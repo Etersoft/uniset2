@@ -1,0 +1,19 @@
+убрать из LDFLAGS в configure библиотеки
+ввести для этих целей LIBS
+проверить, что libUniset линкуется со всеми используемыми библиотеками
+
+Перевести Utilities/ClassGen на xsltproc
+Внести в проект реализацию PLCNet
+
+- написать "uniset-check" автоматический тест основных функций 
+(saveState/Value, getState/Value), setState/Value и т.п.)
+
+- сделать, чтобы можно было Debug пускать через syslog (да ещё и на другую машину)
+
+- Подумать и реализовать механизм хранения ссылок (IOR) с использованием разделяемой памяти...
+(сейчас есть IORFile и omniNames).
+
+- Сделать ObjectIndex_ArrayXML. т.е. использовать vector, при этом считывая индексы из XML.
+
+- Везде где используется sstream и вызов str(), надо делать ss.rdbuf()->freeze(0);
+(http://www.intuit.ru/department/pl/cpp/17/2.html)

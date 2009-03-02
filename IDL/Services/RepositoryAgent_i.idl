@@ -1,0 +1,59 @@
+/* This file is part of the UniSet project
+ * Copyright (c) 2002 Free Software Foundation, Inc.
+ * Copyright (c) 2002 Pavel Vainerman <pv>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+// --------------------------------------------------------------------------
+/*! \file
+ * \author Pavel Vainerman <pv>
+ * \date   $Date: 2005/11/01 21:44:53 $
+ * \version $Id: RepositoryAgent_i.idl,v 1.5 2005/11/01 21:44:53 vpashka Exp $
+*/
+// --------------------------------------------------------------------------
+#ifndef RepositoryAgent_i_IDL_
+#define RepositoryAgent_i_IDL_
+// --------------------------------------------------------------------------
+#include "../UniSetTypes/UniSetObject_i.idl"
+// --------------------------------------------------------------------------------------------------------------
+/*!
+ * \interface RepositoryAgent_i
+ * \brief Интерфейс агента репозитория
+ * Агент репозитрория предназначен для получения доступа к объектам с удаленных узлов.
+ * Он запускается на каждом узле, и с других узлов через него можно получить доступ 
+ * к процессам, датчикам и т.п на данном узле.
+*/ 
+interface RepositoryAgent_i: UniSetObject_i
+{
+
+	// исключения
+	exception NameNotFound
+	{	
+    	string errmsg;
+	};
+
+	exception ResolveError
+	{	
+    	string errmsg;
+	};
+
+//	void registration( in BaseObjectName name, in Object ref );
+//	void unregistration( in BaseObjectName name, in Object ref );
+
+//	Object resolve(in BaseObjectName name) raises(NameNotFound, ResolveError);
+	Object resolveid( in UniSetTypes::ObjectId name) raises(NameNotFound, ResolveError);
+
+};
+#endif

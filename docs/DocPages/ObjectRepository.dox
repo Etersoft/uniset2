@@ -1,0 +1,100 @@
+/*!
+	\page ObjectRepositoryPage Репозиторий объектов
+
+  	Репозиторий объектов предназначен для хранения и получения ссылок на объекты, с целью дальнейшего
+	использования функций предоставленных этими объектами. Объекты регистрирующиеся в репозитории могут быть удаленными...
+
+	- \ref subRegCommon
+	- \ref subReg
+	- \ref subResolve
+
+
+	\section subRegCommon Вводная
+		При наследовании от UniSetObject (и его потомков) регистрация в репозитории происходит автоматически. 
+	Поэтому регистрироватся отдельно нет необходимости. 
+	 
+
+	\section subReg Регистрация 
+		Для регистрации существует следующие функции.
+		
+		По текстовому имени
+		- void ObjectRepository::registration(const ObjectName name, const ObjectPtr oRef, const string section)
+		- void ObjectRepository::registration(const ObjectName fullName, const ObjectPtr oRef)
+
+		По идентификатору
+		- void UniversalInterface::registered(UniSetTypes::ObjectId id, const UniSetTypes::ObjectPtr oRef)throw(ORepFailed);
+		- void UniversalInterface::registered(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node, const UniSetTypes::ObjectPtr oRef)throw(ORepFailed);
+
+		Пример:
+		\code
+			#include "ObjectRepository.h"
+
+			...
+			
+			CORBA::Object_ptr oref;
+			...
+			
+			ObjectRepository orep;
+			try
+			{
+				orep.registration("myObject", oref, "Root/Processes");
+			}
+			cacth(ORepFailed)
+			{
+				cerr << "Не удалось зарегестировать объект " << endl;
+			}
+			
+		\endcode
+		
+		Или при помощи UniverslaInterface
+		\code
+			class MyObject:
+				public UniSetObject
+			{
+				public: 
+					MyObject( UniSetTypes::ObjectId id );
+				
+				...
+	
+				protected:			
+					void my_start()
+					{
+						try
+						{
+							ui.registration(myid, myRef);
+						}
+						catch(Exception ex)
+						{
+							cout << ex << endl;
+						}
+					}
+			}
+			
+		\endcode
+	
+	\section subResolve Получение ссылки на объект
+
+		Для получения ссылки лучше всего пользоваться 
+		- UniSetTypes::ObjectPtr UniversalInterface::resolve( UniSetTypes::ObjectId id )
+		- UniSetTypes::ObjectPtr UniversalInterface::resolve( UniSetTypes::ObjectId id, UniSetTypes::ObjectId nodeName, int timeoutMS=UniversalIO::defaultTimeOut)
+				throw(ResolveNameError, TimeOut);
+
+		т.к. UniversalInterface::resolve() пытается получиться ссылку, в том числе через резервный каналы связи.
+
+		Пример:
+		\code
+			...
+			
+			try
+			{
+				CORBA::Object_ptr oref=0;
+				IOController_i_var ioc = IOController_i::_narrow( ui.resolve(id, node) );
+				...
+			}
+			catch(Exception ex)
+			{
+				cout << ex << endl;
+			}
+
+		\endcode
+*/

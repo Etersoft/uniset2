@@ -1,0 +1,22 @@
+/*!
+ \page DependsPage Зависимости между датчиками
+
+	Механизм зависимостей реализован в классе IOController.
+	В configure.xml настривается 
+	<item textname="...." iotype="..." .../>
+		<consumers>
+		<consumers>
+		<depends>
+			<depend name="Sensor1" filter="val" />
+			<depend name="Sensor2" filter2="val1" />
+		</depends>
+	</item>
+	
+	При считывании конф. файла можно задавать фильтры.
+	
+	
+	ПОКА РЕАЛИЗОВАНА ЗАВИСИМОСТЬ ТОЛЬКО ОТ ОДНОГО ДАТЧИКА!
+	т.е. <depend> может быть только один.
+
+*/
+

@@ -1,0 +1,288 @@
+/*!
+	\page ControlProcessPage Как писать процесс управления
+
+	- \ref pgCP_secDeclareIDL
+	- \ref pgCP_secImplementation
+	- \ref pgCP_secMain
+	- \ref pgCP_secLT_Object
+	- \ref pgCP_secRecomendation
+
+	Все рядовые процессы управления должны наследоваться от класса UniSetObject. 
+	\par 
+		Рассмотрим процесс написания на примере самого простого процесса управления реализующего
+		две функции \c on() и \c off(). Чтобы эти функции были доступны другим процессам необходимо
+		объявить интерфейс на языке IDL.
+
+	\section pgCP_secDeclareIDL Объявление интерфейса на IDL
+		Как писалось выше процесс управления должен наследоваться UniSetObject, это касается и IDL-интерфейса. 
+		Пример объявления
+		\code
+#ifndef TestActiveProcess_i_IDL_
+#define TestActiveProcess_i_IDL_
+// ------------------------------------------------------------------------------------------
+#include "../../../IDL/BaseObjectTypes/UniSetObject_i.idl"
+// ------------------------------------------------------------------------------------------
+interface TestActiveProcess_i: UniSetObject_i
+{
+	void on();
+	void off();
+};
+#endif
+\endcode
+		
+		\par
+		После компиляции автоматически генерируются следующие файлы:
+		- TestActiveProcess_iSK.cc
+		- TestActiveProcess_iSK.hh
+		
+		На основе этих файлов вы реализуете свой интерфейс на С++.
+	
+	\section pgCP_secImplementation Реализация интерфейса на C++
+		Необходимо создать класс реализующий объявленный интерфейс. Формирование названия класса и правила наследования
+		см. \ref UniSetLibStylePage. 
+		\par 
+		Базовые функции интерфейса UniSetObject_i уже реализованы в классе UniSetObject. Поэтому остается только
+		наследоваться от него и реализавать недостающие функции. В итоге получаем 
+\code
+	#ifndef TestActiveProcess_H_
+	#define TestActiveProcess_H_
+	// ------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------------
+	#include "UniSetObject.h"
+	#include "TestActiveProcess_i.hh"
+	// ------------------------------------------------------------------------------------------
+	class TestActiveProcess: 
+			public POA_TestActiveProcess_i,
+			public UniSetObject
+	{
+		public:
+	
+			// -------  Конструктор с заданием обязательных параметров ---------------
+			TestActiveProcess( UniSetTypes::ObjectId id );
+
+    		virtual ~TestActiveProcess();
+
+				// -------  функции объевленные в IDL(интерфейс данного объекта) ---------
+			virtual void on();
+			virtual void off();
+
+		protected:
+			// Основная функция процесса (обработка приходящих сообщений)
+			virtual void processingMessage( UniSetTypes::VoidMessage *msg );						
+			
+			virtual void askSensors(UniversalIO::UIOCommand cmd);
+			virtual void sysCommand( UniSetTypes::SystemMessage* sm );
+			virtual void sensorInfo( UniSetTypes::SensorMessage* si );		
+			virtual void timerInfo( UniSetTypes::TimerMessage* tm );
+			virtual void sigterm( int signo );
+			
+			// Сделан protected чтобы нельзя было создать объект класса 
+			// не задав обязательных параметров 
+	   		TestActiveProcess();
+	};		
+\endcode
+		Реализация функций может выглядеть примерно следующим образом:
+\code
+
+	// ------------------------------------------------------------------------------------------
+	void TestActiveProcess::TestActiveProcess( UniSetTypes::ObjectId id ):
+		UniSetObject(id)
+	{
+	}
+	// ------------------------------------------------------------------------------------------
+
+	void TestActiveProcess::processingMessage( UniSetTypes::VoidMessage *msg)
+	{
+		try
+		{
+			switch(msg->type)
+			{
+				case Message::SensorInfo:
+				{
+					SensorMessage sm(msg);
+					sensorInfo(&sm);
+					break;
+				}
+	
+				case Message::SysCommand:
+				{
+					SystemMessage sm(msg);
+					sysCommand(&sm);
+					break;
+				}
+			
+				case Message::Timer:
+				{
+					TimerMessage tm(msg);
+					timerInfo(&tm);
+					break;
+				}		
+
+				default:
+					cout << myname << ": неизвестное сообщение  "<<  msg->type << endl;	
+					break;
+
+			}
+		}
+		catch(Exception& ex)
+		{
+			cout << myname << "(processingMessage): " << ex << endl;	
+		}
+		catch(...){}
+	}
+	// ------------------------------------------------------------------------------------------
+
+	void TestActiveProcess::askSensors(UniversalIO::UIOCommand cmd)
+	{
+		try
+		{
+			// дискретные датчики
+			ui.askState(Sens1, cmd);
+	    	ui.askState(Sens2, cmd);
+		    ui.askState(Sens3, cmd, remotenode);
+			// аналоговые датчики
+			ui.askValue(ASens1, cmd);
+			ui.askValue(ASens2, cmd);
+		}
+		catch( Exception& ex )
+		{
+			cout << myname << ex << endl;
+		}
+	}
+	// ------------------------------------------------------------------------------------------
+
+	void TestActiveProcess::sigterm( int signo )
+	{
+		cout << myname << "(sigterm): signo " << signo << endl;
+		askSensors( UniversalIO::UIODontNotify );
+	}
+	// ------------------------------------------------------------------------------------------
+
+	void TestActiveProcess::sysCommand( SystemMessage* sm )
+	{
+		cout << myname << "(sysCommand): command= "<<  sm->command << endl;	
+		switch(sm->command)
+		{
+			case SystemMessage::StartUp:
+				askSensors(UniversalIO::UIONotify);
+				break;
+						
+			case SystemMessage::FoldUp:
+			case SystemMessage::Finish:
+				askSensors(UniversalIO::UIODontNotify);
+			break;
+				case SystemMessage::WatchDog:
+				askSensors(UniversalIO::UIONotify);
+			break;
+
+			default:
+				break;
+		}
+	}
+	// ------------------------------------------------------------------------------------------
+
+	void TestActiveProcess::sensorInfo( SensorMessage *si )
+	{
+		cout << myname << "(sensorInfo): name" << conf->oind.getNameById(si->id,si.node) << endl;
+	}
+	// ------------------------------------------------------------------------------------------
+
+	void TestActiveProcess::timerInfo( UniSetTypes::TimerMessage* tm )
+	{
+		cout << myname << "(timerInfo): timerId=" << tm->id << endl;
+	}
+	// ------------------------------------------------------------------------------------------
+		
+\endcode
+
+		\section pgCP_secMain Написание функции main() для подключения процесса
+		
+\code
+
+	#include "ObjectsMap.h"
+	#include "TestActiveProcess.h"
+	#include "ObjectsActivator.h"
+	#include "Configuration.h"
+	// ------------------------------------------------------------------------------------------
+	using namespace UniSetTypes;
+	using namespace std;
+	
+	int main( int argc, char **argv )
+	{
+		try
+		{
+			conf = new Configuration(argc, (const char**)argv, "configure.xml", (ObjectInfo*)ObjectsMap);
+	
+			TestActiveProcess tap(testControlProcess);
+			TestActiveProcess tap2(testControlProcess2);
+			ObjectsActivator activator;
+			activator.addObject(&tap);
+			activator.addObject(&tap2);
+			activator.run(false);
+		}
+		catch( Exception& ex )
+		{
+			cout << ex << endl;
+		}
+		catch(...)
+		{
+			cout << "Неизвестное исключение!!!!"<< endl;
+		}
+	
+		return 0;
+	}
+
+\endcode
+
+		\section pgCP_secLT_Object Создание автономного объекта, не зависящего от TimerService-а
+			Для повышения автономности работы, можно создать процесс, который сам будет реализовывать таймеры.
+		Для этого достаточно при создании своего процесса наследоватся не от UniSetObject, а от UniSetObject_LT.
+		Т.е. код будет выглядеть так:
+\code
+		...
+		
+		class TestActiveProcess: 
+			public POA_TestActiveProcess_i,
+			public UniSetObject_LT
+		{
+			public:
+			...
+		}
+		
+\endcode
+
+		И при заказе таймеров надо использовать не \a ui.askTimer(...), а просто \a askTimer(...).
+		
+\code
+		function my_func()
+		{
+			// ui.askTimer(TimerId1, Time)
+			askTimer(TimerId1, Time);
+			...
+		}
+\endcode		
+			Функция UniSetObject_LT::askTimer() повторяет интерфейс UniversalInterface::askTimer(). 
+		Реализация построена, на переопределении функции UniSetObject::callback(), поэтому если поток
+	не будет создан, таймеры работать не будут.
+	\sa LT_Object, UniSetObject_LT, ObjectsManager_LT
+
+
+
+		\section pgCP_secRecomendation Некоторые общие рекомендации
+		
+		-# Все функции и параметры должны быть откоментированы.
+		-# При обработке завершающих(прерывающих) сигналов желательно производить отказ от заказанных датчиков.			
+			см. UniSetObject::sigterm().
+		-# Желательно при выходе не забывать отказываться от датчиков
+		-# Заказ датчиков необходимых для работы процесса, \b ДОЛЖЕН происходить после прихода сообщения \a startUp
+			или другого подобного признака означающего разрешение на работу.
+		-# Заказ датчиков, таймеров, работа с информацией в основном происходит при помощи UniversalInterface. В каждом
+			классе имеется объект этого интерфейса (UniSetObject::ui), поэтому необходимости в отдельном его создании нет.
+
+		\warning Заказ датчиков может (и должен) происходить \b только после активизации. Ваш процесс НЕ будет доступен
+			для приема команд и сообщений пока он не активизирован. 
+			
+	\par 
+		Вот	вроде и все пока...
+
+*/

@@ -1,0 +1,63 @@
+/*! $Id: ModbusRTUMaster.h,v 1.3 2009/02/24 20:27:25 vpashka Exp $ */
+// -------------------------------------------------------------------------
+#ifndef ModbusRTUMaster_H_
+#define ModbusRTUMaster_H_
+// -------------------------------------------------------------------------
+#include <string>
+#include "Mutex.h"
+#include "Debug.h"
+#include "Configuration.h"
+#include "PassiveTimer.h"
+#include "ComPort.h"
+#include "ModbusTypes.h"
+#include "ModbusClient.h"
+// -------------------------------------------------------------------------
+/*!	Modbus RTU master mode 
+	\todo Добавить ведение статистики по ошибкам
+*/
+class ModbusRTUMaster:
+	public ModbusClient
+{
+	public:
+
+		ModbusRTUMaster( ComPort* com );
+		ModbusRTUMaster( const std::string dev, bool use485=false );
+		virtual ~ModbusRTUMaster();
+
+		inline void cleanupChannel(){ if( port ) port->cleanupChannel(); }
+		
+		void setSpeed( ComPort::Speed s );
+		void setSpeed( const std::string s );
+		ComPort::Speed getSpeed();
+		
+		int getTimeout();
+
+	protected:
+
+		/*! get next data block from channel ot recv buffer 
+			\param begin - get from position
+			\param buf  - buffer for data
+			\param len 	- size of buf
+			\return real data lenght ( must be <= len ) 
+		*/
+		virtual int getNextData( unsigned char* buf, int len );
+
+		/*! set timeout for send/receive data */
+		virtual void setChannelTimeout( int msec );
+
+		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len );
+
+		/*! функция запрос-ответ */
+		virtual ModbusRTU::mbErrCode query( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& msg, 
+											ModbusRTU::ModbusMessage& reply, int timeout );
+
+
+		std::string dev; 		/*!< устройство */
+		ComPort* port;			/*!< устройство для работы с COM-портом */
+		bool myport;
+
+	private:
+};
+// -------------------------------------------------------------------------
+#endif // ModbusRTUMaster_H_
+// -------------------------------------------------------------------------

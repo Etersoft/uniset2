@@ -1,0 +1,97 @@
+// $Id: IOBase.h,v 1.3 2009/01/23 23:56:54 vpashka Exp $
+// -----------------------------------------------------------------------------
+#ifndef IOBase_H_
+#define IOBase_H_
+// -----------------------------------------------------------------------------
+#include <string>
+#include "PassiveTimer.h"
+#include "Trigger.h"
+#include "Mutex.h"
+#include "DigitalFilter.h"
+#include "Calibration.h"
+#include "IOController.h"
+#include "SMInterface.h"
+// -----------------------------------------------------------------------------
+static const int DefaultSubdev 	= -1;
+static const int DefaultChannel = -1;
+static const int NoSafety = -1;
+// -----------------------------------------------------------------------------
+		/*! Информация о входе/выходе */
+		struct IOBase
+		{
+			IOBase():
+				cdiagram(0),
+				breaklim(0),
+				value(0),
+				craw(0),
+				safety(0),
+				defval(0),
+				df(1),
+				nofilter(false),
+				f_median(false),
+				ignore(false),
+				invert(false),
+				jar_state(false),
+				ondelay_state(false),
+				offdelay_state(false)
+			{}
+
+
+			bool check_channel_break( long val ); 	/*!< проверка обрыва провода */
+
+			bool check_jar( bool val );			/*!< реализация фильтра против дребезга */
+			bool check_on_delay( bool val );	/*!< реализация задержки на включение */
+			bool check_off_delay( bool val );	/*!< реализация задержки на отключение */
+			
+			IOController_i::SensorInfo si;
+			UniversalIO::IOTypes stype;			/*!< тип канала (DI,DO,AI,AO) */
+			IOController_i::CalibrateInfo cal; 	/*!< калибровочные параметры */
+			Calibration* cdiagram;				/*!< специальная калибровочная диаграмма */
+
+			long breaklim; 	/*!< значение задающее порог определяющий обрыв (задаётся 'сырое' значение) */
+			long value;		/*!< текущее значение */
+			long craw;		/*!< текущее 'сырое' значение до калибровки */
+			long cprev;		/*!< предыдущее значение после калибровки */
+			long safety;	/*!< безопасное состояние при завершении процесса */
+			long defval;	/*!< безопасное состояние при завершении процесса */
+
+			DigitalFilter df;	/*!< реализация программного фильтра */
+			bool nofilter;		/*!< отключение фильтра */
+			bool f_median;		/*!< признак использования медианного фильтра */
+
+			bool ignore;	/*!< игнорировать при опросе */
+			bool invert;	/*!< инвертированная логика */
+			
+			PassiveTimer ptJar; 		/*!< таймер на дребезг */
+			PassiveTimer ptOnDelay; 	/*!< задержка на срабатывание */
+			PassiveTimer ptOffDelay; 	/*!< задержка на отпускание */
+			
+			bool jar_pause;
+			Trigger trOnDelay;
+			Trigger trOffDelay;
+			Trigger trJar;
+			
+			bool jar_state;			/*!< значение для фильтра дребезга */
+			bool ondelay_state;		/*!< значение для задержки включения */
+			bool offdelay_state;	/*!< значение для задержки отключения */
+			
+			IOController::AIOStateList::iterator ait;
+			IOController::DIOStateList::iterator dit;
+			UniSetTypes::uniset_spin_mutex val_lock; 	/*!< флаг блокирующий работу со значением */
+			
+			friend std::ostream& operator<<(std::ostream& os, IOBase& inf );
+
+			static void processingAsAI( IOBase* it, long new_val, SMInterface* shm, bool force );
+			static void processingAsDI( IOBase* it, bool new_set, SMInterface* shm, bool force );
+			static long processingAsAO( IOBase* it, SMInterface* shm, bool force );
+			static bool processingAsDO( IOBase* it, SMInterface* shm, bool force );
+			static bool initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,  
+									DebugStream* dlog=0, std::string myname="",
+									int def_filtersize=0, float def_filterT=0.0 );
+		};
+
+
+
+// -----------------------------------------------------------------------------
+#endif // IOBase_H_
+// -----------------------------------------------------------------------------

@@ -1,0 +1,185 @@
+// $Id: IOControl.h,v 1.1 2008/12/14 21:57:50 vpashka Exp $
+// -----------------------------------------------------------------------------
+#ifndef IOControl_H_
+#define IOControl_H_
+// -----------------------------------------------------------------------------
+#include <vector>
+#include <list>
+#include <string>
+#include "UniXML.h"
+#include "PassiveTimer.h"
+#include "Trigger.h"
+#include "IONotifyController.h"
+#include "UniSetObject_LT.h"
+#include "Mutex.h"
+#include "MessageType.h"
+#include "ComediInterface.h" 
+#include "DigitalFilter.h" 
+#include "Calibration.h" 
+#include "SMInterface.h" 
+#include "SingleProcess.h"
+#include "IOController.h" 
+#include "IOBase.h" 
+#include "SharedMemory.h" 
+// -----------------------------------------------------------------------------
+#warning Сделать обработку сигналов завершения....
+
+/*! 
+	Процесс работы с картами в/в.
+	Задачи:
+	- опрос дискретных и аналоговых входов, выходов
+	- задержка на страбатывание
+	- задержка на отпскание (для АПС-ых сигналов)
+	- защита от дребезга
+	- программное фильтрование аналоговых сигналов
+	- калибровка аналоговых значений
+	- инвертирование логики дискретных сигналов
+	- выставление безопасного состояния выходов (при аварийном завершении)
+	- определение обрыва провода (для аналоговых сигналов)
+	- мигание лампочками
+	- тест ламп
+*/
+class IOControl:
+	public UniSetObject
+{
+	public:
+		IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID, SharedMemory* ic=0, int numcards=2 );
+		virtual ~IOControl();
+
+		/*! глобальная функция для инициализации объекта */
+		static IOControl* init_iocontrol( int argc, char* argv[], 
+											UniSetTypes::ObjectId icID, SharedMemory* ic=0 );
+		/*! глобальная функция для вывода help-а */
+		static void help_print( int argc, char* argv[] );
+
+//		inline std::string getName(){ return myname; }
+
+		/*! Информация о входе/выходе */
+		struct IOInfo:
+			public IOBase
+		{
+			IOInfo():
+				subdev(DefaultSubdev),channel(DefaultChannel),
+				ncard(-1),
+				aref(0),
+				range(0),
+				lamp(false),
+				no_testlamp(false)
+			{}
+
+
+			short subdev;	/*!< (UNIO) подустройство (см. comedi_test для конкретной карты в/в) */
+			short channel;	/*!< (UNIO) канал [0...23] */
+			short ncard;	/*!< номер карты [1|2]. 0 - не определена */
+
+			/*! Вид поключения
+				0	- analog ref = analog ground
+				1	- analog ref = analog common
+				2	- analog ref = differential
+				3	- analog ref = other (undefined)
+			*/
+			int aref;
+
+			/*! Измерительный диапазон
+				0	-  -10В - 10В
+				1	-  -5В - 5В
+				2	-  -2.5В - 2.5В
+				3	-  -1.25В - 1.25В
+			*/
+			int range;
+
+			bool lamp;		/*!< признак, что данный выход является лампочкой (или сигнализатором) */
+			bool no_testlamp; /*!< флаг исключения из 'проверки ламп' */
+			
+			friend std::ostream& operator<<(std::ostream& os, IOInfo& inf );
+		};
+
+		void execute();
+
+	protected:
+
+		void iopoll(); /*!< опрос карт в/в */
+		void blink();
+		void check_testlamp();
+		
+		// действия при завершении работы
+		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
+		virtual void sysCommand( UniSetTypes::SystemMessage* sm );
+		virtual void askSensors( UniversalIO::UIOCommand cmd );
+		virtual void sensorInfo( UniSetTypes::SensorMessage* sm );
+		virtual void timerInfo( UniSetTypes::TimerMessage* tm );
+		virtual void sigterm( int signo );
+		virtual bool activateObject();
+		
+		// начальная инициализация выходов
+		void initOutputs();
+
+		// инициализация карты (каналов в/в)
+		void initIOCard();
+
+		// чтение файла конфигурации
+		void readConfiguration();
+		bool initIOItem( UniXML_iterator& it );
+		bool check_item( UniXML_iterator& it );
+		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
+
+		void waitSM();
+
+		bool checkCards( const std::string func="" );
+
+//		std::string myname;
+		xmlNode* cnode;			/*!< xml-узел в настроечном файле */
+
+		int polltime;			/*!< переодичность обновления данных (опроса карт в/в), [мсек] */
+		std::vector<ComediInterface*> cards;
+		bool noCards;
+
+
+		typedef std::vector<IOInfo> IOMap;
+		IOMap iomap;			/*!< список входов/выходов */
+		unsigned int maxItem;	/*!< количество элементов (используется на момент инициализации) */
+		int filtersize;
+		float filterT;
+
+		std::string s_field;
+		std::string s_fvalue;
+
+		SMInterface* shm;
+		UniversalInterface ui;
+		UniSetTypes::ObjectId myid;
+
+		typedef std::list<IOMap::iterator> BlinkList;
+		BlinkList lstBlink;
+		PassiveTimer ptBlink;
+		bool blink_state;
+		
+		void addBlink( IOMap::iterator& it );
+		void delBlink( IOMap::iterator& it );
+		
+		UniSetTypes::ObjectId testLamp_S;
+		Trigger trTestLamp;
+		bool isTestLamp;
+		IOController::DIOStateList::iterator ditTestLamp;
+
+		PassiveTimer ptHeartBeat;
+		UniSetTypes::ObjectId sidHeartBeat;
+		int maxHeartBeat;
+		IOController::AIOStateList::iterator aitHeartBeat;
+
+		bool force;			/*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
+		bool force_out;		/*!< флаг означающий, принудительного чтения выходов */
+		int smReadyTimeout; 	/*!< время ожидания готовности SM к работе, мсек */
+		int defCardNum;
+		
+		UniSetTypes::uniset_mutex iopollMutex;
+		bool activated;
+		bool readconf_ok;
+		int activateTimeout;
+		UniSetTypes::ObjectId sidTestSMReady;
+		bool term;
+
+	private:
+};
+// -----------------------------------------------------------------------------
+#endif // IOControl_H_
+// -----------------------------------------------------------------------------

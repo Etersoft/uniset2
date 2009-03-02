@@ -1,0 +1,8 @@
+// эти разделы сформируются автоматически из описаний сделанных в соответствующих h-файлах
+/*! 
+ \page ServicesPage Сервисы
+
+	 - \ref secDBServer
+	 - \ref secInfoServer	 
+	 - \ref secTimerService	 	 
+*/

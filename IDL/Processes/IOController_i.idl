@@ -1,0 +1,288 @@
+/* This file is part of the UniSet project
+ * Copyright (c) 2002 Free Software Foundation, Inc.
+ * Copyright (c) 2002 Pavel Vainerman <pv>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+// --------------------------------------------------------------------------
+/*! \file
+ *  \author Pavel Vainerman <pv>
+ *  \date   $Date: 2008/11/29 21:24:24 $
+ *  \version $Id: IOController_i.idl,v 1.16 2008/11/29 21:24:24 vpashka Exp $
+*/
+// --------------------------------------------------------------------------
+#ifndef BaseIOController_i_IDL_
+#define BaseIOController_i_IDL_
+// --------------------------------------------------------------------------
+#include "../UniSetTypes/UniSetTypes_i.idl"
+#include "../UniSetTypes/ObjectsManager_i.idl"
+// --------------------------------------------------------------------------------------------------------------
+
+/*! 
+ * \inteface IOController_i 
+ * \brief Базовый интерфейс для создания координаторов ввода/вывода  
+ *
+*/ 
+interface IOController_i : ObjectsManager_i	
+{
+	// исключения
+	
+	/*! Датчик не найден */
+	exception NameNotFound
+	{	
+    	string err;
+	};
+
+	exception IOBadParam
+	{	
+	   	string err;
+	};
+
+
+	/*! Значение не определено
+		(например: обрыв датчика)
+	*/
+	exception Undefined
+	{	
+	};
+
+
+	/*! Информация о датчике */
+	struct SensorInfo
+	{
+		UniSetTypes::ObjectId id;	/*!< идентификатор датчика */
+		UniSetTypes::ObjectId node;	/*!< узел на котором он находится */
+	};
+
+	boolean getState(in SensorInfo si) raises(NameNotFound,Undefined);
+	long getValue(in SensorInfo si) raises(NameNotFound,Undefined);
+	void setState(in SensorInfo si, in boolean state,
+					in UniSetTypes::ObjectId sup_id) raises(NameNotFound);
+	void setValue(in SensorInfo si, in long value,
+					in UniSetTypes::ObjectId sup_id) raises(NameNotFound);
+
+	void saveState(in SensorInfo si, in boolean state, in UniversalIO::IOTypes type,
+						in UniSetTypes::ObjectId sup_id) raises(IOBadParam,NameNotFound);
+	void saveValue(in SensorInfo si, in long value, in UniversalIO::IOTypes type, 
+						in UniSetTypes::ObjectId sup_id) raises(IOBadParam,NameNotFound);
+
+	// установка неопределённого состояния
+	// (пока работает только для аналоговых датчиков)
+	void setUndefinedState(in SensorInfo si, in boolean undefined, in UniSetTypes::ObjectId sup_id ) 
+							raises(NameNotFound);
+
+	// fast version (не вырабатывает исключения)
+	oneway void fastSaveState(in SensorInfo si, in boolean state, in UniversalIO::IOTypes type,
+						in UniSetTypes::ObjectId sup_id);
+	oneway void fastSaveValue(in SensorInfo si, in long value, in UniversalIO::IOTypes type, 
+						in UniSetTypes::ObjectId sup_id);
+
+	oneway void fastSetState(in SensorInfo si, in boolean state, in UniSetTypes::ObjectId sup_id);
+	oneway void fastSetValue(in SensorInfo si, in long value, in UniSetTypes::ObjectId sup_id);
+
+	UniversalIO::IOTypes getIOType(in SensorInfo si) raises(NameNotFound);
+
+	// --- Интерфейс для конфигурирования ---
+
+	/*! Получение неколиброванного значения */
+	long getRawValue( in SensorInfo si ) raises(NameNotFound);
+	
+	struct CalibrateInfo
+	{
+		long minRaw;		/*!< минимальное "сырое" значение */
+		long maxRaw; 		/*!< максимальное "сырое" значение */
+		long minCal; 		/*!< минимальное калиброванное значение */
+		long maxCal; 		/*!< максимальное калиброванное значение */
+		long sensibility; 	/*!< чуствительность (для первичного фильтрования) */
+		short precision;	/*!< точность */
+	};
+
+	void calibrate( in SensorInfo si, in CalibrateInfo ci, in UniSetTypes::ObjectId adminId ) raises(NameNotFound);
+	CalibrateInfo getCalibrateInfo( in SensorInfo si ) raises(NameNotFound);
+
+	// --- Интерфес получения информации о всех датчиках ---
+
+	/*! Информация о дискретном датчике */
+	struct DigitalIOInfo
+	{
+		boolean state;				/*!< состояние */
+		boolean undefined; 			/*!< признак неопределённости значения */
+		boolean blocked; 			/*!< данное значение блокировано другим */		
+		boolean real_state;			/*!< запомненное состояние, до блокировки */
+		UniversalIO::IOTypes type;	/*!< тип */	
+		long priority;	 			/*!< приоритет уведомления */	
+		IOController_i::SensorInfo si;
+		boolean default_val; 		/*!< значение по умолчанию */
+		long tv_sec;	/*!< время последнего изменения датчика, секунды (gettimeofday) */
+		long tv_usec;	/*!< время последнего изменения датчика, мксек (gettimeofday) */
+	};
+
+	/*! Информация об аналоговом датчике */
+	struct AnalogIOInfo
+	{
+		long value;					/*!< значение */
+		boolean undefined; 			/*!< признак неопределённости значения */
+		boolean blocked; 			/*!< данное значение блокировано другим */
+		long real_value;			/*!< запомненное состояние, до блокировки */
+		UniversalIO::IOTypes type;	/*!< тип */	
+		long priority;	 			/*!< приоритет уведомления */	
+		IOController_i::SensorInfo si;
+		long default_val; 			/*!< значение по умолчанию */
+		CalibrateInfo ci; 			/*!< калибровочные параметры */
+		long tv_sec;				/*!< время последнего изменения датчика, секунды (gettimeofday) */
+		long tv_usec;				/*!< время последнего изменения датчика, мксек (gettimeofday) */
+	};
+
+	typedef sequence<AnalogIOInfo> ASensorInfoSeq;
+	typedef sequence<DigitalIOInfo> DSensorInfoSeq;
+
+	ASensorInfoSeq getAnalogSensorsMap();
+	DSensorInfoSeq getDigitalSensorsMap();	
+	
+	DigitalIOInfo getDInfo(in SensorInfo si) raises(NameNotFound);
+	AnalogIOInfo getAInfo(in SensorInfo si) raises(NameNotFound);
+
+
+	// -- Функции работы со списком датчиков --
+	
+	// Для простоты функции сделаны универсальными и не различающими
+	// дискретные или аналоговые датчики или выходы
+
+
+	/*! Получение состояния дискретных или аналоговых датчиков. 
+		При этом используется структура аналоговых (как наиболее полная).
+		Для определения типа используйте поле 'type'.
+	*/
+	ASensorInfoSeq getSensorSeq( in UniSetTypes::IDSeq lst );
+
+	/*! Информация о "выходе" */
+	struct OutInfo
+	{
+		SensorInfo si;	/*!< идентификатор выхода */
+		long value;		/*!< значение */
+	};
+
+	typedef sequence<OutInfo> OutSeq;
+
+	/*!
+		Выставить состояние группы датчиков/выходов (дискретных или аналоговых).
+		\return Возвращает список входов/выходов изменить состояние которых не удалось. 
+			Будет пустым если всё хорошо.
+	*/
+	UniSetTypes::IDSeq setOutputSeq( in OutSeq lst, in UniSetTypes::ObjectId sup_id );
+};
+
+// --------------------------------------------------------------------------------------------------------------
+/*!
+ * \interface IONotifyController_i
+ * \brief Базовый интерфейс для создания процессов рассылающих сообщения об изменении состояния
+ * \author Pavel Vainerman <pv>
+ * \version
+ * \date   September 2001-
+ *
+ * ... а здесь идет кратенькое описание...
+*/
+interface IONotifyController_i : IOController_i
+{
+	/*! Неверно указаны пределы */
+	exception BadRange
+	{	
+	};
+
+
+	/*! Заказ уведомления об изменении дискретного датчика
+	 * \sa UniversalIO::UniversalIOController::askState()
+	*/
+	void askState(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
+
+	/*! Заказ уведомления об изменении аналогового датчика
+	 * \sa UniversalIO::UniversalIOController::askValue()
+	*/					
+	void askValue(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
+
+	/*! Универсальная функция заказа уведомления об изменнии датчика.
+	 *	Позволяет заказывать как дискретные так и аналоговые датчики
+	 * \sa UniversalIO::UniversalIOController::askSensor()
+	*/					
+	void askSensor(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
+
+	/*! Заказ порогового датчика
+	 * \sa UniversalIO::UniversalIOController::askThreshold()
+	 * \param tid - идентификатор порога
+	 * \param lowLimit - нижний порог срабатыания
+	 * \param hiLimit - верхний порог срабатывания
+	 * \param sensibility - чуствительность
+	 * 
+	 *	Датчик срабатывает при условии, что значение меньше (lowLimit-sensibility) или
+	 *  больше (hiLimit+sensibility)
+	*/					
+	void askThreshold(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniSetTypes::ThresholdId tid,
+						in long lowLimit, in long hiLimit, in long sensibility,
+						in UniversalIO::UIOCommand cmd ) raises(NameNotFound, IOBadParam, BadRange);
+
+
+	/*! Универсальная функция заказа уведомления об изменнии выхода.
+	 *	Позволяет заказывать как дискретные так и аналоговые выходы
+	 * \sa UniversalIO::UniversalIOController::askOutput()
+	*/					
+	void askOutput(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
+
+
+	/*! 
+		Заказ сразу списка объектов. 
+		\return Возвращает список объектов заказ по котором не прошёл.
+			Будет пустым если всё хорошо.
+	*/
+	UniSetTypes::IDSeq askSensorsSeq( in UniSetTypes::IDSeq lst, 
+										in UniSetTypes::ConsumerInfo ci,
+										in UniversalIO::UIOCommand cmd );
+
+
+	/*! Состояние порогового датчика */
+	enum ThresholdState
+	{
+		LowThreshold,		/*!< сработал нижний порог  (значение меньше нижнего) */
+		NormalThreshold,	/*!< значение в заданных пределах (не достигли порога) */
+		HiThreshold			/*!< сработал верхний порог  (значение больше верхнего) */
+	};
+
+	struct ThresholdInfo
+	{
+		UniSetTypes::ThresholdId id;
+		long hilimit;			/*!< верхняя граница срабатывания */
+		long lowlimit;			/*!< нижняя гранийа срабатывания */
+		long sensibility;		/*!< точность определения границ (?) */
+		ThresholdState state;	
+		long tv_sec;			/*!< время последнего изменения датчика, секунды (gettimeofday) */
+		long tv_usec;			/*!< время последнего изменения датчика, мксек (gettimeofday) */
+	};
+
+	typedef sequence<ThresholdInfo> ThresholdInfoSeq;
+	
+	
+	struct ThresholdList
+	{
+		IOController_i::SensorInfo si;
+		UniversalIO::IOTypes type;
+		long value;
+		ThresholdInfoSeq tlist;
+	};
+	
+	typedef sequence<ThresholdList> ThresholdsListSeq;
+	ThresholdsListSeq getThresholdsList();
+
+};
+// --------------------------------------------------------------------------
+#endif
