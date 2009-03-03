@@ -150,7 +150,7 @@ void SMonitor::sysCommand( SystemMessage *sm )
 // ------------------------------------------------------------------------------------------
 void SMonitor::sensorInfo( SensorMessage *si )
 {
-	cout << "(" << setw(5) << si->id << "): " << setw(8) << UniversalInterface::timeToString(si->sm_tv_sec,":") 
+	cout << "(" << setw(6) << si->id << "): " << setw(8) << UniversalInterface::timeToString(si->sm_tv_sec,":") 
 		 << "(" << setw(6) << si->sm_tv_usec << "): ";
 	cout << setw(45) << conf->oind->getMapName(si->id);
 	if( si->sensor_type == UniversalIO::DigitalInput || si->sensor_type == UniversalIO::DigitalOutput )
