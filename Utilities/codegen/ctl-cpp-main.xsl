@@ -43,7 +43,7 @@ int main( int argc, char* argv[] )
 	if( argc>1 &amp;&amp; strcmp(argv[1],"--help")==0 )
 	{
 		cout &lt;&lt; "--name name		- ID процесса. По умолчанию <xsl:value-of select="$CLASSNAME"/>." &lt;&lt; endl;
-		cout &lt;&lt; "--vonfile fname	- Конф. файл. по умолчанию configure.xml" &lt;&lt; endl;
+		cout &lt;&lt; "--confile fname	- Конф. файл. по умолчанию configure.xml" &lt;&lt; endl;
 		cout &lt;&lt; "--logfile fname	- выводить логи в файл fname. По умолчанию <xsl:value-of select="$CLASSNAME"/>.log"  &lt;&lt; endl;
 		return 0;
 	}
@@ -85,7 +85,7 @@ int main( int argc, char* argv[] )
 		SystemMessage sm(SystemMessage::StartUp); 
 		act.broadcast( sm.transport_msg() );
 		act.run(false);
-		pause();	// пауза, чтобы дочерние потоки успели завершить работу
+		pause();	// пауза, чтобы дочерние потоки успели завершить работ
 	}
 	catch(Exception&amp; ex)
 	{

@@ -118,23 +118,25 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( UniSetTypes::SensorM
 	sensorInfo(sm);
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::askState( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand cmd )
+void <xsl:value-of select="$CLASSNAME"/>_SK::askState( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node )
 {
 // #warning מו עובליתןקבמב...
 	if( cmd == UniversalIO::UIONotify )
 	{
-		SensorMessage sm( sid, (bool)ui.getState(sid) );
+		SensorMessage sm( sid, (bool)ui.getState(sid,node) );
+		sm.node = node;
 //		push( sm.transport_msg() );
 		sensorInfo(&amp;sm);
 	}
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::askValue( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand cmd )
+void <xsl:value-of select="$CLASSNAME"/>_SK::askValue( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node )
 {
 // #warning מו עובליתןקבמב..
 	if( cmd == UniversalIO::UIONotify )
 	{
-		SensorMessage sm( sid, (long)ui.getValue(sid) );
+		SensorMessage sm( sid, (long)ui.getValue(sid,node) );
+		sm.node = node;
 //		push( sm.transport_msg() );
 		sensorInfo(&amp;sm);
 	}

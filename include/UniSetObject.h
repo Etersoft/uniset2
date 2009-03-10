@@ -129,6 +129,7 @@ class UniSetObject:
 			*/
 			virtual void sigterm( int signo ){};
 
+			inline void terminate(){ disactivate(); }
 
 			/*! Ожидать сообщения timeMS */
 			virtual bool waitMessage(UniSetTypes::VoidMessage& msg, int timeMS=UniSetTimer::WaitUpTime);		

@@ -23,6 +23,13 @@
 </xsl:choose>
 </xsl:template>
 
+<xsl:template name="setnode">
+<xsl:choose>
+	<xsl:when test="normalize-space(@node)=''">conf->getLocalNode()</xsl:when>
+	<xsl:when test="normalize-space(@node)!=''">conf->getNodeID(<xsl:value-of select="@node"/> )</xsl:when>
+</xsl:choose>
+</xsl:template>
+
 <xsl:template name="preinclude">
 	<xsl:if test="normalize-space($LOCALINC)!=''">
 	<xsl:text>&quot;</xsl:text>
@@ -48,6 +55,7 @@
 		<xsl:choose>
 		<xsl:when test="$GENTYPE='H'">
 		const UniSetTypes::ObjectId <xsl:value-of select="../../@name"/>; 		/*!&lt; <xsl:value-of select="../../@textname"/> */
+		const UniSetTypes::ObjectId node_<xsl:value-of select="../../@name"/>;
 		<xsl:call-template name="settype"><xsl:with-param name="iotype" select="../../@iotype" /></xsl:call-template><xsl:text> </xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>; /*!&lt; текущее значение */
 		<xsl:call-template name="settype"><xsl:with-param name="iotype" select="../../@iotype" /></xsl:call-template><xsl:text> prev_</xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>; /*!&lt; предыдущее значение */
 		</xsl:when>
@@ -141,10 +149,11 @@
 
 		bool alarm( UniSetTypes::ObjectId sid, bool state );
 		bool getState( UniSetTypes::ObjectId sid );
+		bool getValue( UniSetTypes::ObjectId sid );
 		void setValue( UniSetTypes::ObjectId sid, long value );
 		void setState( UniSetTypes::ObjectId sid, bool state );
-		void askState( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand );
-		void askValue( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand );
+		void askState( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );
+		void askValue( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );
 		void askThreshold ( UniSetTypes::ObjectId sensorId, UniSetTypes::ThresholdId tid,
 							UniversalIO::UIOCommand cmd,
 							CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Long sensibility,
@@ -198,7 +207,6 @@
 
 <xsl:template name="COMMON-HEAD-PRIVATE">
 		IOController_i::SensorInfo si;
-//		UniSetTypes::SensorMessage sm;
 </xsl:template>
 
 <xsl:template name="COMMON-CC-FILE">
@@ -347,6 +355,13 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId tes
 	if( testID == DefaultObjectId )
 		return;
 		
+	if( unideb.debugging(Debug::INFO) )
+	{
+		unideb[Debug::INFO] &lt;&lt; myname &lt;&lt; "(waitSM): waiting SM ready " 
+			&lt;&lt; wait_msec &lt;&lt; " msec"
+			&lt;&lt; " testID=" &lt;&lt; testID &lt;&lt; endl;
+	}
+		
 	if( !ui.waitReady(testID,wait_msec) )
 	{
 		ostringstream err;
@@ -355,7 +370,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId tes
 			&lt;&lt; wait_msec &lt;&lt; " мсек";
 
 		unideb[Debug::CRIT] &lt;&lt; err.str() &lt;&lt; endl;
-		kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
+		terminate();
+		abort();
+		// kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
 		throw SystemError(err.str());
 	}
 
@@ -369,7 +386,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId tes
 				&lt;&lt; wait_msec &lt;&lt; " мсек";
 	
 			unideb[Debug::CRIT] &lt;&lt; err.str() &lt;&lt; endl;
-			kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
+			terminate();
+			abort();
+			// kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
 			throw SystemError(err.str());
 		}
 	}
@@ -405,9 +424,11 @@ using namespace UniSetTypes;
 // Инициализация идентификаторов (имена берутся из конф. файла)
 <xsl:for-each select="//smap/item">
 	<xsl:value-of select="@name"/>(DefaultObjectId),
+node_<xsl:value-of select="@name"/>(DefaultObjectId),
 </xsl:for-each>
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="@name"/>(DefaultObjectId),
+node_<xsl:value-of select="@name"/>(DefaultObjectId),
 </xsl:for-each>
 active(false),
 isTestMode(false),
@@ -427,9 +448,11 @@ activated(false)
 // Инициализация идентификаторов (имена берутся из конф. файла)
 <xsl:for-each select="//smap/item">
 	<xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
+node_<xsl:value-of select="normalize-space(@name)"/>(<xsl:call-template name="setnode"/>),
 </xsl:for-each>
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
+node_<xsl:value-of select="normalize-space(@name)"/>(<xsl:call-template name="setnode"/>),
 </xsl:for-each>
 sleep_msec(<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>),
 active(true),
@@ -446,12 +469,22 @@ activated(false)
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 		throw Exception( myname + ": NotFound ID for (<xsl:value-of select="@name"/>) " + conf->getProp(cnode,"<xsl:value-of select="@name"/>") );
+	<xsl:if test="normalize-space(@node)!=''">
+	if( node_<xsl:value-of select="normalize-space(@node)"/> == UniSetTypes::DefaultObjectId )
+		throw Exception( myname + ": NotFound NodeID for (node=<xsl:value-of select="@node"/>) " + conf->getProp(cnode,"<xsl:value-of select="@node"/>") );
+	</xsl:if>
 	</xsl:if>
 </xsl:for-each>
 
 <xsl:for-each select="//msgmap/item">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": NotFound (Message)OID for " &lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>") &lt;&lt; endl;
+	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
+	{
+		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": NotFound (Message)NodeD for node=" &lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@node)"/>") 
+			&lt;&lt; ". Use localNode=" &lt;&lt; conf->getLocalNode()
+			&lt;&lt; endl;
+	}
 </xsl:for-each>
 
 	// Инициализация значений
@@ -473,8 +506,6 @@ activated(false)
 	</xsl:if>
 	</xsl:for-each>
 	
-	si.node = conf->getLocalNode();
-
 	sleep_msec = atoi(conf->getArgParam("--sleep-msec","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>").c_str());
 	if( sleep_msec &lt;=0 )
 		sleep_msec = <xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>;
@@ -563,15 +594,18 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId code, 
 	else
 		unideb(Debug::LEVEL1) &lt;&lt; "RESET ";
 	
+	unideb(Debug::LEVEL1) &lt;&lt; endl;
+	
 	<xsl:for-each select="//msgmap/item">
 	if( code == <xsl:value-of select="@name"/> )
 	{				
-		unideb(Debug::LEVEL1) &lt;&lt; "<xsl:value-of select="@name"/>" &lt;&lt; endl;
+		unideb[Debug::LEVEL1] &lt;&lt; "<xsl:value-of select="@name"/>" &lt;&lt; endl;
 		try
 		{
 			m_<xsl:value-of select="@name"/> = state;
 			// сохраняем сразу...
 			si.id = <xsl:value-of select="@name"/>;
+			si.node = node_<xsl:value-of select="@name"/>;
 			ui.saveState( si,m_<xsl:value-of select="@name"/>,UniversalIO::DigitalInput,getId() );
 			return true;
 		}
@@ -580,7 +614,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId code, 
 	}
 	</xsl:for-each>
 	
-	unideb(Debug::LEVEL8) &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
+	unideb[Debug::LEVEL1] &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
 	return false;
 }
 // -----------------------------------------------------------------------------
@@ -590,6 +624,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 <xsl:for-each select="//msgmap/item">
 	m_<xsl:value-of select="@name"/> = 0;
 	si.id = <xsl:value-of select="@name"/>;
+	si.node = node_<xsl:value-of select="@name"/>;
 	ui.saveState( si,false,UniversalIO::DigitalInput,getId() );
 </xsl:for-each>
 }

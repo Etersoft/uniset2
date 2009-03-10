@@ -103,7 +103,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId sid
 		{
 			unideb[Debug::LEVEL2] &lt;&lt;  "(setState): <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = " &lt;&lt;  val &lt;&lt;  endl;
 			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>	= val;
-			<xsl:call-template name="setdata"/>
+				<xsl:call-template name="setdata"/>
 			return;
 		}
 		</xsl:if>
@@ -112,10 +112,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId sid
 		{
 			unideb[Debug::LEVEL2] &lt;&lt;  "(setState): <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = " &lt;&lt;  val &lt;&lt;  endl;
 			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>	= val;
-			<xsl:call-template name="setdata"/>
+				<xsl:call-template name="setdata"/>
 			return;
 		}
-		</xsl:if>		
+		</xsl:if>
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
@@ -165,14 +165,14 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( UniSetTypes::SensorM
 	sensorInfo(sm);
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::askState( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand cmd )
+void <xsl:value-of select="$CLASSNAME"/>_SK::askState( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node )
 {
-	ui.askSensor(sid,cmd,getId());
+	ui.askRemoteSensor(sid,cmd,node,getId());
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::askValue( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand cmd )
+void <xsl:value-of select="$CLASSNAME"/>_SK::askValue( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node )
 {
-	ui.askSensor(sid,cmd,getId());
+	ui.askRemoteSensor(sid,cmd,node,getId());
 }
 // -----------------------------------------------------------------------------
 bool <xsl:value-of select="$CLASSNAME"/>_SK::getState( UniSetTypes::ObjectId sid )
@@ -182,19 +182,19 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::getState( UniSetTypes::ObjectId sid
 	{
 	<xsl:choose>
 	<xsl:when test="normalize-space(@iotype)='DI'">
-		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getState(<xsl:value-of select="@name"/>);
+		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getState(<xsl:value-of select="@name"/>, node_<xsl:value-of select="@name"/>);
 		return <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='DI'">
-		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getState(<xsl:value-of select="@name"/>);
+		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getState(<xsl:value-of select="@name"/>, node_<xsl:value-of select="@name"/>);
 		return <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='AO'">
-		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getValue(<xsl:value-of select="@name"/>);
+		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getValue(<xsl:value-of select="@name"/>, node_<xsl:value-of select="@name"/>);
 		return <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='AI'">
-		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getValue(<xsl:value-of select="@name"/>);
+		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getValue(<xsl:value-of select="@name"/>, node_<xsl:value-of select="@name"/>);
 		return <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 	</xsl:when>
 	</xsl:choose>
@@ -229,11 +229,11 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askSensors( UniversalIO::UIOCommand
 		<xsl:for-each select="//smap/item">
 		<xsl:if test="normalize-space(@vartype)='in'">
 			if( <xsl:value-of select="@name"/> != DefaultObjectId )
-				ui.askSensor(<xsl:value-of select="@name"/>,cmd,getId());
+				ui.askRemoteSensor(<xsl:value-of select="@name"/>,cmd,node_<xsl:value-of select="@name"/>,getId());
 		</xsl:if> 
 		<xsl:if test="normalize-space(@vartype)='io'">
 			if( <xsl:value-of select="@name"/> != DefaultObjectId )
-				ui.askSensor(<xsl:value-of select="@name"/>,cmd,getId());
+				ui.askRemoteSensor(<xsl:value-of select="@name"/>,cmd,node_<xsl:value-of select="@name"/>,getId());
 		</xsl:if> 
 		</xsl:for-each>
 			return;
@@ -277,18 +277,18 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setInfo( UniSetTypes::ObjectId code
 	{
 		<xsl:choose>
 			<xsl:when test="normalize-space(@iotype)='DI'">
-				<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getState(<xsl:value-of select="@name"/>);
+				<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getState(<xsl:value-of select="@name"/>, node_<xsl:value-of select="@name"/>);
 			</xsl:when>
 			<xsl:when test="normalize-space(@iotype)='AI'">
-				<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getValue(<xsl:value-of select="@name"/>);
+				<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getValue(<xsl:value-of select="@name"/>, node_<xsl:value-of select="@name"/>);
 			</xsl:when>
 		</xsl:choose>
 		<xsl:choose>
 			<xsl:when test="normalize-space(@iotype)='DO'">
-				<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getState(<xsl:value-of select="@name"/>);
+				<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getState(<xsl:value-of select="@name"/>, node_<xsl:value-of select="@name"/>);
 			</xsl:when>
 			<xsl:when test="normalize-space(@iotype)='AO'">
-				<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getValue(<xsl:value-of select="@name"/>);
+				<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getValue(<xsl:value-of select="@name"/>, node_<xsl:value-of select="@name"/>);
 			</xsl:when>
 		</xsl:choose>
 	}
@@ -300,19 +300,19 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setInfo( UniSetTypes::ObjectId code
 		<xsl:choose>
 		<xsl:when test="normalize-space(@iotype)='DI'">
 			si.id 	= <xsl:value-of select="@name"/>;
-//			si.node = conf->getLocalNode();
+			si.node = node_<xsl:value-of select="@name"/>
 			ui.saveState( si, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>,UniversalIO::DigitalInput,getId() );
 		</xsl:when>
 		<xsl:when test="normalize-space(@iotype)='DO'">
-			ui.setState( <xsl:value-of select="@name"/>, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> );
+			ui.setState( <xsl:value-of select="@name"/>, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, node_<xsl:value-of select="@name"/> );
 		</xsl:when>
 		<xsl:when test="normalize-space(@iotype)='AI'">
 			si.id 	= <xsl:value-of select="@name"/>;
-//			si.node = conf->getLocalNode();
+			si.node = node_<xsl:value-of select="@name"/>
 			ui.saveValue( si, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>,UniversalIO::AnalogInput, getId() );
 		</xsl:when>
 		<xsl:when test="normalize-space(@iotype)='AO'">
-			ui.setValue( <xsl:value-of select="@name"/>, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> );
+			ui.setValue( <xsl:value-of select="@name"/>, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, node_<xsl:value-of select="@name"/> );
 		</xsl:when>
 		</xsl:choose>
 		}
@@ -325,17 +325,19 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setInfo( UniSetTypes::ObjectId code
 	<xsl:choose>
 		<xsl:when test="normalize-space(@iotype)='DI'">
 		si.id 	= <xsl:value-of select="@name"/>;
+		si.node = node_<xsl:value-of select="@name"/>;
 		ui.saveState( si,<xsl:value-of select="$setval"/>,UniversalIO::DigitalInput,getId() );
 		</xsl:when>
 		<xsl:when test="normalize-space(@iotype)='DO'">
-		ui.setState( <xsl:value-of select="@name"/>,<xsl:value-of select="$setval"/>);
+		ui.setState( <xsl:value-of select="@name"/>,<xsl:value-of select="$setval"/>, node_<xsl:value-of select="@name"/>);
 		</xsl:when>
 		<xsl:when test="normalize-space(@iotype)='AI'">
 		si.id 	= <xsl:value-of select="@name"/>;
+		si.node = node_<xsl:value-of select="@name"/>;
 		ui.saveValue( si,<xsl:value-of select="$setval"/>,UniversalIO::AnalogInput, getId() );
 		</xsl:when>
 		<xsl:when test="normalize-space(@iotype)='AO'">
-		ui.setValue( <xsl:value-of select="@name"/>,<xsl:value-of select="$setval"/> );
+		ui.setValue( <xsl:value-of select="@name"/>,<xsl:value-of select="$setval"/>, node_<xsl:value-of select="@name"/> );
 		</xsl:when>
 	</xsl:choose>
 	}
