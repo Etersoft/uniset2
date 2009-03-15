@@ -17,3 +17,8 @@
 
 - Везде где используется sstream и вызов str(), надо делать ss.rdbuf()->freeze(0);
 (http://www.intuit.ru/department/pl/cpp/17/2.html)
+
+
+Вынести IOController_i::SensorInfo просто в UniSetTypes
+(там же где ConsumerInfo и т.п.). И перевести uniset-codegen,
+на использование структуры SensorInfo вместо ObjectId.
