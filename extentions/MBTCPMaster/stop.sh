@@ -1,1 +1,0 @@
-/usr/bin/uniset-stop.sh
