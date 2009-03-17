@@ -46,6 +46,10 @@
 	
 	<SharedMemory name="SharedMemory" shmID="SharedMemory"/>
 
+	<MBMaster1 name="MBMaster1" iaddr="127.0.0.1" addr="0x31" port="30000" 
+			 levels="info,warn,crit" poll_time="200" reply_timeout="60"
+	/>
+
 	<MBSlave1 name="MBSlave1" dev="/dev/ttyS0" addr="0x31" speed="9600" 
 			 aftersend-pause="0" levels="info,warn,crit" poll_time="200" reply_timeout="60"
 	>
@@ -139,6 +143,7 @@
 		<item name="IOControl"/>
 		<item name="RTUExchange"/>
 		<item name="MBSlave1"/>
+		<item name="MBMaster1"/>
 		<item name="UDPExchange"/>
 		<item name="UDPExchange2"/>
 	</objects>

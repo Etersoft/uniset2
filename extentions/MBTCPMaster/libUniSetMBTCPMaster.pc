@@ -1,0 +1,11 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libUniSetMBSlave
+Description: Support library for UniSetModbusSlave
+Requires: libUniSetExtentions libUniSetSharedMemory
+Version: 0.96
+Libs: -L${libdir} -lUniSetMBSlave
+Cflags: -I${includedir}/uniset/extentions

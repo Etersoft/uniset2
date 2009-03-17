@@ -1,0 +1,20 @@
+18/03/2009 00:04:03(info):  (mbtcpexchange): name = MBMaster1(18)
+18/03/2009 00:04:03(crit):  (mbtcpmaster): (MBMaster): Not find conf-node for MBMaster1
+18/03/2009 00:05:29(info):  (mbtcpexchange): name = MBMaster1(18)
+18/03/2009 00:05:29(info):  MBMaster1(init): read s_field='' s_fvalue=''
+18/03/2009 00:05:32(info):  (mbtcpexchange): name = MBMaster1(18)
+18/03/2009 00:05:32(info):  MBMaster1(init): read s_field='' s_fvalue=''
+18/03/2009 00:08:59(info):  (mbtcpexchange): name = MBMaster1(18)
+18/03/2009 00:08:59(info):  MBMaster1(init): read s_field='' s_fvalue=''
+18/03/2009 00:09:45(info):  (mbtcpexchange): name = MBMaster1(18)
+18/03/2009 00:09:45(info):  MBMaster1(init): read s_field='' s_fvalue=''
+18/03/2009 00:11:58(info):  (mbtcpexchange): name = MBMaster1(18)
+18/03/2009 00:11:58(info):  MBMaster1(init): read s_field='' s_fvalue=''
+18/03/2009 00:12:56(info):  (mbtcpexchange): name = MBMaster1(18)
+18/03/2009 00:12:56(info):  MBMaster1(init): read s_field='' s_fvalue=''
+18/03/2009 00:14:10(info):  (mbtcpexchange): name = MBMaster1(18)
+18/03/2009 00:14:10(info):  MBMaster1(init): read s_field='' s_fvalue=''
+18/03/2009 00:14:47(info):  (mbtcpexchange): name = MBMaster1(18)
+18/03/2009 00:14:48(info):  MBMaster1(init): read s_field='' s_fvalue=''
+18/03/2009 00:16:59(info):  (mbtcpexchange): name = MBMaster1(18)
+18/03/2009 00:16:59(info):  MBMaster1(init): read s_field='' s_fvalue=''

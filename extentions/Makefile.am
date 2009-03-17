@@ -4,7 +4,8 @@
 
 if HAVE_EXTENTIONS
 SUBDIRS = lib include SharedMemory IOControl RTUExchange LogicProcessor \
-	ModbusSlave SharedMemoryPlus
+	ModbusSlave MBTCPMaster
+#SharedMemoryPlus
 #UDPExchange
 
 pkgconfigdir 	= $(libdir)/pkgconfig

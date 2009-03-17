@@ -188,6 +188,8 @@ AC_CONFIG_FILES([Makefile
 				 extentions/UDPExchange/libUniSetUDP.pc
 				 extentions/ModbusSlave/Makefile
 				 extentions/ModbusSlave/libUniSetMBSlave.pc
+				 extentions/MBTCPMaster/Makefile
+				 extentions/MBTCPMaster/libUniSetMBTCPMaster.pc
 				 extentions/LogicProcessor/Makefile
 				 extentions/LogicProcessor/libUniSetLogicProcessor.pc
 				 extentions/SharedMemory/Makefile
