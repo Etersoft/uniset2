@@ -4,8 +4,8 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: libUniSetMBSlave
-Description: Support library for UniSetModbusSlave
+Description: Support library for UniSetModbusTCPMaster
 Requires: libUniSetExtentions libUniSetSharedMemory
 Version: @VERSION@
-Libs: -L${libdir} -lUniSetMBSlave
+Libs: -L${libdir} -lUniSetMBTCPMaster
 Cflags: -I${includedir}/uniset/extentions

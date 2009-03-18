@@ -14,3 +14,10 @@ libUniSetMBTCPMaster_la_SOURCES 	= MBMaster.cc
 									$(top_builddir)/extentions/lib/libUniSetExtentions.la \
 									$(SIGC_LIBS)
 @PACKAGE@_mbtcpmaster_CXXFLAGS	= -I$(top_builddir)/extentions/include -I$(top_builddir)/extentions/SharedMemory $(SIGC_CFLAGS)
+
+# install
+devel_include_HEADERS = *.h
+devel_includedir = $(includedir)/@PACKAGE@/extentions
+
+pkgconfigdir 	= $(libdir)/pkgconfig
+pkgconfig_DATA 	= libUniSetMBTCPMaster.pc
