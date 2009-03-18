@@ -24,6 +24,8 @@ class ModbusTCPMaster:
 		bool isConnection();
 
 	protected:
+		
+		void reconnect();
 
 		virtual int getNextData( unsigned char* buf, int len );
 		virtual void setChannelTimeout( int msec );
@@ -35,6 +37,8 @@ class ModbusTCPMaster:
 		ost::TCPStream* tcp;
 		static int nTransaction;
 		std::queue<unsigned char> qrecv;
+		PassiveTimer ptTimeout;
+		std::string iaddr;
 };
 // -------------------------------------------------------------------------
 #endif // ModbusTCPMaster_H_

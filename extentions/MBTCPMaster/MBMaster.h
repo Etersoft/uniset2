@@ -43,10 +43,11 @@ class MBMaster:
 			ModbusRTU::ModbusAddr mbaddr;			/*!< адрес устройства */
 			ModbusRTU::ModbusData mbreg;			/*!< регистр */
 			ModbusRTU::SlaveFunctionCode mbfunc;	/*!< функция для чтения/записи */
+			short nbit;		/*!< bit number (for func=[0x01,0x02]) */
 
 			MBProperty():	
 				mbaddr(0),mbreg(0),
-				mbfunc(ModbusRTU::fnUnknown)
+				mbfunc(ModbusRTU::fnUnknown),nbit(0)
 			{}
 
 			friend std::ostream& operator<<( std::ostream& os, MBProperty& p );
@@ -80,7 +81,8 @@ class MBMaster:
 		void askSensors( UniversalIO::UIOCommand cmd );	
 		void initOutput();
 		void waitSMReady();
-		long callItem( MBMap::iterator& p );
+		long readReg( MBMap::iterator& p );
+		bool writeReg( MBMap::iterator& p, long val );
 
 		virtual bool activateObject();
 		
@@ -100,6 +102,7 @@ class MBMaster:
 		bool initPause;
 		UniSetTypes::uniset_mutex mutex_start;
 
+		bool mbregFromID;
 		bool force;		/*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
 		bool force_out;	/*!< флаг означающий, принудительного чтения выходов */
 		int polltime;	/*!< переодичность обновления данных, [мсек] */
@@ -112,6 +115,7 @@ class MBMaster:
 		UniSetTypes::uniset_mutex pollMutex;
 		Trigger trTimeout;
 		PassiveTimer ptTimeout;
+		
 		
 		bool activated;
 		int activateTimeout;

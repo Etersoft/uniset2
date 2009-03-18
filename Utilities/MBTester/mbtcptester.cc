@@ -146,19 +146,19 @@ int main( int argc, char **argv )
 					}
 				break;
 
-				case 'i':	
+				case 'i':
 					iaddr = string(optarg);
 				break;
 
-				case 'p':	
+				case 'p':
 					port = atoi(optarg);
 				break;
 
-				case 't':	
+				case 't':
 					tout = atoi(optarg);
 				break;
 
-				case 'a':	
+				case 'a':
 					myaddr = ModbusRTU::str2mbAddr(optarg);
 				break;
 
@@ -178,198 +178,201 @@ int main( int argc, char **argv )
 			cout << "(init): ip=" << iaddr << ":" << port
 					<< " myaddr=" << ModbusRTU::addr2str(myaddr)
 					<< " timeout=" << tout << " msec "
-					<< endl;					
-		}		
-		
-		ModbusTCPMaster mb;
+					<< endl;
 
-		if( verb )
 			dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
-
-		mb.setLog(dlog);
-
-		ost::Thread::setException(ost::Thread::throwException);
-		ost::InetAddress ia(iaddr.c_str());
-		mb.connect(ia,port);
-		mb.setTimeout(tout);
-
-		
-		switch(cmd)
-		{
-			case cmdRead01:
-			{
-				if( verb )
-				{
-					cout << "read01: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
-						 << " reg=" << ModbusRTU::dat2str(reg) 
-						 << " count=" << ModbusRTU::dat2str(count) 
-						 << endl;
-				}
-
-				ModbusRTU::ReadCoilRetMessage ret = mb.read01(slaveaddr,reg,count);
-				if( verb )
-					cout << "(reply): " << ret << endl;
-				cout << "(reply): count=" << (int)ret.bcnt << endl;
-				for( int i=0; i<ret.bcnt; i++ )
-				{
-					ModbusRTU::DataBits b(ret.data[i]);
-				
-					cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = (" 
-						<< ModbusRTU::b2str(ret.data[i]) << ") " << b << endl;
-				}
-			}
-			break;
-
-			case cmdRead02:
-			{
-				if( verb )
-				{
-					cout << "read02: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
-						 << " reg=" << ModbusRTU::dat2str(reg) 
-						 << " count=" << ModbusRTU::dat2str(count) 
-						 << endl;
-				}
-
-				ModbusRTU::ReadInputStatusRetMessage ret = mb.read02(slaveaddr,reg,count);
-				if( verb )
-					cout << "(reply): " << ret << endl;
-				cout << "(reply): count=" << (int)ret.bcnt << endl;
-				for( int i=0; i<ret.bcnt; i++ )
-				{
-					ModbusRTU::DataBits b(ret.data[i]);
-				
-					cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = (" 
-						<< ModbusRTU::b2str(ret.data[i]) << ") " << b << endl;
-				}
-			}
-			break;
-
-			case cmdRead03:
-			{
-				if( verb )
-				{
-					cout << "read03: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
-						 << " reg=" << ModbusRTU::dat2str(reg)
-						 << " count=" << ModbusRTU::dat2str(count) 
-						 << endl;
-				}
-
-				ModbusRTU::ReadOutputRetMessage ret = mb.read03(slaveaddr,reg,count);
-				if( verb )
-					cout << "(reply): " << ret << endl;
-				cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
-				for( int i=0; i<ret.count; i++ )
-				{
-					cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i]) 
-						<< " (" 
-						<< ModbusRTU::dat2str(ret.data[i]) 
-						<< ")" 
-						<< endl;
-				}
-			}
-			break;
-			
-			case cmdRead04:
-			{
-				if( verb )
-				{
-					cout << "read04: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
-						 << " reg=" << ModbusRTU::dat2str(reg) 
-						 << " count=" << ModbusRTU::dat2str(count) 
-						 << endl;
-				}
-
-				ModbusRTU::ReadInputRetMessage ret = mb.read04(slaveaddr,reg,count);
-				if( verb )
-					cout << "(reply): " << ret << endl;
-				cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
-				for( int i=0; i<ret.count; i++ )
-				{
-					cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i]) 
-						<< " (" 
-						<< ModbusRTU::dat2str(ret.data[i]) 
-						<< ")" 
-						<< endl;
-				}
-			}
-			break;
-
-			case cmdWrite05:
-			{
-				if( verb )
-				{
-					cout << "write05: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
-						 << " reg=" << ModbusRTU::dat2str(reg) 
-						 << " val=" << ModbusRTU::dat2str(val) 
-						 << endl;
-				}
-				
-				ModbusRTU::ForceSingleCoilRetMessage  ret = mb.write05(slaveaddr,reg,(bool)val);
-				if( verb )
-					cout << "(reply): " << ret << endl;
-			}
-			break;
-
-			case cmdWrite06:
-			{
-				if( verb )
-				{
-					cout << "write06: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
-						 << " reg=" << ModbusRTU::dat2str(reg) 
-						 << " val=" << ModbusRTU::dat2str(val) 
-						 << endl;
-				}
-				
-				ModbusRTU::WriteSingleOutputRetMessage  ret = mb.write06(slaveaddr,reg,val);
-				if( verb )
-					cout << "(reply): " << ret << endl;
-				
-			}
-			break;
-
-			case cmdWrite0F:
-			{
-				if( verb )
-				{
-					cout << "write0F: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
-						 << " reg=" << ModbusRTU::dat2str(reg) 
-						 << " val=" << ModbusRTU::dat2str(val) 
-						 << endl;
-				}
-				
-				ModbusRTU::ForceCoilsMessage msg(slaveaddr,reg);
-				ModbusRTU::DataBits16 b(val);
-				msg.addData(b);
-				ModbusRTU::ForceCoilsRetMessage  ret = mb.write0F(msg);
-				if( verb )
-					cout << "(reply): " << ret << endl;
-			}
-			break;
-
-			case cmdWrite10:
-			{
-				if( verb )
-				{
-					cout << "write06: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
-						 << " reg=" << ModbusRTU::dat2str(reg) 
-						 << " val=" << ModbusRTU::dat2str(val) 
-						 << endl;
-				}
-				
-				ModbusRTU::WriteOutputMessage msg(slaveaddr,reg);
-				msg.addData(val);
-				ModbusRTU::WriteOutputRetMessage  ret = mb.write10(msg);
-				if( verb )
-					cout << "(reply): " << ret << endl;
-			}
-			break;
-
-			case cmdNOP:
-			default:
-				cerr << "No command. Use -h for help." << endl;
-				return 1;
 		}
 		
+		ModbusTCPMaster mb;
+		mb.setLog(dlog);
+
+//		ost::Thread::setException(ost::Thread::throwException);
+		ost::InetAddress ia(iaddr.c_str());
+		mb.setTimeout(tout);
+		mb.connect(ia,port);
+
+		while( 1)
+		{
+
+			switch(cmd)
+			{
+				case cmdRead01:
+				{
+					if( verb )
+					{
+						cout << "read01: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+							 << " reg=" << ModbusRTU::dat2str(reg) 
+							 << " count=" << ModbusRTU::dat2str(count) 
+							 << endl;
+					}
+
+					ModbusRTU::ReadCoilRetMessage ret = mb.read01(slaveaddr,reg,count);
+					if( verb )
+						cout << "(reply): " << ret << endl;
+					cout << "(reply): count=" << (int)ret.bcnt << endl;
+					for( int i=0; i<ret.bcnt; i++ )
+					{
+						ModbusRTU::DataBits b(ret.data[i]);
+					
+						cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = (" 
+							<< ModbusRTU::b2str(ret.data[i]) << ") " << b << endl;
+					}
+				}
+				break;
+
+				case cmdRead02:
+				{
+					if( verb )
+					{
+						cout << "read02: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+						 << " reg=" << ModbusRTU::dat2str(reg) 
+						 << " count=" << ModbusRTU::dat2str(count) 
+						 << endl;
+					}
+
+					ModbusRTU::ReadInputStatusRetMessage ret = mb.read02(slaveaddr,reg,count);
+					if( verb )
+						cout << "(reply): " << ret << endl;
+					cout << "(reply): count=" << (int)ret.bcnt << endl;
+					for( int i=0; i<ret.bcnt; i++ )
+					{
+						ModbusRTU::DataBits b(ret.data[i]);
+					
+						cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = (" 
+							<< ModbusRTU::b2str(ret.data[i]) << ") " << b << endl;
+					}
+				}
+				break;
+
+				case cmdRead03:
+				{
+					if( verb )
+					{
+						cout << "read03: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+							 << " reg=" << ModbusRTU::dat2str(reg)
+							 << " count=" << ModbusRTU::dat2str(count) 
+							 << endl;
+					}
+
+					ModbusRTU::ReadOutputRetMessage ret = mb.read03(slaveaddr,reg,count);
+					if( verb )
+						cout << "(reply): " << ret << endl;
+					cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
+					for( int i=0; i<ret.count; i++ )
+					{
+						cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i]) 
+							<< " (" 
+							<< ModbusRTU::dat2str(ret.data[i]) 
+							<< ")" 
+							<< endl;
+					}
+				}
+				break;
+			
+				case cmdRead04:
+				{
+					if( verb )
+					{
+						cout << "read04: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+							 << " reg=" << ModbusRTU::dat2str(reg) 
+							 << " count=" << ModbusRTU::dat2str(count) 
+							 << endl;
+					}
+
+					ModbusRTU::ReadInputRetMessage ret = mb.read04(slaveaddr,reg,count);
+					if( verb )
+						cout << "(reply): " << ret << endl;
+					cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
+					for( int i=0; i<ret.count; i++ )
+					{
+						cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i]) 
+							<< " (" 
+							<< ModbusRTU::dat2str(ret.data[i]) 
+							<< ")" 
+							<< endl;
+					}
+				}
+				break;
+
+				case cmdWrite05:
+				{
+					if( verb )
+					{
+						cout << "write05: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+							 << " reg=" << ModbusRTU::dat2str(reg) 
+							 << " val=" << ModbusRTU::dat2str(val) 
+							 << endl;
+					}
+					
+					ModbusRTU::ForceSingleCoilRetMessage  ret = mb.write05(slaveaddr,reg,(bool)val);
+					if( verb )
+						cout << "(reply): " << ret << endl;
+				}
+				break;
+
+				case cmdWrite06:
+				{
+					if( verb )
+					{
+						cout << "write06: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+							 << " reg=" << ModbusRTU::dat2str(reg) 
+							 << " val=" << ModbusRTU::dat2str(val) 
+							 << endl;
+					}
+					
+					ModbusRTU::WriteSingleOutputRetMessage  ret = mb.write06(slaveaddr,reg,val);
+					if( verb )
+						cout << "(reply): " << ret << endl;
+					
+				}
+				break;
+
+				case cmdWrite0F:
+				{
+					if( verb )
+					{
+						cout << "write0F: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+							 << " reg=" << ModbusRTU::dat2str(reg) 
+							 << " val=" << ModbusRTU::dat2str(val) 
+							 << endl;
+					}
+					
+					ModbusRTU::ForceCoilsMessage msg(slaveaddr,reg);
+					ModbusRTU::DataBits16 b(val);
+					msg.addData(b);
+					ModbusRTU::ForceCoilsRetMessage  ret = mb.write0F(msg);
+					if( verb )
+						cout << "(reply): " << ret << endl;
+				}
+				break;
+
+				case cmdWrite10:
+				{
+					if( verb )
+					{
+						cout << "write06: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+							 << " reg=" << ModbusRTU::dat2str(reg) 
+							 << " val=" << ModbusRTU::dat2str(val) 
+							 << endl;
+					}
+					
+					ModbusRTU::WriteOutputMessage msg(slaveaddr,reg);
+					msg.addData(val);
+					ModbusRTU::WriteOutputRetMessage  ret = mb.write10(msg);
+					if( verb )
+						cout << "(reply): " << ret << endl;
+				}
+				break;
+
+				case cmdNOP:
+				default:
+					cerr << "No command. Use -h for help." << endl;
+					return 1;
+			}
+
+			msleep(200);
+		} // end of while
+
 		mb.disconnect();
 	}
 	catch( ModbusRTU::mbException& ex )

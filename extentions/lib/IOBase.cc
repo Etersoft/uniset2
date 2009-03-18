@@ -252,18 +252,20 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 {
 	string sname( it.getProp("name") );
 
-	ObjectId sid = UniSetTypes::uni_atoi(it.getProp("id").c_str());
-	if( sid <=0 )
+	ObjectId sid = DefaultObjectId;
+	if( it.getProp("id").empty() )
+		sid = conf->getSensorID(sname);
+	else
 	{
-		if( dlog )
-			dlog[Debug::CRIT] << myname << "(readItem): Не удалось получить ID для датчика: "
-							<< sname << endl;
-		return false;
+		sid = UniSetTypes::uni_atoi(it.getProp("id").c_str());
+		if( sid <=0 )
+			sid = DefaultObjectId;
 	}
 	
 	if( sid == DefaultObjectId )
 	{
-		dlog[Debug::CRIT] << myname << "(readItem): (-1) Не удалось получить ID для датчика: "
+		if( dlog )
+			dlog[Debug::CRIT] << myname << "(readItem): (-1) Не удалось получить ID для датчика: "
 						<< sname << endl;
 		return false;
 	}

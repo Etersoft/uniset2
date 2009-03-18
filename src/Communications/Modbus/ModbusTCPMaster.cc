@@ -13,7 +13,8 @@ using namespace ModbusRTU;
 using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 ModbusTCPMaster::ModbusTCPMaster():
-tcp(0)
+tcp(0),
+iaddr("")
 {
 	setCRCNoCheckit(true);
 }
@@ -46,13 +47,16 @@ int ModbusTCPMaster::nTransaction = 0;
 mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg, 
 				 			ModbusMessage& reply, int timeout )
 {
-	if( !isConnection() )
+
+//	if( !isConnection() )
+	if( iaddr.empty() )
 	{
 		dlog[Debug::WARN] << "(query): not connection to server..." << endl;
 		return erHardwareError;
+
 	}
 
-	PassiveTimer ptTimeout;
+	reconnect();
 
 	if( timeout<=0 || timeout == UniSetTimer::WaitUpTime )
 	{
@@ -66,6 +70,9 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 	
 	try
 	{
+		if( nTransaction >= numeric_limits<int>::max() )
+			nTransaction = 0;
+		
 		ModbusTCP::MBAPHeader mh;
 		mh.tID = ++nTransaction;
 		mh.pID = 0;
@@ -89,7 +96,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		mbErrCode res = send(msg);
 		if( res!=erNoError )
 			return res;
-
+		
   		if( !tcp->isPending(ost::Socket::pendingOutput,timeout) )
   			return erTimeOut;
 
@@ -159,6 +166,17 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 	return erHardwareError;
 }
 // -------------------------------------------------------------------------
+void ModbusTCPMaster::reconnect()
+{
+	if( tcp )
+	{
+		tcp->disconnect();
+		delete tcp;
+	}
+	
+	tcp = new ost::TCPStream(iaddr.c_str());
+}
+// -------------------------------------------------------------------------
 void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
 {
 	if( !tcp )
@@ -169,7 +187,8 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
 		if( dlog.debugging(Debug::INFO) )
 			dlog[Debug::INFO] << "(ModbusTCPMaster): connect to " << s.str() << endl;
 		
-		tcp = new ost::TCPStream(s.str().c_str());
+		iaddr = s.str();
+		tcp = new ost::TCPStream(iaddr.c_str());
 	}
 }
 // -------------------------------------------------------------------------

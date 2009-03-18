@@ -13,7 +13,6 @@
 #include "PassiveTimer.h"
 #include "Trigger.h"
 #include "Mutex.h"
-#include "Calibration.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"
 #include "IOBase.h"
@@ -23,12 +22,13 @@ class MBSlave:
 	public UniSetObject_LT
 {
 	public:
-		MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
+		MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0, std::string prefix="mbs" );
 		virtual ~MBSlave();
 	
 		/*! глобальная функция для инициализации объекта */
 		static MBSlave* init_mbslave( int argc, char* argv[], 
-											UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
+											UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
+											std::string prefix="mbs" );
 
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, char* argv[] );
@@ -172,12 +172,12 @@ class MBSlave:
 		bool pingOK;
 		int wait_msec;
 		bool force;		/*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
-		bool force_out;	/*!< флаг означающий, принудительного чтения выходов */
 
 		bool mbregFromID;
 
 		typedef std::map<int,std::string> FileList;
 		FileList flist;
+		std::string prefix;
 };
 // -----------------------------------------------------------------------------
 #endif // _MBSlave_H_

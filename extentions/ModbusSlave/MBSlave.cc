@@ -13,7 +13,8 @@ using namespace UniSetTypes;
 using namespace UniSetExtentions;
 using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
-MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic ):
+MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, 
+					SharedMemory* ic, string prefix ):
 UniSetObject_LT(objId),
 mbslot(0),
 shm(0),
@@ -21,8 +22,8 @@ initPause(0),
 activated(false),
 pingOK(true),
 force(false),
-force_out(false),
-mbregFromID(false)
+mbregFromID(false),
+prefix(prefix)
 {
 	cout << "$Id: MBSlave.cc,v 1.1 2009/01/11 19:08:45 vpashka Exp $" << endl;
 
@@ -39,36 +40,35 @@ mbregFromID(false)
 	UniXML_iterator it(cnode);
 
 	// определяем фильтр
-	s_field = conf->getArgParam("--mbs-s-filter-field");
-	s_fvalue = conf->getArgParam("--mbs-s-filter-value");
+	s_field = conf->getArgParam("--" + prefix + "-filter-field");
+	s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
 	dlog[Debug::INFO] << myname << "(init): read s_field='" << s_field
 						<< "' s_fvalue='" << s_fvalue << "'" << endl;
 
-	force 		= atoi(conf->getArgParam("--mbs-force",it.getProp("force")).c_str());
-	force_out 	= atoi(conf->getArgParam("--mbs-force-out",it.getProp("force_out")).c_str());
+	force 		= atoi(conf->getArgParam("--" + prefix + "-force",it.getProp("force")).c_str());
 
-	int recv_timeout = atoi(conf->getArgParam("--mbs-recv-timeout",it.getProp("recv_timeout")).c_str());
+	int recv_timeout = atoi(conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")).c_str());
 
-	string saddr = conf->getArgParam("--mbs-my-addr",it.getProp("addr"));
+	string saddr = conf->getArgParam("--" + prefix + "-my-addr",it.getProp("addr"));
 
 	if( saddr.empty() )
 		addr = 0x01;
 	else
 		addr = ModbusRTU::str2mbAddr(saddr);
 
-	mbregFromID = atoi(conf->getArgParam("--mbs-reg-from-id",it.getProp("reg_from_id")).c_str());
+	mbregFromID = atoi(conf->getArgParam("--" + prefix + "-reg-from-id",it.getProp("reg_from_id")).c_str());
 	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
-	string stype = conf->getArgParam("--mbs-type",it.getProp("type"));
+	string stype = conf->getArgParam("--" + prefix + "-type",it.getProp("type"));
 	
 	if( stype == "RTU" )
 	{
 		// ---------- init RS ----------
-		string dev	= conf->getArgParam("--mbs-dev",it.getProp("device"));
+		string dev	= conf->getArgParam("--" + prefix + "-dev",it.getProp("device"));
 		if( dev.empty() )
 			throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown device...");
 
-		string speed 	= conf->getArgParam("--mbs-speed",it.getProp("speed"));
+		string speed 	= conf->getArgParam("--" + prefix + "-speed",it.getProp("speed"));
 		if( speed.empty() )
 			speed = "38400";
 
@@ -87,11 +87,11 @@ mbregFromID(false)
 	}
 	else if( stype == "TCP" )
 	{
-		string iaddr = conf->getArgParam("--mbs-inet-addr",it.getProp("iaddr"));
+		string iaddr = conf->getArgParam("--" + prefix + "-inet-addr",it.getProp("iaddr"));
 		if( iaddr.empty() )
 			throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown TCP server address. Use: --mbs-inet-addr [ XXX.XXX.XXX.XXX| hostname ]");
 		
-		int port = atoi(conf->getArgParam("--mbs-inet-port",it.getProp("iport")).c_str());
+		int port = atoi(conf->getArgParam("--" + prefix + "-inet-port",it.getProp("iport")).c_str());
 		if( port <=0 )
 			port = 502;
 	
@@ -122,7 +122,7 @@ mbregFromID(false)
 //	mbslot->connectRemoteService( sigc::mem_fun(this, &MBSlave::remoteService) );
 	// -------------------------------
 
-	initPause = atoi(conf->getArgParam("--mbs-initPause",it.getProp("initPause")).c_str());
+	initPause = atoi(conf->getArgParam("--" + prefix + "-initPause",it.getProp("initPause")).c_str());
 	if( !initPause )
 		initPause = 3000;
 
@@ -135,7 +135,7 @@ mbregFromID(false)
 		ic->addReadItem( sigc::mem_fun(this,&MBSlave::readItem) );
 
 	// ********** HEARTBEAT *************
-	string heart = conf->getArgParam("--mbs-heartbeat-id",it.getProp("heartbeat_id"));
+	string heart = conf->getArgParam("--" + prefix + "-heartbeat-id",it.getProp("heartbeat_id"));
 	if( !heart.empty() )
 	{
 		sidHeartBeat = conf->getSensorID(heart);
@@ -153,7 +153,7 @@ mbregFromID(false)
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = atoi(conf->getArgParam("--mbs-heartbeat-max",it.getProp("heartbeat_max")).c_str());
+		maxHeartBeat = atoi(conf->getArgParam("--" + prefix + "-heartbeat-max",it.getProp("heartbeat_max")).c_str());
 		if( maxHeartBeat <=0 )
 			maxHeartBeat = 10;
 
@@ -177,11 +177,11 @@ mbregFromID(false)
 	if( wait_msec < 500 )
 		wait_msec = 500;
 
-	activateTimeout	= atoi(conf->getArgParam("--activate-timeout").c_str());
+	activateTimeout	= atoi(conf->getArgParam("--" + prefix + "-activate-timeout").c_str());
 	if( activateTimeout<=0 )
 		activateTimeout = 20000;
 
-	int msec = atoi(conf->getArgParam("--mbs-timeout",it.getProp("timeout")).c_str());
+	int msec = atoi(conf->getArgParam("--" + prefix + "-timeout",it.getProp("timeout")).c_str());
 	if( msec <=0 )
 		msec = 3000;
 
@@ -249,7 +249,7 @@ MBSlave::~MBSlave()
 void MBSlave::waitSMReady()
 {
 	// waiting for SM is ready...
-	int ready_timeout = atoi(conf->getArgParam("--mbs-sm-ready-timeout","15000").c_str());
+	int ready_timeout = atoi(conf->getArgParam("--" + prefix + "-sm-ready-timeout","15000").c_str());
 	if( ready_timeout == 0 )
 		ready_timeout = 15000;
 	else if( ready_timeout < 0 )
@@ -374,6 +374,13 @@ void MBSlave::processingMessage(UniSetTypes::VoidMessage *msg)
 			}
 			break;
 
+			case Message::SensorInfo:
+			{
+				SensorMessage sm( msg );
+				sensorInfo(&sm);
+			}
+			break;
+
 			default:
 				break;
 		}
@@ -478,7 +485,6 @@ void MBSlave::sysCommand(UniSetTypes::SystemMessage *sm)
 // ------------------------------------------------------------------------------------------
 void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 {
-#warning Разобраться с testid
 	if( !shm->waitSMworking(test_id,activateTimeout,50) )
 	{
 		ostringstream err;
@@ -491,17 +497,19 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 		throw SystemError(err.str());
 	}
 
+	if( force )
+		return;
+
 	IOMap::iterator it=iomap.begin();
 	for( ; it!=iomap.end(); ++it )
 	{
 		IOProperty* p(&it->second);
 		
-		if( p->stype != UniversalIO::DigitalOutput && p->stype != UniversalIO::AnalogOutput )
-			continue;
+//		if( p->stype != UniversalIO::DigitalOutput && p->stype != UniversalIO::AnalogOutput )
+//			continue;
 
-		if( p->safety == NoSafetyState )
-			continue;
-
+//		if( p->safety == NoSafetyState )
+//			continue;
 		try
 		{
 			shm->askSensor(p->si.id,cmd);
@@ -519,18 +527,17 @@ void MBSlave::sensorInfo( UniSetTypes::SensorMessage* sm )
 	IOMap::iterator it=iomap.begin();
 	for( ; it!=iomap.end(); ++it )
 	{
-		if( it->second.stype != UniversalIO::DigitalOutput && it->second.stype!=UniversalIO::AnalogOutput )
-			continue;
-
 		if( it->second.si.id == sm->id )
 		{
 			IOProperty* p(&it->second);
-			if( p->stype == UniversalIO::DigitalOutput )
+			if( p->stype == UniversalIO::DigitalOutput ||
+				p->stype == UniversalIO::DigitalInput )
 			{
 				uniset_spin_lock lock(p->val_lock);
 				p->value = sm->state ? 1 : 0;
 			}
-			else if( p->stype == UniversalIO::AnalogOutput )
+			else if( p->stype == UniversalIO::AnalogOutput ||
+					p->stype == UniversalIO::AnalogInput )
 			{
 				uniset_spin_lock lock(p->val_lock);
 				p->value = sm->value;
@@ -621,45 +628,23 @@ bool MBSlave::initItem( UniXML_iterator& it )
 {
 	IOProperty p;
 
-	string sname(it.getProp("name"));
-	ObjectId sid = DefaultObjectId;
-	
-	if( it.getProp("id").empty() )
-		sid = conf->getSensorID(sname);
-	else
-	{
-		sid = UniSetTypes::uni_atoi(it.getProp("id").c_str());
-		if( sid <=0 )
-			sid = DefaultObjectId;
-	}
-	
-	if( sid == DefaultObjectId )
-	{
-		dlog[Debug::CRIT] << myname << "(readItem): (-1) Не удалось получить ID для датчика: "
-						<< sname << endl;
+	if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,&dlog,myname) )
 		return false;
-	}
 
 	if( mbregFromID )
-		p.mbreg = sid;
+		p.mbreg = p.si.id;
 	else
 	{
 		string r = it.getProp("mbreg");
 		if( r.empty() )
 		{
-			dlog[Debug::CRIT] << myname << "(initItem): Unknown 'mbreg' for " << sname << endl;
+			dlog[Debug::CRIT] << myname << "(initItem): Unknown 'mbreg' for " << it.getProp("name") << endl;
 			return false;
 		}
+		
+		p.mbreg = ModbusRTU::str2mbData(r);
 	}
 	
-	p.si.id		= sid;
-	p.si.node 	= conf->getLocalNode();
-	p.value		= atoi(it.getProp("default").c_str());
-
-	p.ignore 	= atoi(it.getProp("ignore").c_str());
-	p.safety 	= atoi(it.getProp("safety").c_str());
-	p.invert 	= atoi(it.getProp("invert").c_str());
-
 	string stype( it.getProp("mb_iotype") );
 	if( stype.empty() )
 		stype = it.getProp("iotype");
@@ -705,30 +690,6 @@ bool MBSlave::initItem( UniXML_iterator& it )
 		}
 	}
 
-	p.cal.minRaw = 0;
-	p.cal.maxRaw = 0;
-	p.cal.minCal = 0;
-	p.cal.maxCal = 0;
-	p.cal.sensibility = 0;
-	p.cal.precision = 0;
-	p.cdiagram = 0;
-
-	if( p.stype == 	UniversalIO::AnalogInput || p.stype == 	UniversalIO::AnalogOutput )
-	{
-		p.cal.minRaw = atoi( it.getProp("rmin").c_str() );
-		p.cal.maxRaw = atoi( it.getProp("rmax").c_str() );
-		p.cal.minCal = atoi( it.getProp("cmin").c_str() );
-		p.cal.maxCal = atoi( it.getProp("cmax").c_str() );
-		p.cal.sensibility = atoi( it.getProp("sensibility").c_str() );
-		p.cal.precision = atoi( it.getProp("precision").c_str() );
-
-		std::string caldiagram( it.getProp("caldiagram") );
-		if( !caldiagram.empty() )
-			p.cdiagram = buildCalibrationDiagram( caldiagram );
-	}
-
-	shm->initAIterator(p.ait);
-	shm->initDIterator(p.dit);
 	iomap[p.mbreg] = p;
 	
 	if( dlog.debugging(Debug::INFO) )
@@ -751,29 +712,31 @@ void MBSlave::initIterators()
 // -----------------------------------------------------------------------------
 void MBSlave::help_print( int argc, char* argv[] )
 {
-	cout << "--mbs-heartbeat-id		- Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--mbs-heartbeat-max  	- Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--mbs-ready-timeout	- Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
-	cout << "--mbs-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
-	cout << "--mbs-notRespondSensor - датчик связи для данного процесса " << endl;
-	cout << "--mbs-sm-ready-timeout - время на ожидание старта SM" << endl;
-	cout << "--mbs-recv-timeout - Таймаут на ожидание ответа." << endl;
-	cout << "--mbs-allow-setdatetime - On set date and time (0x50) modbus function" << endl;
-	cout << "--mbs-my-addr      - адрес текущего узла" << endl;
-	cout << "--mbs-type [RTU|TCP] - modbus server type." << endl;
+	cout << "Default: prefix='mbtcp'" << endl;
+	cout << "--prefix-heartbeat-id		- Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+	cout << "--prefix-heartbeat-max  	- Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
+	cout << "--prefix-ready-timeout	- Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
+	cout << "--prefix-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
+	cout << "--prefix-notRespondSensor - датчик связи для данного процесса " << endl;
+	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
+	cout << "--prefix-recv-timeout - Таймаут на ожидание ответа." << endl;
+	cout << "--prefix-allow-setdatetime - On set date and time (0x50) modbus function" << endl;
+	cout << "--prefix-my-addr      - адрес текущего узла" << endl;
+	cout << "--prefix-type [RTU|TCP] - modbus server type." << endl;
 
 	cout << " Настройки протокола RTU: " << endl;
-	cout << "--mbs-dev devname  - файл устройства" << endl;
-	cout << "--mbs-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
+	cout << "--prefix-dev devname  - файл устройства" << endl;
+	cout << "--prefix-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
 
 	cout << " Настройки протокола TCP: " << endl;
-	cout << "--mbs-inet-addr [xxx.xxx.xxx.xxx | hostname ]  - this modbus server address" << endl;
-	cout << "--mbs-inet-port num - this modbus server port. Default: 502" << endl;
+	cout << "--prefix-inet-addr [xxx.xxx.xxx.xxx | hostname ]  - this modbus server address" << endl;
+	cout << "--prefix-inet-port num - this modbus server port. Default: 502" << endl;
 }
 // -----------------------------------------------------------------------------
-MBSlave* MBSlave::init_mbslave( int argc, char* argv[], UniSetTypes::ObjectId icID, SharedMemory* ic )
+MBSlave* MBSlave::init_mbslave( int argc, char* argv[], UniSetTypes::ObjectId icID, SharedMemory* ic,
+								string prefix )
 {
-	string name = conf->getArgParam("--mbs-name","MBSlave1");
+	string name = conf->getArgParam("--" + prefix + "-name","MBSlave1");
 	if( name.empty() )
 	{
 		cerr << "(mbslave): Не задан name'" << endl;
@@ -1001,7 +964,7 @@ ModbusRTU::mbErrCode MBSlave::real_read( ModbusRTU::ModbusData reg,
 	{
 		if( dlog.debugging(Debug::INFO) )
 		{
-			dlog[Debug::INFO] << myname << "(read): read mbID=" 
+			dlog[Debug::INFO] << myname << "(real_read): read mbID=" 
 				<< ModbusRTU::dat2str(reg) << endl;
 		}
 
@@ -1033,29 +996,29 @@ ModbusRTU::mbErrCode MBSlave::real_read( ModbusRTU::ModbusData reg,
 	}
 	catch( UniSetTypes::NameNotFound& ex )
 	{
-		dlog[Debug::WARN] << myname << "(read): " << ex << endl;
+		dlog[Debug::WARN] << myname << "(real_read): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
 	catch( UniSetTypes::OutOfRange& ex )
 	{
-		dlog[Debug::WARN] << myname << "(read): " << ex << endl;
+		dlog[Debug::WARN] << myname << "(real_read): " << ex << endl;
 		return ModbusRTU::erBadDataValue;
 	}
 	catch( Exception& ex )
 	{
 		if( pingOK )
-			dlog[Debug::CRIT] << myname << "(read): " << ex << endl;
+			dlog[Debug::CRIT] << myname << "(real_read): " << ex << endl;
 	}
 	catch( CORBA::SystemException& ex )
 	{
 		if( pingOK )
-			dlog[Debug::CRIT] << myname << "(read): СORBA::SystemException: "
+			dlog[Debug::CRIT] << myname << "(real_read): CORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 	}
 	catch(...)
 	{
 		if( pingOK )
-			dlog[Debug::CRIT] << myname << "(read) catch ..." << endl;
+			dlog[Debug::CRIT] << myname << "(real_read) catch ..." << endl;
 	}
 	
 	pingOK = false;

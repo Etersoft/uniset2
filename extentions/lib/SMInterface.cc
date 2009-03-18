@@ -439,16 +439,16 @@ void SMInterface::initAIterator( IOController::AIOStateList::iterator& it )
 {
 	if( ic )
 		it = ic->aioEnd();
-	else	
-		cerr << "(SMInterface::initAIterator): ic=NULL" << endl;
+//	else	
+//		cerr << "(SMInterface::initAIterator): ic=NULL" << endl;
 }
 // --------------------------------------------------------------------------
 void SMInterface::initDIterator( IOController::DIOStateList::iterator& it )
 {
 	if( ic )
 		it = ic->dioEnd();
-	else	
-		cerr << "(SMInterface::initDIterator): ic=NULL" << endl;
+//	else
+//		cerr << "(SMInterface::initDIterator): ic=NULL" << endl;
 }
 // --------------------------------------------------------------------------
 bool SMInterface::waitSMready( int ready_timeout, int pmsec )

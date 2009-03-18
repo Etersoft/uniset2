@@ -9,6 +9,7 @@
 using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtentions;
+using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
 MBMaster::MBMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic,
 						std::string prefix):
@@ -18,6 +19,7 @@ maxItem(0),
 mb(0),
 shm(0),
 initPause(0),
+mbregFromID(false),
 force(false),
 force_out(false),
 activated(false),
@@ -55,12 +57,15 @@ prefix(prefix)
 
 	recv_timeout = atoi(conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")).c_str());
 	if( recv_timeout <= 0 )
-		recv_timeout = 100;
+		recv_timeout = 2000;
 
 	string saddr = conf->getArgParam("--" + prefix + "-my-addr",it.getProp("addr"));
 	myaddr = ModbusRTU::str2mbAddr(saddr);
 	if( saddr.empty() )
 		myaddr = 0x00;
+
+	mbregFromID = atoi(conf->getArgParam("--" + prefix + "-reg-from-id",it.getProp("reg_from_id")).c_str());
+	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
 	polltime = atoi(conf->getArgParam("--" + prefix + "-polltime",it.getProp("polltime")).c_str());
 	if( !polltime )
@@ -133,6 +138,8 @@ prefix(prefix)
 // -----------------------------------------------------------------------------
 MBMaster::~MBMaster()
 {
+	if( mb )
+		mb->disconnect();
 	delete mb;
 }
 // -----------------------------------------------------------------------------
@@ -205,6 +212,7 @@ void MBMaster::init_mb()
 		mb = new ModbusTCPMaster();
 		mb->connect(ia,port);
 		mb->setTimeout(recv_timeout);
+		mb->setLog(dlog);
 	}
 	catch( Exception& ex )
 	{
@@ -241,24 +249,23 @@ void MBMaster::poll()
 		{
 			if( it->stype == UniversalIO::AnalogInput )
 			{
-				long val = callItem(it);
+				long val = readReg(it);
 				IOBase::processingAsAI( ib, val, shm, force );
 			}
 			else if( it->stype == UniversalIO::DigitalInput )
 			{
-				bool set = callItem(it) ? true : false;
+				bool set = readReg(it) ? true : false;
 				IOBase::processingAsDI( ib, set, shm, force );
 			}
 			else if( it->stype == UniversalIO::AnalogOutput )
 			{
-				cerr << myname << "(poll): AnalogOutput пока не реализован!!! (sid=" << it->si.id << ")" << endl;
-//				IOBase::processingAO( &ib, val );
+				long val = IOBase::processingAsAO(ib,shm,force_out);
+				writeReg(it,val);
 			}
 			else if( it->stype == UniversalIO::DigitalOutput )
 			{
-//				if( force_out )
-//					it->value = shm->localGetState(it->dit,it->si.id);
-//				bool set IOBase::processingAO( &ib, val );
+				long val = IOBase::processingAsDO(ib,shm,force_out) ? 1 : 0;
+				writeReg(it,val);
 			}
 		}
 		catch(ModbusRTU::mbException& ex )
@@ -293,23 +300,80 @@ void MBMaster::poll()
 	}
 }
 // -----------------------------------------------------------------------------
-long MBMaster::callItem( MBMap::iterator& p )
+long MBMaster::readReg( MBMap::iterator& p )
 {
-	unsigned short v1=0, v2=0;
-	if( p->mbfunc == ModbusRTU::fnReadInputRegisters )
+	try
 	{
-		ModbusRTU::ReadInputRetMessage ret = mb->read04(p->mbaddr, p->mbreg,1);
-		return ret.data[0];
+		if( p->mbfunc == ModbusRTU::fnReadInputRegisters )
+		{	
+//			if( dlog.debugging(Debug::LEVEL3) )
+//				dlog[Debug::LEVEL3] << " read from " << ModbusRTU::addr2str(p->mbaddr) << " reg=" << ModbusRTU::dat2str(p->mbreg) << endl;
+			cerr << " read from " << ModbusRTU::addr2str(p->mbaddr) << " reg=" << ModbusRTU::dat2str(p->mbreg) << endl;
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(p->mbaddr,p->mbreg,1);
+			return ret.data[0];
+		}
+	
+		if( p->mbfunc == ModbusRTU::fnReadOutputRegisters )
+		{
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(p->mbaddr,p->mbreg,1);
+			return ret.data[0];
+		}
+
+		cerr << myname << "(readReg): неподдерживаемая функция чтения " << (int)p->mbfunc << endl;
 	}
-	else if( p->mbfunc == ModbusRTU::fnReadOutputRegisters )
+	catch( ModbusRTU::mbException& ex )
 	{
-		ModbusRTU::ReadOutputRetMessage ret = mb->read03(p->mbaddr, p->mbreg,1);
-		return ret.data[0];
+		dlog[Debug::CRIT] << "(readReg): " << ex << endl;
 	}
-	else
-		cerr << myname << "(callItem): неподдерживаемая функция чтения " << (int)p->mbfunc << endl;
-//		return 0;
+	catch(SystemError& err)
+	{
+		dlog[Debug::CRIT] << "(readReg): " << err << endl;
+	}
+	catch(Exception& ex)
+	{
+		dlog[Debug::CRIT] << "(readReg): " << ex << endl;
+	}
+	catch( ost::SockException& e ) 
+	{
+		dlog[Debug::CRIT] << "(readReg): " << e.getString() << ": " << e.getSystemErrorString() << endl;
+	}
+
 	return 0;
+}
+// -----------------------------------------------------------------------------
+bool MBMaster::writeReg( MBMap::iterator& p, long val )
+{
+	if( p->mbfunc == fnWriteOutputRegisters )
+	{
+		ModbusRTU::WriteOutputMessage msg(p->mbaddr,p->mbreg);
+		msg.addData(val);
+		ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+		return true;
+	}
+
+	if( p->mbfunc == ModbusRTU::fnForceSingleCoil )
+	{
+		ModbusRTU::ForceSingleCoilRetMessage ret = mb->write05(p->mbaddr,p->mbreg,(bool)val);
+		return false;
+	}
+	
+	if( p->mbfunc == fnWriteOutputSingleRegister )
+	{
+		ModbusRTU::WriteSingleOutputRetMessage  ret = mb->write06(p->mbaddr,p->mbreg,val);
+		return true;
+	}
+	
+	if( p->mbfunc == fnForceMultipleCoils )
+	{
+		ModbusRTU::ForceCoilsMessage msg(p->mbaddr,p->mbreg);
+		ModbusRTU::DataBits16 b(val);
+		msg.addData(b);
+		ModbusRTU::ForceCoilsRetMessage  ret = mb->write0F(msg);
+		return true;
+	}
+
+	cerr << myname << "(writeReg): неподдерживаемая функция чтения " << (int)p->mbfunc << endl;
+	return false;
 }
 // -----------------------------------------------------------------------------
 void MBMaster::processingMessage(UniSetTypes::VoidMessage *msg)
@@ -365,6 +429,13 @@ void MBMaster::sysCommand(UniSetTypes::SystemMessage *sm)
 	{
 		case SystemMessage::StartUp:
 		{
+			if( mbmap.empty() )
+			{
+				dlog[Debug::CRIT] << myname << "(sysCommand): mbmap EMPTY! terminated..." << endl;
+				raise(SIGTERM);
+				return; 
+			}
+		
 			waitSMReady();
 
 			// подождать пока пройдёт инициализация датчиков
@@ -393,7 +464,7 @@ void MBMaster::sysCommand(UniSetTypes::SystemMessage *sm)
 			// начальная инициализация
 			if( !force )
 			{
-				uniset_mutex_lock l(pollMutex,2000);	
+				uniset_mutex_lock l(pollMutex,2000);
 				force = true;
 				poll();
 				force = false;
@@ -461,9 +532,7 @@ void MBMaster::initOutput()
 // ------------------------------------------------------------------------------------------
 void MBMaster::askSensors( UniversalIO::UIOCommand cmd )
 {
-#warning Разобраться с testid
-	UniSetTypes::ObjectId testid = 4100; // (notRespondSensor!=DefaultObjectId) ? notRespondSensor : 4100; //TestMode_S
-	if( !shm->waitSMworking(testid,activateTimeout,50) )
+	if( !shm->waitSMworking(test_id,activateTimeout,50) )
 	{
 		ostringstream err;
 		err << myname 
@@ -498,7 +567,27 @@ void MBMaster::askSensors( UniversalIO::UIOCommand cmd )
 // ------------------------------------------------------------------------------------------
 void MBMaster::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
-	
+	MBMap::iterator it=mbmap.begin();
+	for( ; it!=mbmap.end(); ++it )
+	{
+		if( it->stype != UniversalIO::DigitalOutput && it->stype!=UniversalIO::AnalogOutput )
+			continue;
+
+		if( it->si.id == sm->id )
+		{
+			if( it->stype == UniversalIO::DigitalOutput )
+			{
+				uniset_spin_lock lock(it->val_lock);
+				it->value = sm->state ? 1 : 0;
+			}
+			else if( it->stype == UniversalIO::AnalogOutput )
+			{
+				uniset_spin_lock lock(it->val_lock);
+				it->value = sm->value;
+			}
+			break;
+		}
+	}
 }
 // ------------------------------------------------------------------------------------------
 bool MBMaster::activateObject()
@@ -600,28 +689,54 @@ bool MBMaster::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 // ------------------------------------------------------------------------------------------
 bool MBMaster::initItem( UniXML_iterator& it )
 {
-	cerr << "********** init item *************" << endl;
-
 	MBProperty p;
+
 	if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,&dlog,myname) )
 		return false;
-
-	cerr << "********** init item(2) *************" << endl;
 
 	string addr = it.getProp("mbaddr");
 	if( addr.empty() )
 		return true;
 
+	if( mbregFromID )
+		p.mbreg = p.si.id;
+	else
+	{
+		string r = it.getProp("mbreg");
+		if( r.empty() )
+		{
+			dlog[Debug::CRIT] << myname << "(initItem): Unknown 'mbreg' for " << it.getProp("name") << endl;
+			return false;
+		}
+		p.mbreg = ModbusRTU::str2mbData(r);
+	}
+
 	p.mbaddr 	= ModbusRTU::str2mbAddr(addr);
-	
-	if( p.stype == UniversalIO::AnalogInput )
+
+	string stype( it.getProp("mb_iotype") );
+	if( stype.empty() )
+		stype = it.getProp("iotype");
+
+	if( stype == "AI" )
+	{
+		p.stype 	= UniversalIO::AnalogInput;
 		p.mbfunc  	= ModbusRTU::fnReadInputRegisters;
-	else if ( p.stype == UniversalIO::DigitalInput )
+	}
+	else if ( stype == "DI" )
+	{
+		p.stype 	= UniversalIO::DigitalInput;
 		p.mbfunc  	= ModbusRTU::fnReadInputRegisters;
-	else if ( p.stype == UniversalIO::AnalogOutput )
+	}
+	else if ( stype == "AO" )
+	{
+		p.stype 	= UniversalIO::AnalogOutput;
 		p.mbfunc  	= ModbusRTU::fnWriteOutputRegisters;
-	else if ( p.stype == UniversalIO::DigitalOutput )
+	}
+	else if ( stype == "DO" )
+	{
+		p.stype 	= UniversalIO::DigitalOutput;
 		p.mbfunc  	= ModbusRTU::fnWriteOutputRegisters;
+	}
 
 	string f = it.getProp("mbfunc");
 	if( !f.empty() )
@@ -629,12 +744,32 @@ bool MBMaster::initItem( UniXML_iterator& it )
 		p.mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f.c_str());
 		if( p.mbfunc == ModbusRTU::fnUnknown )
 		{
-			dlog[Debug::CRIT] << myname << "(initCommParam): Неверный mbfunc ='" << f
+			dlog[Debug::CRIT] << myname << "(initItem): Неверный mbfunc ='" << f
 					<< "' для  датчика " << it.getProp("name") << endl;
 
 			return false;
 		}
 	}
+
+	if( p.mbfunc == ModbusRTU::fnReadCoilStatus ||
+		p.mbfunc == ModbusRTU::fnReadInputStatus )
+	{
+		string nb = it.getProp("nbit");
+		if( nb.empty() )
+		{
+			dlog[Debug::CRIT] << myname << "(initItem): Unknown nbit. for " 
+					<< it.getProp("name") 
+					<< " mbfunc=" << p.mbfunc
+					<< endl;
+
+			return false;
+		}
+		
+		p.nbit = UniSetTypes::uni_atoi(nb.c_str());
+	}
+
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << myname << "(initItem): add " << p << endl;
 
 	// если вектор уже заполнен
 	// то увеличиваем его на 10 элементов (с запасом)
