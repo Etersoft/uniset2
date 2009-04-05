@@ -478,7 +478,7 @@ activated(false)
 
 <xsl:for-each select="//msgmap/item">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
-		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": NotFound (Message)OID for " &lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>") &lt;&lt; endl;
+		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": NotFound (Message)OID for (<xsl:value-of select="normalize-space(@name)"/>) " &lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>") &lt;&lt; endl;
 	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 	{
 		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": NotFound (Message)NodeD for node=" &lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@node)"/>") 
