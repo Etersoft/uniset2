@@ -481,7 +481,7 @@ activated(false)
 		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": NotFound (Message)OID for (<xsl:value-of select="normalize-space(@name)"/>) " &lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>") &lt;&lt; endl;
 	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": NotFound (Message)NodeD for node=" &lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@node)"/>") 
+		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": NotFound (Message)NodeID for node=(<xsl:value-of select="normalize-space(@node)"/>)" &lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@node)"/>") 
 			&lt;&lt; ". Use localNode=" &lt;&lt; conf->getLocalNode()
 			&lt;&lt; endl;
 	}
