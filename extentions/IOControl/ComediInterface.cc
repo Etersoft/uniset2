@@ -3,7 +3,6 @@
 #include <sstream>
 #include <cstdlib>
 #include <cstring>
-#include <alloca.h>
 #include "ComediInterface.h"
 // -----------------------------------------------------------------------------
 using namespace UniSetTypes;
@@ -47,7 +46,7 @@ int ComediInterface::getAnalogChannel( int subdev, int channel, int range, int a
 std::vector<lsampl_t> ComediInterface::getAnalogPacket( int subdev, int channel, int range, int aref )
 							throw(UniSetTypes::Exception)
 {
-	lsampl_t* data = (lsampl_t *)alloca(1024); /* FIFO size, maximum possible samples */
+	lsampl_t* data = new lsampl_t[1024]; /* FIFO size, maximum possible samples */
 	comedi_insn insn;
 
 	memset(&insn, 0, sizeof(insn));
@@ -60,17 +59,21 @@ std::vector<lsampl_t> ComediInterface::getAnalogPacket( int subdev, int channel,
 	int ret = comedi_do_insn(card, &insn);
 	if( ret < 0 )
 	{
+		delete data;
+	
 		ostringstream err;
 		err << "(ComediInterface:getAnalogPacket): can`t read data from subdev=" << subdev
 			<< " channel=" << channel << " range=" << range <<" aref="<< aref
 			<< " err: " << ret << " (" << strerror(ret) << ")";
 		throw Exception(err.str());
-		return std::vector<lsampl_t>(0);
+//		return std::vector<lsampl_t>(0);
 	}
 
 	std::vector<lsampl_t> result(ret);
 	if(ret > 0)
 		memcpy(&result[0], data, ret * sizeof(lsampl_t));
+
+	delete data;
 
 	return result;
 }
