@@ -2,7 +2,7 @@
 
 Name: uniset
 Version: 0.96
-Release: alt11
+Release: setri1
 Summary: UniSet
 License: GPL
 Group: Development/C++
@@ -180,6 +180,9 @@ Libraries needed to develop for uniset extentions
 
 
 %changelog
+* Mon Apr 06 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-alt11
+- new build
+
 * Sat Jan 17 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-alt7
 - new version
 
