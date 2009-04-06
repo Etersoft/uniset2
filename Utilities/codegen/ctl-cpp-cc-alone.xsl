@@ -276,12 +276,12 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setInfo( UniSetTypes::ObjectId code
 	</xsl:when>
 	<xsl:when test="normalize-space(../../@iotype)='DI'">
 		si.id 	= <xsl:value-of select="../../@name"/>;
-		si.node = conf->getLocalNode();
+		si.node = node_<xsl:value-of select="../../@name"/>;
 		ui.saveState( si, <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, UniversalIO::DigitalInput, getId() );
 	</xsl:when>
 	<xsl:when test="normalize-space(../../@iotype)='AI'">
 		si.id 	= <xsl:value-of select="../../@name"/>;
-		si.node = conf->getLocalNode();
+		si.node = node_<xsl:value-of select="../../@name"/>;
 		ui.saveValue( si,<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>,UniversalIO::AnalogInput, getId() );
 	</xsl:when>
 </xsl:choose>
@@ -298,12 +298,12 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setInfo( UniSetTypes::ObjectId code
 	</xsl:when>
 	<xsl:when test="normalize-space(../../@iotype)='DI'">
 		si.id 	= <xsl:value-of select="../../@name"/>;
-		si.node = conf->getLocalNode();
+		si.node = node_<xsl:value-of select="../../@name"/>;
 		ui.saveState( si,<xsl:value-of select="$setval"/>, UniversalIO::DigitalInput, getId() );
 	</xsl:when>
 	<xsl:when test="normalize-space(../../@iotype)='AI'">
 		si.id 	= <xsl:value-of select="../../@name"/>;
-		si.node = conf->getLocalNode();
+		si.node = node_<xsl:value-of select="../../@name"/>;
 		ui.saveValue( si,<xsl:value-of select="$setval"/>,UniversalIO::AnalogInput, getId() );
 	</xsl:when>
 </xsl:choose>

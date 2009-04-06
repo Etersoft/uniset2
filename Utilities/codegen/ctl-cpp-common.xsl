@@ -60,6 +60,12 @@
 		<xsl:call-template name="settype"><xsl:with-param name="iotype" select="../../@iotype" /></xsl:call-template><xsl:text> prev_</xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>; /*!&lt; предыдущее значение */
 		</xsl:when>
 		<xsl:when test="$GENTYPE='C'"><xsl:value-of select="../../@name"/>(<xsl:value-of select="../../@id"/>),
+			<xsl:if test="normalize-space(../../@node)=''">
+				node_<xsl:value-of select="../../@name"/>(<xsl:value-of select="../../@node"/>),
+			</xsl:if>
+			<xsl:if test="not(normalize-space(../../@node)='')">
+				node_<xsl:value-of select="../../@name"/>(UniSetTypes::conf->getLocalNode()),
+			</xsl:if>
 			<xsl:if test="normalize-space(../../@default)=''">
 				<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>(0),
 			</xsl:if>
