@@ -59,7 +59,7 @@ std::vector<lsampl_t> ComediInterface::getAnalogPacket( int subdev, int channel,
 	int ret = comedi_do_insn(card, &insn);
 	if( ret < 0 )
 	{
-		delete data;
+		delete[] data;
 	
 		ostringstream err;
 		err << "(ComediInterface:getAnalogPacket): can`t read data from subdev=" << subdev
@@ -73,7 +73,7 @@ std::vector<lsampl_t> ComediInterface::getAnalogPacket( int subdev, int channel,
 	if(ret > 0)
 		memcpy(&result[0], data, ret * sizeof(lsampl_t));
 
-	delete data;
+	delete[] data;
 
 	return result;
 }
@@ -132,7 +132,6 @@ void ComediInterface::instrChannel( int subdev, int channel, const std::string i
 		err << "(ComediInterface:instrChannel): unknown instruction "
 			<< " subdev=" << subdev << " channel=" << channel << " instruction=" << instr;
 		throw Exception(err.str());
-		return;
 	}
 
 	args.insert(args.begin(), ins);
