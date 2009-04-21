@@ -124,6 +124,7 @@ void NCRestorer_XML::read_list( UniXML& xml, xmlNode* node, IONotifyController* 
 				try
 				{	
 					IOController::UniDigitalIOInfo dinf(inf);
+					dinf.real_state = dinf.state;
 					dsRegistration(ic,dinf,true);
 				}
 				catch(Exception& ex)
@@ -628,7 +629,8 @@ void NCRestorer_XML::build_depends( UniXML& xml, xmlNode* node, IONotifyControll
 					{
 						mydepinfo.dit->second.blocked = blk_set;
 						mydepinfo.dit->second.block_state = (bool)block_val;
-						mydepinfo.dit->second.real_state = mydepinfo.dit->second.state;
+						mydepinfo.dit->second.state = defval;
+						mydepinfo.dit->second.real_state = defval;
 						if( blk_set )
 							mydepinfo.dit->second.state = (bool)block_val;
 					}
