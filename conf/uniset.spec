@@ -2,7 +2,7 @@
 
 Name: uniset
 Version: 0.96
-Release: eter5
+Release: eter7
 Summary: UniSet
 License: GPL
 Group: Development/C++
@@ -180,6 +180,12 @@ Libraries needed to develop for uniset extentions
 
 
 %changelog
+* Tue Apr 21 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter6
+- new build
+
+* Tue Apr 21 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter5
+- new build
+
 * Mon Apr 06 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter4
 - new ComediInterface
 
