@@ -192,6 +192,7 @@ AC_CONFIG_FILES([Makefile
 				 extentions/MBTCPMaster/libUniSetMBTCPMaster.pc
 				 extentions/LogicProcessor/Makefile
 				 extentions/LogicProcessor/libUniSetLogicProcessor.pc
+				 extentions/SMViewer/Makefile
 				 extentions/SharedMemory/Makefile
 				 extentions/SharedMemory/libUniSetSharedMemory.pc
 				 extentions/SharedMemoryPlus/Makefile])

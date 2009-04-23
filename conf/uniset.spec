@@ -2,7 +2,7 @@
 
 Name: uniset
 Version: 0.96
-Release: eter8
+Release: eter9
 Summary: UniSet
 License: GPL
 Group: Development/C++
