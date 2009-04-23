@@ -2,7 +2,7 @@
 
 Name: uniset
 Version: 0.96
-Release: eter7
+Release: eter8
 Summary: UniSet
 License: GPL
 Group: Development/C++
@@ -177,7 +177,7 @@ Libraries needed to develop for uniset extentions
 %_bindir/rtustate
 %_bindir/%name-rtuexchange
 %_bindir/%name-smemory
-
+%_bindir/%name-smviewer
 
 %changelog
 * Tue Apr 21 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter6
