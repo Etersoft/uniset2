@@ -37,7 +37,7 @@ namespace MTR
 	const ModbusRTU::ModbusData regModelNumber	= 30001;
 	const ModbusRTU::ModbusData regSerialNumber	= 30009;
 	
-	std::string getModeNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr );
+	std::string getModelNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr );
 	std::string getSerialNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr );
 	// -------------------------------------------------------------------------
 	// Настройки связи

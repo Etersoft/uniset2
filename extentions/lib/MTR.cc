@@ -177,7 +177,7 @@ bool setDataBits( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, mtrDataBits d
 	return false;
 }
 // -----------------------------------------------------------------------------
-std::string getModeNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr )
+std::string getModelNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr )
 {
 	try
 	{
