@@ -614,7 +614,6 @@ void RTUExchange::processingMessage(UniSetTypes::VoidMessage *msg)
 	{
 		dlog[Debug::CRIT] << myname << "(SystemError): " << ex << std::endl;
 //		throw SystemError(ex);
-		raise(SIGTERM);
 	}
 	catch( Exception& ex )
 	{
@@ -626,7 +625,7 @@ void RTUExchange::processingMessage(UniSetTypes::VoidMessage *msg)
 	}
 }
 // -----------------------------------------------------------------------------
-void RTUExchange::sysCommand(UniSetTypes::SystemMessage *sm)
+void RTUExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 {
 	switch( sm->command )
 	{
@@ -1079,93 +1078,6 @@ bool RTUExchange::initRTU188item( UniXML_iterator& it, RSProperty& p )
 	}
 	
 	p.rtuChan = UniSetTypes::uni_atoi(chan.c_str());
-	
-/*	
-	if( p.stype == UniversalIO::DigitalInput )
-	{
-		if( jack =="J1" )
-			p.mbreg = 32+nchan;
-		else if( jack == "J2" )
-			p.mbreg = 32+24+nchan;
-		else if( jack == "X4" )
-			p.mbreg = nchan;
-		else if( jack == "X5" )
-			p.mbreg = 8+nchan;
-		else if( jack == "J5" )
-			p.mbreg = 16+nchan;
-		else
-		{
-			dlog[Debug::CRIT] << myname << "(readRTUItem): "
-				<< " указана неизвестный разъём jack=" << jack 
-				<< " для датчика " << it.getProp("name")
-				<< std::endl;
-			return false;
-		}
-	}
-	else if( p.stype == UniversalIO::DigitalOutput )
-	{
-		if( jack =="J1" )
-			p.mbreg = 16+nchan;
-		else if( jack == "J2" )
-			p.mbreg = 16+24+nchan;
-		else if( jack == "J5" )
-			p.mbreg = nchan;
-		else
-		{
-			dlog[Debug::CRIT] << myname << "(readRTUItem): "
-				<< " указана неизвестный разъём jack=" << jack 
-				<< " для датчика " << it.getProp("name")
-				<< std::endl;
-			return false;
-		}
-	}
-	else if( p.stype == UniversalIO::AnalogInput )
-	{
-		if( jack =="J1" )
-			p.mbreg = 1032+(nchan<<1);
-		else if( jack == "J2" )
-			p.mbreg = 1032+((24+nchan)<<1);
-		else if( jack == "X1" )
-			p.mbreg = 1016+(nchan<<1);
-		else if( jack == "X2" )
-			p.mbreg = 1016+((4+nchan)<<1);
-		else if( jack == "J5" )
-			p.mbreg = 1000+(nchan<<1);
-		else
-		{
-			dlog[Debug::CRIT] << myname << "(readRTUItem): "
-				<< " указана неизвестный разъём jack=" << jack 
-				<< " для датчика " << it.getProp("name")
-				<< std::endl;
-			return false;
-		}
-	}
-	else if( p.stype == UniversalIO::AnalogOutput )
-	{
-		if( jack =="J1" )
-			p.mbreg = 1016+(nchan<<1);
-		else if( jack == "J2" )
-			p.mbreg = 1016+((24+nchan)<<1);
-		else if( jack == "J5" )
-			p.mbreg = 1000+(nchan<<1);
-		else
-		{
-			dlog[Debug::CRIT] << myname << "(readRTUItem): "
-				<< " указана неизвестный разъём jack=" << jack 
-				<< " для датчика " << it.getProp("name")
-				<< std::endl;
-			return false;
-		}
-	}
-	else
-	{
-		dlog[Debug::CRIT] << myname << "(readItem): "
-			<<  " указан неподдерживаемый тип iotype=" << p.stype
-			<< " для датчика " << it.getProp("name")
-			<< std::endl;
-		return false;
-	}
-*/
 
 	if( dlog.debugging(Debug::LEVEL2) )
 		dlog[Debug::LEVEL2] << myname << "(readItem): " << p << endl; 
@@ -1207,20 +1119,20 @@ RTUExchange* RTUExchange::init_rtuexchange( int argc, char* argv[], UniSetTypes:
 	string name = conf->getArgParam("--rs-name","RTUExchange1");
 	if( name.empty() )
 	{
-		cerr << "(rsexchange): Не задан name'" << endl;
+		cerr << "(rtuexchange): Не задан name'" << endl;
 		return 0;
 	}
 
 	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		cerr << "(rsexchange): идентификатор '" << name 
+		cerr << "(rtuexchange): идентификатор '" << name 
 			<< "' не найден в конф. файле!"
 			<< " в секции " << conf->getObjectsSection() << endl;
 		return 0;
 	}
 
-	dlog[Debug::INFO] << "(rsexchange): name = " << name << "(" << ID << ")" << endl;
+	dlog[Debug::INFO] << "(rtuexchange): name = " << name << "(" << ID << ")" << endl;
 	return new RTUExchange(ID,icID,ic);
 }
 // -----------------------------------------------------------------------------
