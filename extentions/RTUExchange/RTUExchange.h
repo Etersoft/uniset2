@@ -155,6 +155,9 @@ class RTUExchange:
 		UniSetTypes::uniset_mutex pollMutex;
 		Trigger trTimeout;
 		PassiveTimer ptTimeout;
+		UniSetTypes::ObjectId sidNotRespond;
+		IOController::DIOStateList::iterator ditNotRespond;
+
 		
 		PassiveTimer aiTimer;
 		int ai_polltime;

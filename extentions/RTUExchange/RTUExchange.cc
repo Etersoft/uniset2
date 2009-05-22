@@ -55,6 +55,9 @@ activated(false)
 
 	int recv_timeout = atoi(conf->getArgParam("--rs-recv-timeout",it.getProp("recv_timeout")).c_str());
 
+	sidNotRespond = conf->getSensorID(conf->getArgParam("--rs-notRespondSensor",it.getProp("notRespondSensor")));
+	
+
 //	string saddr = conf->getArgParam("--rs-my-addr",it.getProp("addr"));
 //	ModbusRTU::ModbusAddr myaddr = ModbusRTU::str2mbAddr(saddr);
 //	if( saddr.empty() )
@@ -248,7 +251,7 @@ void RTUExchange::execute()
 	// начальная инициализация
 	if( !force )
 	{
-		uniset_mutex_lock l(pollMutex,2000);	
+		uniset_mutex_lock l(pollMutex,2000);
 		force = true;
 		poll();
 		force = false;
@@ -310,6 +313,7 @@ void RTUExchange::step()
 // -----------------------------------------------------------------------------
 void RTUExchange::poll()
 {
+	bool respond_ok = true;
 	for( RTUMap::iterator it=rtulist.begin(); it!=rtulist.end(); ++it )
 	{
 		if( !activated )
@@ -330,6 +334,7 @@ void RTUExchange::poll()
 		catch( ModbusRTU::mbException& ex )
 		{ 
 			cout << " [ FAILED ] (" << ex << ")" << endl; 
+			respond_ok = false;
 		}
 	}
 
@@ -409,6 +414,8 @@ void RTUExchange::poll()
 						break;
 				}
 			}
+			
+			continue;
 		}
 		catch(ModbusRTU::mbException& ex )
 		{
@@ -439,6 +446,21 @@ void RTUExchange::poll()
 		{
 			dlog[Debug::LEVEL3] << myname << "(poll): catch ..." << endl;
 		}
+		
+		respond_ok = false;
+	}
+
+	if( sidNotRespond!=DefaultObjectId )
+	{
+		if( trTimeout.hi( !respond_ok ) )
+			ptTimeout.reset();
+		else if( respond_ok )
+			ptTimeout.reset();
+
+		if( !respond_ok && ptTimeout.checkTime() )
+			shm->localSaveState(ditNotRespond,sidNotRespond,true,getId());
+		else
+			shm->localSaveState(ditNotRespond,sidNotRespond,false,getId());
 	}
 }
 // -----------------------------------------------------------------------------
@@ -1095,6 +1117,7 @@ void RTUExchange::initIterators()
 	}
 
 	shm->initAIterator(aitHeartBeat);
+	shm->initDIterator(ditNotRespond);
 }
 // -----------------------------------------------------------------------------
 void RTUExchange::help_print( int argc, char* argv[] )
