@@ -20,7 +20,7 @@ SMonitor::SMonitor(ObjectId id):
 	script("")
 {
 	string sid(conf->getArgParam("--sid"));
-	lst = explode(sid);
+	lst = UniSetTypes::explode(sid);
 
 	if( lst.empty() )
 		throw SystemError("Не задан список датчиков (--sid)");
