@@ -42,7 +42,7 @@ class UniXML
 {
 public:
 
-	xmlNode* getFirstNode()
+	inline xmlNode* getFirstNode()
 	{
 		return xmlDocGetRootElement(doc);
 	}

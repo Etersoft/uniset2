@@ -3,7 +3,7 @@
 // --------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
-#include <math.h>
+#include <cmath>
 #include "Configuration.h"
 #include "MTR.h"
 // --------------------------------------------------------------------------

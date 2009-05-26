@@ -1,6 +1,6 @@
 // $Id: MBSlave.cc,v 1.1 2009/01/11 19:08:45 vpashka Exp $
 // -----------------------------------------------------------------------------
-#include <math.h>
+#include <cmath>
 #include <sstream>
 #include "Exceptions.h"
 #include "Extentions.h"
