@@ -659,6 +659,10 @@ void RTUExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 				raise(SIGTERM);
 				return; 
 			}
+
+			if( dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << myname << "(sysCommand): rsmap size= "<< rsmap.size() << endl;
+
 		
 			waitSMReady();
 
