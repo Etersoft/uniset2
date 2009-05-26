@@ -410,10 +410,12 @@ void SharedMemory::fastSaveValue(const IOController_i::SensorInfo& si, CORBA::Lo
 // ------------------------------------------------------------------------------------------
 SharedMemory* SharedMemory::init_smemory( int argc, char* argv[] )
 {
-	string dfile = conf->getConfDir() + conf->getArgParam("--datfile",conf->getConfFileName());
+	string dfile = conf->getArgParam("--datfile",conf->getConfFileName());
+	
+	if( dfile[0]!='.' && dfile[0]!='/' )
+		dfile = conf->getConfDir() + dfile;
+	
 	dlog[Debug::INFO] << "(smemory): datfile = " << dfile << endl;
-	
-	
 	
 	UniSetTypes::ObjectId ID = conf->getControllerID(conf->getArgParam("--smemory-id","SharedMemory"));
 	if( ID == UniSetTypes::DefaultObjectId )
