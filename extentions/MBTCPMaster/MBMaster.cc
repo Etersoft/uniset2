@@ -1,6 +1,6 @@
 // $Id: MBMaster.cc,v 1.11 2009/03/03 10:33:27 pv Exp $
 // -----------------------------------------------------------------------------
-#include <math.h>
+#include <cmath>
 #include <sstream>
 #include "Exceptions.h"
 #include "Extentions.h"

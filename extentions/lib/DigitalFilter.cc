@@ -1,7 +1,7 @@
 // --------------------------------------------------------------------------
 /*! $Id: DigitalFilter.cc,v 1.2 2009/01/16 23:16:42 vpashka Exp $ */
 // --------------------------------------------------------------------------
-#include <math.h>
+#include <cmath>
 #include <iomanip>
 #include <algorithm>
 #include <iostream>

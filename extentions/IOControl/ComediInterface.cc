@@ -43,41 +43,6 @@ int ComediInterface::getAnalogChannel( int subdev, int channel, int range, int a
 	return data;
 }
 // -----------------------------------------------------------------------------
-std::vector<lsampl_t> ComediInterface::getAnalogPacket( int subdev, int channel, int range, int aref )
-							throw(UniSetTypes::Exception)
-{
-	lsampl_t* data = new lsampl_t[1024]; /* FIFO size, maximum possible samples */
-	comedi_insn insn;
-
-	memset(&insn, 0, sizeof(insn));
-	insn.insn = INSN_READ;
-	insn.n = 1024;
-	insn.data = data;
-	insn.subdev = subdev;
-	insn.chanspec = CR_PACK(channel, range, aref);
-
-	int ret = comedi_do_insn(card, &insn);
-	if( ret < 0 )
-	{
-		delete[] data;
-	
-		ostringstream err;
-		err << "(ComediInterface:getAnalogPacket): can`t read data from subdev=" << subdev
-			<< " channel=" << channel << " range=" << range <<" aref="<< aref
-			<< " err: " << ret << " (" << strerror(ret) << ")";
-		throw Exception(err.str());
-//		return std::vector<lsampl_t>(0);
-	}
-
-	std::vector<lsampl_t> result(ret);
-	if(ret > 0)
-		memcpy(&result[0], data, ret * sizeof(lsampl_t));
-
-	delete[] data;
-
-	return result;
-}
-// -----------------------------------------------------------------------------
 void ComediInterface::setAnalogChannel( int subdev, int channel, int data, int range, int aref )
 																throw(UniSetTypes::Exception)
 {
@@ -117,41 +82,6 @@ void ComediInterface::setDigitalChannel( int subdev, int channel, bool bit )
 		throw Exception(err.str());
 	}
 }
-
-// -----------------------------------------------------------------------------
-void ComediInterface::instrChannel( int subdev, int channel, const std::string instr,
-				    std::vector<lsampl_t> args, int range, int aref )
-				    throw(UniSetTypes::Exception)
-{
-	lsampl_t ins = instr2type(instr);
-	comedi_insn insn;
-
-	if(ins < 0)
-	{
-		ostringstream err;
-		err << "(ComediInterface:instrChannel): unknown instruction "
-			<< " subdev=" << subdev << " channel=" << channel << " instruction=" << instr;
-		throw Exception(err.str());
-	}
-
-	args.insert(args.begin(), ins);
-
-	memset(&insn,0,sizeof(insn));
-	insn.insn = INSN_CONFIG;
-	insn.n = args.size();
-	insn.data = &args[0];
-	insn.subdev = subdev;
-	insn.chanspec = CR_PACK(channel,range,aref);
-	if( comedi_do_insn(card,&insn) < 0 )
-	{
-		ostringstream err;
-		err << "(ComediInterface:instrChannel): can`t execute the instruction "
-			<< " subdev=" << subdev << " channel=" << channel << " instruction=" << instr;
-		throw Exception(err.str());
-	}
-	return;
-}
-
 // -----------------------------------------------------------------------------
 void ComediInterface::configureChannel( int subdev, int channel, ChannelType t,
 										int range, int aref )
@@ -209,39 +139,21 @@ void ComediInterface::configureChannel( int subdev, int channel, ChannelType t,
 void ComediInterface::configureSubdev( int subdev, SubdevType t )	
 								throw(UniSetTypes::Exception)
 {
-	static const unsigned char chans[4] = {0, 8, 16, 20}; /* We can configure only one channel per 8-bit port (4-bit for CL and CH). */
-	lsampl_t cmd[4]; /* Ports A, B, CL, CH */
+	lsampl_t cmd = 102;
 	comedi_insn insn;
-
-	switch(t)
+	memset(&insn,0,sizeof(insn));
+	insn.insn = INSN_CONFIG;
+	insn.n = 1;
+	insn.data 		= &cmd;
+	insn.unused[0] 	= t;
+	insn.subdev = subdev;
+	insn.chanspec = 0;
+	if( comedi_do_insn(card,&insn) < 0 )
 	{
-		case TBI24_0:
-			cmd[0] = cmd[1] = cmd[2] = cmd[3] = INSN_CONFIG_DIO_INPUT;
-			break;
-		case TBI0_24:
-		default:
-			cmd[0] = cmd[1] = cmd[2] = cmd[3] = INSN_CONFIG_DIO_OUTPUT;
-			break;
-		case TBI16_8:
-			cmd[0] = cmd[1] = INSN_CONFIG_DIO_INPUT;
-			cmd[2] = cmd[3] = INSN_CONFIG_DIO_OUTPUT;
-			break;
-	}
-
-	for(int i = 0; i < 4; i++) {
-		memset(&insn,0,sizeof(insn));
-		insn.insn = INSN_CONFIG;
-		insn.n = 1;
-		insn.data = &cmd[i];
-		insn.subdev = subdev;
-		insn.chanspec = CR_PACK(chans[i], 0, 0);
-		if( comedi_do_insn(card,&insn) < 0 )
-		{
-			ostringstream err;
-			err << "(ComediInterface:configureSubdev): can`t configure subdev "
-				<< " subdev=" << subdev << " type=" << t;
-			throw Exception(err.str());
-		}
+		ostringstream err;
+		err << "(ComediInterface:configureSubdev): can`t configure subdev "
+			<< " subdev=" << subdev << " type=" << t;
+		throw Exception(err.str());
 	}
 }
 // -----------------------------------------------------------------------------
@@ -277,48 +189,5 @@ ComediInterface::SubdevType ComediInterface::str2type( const std::string s )
 		return TBI16_8;
 		
 	return Unknown;
-}
-// -----------------------------------------------------------------------------
-ComediInterface::EventType ComediInterface::event2type( const std::string s )
-{
-	if( s == "Front" )
-		return Front;
-		
-	if( s == "Rear" )
-		return Rear;
-	
-	if( s == "FrontThenRear" )
-		return FrontThenRear;
-		
-	return No;
-}
-// -----------------------------------------------------------------------------
-lsampl_t ComediInterface::instr2type( const std::string s )
-{
-	if( s == "AVERAGING" || s == "BOUNCE_SUPPRESSION" ) /* This are the same instructions, one for AI, another for DI */
-		return INSN_CONFIG_AVERAGING;
-
-	if( s == "TIMER" )
-		return INSN_CONFIG_TIMER_1;
-
-	if( s == "INPUT_MASK" )
-		return INSN_CONFIG_INPUT_MASK;
-
-	if( s == "FILTER" )
-		return INSN_CONFIG_FILTER;
-
-	if( s == "0mA" )
-		return INSN_CONFIG_0MA;
-
-	if( s == "COMPL" )
-		return INSN_CONFIG_COMPL;
-
-	if( s == "COUNTER" )
-		return INSN_CONFIG_COUNTER;
-
-	if( s == "DI_MODE" )
-		return INSN_CONFIG_DI_MODE;
-
-	return -1;
 }
 // -----------------------------------------------------------------------------

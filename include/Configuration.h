@@ -28,7 +28,6 @@
 #define Configuration_H_
 // --------------------------------------------------------------------------
 // Убрать UniXML.h, сменить unixml на указатель!!!!!!!!
-
 #include <string>
 #include <ostream>
 #include "UniXML.h"
@@ -39,7 +38,6 @@
 #include "Debug.h"
 
 class SystemGuard;
-
 /*
 	В функции main нужно вызвать конструктор класса Configuration
 	fileConf - название файла конфигурации, который будет открываться
@@ -57,7 +55,7 @@ namespace UniSetTypes
 	class Configuration
 	{
 	public:
-			virtual ~Configuration();	
+			virtual ~Configuration();
 
 			/*!	конфигурирование xml-файлом ( предпочтительный способ )	*/
 			Configuration( int argc, char** argv, const std::string xmlfile="" );
@@ -78,7 +76,7 @@ namespace UniSetTypes
 		// Получить указанное свойство пути
 		std::string getProp(xmlNode*, const std::string name);
 		// Получить указанное свойство по имени узла
-		std::string getPropByNodeName(const std::string& nodename, const std::string& prop);	
+		std::string getPropByNodeName(const std::string& nodename, const std::string& prop);
 
 		static std::ostream& help(std::ostream& os);
 
@@ -213,7 +211,7 @@ namespace UniSetTypes
 		ObjectId localNode;
 		
 		std::string fileConfName;
-		std::string imagesDir;			
+		std::string imagesDir;
 
 		std::string confDir;
 		std::string dataDir;
@@ -238,7 +236,5 @@ namespace UniSetTypes
 	
 	
 }	// end of UniSetTypes namespace
-
-
 
 #endif // Configuration_H_

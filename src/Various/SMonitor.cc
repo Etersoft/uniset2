@@ -191,25 +191,3 @@ void SMonitor::timerInfo( UniSetTypes::TimerMessage *tm )
 		
 }
 // ------------------------------------------------------------------------------------------
-UniSetTypes::IDList SMonitor::explode( const string str, char sep )
-{
-	UniSetTypes::IDList l;
-
-	string::size_type prev = 0;
-	string::size_type pos = 0;
-	do
-	{
-		pos = str.find(sep,prev);
-//		cout << "add " << str.substr(prev,pos-prev) << endl;
-		string s(str.substr(prev,pos-prev));
-		if( !s.empty() )
-		{
-			l.add( uni_atoi(s.c_str()) );
-			prev=pos+1;
-		}
-	}
-	while( pos!=string::npos );
-
-	return l;
-}
-// ------------------------------------------------------------------------------------------

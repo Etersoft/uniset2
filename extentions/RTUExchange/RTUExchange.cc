@@ -1,6 +1,6 @@
 // $Id: RTUExchange.cc,v 1.4 2009/01/23 23:56:54 vpashka Exp $
 // -----------------------------------------------------------------------------
-#include <math.h>
+#include <cmath>
 #include <sstream>
 #include "Exceptions.h"
 #include "Extentions.h"

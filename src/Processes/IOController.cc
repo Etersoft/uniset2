@@ -25,7 +25,7 @@
 // -------------------------------------------------------------------------- 
 //#include <stream.h>
 #include <sstream>
-#include <math.h>
+#include <cmath>
 #include "UniversalInterface.h"
 #include "IOController.h"
 #include "Debug.h"

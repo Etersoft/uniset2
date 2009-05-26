@@ -18,14 +18,12 @@ class SMonitor:
 
 		// -----
 	protected:
-		virtual void processingMessage( UniSetTypes::VoidMessage *msg );						
+		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
 		virtual void sysCommand( UniSetTypes::SystemMessage *sm );
-		virtual void sensorInfo( UniSetTypes::SensorMessage *si );		
+		virtual void sensorInfo( UniSetTypes::SensorMessage *si );
 		virtual void timerInfo( UniSetTypes::TimerMessage *tm );
 		virtual void sigterm( int signo );
 	    SMonitor();
-
-		UniSetTypes::IDList explode( const string str, char sep=',' );
 		
 	private:
 		UniSetTypes::IDList lst;

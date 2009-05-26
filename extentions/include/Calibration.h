@@ -1,7 +1,7 @@
 #ifndef Calibration_H_
 #define Calibration_H_
 // -----------------------------------------------------------------------------
-#include <math.h>
+#include <cmath>
 #include <string>
 #include <list>
 #include <ostream>
