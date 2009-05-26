@@ -926,11 +926,11 @@ bool RTUExchange::initItem( UniXML_iterator& it )
 
 	bool ret = false;
 
-	if( rstype == "mtr" )
+	if( rstype == "mtr" || rstype == "MTR" )
 		ret = initMTRitem(it,p);
-	else if( rstype == "rtu" )
+	else if( rstype == "rtu" || rstype == "RTU" )
 		ret = initRTUitem(it,p);
-	else if ( rstype == "rtu188" )
+	else if ( rstype == "rtu188" || rstype == "RTU188" )
 	{
 		ret = initRTU188item(it,p);
 		if( ret )
