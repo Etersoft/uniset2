@@ -5,6 +5,8 @@
 #define _MTR_H_
 // -----------------------------------------------------------------------------
 #include <string>
+#include <cstring>
+#include <cmath>
 #include "modbus/ModbusTypes.h"
 // -----------------------------------------------------------------------------
 class ModbusRTUMaster;

@@ -110,8 +110,8 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 	{
 		if( it->df.size() > 1 )
 			it->df.add(val);
-		else
-			val = it->df.filterRC(val);
+
+		val = it->df.filterRC(val);
 	}
 
 	if( it->cdiagram )	// задана специальная калибровочная диаграмма
@@ -140,7 +140,53 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 			shm->localSetUndefinedState(it->ait,false,it->si.id);
 
 		if( it->cal.precision > 0 )
-			it->value *= lround(pow10(it->cal.precision));
+			val *= lround(pow10(it->cal.precision));
+
+		if( force || it->value != val )
+		{
+			if( it->stype == UniversalIO::AnalogInput )
+				shm->localSaveValue( it->ait,it->si.id,val,shm->ID() );
+			else if( it->stype == UniversalIO::AnalogOutput )
+				shm->localSetValue( it->ait,it->si.id,val,shm->ID() );
+
+			it->value = val;
+		}
+	}
+}
+// -----------------------------------------------------------------------------
+void IOBase::processingFasAI( IOBase* it, float val, SMInterface* shm, bool force )
+{
+	// проверка на обрыв
+	if( it->check_channel_break(val) )
+	{
+		uniset_spin_lock lock(it->val_lock);
+		it->value = ChannelBreakValue;
+		shm->localSetUndefinedState(it->ait,true,it->si.id);
+		return;
+	}
+
+	// Читаем с использованием фильтра...
+	if( !it->nofilter )
+	{
+		if( it->df.size() > 1 )
+			it->df.add(val);
+
+		val = it->df.filterRC(val);
+	}
+
+	IOController_i::CalibrateInfo* cal( &(it->cal) );
+	if( cal->maxRaw!=0 && cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
+		val = UniSetTypes::fcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
+
+	// если предыдущее значение "обрыв",
+	// то сбрасываем признак 
+	{
+		uniset_spin_lock lock(it->val_lock);
+		if( it->value == ChannelBreakValue )
+			shm->localSetUndefinedState(it->ait,false,it->si.id);
+
+		if( it->cal.precision > 0 )
+			val *= lroundf(pow10(it->cal.precision));
 
 		if( force || it->value != val )
 		{
