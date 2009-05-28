@@ -61,6 +61,8 @@ activated(false)
 
 	if( !speed.empty() )
 		mb->setSpeed(speed);
+	
+	mb->setLog(dlog);
 
 	if( recv_timeout > 0 )
 		mb->setTimeout(recv_timeout);
@@ -431,9 +433,7 @@ void RTUExchange::poll()
 				switch(it->mbfunc)
 				{
 					case fnWriteOutputSingleRegister:
-					{
 						WriteSingleOutputRetMessage ret = mb->write06( it->mbaddr,it->mbreg,d);
-					}
 					break;
 
 					case fnWriteOutputRegisters:
@@ -801,8 +801,8 @@ void RTUExchange::askSensors( UniversalIO::UIOCommand cmd )
 		if( it->stype != UniversalIO::DigitalOutput && it->stype != UniversalIO::AnalogOutput )
 			continue;
 
-		if( it->safety == NoSafetyState )
-			continue;
+//		if( it->safety == NoSafetyState )
+//			continue;
 
 		try
 		{
@@ -826,12 +826,12 @@ void RTUExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 
 		if( it->si.id == sm->id )
 		{
-			if( it->stype == UniversalIO::DigitalOutput )
+			if( it->stype == UniversalIO::DigitalOutput ) // || it->stype == UniversalIO::DigitalInput )
 			{
 				uniset_spin_lock lock(it->val_lock);
 				it->value = sm->state ? 1 : 0;
 			}
-			else if( it->stype == UniversalIO::AnalogOutput )
+			else if( it->stype == UniversalIO::AnalogOutput ) // || it->stype == UniversalIO::AnalogInput )
 			{
 				uniset_spin_lock lock(it->val_lock);
 				it->value = sm->value;
@@ -867,8 +867,8 @@ void RTUExchange::sigterm( int signo )
 	RSMap::iterator it=rsmap.begin();
 	for( ; it!=rsmap.end(); ++it )
 	{
-		if( it->stype!=UniversalIO::DigitalOutput && it->stype!=UniversalIO::AnalogOutput )
-			continue;
+//		if( it->stype!=UniversalIO::DigitalOutput && it->stype!=UniversalIO::AnalogOutput )
+//			continue;
 		
 		if( it->safety == NoSafetyState )
 			continue;
