@@ -3,12 +3,10 @@
 // --------------------------------------------------------------------------
 #include <iostream>
 #include <iomanip>
-#include <cmath>
-#include "Configuration.h"
+#include "UniSetTypes.h"
 #include "MTR.h"
 // --------------------------------------------------------------------------
 using namespace std;
-using namespace UniSetTypes;
 using namespace MTR;
 // --------------------------------------------------------------------------
 static void print_help()
@@ -45,7 +43,7 @@ int main( int argc, char **argv )
 	else if( !strcmp(type,"T3") )
 	{
 		T3 t(v1,v2);
-		cout << "(T3): v1=" << t.raw.u.v1 << " v2=" << t.raw.u.v2 
+		cout << "(T3): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1]
 			<< " --> " << (long)t << endl;
 	}
 	else if( !strcmp(type,"T4") )
@@ -57,21 +55,21 @@ int main( int argc, char **argv )
 	else if( !strcmp(type,"T5") )
 	{
 		T5 t(v1,v2);
-		cout << "(T5): v1=" << t.raw.u1.v1 << " v2=" << t.raw.u1.v2 
+		cout << "(T5): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
 			<< " --> " << t.raw.u2.val << " * 10^" << (int)t.raw.u2.exp 
 			<< " ===> " << t.val << endl;
 	}
 	else if( !strcmp(type,"T6") )
 	{
 		T6 t(v1,v2);
-		cout << "(T6): v1=" << t.raw.u1.v1 << " v2=" << t.raw.u1.v2 
+		cout << "(T6): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
 			<< " --> " << t.raw.u2.val << " * 10^" << (int)t.raw.u2.exp 
 			<< " ===> " << t.val << endl;
 	}
 	else if( !strcmp(type,"T7") )
 	{
 		T7 t(v1,v2);
-		cout << "(T7): v1=" << t.raw.u1.v1 << " v2=" << t.raw.u1.v2 
+		cout << "(T7): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
 //			<< " --> " << T7.val << " * 10^-4" 
 			<< " ===> " << t.val 
 			<< " [" << ( t.raw.u2.ic == 0xFF ? "CAP" : "IND" ) << "|"
@@ -81,7 +79,7 @@ int main( int argc, char **argv )
 	else if( !strcmp(type,"T8") )
 	{
 		T8 t(v1,v2);
-		cout << "(T8): v1=" << t.raw.u1.v1 << " v2=" << t.raw.u1.v2 
+		cout << "(T8): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
 			<< " ===> " << setfill('0') << hex
 			<< setw(2) << t.hour() << ":" << setw(2) << t.min()
 			<< " " << setw(2) << t.day() << "/" << setw(2) << t.mon()
@@ -90,7 +88,7 @@ int main( int argc, char **argv )
 	else if( !strcmp(type,"T9") )
 	{
 		T9 t(v1,v2);
-		cout << "(T9): v1=" << t.raw.u1.v1 << " v2=" << t.raw.u1.v2
+		cout << "(T9): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1]
 			<< " ===> " << setfill('0') << hex
 			<< setw(2) << t.hour() << ":" << setw(2) << t.min()
 			<< ":" << setw(2) << t.sec() << "." << setw(2) << t.ssec()
@@ -99,7 +97,7 @@ int main( int argc, char **argv )
 	else if( !strcmp(type,"F1") )
 	{
 		F1 f(v1,v2);
-		cout << "(F1): v1=" << f.raw.u.v1 << " v2=" << f.raw.u.v2 
+		cout << "(F1): v1=" << f.raw.v[0] << " v2=" << f.raw.v[1]
 			<< " ===> " << f.raw.val << endl;
 	}
 	else 
