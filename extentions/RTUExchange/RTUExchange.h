@@ -19,6 +19,7 @@
 #include "MTR.h"
 #include "RTUStorage.h"
 #include "IOBase.h"
+#include "VTypes.h"
 // -----------------------------------------------------------------------------
 class RTUExchange:
 	public UniSetObject_LT
@@ -51,7 +52,6 @@ class RTUExchange:
 
 		friend std::ostream& operator<<( std::ostream& os, const DeviceType& dt );
 
-
 		struct RSProperty:
 			public IOBase
 		{
@@ -60,8 +60,11 @@ class RTUExchange:
 			ModbusRTU::ModbusData mbreg;			/*!< регистр */
 			ModbusRTU::SlaveFunctionCode mbfunc;	/*!< функция для чтения/записи */
 
+			
 			// only for RTU
-			short nbit;		/*!< bit number (for func=[0x01,0x02]) */
+			short nbit;				/*!< bit number (for func=[0x01,0x02]) */
+			VTypes::VType vType;	/*!< type of value */
+			short rnum;				/*!< count of registers */
 
 			// only for MTR
 			MTR::MTRType mtrType;	/*!< тип регистра (согласно спецификации на MTR) */
@@ -74,7 +77,9 @@ class RTUExchange:
 			RSProperty():	
 				devtype(dtUnknown),
 				mbaddr(0),mbreg(0),mbfunc(ModbusRTU::fnUnknown),
-				nbit(-1),rtu(0),rtuJack(RTUStorage::nUnknown),rtuChan(0)
+				nbit(-1),vType(VTypes::vtUnknown),
+				rnum(VTypes::wsize(VTypes::vtUnknown)),
+				rtu(0),rtuJack(RTUStorage::nUnknown),rtuChan(0)
 			{}
 
 			friend std::ostream& operator<<( std::ostream& os, RSProperty& p );

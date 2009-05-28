@@ -1,4 +1,4 @@
-bin_PROGRAMS 			= @PACKAGE@-rtuexchange mtrconv rtustate
+bin_PROGRAMS 			= @PACKAGE@-rtuexchange mtrconv rtustate vtconv
 
 lib_LTLIBRARIES 			= libUniSetRTU.la
 libUniSetRTU_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
@@ -18,6 +18,10 @@ libUniSetRTU_la_SOURCES 	= RTUStorage.cc RTUExchange.cc
 mtrconv_SOURCES	= mtrconv.cc
 mtrconv_LDADD	= $(top_builddir)/extentions/lib/libUniSetExtentions.la $(top_builddir)/lib/libUniSet.la
 mtrconv_CXXFLAGS = -I$(top_builddir)/extentions/include
+
+vtconv_SOURCES	= vtconv.cc
+vtconv_LDADD	= $(top_builddir)/extentions/lib/libUniSetExtentions.la $(top_builddir)/lib/libUniSet.la
+vtconv_CXXFLAGS = -I$(top_builddir)/extentions/include
 
 rtustate_LDADD 		= libUniSetRTU.la $(top_builddir)/extentions/lib/libUniSetExtentions.la $(top_builddir)/lib/libUniSet.la
 rtustate__CXXFLAGS	= -I$(top_builddir)/extentions/include

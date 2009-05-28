@@ -399,12 +399,17 @@ void RTUExchange::poll()
 				if( it->devtype == dtRTU )
 					val = pollRTU(it);
 				else if( it->devtype == dtMTR )
+				{
 					val = pollMTR(it);
+					IOBase::processingAsAI( ib, val, shm, force );
+				}
 				else if( it->devtype == dtRTU188 )
+				{
 					val = pollRTU188(it);
+					IOBase::processingAsAI( ib, val, shm, force );
+				}
 				else
 					continue;
-				IOBase::processingAsAI( ib, val, shm, force );
 			}
 			else if( it->stype == UniversalIO::DigitalInput )
 			{
@@ -433,7 +438,9 @@ void RTUExchange::poll()
 				switch(it->mbfunc)
 				{
 					case fnWriteOutputSingleRegister:
+					{
 						WriteSingleOutputRetMessage ret = mb->write06( it->mbaddr,it->mbreg,d);
+					}
 					break;
 
 					case fnWriteOutputRegisters:
@@ -495,6 +502,9 @@ long RTUExchange::pollRTU( RSMap::iterator& p )
 			<< " mbaddr=" << ModbusRTU::addr2str(p->mbaddr)
 			<< " mbreg=" << ModbusRTU::dat2str(p->mbreg)
 			<< " mbfunc=" << p->mbfunc
+			<< " rnum=" << p->rnum
+			<< " vtype=" << p->vType
+			<< " rnum=" << p->rnum
 			<< endl;
 	}
 	
@@ -502,14 +512,33 @@ long RTUExchange::pollRTU( RSMap::iterator& p )
 	{
 		case ModbusRTU::fnReadInputRegisters:
 		{
-			ModbusRTU::ReadInputRetMessage ret = mb->read04(p->mbaddr,p->mbreg,1);
-			return ret.data[0];
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(p->mbaddr,p->mbreg,p->rnum);
+			if( p->vType == VTypes::vtUnknown )
+			{
+				IOBase::processingAsAI( &(*p), ret.data[0], shm, force );
+				return ret.data[0];
+			}
+			if( p->vType == VTypes::vtF2 )
+			{
+				VTypes::F2 f(ret.data, sizeof(ret.data));
+				
+				cerr << "****** float v=" << (float)f << endl;
+				IOBase::processingFasAI( &(*p), f, shm, force );
+				return 0;
+			}
+
+			if( p->vType == VTypes::vtF4 )
+			{
+				VTypes::F4 f(ret.data, sizeof(ret.data));
+				IOBase::processingFasAI( &(*p), f, shm, force );
+				return 0;
+			}
 		}
 		break;
 
 		case ModbusRTU::fnReadOutputRegisters:
 		{
-			ModbusRTU::ReadOutputRetMessage ret = mb->read03(p->mbaddr, p->mbreg, 1);
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(p->mbaddr, p->mbreg, p->rnum);
 			return ret.data[0];
 		}
 		break;
@@ -1054,6 +1083,28 @@ bool RTUExchange::initRTUitem( UniXML_iterator& it, RSProperty& p )
 		p.nbit = UniSetTypes::uni_atoi(nb.c_str());
 	}
 	
+	string vt(it.getProp("rtuVType"));
+	if( vt.empty() )
+	{
+		p.rnum = VTypes::wsize(VTypes::vtUnknown);
+		p.vType = VTypes::vtUnknown;
+	}
+	else
+	{
+		VTypes::VType v(VTypes::str2type(vt));
+		if( v == VTypes::vtUnknown )
+		{
+			dlog[Debug::CRIT] << myname << "(readRTUItem): Unknown rtuVType=" << vt << " for " 
+					<< it.getProp("name") 
+					<< endl;
+
+			return false;
+		}
+
+		p.vType = v;
+		p.rnum = VTypes::wsize(v);
+	}
+
 	return true;
 }
 // ------------------------------------------------------------------------------------------
@@ -1208,7 +1259,7 @@ std::ostream& operator<<( std::ostream& os, const RTUExchange::DeviceType& dt )
 		break;
 		
 		default:
-			os << "Unknown device type";
+			os << "Unknown device type (" << (int)dt << ")";
 		break;
 	}
 	
