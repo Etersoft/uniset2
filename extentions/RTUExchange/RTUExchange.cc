@@ -32,7 +32,6 @@ activated(false)
 	if( cnode == NULL )
 		throw UniSetTypes::SystemError("(RTUExchange): Not find conf-node for " + myname );
 
-
 	shm = new SMInterface(shmId,&ui,objId,ic);
 
 	UniXML_iterator it(cnode);
@@ -54,14 +53,6 @@ activated(false)
 		speed = "38400";
 
 	int recv_timeout = atoi(conf->getArgParam("--rs-recv-timeout",it.getProp("recv_timeout")).c_str());
-
-	sidNotRespond = conf->getSensorID(conf->getArgParam("--rs-notRespondSensor",it.getProp("notRespondSensor")));
-	
-
-//	string saddr = conf->getArgParam("--rs-my-addr",it.getProp("addr"));
-//	ModbusRTU::ModbusAddr myaddr = ModbusRTU::str2mbAddr(saddr);
-//	if( saddr.empty() )
-//		myaddr = 0x01;
 
 	mbregFromID = atoi(conf->getArgParam("--mbs-reg-from-id",it.getProp("reg_from_id")).c_str());
 	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
@@ -146,9 +137,36 @@ activated(false)
 	if( msec <=0 )
 		msec = 3000;
 
-	ptTimeout.setTiming(msec);
+	xmlNode* respNode = conf->findNode(cnode,"RespondList");
+	if( respNode )
+	{
+		UniXML_iterator it1(respNode);
+		if( it1.goChildren() )
+		{
+			for(;it1.getCurrent(); it1.goNext() )
+			{
+				RespondInfo ri;
+				ModbusRTU::ModbusAddr a = ModbusRTU::str2mbAddr(it1.getProp("addr"));
+				ri.id = conf->getSensorID(it1.getProp("respondSensor"));
+				if( ri.id == DefaultObjectId )
+				{
+					dlog[Debug::CRIT] << myname << ": not found ID for noRespondSensor=" << it1.getProp("respondSensor") << endl;
+					continue;
+				}
+				
+				int tout = atoi(it1.getProp("timeout").c_str());
+				if( tout > 0 )
+					ri.ptTimeout.setTiming(tout);
+				else
+					ri.ptTimeout.setTiming(UniSetTimer::WaitUpTime);
+				
+				ri.invert = atoi(it1.getProp("invert").c_str());
+				
+				respMap[a] = ri;
+			}
+		}
+	}
 
-	dlog[Debug::INFO] << myname << "(init): rs-timeout=" << msec << " msec" << endl;
 }
 // -----------------------------------------------------------------------------
 RTUExchange::~RTUExchange()
@@ -308,17 +326,31 @@ void RTUExchange::step()
 				<< "(step): (hb) " << ex << std::endl;
 		}
 	}
+	
+	for( RespondMap::iterator it=respMap.begin(); it!=respMap.end(); ++it )
+	{
+		try
+		{
+			bool set = it->second.invert ? !it->second.state : it->second.state;
+			shm->localSaveState(it->second.dit,it->second.id,set,getId());
+		}
+		catch(Exception& ex)
+		{
+			dlog[Debug::CRIT] << myname
+				<< "(step): (respond) " << ex << std::endl;
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
 void RTUExchange::poll()
 {
-	bool respond_ok = true;
 	for( RTUMap::iterator it=rtulist.begin(); it!=rtulist.end(); ++it )
 	{
 		if( !activated )
 			return;
 
+		bool respOK = true;
 		try
 		{
 			cout << "poll RTU=(" << (int)it->second->getAddress() 
@@ -334,8 +366,10 @@ void RTUExchange::poll()
 		catch( ModbusRTU::mbException& ex )
 		{ 
 			cout << " [ FAILED ] (" << ex << ")" << endl; 
-			respond_ok = false;
+			respOK = false;
 		}
+
+		setRespond(it->second->getAddress(),respOK);
 	}
 
 	for( RSMap::iterator it=rsmap.begin(); it!=rsmap.end(); ++it )
@@ -415,11 +449,15 @@ void RTUExchange::poll()
 				}
 			}
 			
+			if( it->devtype != dtRTU188 )
+				setRespond(it->mbaddr,true);
 			continue;
 		}
 		catch(ModbusRTU::mbException& ex )
 		{
 			dlog[Debug::LEVEL3] << myname << "(poll): " << ex << endl;
+			if( it->devtype != dtRTU188 )
+				setRespond(it->mbaddr,false);
 		}
 		catch(IOController_i::NameNotFound &ex)
 		{
@@ -446,21 +484,6 @@ void RTUExchange::poll()
 		{
 			dlog[Debug::LEVEL3] << myname << "(poll): catch ..." << endl;
 		}
-		
-		respond_ok = false;
-	}
-
-	if( sidNotRespond!=DefaultObjectId )
-	{
-		if( trTimeout.hi( !respond_ok ) )
-			ptTimeout.reset();
-		else if( respond_ok )
-			ptTimeout.reset();
-
-		if( !respond_ok && ptTimeout.checkTime() )
-			shm->localSaveState(ditNotRespond,sidNotRespond,true,getId());
-		else
-			shm->localSaveState(ditNotRespond,sidNotRespond,false,getId());
 	}
 }
 // -----------------------------------------------------------------------------
@@ -1121,7 +1144,12 @@ void RTUExchange::initIterators()
 	}
 
 	shm->initAIterator(aitHeartBeat);
-	shm->initDIterator(ditNotRespond);
+
+	for( RespondMap::iterator it=respMap.begin(); it!=respMap.end(); ++it )
+	{
+		shm->initDIterator(it->second.dit);
+		it->second.ptTimeout.reset();
+	}
 }
 // -----------------------------------------------------------------------------
 void RTUExchange::help_print( int argc, char* argv[] )
@@ -1229,5 +1257,28 @@ std::ostream& operator<<( std::ostream& os, RTUExchange::RSProperty& p )
 	}		
 	
 	return os;
+}
+// -----------------------------------------------------------------------------
+void RTUExchange::setRespond( ModbusRTU::ModbusAddr addr, bool respond )
+{
+	RespondMap::iterator it = respMap.find(addr);
+	if( it != respMap.end() )
+	{
+		if( it->second.trTimeout.change(respond) )
+		{	
+			if( dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << myname << "(setRespond): (" 
+					<< (int)addr << ")" << ModbusRTU::addr2str(addr)
+					<< " state=" << respond << endl;
+
+			if( respond )
+				it->second.state = true;
+
+			it->second.ptTimeout.reset();
+		}
+
+		if( it->second.state && !respond && it->second.ptTimeout.checkTime() )
+			it->second.state = false;
+	}
 }
 // -----------------------------------------------------------------------------

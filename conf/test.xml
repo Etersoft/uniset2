@@ -68,7 +68,13 @@
 
 	</MBSlave1>
 
-	<RTUExchange name="RTUExchange"/>
+	<RTUExchange name="RTUExchange">
+		<RespondList>
+			<item addr="0x01" respondSensor="RespondRTU_S" timeout="5000"/>
+			<item addr="0x02" respondSensor="NoRespondRTU2_S" timeout="5000" invert="1"/>
+		</RespondList>
+	</RTUExchange>
+	
 	<UDPExchange name="UDPExchange"/>
 	<UDPExchange2 name="UDPExchange2"/>
 
@@ -92,9 +98,9 @@
 	<!-- ************************ Датчики ********************** -->
 	<sensors name="Sensors">
 		<item name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium" default="1" />
-		<item name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x31" mbfunc="0x04" mbreg="0x02" rs="1" />
-		<item name="Input3_S" textname="Команда 3" node="" iotype="DI" priority="Medium" mbtcp="1" mbaddr="0x31" mbfunc="0x04" mbreg="0x02"/>
-		<item name="Input4_S" textname="Команда 4" node="" iotype="DI" priority="Medium" udp="1"/>
+		<item name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" rs="1" />
+		<item name="Input3_S" textname="Команда 3" node="" iotype="DI" priority="Medium" mbtcp="1" mbaddr="0x02" mbfunc="0x04" mbreg="0x02"/>
+		<item name="Input4_S" textname="Команда 4" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" rs="1" />
 		<item name="Input5_S" textname="Команда 5" node="" iotype="DI" priority="Medium" udp="2"/>
 		<item name="Input6_S" textname="Команда 6" node="" iotype="DI" priority="Medium" udp="2">
 			<depends>
@@ -112,6 +118,10 @@
 		</item>
 		<item name="Threshold1_S" textname="Порог" node="" iotype="DI" priority="Medium"/>
 		<item name="TestMode_S" textname="test" node="" iotype="DI" priority="Medium"/>
+		
+		<item name="RespondRTU_S" textname="respond rtu" node="" iotype="DI"/>
+		<item name="NoRespondRTU2_S" textname="no respond rtu" node="" iotype="DI"/>
+		
 	</sensors>
 
 	<thresholds name="thresholds">

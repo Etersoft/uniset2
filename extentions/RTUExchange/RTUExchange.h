@@ -100,6 +100,7 @@ class RTUExchange:
 		long pollRTU188( RSMap::iterator& p );
 		long pollMTR( RSMap::iterator& p );
 		long pollRTU( RSMap::iterator& p );
+		void setRespond(ModbusRTU::ModbusAddr addr, bool respond );
 
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
 		void sysCommand( UniSetTypes::SystemMessage *msg );
@@ -153,11 +154,25 @@ class RTUExchange:
 		UniSetTypes::ObjectId test_id;
 
 		UniSetTypes::uniset_mutex pollMutex;
-		Trigger trTimeout;
-		PassiveTimer ptTimeout;
-		UniSetTypes::ObjectId sidNotRespond;
-		IOController::DIOStateList::iterator ditNotRespond;
 
+		struct RespondInfo
+		{
+			RespondInfo():
+				id(UniSetTypes::DefaultObjectId),
+				state(false),
+				invert(false)
+				{}
+
+			UniSetTypes::ObjectId id;
+			IOController::DIOStateList::iterator dit;
+			PassiveTimer ptTimeout;
+			Trigger trTimeout;
+			bool state;
+			bool invert;
+		};
+		
+		typedef std::map<ModbusRTU::ModbusAddr,RespondInfo> RespondMap;
+		RespondMap respMap;
 		
 		PassiveTimer aiTimer;
 		int ai_polltime;
