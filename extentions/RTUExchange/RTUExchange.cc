@@ -663,7 +663,6 @@ void RTUExchange::processingMessage(UniSetTypes::VoidMessage *msg)
 				UniSetTypes::SystemMessage sm( msg );
 				sysCommand( &sm );
 			}
-
 			break;
 
 			case Message::Timer:
@@ -1083,7 +1082,7 @@ bool RTUExchange::initRTUitem( UniXML_iterator& it, RSProperty& p )
 		p.nbit = UniSetTypes::uni_atoi(nb.c_str());
 	}
 	
-	string vt(it.getProp("rtuVType"));
+	string vt(it.getProp("vtype"));
 	if( vt.empty() )
 	{
 		p.rnum = VTypes::wsize(VTypes::vtUnknown);

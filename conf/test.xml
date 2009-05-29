@@ -115,7 +115,7 @@
 				mbtype="rtu" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" rs="2" default="10" />
 		/>
 		<item name="AI_AS" textname="Analog input" node="" iotype="AI" default="378" priority="Medium"
-				mbtype="rtu" mbaddr="0x01" mbfunc="0x04" mbreg="0x01" rs="1" rtuVType="F2" precision="45">
+				mbtype="rtu" mbaddr="0x01" mbfunc="0x04" mbreg="0x01" rs="1" vtype="F2" precision="45">
 			<consumers>
 				<consumer name="TestProc" type="objects" cfilter="test1"/>
 				<consumer name="PLCProcessor" type="objects"/>
