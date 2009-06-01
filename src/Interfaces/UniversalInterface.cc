@@ -2314,17 +2314,21 @@ bool UniversalInterface::isExist( UniSetTypes::ObjectId id )
 {
 	try
 	{
-/*	
-		try
+		if( uconf->isLocalIOR() )
 		{
-			oref = rcache.resolve(id, uconf->getLocalNode());
-		}
-		catch(NameNotFound){}
+			if( CORBA::is_nil(orb) )
+				orb = uconf->getORB();
 
-		if(!oref)
-			oref = resolve(id, uconf->getLocalNode());
-		return rep.isExist( oref );
-*/		
+			string sior(uconf->iorfile.getIOR(id,uconf->getLocalNode()));
+			if( !sior.empty() )
+			{
+				CORBA::Object_var oref = orb->string_to_object(sior.c_str());
+				return rep.isExist( oref );
+			}
+			
+			return false;
+		}
+	
 		string nm = oind->getNameById(id);
 		return rep.isExist(nm);
 	}
@@ -2332,7 +2336,7 @@ bool UniversalInterface::isExist( UniSetTypes::ObjectId id )
 	{
 //		unideb[Debug::WARN] << "UI(isExist): " << ex << endl;
 	}
-	catch(...){}	
+	catch(...){}
 	return false;
 }
 // ------------------------------------------------------------------------------------------------------------
@@ -2350,7 +2354,7 @@ bool UniversalInterface::isExist( UniSetTypes::ObjectId id, UniSetTypes::ObjectI
 		}
 		catch(NameNotFound){}
 
-		if( CORBA::is_nil(oref) )		
+		if( CORBA::is_nil(oref) )
 			oref = resolve(id, node);
 
 		return rep.isExist( oref );

@@ -130,8 +130,6 @@ namespace UniSetTypes
 		std::string getArgParam(const std::string name, const std::string defval="");
 		xmlNode* initDebug( DebugStream& deb, const std::string& nodename );
 
-		static bool file_exist( const std::string filename );		
-
 		UniSetTypes::ListOfNode::const_iterator listNodesBegin()
 		{
 			return lnodes.begin();

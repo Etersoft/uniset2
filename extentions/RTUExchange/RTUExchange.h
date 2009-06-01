@@ -50,49 +50,116 @@ class RTUExchange:
 			dtMTR			/*!< MTR (DEIF) */
 		};
 
+		static DeviceType getDeviceType( const std::string dtype );
 		friend std::ostream& operator<<( std::ostream& os, const DeviceType& dt );
+// -------------------------------------------------------------------------------
+		struct RTUDevice;
+		struct RegInfo;
 
 		struct RSProperty:
 			public IOBase
 		{
-			DeviceType devtype;						/*!< тип устройства */
-			ModbusRTU::ModbusAddr mbaddr;			/*!< адрес устройства */
-			ModbusRTU::ModbusData mbreg;			/*!< регистр */
-			ModbusRTU::SlaveFunctionCode mbfunc;	/*!< функция для чтения/записи */
-
-			
 			// only for RTU
 			short nbit;				/*!< bit number (for func=[0x01,0x02]) */
 			VTypes::VType vType;	/*!< type of value */
 			short rnum;				/*!< count of registers */
+			
+			RSProperty():
+				nbit(-1),vType(VTypes::vtUnknown),
+				rnum(VTypes::wsize(VTypes::vtUnknown)),
+				reg(0)
+			{}
+
+			RegInfo* reg;
+		};
+
+		friend std::ostream& operator<<( std::ostream& os, const RSProperty& p );
+
+		typedef std::list<RSProperty> PList;
+		
+		struct RegInfo
+		{
+			RegInfo():
+				mbval(0),mbreg(0),mbfunc(ModbusRTU::fnUnknown),
+				mtrType(MTR::mtUnknown),
+				rtuJack(RTUStorage::nUnknown),rtuChan(0),
+				dev(0),
+				q_num(0),q_count(1)
+			{}
+
+			ModbusRTU::ModbusData mbval;
+			ModbusRTU::ModbusData mbreg;			/*!< регистр */
+			ModbusRTU::SlaveFunctionCode mbfunc;	/*!< функция для чтения/записи */
+			PList slst;
 
 			// only for MTR
 			MTR::MTRType mtrType;	/*!< тип регистра (согласно спецификации на MTR) */
 
 			// only for RTU188
-			RTUStorage* rtu;
 			RTUStorage::RTUJack rtuJack;
 			int rtuChan;
+			
+			RTUDevice* dev;
 
-			RSProperty():	
-				devtype(dtUnknown),
-				mbaddr(0),mbreg(0),mbfunc(ModbusRTU::fnUnknown),
-				nbit(-1),vType(VTypes::vtUnknown),
-				rnum(VTypes::wsize(VTypes::vtUnknown)),
-				rtu(0),rtuJack(RTUStorage::nUnknown),rtuChan(0)
-			{}
-
-			friend std::ostream& operator<<( std::ostream& os, RSProperty& p );
+			// optimization
+			int q_num;		/*! number in query */
+			int q_count;	/*! count registers for query */
 		};
 
-	protected:	
+		friend std::ostream& operator<<( std::ostream& os, RegInfo& r );
 
-		typedef std::vector<RSProperty> RSMap;
-		RSMap rsmap;			/*!< список входов/выходов */
-		unsigned int maxItem;	/*!< количество элементов (используется на момент инициализации) */
+		typedef std::map<ModbusRTU::ModbusData,RegInfo*> RegMap;
+
+		struct RTUDevice
+		{
+			RTUDevice():
+			respnond(false),
+			mbaddr(0),
+			dtype(dtUnknown),
+			resp_id(UniSetTypes::DefaultObjectId),
+			resp_state(false),
+			resp_invert(false),
+			resp_real(false),
+			rtu(0)
+			{}
+			
+			bool respnond;
+			ModbusRTU::ModbusAddr mbaddr;	/*!< адрес устройства */
+			RegMap regmap;
+
+			DeviceType dtype;	/*!< тип устройства */
+
+			UniSetTypes::ObjectId resp_id;
+			IOController::DIOStateList::iterator resp_dit;
+			PassiveTimer resp_ptTimeout;
+			Trigger resp_trTimeout;
+			bool resp_state;
+			bool resp_invert;
+			bool resp_real;
+
+			RTUStorage* rtu;
+
+			// return TRUE if state changed
+			bool checkRespond();
+
+		};
+
+		friend std::ostream& operator<<( std::ostream& os, RTUDevice& d );
+		
+		typedef std::map<ModbusRTU::ModbusAddr,RTUDevice*> RTUDeviceMap;
+
+		friend std::ostream& operator<<( std::ostream& os, RTUDeviceMap& d );
+		void printMap(RTUDeviceMap& d);
+// ----------------------------------
+	protected:
+
+		RTUDeviceMap rmap;
 
 		ModbusRTUMaster* mb;
 		UniSetTypes::uniset_mutex mbMutex;
+		std::string devname;
+		std::string speed;
+		int recv_timeout;
 
 		xmlNode* cnode;
 		std::string s_field;
@@ -102,10 +169,12 @@ class RTUExchange:
 
 		void step();
 		void poll();
-		long pollRTU188( RSMap::iterator& p );
-		long pollMTR( RSMap::iterator& p );
-		long pollRTU( RSMap::iterator& p );
-		void setRespond(ModbusRTU::ModbusAddr addr, bool respond );
+		void pollRTU( RTUDevice* dev, RegMap::iterator& it );
+		
+		void updateSM();
+		void updateRTU(RegMap::iterator& it);
+		void updateMTR(RegMap::iterator& it);
+		void updateRTU188(RegMap::iterator& it);
 
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
 		void sysCommand( UniSetTypes::SystemMessage *msg );
@@ -119,29 +188,29 @@ class RTUExchange:
 		
 		// действия при завершении работы
 		virtual void sigterm( int signo );
-
-
+		
+		void initMB();
 		void initIterators();
 		bool initItem( UniXML_iterator& it );
 		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
-		bool initCommParam( UniXML_iterator& it, RSProperty& p );
-		bool initMTRitem( UniXML_iterator& it, RSProperty& p );
-		bool initRTU188item( UniXML_iterator& it, RSProperty& p );
-		bool initRTUitem( UniXML_iterator& it, RSProperty& p );
+
+
+		RTUDevice* addDev( RTUDeviceMap& dmap, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
+		RegInfo* addReg( RegMap& rmap, ModbusRTU::ModbusData r, UniXML_iterator& it, 
+							RTUDevice* dev, RegInfo* rcopy=0 );
+		RSProperty* addProp(PList& plist, RSProperty& p );
+
+		bool initMTRitem( UniXML_iterator& it, RegInfo* p );
+		bool initRTU188item( UniXML_iterator& it, RegInfo* p );
+		bool initRSProperty( RSProperty& p, UniXML_iterator& it );
+		bool initRegInfo( RegInfo* r, UniXML_iterator& it, RTUDevice* dev  );
+		bool initRTUDevice( RTUDevice* d, UniXML_iterator& it );
+		bool initRespondInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
+		
+		void rtuQueryOptimization( RTUDeviceMap& m );
 
 		void readConfiguration();
 		bool check_item( UniXML_iterator& it );
-
-/*
-		struct RTUInfo
-		{
-			RTUInfo():rtu(0),sid_conn(UniSetTypes::DefaultObjectId){}
-			RTUStorage* rtu;
-			UniSetTypes::ObjectId sid_conn;
-		};
-*/
-		typedef std::map<int,RTUStorage*> RTUMap;
-		RTUMap rtulist;
 
 	private:
 		RTUExchange();
@@ -152,6 +221,7 @@ class RTUExchange:
 		bool force_out;	/*!< флаг означающий, принудительного чтения выходов */
 		bool mbregFromID;
 		int polltime;	/*!< переодичность обновления данных, [мсек] */
+
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;
 		int maxHeartBeat;
@@ -159,28 +229,6 @@ class RTUExchange:
 		UniSetTypes::ObjectId test_id;
 
 		UniSetTypes::uniset_mutex pollMutex;
-
-		struct RespondInfo
-		{
-			RespondInfo():
-				id(UniSetTypes::DefaultObjectId),
-				state(false),
-				invert(false)
-				{}
-
-			UniSetTypes::ObjectId id;
-			IOController::DIOStateList::iterator dit;
-			PassiveTimer ptTimeout;
-			Trigger trTimeout;
-			bool state;
-			bool invert;
-		};
-		
-		typedef std::map<ModbusRTU::ModbusAddr,RespondInfo> RespondMap;
-		RespondMap respMap;
-		
-		PassiveTimer aiTimer;
-		int ai_polltime;
 
 		bool activated;
 		int activateTimeout;

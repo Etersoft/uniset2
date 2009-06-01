@@ -24,6 +24,7 @@
 */
 // -----------------------------------------------------------------------------
 #include <cmath>
+#include <fstream>
 #include "UniSetTypes.h"
 #include "Configuration.h"
 // -----------------------------------------------------------------------------
@@ -163,6 +164,23 @@ using namespace UniSetTypes;
 		return seq;
 	}
 	// -------------------------------------------------------------------------
+	bool UniSetTypes::file_exist( const std::string filename )
+	{
+		 std::ifstream file;
+		#ifdef HAVE_IOS_NOCREATE
+		 file.open( filename.c_str(), std::ios::in | std::ios::nocreate );
+		#else	
+		 file.open( filename.c_str(), std::ios::in );
+		#endif	 
+		 bool result = false;
+		 if( file )
+	 		result = true;
+
+		 file.close();
+		 return result;
+	}
+	// -------------------------------------------------------------------------
+	
 	UniSetTypes::IDList UniSetTypes::explode( const string str, char sep )
 	{
 		UniSetTypes::IDList l;
@@ -182,5 +200,36 @@ using namespace UniSetTypes;
 		while( pos!=string::npos );
 	
 		return l;
+	}
+	// ------------------------------------------------------------------------------------------
+	UniversalIO::IOTypes UniSetTypes::getIOType( const std::string stype )
+	{
+		if( stype == "AI" )
+			return UniversalIO::AnalogInput;
+		if ( stype == "AO" )
+			return UniversalIO::AnalogOutput;
+		if ( stype == "DO" )
+			return UniversalIO::DigitalOutput;
+		if ( stype == "DI" )
+			return UniversalIO::DigitalInput;
+
+		return 	UniversalIO::UnknownIOType;
+	}
+	// ------------------------------------------------------------------------------------------
+	std::ostream& UniSetTypes::operator<<( std::ostream& os, const UniversalIO::IOTypes t )
+	{
+		if( t == UniversalIO::AnalogInput )
+			return os << "AI";
+
+		if( t == UniversalIO::DigitalInput )
+			return os << "DI";
+
+		if( t == UniversalIO::AnalogOutput )
+			return os << "AO";
+
+		if( t == UniversalIO::DigitalOutput )
+			return os << "DO";
+
+		return os << "UnknownIOType";
 	}
 	// ------------------------------------------------------------------------------------------

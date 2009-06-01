@@ -32,6 +32,7 @@
 #include <string>
 #include <list>
 #include <limits>
+#include <ostream>
 
 #include <omniORB4/CORBA.h>
 #include "UniSetTypes_i.hh"
@@ -48,6 +49,9 @@ namespace UniSetTypes
 	typedef ObjectId SysId;
 	typedef	CORBA::Object_ptr ObjectPtr;	/*!< Ссылка на объект регистрируемый в ObjectRepository */
 	typedef	CORBA::Object_var ObjectVar;	/*!< Ссылка на объект регистрируемый в ObjectRepository */
+
+	UniversalIO::IOTypes getIOType( const std::string s );
+	std::ostream& operator<<( std::ostream& os, const UniversalIO::IOTypes t );
 
 	/*! Команды для управления лампочками */
 	enum LampCommand
@@ -213,6 +217,8 @@ namespace UniSetTypes
 		std::sscanf(str,"%x",&n);
 		return n;
 	}
+
+	bool file_exist( const std::string filename );
 	
 	IDList explode( const std::string str, char sep=',' );
 }
