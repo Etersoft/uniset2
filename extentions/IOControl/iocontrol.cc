@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 		}
 
 		
-		IOControl* ic = IOControl::init_iocontrol(argc,argv,shmID);
+		IOControl* ic = IOControl::init_iocontrol(argc,argv,shmID,0);
 		if( !ic )
 		{
 			dlog[Debug::CRIT] << "(iocontrol): init не прошёл..." << endl;
