@@ -278,7 +278,7 @@ void IOControl::execute()
 	try
 	{
 		// init first time....
-		if( !force )
+		if( !force && !noCards )
 		{
 			uniset_mutex_lock l(iopollMutex,5000);
 			force = true;
@@ -743,7 +743,7 @@ void IOControl::initIOCard()
 	if( noCards )
 		return;
 
-	ComediInterface* card(0);
+	ComediInterface* card = 0;
 
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
 	{
