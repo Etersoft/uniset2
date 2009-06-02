@@ -1241,22 +1241,8 @@ bool RTUExchange::initRTU188item( UniXML_iterator& it, RegInfo* p )
 // -----------------------------------------------------------------------------
 void RTUExchange::initIterators()
 {
-/*
-	RSMap::iterator it=rsmap.begin();
-	for( ; it!=rsmap.end(); it++ )
-	{
-		shm->initDIterator(it->dit);
-		shm->initAIterator(it->ait);
-	}
-*/
 	shm->initAIterator(aitHeartBeat);
-/*
-	for( RespondMap::iterator it=respMap.begin(); it!=respMap.end(); ++it )
-	{
-		shm->initDIterator(it->second.dit);
-		it->second.ptTimeout.reset();
-	}
-*/
+
 	for( RTUExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
