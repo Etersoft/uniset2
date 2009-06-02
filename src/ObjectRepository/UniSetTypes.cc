@@ -23,12 +23,13 @@
  *  \version $Id: UniSetTypes.cc,v 1.4 2009/01/16 23:16:42 vpashka Exp $
 */
 // -----------------------------------------------------------------------------
-#include <math.h>
-#include "Configuration.h"
+#include <cmath>
 #include "UniSetTypes.h"
+#include "Configuration.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
+
 // -----------------------------------------------------------------------------
 	float UniSetTypes::fcalibrate( float raw, float rawMin, float rawMax, 
 				float calMin, float calMax, bool limit )
@@ -162,3 +163,24 @@ using namespace UniSetTypes;
 		return seq;
 	}
 	// -------------------------------------------------------------------------
+	UniSetTypes::IDList UniSetTypes::explode( const string str, char sep )
+	{
+		UniSetTypes::IDList l;
+
+		string::size_type prev = 0;
+		string::size_type pos = 0;
+		do
+		{
+			pos = str.find(sep,prev);
+			string s(str.substr(prev,pos-prev));
+			if( !s.empty() )
+			{
+				l.add( uni_atoi(s.c_str()) );
+				prev=pos+1;
+			}
+		}
+		while( pos!=string::npos );
+	
+		return l;
+	}
+	// ------------------------------------------------------------------------------------------

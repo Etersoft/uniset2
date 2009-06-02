@@ -28,13 +28,14 @@
 #define UniSetTypes_H_
 // -------------------------------------------------------------------------- 
 #include <cstdlib>
+#include <cstdio>
 #include <string>
 #include <list>
 #include <limits>
+
 #include <omniORB4/CORBA.h>
 #include "UniSetTypes_i.hh"
 #include "Mutex.h"
-
 // -----------------------------------------------------------------------------------------
 /*! Задержка в миллисекундах */
 inline void msleep( unsigned int m ) { usleep(m*1000); }
@@ -208,9 +209,12 @@ namespace UniSetTypes
 			return std::atoi(str);
 
 		unsigned int n;
-		sscanf(str,"%x",&n);
+		
+		std::sscanf(str,"%x",&n);
 		return n;
 	}
+	
+	IDList explode( const std::string str, char sep=',' );
 }
 
 // -----------------------------------------------------------------------------------------

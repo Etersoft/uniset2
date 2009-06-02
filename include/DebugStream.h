@@ -14,11 +14,12 @@
 #ifndef DEBUGSTREAM_H
 #define DEBUGSTREAM_H
 
-#ifdef __GNUG__
-#pragma interface
-#endif
+//#ifdef __GNUG__
+//#pragma interface
+//#endif
 
 #include <iostream>
+#include <string>
 
 #ifdef TEST_DEBUGSTREAM
 #include <string>
@@ -30,7 +31,7 @@ struct Debug {
 		CRIT       = (1 << 2)   // 4
 	};
 	static const type ANY = type(INFO | WARN | CRIT);
-	static Debug::type value(string const & val) {
+	static Debug::type value(std::string const & val) {
 		if (val == "NONE") return Debug::NONE;
 		if (val == "INFO") return Debug::INFO;
 		if (val == "WARN") return Debug::WARN;
@@ -113,7 +114,7 @@ public:
 	/// Sets the debugstreams' logfile to f.
 	void logFile(char const * f);
 	
-	inline string getLogFile(){ return fname; }
+	inline std::string getLogFile(){ return fname; }
 	
 	/// Returns true if t is part of the current debug level.
 	bool debugging(Debug::type t = Debug::ANY) const
@@ -180,7 +181,7 @@ private:
 	///
 	debugstream_internal * internal;
 	bool show_datetime;
-	string fname;
+	std::string fname;
 	
 };
 

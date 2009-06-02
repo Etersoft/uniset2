@@ -1,7 +1,7 @@
 // --------------------------------------------------------------------------
 //!  \version $Id: MTR.cc,v 1.1 2008/12/14 21:57:50 vpashka Exp $
 // --------------------------------------------------------------------------
-#include <math.h>
+#include <cmath>
 #include "modbus/ModbusRTUMaster.h"
 #include "MTR.h"
 // --------------------------------------------------------------------------
@@ -177,7 +177,7 @@ bool setDataBits( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, mtrDataBits d
 	return false;
 }
 // -----------------------------------------------------------------------------
-std::string getModeNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr )
+std::string getModelNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr )
 {
 	try
 	{

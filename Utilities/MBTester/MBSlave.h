@@ -20,6 +20,11 @@ class MBSlave
 			verbose = state;
 		}
 
+		inline void setReply( long val )
+		{
+			replyVal = val;
+		}
+
 		void execute();	/*!< основной цикл работы */
 
 
@@ -96,7 +101,7 @@ class MBSlave
 		typedef std::map<int,std::string> FileList;
 		FileList flist;
 #endif 
-		
+		long replyVal;
 	private:
 		
 };

@@ -16,6 +16,7 @@ static struct option longopts[] = {
 	{ "myaddr", required_argument, 0, 'a' },
 	{ "speed", required_argument, 0, 's' },
 	{ "use485F", no_argument, 0, 'y' },
+	{ "const-reply", required_argument, 0, 'c' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -29,6 +30,7 @@ static void print_help()
 	printf("[-s|--speed] speed                - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
 	printf("[-y|--use485F]                    - use RS485 Fastwel.\n");
 	printf("[-v|--verbose]                    - Print all messages to stdout\n");
+	printf("[-c|--const-reply] val            - Reply val for all queries\n");	
 }
 // --------------------------------------------------------------------------
 int main( int argc, char **argv )
@@ -42,10 +44,11 @@ int main( int argc, char **argv )
 	int tout = 2000;
 	DebugStream dlog;
 	int use485 = 0;
+	int replyVal=0;
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:d:s:y",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "hva:d:s:yc:",longopts,&optindex)) != -1 ) 
 		{
 			switch (opt) 
 			{
@@ -77,6 +80,10 @@ int main( int argc, char **argv )
 					use485 = 1;
 				break;
 
+				case 'c':
+					replyVal = atoi(optarg);
+				break;
+
 				case '?':
 				default:
 					printf("? argumnet\n");
@@ -97,6 +104,7 @@ int main( int argc, char **argv )
 		MBSlave mbs(myaddr,dev,speed,use485);
 		mbs.setLog(dlog);
 		mbs.setVerbose(verb);
+		mbs.setReply(replyVal);
 		mbs.execute();
 	}
 	catch( ModbusRTU::mbException& ex )

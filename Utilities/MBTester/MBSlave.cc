@@ -16,7 +16,8 @@ MBSlave::MBSlave( ModbusRTU::ModbusAddr addr, const std::string dev, const std::
 	addr(addr),
 //	prev(ModbusRTU::erNoError),
 //	askCount(0),
-	verbose(false)
+	verbose(false),
+	replyVal(0)
 {
 	cout << "$Id: MBSlave.cc,v 1.7 2009/02/24 20:27:24 vpashka Exp $" << endl;
 
@@ -109,7 +110,10 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 
 	if( query.count <= 1 )
 	{
-		reply.addData(d);
+		if( replyVal )
+			reply.addData(replyVal);
+		else
+			reply.addData(d);
 		return ModbusRTU::erNoError;
 	}
 
@@ -117,8 +121,12 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 	int num=0; // добавленное количество данных
 	ModbusData reg = query.start;
 	for( ; num<query.count; num++, reg++ )
-		reply.addData(d);
-
+	{
+		if( replyVal )
+			reply.addData(replyVal);
+		else
+			reply.addData(d);
+	}
 	// Если мы в начале проверили, что запрос входит в разрешёный диапазон
 	// то теоретически этой ситуации возникнуть не может...
 	if( reply.bcnt < query.count )
@@ -144,7 +152,10 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 
 	if( query.count <= 1 )
 	{
-		reply.addData(d);
+		if( replyVal )
+			reply.addData(replyVal);
+		else
+			reply.addData(d);
 		return ModbusRTU::erNoError;
 	}
 
@@ -152,8 +163,12 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 	int num=0; // добавленное количество данных
 	ModbusData reg = query.start;
 	for( ; num<query.count; num++, reg++ )
-		reply.addData(d);
-
+	{
+		if( replyVal )
+			reply.addData(replyVal);
+		else
+			reply.addData(d);
+	}
 	// Если мы в начале проверили, что запрос входит в разрешёный диапазон
 	// то теоретически этой ситуации возникнуть не может...
 	if( reply.bcnt < query.count )
@@ -173,7 +188,10 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 
 	if( query.count <= 1 )
 	{
-		reply.addData(query.start);
+		if( replyVal )
+			reply.addData(replyVal);
+		else
+			reply.addData(query.start);	
 		return ModbusRTU::erNoError;
 	}
 
@@ -181,7 +199,12 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 	int num=0; // добавленное количество данных
 	ModbusData reg = query.start;
 	for( ; num<query.count; num++, reg++ )
-		reply.addData(reg);
+	{
+		if( replyVal )
+			reply.addData(replyVal);
+		else
+			reply.addData(reg);
+	}
 
 	// Если мы в начале проверили, что запрос входит в разрешёный диапазон
 	// то теоретически этой ситуации возникнуть не может...
@@ -202,7 +225,10 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters(
 
 	if( query.count <= 1 )
 	{
-		reply.addData(query.start);
+		if( replyVal )
+			reply.addData(replyVal);
+		else
+			reply.addData(query.start);
 		return ModbusRTU::erNoError;
 	}
 
@@ -210,8 +236,12 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters(
 	int num=0; // добавленное количество данных
 	ModbusData reg = query.start;
 	for( ; num<query.count; num++, reg++ )
-		reply.addData(reg);
-
+	{
+		if( replyVal )
+			reply.addData(replyVal);
+		else
+			reply.addData(reg);
+	}
 	// Если мы в начале проверили, что запрос входит в разрешёный диапазон
 	// то теоретически этой ситуации возникнуть не может...
 	if( reply.count < query.count )

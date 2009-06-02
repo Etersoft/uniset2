@@ -44,9 +44,10 @@ int main( int argc, char **argv )
 	int tout = 2000;
 	DebugStream dlog;
 
+
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:d:s:",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "hva:d:s:c:",longopts,&optindex)) != -1 ) 
 		{
 			switch (opt) 
 			{

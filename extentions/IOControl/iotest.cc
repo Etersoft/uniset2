@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <comedilib.h>
-#include <fastwel.h>
 #include <getopt.h>
 
 int subdev = 0;
@@ -17,7 +16,6 @@ static struct option longopts[] = {
 	{ "read", required_argument, 0, 'r' },
 	{ "write", required_argument, 0, 'w' },
 	{ "aread", required_argument, 0, 'i' },
-	{ "anread", required_argument, 0, 'n' },
 	{ "awrite", required_argument, 0, 'o' },
 	{ "subdev", required_argument, 0, 's' },
 	{ "device", required_argument, 0, 'd' },
@@ -25,9 +23,6 @@ static struct option longopts[] = {
 	{ "aref", required_argument, 0, 'z' },
 	{ "range", required_argument, 0, 'x' },
 	{ "config", required_argument, 0, 'c' },
-	{ "extconfig", required_argument, 0, 'e' },
-	{ "timer", required_argument, 0, 't' },
-	{ "autoscan", no_argument, 0, 'u' },
 	{ "autoconf", no_argument, 0, 'a' },
 	{ "plus", required_argument, 0, 'p' },
 	{ "blink", no_argument, 0, 'b' },
@@ -44,22 +39,18 @@ enum Command
 	cmdARead,
 	cmdAWrite,
 	cmdConfig,
-	cmdSubConfig,
-	cmdAnRead,
-	cmdExtConfig,
-	cmdTimer
+	cmdSubConfig
+	
 } cmd;
 // --------------------------------------------------------------------------
 static void insn_config( comedi_t* card, int subdev, int channel, lsampl_t iotype, int range, int aref );
 static void insn_subdev_config( comedi_t* card, int subdev, lsampl_t type );
-static void insn_config_extra( comedi_t* card, int subdev, int channel, lsampl_t data, int range, int aref, int val );
 // --------------------------------------------------------------------------
 
 int main(int argc, char* argv[])
 {
 	comedi_t* card;
 	lsampl_t data = 0;
-	lsampl_t darr[20];
 	int optindex = 0;
 	int opt = 0;
 	char* dev = "/dev/comedi0";
@@ -70,14 +61,10 @@ int main(int argc, char* argv[])
 	int cnum = 0;
 	int blink = 0;
 	int exret = EXIT_SUCCESS;
-
-	int instruction;
-	int autoscan = 0;
-	int n_data;
-
+	
 	memset(chan,-1,sizeof(chan));
 
-	while( (opt = getopt_long(argc, argv, "habur:w:i:o:s:d:c:p:m:q:e:t:n:",longopts,&optindex)) != -1 ) 
+	while( (opt = getopt_long(argc, argv, "habr:w:i:o:s:d:c:p:m:q:",longopts,&optindex)) != -1 ) 
 	{
 		switch (opt) 
 		{
@@ -87,7 +74,6 @@ int main(int argc, char* argv[])
 				printf("[-r|--read] chan 	- read from digital channel\n");
 				printf("[-o|--awrite] chan val - write to analog channel\n");
 				printf("[-i|--aread] chan 	- read from analog channel\n");
-				printf("[-n|--anread] chan 	- read N values (n = 20) from analog channel\n");
 				printf("[-s|--subdev] sub	- use subdev number sub. (Default: 0)\n");
 				printf("[-d|--device] dev	- use device dev. (Default: /dev/comedi0)\n");
 				printf("[--aref] val		- AREF (Default: %d)\n",aref);
@@ -108,14 +94,11 @@ int main(int argc, char* argv[])
 				printf("	1	-  -5В - 5В\n");
 				printf("	2	-  -2.5В - 2.5В\n");
 				printf("	3	-  -1.25В - 1.25В\n");
-				printf("[-e|--extconfig] channel instruction [parameters] - perform configuring instruction at given channel\n");
-				printf("[-t|--timer] channel interval	- start acquisition by timer at given channel or stop it (if interval = 0)\n");
-				printf("[-u|--autoscan]			- (together with -t) set autoscan mode for acquisition by timer\n");
 				printf("[--blink]			- (blink output): ONLY FOR 'write': 0-1-0-1-0-...\n");
 				printf("[--blink-msec] val	- Blink pause [msec]. Default: 300 msec\n");
 			return 0;
 
-			case 'r':
+			case 'r':	
 				chan[0] = atoi(optarg);
 				cmd = cmdDRead;
 			break;
@@ -127,16 +110,7 @@ int main(int argc, char* argv[])
 						val = atoi(argv[optind]);
 			break;
 
-			case 'n':
-				chan[0] = atoi(optarg);
-				cmd = cmdAnRead;
-			break;
-
-			case 'u':
-				autoscan = 1;
-			break;
-
-			case 'i':
+			case 'i':	
 				chan[0] = atoi(optarg);
 				cmd = cmdARead;
 			break;
@@ -148,23 +122,7 @@ int main(int argc, char* argv[])
 						val = atoi(argv[optind]);
 			break;
 
-			case 'e':
-				chan[0] = atoi(optarg);
-				cmd = cmdExtConfig;
-				n_data = 0;
-				for(; optind < argc && (argv[optind])[0]!='-'; optind++, n_data++) {
-					darr[n_data] = atoi(argv[optind]);
-				}
-			break;
-
-			case 't':
-				chan[0] = atoi(optarg);
-				cmd = cmdTimer;
-				if( optind < argc && (argv[optind])[0]!='-' )
-					val = atoi(argv[optind++]);
-			break;
-
-			case 'd':
+			case 'd':	
 				dev = optarg;
 			break;
 
@@ -239,6 +197,12 @@ int main(int argc, char* argv[])
 		{
 			for( int k=0; chan[k]!=-1; k++ )
 			{
+				if( comedi_dio_config(card, subdev, chan[k],INSN_CONFIG_DIO_INPUT) < 0)
+				{
+					comedi_perror("can't configure DI channels");
+					exret = EXIT_FAILURE;
+				}
+
 				if( comedi_dio_read(card, subdev, chan[k],&data) < 0)
 				{
 					fprintf(stderr, "can't read from channel %d\n",chan[k]);
@@ -252,6 +216,14 @@ int main(int argc, char* argv[])
 
 		case cmdDWrite:
 		{
+			for( int k=0; chan[k]!=-1; k++ )
+			{
+				if( comedi_dio_config(card, subdev, chan[k],INSN_CONFIG_DIO_OUTPUT) < 0 )
+				{
+					comedi_perror("can't configure DO channels");
+					exret = EXIT_FAILURE;
+				}
+			}
 			// реализация мигания
 			while(1)
 			{
@@ -295,35 +267,6 @@ int main(int argc, char* argv[])
 		}
 		break;
 
-		case cmdAnRead:
-		{
-			comedi_insn insn;
-			memset(&insn, 0, sizeof(insn));
-			insn.insn = INSN_READ;
-			insn.n = 20;
-			insn.data = darr;
-			insn.subdev = subdev;
-
-			for( int k=0; chan[k]!=-1; k++ )
-			{
-				if( autoconf )
-					insn_config(card, subdev,chan[k],100,range,aref);
-
-				insn.chanspec = CR_PACK(chan[k], range, aref);
-				int ret = comedi_do_insn(card, &insn);
-				if( ret < 0)
-				{
-					fprintf(stderr, "can't read from channel %d: (%d) %s\n",chan,ret,strerror(ret));
-				  	exret = EXIT_FAILURE;
-				}
-
-  				printf("Readed from channel %d: expected 20 samples, got %d samples\n", chan[k], ret);
-  				for(int i = 0; i < ret; i++)
-  					printf("Data[%d] = %d\n", i, darr[i]);
-			}
-		}
-		break;
-
 		case cmdAWrite:
 		{
 			for( int k=0; chan[k]!=-1; k++ )
@@ -346,10 +289,10 @@ int main(int argc, char* argv[])
 			for( int k=0; chan[k]!=-1; k++ )
 			{
 
-				if( val != INSN_CONFIG_DIO_INPUT
-					&& val != INSN_CONFIG_DIO_OUTPUT
-					&& val != INSN_CONFIG_AIO_INPUT
-					&& val != INSN_CONFIG_AIO_OUTPUT
+				if( val != INSN_CONFIG_DIO_INPUT 
+					&& val != INSN_CONFIG_DIO_OUTPUT 
+					&& val != 100 /* INSN_CONFIG_AIO_INPUT */
+					&& val != 101 /* INSN_CONFIG_AIO_OUTPUT */
 				)
 				{
 	       		    fprintf(stderr, "can't config channel %d for type = %d (val=[%d,%d,%d,%d])\n"
@@ -357,45 +300,6 @@ int main(int argc, char* argv[])
 					exret = EXIT_FAILURE;
 				}
 			}
-		}
-		case cmdExtConfig:
-		{
-			for( int k=0; chan[k]!=-1; k++ )
-			{
-				comedi_insn insn;
-
-				memset(&insn, 0, sizeof(insn));
-				insn.insn = INSN_CONFIG;
-				insn.n = n_data;
-				insn.data = darr;
-				insn.subdev = subdev;
-				insn.chanspec = CR_PACK(chan[k], 0, 0);
-
-				comedi_do_insn(card, &insn);
-			}
-			break;
-		}
-		case cmdTimer:
-		{
-			for( int k=0; chan[k]!=-1; k++ )
-			{
-				comedi_insn insn;
-				lsampl_t data[3];
-
-				data[0] = INSN_CONFIG_TIMER_1;
-				data[1] = val;
-				data[2] = autoscan;
-
-				memset(&insn, 0, sizeof(insn));
-				insn.insn = INSN_CONFIG;
-				insn.n = 3;
-				insn.data = data;
-				insn.subdev = subdev;
-				insn.chanspec = CR_PACK(chan[k], 0, 0);
-
-				comedi_do_insn(card, &insn);
-			}
-			break;
 		}
 
 		case cmdSubConfig:
@@ -429,38 +333,38 @@ void insn_config( comedi_t* card, int subdev, int channel, lsampl_t iotype, int 
 
 void insn_subdev_config( comedi_t* card, int subdev, lsampl_t type )
 {
-	static const unsigned char chans[4] = {0, 8, 16, 20}; /* We can configure only one channel per 8-bit port (4-bit for CL and CH). */
-	lsampl_t cmd[4]; /* Ports A, B, CL, CH */
+	lsampl_t cmd = 102;
 	comedi_insn insn;
-
+	memset(&insn,0,sizeof(insn));
+	insn.insn = INSN_CONFIG;
+	insn.n = 1;
+	insn.data = &cmd;
+	insn.unused[0] = type;
+	insn.subdev = subdev;
+	insn.chanspec = 0;
+	
 	switch(type)
 	{
-		case 1: /* TBI 24_0 */
-			cmd[0] = cmd[1] = cmd[2] = cmd[3] = INSN_CONFIG_DIO_INPUT;
+		case 1:
 			printf("set subdev %d type: 'TBI 24/0'\n",subdev);
-			break;
-		case 2: /* TBI 0_24 */
-		default:
-			cmd[0] = cmd[1] = cmd[2] = cmd[3] = INSN_CONFIG_DIO_OUTPUT;
+		break;
+		
+		case 2:
 			printf("set subdev %d type: 'TBI 0/24'\n",subdev);
-			break;
-		case 3: /* TBI 16_8 */
-			cmd[0] = cmd[1] = INSN_CONFIG_DIO_INPUT;
-			cmd[2] = cmd[3] = INSN_CONFIG_DIO_OUTPUT;
+		break;
+		
+		case 3:
 			printf("set subdev %d type: 'TBI 16/8'\n",subdev);
-			break;
+		break;
+		
+		default:
+			printf("set subdev %d type: UNKNOWN\n",subdev);
+		break;
 	}
-
-	for(int i = 0; i < 4; i++) {
-		memset(&insn,0,sizeof(insn));
-		insn.insn = INSN_CONFIG;
-		insn.n = 1;
-		insn.data = &cmd[i];
-		insn.subdev = subdev;
-		insn.chanspec = CR_PACK(chans[i], 0, 0);
-		if( comedi_do_insn(card,&insn) < 0 ) {
-			fprintf(stderr, "can`t configure subdev subdev=%d type=%d",subdev,type);
-			exit(EXIT_FAILURE);
-		}
+	
+	if( comedi_do_insn(card,&insn) < 0 )
+	{
+		fprintf(stderr, "can`t configure subdev subdev=%d type=%d",subdev,type);
+	  	exit(EXIT_FAILURE);
 	}
 }

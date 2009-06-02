@@ -35,12 +35,12 @@
 class MessageInterface
 {
 	public:
-		virtual ~MessageInterface(){};
+		virtual ~MessageInterface(){}
 		virtual	std::string getMessage( UniSetTypes::MessageCode code )=0;
 		virtual	bool isExist(UniSetTypes::MessageCode code)=0;
 
-		virtual	UniSetTypes::MessageCode getCode( const std::string& msg ){ return UniSetTypes::DefaultMessageCode; };
-		virtual	UniSetTypes::MessageCode getCodeByIdName( const std::string& name ){ return UniSetTypes::DefaultMessageCode; };
+		virtual	UniSetTypes::MessageCode getCode( const std::string& msg ){ return UniSetTypes::DefaultMessageCode; }
+		virtual	UniSetTypes::MessageCode getCodeByIdName( const std::string& name ){ return UniSetTypes::DefaultMessageCode; }
 
 		virtual std::ostream& printMessagesMap(std::ostream& os)=0;
 };

@@ -2,7 +2,7 @@
 //!  \version $Id: RTUStorage.cc,v 1.1 2008/12/14 21:57:50 vpashka Exp $
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <string>
