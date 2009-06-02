@@ -1874,6 +1874,5 @@ void RTUExchange::updateRTU188( RegMap::iterator& it )
 			dlog[Debug::LEVEL3] << myname << "(updateMTR): catch ..." << endl;
 		}
 	}
-
 }
 // -----------------------------------------------------------------------------

@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 		string logfilename = conf->getArgParam("--io-logfile","iocontrol.log");
 		string logname( conf->getLogDir() + logfilename );
 		dlog.logFile( logname.c_str() );
-		unideb.logFile( logname.c_str() );	
+		unideb.logFile( logname.c_str() );
 
 		ObjectId shmID = DefaultObjectId;
 		string sID = conf->getArgParam("--smemory-id");

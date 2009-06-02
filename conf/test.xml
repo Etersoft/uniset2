@@ -18,6 +18,11 @@
 		<DumpStateTime 		name="10"/><!-- [сек] -->
 		<SleepTickMS		name="500"/><!-- [мсек] -->
 
+		<ServicesSection name="Services"/>
+		<NameService host="localhost" port="2809"/>
+		<SizeOfMessageQueue name="2000"/>
+		<LocalIOR name="1"/> 
+
 		<!-- Debug, logs -->
 		<UniSetDebug name="unideb" levels="crit,warn" file=""/>
 
@@ -25,9 +30,9 @@
 		<ConfDir name=""/>
 		<DataDir name=""/>
 		<BinDir name=""/>
-		<LogDir name=""/>
+		<LogDir name="/home/pv/tmp/"/>
 		<DocDir name=""/>
-		<LockDir name=""/>
+		<LockDir name="/home/pv/tmp/"/>
 
 	<Services>
 		<LocalTimeService name="TimeService" MaxCountTimers="100" AskLifeTimeSEC="10"/>
@@ -83,6 +88,8 @@
 	
 	<HeartBeatTime time_msec="5000"/>
 
+	<IOControl name="IOControl" />
+
 <ObjectsMap idfromfile="0">
 <!--
 	Краткие пояснения к полям секции 'sensors'
@@ -122,6 +129,10 @@
 		<item name="RS_Test15_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0xD" rs="1" />
 		<item name="RS_Test16_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="mtr" mtrtype="F1" mbaddr="0x05" mbfunc="0x03" mbreg="0x10" rs="1" />
 		<item name="RS_Test17_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x10" rs="1" />
+		<item name="IO_Test1_S" textname="io test" node="" iotype="DO" priority="Medium" io="1"/>
+		<item name="IO_Test2_S" textname="io test" node="" iotype="DI" priority="Medium" io="1"/>
+		<item name="IO_Test3_S" textname="io test" node="" iotype="AO" priority="Medium" io="1"/>
+		<item name="IO_Test4_S" textname="io test" node="" iotype="AI" priority="Medium" io="1"/>
 
 		<item name="Input6_S" textname="Команда 6" node="" iotype="DI" priority="Medium">
 			<depends>
