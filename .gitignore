@@ -13,6 +13,8 @@ output.*
 Makefile
 Makefile.in
 semantic.cache
+*_SK.cc
+*_SK.h
 
 COPYING
 stamp-h1
