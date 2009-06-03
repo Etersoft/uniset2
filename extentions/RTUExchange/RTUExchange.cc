@@ -253,7 +253,7 @@ void RTUExchange::poll()
 
 			if( dlog.debugging(Debug::INFO) )
 			{
-				dlog[Debug::INFO] << myname << "(pollRTU): poll RTU188 "
+				dlog[Debug::INFO] << myname << "(pollRTU188): poll RTU188 "
 					<< " mbaddr=" << ModbusRTU::addr2str(d->mbaddr)
 					<< endl;
 			}
@@ -336,6 +336,8 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr,p->mbreg,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
+				
+			it--;
 		}
 		break;
 
@@ -344,6 +346,7 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr, p->mbreg,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
+			it--;
 		}
 		break;
 		
@@ -352,6 +355,7 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr, p->mbreg,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
+			it--;
 		}
 		break;
 		
@@ -360,6 +364,7 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr,p->mbreg,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
+			it--;
 		}
 		break;
 		
@@ -372,7 +377,7 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			
 			}
 			else
-				ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg,p->q_count);
+				ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg,p->mbval);
 		}
 		break;
 
@@ -381,6 +386,7 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			ModbusRTU::WriteOutputMessage msg(dev->mbaddr,p->mbreg);
 			for( int i=0; i<p->q_count; i++,it++ )
 				msg.addData(it->second->mbval);
+			it--;
 			ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
 		}
 		break;
@@ -1472,6 +1478,8 @@ void RTUExchange::rtuQueryOptimization( RTUDeviceMap& m )
 				if( (it->second->mbreg - reg) > 1 )
 					break;
 				
+				if( beg->second->mbfunc != it->second->mbfunc )
+					break;
 
 				beg->second->q_count++;
 				reg = it->second->mbreg;

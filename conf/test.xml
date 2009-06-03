@@ -133,6 +133,10 @@
 		<item name="IO_Test2_S" textname="io test" node="" iotype="DI" priority="Medium" io="1"/>
 		<item name="IO_Test3_S" textname="io test" node="" iotype="AO" priority="Medium" io="1"/>
 		<item name="IO_Test4_S" textname="io test" node="" iotype="AI" priority="Medium" io="1"/>
+		<item name="W_Test2_S" textname="io test" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x03" mbreg="0x3001" rs="wago" />
+		<item name="W_Test3_S" textname="io test" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x03" mbreg="0x3002" rs="wago" />
+		<item name="W_Test4_S" textname="io test" node="" iotype="AI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x06" mbreg="0x3008" rs="wago" default="4"/>
+
 
 		<item name="Input6_S" textname="Команда 6" node="" iotype="DI" priority="Medium">
 			<depends>
