@@ -42,6 +42,7 @@ namespace VTypes
 			// конструкторы на разные случаи...
 			F2(){ memset(raw.v,0,sizeof(raw.v)); }
 			
+			F2( float f ){ raw.val = f; }
 			F2( const ModbusRTU::ModbusData* data, int size )
 			{
 				for( int i=0; i<wsize() && i<size; i++ )
@@ -76,6 +77,7 @@ namespace VTypes
 			// конструкторы на разные случаи...
 			F4(){ memset(raw.v,0,sizeof(raw.v)); }
 			
+			F4( float f ){ raw.val = f; }
 			F4( const ModbusRTU::ModbusData* data, int size )
 			{
 				for( int i=0; i<wsize() && i<size; i++ )

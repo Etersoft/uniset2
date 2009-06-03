@@ -76,7 +76,7 @@ class Element
 			ChildInfo():el(0),num(0){}
 			
 			Element* el;
-			int num;			
+			int num;
 		};
 
 		typedef std::list<ChildInfo> OutputList;

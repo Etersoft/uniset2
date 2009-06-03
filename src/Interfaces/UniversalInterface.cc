@@ -78,6 +78,7 @@ void UniversalInterface::init()
 	// пытаемся получить ссылку на NameSerivice
 	// в любом случае. даже если включён режим
 	// localIOR
+	localctx=CosNaming::NamingContext::_nil();
 	try
 	{
 		if( CORBA::is_nil(orb) )
@@ -88,10 +89,17 @@ void UniversalInterface::init()
 		else
 			localctx = ORepHelpers::getRootNamingContext( orb, oind->getRealNodeName(uconf->getLocalNode()) );
 	}
-	catch(Exception& ex )
+	catch( Exception& ex )
 	{
 		if( !uconf->isLocalIOR() )
 			throw ex;
+
+		localctx=CosNaming::NamingContext::_nil();
+	}
+	catch( ... )
+	{
+		if( !uconf->isLocalIOR() )
+			throw;
 
 		localctx=CosNaming::NamingContext::_nil();
 	}
@@ -1563,27 +1571,22 @@ void UniversalInterface::registered( UniSetTypes::ObjectId id, UniSetTypes::Obje
 {
 	// если влючён режим использования локальных файлов
 	// то пишем IOR в файл
-	// но при этом на всякий ещё и пытаемся зарегистрироватся
-	// через NameService (omniNames)
 	if( uconf->isLocalIOR() )
 	{
 		if( CORBA::is_nil(orb) )
 			orb = uconf->getORB();
 
-		string sior(orb->object_to_string(oRef));
-		uconf->iorfile.setIOR(id,node,sior);
+		uconf->iorfile.setIOR(id,node,orb->object_to_string(oRef));
 		return;
 	}
 
 	try
 	{
-		string nm=oind->getNameById(id, node);
-		rep.registration(nm,oRef,(bool)force);
+		rep.registration(oind->getNameById(id, node),oRef,(bool)force);
 	}
 	catch(Exception& ex )
 	{
-		if( !uconf->isLocalIOR() )
-			throw;
+		throw;
 	}
 }
 
@@ -1591,17 +1594,18 @@ void UniversalInterface::registered( UniSetTypes::ObjectId id, UniSetTypes::Obje
 void UniversalInterface::unregister(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node)throw(ORepFailed)
 {
 	if( uconf->isLocalIOR() )
+	{
 		uconf->iorfile.unlinkIOR(id,node);
+		return;
+	}
 
 	try
 	{
-		string nm = oind->getNameById(id,node);
-		rep.unregistration(nm);
+		rep.unregistration(oind->getNameById(id,node));
 	}
 	catch(Exception& ex )
 	{
-		if( !uconf->isLocalIOR() )
-			throw;
+		throw;
 	}
 }
 
@@ -1638,14 +1642,17 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 			{
 				// если NameService недоступен то,
 				// сразу выдаём ошибку
-				if( CORBA::is_nil(localctx) )
-				{
-					unideb[Debug::WARN] << "не найден IOR-файл для " << uconf->oind->getNameById(rid,node) << endl;
+//				if( CORBA::is_nil(localctx) )
+//				{
+					if( unideb.debugging(Debug::WARN) )
+					{
+						unideb[Debug::WARN] << "не найден IOR-файл для " << uconf->oind->getNameById(rid,node) << endl;
+					}
 					throw UniSetTypes::ResolveNameError();
-				}
+//				}
 				// иначе пытаемся получить ссылку через NameService (omniNames)
-				unideb[Debug::WARN] << "не найден IOR-файл для " << uconf->oind->getNameById(rid,node) 
-									<< " пытаемся получить доступ через NameService \n";
+//				unideb[Debug::WARN] << "не найден IOR-файл для " << uconf->oind->getNameById(rid,node) 
+//									<< " пытаемся получить доступ через NameService \n";
 
 			}
 		}
@@ -2314,17 +2321,21 @@ bool UniversalInterface::isExist( UniSetTypes::ObjectId id )
 {
 	try
 	{
-/*	
-		try
+		if( uconf->isLocalIOR() )
 		{
-			oref = rcache.resolve(id, uconf->getLocalNode());
-		}
-		catch(NameNotFound){}
+			if( CORBA::is_nil(orb) )
+				orb = uconf->getORB();
 
-		if(!oref)
-			oref = resolve(id, uconf->getLocalNode());
-		return rep.isExist( oref );
-*/		
+			string sior(uconf->iorfile.getIOR(id,uconf->getLocalNode()));
+			if( !sior.empty() )
+			{
+				CORBA::Object_var oref = orb->string_to_object(sior.c_str());
+				return rep.isExist( oref );
+			}
+			
+			return false;
+		}
+	
 		string nm = oind->getNameById(id);
 		return rep.isExist(nm);
 	}
@@ -2332,7 +2343,7 @@ bool UniversalInterface::isExist( UniSetTypes::ObjectId id )
 	{
 //		unideb[Debug::WARN] << "UI(isExist): " << ex << endl;
 	}
-	catch(...){}	
+	catch(...){}
 	return false;
 }
 // ------------------------------------------------------------------------------------------------------------
@@ -2350,7 +2361,7 @@ bool UniversalInterface::isExist( UniSetTypes::ObjectId id, UniSetTypes::ObjectI
 		}
 		catch(NameNotFound){}
 
-		if( CORBA::is_nil(oref) )		
+		if( CORBA::is_nil(oref) )
 			oref = resolve(id, node);
 
 		return rep.isExist( oref );

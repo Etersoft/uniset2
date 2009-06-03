@@ -267,6 +267,95 @@ bool RTUStorage::getState( RTUJack jack, unsigned short int chan, UniversalIO::I
 	return false;
 }
 // -----------------------------------------------------------------------------
+ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, unsigned short chan, UniversalIO::IOTypes t )
+{
+	if( t == UniversalIO::AnalogInput )
+	{
+		switch( jack )
+		{
+			case nJ1:
+				return 1032+chan;
+			case nJ2:
+				return 1032+24+chan;
+			case nJ5:
+				return 1000+chan;
+			case nX1:
+				return 1016+chan;
+			case nX2:
+				return 1016+4+chan;
+				
+			default:
+				break;
+		}
+		
+		return -1;
+	}
+
+	if( t == UniversalIO::AnalogOutput )
+	{
+		switch( jack )
+		{
+			case nJ1:
+				return 1016+chan;
+			case nJ2:
+				return 1016+24+chan;
+			case nJ5:
+				return 1000+chan;
+			case nX1:
+				return 1016+chan;
+			case nX2:
+				return 1016+4+chan;
+				
+			default:
+				break;
+		}
+		
+		return -1;
+	}
+	
+	if( t == UniversalIO::DigitalInput )
+	{
+		switch( jack )
+		{
+			case nJ1:
+				return 32+chan;
+			case nJ2:
+				return 32+24+chan;
+			case nJ5:
+				return 16+chan;
+			case nX4:
+				return chan;
+			case nX5:
+				return 8+chan;
+				
+			default:
+				break;
+		}
+		
+		return -1;
+	}
+
+	if( t == UniversalIO::DigitalOutput )
+	{
+		switch( jack )
+		{
+			case nJ1:
+				return 16+chan;
+			case nJ2:
+				return 16+24+chan;
+			case nJ5:
+				return chan;
+				
+			default:
+				break;
+		}
+		
+		return -1;
+	}
+	
+	return -1;
+}
+// -----------------------------------------------------------------------------
 std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 {
 	os << "-------------------" << endl 

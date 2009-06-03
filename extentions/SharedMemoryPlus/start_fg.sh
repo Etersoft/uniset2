@@ -4,22 +4,21 @@ ulimit -Sc 10000000
 START=uniset-start.sh
 
 ${START} -f ./uniset-smemory-plus --smemory-id SharedMemory  --confile test.xml \
-	 --unideb-add-levels info,crit,warn,level9,system \
+	 --unideb-add-levels info,crit,warn,level9,system,level3,level2,level1 \
 	 --add-io \
-	 --io-force 1 \
-	 --io-name IOControl1 \
+	 --io-name IOControl \
 	 --io-polltime 100 \
 	 --io-s-filter-field io \
-	 --io-s-filter-value ts \
-	 --iodev1 /dev/null 
+	 --io-s-filter-value 1 \
+	 --iodev1 /dev/null \
 	 --iodev2 /dev/null \
-	 --io-test-lamp TS_TestLamp_S \
-	 --io-heartbeat-id _31_11_AS \
-	 --io-sm-ready-test-sid TestMode_S \
-	 --add-rtu \
-	 --rtu-device /dev/cbsideA1 \
-	 --rtu-id RTUExchange \
-	 --add-mbslave \
+	 --io-test-lamp RS_Test9_S \
+	 --io-heartbeat-id AI_AS \
+	 --io-sm-ready-test-sid RS_Test9_S 
+#	 --add-rtu \
+#	 --rs-dev /dev/cbsideA1 \
+#	 --rs-id RTUExchange \
+#	 --add-mbslave \
 	 
 
 #--skip-rtu1 --skip-rtu2 --skip-can --dlog-add-levels info,warn,crit 

@@ -148,14 +148,23 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 				shm->localSaveValue( it->ait,it->si.id,val,shm->ID() );
 			else if( it->stype == UniversalIO::AnalogOutput )
 				shm->localSetValue( it->ait,it->si.id,val,shm->ID() );
+			else if( it->stype == UniversalIO::DigitalOutput )
+				shm->localSetState( it->dit,it->si.id,(bool)val,shm->ID() );
+			else if( it->stype == UniversalIO::DigitalInput )
+				shm->localSaveState( it->dit,it->si.id,(bool)val,shm->ID() );
 
 			it->value = val;
 		}
 	}
 }
 // -----------------------------------------------------------------------------
-void IOBase::processingFasAI( IOBase* it, float val, SMInterface* shm, bool force )
+void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool force )
 {
+	long val = lroundf(fval);
+
+	if( it->cal.precision > 0 )
+		val = lroundf( fval * pow10(it->cal.precision) );
+
 	// проверка на обрыв
 	if( it->check_channel_break(val) )
 	{
@@ -185,15 +194,16 @@ void IOBase::processingFasAI( IOBase* it, float val, SMInterface* shm, bool forc
 		if( it->value == ChannelBreakValue )
 			shm->localSetUndefinedState(it->ait,false,it->si.id);
 
-		if( it->cal.precision > 0 )
-			val *= lroundf(pow10(it->cal.precision));
-
 		if( force || it->value != val )
 		{
 			if( it->stype == UniversalIO::AnalogInput )
 				shm->localSaveValue( it->ait,it->si.id,val,shm->ID() );
 			else if( it->stype == UniversalIO::AnalogOutput )
 				shm->localSetValue( it->ait,it->si.id,val,shm->ID() );
+			else if( it->stype == UniversalIO::DigitalOutput )
+				shm->localSetState( it->dit,it->si.id,(bool)val,shm->ID() );
+			else if( it->stype == UniversalIO::DigitalInput )
+				shm->localSaveState( it->dit,it->si.id,(bool)val,shm->ID() );
 
 			it->value = val;
 		}
@@ -223,6 +233,10 @@ void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force 
 				shm->localSaveState(it->dit,it->si.id,set,shm->ID());
 			else if( it->stype == UniversalIO::DigitalOutput )
 				shm->localSetState(it->dit,it->si.id,set,shm->ID());
+			else if( it->stype == UniversalIO::AnalogInput )
+				shm->localSaveValue( it->ait,it->si.id,(set ? 1:0),shm->ID() );
+			else if( it->stype == UniversalIO::AnalogOutput )
+				shm->localSetValue( it->ait,it->si.id,(set ? 1:0),shm->ID() );
 			
 			it->value = set ? 1 : 0;
 		}
@@ -292,6 +306,52 @@ bool IOBase::processingAsDO( IOBase* it, SMInterface* shm, bool force )
 	return false;
 }
 // -----------------------------------------------------------------------------
+float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
+{
+	uniset_spin_lock lock(it->val_lock);
+
+	long val = it->value;
+	
+	if( force )
+	{
+		val = shm->localGetValue(it->ait,it->si.id);
+		it->value = val;
+	}
+
+	if( it->stype == UniversalIO::AnalogOutput ||
+		it->stype == UniversalIO::AnalogInput )
+	{
+		if( it->cdiagram )	// задана специальная калибровочная диаграмма
+		{
+			if( it->cprev != it->value )
+			{	
+				it->cprev = it->value;
+				val = it->cdiagram->getRawValue(val);
+				it->craw = val;
+			}
+			else
+				val = it->craw; // просто передаём предыдущее значение
+		}
+		else
+		{
+			float fval = val;
+			IOController_i::CalibrateInfo* cal( &(it->cal) );
+			if( cal->maxRaw!=0 && cal->maxRaw!=cal->minRaw ) // задана калибровка
+			{
+				// Калибруем в обратную сторону!!!
+				fval = UniSetTypes::fcalibrate(fval,
+							cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, true );
+			}
+
+			if( it->cal.precision > 0 )
+				return ( fval / pow10(it->cal.precision) );
+		}
+	}
+	
+	return val;
+}
+// -----------------------------------------------------------------------------
+
 bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,  
 						DebugStream* dlog, std::string myname,
 						int def_filtersize, float def_filterT )
@@ -347,20 +407,12 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	else
 		b->safety = NoSafety;
 
-	string stype( it.getProp("iotype") );
-	if( stype == "AI" )
-		b->stype = UniversalIO::AnalogInput;
-	else if ( stype == "AO" )
-		b->stype = UniversalIO::AnalogOutput;
-	else if ( stype == "DO" )
-		b->stype = UniversalIO::DigitalOutput;
-	else if ( stype == "DI" )
-		b->stype = UniversalIO::DigitalInput;
-	else
+	b->stype = UniSetTypes::getIOType(it.getProp("iotype"));
+	if( b->stype == UniversalIO::UnknownIOType )
 	{
 		if( dlog )
 			dlog[Debug::CRIT] << myname << "(IOBase::readItem): неизвестный iotype=: " 
-				<< stype << " для " << sname << endl;
+				<< it.getProp("iotype") << " для " << sname << endl;
 		return false;
 	}
 

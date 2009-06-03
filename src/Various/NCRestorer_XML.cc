@@ -147,6 +147,9 @@ void NCRestorer_XML::read_list( UniXML& xml, xmlNode* node, IONotifyController* 
 				}
 			}
 			break;
+			
+			default:
+				break;
 		}
 		
 		rslot(xml,it,node);
@@ -276,21 +279,12 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
 		}
 	}
 
-	string iotype(xml.getProp(it,"iotype"));
 
-	if( iotype=="DI" )
-		inf.type=UniversalIO::DigitalInput;
-	else if( iotype=="AI" )
-		inf.type=UniversalIO::AnalogInput;
-	else if( iotype=="AO" )
-		inf.type=UniversalIO::AnalogOutput;
-	else if( iotype=="DO" )
-		inf.type=UniversalIO::DigitalOutput;
-	else
+	inf.type = UniSetTypes::getIOType(xml.getProp(it,"iotype"));
+	if( inf.type == UniversalIO::UnknownIOType )
 	{
-		unideb[Debug::CRIT] << "(NCRestorer_XML:getSensorInfo): îåéú÷åóôîùê ôéð (" 
-			<< iotype << ") ×ÈÏÄÁ/×ÙÈÏÄÁ ÄÌÑ " 
-			<< xml.getProp(it,"name") << endl;
+		unideb[Debug::CRIT] << "(NCRestorer_XML:getSensorInfo): unknown iotype=" << xml.getProp(it,"iotype")
+			<< " for  " << xml.getProp(it,"name") << endl;
 		return false;
 	}
 

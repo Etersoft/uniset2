@@ -41,7 +41,7 @@ int wsize(  VType t )
 	if( t == vtF4 )
 		return F4::wsize();
 
-	return 0;
+	return 1;
 }
 // -----------------------------------------------------------------------------
 } // end of namespace VTypes

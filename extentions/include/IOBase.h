@@ -85,6 +85,7 @@ static const int NoSafety = -1;
 			static void processingAsAI( IOBase* it, long new_val, SMInterface* shm, bool force );
 			static void processingAsDI( IOBase* it, bool new_set, SMInterface* shm, bool force );
 			static long processingAsAO( IOBase* it, SMInterface* shm, bool force );
+			static float processingFasAO( IOBase* it, SMInterface* shm, bool force );
 			static bool processingAsDO( IOBase* it, SMInterface* shm, bool force );
 			static bool initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,  
 									DebugStream* dlog=0, std::string myname="",

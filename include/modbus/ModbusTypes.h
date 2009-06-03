@@ -139,7 +139,7 @@ namespace ModbusRTU
 		
 		const DataBits& operator=(const ModbusByte& r);
 
-		operator ModbusByte();		
+		operator ModbusByte();
 		ModbusByte mbyte();
 		
 		bool operator[]( const int i ){ return b[i]; }
@@ -158,8 +158,11 @@ namespace ModbusRTU
 		
 		const DataBits16& operator=(const ModbusData& r);
 
-		operator ModbusData();		
+		operator ModbusData();
 		ModbusData mdata();
+		
+		bool operator[]( const int i ){ return b[i]; }
+		void set( int n, bool s ){ b.set(n,s); }
 		
 		std::bitset<BitsPerData> b;
 	};

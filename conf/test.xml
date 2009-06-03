@@ -18,6 +18,11 @@
 		<DumpStateTime 		name="10"/><!-- [сек] -->
 		<SleepTickMS		name="500"/><!-- [мсек] -->
 
+		<ServicesSection name="Services"/>
+		<NameService host="localhost" port="2809"/>
+		<SizeOfMessageQueue name="2000"/>
+		<LocalIOR name="0"/> 
+
 		<!-- Debug, logs -->
 		<UniSetDebug name="unideb" levels="crit,warn" file=""/>
 
@@ -83,6 +88,8 @@
 	
 	<HeartBeatTime time_msec="5000"/>
 
+	<IOControl name="IOControl" />
+
 <ObjectsMap idfromfile="0">
 <!--
 	Краткие пояснения к полям секции 'sensors'
@@ -100,11 +107,38 @@
 	<!-- ************************ Датчики ********************** -->
 	<sensors name="Sensors">
 		<item name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium" default="1" />
-		<item name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" rs="2" />
+		<item name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" rs="1" />
 		<item name="Input3_S" textname="Команда 3" node="" iotype="DI" priority="Medium" mbtcp="1" mbaddr="0x02" mbfunc="0x04" mbreg="0x02"/>
-		<item name="Input4_S" textname="Команда 4" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" rs="2" />
-		<item name="Input5_S" textname="Команда 5" node="" iotype="DI" priority="Medium" udp="2"/>
-		<item name="Input6_S" textname="Команда 6" node="" iotype="DI" priority="Medium" udp="2">
+		<item name="Input4_S" textname="Команда 4" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x04" mbreg="0x05" rs="1" />
+		
+		<item name="RS_Test1_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x02" nbit="1" rs="1" />
+		<item name="RS_Test2_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x02" nbit="2" rs="1" />
+		<item name="RS_Test3_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x02" nbit="3" rs="1" />
+		<item name="RS_Test4_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x02" nbit="4" rs="1" />
+		<item name="RS_Test5_S" textname="Команда 5" node="" iotype="DI" priority="Medium" mbtype="rtu188" mbaddr="0x03" jack="J1" channel="23" rs="1" />
+		<item name="RS_Test6_S" textname="Команда 5" node="" iotype="DI" priority="Medium" mbtype="rtu188" mbaddr="0x03" jack="J1" channel="23" rs="1" />
+		<item name="RS_Test7_S" textname="Команда 5" node="" iotype="DI" priority="Medium" mbtype="rtu188" mbaddr="0x04" jack="J1" channel="23" rs="1" />
+
+		<item name="RS_Test8_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x05" rs="1" />
+		<item name="RS_Test9_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x06" rs="1" />
+		<item name="RS_Test10_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x07" rs="1" />
+		<item name="RS_Test11_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" vtype="F2" mbaddr="0x01" mbfunc="0x03" mbreg="0x08" rs="1" />
+		<item name="RS_Test12_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0xA" rs="1" />
+		<item name="RS_Test13_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0xB" rs="1" />
+		<item name="RS_Test14_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0xC" rs="1" />
+		<item name="RS_Test15_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0xD" rs="1" />
+		<item name="RS_Test16_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="mtr" mtrtype="F1" mbaddr="0x05" mbfunc="0x03" mbreg="0x10" rs="1" />
+		<item name="RS_Test17_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x10" rs="1" />
+		<item name="IO_Test1_S" textname="io test" node="" iotype="DO" priority="Medium" io="1"/>
+		<item name="IO_Test2_S" textname="io test" node="" iotype="DI" priority="Medium" io="1"/>
+		<item name="IO_Test3_S" textname="io test" node="" iotype="AO" priority="Medium" io="1"/>
+		<item name="IO_Test4_S" textname="io test" node="" iotype="AI" priority="Medium" io="1"/>
+		<item name="W_Test2_S" textname="io test" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x03" mbreg="0x3001" rs="wago" />
+		<item name="W_Test3_S" textname="io test" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x03" mbreg="0x3002" rs="wago" />
+		<item name="W_Test4_S" textname="io test" node="" iotype="AI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x06" mbreg="0x3008" rs="wago" default="4"/>
+
+
+		<item name="Input6_S" textname="Команда 6" node="" iotype="DI" priority="Medium">
 			<depends>
 				<depend name="Input4_S"/>
 			</depends>

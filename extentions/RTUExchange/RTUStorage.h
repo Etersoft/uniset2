@@ -46,6 +46,8 @@ class RTUStorage
 		long getInt( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
 		float getFloat( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
 		bool getState( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
+
+		static ModbusRTU::ModbusData getRegister( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
 	
 		// δοδεματψ: setState, setValue
 		void print();

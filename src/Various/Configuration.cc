@@ -890,23 +890,6 @@ string Configuration::getPort()
 	return UniSetDefaultPort;
 }
 // -------------------------------------------------------------------------
-bool Configuration::file_exist( const string filename )
-{
-	 std::ifstream file;
-
-#ifdef HAVE_IOS_NOCREATE
-	 file.open( filename.c_str(), std::ios::in | std::ios::nocreate );
-#else	
-	 file.open( filename.c_str(), std::ios::in );
-#endif	 
-	 bool result(false);
-	 if( file )
-	 	result = true;
-
-	 file.close();
-	 return result;
-}
-// -------------------------------------------------------------------------
 ObjectId Configuration::getSensorID( const std::string name )
 {
 	return oind->getIdByName(conf->getSensorsSection()+"/"+name);

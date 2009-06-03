@@ -81,7 +81,7 @@ namespace MTR
 	bool setDataBits( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, mtrDataBits d );
 	
 	// -------------------------------------------------------------------------
-	static const int u2size = 2*sizeof(unsigned short);
+	static const int u2size = 2;
 	// -------------------------------------------------------------------------
 	class T1
 	{
@@ -128,6 +128,8 @@ namespace MTR
 			// ------------------------------------------
 			// конструкторы на разные случаи...
 			T3(){ memset(raw.v,0,sizeof(raw.v)); }
+			
+			T3( signed int i ){ raw.val = i; }
 
 			T3( unsigned short v1, unsigned short v2 )
 			{
@@ -177,7 +179,7 @@ namespace MTR
 				memcpy(c,&(data[0]),sizeof(c));
 				sval 	= std::string(c);
 			}
-
+			
 			~T4(){}
 			// ------------------------------------------
 			/*! размер в словах */
@@ -202,6 +204,7 @@ namespace MTR
 					unsigned int val:24;
 					signed char exp; // :8
 				} __attribute__( ( packed ) ) u2;
+				long lval;
 			} T5mem;
 			// ------------------------------------------
 			// конструкторы на разные случаи...
@@ -211,6 +214,11 @@ namespace MTR
 				raw.v[0] = v1;
 				raw.v[1] = v2;
 				val = raw.u2.val * pow(10,raw.u2.exp);
+			}
+			
+			T5( long v )
+			{
+				raw.lval = v;
 			}
 			
 			T5( const ModbusRTU::ModbusData* data )
@@ -247,6 +255,7 @@ namespace MTR
 					signed int val:24;
 					signed char exp; // :8
 				} u2;
+				long lval;
 			} T6mem;
 			// ------------------------------------------
 			// конструкторы на разные случаи...
@@ -256,6 +265,11 @@ namespace MTR
 				raw.v[0] = v1;
 				raw.v[1] = v2;
 				val = raw.u2.val * pow(10,raw.u2.exp);
+			}
+
+			T6( long v )
+			{
+				raw.lval = v;
 			}
 			
 			T6( const ModbusRTU::ModbusData* data )
@@ -293,6 +307,7 @@ namespace MTR
 					unsigned char ic; // :8 - Inductive/capacitive
 					unsigned char ie; // :8 - Import/export 
 				}__attribute__( ( packed ) ) u2;
+				long lval;
 			} T7mem;
 			// ------------------------------------------
 			// конструкторы на разные случаи...
@@ -302,6 +317,10 @@ namespace MTR
 				raw.v[0] = v1;
 				raw.v[1] = v2;
 				val = raw.u2.val * pow(10,-4);
+			}
+			T7( const long v )
+			{
+				raw.lval = v;
 			}
 			
 			T7( const ModbusRTU::ModbusData* data )
@@ -440,6 +459,11 @@ namespace MTR
 			{
 				raw.v[0] = v1;
 				raw.v[1] = v2;
+			}
+
+			F1( float f )
+			{
+				raw.val = f;
 			}
 
 			F1( const ModbusRTU::ModbusData* data )

@@ -1,4 +1,3 @@
-// $Id: RTUExchange.cc,v 1.4 2009/01/23 23:56:54 vpashka Exp $
 // -----------------------------------------------------------------------------
 #include <cmath>
 #include <sstream>
@@ -12,8 +11,6 @@ using namespace UniSetExtentions;
 // -----------------------------------------------------------------------------
 RTUExchange::RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic ):
 UniSetObject_LT(objId),
-rsmap(100),
-maxItem(0),
 mb(0),
 shm(0),
 initPause(0),
@@ -44,31 +41,19 @@ activated(false)
 
 	// ---------- init RS ----------
 //	UniXML_iterator it(cnode);
-	string dev	= conf->getArgParam("--rs-dev",it.getProp("device"));
-	if( dev.empty() )
+	devname	= conf->getArgParam("--rs-dev",it.getProp("device"));
+	if( devname.empty() )
 		throw UniSetTypes::SystemError(myname+"(RTUExchange): Unknown device..." );
 
-	string speed 	= conf->getArgParam("--rs-speed",it.getProp("speed"));
+	speed 	= conf->getArgParam("--rs-speed",it.getProp("speed"));
 	if( speed.empty() )
 		speed = "38400";
 
-	int recv_timeout = atoi(conf->getArgParam("--rs-recv-timeout",it.getProp("recv_timeout")).c_str());
+	recv_timeout = atoi(conf->getArgParam("--rs-recv-timeout",it.getProp("recv_timeout")).c_str());
 
 	mbregFromID = atoi(conf->getArgParam("--mbs-reg-from-id",it.getProp("reg_from_id")).c_str());
 	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
-	mb = new ModbusRTUMaster(dev);
-
-	if( !speed.empty() )
-		mb->setSpeed(speed);
-	
-	mb->setLog(dlog);
-
-	if( recv_timeout > 0 )
-		mb->setTimeout(recv_timeout);
-
-	dlog[Debug::INFO] << myname << "(init): dev=" << dev << " speed=" << speed << endl;
-	// -------------------------------
 
 	polltime = atoi(conf->getArgParam("--rs-polltime",it.getProp("polltime")).c_str());
 	if( !polltime )
@@ -83,8 +68,7 @@ activated(false)
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
-		rsmap.resize(maxItem);
-		dlog[Debug::INFO] << myname << "(init): rsmap size = " << rsmap.size() << endl;
+		rtuQueryOptimization(rmap);
 	}
 	else
 		ic->addReadItem( sigc::mem_fun(this,&RTUExchange::readItem) );
@@ -97,7 +81,7 @@ activated(false)
 		if( sidHeartBeat == DefaultObjectId )
 		{
 			ostringstream err;
-			err << myname << ": не найден идентификатор для датчика 'HeartBeat' " << heart;
+			err << myname << ": ID not found ('HeartBeat') for " << heart;
 			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
@@ -127,17 +111,11 @@ activated(false)
 
 	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
 
-	ai_polltime = atoi(conf->getArgParam("--aiPollTime").c_str());
-	if( ai_polltime > 0 )
-		aiTimer.setTiming(ai_polltime);
-
 	activateTimeout	= atoi(conf->getArgParam("--activate-timeout").c_str());
 	if( activateTimeout<=0 )
 		activateTimeout = 20000;
 
-	int msec = atoi(conf->getArgParam("--rs-timeout",it.getProp("timeout")).c_str());
-	if( msec <=0 )
-		msec = 3000;
+	initMB();
 
 	xmlNode* respNode = conf->findNode(cnode,"RespondList");
 	if( respNode )
@@ -147,44 +125,60 @@ activated(false)
 		{
 			for(;it1.getCurrent(); it1.goNext() )
 			{
-				RespondInfo ri;
 				ModbusRTU::ModbusAddr a = ModbusRTU::str2mbAddr(it1.getProp("addr"));
-				ri.id = conf->getSensorID(it1.getProp("respondSensor"));
-				if( ri.id == DefaultObjectId )
-				{
-					dlog[Debug::CRIT] << myname << ": not found ID for noRespondSensor=" << it1.getProp("respondSensor") << endl;
-					continue;
-				}
-				
-				int tout = atoi(it1.getProp("timeout").c_str());
-				if( tout > 0 )
-					ri.ptTimeout.setTiming(tout);
-				else
-					ri.ptTimeout.setTiming(UniSetTimer::WaitUpTime);
-				
-				ri.invert = atoi(it1.getProp("invert").c_str());
-				
-				respMap[a] = ri;
+				initRespondInfo(rmap,a,it1);
 			}
 		}
 	}
 
+	printMap(rmap);
+//	abort();
 }
 // -----------------------------------------------------------------------------
 RTUExchange::~RTUExchange()
 {
-	// Опрос всех RTU...
-	for( RTUMap::iterator it=rtulist.begin(); it!=rtulist.end(); ++it )
+	for( RTUExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
-		if( it->second )
+		if( it1->second->rtu )
 		{
-			delete it->second;
-			it->second = 0;
+			delete it1->second->rtu;
+			it1->second->rtu = 0;
 		}
+		
+		RTUDevice* d(it1->second);
+		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+			delete it->second;
+
+		delete it1->second;
 	}
 	
 	delete mb;
 	delete shm;
+}
+// -----------------------------------------------------------------------------
+void RTUExchange::initMB()
+{
+	if( !file_exist(devname) )
+	{
+		if( mb )
+		{
+			delete mb;
+			mb=0;
+		}
+		return;
+	}
+
+	mb = new ModbusRTUMaster(devname);
+
+	if( !speed.empty() )
+		mb->setSpeed(speed);
+	
+//	mb->setLog(dlog);
+
+	if( recv_timeout > 0 )
+		mb->setTimeout(recv_timeout);
+
+	dlog[Debug::INFO] << myname << "(init): dev=" << devname << " speed=" << speed << endl;
 }
 // -----------------------------------------------------------------------------
 void RTUExchange::waitSMReady()
@@ -204,100 +198,6 @@ void RTUExchange::waitSMReady()
 		throw SystemError(err.str());
 	}
 }
-// -----------------------------------------------------------------------------
-#if 0
-void RTUExchange::execute()
-{
-	// waiting for SM is ready...
-	waitSMReady();
-	
-	// вызывать обязательно после shm->wait!!!
-	if( !shm->isLocalwork() )
-		readConfiguration();
-
-	rsmap.resize(maxItem);
-	dlog[Debug::INFO] << myname << "(init): rsmap size = " << rsmap.size() << endl;
-	
-	PassiveTimer ptAct(activateTimeout);
-	while( !activated && !ptAct.checkTime() )
-	{	
-		cout << myname << "(execute): wait activate..." << endl;
-		msleep(300);
-		if( activated )
-		{
-			cout << myname << "(execute): activate OK.." << endl;
-			break;
-		}
-	}
-			
-	if( !activated )
-		dlog[Debug::CRIT] << myname << "(execute): ************* don`t activate?! ************" << endl;
-
-	// подождать пока пройдёт инициализация датчиков
-	// см. activateObject() и sysCommand()
-	{
-		// ставим паузу чтобы это mutex сработал обязательно позже
-		// чем mutex в sysCommand и activateObject
-		msleep(1500); 
-		UniSetTypes::uniset_mutex_lock l(mutex_start, 15000);
-	}
-
-	// ---------- init RS ----------
-	UniXML_iterator it(cnode);
-	string dev	= conf->getArgParam("--rs-dev",it.getProp("device"));
-	if( dev.empty() )
-		throw UniSetTypes::SystemError(myname+"(RTUExchange): Unknown device..." );
-
-	string speed 	= conf->getArgParam("--rs-speed",it.getProp("speed"));
-	int recv_timeout = atoi(conf->getArgParam("--rs-recv-timeout",it.getProp("recv_timeout")).c_str());
-
-	string saddr = conf->getArgParam("--rs-my-addr",it.getProp("addr"));
-	ModbusRTU::ModbusAddr myaddr = ModbusRTU::str2mbAddr(saddr);
-	if( saddr.empty() )
-		myaddr = 0x01;
-
-	mb = new ModbusMaster(dev,myaddr);
-
-	if( !speed.empty() )
-		mb->setSpeed(speed);
-
-	if( recv_timeout > 0 )
-		mb->setTimeout(recv_timeout);
-
-	dlog[Debug::INFO] << myname << "(init): myaddr=" << ModbusRTU::addr2str(myaddr) 
-			<< " dev=" << dev << " speed=" << speed << endl;
-	// -------------------------------
-
-	// начальная инициализация
-	if( !force )
-	{
-		uniset_mutex_lock l(pollMutex,2000);
-		force = true;
-		poll();
-		force = false;
-	}
-
-	while( activated )
-	{
-		try
-		{
-			step();
-		}
-		catch( UniSetTypes::Exception& ex)
-		{
-			cerr << myname << "(step): " << ex << std::endl;
-		}
-		catch(...)
-		{
-			cerr << myname << "(step): catch ..." << std::endl;
-		}	
-
-		msleep(polltime);
-	}
-
-	cerr << "************* execute FINISH **********" << endl;
-}
-#endif
 // -----------------------------------------------------------------------------
 void RTUExchange::timerInfo( TimerMessage *tm )
 {
@@ -328,243 +228,262 @@ void RTUExchange::step()
 				<< "(step): (hb) " << ex << std::endl;
 		}
 	}
-	
-	for( RespondMap::iterator it=respMap.begin(); it!=respMap.end(); ++it )
-	{
-		try
-		{
-			bool set = it->second.invert ? !it->second.state : it->second.state;
-			shm->localSaveState(it->second.dit,it->second.id,set,getId());
-		}
-		catch(Exception& ex)
-		{
-			dlog[Debug::CRIT] << myname
-				<< "(step): (respond) " << ex << std::endl;
-		}
-	}
 }
 
 // -----------------------------------------------------------------------------
 void RTUExchange::poll()
 {
-	for( RTUMap::iterator it=rtulist.begin(); it!=rtulist.end(); ++it )
+	if( !mb )
 	{
-		if( !activated )
-			return;
-
-		bool respOK = true;
-		try
-		{
-			cout << "poll RTU=(" << (int)it->second->getAddress() 
-								<< ")" << ModbusRTU::addr2str(it->second->getAddress());
-			if( it->second )
-			{
-				mb->cleanupChannel();
-				it->second->poll(mb);
-				cout << " [OK] " << endl;
-//				cout << it->second << endl;
-			}
-		}
-		catch( ModbusRTU::mbException& ex )
-		{ 
-			cout << " [ FAILED ] (" << ex << ")" << endl; 
-			respOK = false;
-		}
-
-		setRespond(it->second->getAddress(),respOK);
+		initMB();
+		return;
 	}
 
-	for( RSMap::iterator it=rsmap.begin(); it!=rsmap.end(); ++it )
+	for( RTUExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
-		if( !activated )
-			return;
-
-		if( it->mbaddr == 0 ) // || it->mbreg == 0 )
-			continue;
+		RTUDevice* d(it1->second);
 		
-		if( it->si.id == DefaultObjectId )
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr) << endl;
+	
+		if( d->dtype==RTUExchange::dtRTU188 )
 		{
-			cerr << myname << "(poll): sid=DefaultObjectId?!" << endl;
-			continue;
+			if( !d->rtu )
+				continue;
+
+			if( dlog.debugging(Debug::INFO) )
+			{
+				dlog[Debug::INFO] << myname << "(pollRTU188): poll RTU188 "
+					<< " mbaddr=" << ModbusRTU::addr2str(d->mbaddr)
+					<< endl;
+			}
+
+			try
+			{
+#warning For Debug
+//				mb->cleanupChannel();
+				d->resp_real = true;
+				d->rtu->poll(mb);
+			}
+			catch( ModbusRTU::mbException& ex )
+			{ 
+				if( d->resp_real )
+				{
+					dlog[Debug::CRIT] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
+						<< " -> " << ex << endl;
+					d->resp_real = false;
+				}
+			}
 		}
-		
-
-		IOBase* ib = &(*it);
-
-		try
+		else 
 		{
-			if( it->stype == UniversalIO::AnalogInput )
+			for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 			{
-				long val = 0;
-				if( it->devtype == dtRTU )
-					val = pollRTU(it);
-				else if( it->devtype == dtMTR )
+				d->resp_real = true;
+				try
 				{
-					val = pollMTR(it);
-					IOBase::processingAsAI( ib, val, shm, force );
+					if( d->dtype==RTUExchange::dtRTU || d->dtype==RTUExchange::dtMTR )
+						pollRTU(d,it);
 				}
-				else if( it->devtype == dtRTU188 )
-				{
-					val = pollRTU188(it);
-					IOBase::processingAsAI( ib, val, shm, force );
-				}
-				else
-					continue;
-			}
-			else if( it->stype == UniversalIO::DigitalInput )
-			{
-				bool set = false;
-				if( it->devtype == dtRTU )
-					set = pollRTU(it) ? true : false;
-				else if( it->devtype == dtMTR )
-					set = pollMTR(it) ? true : false;
-				else if( it->devtype == dtRTU188 )
-					set = pollRTU188(it) ? true : false;
-				else
-					continue;
-
-				IOBase::processingAsDI( ib, set, shm, force );
-			}
-			else if( it->stype == UniversalIO::AnalogOutput ||
-					 it->stype == UniversalIO::DigitalOutput )
-			{
-				ModbusRTU::ModbusData d = 0;
-				if( it->stype == UniversalIO::AnalogOutput )
-					d = IOBase::processingAsAO( ib, shm, force_out );
-				else 
-					d = IOBase::processingAsDO( ib, shm, force_out ) ? 1 : 0;
-
-				using namespace ModbusRTU;
-				switch(it->mbfunc)
-				{
-					case fnWriteOutputSingleRegister:
+				catch( ModbusRTU::mbException& ex )
+				{ 
+					if( d->resp_real )
 					{
-						WriteSingleOutputRetMessage ret = mb->write06( it->mbaddr,it->mbreg,d);
+						dlog[Debug::CRIT] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
+							<< " -> " << ex << endl;
+						d->resp_real = false;
 					}
-					break;
-
-					case fnWriteOutputRegisters:
-					{
-						WriteOutputMessage msg(it->mbaddr,it->mbreg);
-						msg.addData(d);
-						WriteOutputRetMessage ret = mb->write10(msg);
-					}
-					break;
-					
-					default:
-						break;
 				}
+
+				if( it==d->regmap.end() )
+					break;
 			}
-			
-			if( it->devtype != dtRTU188 )
-				setRespond(it->mbaddr,true);
-			continue;
-		}
-		catch(ModbusRTU::mbException& ex )
-		{
-			dlog[Debug::LEVEL3] << myname << "(poll): " << ex << endl;
-			if( it->devtype != dtRTU188 )
-				setRespond(it->mbaddr,false);
-		}
-		catch(IOController_i::NameNotFound &ex)
-		{
-			dlog[Debug::LEVEL3] << myname << "(poll):(NameNotFound) " << ex.err << endl;
-		}
-		catch(IOController_i::IOBadParam& ex )
-		{
-			dlog[Debug::LEVEL3] << myname << "(poll):(IOBadParam) " << ex.err << endl;
-		}
-		catch(IONotifyController_i::BadRange )
-		{
-			dlog[Debug::LEVEL3] << myname << "(poll): (BadRange)..." << endl;
-		}
-		catch( Exception& ex )
-		{
-			dlog[Debug::LEVEL3] << myname << "(poll): " << ex << endl;
-		}
-		catch(CORBA::SystemException& ex)
-		{
-			dlog[Debug::LEVEL3] << myname << "(poll): СORBA::SystemException: "
-				<< ex.NP_minorString() << endl;
-		}
-		catch(...)
-		{
-			dlog[Debug::LEVEL3] << myname << "(poll): catch ..." << endl;
 		}
 	}
+
+	// update SharedMemory...
+	updateSM();
+	
+//	printMap(rmap);
 }
 // -----------------------------------------------------------------------------
-long RTUExchange::pollRTU( RSMap::iterator& p )
+void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 {
+	RegInfo* p(it->second);
+
 	if( dlog.debugging(Debug::INFO) )
 	{
 		dlog[Debug::INFO] << myname << "(pollRTU): poll "
-			<< " mbaddr=" << ModbusRTU::addr2str(p->mbaddr)
+			<< " mbaddr=" << ModbusRTU::addr2str(dev->mbaddr)
 			<< " mbreg=" << ModbusRTU::dat2str(p->mbreg)
 			<< " mbfunc=" << p->mbfunc
-			<< " rnum=" << p->rnum
-			<< " vtype=" << p->vType
-			<< " rnum=" << p->rnum
+			<< " q_count=" << p->q_count
 			<< endl;
+	}
+	
+	if( p->q_count == 0 )
+	{
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << myname << "(pollRTU): q_count=0 for mbreg=" << ModbusRTU::dat2str(p->mbreg) 
+					<< " IGNORE register..." << endl;
+		return ;
 	}
 	
 	switch( p->mbfunc )
 	{
 		case ModbusRTU::fnReadInputRegisters:
 		{
-			ModbusRTU::ReadInputRetMessage ret = mb->read04(p->mbaddr,p->mbreg,p->rnum);
-			if( p->vType == VTypes::vtUnknown )
-			{
-				IOBase::processingAsAI( &(*p), ret.data[0], shm, force );
-				return ret.data[0];
-			}
-			if( p->vType == VTypes::vtF2 )
-			{
-				VTypes::F2 f(ret.data, sizeof(ret.data));
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr,p->mbreg,p->q_count);
+			for( int i=0; i<p->q_count; i++,it++ )
+				it->second->mbval = ret.data[i];
 				
-				cerr << "****** float v=" << (float)f << endl;
-				IOBase::processingFasAI( &(*p), f, shm, force );
-				return 0;
-			}
-
-			if( p->vType == VTypes::vtF4 )
-			{
-				VTypes::F4 f(ret.data, sizeof(ret.data));
-				IOBase::processingFasAI( &(*p), f, shm, force );
-				return 0;
-			}
+			it--;
 		}
 		break;
 
 		case ModbusRTU::fnReadOutputRegisters:
 		{
-			ModbusRTU::ReadOutputRetMessage ret = mb->read03(p->mbaddr, p->mbreg, p->rnum);
-			return ret.data[0];
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr, p->mbreg,p->q_count);
+			for( int i=0; i<p->q_count; i++,it++ )
+				it->second->mbval = ret.data[i];
+			it--;
 		}
 		break;
 		
 		case ModbusRTU::fnReadInputStatus:
 		{
-			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(p->mbaddr, p->mbreg,1);
-			ModbusRTU::DataBits b(ret.data[0]);
-			return b[p->nbit];
+			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr, p->mbreg,p->q_count);
+			for( int i=0; i<p->q_count; i++,it++ )
+				it->second->mbval = ret.data[i];
+			it--;
 		}
 		break;
 		
 		case ModbusRTU::fnReadCoilStatus:
 		{
-			ModbusRTU::ReadCoilRetMessage ret = mb->read01(p->mbaddr,p->mbreg,1);
-			ModbusRTU::DataBits b(ret.data[0]);
-			return b[p->nbit];
+			ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr,p->mbreg,p->q_count);
+			for( int i=0; i<p->q_count; i++,it++ )
+				it->second->mbval = ret.data[i];
+			it--;
+		}
+		break;
+		
+		case ModbusRTU::fnWriteOutputSingleRegister:
+		{
+			if( p->q_count != 1 )
+			{
+				dlog[Debug::CRIT] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg) 
+					<< " IGNORE WRITE SINGLE REGISTER q_count=" << p->q_count << " ..." << endl;
+			
+			}
+			else
+				ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg,p->mbval);
+		}
+		break;
+
+		case ModbusRTU::fnWriteOutputRegisters:
+		{
+			ModbusRTU::WriteOutputMessage msg(dev->mbaddr,p->mbreg);
+			for( int i=0; i<p->q_count; i++,it++ )
+				msg.addData(it->second->mbval);
+			it--;
+			ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
 		}
 		break;
 		
 		default:
+		{
+			if( dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg) 
+					<< " IGNORE mfunc=" << (int)p->mbfunc << " ..." << endl;
+		}
 		break;
 	}
-	
-	return 0;
 }
+// -----------------------------------------------------------------------------
+bool RTUExchange::RTUDevice::checkRespond()
+{
+	bool prev = resp_state;
+	if( resp_trTimeout.change(resp_real) )
+	{	
+		if( resp_real )
+			resp_state = true;
+			
+		resp_ptTimeout.reset();
+	}
+
+	if( resp_state && !resp_real && resp_ptTimeout.checkTime() )
+		resp_state = false; 
+	
+	return ( prev != resp_state );
+}
+// -----------------------------------------------------------------------------
+void RTUExchange::updateSM()
+{
+	for( RTUExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+	{
+		RTUDevice* d(it1->second);
+		
+		// update respond sensors......
+		if( d->checkRespond() && d->resp_id != DefaultObjectId  )
+		{
+			try
+			{
+				bool set = d->resp_invert ? !d->resp_state : d->resp_state;
+				shm->localSaveState(d->resp_dit,d->resp_id,set,getId());
+			}
+			catch(Exception& ex)
+			{
+				dlog[Debug::CRIT] << myname
+					<< "(step): (respond) " << ex << std::endl;
+			}
+		}
+
+		// update values...
+		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+		{
+			try
+			{
+				if( d->dtype == dtRTU )
+					updateRTU(it);
+				else if( d->dtype == dtMTR )
+					updateMTR(it);
+				else if( d->dtype == dtRTU188 )
+					updateRTU188(it);
+			}
+			catch(IOController_i::NameNotFound &ex)
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateSM):(NameNotFound) " << ex.err << endl;
+			}
+			catch(IOController_i::IOBadParam& ex )
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
+			}
+			catch(IONotifyController_i::BadRange )
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateSM): (BadRange)..." << endl;
+			}
+			catch( Exception& ex )
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateSM): " << ex << endl;
+			}
+			catch(CORBA::SystemException& ex)
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateSM): CORBA::SystemException: "
+					<< ex.NP_minorString() << endl;
+			}
+			catch(...)
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateSM): catch ..." << endl;
+			}
+			
+			if( it==d->regmap.end() )
+				break;
+		}
+	}
+}
+
+/*
 // -----------------------------------------------------------------------------
 long RTUExchange::pollRTU188( RSMap::iterator& p )
 {
@@ -579,78 +498,7 @@ long RTUExchange::pollRTU188( RSMap::iterator& p )
 	
 	return 0;
 }
-// -----------------------------------------------------------------------------
-long RTUExchange::pollMTR( RSMap::iterator& p )
-{
-	unsigned short v1=0, v2=0;
-	if( p->mbfunc == ModbusRTU::fnReadInputRegisters )
-	{
-		ModbusRTU::ReadInputRetMessage ret = mb->read04(p->mbaddr, p->mbreg, MTR::wsize(p->mtrType));
-		v1 = ret.data[0];
-		v2 = ret.data[1];
-	}
-	else if( p->mbfunc == ModbusRTU::fnReadOutputRegisters )
-	{
-		ModbusRTU::ReadOutputRetMessage ret = mb->read03(p->mbaddr, p->mbreg, MTR::wsize(p->mtrType));
-		v1 = ret.data[0];
-		v2 = ret.data[1];
-	}
-	else
-	{
-		cerr << myname << "(readMTR): неподдерживаемая функция чтения " << (int)p->mbfunc << endl;
-		return 0;
-	}
-
-	if( p->mtrType == MTR::mtT1 )
-	{
-		MTR::T1 t(v1);
-		return t.val;
-	}
-		
-	if( p->mtrType == MTR::mtT2 )
-	{
-		MTR::T2 t(v1);
-		return t.val;
-	}
-
-	if( p->mtrType == MTR::mtT3 )
-	{
-		MTR::T3 t(v1,v2);
-		return (long)t;
-	}
-
-	if( p->mtrType == MTR::mtT4 )
-	{
-		MTR::T4 t(v1);
-		return atoi(t.sval.c_str());
-	}
-
-	if( p->mtrType == MTR::mtT5 )
-	{
-		MTR::T5 t(v1,v2);
-		return (long)t.val;
-	}
-
-	if( p->mtrType == MTR::mtT6 )
-	{
-		MTR::T6 t(v1,v2);
-		return (long)t.val;
-	}
-
-	if( p->mtrType == MTR::mtT7 )
-	{
-		MTR::T7 t(v1,v2);
-		return (long)t.val;
-	}
-
-	if( p->mtrType == MTR::mtF1 )
-	{
-		MTR::F1 t(v1,v2);
-		return t;
-	}
-
-	return 0;
-}
+*/
 // -----------------------------------------------------------------------------
 void RTUExchange::processingMessage(UniSetTypes::VoidMessage *msg)
 {
@@ -704,15 +552,16 @@ void RTUExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 	{
 		case SystemMessage::StartUp:
 		{
-			if( rsmap.empty() )
+			if( rmap.empty() )
 			{
-				dlog[Debug::CRIT] << myname << "(sysCommand): rsmap EMPTY! terminated..." << endl;
+				dlog[Debug::CRIT] << myname << "(sysCommand): rmap EMPTY! terminated..." << endl;
 				raise(SIGTERM);
 				return; 
 			}
 
 			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << myname << "(sysCommand): rsmap size= "<< rsmap.size() << endl;
+				dlog[Debug::INFO] << myname << "(sysCommand): rmap size= " << rmap.size() << endl;
+
 
 		
 			waitSMReady();
@@ -823,6 +672,7 @@ void RTUExchange::askSensors( UniversalIO::UIOCommand cmd )
 		throw SystemError(err.str());
 	}
 
+/*
 	RSMap::iterator it=rsmap.begin();
 	for( ; it!=rsmap.end(); ++it )
 	{
@@ -842,10 +692,12 @@ void RTUExchange::askSensors( UniversalIO::UIOCommand cmd )
 		}
 		catch(...){}
 	}
+*/	
 }
 // ------------------------------------------------------------------------------------------
 void RTUExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
+/*
 	RSMap::iterator it=rsmap.begin();
 	for( ; it!=rsmap.end(); ++it )
 	{
@@ -868,6 +720,7 @@ void RTUExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 			break;
 		}
 	}
+*/
 }
 // ------------------------------------------------------------------------------------------
 bool RTUExchange::activateObject()
@@ -879,6 +732,8 @@ bool RTUExchange::activateObject()
 		activated = false;
 		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
 		UniSetObject_LT::activateObject();
+		if( !shm->isLocalwork() )
+			rtuQueryOptimization(rmap);
 		initIterators();
 		activated = true;
 	}
@@ -892,6 +747,7 @@ void RTUExchange::sigterm( int signo )
 	activated = false;
 #warning Доделать...
 	// выставление безопасного состояния на выходы....
+/*
 	RSMap::iterator it=rsmap.begin();
 	for( ; it!=rsmap.end(); ++it )
 	{
@@ -910,7 +766,7 @@ void RTUExchange::sigterm( int signo )
 		}
 		catch(...){}
 	}
-	
+*/	
 	UniSetObject_LT::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
@@ -968,118 +824,125 @@ bool RTUExchange::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 }
 
 // ------------------------------------------------------------------------------------------
-
-bool RTUExchange::initItem( UniXML_iterator& it )
+RTUExchange::RTUDevice* RTUExchange::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAddr a, UniXML_iterator& xmlit )
 {
-	string rstype = it.getProp("mbtype");
-
-	RSProperty p;
-
-	bool ret = false;
-
-	if( rstype == "mtr" || rstype == "MTR" )
-		ret = initMTRitem(it,p);
-	else if( rstype == "rtu" || rstype == "RTU" )
-		ret = initRTUitem(it,p);
-	else if ( rstype == "rtu188" || rstype == "RTU188" )
+	RTUDeviceMap::iterator it = mp.find(a);
+	if( it != mp.end() )
 	{
-		ret = initRTU188item(it,p);
-		if( ret )
+		DeviceType dtype = getDeviceType(xmlit.getProp("mbtype"));
+		if( it->second->dtype != dtype )
 		{
-			RTUMap::iterator r = rtulist.find(p.mbaddr);
-			if( r == rtulist.end() )
-			{
-				p.rtu = new RTUStorage(p.mbaddr);
-				rtulist[p.mbaddr] = p.rtu;
-			}
-			else
-				p.rtu = r->second;
+			dlog[Debug::CRIT] << myname << "(addDev): OTHER mbtype=" << dtype << " for " << xmlit.getProp("name")
+				<< ". Already used devtype=" <<  it->second->dtype 
+				<< " for mbaddr=" << ModbusRTU::addr2str(it->second->mbaddr)
+				<< endl;
+			return 0;
 		}
-	}
-		
-	if( ret )
-	{
-		// если вектор уже заполнен
-		// то увеличиваем его на 10 элементов (с запасом)
-		// после инициализации делается resize
-		// под текущее количество
-		if( maxItem >= rsmap.size() )
-			rsmap.resize(maxItem+10);
-	
-		rsmap[maxItem] = p;
-		maxItem++;
-		
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << myname << "(initItem): add " << p << endl;
+
+		dlog[Debug::INFO] << myname << "(addDev): device for addr=" << ModbusRTU::addr2str(a) 
+			<< " already added. Ignore device params for " << xmlit.getProp("name") << " ..." << endl;
+		return it->second;
 	}
 
-	return ret;
+	RTUExchange::RTUDevice* d = new RTUExchange::RTUDevice();
+	d->mbaddr = a;
+
+	if( !initRTUDevice(d,xmlit) )
+	{	
+		delete d;
+		return 0;
+	}
+
+	mp.insert(RTUDeviceMap::value_type(a,d));
+	return d;
 }
-
 // ------------------------------------------------------------------------------------------
-bool RTUExchange::initCommParam( UniXML_iterator& it, RSProperty& p )
+RTUExchange::RegInfo* RTUExchange::addReg( RegMap& mp, ModbusRTU::ModbusData r, 
+											UniXML_iterator& xmlit, RTUExchange::RTUDevice* dev,
+											RTUExchange::RegInfo* rcopy )
 {
-	if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,&dlog,myname) )
-		return false;
-
-	string addr = it.getProp("mbaddr");
-	if( addr.empty() )
-		return true;
-
-	p.mbaddr 	= ModbusRTU::str2mbAddr(addr);
-	p.mbfunc 	= ModbusRTU::fnUnknown;
-
-	string f = it.getProp("mbfunc");
-	if( !f.empty() )
+	RegMap::iterator it = mp.find(r);
+	if( it != mp.end() )
 	{
-		p.mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f.c_str());
-		if( p.mbfunc == ModbusRTU::fnUnknown )
+		if( !it->second->dev )
 		{
-			dlog[Debug::CRIT] << myname << "(initCommParam): Неверный mbfunc ='" << f
-					<< "' для  датчика " << it.getProp("name") << endl;
-
+			dlog[Debug::CRIT] << myname << "(addReg): for reg=" << ModbusRTU::dat2str(r) 
+				<< " dev=0!!!! " << endl;
+			return 0;
+		}
+	
+		if( it->second->dev->dtype != dev->dtype )
+		{
+			dlog[Debug::CRIT] << myname << "(addReg): OTHER mbtype=" << dev->dtype << " for reg=" << ModbusRTU::dat2str(r) 
+				<< ". Already used devtype=" <<  it->second->dev->dtype << " for " << it->second->dev << endl;
+			return 0;
+		}
+	
+		dlog[Debug::INFO] << myname << "(addReg): reg=" << ModbusRTU::dat2str(r) 
+			<< " already added. Ignore register params for " << xmlit.getProp("name") << " ..." << endl;
+			
+		return it->second;
+	}
+	
+	RTUExchange::RegInfo* ri;
+	if( rcopy )
+	{
+		ri = new RTUExchange::RegInfo(*rcopy);
+		ri->slst.clear();
+		ri->mbreg = r;
+	}
+	else
+	{
+		ri = new RTUExchange::RegInfo();
+		if( !initRegInfo(ri,xmlit,dev) )
+		{
+			delete ri;
+			return 0;
+		}
+		ri->mbreg = r;
+	}
+	
+	mp.insert(RegMap::value_type(r,ri));
+	return ri;
+}
+// ------------------------------------------------------------------------------------------
+RTUExchange::RSProperty* RTUExchange::addProp( PList& plist, RSProperty& p )
+{
+	for( PList::iterator it=plist.begin(); it!=plist.end(); ++it )
+	{
+		if( it->si.id == p.si.id && it->si.node == p.si.node )
+			return &(*it);
+	}
+	
+	plist.push_back(p);
+	PList::iterator it = plist.end();
+	it--;
+	return &(*it);
+}
+// ------------------------------------------------------------------------------------------
+bool RTUExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
+{
+	if( !IOBase::initItem(&p,it,shm,&dlog,myname) )
+		return false;
+	
+	string sbit(it.getProp("nbit"));
+	if( !sbit.empty() )
+	{
+		p.nbit = UniSetTypes::uni_atoi(sbit.c_str());
+		if( p.nbit < 0 || p.nbit >= ModbusRTU::BitsPerData )
+		{
+			dlog[Debug::CRIT] << myname << "(initRSProperty): BAD nbit=" << p.nbit 
+				<< ". (0 >= nbit < " << ModbusRTU::BitsPerData <<")." << endl;
 			return false;
 		}
 	}
-
-	return true;
-}
-// ------------------------------------------------------------------------------------------
-bool RTUExchange::initRTUitem( UniXML_iterator& it, RSProperty& p )
-{
-	p.devtype = dtRTU;
-
-	if( !initCommParam(it,p) )
-		return false;
 	
-	if( mbregFromID )
+	if( p.nbit > 0 && 
+		( p.stype == UniversalIO::AnalogInput ||
+			p.stype == UniversalIO::AnalogOutput ) )
 	{
-		p.mbreg = p.si.id;
-		return true;
-	}
-
-	string reg = it.getProp("mbreg");
-	if( reg.empty() )
-		return true;
-
-	p.mbreg = ModbusRTU::str2mbData(reg);
-	
-	
-	if( p.mbfunc == ModbusRTU::fnReadCoilStatus ||
-		p.mbfunc == ModbusRTU::fnReadInputStatus )
-	{
-		string nb = it.getProp("nbit");
-		if( nb.empty() )
-		{
-			dlog[Debug::CRIT] << myname << "(readRTUItem): Unknown nbit. for " 
-					<< it.getProp("name") 
-					<< " mbfunc=" << p.mbfunc
-					<< endl;
-
-			return false;
-		}
-		
-		p.nbit = UniSetTypes::uni_atoi(nb.c_str());
+		dlog[Debug::WARN] << "(initRSProperty): (ignore) uncorrect param`s nbit>1 (" << p.nbit << ")"
+			<< " but iotype=" << p.stype << " for " << it.getProp("name") << endl;
 	}
 	
 	string vt(it.getProp("vtype"));
@@ -1093,7 +956,7 @@ bool RTUExchange::initRTUitem( UniXML_iterator& it, RSProperty& p )
 		VTypes::VType v(VTypes::str2type(vt));
 		if( v == VTypes::vtUnknown )
 		{
-			dlog[Debug::CRIT] << myname << "(readRTUItem): Unknown rtuVType=" << vt << " for " 
+			dlog[Debug::CRIT] << myname << "(initRSProperty): Unknown rtuVType=" << vt << " for " 
 					<< it.getProp("name") 
 					<< endl;
 
@@ -1107,99 +970,299 @@ bool RTUExchange::initRTUitem( UniXML_iterator& it, RSProperty& p )
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-
-bool RTUExchange::initMTRitem( UniXML_iterator& it, RSProperty& p )
+bool RTUExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  RTUExchange::RTUDevice* dev )
 {
-	p.devtype = dtMTR;
+	r->dev = dev;
+	r->mbval = UniSetTypes::uni_atoi(it.getProp("default").c_str());
 
-	if( !initCommParam(it,p) )
-		return false;
-	
-	p.mtrType = MTR::str2type(it.getProp("mtrtype"));
-	if( p.mtrType == MTR::mtUnknown )
+	if( dev->dtype == RTUExchange::dtMTR )
 	{
-		dlog[Debug::CRIT] << myname << "(readMTRItem): Неверный MTR-тип '" 
-					<< it.getProp("mtrtype")
-					<< "' для  датчика " << it.getProp("name") << endl;
-
+		// only for MTR
+		if( !initMTRitem(it,r) )
+			return false;
+	}
+	else if( dev->dtype == RTUExchange::dtRTU188 )
+	{	// only for RTU188
+		if( !initRTU188item(it,r) )
+			return false;
+	}
+	else if( dev->dtype == RTUExchange::dtRTU )
+	{
+	}
+	else
+	{
+		dlog[Debug::CRIT] << myname << "(initRegInfo): Unknown mbtype='" << dev->dtype
+				<< "' for " << it.getProp("name") << endl;
 		return false;
 	}
 
 	if( mbregFromID )
+		r->mbreg = conf->getSensorID(it.getProp("name"));
+	else if( dev->dtype != RTUExchange::dtRTU188 )
+	{	
+		string reg = it.getProp("mbreg");
+		if( reg.empty() )
+		{
+			dlog[Debug::CRIT] << myname << "(initRegInfo): unknown mbreg for " << it.getProp("name") << endl;
+			return false;
+		}
+		r->mbreg = ModbusRTU::str2mbData(reg);
+	}
+	else // if( dev->dtype == RTUExchange::dtRTU188 )
 	{
-		p.mbreg = p.si.id;
-		return true;
+		UniversalIO::IOTypes stype = UniSetTypes::getIOType(it.getProp("iotype"));
+		r->mbreg = RTUStorage::getRegister(r->rtuJack,r->rtuChan,stype);
+		if( r->mbreg == -1 )
+		{
+			dlog[Debug::CRIT] << myname << "(initRegInfo): (RTU188) unknown mbreg for " << it.getProp("name") << endl;
+			return false;
+		}
 	}
 
-	string reg = it.getProp("mbreg");
-	if( reg.empty() )
-		return true;
-
-	p.mbreg = ModbusRTU::str2mbData(reg);
+	r->mbfunc 	= ModbusRTU::fnUnknown;
+	string f = it.getProp("mbfunc");
+	if( !f.empty() )
+	{
+		r->mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f.c_str());
+		if( r->mbfunc == ModbusRTU::fnUnknown )
+		{
+			dlog[Debug::CRIT] << myname << "(initRegInfo): Unknown mbfunc ='" << f
+					<< "' for " << it.getProp("name") << endl;
+			return false;
+		}
+	}
+	
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-bool RTUExchange::initRTU188item( UniXML_iterator& it, RSProperty& p )
+RTUExchange::DeviceType RTUExchange::getDeviceType( const std::string dtype )
 {
-	p.devtype = dtRTU188;
+	if( dtype.empty() )
+		return dtUnknown;
 
-	if( !check_item(it) )
+	if( dtype == "mtr" || dtype == "MTR" )
+		return dtMTR;
+	
+	if( dtype == "rtu" || dtype == "RTU" )
+		return dtRTU;
+	
+	if ( dtype == "rtu188" || dtype == "RTU188" )
+		return dtRTU188;
+
+	return dtUnknown;
+
+}
+// ------------------------------------------------------------------------------------------
+bool RTUExchange::initRTUDevice( RTUDevice* d, UniXML_iterator& it )
+{
+	d->dtype = getDeviceType(it.getProp("mbtype"));
+
+	if( d->dtype == dtUnknown )
 	{
-		cerr << "******* false filter: " << it.getProp("name") << endl;
+		dlog[Debug::CRIT] << myname << "(initRTUDevice): Unknown mbtype=" << it.getProp("mbtype")
+			<< ". Use: rtu | mtr | rtu188" 
+			<< " for " << it.getProp("name") << endl;
 		return false;
 	}
 
-	if( !initCommParam(it,p) )
+	string addr = it.getProp("mbaddr");
+	if( addr.empty() )
+	{
+		dlog[Debug::CRIT] << myname << "(initRTUDevice): Unknown mbaddr for " << it.getProp("name") << endl;
+		return false;
+	}
+
+	d->mbaddr = ModbusRTU::str2mbAddr(addr);
+	return true;
+}
+// ------------------------------------------------------------------------------------------
+
+bool RTUExchange::initItem( UniXML_iterator& it )
+{
+	RSProperty p;
+	if( !initRSProperty(p,it) )
 		return false;
 
+	string addr = it.getProp("mbaddr");
+	if( addr.empty() )
+	{
+		dlog[Debug::CRIT] << myname << "(initItem): Unknown mbaddr='" << addr << " for " << it.getProp("name") << endl;
+		return false;
+	}
+
+	ModbusRTU::ModbusAddr mbaddr = ModbusRTU::str2mbAddr(addr);
+
+	RTUDevice* dev = addDev(rmap,mbaddr,it);
+	if( !dev )
+	{
+		dlog[Debug::CRIT] << myname << "(initItem): " << it.getProp("name") << " CAN`T ADD for polling!" << endl;
+		return false;
+	}
+
+	ModbusRTU::ModbusData mbreg;
+
+	if( mbregFromID )
+		mbreg = p.si.id; // conf->getSensorID(it.getProp("name"));
+	else if( dev->dtype != RTUExchange::dtRTU188 )
+	{	
+		string reg = it.getProp("mbreg");
+		if( reg.empty() )
+		{
+			dlog[Debug::CRIT] << myname << "(initRegInfo): unknown mbreg for " << it.getProp("name") << endl;
+			return false;
+		}
+		mbreg = ModbusRTU::str2mbData(reg);
+	}
+	else // if( dev->dtype == RTUExchange::dtRTU188 )
+	{
+		RegInfo rr;
+		initRegInfo(&rr,it,dev);
+		mbreg = RTUStorage::getRegister(rr.rtuJack,rr.rtuChan,p.stype);
+		if( mbreg == -1 )
+		{
+			dlog[Debug::CRIT] << myname << "(initItem): unknown mbreg for " << it.getProp("name") << endl;
+			return false;
+		}
+	}
+
+	RegInfo* ri = addReg(dev->regmap,mbreg,it,dev);
+
+	if( dev->dtype == dtMTR )
+	{
+		p.rnum = MTR::wsize(ri->mtrType);
+		if( p.rnum <= 0 )
+		{
+			dlog[Debug::CRIT] << myname << "(initItem): unknown word size for " << it.getProp("name") << endl;
+			return false;
+		}
+	}
+
+	if( !ri )
+		return false;
+	ri->dev = dev;
+
+	// п÷п═п·п▓п∙п═п п░!
+	// п╣я│п╩п╦ я└я┐п╫п╨я├п╦я▐ п╫п╟ п╥п╟п©п╦я│я▄, я┌п╬ п╫п╟п╢п╬ п©я─п╬п╡п╣я─п╦я┌я▄
+	// я┤я┌п╬ п╬п╢п╦п╫ п╦ я┌п╬я┌п╤п╣ я─п╣пЁп╦я│я┌я─ п╫п╣ п©п╣я─п╣п╥п╟п©п╦я┬я┐я┌ п╫п╣я│п╨п╬п╩я▄п╨п╬ п╢п╟я┌я┤п╦п╨п╬п╡
+	// я█я┌п╬ п╡п╬п╥п╪п╬п╤п╫п╬ я┌п╬п╩я▄п╨п╬, п╣я│п╩п╦ п╬п╫п╦ п©п╦я┬я┐я┌ п╠п╦я┌я▀!!
+	// п≤п╒п·п⌠:
+	// п∙я│п╩п╦ п╢п╩я▐ я└я┐п╫п╨я├п╦п╧ п╥п╟п©п╦я│п╦ я│п©п╦я│п╬п╨ п╢п╟я┌я┤п╦п╨п╬п╡ п╫п╟ п╬п╢п╦п╫ я─п╣пЁп╦я│я┌я─ > 1
+	// п╥п╫п╟я┤п╦я┌ п╡ я│п©п╦я│п╨п╣ п╪п╬пЁя┐я┌ п╠я▀я┌я▄ я┌п╬п╩я▄п╨п╬ п╠п╦я┌п╬п╡я▀п╣ п╢п╟я┌я┤п╦п╨п╦
+	// п╦ п╣я│п╩п╦ п╦п╢я▒я┌ п©п╬п©я▀я┌п╨п╟ п╡п╫п╣я│я┌п╦ п╡ я│п©п╦я│п╬п╨ п╫п╣ п╠п╦я┌п╬п╡я▀п╧ п╢п╟я┌я┤п╦п╨ я┌п╬ п·п╗п≤п▒п п░!
+	// п≤ п╫п╟п╬п╠п╬я─п╬я┌: п╣я│п╩п╦ п╦п╢я▒я┌ п©п╬п©я▀я┌п╨п╟ п╡п╫п╣я│я┌п╦ п╠п╦я┌п╬п╡я▀п╧ п╢п╟я┌я┤п╦п╨, п╟ п╡ я│п©п╦я│п╨п╣
+	// я┐п╤п╣ я│п╦п╢п╦я┌ п╢п╟я┌я┤п╦п╨ п╥п╟п╫п╦п╪п╟я▌я┴п╦п╧ я├п╣п╩я▀п╧ я─п╣пЁп╦я│я┌я─, я┌п╬ я┌п╬п╤п╣ п·п╗п≤п▒п п░!
+	if(	ri->mbfunc == ModbusRTU::fnWriteOutputRegisters ||
+			ri->mbfunc == ModbusRTU::fnWriteOutputSingleRegister )
+	{
+		if( p.nbit<0 &&  ri->slst.size() > 1 )
+		{
+			dlog[Debug::CRIT] << myname << "(initItem): FAILED! Sharing SAVE (not bit saving) to "
+				<< " mbreg=" << ModbusRTU::dat2str(ri->mbreg)
+				<< " for " << it.getProp("name") << endl;
+			return false;
+		}
+		
+		if( p.nbit >= 0 && ri->slst.size() == 1 )
+		{
+			PList::iterator it2 = ri->slst.begin();
+			if( it2->nbit < 0 )
+			{
+					dlog[Debug::CRIT] << myname << "(initItem): FAILED! Sharing SAVE (mbreg=" 
+						<< ModbusRTU::dat2str(ri->mbreg) << "  already used)!"
+						<< " IGNORE --> " << it.getProp("name") << endl;
+					return false;
+			}
+		}
+	}
+
+	RSProperty* p1 = addProp(ri->slst,p);
+	if( !p1 )
+		return false;
+	p1->reg = ri;
+
+	if( p1->rnum > 1 )
+	{
+		for( int i=1; i<p1->rnum; i++ )
+			addReg(dev->regmap,mbreg+i,it,dev,ri);
+	}
+	
+	if( dev->dtype == dtRTU188 )
+	{
+		if( !dev->rtu )
+			dev->rtu = new RTUStorage(mbaddr);
+	}
+
+	return true;
+}
+
+// ------------------------------------------------------------------------------------------
+bool RTUExchange::initMTRitem( UniXML_iterator& it, RegInfo* p )
+{
+	p->mtrType = MTR::str2type(it.getProp("mtrtype"));
+	if( p->mtrType == MTR::mtUnknown )
+	{
+		dlog[Debug::CRIT] << myname << "(readMTRItem): Unknown mtrtype '" 
+					<< it.getProp("mtrtype")
+					<< "' for " << it.getProp("name") << endl;
+
+		return false;
+	}
+
+	return true;
+}
+// ------------------------------------------------------------------------------------------
+bool RTUExchange::initRTU188item( UniXML_iterator& it, RegInfo* p )
+{
 	string jack = it.getProp("jack");
 	string chan	= it.getProp("channel");
 	
 	if( jack.empty() )
 	{
-		dlog[Debug::CRIT] << myname << "(readRTUItem): Не задан разъём jack='' "
-					<< " для  " << it.getProp("name") << endl;
+		dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown jack='' "
+					<< " for " << it.getProp("name") << endl;
 		return false;
 	}
-	p.rtuJack = RTUStorage::s2j(jack);
-	if( p.rtuJack == RTUStorage::nUnknown )
+	p->rtuJack = RTUStorage::s2j(jack);
+	if( p->rtuJack == RTUStorage::nUnknown )
 	{
-		dlog[Debug::CRIT] << myname << "(readRTUItem): Неверное значение jack=" << jack
-					<< " для  " << it.getProp("name") << endl;
+		dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown jack=" << jack
+					<< " for " << it.getProp("name") << endl;
 		return false;
 	}
 
 	if( chan.empty() )
 	{
-		dlog[Debug::CRIT] << myname << "(readRTUItem): Не задан разъём channel='' "
-					<< " для  " << it.getProp("name") << endl;
+		dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown channel='' "
+					<< " for " << it.getProp("name") << endl;
 		return false;
 	}
 	
-	p.rtuChan = UniSetTypes::uni_atoi(chan.c_str());
+	p->rtuChan = UniSetTypes::uni_atoi(chan.c_str());
 
 	if( dlog.debugging(Debug::LEVEL2) )
-		dlog[Debug::LEVEL2] << myname << "(readItem): " << p << endl; 
+		dlog[Debug::LEVEL2] << myname << "(readRTU188Item): " << p << endl; 
 
 	return true;
 }
 // -----------------------------------------------------------------------------
 void RTUExchange::initIterators()
 {
-	RSMap::iterator it=rsmap.begin();
-	for( ; it!=rsmap.end(); it++ )
-	{
-		shm->initDIterator(it->dit);
-		shm->initAIterator(it->ait);
-	}
-
 	shm->initAIterator(aitHeartBeat);
 
-	for( RespondMap::iterator it=respMap.begin(); it!=respMap.end(); ++it )
+	for( RTUExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
-		shm->initDIterator(it->second.dit);
-		it->second.ptTimeout.reset();
+		RTUDevice* d(it1->second);
+		shm->initDIterator(d->resp_dit);
+		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+		{
+			for( PList::iterator it2=it->second->slst.begin();it2!=it->second->slst.end(); ++it2 )
+			{
+				shm->initDIterator(it2->dit);
+				shm->initAIterator(it2->ait);
+			}
+		}
 	}
+
 }
 // -----------------------------------------------------------------------------
 void RTUExchange::help_print( int argc, char* argv[] )
@@ -1210,7 +1273,6 @@ void RTUExchange::help_print( int argc, char* argv[] )
 	cout << "--rs-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
 	cout << "--rs-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
 	cout << "--rs-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
-	cout << "--rs-notRespondSensor - датчик связи для данного процесса " << endl;
 	cout << "--rs-sm-ready-timeout - время на ожидание старта SM" << endl;
 	cout << " Настройки протокола RS: " << endl;
 	cout << "--rs-dev devname  - файл устройства" << endl;
@@ -1265,14 +1327,14 @@ std::ostream& operator<<( std::ostream& os, const RTUExchange::DeviceType& dt )
 	return os;
 }
 // -----------------------------------------------------------------------------
-std::ostream& operator<<( std::ostream& os, RTUExchange::RSProperty& p )
+std::ostream& operator<<( std::ostream& os, const RTUExchange::RSProperty& p )
 {
-	os << " mbaddr=(" << (int)p.mbaddr << ")" << ModbusRTU::addr2str(p.mbaddr)
-				<< " mbreg=" << ModbusRTU::dat2str(p.mbreg)
-				<< " mbfunc=" << p.mbfunc
-				<< " devtype=" << p.devtype;
-
-	switch(p.devtype)
+//	os << " mbaddr=(" << (int)p.mbaddr << ")" << ModbusRTU::addr2str(p.mbaddr)
+//				<< " mbreg=" << ModbusRTU::dat2str(p.mbreg)
+//				<< " mbfunc=" << p.mbfunc
+//				<< " dtype=" << p.dtype;
+/*
+	switch(p.dtype)
 	{
 		case RTUExchange::dtRTU:
 			os << " nbit=" << p.nbit;
@@ -1291,9 +1353,11 @@ std::ostream& operator<<( std::ostream& os, RTUExchange::RSProperty& p )
 			os << "Unknown type parameters ???!!!" << endl;
 		break;
 	}
-	
+*/	
 	os 	<< " sid=" << p.si.id
 		<< " stype=" << p.stype
+	 	<< " nbit=" << p.nbit
+		<< " rnum=" << p.rnum
 		<< " safety=" << p.safety
 		<< " invert=" << p.invert;
 
@@ -1309,26 +1373,514 @@ std::ostream& operator<<( std::ostream& os, RTUExchange::RSProperty& p )
 	return os;
 }
 // -----------------------------------------------------------------------------
-void RTUExchange::setRespond( ModbusRTU::ModbusAddr addr, bool respond )
+bool RTUExchange::initRespondInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it )
 {
-	RespondMap::iterator it = respMap.find(addr);
-	if( it != respMap.end() )
+	RTUDeviceMap::iterator d = m.find(a);
+	if( d == m.end() )
 	{
-		if( it->second.trTimeout.change(respond) )
-		{	
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << myname << "(setRespond): (" 
-					<< (int)addr << ")" << ModbusRTU::addr2str(addr)
-					<< " state=" << respond << endl;
+		dlog[Debug::WARN] << myname << "(initRespondInfo): not found device for addr=" << ModbusRTU::addr2str(a) << endl;
+		return false;
+	}
+	
+	d->second->resp_id = conf->getSensorID(it.getProp("respondSensor"));
+	if( d->second->resp_id == DefaultObjectId )
+	{
+		dlog[Debug::CRIT] << myname << ": not found ID for noRespondSensor=" << it.getProp("respondSensor") << endl;
+		return false;
+	}
+				
+	int tout = atoi(it.getProp("timeout").c_str());
+	if( tout > 0 )
+		d->second->resp_ptTimeout.setTiming(tout);
+	else
+		d->second->resp_ptTimeout.setTiming(UniSetTimer::WaitUpTime);
+				
+	d->second->resp_invert = atoi(it.getProp("invert").c_str());
+	return true;
+}
+// -----------------------------------------------------------------------------
+void RTUExchange::printMap( RTUExchange::RTUDeviceMap& m )
+{
+	cout << "devices: " << endl;
+	for( RTUExchange::RTUDeviceMap::iterator it=m.begin(); it!=m.end(); ++it )
+	{
+		cout << "  " <<  *(it->second) << endl;
+	}
+}
+// -----------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, RTUExchange::RTUDeviceMap& m )
+{
+	os << "devices: " << endl;
+	for( RTUExchange::RTUDeviceMap::iterator it=m.begin(); it!=m.end(); ++it )
+	{
+		os << "  " <<  *(it->second) << endl;
+	}
+	return os;
+}
+// -----------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, RTUExchange::RTUDevice& d )
+{
+  		os 	<< "addr=" << ModbusRTU::addr2str(d.mbaddr)
+  			<< " type=" << d.dtype;
 
-			if( respond )
-				it->second.state = true;
+		os << " rtu=" << (d.rtu ? "yes" : "no" );
 
-			it->second.ptTimeout.reset();
+  		os	<< " repond_id=" << d.resp_id
+  			<< " repond_timeout=" << d.resp_ptTimeout.getInterval()
+  			<< " repond_state=" << d.resp_state
+  			<< " repond_invert=" << d.resp_invert
+  			<< endl;
+  			
+
+		os << "  regs: " << endl;
+		for( RTUExchange::RegMap::iterator it=d.regmap.begin(); it!=d.regmap.end(); ++it )
+			os << "     " << *(it->second) << endl;
+	
+	return os;
+}
+// -----------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, RTUExchange::RegInfo& r )
+{
+	os << " mbreg=" << ModbusRTU::dat2str(r.mbreg)
+		<< " mbfunc=" << r.mbfunc
+	
+		<< " mtrType=" << MTR::type2str(r.mtrType)
+		<< " jack=" << RTUStorage::j2s(r.rtuJack)
+		<< " chan=" << r.rtuChan
+		<< " q_num=" << r.q_num
+		<< " q_count=" << r.q_count
+		<< " value=" << ModbusRTU::dat2str(r.mbval) << "(" << (int)r.mbval << ")"
+		<< endl;
+
+	for( RTUExchange::PList::iterator it=r.slst.begin(); it!=r.slst.end(); ++it )
+		os << "         " << (*it) << endl;
+
+	return os;
+}
+// -----------------------------------------------------------------------------
+void RTUExchange::rtuQueryOptimization( RTUDeviceMap& m )
+{
+	dlog[Debug::INFO] << myname << "(rtuQueryOptimization): optimization..." << endl;
+
+	for( RTUExchange::RTUDeviceMap::iterator it1=m.begin(); it1!=m.end(); ++it1 )
+	{
+		RTUDevice* d(it1->second);
+		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+		{
+			RTUExchange::RegMap::iterator beg = it;
+			ModbusRTU::ModbusData reg = it->second->mbreg;
+
+			beg->second->q_num = 1;
+			beg->second->q_count = 1;
+			it++;
+			for( ;it!=d->regmap.end(); ++it )
+			{
+				if( (it->second->mbreg - reg) > 1 )
+					break;
+				
+				if( beg->second->mbfunc != it->second->mbfunc )
+					break;
+
+				beg->second->q_count++;
+				reg = it->second->mbreg;
+				it->second->q_num = beg->second->q_count;
+				it->second->q_count = 0;
+			}
+
+			// check correct function...
+			if( beg->second->q_count>1 && beg->second->mbfunc==ModbusRTU::fnWriteOutputSingleRegister )
+			{
+				dlog[Debug::WARN] << myname << "(rtuQueryOptimization): "
+					<< " optimization change func=" << ModbusRTU::fnWriteOutputSingleRegister
+					<< " <--> func=" << ModbusRTU::fnWriteOutputRegisters
+					<< " for mbaddr=" << ModbusRTU::addr2str(d->mbaddr)
+					<< " mbreg=" << ModbusRTU::dat2str(beg->second->mbreg);
+				
+				beg->second->mbfunc = ModbusRTU::fnWriteOutputRegisters;
+			}
+			
+			if( it==d->regmap.end() )
+				break;
+
+			it--;
 		}
+	}
+}
+// -----------------------------------------------------------------------------
+void RTUExchange::updateRTU( RegMap::iterator& rit )
+{
+	RegInfo* r(rit->second);
+	using namespace ModbusRTU;
+	
+	bool save = false;
+	if( r->mbfunc == fnWriteOutputRegisters || r->mbfunc == fnWriteOutputSingleRegister )
+		save = true;
 
-		if( it->second.state && !respond && it->second.ptTimeout.checkTime() )
-			it->second.state = false;
+	ModbusRTU::DataBits16 b(r->mbval);
+	for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
+	{
+		try
+		{
+			if( it->vType == VTypes::vtUnknown )
+			{
+				if( it->nbit >= 0 )
+				{
+					if( save )
+					{
+						bool set = IOBase::processingAsDO( &(*it), shm, force );
+						b.set(it->nbit,set);
+						r->mbval = b.mdata();
+					}
+					else
+					{
+						bool set = b[it->nbit];
+						IOBase::processingAsDI( &(*it), set, shm, force );
+					}
+					continue;
+				}
+			
+				if( it->rnum <= 1 )
+				{
+					if( save )
+						r->mbval = IOBase::processingAsAO( &(*it), shm, force );
+					else
+						IOBase::processingAsAI( &(*it), r->mbval, shm, force );
+						
+					continue;
+				}
+
+				dlog[Debug::CRIT] << myname << "(updateRTU): IGNORE item: rnum=" << it->rnum 
+						<< " > 1 ?!! for id=" << it->si.id << endl;
+				continue;
+			}
+			else if( it->vType == VTypes::vtF2 )
+			{
+				RegMap::iterator i(rit);
+				if( save )
+				{
+					float f = IOBase::processingFasAO( &(*it), shm, force );
+					VTypes::F2 f2(f);
+					for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
+						i->second->mbval = f2.raw.v[k];
+				}
+				else
+				{
+					ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F2::wsize()];
+					for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
+						data[k] = i->second->mbval;
+				
+					VTypes::F2 f(data,VTypes::F2::wsize());
+					delete[] data;
+				
+					IOBase::processingFasAI( &(*it), (float)f, shm, force );
+				}
+			}
+			else if( it->vType == VTypes::vtF4 )
+			{
+				RegMap::iterator i(rit);
+				if( save )
+				{
+					float f = IOBase::processingFasAO( &(*it), shm, force );
+					VTypes::F4 f4(f);
+					for( int k=0; k<VTypes::F4::wsize(); k++, i++ )
+						i->second->mbval = f4.raw.v[k];
+				}
+				else
+				{
+					ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F4::wsize()];
+					for( int k=0; k<VTypes::F4::wsize(); k++, i++ )
+						data[k] = i->second->mbval;
+				
+					VTypes::F4 f(data,VTypes::F4::wsize());
+					delete[] data;
+				
+					IOBase::processingFasAI( &(*it), (float)f, shm, force );
+				}
+			}
+		}
+		catch(IOController_i::NameNotFound &ex)
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateRTU):(NameNotFound) " << ex.err << endl;
+		}
+		catch(IOController_i::IOBadParam& ex )
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateRTU):(IOBadParam) " << ex.err << endl;
+		}
+		catch(IONotifyController_i::BadRange )
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateRTU): (BadRange)..." << endl;
+		}
+		catch( Exception& ex )
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateRTU): " << ex << endl;
+		}
+		catch(CORBA::SystemException& ex)
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateRTU): CORBA::SystemException: "
+				<< ex.NP_minorString() << endl;
+		}
+		catch(...)
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateRTU): catch ..." << endl;
+		}
+	}
+}
+// -----------------------------------------------------------------------------
+void RTUExchange::updateMTR( RegMap::iterator& rit )
+{
+	RegInfo* r(rit->second);
+	using namespace ModbusRTU;
+	bool save = false;
+	if( r->mbfunc == fnWriteOutputRegisters || r->mbfunc == fnWriteOutputSingleRegister )
+		save = true;
+
+	{
+		for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
+		{
+			try
+			{
+				if( r->mtrType == MTR::mtT1 )
+				{
+					if( save )
+						r->mbval = IOBase::processingAsAO( &(*it), shm, force );
+					else
+					{
+						MTR::T1 t(r->mbval);
+						IOBase::processingAsAI( &(*it), t.val, shm, force );
+					}
+					continue;
+				}
+			
+				if( r->mtrType == MTR::mtT2 )
+				{
+					if( save )
+					{
+						MTR::T2 t(IOBase::processingAsAO( &(*it), shm, force ));
+						r->mbval = t.val; 
+					}
+					else
+					{
+						MTR::T2 t(r->mbval);
+						IOBase::processingAsAI( &(*it), t.val, shm, force );
+					}
+					continue;
+				}
+		
+				if( r->mtrType == MTR::mtT3 )
+				{
+					RegMap::iterator i(rit);
+					if( save )
+					{
+						MTR::T3 t(IOBase::processingAsAO( &(*it), shm, force ));
+						for( int k=0; k<MTR::T3::wsize(); k++, i++ )
+							i->second->mbval = t.raw.v[k];
+					}
+					else
+					{
+						ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T3::wsize()];
+						for( int k=0; k<MTR::T3::wsize(); k++, i++ )
+							data[k] = i->second->mbval;
+		
+						MTR::T3 t(data);
+						delete[] data;
+						IOBase::processingAsAI( &(*it), (long)t, shm, force );
+					}
+					continue;
+				}
+		
+				if( r->mtrType == MTR::mtT4 )
+				{
+					if( save )
+						cerr << myname << "(updateMTR): write (T4) reg(" << dat2str(r->mbreg) << ") to MTR NOT YET!!!" << endl;
+					else
+					{
+						MTR::T4 t(r->mbval);
+						IOBase::processingAsAI( &(*it),atoi(t.sval.c_str()), shm, force );
+					}
+					continue;
+				}
+		
+				if( r->mtrType == MTR::mtT5 )
+				{
+					RegMap::iterator i(rit);
+					if( save )
+					{
+						MTR::T5 t(IOBase::processingAsAO( &(*it), shm, force ));
+						for( int k=0; k<MTR::T5::wsize(); k++, i++ )
+							i->second->mbval = t.raw.v[k];
+					}
+					else
+					{
+						ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T5::wsize()];
+						for( int k=0; k<MTR::T5::wsize(); k++, i++ )
+							data[k] = i->second->mbval;
+		
+						MTR::T5 t(data);
+						delete[] data;
+					
+						IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
+					}
+					continue;
+				}
+		
+				if( r->mtrType == MTR::mtT6 )
+				{
+					RegMap::iterator i(rit);
+					if( save )
+					{
+						MTR::T6 t(IOBase::processingAsAO( &(*it), shm, force ));
+						for( int k=0; k<MTR::T6::wsize(); k++, i++ )
+							i->second->mbval = t.raw.v[k];
+					}
+					else
+					{
+						ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T6::wsize()];
+						for( int k=0; k<MTR::T6::wsize(); k++, i++ )
+							data[k] = i->second->mbval;
+		
+						MTR::T6 t(data);
+						delete[] data;
+					
+						IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
+					}
+					continue;
+				}
+		
+				if( r->mtrType == MTR::mtT7 )
+				{
+					RegMap::iterator i(rit);
+					if( save )
+					{
+						MTR::T7 t(IOBase::processingAsAO( &(*it), shm, force ));
+						for( int k=0; k<MTR::T7::wsize(); k++, i++ )
+							i->second->mbval = t.raw.v[k];
+					}
+					else
+					{
+						ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T7::wsize()];
+						for( int k=0; k<MTR::T7::wsize(); k++, i++ )
+							data[k] = i->second->mbval;
+		
+						MTR::T7 t(data);
+						delete[] data;
+					
+						IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
+					}
+					continue;
+				}
+		
+				if( r->mtrType == MTR::mtF1 )
+				{
+					RegMap::iterator i(rit);
+					if( save )
+					{
+						float f = IOBase::processingFasAO( &(*it), shm, force );
+						MTR::F1 f1(f);
+						for( int k=0; k<MTR::F1::wsize(); k++, i++ )
+							i->second->mbval = f1.raw.v[k];
+					}
+					else
+					{
+						ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::F1::wsize()];
+						for( int k=0; k<MTR::F1::wsize(); k++, i++ )
+							data[k] = i->second->mbval;
+		
+						MTR::F1 t(data);
+						delete[] data;
+					
+						IOBase::processingFasAI( &(*it), (float)t, shm, force );
+					}
+					continue;
+				}
+			}
+			catch(IOController_i::NameNotFound &ex)
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateMTR):(NameNotFound) " << ex.err << endl;
+			}
+			catch(IOController_i::IOBadParam& ex )
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateMTR):(IOBadParam) " << ex.err << endl;
+			}
+			catch(IONotifyController_i::BadRange )
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateMTR): (BadRange)..." << endl;
+			}
+			catch( Exception& ex )
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateMTR): " << ex << endl;
+			}
+			catch(CORBA::SystemException& ex)
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateMTR): CORBA::SystemException: "
+					<< ex.NP_minorString() << endl;
+			}
+			catch(...)
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateMTR): catch ..." << endl;
+			}
+		}
+	}
+}
+// -----------------------------------------------------------------------------
+void RTUExchange::updateRTU188( RegMap::iterator& it )
+{
+	RegInfo* r(it->second);
+	if( !r->dev->rtu )
+		return;
+
+	using namespace ModbusRTU;
+
+//	bool save = false;
+	if( r->mbfunc == fnWriteOutputRegisters || r->mbfunc == fnWriteOutputSingleRegister )
+	{
+//		save = true;
+		cerr << myname << "(updateRTU188): write reg(" << dat2str(r->mbreg) << ") to RTU188 NOT YET!!!" << endl;
+		return;
+	}
+
+	for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
+	{
+		try
+		{
+			if( it->stype == UniversalIO::DigitalInput )
+			{
+				bool set = r->dev->rtu->getState(r->rtuJack,r->rtuChan,it->stype);
+				IOBase::processingAsDI( &(*it), set, shm, force );
+				continue;
+			}
+	
+			if( it->stype == UniversalIO::AnalogInput )
+			{
+				long val = r->dev->rtu->getInt(r->rtuJack,r->rtuChan,it->stype);
+				IOBase::processingAsAI( &(*it),val, shm, force );
+				continue;
+			}
+		}
+		catch(IOController_i::NameNotFound &ex)
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateMTR):(NameNotFound) " << ex.err << endl;
+		}
+		catch(IOController_i::IOBadParam& ex )
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateMTR):(IOBadParam) " << ex.err << endl;
+		}
+		catch(IONotifyController_i::BadRange )
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateMTR): (BadRange)..." << endl;
+		}
+		catch( Exception& ex )
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateMTR): " << ex << endl;
+		}
+		catch(CORBA::SystemException& ex)
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateMTR): CORBA::SystemException: "
+				<< ex.NP_minorString() << endl;
+		}
+		catch(...)
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateMTR): catch ..." << endl;
+		}
 	}
 }
 // -----------------------------------------------------------------------------
