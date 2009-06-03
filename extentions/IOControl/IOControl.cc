@@ -56,7 +56,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	UniXML_iterator it(cnode);
 
 	noCards = true;
-	for( unsigned int i=0; i=<cards.size(); i++ )
+	for( unsigned int i=1; i=<cards.size(); i++ )
 	{
 		stringstream s1;
 		s1 << "--iodev" << i;

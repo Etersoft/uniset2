@@ -8,9 +8,9 @@ REL=eter
 DEFAULTARCH=i586
 RPMDIR=~/RPM/RPMS/$DEFAULTARCH
 RPMSOURCEDIR=~/RPM/SOURCES
-FTPDIR=/var/ftp/pub/Ourside/RPMS.uniset
+FTPDIR=/var/ftp/pub/Ourside/i586/RPMS.uniset
 PROJECT=uniset
-GEN=/var/ftp/pub/Ourside/genbase.sh
+GEN=/var/ftp/pub/Ourside/i586/genb.sh
 BACKUPDIR=$FTPDIR/backup
 RPMBUILD=/usr/bin/rpmbuild
 
@@ -36,7 +36,7 @@ prepare_tarball()
 	cp -r $WDPROJECT/* $DESTDIR/
 	cd 	$DESTDIR/
 		make distclean
-#		[ -a ./autogen.sh ] && ./autogen.sh
+		[ -a ./autogen.sh ] && ./autogen.sh
 		rm -rf autom4te.cache/
 	
 		echo "Make tarball $TARNAME ... from $DESTDIR"
@@ -78,7 +78,7 @@ function send_notify()
 	CURDATE=`date`
 	MAILTO="devel@server"
 # FIXME: проверка отправки
-mutt $MAILTO -s "[19910B] New build: $BUILDNAME" <<EOF
+mutt $MAILTO -s "[uniset] New build: $BUILDNAME" <<EOF
 Готова новая сборка: $BUILDNAME
 -- 
 your $0
@@ -102,11 +102,11 @@ export BUILDNAME=$BASENAME-$VERSION-$RELEASE
 
 add_changelog_helper "- new build" $SPECNAME
 
-prepare_tarball
+prepare_tarball || fatal "Can't prpare"
 
 rpmbb $SPECNAME || fatal "Can't build"
 
-#cp2ftp
+cp2ftp
 
 rpmbs $SPECNAME
 #send_notify
