@@ -174,6 +174,7 @@ Libraries needed to develop for uniset extentions
 %_bindir/%name-logicproc
 %_bindir/%name-plogicproc
 %_bindir/mtrconv
+%_bindir/vtconv
 %_bindir/rtustate
 %_bindir/%name-rtuexchange
 %_bindir/%name-smemory
