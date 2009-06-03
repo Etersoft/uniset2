@@ -68,9 +68,9 @@ class IOControl:
 			{}
 
 
-			short subdev;	/*!< (UNIO) подустройство (см. comedi_test для конкретной карты в/в) */
-			short channel;	/*!< (UNIO) канал [0...23] */
-			short ncard;	/*!< номер карты [1|2]. 0 - не определена */
+			int subdev;		/*!< (UNIO) подустройство (см. comedi_test для конкретной карты в/в) */
+			int channel;	/*!< (UNIO) канал [0...23] */
+			int ncard;		/*!< номер карты [1|2]. 0 - не определена */
 
 			/*! Вид поключения
 				0	- analog ref = analog ground

@@ -23,7 +23,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 						SharedMemory* ic, int numcards ):
 	UniSetObject(id),
 	polltime(500),
-	cards(numcards),
+	cards(numcards+1),
 	noCards(true),
 	iomap(100),
 	maxItem(0),
@@ -56,7 +56,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	UniXML_iterator it(cnode);
 
 	noCards = true;
-	for( unsigned int i=0; i <cards.size(); i++ )
+	for( unsigned int i=0; i=<cards.size(); i++ )
 	{
 		stringstream s1;
 		s1 << "--iodev" << i;
@@ -278,7 +278,7 @@ void IOControl::execute()
 	try
 	{
 		// init first time....
-		if( !force )
+		if( !force && !noCards )
 		{
 			uniset_mutex_lock l(iopollMutex,5000);
 			force = true;
@@ -743,7 +743,7 @@ void IOControl::initIOCard()
 	if( noCards )
 		return;
 
-	ComediInterface* card(0);
+	ComediInterface* card = 0;
 
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
 	{
