@@ -69,6 +69,7 @@ activated(false)
 	{
 		readConfiguration();
 		rtuQueryOptimization(rmap);
+		initRespondList();
 	}
 	else
 		ic->addReadItem( sigc::mem_fun(this,&RTUExchange::readItem) );
@@ -117,20 +118,6 @@ activated(false)
 
 	initMB();
 
-	xmlNode* respNode = conf->findNode(cnode,"RespondList");
-	if( respNode )
-	{
-		UniXML_iterator it1(respNode);
-		if( it1.goChildren() )
-		{
-			for(;it1.getCurrent(); it1.goNext() )
-			{
-				ModbusRTU::ModbusAddr a = ModbusRTU::str2mbAddr(it1.getProp("addr"));
-				initRespondInfo(rmap,a,it1);
-			}
-		}
-	}
-
 	printMap(rmap);
 //	abort();
 }
@@ -168,17 +155,26 @@ void RTUExchange::initMB()
 		return;
 	}
 
-	mb = new ModbusRTUMaster(devname);
+	try
+	{
+		mb = new ModbusRTUMaster(devname);
 
-	if( !speed.empty() )
-		mb->setSpeed(speed);
+		if( !speed.empty() )
+			mb->setSpeed(speed);
 	
-//	mb->setLog(dlog);
+//		mb->setLog(dlog);
 
-	if( recv_timeout > 0 )
-		mb->setTimeout(recv_timeout);
+		if( recv_timeout > 0 )
+			mb->setTimeout(recv_timeout);
 
-	dlog[Debug::INFO] << myname << "(init): dev=" << devname << " speed=" << speed << endl;
+		dlog[Debug::INFO] << myname << "(init): dev=" << devname << " speed=" << speed << endl;
+	}
+	catch(...)
+	{
+		if( mb )
+			delete mb;
+		mb = 0;
+	}
 }
 // -----------------------------------------------------------------------------
 void RTUExchange::waitSMReady()
@@ -236,6 +232,12 @@ void RTUExchange::poll()
 	if( !mb )
 	{
 		initMB();
+		if( !mb )
+		{
+			for( RTUExchange::RTUDeviceMap::iterator it=rmap.begin(); it!=rmap.end(); ++it )
+				it->second->resp_real = false;
+		}
+		updateSM();
 		return;
 	}
 
@@ -260,10 +262,10 @@ void RTUExchange::poll()
 
 			try
 			{
-#warning For Debug
-//				mb->cleanupChannel();
-				d->resp_real = true;
+//#warning For Debug
+				mb->cleanupChannel();
 				d->rtu->poll(mb);
+				d->resp_real = true;
 			}
 			catch( ModbusRTU::mbException& ex )
 			{ 
@@ -279,11 +281,14 @@ void RTUExchange::poll()
 		{
 			for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 			{
-				d->resp_real = true;
 				try
 				{
 					if( d->dtype==RTUExchange::dtRTU || d->dtype==RTUExchange::dtMTR )
-						pollRTU(d,it);
+					{
+						mb->cleanupChannel();
+						if( pollRTU(d,it) )
+							d->resp_real = true;
+					}
 				}
 				catch( ModbusRTU::mbException& ex )
 				{ 
@@ -307,7 +312,7 @@ void RTUExchange::poll()
 //	printMap(rmap);
 }
 // -----------------------------------------------------------------------------
-void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
+bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 {
 	RegInfo* p(it->second);
 
@@ -326,7 +331,7 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		if( dlog.debugging(Debug::INFO) )
 			dlog[Debug::INFO] << myname << "(pollRTU): q_count=0 for mbreg=" << ModbusRTU::dat2str(p->mbreg) 
 					<< " IGNORE register..." << endl;
-		return ;
+		return false;
 	}
 	
 	switch( p->mbfunc )
@@ -374,10 +379,10 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			{
 				dlog[Debug::CRIT] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg) 
 					<< " IGNORE WRITE SINGLE REGISTER q_count=" << p->q_count << " ..." << endl;
-			
+				return false;
 			}
-			else
-				ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg,p->mbval);
+
+			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg,p->mbval);
 		}
 		break;
 
@@ -396,9 +401,12 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			if( dlog.debugging(Debug::INFO) )
 				dlog[Debug::INFO] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg) 
 					<< " IGNORE mfunc=" << (int)p->mbfunc << " ..." << endl;
+			return false;
 		}
 		break;
 	}
+	
+	return true;
 }
 // -----------------------------------------------------------------------------
 bool RTUExchange::RTUDevice::checkRespond()
@@ -408,7 +416,7 @@ bool RTUExchange::RTUDevice::checkRespond()
 	{	
 		if( resp_real )
 			resp_state = true;
-			
+
 		resp_ptTimeout.reset();
 	}
 
@@ -423,7 +431,13 @@ void RTUExchange::updateSM()
 	for( RTUExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
-		
+/*		
+		cout << "check respond addr=" << ModbusRTU::addr2str(d->mbaddr) 
+			<< " respond=" << d->resp_id 
+			<< " real=" << d->resp_real
+			<< " state=" << d->resp_state
+			<< endl;
+*/		
 		// update respond sensors......
 		if( d->checkRespond() && d->resp_id != DefaultObjectId  )
 		{
@@ -562,7 +576,8 @@ void RTUExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 			if( dlog.debugging(Debug::INFO) )
 				dlog[Debug::INFO] << myname << "(sysCommand): rmap size= " << rmap.size() << endl;
 
-
+			if(  shm->isLocalwork() )
+				initRespondList();
 		
 			waitSMReady();
 
@@ -1373,6 +1388,27 @@ std::ostream& operator<<( std::ostream& os, const RTUExchange::RSProperty& p )
 	return os;
 }
 // -----------------------------------------------------------------------------
+void RTUExchange::initRespondList()
+{
+	xmlNode* respNode = conf->findNode(cnode,"RespondList");
+	if( respNode )
+	{
+		UniXML_iterator it1(respNode);
+		if( it1.goChildren() )
+		{
+			for(;it1.getCurrent(); it1.goNext() )
+			{
+				ModbusRTU::ModbusAddr a = ModbusRTU::str2mbAddr(it1.getProp("addr"));
+				initRespondInfo(rmap,a,it1);
+			}
+		}
+		else
+			dlog[Debug::WARN] << myname << "(init): <RespondList> empty section..." << endl;
+	}
+	else
+		dlog[Debug::WARN] << myname << "(init): NO <RespondList> found..." << endl;
+}
+// -----------------------------------------------------------------------------
 bool RTUExchange::initRespondInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it )
 {
 	RTUDeviceMap::iterator d = m.find(a);
@@ -1388,7 +1424,8 @@ bool RTUExchange::initRespondInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, Uni
 		dlog[Debug::CRIT] << myname << ": not found ID for noRespondSensor=" << it.getProp("respondSensor") << endl;
 		return false;
 	}
-				
+
+	dlog[Debug::INFO] << myname << "(initRespondList): add addr=" << ModbusRTU::addr2str(a) << endl;
 	int tout = atoi(it.getProp("timeout").c_str());
 	if( tout > 0 )
 		d->second->resp_ptTimeout.setTiming(tout);
@@ -1396,6 +1433,9 @@ bool RTUExchange::initRespondInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, Uni
 		d->second->resp_ptTimeout.setTiming(UniSetTimer::WaitUpTime);
 				
 	d->second->resp_invert = atoi(it.getProp("invert").c_str());
+	d->second->resp_state = UniSetTypes::uni_atoi(it.getProp("default").c_str());
+	d->second->resp_real = UniSetTypes::uni_atoi(it.getProp("default").c_str());
+	d->second->resp_trTimeout.change(d->second->resp_real);
 	return true;
 }
 // -----------------------------------------------------------------------------

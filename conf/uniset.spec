@@ -181,6 +181,9 @@ Libraries needed to develop for uniset extentions
 %_bindir/%name-smviewer
 
 %changelog
+* Thu Jun 04 2009 Pavel Vainerman <pv@aeu> 0.96-eter23
+- new build
+
 * Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter22
 - new build
 
