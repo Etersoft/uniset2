@@ -5,7 +5,7 @@ uniset-start.sh -f ./uniset-rtuexchange --confile test.xml \
 	--rs-name RSExchange \
 	--rs-speed 38400 \
 	--rs-filter-field rs \
-	--rs-filter-value 1 \
+	--rs-filter-value 2 \
 	--dlog-add-levels info,crit,warn,level1
 #,level3
 
