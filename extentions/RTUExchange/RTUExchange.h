@@ -83,7 +83,7 @@ class RTUExchange:
 				mbval(0),mbreg(0),mbfunc(ModbusRTU::fnUnknown),
 				mtrType(MTR::mtUnknown),
 				rtuJack(RTUStorage::nUnknown),rtuChan(0),
-				dev(0),
+				dev(0),offset(0),
 				q_num(0),q_count(1)
 			{}
 
@@ -101,6 +101,8 @@ class RTUExchange:
 			
 			RTUDevice* dev;
 
+			int offset;
+
 			// optimization
 			int q_num;		/*! number in query */
 			int q_count;	/*! count registers for query */
@@ -117,7 +119,7 @@ class RTUExchange:
 			mbaddr(0),
 			dtype(dtUnknown),
 			resp_id(UniSetTypes::DefaultObjectId),
-			resp_state(false),
+			resp_state(true),
 			resp_invert(false),
 			resp_real(false),
 			rtu(0)
@@ -169,7 +171,7 @@ class RTUExchange:
 
 		void step();
 		void poll();
-		void pollRTU( RTUDevice* dev, RegMap::iterator& it );
+		bool pollRTU( RTUDevice* dev, RegMap::iterator& it );
 		
 		void updateSM();
 		void updateRTU(RegMap::iterator& it);
@@ -193,6 +195,8 @@ class RTUExchange:
 		void initIterators();
 		bool initItem( UniXML_iterator& it );
 		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
+		void initRespondList();
+		void initOffsetList();
 
 
 		RTUDevice* addDev( RTUDeviceMap& dmap, ModbusRTU::ModbusAddr a, UniXML_iterator& it );

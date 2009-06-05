@@ -2,11 +2,7 @@
 
 Name: uniset
 Version: 0.96
-<<<<<<< HEAD:conf/uniset.spec
-Release: eter6
-=======
-Release: eter9
->>>>>>> 6eb79ccca4b348cddaa393aae9cb34b9fcf2a001:conf/uniset.spec
+Release: eter23
 Summary: UniSet
 License: GPL
 Group: Development/C++
@@ -178,20 +174,50 @@ Libraries needed to develop for uniset extentions
 %_bindir/%name-logicproc
 %_bindir/%name-plogicproc
 %_bindir/mtrconv
+%_bindir/vtconv
 %_bindir/rtustate
 %_bindir/%name-rtuexchange
 %_bindir/%name-smemory
 %_bindir/%name-smviewer
 
 %changelog
-<<<<<<< HEAD:conf/uniset.spec
-* Wed May 20 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter5
-=======
+* Thu Jun 04 2009 Pavel Vainerman <pv@aeu> 0.96-eter23
+- new build
+
+* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter22
+- new build
+
+* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter21
+- new build
+
+* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter20
+- new build
+
+* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter19
+- new build
+
+* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter18
+- new build
+
+* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter17
+- new build
+
+* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter16
+- new build
+
+* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter15
+- new build
+
+* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter14
+- new build
+
+* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter13
+- new build
+
 * Tue Apr 21 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter6
 - new build
 
 * Tue Apr 21 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter5
->>>>>>> 6eb79ccca4b348cddaa393aae9cb34b9fcf2a001:conf/uniset.spec
 - new build
 
 * Mon Apr 06 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter4
