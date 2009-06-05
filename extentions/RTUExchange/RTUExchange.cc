@@ -17,7 +17,9 @@ initPause(0),
 force(false),
 force_out(false),
 mbregFromID(false),
-activated(false)
+activated(false),
+rs_pre_clean(false),
+noQueryOptimization(false)
 {
 	cout << "$Id: RTUExchange.cc,v 1.4 2009/01/23 23:56:54 vpashka Exp $" << endl;
 
@@ -50,6 +52,9 @@ activated(false)
 		speed = "38400";
 
 	recv_timeout = atoi(conf->getArgParam("--rs-recv-timeout",it.getProp("recv_timeout")).c_str());
+
+	rs_pre_clean = atoi(conf->getArgParam("--rs-pre-clean",it.getProp("pre_clean")).c_str());
+	noQueryOptimization = atoi(conf->getArgParam("--rs-no-query-optimization",it.getProp("no_query_optimization")).c_str());
 
 	mbregFromID = atoi(conf->getArgParam("--mbs-reg-from-id",it.getProp("reg_from_id")).c_str());
 	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
@@ -260,8 +265,9 @@ void RTUExchange::poll()
 
 			try
 			{
-//#warning For Debug
-				mb->cleanupChannel();
+				if( rs_pre_clean )
+					mb->cleanupChannel();
+
 				d->rtu->poll(mb);
 				d->resp_real = true;
 			}
@@ -283,7 +289,8 @@ void RTUExchange::poll()
 				{
 					if( d->dtype==RTUExchange::dtRTU || d->dtype==RTUExchange::dtMTR )
 					{
-						mb->cleanupChannel();
+						if( rs_pre_clean )
+							mb->cleanupChannel();
 						if( pollRTU(d,it) )
 							d->resp_real = true;
 					}
@@ -1484,6 +1491,9 @@ std::ostream& operator<<( std::ostream& os, RTUExchange::RegInfo& r )
 // -----------------------------------------------------------------------------
 void RTUExchange::rtuQueryOptimization( RTUDeviceMap& m )
 {
+	if( noQueryOptimization )
+		return;
+
 	dlog[Debug::INFO] << myname << "(rtuQueryOptimization): optimization..." << endl;
 
 	for( RTUExchange::RTUDeviceMap::iterator it1=m.begin(); it1!=m.end(); ++it1 )

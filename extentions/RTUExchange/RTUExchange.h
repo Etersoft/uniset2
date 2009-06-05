@@ -236,6 +236,9 @@ class RTUExchange:
 
 		bool activated;
 		int activateTimeout;
+		
+		bool rs_pre_clean;
+		bool noQueryOptimization;
 };
 // -----------------------------------------------------------------------------
 #endif // _RS_EXCHANGE_H_
