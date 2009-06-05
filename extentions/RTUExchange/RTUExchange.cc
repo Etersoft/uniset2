@@ -54,7 +54,6 @@ activated(false)
 	mbregFromID = atoi(conf->getArgParam("--mbs-reg-from-id",it.getProp("reg_from_id")).c_str());
 	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
-
 	polltime = atoi(conf->getArgParam("--rs-polltime",it.getProp("polltime")).c_str());
 	if( !polltime )
 		polltime = 100;
@@ -69,7 +68,6 @@ activated(false)
 	{
 		readConfiguration();
 		rtuQueryOptimization(rmap);
-		initRespondList();
 	}
 	else
 		ic->addReadItem( sigc::mem_fun(this,&RTUExchange::readItem) );
@@ -321,6 +319,7 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		dlog[Debug::INFO] << myname << "(pollRTU): poll "
 			<< " mbaddr=" << ModbusRTU::addr2str(dev->mbaddr)
 			<< " mbreg=" << ModbusRTU::dat2str(p->mbreg)
+			<< " mboffset=" << p->offset
 			<< " mbfunc=" << p->mbfunc
 			<< " q_count=" << p->q_count
 			<< endl;
@@ -338,7 +337,7 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 	{
 		case ModbusRTU::fnReadInputRegisters:
 		{
-			ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr,p->mbreg,p->q_count);
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr,p->mbreg+p->offset,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
 				
@@ -348,7 +347,7 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 
 		case ModbusRTU::fnReadOutputRegisters:
 		{
-			ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr, p->mbreg,p->q_count);
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr, p->mbreg+p->offset,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
 			it--;
@@ -357,7 +356,7 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		
 		case ModbusRTU::fnReadInputStatus:
 		{
-			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr, p->mbreg,p->q_count);
+			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr,p->mbreg+p->offset,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
 			it--;
@@ -366,7 +365,7 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		
 		case ModbusRTU::fnReadCoilStatus:
 		{
-			ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr,p->mbreg,p->q_count);
+			ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr,p->mbreg+p->offset,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
 			it--;
@@ -382,13 +381,13 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 				return false;
 			}
 
-			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg,p->mbval);
+			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg+p->offset,p->mbval);
 		}
 		break;
 
 		case ModbusRTU::fnWriteOutputRegisters:
 		{
-			ModbusRTU::WriteOutputMessage msg(dev->mbaddr,p->mbreg);
+			ModbusRTU::WriteOutputMessage msg(dev->mbaddr,p->mbreg+p->offset);
 			for( int i=0; i<p->q_count; i++,it++ )
 				msg.addData(it->second->mbval);
 			it--;
@@ -497,22 +496,6 @@ void RTUExchange::updateSM()
 	}
 }
 
-/*
-// -----------------------------------------------------------------------------
-long RTUExchange::pollRTU188( RSMap::iterator& p )
-{
-	if( !p->rtu )
-		return 0;
-
-	if( p->stype == UniversalIO::DigitalInput )
-		return p->rtu->getState(p->rtuJack,p->rtuChan,p->stype);
-	
-	if( p->stype == UniversalIO::AnalogInput )
-		return p->rtu->getInt(p->rtuJack,p->rtuChan,p->stype);
-	
-	return 0;
-}
-*/
 // -----------------------------------------------------------------------------
 void RTUExchange::processingMessage(UniSetTypes::VoidMessage *msg)
 {
@@ -576,7 +559,7 @@ void RTUExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 			if( dlog.debugging(Debug::INFO) )
 				dlog[Debug::INFO] << myname << "(sysCommand): rmap size= " << rmap.size() << endl;
 
-			if(  shm->isLocalwork() )
+			if( !shm->isLocalwork() )
 				initRespondList();
 		
 			waitSMReady();
@@ -653,7 +636,6 @@ void RTUExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 				unideb.logFile(fname.c_str());
 				unideb << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << std::endl;
 			}
-
 			dlog << myname << "(sysCommand): logRotate" << std::endl;
 			fname = dlog.getLogFile();
 			if( !fname.empty() )
@@ -989,6 +971,7 @@ bool RTUExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  RTUExchange::RT
 {
 	r->dev = dev;
 	r->mbval = UniSetTypes::uni_atoi(it.getProp("default").c_str());
+	r->offset= UniSetTypes::uni_atoi(it.getProp("mboffset").c_str());
 
 	if( dev->dtype == RTUExchange::dtMTR )
 	{
@@ -1021,6 +1004,7 @@ bool RTUExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  RTUExchange::RT
 			dlog[Debug::CRIT] << myname << "(initRegInfo): unknown mbreg for " << it.getProp("name") << endl;
 			return false;
 		}
+
 		r->mbreg = ModbusRTU::str2mbData(reg);
 	}
 	else // if( dev->dtype == RTUExchange::dtRTU188 )
@@ -1406,7 +1390,7 @@ void RTUExchange::initRespondList()
 			dlog[Debug::WARN] << myname << "(init): <RespondList> empty section..." << endl;
 	}
 	else
-		dlog[Debug::WARN] << myname << "(init): NO <RespondList> found..." << endl;
+		dlog[Debug::WARN] << myname << "(init): <RespondList> not found..." << endl;
 }
 // -----------------------------------------------------------------------------
 bool RTUExchange::initRespondInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it )
@@ -1508,21 +1492,21 @@ void RTUExchange::rtuQueryOptimization( RTUDeviceMap& m )
 		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
 			RTUExchange::RegMap::iterator beg = it;
-			ModbusRTU::ModbusData reg = it->second->mbreg;
+			ModbusRTU::ModbusData reg = it->second->mbreg + it->second->offset;
 
 			beg->second->q_num = 1;
 			beg->second->q_count = 1;
 			it++;
 			for( ;it!=d->regmap.end(); ++it )
 			{
-				if( (it->second->mbreg - reg) > 1 )
+				if( (it->second->mbreg + it->second->offset - reg) > 1 )
 					break;
 				
 				if( beg->second->mbfunc != it->second->mbfunc )
 					break;
 
 				beg->second->q_count++;
-				reg = it->second->mbreg;
+				reg = it->second->mbreg + it->second->offset;
 				it->second->q_num = beg->second->q_count;
 				it->second->q_count = 0;
 			}
