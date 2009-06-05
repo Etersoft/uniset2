@@ -54,7 +54,6 @@ activated(false)
 	mbregFromID = atoi(conf->getArgParam("--mbs-reg-from-id",it.getProp("reg_from_id")).c_str());
 	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
-
 	polltime = atoi(conf->getArgParam("--rs-polltime",it.getProp("polltime")).c_str());
 	if( !polltime )
 		polltime = 100;
@@ -117,20 +116,6 @@ activated(false)
 
 	initMB();
 
-	xmlNode* respNode = conf->findNode(cnode,"RespondList");
-	if( respNode )
-	{
-		UniXML_iterator it1(respNode);
-		if( it1.goChildren() )
-		{
-			for(;it1.getCurrent(); it1.goNext() )
-			{
-				ModbusRTU::ModbusAddr a = ModbusRTU::str2mbAddr(it1.getProp("addr"));
-				initRespondInfo(rmap,a,it1);
-			}
-		}
-	}
-
 	printMap(rmap);
 //	abort();
 }
@@ -168,17 +153,26 @@ void RTUExchange::initMB()
 		return;
 	}
 
-	mb = new ModbusRTUMaster(devname);
+	try
+	{
+		mb = new ModbusRTUMaster(devname);
 
-	if( !speed.empty() )
-		mb->setSpeed(speed);
+		if( !speed.empty() )
+			mb->setSpeed(speed);
 	
-//	mb->setLog(dlog);
+//		mb->setLog(dlog);
 
-	if( recv_timeout > 0 )
-		mb->setTimeout(recv_timeout);
+		if( recv_timeout > 0 )
+			mb->setTimeout(recv_timeout);
 
-	dlog[Debug::INFO] << myname << "(init): dev=" << devname << " speed=" << speed << endl;
+		dlog[Debug::INFO] << myname << "(init): dev=" << devname << " speed=" << speed << endl;
+	}
+	catch(...)
+	{
+		if( mb )
+			delete mb;
+		mb = 0;
+	}
 }
 // -----------------------------------------------------------------------------
 void RTUExchange::waitSMReady()
@@ -236,6 +230,12 @@ void RTUExchange::poll()
 	if( !mb )
 	{
 		initMB();
+		if( !mb )
+		{
+			for( RTUExchange::RTUDeviceMap::iterator it=rmap.begin(); it!=rmap.end(); ++it )
+				it->second->resp_real = false;
+		}
+		updateSM();
 		return;
 	}
 
@@ -260,10 +260,10 @@ void RTUExchange::poll()
 
 			try
 			{
-#warning For Debug
-//				mb->cleanupChannel();
-				d->resp_real = true;
+//#warning For Debug
+				mb->cleanupChannel();
 				d->rtu->poll(mb);
+				d->resp_real = true;
 			}
 			catch( ModbusRTU::mbException& ex )
 			{ 
@@ -279,11 +279,14 @@ void RTUExchange::poll()
 		{
 			for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 			{
-				d->resp_real = true;
 				try
 				{
 					if( d->dtype==RTUExchange::dtRTU || d->dtype==RTUExchange::dtMTR )
-						pollRTU(d,it);
+					{
+						mb->cleanupChannel();
+						if( pollRTU(d,it) )
+							d->resp_real = true;
+					}
 				}
 				catch( ModbusRTU::mbException& ex )
 				{ 
@@ -307,7 +310,7 @@ void RTUExchange::poll()
 //	printMap(rmap);
 }
 // -----------------------------------------------------------------------------
-void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
+bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 {
 	RegInfo* p(it->second);
 
@@ -316,6 +319,7 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		dlog[Debug::INFO] << myname << "(pollRTU): poll "
 			<< " mbaddr=" << ModbusRTU::addr2str(dev->mbaddr)
 			<< " mbreg=" << ModbusRTU::dat2str(p->mbreg)
+			<< " mboffset=" << p->offset
 			<< " mbfunc=" << p->mbfunc
 			<< " q_count=" << p->q_count
 			<< endl;
@@ -326,14 +330,14 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		if( dlog.debugging(Debug::INFO) )
 			dlog[Debug::INFO] << myname << "(pollRTU): q_count=0 for mbreg=" << ModbusRTU::dat2str(p->mbreg) 
 					<< " IGNORE register..." << endl;
-		return ;
+		return false;
 	}
 	
 	switch( p->mbfunc )
 	{
 		case ModbusRTU::fnReadInputRegisters:
 		{
-			ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr,p->mbreg,p->q_count);
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr,p->mbreg+p->offset,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
 				
@@ -343,7 +347,7 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 
 		case ModbusRTU::fnReadOutputRegisters:
 		{
-			ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr, p->mbreg,p->q_count);
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr, p->mbreg+p->offset,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
 			it--;
@@ -352,7 +356,7 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		
 		case ModbusRTU::fnReadInputStatus:
 		{
-			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr, p->mbreg,p->q_count);
+			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr,p->mbreg+p->offset,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
 			it--;
@@ -361,7 +365,7 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		
 		case ModbusRTU::fnReadCoilStatus:
 		{
-			ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr,p->mbreg,p->q_count);
+			ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr,p->mbreg+p->offset,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
 			it--;
@@ -374,16 +378,16 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			{
 				dlog[Debug::CRIT] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg) 
 					<< " IGNORE WRITE SINGLE REGISTER q_count=" << p->q_count << " ..." << endl;
-			
+				return false;
 			}
-			else
-				ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg,p->mbval);
+
+			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg+p->offset,p->mbval);
 		}
 		break;
 
 		case ModbusRTU::fnWriteOutputRegisters:
 		{
-			ModbusRTU::WriteOutputMessage msg(dev->mbaddr,p->mbreg);
+			ModbusRTU::WriteOutputMessage msg(dev->mbaddr,p->mbreg+p->offset);
 			for( int i=0; i<p->q_count; i++,it++ )
 				msg.addData(it->second->mbval);
 			it--;
@@ -396,9 +400,12 @@ void RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			if( dlog.debugging(Debug::INFO) )
 				dlog[Debug::INFO] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg) 
 					<< " IGNORE mfunc=" << (int)p->mbfunc << " ..." << endl;
+			return false;
 		}
 		break;
 	}
+	
+	return true;
 }
 // -----------------------------------------------------------------------------
 bool RTUExchange::RTUDevice::checkRespond()
@@ -408,7 +415,7 @@ bool RTUExchange::RTUDevice::checkRespond()
 	{	
 		if( resp_real )
 			resp_state = true;
-			
+
 		resp_ptTimeout.reset();
 	}
 
@@ -423,7 +430,13 @@ void RTUExchange::updateSM()
 	for( RTUExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
-		
+/*		
+		cout << "check respond addr=" << ModbusRTU::addr2str(d->mbaddr) 
+			<< " respond=" << d->resp_id 
+			<< " real=" << d->resp_real
+			<< " state=" << d->resp_state
+			<< endl;
+*/		
 		// update respond sensors......
 		if( d->checkRespond() && d->resp_id != DefaultObjectId  )
 		{
@@ -483,22 +496,6 @@ void RTUExchange::updateSM()
 	}
 }
 
-/*
-// -----------------------------------------------------------------------------
-long RTUExchange::pollRTU188( RSMap::iterator& p )
-{
-	if( !p->rtu )
-		return 0;
-
-	if( p->stype == UniversalIO::DigitalInput )
-		return p->rtu->getState(p->rtuJack,p->rtuChan,p->stype);
-	
-	if( p->stype == UniversalIO::AnalogInput )
-		return p->rtu->getInt(p->rtuJack,p->rtuChan,p->stype);
-	
-	return 0;
-}
-*/
 // -----------------------------------------------------------------------------
 void RTUExchange::processingMessage(UniSetTypes::VoidMessage *msg)
 {
@@ -562,7 +559,8 @@ void RTUExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 			if( dlog.debugging(Debug::INFO) )
 				dlog[Debug::INFO] << myname << "(sysCommand): rmap size= " << rmap.size() << endl;
 
-
+			if( !shm->isLocalwork() )
+				initRespondList();
 		
 			waitSMReady();
 
@@ -638,7 +636,6 @@ void RTUExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 				unideb.logFile(fname.c_str());
 				unideb << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << std::endl;
 			}
-
 			dlog << myname << "(sysCommand): logRotate" << std::endl;
 			fname = dlog.getLogFile();
 			if( !fname.empty() )
@@ -974,6 +971,7 @@ bool RTUExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  RTUExchange::RT
 {
 	r->dev = dev;
 	r->mbval = UniSetTypes::uni_atoi(it.getProp("default").c_str());
+	r->offset= UniSetTypes::uni_atoi(it.getProp("mboffset").c_str());
 
 	if( dev->dtype == RTUExchange::dtMTR )
 	{
@@ -1006,6 +1004,7 @@ bool RTUExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  RTUExchange::RT
 			dlog[Debug::CRIT] << myname << "(initRegInfo): unknown mbreg for " << it.getProp("name") << endl;
 			return false;
 		}
+
 		r->mbreg = ModbusRTU::str2mbData(reg);
 	}
 	else // if( dev->dtype == RTUExchange::dtRTU188 )
@@ -1373,6 +1372,27 @@ std::ostream& operator<<( std::ostream& os, const RTUExchange::RSProperty& p )
 	return os;
 }
 // -----------------------------------------------------------------------------
+void RTUExchange::initRespondList()
+{
+	xmlNode* respNode = conf->findNode(cnode,"RespondList");
+	if( respNode )
+	{
+		UniXML_iterator it1(respNode);
+		if( it1.goChildren() )
+		{
+			for(;it1.getCurrent(); it1.goNext() )
+			{
+				ModbusRTU::ModbusAddr a = ModbusRTU::str2mbAddr(it1.getProp("addr"));
+				initRespondInfo(rmap,a,it1);
+			}
+		}
+		else
+			dlog[Debug::WARN] << myname << "(init): <RespondList> empty section..." << endl;
+	}
+	else
+		dlog[Debug::WARN] << myname << "(init): <RespondList> not found..." << endl;
+}
+// -----------------------------------------------------------------------------
 bool RTUExchange::initRespondInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it )
 {
 	RTUDeviceMap::iterator d = m.find(a);
@@ -1388,7 +1408,8 @@ bool RTUExchange::initRespondInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, Uni
 		dlog[Debug::CRIT] << myname << ": not found ID for noRespondSensor=" << it.getProp("respondSensor") << endl;
 		return false;
 	}
-				
+
+	dlog[Debug::INFO] << myname << "(initRespondList): add addr=" << ModbusRTU::addr2str(a) << endl;
 	int tout = atoi(it.getProp("timeout").c_str());
 	if( tout > 0 )
 		d->second->resp_ptTimeout.setTiming(tout);
@@ -1396,6 +1417,9 @@ bool RTUExchange::initRespondInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, Uni
 		d->second->resp_ptTimeout.setTiming(UniSetTimer::WaitUpTime);
 				
 	d->second->resp_invert = atoi(it.getProp("invert").c_str());
+	d->second->resp_state = UniSetTypes::uni_atoi(it.getProp("default").c_str());
+	d->second->resp_real = UniSetTypes::uni_atoi(it.getProp("default").c_str());
+	d->second->resp_trTimeout.change(d->second->resp_real);
 	return true;
 }
 // -----------------------------------------------------------------------------
@@ -1468,21 +1492,21 @@ void RTUExchange::rtuQueryOptimization( RTUDeviceMap& m )
 		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
 			RTUExchange::RegMap::iterator beg = it;
-			ModbusRTU::ModbusData reg = it->second->mbreg;
+			ModbusRTU::ModbusData reg = it->second->mbreg + it->second->offset;
 
 			beg->second->q_num = 1;
 			beg->second->q_count = 1;
 			it++;
 			for( ;it!=d->regmap.end(); ++it )
 			{
-				if( (it->second->mbreg - reg) > 1 )
+				if( (it->second->mbreg + it->second->offset - reg) > 1 )
 					break;
 				
 				if( beg->second->mbfunc != it->second->mbfunc )
 					break;
 
 				beg->second->q_count++;
-				reg = it->second->mbreg;
+				reg = it->second->mbreg + it->second->offset;
 				it->second->q_num = beg->second->q_count;
 				it->second->q_count = 0;
 			}
