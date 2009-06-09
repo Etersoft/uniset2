@@ -34,8 +34,7 @@ static const int NoSafety = -1;
 				jar_state(false),
 				ondelay_state(false),
 				offdelay_state(false),
-				t_ai(UniSetTypes::DefaultObjectId),
-				initOK(false)
+				t_ai(UniSetTypes::DefaultObjectId)
 			{}
 
 

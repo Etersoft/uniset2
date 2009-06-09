@@ -307,6 +307,9 @@ void MBSlave::execute_rtu()
 						<< "(execute_rtu): (hb) " << ex << std::endl;
 				}
 			}
+		
+			for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+				IOBase::processingThreshold(&it->second,shm,force);
 		}
 		catch(...){}
 	}
@@ -355,6 +358,9 @@ void MBSlave::execute_tcp()
 						<< "(execute_tcp): (hb) " << ex << std::endl;
 				}
 			}
+
+			for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+				IOBase::processingThreshold(&it->second,shm,force);
 		}
 		catch(...){}
 	}

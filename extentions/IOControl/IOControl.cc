@@ -492,6 +492,9 @@ void IOControl::iopoll()
 			unideb[Debug::LEVEL3] << myname << "(iopoll): catch ..." << endl;
 		}
 	}
+
+	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+			IOBase::processingThreshold(&(*it),shm,force);
 }
 // --------------------------------------------------------------------------------
 void IOControl::readConfiguration()

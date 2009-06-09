@@ -298,6 +298,9 @@ void MBMaster::poll()
 			dlog[Debug::LEVEL3] << myname << "(poll): catch ..." << endl;
 		}
 	}
+
+	for( MBMap::iterator it=mbmap.begin(); it!=mbmap.end(); ++it )
+		IOBase::processingThreshold(&(*it),shm,force);
 }
 // -----------------------------------------------------------------------------
 long MBMaster::readReg( MBMap::iterator& p )

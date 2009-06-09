@@ -370,17 +370,10 @@ void IOBase::processingThreshold( IOBase* it, SMInterface* shm, bool force )
 	if( it->t_ai == DefaultObjectId )
 		return;
 	
-	if( !it->initOK )
-	{
-		shm->initAIterator(it->ait);
-		shm->initDIterator(it->dit);
-		it->initOK = true;
-	}
-	
 	long val = shm->localGetValue(it->ait,it->t_ai);
 	bool set = it->value ? true : false;
 
-	cout  << "val=" << val << " set=" << set << endl;
+//	cout  << "val=" << val << " set=" << set << endl;
 	// Проверка нижнего предела
 	// значение должно быть меньше lowLimit-чуствительность
 	if( val <= (it->ti.lowlimit-it->ti.sensibility) )
@@ -388,8 +381,8 @@ void IOBase::processingThreshold( IOBase* it, SMInterface* shm, bool force )
 	else if( val >= (it->ti.hilimit+it->ti.sensibility) )
 		set = true;
 
-	cout  << "thresh: set=" << set << endl;
-	processingDI(it,set,shm,force);
+//	cout  << "thresh: set=" << set << endl;
+	processingAsDI(it,set,shm,force);
 }
 // -----------------------------------------------------------------------------
 

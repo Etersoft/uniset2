@@ -24,6 +24,5 @@
 на использование структуры SensorInfo вместо ObjectId.
 
 ----------
-RTUExchabge: vtype="Byte"
 smonit: processing "precision"
 admin: processing "precision"
