@@ -16,7 +16,8 @@ namespace VTypes
 		{
 			vtUnknown,
 			vtF2,
-			vtF4
+			vtF4,
+			vtByte
 		};
 
 		std::ostream& operator<<( std::ostream& os, const VType& vt );
@@ -95,6 +96,48 @@ namespace VTypes
 			operator long(){ return lroundf(raw.val); }
 			
 			F4mem raw;
+	};
+	// --------------------------------------------------------------------------
+	class Byte
+	{
+		public:
+		
+			static const int bsize = 2;
+		
+			// ------------------------------------------
+			/*! тип хранения в памяти */
+			typedef union
+			{
+				unsigned short w;
+				unsigned char b[bsize];
+			} Bytemem;
+			// ------------------------------------------
+			// конструкторы на разные случаи...
+			Byte(){ raw.w = 0; }
+			
+			Byte( unsigned char b1, unsigned char b2 ){ raw.b[0]=b1; raw.b[1]=b2; }
+			Byte( const long val )
+			{
+				raw.w = val;
+			}
+			
+			Byte( const ModbusRTU::ModbusData dat )
+			{
+					raw.w = dat;
+			}
+
+			~Byte(){}
+			// ------------------------------------------
+			/*! размер в словах */
+			static int wsize(){ return 1; }
+			/*! тип значения */
+			static VType type(){ return vtByte; }
+			// ------------------------------------------
+			operator long(){ return lroundf(raw.w); }
+
+			unsigned char operator[]( const int i ){ return raw.b[i]; }
+
+			Bytemem raw;
 	};
 	// --------------------------------------------------------------------------
 

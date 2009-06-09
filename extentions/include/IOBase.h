@@ -33,7 +33,8 @@ static const int NoSafety = -1;
 				invert(false),
 				jar_state(false),
 				ondelay_state(false),
-				offdelay_state(false)
+				offdelay_state(false),
+				t_ai(UniSetTypes::DefaultObjectId)
 			{}
 
 
@@ -75,6 +76,14 @@ static const int NoSafety = -1;
 			bool ondelay_state;		/*!< значение для задержки включения */
 			bool offdelay_state;	/*!< значение для задержки отключения */
 			
+			// Порог
+			UniSetTypes::ObjectId t_ai; /*!< если данный датчик дискретный,
+												и является пороговым, то в данном поле
+												хранится идентификатор аналогового датчика
+												с которым он связан */
+			IONotifyController_i::ThresholdInfo ti;
+	
+			
 			IOController::AIOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;
 			UniSetTypes::uniset_spin_mutex val_lock; 	/*!< флаг блокирующий работу со значением */
@@ -87,6 +96,7 @@ static const int NoSafety = -1;
 			static long processingAsAO( IOBase* it, SMInterface* shm, bool force );
 			static float processingFasAO( IOBase* it, SMInterface* shm, bool force );
 			static bool processingAsDO( IOBase* it, SMInterface* shm, bool force );
+			static void processingThreshold( IOBase* it, SMInterface* shm, bool force );
 			static bool initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,  
 									DebugStream* dlog=0, std::string myname="",
 									int def_filtersize=0, float def_filterT=0.0 );

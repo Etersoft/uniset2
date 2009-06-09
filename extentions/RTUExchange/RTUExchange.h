@@ -60,14 +60,15 @@ class RTUExchange:
 			public IOBase
 		{
 			// only for RTU
-			short nbit;				/*!< bit number (for func=[0x01,0x02]) */
+			short nbit;				/*!< bit number) */
 			VTypes::VType vType;	/*!< type of value */
 			short rnum;				/*!< count of registers */
+			short nbyte;			/*!< byte number (1-2) */
 			
 			RSProperty():
 				nbit(-1),vType(VTypes::vtUnknown),
 				rnum(VTypes::wsize(VTypes::vtUnknown)),
-				reg(0)
+				nbyte(0),reg(0)
 			{}
 
 			RegInfo* reg;
@@ -76,7 +77,8 @@ class RTUExchange:
 		friend std::ostream& operator<<( std::ostream& os, const RSProperty& p );
 
 		typedef std::list<RSProperty> PList;
-		
+
+		typedef std::map<ModbusRTU::ModbusData,RegInfo*> RegMap;
 		struct RegInfo
 		{
 			RegInfo():
@@ -106,11 +108,13 @@ class RTUExchange:
 			// optimization
 			int q_num;		/*! number in query */
 			int q_count;	/*! count registers for query */
+			
+			RegMap::iterator rit;
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, RegInfo& r );
 
-		typedef std::map<ModbusRTU::ModbusData,RegInfo*> RegMap;
+
 
 		struct RTUDevice
 		{
@@ -177,6 +181,7 @@ class RTUExchange:
 		void updateRTU(RegMap::iterator& it);
 		void updateMTR(RegMap::iterator& it);
 		void updateRTU188(RegMap::iterator& it);
+		void updateRSProperty( RSProperty* p, bool write_only=false );
 
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
 		void sysCommand( UniSetTypes::SystemMessage *msg );
@@ -236,6 +241,9 @@ class RTUExchange:
 
 		bool activated;
 		int activateTimeout;
+		
+		bool rs_pre_clean;
+		bool noQueryOptimization;
 };
 // -----------------------------------------------------------------------------
 #endif // _RS_EXCHANGE_H_

@@ -1,30 +1,27 @@
 <?xml version = '1.0' encoding = 'koi8-r' ?>
-<UNISETPLC>
-<UserData></UserData>
+<ConfigurationAEU id="$Id: configure.xml,v 1.19 2009/06/04 14:12:40 pv Exp $">
 
-<!-- Общие(стартовые) параметры по UniSet -->
-<UniSet>
-		<NameService host="localhost" port="2809"/>
-		<LocalNode	 name="LocalhostNode"/>
-		<RootSection name="UNISET_PLC"/>
-
-		<CountOfNet 		name="1"/>
-		<RepeatCount 		name="3"/>
-		<RepeatTimeoutMS 	name="50"/>
-
-		<WatchDogTime 		name="0"/> <!-- [мин] -->
-		<PingNodeTime 		name="0"/> <!-- [сек] -->
-		<AutoStartUpTime 	name="1"/> <!-- [сек] -->
-		<DumpStateTime 		name="10"/><!-- [сек] -->
-		<SleepTickMS		name="500"/><!-- [мсек] -->
-
+	<!-- Общие параметры по UniSet -->
+	<UniSet>
+		<LocalNode name="LocalhostNode"/>
+		<RootSection name="AEU"/>
 		<ServicesSection name="Services"/>
 		<NameService host="localhost" port="2809"/>
+		<CountOfNet name="1"/>
+		<RepeatCount name="2"/>
+		<RepeatTimeoutMS name="50"/>
+		<ImagesPath name="images"/>
 		<SizeOfMessageQueue name="2000"/>
+
+		<WatchDogTime name="0"/> <!-- [мин] -->
+		<PingNodeTime name="0"/> <!-- [сек] -->
+		<AutoStartUpTime name="1"/> <!-- [сек] -->
+		<DumpStateTime name="10"/><!-- [сек] -->
+		<SleepTickMS name="500"/><!-- [мсек] -->
+		<!-- "1" для реальной системы (подменяется на 1 при сборке пакета); "0" - использование omniNames -->
 		<LocalIOR name="0"/> 
 
-		<!-- Debug, logs -->
-		<UniSetDebug name="unideb" levels="crit,warn" file=""/>
+		<UniSetDebug name="unideb" levels="" file=""/>
 
 		<!-- Если не указано, то считается текущий каталог -->
 		<ConfDir name=""/>
@@ -33,176 +30,5479 @@
 		<LogDir name=""/>
 		<DocDir name=""/>
 		<LockDir name=""/>
-
-	<Services>
-		<LocalTimeService name="TimeService" MaxCountTimers="100" AskLifeTimeSEC="10"/>
-		<LocalInfoServer name="InfoServer" dbrepeat="1">
-			<RouteList>
-			</RouteList>
-		</LocalInfoServer>
-		
-		<LocalDBServer name="DBServer" dbnode="" dbname="UNISET_PLC" dbuser="dbadmin" dbpass="dbadmin" pingTime="60000" reconnectTime="30000"/>
-		<LocalPrintServer device="/dev/lp0" checkTime="5000" />
-	</Services>
-
-</UniSet>
+	</UniSet>
 
 	<dlog name="dlog" levels="" file=""/>
+
+	<Services>
+		<!-- например "server.setri.ru". Если dbnode="", то берётся localhost -->
+		<LocalDBServer name="DBServer1" dbnode="" dbname="REU" dbuser="dbadmin" dbpass="dbadmin" 
+			 pingTime="60000" reconnectTime="30000" aiignore="1" heartbeat_id="">
+			<Tables></Tables>
+		</LocalDBServer>
+	</Services>
+
+	<settings>
 	
-	<SharedMemory name="SharedMemory" shmID="SharedMemory"/>
-
-	<MBMaster1 name="MBMaster1" iaddr="127.0.0.1" addr="0x31" port="30000" 
-			 levels="info,warn,crit" poll_time="200" reply_timeout="60"
-	/>
-
-	<MBSlave1 name="MBSlave1" dev="/dev/ttyS0" addr="0x31" speed="9600" 
-			 aftersend-pause="0" levels="info,warn,crit" poll_time="200" reply_timeout="60"
-	>
-		<filelist>
-		<!-- Список файлов разрешённых для передачи по modbus
-			directory - каталог где лежит файл. Можно не задавать
-				'ConfDir' - берётся из настроек (см. начало этого файла)
-				'DataDir' - берётся из настроек (см. начало этого файла)
-				'xxx'  - прямое указание каталога
-		-->
-			<item id="1" name="configure.xml" directory="ConfDir"/>
-			<item id="2" name="VERSION" directory="ConfDir"/>
-			<item id="3" name="configure.xml.gz" directory="/tmp/"/>
-			<item id="4" name="SERIAL" directory="ConfDir"/>
-		</filelist>
-
-	</MBSlave1>
-
-	<RTUExchange name="RTUExchange">
-		<RespondList>
-<!--
-			<item addr="0x01" respondSensor="RespondRTU_S" timeout="5000"/>
-			<item addr="0x02" respondSensor="NoRespondRTU2_S" timeout="5000" invert="1"/>
--->		
-		</RespondList>
-	</RTUExchange>
+		<SharedMemory name="SharedMemory" shmID="SharedMemory1"/>
 	
-	<UDPExchange name="UDPExchange"/>
-	<UDPExchange2 name="UDPExchange2"/>
+		<HeartBeatTime time_msec="5000"/>
+		
+		<RSExchange name="RSExchange">
+			<RespondList>
+				<item addr="0x02" respondSensor="RTU_Not_Respond_FS" timeout="5000" invert="1" default="1"/>
+			</RespondList>
+		</RSExchange>
+	</settings>
 
-	
-	<HeartBeatTime time_msec="5000"/>
+	<MainWindow name="MainWindow" pollTime="200" msgCount="50" />
+	<CommonManager name="CommonManager" pingTime="500" lastErrTime="3000"/>
 
-	<IOControl name="IOControl" />
+	<ObjectsMap idfromfile="1" no_dep="0">
 
-<ObjectsMap idfromfile="0">
-<!--
-	Краткие пояснения к полям секции 'sensors'
-	==========================================
-	node 		- узел на котором физически находится данный датчик
-	iotype 		- тип датчика
-	priority 	- приоритет сообщения об изменении данного датчика
-	textname 	- текстовое имя датчика
--->
 	<nodes port="2809">
-		<item name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
-		<item name="Node2"			alias="" textname="Локальный узел"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
+		<item id="3000" name="LocalhostNode" alias="" textname="Локальный узел"	ip="127.0.0.1" CANnodeID="" host="localhost" dbserver=""/>
 	</nodes>
 
 	<!-- ************************ Датчики ********************** -->
-	<sensors name="Sensors">
-		<item name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium" default="1" />
-		<item name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" rs="1" />
-		<item name="Input3_S" textname="Команда 3" node="" iotype="DI" priority="Medium" mbtcp="1" mbaddr="0x02" mbfunc="0x04" mbreg="0x02"/>
-		<item name="Input4_S" textname="Команда 4" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x04" mbreg="0x05" rs="1" />
-		
-		<item name="RS_Test1_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x02" nbit="1" rs="1" />
-		<item name="RS_Test2_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x02" nbit="2" rs="1" />
-		<item name="RS_Test3_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x02" nbit="3" rs="1" />
-		<item name="RS_Test4_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x02" nbit="4" rs="1" />
-		<item name="RS_Test5_S" textname="Команда 5" node="" iotype="DI" priority="Medium" mbtype="rtu188" mbaddr="0x03" jack="J1" channel="23" rs="1" />
-		<item name="RS_Test6_S" textname="Команда 5" node="" iotype="DI" priority="Medium" mbtype="rtu188" mbaddr="0x03" jack="J1" channel="23" rs="1" />
-		<item name="RS_Test7_S" textname="Команда 5" node="" iotype="DI" priority="Medium" mbtype="rtu188" mbaddr="0x04" jack="J1" channel="23" rs="1" />
+	<sensors name="Sensors" section="Sensors" no_check_depends="0" >
 
-		<item name="RS_Test8_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x05" rs="1" />
-		<item name="RS_Test9_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x06" rs="1" />
-		<item name="RS_Test10_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x07" rs="1" />
-		<item name="RS_Test11_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" vtype="F2" mbaddr="0x01" mbfunc="0x03" mbreg="0x08" rs="1" />
-		<item name="RS_Test12_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0xA" rs="1" />
-		<item name="RS_Test13_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0xB" rs="1" />
-		<item name="RS_Test14_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0xC" rs="1" />
-		<item name="RS_Test15_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0xD" rs="1" />
-		<item name="RS_Test16_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="mtr" mtrtype="F1" mbaddr="0x05" mbfunc="0x03" mbreg="0x10" rs="1" />
-		<item name="RS_Test17_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x03" mbreg="0x10" rs="1" />
-		<item name="IO_Test1_S" textname="io test" node="" iotype="DO" priority="Medium" io="1"/>
-		<item name="IO_Test2_S" textname="io test" node="" iotype="DI" priority="Medium" io="1"/>
-		<item name="IO_Test3_S" textname="io test" node="" iotype="AO" priority="Medium" io="1"/>
-		<item name="IO_Test4_S" textname="io test" node="" iotype="AI" priority="Medium" io="1"/>
-		<item name="W_Test2_S" textname="io test" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x03" mbreg="0x3001" rs="wago" />
-		<item name="W_Test3_S" textname="io test" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x03" mbreg="0x3002" rs="wago" />
-		<item name="W_Test4_S" textname="io test" node="" iotype="AI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x06" mbreg="0x3008" rs="wago" default="4"/>
+		<item id="100" name="RTU_Not_Respond_FS" textname="Нет связи с RTU" iotype="DI" character="Info" default="1"/>
+		<item id="99" name="TestMode_S" textname="test mode" iotype="DI"/>
+		<item id="98" name="FlashState_AS" textname="flash state" iotype="AI"/>
 
-
-		<item name="Input6_S" textname="Команда 6" node="" iotype="DI" priority="Medium">
-			<depends>
-				<depend name="Input4_S"/>
-			</depends>
-		</item>
-		<item name="DO_C" textname="Digital output" node="" iotype="DO" priority="Medium"/>
-		<item name="DO1_C" textname="Digital output" node="" iotype="DO" priority="Medium"/>
-		<item name="AO_AS" textname="Analog output" node="" iotype="AO" priority="Medium"
-				mbtype="rtu" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" rs="2" default="10" />
-		/>
-		<item name="AI_AS" textname="Analog input" node="" iotype="AI" default="378" priority="Medium"
-				mbtype="rtu" mbaddr="0x01" mbfunc="0x04" mbreg="0x01" rs="1" vtype="F2" precision="45">
+		<item id="465241" name="Rejim" textname="Rejim"
+		      iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3055" mbfunc="0x03">
 			<consumers>
-				<consumer name="TestProc" type="objects" cfilter="test1"/>
-				<consumer name="PLCProcessor" type="objects"/>
 			</consumers>
 		</item>
-		<item name="Threshold1_S" textname="Порог" node="" iotype="DI" priority="Medium"/>
-		<item name="TestMode_S" textname="test" node="" iotype="DI" priority="Medium"/>
+
+		<item id="465001" name="HC_in" textname="HC_in"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3050" mbfunc="0x03">
+			<consumers>
+			</consumers>
+		</item>
+
+		<item id="465002" name="HC_out" textname="HC_out"
+		      iotype="DO" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3000" mbfunc="0x06">
+			<consumers>
+			</consumers>
+		</item>
+				
+		<item id="465003" name="connect" textname="connect"
+		       iotype="DI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		<item id="465004" name="connect_signal" textname="connect_signal"
+			iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
 		
-		<item name="RespondRTU_S" textname="respond rtu" node="" iotype="DI"/>
-		<item name="NoRespondRTU2_S" textname="no respond rtu" node="" iotype="DI"/>
+		<item id="000001" name="test1" textname="test1"
+			 iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		<item id="000002" name="test2" textname="test2"
+			 iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		<item id="000003" name="test3" textname="test3"
+			 iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+
+		<item id="000004" name="test4" textname="test4"
+			 iotype="DI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+
+		<item id="000005" name="EU_Mode_AS" textname="Режимы работы ЭУ"
+			 iotype="AI" character="Info" default="10">
+			<consumers>			
+			</consumers>				
+		</item>
+
+		<item id="000006" name="No_Signal_S" textname="Нет связи с датчиком"
+			 iotype="DI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+
+
+<!-- //************    КЛАПАНЫ   ****************************- -->	
+	
+		<item id="101" name="valve_K1-1_in" textname="valve_K1-1_in"
+		      iotype="DI" character="Info" default=""
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x218" mbfunc="0x02" nbit="0">
+	               <consumers>			
+	               </consumers>				
+		</item>
 		
+		<item id="102" name="valve_K1-1_out" textname="valve_K1-1_out"
+		      iotype="DO" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3009" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="201" name="valve_K1-2_in" textname="valve_K1-2_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x219" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="202" name="valve_K1-2_out" textname="valve_K1-2_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x300A" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="301" name="valve_K1-3_in" textname="valve_K1-3_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x21A" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="302" name="valve_K1-3_out" textname="valve_K1-3_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x300B" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="401" name="valve_K1-4_in" textname="valve_K1-4_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x21B" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="402" name="valve_K1-4_out" textname="valve_K1-4_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x300C" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="501" name="valve_K1-5_in" textname="valve_K1-5_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x21C" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="502" name="valve_K1-5_out" textname="valve_K1-5_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x300D" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="601" name="valve_K1-6_in" textname="valve_K1-6_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x21D" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="602" name="valve_K1-6_out" textname="valve_K1-6_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x300E" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="701" name="valve_K1-7_in" textname="valve_K1-7_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x21E" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="702" name="valve_K1-7_out" textname="valve_K1-7_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x300F" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="901" name="valve_K2-1_in" textname="valve_K2-1_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x21F" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="902" name="valve_K2-1_out" textname="valve_K2-1_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3010" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1001" name="valve_K2-2_in" textname="valve_K2-2_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x220" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1002" name="valve_K2-2_out" textname="valve_K2-2_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3011" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1101" name="valve_K2-3_in" textname="valve_K2-3_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x221" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1102" name="valve_K2-3_out" textname="valve_K2-3_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3012" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1201" name="valve_K3-1_in" textname="valve_K3-1_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x222" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1202" name="valve_K3-1_out" textname="valve_K3-1_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3013" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1301" name="valve_K3-2_in" textname="valve_K3-2_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x223" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1302" name="valve_K3-2_out" textname="valve_K3-2_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3014" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1401" name="valve_KP1-1_in" textname="valve_KP1-1_in"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1403" name="valve_KP1-1_tek" textname="valve_KP1-1_tek"
+		      iotype="AI" character="Info" precision="2" vtype1="F2"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x305A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1404" name="valve_KP1-1_tek_signal" textname="valve_KP1-1_tek_signal"
+			iotype="AI" character="Info" default="3">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1402" name="valve_KP1-1_out" textname="valve_KP1-1_out"
+		      iotype="AO" character="Info" precision="2" vtype1="F2"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3001" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1601" name="blower_HB1-1_in" textname="blower_HB1-1_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x210" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1602" name="blower_HB1-1_out" textname="valve_HB1-1_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3006" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1701" name="blower_HB1-2_in" textname="blower_HB1-2_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x229" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1702" name="blower_HB1-2_out" textname="blower_HB1-2_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3007" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1801" name="blower_HB2-1_in" textname="blower_HB2-1_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x211" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1802" name="blower_HB2-1_out" textname="blower_HB2-1_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3008" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		
+		<item id="2201" name="cooler_B3-1_in" textname="cooler_B3-1_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x22A" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="2202" name="cooler_B3-1_out" textname="cooler_B3-1_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3016" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1901" name="pump_H3-1_in" textname="pump_H3-1_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x228" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="1902" name="pump_H3-1_out" textname="pump_H3-1_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3015" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="5501" name="btn_hidro_in" textname="btn_hidro_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x18" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="5502" name="btn_hidro_out" textname="btn_hidro_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3002" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="5601" name="btn_nitro_in" textname="btn_nitro_in"
+		      iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x19" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="5602" name="btn_nitro_out" textname="btn_nitro_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3003" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="5701" name="btn_cut_in" textname="btn_cut_in"
+		       iotype="DI" character="Info"
+		      rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x1A" mbfunc="0x02" nbit="0">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="5702" name="btn_cut_out" textname="btn_cut_out"
+		      iotype="DI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3004" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="6601" name="U_bte" textname="U_bte"
+		       iotype="AI" character="Info" precision="2" vtype1="F2"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x305F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="6602" name="U_bte_signal" textname="U_bte_signal"
+		      iotype="AI" character="Info" default="3"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3042" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="6701" name="I_bte" textname="I_bte"
+		      iotype="AI" character="Info" precision="2" vtype1="F2"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3060" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="6702" name="I_bte_signal" textname="I_bte_signal"
+		      iotype="AI" character="Info" default="3"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3043" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="6801" name="P_bte" textname="P_bte"
+		      iotype="AI" character="Info" precision="2" vtype1="F2"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3061" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="6802" name="P_bte_signal" textname="P_bte_signal"
+		      iotype="AI" character="Info" default="3">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<!-- //************    НАГНЕТАТЕЛЬИ ВОЗДУХА И НАСОСЫ  ****************************- -->
+		
+		<item id="6901" name="EN3-1" textname="EN3-1"
+		      iotype="DO" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3018" mbfunc="0x06">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="6902" name="EN3-1_signal" textname="EN3-1_signal"
+		       iotype="AI" character="Info" default="">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		
+			
+		
+		
+		<!-- //************    ПОКАЗОМЕТРЫ  ****************************- -->
+		
+		<item id="2901" name="P1-1" textname="P1-1"
+		      iotype="AI" character="Info" precision="2" vtype1="F2"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3056" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="2902" name="P1-1_signal" textname="P1-1_signal"
+		      iotype="AI" character="Info" default="3"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3044" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="3401" name="P2-1" textname="P2-1"
+		      iotype="AI" character="Info" precision="2" vtype1="F2"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3057" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="3402" name="P2-1_signal" textname="P2-1_signal"
+		      iotype="AI" character="Info" default="3"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3045" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="3501" name="P3-1" textname="P3-1"
+		      iotype="AI" character="Info" precision="2" vtype1="F2"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3058" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="3502" name="P3-1_signal" textname="P3-1_signal"
+		      iotype="AI" character="Info" default="3"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3046" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="3601" name="T2-1" textname="T2-1"
+		      iotype="AI" character="Info" precision="2" vtype1="F2"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x305B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="3602" name="T2-1_signal" textname="T2-1_signal"
+		      iotype="AI" character="Info" default="3"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3049" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="3701" name="T2-2" textname="T2-2"
+		      iotype="AI" character="Info" precision="2" vtype1="F2"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x305C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="3702" name="T2-2_signal" textname="T2-2_signal"
+		      iotype="AI" character="Info" default="3"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x304A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="3801" name="T3-1" textname="T3-1"
+		      iotype="AI" character="Info" precision="2" vtype1="F2"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x305D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="3802" name="T3-1_signal" textname="T3-1_signal"
+		      iotype="AI" character="Info" default="3"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x304B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		
+		<item id="3901" name="T3-2" textname="T3-2"
+		      iotype="AI" character="Info" precision="2" vtype1="F2"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x305E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		<item id="3902" name="T3-2_signal" textname="T3-2_signal"
+		      iotype="AI" character="Info" default="3"
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x304C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		
+<!-- //************    БТЭ-1    ****************************- -->
+		
+		<item id="12301" name="U1_01" textname="U1_01"
+		      iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x00" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12302" name="U1_02" textname="U1_02"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x01" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12303" name="U1_03" textname="U1_03"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x02" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12304" name="U1_04" textname="U1_04"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x03" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12305" name="U1_05" textname="U1_05"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x04" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12306" name="U1_06" textname="U1_06"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x05" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12307" name="U1_07" textname="U1_07"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x06" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12308" name="U1_08" textname="U1_08"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x07" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12309" name="U1_09" textname="U1_09"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x08" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12310" name="U1_10" textname="U1_10"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x09" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12311" name="U1_11" textname="U1_11"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x0A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12312" name="U1_12" textname="U1_12"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x0B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12313" name="U1_13" textname="U1_13"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x0C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12314" name="U1_14" textname="U1_14"
+			 iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x0D" mbfunc="0x03">
+		      <consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12315" name="U1_15" textname="U1_15"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x0E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12316" name="U1_16" textname="U1_16"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x0F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12317" name="U1_17" textname="U1_17"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x10" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+						
+		<item id="12318" name="U1_18" textname="U1_18"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x11" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12319" name="U1_19" textname="U1_19"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x12" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		
+		<item id="12320" name="U1_20" textname="U1_20"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x13" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12321" name="U1_21" textname="U1_21"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x14" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12322" name="U1_22" textname="U1_22"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x15" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12323" name="U1_23" textname="U1_23"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x16" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12324" name="U1_24" textname="U1_24"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x17" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12325" name="U1_25" textname="U1_25"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x18" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12326" name="U1_26" textname="U1_26"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x19" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12327" name="U1_27" textname="U1_27"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x1A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12328" name="U1_28" textname="U1_28"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x1B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12329" name="U1_29" textname="U1_29"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x1C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12330" name="U1_30" textname="U1_30"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x1D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12331" name="U1_31" textname="U1_31"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x1E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12332" name="U1_32" textname="U1_32"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x1F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12333" name="U1_33" textname="U1_33"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x20" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12334" name="U1_34" textname="U1_34"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x21" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12335" name="U1_35" textname="U1_35"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x22" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12336" name="U1_36" textname="U1_36"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x23" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12337" name="U1_37" textname="U1_37"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x24" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12338" name="U1_38" textname="U1_38"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x25" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12339" name="U1_39" textname="U1_39"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x26" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12340" name="U1_40" textname="U1_40"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x27" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12341" name="U1_41" textname="U1_41"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x28" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12342" name="U1_42" textname="U1_42"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x29" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+	
+		<item id="12343" name="U1_43" textname="U1_43"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x2A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12344" name="U1_44" textname="U1_44"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x2B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12345" name="U1_45" textname="U1_45"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x2C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12346" name="U1_46" textname="U1_46"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x2D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12347" name="U1_47" textname="U1_47"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x2E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12348" name="U1_48" textname="U1_48"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x2F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12349" name="U1_49" textname="U1_49"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x30" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12350" name="U1_50" textname="U1_50"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x31" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12351" name="U1_51" textname="U1_51"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x32" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12352" name="U1_52" textname="U1_52"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x33" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12353" name="U1_53" textname="U1_53"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x34" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12354" name="U1_54" textname="U1_54"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x35" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12355" name="U1_55" textname="U1_55"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x36" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12356" name="U1_56" textname="U1_56"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x11" mbreg="0x37" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12357" name="U1_57" textname="U1_57"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x00" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12358" name="U1_58" textname="U1_58"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x01" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12359" name="U1_59" textname="U1_59"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x02" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12360" name="U1_60" textname="U1_60"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x03" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12361" name="U1_61" textname="U1_61"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x04" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12362" name="U1_62" textname="U1_62"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x05" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12363" name="U1_63" textname="U1_63"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x06" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12364" name="U1_64" textname="U1_64"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x07" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12365" name="U1_65" textname="U1_65"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x08" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12366" name="U1_66" textname="U1_66"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x09" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12367" name="U1_67" textname="U1_67"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x0A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12368" name="U1_68" textname="U1_68"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x0B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12369" name="U1_69" textname="U1_69"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x0C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12370" name="U1_70" textname="U1_70"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x0D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12371" name="U1_71" textname="U1_71"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x0E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12372" name="U1_72" textname="U1_72"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x0F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12373" name="U1_73" textname="U1_73"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x10" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12374" name="U1_74" textname="U1_74"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x11" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12375" name="U1_75" textname="U1_75"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x12" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12376" name="U1_76" textname="U1_76"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x13" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12377" name="U1_77" textname="U1_77"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x14" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12378" name="U1_78" textname="U1_78"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x15" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12379" name="U1_79" textname="U1_79"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x16" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12380" name="U1_80" textname="U1_80"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x17" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12381" name="U1_81" textname="U1_81"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x18" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12382" name="U1_82" textname="U1_82"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x19" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12383" name="U1_83" textname="U1_83"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x1A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12384" name="U1_84" textname="U1_84"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x1B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+
+		<!--Signal-->
+		
+		<item id="22301" name="U1_01_signal" textname="U1_01_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22302" name="U1_02_signal" textname="U1_02_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22303" name="U1_03_signal" textname="U1_03_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22304" name="U1_04_signal" textname="U1_04_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22305" name="U1_05_signal" textname="U1_05_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22306" name="U1_06_signal" textname="U1_06_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22307" name="U1_07_signal" textname="U1_07_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22308" name="U1_08_signal" textname="U1_08_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22309" name="U1_09_signal" textname="U1_09_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22310" name="U1_10_signal" textname="U1_10_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22311" name="U1_11_signal" textname="U1_11_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22312" name="U1_12_signal" textname="U1_12_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22313" name="U1_13_signal" textname="U1_13_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22314" name="U1_14_signal" textname="U1_14_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22315" name="U1_15_signal" textname="U1_15_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22316" name="U1_16_signal" textname="U1_16_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22317" name="U1_17_signal" textname="U1_17_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22318" name="U1_18_signal" textname="U1_18_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22319" name="U1_19_signal" textname="U1_19_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		
+		<item id="22320" name="U1_20_signal" textname="U1_20_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22321" name="U1_21_signal" textname="U1_21_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22322" name="U1_22_signal" textname="U1_22_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22323" name="U1_23_signal" textname="U1_23_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22324" name="U1_24_signal" textname="U1_24_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22325" name="U1_25_signal" textname="U1_25_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22326" name="U1_26_signal" textname="U1_26_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22327" name="U1_27_signal" textname="U1_27_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22328" name="U1_28_signal" textname="U1_28_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22329" name="U1_29_signal" textname="U1_29_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22330" name="U1_30_signal" textname="U1_30_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22331" name="U1_31_signal" textname="U1_31_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22332" name="U1_32_signal" textname="U1_32_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22333" name="U1_33_signal" textname="U1_33_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22334" name="U1_34_signal" textname="U1_34_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22335" name="U1_35_signal" textname="U1_35_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22336" name="U1_36_signal" textname="U1_36_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22337" name="U1_37_signal" textname="U1_37_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22338" name="U1_38_signal" textname="U1_38_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22339" name="U1_39_signal" textname="U1_39_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22340" name="U1_40_signal" textname="U1_40_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22341" name="U1_41_signal" textname="U1_41_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22342" name="U1_42_signal" textname="U1_42_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22343" name="U1_43_signal" textname="U1_43_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22344" name="U1_44_signal" textname="U1_44_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22345" name="U1_45_signal" textname="U1_45_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22346" name="U1_46_signal" textname="U1_46_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22347" name="U1_47_signal" textname="U1_47_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22348" name="U1_48_signal" textname="U1_48_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22349" name="U1_49_signal" textname="U1_49_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22350" name="U1_50_signal" textname="U1_50_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22351" name="U1_51_signal" textname="U1_51_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22352" name="U1_52_signal" textname="U1_52_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22353" name="U1_53_signal" textname="U1_53_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22354" name="U1_54_signal" textname="U1_54_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22355" name="U1_55_signal" textname="U1_55_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22356" name="U1_56_signal" textname="U1_56_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22357" name="U1_57_signal" textname="U1_57_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22358" name="U1_58_signal" textname="U1_58_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22359" name="U1_59_signal" textname="U1_59_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22360" name="U1_60_signal" textname="U1_60_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22361" name="U1_61_signal" textname="U1_61_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22362" name="U1_62_signal" textname="U1_62_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22363" name="U1_63_signal" textname="U1_63_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22364" name="U1_64_signal" textname="U1_64_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22365" name="U1_65_signal" textname="U1_65_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22366" name="U1_66_signal" textname="U1_66_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22367" name="U1_67_signal" textname="U1_67_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22368" name="U1_68_signal" textname="U1_68_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22369" name="U1_69_signal" textname="U1_69_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22370" name="U1_70_signal" textname="U1_70_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22371" name="U1_71_signal" textname="U1_71_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22372" name="U1_72_signal" textname="U1_72_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22373" name="U1_73_signal" textname="U1_73_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22374" name="U1_74_signal" textname="U1_74_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22375" name="U1_75_signal" textname="U1_75_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22376" name="U1_76_signal" textname="U1_76_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22377" name="U1_77_signal" textname="U1_77_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22378" name="U1_78_signal" textname="U1_78_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22379" name="U1_79_signal" textname="U1_79_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22380" name="U1_80_signal" textname="U1_80_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22381" name="U1_81_signal" textname="U1_81_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22382" name="U1_82_signal" textname="U1_82_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22383" name="U1_83_signal" textname="U1_83_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22384" name="U1_84_signal" textname="U1_84_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+
+		
+		<!-- //************    БТЭ-2    ****************************- -->
+		
+		<item id="12401" name="U2_01" textname="U2_01"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x1C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12402" name="U2_02" textname="U2_02"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x1D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12403" name="U2_03" textname="U2_03"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x1E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12404" name="U2_04" textname="U2_04"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x1F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12405" name="U2_05" textname="U2_05"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x20" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12406" name="U2_06" textname="U2_06"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x21" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12407" name="U2_07" textname="U2_07"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x22" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12408" name="U2_08" textname="U2_08"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x23" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12409" name="U2_09" textname="U2_09"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x24" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12410" name="U2_10" textname="U2_10"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x25" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12411" name="U2_11" textname="U2_11"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x26" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12412" name="U2_12" textname="U2_12"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x27" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12413" name="U2_13" textname="U2_13"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x28" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12414" name="U2_14" textname="U2_14"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x29" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12415" name="U2_15" textname="U2_15"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x2A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12416" name="U2_16" textname="U2_16"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x2B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12417" name="U2_17" textname="U2_17"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x2C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12418" name="U2_18" textname="U2_18"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x2D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12419" name="U2_19" textname="U2_19"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x2E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		
+		<item id="12420" name="U2_20" textname="U2_20"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x2F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12421" name="U2_21" textname="U2_21"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x30" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12422" name="U2_22" textname="U2_22"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x31" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12423" name="U2_23" textname="U2_23"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x32" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12424" name="U2_24" textname="U2_24"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x33" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12425" name="U2_25" textname="U2_25"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x34" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12426" name="U2_26" textname="U2_26"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x035" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12427" name="U2_27" textname="U2_27"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x36" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12428" name="U2_28" textname="U2_28"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x12" mbreg="0x37" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12429" name="U2_29" textname="U2_29"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x00" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12430" name="U2_30" textname="U2_30"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x01" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12431" name="U2_31" textname="U2_31"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x02" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12432" name="U2_32" textname="U2_32"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x03" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12433" name="U2_33" textname="U2_33"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x04" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12434" name="U2_34" textname="U2_34"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x05" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12435" name="U2_35" textname="U2_35"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x06" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12436" name="U2_36" textname="U2_36"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x07" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12437" name="U2_37" textname="U2_37"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x08" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12438" name="U2_38" textname="U2_38"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x09" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12439" name="U2_39" textname="U2_39"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x0A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12440" name="U2_40" textname="U2_40"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x0B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12441" name="U2_41" textname="U2_41"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x0C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12442" name="U2_42" textname="U2_42"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x0D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12443" name="U2_43" textname="U2_43"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x0E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12444" name="U2_44" textname="U2_44"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x0F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12445" name="U2_45" textname="U2_45"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x10" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12446" name="U2_46" textname="U2_46"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x11" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12447" name="U2_47" textname="U2_47"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x12" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12448" name="U2_48" textname="U2_48"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x13" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12449" name="U2_49" textname="U2_49"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x14" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12450" name="U2_50" textname="U2_50"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x15" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12451" name="U2_51" textname="U2_51"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x16" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12452" name="U2_52" textname="U2_52"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x17" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12453" name="U2_53" textname="U2_53"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x18" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12454" name="U2_54" textname="U2_54"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x19" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12455" name="U2_55" textname="U2_55"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x1A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12456" name="U2_56" textname="U2_56"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x1B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12457" name="U2_57" textname="U2_57"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x1C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12458" name="U2_58" textname="U2_58"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x1D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12459" name="U2_59" textname="U2_59"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x1E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12460" name="U2_60" textname="U2_60"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x1F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12461" name="U2_61" textname="U2_61"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x20" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12462" name="U2_62" textname="U2_62"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x21" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12463" name="U2_63" textname="U2_63"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x22" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12464" name="U2_64" textname="U2_64"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x23" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12465" name="U2_65" textname="U2_65"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x24" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12466" name="U2_66" textname="U2_66"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x25" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12467" name="U2_67" textname="U2_67"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x26" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12468" name="U2_68" textname="U2_68"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x27" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12469" name="U2_69" textname="U2_69"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x28" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12470" name="U2_70" textname="U2_70"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x29" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12471" name="U2_71" textname="U2_71"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x2A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12472" name="U2_72" textname="U2_72"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x2B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12473" name="U2_73" textname="U2_73"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x2C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12474" name="U2_74" textname="U2_74"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x2D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12475" name="U2_75" textname="U2_75"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x2E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12476" name="U2_76" textname="U2_76"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x2F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12477" name="U2_77" textname="U2_77"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x30" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12478" name="U2_78" textname="U2_78"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x31" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12479" name="U2_79" textname="U2_79"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x32" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12480" name="U2_80" textname="U2_80"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x33" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12481" name="U2_81" textname="U2_81"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x34" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12482" name="U2_82" textname="U2_82"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x35" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12483" name="U2_83" textname="U2_83"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x36" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12484" name="U2_84" textname="U2_84"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x13" mbreg="0x37" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<!--Signal-->
+		
+		<item id="22401" name="U2_01_signal" textname="U2_01_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22402" name="U2_02_signal" textname="U2_02_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22403" name="U2_03_signal" textname="U2_03_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22404" name="U2_04_signal" textname="U2_04_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22405" name="U2_05_signal" textname="U2_05_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22406" name="U2_06_signal" textname="U2_06_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22407" name="U2_07_signal" textname="U2_07_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22408" name="U2_08_signal" textname="U2_08_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22409" name="U2_09_signal" textname="U2_09_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22410" name="U2_10_signal" textname="U2_10_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22411" name="U2_11_signal" textname="U2_11_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22412" name="U2_12_signal" textname="U2_12_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22413" name="U2_13_signal" textname="U2_13_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22414" name="U2_14_signal" textname="U2_14_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22415" name="U2_15_signal" textname="U2_15_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22416" name="U2_16_signal" textname="U2_16_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22417" name="U2_17_signal" textname="U2_17_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22418" name="U2_18_signal" textname="U2_18_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22419" name="U2_19_signal" textname="U2_19_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		
+		<item id="22420" name="U2_20_signal" textname="U2_20_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22421" name="U2_21_signal" textname="U2_21_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22422" name="U2_22_signal" textname="U2_22_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22423" name="U2_23_signal" textname="U2_23_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22424" name="U2_24_signal" textname="U2_24_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22425" name="U2_25_signal" textname="U2_25_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22426" name="U2_26_signal" textname="U2_26_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22427" name="U2_27_signal" textname="U2_27_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22428" name="U2_28_signal" textname="U2_28_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22429" name="U2_29_signal" textname="U2_29_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22430" name="U2_30_signal" textname="U2_30_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22431" name="U2_31_signal" textname="U2_31_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22432" name="U2_32_signal" textname="U2_32_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22433" name="U2_33_signal" textname="U2_33_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22434" name="U2_34_signal" textname="U2_34_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22435" name="U2_35_signal" textname="U2_35_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22436" name="U2_36_signal" textname="U2_36_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22437" name="U2_37_signal" textname="U2_37_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22438" name="U2_38_signal" textname="U2_38_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22439" name="U2_39_signal" textname="U2_39_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22440" name="U2_40_signal" textname="U2_40_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22441" name="U2_41_signal" textname="U2_41_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22442" name="U2_42_signal" textname="U2_42_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22443" name="U2_43_signal" textname="U2_43_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22444" name="U2_44_signal" textname="U2_44_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22445" name="U2_45_signal" textname="U2_45_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22446" name="U2_46_signal" textname="U2_46_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22447" name="U2_47_signal" textname="U2_47_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22448" name="U2_48_signal" textname="U2_48_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22449" name="U2_49_signal" textname="U2_49_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22450" name="U2_50_signal" textname="U2_50_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22451" name="U2_51_signal" textname="U2_51_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22452" name="U2_52_signal" textname="U2_52_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22453" name="U2_53_signal" textname="U2_53_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22454" name="U2_54_signal" textname="U2_54_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22455" name="U2_55_signal" textname="U2_55_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22456" name="U2_56_signal" textname="U2_56_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22457" name="U2_57_signal" textname="U2_57_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22458" name="U2_58_signal" textname="U2_58_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22459" name="U2_59_signal" textname="U2_59_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22460" name="U2_60_signal" textname="U2_60_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22461" name="U2_61_signal" textname="U2_61_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22462" name="U2_62_signal" textname="U2_62_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22463" name="U2_63_signal" textname="U2_63_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22464" name="U2_64_signal" textname="U2_64_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22465" name="U2_65_signal" textname="U2_65_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22466" name="U2_66_signal" textname="U2_66_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22467" name="U2_67_signal" textname="U2_67_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22468" name="U2_68_signal" textname="U2_68_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22469" name="U2_69_signal" textname="U2_69_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22470" name="U2_70_signal" textname="U2_70_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22471" name="U2_71_signal" textname="U2_71_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22472" name="U2_72_signal" textname="U2_72_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22473" name="U2_73_signal" textname="U2_73_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22474" name="U2_74_signal" textname="U2_74_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22475" name="U2_75_signal" textname="U2_75_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22476" name="U2_76_signal" textname="U2_76_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22477" name="U2_77_signal" textname="U2_77_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22478" name="U2_78_signal" textname="U2_78_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22479" name="U2_79_signal" textname="U2_79_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22480" name="U2_80_signal" textname="U2_80_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22481" name="U2_81_signal" textname="U2_81_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22482" name="U2_82_signal" textname="U2_82_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22483" name="U2_83_signal" textname="U2_83_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22484" name="U2_84_signal" textname="U2_84_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+
+		<!-- //************    БТЭ-3    ****************************- -->
+		
+		<item id="12501" name="U3_01" textname="U3_01"
+      			 iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x00" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12502" name="U3_02" textname="U3_02"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x01" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12503" name="U3_03" textname="U3_03"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x02" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12504" name="U3_04" textname="U3_04"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x03" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12505" name="U3_05" textname="U3_05"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x04" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12506" name="U3_06" textname="U3_06"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x05" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12507" name="U3_07" textname="U3_07"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x06" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12508" name="U3_08" textname="U3_08"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x07" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12509" name="U3_09" textname="U3_09"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x08" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12510" name="U3_10" textname="U3_10"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x09" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12511" name="U3_11" textname="U3_11"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x0A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12512" name="U3_12" textname="U3_12"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x0B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12513" name="U3_13" textname="U3_13"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x0C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12514" name="U3_14" textname="U3_14"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x0D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12515" name="U3_15" textname="U3_15"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x0E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12516" name="U3_16" textname="U3_16"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x0F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12517" name="U3_17" textname="U3_17"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x10" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+						
+		<item id="12518" name="U3_18" textname="U3_18"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x11" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12519" name="U3_19" textname="U3_19"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x12" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		
+		<item id="12520" name="U3_20" textname="U3_20"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x13" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12521" name="U3_21" textname="U3_21"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x14" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12522" name="U3_22" textname="U3_22"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x15" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12523" name="U3_23" textname="U3_23"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x16" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12524" name="U3_24" textname="U3_24"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x17" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12525" name="U3_25" textname="U3_25"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x18" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12526" name="U3_26" textname="U3_26"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x19" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12527" name="U3_27" textname="U3_27"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x1A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12528" name="U3_28" textname="U3_28"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x1B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12529" name="U3_29" textname="U3_29"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x1C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12530" name="U3_30" textname="U3_30"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x1D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12531" name="U3_31" textname="U3_31"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x1E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12532" name="U3_32" textname="U3_32"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x1F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12533" name="U3_33" textname="U3_33"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x20" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12534" name="U3_34" textname="U3_34"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x21" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12535" name="U3_35" textname="U3_35"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x22" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12536" name="U3_36" textname="U3_36"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x23" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12537" name="U3_37" textname="U3_37"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x24" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12538" name="U3_38" textname="U3_38"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x25" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12539" name="U3_39" textname="U3_39"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x26" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12540" name="U3_40" textname="U3_40"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x27" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12541" name="U3_41" textname="U3_41"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x28" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12542" name="U3_42" textname="U3_42"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x29" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+	
+		<item id="12543" name="U3_43" textname="U3_43"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x2A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12544" name="U3_44" textname="U3_44"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x2B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12545" name="U3_45" textname="U3_45"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x2C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12546" name="U3_46" textname="U3_46"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x2D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12547" name="U3_47" textname="U3_47"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x2E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12548" name="U3_48" textname="U3_48"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x2F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12549" name="U3_49" textname="U3_49"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x30" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12550" name="U3_50" textname="U3_50"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x31" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12551" name="U3_51" textname="U3_51"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x32" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12552" name="U3_52" textname="U3_52"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x33" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12553" name="U3_53" textname="U3_53"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x34" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12554" name="U3_54" textname="U3_54"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x35" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12555" name="U3_55" textname="U3_55"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x36" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12556" name="U3_56" textname="U3_56"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x14" mbreg="0x37" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12557" name="U3_57" textname="U3_57"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x00" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12558" name="U3_58" textname="U3_58"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x01" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12559" name="U3_59" textname="U3_59"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x02" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12560" name="U3_60" textname="U3_60"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x03" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12561" name="U3_61" textname="U3_61"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x04" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12562" name="U3_62" textname="U3_62"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x05" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12563" name="U3_63" textname="U3_63"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x06" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12564" name="U3_64" textname="U3_64"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x07" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12565" name="U3_65" textname="U3_65"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x08" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12566" name="U3_66" textname="U3_66"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x09" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12567" name="U3_67" textname="U3_67"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x0A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12568" name="U3_68" textname="U3_68"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x0B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12569" name="U3_69" textname="U3_69"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x0C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12570" name="U3_70" textname="U3_70"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x0D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12571" name="U3_71" textname="U3_71"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x0E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12572" name="U3_72" textname="U3_72"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x0F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12573" name="U3_73" textname="U3_73"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x10" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12574" name="U3_74" textname="U3_74"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x11" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12575" name="U3_75" textname="U3_75"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x12" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12576" name="U3_76" textname="U3_76"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x13" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12577" name="U3_77" textname="U3_77"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x14" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12578" name="U3_78" textname="U3_78"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x15" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12579" name="U3_79" textname="U3_79"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x16" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12580" name="U3_80" textname="U3_80"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x17" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12581" name="U3_81" textname="U3_81"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x18" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12582" name="U3_82" textname="U3_82"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x19" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12583" name="U3_83" textname="U3_83"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x1A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12584" name="U3_84" textname="U3_84"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x1B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+
+		<!--Signal-->
+		
+		<item id="22501" name="U3_01_signal" textname="U3_01_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22502" name="U3_02_signal" textname="U3_02_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22503" name="U3_03_signal" textname="U3_03_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22504" name="U3_04_signal" textname="U3_04_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22505" name="U3_05_signal" textname="U3_05_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22506" name="U3_06_signal" textname="U3_06_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22507" name="U3_07_signal" textname="U3_07_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22508" name="U3_08_signal" textname="U3_08_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22509" name="U3_09_signal" textname="U3_09_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22510" name="U3_10_signal" textname="U3_10_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22511" name="U3_11_signal" textname="U3_11_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22512" name="U3_12_signal" textname="U3_12_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22513" name="U3_13_signal" textname="U3_13_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22514" name="U3_14_signal" textname="U3_14_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22515" name="U3_15_signal" textname="U3_15_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22516" name="U3_16_signal" textname="U3_16_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22517" name="U3_17_signal" textname="U3_17_signal"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x00" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22518" name="U3_18_signal" textname="U3_18_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22519" name="U3_19_signal" textname="U3_19_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		
+		<item id="22520" name="U3_20_signal" textname="U3_20_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22521" name="U3_21_signal" textname="U3_21_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22522" name="U3_22_signal" textname="U3_22_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22523" name="U3_23_signal" textname="U3_23_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22524" name="U3_24_signal" textname="U3_24_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22525" name="U3_25_signal" textname="U3_25_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22526" name="U3_26_signal" textname="U3_26_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22527" name="U3_27_signal" textname="U3_27_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22528" name="U3_28_signal" textname="U3_28_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22529" name="U3_29_signal" textname="U3_29_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22530" name="U3_30_signal" textname="U3_30_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22531" name="U3_31_signal" textname="U3_31_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22532" name="U3_32_signal" textname="U3_32_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22533" name="U3_33_signal" textname="U3_33_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22534" name="U3_34_signal" textname="U3_34_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22535" name="U3_35_signal" textname="U3_35_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22536" name="U3_36_signal" textname="U3_36_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22537" name="U3_37_signal" textname="U3_37_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22538" name="U3_38_signal" textname="U3_38_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22539" name="U3_39_signal" textname="U3_39_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22540" name="U3_40_signal" textname="U3_40_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22541" name="U3_41_signal" textname="U3_41_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22542" name="U3_42_signal" textname="U3_42_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22543" name="U3_43_signal" textname="U3_43_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22544" name="U3_44_signal" textname="U3_44_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22545" name="U3_45_signal" textname="U3_45_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22546" name="U3_46_signal" textname="U3_46_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22547" name="U3_47_signal" textname="U3_47_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22548" name="U3_48_signal" textname="U3_48_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22549" name="U3_49_signal" textname="U3_49_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22550" name="U3_50_signal" textname="U3_50_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22551" name="U3_51_signal" textname="U3_51_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22552" name="U3_52_signal" textname="U3_52_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22553" name="U3_53_signal" textname="U3_53_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22554" name="U3_54_signal" textname="U3_54_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22555" name="U3_55_signal" textname="U3_55_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22556" name="U3_56_signal" textname="U3_56_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22557" name="U3_57_signal" textname="U3_57_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22558" name="U3_58_signal" textname="U3_58_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22559" name="U3_59_signal" textname="U3_59_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22560" name="U3_60_signal" textname="U3_60_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22561" name="U3_61_signal" textname="U3_61_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22562" name="U3_62_signal" textname="U3_62_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22563" name="U3_63_signal" textname="U3_63_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22564" name="U3_64_signal" textname="U3_64_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22565" name="U3_65_signal" textname="U3_65_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22566" name="U3_66_signal" textname="U3_66_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22567" name="U3_67_signal" textname="U3_67_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22568" name="U3_68_signal" textname="U3_68_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22569" name="U3_69_signal" textname="U3_69_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22570" name="U3_70_signal" textname="U3_70_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22571" name="U3_71_signal" textname="U3_71_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22572" name="U3_72_signal" textname="U3_72_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22573" name="U3_73_signal" textname="U3_73_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22574" name="U3_74_signal" textname="U3_74_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22575" name="U3_75_signal" textname="U3_75_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22576" name="U3_76_signal" textname="U3_76_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22577" name="U3_77_signal" textname="U3_77_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22578" name="U3_78_signal" textname="U3_78_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22579" name="U3_79_signal" textname="U3_79_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22580" name="U3_80_signal" textname="U3_80_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22581" name="U3_81_signal" textname="U3_81_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22582" name="U3_82_signal" textname="U3_82_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22583" name="U3_83_signal" textname="U3_83_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22584" name="U3_84_signal" textname="U3_84_signal"
+		       iotype="AI" character="Info">
+			<consumers>			
+			</consumers>				
+		</item>
+	
+		<!-- //************    БТЭ-4    ****************************- -->
+		
+		<item id="12601" name="U4_01" textname="U4_01"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x1C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12602" name="U4_02" textname="U4_02"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x1D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12603" name="U4_03" textname="U4_03"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x1E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12604" name="U4_04" textname="U4_04"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x1F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12605" name="U4_05" textname="U4_05"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x20" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12606" name="U4_06" textname="U4_06"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x21" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12607" name="U4_07" textname="U4_07"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x22" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12608" name="U4_08" textname="U4_08"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x23" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12609" name="U4_09" textname="U4_09"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x24" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12610" name="U4_10" textname="U4_10"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x25" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12611" name="U4_11" textname="U4_11"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x26" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12612" name="U4_12" textname="U4_12"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x27" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12613" name="U4_13" textname="U4_13"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x28" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12614" name="U4_14" textname="U4_14"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x29" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12615" name="U4_15" textname="U4_15"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x2A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12616" name="U4_16" textname="U4_16"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x2B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12617" name="U4_17" textname="U4_17"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x2C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12618" name="U4_18" textname="U4_18"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x2D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12619" name="U4_19" textname="U4_19"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x2E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		
+		<item id="12620" name="U4_20" textname="U4_20"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x2F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12621" name="U4_21" textname="U4_21"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x30" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12622" name="U4_22" textname="U4_22"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x31" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12623" name="U4_23" textname="U4_23"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x32" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12624" name="U4_24" textname="U4_24"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x33" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12625" name="U4_25" textname="U4_25"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x34" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12626" name="U4_26" textname="U4_26"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x35" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12627" name="U4_27" textname="U4_27"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x36" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12628" name="U4_28" textname="U4_28"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x15" mbreg="0x37" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12629" name="U4_29" textname="U4_29"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x00" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12630" name="U4_30" textname="U4_30"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x01" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12631" name="U4_31" textname="U4_31"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x02" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12632" name="U4_32" textname="U4_32"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x03" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12633" name="U4_33" textname="U4_33"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x04" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12634" name="U4_34" textname="U4_34"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x05" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12635" name="U4_35" textname="U4_35"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x06" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12636" name="U4_36" textname="U4_36"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x07" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12637" name="U4_37" textname="U4_37"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x08" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12638" name="U4_38" textname="U4_38"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x09" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12639" name="U4_39" textname="U4_39"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x0A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12640" name="U4_40" textname="U4_40"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x0B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12641" name="U4_41" textname="U4_41"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x0C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12642" name="U4_42" textname="U4_42"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x0D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12643" name="U4_43" textname="U4_43"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x0E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12644" name="U4_44" textname="U4_44"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x0F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12645" name="U4_45" textname="U4_45"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x10" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12646" name="U4_46" textname="U4_46"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x11" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12647" name="U4_47" textname="U4_47"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x12" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12648" name="U4_48" textname="U4_48"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x13" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12649" name="U4_49" textname="U4_49"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x14" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12650" name="U4_50" textname="U4_50"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x15" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12651" name="U4_51" textname="U4_51"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x16" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12652" name="U4_52" textname="U4_52"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x17" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12653" name="U4_53" textname="U4_53"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x18" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12654" name="U4_54" textname="U4_54"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x19" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12655" name="U4_55" textname="U4_55"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x1A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12656" name="U4_56" textname="U4_56"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x1B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12657" name="U4_57" textname="U4_57"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x1C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12658" name="U4_58" textname="U4_58"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x1D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12659" name="U4_59" textname="U4_59"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x1E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12660" name="U4_60" textname="U4_60"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x1F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12661" name="U4_61" textname="U4_61"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x20" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12662" name="U4_62" textname="U4_62"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x21" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12663" name="U4_63" textname="U4_63"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x22" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12664" name="U4_64" textname="U4_64"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x23" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12665" name="U4_65" textname="U4_65"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x24" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12666" name="U4_66" textname="U4_66"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x25" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12667" name="U4_67" textname="U4_67"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x26" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12668" name="U4_68" textname="U4_68"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x27" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12669" name="U4_69" textname="U4_69"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x28" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12670" name="U4_70" textname="U4_70"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x29" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12671" name="U4_71" textname="U4_71"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x2A" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12672" name="U4_72" textname="U4_72"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x2B" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12673" name="U4_73" textname="U4_73"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x2C" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12674" name="U4_74" textname="U4_74"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x2D" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12675" name="U4_75" textname="U4_75"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x2E" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12676" name="U4_76" textname="U4_76"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x2F" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12677" name="U4_77" textname="U4_77"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x30" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12678" name="U4_78" textname="U4_78"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x31" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12679" name="U4_79" textname="U4_79"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x32" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12680" name="U4_80" textname="U4_80"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x33" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12681" name="U4_81" textname="U4_81"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x34" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12682" name="U4_82" textname="U4_82"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x35" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12683" name="U4_83" textname="U4_83"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x36" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="12684" name="U4_84" textname="U4_84"
+		       iotype="AI" character="Info"
+			rs="1" mbtype="rtu" mbaddr="0x16" mbreg="0x37" mbfunc="0x03">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<!--Signal-->
+		
+		<item id="22601" name="U4_01_signal" textname="U4_01_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22602" name="U4_02_signal" textname="U4_02_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22603" name="U4_03_signal" textname="U4_03_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22604" name="U4_04_signal" textname="U4_04_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22605" name="U4_05_signal" textname="U4_05_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22606" name="U4_06_signal" textname="U4_06_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22607" name="U4_07_signal" textname="U4_07_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22608" name="U4_08_signal" textname="U4_08_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22609" name="U4_09_signal" textname="U4_09_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22610" name="U4_10_signal" textname="U4_10_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22611" name="U4_11_signal" textname="U4_11_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22612" name="U4_12_signal" textname="U4_12_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22613" name="U4_13_signal" textname="U4_13_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22614" name="U4_14_signal" textname="U4_14_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22615" name="U4_15_signal" textname="U4_15_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22616" name="U4_16_signal" textname="U4_16_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22617" name="U4_17_signal" textname="U4_17_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22618" name="U4_18_signal" textname="U4_18_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22619" name="U4_19_signal" textname="U4_19_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		
+		<item id="22620" name="U4_20_signal" textname="U4_20_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22621" name="U4_21_signal" textname="U4_21_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22622" name="U4_22_signal" textname="U4_22_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22623" name="U4_23_signal" textname="U4_23_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22624" name="U4_24_signal" textname="U4_24_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22625" name="U4_25_signal" textname="U4_25_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22626" name="U4_26_signal" textname="U4_26_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22627" name="U4_27_signal" textname="U4_27_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22628" name="U4_28_signal" textname="U4_28_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22629" name="U4_29_signal" textname="U4_29_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22630" name="U4_30_signal" textname="U4_30_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22631" name="U4_31_signal" textname="U4_31_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22632" name="U4_32_signal" textname="U4_32_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22633" name="U4_33_signal" textname="U4_33_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22634" name="U4_34_signal" textname="U4_34_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22635" name="U4_35_signal" textname="U4_35_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22636" name="U4_36_signal" textname="U4_36_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22637" name="U4_37_signal" textname="U4_37_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22638" name="U4_38_signal" textname="U4_38_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22639" name="U4_39_signal" textname="U4_39_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22640" name="U4_40_signal" textname="U4_40_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22641" name="U4_41_signal" textname="U4_41_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22642" name="U4_42_signal" textname="U4_42_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22643" name="U4_43_signal" textname="U4_43_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22644" name="U4_44_signal" textname="U4_44_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22645" name="U4_45_signal" textname="U4_45_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22646" name="U4_46_signal" textname="U4_46_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22647" name="U4_47_signal" textname="U4_47_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22648" name="U4_48_signal" textname="U4_48_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22649" name="U4_49_signal" textname="U4_49_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22650" name="U4_50_signal" textname="U4_50_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22651" name="U4_51_signal" textname="U4_51_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22652" name="U4_52_signal" textname="U4_52_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22653" name="U4_53_signal" textname="U4_53_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22654" name="U4_54_signal" textname="U4_54_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22655" name="U4_55_signal" textname="U4_55_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22656" name="U4_56_signal" textname="U4_56_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22657" name="U4_57_signal" textname="U4_57_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22658" name="U4_58_signal" textname="U4_58_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22659" name="U4_59_signal" textname="U4_59_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22660" name="U4_60_signal" textname="U4_60_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22661" name="U4_61_signal" textname="U4_61_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22662" name="U4_62_signal" textname="U4_62_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22663" name="U4_63_signal" textname="U4_63_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22664" name="U4_64_signal" textname="U4_64_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22665" name="U4_65_signal" textname="U4_65_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22666" name="U4_66_signal" textname="U4_66_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22667" name="U4_67_signal" textname="U4_67_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22668" name="U4_68_signal" textname="U4_68_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22669" name="U4_69_signal" textname="U4_69_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22670" name="U4_70_signal" textname="U4_70_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22671" name="U4_71_signal" textname="U4_71_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22672" name="U4_72_signal" textname="U4_72_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22673" name="U4_73_signal" textname="U4_73_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22674" name="U4_74_signal" textname="U4_74_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22675" name="U4_75_signal" textname="U4_75_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22676" name="U4_76_signal" textname="U4_76_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22677" name="U4_77_signal" textname="U4_77_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22678" name="U4_78_signal" textname="U4_78_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22679" name="U4_79_signal" textname="U4_79_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22680" name="U4_80_signal" textname="U4_80_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22681" name="U4_81_signal" textname="U4_81_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22682" name="U4_82_signal" textname="U4_82_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22683" name="U4_83_signal" textname="U4_83_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="22684" name="U4_84_signal" textname="U4_84_signal"
+		       iotype="AI" character="Info" default="1">
+			<consumers>			
+			</consumers>				
+		</item>
+		
+		<item id="99966523" name="flash_out" textname="flash"
+		      iotype="AI" character="Info" >
+			<consumers>			
+			</consumers>				
+		</item>
+	
 	</sensors>
+	
+	
 
+<!-- //************    П О Р О Г О В Ы Е     Д А Т Ч И К И    ****************************- -->
 	<thresholds name="thresholds">
-		<sensor name="AI_AS" node="" iotype="AI">
-			<threshold name="t1" lowlimit="374" hilimit="376" sensibility="0" id="1" sid="Threshold1_S">
-				<consumers>
-					<consumer name="TestProc" type="objects"/>
-				</consumers>
-			</threshold>
-		</sensor>
 	</thresholds>
+	
+	<item id="22884" name="BTE_alarm" textname="bte_alarm"
+	       iotype="AI" character="Info" default="1">
+		<consumers>			
+		</consumers>				
+	</item>
+	
+	<item id="22784" name="BTE_warning" textname="bte_warning"
+		      iotype="AI" character="Info" default="1">
+		<consumers>			
+		</consumers>				
+	</item>
 
-	<controllers name="Controllers">
-		<item name="SharedMemory"/>
+	<!-- ******************* Идентификаторы NotifyController-ов ***************** -->
+	<controllers name="Controllers" section="Controllers" >
+		<item id="90069" name="SharedMemory1"/>
 	</controllers>
 
 	<!-- ******************* Идентификаторы сервисов ***************** -->
-	<services name="Services">
-		<item name="InfoServer"/>
-		<item name="DBServer"/>
-		<item name="PrintServer"/>
-		<item name="TimeService"/>
+	<services name="Services" section="Services" >
+		<item id="90062" name="DBServer1"/>
 	</services>
 
 	<!-- ******************* Идентификаторы объектов ***************** -->
-	<objects name="UniObjects">
-		<item name="TestProc"/>
-		<item name="LProcessor"/>
-		<item name="IOControl"/>
-		<item name="RTUExchange"/>
-		<item name="MBSlave1"/>
-		<item name="MBMaster1"/>
-		<item name="UDPExchange"/>
-		<item name="UDPExchange2"/>
+	<objects name="Objects" section="Objects">
+		<item id="90051" name="MainWindow"/>
+		<item id="90052" name="JournalManager"/>
+		<item id="90053" name="FullJournalManager"/>
+		<item id="90054" name="RSExchange"/>
+		<item id="901540" name="Transp_VO"/>
+		<item id="998046" name="FullJournal"/>
+		<item id="998032" name="Hand_control_VO"/>
+		<item id="998033" name="connect_VO"/>
+		<item id="998034" name="Rejim_VO"/>
+		<item id="9465634" name="Flash_VO"/>
+		
+		<item id="90055" name="TestProc"/>
+
+		<item id="666001" name="K1-1_VO"/>
+		<item id="666002" name="K1-2_VO"/>
+		<item id="666003" name="K1-3_VO"/>
+		<item id="666004" name="K1-4_VO"/>
+		<item id="666005" name="K1-5_VO"/>
+		<item id="666006" name="K1-6_VO"/>
+		<item id="666007" name="K1-7_VO"/>
+		<item id="666009" name="K2-1_VO"/>
+		<item id="666010" name="K2-2_VO"/>
+		<item id="666011" name="K2-3_VO"/>
+		<item id="666012" name="K3-1_VO"/>
+		<item id="666013" name="K3-2_VO"/>
+		<item id="666014" name="KP1-1_VO"/>
+		<item id="666091" name="KP1-1_zad_VO"/>
+		<item id="666092" name="KP1-1_tek_VO"/>
+		<item id="666015" name="HB1-1_VO"/>
+		<item id="666016" name="HB1-2_VO"/>
+		<item id="666017" name="HB2-1_VO"/>
+		<item id="666018" name="B3-1_VO"/>
+		<item id="666019" name="H3-1_VO"/>
+		
+		<item id="666020" name="btn_hidro_VO"/>
+		<item id="666021" name="btn_nitro_VO"/>
+		<item id="666023" name="btn_cut_VO"/>
+		
+		<item id="666029" name="P1-1_VO"/>
+		<item id="666034" name="P2-1_VO"/>
+		<item id="666035" name="P3-1_VO"/>
+		<item id="666036" name="T2-1_VO"/>
+		<item id="666037" name="T2-2_VO"/>
+		<item id="666038" name="T3-1_VO"/>
+		<item id="666039" name="T3-2_VO"/>
+		
+		<item id="666040" name="U_bte_VO"/>
+		<item id="666041" name="I_bte_VO"/>
+		<item id="666042" name="P_bte_VO"/>
+		<item id="996043" name="EN3-1_VO"/>
+		
+		<item id="661001" name="U1_01_VO"/>
+		<item id="661002" name="U1_02_VO"/>
+		<item id="661003" name="U1_03_VO"/>
+		<item id="661004" name="U1_04_VO"/>
+		<item id="661005" name="U1_05_VO"/>
+		<item id="661006" name="U1_06_VO"/>
+		<item id="661007" name="U1_07_VO"/>
+		<item id="661008" name="U1_08_VO"/>
+		<item id="661009" name="U1_09_VO"/>
+		<item id="661010" name="U1_10_VO"/>
+		<item id="661011" name="U1_11_VO"/>
+		<item id="661012" name="U1_12_VO"/>
+		<item id="661013" name="U1_13_VO"/>
+		<item id="661014" name="U1_14_VO"/>
+		<item id="661015" name="U1_15_VO"/>
+		<item id="661016" name="U1_16_VO"/>
+		<item id="661017" name="U1_17_VO"/>
+		<item id="661018" name="U1_18_VO"/>
+		<item id="661019" name="U1_19_VO"/>
+		<item id="661020" name="U1_20_VO"/>
+		<item id="661021" name="U1_21_VO"/>
+		<item id="661022" name="U1_22_VO"/>
+		<item id="661023" name="U1_23_VO"/>
+		<item id="661024" name="U1_24_VO"/>
+		<item id="661025" name="U1_25_VO"/>
+		<item id="661026" name="U1_26_VO"/>
+		<item id="661027" name="U1_27_VO"/>
+		<item id="661028" name="U1_28_VO"/>
+		<item id="661029" name="U1_29_VO"/>
+		<item id="661030" name="U1_30_VO"/>
+		<item id="661031" name="U1_31_VO"/>
+		<item id="661032" name="U1_32_VO"/>
+		<item id="661033" name="U1_33_VO"/>
+		<item id="661034" name="U1_34_VO"/>
+		<item id="661035" name="U1_35_VO"/>
+		<item id="661036" name="U1_36_VO"/>
+		<item id="661037" name="U1_37_VO"/>
+		<item id="661038" name="U1_38_VO"/>
+		<item id="661039" name="U1_39_VO"/>
+		<item id="661040" name="U1_40_VO"/>
+		<item id="661041" name="U1_41_VO"/>
+		<item id="661042" name="U1_42_VO"/>
+		<item id="661043" name="U1_43_VO"/>
+		<item id="661044" name="U1_44_VO"/>
+		<item id="661045" name="U1_45_VO"/>
+		<item id="661046" name="U1_46_VO"/>
+		<item id="661047" name="U1_47_VO"/>
+		<item id="661048" name="U1_48_VO"/>
+		<item id="661049" name="U1_49_VO"/>
+		<item id="661050" name="U1_50_VO"/>
+		<item id="661051" name="U1_51_VO"/>
+		<item id="661052" name="U1_52_VO"/>
+		<item id="661053" name="U1_53_VO"/>
+		<item id="661054" name="U1_54_VO"/>
+		<item id="661055" name="U1_55_VO"/>
+		<item id="661056" name="U1_56_VO"/>
+		<item id="661057" name="U1_57_VO"/>
+		<item id="661058" name="U1_58_VO"/>
+		<item id="661059" name="U1_59_VO"/>
+		<item id="661060" name="U1_60_VO"/>
+		<item id="661061" name="U1_61_VO"/>
+		<item id="661062" name="U1_62_VO"/>
+		<item id="661063" name="U1_63_VO"/>
+		<item id="661064" name="U1_64_VO"/>
+		<item id="661065" name="U1_65_VO"/>
+		<item id="661066" name="U1_66_VO"/>
+		<item id="661067" name="U1_67_VO"/>
+		<item id="661068" name="U1_68_VO"/>
+		<item id="661069" name="U1_69_VO"/>
+		<item id="661070" name="U1_70_VO"/>
+		<item id="661071" name="U1_71_VO"/>
+		<item id="661072" name="U1_72_VO"/>
+		<item id="661073" name="U1_73_VO"/>
+		<item id="661074" name="U1_74_VO"/>
+		<item id="661075" name="U1_75_VO"/>
+		<item id="661076" name="U1_76_VO"/>
+		<item id="661077" name="U1_77_VO"/>
+		<item id="661078" name="U1_78_VO"/>
+		<item id="661079" name="U1_79_VO"/>
+		<item id="661080" name="U1_80_VO"/>
+		<item id="661081" name="U1_81_VO"/>
+		<item id="661082" name="U1_82_VO"/>
+		<item id="661083" name="U1_83_VO"/>
+		<item id="661084" name="U1_84_VO"/>
+		
+		
+		
+		
+		<item id="662001" name="U2_01_VO"/>
+		<item id="662002" name="U2_02_VO"/>
+		<item id="662003" name="U2_03_VO"/>
+		<item id="662004" name="U2_04_VO"/>
+		<item id="662005" name="U2_05_VO"/>
+		<item id="662006" name="U2_06_VO"/>
+		<item id="662007" name="U2_07_VO"/>
+		<item id="662008" name="U2_08_VO"/>
+		<item id="662009" name="U2_09_VO"/>
+		<item id="662010" name="U2_10_VO"/>
+		<item id="662011" name="U2_11_VO"/>
+		<item id="662012" name="U2_12_VO"/>
+		<item id="662013" name="U2_13_VO"/>
+		<item id="662014" name="U2_14_VO"/>
+		<item id="662015" name="U2_15_VO"/>
+		<item id="662016" name="U2_16_VO"/>
+		<item id="662017" name="U2_17_VO"/>
+		<item id="662018" name="U2_18_VO"/>
+		<item id="662019" name="U2_19_VO"/>
+		<item id="662020" name="U2_20_VO"/>
+		<item id="662021" name="U2_21_VO"/>
+		<item id="662022" name="U2_22_VO"/>
+		<item id="662023" name="U2_23_VO"/>
+		<item id="662024" name="U2_24_VO"/>
+		<item id="662025" name="U2_25_VO"/>
+		<item id="662026" name="U2_26_VO"/>
+		<item id="662027" name="U2_27_VO"/>
+		<item id="662028" name="U2_28_VO"/>
+		<item id="662029" name="U2_29_VO"/>
+		<item id="662030" name="U2_30_VO"/>
+		<item id="662031" name="U2_31_VO"/>
+		<item id="662032" name="U2_32_VO"/>
+		<item id="662033" name="U2_33_VO"/>
+		<item id="662034" name="U2_34_VO"/>
+		<item id="662035" name="U2_35_VO"/>
+		<item id="662036" name="U2_36_VO"/>
+		<item id="662037" name="U2_37_VO"/>
+		<item id="662038" name="U2_38_VO"/>
+		<item id="662039" name="U2_39_VO"/>
+		<item id="662040" name="U2_40_VO"/>
+		<item id="662041" name="U2_41_VO"/>
+		<item id="662042" name="U2_42_VO"/>
+		<item id="662043" name="U2_43_VO"/>
+		<item id="662044" name="U2_44_VO"/>
+		<item id="662045" name="U2_45_VO"/>
+		<item id="662046" name="U2_46_VO"/>
+		<item id="662047" name="U2_47_VO"/>
+		<item id="662048" name="U2_48_VO"/>
+		<item id="662049" name="U2_49_VO"/>
+		<item id="662050" name="U2_50_VO"/>
+		<item id="662051" name="U2_51_VO"/>
+		<item id="662052" name="U2_52_VO"/>
+		<item id="662053" name="U2_53_VO"/>
+		<item id="662054" name="U2_54_VO"/>
+		<item id="662055" name="U2_55_VO"/>
+		<item id="662056" name="U2_56_VO"/>
+		<item id="662057" name="U2_57_VO"/>
+		<item id="662058" name="U2_58_VO"/>
+		<item id="662059" name="U2_59_VO"/>
+		<item id="662060" name="U2_60_VO"/>
+		<item id="662061" name="U2_61_VO"/>
+		<item id="662062" name="U2_62_VO"/>
+		<item id="662063" name="U2_63_VO"/>
+		<item id="662064" name="U2_64_VO"/>
+		<item id="662065" name="U2_65_VO"/>
+		<item id="662066" name="U2_66_VO"/>
+		<item id="662067" name="U2_67_VO"/>
+		<item id="662068" name="U2_68_VO"/>
+		<item id="662069" name="U2_69_VO"/>
+		<item id="662070" name="U2_70_VO"/>
+		<item id="662071" name="U2_71_VO"/>
+		<item id="662072" name="U2_72_VO"/>
+		<item id="662073" name="U2_73_VO"/>
+		<item id="662074" name="U2_74_VO"/>
+		<item id="662075" name="U2_75_VO"/>
+		<item id="662076" name="U2_76_VO"/>
+		<item id="662077" name="U2_77_VO"/>
+		<item id="662078" name="U2_78_VO"/>
+		<item id="662079" name="U2_79_VO"/>
+		<item id="662080" name="U2_80_VO"/>
+		<item id="662081" name="U2_81_VO"/>
+		<item id="662082" name="U2_82_VO"/>
+		<item id="662083" name="U2_83_VO"/>
+		<item id="662084" name="U2_84_VO"/>
+		
+		
+		<item id="663001" name="U3_01_VO"/>
+		<item id="663002" name="U3_02_VO"/>
+		<item id="663003" name="U3_03_VO"/>
+		<item id="663004" name="U3_04_VO"/>
+		<item id="663005" name="U3_05_VO"/>
+		<item id="663006" name="U3_06_VO"/>
+		<item id="663007" name="U3_07_VO"/>
+		<item id="663008" name="U3_08_VO"/>
+		<item id="663009" name="U3_09_VO"/>
+		<item id="663010" name="U3_10_VO"/>
+		<item id="663011" name="U3_11_VO"/>
+		<item id="663012" name="U3_12_VO"/>
+		<item id="663013" name="U3_13_VO"/>
+		<item id="663014" name="U3_14_VO"/>
+		<item id="663015" name="U3_15_VO"/>
+		<item id="663016" name="U3_16_VO"/>
+		<item id="663017" name="U3_17_VO"/>
+		<item id="663018" name="U3_18_VO"/>
+		<item id="663019" name="U3_19_VO"/>
+		<item id="663020" name="U3_20_VO"/>
+		<item id="663021" name="U3_21_VO"/>
+		<item id="663022" name="U3_22_VO"/>
+		<item id="663023" name="U3_23_VO"/>
+		<item id="663024" name="U3_24_VO"/>
+		<item id="663025" name="U3_25_VO"/>
+		<item id="663026" name="U3_26_VO"/>
+		<item id="663027" name="U3_27_VO"/>
+		<item id="663028" name="U3_28_VO"/>
+		<item id="663029" name="U3_29_VO"/>
+		<item id="663030" name="U3_30_VO"/>
+		<item id="663031" name="U3_31_VO"/>
+		<item id="663032" name="U3_32_VO"/>
+		<item id="663033" name="U3_33_VO"/>
+		<item id="663034" name="U3_34_VO"/>
+		<item id="663035" name="U3_35_VO"/>
+		<item id="663036" name="U3_36_VO"/>
+		<item id="663037" name="U3_37_VO"/>
+		<item id="663038" name="U3_38_VO"/>
+		<item id="663039" name="U3_39_VO"/>
+		<item id="663040" name="U3_40_VO"/>
+		<item id="663041" name="U3_41_VO"/>
+		<item id="663042" name="U3_42_VO"/>
+		<item id="663043" name="U3_43_VO"/>
+		<item id="663044" name="U3_44_VO"/>
+		<item id="663045" name="U3_45_VO"/>
+		<item id="663046" name="U3_46_VO"/>
+		<item id="663047" name="U3_47_VO"/>
+		<item id="663048" name="U3_48_VO"/>
+		<item id="663049" name="U3_49_VO"/>
+		<item id="663050" name="U3_50_VO"/>
+		<item id="663051" name="U3_51_VO"/>
+		<item id="663052" name="U3_52_VO"/>
+		<item id="663053" name="U3_53_VO"/>
+		<item id="663054" name="U3_54_VO"/>
+		<item id="663055" name="U3_55_VO"/>
+		<item id="663056" name="U3_56_VO"/>
+		<item id="663057" name="U3_57_VO"/>
+		<item id="663058" name="U3_58_VO"/>
+		<item id="663059" name="U3_59_VO"/>
+		<item id="663060" name="U3_60_VO"/>
+		<item id="663061" name="U3_61_VO"/>
+		<item id="663062" name="U3_62_VO"/>
+		<item id="663063" name="U3_63_VO"/>
+		<item id="663064" name="U3_64_VO"/>
+		<item id="663065" name="U3_65_VO"/>
+		<item id="663066" name="U3_66_VO"/>
+		<item id="663067" name="U3_67_VO"/>
+		<item id="663068" name="U3_68_VO"/>
+		<item id="663069" name="U3_69_VO"/>
+		<item id="663070" name="U3_70_VO"/>
+		<item id="663071" name="U3_71_VO"/>
+		<item id="663072" name="U3_72_VO"/>
+		<item id="663073" name="U3_73_VO"/>
+		<item id="663074" name="U3_74_VO"/>
+		<item id="663075" name="U3_75_VO"/>
+		<item id="663076" name="U3_76_VO"/>
+		<item id="663077" name="U3_77_VO"/>
+		<item id="663078" name="U3_78_VO"/>
+		<item id="663079" name="U3_79_VO"/>
+		<item id="663080" name="U3_80_VO"/>
+		<item id="663081" name="U3_81_VO"/>
+		<item id="663082" name="U3_82_VO"/>
+		<item id="663083" name="U3_83_VO"/>
+		<item id="663084" name="U3_84_VO"/>
+		
+		
+		
+		<item id="664001" name="U4_01_VO"/>
+		<item id="664002" name="U4_02_VO"/>
+		<item id="664003" name="U4_03_VO"/>
+		<item id="664004" name="U4_04_VO"/>
+		<item id="664005" name="U4_05_VO"/>
+		<item id="664006" name="U4_06_VO"/>
+		<item id="664007" name="U4_07_VO"/>
+		<item id="664008" name="U4_08_VO"/>
+		<item id="664009" name="U4_09_VO"/>
+		<item id="664010" name="U4_10_VO"/>
+		<item id="664011" name="U4_11_VO"/>
+		<item id="664012" name="U4_12_VO"/>
+		<item id="664013" name="U4_13_VO"/>
+		<item id="664014" name="U4_14_VO"/>
+		<item id="664015" name="U4_15_VO"/>
+		<item id="664016" name="U4_16_VO"/>
+		<item id="664017" name="U4_17_VO"/>
+		<item id="664018" name="U4_18_VO"/>
+		<item id="664019" name="U4_19_VO"/>
+		<item id="664020" name="U4_20_VO"/>
+		<item id="664021" name="U4_21_VO"/>
+		<item id="664022" name="U4_22_VO"/>
+		<item id="664023" name="U4_23_VO"/>
+		<item id="664024" name="U4_24_VO"/>
+		<item id="664025" name="U4_25_VO"/>
+		<item id="664026" name="U4_26_VO"/>
+		<item id="664027" name="U4_27_VO"/>
+		<item id="664028" name="U4_28_VO"/>
+		<item id="664029" name="U4_29_VO"/>
+		<item id="664030" name="U4_30_VO"/>
+		<item id="664031" name="U4_31_VO"/>
+		<item id="664032" name="U4_32_VO"/>
+		<item id="664033" name="U4_33_VO"/>
+		<item id="664034" name="U4_34_VO"/>
+		<item id="664035" name="U4_35_VO"/>
+		<item id="664036" name="U4_36_VO"/>
+		<item id="664037" name="U4_37_VO"/>
+		<item id="664038" name="U4_38_VO"/>
+		<item id="664039" name="U4_39_VO"/>
+		<item id="664040" name="U4_40_VO"/>
+		<item id="664041" name="U4_41_VO"/>
+		<item id="664042" name="U4_42_VO"/>
+		<item id="664043" name="U4_43_VO"/>
+		<item id="664044" name="U4_44_VO"/>
+		<item id="664045" name="U4_45_VO"/>
+		<item id="664046" name="U4_46_VO"/>
+		<item id="664047" name="U4_47_VO"/>
+		<item id="664048" name="U4_48_VO"/>
+		<item id="664049" name="U4_49_VO"/>
+		<item id="664050" name="U4_50_VO"/>
+		<item id="664051" name="U4_51_VO"/>
+		<item id="664052" name="U4_52_VO"/>
+		<item id="664053" name="U4_53_VO"/>
+		<item id="664054" name="U4_54_VO"/>
+		<item id="664055" name="U4_55_VO"/>
+		<item id="664056" name="U4_56_VO"/>
+		<item id="664057" name="U4_57_VO"/>
+		<item id="664058" name="U4_58_VO"/>
+		<item id="664059" name="U4_59_VO"/>
+		<item id="664060" name="U4_60_VO"/>
+		<item id="664061" name="U4_61_VO"/>
+		<item id="664062" name="U4_62_VO"/>
+		<item id="664063" name="U4_63_VO"/>
+		<item id="664064" name="U4_64_VO"/>
+		<item id="664065" name="U4_65_VO"/>
+		<item id="664066" name="U4_66_VO"/>
+		<item id="664067" name="U4_67_VO"/>
+		<item id="664068" name="U4_68_VO"/>
+		<item id="664069" name="U4_69_VO"/>
+		<item id="664070" name="U4_70_VO"/>
+		<item id="664071" name="U4_71_VO"/>
+		<item id="664072" name="U4_72_VO"/>
+		<item id="664073" name="U4_73_VO"/>
+		<item id="664074" name="U4_74_VO"/>
+		<item id="664075" name="U4_75_VO"/>
+		<item id="664076" name="U4_76_VO"/>
+		<item id="664077" name="U4_77_VO"/>
+		<item id="664078" name="U4_78_VO"/>
+		<item id="664079" name="U4_79_VO"/>
+		<item id="664080" name="U4_80_VO"/>
+		<item id="664081" name="U4_81_VO"/>
+		<item id="664082" name="U4_82_VO"/>
+		<item id="664083" name="U4_83_VO"/>
+		<item id="664084" name="U4_84_VO"/>
+		<item id="962345" name="oscil_P_VO"/>
+		
+		<item id="998001" name="FullJournal"/>
+		<item id="998002" name="WarningJournal"/>
+		<item id="998003" name="AlarmJournal"/>
+		<item id="997001" name="OSCIL1_VO"/>
+		<item id="997002" name="OSCIL2_VO"/>
+		<item id="997003" name="OSCIL3_VO"/>
+		<item id="997004" name="OSCIL4_VO"/>
+		<item id="997005" name="OSCIL5_VO"/>
+		
+		
+		<item id="90500" name="Failure_VO"/>
+		<item id="90501" name="Mode_VO"/>
+		<item id="90502" name="HandMode_VO"/>
+		<item id="90503" name="NoRespond_VO"/>
+		
+
 	</objects>
+	
 </ObjectsMap>
 
-	<messages name="messages" idfromfile="1" >
-		<item id="101" name="midMsg1" text="Text for message 1"/>
-		<item id="102" name="midMsg2" text="Text for message 2"/>
-		<item id="103" name="midMsg3" text="Text for message 3"/>
-		<item id="104" name="midMsg4" text="Text for message 4"/>
-		<item id="105" name="midMsg5" text="Text for message 5"/>
-	</messages>
-</UNISETPLC>
+	<!-- 
+		====================== Калибровочные диаграммы =========================
+		diagram - набор (переломных) точек характеристики
+
+		x - сырое значение
+		y - калиброванное значение
+
+		ВНИМАНИЕ!
+		При загрузке все точки будут отсортированы в порядке возрастания x!
+
+	 -->
+	<Calibrations name="Calibrations">
+		<diagram name="Test1_AS">
+		</diagram>
+	</Calibrations>
+
+
+
+	<Stand>
+		<Scripts>
+			<item script="ctl-smemory2-AEU-stand.sh"/>
+		</Scripts>
+		<Imitators>
+			<geu name="TEST1" 
+				title="Проверка функционирования алгоритмов управления XXX" 
+				start="/usr/bin/ctl-AEU-geuimitator.sh start" 
+				stop="/usr/bin/ctl-AEU-geuimitator.sh stop" 
+				check="/usr/bin/ctl-AEU-geuimitator.sh status">
+			<Object name="Режимы имитатора" type="visual" gobject="frame"
+				pack="table" header="Режимы имитатора" scroll="1">
+				<Object name="" type="visual" gobject="frame"
+					pack="table" x="0" y="0" width="450" height="-1" xx2="250">
+					<Object name="Accept_On_GEU_L" type="visual" gobject="button"
+						text="XXX2" out_sensor="" x="0" y="0"/>
+					<Object name="Accept_On_GEU_R" type="visual" gobject="button"
+						text="XXX3" out_sensor="" x="0" y="1"/>
+				</Object>
+				<Object name="Неисправности XXX" type="visual" gobject="frame"
+					pack="table" x="0" y="1" width="450" height="-1" xx2="650">
+					<Object name="XXX_Protection" type="visual" gobject="button"
+						text="XXX аварийное отключение" out_sensor="Cmd0_FS" x="0" y="0"/>
+				</Object>
+			</Object>
+			</geu>
+		</Imitators>
+	</Stand>
+
+</ConfigurationAEU>

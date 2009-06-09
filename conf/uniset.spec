@@ -2,7 +2,7 @@
 
 Name: uniset
 Version: 0.96
-Release: eter24
+Release: eter26
 Summary: UniSet
 License: GPL
 Group: Development/C++
@@ -181,7 +181,7 @@ Libraries needed to develop for uniset extentions
 %_bindir/%name-smviewer
 
 %changelog
-* Tue Jun 09 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter24
+* Mon Jun 08 2009 Pavel Vainerman <pv@aeu> 0.96-eter25
 - new build
 
 * Thu Jun 04 2009 Pavel Vainerman <pv@aeu> 0.96-eter23

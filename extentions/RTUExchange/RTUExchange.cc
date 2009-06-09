@@ -17,7 +17,9 @@ initPause(0),
 force(false),
 force_out(false),
 mbregFromID(false),
-activated(false)
+activated(false),
+rs_pre_clean(false),
+noQueryOptimization(false)
 {
 	cout << "$Id: RTUExchange.cc,v 1.4 2009/01/23 23:56:54 vpashka Exp $" << endl;
 
@@ -50,6 +52,11 @@ activated(false)
 		speed = "38400";
 
 	recv_timeout = atoi(conf->getArgParam("--rs-recv-timeout",it.getProp("recv_timeout")).c_str());
+	if( recv_timeout <= 0 )
+		recv_timeout = 100;
+
+	rs_pre_clean = atoi(conf->getArgParam("--rs-pre-clean",it.getProp("pre_clean")).c_str());
+	noQueryOptimization = atoi(conf->getArgParam("--rs-no-query-optimization",it.getProp("no_query_optimization")).c_str());
 
 	mbregFromID = atoi(conf->getArgParam("--mbs-reg-from-id",it.getProp("reg_from_id")).c_str());
 	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
@@ -63,6 +70,7 @@ activated(false)
 		initPause = 3000;
 
 	force = atoi(conf->getArgParam("--rs-force",it.getProp("force")).c_str());
+	force_out = atoi(conf->getArgParam("--rs-force-out",it.getProp("force_out")).c_str());
 
 	if( shm->isLocalwork() )
 	{
@@ -260,8 +268,9 @@ void RTUExchange::poll()
 
 			try
 			{
-//#warning For Debug
-				mb->cleanupChannel();
+				if( rs_pre_clean )
+					mb->cleanupChannel();
+
 				d->rtu->poll(mb);
 				d->resp_real = true;
 			}
@@ -283,7 +292,8 @@ void RTUExchange::poll()
 				{
 					if( d->dtype==RTUExchange::dtRTU || d->dtype==RTUExchange::dtMTR )
 					{
-						mb->cleanupChannel();
+						if( rs_pre_clean )
+							mb->cleanupChannel();
 						if( pollRTU(d,it) )
 							d->resp_real = true;
 					}
@@ -306,6 +316,18 @@ void RTUExchange::poll()
 
 	// update SharedMemory...
 	updateSM();
+	
+	// check thresholds
+	for( RTUExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+	{
+		RTUDevice* d(it1->second);
+		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+		{
+			RegInfo* r(it->second);
+			for( PList::iterator i=r->slst.begin(); i!=r->slst.end(); ++i )
+				IOBase::processingThreshold( &(*i),shm,force);
+		}
+	}
 	
 //	printMap(rmap);
 }
@@ -340,7 +362,6 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr,p->mbreg+p->offset,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
-				
 			it--;
 		}
 		break;
@@ -380,7 +401,6 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 					<< " IGNORE WRITE SINGLE REGISTER q_count=" << p->q_count << " ..." << endl;
 				return false;
 			}
-
 			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg+p->offset,p->mbval);
 		}
 		break;
@@ -514,8 +534,8 @@ void RTUExchange::processingMessage(UniSetTypes::VoidMessage *msg)
 			{
 				TimerMessage tm(msg);
 				timerInfo(&tm);
-				break;
 			}
+			break;
 		
 			case Message::SensorInfo:
 			{
@@ -551,7 +571,7 @@ void RTUExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 		{
 			if( rmap.empty() )
 			{
-				dlog[Debug::CRIT] << myname << "(sysCommand): rmap EMPTY! terminated..." << endl;
+				dlog[Debug::CRIT] << myname << "(sysCommand): ************* rmap EMPTY! terminated... *************" << endl;
 				raise(SIGTERM);
 				return; 
 			}
@@ -584,19 +604,18 @@ void RTUExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 				askSensors(UniversalIO::UIONotify);
 				initOutput();
 			}
-			
-			askTimer(tmExchange,polltime);
 
 			// начальная инициализация
 			if( !force )
 			{
-				uniset_mutex_lock l(pollMutex,2000);	
+				uniset_mutex_lock l(pollMutex,2000);
 				force = true;
 				poll();
 				force = false;
 			}
+			askTimer(tmExchange,polltime);
 			break;
-		}				
+		}
 
 		case SystemMessage::FoldUp:
 		case SystemMessage::Finish:
@@ -669,55 +688,60 @@ void RTUExchange::askSensors( UniversalIO::UIOCommand cmd )
 		throw SystemError(err.str());
 	}
 
-/*
-	RSMap::iterator it=rsmap.begin();
-	for( ; it!=rsmap.end(); ++it )
+	if( force_out )
+		return;
+
+	for( RTUExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
-		if( it->stype != UniversalIO::DigitalOutput && it->stype != UniversalIO::AnalogOutput )
-			continue;
-
-//		if( it->safety == NoSafetyState )
-//			continue;
-
-		try
+		RTUDevice* d(it1->second);
+		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
-			shm->askSensor(it->si.id,cmd);
+			if( it->second->mbfunc != ModbusRTU::fnWriteOutputRegisters && 
+				it->second->mbfunc != ModbusRTU::fnWriteOutputSingleRegister )
+				continue;
+		
+			for( PList::iterator i=it->second->slst.begin(); i!=it->second->slst.end(); ++i )
+			{
+				try
+				{
+					shm->askSensor(i->si.id,cmd);
+				}
+				catch( UniSetTypes::Exception& ex )
+				{
+					dlog[Debug::WARN] << myname << "(askSensors): " << ex << std::endl;
+				}
+				catch(...)
+				{
+					dlog[Debug::WARN] << myname << "(askSensors): catch..." << std::endl;
+				}
+			}
 		}
-		catch( UniSetTypes::Exception& ex )
-		{
-			dlog[Debug::WARN] << myname << "(askSensors): " << ex << std::endl;
-		}
-		catch(...){}
 	}
-*/	
 }
 // ------------------------------------------------------------------------------------------
 void RTUExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
-/*
-	RSMap::iterator it=rsmap.begin();
-	for( ; it!=rsmap.end(); ++it )
-	{
-		if( it->stype != UniversalIO::DigitalOutput && it->stype != UniversalIO::AnalogOutput )
-			continue;
+	if( force_out )
+		return;
 
-		if( it->si.id == sm->id )
+	for( RTUExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+	{
+		RTUDevice* d(it1->second);
+		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
-			if( it->stype == UniversalIO::DigitalOutput ) // || it->stype == UniversalIO::DigitalInput )
+			if( it->second->mbfunc != ModbusRTU::fnWriteOutputRegisters && 
+				it->second->mbfunc != ModbusRTU::fnWriteOutputSingleRegister )
+				continue;
+		
+			for( PList::iterator i=it->second->slst.begin(); i!=it->second->slst.end(); ++i )
 			{
-				uniset_spin_lock lock(it->val_lock);
-				it->value = sm->state ? 1 : 0;
+//				cerr << myname << "(sensorInfo): ************ update si.id=" << sm->id 
+//						<< " reg=" << ModbusRTU::dat2str(i->reg->mbreg) << endl;
+				updateRSProperty( &(*i),true);
+				return;
 			}
-			else if( it->stype == UniversalIO::AnalogOutput ) // || it->stype == UniversalIO::AnalogInput )
-			{
-				uniset_spin_lock lock(it->val_lock);
-				it->value = sm->value;
-			}
-			
-			break;
 		}
 	}
-*/
 }
 // ------------------------------------------------------------------------------------------
 bool RTUExchange::activateObject()
@@ -875,9 +899,13 @@ RTUExchange::RegInfo* RTUExchange::addReg( RegMap& mp, ModbusRTU::ModbusData r,
 			return 0;
 		}
 	
-		dlog[Debug::INFO] << myname << "(addReg): reg=" << ModbusRTU::dat2str(r) 
-			<< " already added. Ignore register params for " << xmlit.getProp("name") << " ..." << endl;
-			
+		if( dlog.debugging(Debug::INFO) )
+		{
+			dlog[Debug::INFO] << myname << "(addReg): reg=" << ModbusRTU::dat2str(r) 
+				<< " already added. Ignore register params for " << xmlit.getProp("name") << " ..." << endl;
+		}
+
+		it->second->rit = it;
 		return it->second;
 	}
 	
@@ -900,6 +928,8 @@ RTUExchange::RegInfo* RTUExchange::addReg( RegMap& mp, ModbusRTU::ModbusData r,
 	}
 	
 	mp.insert(RegMap::value_type(r,ri));
+	ri->rit = mp.find(r);
+	
 	return ri;
 }
 // ------------------------------------------------------------------------------------------
@@ -940,6 +970,18 @@ bool RTUExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 	{
 		dlog[Debug::WARN] << "(initRSProperty): (ignore) uncorrect param`s nbit>1 (" << p.nbit << ")"
 			<< " but iotype=" << p.stype << " for " << it.getProp("name") << endl;
+	}
+
+	string sbyte(it.getProp("nbyte"));
+	if( !sbyte.empty() )
+	{
+		p.nbyte = UniSetTypes::uni_atoi(sbyte.c_str());
+		if( p.nbyte < 0 || p.nbyte > VTypes::Byte::bsize )
+		{
+			dlog[Debug::CRIT] << myname << "(initRSProperty): BAD nbyte=" << p.nbyte 
+				<< ". (0 >= nbyte < " << VTypes::Byte::bsize << ")." << endl;
+			return false;
+		}
 	}
 	
 	string vt(it.getProp("vtype"));
@@ -1328,34 +1370,10 @@ std::ostream& operator<<( std::ostream& os, const RTUExchange::DeviceType& dt )
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, const RTUExchange::RSProperty& p )
 {
-//	os << " mbaddr=(" << (int)p.mbaddr << ")" << ModbusRTU::addr2str(p.mbaddr)
-//				<< " mbreg=" << ModbusRTU::dat2str(p.mbreg)
-//				<< " mbfunc=" << p.mbfunc
-//				<< " dtype=" << p.dtype;
-/*
-	switch(p.dtype)
-	{
-		case RTUExchange::dtRTU:
-			os << " nbit=" << p.nbit;
-		break;
-
-		case RTUExchange::dtRTU188:
-			os << " jack=" << RTUStorage::j2s(p.rtuJack)
-				<< " chan=" << p.rtuChan;
-		break;
-
-		case RTUExchange::dtMTR:
-			os << " mtrType=" << MTR::type2str(p.mtrType);
-		break;
-		
-		default:
-			os << "Unknown type parameters ???!!!" << endl;
-		break;
-	}
-*/	
 	os 	<< " sid=" << p.si.id
 		<< " stype=" << p.stype
 	 	<< " nbit=" << p.nbit
+	 	<< " nbyte=" << p.nbyte
 		<< " rnum=" << p.rnum
 		<< " safety=" << p.safety
 		<< " invert=" << p.invert;
@@ -1484,6 +1502,9 @@ std::ostream& operator<<( std::ostream& os, RTUExchange::RegInfo& r )
 // -----------------------------------------------------------------------------
 void RTUExchange::rtuQueryOptimization( RTUDeviceMap& m )
 {
+	if( noQueryOptimization )
+		return;
+
 	dlog[Debug::INFO] << myname << "(rtuQueryOptimization): optimization..." << endl;
 
 	for( RTUExchange::RTUDeviceMap::iterator it1=m.begin(); it1!=m.end(); ++it1 )
@@ -1540,49 +1561,91 @@ void RTUExchange::updateRTU( RegMap::iterator& rit )
 	if( r->mbfunc == fnWriteOutputRegisters || r->mbfunc == fnWriteOutputSingleRegister )
 		save = true;
 
+//	if( !force_out_up && save )
+//		return;
+
 	ModbusRTU::DataBits16 b(r->mbval);
 	for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
-	{
+		updateRSProperty( &(*it),false );
+}
+// -----------------------------------------------------------------------------
+void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
+{
+	using namespace ModbusRTU;
+	RegInfo* r(p->reg->rit->second);
+
+	bool save = false;
+	if( r->mbfunc == fnWriteOutputRegisters || r->mbfunc == fnWriteOutputSingleRegister )
+		save = true;
+	else if( write_only )
+		return;
+
 		try
 		{
-			if( it->vType == VTypes::vtUnknown )
+			if( p->vType == VTypes::vtUnknown )
 			{
-				if( it->nbit >= 0 )
+				ModbusRTU::DataBits16 b(r->mbval);
+				if( p->nbit >= 0 )
 				{
 					if( save )
 					{
-						bool set = IOBase::processingAsDO( &(*it), shm, force );
-						b.set(it->nbit,set);
+						bool set = IOBase::processingAsDO( p, shm, force_out );
+						b.set(p->nbit,set);
 						r->mbval = b.mdata();
 					}
 					else
 					{
-						bool set = b[it->nbit];
-						IOBase::processingAsDI( &(*it), set, shm, force );
+						bool set = b[p->nbit];
+						IOBase::processingAsDI( p, set, shm, force );
 					}
-					continue;
+					return;
 				}
 			
-				if( it->rnum <= 1 )
+				if( p->rnum <= 1 )
 				{
 					if( save )
-						r->mbval = IOBase::processingAsAO( &(*it), shm, force );
+						r->mbval = IOBase::processingAsAO( p, shm, force_out );
 					else
-						IOBase::processingAsAI( &(*it), r->mbval, shm, force );
+						IOBase::processingAsAI( p, r->mbval, shm, force );
 						
-					continue;
+					return;
 				}
 
-				dlog[Debug::CRIT] << myname << "(updateRTU): IGNORE item: rnum=" << it->rnum 
-						<< " > 1 ?!! for id=" << it->si.id << endl;
-				continue;
+				dlog[Debug::CRIT] << myname << "(updateRSProperty): IGNORE item: rnum=" << p->rnum 
+						<< " > 1 ?!! for id=" << p->si.id << endl;
+				
+				return;
 			}
-			else if( it->vType == VTypes::vtF2 )
+			else if( p->vType == VTypes::vtByte )
 			{
-				RegMap::iterator i(rit);
+				if( p->nbyte <= 0 || p->nbyte > VTypes::Byte::bsize )
+				{
+					dlog[Debug::CRIT] << myname << "(updateRSProperty): IGNORE item: reg=" << ModbusRTU::dat2str(r->mbreg) 
+							<< " vtype=" << p->vType << " but nbyte=" << p->nbyte << endl;
+					return;
+				}
+
 				if( save )
 				{
-					float f = IOBase::processingFasAO( &(*it), shm, force );
+					long v = IOBase::processingAsAO( p, shm, force_out );
+					VTypes::Byte b(r->mbval);
+					b.raw.b[p->nbyte-1] = v;
+					r->mbval = b.raw.w;
+				}
+				else
+				{
+					VTypes::Byte b(r->mbval);
+					IOBase::processingAsAI( p, b.raw.b[p->nbyte-1], shm, force );
+				}
+				
+				return;
+			}
+			else if( p->vType == VTypes::vtF2 )
+			{
+				RegMap::iterator i(p->reg->rit);
+				if( save )
+				{
+					float f = IOBase::processingFasAO( p, shm, force_out );
 					VTypes::F2 f2(f);
 					for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
 						i->second->mbval = f2.raw.v[k];
@@ -1596,15 +1659,15 @@ void RTUExchange::updateRTU( RegMap::iterator& rit )
 					VTypes::F2 f(data,VTypes::F2::wsize());
 					delete[] data;
 				
-					IOBase::processingFasAI( &(*it), (float)f, shm, force );
+					IOBase::processingFasAI( p, (float)f, shm, force );
 				}
 			}
-			else if( it->vType == VTypes::vtF4 )
+			else if( p->vType == VTypes::vtF4 )
 			{
-				RegMap::iterator i(rit);
+				RegMap::iterator i(p->reg->rit);
 				if( save )
 				{
-					float f = IOBase::processingFasAO( &(*it), shm, force );
+					float f = IOBase::processingFasAO( p, shm, force_out );
 					VTypes::F4 f4(f);
 					for( int k=0; k<VTypes::F4::wsize(); k++, i++ )
 						i->second->mbval = f4.raw.v[k];
@@ -1618,38 +1681,38 @@ void RTUExchange::updateRTU( RegMap::iterator& rit )
 					VTypes::F4 f(data,VTypes::F4::wsize());
 					delete[] data;
 				
-					IOBase::processingFasAI( &(*it), (float)f, shm, force );
+					IOBase::processingFasAI( p, (float)f, shm, force );
 				}
 			}
 		}
 		catch(IOController_i::NameNotFound &ex)
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRTU):(NameNotFound) " << ex.err << endl;
+			dlog[Debug::LEVEL3] << myname << "(updateRSProperty):(NameNotFound) " << ex.err << endl;
 		}
 		catch(IOController_i::IOBadParam& ex )
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRTU):(IOBadParam) " << ex.err << endl;
+			dlog[Debug::LEVEL3] << myname << "(updateRSProperty):(IOBadParam) " << ex.err << endl;
 		}
 		catch(IONotifyController_i::BadRange )
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRTU): (BadRange)..." << endl;
+			dlog[Debug::LEVEL3] << myname << "(updateRSProperty): (BadRange)..." << endl;
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRTU): " << ex << endl;
+			dlog[Debug::LEVEL3] << myname << "(updateRSProperty): " << ex << endl;
 		}
 		catch(CORBA::SystemException& ex)
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRTU): CORBA::SystemException: "
+			dlog[Debug::LEVEL3] << myname << "(updateRSProperty): CORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRTU): catch ..." << endl;
+			dlog[Debug::LEVEL3] << myname << "(updateRSProperty): catch ..." << endl;
 		}
-	}
 }
 // -----------------------------------------------------------------------------
+
 void RTUExchange::updateMTR( RegMap::iterator& rit )
 {
 	RegInfo* r(rit->second);
@@ -1666,7 +1729,7 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 				if( r->mtrType == MTR::mtT1 )
 				{
 					if( save )
-						r->mbval = IOBase::processingAsAO( &(*it), shm, force );
+						r->mbval = IOBase::processingAsAO( &(*it), shm, force_out );
 					else
 					{
 						MTR::T1 t(r->mbval);
@@ -1679,7 +1742,7 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 				{
 					if( save )
 					{
-						MTR::T2 t(IOBase::processingAsAO( &(*it), shm, force ));
+						MTR::T2 t(IOBase::processingAsAO( &(*it), shm, force_out ));
 						r->mbval = t.val; 
 					}
 					else
@@ -1695,7 +1758,7 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 					RegMap::iterator i(rit);
 					if( save )
 					{
-						MTR::T3 t(IOBase::processingAsAO( &(*it), shm, force ));
+						MTR::T3 t(IOBase::processingAsAO( &(*it), shm, force_out ));
 						for( int k=0; k<MTR::T3::wsize(); k++, i++ )
 							i->second->mbval = t.raw.v[k];
 					}
@@ -1729,7 +1792,7 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 					RegMap::iterator i(rit);
 					if( save )
 					{
-						MTR::T5 t(IOBase::processingAsAO( &(*it), shm, force ));
+						MTR::T5 t(IOBase::processingAsAO( &(*it), shm, force_out ));
 						for( int k=0; k<MTR::T5::wsize(); k++, i++ )
 							i->second->mbval = t.raw.v[k];
 					}
@@ -1752,7 +1815,7 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 					RegMap::iterator i(rit);
 					if( save )
 					{
-						MTR::T6 t(IOBase::processingAsAO( &(*it), shm, force ));
+						MTR::T6 t(IOBase::processingAsAO( &(*it), shm, force_out ));
 						for( int k=0; k<MTR::T6::wsize(); k++, i++ )
 							i->second->mbval = t.raw.v[k];
 					}
@@ -1775,7 +1838,7 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 					RegMap::iterator i(rit);
 					if( save )
 					{
-						MTR::T7 t(IOBase::processingAsAO( &(*it), shm, force ));
+						MTR::T7 t(IOBase::processingAsAO( &(*it), shm, force_out ));
 						for( int k=0; k<MTR::T7::wsize(); k++, i++ )
 							i->second->mbval = t.raw.v[k];
 					}
@@ -1798,7 +1861,7 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 					RegMap::iterator i(rit);
 					if( save )
 					{
-						float f = IOBase::processingFasAO( &(*it), shm, force );
+						float f = IOBase::processingFasAO( &(*it), shm, force_out );
 						MTR::F1 f1(f);
 						for( int k=0; k<MTR::F1::wsize(); k++, i++ )
 							i->second->mbval = f1.raw.v[k];
