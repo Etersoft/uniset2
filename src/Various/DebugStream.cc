@@ -207,11 +207,16 @@ DebugStream::~DebugStream()
 //--------------------------------------------------------------------------
 const DebugStream& DebugStream::operator=( const DebugStream& r )
 {
+	if( r == *this )
+		return *this;
+
 	dt = r.dt;
 	show_datetime = r.show_datetime;
 	fname = r.fname;
 	if( !r.fname.empty() )
 		logFile(fname.c_str());
+	
+	return *this;
 }
 //--------------------------------------------------------------------------
 /// Sets the debugstreams' logfile to f.

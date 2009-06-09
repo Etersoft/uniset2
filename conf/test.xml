@@ -61,7 +61,7 @@
 	<ObjectsMap idfromfile="1" no_dep="0">
 
 	<nodes port="2809">
-		<item id="3000" name="LocalhostNode" alias="" textname="Локальный узел"	ip="127.0.0.1" CANnodeID="" host="localhost" dbserver="DBServer1"/>
+		<item id="3000" name="LocalhostNode" alias="" textname="Локальный узел"	ip="127.0.0.1" CANnodeID="" host="localhost" dbserver=""/>
 	</nodes>
 
 	<!-- ************************ Датчики ********************** -->
@@ -87,7 +87,7 @@
 
 		<item id="465002" name="HC_out" textname="HC_out"
 		      iotype="DO" character="Info"
-			rs="2" mbtype="rtu" mbaddr="0x02" mbreg="0x3000" mbfunc="0x06">
+			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3000" mbfunc="0x06">
 			<consumers>
 			</consumers>
 		</item>

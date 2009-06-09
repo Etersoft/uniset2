@@ -16,6 +16,9 @@ std::ostream& operator<<( std::ostream& os, const VType& vt )
 
 VType str2type( const std::string s )
 {
+	if( s == "Byte" )
+		return vtByte;
+
 	if( s == "F2" )
 		return vtF2;
 	if( s == "F4" )
@@ -26,6 +29,8 @@ VType str2type( const std::string s )
 // -------------------------------------------------------------------------
 string type2str( VType t )
 {
+	if( t == vtByte )
+		return "Byte";
 	if( t == vtF2 )
 		return "F2";
 	if( t == vtF4 )
@@ -36,6 +41,8 @@ string type2str( VType t )
 // -------------------------------------------------------------------------
 int wsize(  VType t )
 {
+	if( t == vtByte )
+		return Byte::wsize();
 	if( t == vtF2 )
 		return F2::wsize();
 	if( t == vtF4 )

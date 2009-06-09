@@ -23,3 +23,7 @@
 (там же где ConsumerInfo и т.п.). И перевести uniset-codegen,
 на использование структуры SensorInfo вместо ObjectId.
 
+----------
+RTUExchabge: vtype="Byte"
+smonit: processing "precision"
+admin: processing "precision"

@@ -105,17 +105,18 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 		return;
 	}
 
-	// Читаем с использованием фильтра...
-	if( !it->nofilter )
-	{
-		if( it->df.size() > 1 )
-			it->df.add(val);
-
-		val = it->df.filterRC(val);
-	}
-
 	if( it->cdiagram )	// задана специальная калибровочная диаграмма
 	{
+		// Если есть диаграмма, то оптимальнее флитровать 
+		// скачки, ДО ДИАГРАММЫ
+		if( !it->nofilter && it->df.size() > 1 )
+		{
+			if( it->f_median )
+				val = it->df.median(val);
+			else
+				val = it->df.filterRC(val);
+		}
+
 		if( it->craw != val )
 		{	
 			it->craw = val;
@@ -130,6 +131,16 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 		IOController_i::CalibrateInfo* cal( &(it->cal) );
 		if( cal->maxRaw!=0 && cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
 			val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
+		
+		// Если НЕ диаграмма, то фильтруем 
+		// скачки, ПОСЛЕ обработки
+		if( !it->nofilter && it->df.size() > 1 )
+		{
+			if( it->f_median )
+				val = it->df.median(val);
+			else
+				val = it->df.filterRC(val);
+		}
 	}
 
 	// если предыдущее значение "обрыв",
@@ -185,7 +196,7 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 
 	IOController_i::CalibrateInfo* cal( &(it->cal) );
 	if( cal->maxRaw!=0 && cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
-		val = UniSetTypes::fcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
+		val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
 
 	// если предыдущее значение "обрыв",
 	// то сбрасываем признак 
@@ -246,12 +257,15 @@ void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force 
 long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 {
 	uniset_spin_lock lock(it->val_lock);
-
 	long val = it->value;
 	
 	if( force )
 	{
-		val = shm->localGetValue(it->ait,it->si.id);
+		if( it->stype == UniversalIO::DigitalInput || it->stype == UniversalIO::DigitalOutput )
+			val = shm->localGetState(it->dit,it->si.id) ? 1 : 0;
+		else if( it->stype == UniversalIO::AnalogInput || it->stype == UniversalIO::AnalogOutput )
+			val = shm->localGetValue(it->ait,it->si.id);
+
 		it->value = val;
 	}
 
@@ -272,7 +286,7 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 		else
 		{
 			IOController_i::CalibrateInfo* cal( &(it->cal) );
-			if( cal->maxRaw!=0 && cal->maxRaw!=cal->minRaw ) // задана калибровка
+			if( cal && cal->maxRaw!=0 && cal->maxRaw!=cal->minRaw ) // задана калибровка
 			{
 				// Калибруем в обратную сторону!!!
 				val = UniSetTypes::lcalibrate(it->value,
@@ -291,19 +305,19 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 // -----------------------------------------------------------------------------
 bool IOBase::processingAsDO( IOBase* it, SMInterface* shm, bool force )
 {
-	uniset_spin_lock lock(it->val_lock);
-	bool set = it->value;
-	if( it->stype == UniversalIO::DigitalOutput ||
-		it->stype == UniversalIO::DigitalInput )
-	{
+		uniset_spin_lock lock(it->val_lock);
+		bool set = it->value;
+
 		if( force )
-			set = shm->localGetState(it->dit,it->si.id);
+		{
+			if( it->stype == UniversalIO::DigitalInput || it->stype == UniversalIO::DigitalOutput )
+				set = shm->localGetState(it->dit,it->si.id);
+			else if( it->stype == UniversalIO::AnalogInput || it->stype == UniversalIO::AnalogOutput )
+				set = shm->localGetValue(it->ait,it->si.id) ? true : false;
+		}
 		
 		set = it->invert ? !set : set;
 		return set; 
-	}
-	
-	return false;
 }
 // -----------------------------------------------------------------------------
 float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
@@ -349,6 +363,33 @@ float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
 	}
 	
 	return val;
+}
+// -----------------------------------------------------------------------------
+void IOBase::processingThreshold( IOBase* it, SMInterface* shm, bool force )
+{
+	if( it->t_ai == DefaultObjectId )
+		return;
+	
+	if( !it->initOK )
+	{
+		shm->initAIterator(it->ait);
+		shm->initDIterator(it->dit);
+		it->initOK = true;
+	}
+	
+	long val = shm->localGetValue(it->ait,it->t_ai);
+	bool set = it->value ? true : false;
+
+	cout  << "val=" << val << " set=" << set << endl;
+	// Проверка нижнего предела
+	// значение должно быть меньше lowLimit-чуствительность
+	if( val <= (it->ti.lowlimit-it->ti.sensibility) )
+		set = false;
+	else if( val >= (it->ti.hilimit+it->ti.sensibility) )
+		set = true;
+
+	cout  << "thresh: set=" << set << endl;
+	processingDI(it,set,shm,force);
 }
 // -----------------------------------------------------------------------------
 
@@ -456,9 +497,6 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 			}
 		}
 		
-		for( int i=0; i<f_size; i++ )
-			b->df.add( b->defval );
-
 		if( !it.getProp("filterT").empty() )
 		{
 			f_T = atof(it.getProp("filterT").c_str());
@@ -469,10 +507,36 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		if( b->stype == UniversalIO::AnalogInput )
 			b->df.setSettings( f_size, f_T );
 
+		b->df.init(b->defval);
+
 		std::string caldiagram( it.getProp("caldiagram") );
 		if( !caldiagram.empty() )
 			b->cdiagram = UniSetExtentions::buildCalibrationDiagram(caldiagram);
 	}
+	else if( b->stype == UniversalIO::DigitalInput || b->stype == UniversalIO::DigitalOutput )
+	{
+		string tai(it.getProp("threshold_aid"));
+		if( !tai.empty() )
+		{
+			b->t_ai = conf->getSensorID(tai);
+			if( b->t_ai == DefaultObjectId )
+			{
+				if( dlog )
+					dlog[Debug::CRIT] << myname << "(IOBase::readItem): unknown ID for threshold_ai "
+						<< tai << endl;
+				return false;
+			}
+		
+			b->ti.lowlimit 	= uni_atoi( it.getProp("lowlimit").c_str() );
+			b->ti.hilimit 		= uni_atoi( it.getProp("hilimit").c_str() );
+			b->ti.sensibility 	= uni_atoi( it.getProp("sensibility").c_str() );
+		}
+	}
+//	else
+//	{
+//		dlog[Debug::CRIT] << myname << "(IOBase::readItem): неизвестный iotype=: " << stype << " для " << sname << endl;
+//		return false;
+//	}
 
 	return true;
 }
