@@ -78,20 +78,48 @@
 			</consumers>
 		</item>
 
-		<item id="465001" name="HC_in" textname="HC_in"
+		<item id="1" name="HC_in" textname="HC_in"
 		      iotype="DI" character="Info"
-			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3050" mbfunc="0x03">
+			rs="2" mbtype="rtu" mbaddr="0x02" mbreg="0x3000" mbfunc="0x02">
 			<consumers>
 			</consumers>
 		</item>
 
-		<item id="465002" name="HC_out" textname="HC_out"
-		      iotype="DO" character="Info"
-			rs="1" mbtype="rtu" mbaddr="0x02" mbreg="0x3000" mbfunc="0x06">
+		<item id="2" name="HC_out" textname="HC_out"
+		      iotype="DI" character="Info"
+			rs="2" mbtype="rtu" mbaddr="0x02" mbreg="0x3001" mbfunc="0x02">
 			<consumers>
 			</consumers>
 		</item>
-				
+
+		<item id="3" name="HC_in" textname="HC_in"
+		      iotype="DI" character="Info"
+			rs="2" mbtype="rtu" mbaddr="0x02" mbreg="0x3000" mbfunc="0x02">
+			<consumers>
+			</consumers>
+		</item>
+
+		<item id="4" name="HC_out" textname="HC_out"
+		      iotype="DO" character="Info"
+			rs="2" mbtype="rtu" mbaddr="0x02" mbreg="0x301" mbfunc="0x05">
+			<consumers>
+			</consumers>
+		</item>
+
+		<item id="5" name="HC_in" textname="HC_in"
+		      iotype="DI" character="Info"
+			rs="2" mbtype="rtu" mbaddr="0x02" mbreg="0x302" mbfunc="0x05">
+			<consumers>
+			</consumers>
+		</item>
+
+		<item id="6" name="HC_out" textname="HC_out"
+		      iotype="DI" character="Info"
+			rs="2" mbtype="rtu" mbaddr="0x02" mbreg="0x304" mbfunc="0x05">
+			<consumers>
+			</consumers>
+		</item>
+
 		<item id="465003" name="connect" textname="connect"
 		       iotype="DI" character="Info" default="1">
 			<consumers>			
@@ -103,40 +131,7 @@
 			</consumers>				
 		</item>
 		
-		<item id="000001" name="test1" textname="test1"
-			 iotype="AI" character="Info" default="1">
-			<consumers>			
-			</consumers>				
-		</item>
-		<item id="000002" name="test2" textname="test2"
-			 iotype="AI" character="Info">
-			<consumers>			
-			</consumers>				
-		</item>
-		<item id="000003" name="test3" textname="test3"
-			 iotype="AI" character="Info">
-			<consumers>			
-			</consumers>				
-		</item>
-
-		<item id="000004" name="test4" textname="test4"
-			 iotype="DI" character="Info">
-			<consumers>			
-			</consumers>				
-		</item>
-
-		<item id="000005" name="EU_Mode_AS" textname="Режимы работы ЭУ"
-			 iotype="AI" character="Info" default="10">
-			<consumers>			
-			</consumers>				
-		</item>
-
-		<item id="000006" name="No_Signal_S" textname="Нет связи с датчиком"
-			 iotype="DI" character="Info">
-			<consumers>			
-			</consumers>				
-		</item>
-
+	
 
 <!-- //************    КЛАПАНЫ   ****************************- -->	
 	

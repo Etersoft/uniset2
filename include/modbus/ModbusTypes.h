@@ -74,6 +74,8 @@ namespace ModbusRTU
 	// -------------------------------------------------------------------------
 	float dat2f( const ModbusData dat1, const ModbusData dat2 );
 	// -------------------------------------------------------------------------
+	bool isWriteFunction( SlaveFunctionCode c );
+	// -------------------------------------------------------------------------
 	/*! Заголовок сообщений */
 	struct ModbusHeader
 	{
@@ -240,18 +242,18 @@ namespace ModbusRTU
 		bool setBit( unsigned char dnum, unsigned char bnum, bool state );
 
 		/*! получение данных.
-		 * \param dnum  - номер байта
+		 * \param bnum  - номер байта
 		 * \param d     - найденные данные
 		 * \return TRUE - если есть
 		 * \return FALSE - если НЕ найдено
 		*/
-		bool getData( unsigned char dnum, DataBits& d );
+		bool getData( unsigned char bnum, DataBits& d );
 
 		/*! очистка данных */
 		void clear();
 		
 		/*! проверка на переполнение */	
-		inline bool isFull() 		
+		inline bool isFull()
 		{
 			return ( bcnt >= MAXLENPACKET );
 		}
@@ -259,7 +261,7 @@ namespace ModbusRTU
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		int szData();
 		
-		/*! преобразование для посылки в сеть */	
+		/*! преобразование для посылки в сеть */
 		ModbusMessage transport_msg();
 	};
 

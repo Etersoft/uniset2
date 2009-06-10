@@ -378,8 +378,17 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		case ModbusRTU::fnReadInputStatus:
 		{
 			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr,p->mbreg+p->offset,p->q_count);
-			for( int i=0; i<p->q_count; i++,it++ )
-				it->second->mbval = ret.data[i];
+			int m=0;
+			for( int i=0; i<ret.bcnt; i++ )
+			{
+				ModbusRTU::DataBits b(ret.data[i]);
+				for( int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
+				{
+//					cerr << "(read02): save mbreg=" << ModbusRTU::dat2str(it->second->mbreg)
+//							<< " val=" << (int)(b[k]) << endl;
+					it->second->mbval = b[k];
+				}
+			}
 			it--;
 		}
 		break;
@@ -387,8 +396,17 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		case ModbusRTU::fnReadCoilStatus:
 		{
 			ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr,p->mbreg+p->offset,p->q_count);
-			for( int i=0; i<p->q_count; i++,it++ )
-				it->second->mbval = ret.data[i];
+			int m = 0;
+			for( int i=0; i<ret.bcnt; i++ )
+			{
+				ModbusRTU::DataBits b(ret.data[i]);
+				for( int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
+				{
+//					cerr << "(read01): save mbreg=" << ModbusRTU::dat2str(it->second->mbreg)
+//							<< " val=" << (int)(b[k]) << endl;
+					it->second->mbval = b[k] ? 1 : 0;
+				}
+			}
 			it--;
 		}
 		break;
@@ -398,7 +416,7 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			if( p->q_count != 1 )
 			{
 				dlog[Debug::CRIT] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg) 
-					<< " IGNORE WRITE SINGLE REGISTER q_count=" << p->q_count << " ..." << endl;
+					<< " IGNORE WRITE SINGLE REGISTER (0x06) q_count=" << p->q_count << " ..." << endl;
 				return false;
 			}
 			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg+p->offset,p->mbval);
@@ -412,6 +430,36 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 				msg.addData(it->second->mbval);
 			it--;
 			ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+		}
+		break;
+
+		case ModbusRTU::fnForceSingleCoil:
+		{
+			if( p->q_count != 1 )
+			{
+				dlog[Debug::CRIT] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg) 
+					<< " IGNORE FORCE SINGLE COIL (0x05) q_count=" << p->q_count << " ..." << endl;
+				return false;
+			}
+
+			ModbusRTU::ForceSingleCoilRetMessage ret = mb->write05(dev->mbaddr,p->mbreg+p->offset,p->mbval);
+		}
+		break;
+
+		case ModbusRTU::fnForceMultipleCoils:
+		{
+				ModbusRTU::ForceCoilsMessage msg(dev->mbaddr,p->mbreg+p->offset);
+				for( int i=0; i<p->q_count; i++ )
+				{
+					ModbusRTU::DataBits16 d;
+					for( int k=0; k<ModbusRTU::BitsPerData && i<p->q_count; k++,i++,it++ )
+						d.set(k, (it->second->mbval ? true : false) );
+				
+					msg.addData(d);
+				}
+				
+				it--;
+				ModbusRTU::ForceCoilsRetMessage ret = mb->write0F(msg);
 		}
 		break;
 		
@@ -1543,6 +1591,16 @@ void RTUExchange::rtuQueryOptimization( RTUDeviceMap& m )
 				
 				beg->second->mbfunc = ModbusRTU::fnWriteOutputRegisters;
 			}
+			else if( beg->second->q_count>1 && beg->second->mbfunc==ModbusRTU::fnForceSingleCoil )
+			{
+				dlog[Debug::WARN] << myname << "(rtuQueryOptimization): "
+					<< " optimization change func=" << ModbusRTU::fnForceSingleCoil
+					<< " <--> func=" << ModbusRTU::fnForceMultipleCoils
+					<< " for mbaddr=" << ModbusRTU::addr2str(d->mbaddr)
+					<< " mbreg=" << ModbusRTU::dat2str(beg->second->mbreg);
+				
+				beg->second->mbfunc = ModbusRTU::fnForceMultipleCoils;
+			}
 			
 			if( it==d->regmap.end() )
 				break;
@@ -1557,9 +1615,7 @@ void RTUExchange::updateRTU( RegMap::iterator& rit )
 	RegInfo* r(rit->second);
 	using namespace ModbusRTU;
 	
-	bool save = false;
-	if( r->mbfunc == fnWriteOutputRegisters || r->mbfunc == fnWriteOutputSingleRegister )
-		save = true;
+	bool save = isWriteFunction( r->mbfunc );
 
 //	if( !force_out_up && save )
 //		return;
@@ -1574,10 +1630,9 @@ void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
 	using namespace ModbusRTU;
 	RegInfo* r(p->reg->rit->second);
 
-	bool save = false;
-	if( r->mbfunc == fnWriteOutputRegisters || r->mbfunc == fnWriteOutputSingleRegister )
-		save = true;
-	else if( write_only )
+	bool save = isWriteFunction( r->mbfunc );
+
+	if( !save && write_only )
 		return;
 
 		try
@@ -1613,7 +1668,6 @@ void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
 
 				dlog[Debug::CRIT] << myname << "(updateRSProperty): IGNORE item: rnum=" << p->rnum 
 						<< " > 1 ?!! for id=" << p->si.id << endl;
-				
 				return;
 			}
 			else if( p->vType == VTypes::vtByte )
@@ -1717,9 +1771,7 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 {
 	RegInfo* r(rit->second);
 	using namespace ModbusRTU;
-	bool save = false;
-	if( r->mbfunc == fnWriteOutputRegisters || r->mbfunc == fnWriteOutputSingleRegister )
-		save = true;
+	bool save = isWriteFunction( r->mbfunc );
 
 	{
 		for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
@@ -1918,7 +1970,7 @@ void RTUExchange::updateRTU188( RegMap::iterator& it )
 	using namespace ModbusRTU;
 
 //	bool save = false;
-	if( r->mbfunc == fnWriteOutputRegisters || r->mbfunc == fnWriteOutputSingleRegister )
+	if( isWriteFunction(r->mbfunc) )
 	{
 //		save = true;
 		cerr << myname << "(updateRTU188): write reg(" << dat2str(r->mbreg) << ") to RTU188 NOT YET!!!" << endl;

@@ -155,6 +155,17 @@ ModbusCRC ModbusRTU::checkCRC( ModbusByte* buf, int len )
 	return crc;
 }
 // -------------------------------------------------------------------------
+bool ModbusRTU::isWriteFunction( SlaveFunctionCode c )
+{
+	if( c == fnWriteOutputRegisters || 
+		c == fnWriteOutputSingleRegister ||
+		c == fnForceSingleCoil ||
+		c == fnForceMultipleCoils )
+		return true;
+		
+	return false;
+}
+// -------------------------------------------------------------------------
 std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, int len )
 {
 	// Чтобы не менять настройки 'os'
