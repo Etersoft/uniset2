@@ -50,7 +50,7 @@
 		
 		<RSExchange name="RSExchange">
 			<RespondList>
-				<item addr="0x02" respondSensor="RTU_Not_Respond_FS" timeout="5000" invert="1" default="1"/>
+				<item addr="0x02" respondSensor="RTU_Not_Respond_FS" timeout="2000" invert="1" default="1"/>
 			</RespondList>
 		</RSExchange>
 	</settings>
@@ -108,7 +108,7 @@
 
 		<item id="5" name="HC_in" textname="HC_in"
 		      iotype="DI" character="Info"
-			rs="2" mbtype="rtu" mbaddr="0x02" mbreg="0x302" mbfunc="0x05">
+			rs="3" mbtype="rtu" mbaddr="0x02" mbreg="0x302" mbfunc="0x04" vtype="F2">
 			<consumers>
 			</consumers>
 		</item>

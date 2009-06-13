@@ -44,7 +44,7 @@ int main( int argc, char **argv )
 	int tout = 2000;
 	DebugStream dlog;
 	int use485 = 0;
-	int replyVal=0;
+	int replyVal=-1;
 
 	try
 	{
@@ -104,7 +104,8 @@ int main( int argc, char **argv )
 		MBSlave mbs(myaddr,dev,speed,use485);
 		mbs.setLog(dlog);
 		mbs.setVerbose(verb);
-		mbs.setReply(replyVal);
+		if( replyVal!=-1 )
+			mbs.setReply(replyVal);
 		mbs.execute();
 	}
 	catch( ModbusRTU::mbException& ex )

@@ -539,10 +539,10 @@ namespace ModbusRTU
 		public ModbusHeader
 	{
 		ModbusData start;	/*!< стартовый адрес записи */
-		ModbusData quant;	/*!< количество слов данных */ 
+		ModbusData quant;	/*!< количество битов */ 
 		ModbusByte bcnt;	/*!< количество байт данных */
 		/*! данные */
-		ModbusData data[MAXLENPACKET/sizeof(ModbusData)-sizeof(ModbusData)*2-sizeof(ModbusByte)];
+		ModbusByte data[MAXLENPACKET-sizeof(ModbusData)*2-sizeof(ModbusByte)];
 		ModbusCRC crc;		/*!< контрольная сумма */
 
 		// ------- to slave -------
@@ -554,16 +554,15 @@ namespace ModbusRTU
 		 * \return TRUE - если удалось
 		 * \return FALSE - если НЕ удалось
 		*/
-		bool addData( DataBits16 d );
-
-		/*! установить бит.
-		 * \param dnum  - номер байта
-		 * \param bnum  - номер бита
-		 * \param state - состояние
-		 * \return TRUE - если есть
-		 * \return FALSE - если НЕ найдено
-		*/
-		bool setBit( unsigned char dnum, unsigned char bnum, bool state );
+		bool addData( DataBits d );
+		
+		// return number of bit
+		// -1 - error
+		int addBit( bool state );
+		
+		bool setBit( int nbit, bool state );
+		
+		inline int last(){ return quant; }
 
 		/*! получение данных.
 		 * \param dnum  - номер байта
@@ -571,12 +570,14 @@ namespace ModbusRTU
 		 * \return TRUE - если есть
 		 * \return FALSE - если НЕ найдено
 		*/
-		bool getData( unsigned char dnum, DataBits16& d );
+		bool getData( unsigned char dnum, DataBits& d );
+		
+		bool getBit( unsigned char bnum );
 
 		void clear();
-		inline bool isFull() 		
+		inline bool isFull()
 		{
-			return ( quant*sizeof(ModbusData) >= MAXLENPACKET );
+			return ( bcnt >= MAXLENPACKET );
 		}
 
 		// ------- from master -------	

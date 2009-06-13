@@ -17,7 +17,7 @@ MBSlave::MBSlave( ModbusRTU::ModbusAddr addr, const std::string dev, const std::
 //	prev(ModbusRTU::erNoError),
 //	askCount(0),
 	verbose(false),
-	replyVal(0)
+	replyVal(-1)
 {
 	cout << "$Id: MBSlave.cc,v 1.7 2009/02/24 20:27:24 vpashka Exp $" << endl;
 
@@ -80,7 +80,7 @@ void MBSlave::execute()
 		{
 			//  с проверкой на переполнение
 			askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
-			if( res!=ModbusRTU::erNoError )			
+			if( res!=ModbusRTU::erNoError )
 				errmap[res]++;
 		
 			prev = res;
@@ -115,7 +115,7 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 		
 	for( int i=0; i<bcnt; i++ )
 	{
-		if( replyVal )
+		if( replyVal!=-1 )
 			reply.addData(replyVal);
 		else
 			reply.addData(d);
@@ -141,7 +141,7 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 
 	for( int i=0; i<bcnt; i++ )
 	{
-		if( replyVal )
+		if( replyVal!=-1 )
 			reply.addData(replyVal);
 		else
 			reply.addData(d);
@@ -158,10 +158,10 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 
 	if( query.count <= 1 )
 	{
-		if( replyVal )
+		if( replyVal!=-1 )
 			reply.addData(replyVal);
 		else
-			reply.addData(query.start);	
+			reply.addData(query.start);
 		return ModbusRTU::erNoError;
 	}
 
@@ -170,7 +170,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 	ModbusData reg = query.start;
 	for( ; num<query.count; num++, reg++ )
 	{
-		if( replyVal )
+		if( replyVal != -1 )
 			reply.addData(replyVal);
 		else
 			reply.addData(reg);
@@ -195,7 +195,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters(
 
 	if( query.count <= 1 )
 	{
-		if( replyVal )
+		if( replyVal != -1 )
 			reply.addData(replyVal);
 		else
 			reply.addData(query.start);
@@ -207,7 +207,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters(
 	ModbusData reg = query.start;
 	for( ; num<query.count; num++, reg++ )
 	{
-		if( replyVal )
+		if( replyVal != -1 )
 			reply.addData(replyVal);
 		else
 			reply.addData(reg);

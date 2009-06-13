@@ -1206,30 +1206,45 @@ ForceCoilsMessage::ForceCoilsMessage( ModbusAddr a, ModbusData s ):
 	func = fnForceMultipleCoils;
 }
 // -------------------------------------------------------------------------
-bool ForceCoilsMessage::addData( DataBits16 d )
+bool ForceCoilsMessage::addData( DataBits d )
 {
 	if( isFull() )
 		return false;
 	
-	data[quant++] = d.mdata();
-	bcnt = quant*sizeof(ModbusData);
+	data[bcnt++] = d.mbyte();
+	quant += BitsPerByte;
 	return true;
 }
 // -------------------------------------------------------------------------
-bool ForceCoilsMessage::setBit( unsigned char dnum, unsigned char bnum, bool state )
+int ForceCoilsMessage::addBit( bool state )
 {
-	if( dnum<bcnt && bnum<BitsPerData )
-	{
-		DataBits16 d(data[dnum]);
-		d.b[bnum] = state;
-		data[dnum] = d;
-		return true;
-	}
-	
-	return false;
+	int qnum = quant % BitsPerByte;
+
+	if( qnum == 0 )
+		bcnt++;
+
+	DataBits b(data[bcnt-1]);
+	b.b[qnum] = state;
+	data[bcnt-1] = b.mbyte();
+	quant++;
+	return (quant-1);
 }
 // -------------------------------------------------------------------------
-bool ForceCoilsMessage::getData( unsigned char dnum, DataBits16& d )
+bool ForceCoilsMessage::setBit( int nbit, bool state )
+{
+	if( nbit<0 || nbit >= quant )
+		return false;
+	
+	int bnum = nbit / BitsPerByte;
+	int qnum = nbit % BitsPerByte;
+
+	DataBits b(data[bnum]);
+	b.b[qnum] = state;
+	data[bnum] = b.mbyte();
+	return true;
+}
+// -------------------------------------------------------------------------
+bool ForceCoilsMessage::getData( unsigned char dnum, DataBits& d )
 {
 	if( dnum < bcnt )
 	{
@@ -1270,14 +1285,8 @@ ModbusMessage ForceCoilsMessage::transport_msg()
 	memcpy(&(mm.data[ind]),&bcnt,sizeof(bcnt));
 	ind+=sizeof(bcnt);
 
-	// Создаём временно массив, переворачиваем байты
-	ModbusData* dtmp = new ModbusData[quant];
-	for( int i=0; i<quant; i++ )
-		dtmp[i] = SWAPSHORT(data[i]);
-
 	// копируем данные
-	memcpy(&(mm.data[ind]),dtmp,bcnt);
-	delete dtmp;
+	memcpy(&(mm.data[ind]),data,bcnt);
 
 	ind+=bcnt;
 
@@ -1337,14 +1346,11 @@ void ForceCoilsMessage::init( ModbusMessage& m )
 
 	// последний элемент это CRC
 	memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
-
-	for( int i=0; i<quant; i++ )
-		data[i] = SWAPSHORT(data[i]);
 }
 // -------------------------------------------------------------------------
 bool ForceCoilsMessage::checkFormat()
 {
-	return ( (bcnt==(quant*sizeof(ModbusData))) && (func==fnForceMultipleCoils) );
+	return ( func==fnForceMultipleCoils );
 }
 // -------------------------------------------------------------------------
 int ForceCoilsMessage::szData()
@@ -1369,14 +1375,14 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsMessage& m )
 		<< " bcnt=" << b2str(m.bcnt)
 		<< " data[" << (int)m.quant <<"]={ ";
 		
-	for( int i=0; i<m.quant; i++ )
+	for( int i=0; i<m.bcnt; i++ )
 	{
-		DataBits16 d(m.data[i]);
+		DataBits d(m.data[i]);
 		os << "" << d << "  ";
 	}
 	
 	os << "}";
-	return os;	
+	return os;
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsMessage* m )
 {

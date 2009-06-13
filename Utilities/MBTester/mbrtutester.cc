@@ -458,7 +458,7 @@ int main( int argc, char **argv )
 				}
 				
 				ModbusRTU::ForceCoilsMessage msg(slaveaddr,reg);
-				ModbusRTU::DataBits16 b(val);
+				ModbusRTU::DataBits b(val);
 				msg.addData(b);
 				ModbusRTU::ForceCoilsRetMessage  ret = mb.write0F(msg);
 				if( verb )

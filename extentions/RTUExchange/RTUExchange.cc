@@ -19,7 +19,8 @@ force_out(false),
 mbregFromID(false),
 activated(false),
 rs_pre_clean(false),
-noQueryOptimization(false)
+noQueryOptimization(false),
+allNotRespond(false)
 {
 	cout << "$Id: RTUExchange.cc,v 1.4 2009/01/23 23:56:54 vpashka Exp $" << endl;
 
@@ -53,7 +54,13 @@ noQueryOptimization(false)
 
 	recv_timeout = atoi(conf->getArgParam("--rs-recv-timeout",it.getProp("recv_timeout")).c_str());
 	if( recv_timeout <= 0 )
-		recv_timeout = 100;
+		recv_timeout = 50;
+
+	int alltout = atoi(conf->getArgParam("--rs-all-timeout",it.getProp("all_timeout")).c_str());
+	if( alltout <=0 )
+		alltout = 2000;
+		
+	ptAllNotRespond.setTiming(alltout);
 
 	rs_pre_clean = atoi(conf->getArgParam("--rs-pre-clean",it.getProp("pre_clean")).c_str());
 	noQueryOptimization = atoi(conf->getArgParam("--rs-no-query-optimization",it.getProp("no_query_optimization")).c_str());
@@ -76,6 +83,7 @@ noQueryOptimization(false)
 	{
 		readConfiguration();
 		rtuQueryOptimization(rmap);
+		initRespondList();
 	}
 	else
 		ic->addReadItem( sigc::mem_fun(this,&RTUExchange::readItem) );
@@ -122,7 +130,7 @@ noQueryOptimization(false)
 	if( activateTimeout<=0 )
 		activateTimeout = 20000;
 
-	initMB();
+	initMB(false);
 
 	printMap(rmap);
 //	abort();
@@ -149,16 +157,25 @@ RTUExchange::~RTUExchange()
 	delete shm;
 }
 // -----------------------------------------------------------------------------
-void RTUExchange::initMB()
+void RTUExchange::initMB( bool reopen )
 {
 	if( !file_exist(devname) )
 	{
 		if( mb )
 		{
 			delete mb;
-			mb=0;
+			mb = 0;
 		}
 		return;
+	}
+
+	if( mb )
+	{
+		if( !reopen )
+			return;
+		
+		delete mb;
+		mb = 0;
 	}
 
 	try
@@ -235,9 +252,18 @@ void RTUExchange::step()
 // -----------------------------------------------------------------------------
 void RTUExchange::poll()
 {
+	if( trAllNotRespond.hi(allNotRespond) )
+		ptAllNotRespond.reset();
+	
+	if( allNotRespond && mb && ptAllNotRespond.checkTime() )
+	{
+		ptAllNotRespond.reset();
+		initMB(true);
+	}
+	
 	if( !mb )
 	{
-		initMB();
+		initMB(false);
 		if( !mb )
 		{
 			for( RTUExchange::RTUDeviceMap::iterator it=rmap.begin(); it!=rmap.end(); ++it )
@@ -286,6 +312,7 @@ void RTUExchange::poll()
 		}
 		else 
 		{
+			d->resp_real = false;
 			for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 			{
 				try
@@ -303,8 +330,9 @@ void RTUExchange::poll()
 					if( d->resp_real )
 					{
 						dlog[Debug::CRIT] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
+							<< "reg=" << ModbusRTU::dat2str(it->second->mbreg)
 							<< " -> " << ex << endl;
-						d->resp_real = false;
+				//		d->resp_real = false;
 					}
 				}
 
@@ -383,11 +411,7 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			{
 				ModbusRTU::DataBits b(ret.data[i]);
 				for( int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
-				{
-//					cerr << "(read02): save mbreg=" << ModbusRTU::dat2str(it->second->mbreg)
-//							<< " val=" << (int)(b[k]) << endl;
 					it->second->mbval = b[k];
-				}
 			}
 			it--;
 		}
@@ -401,11 +425,7 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			{
 				ModbusRTU::DataBits b(ret.data[i]);
 				for( int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
-				{
-//					cerr << "(read01): save mbreg=" << ModbusRTU::dat2str(it->second->mbreg)
-//							<< " val=" << (int)(b[k]) << endl;
 					it->second->mbval = b[k] ? 1 : 0;
-				}
 			}
 			it--;
 		}
@@ -449,14 +469,8 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		case ModbusRTU::fnForceMultipleCoils:
 		{
 				ModbusRTU::ForceCoilsMessage msg(dev->mbaddr,p->mbreg+p->offset);
-				for( int i=0; i<p->q_count; i++ )
-				{
-					ModbusRTU::DataBits16 d;
-					for( int k=0; k<ModbusRTU::BitsPerData && i<p->q_count; k++,i++,it++ )
-						d.set(k, (it->second->mbval ? true : false) );
-				
-					msg.addData(d);
-				}
+				for( int i=0; i<p->q_count; i++,it++ )
+					msg.addBit( it->second->mbval ? true : false );
 				
 				it--;
 				ModbusRTU::ForceCoilsRetMessage ret = mb->write0F(msg);
@@ -495,16 +509,20 @@ bool RTUExchange::RTUDevice::checkRespond()
 // -----------------------------------------------------------------------------
 void RTUExchange::updateSM()
 {
+	allNotRespond = true;
 	for( RTUExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
-/*		
+		
 		cout << "check respond addr=" << ModbusRTU::addr2str(d->mbaddr) 
 			<< " respond=" << d->resp_id 
 			<< " real=" << d->resp_real
 			<< " state=" << d->resp_state
 			<< endl;
-*/		
+
+		if( d->resp_real )
+			allNotRespond = false;
+				
 		// update respond sensors......
 		if( d->checkRespond() && d->resp_id != DefaultObjectId  )
 		{
@@ -519,6 +537,8 @@ void RTUExchange::updateSM()
 					<< "(step): (respond) " << ex << std::endl;
 			}
 		}
+
+		cerr << "*********** allNotRespond=" << allNotRespond << endl;
 
 		// update values...
 		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
@@ -1483,9 +1503,18 @@ bool RTUExchange::initRespondInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, Uni
 		d->second->resp_ptTimeout.setTiming(UniSetTimer::WaitUpTime);
 				
 	d->second->resp_invert = atoi(it.getProp("invert").c_str());
-	d->second->resp_state = UniSetTypes::uni_atoi(it.getProp("default").c_str());
-	d->second->resp_real = UniSetTypes::uni_atoi(it.getProp("default").c_str());
-	d->second->resp_trTimeout.change(d->second->resp_real);
+/*
+	if( !it.getProp("default").empty() )
+	{
+		d->second->resp_state = UniSetTypes::uni_atoi(it.getProp("default").c_str());
+		d->second->resp_real = UniSetTypes::uni_atoi(it.getProp("default").c_str());
+	}
+*/
+/*
+	d->second->resp_real = true;
+	d->second->resp_state = false;
+	d->second->resp_trTimeout.change(false);
+*/
 	return true;
 }
 // -----------------------------------------------------------------------------
@@ -1515,10 +1544,10 @@ std::ostream& operator<<( std::ostream& os, RTUExchange::RTUDevice& d )
 
 		os << " rtu=" << (d.rtu ? "yes" : "no" );
 
-  		os	<< " repond_id=" << d.resp_id
-  			<< " repond_timeout=" << d.resp_ptTimeout.getInterval()
-  			<< " repond_state=" << d.resp_state
-  			<< " repond_invert=" << d.resp_invert
+  		os	<< " respond_id=" << d.resp_id
+  			<< " respond_timeout=" << d.resp_ptTimeout.getInterval()
+  			<< " respond_state=" << d.resp_state
+  			<< " respond_invert=" << d.resp_invert
   			<< endl;
   			
 
@@ -1613,14 +1642,6 @@ void RTUExchange::rtuQueryOptimization( RTUDeviceMap& m )
 void RTUExchange::updateRTU( RegMap::iterator& rit )
 {
 	RegInfo* r(rit->second);
-	using namespace ModbusRTU;
-	
-	bool save = isWriteFunction( r->mbfunc );
-
-//	if( !force_out_up && save )
-//		return;
-
-	ModbusRTU::DataBits16 b(r->mbval);
 	for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
 		updateRSProperty( &(*it),false );
 }

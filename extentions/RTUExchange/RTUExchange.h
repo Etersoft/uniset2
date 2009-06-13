@@ -123,11 +123,13 @@ class RTUExchange:
 			mbaddr(0),
 			dtype(dtUnknown),
 			resp_id(UniSetTypes::DefaultObjectId),
-			resp_state(true),
+			resp_state(false),
 			resp_invert(false),
-			resp_real(false),
+			resp_real(true),
 			rtu(0)
-			{}
+			{
+				resp_trTimeout.change(false);
+			}
 			
 			bool respnond;
 			ModbusRTU::ModbusAddr mbaddr;	/*!< адрес устройства */
@@ -196,7 +198,7 @@ class RTUExchange:
 		// действия при завершении работы
 		virtual void sigterm( int signo );
 		
-		void initMB();
+		void initMB( bool reopen=false );
 		void initIterators();
 		bool initItem( UniXML_iterator& it );
 		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
@@ -244,6 +246,10 @@ class RTUExchange:
 		
 		bool rs_pre_clean;
 		bool noQueryOptimization;
+		
+		bool allNotRespond;
+		Trigger trAllNotRespond;
+		PassiveTimer ptAllNotRespond;
 };
 // -----------------------------------------------------------------------------
 #endif // _RS_EXCHANGE_H_
