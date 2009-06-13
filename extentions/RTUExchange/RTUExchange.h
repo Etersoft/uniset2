@@ -209,7 +209,7 @@ class RTUExchange:
 		RTUDevice* addDev( RTUDeviceMap& dmap, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
 		RegInfo* addReg( RegMap& rmap, ModbusRTU::ModbusData r, UniXML_iterator& it, 
 							RTUDevice* dev, RegInfo* rcopy=0 );
-		RSProperty* addProp(PList& plist, RSProperty& p );
+		RSProperty* addProp( PList& plist, RSProperty& p );
 
 		bool initMTRitem( UniXML_iterator& it, RegInfo* p );
 		bool initRTU188item( UniXML_iterator& it, RegInfo* p );

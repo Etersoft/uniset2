@@ -1204,6 +1204,7 @@ ForceCoilsMessage::ForceCoilsMessage( ModbusAddr a, ModbusData s ):
 {
 	addr = a;
 	func = fnForceMultipleCoils;
+	memset(data,0,sizeof(data));
 }
 // -------------------------------------------------------------------------
 bool ForceCoilsMessage::addData( DataBits d )
@@ -1280,8 +1281,7 @@ ModbusMessage ForceCoilsMessage::transport_msg()
 	// копируем
 	memcpy(mm.data,&d,ind);
 
-	// copy bcnt	
-	bcnt	= quant*sizeof(ModbusData);
+	// copy bcnt
 	memcpy(&(mm.data[ind]),&bcnt,sizeof(bcnt));
 	ind+=sizeof(bcnt);
 

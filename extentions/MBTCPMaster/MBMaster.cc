@@ -369,8 +369,7 @@ bool MBMaster::writeReg( MBMap::iterator& p, long val )
 	if( p->mbfunc == fnForceMultipleCoils )
 	{
 		ModbusRTU::ForceCoilsMessage msg(p->mbaddr,p->mbreg);
-		ModbusRTU::DataBits16 b(val);
-		msg.addData(b);
+		msg.addBit( val ? true : false );
 		ModbusRTU::ForceCoilsRetMessage  ret = mb->write0F(msg);
 		return true;
 	}

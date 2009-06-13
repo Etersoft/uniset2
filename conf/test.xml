@@ -80,28 +80,28 @@
 
 		<item id="1" name="HC_in" textname="HC_in"
 		      iotype="DI" character="Info"
-			rs="2" mbtype="rtu" mbaddr="0x02" mbreg="0x3000" mbfunc="0x02">
+			rs="3" mbtype="rtu" mbaddr="0x02" mbreg="0x3000" mbfunc="0x02">
 			<consumers>
 			</consumers>
 		</item>
 
 		<item id="2" name="HC_out" textname="HC_out"
 		      iotype="DI" character="Info"
-			rs="2" mbtype="rtu" mbaddr="0x02" mbreg="0x3001" mbfunc="0x02">
+			rs="3" mbtype="rtu" mbaddr="0x02" mbreg="0x3001" mbfunc="0x02">
 			<consumers>
 			</consumers>
 		</item>
 
 		<item id="3" name="HC_in" textname="HC_in"
 		      iotype="DI" character="Info"
-			rs="2" mbtype="rtu" mbaddr="0x02" mbreg="0x3000" mbfunc="0x02">
+			rs="3" mbtype="rtu" mbaddr="0x02" mbreg="0x3002" mbfunc="0x05">
 			<consumers>
 			</consumers>
 		</item>
 
 		<item id="4" name="HC_out" textname="HC_out"
 		      iotype="DO" character="Info"
-			rs="2" mbtype="rtu" mbaddr="0x02" mbreg="0x301" mbfunc="0x05">
+			rs="3" mbtype="rtu" mbaddr="0x02" mbreg="0x301" mbfunc="0x05">
 			<consumers>
 			</consumers>
 		</item>
@@ -115,7 +115,7 @@
 
 		<item id="6" name="HC_out" textname="HC_out"
 		      iotype="DI" character="Info"
-			rs="2" mbtype="rtu" mbaddr="0x02" mbreg="0x304" mbfunc="0x05">
+			rs="3" mbtype="rtu" mbaddr="0x02" mbreg="0x3003" mbfunc="0x05">
 			<consumers>
 			</consumers>
 		</item>

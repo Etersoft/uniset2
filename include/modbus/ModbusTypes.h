@@ -539,7 +539,7 @@ namespace ModbusRTU
 		public ModbusHeader
 	{
 		ModbusData start;	/*!< стартовый адрес записи */
-		ModbusData quant;	/*!< количество битов */ 
+		ModbusData quant;	/*!< количество записываемых битов */ 
 		ModbusByte bcnt;	/*!< количество байт данных */
 		/*! данные */
 		ModbusByte data[MAXLENPACKET-sizeof(ModbusData)*2-sizeof(ModbusByte)];
@@ -615,7 +615,7 @@ namespace ModbusRTU
 		public ModbusHeader
 	{
 		ModbusData start; 	/*!< записанный начальный адрес */
-		ModbusData quant;	/*!< количество записанных слов данных */
+		ModbusData quant;	/*!< количество записанных битов */
 
 		// ------- from slave -------
 		ForceCoilsRetMessage( ModbusMessage& m );

@@ -330,7 +330,7 @@ void RTUExchange::poll()
 					if( d->resp_real )
 					{
 						dlog[Debug::CRIT] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
-							<< "reg=" << ModbusRTU::dat2str(it->second->mbreg)
+							<< " reg=" << ModbusRTU::dat2str(it->second->mbreg)
 							<< " -> " << ex << endl;
 				//		d->resp_real = false;
 					}
@@ -470,17 +470,18 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		{
 				ModbusRTU::ForceCoilsMessage msg(dev->mbaddr,p->mbreg+p->offset);
 				for( int i=0; i<p->q_count; i++,it++ )
-					msg.addBit( it->second->mbval ? true : false );
-				
+					msg.addBit( (it->second->mbval ? true : false) );
+
 				it--;
+//				cerr << "*********** (write multiple): " << msg << endl;
 				ModbusRTU::ForceCoilsRetMessage ret = mb->write0F(msg);
 		}
 		break;
 		
 		default:
 		{
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg) 
+			if( dlog.debugging(Debug::WARN) )
+				dlog[Debug::WARN] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg) 
 					<< " IGNORE mfunc=" << (int)p->mbfunc << " ..." << endl;
 			return false;
 		}
@@ -764,8 +765,7 @@ void RTUExchange::askSensors( UniversalIO::UIOCommand cmd )
 		RTUDevice* d(it1->second);
 		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
-			if( it->second->mbfunc != ModbusRTU::fnWriteOutputRegisters && 
-				it->second->mbfunc != ModbusRTU::fnWriteOutputSingleRegister )
+			if( !isWriteFunction(it->second->mbfunc) )
 				continue;
 		
 			for( PList::iterator i=it->second->slst.begin(); i!=it->second->slst.end(); ++i )
@@ -797,16 +797,24 @@ void RTUExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 		RTUDevice* d(it1->second);
 		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
-			if( it->second->mbfunc != ModbusRTU::fnWriteOutputRegisters && 
-				it->second->mbfunc != ModbusRTU::fnWriteOutputSingleRegister )
+			if( !isWriteFunction(it->second->mbfunc) )
 				continue;
 		
 			for( PList::iterator i=it->second->slst.begin(); i!=it->second->slst.end(); ++i )
 			{
-//				cerr << myname << "(sensorInfo): ************ update si.id=" << sm->id 
-//						<< " reg=" << ModbusRTU::dat2str(i->reg->mbreg) << endl;
-				updateRSProperty( &(*i),true);
-				return;
+				if( sm->id == i->si.id && sm->node == i->si.node )
+				{
+					if( dlog.debugging(Debug::INFO) )
+					{
+						dlog[Debug::INFO] << myname<< "(sensorInfo): si.id=" << sm->id 
+							<< " reg=" << ModbusRTU::dat2str(i->reg->mbreg)
+							<< " val=" << sm->value << endl;
+					}
+
+					i->value = sm->value;
+					updateRSProperty( &(*i),true);
+					return;
+				}
 			}
 		}
 	}
@@ -1290,6 +1298,7 @@ bool RTUExchange::initItem( UniXML_iterator& it )
 	RSProperty* p1 = addProp(ri->slst,p);
 	if( !p1 )
 		return false;
+
 	p1->reg = ri;
 
 	if( p1->rnum > 1 )
@@ -1441,7 +1450,8 @@ std::ostream& operator<<( std::ostream& os, const RTUExchange::DeviceType& dt )
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, const RTUExchange::RSProperty& p )
 {
-	os 	<< " sid=" << p.si.id
+	os 	<< " (" << ModbusRTU::dat2str(p.reg->mbreg) << ")"
+		<< " sid=" << p.si.id
 		<< " stype=" << p.stype
 	 	<< " nbit=" << p.nbit
 	 	<< " nbyte=" << p.nbyte
@@ -1655,7 +1665,7 @@ void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
 	RegInfo* r(p->reg->rit->second);
 
 	bool save = isWriteFunction( r->mbfunc );
-
+	
 	if( !save && write_only )
 		return;
 
