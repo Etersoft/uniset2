@@ -514,11 +514,11 @@ void RTUExchange::updateSM()
 	{
 		RTUDevice* d(it1->second);
 		
-		cout << "check respond addr=" << ModbusRTU::addr2str(d->mbaddr) 
-			<< " respond=" << d->resp_id 
-			<< " real=" << d->resp_real
-			<< " state=" << d->resp_state
-			<< endl;
+//		cout << "check respond addr=" << ModbusRTU::addr2str(d->mbaddr) 
+//			<< " respond=" << d->resp_id 
+//			<< " real=" << d->resp_real
+//			<< " state=" << d->resp_state
+//			<< endl;
 
 		if( d->resp_real )
 			allNotRespond = false;
@@ -538,7 +538,7 @@ void RTUExchange::updateSM()
 			}
 		}
 
-		cerr << "*********** allNotRespond=" << allNotRespond << endl;
+//		cerr << "*********** allNotRespond=" << allNotRespond << endl;
 
 		// update values...
 		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
@@ -1268,6 +1268,8 @@ bool RTUExchange::initItem( UniXML_iterator& it )
 			dlog[Debug::CRIT] << myname << "(initItem): FAILED! Sharing SAVE (not bit saving) to "
 				<< " mbreg=" << ModbusRTU::dat2str(ri->mbreg)
 				<< " for " << it.getProp("name") << endl;
+
+			abort(); 	// ABORT PROGRAM!!!!
 			return false;
 		}
 		
@@ -1279,6 +1281,7 @@ bool RTUExchange::initItem( UniXML_iterator& it )
 					dlog[Debug::CRIT] << myname << "(initItem): FAILED! Sharing SAVE (mbreg=" 
 						<< ModbusRTU::dat2str(ri->mbreg) << "  already used)!"
 						<< " IGNORE --> " << it.getProp("name") << endl;
+					abort(); 	// ABORT PROGRAM!!!!
 					return false;
 			}
 		}
