@@ -892,26 +892,41 @@ string Configuration::getPort()
 // -------------------------------------------------------------------------
 ObjectId Configuration::getSensorID( const std::string name )
 {
+	if( name.empty() )
+		return DefaultObjectId;
+		
 	return oind->getIdByName(conf->getSensorsSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
 ObjectId Configuration::getControllerID( const std::string name )
 {
+	if( name.empty() )
+		return DefaultObjectId;
+
 	return oind->getIdByName(conf->getControllersSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
 ObjectId Configuration::getObjectID( const std::string name )
 {
+	if( name.empty() )
+		return DefaultObjectId;
+
 	return oind->getIdByName(conf->getObjectsSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
 ObjectId Configuration::getServiceID( const std::string name )
 {
+	if( name.empty() )
+		return DefaultObjectId;
+
 	return oind->getIdByName(conf->getServicesSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
 UniSetTypes::ObjectId Configuration::getNodeID( const std::string name, std::string alias )
 {
+	if( name.empty() )
+		return DefaultObjectId;
+
 	if( alias.empty() )
 		alias = name;
 //	return oind->getNodeId( oind->mkFullNodeName(name,alias) );

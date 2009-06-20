@@ -503,8 +503,8 @@ void UniversalInterface::setUndefinedState( IOController_i::SensorInfo& si, bool
 			catch(CORBA::TRANSIENT){}
 			catch(CORBA::OBJECT_NOT_EXIST){}
 			catch(CORBA::SystemException& ex){}
-			msleep(uconf->getRepeatTimeout());			
-			oref = CORBA::Object::_nil();			
+			msleep(uconf->getRepeatTimeout());
+			oref = CORBA::Object::_nil();
 		}
 	}
 	catch(UniSetTypes::TimeOut){}
@@ -515,25 +515,25 @@ void UniversalInterface::setUndefinedState( IOController_i::SensorInfo& si, bool
 	}
 	catch(ORepFailed)
 	{
-		rcache.erase(si.id, si.node);	
+		rcache.erase(si.id, si.node);
 		// не смогли получить ссылку на объект
 		unideb[Debug::WARN] << set_err("UI(setUndefinedState): не смог получить ссылку на объект",si.id,si.node) << endl;
 	}	
 	catch(CORBA::NO_IMPLEMENT)
 	{
-		rcache.erase(si.id, si.node);	
+		rcache.erase(si.id, si.node);
 		unideb[Debug::WARN] << set_err("UI(setUndefinedState): недоступна реализация метода",si.id,si.node) << endl;	
 	}	
 	catch(CORBA::OBJECT_NOT_EXIST)
 	{
-		rcache.erase(si.id, si.node);			
+		rcache.erase(si.id, si.node);
 		unideb[Debug::WARN] << set_err("UI(setUndefinedState): ссылка на не существующий объект",si.id,si.node) << endl;
 	}	
 	catch(CORBA::COMM_FAILURE){}
 	catch(CORBA::SystemException& ex){}
-	catch(...){}		
+	catch(...){}
 	
-	rcache.erase(si.id, si.node);	
+	rcache.erase(si.id, si.node);
 	unideb[Debug::WARN] << set_err("UI(setUndefinedState): TimeOut для объекта",si.id,si.node) << endl;
 }
 // ------------------------------------------------------------------------------------------------------------
@@ -575,30 +575,30 @@ void UniversalInterface::setValue(ObjectId name, long value, ObjectId node)
 			catch(CORBA::TRANSIENT){}
 			catch(CORBA::OBJECT_NOT_EXIST){}
 			catch(CORBA::SystemException& ex){}
-			msleep(uconf->getRepeatTimeout());			
-			oref = CORBA::Object::_nil();			
+			msleep(uconf->getRepeatTimeout());
+			oref = CORBA::Object::_nil();
 		}
 	}
 	catch(UniSetTypes::TimeOut){}
 	catch(IOController_i::NameNotFound &ex)
 	{
-		rcache.erase(name, node);	
+		rcache.erase(name, node);
 		throw NameNotFound(set_err("UI(setValue): NameNotFound для объекта",name,node));
 	}
 	catch(ORepFailed)
 	{
-		rcache.erase(name, node);		
+		rcache.erase(name, node);
 		// не смогли получить ссылку на объект
 		throw IOBadParam(set_err("UI(setValue): не смог получить ссылку на объект ",name,node));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
 	{
-		rcache.erase(name, node);		
-		throw IOBadParam(set_err("UI(setValue): недоступна реализация метода",name,node));		
+		rcache.erase(name, node);
+		throw IOBadParam(set_err("UI(setValue): недоступна реализация метода",name,node));
 	}	
 	catch(CORBA::OBJECT_NOT_EXIST)
 	{
-		rcache.erase(name, node);		
+		rcache.erase(name, node);
 		throw IOBadParam(set_err("UI(setValue): ссылка на не существующий объект",name,node));
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
@@ -610,7 +610,7 @@ void UniversalInterface::setValue(ObjectId name, long value, ObjectId node)
 		// ошибка системы коммуникации
 		// unideb[Debug::WARN] << "UI(setValue): CORBA::SystemException" << endl;
 	}	
-	rcache.erase(name, node);		
+	rcache.erase(name, node);
 	throw UniSetTypes::TimeOut(set_err("UI(setValue): TimeOut для объекта",name,node));
 }
 
@@ -2913,7 +2913,7 @@ UniSetTypes::IDSeq_var UniversalInterface::askSensorsSeq( UniSetTypes::IDList& l
 	throw UniSetTypes::TimeOut(set_err("UI(askSensorSeq): TimeOut для объекта",sid,conf->getLocalNode()));
 }
 // -----------------------------------------------------------------------------
-bool UniversalInterface::waitReady( UniSetTypes::ObjectId id, int msec, int pmsec )
+bool UniversalInterface::waitReady( UniSetTypes::ObjectId id, int msec, int pmsec, ObjectId node )
 {
 	PassiveTimer ptReady(msec);
 	bool ready = false;
@@ -2921,7 +2921,7 @@ bool UniversalInterface::waitReady( UniSetTypes::ObjectId id, int msec, int pmse
 	{
 		try
 		{
-			ready = isExist(id);
+			ready = isExist(id,node);
 			if( ready )
 				break;
 		}
@@ -2933,7 +2933,7 @@ bool UniversalInterface::waitReady( UniSetTypes::ObjectId id, int msec, int pmse
 	return ready;
 }
 // -----------------------------------------------------------------------------
-bool UniversalInterface::waitWorking( UniSetTypes::ObjectId id, int msec, int pmsec )
+bool UniversalInterface::waitWorking( UniSetTypes::ObjectId id, int msec, int pmsec, ObjectId node )
 {
 	PassiveTimer ptReady(msec);
 	bool ready = false;
@@ -2942,7 +2942,7 @@ bool UniversalInterface::waitWorking( UniSetTypes::ObjectId id, int msec, int pm
 	{
 		try
 		{
-			getState(id);
+			getState(id,node);
 			ready = true;
 			break;
 		}

@@ -275,8 +275,11 @@ class UniversalInterface
 		bool info( UniSetTypes::InfoMessage& msg,  UniSetTypes::ObjectId messenger);
 		bool alarm( UniSetTypes::AlarmMessage& msg,  UniSetTypes::ObjectId messenger);
 		
-		bool waitReady( UniSetTypes::ObjectId id, int msec, int pause=5000 ); 	// used exist
-		bool waitWorking( UniSetTypes::ObjectId id, int msec, int pause=3000 );	// used getState
+		bool waitReady( UniSetTypes::ObjectId id, int msec, int pause=5000,
+						UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() ); 	// used exist
+
+		bool waitWorking( UniSetTypes::ObjectId id, int msec, int pause=3000,
+							UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() ); 	// used getState
 
 		inline void setCacheMaxSize( unsigned int newsize)
 		{
