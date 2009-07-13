@@ -11,27 +11,21 @@ autom4te.cache
 traces.*
 output.*
 Makefile
-Makefile.in
 semantic.cache
 *_SK.cc
 *_SK.h
 
-COPYING
 stamp-h1
 missing
 ltmain.sh
 libtool
 install-sh
 depcomp
-configure
 config.sub
 config.status
 config.log
-config.h.in
-config.h
 config.guess
 compile
-aclocal.m4
 compile
 
 #binaries
