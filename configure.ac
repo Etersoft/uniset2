@@ -5,6 +5,7 @@
 AC_INIT([uniset], [0.96], pv@etersoft.ru)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADER(config.h)
 
 dnl Initialize maintainer mode
