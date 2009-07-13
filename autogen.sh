@@ -2,6 +2,7 @@
 
 #set -x
 rm -f po/stamp-po
+# Improve: try autoreconf -fiv instead this script
 aclocal || exit 1
 autoheader || exit 1
 libtoolize --copy || exit 1

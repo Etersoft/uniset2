@@ -16,16 +16,10 @@ semantic.cache
 *_SK.h
 
 stamp-h1
-missing
-ltmain.sh
-libtool
-install-sh
-depcomp
 config.sub
 config.status
 config.log
 config.guess
-compile
 compile
 
 #binaries
