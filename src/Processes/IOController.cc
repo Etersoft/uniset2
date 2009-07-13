@@ -123,7 +123,15 @@ CORBA::Boolean IOController::getState( const IOController_i::SensorInfo& si )
 CORBA::Long IOController::getValue( const IOController_i::SensorInfo& si )
 {
 	AIOStateList::iterator li(aioList.end());
-	return localGetValue(li,si);
+	try
+	{
+		return localGetValue(li,si);
+	} // getState if not found...
+	catch( IOController_i::NameNotFound )
+	{
+		DIOStateList::iterator li(dioList.end());
+		return (localGetState(li,si) ? 1 : 0);
+	}
 }
 // ------------------------------------------------------------------------------------------
 bool IOController::localGetState( IOController::DIOStateList::iterator& li, 
