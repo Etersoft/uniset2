@@ -1,4 +1,5 @@
 %def_disable doc
+%define oname uniset
 
 Name: libuniset
 Version: 0.96
@@ -86,32 +87,37 @@ Libraries needed to develop for uniset extensions
 %makeinstall_std
 
 %files utils
-%_bindir/%name-admin
-%_bindir/%name-infoserver
-%_bindir/%name-mb*
-%_bindir/%name-nullController
-%_bindir/%name-sviewer-text
-%_bindir/%name-smonit
-%_bindir/%name-start*
-%_bindir/%name-stop*
-%_bindir/%name-func*
-%_bindir/%name-codegen
-%dir %_datadir/%name/
-%dir %_datadir/%name/xslt/
-%_datadir/%name/xslt/*.xsl
+%_bindir/%oname-admin
+%_bindir/%oname-infoserver
+%_bindir/%oname-mb*
+%_bindir/%oname-nullController
+%_bindir/%oname-sviewer-text
+%_bindir/%oname-smonit
+%_bindir/%oname-start*
+%_bindir/%oname-stop*
+%_bindir/%oname-func*
+%_bindir/%oname-codegen
+%dir %_datadir/%oname/
+%dir %_datadir/%oname/xslt/
+%_datadir/%oname/xslt/*.xsl
 
 %files
 %_libdir/libUniSet.so.*
 
 %files devel
-%dir %_includedir/%name/
-%_includedir/%name/*.h
+%dir %_includedir/%oname/
+%_includedir/%oname/*.h
+%_includedir/%oname/*.hh
+%_includedir/%oname/IOs/
+%_includedir/%oname/modbus/
+%_includedir/%oname/mysql/
+
 %_libdir/libUniSet.so
-%_datadir/idl/%name/
+%_datadir/idl/%oname/
 %_pkgconfigdir/libUniSet.pc
 
 %files mysql-dbserver
-%_bindir/%name-mysql-*dbserver
+%_bindir/%oname-mysql-*dbserver
 %_libdir/*-mysql.so*
 
 %if_enabled doc
@@ -120,17 +126,17 @@ Libraries needed to develop for uniset extensions
 %endif
 
 %files extensions
-%_bindir/%name-iocontrol
-%_bindir/%name-iotest
-%_bindir/%name-iocalibr
-%_bindir/%name-logicproc
-%_bindir/%name-plogicproc
+%_bindir/%oname-iocontrol
+%_bindir/%oname-iotest
+%_bindir/%oname-iocalibr
+%_bindir/%oname-logicproc
+%_bindir/%oname-plogicproc
 %_bindir/mtrconv
 %_bindir/vtconv
 %_bindir/rtustate
-%_bindir/%name-rtuexchange
-%_bindir/%name-smemory
-%_bindir/%name-smviewer
+%_bindir/%oname-rtuexchange
+%_bindir/%oname-smemory
+%_bindir/%oname-smviewer
 
 %_libdir/*Extensions.so.*
 %_libdir/libUniSetIO*.so.*
@@ -140,7 +146,7 @@ Libraries needed to develop for uniset extensions
 %_libdir/libUniSetShared*.so.*
 
 %files extensions-devel
-%_includedir/%name/extensions/
+%_includedir/%oname/extensions/
 %_libdir/*Extensions.so
 %_libdir/libUniSetIO*.so
 %_libdir/libUniSetLP*.so
@@ -157,6 +163,10 @@ Libraries needed to develop for uniset extensions
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Jul 14 2009 Vitaly Lipatov <lav@altlinux.ru> 0.96-eter29
+- build from gear repo, rewrote spec
+- rename extentions to extensions (see eterbug #4008)
+
 * Mon Jun 08 2009 Pavel Vainerman <pv@aeu> 0.96-eter25
 - new build
 
