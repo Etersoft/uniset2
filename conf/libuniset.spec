@@ -33,14 +33,18 @@ Libraries needed to develop for UniSet.
 Group: Development/Databases
 Summary: MySQL-dbserver implementatioin for UniSet
 Requires: %name = %version-%release
+Provides: %oname-mysql-dbserver
+Obsoletes: %oname-mysql-dbserver
 
 %description mysql-dbserver
-MySQL dbseever for %name
+MySQL dbserver for %name
 
 %package utils
 Summary: UniSet utilities
 Group: Development/Tools
 Requires: %name = %version-%release
+Provides: %oname-utils
+Obsoletes: %oname-utils
 
 %description utils
 UniSet utilities
@@ -57,6 +61,10 @@ Documentations for developing with UniSet
 Group: Development/Databases
 Summary: libUniSet extensions
 Requires: %name = %version-%release
+Provides: %oname-extentions
+Obsoletes: %oname-extentions
+Provides: %name-extentions
+Obsoletes: %name-extentions
 
 %description extensions
 Extensions for libuniset
@@ -65,6 +73,8 @@ Extensions for libuniset
 Group: Development/Databases
 Summary: Libraries needed to develop for uniset extensions
 Requires: %name-extensions = %version-%release
+Provides: %name-extentions-devel
+Obsoletes: %name-extentions-devel
 
 %description extensions-devel
 Libraries needed to develop for uniset extensions
