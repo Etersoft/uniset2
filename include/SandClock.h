@@ -24,7 +24,7 @@
 #ifndef SandClock_H_
 #define SandClock_H_
 // --------------------------------------------------------------------------
-#include <uniset/PassiveTimer.h>
+#include "PassiveTimer.h"
 // --------------------------------------------------------------------------
 class SandClock
 {
