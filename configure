@@ -936,7 +936,7 @@ enable_fast_install
 with_gnu_ld
 enable_libtool_lock
 enable_mysql
-enable_extentions
+enable_extensions
 enable_docs
 '
       ac_precious_vars='build_alias
@@ -1603,7 +1603,7 @@ Optional Features:
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-mysql         disable MySQL support
-  --disable-extentions    disable build uniset extentions
+  --disable-extensions    disable build uniset extensions
   --disable-docs          disable build docs
 
 Optional Packages:
@@ -16609,13 +16609,13 @@ else
 fi
 
 
-#check build extentions
+#check build extensions
 ext=true
-{ $as_echo "$as_me:$LINENO: checking Extentions" >&5
-$as_echo_n "checking Extentions... " >&6; }
-# Check whether --enable-extentions was given.
-if test "${enable_extentions+set}" = set; then
-  enableval=$enable_extentions;  if test $enableval = yes; then ext=true; else ext=false; fi
+{ $as_echo "$as_me:$LINENO: checking Extensions" >&5
+$as_echo_n "checking Extensions... " >&6; }
+# Check whether --enable-extensions was given.
+if test "${enable_extensions+set}" = set; then
+  enableval=$enable_extensions;  if test $enableval = yes; then ext=true; else ext=false; fi
 else
    ext=true;
 fi
@@ -18579,7 +18579,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files Makefile libUniSet.pc lib/Makefile IDL/Makefile IDL/UniSetTypes/Makefile IDL/Processes/Makefile IDL/Services/Makefile src/Communications/Makefile src/Communications/Modbus/Makefile src/IOs/Makefile src/Interfaces/Makefile src/ObjectRepository/Makefile src/Processes/Makefile src/Services/Makefile src/Threads/Makefile src/Timers/Makefile src/Various/Makefile src/Makefile include/Makefile include/modbus/Makefile include/IOs/Makefile docs/Makefile docs/UniSetDox.cfg docs/UniSetDoxDevel.cfg Utilities/Makefile Utilities/scripts/Makefile Utilities/Admin/Makefile Utilities/NullController/Makefile Utilities/SViewer-text/Makefile Utilities/SMonit/Makefile Utilities/InfoServer/Makefile Utilities/MBTester/Makefile Utilities/DBServer-MySQL/Makefile Utilities/codegen/Makefile Utilities/codegen/uniset-codegen Utilities/codegen/tests/Makefile extentions/Makefile extentions/libUniSetExtentions.pc extentions/lib/Makefile extentions/include/Makefile extentions/IOControl/Makefile extentions/IOControl/libUniSetIOControl.pc extentions/RTUExchange/Makefile extentions/RTUExchange/libUniSetRTU.pc extentions/UDPExchange/Makefile extentions/UDPExchange/libUniSetUDP.pc extentions/ModbusSlave/Makefile extentions/ModbusSlave/libUniSetMBSlave.pc extentions/MBTCPMaster/Makefile extentions/MBTCPMaster/libUniSetMBTCPMaster.pc extentions/LogicProcessor/Makefile extentions/LogicProcessor/libUniSetLogicProcessor.pc extentions/SMViewer/Makefile extentions/SharedMemory/Makefile extentions/SharedMemory/libUniSetSharedMemory.pc extentions/SharedMemoryPlus/Makefile"
+ac_config_files="$ac_config_files Makefile libUniSet.pc lib/Makefile IDL/Makefile IDL/UniSetTypes/Makefile IDL/Processes/Makefile IDL/Services/Makefile src/Communications/Makefile src/Communications/Modbus/Makefile src/IOs/Makefile src/Interfaces/Makefile src/ObjectRepository/Makefile src/Processes/Makefile src/Services/Makefile src/Threads/Makefile src/Timers/Makefile src/Various/Makefile src/Makefile include/Makefile include/modbus/Makefile include/IOs/Makefile docs/Makefile docs/UniSetDox.cfg docs/UniSetDoxDevel.cfg Utilities/Makefile Utilities/scripts/Makefile Utilities/Admin/Makefile Utilities/NullController/Makefile Utilities/SViewer-text/Makefile Utilities/SMonit/Makefile Utilities/InfoServer/Makefile Utilities/MBTester/Makefile Utilities/DBServer-MySQL/Makefile Utilities/codegen/Makefile Utilities/codegen/uniset-codegen Utilities/codegen/tests/Makefile extensions/Makefile extensions/libUniSetExtensions.pc extensions/lib/Makefile extensions/include/Makefile extensions/IOControl/Makefile extensions/IOControl/libUniSetIOControl.pc extensions/RTUExchange/Makefile extensions/RTUExchange/libUniSetRTU.pc extensions/UDPExchange/Makefile extensions/UDPExchange/libUniSetUDP.pc extensions/ModbusSlave/Makefile extensions/ModbusSlave/libUniSetMBSlave.pc extensions/MBTCPMaster/Makefile extensions/MBTCPMaster/libUniSetMBTCPMaster.pc extensions/LogicProcessor/Makefile extensions/LogicProcessor/libUniSetLogicProcessor.pc extensions/SMViewer/Makefile extensions/SharedMemory/Makefile extensions/SharedMemory/libUniSetSharedMemory.pc extensions/SharedMemoryPlus/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -19641,26 +19641,26 @@ do
     "Utilities/codegen/Makefile") CONFIG_FILES="$CONFIG_FILES Utilities/codegen/Makefile" ;;
     "Utilities/codegen/uniset-codegen") CONFIG_FILES="$CONFIG_FILES Utilities/codegen/uniset-codegen" ;;
     "Utilities/codegen/tests/Makefile") CONFIG_FILES="$CONFIG_FILES Utilities/codegen/tests/Makefile" ;;
-    "extentions/Makefile") CONFIG_FILES="$CONFIG_FILES extentions/Makefile" ;;
-    "extentions/libUniSetExtentions.pc") CONFIG_FILES="$CONFIG_FILES extentions/libUniSetExtentions.pc" ;;
-    "extentions/lib/Makefile") CONFIG_FILES="$CONFIG_FILES extentions/lib/Makefile" ;;
-    "extentions/include/Makefile") CONFIG_FILES="$CONFIG_FILES extentions/include/Makefile" ;;
-    "extentions/IOControl/Makefile") CONFIG_FILES="$CONFIG_FILES extentions/IOControl/Makefile" ;;
-    "extentions/IOControl/libUniSetIOControl.pc") CONFIG_FILES="$CONFIG_FILES extentions/IOControl/libUniSetIOControl.pc" ;;
-    "extentions/RTUExchange/Makefile") CONFIG_FILES="$CONFIG_FILES extentions/RTUExchange/Makefile" ;;
-    "extentions/RTUExchange/libUniSetRTU.pc") CONFIG_FILES="$CONFIG_FILES extentions/RTUExchange/libUniSetRTU.pc" ;;
-    "extentions/UDPExchange/Makefile") CONFIG_FILES="$CONFIG_FILES extentions/UDPExchange/Makefile" ;;
-    "extentions/UDPExchange/libUniSetUDP.pc") CONFIG_FILES="$CONFIG_FILES extentions/UDPExchange/libUniSetUDP.pc" ;;
-    "extentions/ModbusSlave/Makefile") CONFIG_FILES="$CONFIG_FILES extentions/ModbusSlave/Makefile" ;;
-    "extentions/ModbusSlave/libUniSetMBSlave.pc") CONFIG_FILES="$CONFIG_FILES extentions/ModbusSlave/libUniSetMBSlave.pc" ;;
-    "extentions/MBTCPMaster/Makefile") CONFIG_FILES="$CONFIG_FILES extentions/MBTCPMaster/Makefile" ;;
-    "extentions/MBTCPMaster/libUniSetMBTCPMaster.pc") CONFIG_FILES="$CONFIG_FILES extentions/MBTCPMaster/libUniSetMBTCPMaster.pc" ;;
-    "extentions/LogicProcessor/Makefile") CONFIG_FILES="$CONFIG_FILES extentions/LogicProcessor/Makefile" ;;
-    "extentions/LogicProcessor/libUniSetLogicProcessor.pc") CONFIG_FILES="$CONFIG_FILES extentions/LogicProcessor/libUniSetLogicProcessor.pc" ;;
-    "extentions/SMViewer/Makefile") CONFIG_FILES="$CONFIG_FILES extentions/SMViewer/Makefile" ;;
-    "extentions/SharedMemory/Makefile") CONFIG_FILES="$CONFIG_FILES extentions/SharedMemory/Makefile" ;;
-    "extentions/SharedMemory/libUniSetSharedMemory.pc") CONFIG_FILES="$CONFIG_FILES extentions/SharedMemory/libUniSetSharedMemory.pc" ;;
-    "extentions/SharedMemoryPlus/Makefile") CONFIG_FILES="$CONFIG_FILES extentions/SharedMemoryPlus/Makefile" ;;
+    "extensions/Makefile") CONFIG_FILES="$CONFIG_FILES extensions/Makefile" ;;
+    "extensions/libUniSetExtensions.pc") CONFIG_FILES="$CONFIG_FILES extensions/libUniSetExtensions.pc" ;;
+    "extensions/lib/Makefile") CONFIG_FILES="$CONFIG_FILES extensions/lib/Makefile" ;;
+    "extensions/include/Makefile") CONFIG_FILES="$CONFIG_FILES extensions/include/Makefile" ;;
+    "extensions/IOControl/Makefile") CONFIG_FILES="$CONFIG_FILES extensions/IOControl/Makefile" ;;
+    "extensions/IOControl/libUniSetIOControl.pc") CONFIG_FILES="$CONFIG_FILES extensions/IOControl/libUniSetIOControl.pc" ;;
+    "extensions/RTUExchange/Makefile") CONFIG_FILES="$CONFIG_FILES extensions/RTUExchange/Makefile" ;;
+    "extensions/RTUExchange/libUniSetRTU.pc") CONFIG_FILES="$CONFIG_FILES extensions/RTUExchange/libUniSetRTU.pc" ;;
+    "extensions/UDPExchange/Makefile") CONFIG_FILES="$CONFIG_FILES extensions/UDPExchange/Makefile" ;;
+    "extensions/UDPExchange/libUniSetUDP.pc") CONFIG_FILES="$CONFIG_FILES extensions/UDPExchange/libUniSetUDP.pc" ;;
+    "extensions/ModbusSlave/Makefile") CONFIG_FILES="$CONFIG_FILES extensions/ModbusSlave/Makefile" ;;
+    "extensions/ModbusSlave/libUniSetMBSlave.pc") CONFIG_FILES="$CONFIG_FILES extensions/ModbusSlave/libUniSetMBSlave.pc" ;;
+    "extensions/MBTCPMaster/Makefile") CONFIG_FILES="$CONFIG_FILES extensions/MBTCPMaster/Makefile" ;;
+    "extensions/MBTCPMaster/libUniSetMBTCPMaster.pc") CONFIG_FILES="$CONFIG_FILES extensions/MBTCPMaster/libUniSetMBTCPMaster.pc" ;;
+    "extensions/LogicProcessor/Makefile") CONFIG_FILES="$CONFIG_FILES extensions/LogicProcessor/Makefile" ;;
+    "extensions/LogicProcessor/libUniSetLogicProcessor.pc") CONFIG_FILES="$CONFIG_FILES extensions/LogicProcessor/libUniSetLogicProcessor.pc" ;;
+    "extensions/SMViewer/Makefile") CONFIG_FILES="$CONFIG_FILES extensions/SMViewer/Makefile" ;;
+    "extensions/SharedMemory/Makefile") CONFIG_FILES="$CONFIG_FILES extensions/SharedMemory/Makefile" ;;
+    "extensions/SharedMemory/libUniSetSharedMemory.pc") CONFIG_FILES="$CONFIG_FILES extensions/SharedMemory/libUniSetSharedMemory.pc" ;;
+    "extensions/SharedMemoryPlus/Makefile") CONFIG_FILES="$CONFIG_FILES extensions/SharedMemoryPlus/Makefile" ;;
 
   *) { { $as_echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 $as_echo "$as_me: error: invalid argument: $ac_config_target" >&2;}

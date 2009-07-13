@@ -2,11 +2,6 @@
 # This file is part of the UniSet library                                  #
 ############################################################################
 
-ACLOCAL_AMFLAGS = -I m4
-
-SUBDIRS=IDL src lib include Utilities extensions docs
-
-include $(top_builddir)/conf/common.mk
-
-pkgconfigdir 	= $(libdir)/pkgconfig
-pkgconfig_DATA 	= libUniSet.pc
+# install
+devel_include_HEADERS = *.h
+devel_includedir = $(includedir)/@PACKAGE@/extensions

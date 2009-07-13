@@ -1,0 +1,19 @@
+bin_PROGRAMS 		= @PACKAGE@-smemory-plus
+
+@PACKAGE@_smemory_plus_LDADD 		= $(top_builddir)/lib/libUniSet.la \
+	$(top_builddir)/extensions/RTUExchange/libUniSetRTU.la \
+	$(top_builddir)/extensions/ModbusSlave/libUniSetMBSlave.la \
+	$(top_builddir)/extensions/IOControl/libUniSetIOControl.la \
+	$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
+	$(top_builddir)/extensions/lib/libUniSetExtensions.la \
+	$(SIGC_LIBS)
+
+@PACKAGE@_smemory_plus_CXXFLAGS	= -I$(top_builddir)/extensions/CanNetwork \
+	-I$(top_builddir)/extensions/RTUExchange \
+	-I$(top_builddir)/extensions/ModbusSlave \
+	-I$(top_builddir)/extensions/IOControl \
+	-I$(top_builddir)/extensions/SharedMemory \
+	-I$(top_builddir)/extensions/include \
+	$(SIGC_CFLAGS)
+
+@PACKAGE@_smemory_plus_SOURCES = smemory-plus.cc

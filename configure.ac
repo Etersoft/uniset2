@@ -77,10 +77,10 @@ fi
 
 AM_CONDITIONAL(DISABLE_MYSQL, test ${dmysql} = true)
 
-#check build extentions
+#check build extensions
 ext=true
-AC_MSG_CHECKING([Extentions])
-AC_ARG_ENABLE(extentions,AC_HELP_STRING([--disable-extentions], [disable build uniset extentions]),
+AC_MSG_CHECKING([Extensions])
+AC_ARG_ENABLE(extensions,AC_HELP_STRING([--disable-extensions], [disable build uniset extensions]),
 [ if test $enableval = yes; then ext=true; else ext=false; fi],[ ext=true; ])
 
 if test ${ext} = true; then
@@ -177,25 +177,25 @@ AC_CONFIG_FILES([Makefile
 				 Utilities/codegen/Makefile
 				 Utilities/codegen/uniset-codegen
 				 Utilities/codegen/tests/Makefile
-				 extentions/Makefile
-				 extentions/libUniSetExtentions.pc
-				 extentions/lib/Makefile
-				 extentions/include/Makefile
-				 extentions/IOControl/Makefile
-				 extentions/IOControl/libUniSetIOControl.pc
-				 extentions/RTUExchange/Makefile
-				 extentions/RTUExchange/libUniSetRTU.pc
-				 extentions/UDPExchange/Makefile
-				 extentions/UDPExchange/libUniSetUDP.pc
-				 extentions/ModbusSlave/Makefile
-				 extentions/ModbusSlave/libUniSetMBSlave.pc
-				 extentions/MBTCPMaster/Makefile
-				 extentions/MBTCPMaster/libUniSetMBTCPMaster.pc
-				 extentions/LogicProcessor/Makefile
-				 extentions/LogicProcessor/libUniSetLogicProcessor.pc
-				 extentions/SMViewer/Makefile
-				 extentions/SharedMemory/Makefile
-				 extentions/SharedMemory/libUniSetSharedMemory.pc
-				 extentions/SharedMemoryPlus/Makefile])
+				 extensions/Makefile
+				 extensions/libUniSetExtensions.pc
+				 extensions/lib/Makefile
+				 extensions/include/Makefile
+				 extensions/IOControl/Makefile
+				 extensions/IOControl/libUniSetIOControl.pc
+				 extensions/RTUExchange/Makefile
+				 extensions/RTUExchange/libUniSetRTU.pc
+				 extensions/UDPExchange/Makefile
+				 extensions/UDPExchange/libUniSetUDP.pc
+				 extensions/ModbusSlave/Makefile
+				 extensions/ModbusSlave/libUniSetMBSlave.pc
+				 extensions/MBTCPMaster/Makefile
+				 extensions/MBTCPMaster/libUniSetMBTCPMaster.pc
+				 extensions/LogicProcessor/Makefile
+				 extensions/LogicProcessor/libUniSetLogicProcessor.pc
+				 extensions/SMViewer/Makefile
+				 extensions/SharedMemory/Makefile
+				 extensions/SharedMemory/libUniSetSharedMemory.pc
+				 extensions/SharedMemoryPlus/Makefile])
 				 
 AC_OUTPUT

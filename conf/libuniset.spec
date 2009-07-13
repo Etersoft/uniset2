@@ -52,21 +52,21 @@ Requires: lib%name = %version-%release
 %description doc
 Documentations for developing with UniSet
 
-%package extentions
+%package extensions
 Group: Development/Databases
-Summary: libUniSet extentions
+Summary: libUniSet extensions
 Requires: %name = %version-%release
 
-%description extentions
-Extentions for libuniset
+%description extensions
+Extensions for libuniset
 
-%package extentions-devel
+%package extensions-devel
 Group: Development/Databases
-Summary: Libraries needed to develop for uniset extentions
-Requires: %name-extentions = %version-%release
+Summary: Libraries needed to develop for uniset extensions
+Requires: %name-extensions = %version-%release
 
-%description extentions-devel
-Libraries needed to develop for uniset extentions
+%description extensions-devel
+Libraries needed to develop for uniset extensions
 
 %prep
 %setup -q
@@ -119,7 +119,7 @@ Libraries needed to develop for uniset extentions
 %_docdir/%name
 %endif
 
-%files extentions
+%files extensions
 %_bindir/%name-iocontrol
 %_bindir/%name-iotest
 %_bindir/%name-iocalibr
@@ -132,22 +132,22 @@ Libraries needed to develop for uniset extentions
 %_bindir/%name-smemory
 %_bindir/%name-smviewer
 
-%_libdir/*Extentions.so.*
+%_libdir/*Extensions.so.*
 %_libdir/libUniSetIO*.so.*
 %_libdir/libUniSetLP*.so.*
 %_libdir/libUniSetMB*.so.*
 %_libdir/libUniSetRT*.so.*
 %_libdir/libUniSetShared*.so.*
 
-%files extentions-devel
-%_includedir/%name/extentions/
-%_libdir/*Extentions.so
+%files extensions-devel
+%_includedir/%name/extensions/
+%_libdir/*Extensions.so
 %_libdir/libUniSetIO*.so
 %_libdir/libUniSetLP*.so
 %_libdir/libUniSetMB*.so
 %_libdir/libUniSetRT*.so
 %_libdir/libUniSetShared*.so
-%_pkgconfigdir/*Extentions.pc
+%_pkgconfigdir/*Extensions.pc
 %_pkgconfigdir/libUniSetIO*.pc
 %_pkgconfigdir/libUniSetLog*.pc
 %_pkgconfigdir/libUniSetMB*.pc
@@ -221,7 +221,7 @@ Libraries needed to develop for uniset extentions
 - new version
 
 * Tue Dec 16 2008 Pavel Vainerman <pv@altlinux.ru> 0.96-alt1
-- new version (+extentions)
+- new version (+extensions)
 
 * Tue Nov 27 2007 Pavel Vainerman <pv@altlinux.ru> 0.93-alt13
 - new version
