@@ -78,11 +78,12 @@ Libraries needed to develop for uniset extentions
 %configure --disable-docs
 %endif
 
-#%make_build
-%make
+# Hack to make IDL first
+%make -C IDL
+%make_build || %make
 
 %install
-%makeinstall
+%makeinstall_std
 
 %files utils
 %_bindir/%name-admin
