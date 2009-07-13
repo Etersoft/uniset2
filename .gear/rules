@@ -1,2 +1,2 @@
-tar: . name=uniset-@version@
+tar: . name=libuniset-@version@
 spec: conf/libuniset.spec
