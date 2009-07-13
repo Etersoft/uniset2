@@ -1,0 +1,2 @@
+tar: . name=uniset-@version@
+spec: conf/libuniset.spec

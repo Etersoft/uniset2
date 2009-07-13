@@ -1,85 +1,71 @@
 %def_disable doc
 
-Name: uniset
+Name: libuniset
 Version: 0.96
-Release: eter28
-Summary: UniSet
+Release: eter29
+
+Summary: UniSet - library for building distributed industrial control systems
+
 License: GPL
 Group: Development/C++
-URL: http://sourceforge.net/uniset
+Url: http://sourceforge.net/uniset
+
 Packager: Pavel Vainerman <pv@altlinux.ru>
-Source: %name-%version.tar.bz2
+
+Source: /var/ftp/pvt/Etersoft/Ourside/mb745/sources/tarball/%name-%version.tar
 
 # Automatically added by buildreq on Sun Dec 28 2008
 BuildRequires: libMySQL-devel libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel libxml2-devel
 
-#BuildRequires: gcc-c++ libMySQL-devel libomniORB-devel libsigc++2.0-devel libxml2-devel linux-libc-headers python-modules
-#BuildRequires: gcc-c++ libMySQL-devel libomniORB-devel libsigc++2.0-devel libxml2-devel python-modules kernel-headers-common pkgconfig zlib-devel
-
 %description
-UniSet
+The UniSet library intended for building distributed industrial control systems
 
-%package -n lib%name
-Summary: Libraries for UniSet
-Group: System/Libraries
-
-%description -n lib%name
-This package provides libraries to use UniSet.
-
-%package -n lib%name-devel
+%package devel
 Group: Development/C
 Summary: Libraries needed to develop for UniSet
-Requires: lib%name = %version-%release
+Requires: %name = %version-%release
 
-%description -n lib%name-devel
+%description devel
 Libraries needed to develop for UniSet.
 
-%package -n %name-mysql-dbserver
+%package mysql-dbserver
 Group: Development/Databases
 Summary: MySQL-dbserver implementatioin for UniSet
-Requires: lib%name = %version-%release
+Requires: %name = %version-%release
 
-%description -n %name-mysql-dbserver
-MySQL dbserever for libuniset
+%description mysql-dbserver
+MySQL dbseever for %name
 
 %package utils
 Summary: UniSet utilities
 Group: Development/Tools
-Requires: lib%name = %version-%release
+Requires: %name = %version-%release
 
 %description utils
-UniSet utilities 
+UniSet utilities
 
-%package -n lib%name-doc
+%package doc
 Group: Development/C
-Summary: Documentations for developing with UniSet.
+Summary: Documentations for developing with UniSet
 Requires: lib%name = %version-%release
 
-%description -n lib%name-doc
+%description doc
 Documentations for developing with UniSet
 
-%package -n lib%name-extentions
+%package extentions
 Group: Development/Databases
 Summary: libUniSet extentions
-Requires: lib%name = %version-%release
+Requires: %name = %version-%release
 
-%description -n lib%name-extentions
-Libraries needed to develop for UniSetExtentions.
-
-%package -n %name-extentions
-Group: Development/Databases
-Summary: libUniSet extentions
-Requires: lib%name-extentions = %version-%release
-
-%description -n %name-extentions
+%description extentions
 Extentions for libuniset
 
-%package -n lib%name-extentions-devel
+%package extentions-devel
 Group: Development/Databases
 Summary: Libraries needed to develop for uniset extentions
-Requires: lib%name-extentions = %version-%release
+Requires: %name-extentions = %version-%release
 
-%description -n lib%name-extentions-devel
+%description extentions-devel
 Libraries needed to develop for uniset extentions
 
 %prep
@@ -98,10 +84,6 @@ Libraries needed to develop for uniset extentions
 %install
 %makeinstall
 
-%post -n lib%name
-
-%postun -n lib%name
-
 %files utils
 %_bindir/%name-admin
 %_bindir/%name-infoserver
@@ -113,61 +95,30 @@ Libraries needed to develop for uniset extentions
 %_bindir/%name-stop*
 %_bindir/%name-func*
 %_bindir/%name-codegen
+%dir %_datadir/%name/
+%dir %_datadir/%name/xslt/
 %_datadir/%name/xslt/*.xsl
 
-%files -n lib%name
-%_libdir/libUniSet.so*
-%exclude %_libdir/*Extentions.so*
-%exclude %_libdir/libUniSetIO*.so*
-%exclude %_libdir/libUniSetLP*.so*
-%exclude %_libdir/libUniSetMB*.so*
-%exclude %_libdir/libUniSetRT*.so*
-%exclude %_libdir/libUniSetShared*.so*
+%files
+%_libdir/libUniSet.so.*
 
-%files -n lib%name-devel
-%_includedir/%name
-%_datadir/idl/%name
-%_libdir/pkgconfig/libUniSet.pc
-%exclude %_includedir/%name/extentions
-#%exclude %_libdir/pkgconfig/libUniSet*.pc
-%exclude %_libdir/pkgconfig/*Extentions.pc
-%exclude %_libdir/pkgconfig/libUniSetIO*.pc
-%exclude %_libdir/pkgconfig/libUniSetLog*.pc
-%exclude %_libdir/pkgconfig/libUniSetMB*.pc
-%exclude %_libdir/pkgconfig/libUniSetRT*.pc
-%exclude %_libdir/pkgconfig/libUniSetShared*.pc
+%files devel
+%dir %_includedir/%name/
+%_includedir/%name/*.h
+%_libdir/libUniSet.so
+%_datadir/idl/%name/
+%_pkgconfigdir/libUniSet.pc
 
-%files -n %name-mysql-dbserver
+%files mysql-dbserver
 %_bindir/%name-mysql-*dbserver
 %_libdir/*-mysql.so*
 
-%files -n lib%name-doc
 %if_enabled doc
+%files doc
 %_docdir/%name
 %endif
 
-%files -n lib%name-extentions
-%_libdir/*Extentions.so*
-%_libdir/libUniSetIO*.so*
-%_libdir/libUniSetLP*.so*
-%_libdir/libUniSetMB*.so*
-%_libdir/libUniSetRT*.so*
-%_libdir/libUniSetShared*.so*
-
-
-%files -n lib%name-extentions-devel
-%_includedir/%name/extentions
-
-%_libdir/pkgconfig/*Extentions.pc
-%_libdir/pkgconfig/libUniSetIO*.pc
-%_libdir/pkgconfig/libUniSetLog*.pc
-%_libdir/pkgconfig/libUniSetMB*.pc
-%_libdir/pkgconfig/libUniSetRT*.pc
-%_libdir/pkgconfig/libUniSetShared*.pc
-#%_libdir/pkgconfig/libUniSet*.pc
-%exclude %_libdir/pkgconfig/libUniSet.pc
-
-%files -n %name-extentions
+%files extentions
 %_bindir/%name-iocontrol
 %_bindir/%name-iotest
 %_bindir/%name-iocalibr
@@ -179,6 +130,30 @@ Libraries needed to develop for uniset extentions
 %_bindir/%name-rtuexchange
 %_bindir/%name-smemory
 %_bindir/%name-smviewer
+
+%_libdir/*Extentions.so.*
+%_libdir/libUniSetIO*.so.*
+%_libdir/libUniSetLP*.so.*
+%_libdir/libUniSetMB*.so.*
+%_libdir/libUniSetRT*.so.*
+%_libdir/libUniSetShared*.so.*
+
+%files extentions-devel
+%_includedir/%name/extentions/
+%_libdir/*Extentions.so
+%_libdir/libUniSetIO*.so
+%_libdir/libUniSetLP*.so
+%_libdir/libUniSetMB*.so
+%_libdir/libUniSetRT*.so
+%_libdir/libUniSetShared*.so
+%_pkgconfigdir/*Extentions.pc
+%_pkgconfigdir/libUniSetIO*.pc
+%_pkgconfigdir/libUniSetLog*.pc
+%_pkgconfigdir/libUniSetMB*.pc
+%_pkgconfigdir/libUniSetRT*.pc
+%_pkgconfigdir/libUniSetShared*.pc
+#%_pkgconfigdir/libUniSet*.pc
+%exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
 * Mon Jun 08 2009 Pavel Vainerman <pv@aeu> 0.96-eter25
@@ -341,7 +316,6 @@ Libraries needed to develop for uniset extentions
 - change createNext in UniXML
 - add copyNode (new function to UniXML)
 
-
 * Tue Feb 22 2005 Pavel Vainerman <pv@altlinux.ru> 0.4.9-alt2
 - bug fix for AskDumperXML1
 
@@ -367,7 +341,6 @@ Libraries needed to develop for uniset extentions
 - new version
 - add analog and digital filters
 - add sensibility for analog sensor
-
 
 * Wed Dec 22 2004 Pavel Vainerman <pv@altlinux.ru> 0.0.4-alt1
 - build new version
