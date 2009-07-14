@@ -28,4 +28,6 @@ compile
 
 .nfs*
 
-libUnuSet.pc
+*.pc
+docs/html/*
+include/*_i.hh
