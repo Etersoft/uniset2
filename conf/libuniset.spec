@@ -19,6 +19,8 @@ Source: /var/ftp/pvt/Etersoft/Ourside/unstable/sources/tarball/%name-%version.ta
 # Automatically added by buildreq on Tue Jul 14 2009
 BuildRequires: glibc-devel libMySQL-devel libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel python-modules xsltproc
 
+%set_verify_elf_method textrel=strict,rpath=strict,unresolved=strict
+
 %description
 The UniSet library intended for building distributed industrial control systems
 
