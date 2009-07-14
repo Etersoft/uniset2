@@ -18,10 +18,8 @@ semantic.cache
 config.h
 
 stamp-h1
-config.sub
 config.status
 config.log
-config.guess
 compile
 
 #binaries
