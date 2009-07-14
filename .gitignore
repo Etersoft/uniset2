@@ -13,7 +13,9 @@ output.*
 Makefile
 semantic.cache
 *_SK.cc
+*_iSK.cc
 *_SK.h
+config.h
 
 stamp-h1
 config.sub
@@ -27,3 +29,5 @@ compile
 #links to configure
 
 .nfs*
+
+libUnuSet.pc
