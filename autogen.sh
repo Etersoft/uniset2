@@ -1,12 +1,10 @@
 #! /bin/sh
 
-#set -x
-rm -f po/stamp-po
-# Improve: try autoreconf -fiv instead this script
-aclocal || exit 1
-autoheader || exit 1
-libtoolize --copy || exit 1
-automake --add-missing --include-deps --copy || exit 1
-autoconf || exit 1
+# If needed, run autoreconf -fiv manually and commit all files
+
+# We run just autoreconf, updates all needed
+autoreconf -v
+
+# run configure if project is compiled
 test -f Makefile && ./configure --enable-maintainer-mode
 exit 0
