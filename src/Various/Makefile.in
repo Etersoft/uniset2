@@ -65,7 +65,8 @@ am_libVarious_la_OBJECTS = libVarious_la-DebugStream.lo \
 	libVarious_la-SMonitor.lo libVarious_la-LT_Object.lo \
 	libVarious_la-MessageInterface_XML.lo \
 	libVarious_la-MessageInterface_idXML.lo \
-	libVarious_la-WDTInterface.lo
+	libVarious_la-WDTInterface.lo libVarious_la-CycleStorage.lo \
+	libVarious_la-TableStorage.lo
 libVarious_la_OBJECTS = $(am_libVarious_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -224,7 +225,8 @@ libVarious_la_SOURCES = DebugStream.cc Debug.cc UniXML.cc MessageType.cc Configu
 	NCRestorer.cc NCRestorer_XML.cc \
 	ISRestorer.cc ISRestorer_XML.cc \
 	RunLock.cc Mutex.cc SViewer.cc SMonitor.cc LT_Object.cc \
-	MessageInterface_XML.cc MessageInterface_idXML.cc WDTInterface.cc
+	MessageInterface_XML.cc MessageInterface_idXML.cc WDTInterface.cc \
+	CycleStorage.cc TableStorage.cc
 
 all: all-am
 
@@ -279,6 +281,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libVarious_la-Configuration.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libVarious_la-CycleStorage.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libVarious_la-Debug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libVarious_la-DebugStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libVarious_la-ISRestorer.Plo@am__quote@
@@ -295,6 +298,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libVarious_la-SMonitor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libVarious_la-SViewer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libVarious_la-SystemGuard.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libVarious_la-TableStorage.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libVarious_la-TextIndex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libVarious_la-UniXML.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libVarious_la-WDTInterface.Plo@am__quote@
@@ -459,6 +463,20 @@ libVarious_la-WDTInterface.lo: WDTInterface.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='WDTInterface.cc' object='libVarious_la-WDTInterface.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libVarious_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libVarious_la-WDTInterface.lo `test -f 'WDTInterface.cc' || echo '$(srcdir)/'`WDTInterface.cc
+
+libVarious_la-CycleStorage.lo: CycleStorage.cc
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libVarious_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libVarious_la-CycleStorage.lo -MD -MP -MF $(DEPDIR)/libVarious_la-CycleStorage.Tpo -c -o libVarious_la-CycleStorage.lo `test -f 'CycleStorage.cc' || echo '$(srcdir)/'`CycleStorage.cc
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libVarious_la-CycleStorage.Tpo $(DEPDIR)/libVarious_la-CycleStorage.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='CycleStorage.cc' object='libVarious_la-CycleStorage.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libVarious_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libVarious_la-CycleStorage.lo `test -f 'CycleStorage.cc' || echo '$(srcdir)/'`CycleStorage.cc
+
+libVarious_la-TableStorage.lo: TableStorage.cc
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libVarious_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libVarious_la-TableStorage.lo -MD -MP -MF $(DEPDIR)/libVarious_la-TableStorage.Tpo -c -o libVarious_la-TableStorage.lo `test -f 'TableStorage.cc' || echo '$(srcdir)/'`TableStorage.cc
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/libVarious_la-TableStorage.Tpo $(DEPDIR)/libVarious_la-TableStorage.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='TableStorage.cc' object='libVarious_la-TableStorage.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libVarious_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libVarious_la-TableStorage.lo `test -f 'TableStorage.cc' || echo '$(srcdir)/'`TableStorage.cc
 
 mostlyclean-libtool:
 	-rm -f *.lo

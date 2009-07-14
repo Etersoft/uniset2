@@ -10,7 +10,8 @@ libVarious_la_SOURCES 	= DebugStream.cc Debug.cc UniXML.cc MessageType.cc Config
 	NCRestorer.cc NCRestorer_XML.cc \
 	ISRestorer.cc ISRestorer_XML.cc \
 	RunLock.cc Mutex.cc SViewer.cc SMonitor.cc LT_Object.cc \
-	MessageInterface_XML.cc MessageInterface_idXML.cc WDTInterface.cc
+	MessageInterface_XML.cc MessageInterface_idXML.cc WDTInterface.cc \
+	CycleStorage.cc TableStorage.cc
 
 include $(top_builddir)/conf/setting.mk
 

@@ -24,126 +24,14 @@
  */
 // --------------------------------------------------------------------------
 
-#include "stdio.h"
-#include "string.h"
-#include "Jrn.h"
+#include <stdio.h>
+#include <string.h>
 
-StorageTable::StorageTable()
-{
-	file = fopen("tbl", "r+");
-	if(file==NULL)
-	{
-		file = fopen("tbl","w");
-		StorageTableElem *t = new StorageTableElem();
-		for(int i=0;i<100;i++) fwrite(t,sizeof(*t),1,file);
-		fclose(file);
-		file = fopen("tbl","r+");
-	}
-	size=100;
-	seekpos=0;
-}
+#include "Storages.h"
 
-StorageTable::StorageTable(const char* name, int sz, int seek)
+CycleStorage::CycleStorage()
 {
-	file = fopen(name, "r+");
-	size=sz/sizeof(StorageTableElem);
-	if(file==NULL)
-	{
-		file = fopen(name,"w");
-		StorageTableElem *t = new StorageTableElem();
-		for(int i=0;i<size;i++) fwrite(t,sizeof(*t),1,file);
-		fclose(file);
-		file = fopen(name,"r+");
-		seekpos=0;
-	}
-	else seekpos=seek;
-}
-
-StorageTable::~StorageTable()
-{
-	fclose(file);
-}
-
-int StorageTable::AddRow(char* key, char* value)
-{
-	StorageTableElem *tbl = new StorageTableElem();
-	int i;
-	if(file!=NULL)
-	{
-		fseek(file,seekpos,0);
-		for(i=0;i<size;i++)
-		{
-			fread(tbl,sizeof(*tbl),1,file);
-			if(!strcmp(tbl->key,key))
-			{
-				strcpy(tbl->value,value);
-				fseek(file,seekpos+i*sizeof(*tbl),0);
-				fwrite(tbl,sizeof(*tbl),1,file);
-				return 0;
-			}
-		}
-		fseek(file,seekpos,0);
-		for(i=0;i<size;i++)
-		{
-			fread(tbl,sizeof(*tbl),1,file);
-			if(*(tbl->key)==0)
-			{
-				strcpy(tbl->key,key);
-				strcpy(tbl->value,value);
-				fseek(file,seekpos+i*sizeof(*tbl),0);
-				fwrite(tbl,sizeof(*tbl),1,file);
-				return 0;
-			}	
-		}
-	}
-	return 1;
-}
-
-int StorageTable::DelRow(char* key)
-{
-	StorageTableElem *tbl = new StorageTableElem();
-	int i;
-	if(file!=NULL)
-	{
-		fseek(file,seekpos,0);
-		for(i=0;i<size;i++)
-		{
-			fread(tbl,(key_size+val_size),1,file);
-			if(!strcmp(tbl->key,key))
-			{
-				tbl->key[0]=0;
-				fseek(file,seekpos+i*(key_size+val_size),0);
-				fwrite(tbl,(key_size+val_size),1,file);
-				return 0;
-			}
-		}
-	}
-	return 1;
-}
-
-char* StorageTable::FindKeyValue(char* key, char* val)
-{
-	StorageTableElem *tbl = new StorageTableElem();
-	int i;
-	if(file!=NULL)
-	{
-		fseek(file,seekpos,0);
-		for(i=0;i<size;i++)
-		{
-			fread(tbl,(key_size+val_size),1,file);
-			if(!strcmp(tbl->key,key))
-			{
-				strcpy(val,tbl->value);
-				return val;
-			}
-		}
-	}
-	return 0;
-}
-
-CycleJournal::CycleJournal()
-{
-	CycleJournalElem *jrn = new CycleJournalElem();
+	CycleStorageElem *jrn = new CycleStorageElem();
 	file = fopen("jrn", "r+");
 	size=100;
 	seekpos=0;
@@ -152,7 +40,7 @@ CycleJournal::CycleJournal()
 	if(file==NULL)
 	{
 		file = fopen("jrn","w");
-		CycleJournalElem *t = new CycleJournalElem();
+		CycleStorageElem *t = new CycleStorageElem();
 		for(int i=0;i<100;i++) fwrite(t,sizeof(*t),1,file);
 		fclose(file);
 		file = fopen("jrn","r+");
@@ -240,17 +128,17 @@ CycleJournal::CycleJournal()
 	}
 }
 
-CycleJournal::CycleJournal(const char* name, int sz, int seek)
+CycleStorage::CycleStorage(const char* name, int sz, int seek)
 {
-	CycleJournalElem *jrn = new CycleJournalElem();
+	CycleStorageElem *jrn = new CycleStorageElem();
 	file = fopen(name, "r+");
-	size=sz/sizeof(CycleJournalElem);
+	size=sz/sizeof(CycleStorageElem);
 	int l=-1,r=size,mid;
 	iter=0;
 	if(file==NULL)
 	{
 		file = fopen(name,"w");
-		CycleJournalElem *t = new CycleJournalElem();
+		CycleStorageElem *t = new CycleStorageElem();
 		for(int i=0;i<size;i++) fwrite(t,sizeof(*t),1,file);
 		fclose(file);
 		file = fopen(name,"r+");
@@ -340,14 +228,14 @@ CycleJournal::CycleJournal(const char* name, int sz, int seek)
 	}
 }
 
-CycleJournal::~CycleJournal()
+CycleStorage::~CycleStorage()
 {
 	fclose(file);
 }
 
-int CycleJournal::AddRow(char* str)
+int CycleStorage::AddRow(char* str)
 {
-	CycleJournalElem *jrn = new CycleJournalElem();
+	CycleStorageElem *jrn = new CycleStorageElem();
 	int i;
 	if(file!=NULL)
 	{
@@ -413,9 +301,9 @@ int CycleJournal::AddRow(char* str)
 	return 1;
 }
 
-int CycleJournal::DelRow(int row)
+int CycleStorage::DelRow(int row)
 {
-	CycleJournalElem *jrn = new CycleJournalElem(); 
+	CycleStorageElem *jrn = new CycleStorageElem(); 
 	int i=(head+row)%size,j;
 	if( row >= size ) return 1;
 	if(file!=NULL)
@@ -439,9 +327,9 @@ int CycleJournal::DelRow(int row)
 	return 1;
 }
 
-int CycleJournal::DelAllRows()
+int CycleStorage::DelAllRows()
 {
-	CycleJournalElem *jrn = new CycleJournalElem(); 
+	CycleStorageElem *jrn = new CycleStorageElem(); 
 	int i;
 	if(file!=NULL)
 	{
@@ -472,9 +360,9 @@ int CycleJournal::DelAllRows()
 	return 1;
 }
 
-int CycleJournal::ViewRows(int beg, int num)
+int CycleStorage::ViewRows(int beg, int num)
 {
-	CycleJournalElem *jrn = new CycleJournalElem(); 
+	CycleStorageElem *jrn = new CycleStorageElem(); 
 	int i,j=(head+beg)%size,n=num;
 	if(num==0) n=size;
 	if(num>size) n=size;

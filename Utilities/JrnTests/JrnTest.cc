@@ -26,7 +26,7 @@
 
 #include "stdio.h"
 #include "string.h"
-#include "Jrn.h"
+#include "Storages.h"
 
 char* itoa(int val, int base)
 {
@@ -48,14 +48,14 @@ void testTable(void)
 {
 	char *chr=new char[2];
 	char *val=new char[2];
-	StorageTable *t;
-	t = new StorageTable("table.test", 6000, 0);
+	TableStorage *t;
+	t = new TableStorage("table.test", 6000, 0);
 	int i;
 	printf("testTable\nsize = %d\n",t->size);
 	for(i=0;i<t->size+5;i++)
 	{
 		chr[0]=i%256;
-		if(t->AddRow(chr,chr)==1) printf("elem number %d - no space in StorageTable\n",i);
+		if(t->AddRow(chr,chr)==1) printf("elem number %d - no space in TableStorage\n",i);
 	}
 	printf("elements with values=keys added\n");
 	for(i=40;i<60;i++)
@@ -81,11 +81,11 @@ void testTable(void)
 
 void testJournal1(void)
 {
-	CycleJournal *j;
+	CycleStorage *j;
 	int i;
 	char *str=new char[6];
 	printf("journal test 1\n");
-	j = new CycleJournal("journal.test",2000000,0);
+	j = new CycleStorage("journal.test",2000000,0);
 	printf("size = %d\n",j->size);
 	for(i=1;i<30000;i++)
 	{
@@ -109,17 +109,17 @@ void testJournal1(void)
 	j->ViewRows(0,20);
 	printf("\nthe same after reopen:\n");
 	delete j;
-	j = new CycleJournal("journal.test",2000000,0);
+	j = new CycleStorage("journal.test",2000000,0);
 	j->ViewRows(0,20);
 	printf("\n");
 }
 
 void testJournal2(void)
 {
-	CycleJournal *j;
+	CycleStorage *j;
 	int i,k;
 	char *str=new char[4];
-	j = new CycleJournal("journal.test",2000000,0);
+	j = new CycleStorage("journal.test",2000000,0);
 	printf("journal test 2 - checking number of iterations to find head/tail\n");
 	printf("size = %d\n\n",j->size);
 	printf("iterations = %d\n",j->iter);
@@ -131,7 +131,7 @@ void testJournal2(void)
 			j->AddRow(str);
 		}
 		delete j;
-		j = new CycleJournal("journal.test",2000000,0);
+		j = new CycleStorage("journal.test",2000000,0);
 		printf("iterations = %d\n",j->iter);
 	}
 	printf("\n");

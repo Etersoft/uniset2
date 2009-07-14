@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
- * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Ivan Donchevskiy
+ * Copyright (c) 2009 Free Software Foundation, Inc.
+ * Copyright (c) 2009 Ivan Donchevskiy
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,51 +24,56 @@
  */
 // --------------------------------------------------------------------------
 
-#include "stdio.h"
-#include "string.h"
+#ifndef Storages_H_
+#define Storages_H_
+
+#include <stdio.h>
+#include <string.h>
 
 #define str_size 80
 #define key_size 20
 #define val_size 40
 
-struct StorageTableElem
+struct TableStorageElem
 {
 	char key[key_size];
 	char value[val_size];
 } __attribute__((__packed__));
 
-struct CycleJournalElem
+struct CycleStorageElem
 {
         char str[str_size];
 	int status;
 } __attribute__((__packed__));
 
-class StorageTable
+class TableStorage
 {
 	FILE *file;
 	int seekpos;
 	public:
 		int size;
-		StorageTable();
-		StorageTable(const char* name, int sz, int seek);
-		~StorageTable();
+		TableStorage();
+		TableStorage(const char* name, int sz, int seek);
+		~TableStorage();
 		int AddRow(char* key, char* val);
 		int DelRow(char* key);
 		char* FindKeyValue(char* key, char* val);
 };
 
-class CycleJournal
+class CycleStorage
 {
 	FILE *file;
 	int seekpos;
 	int head,tail;
 	public:
 		int size, iter;
-		CycleJournal();
-		CycleJournal(const char* name, int sz, int seek);
-		~CycleJournal();
+		CycleStorage();
+		CycleStorage(const char* name, int sz, int seek);
+		~CycleStorage();
 		int AddRow(char* str);
 		int DelRow(int row);
 		int DelAllRows(void);
 		int ViewRows(int beg, int num);
 };
+
+#endif
