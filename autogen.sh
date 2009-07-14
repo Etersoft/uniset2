@@ -6,5 +6,5 @@
 autoreconf -v
 
 # run configure if project is compiled
-test -f Makefile && ./configure --enable-maintainer-mode
+test -f Makefile && ./configure --enable-maintainer-mode --prefix=/usr
 exit 0
