@@ -87,7 +87,7 @@ Libraries needed to develop for uniset extensions
 %if_enabled doc
 %configure
 %else
-%configure --disable-docs
+%configure --disable-docs --disable-static
 %endif
 
 # Hack to make IDL first
@@ -96,6 +96,7 @@ Libraries needed to develop for uniset extensions
 
 %install
 %makeinstall_std
+rm -f %buildroot%_libdir/*.la
 
 %files utils
 %_bindir/%oname-admin
