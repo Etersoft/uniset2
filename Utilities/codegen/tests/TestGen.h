@@ -3,7 +3,7 @@
 #ifndef TestGen_H_
 #define TestGen_H_
 // -----------------------------------------------------------------------------
-#include "TestGen_SK.h" 
+#include "TestGen_SK.h"
 // -----------------------------------------------------------------------------
 class TestGen:
 	public TestGen_SK

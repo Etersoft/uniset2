@@ -1,6 +1,6 @@
 // $Id$
 
-#include <uniset/Exceptions.h>
+#include "Exceptions.h"
 #include "TestGen.h"
 // -----------------------------------------------------------------------------
 using namespace std;
