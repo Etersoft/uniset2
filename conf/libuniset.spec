@@ -13,10 +13,11 @@ Url: http://sourceforge.net/uniset
 
 Packager: Pavel Vainerman <pv@altlinux.ru>
 
-Source: /var/ftp/pvt/Etersoft/Ourside/mb745/sources/tarball/%name-%version.tar
+Source: /var/ftp/pvt/Etersoft/Ourside/unstable/sources/tarball/%name-%version.tar
 
-# Automatically added by buildreq on Sun Dec 28 2008
-BuildRequires: libMySQL-devel libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel libxml2-devel
+# manually removed: glibc-devel-static
+# Automatically added by buildreq on Tue Jul 14 2009
+BuildRequires: glibc-devel libMySQL-devel libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel python-modules xsltproc
 
 %description
 The UniSet library intended for building distributed industrial control systems
@@ -176,6 +177,7 @@ Libraries needed to develop for uniset extensions
 * Tue Jul 14 2009 Vitaly Lipatov <lav@altlinux.ru> 0.96-eter29
 - build from gear repo, rewrote spec
 - rename extentions to extensions (see eterbug #4008)
+- update buildreq
 
 * Mon Jun 08 2009 Pavel Vainerman <pv@aeu> 0.96-eter25
 - new build
