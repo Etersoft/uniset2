@@ -29,11 +29,13 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <UniXML.h>
 
 #define key_size 20
 
 struct TableStorageElem
 {
+	char status;
 	char key[key_size];
 } __attribute__((__packed__));
 
@@ -46,6 +48,7 @@ class TableStorage
 {
 	FILE *file;
 	int seekpos, inf_size;
+	int head;
 	public:
 		int size;
 		TableStorage(const char* name, int inf_sz, int sz, int seek);
@@ -68,6 +71,7 @@ class CycleStorage
 		int DelRow(int row);
 		int DelAllRows(void);
 		int ViewRows(int beg, int num);
+		int ExportToXML(const char* name);
 };
 
 #endif

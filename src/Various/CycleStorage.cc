@@ -263,6 +263,7 @@ int CycleStorage::DelAllRows()
 				fwrite(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
 			}
 		}
+		head=tail=-1;
 	}
 	return 1;
 }
@@ -292,6 +293,35 @@ int CycleStorage::ViewRows(int beg, int num)
 			}
 			j++;
 		}
+		return 0;
+	}
+	return 1;
+}
+
+int CycleStorage::ExportToXML(const char* name)
+{
+	CycleStorageElem *jrn = (CycleStorageElem*)malloc(sizeof(CycleStorageElem)+inf_size);
+	int i,j=head;
+	if(file!=NULL)
+	{
+		UniXML* f = new UniXML();
+		f->newDoc("!");
+		fseek(file,seekpos+j*(sizeof(CycleStorageElem)+inf_size),0);
+		for(i=0;i<size;i++)
+		{
+			if(j==size)
+			{
+				j=0;
+				fseek(file,seekpos,0);
+			}
+			fread(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
+			if((jrn->status!=0)&&(jrn->status!=3)&&(jrn->status!=5)&&(jrn->status!=6))
+			{
+				f->createNext(f->cur,"!",((char*)(jrn)+sizeof(CycleStorageElem)));
+			}
+			j++;
+		}
+		f->save(name);
 		return 0;
 	}
 	return 1;

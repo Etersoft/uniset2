@@ -24,10 +24,12 @@
  */
 // --------------------------------------------------------------------------
 
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
 #include "Storages.h"
+#include "UniXML.h"
 
 char* itoa(int val, int base)
 {
@@ -50,36 +52,39 @@ void testTable(void)
 	char *chr=(char*)malloc(20);
 	char *val=(char*)malloc(40);
 	TableStorage *t;
-	t = new TableStorage("table.test", 40, 6000, 0);
+	t = new TableStorage("table.test", 40, 1220, 0);
 	int i;
 	printf("testTable\nsize = %d\n",t->size);
-	for(i=0;i<t->size+5;i++)
+	for(i=0;i<t->size;i++)
 	{
 		chr[0]=i;
 		val=itoa(i,10);
-		if(t->AddRow(chr,val)==1) printf("elem number %d - no space in TableStorage\n",i);
+		t->AddRow(chr,val);
 	}
-	printf("elements with values=keys added\nvalues from keys 25-59\n");
-	for(i=25;i<60;i++)
+	//printf("elements with values=keys added\nvalues from keys 25-59\n");
+	printf("elements with values=keys added:\n");
+	for(i=0;i<40;i++)
 	{
 		chr[0]=i;
 		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
 	}
 	printf("\n");
-	for(i=40;i<60;i++)
+	for(i=9;i<15;i++)
 	{
 		chr[0]=i;
 		t->DelRow(chr);
 	}
-	printf("elements with keys from 40 to 60 deleted\n");
-	for(i=30;i<50;i++)
+	//printf("elements with keys from 40 to 60 deleted\n");
+	printf("elements with keys from 9 to 14 deleted\n");
+	for(i=9;i<15;i++)
 	{
 		chr[0]=i;
 		val=itoa(i+40,10);
-		if(t->AddRow(chr,val)==1) printf("elem number %d - no space in TableStorage\n",i);
+		t->AddRow(chr,val);
 	}
-	printf("elements with keys from 30 to 50 with values=key+40 added\nvalues from keys 25-59\n");
-	for(i=25;i<60;i++)
+	//printf("elements with keys from 30 to 50 with values=key+40 added\nvalues from keys 25-59\n");
+	printf("elements with keys from 9 to 14 with values=key+40 added, all elements:\n");
+	for(i=0;i<40;i++)
 	{
 		chr[0]=i;
 		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
@@ -119,6 +124,7 @@ void testJournal1(void)
 	j = new CycleStorage("journal.test",30,2000000,0);
 	j->ViewRows(0,20);
 	printf("\n");
+	j->ExportToXML("Xml.xml");
 }
 
 void testJournal2(void)
@@ -132,7 +138,7 @@ void testJournal2(void)
 	printf("iterations = %d\n",j->iter);
 	for(i=0;i<20;i++)
 	{
-		for(k=0;k<2000;k++)
+		for(k=1000;k<3000;k++)
 		{
 			str = itoa(k,10);
 			j->AddRow(str);
@@ -146,14 +152,13 @@ void testJournal2(void)
 
 int main(int args, char **argv)
 {
-	printf("args=%d\n",args);
-	if(args<2)
+	/*if(args<2)
 	{
 		printf("Correct usage: jrntest File_name\n");
 		return 0;
 	}
 	CycleStorage *j = new CycleStorage(argv[1],99,1000,0);
-	printf("commands:\nadd\ndelete\nview\ndel_all\nenter q or quit to exit\n\n");
+	printf("commands:\nadd\ndelete\nview\ntoxml\ndel_all\nenter q or quit to exit\n\n");
 	char* com=new char[8];
 	char* str=new char[99];
 	int num,count;
@@ -198,11 +203,21 @@ int main(int args, char **argv)
 					printf("\n");
 				}
 		}
-	}
-	/*testTable();
+		else if(!strcmp(com,"toxml"))
+		{
+			printf("enter file name: ");
+			if(scanf("%25s",str)>0)
+			{
+				j->ExportToXML(str);
+				printf("\n");
+			}
+		}
+		else printf("commands:\nadd\ndelete\nview\ntoxml\ndel_all\nenter q or quit to exit\n\n");
+	}*/
+	testTable();
 
 	testJournal1();
-	testJournal2();*/
+	testJournal2();
 
 	return 0;
 }
