@@ -30,21 +30,6 @@
 
 #include "Storages.h"
 
-TableStorage::TableStorage()
-{
-	file = fopen("tbl", "r+");
-	inf_size=60;
-	size=100;
-	seekpos=0;
-	if(file==NULL)
-	{
-		file = fopen("tbl","w");
-		TableStorageElem *t = (TableStorageElem*)malloc(sizeof(TableStorageElem)+inf_size);
-		for(int i=0;i<size;i++) fwrite(t,(sizeof(TableStorageElem)+inf_size),1,file);
-		fclose(file);
-		file = fopen("tbl","r+");
-	}
-}
 
 TableStorage::TableStorage(const char* name, int inf_sz, int sz, int seek)
 {

@@ -144,12 +144,65 @@ void testJournal2(void)
 }
 
 
-int main(void)
+int main(int args, char **argv)
 {
-	testTable();
+	printf("args=%d\n",args);
+	if(args<2)
+	{
+		printf("Correct usage: jrntest File_name\n");
+		return 0;
+	}
+	CycleStorage *j = new CycleStorage(argv[1],99,1000,0);
+	printf("commands:\nadd\ndelete\nview\ndel_all\nenter q or quit to exit\n\n");
+	char* com=new char[8];
+	char* str=new char[99];
+	int num,count;
+	strcpy(com,"qwerty");
+	while(strcmp(com,"q")&&strcmp(com,"quit"))
+	{
+		scanf("%s",com);
+		if(!strcmp(com,"add"))
+		{
+			printf("string to add: ");
+			if(scanf("%99s",str)>0)
+			{
+				j->AddRow(str);
+				printf("\n");
+			}
+		}
+		else if(!strcmp(com,"delete"))
+		{
+			printf("number of string to delete: ");
+			if(scanf("%d",&num)>0)
+			{
+				j->DelRow(num);
+				printf("\n");
+			}
+		}
+		else if(!strcmp(com,"view"))
+		{
+			printf("start number and count (0 0 for all): ");
+			if(scanf("%d%d",&num,&count)>1)
+			{
+				j->ViewRows(num,count);
+				printf("\n");
+			}
+		}
+		else if(!strcmp(com,"del_all"))
+		{
+			printf("are you sure? (y/n) ");
+			if(scanf("%s",str)>0)
+				if(!strcmp(str,"y"))
+				{
+					j->DelAllRows();
+					printf("\n");
+				}
+		}
+	}
+	/*testTable();
 
 	testJournal1();
-	testJournal2();
+	testJournal2();*/
 
 	return 0;
 }

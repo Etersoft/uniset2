@@ -48,7 +48,6 @@ class TableStorage
 	int seekpos, inf_size;
 	public:
 		int size;
-		TableStorage();
 		TableStorage(const char* name, int inf_sz, int sz, int seek);
 		~TableStorage();
 		int AddRow(char* key, char* val);
@@ -63,7 +62,6 @@ class CycleStorage
 	int head,tail;
 	public:
 		int size, iter;
-		CycleStorage();
 		CycleStorage(const char* name, int inf_sz, int sz, int seek);
 		~CycleStorage();
 		int AddRow(char* str);
