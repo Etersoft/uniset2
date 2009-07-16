@@ -19,8 +19,8 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \author Ivan Donchevskiy
- *  \date   $Date: 2009/07/14 16:59:00 $
- *  \version $Id: Jrn.h,v 1.0 2009/07/14 16:59:00 vpashka Exp $
+ *  \date   $Date: 2009/07/15 15:55:00 $
+ *  \version $Id: Jrn.h,v 1.0 2009/07/15 15:55:00 vpashka Exp $
  */
 // --------------------------------------------------------------------------
 
@@ -29,31 +29,29 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <UniXML.h>
 
-#define str_size 80
 #define key_size 20
-#define val_size 40
 
 struct TableStorageElem
 {
+	char status;
 	char key[key_size];
-	char value[val_size];
 } __attribute__((__packed__));
 
 struct CycleStorageElem
 {
-        char str[str_size];
-	int status;
+	char status;
 } __attribute__((__packed__));
 
 class TableStorage
 {
 	FILE *file;
-	int seekpos;
+	int seekpos, inf_size;
+	int head;
 	public:
 		int size;
-		TableStorage();
-		TableStorage(const char* name, int sz, int seek);
+		TableStorage(const char* name, int inf_sz, int sz, int seek);
 		~TableStorage();
 		int AddRow(char* key, char* val);
 		int DelRow(char* key);
@@ -63,17 +61,17 @@ class TableStorage
 class CycleStorage
 {
 	FILE *file;
-	int seekpos;
+	int seekpos, inf_size;
 	int head,tail;
 	public:
 		int size, iter;
-		CycleStorage();
-		CycleStorage(const char* name, int sz, int seek);
+		CycleStorage(const char* name, int inf_sz, int sz, int seek);
 		~CycleStorage();
 		int AddRow(char* str);
 		int DelRow(int row);
 		int DelAllRows(void);
 		int ViewRows(int beg, int num);
+		int ExportToXML(const char* name);
 };
 
 #endif

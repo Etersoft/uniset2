@@ -75,9 +75,10 @@ public:
 	// Возвращает указатель на временный буфер, который один на все вызовы функции.
 	static const xmlChar* local2xml(std::string text);
 	
-	// Получить свойство name указанного узла node
+	// Создать новый XML-документ
 	void newDoc(const std::string& root_node, std::string xml_ver="1.0");
 
+	// Получить свойство name указанного узла node
 	static std::string getProp(xmlNode* node, const std::string name);
 	
 	// Установить свойство name указанного узла node

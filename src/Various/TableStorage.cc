@@ -19,45 +19,90 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \author Ivan Donchevskiy
- *  \date   $Date: 2009/07/14 16:59:00 $
- *  \version $Id: Jrn.h,v 1.0 2009/07/14 16:59:00 vpashka Exp $
+ *  \date   $Date: 2009/07/15 15:55:00 $
+ *  \version $Id: Jrn.h,v 1.0 2009/07/15 15:55:00vpashka Exp $
  */
 // --------------------------------------------------------------------------
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "Storages.h"
 
-TableStorage::TableStorage()
-{
-	file = fopen("tbl", "r+");
-	if(file==NULL)
-	{
-		file = fopen("tbl","w");
-		TableStorageElem *t = new TableStorageElem();
-		for(int i=0;i<100;i++) fwrite(t,sizeof(*t),1,file);
-		fclose(file);
-		file = fopen("tbl","r+");
-	}
-	size=100;
-	seekpos=0;
-}
 
-TableStorage::TableStorage(const char* name, int sz, int seek)
+TableStorage::TableStorage(const char* name, int inf_sz, int sz, int seek)
 {
 	file = fopen(name, "r+");
-	size=sz/sizeof(TableStorageElem);
+	inf_size=inf_sz;
+	int l=-1,r=size,mid;
+	size=sz/(sizeof(TableStorageElem)+inf_size);
+	TableStorageElem *t = (TableStorageElem*)malloc(sizeof(TableStorageElem)+inf_size);
 	if(file==NULL)
 	{
 		file = fopen(name,"w");
-		TableStorageElem *t = new TableStorageElem();
-		for(int i=0;i<size;i++) fwrite(t,sizeof(*t),1,file);
+		for(int i=0;i<size;i++) fwrite(t,(sizeof(TableStorageElem)+inf_size),1,file);
 		fclose(file);
 		file = fopen(name,"r+");
 		seekpos=0;
+		head=-1;
 	}
-	else seekpos=seek;
+	else
+	{
+		seekpos=seek;
+		fseek(file,seekpos,0);
+		fread(t,(sizeof(TableStorageElem)+inf_size),1,file);
+		if(t->status==0)
+		{
+			head=-1;
+		}
+		else if((t->status==1)||(t->status==6))
+		{
+			head=0;
+		}
+		else if((t->status==2)||(t->status==3))
+		{
+			while((t->status!=1)&&(t->status!=6)&&(r - l > 1))
+			{
+				mid = (l+r)/2;
+				fseek(file,seekpos+mid*(sizeof(TableStorageElem)+inf_size),0);
+				fread(t,(sizeof(TableStorageElem)+inf_size),1,file);
+				if((t->status==2)||(t->status==3))
+					l = mid;
+				else if((t->status==4)||(t->status==5))
+					r = mid;
+				else
+				{
+					r=mid;
+					break;
+				}
+			}
+			if(r<size)
+				head=r;
+			else head=size-1;
+		}
+		else
+		{
+			while((t->status!=1)&&(t->status!=6)&&(r - l > 1))
+			{
+				mid = (l+r)/2;
+				fseek(file,seekpos+mid*(sizeof(TableStorageElem)+inf_size),0);
+				fread(t,(sizeof(TableStorageElem)+inf_size),1,file);
+				if((t->status==2)||(t->status==3))
+					r = mid;
+				else if((t->status==4)||(t->status==5))
+					l = mid;
+				else
+				{
+					r=mid;
+					break;
+				}
+			}
+			if(r<size)
+				head=r;
+			else head=size-1;
+		}
+	}
 }
 
 TableStorage::~TableStorage()
@@ -67,55 +112,117 @@ TableStorage::~TableStorage()
 
 int TableStorage::AddRow(char* key, char* value)
 {
-	TableStorageElem *tbl = new TableStorageElem();
-	int i;
+	TableStorageElem *tbl = (TableStorageElem*)malloc(sizeof(TableStorageElem)+inf_size);
+	int i,k,j,st;
 	if(file!=NULL)
 	{
-		fseek(file,seekpos,0);
+		if(head==-1)
+		{
+			fseek(file,seekpos,0);
+			tbl->status=1;
+			strcpy(tbl->key,key);
+			for(k=0;k<inf_size;k++)
+				*((char*)(tbl)+sizeof(TableStorageElem)+k)=*(value+k);
+			fwrite(tbl,(sizeof(TableStorageElem)+inf_size),1,file);
+			head=0;
+			return 0;
+		}
+		fseek(file,seekpos+head*(sizeof(TableStorageElem)+inf_size),0);
+		j=head;
 		for(i=0;i<size;i++)
 		{
-			fread(tbl,sizeof(*tbl),1,file);
-			if(!strcmp(tbl->key,key))
-			{
-				strcpy(tbl->value,value);
-				fseek(file,seekpos+i*sizeof(*tbl),0);
-				fwrite(tbl,sizeof(*tbl),1,file);
+			fread(tbl,(sizeof(TableStorageElem)+inf_size),1,file);
+			if(tbl->status==0) break;
+			if(!strcmp(tbl->key,key)&&((tbl->status==2)||(tbl->status==4)||(tbl->status==1)))
+			{	
+				for(k=0;k<inf_size;k++)
+					*((char*)(tbl)+sizeof(TableStorageElem)+k)=*(value+k);
+				fseek(file,seekpos+i*(sizeof(TableStorageElem)+inf_size),0);
+				fwrite(tbl,(sizeof(TableStorageElem)+inf_size),1,file);
 				return 0;
 			}
+			j++;
+			if(j>=size)
+			{
+				j=0;
+				fseek(file,seekpos,0);
+			}
 		}
-		fseek(file,seekpos,0);
-		for(i=0;i<size;i++)
+		fseek(file,seekpos+j*(sizeof(TableStorageElem)+inf_size),0);
+		if(j==head)
 		{
-			fread(tbl,sizeof(*tbl),1,file);
-			if(*(tbl->key)==0)
+			if((tbl->status==2)||(tbl->status==3)) st=2;
+			else st=4;
+
+			if(j==0)
+				if(st==2) st=4;
+				else st=2;
+
+			tbl->status=st;
+			strcpy(tbl->key,key);
+			for(k=0;k<inf_size;k++)
+				*((char*)(tbl)+sizeof(TableStorageElem)+k)=*(value+k);
+			fwrite(tbl,(sizeof(TableStorageElem)+inf_size),1,file);
+			j++;
+			if(j>=size)
+			{
+				j=0;
+				fseek(file,seekpos,0);
+			}
+
+			fread(tbl,(sizeof(TableStorageElem)+inf_size),1,file);
+			if((tbl->status==3)||(tbl->status==5)) tbl->status=6;
+			else tbl->status=1;
+			fseek(file,seekpos+j*(sizeof(TableStorageElem)+inf_size),0);
+			fwrite(tbl,(sizeof(TableStorageElem)+inf_size),1,file);
+			head++;
+			if(head>=size) head=0;
+			return 0;
+		}
+
+		/*for(i=0;i<size;i++)
+		{
+			fread(tbl,(sizeof(TableStorageElem)+inf_size),1,file);
+			if(tbl->key[0]==0)
 			{
 				strcpy(tbl->key,key);
-				strcpy(tbl->value,value);
-				fseek(file,seekpos+i*sizeof(*tbl),0);
-				fwrite(tbl,sizeof(*tbl),1,file);
+				for(k=0;k<inf_size;k++)
+					*((char*)(tbl)+sizeof(TableStorageElem)+k)=*(value+k);
+				fseek(file,seekpos+i*(sizeof(TableStorageElem)+inf_size),0);
+				fwrite(tbl,(sizeof(TableStorageElem)+inf_size),1,file);
 				return 0;
 			}	
-		}
+		}*/
 	}
 	return 1;
 }
 
 int TableStorage::DelRow(char* key)
 {
-	TableStorageElem *tbl = new TableStorageElem();
-	int i;
+	TableStorageElem *tbl = (TableStorageElem*)malloc(sizeof(TableStorageElem)+inf_size);
+	int i,j;
 	if(file!=NULL)
 	{
-		fseek(file,seekpos,0);
+		fseek(file,seekpos+head*(sizeof(TableStorageElem)+inf_size),0);
+		j=head;
 		for(i=0;i<size;i++)
 		{
-			fread(tbl,(key_size+val_size),1,file);
-			if(!strcmp(tbl->key,key))
+			fread(tbl,(sizeof(TableStorageElem)+inf_size),1,file);
+			if(!strcmp(tbl->key,key)&&((tbl->status==2)||(tbl->status==4)||(tbl->status==1)))
 			{
-				tbl->key[0]=0;
-				fseek(file,seekpos+i*(key_size+val_size),0);
-				fwrite(tbl,(key_size+val_size),1,file);
+				//tbl->key[0]=0;
+				if(tbl->status==1) tbl->status=6;
+				else if(tbl->status==2) tbl->status=3;
+				else tbl->status=5;
+				fseek(file,seekpos+j*(sizeof(TableStorageElem)+inf_size),0);
+				fwrite(tbl,(sizeof(TableStorageElem)+inf_size),1,file);
 				return 0;
+			}
+			j++;
+			if(j>=size)
+			{
+				j=0;
+				fseek(file,seekpos,0);
 			}
 		}
 	}
@@ -124,17 +231,18 @@ int TableStorage::DelRow(char* key)
 
 char* TableStorage::FindKeyValue(char* key, char* val)
 {
-	TableStorageElem *tbl = new TableStorageElem();
-	int i;
+	TableStorageElem *tbl = (TableStorageElem*)malloc(sizeof(TableStorageElem)+inf_size);
+	int i,k;
 	if(file!=NULL)
 	{
 		fseek(file,seekpos,0);
 		for(i=0;i<size;i++)
 		{
-			fread(tbl,(key_size+val_size),1,file);
-			if(!strcmp(tbl->key,key))
+			fread(tbl,(sizeof(TableStorageElem)+inf_size),1,file);
+			if(!strcmp(tbl->key,key)&&((tbl->status==2)||(tbl->status==4)||(tbl->status==1)))
 			{
-				strcpy(val,tbl->value);
+				for(k=0;k<inf_size;k++)
+					*(val+k)=*((char*)(tbl)+sizeof(TableStorageElem)+k);
 				return val;
 			}
 		}
