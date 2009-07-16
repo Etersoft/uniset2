@@ -616,13 +616,13 @@ namespace ModbusRTU
 	{
 		ModbusData start; 	/*!< записанный начальный адрес */
 		ModbusData quant;	/*!< количество записанных битов */
+		ModbusCRC crc;
 
 		// ------- from slave -------
 		ForceCoilsRetMessage( ModbusMessage& m );
 		ForceCoilsRetMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
-		ModbusCRC crc;
-
+		
 		// ------- to master -------
 		/*! 
 		 * \param _from - адрес отправителя

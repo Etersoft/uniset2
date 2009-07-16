@@ -31,6 +31,7 @@ static const int NoSafety = -1;
 				f_median(false),
 				ignore(false),
 				invert(false),
+				noprecision(false),
 				jar_state(false),
 				ondelay_state(false),
 				offdelay_state(false),
@@ -62,6 +63,7 @@ static const int NoSafety = -1;
 
 			bool ignore;	/*!< игнорировать при опросе */
 			bool invert;	/*!< инвертированная логика */
+			bool noprecision;
 			
 			PassiveTimer ptJar; 		/*!< таймер на дребезг */
 			PassiveTimer ptOnDelay; 	/*!< задержка на срабатывание */
@@ -75,6 +77,8 @@ static const int NoSafety = -1;
 			bool jar_state;			/*!< значение для фильтра дребезга */
 			bool ondelay_state;		/*!< значение для задержки включения */
 			bool offdelay_state;	/*!< значение для задержки отключения */
+			
+			
 			
 			// Порог
 			UniSetTypes::ObjectId t_ai; /*!< если данный датчик дискретный,

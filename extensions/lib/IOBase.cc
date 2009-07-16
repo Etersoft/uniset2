@@ -143,15 +143,16 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 		}
 	}
 
+	if( !it->noprecision && it->cal.precision > 0 )
+		val *= lround(pow10(it->cal.precision));
+
+
 	// если предыдущее значение "обрыв",
 	// то сбрасываем признак 
 	{
 		uniset_spin_lock lock(it->val_lock);
 		if( it->value == ChannelBreakValue )
 			shm->localSetUndefinedState(it->ait,false,it->si.id);
-
-		if( it->cal.precision > 0 )
-			val *= lround(pow10(it->cal.precision));
 
 		if( force || it->value != val )
 		{
@@ -417,6 +418,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	b->ignore	= atoi( it.getProp("ioignore").c_str() );
 	b->invert	= atoi( it.getProp("ioinvert").c_str() );
 	b->defval 	= atoi( it.getProp("default").c_str() );
+	b->noprecision	= atoi( it.getProp("noprecision").c_str() );
 	b->value	= b->defval;
 	b->breaklim = atoi( it.getProp("breaklim").c_str() );
 	
