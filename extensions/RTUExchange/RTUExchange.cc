@@ -12,6 +12,7 @@ using namespace UniSetExtensions;
 RTUExchange::RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic ):
 UniSetObject_LT(objId),
 mb(0),
+defSpeed(ComPort::ComSpeed0),
 shm(0),
 initPause(0),
 force(false),
@@ -48,9 +49,11 @@ allNotRespond(false)
 	if( devname.empty() )
 		throw UniSetTypes::SystemError(myname+"(RTUExchange): Unknown device..." );
 
-	speed 	= conf->getArgParam("--rs-speed",it.getProp("speed"));
+	string speed = conf->getArgParam("--rs-speed",it.getProp("speed"));
 	if( speed.empty() )
 		speed = "38400";
+
+	defSpeed = ComPort::getSpeed(speed);
 
 	recv_timeout = atoi(conf->getArgParam("--rs-recv-timeout",it.getProp("recv_timeout")).c_str());
 	if( recv_timeout <= 0 )
@@ -83,7 +86,7 @@ allNotRespond(false)
 	{
 		readConfiguration();
 		rtuQueryOptimization(rmap);
-		initRespondList();
+		initDeviceList();
 	}
 	else
 		ic->addReadItem( sigc::mem_fun(this,&RTUExchange::readItem) );
@@ -182,15 +185,15 @@ void RTUExchange::initMB( bool reopen )
 	{
 		mb = new ModbusRTUMaster(devname);
 
-		if( !speed.empty() )
-			mb->setSpeed(speed);
+		if( defSpeed != ComPort::ComSpeed0 )
+			mb->setSpeed(defSpeed);
 	
 //		mb->setLog(dlog);
 
 		if( recv_timeout > 0 )
 			mb->setTimeout(recv_timeout);
 
-		dlog[Debug::INFO] << myname << "(init): dev=" << devname << " speed=" << speed << endl;
+		dlog[Debug::INFO] << myname << "(init): dev=" << devname << " speed=" << ComPort::getSpeed(defSpeed) << endl;
 	}
 	catch(...)
 	{
@@ -273,9 +276,17 @@ void RTUExchange::poll()
 		return;
 	}
 
+	ComPort::Speed s = mb->getSpeed();
+	
 	for( RTUExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
+	
+		if( d->speed != s )
+		{
+			s = d->speed;
+			mb->setSpeed(d->speed);
+		}
 		
 		if( dlog.debugging(Debug::INFO) )
 			dlog[Debug::INFO] << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr) << endl;
@@ -505,6 +516,14 @@ bool RTUExchange::RTUDevice::checkRespond()
 	if( resp_state && !resp_real && resp_ptTimeout.checkTime() )
 		resp_state = false; 
 	
+	// если ещё не инициализировали значение в SM
+	// то возвращаем true, чтобы оно принудительно сохранилось
+	if( !resp_init )
+	{
+		resp_init = true;
+		return true;
+	}
+
 	return ( prev != resp_state );
 }
 // -----------------------------------------------------------------------------
@@ -524,7 +543,7 @@ void RTUExchange::updateSM()
 		if( d->resp_real )
 			allNotRespond = false;
 				
-		// update respond sensors......
+		// update respond sensors...
 		if( d->checkRespond() && d->resp_id != DefaultObjectId  )
 		{
 			try
@@ -649,7 +668,7 @@ void RTUExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 				dlog[Debug::INFO] << myname << "(sysCommand): rmap size= " << rmap.size() << endl;
 
 			if( !shm->isLocalwork() )
-				initRespondList();
+				initDeviceList();
 		
 			waitSMReady();
 
@@ -1189,6 +1208,7 @@ bool RTUExchange::initRTUDevice( RTUDevice* d, UniXML_iterator& it )
 		return false;
 	}
 
+	d->speed = defSpeed;
 	d->mbaddr = ModbusRTU::str2mbAddr(addr);
 	return true;
 }
@@ -1471,9 +1491,9 @@ std::ostream& operator<<( std::ostream& os, const RTUExchange::RSProperty& p )
 	return os;
 }
 // -----------------------------------------------------------------------------
-void RTUExchange::initRespondList()
+void RTUExchange::initDeviceList()
 {
-	xmlNode* respNode = conf->findNode(cnode,"RespondList");
+	xmlNode* respNode = conf->findNode(cnode,"DeviceList");
 	if( respNode )
 	{
 		UniXML_iterator it1(respNode);
@@ -1482,33 +1502,33 @@ void RTUExchange::initRespondList()
 			for(;it1.getCurrent(); it1.goNext() )
 			{
 				ModbusRTU::ModbusAddr a = ModbusRTU::str2mbAddr(it1.getProp("addr"));
-				initRespondInfo(rmap,a,it1);
+				initDeviceInfo(rmap,a,it1);
 			}
 		}
 		else
-			dlog[Debug::WARN] << myname << "(init): <RespondList> empty section..." << endl;
+			dlog[Debug::WARN] << myname << "(init): <DeviceList> empty section..." << endl;
 	}
 	else
-		dlog[Debug::WARN] << myname << "(init): <RespondList> not found..." << endl;
+		dlog[Debug::WARN] << myname << "(init): <DeviceList> not found..." << endl;
 }
 // -----------------------------------------------------------------------------
-bool RTUExchange::initRespondInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it )
+bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it )
 {
 	RTUDeviceMap::iterator d = m.find(a);
 	if( d == m.end() )
 	{
-		dlog[Debug::WARN] << myname << "(initRespondInfo): not found device for addr=" << ModbusRTU::addr2str(a) << endl;
+		dlog[Debug::WARN] << myname << "(initDeviceInfo): not found device for addr=" << ModbusRTU::addr2str(a) << endl;
 		return false;
 	}
 	
 	d->second->resp_id = conf->getSensorID(it.getProp("respondSensor"));
 	if( d->second->resp_id == DefaultObjectId )
 	{
-		dlog[Debug::CRIT] << myname << ": not found ID for noRespondSensor=" << it.getProp("respondSensor") << endl;
+		dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for noRespondSensor=" << it.getProp("respondSensor") << endl;
 		return false;
 	}
 
-	dlog[Debug::INFO] << myname << "(initRespondList): add addr=" << ModbusRTU::addr2str(a) << endl;
+	dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
 	int tout = atoi(it.getProp("timeout").c_str());
 	if( tout > 0 )
 		d->second->resp_ptTimeout.setTiming(tout);
@@ -1516,18 +1536,20 @@ bool RTUExchange::initRespondInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, Uni
 		d->second->resp_ptTimeout.setTiming(UniSetTimer::WaitUpTime);
 				
 	d->second->resp_invert = atoi(it.getProp("invert").c_str());
-/*
-	if( !it.getProp("default").empty() )
+
+	string s = it.getProp("speed");
+	if( !s.empty() )
 	{
-		d->second->resp_state = UniSetTypes::uni_atoi(it.getProp("default").c_str());
-		d->second->resp_real = UniSetTypes::uni_atoi(it.getProp("default").c_str());
+		d->second->speed = ComPort::getSpeed(s);
+		if( d->second->speed == ComPort::ComSpeed0 )
+		{
+			d->second->speed = defSpeed;
+			dlog[Debug::CRIT] << myname << "(initDeviceInfo): Unknown speed=" << s <<
+				" for addr=" << ModbusRTU::addr2str(a) << endl;
+			return false;
+		}
 	}
-*/
-/*
-	d->second->resp_real = true;
-	d->second->resp_state = false;
-	d->second->resp_trTimeout.change(false);
-*/
+
 	return true;
 }
 // -----------------------------------------------------------------------------

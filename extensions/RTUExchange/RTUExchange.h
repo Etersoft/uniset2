@@ -119,6 +119,7 @@ class RTUExchange:
 		struct RTUDevice
 		{
 			RTUDevice():
+			speed(ComPort::ComSpeed38400),
 			respnond(false),
 			mbaddr(0),
 			dtype(dtUnknown),
@@ -126,11 +127,14 @@ class RTUExchange:
 			resp_state(false),
 			resp_invert(false),
 			resp_real(true),
+			resp_init(false),
 			rtu(0)
 			{
 				resp_trTimeout.change(false);
 			}
 			
+			
+			ComPort::Speed speed;
 			bool respnond;
 			ModbusRTU::ModbusAddr mbaddr;	/*!< адрес устройства */
 			RegMap regmap;
@@ -144,6 +148,7 @@ class RTUExchange:
 			bool resp_state;
 			bool resp_invert;
 			bool resp_real;
+			bool resp_init;
 
 			RTUStorage* rtu;
 
@@ -166,7 +171,7 @@ class RTUExchange:
 		ModbusRTUMaster* mb;
 		UniSetTypes::uniset_mutex mbMutex;
 		std::string devname;
-		std::string speed;
+		ComPort::Speed defSpeed;
 		int recv_timeout;
 
 		xmlNode* cnode;
@@ -174,7 +179,7 @@ class RTUExchange:
 		std::string s_fvalue;
 
 		SMInterface* shm;
-
+		
 		void step();
 		void poll();
 		bool pollRTU( RTUDevice* dev, RegMap::iterator& it );
@@ -202,7 +207,7 @@ class RTUExchange:
 		void initIterators();
 		bool initItem( UniXML_iterator& it );
 		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
-		void initRespondList();
+		void initDeviceList();
 		void initOffsetList();
 
 
@@ -216,7 +221,7 @@ class RTUExchange:
 		bool initRSProperty( RSProperty& p, UniXML_iterator& it );
 		bool initRegInfo( RegInfo* r, UniXML_iterator& it, RTUDevice* dev  );
 		bool initRTUDevice( RTUDevice* d, UniXML_iterator& it );
-		bool initRespondInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
+		bool initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
 		
 		void rtuQueryOptimization( RTUDeviceMap& m );
 

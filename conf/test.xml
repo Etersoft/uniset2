@@ -48,10 +48,10 @@
 	
 		<HeartBeatTime time_msec="5000"/>
 		
-		<RSExchange name="RSExchange">
-			<RespondList>
-				<item addr="0x02" respondSensor="RTU_Not_Respond_FS" timeout="2000" invert="1" default="1"/>
-			</RespondList>
+		<RSExchange name="RSExchange" speed="38400">
+			<DeviceList>
+				<item addr="0x02" speed="9600" respondSensor="RTU_Not_Respond_FS" timeout="2000" invert="0"/>
+			</DeviceList>
 		</RSExchange>
 	</settings>
 
