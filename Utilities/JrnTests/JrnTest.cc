@@ -47,7 +47,7 @@ char* itoa(int val, int base)
 }
 
 
-void testTable(void)
+void testTable1(void)
 {
 	char *chr=(char*)malloc(20);
 	char *val=(char*)malloc(40);
@@ -90,6 +90,84 @@ void testTable(void)
 		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
 	}
 	printf("\n");
+}
+
+void testTable2(void)
+{
+	char *chr=(char*)malloc(20);
+	char *val=(char*)malloc(40);
+	TableBlockStorage *t;
+	t = new TableBlockStorage("blocktable.test", 40, 20000, 5,40);
+	int i;
+	printf("testTable\nsize = %d\n",t->block_size);
+	for(i=1;i<16;i++)
+	{
+		chr[0]=i;
+		val=itoa(i,10);
+		t->AddRow(chr,val);
+	}
+	printf("current block = %d, elements with values=keys added:\n",t->cur_block);
+	for(i=1;i<16;i++)
+	{
+		chr[0]=i;
+		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
+	}
+	printf("\ncurrent block = %d\n",t->cur_block);
+	for(i=1;i<16;i++)
+	{
+		chr[0]=i;
+		val=itoa(i+10,10);
+		t->AddRow(chr,val);
+	}
+	for(i=1;i<16;i++)
+	{
+		chr[0]=i;
+		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
+	}
+	printf("\ncurrent block = %d\n",t->cur_block);
+	for(i=20;i<30;i++)
+	{
+		chr[0]=i;
+		val=itoa(i,10);
+		t->AddRow(chr,val);
+	}
+	for(i=1;i<40;i++)
+	{
+		chr[0]=i;
+		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
+	}
+	printf("\ncurrent block = %d\n",t->cur_block);
+
+	chr[0]=30;
+	strcpy(val,"new block");
+	t->AddRow(chr,val);
+	for(i=1;i<40;i++)
+	{
+		chr[0]=i;
+		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
+	}
+	printf("\ncurrent block = %d\n",t->cur_block);
+	/*for(i=9;i<15;i++)
+	{
+		chr[0]=i;
+		t->DelRow(chr);
+	}
+	//printf("elements with keys from 40 to 60 deleted\n");
+	printf("elements with keys from 9 to 14 deleted\n");
+	for(i=9;i<15;i++)
+	{
+		chr[0]=i;
+		val=itoa(i+40,10);
+		t->AddRow(chr,val);
+	}
+	//printf("elements with keys from 30 to 50 with values=key+40 added\nvalues from keys 25-59\n");
+	printf("elements with keys from 9 to 14 with values=key+40 added, all elements:\n");
+	for(i=0;i<40;i++)
+	{
+		chr[0]=i;
+		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
+	}
+	printf("\n");*/
 }
 
 void testJournal1(void)
@@ -154,7 +232,8 @@ int main(int args, char **argv)
 {
 	/*if(args<2)
 	{
-		printf("Correct usage: jrntest File_name\n");
+		printf("Correct usage: jrntest [command] [param]\n");
+		printf(" commands:\n  add - add row with text = param\n  delete - delete row with number = param\n  view - view param2  from row = param1 \n  toxml - export journal to XML file with name = param\n  del_all - delete all journal\n  q or quit - exit\n\n");
 		return 0;
 	}
 	CycleStorage *j = new CycleStorage(argv[1],99,1000,0);
@@ -214,7 +293,8 @@ int main(int args, char **argv)
 		}
 		else printf("commands:\nadd\ndelete\nview\ntoxml\ndel_all\nenter q or quit to exit\n\n");
 	}*/
-	testTable();
+	testTable1();
+	testTable2();
 
 	testJournal1();
 	testJournal2();
