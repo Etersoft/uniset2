@@ -76,7 +76,7 @@ int main( int argc, char **argv )
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:w:z:r:x:c:b:d:s:t:p",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "hva:w:z:r:x:c:b:d:s:t:p:i:",longopts,&optindex)) != -1 ) 
 		{
 			switch (opt) 
 			{
