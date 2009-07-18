@@ -39,6 +39,12 @@ struct TableStorageElem
 	char key[key_size];
 } __attribute__((__packed__));
 
+struct TableBlockStorageElem
+{
+	int count;
+	char key[key_size];
+} __attribute__((__packed__));
+
 struct CycleStorageElem
 {
 	char status;
@@ -53,6 +59,20 @@ class TableStorage
 		int size;
 		TableStorage(const char* name, int inf_sz, int sz, int seek);
 		~TableStorage();
+		int AddRow(char* key, char* val);
+		int DelRow(char* key);
+		char* FindKeyValue(char* key, char* val);
+};
+
+class TableBlockStorage
+{
+	FILE *file;
+	int inf_size;
+	int max,lim;
+	public:
+		int size,cur_block,block_size;
+		TableBlockStorage(const char* name, int inf_sz, int sz, int block_num, int block_lim);
+		~TableBlockStorage();
 		int AddRow(char* key, char* val);
 		int DelRow(char* key);
 		char* FindKeyValue(char* key, char* val);
