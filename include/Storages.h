@@ -28,6 +28,7 @@
 #define Storages_H_
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <UniXML.h>
 
@@ -42,7 +43,7 @@ struct TableStorageElem
 struct TableBlockStorageElem
 {
 	int count;
-	char key[key_size];
+	//char key[key_size];
 } __attribute__((__packed__));
 
 struct CycleStorageElem
@@ -67,12 +68,15 @@ class TableStorage
 class TableBlockStorage
 {
 	FILE *file;
-	int inf_size;
+	int inf_size, k_size;
 	int max,lim;
+	TableBlockStorageElem** mem;
 	public:
 		int size,cur_block,block_size;
-		TableBlockStorage(const char* name, int inf_sz, int sz, int block_num, int block_lim);
+		TableBlockStorage();
+		TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim);
 		~TableBlockStorage();
+		int Open(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim);
 		int AddRow(char* key, char* val);
 		int DelRow(char* key);
 		char* FindKeyValue(char* key, char* val);
