@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <UniXML.h>
+#include "UniXML.h"
 
 #define key_size 20
 
@@ -67,16 +67,16 @@ class TableStorage
 
 class TableBlockStorage
 {
-	FILE *file;
-	int inf_size, k_size;
-	int max,lim;
+	int max,lim,seekpos;
 	TableBlockStorageElem** mem;
 	public:
+		FILE *file;
+		int inf_size, k_size;
 		int size,cur_block,block_size;
 		TableBlockStorage();
-		TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim);
+		TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek);
 		~TableBlockStorage();
-		int Open(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim);
+		int Open(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
 		int AddRow(char* key, char* val);
 		int DelRow(char* key);
 		char* FindKeyValue(char* key, char* val);

@@ -97,77 +97,61 @@ void testTable2(void)
 	char *chr=(char*)malloc(20);
 	char *val=(char*)malloc(40);
 	TableBlockStorage *t;
-	t = new TableBlockStorage("blocktable.test", 40, 20000, 5,40);
+	t = new TableBlockStorage("blocktableint.test", 4, 40, 20000, 5,28,0);
 	int i;
 	printf("testTable\nsize = %d\n",t->block_size);
-	for(i=1;i<16;i++)
+	for(i=1;i<11;i++)
 	{
 		chr[0]=i;
 		val=itoa(i,10);
-		t->AddRow(chr,val);
+		t->AddRow((char*)&i,val);
 	}
 	printf("current block = %d, elements with values=keys added:\n",t->cur_block);
-	for(i=1;i<16;i++)
+	for(i=1;i<11;i++)
 	{
 		chr[0]=i;
-		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
+		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\ncurrent block = %d\n",t->cur_block);
-	for(i=1;i<16;i++)
+	for(i=1;i<8;i++)
 	{
 		chr[0]=i;
 		val=itoa(i+10,10);
-		t->AddRow(chr,val);
+		t->AddRow((char*)&i,val);
 	}
-	for(i=1;i<16;i++)
+	for(i=8;i<11;i++)
 	{
 		chr[0]=i;
-		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
+		t->DelRow((char*)&i);
+	}
+	for(i=1;i<11;i++)
+	{
+		chr[0]=i;
+		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\ncurrent block = %d\n",t->cur_block);
-	for(i=20;i<30;i++)
-	{
-		chr[0]=i;
-		val=itoa(i,10);
-		t->AddRow(chr,val);
-	}
-	for(i=1;i<40;i++)
-	{
-		chr[0]=i;
-		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
-	}
-	printf("\ncurrent block = %d\n",t->cur_block);
-
-	chr[0]=30;
-	strcpy(val,"new block");
-	t->AddRow(chr,val);
-	for(i=1;i<40;i++)
-	{
-		chr[0]=i;
-		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
-	}
-	printf("\ncurrent block = %d\n",t->cur_block);
-	/*for(i=9;i<15;i++)
-	{
-		chr[0]=i;
-		t->DelRow(chr);
-	}
-	//printf("elements with keys from 40 to 60 deleted\n");
-	printf("elements with keys from 9 to 14 deleted\n");
-	for(i=9;i<15;i++)
+	for(i=3;i<11;i++)
 	{
 		chr[0]=i;
 		val=itoa(i+40,10);
-		t->AddRow(chr,val);
+		t->AddRow((char*)&i,val);
 	}
-	//printf("elements with keys from 30 to 50 with values=key+40 added\nvalues from keys 25-59\n");
-	printf("elements with keys from 9 to 14 with values=key+40 added, all elements:\n");
-	for(i=0;i<40;i++)
+	for(i=1;i<11;i++)
 	{
 		chr[0]=i;
-		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
+		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
-	printf("\n");*/
+	printf("\ncurrent block = %d\n",t->cur_block);
+
+	chr[0]=10;
+	strcpy(val,"new block");
+	t->AddRow((char*)&i,val);
+	for(i=1;i<40;i++)
+	{
+		chr[0]=i;
+		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
+	}
+	printf("\ncurrent block = %d\n",t->cur_block);
 }
 
 void testJournal1(void)

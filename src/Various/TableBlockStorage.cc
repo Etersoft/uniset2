@@ -53,13 +53,16 @@ TableBlockStorage::TableBlockStorage()
 	lim=0;
 	cur_block=0;
 	block_size=0;
+	seekpos=0;
+	file=NULL;
 }
 
-TableBlockStorage::TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim)
+TableBlockStorage::TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek)
 {
 	file = fopen(name, "r+");
 	k_size=key_sz;
 	inf_size=inf_sz;
+	seekpos=seek;
 	int i, full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;
 	max=-1;
 	lim=block_lim;
@@ -78,6 +81,7 @@ TableBlockStorage::TableBlockStorage(const char* name, int key_sz, int inf_sz, i
 	{
 		file = fopen(name,"w");
 		cur_block=0;
+		fseek(file,seekpos,0);
 		for(i=0;i<size;i++) 
 		{
 			if(i%block_size==0)
@@ -95,7 +99,7 @@ TableBlockStorage::TableBlockStorage(const char* name, int key_sz, int inf_sz, i
 	{
 		for(i=0;i<block_num;i++)
 		{
-			fseek(file,i*block_size*(full_size),0);
+			fseek(file,seekpos+i*block_size*(full_size),0);
 			fread(t,(full_size),1,file);
 			if(t->count>=0) 
 			{
@@ -103,7 +107,7 @@ TableBlockStorage::TableBlockStorage(const char* name, int key_sz, int inf_sz, i
 				break;
 			}
 		}
-		fseek(file,(cur_block*block_size)*(full_size),0);
+		fseek(file,seekpos+(cur_block*block_size)*(full_size),0);
 		for(i=0;i<block_size;i++)
 		{
 			fread(mem[i],(full_size),1,file);
@@ -117,11 +121,12 @@ TableBlockStorage::~TableBlockStorage()
 	fclose(file);
 }
 
-int TableBlockStorage::Open(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim)
+int TableBlockStorage::Open(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek)
 {
 	file = fopen(name, "r+");
 	k_size=key_sz;
 	inf_size=inf_sz;
+	seekpos=seek;
 	int i,full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;
 	max=-1;
 	lim=block_lim;
@@ -144,7 +149,7 @@ int TableBlockStorage::Open(const char* name, int key_sz, int inf_sz, int sz, in
 	{
 		for(i=0;i<block_num;i++)
 		{
-			fseek(file,i*block_size*(full_size),0);
+			fseek(file,seekpos+i*block_size*(full_size),0);
 			fread(t,(full_size),1,file);
 			if(t->count>=0) 
 			{
@@ -152,7 +157,7 @@ int TableBlockStorage::Open(const char* name, int key_sz, int inf_sz, int sz, in
 				break;
 			}
 		}
-		fseek(file,(cur_block*block_size)*(full_size),0);
+		fseek(file,seekpos+(cur_block*block_size)*(full_size),0);
 		for(i=0;i<block_size;i++)
 		{
 			fread(mem[i],(full_size),1,file);
@@ -180,23 +185,15 @@ int TableBlockStorage::AddRow(char* key, char* value)
 					if(mem[i]->count>=0)
 					{
 						mem[i]->count=++max;
-						fseek(file,((cur_block+1)*block_size+j)*(full_size),0);
+						fseek(file,seekpos+((cur_block+1)*block_size+j)*(full_size),0);
 						fwrite(mem[i],(full_size),1,file);
 						j++;
 					}
 				}
-				/*fseek(file,((cur_block+1)*block_size+j)*(full_size),0);
-				mem[j]->count=++max;
-				for(k=0;k<k_size;k++)
-					*((char*)mem[j]+sizeof(TableBlockStorageElem)+k)=*(key+k);
-				for(k=0;k<inf_size;k++)
-					*((char*)mem[j]+sizeof(TableBlockStorageElem)+k_size+k)=*(value+k);
-				fwrite(mem[j],(sizeof(TableBlockStorageElem)+inf_size),1,file);*/
 				tbl->count=-5;
-				fseek(file,cur_block*block_size*(full_size),0);
+				fseek(file,seekpos+cur_block*block_size*(full_size),0);
 				fwrite(tbl,(full_size),1,file);
 				cur_block++;
-				//return 0;
 			}
 		}
 		for(i=0;i<block_size;i++)
@@ -211,7 +208,7 @@ int TableBlockStorage::AddRow(char* key, char* value)
 			mem[pos]->count=++max;
 			for(k=0;k<inf_size;k++)
 				*((char*)mem[pos]+sizeof(TableBlockStorageElem)+k_size+k)=*(value+k);
-			fseek(file,(cur_block*block_size+pos)*(full_size),0);
+			fseek(file,seekpos+(cur_block*block_size+pos)*(full_size),0);
 			fwrite(mem[pos],(full_size),1,file);
 			return 0;
 		}
@@ -220,7 +217,7 @@ int TableBlockStorage::AddRow(char* key, char* value)
 			*((char*)mem[empty]+sizeof(TableBlockStorageElem)+k)=*(key+k);
 		for(k=0;k<inf_size;k++)
 			*((char*)mem[empty]+sizeof(TableBlockStorageElem)+k_size+k)=*(value+k);
-		fseek(file,(cur_block*block_size+empty)*(full_size),0);
+		fseek(file,seekpos+(cur_block*block_size+empty)*(full_size),0);
 		fwrite(mem[empty],(full_size),1,file);
 		return 0;
 	}
@@ -245,13 +242,13 @@ int TableBlockStorage::DelRow(char* key)
 					if(mem[i]->count>=0)
 					{
 						mem[i]->count=++max;
-						fseek(file,((cur_block+1)*block_size+j)*(full_size),0);
+						fseek(file,seekpos+((cur_block+1)*block_size+j)*(full_size),0);
 						fwrite(mem[i],(full_size),1,file);
 						j++;
 					}
 				}
 				tbl->count=-5;
-				fseek(file,cur_block*block_size*(full_size),0);
+				fseek(file,seekpos+cur_block*block_size*(full_size),0);
 				fwrite(tbl,(full_size),1,file);
 				cur_block++;
 			}
@@ -261,7 +258,7 @@ int TableBlockStorage::DelRow(char* key)
 			if((*((char*)mem[i]+sizeof(TableBlockStorageElem))!=0)&&(mem[i]>=0))
 				if(KeyCompare((char*)mem[i],key,k_size))
 				{
-					fseek(file,(cur_block*block_size+i)*(full_size),0);
+					fseek(file,seekpos+(cur_block*block_size+i)*(full_size),0);
 					mem[i]->count=++max;
 					*((char*)mem[i]+sizeof(TableBlockStorageElem))=0;
 					fwrite(mem[i],(full_size),1,file);
@@ -277,7 +274,6 @@ char* TableBlockStorage::FindKeyValue(char* key, char* val)
 	int i,k;
 	if(file!=NULL)
 	{
-		//fseek(file,cur_block*block_size*(full_size),0);
 		for(i=0;i<block_size;i++)
 		{
 			//fread(tbl,(full_size),1,file);
