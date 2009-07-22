@@ -8,4 +8,4 @@ Description: Support library for UniSetModbusSlave
 Requires: libUniSetExtensions libUniSetSharedMemory
 Version: @VERSION@
 Libs: -L${libdir} -lUniSetMBSlave
-Cflags: -I${includedir}/uniset/extensions
+Cflags: -I${includedir}/uniset

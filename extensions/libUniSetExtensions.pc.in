@@ -8,4 +8,4 @@ Description: Support library for UniSet Extensions
 Requires: libUniSet comedilib
 Version: @VERSION@
 Libs: -L${libdir} -lUniSetExtensions
-Cflags: -I${includedir}/uniset/extensions
+Cflags: -I${includedir}/uniset
