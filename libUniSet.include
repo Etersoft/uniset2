@@ -1,0 +1,29 @@
+#!/bin/sh
+# Copyright (c) 2009 Free Software Foundation, Inc.
+# Copyright (c) 2009 Vitaly Lipatov <lav@etersoft.ru>
+
+# exports flags and libs from pc file for build with library for source tree
+# EXPORTPATH contains path to the project dir (../uniset f.i.)
+
+# Usage example:
+# TryExport()
+# {
+#	EXPORTPATH=$(readlink -f $1)
+#	test -r $1/$2 && . $1/$2
+# }
+#
+# TryExport ../uniset libUniSet.include
+
+
+PCFILE=$EXPORTPATH/libUniSet.pc
+test -r "$PCFILE" || exit 1
+
+# guess prefix in the first line of pkgconfig file
+eval $(head -n1 $PCFILE)
+
+test -d "$prefix" || exit 1
+
+export UNISET_CFLAGS="$(pkg-config --cflags $PCFILE | sed -e "s|-I$prefix/include/uniset|-I$EXPORTPATH/include|g" )"
+
+export UNISET_LIBS="-L$EXPORTPATH/lib $(pkg-config --libs $PCFILE | sed -e "s|-L$prefix ||g" )"
+
