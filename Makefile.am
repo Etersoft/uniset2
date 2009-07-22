@@ -2,8 +2,6 @@
 # This file is part of the UniSet library                                  #
 ############################################################################
 
-ACLOCAL_AMFLAGS = -I m4
-
 SUBDIRS=IDL src lib include Utilities extensions docs
 
 include $(top_builddir)/conf/common.mk

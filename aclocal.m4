@@ -7692,8 +7692,3 @@ AC_SUBST([SED])
 AC_MSG_RESULT([$SED])
 ])
 
-m4_include([m4/libtool.m4])
-m4_include([m4/ltoptions.m4])
-m4_include([m4/ltsugar.m4])
-m4_include([m4/ltversion.m4])
-m4_include([m4/lt~obsolete.m4])
