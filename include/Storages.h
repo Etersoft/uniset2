@@ -34,6 +34,12 @@
 
 #define key_size 20
 
+struct StorageAttr
+{
+	int k_size, inf_size,size,block_number;
+	int lim, seekpos;
+};
+
 struct TableStorageElem
 {
 	char status;
@@ -43,7 +49,6 @@ struct TableStorageElem
 struct TableBlockStorageElem
 {
 	int count;
-	//char key[key_size];
 } __attribute__((__packed__));
 
 struct CycleStorageElem
@@ -67,18 +72,20 @@ class TableStorage
 
 class TableBlockStorage
 {
-	int max,lim,seekpos;
+	int max;
 	TableBlockStorageElem** mem;
 	public:
 		FILE *file;
-		int inf_size, k_size;
-		int size,cur_block,block_size;
+		int inf_size, k_size, lim,seekpos;
+		int size,cur_block,block_size,block_number;
 		TableBlockStorage();
 		TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek);
 		~TableBlockStorage();
-		int Open(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
-		int AddRow(char* key, char* val);
-		int DelRow(char* key);
+	private: bool CopyToNextBlock();
+	public:
+		bool Open(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
+		bool AddRow(char* key, char* val);
+		bool DelRow(char* key);
 		char* FindKeyValue(char* key, char* val);
 };
 
