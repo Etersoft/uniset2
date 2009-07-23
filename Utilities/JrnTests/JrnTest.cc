@@ -31,22 +31,6 @@
 #include "Storages.h"
 #include "UniXML.h"
 
-char* itoa(int val, int base)
-{
-	
-	static char buf[32] = {0};
-	
-	int i = 30;
-	
-	for(; val && i ; --i, val /= base)
-	
-		buf[i] = "0123456789abcdef"[val % base];
-	
-	return &buf[i+1];
-	
-}
-
-
 void testTable1(void)
 {
 	char *chr=(char*)malloc(20);
@@ -58,10 +42,9 @@ void testTable1(void)
 	for(i=0;i<t->size;i++)
 	{
 		chr[0]=i;
-		val=itoa(i,10);
+		sprintf(val,"%d",i);
 		t->AddRow(chr,val);
 	}
-	//printf("elements with values=keys added\nvalues from keys 25-59\n");
 	printf("elements with values=keys added:\n");
 	for(i=0;i<40;i++)
 	{
@@ -74,15 +57,13 @@ void testTable1(void)
 		chr[0]=i;
 		t->DelRow(chr);
 	}
-	//printf("elements with keys from 40 to 60 deleted\n");
 	printf("elements with keys from 9 to 14 deleted\n");
 	for(i=9;i<15;i++)
 	{
 		chr[0]=i;
-		val=itoa(i+40,10);
+		sprintf(val,"%d",i+40);
 		t->AddRow(chr,val);
 	}
-	//printf("elements with keys from 30 to 50 with values=key+40 added\nvalues from keys 25-59\n");
 	printf("elements with keys from 9 to 14 with values=key+40 added, all elements:\n");
 	for(i=0;i<40;i++)
 	{
@@ -94,64 +75,71 @@ void testTable1(void)
 
 void testTable2(void)
 {
-	char *chr=(char*)malloc(20);
 	char *val=(char*)malloc(40);
 	TableBlockStorage *t;
-	t = new TableBlockStorage("blocktableint.test", 4, 40, 20000, 5,28,0);
+	t = new TableBlockStorage("big_file.test", 4, 40, 20000, 5,28,0);
 	int i;
 	printf("testTable\nsize = %d\n",t->block_size);
+	for(i=1;i<20;i++)
+	{
+		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
+	}
+	printf("\ncurrent block = %d\n",t->cur_block);
 	for(i=1;i<11;i++)
 	{
-		chr[0]=i;
-		val=itoa(i,10);
+		sprintf(val,"%d",i);
 		t->AddRow((char*)&i,val);
 	}
 	printf("current block = %d, elements with values=keys added:\n",t->cur_block);
-	for(i=1;i<11;i++)
+	for(i=1;i<20;i++)
 	{
-		chr[0]=i;
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\ncurrent block = %d\n",t->cur_block);
 	for(i=1;i<8;i++)
 	{
-		chr[0]=i;
-		val=itoa(i+10,10);
+		sprintf(val,"%d",i+10);
 		t->AddRow((char*)&i,val);
 	}
 	for(i=8;i<11;i++)
 	{
-		chr[0]=i;
 		t->DelRow((char*)&i);
 	}
-	for(i=1;i<11;i++)
+	for(i=1;i<20;i++)
 	{
-		chr[0]=i;
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\ncurrent block = %d\n",t->cur_block);
 	for(i=3;i<11;i++)
 	{
-		chr[0]=i;
-		val=itoa(i+40,10);
+		sprintf(val,"%d",i+40);
 		t->AddRow((char*)&i,val);
 	}
-	for(i=1;i<11;i++)
+	for(i=1;i<20;i++)
 	{
-		chr[0]=i;
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\ncurrent block = %d\n",t->cur_block);
 
-	chr[0]=10;
 	strcpy(val,"new block");
+	i=9;
 	t->AddRow((char*)&i,val);
-	for(i=1;i<40;i++)
+	for(i=1;i<20;i++)
 	{
-		chr[0]=i;
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\ncurrent block = %d\n",t->cur_block);
+
+	t->Open("big_file.test", 4, 40, 20000, 5,28,0);
+	i=11;
+	sprintf(val,"%d",i);
+	//t->AddRow((char*)&i,val);
+	for(i=1;i<20;i++)
+	{
+		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
+	}
+	printf("\ncurrent block = %d\n",t->cur_block);
+	
 }
 
 void testJournal1(void)
@@ -160,15 +148,25 @@ void testJournal1(void)
 	int i;
 	char *str = (char*)malloc(30);
 	printf("journal test 1\n");
-	j = new CycleStorage("journal.test",30,1000000,0);
+	j = new CycleStorage("big_file.test",30,1000000,20000);
 	printf("size = %d\n",j->size);
 	for(i=1;i<40000;i++)
 	{
-		str = itoa(i,10);
+		sprintf(str,"%d",i);
 		j->AddRow(str);
 	}
 	printf("\n20 elements from 10-th:\n");
 	j->ViewRows(10,20);
+
+	printf("test of 2 classes working in 1 file together\n");
+	TableBlockStorage *t = new TableBlockStorage("big_file.test", 4, 40, 20000, 5,28,0);
+	char *val = (char*)malloc(40);
+	for(i=1;i<20;i++)
+	{
+		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
+	}
+	printf("\ncurrent block = %d\n\n",t->cur_block);
+
 	printf("\n20 elements from 10-th after deleting first 20:\n");
 	for(i=0;i<20;i++)
 	{
@@ -178,12 +176,13 @@ void testJournal1(void)
 	printf("\nfirst 20 after adding 10 elements\n");
 	for(i=1;i<11;i++)
 	{
-		str = itoa(i,10);
+		sprintf(str,"%d",i);
 		j->AddRow(str);
 	}
 	j->ViewRows(0,20);
 	printf("\nthe same after reopen:\n");
-	j = new CycleStorage("journal.test",30,2000000,0);
+	j = new CycleStorage();
+	j->Open("big_file.test",30,1000000,20000);
 	j->ViewRows(0,20);
 	printf("\n");
 	j->ExportToXML("Xml.xml");
@@ -194,18 +193,19 @@ void testJournal2(void)
 	CycleStorage *j;
 	int i,k;
 	char *str = (char*)malloc(30);
-	j = new CycleStorage("journal.test",30,1000000,0);
+	j = new CycleStorage("big_file.test",30,1000000,20000);
 	printf("journal test 2 - checking number of iterations to find head/tail\n");
 	printf("size = %d\n\n",j->size);
 	printf("iterations = %d\n",j->iter);
+	//j->ViewRows(10,20);
 	for(i=0;i<20;i++)
 	{
 		for(k=1000;k<3000;k++)
 		{
-			str = itoa(k,10);
+			sprintf(str,"%d",k);
 			j->AddRow(str);
 		}
-		j = new CycleStorage("journal.test",30,2000000,0);
+		j->Open("big_file.test",30,1000000,20000);
 		printf("iterations = %d\n",j->iter);
 	}
 	printf("\n");
@@ -214,69 +214,6 @@ void testJournal2(void)
 
 int main(int args, char **argv)
 {
-	/*if(args<2)
-	{
-		printf("Correct usage: jrntest [command] [param]\n");
-		printf(" commands:\n  add - add row with text = param\n  delete - delete row with number = param\n  view - view param2  from row = param1 \n  toxml - export journal to XML file with name = param\n  del_all - delete all journal\n  q or quit - exit\n\n");
-		return 0;
-	}
-	CycleStorage *j = new CycleStorage(argv[1],99,1000,0);
-	printf("commands:\nadd\ndelete\nview\ntoxml\ndel_all\nenter q or quit to exit\n\n");
-	char* com=new char[8];
-	char* str=new char[99];
-	int num,count;
-	strcpy(com,"qwerty");
-	while(strcmp(com,"q")&&strcmp(com,"quit"))
-	{
-		scanf("%s",com);
-		if(!strcmp(com,"add"))
-		{
-			printf("string to add: ");
-			if(scanf("%99s",str)>0)
-			{
-				j->AddRow(str);
-				printf("\n");
-			}
-		}
-		else if(!strcmp(com,"delete"))
-		{
-			printf("number of string to delete: ");
-			if(scanf("%d",&num)>0)
-			{
-				j->DelRow(num);
-				printf("\n");
-			}
-		}
-		else if(!strcmp(com,"view"))
-		{
-			printf("start number and count (0 0 for all): ");
-			if(scanf("%d%d",&num,&count)>1)
-			{
-				j->ViewRows(num,count);
-				printf("\n");
-			}
-		}
-		else if(!strcmp(com,"del_all"))
-		{
-			printf("are you sure? (y/n) ");
-			if(scanf("%s",str)>0)
-				if(!strcmp(str,"y"))
-				{
-					j->DelAllRows();
-					printf("\n");
-				}
-		}
-		else if(!strcmp(com,"toxml"))
-		{
-			printf("enter file name: ");
-			if(scanf("%25s",str)>0)
-			{
-				j->ExportToXML(str);
-				printf("\n");
-			}
-		}
-		else printf("commands:\nadd\ndelete\nview\ntoxml\ndel_all\nenter q or quit to exit\n\n");
-	}*/
 	testTable1();
 	testTable2();
 

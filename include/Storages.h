@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "UniXML.h"
 
 #define key_size 20
@@ -38,7 +39,12 @@ struct StorageAttr
 {
 	int k_size, inf_size,size,block_number;
 	int lim, seekpos;
-};
+} __attribute__((__packed__));
+
+struct CycleStorageAttr
+{
+	int size, inf_size, seekpos;
+} __attribute__((__packed__));
 
 struct TableStorageElem
 {
@@ -84,6 +90,7 @@ class TableBlockStorage
 	private: bool CopyToNextBlock();
 	public:
 		bool Open(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
+		bool Create(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
 		bool AddRow(char* key, char* val);
 		bool DelRow(char* key);
 		char* FindKeyValue(char* key, char* val);
@@ -96,13 +103,16 @@ class CycleStorage
 	int head,tail;
 	public:
 		int size, iter;
+		CycleStorage();
 		CycleStorage(const char* name, int inf_sz, int sz, int seek);
 		~CycleStorage();
-		int AddRow(char* str);
-		int DelRow(int row);
-		int DelAllRows(void);
-		int ViewRows(int beg, int num);
-		int ExportToXML(const char* name);
+		bool Open(const char* name, int inf_sz, int sz, int seek);
+		bool Create(const char* name, int inf_sz, int sz, int seek);
+		bool AddRow(char* str);
+		bool DelRow(int row);
+		bool DelAllRows(void);
+		bool ViewRows(int beg, int num);
+		bool ExportToXML(const char* name);
 };
 
 #endif

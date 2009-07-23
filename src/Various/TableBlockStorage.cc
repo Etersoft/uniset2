@@ -60,35 +60,9 @@ TableBlockStorage::TableBlockStorage()
 
 TableBlockStorage::TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek)
 {
+	if(file!=NULL) fclose(file);
 	if(!Open(name, key_sz, inf_sz, sz, block_num, block_lim, seek))
-	{
-		int i,full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;
-		TableBlockStorageElem *t = (TableBlockStorageElem*)malloc(full_size);
-
-		StorageAttr *sa = (StorageAttr*)malloc(24);
-		sa->k_size=k_size;
-		sa->inf_size=inf_size;
-		sa->size=size;
-		sa->block_number=block_number;
-		sa->lim=lim;
-		sa->seekpos=seekpos;
-
-		cur_block=0;
-		fseek(file,seekpos,0);
-		fwrite(sa,24,1,file);
-		seekpos+=24;
-
-		for(i=0;i<size;i++) 
-		{
-			if(i%block_size==0)
-				t->count=-5;
-			else t->count=-1;
-			fwrite(t,(full_size),1,file);
-		}
-		mem[0]->count=-5;
-		for(i=1;i<block_size;i++)
-			mem[i]->count=-1;
-	}
+		Create(name, key_sz, inf_sz, sz, block_num, block_lim, seek);
 }
 
 TableBlockStorage::~TableBlockStorage()
@@ -128,17 +102,32 @@ bool TableBlockStorage::CopyToNextBlock(void)
 
 bool TableBlockStorage::Open(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek)
 {
+	if(file!=NULL) fclose(file);
+
 	file = fopen(name, "r+");
+	if(file==NULL) return false;
+
+	seekpos=seek;
+	StorageAttr *sa = new StorageAttr();
+	if(fseek(file,seekpos,0)==0) fread(sa,sizeof(StorageAttr),1,file);
+	else return false;
+
+	int full_size = sizeof(TableBlockStorageElem)+key_sz+inf_sz;
+
+	int tmpsize=(sz-sizeof(StorageAttr))/(full_size);
+	int tmpblock=tmpsize/block_num;
+	tmpsize=tmpblock*block_num;
+
+	if((sa->k_size!=key_sz)||(sa->inf_size!=inf_sz)||(sa->size!=tmpsize)||(sa->block_number!=block_num)||(sa->lim!=block_lim)||(sa->seekpos!=seek)) return false;
+
 	k_size=key_sz;
 	inf_size=inf_sz;
-	seekpos=seek;
 	lim=block_lim;
-	int full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;
-	size=(sz-24)/(full_size);
-
+	size=(sz-sizeof(StorageAttr))/(full_size);
 	block_number=block_num;
 	block_size=size/block_num;
 	size=block_size*block_num;
+
 	max=-1;
 	int i;
 
@@ -147,45 +136,88 @@ bool TableBlockStorage::Open(const char* name, int key_sz, int inf_sz, int sz, i
 	{
 		mem[i]=(TableBlockStorageElem*)malloc(full_size);
 	}
-;
-	StorageAttr *sa = (StorageAttr*)malloc(24);
-	if(file==NULL)
-	{
-		file=fopen(name,"w+");
-		//fclose(file);
-		//file=fopen(name,"r+");
-	}
-	if(fseek(file,seekpos,0)==0) fread(sa,sizeof(StorageAttr),1,file);
-	else return false;
 
 	TableBlockStorageElem *t = (TableBlockStorageElem*)malloc(full_size);
-	for(int k=0;k<k_size+inf_size;k++)
-		*((char*)(t)+sizeof(TableBlockStorageElem)+k)=0;
 	
-	if((sa->k_size==k_size)&&(sa->inf_size==inf_size)&&(sa->size==size)&&(sa->block_number==block_number)&&(sa->lim==lim)&&(sa->seekpos==seekpos))
+	seekpos+=sizeof(StorageAttr);
+	for(i=0;i<block_num;i++)
 	{
-		seekpos+=24;
-		for(i=0;i<block_num;i++)
+		fseek(file,seekpos+i*block_size*(full_size),0);
+		fread(t,(full_size),1,file);
+		if(t->count>=0) 
 		{
-			fseek(file,seekpos+i*block_size*(full_size),0);
-			fread(t,(full_size),1,file);
-			if(t->count>=0) 
-			{
-				cur_block=i;
-				break;
-			}
-		}
-		fseek(file,seekpos+(cur_block*block_size)*(full_size),0);
-		for(i=0;i<block_size;i++)
-		{
-			fread(mem[i],(full_size),1,file);
-			if(mem[i]->count>max) max=mem[i]->count;
+			cur_block=i;
+			break;
 		}
 	}
-	else
+	fseek(file,seekpos+(cur_block*block_size)*(full_size),0);
+	for(i=0;i<block_size;i++)
 	{
-		return false;
+		fread(mem[i],(full_size),1,file);
+		if(mem[i]->count>max) max=mem[i]->count;
 	}
+	return true;
+}
+
+bool TableBlockStorage::Create(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek)
+{
+	if(file!=NULL) fclose(file);
+	file = fopen(name, "r+");
+	if(file==NULL)
+	{
+		FILE*f=fopen(name,"w");
+		fclose(f);
+		file = fopen(name, "r+");
+	}
+	k_size=key_sz;
+	inf_size=inf_sz;
+	seekpos=seek;
+	lim=block_lim;
+	int i,full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;
+	TableBlockStorageElem *t = (TableBlockStorageElem*)malloc(full_size);
+	size=(sz-sizeof(StorageAttr))/(full_size);
+
+	block_number=block_num;
+	block_size=size/block_num;
+	size=block_size*block_num;
+	max=-1;
+
+	mem = new TableBlockStorageElem*[block_size];
+	for(i=0;i<block_size;i++)
+	{
+		mem[i]=(TableBlockStorageElem*)malloc(full_size);
+	}
+
+	StorageAttr *sa = new StorageAttr();
+	sa->k_size=k_size;
+	sa->inf_size=inf_size;
+	sa->size=size;
+	sa->block_number=block_number;
+	sa->lim=lim;
+	sa->seekpos=seekpos;
+
+	cur_block=0;
+	fseek(file,seekpos,0);
+	fwrite(sa,sizeof(StorageAttr),1,file);
+	seekpos+=sizeof(StorageAttr);
+
+	for(i=0;i<size;i++) 
+	{
+		if(i%block_size==0)
+			t->count=-5;
+		else t->count=-1;
+		fwrite(t,(full_size),1,file);
+	}
+
+	int emp = sz-size*full_size-sizeof(StorageAttr);
+	if(emp>0)
+	{
+		char* empty=new char[emp];
+		fwrite(empty,emp,1,file);
+	}
+	mem[0]->count=-5;
+	for(i=1;i<block_size;i++)
+		mem[i]->count=-1;
 	return true;
 }
 
@@ -225,7 +257,6 @@ bool TableBlockStorage::AddRow(char* key, char* value)
 bool TableBlockStorage::DelRow(char* key)
 {
 	int full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;
-	TableBlockStorageElem *tbl = (TableBlockStorageElem*)malloc(full_size);
 	int i;
 	if(file==NULL) return false;
 
