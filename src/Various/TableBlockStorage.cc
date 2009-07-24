@@ -24,6 +24,10 @@
  */
 // --------------------------------------------------------------------------
 
+/*!	Функции класса TableBlockStorage, таблицы ключ-значение с ограниченным кол-вом перезаписей для
+	каждого блока памяти, при достижении предела, происходит переход в следующий блок
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -216,6 +220,11 @@ bool TableBlockStorage::Create(const char* name, int key_sz, int inf_sz, int sz,
 	fflush(file);
 	seekpos+=sizeof(StorageAttr);
 
+	/*!	Поле счетчика записей при создании служит флагом на используемость блока и на пустоту ячейки записи:
+		(-5) - заполняются первые элементы каждого блока, емли там другое значение, то этот блок используется,
+		(-1) - все остальные пустые записи
+	*/
+
 	for(i=0;i<size;i++) 
 	{
 		if(i%block_size==0)
@@ -271,6 +280,9 @@ bool TableBlockStorage::DelRow(char* key)
 {
 	int i;
 	if(file==NULL) return false;
+
+	/*!	При удалении счетчик перезаписей также увеличивается
+	*/
 
 	CopyToNextBlock();
 	for(i=0;i<block_size;i++)

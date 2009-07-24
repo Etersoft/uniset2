@@ -75,11 +75,10 @@ void testTable1(void)
 
 void testTable2(void)
 {
-	char *val=(char*)malloc(40);
+	char *val=new char[40];
 	TableBlockStorage *t;
 	t = new TableBlockStorage("big_file.test", 4, 40, 20000, 5,28,0);
 	int i;
-	printf("testTable\nsize = %d\n",t->block_size);
 	for(i=1;i<20;i++)
 	{
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
@@ -133,59 +132,62 @@ void testTable2(void)
 	t->Open("big_file.test", 4, 40, 20000, 5,28,0);
 	i=11;
 	sprintf(val,"%d",i);
-	//t->AddRow((char*)&i,val);
+	t->AddRow((char*)&i,val);
 	for(i=1;i<20;i++)
 	{
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\ncurrent block = %d\n",t->cur_block);
-	
+	delete t;
 }
 
 void testJournal1(void)
 {
 	CycleStorage *j;
 	int i;
-	char *str = (char*)malloc(30);
+	char *str = new char[30];
 	printf("journal test 1\n");
 	j = new CycleStorage("big_file.test",30,1000000,20000);
 	printf("size = %d\n",j->size);
-	for(i=1;i<40000;i++)
+	for(i=1;i<33000;i++)
 	{
 		sprintf(str,"%d",i);
 		j->AddRow(str);
 	}
-	printf("\n20 elements from 10-th:\n");
-	j->ViewRows(10,20);
+	printf("\nfirst 30 elements:\n");
+	j->ViewRows(0,30);
 
 	printf("test of 2 classes working in 1 file together\n");
 	TableBlockStorage *t = new TableBlockStorage("big_file.test", 4, 40, 20000, 5,28,0);
-	char *val = (char*)malloc(40);
+	char *val = new char[40];
 	for(i=1;i<20;i++)
 	{
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\ncurrent block = %d\n\n",t->cur_block);
 
-	printf("\n20 elements from 10-th after deleting first 20:\n");
+	printf("\nfirst 30 elements after deleting first 20:\n");
 	for(i=0;i<20;i++)
 	{
 		j->DelRow(i);
 	}
-	j->ViewRows(10,20);
+	j->ViewRows(0,30);
 	printf("\nfirst 20 after adding 10 elements\n");
-	for(i=1;i<11;i++)
+	for(i=10001;i<10011;i++)
 	{
 		sprintf(str,"%d",i);
 		j->AddRow(str);
 	}
 	j->ViewRows(0,20);
 	printf("\nthe same after reopen:\n");
+	delete j;
 	j = new CycleStorage();
 	j->Open("big_file.test",30,1000000,20000);
 	j->ViewRows(0,20);
 	printf("\n");
 	j->ExportToXML("Xml.xml");
+	delete t;
+	delete j;
 }
 
 void testJournal2(void)
@@ -209,12 +211,13 @@ void testJournal2(void)
 		printf("iterations = %d\n",j->iter);
 	}
 	printf("\n");
+	delete j;
 }
 
 
 int main(int args, char **argv)
 {
-	testTable1();
+	//testTable1();
 	testTable2();
 
 	testJournal1();

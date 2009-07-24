@@ -24,6 +24,10 @@
  */
 // --------------------------------------------------------------------------
 
+/*!	Функции класса CycleStorage, циклически переписываемого журнала,
+	перезаписываются самые старые элемениты при полном заполнении журнала
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,6 +60,9 @@ void CycleStorage::filewrite(CycleStorageElem* jrn,int seek,bool needflush)
 
 bool CycleStorage::Open(const char* name, int inf_sz, int sz, int seek)
 {
+	/*! 	Если уже был открыт файл в переменной данного класса, он закрывается и открывается новый
+	*/
+
 	if(file!=NULL) fclose(file);
 	file = fopen(name, "r+");
 	if(file==NULL) return false;
@@ -85,6 +92,12 @@ bool CycleStorage::Open(const char* name, int inf_sz, int sz, int seek)
 	iter=0;
 	seekpos+=sizeof(CycleStorageAttr);
 	fread(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
+
+	/*! 	Ищем голову и хвост по значениям jrn->status: 0 - пусто, 1 - гоова, 2,4 - два типа существующих элементов
+		(или 2 слева от головы - 4 справа, или наоборот), 3 - удаленный 2, 5 - удаленный 4, 6 - удаленный 1.
+		Для нахождения головы|хвоста используется двоичный поиск
+	*/
+
 	if(jrn->status==0)
 	{
 		head=-1;
@@ -198,6 +211,9 @@ bool CycleStorage::Create(const char* name, int inf_sz, int sz, int seek)
 	}
 	fflush(file);
 	
+	/*!	Дописываем оставшееся место, чтобы журнал занимал ровно столько места, сколько передано в параметрах
+	*/
+
 	int emp = sz-size*(sizeof(CycleStorageElem)+inf_size)-sizeof(CycleStorageAttr);
 	if(emp>0)
 	{
@@ -218,6 +234,10 @@ bool CycleStorage::AddRow(char* str)
 	if(file==NULL) return false;
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[(sizeof(CycleStorageElem)+inf_size)];
 	int i=0,k;
+
+	/*!	Первые 2 случая - список пуст (head=-1), в списке 1 элемент(head=tail=0) рассматриваю отдельно)
+	*/
+
 	if(head==-1)
 	{
 		jrn->status=1;
@@ -239,9 +259,17 @@ bool CycleStorage::AddRow(char* str)
 	}
 	fseek(file,seekpos+tail*(sizeof(CycleStorageElem)+inf_size),0);
 	fread(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
-	if((jrn->status==2)||(jrn->status==3))
-		i=2;
+
+	/*!	Статус элемента совпадает со статусом последнего элемента в журнале 2, 3 -> 2; 4, 5 -> 4
+	*/
+
+	if((jrn->status==2)||(jrn->status==3)) i=2;
 	else i=4;
+
+	/*!	Если последний элемент журнала в крайней правой позиции выделенной части файла,
+		переходим в начало части файла и инвертируем статус 2->4, 4->2
+	*/
+
 	if(tail==size-1)
 	{
 		fseek(file,seekpos,0);
@@ -259,6 +287,10 @@ bool CycleStorage::AddRow(char* str)
 	}
 	else
 	{
+		/*!	Переписываем головной элемент новым, а второй от начала делаем головным,
+			т. е. сдвигаем голову на 1 элемент вперед
+		*/
+
 		head++;
 		if(head>=size) head=0;
 		jrn->status=i;
@@ -282,6 +314,10 @@ bool CycleStorage::DelRow(int row)
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[(sizeof(CycleStorageElem)+inf_size)];
 	fseek(file,seekpos+i*(sizeof(CycleStorageElem)+inf_size),0);
 	fread(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
+
+	/*!	При удалении меняем стутус 1->6, 2->3, 4->5 или возвращаем false
+	*/
+
 	if(jrn->status==1)
 	{
 		jrn->status=6;
@@ -367,7 +403,7 @@ bool CycleStorage::ExportToXML(const char* name)
 			fseek(file,seekpos,0);
 		}
 		fread(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
-		if((jrn->status!=0)&&(jrn->status!=3)&&(jrn->status!=5)&&(jrn->status!=6))
+		if((jrn->status==1)||(jrn->status==2)||(jrn->status==4))
 		{
 			f->createNext(f->cur,"!",((char*)(jrn)+sizeof(CycleStorageElem)));
 		}

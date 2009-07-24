@@ -80,10 +80,11 @@ class TableBlockStorage
 {
 	int max;
 	TableBlockStorageElem** mem;
+	FILE *file;
+	int inf_size, k_size, lim,seekpos;
+	int size,block_size,block_number,full_size;
 	public:
-		FILE *file;
-		int inf_size, k_size, lim,seekpos;
-		int size,cur_block,block_size,block_number;
+		int cur_block;
 		TableBlockStorage();
 		TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek);
 		~TableBlockStorage();
