@@ -46,28 +46,25 @@ bool KeyCompare(char* key1, char* key2, int cnt)
 
 TableBlockStorage::TableBlockStorage()
 {
-	size=0;
-	k_size=0;
-	inf_size=0;
-	max=-1;
-	lim=0;
-	cur_block=0;
-	block_number=0;
-	block_size=0;
-	seekpos=0;
 	file=NULL;
 }
 
 TableBlockStorage::TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek)
 {
-	if(file!=NULL) fclose(file);
+	file=NULL;
 	if(!Open(name, key_sz, inf_sz, sz, block_num, block_lim, seek))
 		Create(name, key_sz, inf_sz, sz, block_num, block_lim, seek);
 }
 
 TableBlockStorage::~TableBlockStorage()
 {
-	fclose(file);
+	for(int i=0;i<block_size;i++)
+	{
+		delete mem[i];
+	}
+	delete mem;
+
+	if(file!=NULL) fclose(file);
 }
 
 void TableBlockStorage::filewrite(TableBlockStorageElem* tbl,int seek, bool needflush)
@@ -79,8 +76,8 @@ void TableBlockStorage::filewrite(TableBlockStorageElem* tbl,int seek, bool need
 
 bool TableBlockStorage::CopyToNextBlock(void)
 {
-	int i,j,full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;
-	TableBlockStorageElem *tbl = (TableBlockStorageElem*)malloc(full_size);
+	int i,j;
+	TableBlockStorageElem *tbl = (TableBlockStorageElem*)new char[full_size];
 
 	if(max==lim-1)
 	{
@@ -102,6 +99,7 @@ bool TableBlockStorage::CopyToNextBlock(void)
 			cur_block++;
 		}
 	}
+	delete tbl;
 	return true;
 }
 
@@ -115,15 +113,24 @@ bool TableBlockStorage::Open(const char* name, int key_sz, int inf_sz, int sz, i
 	seekpos=seek;
 	StorageAttr *sa = new StorageAttr();
 	if(fseek(file,seekpos,0)==0) fread(sa,sizeof(StorageAttr),1,file);
-	else return false;
+	else 
+	{
+		delete sa;
+		return false;
+	}
 
-	int full_size = sizeof(TableBlockStorageElem)+key_sz+inf_sz;
+	full_size = sizeof(TableBlockStorageElem)+key_sz+inf_sz;
 
 	int tmpsize=(sz-sizeof(StorageAttr))/(full_size);
 	int tmpblock=tmpsize/block_num;
 	tmpsize=tmpblock*block_num;
 
-	if((sa->k_size!=key_sz)||(sa->inf_size!=inf_sz)||(sa->size!=tmpsize)||(sa->block_number!=block_num)||(sa->lim!=block_lim)||(sa->seekpos!=seek)) return false;
+	if((sa->k_size!=key_sz)||(sa->inf_size!=inf_sz)||(sa->size!=tmpsize)||(sa->block_number!=block_num)||(sa->lim!=block_lim)||(sa->seekpos!=seek))
+	{
+		delete sa;
+		return false;
+	}
+	delete sa;
 
 	k_size=key_sz;
 	inf_size=inf_sz;
@@ -139,10 +146,10 @@ bool TableBlockStorage::Open(const char* name, int key_sz, int inf_sz, int sz, i
 	mem = new TableBlockStorageElem*[block_size];
 	for(i=0;i<block_size;i++)
 	{
-		mem[i]=(TableBlockStorageElem*)malloc(full_size);
+		mem[i]=(TableBlockStorageElem*)new char[full_size];
 	}
 
-	TableBlockStorageElem *t = (TableBlockStorageElem*)malloc(full_size);
+	TableBlockStorageElem *t = (TableBlockStorageElem*)new char[full_size];
 	
 	seekpos+=sizeof(StorageAttr);
 	for(i=0;i<block_num;i++)
@@ -161,6 +168,7 @@ bool TableBlockStorage::Open(const char* name, int key_sz, int inf_sz, int sz, i
 		fread(mem[i],(full_size),1,file);
 		if(mem[i]->count>max) max=mem[i]->count;
 	}
+	delete t;
 	return true;
 }
 
@@ -178,8 +186,9 @@ bool TableBlockStorage::Create(const char* name, int key_sz, int inf_sz, int sz,
 	inf_size=inf_sz;
 	seekpos=seek;
 	lim=block_lim;
-	int i,full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;
-	TableBlockStorageElem *t = (TableBlockStorageElem*)malloc(full_size);
+	full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;
+	int i;
+	TableBlockStorageElem *t = (TableBlockStorageElem*)new char[full_size];
 	size=(sz-sizeof(StorageAttr))/(full_size);
 
 	block_number=block_num;
@@ -190,7 +199,7 @@ bool TableBlockStorage::Create(const char* name, int key_sz, int inf_sz, int sz,
 	mem = new TableBlockStorageElem*[block_size];
 	for(i=0;i<block_size;i++)
 	{
-		mem[i]=(TableBlockStorageElem*)malloc(full_size);
+		mem[i]=(TableBlockStorageElem*)new char[full_size];
 	}
 
 	StorageAttr *sa = new StorageAttr();
@@ -226,12 +235,13 @@ bool TableBlockStorage::Create(const char* name, int key_sz, int inf_sz, int sz,
 	mem[0]->count=-5;
 	for(i=1;i<block_size;i++)
 		mem[i]->count=-1;
+	delete sa;
+	delete t;
 	return true;
 }
 
 bool TableBlockStorage::AddRow(char* key, char* value)
 {
-	int full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;
 	int i=0,pos=-1,empty=-1,k;
 	if(file==NULL) return false;
 
@@ -259,7 +269,6 @@ bool TableBlockStorage::AddRow(char* key, char* value)
 
 bool TableBlockStorage::DelRow(char* key)
 {
-	int full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;
 	int i;
 	if(file==NULL) return false;
 
