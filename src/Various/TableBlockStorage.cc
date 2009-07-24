@@ -70,9 +70,16 @@ TableBlockStorage::~TableBlockStorage()
 	fclose(file);
 }
 
+void TableBlockStorage::filewrite(TableBlockStorageElem* tbl,int seek, bool needflush)
+{
+	fseek(file,seekpos+seek*(sizeof(TableBlockStorageElem)+k_size+inf_size),0);
+	fwrite(tbl,(sizeof(TableBlockStorageElem)+k_size+inf_size),1,file);
+	if(needflush) fflush(file);
+}
+
 bool TableBlockStorage::CopyToNextBlock(void)
 {
-	int i,j,full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;;
+	int i,j,full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;
 	TableBlockStorageElem *tbl = (TableBlockStorageElem*)malloc(full_size);
 
 	if(max==lim-1)
@@ -86,14 +93,12 @@ bool TableBlockStorage::CopyToNextBlock(void)
 				if(mem[i]->count>=0)
 				{
 					mem[i]->count=++max;
-					fseek(file,seekpos+((cur_block+1)*block_size+j)*(full_size),0);
-					fwrite(mem[i],(full_size),1,file);
+					filewrite(mem[i],(cur_block+1)*block_size+j,false);
 					j++;
 				}
 			}
 			tbl->count=-5;
-			fseek(file,seekpos+cur_block*block_size*(full_size),0);
-			fwrite(tbl,(full_size),1,file);
+			filewrite(tbl,cur_block*block_size);
 			cur_block++;
 		}
 	}
@@ -199,6 +204,7 @@ bool TableBlockStorage::Create(const char* name, int key_sz, int inf_sz, int sz,
 	cur_block=0;
 	fseek(file,seekpos,0);
 	fwrite(sa,sizeof(StorageAttr),1,file);
+	fflush(file);
 	seekpos+=sizeof(StorageAttr);
 
 	for(i=0;i<size;i++) 
@@ -206,14 +212,16 @@ bool TableBlockStorage::Create(const char* name, int key_sz, int inf_sz, int sz,
 		if(i%block_size==0)
 			t->count=-5;
 		else t->count=-1;
-		fwrite(t,(full_size),1,file);
+		filewrite(t,i,false);
 	}
+	fflush(file);
 
 	int emp = sz-size*full_size-sizeof(StorageAttr);
 	if(emp>0)
 	{
 		char* empty=new char[emp];
 		fwrite(empty,emp,1,file);
+		fflush(file);
 	}
 	mem[0]->count=-5;
 	for(i=1;i<block_size;i++)
@@ -240,8 +248,7 @@ bool TableBlockStorage::AddRow(char* key, char* value)
 		mem[pos]->count=++max;
 		for(k=0;k<inf_size;k++)
 			*((char*)mem[pos]+sizeof(TableBlockStorageElem)+k_size+k)=*(value+k);
-		fseek(file,seekpos+(cur_block*block_size+pos)*(full_size),0);
-		fwrite(mem[pos],(full_size),1,file);
+		filewrite(mem[pos],cur_block*block_size+pos);
 		return true;;
 	}
 	mem[empty]->count=++max;
@@ -249,8 +256,7 @@ bool TableBlockStorage::AddRow(char* key, char* value)
 		*((char*)mem[empty]+sizeof(TableBlockStorageElem)+k)=*(key+k);
 	for(k=0;k<inf_size;k++)
 		*((char*)mem[empty]+sizeof(TableBlockStorageElem)+k_size+k)=*(value+k);
-	fseek(file,seekpos+(cur_block*block_size+empty)*(full_size),0);
-	fwrite(mem[empty],(full_size),1,file);
+	filewrite(mem[empty],cur_block*block_size+empty);
 	return true;
 }
 
@@ -266,10 +272,9 @@ bool TableBlockStorage::DelRow(char* key)
 		if((*((char*)mem[i]+sizeof(TableBlockStorageElem))!=0)&&(mem[i]>=0))
 			if(KeyCompare((char*)mem[i],key,k_size))
 			{
-				fseek(file,seekpos+(cur_block*block_size+i)*(full_size),0);
 				mem[i]->count=++max;
 				*((char*)mem[i]+sizeof(TableBlockStorageElem))=0;
-				fwrite(mem[i],(full_size),1,file);
+				filewrite(mem[i],cur_block*block_size+i);
 				return true;
 			}
 	}

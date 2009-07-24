@@ -50,6 +50,13 @@ CycleStorage::~CycleStorage()
 	fclose(file);
 }
 
+void CycleStorage::filewrite(CycleStorageElem* jrn,int seek,bool needflush)
+{
+	fseek(file,seekpos+seek*(sizeof(CycleStorageElem)+inf_size),0);
+	fwrite(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
+	if(needflush) fflush(file);
+}
+
 bool CycleStorage::Open(const char* name, int inf_sz, int sz, int seek)
 {
 	if(file!=NULL) fclose(file);
@@ -173,15 +180,21 @@ bool CycleStorage::Create(const char* name, int inf_sz, int sz, int seek)
 
 	fseek(file,seekpos,0);
 	fwrite(csa,sizeof(CycleStorageAttr),1,file);
+	fflush(file);
 	seekpos+=sizeof(CycleStorageAttr);
 
-	for(int i=0;i<size;i++) fwrite(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
+	for(int i=0;i<size;i++)
+	{
+		filewrite(jrn,i,false);
+	}
+	fflush(file);
 	
 	int emp = sz-size*(sizeof(CycleStorageElem)+inf_size)-sizeof(CycleStorageAttr);
 	if(emp>0)
 	{
 		char* empty= new char[emp];
 		fwrite(empty,emp,1,file);
+		fflush(file);
 	}
 
 	head=tail=-1;
@@ -190,27 +203,25 @@ bool CycleStorage::Create(const char* name, int inf_sz, int sz, int seek)
 
 bool CycleStorage::AddRow(char* str)
 {
+	if(file==NULL) return false;
 	CycleStorageElem *jrn = (CycleStorageElem*)malloc(sizeof(CycleStorageElem)+inf_size);
 	int i,k;
-	if(file==NULL) return false;
 	if(head==-1)
 	{
-		fseek(file,seekpos,0);
+		jrn->status=1;
 		for(k=0;k<inf_size;k++)
 			*((char*)(jrn)+sizeof(CycleStorageElem)+k)=*(str+k);
-		jrn->status=1;
-		fwrite(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
+		filewrite(jrn,0);
 		head=0;
 		tail=0;
 		return true;
 	}
 	if(head==tail)
 	{
-		fseek(file,seekpos+(sizeof(CycleStorageElem)+inf_size),0);
+		jrn->status=2;
 		for(k=0;k<inf_size;k++)
 			*((char*)(jrn)+sizeof(CycleStorageElem)+k)=*(str+k);
-		jrn->status=2;
-		fwrite(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
+		filewrite(jrn,1);
 		tail=1;
 		return true;
 	}
@@ -230,29 +241,25 @@ bool CycleStorage::AddRow(char* str)
 	fread(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
 	if(jrn->status==0)
 	{
-		fseek(file,seekpos+tail*(sizeof(CycleStorageElem)+inf_size),0);
+		jrn->status=2;
 		for(k=0;k<inf_size;k++)
 			*((char*)(jrn)+sizeof(CycleStorageElem)+k)=*(str+k);
-		jrn->status=2;
-		fwrite(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
+		filewrite(jrn,tail);
 		return true;
 	}
 	else
 	{
 		head++;
 		if(head>=size) head=0;
-		fseek(file,seekpos+tail*(sizeof(CycleStorageElem)+inf_size),0);
+		jrn->status=i;
 		for(k=0;k<inf_size;k++)
 			*((char*)(jrn)+sizeof(CycleStorageElem)+k)=*(str+k);
-		jrn->status=i;
-		if(tail==0) fseek(file,seekpos,0);
-		fwrite(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
+		filewrite(jrn,tail);
 		fseek(file,seekpos+head*(sizeof(CycleStorageElem)+inf_size),0);
 		fread(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
 		if((jrn->status==3)||(jrn->status==5)) jrn->status=6;
 		else jrn->status=1;
-		fseek(file,seekpos+head*(sizeof(CycleStorageElem)+inf_size),0);
-		fwrite(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
+		filewrite(jrn,head);
 		return true;
 	}
 }
@@ -268,47 +275,34 @@ bool CycleStorage::DelRow(int row)
 	if(jrn->status==1)
 	{
 		jrn->status=6;
-		fseek(file,seekpos+i*(sizeof(CycleStorageElem)+inf_size),0);
-		fwrite(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
+		filewrite(jrn,i);
 		return true;
 	}
 	if(jrn->status==2) j=3;
 	else if(jrn->status==4) j=5;
 	else return false;
-	fseek(file,seekpos+i*(sizeof(CycleStorageElem)+inf_size),0);
 	jrn->status=j;
-	fwrite(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
+	filewrite(jrn,i);
 	return true;
 }
 
 bool CycleStorage::DelAllRows()
 {
-	CycleStorageElem *jrn = (CycleStorageElem*)malloc(sizeof(CycleStorageElem)+inf_size);
-	int i;
 	if(file==NULL) return false;
+	CycleStorageElem *jrn = (CycleStorageElem*)malloc(sizeof(CycleStorageElem)+inf_size);
+	int i,j;
 	fseek(file,seekpos,0);
-	if((tail>head)&&(tail!=size-1))
-	{
-		i=1;
-		while(i!=0)
-		{
-			fread(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
-			jrn->status=0;
-			fseek(file,seekpos+i*(sizeof(CycleStorageElem)+inf_size),0);
-			fwrite(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
-			i=jrn->status;
-		}
-	}
+
 	for(i=0;i<size;i++)
 	{
 		fread(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
 		if(jrn->status!=0)
 		{
 			jrn->status=0;
-			fseek(file,seekpos+i*(sizeof(CycleStorageElem)+inf_size),0);
-			fwrite(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);
+			filewrite(jrn,i,false);
 		}
 	}
+	fflush(file);
 	head=tail=-1;
 	return true;
 }
