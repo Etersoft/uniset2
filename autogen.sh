@@ -1,9 +1,6 @@
 #! /bin/sh
 
-# If needed, run autoreconf -fiv manually and commit all files
-
-# We run just autoreconf, updates all needed
-autoreconf -v
+autoreconf -fiv
 
 # run configure if project is compiled
 test -f Makefile && ./configure --enable-maintainer-mode --prefix=/usr

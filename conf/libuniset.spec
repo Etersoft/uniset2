@@ -86,7 +86,7 @@ Libraries needed to develop for uniset extensions
 %setup -q
 
 %build
-%undefine __libtoolize
+%autoreconf
 %if_enabled doc
 %configure
 %else
