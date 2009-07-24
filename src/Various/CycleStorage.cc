@@ -209,8 +209,7 @@ bool CycleStorage::AddRow(char* str)
 	if(head==-1)
 	{
 		jrn->status=1;
-		for(k=0;k<inf_size;k++)
-			*((char*)(jrn)+sizeof(CycleStorageElem)+k)=*(str+k);
+		memcpy((void*)((char*)jrn+sizeof(CycleStorageElem)),(void*)str,inf_size);
 		filewrite(jrn,0);
 		head=0;
 		tail=0;
@@ -219,8 +218,7 @@ bool CycleStorage::AddRow(char* str)
 	if(head==tail)
 	{
 		jrn->status=2;
-		for(k=0;k<inf_size;k++)
-			*((char*)(jrn)+sizeof(CycleStorageElem)+k)=*(str+k);
+		memcpy((void*)((char*)jrn+sizeof(CycleStorageElem)),(void*)str,inf_size);
 		filewrite(jrn,1);
 		tail=1;
 		return true;
@@ -242,8 +240,7 @@ bool CycleStorage::AddRow(char* str)
 	if(jrn->status==0)
 	{
 		jrn->status=2;
-		for(k=0;k<inf_size;k++)
-			*((char*)(jrn)+sizeof(CycleStorageElem)+k)=*(str+k);
+		memcpy((void*)((char*)jrn+sizeof(CycleStorageElem)),(void*)str,inf_size);
 		filewrite(jrn,tail);
 		return true;
 	}
@@ -252,8 +249,7 @@ bool CycleStorage::AddRow(char* str)
 		head++;
 		if(head>=size) head=0;
 		jrn->status=i;
-		for(k=0;k<inf_size;k++)
-			*((char*)(jrn)+sizeof(CycleStorageElem)+k)=*(str+k);
+		memcpy((void*)((char*)jrn+sizeof(CycleStorageElem)),(void*)str,inf_size);
 		filewrite(jrn,tail);
 		fseek(file,seekpos+head*(sizeof(CycleStorageElem)+inf_size),0);
 		fread(jrn,(sizeof(CycleStorageElem)+inf_size),1,file);

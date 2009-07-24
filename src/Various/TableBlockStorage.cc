@@ -246,16 +246,13 @@ bool TableBlockStorage::AddRow(char* key, char* value)
 	if(pos>=0)
 	{
 		mem[pos]->count=++max;
-		for(k=0;k<inf_size;k++)
-			*((char*)mem[pos]+sizeof(TableBlockStorageElem)+k_size+k)=*(value+k);
+		memcpy((void*)((char*)mem[pos]+sizeof(TableBlockStorageElem)+k_size),(void*)value,inf_size);
 		filewrite(mem[pos],cur_block*block_size+pos);
 		return true;;
 	}
 	mem[empty]->count=++max;
-	for(k=0;k<k_size;k++)
-		*((char*)mem[empty]+sizeof(TableBlockStorageElem)+k)=*(key+k);
-	for(k=0;k<inf_size;k++)
-		*((char*)mem[empty]+sizeof(TableBlockStorageElem)+k_size+k)=*(value+k);
+	memcpy((void*)((char*)mem[empty]+sizeof(TableBlockStorageElem)),(void*)key,k_size);
+	memcpy((void*)((char*)mem[empty]+sizeof(TableBlockStorageElem)+k_size),(void*)value,inf_size);
 	filewrite(mem[empty],cur_block*block_size+empty);
 	return true;
 }
@@ -290,8 +287,7 @@ char* TableBlockStorage::FindKeyValue(char* key, char* val)
 			if((*((char*)mem[i]+sizeof(TableBlockStorageElem))!=0)&&(mem[i]>=0))
 				if(KeyCompare((char*)mem[i],key,k_size))
 				{
-					for(k=0;k<inf_size;k++)
-						*(val+k)=*((char*)mem[i]+sizeof(TableBlockStorageElem)+k_size+k);
+					memcpy((void*)val,(void*)((char*)mem[i]+sizeof(TableBlockStorageElem)+k_size),inf_size);
 					return val;
 				}
 		}
