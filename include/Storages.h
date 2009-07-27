@@ -80,13 +80,13 @@ class TableBlockStorage
 {
 	int max;
 	TableBlockStorageElem** mem;
-	FILE *file;
-	int inf_size, k_size, lim,seekpos;
+	int k_size, lim,seekpos;
 	int size,block_size,block_number,full_size;
 	public:
-		int cur_block;
+		FILE *file;
+		int cur_block,inf_size;
 		TableBlockStorage();
-		TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek);
+		TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek, bool create=false);
 		~TableBlockStorage();
 	private:
 		void filewrite(TableBlockStorageElem* tbl,int seek, bool needflush=true);

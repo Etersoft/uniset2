@@ -77,7 +77,7 @@ void testTable2(void)
 {
 	char *val=new char[40];
 	TableBlockStorage *t;
-	t = new TableBlockStorage("big_file.test", 4, 40, 20000, 5,28,0);
+	t = new TableBlockStorage("big_file.test", 4, 40, 20000, 5,28,0,true);
 	int i;
 	for(i=1;i<20;i++)
 	{
@@ -94,12 +94,13 @@ void testTable2(void)
 	{
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
-	printf("\ncurrent block = %d\n",t->cur_block);
+	printf("\ncurrent block = %d, rewriting first 7 with values=keys+10\n",t->cur_block);
 	for(i=1;i<8;i++)
 	{
 		sprintf(val,"%d",i+10);
 		t->AddRow((char*)&i,val);
 	}
+	printf("deleteing 8-10 elements\n");
 	for(i=8;i<11;i++)
 	{
 		t->DelRow((char*)&i);
@@ -108,7 +109,7 @@ void testTable2(void)
 	{
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
-	printf("\ncurrent block = %d\n",t->cur_block);
+	printf("\ncurrent block = %d, rewriting 3-10 elements with values=keys+40\n",t->cur_block);
 	for(i=3;i<11;i++)
 	{
 		sprintf(val,"%d",i+40);
@@ -128,11 +129,8 @@ void testTable2(void)
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\ncurrent block = %d\n",t->cur_block);
-
+	printf("after reopen:\n");
 	t->Open("big_file.test", 4, 40, 20000, 5,28,0);
-	i=11;
-	sprintf(val,"%d",i);
-	t->AddRow((char*)&i,val);
 	for(i=1;i<20;i++)
 	{
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);

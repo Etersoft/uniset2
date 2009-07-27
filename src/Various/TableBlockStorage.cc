@@ -53,11 +53,14 @@ TableBlockStorage::TableBlockStorage()
 	file=NULL;
 }
 
-TableBlockStorage::TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek)
+TableBlockStorage::TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek, bool create)
 {
 	file=NULL;
 	if(!Open(name, key_sz, inf_sz, sz, block_num, block_lim, seek))
-		Create(name, key_sz, inf_sz, sz, block_num, block_lim, seek);
+		if(create)
+			Create(name, key_sz, inf_sz, sz, block_num, block_lim, seek);
+		else
+			file=NULL;
 }
 
 TableBlockStorage::~TableBlockStorage()
