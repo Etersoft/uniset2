@@ -94,9 +94,9 @@ class TableBlockStorage
 	public:
 		bool Open(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
 		bool Create(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
-		bool AddRow(char* key, char* val);
-		bool DelRow(char* key);
-		char* FindKeyValue(char* key, char* val);
+		bool AddRow(void* key, void* val);
+		bool DelRow(void* key);
+		void* FindKeyValue(void* key, void* val);
 };
 
 class CycleStorage
@@ -112,7 +112,7 @@ class CycleStorage
 		~CycleStorage();
 		bool Open(const char* name, int inf_sz, int sz, int seek);
 		bool Create(const char* name, int inf_sz, int sz, int seek);
-		bool AddRow(char* str);
+		bool AddRow(void* str);
 		bool DelRow(int row);
 		bool DelAllRows(void);
 		bool ViewRows(int beg, int num);

@@ -81,7 +81,7 @@ void testTable2(void)
 	int i;
 	for(i=1;i<20;i++)
 	{
-		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
+		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\ncurrent block = %d\n",t->cur_block);
 	for(i=1;i<11;i++)
@@ -92,38 +92,38 @@ void testTable2(void)
 	printf("current block = %d, elements with values=keys added:\n",t->cur_block);
 	for(i=1;i<20;i++)
 	{
-		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
+		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\ncurrent block = %d, rewriting first 7 with values=keys+10\n",t->cur_block);
 	for(i=1;i<8;i++)
 	{
 		sprintf(val,"%d",i+10);
-		t->AddRow((char*)&i,val);
+		t->AddRow(&i,val);
 	}
 	printf("deleteing 8-10 elements\n");
 	for(i=8;i<11;i++)
 	{
-		t->DelRow((char*)&i);
+		t->DelRow(&i);
 	}
 	for(i=1;i<20;i++)
 	{
-		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
+		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\ncurrent block = %d, rewriting 3-10 elements with values=keys+40\n",t->cur_block);
 	for(i=3;i<11;i++)
 	{
 		sprintf(val,"%d",i+40);
-		t->AddRow((char*)&i,val);
+		t->AddRow(&i,val);
 	}
 	for(i=1;i<20;i++)
 	{
-		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
+		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\ncurrent block = %d\n",t->cur_block);
 
 	strcpy(val,"new block");
 	i=9;
-	t->AddRow((char*)&i,val);
+	t->AddRow(&i,val);
 	for(i=1;i<20;i++)
 	{
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
@@ -133,7 +133,7 @@ void testTable2(void)
 	t->Open("big_file.test", 4, 40, 20000, 5,28,0);
 	for(i=1;i<20;i++)
 	{
-		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
+		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\ncurrent block = %d\n",t->cur_block);
 	delete t;
