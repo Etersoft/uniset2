@@ -34,18 +34,12 @@
 
 #include "Storages.h"
 
+#define block_begin -5
+#define empty_elem -1
+
 bool KeyCompare(void* key1, void* key2, int cnt)
 {
-	bool fl=true;
-	for(int i=0;i<cnt;i++)
-	{
-		if(*((char*)key1+sizeof(TableBlockStorageElem)+i)!=*((char*)key2+i))
-		{
-			fl=false;
-			break;
-		}
-	}
-	return fl;
+	return !memcmp((char*)key1+sizeof(TableBlockStorageElem),key2,cnt);
 }
 
 TableBlockStorage::TableBlockStorage()
@@ -74,35 +68,47 @@ TableBlockStorage::~TableBlockStorage()
 	if(file!=NULL) fclose(file);
 }
 
-void TableBlockStorage::filewrite(TableBlockStorageElem* tbl,int seek, bool needflush)
+void* TableBlockStorage::KeyPointer(void* pnt)
 {
-	fseek(file,seekpos+seek*(sizeof(TableBlockStorageElem)+k_size+inf_size),0);
-	fwrite(tbl,(sizeof(TableBlockStorageElem)+k_size+inf_size),1,file);
+	return (char*)pnt+sizeof(TableBlockStorageElem);
+}
+
+void* TableBlockStorage::ValPointer(void* pnt)
+{
+	return (char*)pnt+sizeof(TableBlockStorageElem)+k_size;
+}
+
+void TableBlockStorage::filewrite(int seek, bool needflush)
+{
+	fseek(file,seekpos+(seek+cur_block*block_size)*full_size,0);
+	fwrite(mem[seek],full_size,1,file);
 	if(needflush) fflush(file);
 }
 
 bool TableBlockStorage::CopyToNextBlock(void)
 {
-	int i,j;
+	int i;
 	TableBlockStorageElem *tbl = (TableBlockStorageElem*)new char[full_size];
 
 	if(max==lim-1)
 	{
 		if((cur_block+2)*block_size<=size)
 		{
-			max=-1;
-			j=0;
+			max=-1;;
 			for(i=0;i<block_size;i++)
 			{
 				if(mem[i]->count>=0)
 				{
 					mem[i]->count=++max;
-					filewrite(mem[i],(cur_block+1)*block_size+j,false);
-					j++;
+					cur_block++;
+					filewrite(i,false);
+					cur_block--;
 				}
 			}
-			tbl->count=-5;
-			filewrite(tbl,cur_block*block_size);
+			tbl->count=block_begin;
+			fseek(file,seekpos+cur_block*block_size*full_size,0);
+			fwrite(tbl,full_size,1,file);
+			fflush(file);
 			cur_block++;
 		}
 	}
@@ -119,7 +125,8 @@ bool TableBlockStorage::Open(const char* name, int key_sz, int inf_sz, int sz, i
 
 	seekpos=seek;
 	StorageAttr *sa = new StorageAttr();
-	if(fseek(file,seekpos,0)==0) fread(sa,sizeof(StorageAttr),1,file);
+	if(fseek(file,seekpos,0)==0)
+		fread(sa,sizeof(StorageAttr),1,file);
 	else 
 	{
 		delete sa;
@@ -195,7 +202,7 @@ bool TableBlockStorage::Create(const char* name, int key_sz, int inf_sz, int sz,
 	lim=block_lim;
 	full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;
 	int i;
-	TableBlockStorageElem *t = (TableBlockStorageElem*)new char[full_size];
+
 	size=(sz-sizeof(StorageAttr))/(full_size);
 
 	block_number=block_num;
@@ -224,17 +231,20 @@ bool TableBlockStorage::Create(const char* name, int key_sz, int inf_sz, int sz,
 	seekpos+=sizeof(StorageAttr);
 
 	/*!	Поле счетчика записей при создании служит флагом на используемость блока и на пустоту ячейки записи:
-		(-5) - заполняются первые элементы каждого блока, емли там другое значение, то этот блок используется,
-		(-1) - все остальные пустые записи
+		block_begin=(-5) - заполняются первые элементы каждого блока, если там другое значение, то этот блок используется, empty_elem=(-1) - все остальные пустые записи
 	*/
 
+	mem[0]->count=block_begin;
+	for(i=1;i<block_size;i++)
+		mem[i]->count=empty_elem;
+
+	/*!	Цикл инициализирует все блоки в файле*/
 	for(i=0;i<size;i++) 
 	{
-		if(i%block_size==0)
-			t->count=-5;
-		else t->count=-1;
-		filewrite(t,i,false);
+		if((i!=0)&&(i%block_size==0)) cur_block++;
+		filewrite(i%block_size,false);
 	}
+	cur_block=0;
 	fflush(file);
 
 	int emp = sz-size*full_size-sizeof(StorageAttr);
@@ -244,11 +254,7 @@ bool TableBlockStorage::Create(const char* name, int key_sz, int inf_sz, int sz,
 		fwrite(empty,emp,1,file);
 		fflush(file);
 	}
-	mem[0]->count=-5;
-	for(i=1;i<block_size;i++)
-		mem[i]->count=-1;
 	delete sa;
-	delete t;
 	return true;
 }
 
@@ -260,22 +266,17 @@ bool TableBlockStorage::AddRow(void* key, void* value)
 	CopyToNextBlock();
 	for(i=0;i<block_size;i++)
 	{
-		if((*((char*)mem[i]+sizeof(TableBlockStorageElem))!=0)&&(mem[i]->count>=0))
-			if(KeyCompare(mem[i],key,k_size))
-				pos = i;
+		if(mem[i]->count>=0)
+			if(KeyCompare(mem[i],key,k_size)) pos = i;
 		if((mem[i]->count<0)&&(empty<0)) empty=i;
 	}
-	if(pos>=0)
-	{
-		mem[pos]->count=++max;
-		memcpy((char*)mem[pos]+sizeof(TableBlockStorageElem)+k_size,value,inf_size);
-		filewrite(mem[pos],cur_block*block_size+pos);
-		return true;;
-	}
+
+	if(pos>=0) empty=pos;
+	else memcpy(KeyPointer(mem[empty]),key,k_size);
+
 	mem[empty]->count=++max;
-	memcpy((char*)mem[empty]+sizeof(TableBlockStorageElem),key,k_size);
-	memcpy((char*)mem[empty]+sizeof(TableBlockStorageElem)+k_size,value,inf_size);
-	filewrite(mem[empty],cur_block*block_size+empty);
+	memcpy(ValPointer(mem[empty]),value,inf_size);
+	filewrite(empty);
 	return true;
 }
 
@@ -290,12 +291,13 @@ bool TableBlockStorage::DelRow(void* key)
 	CopyToNextBlock();
 	for(i=0;i<block_size;i++)
 	{
-		if((*((char*)mem[i]+sizeof(TableBlockStorageElem))!=0)&&(mem[i]->count>=0))
+		if(mem[i]->count>=0)
 			if(KeyCompare(mem[i],key,k_size))
 			{
 				mem[i]->count=++max;
-				*((char*)mem[i]+sizeof(TableBlockStorageElem))=0;
-				filewrite(mem[i],cur_block*block_size+i);
+				for(int k=0;k<k_size;k++)
+					*((char*)KeyPointer(mem[i])+k)=0;
+				filewrite(i);
 				return true;
 			}
 	}
@@ -308,10 +310,10 @@ void* TableBlockStorage::FindKeyValue(void* key, void* val)
 	{
 		for(i=0;i<block_size;i++)
 		{
-			if((*((char*)mem[i]+sizeof(TableBlockStorageElem))!=0)&&(mem[i]>=0))
+			if(mem[i]->count>=0)
 				if(KeyCompare(mem[i],key,k_size))
 				{
-					memcpy(val,(char*)mem[i]+sizeof(TableBlockStorageElem)+k_size,inf_size);
+					memcpy(val,ValPointer(mem[i]),inf_size);
 					return val;
 				}
 		}

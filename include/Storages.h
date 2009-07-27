@@ -89,8 +89,10 @@ class TableBlockStorage
 		TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek, bool create=false);
 		~TableBlockStorage();
 	private:
-		void filewrite(TableBlockStorageElem* tbl,int seek, bool needflush=true);
+		void filewrite(int seek, bool needflush=true);
 		bool CopyToNextBlock();
+		void* KeyPointer(void* pnt);
+		void* ValPointer(void* pnt);
 	public:
 		bool Open(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
 		bool Create(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
@@ -103,12 +105,13 @@ class CycleStorage
 {
 	FILE *file;
 	int seekpos, inf_size;
-	int head,tail;
+	int head,tail,full_size;
 	void filewrite(CycleStorageElem* jrn,int seek, bool needflush=true);
+	void* ValPointer(void* pnt);
 	public:
 		int size, iter;
 		CycleStorage();
-		CycleStorage(const char* name, int inf_sz, int sz, int seek);
+		CycleStorage(const char* name, int inf_sz, int sz, int seek,bool create=false);
 		~CycleStorage();
 		bool Open(const char* name, int inf_sz, int sz, int seek);
 		bool Create(const char* name, int inf_sz, int sz, int seek);

@@ -145,7 +145,7 @@ void testJournal1(void)
 	int i;
 	char *str = new char[30];
 	printf("journal test 1\n");
-	j = new CycleStorage("big_file.test",30,1000000,20000);
+	j = new CycleStorage("big_file.test",30,1000000,20000,true);
 	printf("size = %d\n",j->size);
 	for(i=1;i<33000;i++)
 	{
