@@ -91,8 +91,9 @@ class TableBlockStorage
 	private:
 		void filewrite(int seek, bool needflush=true);
 		bool CopyToNextBlock();
-		void* KeyPointer(void* pnt);
-		void* ValPointer(void* pnt);
+		bool KeyCompare(int i, void* key);
+		void* KeyPointer(int num);
+		void* ValPointer(int num);
 	public:
 		bool Open(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
 		bool Create(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
@@ -118,7 +119,6 @@ class CycleStorage
 		bool AddRow(void* str);
 		bool DelRow(int row);
 		bool DelAllRows(void);
-		//bool ViewRows(int beg, int num);
 		void* ViewRow(int num, void* str);
 		bool ExportToXML(const char* name);
 };

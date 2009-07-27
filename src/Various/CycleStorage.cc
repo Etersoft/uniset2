@@ -43,10 +43,12 @@ CycleStorage::CycleStorage(const char* name, int inf_sz, int sz, int seek, bool 
 {
 	file=NULL;
 	if(!Open(name,inf_sz, sz, seek))
+	{
 		if(create)
 			Create(name,inf_sz, sz, seek);
 		else
 			file=NULL;
+	}
 }
 
 CycleStorage::~CycleStorage()
@@ -220,7 +222,7 @@ bool CycleStorage::AddRow(void* str)
 {
 	if(file==NULL) return false;
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
-	int i=0,k;
+	int i=0;
 
 	/*!	Первые 2 случая - список пуст (head=-1), в списке 1 элемент(head=tail=0) рассматриваю отдельно)
 	*/
@@ -327,7 +329,7 @@ bool CycleStorage::DelAllRows()
 {
 	if(file==NULL) return false;
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
-	int i,j;
+	int i;
 	fseek(file,seekpos,0);
 
 	for(i=0;i<size;i++)
@@ -347,7 +349,7 @@ bool CycleStorage::DelAllRows()
 
 void* CycleStorage::ViewRow(int num, void* str)
 {
-	int i,j=(head+num)%size;
+	int j=(head+num)%size;
 	if((file==NULL)||(num>size)) return false;
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
 	fseek(file,seekpos+j*full_size,0);

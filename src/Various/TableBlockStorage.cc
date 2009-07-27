@@ -37,11 +37,6 @@
 #define block_begin -5
 #define empty_elem -1
 
-bool KeyCompare(void* key1, void* key2, int cnt)
-{
-	return !memcmp((char*)key1+sizeof(TableBlockStorageElem),key2,cnt);
-}
-
 TableBlockStorage::TableBlockStorage()
 {
 	file=NULL;
@@ -51,10 +46,12 @@ TableBlockStorage::TableBlockStorage(const char* name, int key_sz, int inf_sz, i
 {
 	file=NULL;
 	if(!Open(name, key_sz, inf_sz, sz, block_num, block_lim, seek))
+	{
 		if(create)
 			Create(name, key_sz, inf_sz, sz, block_num, block_lim, seek);
 		else
 			file=NULL;
+	}
 }
 
 TableBlockStorage::~TableBlockStorage()
@@ -68,14 +65,19 @@ TableBlockStorage::~TableBlockStorage()
 	if(file!=NULL) fclose(file);
 }
 
-void* TableBlockStorage::KeyPointer(void* pnt)
+bool TableBlockStorage::KeyCompare(int i, void* key)
 {
-	return (char*)pnt+sizeof(TableBlockStorageElem);
+	return !memcmp((char*)mem[i]+sizeof(TableBlockStorageElem),key,k_size);
 }
 
-void* TableBlockStorage::ValPointer(void* pnt)
+void* TableBlockStorage::KeyPointer(int num)
 {
-	return (char*)pnt+sizeof(TableBlockStorageElem)+k_size;
+	return (char*)mem[num]+sizeof(TableBlockStorageElem);
+}
+
+void* TableBlockStorage::ValPointer(int num)
+{
+	return (char*)mem[num]+sizeof(TableBlockStorageElem)+k_size;
 }
 
 void TableBlockStorage::filewrite(int seek, bool needflush)
@@ -260,22 +262,22 @@ bool TableBlockStorage::Create(const char* name, int key_sz, int inf_sz, int sz,
 
 bool TableBlockStorage::AddRow(void* key, void* value)
 {
-	int i=0,pos=-1,empty=-1,k;
+	int i=0,pos=-1,empty=-1;
 	if(file==NULL) return false;
 
 	CopyToNextBlock();
 	for(i=0;i<block_size;i++)
 	{
 		if(mem[i]->count>=0)
-			if(KeyCompare(mem[i],key,k_size)) pos = i;
+			if(KeyCompare(i,key)) pos = i;
 		if((mem[i]->count<0)&&(empty<0)) empty=i;
 	}
 
 	if(pos>=0) empty=pos;
-	else memcpy(KeyPointer(mem[empty]),key,k_size);
+	else memcpy(KeyPointer(empty),key,k_size);
 
 	mem[empty]->count=++max;
-	memcpy(ValPointer(mem[empty]),value,inf_size);
+	memcpy(ValPointer(empty),value,inf_size);
 	filewrite(empty);
 	return true;
 }
@@ -292,32 +294,32 @@ bool TableBlockStorage::DelRow(void* key)
 	for(i=0;i<block_size;i++)
 	{
 		if(mem[i]->count>=0)
-			if(KeyCompare(mem[i],key,k_size))
+			if(KeyCompare(i,key))
 			{
 				mem[i]->count=++max;
-				for(int k=0;k<k_size;k++)
-					*((char*)KeyPointer(mem[i])+k)=0;
+				memset(KeyPointer(i),0,k_size);
+				//for(int k=0;k<k_size;k++)
+				//	*((char*)KeyPointer(i)+k)=0;
 				filewrite(i);
 				return true;
 			}
 	}
+	return false;
 }
 
 void* TableBlockStorage::FindKeyValue(void* key, void* val)
 {
-	int i,k;
-	if(file!=NULL)
+	int i;
+	if(file==NULL) return 0;
+	for(i=0;i<block_size;i++)
 	{
-		for(i=0;i<block_size;i++)
-		{
-			if(mem[i]->count>=0)
-				if(KeyCompare(mem[i],key,k_size))
-				{
-					memcpy(val,ValPointer(mem[i]),inf_size);
-					return val;
-				}
-		}
+		if(mem[i]->count>=0)
+			if(KeyCompare(i,key))
+			{
+				memcpy(val,ValPointer(i),inf_size);
+				return val;
+			}
 	}
-	return 0;
+	return false;
 }
 
