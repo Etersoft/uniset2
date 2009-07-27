@@ -345,31 +345,21 @@ bool CycleStorage::DelAllRows()
 	return true;
 }
 
-bool CycleStorage::ViewRows(int beg, int num)
+void* CycleStorage::ViewRow(int num, void* str)
 {
-	int i,j=(head+beg)%size,n=num,k;
-	if(num==0) n=size;
-	if(num>size) n=size;
-	if(file==NULL) return false;
+	int i,j=(head+num)%size;
+	if((file==NULL)||(num>size)) return false;
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
 	fseek(file,seekpos+j*full_size,0);
-	for(i=0;i<n;i++)
+	fread(jrn,full_size,1,file);
+	if((jrn->status==1)||(jrn->status==2)||(jrn->status==4))
 	{
-		if(j==size)
-		{
-			j=0;
-			fseek(file,seekpos,0);
-		}
-		fread(jrn,full_size,1,file);
-		if((jrn->status==1)||(jrn->status==2)||(jrn->status==4))
-		{
-			printf("%s",((char*)(jrn)+sizeof(CycleStorageElem)));
-			printf("\n");
-		}
-		j++;
+		memcpy(str,ValPointer(jrn),inf_size);
+		delete jrn;
+		return str;
 	}
 	delete jrn;
-	return true;
+	return 0;
 }
 
 bool CycleStorage::ExportToXML(const char* name)

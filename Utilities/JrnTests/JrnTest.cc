@@ -153,7 +153,11 @@ void testJournal1(void)
 		j->AddRow(str);
 	}
 	printf("\nfirst 30 elements:\n");
-	j->ViewRows(0,30);
+	for(i=0;i<30;i++)
+	{
+		if(j->ViewRow(i,str))
+			printf("%s\n",str);
+	}
 
 	printf("test of 2 classes working in 1 file together\n");
 	TableBlockStorage *t = new TableBlockStorage("big_file.test", 4, 40, 20000, 5,28,0);
@@ -169,19 +173,31 @@ void testJournal1(void)
 	{
 		j->DelRow(i);
 	}
-	j->ViewRows(0,30);
+	for(i=0;i<30;i++)
+	{
+		if(j->ViewRow(i,str))
+			printf("%s\n",str);
+	}
 	printf("\nfirst 20 after adding 10 elements\n");
 	for(i=10001;i<10011;i++)
 	{
 		sprintf(str,"%d",i);
 		j->AddRow(str);
 	}
-	j->ViewRows(0,20);
+	for(i=0;i<20;i++)
+	{
+		if(j->ViewRow(i,str))
+			printf("%s\n",str);
+	}
 	printf("\nthe same after reopen:\n");
 	delete j;
 	j = new CycleStorage();
 	j->Open("big_file.test",30,1000000,20000);
-	j->ViewRows(0,20);
+	for(i=0;i<20;i++)
+	{
+		if(j->ViewRow(i,str))
+			printf("%s\n",str);
+	}
 	printf("\n");
 	j->ExportToXML("Xml.xml");
 	delete t;
@@ -197,7 +213,6 @@ void testJournal2(void)
 	printf("journal test 2 - checking number of iterations to find head/tail\n");
 	printf("size = %d\n\n",j->size);
 	printf("iterations = %d\n",j->iter);
-	//j->ViewRows(10,20);
 	for(i=0;i<20;i++)
 	{
 		for(k=1000;k<3000;k++)

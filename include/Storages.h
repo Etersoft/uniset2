@@ -118,7 +118,8 @@ class CycleStorage
 		bool AddRow(void* str);
 		bool DelRow(int row);
 		bool DelAllRows(void);
-		bool ViewRows(int beg, int num);
+		//bool ViewRows(int beg, int num);
+		void* ViewRow(int num, void* str);
 		bool ExportToXML(const char* name);
 };
 
