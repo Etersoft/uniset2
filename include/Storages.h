@@ -119,10 +119,13 @@ class CycleStorage
 		void* ViewRow(int num, void* str);
 		bool ExportToXML(const char* name);
 		int GetIter(void);
-	private:
+	protected:
 		FILE *file;
-		int size,seekpos, inf_size,iter;
-		int head,tail,full_size;
+		int inf_size;
+		int head,tail;
+	private:
+		int size,seekpos, iter;
+		int full_size;
 		void filewrite(CycleStorageElem* jrn,int seek, bool needflush=true);
 		void* ValPointer(void* pnt);
 };

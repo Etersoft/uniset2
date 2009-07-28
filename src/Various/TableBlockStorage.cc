@@ -298,8 +298,6 @@ bool TableBlockStorage::DelRow(void* key)
 			{
 				mem[i]->count=++max;
 				memset(KeyPointer(i),0,k_size);
-				//for(int k=0;k<k_size;k++)
-				//	*((char*)KeyPointer(i)+k)=0;
 				filewrite(i);
 				return true;
 			}
@@ -321,5 +319,10 @@ void* TableBlockStorage::FindKeyValue(void* key, void* val)
 			}
 	}
 	return false;
+}
+
+int TableBlockStorage::GetCurBlock()
+{
+	return cur_block;
 }
 

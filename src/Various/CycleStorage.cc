@@ -350,7 +350,7 @@ bool CycleStorage::DelAllRows()
 void* CycleStorage::ViewRow(int num, void* str)
 {
 	int j=(head+num)%size;
-	if((file==NULL)||(num>size)) return false;
+	if((file==NULL)||(num>size)) return 0;
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
 	fseek(file,seekpos+j*full_size,0);
 	fread(jrn,full_size,1,file);
