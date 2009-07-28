@@ -313,6 +313,35 @@ xmlNode* UniXML::findNode(xmlNode* node, const string searchnode, const string n
 // -------------------------------------------------------------------------
 // -------------------------------------------------------------------------
 // -------------------------------------------------------------------------
+
+//width means number of nodes of the same level as node in 1-st parameter (width number includes first node)
+//depth means number of times we can go to the children, if 0 we can't go only to elements of the same level
+xmlNode* UniXML::extFindNode(xmlNode* node, int depth, int width, const string searchnode, const string name, bool top )
+{
+	xmlNode* nodeFound;
+	int i=0;
+	while (node != NULL)
+	{
+		if(top&&(i>=width)) return 0;
+		if (searchnode == xml2local(node->name))
+		{
+			if( name == getProp(node,"name") )
+				return node;
+
+			if( name.empty() )
+				return node;
+		}
+		if(depth>0)
+		{
+			if ( (nodeFound=extFindNode(node->children, depth-1,width, searchnode, name,false)) != 0 )
+				return nodeFound;
+		}
+		i++;
+		node = node->next;
+	}
+	return 0;
+}
+
 bool UniXML_iterator::goNext()
 {
 	if( !curNode ) // || !curNode->next )

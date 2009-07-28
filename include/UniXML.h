@@ -107,6 +107,8 @@ public:
 	// используя ->parent
 	xmlNode* findNode(xmlNode* node, const std::string searchnode, const std::string name = "");
 
+	xmlNode* extFindNode(xmlNode* node, int depth, int width, const std::string searchnode, const std::string name = "", bool top=true );
+
 
 protected:
 	static int recur;

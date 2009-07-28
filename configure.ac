@@ -175,6 +175,7 @@ AC_CONFIG_FILES([Makefile
 				 Utilities/MBTester/Makefile
 				 Utilities/DBServer-MySQL/Makefile
 				 Utilities/JrnTests/Makefile
+				 Utilities/UniXmlTest/Makefile
 				 Utilities/codegen/Makefile
 				 Utilities/codegen/uniset-codegen
 				 Utilities/codegen/tests/Makefile
