@@ -33,13 +33,12 @@
 
 void testTable1(void)
 {
-	char *chr=(char*)malloc(20);
-	char *val=(char*)malloc(40);
+	char *chr=new char[20];
+	char *val=new char[40];
 	TableStorage *t;
 	t = new TableStorage("table.test", 40, 1220, 0);
 	int i;
-	printf("testTable\nsize = %d\n",t->size);
-	for(i=0;i<t->size;i++)
+	for(i=0;i<20;i++)
 	{
 		chr[0]=i;
 		sprintf(val,"%d",i);
@@ -83,18 +82,18 @@ void testTable2(void)
 	{
 		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
-	printf("\ncurrent block = %d\n",t->cur_block);
+	printf("\ncurrent block = %d\n",t->GetCurBlock());
 	for(i=1;i<11;i++)
 	{
 		sprintf(val,"%d",i);
 		t->AddRow((char*)&i,val);
 	}
-	printf("current block = %d, elements with values=keys added:\n",t->cur_block);
+	printf("current block = %d, elements with values=keys added:\n",t->GetCurBlock());
 	for(i=1;i<20;i++)
 	{
 		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
-	printf("\ncurrent block = %d, rewriting first 7 with values=keys+10\n",t->cur_block);
+	printf("\ncurrent block = %d, rewriting first 7 with values=keys+10\n",t->GetCurBlock());
 	for(i=1;i<8;i++)
 	{
 		sprintf(val,"%d",i+10);
@@ -109,7 +108,7 @@ void testTable2(void)
 	{
 		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
-	printf("\ncurrent block = %d, rewriting 3-10 elements with values=keys+40\n",t->cur_block);
+	printf("\ncurrent block = %d, rewriting 3-10 elements with values=keys+40\n",t->GetCurBlock());
 	for(i=3;i<11;i++)
 	{
 		sprintf(val,"%d",i+40);
@@ -119,7 +118,7 @@ void testTable2(void)
 	{
 		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
-	printf("\ncurrent block = %d\n",t->cur_block);
+	printf("\ncurrent block = %d\n",t->GetCurBlock());
 
 	strcpy(val,"new block");
 	i=9;
@@ -128,14 +127,14 @@ void testTable2(void)
 	{
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
-	printf("\ncurrent block = %d\n",t->cur_block);
+	printf("\ncurrent block = %d\n",t->GetCurBlock());
 	printf("after reopen:\n");
 	t->Open("big_file.test", 4, 40, 20000, 5,28,0);
 	for(i=1;i<20;i++)
 	{
 		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
-	printf("\ncurrent block = %d\n",t->cur_block);
+	printf("\ncurrent block = %d\n",t->GetCurBlock());
 	delete t;
 }
 
@@ -146,7 +145,6 @@ void testJournal1(void)
 	char *str = new char[30];
 	printf("journal test 1\n");
 	j = new CycleStorage("big_file.test",30,1000000,20000,true);
-	printf("size = %d\n",j->size);
 	for(i=1;i<33000;i++)
 	{
 		sprintf(str,"%d",i);
@@ -166,7 +164,7 @@ void testJournal1(void)
 	{
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
-	printf("\ncurrent block = %d\n\n",t->cur_block);
+	printf("\ncurrent block = %d\n\n",t->GetCurBlock());
 
 	printf("\nfirst 30 elements after deleting first 20:\n");
 	for(i=0;i<20;i++)
@@ -211,8 +209,7 @@ void testJournal2(void)
 	char *str = (char*)malloc(30);
 	j = new CycleStorage("big_file.test",30,1000000,20000);
 	printf("journal test 2 - checking number of iterations to find head/tail\n");
-	printf("size = %d\n\n",j->size);
-	printf("iterations = %d\n",j->iter);
+	printf("iterations = %d\n",j->GetIter());
 	for(i=0;i<20;i++)
 	{
 		for(k=1000;k<3000;k++)
@@ -221,7 +218,7 @@ void testJournal2(void)
 			j->AddRow(str);
 		}
 		j->Open("big_file.test",30,1000000,20000);
-		printf("iterations = %d\n",j->iter);
+		printf("iterations = %d\n",j->GetIter());
 	}
 	printf("\n");
 	delete j;

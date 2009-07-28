@@ -65,10 +65,9 @@ struct CycleStorageElem
 class TableStorage
 {
 	FILE *file;
-	int seekpos, inf_size;
+	int size,seekpos, inf_size;
 	int head;
 	public:
-		int size;
 		TableStorage(const char* name, int inf_sz, int sz, int seek);
 		~TableStorage();
 		int AddRow(char* key, char* val);
@@ -78,39 +77,37 @@ class TableStorage
 
 class TableBlockStorage
 {
-	int max;
-	TableBlockStorageElem** mem;
-	int k_size, lim,seekpos;
-	int size,block_size,block_number,full_size;
 	public:
-		FILE *file;
-		int cur_block,inf_size;
 		TableBlockStorage();
 		TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek, bool create=false);
 		~TableBlockStorage();
-	private:
-		void filewrite(int seek, bool needflush=true);
-		bool CopyToNextBlock();
-		bool KeyCompare(int i, void* key);
-		void* KeyPointer(int num);
-		void* ValPointer(int num);
-	public:
 		bool Open(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
 		bool Create(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
 		bool AddRow(void* key, void* val);
 		bool DelRow(void* key);
 		void* FindKeyValue(void* key, void* val);
+		int GetCurBlock(void);
+	protected:
+		FILE *file;
+		int inf_size;
+	private:
+		int max,cur_block;
+		TableBlockStorageElem** mem;
+		int k_size, lim,seekpos;
+		int size,block_size,block_number,full_size;
+		void filewrite(int seek, bool needflush=true);
+		bool CopyToNextBlock();
+		bool KeyCompare(int i, void* key);
+		void* KeyPointer(int num);
+		void* ValPointer(int num);
+	/*public:
+		FILE *file;
+		int cur_block,inf_size;*/
 };
 
 class CycleStorage
 {
-	FILE *file;
-	int seekpos, inf_size;
-	int head,tail,full_size;
-	void filewrite(CycleStorageElem* jrn,int seek, bool needflush=true);
-	void* ValPointer(void* pnt);
 	public:
-		int size, iter;
 		CycleStorage();
 		CycleStorage(const char* name, int inf_sz, int sz, int seek,bool create=false);
 		~CycleStorage();
@@ -121,6 +118,13 @@ class CycleStorage
 		bool DelAllRows(void);
 		void* ViewRow(int num, void* str);
 		bool ExportToXML(const char* name);
+		int GetIter(void);
+	private:
+		FILE *file;
+		int size,seekpos, inf_size,iter;
+		int head,tail,full_size;
+		void filewrite(CycleStorageElem* jrn,int seek, bool needflush=true);
+		void* ValPointer(void* pnt);
 };
 
 #endif

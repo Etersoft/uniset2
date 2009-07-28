@@ -370,8 +370,10 @@ bool CycleStorage::ExportToXML(const char* name)
 	if(file==NULL) return false;
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
 	UniXML* f = new UniXML();
-	f->newDoc("!");
+	xmlNode* xn;
+	f->newDoc("journal");
 	fseek(file,seekpos+j*full_size,0);
+	char* num = new char[10];
 	for(i=0;i<size;i++)
 	{
 		if(j==size)
@@ -382,11 +384,19 @@ bool CycleStorage::ExportToXML(const char* name)
 		fread(jrn,full_size,1,file);
 		if((jrn->status==1)||(jrn->status==2)||(jrn->status==4))
 		{
-			f->createNext(f->cur,"!",(char*)ValPointer(jrn));
+			sprintf(num,"%d",i);
+			xn=f->createChild(f->cur,"item","");
+			f->setProp(xn,"key",num);
+			f->setProp(xn,"text",(char*)ValPointer(jrn));
 		}
 		j++;
 	}
 	f->save(name);
 	delete jrn;
 	return true;
+}
+
+int CycleStorage::GetIter()
+{
+	return iter;
 }
