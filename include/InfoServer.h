@@ -85,7 +85,7 @@ class InfoServer:
 		InfoServer( UniSetTypes::ObjectId id=UniSetTypes::DefaultObjectId, ISRestorer* d=0 );
 		virtual ~InfoServer();
 
-		virtual UniSetTypes::ObjectType getType(){ return "InfoServer"; }
+		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("InfoServer"); }
 
 		
 		// реализация IDL интерфейса

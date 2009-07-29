@@ -52,7 +52,7 @@ class SystemGuard:
 		virtual void oaDestroy(int signo=0);
 		
 		virtual UniSetTypes::SimpleInfo* getInfo();
-		virtual UniSetTypes::ObjectType getType(){ return "SystemGuard"; }
+		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("SystemGuard"); }
 
 	protected:
 	

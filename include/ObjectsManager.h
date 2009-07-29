@@ -65,7 +65,7 @@ class ObjectsManager:
 		virtual ~ObjectsManager();
 
 
-		virtual UniSetTypes::ObjectType getType(){ return "ObjectsManager"; }
+		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("ObjectsManager"); }
 
 		// ------  функции объявленные в интерфейсе(IDL) ------
 		virtual void broadcast(const UniSetTypes::TransportMessage& msg);

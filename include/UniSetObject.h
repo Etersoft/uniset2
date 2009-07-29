@@ -76,7 +76,7 @@ class UniSetObject:
 		virtual CORBA::Boolean exist();
 		virtual char* getName(){return (char*)myname.c_str();}
 		virtual UniSetTypes::ObjectId getId(){ return myid; }
-		virtual UniSetTypes::ObjectType getType() { static UniSetTypes::ObjectType ot("UniSetObject"); return ot; }
+		virtual UniSetTypes::ObjectType getType() { return UniSetTypes::getObjectType("UniSetObject"); }
 		virtual UniSetTypes::SimpleInfo* getInfo();
 		friend std::ostream& operator<<(std::ostream& os, UniSetObject& obj );
 

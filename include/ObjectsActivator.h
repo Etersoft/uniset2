@@ -59,7 +59,7 @@ class ObjectsActivator:
 		
 		inline void oakill(int signo){ raise(signo);}
 
-		virtual UniSetTypes::ObjectType getType(){ return "ObjectsActivator"; }
+		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("ObjectsActivator"); }
 
 		
 	protected:
