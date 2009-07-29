@@ -1876,7 +1876,7 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 						for( int k=0; k<MTR::T3::wsize(); k++, i++ )
 							data[k] = i->second->mbval;
 		
-						MTR::T3 t(data);
+						MTR::T3 t(data,MTR::T3::wsize());
 						delete[] data;
 						IOBase::processingAsAI( &(*it), (long)t, shm, force );
 					}
@@ -1910,7 +1910,7 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 						for( int k=0; k<MTR::T5::wsize(); k++, i++ )
 							data[k] = i->second->mbval;
 		
-						MTR::T5 t(data);
+						MTR::T5 t(data,MTR::T5::wsize());
 						delete[] data;
 					
 						IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
@@ -1933,7 +1933,7 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 						for( int k=0; k<MTR::T6::wsize(); k++, i++ )
 							data[k] = i->second->mbval;
 		
-						MTR::T6 t(data);
+						MTR::T6 t(data,MTR::T6::wsize());
 						delete[] data;
 					
 						IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
@@ -1956,7 +1956,7 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 						for( int k=0; k<MTR::T7::wsize(); k++, i++ )
 							data[k] = i->second->mbval;
 		
-						MTR::T7 t(data);
+						MTR::T7 t(data,MTR::T7::wsize());
 						delete[] data;
 					
 						IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
@@ -1980,7 +1980,7 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 						for( int k=0; k<MTR::F1::wsize(); k++, i++ )
 							data[k] = i->second->mbval;
 		
-						MTR::F1 t(data);
+						MTR::F1 t(data,MTR::F1::wsize());
 						delete[] data;
 					
 						IOBase::processingFasAI( &(*it), (float)t, shm, force );
