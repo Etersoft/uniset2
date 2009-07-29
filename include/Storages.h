@@ -36,28 +36,33 @@
 
 #define key_size 20
 
+/*! Заголовок таблицы с элементами класса TableBlockStorage */
 struct StorageAttr
 {
 	int k_size, inf_size,size,block_number;
 	int lim, seekpos;
 } __attribute__((__packed__));
 
+/*! Заголовок журнала с элементами класса CycleStorage */
 struct CycleStorageAttr
 {
 	int size, inf_size, seekpos;
 } __attribute__((__packed__));
 
+/*! Основная структура класса TableStorage */
 struct TableStorageElem
 {
 	char status;
 	char key[key_size];
 } __attribute__((__packed__));
 
+/*! Основная структура класса TableBlockStorage */
 struct TableBlockStorageElem
 {
 	int count;
 } __attribute__((__packed__));
 
+/*! Основная структура класса CycleStorage */
 struct CycleStorageElem
 {
 	char status;
@@ -79,14 +84,32 @@ class TableStorage
 class TableBlockStorage
 {
 	public:
+		/*! Конструктор по умолчанию не открывает и не создает новой таблицы */
 		TableBlockStorage();
+
+		/*! Конструктор вызывает функцию Open, а при параметре create=true создает новую таблицу при
+		несовпадении заголовков или отсутствии старой */
 		TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek, bool create=false);
+
 		~TableBlockStorage();
+
+		/*! inf_sz - размер поля информации, key_sz - размер поля ключа, sz - размер таблицы
+		block_num - кол-во блоков (при этом размер одного блока = sz/block_num должен быть достаточен для
+		всей информации, записываемой в таблицу), block_lim - число перезаписей на блок,
+		seek - отступ от начала файла (указывает место, где расположена таблица) */
 		bool Open(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
 		bool Create(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
+
+		/*! Добавление информации по ключу, возможна перезапись при совпадении ключа с существующим */
 		bool AddRow(void* key, void* val);
+
+		/*! Удаление информации по ключу, фактически освобождения места не происходит, оно только помечается удаленным*/
 		bool DelRow(void* key);
+
+		/*! Поиск информации по ключу, при неудаче возвращается 0 */
 		void* FindKeyValue(void* key, void* val);
+
+		/*! Получение текущего блока (для тестовой программы) */
 		int GetCurBlock(void);
 	protected:
 		FILE *file;
@@ -106,16 +129,36 @@ class TableBlockStorage
 class CycleStorage
 {
 	public:
+		/*! Конструктор по умолчанию не открывает и не создает нового журнала */
 		CycleStorage();
+
+		/*! Конструктор вызывает функцию Open, а при параметре create=true создает новый журнал при
+		несовпадении заголовков или отсутствии старого */
 		CycleStorage(const char* name, int inf_sz, int sz, int seek,bool create=false);
+
 		~CycleStorage();
+
+		/*! inf_sz - размер поля информации, sz - размер всего журнала,
+		seek - отступ от начала файла (указывает место, где расположен журнал) */
 		bool Open(const char* name, int inf_sz, int sz, int seek);
 		bool Create(const char* name, int inf_sz, int sz, int seek);
+
+		/*! Добавление информации в конец журнала */
 		bool AddRow(void* str);
+
+		/*! Удаление информации с номером ряда row */
 		bool DelRow(int row);
+
+		/*! Очистка журнала *?
 		bool DelAllRows(void);
+
+		/*! Функция возвращает информацию из ряда с номером num */
 		void* ViewRow(int num, void* str);
+
+		/*! Экспорт в Xml-файл с именем name */
 		bool ExportToXML(const char* name);
+
+		/*! Получение кол-ва итерации при поиске начала/конца журнала (для тестовой программы) */
 		int GetIter(void);
 	protected:
 		FILE *file;
