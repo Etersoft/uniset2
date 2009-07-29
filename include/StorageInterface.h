@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman <pv>
+ * Copyright (c) 2002 Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \author Pavel Vainerman <pv>
+ * \author Pavel Vainerman
  * \version $Id: StorageInterface.h,v 1.2 2006/12/20 10:39:01 vpashka Exp $
  * \date   $Date: 2006/12/20 10:39:01 $
  */

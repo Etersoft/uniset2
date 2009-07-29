@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Vitaly Lipatov <lav>, Pavel Vainerman <pv>
+ * Copyright (c) 2002 Vitaly Lipatov, Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \brief ????? ?????? ? ?????????????
- *  \author Vitaly Lipatov <lav>, Pavel Vainerman <pv>
+ *  \author Vitaly Lipatov, Pavel Vainerman
  *  \date   $Date: 2008/09/16 19:02:46 $
  *  \version $Id: Configuration.cc,v 1.41 2008/09/16 19:02:46 vpashka Exp $
  */

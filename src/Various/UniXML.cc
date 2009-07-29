@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *  \author Vitaly Lipatov <lav>
+ *  \author Vitaly Lipatov
  *  \date   $Date: 2006/12/20 13:43:41 $
  *  \version $Id: UniXML.cc,v 1.13 2006/12/20 13:43:41 vpashka Exp $
  *  \par

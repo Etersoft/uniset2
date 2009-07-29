@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman <pv>
+ * Copyright (c) 2002 Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \brief Блокировка повторного запуска программы
- *  \author Ahton Korbin<ahtoh>, Pavel Vainerman <pv>
+ *  \author Ahton Korbin<ahtoh>, Pavel Vainerman
  *  \date   $Date: 2006/12/20 13:43:41 $
  *  \version $Id: RunLock.cc,v 1.8 2006/12/20 13:43:41 vpashka Exp $
 */

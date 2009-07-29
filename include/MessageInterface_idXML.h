@@ -1,6 +1,6 @@
 /*! \file
  *  \brief Класс работы с сообщениями
- *  \author Pavel Vainerman <pv>
+ *  \author Pavel Vainerman
  *  \date   $Date: 2008/11/22 23:22:24 $
  *  \version $Id: MessageInterface_idXML.h,v 1.5 2008/11/22 23:22:24 vpashka Exp $
  */

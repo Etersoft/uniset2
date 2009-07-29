@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman <pv>
+ * Copyright (c) 2002 Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 /*! \file
  * \brief Реализация базового(фундаментального) класса для объектов системы 
  * (процессов управления, элементов графического интерфейса и т.п.)
- * \author Pavel Vainerman <pv>
+ * \author Pavel Vainerman
  * \date $Date: 2009/01/16 23:16:42 $
  * \version $Id: UniSetObject.h,v 1.19 2009/01/16 23:16:42 vpashka Exp $
  */

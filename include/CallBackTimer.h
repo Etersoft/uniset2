@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman <pv>
+ * Copyright (c) 2002 Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *  \author Pavel Vainerman <pv>
+ *  \author Pavel Vainerman
  *  \date   $Date: 2005/01/28 20:52:20 $
  *  \version $Id: CallBackTimer.h,v 1.5 2005/01/28 20:52:20 vitlav Exp $
 */
@@ -54,7 +54,7 @@ namespace UniSetTypes
 
 /*! 
  * \brief Таймер 
- * \author Pavel Vainerman <pv>
+ * \author Pavel Vainerman
  * \par
  * Создает поток, в котором происходит отсчет тактов (10ms). Позволяет заказывать до CallBackTimer::MAXCallBackTimer таймеров.
  * При срабатывании будет вызвана указанная функция с указанием \b Id таймера, который сработал. 

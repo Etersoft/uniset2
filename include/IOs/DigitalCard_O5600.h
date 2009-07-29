@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \brief Заголовочный файл для дискретной карты DIO5600
- *  \author Vitaly Lipatov <lav>
+ *  \author Vitaly Lipatov
  *  \date   $Date: 2005/01/28 20:52:53 $
  *  \version $Id: DigitalCard_O5600.h,v 1.3 2005/01/28 20:52:53 vitlav Exp $
  */

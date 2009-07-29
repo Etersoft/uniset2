@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \brief Заголовочный файл для организации низкоуровневого ввода-вывода.
- *  \author Vitaly Lipatov <lav>
+ *  \author Vitaly Lipatov
  *  \date   $Date: 2006/12/21 14:47:42 $
  *  \version $Id: IOAccess.h,v 1.5 2006/12/21 14:47:42 vpashka Exp $
  *  \par
@@ -38,7 +38,7 @@
 
 /*! \class IOAccess
  *  \brief Предоставление операций для низкоуровневого ввода-вывода.
- *  \author Vitaly Lipatov <lav>
+ *  \author Vitaly Lipatov
  *  \date   $Date: 2006/12/21 14:47:42 $
  *  \version $Id: IOAccess.h,v 1.5 2006/12/21 14:47:42 vpashka Exp $
  *  \par

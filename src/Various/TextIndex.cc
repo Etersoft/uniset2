@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *  \author Vitaly Lipatov <lav>
+ *  \author Vitaly Lipatov
  *  \date   $Date: 2005/01/28 21:14:18 $
  *  \version $Id: TextIndex.cc,v 1.6 2005/01/28 21:14:18 vitlav Exp $
  *  \par

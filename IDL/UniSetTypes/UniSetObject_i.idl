@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman <pv>
+ * Copyright (c) 2002 Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *  \author Pavel Vainerman <pv>
+ *  \author Pavel Vainerman
  *  \date   $Date: 2007/12/17 22:50:59 $
  *  \version $Id: UniSetObject_i.idl,v 1.4 2007/12/17 22:50:59 vpashka Exp $
 */
@@ -34,7 +34,7 @@
 	/*!
 	 * \interface UniSetObject_i
 	 * \brief Базовый интерфес для всех объектов
-	 * \author Pavel Vainerman <pv>
+	 * \author Pavel Vainerman
 	 *
 	 * Первичный базовый класс. Праролитель всех объектов в системе.
 	 * 
