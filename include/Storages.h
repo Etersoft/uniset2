@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 
 #include "UniXML.h"
 
@@ -100,9 +101,6 @@ class TableBlockStorage
 		bool KeyCompare(int i, void* key);
 		void* KeyPointer(int num);
 		void* ValPointer(int num);
-	/*public:
-		FILE *file;
-		int cur_block,inf_size;*/
 };
 
 class CycleStorage

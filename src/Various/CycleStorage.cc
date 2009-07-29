@@ -28,10 +28,6 @@
 	перезаписываются самые старые элемениты при полном заполнении журнала
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "Storages.h"
 
 CycleStorage::CycleStorage()
@@ -86,7 +82,7 @@ bool CycleStorage::Open(const char* name, int inf_sz, int sz, int seek)
 		return false;
 	}
 
-	if((csa->size!=((sz-sizeof(CycleStorageAttr))/(sizeof(CycleStorageElem)+inf_sz)))||(csa->inf_size!=inf_sz)||(csa->seekpos!=seek)) 
+	if((csa->size!=((sz-sizeof(CycleStorageAttr))/(sizeof(CycleStorageElem)+inf_sz)))||(csa->inf_size!=inf_sz)||(csa->seekpos!=seek))
 	{
 		delete csa;
 		return false;
@@ -350,7 +346,9 @@ bool CycleStorage::DelAllRows()
 void* CycleStorage::ViewRow(int num, void* str)
 {
 	int j=(head+num)%size;
-	if((file==NULL)||(num>size)) return 0;
+	if((file==NULL)||(num>=size)) return 0;
+
+	if((head!=tail+1)&&(num>tail)) return 0;
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
 	fseek(file,seekpos+j*full_size,0);
 	fread(jrn,full_size,1,file);

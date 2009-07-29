@@ -224,7 +224,6 @@ void testJournal2(void)
 	delete j;
 }
 
-
 int main(int args, char **argv)
 {
 	//testTable1();

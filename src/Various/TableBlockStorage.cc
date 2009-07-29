@@ -28,10 +28,6 @@
 	каждого блока памяти, при достижении предела, происходит переход в следующий блок
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "Storages.h"
 
 #define block_begin -5
@@ -318,7 +314,7 @@ void* TableBlockStorage::FindKeyValue(void* key, void* val)
 				return val;
 			}
 	}
-	return false;
+	return 0;
 }
 
 int TableBlockStorage::GetCurBlock()
