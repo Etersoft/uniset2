@@ -153,7 +153,7 @@ void testJournal1(void)
 	printf("\nfirst 30 elements:\n");
 	for(i=0;i<30;i++)
 	{
-		if(j->ViewRow(i,str))
+		if(j->ReadRow(i,str))
 			printf("%s\n",str);
 	}
 
@@ -173,7 +173,7 @@ void testJournal1(void)
 	}
 	for(i=0;i<30;i++)
 	{
-		if(j->ViewRow(i,str))
+		if(j->ReadRow(i,str))
 			printf("%s\n",str);
 	}
 	printf("\nfirst 20 after adding 10 elements\n");
@@ -184,7 +184,7 @@ void testJournal1(void)
 	}
 	for(i=0;i<20;i++)
 	{
-		if(j->ViewRow(i,str))
+		if(j->ReadRow(i,str))
 			printf("%s\n",str);
 	}
 	printf("\nthe same after reopen:\n");
@@ -193,11 +193,10 @@ void testJournal1(void)
 	j->Open("big_file.test",30,1000000,20000);
 	for(i=0;i<20;i++)
 	{
-		if(j->ViewRow(i,str))
+		if(j->ReadRow(i,str))
 			printf("%s\n",str);
 	}
 	printf("\n");
-	j->ExportToXML("Xml.xml");
 	delete t;
 	delete j;
 }
