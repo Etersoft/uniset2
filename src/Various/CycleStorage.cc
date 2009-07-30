@@ -74,13 +74,10 @@ bool CycleStorage::Open(const char* name, int inf_sz, int sz, int seek)
 	if(file==NULL) return false;
 
 	seekpos=seek;
+	if(fseek(file,seekpos,0)==-1) return false;
+
 	CycleStorageAttr *csa = new CycleStorageAttr();
-	if(fseek(file,seekpos,0)==0) fread(csa,sizeof(CycleStorageAttr),1,file);
-	else
-	{
-		delete csa;
-		return false;
-	}
+	fread(csa,sizeof(CycleStorageAttr),1,file);
 
 	if((csa->size!=((sz-sizeof(CycleStorageAttr))/(sizeof(CycleStorageElem)+inf_sz)))||(csa->inf_size!=inf_sz)||(csa->seekpos!=seek))
 	{
@@ -173,19 +170,21 @@ bool CycleStorage::Create(const char* name, int inf_sz, int sz, int seek)
 
 	inf_size=inf_sz;
 	full_size=sizeof(CycleStorageElem)+inf_size;
-	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
-	jrn->status=0;
-
+	
 	size=(sz-sizeof(CycleStorageAttr))/full_size;
 	iter=0;
 	seekpos=seek;
+
+	if(fseek(file,seekpos,0)==-1) return false;
+
+	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
+	jrn->status=0;
 
 	CycleStorageAttr *csa = new CycleStorageAttr();
 	csa->inf_size=inf_size;
 	csa->size=size;
 	csa->seekpos=seekpos;
 
-	fseek(file,seekpos,0);
 	fwrite(csa,sizeof(CycleStorageAttr),1,file);
 	fflush(file);
 	seekpos+=sizeof(CycleStorageAttr);
