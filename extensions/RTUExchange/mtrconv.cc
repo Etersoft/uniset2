@@ -26,7 +26,7 @@ int main( int argc, char **argv )
 
 	unsigned short v1 = 0;
 	unsigned short v2 = 0;
-	char* type="";
+	const char* type="";
 
 	if( argc<2 )
 	{

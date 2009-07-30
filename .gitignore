@@ -13,6 +13,7 @@ output.*
 Makefile
 Makefile.in
 libtool
+INSTALL
 
 ltmain.sh
 missing
@@ -27,7 +28,8 @@ semantic.cache
 *_SK.cc
 *_iSK.cc
 *_SK.h
-config.h
+/config.h
+/config.h.in
 
 stamp-h1
 config.status
