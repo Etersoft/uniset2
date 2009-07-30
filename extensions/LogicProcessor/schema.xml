@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="koi8-r"?>
+<Schema>
+<text-view>
+       ----
+  1 --|    |
+  2 --|TOR1|---|  1  -----
+      |    |   |----|     |
+       ----       2 |     |--|
+               |----|TAND3|  |
+       ----    |    |     |  |          
+      |    |   |     -----   |          
+  1 --|TOR2|   |             |            1  ----       -------
+  2 --|    |---              |    ----   ---|    |     |       |  out
+      |    |                 | 1 |    |   2 |TOR5|-----| Delay |----
+       ----                  |---|TOR4|-----|    |     |       |
+                           2 ----|    |     |    |     |       |
+                                  ----       ----       -------
+</text-view>
+
+<elements>
+	<item id="1" type="OR" inCount="2"/>
+	<item id="2" type="OR" inCount="2"/>
+	<item id="3" type="AND" inCount="2"/>
+	<item id="4" type="OR" inCount="2"/>
+	<item id="5" type="OR" inCount="2"/>
+	<item id="6" type="Delay" inCount="1" delayMS="3000"/>
+</elements>
+
+<connections>
+	<item type="ext" from="Input1_S" to="1" toInput="1" />
+	<item type="ext" from="Input2_S" to="1" toInput="2" />
+	<item type="ext" from="Input3_S" to="2" toInput="1" />
+	<item type="ext" from="Input4_S" to="2" toInput="2" />
+	<item type="ext" from="Input5_S" to="4" toInput="2" />
+	<item type="ext" from="Input6_S" to="5" toInput="1" />
+	<item type="int" from="1" to="3" toInput="1" />
+	<item type="int" from="2" to="3" toInput="2" />
+	<item type="int" from="3" to="4" toInput="1" />
+	<item type="int" from="4" to="5" toInput="2" />
+	<item type="int" from="5" to="6" toInput="1" />
+	<item type="out" from="6" to="Output1_C"/>
+</connections>
+
+</Schema>
