@@ -113,7 +113,7 @@ TableStorage::~TableStorage()
 int TableStorage::AddRow(char* key, char* value)
 {
 	TableStorageElem *tbl = (TableStorageElem*)malloc(sizeof(TableStorageElem)+inf_size);
-	int i,k,j,st;
+	int i,k,j;
 	if(file!=NULL)
 	{
 		if(head==-1)
@@ -151,14 +151,19 @@ int TableStorage::AddRow(char* key, char* value)
 		fseek(file,seekpos+j*(sizeof(TableStorageElem)+inf_size),0);
 		if(j==head)
 		{
-			if((tbl->status==2)||(tbl->status==3)) st=2;
-			else st=4;
+			if((tbl->status==2)||(tbl->status==3))
+				tbl->status=2;
+			else
+				tbl->status=4;
 
 			if(j==0)
-				if(st==2) st=4;
-				else st=2;
+			{
+				if(tbl->status==2)
+					tbl->status=4;
+				else
+					tbl->status=2;
+			}
 
-			tbl->status=st;
 			strcpy(tbl->key,key);
 			for(k=0;k<inf_size;k++)
 				*((char*)(tbl)+sizeof(TableStorageElem)+k)=*(value+k);
