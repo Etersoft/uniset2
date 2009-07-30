@@ -23,7 +23,57 @@ eval $(head -n1 $PCFILE)
 
 test -d "$prefix" || exit 1
 
-export UNISET_CFLAGS="$(pkg-config --cflags $PCFILE | sed -e "s|-I$prefix/include/uniset|-I$EXPORTPATH/include|g" )"
+export PKG_CONFIG_PATH=$EXPORTPATH:$EXPORTPATH/extensions:$EXPORTPATH/extensions/SharedMemory:$PKG_CONFIG_PATH
 
-export UNISET_LIBS="-L$EXPORTPATH/lib $(pkg-config --libs $PCFILE | sed -e "s|-L$prefix ||g" )"
+cflags()
+{
+	pkg-config --cflags $1 | sed -e "s|-I$prefix/include/uniset|-I$EXPORTPATH/include|g"
+}
+
+libs()
+{
+	echo -n "-L$EXPORTPATH/lib "
+	pkg-config --libs $1 | sed -e "s|-L$prefix ||g"
+}
+
+export UNISET_CFLAGS="$( cflags $PCFILE )"
+
+export UNISET_LIBS="$( libs $PCFILE )"
+
+ext_cflags()
+{
+	# FIXME: really use extensions/
+	echo -n "-I$1"
+	cflags $1/$2
+}
+
+ext_libs()
+{
+	echo -n "-L$1"
+	libs $1/$2
+}
+
+EXFILE="$EXPORTPATH/extensions libUniSetExtensions.pc"
+export UNISET_EXT_CFLAGS="-I$EXPORTPATH/extensions/include $( ext_cflags $EXFILE )"
+export UNISET_EXT_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/IOControl libUniSetIOControl.pc"
+export UNISET_EXT_IO_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_IO_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/SharedMemory libUniSetSharedMemory.pc"
+export UNISET_EXT_SM_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_SM_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/ModbusSlave libUniSetMBSlave.pc"
+export UNISET_EXT_MBS_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_MBS_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/MBTCPMaster libUniSetMBTCPMaster.pc"
+export UNISET_EXT_MBM_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_MBM_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/RTUExchange libUniSetRTU.pc"
+export UNISET_EXT_RTU_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_RTU_LIBS="$( ext_libs $EXFILE )"
 
