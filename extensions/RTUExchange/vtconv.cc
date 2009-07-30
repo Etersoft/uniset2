@@ -45,7 +45,7 @@ int main( int argc, char **argv )
 	unsigned short v[4];
 	memset(v,0,sizeof(v));
 
-	char* type="";
+	const char* type="";
 
 	if( argc<3 )
 	{
