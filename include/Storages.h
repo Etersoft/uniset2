@@ -32,7 +32,8 @@
 #include <string.h>
 #include <string>
 
-#include "UniXML.h"
+#define EMPTY_BLOCK -5
+#define EMPTY_ELEM -1
 
 #define key_size 20
 
@@ -153,10 +154,10 @@ class CycleStorage
 		bool DelAllRows(void);
 
 		/*! Функция возвращает информацию из ряда с номером num */
-		void* ViewRow(int num, void* str);
+		void* ReadRow(int num, void* str);
 
 		/*! Экспорт в Xml-файл с именем name */
-		bool ExportToXML(const char* name);
+		//bool ExportToXML(const char* name);
 
 		/*! Получение кол-ва итерации при поиске начала/конца журнала (для тестовой программы) */
 		int GetIter(void);
@@ -169,6 +170,7 @@ class CycleStorage
 		int full_size;
 		void filewrite(CycleStorageElem* jrn,int seek, bool needflush=true);
 		void* ValPointer(void* pnt);
+		void FindHead();
 };
 
 #endif

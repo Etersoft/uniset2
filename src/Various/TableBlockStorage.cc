@@ -30,9 +30,6 @@
 
 #include "Storages.h"
 
-#define block_begin -5
-#define empty_elem -1
-
 TableBlockStorage::TableBlockStorage()
 {
 	file=NULL;
@@ -85,33 +82,28 @@ void TableBlockStorage::filewrite(int seek, bool needflush)
 
 bool TableBlockStorage::CopyToNextBlock(void)
 {
-	int i;
-	TableBlockStorageElem *tbl = (TableBlockStorageElem*)new char[full_size];
-
-	if(max==lim-1)
+	if(cur_block<block_number-1)
 	{
-		if((cur_block+2)*block_size<=size)
+		int i;
+		max=-1;
+		
+		mem[0]->count=EMPTY_BLOCK;
+		filewrite(0,false);
+
+		cur_block++;
+		for(i=0;i<block_size;i++)
 		{
-			max=-1;;
-			for(i=0;i<block_size;i++)
+			if(mem[i]->count>=0)
 			{
-				if(mem[i]->count>=0)
-				{
-					mem[i]->count=++max;
-					cur_block++;
-					filewrite(i,false);
-					cur_block--;
-				}
+				mem[i]->count=++max;
+				filewrite(i,false);
 			}
-			tbl->count=block_begin;
-			fseek(file,seekpos+cur_block*block_size*full_size,0);
-			fwrite(tbl,full_size,1,file);
-			fflush(file);
-			cur_block++;
 		}
+		
+		fflush(file);
+		return true;
 	}
-	delete tbl;
-	return true;
+	return false;
 }
 
 bool TableBlockStorage::Open(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek)
@@ -229,9 +221,9 @@ bool TableBlockStorage::Create(const char* name, int key_sz, int inf_sz, int sz,
 		block_begin=(-5) - заполняются первые элементы каждого блока, если там другое значение, то этот блок используется, empty_elem=(-1) - все остальные пустые записи
 	*/
 
-	mem[0]->count=block_begin;
+	mem[0]->count=EMPTY_BLOCK;
 	for(i=1;i<block_size;i++)
-		mem[i]->count=empty_elem;
+		mem[i]->count=EMPTY_ELEM;
 
 	/*!	Цикл инициализирует все блоки в файле*/
 	for(i=0;i<size;i++) 
@@ -258,7 +250,7 @@ bool TableBlockStorage::AddRow(void* key, void* value)
 	int i=0,pos=-1,empty=-1;
 	if(file==NULL) return false;
 
-	CopyToNextBlock();
+	if(max==lim-1) CopyToNextBlock();
 	for(i=0;i<block_size;i++)
 	{
 		if(mem[i]->count>=0)
@@ -283,7 +275,7 @@ bool TableBlockStorage::DelRow(void* key)
 	/*!	При удалении счетчик перезаписей также увеличивается
 	*/
 
-	CopyToNextBlock();
+	if(max==lim-1) CopyToNextBlock();
 	for(i=0;i<block_size;i++)
 	{
 		if(mem[i]->count>=0)

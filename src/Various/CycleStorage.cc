@@ -64,44 +64,17 @@ void CycleStorage::filewrite(CycleStorageElem* jrn,int seek,bool needflush)
 	if(needflush) fflush(file);
 }
 
-bool CycleStorage::Open(const char* name, int inf_sz, int sz, int seek)
+/*! 	Ищем голову и хвост по значениям jrn->status: 0 - пусто, 1 - гоова, 2,4 - два типа существующих элементов
+	(или 2 слева от головы - 4 справа, или наоборот), 3 - удаленный 2, 5 - удаленный 4, 6 - удаленный 1.
+	Для нахождения головы|хвоста используется двоичный поиск
+*/
+void CycleStorage::FindHead()
 {
-	/*! 	Если уже был открыт файл в переменной данного класса, он закрывается и открывается новый
-	*/
-
-	if(file!=NULL) fclose(file);
-	file = fopen(name, "r+");
-	if(file==NULL) return false;
-
-	seekpos=seek;
-	if(fseek(file,seekpos,0)==-1) return false;
-
-	CycleStorageAttr *csa = new CycleStorageAttr();
-	fread(csa,sizeof(CycleStorageAttr),1,file);
-
-	if((csa->size!=((sz-sizeof(CycleStorageAttr))/(sizeof(CycleStorageElem)+inf_sz)))||(csa->inf_size!=inf_sz)||(csa->seekpos!=seek))
-	{
-		delete csa;
-		return false;
-	}
-	delete csa;
-
-	inf_size=inf_sz;
-	full_size=sizeof(CycleStorageElem)+inf_size;
-	size=(sz-sizeof(CycleStorageAttr))/full_size;
-	seekpos=seek;
-
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
 	int l=-1,r=size,mid;
 	iter=0;
 	seekpos+=sizeof(CycleStorageAttr);
 	fread(jrn,full_size,1,file);
-
-	/*! 	Ищем голову и хвост по значениям jrn->status: 0 - пусто, 1 - гоова, 2,4 - два типа существующих элементов
-		(или 2 слева от головы - 4 справа, или наоборот), 3 - удаленный 2, 5 - удаленный 4, 6 - удаленный 1.
-		Для нахождения головы|хвоста используется двоичный поиск
-	*/
-
 	if(jrn->status==0)
 	{
 		head=-1;
@@ -154,6 +127,39 @@ bool CycleStorage::Open(const char* name, int inf_sz, int sz, int seek)
 		if(tail<0) tail=size-1;
 	}
 	delete jrn;
+}
+
+bool CycleStorage::Open(const char* name, int inf_sz, int sz, int seek)
+{
+	/*! 	Если уже был открыт файл в переменной данного класса, он закрывается и открывается новый
+	*/
+
+	if(file!=NULL) fclose(file);
+	file = fopen(name, "r+");
+	if(file==NULL) return false;
+
+	seekpos=seek;
+	if(fseek(file,seekpos,0)==-1) return false;
+
+	CycleStorageAttr *csa = new CycleStorageAttr();
+	fread(csa,sizeof(CycleStorageAttr),1,file);
+
+	if((csa->size!=((sz-sizeof(CycleStorageAttr))/(sizeof(CycleStorageElem)+inf_sz)))||(csa->inf_size!=inf_sz)||(csa->seekpos!=seek))
+	{
+		delete csa;
+		return false;
+	}
+	delete csa;
+
+	inf_size=inf_sz;
+	full_size=sizeof(CycleStorageElem)+inf_size;
+	size=(sz-sizeof(CycleStorageAttr))/full_size;
+	seekpos=seek;
+
+	seekpos+=sizeof(CycleStorageAttr);
+
+	FindHead();
+
 	return true;
 }
 
@@ -342,7 +348,7 @@ bool CycleStorage::DelAllRows()
 	return true;
 }
 
-void* CycleStorage::ViewRow(int num, void* str)
+void* CycleStorage::ReadRow(int num, void* str)
 {
 	int j=(head+num)%size;
 	if((file==NULL)||(num>=size)) return 0;
@@ -361,7 +367,7 @@ void* CycleStorage::ViewRow(int num, void* str)
 	return 0;
 }
 
-bool CycleStorage::ExportToXML(const char* name)
+/*bool CycleStorage::ExportToXML(const char* name)
 {
 	int i,j=head;
 	if(file==NULL) return false;
@@ -391,7 +397,7 @@ bool CycleStorage::ExportToXML(const char* name)
 	f->save(name);
 	delete jrn;
 	return true;
-}
+}*/
 
 int CycleStorage::GetIter()
 {
