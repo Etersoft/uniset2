@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman <pv>
+ * Copyright (c) 2002 Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 /*! \file
  * \brief Реализация интерфейса менеджера объектов.
- * \author Pavel Vainerman <pv>
+ * \author Pavel Vainerman
  * \date  $Date: 2009/01/16 23:16:42 $
  * \version $Id: ObjectsManager.h,v 1.13 2009/01/16 23:16:42 vpashka Exp $
  */
@@ -65,7 +65,7 @@ class ObjectsManager:
 		virtual ~ObjectsManager();
 
 
-		virtual UniSetTypes::ObjectType getType(){ return "ObjectsManager"; }
+		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("ObjectsManager"); }
 
 		// ------  функции объявленные в интерфейсе(IDL) ------
 		virtual void broadcast(const UniSetTypes::TransportMessage& msg);

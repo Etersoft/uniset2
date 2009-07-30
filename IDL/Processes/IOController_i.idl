@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman <pv>
+ * Copyright (c) 2002 Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *  \author Pavel Vainerman <pv>
+ *  \author Pavel Vainerman
  *  \date   $Date: 2008/11/29 21:24:24 $
  *  \version $Id: IOController_i.idl,v 1.16 2008/11/29 21:24:24 vpashka Exp $
 */
@@ -188,7 +188,7 @@ interface IOController_i : ObjectsManager_i
 /*!
  * \interface IONotifyController_i
  * \brief Базовый интерфейс для создания процессов рассылающих сообщения об изменении состояния
- * \author Pavel Vainerman <pv>
+ * \author Pavel Vainerman
  * \version
  * \date   September 2001-
  *

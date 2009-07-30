@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \author Anthony Korbin <ahtoh>
+ * \author Anthony Korbin
  * \date   $Date: 2005/10/06 21:47:42 $
  * \version $Id: PosixThread.cc,v 1.8 2005/10/06 21:47:42 vpashka Exp $
 */

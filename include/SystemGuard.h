@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman <pv>
+ * Copyright (c) 2002 Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 //--------------------------------------------------------------------------------
 /*! \file
  * \brief Реализация SystemGuard
- * \author Pavel Vainerman <pv>
+ * \author Pavel Vainerman
  * \date $Date: 2007/06/17 21:30:55 $
  * \version $Id: SystemGuard.h,v 1.9 2007/06/17 21:30:55 vpashka Exp $
  */
@@ -52,7 +52,7 @@ class SystemGuard:
 		virtual void oaDestroy(int signo=0);
 		
 		virtual UniSetTypes::SimpleInfo* getInfo();
-		virtual UniSetTypes::ObjectType getType(){ return "SystemGuard"; }
+		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("SystemGuard"); }
 
 	protected:
 	

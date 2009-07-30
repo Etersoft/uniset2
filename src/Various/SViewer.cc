@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman <pv>
+ * Copyright (c) 2002 Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \brief Программа просмотра состояния датчиков
- *  \author Павел Вайнерман <pv>
+ *  \author Pavel Vainerman
  *  \date   $Date: 2007/11/18 19:13:35 $
  *  \version $Id: SViewer.cc,v 1.15 2007/11/18 19:13:35 vpashka Exp $
  */

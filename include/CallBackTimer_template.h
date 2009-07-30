@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman <pv>
+ * Copyright (c) 2002 Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *  \author Pavel Vainerman <pv>
+ *  \author Pavel Vainerman
  *  \date   $Date: 2008/02/07 21:04:56 $
  *  \version $Id: CallBackTimer_template.h,v 1.6 2008/02/07 21:04:56 vpashka Exp $
 */

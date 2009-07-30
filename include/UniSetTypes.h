@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002-2005 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman <pv>
+ * Copyright (c) 2002 Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *  \author Pavel Vainerman <pv>
+ *  \author Pavel Vainerman
  *  \date   $Date: 2009/01/16 23:16:42 $
  *  \version $Id: UniSetTypes.h,v 1.12 2009/01/16 23:16:42 vpashka Exp $
  *	\brief базовые типы библиотеки UniSet
@@ -49,6 +49,9 @@ namespace UniSetTypes
 	typedef ObjectId SysId;
 	typedef	CORBA::Object_ptr ObjectPtr;	/*!< Ссылка на объект регистрируемый в ObjectRepository */
 	typedef	CORBA::Object_var ObjectVar;	/*!< Ссылка на объект регистрируемый в ObjectRepository */
+
+	/*! Функция делает ObjectType из const char * (переводит const-строку в обычную, что плохо, но мы обещаем не писать в неё :) )  */
+	inline static UniSetTypes::ObjectType getObjectType(const char * name) { const void *t = name;  return (UniSetTypes::ObjectType)t; }
 
 	UniversalIO::IOTypes getIOType( const std::string s );
 	std::ostream& operator<<( std::ostream& os, const UniversalIO::IOTypes t );

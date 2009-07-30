@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman <pv>
+ * Copyright (c) 2002 Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 /*! \file
  * \brief Реализация IONotifyController_i
- * \author Pavel Vainerman <pv>
+ * \author Pavel Vainerman
  * \date  $Date: 2007/12/16 21:32:07 $
  * \version $Id: IONotifyController.h,v 1.23 2007/12/16 21:32:07 vpashka Exp $
 */
@@ -52,7 +52,7 @@ class IONotifyController:
 
 	    virtual ~IONotifyController();
 
-		virtual UniSetTypes::ObjectType getType(){ return "IONotifyController"; }
+		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("IONotifyController"); }
 
 		virtual void askSensor(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 		virtual void askState(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);

@@ -18,7 +18,7 @@
  */
 
 /*! \file
- *  \author Vitaly Lipatov <lav>
+ *  \author Vitaly Lipatov
  *  \date   $Date: 2007/01/02 22:30:48 $
  *  \version $Id: TextIndex.h,v 1.6 2007/01/02 22:30:48 vpashka Exp $
  *  \par

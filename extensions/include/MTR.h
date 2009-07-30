@@ -137,9 +137,9 @@ namespace MTR
 				raw.v[1] = v2;
 			}
 			
-			T3( const ModbusRTU::ModbusData* data )
+			T3( const ModbusRTU::ModbusData* data, int size )
 			{
-				if( sizeof(data) >=u2size )
+				if( size >= u2size )
 				{
 					for( int i=0; i<u2size; i++ )
 						raw.v[i] = data[i];
@@ -221,9 +221,9 @@ namespace MTR
 				raw.lval = v;
 			}
 			
-			T5( const ModbusRTU::ModbusData* data )
+			T5( const ModbusRTU::ModbusData* data, int size )
 			{
-				if( sizeof(data) >=u2size )
+				if( size >= u2size )
 				{
 					for( int i=0; i<u2size; i++ )
 						raw.v[i] = data[i];
@@ -272,9 +272,9 @@ namespace MTR
 				raw.lval = v;
 			}
 			
-			T6( const ModbusRTU::ModbusData* data )
+			T6( const ModbusRTU::ModbusData* data, int size )
 			{
-				if( sizeof(data) >=u2size )
+				if( size >= u2size )
 				{
 					for( int i=0; i<u2size; i++ )
 						raw.v[i] = data[i];
@@ -323,9 +323,9 @@ namespace MTR
 				raw.lval = v;
 			}
 			
-			T7( const ModbusRTU::ModbusData* data )
+			T7( const ModbusRTU::ModbusData* data, int size )
 			{
-				if( sizeof(data) >=u2size )
+				if( size >= u2size )
 				{
 					for( int i=0; i<u2size; i++ )
 						raw.v[i] = data[i];
@@ -369,9 +369,9 @@ namespace MTR
 				raw.v[1] = v2;
 			}
 
-			T8( const ModbusRTU::ModbusData* data )
+			T8( const ModbusRTU::ModbusData* data, int size )
 			{
-				if( sizeof(data) >=u2size )
+				if( size >= u2size )
 				{
 					for( int i=0; i<u2size; i++ )
 						raw.v[i] = data[i];
@@ -418,9 +418,9 @@ namespace MTR
 				raw.v[1] = v2;
 			}
 
-			T9( const ModbusRTU::ModbusData* data )
+			T9( const ModbusRTU::ModbusData* data, int size )
 			{
-				if( sizeof(data) >=u2size )
+				if( size >= u2size )
 				{
 					for( int i=0; i<u2size; i++ )
 						raw.v[i] = data[i];
@@ -466,9 +466,9 @@ namespace MTR
 				raw.val = f;
 			}
 
-			F1( const ModbusRTU::ModbusData* data )
+			F1( const ModbusRTU::ModbusData* data, int size )
 			{
-				if( sizeof(data) >=u2size )
+				if( size >= u2size )
 				{
 					for( int i=0; i<u2size; i++ )
 						raw.v[i] = data[i];

@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman <pv>
+ * Copyright (c) 2002 Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \brief Базовые типы сообщений
- *  \author Vitaly Lipatov <lav>, Pavel Vainerman <pv>
+ *  \author Vitaly Lipatov, Pavel Vainerman
  *  \date   $Date: 2008/12/14 21:57:51 $
  *  \version $Id: MessageType.h,v 1.14 2008/12/14 21:57:51 vpashka Exp $
  */

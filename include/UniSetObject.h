@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
  * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Pavel Vainerman <pv>
+ * Copyright (c) 2002 Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 /*! \file
  * \brief Реализация базового(фундаментального) класса для объектов системы 
  * (процессов управления, элементов графического интерфейса и т.п.)
- * \author Pavel Vainerman <pv>
+ * \author Pavel Vainerman
  * \date $Date: 2009/01/16 23:16:42 $
  * \version $Id: UniSetObject.h,v 1.19 2009/01/16 23:16:42 vpashka Exp $
  */
@@ -76,7 +76,7 @@ class UniSetObject:
 		virtual CORBA::Boolean exist();
 		virtual char* getName(){return (char*)myname.c_str();}
 		virtual UniSetTypes::ObjectId getId(){ return myid; }
-		virtual UniSetTypes::ObjectType getType() { static UniSetTypes::ObjectType ot("UniSetObject"); return ot; }
+		virtual UniSetTypes::ObjectType getType() { return UniSetTypes::getObjectType("UniSetObject"); }
 		virtual UniSetTypes::SimpleInfo* getInfo();
 		friend std::ostream& operator<<(std::ostream& os, UniSetObject& obj );
 
