@@ -72,28 +72,48 @@ void testTable1(void)
 	printf("\n");
 }
 
-void testTable2(void)
+bool testTable2(void)
 {
 	char *val=new char[40];
 	TableBlockStorage *t;
-	t = new TableBlockStorage("big_file.test", 4, 40, 20000, 5,28,0,true);
+	t = new TableBlockStorage();
+	t->Create("big_file.test", 4, 40, 20000, 5,28,0);
 	int i;
 	for(i=1;i<20;i++)
 	{
 		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
-	printf("\ncurrent block = %d\n",t->GetCurBlock());
+	printf("\n");
+	if(t->GetCurBlock()!=0)
+	{
+		delete t;
+		return false;
+	}
 	for(i=1;i<11;i++)
 	{
 		sprintf(val,"%d",i);
 		t->AddRow((char*)&i,val);
 	}
-	printf("current block = %d, elements with values=keys added:\n",t->GetCurBlock());
+	if(t->GetCurBlock()!=0)
+	{
+		delete t;
+		return false;
+	}
 	for(i=1;i<20;i++)
 	{
 		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
+		if(val[0]==0)
+		{
+			delete t;
+			return false;
+		}
 	}
-	printf("\ncurrent block = %d, rewriting first 7 with values=keys+10\n",t->GetCurBlock());
+	printf("\n");
+	if(t->GetCurBlock()!=0)
+	{
+		delete t;
+		return false;
+	}
 	for(i=1;i<8;i++)
 	{
 		sprintf(val,"%d",i+10);
@@ -106,9 +126,27 @@ void testTable2(void)
 	}
 	for(i=1;i<20;i++)
 	{
-		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
+		if(t->FindKeyValue(&i,val)!=0)
+		{
+			printf("%s, ",val);
+			if((i > 7)&&(i <11))
+			{
+				delete t;
+				return false;
+			}
+		}
+		if((val[0] == 0)&&(i < 8))
+		{
+			delete t;
+			return false;
+		}
 	}
-	printf("\ncurrent block = %d, rewriting 3-10 elements with values=keys+40\n",t->GetCurBlock());
+	printf("\nrewriting 3-10 elements with values=keys+40\n");
+	if(t->GetCurBlock()!=0)
+	{
+		delete t;
+		return false;
+	}
 	for(i=3;i<11;i++)
 	{
 		sprintf(val,"%d",i+40);
@@ -117,8 +155,22 @@ void testTable2(void)
 	for(i=1;i<20;i++)
 	{
 		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
+		if((atoi(val) != i+40) && (i>2) && (i<11))
+		{
+			delete t;
+			return false;
+		}
+		if((atoi(val) != i+10) && (i<3))
+		{
+			delete t;
+			return false;
+		}
 	}
-	printf("\ncurrent block = %d\n",t->GetCurBlock());
+	if(t->GetCurBlock()!=0)
+	{
+		delete t;
+		return false;
+	}
 
 	strcpy(val,"new block");
 	i=9;
@@ -127,21 +179,30 @@ void testTable2(void)
 	{
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
-	printf("\ncurrent block = %d\n",t->GetCurBlock());
+	if(t->GetCurBlock()!=1)
+	{
+		delete t;
+		return false;
+	}
 	printf("after reopen:\n");
 	t->Open("big_file.test", 4, 40, 20000, 5,28,0);
 	for(i=1;i<20;i++)
 	{
 		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
-	printf("\ncurrent block = %d\n",t->GetCurBlock());
+	if(t->GetCurBlock()!=1)
+	{
+		delete t;
+		return false;
+	}
 	delete t;
+	return true;
 }
 
-void testJournal1(void)
+bool testJournal1(void)
 {
 	CycleStorage *j;
-	int i;
+	int i,k=0;
 	char *str = new char[30];
 	printf("journal test 1\n");
 	j = new CycleStorage("big_file.test",30,1000000,20000,true);
@@ -150,12 +211,21 @@ void testJournal1(void)
 		sprintf(str,"%d",i);
 		j->AddRow(str);
 	}
-	printf("\nfirst 30 elements:\n");
+	printf("first 30 elements:\n");
 	for(i=0;i<30;i++)
 	{
 		if(j->ReadRow(i,str))
+		{
 			printf("%s\n",str);
+			k++;
+		}
 	}
+	if(k < 30)
+	{
+		delete j;
+		return false;
+	}
+	k = 0;
 
 	printf("test of 2 classes working in 1 file together\n");
 	TableBlockStorage *t = new TableBlockStorage("big_file.test", 4, 40, 20000, 5,28,0);
@@ -163,8 +233,13 @@ void testJournal1(void)
 	for(i=1;i<20;i++)
 	{
 		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
+		if((atoi(val) != i+10) && (i<3))
+		{
+			delete t;
+			delete j;
+			return false;
+		}
 	}
-	printf("\ncurrent block = %d\n\n",t->GetCurBlock());
 
 	printf("\nfirst 30 elements after deleting first 20:\n");
 	for(i=0;i<20;i++)
@@ -174,9 +249,20 @@ void testJournal1(void)
 	for(i=0;i<30;i++)
 	{
 		if(j->ReadRow(i,str))
+		{
 			printf("%s\n",str);
+			k++;
+		}
 	}
-	printf("\nfirst 20 after adding 10 elements\n");
+	if(k != 10)
+	{
+		delete t;
+		delete j;
+		return false;
+	}
+	k = 0;
+
+	printf("first 20 after adding 10 elements\n");
 	for(i=10001;i<10011;i++)
 	{
 		sprintf(str,"%d",i);
@@ -185,20 +271,61 @@ void testJournal1(void)
 	for(i=0;i<20;i++)
 	{
 		if(j->ReadRow(i,str))
+		{
 			printf("%s\n",str);
+			k++;
+		}
 	}
-	printf("\nthe same after reopen:\n");
+	if(k != 10)
+	{
+		delete t;
+		delete j;
+		return false;
+	}
+	k = 0;
+
+	printf("the same after reopen:\n");
 	delete j;
 	j = new CycleStorage();
 	j->Open("big_file.test",30,1000000,20000);
 	for(i=0;i<20;i++)
 	{
 		if(j->ReadRow(i,str))
+		{
 			printf("%s\n",str);
+			k++;
+		}
 	}
-	printf("\n");
+	if(k != 10)
+	{
+		delete t;
+		delete j;
+		return false;
+	}
+	k = 0;
+
+	printf("the same after reopen:\n");
+	delete j;
+	j = new CycleStorage();
+	j->Open("big_file.test",30,1000000,20000);
+	for(i=0;i<20;i++)
+	{
+		if(j->ReadRow(i,str))
+		{
+			printf("%s\n",str);
+			k++;
+		}
+	}
+	if(k != 10)
+	{
+		delete t;
+		delete j;
+		//return false;
+	}
+
 	delete t;
 	delete j;
+	return true;
 }
 
 void testJournal2(void)
@@ -226,10 +353,30 @@ void testJournal2(void)
 int main(int args, char **argv)
 {
 	//testTable1();
-	testTable2();
 
-	testJournal1();
-	testJournal2();
+	bool ok = true;
+	if(testTable2())
+		printf("\nTest for TableBlockStorage passed\n\n");
+	else
+	{
+		printf("\nTest for TableBlockStorage failed\n\n");
+		ok = false;
+	}
 
+	if(testJournal1())
+		printf("\nTest1 for CycleStorage passed\n\n");
+	else
+	{
+		printf("\nTest for CycleStorage failed\n\n");
+		ok = false;
+	}
+
+	if(ok)
+	{
+		testJournal2();
+		printf("TEST PASSED :)\n");
+	}
+	else
+		printf("TEST FAILED :(\n");
 	return 0;
 }
