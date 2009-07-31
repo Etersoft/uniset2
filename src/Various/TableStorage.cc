@@ -110,10 +110,10 @@ TableStorage::~TableStorage()
 	fclose(file);
 }
 
-int TableStorage::AddRow(char* key, char* value)
+int TableStorage::addRow(char* key, char* value)
 {
 	TableStorageElem *tbl = (TableStorageElem*)malloc(sizeof(TableStorageElem)+inf_size);
-	int i,k,j;
+	int i,k,j,st;
 	if(file!=NULL)
 	{
 		if(head==-1)
@@ -151,19 +151,14 @@ int TableStorage::AddRow(char* key, char* value)
 		fseek(file,seekpos+j*(sizeof(TableStorageElem)+inf_size),0);
 		if(j==head)
 		{
-			if((tbl->status==2)||(tbl->status==3))
-				tbl->status=2;
-			else
-				tbl->status=4;
+			if((tbl->status==2)||(tbl->status==3)) st=2;
+			else st=4;
 
 			if(j==0)
-			{
-				if(tbl->status==2)
-					tbl->status=4;
-				else
-					tbl->status=2;
-			}
+				if(st==2) st=4;
+				else st=2;
 
+			tbl->status=st;
 			strcpy(tbl->key,key);
 			for(k=0;k<inf_size;k++)
 				*((char*)(tbl)+sizeof(TableStorageElem)+k)=*(value+k);
@@ -184,25 +179,11 @@ int TableStorage::AddRow(char* key, char* value)
 			if(head>=size) head=0;
 			return 0;
 		}
-
-		/*for(i=0;i<size;i++)
-		{
-			fread(tbl,(sizeof(TableStorageElem)+inf_size),1,file);
-			if(tbl->key[0]==0)
-			{
-				strcpy(tbl->key,key);
-				for(k=0;k<inf_size;k++)
-					*((char*)(tbl)+sizeof(TableStorageElem)+k)=*(value+k);
-				fseek(file,seekpos+i*(sizeof(TableStorageElem)+inf_size),0);
-				fwrite(tbl,(sizeof(TableStorageElem)+inf_size),1,file);
-				return 0;
-			}	
-		}*/
 	}
 	return 1;
 }
 
-int TableStorage::DelRow(char* key)
+int TableStorage::delRow(char* key)
 {
 	TableStorageElem *tbl = (TableStorageElem*)malloc(sizeof(TableStorageElem)+inf_size);
 	int i,j;
@@ -234,7 +215,7 @@ int TableStorage::DelRow(char* key)
 	return 1;
 }
 
-char* TableStorage::FindKeyValue(char* key, char* val)
+char* TableStorage::findKeyValue(char* key, char* val)
 {
 	TableStorageElem *tbl = (TableStorageElem*)malloc(sizeof(TableStorageElem)+inf_size);
 	int i,k;

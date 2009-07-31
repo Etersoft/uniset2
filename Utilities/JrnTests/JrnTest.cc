@@ -42,32 +42,32 @@ void testTable1(void)
 	{
 		chr[0]=i;
 		sprintf(val,"%d",i);
-		t->AddRow(chr,val);
+		t->addRow(chr,val);
 	}
 	printf("elements with values=keys added:\n");
 	for(i=0;i<40;i++)
 	{
 		chr[0]=i;
-		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
+		if(t->findKeyValue(chr,val)!=0) printf("%s, ",val);
 	}
 	printf("\n");
 	for(i=9;i<15;i++)
 	{
 		chr[0]=i;
-		t->DelRow(chr);
+		t->delRow(chr);
 	}
 	printf("elements with keys from 9 to 14 deleted\n");
 	for(i=9;i<15;i++)
 	{
 		chr[0]=i;
 		sprintf(val,"%d",i+40);
-		t->AddRow(chr,val);
+		t->addRow(chr,val);
 	}
 	printf("elements with keys from 9 to 14 with values=key+40 added, all elements:\n");
 	for(i=0;i<40;i++)
 	{
 		chr[0]=i;
-		if(t->FindKeyValue(chr,val)!=0) printf("%s, ",val);
+		if(t->findKeyValue(chr,val)!=0) printf("%s, ",val);
 	}
 	printf("\n");
 }
@@ -77,14 +77,14 @@ bool testTable2(void)
 	char *val=new char[40];
 	TableBlockStorage *t;
 	t = new TableBlockStorage();
-	t->Create("big_file.test", 4, 40, 20000, 5,28,0);
+	t->create("big_file.test", 4, 40, 20000, 5,28,0);
 	int i;
 	for(i=1;i<20;i++)
 	{
-		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
+		if(t->findKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\n");
-	if(t->GetCurBlock()!=0)
+	if(t->getCurBlock()!=0)
 	{
 		delete t;
 		return false;
@@ -92,16 +92,16 @@ bool testTable2(void)
 	for(i=1;i<11;i++)
 	{
 		sprintf(val,"%d",i);
-		t->AddRow((char*)&i,val);
+		t->addRow((char*)&i,val);
 	}
-	if(t->GetCurBlock()!=0)
+	if(t->getCurBlock()!=0)
 	{
 		delete t;
 		return false;
 	}
 	for(i=1;i<20;i++)
 	{
-		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
+		if(t->findKeyValue(&i,val)!=0) printf("%s, ",val);
 		if(val[0]==0)
 		{
 			delete t;
@@ -109,7 +109,7 @@ bool testTable2(void)
 		}
 	}
 	printf("\n");
-	if(t->GetCurBlock()!=0)
+	if(t->getCurBlock()!=0)
 	{
 		delete t;
 		return false;
@@ -117,16 +117,16 @@ bool testTable2(void)
 	for(i=1;i<8;i++)
 	{
 		sprintf(val,"%d",i+10);
-		t->AddRow(&i,val);
+		t->addRow(&i,val);
 	}
 	printf("deleteing 8-10 elements\n");
 	for(i=8;i<11;i++)
 	{
-		t->DelRow(&i);
+		t->delRow(&i);
 	}
 	for(i=1;i<20;i++)
 	{
-		if(t->FindKeyValue(&i,val)!=0)
+		if(t->findKeyValue(&i,val)!=0)
 		{
 			printf("%s, ",val);
 			if((i > 7)&&(i <11))
@@ -142,7 +142,7 @@ bool testTable2(void)
 		}
 	}
 	printf("\nrewriting 3-10 elements with values=keys+40\n");
-	if(t->GetCurBlock()!=0)
+	if(t->getCurBlock()!=0)
 	{
 		delete t;
 		return false;
@@ -150,11 +150,11 @@ bool testTable2(void)
 	for(i=3;i<11;i++)
 	{
 		sprintf(val,"%d",i+40);
-		t->AddRow(&i,val);
+		t->addRow(&i,val);
 	}
 	for(i=1;i<20;i++)
 	{
-		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
+		if(t->findKeyValue(&i,val)!=0) printf("%s, ",val);
 		if((atoi(val) != i+40) && (i>2) && (i<11))
 		{
 			delete t;
@@ -166,7 +166,7 @@ bool testTable2(void)
 			return false;
 		}
 	}
-	if(t->GetCurBlock()!=0)
+	if(t->getCurBlock()!=0)
 	{
 		delete t;
 		return false;
@@ -174,23 +174,23 @@ bool testTable2(void)
 
 	strcpy(val,"new block");
 	i=9;
-	t->AddRow(&i,val);
+	t->addRow(&i,val);
 	for(i=1;i<20;i++)
 	{
-		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
+		if(t->findKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
-	if(t->GetCurBlock()!=1)
+	if(t->getCurBlock()!=1)
 	{
 		delete t;
 		return false;
 	}
 	printf("after reopen:\n");
-	t->Open("big_file.test", 4, 40, 20000, 5,28,0);
+	t->open("big_file.test", 4, 40, 20000, 5,28,0);
 	for(i=1;i<20;i++)
 	{
-		if(t->FindKeyValue(&i,val)!=0) printf("%s, ",val);
+		if(t->findKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
-	if(t->GetCurBlock()!=1)
+	if(t->getCurBlock()!=1)
 	{
 		delete t;
 		return false;
@@ -209,12 +209,12 @@ bool testJournal1(void)
 	for(i=1;i<33000;i++)
 	{
 		sprintf(str,"%d",i);
-		j->AddRow(str);
+		j->addRow(str);
 	}
 	printf("first 30 elements:\n");
 	for(i=0;i<30;i++)
 	{
-		if(j->ReadRow(i,str))
+		if(j->readRow(i,str))
 		{
 			printf("%s\n",str);
 			k++;
@@ -232,7 +232,7 @@ bool testJournal1(void)
 	char *val = new char[40];
 	for(i=1;i<20;i++)
 	{
-		if(t->FindKeyValue((char*)&i,val)!=0) printf("%s, ",val);
+		if(t->findKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 		if((atoi(val) != i+10) && (i<3))
 		{
 			delete t;
@@ -244,11 +244,11 @@ bool testJournal1(void)
 	printf("\nfirst 30 elements after deleting first 20:\n");
 	for(i=0;i<20;i++)
 	{
-		j->DelRow(i);
+		j->delRow(i);
 	}
 	for(i=0;i<30;i++)
 	{
-		if(j->ReadRow(i,str))
+		if(j->readRow(i,str))
 		{
 			printf("%s\n",str);
 			k++;
@@ -266,11 +266,11 @@ bool testJournal1(void)
 	for(i=10001;i<10011;i++)
 	{
 		sprintf(str,"%d",i);
-		j->AddRow(str);
+		j->addRow(str);
 	}
 	for(i=0;i<20;i++)
 	{
-		if(j->ReadRow(i,str))
+		if(j->readRow(i,str))
 		{
 			printf("%s\n",str);
 			k++;
@@ -285,12 +285,11 @@ bool testJournal1(void)
 	k = 0;
 
 	printf("the same after reopen:\n");
-	delete j;
 	j = new CycleStorage();
-	j->Open("big_file.test",30,1000000,20000);
+	j->open("big_file.test",30,1000000,20000);
 	for(i=0;i<20;i++)
 	{
-		if(j->ReadRow(i,str))
+		if(j->readRow(i,str))
 		{
 			printf("%s\n",str);
 			k++;
@@ -305,12 +304,11 @@ bool testJournal1(void)
 	k = 0;
 
 	printf("the same after reopen:\n");
-	delete j;
 	j = new CycleStorage();
-	j->Open("big_file.test",30,1000000,20000);
+	j->open("big_file.test",30,1000000,20000);
 	for(i=0;i<20;i++)
 	{
-		if(j->ReadRow(i,str))
+		if(j->readRow(i,str))
 		{
 			printf("%s\n",str);
 			k++;
@@ -320,7 +318,7 @@ bool testJournal1(void)
 	{
 		delete t;
 		delete j;
-		//return false;
+		return false;
 	}
 
 	delete t;
@@ -335,16 +333,16 @@ void testJournal2(void)
 	char *str = (char*)malloc(30);
 	j = new CycleStorage("big_file.test",30,1000000,20000);
 	printf("journal test 2 - checking number of iterations to find head/tail\n");
-	printf("iterations = %d\n",j->GetIter());
+	printf("iterations = %d\n",j->getIter());
 	for(i=0;i<20;i++)
 	{
 		for(k=1000;k<3000;k++)
 		{
 			sprintf(str,"%d",k);
-			j->AddRow(str);
+			j->addRow(str);
 		}
-		j->Open("big_file.test",30,1000000,20000);
-		printf("iterations = %d\n",j->GetIter());
+		j->open("big_file.test",30,1000000,20000);
+		printf("iterations = %d\n",j->getIter());
 	}
 	printf("\n");
 	delete j;

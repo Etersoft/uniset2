@@ -79,9 +79,9 @@ class TableStorage
 	public:
 		TableStorage(const char* name, int inf_sz, int sz, int seek);
 		~TableStorage();
-		int AddRow(char* key, char* val);
-		int DelRow(char* key);
-		char* FindKeyValue(char* key, char* val);
+		int addRow(char* key, char* val);
+		int delRow(char* key);
+		char* findKeyValue(char* key, char* val);
 };
 
 class TableBlockStorage
@@ -100,20 +100,20 @@ class TableBlockStorage
 		block_num - кол-во блоков (при этом размер одного блока = sz/block_num должен быть достаточен для
 		всей информации, записываемой в таблицу), block_lim - число перезаписей на блок,
 		seek - отступ от начала файла (указывает место, где расположена таблица) */
-		bool Open(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
-		bool Create(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
+		bool open(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
+		bool create(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
 
 		/*! Добавление информации по ключу, возможна перезапись при совпадении ключа с существующим */
-		bool AddRow(void* key, void* val);
+		bool addRow(void* key, void* val);
 
 		/*! Удаление информации по ключу, фактически освобождения места не происходит, оно только помечается удаленным*/
-		bool DelRow(void* key);
+		bool delRow(void* key);
 
 		/*! Поиск информации по ключу, при неудаче возвращается 0 */
-		void* FindKeyValue(void* key, void* val);
+		void* findKeyValue(void* key, void* val);
 
 		/*! Получение текущего блока (для тестовой программы) */
-		int GetCurBlock(void);
+		int getCurBlock(void);
 	protected:
 		FILE *file;
 		int inf_size;
@@ -123,10 +123,10 @@ class TableBlockStorage
 		int k_size, lim,seekpos;
 		int size,block_size,block_number,full_size;
 		void filewrite(int seek, bool needflush=true);
-		bool CopyToNextBlock();
-		bool KeyCompare(int i, void* key);
-		void* KeyPointer(int num);
-		void* ValPointer(int num);
+		bool copyToNextBlock();
+		bool keyCompare(int i, void* key);
+		void* keyPointer(int num);
+		void* valPointer(int num);
 };
 
 class CycleStorage
@@ -143,26 +143,23 @@ class CycleStorage
 
 		/*! inf_sz - размер поля информации, sz - размер всего журнала,
 		seek - отступ от начала файла (указывает место, где расположен журнал) */
-		bool Open(const char* name, int inf_sz, int sz, int seek);
-		bool Create(const char* name, int inf_sz, int sz, int seek);
+		bool open(const char* name, int inf_sz, int sz, int seek);
+		bool create(const char* name, int inf_sz, int sz, int seek);
 
 		/*! Добавление информации в конец журнала */
-		bool AddRow(void* str);
+		bool addRow(void* str);
 
 		/*! Удаление информации с номером ряда row */
-		bool DelRow(int row);
+		bool delRow(int row);
 
 		/*! Очистка журнала */
-		bool DelAllRows(void);
+		bool delAllRows(void);
 
 		/*! Функция возвращает информацию из ряда с номером num */
-		void* ReadRow(int num, void* str);
-
-		/*! Экспорт в Xml-файл с именем name */
-		//bool ExportToXML(const char* name);
+		void* readRow(int num, void* str);
 
 		/*! Получение кол-ва итерации при поиске начала/конца журнала (для тестовой программы) */
-		int GetIter(void);
+		int getIter(void);
 	protected:
 		FILE *file;
 		int inf_size;
@@ -171,8 +168,8 @@ class CycleStorage
 		int size,seekpos, iter;
 		int full_size;
 		void filewrite(CycleStorageElem* jrn,int seek, bool needflush=true);
-		void* ValPointer(void* pnt);
-		void FindHead();
+		void* valPointer(void* pnt);
+		void findHead();
 };
 
 #endif

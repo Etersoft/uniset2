@@ -35,13 +35,13 @@ CycleStorage::CycleStorage()
 	file=NULL;
 }
 
-CycleStorage::CycleStorage(const char* name, int inf_sz, int sz, int seek, bool create)
+CycleStorage::CycleStorage(const char* name, int inf_sz, int sz, int seek, bool cr)
 {
 	file=NULL;
-	if(!Open(name,inf_sz, sz, seek))
+	if(!open(name,inf_sz, sz, seek))
 	{
-		if(create)
-			Create(name,inf_sz, sz, seek);
+		if(cr)
+			create(name,inf_sz, sz, seek);
 		else
 			file=NULL;
 	}
@@ -52,7 +52,7 @@ CycleStorage::~CycleStorage()
 	fclose(file);
 }
 
-void* CycleStorage::ValPointer(void* pnt)
+void* CycleStorage::valPointer(void* pnt)
 {
 	return (char*)pnt+sizeof(CycleStorageElem);
 }
@@ -68,7 +68,7 @@ void CycleStorage::filewrite(CycleStorageElem* jrn,int seek,bool needflush)
 	(или 2 слева от головы - 4 справа, или наоборот), 3 - удаленный 2, 5 - удаленный 4, 6 - удаленный 1.
 	Для нахождения головы|хвоста используется двоичный поиск
 */
-void CycleStorage::FindHead()
+void CycleStorage::findHead()
 {
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
 	int l=-1,r=size,mid;
@@ -134,7 +134,7 @@ void CycleStorage::FindHead()
 	delete jrn;
 }
 
-bool CycleStorage::Open(const char* name, int inf_sz, int sz, int seek)
+bool CycleStorage::open(const char* name, int inf_sz, int sz, int seek)
 {
 	/*! 	Если уже был открыт файл в переменной данного класса, он закрывается и открывается новый
 	*/
@@ -165,12 +165,12 @@ bool CycleStorage::Open(const char* name, int inf_sz, int sz, int seek)
 
 	seekpos+=sizeof(CycleStorageAttr);
 
-	FindHead();
+	findHead();
 
 	return true;
 }
 
-bool CycleStorage::Create(const char* name, int inf_sz, int sz, int seek)
+bool CycleStorage::create(const char* name, int inf_sz, int sz, int seek)
 {
 	if(file!=NULL) fclose(file);
 	file = fopen(name, "r+");
@@ -203,6 +203,7 @@ bool CycleStorage::Create(const char* name, int inf_sz, int sz, int seek)
 	fwrite(csa,sizeof(CycleStorageAttr),1,file);
 	fflush(file);
 	seekpos+=sizeof(CycleStorageAttr);
+	delete csa;
 
 	/*! Создаем журнал нужного размера */
 	for(int i=0;i<size;i++)
@@ -222,12 +223,11 @@ bool CycleStorage::Create(const char* name, int inf_sz, int sz, int seek)
 	}
 
 	head=tail=-1;
-	delete csa;
 	delete jrn;
 	return true;
 }
 
-bool CycleStorage::AddRow(void* str)
+bool CycleStorage::addRow(void* str)
 {
 	if(file==NULL) return false;
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
@@ -236,7 +236,7 @@ bool CycleStorage::AddRow(void* str)
 	/*!	Первые 2 случая - список пуст (head=-1), в списке 1 элемент(head=tail=0) рассматриваю отдельно)
 	*/
 
-	memcpy(ValPointer(jrn),str,inf_size);
+	memcpy(valPointer(jrn),str,inf_size);
 	if(head==-1)
 	{
 		jrn->status=1;
@@ -276,7 +276,7 @@ bool CycleStorage::AddRow(void* str)
 	}
 	else tail++;
 	fread(jrn,full_size,1,file);
-	memcpy(ValPointer(jrn),str,inf_size);
+	memcpy(valPointer(jrn),str,inf_size);
 	if(jrn->status==0)
 	{
 		jrn->status=2;
@@ -302,7 +302,7 @@ bool CycleStorage::AddRow(void* str)
 	return true;
 }
 
-bool CycleStorage::DelRow(int row)
+bool CycleStorage::delRow(int row)
 {
 	int i=(head+row)%size,j;
 	if( row >= size ) return false;
@@ -334,7 +334,7 @@ bool CycleStorage::DelRow(int row)
 	return true;
 }
 
-bool CycleStorage::DelAllRows()
+bool CycleStorage::delAllRows()
 {
 	/*! Переписываем статусы всех элементов нулями */
 	if(file==NULL) return false;
@@ -357,7 +357,8 @@ bool CycleStorage::DelAllRows()
 	return true;
 }
 
-void* CycleStorage::ReadRow(int num, void* str)
+/*! TODO: можно убрать из параметров str, просто возвращать значение */
+void* CycleStorage::readRow(int num, void* str)
 {
 	/*! Отсчитываем номер элемента от головы журнала */
 	int j=(head+num)%size;
@@ -369,47 +370,15 @@ void* CycleStorage::ReadRow(int num, void* str)
 	fread(jrn,full_size,1,file);
 	if((jrn->status==1)||(jrn->status==2)||(jrn->status==4))
 	{
-		memcpy(str,ValPointer(jrn),inf_size);
+		memcpy(str,valPointer(jrn),inf_size);
 		delete jrn;
 		return str;
 	}
 	delete jrn;
-	return 0;
+	return NULL;
 }
 
-/*bool CycleStorage::ExportToXML(const char* name)
-{
-	int i,j=head;
-	if(file==NULL) return false;
-	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
-	UniXML* f = new UniXML();
-	xmlNode* xn;
-	f->newDoc("journal");
-	fseek(file,seekpos+j*full_size,0);
-	char* num = new char[10];
-	for(i=0;i<size;i++)
-	{
-		if(j==size)
-		{
-			j=0;
-			fseek(file,seekpos,0);
-		}
-		fread(jrn,full_size,1,file);
-		if((jrn->status==1)||(jrn->status==2)||(jrn->status==4))
-		{
-			sprintf(num,"%d",i);
-			xn=f->createChild(f->cur,"item","");
-			f->setProp(xn,"key",num);
-			f->setProp(xn,"text",(char*)ValPointer(jrn));
-		}
-		j++;
-	}
-	f->save(name);
-	delete jrn;
-	return true;
-}*/
-
-int CycleStorage::GetIter()
+int CycleStorage::getIter()
 {
 	return iter;
 }
