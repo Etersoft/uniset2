@@ -250,8 +250,10 @@ bool SharedMemory::activateObject()
 			it->dit = mydioEnd();
 		}
 
+//		cerr << "history count=" << hist.size() << endl;
 		for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
 		{
+//			cerr << "history for id=" << it->id << " count=" << it->hlst.size() << endl;
 			for( HistoryList::iterator hit=it->hlst.begin(); hit!=it->hlst.end(); ++hit )
 			{
 				hit->ait = myaioEnd();
@@ -651,15 +653,30 @@ void SharedMemory::saveHistory()
 	{
 		for( HistoryList::iterator hit=it->hlst.begin(); hit!=it->hlst.end(); ++hit )
 		{
-			long val = 0;
-			if(  hit->ait != myaioEnd() )
-				val = localGetValue( hit->ait, hit->ait->second.si );
+			if( hit->ait != myaioEnd() )
+				hit->add( localGetValue( hit->ait, hit->ait->second.si ), it->size );
 			else if( hit->dit != mydioEnd() )
-				val = localGetState( hit->dit, hit->dit->second.si );
-			else 
-				continue;
+				hit->add( localGetState( hit->dit, hit->dit->second.si ), it->size );
+			else
+			{
+				IOController_i::SensorInfo si;
+				si.id 	= hit->id;
+				si.node	= conf->getLocalNode();
+				try
+				{
+					
+					hit->add( localGetValue( hit->ait, si ), it->size );
+					continue;
+				}
+				catch(...){}
 
-			hit->add( val, it->size );
+				try
+				{
+					hit->add( localGetState( hit->dit, si ), it->size );
+					continue;
+				}
+				catch(...){}
+			}
 		}
 	}
 }
@@ -692,7 +709,7 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 				}
 			}
 			else if( sm->sensor_type == UniversalIO::AnalogInput ||
-				sm->sensor_type == UniversalIO::AnalogOutput )
+					 sm->sensor_type == UniversalIO::AnalogOutput )
 			{
 				if( !it->fuse_use_val )
 				{
@@ -722,7 +739,21 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, const SharedMemory::HistoryInfo& h )
 {
-	os << "id=" << h.id << " fuse_id=" << h.fuse_id;
+	os << "History id=" << h.id 
+		<< " fuse_id=" << h.fuse_id
+		<< " fuse_invert=" << h.fuse_invert
+		<< " fuse_val=" << h.fuse_val
+		<< " size=" << h.size
+		<< " filter=" << h.filter << endl;
+	
+	for( SharedMemory::HistoryList::const_iterator it=h.hlst.begin(); it!=h.hlst.end(); ++it )
+	{
+		os << "    id=" << it->id << "[";
+		for( SharedMemory::HBuffer::const_iterator i=it->buf.begin(); i!=it->buf.end(); ++i )
+			os << " " << (*i);
+		os << " ]" << endl;
+	}
+	
 	return os;
 }
 // ------------------------------------------------------------------------------------------
