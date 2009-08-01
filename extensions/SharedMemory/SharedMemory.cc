@@ -556,7 +556,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 	xmlNode* n = conf->findNode(cnode,"History");
 	if( !n )
 	{
-		dlog[Debug::WARN] << myname << "(buildHistoryList): <History> not found " << endl;
+		dlog[Debug::WARN] << myname << "(buildHistoryList): <History> not found. ignore..." << endl;
 		return;
 	}
 
@@ -568,7 +568,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 	
 	if( !it.goChildren() )
 	{
-		dlog[Debug::WARN] << myname << "(buildHistoryList): <History> empty..." << endl;
+		dlog[Debug::WARN] << myname << "(buildHistoryList): <History> empty. ignore..." << endl;
 		return;
 	}
 
@@ -589,7 +589,8 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 		{
 			dlog[Debug::WARN] << myname << "(buildHistory): not found sensor ID for " 
 				<< it.getProp("idFuse")
-				<< " history item id=" << it.getProp("id") << endl;
+				<< " history item id=" << it.getProp("id") 
+				<< " ..ignore.." << endl;
 			continue;
 		}
 
@@ -600,7 +601,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 	}
 
 	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << myname << "(buildHistoryList): histoty size=" << hist.size() << endl;
+		dlog[Debug::INFO] << myname << "(buildHistoryList): history logs count=" << hist.size() << endl;
 }
 // -----------------------------------------------------------------------------
 void SharedMemory::checkHistoryFilter( UniXML_iterator& xit )
