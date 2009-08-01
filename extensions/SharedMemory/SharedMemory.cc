@@ -216,7 +216,7 @@ void SharedMemory::askSensors( UniversalIO::UIOCommand cmd )
 /*
 	for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
 	{
-		if( sm->id == it->idFuse )
+		if( sm->id == it->fuse_id )
 		{
 			try
 			{
@@ -584,17 +584,23 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 		if( hi.filter.empty() )
 			continue;
 
-		hi.idFuse = conf->getSensorID(it.getProp("fuse"));
-		if( hi.idFuse == DefaultObjectId )
+		hi.fuse_id = conf->getSensorID(it.getProp("fuse_id"));
+		if( hi.fuse_id == DefaultObjectId )
 		{
 			dlog[Debug::WARN] << myname << "(buildHistory): not found sensor ID for " 
-				<< it.getProp("idFuse")
+				<< it.getProp("fuse_id")
 				<< " history item id=" << it.getProp("id") 
 				<< " ..ignore.." << endl;
 			continue;
 		}
 
-		hi.invert 	= uni_atoi(it.getProp("invert").c_str());
+		hi.fuse_invert 	= uni_atoi(it.getProp("fuse_invert").c_str());
+		
+		if( !it.getProp("fuse_value").empty() )
+		{
+			hi.fuse_use_val = true;
+			hi.fuse_val	= uni_atoi(it.getProp("fuse_value").c_str());
+		}
 
 		// WARNING: no check duplicates...
 		hist.push_back(hi);
@@ -671,15 +677,44 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 
 	for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
 	{
-		if( sm->id == it->idFuse )
+		if( sm->id == it->fuse_id )
 		{
-			bool st = it->invert ? !sm->state : sm->state;
-			if( st )
+			if( sm->sensor_type == UniversalIO::DigitalInput ||
+				sm->sensor_type == UniversalIO::DigitalOutput )
 			{
-				if( dlog.debugging(Debug::INFO) )
-					dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+				bool st = it->fuse_invert ? !sm->state : sm->state;
+				if( st )
+				{
+					if( dlog.debugging(Debug::INFO) )
+						dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 			
-				m_historySignal.emit( &(*it) );
+					m_historySignal.emit( &(*it) );
+				}
+			}
+			else if( sm->sensor_type == UniversalIO::AnalogInput ||
+				sm->sensor_type == UniversalIO::AnalogOutput )
+			{
+				if( !it->fuse_use_val )
+				{
+					bool st = it->fuse_invert ? !sm->state : sm->state;
+					if( !st )
+					{
+						if( dlog.debugging(Debug::INFO) )
+							dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+			
+						m_historySignal.emit( &(*it) );
+					}
+				}
+				else
+				{
+					if( sm->value == it->fuse_val )
+					{
+						if( dlog.debugging(Debug::INFO) )
+							dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+			
+						m_historySignal.emit( &(*it) );
+					}
+				}
 			}
 		}
 	}
@@ -687,7 +722,7 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, const SharedMemory::HistoryInfo& h )
 {
-	os << "id=" << h.id << " idFuse=" << h.idFuse;
+	os << "id=" << h.id << " fuse_id=" << h.fuse_id;
 	return os;
 }
 // ------------------------------------------------------------------------------------------

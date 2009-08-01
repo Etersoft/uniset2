@@ -46,8 +46,8 @@
 	
 	<SharedMemory name="SharedMemory" shmID="SharedMemory">
 		<History savetime="200">
-			<item id="1" fuse="AlarmFuse1_S" size="30" filter="a1"/>
-			<item id="2" fuse="AlarmFuse2_S" size="30" filter="a2"/>
+			<item id="1" fuse_id="AlarmFuse1_S" fuse_invert="1" size="30" filter="a1"/>
+			<item id="2" fuse_id="AlarmFuse2_AS" fuse_value="2" size="30" filter="a2"/>
 		</History>
 	</SharedMemory>
 
@@ -129,7 +129,7 @@
 		<item name="NoRespondRTU2_S" textname="no respond rtu" node="" iotype="DI"/>
 		
 		<item name="AlarmFuse1_S" textname="alarm fuse sensor 1" node="" iotype="DI" priority="Medium"/>
-		<item name="AlarmFuse2_S" textname="alarm fuse sensor 2" node="" iotype="DI" priority="Medium"/>
+		<item name="AlarmFuse2_AS" textname="alarm fuse sensor 2" node="" iotype="AI" priority="Medium"/>
 		
 		<item name="DumpSensor1_S" textname="alarm dumpm sensor 1" a1="1" node="" iotype="DI" priority="Medium"/>
 		<item name="DumpSensor2_S" textname="alarm dumpm sensor 2" a1="1" node="" iotype="DI" priority="Medium"/>

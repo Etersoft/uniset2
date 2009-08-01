@@ -75,15 +75,19 @@ class SharedMemory:
 		struct HistoryInfo
 		{
 			HistoryInfo():
-				id(0),idFuse(UniSetTypes::DefaultObjectId),
-				size(0),filter(""),invert(false){}
+				id(0),
+				size(0),filter(""),
+				fuse_id(UniSetTypes::DefaultObjectId),
+				fuse_invert(false),fuse_use_val(false),fuse_val(0){}
 			
 			long id;						// ID
-			UniSetTypes::ObjectId idFuse; 	// fuse sesnsor
 			HistoryList hlst;				// history list
 			int size;
 			std::string filter;		// filter field
-			bool invert;
+			UniSetTypes::ObjectId fuse_id; 	// fuse sesnsor
+			bool fuse_invert;
+			bool fuse_use_val;
+			long fuse_val;
 		};
 		
 		friend std::ostream& operator<<( std::ostream& os, const HistoryInfo& h );
