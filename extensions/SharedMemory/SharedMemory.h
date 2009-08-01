@@ -13,9 +13,11 @@
 // -----------------------------------------------------------------------------
 
 /*! Реализация разделямой между процессами памяти 
-	Помимо функции хранения, осуществляет логику слежения
-	за процессами (инкремент специальных датчиков),
-	а также выставление дискретных датчиков "живости" процессов.
+	Задачи:
+	- хранение
+	- слежение за процессами (инкремент специальных датчиков),
+		а также выставление дискретных датчиков "живости" процессов.
+	- осуществляет механизм аварийного дампа
 */
 class SharedMemory:
 	public IONotifyController_LT
@@ -45,6 +47,51 @@ class SharedMemory:
 		virtual CORBA::Boolean exist();
 
 		void addReadItem( Restorer_XML::ReaderSlot sl );
+		
+
+		// ------------  HISTORY  --------------------
+		typedef std::list<long> HBuffer;
+		
+		struct HistoryItem
+		{
+			HistoryItem():id(UniSetTypes::DefaultObjectId){}
+
+			UniSetTypes::ObjectId id;
+			HBuffer buf;
+
+			AIOStateList::iterator ait;
+			DIOStateList::iterator dit;
+
+			void add( long val, int size )
+			{
+				buf.push_back(val);
+				if( buf.size() >= size )
+					buf.erase(buf.begin());
+			}
+		};
+
+		typedef std::list<HistoryItem> HistoryList;
+
+		struct HistoryInfo
+		{
+			HistoryInfo():
+				id(0),idFuse(UniSetTypes::DefaultObjectId),
+				size(0),filter(""),invert(false){}
+			
+			long id;						// ID
+			UniSetTypes::ObjectId idFuse; 	// fuse sesnsor
+			HistoryList hlst;				// history list
+			int size;
+			std::string filter;		// filter field
+			bool invert;
+		};
+		
+		friend std::ostream& operator<<( std::ostream& os, const HistoryInfo& h );
+		
+		typedef std::list<HistoryInfo> History;
+
+		typedef sigc::signal<void,HistoryInfo*> HistorySlot;
+		HistorySlot signal_history();
 		
 	protected:
 		typedef std::list<Restorer_XML::ReaderSlot> ReadSlotList;
@@ -97,11 +144,13 @@ class SharedMemory:
 		enum Timers
 		{
 			tmHeartBeatCheck,
-			tmEvent
+			tmEvent,
+			tmHistory
 		};
 		
 		int heartbeatCheckTime;
 		std::string heartbeat_node;
+		int histSaveTime;
 		
 		void checkHeartBeat();
 
@@ -125,7 +174,14 @@ class SharedMemory:
 		bool dblogging;
 	
 	private:
-
+	
+		HistorySlot m_historySignal;
+		History hist;
+		
+		void buildHistoryList( xmlNode* cnode );
+		void checkHistoryFilter( UniXML_iterator& it );
+		void saveHistory();
+		void updateHistory( UniSetTypes::SensorMessage* sm );
 };
 // -----------------------------------------------------------------------------
 #endif // SharedMemory_H_

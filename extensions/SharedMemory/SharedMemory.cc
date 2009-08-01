@@ -12,6 +12,7 @@ using namespace UniSetExtensions;
 SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	IONotifyController_LT(id),
 	heartbeatCheckTime(5000),
+	histSaveTime(200),
 	wdt(0),
 	activated(false),
 	workready(false),
@@ -23,12 +24,14 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	if( cnode == NULL )
 		throw SystemError("Not find conf-node for SharedMemory");
 
-	UniXML_iterator it(cnode);	
-	
+	UniXML_iterator it(cnode);
+
+	// ----------------------
+	buildHistoryList(cnode);
+	signal_change_state().connect(sigc::mem_fun(*this, &SharedMemory::updateHistory));
 	// ----------------------
 	restorer = NULL;
 	NCRestorer_XML* rxml = new NCRestorer_XML(datafile);
-	// rxml = new NCRestorer_XML1(datafile);
 	
 	string s_field = conf->getArgParam("--s-filter-field");
 	string s_fvalue = conf->getArgParam("--s-filter-value");
@@ -158,6 +161,8 @@ void SharedMemory::timerInfo( TimerMessage *tm )
 		sendEvent(sm1);
 		askTimer(tm->id,0);
 	}
+	else if( tm->id == tmHistory )
+		saveHistory();
 }
 
 // ------------------------------------------------------------------------------------------
@@ -185,10 +190,11 @@ void SharedMemory::sysCommand( SystemMessage *sm )
 			UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
 			askTimer(tmHeartBeatCheck,heartbeatCheckTime);
 			askTimer(tmEvent,evntPause,1);
+			askTimer(tmHistory,histSaveTime);
 		}
 		break;
 		
-		case SystemMessage::FoldUp:								
+		case SystemMessage::FoldUp:
 		case SystemMessage::Finish:
 			break;
 		
@@ -207,14 +213,21 @@ void SharedMemory::sysCommand( SystemMessage *sm )
 
 void SharedMemory::askSensors( UniversalIO::UIOCommand cmd )
 {
-	try
+/*
+	for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
 	{
-//		ui.askState( SID, cmd);
+		if( sm->id == it->idFuse )
+		{
+			try
+			{
+				ui.askState( SID, cmd);
+			}
+			catch(Exception& ex)
+		    {
+				dlog[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
+			}
 	}
-	catch(Exception& ex)
-    {
-		dlog[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
-	}
+*/	
 }
 
 // ------------------------------------------------------------------------------------------
@@ -233,8 +246,17 @@ bool SharedMemory::activateObject()
 		// инициализируем указатели		
 		for( HeartBeatList::iterator it=hlist.begin(); it!=hlist.end(); ++it )
 		{
-			it->ait 	= myaioEnd();
-			it->dit 	= mydioEnd();
+			it->ait = myaioEnd();
+			it->dit = mydioEnd();
+		}
+
+		for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
+		{
+			for( HistoryList::iterator hit=it->hlst.begin(); hit!=it->hlst.end(); ++hit )
+			{
+				hit->ait = myaioEnd();
+				hit->dit = mydioEnd();
+			}
 		}
 
 		activated = true;
@@ -252,7 +274,7 @@ CORBA::Boolean SharedMemory::exist()
 void SharedMemory::sigterm( int signo )
 {
 	if( signo == SIGTERM )
-		wdt->stop();		
+		wdt->stop();
 //	raise(SIGKILL);
 }
 // ------------------------------------------------------------------------------------------
@@ -321,6 +343,9 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 		}
 		catch(...){}
 	}
+
+	// check history filters
+	checkHistoryFilter(it);
 
 
 	if( heartbeat_node.empty() || it.getProp("heartbeat").empty())
@@ -391,7 +416,7 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 	// без проверки на дублирование т.к. 
 	// id - гарантирует уникальность в нашем configure.xml
 	hlist.push_back(hi);
-	return true;		
+	return true;
 }
 // ------------------------------------------------------------------------------------------
 void SharedMemory::saveValue( const IOController_i::SensorInfo& si, CORBA::Long value,
@@ -523,3 +548,145 @@ void SharedMemory::loggingInfo( SensorMessage& sm )
 		IONotifyController_LT::loggingInfo(sm);
 }
 // -----------------------------------------------------------------------------
+void SharedMemory::buildHistoryList( xmlNode* cnode )
+{
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << myname << "(buildHistoryList): ..."  << endl;
+
+	xmlNode* n = conf->findNode(cnode,"History");
+	if( !n )
+	{
+		dlog[Debug::WARN] << myname << "(buildHistoryList): <History> not found " << endl;
+		return;
+	}
+
+	UniXML_iterator it(n);
+	
+	histSaveTime = uni_atoi(it.getProp("savetime").c_str());
+	if( histSaveTime < 0 )
+		histSaveTime = 200;
+	
+	if( !it.goChildren() )
+	{
+		dlog[Debug::WARN] << myname << "(buildHistoryList): <History> empty..." << endl;
+		return;
+	}
+
+	for( ; it.getCurrent(); it.goNext() )
+	{
+		HistoryInfo hi;
+		hi.id 		= UniSetTypes::uni_atoi( it.getProp("id").c_str() );
+		hi.size 	= UniSetTypes::uni_atoi( it.getProp("size").c_str() );
+		if( hi.size <=0 )
+			continue;
+
+		hi.filter 	= it.getProp("filter");
+		if( hi.filter.empty() )
+			continue;
+
+		hi.idFuse = conf->getSensorID(it.getProp("fuse"));
+		if( hi.idFuse == DefaultObjectId )
+		{
+			dlog[Debug::WARN] << myname << "(buildHistory): not found sensor ID for " 
+				<< it.getProp("idFuse")
+				<< " history item id=" << it.getProp("id") << endl;
+			continue;
+		}
+
+		hi.invert 	= uni_atoi(it.getProp("invert").c_str());
+
+		// WARNING: no check duplicates...
+		hist.push_back(hi);
+	}
+
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << myname << "(buildHistoryList): histoty size=" << hist.size() << endl;
+}
+// -----------------------------------------------------------------------------
+void SharedMemory::checkHistoryFilter( UniXML_iterator& xit )
+{
+	for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
+	{
+		if( xit.getProp(it->filter).empty() )
+			continue;
+
+		HistoryItem ai;
+
+		if( !xit.getProp("id").empty() )
+		{
+			ai.id = uni_atoi(xit.getProp("id").c_str());
+			it->hlst.push_back(ai);
+			continue;
+		}
+
+		ai.id = conf->getSensorID(xit.getProp("name"));
+		if( ai.id == DefaultObjectId )
+		{
+			dlog[Debug::WARN] << myname << "(checkHistoryFilter): not found sensor ID for " << xit.getProp("name") << endl;
+			continue;
+		}
+		
+		it->hlst.push_back(ai);
+	}
+}
+// -----------------------------------------------------------------------------
+SharedMemory::HistorySlot SharedMemory::signal_history()
+{
+	return m_historySignal;
+}
+// -----------------------------------------------------------------------------
+void SharedMemory::saveHistory()
+{
+//	if( dlog.debugging(Debug::INFO) )
+//		dlog[Debug::INFO] << myname << "(saveHistory): ..." << endl;
+
+	for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
+	{
+		for( HistoryList::iterator hit=it->hlst.begin(); hit!=it->hlst.end(); ++hit )
+		{
+			long val = 0;
+			if(  hit->ait != myaioEnd() )
+				val = localGetValue( hit->ait, hit->ait->second.si );
+			else if( hit->dit != mydioEnd() )
+				val = localGetState( hit->dit, hit->dit->second.si );
+			else 
+				continue;
+
+			hit->add( val, it->size );
+		}
+	}
+}
+// -----------------------------------------------------------------------------
+void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
+{
+	if( dlog.debugging(Debug::INFO) )
+	{
+		dlog[Debug::INFO] << myname << "(updateHistory): " 
+			<< " sid=" << sm->id 
+			<< " state=" << sm->state 
+			<< " value=" << sm->value
+			<< endl;
+	}
+
+	for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
+	{
+		if( sm->id == it->idFuse )
+		{
+			bool st = it->invert ? !sm->state : sm->state;
+			if( st )
+			{
+				if( dlog.debugging(Debug::INFO) )
+					dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+			
+				m_historySignal.emit( &(*it) );
+			}
+		}
+	}
+}
+// -----------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, const SharedMemory::HistoryInfo& h )
+{
+	os << "id=" << h.id << " idFuse=" << h.idFuse;
+	return os;
+}
+// ------------------------------------------------------------------------------------------

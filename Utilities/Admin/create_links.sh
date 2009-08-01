@@ -8,10 +8,6 @@ ln -s -f admin.sh foldUp
 ln -s -f admin.sh info
 ln -s -f admin.sh alarm
 ln -s -f admin.sh create
-#ln -s -f admin.sh setState
-#ln -s -f admin.sh dbcreate
-#ln -s -f admin.sh statistic
-#ln -s -f admin.sh database
 ln -s -f admin.sh logrotate
 ln -s -f admin.sh omap
 ln -s -f admin.sh msgmap
@@ -28,5 +24,7 @@ ln -s -f admin.sh getCalibrate
 ln -s -f admin.sh help
 ln -s -f admin.sh oinfo
 
-ln -s -f /usr/bin/uniset-stop.sh stop.sh
+ln -s -f ../../Utilities/scripts/uniset-start.sh 
+ln -s -f ../../Utilities/scripts/uniset-stop.sh stop.sh
+ln -s -f ../../Utilities/scripts/uniset-functions.sh 
 ln -s -f ../../conf/test.xml test.xml

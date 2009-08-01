@@ -128,6 +128,9 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
 				case UniversalIO::AnalogOutput:
 					ic->asRegistration(inf);
 				break;
+				
+				default:
+					break;
 			}
 		}
 	}
@@ -157,6 +160,9 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
 				ic->checkThreshold(it,inf.si,false);
 			}
 			break;
+			
+			default:
+				break;
 		}
 	}
 	catch(Exception& ex)

@@ -69,6 +69,10 @@ class IONotifyController:
 													const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 
 
+		//  -----------------------------------------------
+		typedef sigc::signal<void,UniSetTypes::SensorMessage*> ChangeSignal;
+		ChangeSignal signal_change_state(){ return changeSignal; }
+
 		//  -------------------- !!!!!!!!! ---------------------------------
 		virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList();
 
@@ -208,6 +212,8 @@ class IONotifyController:
 		NCRestorer* restorer;
 
 		void onChangeUndefined( DependsList::iterator it, bool undefined );
+
+		ChangeSignal changeSignal;
 
 	private:
 		friend class NCRestorer;

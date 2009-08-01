@@ -487,6 +487,12 @@ void IONotifyController::localSaveState( IOController::DIOStateList::iterator& i
 
 	try
 	{	
+		changeSignal.emit(&sm);
+	}
+	catch(...){}
+
+	try
+	{	
 		loggingInfo(sm);
 	}
 	catch(...){}
@@ -494,7 +500,7 @@ void IONotifyController::localSaveState( IOController::DIOStateList::iterator& i
 	AskMap::iterator it1 = askDIOList.find( key(si.id,si.node) );
 	if( it1!=askDIOList.end() )
 	{	// lock
-		uniset_mutex_lock lock(askDMutex, 1000);	
+		uniset_mutex_lock lock(askDMutex, 1000);
 		send(it1->second, sm);
 	}	// unlock
 }
@@ -541,6 +547,12 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 		sm.sm_tv_usec	= li->second.tv_usec;
 		sm.ci			= li->second.ci;
 	} // unlock
+
+	try
+	{	
+		changeSignal.emit(&sm);
+	}
+	catch(...){}
 
 	try
 	{	
@@ -1172,6 +1184,12 @@ void IONotifyController::localSetState( IOController::DIOStateList::iterator& it
 		sm.sensor_type 	= it->second.type;
 		sm.supplier 	= sup_id;
 	}	// unlock
+
+	try
+	{	
+		changeSignal.emit(&sm);
+	}
+	catch(...){}
 	
 	try
 	{	
@@ -1222,6 +1240,12 @@ void IONotifyController::localSetValue( IOController::AIOStateList::iterator& li
 		sm.ci			= li->second.ci;
 		sm.supplier 	= sup_id;
 	}	// unlock 
+
+	try
+	{	
+		changeSignal.emit(&sm);
+	}
+	catch(...){}
 
 	try
 	{	

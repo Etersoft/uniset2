@@ -44,7 +44,12 @@
 
 	<dlog name="dlog" levels="" file=""/>
 	
-	<SharedMemory name="SharedMemory" shmID="SharedMemory"/>
+	<SharedMemory name="SharedMemory" shmID="SharedMemory">
+		<History savetime="200">
+			<item id="1" fuse="AlarmFuse1_S" size="30" filter="a1"/>
+			<item id="2" fuse="AlarmFuse2_S" size="30" filter="a2"/>
+		</History>
+	</SharedMemory>
 
 	<MBMaster1 name="MBMaster1" iaddr="127.0.0.1" addr="0x31" port="30000" 
 			 levels="info,warn,crit" poll_time="200" reply_timeout="60"
@@ -122,6 +127,18 @@
 		
 		<item name="RespondRTU_S" textname="respond rtu" node="" iotype="DI"/>
 		<item name="NoRespondRTU2_S" textname="no respond rtu" node="" iotype="DI"/>
+		
+		<item name="AlarmFuse1_S" textname="alarm fuse sensor 1" node="" iotype="DI" priority="Medium"/>
+		<item name="AlarmFuse2_S" textname="alarm fuse sensor 2" node="" iotype="DI" priority="Medium"/>
+		
+		<item name="DumpSensor1_S" textname="alarm dumpm sensor 1" a1="1" node="" iotype="DI" priority="Medium"/>
+		<item name="DumpSensor2_S" textname="alarm dumpm sensor 2" a1="1" node="" iotype="DI" priority="Medium"/>
+		<item name="DumpSensor3_S" textname="alarm dumpm sensor 3" a1="1" node="" iotype="DI" priority="Medium"/>
+		<item name="DumpSensor4_S" textname="alarm dumpm sensor 4" a1="1" node="" iotype="DI" priority="Medium"/>
+		<item name="DumpSensor5_S" textname="alarm dumpm sensor 5" a2="1" node="" iotype="DI" priority="Medium"/>
+		<item name="DumpSensor6_S" textname="alarm dumpm sensor 6" a2="1" node="" iotype="DI" priority="Medium"/>
+		<item name="DumpSensor7_S" textname="alarm dumpm sensor 7" a2="1" node="" iotype="DI" priority="Medium"/>
+		<item name="DumpSensor8_S" textname="alarm dumpm sensor 8" a2="1" node="" iotype="DI" priority="Medium"/>
 		
 	</sensors>
 
