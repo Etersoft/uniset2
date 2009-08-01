@@ -3,7 +3,7 @@
 . /etc/rpm/etersoft-build-functions
 
 cd ..
-SPECNAME=conf/uniset.spec
+SPECNAME=conf/libuniset.spec
 REL=eter
 DEFAULTARCH=i586
 RPMDIR=~/RPM/RPMS/$DEFAULTARCH
