@@ -176,12 +176,12 @@ class SharedMemory:
 		virtual void dumpThresholdList(const IOController_i::SensorInfo& si, const IONotifyController::ThresholdExtList& lst){}
 
 		bool dblogging;
-	
+
+		History hist;
 	private:
 	
 		HistorySlot m_historySignal;
-		History hist;
-		
+
 		void buildHistoryList( xmlNode* cnode );
 		void checkHistoryFilter( UniXML_iterator& it );
 		void saveHistory();
