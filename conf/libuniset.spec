@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.96
-Release: eter32
+Release: eter33
 
 Summary: UniSet - library for building distributed industrial control systems
 

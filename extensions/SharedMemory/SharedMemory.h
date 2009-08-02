@@ -178,14 +178,15 @@ class SharedMemory:
 		bool dblogging;
 
 		History hist;
-	private:
-	
-		HistorySlot m_historySignal;
+
+		virtual void updateHistory( UniSetTypes::SensorMessage* sm );
+		virtual void saveHistory();
 
 		void buildHistoryList( xmlNode* cnode );
 		void checkHistoryFilter( UniXML_iterator& it );
-		void saveHistory();
-		void updateHistory( UniSetTypes::SensorMessage* sm );
+
+	private:
+		HistorySlot m_historySignal;
 };
 // -----------------------------------------------------------------------------
 #endif // SharedMemory_H_
