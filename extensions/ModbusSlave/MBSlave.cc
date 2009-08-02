@@ -821,8 +821,8 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage&
 		if( reply.count < query.count )
 		{
 			dlog[Debug::WARN] << myname 
-				<< "(readOutputRegisters): Получили меньше чем ожидали. "
-				<< " Запросили " << query.count << " получили " << reply.count << endl;
+				<< "(readInputRegisters): query.count=" << query.count 
+					<< " > reply.count=" << reply.count << endl;
 		}
 
 		pingOK = true;
@@ -830,7 +830,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage&
 	}
 	catch( UniSetTypes::NameNotFound& ex )
 	{
-		dlog[Debug::WARN] << myname << "(writeOutputRegisters): " << ex << endl;
+		dlog[Debug::WARN] << myname << "(readOutputRegisters): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
 	catch( Exception& ex )
@@ -1071,8 +1071,8 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 		if( reply.count < query.count )
 		{
 			dlog[Debug::WARN] << myname 
-				<< "(readOutputRegisters): Получили меньше чем ожидали. "
-				<< " Запросили " << query.count << " получили " << reply.count << endl;
+				<< "(readInputRegisters): query.count=" << query.count 
+					<< " > reply.count=" << reply.count << endl;
 		}
 
 		pingOK = true;
