@@ -19,7 +19,11 @@ UniSetObject_LT(objId),
 mbslot(0),
 shm(0),
 initPause(0),
+askCount(0),
+test_id(DefaultObjectId),
+askcount_id(DefaultObjectId),
 activated(false),
+activateTimeout(500),
 pingOK(true),
 force(false),
 mbregFromID(false),
@@ -1076,7 +1080,8 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 				reply.addData(d);
 			else
 				reply.addData(0);
-
+			
+			
 			pingOK = true;
 			return ret;
 		}

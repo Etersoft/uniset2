@@ -37,14 +37,13 @@ int main(int argc, char **argv)
 		if( logfilename.empty() )
 			logfilename = "mbslave.log";
 	
-		conf->initDebug(dlog,"dlog");
-	
 		std::ostringstream logname;
 		string dir(conf->getLogDir());
 		logname << dir << logfilename;
 		unideb.logFile( logname.str().c_str() );
 		dlog.logFile( logname.str().c_str() );
 
+		conf->initDebug(dlog,"dlog");
 
 		ObjectId shmID = DefaultObjectId;
 		string sID = conf->getArgParam("--smemory-id");

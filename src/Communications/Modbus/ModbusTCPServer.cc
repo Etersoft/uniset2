@@ -54,7 +54,7 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, int timeout )
 			if( tcp.isPending(Socket::pendingInput, timeout) )
 			{
 				memset(&curQueryHeader,0,sizeof(curQueryHeader));
-				mbErrCode res = tcp_processing(tcp,curQueryHeader);
+				res = tcp_processing(tcp,curQueryHeader);
 				if( res!=erNoError )
 				{
 					tcp.disconnect();

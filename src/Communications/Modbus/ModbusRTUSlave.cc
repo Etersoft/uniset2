@@ -66,7 +66,7 @@ mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, int timeout )
 {
 	uniset_mutex_lock lck(recvMutex,timeout);
 	ModbusMessage buf;
-	mbErrCode res(erBadReplyNodeAddress);
+	mbErrCode res = erBadReplyNodeAddress;
 	do
 	{
 		res = recv(addr,buf,timeout);
