@@ -56,6 +56,8 @@ class MBSlave:
 			friend std::ostream& operator<<( std::ostream& os, IOProperty& p );
 		};
 
+		inline long getAskCount(){ return askCount; }
+
 	protected:
 
 		/*! обработка 0x01 */
@@ -165,7 +167,7 @@ class MBSlave:
 		ModbusRTU::mbErrCode prev;
 		long askCount;
 		typedef std::map<ModbusRTU::mbErrCode,unsigned int> ExchangeErrorMap;
-		ExchangeErrorMap errmap; 	/*!< статистика обмена */		
+		ExchangeErrorMap errmap; 	/*!< статистика обмена */
 		
 		bool activated;
 		int activateTimeout;

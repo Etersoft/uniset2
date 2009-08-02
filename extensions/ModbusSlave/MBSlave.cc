@@ -282,7 +282,7 @@ void MBSlave::execute_rtu()
 			{
 				//  с проверкой на переполнение
 				askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
-				if( res!=ModbusRTU::erNoError )			
+				if( res!=ModbusRTU::erNoError )
 					errmap[res]++;
 	
 				prev = res;
@@ -333,7 +333,7 @@ void MBSlave::execute_tcp()
 			{
 				//  с проверкой на переполнение
 				askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
-				if( res!=ModbusRTU::erNoError )			
+				if( res!=ModbusRTU::erNoError )
 					errmap[res]++;
 	
 				prev = res;
