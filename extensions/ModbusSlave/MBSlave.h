@@ -163,6 +163,9 @@ class MBSlave:
 		IOController::AIOStateList::iterator aitHeartBeat;
 		UniSetTypes::ObjectId test_id;
 
+		IOController::AIOStateList::iterator aitAskCount;
+		UniSetTypes::ObjectId askcount_id;
+
 		PassiveTimer ptTimeout;
 		ModbusRTU::mbErrCode prev;
 		long askCount;

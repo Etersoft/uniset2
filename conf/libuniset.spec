@@ -178,6 +178,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Mon Aug 03 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter35
+- new  RS  properties
+
 * Sat Aug 01 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter30
 - new build
 

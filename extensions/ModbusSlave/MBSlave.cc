@@ -171,6 +171,9 @@ prefix(prefix)
 		}
 	}
 
+	askcount_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-askcount-id",it.getProp("askcount_id")));
+	dlog[Debug::INFO] << myname << ": init askcount_id=" << askcount_id << endl;
+
 	dlog[Debug::INFO] << myname << ": init test_id=" << test_id << endl;
 
 	wait_msec = getHeartBeatTime() - 100;
@@ -305,6 +308,19 @@ void MBSlave::execute_rtu()
 				{
 					dlog[Debug::CRIT] << myname
 						<< "(execute_rtu): (hb) " << ex << std::endl;
+				}
+			}
+
+			if( askcount_id!=DefaultObjectId )
+			{
+				try
+				{
+					shm->localSaveValue(aitAskCount,askcount_id,askCount,getId());
+				}
+				catch(Exception& ex)
+				{
+					dlog[Debug::CRIT] << myname
+						<< "(execute_rtu): (askCount) " << ex << std::endl;
 				}
 			}
 		
@@ -712,6 +728,7 @@ void MBSlave::initIterators()
 	}
 
 	shm->initAIterator(aitHeartBeat);
+	shm->initAIterator(aitAskCount);
 }
 // -----------------------------------------------------------------------------
 void MBSlave::help_print( int argc, char* argv[] )
