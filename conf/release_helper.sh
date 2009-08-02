@@ -102,7 +102,7 @@ export BUILDNAME=$BASENAME-$VERSION-$RELEASE
 
 add_changelog_helper "- new build" $SPECNAME
 
-prepare_tarball || fatal "Can't prpare"
+#prepare_tarball || fatal "Can't prepare tarball"
 
 rpmbb $SPECNAME || fatal "Can't build"
 
