@@ -611,8 +611,6 @@ void MBMaster::sigterm( int signo )
 {
 	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
 	activated = false;
-#warning Доделать...
-	// выставление безопасного состояния на выходы....
 	MBMap::iterator it=mbmap.begin();
 	for( ; it!=mbmap.end(); ++it )
 	{
@@ -624,6 +622,8 @@ void MBMaster::sigterm( int signo )
 
 		try
 		{
+			#warning Доделать...
+			// выставление безопасного состояния на выходы....
 		}
 		catch( UniSetTypes::Exception& ex )
 		{
@@ -637,8 +637,6 @@ void MBMaster::sigterm( int signo )
 // ------------------------------------------------------------------------------------------
 void MBMaster::readConfiguration()
 {
-#warning Сделать сортировку по диапазонам адресов!!!
-// чтобы запрашивать одним запросом, сразу несколько входов...
 //	readconf_ok = false;
 	xmlNode* root = conf->getXMLSensorsSection();
 	if(!root)
