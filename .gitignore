@@ -30,6 +30,7 @@ semantic.cache
 *_SK.h
 /config.h
 /config.h.in
+include/extensions
 
 stamp-h1
 config.status
