@@ -69,7 +69,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 			unideb[Debug::LEVEL3] << myname << "(init): КАРТА N" << i 
 								<< " ОТКЛЮЧЕНА (TestMode)!!! в КАЧЕСТВЕ УСТРОЙСТВА УКАЗАНО '" 
 								<< iodev << "'" << endl;
-			cards[i] = 0;
+			cards[i] = NULL;
 			cout << "******************** CARD" << i << ": IO IMITATOR MODE ****************" << endl;			
 		}
 		else
@@ -79,7 +79,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 			cout << "card" << i << ": " << cards[i]->devname() << endl;
 		}
 		
-		if( cards[i] )
+		if( cards[i] != NULL )
 		{
 			for( int s=0; s<4; s++ )
 			{
@@ -212,9 +212,6 @@ IOControl::~IOControl()
 	// здесь бы ещё пройтись по списку с сделать delete для
 	// всех cdiagram созданных через new
 	// 
-	for( unsigned int i=0; i<cards.size(); i++ )
-		delete cards[i];
-
 	delete shm;
 }
 
@@ -341,20 +338,15 @@ void IOControl::execute()
 // --------------------------------------------------------------------------------
 void IOControl::iopoll()
 {
-	ComediInterface* card = 0;
-	int val = 0;
 
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
 	{
 		if( it->ignore || it->ncard == defCardNum )
 			continue;
 
-		card = 0;
-		if( it->ncard >= 0 && it->ncard<cards.size() )
-			card = cards[it->ncard];
+		ComediInterface* card = cards.getCard(it->ncard);
 
-
-		if( !card || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
+		if( card == NULL || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
 			continue;
 
 //		cout  << conf->oind->getMapName(it->si.id) 
@@ -372,7 +364,7 @@ void IOControl::iopoll()
 		{
 			if( it->stype == UniversalIO::AnalogInput )
 			{
-				val = card->getAnalogChannel(it->subdev,it->channel, it->range, it->aref);
+				int val = card->getAnalogChannel(it->subdev,it->channel, it->range, it->aref);
 /*
 				if( unideb.debugging(Debug::LEVEL3) )
 				{
@@ -561,7 +553,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	else
 		inf.ncard = atoi( c.c_str() );
 
-	if( c.empty() || inf.ncard<0 || inf.ncard >= cards.size() )
+	if( c.empty() || inf.ncard < 0 || inf.ncard >= (int)cards.size() )
 	{
 		dlog[Debug::LEVEL3] << myname 
 							<< "(initIOItem): Не указан или неверный номер карты (" 
@@ -664,19 +656,15 @@ void IOControl::sigterm( int signo )
 	if( noCards )
 		return;
 
-	ComediInterface* card = 0;
-
 	// выставляем безопасные состояния
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
 	{
 		if( it->ignore )
 			continue;
 
-		card = 0;
-		if( it->ncard>=0 && it->ncard<cards.size() )
-			card = cards[it->ncard];
+		ComediInterface* card = cards.getCard(it->ncard);
 
-		if( !card )
+		if( card == NULL )
 			continue;
 
 		try
@@ -710,23 +698,19 @@ void IOControl::initOutputs()
 	if( noCards )
 		return;
 
-	ComediInterface* card = 0;
-
 	// выставляем значение по умолчанию
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
 	{
 		if( it->ignore )
 			continue;
 
-		card = 0;
-		if( it->ncard>=0 && it->ncard<cards.size() )
-			card = cards[it->ncard];
+		ComediInterface* card = cards.getCard(it->ncard);
+
+		if( card == NULL || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
+			continue;
 
 		try
 		{
-			if( !card || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
-				continue;
-
 			if( it->lamp )
 				card->setDigitalChannel(it->subdev,it->channel,(bool)it->defval);
 			else if( it->stype == UniversalIO::DigitalOutput )
@@ -746,18 +730,14 @@ void IOControl::initIOCard()
 	if( noCards )
 		return;
 
-	ComediInterface* card = 0;
-
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
 	{
 		if( it->subdev == DefaultSubdev )
 			continue;
 
-		card = 0;
-		if( it->ncard>=0 && it->ncard<cards.size() )
-			card = cards[it->ncard];
+		ComediInterface* card = cards.getCard(it->ncard);
 
-		if( !card || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
+		if( card == NULL || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
 			continue;
 
 		try
@@ -792,7 +772,6 @@ void IOControl::blink()
 	if( lstBlink.empty() )
 		return;
 
-	ComediInterface* card(0);
 	
 	for( BlinkList::iterator it=lstBlink.begin(); it!=lstBlink.end(); ++it )
 	{
@@ -801,15 +780,13 @@ void IOControl::blink()
 		if( io->subdev == DefaultSubdev || io->channel==DefaultChannel )
 			continue;
 
-		card = 0;
-		if( io->ncard>=0 && io->ncard<cards.size() )
-			card = cards[io->ncard];
 
-		if( !card )
+		ComediInterface* card = cards.getCard(io->ncard);
+		if( card == NULL )
 			continue;
 
 		try
-		{			
+		{
 			card->setDigitalChannel(io->subdev,io->channel,blink_state);
 		}
 		catch( Exception& ex )
@@ -916,7 +893,7 @@ IOControl* IOControl::init_iocontrol( int argc, char* argv[],
 	}
 
 	int numcards = atoi(conf->getArgParam("--io-numcards","1").c_str());
-	if( numcards <=0 )
+	if( numcards <= 0 )
 		numcards = 1;
 
 
@@ -1117,17 +1094,14 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 		unideb[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
 	}
 
-	ComediInterface* card = 0;
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
 	{
 		if( it->ignore )
 			continue;
 
-		card = 0;
-		if( it->ncard>=0 && it->ncard<cards.size() )
-			card = cards[it->ncard];
-		
-		if( !card || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
+		ComediInterface* card = cards.getCard(it->ncard);
+
+		if( card == NULL || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
 			continue;
 
 		if( it->stype == UniversalIO::AnalogOutput ||
@@ -1206,12 +1180,10 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 								// (так комфортнее выглядит для оператора)
 								if( it->ignore || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
 									break;
-								
-								ComediInterface* card = 0;
-								if( it->ncard>=0 && it->ncard<cards.size() )
-									card = cards[it->ncard];
-								
-								if( card )
+
+								ComediInterface* card = cards.getCard(it->ncard);
+
+								if( card != NULL )
 									card->setDigitalChannel(it->subdev,it->channel,1);
 							}
 						}

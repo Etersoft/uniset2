@@ -24,6 +24,26 @@
 // -----------------------------------------------------------------------------
 #warning Сделать обработку сигналов завершения....
 
+class CardList:
+	public std::vector<ComediInterface*>
+{
+	public:
+
+		CardList(int size) : std::vector<ComediInterface*>(size) { }
+
+		~CardList() {
+			for( unsigned int i=0; i<size(); i++ )
+				delete (*this)[i];
+		}
+
+		inline ComediInterface* getCard(int ncard) {
+			if( ncard >= 0 && ncard < (int)size() )
+				return (*this)[ncard];
+			return NULL;
+	}
+
+};
+
 /*! 
 	Процесс работы с картами в/в.
 	Задачи:
@@ -70,7 +90,7 @@ class IOControl:
 
 			int subdev;		/*!< (UNIO) подустройство (см. comedi_test для конкретной карты в/в) */
 			int channel;	/*!< (UNIO) канал [0...23] */
-			int ncard;		/*!< номер карты [1|2]. 0 - не определена */
+			int ncard;		/*!< номер карты [1|2]. 0 - не определена. FIXME from Lav: -1 - не определена? */
 
 			/*! Вид поключения
 				0	- analog ref = analog ground
@@ -131,7 +151,7 @@ class IOControl:
 		xmlNode* cnode;			/*!< xml-узел в настроечном файле */
 
 		int polltime;			/*!< переодичность обновления данных (опроса карт в/в), [мсек] */
-		std::vector<ComediInterface*> cards;
+		CardList cards;			/*!< список карт - массив созданных ComediInterface */
 		bool noCards;
 
 
