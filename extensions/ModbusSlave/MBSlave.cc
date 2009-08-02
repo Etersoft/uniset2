@@ -375,6 +375,19 @@ void MBSlave::execute_tcp()
 				}
 			}
 
+			if( askcount_id!=DefaultObjectId )
+			{
+				try
+				{
+					shm->localSaveValue(aitAskCount,askcount_id,askCount,getId());
+				}
+				catch(Exception& ex)
+				{
+					dlog[Debug::CRIT] << myname
+						<< "(execute_rtu): (askCount) " << ex << std::endl;
+				}
+			}
+
 			for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
 				IOBase::processingThreshold(&it->second,shm,force);
 		}
