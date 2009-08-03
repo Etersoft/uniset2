@@ -1,15 +1,17 @@
 #include <cstdlib>
-#include <string>
 #include <cstring>
-#include <comedilib.h>
 #include <getopt.h>
 #include <time.h>
+
+#include <string>
 #include <iostream>
 #include <iomanip>
 #include <map>
 #include <algorithm>
 #include <list>
-#include "UniXML.h"
+
+#include <comedilib.h>
+#include <UniXML.h>
 
 // --------------------------------------------------------------------------
 using namespace std;
@@ -72,7 +74,7 @@ static struct option longopts[] = {
 int main(int argc, char* argv[])
 {
 	comedi_t* card;
-	char* dev = "/dev/comedi0";
+	const char* dev = "/dev/comedi0";
 	lsampl_t data = 0;
 	int optindex = 0;
 	int opt = 0;
@@ -121,11 +123,11 @@ int main(int argc, char* argv[])
 			break;
 			
 			case 'o':
-				openFileXml=optarg;	
+				openFileXml=optarg;
 			break;
 
 			case 'f':
-				saveFileXml=optarg;	
+				saveFileXml=optarg;
 			break;
 
 			case 'n':
@@ -133,16 +135,16 @@ int main(int argc, char* argv[])
 			break;
 
 			case 'i':
-				sort_rise=optarg=="1"?true:false;	
+				sort_rise=atoi(optarg);
 			break;
 
 			case 'c':
-				sort_cal=optarg=="1"?true:false;	
+				sort_cal=atoi(optarg);
 			break;
 			
 			case '?':
 			default:
-				printf("? argumnet\n");
+				printf("? argument\n");
 				return 0;
 		}	
 	}
@@ -189,7 +191,7 @@ int main(int argc, char* argv[])
 					string str;
 					str.clear();
 					cout<<"\nQuiting... Are You shure?(y/n)"<<endl;
-					getline(cin,str);	
+					getline(cin, str);
 					if(  str == "y")
 						return 0;
 					break;	
@@ -203,22 +205,22 @@ int main(int argc, char* argv[])
 						 <<"		(d) on calibrated value decrease"<<endl;
 					getline(cin,str);
 					cout<<"		"<<str<<endl;
-					if(str.c_str()[0]=='a')
-					{							
+					if(str == "a")
+					{
 						sort_rise=true;
 						sort_cal=false;
 					}	
-					else if(str.c_str()[0]=='b')
+					else if(str == "b")
 					{
 						sort_rise=false;
 						sort_cal=false;
 					}	
-					else if(str.c_str()[0]=='c')
+					else if(str == "c")
 					{
 						sort_rise=true;
 						sort_cal=true;
 					}	
-					else if(str.c_str()[0]=='d')
+					else if(str == "d")
 					{
 						sort_rise=false;
 						sort_cal=true;
@@ -231,8 +233,8 @@ int main(int argc, char* argv[])
 				{
 					string str;
 					str.clear();
-					cout<<"\nClearing... Are You shure?(y/n)"<<endl;
-					getline(cin,str);	
+					cout<<"\nClearing... Are You sure?(y/n)"<<endl;
+					getline(cin,str);
 					if(  str == "y")
 						massDat.clear();
 					break;
@@ -335,7 +337,7 @@ void saveXML()
 	if(nodeXml.length()<1)
 		nodeXml="MyCalibration";
 	fprintf(fp,"<Calibration>\n	<diagram name=\"");
-	fprintf(fp,nodeXml.c_str());
+	fprintf(fp,"%s",nodeXml.c_str());
 	fprintf(fp,"\">\n");
 
 	sortData(sort_rise,sort_cal);
