@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 	lsampl_t data = 0;
 	int optindex = 0;
 	int opt = 0;
-	char* dev = "/dev/comedi0";
+	const char* dev = "/dev/comedi0";
 	int val = -1;
 	cmd = cmdNOP;
 	int verb = 0;
@@ -258,7 +258,7 @@ int main(int argc, char* argv[])
 				int ret = comedi_data_read(card, subdev, chan[k], range, AREF_GROUND, &data);
 				if( ret < 0)
 				{
-					fprintf(stderr, "can't read from channel %d: (%d) %s\n",chan,ret,strerror(ret));
+					fprintf(stderr, "can't read from channel %d: (%d) %s\n",chan[k],ret,strerror(ret));
 				  	exret = EXIT_FAILURE;
 				}
 
