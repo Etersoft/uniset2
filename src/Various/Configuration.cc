@@ -307,15 +307,12 @@ void Configuration::initConfiguration( int argc, char** argv )
 		_argc 	= argc+2*lnodes.size()+2;
 		_argv	= new char*[_argc];
 
+		int i = 0;
 		// перегоняем старые параметры
-		int i=0;
-		for( ;i<argc; i++ )
-		{	
-			_argv[i] = new char[strlen(argv[i]) + 1];
-			strcpy(_argv[i],argv[i]);
-		}
+		for( ; i < argc; i++ )
+			_argv[i] = strdup(argv[i]);
 
-		// формируем новые
+		// формируем новые, используя i в качестве индекса
 		for( UniSetTypes::ListOfNode::iterator it=lnodes.begin(); it!=lnodes.end(); ++it )
 		{
 			_argv[i] = "-ORBInitRef";
@@ -323,8 +320,7 @@ void Configuration::initConfiguration( int argc, char** argv )
 			string name(oind->getRealNodeName(it->id));
 			ostringstream param;	
 			param << name << "=corbaname::" << it->host << ":" << it->port;
-			_argv[i+1] = new char[param.str().size()+1]; // +1 - \0
-			strcpy(_argv[i+1],param.str().c_str());
+			_argv[i+1] = strdup(param.str().c_str());
 
 			if( unideb.debugging(Debug::INFO) )
 				unideb[Debug::INFO] << "(Configuration): внесли параметр " << param.str() << endl;
@@ -355,10 +351,7 @@ void Configuration::initConfiguration( int argc, char** argv )
 
 			ostringstream param;	
 			param <<"NameService=corbaname::" << getProp(nsnode,"host") << ":" << defPort;
-			// сперва надо выделить место под строку
-			_argv[i+1] = new char[param.str().size()+1]; // +1 - \0
-			// теперь скопировать
-			strcpy(_argv[i+1],param.str().c_str());
+			_argv[i+1] = strdup(param.str().c_str());
 			if( unideb.debugging(Debug::INFO) )
 				unideb[Debug::INFO] << "(Configuration): внесли параметр " << param.str() << endl;
 		}
@@ -771,32 +764,23 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
 	string del_level("--"+debname+"-del-levels");
 		
 	// смотрим командную строку
-	for (int i=1; i<_argc; i++)
+	for (int i=1; i < (_argc - 1); i++)
 	{
-		if( !strcmp(_argv[i],log_in.c_str()) )		// "--debug-log_in_file"
+		if( log_in == _argv[i] )		// "--debug-log_in_file"
 		{
-			if( i+1 < _argc )
-				deb.logFile(_argv[i+1]);
+			deb.logFile(_argv[i+1]);
 		}
-		else if( !strcmp(_argv[i],add_level.c_str()) )	// "--debug-add-levels"
+		else if( add_level == _argv[i] )	// "--debug-add-levels"
 		{
-			if( i+1 < _argc )
-			{
-				string val(_argv[i+1]);
-				deb.addLevel(Debug::value(val));
-			}
+			deb.addLevel(Debug::value(_argv[i+1]));
 		}
-		else if( !strcmp(_argv[i],del_level.c_str()) )	// "--debug-del-levels"
+		else if( del_level == _argv[i] )	// "--debug-del-levels"
 		{
-			if( i+1 < _argc )
-			{
-				string val(_argv[i+1]);
-				deb.delLevel(Debug::value(val));
-			}
+			deb.delLevel(Debug::value(_argv[i+1]));
 		}
 	}
-			
-	return dnode;	
+
+	return dnode;
 }
 // -------------------------------------------------------------------------
 void Configuration::initRepSections()

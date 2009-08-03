@@ -149,15 +149,10 @@ namespace UniSetTypes
 										int _argc, char** _argv, 
 											const std::string defval="" )
 	{
-		for( int i=1; i<_argc; i++ )
+		for( int i=1; i < (_argc - 1) ; i++ )
 		{
-			if( !strcmp(_argv[i], name.c_str()) )
-			{
-				int k=i+1;
-				if( k<_argc )
-					return _argv[k];
-				break;
-			}
+			if( name == _argv[i] )
+				return _argv[i+1];
 		}
 		return defval;
 	}
@@ -171,7 +166,7 @@ namespace UniSetTypes
 	{
 		for( int i=1; i<_argc; i++ )
 		{
-			if( !strcmp(_argv[i], name.c_str()) )
+			if( name == _argv[i] )
 				return i;
 		}
 		return -1;
