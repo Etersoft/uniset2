@@ -93,9 +93,7 @@ Libraries needed to develop for uniset extensions
 %configure --disable-docs --disable-static
 %endif
 
-# Hack to make IDL first
-%make -C IDL
-%make_build || %make
+%make_build
 
 %install
 %makeinstall_std
