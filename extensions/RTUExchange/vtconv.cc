@@ -14,7 +14,7 @@ static void print_help()
 	printf("Usage: vtconv TYPE[F2|F4] hex1 hex2 [hex3 hex4]\n");
 }
 // --------------------------------------------------------------------------
-int main( int argc, char **argv )
+int main( int argc, const char **argv )
 {   
 
 	VTypes::F2 f2;

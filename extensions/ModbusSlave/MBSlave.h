@@ -26,12 +26,12 @@ class MBSlave:
 		virtual ~MBSlave();
 	
 		/*! глобальная функция для инициализации объекта */
-		static MBSlave* init_mbslave( int argc, char* argv[], 
+		static MBSlave* init_mbslave( int argc, const char** argv,
 											UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
 											std::string prefix="mbs" );
 
 		/*! глобальная функция для вывода help-а */
-		static void help_print( int argc, char* argv[] );
+		static void help_print( int argc, const char** argv );
 
 		static const int NoSafetyState=-1;
 

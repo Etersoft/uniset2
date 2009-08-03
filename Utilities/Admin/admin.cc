@@ -151,7 +151,7 @@ static void usage()
 		TransportMessage можно создать один раз до цикла.
 */
 // --------------------------------------------------------------------------------------
-int main(int argc, char* argv[])
+int main(int argc, const char** argv)
 {
 	try
 	{
@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
 		char opt = 0;
 
 
-	while( (opt = getopt_long(argc, argv, "hc:beomsfur:l:a:n:d:i:v:t:x:j:g:k:w:p:y:",longopts,&optindex)) != -1 ) 
+	while( (opt = getopt_long(argc, (char * const*)argv, "hc:beomsfur:l:a:n:d:i:v:t:x:j:g:k:w:p:y:",longopts,&optindex)) != -1 ) 
 	{
 		switch (opt) //разбираем параметры 
 		{

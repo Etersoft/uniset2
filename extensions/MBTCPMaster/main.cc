@@ -11,7 +11,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-int main( int argc,char** argv )
+int main( int argc, const char** argv )
 {
 	if( argc>1 && (!strcmp(argv[1],"--help") || !strcmp(argv[1],"-h")) )
 	{
@@ -19,13 +19,13 @@ int main( int argc,char** argv )
 		cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
 		cout << "--mbtcp-logfile filename    - logfilename. Default: mbtcpmaster.log" << endl;
 		cout << endl;
-		MBMaster::help_print(argc,argv);
+		MBMaster::help_print(argc, argv);
 		return 0;
 	}
 
 	try
 	{
-		string confile=UniSetTypes::getArgParam("--confile",argc,argv,"configure.xml");
+		string confile=UniSetTypes::getArgParam("--confile",argc, argv, "configure.xml");
 		conf = new Configuration( argc, argv, confile );
 
 		string logfilename(conf->getArgParam("--mbtcp-logfile"));

@@ -15,7 +15,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 using namespace std;
 // --------------------------------------------------------------------------
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {
 
 	if( argc>1 && (!strcmp(argv[1],"--help") || !strcmp(argv[1],"-h")) )

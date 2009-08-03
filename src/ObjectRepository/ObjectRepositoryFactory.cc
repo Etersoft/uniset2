@@ -74,8 +74,8 @@ bool ObjectRepositoryFactory::createSection( const char* name, const char* in_se
 	}
 	
 	int argc(uconf->getArgc());
-	char **argv(uconf->getArgv());
-	CosNaming::NamingContext_var ctx = ORepHelpers::getContext(in_section, argc, argv, uconf->getNSName() );    
+	const char **argv(uconf->getArgv());
+	CosNaming::NamingContext_var ctx = ORepHelpers::getContext(in_section, argc, argv, uconf->getNSName() );
 	return createContext( name, ctx.in() );
 }
 
@@ -217,14 +217,14 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
 {
 //	string name = getName(fullName.c_str(),'/');
 //  string sec = getSectionName(fullName.c_str(),'/');
-//	CosNaming::NamingContext_var ctx = getContext(sec, argc, argv);    
+//	CosNaming::NamingContext_var ctx = getContext(sec, argc, argv);
 	unsigned int how_many = 1000;
 	CosNaming::NamingContext_var ctx;
 	try
 	{	
 		int argc(uconf->getArgc());
-		char **argv(uconf->getArgv());
-		ctx = ORepHelpers::getContext(fullName, argc, argv, nsName);    
+		const char **argv(uconf->getArgv());
+		ctx = ORepHelpers::getContext(fullName, argc, argv, nsName);
 	}
 	catch( ORepFailed )
 	{
@@ -285,9 +285,9 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
 		try
 		{
 			int argc(uconf->getArgc());
-			char **argv(uconf->getArgv());
+			const char **argv(uconf->getArgv());
 			CosNaming::Name_var ctxName = omniURI::stringToName(name.c_str());
-			CosNaming::NamingContext_var in_ctx = ORepHelpers::getContext(in_sec, argc, argv, nsName);    
+			CosNaming::NamingContext_var in_ctx = ORepHelpers::getContext(in_sec, argc, argv, nsName);
 			ctx->destroy();
 			in_ctx->unbind(ctxName);
 		}
@@ -327,7 +327,7 @@ bool ObjectRepositoryFactory::renameSection( const string& newFName, const strin
 //		unideb[Debug::REPOSITORY] << "ORepFactory: в контексте "<< in_sec << endl; 
 //		unideb[Debug::REPOSITORY] << "ORepFactory: переименовываем " << oldFName << " в " << newFName << endl;				
 		int argc(uconf->getArgc());
-		char **argv(uconf->getArgv());
+		const char **argv(uconf->getArgv());
 		CosNaming::NamingContext_var in_ctx = ORepHelpers::getContext(in_sec, argc, argv, nsName);    
 		CosNaming::NamingContext_var ctx = ORepHelpers::getContext(oldFName, argc, argv, nsName);    
 

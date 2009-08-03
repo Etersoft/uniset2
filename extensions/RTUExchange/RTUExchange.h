@@ -29,11 +29,11 @@ class RTUExchange:
 		virtual ~RTUExchange();
 	
 		/*! глобальная функция для инициализации объекта */
-		static RTUExchange* init_rtuexchange( int argc, char* argv[], 
+		static RTUExchange* init_rtuexchange( int argc, const char** argv,
 											UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
 
 		/*! глобальная функция для вывода help-а */
-		static void help_print( int argc, char* argv[] );
+		static void help_print( int argc, const char** argv );
 
 		static const int NoSafetyState=-1;
 

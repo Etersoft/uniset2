@@ -27,9 +27,9 @@ class SharedMemory:
 		virtual ~SharedMemory();
 
 		/*! глобальная функция для инициализации объекта */
-		static SharedMemory* init_smemory( int argc, char* argv[] );
+		static SharedMemory* init_smemory( int argc, const char** argv );
 		/*! глобальная функция для вывода help-а */
-		static void help_print( int argc, char* argv[] );
+		static void help_print( int argc, const char** argv );
 
 
 	    virtual void saveValue(const IOController_i::SensorInfo& si, CORBA::Long value,
@@ -62,7 +62,7 @@ class SharedMemory:
 			AIOStateList::iterator ait;
 			DIOStateList::iterator dit;
 
-			void add( long val, int size )
+			void add( long val, size_t size )
 			{
 				buf.push_back(val);
 				if( buf.size() >= size )

@@ -9,7 +9,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-int main( int argc,char** argv )
+int main( int argc, const char** argv )
 {
 	try
 	{
@@ -19,11 +19,11 @@ int main( int argc,char** argv )
 			cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
 			cout << "--rs-logfile filename    - logfilename. Default: rtuexchange.log" << endl;
 			cout << endl;
-			RTUExchange::help_print(argc,argv);
+			RTUExchange::help_print(argc, argv);
 			return 0;
 		}
 
-		string confile=UniSetTypes::getArgParam("--confile",argc,argv,"configure.xml");
+		string confile=UniSetTypes::getArgParam("--confile", argc, argv, "configure.xml");
 		conf = new Configuration( argc, argv, confile );
 
 		string logfilename(conf->getArgParam("--rs-logfile"));

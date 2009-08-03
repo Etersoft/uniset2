@@ -24,11 +24,11 @@ class MBMaster:
 		virtual ~MBMaster();
 	
 		/*! глобальная функция для инициализации объекта */
-		static MBMaster* init_mbmaster( int argc, char* argv[], UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
+		static MBMaster* init_mbmaster( int argc, const char** argv, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
 										std::string prefix="mbtcp" );
 
 		/*! глобальная функция для вывода help-а */
-		static void help_print( int argc, char* argv[] );
+		static void help_print( int argc, const char** argv );
 
 		static const int NoSafetyState=-1;
 

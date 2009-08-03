@@ -873,7 +873,7 @@ void IOControl::check_testlamp()
 }
 
 // -----------------------------------------------------------------------------
-IOControl* IOControl::init_iocontrol( int argc, char* argv[], 
+IOControl* IOControl::init_iocontrol( int argc, const char** argv,
 										UniSetTypes::ObjectId icID, SharedMemory* ic )
 {
 	string name = conf->getArgParam("--io-name","IOControl1");
@@ -883,7 +883,7 @@ IOControl* IOControl::init_iocontrol( int argc, char* argv[],
 		return 0;
 	}
 
-	ObjectId ID = conf->getObjectID(name);	
+	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
 		cerr << "(iocontrol): идентификатор '" << name 
@@ -901,7 +901,7 @@ IOControl* IOControl::init_iocontrol( int argc, char* argv[],
 	return new IOControl(ID,icID,ic,numcards);
 }
 // -----------------------------------------------------------------------------
-void IOControl::help_print( int argc, char* argv[] )
+void IOControl::help_print( int argc, const char** argv )
 {
 	cout << "--io-confnode name - Использовать для настройки указанный xml-узел" << endl;
 	cout << "--io-name name		- ID процесса. По умолчанию IOController1." << endl;

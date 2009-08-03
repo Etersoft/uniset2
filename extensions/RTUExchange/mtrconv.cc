@@ -14,7 +14,7 @@ static void print_help()
 	printf("Usage: mtrconv TYPE[T1...T12] hex1 hex2\n");
 }
 // --------------------------------------------------------------------------
-int main( int argc, char **argv )
+int main( int argc, const char **argv )
 {   
 	ModbusRTU::ModbusData dt[3];
 	ModbusRTU::ModbusData* data = dt;

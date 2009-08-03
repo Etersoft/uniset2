@@ -38,7 +38,7 @@
 using namespace std;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
-int main( int argc, char* argv[] )
+int main( int argc, const char** argv )
 {
 	if( argc>1 &amp;&amp; strcmp(argv[1],"--help")==0 )
 	{
@@ -51,7 +51,7 @@ int main( int argc, char* argv[] )
 	try
 	{
 		string confile = UniSetTypes::getArgParam( "--confile", argc, argv, "configure.xml" );
-		conf = new Configuration(argc, argv,confile);
+		conf = new Configuration(argc, argv, confile);
 
 		string logfilename = conf->getArgParam("--logfile","<xsl:value-of select="$CLASSNAME"/>.log");
 

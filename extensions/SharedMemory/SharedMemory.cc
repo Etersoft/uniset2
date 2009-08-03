@@ -435,9 +435,9 @@ void SharedMemory::fastSaveValue(const IOController_i::SensorInfo& si, CORBA::Lo
 	IONotifyController_LT::fastSaveValue(si,value,type,sup_id);
 }					
 // ------------------------------------------------------------------------------------------
-SharedMemory* SharedMemory::init_smemory( int argc, char* argv[] )
+SharedMemory* SharedMemory::init_smemory( int argc, const char** argv )
 {
-	string dfile = conf->getArgParam("--datfile",conf->getConfFileName());
+	string dfile = conf->getArgParam("--datfile", conf->getConfFileName());
 
 	if( dfile[0]!='.' && dfile[0]!='/' )
 		dfile = conf->getConfDir() + dfile;
@@ -455,7 +455,7 @@ SharedMemory* SharedMemory::init_smemory( int argc, char* argv[] )
 	return new SharedMemory(ID,dfile);
 }
 // -----------------------------------------------------------------------------
-void SharedMemory::help_print( int argc, char* argv[] )
+void SharedMemory::help_print( int argc, const char** argv )
 {
 	cout << "--smemory-id           - SharedMemeory ID" << endl;
 	cout << "--logfile fname	- выводить логи в файл fname. По умолчанию smemory.log" << endl;

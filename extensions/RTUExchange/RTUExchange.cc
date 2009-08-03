@@ -1406,7 +1406,7 @@ void RTUExchange::initIterators()
 
 }
 // -----------------------------------------------------------------------------
-void RTUExchange::help_print( int argc, char* argv[] )
+void RTUExchange::help_print( int argc, const char** argv )
 {
 	cout << "--rs-polltime msec     - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
 	cout << "--rs-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
@@ -1422,7 +1422,7 @@ void RTUExchange::help_print( int argc, char* argv[] )
 	cout << "--rs-recv-timeout - Таймаут на ожидание ответа." << endl;
 }
 // -----------------------------------------------------------------------------
-RTUExchange* RTUExchange::init_rtuexchange( int argc, char* argv[], UniSetTypes::ObjectId icID, SharedMemory* ic )
+RTUExchange* RTUExchange::init_rtuexchange( int argc, const char** argv, UniSetTypes::ObjectId icID, SharedMemory* ic )
 {
 	string name = conf->getArgParam("--rs-name","RTUExchange1");
 	if( name.empty() )

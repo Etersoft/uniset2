@@ -795,11 +795,11 @@ void MBMaster::initIterators()
 	shm->initAIterator(aitHeartBeat);
 }
 // -----------------------------------------------------------------------------
-void MBMaster::help_print( int argc, char* argv[] )
+void MBMaster::help_print( int argc, const char** argv )
 {
 	cout << "Default: prefix='mbtcp'" << endl;
 	cout << "--prefix-polltime msec	- Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
-	cout << "--prefix-heartbeat-id		- Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+	cout << "--prefix-heartbeat-id		- Данный процесс связан с указанным аналоговым heartbeat-датчиком." << endl;
 	cout << "--prefix-heartbeat-max  	- Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 	cout << "--prefix-ready-timeout	- Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
 	cout << "--prefix-force			- Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
@@ -813,7 +813,7 @@ void MBMaster::help_print( int argc, char* argv[] )
 	cout << "--prefix-recv-timeout - Таймаут на ожидание ответа." << endl;
 }
 // -----------------------------------------------------------------------------
-MBMaster* MBMaster::init_mbmaster( int argc, char* argv[], UniSetTypes::ObjectId shmID, SharedMemory* ic,
+MBMaster* MBMaster::init_mbmaster( int argc, const char** argv, UniSetTypes::ObjectId shmID, SharedMemory* ic,
 							std::string prefix )
 {
 	string name = conf->getArgParam("--" + prefix + "-name","MBTCPMaster1");

@@ -9,7 +9,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {
 	try
 	{

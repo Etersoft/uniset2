@@ -11,12 +11,12 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // --------------------------------------------------------------------------
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {   
 	if( argc>1 && strcmp(argv[1],"--help")==0 )
 	{
 		cout << "--confile	- Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
-		SharedMemory::help_print(argc,argv);
+		SharedMemory::help_print(argc, argv);
 		return 0;
 	}
 
@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 		unideb.logFile( logname.c_str() );
 		dlog.logFile( logname.c_str() );
 
-		SharedMemory* shm = SharedMemory::init_smemory(argc,argv);
+		SharedMemory* shm = SharedMemory::init_smemory(argc, argv);
 		if( !shm )
 			return 1;
 

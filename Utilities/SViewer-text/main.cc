@@ -12,7 +12,7 @@ static void short_usage()
 	cout << "Usage: uniset-sviewer-text [--fullname] [--polltime msec] [--confile uniset-confile]\n";
 }
 // --------------------------------------------------------------------------
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {   
 	try
 	{

@@ -123,11 +123,11 @@ Configuration::~Configuration()
 }
 // ---------------------------------------------------------------------------------
 
-Configuration::Configuration( int argc, char** argv, const string xmlfile ):
+Configuration::Configuration( int argc, const char** argv, const string xmlfile ):
 	mi(NULL),
 	oind(NULL),
-	_argc(argc), 
-	_argv(argv), 
+	_argc(argc),
+	_argv(argv),
 	NSName("NameService"),
 	repeatCount(2),repeatTimeout(100), 	
 	localTimerService(UniSetTypes::DefaultObjectId),
@@ -141,12 +141,12 @@ Configuration::Configuration( int argc, char** argv, const string xmlfile ):
 	initConfiguration(argc,argv);
 }
 // ---------------------------------------------------------------------------------
-Configuration::Configuration( int argc, char** argv, ObjectIndex* _oind, 
+Configuration::Configuration( int argc, const char** argv, ObjectIndex* _oind,
 								const string fileConf ):
 	mi(NULL),
 	oind(NULL),
-	_argc(argc), 
-	_argv(argv), 
+	_argc(argc),
+	_argv(argv),
 	NSName("NameService"),
 	repeatCount(2),repeatTimeout(100), 
 	localTimerService(UniSetTypes::DefaultObjectId),
@@ -161,12 +161,12 @@ Configuration::Configuration( int argc, char** argv, ObjectIndex* _oind,
 	initConfiguration(argc,argv);
 }
 // ---------------------------------------------------------------------------------
-Configuration::Configuration( int argc, char** argv, const string fileConf, 
+Configuration::Configuration( int argc, const char** argv, const string fileConf,
 				UniSetTypes::ObjectInfo* omap ):
 	mi(NULL),
 	oind(NULL),
-	_argc(argc), 
-	_argv(argv), 
+	_argc(argc),
+	_argv(argv),
 	NSName("NameService"),
 	repeatCount(2),repeatTimeout(100), 
 	localTimerService(UniSetTypes::DefaultObjectId),
@@ -181,7 +181,7 @@ Configuration::Configuration( int argc, char** argv, const string fileConf,
 	initConfiguration(argc,argv);
 }
 // ---------------------------------------------------------------------------------
-void Configuration::initConfiguration( int argc, char** argv )
+void Configuration::initConfiguration( int argc, const char** argv )
 {
 //	PassiveTimer pt(UniSetTimer::WaitUpTime);
 	if( unideb.debugging(Debug::SYSTEM) )
@@ -305,7 +305,7 @@ void Configuration::initConfiguration( int argc, char** argv )
 		// +N --> -ORBIniRef NodeName=
 		// +2 --> -ORBIniRef NameService=
 		_argc 	= argc+2*lnodes.size()+2;
-		_argv	= new char*[_argc];
+		_argv	= new const char*[_argc];
 
 		int i = 0;
 		// перегоняем старые параметры
@@ -358,7 +358,7 @@ void Configuration::initConfiguration( int argc, char** argv )
 
 		// ------------- CORBA INIT -------------		
 		// orb init
-		orb = CORBA::ORB_init(_argc,_argv);
+		orb = CORBA::ORB_init(_argc,(char**)_argv);
 		// create policy
 		CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
 		PortableServer::POA_var root_poa = PortableServer::POA::_narrow(obj);
@@ -402,7 +402,7 @@ void Configuration::initConfiguration( int argc, char** argv )
 // -------------------------------------------------------------------------
 string Configuration::getArgParam( const string name, const string defval )
 {
-	return UniSetTypes::getArgParam(name,_argc,_argv,defval);
+	return UniSetTypes::getArgParam(name, _argc, _argv, defval);
 }
 // -------------------------------------------------------------------------
 // ????????????? ????????... (??? ???????????)
@@ -959,7 +959,7 @@ xmlNode* Configuration::getXMLServicesSection()
 	return xmlServicesSec;
 }
 // -------------------------------------------------------------------------
-void uniset_init( int argc, char* argv[], const std::string xmlfile )
+void uniset_init( int argc, const char** argv, const std::string xmlfile )
 {
 	string confile = UniSetTypes::getArgParam( "--confile", argc, argv, xmlfile );
 	UniSetTypes::conf = new Configuration(argc, argv, confile);
