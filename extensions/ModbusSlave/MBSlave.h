@@ -46,11 +46,10 @@ class MBSlave:
 			public IOBase
 		{
 			ModbusRTU::ModbusData mbreg;			/*!< регистр */
-			ModbusRTU::SlaveFunctionCode mbfunc;	/*!< функция для чтения/записи */
 			AccessMode amode;
 
-			IOProperty():	
-				mbreg(0),mbfunc(ModbusRTU::fnUnknown)
+			IOProperty():
+				mbreg(0)
 			{}
 
 			friend std::ostream& operator<<( std::ostream& os, IOProperty& p );

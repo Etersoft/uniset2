@@ -49,7 +49,7 @@ prefix(prefix)
 	dlog[Debug::INFO] << myname << "(init): read s_field='" << s_field
 						<< "' s_fvalue='" << s_fvalue << "'" << endl;
 
-	force 		= atoi(conf->getArgParam("--" + prefix + "-force",it.getProp("force")).c_str());
+	force = atoi(conf->getArgParam("--" + prefix + "-force",it.getProp("force")).c_str());
 
 	int recv_timeout = atoi(conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")).c_str());
 
@@ -687,25 +687,13 @@ bool MBSlave::initItem( UniXML_iterator& it )
 		stype = it.getProp("iotype");
 
 	if( stype == "AI" )
-	{
 		p.stype 	= UniversalIO::AnalogInput;
-		p.mbfunc  	= ModbusRTU::fnReadInputRegisters;
-	}
 	else if ( stype == "DI" )
-	{
 		p.stype 	= UniversalIO::DigitalInput;
-		p.mbfunc  	= ModbusRTU::fnReadInputRegisters;
-	}
 	else if ( stype == "AO" )
-	{
 		p.stype 	= UniversalIO::AnalogOutput;
-		p.mbfunc  	= ModbusRTU::fnWriteOutputRegisters;
-	}
 	else if ( stype == "DO" )
-	{
 		p.stype 	= UniversalIO::DigitalOutput;
-		p.mbfunc  	= ModbusRTU::fnWriteOutputRegisters;
-	}
 
 	p.amode = MBSlave::amRW;
 	string am(it.getProp("mb_accessmode"));
@@ -713,19 +701,6 @@ bool MBSlave::initItem( UniXML_iterator& it )
 		p.amode = MBSlave::amRO;
 	else if( am == "rw" )
 		p.amode = MBSlave::amRW;
-
-	string f = it.getProp("mbfunc");
-	if( !f.empty() )
-	{
-		p.mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f.c_str());
-		if( p.mbfunc == ModbusRTU::fnUnknown )
-		{
-			dlog[Debug::CRIT] << myname << "(initItem): Неверный mbfunc ='" << f
-					<< "' для  датчика " << it.getProp("name") << endl;
-
-			return false;
-		}
-	}
 
 	iomap[p.mbreg] = p;
 	
