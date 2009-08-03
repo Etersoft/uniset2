@@ -74,3 +74,9 @@ extensions/RTUExchange/rtustate
 extensions/RTUExchange/uniset-rtuexchange
 extensions/RTUExchange/vtconv
 extensions/SharedMemory/uniset-smemory
+
+extensions/MBTCPMaster/uniset-mbtcpmaster
+extensions/ModbusSlave/uniset-mbslave
+extensions/SMViewer/uniset-smviewer
+extensions/SharedMemory/stop.sh
+extensions/SharedMemory/test.xml
