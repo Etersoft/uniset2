@@ -25,9 +25,9 @@
 
 #include <string>
 //#include <lstrings.h>
-#ifndef _
-	#define _(n) n
-#endif
+//#ifndef _
+//	#define _(n) n
+//#endif
 
 using std::string;
 

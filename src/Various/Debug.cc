@@ -96,8 +96,8 @@ void Debug::showLevel(ostream & o, Debug::type level)
 		if (errorTags[i].level != Debug::ANY
 		    && errorTags[i].level != Debug::NONE
 		    && errorTags[i].level & level)
-			o << _("Debugging `") << errorTags[i].name
-			  << "' (" << _(errorTags[i].desc) << ')' << endl;
+			o << "Debugging `" << errorTags[i].name
+			  << "' (" << errorTags[i].desc << ')' << endl;
 }
 
 
@@ -106,7 +106,7 @@ void Debug::showTags(ostream & os)
 	for (int i = 0 ; i < numErrorTags ; ++i)
 		os << setw(7) << errorTags[i].level
 		   << setw(10) << errorTags[i].name
-		   << "  " << _(errorTags[i].desc) << '\n';
+		   << "  " << errorTags[i].desc << '\n';
 	os.flush();
 }
 
