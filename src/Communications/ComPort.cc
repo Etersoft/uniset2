@@ -19,8 +19,9 @@
 #include "ComPort.h"
 // --------------------------------------------------------------------------------
 // почему-то в termios этого нет, но в ядре есть
+#ifndef CMSPAR
 #define CMSPAR    010000000000          /* mark or space (stick) parity */
-#warning "I'm define CMSPAR for stick parity!"
+#endif
 // --------------------------------------------------------------------------------
 using namespace UniSetTypes;
 using namespace std;
@@ -306,7 +307,7 @@ void ComPort::cleanupChannel()
 	{
 		k = ::read(fd,tmpbuf,sizeof(tmpbuf));
 	}
-	while( k>0 && k >= sizeof(tmpbuf) );
+	while( k>0 );
 
 // #warning Обнулять нельзя, может надо делать что-то интелектуальнее...
 //	curSym 		= 0;
