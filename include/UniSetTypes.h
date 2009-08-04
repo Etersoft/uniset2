@@ -205,6 +205,7 @@ namespace UniSetTypes
 	long setoutregion(long raw, long rawMin, long rawMax);
 
 
+	/// Преобразование строки в число (если префикс 0x, воспринимаем число 16-ным)
 	inline int uni_atoi( const char* str )
 	{
 		if (strlen(str) < 3 || toupper(str[1]) != 'X')
@@ -214,6 +215,10 @@ namespace UniSetTypes
 		
 		std::sscanf(str,"%x",&n);
 		return n;
+	}
+	inline int uni_atoi( const std::string str )
+	{
+		return uni_atoi(str.c_str());
 	}
 
 	bool file_exist( const std::string filename );
