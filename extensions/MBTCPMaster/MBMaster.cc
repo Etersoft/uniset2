@@ -741,7 +741,7 @@ bool MBMaster::initItem( UniXML_iterator& it )
 	string f = it.getProp("mbfunc");
 	if( !f.empty() )
 	{
-		p.mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f.c_str());
+		p.mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f);
 		if( p.mbfunc == ModbusRTU::fnUnknown )
 		{
 			dlog[Debug::CRIT] << myname << "(initItem): Неверный mbfunc ='" << f
@@ -765,7 +765,7 @@ bool MBMaster::initItem( UniXML_iterator& it )
 			return false;
 		}
 		
-		p.nbit = UniSetTypes::uni_atoi(nb.c_str());
+		p.nbit = UniSetTypes::uni_atoi(nb);
 	}
 
 	if( dlog.debugging(Debug::INFO) )

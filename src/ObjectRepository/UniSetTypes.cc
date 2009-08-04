@@ -193,7 +193,7 @@ using namespace UniSetTypes;
 			string s(str.substr(prev,pos-prev));
 			if( !s.empty() )
 			{
-				l.add( uni_atoi(s.c_str()) );
+				l.add( uni_atoi(s) );
 				prev=pos+1;
 			}
 		}

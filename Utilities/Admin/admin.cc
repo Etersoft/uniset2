@@ -1193,7 +1193,7 @@ int getValue(string args, UniversalInterface &ui )
 // --------------------------------------------------------------------------------------
 int getCalibrate(string arg, UniversalInterface &ui)
 {
-	UniSetTypes::ObjectId sid(uni_atoi(arg.c_str()));
+	UniSetTypes::ObjectId sid(uni_atoi(arg));
 	if( sid<=0 )
 	{
 		cout << "(getCalibrate): Не задан SensorId аналогового датчика!!!!!!"<< endl;
@@ -1219,7 +1219,7 @@ int getCalibrate(string arg, UniversalInterface &ui)
 // --------------------------------------------------------------------------------------
 int getRawValue(string arg, UniversalInterface &ui )
 {
-	UniSetTypes::ObjectId sid(uni_atoi(arg.c_str()));
+	UniSetTypes::ObjectId sid(uni_atoi(arg));
 	if( sid==0 )
 	{
 		cout << "(getRawValue): Не задан SensorId аналогового датчика!!!!!!"<< endl;
@@ -1296,7 +1296,7 @@ int configure(string arg, UniversalInterface &ui )
 // --------------------------------------------------------------------------------------
 int oinfo(string arg, UniversalInterface &ui )
 {
-	UniSetTypes::ObjectId oid(uni_atoi(arg.c_str()));
+	UniSetTypes::ObjectId oid(uni_atoi(arg));
 	if( oid==0 )
 	{
 		cout << "(oinfo): Не задан OID!"<< endl;

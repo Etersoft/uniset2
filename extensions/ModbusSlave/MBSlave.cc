@@ -49,7 +49,7 @@ prefix(prefix)
 	dlog[Debug::INFO] << myname << "(init): read s_field='" << s_field
 						<< "' s_fvalue='" << s_fvalue << "'" << endl;
 
-	force = atoi(conf->getArgParam("--" + prefix + "-force",it.getProp("force")).c_str());
+	force = uni_atoi(conf->getArgParam("--" + prefix + "-force",it.getProp("force")));
 
 	int recv_timeout = atoi(conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")).c_str());
 
@@ -60,7 +60,7 @@ prefix(prefix)
 	else
 		addr = ModbusRTU::str2mbAddr(saddr);
 
-	mbregFromID = atoi(conf->getArgParam("--" + prefix + "-reg-from-id",it.getProp("reg_from_id")).c_str());
+	mbregFromID = uni_atoi(conf->getArgParam("--" + prefix + "-reg-from-id",it.getProp("reg_from_id")));
 	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
 	string stype = conf->getArgParam("--" + prefix + "-type",it.getProp("type"));
@@ -702,6 +702,22 @@ bool MBSlave::initItem( UniXML_iterator& it )
 	else if( am == "rw" )
 		p.amode = MBSlave::amRW;
 
+<<<<<<< HEAD:extensions/ModbusSlave/MBSlave.cc
+=======
+	string f = it.getProp("mbfunc");
+	if( !f.empty() )
+	{
+		p.mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f);
+		if( p.mbfunc == ModbusRTU::fnUnknown )
+		{
+			dlog[Debug::CRIT] << myname << "(initItem): Неверный mbfunc ='" << f
+					<< "' для  датчика " << it.getProp("name") << endl;
+
+			return false;
+		}
+	}
+
+>>>>>>> use uni_atoi string instead c_str() in each call:extensions/ModbusSlave/MBSlave.cc
 	iomap[p.mbreg] = p;
 	
 	if( dlog.debugging(Debug::INFO) )

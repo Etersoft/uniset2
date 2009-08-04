@@ -1050,7 +1050,7 @@ bool RTUExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 	string sbit(it.getProp("nbit"));
 	if( !sbit.empty() )
 	{
-		p.nbit = UniSetTypes::uni_atoi(sbit.c_str());
+		p.nbit = UniSetTypes::uni_atoi(sbit);
 		if( p.nbit < 0 || p.nbit >= ModbusRTU::BitsPerData )
 		{
 			dlog[Debug::CRIT] << myname << "(initRSProperty): BAD nbit=" << p.nbit 
@@ -1070,7 +1070,7 @@ bool RTUExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 	string sbyte(it.getProp("nbyte"));
 	if( !sbyte.empty() )
 	{
-		p.nbyte = UniSetTypes::uni_atoi(sbyte.c_str());
+		p.nbyte = UniSetTypes::uni_atoi(sbyte);
 		if( p.nbyte < 0 || p.nbyte > VTypes::Byte::bsize )
 		{
 			dlog[Debug::CRIT] << myname << "(initRSProperty): BAD nbyte=" << p.nbyte 
@@ -1159,7 +1159,7 @@ bool RTUExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  RTUExchange::RT
 	string f = it.getProp("mbfunc");
 	if( !f.empty() )
 	{
-		r->mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f.c_str());
+		r->mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f);
 		if( r->mbfunc == ModbusRTU::fnUnknown )
 		{
 			dlog[Debug::CRIT] << myname << "(initRegInfo): Unknown mbfunc ='" << f
@@ -1378,7 +1378,7 @@ bool RTUExchange::initRTU188item( UniXML_iterator& it, RegInfo* p )
 		return false;
 	}
 	
-	p->rtuChan = UniSetTypes::uni_atoi(chan.c_str());
+	p->rtuChan = UniSetTypes::uni_atoi(chan);
 
 	if( dlog.debugging(Debug::LEVEL2) )
 		dlog[Debug::LEVEL2] << myname << "(readRTU188Item): " << p << endl; 

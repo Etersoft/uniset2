@@ -219,7 +219,7 @@ bool NCRestorer_XML::getBaseInfo( UniXML& xml, xmlNode* it, IOController_i::Sens
 
 	string id(xml.getProp(it,"id"));
 	if( !id.empty() )
-		sid = uni_atoi( id.c_str() );
+		sid = uni_atoi( id );
 	else
 	{
 		sname = conf->getSensorsSection()+"/"+sname;

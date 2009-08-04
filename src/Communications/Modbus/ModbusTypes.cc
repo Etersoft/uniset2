@@ -2248,7 +2248,7 @@ ModbusAddr ModbusRTU::str2mbAddr( const std::string val )
 	if( val.empty() )
 		return 0;
 
-	return (ModbusAddr)UniSetTypes::uni_atoi(val.c_str());
+	return (ModbusAddr)UniSetTypes::uni_atoi(val);
 }
 // -------------------------------------------------------------------------
 ModbusData ModbusRTU::str2mbData( const std::string val )
@@ -2256,7 +2256,7 @@ ModbusData ModbusRTU::str2mbData( const std::string val )
 	if( val.empty() )
 		return 0;
 
-	return (ModbusData)UniSetTypes::uni_atoi(val.c_str());
+	return (ModbusData)UniSetTypes::uni_atoi(val);
 }
 // -------------------------------------------------------------------------
 std::string ModbusRTU::dat2str( const ModbusData dat )
