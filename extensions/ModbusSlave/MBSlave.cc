@@ -19,9 +19,9 @@ UniSetObject_LT(objId),
 mbslot(0),
 shm(0),
 initPause(0),
-askCount(0),
 test_id(DefaultObjectId),
 askcount_id(DefaultObjectId),
+askCount(0),
 activated(false),
 activateTimeout(500),
 pingOK(true),
@@ -51,7 +51,7 @@ prefix(prefix)
 
 	force = uni_atoi(conf->getArgParam("--" + prefix + "-force",it.getProp("force")));
 
-	int recv_timeout = atoi(conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")).c_str());
+	// int recv_timeout = atoi(conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")).c_str());
 
 	string saddr = conf->getArgParam("--" + prefix + "-my-addr",it.getProp("addr"));
 

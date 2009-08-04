@@ -369,7 +369,7 @@ DataBits::operator ModbusByte()
 ModbusByte DataBits::mbyte()
 {
 	ModbusByte ubyte = 0;
-	for( int i=0; i<b.size(); i++ )
+	for( unsigned int i=0; i<b.size(); i++ )
 	{
 		if( b[i] )
 			ubyte |= 1<<i;
@@ -380,7 +380,7 @@ ModbusByte DataBits::mbyte()
 // -------------------------------------------------------------------------
 const DataBits& DataBits::operator=( const ModbusByte& r )
 {
-	for( int i=0; i<b.size(); i++ )
+	for( unsigned int i=0; i<b.size(); i++ )
 		b[i] = r&(1<<i);
 	
 	return (*this);
@@ -389,7 +389,7 @@ const DataBits& DataBits::operator=( const ModbusByte& r )
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DataBits& d )
 {
 	os << "[";
-	for( int i=d.b.size()-1; i>=0; i-- )
+	for( int i = (int)d.b.size()-1; i>=0; i-- )
 		os << d.b[i];
 	os << "]";
 
@@ -425,7 +425,7 @@ DataBits16::operator ModbusData()
 ModbusData DataBits16::mdata()
 {
 	ModbusData udata = 0;
-	for( int i=0; i<b.size(); i++ )
+	for( unsigned int i=0; i<b.size(); i++ )
 	{
 		if( b[i] )
 			udata |= 1<<i;
@@ -436,7 +436,7 @@ ModbusData DataBits16::mdata()
 // -------------------------------------------------------------------------
 const DataBits16& DataBits16::operator=( const ModbusData& r )
 {
-	for( int i=0; i<b.size(); i++ )
+	for( unsigned int i=0; i<b.size(); i++ )
 		b[i] = r&(1<<i);
 	
 	return (*this);
@@ -445,7 +445,7 @@ const DataBits16& DataBits16::operator=( const ModbusData& r )
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DataBits16& d )
 {
 	os << "[";
-	for( int i=d.b.size()-1; i>=0; i-- )
+	for( int i=(int)d.b.size()-1; i>=0; i-- )
 		os << d.b[i];
 	os << "]";
 
@@ -876,7 +876,7 @@ void ReadOutputRetMessage::init( ModbusMessage& m )
 	func = m.func;
 	
 	// bcnt = m.data[0];
-	int cnt = m.data[0] / sizeof(ModbusData);
+	unsigned int cnt = m.data[0] / sizeof(ModbusData);
 	if( cnt > MAXLENPACKET/sizeof(ModbusData) )
 	{
 //		cerr << "(ReadOutputRetMessage): BAD bcnt=" 
@@ -889,7 +889,7 @@ void ReadOutputRetMessage::init( ModbusMessage& m )
 	memcpy(&data,&(m.data[1]),bcnt);
 	
 	// переворачиваем данные
-	for( int i=0; i<cnt; i++ )
+	for( unsigned int i=0; i<cnt; i++ )
 		data[i] = SWAPSHORT(data[i]);
 
  	memcpy(&crc,&(m.data[bcnt+1]),szCRC);
@@ -1092,7 +1092,7 @@ void ReadInputRetMessage::init( ModbusMessage& m )
 	func = m.func;
 	
 	// bcnt = m.data[0];
-	int cnt = m.data[0] / sizeof(ModbusData);
+	unsigned int cnt = m.data[0] / sizeof(ModbusData);
 	if( cnt > MAXLENPACKET/sizeof(ModbusData) )
 		throw mbException(erPacketTooLong);
 
@@ -1101,10 +1101,10 @@ void ReadInputRetMessage::init( ModbusMessage& m )
 	memcpy(&data,&(m.data[1]),bcnt);
 	
 	// переворачиваем данные
-	for( int i=0; i<cnt; i++ )
+	for( unsigned int i=0; i<cnt; i++ )
 		data[i] = SWAPSHORT(data[i]);
 
- 	memcpy(&crc,&(m.data[bcnt+1]),szCRC);		
+ 	memcpy(&crc,&(m.data[bcnt+1]),szCRC);
 }	
 // -------------------------------------------------------------------------
 int ReadInputRetMessage::getDataLen( ModbusMessage& m )
@@ -2910,7 +2910,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, FileTransferRetMessage* m 
 std::ostream& ModbusTCP::operator<<(std::ostream& os, MBAPHeader& m )
 {
 //	m.swapdata();
-	for( int i=0; i<sizeof(m); i++ )
+	for( unsigned int i=0; i<sizeof(m); i++ )
 		os << ((unsigned char*)(&m))[i];
 //	m.swapdata();
 	return os;

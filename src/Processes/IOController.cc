@@ -896,6 +896,8 @@ UniSetTypes::Message::Priority IOController::getMessagePriority(UniSetTypes::Key
 				return (UniSetTypes::Message::Priority)it->second.priority;
 		}
 		break;
+		default:
+		break;
 	}
 	
 	return UniSetTypes::Message::Medium; // ??

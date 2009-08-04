@@ -157,8 +157,8 @@ class LT_Object
 			short curTick; 
 			
 			// таймер с меньшим временем ожидания имеет больший приоритет
-		   	bool operator < ( const TimerInfo& ti ) const
-    		{ 
+			bool operator < ( const TimerInfo& ti ) const
+			{ 
 				return curTimeMS > ti.curTimeMS; 
 			}
 

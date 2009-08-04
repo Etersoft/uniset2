@@ -4,6 +4,7 @@
 #define ModbusServer_H_
 // -------------------------------------------------------------------------
 #include <string>
+
 #include "Debug.h"
 #include "Mutex.h"
 #include "Configuration.h"

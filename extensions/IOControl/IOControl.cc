@@ -91,7 +91,6 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 				string stype = conf->getArgParam(t1.str(),it.getProp(t2.str()));
 				if( !stype.empty() )
 				{
-//					ComediInterface::SubdevType st = (ComediInterface::SubdevType)UniSetTypes::uni_atoi(stype.c_str());
 					ComediInterface::SubdevType st = ComediInterface::str2type(stype.c_str());
 					if( !stype.empty() && st == ComediInterface::Unknown )
 					{

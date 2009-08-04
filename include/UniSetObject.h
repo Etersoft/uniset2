@@ -95,7 +95,7 @@ class UniSetObject:
 			virtual void processingMessage(UniSetTypes::VoidMessage *msg);
 
 			/*! Получить сообщение */
-			bool receiveMessage(UniSetTypes::VoidMessage& msg);		
+			bool receiveMessage(UniSetTypes::VoidMessage& vm);
 	
 			/*! текущее количесво сообщений в очереди */
 			unsigned int countMessages();
@@ -219,7 +219,7 @@ class UniSetObject:
 			bool reg;
 			bool active;
 			bool threadcreate;
-			UniSetTimer* tmr;	
+			UniSetTimer* tmr;
 			UniSetTypes::ObjectId myid;
 			CORBA::Object_var oref;
 			ThreadCreator<UniSetObject>* thr;

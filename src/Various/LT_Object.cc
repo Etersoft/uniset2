@@ -88,14 +88,14 @@ int LT_Object::checkTimers( UniSetObject* obj )
 					// Проверка на количество заданных тактов
 					if( !li->curTick )
 					{
-						li = tlst.erase(li);												
+						li = tlst.erase(li);
 						if( tlst.empty() )
 							sleepTime = UniSetTimer::WaitUpTime;
 						continue;
 					}
 					else if(li->curTick>0 )
 						li->curTick--;
-										
+
 					li->reset();
 					resort = true;
 				}

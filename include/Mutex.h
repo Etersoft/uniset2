@@ -66,10 +66,10 @@ namespace UniSetTypes
 			friend class uniset_mutex_lock;
 		   	uniset_mutex (const uniset_mutex& r);
 	   		const uniset_mutex &operator=(const uniset_mutex& r);
+			omni_condition* cnd;
 			std::string nm;
 			omni_semaphore sem;
 			omni_mutex mtx;
-			omni_condition* cnd;
 			mutex_atomic_t locked;
  	};
 

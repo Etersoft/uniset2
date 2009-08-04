@@ -97,8 +97,8 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		if( res!=erNoError )
 			return res;
 		
-  		if( !tcp->isPending(ost::Socket::pendingOutput,timeout) )
-  			return erTimeOut;
+		if( !tcp->isPending(ost::Socket::pendingOutput,timeout) )
+			return erTimeOut;
 
 		if( timeout != TIMEOUT_INF )
 		{
@@ -124,7 +124,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				dlog(Debug::INFO) << endl;
 			}
 
-			if( ret < sizeof(rmh) )
+			if( ret < (int)sizeof(rmh) )
 				return erHardwareError;
 
 			rmh.swapdata();

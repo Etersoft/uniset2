@@ -129,7 +129,7 @@ Configuration::Configuration( int argc, const char** argv, const string xmlfile 
 	_argc(argc),
 	_argv(argv),
 	NSName("NameService"),
-	repeatCount(2),repeatTimeout(100), 	
+	repeatCount(2),repeatTimeout(100),
 	localTimerService(UniSetTypes::DefaultObjectId),
 	localDBServer(UniSetTypes::DefaultObjectId),
 	localInfoServer(UniSetTypes::DefaultObjectId),

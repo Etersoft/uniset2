@@ -35,8 +35,8 @@ using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 static mutex_atomic_t mutex_atomic_read( mutex_atomic_t* m ){ return (*m); }
 static mutex_atomic_t mutex_atomic_set( mutex_atomic_t* m, int val ){ return (*m) = val; }
-static void mutex_atomic_inc( mutex_atomic_t* m ){ (*m)++; }
-static void mutex_atomic_dec( mutex_atomic_t* m ){ (*m)--; }
+//static void mutex_atomic_inc( mutex_atomic_t* m ){ (*m)++; }
+//static void mutex_atomic_dec( mutex_atomic_t* m ){ (*m)--; }
 // -----------------------------------------------------------------------------
 #ifndef HAVE_LINUX_LIBC_HEADERS_INCLUDE_LINUX_FUTEX_H
 uniset_mutex::uniset_mutex():

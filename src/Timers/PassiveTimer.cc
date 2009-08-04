@@ -29,15 +29,22 @@
 #include <unistd.h>
 #include "PassiveTimer.h"
 
+//----------------------------------------------------------------------------------------
+// CLK_TCK устарела по новому стандарту
+#ifndef CLK_TCK
+#define CLK_TCK sysconf(_SC_CLK_TCK)
+#endif
+//----------------------------------------------------------------------------------------
+
 //------------------------------------------------------------------------------
 
 PassiveTimer::PassiveTimer( ):
 timeAct(0),
 timeSS(0),
-timeStart(0)
+timeStart(0),
+clock_ticks(sysconf(_SC_CLK_TCK))
 {
-	clock_ticks = sysconf(_SC_CLK_TCK);
-	setTiming(-1);
+	setTiming(WaitUpTime);
 }
 
 //------------------------------------------------------------------------------
@@ -45,65 +52,71 @@ timeStart(0)
 PassiveTimer::PassiveTimer( int timeMS ):
 timeAct(0),
 timeSS(0),
-timeStart(0)
+timeStart(0),
+clock_ticks(sysconf(_SC_CLK_TCK))
 {
 //	printf("const =%d\n",timeMS);
-	clock_ticks = sysconf(_SC_CLK_TCK);
 	setTiming( timeMS );
 }
 
 //------------------------------------------------------------------------------
-/*! \note  Если задано timeMS<0, не сработает никогда */
 bool PassiveTimer::checkTime()
 {
 //	printf("times=%d, act=%d\n",times(0),timeAct);
 //	printf("%d\n",timeSS); msleep(10);
 
-	if( timeSS<0 )	// == WaitUpTime;
-		return false; 
+	if( timeSS == WaitUpTime);
+		return false;
 
-	if( times(0) >= timeAct )
+	if( times() >= timeAct )
 		return true;
 	return false;
 }
 
 //------------------------------------------------------------------------------
 // Установить время таймера
-void PassiveTimer::setTiming( int timeMS )
+timeout_t PassiveTimer::setTiming( timeout_t timeMS )
 {
-	if( timeMS<0 )
+	if( timeMS == WaitUpTime )
 	{
-		// для корректной работы getCurrent()
-		// время всё-равно надо засечь
-		timeSS=WaitUpTime;
-		timeStart=times(0);
-//		PassiveTimer::reset();
+		timeSS = WaitUpTime;
 	}
 	else
 	{
 		timeSS=timeMS/10; // задержка в сантисекундах
 		if (timeMS%10)
 			timeSS++; // Округляем в большую сторону
-		PassiveTimer::reset();
 	}
+	PassiveTimer::reset();
+	return getInterval();
 }
 
 //------------------------------------------------------------------------------
 // Запустить таймер
 void PassiveTimer::reset(void)
 {
-	timeStart=times(0);
+	timeStart = times();
+	if( timeSS == WaitUpTime)
+		return;
 	timeAct = (timeSS*clock_ticks)/100 + timeStart;
 }
 //------------------------------------------------------------------------------
 // получить текущее значение таймера
-int PassiveTimer::getCurrent()
+timeout_t PassiveTimer::getCurrent()
 {
-	return (times(0)-timeStart)*1000/clock_ticks;
+	return (times()-timeStart)*1000/clock_ticks;
 }
 //------------------------------------------------------------------------------
 void PassiveTimer::terminate()
 {
 	timeAct = 0;
 }
+
 //------------------------------------------------------------------------------
+clock_t PassiveTimer::times()
+{
+	// Не в Linux запрещено вызывать с NULL
+	struct tms tm;
+	return ::times(&tm);
+}
+

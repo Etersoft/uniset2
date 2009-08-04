@@ -150,7 +150,7 @@ mbErrCode ModbusTCPServer::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPH
 	while( !qrecv.empty() )
 		qrecv.pop();
 
-	int len = getNextData((unsigned char*)(&mhead),sizeof(mhead));
+	unsigned int len = getNextData((unsigned char*)(&mhead),sizeof(mhead));
 	if( len < sizeof(mhead) )
 		return erInvalidFormat;
 

@@ -103,7 +103,7 @@ int PassiveSysTimer::wait(int timeMS)
 	if( sigaction(SIGALRM, &action, 0) == -1)
 	{
 		cerr << "PassiveSysTimer: error sigaction" << endl;
-		return 0;
+		return false;
 	}	
 
 
@@ -112,7 +112,7 @@ int PassiveSysTimer::wait(int timeMS)
 	terminated = 0;
 
 	int sec;
-	int msec;	
+	int msec;
 	
 	if (timeMS == WaitUpTime)
 	{
@@ -126,19 +126,19 @@ int PassiveSysTimer::wait(int timeMS)
 	}
 
 	mtimer.it_value.tv_sec     = sec;
-   	mtimer.it_value.tv_usec    = msec;
+	mtimer.it_value.tv_usec    = msec;
 	mtimer.it_interval.tv_sec  = 0;
 	mtimer.it_interval.tv_usec = 0;
-	setitimer( ITIMER_REAL, &mtimer, (struct itimerval *)0 );    	
+	setitimer( ITIMER_REAL, &mtimer, (struct itimerval *)0 );
 
 	PassiveTimer::setTiming(timeMS); // вызываем для совместимости с обычным PassiveTimer-ом
 	
 	sigset_t mask, oldmask;
-    
-    sigemptyset(&mask);
+
+	sigemptyset(&mask);
 	// блокируем все сигналы кроме этих
-    sigaddset( &mask, SIGALRM );
-    sigprocmask( SIG_BLOCK, &mask, &oldmask );
+	sigaddset( &mask, SIGALRM );
+	sigprocmask( SIG_BLOCK, &mask, &oldmask );
 	if (timeMS == WaitUpTime)
 	{
 		while (!terminated)
@@ -148,10 +148,10 @@ int PassiveSysTimer::wait(int timeMS)
 		sigsuspend( &oldmask );
 
 	terminated = 1;
-    sigprocmask( SIG_UNBLOCK, &mask, NULL );
+	sigprocmask( SIG_UNBLOCK, &mask, NULL );
 	
 //	cout << "PassiveSysTimer: time ok"<< endl;
-	return 1;	
+	return true;
 }
 
 // ------------------------------------------------------------------------------------------

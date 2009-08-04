@@ -107,7 +107,7 @@ void TimerService::askTimer( const TimerService_i::Timer& ti, const UniSetTypes:
 						{
 							li->curTick = ti.ticks;
 							li->tmr.setTiming(ti.timeMS);
-							li->not_ping = false;						
+							li->not_ping = false;
 							li->lifetmr.reset();
 							unideb[Debug::INFO] << myname << ": заказ на таймер(id="<< ti.timerid << ") "
 									<< ti.timeMS << " [мс] от " << ui.getNameById(ci.id)
@@ -212,7 +212,7 @@ void TimerService::work()
 							if( !AskLifeTimeSEC )
 							{
 								unideb[Debug::WARN] << myname << ": удаляем из списка "<< ui.getNameById(li->cinf.id,li->cinf.node) << endl;
-								li = tlst.erase(li);												
+								li = tlst.erase(li);
 								if( tlst.empty() )
 									isSleep = true;
 								continue;
@@ -225,7 +225,7 @@ void TimerService::work()
 						else if( li->lifetmr.checkTime() )
 						{	
 							unideb[Debug::WARN] << myname << ": удаляем из списка "<< ui.getNameById(li->cinf.id,li->cinf.node) << endl;
-							li = tlst.erase(li);												
+							li = tlst.erase(li);
 							if( tlst.empty() )
 								isSleep = true;
 							continue;
@@ -237,7 +237,7 @@ void TimerService::work()
 						// Проверка на количество заданных тактов
 						if( !li->curTick )
 						{
-							li = tlst.erase(li);												
+							li = tlst.erase(li);
 							if( tlst.empty() )
 								isSleep = true;
 							continue;

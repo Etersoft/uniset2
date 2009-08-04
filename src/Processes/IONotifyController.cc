@@ -203,7 +203,6 @@ void IONotifyController::askState( const IOController_i::SensorInfo& si,
 	
 	// если такого дискретного датчика нет, здесь сработает исключение...
 	DIOStateList::iterator li = mydioEnd();
-	bool st = localGetState(li,si);
 
 	// lock ???
 	if( li==mydioEnd() )
@@ -288,7 +287,6 @@ void IONotifyController::askValue(const IOController_i::SensorInfo& si,
 	
 	// если такого аналогового датчика нет, здесь сработает исключение...
 	AIOStateList::iterator li = myaioEnd();
-	long val = localGetValue(li,si);
 	if( li->second.type != UniversalIO::AnalogInput )
 	{
 		ostringstream err;

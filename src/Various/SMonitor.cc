@@ -178,7 +178,7 @@ void SMonitor::sensorInfo( SensorMessage *si )
 
 		cmd << " " << si->sm_tv_sec << " " << si->sm_tv_usec;
 
-		int ret = system(cmd.str().c_str());
+		(void)system(cmd.str().c_str());
 //		if( WIFSIGNALED(ret) && (WTERMSIG(ret) == SIGINT || WTERMSIG(ret) == SIGQUIT))
 //		{
 //			cout << "finish..." << endl;

@@ -154,9 +154,10 @@ int TableStorage::addRow(char* key, char* value)
 			if((tbl->status==2)||(tbl->status==3)) st=2;
 			else st=4;
 
-			if(j==0)
+			if(j==0) {
 				if(st==2) st=4;
 				else st=2;
+			}
 
 			tbl->status=st;
 			strcpy(tbl->key,key);
