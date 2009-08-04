@@ -58,13 +58,13 @@ namespace UniSetTypes
 			virtual ~Configuration();
 
 			/*!	конфигурирование xml-файлом ( предпочтительный способ )	*/
-			Configuration( int argc, const char** argv, const std::string xmlfile="" );
+			Configuration( int argc, const char* const* argv, const std::string xmlfile="" );
 
 			/*!	конфигурирование xml-файлом	*/
-			Configuration( int argc, const char** argv, ObjectIndex* oind, const std::string xmlfile="" );
+			Configuration( int argc, const char* const* argv, ObjectIndex* oind, const std::string xmlfile="" );
 
 			/*! устаревший вариант, для поддержки старых проектов */
-			Configuration( int argc, const char** argv,
+			Configuration( int argc, const char* const* argv,
 							const std::string fileConf, UniSetTypes::ObjectInfo* objectsMap );
 
 		/// Получить значение полей с путём path
@@ -82,7 +82,7 @@ namespace UniSetTypes
 
 		std::string getRootDir(); /*!< Получение каталога, в котором находится выполняющаяся программа */
 		inline int getArgc(){ return _argc; }
-		inline const char** getArgv() const { return _argv; }
+		inline const char* const* getArgv() const { return _argv; }
 		inline ObjectId getTimerService() const { return localTimerService; } /*!< получение идентификатора TimerServic-а */
 		inline ObjectId getDBServer() const { return localDBServer; }		/*!< получение идентификатора DBServer-а */
 		inline ObjectId getInfoServer() const { return localInfoServer; }	/*!< получение идентификатора InfoServer-а */
@@ -158,7 +158,7 @@ namespace UniSetTypes
 	protected:
 		Configuration();
 
-		virtual void initConfiguration(int argc, const char** argv);
+		virtual void initConfiguration(int argc, const char* const* argv);
 		
 		void createNodesList();
 		virtual void initNode( UniSetTypes::NodeInfo& ninfo, UniXML_iterator& it);
@@ -177,7 +177,7 @@ namespace UniSetTypes
 		UniXML unixml;
 
 		int _argc;
-		const char** _argv;
+		const char* const* _argv;
 		CORBA::ORB_var orb;
 		CORBA::PolicyList policyList;
 		
@@ -230,7 +230,7 @@ namespace UniSetTypes
 	
 	// Инициализация UniSetTypes::conf.
 	// ( учитываются параметры командной строки --confile и --id-from-config )
-	void uniset_init( int argc, const char** argv, const std::string xmlfile="configure.xml" );
+	void uniset_init( int argc, const char* const* argv, const std::string xmlfile="configure.xml" );
 	
 	
 }	// end of UniSetTypes namespace

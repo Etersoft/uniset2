@@ -146,7 +146,7 @@ namespace UniSetTypes
 		\param defval - значение, которое будет возвращено, если параметр не найден
 	*/
 	inline std::string getArgParam( const std::string name, 
-										int _argc, const char** _argv,
+										int _argc, const char* const* _argv,
 											const std::string defval="" )
 	{
 		for( int i=1; i < (_argc - 1) ; i++ )
@@ -162,7 +162,7 @@ namespace UniSetTypes
 		\return Возвращает -1, если параметр не найден. 
 			Или позицию параметра, если найден.
 	*/
-	inline int findArgParam( const std::string name, int _argc, const char** _argv )
+	inline int findArgParam( const std::string name, int _argc, const char* const* _argv )
 	{
 		for( int i=1; i<_argc; i++ )
 		{

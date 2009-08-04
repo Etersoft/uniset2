@@ -795,7 +795,7 @@ void MBMaster::initIterators()
 	shm->initAIterator(aitHeartBeat);
 }
 // -----------------------------------------------------------------------------
-void MBMaster::help_print( int argc, const char** argv )
+void MBMaster::help_print( int argc, const char* const* argv )
 {
 	cout << "Default: prefix='mbtcp'" << endl;
 	cout << "--prefix-polltime msec	- Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
@@ -813,7 +813,7 @@ void MBMaster::help_print( int argc, const char** argv )
 	cout << "--prefix-recv-timeout - Таймаут на ожидание ответа." << endl;
 }
 // -----------------------------------------------------------------------------
-MBMaster* MBMaster::init_mbmaster( int argc, const char** argv, UniSetTypes::ObjectId shmID, SharedMemory* ic,
+MBMaster* MBMaster::init_mbmaster( int argc, const char* const* argv, UniSetTypes::ObjectId shmID, SharedMemory* ic,
 							std::string prefix )
 {
 	string name = conf->getArgParam("--" + prefix + "-name","MBTCPMaster1");

@@ -22,7 +22,7 @@ static void short_usage()
 		 << " --dbDumping [0,1] - создавать ли dump-файл \n";
 }
 // --------------------------------------------------------------------------
-int main(int argc, const char** argv)
+int main(int argc, char** argv)
 {
 	try
 	{

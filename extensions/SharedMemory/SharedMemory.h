@@ -27,9 +27,9 @@ class SharedMemory:
 		virtual ~SharedMemory();
 
 		/*! глобальная функция для инициализации объекта */
-		static SharedMemory* init_smemory( int argc, const char** argv );
+		static SharedMemory* init_smemory( int argc, const char* const* argv );
 		/*! глобальная функция для вывода help-а */
-		static void help_print( int argc, const char** argv );
+		static void help_print( int argc, const char* const* argv );
 
 
 	    virtual void saveValue(const IOController_i::SensorInfo& si, CORBA::Long value,

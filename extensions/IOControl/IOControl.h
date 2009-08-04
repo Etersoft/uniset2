@@ -67,10 +67,10 @@ class IOControl:
 		virtual ~IOControl();
 
 		/*! глобальная функция для инициализации объекта */
-		static IOControl* init_iocontrol( int argc, const char** argv,
+		static IOControl* init_iocontrol( int argc, const char* const* argv,
 											UniSetTypes::ObjectId icID, SharedMemory* ic=0 );
 		/*! глобальная функция для вывода help-а */
-		static void help_print( int argc, const char** argv );
+		static void help_print( int argc, const char* const* argv );
 
 //		inline std::string getName(){ return myname; }
 

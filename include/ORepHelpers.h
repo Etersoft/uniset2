@@ -44,8 +44,8 @@ namespace ORepHelpers
 
     //! Получение контекста по заданному имени 
     CosNaming::NamingContext_ptr getContext(const std::string& cname, int argc,
-											const char** argv, const std::string& nsName)
-															throw(UniSetTypes::ORepFailed);
+						const char* const* argv, const std::string& nsName)
+						throw(UniSetTypes::ORepFailed);
 
 	CosNaming::NamingContext_ptr getContext(CORBA::ORB_ptr orb, const std::string& cname,
 											const std::string& nsName)

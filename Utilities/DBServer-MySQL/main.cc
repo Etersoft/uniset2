@@ -13,7 +13,7 @@ static void short_usage()
 	cout << "Usage: uniset-dbserver [--name ObjectId] [--confile configure.xml]\n";
 }
 // --------------------------------------------------------------------------
-int main(int argc, const char** argv)
+int main(int argc, char** argv)
 {
 	try
 	{

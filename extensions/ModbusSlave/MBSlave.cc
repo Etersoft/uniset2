@@ -723,7 +723,7 @@ void MBSlave::initIterators()
 	shm->initAIterator(aitAskCount);
 }
 // -----------------------------------------------------------------------------
-void MBSlave::help_print( int argc, const char** argv )
+void MBSlave::help_print( int argc, const char* const* argv )
 {
 	cout << "Default: prefix='mbtcp'" << endl;
 	cout << "--prefix-heartbeat-id		- Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
@@ -746,7 +746,7 @@ void MBSlave::help_print( int argc, const char** argv )
 	cout << "--prefix-inet-port num - this modbus server port. Default: 502" << endl;
 }
 // -----------------------------------------------------------------------------
-MBSlave* MBSlave::init_mbslave( int argc, const char** argv, UniSetTypes::ObjectId icID, SharedMemory* ic,
+MBSlave* MBSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID, SharedMemory* ic,
 								string prefix )
 {
 	string name = conf->getArgParam("--" + prefix + "-name","MBSlave1");

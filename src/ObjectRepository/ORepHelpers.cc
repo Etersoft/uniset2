@@ -44,7 +44,7 @@ namespace ORepHelpers
      *	\param cname - полное имя контекста ссылку на который, возвратит функция. 
      *	\param argc, argv  - параметры инициализации ORB      
     */
-	CosNaming::NamingContext_ptr getContext(const string& cname, int argc, const char** argv, const string& nsName )throw(ORepFailed)
+	CosNaming::NamingContext_ptr getContext(const string& cname, int argc, const char* const* argv, const string& nsName )throw(ORepFailed)
     {
 		CORBA::ORB_var orb = CORBA::ORB_init( argc, (char**)argv );
 		unideb[Debug::REPOSITORY] << "OREPHELP: orb init ok"<< endl;
