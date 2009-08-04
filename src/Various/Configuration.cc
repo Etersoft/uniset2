@@ -123,7 +123,7 @@ Configuration::~Configuration()
 }
 // ---------------------------------------------------------------------------------
 
-Configuration::Configuration( int argc, const char** argv, const string xmlfile ):
+Configuration::Configuration( int argc, const char* const* argv, const string xmlfile ):
 	mi(NULL),
 	oind(NULL),
 	_argc(argc),
@@ -141,7 +141,7 @@ Configuration::Configuration( int argc, const char** argv, const string xmlfile 
 	initConfiguration(argc,argv);
 }
 // ---------------------------------------------------------------------------------
-Configuration::Configuration( int argc, const char** argv, ObjectIndex* _oind,
+Configuration::Configuration( int argc, const char* const* argv, ObjectIndex* _oind,
 								const string fileConf ):
 	mi(NULL),
 	oind(NULL),
@@ -161,7 +161,7 @@ Configuration::Configuration( int argc, const char** argv, ObjectIndex* _oind,
 	initConfiguration(argc,argv);
 }
 // ---------------------------------------------------------------------------------
-Configuration::Configuration( int argc, const char** argv, const string fileConf,
+Configuration::Configuration( int argc, const char* const* argv, const string fileConf,
 				UniSetTypes::ObjectInfo* omap ):
 	mi(NULL),
 	oind(NULL),
@@ -181,7 +181,7 @@ Configuration::Configuration( int argc, const char** argv, const string fileConf
 	initConfiguration(argc,argv);
 }
 // ---------------------------------------------------------------------------------
-void Configuration::initConfiguration( int argc, const char** argv )
+void Configuration::initConfiguration( int argc, const char* const* argv )
 {
 //	PassiveTimer pt(UniSetTimer::WaitUpTime);
 	if( unideb.debugging(Debug::SYSTEM) )
@@ -305,22 +305,22 @@ void Configuration::initConfiguration( int argc, const char** argv )
 		// +N --> -ORBIniRef NodeName=
 		// +2 --> -ORBIniRef NameService=
 		_argc 	= argc+2*lnodes.size()+2;
-		_argv	= new const char*[_argc];
+		const char** new_argv	= new const char*[_argc];
 
 		int i = 0;
 		// перегоняем старые параметры
 		for( ; i < argc; i++ )
-			_argv[i] = strdup(argv[i]);
+			new_argv[i] = strdup(argv[i]);
 
 		// формируем новые, используя i в качестве индекса
 		for( UniSetTypes::ListOfNode::iterator it=lnodes.begin(); it!=lnodes.end(); ++it )
 		{
-			_argv[i] = "-ORBInitRef";
+			new_argv[i] = "-ORBInitRef";
 
 			string name(oind->getRealNodeName(it->id));
 			ostringstream param;	
 			param << name << "=corbaname::" << it->host << ":" << it->port;
-			_argv[i+1] = strdup(param.str().c_str());
+			new_argv[i+1] = strdup(param.str().c_str());
 
 			if( unideb.debugging(Debug::INFO) )
 				unideb[Debug::INFO] << "(Configuration): внесли параметр " << param.str() << endl;
@@ -333,14 +333,14 @@ void Configuration::initConfiguration( int argc, const char** argv )
 		if( !nsnode )
 		{
 			unideb[Debug::WARN] << "(Configuration): не нашли раздела 'NameService' \n";
-			_argv[i] 	= "";
-			_argv[i+1] 	= "";
+			new_argv[i] 	= "";
+			new_argv[i+1] 	= "";
 		}
 		else
 		{
-			_argv[i] = "-ORBInitRef";
+			new_argv[i] = "-ORBInitRef";
 
-			_argv[i+1] 	= ""; // сперва инициализиуем пустой строкой (т.к. будет вызываться getArgParam)
+			new_argv[i+1] 	= ""; // сперва инициализиуем пустой строкой (т.к. будет вызываться getArgParam)
 			string defPort( getPort() ); // здесь вызывается getArgParam! проходящий по _argv
 
 			if( defPort == UniSetDefaultPort )
@@ -351,11 +351,12 @@ void Configuration::initConfiguration( int argc, const char** argv )
 
 			ostringstream param;	
 			param <<"NameService=corbaname::" << getProp(nsnode,"host") << ":" << defPort;
-			_argv[i+1] = strdup(param.str().c_str());
+			new_argv[i+1] = strdup(param.str().c_str());
 			if( unideb.debugging(Debug::INFO) )
 				unideb[Debug::INFO] << "(Configuration): внесли параметр " << param.str() << endl;
 		}
 
+		_argv = new_argv;
 		// ------------- CORBA INIT -------------		
 		// orb init
 		orb = CORBA::ORB_init(_argc,(char**)_argv);
@@ -959,7 +960,7 @@ xmlNode* Configuration::getXMLServicesSection()
 	return xmlServicesSec;
 }
 // -------------------------------------------------------------------------
-void uniset_init( int argc, const char** argv, const std::string xmlfile )
+void uniset_init( int argc, const char* const* argv, const std::string xmlfile )
 {
 	string confile = UniSetTypes::getArgParam( "--confile", argc, argv, xmlfile );
 	UniSetTypes::conf = new Configuration(argc, argv, confile);
