@@ -60,9 +60,9 @@ namespace UniversalIO
 /*!
  * \class UniversalInterface
  * ... а здесь идет кратенькое описание... (коротенько минут на 40!...)
- * Для увеличения производительсноти в функции встроен cache обращений...
+ * Для увеличения производительности в функции встроен cache обращений...
  *
- * См. также \ref UniversalIOContorllerPage
+ * См. также \ref UniversalIOControllerPage
 */ 
 class UniversalInterface
 {

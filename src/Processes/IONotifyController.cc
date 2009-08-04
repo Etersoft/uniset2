@@ -201,7 +201,7 @@ void IONotifyController::askState( const IOController_i::SensorInfo& si,
 		unideb[Debug::INFO] << "поступил заказ от "<< name << " на дискретный датчик "
 			<< conf->oind->getNameById(si.id,si.node) << endl;
 	
-	// если такого дискретного датчика нет сдесь сработает исключение...
+	// если такого дискретного датчика нет, здесь сработает исключение...
 	DIOStateList::iterator li = mydioEnd();
 	bool st = localGetState(li,si);
 
@@ -286,7 +286,7 @@ void IONotifyController::askValue(const IOController_i::SensorInfo& si,
 			<< conf->oind->getNameById(si.id,si.node) << endl;
 	}
 	
-	// если такого аналогово датчика нет сдесь сработает исключение...
+	// если такого аналогового датчика нет, здесь сработает исключение...
 	AIOStateList::iterator li = myaioEnd();
 	long val = localGetValue(li,si);
 	if( li->second.type != UniversalIO::AnalogInput )

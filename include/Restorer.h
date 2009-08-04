@@ -47,8 +47,8 @@ class Restorer_XML
 
 		/*! слот для подключения функции чтения датчика из xml-файла. 
 			\param uxml	- интерфейс для работы с xml-файлом
-			\param it 	- интератор(указатель) на текущий считываемый xml-узел (<item>)
-			\param sec	- интератор(указатель) на корневой узел секции (<SubscriberList>)
+			\param it 	- итератор (указатель) на текущий считываемый xml-узел (item)
+			\param sec	- итератор (указатель) на корневой узел секции (SubscriberList)
 			\return TRUE - если чтение параметров прошло успешно, FALSE - если нет
 		*/
 		typedef sigc::slot<bool,UniXML&,UniXML_iterator&,xmlNode*> ReaderSlot;
@@ -61,8 +61,8 @@ class Restorer_XML
 										UniXML_iterator& it, xmlNode* sec)
 
 			uxml	- интерфейс для работы с xml-файлом
-			it 	- интератор(указатель) на текущий считываемый xml-узел (<item>)
-			sec	- указатель на корневой узел секции (<SubscriberList>)
+			it 	- интератор(указатель) на текущий считываемый xml-узел (item)
+			sec	- указатель на корневой узел секции (SubscriberList)
 		*/
 		void setReadItem( ReaderSlot sl );
 

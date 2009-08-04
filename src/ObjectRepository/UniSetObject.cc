@@ -218,8 +218,8 @@ void UniSetObject::setID( UniSetTypes::ObjectId id )
 
 // ------------------------------------------------------------------------------------------
 /*!
- *	\param VoidMessage msg - указатель на структуру, которая заполняется если есть сообщение
- *	\return Возращает \a true если сообщение есть, и \a false если нет
+ *	\param  vm - указатель на структуру, которая заполняется если есть сообщение
+ *	\return Возвращает \a true если сообщение есть, и \a false если нет
 */
 bool UniSetObject::receiveMessage( VoidMessage& vm )
 {

@@ -77,7 +77,7 @@ class TriggerAND
 
 		/*! 
 			прототип функции вызова 
-			\prarm newstate - новое состояние 'выхода'
+			\param newstate - новое состояние 'выхода'
 		*/
 		typedef void(Caller::* Action)(bool newstate);	
 	

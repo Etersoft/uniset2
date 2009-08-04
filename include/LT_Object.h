@@ -92,7 +92,7 @@ class UniSetObject;
 	\endcode	
 		
 	
-	\warning Точность работы опрделяется переодичснотью вызова обработичика.
+	\warning Точность работы определяется переодичснотью вызова обработичика.
 	\sa TimerService
 */ 
 class LT_Object
@@ -183,9 +183,9 @@ class LT_Object
 
 	private:
 		TimersList tlst; 
-		/*! замок для блокирования совместного доступа к cписку таймеров */			
+		/*! замок для блокирования совместного доступа к cписку таймеров */
 		UniSetTypes::uniset_mutex lstMutex; 
-		int sleepTime;
+		timeout_t sleepTime; /*!< текущее время ожидания */
 		PassiveTimer tmLast;
 };
 //--------------------------------------------------------------------------

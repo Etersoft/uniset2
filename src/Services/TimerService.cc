@@ -66,17 +66,17 @@ TimerService::~TimerService()
 }
 
 // ------------------------------------------------------------------------------------------
-/*! 
- * \param timerid - идентификатор заказываемого таймера
- * \param timeMS - интервал (0 - означает отказ от таймера)
- * \param fromId - идентификатор заказчика
- * \param node - узел на котором находится заказчик
+/*
+ * \param ti.timerid - идентификатор заказываемого таймера
+ * \param ti.timeMS - интервал (0 - означает отказ от таймера)
+ * \param ci.fromId - идентификатор заказчика
+ * \param ci.node - узел, на котором находится заказчик
  * \exception TimerService_i::TimerAlreadyExist  - вырабатывается если от данного заказчика
  * \b уже \b есть заказ на таймер с таким идентификатором
 */
 void TimerService::askTimer( const TimerService_i::Timer& ti, const UniSetTypes::ConsumerInfo& ci )
 {
-	if( ti.timeMS>0 ) // заказ
+	if( ti.timeMS > 0 ) // заказ
 	{
 			if( tlst.size() >= MaxCountTimers )
 			{
@@ -85,10 +85,10 @@ void TimerService::askTimer( const TimerService_i::Timer& ti, const UniSetTypes:
 				throw ex;
 			}
 				
-			if( ti.timeMS < UniSetTimer::MIN_QUANTITY_TIME_MS )
+			if( ti.timeMS < UniSetTimer::MinQuantityTime )
 			{
 				TimerService_i::TimeMSLowLimit ex;
-				ex.lowLimitMS = UniSetTimer::MIN_QUANTITY_TIME_MS;
+				ex.lowLimitMS = UniSetTimer::MinQuantityTime;
 				throw ex;
 			}
 			
