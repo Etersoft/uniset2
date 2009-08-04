@@ -102,7 +102,7 @@ void MessageInterface_idXML::build( UniXML& xml )
 	{
 		MessageInfo inf;
 
-		inf.code = uni_atoi( it.getProp("id").c_str() );
+		inf.code = it.getIntProp("id");
 		if( inf.code <= 0 )
 		{
 			ostringstream msg;

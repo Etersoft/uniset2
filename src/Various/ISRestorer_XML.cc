@@ -109,7 +109,7 @@ void ISRestorer_XML::read_list(UniXML& xml, xmlNode* node, InfoServer* is )
 {
 	UniXML_iterator it(node);
 
-	bool autoID=atoi(it.getProp("autoID").c_str());
+	bool autoID=it.getIntProp("autoID");
 
 	if( !it.goChildren() )
 		return;
@@ -124,8 +124,7 @@ void ISRestorer_XML::read_list(UniXML& xml, xmlNode* node, InfoServer* is )
 			code = conf->mi->getCodeByIdName(it.getProp("name"));
 		else
 		{
-			string scode(xml.getProp(it,"id"));
-			code = atoi(scode.c_str());
+			code = xml.getIntProp(it,"id");
 		}
 		
 		if( code == UniSetTypes::DefaultMessageCode )
@@ -150,7 +149,7 @@ void ISRestorer_XML::read_list(UniXML& xml, xmlNode* node, InfoServer* is )
 				continue;
 
 			InfoServer::ConsumerInfoExt cinf(ci);
-			cinf.ask = atoi(xml.getProp(itc,"ask").c_str());	
+			cinf.ask = xml.getIntProp(itc,"ask");
 			lst.push_front(cinf);
 			cslot(xml,itc,it.getCurrent());
 		}

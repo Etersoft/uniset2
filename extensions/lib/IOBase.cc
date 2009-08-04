@@ -398,7 +398,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		sid = conf->getSensorID(sname);
 	else
 	{
-		sid = UniSetTypes::uni_atoi(it.getProp("id").c_str());
+		sid = it.getIntProp("id");
 		if( sid <=0 )
 			sid = DefaultObjectId;
 	}
@@ -522,9 +522,9 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 				return false;
 			}
 		
-			b->ti.lowlimit 	= uni_atoi( it.getProp("lowlimit").c_str() );
-			b->ti.hilimit 		= uni_atoi( it.getProp("hilimit").c_str() );
-			b->ti.sensibility 	= uni_atoi( it.getProp("sensibility").c_str() );
+			b->ti.lowlimit 	= it.getIntProp("lowlimit");
+			b->ti.hilimit 		= it.getIntProp("hilimit");
+			b->ti.sensibility 	= it.getIntProp("sensibility");
 		}
 	}
 //	else

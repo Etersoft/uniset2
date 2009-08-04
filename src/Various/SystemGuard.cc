@@ -65,11 +65,11 @@ SystemGuard::SystemGuard( ObjectId id ): //, ObjectsActivator* a ):
 
 void SystemGuard::init()
 {
-	WatchDogTimeOut = atoi( conf->getField("WatchDogTime").c_str() )*60; 
-	PingNodeTimeOut = atoi( conf->getField("PingNodeTime").c_str() );
-	AutoStartUpTimeOut = atoi( conf->getField("AutoStartUpTime").c_str() );
-	DumpStateTime = atoi( conf->getField("DumpStateTime").c_str() );
-	SleepTickMS	= atoi( conf->getField("SleepTickMS").c_str() );
+	WatchDogTimeOut = conf->getIntField("WatchDogTime") * 60; 
+	PingNodeTimeOut = conf->getIntField("PingNodeTime");
+	AutoStartUpTimeOut = conf->getIntField("AutoStartUpTime");
+	DumpStateTime = conf->getIntField("DumpStateTime");
+	SleepTickMS	= conf->getIntField("SleepTickMS");
 //	act->addManager( static_cast<ObjectsManager*>(this) );
 }
 

@@ -373,7 +373,7 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 	};
 
 	HeartBeatInfo hi;
-	hi.a_sid = UniSetTypes::uni_atoi( it.getProp("id").c_str() );
+	hi.a_sid = it.getIntProp("id");
 
 	if( it.getProp("heartbeat_ds_name").empty() )
 	{
@@ -401,7 +401,7 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 		}
 	}
 
-	hi.reboot_msec = UniSetTypes::uni_atoi( it.getProp("heartbeat_reboot_msec").c_str() );
+	hi.reboot_msec = it.getIntProp("heartbeat_reboot_msec");
 	hi.ptReboot.setTiming(UniSetTimer::WaitUpTime);
 
 	if( hi.a_sid <= 0 )
@@ -503,7 +503,7 @@ void SharedMemory::readEventList( std::string oname )
 		if( it.getProp(e_filter).empty() )
 			continue;
 
-		ObjectId oid = UniSetTypes::uni_atoi(it.getProp("id").c_str());
+		ObjectId oid = it.getIntProp("id");
 		if( oid != 0 )
 		{
 			if( dlog.debugging(Debug::INFO) )
@@ -564,7 +564,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 
 	UniXML_iterator it(n);
 	
-	histSaveTime = uni_atoi(it.getProp("savetime").c_str());
+	histSaveTime = it.getIntProp("savetime");
 	if( histSaveTime < 0 )
 		histSaveTime = 200;
 	
@@ -577,8 +577,8 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 	for( ; it.getCurrent(); it.goNext() )
 	{
 		HistoryInfo hi;
-		hi.id 		= UniSetTypes::uni_atoi( it.getProp("id").c_str() );
-		hi.size 	= UniSetTypes::uni_atoi( it.getProp("size").c_str() );
+		hi.id 		= it.getIntProp("id");
+		hi.size 	= it.getIntProp("size");
 		if( hi.size <=0 )
 			continue;
 
@@ -596,12 +596,12 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 			continue;
 		}
 
-		hi.fuse_invert 	= uni_atoi(it.getProp("fuse_invert").c_str());
+		hi.fuse_invert 	= it.getIntProp("fuse_invert");
 		
 		if( !it.getProp("fuse_value").empty() )
 		{
 			hi.fuse_use_val = true;
-			hi.fuse_val	= uni_atoi(it.getProp("fuse_value").c_str());
+			hi.fuse_val	= it.getIntProp("fuse_value");
 		}
 
 		// WARNING: no check duplicates...
@@ -623,7 +623,7 @@ void SharedMemory::checkHistoryFilter( UniXML_iterator& xit )
 
 		if( !xit.getProp("id").empty() )
 		{
-			ai.id = uni_atoi(xit.getProp("id").c_str());
+			ai.id = xit.getIntProp("id");
 			it->hlst.push_back(ai);
 			continue;
 		}

@@ -291,12 +291,12 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
 	// калибровка
 	if( inf.type == UniversalIO::AnalogInput || inf.type == UniversalIO::AnalogOutput )
 	{
-		inf.ci.minRaw = uni_atoi( xml.getProp(it,"rmin").c_str() );
-		inf.ci.maxRaw = uni_atoi( xml.getProp(it,"rmax").c_str() );
-		inf.ci.minCal = uni_atoi( xml.getProp(it,"cmin").c_str() );
-		inf.ci.maxCal = uni_atoi( xml.getProp(it,"cmax").c_str() );
-		inf.ci.sensibility = uni_atoi( xml.getProp(it,"sensibility").c_str() );
-		inf.ci.precision = uni_atoi( xml.getProp(it,"precision").c_str() );
+		inf.ci.minRaw = xml.getIntProp(it,"rmin");
+		inf.ci.maxRaw = xml.getIntProp(it,"rmax");
+		inf.ci.minCal = xml.getIntProp(it,"cmin");
+		inf.ci.maxCal = xml.getIntProp(it,"cmax");
+		inf.ci.sensibility = xml.getIntProp(it,"sensibility");
+		inf.ci.precision = xml.getIntProp(it,"precision");
 	}
 	else
 	{
@@ -308,7 +308,7 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
 		inf.ci.precision = 0;
 	}
 
-	inf.default_val = uni_atoi(xml.getProp(it,"default").c_str());
+	inf.default_val = xml.getIntProp(it,"default");
 	inf.value 		= inf.default_val;
 	inf.undefined = false;
 	inf.real_value = inf.value;
@@ -450,11 +450,11 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 	}
 
 	UniXML_iterator uit(node);
-	ti.id 			= uni_atoi( uit.getProp("id").c_str() );
-	ti.lowlimit 	= uni_atoi( uit.getProp("lowlimit").c_str() );
-	ti.hilimit 		= uni_atoi( uit.getProp("hilimit").c_str() );
-	ti.sensibility 	= uni_atoi( uit.getProp("sensibility").c_str() );
-	ti.inverse 		= atoi( uit.getProp("inverse").c_str() );
+	ti.id 			= uit.getIntProp("id");
+	ti.lowlimit 	= uit.getIntProp("lowlimit");
+	ti.hilimit 		= uit.getIntProp("hilimit");
+	ti.sensibility 	= uit.getIntProp("sensibility");
+	ti.inverse 		= uit.getIntProp("inverse");
 	ti.state 		= IONotifyController_i::NormalThreshold;
 
 	if( ti.sid == UniSetTypes::DefaultObjectId )

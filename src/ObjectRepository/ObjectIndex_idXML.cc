@@ -134,7 +134,7 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string sec )
 	for( ;it.getCurrent(); it.goNext() )
 	{
 		ObjectInfo inf;
-		inf.id = uni_atoi( it.getProp("id").c_str() );
+		inf.id = it.getIntProp("id");
 
 		if( inf.id <= 0 )
 		{
@@ -187,7 +187,7 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string sec )
 	{
 		ObjectInfo inf;
 		
-		inf.id = uni_atoi( it.getProp("id").c_str() );
+		inf.id = it.getIntProp("id");
 		if( inf.id <= 0 )
 		{
 			ostringstream msg;

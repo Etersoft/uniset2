@@ -227,7 +227,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
 				try
 				{				
-					if( unixml.getProp(cnode,"idfromfile").empty() || atoi(unixml.getProp(cnode,"idfromfile").c_str())==0 )
+					if( unixml.getProp(cnode,"idfromfile").empty() || unixml.getIntProp(cnode,"idfromfile")==0 )
 						oind = new ObjectIndex_XML(unixml); //(fileConfName);
 					else
 						oind = new ObjectIndex_idXML(unixml); //(fileConfName);
@@ -247,7 +247,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 				mi = new DefaultMessageInterface();
 			else
 			{
-				if( unixml.getProp(cnode,"idfromfile").empty() || atoi(unixml.getProp(cnode,"idfromfile").c_str())==0 )
+				if( unixml.getProp(cnode,"idfromfile").empty() || unixml.getIntProp(cnode,"idfromfile")==0 )
 					mi = new MessageInterface_XML(unixml); // (fileConfName);
 				else
 					mi = new MessageInterface_idXML(unixml); // (fileConfName);
@@ -481,18 +481,18 @@ void Configuration::initParameters()
 		}
 		else if( name == "CountOfNet" )
 		{
-			countOfNet = atoi(it.getProp("name").c_str());
+			countOfNet = it.getIntProp("name");
 		}
 		else if( name == "RepeatTimeoutMS" )
 		{
-			repeatTimeout = atoi( it.getProp("name").c_str());
+			repeatTimeout = it.getIntProp("name");
 			if(!repeatTimeout)
 				repeatTimeout=50; //[????]
 
 		}
 		else if( name == "RepeatCount" )
 		{
-			repeatCount = atoi( it.getProp("name").c_str());
+			repeatCount = it.getIntProp("name");
 			if(!repeatCount)
 				repeatCount = 1;
 		}
@@ -502,11 +502,11 @@ void Configuration::initParameters()
 		}
 		else if( name == "LocalIOR" )
 		{
-			localIOR = atoi( it.getProp("name").c_str() );
+			localIOR = it.getIntProp("name");
 		}
 		else if( name == "TransientIOR" )
 		{
-			transientIOR = atoi( it.getProp("name").c_str());
+			transientIOR = it.getIntProp("name");
 		}
 		else if( name == "DataDir" )
 		{

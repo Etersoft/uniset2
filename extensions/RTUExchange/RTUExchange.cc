@@ -1107,8 +1107,8 @@ bool RTUExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 bool RTUExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  RTUExchange::RTUDevice* dev )
 {
 	r->dev = dev;
-	r->mbval = UniSetTypes::uni_atoi(it.getProp("default").c_str());
-	r->offset= UniSetTypes::uni_atoi(it.getProp("mboffset").c_str());
+	r->mbval = it.getIntProp("default");
+	r->offset= it.getIntProp("mboffset");
 
 	if( dev->dtype == RTUExchange::dtMTR )
 	{
