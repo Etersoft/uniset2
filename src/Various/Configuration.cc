@@ -571,6 +571,12 @@ string Configuration::getField(const string path)
 	return getProp(getNode(path),"name");
 }
 // -------------------------------------------------------------------------
+int Configuration::getIntField(const std::string path)
+{
+	return unixml.getIntProp(getNode(path), "name");
+}
+
+// -------------------------------------------------------------------------
 xmlNode* Configuration::findNode(xmlNode* node, const std::string snode, const std::string sname)
 {
 	if( !unixml.isOpen() )

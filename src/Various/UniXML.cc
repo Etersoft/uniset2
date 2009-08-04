@@ -32,6 +32,7 @@
 #include <iostream>
 #include <string>
 
+#include "UniSetTypes.h"
 #include "UniXML.h"
 #include "Exceptions.h"
 
@@ -199,6 +200,11 @@ const xmlChar* UniXML::local2xml(string text)
 string UniXML::getProp(xmlNode* node, const string name)
 {
 	return xml2local(::xmlGetProp(node, (const xmlChar*)name.c_str()));
+}
+
+int UniXML::getIntProp(xmlNode* node, const string name )
+{
+	return UniSetTypes::uni_atoi((const char*)::xmlGetProp(node, (const xmlChar*)name.c_str()));
 }
 
 void UniXML::setProp(xmlNode* node, string name, string text)
@@ -429,6 +435,12 @@ bool UniXML_iterator::goChildren()
 string UniXML_iterator::getProp( const string name )
 {
 	return UniXML::xml2local(::xmlGetProp(curNode, (const xmlChar*)name.c_str()));
+}
+
+// -------------------------------------------------------------------------		
+int UniXML_iterator::getIntProp( const string name )
+{
+	return UniSetTypes::uni_atoi((char*)::xmlGetProp(curNode, (const xmlChar*)name.c_str()));
 }
 // -------------------------------------------------------------------------		
 void UniXML_iterator::setProp( const string name, const string text )

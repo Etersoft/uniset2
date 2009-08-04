@@ -69,6 +69,9 @@ namespace UniSetTypes
 
 		/// Получить значение полей с путём path
 		std::string getField(const std::string path);
+		/// Получить число из поле с путём path
+		int getIntField(const std::string path);
+
 		xmlNode* findNode(xmlNode* node, const std::string searchnode, const std::string name = "" );
 		
 		// Получить узел

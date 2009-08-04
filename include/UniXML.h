@@ -80,6 +80,7 @@ public:
 
 	// Получить свойство name указанного узла node
 	static std::string getProp(xmlNode* node, const std::string name);
+	static int getIntProp(xmlNode* node, const std::string name);
 	
 	// Установить свойство name указанного узла node
 	static void setProp(xmlNode* node, const std::string name, const std::string text);
@@ -124,6 +125,7 @@ class UniXML_iterator
 		UniXML_iterator() {}
 
 		std::string getProp(const std::string name);
+		int getIntProp(const std::string name);
 		void setProp(const std::string name, const std::string text);
 		
 		/*! Перейти к следующему узлу. Возвращает false, если некуда перейти */
