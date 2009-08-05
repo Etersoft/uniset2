@@ -36,9 +36,10 @@ prepare_tarball()
 	cp -r $WDPROJECT/* $DESTDIR/
 	cd 	$DESTDIR/
 		make distclean
-		[ -a ./autogen.sh ] && ./autogen.sh
+#		[ -a ./autogen.sh ] && ./autogen.sh
 		rm -rf autom4te.cache/
-	
+		rm -rf .git
+		rm -rf .gear
 		echo "Make tarball $TARNAME ... from $DESTDIR"
 		mkdir -p $RPMSOURCEDIR/
 		$NICE tar cfj $RPMSOURCEDIR/$TARNAME ../$NAMEVER $ETERTARPARAM || RET=1
