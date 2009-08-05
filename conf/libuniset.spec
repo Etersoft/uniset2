@@ -93,7 +93,8 @@ Libraries needed to develop for uniset extensions
 %configure --disable-docs --disable-static
 %endif
 
-%make_build
+#%make_build
+%make
 
 %install
 %makeinstall_std
@@ -126,7 +127,7 @@ rm -f %buildroot%_libdir/*.la
 %_includedir/%oname/mysql/
 
 %_libdir/libUniSet.so
-%_datadir/idl/%oname/
+#%_datadir/idl/%oname/
 %_pkgconfigdir/libUniSet.pc
 
 %files mysql-dbserver
