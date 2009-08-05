@@ -174,7 +174,7 @@ class MBSlave:
 		bool activated;
 		int activateTimeout;
 		bool pingOK;
-		int wait_msec;
+		timeout_t wait_msec;
 		bool force;		/*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
 
 		bool mbregFromID;

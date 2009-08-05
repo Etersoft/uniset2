@@ -107,7 +107,7 @@ class ModbusClient
 			\param part_timeout_msec - таймаут на получение очередной части файла.
 		*/
 		ModbusRTU::FileTransferRetMessage partOfFileTransfer( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusData idFile, 
-																ModbusRTU::ModbusData numpack, int part_timeout_msec=2000 )
+																ModbusRTU::ModbusData numpack, timeout_t part_timeout_msec=2000 )
 																	throw(ModbusRTU::mbException);
 
 		/*! Загрузить файл
@@ -116,17 +116,17 @@ class ModbusClient
 			\param part_timeout_msec - таймаут на получение очередной части файла.
 		*/
 		void fileTransfer( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusData idFile, 
-							const char* save2filename, int part_timeout_msec=2000 )
+							const char* save2filename, timeout_t part_timeout_msec=2000 )
 														throw(ModbusRTU::mbException);
 
 		// ---------------------------------------------------------------------
 		/*! установить время ожидания по умолчанию */
-		void setTimeout( int msec );
+		void setTimeout( timeout_t msec );
 		
 		/*! Установка паузы после посылки запроса
 			\return старое значение
 		*/
-		int setAfterSendPause( int msec );
+		int setAfterSendPause( timeout_t msec );
 
 		void initLog( UniSetTypes::Configuration* conf, const std::string name, const std::string logfile="" );
 		void setLog( DebugStream& dlog );
@@ -146,13 +146,13 @@ class ModbusClient
 		virtual int getNextData( unsigned char* buf, int len )=0;
 
 		/*! set timeout for send/receive data */
-		virtual void setChannelTimeout( int msec )=0;
+		virtual void setChannelTimeout( timeout_t msec )=0;
 
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len )=0;
 
 		/*! функция запрос-ответ */
 		virtual ModbusRTU::mbErrCode query( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& msg, 
-											ModbusRTU::ModbusMessage& reply, int timeout )=0;
+											ModbusRTU::ModbusMessage& reply, timeout_t timeout )=0;
 
 		// -------------------------------------
 		/*! посылка запроса */
@@ -160,18 +160,18 @@ class ModbusClient
 
 		/*! обработка ответа */
 		virtual ModbusRTU::mbErrCode recv( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusByte qfunc, 
-									ModbusRTU::ModbusMessage& rbuf, int timeout );
+									ModbusRTU::ModbusMessage& rbuf, timeout_t timeout );
 
 		virtual ModbusRTU::mbErrCode recv_pdu( ModbusRTU::ModbusByte qfunc, 
-									ModbusRTU::ModbusMessage& rbuf, int timeout );
+									ModbusRTU::ModbusMessage& rbuf, timeout_t timeout );
 
 
 
 		ModbusRTU::ModbusMessage reply;	/*!< буфер для приёма сообщений */
 		ModbusRTU::ModbusMessage qbuf; 	/*!< буфер для посылки сообщений */
 
-		int replyTimeOut_ms;	/*!< таймаут на ожидание ответа */
-		int aftersend_msec;		/*!< пауза после посылки запроса */
+		timeout_t replyTimeOut_ms;	/*!< таймаут на ожидание ответа */
+		timeout_t aftersend_msec;		/*!< пауза после посылки запроса */
 		
 		bool crcNoCheckit;
 

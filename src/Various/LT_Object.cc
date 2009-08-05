@@ -37,9 +37,7 @@ using namespace UniSetTypes;
 LT_Object::LT_Object():
 sleepTime(UniSetTimer::WaitUpTime)
 {
-	tmLast.setTiming(100000);
 	tmLast.setTiming(UniSetTimer::WaitUpTime);
-	
 }
 
 // ------------------------------------------------------------------------------------------
@@ -47,7 +45,7 @@ LT_Object::~LT_Object()
 {
 }
 // ------------------------------------------------------------------------------------------
-int LT_Object::checkTimers( UniSetObject* obj )
+timeout_t LT_Object::checkTimers( UniSetObject* obj )
 {
 	try
 	{
@@ -62,13 +60,13 @@ int LT_Object::checkTimers( UniSetObject* obj )
 		}
 
 		// защита от непрерывного потока сообщений
-		if( tmLast.getCurrent() < UniSetTimer::MIN_QUANTITY_TIME_MS )
+		if( tmLast.getCurrent() < UniSetTimer::MinQuantityTime )
 		{
 			// корректируем сперва sleepTime
-			sleepTime -= tmLast.getCurrent();
-			if( sleepTime < UniSetTimer::MIN_QUANTITY_TIME_MS )
+			sleepTime = tmLast.getLeft(sleepTime);
+			if( sleepTime < UniSetTimer::MinQuantityTime )
 			{
-				sleepTime=UniSetTimer::MIN_QUANTITY_TIME_MS;
+				sleepTime=UniSetTimer::MinQuantityTime;
 				return sleepTime;
 			}
 		}
@@ -101,10 +99,8 @@ int LT_Object::checkTimers( UniSetObject* obj )
 				}
 				else
 				{
-					li->curTimeMS -= tmLast.getCurrent(); 
-					if( li->curTimeMS < 0 )
-						li->curTimeMS = 0;
-				}			
+					li->curTimeMS = tmLast.getLeft(li->curTimeMS);
+				}
 
 				// ищем минимальное оставшееся время
 				if( li->curTimeMS < sleepTime || sleepTime == UniSetTimer::WaitUpTime )
@@ -114,8 +110,8 @@ int LT_Object::checkTimers( UniSetObject* obj )
 			if( resort )	// пересортировываем в связи с обновлением списка
 				tlst.sort();
 			
-			if( sleepTime < UniSetTimer::MIN_QUANTITY_TIME_MS )
-				sleepTime=UniSetTimer::MIN_QUANTITY_TIME_MS;
+			if( sleepTime < UniSetTimer::MinQuantityTime )
+				sleepTime=UniSetTimer::MinQuantityTime;
 		} // unlock		
 
 		tmLast.reset();
@@ -129,15 +125,15 @@ int LT_Object::checkTimers( UniSetObject* obj )
 }
 // ------------------------------------------------------------------------------------------
 
-int LT_Object::askTimer( UniSetTypes::TimerId timerid, long timeMS, short ticks, UniSetTypes::Message::Priority p )
+timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks, UniSetTypes::Message::Priority p )
 {
-	if( timeMS>0 ) // заказ
+	if( timeMS > 0 ) // заказ
 	{
-		if( timeMS < UniSetTimer::MIN_QUANTITY_TIME_MS )
+		if( timeMS < UniSetTimer::MinQuantityTime )
 		{
 			unideb[Debug::CRIT] << "(LT_askTimer): [мс] попытка заказть таймер со временем срабатыания "
-						<< " меньше разрешённого " << UniSetTimer::MIN_QUANTITY_TIME_MS << endl;
-			timeMS = UniSetTimer::MIN_QUANTITY_TIME_MS;
+						<< " меньше разрешённого " << UniSetTimer::MinQuantityTime << endl;
+			timeMS = UniSetTimer::MinQuantityTime;
 		}
 			
 		{	// lock
@@ -170,7 +166,7 @@ int LT_Object::askTimer( UniSetTypes::TimerId timerid, long timeMS, short ticks,
 		if( unideb.debugging(Debug::INFO) )
 			unideb[Debug::INFO] << "(LT_askTimer): поступил заказ на таймер(id="<< timerid << ") " << timeMS << " [мс]\n";
 	}
-	else // отказ
+	else // отказ (при timeMS == 0)
 	{
 		if( unideb.debugging(Debug::INFO) )
 			unideb[Debug::INFO] << "(LT_askTimer): поступил отказ по таймеру id="<< timerid << endl;	
@@ -193,7 +189,7 @@ int LT_Object::askTimer( UniSetTypes::TimerId timerid, long timeMS, short ticks,
 		if( tlst.empty() )
 			sleepTime = UniSetTimer::WaitUpTime;
 		else
-			sleepTime = UniSetTimer::MIN_QUANTITY_TIME_MS;
+			sleepTime = UniSetTimer::MinQuantityTime;
 	}
 
 	return sleepTime;

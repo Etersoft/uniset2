@@ -54,7 +54,7 @@ interface TimerService_i: UniSetObject_i
 	*/
 	exception TimeMSLowLimit
 	{	
-		long lowLimitMS;
+		unsigned long lowLimitMS; // instead timeout_t
 	};
 
 
@@ -62,8 +62,8 @@ interface TimerService_i: UniSetObject_i
 	struct Timer
 	{
 		UniSetTypes::TimerId timerid;
-		long timeMS;
-		short ticks;
+		unsigned long timeMS;
+		long ticks; // instead clock_t
 		short msgPriority;
 	};
 

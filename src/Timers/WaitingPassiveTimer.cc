@@ -84,7 +84,7 @@ WaitingPassiveTimer::~WaitingPassiveTimer()
 // ------------------------------------------------------------------------------------------
 void WaitingPassiveTimer::work()
 {
-	int sleepMKS = (int)(MIN_QUANTITY_TIME_MS/1000);
+	timeout_t sleepMKS = MIN_QUANTITY_TIME_MS*1000;
 	terminated = false;
 	while( !terminated )
 	{
@@ -119,7 +119,7 @@ void WaitingPassiveTimer::terminate()
 	usleep(1000);
 }
 // ------------------------------------------------------------------------------------------
-void WaitingPassiveTimer::wait(int timeMS)
+void WaitingPassiveTimer::wait(timeout_t timeMS)
 {
 	if ( !terminated )
 		terminate();

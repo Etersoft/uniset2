@@ -110,7 +110,7 @@ class LT_Object
 			\return Возвращает время [мсек] оставшееся до срабатывания
 			очередного таймера
 		*/
-		int askTimer( UniSetTypes::TimerId timerid, long timeMS, short ticks=-1, 
+		timeout_t askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks=-1, 
 						UniSetTypes::Message::Priority p=UniSetTypes::Message::High );
 
 
@@ -120,10 +120,10 @@ class LT_Object
 			\return Возвращает время [мсек] оставшееся до срабатывания
 				очередного таймера
 		*/
-		int checkTimers( UniSetObject* obj );
+		timeout_t checkTimers( UniSetObject* obj );
 
 		/*! получить текущее время ожидания */
-		inline int getSleepTimeMS(){ return sleepTime; }
+		//inline timeout_t getSleepTimeMS(){ return sleepTime; }
 
 	protected:
 
@@ -131,7 +131,7 @@ class LT_Object
 		struct TimerInfo
 		{
 			TimerInfo():id(0), curTimeMS(0), priority(UniSetTypes::Message::High){};
-			TimerInfo(UniSetTypes::TimerId id, long timeMS, short cnt, UniSetTypes::Message::Priority p):
+			TimerInfo(UniSetTypes::TimerId id, timeout_t timeMS, short cnt, UniSetTypes::Message::Priority p):
 				id(id),
 				curTimeMS(timeMS),
 				priority(p),
@@ -147,14 +147,14 @@ class LT_Object
 			}
 			
 			UniSetTypes::TimerId id;	/*!<  идентификатор таймера */
-			int curTimeMS;				/*!<  остаток времени */
+			timeout_t curTimeMS;				/*!<  остаток времени */
 			UniSetTypes::Message::Priority priority; /*!<  приоритет посылаемого сообщения */
 
 			/*!
 			 * текущий такт
 			 * \note Если задано количество -1 то сообщения будут поылатся постоянно
 			*/
-			short curTick; 
+			clock_t curTick; 
 			
 			// таймер с меньшим временем ожидания имеет больший приоритет
 			bool operator < ( const TimerInfo& ti ) const

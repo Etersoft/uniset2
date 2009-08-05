@@ -31,7 +31,7 @@ int ModbusTCPMaster::getNextData( unsigned char* buf, int len )
 	return ModbusTCPCore::getNextData(buf,len,qrecv,tcp);
 }
 // -------------------------------------------------------------------------
-void ModbusTCPMaster::setChannelTimeout( int msec )
+void ModbusTCPMaster::setChannelTimeout( timeout_t msec )
 {
 	if( tcp )
 		tcp->setTimeout(msec);
@@ -45,7 +45,7 @@ mbErrCode ModbusTCPMaster::sendData( unsigned char* buf, int len )
 int ModbusTCPMaster::nTransaction = 0;
 
 mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg, 
-				 			ModbusMessage& reply, int timeout )
+				 			ModbusMessage& reply, timeout_t timeout )
 {
 
 //	if( !isConnection() )
@@ -58,13 +58,8 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 	reconnect();
 
-	if( timeout<=0 || timeout == UniSetTimer::WaitUpTime )
-	{
-		timeout = TIMEOUT_INF;
-		ptTimeout.setTiming(UniSetTimer::WaitUpTime);
-	}
-	else
-		ptTimeout.setTiming(timeout);
+	assert(timeout);
+	ptTimeout.setTiming(timeout);
 	
 	ost::Thread::setException(ost::Thread::throwException);
 	
@@ -100,10 +95,10 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		if( !tcp->isPending(ost::Socket::pendingOutput,timeout) )
 			return erTimeOut;
 
-		if( timeout != TIMEOUT_INF )
+		if( timeout != UniSetTimer::WaitUpTime )
 		{
-			timeout -= ptTimeout.getCurrent();
-			if( timeout <=0 )
+			timeout = ptTimeout.getLeft(timeout);
+			if( timeout == 0 )
 				return erTimeOut;
 
 			ptTimeout.setTiming(timeout);

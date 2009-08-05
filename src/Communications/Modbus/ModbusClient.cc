@@ -25,15 +25,15 @@ ModbusClient::~ModbusClient()
 {
 }
 // -------------------------------------------------------------------------
-void ModbusClient::setTimeout( int msec )
+void ModbusClient::setTimeout( timeout_t msec )
 {
-	if( msec != UniSetTimer::WaitUpTime && msec>=0 )
+	if( msec != UniSetTimer::WaitUpTime )
 		replyTimeOut_ms = msec;
 }
 // -------------------------------------------------------------------------
-int ModbusClient::setAfterSendPause( int msec )
+int ModbusClient::setAfterSendPause( timeout_t msec )
 {
-	int old = aftersend_msec;
+	timeout_t old = aftersend_msec;
 	aftersend_msec = msec;
 	return old;
 }
@@ -172,7 +172,7 @@ SetDateTimeRetMessage ModbusClient::setDateTime( ModbusAddr addr, ModbusByte hou
 }						
 // --------------------------------------------------------------------------------
 void ModbusClient::fileTransfer( ModbusAddr addr, ModbusData numfile, 
-									const char* save2filename, int part_timeout_msec )
+									const char* save2filename, timeout_t part_timeout_msec )
 												throw(ModbusRTU::mbException)
 {
 //#warning Необходимо реализовать
@@ -256,9 +256,9 @@ void ModbusClient::fileTransfer( ModbusAddr addr, ModbusData numfile,
 	throw mbException(res);
 }						
 // --------------------------------------------------------------------------------
-FileTransferRetMessage ModbusClient::partOfFileTransfer( ModbusAddr addr, 
+FileTransferRetMessage ModbusClient::partOfFileTransfer( ModbusAddr addr,
 										ModbusData idFile, ModbusData numpack,
-										int part_timeout_msec )
+										timeout_t part_timeout_msec )
 											throw(ModbusRTU::mbException)
 {
 	FileTransferMessage msg(addr,idFile,numpack);
@@ -272,7 +272,7 @@ FileTransferRetMessage ModbusClient::partOfFileTransfer( ModbusAddr addr,
 }									
 // --------------------------------------------------------------------------------
 mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc, 
-								ModbusMessage& rbuf, int timeout )
+								ModbusMessage& rbuf, timeout_t timeout )
 {
 	if( timeout == UniSetTimer::WaitUpTime )
 		timeout = 15*60*1000*1000; // используем просто большое время (15 минут). Переведя его в наносекунды.
@@ -329,7 +329,7 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 }
 
 // --------------------------------------------------------------------------------
-mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, int timeout )
+mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout_t timeout )
 {
 	int bcnt=1; // receive bytes count (1 - addr)
 	try

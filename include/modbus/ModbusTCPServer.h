@@ -23,7 +23,7 @@ class ModbusTCPServer:
 		ModbusTCPServer( ost::InetAddress &ia, int port=502 );
 		virtual ~ModbusTCPServer();
 		
-		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, int msecTimeout );
+		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout );
 		
 	protected:
 
@@ -32,7 +32,7 @@ class ModbusTCPServer:
 
 		// realisation (see ModbusServer.h)
 		virtual int getNextData( unsigned char* buf, int len );
-		virtual void setChannelTimeout( int msec );
+		virtual void setChannelTimeout( timeout_t msec );
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len );
 
 		virtual ModbusRTU::mbErrCode tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPHeader& mhead );

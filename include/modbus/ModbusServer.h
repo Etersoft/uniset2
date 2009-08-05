@@ -27,21 +27,21 @@ class ModbusServer
 			\param msecTimeout 	- время ожидания прихода очередного сообщения в мсек.
 			\return Возвращает код ошибки из ModbusRTU::mbErrCode
 		*/
-		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, int msecTimeout )=0;
+		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout )=0;
 
 
 		/*! Установка паузы после посылки 
 			\return старое значение
 		*/
-		int setAfterSendPause( int msec );
+		timeout_t setAfterSendPause( timeout_t msec );
 
 		/*! Установка таймаута на формирование ответа
 			\return старое значение
 		*/
-		int setReplyTimeout( int msec );
+		timeout_t setReplyTimeout( timeout_t msec );
 
 		/*! установить время ожидания по умолчанию */
-		void setRecvTimeout( int msec );
+		void setRecvTimeout( timeout_t msec );
 
 		inline void setCRCNoCheckit( bool set ){ crcNoCheckit = set; }
 		inline bool isCRCNoCheckit(){ return crcNoCheckit; }
@@ -182,7 +182,7 @@ class ModbusServer
 		
 
 		/*! set timeout for receive data */
-		virtual void setChannelTimeout( int msec )=0;
+		virtual void setChannelTimeout( timeout_t msec )=0;
 
 		/*! послать сообщение(ответ) в канал */
 		virtual ModbusRTU::mbErrCode send( ModbusRTU::ModbusMessage& buf );
@@ -194,13 +194,13 @@ class ModbusServer
 		virtual ModbusRTU::mbErrCode processing( ModbusRTU::ModbusMessage& buf );
 
 		/*! принять сообщение из канала */
-		ModbusRTU::mbErrCode recv( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& buf, int timeout );
-		ModbusRTU::mbErrCode recv_pdu( ModbusRTU::ModbusMessage& rbuf, int timeout );
+		ModbusRTU::mbErrCode recv( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& buf, timeout_t timeout );
+		ModbusRTU::mbErrCode recv_pdu( ModbusRTU::ModbusMessage& rbuf, timeout_t timeout );
 
 		UniSetTypes::uniset_mutex recvMutex;
-		int recvTimeOut_ms;		/*!< таймаут на приём */
-		int replyTimeout_ms;	/*!< таймаут на формирование ответа */
-		int aftersend_msec;		/*!< пауза после посылки ответа */
+		timeout_t recvTimeOut_ms;		/*!< таймаут на приём */
+		timeout_t replyTimeout_ms;	/*!< таймаут на формирование ответа */
+		timeout_t aftersend_msec;		/*!< пауза после посылки ответа */
 		bool onBroadcast;		/*!< включен режим работы с broadcst-сообщениями */
 		bool crcNoCheckit;
 

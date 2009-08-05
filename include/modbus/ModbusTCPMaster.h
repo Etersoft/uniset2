@@ -28,10 +28,10 @@ class ModbusTCPMaster:
 		void reconnect();
 
 		virtual int getNextData( unsigned char* buf, int len );
-		virtual void setChannelTimeout( int msec );
+		virtual void setChannelTimeout( timeout_t msec );
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len );
 		virtual ModbusRTU::mbErrCode query( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& msg, 
-											ModbusRTU::ModbusMessage& reply, int timeout );
+											ModbusRTU::ModbusMessage& reply, timeout_t timeout );
 
 	private:
 		ost::TCPStream* tcp;

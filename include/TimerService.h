@@ -139,7 +139,7 @@ class TimerService:
 			UniSetTypes::ConsumerInfo cinf;		/*!<  инфою о заказчике */
 			UniSetObject_i_var ref;				/*!<  ссылка заказчика */
 			UniSetTypes::TimerId id;			/*!<  идентификатор таймера */
-			int curTimeMS;						/*!<  остаток времени */
+			timeout_t curTimeMS;						/*!<  остаток времени */
 			UniSetTypes::Message::Priority priority;	/*!<  приоритет посылаемого сообщения */
 
 			/*!

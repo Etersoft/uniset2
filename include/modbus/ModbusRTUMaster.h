@@ -43,13 +43,13 @@ class ModbusRTUMaster:
 		virtual int getNextData( unsigned char* buf, int len );
 
 		/*! set timeout for send/receive data */
-		virtual void setChannelTimeout( int msec );
+		virtual void setChannelTimeout( timeout_t msec );
 
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len );
 
 		/*! функция запрос-ответ */
 		virtual ModbusRTU::mbErrCode query( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& msg, 
-											ModbusRTU::ModbusMessage& reply, int timeout );
+											ModbusRTU::ModbusMessage& reply, timeout_t timeout );
 
 
 		std::string dev; 		/*!< устройство */

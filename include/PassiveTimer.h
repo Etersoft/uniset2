@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 #include <signal.h>
 #include <sys/time.h>
+#include <cc++/socket.h>
 //#include "Exceptions.h"
 
 
@@ -44,26 +45,34 @@ class UniSetTimer
 		virtual ~UniSetTimer(){};
 	
 		virtual bool checkTime()=0;				/*!< проверка наступления заданного времени */
-		virtual void setTiming( int timeMS )=0; /*!< установить таймер и запустить */
+		virtual timeout_t setTiming( timeout_t timeMS )=0; /*!< установить таймер и запустить */
 		virtual void reset()=0;					/*!< перезапустить таймер */
 
-		virtual int getCurrent()=0; 		/*!< получить текущее значение таймера */
-		virtual int getInterval()=0;		/*!< получить интервал, на который установлен таймер, в мс */
+		virtual timeout_t getCurrent()=0; 		/*!< получить текущее значение таймера */
+		virtual timeout_t getInterval()=0;		/*!< получить интервал, на который установлен таймер, в мс */
+		timeout_t getLeft(timeout_t timeout)		/*< получить время, которое остается от timeout после прошествия времени getCurrent() */
+		{
+			timeout_t ct = getCurrent();
+			if( timeout <= ct )
+				return 0;
+			return timeout - ct;
+		}
 		
 		// объявлены не чисто виртуальными т.к.
 		// некоторые классы могут не иметь подобных
 		// свойств.
-		virtual int wait(int timeMS){ return 0;} 	/*!< заснуть ожидая наступления времени */
+		virtual bool wait(timeout_t timeMS){ return 0;} 	/*!< заснуть ожидая наступления времени */
 		virtual void terminate(){}					/*!< прервать работу таймера */
 		virtual void stop(){ terminate(); };		/*!< завершить работу таймера */
 
 		/*! Время засыпания, до момента пока не будет вызвана функция прерывания
 		 *  terminate() или stop()
 		 */
-		static const int WaitUpTime = -1;
+		static const timeout_t WaitUpTime = TIMEOUT_INF;
 		
 		/*! Минимальное время срабатывания. Задается в мсек. */
-		static const int MIN_QUANTITY_TIME_MS = 30;
+		static const timeout_t MinQuantityTime = 30;
+		static const timeout_t MIN_QUANTITY_TIME_MS = 30; /*< устарело, не использовать! */
 };
 //----------------------------------------------------------------------------------------
 /*! \class PassiveTimer
@@ -82,15 +91,15 @@ class PassiveTimer:
 {
 public:
 	PassiveTimer();
-	PassiveTimer( int timeMS ); 			/*!< установить таймер */
+	PassiveTimer( timeout_t timeMS ); 			/*!< установить таймер */
 	
 
 	virtual bool checkTime();				/*!< проверка наступления заданного времени */
-	virtual void setTiming( int timeMS ); 	/*!< установить таймер и запустить */
+	virtual timeout_t setTiming( timeout_t timeMS ); 	/*!< установить таймер и запустить */
 	virtual void reset();					/*!< перезапустить таймер */
 
-	virtual int getCurrent(); 				/*!< получить текущее значение таймера, в мс */
-	virtual int getInterval()				/*!< получить интервал, на который установлен таймер, в мс */
+	virtual timeout_t getCurrent(); 				/*!< получить текущее значение таймера, в мс */
+	virtual timeout_t getInterval()				/*!< получить интервал, на который установлен таймер, в мс */
 	{
 		return timeSS*10;
 	}
@@ -98,11 +107,12 @@ public:
 	virtual void terminate();				/*!< прервать работу таймера */
 
 protected:
-	int timeAct;	/*!< время срабатывания таймера, в тиках */
-	int timeSS;		/*!< интервал таймера, в сантисекундах */
-	int timeStart;	/*!< время установки таймера (сброса) */
+	clock_t timeAct;	/*!< время срабатывания таймера, в тиках */
+	timeout_t timeSS;		/*!< интервал таймера, в сантисекундах */
+	clock_t timeStart;	/*!< время установки таймера (сброса) */
 private:
-	int clock_ticks; // CLK_TCK
+	clock_t clock_ticks; // Количество тиков в секунду
+	clock_t times(); // Возвращает текущее время в тиках
 };
 
 //----------------------------------------------------------------------------------------
@@ -115,7 +125,7 @@ class omni_condition;
  * \date  $Date: 2007/08/02 22:52:27 $
  * \version $Id: PassiveTimer.h,v 1.9 2007/08/02 22:52:27 vpashka Exp $
  * \par
- * Позволяет заснуть на заданное время wait(int timeMS).
+ * Позволяет заснуть на заданное время wait(timeout_t timeMS).
  * Механизм работает на основе взаимных блокировок потоков (mutex и condition). 
  * \note Если таймер запущен в режиме ожидания (WaitUpTime), то он может быть выведен из него
  * при помощи terminate().
@@ -128,7 +138,7 @@ class ThrPassiveTimer:
 		ThrPassiveTimer();
 		~ThrPassiveTimer();
 
-		virtual int wait(int timeMS);	/*!< блокировать вызывающий поток на заданное время */
+		virtual bool wait(timeout_t timeMS);	/*!< блокировать вызывающий поток на заданное время */
 		virtual void terminate();		/*!< прервать работу таймера */
 	protected:
 	private:
@@ -154,13 +164,13 @@ class PassiveSysTimer:
 		PassiveSysTimer();
 		~PassiveSysTimer();
 
-		virtual int wait(int timeMS); //throw(UniSetTypes::NotSetSignal);
-		virtual void terminate();		
+		virtual bool wait(timeout_t timeMS); //throw(UniSetTypes::NotSetSignal);
+		virtual void terminate();
 		
 	protected:
 
 	private:
-		struct itimerval mtimer;	
+		struct itimerval mtimer;
 		pid_t pid;	
 
 //		bool terminated;

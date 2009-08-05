@@ -89,7 +89,7 @@ void PassiveSysTimer::terminate()
 	}
 }
 // ------------------------------------------------------------------------------------------
-int PassiveSysTimer::wait(int timeMS)
+bool PassiveSysTimer::wait(timeout_t timeMS)
 {
 	pid = getpid();
 

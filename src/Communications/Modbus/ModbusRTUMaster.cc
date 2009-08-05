@@ -98,7 +98,7 @@ int ModbusRTUMaster::getNextData( unsigned char* buf, int len )
 	return port->receiveBlock(buf, len);
 }
 // --------------------------------------------------------------------------------
-void ModbusRTUMaster::setChannelTimeout( int msec )
+void ModbusRTUMaster::setChannelTimeout( timeout_t msec )
 {
 	if( port )
 		port->setTimeout(msec*1000);
@@ -120,7 +120,7 @@ mbErrCode ModbusRTUMaster::sendData( unsigned char* buf, int len )
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusRTUMaster::query( ModbusAddr addr, ModbusMessage& msg, 
-									ModbusMessage& reply, int timeout )
+									ModbusMessage& reply, timeout_t timeout )
 {
 	mbErrCode res = send(msg);
 	if( res!=erNoError )

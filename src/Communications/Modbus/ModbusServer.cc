@@ -28,26 +28,28 @@ ModbusServer::~ModbusServer()
 {
 }
 // -------------------------------------------------------------------------
-void ModbusServer::setRecvTimeout( int msec )
+void ModbusServer::setRecvTimeout( timeout_t msec )
 {
-	if( msec != UniSetTimer::WaitUpTime && msec>=0 )
+	if( msec != UniSetTimer::WaitUpTime )
 		recvTimeOut_ms = msec;
 }
 // -------------------------------------------------------------------------
-int ModbusServer::setReplyTimeout( int msec )
+timeout_t ModbusServer::setReplyTimeout( timeout_t msec )
 {
-	if( msec <= 0 )
+	// #warning "Why msec can be 0?"
+	assert(msec);
+	if( msec == UniSetTimer::WaitUpTime )
 		return replyTimeout_ms;
 
-	int old = replyTimeout_ms;
+	timeout_t old = replyTimeout_ms; // запоминаем текущее значение, чтобы вернуть в конце
 	replyTimeout_ms = msec;
 	tmProcessing.setTiming(replyTimeout_ms);
 	return old;
 }
 // -------------------------------------------------------------------------
-int ModbusServer::setAfterSendPause( int msec )
+timeout_t ModbusServer::setAfterSendPause( timeout_t msec )
 {
-	int old = aftersend_msec;
+	timeout_t old = aftersend_msec;
 	aftersend_msec = msec;
 	return old;
 }
@@ -448,10 +450,11 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 }
 
 // -------------------------------------------------------------------------
-mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, int timeout )
+mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, timeout_t timeout )
 {
-	if( timeout == UniSetTimer::WaitUpTime || timeout<=0 ) 
-		timeout = 15*60*1000; // используем просто большое время (15 минут). Переведя его в наносекунды.
+	assert(timeout);
+	if( timeout == UniSetTimer::WaitUpTime )
+		timeout = 15*60*1000; // используем просто большое время (15 минут), переведя его в наносекунды.
 
 	setChannelTimeout(timeout);
 	PassiveTimer tmAbort(timeout);
@@ -505,7 +508,7 @@ mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, i
 }
 
 // -------------------------------------------------------------------------
-mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, int timeout )
+mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 {
 	int bcnt = 1; // 1 - addr
 	try

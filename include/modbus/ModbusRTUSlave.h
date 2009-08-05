@@ -32,13 +32,13 @@ class ModbusRTUSlave:
 		void setSpeed( const std::string s );
 		ComPort::Speed getSpeed();
 
-		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, int msecTimeout );
+		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout );
 		
 	protected:
 
 		// realisation (see ModbusServer.h)
 		virtual int getNextData( unsigned char* buf, int len );
-		virtual void setChannelTimeout( int msec );
+		virtual void setChannelTimeout( timeout_t msec );
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len );
 
 		std::string dev;	/*!< устройство */

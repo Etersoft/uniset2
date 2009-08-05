@@ -51,13 +51,13 @@ class IONotifyController_LT:
 			\return Возвращает время [мсек] оставшееся до срабатывания
 			очередного таймера
 		*/
-		void askTimer( UniSetTypes::TimerId timerid, long timeMS, short ticks=-1,
+		void askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, short ticks=-1,
 						UniSetTypes::Message::Priority p=UniSetTypes::Message::High );
 
 		/*! функция вызываемая из потока */
 		virtual void callback();
 
-		int sleepTime;
+		timeout_t sleepTime;
 		LT_Object lt;
 	private:
 

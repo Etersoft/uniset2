@@ -49,7 +49,7 @@ clock_ticks(sysconf(_SC_CLK_TCK))
 
 //------------------------------------------------------------------------------
 
-PassiveTimer::PassiveTimer( int timeMS ):
+PassiveTimer::PassiveTimer( timeout_t timeMS ):
 timeAct(0),
 timeSS(0),
 timeStart(0),

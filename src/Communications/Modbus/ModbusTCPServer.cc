@@ -22,27 +22,27 @@ ModbusTCPServer::~ModbusTCPServer()
 {
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, int timeout )
+mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout )
 {
 	PassiveTimer ptTimeout(timeout);
 	ModbusMessage buf;
 	mbErrCode res = erTimeOut;
 	
 //	Thread::setException(Thread::throwException);
-	if( timeout<=0 || timeout == UniSetTimer::WaitUpTime )
-		timeout = TIMEOUT_INF;
+//#warning "Why timeout can be 0 there?"
+	assert(timeout);
 	
 	ptTimeout.reset();
 	try 
 	{
-		if( isPendingConnection(timeout) ) 
+		if( isPendingConnection(timeout) )
 		{
 			tcp.connect(*this);
 
-			if( timeout != TIMEOUT_INF )
+			if( timeout != UniSetTimer::WaitUpTime )
 			{
-				timeout -= ptTimeout.getCurrent();
-				if( timeout <=0 )
+				timeout = ptTimeout.getLeft(timeout);
+				if( timeout == 0 )
 				{
 					tcp.disconnect();
 					return erTimeOut;
@@ -61,22 +61,21 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, int timeout )
 					return res;
 				}
 
-				if( timeout != TIMEOUT_INF )
+				if( timeout != UniSetTimer::WaitUpTime )
 				{
-					timeout -= ptTimeout.getCurrent();
-					if( timeout <=0 )
+					timeout = ptTimeout.getLeft(timeout);
+					if( timeout == 0 )
 					{
 						tcp.disconnect();
 						return erTimeOut;
 					}
 				}
 
-				int msec = (timeout != TIMEOUT_INF) ? timeout : UniSetTimer::WaitUpTime;
 				do
 				{
 					// buf.addr = curQueryHeader.uID;
 					// res = recv_pdu(buf,mec);
-					res = recv( addr, buf, msec );
+					res = recv( addr, buf, timeout );
 
 					if( res!=erNoError && res!=erBadReplyNodeAddress )
 					{
@@ -92,10 +91,10 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, int timeout )
 						return res;
 					}
 					
-					if( timeout != TIMEOUT_INF )
+					if( timeout != UniSetTimer::WaitUpTime )
 					{
-						timeout -= ptTimeout.getCurrent();
-						if( timeout <=0 )
+						timeout = ptTimeout.getLeft(timeout);
+						if( timeout == 0 )
 						{
 							tcp.disconnect();
 							return erTimeOut;
@@ -125,7 +124,7 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, int timeout )
 }
 
 // --------------------------------------------------------------------------------
-void ModbusTCPServer::setChannelTimeout( int msec )
+void ModbusTCPServer::setChannelTimeout( timeout_t msec )
 {
 	tcp.setTimeout(msec);
 }

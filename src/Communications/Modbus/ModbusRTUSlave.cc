@@ -62,7 +62,7 @@ ModbusRTUSlave::~ModbusRTUSlave()
 		delete port;
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, int timeout )
+mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout )
 {
 	uniset_mutex_lock lck(recvMutex,timeout);
 	ModbusMessage buf;
@@ -127,7 +127,7 @@ int ModbusRTUSlave::getNextData( unsigned char* buf, int len )
 	return port->receiveBlock(buf, len);
 }
 // --------------------------------------------------------------------------------
-void ModbusRTUSlave::setChannelTimeout( int msec )
+void ModbusRTUSlave::setChannelTimeout( timeout_t msec )
 {
 	if( msec == UniSetTimer::WaitUpTime )
 		port->setTimeout(15*60*1000*1000); // используем просто большое время (15 минут). Переведя его в наносекунды.

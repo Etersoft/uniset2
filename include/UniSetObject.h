@@ -132,7 +132,7 @@ class UniSetObject:
 			inline void terminate(){ disactivate(); }
 
 			/*! Ожидать сообщения timeMS */
-			virtual bool waitMessage(UniSetTypes::VoidMessage& msg, int timeMS=UniSetTimer::WaitUpTime);		
+			virtual bool waitMessage(UniSetTypes::VoidMessage& msg, timeout_t timeMS=UniSetTimer::WaitUpTime);
 
 			void setID(UniSetTypes::ObjectId id);
 

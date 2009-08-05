@@ -67,7 +67,7 @@ void UniSetObject_LT::callback()
 	}
 }
 // ------------------------------------------------------------------------------------------
-void UniSetObject_LT::askTimer( UniSetTypes::TimerId timerid, long timeMS, short ticks, UniSetTypes::Message::Priority p )
+void UniSetObject_LT::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, short ticks, UniSetTypes::Message::Priority p )
 {
 	// проверяйте возвращаемое значение
 	if( lt.askTimer(timerid, timeMS, ticks, p) != UniSetTimer::WaitUpTime )

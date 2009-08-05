@@ -191,11 +191,10 @@ void TimerService::work()
 	bool resort = false;
 	terminate = false;
 //	TimerInfo* ti;
-	int sleepTime(UniSetTimer::MIN_QUANTITY_TIME_MS);	// мс
 
 	while(!terminate)
 	{
-		sleepTime = UniSetTimer::MIN_QUANTITY_TIME_MS; // мс
+		timeout_t sleepTime = UniSetTimer::MinQuantityTime; // мс
 		{	// lock
 			uniset_mutex_lock lock(lstMutex, 5000);
 			resort = false;
@@ -251,9 +250,10 @@ void TimerService::work()
 				}
 				else
 				{
-					li->curTimeMS -= sleepTime; 
-					if( li->curTimeMS < 0)
+					if( li->curTimeMS < sleepTime)
 						li->curTimeMS = 0;
+					else
+						li->curTimeMS -= sleepTime; 
 
 				}
 				
@@ -270,8 +270,8 @@ void TimerService::work()
 			if( resort )	// пересортировываем в связи с обновлением списка
 				tlst.sort();
 			
-			if( sleepTime < UniSetTimer::MIN_QUANTITY_TIME_MS )
-				sleepTime=UniSetTimer::MIN_QUANTITY_TIME_MS;
+			if( sleepTime < UniSetTimer::MinQuantityTime )
+				sleepTime=UniSetTimer::MinQuantityTime;
 
 		} // unlock
 
