@@ -208,11 +208,10 @@ namespace UniSetTypes
 	/// Преобразование строки в число (воспринимает префикс 0, как 8-ное, префикс 0x, как 16-ное, минус для отриц. чисел)
 	inline int uni_atoi( const char* str )
 	{
-		if ( str == NULL)
-			return 0;
+		int n = 0; // if str is NULL or sscanf failed, we return 0
 
-		unsigned int n;
-		std::sscanf(str, "%i", &n);
+		if ( str != NULL )
+			std::sscanf(str, "%i", &n);
 		return n;
 	}
 	inline int uni_atoi( const std::string str )
