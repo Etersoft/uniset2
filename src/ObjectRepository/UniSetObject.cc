@@ -336,7 +336,7 @@ struct MsgInfo
 };
 
 // ------------------------------------------------------------------------------------------
-bool UniSetObject::waitMessage(VoidMessage& vm, int timeMS)
+bool UniSetObject::waitMessage(VoidMessage& vm, timeout_t timeMS)
 {
 	if( receiveMessage(vm) )
 		return true;
