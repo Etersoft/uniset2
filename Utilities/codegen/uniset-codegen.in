@@ -30,7 +30,7 @@ EOF
 }
 
 #parse command line options
-TEMP=`getopt -n $PROG -o h,n:,m:,a,l -l help,name:,main:,no-main,topdir:,alone,ask,local,local-include,add-cc-include,add-hh-include -- "$@"` || exit 1
+TEMP=`getopt -n $PROG -o h,n:,m:,a,l -l help,name:,main:,no-main,topdir:,path:,alone,ask,local,local-include,add-cc-include,add-hh-include -- "$@"` || exit 1
 eval set -- "$TEMP"
 
 name=
@@ -44,6 +44,7 @@ ask=
 localinc=0
 add_cc_inc=
 add_hh_inc=
+xsltpath=
 
 xls_h="ctl-cpp-h.xsl"
 xls_c="ctl-cpp-cc.xsl"
@@ -98,6 +99,16 @@ while :; do
 		xsltdir=.
 		;;
 
+	--xsltdir)
+		shift
+		xsltdir="$1"
+		;;
+
+	--path)
+		shift
+		xsltpath="--path $1"
+		;;
+
 	--) shift; break
 	;;
 	*) "unrecognized option: $1"
@@ -135,6 +146,7 @@ PARAMS=$( echo \
 		--stringparam XML_FILENAME "${fname}" \
 		--stringparam CNAME "${name}" \
 		--stringparam LOCALINC "${localinc}" \
+		$xsltpath \
 		)
 #		--stringparam ADD_CC_INC "${add_cc_inc}" \
 #		--stringparam ADD_HH_INC "${add_hh_inc}" \
