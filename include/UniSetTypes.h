@@ -205,17 +205,14 @@ namespace UniSetTypes
 	long setoutregion(long raw, long rawMin, long rawMax);
 
 
-	/// Преобразование строки в число (если префикс 0x, воспринимаем число 16-ным)
+	/// Преобразование строки в число (воспринимает префикс 0, как 8-ное, префикс 0x, как 16-ное, минус для отриц. чисел)
 	inline int uni_atoi( const char* str )
 	{
 		if ( str == NULL)
 			return 0;
 
-		if (strlen(str) < 3 || toupper(str[1]) != 'X')
-			return std::atoi(str);
-
 		unsigned int n;
-		std::sscanf(str,"%x",&n);
+		std::sscanf(str, "%i", &n);
 		return n;
 	}
 	inline int uni_atoi( const std::string str )
