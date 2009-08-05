@@ -702,22 +702,6 @@ bool MBSlave::initItem( UniXML_iterator& it )
 	else if( am == "rw" )
 		p.amode = MBSlave::amRW;
 
-<<<<<<< HEAD:extensions/ModbusSlave/MBSlave.cc
-=======
-	string f = it.getProp("mbfunc");
-	if( !f.empty() )
-	{
-		p.mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f);
-		if( p.mbfunc == ModbusRTU::fnUnknown )
-		{
-			dlog[Debug::CRIT] << myname << "(initItem): Неверный mbfunc ='" << f
-					<< "' для  датчика " << it.getProp("name") << endl;
-
-			return false;
-		}
-	}
-
->>>>>>> use uni_atoi string instead c_str() in each call:extensions/ModbusSlave/MBSlave.cc
 	iomap[p.mbreg] = p;
 	
 	if( dlog.debugging(Debug::INFO) )
