@@ -10,5 +10,9 @@ include $(top_builddir)/conf/common.mk
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSet.pc
 
+# Hack for fix build order
 all-local:
-	$(MAKE) -C $(FIRSTSUBDIRS)
+	$(MAKE) -C $(FIRSTSUBDIRS) -j1 all
+
+clean-local:
+	$(MAKE) -C $(FIRSTSUBDIRS) clean
