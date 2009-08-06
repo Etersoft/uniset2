@@ -2,7 +2,7 @@
 
 export LD_LIBRARY_PATH="../../lib/.libs;../lib/.libs"
 
-ulimit -Sc 1000000000000
+ulimit -Sc 10000000000
 
 ./uniset-start.sh -f ./uniset-smemory --smemory-id SharedMemory \
 --confile test.xml --datfile test.xml \

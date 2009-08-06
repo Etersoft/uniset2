@@ -48,7 +48,7 @@ AC_SUBST(COMCPP_LIBS)
 
 # export
 LDFLAGS="${OMNI_LIBS} ${XML_LIBS}"
-CXXFLAGS="-pedantic -Wall -funsigned-char -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} -I\$(top_builddir)/include"
+CXXFLAGS="-pedantic -Wall -funsigned-char -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} -I\$(top_builddir)/include"
 
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
