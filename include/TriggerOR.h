@@ -87,10 +87,10 @@ class TriggerOR
 		
 
 		bool getState(InputType in);
-		bool commit(InputType in, bool state);	
+		bool commit(InputType in, bool state);
 
-		void add(InputType in, bool state);		
-		void remove(InputType in);				
+		void add(InputType in, bool state);
+		void remove(InputType in);
 
 		typedef std::map<InputType, bool> InputMap;
 
@@ -104,7 +104,7 @@ class TriggerOR
 			return inputs.end();
 		}
 
-		void update();		
+		void update();
 		void reset();
 
 	protected:

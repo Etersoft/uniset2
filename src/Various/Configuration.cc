@@ -318,7 +318,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 			new_argv[i] = "-ORBInitRef";
 
 			string name(oind->getRealNodeName(it->id));
-			ostringstream param;	
+			ostringstream param;
 			param << name << "=corbaname::" << it->host << ":" << it->port;
 			new_argv[i+1] = strdup(param.str().c_str());
 

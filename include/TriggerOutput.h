@@ -85,7 +85,7 @@ class TriggerOutput
 			\param out - идентификатор 'выхода'
 			\param val - новое значение
 		*/
-		typedef void(Caller::* Action)(OutIdType out, ValueType val);	
+		typedef void(Caller::* Action)(OutIdType out, ValueType val);
 	
 		TriggerOutput(Caller* r, Action a);
 		~TriggerOutput();
@@ -98,16 +98,16 @@ class TriggerOutput
 			\param out - идентификатор 'выхода'
 			\param val - новое значение
 		*/
-		void set(OutIdType out, ValueType val);	
+		void set(OutIdType out, ValueType val);
 
 		/*! добавить новый 'выход' и установить начальное значение.
 			\param out - идентификатор 'выхода'
 			\param val - новое значение
 		*/
-		void add(OutIdType out, ValueType val);		
+		void add(OutIdType out, ValueType val);
 
 		/*! удалить указанный 'выход' */
-		void remove(OutIdType out);				
+		void remove(OutIdType out);
 
 		void update();
 		void reset();

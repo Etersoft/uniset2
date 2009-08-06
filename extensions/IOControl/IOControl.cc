@@ -742,7 +742,7 @@ void IOControl::initIOCard()
 		try
 		{	
 			// конфигурировать необходимо только дискретные входы/выходы
-			// или "лампочки" (т.к. они фиктивные аналоговыек датчики)
+			// или "лампочки" (т.к. они фиктивные аналоговые датчики)
 			if( it->lamp )
 				card->configureChannel(it->subdev,it->channel,ComediInterface::DO);
 			else if( it->stype == UniversalIO::DigitalInput )

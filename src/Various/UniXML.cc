@@ -39,6 +39,12 @@
 using namespace UniSetTypes;
 using namespace std;
 
+/* FIXME:
+По хорошему, надо отказаться от этого перекодирования
+на ходу, потому что в поиске это наверняка чрезвычайно замедляет.
+Возможно стоит использовать в качестве основы libxmlmm.
+Перед переделкой нужно написать полный тест на все функции UniXML.
+*/
 const string UniXML::InternalEncoding("koi8-r");
 const string UniXML::ExternalEncoding("koi8-r");
 const string UniXML::xmlEncoding("utf-8");

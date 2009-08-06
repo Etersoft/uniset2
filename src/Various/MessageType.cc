@@ -198,7 +198,7 @@ character(ch),
 broadcast(true),
 route(false)
 {
-	this->node = node;			
+	this->node = node;
 	type = Message::Info;
 	this->priority = priority;
 	this->consumer = consumer;
