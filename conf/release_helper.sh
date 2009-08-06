@@ -27,7 +27,7 @@ prepare_tarball()
 
 	NAMEVER=$BASENAME-$VERSION
 	WDPROJECT=$(pwd)
-	TARNAME=$NAMEVER.tar.bz2
+	TARNAME=$NAMEVER.tar
 	DESTDIR=$TMPDIR/$NAMEVER
 	RET=0
 
@@ -42,7 +42,7 @@ prepare_tarball()
 		rm -rf .gear
 		echo "Make tarball $TARNAME ... from $DESTDIR"
 		mkdir -p $RPMSOURCEDIR/
-		$NICE tar cfj $RPMSOURCEDIR/$TARNAME ../$NAMEVER $ETERTARPARAM || RET=1
+		$NICE tar cf $RPMSOURCEDIR/$TARNAME ../$NAMEVER $ETERTARPARAM || RET=1
 		rm -rf $DESTDIR
 	cd -
 
