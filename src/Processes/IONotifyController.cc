@@ -196,14 +196,16 @@ void IONotifyController::askState( const IOController_i::SensorInfo& si,
 	// не может обратится к этому контроллеру по ссылке на другой датчик
 	// (ведь ссылка на датчик это ссылка на контроллер который за него отвечает)
 	// контроль заказа типа датчика(дискретного) здесь производится
-	string name = conf->oind->getNameById(ci.id, ci.node);
-	if( unideb.debugging(Debug::INFO) )	
-		unideb[Debug::INFO] << "поступил заказ от "<< name << " на дискретный датчик "
+	if( unideb.debugging(Debug::INFO) )
+	{
+		unideb[Debug::INFO] << "поступил заказ от "
+			<< conf->oind->getNameById(ci.id, ci.node) << " на дискретный датчик "
 			<< conf->oind->getNameById(si.id,si.node) << endl;
+	}
 	
 	// если такого дискретного датчика нет, здесь сработает исключение...
 	DIOStateList::iterator li = mydioEnd();
-
+	bool st = localGetState(li,si);
 	// lock ???
 	if( li==mydioEnd() )
 	{
@@ -253,11 +255,12 @@ void IONotifyController::askState( const IOController_i::SensorInfo& si,
 		}
 		catch(Exception& ex)
 		{
-		   	unideb[Debug::WARN] << myname << "(askState): " << name << " "<< ex << endl;
+		   	unideb[Debug::WARN] << myname << "(askState): " 
+		   		<< conf->oind->getNameById(si.id, si.node) << " "<< ex << endl;
 		}
 	    catch( CORBA::SystemException& ex )
 	    {
-    		unideb[Debug::WARN] << name << " недоступен!!(CORBA::SystemException): "
+    		unideb[Debug::WARN] << conf->oind->getNameById(ci.id, ci.node) << " недоступен!!(CORBA::SystemException): "
 				<< ex.NP_minorString() << endl;
 	    }
 		catch(...){}
@@ -278,19 +281,21 @@ void IONotifyController::askValue(const IOController_i::SensorInfo& si,
 	// (ведь ссылка на датчик это ссылка на контроллер который за него отвечает)
 	// контроль заказа именно АНАЛОГОВО датчика производится
 
-	string name = conf->oind->getNameById(ci.id, ci.node);
 	if( unideb.debugging(Debug::INFO) )	
 	{
-		unideb[Debug::INFO] << "поступил заказ от "<< name << " на аналоговый датчик "
+		unideb[Debug::INFO] << "поступил заказ от "<< conf->oind->getNameById(ci.id, ci.node)
+			<< " на аналоговый датчик "
 			<< conf->oind->getNameById(si.id,si.node) << endl;
 	}
 	
 	// если такого аналогового датчика нет, здесь сработает исключение...
 	AIOStateList::iterator li = myaioEnd();
+	long val = localGetValue(li,si);
 	if( li->second.type != UniversalIO::AnalogInput )
 	{
 		ostringstream err;
-		err << myname << "(askState): ВХОДНОЙ АНАЛОГОВЫЙ ДАТЧИК с именем " << conf->oind->getNameById(si.id) << " не найден";
+		err << myname << "(askState): ВХОДНОЙ АНАЛОГОВЫЙ ДАТЧИК с именем " << conf->oind->getNameById(si.id) 
+			<< " не найден";
 		if( unideb.debugging(Debug::INFO) )	
 			unideb[Debug::INFO] << err.str() << endl;
 		throw IOController_i::NameNotFound(err.str().c_str());
@@ -331,11 +336,12 @@ void IONotifyController::askValue(const IOController_i::SensorInfo& si,
 		}
 		catch(Exception& ex)
 		{
-		   	unideb[Debug::WARN] << myname << "(askValue): " <<  name << " catch "<< ex << endl;
+		   	unideb[Debug::WARN] << myname << "(askValue): " <<  conf->oind->getNameById(si.id, si.node) << " catch "<< ex << endl;
 		}
 	    catch( CORBA::SystemException& ex )
 	    {
-	    	unideb[Debug::WARN] << name << " недоступен!!(CORBA::SystemException): "
+	    	unideb[Debug::WARN] << conf->oind->getNameById(ci.id, ci.node) 
+	    		<< " недоступен!!(CORBA::SystemException): "
 				<< ex.NP_minorString() << endl;
 	    }	
 		catch(...){}
