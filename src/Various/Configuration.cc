@@ -869,21 +869,25 @@ void Configuration::setConfFileName( const string fn )
 	}
 }
 // -------------------------------------------------------------------------
-string Configuration::getPort()
+string Configuration::getPort(const string port)
 {
-	// ?????? ????????? ??????
+	// Порт задан в параметрах программы
 	string defport(getArgParam("--uniset-port"));
 	if( !defport.empty() )
 		return defport;
 
-	// ????? ?????????? ?????????
+	// Порт задан в переменной окружения
 	if( getenv("UNISET_PORT") != NULL )
 	{
 		defport = getenv("UNISET_PORT");
 		return defport;
 	}
 
-	// ????? default
+	// Порт задан в параметрах
+	if( !port.empty() )
+		return port;
+
+	// Порт по умолчанию
 	return UniSetDefaultPort;
 }
 // -------------------------------------------------------------------------

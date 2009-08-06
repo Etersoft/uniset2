@@ -176,7 +176,7 @@ namespace UniSetTypes
 		void initParameters();
 		void setLocalNode( std::string nodename );
 		
-		std::string getPort();
+		std::string getPort(const std::string port="");
 			
 		friend class ::SystemGuard;
 //		friend bool SystemGuard::pingNode();
