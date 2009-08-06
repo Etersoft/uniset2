@@ -162,6 +162,7 @@ AC_CONFIG_FILES([Makefile
 				 include/Makefile
 				 include/modbus/Makefile
 				 include/IOs/Makefile
+				 tests/Makefile
 				 docs/Makefile
 				 docs/UniSetDox.cfg
 				 docs/UniSetDoxDevel.cfg
