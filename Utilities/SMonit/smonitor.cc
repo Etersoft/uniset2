@@ -24,10 +24,9 @@ int main( int argc, const char **argv )
 		uniset_init(argc,argv,"configure.xml");
 
 		ObjectId ID(DefaultObjectId);
-		string name = conf->getArgParam("--name");
-		if( name.empty() )
-			name = "TestProc";
-		ID = conf->getObjectID(name);	
+		string name = conf->getArgParam("--name", "TestProc");
+
+		ID = conf->getObjectID(name);
 		if( ID == UniSetTypes::DefaultObjectId )
 		{
 			cerr << "(main): идентификатор '" << name 

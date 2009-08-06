@@ -190,7 +190,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 	char curdir[FILENAME_MAX];
 	getcwd(curdir,FILENAME_MAX);
 
-	rootDir = curdir + string("/");
+	rootDir = string(curdir) + "/";
 	UniSetTypes::conf = this;
 
 	try
@@ -281,13 +281,13 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 //		localIOR = false; // ??. initParameters()
 		string lior( getArgParam("--localIOR") );
 		if( !lior.empty() )
-			localIOR = atoi(lior.c_str());
+			localIOR = uni_atoi(lior);
 
 		// transientIOR
 //		transientIOR = false; // ??. initParameters()
 		string tior( getArgParam("--transientIOR") );
 		if( !tior.empty() )
-			transientIOR = atoi(tior.c_str());
+			transientIOR = uni_atoi(tior);
 
 		if( imagesDir[0]!='/' && imagesDir[0]!='.' )
 			imagesDir = dataDir + imagesDir + "/";
