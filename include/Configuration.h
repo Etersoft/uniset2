@@ -130,7 +130,11 @@ namespace UniSetTypes
 		inline bool isLocalIOR(){ return localIOR; }
 		inline bool isTransientIOR(){ return transientIOR; }
 		
+		/*! получить значение указанного параметра, или значение по умолчанию */
 		std::string getArgParam(const std::string name, const std::string defval="");
+		/*! получить числовое значение параметра, если не число, то 0 */
+		int getArgInt(const std::string name, const std::string defval="");
+
 		xmlNode* initDebug( DebugStream& deb, const std::string& nodename );
 
 		UniSetTypes::ListOfNode::const_iterator listNodesBegin()
