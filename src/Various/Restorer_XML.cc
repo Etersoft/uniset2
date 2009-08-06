@@ -216,7 +216,7 @@ xmlNode* Restorer_XML::find_node( UniXML& xml, xmlNode* root,
 				if( nm.empty() )
 					return it;
 				
-				if( xml.getProp(it, "name")==nm )
+				if( xml.getProp(it, "name") == nm )
 					return it;
 			}
 		}

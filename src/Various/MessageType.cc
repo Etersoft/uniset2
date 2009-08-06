@@ -130,7 +130,7 @@ ci(ci),
 threshold(false),
 tid(UniSetTypes::DefaultThresholdId)
 {
-	state = value!=0 ? true:false;
+	state = value != 0;
 	type			= Message::SensorInfo;
 	this->priority 	= priority;
 	this->consumer 	= consumer;	

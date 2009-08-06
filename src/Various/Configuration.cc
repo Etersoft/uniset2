@@ -243,7 +243,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 		// Init MessageInterface
 		{
 			xmlNode* cnode = unixml.findNode(unixml.getFirstNode(),"messages");
-			if( !cnode )
+			if( cnode == NULL )
 				mi = new DefaultMessageInterface();
 			else
 			{
@@ -713,7 +713,7 @@ void Configuration::initNode( UniSetTypes::NodeInfo& ninfo, UniXML_iterator& it 
 string Configuration::getPropByNodeName(const string& nodename, const string& prop)
 {
 	xmlNode* node = getNode(nodename);
-	if(!node)
+	if(node == NULL)
 		return "";
 
 	return getProp(node,prop);
@@ -730,7 +730,7 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
 	string debname(_debname);
 
 	xmlNode* dnode = conf->getNode(_debname);
-	if( !dnode )
+	if( dnode == NULL )
 	{
 		deb << "(Configuration)(initDebug):  WARNING! не нашли раздела " << _debname << endl;
 		// тогда считаем, что задано название самого DebugStream
@@ -741,13 +741,13 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
 			debname = getProp(dnode,"name");
 	}
 
-	string no_deb("--"+debname+"-no-debug");		
+	string no_deb("--"+debname+"-no-debug");
 	for (int i=1; i<_argc; i++)
 	{
-		if( !strcmp(_argv[i],no_deb.c_str()) )
+		if( no_deb == _argv[i] )
 		{
 			deb.addLevel(Debug::NONE);
-			return dnode;			
+			return dnode;
 		}
 	}
 
@@ -794,7 +794,7 @@ void Configuration::initRepSections()
 {
 	// Реализация под жёсткую структуру репозитория
 	xmlNode* node( unixml.findNode(unixml.getFirstNode(),"RootSection") );
-	if( node==0 )
+	if( node == NULL )
 	{
 		ostringstream msg;
 		msg << "Configuration(initRepSections): не нашли параметр RootSection в конф. файле " << fileConfName;
@@ -812,7 +812,7 @@ void Configuration::initRepSections()
 string Configuration::getRepSectionName( const string sec, xmlNode* secnode )
 {
 	xmlNode* node = unixml.findNode(unixml.getFirstNode(),sec);
-	if( node==0 )
+	if( node == NULL )
 	{
 		ostringstream msg;
 		msg << "Configuration(initRepSections): не нашли секцию " << sec << " в конф. файле " << fileConfName;

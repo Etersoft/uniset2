@@ -354,9 +354,9 @@ bool UniXML_iterator::goNext()
 		return false;
 
 	curNode = curNode->next;
-	if ( getName() == string("text") )
+	if ( getName() == "text" )
 		return goNext();
-	if ( getName() == string("comment") )
+	if ( getName() == "comment" )
 		return goNext();
 	return true;
 }
@@ -367,9 +367,9 @@ bool UniXML_iterator::goThrowNext()
 	if (!node)
 		return false;
 	curNode = node;
-	if ( getName() == string("text") )
+	if ( getName() == "text" )
 		return goThrowNext();
-	if ( getName() == string("comment") )
+	if ( getName() == "comment" )
 		return goThrowNext();
 	return true;
 }
@@ -379,9 +379,9 @@ bool UniXML_iterator::goPrev()
 	if( !curNode ) // || !curNode->prev )
 		return false;
 	curNode = curNode->prev;
-	if ( getName() == string("text") )
+	if ( getName() == "text" )
 		return goPrev();
-	if ( getName() == string("comment") )
+	if ( getName() == "comment" )
 		return goPrev();
 	return true;
 }
@@ -420,11 +420,11 @@ bool UniXML_iterator::goChildren()
 	xmlNode* tmp(curNode);
 	curNode = curNode->children;
 	// использовать везде xmlIsBlankNode, если подходит
-	if ( getName() == string("text") )
+	if ( getName() == "text" )
 		return goNext();
-	if ( getName() == string("comment") )
+	if ( getName() == "comment" )
 		return goNext();
-	if ( getName() == string("") )
+	if ( getName().empty() )
 	{
 		curNode = tmp;
 		return false;

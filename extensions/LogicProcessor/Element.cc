@@ -29,7 +29,7 @@ void Element::addChildOut( Element* el, int num )
 
 	// ÐÒÏ×ÅÒËÁ ÎÁ ÃÉËÌÉÞÅÓËÕÀ ÚÁ×ÉÓÉÍÏÓÔØ
 	// el ÎÅ ÄÏÌÖÅÎ ÓÏÄÅÒÖÁÔØ × Ó×ÏÉÈ ÐÏÔÏÍËÁÈ myid
-	if( el->find(myid) != 0 )
+	if( el->find(myid) != NULL )
 	{
 		ostringstream msg;
 		msg << "(" << myid << "):  ðïðùôëá óïúäáôø ãéëìéþåëõà úá÷éóéíïóôø!!!\n";
@@ -74,7 +74,7 @@ Element* Element::find( ElementID id )
 			return it->el;
 		
 		Element* el( it->el->find(id) );
-		if( el != 0 )
+		if( el != NULL )
 			return el;
 	}
 	
