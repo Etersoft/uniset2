@@ -220,7 +220,7 @@ const DebugStream& DebugStream::operator=( const DebugStream& r )
 }
 //--------------------------------------------------------------------------
 /// Sets the debugstreams' logfile to f.
-void DebugStream::logFile(char const * f)
+void DebugStream::logFile(const std::string f)
 {
 	fname = f;
 	if (internal) {
@@ -228,7 +228,7 @@ void DebugStream::logFile(char const * f)
 	} else {
 		internal = new debugstream_internal;
 	}
-	internal->fbuf.open(f, ios::out|ios::app);
+	internal->fbuf.open(f.c_str(), ios::out|ios::app);
 	delete rdbuf(new teebuf(cerr.rdbuf(),
 				&internal->fbuf));
 }
