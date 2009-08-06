@@ -341,15 +341,9 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 			new_argv[i] = "-ORBInitRef";
 
 			new_argv[i+1] 	= ""; // сперва инициализиуем пустой строкой (т.к. будет вызываться getArgParam)
-			string defPort( getPort() ); // здесь вызывается getArgParam! проходящий по _argv
+			string defPort( getPort( getProp(nsnode,"port") ) ); // здесь вызывается getArgParam! проходящий по _argv
 
-			if( defPort == UniSetDefaultPort )
-				defPort = getProp(nsnode,"port");
-		
-			if( defPort.empty() )
-				defPort = UniSetDefaultPort;
-
-			ostringstream param;	
+			ostringstream param;
 			param <<"NameService=corbaname::" << getProp(nsnode,"host") << ":" << defPort;
 			new_argv[i+1] = strdup(param.str().c_str());
 			if( unideb.debugging(Debug::INFO) )
@@ -616,17 +610,10 @@ void Configuration::createNodesList()
 	}
 
 	UniXML_iterator it(node);
-	it.goChildren();	
+	it.goChildren();
 
 	// определяем порт
-	string defPort(getPort());
-
-	if( defPort == UniSetDefaultPort )
-		defPort = unixml.getProp(node,"port");
-
-	// потом конст.
-	if( defPort.empty() )
-		defPort = UniSetDefaultPort;
+	string defPort(getPort(unixml.getProp(node,"port")));
 
 	lnodes.clear();
 	for( ;it;it.goNext() )
