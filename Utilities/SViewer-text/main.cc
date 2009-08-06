@@ -36,10 +36,10 @@ int main(int argc, const char **argv)
 		for(int i=0; i<size; i++)
 			cout << "id=" << seq[i].si.id << " val=" << seq[i].value << endl;
 */			
-		bool fullname = atoi(conf->getArgParam("--fullname").c_str());
+		bool fullname = conf->getArgInt("--fullname");
 
 		SViewer sv(conf->getControllersSection(),!fullname);
-		int timeMS = atoi(conf->getArgParam("--polltime").c_str());
+		timeout_t timeMS = conf->getArgInt("--polltime");
 		if( timeMS )
 		{
 			cout << "(main): просматриваем с периодом " << timeMS << "[мсек]" <<  endl;

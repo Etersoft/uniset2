@@ -512,26 +512,26 @@ activated(false)
 	</xsl:if>
 	</xsl:for-each>
 	
-	sleep_msec = atoi(conf->getArgParam("--sleep-msec","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>").c_str());
+	sleep_msec = conf->getArgInt("--sleep-msec","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>");
 	if( sleep_msec &lt;=0 )
 		sleep_msec = <xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>;
 
-	resetMsgTime = atoi(conf->getProp(cnode,"resetMsgTime").c_str());
+	resetMsgTime = uni_atoi(conf->getProp(cnode,"resetMsgTime"));
 	if( resetMsgTime &lt;= 0 )
 		resetMsgTime = 200;
 	ptResetMsg.setTiming(resetMsgTime);
 
-	smReadyTimeout = atoi(conf->getArgParam("--sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>").c_str());
+	smReadyTimeout = conf->getArgInt("--sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
 	if( smReadyTimeout == 0 )
 		smReadyTimeout = 60000;
 	else if( smReadyTimeout &lt; 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 
-	activateTimeout	= atoi(conf->getArgParam("--activate-timeout").c_str());
+	activateTimeout	= conf->getArgInt("--activate-timeout");
 	if( activateTimeout&lt;=0 )
 		activateTimeout = 20000;
 
-	int msec = atoi(conf->getArgParam("--startup-timeout").c_str());
+	int msec = conf->getArgInt("--startup-timeout");
 	if( msec&lt;=0 )
 		msec = 10000;
 	ptStartUpTimeout.setTiming(msec);
@@ -709,26 +709,26 @@ activated(false)
 	</xsl:call-template>
 </xsl:for-each>
 
-	sleep_msec = atoi(conf->getArgParam("--sleep-msec","<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>").c_str());
+	sleep_msec = conf->getArgInt("--sleep-msec","<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>");
 	if( sleep_msec &lt;=0 )
 		sleep_msec = <xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>;
 
-	resetMsgTime = atoi(conf->getProp(cnode,"resetMsgTime").c_str());
+	resetMsgTime = uni_atoi(conf->getProp(cnode,"resetMsgTime"));
 	if( resetMsgTime &lt;= 0 )
 		resetMsgTime = 0;
 	ptResetMsg.setTiming(resetMsgTime);
 
-	smReadyTimeout = atoi(conf->getArgParam("--sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>").c_str());	
+	smReadyTimeout = conf->getArgInt("--sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
 	if( smReadyTimeout == 0 )
 		smReadyTimeout = 60000;
 	else if( smReadyTimeout &lt; 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 
-	activateTimeout	= atoi(conf->getArgParam("--activate-timeout").c_str());
+	activateTimeout	= conf->getArgInt("--activate-timeout");
 	if( activateTimeout&lt;=0 )
 		activateTimeout = 20000;
 
-	int msec = atoi(conf->getArgParam("--startup-timeout").c_str());
+	int msec = conf->getArgInt("--startup-timeout");
 	if( msec&lt;=0 )
 		msec = 10000;
 	ptStartUpTimeout.setTiming(msec);

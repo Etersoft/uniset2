@@ -49,7 +49,7 @@ prefix(prefix)
 	dlog[Debug::INFO] << myname << "(init): read s_field='" << s_field
 						<< "' s_fvalue='" << s_fvalue << "'" << endl;
 
-	force = uni_atoi(conf->getArgParam("--" + prefix + "-force",it.getProp("force")));
+	force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
 
 	// int recv_timeout = atoi(conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")).c_str());
 
@@ -60,7 +60,7 @@ prefix(prefix)
 	else
 		addr = ModbusRTU::str2mbAddr(saddr);
 
-	mbregFromID = uni_atoi(conf->getArgParam("--" + prefix + "-reg-from-id",it.getProp("reg_from_id")));
+	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id",it.getProp("reg_from_id"));
 	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
 	string stype = conf->getArgParam("--" + prefix + "-type",it.getProp("type"));
@@ -157,8 +157,8 @@ prefix(prefix)
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = atoi(conf->getArgParam("--" + prefix + "-heartbeat-max",it.getProp("heartbeat_max")).c_str());
-		if( maxHeartBeat <=0 )
+		maxHeartBeat = conf->getArgInt("--" + prefix + "-heartbeat-max",it.getProp("heartbeat_max"));
+		if( maxHeartBeat <= 0 )
 			maxHeartBeat = 10;
 
 		test_id = sidHeartBeat;
@@ -184,11 +184,11 @@ prefix(prefix)
 	if( wait_msec < 500 )
 		wait_msec = 500;
 
-	activateTimeout	= atoi(conf->getArgParam("--" + prefix + "-activate-timeout").c_str());
-	if( activateTimeout<=0 )
+	activateTimeout	= conf->getArgInt("--" + prefix + "-activate-timeout");
+	if( activateTimeout <= 0 )
 		activateTimeout = 20000;
 
-	int msec = atoi(conf->getArgParam("--" + prefix + "-timeout",it.getProp("timeout")).c_str());
+	int msec = conf->getArgInt("--" + prefix + "-timeout",it.getProp("timeout"));
 	if( msec <=0 )
 		msec = 3000;
 
@@ -256,7 +256,7 @@ MBSlave::~MBSlave()
 void MBSlave::waitSMReady()
 {
 	// waiting for SM is ready...
-	int ready_timeout = atoi(conf->getArgParam("--" + prefix + "-sm-ready-timeout","15000").c_str());
+	int ready_timeout = conf->getArgInt("--" + prefix + "-sm-ready-timeout","15000");
 	if( ready_timeout == 0 )
 		ready_timeout = 15000;
 	else if( ready_timeout < 0 )

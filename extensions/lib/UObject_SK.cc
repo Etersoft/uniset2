@@ -38,27 +38,27 @@ activated(false)
 {
 	si.node = conf->getLocalNode();
 
-	sleep_msec = atoi(conf->getArgParam("--sleep-msec","200").c_str());
-	if( sleep_msec <=0 )
+	sleep_msec = conf->getArgInt("--sleep-msec","200");
+	if( sleep_msec <= 0 )
 		sleep_msec = 200;
 
-	resetMsgTime = atoi(conf->getProp(cnode,"resetMsgTime").c_str());
+	resetMsgTime = conf->getIntProp(cnode,"resetMsgTime");
 	if( resetMsgTime <= 0 )
 		resetMsgTime = 200;
 	ptResetMsg.setTiming(resetMsgTime);
 
-	smReadyTimeout = atoi(conf->getArgParam("--sm-ready-timeout","").c_str());
+	smReadyTimeout = conf->getArgInt("--sm-ready-timeout","");
 	if( smReadyTimeout == 0 )
 		smReadyTimeout = 60000;
 	else if( smReadyTimeout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 
-	activateTimeout	= atoi(conf->getArgParam("--activate-timeout").c_str());
-	if( activateTimeout<=0 )
+	activateTimeout	= conf->getArgInt("--activate-timeout"));
+	if( activateTimeout <= 0 )
 		activateTimeout = 20000;
 
-	int msec = atoi(conf->getArgParam("--startup-timeout").c_str());
-	if( msec<=0 )
+	int msec = conf->getArgInt("--startup-timeout");
+	if( msec <= 0 )
 		msec = 10000;
 	ptStartUpTimeout.setTiming(msec);
 }

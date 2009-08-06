@@ -40,7 +40,7 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	string d_field = conf->getArgParam("--d-filter-field");
 	string d_fvalue = conf->getArgParam("--d-filter-value");
 	
-	int lock_msec = atoi(conf->getArgParam("--lock-value-pause").c_str());
+	int lock_msec = conf->getArgInt("--lock-value-pause");
 	if( lock_msec < 0 )
 		lock_msec = 0;
 	setCheckLockValuePause(lock_msec);
@@ -51,7 +51,7 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	else
 		dlog[Debug::INFO] << myname << "(init): heartbeat-node: " << heartbeat_node << endl;
 
-	heartbeatCheckTime = atoi(conf->getArgParam("--heartbeat-check-time","1000").c_str());
+	heartbeatCheckTime = conf->getArgInt("--heartbeat-check-time","1000");
 
 	
 //	rxml->setSensorFilter(s_filterField, s_filterValue);
@@ -74,17 +74,17 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 		dlog[Debug::WARN] << myname << "(init): watchdog timer NOT USED (--wdt-device NULL)" << endl;
 
 
-	dblogging = atoi(conf->getArgParam("--db-logging").c_str());
+	dblogging = conf->getArgInt("--db-logging");
 
 	e_filter = conf->getArgParam("--e-filter");
 	buildEventList(cnode);
 
-	evntPause = atoi(conf->getArgParam("--e-startup-pause").c_str());
-	if( evntPause<=0 )
+	evntPause = conf->getArgInt("--e-startup-pause");
+	if( evntPause <= 0 )
 		evntPause = 5000;
 		
-	activateTimeout	= atoi(conf->getArgParam("--activate-timeout").c_str());
-	if( activateTimeout<=0 )
+	activateTimeout	= conf->getArgInt("--activate-timeout");
+	if( activateTimeout <= 0 )
 		activateTimeout = 10000;
 }
 

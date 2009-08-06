@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 		string d_fvalue = conf->getArgParam("--d-filter-value");
 
 		// надо ли писать изменения в БД
-		bool dbDumping = atoi(conf->getArgParam("--dbDumping").c_str());
+		bool dbDumping = conf->getArgInt("--dbDumping");
 
 		NullController nc(ID,askfile,s_field,s_fvalue,c_field,c_fvalue,d_field,d_fvalue,dbDumping);
 		ObjectsActivator act;

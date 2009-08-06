@@ -7,7 +7,7 @@ using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 LProcessor::LProcessor()
 {
-	sleepTime = atoi(conf->getArgParam("--sleepTime").c_str());
+	sleepTime = conf->getArgInt("--sleepTime");
 	sleepTime = (sleepTime<=0) ? 200 : sleepTime;
 }
 

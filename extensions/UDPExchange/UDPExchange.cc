@@ -44,11 +44,9 @@ maxItem(0)
 	if( s_host.empty() )
 		throw UniSetTypes::SystemError(myname+"(UDPExchange): Unknown host. Use --udp-host" );
 
-	string s_port 	= conf->getArgParam("--udp-port",it.getProp("port"));
-	if( s_port.empty() )
+	port = conf->getArgInt("--udp-port",it.getProp("port"));
+	if( port <= 0 )
 		throw UniSetTypes::SystemError(myname+"(UDPExchange): Unknown port address. Use --udp-port" );
-
-	port = atoi(s_port.c_str());
 
 	if( dlog.debugging(Debug::INFO) )
 		dlog[Debug::INFO] << "(UDPExchange): UDP set to " << s_host << ":" << port << endl;
@@ -69,16 +67,16 @@ maxItem(0)
 
 	thr = new ThreadCreator<UDPExchange>(this, &UDPExchange::poll);
 
-	recvTimeout = atoi(conf->getArgParam("--udp-recv-timeout",it.getProp("recvTimeout")).c_str());
-	if( recvTimeout <=0 )
+	recvTimeout = conf->getArgInt("--udp-recv-timeout",it.getProp("recvTimeout"));
+	if( recvTimeout <= 0 )
 		recvTimeout = 5000;
 		
-	sendTimeout = atoi(conf->getArgParam("--udp-send-timeout",it.getProp("sendTimeout")).c_str());
-	if( sendTimeout <=0 )
+	sendTimeout = conf->getArgInt("--udp-send-timeout",it.getProp("sendTimeout"));
+	if( sendTimeout <= 0 )
 		sendTimeout = 5000;
 
-	polltime = atoi(conf->getArgParam("--udp-polltime",it.getProp("polltime")).c_str());
-	if( !polltime )
+	polltime = conf->getArgInt("--udp-polltime",it.getProp("polltime"));
+	if( polltime <= 0 )
 		polltime = 100;
 
 
@@ -111,8 +109,8 @@ maxItem(0)
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = atoi(conf->getArgParam("--udp-heartbeat-max",it.getProp("heartbeat_max")).c_str());
-		if( maxHeartBeat <=0 )
+		maxHeartBeat = conf->getArgInt("--udp-heartbeat-max",it.getProp("heartbeat_max"));
+		if( maxHeartBeat <= 0 )
 			maxHeartBeat = 10;
 		test_id = sidHeartBeat;
 	}
@@ -130,12 +128,12 @@ maxItem(0)
 
 	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
 
-	activateTimeout	= atoi(conf->getArgParam("--activate-timeout").c_str());
-	if( activateTimeout<=0 )
+	activateTimeout	= conf->getArgInt("--activate-timeout"));
+	if( activateTimeout <= 0 )
 		activateTimeout = 20000;
 
-	int msec = atoi(conf->getArgParam("--udp-timeout",it.getProp("timeout")).c_str());
-	if( msec <=0 )
+	int msec = conf->getArgInt("--udp-timeout",it.getProp("timeout"));
+	if( msec <= 0 )
 		msec = 3000;
 
 	dlog[Debug::INFO] << myname << "(init): udp-timeout=" << msec << " msec" << endl;
@@ -151,7 +149,7 @@ UDPExchange::~UDPExchange()
 void UDPExchange::waitSMReady()
 {
 	// waiting for SM is ready...
-	int ready_timeout = atoi(conf->getArgParam("--udp-sm-ready-timeout","15000").c_str());
+	int ready_timeout = conf->getArgInt("--udp-sm-ready-timeout","15000");
 	if( ready_timeout == 0 )
 		ready_timeout = 15000;
 	else if( ready_timeout < 0 )

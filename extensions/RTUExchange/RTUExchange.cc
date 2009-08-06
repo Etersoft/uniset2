@@ -55,32 +55,32 @@ allNotRespond(false)
 
 	defSpeed = ComPort::getSpeed(speed);
 
-	recv_timeout = atoi(conf->getArgParam("--rs-recv-timeout",it.getProp("recv_timeout")).c_str());
+	recv_timeout = conf->getArgInt("--rs-recv-timeout",it.getProp("recv_timeout"));
 	if( recv_timeout <= 0 )
 		recv_timeout = 50;
 
-	int alltout = atoi(conf->getArgParam("--rs-all-timeout",it.getProp("all_timeout")).c_str());
-	if( alltout <=0 )
+	int alltout = conf->getArgInt("--rs-all-timeout",it.getProp("all_timeout"));
+	if( alltout <= 0 )
 		alltout = 2000;
 		
 	ptAllNotRespond.setTiming(alltout);
 
-	rs_pre_clean = atoi(conf->getArgParam("--rs-pre-clean",it.getProp("pre_clean")).c_str());
-	noQueryOptimization = atoi(conf->getArgParam("--rs-no-query-optimization",it.getProp("no_query_optimization")).c_str());
+	rs_pre_clean = conf->getArgInt("--rs-pre-clean",it.getProp("pre_clean"));
+	noQueryOptimization = conf->getArgInt("--rs-no-query-optimization",it.getProp("no_query_optimization"));
 
-	mbregFromID = atoi(conf->getArgParam("--mbs-reg-from-id",it.getProp("reg_from_id")).c_str());
+	mbregFromID = conf->getArgInt("--mbs-reg-from-id",it.getProp("reg_from_id"));
 	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
-	polltime = atoi(conf->getArgParam("--rs-polltime",it.getProp("polltime")).c_str());
+	polltime = conf->getArgInt("--rs-polltime",it.getProp("polltime"));
 	if( !polltime )
 		polltime = 100;
 
-	initPause = atoi(conf->getArgParam("--rs-initPause",it.getProp("initPause")).c_str());
+	initPause = conf->getArgInt("--rs-initPause",it.getProp("initPause"));
 	if( !initPause )
 		initPause = 3000;
 
-	force = atoi(conf->getArgParam("--rs-force",it.getProp("force")).c_str());
-	force_out = atoi(conf->getArgParam("--rs-force-out",it.getProp("force_out")).c_str());
+	force = conf->getArgInt("--rs-force",it.getProp("force"));
+	force_out = conf->getArgInt("--rs-force-out",it.getProp("force_out"));
 
 	if( shm->isLocalwork() )
 	{
@@ -110,8 +110,8 @@ allNotRespond(false)
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = atoi(conf->getArgParam("--rs-heartbeat-max",it.getProp("heartbeat_max")).c_str());
-		if( maxHeartBeat <=0 )
+		maxHeartBeat = conf->getArgInt("--rs-heartbeat-max",it.getProp("heartbeat_max"));
+		if( maxHeartBeat <= 0 )
 			maxHeartBeat = 10;
 		test_id = sidHeartBeat;
 	}
@@ -129,8 +129,8 @@ allNotRespond(false)
 
 	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
 
-	activateTimeout	= atoi(conf->getArgParam("--activate-timeout").c_str());
-	if( activateTimeout<=0 )
+	activateTimeout	= conf->getArgInt("--activate-timeout");
+	if( activateTimeout <= 0 )
 		activateTimeout = 20000;
 
 	initMB(false);
@@ -206,7 +206,7 @@ void RTUExchange::initMB( bool reopen )
 void RTUExchange::waitSMReady()
 {
 	// waiting for SM is ready...
-	int ready_timeout = atoi(conf->getArgParam("--rs-sm-ready-timeout","15000").c_str());
+	int ready_timeout = conf->getArgInt("--rs-sm-ready-timeout","15000");
 	if( ready_timeout == 0 )
 		ready_timeout = 15000;
 	else if( ready_timeout < 0 )

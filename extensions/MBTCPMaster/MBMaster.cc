@@ -51,11 +51,11 @@ prefix(prefix)
 		throw UniSetTypes::SystemError(myname+"(MBMaster): Unknown inet addr...(Use: " + pname +")" );
 
 	string tmp("--" + prefix + "-port");
-	port = atoi(conf->getArgParam(tmp,it.getProp("port")).c_str());
-	if( port<=0 )
+	port = conf->getArgInt(tmp,it.getProp("port"));
+	if( port <= 0 )
 		throw UniSetTypes::SystemError(myname+"(MBMaster): Unknown inet port...(Use: " + tmp +")" );
 
-	recv_timeout = atoi(conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")).c_str());
+	recv_timeout = conf->getArgInt("--" + prefix + "-recv-timeout",it.getProp("recv_timeout"));
 	if( recv_timeout <= 0 )
 		recv_timeout = 2000;
 
@@ -64,18 +64,18 @@ prefix(prefix)
 	if( saddr.empty() )
 		myaddr = 0x00;
 
-	mbregFromID = atoi(conf->getArgParam("--" + prefix + "-reg-from-id",it.getProp("reg_from_id")).c_str());
+	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id",it.getProp("reg_from_id"));
 	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
-	polltime = atoi(conf->getArgParam("--" + prefix + "-polltime",it.getProp("polltime")).c_str());
+	polltime = conf->getArgInt("--" + prefix + "-polltime",it.getProp("polltime"));
 	if( !polltime )
 		polltime = 100;
 
-	initPause = atoi(conf->getArgParam("--" + prefix + "-initPause",it.getProp("initPause")).c_str());
+	initPause = conf->getArgInt("--" + prefix + "-initPause",it.getProp("initPause"));
 	if( !initPause )
 		initPause = 3000;
 
-	force = atoi(conf->getArgParam("--" + prefix + "-force",it.getProp("force")).c_str());
+	force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
 
 	if( shm->isLocalwork() )
 	{
@@ -105,8 +105,8 @@ prefix(prefix)
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = atoi(conf->getArgParam("--" + prefix + "-heartbeat-max",it.getProp("heartbeat_max")).c_str());
-		if( maxHeartBeat <=0 )
+		maxHeartBeat = conf->getArgInt("--" + prefix + "-heartbeat-max",it.getProp("heartbeat_max"));
+		if( maxHeartBeat <= 0 )
 			maxHeartBeat = 10;
 
 		test_id = sidHeartBeat;
@@ -123,12 +123,12 @@ prefix(prefix)
 		}
 	}
 
-	activateTimeout	= atoi(conf->getArgParam("--" + prefix + "-activate-timeout").c_str());
-	if( activateTimeout<=0 )
+	activateTimeout	= conf->getArgInt("--" + prefix + "-activate-timeout");
+	if( activateTimeout <= 0 )
 		activateTimeout = 20000;
 
-	int msec = atoi(conf->getArgParam("--" + prefix + "-timeout",it.getProp("timeout")).c_str());
-	if( msec <=0 )
+	int msec = conf->getArgInt("--" + prefix + "-timeout",it.getProp("timeout"));
+	if( msec <= 0 )
 		msec = 3000;
 
 	ptTimeout.setTiming(msec);
@@ -146,7 +146,7 @@ MBMaster::~MBMaster()
 void MBMaster::waitSMReady()
 {
 	// waiting for SM is ready...
-	int ready_timeout = atoi(conf->getArgParam("--" + prefix + "-sm-ready-timeout","15000").c_str());
+	int ready_timeout = conf->getArgInt("--" + prefix + "-sm-ready-timeout","15000");
 	if( ready_timeout == 0 )
 		ready_timeout = 15000;
 	else if( ready_timeout < 0 )

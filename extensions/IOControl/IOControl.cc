@@ -109,15 +109,15 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		}
 	}
 	
-	polltime = atoi(conf->getArgParam("--io-polltime",it.getProp("polltime")).c_str());
+	polltime = conf->getArgInt("--io-polltime",it.getProp("polltime"));
 	if( !polltime )
 		polltime = 150;
 
-	force 		= atoi(conf->getArgParam("--io-force",it.getProp("force")).c_str());
-	force_out 	= atoi(conf->getArgParam("--io-force-out",it.getProp("force_out")).c_str());
+	force 		= conf->getArgInt("--io-force",it.getProp("force"));
+	force_out 	= conf->getArgInt("--io-force-out",it.getProp("force_out"));
 
-	filtersize = atoi(conf->getArgParam("--io-filtersize",it.getProp("filtersize")).c_str());
-	if( filtersize<=0 )
+	filtersize = conf->getArgInt("--io-filtersize",it.getProp("filtersize"));
+	if( filtersize <= 0 )
 		filtersize = 1;
 
 	filterT = atof(conf->getArgParam("--io-filterT",it.getProp("filterT")).c_str());
@@ -146,13 +146,13 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	unideb[Debug::INFO] << myname << "(init): read s_field='" << s_field
 						<< "' s_fvalue='" << s_fvalue << "'" << endl;
 
-	int blink_msec = atoi(conf->getArgParam("--io-blink-time",it.getProp("blink-time")).c_str());
+	int blink_msec = conf->getArgInt("--io-blink-time",it.getProp("blink-time"));
 	if( blink_msec<=0 )
 		blink_msec = 300;
 	
 	ptBlink.setTiming(blink_msec);
 
-	smReadyTimeout = atoi(conf->getArgParam("--io-sm-ready-timeout",it.getProp("ready_timeout")).c_str());
+	smReadyTimeout = conf->getArgInt("--io-sm-ready-timeout",it.getProp("ready_timeout"));
 	if( smReadyTimeout == 0 )
 		smReadyTimeout = 15000;
 	else if( smReadyTimeout < 0 )
@@ -160,7 +160,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 
 
 	string sm_ready_sid = conf->getArgParam("--io-sm-ready-test-sid",it.getProp("sm_ready_test_sid"));
-	sidTestSMReady = conf->getSensorID(sm_ready_sid.c_str());
+	sidTestSMReady = conf->getSensorID(sm_ready_sid);
 	if( sidTestSMReady == DefaultObjectId )
 	{
 		sidTestSMReady = 4100; /* TestMode_S */
@@ -185,19 +185,19 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 			throw SystemError(err.str());
 		}
 
-		int heartbeatTime = atoi(conf->getArgParam("--heartbeat-check-time","1000").c_str());
+		int heartbeatTime = conf->getArgInt("--heartbeat-check-time","1000");
 		if( heartbeatTime )
 			ptHeartBeat.setTiming(heartbeatTime);
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = atoi(conf->getArgParam("--io-heartbeat-max",it.getProp("heartbeat_max")).c_str());
-		if( maxHeartBeat <=0 )
+		maxHeartBeat = conf->getArgInt("--io-heartbeat-max",it.getProp("heartbeat_max"));
+		if( maxHeartBeat <= 0 )
 			maxHeartBeat = 10;
 	}
 
-	activateTimeout	= atoi(conf->getArgParam("--activate-timeout").c_str());
-	if( activateTimeout<=0 )
+	activateTimeout	= conf->getArgInt("--activate-timeout");
+	if( activateTimeout <= 0 )
 		activateTimeout = 25000;
 
 	if( !shm->isLocalwork() ) // ic
@@ -249,7 +249,7 @@ void IOControl::execute()
 	// чтение параметров по входам-выходам
 	initIOCard();
 
-	bool skip_iout = atoi(conf->getArgParam("--io-skip-init-output").c_str());
+	bool skip_iout = conf->getArgInt("--io-skip-init-output");
 	if( !skip_iout )
 		initOutputs();
 
