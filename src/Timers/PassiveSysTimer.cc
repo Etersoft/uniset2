@@ -111,8 +111,8 @@ bool PassiveSysTimer::wait(timeout_t timeMS)
 //		terminate();
 	terminated = 0;
 
-	int sec;
-	int msec;
+	timeout_t sec;
+	timeout_t msec;
 	
 	if (timeMS == WaitUpTime)
 	{

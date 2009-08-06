@@ -57,7 +57,7 @@ void SViewer::on_SViewer_destroy()
 //	activator->oakill(SIGKILL);
 }
 // --------------------------------------------------------------------------
-void SViewer::monitor( int timeMS )
+void SViewer::monitor( timeout_t timeMS )
 {
 	for(;;)
 	{

@@ -32,6 +32,7 @@
 #include "IOController_i.hh"
 #include "ObjectRepository.h"
 #include "UniversalInterface.h"
+#include "PassiveTimer.h"
 //--------------------------------------------------------------------------------
 class SViewer 
 {   
@@ -41,7 +42,7 @@ class SViewer
 		virtual ~SViewer();
 
 		void view();
-		void monitor( int timeoutMS=500 );
+		void monitor( timeout_t timeoutMS=500 );
 		
 	protected:
         friend class SViewer_glade;

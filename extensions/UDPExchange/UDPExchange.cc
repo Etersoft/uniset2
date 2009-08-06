@@ -132,8 +132,8 @@ maxItem(0)
 	if( activateTimeout <= 0 )
 		activateTimeout = 20000;
 
-	int msec = conf->getArgInt("--udp-timeout",it.getProp("timeout"));
-	if( msec <= 0 )
+	timeout_t msec = conf->getArgInt("--udp-timeout",it.getProp("timeout"));
+	if( msec == 0 )
 		msec = 3000;
 
 	dlog[Debug::INFO] << myname << "(init): udp-timeout=" << msec << " msec" << endl;

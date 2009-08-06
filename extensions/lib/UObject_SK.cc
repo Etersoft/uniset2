@@ -57,8 +57,8 @@ activated(false)
 	if( activateTimeout <= 0 )
 		activateTimeout = 20000;
 
-	int msec = conf->getArgInt("--startup-timeout");
-	if( msec <= 0 )
+	timeout_t msec = conf->getArgInt("--startup-timeout");
+	if( msec == 0 )
 		msec = 10000;
 	ptStartUpTimeout.setTiming(msec);
 }
