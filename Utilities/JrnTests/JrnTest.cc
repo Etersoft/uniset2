@@ -75,146 +75,145 @@ void testTable1(void)
 bool testTable2(void)
 {
 	char *val=new char[40];
-	TableBlockStorage *t;
-	t = new TableBlockStorage();
-	t->create("big_file.test", 4, 40, 20000, 5,28,0);
+	TableBlockStorage t;
+	//t = new TableBlockStorage();
+	t.create("big_file.test", 4, 40, 20000, 5,28,0);
 	int i;
 	for(i=1;i<20;i++)
 	{
-		if(t->findKeyValue(&i,val)!=0) printf("%s, ",val);
+		if(t.findKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\n");
-	if(t->getCurBlock()!=0)
+	if(t.getCurBlock()!=0)
 	{
-		delete t;
+		delete val;
 		return false;
 	}
 	for(i=1;i<11;i++)
 	{
 		sprintf(val,"%d",i);
-		t->addRow((char*)&i,val);
+		t.addRow((char*)&i,val);
 	}
-	if(t->getCurBlock()!=0)
+	if(t.getCurBlock()!=0)
 	{
-		delete t;
+		delete val;
 		return false;
 	}
 	for(i=1;i<20;i++)
 	{
-		if(t->findKeyValue(&i,val)!=0) printf("%s, ",val);
+		if(t.findKeyValue(&i,val)!=0) printf("%s, ",val);
 		if(val[0]==0)
 		{
-			delete t;
+			delete val;
 			return false;
 		}
 	}
 	printf("\n");
-	if(t->getCurBlock()!=0)
+	if(t.getCurBlock()!=0)
 	{
-		delete t;
+		delete val;
 		return false;
 	}
 	for(i=1;i<8;i++)
 	{
 		sprintf(val,"%d",i+10);
-		t->addRow(&i,val);
+		t.addRow(&i,val);
 	}
 	printf("deleteing 8-10 elements\n");
 	for(i=8;i<11;i++)
 	{
-		t->delRow(&i);
+		t.delRow(&i);
 	}
 	for(i=1;i<20;i++)
 	{
-		if(t->findKeyValue(&i,val)!=0)
+		if(t.findKeyValue(&i,val)!=0)
 		{
 			printf("%s, ",val);
 			if((i > 7)&&(i <11))
 			{
-				delete t;
+				delete val;
 				return false;
 			}
 		}
 		if((val[0] == 0)&&(i < 8))
 		{
-			delete t;
+			delete val;
 			return false;
 		}
 	}
 	printf("\nrewriting 3-10 elements with values=keys+40\n");
-	if(t->getCurBlock()!=0)
+	if(t.getCurBlock()!=0)
 	{
-		delete t;
+		delete val;
 		return false;
 	}
 	for(i=3;i<11;i++)
 	{
 		sprintf(val,"%d",i+40);
-		t->addRow(&i,val);
+		t.addRow(&i,val);
 	}
 	for(i=1;i<20;i++)
 	{
-		if(t->findKeyValue(&i,val)!=0) printf("%s, ",val);
+		if(t.findKeyValue(&i,val)!=0) printf("%s, ",val);
 		if((atoi(val) != i+40) && (i>2) && (i<11))
 		{
-			delete t;
+			delete val;
 			return false;
 		}
 		if((atoi(val) != i+10) && (i<3))
 		{
-			delete t;
+			delete val;
 			return false;
 		}
 	}
-	if(t->getCurBlock()!=0)
+	if(t.getCurBlock()!=0)
 	{
-		delete t;
+		delete val;
 		return false;
 	}
 
 	strcpy(val,"new block");
 	i=9;
-	t->addRow(&i,val);
+	t.addRow(&i,val);
 	for(i=1;i<20;i++)
 	{
-		if(t->findKeyValue((char*)&i,val)!=0) printf("%s, ",val);
+		if(t.findKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 	}
-	if(t->getCurBlock()!=1)
+	if(t.getCurBlock()!=1)
 	{
-		delete t;
+		delete val;
 		return false;
 	}
 	printf("after reopen:\n");
-	t->open("big_file.test", 4, 40, 20000, 5,28,0);
+	t.open("big_file.test", 4, 40, 20000, 5,28,0);
 	for(i=1;i<20;i++)
 	{
-		if(t->findKeyValue(&i,val)!=0) printf("%s, ",val);
+		if(t.findKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
-	if(t->getCurBlock()!=1)
+	if(t.getCurBlock()!=1)
 	{
-		delete t;
+		delete val;
 		return false;
 	}
-	delete t;
+	delete val;
 	return true;
 }
 
 bool testJournal1(void)
 {
-	CycleStorage *j;
+	CycleStorage j("big_file.test",30,32000,20000,true);
 	int i,k=0;
 	char *str = new char[30];
 	printf("journal test 1\n");
-	j = new CycleStorage("big_file.test",30,1000000,20000,true);
 	for(i=1;i<33000;i++)
 	{
 		sprintf(str,"%d",i);
-		j->addRow(str);
+		j.addRow(str);
 	}
 	printf("first 30 elements:\n");
 	for(i=0;i<30;i++)
 	{
-		if(j->readRow(i,str))
+		if(j.readRow(i,str))
 		{
 			printf("%s\n",str);
 			k++;
@@ -222,33 +221,34 @@ bool testJournal1(void)
 	}
 	if(k < 30)
 	{
-		delete j;
+		delete str;
 		return false;
 	}
 	k = 0;
 
 	printf("test of 2 classes working in 1 file together\n");
-	TableBlockStorage *t = new TableBlockStorage("big_file.test", 4, 40, 20000, 5,28,0);
+	TableBlockStorage t("big_file.test", 4, 40, 20000, 5,28,0);
 	char *val = new char[40];
 	for(i=1;i<20;i++)
 	{
-		if(t->findKeyValue((char*)&i,val)!=0) printf("%s, ",val);
+		if(t.findKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 		if((atoi(val) != i+10) && (i<3))
 		{
-			delete t;
-			delete j;
+			delete val;
+			delete str;
 			return false;
 		}
 	}
+	delete val;
 
 	printf("\nfirst 30 elements after deleting first 20:\n");
 	for(i=0;i<20;i++)
 	{
-		j->delRow(i);
+		j.delRow(i);
 	}
 	for(i=0;i<30;i++)
 	{
-		if(j->readRow(i,str))
+		if(j.readRow(i,str))
 		{
 			printf("%s\n",str);
 			k++;
@@ -256,8 +256,7 @@ bool testJournal1(void)
 	}
 	if(k != 10)
 	{
-		delete t;
-		delete j;
+		delete str;
 		return false;
 	}
 	k = 0;
@@ -266,11 +265,11 @@ bool testJournal1(void)
 	for(i=10001;i<10011;i++)
 	{
 		sprintf(str,"%d",i);
-		j->addRow(str);
+		j.addRow(str);
 	}
 	for(i=0;i<20;i++)
 	{
-		if(j->readRow(i,str))
+		if(j.readRow(i,str))
 		{
 			printf("%s\n",str);
 			k++;
@@ -278,18 +277,38 @@ bool testJournal1(void)
 	}
 	if(k != 10)
 	{
-		delete t;
-		delete j;
+		delete str;
+		return false;
+	}
+
+	k = 0;
+	printf("the same after reopen:\n");
+	if(!j.open("big_file.test",30,32000,20000))
+	{
+		printf("Reopen file error\n");
+		delete str;
+		return false;
+	}
+	for(i=0;i<20;i++)
+	{
+		if(j.readRow(i,str))
+		{
+			printf("%s\n",str);
+			k++;
+		}
+	}
+	if(k != 10)
+	{
+		delete str;
 		return false;
 	}
 	k = 0;
 
 	printf("the same after reopen:\n");
-	j = new CycleStorage();
-	j->open("big_file.test",30,1000000,20000);
+	printf("opening... %d\n",j.open("big_file.test",30,32000,20000));
 	for(i=0;i<20;i++)
 	{
-		if(j->readRow(i,str))
+		if(j.readRow(i,str))
 		{
 			printf("%s\n",str);
 			k++;
@@ -297,55 +316,32 @@ bool testJournal1(void)
 	}
 	if(k != 10)
 	{
-		delete t;
-		delete j;
+		delete str;
 		return false;
 	}
-	k = 0;
-
-	printf("the same after reopen:\n");
-	j = new CycleStorage();
-	j->open("big_file.test",30,1000000,20000);
-	for(i=0;i<20;i++)
-	{
-		if(j->readRow(i,str))
-		{
-			printf("%s\n",str);
-			k++;
-		}
-	}
-	if(k != 10)
-	{
-		delete t;
-		delete j;
-		return false;
-	}
-
-	delete t;
-	delete j;
+	delete str;
 	return true;
 }
 
 void testJournal2(void)
 {
-	CycleStorage *j;
+	CycleStorage j("big_file.test",30,32000,20000);
 	int i,k;
-	char *str = (char*)malloc(30);
-	j = new CycleStorage("big_file.test",30,1000000,20000);
+	char *str = new char[30];
 	printf("journal test 2 - checking number of iterations to find head/tail\n");
-	printf("iterations = %d\n",j->getIter());
+	printf("iterations = %d\n",j.getIter());
 	for(i=0;i<20;i++)
 	{
 		for(k=1000;k<3000;k++)
 		{
 			sprintf(str,"%d",k);
-			j->addRow(str);
+			j.addRow(str);
 		}
-		j->open("big_file.test",30,1000000,20000);
-		printf("iterations = %d\n",j->getIter());
+		j.open("big_file.test",30,32000,20000);
+		printf("iterations = %d\n",j.getIter());
 	}
 	printf("\n");
-	delete j;
+	delete str;
 }
 
 
@@ -402,7 +398,7 @@ int main(int args, char **argv)
 {
 	//testTable1();
 	bool ok = true;
-/*
+
 	if(testTable2())
 		printf("\nTest for TableBlockStorage passed\n\n");
 	else
@@ -418,9 +414,7 @@ int main(int args, char **argv)
 		printf("\nTest for CycleStorage failed\n\n");
 		ok = false;
 	}
-*/
-	testJournal3();
-/*
+
 	if(ok)
 	{
 		testJournal2();
@@ -428,6 +422,8 @@ int main(int args, char **argv)
 	}
 	else
 		printf("TEST FAILED :(\n");
-*/
+
+	testJournal3();
+
 	return 0;
 }
