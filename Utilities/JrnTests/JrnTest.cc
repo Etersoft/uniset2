@@ -199,6 +199,32 @@ bool testTable2(void)
 	return true;
 }
 
+bool reOpen()
+{
+	CycleStorage j;
+	int i,k=0;
+	char *str = new char[30];
+	printf("the same after reopen:\n");
+	if(!j.open("big_file.test",30,32000,20000))
+	{
+		printf("Reopen file error\n");
+		delete str;
+		return false;
+	}
+	for(i=0;i<20;i++)
+	{
+		if(j.readRow(i,str))
+		{
+			printf("%s\n",str);
+			k++;
+		}
+	}
+	delete str;
+	if(k != 10)
+		return false;
+	return true;
+}
+
 bool testJournal1(void)
 {
 	CycleStorage j("big_file.test",30,32000,20000,true);
@@ -282,43 +308,11 @@ bool testJournal1(void)
 	}
 
 	k = 0;
-	printf("the same after reopen:\n");
-	if(!j.open("big_file.test",30,32000,20000))
-	{
-		printf("Reopen file error\n");
-		delete str;
-		return false;
-	}
-	for(i=0;i<20;i++)
-	{
-		if(j.readRow(i,str))
-		{
-			printf("%s\n",str);
-			k++;
-		}
-	}
-	if(k != 10)
-	{
-		delete str;
-		return false;
-	}
-	k = 0;
 
-	printf("the same after reopen:\n");
-	printf("opening... %d\n",j.open("big_file.test",30,32000,20000));
-	for(i=0;i<20;i++)
-	{
-		if(j.readRow(i,str))
-		{
-			printf("%s\n",str);
-			k++;
-		}
-	}
-	if(k != 10)
-	{
-		delete str;
-		return false;
-	}
+	if(!reOpen()) return false;
+
+	if(!reOpen()) return false;
+
 	delete str;
 	return true;
 }
@@ -366,9 +360,10 @@ bool testJournal3()
 	j.getFullSize()
 	);
 
-	
-	printf("write 30 elements:\n");
-	for(int i=0;i<30;i++)
+	JItem ji;
+
+	printf("write 35 elements:\n");
+	for(int i=0;i<35;i++)
 	{
 		JItem ji;
 		ji.id = i;
@@ -378,9 +373,8 @@ bool testJournal3()
 		j.addRow(&ji);
 	}
 
-	printf("read first 5 elements:\n");
+	printf("read first 10 elements:\n");
 	
-	JItem ji;
 	for( int i=0;i<10;i++)
 	{
 		if( j.readRow(i,&ji) )

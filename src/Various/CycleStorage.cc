@@ -59,7 +59,8 @@ void CycleStorage::filewrite(CycleStorageElem* jrn,int seek,bool needflush)
 {
 	fseek(file,seekpos+seek*full_size,0);
 	fwrite(jrn,full_size,1,file);
-	if(needflush) fflush(file);
+	if(needflush)
+		fflush(file);
 }
 
 /*! 	Ищем голову и хвост по значениям jrn->status: 0 - пусто, 1 - гоова, 2,4 - два типа существующих элементов
@@ -71,7 +72,6 @@ bool CycleStorage::findHead()
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
 	int l=-1,r=size,mid;
 	iter=0;
-	seekpos+=sizeof(CycleStorageAttr);
 	fread(jrn,full_size,1,file);
 	if(jrn->status==0)
 	{
@@ -121,8 +121,10 @@ bool CycleStorage::findHead()
 				r=mid;
 				break;
 			}
-			else 
+			else
+			{
 				return false;
+			}
 		}
 		if(r<size)
 			head=r;
@@ -139,13 +141,13 @@ bool CycleStorage::open(const char* name, int inf_sz, int inf_count, int seek)
 {
 	/*! 	Если уже был открыт файл в переменной данного класса, он закрывается и открывается новый
 	*/
-
-	if(file!=NULL) fclose(file);
+	
+	if(file!=NULL)
+		fclose(file);
 	file = fopen(name, "r+");
 	if(file==NULL) return false;
 
-	seekpos=seek;
-	if(fseek(file,seekpos,0)==-1) return false;
+	if(fseek(file,seek,0)==-1) return false;
 
 	/*! Читаем заголовок */
 	CycleStorageAttr csa;
@@ -157,11 +159,12 @@ bool CycleStorage::open(const char* name, int inf_sz, int inf_count, int seek)
 	inf_size=inf_sz;
 	full_size=sizeof(CycleStorageElem)+inf_size;
 	size=inf_count;
-	seekpos=seek;
+	seekpos=seek+sizeof(CycleStorageAttr);
 
-	seekpos+=sizeof(CycleStorageAttr);
 	if(!findHead())
+	{
 		return false;
+	}
 	return true;
 }
 
@@ -191,15 +194,14 @@ bool CycleStorage::create(const char* name, int inf_sz, int inf_count, int seek)
 	jrn->status=0;
 
 	/*! Записываем заголовок журнала */
-	CycleStorageAttr *csa = new CycleStorageAttr();
-	csa->inf_size=inf_size;
-	csa->size=size;
-	csa->seekpos=seekpos;
+	CycleStorageAttr csa;
+	csa.inf_size=inf_size;
+	csa.size=size;
+	csa.seekpos=seekpos;
 
-	fwrite(csa,sizeof(CycleStorageAttr),1,file);
+	fwrite(&csa,sizeof(CycleStorageAttr),1,file);
 	fflush(file);
 	seekpos+=sizeof(CycleStorageAttr);
-	delete csa;
 
 	/*! Создаем журнал нужного размера */
 	for(int i=0;i<size;i++)
