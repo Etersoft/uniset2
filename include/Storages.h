@@ -137,14 +137,19 @@ class CycleStorage
 
 		/*! Конструктор вызывает функцию Open, а при параметре create=true создает новый журнал при
 		несовпадении заголовков или отсутствии старого */
-		CycleStorage(const char* name, int inf_sz, int sz, int seek,bool create=false);
+		CycleStorage(const char* name, int inf_sz, int inf_count, int seek,bool create=false);
 
 		~CycleStorage();
 
-		/*! inf_sz - размер поля информации, sz - размер всего журнала,
-		seek - отступ от начала файла (указывает место, где расположен журнал) */
-		bool open(const char* name, int inf_sz, int sz, int seek);
-		bool create(const char* name, int inf_sz, int sz, int seek);
+		/*! 
+			\param inf_sz - размер поля информации, 
+			\param int_count - количество записей (размером inf_sz)
+			\param seek - отступ от начала файла (указывает место, где расположен журнал) 
+		*/
+		bool open(const char* name, int inf_sz, int inf_count, int seek);
+		bool create(const char* name, int inf_sz, int inf_count, int seek);
+		bool isOpen(){ return (file!=NULL); }
+
 
 		/*! Добавление информации в конец журнала */
 		bool addRow(void* str);
@@ -155,11 +160,15 @@ class CycleStorage
 		/*! Очистка журнала */
 		bool delAllRows(void);
 
-		/*! Функция возвращает информацию из ряда с номером num */
+		/*! \return Функция возвращает информацию из ряда с номером num */
 		void* readRow(int num, void* str);
 
 		/*! Получение кол-ва итерации при поиске начала/конца журнала (для тестовой программы) */
 		int getIter(void);
+		
+		inline int getSize(){ return size; }
+		inline int getInfSize(){ return inf_size; }
+		inline int getFullSize(){ return full_size; }
 	protected:
 		FILE *file;
 		int inf_size;

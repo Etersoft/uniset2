@@ -348,11 +348,61 @@ void testJournal2(void)
 	delete j;
 }
 
+
+struct JItem
+{
+	long id;
+	long val[10];
+} __attribute__((__packed__));
+
+bool testJournal3()
+{
+	CycleStorage j("journal3.test",sizeof(JItem),10,0,true);
+	if( !j.isOpen() )
+	{
+		printf("create journal3.test failed\n");
+		return false;
+	}
+
+	printf("Joural size=%d inf_size=%d full_size=%d\n",
+	j.getSize(),
+	j.getInfSize(),
+	j.getFullSize()
+	);
+
+	
+	printf("write 30 elements:\n");
+	for(int i=0;i<30;i++)
+	{
+		JItem ji;
+		ji.id = i;
+		for( int k=0; k<10; k++ )
+			ji.val[k] = i;
+
+		j.addRow(&ji);
+	}
+
+	printf("read first 5 elements:\n");
+	
+	JItem ji;
+	for( int i=0;i<10;i++)
+	{
+		if( j.readRow(i,&ji) )
+			printf("read i=%d j.id=%d\n",i,ji.id);
+		else
+			printf("read num=%d FAILED!\n",i);
+			
+	}
+
+	return true;
+}
+
+
 int main(int args, char **argv)
 {
 	//testTable1();
-
 	bool ok = true;
+/*
 	if(testTable2())
 		printf("\nTest for TableBlockStorage passed\n\n");
 	else
@@ -368,7 +418,9 @@ int main(int args, char **argv)
 		printf("\nTest for CycleStorage failed\n\n");
 		ok = false;
 	}
-
+*/
+	testJournal3();
+/*
 	if(ok)
 	{
 		testJournal2();
@@ -376,5 +428,6 @@ int main(int args, char **argv)
 	}
 	else
 		printf("TEST FAILED :(\n");
+*/
 	return 0;
 }

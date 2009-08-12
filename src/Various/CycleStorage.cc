@@ -35,15 +35,13 @@ CycleStorage::CycleStorage()
 	file=NULL;
 }
 
-CycleStorage::CycleStorage(const char* name, int inf_sz, int sz, int seek, bool cr)
+CycleStorage::CycleStorage(const char* name, int inf_sz, int inf_count, int seek, bool cr):
+	file(NULL)
 {
-	file=NULL;
-	if(!open(name,inf_sz, sz, seek))
+	if(!open(name,inf_sz, inf_count, seek))
 	{
 		if(cr)
-			create(name,inf_sz, sz, seek);
-		else
-			file=NULL;
+			create(name,inf_sz, inf_count, seek);
 	}
 }
 
@@ -134,7 +132,7 @@ void CycleStorage::findHead()
 	delete jrn;
 }
 
-bool CycleStorage::open(const char* name, int inf_sz, int sz, int seek)
+bool CycleStorage::open(const char* name, int inf_sz, int inf_count, int seek)
 {
 	/*! 	Если уже был открыт файл в переменной данного класса, он закрывается и открывается новый
 	*/
@@ -147,30 +145,26 @@ bool CycleStorage::open(const char* name, int inf_sz, int sz, int seek)
 	if(fseek(file,seekpos,0)==-1) return false;
 
 	/*! Читаем заголовок */
-	CycleStorageAttr *csa = new CycleStorageAttr();
-	fread(csa,sizeof(CycleStorageAttr),1,file);
+	CycleStorageAttr csa;
+	fread(&csa,sizeof(csa),1,file);
+
+	int sz = inf_sz * inf_count;
 
 	/*! Проверяем заголовок на совпадение с нашими значениями */
-	if((csa->size!=(int)((sz-sizeof(CycleStorageAttr))/(sizeof(CycleStorageElem)+inf_sz)))||(csa->inf_size!=inf_sz)||(csa->seekpos!=seek))
-	{
-		delete csa;
+	if((csa.size!=(int)((sz-sizeof(csa))/(sizeof(CycleStorageElem)+inf_sz)))||(csa.inf_size!=inf_sz)||(csa.seekpos!=seek))
 		return false;
-	}
-	delete csa;
 
 	inf_size=inf_sz;
 	full_size=sizeof(CycleStorageElem)+inf_size;
-	size=(sz-sizeof(CycleStorageAttr))/full_size;
+	size=(sz-sizeof(csa))/full_size;
 	seekpos=seek;
 
 	seekpos+=sizeof(CycleStorageAttr);
-
 	findHead();
-
 	return true;
 }
 
-bool CycleStorage::create(const char* name, int inf_sz, int sz, int seek)
+bool CycleStorage::create(const char* name, int inf_sz, int inf_count, int seek)
 {
 	if(file!=NULL) fclose(file);
 	file = fopen(name, "r+");
@@ -181,6 +175,8 @@ bool CycleStorage::create(const char* name, int inf_sz, int sz, int seek)
 		fclose(f);
 		file = fopen(name, "r+");
 	}
+
+	int sz = inf_sz * inf_count;
 
 	inf_size=inf_sz;
 	full_size=sizeof(CycleStorageElem)+inf_size;
@@ -360,14 +356,18 @@ bool CycleStorage::delAllRows()
 /*! TODO: можно убрать из параметров str, просто возвращать значение */
 void* CycleStorage::readRow(int num, void* str)
 {
+	if( size<=0 ) return 0;
+
 	/*! Отсчитываем номер элемента от головы журнала */
 	int j=(head+num)%size;
 	if((file==NULL)||(num>=size)) return 0;
 
 	if((head!=tail+1)&&(num>tail)) return 0;
+
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
 	fseek(file,seekpos+j*full_size,0);
 	fread(jrn,full_size,1,file);
+
 	if((jrn->status==1)||(jrn->status==2)||(jrn->status==4))
 	{
 		memcpy(str,valPointer(jrn),inf_size);
