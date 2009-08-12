@@ -178,7 +178,7 @@ class CycleStorage
 		int full_size;
 		void filewrite(CycleStorageElem* jrn,int seek, bool needflush=true);
 		void* valPointer(void* pnt);
-		void findHead();
+		bool findHead();
 };
 
 #endif

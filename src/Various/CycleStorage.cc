@@ -66,7 +66,7 @@ void CycleStorage::filewrite(CycleStorageElem* jrn,int seek,bool needflush)
 	(или 2 слева от головы - 4 справа, или наоборот), 3 - удаленный 2, 5 - удаленный 4, 6 - удаленный 1.
 	Для нахождения головы|хвоста используется двоичный поиск
 */
-void CycleStorage::findHead()
+bool CycleStorage::findHead()
 {
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
 	int l=-1,r=size,mid;
@@ -116,11 +116,13 @@ void CycleStorage::findHead()
 				l = mid;
 			else if((jrn->status==j)||(jrn->status==j+1))
 				r = mid;
-			else
+			else if((jrn->status==1)||(jrn->status==6))
 			{
 				r=mid;
 				break;
 			}
+			else 
+				return false;
 		}
 		if(r<size)
 			head=r;
@@ -130,6 +132,7 @@ void CycleStorage::findHead()
 		if(tail<0) tail=size-1;
 	}
 	delete jrn;
+	return true;
 }
 
 bool CycleStorage::open(const char* name, int inf_sz, int inf_count, int seek)
@@ -148,19 +151,17 @@ bool CycleStorage::open(const char* name, int inf_sz, int inf_count, int seek)
 	CycleStorageAttr csa;
 	fread(&csa,sizeof(csa),1,file);
 
-	int sz = inf_sz * inf_count;
-
 	/*! Проверяем заголовок на совпадение с нашими значениями */
-	if((csa.size!=(int)((sz-sizeof(csa))/(sizeof(CycleStorageElem)+inf_sz)))||(csa.inf_size!=inf_sz)||(csa.seekpos!=seek))
+	if((csa.size!=inf_count)||(csa.inf_size!=inf_sz)||(csa.seekpos!=seek))
 		return false;
-
 	inf_size=inf_sz;
 	full_size=sizeof(CycleStorageElem)+inf_size;
-	size=(sz-sizeof(csa))/full_size;
+	size=inf_count;
 	seekpos=seek;
 
 	seekpos+=sizeof(CycleStorageAttr);
-	findHead();
+	if(!findHead())
+		return false;
 	return true;
 }
 
@@ -176,12 +177,11 @@ bool CycleStorage::create(const char* name, int inf_sz, int inf_count, int seek)
 		file = fopen(name, "r+");
 	}
 
-	int sz = inf_sz * inf_count;
 
 	inf_size=inf_sz;
 	full_size=sizeof(CycleStorageElem)+inf_size;
 	
-	size=(sz-sizeof(CycleStorageAttr))/full_size;
+	size=inf_count;
 	iter=0;
 	seekpos=seek;
 
@@ -207,16 +207,6 @@ bool CycleStorage::create(const char* name, int inf_sz, int inf_count, int seek)
 		filewrite(jrn,i,false);
 	}
 	fflush(file);
-	
-	/*!	Дописываем оставшееся место, чтобы журнал занимал ровно столько места, сколько передано в параметрах */
-	int emp = sz-size*full_size-sizeof(CycleStorageAttr);
-	if(emp>0)
-	{
-		char* empty= new char[emp];
-		fwrite(empty,emp,1,file);
-		fflush(file);
-		delete empty;
-	}
 
 	head=tail=-1;
 	delete jrn;
