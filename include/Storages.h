@@ -143,8 +143,11 @@ class CycleStorage
 
 		/*! 
 			\param inf_sz - размер поля информации, 
-			\param int_count - количество записей (размером inf_sz)
-			\param seek - отступ от начала файла (указывает место, где расположен журнал) 
+			\param inf_count - количество записей (размером inf_sz +1 на ключевое поле)
+			\param seek - отступ от начала файла (указывает место, где расположен журнал)
+
+			размер всего журнала будет равен inf_count*(inf_sz+1) + sizeof(CycleStorageAttr),
+			где последнее слагаемое - размер заголовка
 		*/
 		bool open(const char* name, int inf_sz, int inf_count, int seek);
 		bool create(const char* name, int inf_sz, int inf_count, int seek);

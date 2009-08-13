@@ -172,6 +172,8 @@ bool testTable2(void)
 		return false;
 	}
 
+	printf("\n");
+
 	strcpy(val,"new block");
 	i=9;
 	t.addRow(&i,val);
