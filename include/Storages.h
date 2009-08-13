@@ -131,7 +131,7 @@ class TableBlockStorage
 		int inf_size;
 	private:
 		int max,cur_block;
-		TableBlockStorageElem** mem;
+		TableBlockStorageElem* mem;
 		int k_size, lim,seekpos;
 		int size,block_size,block_number,full_size;
 		void filewrite(int seek, bool needflush=true);
@@ -139,6 +139,7 @@ class TableBlockStorage
 		bool keyCompare(int i, void* key);
 		void* keyPointer(int num);
 		void* valPointer(int num);
+		TableBlockStorageElem* elemPointer(int num);
 };
 
 class CycleStorage
