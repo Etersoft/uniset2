@@ -35,13 +35,13 @@ TableBlockStorage::TableBlockStorage()
 	file=NULL;
 }
 
-TableBlockStorage::TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek, bool cr)
+TableBlockStorage::TableBlockStorage(const char* name, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek, bool cr)
 {
 	file=NULL;
-	if(!open(name, key_sz, inf_sz, sz, block_num, block_lim, seek))
+	if(!open(name, key_sz, inf_sz, inf_count, block_num, block_lim, seek))
 	{
 		if(cr)
-			create(name, key_sz, inf_sz, sz, block_num, block_lim, seek);
+			create(name, key_sz, inf_sz, inf_count, block_num, block_lim, seek);
 		else
 			file=NULL;
 	}
@@ -114,7 +114,7 @@ bool TableBlockStorage::copyToNextBlock(void)
 	return true;
 }
 
-bool TableBlockStorage::open(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek)
+bool TableBlockStorage::open(const char* name, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek)
 {
 	/*! Если уже был открыт файл в переменной данного класса, он закрывается и открывается новый */
 	if(file!=NULL) fclose(file);
@@ -136,9 +136,7 @@ bool TableBlockStorage::open(const char* name, int key_sz, int inf_sz, int sz, i
 
 	full_size = sizeof(TableBlockStorageElem)+key_sz+inf_sz;
 
-	int tmpsize=(sz-sizeof(StorageAttr))/(full_size);
-	int tmpblock=tmpsize/block_num;
-	tmpsize=tmpblock*block_num;
+	int tmpsize=inf_count*block_num;
 
 	/*! Проверяем заголовок на совпадение с нашими значениями */
 	if((sa.k_size!=key_sz)||(sa.inf_size!=inf_sz)||(sa.size!=tmpsize)||(sa.block_number!=block_num)||(sa.lim!=block_lim)||(sa.seekpos!=seek))
@@ -151,9 +149,8 @@ bool TableBlockStorage::open(const char* name, int key_sz, int inf_sz, int sz, i
 	k_size=key_sz;
 	inf_size=inf_sz;
 	lim=block_lim;
-	size=(sz-sizeof(StorageAttr))/(full_size);
 	block_number=block_num;
-	block_size=size/block_num;
+	block_size=inf_count;
 	size=block_size*block_num;
 
 	max=-1;
@@ -188,7 +185,7 @@ bool TableBlockStorage::open(const char* name, int key_sz, int inf_sz, int sz, i
 	return true;
 }
 
-bool TableBlockStorage::create(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek)
+bool TableBlockStorage::create(const char* name, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek)
 {
 	if(file!=NULL) fclose(file);
 	file = fopen(name, "r+");
@@ -205,10 +202,9 @@ bool TableBlockStorage::create(const char* name, int key_sz, int inf_sz, int sz,
 	full_size = sizeof(TableBlockStorageElem)+k_size+inf_size;
 	int i;
 
-	size=(sz-sizeof(StorageAttr))/(full_size);
 
 	block_number=block_num;
-	block_size=size/block_num;
+	block_size=inf_count;
 	size=block_size*block_num;
 	max=-1;
 
@@ -252,15 +248,6 @@ bool TableBlockStorage::create(const char* name, int key_sz, int inf_sz, int sz,
 	cur_block=0;
 	fflush(file);
 
-	/*!	Дописываем оставшееся место, чтобы таблица занимал ровно столько места, сколько передано в параметрах */
-	int emp = sz-size*full_size-sizeof(StorageAttr);
-	if(emp>0)
-	{
-		char* empty=new char[emp];
-		fwrite(empty,emp,1,file);
-		fflush(file);
-		delete empty;
-	}
 	return true;
 }
 

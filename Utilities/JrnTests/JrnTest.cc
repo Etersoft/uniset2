@@ -31,6 +31,8 @@
 #include "Storages.h"
 #include "UniXML.h"
 
+int seek=0;
+
 void testTable1(void)
 {
 	char *chr=new char[20];
@@ -77,7 +79,9 @@ bool testTable2(void)
 	char *val=new char[40];
 	TableBlockStorage t;
 	//t = new TableBlockStorage();
-	t.create("big_file.test", 4, 40, 20000, 5,28,0);
+	t.create("big_file.test", 4, 40, 100, 5,28,0);
+	seek=t.getByteSize();
+	printf("Table size in bytes = %d\n",seek);
 	int i;
 	for(i=1;i<20;i++)
 	{
@@ -187,7 +191,7 @@ bool testTable2(void)
 		return false;
 	}
 	printf("after reopen:\n");
-	t.open("big_file.test", 4, 40, 20000, 5,28,0);
+	t.open("big_file.test", 4, 40, 100, 5,28,0);
 	for(i=1;i<20;i++)
 	{
 		if(t.findKeyValue(&i,val)!=0) printf("%s, ",val);
@@ -207,7 +211,7 @@ bool reOpen()
 	int i,k=0;
 	char *str = new char[30];
 	printf("the same after reopen:\n");
-	if(!j.open("big_file.test",30,32000,20000))
+	if(!j.open("big_file.test",30,32000,seek))
 	{
 		printf("Reopen file error\n");
 		delete str;
@@ -229,7 +233,7 @@ bool reOpen()
 
 bool testJournal1(void)
 {
-	CycleStorage j("big_file.test",30,32000,20000,true);
+	CycleStorage j("big_file.test",30,32000,seek,true);
 	int i,k=0;
 	char *str = new char[30];
 	printf("journal test 1\n");
@@ -254,8 +258,8 @@ bool testJournal1(void)
 	}
 	k = 0;
 
+	TableBlockStorage t("big_file.test", 4, 40, 100, 5,28,0);
 	printf("test of 2 classes working in 1 file together\n");
-	TableBlockStorage t("big_file.test", 4, 40, 20000, 5,28,0);
 	char *val = new char[40];
 	for(i=1;i<20;i++)
 	{
@@ -321,20 +325,20 @@ bool testJournal1(void)
 
 void testJournal2(void)
 {
-	CycleStorage j("big_file.test",30,32000,20000);
+	CycleStorage j("big_file.test",30,32000,seek);
 	int i,k;
 	char *str = new char[30];
 	printf("journal test 2 - checking number of iterations to find head/tail\n");
 	printf("iterations = %d\n",j.getIter());
 	for(i=0;i<20;i++)
 	{
-		for(k=1000;k<3000;k++)
+		for(k=1000;k<2999;k++)
 		{
 			sprintf(str,"%d",k);
 			j.addRow(str);
 		}
-		j.open("big_file.test",30,32000,20000);
-		printf("iterations = %d\n",j.getIter());
+		j.open("big_file.test",30,32000,seek);
+		printf("i=%d, iterations = %d\n", i, j.getIter());
 	}
 	printf("\n");
 	delete str;
@@ -356,10 +360,11 @@ bool testJournal3()
 		return false;
 	}
 
-	printf("Joural size=%d inf_size=%d full_size=%d\n",
+	printf("Joural size=%d inf_size=%d full_size=%d byte_size=%d\n",
 	j.getSize(),
 	j.getInfSize(),
-	j.getFullSize()
+	j.getFullSize(),
+	j.getByteSize()
 	);
 
 	JItem ji;

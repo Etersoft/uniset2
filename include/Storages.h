@@ -92,16 +92,25 @@ class TableBlockStorage
 
 		/*! Конструктор вызывает функцию Open, а при параметре create=true создает новую таблицу при
 		несовпадении заголовков или отсутствии старой */
-		TableBlockStorage(const char* name, int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek, bool create=false);
+		TableBlockStorage(const char* name, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek, bool create=false);
 
 		~TableBlockStorage();
 
-		/*! inf_sz - размер поля информации, key_sz - размер поля ключа, sz - размер таблицы
-		block_num - кол-во блоков (при этом размер одного блока = sz/block_num должен быть достаточен для
-		всей информации, записываемой в таблицу), block_lim - число перезаписей на блок,
-		seek - отступ от начала файла (указывает место, где расположена таблица) */
-		bool open(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
-		bool create(const char* name, int inf_sz, int key_sz, int sz, int block_num, int block_lim, int seek);
+		/*!
+			\param inf_sz - размер поля информации,
+			\param key_sz - размер поля ключа,
+			\param inf_count - кол-во записей в одном блоке таблицы (размером inf_sz+key_sz
+			+sizeof(int) на ключевое поле)
+			\param block_num - кол-во блоков (при этом кол-во записей во всей таблице = inf_count*block_num,
+			\param block_lim - число перезаписей на блок,
+			\param seek - отступ от начала файла (указывает место, где расположена таблица) 
+
+			размер всей таблицы будет равен inf_count*block_num*(inf_sz+key_sz+sizeof(int)) +
+			sizeof(StorageAttr), где последнее слагаемое - размер заголовка,
+			размер можно получить, вызвав функцию getByteSize()
+		*/
+		bool open(const char* name, int inf_sz, int key_sz, int inf_count, int block_num, int block_lim, int seek);
+		bool create(const char* name, int inf_sz, int key_sz, int inf_count, int block_num, int block_lim, int seek);
 
 		/*! Добавление информации по ключу, возможна перезапись при совпадении ключа с существующим */
 		bool addRow(void* key, void* val);
@@ -114,6 +123,9 @@ class TableBlockStorage
 
 		/*! Получение текущего блока (для тестовой программы) */
 		int getCurBlock(void);
+
+		inline int getByteSize() { return (size*full_size + sizeof(StorageAttr)); }
+
 	protected:
 		FILE *file;
 		int inf_size;
@@ -148,6 +160,7 @@ class CycleStorage
 
 			размер всего журнала будет равен inf_count*(inf_sz+1) + sizeof(CycleStorageAttr),
 			где последнее слагаемое - размер заголовка
+			размер можно получить, вызвав функцию getByteSize()
 		*/
 		bool open(const char* name, int inf_sz, int inf_count, int seek);
 		bool create(const char* name, int inf_sz, int inf_count, int seek);
@@ -169,6 +182,7 @@ class CycleStorage
 		/*! Получение кол-ва итерации при поиске начала/конца журнала (для тестовой программы) */
 		int getIter(void);
 		
+		inline int getByteSize() { return (size*full_size + sizeof(CycleStorageAttr)); }
 		inline int getSize(){ return size; }
 		inline int getInfSize(){ return inf_size; }
 		inline int getFullSize(){ return full_size; }
