@@ -147,7 +147,12 @@ bool CycleStorage::open(const char* name, int inf_sz, int inf_count, int seek)
 	file = fopen(name, "r+");
 	if(file==NULL) return false;
 
-	if(fseek(file,seek,0)==-1) return false;
+	if(fseek(file,seek,0)==-1)
+	{
+		fclose(file);
+		file=NULL;
+		return false;
+	}
 
 	/*! Читаем заголовок */
 	CycleStorageAttr csa;
@@ -155,7 +160,11 @@ bool CycleStorage::open(const char* name, int inf_sz, int inf_count, int seek)
 
 	/*! Проверяем заголовок на совпадение с нашими значениями */
 	if((csa.size!=inf_count)||(csa.inf_size!=inf_sz)||(csa.seekpos!=seek))
+	{
+		fclose(file);
+		file=NULL;
 		return false;
+	}
 	inf_size=inf_sz;
 	full_size=sizeof(CycleStorageElem)+inf_size;
 	size=inf_count;
@@ -163,6 +172,8 @@ bool CycleStorage::open(const char* name, int inf_sz, int inf_count, int seek)
 
 	if(!findHead())
 	{
+		fclose(file);
+		file=NULL;
 		return false;
 	}
 	return true;

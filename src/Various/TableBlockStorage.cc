@@ -123,11 +123,16 @@ bool TableBlockStorage::open(const char* name, int key_sz, int inf_sz, int sz, i
 	if(file==NULL) return false;
 
 	seekpos=seek;
-	if(fseek(file,seekpos,0)==-1) return false;
+	if(fseek(file,seekpos,0)==-1)
+	{
+		fclose(file);
+		file=NULL;
+		return false;
+	}
 
 	/*! Чтение заголовка таблицы */
-	StorageAttr *sa = new StorageAttr();
-	fread(sa,sizeof(StorageAttr),1,file);
+	StorageAttr sa;
+	fread(&sa,sizeof(StorageAttr),1,file);
 
 	full_size = sizeof(TableBlockStorageElem)+key_sz+inf_sz;
 
@@ -136,12 +141,12 @@ bool TableBlockStorage::open(const char* name, int key_sz, int inf_sz, int sz, i
 	tmpsize=tmpblock*block_num;
 
 	/*! Проверяем заголовок на совпадение с нашими значениями */
-	if((sa->k_size!=key_sz)||(sa->inf_size!=inf_sz)||(sa->size!=tmpsize)||(sa->block_number!=block_num)||(sa->lim!=block_lim)||(sa->seekpos!=seek))
+	if((sa.k_size!=key_sz)||(sa.inf_size!=inf_sz)||(sa.size!=tmpsize)||(sa.block_number!=block_num)||(sa.lim!=block_lim)||(sa.seekpos!=seek))
 	{
-		delete sa;
+		fclose(file);
+		file=NULL;
 		return false;
 	}
-	delete sa;
 
 	k_size=key_sz;
 	inf_size=inf_sz;
@@ -216,20 +221,19 @@ bool TableBlockStorage::create(const char* name, int key_sz, int inf_sz, int sz,
 		mem[i]=(TableBlockStorageElem*)new char[full_size];
 	}
 
-	StorageAttr *sa = new StorageAttr();
-	sa->k_size=k_size;
-	sa->inf_size=inf_size;
-	sa->size=size;
-	sa->block_number=block_number;
-	sa->lim=lim;
-	sa->seekpos=seekpos;
+	StorageAttr sa;
+	sa.k_size=k_size;
+	sa.inf_size=inf_size;
+	sa.size=size;
+	sa.block_number=block_number;
+	sa.lim=lim;
+	sa.seekpos=seekpos;
 
 	/*! Запись заголовка таблицы */
 	cur_block=0;
-	fwrite(sa,sizeof(StorageAttr),1,file);
+	fwrite(&sa,sizeof(StorageAttr),1,file);
 	fflush(file);
 	seekpos+=sizeof(StorageAttr);
-	delete sa;
 
 	/*!	Поле счетчика записей при создании служит флагом на используемость блока и на пустоту ячейки записи:
 		EMPTY_BLOCK=(-5) - заполняются первые элементы каждого блока, если там другое значение, то этот блок используется, EMPTY_ELEM=(-1) - все остальные пустые записи
@@ -255,6 +259,7 @@ bool TableBlockStorage::create(const char* name, int key_sz, int inf_sz, int sz,
 		char* empty=new char[emp];
 		fwrite(empty,emp,1,file);
 		fflush(file);
+		delete empty;
 	}
 	return true;
 }
