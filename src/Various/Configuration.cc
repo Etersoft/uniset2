@@ -262,7 +262,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
 		// default init...
 		transientIOR 	= false;
-		localIOR 		= false;
+		localIOR 	= false;
 
 		initParameters();
 
@@ -325,8 +325,13 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 			if( unideb.debugging(Debug::INFO) )
 				unideb[Debug::INFO] << "(Configuration): внесли параметр " << param.str() << endl;
 			i+=2;
+
 			assert( i < _argc );
 		}
+		
+		// т..к _argc уже изменился, то и _argv надо обновить
+		// чтобы вызов getArgParam не привел к SIGSEGV
+		_argv = new_argv;
 
 		// NameService (+2)
 		xmlNode* nsnode = getNode("NameService");
@@ -339,8 +344,8 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 		else
 		{
 			new_argv[i] = "-ORBInitRef";
-
 			new_argv[i+1] 	= ""; // сперва инициализиуем пустой строкой (т.к. будет вызываться getArgParam)
+			
 			string defPort( getPort( getProp(nsnode,"port") ) ); // здесь вызывается getArgParam! проходящий по _argv
 
 			ostringstream param;
@@ -349,7 +354,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 			if( unideb.debugging(Debug::INFO) )
 				unideb[Debug::INFO] << "(Configuration): внесли параметр " << param.str() << endl;
 		}
-
+		
 		_argv = new_argv;
 		// ------------- CORBA INIT -------------		
 		// orb init
@@ -662,7 +667,7 @@ void Configuration::createNodesList()
 			}
 		}
 
-		tmp = getProp(it,"dbserver");
+		tmp = it.getProp("dbserver");
 		
 		if( tmp.empty() )
 			ninf.dbserver = UniSetTypes::DefaultObjectId;
@@ -693,7 +698,7 @@ void Configuration::createNodesList()
 	}	
 
 	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << "Configuration(createNodesList): ВСЕГО УЗЛОВ В СПИСКЕ " << lnodes.size() << endl;	
+		unideb[Debug::INFO] << "Configuration(createNodesList): ВСЕГО УЗЛОВ В СПИСКЕ " << lnodes.size() << endl;
 }
 // -------------------------------------------------------------------------
 void Configuration::initNode( UniSetTypes::NodeInfo& ninfo, UniXML_iterator& it )

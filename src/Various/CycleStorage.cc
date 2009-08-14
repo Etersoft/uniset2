@@ -83,21 +83,19 @@ bool CycleStorage::findHead()
 		/*! Если первый элемент - голова списка */
 		head=0;
 		/*! В этом случае журнал может быть е полностью заполнен, поэтому хвост нужно искать */
-		while(r - l > 1)
+		while( (r-l)>1 )
 		{
 			mid = (l+r)/2;
 			fseek(file,seekpos+mid*full_size,0);
 			fread(jrn,full_size,1,file);
 			iter++;
-			if(jrn->status==0)
+			if( jrn->status==0 )
 				r = mid;
-			else l=mid;
+			else 
+				l = mid;
 		}
-		if(r<size)
-		{
-			tail=r-1;
-		}
-		else tail=size-1;
+
+		tail = (r<size) ? (r-1) : (size-1);
 	}
 	else
 	{
@@ -105,7 +103,8 @@ bool CycleStorage::findHead()
 		/*! i равно или 2-ум, или 4-ем, в зависимости от этого слева головы списка 2-ки, а справа 4-ки
 		или наоборот */
 		i=jrn->status-jrn->status%2;
-		if(i==2) j=4; else j=2;
+		j = (i==2) ? 4 : 2;
+		
 		while((jrn->status!=1)&&(jrn->status!=6)&&(r - l > 1))
 		{
 			mid = (l+r)/2;
@@ -123,17 +122,19 @@ bool CycleStorage::findHead()
 			}
 			else
 			{
+				delete[] jrn;
 				return false;
 			}
 		}
-		if(r<size)
-			head=r;
-		else head=size-1;
+		
+		head = (r<size) ? r : (size-1);
+
 		/*! хвост списка на 1 левее головы, т.к. если голова не в начале, то журнал весь заполнен */
 		tail=head-1;
 		if(tail<0) tail=size-1;
 	}
-	delete jrn;
+
+	delete[] jrn;
 	return true;
 }
 
@@ -242,7 +243,7 @@ bool CycleStorage::addRow(void* str)
 		filewrite(jrn,0);
 		head=0;
 		tail=0;
-		delete jrn;
+		delete[] jrn;
 		return true;
 	}
 	if(head==tail)
@@ -250,7 +251,7 @@ bool CycleStorage::addRow(void* str)
 		jrn->status=2;
 		filewrite(jrn,1);
 		tail=1;
-		delete jrn;
+		delete[] jrn;
 		return true;
 	}
 	fseek(file,seekpos+tail*full_size,0);
@@ -259,8 +260,7 @@ bool CycleStorage::addRow(void* str)
 	/*!	Статус элемента совпадает со статусом последнего элемента в журнале 2, 3 -> 2; 4, 5 -> 4
 	*/
 
-	if((jrn->status==2)||(jrn->status==3)) i=2;
-	else i=4;
+	 i = ((jrn->status==2)||(jrn->status==3)) ? 2 : 4;
 
 	/*!	Если последний элемент журнала в крайней правой позиции выделенной части файла,
 		переходим в начало части файла и инвертируем статус 2->4, 4->2
@@ -270,10 +270,10 @@ bool CycleStorage::addRow(void* str)
 	{
 		fseek(file,seekpos,0);
 		tail=0;
-		if(i==2) i=4;
-		else i=2;
+		i = (i==2) ? 4 : 2;
 	}
 	else tail++;
+
 	fread(jrn,full_size,1,file);
 	memcpy(valPointer(jrn),str,inf_size);
 	if(jrn->status==0)
@@ -297,7 +297,7 @@ bool CycleStorage::addRow(void* str)
 		else jrn->status=1;
 		filewrite(jrn,head);
 	}
-	delete jrn;
+	delete[] jrn;
 	return true;
 }
 
@@ -317,19 +317,19 @@ bool CycleStorage::delRow(int row)
 	{
 		jrn->status=6;
 		filewrite(jrn,i);
-		delete jrn;
+		delete[] jrn;
 		return true;
 	}
 	if(jrn->status==2) j=3;
 	else if(jrn->status==4) j=5;
 	else 
 	{
-		delete jrn;
+		delete[] jrn;
 		return false;
 	}
 	jrn->status=j;
 	filewrite(jrn,i);
-	delete jrn;
+	delete[] jrn;
 	return true;
 }
 
@@ -352,7 +352,7 @@ bool CycleStorage::delAllRows()
 	}
 	fflush(file);
 	head=tail=-1;
-	delete jrn;
+	delete[] jrn;
 	return true;
 }
 
@@ -374,10 +374,10 @@ void* CycleStorage::readRow(int num, void* str)
 	if((jrn->status==1)||(jrn->status==2)||(jrn->status==4))
 	{
 		memcpy(str,valPointer(jrn),inf_size);
-		delete jrn;
+		delete[] jrn;
 		return str;
 	}
-	delete jrn;
+	delete[] jrn;
 	return NULL;
 }
 
