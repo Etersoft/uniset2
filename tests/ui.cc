@@ -1,3 +1,4 @@
+#include <time.h>
 #include "UniversalInterface.h"
 #include "UniSetTypes.h"
 
@@ -25,17 +26,13 @@ int main( int argc, const char **argv )
 		IOController_i::ShortIOInfo inf = ui.getChangedTime(id,conf->getLocalNode());
 
 		struct tm* tms = localtime(&inf.tv_sec);
-		char dbuf[20];
-		snprintf(dbuf,sizeof(dbuf),"%02d/%02d/%04d ", tms->tm_mday, tms->tm_mon+1, tms->tm_year+1900);
 
-		char tbuf[20];
-		snprintf(tbuf,sizeof(tbuf),"%02d:%02d:%02d ", tms->tm_hour, tms->tm_min, tms->tm_sec);
-
+		char t_str[ 150 ];
+		strftime( t_str, sizeof(t_str), "%d %b %Y %H:%M:%S", tms );
 	
 		cout << "id=" << id
 			<< " value=" << inf.value
-			<< " last changed: " << string(dbuf) << " " << string(tbuf) 
-			<< endl;
+			<< " last changed: " << string(t_str) << endl;
 	}
 	catch( Exception& ex )
 	{
