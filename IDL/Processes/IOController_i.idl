@@ -182,6 +182,18 @@ interface IOController_i : ObjectsManager_i
 			Будет пустым если всё хорошо.
 	*/
 	UniSetTypes::IDSeq setOutputSeq( in OutSeq lst, in UniSetTypes::ObjectId sup_id );
+
+
+	/*! Информация о дискретном датчике */
+	struct ShortIOInfo
+	{
+		long value;
+		long tv_sec;	/*!< время последнего изменения датчика, секунды (gettimeofday) */
+		long tv_usec;	/*!< время последнего изменения датчика, мксек (gettimeofday) */
+	};
+
+	ShortIOInfo getChangedTime(in SensorInfo si) raises(NameNotFound);
+
 };
 
 // --------------------------------------------------------------------------------------------------------------
