@@ -683,6 +683,9 @@ void SharedMemory::saveHistory()
 // -----------------------------------------------------------------------------
 void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 {
+	if( hist.empty() )
+		return;
+
 	if( dlog.debugging(Debug::INFO) )
 	{
 		dlog[Debug::INFO] << myname << "(updateHistory): " 
