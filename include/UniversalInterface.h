@@ -176,7 +176,7 @@ class UniversalInterface
 						UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
 		void askRemoteOutput( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node,
-							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId )throw(IO_THROW_EXCEPTIONS);		
+							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId )throw(IO_THROW_EXCEPTIONS);
 
 		//! Заказ таймера
 		void askTimer( UniSetTypes::TimerId timerid, CORBA::Long timeMS, CORBA::Short ticks=-1,
@@ -191,10 +191,13 @@ class UniversalInterface
 								UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId ) throw(IO_THROW_EXCEPTIONS);
 		
 
-		UniversalIO::IOTypes getIOType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);		
+		UniversalIO::IOTypes getIOType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
 		UniversalIO::IOTypes getIOType(UniSetTypes::ObjectId id);
-		UniSetTypes::ObjectType getType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);		
+		UniSetTypes::ObjectType getType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
 		UniSetTypes::ObjectType getType(UniSetTypes::ObjectId id);
+
+		IOController_i::ShortIOInfo getChangedTime( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
+
 
 //		/*! регистрация объекта в репозитории */
 		void registered(UniSetTypes::ObjectId id, const UniSetTypes::ObjectPtr oRef, bool force=false)throw(UniSetTypes::ORepFailed);

@@ -2188,6 +2188,78 @@ void UniversalInterface::fastSaveState( IOController_i::SensorInfo& si, bool sta
 }
 
 // ------------------------------------------------------------------------------------------------------------
+IOController_i::ShortIOInfo UniversalInterface::getChangedTime( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+{
+	if( id == DefaultObjectId )
+		throw ORepFailed("UI(getChangedTime): Unknown id=UniSetTypes::DefaultObjectId");
+
+	IOController_i::SensorInfo si;
+	si.id = id;
+	si.node = node;
+
+	try
+	{
+		CORBA::Object_var oref;
+		try
+		{
+			oref = rcache.resolve(si.id, si.node);
+		}
+		catch( NameNotFound ){}
+
+		for (unsigned int i=0; i<uconf->getRepeatCount(); i++)
+		{
+			try
+			{
+				if( CORBA::is_nil(oref) )
+					oref = resolve( si.id, si.node );
+
+				IOController_i_var iom = IOController_i::_narrow(oref);
+				return iom->getChangedTime(si);
+			}
+			catch(CORBA::TRANSIENT){}
+			catch(CORBA::OBJECT_NOT_EXIST){}
+			catch(CORBA::SystemException& ex){}
+			msleep(uconf->getRepeatTimeout());
+			oref = CORBA::Object::_nil();
+		}
+	}
+	catch(UniSetTypes::TimeOut){}
+	catch(IOController_i::NameNotFound &ex)
+	{
+		rcache.erase(si.id, si.node);
+		unideb[Debug::WARN] << "UI(getChangedTime): " << ex.err << endl;
+	}
+	catch(ORepFailed)
+	{
+		rcache.erase(si.id, si.node);
+		unideb[Debug::WARN] << set_err("UI(getChangedTime): не смог получить ссылку на объект ",si.id,si.node) << endl;
+	}	
+	catch(CORBA::NO_IMPLEMENT)
+	{
+		rcache.erase(si.id, si.node);		
+		unideb[Debug::WARN] << set_err("UI(getChangedTime): недоступна реализация метода",si.id,si.node) << endl;
+	}	
+	catch(CORBA::OBJECT_NOT_EXIST)
+	{
+		rcache.erase(si.id, si.node);
+		unideb[Debug::WARN] << set_err("UI(getChangedTime): ссылка на не существующий объект",si.id,si.node) << endl;
+	}	
+	catch(CORBA::COMM_FAILURE)
+	{
+		// ошибка системы коммуникации
+		// unideb[Debug::WARN] << "UI(saveState): CORBA::COMM_FAILURE " << endl;
+	}	
+	catch(CORBA::SystemException& ex)
+	{
+		// ошибка системы коммуникации
+		// unideb[Debug::WARN] << "UI(saveState): CORBA::SystemException" << endl;
+	}	
+	catch(...){}
+	
+	rcache.erase(si.id, si.node);
+	throw UniSetTypes::TimeOut(set_err("UI(getChangedTime): TimeOut для объекта",si.id, si.node));
+}
+// ------------------------------------------------------------------------------------------------------------
 
 ObjectPtr UniversalInterface::CacheOfResolve::resolve( ObjectId id, ObjectId node )
 	throw(NameNotFound)
