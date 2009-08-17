@@ -408,8 +408,15 @@ bool CycleStorage::setSize(int count)
 
 	if(count<size)
 	{
+		if( head>count-1 )
+		{
+			head = 0;
+			tail = count - 1;
+		}
+		if( tail>count-1 )
+			tail = count - 1;
 		size=count;
-		return delAllRows();
+		return true;
 	}
 
 	int num = count - size;
