@@ -101,6 +101,8 @@ public:
 	virtual timeout_t getCurrent(); 				/*!< получить текущее значение таймера, в мс */
 	virtual timeout_t getInterval()				/*!< получить интервал, на который установлен таймер, в мс */
 	{
+		if( timeSS == WaitUpTime )
+			return 0;
 		return timeSS*10;
 	}
 	

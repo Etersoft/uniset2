@@ -40,7 +40,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	readconf_ok(false),
 	term(false)
 {
-	cout << "$Id: IOControl.cc,v 1.3 2009/01/23 23:56:54 vpashka Exp $" << endl;
+//	cout << "$Id: IOControl.cc,v 1.3 2009/01/23 23:56:54 vpashka Exp $" << endl;
 //	{
 //		string myfullname = conf->oind->getNameById(id);
 //		myname = ORepHelpers::getShortName(myfullname.c_str());
@@ -337,13 +337,17 @@ void IOControl::execute()
 // --------------------------------------------------------------------------------
 void IOControl::iopoll()
 {
-
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
 	{
 		if( it->ignore || it->ncard == defCardNum )
 			continue;
 
 		ComediInterface* card = cards.getCard(it->ncard);
+
+//		cout  << conf->oind->getMapName(it->si.id) 
+//				<< " card=" << card << " ncard=" << it->ncard
+//				<< " subdev: " << it->subdev << " chan: " << it->channel << endl;
+
 
 		if( card == NULL || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
 			continue;
@@ -391,7 +395,13 @@ void IOControl::iopoll()
 						<< endl;
 				}
 */
+//				cout << " jar=" << ib->ptJar.getInterval()
+//					 << " ondelay=" << ib->ptOnDelay.getInterval()
+//					 << endl; 
+
 				IOBase::processingAsDI( ib, set, shm, force );
+				
+//				cout << "val=" << ib->value << endl;
 								
 				// немного оптимизации
 				// сразу выставляем.сбрасываем флаг тестирования

@@ -65,7 +65,7 @@ bool PassiveTimer::checkTime()
 //	printf("times=%d, act=%d\n",times(0),timeAct);
 //	printf("%d\n",timeSS); msleep(10);
 
-	if( timeSS == WaitUpTime)
+	if( timeSS == WaitUpTime )
 		return false;
 
 	if( times() >= timeAct )

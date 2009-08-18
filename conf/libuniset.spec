@@ -3,9 +3,8 @@
 
 Name: libuniset
 Version: 0.96
-Release: eter47
+Release: eter49
 Summary: UniSet - library for building distributed industrial control systems
-
 License: GPL
 Group: Development/C++
 Url: http://sourceforge.net/uniset
@@ -176,6 +175,12 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Aug 18 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter48
+- fixed bug in PassiveTimer
+
+* Tue Aug 18 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter47
+- new build
+
 * Tue Aug 18 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter46
 - new build
 
