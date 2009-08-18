@@ -44,6 +44,8 @@
 
 	<dlog name="dlog" levels="" file=""/>
 	
+	<IOControl name="IOControl" />
+	
 	<SharedMemory name="SharedMemory" shmID="SharedMemory">
 		<History savetime="200">
 			<item id="1" fuse_id="AlarmFuse1_S" fuse_invert="1" size="30" filter="a1"/>

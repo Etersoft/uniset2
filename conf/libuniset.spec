@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.96
-Release: eter39
+Release: eter47
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -177,6 +177,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Aug 18 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter46
+- new build
+
 * Thu Aug 06 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter38
 - new build
 

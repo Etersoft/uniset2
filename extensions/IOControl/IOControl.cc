@@ -56,7 +56,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	UniXML_iterator it(cnode);
 
 	noCards = true;
-	for( unsigned int i=1; i<=cards.size(); i++ )
+	for( unsigned int i=1; i<cards.size(); i++ )
 	{
 		stringstream s1;
 		s1 << "--iodev" << i;
@@ -70,7 +70,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 								<< " ïôëìàþåîá (TestMode)!!! × ëáþåóô÷å õóôòïêóô÷á õëáúáîï '" 
 								<< iodev << "'" << endl;
 			cards[i] = NULL;
-			cout << "******************** CARD" << i << ": IO IMITATOR MODE ****************" << endl;			
+			cout << "******************** CARD" << i << ": IO IMITATOR MODE ****************" << endl;
 		}
 		else
 		{

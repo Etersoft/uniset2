@@ -1,5 +1,6 @@
 #!/bin/sh
 
+export LD_LIBRARY_PATH="../../lib/.libs;../lib/.libs"
 #ulimit -Sc 1000000000000
 
 uniset-start.sh -f ./uniset-iocontrol --smemory-id SharedMemory \
@@ -8,10 +9,11 @@ uniset-start.sh -f ./uniset-iocontrol --smemory-id SharedMemory \
 	 --io-polltime 100 \
 	 --io-s-filter-field io \
 	 --io-s-filter-value 1 \
+	 --io-numcards 2 \
 	 --iodev1 /dev/null \
 	 --iodev2 /dev/null \
-	 --io-test-lamp RS_Test9_S \
+	 --io-test-lamp Input1_S \
 	 --io-heartbeat-id AI_AS \
-	 --io-sm-ready-test-sid RS_Test9_S \
-	--unideb-add-levels info,crit,warn,level9,system \
+	 --io-sm-ready-test-sid Input1_S \
+	--unideb-add-levels info,crit,warn,level9,system
 
