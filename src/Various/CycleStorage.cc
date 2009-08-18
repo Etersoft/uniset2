@@ -365,7 +365,7 @@ void* CycleStorage::readRow(int num, void* str)
 	int j=(head+num)%size;
 	if((file==NULL)||(num>=size)) return 0;
 
-	if((head!=tail+1)&&(num>tail)) return 0;
+	if((head!=tail+1)&&(num>tail)&&(head!=tail)) return 0;
 
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
 	fseek(file,seekpos+j*full_size,0);
@@ -385,3 +385,77 @@ int CycleStorage::getIter()
 {
 	return iter;
 }
+
+/*! Функция для изменения размера журнала. Удаляет все записи, если новый размер меньше. Заполняет новое место
+записями, аналогичными удаленным, если новый размер больше. Вызывать лучше не часто, т. к. переписывается заголовок
+журнала, расположенный статически в одном месте */
+
+bool CycleStorage::setSize(int count)
+{
+	if( file==NULL ) return false;
+
+	if( count==size ) return true;
+
+	fseek(file,seekpos-sizeof(CycleStorageAttr),0);
+
+	/*! Записываем заголовок журнала */
+	CycleStorageAttr csa;
+	csa.inf_size=inf_size;
+	csa.size=count;
+	csa.seekpos=seekpos-sizeof(CycleStorageAttr);
+	fwrite(&csa,sizeof(CycleStorageAttr),1,file);
+	fflush(file);
+
+	if(count<size)
+	{
+		if( head>count-1 )
+		{
+			head = 0;
+			tail = count - 1;
+		}
+		if( tail>count-1 )
+			tail = count - 1;
+		size=count;
+		return true;
+	}
+
+	int num = count - size;
+	size = count;
+	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
+
+	if(( head==tail+1 ) || (( tail==size-num-1 ) && ( head==0 )))
+	{
+		if( head<size-num-1 )
+			fseek(file, seekpos + (size-num-1)*full_size, 0);
+		else
+			fseek(file, seekpos, 0);
+		fread(jrn, full_size, 1, file);
+		if(( jrn->status==2 ) || (jrn->status==3 ))
+			jrn->status = ( head<size-num-1 ) ? 3 : 5;
+		else if(( jrn->status==4 ) || (jrn->status==5 ))
+			jrn->status = ( head<size-num-1 ) ? 5 : 3;
+		else
+		{
+			delete[] jrn;
+			return false;
+		}
+		for( int i=num; i>0; i-- )
+		{
+			filewrite(jrn, size-i, false);
+		}
+		fflush(file);
+		if( head==0 )
+			tail = size-1;
+	}
+	else
+	{
+		jrn->status=0;
+		for( int i=num; i>0; i-- )
+			filewrite(jrn, size-i, false);
+		fflush(file);
+	}
+
+	delete[] jrn;
+	return true;
+}
+

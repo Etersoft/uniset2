@@ -913,7 +913,10 @@ IOController_i::DigitalIOInfo IOController::getDInfo(const IOController_i::Senso
 {
 	DIOStateList::iterator it = dioList.find( key(si.id, si.node) );
 	if( it!=dioList.end() )
+	{
+		uniset_spin_lock lock(it->second.val_lock,checkLockValuePause);
 		return it->second;
+	}
 
 	// -------------
 	ostringstream err;
@@ -926,7 +929,10 @@ IOController_i::AnalogIOInfo IOController::getAInfo(const IOController_i::Sensor
 {
 	AIOStateList::iterator it = aioList.find( key(si.id, si.node) );
 	if( it!=aioList.end() )
+	{
+		uniset_spin_lock lock(it->second.val_lock,checkLockValuePause);
 		return it->second;
+	}
 
 	// -------------
 	ostringstream err;
@@ -1360,5 +1366,37 @@ IDSeq* IOController::setOutputSeq(const IOController_i::OutSeq& lst, ObjectId su
 	}
 
 	return badlist.getIDSeq();
+}
+// -----------------------------------------------------------------------------
+IOController_i::ShortIOInfo IOController::getChangedTime( const IOController_i::SensorInfo& si )
+{
+	DIOStateList::iterator dit = dioList.find( key(si.id, si.node) );
+	if( dit!=dioList.end() )
+	{
+		IOController_i::ShortIOInfo i;
+		uniset_spin_lock lock(dit->second.val_lock,checkLockValuePause);
+		i.value = dit->second.state ? 1 : 0;
+		i.tv_sec = dit->second.tv_sec;
+		i.tv_usec = dit->second.tv_usec;
+		return i;
+	}
+
+	AIOStateList::iterator ait = aioList.find( key(si.id, si.node) );
+	if( ait!=aioList.end() )
+	{
+		IOController_i::ShortIOInfo i;
+		uniset_spin_lock lock(ait->second.val_lock,checkLockValuePause);
+		i.value = ait->second.value;
+		i.tv_sec = ait->second.tv_sec;
+		i.tv_usec = ait->second.tv_usec;
+		return i;
+	}
+
+	// -------------
+	ostringstream err;
+	err << myname << "(getChangedTime): дискретный вход(выход) с именем " 
+		<< conf->oind->getNameById(si.id) << " не найден";
+	unideb[Debug::INFO] << err.str() << endl;
+	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // -----------------------------------------------------------------------------

@@ -122,6 +122,8 @@ class IOController:
 		UniSetTypes::Message::Priority getPriority(const IOController_i::SensorInfo& si, 
 													UniversalIO::IOTypes type);
 													
+		virtual IOController_i::ShortIOInfo getChangedTime(const IOController_i::SensorInfo& si);
+
 	public:
 
 		struct DependsInfo;

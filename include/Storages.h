@@ -182,6 +182,9 @@ class CycleStorage
 
 		/*! Получение кол-ва итерации при поиске начала/конца журнала (для тестовой программы) */
 		int getIter(void);
+
+		/*! Изменение размера журнала (количества записей в нем) */
+		bool setSize(int count);
 		
 		inline int getByteSize() { return (size*full_size + sizeof(CycleStorageAttr)); }
 		inline int getSize(){ return size; }

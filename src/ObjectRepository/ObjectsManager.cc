@@ -235,7 +235,7 @@ void ObjectsManager::managers(OManagerCommand cmd)
 			}
 			catch( Exception& ex )
 			{
-				unideb[Debug::CRIT] << myname << "(managers): " << ex << endl;				
+				unideb[Debug::CRIT] << myname << "(managers): " << ex << endl;
 				unideb[Debug::CRIT] << myname << "(managers): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
 			}
 			catch(CORBA::SystemException& ex)
@@ -304,7 +304,9 @@ void ObjectsManager::objects(OManagerCommand cmd)
 		    }
 			catch( CORBA::Exception& ex )
 			{
-			    unideb[Debug::CRIT] << myname << "(objects): Caught CORBA::Exception." << endl;
+			    unideb[Debug::CRIT] << myname << "(objects): Caught CORBA::Exception. " 
+			    << ex._name()
+			    << " (" << (*li)->getName() << ")" << endl;
 			}
 			catch( omniORB::fatalException& fe ) 
 			{

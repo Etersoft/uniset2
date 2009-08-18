@@ -211,7 +211,7 @@ bool reOpen()
 	int i,k=0;
 	char *str = new char[30];
 	printf("the same after reopen:\n");
-	if(!j.open("big_file.test",30,32000,seek))
+	if(!j.open("big_file.test",30,33000,seek))
 	{
 		printf("Reopen file error\n");
 		delete str;
@@ -237,7 +237,7 @@ bool testJournal1(void)
 	int i,k=0;
 	char *str = new char[30];
 	printf("journal test 1\n");
-	for(i=1;i<33000;i++)
+	for(i=1;i<64001;i++)
 	{
 		sprintf(str,"%d",i);
 		j.addRow(str);
@@ -257,7 +257,8 @@ bool testJournal1(void)
 		return false;
 	}
 	k = 0;
-
+	printf("size changed to 33000 rows (increased)\n");
+	j.setSize(33000);
 	TableBlockStorage t("big_file.test", 4, 40, 100, 5,28,0);
 	printf("test of 2 classes working in 1 file together\n");
 	char *val = new char[40];
@@ -294,7 +295,7 @@ bool testJournal1(void)
 	k = 0;
 
 	printf("first 20 after adding 10 elements\n");
-	for(i=10001;i<10011;i++)
+	for(i=10000001;i<10000011;i++)
 	{
 		sprintf(str,"%d",i);
 		j.addRow(str);
@@ -319,6 +320,23 @@ bool testJournal1(void)
 
 	if(!reOpen()) return false;
 
+	printf("size changed back to 32000 rows\n");
+	j.setSize(32000);
+	for(i=0;i<20;i++)
+	{
+		if(j.readRow(i,str))
+		{
+			printf("%s\n",str);
+			k++;
+		}
+	}
+	if(k != 10)
+	{
+		delete str;
+		return false;
+	}
+
+	k = 0;
 	delete str;
 	return true;
 }
