@@ -2648,6 +2648,7 @@ void UniversalInterface::calibrate(const IOController_i::SensorInfo& si,
 
 				IOController_i_var iom = IOController_i::_narrow(oref);
 				iom->calibrate(si,ci,admId);
+				return;
 			}
 			catch(CORBA::TRANSIENT){}
 			catch(CORBA::OBJECT_NOT_EXIST){}
