@@ -22,7 +22,7 @@ std::ostream& operator<<( std::ostream& os, IOControl::IOInfo& inf )
 IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 						SharedMemory* ic, int numcards ):
 	UniSetObject(id),
-	polltime(500),
+	polltime(150),
 	cards(numcards+1),
 	noCards(true),
 	iomap(100),
@@ -115,7 +115,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	
 	polltime = conf->getArgInt("--io-polltime",it.getProp("polltime"));
 	if( !polltime )
-		polltime = 150;
+		polltime = 100;
 
 	force 		= conf->getArgInt("--io-force",it.getProp("force"));
 	force_out 	= conf->getArgInt("--io-force-out",it.getProp("force_out"));
@@ -902,7 +902,7 @@ void IOControl::initIOCard()
 // -----------------------------------------------------------------------------
 void IOControl::blink( BlinkList& lst, bool& bstate )
 {
-	if( lstBlink.empty() )
+	if( lst.empty() )
 		return;
 
 	
@@ -913,14 +913,13 @@ void IOControl::blink( BlinkList& lst, bool& bstate )
 		if( io->subdev==DefaultSubdev || io->channel==DefaultChannel )
 			continue;
 
-
 		ComediInterface* card = cards.getCard(io->ncard);
 		if( card == NULL )
 			continue;
 
 		try
 		{
-			card->setDigitalChannel(io->subdev,io->channel,blink_state);
+			card->setDigitalChannel(io->subdev,io->channel,bstate);
 		}
 		catch( Exception& ex )
 		{
@@ -945,7 +944,7 @@ void IOControl::addBlink( IOInfo* io, BlinkList& lst )
 // -----------------------------------------------------------------------------
 void IOControl::delBlink( IOInfo* io, BlinkList& lst )
 {
-	for( BlinkList::iterator it=lstBlink.begin(); it!=lstBlink.end(); ++it )
+	for( BlinkList::iterator it=lst.begin(); it!=lst.end(); ++it )
 	{
 		if( (*it) == io )
 		{
@@ -983,11 +982,22 @@ void IOControl::check_testlamp()
 			if(  it->stype == UniversalIO::AnalogOutput )
 			{
 				if( isTestLamp )
+				{
 					addBlink( &(*it),lstBlink);
-				else if( it->value != lmpBLINK )
+					delBlink( &(*it),lstBlink2);
+					delBlink( &(*it),lstBlink3);
+				}
+				else if( it->value == lmpBLINK )
+					addBlink( &(*it),lstBlink);
+				else if( it->value == lmpBLINK2 )
+					addBlink( &(*it),lstBlink2);
+				else if( it->value == lmpBLINK3 )
+					addBlink( &(*it),lstBlink3);
+				else
 				{
 					delBlink(&(*it),lstBlink);
 					delBlink(&(*it),lstBlink2);
+					delBlink(&(*it),lstBlink3);
 				}
 			}
 			else if( it->stype == UniversalIO::DigitalOutput )
@@ -995,10 +1005,7 @@ void IOControl::check_testlamp()
 				if( isTestLamp )
 					addBlink(&(*it),lstBlink);
 				else
-				{
 					delBlink(&(*it),lstBlink);
-					delBlink(&(*it),lstBlink2);
-				}
 			}
 		}
 	}
