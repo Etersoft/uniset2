@@ -954,7 +954,18 @@ CORBA::Long IOController::getRawValue(const IOController_i::SensorInfo& si)
 
 	// ??? получаем raw из калиброванного значения ???
 	IOController_i::CalibrateInfo& ci(it->second.ci);
-	return UniSetTypes::lcalibrate(it->second.value,ci.minRaw,ci.maxRaw,ci.minCal,ci.maxCal,true);
+
+	if( ci.maxCal!=0 && ci.maxCal!=ci.minCal )
+	{
+		if( it->second.type == UniversalIO::AnalogInput )
+			return UniSetTypes::lcalibrate(it->second.value,ci.minRaw,ci.maxRaw,ci.minCal,ci.maxCal,true);
+
+		// п╨п╟п╩п╦п╠я─я┐п╣п╪ п╡ п╬п╠я─п╟я┌п╫я┐я▌ я│я┌п╬я─п╬п╫я┐ (п╫п╟ п╡я▀я┘п╬п╢)
+		if( it->second.type == UniversalIO::AnalogOutput ) 
+			return UniSetTypes::lcalibrate(it->second.value,ci.minCal,ci.maxCal,ci.minRaw,ci.maxRaw,true);
+	}
+	
+	return it->second.value;
 }
 // --------------------------------------------------------------------------------------------------------------
 void IOController::calibrate(const IOController_i::SensorInfo& si, 
