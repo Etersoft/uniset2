@@ -31,6 +31,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	shm(0),
 	myid(id),
 	blink_state(true),
+	blink2_state(true),
+	blink3_state(true),
 	testLamp_S(UniSetTypes::DefaultObjectId),
 	isTestLamp(false),
 	sidHeartBeat(UniSetTypes::DefaultObjectId),
@@ -52,6 +54,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		throw SystemError("Not find conf-node " + cname + " for " + myname);
 
 	defCardNum = atoi( conf->getArgParam("--io-default-cardnum","-1").c_str());
+
+	unideb[Debug::INFO] << myname << "(init): numcards=" << numcards << endl;
 
 	UniXML_iterator it(cnode);
 
@@ -152,7 +156,19 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	
 	ptBlink.setTiming(blink_msec);
 
-	smReadyTimeout = conf->getArgInt("--io-sm-ready-timeout",it.getProp("ready_timeout"));
+	int blink2_msec = conf->getArgInt("--io-blink2-time",it.getProp("blink2-time"));
+	if( blink2_msec<=0 )
+		blink2_msec = 150;
+	
+	ptBlink2.setTiming(blink2_msec);
+
+	int blink3_msec = conf->getArgInt("--io-blink3-time",it.getProp("blink3-time"));
+	if( blink3_msec<=0 )
+		blink3_msec = 100;
+	
+	ptBlink3.setTiming(blink2_msec);
+
+	smReadyTimeout = atoi(conf->getArgParam("--io-sm-ready-timeout",it.getProp("ready_timeout")).c_str());
 	if( smReadyTimeout == 0 )
 		smReadyTimeout = 15000;
 	else if( smReadyTimeout < 0 )
@@ -211,6 +227,9 @@ IOControl::~IOControl()
 	// здесь бы ещё пройтись по списку с сделать delete для
 	// всех cdiagram созданных через new
 	// 
+	for( unsigned int i=0; i<cards.size(); i++ )
+		delete cards[i];
+
 	delete shm;
 }
 
@@ -242,6 +261,7 @@ void IOControl::execute()
 	}
 	
 	iomap.resize(maxItem);
+	maxHalf = maxItem / 2;
 	unideb[Debug::INFO] << myname << "(init): iomap size = " << iomap.size() << endl;
 
 	cerr << myname << "(iomap size): " << iomap.size() << endl;
@@ -297,11 +317,29 @@ void IOControl::execute()
 					ptBlink.reset();
 					try
 					{
-						blink();
+						blink(lstBlink,blink_state);
 					}
 					catch(...){}
 				}
-				
+				if( ptBlink2.checkTime() )
+				{
+					ptBlink2.reset();
+					try
+					{
+						blink(lstBlink2,blink2_state);
+					}
+					catch(...){}
+				}
+				if( ptBlink3.checkTime() )
+				{
+					ptBlink3.reset();
+					try
+					{
+						blink(lstBlink3,blink3_state);
+					}
+					catch(...){}
+				}
+
 				uniset_mutex_lock l(iopollMutex,5000);
 				iopoll();
 			}
@@ -337,10 +375,50 @@ void IOControl::execute()
 // --------------------------------------------------------------------------------
 void IOControl::iopoll()
 {
-	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+	// Опрос приоритетной очереди
+	for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
 	{
-		if( it->ignore || it->ncard == defCardNum )
+		if( it->priority > 0 )
+			ioread( &(iomap[it->index]) );
+	}
+
+	bool prior = false;
+	int i=0;
+	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it,i++ )
+	{
+		if( it->ignore )
 			continue;
+
+		IOBase::processingThreshold((IOBase*)&(*it),shm,force);
+
+		ioread( (IOInfo*)&(*it) );
+		
+		// на середине 
+		// опять опросим приоритетные
+		if( !prior && i>maxHalf )
+		{
+			for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
+			{
+				if( it->priority > 1 )
+					ioread( &(iomap[it->index]) );
+			}
+			
+			prior = true;
+		}
+	}
+	
+	// Опрос приоритетной очереди
+	for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
+	{
+		if( it->priority > 2 )
+			ioread( &(iomap[it->index]) );
+	}
+}
+// --------------------------------------------------------------------------------
+void IOControl::ioread( IOInfo* it )
+{
+	if( it->ignore || it->ncard == defCardNum )
+		return;
 
 		ComediInterface* card = cards.getCard(it->ncard);
 
@@ -350,7 +428,7 @@ void IOControl::iopoll()
 
 
 		if( card == NULL || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
-			continue;
+			return;
 
 //		cout  << conf->oind->getMapName(it->si.id) 
 //				<< " subdev: " << it->subdev << " chan: " << it->channel << endl;
@@ -358,7 +436,7 @@ void IOControl::iopoll()
 		if( it->si.id == DefaultObjectId )
 		{
 			cerr << myname << "(iopoll): sid=DefaultObjectId?!" << endl;
-			continue;
+			return;
 		}
 
 		IOBase* ib = &(*it);
@@ -426,8 +504,14 @@ void IOControl::iopoll()
 					{
 						case lmpOFF:
 						{
-							if( force_out && prev_val == lmpBLINK )
-								delBlink(it);
+							if( force_out && (prev_val == lmpBLINK 
+								|| prev_val == lmpBLINK2
+								|| prev_val == lmpBLINK3) )
+							{
+								delBlink(it,lstBlink);
+								delBlink(it,lstBlink2);
+								delBlink(it,lstBlink3);
+							}
 
 							if( it->no_testlamp || (!it->no_testlamp && !isTestLamp) )
 								card->setDigitalChannel(it->subdev,it->channel,0);
@@ -436,8 +520,14 @@ void IOControl::iopoll()
 	
 						case lmpON:
 						{
-							if( force_out && prev_val == lmpBLINK )
-								delBlink(it);
+							if( force_out && (prev_val == lmpBLINK 
+								|| prev_val == lmpBLINK2
+								|| prev_val == lmpBLINK3) )
+							{
+								delBlink(it,lstBlink);
+								delBlink(it,lstBlink2);
+								delBlink(it,lstBlink3);
+							}
 
 							if( it->no_testlamp || (!it->no_testlamp && !isTestLamp) )
 								card->setDigitalChannel(it->subdev,it->channel,1);
@@ -448,7 +538,35 @@ void IOControl::iopoll()
 						{
 							if( force_out && prev_val != lmpBLINK )
 							{
-								addBlink(it);
+								delBlink(it,lstBlink2);
+								delBlink(it,lstBlink3);
+								addBlink(it,lstBlink);
+								// и сразу зажигаем, чтобы не было паузы (так комфортнее выглядит для оператора)
+								card->setDigitalChannel(it->subdev,it->channel,1);
+							}
+						}
+						break;
+
+						case lmpBLINK2:
+						{
+							if( force_out && prev_val != lmpBLINK2 )
+							{
+								delBlink(it,lstBlink);
+								delBlink(it,lstBlink3);
+								addBlink(it,lstBlink2);
+								// и сразу зажигаем, чтобы не было паузы (так комфортнее выглядит для оператора)
+								card->setDigitalChannel(it->subdev,it->channel,1);
+							}
+						}
+						break;
+
+						case lmpBLINK3:
+						{
+							if( force_out && prev_val != lmpBLINK3 )
+							{
+								delBlink(it,lstBlink);
+								delBlink(it,lstBlink2);
+								addBlink(it,lstBlink3);
 								// и сразу зажигаем, чтобы не было паузы (так комфортнее выглядит для оператора)
 								card->setDigitalChannel(it->subdev,it->channel,1);
 							}
@@ -456,7 +574,7 @@ void IOControl::iopoll()
 						break;
 						
 						default:
-							continue;
+							return;
 					}
 				}
 			}
@@ -492,10 +610,7 @@ void IOControl::iopoll()
 		{
 			unideb[Debug::LEVEL3] << myname << "(iopoll): catch ..." << endl;
 		}
-	}
-
-	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
-			IOBase::processingThreshold(&(*it),shm,force);
+	
 }
 // --------------------------------------------------------------------------------
 void IOControl::readConfiguration()
@@ -564,7 +679,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 
 	if( c.empty() || inf.ncard < 0 || inf.ncard >= (int)cards.size() )
 	{
-		dlog[Debug::LEVEL3] << myname 
+		unideb[Debug::LEVEL3] << myname 
 							<< "(initIOItem): Не указан или неверный номер карты (" 
 							<< inf.ncard << ") для " << it.getProp("name") 
 							<< " set default=" << defCardNum << endl;
@@ -638,6 +753,15 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	// под реальное количество
 	if( maxItem >= iomap.size() )
 		iomap.resize(maxItem+10);
+	int prior = atoi((it.getProp("iopriority")).c_str());
+	if( prior > 0 )
+	{
+		IOPriority p(prior,maxItem);
+		pmap.push_back(p);
+		unideb[Debug::LEVEL3] << myname << "(readItem): add to priority list: " << 
+						it.getProp("name") 
+						<< " priority=" << prior << endl;
+	}
 	
 	iomap[maxItem++] = inf;
 	return true;
@@ -724,7 +848,7 @@ void IOControl::initOutputs()
 				card->setDigitalChannel(it->subdev,it->channel,(bool)it->defval);
 			else if( it->stype == UniversalIO::DigitalOutput )
 				card->setDigitalChannel(it->subdev,it->channel,(bool)it->defval);
-			else if( it->stype == UniversalIO::AnalogOutput )				
+			else if( it->stype == UniversalIO::AnalogOutput )
 				card->setAnalogChannel(it->subdev,it->channel,it->defval,it->range,it->aref);
 		}
 		catch( Exception& ex )
@@ -776,17 +900,17 @@ void IOControl::initIOCard()
 	}
 }	
 // -----------------------------------------------------------------------------
-void IOControl::blink()
+void IOControl::blink( BlinkList& lst, bool& bstate )
 {
 	if( lstBlink.empty() )
 		return;
 
 	
-	for( BlinkList::iterator it=lstBlink.begin(); it!=lstBlink.end(); ++it )
+	for( BlinkList::iterator it=lst.begin(); it!=lst.end(); ++it )
 	{
-		IOMap::iterator& io(*it);
-
-		if( io->subdev == DefaultSubdev || io->channel==DefaultChannel )
+		IOInfo* io(*it);
+	
+		if( io->subdev==DefaultSubdev || io->channel==DefaultChannel )
 			continue;
 
 
@@ -804,27 +928,28 @@ void IOControl::blink()
 		}
 	}
 	
-	blink_state ^= true;
+	bstate ^= true;
 }
 // -----------------------------------------------------------------------------
-void IOControl::addBlink( IOMap::iterator& io )
+
+void IOControl::addBlink( IOInfo* io, BlinkList& lst )
 {
-	for( BlinkList::iterator it=lstBlink.begin(); it!=lstBlink.end(); ++it )
+	for( BlinkList::iterator it=lst.begin(); it!=lst.end(); ++it )
 	{
 		if( (*it) == io )
 			return;
 	}
 	
-	lstBlink.push_back(io);
+	lst.push_back(io);
 }
 // -----------------------------------------------------------------------------
-void IOControl::delBlink( IOMap::iterator& io )
+void IOControl::delBlink( IOInfo* io, BlinkList& lst )
 {
 	for( BlinkList::iterator it=lstBlink.begin(); it!=lstBlink.end(); ++it )
 	{
 		if( (*it) == io )
 		{
-			lstBlink.erase(it);
+			lst.erase(it);
 			return;
 		}
 	}
@@ -858,16 +983,22 @@ void IOControl::check_testlamp()
 			if(  it->stype == UniversalIO::AnalogOutput )
 			{
 				if( isTestLamp )
-					addBlink(it);
+					addBlink( &(*it),lstBlink);
 				else if( it->value != lmpBLINK )
-					delBlink(it);
+				{
+					delBlink(&(*it),lstBlink);
+					delBlink(&(*it),lstBlink2);
+				}
 			}
 			else if( it->stype == UniversalIO::DigitalOutput )
 			{
 				if( isTestLamp )
-					addBlink(it);
+					addBlink(&(*it),lstBlink);
 				else
-					delBlink(it);
+				{
+					delBlink(&(*it),lstBlink);
+					delBlink(&(*it),lstBlink2);
+				}
 			}
 		}
 	}
@@ -937,6 +1068,8 @@ void IOControl::help_print( int argc, const char* const* argv )
 	cout << "--io-s-filter-field	- Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
 	cout << "--io-s-filter-value	- Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
 	cout << "--io-blink-time msec	- Частота мигания, мсек. По умолчанию в configure.xml" << endl;
+	cout << "--io-blink2-time msec	- Вторая частота мигания (lmpBLINK2), мсек. По умолчанию в configure.xml" << endl;
+	cout << "--io-blink3-time msec	- Вторая частота мигания (lmpBLINK3), мсек. По умолчанию в configure.xml" << endl;
 	cout << "--io-heartbeat-id		- Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
 	cout << "--io-heartbeat-max  	- Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 	cout << "--io-ready-timeout		- Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
@@ -1003,9 +1136,9 @@ void IOControl::sysCommand( SystemMessage* sm )
 		
 			askSensors(UniversalIO::UIONotify);
 			break;
-		}				
+		}
 		
-		case SystemMessage::FoldUp:								
+		case SystemMessage::FoldUp:
 		case SystemMessage::Finish:
 			askSensors(UniversalIO::UIODontNotify);
 			break;
@@ -1173,23 +1306,70 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 					switch( cur_val )
 					{
 						case lmpOFF:
-							delBlink(it);
+							delBlink(&(*it),lstBlink);
+							delBlink(&(*it),lstBlink2);
+							delBlink(&(*it),lstBlink3);
 						break;
 	
 						case lmpON:
-							delBlink(it);
+							delBlink(&(*it),lstBlink);
+							delBlink(&(*it),lstBlink2);
+							delBlink(&(*it),lstBlink3);
 						break;
+
 
 						case lmpBLINK:
 						{
 							if( prev_val != lmpBLINK )
 							{
-								addBlink(it);
+								delBlink(&(*it),lstBlink2);
+								delBlink(&(*it),lstBlink3);
+								addBlink(&(*it),lstBlink);
 								// и сразу зажигаем, чтобы не было паузы
 								// (так комфортнее выглядит для оператора)
 								if( it->ignore || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
 									break;
 
+								ComediInterface* card = cards.getCard(it->ncard);
+
+								if( card != NULL )
+									card->setDigitalChannel(it->subdev,it->channel,1);
+							}
+						}
+						break;
+
+						case lmpBLINK2:
+						{
+							if( prev_val != lmpBLINK2 )
+							{
+								delBlink(&(*it),lstBlink);
+								delBlink(&(*it),lstBlink3);
+								addBlink(&(*it),lstBlink2);
+								// и сразу зажигаем, чтобы не было паузы
+								// (так комфортнее выглядит для оператора)
+								if( it->ignore || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
+									break;
+								
+								ComediInterface* card = cards.getCard(it->ncard);
+
+								if( card != NULL )
+									card->setDigitalChannel(it->subdev,it->channel,1);
+							}
+						}
+						break;
+
+						case lmpBLINK3:
+						{
+							if( prev_val != lmpBLINK3 )
+							{
+								delBlink(&(*it),lstBlink);
+								delBlink(&(*it),lstBlink2);
+								addBlink(&(*it),lstBlink3);
+								// и сразу зажигаем, чтобы не было паузы
+								// (так комфортнее выглядит для оператора)
+								if( it->ignore || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
+									break;
+								
 								ComediInterface* card = cards.getCard(it->ncard);
 
 								if( card != NULL )

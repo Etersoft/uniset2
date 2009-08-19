@@ -61,8 +61,8 @@ namespace UniSetTypes
 	{
 		lmpOFF		= 0,	/*!< выключить */
 		lmpON		= 1,	/*!< включить */
-		lmpBLINK	= 2,		/*!< мигать */
-		lmpBLINK2	= 3,		/*!< мигать */
+		lmpBLINK	= 2,	/*!< мигать */
+		lmpBLINK2	= 3,	/*!< мигать */
 		lmpBLINK3	= 4		/*!< мигать */
 	};
 

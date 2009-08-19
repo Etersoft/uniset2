@@ -114,14 +114,24 @@ class IOControl:
 			friend std::ostream& operator<<(std::ostream& os, IOInfo& inf );
 		};
 
+		struct IOPriority
+		{
+			IOPriority(int p, int i):
+				priority(p),index(i){}
+				
+			int priority;
+			int index;
+		};
+
 		void execute();
 
 	protected:
 
 		void iopoll(); /*!< опрос карт в/в */
-		void blink();
+		void ioread( IOInfo* it );
 		void check_testlamp();
-		
+		void blink();
+	
 		// действия при завершении работы
 		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
 		virtual void sysCommand( UniSetTypes::SystemMessage* sm );
@@ -157,7 +167,12 @@ class IOControl:
 
 		typedef std::vector<IOInfo> IOMap;
 		IOMap iomap;			/*!< список входов/выходов */
+		
+		typedef std::list<IOPriority> PIOMap;
+		PIOMap pmap;	/*!< список приоритетных входов/выходов */
+
 		unsigned int maxItem;	/*!< количество элементов (используется на момент инициализации) */
+		unsigned int maxHalf;
 		int filtersize;
 		float filterT;
 
@@ -168,13 +183,26 @@ class IOControl:
 		UniversalInterface ui;
 		UniSetTypes::ObjectId myid;
 
-		typedef std::list<IOMap::iterator> BlinkList;
+		typedef std::list<IOInfo*> BlinkList;
+
+		void addBlink( IOInfo* it, BlinkList& lst );
+		void delBlink( IOInfo* it, BlinkList& lst );
+		void blink( BlinkList& lst, bool& bstate );
+
+		// обычное мигание
 		BlinkList lstBlink;
 		PassiveTimer ptBlink;
 		bool blink_state;
 		
-		void addBlink( IOMap::iterator& it );
-		void delBlink( IOMap::iterator& it );
+		// мигание с двойной частотой
+		BlinkList lstBlink2;
+		PassiveTimer ptBlink2;
+		bool blink2_state;
+
+		// мигание с тройной частотой
+		BlinkList lstBlink3;
+		PassiveTimer ptBlink3;
+		bool blink3_state;
 		
 		UniSetTypes::ObjectId testLamp_S;
 		Trigger trTestLamp;

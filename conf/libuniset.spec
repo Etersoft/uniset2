@@ -175,6 +175,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Aug 19 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter49
+- add BLINK2, BLINK3 to IOControl
+
 * Tue Aug 18 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter48
 - fixed bug in PassiveTimer
 
