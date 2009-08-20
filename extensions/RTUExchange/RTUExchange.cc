@@ -1521,11 +1521,14 @@ bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
 		return false;
 	}
 	
-	d->second->resp_id = conf->getSensorID(it.getProp("respondSensor"));
-	if( d->second->resp_id == DefaultObjectId )
+	if( !it.getProp("respondSensor").empty() )
 	{
-		dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for noRespondSensor=" << it.getProp("respondSensor") << endl;
-		return false;
+		d->second->resp_id = conf->getSensorID(it.getProp("respondSensor"));
+		if( d->second->resp_id == DefaultObjectId )
+		{
+			dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for noRespondSensor=" << it.getProp("respondSensor") << endl;
+			return false;
+		}
 	}
 
 	dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
