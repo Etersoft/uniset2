@@ -559,6 +559,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 	if( !n )
 	{
 		dlog[Debug::WARN] << myname << "(buildHistoryList): <History> not found. ignore..." << endl;
+		hist.clear();
 		return;
 	}
 
