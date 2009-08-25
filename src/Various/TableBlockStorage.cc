@@ -259,7 +259,11 @@ bool TableBlockStorage::addRow(void* key, void* value)
 
 	/*! если нашли совпадение ключа, то pos>=0, записываем на это место, иначе пишем на пустое место empty */
 	if(pos>=0) empty=pos;
-	else memcpy(keyPointer(empty),key,k_size);
+	else
+	{
+		if( empty<0 ) return false; /*! Возвращаем false, если место в блоке закончилось */
+		memcpy(keyPointer(empty),key,k_size);
+	}
 
 	elemPointer(empty)->count=++max;
 	memcpy(valPointer(empty),value,inf_size);
