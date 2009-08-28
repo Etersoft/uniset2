@@ -14,7 +14,10 @@ include $(top_builddir)/conf/setting.mk
 
 # install
 devel_include_HEADERS = *.h
-devel_includedir = $(includedir)/@PACKAGE@/extensions
+devel_includedir = $(pkgincludedir)/extensions
 
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSetSharedMemory.pc
+
+all-local:
+	ln -sf ../SharedMemory/$(devel_include_HEADERS) ../include
