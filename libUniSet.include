@@ -33,7 +33,7 @@ cflags()
 libs()
 {
 	echo -n "-L$EXPORTPATH/lib "
-	pkg-config --libs $1 | sed -e "s|-L$prefix ||g"
+	pkg-config --libs $1 | sed -e "s|-L$prefix | |g"
 }
 
 export UNISET_CFLAGS="$( cflags $PCFILE )"
@@ -43,19 +43,19 @@ export UNISET_LIBS="$( libs $PCFILE )"
 ext_cflags()
 {
 	# FIXME: really use extensions/
-	echo -n "-I$1"
+	echo -n "-I$1 "
 	cflags $1/$2
 }
 
 ext_libs()
 {
-	echo -n "-L$1"
+	echo -n "-L$1 "
 	libs $1/$2
 }
 
 EXFILE="$EXPORTPATH/extensions libUniSetExtensions.pc"
 export UNISET_EXT_CFLAGS="-I$EXPORTPATH/extensions/include $( ext_cflags $EXFILE )"
-export UNISET_EXT_LIBS="$( ext_libs $EXFILE )"
+export UNISET_EXT_LIBS="-L$EXPORTPATH/extensions/lib $( ext_libs $EXFILE )"
 
 EXFILE="$EXPORTPATH/extensions/IOControl libUniSetIOControl.pc"
 export UNISET_EXT_IO_CFLAGS="$( ext_cflags $EXFILE )"
