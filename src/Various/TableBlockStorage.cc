@@ -210,6 +210,9 @@ bool TableBlockStorage::create(const char* name, int key_sz, int inf_sz, int inf
 	/*! Инициализация памяти */
 	mem = (TableBlockStorageElem*) new char[block_size*full_size];
 
+	for( i=0; i<block_size*full_size; i++ )
+		*((char*)mem+i) = 0;
+
 	StorageAttr sa;
 	sa.k_size=k_size;
 	sa.inf_size=inf_size;
