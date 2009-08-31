@@ -29,7 +29,10 @@ rtustate_SOURCES	= rtustate.cc
 
 # install
 devel_include_HEADERS = *.h
-devel_includedir = $(includedir)/@PACKAGE@/extensions
+devel_includedir = $(pkgincludedir)/extensions
 
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSetRTU.pc
+
+all-local:
+	ln -sf ../RTUExchange/$(devel_include_HEADERS) ../include

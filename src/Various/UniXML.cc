@@ -213,6 +213,14 @@ int UniXML::getIntProp(xmlNode* node, const string name )
 	return UniSetTypes::uni_atoi((const char*)::xmlGetProp(node, (const xmlChar*)name.c_str()));
 }
 
+int UniXML::getPIntProp(xmlNode* node, const string name, int def )
+{
+	int i = getIntProp(node, name);
+	if (i <= 0)
+		return def;
+	return i;
+}
+
 void UniXML::setProp(xmlNode* node, string name, string text)
 {
 	xmlSetProp(node, (const xmlChar*)name.c_str(), local2xml(text));
@@ -448,6 +456,15 @@ int UniXML_iterator::getIntProp( const string name )
 {
 	return UniSetTypes::uni_atoi((char*)::xmlGetProp(curNode, (const xmlChar*)name.c_str()));
 }
+
+int UniXML_iterator::getPIntProp( const string name, int def )
+{
+	int i = getIntProp(name);
+	if (i <= 0)
+		return def;
+	return i;
+}
+
 // -------------------------------------------------------------------------		
 void UniXML_iterator::setProp( const string name, const string text )
 {

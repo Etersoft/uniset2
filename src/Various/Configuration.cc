@@ -226,8 +226,8 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 				}
 
 				try
-				{				
-					if( unixml.getProp(cnode,"idfromfile").empty() || unixml.getIntProp(cnode,"idfromfile")==0 )
+				{
+					if( unixml.getIntProp(cnode,"idfromfile") == 0 )
 						oind = new ObjectIndex_XML(unixml); //(fileConfName);
 					else
 						oind = new ObjectIndex_idXML(unixml); //(fileConfName);
@@ -247,7 +247,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 				mi = new DefaultMessageInterface();
 			else
 			{
-				if( unixml.getProp(cnode,"idfromfile").empty() || unixml.getIntProp(cnode,"idfromfile")==0 )
+				if( unixml.getIntProp(cnode,"idfromfile") == 0 )
 					mi = new MessageInterface_XML(unixml); // (fileConfName);
 				else
 					mi = new MessageInterface_idXML(unixml); // (fileConfName);
@@ -277,17 +277,17 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
 		initRepSections();
 
-		// localIOR 
+		// localIOR
 //		localIOR = false; // ??. initParameters()
-		string lior( getArgParam("--localIOR") );
-		if( !lior.empty() )
-			localIOR = uni_atoi(lior);
+		int lior = getArgInt("--localIOR");
+		if( lior )
+			localIOR = lior;
 
 		// transientIOR
 //		transientIOR = false; // ??. initParameters()
-		string tior( getArgParam("--transientIOR") );
-		if( !tior.empty() )
-			transientIOR = uni_atoi(tior);
+		int tior = getArgInt("--transientIOR");
+		if( tior )
+			transientIOR = tior;
 
 		if( imagesDir[0]!='/' && imagesDir[0]!='.' )
 			imagesDir = dataDir + imagesDir + "/";

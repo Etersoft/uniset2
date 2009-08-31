@@ -17,7 +17,10 @@ libUniSetMBSlave_la_SOURCES 	= MBSlave.cc
 
 # install
 devel_include_HEADERS = *.h
-devel_includedir = $(includedir)/@PACKAGE@/extensions
+devel_includedir = $(pkgincludedir)/extensions
 
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSetMBSlave.pc
+
+all-local:
+	ln -sf ../ModbusSlave/$(devel_include_HEADERS) ../include

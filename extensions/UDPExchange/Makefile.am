@@ -18,7 +18,10 @@ libUniSetUDP_la_SOURCES 	= UDPPacket.cc UDPExchange.cc
 
 # install
 devel_include_HEADERS = *.h
-devel_includedir = $(includedir)/@PACKAGE@/extensions
+devel_includedir = $(pkgincludedir)/extensions
 
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSetUDP.pc
+
+all-local:
+	ln -sf ../UDPExchange/$(devel_include_HEADERS) ../include
