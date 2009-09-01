@@ -57,9 +57,8 @@ namespace ModbusRTU
 	};
 
 	const unsigned char MBErrMask = 0x80;
-
 	// ---------------------------------------------------------------------
-	static unsigned short SWAPSHORT(unsigned short x) { return ((((x)>>8)&0xff)|(((x)<<8)&0xff00)); }
+	unsigned short SWAPSHORT(unsigned short x);
 	// ---------------------------------------------------------------------
 	/*! Расчёт контрольной суммы */
 	ModbusCRC checkCRC( ModbusByte* start, int len );
@@ -514,15 +513,17 @@ namespace ModbusRTU
 		void clear();
 		
 		/*! проверка на переполнение */	
-		inline bool isFull() 		
+		inline bool isFull()
 		{
 			return ( count*sizeof(ModbusData) >= MAXLENPACKET );
 		}
+		
+		void swapData();
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		int szData();
 		
-		/*! преобразование для посылки в сеть */	
+		/*! преобразование для посылки в сеть */
 		ModbusMessage transport_msg();
 		
 		// Это поле не входит в стандарт modbus

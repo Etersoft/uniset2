@@ -26,3 +26,7 @@
 ----------
 smonit: processing "precision"
 admin: processing "precision"
+
+
+Встроить в SM возможность заказать переодичность уведомления по аналоговым
+(или любым) датчикам.

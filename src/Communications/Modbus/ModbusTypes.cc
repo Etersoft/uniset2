@@ -13,6 +13,13 @@ using namespace std;
 // -------------------------------------------------------------------------
 #define USE_CRC_TAB 1 // при расчёте использовать таблицы 
 // -------------------------------------------------------------------------
+
+unsigned short ModbusRTU::SWAPSHORT( unsigned short x ) 
+{ 
+	return ((((x)>>8)&0xff)|(((x)<<8)&0xff00)); 
+}
+
+// -------------------------------------------------------------------------
 // Lav: не используется, см. ниже
 
 #ifdef USE_CRC_TAB
@@ -1099,11 +1106,17 @@ void ReadInputRetMessage::init( ModbusMessage& m )
 	memcpy(&data,&(m.data[1]),bcnt);
 	
 	// переворачиваем данные
-	for( unsigned int i=0; i<cnt; i++ )
-		data[i] = SWAPSHORT(data[i]);
+	swapData();
 
  	memcpy(&crc,&(m.data[bcnt+1]),szCRC);
 }	
+// -------------------------------------------------------------------------
+void ReadInputRetMessage::swapData()
+{
+	// переворачиваем данные
+	for( unsigned int i=0; i<count; i++ )
+		data[i] = SWAPSHORT(data[i]);
+}
 // -------------------------------------------------------------------------
 int ReadInputRetMessage::getDataLen( ModbusMessage& m )
 {
