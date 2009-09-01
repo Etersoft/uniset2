@@ -203,6 +203,8 @@ bool CycleStorage::create(const char* name, int inf_sz, int inf_count, int seek)
 	if(fseek(file,seekpos,0)==-1) return false;
 
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
+	for( int i=0; i<full_size; i++ )
+		*((char*)jrn+i) = 0;
 	jrn->status=0;
 
 	/*! Записываем заголовок журнала */
@@ -232,7 +234,8 @@ bool CycleStorage::addRow(void* str)
 	if(file==NULL) return false;
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
 	int i=0;
-
+	for( i=0; i<full_size; i++ )
+		*((char*)jrn+i) = 0;
 	/*!	Первые 2 случая - список пуст (head=-1), в списке 1 элемент(head=tail=0) рассматриваю отдельно)
 	*/
 

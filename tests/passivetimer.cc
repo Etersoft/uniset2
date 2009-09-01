@@ -21,6 +21,17 @@ int main()
 		return 1;
 	}
 
+	PassiveTimer pt3(UniSetTimer::WaitUpTime);
+	cout << "pt3.getCurrent(): " << pt3.getCurrent() << endl;
+	msleep(3000);
+	int pt3_ms = pt3.getCurrent();
+	cout << "pt3.getCurrent(): " << pt3_ms << endl;
+	if( pt3_ms < 3000 )
+	{
+		cerr << "BAD getCurrent() function for WaitUpTime timer (pt3)" << endl;
+		return 1;
+	}
+
 
 	while(1)
 	{

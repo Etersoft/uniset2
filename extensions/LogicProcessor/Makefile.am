@@ -28,7 +28,10 @@ bin_PROGRAMS 		= @PACKAGE@-logicproc @PACKAGE@-plogicproc
 
 # install
 devel_include_HEADERS = *.h
-devel_includedir = $(includedir)/@PACKAGE@/extensions
+devel_includedir = $(pkgincludedir)/extensions
 
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSetLogicProcessor.pc
+
+all-local:
+	ln -sf ../LogicProcessor/$(devel_include_HEADERS) ../include

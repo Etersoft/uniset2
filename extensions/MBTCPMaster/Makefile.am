@@ -17,7 +17,10 @@ libUniSetMBTCPMaster_la_SOURCES 	= MBMaster.cc
 
 # install
 devel_include_HEADERS = *.h
-devel_includedir = $(includedir)/@PACKAGE@/extensions
+devel_includedir = $(pkgincludedir)/extensions
 
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSetMBTCPMaster.pc
+
+all-local:
+	ln -sf ../MBTCPMaster/$(devel_include_HEADERS) ../include

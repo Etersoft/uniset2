@@ -30,7 +30,10 @@ libUniSetIOControl_la_SOURCES 	= ComediInterface.cc IOControl.cc
 
 # install
 devel_include_HEADERS = *.h
-devel_includedir = $(includedir)/@PACKAGE@/extensions
+devel_includedir = $(pkgincludedir)/extensions
 
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSetIOControl.pc
+
+all-local:
+	ln -sf ../IOControl/$(devel_include_HEADERS) ../include
