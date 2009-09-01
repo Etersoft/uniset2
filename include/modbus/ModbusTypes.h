@@ -59,6 +59,8 @@ namespace ModbusRTU
 	const unsigned char MBErrMask = 0x80;
 
 	// ---------------------------------------------------------------------
+	static unsigned short SWAPSHORT(unsigned short x) { return ((((x)>>8)&0xff)|(((x)<<8)&0xff00)); }
+	// ---------------------------------------------------------------------
 	/*! Расчёт контрольной суммы */
 	ModbusCRC checkCRC( ModbusByte* start, int len );
 	const int szCRC = sizeof(ModbusCRC); /*!< размер данных для контрольной суммы */

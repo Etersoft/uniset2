@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.96
-Release: eter50
+Release: eter52
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -175,6 +175,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Fri Aug 21 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter51
+- minor fixes in RTUExchange
+
 * Wed Aug 19 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter50
 - fixed bug in IOControl (blink mechanic)
 

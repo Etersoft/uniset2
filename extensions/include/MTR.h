@@ -36,18 +36,18 @@ namespace MTR
 	int wsize( MTRType t ); 					/*!< длина данных в словах */
 	// -------------------------------------------------------------------------
 	// Информация
-	const ModbusRTU::ModbusData regModelNumber	= 30001;
-	const ModbusRTU::ModbusData regSerialNumber	= 30009;
+	const ModbusRTU::ModbusData regModelNumber	= 0x01;
+	const ModbusRTU::ModbusData regSerialNumber	= 0x09;
 	
 	std::string getModelNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr );
 	std::string getSerialNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr );
 	// -------------------------------------------------------------------------
-	// Настройки связи
-	const ModbusRTU::ModbusData regAddress		= 40055;
-	const ModbusRTU::ModbusData regBaudRate		= 40056;
-	const ModbusRTU::ModbusData regStopBit		= 40057; /* 0 - Stop bit, 1 - Stop bits */
-	const ModbusRTU::ModbusData regParity		= 40058;
-	const ModbusRTU::ModbusData regDataBits		= 40059;
+	// Настройки связи (чтение - read03, запись - write06)
+	const ModbusRTU::ModbusData regAddress		= 55;
+	const ModbusRTU::ModbusData regBaudRate		= 56;
+	const ModbusRTU::ModbusData regStopBit		= 57; /* 0 - Stop bit, 1 - Stop bits */
+	const ModbusRTU::ModbusData regParity		= 58;
+	const ModbusRTU::ModbusData regDataBits		= 59;
 
 	enum mtrBaudRate
 	{
@@ -497,7 +497,11 @@ namespace MTR
 			T_Str16( const ModbusRTU::ReadInputRetMessage& ret )
 			{
 				char c[16];
-				memcpy(c,&ret.data,sizeof(c));
+				ModbusRTU::ModbusData data[8];
+				for( int i=0; i<8; i++ )
+					data[i] = ModbusRTU::SWAPSHORT(ret.data[i]);
+
+				memcpy(c,&data,sizeof(c));
 				sval = std::string(c);
 			}
 
@@ -511,6 +515,7 @@ namespace MTR
 			std::string sval;
 	};
 	// --------------------------------------------------------------------------
+
 	class T_Str8
 	{
 		public:
@@ -520,7 +525,10 @@ namespace MTR
 			T_Str8( const ModbusRTU::ReadInputRetMessage& ret )
 			{
 				char c[8];
-				memcpy(c,&ret.data,sizeof(c));
+				ModbusRTU::ModbusData data[4];
+				for( int i=0; i<4; i++ )
+					data[i] = ModbusRTU::SWAPSHORT(ret.data[i]);
+				memcpy(c,&data,sizeof(c));
 				sval = std::string(c);
 			}
 
