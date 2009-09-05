@@ -96,7 +96,7 @@ double DigitalFilter::firstLevel()
 //--------------------------------------------------------------------------
 int DigitalFilter::filterRC( int rawval )
 {
-	if( Ti<=0 )
+	if( Ti <= 0 )
 		return rawval;
 
 	return lroundf(secondLevel(rawval));
@@ -105,7 +105,7 @@ int DigitalFilter::filterRC( int rawval )
 
 double DigitalFilter::secondLevel( double rawval )
 {
-	if( Ti<=0 )
+	if( Ti <= 0 )
 		return rawval;
 
 	// Измеряем время с прошлого вызова функции

@@ -341,7 +341,7 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
 	std::string fname(it->second);
 	
 	int fd = open(fname.c_str(), O_RDONLY | O_NONBLOCK );
-	if( fd <=0 )
+	if( fd <= 0 )
 	{
 		dlog[Debug::WARN] << "(fileTransfer): open '" << fname << "' with error: " << strerror(errno) << endl;
 		return ModbusRTU::erOperationFailed;

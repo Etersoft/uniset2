@@ -16,7 +16,7 @@ std::ostream& operator<<( std::ostream& os, IOBase& inf )
 bool IOBase::check_channel_break( long val )
 {
 	// порог не задан... (проверка отключена)
-	if( breaklim <=0 )
+	if( breaklim <= 0 )
 		return false;
 		
 	return ( val < breaklim );

@@ -13,7 +13,7 @@ int main( int argc, const char **argv )
 		uniset_init(argc,argv,"test.xml");
 
 		int id = conf->getArgInt("--sid");
-		if( id <=0 )
+		if( id <= 0 )
 		{
 			cerr << "unknown sensor ID. Use --sid " << endl;
 			return 1;

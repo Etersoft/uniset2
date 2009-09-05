@@ -123,7 +123,7 @@ unsigned char ComPort485F::m_receiveByte( bool wait )
 			}
 		}
 
-		if( rc<=0 )
+		if( rc <= 0 )
 			throw UniSetTypes::TimeOut();
 	}
 

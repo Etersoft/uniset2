@@ -205,7 +205,7 @@ unsigned char ComPort::m_receiveByte( bool wait )
 		}
 		else
 			bufLength=read(fd,buf,BufSize);
-		if(bufLength<=0)
+		if(bufLength <= 0)
 		{
 			throw UniSetTypes::TimeOut();
 		}

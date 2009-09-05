@@ -1194,7 +1194,7 @@ int getValue(string args, UniversalInterface &ui )
 int getCalibrate(string arg, UniversalInterface &ui)
 {
 	UniSetTypes::ObjectId sid(uni_atoi(arg));
-	if( sid<=0 )
+	if( sid <= 0 )
 	{
 		cout << "(getCalibrate): Не задан SensorId аналогового датчика!!!!!!"<< endl;
 		return 1;

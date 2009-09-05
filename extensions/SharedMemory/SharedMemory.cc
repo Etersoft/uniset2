@@ -612,7 +612,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 		HistoryInfo hi;
 		hi.id 		= it.getIntProp("id");
 		hi.size 	= it.getIntProp("size");
-		if( hi.size <=0 )
+		if( hi.size <= 0 )
 			continue;
 
 		hi.filter 	= it.getProp("filter");

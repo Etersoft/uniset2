@@ -382,13 +382,13 @@ bool CycleStorage::delAllRows()
 /*! TODO: можно убрать из параметров str, просто возвращать значение */
 void* CycleStorage::readRow(int num, void* str)
 {
-	if( size<=0 ) return 0;
+	if( size <= 0 ) return NULL;
 
 	/*! Отсчитываем номер элемента от головы журнала */
 	int j=(head+num)%size;
-	if((file==NULL)||(num>=size)) return 0;
+	if((file==NULL)||(num>=size)) return NULL;
 
-	if((head!=tail+1)&&(num>tail)&&(head!=tail)) return 0;
+	if((head!=tail+1)&&(num>tail)&&(head!=tail)) return NULL;
 
 	CycleStorageElem *jrn = (CycleStorageElem*)new char[full_size];
 	fseek(file,seekpos+j*full_size,0);

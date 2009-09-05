@@ -222,7 +222,7 @@ void ModbusClient::fileTransfer( ModbusAddr addr, ModbusData numfile,
 								<< ret.numpacks << " curpack=" << curpack+1 << endl;
 					
 			// save data...
-			if( fwrite(&ret.data,ret.dlen,1,fdsave) <=0 )
+			if( fwrite(&ret.data,ret.dlen,1,fdsave) <= 0 )
 			{
 				dlog[Debug::WARN] << "(fileTransfer): fwrite '" 
 						<< save2filename << "' with error: " 

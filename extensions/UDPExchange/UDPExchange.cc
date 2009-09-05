@@ -566,7 +566,7 @@ bool UDPExchange::initItem( UniXML_iterator& it )
 	if( !tid.empty() )
 	{
 		sid = UniSetTypes::uni_atoi(tid);
-		if( sid<=0 )
+		if( sid <= 0 )
 			sid = DefaultObjectId;
 	}
 	else

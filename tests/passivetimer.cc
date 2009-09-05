@@ -9,7 +9,6 @@ PassiveTimer pt(1000);
 
 int main()
 {
-
 	PassiveTimer pt1(5000);
 	cout << " pt1.getInterval()=" << pt1.getInterval() << endl;
 	

@@ -16,7 +16,7 @@ int ModbusTCPCore::readNextData( ost::TCPStream* tcp,
 	{
 		char c;
 		tcp->read(&c,sizeof(c));
-		if( tcp->gcount()<=0 )
+		if( tcp->gcount() <= 0 )
 			break;
 	
 		qrecv.push( (unsigned char)(c) );
@@ -34,12 +34,12 @@ int ModbusTCPCore::getNextData( unsigned char* buf, int len,
 
 	if( qrecv.empty() )
 	{
-		if( len <=0 )
+		if( len <= 0 )
 			len = 7;
 
 		int ret = ModbusTCPCore::readNextData(tcp,qrecv,len);
 
-		if( ret <=0 )
+		if( ret <= 0 )
 			return 0;
 	}
 

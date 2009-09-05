@@ -153,7 +153,7 @@ uniset_mutex::uniset_mutex( const uniset_mutex& r ):
 uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, int timeMS ):
 	mutex(&m)
 {
-	if( timeMS<=0 || mutex->isRelease() )
+	if( timeMS <= 0 || mutex->isRelease() )
 	{
 		mutex->lock();
 		mutex_atomic_set(&mlock,1);

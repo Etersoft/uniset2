@@ -1121,7 +1121,7 @@ ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string fname,
 		(*dlog)[Debug::INFO] << "(replyFileTransfer): " << query << endl;
 	
 	int fd = open(fname.c_str(), O_RDONLY | O_NONBLOCK );
-	if( fd <=0 )
+	if( fd <= 0 )
 	{
 		if( dlog && dlog->debugging(Debug::WARN) )
 			(*dlog)[Debug::WARN] << "(replyFileTransfer): open '" << fname << "' with error: " << strerror(errno) << endl;
