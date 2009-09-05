@@ -224,5 +224,7 @@ namespace UniSetTypes
 	IDList explode( const std::string str, char sep=',' );
 }
 
+#define atoi atoi##_Do_not_use_atoi_function_directly_Use_getIntProp90,_getArgInt_or_uni_atoi
+
 // -----------------------------------------------------------------------------------------
 #endif
