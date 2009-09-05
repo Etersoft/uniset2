@@ -12,9 +12,11 @@
 
 #include <comedilib.h>
 #include <UniXML.h>
+#include <UniSetTypes.h>
 
 // --------------------------------------------------------------------------
 using namespace std;
+using namespace UniSetTypes;
 
 struct equals 
 {
@@ -374,9 +376,9 @@ void openXML()
 		string str;
 		str.clear();
 
-		getline(cin,str);	
+		getline(cin,str);
 		if(  str != "")
-			openFileXml=str;	
+			openFileXml=str;
 
 		try
 		{
@@ -410,17 +412,17 @@ void openXML()
 			int ndat, ncal;
 			for(;it;it.goNext())
 			{
-				ndat = atoi(it.getProp("x").c_str());
-				ncal = atoi(it.getProp("y").c_str());
-				massDat[ndat]=ncal;
+				ndat = it.getIntProp("x");
+				ncal = it.getIntProp("y");
+				massDat[ndat] = ncal;
 			}
-		
+
 			uxml.close();
 			return;
 		}
 		catch( ... )
 		{
-			cout<<"File "<<openFileXml<<"can not be opened"<<endl;
+			cout << "File " << openFileXml << "can not be opened" << endl;
 		}
 	}
 }
@@ -475,8 +477,8 @@ void sortData(bool rise,bool cal)
 				eq.cal=*itl;
 				sortedMass.push_back(eq);
 			}
-			tt=*itl;				
-		}		
+			tt=*itl;
+		}
 	
 	}
 	else if(!rise && cal)
@@ -507,8 +509,8 @@ void sortData(bool rise,bool cal)
 				eq.cal=*itl;
 				sortedMass.push_back(eq);
 			}
-			tt=*itl;				
-		}	
+			tt=*itl;
+		}
 	}
 	else if(rise && !cal)
 	{
@@ -519,7 +521,7 @@ void sortData(bool rise,bool cal)
 			eq.dat=it->first;
 			eq.cal=it->second;
 			sortedMass.push_back(eq);
-		}	
+		}
 	}
 	else if(!rise && !cal)
 	{
