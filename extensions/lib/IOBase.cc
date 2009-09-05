@@ -398,9 +398,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		sid = conf->getSensorID(sname);
 	else
 	{
-		sid = it.getIntProp("id");
-		if( sid <=0 )
-			sid = DefaultObjectId;
+		sid = it.getPIntProp("id", DefaultObjectId);
 	}
 	
 	if( sid == DefaultObjectId )

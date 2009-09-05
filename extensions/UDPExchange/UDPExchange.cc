@@ -67,18 +67,11 @@ maxItem(0)
 
 	thr = new ThreadCreator<UDPExchange>(this, &UDPExchange::poll);
 
-	recvTimeout = conf->getArgInt("--udp-recv-timeout",it.getProp("recvTimeout"));
-	if( recvTimeout <= 0 )
-		recvTimeout = 5000;
-		
-	sendTimeout = conf->getArgInt("--udp-send-timeout",it.getProp("sendTimeout"));
-	if( sendTimeout <= 0 )
-		sendTimeout = 5000;
+	recvTimeout = conf->getArgPInt("--udp-recv-timeout",it.getProp("recvTimeout"), 5000);
 
-	polltime = conf->getArgInt("--udp-polltime",it.getProp("polltime"));
-	if( polltime <= 0 )
-		polltime = 100;
+	sendTimeout = conf->getArgPInt("--udp-send-timeout",it.getProp("sendTimeout"), 5000);
 
+	polltime = conf->getArgPInt("--udp-polltime",it.getProp("polltime"), 100);
 
 	// -------------------------------
 	if( shm->isLocalwork() )
@@ -109,9 +102,7 @@ maxItem(0)
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = conf->getArgInt("--udp-heartbeat-max",it.getProp("heartbeat_max"));
-		if( maxHeartBeat <= 0 )
-			maxHeartBeat = 10;
+		maxHeartBeat = conf->getArgPInt("--udp-heartbeat-max", it.getProp("heartbeat_max"), 10);
 		test_id = sidHeartBeat;
 	}
 	else
@@ -128,13 +119,9 @@ maxItem(0)
 
 	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
 
-	activateTimeout	= conf->getArgInt("--activate-timeout"));
-	if( activateTimeout <= 0 )
-		activateTimeout = 20000;
+	activateTimeout	= conf->getArgPInt("--activate-timeout"), 20000);
 
-	timeout_t msec = conf->getArgInt("--udp-timeout",it.getProp("timeout"));
-	if( msec == 0 )
-		msec = 3000;
+	timeout_t msec = conf->getArgPInt("--udp-timeout",it.getProp("timeout"), 3000);
 
 	dlog[Debug::INFO] << myname << "(init): udp-timeout=" << msec << " msec" << endl;
 }

@@ -507,16 +507,11 @@ void Configuration::initParameters()
 		}
 		else if( name == "RepeatTimeoutMS" )
 		{
-			repeatTimeout = it.getIntProp("name");
-			if(!repeatTimeout)
-				repeatTimeout=50; //[????]
-
+			repeatTimeout = it.getPIntProp("name", 50);
 		}
 		else if( name == "RepeatCount" )
 		{
-			repeatCount = it.getIntProp("name");
-			if(!repeatCount)
-				repeatCount = 1;
+			repeatCount = it.getPIntProp("name", 1);
 		}
 		else if( name == "ImagesPath" )
 		{
