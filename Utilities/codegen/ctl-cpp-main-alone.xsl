@@ -40,7 +40,7 @@ using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 int main( int argc,char* argv[] )
 {
-	if( argc>1 &amp;&amp; strcmp(argv[1],"--help")==0 )
+	if( argc>1 &amp;&amp; !strcmp(argv[1],"--help") )
 	{
 		cout &lt;&lt; "--name name		- ID процесса. По умолчанию IOController1." &lt;&lt; endl;
 		cout &lt;&lt; "--confile fname	- Конф. файл. по умолчанию configure.xml" &lt;&lt; endl;
@@ -62,7 +62,7 @@ int main( int argc,char* argv[] )
 		ObjectId ID(DefaultObjectId);
 		string name = conf->getArgParam("--name","<xsl:value-of select="normalize-space($OID)"/>");
 		if( !name.empty() )
-			ID = conf->getObjectID(name);	
+			ID = conf->getObjectID(name);
 
 		if( ID == UniSetTypes::DefaultObjectId )
 		{

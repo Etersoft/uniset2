@@ -67,7 +67,7 @@ int main( int argc, const char** argv )
 		string name = conf->getArgParam("--name","<xsl:value-of select="$CLASSNAME"/>");
 		if( !name.empty() )
 		{
-			ID = conf->getObjectID(name);	
+			ID = conf->getObjectID(name);
 			if( ID == UniSetTypes::DefaultObjectId )
 			{
 				cerr &lt;&lt; "(main): идентификатор '" &lt;&lt; name 

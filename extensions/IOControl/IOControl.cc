@@ -368,7 +368,7 @@ void IOControl::iopoll()
 	}
 
 	bool prior = false;
-	int i=0;
+	unsigned int i = 0;
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it,i++ )
 	{
 		if( it->ignore )
@@ -644,7 +644,7 @@ bool IOControl::check_item( UniXML_iterator& it )
 		return false;
 
 	// просто проверка что field = value
-	if( !s_fvalue.empty() && it.getProp(s_field)!=s_fvalue )
+	if( !s_fvalue.empty() && it.getProp(s_field) != s_fvalue )
 		return false;
 
 	return true;

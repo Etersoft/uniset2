@@ -95,12 +95,13 @@ public:
 	
 
 	virtual bool checkTime();				/*!< проверка наступления заданного времени */
-	virtual timeout_t setTiming( timeout_t timeMS ); 	/*!< установить таймер и запустить */
+	virtual timeout_t setTiming( timeout_t timeMS ); 	/*!< установить таймер и запустить. timeMS = 0 вызовет немедленное срабатывание */
 	virtual void reset();					/*!< перезапустить таймер */
 
 	virtual timeout_t getCurrent(); 				/*!< получить текущее значение таймера, в мс */
 	virtual timeout_t getInterval()				/*!< получить интервал, на который установлен таймер, в мс */
 	{
+		// TODO: нужно убрать предположение, что нулевой интервал - выключенный таймер
 		if( timeSS == WaitUpTime )
 			return 0;
 		return timeSS*10;

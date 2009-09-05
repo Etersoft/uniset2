@@ -406,7 +406,7 @@ bool testJournal3()
 	for( int i=0;i<10;i++)
 	{
 		if( j.readRow(i,&ji) )
-			printf("read i=%d j.id=%d\n",i,ji.id);
+			printf("read i=%d j.id=%ld\n", i, ji.id);
 		else
 			printf("read num=%d FAILED!\n",i);
 			

@@ -214,10 +214,10 @@ class IOControl:
 		int maxHeartBeat;
 		IOController::AIOStateList::iterator aitHeartBeat;
 
-		bool force;			/*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
-		bool force_out;		/*!< флаг означающий, принудительного чтения выходов */
+		bool force;			/*!< флаг, означающий, что надо сохранять в SM, даже если значение не менялось */
+		bool force_out;		/*!< флаг, включающий принудительное чтения выходов */
 		int smReadyTimeout; 	/*!< время ожидания готовности SM к работе, мсек */
-		int defCardNum;
+		int defCardNum;		/*!< номер карты по умолчанию */
 		
 		UniSetTypes::uniset_mutex iopollMutex;
 		bool activated;
