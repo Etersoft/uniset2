@@ -140,8 +140,8 @@ stCountOfQueueFull(0)
 {
 	/*! \warning UniverslalInterface не инициализируется идентификатором объекта */
 	tmr = CREATE_TIMER;
-	myname = section+"/"+name;
-	myid = ui.getIdByName(myname.c_str());
+	myname = section + "/" + name;
+	myid = ui.getIdByName(myname);
 	if( myid == DefaultObjectId )
 	{
 		unideb[Debug::WARN] << "name: НЕ НАЙДЕН ИДЕНТИФИКАТОР В ObjectsMap!!!" << endl;

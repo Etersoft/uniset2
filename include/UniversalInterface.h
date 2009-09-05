@@ -232,6 +232,10 @@ class UniversalInterface
 		{
 		    return oind->getIdByName(name);
 		}
+		inline UniSetTypes::ObjectId getIdByName(const string name)
+		{
+		    return getIdByName(name.c_str());
+		}
 
 		/*! получение имени по идентификатору объекта */
 		inline std::string getNameById( UniSetTypes::ObjectId id )
