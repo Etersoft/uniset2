@@ -57,13 +57,9 @@ allNotRespond(false)
 	use485F = conf->getArgInt("--rs-use485F",it.getProp("use485F"));
 	defSpeed = ComPort::getSpeed(speed);
 
-	recv_timeout = conf->getArgInt("--rs-recv-timeout",it.getProp("recv_timeout"));
-	if( recv_timeout <= 0 )
-		recv_timeout = 50;
+	recv_timeout = conf->getArgPInt("--rs-recv-timeout",it.getProp("recv_timeout"), 50);
 
-	int alltout = conf->getArgInt("--rs-all-timeout",it.getProp("all_timeout"));
-	if( alltout <= 0 )
-		alltout = 2000;
+	int alltout = conf->getArgPInt("--rs-all-timeout",it.getProp("all_timeout"), 2000);
 		
 	ptAllNotRespond.setTiming(alltout);
 
@@ -73,13 +69,9 @@ allNotRespond(false)
 	mbregFromID = conf->getArgInt("--mbs-reg-from-id",it.getProp("reg_from_id"));
 	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
-	polltime = conf->getArgInt("--rs-polltime",it.getProp("polltime"));
-	if( !polltime )
-		polltime = 100;
+	polltime = conf->getArgPInt("--rs-polltime",it.getProp("polltime"), 100);
 
-	initPause = conf->getArgInt("--rs-initPause",it.getProp("initPause"));
-	if( !initPause )
-		initPause = 3000;
+	initPause = conf->getArgPInt("--rs-initPause",it.getProp("initPause"), 3000);
 
 	force = conf->getArgInt("--rs-force",it.getProp("force"));
 	force_out = conf->getArgInt("--rs-force-out",it.getProp("force_out"));
@@ -112,9 +104,7 @@ allNotRespond(false)
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = conf->getArgInt("--rs-heartbeat-max",it.getProp("heartbeat_max"));
-		if( maxHeartBeat <= 0 )
-			maxHeartBeat = 10;
+		maxHeartBeat = conf->getArgPInt("--rs-heartbeat-max",it.getProp("heartbeat_max"), 10);
 		test_id = sidHeartBeat;
 	}
 	else
@@ -131,9 +121,7 @@ allNotRespond(false)
 
 	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
 
-	activateTimeout	= conf->getArgInt("--activate-timeout");
-	if( activateTimeout <= 0 )
-		activateTimeout = 20000;
+	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
 
 	initMB(false);
 
@@ -1534,13 +1522,9 @@ bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
 	}
 
 	dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
-	int tout = atoi(it.getProp("timeout").c_str());
-	if( tout > 0 )
-		d->second->resp_ptTimeout.setTiming(tout);
-	else
-		d->second->resp_ptTimeout.setTiming(UniSetTimer::WaitUpTime);
-				
-	d->second->resp_invert = atoi(it.getProp("invert").c_str());
+	int tout = it.getPIntProp("timeout", UniSetTimer::WaitUpTime);
+	d->second->resp_ptTimeout.setTiming(tout);
+	d->second->resp_invert = it.getIntProp("invert");
 
 	string s = it.getProp("speed");
 	if( !s.empty() )

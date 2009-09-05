@@ -364,8 +364,8 @@ void DBServer_MySQL::init()
 	tblMap[UniSetTypes::Message::Alarm] = "Messages";
 	tblMap[UniSetTypes::Message::SensorInfo] = "AnalogSensors";
 	
-	PingTime = atoi( conf->getProp(node,"pingTime").c_str() );
-	ReconnectTime = atoi( conf->getProp(node,"reconnectTime").c_str() );
+	PingTime = conf->getIntProp(node,"pingTime");
+	ReconnectTime = conf->getIntProp(node,"reconnectTime");
 	
 	if( dbnode.empty() )
 		dbnode = "localhost";

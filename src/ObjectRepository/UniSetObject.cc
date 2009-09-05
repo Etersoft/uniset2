@@ -66,22 +66,16 @@ stCountOfQueueFull(0)
 	myname = "noname";
 	section = "nonameSection";
 	
-	SizeOfMessageQueue = atoi(conf->getField("SizeOfMessageQueue").c_str());
-	if( SizeOfMessageQueue <= 0 )
-		SizeOfMessageQueue = 1000;
+	SizeOfMessageQueue = conf->getPIntField("SizeOfMessageQueue", 1000);
 	
-	MaxCountRemoveOfMessage = atoi(conf->getField("MaxCountRemoveOfMessage").c_str());
+	MaxCountRemoveOfMessage = conf->getIntField("MaxCountRemoveOfMessage");
 	if( MaxCountRemoveOfMessage <= 0 )
 		MaxCountRemoveOfMessage = SizeOfMessageQueue / 4;
 	if( MaxCountRemoveOfMessage <= 0 )
 		MaxCountRemoveOfMessage = 10;
-	recvMutexTimeout = atoi(conf->getField("RecvMutexTimeout").c_str());
-	if( recvMutexTimeout <= 0 )
-		recvMutexTimeout = 10000;
+	recvMutexTimeout = conf->getPIntField("RecvMutexTimeout", 10000);
 
-	pushMutexTimeout = atoi(conf->getField("PushMutexTimeout").c_str());
-	if( pushMutexTimeout <= 0 )
-		pushMutexTimeout = 9000;
+	pushMutexTimeout = conf->getPIntField("PushMutexTimeout", 9000);
 }
 // ------------------------------------------------------------------------------------------
 UniSetObject::UniSetObject( ObjectId id ):
@@ -100,11 +94,9 @@ MaxCountRemoveOfMessage(10),
 stMaxQueueMessages(0),
 stCountOfQueueFull(0)
 {
-	SizeOfMessageQueue = atoi(conf->getField("SizeOfMessageQueue").c_str());
-	if( SizeOfMessageQueue <= 0 )
-		SizeOfMessageQueue = 1000;
-	
-	MaxCountRemoveOfMessage = atoi(conf->getField("MaxCountRemoveOfMessage").c_str());
+	SizeOfMessageQueue = conf->getPIntField("SizeOfMessageQueue", 1000);
+
+	MaxCountRemoveOfMessage = conf->getIntField("MaxCountRemoveOfMessage");
 	if( MaxCountRemoveOfMessage <= 0 )
 		MaxCountRemoveOfMessage = SizeOfMessageQueue / 4;
 	if( MaxCountRemoveOfMessage <= 0 )
@@ -124,13 +116,8 @@ stCountOfQueueFull(0)
 		myname = "noname";
 		section = "nonameSection";
 	}
-	recvMutexTimeout = atoi(conf->getField("RecvMutexTimeout").c_str());
-	if( recvMutexTimeout <= 0 )
-		recvMutexTimeout = 10000;
-
-	pushMutexTimeout = atoi(conf->getField("PushMutexTimeout").c_str());
-	if( pushMutexTimeout <= 0 )
-		pushMutexTimeout = 9000;
+	recvMutexTimeout = conf->getPIntField("RecvMutexTimeout", 10000);
+	pushMutexTimeout = conf->getPIntField("PushMutexTimeout", 9000);
 
 }
 
@@ -160,23 +147,16 @@ stCountOfQueueFull(0)
 		unideb[Debug::WARN] << "name: ξε ξακδεξ ιδεξτιζιλατος χ ObjectsMap!!!" << endl;
 		throw Exception(name+": ξε ξακδεξ ιδεξτιζιλατος χ ObjectsMap!!!");
 	}
-	SizeOfMessageQueue = atoi(conf->getField("SizeOfMessageQueue").c_str());
-	if( SizeOfMessageQueue <= 0 )
-		SizeOfMessageQueue = 1000;
+	SizeOfMessageQueue = conf->getPIntField("SizeOfMessageQueue", 1000);
 	
-	MaxCountRemoveOfMessage = atoi(conf->getField("MaxCountRemoveOfMessage").c_str());
+	MaxCountRemoveOfMessage = conf->getIntField("MaxCountRemoveOfMessage");
 	if( MaxCountRemoveOfMessage <= 0 )
 		MaxCountRemoveOfMessage = SizeOfMessageQueue / 4;
 	if( MaxCountRemoveOfMessage <= 0 )
 		MaxCountRemoveOfMessage = 10;
 
-	recvMutexTimeout = atoi(conf->getField("RecvMutexTimeout").c_str());
-	if( recvMutexTimeout <= 0 )
-		recvMutexTimeout = 10000;
-
-	pushMutexTimeout = atoi(conf->getField("PushMutexTimeout").c_str());
-	if( pushMutexTimeout <= 0 )
-		pushMutexTimeout = 9000;
+	recvMutexTimeout = conf->getPIntField("RecvMutexTimeout", 10000);
+	pushMutexTimeout = conf->getPIntField("PushMutexTimeout", 9000);
 
 	ui.initBackId(myid);
 }

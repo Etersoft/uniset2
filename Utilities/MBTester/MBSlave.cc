@@ -21,7 +21,7 @@ MBSlave::MBSlave( ModbusRTU::ModbusAddr addr, const std::string dev, const std::
 {
 	cout << "$Id: MBSlave.cc,v 1.7 2009/02/24 20:27:24 vpashka Exp $" << endl;
 
-//	int replyTimeout = atoi( conf->getArgParam("--reply-timeout",it.getProp("reply_timeout")).c_str() );
+//	int replyTimeout = uni_atoi( conf->getArgParam("--reply-timeout",it.getProp("reply_timeout")).c_str() );
 //	if( replyTimeout <= 0 )
 //		replyTimeout = 2000;
 

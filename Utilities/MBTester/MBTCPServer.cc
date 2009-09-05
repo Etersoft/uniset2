@@ -20,7 +20,7 @@ MBTCPServer::MBTCPServer( ModbusAddr myaddr, const string inetaddr, int port, bo
 {
 	cout << "$Id: MBTCPServer.cc,v 1.1 2008/11/22 23:22:23 vpashka Exp $" << endl;
 
-//	int replyTimeout = atoi( conf->getArgParam("--reply-timeout",it.getProp("reply_timeout")).c_str() );
+//	int replyTimeout = uni_atoi( conf->getArgParam("--reply-timeout",it.getProp("reply_timeout")).c_str() );
 //	if( replyTimeout <= 0 )
 //		replyTimeout = 2000;
 

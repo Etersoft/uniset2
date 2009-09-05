@@ -53,7 +53,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	if( cnode == NULL )
 		throw SystemError("Not find conf-node " + cname + " for " + myname);
 
-	defCardNum = atoi( conf->getArgParam("--io-default-cardnum","-1").c_str());
+	defCardNum = conf->getArgInt("--io-default-cardnum","-1");
 
 	unideb[Debug::INFO] << myname << "(init): numcards=" << numcards << endl;
 
@@ -120,9 +120,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	force 		= conf->getArgInt("--io-force",it.getProp("force"));
 	force_out 	= conf->getArgInt("--io-force-out",it.getProp("force_out"));
 
-	filtersize = conf->getArgInt("--io-filtersize",it.getProp("filtersize"));
-	if( filtersize <= 0 )
-		filtersize = 1;
+	filtersize = conf->getArgPInt("--io-filtersize",it.getProp("filtersize"), 1);
 
 	filterT = atof(conf->getArgParam("--io-filterT",it.getProp("filterT")).c_str());
 
@@ -150,25 +148,16 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	unideb[Debug::INFO] << myname << "(init): read s_field='" << s_field
 						<< "' s_fvalue='" << s_fvalue << "'" << endl;
 
-	int blink_msec = conf->getArgInt("--io-blink-time",it.getProp("blink-time"));
-	if( blink_msec<=0 )
-		blink_msec = 300;
-	
+	int blink_msec = conf->getArgPInt("--io-blink-time",it.getProp("blink-time"), 300);
 	ptBlink.setTiming(blink_msec);
 
-	int blink2_msec = conf->getArgInt("--io-blink2-time",it.getProp("blink2-time"));
-	if( blink2_msec<=0 )
-		blink2_msec = 150;
-	
+	int blink2_msec = conf->getArgPInt("--io-blink2-time",it.getProp("blink2-time"), 150);
 	ptBlink2.setTiming(blink2_msec);
 
-	int blink3_msec = conf->getArgInt("--io-blink3-time",it.getProp("blink3-time"));
-	if( blink3_msec<=0 )
-		blink3_msec = 100;
-	
+	int blink3_msec = conf->getArgPInt("--io-blink3-time",it.getProp("blink3-time"), 100);
 	ptBlink3.setTiming(blink2_msec);
 
-	smReadyTimeout = atoi(conf->getArgParam("--io-sm-ready-timeout",it.getProp("ready_timeout")).c_str());
+	smReadyTimeout = conf->getArgInt("--io-sm-ready-timeout",it.getProp("ready_timeout"));
 	if( smReadyTimeout == 0 )
 		smReadyTimeout = 15000;
 	else if( smReadyTimeout < 0 )
@@ -207,14 +196,10 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = conf->getArgInt("--io-heartbeat-max",it.getProp("heartbeat_max"));
-		if( maxHeartBeat <= 0 )
-			maxHeartBeat = 10;
+		maxHeartBeat = conf->getArgPInt("--io-heartbeat-max",it.getProp("heartbeat_max"), 10);
 	}
 
-	activateTimeout	= conf->getArgInt("--activate-timeout");
-	if( activateTimeout <= 0 )
-		activateTimeout = 25000;
+	activateTimeout	= conf->getArgPInt("--activate-timeout", 25000);
 
 	if( !shm->isLocalwork() ) // ic
 		ic->addReadItem( sigc::mem_fun(this,&IOControl::readItem) );
@@ -672,10 +657,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 
 	string c(it.getProp("card"));
 
-	if( c.empty() )
-		inf.ncard = defCardNum;
-	else
-		inf.ncard = atoi( c.c_str() );
+	inf.ncard = uni_atoi( c );
 
 	if( c.empty() || inf.ncard < 0 || inf.ncard >= (int)cards.size() )
 	{
@@ -686,7 +668,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 		inf.ncard = defCardNum;
 	}
 
-	inf.subdev = atoi( it.getProp("subdev").c_str());
+	inf.subdev = it.getIntProp("subdev");
 	
 	if( inf.subdev < 0 )
 		inf.subdev = DefaultSubdev;
@@ -708,8 +690,8 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 			inf.subdev = DefaultSubdev;
 	}
 	
-	inf.channel = atoi((it.getProp("channel")).c_str());
-	if( inf.channel<0 || inf.channel > 32 )
+	inf.channel = it.getIntProp("channel");
+	if( inf.channel < 0 || inf.channel > 32 )
 	{
 		unideb[Debug::WARN] << myname << "(readItem): неизвестный канал: " << inf.channel
 							<< " для " << it.getProp("name") << endl;
@@ -719,14 +701,14 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	if( !IOBase::initItem(&inf,it,shm,&unideb,myname,filtersize,filterT) )
 		return false;
 
-	inf.lamp = atoi( it.getProp("lamp").c_str() );
-	inf.no_testlamp = atoi( it.getProp("no_iotestlamp").c_str() );
+	inf.lamp = it.getIntProp("lamp");
+	inf.no_testlamp = it.getIntProp("no_iotestlamp");
 	inf.aref = 0;
 	inf.range = 0;
 
 	if( inf.stype == UniversalIO::AnalogInput || inf.stype == UniversalIO::AnalogOutput )
 	{
-		inf.range = atoi((it.getProp("range")).c_str());
+		inf.range = it.getIntProp("range");
 		if( inf.range < 0 || inf.range > 3 )
 		{
 			unideb[Debug::WARN] << myname << "(readItem): неизвестный коэффициент усиления(range): " << inf.range
@@ -735,7 +717,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 			return false;
 		}
 
-		inf.aref = atoi((it.getProp("aref")).c_str());
+		inf.aref = it.getIntProp("aref");
 		if( inf.aref < 0 || inf.aref > 3 )
 		{
 			unideb[Debug::WARN] << myname << "(readItem): неизвестный тип подключения: " << inf.aref
@@ -753,7 +735,8 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	// под реальное количество
 	if( maxItem >= iomap.size() )
 		iomap.resize(maxItem+10);
-	int prior = atoi((it.getProp("iopriority")).c_str());
+
+	int prior = it.getIntProp("iopriority");
 	if( prior > 0 )
 	{
 		IOPriority p(prior,maxItem);
@@ -1039,10 +1022,7 @@ IOControl* IOControl::init_iocontrol( int argc, const char* const* argv,
 		return 0;
 	}
 
-	int numcards = atoi(conf->getArgParam("--io-numcards","1").c_str());
-	if( numcards <= 0 )
-		numcards = 1;
-
+	int numcards = conf->getArgPInt("--io-numcards",1);
 
 	unideb[Debug::INFO] << "(iocontrol): name = " << name << "(" << ID << ")" << endl;
 	return new IOControl(ID,icID,ic,numcards);

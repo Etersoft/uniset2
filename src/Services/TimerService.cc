@@ -357,8 +357,8 @@ void TimerService::init(const string& confnode)
 		return;
 	}
 
-	MaxCountTimers = atoi(conf->getProp(node,"MaxCountTimers").c_str());
-	AskLifeTimeSEC = atoi(conf->getProp(node,"AskLifeTimeSEC").c_str());
+	MaxCountTimers = conf->getIntProp(node,"MaxCountTimers");
+	AskLifeTimeSEC = conf->getIntProp(node,"AskLifeTimeSEC");
 	
 	assert( TimerService::MaxCountTimers > 0 );
 	assert( TimerService::AskLifeTimeSEC >= 0 );

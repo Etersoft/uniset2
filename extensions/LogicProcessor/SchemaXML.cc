@@ -50,9 +50,7 @@ void SchemaXML::read( const string xmlfile )
 	{
 		string type(xml.getProp(it, "type"));
 		string ID(xml.getProp(it, "id"));
-		int inCount(atoi(xml.getProp(it, "inCount").c_str()));
-
-		inCount = (inCount <= 0) ? 1 : inCount;
+		int inCount(xml.getPIntProp(it, "inCount", 1));
 		
 		if( type == "OR" )
 			manage( new TOR(ID, inCount) );
@@ -60,12 +58,12 @@ void SchemaXML::read( const string xmlfile )
 			manage( new TAND(ID, inCount) );
 		else if( type == "Delay" )
 		{
-			int delayMS = atoi( xml.getProp(it,"delayMS").c_str() );
+			int delayMS = xml.getIntProp(it,"delayMS");
 			manage( new TDelay(ID,delayMS,inCount) );
 		}
 		else if( type == "NOT" )
 		{
-			bool defout = atoi( xml.getProp(it,"default_out_state").c_str() );
+			bool defout = xml.getIntProp(it,"default_out_state");
 			manage( new TNOT(ID,defout) );
 		}
 		else
@@ -98,7 +96,7 @@ void SchemaXML::read( const string xmlfile )
 		string type(xml.getProp(it, "type"));
 		string fID(xml.getProp(it, "from"));
 		string tID(xml.getProp(it, "to"));
-		int toIn(atoi(xml.getProp(it, "toInput").c_str()));
+		int toIn(xml.getIntProp(it, "toInput"));
 		
 		if( type == "ext" )
 		{

@@ -38,13 +38,9 @@ activated(false)
 {
 	si.node = conf->getLocalNode();
 
-	sleep_msec = conf->getArgInt("--sleep-msec","200");
-	if( sleep_msec <= 0 )
-		sleep_msec = 200;
+	sleep_msec = conf->getArgPInt("--sleep-msec", 200);
 
-	resetMsgTime = conf->getIntProp(cnode,"resetMsgTime");
-	if( resetMsgTime <= 0 )
-		resetMsgTime = 200;
+	resetMsgTime = conf->getPIntProp(cnode,"resetMsgTime", 200);
 	ptResetMsg.setTiming(resetMsgTime);
 
 	smReadyTimeout = conf->getArgInt("--sm-ready-timeout","");
@@ -53,13 +49,9 @@ activated(false)
 	else if( smReadyTimeout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 
-	activateTimeout	= conf->getArgInt("--activate-timeout"));
-	if( activateTimeout <= 0 )
-		activateTimeout = 20000;
+	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
 
-	timeout_t msec = conf->getArgInt("--startup-timeout");
-	if( msec == 0 )
-		msec = 10000;
+	timeout_t msec = conf->getArgPInt("--startup-timeout", 10000);
 	ptStartUpTimeout.setTiming(msec);
 }
 

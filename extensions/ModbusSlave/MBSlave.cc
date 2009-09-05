@@ -51,7 +51,7 @@ prefix(prefix)
 
 	force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
 
-	// int recv_timeout = atoi(conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")).c_str());
+	// int recv_timeout = conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")));
 
 	string saddr = conf->getArgParam("--" + prefix + "-my-addr",it.getProp("addr"));
 
@@ -95,9 +95,7 @@ prefix(prefix)
 		if( iaddr.empty() )
 			throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown TCP server address. Use: --mbs-inet-addr [ XXX.XXX.XXX.XXX| hostname ]");
 		
-		int port = atoi(conf->getArgParam("--" + prefix + "-inet-port",it.getProp("iport")).c_str());
-		if( port <=0 )
-			port = 502;
+		int port = conf->getArgPInt("--" + prefix + "-inet-port",it.getProp("iport"), 502);
 	
 		ost::InetAddress ia(iaddr.c_str());
 		mbslot	= new ModbusTCPServerSlot(ia,port);
@@ -126,9 +124,7 @@ prefix(prefix)
 //	mbslot->connectRemoteService( sigc::mem_fun(this, &MBSlave::remoteService) );
 	// -------------------------------
 
-	initPause = atoi(conf->getArgParam("--" + prefix + "-initPause",it.getProp("initPause")).c_str());
-	if( !initPause )
-		initPause = 3000;
+	initPause = conf->getArgPInt("--" + prefix + "-initPause",it.getProp("initPause"), 3000);
 
 	if( shm->isLocalwork() )
 	{
@@ -157,10 +153,7 @@ prefix(prefix)
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = conf->getArgInt("--" + prefix + "-heartbeat-max",it.getProp("heartbeat_max"));
-		if( maxHeartBeat <= 0 )
-			maxHeartBeat = 10;
-
+		maxHeartBeat = conf->getArgPInt("--" + prefix + "-heartbeat-max",it.getProp("heartbeat_max"), 10);
 		test_id = sidHeartBeat;
 	}
 	else
@@ -184,14 +177,9 @@ prefix(prefix)
 	if( wait_msec < 500 )
 		wait_msec = 500;
 
-	activateTimeout	= conf->getArgInt("--" + prefix + "-activate-timeout");
-	if( activateTimeout <= 0 )
-		activateTimeout = 20000;
+	activateTimeout	= conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
 
-	timeout_t msec = conf->getArgInt("--" + prefix + "-timeout",it.getProp("timeout"));
-	if( msec == 0 )
-		msec = 3000;
-
+	timeout_t msec = conf->getArgPInt("--" + prefix + "-timeout",it.getProp("timeout"), 3000);
 	ptTimeout.setTiming(msec);
 
 	dlog[Debug::INFO] << myname << "(init): rs-timeout=" << msec << " msec" << endl;
@@ -212,8 +200,8 @@ prefix(prefix)
 					dlog[Debug::WARN] << myname << "(build file list): ignore empty name... " << endl;
 					continue;
 				}
-				int id = atoi(fit.getProp("id").c_str());
-				if( id==0 )
+				int id = fit.getIntProp("id");
+				if( id == 0 )
 				{
 					dlog[Debug::WARN] << myname << "(build file list): FAILED ID for " << nm << "... ignore..." << endl;
 					continue;

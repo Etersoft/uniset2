@@ -7,8 +7,7 @@ using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 LProcessor::LProcessor()
 {
-	sleepTime = conf->getArgInt("--sleepTime");
-	sleepTime = (sleepTime<=0) ? 200 : sleepTime;
+	sleepTime = conf->getArgPInt("--sleepTime", 200);
 }
 
 LProcessor::~LProcessor()

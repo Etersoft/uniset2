@@ -605,8 +605,8 @@ void NCRestorer_XML::build_depends( UniXML& xml, xmlNode* node, IONotifyControll
 						continue;
 					}
 							
-					mydepinfo.block_invert = atoi( dit.getProp("block_invert").c_str());;
-					long block_val = atoi( dit.getProp("block_value").c_str());;
+					mydepinfo.block_invert = dit.getIntProp("block_invert");
+					long block_val = dit.getIntProp("block_value");
 
 					long defval 	= 0;
 					if( blk.dit != dioEnd(ic) )

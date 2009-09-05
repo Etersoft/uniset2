@@ -414,34 +414,24 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	b->si.id 	= sid;
 	b->si.node 	= conf->getLocalNode();
 
-	b->nofilter = atoi( it.getProp("nofilter").c_str() );
-	b->ignore	= atoi( it.getProp("ioignore").c_str() );
-	b->invert	= atoi( it.getProp("ioinvert").c_str() );
-	b->defval 	= atoi( it.getProp("default").c_str() );
-	b->noprecision	= atoi( it.getProp("noprecision").c_str() );
+	b->nofilter = it.getIntProp("nofilter");
+	b->ignore	= it.getIntProp("ioignore");
+	b->invert	= it.getIntProp("ioinvert");
+	b->defval 	= it.getIntProp("default");
+	b->noprecision	= it.getIntProp("noprecision");
 	b->value	= b->defval;
-	b->breaklim = atoi( it.getProp("breaklim").c_str() );
+	b->breaklim = it.getIntProp("breaklim");
 	
-	long msec = atoi( it.getProp("jardelay").c_str() );
+	long msec = it.getPIntProp("jardelay", UniSetTimer::WaitUpTime);
 	b->ptJar.setTiming(msec);
-	if( msec<=0 )
-		b->ptJar.setTiming(UniSetTimer::WaitUpTime);
 
-	msec = atoi( it.getProp("ondelay").c_str() );
+	msec = it.getPIntProp("ondelay", UniSetTimer::WaitUpTime);
 	b->ptOnDelay.setTiming(msec);
-	if( msec<=0 )
-		b->ptOnDelay.setTiming(UniSetTimer::WaitUpTime);
 
-	msec = atoi( it.getProp("offdelay").c_str() );
+	msec = it.getPIntProp("offdelay", UniSetTimer::WaitUpTime);
 	b->ptOffDelay.setTiming(msec);
-	if( msec<=0 )
-		b->ptOffDelay.setTiming(UniSetTimer::WaitUpTime);
 	
-	string saf = it.getProp("safety");
-	if( !saf.empty() )
-		b->safety = atoi(saf.c_str());
-	else
-		b->safety = NoSafety;
+	b->safety = it.getPIntProp("safety", NoSafety);
 
 	b->stype = UniSetTypes::getIOType(it.getProp("iotype"));
 	if( b->stype == UniversalIO::UnknownIOType )
@@ -466,16 +456,16 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 
 	if( b->stype == UniversalIO::AnalogInput || b->stype == UniversalIO::AnalogOutput )
 	{
-		b->cal.minRaw = atoi( it.getProp("rmin").c_str() );
-		b->cal.maxRaw = atoi( it.getProp("rmax").c_str() );
-		b->cal.minCal = atoi( it.getProp("cmin").c_str() );
-		b->cal.maxCal = atoi( it.getProp("cmax").c_str() );
-		b->cal.sensibility = atoi( it.getProp("sensibility").c_str() );
-		b->cal.precision = atoi( it.getProp("precision").c_str() );
+		b->cal.minRaw = it.getIntProp("rmin");
+		b->cal.maxRaw = it.getIntProp("rmax");
+		b->cal.minCal = it.getIntProp("cmin");
+		b->cal.maxCal = it.getIntProp("cmax");
+		b->cal.sensibility = it.getIntProp("sensibility");
+		b->cal.precision = it.getIntProp("precision");
 
 		int f_size 	= def_filtersize;
 		float f_T 	= def_filterT;
-		int f_median = atoi( it.getProp("filtermedian").c_str() );
+		int f_median = it.getIntProp("filtermedian");
 		
 		if( f_median > 0 )
 		{
@@ -486,9 +476,8 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		{
 			if( !it.getProp("filtersize").empty() )
 			{
-				f_size = atoi(it.getProp("filtersize").c_str());
-				if( f_size < 0 )
-					f_size = 0;
+				#warning "почему здесь 0, хотя f_size инициализируется def_filtersize?"
+				f_size = it.getPIntProp("filtersize", 0);
 			}
 		}
 		

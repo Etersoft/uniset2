@@ -57,13 +57,13 @@ namespace UniSetExtensions
 			ostringstream err;
 			err << "Not find conf-node for HeartBeatTime";
 			cerr << err.str() << endl;
-			throw SystemError(err.str()); 
+			throw SystemError(err.str());
 		}
 	
 		UniXML_iterator it(cnode);
 		
-		heartBeatTime = atoi(it.getProp("time_msec").c_str());
-		if( heartBeatTime <=0 )
+		heartBeatTime = it.getIntProp("time_msec");
+		if( heartBeatTime <= 0 )
 		{
 			heartBeatTime = 0;
 			dlog[Debug::WARN] << "(getHeartBeatTime): ÍÅÈÁÎÉÚÍ 'HEARTBEAT' ïôëìàþ³î!" << endl;

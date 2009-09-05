@@ -61,7 +61,7 @@ InfoServer::InfoServer( ObjectId id, ISRestorer* d ):
 		xmlNode* root = xml->findNode(xml->getFirstNode(),"LocalInfoServer");
 		if( root )
 		{
-			dbrepeat = atoi(xml->getProp(root,"dbrepeat").c_str());
+			dbrepeat = xml->getIntProp(root,"dbrepeat");
 			if( !dbrepeat )
 				unideb[Debug::INFO] << myname << "(init): dbrepeat="<< dbrepeat << endl;
 			
