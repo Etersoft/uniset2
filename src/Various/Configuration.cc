@@ -410,6 +410,22 @@ int Configuration::getArgInt( const string name, const string defval )
 	return UniSetTypes::uni_atoi(getArgParam( name, defval ));
 }
 
+int Configuration::getArgPInt( const string name, int defval )
+{
+	int i = getArgInt(name);
+	if ( i <= 0 )
+		return defval;
+	return i;
+}
+
+int Configuration::getArgPInt( const string name, const string strdefval, int defval )
+{
+	int i = getArgInt(name, strdefval);
+	if ( i <= 0 )
+		return defval;
+	return i;
+}
+
 
 // -------------------------------------------------------------------------
 // ????????????? ????????... (??? ???????????)
@@ -569,17 +585,36 @@ xmlNode* Configuration::getNode(const string& path)
 // -------------------------------------------------------------------------
 string Configuration::getProp(xmlNode* node, const string name)
 {
-	return UniXML::getProp(node,name);
+	return UniXML::getProp(node, name);
 }
+int Configuration::getIntProp(xmlNode* node, const string name)
+{
+	return UniXML::getIntProp(node, name);
+}
+int Configuration::getPIntProp(xmlNode* node, const string name, int def)
+{
+	return UniXML::getPIntProp(node, name, def);
+}
+
 // -------------------------------------------------------------------------
 string Configuration::getField(const string path)
 {
 	return getProp(getNode(path),"name");
 }
+
 // -------------------------------------------------------------------------
 int Configuration::getIntField(const std::string path)
 {
 	return unixml.getIntProp(getNode(path), "name");
+}
+
+// -------------------------------------------------------------------------
+int Configuration::getPIntField(const std::string path, int def)
+{
+	int i = getIntField(path);;
+	if (i <= 0)
+		return def;
+	return i;
 }
 
 // -------------------------------------------------------------------------

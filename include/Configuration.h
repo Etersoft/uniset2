@@ -71,6 +71,8 @@ namespace UniSetTypes
 		std::string getField(const std::string path);
 		/// Получить число из поле с путём path
 		int getIntField(const std::string path);
+		/// Получить число из поле с путём path (или def, если значение <= 0)
+		int getPIntField(const std::string path, int def);
 
 		xmlNode* findNode(xmlNode* node, const std::string searchnode, const std::string name = "" );
 		
@@ -78,6 +80,8 @@ namespace UniSetTypes
 		xmlNode* getNode(const std::string& path);
 		// Получить указанное свойство пути
 		std::string getProp(xmlNode*, const std::string name);
+		int getIntProp(xmlNode*, const std::string name);
+		int getPIntProp(xmlNode*, const std::string name, int def);
 		// Получить указанное свойство по имени узла
 		std::string getPropByNodeName(const std::string& nodename, const std::string& prop);
 
@@ -132,8 +136,11 @@ namespace UniSetTypes
 		
 		/*! получить значение указанного параметра, или значение по умолчанию */
 		std::string getArgParam(const std::string name, const std::string defval="");
-		/*! получить числовое значение параметра, если не число, то 0 */
+		/*! получить числовое значение параметра, если не число, то 0. Если параметра нет, используется значение defval */
 		int getArgInt(const std::string name, const std::string defval="");
+		/*! получить числовое значение параметра, но если оно не положительное, вернуть defval */
+		int getArgPInt(const std::string name, int defval);
+		int getArgPInt(const std::string name, const std::string strdefval, int defval);
 
 		xmlNode* initDebug( DebugStream& deb, const std::string& nodename );
 
