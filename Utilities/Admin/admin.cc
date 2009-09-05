@@ -649,12 +649,12 @@ int alarm(string args, UniversalInterface &ui)
 	
 	if(separateArgs(args,arg))
 	{
-		UniSetTypes::MessageCode code = atoi(arg.c_str());
+		UniSetTypes::MessageCode code = uni_atoi(arg);
 		UniSetTypes::MessageCode cause(UniSetTypes::DefaultMessageCode);
 
 		if(separateArgs(args,arg))
 		{
-			cause = atoi(arg.c_str());
+			cause = uni_atoi(arg);
 		}
 		else
 		{

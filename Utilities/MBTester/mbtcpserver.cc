@@ -58,11 +58,11 @@ int main( int argc, char **argv )
 				break;
 
 				case 'p':	
-					port = atoi(optarg);
+					port = uni_atoi(optarg);
 				break;
 
 				case 't':	
-					tout = atoi(optarg);
+					tout = uni_atoi(optarg);
 				break;
 
 				case 'a':	

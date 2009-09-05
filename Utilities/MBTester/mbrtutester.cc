@@ -142,7 +142,7 @@ int main( int argc, char **argv )
 						reg = ModbusRTU::str2mbData(argv[optind]);
 					
 					if( checkArg(optind+1,argc,argv) )
-						count = atoi(argv[optind+1]);
+						count = uni_atoi(argv[optind+1]);
 				break;
 
 				case 'f':
@@ -196,7 +196,7 @@ int main( int argc, char **argv )
 				break;
 
 				case 't':	
-					tout = atoi(optarg);
+					tout = uni_atoi(optarg);
 				break;
 
 				case 'a':	

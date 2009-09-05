@@ -102,44 +102,44 @@ int main(int argc, char* argv[])
 		
 			return 0;
 
-			case 'r':	
-				chan = atoi(optarg);
+			case 'r':
+				chan = uni_atoi(optarg);
 			break;
 			
-			case 'd':	
+			case 'd':
 				dev = optarg;
 			break;
 
-			case 's':	
-				subdev = atoi(optarg);
+			case 's':
+				subdev = uni_atoi(optarg);
 			break;
 
-			case 'x':	
-				range = atoi(optarg);
+			case 'x':
+				range = uni_atoi(optarg);
 			break;
 
-			case 'a':	
-				aref = atoi(optarg);
+			case 'a':
+				aref = uni_atoi(optarg);
 			break;
 			
 			case 'o':
-				openFileXml=optarg;
+				openFileXml = optarg;
 			break;
 
 			case 'f':
-				saveFileXml=optarg;
+				saveFileXml = optarg;
 			break;
 
 			case 'n':
-				nodeXml=optarg;	
+				nodeXml = optarg;
 			break;
 
 			case 'i':
-				sort_rise=atoi(optarg);
+				sort_rise = uni_atoi(optarg);
 			break;
 
 			case 'c':
-				sort_cal=atoi(optarg);
+				sort_cal = uni_atoi(optarg);
 			break;
 			
 			case '?':

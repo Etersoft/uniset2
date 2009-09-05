@@ -65,7 +65,7 @@ int main( int argc, char **argv )
 				break;
 
 				case 't':
-					tout = atoi(optarg);
+					tout = uni_atoi(optarg);
 				break;
 
 				case 'a':
@@ -81,7 +81,7 @@ int main( int argc, char **argv )
 				break;
 
 				case 'c':
-					replyVal = atoi(optarg);
+					replyVal = uni_atoi(optarg);
 				break;
 
 				case '?':

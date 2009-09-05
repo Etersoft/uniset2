@@ -1886,7 +1886,7 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 					else
 					{
 						MTR::T4 t(r->mbval);
-						IOBase::processingAsAI( &(*it),atoi(t.sval.c_str()), shm, force );
+						IOBase::processingAsAI( &(*it), uni_atoi(t.sval), shm, force );
 					}
 					continue;
 				}
