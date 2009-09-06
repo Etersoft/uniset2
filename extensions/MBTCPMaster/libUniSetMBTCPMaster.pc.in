@@ -3,7 +3,7 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libUniSetMBSlave
+Name: libUniSetMBTCPMaster
 Description: Support library for UniSetModbusTCPMaster
 Requires: libUniSetExtensions libUniSetSharedMemory
 Version: @VERSION@
