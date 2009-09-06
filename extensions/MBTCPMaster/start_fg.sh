@@ -1,8 +1,11 @@
 #!/bin/sh
 
-uniset-start.sh -f ./uniset-mbtcpmaster --mbtcp-name MBMaster1 --confile test.xml \
+uniset-start.sh -f ./uniset-mbtcpmaster --mbtcp-name MBTCPExchange1 \
 --dlog-add-levels info,crit,warn \
---mbtcp-iaddr 127.0.0.1 --mbtcp-port 2048
+--mbtcp-filter-field CAN2sender \
+--mbtcp-filter-value SYSTSNode \
+--mbtcp-reg-from-id 1 \
+--mbtcp-gateway-iaddr 127.0.0.1 \
+--mbtcp-gateway-port 2048
 #--mbtcp-filter-field mbtcp --mbtcp-filter-value 1
 
-#--mbtcp-reg-from-id 1

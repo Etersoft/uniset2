@@ -1,7 +1,7 @@
 // $Id: rsexchange.cc,v 1.2 2008/06/06 11:03:32 pv Exp $
 // -----------------------------------------------------------------------------
 #include <sstream>
-#include "MBMaster.h"
+#include "MBTCPMaster.h"
 #include "Configuration.h"
 #include "Debug.h"
 #include "ObjectsActivator.h"
@@ -11,7 +11,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-int main( int argc, char** argv )
+int main( int argc, const char** argv )
 {
 	if( argc>1 && (!strcmp(argv[1],"--help") || !strcmp(argv[1],"-h")) )
 	{
@@ -19,7 +19,7 @@ int main( int argc, char** argv )
 		cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
 		cout << "--mbtcp-logfile filename    - logfilename. Default: mbtcpmaster.log" << endl;
 		cout << endl;
-		MBMaster::help_print(argc, argv);
+		MBTCPMaster::help_print(argc, argv);
 		return 0;
 	}
 
@@ -53,7 +53,7 @@ int main( int argc, char** argv )
 			return 1;
 		}
 
-		MBMaster* mb = MBMaster::init_mbmaster(argc,argv,shmID);
+		MBTCPMaster* mb = MBTCPMaster::init_mbmaster(argc,argv,shmID);
 		if( !mb )
 		{
 			dlog[Debug::CRIT] << "(mbmaster): init не прошёл..." << endl;

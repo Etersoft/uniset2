@@ -6,7 +6,7 @@ libUniSetMBTCPMaster_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
 								$(top_builddir)/extensions/lib/libUniSetExtensions.la \
 								$(SIGC_LIBS)
 libUniSetMBTCPMaster_la_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
-libUniSetMBTCPMaster_la_SOURCES 	= MBMaster.cc
+libUniSetMBTCPMaster_la_SOURCES 	= MBTCPMaster.cc
 
 @PACKAGE@_mbtcpmaster_SOURCES 	= main.cc
 @PACKAGE@_mbtcpmaster_LDADD 	= libUniSetMBTCPMaster.la $(top_builddir)/lib/libUniSet.la \
