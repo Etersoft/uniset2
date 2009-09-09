@@ -28,7 +28,6 @@ int main(int argc, const char **argv)
 		unideb.logFile( logname.c_str() );
 		dlog.logFile( logname.c_str() );
 
-
 		ObjectId shmID = DefaultObjectId;
 		string sID = conf->getArgParam("--smemory-id");
 		if( !sID.empty() )
@@ -51,7 +50,8 @@ int main(int argc, const char **argv)
 		act.addObject(static_cast<class UniSetObject*>(shm));
 		SystemMessage sm(SystemMessage::StartUp); 
 		act.broadcast( sm.transport_msg() );
-		act.run(false);
+		act.run(true);
+		shm->execute();
 		return 0;
 	}
 	catch(SystemError& err)

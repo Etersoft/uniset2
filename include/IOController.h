@@ -124,6 +124,8 @@ class IOController:
 													
 		virtual IOController_i::ShortIOInfo getChangedTime(const IOController_i::SensorInfo& si);
 
+		virtual IOController_i::ShortMapSeq* getSensors();
+
 	public:
 
 		struct DependsInfo;

@@ -197,7 +197,8 @@ class UniversalInterface
 		UniSetTypes::ObjectType getType(UniSetTypes::ObjectId id);
 
 		IOController_i::ShortIOInfo getChangedTime( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
-
+		IOController_i::ShortMapSeq* getSensors( UniSetTypes::ObjectId id, 
+													UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode() );
 
 //		/*! регистрация объекта в репозитории */
 		void registered(UniSetTypes::ObjectId id, const UniSetTypes::ObjectPtr oRef, bool force=false)throw(UniSetTypes::ORepFailed);

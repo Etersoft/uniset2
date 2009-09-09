@@ -1411,3 +1411,38 @@ IOController_i::ShortIOInfo IOController::getChangedTime( const IOController_i::
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // -----------------------------------------------------------------------------
+IOController_i::ShortMapSeq* IOController::getSensors()
+{
+	// úá ïó÷ïâïöäåîéå ğáíñôé ïô÷åşáåô ëìéåîô!!!!!!
+	// ĞÏÜÔÏÍÕ ÅÍÕ ÌÕŞÛÅ ĞÏÌØÚÏ×ÁÔØÓÑ ĞÒÉ ĞÏÌÕŞÅÎÉÉ _var-ËÌÁÓÓÏÍ
+	IOController_i::ShortMapSeq* res = new IOController_i::ShortMapSeq();
+	res->length( aioList.size() + dioList.size() );
+
+	int i=0;
+	for( AIOStateList::iterator it=aioList.begin(); it!=aioList.end(); ++it)
+	{	
+		IOController_i::ShortMap m;
+		{
+			uniset_spin_lock lock(it->second.val_lock,checkLockValuePause);
+			m.id 	= it->second.si.id;
+			m.value = it->second.value;
+			m.type = it->second.type;
+		}
+		(*res)[i++] = m;
+	}
+	for( DIOStateList::iterator it=dioList.begin(); it!=dioList.end(); ++it)
+	{	
+		IOController_i::ShortMap m;
+		{
+			uniset_spin_lock lock(it->second.val_lock,checkLockValuePause);
+			m.id 	= it->second.si.id;
+			m.value = it->second.state ? 1 : 0;
+			m.type = it->second.type;
+		}
+
+		(*res)[i++] = m;
+	}
+	
+	return res;
+}
+// -----------------------------------------------------------------------------

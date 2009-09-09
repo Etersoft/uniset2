@@ -194,6 +194,18 @@ interface IOController_i : ObjectsManager_i
 
 	ShortIOInfo getChangedTime(in SensorInfo si) raises(NameNotFound);
 
+
+	/*! Информация о дискретном датчике */
+	struct ShortMap
+	{
+		UniversalIO::IOTypes type;
+		long value;
+		long id;
+	};
+
+	typedef sequence<ShortMap> ShortMapSeq;
+
+	ShortMapSeq getSensors();
 };
 
 // --------------------------------------------------------------------------------------------------------------

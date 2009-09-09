@@ -19,9 +19,6 @@ class UniExchange:
 
 		void execute();
 
-		virtual IOController_i::ASensorInfoSeq* getAnalogSensorsMap();
-		virtual IOController_i::DSensorInfoSeq* getDigitalSensorsMap();
-
 		static UniExchange* init_exchange( int argc, const char* const* argv,
 									UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
 									const std::string prefix="unet" );
@@ -43,13 +40,27 @@ class UniExchange:
 		std::string s_fvalue;
 		SMInterface* shm;
 		
+		struct SInfo
+		{
+			IOController::DIOStateList::iterator dit;
+			IOController::AIOStateList::iterator ait;
+		};
+		
+		typedef std::vector<SInfo> SList;
+		
 		struct NetNodeInfo
 		{
+			NetNodeInfo();
+		
 			CORBA::Object_var oref;
-			IONotifyController_i_var shm;
+			IOController_i_var shm;
 			UniSetTypes::ObjectId id;
 			UniSetTypes::ObjectId node;
 			UniSetTypes::ObjectId sidConnection; /*!< датчик связи */
+			IOController::DIOStateList::iterator conn_dit;
+			SList smap;
+			
+			void update(IOController_i::ShortMapSeq_var& map, SMInterface* shm );
 		};
 		
 		typedef std::list<NetNodeInfo> NetNodeList;
@@ -59,6 +70,8 @@ class UniExchange:
 		bool check_item( UniXML_iterator& it );
 		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
 		bool initItem( UniXML_iterator& it );
+		
+		int polltime;
 		
 	private:
 };

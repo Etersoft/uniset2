@@ -9,10 +9,21 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // --------------------------------------------------------------------------
+UniExchange::NetNodeInfo::NetNodeInfo():
+	oref(CORBA::Object::_nil()),
+	id(DefaultObjectId),
+	node(conf->getLocalNode()),
+	sidConnection(DefaultObjectId),
+	smap(1)
+{
+
+}
+// --------------------------------------------------------------------------
 UniExchange::UniExchange( UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID, 
 							SharedMemory* ic, const std::string prefix ):
 IOController(id),
-shm(0)
+shm(0),
+polltime(200)
 {
 	cnode = conf->getNode(myname);
 	if( cnode == NULL )
@@ -29,8 +40,6 @@ shm(0)
 
 	if( it.goChildren() )
 	{
-		UniSetTypes::ObjectId l_id = getSharedMemoryID();
-	
 		for( ; it.getCurrent(); it.goNext() )
 		{
 			UniSetTypes::ObjectId id;
@@ -39,10 +48,14 @@ shm(0)
 			if( !n.empty() )
 				id = it.getIntProp("id");
 			else
-				id = conf->getControllerID(n);
+				id = conf->getControllerID( it.getProp("name") );
 				
 			if( id == DefaultObjectId )
+			{
+				if( n.empty() )
+					n = it.getProp("name");
 				throw SystemError("(UniExchange): Uknown ID for " + n );
+			}
 
 			UniSetTypes::ObjectId node;
 
@@ -86,87 +99,88 @@ void UniExchange::execute()
 	{
 		for( NetNodeList::iterator it=nlst.begin(); it!=nlst.end(); ++it )
 		{
+			bool ok = false;
 			try
 			{
-				bool ok = false;;
-/*
-				dlog[Debug::INFO] << myname << ": resolve id=" << it->id
-											<< " name="        << conf->oind->getNameById(it->id)
-											<< " node="        << it->node
-											<< endl;
-*/
-				for( 
-				unsigned int i=0; i<conf->getRepeatCount(); i++)
-				{
-					try
-					{
-						if( CORBA::is_nil(it->oref) )
-						{
-							it->oref = ui.resolve( it->id, it->node );
-						}
-
-						if( CORBA::is_nil(it->oref) ) 
-							continue;
-
-						it->shm = IONotifyController_i::_narrow(it->oref);
-						if( CORBA::is_nil(it->shm) )
-						{ 
-							it->oref = CORBA::Object::_nil();
-							msleep(conf->getRepeatTimeout());
-							continue;
-						}
-						
-						if ( it->shm->exist() )
-						{
-							dlog[Debug::INFO] << " node=" << it->node << ": resolve OK ***" << endl;
-							ok = true;
-							break;
-						}
-						
-					}
-					catch(CORBA::TRANSIENT){}
-					catch(CORBA::OBJECT_NOT_EXIST){}
-					catch(CORBA::SystemException& ex){}
-					catch(...){}
-
-					it->oref = CORBA::Object::_nil();
-					msleep(conf->getRepeatTimeout());
-				}
-
-				if( it->sidConnection != DefaultObjectId )
-				{
-					try
-					{
-//						shm->saveLocalState( it->sidConnection, ok );
-						ui.saveState(it->sidConnection, ok, UniversalIO::DigitalInput,conf->getLocalNode());
-					}
-					catch(...){dlog[Debug::CRIT]<< myname << "(execute): sensor not avalible "<< conf->oind->getNameById( it->sidConnection) <<endl; }
-				}
-
-				if( !ok )
-				{
-					dlog[Debug::INFO] << "****** cannot connect with node=" << it->node << endl;
-					continue;
-				}
+				IOController_i::ShortMapSeq_var sseq = ui.getSensors( it->id, it->node );
+				ok = true;
+				it->update(sseq,shm);
 			}
-			
 			catch( Exception& ex )
 			{
-				cout  << myname << "(execute): " << ex << endl;
+				dlog[Debug::INFO]  << myname << "(execute): " << ex << endl;
 			}
 			catch( ... )
 			{
-				cout  << myname << "(execute): catch ..." << endl;
+				dlog[Debug::INFO]  << myname << "(execute): catch ..." << endl;
 			}
-			
+	
+			if( it->sidConnection != DefaultObjectId )
+			{
+				try
+				{
+					shm->localSaveState(it->conn_dit,it->sidConnection,ok,getId());
+				}
+				catch(...)
+				{
+					dlog[Debug::CRIT]<< myname << "(execute): sensor not avalible "
+							<< conf->oind->getNameById( it->sidConnection) 
+							<< endl; 
+				}
+			}
+
+			if( !ok )
+				dlog[Debug::INFO] << "****** cannot connect with node=" << it->node << endl;
 		}
 	
-		msleep(200);
+		msleep(polltime);
 	}
 }
 // -----------------------------------------------------------------------------
+void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMInterface* shm  )
+{
+	bool reinit = false;
+	if( smap.size() != map->length() )
+	{
+		reinit = true;
+		// init new map...
+		smap.resize(map->length());
+	}
+	
+	int size = map->length();
+	for( int i=0; i<size; i++ )
+	{
+		if( reinit )
+		{
+			shm->initDIterator(smap[i].dit);
+			shm->initAIterator(smap[i].ait);
+		}
+		
+		try
+		{
+			if( map[i].type == UniversalIO::DigitalInput )
+				shm->localSaveState( smap[i].dit, map[i].id, (map[i].value ? true : false ), shm->ID() );
+			else if( map[i].type == UniversalIO::DigitalOutput )
+				shm->localSetState( smap[i].dit, map[i].id, (map[i].value ? true : false ), shm->ID() );
+			else if( map[i].type == UniversalIO::AnalogInput )
+				shm->localSaveValue( smap[i].ait, map[i].id, map[i].value, shm->ID() );
+			else if( map[i].type == UniversalIO::AnalogOutput )
+				shm->localSetValue( smap[i].ait, map[i].id, map[i].value, shm->ID() );
+		}
+		catch( Exception& ex )
+		{
+			dlog[Debug::INFO]  << "(update): " << ex << endl;
+		}
+		catch( ... )
+		{
+			dlog[Debug::INFO]  << "(update): catch ..." << endl;
+		}
+	}
+}
+// --------------------------------------------------------------------------
 void UniExchange::askSensors( UniversalIO::UIOCommand cmd )
 {
+
 }
 // -----------------------------------------------------------------------------
 void UniExchange::processingMessage( UniSetTypes::VoidMessage* msg )
@@ -248,7 +262,9 @@ UniExchange* UniExchange::init_exchange( int argc, const char* const* argv,
 										UniSetTypes::ObjectId icID, SharedMemory* ic, 
 											const std::string prefix )
 {
-	string nm(conf->getArgParam("--uniexchange-id","UniExchange"));
+	string p("--" + prefix + "-id");
+	string nm(UniSetTypes::getArgParam(p,argc,argv,"UniExchange"));
+
 	UniSetTypes::ObjectId ID = conf->getControllerID(nm);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
@@ -257,16 +273,6 @@ UniExchange* UniExchange::init_exchange( int argc, const char* const* argv,
 		return 0;
 	}
 	return new UniExchange(ID,icID,ic,prefix);
-}
-// -----------------------------------------------------------------------------
-IOController_i::ASensorInfoSeq* UniExchange::getAnalogSensorsMap()
-{
-
-}
-// -----------------------------------------------------------------------------
-IOController_i::DSensorInfoSeq* UniExchange::getDigitalSensorsMap()
-{
-
 }
 // -----------------------------------------------------------------------------
 void UniExchange::readConfiguration()

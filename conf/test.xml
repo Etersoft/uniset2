@@ -53,6 +53,11 @@
 		</History>
 	</SharedMemory>
 
+	<UniExchange name="UniExchange">
+		<item name="UniExchange2" node_id="Node2" sid_connection=""/>
+		<item id="3001" node_id="Node2" sid_connection=""/>
+	</UniExchange>
+
 	<MBMaster1 name="MBMaster1" iaddr="127.0.0.1" addr="0x31" port="30000" 
 			 levels="info,warn,crit" poll_time="200" reply_timeout="60"
 	/>
@@ -156,6 +161,8 @@
 
 	<controllers name="Controllers">
 		<item name="SharedMemory"/>
+		<item name="UniExchange"/>
+		<item name="UniExchange2"/>
 	</controllers>
 
 	<!-- ******************* Идентификаторы сервисов ***************** -->

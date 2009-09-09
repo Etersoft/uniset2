@@ -2986,6 +2986,69 @@ UniSetTypes::IDSeq_var UniversalInterface::askSensorsSeq( UniSetTypes::IDList& l
 	throw UniSetTypes::TimeOut(set_err("UI(askSensorSeq): TimeOut для объекта",sid,conf->getLocalNode()));
 }
 // -----------------------------------------------------------------------------
+IOController_i::ShortMapSeq* UniversalInterface::getSensors( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+{
+	try
+	{
+		CORBA::Object_var oref;
+		try
+		{
+			oref = rcache.resolve(id,node);
+		}
+		catch( NameNotFound ){}
+
+		for( unsigned int i=0; i<uconf->getRepeatCount(); i++)
+		{
+			try
+			{
+				if( CORBA::is_nil(oref) )
+					oref = resolve(id,node);
+
+				IOController_i_var iom = IOController_i::_narrow(oref);
+				return iom->getSensors();
+			}
+			catch(CORBA::TRANSIENT){}
+			catch(CORBA::OBJECT_NOT_EXIST){}
+			catch(CORBA::SystemException& ex){}
+			msleep(uconf->getRepeatTimeout());
+			oref = CORBA::Object::_nil();
+		}
+	}
+	catch(UniSetTypes::TimeOut){}
+	catch(IOController_i::NameNotFound &ex)
+	{
+		rcache.erase(id,node);
+		throw NameNotFound("UI(getSensors): "+string(ex.err));
+	}
+	catch(ORepFailed)
+	{
+		rcache.erase(id,node);
+		// не смогли получить ссылку на объект
+		throw IOBadParam(set_err("UI(getSensors): не смог получить ссылку на объект ",id,node));
+	}	
+	catch(CORBA::NO_IMPLEMENT)
+	{
+		rcache.erase(id,node);
+		throw IOBadParam(set_err("UI(getSensors): недоступна реализация метода",id,node));		
+	}	
+	catch(CORBA::OBJECT_NOT_EXIST)
+	{
+		rcache.erase(id,node);
+		throw IOBadParam(set_err("UI(getSensors): ссылка на не существующий объект",id,node));
+	}	
+	catch(CORBA::COMM_FAILURE& ex)
+	{
+		// ошибка системы коммуникации
+	}	
+	catch(CORBA::SystemException& ex)
+	{
+		// ошибка системы коммуникации
+		// unideb[Debug::WARN] << "UI(getValue): CORBA::SystemException" << endl;
+	}	
+	rcache.erase(id,node);
+	throw UniSetTypes::TimeOut(set_err("UI(getSensors): TimeOut для объекта",id,node));
+}
+// -----------------------------------------------------------------------------
 bool UniversalInterface::waitReady( UniSetTypes::ObjectId id, int msec, int pmsec, ObjectId node )
 {
 	PassiveTimer ptReady(msec);
