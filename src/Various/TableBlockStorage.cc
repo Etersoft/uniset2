@@ -35,13 +35,13 @@ TableBlockStorage::TableBlockStorage()
 	file=NULL;
 }
 
-TableBlockStorage::TableBlockStorage(const char* name, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek, bool cr)
+TableBlockStorage::TableBlockStorage(const char* name, int byte_sz, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek, bool cr)
 {
 	file=NULL;
-	if(!open(name, key_sz, inf_sz, inf_count, block_num, block_lim, seek))
+	if(!open(name, byte_sz, key_sz, inf_sz, inf_count, block_num, block_lim, seek))
 	{
 		if(cr)
-			create(name, key_sz, inf_sz, inf_count, block_num, block_lim, seek);
+			create(name, byte_sz, key_sz, inf_sz, inf_count, block_num, block_lim, seek);
 		else
 			file=NULL;
 	}
@@ -115,7 +115,7 @@ bool TableBlockStorage::copyToNextBlock(void)
 	return true;
 }
 
-bool TableBlockStorage::open(const char* name, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek)
+bool TableBlockStorage::open(const char* name, int byte_sz, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek)
 {
 	/*! Если уже был открыт файл в переменной данного класса, он закрывается и открывается новый */
 	if(file!=NULL) fclose(file);
@@ -154,6 +154,13 @@ bool TableBlockStorage::open(const char* name, int key_sz, int inf_sz, int inf_c
 	block_size=inf_count;
 	size=block_size*block_num;
 
+	if( byte_sz<getByteSize() )
+	{
+		fclose(file);
+		file=NULL;
+		return false;
+	}
+
 	max=-1;
 
 	/*! Инициализация памяти */
@@ -182,16 +189,11 @@ bool TableBlockStorage::open(const char* name, int key_sz, int inf_sz, int inf_c
 	return true;
 }
 
-bool TableBlockStorage::create(const char* name, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek)
+bool TableBlockStorage::create(const char* name, int byte_sz, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek)
 {
 	if(file!=NULL) fclose(file);
 	file = fopen(name, "r+");
-	if(file==NULL)
-	{
-		FILE*f=fopen(name,"w");
-		fclose(f);
-		file = fopen(name, "r+");
-	}
+
 	k_size=key_sz;
 	inf_size=inf_sz;
 	seekpos=seek;
@@ -204,6 +206,20 @@ bool TableBlockStorage::create(const char* name, int key_sz, int inf_sz, int inf
 	block_size=inf_count;
 	size=block_size*block_num;
 	max=-1;
+
+	if( byte_sz<getByteSize() )
+	{
+		if( file!=NULL ) fclose(file);
+		file=NULL;
+		return false;
+	}
+
+	if(file==NULL)
+	{
+		FILE*f=fopen(name,"w");
+		fclose(f);
+		file = fopen(name, "r+");
+	}
 
 	if(fseek(file,seekpos,0)==-1) return false;
 

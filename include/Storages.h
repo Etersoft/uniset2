@@ -92,7 +92,7 @@ class TableBlockStorage
 
 		/*! Конструктор вызывает функцию Open, а при параметре create=true создает новую таблицу при
 		несовпадении заголовков или отсутствии старой */
-		TableBlockStorage(const char* name, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek, bool create=false);
+		TableBlockStorage(const char* name, int byte_sz, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek, bool create=false);
 
 		~TableBlockStorage();
 
@@ -109,8 +109,8 @@ class TableBlockStorage
 			sizeof(StorageAttr), где последнее слагаемое - размер заголовка,
 			размер можно получить, вызвав функцию getByteSize()
 		*/
-		bool open(const char* name, int inf_sz, int key_sz, int inf_count, int block_num, int block_lim, int seek);
-		bool create(const char* name, int inf_sz, int key_sz, int inf_count, int block_num, int block_lim, int seek);
+		bool open(const char* name, int byte_sz, int inf_sz, int key_sz, int inf_count, int block_num, int block_lim, int seek);
+		bool create(const char* name, int byte_sz, int inf_sz, int key_sz, int inf_count, int block_num, int block_lim, int seek);
 
 		/*! Добавление информации по ключу, возможна перезапись при совпадении ключа с существующим */
 		bool addRow(void* key, void* val);

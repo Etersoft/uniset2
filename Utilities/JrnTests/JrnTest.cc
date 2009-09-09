@@ -32,6 +32,7 @@
 #include "UniXML.h"
 
 int seek=0;
+int b_size=100000;
 
 void testTable1(void)
 {
@@ -79,7 +80,7 @@ bool testTable2(void)
 	char *val=new char[40];
 	TableBlockStorage t;
 	//t = new TableBlockStorage();
-	t.create("big_file.test", 4, 40, 100, 5,28,0);
+	t.create("big_file.test", b_size, 4, 40, 100, 5,28,0);
 	seek=t.getByteSize();
 	printf("Table size in bytes = %d\n",seek);
 	int i;
@@ -191,7 +192,7 @@ bool testTable2(void)
 		return false;
 	}
 	printf("after reopen:\n");
-	t.open("big_file.test", 4, 40, 100, 5,28,0);
+	t.open("big_file.test", b_size, 4, 40, 100, 5,28,0);
 	for(i=1;i<20;i++)
 	{
 		if(t.findKeyValue(&i,val)!=0) printf("%s, ",val);
@@ -259,7 +260,7 @@ bool testJournal1(void)
 	k = 0;
 	printf("size changed to 33000 rows (increased)\n");
 	j.setSize(33000);
-	TableBlockStorage t("big_file.test", 4, 40, 100, 5,28,0);
+	TableBlockStorage t("big_file.test", b_size, 4, 40, 100, 5,28,0);
 	printf("test of 2 classes working in 1 file together\n");
 	char *val = new char[40];
 	for(i=1;i<20;i++)
