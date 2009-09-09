@@ -54,7 +54,7 @@
 	</SharedMemory>
 
 	<UniExchange name="UniExchange">
-		<item name="UniExchange2" node_id="Node2" sid_connection=""/>
+		<item name="UniExchange2" node="Node2" sid_connection=""/>
 		<item id="3001" node_id="Node2" sid_connection=""/>
 	</UniExchange>
 

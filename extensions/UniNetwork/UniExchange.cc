@@ -38,6 +38,12 @@ polltime(200)
 	dlog[Debug::INFO] << myname << "(init): read fileter-field='" << s_field
 						<< "' filter-value='" << s_fvalue << "'" << endl;
 
+	polltime = conf->getArgInt("--" + prefix + "-polltime",it.getProp("polltime"));
+	if( polltime <= 0 )
+		polltime = 200;
+	dlog[Debug::INFO] << myname << "(init): polltime=" << polltime << endl;
+
+
 	if( it.goChildren() )
 	{
 		for( ; it.getCurrent(); it.goNext() )
@@ -48,14 +54,13 @@ polltime(200)
 			if( !n.empty() )
 				id = it.getIntProp("id");
 			else
+			{
 				id = conf->getControllerID( it.getProp("name") );
+				n = it.getProp("name");
+			}
 				
 			if( id == DefaultObjectId )
-			{
-				if( n.empty() )
-					n = it.getProp("name");
 				throw SystemError("(UniExchange): Uknown ID for " + n );
-			}
 
 			UniSetTypes::ObjectId node;
 
@@ -63,8 +68,11 @@ polltime(200)
 			if( !n1.empty() )
 				node = it.getIntProp("node_id");
 			else
+			{
+				n1 = it.getProp("node");
 				node = conf->getNodeID(n1);
-				
+			}
+
 			if( id == DefaultObjectId )
 				throw SystemError("(UniExchange): Uknown ID for node=" + n1 );
 			
@@ -102,8 +110,14 @@ void UniExchange::execute()
 			bool ok = false;
 			try
 			{
+				if( dlog.debugging(Debug::INFO) )
+					dlog[Debug::INFO] << myname << ": connect to id=" << it->id << " node=" << it->node << endl;
+
 				IOController_i::ShortMapSeq_var sseq = ui.getSensors( it->id, it->node );
 				ok = true;
+
+				if( dlog.debugging(Debug::INFO) )
+					dlog[Debug::INFO] << myname << " update sensors from id=" << it->id << " node=" << it->node << endl;
 				it->update(sseq,shm);
 			}
 			catch( Exception& ex )
@@ -129,8 +143,8 @@ void UniExchange::execute()
 				}
 			}
 
-			if( !ok )
-				dlog[Debug::INFO] << "****** cannot connect with node=" << it->node << endl;
+			if( !ok && dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << myname << ": ****** cannot connect with node=" << it->node << endl;
 		}
 	
 		msleep(polltime);
@@ -262,7 +276,7 @@ UniExchange* UniExchange::init_exchange( int argc, const char* const* argv,
 										UniSetTypes::ObjectId icID, SharedMemory* ic, 
 											const std::string prefix )
 {
-	string p("--" + prefix + "-id");
+	string p("--" + prefix + "-name");
 	string nm(UniSetTypes::getArgParam(p,argc,argv,"UniExchange"));
 
 	UniSetTypes::ObjectId ID = conf->getControllerID(nm);
