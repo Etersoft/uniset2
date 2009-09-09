@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.96
-Release: eter57
+Release: eter58
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -149,6 +149,7 @@ rm -f %buildroot%_libdir/*.la
 %_bindir/%oname-rtuexchange
 %_bindir/%oname-smemory
 %_bindir/%oname-smviewer
+%_bindir/%oname-network
 
 %_libdir/*Extensions.so.*
 %_libdir/libUniSetIO*.so.*
@@ -156,6 +157,7 @@ rm -f %buildroot%_libdir/*.la
 %_libdir/libUniSetMB*.so.*
 %_libdir/libUniSetRT*.so.*
 %_libdir/libUniSetShared*.so.*
+%_libdir/libUniSetNetwork*.so.*
 
 %files extensions-devel
 %_includedir/%oname/extensions/
@@ -171,10 +173,14 @@ rm -f %buildroot%_libdir/*.la
 %_pkgconfigdir/libUniSetMB*.pc
 %_pkgconfigdir/libUniSetRT*.pc
 %_pkgconfigdir/libUniSetShared*.pc
+%_pkgconfigdir/libUniSetNetwork*.pc
 #%_pkgconfigdir/libUniSet*.pc
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Sep 09 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter57
+- new build
+
 * Wed Sep 09 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter56
 - new build
 
