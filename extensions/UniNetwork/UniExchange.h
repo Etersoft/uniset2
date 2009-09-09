@@ -8,6 +8,7 @@
 #include "IOController.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"
+#include "PassiveTimer.h"
 // -----------------------------------------------------------------------------
 class UniExchange:
 	public IOController
@@ -26,6 +27,8 @@ class UniExchange:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char** argv );
 
+		virtual IOController_i::ShortMapSeq* getSensors();
+
 	protected:
 
 		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
@@ -42,8 +45,17 @@ class UniExchange:
 		
 		struct SInfo
 		{
+			SInfo():
+				val(0),
+				id(UniSetTypes::DefaultObjectId),
+				type(UniversalIO::UnknownIOType)
+			{}
+
 			IOController::DIOStateList::iterator dit;
 			IOController::AIOStateList::iterator ait;
+			long val;
+			long id;
+			UniversalIO::IOTypes type;
 		};
 		
 		typedef std::vector<SInfo> SList;
@@ -70,8 +82,16 @@ class UniExchange:
 		bool check_item( UniXML_iterator& it );
 		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
 		bool initItem( UniXML_iterator& it );
+		void updateLocalData();
+		void initIterators();
 		
 		int polltime;
+		PassiveTimer ptUpdate;
+		bool init_ok;
+		
+		SList mymap;
+		int maxIndex;
+		int smReadyTimeout;
 		
 	private:
 };

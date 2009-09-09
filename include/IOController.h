@@ -76,7 +76,7 @@ class IOController:
 								UniversalIO::IOTypes type = UniversalIO::DigitalInput,
 								UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
 
-		/*! \warning Не сделано проверки, зарегистрирован ли такой датчик */								
+		/*! \warning Не сделано проверки, зарегистрирован ли такой датчик */
 	    virtual void saveValue(const IOController_i::SensorInfo& si, CORBA::Long value,
 								UniversalIO::IOTypes type = UniversalIO::AnalogInput,
 								UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
@@ -94,7 +94,7 @@ class IOController:
 		virtual UniSetTypes::IDSeq* setOutputSeq(const IOController_i::OutSeq& lst, UniSetTypes::ObjectId sup_id);
 
 //     ----------------------------------------------------------------
-		virtual UniversalIO::IOTypes getIOType(const IOController_i::SensorInfo& si);		
+		virtual UniversalIO::IOTypes getIOType(const IOController_i::SensorInfo& si);
 
 		virtual IOController_i::ASensorInfoSeq* getAnalogSensorsMap();
 		virtual IOController_i::DSensorInfoSeq* getDigitalSensorsMap();

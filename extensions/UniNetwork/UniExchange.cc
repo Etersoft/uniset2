@@ -23,7 +23,10 @@ UniExchange::UniExchange( UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID,
 							SharedMemory* ic, const std::string prefix ):
 IOController(id),
 shm(0),
-polltime(200)
+polltime(200),
+mymap(1),
+maxIndex(0),
+smReadyTimeout(15000)
 {
 	cnode = conf->getNode(myname);
 	if( cnode == NULL )
@@ -43,6 +46,20 @@ polltime(200)
 		polltime = 200;
 	dlog[Debug::INFO] << myname << "(init): polltime=" << polltime << endl;
 
+	int updatetime = conf->getArgInt("--" + prefix + "-updatetime",it.getProp("updatetime"));
+	if( updatetime <= 0 )
+		updatetime = 200;
+	dlog[Debug::INFO] << myname << "(init): updatetime=" << polltime << endl;
+
+	ptUpdate.setTiming(updatetime);
+
+	smReadyTimeout = atoi(conf->getArgParam("--io-sm-ready-timeout",it.getProp("ready_timeout")).c_str());
+	if( smReadyTimeout == 0 )
+		smReadyTimeout = 15000;
+	else if( smReadyTimeout < 0 )
+		smReadyTimeout = UniSetTimer::WaitUpTime;
+
+	dlog[Debug::INFO] << myname << "(init): smReadyTimeout=" << smReadyTimeout << endl;
 
 	if( it.goChildren() )
 	{
@@ -88,7 +105,10 @@ polltime(200)
 	}
 	
 	if( shm->isLocalwork() )
+	{
 		readConfiguration();
+		mymap.resize(maxIndex);
+	}
 	else
 		ic->addReadItem( sigc::mem_fun(this,&UniExchange::readItem) );
 }
@@ -103,6 +123,28 @@ UniExchange::~UniExchange()
 // -----------------------------------------------------------------------------
 void UniExchange::execute()
 {
+	if( !shm->waitSMready(smReadyTimeout,50) )
+	{
+		ostringstream err;
+		err << myname << "(execute): Не дождались готовности SharedMemory к работе в течение "
+					<< smReadyTimeout << " мсек";
+
+		unideb[Debug::CRIT] << err.str() << endl;
+		throw SystemError(err.str());
+	}
+
+	PassiveTimer pt(UniSetTimer::WaitUpTime);
+	if( shm->isLocalwork() )
+	{
+		maxIndex = 0;
+		readConfiguration();
+		cerr << "************************** readConfiguration: " << pt.getCurrent() << " msec " << endl;
+	}
+
+	mymap.resize(maxIndex);
+	initIterators();
+	init_ok = true;
+
 	while(1)
 	{
 		for( NetNodeList::iterator it=nlst.begin(); it!=nlst.end(); ++it )
@@ -146,6 +188,12 @@ void UniExchange::execute()
 			if( !ok && dlog.debugging(Debug::INFO) )
 				dlog[Debug::INFO] << myname << ": ****** cannot connect with node=" << it->node << endl;
 		}
+
+		if( ptUpdate.checkTime() )
+		{
+			updateLocalData();
+			ptUpdate.reset();
+		}
 	
 		msleep(polltime);
 	}
@@ -168,7 +216,11 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMI
 		{
 			shm->initDIterator(smap[i].dit);
 			shm->initAIterator(smap[i].ait);
+			smap[i].type 	= map[i].type;
+			smap[i].id 		= map[i].id;
 		}
+
+		smap[i].val 	= map[i].value;
 		
 		try
 		{
@@ -189,6 +241,66 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMI
 		{
 			dlog[Debug::INFO]  << "(update): catch ..." << endl;
 		}
+	}
+}
+// --------------------------------------------------------------------------
+IOController_i::ShortMapSeq* UniExchange::getSensors()
+{
+	if( !init_ok )
+		throw CORBA::COMM_FAILURE();
+
+	IOController_i::ShortMapSeq* res = new IOController_i::ShortMapSeq();
+	res->length( mymap.size() );
+
+	int i=0;
+	for( SList::iterator it=mymap.begin(); it!=mymap.end(); ++it )
+	{
+		IOController_i::ShortMap m;
+		m.id 	= it->id;
+		m.value = it->val;
+		m.type = it->type;
+		(*res)[i++] = m;
+	}
+
+	return res;
+}
+// --------------------------------------------------------------------------
+void UniExchange::updateLocalData()
+{
+	for( SList::iterator it=mymap.begin(); it!=mymap.end(); ++it )
+	{
+		try
+		{
+			if( it->type == UniversalIO::DigitalInput ||
+				it->type == UniversalIO::DigitalOutput )
+			{
+				it->val = shm->localGetState( it->dit, it->id );
+			}
+			else if( it->type == UniversalIO::AnalogInput ||
+					it->type == UniversalIO::AnalogOutput )
+			{
+				it->val = shm->localGetValue( it->ait, it->id );
+			}
+		}
+		catch( Exception& ex )
+		{
+			dlog[Debug::INFO]  << "(update): " << ex << endl;
+		}
+		catch( ... )
+		{
+			dlog[Debug::INFO]  << "(update): catch ..." << endl;
+		}
+	}
+	
+	init_ok = true;
+}
+// --------------------------------------------------------------------------
+void UniExchange::initIterators()
+{
+	for( SList::iterator it=mymap.begin(); it!=mymap.end(); ++it )
+	{
+		shm->initDIterator(it->dit);
+		shm->initAIterator(it->ait);
 	}
 }
 // --------------------------------------------------------------------------
@@ -345,10 +457,44 @@ bool UniExchange::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 // ------------------------------------------------------------------------------------------
 bool UniExchange::initItem( UniXML_iterator& it )
 {
+	SInfo i;
+
+	i.id = DefaultObjectId;
+	if( it.getProp("id").empty() )
+		i.id = conf->getSensorID(it.getProp("name"));
+	else
+	{
+		i.id = it.getIntProp("id");
+		if( i.id <=0 )
+			i.id = DefaultObjectId;
+	}
+	
+	if( i.id == DefaultObjectId )
+	{
+		if( dlog )
+			dlog[Debug::CRIT] << myname << "(initItem): Unknown ID for " 
+				<< it.getProp("name") << endl;
+		return false;
+	}
+
+	i.type = UniSetTypes::getIOType(it.getProp("iotype"));
+	if( i.type == UniversalIO::UnknownIOType )
+	{
+		if( dlog )
+			dlog[Debug::CRIT] << myname << "(initItem): Unknown iotype= " 
+				<< it.getProp("iotype") << " for " << it.getProp("name") << endl;
+		return false;
+	}
+
+	i.val = 0;
+
+	mymap[maxIndex++] = i;
+	if( maxIndex >= mymap.size() )
+		mymap.resize(maxIndex+10);
+
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
 void UniExchange::help_print( int argc, const char** argv )
 {
 	cout << "--unet-polltime msec     - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
