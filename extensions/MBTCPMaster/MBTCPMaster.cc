@@ -1267,7 +1267,7 @@ void MBTCPMaster::initIterators()
 
 }
 // -----------------------------------------------------------------------------
-void MBTCPMaster::help_print( int argc, const char** argv )
+void MBTCPMaster::help_print( int argc, const char* const* argv )
 {
 	cout << "--mbm-polltime msec     - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
 	cout << "--mbm-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
@@ -1283,7 +1283,7 @@ void MBTCPMaster::help_print( int argc, const char** argv )
 	cout << "--mbm-recv-timeout - Таймаут на ожидание ответа." << endl;
 }
 // -----------------------------------------------------------------------------
-MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char** argv, UniSetTypes::ObjectId icID, SharedMemory* ic, 
+MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv, UniSetTypes::ObjectId icID, SharedMemory* ic, 
 											const std::string prefix )
 {
 	string name = conf->getArgParam("--" + prefix + "-name","MBTCPMaster1");

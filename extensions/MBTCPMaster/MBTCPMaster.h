@@ -30,12 +30,12 @@ class MBTCPMaster:
 		virtual ~MBTCPMaster();
 	
 		/*! глобальная функция для инициализации объекта */
-		static MBTCPMaster* init_mbmaster( int argc, const char** argv, 
+		static MBTCPMaster* init_mbmaster( int argc, const char* const* argv, 
 											UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
 											const std::string prefix="mbtcp" );
 
 		/*! глобальная функция для вывода help-а */
-		static void help_print( int argc, const char** argv );
+		static void help_print( int argc, const char* const* argv );
 
 		static const int NoSafetyState=-1;
 
