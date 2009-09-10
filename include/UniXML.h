@@ -80,6 +80,7 @@ public:
 
 	// Получить свойство name указанного узла node
 	static std::string getProp(xmlNode* node, const std::string name);
+	static std::string getPropUtf8(xmlNode* node, const std::string name);
 	static int getIntProp(xmlNode* node, const std::string name);
 	/// if value if not positive ( <= 0 ), returns def
 	static int getPIntProp(xmlNode* node, const std::string name, int def);
@@ -127,6 +128,7 @@ class UniXML_iterator
 		UniXML_iterator() {}
 
 		std::string getProp(const std::string name);
+		std::string getPropUtf8(const std::string name);
 		int getIntProp(const std::string name);
 		/// if value if not positive ( <= 0 ), returns def
 		int getPIntProp(const std::string name, int def);

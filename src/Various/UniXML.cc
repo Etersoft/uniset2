@@ -44,6 +44,8 @@ using namespace std;
 на ходу, потому что в поиске это наверняка чрезвычайно замедляет.
 Возможно стоит использовать в качестве основы libxmlmm.
 Перед переделкой нужно написать полный тест на все функции UniXML.
+Особенно проверить распознавание кодировки XML-файла
+В качестве начальной мере добавлены функции getPropUtf8
 */
 const string UniXML::InternalEncoding("koi8-r");
 const string UniXML::ExternalEncoding("koi8-r");
@@ -126,8 +128,6 @@ string UniXML::xml2local(const xmlChar* xmlText)
 		return "";
 	}
 
-#warning Надо со всем этим разобраться...
-
 	size_t inl=strlen(text);
 	size_t outl=inl;
 
@@ -162,8 +162,6 @@ static char tmpbuf_l2x[500];
 // Возвращает указатель на временный буфер, который один на все вызовы функции.
 const xmlChar* UniXML::local2xml(string text)
 {
-
-#warning Надо со всем этим разобраться...
 
 	iconv_t frt;
 	frt = iconv_open(xmlEncoding.c_str(), InternalEncoding.c_str() );
@@ -208,9 +206,14 @@ string UniXML::getProp(xmlNode* node, const string name)
 	return xml2local(::xmlGetProp(node, (const xmlChar*)name.c_str()));
 }
 
+string UniXML::getPropUtf8(xmlNode* node, const string name)
+{
+	return (const char*)::xmlGetProp(node, (const xmlChar*)name.c_str());
+}
+
 int UniXML::getIntProp(xmlNode* node, const string name )
 {
-	return UniSetTypes::uni_atoi((const char*)::xmlGetProp(node, (const xmlChar*)name.c_str()));
+	return UniSetTypes::uni_atoi(getPropUtf8(node, name));
 }
 
 int UniXML::getPIntProp(xmlNode* node, const string name, int def )
@@ -445,13 +448,20 @@ bool UniXML_iterator::goChildren()
 	}
 	return true;
 }
+
 // -------------------------------------------------------------------------		
 string UniXML_iterator::getProp( const string name )
 {
-	return UniXML::xml2local(::xmlGetProp(curNode, (const xmlChar*)name.c_str()));
+	return UniXML::getProp(curNode, name);
 }
 
-// -------------------------------------------------------------------------		
+// -------------------------------------------------------------------------
+string UniXML_iterator::getPropUtf8( const string name )
+{
+	return UniXML::getPropUtf8(curNode, name);
+}
+
+// -------------------------------------------------------------------------
 int UniXML_iterator::getIntProp( const string name )
 {
 	return UniSetTypes::uni_atoi((char*)::xmlGetProp(curNode, (const xmlChar*)name.c_str()));
