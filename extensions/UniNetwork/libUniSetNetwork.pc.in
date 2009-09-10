@@ -5,7 +5,7 @@ includedir=@includedir@
 
 Name: libUniSetNetwork
 Description: Support library for UniSet net exchange
-Requires: libUniSetExtensions libUniSetNetwork
+Requires: libUniSetExtensions libUniSetSharedMemory
 Version: @VERSION@
 Libs: -L${libdir} -lUniSetNetwork
 Cflags: -I${includedir}/uniset
