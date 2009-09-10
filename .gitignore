@@ -80,3 +80,5 @@ extensions/ModbusSlave/uniset-mbslave
 extensions/SMViewer/uniset-smviewer
 extensions/SharedMemory/stop.sh
 extensions/SharedMemory/test.xml
+
+extensions/include
