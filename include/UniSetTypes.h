@@ -127,6 +127,20 @@ namespace UniSetTypes
 	class uniset_mutex;
 	class uniset_mutex_lock;
 
+	/// Преобразование строки в число (воспринимает префикс 0, как 8-ное, префикс 0x, как 16-ное, минус для отриц. чисел)
+	inline int uni_atoi( const char* str )
+	{
+		int n = 0; // if str is NULL or sscanf failed, we return 0
+
+		if ( str != NULL )
+			std::sscanf(str, "%i", &n);
+		return n;
+	}
+	inline int uni_atoi( const std::string str )
+	{
+		return uni_atoi(str.c_str());
+	}
+
 
 	typedef long KeyType;	/*!< уникальный ключ объекта */
 	
@@ -155,6 +169,13 @@ namespace UniSetTypes
 				return _argv[i+1];
 		}
 		return defval;
+	}
+
+	inline int getArgInt( const std::string name, 
+							int _argc, const char* const* _argv,
+							const std::string defval="" )
+	{
+		return uni_atoi(getArgParam(name, _argc, _argv, defval));
 	}
 
 	/*! Проверка наличия параметра в командной строке
@@ -205,19 +226,6 @@ namespace UniSetTypes
 	long setoutregion(long raw, long rawMin, long rawMax);
 
 
-	/// Преобразование строки в число (воспринимает префикс 0, как 8-ное, префикс 0x, как 16-ное, минус для отриц. чисел)
-	inline int uni_atoi( const char* str )
-	{
-		int n = 0; // if str is NULL or sscanf failed, we return 0
-
-		if ( str != NULL )
-			std::sscanf(str, "%i", &n);
-		return n;
-	}
-	inline int uni_atoi( const std::string str )
-	{
-		return uni_atoi(str.c_str());
-	}
 
 	bool file_exist( const std::string filename );
 	
