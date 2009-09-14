@@ -220,7 +220,7 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMI
 			smap[i].id 		= map[i].id;
 		}
 
-		smap[i].val 	= map[i].value;
+		smap[i].val = map[i].value;
 		
 		try
 		{
@@ -256,9 +256,12 @@ IOController_i::ShortMapSeq* UniExchange::getSensors()
 	for( SList::iterator it=mymap.begin(); it!=mymap.end(); ++it )
 	{
 		IOController_i::ShortMap m;
-		m.id 	= it->id;
-		m.value = it->val;
-		m.type = it->type;
+		{
+			uniset_spin_lock lock(it->val_lock,30);
+			m.id 	= it->id;
+			m.value = it->val;
+			m.type = it->type;
+		}
 		(*res)[i++] = m;
 	}
 
@@ -271,6 +274,7 @@ void UniExchange::updateLocalData()
 	{
 		try
 		{
+			uniset_spin_lock lock(it->val_lock,30);
 			if( it->type == UniversalIO::DigitalInput ||
 				it->type == UniversalIO::DigitalOutput )
 			{
