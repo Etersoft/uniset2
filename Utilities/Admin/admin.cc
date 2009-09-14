@@ -824,10 +824,10 @@ int saveValue(string args, UniversalInterface &ui)
 	{
 		if( isdigit( arg[0] ) )
 		{
-			if( sscanf( arg.c_str(),"%ld:%ld=%ld",&sid,&node,&val ) < 2 )
+			if( sscanf( arg.c_str(),"%ld=%ld",&sid,&val ) < 2 )
 			{
 				cout << i <<"\t------------------------"<< endl;
-				cerr << "!!!!!!!!! пара SensorId=Value #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
+				cerr << "(digit): !!! пара SensorId=Value #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
 				err=1;
 				continue;
 			}
@@ -835,16 +835,16 @@ int saveValue(string args, UniversalInterface &ui)
 		else
 		{
 			int ind;
-			string name,strval;
+			string strval;
 			ind = arg.find_first_of("=");
-			name = conf->getSensorsSection()+"/"+arg.substr(0,ind);
+			string name(arg.substr(0,ind));
 			strval = arg.substr( ind + 1, arg.length() );
-			sid = conf->oind->getIdByName(name);
+			sid = conf->getSensorID(name);
 
 			if( sid == UniSetTypes::DefaultObjectId || (sscanf( strval.c_str(),"%ld",&val ) < 1) )
 			{
 				cout << i <<"\t------------------------"<< endl;
-				cerr << "!!!!!!!!! пара SensorName=Value #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
+				cerr << "(name): !!! пара SensorName=Value #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
 				err=1;
 				continue;
 			}
@@ -896,11 +896,11 @@ int saveState(string args, UniversalInterface &ui)
 		else
 		{
 			int ind;
-			string name,strval;
+			string strval;
 			ind = arg.find_first_of("=");
-			name = conf->getSensorsSection()+"/"+arg.substr(0,ind);
+			string name(arg.substr(0,ind));
 			strval = arg.substr( ind + 1, arg.length() );
-			sid = conf->oind->getIdByName(name);
+			sid = conf->getSensorID(name);
 
 			if( sid == UniSetTypes::DefaultObjectId || (sscanf( strval.c_str(),"%ld",&inval ) < 1) )
 			{
@@ -965,11 +965,11 @@ int setValue(string args, UniversalInterface &ui)
 		else
 		{
 			int ind;
-			string name,strval;
+			string strval;
 			ind = arg.find_first_of("=");
-			name = conf->getSensorsSection()+"/"+arg.substr(0,ind);
+			string name(arg.substr(0,ind));
 			strval = arg.substr( ind + 1, arg.length() );
-			sid = conf->oind->getIdByName(name);
+			sid = conf->getSensorID(name);
 
 			if( sid == UniSetTypes::DefaultObjectId || (sscanf( strval.c_str(),"%ld",&val ) < 1) )
 			{
@@ -1025,15 +1025,15 @@ int setState(string args, UniversalInterface &ui)
 		else
 		{
 			int ind;
-			string name,strval;
+			string strval;
 			ind = arg.find_first_of("=");
-			name = conf->getSensorsSection()+"/"+arg.substr(0,ind);
+			string name(arg.substr(0,ind));
 			strval = arg.substr( ind + 1, arg.length() );
-			sid = conf->oind->getIdByName(name);
+			sid = conf->getSensorID(name);
 
 			if( sid == UniSetTypes::DefaultObjectId || (sscanf( strval.c_str(),"%ld",&inval ) < 1) )
 			{
-				cout << i <<"\t------------------------"<< endl;		
+				cout << i <<"\t------------------------"<< endl;
 				cerr << "!!!!!!!!! пара SensorName=State #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
 				err=1;
 				continue;
@@ -1097,9 +1097,7 @@ int getState(string args, UniversalInterface &ui)
 		}	
 		else
 		{
-			string name;
-			name = conf->getSensorsSection()+"/"+arg;
-			sid = conf->oind->getIdByName(name);
+			sid = conf->getSensorID(arg);
 
 			if( sid == UniSetTypes::DefaultObjectId )
 			{
@@ -1161,9 +1159,7 @@ int getValue(string args, UniversalInterface &ui )
 		}	
 		else
 		{
-			string name;
-			name = conf->getSensorsSection()+"/"+arg;
-			sid = conf->oind->getIdByName(name);
+			sid = conf->getSensorID(arg);
 
 			if( sid == UniSetTypes::DefaultObjectId )
 			{
