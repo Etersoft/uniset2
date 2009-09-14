@@ -33,7 +33,7 @@
 
 int seek=0;
 int b_size=100000;
-
+int bj_size=1300000;
 void testTable1(void)
 {
 	char *chr=new char[20];
@@ -212,7 +212,7 @@ bool reOpen()
 	int i,k=0;
 	char *str = new char[30];
 	printf("the same after reopen:\n");
-	if(!j.open("big_file.test",30,33000,seek))
+	if(!j.open("big_file.test",bj_size,30,33000,seek))
 	{
 		printf("Reopen file error\n");
 		delete str;
@@ -234,7 +234,7 @@ bool reOpen()
 
 bool testJournal1(void)
 {
-	CycleStorage j("big_file.test",30,32000,seek,true);
+	CycleStorage j("big_file.test",bj_size,30,32000,seek,true);
 	int i,k=0;
 	char *str = new char[30];
 	printf("journal test 1\n");
@@ -344,7 +344,7 @@ bool testJournal1(void)
 
 void testJournal2(void)
 {
-	CycleStorage j("big_file.test",30,32000,seek);
+	CycleStorage j("big_file.test",bj_size,30,32000,seek);
 	int i,k;
 	char *str = new char[30];
 	printf("journal test 2 - checking number of iterations to find head/tail\n");
@@ -356,7 +356,7 @@ void testJournal2(void)
 			sprintf(str,"%d",k);
 			j.addRow(str);
 		}
-		j.open("big_file.test",30,32000,seek);
+		j.open("big_file.test",bj_size,30,32000,seek);
 		printf("i=%d, iterations = %d\n", i, j.getIter());
 	}
 	printf("\n");
@@ -372,7 +372,7 @@ struct JItem
 
 bool testJournal3()
 {
-	CycleStorage j("journal3.test",sizeof(JItem),10,0,true);
+	CycleStorage j("journal3.test",bj_size,sizeof(JItem),10,0,true);
 	if( !j.isOpen() )
 	{
 		printf("create journal3.test failed\n");

@@ -150,7 +150,7 @@ class CycleStorage
 
 		/*! Конструктор вызывает функцию Open, а при параметре create=true создает новый журнал при
 		несовпадении заголовков или отсутствии старого */
-		CycleStorage(const char* name, int inf_sz, int inf_count, int seek,bool create=false);
+		CycleStorage(const char* name, int byte_sz, int inf_sz, int inf_count, int seek,bool create=false);
 
 		~CycleStorage();
 
@@ -163,8 +163,8 @@ class CycleStorage
 			где последнее слагаемое - размер заголовка
 			размер можно получить, вызвав функцию getByteSize()
 		*/
-		bool open(const char* name, int inf_sz, int inf_count, int seek);
-		bool create(const char* name, int inf_sz, int inf_count, int seek);
+		bool open(const char* name, int byte_sz, int inf_sz, int inf_count, int seek);
+		bool create(const char* name, int byte_sz, int inf_sz, int inf_count, int seek);
 		bool isOpen(){ return (file!=NULL); }
 
 

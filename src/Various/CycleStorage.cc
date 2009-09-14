@@ -35,13 +35,13 @@ CycleStorage::CycleStorage()
 	file=NULL;
 }
 
-CycleStorage::CycleStorage(const char* name, int inf_sz, int inf_count, int seek, bool cr):
+CycleStorage::CycleStorage(const char* name, int byte_sz, int inf_sz, int inf_count, int seek, bool cr):
 	file(NULL)
 {
-	if(!open(name,inf_sz, inf_count, seek))
+	if(!open(name, byte_sz, inf_sz, inf_count, seek))
 	{
 		if(cr)
-			create(name,inf_sz, inf_count, seek);
+			create(name, byte_sz, inf_sz, inf_count, seek);
 	}
 }
 
@@ -138,17 +138,17 @@ bool CycleStorage::findHead()
 	return true;
 }
 
-bool CycleStorage::open(const char* name, int inf_sz, int inf_count, int seek)
+bool CycleStorage::open(const char* name, int byte_sz, int inf_sz, int inf_count, int seek)
 {
 	/*! 	Если уже был открыт файл в переменной данного класса, он закрывается и открывается новый
 	*/
 	
-	if(file!=NULL)
+	if( file!=NULL )
 		fclose(file);
 	file = fopen(name, "r+");
-	if(file==NULL) return false;
+	if( file==NULL ) return false;
 
-	if(fseek(file,seek,0)==-1)
+	if( fseek(file,seek,0)==-1 )
 	{
 		fclose(file);
 		file=NULL;
@@ -157,10 +157,10 @@ bool CycleStorage::open(const char* name, int inf_sz, int inf_count, int seek)
 
 	/*! Читаем заголовок */
 	CycleStorageAttr csa;
-	fread(&csa,sizeof(csa),1,file);
+	fread(&csa, sizeof(csa), 1, file);
 
 	/*! Проверяем заголовок на совпадение с нашими значениями */
-	if((csa.size!=inf_count)||(csa.inf_size!=inf_sz)||(csa.seekpos!=seek))
+	if( ( csa.size!=inf_count ) || ( csa.inf_size!=inf_sz ) || ( csa.seekpos!=seek ) )
 	{
 		fclose(file);
 		file=NULL;
@@ -171,27 +171,19 @@ bool CycleStorage::open(const char* name, int inf_sz, int inf_count, int seek)
 	size=inf_count;
 	seekpos=seek+sizeof(CycleStorageAttr);
 
-	if(!findHead())
+	if( ( byte_sz<getByteSize() ) || !findHead() )
 	{
 		fclose(file);
-		file=NULL;
+		file = NULL;
 		return false;
 	}
 	return true;
 }
 
-bool CycleStorage::create(const char* name, int inf_sz, int inf_count, int seek)
+bool CycleStorage::create(const char* name, int byte_sz, int inf_sz, int inf_count, int seek)
 {
 	if(file!=NULL) fclose(file);
 	file = fopen(name, "r+");
-	/*! Создаем файл, если его нет */
-	if(file==NULL)
-	{
-		FILE*f=fopen(name,"w");
-		fclose(f);
-		file = fopen(name, "r+");
-	}
-
 
 	inf_size=inf_sz;
 	full_size=sizeof(CycleStorageElem)+inf_size;
@@ -199,6 +191,22 @@ bool CycleStorage::create(const char* name, int inf_sz, int inf_count, int seek)
 	size=inf_count;
 	iter=0;
 	seekpos=seek;
+
+	if( byte_sz<getByteSize() )
+	{
+		if( file!= NULL )
+			fclose(file);
+		file = NULL;
+		return false;
+	}
+
+	/*! Создаем файл, если его нет */
+	if(file==NULL)
+	{
+		FILE*f=fopen(name,"w");
+		fclose(f);
+		file = fopen(name, "r+");
+	}
 
 	if(fseek(file,seekpos,0)==-1) return false;
 
