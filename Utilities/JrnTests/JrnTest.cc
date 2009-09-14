@@ -25,11 +25,13 @@
 // --------------------------------------------------------------------------
 
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
-#include "Storages.h"
-#include "UniXML.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <Storages.h>
+#include <UniXML.h>
+#include <UniSetTypes.h>
 
 int seek=0;
 int b_size=100000;
@@ -160,12 +162,12 @@ bool testTable2(void)
 	for(i=1;i<20;i++)
 	{
 		if(t.findKeyValue(&i,val)!=0) printf("%s, ",val);
-		if((atoi(val) != i+40) && (i>2) && (i<11))
+		if((UniSetTypes::uni_atoi(val) != i+40) && (i>2) && (i<11))
 		{
 			delete val;
 			return false;
 		}
-		if((atoi(val) != i+10) && (i<3))
+		if((UniSetTypes::uni_atoi(val) != i+10) && (i<3))
 		{
 			delete val;
 			return false;
@@ -266,7 +268,7 @@ bool testJournal1(void)
 	for(i=1;i<20;i++)
 	{
 		if(t.findKeyValue((char*)&i,val)!=0) printf("%s, ",val);
-		if((atoi(val) != i+10) && (i<3))
+		if((UniSetTypes::uni_atoi(val) != i+10) && (i<3))
 		{
 			delete val;
 			delete str;
