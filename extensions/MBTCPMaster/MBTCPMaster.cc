@@ -50,36 +50,27 @@ prefix(prefix)
 		throw UniSetTypes::SystemError(myname+"(MBMaster): Unknown inet addr...(Use: " + pname +")" );
 
 	string tmp("--" + prefix + "-gateway-port");
-	port = atoi(conf->getArgParam(tmp,it.getProp("gateway_port")).c_str());
-	if( port<=0 )
+	port = conf->getArgInt(tmp,it.getProp("gateway_port"));
+	if( port <= 0 )
 		throw UniSetTypes::SystemError(myname+"(MBMaster): Unknown inet port...(Use: " + tmp +")" );
 
 
-	recv_timeout = atoi(conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")).c_str());
-	if( recv_timeout <= 0 )
-		recv_timeout = 50;
+	recv_timeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recv_timeout"), 50);
 
-	int alltout = atoi(conf->getArgParam("--" + prefix + "-all-timeout",it.getProp("all_timeout")).c_str());
-	if( alltout <=0 )
-		alltout = 2000;
-		
+	int alltout = conf->getArgPInt("--" + prefix + "-all-timeout",it.getProp("all_timeout"), 2000);
 	ptAllNotRespond.setTiming(alltout);
 
-	noQueryOptimization = atoi(conf->getArgParam("--" + prefix + "-no-query-optimization",it.getProp("no_query_optimization")).c_str());
+	noQueryOptimization = conf->getArgInt("--" + prefix + "-no-query-optimization",it.getProp("no_query_optimization"));
 
-	mbregFromID = atoi(conf->getArgParam("--" + prefix + "-reg-from-id",it.getProp("reg_from_id")).c_str());
+	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id",it.getProp("reg_from_id"));
 	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
-	polltime = atoi(conf->getArgParam("--" + prefix + "-polltime",it.getProp("polltime")).c_str());
-	if( !polltime )
-		polltime = 100;
+	polltime = conf->getArgPInt("--" + prefix + "-polltime",it.getProp("polltime"), 100);
 
-	initPause = atoi(conf->getArgParam("--" + prefix + "-initPause",it.getProp("initPause")).c_str());
-	if( !initPause )
-		initPause = 3000;
+	initPause = conf->getArgPInt("--" + prefix + "-initPause",it.getProp("initPause"), 3000);
 
-	force = atoi(conf->getArgParam("--" + prefix + "-force",it.getProp("force")).c_str());
-	force_out = atoi(conf->getArgParam("--" + prefix + "-force-out",it.getProp("force_out")).c_str());
+	force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
+	force_out = conf->getArgInt("--" + prefix + "-force-out",it.getProp("force_out"));
 
 	if( shm->isLocalwork() )
 	{
@@ -109,9 +100,7 @@ prefix(prefix)
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = atoi(conf->getArgParam("--" + prefix + "-heartbeat-max",it.getProp("heartbeat_max")).c_str());
-		if( maxHeartBeat <=0 )
-			maxHeartBeat = 10;
+		maxHeartBeat = conf->getArgPInt("--" + prefix + "-heartbeat-max",it.getProp("heartbeat_max"), 10);
 		test_id = sidHeartBeat;
 	}
 	else
@@ -128,9 +117,7 @@ prefix(prefix)
 
 	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
 
-	activateTimeout	= atoi(conf->getArgParam("--" + prefix + "-activate-timeout").c_str());
-	if( activateTimeout<=0 )
-		activateTimeout = 20000;
+	activateTimeout	= conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
 
 	initMB(false);
 
@@ -192,13 +179,13 @@ void MBTCPMaster::initMB( bool reopen )
 void MBTCPMaster::waitSMReady()
 {
 	// waiting for SM is ready...
-	int ready_timeout = atoi(conf->getArgParam("--mbm-sm-ready-timeout","15000").c_str());
+	int ready_timeout = conf->getArgInt("--mbm-sm-ready-timeout","15000");
 	if( ready_timeout == 0 )
 		ready_timeout = 15000;
 	else if( ready_timeout < 0 )
 		ready_timeout = UniSetTimer::WaitUpTime;
 
-	if( !shm->waitSMready(ready_timeout,50) )
+	if( !shm->waitSMready(ready_timeout, 50) )
 	{
 		ostringstream err;
 		err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
@@ -1072,8 +1059,8 @@ bool MBTCPMaster::initRSProperty( RSProperty& p, UniXML_iterator& it )
 bool MBTCPMaster::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBTCPMaster::RTUDevice* dev )
 {
 	r->dev = dev;
-	r->mbval = UniSetTypes::uni_atoi(it.getProp("default").c_str());
-	r->offset= UniSetTypes::uni_atoi(it.getProp("tcp_mboffset").c_str());
+	r->mbval = it.getIntProp("default");
+	r->offset= it.getIntProp("tcp_mboffset");
 
 	if( dev->dtype != MBTCPMaster::dtRTU )
 	{
@@ -1087,7 +1074,7 @@ bool MBTCPMaster::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBTCPMaster::RT
 		if( it.getProp("id").empty() )
 			r->mbreg = conf->getSensorID(it.getProp("name"));
 		else
-			r->mbreg = UniSetTypes::uni_atoi(it.getProp("id").c_str());
+			r->mbreg = it.getIntProp("id");
 	}
 	else
 	{
@@ -1383,13 +1370,9 @@ bool MBTCPMaster::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
 	}
 
 	dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
-	int tout = atoi(it.getProp("timeout").c_str());
-	if( tout > 0 )
-		d->second->resp_ptTimeout.setTiming(tout);
-	else
-		d->second->resp_ptTimeout.setTiming(UniSetTimer::WaitUpTime);
-				
-	d->second->resp_invert = atoi(it.getProp("invert").c_str());
+	int tout = it.getPIntProp("timeout", UniSetTimer::WaitUpTime);
+	d->second->resp_ptTimeout.setTiming(tout);
+	d->second->resp_invert = it.getIntProp("invert");
 	return true;
 }
 // -----------------------------------------------------------------------------

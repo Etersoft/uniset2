@@ -119,7 +119,7 @@ maxItem(0)
 
 	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
 
-	activateTimeout	= conf->getArgPInt("--activate-timeout"), 20000);
+	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
 
 	timeout_t msec = conf->getArgPInt("--udp-timeout",it.getProp("timeout"), 3000);
 

@@ -53,7 +53,7 @@ smReadyTimeout(15000)
 
 	ptUpdate.setTiming(updatetime);
 
-	smReadyTimeout = atoi(conf->getArgParam("--io-sm-ready-timeout",it.getProp("ready_timeout")).c_str());
+	smReadyTimeout = conf->getArgInt("--io-sm-ready-timeout",it.getProp("ready_timeout"));
 	if( smReadyTimeout == 0 )
 		smReadyTimeout = 15000;
 	else if( smReadyTimeout < 0 )
