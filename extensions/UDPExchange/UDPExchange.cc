@@ -11,9 +11,9 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 UDPExchange::UDPExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic ):
 UniSetObject_LT(objId),
-udp(0),
 shm(0),
 initPause(0),
+udp(0),
 activated(false),
 dlist(100),
 maxItem(0)
@@ -236,8 +236,8 @@ void UDPExchange::recv()
 	// receive
 	if( udp->isInputReady(recvTimeout) )
 	{
-		int ret = udp->UDPReceive::receive(&h,sizeof(h));
-		if( ret<sizeof(h) )
+		ssize_t ret = udp->UDPReceive::receive(&h,sizeof(h));
+		if( ret<(ssize_t)sizeof(h) )
 		{
 			cerr << myname << "(receive): ret=" << ret << " sizeof=" << sizeof(h) << endl;
 			return;
@@ -252,8 +252,8 @@ void UDPExchange::recv()
 		{
 			for( int i=0; i<h.dcount;i++ )
 			{
-				int ret = udp->UDPReceive::receive(&d,sizeof(d));
-				if( ret < sizeof(d) )
+				ssize_t ret = udp->UDPReceive::receive(&d,sizeof(d));
+				if( ret < (ssize_t)sizeof(d) )
 					return;
 			}
 			return;
@@ -261,8 +261,8 @@ void UDPExchange::recv()
 #endif 		
 		for( int i=0; i<h.dcount;i++ )
 		{
-			int ret = udp->UDPReceive::receive(&d,sizeof(d));
-			if( ret<sizeof(d) )
+			ssize_t ret = udp->UDPReceive::receive(&d,sizeof(d));
+			if( ret<(ssize_t)sizeof(d) )
 			{
 				cerr << myname << "(receive data " << i << "): ret=" << ret << " sizeof=" << sizeof(d) << endl;
 				break;
@@ -284,8 +284,8 @@ void UDPExchange::send()
 	// receive
 	if( udp->isOutputReady(sendTimeout) )
 	{
-		int ret = udp->transmit((char*)(&h),sizeof(h));
-		if( ret<sizeof(h) )
+		ssize_t ret = udp->transmit((char*)(&h),sizeof(h));
+		if( ret<(ssize_t)sizeof(h) )
 		{
 			cerr << myname << "(send data header): ret=" << ret << " sizeof=" << sizeof(h) << endl;
 			return;
@@ -296,8 +296,8 @@ void UDPExchange::send()
 		for( ; it!=mypack.dlist.end(); ++it )
 		{
 			cout << myname << "(send): " << (*it) << endl;
-			ret = udp->transmit((char*)(&(*it)),sizeof(*it));
-			if( ret<sizeof(*it) )
+			ssize_t ret = udp->transmit((char*)(&(*it)),sizeof(*it));
+			if( ret<(ssize_t)sizeof(*it) )
 			{
 				cerr << myname << "(send data): ret=" << ret << " sizeof=" << sizeof(*it) << endl;
 				break;
