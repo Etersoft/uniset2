@@ -23,7 +23,7 @@ eval $(head -n1 $PCFILE)
 
 test -d "$prefix" || exit 1
 
-export PKG_CONFIG_PATH=$EXPORTPATH:$EXPORTPATH/extensions:$EXPORTPATH/extensions/SharedMemory:$PKG_CONFIG_PATH
+export PKG_CONFIG_PATH=$EXPORTPATH:$EXPORTPATH/extensions:$EXPORTPATH/extensions/SharedMemory:$EXPORTPATH/extensions/UniNetwork:$PKG_CONFIG_PATH
 
 cflags()
 {
@@ -70,8 +70,12 @@ export UNISET_EXT_MBS_CFLAGS="$( ext_cflags $EXFILE )"
 export UNISET_EXT_MBS_LIBS="$( ext_libs $EXFILE )"
 
 EXFILE="$EXPORTPATH/extensions/MBTCPMaster libUniSetMBTCPMaster.pc"
-export UNISET_EXT_MBM_CFLAGS="$( ext_cflags $EXFILE )"
-export UNISET_EXT_MBM_LIBS="$( ext_libs $EXFILE )"
+export UNISET_EXT_MBTCP_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_MBTCP_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/UniNetwork libUniSetNetwork.pc"
+export UNISET_EXT_NET_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_NET_LIBS="$( ext_libs $EXFILE )"
 
 EXFILE="$EXPORTPATH/extensions/RTUExchange libUniSetRTU.pc"
 export UNISET_EXT_RTU_CFLAGS="$( ext_cflags $EXFILE )"
