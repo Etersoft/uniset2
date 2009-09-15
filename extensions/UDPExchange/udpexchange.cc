@@ -35,8 +35,8 @@ int main( int argc, char** argv )
 		std::ostringstream logname;
 		string dir(conf->getLogDir());
 		logname << dir << logfilename;
-		unideb.logFile( logname.str().c_str() );
-		dlog.logFile( logname.str().c_str() );
+		unideb.logFile( logname.str() );
+		dlog.logFile( logname.str() );
 
 		ObjectId shmID = DefaultObjectId;
 		string sID = conf->getArgParam("--smemory-id");

@@ -29,8 +29,8 @@ int main(int argc, const char **argv)
 		conf->initDebug(dlog,"dlog");
 		string logfilename = conf->getArgParam("--io-logfile","iocontrol.log");
 		string logname( conf->getLogDir() + logfilename );
-		dlog.logFile( logname.c_str() );
-		unideb.logFile( logname.c_str() );
+		dlog.logFile( logname );
+		unideb.logFile( logname );
 
 		ObjectId shmID = DefaultObjectId;
 		string sID = conf->getArgParam("--smemory-id");

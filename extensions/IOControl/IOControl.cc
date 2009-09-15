@@ -1163,7 +1163,7 @@ void IOControl::sysCommand( SystemMessage* sm )
 			string fname = unideb.getLogFile();
 			if( !fname.empty() )
 			{
-				unideb.logFile(fname.c_str());
+				unideb.logFile(fname);
 				unideb << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << endl;
 			}
 
@@ -1171,7 +1171,7 @@ void IOControl::sysCommand( SystemMessage* sm )
 			fname = unideb.getLogFile();
 			if( !fname.empty() )
 			{
-				unideb.logFile(fname.c_str());
+				unideb.logFile(fname);
 				unideb << myname << "(sysCommand): ***************** GGDEB LOG ROTATE *****************" << endl;
 			}
 		}

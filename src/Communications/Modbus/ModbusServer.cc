@@ -1103,7 +1103,7 @@ void ModbusServer::initLog( UniSetTypes::Configuration* conf,
 	conf->initDebug(dlog,lname);
 
 	if( !logfile.empty() )
-		dlog.logFile( logfile.c_str() );	
+		dlog.logFile( logfile );
 }
 // -------------------------------------------------------------------------
 void ModbusServer::printProcessingTime()

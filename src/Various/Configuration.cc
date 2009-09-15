@@ -791,7 +791,7 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
 
 			string debug_file(getProp(dnode,"file"));
 			if( !debug_file.empty() )
-				deb.logFile(debug_file.c_str());
+				deb.logFile(debug_file);
 	}
 	
 	// теперь смотрим командную строку

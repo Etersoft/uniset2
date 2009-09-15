@@ -28,8 +28,8 @@ int main(int argc, const char **argv)
 		conf->initDebug(dlog,"dlog");
 		string logfilename = conf->getArgParam("--logfile", "smemory.log");
 		string logname( conf->getLogDir() + logfilename );
-		unideb.logFile( logname.c_str() );
-		dlog.logFile( logname.c_str() );
+		unideb.logFile( logname );
+		dlog.logFile( logname );
 
 		SharedMemory* shm = SharedMemory::init_smemory(argc, argv);
 		if( !shm )

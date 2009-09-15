@@ -40,8 +40,8 @@ int main(int argc, const char **argv)
 		std::ostringstream logname;
 		string dir(conf->getLogDir());
 		logname << dir << logfilename;
-		unideb.logFile( logname.str().c_str() );
-		dlog.logFile( logname.str().c_str() );
+		unideb.logFile( logname.str() );
+		dlog.logFile( logname.str() );
 
 		conf->initDebug(dlog,"dlog");
 

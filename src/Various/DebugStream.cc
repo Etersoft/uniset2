@@ -214,7 +214,7 @@ const DebugStream& DebugStream::operator=( const DebugStream& r )
 	show_datetime = r.show_datetime;
 	fname = r.fname;
 	if( !r.fname.empty() )
-		logFile(fname.c_str());
+		logFile(fname);
 	
 	return *this;
 }

@@ -126,7 +126,7 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 			string fname = unideb.getLogFile();
 			if( !fname.empty() )
 			{
-				unideb.logFile(fname.c_str());
+				unideb.logFile(fname);
 				unideb << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << std::endl;
 			}
 
@@ -134,7 +134,7 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 			fname = dlog.getLogFile();
 			if( !fname.empty() )
 			{
-				dlog.logFile(fname.c_str());
+				dlog.logFile(fname);
 				dlog << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
 			}
 		}

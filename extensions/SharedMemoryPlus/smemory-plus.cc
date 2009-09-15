@@ -35,7 +35,7 @@ int main( int argc, char **argv )
 
 		string logfilename = conf->getArgParam("--logfile", "smemory-plus.log");
 		string logname( conf->getLogDir() + logfilename );
-		unideb.logFile( logname.c_str() );
+		unideb.logFile( logname );
 
 		ObjectsActivator act;
 
