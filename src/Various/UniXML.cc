@@ -500,6 +500,6 @@ int UniXML_iterator::getPIntProp( const string name, int def ) const
 // -------------------------------------------------------------------------		
 void UniXML_iterator::setProp( const string name, const string text )
 {
-	xmlSetProp(curNode, (const xmlChar*)name.c_str(), UniXML::local2xml(text));
+	UniXML::setProp(curNode, name, text);
 }
 // -------------------------------------------------------------------------		

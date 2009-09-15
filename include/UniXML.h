@@ -68,13 +68,6 @@ public:
 	static const std::string xmlEncoding;
 	
 
-	// Преобразование текстовой строки из XML в строку нашего внутреннего представления
-	static std::string xml2local(const std::string text);
-
-	// Преобразование текстовой строки из нашего внутреннего представления в строку для XML
-	// Возвращает указатель на временный буфер, который один на все вызовы функции.
-	static const xmlChar* local2xml(std::string text);
-	static std::string local2utf8(const std::string text);
 	
 	// Создать новый XML-документ
 	void newDoc(const std::string& root_node, std::string xml_ver="1.0");
@@ -118,6 +111,14 @@ public:
 
 
 protected:
+	// Преобразование текстовой строки из XML в строку нашего внутреннего представления
+	static std::string xml2local(const std::string text);
+
+	// Преобразование текстовой строки из нашего внутреннего представления в строку для XML
+	// Возвращает указатель на временный буфер, который один на все вызовы функции.
+	static const xmlChar* local2xml(std::string text);
+	static std::string local2utf8(const std::string text);
+
 	static int recur;
 
 };
