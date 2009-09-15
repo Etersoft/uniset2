@@ -127,11 +127,11 @@ class UniXML_iterator
 		{}
 		UniXML_iterator() {}
 
-		std::string getProp(const std::string name);
-		std::string getPropUtf8(const std::string name);
-		int getIntProp(const std::string name);
+		std::string getProp(const std::string name) const;
+		std::string getPropUtf8(const std::string name) const;
+		int getIntProp(const std::string name) const;
 		/// if value if not positive ( <= 0 ), returns def
-		int getPIntProp(const std::string name, int def);
+		int getPIntProp(const std::string name, int def) const;
 		void setProp(const std::string name, const std::string text);
 		
 		/*! Перейти к следующему узлу. Возвращает false, если некуда перейти */

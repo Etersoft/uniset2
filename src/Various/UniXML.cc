@@ -450,24 +450,24 @@ bool UniXML_iterator::goChildren()
 }
 
 // -------------------------------------------------------------------------		
-string UniXML_iterator::getProp( const string name )
+string UniXML_iterator::getProp( const string name ) const
 {
 	return UniXML::getProp(curNode, name);
 }
 
 // -------------------------------------------------------------------------
-string UniXML_iterator::getPropUtf8( const string name )
+string UniXML_iterator::getPropUtf8( const string name ) const
 {
 	return UniXML::getPropUtf8(curNode, name);
 }
 
 // -------------------------------------------------------------------------
-int UniXML_iterator::getIntProp( const string name )
+int UniXML_iterator::getIntProp( const string name ) const
 {
 	return UniSetTypes::uni_atoi((char*)::xmlGetProp(curNode, (const xmlChar*)name.c_str()));
 }
 
-int UniXML_iterator::getPIntProp( const string name, int def )
+int UniXML_iterator::getPIntProp( const string name, int def ) const
 {
 	int i = getIntProp(name);
 	if (i <= 0)
