@@ -173,6 +173,7 @@ class RTUExchange:
 		std::string devname;
 		ComPort::Speed defSpeed;
 		int recv_timeout;
+		bool use485F;
 
 		xmlNode* cnode;
 		std::string s_field;

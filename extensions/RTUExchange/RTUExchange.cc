@@ -13,6 +13,7 @@ RTUExchange::RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
 UniSetObject_LT(objId),
 mb(0),
 defSpeed(ComPort::ComSpeed0),
+use485F(false),
 shm(0),
 initPause(0),
 force(false),
@@ -53,6 +54,7 @@ allNotRespond(false)
 	if( speed.empty() )
 		speed = "38400";
 
+	use485F = conf->getArgInt("--rs-use485F",it.getProp("use485F"));
 	defSpeed = ComPort::getSpeed(speed);
 
 	recv_timeout = conf->getArgInt("--rs-recv-timeout",it.getProp("recv_timeout"));
@@ -183,7 +185,7 @@ void RTUExchange::initMB( bool reopen )
 
 	try
 	{
-		mb = new ModbusRTUMaster(devname);
+		mb = new ModbusRTUMaster(devname,use485F);
 
 		if( defSpeed != ComPort::ComSpeed0 )
 			mb->setSpeed(defSpeed);
