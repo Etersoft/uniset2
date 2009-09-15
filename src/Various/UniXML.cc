@@ -115,11 +115,9 @@ void UniXML::close()
 
 // Преобразование текстовой строки из XML в строку нашего внутреннего представления
 
-string UniXML::xml2local(const xmlChar* xmlText)
+string UniXML::xml2local(const string t)
 {
-	const char* text= (const char*)xmlText;
-	if (text == 0)
-		return "";
+	const char* text= t.c_str();
 	iconv_t frt;
 	frt = iconv_open(InternalEncoding.c_str(), xmlEncoding.c_str());
 	if (frt == (iconv_t) -1)
@@ -198,25 +196,30 @@ const xmlChar* UniXML::local2xml(string text)
 
 	delete[] inbuf;
 	return (xmlChar*)tmpbuf_l2x;
-}	
-
-
-string UniXML::getProp(xmlNode* node, const string name)
-{
-	return xml2local(::xmlGetProp(node, (const xmlChar*)name.c_str()));
 }
 
-string UniXML::getPropUtf8(xmlNode* node, const string name)
+string UniXML::local2utf8(const string text)
 {
-	return (const char*)::xmlGetProp(node, (const xmlChar*)name.c_str());
+	return string((const char*)local2xml(text));
 }
 
-int UniXML::getIntProp(xmlNode* node, const string name )
+
+string UniXML::getProp(const xmlNode* node, const string name)
+{
+	return xml2local(getPropUtf8(node, name));
+}
+
+string UniXML::getPropUtf8(const xmlNode* node, const string name)
+{
+	return (const char*)::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
+}
+
+int UniXML::getIntProp(const xmlNode* node, const string name )
 {
 	return UniSetTypes::uni_atoi(getPropUtf8(node, name));
 }
 
-int UniXML::getPIntProp(xmlNode* node, const string name, int def )
+int UniXML::getPIntProp(const xmlNode* node, const string name, int def )
 {
 	int i = getIntProp(node, name);
 	if (i <= 0)
@@ -311,44 +314,48 @@ xmlNode* UniXML::nextNode(xmlNode* n)
 	return n;
 }
 
-xmlNode* UniXML::findNode(xmlNode* node, const string searchnode, const string name )
+xmlNode* UniXML::findNodeUtf8(xmlNode* node, const string searchnode, const string name ) const
 {
-	xmlNode* nodeFound;
-//	recur++;
 	while (node != NULL)
 	{
-		if (searchnode == xml2local(node->name))
+		if (searchnode == (const char*)node->name)
 		{
-			if( name == getProp(node,"name") )
+			if( name == getPropUtf8(node, "name") )
 				return node;
 
-			if( name.empty() ) // == "")
+			if( name.empty() )
 				return node;
 		}
-		if ( (nodeFound=findNode(node->children, searchnode, name)) != 0 )
+		xmlNode * nodeFound = findNode(node->children, searchnode, name);
+		if ( nodeFound != NULL )
 			return nodeFound;
 
 		node = node->next;
 	}
-//	recur--;
-	return 0;
+	return NULL;
 }
+
+xmlNode* UniXML::findNode(xmlNode* node, const string searchnode, const string name ) const
+{
+	return findNodeUtf8(node, local2utf8(searchnode), local2utf8(name));
+}
+
+
 // -------------------------------------------------------------------------
 // -------------------------------------------------------------------------
 // -------------------------------------------------------------------------
 
 //width means number of nodes of the same level as node in 1-st parameter (width number includes first node)
 //depth means number of times we can go to the children, if 0 we can't go only to elements of the same level
-xmlNode* UniXML::extFindNode(xmlNode* node, int depth, int width, const string searchnode, const string name, bool top )
+xmlNode* UniXML::extFindNodeUtf8(xmlNode* node, int depth, int width, const string searchnode, const string name, bool top )
 {
-	xmlNode* nodeFound;
 	int i=0;
 	while (node != NULL)
 	{
-		if(top&&(i>=width)) return 0;
-		if (searchnode == xml2local(node->name))
+		if(top&&(i>=width)) return NULL;
+		if (searchnode == (const char*)node->name)
 		{
-			if( name == getProp(node,"name") )
+			if( name == getPropUtf8(node, "name") )
 				return node;
 
 			if( name.empty() )
@@ -356,14 +363,21 @@ xmlNode* UniXML::extFindNode(xmlNode* node, int depth, int width, const string s
 		}
 		if(depth>0)
 		{
-			if ( (nodeFound=extFindNode(node->children, depth-1,width, searchnode, name,false)) != 0 )
+			xmlNode* nodeFound = extFindNodeUtf8(node->children, depth-1,width, searchnode, name, false);
+			if ( nodeFound != NULL )
 				return nodeFound;
 		}
 		i++;
 		node = node->next;
 	}
-	return 0;
+	return NULL;
 }
+
+xmlNode* UniXML::extFindNode(xmlNode* node, int depth, int width, const string searchnode, const string name, bool top )
+{
+	return extFindNodeUtf8(node, depth, width, local2utf8(searchnode), local2utf8(name), top );
+}
+
 
 bool UniXML_iterator::goNext()
 {
