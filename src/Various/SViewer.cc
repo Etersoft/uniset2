@@ -142,7 +142,7 @@ void SViewer::readSection(const string section, const string secRoot)
 				{
 					string ob(*li);
 					string fname(curSection+ "/"+ ob);
-					ObjectId id = conf->oind->getIdByFullName( fname.c_str() );
+					ObjectId id = conf->oind->getIdByFullName( fname );
 					if( id == DefaultObjectId )
 						cout << "(readSection): ID?! для " << fname << endl;
 					else
