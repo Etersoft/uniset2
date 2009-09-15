@@ -186,6 +186,8 @@ class UniXML_iterator
 				return "";
 		}
 
+		const std::string getContent() const;
+
 		operator xmlNode*()
 		{
 			//unideb << "current\n";

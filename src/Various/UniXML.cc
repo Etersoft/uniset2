@@ -469,6 +469,14 @@ string UniXML_iterator::getProp( const string name ) const
 	return UniXML::getProp(curNode, name);
 }
 
+// -------------------------------------------------------------------------		
+const string UniXML_iterator::getContent() const
+{
+	if (curNode == NULL)
+		return "";
+	return (const char*)::xmlNodeGetContent(curNode);
+}
+
 // -------------------------------------------------------------------------
 string UniXML_iterator::getPropUtf8( const string name ) const
 {
