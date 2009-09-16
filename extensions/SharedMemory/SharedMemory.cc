@@ -16,7 +16,8 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	wdt(0),
 	activated(false),
 	workready(false),
-	dblogging(false)
+	dblogging(false),
+	msecPulsar(0)
 {
 	cout << "$Id: SharedMemory.cc,v 1.4 2009/01/24 11:20:19 vpashka Exp $" << endl;
 
@@ -86,6 +87,27 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	activateTimeout	= conf->getArgInt("--activate-timeout");
 	if( activateTimeout <= 0 )
 		activateTimeout = 10000;
+
+
+	siPulsar.id = DefaultObjectId;
+	siPulsar.node = DefaultObjectId;
+	string p = conf->getArgParam("--pulsar-id",it.getProp("pulsar_id"));
+	if( !p.empty() )
+	{
+		siPulsar.id = conf->getSensorID(p);
+		if( siPulsar.id == DefaultObjectId )
+		{
+			ostringstream err;
+			err << myname << ": ID not found ('pulsar') for " << p;
+			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			throw SystemError(err.str());
+		}
+		siPulsar.node = conf->getLocalNode();
+
+		msecPulsar = conf->getArgInt("--pulsar-msec",it.getProp("pulsar_msec"));
+		if( msecPulsar <=0 )
+			msecPulsar = 5000;
+	}
 }
 
 // --------------------------------------------------------------------------------
@@ -163,6 +185,12 @@ void SharedMemory::timerInfo( TimerMessage *tm )
 	}
 	else if( tm->id == tmHistory )
 		saveHistory();
+	else if( tm->id == tmPulsar )
+	{
+		bool st = localGetState(ditPulsar,siPulsar);
+		st ^= true;
+		localSaveState(ditPulsar,siPulsar,st,getId());
+	}
 }
 
 // ------------------------------------------------------------------------------------------
@@ -191,6 +219,8 @@ void SharedMemory::sysCommand( SystemMessage *sm )
 			askTimer(tmHeartBeatCheck,heartbeatCheckTime);
 			askTimer(tmEvent,evntPause,1);
 			askTimer(tmHistory,histSaveTime);
+			if( msecPulsar > 0 )
+				askTimer(tmPulsar,msecPulsar);
 		}
 		break;
 		
@@ -249,6 +279,8 @@ bool SharedMemory::activateObject()
 			it->ait = myaioEnd();
 			it->dit = mydioEnd();
 		}
+		
+		ditPulsar = mydioEnd();
 
 //		cerr << "history count=" << hist.size() << endl;
 		for( History::iterator it=hist.begin();  it!=hist.end(); ++it )

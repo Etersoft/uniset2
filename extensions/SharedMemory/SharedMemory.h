@@ -149,7 +149,8 @@ class SharedMemory:
 		{
 			tmHeartBeatCheck,
 			tmEvent,
-			tmHistory
+			tmHistory,
+			tmPulsar
 		};
 		
 		int heartbeatCheckTime;
@@ -184,6 +185,11 @@ class SharedMemory:
 
 		void buildHistoryList( xmlNode* cnode );
 		void checkHistoryFilter( UniXML_iterator& it );
+
+
+		DIOStateList::iterator ditPulsar;
+		IOController_i::SensorInfo siPulsar;
+		int msecPulsar;
 
 	private:
 		HistorySlot m_historySignal;
