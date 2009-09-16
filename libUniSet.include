@@ -81,3 +81,4 @@ EXFILE="$EXPORTPATH/extensions/RTUExchange libUniSetRTU.pc"
 export UNISET_EXT_RTU_CFLAGS="$( ext_cflags $EXFILE )"
 export UNISET_EXT_RTU_LIBS="$( ext_libs $EXFILE )"
 
+export UNISET_CODEGEN="sh $EXPORTPATH/Utilities/codegen/uniset-codegen --path $EXPORTPATH/Utilities/codegen"

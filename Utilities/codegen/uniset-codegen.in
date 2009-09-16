@@ -152,6 +152,6 @@ PARAMS=$( echo \
 #		--stringparam ADD_HH_INC "${add_hh_inc}" \
 
 # generate xxx_SK class
-xsltproc ${PARAMS} ${xsltdir}/${xls_h} $xmlfile > $uni_h
-xsltproc ${PARAMS} ${xsltdir}/${xls_c} $xmlfile > $uni_cc
-[ -n "$no_main" ] || xsltproc ${PARAMS} ${xsltdir}/${xls_m} $xmlfile > $uni_main
+xsltproc ${PARAMS} ${xsltdir}/${xls_h} $xmlfile > $uni_h || rm -f $uni_h
+xsltproc ${PARAMS} ${xsltdir}/${xls_c} $xmlfile > $uni_cc || rm -f $uni_cc
+[ -n "$no_main" ] || xsltproc ${PARAMS} ${xsltdir}/${xls_m} $xmlfile > $uni_main || rm -f $uni_main
