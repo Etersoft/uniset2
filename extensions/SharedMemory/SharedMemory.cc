@@ -80,14 +80,9 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	e_filter = conf->getArgParam("--e-filter");
 	buildEventList(cnode);
 
-	evntPause = conf->getArgInt("--e-startup-pause");
-	if( evntPause <= 0 )
-		evntPause = 5000;
-		
-	activateTimeout	= conf->getArgInt("--activate-timeout");
-	if( activateTimeout <= 0 )
-		activateTimeout = 10000;
+	evntPause = conf->getArgPInt("--e-startup-pause", 5000);
 
+	activateTimeout	= conf->getArgPInt("--activate-timeout", 10000);
 
 	siPulsar.id = DefaultObjectId;
 	siPulsar.node = DefaultObjectId;
@@ -104,9 +99,7 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 		}
 		siPulsar.node = conf->getLocalNode();
 
-		msecPulsar = conf->getArgInt("--pulsar-msec",it.getProp("pulsar_msec"));
-		if( msecPulsar <=0 )
-			msecPulsar = 5000;
+		msecPulsar = conf->getArgPInt("--pulsar-msec",it.getProp("pulsar_msec"), 5000);
 	}
 }
 
@@ -388,8 +381,8 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 	if( heartbeat_node != it.getProp("heartbeat_node") )
 		return true;
 
-	int i = atoi(it.getProp("heartbeat").c_str());
-	if( i<=0 )
+	int i = it.getIntProp("heartbeat");
+	if( i <= 0 )
 		return true;
 
 	if( it.getProp("iotype") != "AI" )
