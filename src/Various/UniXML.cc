@@ -326,7 +326,7 @@ xmlNode* UniXML::findNodeUtf8(xmlNode* node, const string searchnode, const stri
 			if( name.empty() )
 				return node;
 		}
-		xmlNode * nodeFound = findNode(node->children, searchnode, name);
+		xmlNode * nodeFound = findNodeUtf8(node->children, searchnode, name);
 		if ( nodeFound != NULL )
 			return nodeFound;
 
@@ -361,7 +361,7 @@ xmlNode* UniXML::extFindNodeUtf8(xmlNode* node, int depth, int width, const stri
 			if( name.empty() )
 				return node;
 		}
-		if(depth>0)
+		if(depth > 0)
 		{
 			xmlNode* nodeFound = extFindNodeUtf8(node->children, depth-1,width, searchnode, name, false);
 			if ( nodeFound != NULL )
