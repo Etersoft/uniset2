@@ -218,8 +218,8 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 		{
 			if( oind == NULL )
 			{
-				xmlNode* cnode = unixml.findNode(unixml.getFirstNode(),"ObjectsMap");
-				if( !cnode )
+				UniXML_iterator it = unixml.findNode(unixml.getFirstNode(),"ObjectsMap");
+				if( it == NULL )
 				{
 					unideb[Debug::CRIT] << "(Configuration:init): not found <ObjectsMap> node in "  << fileConfName << endl;
 					throw SystemError("(Configuration:init): not found <ObjectsMap> node in " + fileConfName );
@@ -227,7 +227,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
 				try
 				{
-					if( unixml.getIntProp(cnode,"idfromfile") == 0 )
+					if( it.getIntProp("idfromfile") == 0 )
 						oind = new ObjectIndex_XML(unixml); //(fileConfName);
 					else
 						oind = new ObjectIndex_idXML(unixml); //(fileConfName);
@@ -242,12 +242,12 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 	
 		// Init MessageInterface
 		{
-			xmlNode* cnode = unixml.findNode(unixml.getFirstNode(),"messages");
-			if( cnode == NULL )
+			UniXML_iterator it = unixml.findNode(unixml.getFirstNode(),"messages");
+			if( it == NULL )
 				mi = new DefaultMessageInterface();
 			else
 			{
-				if( unixml.getIntProp(cnode,"idfromfile") == 0 )
+				if( it.getIntProp("idfromfile") == 0 )
 					mi = new MessageInterface_XML(unixml); // (fileConfName);
 				else
 					mi = new MessageInterface_idXML(unixml); // (fileConfName);
