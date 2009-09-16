@@ -138,6 +138,26 @@ bool CycleStorage::findHead()
 	return true;
 }
 
+/*! Использовать для проверки совпадения заголовков */
+bool CycleStorage::checkAttr(int inf_sz, int inf_count, int seek)
+{
+	if( file==NULL ) return false;
+	fseek(file,seek,0);
+
+	/*! Читаем заголовок */
+	CycleStorageAttr csa;
+	fread(&csa, sizeof(csa), 1, file);
+
+	/*! Проверяем заголовок на совпадение с нашими значениями */
+	if( ( csa.size!=inf_count ) || ( csa.inf_size!=inf_sz ) || ( csa.seekpos!=seek ) )
+	{
+		fclose(file);
+		file=NULL;
+		return false;
+	}
+	return true;
+}
+
 bool CycleStorage::open(const char* name, int byte_sz, int inf_sz, int inf_count, int seek)
 {
 	/*! 	Если уже был открыт файл в переменной данного класса, он закрывается и открывается новый
@@ -155,17 +175,9 @@ bool CycleStorage::open(const char* name, int byte_sz, int inf_sz, int inf_count
 		return false;
 	}
 
-	/*! Читаем заголовок */
-	CycleStorageAttr csa;
-	fread(&csa, sizeof(csa), 1, file);
-
-	/*! Проверяем заголовок на совпадение с нашими значениями */
-	if( ( csa.size!=inf_count ) || ( csa.inf_size!=inf_sz ) || ( csa.seekpos!=seek ) )
-	{
-		fclose(file);
-		file=NULL;
+	if( !checkAttr(inf_sz, inf_count, seek) )
 		return false;
-	}
+
 	inf_size=inf_sz;
 	full_size=sizeof(CycleStorageElem)+inf_size;
 	size=inf_count;

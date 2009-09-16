@@ -115,7 +115,7 @@ bool TableBlockStorage::copyToNextBlock(void)
 	return true;
 }
 
-/*! Выполнять для проверки совпадения заголовков */
+/*! Использовать для проверки совпадения заголовков */
 bool TableBlockStorage::checkAttr( int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek )
 {
 	if( file==NULL ) return false;

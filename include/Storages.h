@@ -192,6 +192,9 @@ class CycleStorage
 		inline int getSize(){ return size; }
 		inline int getInfSize(){ return inf_size; }
 		inline int getFullSize(){ return full_size; }
+
+		bool checkAttr(int inf_sz, int inf_count, int seek);
+
 	protected:
 		FILE *file;
 		int inf_size;
