@@ -115,6 +115,29 @@ bool TableBlockStorage::copyToNextBlock(void)
 	return true;
 }
 
+/*! Выполнять для проверки совпадения заголовков */
+bool TableBlockStorage::checkAttr( int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek )
+{
+	if( file==NULL ) return false;
+
+	int tmpsize=inf_count*block_num;
+
+	fseek(file, seek, 0);
+
+	/*! Чтение заголовка таблицы */
+	StorageAttr sa;
+	fread(&sa,sizeof(StorageAttr),1,file);
+
+	/*! Проверяем заголовок на совпадение с нашими значениями */
+	if((sa.k_size!=key_sz)||(sa.inf_size!=inf_sz)||(sa.size!=tmpsize)||(sa.block_number!=block_num)||(sa.lim!=block_lim)||(sa.seekpos!=seek))
+	{
+		fclose(file);
+		file=NULL;
+		return false;
+	}
+	return true;
+}
+
 bool TableBlockStorage::open(const char* name, int byte_sz, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek)
 {
 	/*! Если уже был открыт файл в переменной данного класса, он закрывается и открывается новый */
@@ -131,21 +154,10 @@ bool TableBlockStorage::open(const char* name, int byte_sz, int key_sz, int inf_
 		return false;
 	}
 
-	/*! Чтение заголовка таблицы */
-	StorageAttr sa;
-	fread(&sa,sizeof(StorageAttr),1,file);
-
 	full_size = sizeof(TableBlockStorageElem)+key_sz+inf_sz;
 
-	int tmpsize=inf_count*block_num;
-
-	/*! Проверяем заголовок на совпадение с нашими значениями */
-	if((sa.k_size!=key_sz)||(sa.inf_size!=inf_sz)||(sa.size!=tmpsize)||(sa.block_number!=block_num)||(sa.lim!=block_lim)||(sa.seekpos!=seek))
-	{
-		fclose(file);
-		file=NULL;
+	if( !checkAttr(key_sz, inf_sz, inf_count, block_num, block_lim, seek ) )
 		return false;
-	}
 
 	k_size=key_sz;
 	inf_size=inf_sz;

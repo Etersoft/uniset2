@@ -126,6 +126,8 @@ class TableBlockStorage
 
 		inline int getByteSize() { return (size*full_size + sizeof(StorageAttr)); }
 
+		bool checkAttr( int key_sz, int inf_sz, int sz, int block_num, int block_lim, int seek );
+
 	protected:
 		FILE *file;
 		int inf_size;
