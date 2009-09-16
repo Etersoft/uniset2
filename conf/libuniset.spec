@@ -2,8 +2,8 @@
 %define oname uniset
 
 Name: libuniset
-Version: 0.96
-Release: eter64
+Version: 0.97
+Release: eter1
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -179,31 +179,24 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Sep 16 2009 Vitaly Lipatov <lav@altlinux.ru> 0.97-eter1
+- add getProp and getInt into generated _SK class for use default cnode
+- UniXML: make xml2local, local2xml protected
+- UniXML: add getContent for iterator (via xmlNodeGetContent)
+- use logFile with string, without c_str
+- UniXML: add getPropUtf8, findNodeUtf8, extFindNodeUtf8
+- UniSetTypes: add getArgInt, getArgPInt
+- forbid direct use atoi function in uniset and uniset related projects
+- add string support for getIdByName
+- use appropriate getArg(P)Int, get(P)IntProp instead direct atoi using
+- Configuration: add getPIntField, getIntProp, getPIntProp, getArgPint
+- Added byte size check in CycleStorage and TableBlockStorage
+- add uniset-network (new component - UniNetwork)
+- add new interface: getSensors()
+- add new realization MBTCPMaster
+- introduce getPintProp for get positive only values (returns def if the value zero or negative). Note: def may be negative if needed.
+
 * Tue Sep 15 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter63
-- new build
-
-* Tue Sep 15 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter62
-- new build
-
-* Mon Sep 14 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter61
-- new build
-
-* Thu Sep 10 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter60
-- rebuild for eterbook
-
-* Thu Sep 10 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter59
-- UniNetwork debugging
-
-* Wed Sep 09 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter58
-- UniNetwork debugging
-
-* Wed Sep 09 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter57
-- new build
-
-* Wed Sep 09 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter56
-- new build
-
-* Mon Sep 07 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter55
 - new build
 
 * Mon Sep 07 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter54
@@ -227,24 +220,6 @@ rm -f %buildroot%_libdir/*.la
 * Tue Aug 18 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter48
 - fixed bug in PassiveTimer
 
-* Tue Aug 18 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter47
-- new build
-
-* Tue Aug 18 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter46
-- new build
-
-* Thu Aug 13 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter41
-- new build
-
-* Wed Aug 12 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter40
-- new build
-
-* Wed Aug 12 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter39
-- new build
-
-* Thu Aug 06 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter38
-- new build
-
 * Wed Aug 05 2009 Vitaly Lipatov <lav@altlinux.ru> 0.96-eter37
 - fixed smp build
 
@@ -262,48 +237,6 @@ rm -f %buildroot%_libdir/*.la
 - rename extentions to extensions (see eterbug #4008)
 - update buildreq
 
-* Mon Jun 08 2009 Pavel Vainerman <pv@aeu> 0.96-eter25
-- new build
-
-* Thu Jun 04 2009 Pavel Vainerman <pv@aeu> 0.96-eter23
-- new build
-
-* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter22
-- new build
-
-* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter21
-- new build
-
-* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter20
-- new build
-
-* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter19
-- new build
-
-* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter18
-- new build
-
-* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter17
-- new build
-
-* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter16
-- new build
-
-* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter15
-- new build
-
-* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter14
-- new build
-
-* Thu Jun 04 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter13
-- new build
-
-* Tue Apr 21 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter6
-- new build
-
-* Tue Apr 21 2009 Pavel Vainerman <pv@etersoft.ru> 0.96-eter5
-- new build
-
 * Mon Apr 06 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter4
 - new ComediInterface
 
@@ -312,15 +245,6 @@ rm -f %buildroot%_libdir/*.la
 
 * Mon Apr 06 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter2
 - fixed bugs in uniset-codegen
-
-* Mon Apr 06 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-eter1
-- new build
-
-* Mon Apr 06 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-setri1
-- new build
-
-* Mon Apr 06 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-alt11
-- new build
 
 * Sat Jan 17 2009 Pavel Vainerman <pv@altlinux.ru> 0.96-alt7
 - new version

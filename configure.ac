@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset], [0.96], pv@etersoft.ru)
+AC_INIT([uniset], [0.97], pv@etersoft.ru)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 
 # AC_CONFIG_MACRO_DIR([m4])
