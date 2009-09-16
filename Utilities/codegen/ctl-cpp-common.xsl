@@ -205,6 +205,11 @@
 		bool in_LocalTestMode_S;
 		
 		xmlNode* confnode;
+		/*! получить числовое свойство из конф. файла по привязанной confnode */
+		int getIntProp(const std::string name) { return UniSetTypes::conf->getIntProp(confnode, name); }
+		/*! получить текстовое свойство из конф. файла по привязанной confnode */
+		const std::string getProp(const std::string name) { return UniSetTypes::conf->getProp(confnode, name); }
+
 		int smReadyTimeout; 	/*!&lt; время ожидания готовности SM */
 		bool activated;
 		int activateTimeout;	/*!&lt; время ожидания готовности UniSetObject к работе */
