@@ -47,7 +47,7 @@ CycleStorage::CycleStorage(const char* name, int byte_sz, int inf_sz, int inf_co
 
 CycleStorage::~CycleStorage()
 {
-	fclose(file);
+	if( file!=NULL ) fclose(file);
 }
 
 void* CycleStorage::valPointer(void* pnt)
@@ -142,7 +142,12 @@ bool CycleStorage::findHead()
 bool CycleStorage::checkAttr(int inf_sz, int inf_count, int seek)
 {
 	if( file==NULL ) return false;
-	fseek(file,seek,0);
+	if( fseek(file,seek,0)==-1 )
+	{
+		fclose(file);
+		file=NULL;
+		return false;
+	}
 
 	/*! Читаем заголовок */
 	CycleStorageAttr csa;
@@ -215,10 +220,13 @@ bool CycleStorage::create(const char* name, int byte_sz, int inf_sz, int inf_cou
 	/*! Создаем файл, если его нет */
 	if(file==NULL)
 	{
-		FILE*f=fopen(name,"w");
+		FILE *f=fopen(name,"w");
+		if( f==NULL ) return false;
 		fclose(f);
 		file = fopen(name, "r+");
 	}
+
+	if( file==NULL ) return false;
 
 	if(fseek(file,seekpos,0)==-1) return false;
 

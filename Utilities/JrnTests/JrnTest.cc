@@ -236,6 +236,10 @@ bool reOpen()
 
 bool testJournal1(void)
 {
+	CycleStorage *jjj = new CycleStorage();
+	jjj->create("/dev/hdb2",bj_size,30,32000,seek);
+	delete jjj;
+
 	CycleStorage j("big_file.test",bj_size,30,32000,seek,true);
 	int i,k=0;
 	char *str = new char[30];

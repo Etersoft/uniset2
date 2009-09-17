@@ -49,7 +49,7 @@ TableBlockStorage::TableBlockStorage(const char* name, int byte_sz, int key_sz, 
 
 TableBlockStorage::~TableBlockStorage()
 {
-	delete mem;
+	if( mem!=NULL ) delete mem;
 
 	if(file!=NULL) fclose(file);
 }
@@ -228,7 +228,8 @@ bool TableBlockStorage::create(const char* name, int byte_sz, int key_sz, int in
 
 	if(file==NULL)
 	{
-		FILE*f=fopen(name,"w");
+		FILE *f=fopen(name,"w");
+		if( f==NULL ) return false;
 		fclose(f);
 		file = fopen(name, "r+");
 	}
