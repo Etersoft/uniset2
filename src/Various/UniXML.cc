@@ -211,7 +211,10 @@ string UniXML::getProp(const xmlNode* node, const string name)
 
 string UniXML::getPropUtf8(const xmlNode* node, const string name)
 {
-	return (const char*)::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
+	const char * text = (const char*)::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
+	if (text == NULL)
+		return "";
+	return text;
 }
 
 int UniXML::getIntProp(const xmlNode* node, const string name )
@@ -320,11 +323,12 @@ xmlNode* UniXML::findNodeUtf8(xmlNode* node, const string searchnode, const stri
 	{
 		if (searchnode == (const char*)node->name)
 		{
+			/* Если name не задано, не сверяем. Иначе ищем, пока не найдём с таким именем */
+			if( name.empty() )
+				return node;
 			if( name == getPropUtf8(node, "name") )
 				return node;
 
-			if( name.empty() )
-				return node;
 		}
 		xmlNode * nodeFound = findNodeUtf8(node->children, searchnode, name);
 		if ( nodeFound != NULL )
