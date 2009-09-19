@@ -8,13 +8,14 @@ using namespace std;
 
 int main()
 {
-	try
+/*	try
 	{
+*/
 		UniXML xml("test.xml");
 		
-		xmlNode* cnode = xml.findNode(xml.getFirstNode(),"testnode");
-		if( !cnode )
-		{	
+		xmlNode* cnode = xml.findNode(xml.getFirstNode(),"UniSet");
+		if( cnode == NULL )
+		{
 			cerr << "<testnode> not found" << endl;
 			return 1;
 		} 
@@ -24,6 +25,19 @@ int main()
 			 << " int id=" << it.getIntProp("id")
 			 << endl;
 
+		{
+		UniXML_iterator it = xml.findNode(xml.getFirstNode(),"LocalInfoServer", "InfoServer");
+		if( it == NULL )
+		{
+			cerr << "<testnode> not found" << endl;
+			return 1;
+		} 
+
+		cout << "string id=" << it.getProp("dbrepeat")
+			 << " int id=" << it.getIntProp("dbrepeat")
+			 << endl;
+		}
+/*
 	}
 	catch( UniSetTypes::Exception& ex )
 	{
@@ -35,6 +49,6 @@ int main()
 		cerr << "catch ... " << endl;
 		return 1;
 	}
-	
+*/
 	return 0;
 }
