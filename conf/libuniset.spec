@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.97
-Release: eter1
+Release: eter2
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -179,6 +179,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Sat Sep 19 2009 Vitaly Lipatov <lav@altlinux.ru> 0.97-eter2
+- fix build
+
 * Wed Sep 16 2009 Vitaly Lipatov <lav@altlinux.ru> 0.97-eter1
 - add getProp and getInt into generated _SK class for use default cnode
 - UniXML: make xml2local, local2xml protected
