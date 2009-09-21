@@ -60,7 +60,9 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 	assert(timeout);
 	ptTimeout.setTiming(timeout);
-	
+
+	tcp->setTimeout(timeout);
+
 	ost::Thread::setException(ost::Thread::throwException);
 	
 	try
