@@ -12,15 +12,15 @@ int main()
 	{
 */
 		UniXML xml("test.xml");
-		
+
 		xmlNode* cnode = xml.findNode(xml.getFirstNode(),"UniSet");
 		if( cnode == NULL )
 		{
 			cerr << "<testnode> not found" << endl;
 			return 1;
 		} 
-
 		UniXML_iterator it(cnode);
+
 		cout << "string id=" << it.getProp("id")
 			 << " int id=" << it.getIntProp("id")
 			 << endl;
