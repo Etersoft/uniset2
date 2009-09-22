@@ -26,6 +26,35 @@ EOF
 echo "inform mail sent to $MAILTO"
 }
 
+prepare_tarball()
+{
+	build_rpms_name $SPECNAME
+
+	NAMEVER=$BASENAME-$VERSION
+	WDPROJECT=$(pwd)
+	TARNAME=$NAMEVER.tar
+	DESTDIR=$TMPDIR/$NAMEVER
+	RET=0
+
+	mkdir -p $DESTDIR
+	rm -rf $DESTDIR/*
+	cp -r $WDPROJECT/* $DESTDIR/
+	cd 	$DESTDIR/
+		make distclean
+		[ -a ./autogen.sh ] && ./autogen.sh
+		rm -rf autom4te.cache/
+		rm -rf .git
+		rm -rf .gear
+	
+		echo "Make tarball $TARNAME ... from $DESTDIR"
+		mkdir -p $RPMSOURCEDIR/
+		$NICE tar cf $RPMSOURCEDIR/$TARNAME ../$NAMEVER $ETERTARPARAM || RET=1
+		rm -rf $DESTDIR
+	cd -
+
+	[ $RET ] && echo "build ok" || fatal "Can't create tarball"
+}
+
 function cp2ftp()
 {
 	mkdir -p $BACKUPDIR
@@ -41,7 +70,7 @@ export BUILDNAME=$BASENAME-$VERSION-$RELEASE
 
 add_changelog_helper "- new build" $SPECNAME
 
-#prepare_tarball || fatal "Can't prepare tarball"
+prepare_tarball || fatal "Can't prepare tarball"
 
 rpmbb $SPECNAME || fatal "Can't build"
 
