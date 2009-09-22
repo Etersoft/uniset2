@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	insn_config(card,subdev,chan,100,range,aref);
+//	insn_config(card,subdev,chan,100,range,aref);
 
 	int fd=open("/dev/stdin",O_NONBLOCK | O_RDONLY );
 	helpPrint();
@@ -171,7 +171,7 @@ int main(int argc, char* argv[])
 	
 	while(1)
 	{	
-		if(comedi_data_read(card, subdev, chan, range, AREF_GROUND, &data) < 0)
+		if(comedi_data_read(card, subdev, chan, range, aref, &data) < 0)
 		{
 			fprintf(stderr, "can't read from channel %d\n",chan);
 		  	exit(EXIT_FAILURE);
@@ -286,7 +286,7 @@ void insn_config( comedi_t* card, int subdev, int channel, lsampl_t iotype, int 
 	insn.chanspec = CR_PACK(channel,range,aref);
 	if( comedi_do_insn(card,&insn) < 0 )
 	{
-		fprintf(stderr, "can`t configure (AIO) subdev=%d channel=%d type=%d",subdev,channel,iotype);
+		fprintf(stderr, "can`t configure (AIO) subdev=%d channel=%d type=%d\n",subdev,channel,iotype);
 	  	exit(EXIT_FAILURE);
 	}
 }

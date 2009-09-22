@@ -1,5 +1,6 @@
-noinst_PROGRAMS 	= test
+noinst_PROGRAMS = test
 test_LDADD 		= $(top_builddir)/lib/libUniSet.la
+test_CXXFLAGS	= -I$(top_builddir)/include
 test_SOURCES 	= TestGen_SK.cc TestGen.cc TestGen-main.cc
 
 GENERATED=TestGen_SK.h TestGen_SK.cc TestGen-main.cc

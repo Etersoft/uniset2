@@ -255,7 +255,7 @@ int main(int argc, char* argv[])
 				if( autoconf )
 					insn_config(card, subdev,chan[k],100,range,aref);
 			
-				int ret = comedi_data_read(card, subdev, chan[k], range, AREF_GROUND, &data);
+				int ret = comedi_data_read(card, subdev, chan[k], range, aref, &data);
 				if( ret < 0)
 				{
 					fprintf(stderr, "can't read from channel %d: (%d) %s\n",chan[k],ret,strerror(ret));
@@ -274,7 +274,7 @@ int main(int argc, char* argv[])
 				if( autoconf )
 					insn_config(card,subdev,chan[k],101,range,aref);
 
-				int ret = comedi_data_write(card, subdev, chan[k], range, AREF_GROUND, val);
+				int ret = comedi_data_write(card, subdev, chan[k], range, aref, val);
 				if( ret < 0)
 				{
 					fprintf(stderr, "can't write to channel %d: (%d) %s\n",chan[k],ret,strerror(ret));
