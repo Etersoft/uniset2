@@ -107,7 +107,7 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 
 	if( it->cdiagram )	// задана специальная калибровочная диаграмма
 	{
-		// Если есть диаграмма, то оптимальнее флитровать 
+		// Если есть диаграмма, то оптимальнее фильтровать 
 		// скачки, ДО ДИАГРАММЫ
 		if( !it->nofilter && it->df.size() > 1 )
 		{
@@ -129,7 +129,7 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 	else
 	{
 		IOController_i::CalibrateInfo* cal( &(it->cal) );
-		if( cal->maxRaw!=0 && cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
+		if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
 			val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
 		
 		// Если НЕ диаграмма, то фильтруем 
@@ -196,7 +196,7 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 	}
 
 	IOController_i::CalibrateInfo* cal( &(it->cal) );
-	if( cal->maxRaw!=0 && cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
+	if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
 		val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
 
 	// если предыдущее значение "обрыв",
@@ -287,7 +287,7 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 		else
 		{
 			IOController_i::CalibrateInfo* cal( &(it->cal) );
-			if( cal && cal->maxRaw!=0 && cal->maxRaw!=cal->minRaw ) // задана калибровка
+			if( cal && cal->maxRaw!=cal->minRaw ) // задана калибровка
 			{
 				// Калибруем в обратную сторону!!!
 				val = UniSetTypes::lcalibrate(it->value,
@@ -351,7 +351,7 @@ float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
 		{
 			float fval = val;
 			IOController_i::CalibrateInfo* cal( &(it->cal) );
-			if( cal->maxRaw!=0 && cal->maxRaw!=cal->minRaw ) // задана калибровка
+			if( cal->maxRaw!=cal->minRaw ) // задана калибровка
 			{
 				// Калибруем в обратную сторону!!!
 				fval = UniSetTypes::fcalibrate(fval,
@@ -475,7 +475,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 			if( !it.getProp("filtersize").empty() )
 			{
 				#warning "почему здесь 0, хотя f_size инициализируется def_filtersize?"
-				f_size = it.getPIntProp("filtersize", 0);
+				f_size = it.getPIntProp("filtersize",def_filtersize);
 			}
 		}
 		

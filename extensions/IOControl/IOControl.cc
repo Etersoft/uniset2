@@ -12,10 +12,18 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, IOControl::IOInfo& inf )
 {
-	return os << "(" << inf.si.id << ")" << conf->oind->getMapName(inf.si.id)
+	os << "(" << inf.si.id << ")" << conf->oind->getMapName(inf.si.id)
 		<< " card=" << inf.ncard << " channel=" << inf.channel << " subdev=" << inf.subdev 
 		<< " aref=" << inf.aref << " range=" << inf.range 
 		<< " default=" << inf.defval << " safety=" << inf.safety;
+	
+	if( inf.cal.minRaw!=inf.cal.maxRaw )
+		os << " rmin=" << inf.cal.minRaw
+			<< " rmax=" << inf.cal.maxRaw
+			<< " cmin=" << inf.cal.minCal
+			<< " cmax=" << inf.cal.maxCal;
+	
+	return os;
 }
 // -----------------------------------------------------------------------------
 
@@ -155,7 +163,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	ptBlink2.setTiming(blink2_msec);
 
 	int blink3_msec = conf->getArgPInt("--io-blink3-time",it.getProp("blink3-time"), 100);
-	ptBlink3.setTiming(blink2_msec);
+	ptBlink3.setTiming(blink3_msec);
 
 	smReadyTimeout = conf->getArgInt("--io-sm-ready-timeout",it.getProp("ready_timeout"));
 	if( smReadyTimeout == 0 )
@@ -475,8 +483,8 @@ void IOControl::ioread( IOInfo* it )
 			{
 				if( !it->lamp )
 				{
-					IOBase::processingAsAO( ib, shm, force_out );
-					card->setAnalogChannel(it->subdev,it->channel,it->value,it->range,it->aref);
+					long rval = IOBase::processingAsAO( ib, shm, force_out );
+					card->setAnalogChannel(it->subdev,it->channel,rval,it->range,it->aref);
 				}
 				else // управление лампочками
 				{

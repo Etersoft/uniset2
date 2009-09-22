@@ -180,9 +180,12 @@ void SharedMemory::timerInfo( TimerMessage *tm )
 		saveHistory();
 	else if( tm->id == tmPulsar )
 	{
-		bool st = localGetState(ditPulsar,siPulsar);
-		st ^= true;
-		localSaveState(ditPulsar,siPulsar,st,getId());
+		if( siPulsar.id != DefaultObjectId )
+		{
+			bool st = localGetState(ditPulsar,siPulsar);
+			st ^= true;
+			localSaveState(ditPulsar,siPulsar,st,getId());
+		}
 	}
 }
 
