@@ -178,6 +178,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Sep 23 2009 Vitaly Lipatov <lav@altlinux.ru> 0.97-eter9
+- new build
+
 * Tue Sep 22 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter8
 - new build
 
