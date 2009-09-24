@@ -91,6 +91,7 @@ Configuration::Configuration():
 	localTimerService(UniSetTypes::DefaultObjectId),
 	localDBServer(UniSetTypes::DefaultObjectId),
 	localInfoServer(UniSetTypes::DefaultObjectId),
+	localNode(UniSetTypes::DefaultObjectId),
 	fileConfName("")
 {
 //	unideb[Debug::CRIT] << " configuration FAILED!!!!!!!!!!!!!!!!!" << endl;
@@ -133,6 +134,7 @@ Configuration::Configuration( int argc, const char* const* argv, const string xm
 	localTimerService(UniSetTypes::DefaultObjectId),
 	localDBServer(UniSetTypes::DefaultObjectId),
 	localInfoServer(UniSetTypes::DefaultObjectId),
+	localNode(UniSetTypes::DefaultObjectId),
 	fileConfName(xmlfile)
 {
 	if( xmlfile.empty() )
@@ -152,6 +154,7 @@ Configuration::Configuration( int argc, const char* const* argv, ObjectIndex* _o
 	localTimerService(UniSetTypes::DefaultObjectId),
 	localDBServer(UniSetTypes::DefaultObjectId),
 	localInfoServer(UniSetTypes::DefaultObjectId),
+	localNode(UniSetTypes::DefaultObjectId),
 	fileConfName(fileConf)
 {
 	if( fileConf.empty() )
@@ -172,6 +175,7 @@ Configuration::Configuration( int argc, const char* const* argv, const string fi
 	localTimerService(UniSetTypes::DefaultObjectId),
 	localDBServer(UniSetTypes::DefaultObjectId),
 	localInfoServer(UniSetTypes::DefaultObjectId),
+	localNode(UniSetTypes::DefaultObjectId),
 	fileConfName(fileConf)
 {
 	if( fileConf.empty() )
@@ -264,12 +268,11 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 		transientIOR 	= false;
 		localIOR 	= false;
 
-		initParameters();
-
-
 		string lnode( getArgParam("--localNode") );
 		if( !lnode.empty() )
 			setLocalNode(lnode);
+
+		initParameters();
 
 		// help
 //		if( !getArgParam("--help").empty() )
@@ -455,8 +458,11 @@ void Configuration::initParameters()
 		
 		if( name == "LocalNode" )
 		{
-			string nodename( it.getProp("name") );
-			setLocalNode(nodename);
+			if( localNode == UniSetTypes::DefaultObjectId )
+			{
+				string nodename( it.getProp("name") );
+				setLocalNode(nodename);
+			}
 		}
 		else if( name == "LocalTimerService" )
 		{
@@ -567,8 +573,10 @@ void Configuration::setLocalNode( string nodename )
 
 	if( localNode == DefaultObjectId )
 	{
-		unideb[Debug::CRIT] << "(Configuration::setLocalNode): node '" << nodename << "' ?? ?????? ????????????? Ÿ ObjectsMap!!!" << endl;
-		throw Exception("(Configuration::setLocalNode): node '"+nodename+"' ?? ?????? ????????????? Ÿ ObjectsMap!!!");
+		stringstream err;
+		err << "(Configuration::setLocalNode): Not found node '" << nodename << "'";
+		unideb[Debug::CRIT] << err << endl;
+		throw Exception(err.str());
 	}
 	oind->initLocalNode(localNode);
 }
