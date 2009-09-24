@@ -33,100 +33,180 @@
 using namespace std;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
-#define MUTEX_LOCK_SLEEP_MS 20
-// -------------------------------------------------------------------------------------------
-uniset_mutex::uniset_mutex(): 
-	release(1),
+static mutex_atomic_t mutex_atomic_read( mutex_atomic_t* m ){ return (*m); }
+static mutex_atomic_t mutex_atomic_set( mutex_atomic_t* m, int val ){ return (*m) = val; }
+//static void mutex_atomic_inc( mutex_atomic_t* m ){ (*m)++; }
+//static void mutex_atomic_dec( mutex_atomic_t* m ){ (*m)--; }
+// -----------------------------------------------------------------------------
+#ifndef HAVE_LINUX_LIBC_HEADERS_INCLUDE_LINUX_FUTEX_H
+uniset_mutex::uniset_mutex():
+	cnd(0),
 	nm("")
 {
-	ocond = new omni_condition(&omutex);
+	mutex_atomic_set(&locked,0);
+	cnd = new omni_condition(&mtx);
 }
 
-uniset_mutex::uniset_mutex( const string name ):
-	release(1),
+uniset_mutex::uniset_mutex( string name ):
 	nm(name)
 {
-	ocond = new omni_condition(&omutex);
+	mutex_atomic_set(&locked,0);
+	cnd = new omni_condition(&mtx);
 }
 
 uniset_mutex::~uniset_mutex()
 {
-	delete ocond;
+	unlock();
+	mutex_atomic_set(&locked,0);
+	delete cnd;
 }
 
 void uniset_mutex::lock()
 {
-	release = 0;
-	omutex.lock();
+	sem.wait();
+	mutex_atomic_set(&locked,1);
 }
 
 void uniset_mutex::unlock()
 {
-	omutex.unlock();
-	release = 1;
+	mutex_atomic_set(&locked,0);
+	sem.post();
+	cnd->signal();
 }
+
+bool uniset_mutex::isRelease()
+{
+	return (bool)!mutex_atomic_read(&locked);
+}
+// -----------------------------------------------------------------------------
+#else // HAVE_LINUX_FUTEX_H
+// -----------------------------------------------------------------------------
+// mutex на основе futex
+// Идея и реализация взята с http://kerneldump.110mb.com/dokuwiki/doku.php?id=wiki:futexes_are_tricky_p3
+// Оригинальная статья: http://people.redhat.com/drepper/futex.pdf
+
+uniset_mutex::uniset_mutex():
+	val(0),nm("")
+{
+}
+
+uniset_mutex::uiset_mutex( std::string name )
+	val(0),
+	nm(name)
+{
+
+}
+
+uniset_mutex::~uniset_mutex()
+{
+	unlock();	
+}
+
+void uniset_mutex::lock() 
+{
+	int c;
+	if( (c = cmpxchg(val, 0, 1))!= 0 )
+	{
+		do 
+		{
+			if( c==2 || cmpxchg(val, 1, 2)!=0 )
+				futex_wait(&val, 2);
+		}
+		while( (c = cmpxchg(val, 0, 2))!=0 );
+	}
+}
+
+void uniset_mutex::unlock()
+{
+	if( atomic_dec(val)!=1 )
+	{
+		val = 0;
+		futex_wake(&val, 1);
+	}
+}
+
+bool uniset_mutex::isRelease()
+{
+	return (bool)cmpxchg(val, 1, 2);
+}
+
+// -----------------------------------------------------------------------------
+#endif // HAVE_LINUX_FUTEX_H
+// -----------------------------------------------------------------------------
 
 const uniset_mutex &uniset_mutex::operator=(const uniset_mutex& r)
 {
 	if( this != &r )
-	{
-		release = r.release;
-		if( release )
-			unlock();
-		else
-			lock();
-	}
+		locked = r.locked;
+
 	return *this;
 }
 
-uniset_mutex::uniset_mutex (const uniset_mutex& r):
-	release(r.release),
+uniset_mutex::uniset_mutex( const uniset_mutex& r ):
+	cnd(0),
 	nm(r.nm)
 {
+	cnd = new omni_condition(&mtx);
 }
 
-// -------------------------------------------------------------------------------------------
-uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, int t_msec ):
+// -----------------------------------------------------------------------------
+uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, int timeMS ):
 	mutex(&m)
 {
-	if( m.isRelease() )
+	if( timeMS <= 0 || mutex->isRelease() )
 	{
-		m.lock();
-//		cerr << "....locked.." << endl; 
+		mutex->lock();
+		mutex_atomic_set(&mlock,1);
 		return;
 	}
-	
-	if( t_msec > 0 )
+
+	unsigned long sec, msec;
+	omni_thread::get_time(&sec,&msec, timeMS/1000, (timeMS%1000)*1000000 );
+	mutex->mtx.lock();
+	if( !mutex->cnd->timedwait(sec, msec) )
 	{
-		m.lock();
-		unsigned long sec, msec;
-		omni_thread::get_time(&sec,&msec,t_msec/1000,(t_msec%1000)*1000000);
-//		cerr << "....wait mutex msec=" << t_msec << endl; 
-//		m.ocond->timedwait(sec, msec);
-		if( !m.ocond->timedwait(sec, msec) )
+		if( !mutex->name().empty() && unideb.debugging( Debug::type(Debug::LEVEL9|Debug::WARN)) )
 		{
-			m.unlock();
-			return;
+			unideb[Debug::type(Debug::LEVEL9|Debug::WARN)] 
+				<< "(mutex_lock): вышло заданное время ожидания " 
+				<< timeMS << " msec для " << mutex->name() << endl;
 		}
+
+		mutex_atomic_set(&mlock,0);
+		mutex->mtx.unlock();
+		return;	//	ресурс не захватываем
 	}
-//	m.lock();
+
+	mutex_atomic_set(&mlock,1);
+	mutex->lock();
+	mutex->mtx.unlock();
 }
 
-// -------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+bool uniset_mutex_lock::lock_ok()
+{ 
+	return (bool)mutex_atomic_read(&mlock);
+}
+
 uniset_mutex_lock::~uniset_mutex_lock()
 {	
-	mutex->unlock();
-	mutex->ocond->signal();
+	if( mutex_atomic_read(&mlock) )
+	{
+		mutex_atomic_set(&mlock,0);
+		mutex->unlock();
+	}
 }
-// -------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 uniset_mutex_lock& uniset_mutex_lock::operator=(const uniset_mutex_lock &r)
 {
 	return *this;
 }
-// -------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+#ifndef HAVE_LINUX_LIBC_HEADERS_INCLUDE_LINUX_FUTEX_H
+
 uniset_spin_mutex::uniset_spin_mutex()
 {
-	unlock();
+	unlock();	
 }
 
 uniset_spin_mutex::~uniset_spin_mutex()
@@ -149,14 +229,54 @@ uniset_spin_mutex::uniset_spin_mutex( const uniset_spin_mutex& r )
 
 void uniset_spin_mutex::lock( int check_pause_msec )
 {
-	lock();
+	while( mutex_atomic_read(&m) != 0 )
+	{
+		if( check_pause_msec > 0 )
+			msleep(check_pause_msec);
+	}
+	mutex_atomic_set(&m,1);
 }
 
 void uniset_spin_mutex::unlock()
 {
-	unlock();
+	m = 0;
 }
 
+#else // HAVE_FUTEX
+
+// mutex на основе futex
+// Идея и реализация взята с http://kerneldump.110mb.com/dokuwiki/doku.php?id=wiki:futexes_are_tricky_p3
+// Оригинальная статья: http://people.redhat.com/drepper/futex.pdf
+void uniset_spin_mutex::lock( int check_pause_msec )
+{
+	struct timespec tm;
+	tm.tv_sec 	= check_pause_msec / 1000;
+	tm.tv_nsec 	= check_pause_msec%1000;
+
+	int c;
+	if( (c = cmpxchg(val, 0, 1))!= 0 )
+	{
+		do 
+		{
+			if( c==2 || cmpxchg(val, 1, 2)!=0 )
+			{
+				if( futex_wait(&val, 2,tm) == ETIMEDOUT )
+					return;
+			}
+		}
+		while( (c = cmpxchg(val, 0, 2))!=0 );
+	}
+}
+
+void uniset_spin_mutex::unlock()
+{
+	if( atomic_dec(val)!=1 )
+	{
+		val = 0;
+		futex_wake(&val, 1);
+	}
+}
+#endif // HAVE_FUTEX
 
 // -------------------------------------------------------------------------------------------
 uniset_spin_lock::uniset_spin_lock( uniset_spin_mutex& _m, int check_pause_msec ):
