@@ -40,6 +40,13 @@ class NCRestorer;
 //---------------------------------------------------------------------------
 /*! \class IONotifyController
  * \todo Сделать логирование выходов 
+ 
+ \section AskSensors Заказ датчиков
+	
+	....
+	ConsumerMaxAttempts - максимальное число неудачных 
+попыток посласть сообщение "заказчику". Настраивается в 
+конфигурационном файле. По умолчанию = 5.
 */ 
 class IONotifyController: 
 	public IOController,
