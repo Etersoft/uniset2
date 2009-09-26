@@ -10,7 +10,7 @@
 		out	- выходные регистры (запись)
 		io  - запись и чтение
 -->
-<QG>
+<Test>
   <settings>
   	<set name="class-name" val="TestGen"/>
   	<set name="msg-count" val="20"/>
@@ -27,4 +27,4 @@
   	<!-- name - название переменной в конф. файле -->
 		<item name="mid_Message1" comment="comment for Message 1" />
   </msgmap>
-</QG>
+</Test>

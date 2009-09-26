@@ -73,6 +73,13 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		// Выполнение шага программы
 		step();
 
+		// "сердцебиение"
+		if( idHeartBeat!=DefaultObjectId &amp;&amp; ptHeartBeat.checkTime() )
+		{
+			ui.saveValue(idHeartBeat,maxHeartBeat,UniversalIO::AnalogInput);
+			ptHeartBeat.reset();
+		}
+
 		// обновление выходов
 		updateOutputs(false);
 
