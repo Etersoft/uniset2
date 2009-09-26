@@ -23,6 +23,10 @@ VType str2type( const std::string s )
 		return vtF2;
 	if( s == "F4" )
 		return vtF4;
+	if( s == "Unsigned" )
+		return vtUnsigned;
+	if( s == "Signed" )
+		return vtSigned;
 
 	return vtUnknown;
 }
@@ -35,6 +39,10 @@ string type2str( VType t )
 		return "F2";
 	if( t == vtF4 )
 		return "F4";
+	if( t == vtUnsigned )
+		return "Unsigned";
+	if( t == vtSigned )
+		return "Signed";
 
 	return "vtUnknown";
 }
@@ -47,6 +55,10 @@ int wsize(  VType t )
 		return F2::wsize();
 	if( t == vtF4 )
 		return F4::wsize();
+	if( t == vtUnsigned )
+		return Unsigned::wsize();
+	if( t == vtSigned )
+		return Signed::wsize();
 
 	return 1;
 }
