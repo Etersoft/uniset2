@@ -92,7 +92,8 @@ Configuration::Configuration():
 	localDBServer(UniSetTypes::DefaultObjectId),
 	localInfoServer(UniSetTypes::DefaultObjectId),
 	localNode(UniSetTypes::DefaultObjectId),
-	fileConfName("")
+	fileConfName(""),
+	heartbeat_msec(10000)
 {
 //	unideb[Debug::CRIT] << " configuration FAILED!!!!!!!!!!!!!!!!!" << endl;
 //	throw Exception();
@@ -214,6 +215,10 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 			unideb << " FAILED open configuration from " <<  fileConfName << endl;
 			throw;
 		}
+
+	
+		// default value
+		heartbeat_msec = 5000;
 
 //	cerr << "*************** initConfiguration: xmlOpen: " << pt.getCurrent() << " msec " << endl;
 //	pt.reset();
@@ -560,6 +565,10 @@ void Configuration::initParameters()
 			confDir = it.getProp("name");
 			if( confDir.empty() )
 				confDir = getRootDir();
+		}
+		else if( name == "HeartBeatTime" )
+		{
+			heartbeat_msec = it.getIntProp("name");
 		}
 	}
 }

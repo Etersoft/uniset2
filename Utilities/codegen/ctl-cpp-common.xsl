@@ -283,9 +283,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* sm )
 			askSensors(UniversalIO::UIONotify);
 			active = true;
 			break;
-		}				
+		}
 		
-		case SystemMessage::FoldUp:								
+		case SystemMessage::FoldUp:
 		case SystemMessage::Finish:
 			askSensors(UniversalIO::UIODontNotify);
 			break;
@@ -412,6 +412,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId tes
 // ----------------------------------------------------------------------------
 </xsl:template>
 
+
 <xsl:template name="COMMON-CC-HEAD">
 // --------------------------------------------------------------------------
 /*
@@ -519,7 +520,7 @@ activated(false)
 			throw SystemError(err.str());
 		}
 
-		int heartbeatTime = conf->getArgPInt("--heartbeat-time",it.getProp("heartbeatTime"), 5000);
+		int heartbeatTime = conf->getArgPInt("--heartbeat-time",it.getProp("heartbeatTime"),conf-&gt;getHeartBeatTime());
 		if( heartbeatTime>0 )
 			ptHeartBeat.setTiming(heartbeatTime);
 		else
@@ -752,7 +753,7 @@ activated(false)
 			throw SystemError(err.str());
 		}
 
-		int heartbeatTime = conf->getArgPInt("--heartbeat-time",it.getProp("heartbeatTime"), 5000);
+		int heartbeatTime = conf->getArgPInt("--heartbeat-time",it.getProp("heartbeatTime"),conf-&gt;getHeartBeatTime());
 
 		if( heartbeatTime>0 )
 			ptHeartBeat.setTiming(heartbeatTime);

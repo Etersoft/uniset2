@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.97
-Release: eter13
+Release: eter15
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -178,6 +178,12 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Sat Sep 26 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter14
+- add default heartbeat time to Configuration
+
+* Sat Sep 26 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter13
+- add heartbeat logic to uniset-codegen
+
 * Sat Sep 26 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter12
 - minor fixes in IONotifyController
 

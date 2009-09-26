@@ -122,10 +122,12 @@ namespace UniSetTypes
 		inline const std::string getConfFileName() const { return fileConfName; }
 		inline std::string getImagesDir() const { return imagesDir; }	// временно
 
+		inline int getHeartBeatTime(){ return heartbeat_msec; }
+
 		// dirs
 		inline const std::string getConfDir() const { return confDir; }
 		inline const std::string getDataDir() const { return dataDir; }
-		inline const std::string getBinDir() const { return binDir; }		
+		inline const std::string getBinDir() const { return binDir; }
 		inline const std::string getLogDir() const { return logDir; }
 		inline const std::string getLockDir() const { return lockDir; }
 		inline const std::string getDocDir() const { return docDir; }
@@ -233,6 +235,8 @@ namespace UniSetTypes
 		std::string lockDir;
 		bool localIOR;
 		bool transientIOR;
+		
+		int heartbeat_msec;
 	};
 
 	/*! Глобальный указатель на конфигуратор */
