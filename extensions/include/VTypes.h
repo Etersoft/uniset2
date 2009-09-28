@@ -25,7 +25,7 @@ namespace VTypes
 		std::ostream& operator<<( std::ostream& os, const VType& vt );
 
 		// -------------------------------------------------------------------------
-		std::string type2str( VType t );			/*!< преоразование строки в тип */
+		std::string type2str( VType t );		/*!< преоразование строки в тип */
 		VType str2type( const std::string s );	/*!< преобразование названия в строку */
 		int wsize( VType t ); 					/*!< длина данных в словах */
 	// -------------------------------------------------------------------------

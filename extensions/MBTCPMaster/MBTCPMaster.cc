@@ -1556,13 +1556,67 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 							IOBase::processingAsDI( p, r->mbval, shm, force );
 						}
 						else
-							IOBase::processingAsAI( p, r->mbval, shm, force );
+							IOBase::processingAsAI( p, (signed short)(r->mbval), shm, force );
 					}
 					return;
 				}
 
 				dlog[Debug::CRIT] << myname << "(updateRSProperty): IGNORE item: rnum=" << p->rnum 
 						<< " > 1 ?!! for id=" << p->si.id << endl;
+				return;
+			}
+			else if( p->vType == VTypes::vtSigned )
+			{
+				if( save )
+				{
+					if( p->stype == UniversalIO::DigitalInput ||
+						p->stype == UniversalIO::DigitalOutput )
+					{
+						r->mbval = (signed short)IOBase::processingAsDO( p, shm, force_out );
+					}
+					else  
+						r->mbval = (signed short)IOBase::processingAsAO( p, shm, force_out );
+				}
+				else
+				{
+					if( p->stype == UniversalIO::DigitalInput ||
+						p->stype == UniversalIO::DigitalOutput )
+					{
+						IOBase::processingAsDI( p, r->mbval, shm, force );
+					}
+					else
+					{
+						long val = (signed short)r->mbval;
+						IOBase::processingAsAI( p, val, shm, force );
+					}
+				}
+				return;
+			}
+			else if( p->vType == VTypes::vtUnsigned )
+			{
+				if( save )
+				{
+					if( p->stype == UniversalIO::DigitalInput ||
+						p->stype == UniversalIO::DigitalOutput )
+					{
+						r->mbval = (unsigned short)IOBase::processingAsDO( p, shm, force_out );
+					}
+					else  
+						r->mbval = (unsigned short)IOBase::processingAsAO( p, shm, force_out );
+				}
+				else
+				{
+					if( p->stype == UniversalIO::DigitalInput ||
+						p->stype == UniversalIO::DigitalOutput )
+					{
+						IOBase::processingAsDI( p, r->mbval, shm, force );
+					}
+					else
+					{
+						long val = (unsigned short)r->mbval;
+						IOBase::processingAsAI( p, val, shm, force );
+					}
+				}
 				return;
 			}
 			else if( p->vType == VTypes::vtByte )

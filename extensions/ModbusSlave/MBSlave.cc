@@ -690,6 +690,23 @@ bool MBSlave::initItem( UniXML_iterator& it )
 	else if( am == "rw" )
 		p.amode = MBSlave::amRW;
 
+	string vt(it.getProp("mb_vtype"));
+	if( vt.empty() )
+		p.vtype = VTypes::vtUnknown;
+	else
+	{
+		VTypes::VType v(VTypes::str2type(vt));
+		if( v == VTypes::vtUnknown )
+		{
+			dlog[Debug::CRIT] << myname << "(initItem): Unknown rtuVType=" << vt << " for " 
+					<< it.getProp("name") 
+					<< endl;
+
+			return false;
+		}
+		p.vtype = v;
+	}
+
 	iomap[p.mbreg] = p;
 	
 	if( dlog.debugging(Debug::INFO) )
@@ -891,7 +908,7 @@ ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleO
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::real_write( ModbusRTU::ModbusData reg, 
-											ModbusRTU::ModbusData val )
+											ModbusRTU::ModbusData mbval )
 {
 	try
 	{
@@ -899,8 +916,8 @@ ModbusRTU::mbErrCode MBSlave::real_write( ModbusRTU::ModbusData reg,
 		{
 			dlog[Debug::INFO] << myname << "(write): save mbID=" 
 				<< ModbusRTU::dat2str(reg) 
-				<< " data=" << ModbusRTU::dat2str(val)
-				<< "(" << (int)val << ")" << endl;
+				<< " data=" << ModbusRTU::dat2str(mbval)
+				<< "(" << (int)mbval << ")" << endl;
 		}
 
 		IOMap::iterator it = iomap.find(reg);
@@ -912,6 +929,65 @@ ModbusRTU::mbErrCode MBSlave::real_write( ModbusRTU::ModbusData reg,
 		if( p->amode == MBSlave::amRO )
 			return ModbusRTU::erBadDataAddress;
 
+		if( p->vtype == VTypes::vtUnknown )
+		{
+			if( p->stype == UniversalIO::DigitalInput ||
+				p->stype == UniversalIO::DigitalOutput )
+			{
+				IOBase::processingAsDI( p, mbval, shm, force );
+			}
+			else
+			{
+				long val = (signed short)(mbval);
+				IOBase::processingAsAI( p, val, shm, force );
+			}
+			return erNoError;
+		}
+		else if( p->vtype == VTypes::vtUnsigned )
+		{
+			long val = (unsigned short)(mbval);
+			IOBase::processingAsAI( p, val, shm, force );
+		}
+		else if( p->vtype == VTypes::vtSigned )
+		{
+			long val = (signed short)(mbval);
+			IOBase::processingAsAI( p, val, shm, force );
+		}
+/*		
+		else if( p->vtype == VTypes::vtByte )
+		{
+			VTypes::Byte b(r->mbval);
+			IOBase::processingAsAI( p, b.raw.b[p->nbyte-1], shm, force );
+			return;
+		}
+		else if( p->vtype == VTypes::vtF2 )
+		{
+			RegMap::iterator i(p->reg->rit);
+			ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F2::wsize()];
+				for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
+					data[k] = i->second->mbval;
+				
+				VTypes::F2 f(data,VTypes::F2::wsize());
+				delete[] data;
+			
+				IOBase::processingFasAI( p, (float)f, shm, force );
+			}
+			else if( p->vtype == VTypes::vtF4 )
+			{
+				RegMap::iterator i(p->reg->rit);
+
+				ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F4::wsize()];
+				for( int k=0; k<VTypes::F4::wsize(); k++, i++ )
+					data[k] = i->second->mbval;
+				
+				VTypes::F4 f(data,VTypes::F4::wsize());
+				delete[] data;
+				
+				IOBase::processingFasAI( p, (float)f, shm, force );
+			}
+*/
+
+/*
 		if( p->stype == UniversalIO::DigitalInput ||
 			p->stype == UniversalIO::DigitalOutput )
 		{
@@ -923,7 +999,7 @@ ModbusRTU::mbErrCode MBSlave::real_write( ModbusRTU::ModbusData reg,
 		{
 			IOBase::processingAsAI( p, val, shm, force );
 		}
-
+*/
 		pingOK = true;
 		return ModbusRTU::erNoError;
 	}
