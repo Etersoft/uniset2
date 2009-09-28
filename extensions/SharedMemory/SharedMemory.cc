@@ -634,7 +634,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 			hi.fuse_val	= it.getIntProp("fuse_value");
 		}
 
-		dlog[Debug::INFO] << myname << "(buildHistory): add fuse_id" << hi.fuse_id 
+		dlog[Debug::INFO] << myname << "(buildHistory): add fuse_id=" << hi.fuse_id 
 				<< " fuse_val=" << hi.fuse_val
 				<< " fuse_use_val=" << hi.fuse_use_val
 				<< " fuse_invert=" << hi.fuse_invert
