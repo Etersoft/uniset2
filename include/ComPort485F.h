@@ -21,7 +21,7 @@ class ComPort485F:
 {
 	public:
 
-		ComPort485F( std::string comDevice, int gpio_num );
+		ComPort485F( std::string comDevice, int gpio_num, bool tmit_ctrl );
 	
 		virtual void sendByte( unsigned char x );
 		virtual void setTimeout( int timeout );
@@ -41,6 +41,7 @@ class ComPort485F:
 		std::queue<unsigned char> rq; /*!< очередь для чтения */
 
 		int gpio_num;
+		bool tmit_ctrl_on;
 		PassiveTimer ptRecv;
 		int tout_msec;
 };

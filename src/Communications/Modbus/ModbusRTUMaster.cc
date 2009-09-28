@@ -21,9 +21,9 @@ ModbusRTUMaster::ModbusRTUMaster( const string dev, bool use485 ):
 	{
 		ComPort485F* cp;
 		if( dev == "/dev/ttyS2" )
-			cp = new ComPort485F(dev,5);
+			cp = new ComPort485F(dev,5,false);
 		else if( dev == "/dev/ttyS3" )
-			cp = new ComPort485F(dev,6);
+			cp = new ComPort485F(dev,6,false);
 		else
 			throw Exception("Open ComPort FAILED! dev must be /dev/ttyS2 or /dev/tytS3");
 
