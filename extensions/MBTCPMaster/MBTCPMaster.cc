@@ -1539,10 +1539,25 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 				if( p->rnum <= 1 )
 				{
 					if( save )
-						r->mbval = IOBase::processingAsAO( p, shm, force_out );
+					{
+						if( p->stype == UniversalIO::DigitalInput ||
+							p->stype == UniversalIO::DigitalOutput )
+						{
+							r->mbval = IOBase::processingAsDO( p, shm, force_out );
+						}
+						else  
+							r->mbval = IOBase::processingAsAO( p, shm, force_out );
+					}
 					else
-						IOBase::processingAsAI( p, r->mbval, shm, force );
-						
+					{
+						if( p->stype == UniversalIO::DigitalInput ||
+							p->stype == UniversalIO::DigitalOutput )
+						{
+							IOBase::processingAsDI( p, r->mbval, shm, force );
+						}
+						else
+							IOBase::processingAsAI( p, r->mbval, shm, force );
+					}
 					return;
 				}
 

@@ -108,7 +108,7 @@ prefix(prefix)
 		throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown slave type. Use: --mbs-type [RTU|TCP]");
 
 //	mbslot->connectReadCoil( sigc::mem_fun(this, &MBSlave::readCoilStatus) );
-//	mbslot->connectReadInputStatus( sigc::mem_fun(this, &MBSlave::readInputStatus) );
+	mbslot->connectReadInputStatus( sigc::mem_fun(this, &MBSlave::readInputStatus) );
 	mbslot->connectReadOutput( sigc::mem_fun(this, &MBSlave::readOutputRegisters) );
 	mbslot->connectReadInput( sigc::mem_fun(this, &MBSlave::readInputRegisters) );
 //	mbslot->connectForceSingleCoil( sigc::mem_fun(this, &MBSlave::forceSingleCoil) );
@@ -1138,8 +1138,74 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query, 
 												ReadInputStatusRetMessage& reply )
 {
-//	cout << "(readInputStatus): " << query << endl;
-	return ModbusRTU::erOperationFailed;
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << myname << "(readInputStatus): " << query << endl;
+
+	try
+	{
+		if( query.count <= 1 )
+		{
+			ModbusRTU::ModbusData d = 0;
+			ModbusRTU::mbErrCode ret = real_read(query.start,d);
+			if( ret == ModbusRTU::erNoError )
+				reply.addData(d);
+			else
+				reply.addData(0);
+			
+			
+			pingOK = true;
+			return ret;
+		}
+
+		// Фомирование ответа:
+		int num=0; // добавленное количество данных
+		ModbusRTU::ModbusData d = 0;
+		ModbusRTU::ModbusData reg = query.start;
+		for( ; num<query.count; num++, reg++ )
+		{
+			ModbusRTU::mbErrCode ret = real_read(reg,d);
+			if( ret == ModbusRTU::erNoError )
+				reply.addData(d);
+			else
+				reply.addData(0);
+		}
+
+		// Если мы в начале проверили, что запрос входит в разрешёный диапазон
+		// то теоретически этой ситуации возникнуть не может...
+//		if( reply.bcnt < query.count )
+//		{
+//			dlog[Debug::WARN] << myname 
+//				<< "(readInputStatus): query.count=" << query.count 
+//					<< " > reply.count=" << reply.count << endl;
+//		}
+
+		pingOK = true;
+		return ModbusRTU::erNoError;
+	}
+	catch( UniSetTypes::NameNotFound& ex )
+	{
+		dlog[Debug::WARN] << myname << "(readInputStatus): " << ex << endl;
+		return ModbusRTU::erBadDataAddress;
+	}
+	catch( Exception& ex )
+	{
+		if( pingOK )
+			dlog[Debug::CRIT] << myname << "(readInputStatus): " << ex << endl;
+	}
+	catch( CORBA::SystemException& ex )
+	{
+		if( pingOK )
+			dlog[Debug::CRIT] << myname << "(readInputStatus): СORBA::SystemException: "
+				<< ex.NP_minorString() << endl;
+	}
+	catch(...)
+	{
+		if( pingOK )
+			dlog[Debug::CRIT] << myname << "(readInputStatus): catch ..." << endl;
+	}
+	
+	pingOK = false;
+	return ModbusRTU::erTimeOut;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query, 

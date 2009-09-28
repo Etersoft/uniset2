@@ -100,9 +100,9 @@ int main( int argc, char **argv )
 		{
 			ComPort485F* cp;
 			if( dev == "/dev/ttyS2" )
-				cp = new ComPort485F(dev,5,false);
+				cp = new ComPort485F(dev,5);
 			else if( dev == "/dev/ttyS3" )
-				cp = new ComPort485F(dev,6,false);
+				cp = new ComPort485F(dev,6);
 			else
 			{
 				cerr << "dev must be /dev/ttyS2 or /dev/tytS3" << endl;
