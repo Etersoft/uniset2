@@ -7,24 +7,26 @@ load_mod spec
 
 REL=eter
 MAILDOMAIN=server
-BACKUPDIR=$FTPDIR/backup
 RPMBINDIR=$RPMDIR/RPMS
+
 # builder50 path
 TOPDIR=/var/ftp/pvt/Etersoft/Ourside/
 
 PROJECT=$1
 test -n "$PROJECT" || PROJECT=uniset
 
+PKGNAME=uniset
 SPECNAME=libuniset.spec
 
-FTPDIR=$TOPDIR/i586/RPMS.$PROJECT
-if [ -d "$FTPDIR" ] ; then
+if [ -d "$TOPDIR" ] ; then
 	GEN="genbasedir --create --progress --topdir=$TOPDIR i586 $PROJECT"
 else
 	# For NoteBook build
-	FTPDIR=/var/ftp/pub/Ourside/i586/RPMS.$PROJECT
+	TOPDIR=/var/ftp/pub/Ourside/
 	GEN=/var/ftp/pub/Ourside/i586/genb.sh
 fi
+FTPDIR=$TOPDIR/i586/RPMS.$PROJECT
+BACKUPDIR=$FTPDIR/backup
 
 fatal()
 {
@@ -50,9 +52,9 @@ echo "inform mail sent to $MAILTO"
 function cp2ftp()
 {
 	mkdir -p $BACKUPDIR
-	mv -f $FTPDIR/*$PROJECT* $BACKUPDIR/
-	mv -f $RPMBINDIR/*$PROJECT* $FTPDIR/
-	chmod 'a+rw' $FTPDIR/*$PROJECT*
+	mv -f $FTPDIR/*$PKGNAME* $BACKUPDIR/
+	mv -f $RPMBINDIR/*$PKGNAME* $FTPDIR/
+	chmod 'a+rw' $FTPDIR/*$PKGNAME*
 	$GEN
 }
 
