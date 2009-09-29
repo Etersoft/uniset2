@@ -40,6 +40,13 @@ class NCRestorer;
 //---------------------------------------------------------------------------
 /*! \class IONotifyController
  * \todo Сделать логирование выходов 
+ 
+ \section AskSensors Заказ датчиков
+	
+	....
+	ConsumerMaxAttempts - максимальное число неудачных 
+попыток посласть сообщение "заказчику". Настраивается в 
+конфигурационном файле. По умолчанию = 5.
 */ 
 class IONotifyController: 
 	public IOController,
@@ -82,11 +89,12 @@ class IONotifyController:
 			public	UniSetTypes::ConsumerInfo
 		{
 			ConsumerInfoExt( const UniSetTypes::ConsumerInfo& ci,
-							UniSetObject_i_ptr ref=0):
+							UniSetObject_i_ptr ref=0, int maxAttemtps = 10 ):
 				UniSetTypes::ConsumerInfo(ci),
-				ref(ref){}
+				ref(ref),attempt(maxAttemtps){}
 
 			UniSetObject_i_var ref;
+			int attempt;
 		};
 
 		typedef std::list<ConsumerInfoExt> ConsumerList;
@@ -250,6 +258,8 @@ class IONotifyController:
 		UniSetTypes::uniset_mutex askAOMutex;
 		/*! замок для блокирования совместного доступа к cписку потребителей дискретных выходов */
 		UniSetTypes::uniset_mutex askDOMutex;
+		
+		int maxAttemtps; /*! timeout for consumer */
 };
 
 #endif

@@ -16,6 +16,7 @@
 #include "SMInterface.h"
 #include "SharedMemory.h"
 #include "IOBase.h"
+#include "VTypes.h"
 #include "ThreadCreator.h"
 // -----------------------------------------------------------------------------
 class MBSlave:
@@ -45,11 +46,13 @@ class MBSlave:
 		struct IOProperty:
 			public IOBase
 		{
-			ModbusRTU::ModbusData mbreg;			/*!< регистр */
+			ModbusRTU::ModbusData mbreg;	/*!< регистр */
 			AccessMode amode;
+			VTypes::VType vtype;	/*!< type of value */
 
 			IOProperty():
-				mbreg(0)
+				mbreg(0),
+				vtype(VTypes::vtUnknown)
 			{}
 
 			friend std::ostream& operator<<( std::ostream& os, IOProperty& p );

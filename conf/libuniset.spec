@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.97
-Release: eter9
+Release: eter20
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -178,8 +178,38 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
-* Wed Sep 23 2009 Vitaly Lipatov <lav@altlinux.ru> 0.97-eter9
+* Mon Sep 28 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter19
+- new comport
+
+* Mon Sep 28 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter18
+- restore mutex
+
+* Mon Sep 28 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter17
+- new mbtcpmaster
+
+* Mon Sep 28 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter16
+- new mutex
+
+* Sat Sep 26 2009 Pavel Vainerman <pv@altlinux.ru> 0.97-eter15
 - new build
+
+* Sat Sep 26 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter14
+- add default heartbeat time to Configuration
+
+* Sat Sep 26 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter13
+- add heartbeat logic to uniset-codegen
+
+* Sat Sep 26 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter12
+- minor fixes in IONotifyController
+
+* Fri Sep 25 2009 Pavel Vainerman <pv@altlinux.ru> 0.97-eter11
+- return old mutex
+
+* Wed Sep 23 2009 Pavel Vainerman <pv@altlinux.ru> 0.97-eter10
+- new build
+
+* Wed Sep 23 2009 Pavel Vainerman <pv@altlinux.ru> 0.97-eter9
+- new mutex
 
 * Tue Sep 22 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter8
 - new build

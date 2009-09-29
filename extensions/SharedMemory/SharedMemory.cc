@@ -19,7 +19,7 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	dblogging(false),
 	msecPulsar(0)
 {
-	cout << "$Id: SharedMemory.cc,v 1.4 2009/01/24 11:20:19 vpashka Exp $" << endl;
+//	cout << "$Id: SharedMemory.cc,v 1.4 2009/01/24 11:20:19 vpashka Exp $" << endl;
 
 	xmlNode* cnode = conf->getNode("SharedMemory");
 	if( cnode == NULL )
@@ -627,11 +627,19 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 
 		hi.fuse_invert 	= it.getIntProp("fuse_invert");
 		
+		hi.fuse_use_val = false;
 		if( !it.getProp("fuse_value").empty() )
 		{
 			hi.fuse_use_val = true;
 			hi.fuse_val	= it.getIntProp("fuse_value");
 		}
+
+		dlog[Debug::INFO] << myname << "(buildHistory): add fuse_id=" << hi.fuse_id 
+				<< " fuse_val=" << hi.fuse_val
+				<< " fuse_use_val=" << hi.fuse_use_val
+				<< " fuse_invert=" << hi.fuse_invert
+				<< endl;
+
 
 		// WARNING: no check duplicates...
 		hist.push_back(hi);

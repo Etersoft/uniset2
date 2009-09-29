@@ -57,7 +57,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		// проверка таймеров
 		checkTimers(this);
 
-		
 		if( resetMsgTime&gt;0 &amp;&amp; trResetMsg.hi(ptResetMsg.checkTime()) )
 		{
 //			cout &lt;&lt; myname &lt;&lt;  ": ********* reset messages *********" &lt;&lt; endl;
@@ -74,7 +73,14 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 
 		// Выполнение шага программы
 		step();
-		
+
+		// "сердцебиение"
+		if( idHeartBeat!=DefaultObjectId &amp;&amp; ptHeartBeat.checkTime() )
+		{
+			ui.saveValue(idHeartBeat,maxHeartBeat,UniversalIO::AnalogInput);
+			ptHeartBeat.reset();
+		}
+
 		// Формирование выходов
 		updateOutputs(false);
 		

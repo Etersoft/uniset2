@@ -44,16 +44,19 @@ IONotifyController::IONotifyController():
 restorer(NULL),
 askDMutex("askDMutex"),
 askAMutex("askAMutex"),
-trshMutex("trshMutex")
+trshMutex("trshMutex"),
+maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 {
+	
 }
 
-IONotifyController::IONotifyController(const string name, const string section, NCRestorer* d):  
+IONotifyController::IONotifyController(const string name, const string section, NCRestorer* d ): 
 	IOController(name, section),
 	restorer(d),
 	askDMutex(name+"askDMutex"),
 	askAMutex(name+"askAMutex"),
-	trshMutex(name+"trshMutex")
+	trshMutex(name+"trshMutex"),
+	maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 {
 	// добавляем фильтры
 	addAFilter( sigc::mem_fun(this,&IONotifyController::myAFilter) );
@@ -66,14 +69,14 @@ IONotifyController::IONotifyController( ObjectId id, NCRestorer* d ):
 	restorer(d),
 	askDMutex(string(conf->oind->getMapName(id))+"_askDMutex"),
 	askAMutex(string(conf->oind->getMapName(id))+"_askAMutex"),
-	trshMutex(string(conf->oind->getMapName(id))+"_trshMutex")
+	trshMutex(string(conf->oind->getMapName(id))+"_trshMutex"),
+	maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 {
 	// добавляем фильтры
 	addAFilter( sigc::mem_fun(this,&IONotifyController::myAFilter) );
 	addDFilter( sigc::mem_fun(this,&IONotifyController::myDFilter) );
 	setDependsSlot( sigc::mem_fun(this,&IONotifyController::onChangeUndefined) );
 }
-
 
 IONotifyController::~IONotifyController()
 {
@@ -112,7 +115,7 @@ bool IONotifyController::addConsumer(ConsumerList& lst, const ConsumerInfo& ci )
 			return false;
 	}
 
-	ConsumerInfoExt cinf(ci);
+	ConsumerInfoExt cinf(ci,0,maxAttemtps);
 	// получаем ссылку
 	try
 	{
@@ -567,7 +570,7 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 	AskMap::iterator it = askAIOList.find( key(si.id,si.node) );
 	if( it!=askAIOList.end() )
 	{	// lock
-		uniset_mutex_lock lock(askAMutex, 1000);	
+		uniset_mutex_lock lock(askAMutex, 1000);
 		send(it->second, sm);
 	}
 
@@ -599,9 +602,10 @@ void IONotifyController::send(ConsumerList& lst, UniSetTypes::SensorMessage& sm)
 					li->ref = UniSetObject_i::_narrow(op);
 				}
 
-				sm.consumer = li->id;				
+				sm.consumer = li->id;
 				li->ref->push( sm.transport_msg() );
-				break;					
+				li->attempt = maxAttemtps; // reinit attempts
+				break;
 			}
 			catch(Exception& ex)
 			{
@@ -619,8 +623,14 @@ void IONotifyController::send(ConsumerList& lst, UniSetTypes::SensorMessage& sm)
 				unideb[Debug::CRIT] << myname << "(IONotifyController::send): "
 					<< conf->oind->getNameById(li->id, li->node) 
 					<< " недоступен!!(...)" << endl;
-			}	
+			}
 			
+			if( maxAttemtps>0 &&  (--li->attempt <= 0) )
+			{
+				li = lst.erase(li);
+				break;
+			}
+
 			li->ref = UniSetObject_i::_nil();
 		}
 	}

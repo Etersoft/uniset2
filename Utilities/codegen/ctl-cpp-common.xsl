@@ -203,6 +203,11 @@
 		UniSetTypes::ObjectId idLocalTestMode_S;	/*!&lt; идентификатор для флага тестовго режима (для данного узла) */
 		bool in_TestMode_S;
 		bool in_LocalTestMode_S;
+
+		// управление датчиком "сердцебиения"
+		PassiveTimer ptHeartBeat;				/*! &lt; период "сердцебиения" */
+		UniSetTypes::ObjectId idHeartBeat;		/*! &lt; идентификатор датчика (AI) "сердцебиения" */
+		int maxHeartBeat;						/*! &lt; сохраняемое значение */
 		
 		xmlNode* confnode;
 		/*! получить числовое свойство из конф. файла по привязанной confnode */
@@ -278,9 +283,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* sm )
 			askSensors(UniversalIO::UIONotify);
 			active = true;
 			break;
-		}				
+		}
 		
-		case SystemMessage::FoldUp:								
+		case SystemMessage::FoldUp:
 		case SystemMessage::Finish:
 			askSensors(UniversalIO::UIODontNotify);
 			break;
@@ -407,6 +412,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId tes
 // ----------------------------------------------------------------------------
 </xsl:template>
 
+
 <xsl:template name="COMMON-CC-HEAD">
 // --------------------------------------------------------------------------
 /*
@@ -445,6 +451,8 @@ active(false),
 isTestMode(false),
 idTestMode_S(DefaultObjectId),
 idLocalTestMode_S(DefaultObjectId),
+idHeartBeat(DefaultObjectId),
+maxHeartBeat(10),
 confnode(0),
 smReadyTimeout(0),
 activated(false)
@@ -472,6 +480,8 @@ idTestMode_S(conf->getSensorID("TestMode_S")),
 idLocalTestMode_S(conf->getSensorID(conf->getProp(cnode,"LocalTestMode_S"))),
 in_TestMode_S(false),
 in_LocalTestMode_S(false),
+idHeartBeat(DefaultObjectId),
+maxHeartBeat(10),
 confnode(cnode),
 smReadyTimeout(0),
 activated(false)
@@ -497,6 +507,27 @@ activated(false)
 			&lt;&lt; endl;
 	}
 </xsl:for-each>
+
+	UniXML_iterator it(cnode);
+	string heart = conf->getArgParam("--heartbeat-id",it.getProp("heartbeat_id"));
+	if( !heart.empty() )
+	{
+		idHeartBeat = conf->getSensorID(heart);
+		if( idHeartBeat == DefaultObjectId )
+		{
+			ostringstream err;
+			err &lt;&lt; myname &lt;&lt; ": не найден идентификатор для датчика 'HeartBeat' " &lt;&lt; heart;
+			throw SystemError(err.str());
+		}
+
+		int heartbeatTime = conf->getArgPInt("--heartbeat-time",it.getProp("heartbeatTime"),conf-&gt;getHeartBeatTime());
+		if( heartbeatTime>0 )
+			ptHeartBeat.setTiming(heartbeatTime);
+		else
+			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
+
+		maxHeartBeat = conf->getArgPInt("--heartbeat-max",it.getProp("heartbeat_max"), 10);
+	}
 
 	// Инициализация значений
 	<xsl:for-each select="//smap/item">
@@ -666,6 +697,8 @@ active(false),
 isTestMode(false),
 idTestMode_S(DefaultObjectId),
 idLocalTestMode_S(DefaultObjectId),
+idHeartBeat(DefaultObjectId),
+maxHeartBeat(10),
 confnode(0),
 activated(false)
 {
@@ -695,6 +728,8 @@ idTestMode_S(conf->getSensorID("TestMode_S")),
 idLocalTestMode_S(conf->getSensorID(conf->getProp(cnode,"LocalTestMode_S"))),
 in_TestMode_S(false),
 in_LocalTestMode_S(false),
+idHeartBeat(DefaultObjectId),
+maxHeartBeat(10),
 confnode(cnode),
 activated(false)
 {
@@ -705,6 +740,29 @@ activated(false)
 		<xsl:with-param name="GENTYPE" select="'CHECK'"/>
 	</xsl:call-template>
 </xsl:for-each>
+
+	UniXML_iterator it(cnode);
+	string heart = conf->getArgParam("--heartbeat-id",it.getProp("heartbeat_id"));
+	if( !heart.empty() )
+	{
+		idHeartBeat = conf->getSensorID(heart);
+		if( idHeartBeat == DefaultObjectId )
+		{
+			ostringstream err;
+			err &lt;&lt; myname &lt;&lt; ": не найден идентификатор для датчика 'HeartBeat' " &lt;&lt; heart;
+			throw SystemError(err.str());
+		}
+
+		int heartbeatTime = conf->getArgPInt("--heartbeat-time",it.getProp("heartbeatTime"),conf-&gt;getHeartBeatTime());
+
+		if( heartbeatTime>0 )
+			ptHeartBeat.setTiming(heartbeatTime);
+		else
+			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
+
+		maxHeartBeat = conf->getArgPInt("--heartbeat-max",it.getProp("heartbeat_max"), 10);
+	}
+
 
 	sleep_msec = conf->getArgPInt("--sleep-msec","<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
 

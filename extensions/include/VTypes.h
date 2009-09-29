@@ -17,13 +17,15 @@ namespace VTypes
 			vtUnknown,
 			vtF2,
 			vtF4,
-			vtByte
+			vtByte,
+			vtUnsigned,
+			vtSigned
 		};
 
 		std::ostream& operator<<( std::ostream& os, const VType& vt );
 
 		// -------------------------------------------------------------------------
-		std::string type2str( VType t );			/*!< преоразование строки в тип */
+		std::string type2str( VType t );		/*!< преоразование строки в тип */
 		VType str2type( const std::string s );	/*!< преобразование названия в строку */
 		int wsize( VType t ); 					/*!< длина данных в словах */
 	// -------------------------------------------------------------------------
@@ -138,6 +140,66 @@ namespace VTypes
 			unsigned char operator[]( const int i ){ return raw.b[i]; }
 
 			Bytemem raw;
+	};
+	// --------------------------------------------------------------------------
+	class Unsigned
+	{
+		public:
+
+			// ------------------------------------------
+			// конструкторы на разные случаи...
+			Unsigned():raw(0){}
+			
+			Unsigned( const long val )
+			{
+				raw = val;
+			}
+			
+			Unsigned( const ModbusRTU::ModbusData dat )
+			{
+				raw = dat;
+			}
+
+			~Unsigned(){}
+			// ------------------------------------------
+			/*! размер в словах */
+			static int wsize(){ return sizeof(unsigned short); }
+			/*! тип значения */
+			static VType type(){ return vtUnsigned; }
+			// ------------------------------------------
+			operator long(){ return raw; }
+
+			unsigned short raw;
+	};
+	// --------------------------------------------------------------------------
+	class Signed
+	{
+		public:
+
+			// ------------------------------------------
+			// конструкторы на разные случаи...
+			Signed():raw(0){}
+			
+			Signed( const long val )
+			{
+				raw = val;
+			}
+			
+			Signed( const ModbusRTU::ModbusData dat )
+			{
+				raw = dat;
+			}
+
+			~Signed(){}
+			// ------------------------------------------
+			/*! размер в словах */
+			static int wsize(){ return sizeof(signed short); }
+			/*! тип значения */
+			static VType type(){ return vtSigned; }
+			// ------------------------------------------
+			operator long(){ return raw; }
+
+			signed short raw;
 	};
 	// --------------------------------------------------------------------------
 

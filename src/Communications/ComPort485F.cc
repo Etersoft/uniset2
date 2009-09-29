@@ -61,14 +61,17 @@ static void setRTS(int fd, int state)
 	ioctl(fd, TIOCMSET, &status);
 }
 // --------------------------------------------------------------------------------
-ComPort485F::ComPort485F( string dev, int gpio_num ):
+ComPort485F::ComPort485F( string dev, int gpio_num, bool tmit_ctrl ):
 	ComPort(dev,false),
 	gpio_num(gpio_num)
 {
-	iopl(3);
-	gpio_low_out_en(gpio_num);
-	setRTS(fd, 0);
-	gpio_low_set_value(gpio_num, 0);
+	if( tmit_ctrl_on = tmit_ctrl )
+	{
+		iopl(3);
+		gpio_low_out_en(gpio_num);
+		setRTS(fd, 0);
+		gpio_low_set_value(gpio_num, 0);
+	}
 }
 // --------------------------------------------------------------------------------
 void ComPort485F::setTimeout(int timeout)
@@ -79,8 +82,11 @@ void ComPort485F::setTimeout(int timeout)
 // --------------------------------------------------------------------------------
 unsigned char ComPort485F::m_receiveByte( bool wait )
 {
-	setRTS(fd, 0);
-	gpio_low_set_value(gpio_num, 0);
+	if( tmit_ctrl_on )
+	{
+		setRTS(fd, 0);
+		gpio_low_set_value(gpio_num, 0);
+	}
 	if( rq.empty() )
 	{	
 		int rc = 0;
@@ -135,16 +141,22 @@ unsigned char ComPort485F::m_receiveByte( bool wait )
 // --------------------------------------------------------------------------------
 int ComPort485F::sendBlock( unsigned char* msg, int len )
 {
-	setRTS(fd, 1);
-	gpio_low_set_value(gpio_num, 1);
+	if( tmit_ctrl_on )
+	{
+		setRTS(fd, 1);
+		gpio_low_set_value(gpio_num, 1);
+	}
 	int r=0;
 	try
 	{
 		cleanupChannel();
 		r = ComPort::sendBlock(msg,len);
-		tcdrain(fd);
-		gpio_low_set_value(gpio_num, 0);
-		setRTS(fd, 0);
+		if( tmit_ctrl_on )
+		{
+			tcdrain(fd);
+			gpio_low_set_value(gpio_num, 0);
+			setRTS(fd, 0);
+		}
 		if( r > 0 )
 		{
 			save2queue(msg,len,r);
@@ -153,41 +165,58 @@ int ComPort485F::sendBlock( unsigned char* msg, int len )
 	}
 	catch( Exception& ex )
 	{
-		setRTS(fd, 0);
-		gpio_low_set_value(gpio_num, 0);
+		if( tmit_ctrl_on )
+		{
+			setRTS(fd, 0);
+			gpio_low_set_value(gpio_num, 0);
+		}
 		throw;
 	}
 
-	setRTS(fd, 0);
-	gpio_low_set_value(gpio_num, 0);
+	if( tmit_ctrl_on )
+	{
+		setRTS(fd, 0);
+		gpio_low_set_value(gpio_num, 0);
+	}
 	return r;
 }
 // --------------------------------------------------------------------------------
 void ComPort485F::sendByte( unsigned char x )
 {
 	/* Fire transmitter */
-	setRTS(fd, 1);
-	gpio_low_set_value(gpio_num, 1);
+	if( tmit_ctrl_on )
+	{
+		setRTS(fd, 1);
+		gpio_low_set_value(gpio_num, 1);
+	}
 	try
 	{
 		ComPort::sendByte(x);
-		tcdrain(fd);
+		if( tmit_ctrl_on )
+		{
+			tcdrain(fd);
+			setRTS(fd, 0);
+			gpio_low_set_value(gpio_num, 0);
+		}
 		wq.push(x);
-
-		setRTS(fd, 0);
-		gpio_low_set_value(gpio_num, 0);
 		m_read(2000);
 	}
 	catch( Exception& ex )
 	{
-		tcdrain(fd);
-		setRTS(fd, 0);
-		gpio_low_set_value(gpio_num, 0);
+		if( tmit_ctrl_on )
+		{
+			tcdrain(fd);
+			setRTS(fd, 0);
+			gpio_low_set_value(gpio_num, 0);
+		}
 		throw;
 	}
 
-	setRTS(fd, 0);
-	gpio_low_set_value(gpio_num, 0);
+	if( tmit_ctrl_on )
+	{
+		setRTS(fd, 0);
+		gpio_low_set_value(gpio_num, 0);
+	}
 }
 // --------------------------------------------------------------------------------
 void ComPort485F::save2queue( unsigned char*msg, int len, int bnum )

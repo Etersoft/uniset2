@@ -34,6 +34,10 @@
 // -----------------------------------------------------------------------------------------
 namespace UniSetTypes
 {
+	typedef sig_atomic_t mutex_atomic_t;
+	// typedef _Atomic_word mutex_atomic_t;
+	
+
 	/*! \class uniset_mutex 
 
 	 * \note Напрямую функциями \a lock() и \a unlock() лучше не пользоваться. 
@@ -44,14 +48,10 @@ namespace UniSetTypes
 	{
 		public:
 		    uniset_mutex();
-			uniset_mutex( const std::string name );
+			uniset_mutex( std::string name );
     		~uniset_mutex();
 
-			inline bool isRelease() const
-			{
-				return (bool)release;
-			};			
-
+			bool isRelease();
 			void lock();
 		    void unlock();
 			
@@ -66,13 +66,18 @@ namespace UniSetTypes
 			friend class uniset_mutex_lock;
 		   	uniset_mutex (const uniset_mutex& r);
 	   		const uniset_mutex &operator=(const uniset_mutex& r);
-			volatile sig_atomic_t release;
-			const std::string nm;
-			omni_condition* ocond;
-			omni_mutex     omutex; 
+			omni_condition* cnd;
+			std::string nm;
+			omni_semaphore sem;
+			omni_mutex mtx;
+			mutex_atomic_t locked;
  	};
 
 	/*! \class uniset_mutex_lock
+	 * \author Pavel Vainerman
+	 * \date   $Date: 2007/11/18 19:13:35 $
+	 * \version $Id: Mutex.h,v 1.14 2007/11/18 19:13:35 vpashka Exp $
+	 *
 	 *	Предназначен для блокирования совместного доступа. Как пользоваться см. \ref MutexHowToPage
 	 *	\note Если ресурс уже занят, то lock ждет его освобождения... 
 	 *	\warning Насколько ожидание защищено от зависания надо еще проверять!
@@ -88,13 +93,13 @@ namespace UniSetTypes
 
 		private:
 		   	uniset_mutex* mutex;
+			mutex_atomic_t mlock;
 		    uniset_mutex_lock(const uniset_mutex_lock&);
 		    uniset_mutex_lock& operator=(const uniset_mutex_lock&);
 	};
 
 	// -------------------------------------------------------------------------
-	class uniset_spin_mutex:
-		public uniset_mutex
+	class uniset_spin_mutex
 	{
 		public:
 			uniset_spin_mutex();
@@ -106,6 +111,7 @@ namespace UniSetTypes
 			void unlock();
 
 		private:
+			mutex_atomic_t m;
 	};
 	// -------------------------------------------------------------------------
 	class uniset_spin_lock
