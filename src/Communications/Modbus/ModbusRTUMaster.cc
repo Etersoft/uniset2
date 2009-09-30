@@ -13,7 +13,7 @@ using namespace ModbusRTU;
 using namespace UniSetTypes;
 
 // -------------------------------------------------------------------------
-ModbusRTUMaster::ModbusRTUMaster( const string dev, bool use485 ):
+ModbusRTUMaster::ModbusRTUMaster( const string dev, bool use485, bool tr_ctl ):
 	port(NULL),
 	myport(true)
 {
@@ -21,9 +21,9 @@ ModbusRTUMaster::ModbusRTUMaster( const string dev, bool use485 ):
 	{
 		ComPort485F* cp;
 		if( dev == "/dev/ttyS2" )
-			cp = new ComPort485F(dev,5);
+			cp = new ComPort485F(dev,5,tr_ctl);
 		else if( dev == "/dev/ttyS3" )
-			cp = new ComPort485F(dev,6);
+			cp = new ComPort485F(dev,6,tr_ctl);
 		else
 			throw Exception("Open ComPort FAILED! dev must be /dev/ttyS2 or /dev/tytS3");
 

@@ -174,6 +174,7 @@ class RTUExchange:
 		ComPort::Speed defSpeed;
 		int recv_timeout;
 		bool use485F;
+		bool transmitCtl;
 
 		xmlNode* cnode;
 		std::string s_field;

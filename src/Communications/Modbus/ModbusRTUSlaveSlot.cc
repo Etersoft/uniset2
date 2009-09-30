@@ -5,8 +5,8 @@
 using namespace ModbusRTU;
 using namespace std;
 // -------------------------------------------------------------------------
-ModbusRTUSlaveSlot::ModbusRTUSlaveSlot( const std::string dev, bool use485 ):
-	ModbusRTUSlave(dev,use485)
+ModbusRTUSlaveSlot::ModbusRTUSlaveSlot( const std::string dev, bool use485, bool tr_ctl ):
+	ModbusRTUSlave(dev,use485,tr_ctl)
 {
 }
 // -------------------------------------------------------------------------

@@ -21,7 +21,7 @@ class ModbusRTUMaster:
 	public:
 
 		ModbusRTUMaster( ComPort* com );
-		ModbusRTUMaster( const std::string dev, bool use485=false );
+		ModbusRTUMaster( const std::string dev, bool use485=false, bool tr_ctl=false );
 		virtual ~ModbusRTUMaster();
 
 		inline void cleanupChannel(){ if( port ) port->cleanupChannel(); }

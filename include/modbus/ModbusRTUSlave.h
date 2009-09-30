@@ -24,7 +24,7 @@ class ModbusRTUSlave:
 	public ModbusServer
 {
 	public:
-		ModbusRTUSlave( const std::string dev, bool use485=false );
+		ModbusRTUSlave( const std::string dev, bool use485=false, bool tr_ctl=false  );
 		ModbusRTUSlave( ComPort* com );
 		virtual ~ModbusRTUSlave();
 		

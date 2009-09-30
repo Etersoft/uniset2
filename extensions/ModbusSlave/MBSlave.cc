@@ -76,7 +76,10 @@ prefix(prefix)
 		if( speed.empty() )
 			speed = "38400";
 
-		ModbusRTUSlaveSlot* rs = new ModbusRTUSlaveSlot(dev);
+		bool use485F = conf->getArgInt("--rs-use485F",it.getProp("use485F"));
+		bool transmitCtl = conf->getArgInt("--rs-transmit-ctl",it.getProp("transmitCtl"));
+
+		ModbusRTUSlaveSlot* rs = new ModbusRTUSlaveSlot(dev,use485F,transmitCtl);
 		rs->setSpeed(speed);
 		rs->setRecvTimeout(2000);
 //		rs->setAfterSendPause(afterSend);
