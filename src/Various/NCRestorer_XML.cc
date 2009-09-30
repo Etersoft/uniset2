@@ -221,10 +221,7 @@ bool NCRestorer_XML::getBaseInfo( UniXML& xml, xmlNode* it, IOController_i::Sens
 	if( !id.empty() )
 		sid = uni_atoi( id );
 	else
-	{
-		sname = conf->getSensorsSection()+"/"+sname;
-		sid = conf->oind->getIdByName(sname);
-	}
+		sid = conf->getSensorID(sname);
 
 	if( sid == UniSetTypes::DefaultObjectId )
 	{
@@ -235,13 +232,7 @@ bool NCRestorer_XML::getBaseInfo( UniXML& xml, xmlNode* it, IOController_i::Sens
 	ObjectId snode = conf->getLocalNode();
 	string snodename(xml.getProp(it,"node"));
 	if( !snodename.empty() )
-	{
-		string virtnode = conf->oind->getVirtualNodeName(snodename);
-		if( virtnode.empty() )
-			snodename = conf->oind->mkFullNodeName(snodename,snodename);;
-
-		snode = conf->oind->getIdByName(snodename);
-	}
+		snode = conf->getNodeID(snodename);
 
 	if( snode == UniSetTypes::DefaultObjectId )
 	{
@@ -437,10 +428,10 @@ bool NCRestorer_XML::getConsumerList( UniXML& xml,xmlNode* node,
 bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node, 
 										IONotifyController::ThresholdInfoExt& ti )
 {
-	string sid_name = conf->getSensorsSection()+"/"+xml.getProp(node,"sid");
+	string sid_name = xml.getProp(node,"sid");
 	if( !sid_name.empty() )
 	{
-		ti.sid = conf->oind->getIdByName(sid_name);
+		ti.sid = conf->getSensorID(sid_name);
 		if( ti.sid == UniSetTypes::DefaultObjectId )
 		{
 			unideb[Debug::CRIT] << "(NCRestorer_XML:getThresholdInfo): " 
@@ -462,7 +453,7 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 		string sid_name(uit.getProp("sid"));
 		if( !sid_name.empty() )
 		{
-			ti.sid = conf->oind->getIdByName(sid_name);
+			ti.sid = conf->getSensorID(sid_name);
 			if( ti.sid == UniSetTypes::DefaultObjectId )
 			{
 				unideb[Debug::CRIT] << "(NCRestorer_XML:getThresholdInfo): " 
