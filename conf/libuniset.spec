@@ -178,6 +178,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Sep 29 2009 Vitaly Lipatov <lav@altlinux.ru> 0.97-eter21
+- new build
+
 * Tue Sep 29 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter20
 - new vtypes for Modbus
 
