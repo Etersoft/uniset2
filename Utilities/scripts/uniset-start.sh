@@ -53,7 +53,7 @@ fi
 	pid=$!
 	echo $pid >$PIDFILE # создаём pid-файл
 
-	PROGLINE=$(ps -x | grep $(basename $NAMEPROG) | grep -v $0 | grep -v grep)
+	PROGLINE=$(ps -x | grep -q $(basename $NAMEPROG) | grep -v $0 | grep -v grep)
 
 	if [ -n "$PROGLINE" ]; then
 		RETVAL=1

@@ -64,7 +64,7 @@ function set_omni
 
 	OMNIPORT=$(expr $USERID + $BASEOMNIPORT)
 
-	if [ $(grep "$OMNIPORT/" /etc/services | wc -l) \> 0 ]
+	if [ $(grep -q "$OMNIPORT/" /etc/services | wc -l) \> 0 ]
 	then
 		if [ $USERID = 0 ]
 		then
@@ -86,9 +86,9 @@ function runOmniNames()
 	RETVAL=1
 	omniTest=0
 	if [ $std = 1 ]; then
-		omniTest=$(ps -ax | grep $OMNINAME | grep -v grep | grep -v $0 | wc -l);
+		omniTest=$(ps ax | grep -q $OMNINAME | grep -v grep | grep -v $0 | wc -l);
 	else
-		omniTest=$(ps -aux | grep $OMNINAME | grep $USER  | grep -v grep | grep -v $0 | wc -l);
+		omniTest=$(ps aux | grep -q $OMNINAME | grep $USER  | grep -v grep | grep -v $0 | wc -l);
 	fi
 
 	if [ $omniTest \> 0 ]; 
@@ -120,7 +120,7 @@ function runOmniNames()
 	fi
 	#echo $! $OMNINAME >>$RANSERVICES
 	
-	if [ $(grep $OMNINAME $RANSERVICES | wc -l) \= 0 ]
+	if [ $(grep -q $OMNINAME $RANSERVICES | wc -l) \= 0 ]
 	then
 		echo 0 $OMNINAME >>$RANSERVICES
 	fi

@@ -178,6 +178,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Thu Oct 01 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter24
+- new mutex
+
 * Wed Sep 30 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter23
 - control (on/off) new ComPort
 
