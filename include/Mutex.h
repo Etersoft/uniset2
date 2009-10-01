@@ -59,13 +59,14 @@ namespace UniSetTypes
 			{
 				return nm;
 			};
+
+			uniset_mutex (const uniset_mutex& r);
+			uniset_mutex &operator=(const uniset_mutex& r);
 			
 		protected:
 		
 		private:
 			friend class uniset_mutex_lock;
-		   	uniset_mutex (const uniset_mutex& r);
-	   		const uniset_mutex &operator=(const uniset_mutex& r);
 			omni_condition* cnd;
 			std::string nm;
 			omni_semaphore sem;
@@ -99,32 +100,10 @@ namespace UniSetTypes
 	};
 
 	// -------------------------------------------------------------------------
-	class uniset_spin_mutex
-	{
-		public:
-			uniset_spin_mutex();
-			~uniset_spin_mutex();
-		   	uniset_spin_mutex (const uniset_spin_mutex& r);
-	   		const uniset_spin_mutex &operator=(const uniset_spin_mutex& r);
-			
-			void lock( int check_pause_msec=0 );
-			void unlock();
 
-		private:
-			mutex_atomic_t m;
-	};
-	// -------------------------------------------------------------------------
-	class uniset_spin_lock
-	{
-		public:
-			uniset_spin_lock( uniset_spin_mutex& m, int check_pause_msec=0 );
-			~uniset_spin_lock();
+	typedef uniset_mutex uniset_spin_mutex;
+	typedef uniset_mutex_lock uniset_spin_lock;
 
-		private:
-		    uniset_spin_lock(const uniset_spin_lock&);
-		    uniset_spin_lock& operator=(const uniset_spin_lock&);
-			uniset_spin_mutex& m;
-	};
 	// -------------------------------------------------------------------------
 } // end of UniSetTypes namespace
 
