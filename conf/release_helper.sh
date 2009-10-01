@@ -67,7 +67,7 @@ rpmbb $SPECNAME || fatal "Can't build"
 
 cp2ftp
 
-#rpmbs $SPECNAME
+rpmbs $SPECNAME
 #send_notify
 
 # Увеличиваем релиз и запоминаем спек после успешной сборки
