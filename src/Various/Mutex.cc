@@ -38,7 +38,6 @@ static mutex_atomic_t mutex_atomic_set( mutex_atomic_t* m, int val ){ return (*m
 //static void mutex_atomic_inc( mutex_atomic_t* m ){ (*m)++; }
 //static void mutex_atomic_dec( mutex_atomic_t* m ){ (*m)--; }
 // -----------------------------------------------------------------------------
-#ifndef HAVE_LINUX_LIBC_HEADERS_INCLUDE_LINUX_FUTEX_H
 uniset_mutex::uniset_mutex():
 	cnd(0),
 	nm("")
@@ -79,61 +78,6 @@ bool uniset_mutex::isRelease()
 	return (bool)!mutex_atomic_read(&locked);
 }
 // -----------------------------------------------------------------------------
-#else // HAVE_LINUX_FUTEX_H
-// -----------------------------------------------------------------------------
-// mutex на основе futex
-// Идея и реализация взята с http://kerneldump.110mb.com/dokuwiki/doku.php?id=wiki:futexes_are_tricky_p3
-// Оригинальная статья: http://people.redhat.com/drepper/futex.pdf
-
-uniset_mutex::uniset_mutex():
-	val(0),nm("")
-{
-}
-
-uniset_mutex::uiset_mutex( std::string name )
-	val(0),
-	nm(name)
-{
-
-}
-
-uniset_mutex::~uniset_mutex()
-{
-	unlock();	
-}
-
-void uniset_mutex::lock() 
-{
-	int c;
-	if( (c = cmpxchg(val, 0, 1))!= 0 )
-	{
-		do 
-		{
-			if( c==2 || cmpxchg(val, 1, 2)!=0 )
-				futex_wait(&val, 2);
-		}
-		while( (c = cmpxchg(val, 0, 2))!=0 );
-	}
-}
-
-void uniset_mutex::unlock()
-{
-	if( atomic_dec(val)!=1 )
-	{
-		val = 0;
-		futex_wake(&val, 1);
-	}
-}
-
-bool uniset_mutex::isRelease()
-{
-	return (bool)cmpxchg(val, 1, 2);
-}
-
-// -----------------------------------------------------------------------------
-#endif // HAVE_LINUX_FUTEX_H
-// -----------------------------------------------------------------------------
-
 const uniset_mutex &uniset_mutex::operator=(const uniset_mutex& r)
 {
 	if( this != &r )
@@ -202,8 +146,6 @@ uniset_mutex_lock& uniset_mutex_lock::operator=(const uniset_mutex_lock &r)
 	return *this;
 }
 // -----------------------------------------------------------------------------
-#ifndef HAVE_LINUX_LIBC_HEADERS_INCLUDE_LINUX_FUTEX_H
-
 uniset_spin_mutex::uniset_spin_mutex()
 {
 	unlock();	
@@ -241,43 +183,6 @@ void uniset_spin_mutex::unlock()
 {
 	m = 0;
 }
-
-#else // HAVE_FUTEX
-
-// mutex на основе futex
-// Идея и реализация взята с http://kerneldump.110mb.com/dokuwiki/doku.php?id=wiki:futexes_are_tricky_p3
-// Оригинальная статья: http://people.redhat.com/drepper/futex.pdf
-void uniset_spin_mutex::lock( int check_pause_msec )
-{
-	struct timespec tm;
-	tm.tv_sec 	= check_pause_msec / 1000;
-	tm.tv_nsec 	= check_pause_msec%1000;
-
-	int c;
-	if( (c = cmpxchg(val, 0, 1))!= 0 )
-	{
-		do 
-		{
-			if( c==2 || cmpxchg(val, 1, 2)!=0 )
-			{
-				if( futex_wait(&val, 2,tm) == ETIMEDOUT )
-					return;
-			}
-		}
-		while( (c = cmpxchg(val, 0, 2))!=0 );
-	}
-}
-
-void uniset_spin_mutex::unlock()
-{
-	if( atomic_dec(val)!=1 )
-	{
-		val = 0;
-		futex_wake(&val, 1);
-	}
-}
-#endif // HAVE_FUTEX
-
 // -------------------------------------------------------------------------------------------
 uniset_spin_lock::uniset_spin_lock( uniset_spin_mutex& _m, int check_pause_msec ):
 m(_m)

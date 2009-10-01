@@ -104,13 +104,16 @@ namespace UniSetTypes
 		public:
 			uniset_spin_mutex();
 			~uniset_spin_mutex();
-		   	uniset_spin_mutex (const uniset_spin_mutex& r);
-	   		const uniset_spin_mutex &operator=(const uniset_spin_mutex& r);
-			
+
 			void lock( int check_pause_msec=0 );
 			void unlock();
 
+		protected:
+		   	uniset_spin_mutex (const uniset_spin_mutex& r);
+	   		const uniset_spin_mutex &operator=(const uniset_spin_mutex& r);
+
 		private:
+			friend class uniset_spin_lock;
 			mutex_atomic_t m;
 	};
 	// -------------------------------------------------------------------------
