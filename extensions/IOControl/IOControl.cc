@@ -961,8 +961,8 @@ void IOControl::check_testlamp()
 		if( isTestLamp )
 			blink_state = true; // первый такт всегда зажигаем...
 
-		cout << myname << "(check_test_lamp): ************* test lamp " 
-			<< isTestLamp << " *************" << endl;
+//		cout << myname << "(check_test_lamp): ************* test lamp " 
+//			<< isTestLamp << " *************" << endl;
 
 		// проходим по списку и формируем список мигающих выходов...
 		for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
