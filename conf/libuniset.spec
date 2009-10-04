@@ -178,6 +178,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Sun Oct 04 2009 Vitaly Lipatov <lav@altlinux.ru> 0.97-eter26
+- new build
+
 * Thu Oct 01 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter25
 - return old mutex
 
