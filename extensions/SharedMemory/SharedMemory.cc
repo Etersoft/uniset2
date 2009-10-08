@@ -214,8 +214,10 @@ void SharedMemory::sysCommand( SystemMessage *sm )
 			UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
 			askTimer(tmHeartBeatCheck,heartbeatCheckTime);
 			askTimer(tmEvent,evntPause,1);
-			if( histSaveTime > 0 )
+
+			if( histSaveTime > 0 && !hist.empty() )
 				askTimer(tmHistory,histSaveTime);
+
 			if( msecPulsar > 0 )
 				askTimer(tmPulsar,msecPulsar);
 		}
