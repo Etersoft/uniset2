@@ -108,7 +108,6 @@ namespace UniSetTypes
 			void lock( int check_pause_msec=0 );
 			void unlock();
 
-		protected:
 		   	uniset_spin_mutex (const uniset_spin_mutex& r);
 	   		const uniset_spin_mutex &operator=(const uniset_spin_mutex& r);
 

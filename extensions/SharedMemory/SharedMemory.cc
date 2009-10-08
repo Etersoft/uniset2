@@ -12,7 +12,7 @@ using namespace UniSetExtensions;
 SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	IONotifyController_LT(id),
 	heartbeatCheckTime(5000),
-	histSaveTime(200),
+	histSaveTime(0),
 	wdt(0),
 	activated(false),
 	workready(false),
@@ -214,7 +214,8 @@ void SharedMemory::sysCommand( SystemMessage *sm )
 			UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
 			askTimer(tmHeartBeatCheck,heartbeatCheckTime);
 			askTimer(tmEvent,evntPause,1);
-			askTimer(tmHistory,histSaveTime);
+			if( histSaveTime > 0 )
+				askTimer(tmHistory,histSaveTime);
 			if( msecPulsar > 0 )
 				askTimer(tmPulsar,msecPulsar);
 		}
@@ -310,6 +311,13 @@ void SharedMemory::sigterm( int signo )
 // ------------------------------------------------------------------------------------------
 void SharedMemory::checkHeartBeat()
 {
+	if( hlist.empty() )
+	{
+		if( wdt && workready )
+			wdt->ping();
+		return;
+	}
+
 	IOController_i::SensorInfo si;
 	si.node = conf->getLocalNode();
 
@@ -594,8 +602,8 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 	UniXML_iterator it(n);
 	
 	histSaveTime = it.getIntProp("savetime");
-	if( histSaveTime < 0 )
-		histSaveTime = 200;
+	if( histSaveTime <= 0 )
+		histSaveTime = 0;
 	
 	if( !it.goChildren() )
 	{
@@ -683,6 +691,8 @@ SharedMemory::HistorySlot SharedMemory::signal_history()
 // -----------------------------------------------------------------------------
 void SharedMemory::saveHistory()
 {
+	if( hist.empty() )
+		return;
 //	if( dlog.debugging(Debug::INFO) )
 //		dlog[Debug::INFO] << myname << "(saveHistory): ..." << endl;
 

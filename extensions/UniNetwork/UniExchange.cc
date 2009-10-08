@@ -212,26 +212,28 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMI
 	int size = map->length();
 	for( int i=0; i<size; i++ )
 	{
+		SInfo* s = &(smap[i]);
+		IOController_i::ShortMap* m = &(map[i]);
 		if( reinit )
 		{
-			shm->initDIterator(smap[i].dit);
-			shm->initAIterator(smap[i].ait);
-			smap[i].type 	= map[i].type;
-			smap[i].id 		= map[i].id;
+			shm->initDIterator(s->dit);
+			shm->initAIterator(s->ait);
+			s->type 	= m->type;
+			s->id 		= m->id;
 		}
 
-		smap[i].val = map[i].value;
+		s->val = m->value;
 		
 		try
 		{
-			if( map[i].type == UniversalIO::DigitalInput )
-				shm->localSaveState( smap[i].dit, map[i].id, (map[i].value ? true : false ), shm->ID() );
-			else if( map[i].type == UniversalIO::DigitalOutput )
-				shm->localSetState( smap[i].dit, map[i].id, (map[i].value ? true : false ), shm->ID() );
+			if( m->type == UniversalIO::DigitalInput )
+				shm->localSaveState( s->dit, m->id, (m->value ? true : false ), shm->ID() );
+			else if( m->type == UniversalIO::DigitalOutput )
+				shm->localSetState( s->dit, m->id, (m->value ? true : false ), shm->ID() );
 			else if( map[i].type == UniversalIO::AnalogInput )
-				shm->localSaveValue( smap[i].ait, map[i].id, map[i].value, shm->ID() );
+				shm->localSaveValue( s->ait, m->id, m->value, shm->ID() );
 			else if( map[i].type == UniversalIO::AnalogOutput )
-				shm->localSetValue( smap[i].ait, map[i].id, map[i].value, shm->ID() );
+				shm->localSetValue( s->ait, m->id, m->value, shm->ID() );
 		}
 		catch( Exception& ex )
 		{
