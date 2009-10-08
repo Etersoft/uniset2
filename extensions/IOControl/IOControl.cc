@@ -240,10 +240,12 @@ void IOControl::execute()
 	{
 		maxItem = 0;
 		readConfiguration();
+		iomap.resize(maxItem);
 		cerr << "************************** readConfiguration: " << pt.getCurrent() << " msec " << endl;
 	}
 	else
 	{
+		iomap.resize(maxItem);
 		// init iterators
 		for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
 		{
@@ -253,7 +255,6 @@ void IOControl::execute()
 		readconf_ok = true; // т.к. waitSM() уже был...
 	}
 	
-	iomap.resize(maxItem);
 	maxHalf = maxItem / 2;
 	unideb[Debug::INFO] << myname << "(init): iomap size = " << iomap.size() << endl;
 
@@ -349,7 +350,7 @@ void IOControl::execute()
 		}
 		catch(CORBA::SystemException& ex)
 		{
-			unideb[Debug::LEVEL3] << myname << "(execute): СORBA::SystemException: "
+			unideb[Debug::LEVEL3] << myname << "(execute): CORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 		}
 		catch(...)
@@ -614,14 +615,14 @@ void IOControl::readConfiguration()
 	if(!root)
 	{
 		ostringstream err;
-		err << myname << "(readConfiguration): не нашли корневого раздела <sensors>";
+		err << myname << "(readConfiguration): section <sensors> not found";
 		throw SystemError(err.str());
 	}
 
 	UniXML_iterator it(root);
 	if( !it.goChildren() )
 	{
-		std::cerr << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
+		std::cerr << myname << "(readConfiguration): section <sensors> empty?!!\n";
 		return;
 	}
 
@@ -719,7 +720,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 		inf.range = it.getIntProp("range");
 		if( inf.range < 0 || inf.range > 3 )
 		{
-			unideb[Debug::WARN] << myname << "(readItem): неизвестный коэффициент усиления(range): " << inf.range
+			unideb[Debug::CRIT] << myname << "(readItem): неизвестный коэффициент усиления(range): " << inf.range
 							<< " для " << it.getProp("name") 
 							<< " Разрешнный диапазон: range=[0..3]" << endl;
 			return false;
@@ -728,7 +729,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 		inf.aref = it.getIntProp("aref");
 		if( inf.aref < 0 || inf.aref > 3 )
 		{
-			unideb[Debug::WARN] << myname << "(readItem): неизвестный тип подключения: " << inf.aref
+			unideb[Debug::CRIT] << myname << "(readItem): неизвестный тип подключения: " << inf.aref
 							<< " для " << it.getProp("name") << endl;
 			return false;
 		}
@@ -1017,16 +1018,15 @@ IOControl* IOControl::init_iocontrol( int argc, const char* const* argv,
 	string name = conf->getArgParam("--io-name","IOControl1");
 	if( name.empty() )
 	{
-		cerr << "(iocontrol): Не задан name'" << endl;
+		cerr << "(iocontrol): Unknown name. Use --io-name " << endl;
 		return 0;
 	}
 
 	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		cerr << "(iocontrol): идентификатор '" << name 
-			<< "' не найден в конф. файле!"
-			<< " в секции " << conf->getObjectsSection() << endl;
+		cerr << "(iocontrol): Unknown ID for " << name 
+			<< "' Not found in <objects>" << endl;
 		return 0;
 	}
 
