@@ -191,6 +191,9 @@ int main( int argc, char **argv )
 		mb.setTimeout(tout);
 		mb.connect(ia,port);
 
+		if( verb )
+			cout << "connection: " << (mb.isConnection() ? "YES" : "NO") << endl;
+
 		while( 1)
 		{
 

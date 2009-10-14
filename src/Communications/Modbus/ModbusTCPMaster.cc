@@ -47,15 +47,14 @@ int ModbusTCPMaster::nTransaction = 0;
 mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg, 
 				 			ModbusMessage& reply, timeout_t timeout )
 {
-
-//	if( !isConnection() )
 	if( iaddr.empty() )
 	{
 		dlog[Debug::WARN] << "(query): unknown ip address for server..." << endl;
 		return erHardwareError;
 	}
 
-	reconnect();
+	if( !isConnection() )
+		reconnect();
 
 	if( !isConnection() )
 	{
@@ -185,6 +184,8 @@ void ModbusTCPMaster::reconnect()
 		delete tcp;
 	}
 	
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << "(ModbusTCPMaster): reconnect " << iaddr << endl;
 	tcp = new ost::TCPStream(iaddr.c_str());
 }
 // -------------------------------------------------------------------------
