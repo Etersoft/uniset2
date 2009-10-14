@@ -34,7 +34,7 @@
 #include <UniSetTypes.h>
 
 int seek=0;
-int b_size=100000;
+int b_size=25000;
 int bj_size=1300000;
 void testTable1(void)
 {
@@ -80,6 +80,9 @@ void testTable1(void)
 bool testTable2(void)
 {
 	char *val=new char[40];
+	TableBlockStorage t0;
+	t0.create("small_file.test", b_size, 4, 40, 100, 5,28,0);
+	t0.open("small_file.test", b_size, 4, 40, 100, 5,28,0);
 	TableBlockStorage t;
 	//t = new TableBlockStorage();
 	t.create("big_file.test", b_size, 4, 40, 100, 5,28,0);
@@ -91,6 +94,7 @@ bool testTable2(void)
 		if(t.findKeyValue(&i,val)!=0) printf("%s, ",val);
 	}
 	printf("\n");
+	t0.addRow((char*)&i,val);
 	if(t.getCurBlock()!=0)
 	{
 		delete val;

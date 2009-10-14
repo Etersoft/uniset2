@@ -189,6 +189,8 @@ bool TableBlockStorage::open(const char* name, int byte_sz, int key_sz, int inf_
 		if(t->count >= 0) 
 			break;
 	}
+	if( t->count < 0 )
+		cur_block = 0;
 
 	/*! Чтение в память из нужного блока */
 	fseek(file,seekpos+(cur_block*block_size)*(full_size),0);
