@@ -21,7 +21,8 @@ mbregFromID(false),
 activated(false),
 noQueryOptimization(false),
 allNotRespond(false),
-prefix(prefix)
+prefix(prefix),
+no_extimer(false)
 {
 //	cout << "$ $" << endl;
 
@@ -119,7 +120,7 @@ prefix(prefix)
 
 	activateTimeout	= conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
 
-	initMB(false);
+//	initMB(false);
 
 	printMap(rmap);
 //	abort();
@@ -163,6 +164,9 @@ void MBTCPMaster::initMB( bool reopen )
 			mb->setTimeout(recv_timeout);
 
 		dlog[Debug::INFO] << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
+		
+		if( dlog.debugging(Debug::LEVEL9) )
+			mb->setLog(dlog);
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
@@ -197,7 +201,12 @@ void MBTCPMaster::waitSMReady()
 void MBTCPMaster::timerInfo( TimerMessage *tm )
 {
 	if( tm->id == tmExchange )
-		step();
+	{
+		if( no_extimer )
+			askTimer(tm->id,0);
+		else
+			step();
+	}
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::step()
@@ -1515,6 +1524,9 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 	if( !save && write_only )
 		return;
 
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << "udpateP: sid=" << p->si.id << " mbval=" << r->mbval << endl;
+
 		try
 		{
 			if( p->vType == VTypes::vtUnknown )
@@ -1715,4 +1727,34 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 		}
 }
 // -----------------------------------------------------------------------------
+void MBTCPMaster::execute()
+{
+	no_extimer = true;
 
+	try
+	{
+		askTimer(tmExchange,0);
+	}
+	catch(...){}
+	
+	initMB(false);
+
+	while(1)
+	{
+		try
+		{
+			step();
+		}
+		catch( Exception& ex )
+		{
+			dlog[Debug::CRIT] << myname << "(execute): " << ex << std::endl;
+		}
+		catch(...)
+		{
+			dlog[Debug::CRIT] << myname << "(execute): catch ..." << endl;
+		}
+
+		msleep(polltime);
+	}
+}
+// -----------------------------------------------------------------------------

@@ -1546,7 +1546,7 @@ bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
 // -----------------------------------------------------------------------------
 void RTUExchange::printMap( RTUExchange::RTUDeviceMap& m )
 {
-	cout << "devices: " << endl;
+	cout << "devices: num=" << m.size() << endl;
 	for( RTUExchange::RTUDeviceMap::iterator it=m.begin(); it!=m.end(); ++it )
 	{
 		cout << "  " <<  *(it->second) << endl;

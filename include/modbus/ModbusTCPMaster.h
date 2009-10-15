@@ -35,7 +35,7 @@ class ModbusTCPMaster:
 
 	private:
 		ost::TCPStream* tcp;
-		static int nTransaction;
+		int nTransaction;
 		std::queue<unsigned char> qrecv;
 		PassiveTimer ptTimeout;
 		std::string iaddr;

@@ -37,6 +37,8 @@ class MBTCPMaster:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
+		void execute();
+	
 		static const int NoSafetyState=-1;
 
 		enum Timer
@@ -235,6 +237,8 @@ class MBTCPMaster:
 		Trigger trAllNotRespond;
 		PassiveTimer ptAllNotRespond;
 		std::string prefix;
+		
+		bool no_extimer;
 };
 // -----------------------------------------------------------------------------
 #endif // _MBTCPMaster_H_

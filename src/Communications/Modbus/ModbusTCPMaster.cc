@@ -14,6 +14,7 @@ using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 ModbusTCPMaster::ModbusTCPMaster():
 tcp(0),
+nTransaction(0),
 iaddr("")
 {
 	setCRCNoCheckit(true);
@@ -56,7 +57,8 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 	}
 
-	reconnect();
+	if( !isConnection() )
+		reconnect();
 
 	assert(timeout);
 	ptTimeout.setTiming(timeout);
@@ -67,7 +69,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 	
 	try
 	{
-		if( nTransaction >= numeric_limits<int>::max() )
+		if( nTransaction >= numeric_limits<ModbusRTU::ModbusData>::max() )
 			nTransaction = 0;
 		
 		ModbusTCP::MBAPHeader mh;
@@ -122,7 +124,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 			}
 
 			if( ret < (int)sizeof(rmh) )
-				return erHardwareError;
+				return erTimeOut; // return erHardwareError;
 
 			rmh.swapdata();
 			

@@ -17,7 +17,8 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	activated(false),
 	workready(false),
 	dblogging(false),
-	msecPulsar(0)
+	msecPulsar(0),
+	iotypePulsar(UniversalIO::DigitalInput)
 {
 //	cout << "$Id: SharedMemory.cc,v 1.4 2009/01/24 11:20:19 vpashka Exp $" << endl;
 
@@ -100,6 +101,19 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 		siPulsar.node = conf->getLocalNode();
 
 		msecPulsar = conf->getArgPInt("--pulsar-msec",it.getProp("pulsar_msec"), 5000);
+		
+		string t = conf->getArgParam("--pulsar-iotype",it.getProp("pulsar_iotype"));
+		if( !t.empty() )
+		{
+			iotypePulsar = UniSetTypes::getIOType(t);
+			if( iotypePulsar == UniversalIO::UnknownIOType )
+			{
+				ostringstream err;
+				err << myname << ": Unknown iotype '" << t << "' for pulsar. Must be 'DI' or 'DO'";
+				dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+				throw SystemError(err.str());
+			}
+		}
 	}
 }
 
@@ -184,7 +198,10 @@ void SharedMemory::timerInfo( TimerMessage *tm )
 		{
 			bool st = localGetState(ditPulsar,siPulsar);
 			st ^= true;
-			localSaveState(ditPulsar,siPulsar,st,getId());
+			if( iotypePulsar == UniversalIO::DigitalInput )
+				localSaveState(ditPulsar,siPulsar,st,getId());
+			else if( iotypePulsar == UniversalIO::DigitalOutput )
+				localSetState(ditPulsar,siPulsar,st,getId());
 		}
 	}
 }

@@ -189,6 +189,7 @@ class SharedMemory:
 
 		DIOStateList::iterator ditPulsar;
 		IOController_i::SensorInfo siPulsar;
+		UniversalIO::IOTypes iotypePulsar;
 		int msecPulsar;
 
 	private:
