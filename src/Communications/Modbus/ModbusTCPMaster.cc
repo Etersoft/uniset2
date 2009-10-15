@@ -48,17 +48,17 @@ int ModbusTCPMaster::nTransaction = 0;
 mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg, 
 				 			ModbusMessage& reply, timeout_t timeout )
 {
-
-//	if( !isConnection() )
 	if( iaddr.empty() )
 	{
-		dlog[Debug::WARN] << "(query): not connection to server..." << endl;
+		dlog[Debug::WARN] << "(query): unknown ip address for server..." << endl;
 		return erHardwareError;
-
 	}
 
 	if( !isConnection() )
-		reconnect();
+	{
+		dlog[Debug::WARN] << "(query): not connected to server..." << endl;
+		return erTimeOut;
+	}
 
 	assert(timeout);
 	ptTimeout.setTiming(timeout);
@@ -114,6 +114,15 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 		if( tcp->isPending(ost::Socket::pendingInput,timeout) ) 
 		{
+/*			
+			unsigned char rbuf[100];
+			memset(rbuf,0,sizeof(rbuf));
+			int ret = getNextData(rbuf,sizeof(rbuf));
+			cerr << "ret=" << ret << " recv: ";
+			for( int i=0; i<sizeof(rbuf); i++ )
+				cerr << hex << " 0x" <<  (int)rbuf[i];
+			cerr << endl;
+*/
 			ModbusTCP::MBAPHeader rmh;
 			int ret = getNextData((unsigned char*)(&rmh),sizeof(rmh));
 			if( dlog.debugging(Debug::INFO) )
@@ -173,6 +182,8 @@ void ModbusTCPMaster::reconnect()
 		delete tcp;
 	}
 	
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << "(ModbusTCPMaster): reconnect " << iaddr << endl;
 	tcp = new ost::TCPStream(iaddr.c_str());
 }
 // -------------------------------------------------------------------------

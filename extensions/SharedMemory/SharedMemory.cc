@@ -42,7 +42,7 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	string d_field = conf->getArgParam("--d-filter-field");
 	string d_fvalue = conf->getArgParam("--d-filter-value");
 	
-	int lock_msec = conf->getArgInt("--lock-value-pause");
+	int lock_msec = conf->getArgPInt("--lock-value-pause",0);
 	if( lock_msec < 0 )
 		lock_msec = 0;
 	setCheckLockValuePause(lock_msec);
