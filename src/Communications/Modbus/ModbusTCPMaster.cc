@@ -43,8 +43,6 @@ mbErrCode ModbusTCPMaster::sendData( unsigned char* buf, int len )
 	return ModbusTCPCore::sendData(buf,len,tcp);
 }
 // -------------------------------------------------------------------------
-int ModbusTCPMaster::nTransaction = 0;
-
 mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg, 
 				 			ModbusMessage& reply, timeout_t timeout )
 {
