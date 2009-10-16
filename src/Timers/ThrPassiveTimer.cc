@@ -68,7 +68,7 @@ bool ThrPassiveTimer::wait(timeout_t timeMS)
 	terminated = 0;
 	{
 		tmutex->lock();
-		timeMS = PassiveTimer::setTiming(timeMS); // вызываем для совместимости с обычным PassiveTimer-ом
+		timeout_t tmMS = PassiveTimer::setTiming(timeMS); // вызываем для совместимости с обычным PassiveTimer-ом
 		if( timeMS == WaitUpTime )
 		{
 			while( !terminated )	// на всякий, вдруг проснется по ошибке...
@@ -77,7 +77,7 @@ bool ThrPassiveTimer::wait(timeout_t timeMS)
 		else
 		{
 			unsigned long sec, msec;
-			omni_thread::get_time(&sec,&msec, timeMS/1000, (timeMS%1000)*1000000 );
+			omni_thread::get_time(&sec,&msec, tmMS/1000, (tmMS%1000)*1000000 );
 //			cout <<"timer: спим "<< timeMS/1000 << "[сек] и " << (timeMS%1000)*1000000 <<"[мсек]" << endl;
 			tcondx->timedwait(sec, msec);
 		}
