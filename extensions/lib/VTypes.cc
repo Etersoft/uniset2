@@ -16,16 +16,15 @@ std::ostream& operator<<( std::ostream& os, const VType& vt )
 
 VType str2type( const std::string s )
 {
-	if( s == "Byte" )
+	if( s == "Byte" || s == "byte" )
 		return vtByte;
-
-	if( s == "F2" )
+	if( s == "F2" || s == "f2" )
 		return vtF2;
-	if( s == "F4" )
+	if( s == "F4" || s == "f4" )
 		return vtF4;
-	if( s == "Unsigned" )
+	if( s == "Unsigned" || s == "unsigned" )
 		return vtUnsigned;
-	if( s == "Signed" )
+	if( s == "Signed" || s == "signed" )
 		return vtSigned;
 
 	return vtUnknown;

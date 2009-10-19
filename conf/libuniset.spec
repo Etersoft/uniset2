@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.97
-Release: eter29
+Release: eter30
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -178,6 +178,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Sun Oct 18 2009 Pavel Vainerman <pv@altlinux.ru> 0.97-eter29
+- new build
+
 * Fri Oct 09 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter28
 - minor optimization
 
