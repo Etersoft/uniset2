@@ -36,6 +36,7 @@
 
 #include <omniORB4/CORBA.h>
 #include "UniSetTypes_i.hh"
+#include "IOController_i.hh"
 #include "Mutex.h"
 // -----------------------------------------------------------------------------------------
 /*! Задержка в миллисекундах */
@@ -55,6 +56,9 @@ namespace UniSetTypes
 
 	UniversalIO::IOTypes getIOType( const std::string s );
 	std::ostream& operator<<( std::ostream& os, const UniversalIO::IOTypes t );
+
+	std::ostream& operator<<( std::ostream& os, const IOController_i::CalibrateInfo c );
+
 
 	/*! Команды для управления лампочками */
 	enum LampCommand

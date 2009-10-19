@@ -18,10 +18,7 @@ std::ostream& operator<<( std::ostream& os, IOControl::IOInfo& inf )
 		<< " default=" << inf.defval << " safety=" << inf.safety;
 	
 	if( inf.cal.minRaw!=inf.cal.maxRaw )
-		os << " rmin=" << inf.cal.minRaw
-			<< " rmax=" << inf.cal.maxRaw
-			<< " cmin=" << inf.cal.minCal
-			<< " cmax=" << inf.cal.maxCal;
+		os << inf.cal;
 	
 	return os;
 }

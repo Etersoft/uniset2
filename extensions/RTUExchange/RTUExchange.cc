@@ -1473,10 +1473,7 @@ std::ostream& operator<<( std::ostream& os, const RTUExchange::RSProperty& p )
 
 	if( p.stype == UniversalIO::AnalogInput || p.stype == UniversalIO::AnalogOutput )
 	{
-		os 	<< " rmin=" << p.cal.minRaw
-			<< " rmax=" << p.cal.maxRaw
-			<< " cmin=" << p.cal.maxCal
-			<< " cmax=" << p.cal.maxCal
+		os 	<< p.cal
 			<< " cdiagram=" << ( p.cdiagram ? "yes" : "no" );
 	}		
 	

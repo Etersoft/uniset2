@@ -1208,11 +1208,7 @@ int getCalibrate(string arg, UniversalInterface &ui)
 	si.id = sid;
 	si.node = conf->getLocalNode();
 	IOController_i::CalibrateInfo ci = ui.getCalibrateInfo(si);
-	cout << "rmin=" << ci.minRaw << " rmax=" << ci.maxRaw;
-	cout << " cmin=" << ci.minCal << " cmax=" << ci.maxCal;
-	cout << " sensibility=" << ci.sensibility;
-	cout << endl;
-
+	cout << ci << endl;
 	return 0;
 }
 

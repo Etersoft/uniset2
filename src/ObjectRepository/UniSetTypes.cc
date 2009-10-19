@@ -204,14 +204,14 @@ using namespace UniSetTypes;
 	// ------------------------------------------------------------------------------------------
 	UniversalIO::IOTypes UniSetTypes::getIOType( const std::string stype )
 	{
-		if( stype == "AI" )
-			return UniversalIO::AnalogInput;
-		if ( stype == "AO" )
-			return UniversalIO::AnalogOutput;
-		if ( stype == "DO" )
-			return UniversalIO::DigitalOutput;
-		if ( stype == "DI" )
+		if ( stype == "DI" || stype == "di" )
 			return UniversalIO::DigitalInput;
+		if( stype == "AI" || stype == "ai" )
+			return UniversalIO::AnalogInput;
+		if ( stype == "DO" || stype == "do" )
+			return UniversalIO::DigitalOutput;
+		if ( stype == "AO" || stype == "ao" )
+			return UniversalIO::AnalogOutput;
 
 		return 	UniversalIO::UnknownIOType;
 	}
@@ -231,5 +231,13 @@ using namespace UniSetTypes;
 			return os << "DO";
 
 		return os << "UnknownIOType";
+	}
+	// ------------------------------------------------------------------------------------------
+	std::ostream& UniSetTypes::operator<<( std::ostream& os, const IOController_i::CalibrateInfo c )
+	{
+		return os << " rmin=" << c.minRaw << " rmax=" << c.maxRaw
+					<< " cmin=" << c.minCal << " cmax=" << c.maxCal
+					<< " precision=" << c.precision
+					<< " sensibility=" << c.sensibility;
 	}
 	// ------------------------------------------------------------------------------------------
