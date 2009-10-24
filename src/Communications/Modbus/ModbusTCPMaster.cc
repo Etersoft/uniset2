@@ -54,6 +54,13 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 	if( !isConnection() )
 	{
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << "(ModbusTCPMaster): no connection.. reconnnect..." << endl;
+		reconnect();
+	}
+
+	if( !isConnection() )
+	{
 		dlog[Debug::WARN] << "(query): not connected to server..." << endl;
 		return erTimeOut;
 	}
@@ -95,7 +102,13 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 			return res;
 		
 		if( !tcp->isPending(ost::Socket::pendingOutput,timeout) )
+		{
+			if( dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << "(ModbusTCPMaster): no write pending.. reconnnect.." << endl;
+
+			reconnect();
 			return erTimeOut;
+		}
 
 		if( timeout != UniSetTimer::WaitUpTime )
 		{
@@ -174,21 +187,25 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::reconnect()
 {
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << "(ModbusTCPMaster): reconnect " << iaddr << endl;
+
 	if( tcp )
 	{
 		tcp->disconnect();
 		delete tcp;
 	}
 	
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "(ModbusTCPMaster): reconnect " << iaddr << endl;
 	tcp = new ost::TCPStream(iaddr.c_str());
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
 {
-	if( !tcp )
-	{
+	if( tcp )
+		disconnect();
+
+//	if( !tcp )
+//	{
 		ostringstream s;
 		s << addr << ":" << port;
 		
@@ -197,17 +214,17 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
 		
 		iaddr = s.str();
 		tcp = new ost::TCPStream(iaddr.c_str());
-	}
+//	}
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::disconnect()
 {
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << "(ModbusTCPMaster): disconnect." << endl;
+
 	if( !tcp )
 		return;
 	
-//	if( dlog.debugging(Debug::INFO) )
-//		dlog[Debug::INFO] << "(ModbusTCPMaster): disconnect." << endl;
-
 	tcp->disconnect();
 	delete tcp;
 	tcp = 0;

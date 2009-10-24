@@ -335,7 +335,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 					<< " IGNORE register..." << endl;
 		return false;
 	}
-	
+
 	switch( p->mbfunc )
 	{
 		case ModbusRTU::fnReadInputRegisters:
@@ -392,6 +392,8 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 					<< " IGNORE WRITE SINGLE REGISTER (0x06) q_count=" << p->q_count << " ..." << endl;
 				return false;
 			}
+			
+			cerr << "**** mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
 			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg+p->offset,p->mbval);
 		}
 		break;
@@ -415,6 +417,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 				return false;
 			}
 
+			cerr << "****(coil) mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
 			ModbusRTU::ForceSingleCoilRetMessage ret = mb->write05(dev->mbaddr,p->mbreg+p->offset,p->mbval);
 		}
 		break;
