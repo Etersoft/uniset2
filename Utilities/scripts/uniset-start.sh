@@ -1,4 +1,5 @@
 #!/bin/sh
+
 # общие функции
 . uniset-functions.sh
 

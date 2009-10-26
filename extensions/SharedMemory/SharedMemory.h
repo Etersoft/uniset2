@@ -31,16 +31,6 @@ class SharedMemory:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
-
-	    virtual void saveValue(const IOController_i::SensorInfo& si, CORBA::Long value,
-								UniversalIO::IOTypes type = UniversalIO::AnalogInput,
-								UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
-
-	    virtual void fastSaveValue(const IOController_i::SensorInfo& si, CORBA::Long value,
-								UniversalIO::IOTypes type = UniversalIO::AnalogInput,
-								UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
-
-
 		// функция определяет "готовность" SM к работе.
 		// должна использоваться другими процессами, для того, 
 		// чтобы понять, когда можно получать от SM данные.
@@ -107,6 +97,17 @@ class SharedMemory:
 		void timerInfo( UniSetTypes::TimerMessage *tm );
 		void askSensors( UniversalIO::UIOCommand cmd );
 		void sendEvent( UniSetTypes::SystemMessage& sm );
+
+
+		virtual void localSaveValue( AIOStateList::iterator& it, const IOController_i::SensorInfo& si,
+										CORBA::Long newvalue, UniSetTypes::ObjectId sup_id );
+		virtual void localSaveState( DIOStateList::iterator& it, const IOController_i::SensorInfo& si,
+										CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id );
+	  	virtual void localSetState( DIOStateList::iterator& it, const IOController_i::SensorInfo& si,
+										CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id );
+		virtual void localSetValue( AIOStateList::iterator& it, const IOController_i::SensorInfo& si,
+										CORBA::Long value, UniSetTypes::ObjectId sup_id );
+
 
 		// действия при завершении работы
 		virtual void sigterm( int signo );

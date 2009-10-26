@@ -1,4 +1,5 @@
 #!/bin/sh
+
 SIG=-TERM
 ARGS=$1
 
@@ -35,7 +36,7 @@ for i in $(tac $RANSERVICES | cut -d " " -f 2)
 do
 	TOKILL=$(basename $i)
 	echo -n Завершаем $TOKILL... 
-	if [ $(ps -x | grep $TOKILL | wc -l) = 0 ]
+	if [ $(ps ax | grep $TOKILL | wc -l) = 0 ]
 	then
 		echo " already stoppped [ OK ]"
 	else
