@@ -1,4 +1,4 @@
-/*!
+/* OBSOLETE DOC!!!
 	\page ControlProcessPage Как писать процесс управления
 
 	- \ref pgCP_secDeclareIDL

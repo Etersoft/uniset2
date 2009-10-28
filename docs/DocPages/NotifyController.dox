@@ -1,4 +1,4 @@
-/*!
+/* OBSOLETE DOC!!!
 	\page IONotifyControllerPage Как писать IONotifyController (процесс ввода/вывода)
 
 	- \ref pgIONC_secDeclareIDL

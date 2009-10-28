@@ -16,9 +16,11 @@
 
 
       \section sec_SM_Common Задачи решаемые объектом SharedMemory
+      
+	Класс SharedMemory расширяет набор задач класса IONotifyController.
+	Для ознакомления с базовыми функциями см. \ref page_IONotifyController
 
-	Задачи:
-	- \ref sec_SM_Save 
+	Задачи решаемые SM:
 	- \ref sec_SM_Conf
 	- \ref sec_SM_Event
 	- \ref sec_SM_HeartBeat
@@ -26,10 +28,8 @@
 	- \ref sec_SM_Pulsar
 	- \ref sec_SM_DBLog
 
-	\section sec_SM_Save Хранение
-	
 	\section sec_SM_Conf Определение списка регистрируемых датчиков
-	  SM позволяет определять список датчиков, которые SM будет предоставлять
+	  SM позволяет определять список датчиков, которые он будет предоставлять
 	  для работы другим объектам. Помимо этого можно задавать фильтрующие поля
 	  для списка "заказчиков"(consumer) по каждому датчику, а также
 	  поля для фильтрования списка зависимостей(depends) по датчикам.

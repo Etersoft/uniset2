@@ -260,4 +260,3 @@ const UniSetTypes::ObjectInfo ObjectsMap[MAX_NUMOBJECTS] =
 	\subsection OMAP_subDynamic_Create Создание динамической карты объектов
 	\subsection OMAP_subDynamic_Example Пример использования динамической карты объектов
 */
-

@@ -3,6 +3,6 @@
  \page ServicesPage Сервисы
 
 	 - \ref secDBServer
-	 - \ref secInfoServer	 
-	 - \ref secTimerService	 	 
+	 - \ref secInfoService
+	 - \ref secTimerService
 */
