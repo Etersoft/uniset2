@@ -1273,12 +1273,9 @@ void MBTCPMaster::help_print( int argc, const char* const* argv )
 	cout << "--mbm-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 	cout << "--mbm-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
 	cout << "--mbm-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
-	cout << "--mbm-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
-	cout << "--mbm-sm-ready-timeout - время на ожидание старта SM" << endl;
-	cout << " Настройки протокола RS: " << endl;
-	cout << "--mbm-dev devname  - файл устройства" << endl;
-	cout << "--mbm-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
-	cout << "--mbm-my-addr      - адрес текущего узла" << endl;
+	cout << "--mbm-initPause         - Задержка перед инициализацией (время на активизация процесса)" << endl;
+//	cout << "--mbm-sm-ready-timeout - время на ожидание старта SM" << endl;
+	cout << " Настройки протокола TCP: " << endl;
 	cout << "--mbm-recv-timeout - Таймаут на ожидание ответа." << endl;
 }
 // -----------------------------------------------------------------------------

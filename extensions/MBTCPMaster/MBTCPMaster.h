@@ -18,8 +18,91 @@
 #include "VTypes.h"
 // -----------------------------------------------------------------------------
 /*!
-	п═п╣п╟п╩п╦п╥п╟я├п╦я▐ Modbus TCP Master-п╟ п╢п╩я▐ я─п╟п╠п╬я┌я▀ я│п╬ п╪п╫п╬пЁп╦п╪п╦ ModbusRTU я┐я│я┌я─п╬п╧я│я┌п╡п╟п╪п╦,
-	п╫п╬ я┌п╬п╩я▄п╨п╬ я┤п╣я─п╣п╥ п·п■п≤п² ModbusTCP-я┬п╩я▌п╥.
+      \page page_ModbusTCP Реализация ModbusTCP master
+      
+      - \ref sec_MBTCP_Comm
+      - \ref sec_MBTCP_Conf
+      
+      \section sec_MBTCP_Comm Общее описание ModbusTCP master
+      Класс реализует процесс обмена (опрос/запись) с RTU-устройствами,
+      через TCP-шлюз. Список регистров с которыми работает процесс задаётся в конфигурационном файле
+      в секции <sensors>. см. \ref sec_MBTCP_Conf
+      
+      \b --xxx-name 
+      
+      IP-адрес шлюза задаётся параметром в конфигурационном файле папаметром \b gateway_iaddr или
+      параметом командной строки \b --xxx-gateway-iaddr.
+      
+      Порт задаётся в конфигурационном файле папаметром \b gateway_port или
+      параметом командной строки \b --xxx-gateway-port. По умолчанию используется порт \b 502.
+      
+      \b --xxx-recv-timeout или \b recv_timeout
+      
+      \b --xxx-all-timeout или \b all_timeout
+      
+      \b --xxx-no-query-optimization или \b no_query_optimization
+      
+      \b --xxx-poll-time или \b poll_time
+      
+      \b --xxx-init-time или \b init_time
+      
+      \b --xxx-force или \b foce
+      
+      \b --xxx-force-out или \b foce_out
+      
+      \b --xxx-reg-from-id или \b reg_from_id
+      
+      \b --xxx-heartbeat-id или \b heartbeat_id
+
+      \b --xxx-heartbeat-max или \b heartbeat_max
+      
+      \b --xxx-activate-timeout msec . По умолчанию 2000.
+      
+      \b --xxx-filter-field
+      \b --xxx-filter-value
+      
+      
+      
+      
+      
+      
+      
+      \section  sec_MBTCP_Conf Конфигурирование ModbusTCP master
+      Конфигурационные параметры задаются в секции <sensors> конфигурационного файла.
+      Пример:
+  \code      
+  <sensors name="Sensors">
+    ...
+    <item name="MySensor_S" textname="my sesnsor" iotype="DI" 
+	      tcp_mbtype="rtu" tcp_mbaddr="0x01" tcp_mbfunc="0x04" tcp_mbreg="0x02" my_tcp="1" 
+     />
+    ...
+  </sensors>
+\endcode      
+  К основным параметрам относятся следующие:
+   - \b tcp_mbtype    - [rtu] - пока едиственный разрешённый тип.
+   - \b tcp_mbaddr    - адрес RTU-устройства.
+   - \b tcp_mbreg     - запрашиваемый/записываемый регистр. 
+   - \b tcp_mbfunc    - [0x1,0x2,0x3,...] функция опроса/записи. Разрешённые см. ModbusRTU::SlaveFunctionCode.
+   
+   Помимо этого можно задавать следующие параметры:
+   - \b tcp_vtype     - тип переменной. см VTypes::VType.
+   - \b tcp_rawdata   - [1|0]  - игнорировать или нет параметры калибровки
+   - \b tcp_iotype    - [DI,DO,AI,AO] - переназначить тип датчика. По умолчанию используется поле iotype.
+   - \b tcp_nbit      - номер бита в слове. Используется для DI,DO в случае когда для опроса используется
+			 функция читающая слова (03
+   - \b tcp_nbyte     - [1|2] номер байта. Используется если tcp_vtype="byte".
+   - \b tcp_mboffset  - "сдвиг"(может быть отрицательным) при опросе/записи. 
+                        Т.е. фактически будет опрошен/записан регистр "mbreg+mboffset".
+
+   \warning Регистр должен быть уникальным. И может повторятся только если указан параметр \a nbit или \a nbyte.
+   
+
+*/
+// -----------------------------------------------------------------------------
+/*!
+	Реализация Modbus TCP Master для обмена с многими ModbusRTU устройствами
+	через один modbus tcp шлюз.
 */
 class MBTCPMaster:
 	public UniSetObject_LT

@@ -12,22 +12,23 @@
 // -----------------------------------------------------------------------------
 namespace VTypes
 {
+		/*! Тип переменной для Modbus[RTU|TCP] */
 		enum VType
 		{
 			vtUnknown,
-			vtF2,
-			vtF4,
-			vtByte,
-			vtUnsigned,
-			vtSigned
+			vtF2,		/*!< двойное слово (4 байта) */
+			vtF4,		/*!< 8-х байтовое слово */
+			vtByte,		/*!< байт */
+			vtUnsigned,	/*!< беззнаковое */
+			vtSigned	/*!< знаковое */
 		};
 
 		std::ostream& operator<<( std::ostream& os, const VType& vt );
 
 		// -------------------------------------------------------------------------
-		std::string type2str( VType t );		/*!< преоразование строки в тип */
+		std::string type2str( VType t );	/*!< преобразование строки в тип */
 		VType str2type( const std::string s );	/*!< преобразование названия в строку */
-		int wsize( VType t ); 					/*!< длина данных в словах */
+		int wsize( VType t ); 			/*!< длина данных в словах */
 	// -------------------------------------------------------------------------
 	class F2
 	{
