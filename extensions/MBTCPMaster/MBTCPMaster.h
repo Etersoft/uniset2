@@ -22,54 +22,98 @@
       
       - \ref sec_MBTCP_Comm
       - \ref sec_MBTCP_Conf
+      - \ref sec_MBTCP_ConfList
       
       \section sec_MBTCP_Comm Общее описание ModbusTCP master
       Класс реализует процесс обмена (опрос/запись) с RTU-устройствами,
       через TCP-шлюз. Список регистров с которыми работает процесс задаётся в конфигурационном файле
-      в секции <sensors>. см. \ref sec_MBTCP_Conf
-      
-      \b --xxx-name 
-      
-      IP-адрес шлюза задаётся параметром в конфигурационном файле папаметром \b gateway_iaddr или
-      параметом командной строки \b --xxx-gateway-iaddr.
-      
-      Порт задаётся в конфигурационном файле папаметром \b gateway_port или
-      параметом командной строки \b --xxx-gateway-port. По умолчанию используется порт \b 502.
-      
-      \b --xxx-recv-timeout или \b recv_timeout
-      
-      \b --xxx-all-timeout или \b all_timeout
-      
-      \b --xxx-no-query-optimization или \b no_query_optimization
-      
-      \b --xxx-poll-time или \b poll_time
-      
-      \b --xxx-init-time или \b init_time
-      
-      \b --xxx-force или \b foce
-      
-      \b --xxx-force-out или \b foce_out
-      
-      \b --xxx-reg-from-id или \b reg_from_id
-      
-      \b --xxx-heartbeat-id или \b heartbeat_id
-
-      \b --xxx-heartbeat-max или \b heartbeat_max
-      
-      \b --xxx-activate-timeout msec . По умолчанию 2000.
-      
-      \b --xxx-filter-field
-      \b --xxx-filter-value
-      
-      
-      
-      
-      
-      
+      в секции \b <sensors>. см. \ref sec_MBTCP_Conf
       
       \section  sec_MBTCP_Conf Конфигурирование ModbusTCP master
-      Конфигурационные параметры задаются в секции <sensors> конфигурационного файла.
+
+      Конфигурирование процесса осуществляется либо параметрами командной строки либо
+      через настроечную секцию. 
+
+      \par Секция с настройками
+      При своём старте, в конфигурационном файле ищётся секция с названием объекта,
+      в которой указываются настроечные параметры по умолчанию.
       Пример:
+      \code
+	<MBMaster1 name="MBMaster1" gateway_iaddr="127.0.0.1" gateway_port="30000" polltime="200">
+	     <DeviceList>
+	         <item addr="0x01" respondSensor="RTU1_Not_Respond_FS" timeout="2000" invert="1"/>
+		 <item addr="0x02" respondSensor="RTU2_Respond_FS" timeout="2000" invert="0"/>
+	     </DeviceList>
+	</MBMaster1>
+      \endcode
+      Секция <DeviceList> позволяет задать параметры обмена с конкретным RTU-устройством.
+      
+      - \b addr -  адрес устройства для которого, задаются параметры
+      - \b timeout msec - таймаут, для определения отсутствия связи
+      - \b invert - инвертировать логику. По умолчанию датчик выставляется в "1" при \b наличии связи.
+      - \b respondSensor - идентификатор датчика связи.
+
+      \par Параметры запуска
+	
+	При создании объекта в конструкторе передаётся префикс для определения параметров командной строки.
+      По умолчанию \b xxx="mbtcp".
+      Далее приведены основные параметры:
+
+      \b --xxx-name ID - идентификатор процесса.
+      
+      IP-адрес шлюза задаётся параметром в конфигурационном файле \b gateway_iaddr или
+      параметром командной строки \b --xxx-gateway-iaddr.
+      
+      Порт задаётся в конфигурационном файле параметром \b gateway_port или
+      параметром командной строки \b --xxx-gateway-port. По умолчанию используется порт \b 502.
+      
+      \b --xxx-recv-timeout или \b recv_timeout msec - таймаут на приём сообщений. По умолчанию 2000 мсек.
+      
+      \b --xxx-all-timeout или \b all_timeout msec  - таймаут на определение отсутсвия связи 
+                                                   (после этого идёт попытка реинициализировать соединение)
+      
+      \b --xxx-no-query-optimization или \b no_query_optimization   - [1|0] отключить оптимизацию запросов
+       
+       Оптимизация заключается в том, что регистры идущие подряд автоматически запрашиваются/записываются одним запросом.
+       В связи с чем, функция указанная в качестве \b mbfunc игнорируется и подменяется на работающую с многими регистрами.
+      
+      
+      \b --xxx-poll-time или \b poll_time msec - пауза между опросами. По умолчанию 100 мсек.
+      
+      \b --xxx-initPause или \b initPause msec - пауза перед началом работы, после активации. По умолчанию 50 мсек.
+
+      \b --xxx-force или \b foce [1|0] 
+       - 1 - перечитывать значения входов из SharedMemory на каждом цикле
+       - 0 - обновлять значения только по изменению
+      
+      \b --xxx-force-out или \b foce_out [1|0]
+       - 1 - перечитывать значения выходов из SharedMemory на каждом цикле
+       - 0 - обновлять значения только по изменению
+
+      \b --xxx-reg-from-id или \b reg_from_id [1|0] 
+       - 1 - в качестве регистра использовать идентификатор датчика
+       - 0 - регистр брать из поля tcp_mbreg
+      
+      \b --xxx-heartbeat-id или \b heartbeat_id ID - идентификатор датчика "сердцебиения" (см. \ref sec_SM_HeartBeat)
+
+      \b --xxx-heartbeat-max или \b heartbeat_max val - сохраняемое значение счётчика "сердцебиения".
+      
+      \b --xxx-activate-timeout msec . По умолчанию 2000. - время ожидания готовности SharedMemory к работе.
+      
+      \section  sec_MBTCP_ConfList Конфигурирование списка регистров для ModbusTCP master
+      Конфигурационные параметры задаются в секции <sensors> конфигурационного файла.
+      Список обрабатываемых регистров задаётся при помощи двух параметров командной строки
+      
+      \b --xxx-filter-field  - задаёт фильтрующее поле для датчиков
+      
+      \b --xxx-filter-value  - задаёт значение фильтрующего поля. Необязательный параметр.
+
+      Если параметры не заданы, будет произведена попытка загрузить все датчики, у которых
+      присутствуют необходимые настроечные параметры.
+      
+      \warning Если в результате список будет пустым, процесс завершает работу.
+
+      Пример конфигурационных параметров:
   \code      
   <sensors name="Sensors">
     ...
@@ -78,7 +122,8 @@
      />
     ...
   </sensors>
-\endcode      
+\endcode
+
   К основным параметрам относятся следующие:
    - \b tcp_mbtype    - [rtu] - пока едиственный разрешённый тип.
    - \b tcp_mbaddr    - адрес RTU-устройства.
@@ -96,7 +141,6 @@
                         Т.е. фактически будет опрошен/записан регистр "mbreg+mboffset".
 
    \warning Регистр должен быть уникальным. И может повторятся только если указан параметр \a nbit или \a nbyte.
-   
 
 */
 // -----------------------------------------------------------------------------
@@ -131,8 +175,8 @@ class MBTCPMaster:
 
 		enum DeviceType
 		{
-			dtUnknown,		/*!< неизвестный */
-			dtRTU			/*!< RTU (default) */
+			dtUnknown,	/*!< неизвестный */
+			dtRTU		/*!< RTU (default) */
 		};
 
 		static DeviceType getDeviceType( const std::string dtype );
@@ -145,10 +189,10 @@ class MBTCPMaster:
 			public IOBase
 		{
 			// only for RTU
-			short nbit;				/*!< bit number) */
+			short nbit;		/*!< bit number) */
 			VTypes::VType vType;	/*!< type of value */
-			short rnum;				/*!< count of registers */
-			short nbyte;			/*!< byte number (1-2) */
+			short rnum;		/*!< count of registers */
+			short nbyte;		/*!< byte number (1-2) */
 			
 			RSProperty():
 				nbit(-1),vType(VTypes::vtUnknown),
@@ -173,7 +217,7 @@ class MBTCPMaster:
 			{}
 
 			ModbusRTU::ModbusData mbval;
-			ModbusRTU::ModbusData mbreg;			/*!< регистр */
+			ModbusRTU::ModbusData mbreg;		/*!< регистр */
 			ModbusRTU::SlaveFunctionCode mbfunc;	/*!< функция для чтения/записи */
 			PList slst;
 
@@ -182,7 +226,7 @@ class MBTCPMaster:
 			int offset;
 
 			// optimization
-			int q_num;		/*! number in query */
+			int q_num;	/*! number in query */
 			int q_count;	/*! count registers for query */
 			
 			RegMap::iterator rit;

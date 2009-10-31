@@ -56,9 +56,9 @@ no_extimer(false)
 		throw UniSetTypes::SystemError(myname+"(MBMaster): Unknown inet port...(Use: " + tmp +")" );
 
 
-	recv_timeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recv_timeout"), 50);
+	recv_timeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recv_timeout"), 2000);
 
-	int alltout = conf->getArgPInt("--" + prefix + "-all-timeout",it.getProp("all_timeout"), 2000);
+	int alltout = conf->getArgPInt("--" + prefix + "-all-timeout",it.getProp("all_timeout"), 5000);
 	ptAllNotRespond.setTiming(alltout);
 
 	noQueryOptimization = conf->getArgInt("--" + prefix + "-no-query-optimization",it.getProp("no_query_optimization"));
@@ -68,7 +68,7 @@ no_extimer(false)
 
 	polltime = conf->getArgPInt("--" + prefix + "-polltime",it.getProp("polltime"), 100);
 
-	initPause = conf->getArgPInt("--" + prefix + "-initPause",it.getProp("initPause"), 3000);
+	initPause = conf->getArgPInt("--" + prefix + "-initPause",it.getProp("initPause"), 50);
 
 	force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
 	force_out = conf->getArgInt("--" + prefix + "-force-out",it.getProp("force_out"));

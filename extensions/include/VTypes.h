@@ -16,11 +16,11 @@ namespace VTypes
 		enum VType
 		{
 			vtUnknown,
-			vtF2,		/*!< двойное слово (4 байта) */
-			vtF4,		/*!< 8-х байтовое слово */
-			vtByte,		/*!< байт */
-			vtUnsigned,	/*!< беззнаковое */
-			vtSigned	/*!< знаковое */
+			vtF2,		/*!< двойное слово (4 байта). В виде строки задаётся как \b "F2". */
+			vtF4,		/*!< 8-х байтовое слово. В виде строки задаётся как \b "F4". */
+			vtByte,		/*!< байт.  В виде строки задаётся как \b "byte". */
+			vtUnsigned,	/*!< беззнаковое.  В виде строки задаётся как \b "unsigned". */
+			vtSigned	/*!< знаковое. В виде строки задаётся как \b "signed". */
 		};
 
 		std::ostream& operator<<( std::ostream& os, const VType& vt );
