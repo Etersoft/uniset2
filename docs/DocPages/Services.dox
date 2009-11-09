@@ -5,4 +5,9 @@
 	 - \ref secDBServer
 	 - \ref secInfoService
 	 - \ref secTimerService
+
+
+    \section secDBServer Сервер БД
+
+	\sa \ref page_DBServer_MySQL
 */

@@ -22,6 +22,21 @@
 #include "IOBase.h" 
 #include "SharedMemory.h" 
 // -----------------------------------------------------------------------------
+/*!
+      \page page_IOControl (IOControl) Реализация процесса ввода/вывода
+      
+      - \ref sec_IOC_Comm
+      - \ref sec_IOC_Conf
+      - \ref sec_IOC_ConfList
+
+      \section sec_IOC_Comm Общее описание процесса в/в
+
+      \section sec_IOC_Conf Конфигурирование процесса в/в
+      
+      \section sec_IOC_ConfList Список датчиков для процесса в/в
+
+*/
+// -----------------------------------------------------------------------------
 #warning Сделать обработку сигналов завершения....
 
 class CardList:
