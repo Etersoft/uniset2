@@ -16,3 +16,4 @@ include $(top_builddir)/conf/setting.mk
 # install
 devel_include_HEADERS = *.h
 devel_includedir = $(includedir)/@PACKAGE@/mysql
+

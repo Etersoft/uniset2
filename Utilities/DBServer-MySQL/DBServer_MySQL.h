@@ -155,7 +155,7 @@ class DBServer_MySQL:
 		virtual void parse( UniSetTypes::DBMessage* dbmsg );
 		virtual void parse( UniSetTypes::InfoMessage* imsg );
 		virtual void parse( UniSetTypes::AlarmMessage* amsg );
-		virtual void parse( UniSetTypes::ConfirmMessage* cmsg );		
+		virtual void parse( UniSetTypes::ConfirmMessage* cmsg );
 
 		bool writeToBase( const string& query );
 

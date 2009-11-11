@@ -3,9 +3,9 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libUniSetRTU
-Description: Support library for UniSetRTUExchange
+Name: libUniSetSMDBServer
+Description: Support library for UniSetSMDBServer
 Requires: libUniSetExtensions
 Version: @VERSION@
-Libs: -L${libdir} -lUniSetRTU
+Libs: -L${libdir} -lUniSetSMDBServer
 Cflags: -I${includedir}/uniset
