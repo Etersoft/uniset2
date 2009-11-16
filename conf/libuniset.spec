@@ -182,6 +182,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Mon Nov 16 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter35
+- fixed bug in uniset-mysql-dbserver
+
 * Thu Nov 12 2009 Pavel Vainerman <pv@altlinux.ru> 0.97-eter34
 - new build
 
