@@ -1,13 +1,13 @@
 -- MySQL dump 9.10
 --
--- Host: localhost    Database: Gidrograph
+-- Host: localhost    Database: TESTBASE
 -- ------------------------------------------------------
 -- Server version	4.0.18-log
 
 --  Создание пользователя для dbadmin-а
-GRANT SELECT,INSERT,UPDATE,DELETE,INDEX,LOCK TABLES,CREATE,DROP ON G19910B.* TO dbadmin@localhost IDENTIFIED BY 'dbadmin';
+GRANT SELECT,INSERT,UPDATE,DELETE,INDEX,LOCK TABLES,CREATE,DROP ON TESTBASE.* TO dbadmin@localhost IDENTIFIED BY 'dbadmin';
 -- Создание пользователя для просмотра
-GRANT SELECT ON G19910B.* TO dbreader@"%" IDENTIFIED BY 'dbreader';
+GRANT SELECT ON TESTBASE.* TO dbreader@"%" IDENTIFIED BY 'dbreader';
 
 --
 -- Table structure for table `AnalogSensors`
@@ -143,5 +143,3 @@ CREATE TABLE SensorsThreshold (
   alarm int(8) NOT NULL default '0',
   warning int(8) NOT NULL default '0'
 ) TYPE=MyISAM;
-
-
