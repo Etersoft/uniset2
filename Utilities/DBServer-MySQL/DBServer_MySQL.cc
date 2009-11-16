@@ -332,8 +332,11 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 		
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::init()
+void DBServer_MySQL::init_dbserver()
 {
+	DBServer::init_dbserver();
+	unideb[Debug::INFO] << myname << "(init): ..." << endl;
+
 	if( connect_ok )
 	{
 		initDBTableMap(tblMap);	
@@ -454,7 +457,7 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
 				unideb[Debug::WARN] << myname << "(timerInfo): нет связи с БД" << endl;
 			}
 			else
-				init();
+				init_dbserver();
 		}
 		break;
 

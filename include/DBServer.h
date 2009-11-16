@@ -66,10 +66,10 @@ class DBServer:
 		virtual void parse( UniSetTypes::DBMessage* dbmsg ){};
 		virtual void parse( UniSetTypes::InfoMessage* imsg ){};
 		virtual void parse( UniSetTypes::AlarmMessage* amsg ){};
-		virtual void parse( UniSetTypes::ConfirmMessage* cmsg ){};		
+		virtual void parse( UniSetTypes::ConfirmMessage* cmsg ){};
 
 		virtual bool activateObject();
-		virtual void init(){};
+		virtual void init_dbserver(){};
 		
 	private:
 };

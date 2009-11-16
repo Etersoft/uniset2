@@ -1,7 +1,7 @@
 // $Id: main.cc,v 1.8 2008/02/10 03:21:41 vpashka Exp $
 // --------------------------------------------------------------------------
 #include "Configuration.h"
-#include "DBServer.h"
+#include "DBServer_MySQL.h"
 #include "ObjectsActivator.h"
 #include "Debug.h"
 // --------------------------------------------------------------------------
@@ -10,7 +10,7 @@ using namespace std;
 // --------------------------------------------------------------------------
 static void short_usage()
 {
-	cout << "Usage: uniset-dbserver [--name ObjectId] [--confile configure.xml]\n";
+	cout << "Usage: uniset-mysql-dbserver [--name ObjectId] [--confile configure.xml]\n";
 }
 // --------------------------------------------------------------------------
 int main(int argc, char** argv)
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 			return 1;
 		}
 
-		DBServer dbs(ID);
+		DBServer_MySQL dbs(ID);
 		ObjectsActivator act;
 		act.addObject(static_cast<class UniSetObject*>(&dbs));
 		act.run(false);

@@ -158,8 +158,7 @@ class DBServer_MySQL:
 		virtual void parse( UniSetTypes::ConfirmMessage* cmsg );
 
 		bool writeToBase( const string& query );
-
-		virtual void init();
+		virtual void init_dbserver();
 		void createTables( DBInterface* db );
 		
 		inline const char* tblName(int key)

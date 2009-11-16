@@ -103,7 +103,7 @@
 	textname 	- текстовое имя датчика
 -->
 	<nodes port="2809">
-		<item name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
+		<item name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1" infserver="InfoServer" dbserver="DBServer"/>
 		<item name="Node2"			alias="" textname="Локальный узел"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
 	</nodes>
 

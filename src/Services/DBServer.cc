@@ -128,8 +128,8 @@ void DBServer::processingMessage( UniSetTypes::VoidMessage *msg )
 //--------------------------------------------------------------------------------------------
 bool DBServer::activateObject()
 {
-	UniSetObject::activateObject();
-	init();
+	UniSetObject_LT::activateObject();
+	init_dbserver();
 	return true;
 }
 //--------------------------------------------------------------------------------------------
