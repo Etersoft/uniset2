@@ -144,8 +144,8 @@ stCountOfQueueFull(0)
 	myid = ui.getIdByName(myname);
 	if( myid == DefaultObjectId )
 	{
-		unideb[Debug::WARN] << "name: НЕ НАЙДЕН ИДЕНТИФИКАТОР В ObjectsMap!!!" << endl;
-		throw Exception(name+": НЕ НАЙДЕН ИДЕНТИФИКАТОР В ObjectsMap!!!");
+		unideb[Debug::WARN] << "name: my ID not found!" << endl;
+		throw Exception(name+": my ID not found!");
 	}
 	SizeOfMessageQueue = conf->getPIntField("SizeOfMessageQueue", 1000);
 	
@@ -177,17 +177,17 @@ UniSetObject::~UniSetObject()
 bool UniSetObject::init( ObjectsManager* om )
 {
 	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname << ": инициализация ..." << endl;
+	  unideb[Debug::INFO] << myname << ": init..." << endl;
 	this->mymngr = om;
 	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname << ": ok..." << endl;
+		unideb[Debug::INFO] << myname << ": init ok..." << endl;
 	return true;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::setID( UniSetTypes::ObjectId id )
 {
 	if( myid!=UniSetTypes::DefaultObjectId )
-		throw ObjectNameAlready("ObjectId уже задан (setID)");
+		throw ObjectNameAlready("ObjectId already set(setID)");
 
 	string myfullname = ui.getNameById(id);
 	myname = ORepHelpers::getShortName(myfullname.c_str()); 
@@ -211,7 +211,8 @@ bool UniSetObject::receiveMessage( VoidMessage& vm )
 			// контроль переполнения
 			if( queueMsg.size() > SizeOfMessageQueue ) 
 			{
-				unideb[Debug::CRIT] << myname <<": переполнение очереди сообщений!" << endl << flush;
+				if( unideb.debugging(Debug::CRIT) )
+				  unideb[Debug::CRIT] << myname <<"(receiveMessages): messages queue overflow!" << endl << flush;
 				cleanMsgQueue(queueMsg);
 				// обновляем статистику по переполнениям
 				stCountOfQueueFull++;
@@ -220,6 +221,9 @@ bool UniSetObject::receiveMessage( VoidMessage& vm )
 
 			if( !queueMsg.empty() )
 			{
+//			      if( unideb.debugging(Debug::CRIT) )
+//				unideb[Debug::CRIT] << myname <<"(receiveMessages): get new msg.." << endl << flush;
+
 				vm = queueMsg.top(); // получили сообщение
 //				Проверка на последовательное вынимание			
 //				cout << myname << ": receive message....tm=" << vm.time << " msec=" << vm.time_msec << "\tprior="<< vm.priority << endl;
@@ -327,7 +331,7 @@ bool UniSetObject::waitMessage(VoidMessage& vm, timeout_t timeMS)
 void UniSetObject::registered()
 {
 	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname << ": регистрация ..." << endl;
+		unideb[Debug::INFO] << myname << ": registration..." << endl;
 
 	if( myid == UniSetTypes::DefaultObjectId )
 	{
@@ -338,14 +342,14 @@ void UniSetObject::registered()
 
 	if( !mymngr )
 	{
-		unideb[Debug::WARN] << myname << "(registered): не задан менеджер" << endl;
-		string err(myname+": не задан менеджер");
+		unideb[Debug::WARN] << myname << "(registered): unknown my manager" << endl;
+		string err(myname+": unknown my manager");
 		throw ORepFailed(err.c_str());
 	}
 
 	if( !oref )
 	{
-		unideb[Debug::CRIT] << myname << "(registered): нулевая ссылка oref!!!..." << endl;
+		unideb[Debug::CRIT] << myname << "(registered): oref is NULL!..." << endl;
 		return;
 	}
 
@@ -371,7 +375,7 @@ void UniSetObject::registered()
 	объект станет недоступен другим, а знать об этом не будет!!!
 	
 */
-				unideb[Debug::CRIT] << myname << "(registered): ЗАМЕНЯЮ СУЩЕСТВУЮЩИЙ ОБЪЕКТ (ObjectNameAlready)" << endl;
+				unideb[Debug::CRIT] << myname << "(registered): replace object (ObjectNameAlready)" << endl;
 				reg = true;
 				unregister();
 //				unideb[Debug::CRIT] << myname << "(registered): не смог зарегестрироваться в репозитории объектов (ObjectNameAlready)" << endl;
@@ -381,13 +385,13 @@ void UniSetObject::registered()
 	}
 	catch( ORepFailed )
 	{
-		string err(myname+": не смог зарегестрироваться в репозитории объектов");
+		string err(myname+": don`t registration in object reposotory");
 		throw ORepFailed(err.c_str());
 	}
 	catch(Exception& ex)
 	{
 		unideb[Debug::WARN] << myname << "(registered):  " << ex << endl;
-		string err(myname+": не смог зарегестрироваться в репозитории объектов");
+		string err(myname+": don`t registration in object reposotory");
 		throw ORepFailed(err.c_str());
 	}
 	reg = true;
@@ -408,7 +412,7 @@ void UniSetObject::unregister()
 
 	if( !oref )
 	{
-		unideb[Debug::WARN] << myname << "(unregister): нулевая ссылка oref!!!..." << endl;
+		unideb[Debug::WARN] << myname << "(unregister): oref NULL!" << endl;
 		reg = false;
 		return;
 	}
@@ -426,7 +430,7 @@ void UniSetObject::unregister()
 	}
 	catch(...)
 	{
-		unideb[Debug::WARN] << myname << ": не смог разрегестрироваться в репозитории объектов" << endl;
+		unideb[Debug::WARN] << myname << ": don`t registration in object repository" << endl;
 	}
 	
 	reg = false;
@@ -460,8 +464,8 @@ void UniSetObject::push(const TransportMessage& tm)
 		// контроль переполнения
 		if( !queueMsg.empty() && queueMsg.size()>SizeOfMessageQueue )
 		{
-			
-			unideb[Debug::CRIT] << myname <<": переполнение очереди сообщений!\n";
+			if( unideb.debugging(Debug::CRIT) )
+			  unideb[Debug::CRIT] << myname <<"(push): message queue overflow!" << endl << flush;
 			cleanMsgQueue(queueMsg);
 
 			// обновляем статистику
@@ -469,7 +473,11 @@ void UniSetObject::push(const TransportMessage& tm)
 			stMaxQueueMessages=0;	
 		}
 
-		queueMsg.push(VoidMessage(tm));
+//		if( unideb.debugging(Debug::CRIT) )
+//		  unideb[Debug::CRIT] << myname <<"(push): push new msg.." << endl << flush;
+
+		VoidMessage v(tm);
+		queueMsg.push(v);
 		
 		// максимальное число ( для статистики )
 		if( queueMsg.size() > stMaxQueueMessages )
@@ -482,13 +490,13 @@ void UniSetObject::push(const TransportMessage& tm)
 // ------------------------------------------------------------------------------------------
 void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 {
-	unideb[Debug::CRIT] << myname << "(cleanMsgQueue): ОЧИСТКА ОЧЕРЕДИ СООБЩЕНИЙ...\n";
+ 	unideb[Debug::CRIT] << myname << "(cleanMsgQueue): msg queue cleaning..." << endl << flush;
 
 	// проходим по всем известным нам типам(базовым)
 	// ищем все совпадающие сообщения и оставляем только последние...
-	unideb[Debug::CRIT] << myname << "(cleanMsgQueue): ТЕКУЩИЙ размер очереди сообщений: " << q.size() << endl;
+	unideb[Debug::CRIT] << myname << "(cleanMsgQueue): current size of queue: " << q.size() << endl << flush;
 
-	VoidMessage vm;
+	VoidMessage m;
 	map<UniSetTypes::KeyType,VoidMessage> smap;
 	map<int,VoidMessage> tmap;
 	map<int,VoidMessage> sysmap;
@@ -504,64 +512,64 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 		int max = q.size();
 		for( int i=0; i<=max; i++ )
 		{
-			vm = q.top();
+			m = q.top();
 			q.pop();
 			
-			switch( vm.type )
+			switch( m.type )
 			{
 				case Message::SensorInfo:
 				{
-					SensorMessage sm(&vm);
+					SensorMessage sm(&m);
 					UniSetTypes::KeyType k(key(sm.id,sm.node));
 					// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
 					// то достаточно просто сохранять последнее сообщение для одинаковых Key
-					smap[k] = vm;
+					smap[k] = m;
 					break;
 				}
 
 				case Message::Timer:
 				{
-					TimerMessage tm(&vm);
+					TimerMessage tm(&m);
 					// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
 					// то достаточно просто сохранять последнее сообщение для одинаковых TimerId
-					tmap[tm.id] = vm;
+					tmap[tm.id] = m;
 					break;
 				}		
 
 				case Message::SysCommand:
 				{
-					SystemMessage sm(&vm);
-					sysmap[sm.command] = vm;
+					SystemMessage sm(&m);
+					sysmap[sm.command] = m;
 				}
 				break;
 
 				case Message::Alarm:
 				{
-					AlarmMessage am(&vm);
+					AlarmMessage am(&m);
 					MsgInfo mi(am);
 					// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
 					// то достаточно просто сохранять последнее сообщение для одинаковых MsgInfo
-					amap[mi] = vm;
+					amap[mi] = m;
 				}
 				break;
 
 				case Message::Info:
 				{
-					InfoMessage im(&vm);
+					InfoMessage im(&m);
 					MsgInfo mi(im);
 					// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
 					// то достаточно просто сохранять последнее сообщение для одинаковых MsgInfo
-					imap[mi] = vm;
+					imap[mi] = m;
 				}
 				break;
 				
 				case Message::Confirm:
 				{
-					ConfirmMessage cm(&vm);
+					ConfirmMessage cm(&m);
 					MsgInfo mi(cm);
 					// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
 					// то достаточно просто сохранять последнее сообщение для одинаковых MsgInfo
-					cmap[mi] = vm;
+					cmap[mi] = m;
 				}
 				break;
 
@@ -571,20 +579,23 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 				
 				default:
 					// сразу пизаем
-					lstOther.push_front(vm);
+					lstOther.push_front(m);
 				break;
 
 			}
 		}	
 
-		unideb[Debug::CRIT] << myname << "(cleanMsgQueue): осталось по SensorMessage: " << smap.size() << endl;
-		unideb[Debug::CRIT] << myname << "(cleanMsgQueue): осталось по TimerMessage: " << tmap.size() << endl;
-		unideb[Debug::CRIT] << myname << "(cleanMsgQueue): осталось по SystemMessage: " << sysmap.size() << endl;
-		unideb[Debug::CRIT] << myname << "(cleanMsgQueue): осталось по AlarmMessage: " << amap.size() << endl;
-		unideb[Debug::CRIT] << myname << "(cleanMsgQueue): осталось по InfoMessage: " << imap.size() << endl;
-		unideb[Debug::CRIT] << myname << "(cleanMsgQueue): осталось по ConfirmMessage: " << cmap.size() << endl;
-		unideb[Debug::CRIT] << myname << "(cleanMsgQueue): осталось по Остальным: " << lstOther.size() << endl;
-
+		if( unideb.debugging(Debug::CRIT) )
+		{
+		  unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean SensorMessage: " << smap.size() << endl;
+		  unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean TimerMessage: " << tmap.size() << endl;
+		  unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean SystemMessage: " << sysmap.size() << endl;
+		  unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean AlarmMessage: " << amap.size() << endl;
+		  unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean InfoMessage: " << imap.size() << endl;
+		  unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean ConfirmMessage: " << cmap.size() << endl;
+		  unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean other: " << lstOther.size() << endl;
+		}
+		
 		// теперь ОСТАВШИЕСЯ запихиваем обратно в очередь...
 
 		map<UniSetTypes::KeyType,VoidMessage>::iterator it=smap.begin();
@@ -628,21 +639,32 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 		{
 			q.push(*it6);
 		}
-		
-		unideb[Debug::CRIT] << myname 
-					<< "(cleanMsgQueue): РЕЗУЛЬТАТ размер очереди сообщений: " 
-					<< countMessages()
-					<< " < " << getMaxSizeOfMessageQueue() << endl;
+
+		if( unideb.debugging(Debug::CRIT) )
+		{
+		    unideb[Debug::CRIT] << myname 
+			<< "(cleanMsgQueue): result size of queue: " 
+			<< q.size()
+			<< " < " << getMaxSizeOfMessageQueue() << endl;
+		}
 		
 		if( q.size() >= getMaxSizeOfMessageQueue() )
 		{
-			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): НЕ ПОМОГЛО!!! Сообщений осталось больше > " << q.size() << endl;
-			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): Просто удаляем " << getMaxCountRemoveOfMessage() << " старых сообщений\n";
-			for( unsigned int i=0; i<getMaxCountRemoveOfMessage() && !q.empty(); i++ )
+			if( unideb.debugging(Debug::CRIT) )
+			{
+			  unideb[Debug::CRIT] << myname << "(cleanMsgQueue): clean failed. size > " << q.size() << endl;
+			  unideb[Debug::CRIT] << myname << "(cleanMsgQueue): remove " << getMaxCountRemoveOfMessage() << " old messages " << endl;
+			}
+			for( unsigned int i=0; i<getMaxCountRemoveOfMessage(); i++ )
 			{
 				q.top(); 
 				q.pop(); 
+				if( q.empty() )
+				    break;
 			}
+			
+			if( unideb.debugging(Debug::CRIT) )
+			  unideb[Debug::CRIT] << myname << "(cleanMsgQueue): result size=" << q.size() << endl;
 		}
 }
 // ------------------------------------------------------------------------------------------
@@ -671,7 +693,7 @@ bool UniSetObject::disactivate()
 
 	// Очищаем очередь
 	{ // lock
-		uniset_mutex_lock mlk(qmutex, 200);
+		uniset_mutex_lock mlk(qmutex, 400);
 		while( !queueMsg.empty() )
 			queueMsg.pop(); 
 	}
@@ -696,7 +718,7 @@ bool UniSetObject::disactivate()
 				unideb[Debug::INFO] << "ok..." << endl;
 			return true;
 		}
-		unideb[Debug::WARN] << "manager уже уничтожен..." << endl;
+		unideb[Debug::WARN] << "manager already destroyed.." << endl;
 	}
 	catch(CORBA::TRANSIENT)
 	{

@@ -131,7 +131,7 @@ bool UniversalInterface::getState(ObjectId name, ObjectId node)
 	throw(IO_THROW_EXCEPTIONS)
 {
 	if ( name == DefaultObjectId )
-		throw ORepFailed("UI(getState): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(getState): error: getState for id=UniSetTypes::DefaultObjectId ?!");
 
 	try
 	{
@@ -223,7 +223,7 @@ long UniversalInterface::getValue(ObjectId name, ObjectId node)
 	throw(IO_THROW_EXCEPTIONS)
 {
 	if ( name == DefaultObjectId )
-		throw ORepFailed("UI(getValue): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(getValue): error id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -306,7 +306,7 @@ void UniversalInterface::setState(ObjectId name, bool state, ObjectId node)
 	throw(IO_THROW_EXCEPTIONS)
 {
 	if ( name == DefaultObjectId )
-		throw ORepFailed("UI(setState): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(setState): error id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -2279,7 +2279,10 @@ ObjectPtr UniversalInterface::CacheOfResolve::resolve( ObjectId id, ObjectId nod
 	// то мы делаем _duplicate....
 	
 	if( !CORBA::is_nil(it->second.ptr) )
-		return it->second.ptr.out(); // CORBA::Object::_duplicate(it->second.ptr);
+//	    return it->second.ptr;
+	    return it->second.ptr._retn();
+//	    return CORBA::Object::_duplicate(it->second.ptr);
+//		return it->second.ptr.out(); // CORBA::Object::_duplicate(it->second.ptr);
 
 	throw NameNotFound();		
 }
@@ -2289,11 +2292,11 @@ void UniversalInterface::CacheOfResolve::cache( ObjectId id, ObjectId node, Obje
 //#warning Временно отключён кэш
 //	return;
 
-	if( mcache.size() > MaxSize )
-	{
-		if( !clean() )
-			 unideb[Debug::CRIT] << "UI(resolve cache): не удалось уменьшить размер кэш-а!!!!"<< endl;
-	}
+//	if( mcache.size() > MaxSize )
+//	{
+//		if( !clean() )
+//			 unideb[Debug::CRIT] << "UI(resolve cache): не удалось уменьшить размер кэш-а!!!!"<< endl;
+//	}
 
 	UniSetTypes::KeyType k(key(id,node));
 
@@ -2309,8 +2312,12 @@ void UniversalInterface::CacheOfResolve::cache( ObjectId id, ObjectId node, Obje
 // ------------------------------------------------------------------------------------------------------------
 bool UniversalInterface::CacheOfResolve::clean()
 {
+//    return true;
+    
+    if( unideb.debugging(Debug::INFO) )
 	unideb[Debug::INFO] << "UI: clean cache...."<< endl;
-	time_t tm = time(NULL)-CleanTime*60;
+
+      time_t tm = time(NULL)-CleanTime*60;
 //	remove_if(mcache.begin(), mcache.end(),OldRef_eq(tm));
 	for( CacheMap::iterator it=mcache.begin(); it!=mcache.end();)
 	{
@@ -2329,8 +2336,8 @@ bool UniversalInterface::CacheOfResolve::clean()
 
 void UniversalInterface::CacheOfResolve::erase( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
 {
-//#warning Временно отключён кэш
-//	return;
+#warning Временно отключён кэш
+	return;
 
 	CacheMap::iterator it = mcache.find( key(id,node) );
 	if( it != mcache.end() )
