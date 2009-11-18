@@ -610,19 +610,19 @@ void IONotifyController::send(ConsumerList& lst, UniSetTypes::SensorMessage& sm)
 			catch(Exception& ex)
 			{
 			   	unideb[Debug::WARN] << myname << "(IONotifyController::send): " << ex
-						<< " для " << conf->oind->getNameById(li->id, li->node) << endl;
+						<< " for " << conf->oind->getNameById(li->id, li->node) << endl;
 			}
 		    catch( CORBA::SystemException& ex )
 		    {
 		    	unideb[Debug::WARN] << myname << "(IONotifyController::send): " 
-					<< conf->oind->getNameById(li->id, li->node) << " недоступен!!(CORBA::SystemException): "
+					<< conf->oind->getNameById(li->id, li->node) << " (CORBA::SystemException): "
 					<< ex.NP_minorString() << endl;
 	    	}
 			catch(...)
 			{
 				unideb[Debug::CRIT] << myname << "(IONotifyController::send): "
 					<< conf->oind->getNameById(li->id, li->node) 
-					<< " недоступен!!(...)" << endl;
+					<< " catch..." << endl;
 			}
 			
 			if( maxAttemtps>0 &&  (--li->attempt <= 0) )
@@ -801,11 +801,11 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 						}
 						catch(Exception& ex)
 						{
-							unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+							unideb[Debug::WARN] << myname << "(askThreshold): dump: " << ex << endl;
 						}
 						catch(...)
 						{	
-				    		unideb[Debug::WARN] << myname << " не смогли сделать dump" << endl;
+				    		unideb[Debug::WARN] << myname << "(askThreshold): dump catch..." << endl;
 						}
 					}
 				}
@@ -874,11 +874,11 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 						}
 						catch(Exception& ex)
 						{
-							unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+							unideb[Debug::WARN] << myname << "(askThreshold): dump: " << ex << endl;
 						}
 						catch(...)
 						{	
-				    		unideb[Debug::WARN] << myname << " не смогли сделать dump" << endl;
+				    		unideb[Debug::WARN] << myname << "(askThreshold): dump catch..." << endl;
 						}
 					}
 				}
