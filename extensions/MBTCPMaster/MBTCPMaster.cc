@@ -192,7 +192,7 @@ void MBTCPMaster::waitSMReady()
 	if( !shm->waitSMready(ready_timeout, 50) )
 	{
 		ostringstream err;
-		err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
+		err << myname << "(waitSMReady): failed waiting SharedMemory " << ready_timeout << " msec";
 		dlog[Debug::CRIT] << err.str() << endl;
 		throw SystemError(err.str());
 	}
@@ -254,6 +254,7 @@ void MBTCPMaster::poll()
 			for( MBTCPMaster::RTUDeviceMap::iterator it=rmap.begin(); it!=rmap.end(); ++it )
 				it->second->resp_real = false;
 		}
+		cerr << "*********** mb=NULL " << endl;
 		updateSM();
 		return;
 	}
@@ -393,7 +394,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 				return false;
 			}
 			
-			cerr << "**** mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
+//			cerr << "**** mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
 			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg+p->offset,p->mbval);
 		}
 		break;
@@ -417,7 +418,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 				return false;
 			}
 
-			cerr << "****(coil) mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
+//			cerr << "****(coil) mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
 			ModbusRTU::ForceSingleCoilRetMessage ret = mb->write05(dev->mbaddr,p->mbreg+p->offset,p->mbval);
 		}
 		break;
@@ -478,13 +479,15 @@ void MBTCPMaster::updateSM()
 	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
-/*		
-		cout << "check respond addr=" << ModbusRTU::addr2str(d->mbaddr) 
-			<< " respond=" << d->resp_id 
-			<< " real=" << d->resp_real
-			<< " state=" << d->resp_state
-			<< endl;
-*/
+		
+		if( dlog.debugging(Debug::LEVEL4) )
+		{
+			dlog[Debug::LEVEL4] << "check respond addr=" << ModbusRTU::addr2str(d->mbaddr) 
+				<< " respond=" << d->resp_id 
+				<< " real=" << d->resp_real
+				<< " state=" << d->resp_state
+				<< endl;
+		}
 		if( d->resp_real )
 			allNotRespond = false;
 				

@@ -17,8 +17,8 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	activated(false),
 	workready(false),
 	dblogging(false),
-	msecPulsar(0),
-	iotypePulsar(UniversalIO::DigitalInput)
+	iotypePulsar(UniversalIO::DigitalInput),
+	msecPulsar(0)
 {
 //	cout << "$Id: SharedMemory.cc,v 1.4 2009/01/24 11:20:19 vpashka Exp $" << endl;
 
@@ -168,6 +168,25 @@ void SharedMemory::processingMessage( UniSetTypes::VoidMessage *msg )
 	{
 		dlog[Debug::CRIT]  << myname << "(processingMessage): " << ex << endl;
 	}
+	catch(CORBA::SystemException& ex)
+    {
+		dlog[Debug::WARN] << myname << "(processingMessage): CORBA::SystemException: " << ex.NP_minorString() << endl;
+  	}
+	catch(CORBA::Exception& ex)
+    {
+		dlog[Debug::WARN] << myname << "(processingMessage): CORBA::Exception: " << ex._name() << endl;
+	}
+	catch( omniORB::fatalException& fe ) 
+	{
+		dlog[Debug::CRIT] << myname << "(processingMessage): Caught omniORB::fatalException:" << endl;
+	    dlog[Debug::CRIT] << myname << "(processingMessage): file: " << fe.file()
+			<< " line: " << fe.line()
+	    	<< " mesg: " << fe.errmsg() << endl;
+	}
+	catch(...)
+	{
+		dlog[Debug::CRIT]  << myname << "(processingMessage): catch..." << endl;
+	}
 }
 
 // ------------------------------------------------------------------------------------------
@@ -281,6 +300,7 @@ bool SharedMemory::activateObject()
 {
 	PassiveTimer pt(UniSetTimer::WaitUpTime);
 	bool res = true;
+	
 	// блокирование обработки Startup 
 	// пока не пройдёт инициализация датчиков
 	// см. sysCommand()
@@ -311,6 +331,7 @@ bool SharedMemory::activateObject()
 
 		activated = true;
 	}
+
 	cerr << "************************** activate: " << pt.getCurrent() << " msec " << endl;
 	return res;
 }

@@ -56,7 +56,7 @@ int main( int argc, const char** argv )
 		MBTCPMaster* mb = MBTCPMaster::init_mbmaster(argc,argv,shmID);
 		if( !mb )
 		{
-			dlog[Debug::CRIT] << "(mbmaster): init не прошёл..." << endl;
+			dlog[Debug::CRIT] << "(mbmaster): init MBTCPMaster failed." << endl;
 			return 1;
 		}
 

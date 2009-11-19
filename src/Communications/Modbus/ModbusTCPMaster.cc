@@ -93,22 +93,34 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 			mbPrintMessage( dlog, (ModbusByte*)(&mh), sizeof(mh));
 			dlog(Debug::INFO) << endl;
 		}
-		(*tcp) << mh;
-		mh.swapdata();
 
-		// send PDU
-		mbErrCode res = send(msg);
-		if( res!=erNoError )
-			return res;
-		
-		if( !tcp->isPending(ost::Socket::pendingOutput,timeout) )
+		for( int i=0; i<2; i++ )
 		{
+			(*tcp) << mh;
+
+			// send PDU
+			mbErrCode res = send(msg);
+			if( res!=erNoError )
+				return res;
+
+			if( tcp->isPending(ost::Socket::pendingOutput,timeout) )
+				break;
+
 			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(ModbusTCPMaster): no write pending.. reconnnect.." << endl;
+				dlog[Debug::INFO] << "(ModbusTCPMaster::query): no write pending.. reconnnect.." << endl;
 
 			reconnect();
-			return erTimeOut;
-		}
+			if( !isConnection() )
+			{
+				dlog[Debug::WARN] << "(ModbusTCPMaster::query): not connected to server..." << endl;
+				return erTimeOut;
+			}
+		
+			if( dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << "(ModbusTCPMaster::query): no write pending.. reconnnect OK" << endl;
+    	}
+
+		mh.swapdata();
 
 		if( timeout != UniSetTimer::WaitUpTime )
 		{
@@ -158,7 +170,9 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 //			msg.addr = rmh.uID;
 //			return recv_pdu(msg.func,reply,timeout);
 		}
-		
+
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << "(query): input pending timeout " << endl;
 		return erTimeOut;
 	}
 	catch( ModbusRTU::mbException& ex )
