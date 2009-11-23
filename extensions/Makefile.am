@@ -4,7 +4,8 @@
 
 if HAVE_EXTENTIONS
 SUBDIRS = lib include SharedMemory IOControl RTUExchange LogicProcessor \
-	ModbusSlave MBTCPMaster SMViewer UniNetwork SMDBServer
+	ModbusSlave MBTCPMaster SMViewer UniNetwork
+#SMDBServer
 #SharedMemoryPlus
 #UDPExchange
 

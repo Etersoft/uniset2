@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.97
-Release: eter38
+Release: eter45
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -149,7 +149,7 @@ rm -f %buildroot%_libdir/*.la
 %_bindir/%oname-smemory
 %_bindir/%oname-smviewer
 %_bindir/%oname-network
-%_bindir/%oname-smdbserver
+#%_bindir/%oname-smdbserver
 
 %_libdir/*Extensions.so.*
 %_libdir/libUniSetIO*.so.*
@@ -158,7 +158,7 @@ rm -f %buildroot%_libdir/*.la
 %_libdir/libUniSetRT*.so.*
 %_libdir/libUniSetShared*.so.*
 %_libdir/libUniSetNetwork*.so.*
-%_libdir/libUniSetSMDBServer*.so.*
+#%_libdir/libUniSetSMDBServer*.so.*
 
 %files extensions-devel
 %_includedir/%oname/extensions/
@@ -169,7 +169,7 @@ rm -f %buildroot%_libdir/*.la
 %_libdir/libUniSetRT*.so
 %_libdir/libUniSetShared*.so
 %_libdir/libUniSetNetwork.so
-%_libdir/libUniSetSMDBServer.so
+#%_libdir/libUniSetSMDBServer.so
 %_pkgconfigdir/*Extensions.pc
 %_pkgconfigdir/libUniSetIO*.pc
 %_pkgconfigdir/libUniSetLog*.pc
@@ -177,11 +177,14 @@ rm -f %buildroot%_libdir/*.la
 %_pkgconfigdir/libUniSetRT*.pc
 %_pkgconfigdir/libUniSetShared*.pc
 %_pkgconfigdir/libUniSetNetwork*.pc
-%_pkgconfigdir/libUniSetSMDBServer.pc
+#%_pkgconfigdir/libUniSetSMDBServer.pc
 #%_pkgconfigdir/libUniSet*.pc
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Mon Nov 23 2009 Pavel Vainerman <pv@etersoft.ru> 0.97-eter44
+- exclude SMDBServer
+
 * Thu Nov 19 2009 Larik Ishkulov <gentro@etersoft.ru> 0.97-eter37
 - new build
 

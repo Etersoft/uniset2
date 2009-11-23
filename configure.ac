@@ -206,10 +206,11 @@ AC_CONFIG_FILES([Makefile
 				 extensions/SMViewer/Makefile
 				 extensions/UniNetwork/Makefile
 				 extensions/UniNetwork/libUniSetNetwork.pc
-				 extensions/SMDBServer/Makefile
-				 extensions/SMDBServer/libUniSetSMDBServer.pc
 				 extensions/SharedMemory/Makefile
 				 extensions/SharedMemory/libUniSetSharedMemory.pc
 				 extensions/SharedMemoryPlus/Makefile])
 				 
 AC_OUTPUT
+
+#				 extensions/SMDBServer/Makefile
+#				 extensions/SMDBServer/libUniSetSMDBServer.pc
