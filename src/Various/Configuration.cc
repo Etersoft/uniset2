@@ -649,16 +649,16 @@ void Configuration::createNodesList()
 	xmlNode* omapnode = unixml.findNode(unixml.getFirstNode(), "ObjectsMap");
 	if( !omapnode )
 	{
-		unideb[Debug::CRIT] << "(Configuration): ÎÅ ÎÁÛÌÉ ÒÁÚÄÅÌÁ ObjectsMap..."<< endl;
-		throw Exception("configiuration: ÎÅ ÎÁÛÌÉ ÒÁÚÄÅÌÁ ObjectsMap");
+		unideb[Debug::CRIT] << "(Configuration): <ObjectsMap> not found!!!" << endl;
+		throw Exception("(Configuration): <ObjectsMap> not found!");
 	}
 
 
 	xmlNode* node = unixml.findNode(omapnode, "nodes");
 	if(!node)
 	{
-		unideb[Debug::CRIT] << "(Configuration): ÎÅ ÎÁÛÌÉ ÒÁÚÄÅÌÁ ObjectsMap/nodes..."<< endl;
-		throw Exception("configiuration: ÎÅ ÎÁÛÌÉ ÒÁÚÄÅÌÁ ObjectsMap/nodes");
+		unideb[Debug::CRIT] << "(Configuration): <nodes> section not found!"<< endl;
+		throw Exception("(Configiuration): <nodes> section not found");
 	}
 
 	UniXML_iterator it(node);
@@ -673,8 +673,8 @@ void Configuration::createNodesList()
 		string sname(getProp(it,"name"));
 		if(sname.empty())
 		{
-			unideb[Debug::CRIT] << "Configuration(createNodesList): ÎÅ ÚÁÄÁÎÏ ÉÍÑ ÕÚÌÁ "<< endl;
-			throw Exception("Configuration(createNodesList: × ÓÐÉÓËÅ ÕÚÌÏ× ÎÅ ÚÁÄÁÎÏ ÉÍÑ!");
+			unideb[Debug::CRIT] << "Configuration(createNodesList): unknown name='' in <nodes> "<< endl;
+			throw Exception("Configuration(createNodesList: unknown name='' in <nodes>");
 //			continue;
 		}
 
@@ -688,8 +688,8 @@ void Configuration::createNodesList()
 		ninf.id = oind->getIdByName(nodename);
 		if( ninf.id == DefaultObjectId )
 		{
-			unideb[Debug::CRIT] << "Configuration(createNodesList): node '" << nodename << "' îå îáêäåî éäåîôéæéëáôïò ÷ ObjectsMap!!!" << endl;
-			throw Exception("Configuration(createNodesList): node "+nodename+" îå îáêäåî éäåîôéæéëáôïò ÷ ObjectsMap!!!");
+			unideb[Debug::CRIT] << "Configuration(createNodesList): Not found ID for node '" << nodename << "'" << endl;
+			throw Exception("Configuration(createNodesList): Not found ID for node '"+nodename+"'");
 //			continue;
 		}
 		
@@ -709,8 +709,8 @@ void Configuration::createNodesList()
 			ninf.infserver = oind->getIdByName(iname);
 			if( ninf.infserver == DefaultObjectId )
 			{
-				unideb[Debug::CRIT] << "Configuration(createNodesList): InfoServre '" << iname << "' îå îáêäåî éäåîôéæéëáôïò ÷ ObjectsMap!!!" << endl;
-				throw Exception("Configuration(createNodesList: InfoServer "+iname+" îå îáêäåî éäåîôéæéëáôïò ÷ ObjectsMap!!!");
+				unideb[Debug::CRIT] << "Configuration(createNodesList): Not found ID for infoserver name='" << iname << "'" << endl;
+				throw Exception("Configuration(createNodesList: Not found ID for infoserver name='"+iname+"'");
 			}
 		}
 
@@ -724,8 +724,8 @@ void Configuration::createNodesList()
 			ninf.dbserver = oind->getIdByName(dname);
 			if( ninf.dbserver == DefaultObjectId )
 			{
-				unideb[Debug::CRIT] << "Configuration(createNodesList): DBServer '" << dname << "' ?? ?????? ????????????? Ÿ ObjectsMap!!!" << endl;
-				throw Exception("Configuration(createNodesList: DBServer "+dname+" ?? ?????? ????????????? Ÿ ObjectsMap!!!");
+				unideb[Debug::CRIT] << "Configuration(createNodesList): Not found ID for DBServer name='" << dname << "'" << endl;
+				throw Exception("Configuration(createNodesList: Not found ID for DBServer name='"+dname+"'");
 			}
 		}
 
@@ -740,12 +740,12 @@ void Configuration::createNodesList()
 		initNode(ninf, it);
 
 		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << "Configuration(createNodesList): ÄÏÂÁ×ÌÑÅÍ × ÓÐÉÓÏË ÕÚÅÌ name: " << nodename << " id=" << ninf.id << endl;
+			unideb[Debug::INFO] << "Configuration(createNodesList): add to list of nodes: node=" << nodename << " id=" << ninf.id << endl;
 		lnodes.push_back(ninf);
 	}	
 
 	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << "Configuration(createNodesList): ÷óåçï õúìï÷ ÷ óðéóëå " << lnodes.size() << endl;
+		unideb[Debug::INFO] << "Configuration(createNodesList): size of node list " << lnodes.size() << endl;
 }
 // -------------------------------------------------------------------------
 void Configuration::initNode( UniSetTypes::NodeInfo& ninfo, UniXML_iterator& it )
@@ -769,7 +769,7 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
 {
 	if( _debname.empty() )
 	{
-		deb << "(Configuration)(initDebug): INIT DEBUG FAILED!!! îå úáäáîï îáú÷áîéå ìïçá\n";
+		deb << "(Configuration)(initDebug): INIT DEBUG FAILED!!!" << endl;
 		return 0;
 	}
 
@@ -777,10 +777,7 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
 
 	xmlNode* dnode = conf->getNode(_debname);
 	if( dnode == NULL )
-	{
-		deb << "(Configuration)(initDebug):  WARNING! ÎÅ ÎÁÛÌÉ ÒÁÚÄÅÌÁ " << _debname << endl;
-		// ÔÏÇÄÁ ÓÞÉÔÁÅÍ, ÞÔÏ ÚÁÄÁÎÏ ÎÁÚ×ÁÎÉÅ ÓÁÍÏÇÏ DebugStream
-	}
+		deb << "(Configuration)(initDebug):  WARNING! Not found conf. section for log '" << _debname  << "'" << endl;
 	else
 	{
 		if( !getProp(dnode,"name").empty() )
@@ -843,7 +840,7 @@ void Configuration::initRepSections()
 	if( node == NULL )
 	{
 		ostringstream msg;
-		msg << "Configuration(initRepSections): ÎÅ ÎÁÛÌÉ ÐÁÒÁÍÅÔÒ RootSection × ËÏÎÆ. ÆÁÊÌÅ " << fileConfName;
+		msg << "Configuration(initRepSections): Not found section <RootSection> in " << fileConfName;
 		unideb[Debug::CRIT] << msg.str() << endl;
 		throw SystemError(msg.str());
 	}
@@ -861,7 +858,7 @@ string Configuration::getRepSectionName( const string sec, xmlNode* secnode )
 	if( node == NULL )
 	{
 		ostringstream msg;
-		msg << "Configuration(initRepSections): ÎÅ ÎÁÛÌÉ ÓÅËÃÉÀ " << sec << " × ËÏÎÆ. ÆÁÊÌÅ " << fileConfName;
+		msg << "Configuration(initRepSections): Not found section '" << sec << "' in " << fileConfName;
 		unideb[Debug::CRIT] << msg.str() << endl;
 		throw SystemError(msg.str());
 	}
@@ -899,10 +896,9 @@ void Configuration::setConfFileName( const string fn )
 	if( fileConfName.empty() )
 	{
 		ostringstream msg;
-		msg << "\n\n***** CRIT: îÅ ÚÁÄÁÎ ËÏÎÆÉÇÕÒÁÃÉÏÎÎÙÊ ÆÁÊÌ. \n"
-			<< " úÁÄÁÊÔÅ ËÌÀÞ --confile\n"
-			<< " éÌÉ ÏÐÒÅÄÅÌÉÔÅ ÐÅÒÅÍÅÎÎÕÀ ÏËÒÕÖÅÎÉÑ UNISET_CONFILE\n\n";
-//			<< " éÌÉ ÒÁÚÍÅÓÔÉÔØ ÆÁÊÌ × /etc/uniset-configure.xml \n\n";
+		msg << "\n\n***** CRIT: Unknown configure file." << endl
+			<< " Use --confile filename " << endl
+			<< " OR define enviropment variable UNISET_CONFILE" << endl;
 		unideb[Debug::CRIT] << msg.str();
 		throw SystemError(msg.str());
 	}
