@@ -1,4 +1,5 @@
 #include <string>
+#include <sstream>
 #include "Mutex.h"
 #include "ThreadCreator.h"
 #include "UniSetTypes.h"
@@ -35,10 +36,11 @@ class MyClass
 			{
 				{
 					cerr << nm << ": before release=" << m.isRelease() << endl;
-					uniset_mutex_lock l(m,5000);
+					uniset_mutex_lock l(m);
+					msleep(30);
 					cerr << nm << ": after release=" << m.isRelease() << endl;
 				}
-				msleep(300);
+				msleep(10);
 			}
 		}
 				
@@ -49,14 +51,20 @@ class MyClass
 
 int main( int argc, const char **argv )
 {
-	MyClass* mc1 = new MyClass("t1");
-	MyClass* mc2 = new MyClass("t2");
+	int max = 10;
 	
-//	m.lock();
-	mc1->execute();
-	msleep(200);
-	mc2->execute();
+	if( argc > 1 )
+		max = UniSetTypes::uni_atoi(argv[1]);
+	
+	for( int i=0; i<max; i++ )
+	{
+		ostringstream s;
+		s << "t" << i;
+     	MyClass* t = new MyClass(s.str());
+     	t->execute();
+     	msleep(50);
+	}	
+
 	pause();
-//	m.unlock();
 	return 0;
 }
