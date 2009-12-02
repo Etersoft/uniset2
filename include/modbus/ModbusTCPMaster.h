@@ -23,10 +23,15 @@ class ModbusTCPMaster:
 		void disconnect();
 		bool isConnection();
 
+		inline void setForceDisconnect( bool s )
+		{
+			force_disconnect = s;
+		}
 	protected:
 		
 		void reconnect();
-
+		void cleanInputStream();
+		
 		virtual int getNextData( unsigned char* buf, int len );
 		virtual void setChannelTimeout( timeout_t msec );
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len );
@@ -39,6 +44,7 @@ class ModbusTCPMaster:
 		std::queue<unsigned char> qrecv;
 		PassiveTimer ptTimeout;
 		std::string iaddr;
+		bool force_disconnect;
 };
 // -------------------------------------------------------------------------
 #endif // ModbusTCPMaster_H_
