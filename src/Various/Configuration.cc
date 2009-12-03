@@ -584,7 +584,7 @@ void Configuration::setLocalNode( string nodename )
 	{
 		stringstream err;
 		err << "(Configuration::setLocalNode): Not found node '" << nodename << "'";
-		unideb[Debug::CRIT] << err << endl;
+		unideb[Debug::CRIT] << err.str() << endl;
 		throw Exception(err.str());
 	}
 	oind->initLocalNode(localNode);
