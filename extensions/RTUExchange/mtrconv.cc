@@ -16,14 +16,6 @@ static void print_help()
 // --------------------------------------------------------------------------
 int main( int argc, const char **argv )
 {   
-	ModbusRTU::ModbusData dt[3];
-	ModbusRTU::ModbusData* data = dt;
-	
-	cerr << "sizeof=" << sizeof( (*data) ) << " sizeof dt=" << sizeof(dt) << endl;
-	
-	return 0;
-
-
 	unsigned short v1 = 0;
 	unsigned short v2 = 0;
 	const char* type="";
