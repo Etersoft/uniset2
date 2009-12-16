@@ -105,18 +105,20 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 		return;
 	}
 
+	if( !it->nofilter && it->df.size() > 1 )
+	{
+		if( it->f_median )
+			val = it->df.median(val);
+		else if( it->f_filter_iir )
+			val = it->df.filterIIR(val);
+		else if( it->f_ls )
+			val = it->df.leastsqr(val);
+		else
+			val = it->df.filterRC(val);
+	}
+
 	if( it->cdiagram )	// задана специальная калибровочная диаграмма
 	{
-		// Если есть диаграмма, то оптимальнее фильтровать 
-		// скачки, ДО ДИАГРАММЫ
-		if( !it->nofilter && it->df.size() > 1 )
-		{
-			if( it->f_median )
-				val = it->df.median(val);
-			else
-				val = it->df.filterRC(val);
-		}
-
 		if( it->craw != val )
 		{	
 			it->craw = val;
@@ -131,16 +133,6 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 		IOController_i::CalibrateInfo* cal( &(it->cal) );
 		if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
 			val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
-		
-		// Если НЕ диаграмма, то фильтруем 
-		// скачки, ПОСЛЕ обработки
-		if( !it->nofilter && it->df.size() > 1 )
-		{
-			if( it->f_median )
-				val = it->df.median(val);
-			else
-				val = it->df.filterRC(val);
-		}
 	}
 
 	if( !it->noprecision && it->cal.precision > 0 )
@@ -389,7 +381,8 @@ void IOBase::processingThreshold( IOBase* it, SMInterface* shm, bool force )
 
 bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,  
 						DebugStream* dlog, std::string myname,
-						int def_filtersize, float def_filterT )
+						int def_filtersize, float def_filterT, float def_lsparam,
+						float def_iir_coeff_prev, float def_iir_coeff_new )
 {
 	string sname( it.getProp("name") );
 
@@ -448,6 +441,8 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	b->cal.precision = 0;
 	b->cdiagram = 0;
 	b->f_median = false;
+	b->f_ls = false;
+	b->f_filter_iir = false;
 		
 	shm->initAIterator(b->ait);
 	shm->initDIterator(b->dit);
@@ -463,7 +458,11 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 
 		int f_size 	= def_filtersize;
 		float f_T 	= def_filterT;
+		float f_lsparam = def_lsparam;
 		int f_median = it.getIntProp("filtermedian");
+		int f_iir = it.getIntProp("iir_thr");
+		float f_iir_coeff_prev = def_iir_coeff_prev;
+		float f_iir_coeff_new = def_iir_coeff_new;
 		
 		if( f_median > 0 )
 		{
@@ -472,6 +471,8 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		}
 		else
 		{
+			if( f_iir > 0 )
+				b->f_filter_iir = true;
 			if( !it.getProp("filtersize").empty() )
 			{
 				#warning "почему здесь 0, хотя f_size инициализируется def_filtersize?"
@@ -486,8 +487,22 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 				f_T = 0.0;
 		}
 
+		if( !it.getProp("leastsqr").empty() )
+		{
+			b->f_ls = true;
+			f_lsparam = atof(it.getProp("leastsqr").c_str());
+			if( f_lsparam < 0 )
+				f_lsparam = def_lsparam;
+		}
+
+		if( !it.getProp("iir_coeff_prev").empty() )
+			f_iir_coeff_prev = atof(it.getProp("iir_coeff_prev").c_str());
+		if( !it.getProp("iir_coeff_new").empty() )
+			f_iir_coeff_new = atof(it.getProp("iir_coeff_new").c_str());
+
 		if( b->stype == UniversalIO::AnalogInput )
-			b->df.setSettings( f_size, f_T );
+			b->df.setSettings( f_size, f_T, f_lsparam, f_iir,
+			                   f_iir_coeff_prev, f_iir_coeff_new );
 
 		b->df.init(b->defval);
 
