@@ -17,11 +17,14 @@
 class DigitalFilter
 {
 	public:
-		DigitalFilter ( unsigned int bufsize=5, double T=0 );
+		DigitalFilter ( unsigned int bufsize=5, double T=0, double lsq=0.2,
+		                int iir_thr=10000, double iir_coeff_prev=0.5,
+		                double iir_coeff_new=0.5 );
 		~DigitalFilter ();
 		
 		// T <=0 - отключить вторую ступень фильтра
-		void setSettings( unsigned int bufsize, double T );
+		void setSettings( unsigned int bufsize, double T, double lsq,
+		                  int iir_thr, double iir_coeff_prev, double iir_coeff_new );
 
 		// Усреднение с учётом СКОС
 		// На вход подается новое значение
@@ -35,10 +38,18 @@ class DigitalFilter
 		// медианный фильтр
 		int median( int newval );
 		
+		// адаптивный фильтр по схеме наименьших квадратов
+		int leastsqr( int newval );
+
+		// рекурсивный фильтр
+		int filterIIR( int newval );
+
 		// получить текущее фильтрованное значение
 		int current1();
 		int currentRC();
 		int currentMedian();
+		int currentLS();
+		int currentIIR();
 
 		// просто добавить очередное значение
 		void add( int newValue );
@@ -74,6 +85,19 @@ class DigitalFilter
 		
 		typedef std::vector<int> MedianVector;
 		MedianVector mvec;
+
+		typedef std::vector<double> Coeff;
+		Coeff w;        // Вектор коэффициентов для filterIIR
+
+		double lsparam; // Параметр для filterIIR
+		double ls;      // Последнее значение, возвращённое filterIIR
+
+		int thr;        // Порог для изменений, обрабатываемых рекурсивным фильтром
+		int prev;       // Последнее значение, возвращённое рекурсивным фильтром
+
+		// Коэффициенты для рекурсивного фильтра
+		double coeff_prev;
+		double coeff_new;
 };
 //--------------------------------------------------------------------------
 #endif // DigitalFilter_H_

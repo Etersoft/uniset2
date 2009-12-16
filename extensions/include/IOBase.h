@@ -29,6 +29,8 @@ static const int NoSafety = -1;
 				df(1),
 				nofilter(false),
 				f_median(false),
+				f_ls(false),
+				f_filter_iir(false),
 				ignore(false),
 				invert(false),
 				noprecision(false),
@@ -60,6 +62,8 @@ static const int NoSafety = -1;
 			DigitalFilter df;	/*!< реализация программного фильтра */
 			bool nofilter;		/*!< отключение фильтра */
 			bool f_median;		/*!< признак использования медианного фильтра */
+			bool f_ls;			/*!< признак использования адаптивного фильтра по методу наименьших квадратов */
+			bool f_filter_iir;	/*!< признак использования рекурсивного фильтра */
 
 			bool ignore;	/*!< игнорировать при опросе */
 			bool invert;	/*!< инвертированная логика */
@@ -103,7 +107,9 @@ static const int NoSafety = -1;
 			static void processingThreshold( IOBase* it, SMInterface* shm, bool force );
 			static bool initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,  
 									DebugStream* dlog=0, std::string myname="",
-									int def_filtersize=0, float def_filterT=0.0 );
+									int def_filtersize=0, float def_filterT=0.0,
+									float def_lsparam=0.2, float def_iir_coeff_prev=0.5,
+									float def_iir_coeff_new=0.5 );
 		};
 
 

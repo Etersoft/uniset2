@@ -11,14 +11,23 @@
 using namespace UniSetTypes;
 using namespace std;
 //--------------------------------------------------------------------------
-DigitalFilter::DigitalFilter( unsigned int bufsize, double T ):
+DigitalFilter::DigitalFilter( unsigned int bufsize, double T, double lsq,
+	                          int iir_thr, double iir_coeff_prev,
+	                          double iir_coeff_new ):
 	Ti(T),
 	val(0),
 	M(0),
 	S(0),
 	tmr(UniSetTimer::WaitUpTime),
 	maxsize(bufsize),
-	mvec(bufsize)
+	mvec(bufsize),
+	w(bufsize),
+	lsparam(lsq),
+	ls(0),
+	thr(iir_thr),
+	prev(0),
+	coeff_prev(iir_coeff_prev),
+	coeff_new(iir_coeff_new)
 {
 }
 //--------------------------------------------------------------------------
@@ -26,13 +35,20 @@ DigitalFilter::~DigitalFilter()
 {
 }
 //--------------------------------------------------------------------------
-void DigitalFilter::setSettings( unsigned int bufsize, double T )
+void DigitalFilter::setSettings( unsigned int bufsize, double T, double lsq,
+	                             int iir_thr, double iir_coeff_prev,
+	                             double iir_coeff_new )
 {
 	Ti = T;
 	maxsize = bufsize;
 	if( maxsize < 1 )
 		maxsize = 1;
 	
+	coeff_prev = iir_coeff_prev;
+	coeff_new = iir_coeff_new;
+	if( iir_thr > 0 )
+		thr = iir_thr;
+
 	if( buf.size() > maxsize )
 	{
 		// удаляем лишние (первые) элементы
@@ -40,6 +56,10 @@ void DigitalFilter::setSettings( unsigned int bufsize, double T )
 		for( int i=0; i<sub; i++ )
 			buf.erase( buf.begin() );
 	}
+
+	if( w.size() != maxsize || lsq != lsparam )
+		w.assign(maxsize, 1.0/maxsize);
+	lsparam = lsq;
 }
 //--------------------------------------------------------------------------
 void DigitalFilter::init( int val )
@@ -47,6 +67,8 @@ void DigitalFilter::init( int val )
 	buf.clear();
 	for( unsigned int i=0; i<maxsize; i++ )
 		buf.push_back(val);
+
+	w.assign(maxsize, 1.0/maxsize);
 
 	tmr.reset();
 	this->val = val;
@@ -186,5 +208,59 @@ int DigitalFilter::median( int newval )
 int DigitalFilter::currentMedian()
 {
 	return mvec[maxsize/2];
+}
+//--------------------------------------------------------------------------
+int DigitalFilter::leastsqr( int newval )
+{
+	ls = 0;
+
+	add(newval);
+
+	// Цифровая фильтрация
+	FIFOBuffer::const_iterator it = buf.begin();
+	for( unsigned int i=0; i<maxsize; i++,it++ )
+		ls += *it * w[i];
+
+	// Вычисляем ошибку выхода
+	double er = newval - ls;
+
+	// Обновляем коэффициенты
+	double u = 2 * (lsparam/maxsize) * er;
+	it = buf.begin();
+	for( unsigned int i=0; i<maxsize; i++,it++ )
+		w[i] = w[i] + *it * u;
+
+	return lroundf(ls);
+}
+//--------------------------------------------------------------------------
+int DigitalFilter::currentLS()
+{
+	return lroundf(ls);
+}
+//--------------------------------------------------------------------------
+int DigitalFilter::filterIIR( int newval )
+{
+	if( newval > prev + thr || newval < prev - thr || maxsize < 1 )
+	{
+		if( maxsize > 0 )
+			init(newval);
+		prev = newval;
+	}
+	else
+	{
+		double aver;
+
+		add(newval);
+		for( FIFOBuffer::iterator i = buf.begin(); i != buf.end(); ++i )
+			aver += *i;
+		aver /= maxsize;
+		prev = lroundf((coeff_prev * prev + coeff_new * aver)/(coeff_prev + coeff_new));
+	}
+	return prev;
+}
+//--------------------------------------------------------------------------
+int DigitalFilter::currentIIR()
+{
+	return prev;
 }
 //--------------------------------------------------------------------------
