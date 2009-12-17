@@ -509,8 +509,7 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 //		while нельзя использовать потому-что, из параллельного потока
 //		могут запихивать в очередь ещё сообщения.. И это цикл никогда не прервётся...
 
-		int max = q.size();
-		for( int i=0; i<=max; i++ )
+		while( !q.empty() )
 		{
 			m = q.top();
 			q.pop();
@@ -524,8 +523,8 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 					// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
 					// то достаточно просто сохранять последнее сообщение для одинаковых Key
 					smap[k] = m;
-					break;
 				}
+				break;
 
 				case Message::Timer:
 				{
@@ -533,8 +532,8 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 					// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
 					// то достаточно просто сохранять последнее сообщение для одинаковых TimerId
 					tmap[tm.id] = m;
-					break;
-				}		
+				}
+				break;
 
 				case Message::SysCommand:
 				{
