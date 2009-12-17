@@ -2264,6 +2264,7 @@ IOController_i::ShortIOInfo UniversalInterface::getChangedTime( UniSetTypes::Obj
 ObjectPtr UniversalInterface::CacheOfResolve::resolve( ObjectId id, ObjectId node )
 	throw(NameNotFound)
 {
+	UniSetTypes::uniset_mutex_lock l(cmutex,200);
 
 //#warning Временно отключён кэш
 //	throw NameNotFound();
@@ -2289,6 +2290,7 @@ ObjectPtr UniversalInterface::CacheOfResolve::resolve( ObjectId id, ObjectId nod
 // ------------------------------------------------------------------------------------------------------------
 void UniversalInterface::CacheOfResolve::cache( ObjectId id, ObjectId node, ObjectVar ptr )
 {
+	UniSetTypes::uniset_mutex_lock l(cmutex,220);
 //#warning Временно отключён кэш
 //	return;
 
@@ -2312,6 +2314,7 @@ void UniversalInterface::CacheOfResolve::cache( ObjectId id, ObjectId node, Obje
 // ------------------------------------------------------------------------------------------------------------
 bool UniversalInterface::CacheOfResolve::clean()
 {
+	UniSetTypes::uniset_mutex_lock l(cmutex,180);
 //    return true;
     
     if( unideb.debugging(Debug::INFO) )
@@ -2336,6 +2339,7 @@ bool UniversalInterface::CacheOfResolve::clean()
 
 void UniversalInterface::CacheOfResolve::erase( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
 {
+	UniSetTypes::uniset_mutex_lock l(cmutex,220);
 //#warning Временно отключён кэш
 //	return;
 
