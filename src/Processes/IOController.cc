@@ -756,15 +756,18 @@ void IOController::logging( UniSetTypes::SensorMessage& sm )
 	{
 //		struct timezone tz;
 //		gettimeofday(&sm.tm,&tz);
-		ObjectId dbID = conf->getDBServer();				
+		ObjectId dbID = conf->getDBServer();
 		// значит на этом узле нет DBServer-а
 		if( dbID == UniSetTypes::DefaultObjectId )
 			return;
  		
 		sm.consumer = dbID;
 		TransportMessage tm(sm.transport_msg());
-		ui.send(sm.consumer, tm);
-		isPingDBServer = true;
+		{
+			uniset_mutex_lock l(loggingMutex,300);
+			ui.send(sm.consumer, tm);
+			isPingDBServer = true;
+		}
 	}
 	catch(...)
 	{
@@ -853,7 +856,7 @@ IOController_i::DSensorInfoSeq* IOController::getDigitalSensorsMap()
 	res->length(dioList.size());
 
 //	{ // lock
-//		uniset_mutex_lock lock(dioMutex, 500);		
+//		uniset_mutex_lock lock(dioMutex, 500);
 		int i=0;
 		for( DIOStateList::iterator it= dioList.begin(); it!=dioList.end(); ++it)
 		{	

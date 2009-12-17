@@ -388,6 +388,8 @@ class IOController:
 		DependsSlot dslot; /*!< undefined depends slot */
 		DependsSlot bslot; /*!< block depends slot */
 		int checkLockValuePause;
+
+		UniSetTypes::uniset_mutex loggingMutex; /*!< logging info mutex */
 };
 
 #endif
