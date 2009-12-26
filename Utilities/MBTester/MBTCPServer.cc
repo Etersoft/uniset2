@@ -48,9 +48,9 @@ MBTCPServer::MBTCPServer( ModbusAddr myaddr, const string inetaddr, int port, bo
 	sslot->connectRemoteService( sigc::mem_fun(this, &MBTCPServer::remoteService) );
 	sslot->connectFileTransfer( sigc::mem_fun(this, &MBTCPServer::fileTransfer) );	
 
-	sslot->setRecvTimeout(2000);
+	sslot->setRecvTimeout(6000);
 //	sslot->setAfterSendPause(afterSend);
-//	sslot->setReplyTimeout(replyTimeout);
+	sslot->setReplyTimeout(10000);
 
 	// build file list...
 }

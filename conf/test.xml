@@ -84,7 +84,7 @@
 
 	<RSExchange name="RSExchange" speed="38400">
 		<DeviceList>
-			<item addr="0x02" speed="9600" respondSensor="RespondRTU_S" timeout="5000" invert="0"/>
+			<item addr="0x02" force_disconnect="1" speed="9600" respondSensor="RespondRTU_S" timeout="5000" invert="0"/>
 		</DeviceList>
 	</RSExchange>
 
@@ -112,7 +112,7 @@
 		<item name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium" default="1" />
 		<item name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" rs="2" />
 		<item name="Input3_S" textname="Команда 3" node="" iotype="DI" priority="Medium" 
-			  mbtcp="1" tcp_mbtype="rtu" tcp_mbaddr="0x02" tcp_mbfunc="0x04" tcp_mbreg="0x02"/>
+			  mbtcp="1" tcp_mbtype="rtu" tcp_mbaddr="0x02" tcp_mbfunc="0x06" tcp_mbreg="0x02" tcp_preinit="1" />
 		<item name="Input4_S" textname="Команда 4" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" rs="2" />
 		<item name="Input5_S" textname="Команда 5" node="" iotype="DI" priority="Medium" udp="2"/>
 		<item name="Input6_S" textname="Команда 6" node="" iotype="DI" priority="Medium" udp="2">

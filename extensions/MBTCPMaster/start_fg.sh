@@ -8,7 +8,7 @@ uniset-start.sh -f ./uniset-mbtcpmaster \
 --mbtcp-filter-field mbtcp \
 --mbtcp-filter-value 1 \
 --mbtcp-gateway-iaddr 127.0.0.1 \
---mbtcp-gateway-port 1024 \
+--mbtcp-gateway-port 2048 \
 --mbtcp-recv-timeout 5000 
 #--mbtcp-filter-field mbtcp --mbtcp-filter-value 1
 

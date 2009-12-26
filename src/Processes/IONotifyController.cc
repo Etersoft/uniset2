@@ -251,7 +251,7 @@ void IONotifyController::askState( const IOController_i::SensorInfo& si,
 			smsg.sm_tv_usec	= li->second.tv_usec;
 		}
 
-		TransportMessage tm(smsg.transport_msg());			
+		TransportMessage tm(smsg.transport_msg());
 	    try
 	    {
 			ui.send(ci.id, tm, ci.node);
@@ -1149,7 +1149,7 @@ void IONotifyController::askOutput(const IOController_i::SensorInfo& si,
 			smsg.sensor_type 	= type;
 			smsg.supplier 		= getId();
 			
-			TransportMessage tm(smsg.transport_msg());			
+			TransportMessage tm(smsg.transport_msg());
 			ui.send(ci.id, tm, ci.node);
 		}
 		catch(Exception& ex)

@@ -56,9 +56,9 @@ no_extimer(false)
 		throw UniSetTypes::SystemError(myname+"(MBMaster): Unknown inet port...(Use: " + tmp +")" );
 
 
-	recv_timeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recv_timeout"), 2000);
+	recv_timeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recv_timeout"), 50);
 
-	int alltout = conf->getArgPInt("--" + prefix + "-all-timeout",it.getProp("all_timeout"), 5000);
+	int alltout = conf->getArgPInt("--" + prefix + "-all-timeout",it.getProp("all_timeout"), 2000);
 	ptAllNotRespond.setTiming(alltout);
 
 	noQueryOptimization = conf->getArgInt("--" + prefix + "-no-query-optimization",it.getProp("no_query_optimization"));
@@ -68,7 +68,7 @@ no_extimer(false)
 
 	polltime = conf->getArgPInt("--" + prefix + "-polltime",it.getProp("polltime"), 100);
 
-	initPause = conf->getArgPInt("--" + prefix + "-initPause",it.getProp("initPause"), 50);
+	initPause = conf->getArgPInt("--" + prefix + "-initPause",it.getProp("initPause"), 3000);
 
 	force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
 	force_out = conf->getArgInt("--" + prefix + "-force-out",it.getProp("force_out"));
@@ -254,28 +254,31 @@ void MBTCPMaster::poll()
 			for( MBTCPMaster::RTUDeviceMap::iterator it=rmap.begin(); it!=rmap.end(); ++it )
 				it->second->resp_real = false;
 		}
-		cerr << "*********** mb=NULL " << endl;
 		updateSM();
 		return;
 	}
 
+		
 	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
+	
+		mb->setForceDisconnect(d->force_disconnect);
 	
 		if( dlog.debugging(Debug::INFO) )
 			dlog[Debug::INFO] << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
 				<< " regs=" << d->regmap.size() << endl;
 	
-			d->resp_real = false;
+			d->resp_real = true;
 			for( MBTCPMaster::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 			{
 				try
 				{
 					if( d->dtype==MBTCPMaster::dtRTU )
 					{
-						if( pollRTU(d,it) )
-							d->resp_real = true;
+//						if( pollRTU(d,it) )
+//							d->resp_real = true;
+						pollRTU(d,it);
 					}
 				}
 				catch( ModbusRTU::mbException& ex )
@@ -285,10 +288,13 @@ void MBTCPMaster::poll()
 						dlog[Debug::CRIT] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
 							<< " reg=" << ModbusRTU::dat2str(it->second->mbreg)
 							<< " -> " << ex << endl;
-				//		d->resp_real = false;
 					}
-				}
 
+					d->resp_real = false;
+					if( !d->ask_every_reg )
+						break;
+				}
+				
 				if( it==d->regmap.end() )
 					break;
 			}
@@ -318,14 +324,15 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 {
 	RegInfo* p(it->second);
 
-	if( dlog.debugging(Debug::INFO)  )
+	if( dlog.debugging(Debug::LEVEL3)  )
 	{
-		dlog[Debug::INFO] << myname << "(pollRTU): poll "
+		dlog[Debug::LEVEL3] << myname << "(pollRTU): poll "
 			<< " mbaddr=" << ModbusRTU::addr2str(dev->mbaddr)
 			<< " mbreg=" << ModbusRTU::dat2str(p->mbreg)
 			<< " mboffset=" << p->offset
 			<< " mbfunc=" << p->mbfunc
 			<< " q_count=" << p->q_count
+			<< " mb_init=" << p->mb_init
 			<< endl;
 	}
 	
@@ -336,7 +343,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 					<< " IGNORE register..." << endl;
 		return false;
 	}
-
+	
 	switch( p->mbfunc )
 	{
 		case ModbusRTU::fnReadInputRegisters:
@@ -394,6 +401,15 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 				return false;
 			}
 			
+			if( !p->mb_init )
+			{
+//				cerr << "******* mb_init: mbreg=" << ModbusRTU::dat2str(p->mbreg) << endl;
+				ModbusRTU::ReadInputRetMessage ret1 = mb->read04(dev->mbaddr,p->mb_init_mbreg,1);
+				p->mbval = ret1.data[0];
+				p->sm_init = true;
+				return true;
+			}
+
 //			cerr << "**** mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
 			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg+p->offset,p->mbval);
 		}
@@ -403,7 +419,21 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		{
 			ModbusRTU::WriteOutputMessage msg(dev->mbaddr,p->mbreg+p->offset);
 			for( int i=0; i<p->q_count; i++,it++ )
+			{
+				if( !it->second->mb_init )
+				{
+//					cerr << "******* mb_init: mbreg=" << ModbusRTU::dat2str(it->second->mbreg) 
+//						<< " mb_init mbreg=" << ModbusRTU::dat2str(it->second->mb_init_mbreg) << endl;
+					ModbusRTU::ReadOutputRetMessage ret1 = mb->read03(dev->mbaddr,it->second->mb_init_mbreg,1);
+//					cerr << "******* mb_init: mbreg=" << ModbusRTU::dat2str(it->second->mbreg) 
+//						<< " mb_init mbreg=" << ModbusRTU::dat2str(it->second->mb_init_mbreg)
+//						<< " mbval=" << ret1.data[0] << endl;
+					it->second->mbval = ret1.data[0];
+					it->second->sm_init = true;
+				}
+			
 				msg.addData(it->second->mbval);
+			}
 			it--;
 			ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
 		}
@@ -418,6 +448,19 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 				return false;
 			}
 
+			if( !p->mb_init )
+			{
+//				cerr << "******* mb_init: mbreg=" << ModbusRTU::dat2str(p->mbreg)
+//						<< " init mbreg=" << ModbusRTU::dat2str(p->mb_init_mbreg) << endl;
+				ModbusRTU::ReadInputStatusRetMessage ret1 = mb->read02(dev->mbaddr,p->mb_init_mbreg,1);
+				ModbusRTU::DataBits b(ret1.data[0]);
+//				cerr << "******* mb_init_mbreg=" << ModbusRTU::dat2str(p->mb_init_mbreg) 
+//						<< " read val=" << (int)b[0] << endl;
+				p->mbval = b[0];
+				p->sm_init = true;
+				return true;
+			}
+
 //			cerr << "****(coil) mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
 			ModbusRTU::ForceSingleCoilRetMessage ret = mb->write05(dev->mbaddr,p->mbreg+p->offset,p->mbval);
 		}
@@ -425,13 +468,42 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 
 		case ModbusRTU::fnForceMultipleCoils:
 		{
-				ModbusRTU::ForceCoilsMessage msg(dev->mbaddr,p->mbreg+p->offset);
+			if( !p->mb_init )
+			{
+				// every register ask... (for mb_init_mbreg no some)
 				for( int i=0; i<p->q_count; i++,it++ )
-					msg.addBit( (it->second->mbval ? true : false) );
-
+				{
+					ModbusRTU::ReadInputStatusRetMessage ret1 = mb->read02(dev->mbaddr,it->second->mb_init_mbreg,1);
+					ModbusRTU::DataBits b(ret1.data[0]);
+					it->second->mbval = b[0] ? 1 : 0;
+					it->second->sm_init = true;
+				}
+/*
+				// alone query for all register (if mb_init_mbreg ++ )
+				ModbusRTU::ReadInputStatusRetMessage ret1 = mb->read02(dev->mbaddr,p->mb_init_mbreg,p->q_count);
+				int m=0;
+				for( int i=0; i<ret1.bcnt; i++ )
+				{
+					ModbusRTU::DataBits b(ret1.data[i]);
+					for( int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
+					{
+						it->second->mbval = b[k] ? 1 : 0;
+						it->second->sm_init = true;
+					}
+				}
+*/
+				p->sm_init = true;
 				it--;
-//				cerr << "*********** (write multiple): " << msg << endl;
-				ModbusRTU::ForceCoilsRetMessage ret = mb->write0F(msg);
+				return true;
+			}
+
+			ModbusRTU::ForceCoilsMessage msg(dev->mbaddr,p->mbreg+p->offset);
+			for( int i=0; i<p->q_count; i++,it++ )
+				msg.addBit( (it->second->mbval ? true : false) );
+
+			it--;
+//			cerr << "*********** (write multiple): " << msg << endl;
+			ModbusRTU::ForceCoilsRetMessage ret = mb->write0F(msg);
 		}
 		break;
 		
@@ -771,8 +843,12 @@ void MBTCPMaster::sensorInfo( UniSetTypes::SensorMessage* sm )
 					{
 						dlog[Debug::INFO] << myname<< "(sensorInfo): si.id=" << sm->id 
 							<< " reg=" << ModbusRTU::dat2str(i->reg->mbreg)
-							<< " val=" << sm->value << endl;
+							<< " val=" << sm->value 
+							<< " mb_init=" << i->reg->mb_init << endl;
 					}
+
+					if( !i->reg->mb_init )
+						continue;
 
 					i->value = sm->value;
 					updateRSProperty( &(*i),true);
@@ -1075,8 +1151,9 @@ bool MBTCPMaster::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBTCPMaster::RT
 {
 	r->dev = dev;
 	r->mbval = it.getIntProp("default");
-	r->offset= it.getIntProp("tcp_mboffset");
-
+	r->offset = it.getIntProp("tcp_mboffset");
+	r->mb_init = it.getIntProp("tcp_mbinit");
+	
 	if( dev->dtype != MBTCPMaster::dtRTU )
 	{
 		dlog[Debug::CRIT] << myname << "(initRegInfo): Unknown mbtype='" << dev->dtype
@@ -1100,6 +1177,19 @@ bool MBTCPMaster::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBTCPMaster::RT
 			return false;
 		}
 		r->mbreg = ModbusRTU::str2mbData(sr);
+	}
+
+	{
+		string sr = it.getProp("tcp_init_mbreg");
+		if( sr == "-1" )
+		{
+			r->mb_init = true; // OFF mb_init
+			r->sm_init = true;
+		}
+		else if( sr.empty() )
+			r->mb_init_mbreg = r->mbreg;
+		else
+			r->mb_init_mbreg = ModbusRTU::str2mbData(sr);
 	}
 
 	r->mbfunc 	= ModbusRTU::fnUnknown;
@@ -1242,7 +1332,10 @@ bool MBTCPMaster::initItem( UniXML_iterator& it )
 	if( p1->rnum > 1 )
 	{
 		for( int i=1; i<p1->rnum; i++ )
-			addReg(dev->regmap,mbreg+i,it,dev,ri);
+		{
+			MBTCPMaster::RegInfo* ri1 = addReg(dev->regmap,mbreg+i,it,dev,ri);
+			ri1->mb_init_mbreg = ri->mb_init_mbreg+i;
+		}
 	}
 	
 	return true;
@@ -1370,18 +1463,29 @@ bool MBTCPMaster::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
 		dlog[Debug::WARN] << myname << "(initDeviceInfo): not found device for addr=" << ModbusRTU::addr2str(a) << endl;
 		return false;
 	}
+
+	d->second->ask_every_reg = it.getIntProp("ask_every_reg");
+	d->second->force_disconnect = it.getIntProp("force_disconnect");
+
+	dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) 
+			<< " force_disconnect=" << d->second->force_disconnect
+			<< " ask_every_reg=" << d->second->ask_every_reg << endl;
 	
 	d->second->resp_id = conf->getSensorID(it.getProp("respondSensor"));
 	if( d->second->resp_id == DefaultObjectId )
 	{
 		dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for noRespondSensor=" << it.getProp("respondSensor") << endl;
-		return false;
+		return true;
 	}
 
 	dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
 	int tout = it.getPIntProp("timeout", UniSetTimer::WaitUpTime);
 	d->second->resp_ptTimeout.setTiming(tout);
 	d->second->resp_invert = it.getIntProp("invert");
+//	d->second->no_clean_input = it.getIntProp("no_clean_input");
+	
+//	dlog[Debug::INFO] << myname << "(initDeviceInfo): add " << d->second << endl;
+	
 	return true;
 }
 // -----------------------------------------------------------------------------
@@ -1512,6 +1616,9 @@ void MBTCPMaster::updateRTU( RegMap::iterator& rit )
 	RegInfo* r(rit->second);
 	for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
 		updateRSProperty( &(*it),false );
+
+	if( r->sm_init )
+		r->mb_init = true;
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
@@ -1524,8 +1631,16 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 	if( !save && write_only )
 		return;
 
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "udpateP: sid=" << p->si.id << " mbval=" << r->mbval << endl;
+	if( dlog.debugging(Debug::LEVEL3) )
+		dlog[Debug::LEVEL3] << "updateP: sid=" << p->si.id 
+				<< " mbval=" << r->mbval 
+				<< " vtype=" << p->vType
+				<< " rnum=" << p->rnum
+				<< " nbit=" << p->nbit
+				<< " save=" << save
+				<< " ioype=" << p->stype
+				<< " mb_init=" << r->mb_init
+				<< endl;
 
 		try
 		{
@@ -1534,7 +1649,7 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 				ModbusRTU::DataBits16 b(r->mbval);
 				if( p->nbit >= 0 )
 				{
-					if( save )
+					if( save && r->mb_init )
 					{
 						bool set = IOBase::processingAsDO( p, shm, force_out );
 						b.set(p->nbit,set);
@@ -1545,12 +1660,13 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 						bool set = b[p->nbit];
 						IOBase::processingAsDI( p, set, shm, force );
 					}
+
 					return;
 				}
 			
 				if( p->rnum <= 1 )
 				{
-					if( save )
+					if( save && r->mb_init )
 					{
 						if( p->stype == UniversalIO::DigitalInput ||
 							p->stype == UniversalIO::DigitalOutput )
@@ -1579,7 +1695,7 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 			}
 			else if( p->vType == VTypes::vtSigned )
 			{
-				if( save )
+				if( save && r->mb_init )
 				{
 					if( p->stype == UniversalIO::DigitalInput ||
 						p->stype == UniversalIO::DigitalOutput )
@@ -1598,15 +1714,14 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 					}
 					else
 					{
-						long val = (signed short)r->mbval;
-						IOBase::processingAsAI( p, val, shm, force );
+						IOBase::processingAsAI( p, (signed short)(r->mbval), shm, force );
 					}
 				}
 				return;
 			}
 			else if( p->vType == VTypes::vtUnsigned )
 			{
-				if( save )
+				if( save && r->mb_init )
 				{
 					if( p->stype == UniversalIO::DigitalInput ||
 						p->stype == UniversalIO::DigitalOutput )
@@ -1625,8 +1740,7 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 					}
 					else
 					{
-						long val = (unsigned short)r->mbval;
-						IOBase::processingAsAI( p, val, shm, force );
+						IOBase::processingAsAI( p, (unsigned short)r->mbval, shm, force );
 					}
 				}
 				return;
@@ -1640,7 +1754,7 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 					return;
 				}
 
-				if( save )
+				if( save && r->mb_init )
 				{
 					long v = IOBase::processingAsAO( p, shm, force_out );
 					VTypes::Byte b(r->mbval);
@@ -1658,7 +1772,7 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 			else if( p->vType == VTypes::vtF2 )
 			{
 				RegMap::iterator i(p->reg->rit);
-				if( save )
+				if( save && r->mb_init )
 				{
 					float f = IOBase::processingFasAO( p, shm, force_out );
 					VTypes::F2 f2(f);
@@ -1680,7 +1794,7 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 			else if( p->vType == VTypes::vtF4 )
 			{
 				RegMap::iterator i(p->reg->rit);
-				if( save )
+				if( save && r->mb_init )
 				{
 					float f = IOBase::processingFasAO( p, shm, force_out );
 					VTypes::F4 f4(f);
