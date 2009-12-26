@@ -86,7 +86,8 @@ class RTUExchange:
 				mtrType(MTR::mtUnknown),
 				rtuJack(RTUStorage::nUnknown),rtuChan(0),
 				dev(0),offset(0),
-				q_num(0),q_count(1)
+				q_num(0),q_count(1),mb_init(false),sm_init(false),
+				mb_init_mbreg(0)
 			{}
 
 			ModbusRTU::ModbusData mbval;
@@ -110,6 +111,9 @@ class RTUExchange:
 			int q_count;	/*! count registers for query */
 			
 			RegMap::iterator rit;
+			bool mb_init;	/*!< init before use */
+			bool sm_init;	/*!< SM init value */
+			ModbusRTU::ModbusData mb_init_mbreg;	/*!< mb_init register */
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, RegInfo& r );
@@ -126,7 +130,7 @@ class RTUExchange:
 			resp_id(UniSetTypes::DefaultObjectId),
 			resp_state(false),
 			resp_invert(false),
-			resp_real(true),
+			resp_real(false),
 			resp_init(false),
 			rtu(0)
 			{

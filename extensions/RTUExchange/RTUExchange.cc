@@ -367,14 +367,15 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 {
 	RegInfo* p(it->second);
 
-	if( dlog.debugging(Debug::INFO) )
+	if( dlog.debugging(Debug::LEVEL3)  )
 	{
-		dlog[Debug::INFO] << myname << "(pollRTU): poll "
+		dlog[Debug::LEVEL3] << myname << "(pollRTU): poll "
 			<< " mbaddr=" << ModbusRTU::addr2str(dev->mbaddr)
 			<< " mbreg=" << ModbusRTU::dat2str(p->mbreg)
 			<< " mboffset=" << p->offset
 			<< " mbfunc=" << p->mbfunc
 			<< " q_count=" << p->q_count
+			<< " mb_init=" << p->mb_init
 			<< endl;
 	}
 	
@@ -442,6 +443,17 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 					<< " IGNORE WRITE SINGLE REGISTER (0x06) q_count=" << p->q_count << " ..." << endl;
 				return false;
 			}
+			
+			if( !p->mb_init )
+			{
+//				cerr << "******* mb_init: mbreg=" << ModbusRTU::dat2str(p->mbreg) << endl;
+				ModbusRTU::ReadInputRetMessage ret1 = mb->read04(dev->mbaddr,p->mb_init_mbreg,1);
+				p->mbval = ret1.data[0];
+				p->sm_init = true;
+				return true;
+			}
+
+//			cerr << "**** mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
 			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg+p->offset,p->mbval);
 		}
 		break;
@@ -450,7 +462,21 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		{
 			ModbusRTU::WriteOutputMessage msg(dev->mbaddr,p->mbreg+p->offset);
 			for( int i=0; i<p->q_count; i++,it++ )
+			{
+				if( !it->second->mb_init )
+				{
+//					cerr << "******* mb_init: mbreg=" << ModbusRTU::dat2str(it->second->mbreg) 
+//						<< " mb_init mbreg=" << ModbusRTU::dat2str(it->second->mb_init_mbreg) << endl;
+					ModbusRTU::ReadOutputRetMessage ret1 = mb->read03(dev->mbaddr,it->second->mb_init_mbreg,1);
+//					cerr << "******* mb_init: mbreg=" << ModbusRTU::dat2str(it->second->mbreg) 
+//						<< " mb_init mbreg=" << ModbusRTU::dat2str(it->second->mb_init_mbreg)
+//						<< " mbval=" << ret1.data[0] << endl;
+					it->second->mbval = ret1.data[0];
+					it->second->sm_init = true;
+				}
+			
 				msg.addData(it->second->mbval);
+			}
 			it--;
 			ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
 		}
@@ -465,19 +491,62 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 				return false;
 			}
 
+			if( !p->mb_init )
+			{
+//				cerr << "******* mb_init: mbreg=" << ModbusRTU::dat2str(p->mbreg)
+//						<< " init mbreg=" << ModbusRTU::dat2str(p->mb_init_mbreg) << endl;
+				ModbusRTU::ReadInputStatusRetMessage ret1 = mb->read02(dev->mbaddr,p->mb_init_mbreg,1);
+				ModbusRTU::DataBits b(ret1.data[0]);
+//				cerr << "******* mb_init_mbreg=" << ModbusRTU::dat2str(p->mb_init_mbreg) 
+//						<< " read val=" << (int)b[0] << endl;
+				p->mbval = b[0];
+				p->sm_init = true;
+				return true;
+			}
+
+//			cerr << "****(coil) mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
 			ModbusRTU::ForceSingleCoilRetMessage ret = mb->write05(dev->mbaddr,p->mbreg+p->offset,p->mbval);
 		}
 		break;
 
 		case ModbusRTU::fnForceMultipleCoils:
 		{
-				ModbusRTU::ForceCoilsMessage msg(dev->mbaddr,p->mbreg+p->offset);
+			if( !p->mb_init )
+			{
+				// every register ask... (for mb_init_mbreg no some)
 				for( int i=0; i<p->q_count; i++,it++ )
-					msg.addBit( (it->second->mbval ? true : false) );
-
+				{
+					ModbusRTU::ReadInputStatusRetMessage ret1 = mb->read02(dev->mbaddr,it->second->mb_init_mbreg,1);
+					ModbusRTU::DataBits b(ret1.data[0]);
+					it->second->mbval = b[0] ? 1 : 0;
+					it->second->sm_init = true;
+				}
+/*
+				// alone query for all register (if mb_init_mbreg ++ )
+				ModbusRTU::ReadInputStatusRetMessage ret1 = mb->read02(dev->mbaddr,p->mb_init_mbreg,p->q_count);
+				int m=0;
+				for( int i=0; i<ret1.bcnt; i++ )
+				{
+					ModbusRTU::DataBits b(ret1.data[i]);
+					for( int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
+					{
+						it->second->mbval = b[k] ? 1 : 0;
+						it->second->sm_init = true;
+					}
+				}
+*/
+				p->sm_init = true;
 				it--;
-//				cerr << "*********** (write multiple): " << msg << endl;
-				ModbusRTU::ForceCoilsRetMessage ret = mb->write0F(msg);
+				return true;
+			}
+
+			ModbusRTU::ForceCoilsMessage msg(dev->mbaddr,p->mbreg+p->offset);
+			for( int i=0; i<p->q_count; i++,it++ )
+				msg.addBit( (it->second->mbval ? true : false) );
+
+			it--;
+//			cerr << "*********** (write multiple): " << msg << endl;
+			ModbusRTU::ForceCoilsRetMessage ret = mb->write0F(msg);
 		}
 		break;
 		
@@ -526,12 +595,14 @@ void RTUExchange::updateSM()
 	{
 		RTUDevice* d(it1->second);
 		
-//		cout << "check respond addr=" << ModbusRTU::addr2str(d->mbaddr) 
-//			<< " respond=" << d->resp_id 
-//			<< " real=" << d->resp_real
-//			<< " state=" << d->resp_state
-//			<< endl;
-
+		if( dlog.debugging(Debug::LEVEL4) )
+		{
+			dlog[Debug::LEVEL4] << "check respond addr=" << ModbusRTU::addr2str(d->mbaddr) 
+				<< " respond=" << d->resp_id 
+				<< " real=" << d->resp_real
+				<< " state=" << d->resp_state
+				<< endl;
+		}
 		if( d->resp_real )
 			allNotRespond = false;
 				
@@ -819,8 +890,12 @@ void RTUExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 					{
 						dlog[Debug::INFO] << myname<< "(sensorInfo): si.id=" << sm->id 
 							<< " reg=" << ModbusRTU::dat2str(i->reg->mbreg)
-							<< " val=" << sm->value << endl;
+							<< " val=" << sm->value 
+							<< " mb_init=" << i->reg->mb_init << endl;
 					}
+
+					if( !i->reg->mb_init )
+						continue;
 
 					i->value = sm->value;
 					updateRSProperty( &(*i),true);
@@ -1101,6 +1176,7 @@ bool RTUExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  RTUExchange::RT
 	r->dev = dev;
 	r->mbval = it.getIntProp("default");
 	r->offset= it.getIntProp("mboffset");
+	r->mb_init = it.getIntProp("mbinit");
 
 	if( dev->dtype == RTUExchange::dtMTR )
 	{
@@ -1145,6 +1221,19 @@ bool RTUExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  RTUExchange::RT
 			dlog[Debug::CRIT] << myname << "(initRegInfo): (RTU188) unknown mbreg for " << it.getProp("name") << endl;
 			return false;
 		}
+	}
+
+	{
+		string sr = it.getProp("init_mbreg");
+		if( sr == "-1" )
+		{
+			r->mb_init = true; // OFF mb_init
+			r->sm_init = true;
+		}
+		else if( sr.empty() )
+			r->mb_init_mbreg = r->mbreg;
+		else
+			r->mb_init_mbreg = ModbusRTU::str2mbData(sr);
 	}
 
 	r->mbfunc 	= ModbusRTU::fnUnknown;
@@ -1280,8 +1369,7 @@ bool RTUExchange::initItem( UniXML_iterator& it )
 	// и если идёт попытка внести в список не битовый датчик то ОШИБКА!
 	// И наоборот: если идёт попытка внести битовый датчик, а в списке
 	// уже сидит датчик занимающий целый регистр, то тоже ОШИБКА!
-	if(	ri->mbfunc == ModbusRTU::fnWriteOutputRegisters ||
-			ri->mbfunc == ModbusRTU::fnWriteOutputSingleRegister )
+	if(	ModbusRTU::isWriteFunction(ri->mbfunc) )
 	{
 		if( p.nbit<0 &&  ri->slst.size() > 1 )
 		{
@@ -1316,7 +1404,10 @@ bool RTUExchange::initItem( UniXML_iterator& it )
 	if( p1->rnum > 1 )
 	{
 		for( int i=1; i<p1->rnum; i++ )
-			addReg(dev->regmap,mbreg+i,it,dev,ri);
+		{
+			RTUExchange::RegInfo* ri1 = addReg(dev->regmap,mbreg+i,it,dev,ri);
+			ri1->mb_init_mbreg = ri->mb_init_mbreg+i;
+		}
 	}
 	
 	if( dev->dtype == dtRTU188 )
@@ -1516,7 +1607,7 @@ bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
 		if( d->second->resp_id == DefaultObjectId )
 		{
 			dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for noRespondSensor=" << it.getProp("respondSensor") << endl;
-			return false;
+			return true;
 		}
 	}
 
@@ -1674,6 +1765,9 @@ void RTUExchange::updateRTU( RegMap::iterator& rit )
 	RegInfo* r(rit->second);
 	for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
 		updateRSProperty( &(*it),false );
+
+	if( r->sm_init )
+		r->mb_init = true;
 }
 // -----------------------------------------------------------------------------
 void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
@@ -1693,7 +1787,7 @@ void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
 				ModbusRTU::DataBits16 b(r->mbval);
 				if( p->nbit >= 0 )
 				{
-					if( save )
+					if( save && r->mb_init )
 					{
 						bool set = IOBase::processingAsDO( p, shm, force_out );
 						b.set(p->nbit,set);
@@ -1709,7 +1803,7 @@ void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
 
 				if( p->rnum <= 1 )
 				{
-					if( save )
+					if( save && r->mb_init )
 					{
 						if( p->stype == UniversalIO::DigitalInput ||
 							p->stype == UniversalIO::DigitalOutput )
@@ -1738,7 +1832,7 @@ void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
 			}
 			else if( p->vType == VTypes::vtSigned )
 			{
-				if( save )
+				if( save && r->mb_init )
 				{
 					if( p->stype == UniversalIO::DigitalInput ||
 						p->stype == UniversalIO::DigitalOutput )
@@ -1757,15 +1851,14 @@ void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
 					}
 					else
 					{
-						long val = (signed short)r->mbval;
-						IOBase::processingAsAI( p, val, shm, force );
+						IOBase::processingAsAI( p, (signed short)(r->mbval), shm, force );
 					}
 				}
 				return;
 			}
 			else if( p->vType == VTypes::vtUnsigned )
 			{
-				if( save )
+				if( save && r->mb_init )
 				{
 					if( p->stype == UniversalIO::DigitalInput ||
 						p->stype == UniversalIO::DigitalOutput )
@@ -1784,8 +1877,7 @@ void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
 					}
 					else
 					{
-						long val = (unsigned short)r->mbval;
-						IOBase::processingAsAI( p, val, shm, force );
+						IOBase::processingAsAI( p, (unsigned short)r->mbval, shm, force );
 					}
 				}
 				return;
@@ -1799,7 +1891,7 @@ void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
 					return;
 				}
 
-				if( save )
+				if( save && r->mb_init )
 				{
 					long v = IOBase::processingAsAO( p, shm, force_out );
 					VTypes::Byte b(r->mbval);
@@ -1817,7 +1909,7 @@ void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
 			else if( p->vType == VTypes::vtF2 )
 			{
 				RegMap::iterator i(p->reg->rit);
-				if( save )
+				if( save && r->mb_init )
 				{
 					float f = IOBase::processingFasAO( p, shm, force_out );
 					VTypes::F2 f2(f);
@@ -1839,7 +1931,7 @@ void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
 			else if( p->vType == VTypes::vtF4 )
 			{
 				RegMap::iterator i(p->reg->rit);
-				if( save )
+				if( save && r->mb_init )
 				{
 					float f = IOBase::processingFasAO( p, shm, force_out );
 					VTypes::F4 f4(f);
