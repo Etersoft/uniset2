@@ -87,7 +87,7 @@ void MBTCPServer::execute()
 #endif
 		
 		if( verbose && res!=ModbusRTU::erNoError && res!=ModbusRTU::erTimeOut )
-			cerr << "(wait): " << ModbusRTU::mbErr2Str(res) << endl;
+			cerr << "(execute::receive): " << ModbusRTU::mbErr2Str(res) << endl;
 	}
 }
 // -------------------------------------------------------------------------
