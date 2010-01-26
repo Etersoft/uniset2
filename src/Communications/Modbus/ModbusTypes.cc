@@ -653,7 +653,8 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputStatusMessage& m 
 //	return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
 	return os << "addr=" << addr2str(m.addr) 
 				<< " start=" << dat2str(m.start) 
-				<< " count=" << dat2str(m.count);
+				<< " count=" << dat2str(m.count)
+				<< "(" << (int)m.count << ")";
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputStatusMessage* m )
 {
@@ -854,7 +855,9 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadOutputMessage& m )
 //	return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
 	return os << "addr=" << addr2str(m.addr) 
 				<< " start=" << dat2str(m.start) 
-				<< " count=" << dat2str(m.count);
+				<< " count=" << dat2str(m.count)
+				<< "(" << (int)m.count << ")";
+
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadOutputMessage* m )
 {
@@ -1070,7 +1073,8 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputMessage& m )
 //	return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
 	return os << "addr=" << addr2str(m.addr) 
 				<< " start=" << dat2str(m.start) 
-				<< " count=" << dat2str(m.count);
+				<< " count=" << dat2str(m.count)
+				<< "(" << (int)m.count << ")";
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputMessage* m )
 {

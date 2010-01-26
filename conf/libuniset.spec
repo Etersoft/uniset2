@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.97
-Release: eter48
+Release: eter50
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -182,6 +182,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Jan 26 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter49
+- fixed bug in ModbusTCPMaster
+
 * Mon Dec 28 2009 Alexander Morozov <amorozov@etersoft.ru> 0.97-eter48
 - added new filters
 - fixed some bugs

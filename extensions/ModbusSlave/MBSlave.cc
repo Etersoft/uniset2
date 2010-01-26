@@ -833,7 +833,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage&
 		if( reply.count < query.count )
 		{
 			dlog[Debug::WARN] << myname 
-				<< "(readInputRegisters): query.count=" << query.count 
+				<< "(readInputRegisters): query.count=" << (int)query.count 
 					<< " > reply.count=" << reply.count << endl;
 		}
 
@@ -1143,8 +1143,8 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 		if( reply.count < query.count )
 		{
 			dlog[Debug::WARN] << myname 
-				<< "(readInputRegisters): query.count=" << query.count 
-					<< " > reply.count=" << reply.count << endl;
+				<< "(readInputRegisters): query.count=" << (int)query.count 
+					<< " > reply.count=" << (int)reply.count << endl;
 		}
 
 		pingOK = true;

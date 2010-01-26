@@ -88,6 +88,7 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
 						}
 
 						usleep(10000);
+						tcp.disconnect();
 						return res;
 					}
 					
@@ -104,7 +105,10 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
 				while( res == erBadReplyNodeAddress );
 				
 				if( res!=erNoError )
+				{
+					tcp.disconnect();
 					return res;
+				}
 
 				// processing message...
 				res = processing(buf);
@@ -169,7 +173,13 @@ mbErrCode ModbusTCPServer::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPH
 	len = ModbusTCPCore::readNextData(&tcp,qrecv,mhead.len);
 
 	if( len<mhead.len )
+	{
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << "(ModbusTCPServer::tcp_processing): len(" << (int)len 
+					<< ") < mhead.len(" << (int)mhead.len << ")" << endl;
+		
 		return erInvalidFormat;
+	}
 
 	return erNoError;
 }

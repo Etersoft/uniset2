@@ -160,10 +160,13 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 			if( ret < (int)sizeof(rmh) )
 			{
+				if( dlog.debugging(Debug::INFO) )
+					dlog[Debug::INFO] << "(ModbusTCPMaster::query): ret=" << (int)ret
+							<< " < rmh=" << (int)sizeof(rmh) << endl;
 				disconnect();
 				return erTimeOut; // return erHardwareError;
 			}
-
+            
 			rmh.swapdata();
 			
 			if( rmh.tID != mh.tID )
@@ -176,11 +179,20 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				cleanInputStream();
 				return  erBadReplyNodeAddress;
 			}
-
 			//
-			return recv(addr,msg.func,reply,timeout);
-//			msg.addr = rmh.uID;
-//			return recv_pdu(msg.func,reply,timeout);
+
+//			return recv(addr,msg.func,reply,timeout);
+			mbErrCode res = recv(addr,msg.func,reply,timeout);
+			
+			if( force_disconnect )
+			{
+				if( dlog.debugging(Debug::INFO) )
+					dlog[Debug::INFO] << "(query): force disconnect.." << endl;
+			
+				disconnect();
+			}
+
+			return res;
 		}
 
 		if( dlog.debugging(Debug::INFO) )
