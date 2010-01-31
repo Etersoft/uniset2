@@ -1,4 +1,5 @@
-/*! \page ObjectsMapPage Карта объектов
+/* OBSOLETE DOC!!!
+ \page ObjectsMapPage Карта объектов
 
   - \ref OMAP_secCommon
   - \ref OMAP_secStatic
@@ -230,7 +231,7 @@ const UniSetTypes::ObjectInfo ObjectsMap[MAX_NUMOBJECTS] =
 
 		Для использования в программе код должен выглядеть примерно следующим образом:
 \code
-	\#include "ObjectysMap.h"
+	\#include "ObjectsMap.h"
 	
 	...
 	// посылка сообщения объекту testControlProcess

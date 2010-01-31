@@ -44,8 +44,8 @@
 	кода, используйте следующую конструкцию:
 	
 		\code
-			if (unideb.debugging(Debug::INFO)) {                                         
-        		unideb << "...debug output...\n";                                       
+			if (unideb.debugging(Debug::INFO)) {
+        		unideb << "...debug output..." << endl;
 			}
 		\endcode
 	
