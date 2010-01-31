@@ -215,7 +215,7 @@ const UniSetTypes::ObjectInfo ObjectsMap[MAX_NUMOBJECTS] =
 			...
 			
 			// запуск
-			act.tun(false);
+			act.run(false);
 		}			
 		catch(Exception& ex )
     	{
@@ -248,7 +248,7 @@ const UniSetTypes::ObjectInfo ObjectsMap[MAX_NUMOBJECTS] =
 	// заказ датчика
 	try
 	{
-		ui.askSensor(maxTemperatureOilD1_S);
+		ui.askSensor(maxTemperatureOilD1_S,UniversalIO::UIONotify);
 	}
 	catch(UniSetTypes::Exception& ex)
 	{
