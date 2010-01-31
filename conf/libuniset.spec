@@ -104,6 +104,7 @@ rm -f %buildroot%_libdir/*.la
 %_bindir/%oname-nullController
 %_bindir/%oname-sviewer-text
 %_bindir/%oname-smonit
+%_bindir/%oname-simitator
 %_bindir/%oname-start*
 %_bindir/%oname-stop*
 %_bindir/%oname-func*
@@ -182,6 +183,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Fri Jan 29 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter50
+- add simitator
+
 * Tue Jan 26 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter49
 - fixed bug in ModbusTCPMaster
 
