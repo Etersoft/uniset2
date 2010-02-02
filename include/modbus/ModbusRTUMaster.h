@@ -29,7 +29,11 @@ class ModbusRTUMaster:
 		void setSpeed( ComPort::Speed s );
 		void setSpeed( const std::string s );
 		ComPort::Speed getSpeed();
-		
+
+		void setParity( ComPort::Parity parity );
+		void setCharacterSize( ComPort::CharacterSize csize );
+		void setStopBits( ComPort::StopBits sBit );
+
 		int getTimeout();
 
 	protected:

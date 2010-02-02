@@ -82,7 +82,24 @@ ComPort::Speed ModbusRTUMaster::getSpeed()
 	
 	return port->getSpeed();
 }
-
+// -------------------------------------------------------------------------
+void ModbusRTUMaster::setParity( ComPort::Parity parity )
+{
+	if( port != NULL)
+		port->setParity(parity);
+}
+// -------------------------------------------------------------------------
+void ModbusRTUMaster::setCharacterSize( ComPort::CharacterSize csize )
+{
+	if( port != NULL)
+		port->setCharacterSize(csize);
+}
+// -------------------------------------------------------------------------
+void ModbusRTUMaster::setStopBits( ComPort::StopBits sBit )
+{
+	if( port != NULL)
+		port->setStopBits(sBit);
+}
 // -------------------------------------------------------------------------
 int ModbusRTUMaster::getTimeout()
 {
