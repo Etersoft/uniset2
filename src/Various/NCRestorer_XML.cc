@@ -469,7 +469,7 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 bool NCRestorer_XML::check_thresholds_item( UniXML_iterator& it )
 {	
 	// формат тот же как и <sensors> 
-	return check_list_item(it);
+	return check_consumer_item(it);
 }
 // ------------------------------------------------------------------------------------------
 void NCRestorer_XML::setReadThresholdItem( ReaderSlot sl )
