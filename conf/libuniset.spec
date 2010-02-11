@@ -183,6 +183,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Thu Feb 04 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter53
+- new build
+
 * Tue Feb 02 2010 Larik Ishkulov <gentro@etersoft.ru> 0.97-eter52
 - new build
 
