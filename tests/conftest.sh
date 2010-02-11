@@ -4,6 +4,9 @@ SID=$1
 
 [ -z "$SID" ] && SID=1
 
+echo "check auto ID configuration..."
 uniset-start.sh -f ./conftest --confile test.xml
-#--unideb-add-levels system,info,level9
+
+echo "check id from file configuration..."
+uniset-start.sh -f ./conftest --confile testID.xml
 
