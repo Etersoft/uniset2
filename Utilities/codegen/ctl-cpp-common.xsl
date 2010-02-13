@@ -166,7 +166,7 @@
 							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
 		void updateValues();
-		void setInfo( UniSetTypes::ObjectId code, bool state );
+		void setMsg( UniSetTypes::ObjectId code, bool state );
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PROTECTED">
