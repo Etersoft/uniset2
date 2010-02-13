@@ -32,6 +32,19 @@ int main()
 	}
 
 
+	PassiveTimer pt4(350);
+
+	for( int i=0;i<12; i++ )
+	{
+		cerr << "pt4: check time = " << pt4.checkTime() << endl;
+		if( pt4.checkTime() )
+		{
+			cerr << "pt4: reset..." << endl;
+			pt4.reset();
+		}
+		msleep(200);
+	}
+
 	while(1)
 	{
 		cerr << "timer=" << pt.checkTime() << endl;
