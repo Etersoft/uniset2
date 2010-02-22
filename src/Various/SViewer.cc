@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *  \brief Программа просмотра состояния датчиков
+ *  \brief п÷я─п╬пЁя─п╟п╪п╪п╟ п©я─п╬я│п╪п╬я┌я─п╟ я│п╬я│я┌п╬я▐п╫п╦я▐ п╢п╟я┌я┤п╦п╨п╬п╡
  *  \author Pavel Vainerman
  *  \date   $Date: 2007/11/18 19:13:35 $
  *  \version $Id: SViewer.cc,v 1.15 2007/11/18 19:13:35 vpashka Exp $
@@ -95,7 +95,7 @@ void SViewer::readSection(const string section, const string secRoot)
 //		cout << " read sectionlist ..."<< endl;
 		if( !rep.listSections(curSection, &lst, 1000) )
 		{
-			cout << "(readSection): получен не полный список" << endl;
+			cout << "(readSection): п©п╬п╩я┐я┤п╣п╫ п╫п╣ п©п╬п╩п╫я▀п╧ я│п©п╦я│п╬п╨" << endl;
 		}
 	}
 	catch( ORepFailed ){}
@@ -119,7 +119,7 @@ void SViewer::readSection(const string section, const string secRoot)
 		try
 		{
 			if( !rep.list(secName, &lstObj, 1000) )
-				cout << "(readSection): получен не полный список" << endl;
+				cout << "(readSection): п©п╬п╩я┐я┤п╣п╫ п╫п╣ п©п╬п╩п╫я▀п╧ я│п©п╦я│п╬п╨" << endl;
 		}
 		catch( ORepFailed )
 		{
@@ -144,7 +144,7 @@ void SViewer::readSection(const string section, const string secRoot)
 					string fname(curSection+ "/"+ ob);
 					ObjectId id = conf->oind->getIdByFullName( fname );
 					if( id == DefaultObjectId )
-						cout << "(readSection): ID?! для " << fname << endl;
+						cout << "(readSection): ID?! п╢п╩я▐ " << fname << endl;
 					else
 						getInfo(id);
 				}
@@ -156,7 +156,7 @@ void SViewer::readSection(const string section, const string secRoot)
 			}
 		}
 		else
-			cout << " секция " << secRoot << "/" << section << " не содержит объектов " << endl;
+			cout << " я│п╣п╨я├п╦я▐ " << secRoot << "/" << section << " п╫п╣ я│п╬п╢п╣я─п╤п╦я┌ п╬п╠я┼п╣п╨я┌п╬п╡ " << endl;
 	}
 }
 // ---------------------------------------------------------------------------
@@ -221,7 +221,7 @@ void SViewer::updateDSensors(IOController_i::DSensorInfoSeq_var& dmap, UniSetTyp
 {
 	string owner = ORepHelpers::getShortName(conf->oind->getMapName(oid));
 	cout << "\n======================================================\n" << owner;
-	cout << "\t Дискретные датчики";
+	cout << "\t п■п╦я│п╨я─п╣я┌п╫я▀п╣ п╢п╟я┌я┤п╦п╨п╦";
 	cout << "\n------------------------------------------------------"<< endl;
 
 	int size = dmap->length();
@@ -241,7 +241,7 @@ void SViewer::updateDSensors(IOController_i::DSensorInfoSeq_var& dmap, UniSetTyp
 	cout << "------------------------------------------------------\n";
 	
 	cout << "\n======================================================\n" << owner;
-	cout << "\t Дискретные выходы";
+	cout << "\t п■п╦я│п╨я─п╣я┌п╫я▀п╣ п╡я▀я┘п╬п╢я▀";
 	cout << "\n------------------------------------------------------"<< endl;
 	for(int i=0; i<size; i++)
 	{
@@ -264,7 +264,7 @@ void SViewer::updateASensors(IOController_i::ASensorInfoSeq_var& amap, UniSetTyp
 {
 	string owner = ORepHelpers::getShortName(conf->oind->getMapName(oid));
 	cout << "\n======================================================\n" << owner;
-	cout << "\t Аналоговые датчики";
+	cout << "\t п░п╫п╟п╩п╬пЁп╬п╡я▀п╣ п╢п╟я┌я┤п╦п╨п╦";
 	cout << "\n------------------------------------------------------"<< endl;
 	int size = amap->length();
 	for(int i=0; i<size; i++)
@@ -282,7 +282,7 @@ void SViewer::updateASensors(IOController_i::ASensorInfoSeq_var& amap, UniSetTyp
 	cout << "------------------------------------------------------\n";	
 
 	cout << "\n======================================================\n" << owner;
-	cout << "\t Аналоговые выходы";
+	cout << "\t п░п╫п╟п╩п╬пЁп╬п╡я▀п╣ п╡я▀я┘п╬п╢я▀";
 	cout << "\n------------------------------------------------------"<< endl;
 	for(int i=0; i<size; i++)
 	{
@@ -305,7 +305,7 @@ void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tls
 	int size = tlst->length();
 	string owner = ORepHelpers::getShortName(conf->oind->getMapName(oid));
 	cout << "\n======================================================\n" << owner;
-	cout << "\t Пороговые датчики";
+	cout << "\t п÷п╬я─п╬пЁп╬п╡я▀п╣ п╢п╟я┌я┤п╦п╨п╦";
 	cout << "\n------------------------------------------------------"<< endl;
 
 	for(int i=0; i<size; i++)

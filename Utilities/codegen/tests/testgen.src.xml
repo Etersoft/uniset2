@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="koi8-r"?>
 <!--
-	name 		- название класса
-	msgcount	- сколько сообщений обрабатывается за один раз
-	sleep_msec	- пауза между итерациями в работе процесса
+	name 		- п╫п╟п╥п╡п╟п╫п╦п╣ п╨п╩п╟я│я│п╟
+	msgcount	- я│п╨п╬п╩я▄п╨п╬ я│п╬п╬п╠я┴п╣п╫п╦п╧ п╬п╠я─п╟п╠п╟я┌я▀п╡п╟п╣я┌я│я▐ п╥п╟ п╬п╢п╦п╫ я─п╟п╥
+	sleep_msec	- п©п╟я┐п╥п╟ п╪п╣п╤п╢я┐ п╦я┌п╣я─п╟я├п╦я▐п╪п╦ п╡ я─п╟п╠п╬я┌п╣ п©я─п╬я├п╣я│я│п╟
 
 	type
 	====
-		in 	- входные регистры (только для чтения)
-		out	- выходные регистры (запись)
-		io  - запись и чтение
+		in 	- п╡я┘п╬п╢п╫я▀п╣ я─п╣пЁп╦я│я┌я─я▀ (я┌п╬п╩я▄п╨п╬ п╢п╩я▐ я┤я┌п╣п╫п╦я▐)
+		out	- п╡я▀я┘п╬п╢п╫я▀п╣ я─п╣пЁп╦я│я┌я─я▀ (п╥п╟п©п╦я│я▄)
+		io  - п╥п╟п©п╦я│я▄ п╦ я┤я┌п╣п╫п╦п╣
 -->
 <Test>
   <settings>
@@ -17,14 +17,14 @@
 	<set name="sleep-msec" val="150"/>
   </settings>
   <smap> 
-	<!-- name - название переменной в конф. файле -->
+	<!-- name - п╫п╟п╥п╡п╟п╫п╦п╣ п©п╣я─п╣п╪п╣п╫п╫п╬п╧ п╡ п╨п╬п╫я└. я└п╟п╧п╩п╣ -->
 	<item name="input1_s" vartype="in" iotype="DI" comment="comment for input1" />
 	<item name="input2_s" vartype="in" iotype="DI" comment="comment for input2" />
 	<item name="output1_c" vartype="out" iotype="DO" omment="comment for output1" />
   </smap>
 
   <msgmap>
-  	<!-- name - название переменной в конф. файле -->
+  	<!-- name - п╫п╟п╥п╡п╟п╫п╦п╣ п©п╣я─п╣п╪п╣п╫п╫п╬п╧ п╡ п╨п╬п╫я└. я└п╟п╧п╩п╣ -->
 		<item name="mid_Message1" comment="comment for Message 1" />
   </msgmap>
 </Test>

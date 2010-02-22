@@ -4,9 +4,9 @@
 -- ------------------------------------------------------
 -- Server version	4.0.18-log
 
---  Создание пользователя для dbadmin-а
+--  п║п╬п╥п╢п╟п╫п╦п╣ п©п╬п╩я▄п╥п╬п╡п╟я┌п╣п╩я▐ п╢п╩я▐ dbadmin-п╟
 GRANT SELECT,INSERT,UPDATE,DELETE,INDEX,LOCK TABLES,CREATE,DROP ON TESTBASE.* TO dbadmin@localhost IDENTIFIED BY 'dbadmin';
--- Создание пользователя для просмотра
+-- п║п╬п╥п╢п╟п╫п╦п╣ п©п╬п╩я▄п╥п╬п╡п╟я┌п╣п╩я▐ п╢п╩я▐ п©я─п╬я│п╪п╬я┌я─п╟
 GRANT SELECT ON TESTBASE.* TO dbreader@"%" IDENTIFIED BY 'dbreader';
 
 --

@@ -51,7 +51,7 @@ void DigitalFilter::setSettings( unsigned int bufsize, double T, double lsq,
 
 	if( buf.size() > maxsize )
 	{
-		// удаляем лишние (первые) элементы
+		// я┐п╢п╟п╩я▐п╣п╪ п╩п╦я┬п╫п╦п╣ (п©п╣я─п╡я▀п╣) я█п╩п╣п╪п╣п╫я┌я▀
 		int sub = buf.size() - maxsize;
 		for( int i=0; i<sub; i++ )
 			buf.erase( buf.begin() );
@@ -76,14 +76,14 @@ void DigitalFilter::init( int val )
 //--------------------------------------------------------------------------
 double DigitalFilter::firstLevel()
 {
-	// считаем среднее арифметическое
+	// я│я┤п╦я┌п╟п╣п╪ я│я─п╣п╢п╫п╣п╣ п╟я─п╦я└п╪п╣я┌п╦я┤п╣я│п╨п╬п╣
 	M=0;
 	for( FIFOBuffer::iterator i=buf.begin(); i!=buf.end(); ++i )
 		M = M + (*i);
 
 	M = M/buf.size();
 
-	// считаем среднеквадратичное отклонение
+	// я│я┤п╦я┌п╟п╣п╪ я│я─п╣п╢п╫п╣п╨п╡п╟п╢я─п╟я┌п╦я┤п╫п╬п╣ п╬я┌п╨п╩п╬п╫п╣п╫п╦п╣
 	S=0;
 	double r=0;
 	for( FIFOBuffer::iterator i=buf.begin(); i!=buf.end(); ++i )	
@@ -98,9 +98,9 @@ double DigitalFilter::firstLevel()
 	if( S == 0 )
 		return M;
 
-	// Находим среднее арифметическое без учета элементов, отклонение которых вдвое превышает среднеквадратичное
+	// п²п╟я┘п╬п╢п╦п╪ я│я─п╣п╢п╫п╣п╣ п╟я─п╦я└п╪п╣я┌п╦я┤п╣я│п╨п╬п╣ п╠п╣п╥ я┐я┤п╣я┌п╟ я█п╩п╣п╪п╣п╫я┌п╬п╡, п╬я┌п╨п╩п╬п╫п╣п╫п╦п╣ п╨п╬я┌п╬я─я▀я┘ п╡п╢п╡п╬п╣ п©я─п╣п╡я▀я┬п╟п╣я┌ я│я─п╣п╢п╫п╣п╨п╡п╟п╢я─п╟я┌п╦я┤п╫п╬п╣
 	int n = 0;
-	double val = 0; // Конечное среднее значение
+	double val = 0; // п п╬п╫п╣я┤п╫п╬п╣ я│я─п╣п╢п╫п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣
 	for( FIFOBuffer::iterator i=buf.begin(); i!=buf.end(); ++i )	
 	{
 		if( fabs(M-(*i)) > S*2 )
@@ -130,14 +130,14 @@ double DigitalFilter::secondLevel( double rawval )
 	if( Ti <= 0 )
 		return rawval;
 
-	// Измеряем время с прошлого вызова функции
+	// п≤п╥п╪п╣я─я▐п╣п╪ п╡я─п╣п╪я▐ я│ п©я─п╬я┬п╩п╬пЁп╬ п╡я▀п╥п╬п╡п╟ я└я┐п╫п╨я├п╦п╦
 	int dt = tmr.getCurrent();
 	if( dt == 0 )
 		return val;
 
 	tmr.reset();
 
-	// Сама формула RC фильтра
+	// п║п╟п╪п╟ я└п╬я─п╪я┐п╩п╟ RC я└п╦п╩я▄я┌я─п╟
 	val = (rawval + Ti*val/dt) / (Ti/dt + 1);
 
 	return val;
@@ -154,8 +154,8 @@ int DigitalFilter::filter1( int newval )
 //--------------------------------------------------------------------------
 void DigitalFilter::add( int newval )
 {
-	// помещаем очередное значение в буфер
-	// удаляя при этом старое (FIFO)
+	// п©п╬п╪п╣я┴п╟п╣п╪ п╬я┤п╣я─п╣п╢п╫п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ п╡ п╠я┐я└п╣я─
+	// я┐п╢п╟п╩я▐я▐ п©я─п╦ я█я┌п╬п╪ я│я┌п╟я─п╬п╣ (FIFO)
 	buf.push_back(newval);
 	if( buf.size() > maxsize )
 		buf.erase( buf.begin() );
@@ -216,15 +216,15 @@ int DigitalFilter::leastsqr( int newval )
 
 	add(newval);
 
-	// Цифровая фильтрация
+	// п╕п╦я└я─п╬п╡п╟я▐ я└п╦п╩я▄я┌я─п╟я├п╦я▐
 	FIFOBuffer::const_iterator it = buf.begin();
 	for( unsigned int i=0; i<maxsize; i++,it++ )
 		ls += *it * w[i];
 
-	// Вычисляем ошибку выхода
+	// п▓я▀я┤п╦я│п╩я▐п╣п╪ п╬я┬п╦п╠п╨я┐ п╡я▀я┘п╬п╢п╟
 	double er = newval - ls;
 
-	// Обновляем коэффициенты
+	// п·п╠п╫п╬п╡п╩я▐п╣п╪ п╨п╬я█я└я└п╦я├п╦п╣п╫я┌я▀
 	double u = 2 * (lsparam/maxsize) * er;
 	it = buf.begin();
 	for( unsigned int i=0; i<maxsize; i++,it++ )

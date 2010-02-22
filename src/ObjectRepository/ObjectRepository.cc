@@ -83,11 +83,11 @@ bool ObjectRepository::init()
 }
 // --------------------------------------------------------------------------
 /*!
- *  Пример:  registration("sens1", oRef, "Root/SensorSection");
- * \param name - имя регистрируемого объекта
- * \param oRef - ссылка на объект 
- * \param section - имя секции в которую заносится регистрационная запись
- * \exception ORepFailed - генерируется если произошла ошибка при регистрации
+ *  п÷я─п╦п╪п╣я─:  registration("sens1", oRef, "Root/SensorSection");
+ * \param name - п╦п╪я▐ я─п╣пЁп╦я│я┌я─п╦я─я┐п╣п╪п╬пЁп╬ п╬п╠я┼п╣п╨я┌п╟
+ * \param oRef - я│я│я▀п╩п╨п╟ п╫п╟ п╬п╠я┼п╣п╨я┌ 
+ * \param section - п╦п╪я▐ я│п╣п╨я├п╦п╦ п╡ п╨п╬я┌п╬я─я┐я▌ п╥п╟п╫п╬я│п╦я┌я│я▐ я─п╣пЁп╦я│я┌я─п╟я├п╦п╬п╫п╫п╟я▐ п╥п╟п©п╦я│я▄
+ * \exception ORepFailed - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ п©я─п╬п╦п╥п╬я┬п╩п╟ п╬я┬п╦п╠п╨п╟ п©я─п╦ я─п╣пЁп╦я│я┌я─п╟я├п╦п╦
  * \sa registration(const string fullName, const CORBA::Object_ptr oRef) 
 */
 void ObjectRepository::registration(const string& name, const ObjectPtr oRef, const string& section, bool force)
@@ -96,15 +96,15 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 	ostringstream err;
 
 	if( unideb.debugging(Debug::type(Debug::INFO|Debug::REPOSITORY)) )
-		unideb[Debug::type(Debug::INFO|Debug::REPOSITORY)] << "ObjectRepository(registration): регистрируем " << name << endl;
+		unideb[Debug::type(Debug::INFO|Debug::REPOSITORY)] << "ObjectRepository(registration): я─п╣пЁп╦я│я┌я─п╦я─я┐п╣п╪ " << name << endl;
 
-	// Проверка корректности имени
+	// п÷я─п╬п╡п╣я─п╨п╟ п╨п╬я─я─п╣п╨я┌п╫п╬я│я┌п╦ п╦п╪п╣п╫п╦
 	char bad = ORepHelpers::checkBadSymbols(name);
 	if( bad != 0 )
 	{
 		cerr << "orep reg: BAD Symbols" << endl;
 		err << "ObjectRepository(registration): (InvalidObjectName) " << name;
-		err << " содержит недопустимый символ " << bad;
+		err << " я│п╬п╢п╣я─п╤п╦я┌ п╫п╣п╢п╬п©я┐я│я┌п╦п╪я▀п╧ я│п╦п╪п╡п╬п╩ " << bad;
 		throw ( InvalidObjectName(err.str().c_str()) );
 	}
 	
@@ -114,7 +114,7 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 	{
 	    try
     	{
-	        // Добавляем в репозиторий новую ссылку (заменяя если есть старую)
+	        // п■п╬п╠п╟п╡п╩я▐п╣п╪ п╡ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╧ п╫п╬п╡я┐я▌ я│я│я▀п╩п╨я┐ (п╥п╟п╪п╣п╫я▐я▐ п╣я│п╩п╦ п╣я│я┌я▄ я│я┌п╟я─я┐я▌)
 	
 			CORBA::ORB_var orb = uconf->getORB();
 			ctx = ORepHelpers::getContext(orb, section, nsName);    
@@ -125,25 +125,25 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 		catch(const CosNaming::NamingContext::AlreadyBound &nf)
 		{
 			if( unideb.debugging(Debug::type(Debug::WARN|Debug::REPOSITORY)) )
-				unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "(registration): "<< name <<" уже зарегестрирован в "<< section << "!!!" << endl;
+				unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "(registration): "<< name <<" я┐п╤п╣ п╥п╟я─п╣пЁп╣я│я┌я─п╦я─п╬п╡п╟п╫ п╡ "<< section << "!!!" << endl;
 
 			if( !force )
 				throw ObjectNameAlready();
 				
-			// разрегистриуем, перед повтроной попыткой
+			// я─п╟п╥я─п╣пЁп╦я│я┌я─п╦я┐п╣п╪, п©п╣я─п╣п╢ п©п╬п╡я┌я─п╬п╫п╬п╧ п©п╬п©я▀я┌п╨п╬п╧
 			ctx->unbind(oName);
 			continue;
 /*
-			// делаем проверку жив ли объект
+			// п╢п╣п╩п╟п╣п╪ п©я─п╬п╡п╣я─п╨я┐ п╤п╦п╡ п╩п╦ п╬п╠я┼п╣п╨я┌
 			bool life(false);
 			try
 			{
-				unideb[Debug::type(Debug::INFO|Debug::REPOSITORY)] << "(registration): " << name << " уже есть... проверяем живой ли? "<< endl;
+				unideb[Debug::type(Debug::INFO|Debug::REPOSITORY)] << "(registration): " << name << " я┐п╤п╣ п╣я│я┌я▄... п©я─п╬п╡п╣я─я▐п╣п╪ п╤п╦п╡п╬п╧ п╩п╦? "<< endl;
 				CORBA::Object_var ref = ctx->resolve(oName);	
 				UniSetObject_i_var uobj = UniSetObject_i::_narrow(ref);
-				uobj->getId(); // пытаемся вызвать функцию (любую), если не сможет сработает исключение
+				uobj->getId(); // п©я▀я┌п╟п╣п╪я│я▐ п╡я▀п╥п╡п╟я┌я▄ я└я┐п╫п╨я├п╦я▌ (п╩я▌п╠я┐я▌), п╣я│п╩п╦ п╫п╣ я│п╪п╬п╤п╣я┌ я│я─п╟п╠п╬я┌п╟п╣я┌ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣
 				life = true;
-				unideb[Debug::type(Debug::INFO|Debug::REPOSITORY)] << "(registration): " << name << " живой! "<< endl;
+				unideb[Debug::type(Debug::INFO|Debug::REPOSITORY)] << "(registration): " << name << " п╤п╦п╡п╬п╧! "<< endl;
 			}
 			catch(...)
 			{ 
@@ -152,12 +152,12 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 	
 			if( !life )
 			{
-				unideb(Debug::type(Debug::WARN|Debug::REPOSITORY)) << "(registration): " << name << " ЕСТЬ в репозитории, но недоступен. Заменяем на новую ссылку "<< endl;
+				unideb(Debug::type(Debug::WARN|Debug::REPOSITORY)) << "(registration): " << name << " п∙п║п╒п╛ п╡ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╦, п╫п╬ п╫п╣п╢п╬я│я┌я┐п©п╣п╫. п≈п╟п╪п╣п╫я▐п╣п╪ п╫п╟ п╫п╬п╡я┐я▌ я│я│я▀п╩п╨я┐ "<< endl;
 				ctx->rebind(oName, oRef);
 			}
 			else
 			{
-				unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "(registration): "<< name <<" уже зарегестрирован в "<< section<< "!!!!!!!!!!!" << endl;
+				unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "(registration): "<< name <<" я┐п╤п╣ п╥п╟я─п╣пЁп╣я│я┌я─п╦я─п╬п╡п╟п╫ п╡ "<< section<< "!!!!!!!!!!!" << endl;
 				throw ObjectNameAlready();
 			}
 			return;
@@ -165,7 +165,7 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 		}
 	    catch(ORepFailed)
 	    {
-	  		string er("ObjectRepository(registrartion): (getContext) не смог зарегистрировать "+name);
+	  		string er("ObjectRepository(registrartion): (getContext) п╫п╣ я│п╪п╬пЁ п╥п╟я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟я┌я▄ "+name);
 				throw ORepFailed(er.c_str());
 	    }
 		catch(CosNaming::NamingContext::NotFound)
@@ -174,7 +174,7 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 	    }
 	    catch(const CosNaming::NamingContext::InvalidName &nf)
 	    {
-			err << "ObjectRepository(registration): (InvalidName) не смог зарегистрировать ссылку  " << name;;
+			err << "ObjectRepository(registration): (InvalidName) п╫п╣ я│п╪п╬пЁ п╥п╟я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟я┌я▄ я│я│я▀п╩п╨я┐  " << name;;
 	    }
 		catch(const CosNaming::NamingContext::CannotProceed &cp)
 		{
@@ -183,14 +183,14 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 		}
 	    catch(CORBA::SystemException& ex)
 	    {
-			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ObjectRepository(registrartion): поймали CORBA::SystemException: "
+			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ObjectRepository(registrartion): п©п╬п╧п╪п╟п╩п╦ CORBA::SystemException: "
 					<< ex.NP_minorString() << endl;
 	
-			err << "ObjectRepository(registrartion): поймали CORBA::SystemException: " << ex.NP_minorString();
+			err << "ObjectRepository(registrartion): п©п╬п╧п╪п╟п╩п╦ CORBA::SystemException: " << ex.NP_minorString();
 	    }
 	//	catch(...)
 	//	{
-	//		unideb[Debug::WARN] << "поймали что-то неизвестное..."<< endl;
+	//		unideb[Debug::WARN] << "п©п╬п╧п╪п╟п╩п╦ я┤я┌п╬-я┌п╬ п╫п╣п╦п╥п╡п╣я│я┌п╫п╬п╣..."<< endl;
 	//	}
 	}
 	
@@ -199,12 +199,12 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 // --------------------------------------------------------------------------
 
 /*!
- *  Функция регистрирует объект с именем "fullName" в репозитории объектов и связывает это имя со сылкой "oRef".
- *  \note При этом надо иметь ввиду, что задается полное имя объекта.
- *	Пример: registration("Root/SensorSection/sens1", oRef);
- *	\param fullName - полное имя регистрируемого объекта (т.е. включающее в себя имя секции)
- *	\param oRef - ссылка на объект 
- *  \exception ORepFailed - генерируется если произошла ошибка при регистрации
+ *  п╓я┐п╫п╨я├п╦я▐ я─п╣пЁп╦я│я┌я─п╦я─я┐п╣я┌ п╬п╠я┼п╣п╨я┌ я│ п╦п╪п╣п╫п╣п╪ "fullName" п╡ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╦ п╬п╠я┼п╣п╨я┌п╬п╡ п╦ я│п╡я▐п╥я▀п╡п╟п╣я┌ я█я┌п╬ п╦п╪я▐ я│п╬ я│я▀п╩п╨п╬п╧ "oRef".
+ *  \note п÷я─п╦ я█я┌п╬п╪ п╫п╟п╢п╬ п╦п╪п╣я┌я▄ п╡п╡п╦п╢я┐, я┤я┌п╬ п╥п╟п╢п╟п╣я┌я│я▐ п©п╬п╩п╫п╬п╣ п╦п╪я▐ п╬п╠я┼п╣п╨я┌п╟.
+ *	п÷я─п╦п╪п╣я─: registration("Root/SensorSection/sens1", oRef);
+ *	\param fullName - п©п╬п╩п╫п╬п╣ п╦п╪я▐ я─п╣пЁп╦я│я┌я─п╦я─я┐п╣п╪п╬пЁп╬ п╬п╠я┼п╣п╨я┌п╟ (я┌.п╣. п╡п╨п╩я▌я┤п╟я▌я┴п╣п╣ п╡ я│п╣п╠я▐ п╦п╪я▐ я│п╣п╨я├п╦п╦)
+ *	\param oRef - я│я│я▀п╩п╨п╟ п╫п╟ п╬п╠я┼п╣п╨я┌ 
+ *  \exception ORepFailed - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ п©я─п╬п╦п╥п╬я┬п╩п╟ п╬я┬п╦п╠п╨п╟ п©я─п╦ я─п╣пЁп╦я│я┌я─п╟я├п╦п╦
  *  \sa registration(const string name, const ObjectPtr oRef, const string section)
 */
 void ObjectRepository::registration( const std::string& fullName, const UniSetTypes::ObjectPtr oRef, bool force )
@@ -218,17 +218,17 @@ void ObjectRepository::registration( const std::string& fullName, const UniSetTy
 // --------------------------------------------------------------------------
 
 /*!
- *	\param name - имя регистрируемого объекта (т.е. включающее в себя имя секции)
- *	\param section - имя секции в которой зарегистрирован объект
- *  \exception ORepFailed - генерируется если произошла ошибка при удалении
- * 	\warning Нет проверки корректности удаляемого имени. т.е.
- *	проверки на, то не является ли имя ссылкой на объект или контекст
- *	т.к. для удаления ссылки на контекст нужен алгоритм посложнее...
+ *	\param name - п╦п╪я▐ я─п╣пЁп╦я│я┌я─п╦я─я┐п╣п╪п╬пЁп╬ п╬п╠я┼п╣п╨я┌п╟ (я┌.п╣. п╡п╨п╩я▌я┤п╟я▌я┴п╣п╣ п╡ я│п╣п╠я▐ п╦п╪я▐ я│п╣п╨я├п╦п╦)
+ *	\param section - п╦п╪я▐ я│п╣п╨я├п╦п╦ п╡ п╨п╬я┌п╬я─п╬п╧ п╥п╟я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟п╫ п╬п╠я┼п╣п╨я┌
+ *  \exception ORepFailed - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ п©я─п╬п╦п╥п╬я┬п╩п╟ п╬я┬п╦п╠п╨п╟ п©я─п╦ я┐п╢п╟п╩п╣п╫п╦п╦
+ * 	\warning п²п╣я┌ п©я─п╬п╡п╣я─п╨п╦ п╨п╬я─я─п╣п╨я┌п╫п╬я│я┌п╦ я┐п╢п╟п╩я▐п╣п╪п╬пЁп╬ п╦п╪п╣п╫п╦. я┌.п╣.
+ *	п©я─п╬п╡п╣я─п╨п╦ п╫п╟, я┌п╬ п╫п╣ я▐п╡п╩я▐п╣я┌я│я▐ п╩п╦ п╦п╪я▐ я│я│я▀п╩п╨п╬п╧ п╫п╟ п╬п╠я┼п╣п╨я┌ п╦п╩п╦ п╨п╬п╫я┌п╣п╨я│я┌
+ *	я┌.п╨. п╢п╩я▐ я┐п╢п╟п╩п╣п╫п╦я▐ я│я│я▀п╩п╨п╦ п╫п╟ п╨п╬п╫я┌п╣п╨я│я┌ п╫я┐п╤п╣п╫ п╟п╩пЁп╬я─п╦я┌п╪ п©п╬я│п╩п╬п╤п╫п╣п╣...
 */
 void ObjectRepository::unregistration(const string& name, const string& section)
 	throw(ORepFailed, NameNotFound)
 {
-//	unideb[Debug::INFO] << "OREP: unregistration "<< name << " из "<< section << endl;
+//	unideb[Debug::INFO] << "OREP: unregistration "<< name << " п╦п╥ "<< section << endl;
 	ostringstream err;
     CosNaming::Name_var oName = omniURI::stringToName(name.c_str());
 	
@@ -241,7 +241,7 @@ void ObjectRepository::unregistration(const string& name, const string& section)
 
     try
     {
-	    // Удаляем запись об объекте
+	    // пёп╢п╟п╩я▐п╣п╪ п╥п╟п©п╦я│я▄ п╬п╠ п╬п╠я┼п╣п╨я┌п╣
 		ctx->unbind(oName);
 		
 //		unideb[Debug::INFO] << "OREP: ok" << endl;
@@ -249,11 +249,11 @@ void ObjectRepository::unregistration(const string& name, const string& section)
     }	
 	catch(const CosNaming::NamingContext::NotFound &nf)
     {
-		err << "ObjectRepository(unregistrartion): не найден объект ->" << name;
+		err << "ObjectRepository(unregistrartion): п╫п╣ п╫п╟п╧п╢п╣п╫ п╬п╠я┼п╣п╨я┌ ->" << name;
     }
 	catch(const CosNaming::NamingContext::InvalidName &in)
 	{
-		err << "ObjectRepository(unregistrartion): не корректное имя объекта -> " << name;
+		err << "ObjectRepository(unregistrartion): п╫п╣ п╨п╬я─я─п╣п╨я┌п╫п╬п╣ п╦п╪я▐ п╬п╠я┼п╣п╨я┌п╟ -> " << name;
 	}
 	catch(const CosNaming::NamingContext::CannotProceed &cp)
 	{
@@ -262,13 +262,13 @@ void ObjectRepository::unregistration(const string& name, const string& section)
 	}
 
 	if (err.str().empty())
-		err << "ObjectRepository(unregistrartion): не смог удалить " << name;
+		err << "ObjectRepository(unregistrartion): п╫п╣ я│п╪п╬пЁ я┐п╢п╟п╩п╦я┌я▄ " << name;
    	throw ORepFailed(err.str().c_str());
 }
 // --------------------------------------------------------------------------
 /*!
- *	\param fullName - полное имя регистрируемого объекта (т.е. включающее в себя имя секции)
- *  \exception ORepFailed - генерируется если произошла ошибка при удалении
+ *	\param fullName - п©п╬п╩п╫п╬п╣ п╦п╪я▐ я─п╣пЁп╦я│я┌я─п╦я─я┐п╣п╪п╬пЁп╬ п╬п╠я┼п╣п╨я┌п╟ (я┌.п╣. п╡п╨п╩я▌я┤п╟я▌я┴п╣п╣ п╡ я│п╣п╠я▐ п╦п╪я▐ я│п╣п╨я├п╦п╦)
+ *  \exception ORepFailed - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ п©я─п╬п╦п╥п╬я┬п╩п╟ п╬я┬п╦п╠п╨п╟ п©я─п╦ я┐п╢п╟п╩п╣п╫п╦п╦
  * 	\sa unregistration(const string name, const string section)
 */
 void ObjectRepository::unregistration(const string& fullName)
@@ -288,7 +288,7 @@ ObjectPtr ObjectRepository::resolve( const string& name, const string NSName )
 	try
 	{
 		if( !localctx && !init() )
-			throw ORepFailed("ObjectRepository(resolve): не смог получить ссылку на NameServices");
+			throw ORepFailed("ObjectRepository(resolve): п╫п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ NameServices");
 
 		CORBA::Object_var oRef;
 		CosNaming::Name_var nc = omniURI::stringToName(name.c_str());
@@ -296,7 +296,7 @@ ObjectPtr ObjectRepository::resolve( const string& name, const string NSName )
 		if ( !CORBA::is_nil(oRef) )
 			return oRef._retn();					
 
-		err << "ObjectRepository(resolve): не смог получить ссылку на объект " << name.c_str();
+		err << "ObjectRepository(resolve): п╫п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌ " << name.c_str();
 	}
 	catch(const CosNaming::NamingContext::NotFound &nf)
 	{
@@ -304,7 +304,7 @@ ObjectPtr ObjectRepository::resolve( const string& name, const string NSName )
 	}
 	catch(const CosNaming::NamingContext::InvalidName &nf)
 	{
-		err << "ObjectRepository(resolve): не смог получить ссылку на контекст(InvalidName) ";
+		err << "ObjectRepository(resolve): п╫п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╨п╬п╫я┌п╣п╨я│я┌(InvalidName) ";
 	}
 	catch(const CosNaming::NamingContext::CannotProceed& cp)
 	{
@@ -314,15 +314,15 @@ ObjectPtr ObjectRepository::resolve( const string& name, const string NSName )
     catch(CORBA::SystemException& ex)
     {
 		err << "ObjectRepository(resolve): catch SystemException: " << ex.NP_minorString()
-			<< " для " << name;
+			<< " п╢п╩я▐ " << name;
 	}
 	catch(...)
 	{
-		err << "ObjectRepository(resolve): catch ... для " << name;
+		err << "ObjectRepository(resolve): catch ... п╢п╩я▐ " << name;
 	}
 
 	if(err.str().empty())
-		err << "ObjectRepository(resolve): ??? для " << name;			
+		err << "ObjectRepository(resolve): ??? п╢п╩я▐ " << name;			
 	
 	throw ORepFailed(err.str().c_str());
 }
@@ -330,12 +330,12 @@ ObjectPtr ObjectRepository::resolve( const string& name, const string NSName )
 // --------------------------------------------------------------------------
 
 /*!
- * \param ls - указатель на список который надо заполнить
- * \param how_many - максимальное количество заносимых элементов
- * \param section - полное имя секции начиная с Root. 
- * \return Функция возвращает true, если в список были внесены не все элементы. Т.е. действительное
- * количество объектов в этой секции превышает заданное how_many.
- * \exception ORepFailed - генерируется если произошла при получении доступа к секции
+ * \param ls - я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ я│п©п╦я│п╬п╨ п╨п╬я┌п╬я─я▀п╧ п╫п╟п╢п╬ п╥п╟п©п╬п╩п╫п╦я┌я▄
+ * \param how_many - п╪п╟п╨я│п╦п╪п╟п╩я▄п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╥п╟п╫п╬я│п╦п╪я▀я┘ я█п╩п╣п╪п╣п╫я┌п╬п╡
+ * \param section - п©п╬п╩п╫п╬п╣ п╦п╪я▐ я│п╣п╨я├п╦п╦ п╫п╟я┤п╦п╫п╟я▐ я│ Root. 
+ * \return п╓я┐п╫п╨я├п╦я▐ п╡п╬п╥п╡я─п╟я┴п╟п╣я┌ true, п╣я│п╩п╦ п╡ я│п©п╦я│п╬п╨ п╠я▀п╩п╦ п╡п╫п╣я│п╣п╫я▀ п╫п╣ п╡я│п╣ я█п╩п╣п╪п╣п╫я┌я▀. п╒.п╣. п╢п╣п╧я│я┌п╡п╦я┌п╣п╩я▄п╫п╬п╣
+ * п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╬п╠я┼п╣п╨я┌п╬п╡ п╡ я█я┌п╬п╧ я│п╣п╨я├п╦п╦ п©я─п╣п╡я▀я┬п╟п╣я┌ п╥п╟п╢п╟п╫п╫п╬п╣ how_many.
+ * \exception ORepFailed - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ п©я─п╬п╦п╥п╬я┬п╩п╟ п©я─п╦ п©п╬п╩я┐я┤п╣п╫п╦п╦ п╢п╬я│я┌я┐п©п╟ п╨ я│п╣п╨я├п╦п╦
 */ 
 bool ObjectRepository::list(const string& section, ListObjectName *ls, unsigned int how_many)throw(ORepFailed)
 {
@@ -344,12 +344,12 @@ bool ObjectRepository::list(const string& section, ListObjectName *ls, unsigned 
 
 // --------------------------------------------------------------------------
 /*!
- * \param ls - указатель на список который надо заполнить
- * \param how_many - максимальное количество заносимых элементов
- * \param in_section - полное имя секции начиная с Root. 
- * \return Функция возвращает true, если в список были внесены не все элементы. Т.е. действительное
- * количество объектов в этой секции превышает заданное how_many.
- * \exception ORepFailed - генерируется если произошла при получении доступа к секции
+ * \param ls - я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ я│п©п╦я│п╬п╨ п╨п╬я┌п╬я─я▀п╧ п╫п╟п╢п╬ п╥п╟п©п╬п╩п╫п╦я┌я▄
+ * \param how_many - п╪п╟п╨я│п╦п╪п╟п╩я▄п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╥п╟п╫п╬я│п╦п╪я▀я┘ я█п╩п╣п╪п╣п╫я┌п╬п╡
+ * \param in_section - п©п╬п╩п╫п╬п╣ п╦п╪я▐ я│п╣п╨я├п╦п╦ п╫п╟я┤п╦п╫п╟я▐ я│ Root. 
+ * \return п╓я┐п╫п╨я├п╦я▐ п╡п╬п╥п╡я─п╟я┴п╟п╣я┌ true, п╣я│п╩п╦ п╡ я│п©п╦я│п╬п╨ п╠я▀п╩п╦ п╡п╫п╣я│п╣п╫я▀ п╫п╣ п╡я│п╣ я█п╩п╣п╪п╣п╫я┌я▀. п╒.п╣. п╢п╣п╧я│я┌п╡п╦я┌п╣п╩я▄п╫п╬п╣
+ * п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╬п╠я┼п╣п╨я┌п╬п╡ п╡ я█я┌п╬п╧ я│п╣п╨я├п╦п╦ п©я─п╣п╡я▀я┬п╟п╣я┌ п╥п╟п╢п╟п╫п╫п╬п╣ how_many.
+ * \exception ORepFailed - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ п©я─п╬п╦п╥п╬я┬п╩п╟ п©я─п╦ п©п╬п╩я┐я┤п╣п╫п╦п╦ п╢п╬я│я┌я┐п©п╟ п╨ я│п╣п╨я├п╦п╦
 */ 
 bool ObjectRepository::listSections(const string& in_section, ListObjectName *ls, unsigned int how_many)throw(ORepFailed)
 {
@@ -358,18 +358,18 @@ bool ObjectRepository::listSections(const string& in_section, ListObjectName *ls
 
 // --------------------------------------------------------------------------
 /*!
- * \param ls - указатель на список который надо заполнить
- * \param how_many - максимальное количество заносимых элементов
- * \param in_section - полное имя секции начиная с Root. 
- * \param type - тип вынимаемых(заносимых в список) объектов.
- * \return Функция возвращает true, если в список были внесены не все элементы. Т.е. действительное
- * количество объектов в этой секции превышает заданное how_many.
- * \exception ORepFailed - генерируется если произошла при получении доступа к секции
+ * \param ls - я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ я│п©п╦я│п╬п╨ п╨п╬я┌п╬я─я▀п╧ п╫п╟п╢п╬ п╥п╟п©п╬п╩п╫п╦я┌я▄
+ * \param how_many - п╪п╟п╨я│п╦п╪п╟п╩я▄п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╥п╟п╫п╬я│п╦п╪я▀я┘ я█п╩п╣п╪п╣п╫я┌п╬п╡
+ * \param in_section - п©п╬п╩п╫п╬п╣ п╦п╪я▐ я│п╣п╨я├п╦п╦ п╫п╟я┤п╦п╫п╟я▐ я│ Root. 
+ * \param type - я┌п╦п© п╡я▀п╫п╦п╪п╟п╣п╪я▀я┘(п╥п╟п╫п╬я│п╦п╪я▀я┘ п╡ я│п©п╦я│п╬п╨) п╬п╠я┼п╣п╨я┌п╬п╡.
+ * \return п╓я┐п╫п╨я├п╦я▐ п╡п╬п╥п╡я─п╟я┴п╟п╣я┌ true, п╣я│п╩п╦ п╡ я│п©п╦я│п╬п╨ п╠я▀п╩п╦ п╡п╫п╣я│п╣п╫я▀ п╫п╣ п╡я│п╣ я█п╩п╣п╪п╣п╫я┌я▀. п╒.п╣. п╢п╣п╧я│я┌п╡п╦я┌п╣п╩я▄п╫п╬п╣
+ * п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╬п╠я┼п╣п╨я┌п╬п╡ п╡ я█я┌п╬п╧ я│п╣п╨я├п╦п╦ п©я─п╣п╡я▀я┬п╟п╣я┌ п╥п╟п╢п╟п╫п╫п╬п╣ how_many.
+ * \exception ORepFailed - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ п©я─п╬п╦п╥п╬я┬п╩п╟ п©я─п╦ п©п╬п╩я┐я┤п╣п╫п╦п╦ п╢п╬я│я┌я┐п©п╟ п╨ я│п╣п╨я├п╦п╦
 */ 
 bool ObjectRepository::list(const string& section, ListObjectName *ls, unsigned int how_many, ObjectType type)
 {
-  // Возвращает false если вынут не весь список...
-//  	unideb[Debug::INFO] << "получаем список из "<< section << endl;
+  // п▓п╬п╥п╡я─п╟я┴п╟п╣я┌ false п╣я│п╩п╦ п╡я▀п╫я┐я┌ п╫п╣ п╡п╣я│я▄ я│п©п╦я│п╬п╨...
+//  	unideb[Debug::INFO] << "п©п╬п╩я┐я┤п╟п╣п╪ я│п©п╦я│п╬п╨ п╦п╥ "<< section << endl;
 	CosNaming::NamingContext_var ctx;
 	try
 	{
@@ -378,14 +378,14 @@ bool ObjectRepository::list(const string& section, ListObjectName *ls, unsigned 
 	}
 	catch(ORepFailed)
 	{
-		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ORepository(list): не смог получить ссылку на "<< section << endl;
+		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ORepository(list): п╫п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ "<< section << endl;
 		throw;
 //		return false;
 	}
 	
 	if( CORBA::is_nil(ctx) )
 	{
-		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ORepository(list): не смог получить ссылку на "<< section << endl;
+		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ORepository(list): п╫п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ "<< section << endl;
 		throw ORepFailed();
 	}
 	
@@ -403,7 +403,7 @@ bool ObjectRepository::list(const string& section, ListObjectName *ls, unsigned 
 			res = false;
 	}
 
-//	cout << "получили список "<< section << " размером " << bl->length()<< endl;
+//	cout << "п©п╬п╩я┐я┤п╦п╩п╦ я│п©п╦я│п╬п╨ "<< section << " я─п╟п╥п╪п╣я─п╬п╪ " << bl->length()<< endl;
 
 	for( unsigned int i=0; i<how_many;i++)
 	{
@@ -460,7 +460,7 @@ bool ObjectRepository::isExist( ObjectPtr oref )
     catch(CORBA::Exception&){}
     catch(omniORB::fatalException& fe)
     {
-		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ObjectRepository(isExist): "<< "поймали omniORB::fatalException:" << endl;
+		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ObjectRepository(isExist): "<< "п©п╬п╧п╪п╟п╩п╦ omniORB::fatalException:" << endl;
         unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "  file: " << fe.file() << endl;
 		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "  line: " << fe.line() << endl;
         unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "  mesg: " << fe.errmsg() << endl;

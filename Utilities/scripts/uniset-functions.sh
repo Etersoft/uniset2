@@ -3,7 +3,7 @@
 USERID=0
 BASEOMNIPORT=2809
 
-# Получаем наш внутренний номер пользователя
+# п÷п╬п╩я┐я┤п╟п╣п╪ п╫п╟я┬ п╡п╫я┐я┌я─п╣п╫п╫п╦п╧ п╫п╬п╪п╣я─ п©п╬п╩я▄п╥п╬п╡п╟я┌п╣п╩я▐
 function get_userid()
 {
 	USERID=$(expr $UID + 50000)
@@ -15,19 +15,19 @@ function standart_control()
 	if [ -z $TMPDIR ]
 	then
 		TMPDIR=$HOME/tmp
-		echo Не определена переменная окружения TMPDIR. Используем $TMPDIR
+		echo п²п╣ п╬п©я─п╣п╢п╣п╩п╣п╫п╟ п©п╣я─п╣п╪п╣п╫п╫п╟я▐ п╬п╨я─я┐п╤п╣п╫п╦я▐ TMPDIR. п≤я│п©п╬п╩я▄п╥я┐п╣п╪ $TMPDIR
 	else
-		echo Определена TMPDIR=$TMPDIR
+		echo п·п©я─п╣п╢п╣п╩п╣п╫п╟ TMPDIR=$TMPDIR
 	fi
 
 	if [ $1 = 1 ]; then
 		TMPDIR=/var/tmp
-		echo Используем стандартный порт Omni: $BASEOMNIPORT и временный каталог $TMPDIR
+		echo п≤я│п©п╬п╩я▄п╥я┐п╣п╪ я│я┌п╟п╫п╢п╟я─я┌п╫я▀п╧ п©п╬я─я┌ Omni: $BASEOMNIPORT п╦ п╡я─п╣п╪п╣п╫п╫я▀п╧ п╨п╟я┌п╟п╩п╬пЁ $TMPDIR
 	else
 		get_userid
 		if [ $USERID = 0 ]
 		then
-			echo Не разрешено запускать пользователю $(whoami) с uid=$UID
+			echo п²п╣ я─п╟п╥я─п╣я┬п╣п╫п╬ п╥п╟п©я┐я│п╨п╟я┌я▄ п©п╬п╩я▄п╥п╬п╡п╟я┌п╣п╩я▌ $(whoami) я│ uid=$UID
 			exit 0
 		fi
 	fi
@@ -54,10 +54,10 @@ function set_omni_port
 
 function set_omni 
 {
-	# Каталог для хранения записей omniORB
+	# п п╟я┌п╟п╩п╬пЁ п╢п╩я▐ я┘я─п╟п╫п╣п╫п╦я▐ п╥п╟п©п╦я│п╣п╧ omniORB
 	OMNILOG=$TMPDIR/omniORB
 
-	# Файл для хранения перечня запущенных в фоновом режиме процессов
+	# п╓п╟п╧п╩ п╢п╩я▐ я┘я─п╟п╫п╣п╫п╦я▐ п©п╣я─п╣я┤п╫я▐ п╥п╟п©я┐я┴п╣п╫п╫я▀я┘ п╡ я└п╬п╫п╬п╡п╬п╪ я─п╣п╤п╦п╪п╣ п©я─п╬я├п╣я│я│п╬п╡
 	RANSERVICES=$OMNILOG/ran.list
 	touch $RANSERVICES
 
@@ -69,15 +69,15 @@ function set_omni
 	then
 		if [ $USERID = 0 ]
 		then
-			echo INFO: Запись о порте $OMNIPORT присутствует в /etc/services.
+			echo INFO: п≈п╟п©п╦я│я▄ п╬ п©п╬я─я┌п╣ $OMNIPORT п©я─п╦я│я┐я┌я│я┌п╡я┐п╣я┌ п╡ /etc/services.
 		else
-			echo Извините, порт $OMNIPORT уже присутствует в /etc/services.
-			echo Запуск omniNames невозможен.
-			echo Завершаемся
+			echo п≤п╥п╡п╦п╫п╦я┌п╣, п©п╬я─я┌ $OMNIPORT я┐п╤п╣ п©я─п╦я│я┐я┌я│я┌п╡я┐п╣я┌ п╡ /etc/services.
+			echo п≈п╟п©я┐я│п╨ omniNames п╫п╣п╡п╬п╥п╪п╬п╤п╣п╫.
+			echo п≈п╟п╡п╣я─я┬п╟п╣п╪я│я▐
 			exit 0
 		fi
 	fi
-	[ -e $(which $OMNINAME) ]  || { echo Error: Команда $OMNINAME не найдена ; exit 0; }
+	[ -e $(which $OMNINAME) ]  || { echo Error: п п╬п╪п╟п╫п╢п╟ $OMNINAME п╫п╣ п╫п╟п╧п╢п╣п╫п╟ ; exit 0; }
 
 }
 
@@ -94,29 +94,29 @@ function runOmniNames()
 
 	if [ $omniTest \> 0 ]; 
 	then	 
-		echo $OMNINAME уже запущен. #Прерываем.
+		echo $OMNINAME я┐п╤п╣ п╥п╟п©я┐я┴п╣п╫. #п÷я─п╣я─я▀п╡п╟п╣п╪.
 		return 0;
 	fi
 
 	if [ ! -d $OMNILOG ]
 	then
 		mkdir -p $OMNILOG
-		echo Запуск omniNames первый раз с портом $OMNIPORT
+		echo п≈п╟п©я┐я│п╨ omniNames п©п╣я─п╡я▀п╧ я─п╟п╥ я│ п©п╬я─я┌п╬п╪ $OMNIPORT
 		$OMNINAME -start $OMNIPORT -logdir $OMNILOG &>$OMNILOG/background.output &
 		pid=$!
-		echo Создание структуры репозитория объектов
+		echo п║п╬п╥п╢п╟п╫п╦п╣ я│я┌я─я┐п╨я┌я┐я─я▀ я─п╣п©п╬п╥п╦я┌п╬я─п╦я▐ п╬п╠я┼п╣п╨я┌п╬п╡
 	else
-		echo Обычный запуск omniNames. Если есть проблемы, сотрите $OMNILOG
+		echo п·п╠я▀я┤п╫я▀п╧ п╥п╟п©я┐я│п╨ omniNames. п∙я│п╩п╦ п╣я│я┌я▄ п©я─п╬п╠п╩п╣п╪я▀, я│п╬я┌я─п╦я┌п╣ $OMNILOG
 		$OMNINAME -logdir $OMNILOG &>$OMNILOG/background.output &
 		pid=$!
 	fi
 	RET=$?
 	if [ $RET = 0 ]; then
 		if [ $WITH_PID = 1 ]; then
-			echo $pid >"$RUNDIR/$OMNINAME.pid" # создаём pid-файл
+			echo $pid >"$RUNDIR/$OMNINAME.pid" # я│п╬п╥п╢п╟я▒п╪ pid-я└п╟п╧п╩
 		fi;
 	else
-		echo Запуск omniNames не удался
+		echo п≈п╟п©я┐я│п╨ omniNames п╫п╣ я┐п╢п╟п╩я│я▐
 		return 1;
 	fi
 	#echo $! $OMNINAME >>$RANSERVICES
@@ -126,10 +126,10 @@ function runOmniNames()
 		echo 0 $OMNINAME >>$RANSERVICES
 	fi
 
-	# Проверка на запуск omniNames -а
+	# п÷я─п╬п╡п╣я─п╨п╟ п╫п╟ п╥п╟п©я┐я│п╨ omniNames -п╟
 	yes=$(echo $* | grep omniNames )
 	if [ -n "$yes" ]; then
-		echo Запуск omniNames [ OK ]
+		echo п≈п╟п©я┐я│п╨ omniNames [ OK ]
 		$RETVAL=0
 	fi
 

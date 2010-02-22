@@ -14,8 +14,8 @@ class Schema
 		Element* manage( Element* el );
 		void remove( Element* el );
 
-		// внутренее соединения
-		// между элементами
+		// п╡п╫я┐я┌я─п╣п╫п╣п╣ я│п╬п╣п╢п╦п╫п╣п╫п╦я▐
+		// п╪п╣п╤п╢я┐ я█п╩п╣п╪п╣п╫я┌п╟п╪п╦
 		struct INLink
 		{
 			INLink(Element* f, Element* t, int ni):
@@ -27,8 +27,8 @@ class Schema
 			int numInput;
 		};
 		
-		// внешнее соединение
-		// что-то на вход элемента
+		// п╡п╫п╣я┬п╫п╣п╣ я│п╬п╣п╢п╦п╫п╣п╫п╦п╣
+		// я┤я┌п╬-я┌п╬ п╫п╟ п╡я┘п╬п╢ я█п╩п╣п╪п╣п╫я┌п╟
 		struct EXTLink
 		{
 			EXTLink(std::string n, Element* t, int ni):
@@ -40,7 +40,7 @@ class Schema
 			int numInput;
 		};
 
-		// наружный выход
+		// п╫п╟я─я┐п╤п╫я▀п╧ п╡я▀я┘п╬п╢
 		struct EXTOut
 		{
 			EXTOut(std::string n, Element* f):
@@ -98,7 +98,7 @@ class Schema
 		Element* findOut(const std::string name);
 
 	protected:
-		ElementMap emap; // список элеметов
+		ElementMap emap; // я│п©п╦я│п╬п╨ я█п╩п╣п╪п╣я┌п╬п╡
 		InternalList inLinks;
 		ExternalList extLinks;
 		OutputsList outList;

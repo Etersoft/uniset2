@@ -56,8 +56,8 @@
 		<xsl:when test="$GENTYPE='H'">
 		const UniSetTypes::ObjectId <xsl:value-of select="../../@name"/>; 		/*!&lt; <xsl:value-of select="../../@textname"/> */
 		const UniSetTypes::ObjectId node_<xsl:value-of select="../../@name"/>;
-		<xsl:call-template name="settype"><xsl:with-param name="iotype" select="../../@iotype" /></xsl:call-template><xsl:text> </xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>; /*!&lt; текущее значение */
-		<xsl:call-template name="settype"><xsl:with-param name="iotype" select="../../@iotype" /></xsl:call-template><xsl:text> prev_</xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>; /*!&lt; предыдущее значение */
+		<xsl:call-template name="settype"><xsl:with-param name="iotype" select="../../@iotype" /></xsl:call-template><xsl:text> </xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>; /*!&lt; я┌п╣п╨я┐я┴п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣ */
+		<xsl:call-template name="settype"><xsl:with-param name="iotype" select="../../@iotype" /></xsl:call-template><xsl:text> prev_</xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>; /*!&lt; п©я─п╣п╢я▀п╢я┐я┴п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣ */
 		</xsl:when>
 		<xsl:when test="$GENTYPE='C'"><xsl:value-of select="../../@name"/>(<xsl:value-of select="../../@id"/>),
 			<xsl:if test="not(normalize-space(../../@node)='')">
@@ -89,8 +89,8 @@
 		<xsl:if test="normalize-space(@name)=$OID">
 			<xsl:choose>
 			<xsl:when test="$GENTYPE='H'">const UniSetTypes::ObjectId mid_<xsl:value-of select="normalize-space(../../@name)"/>; 	/*!&lt; <xsl:value-of select="normalize-space(../../@text)"/> */
-			bool m_<xsl:value-of select="normalize-space(../../@name)"/>; 	/*!&lt; текущее состояние (сообщения) */
-			bool prev_m_<xsl:value-of select="normalize-space(../../@name)"/>; 	/*!&lt; предыдущее состояние (сообщения) */
+			bool m_<xsl:value-of select="normalize-space(../../@name)"/>; 	/*!&lt; я┌п╣п╨я┐я┴п╣п╣ я│п╬я│я┌п╬я▐п╫п╦п╣ (я│п╬п╬п╠я┴п╣п╫п╦я▐) */
+			bool prev_m_<xsl:value-of select="normalize-space(../../@name)"/>; 	/*!&lt; п©я─п╣п╢я▀п╢я┐я┴п╣п╣ я│п╬я│я┌п╬я▐п╫п╦п╣ (я│п╬п╬п╠я┴п╣п╫п╦я▐) */
 			</xsl:when>
 			<xsl:when test="$GENTYPE='C'">mid_<xsl:value-of select="normalize-space(../../@name)"/>(<xsl:value-of select="../../@id"/>),
 			</xsl:when>
@@ -111,7 +111,7 @@
 				m_<xsl:value-of select="../../@name"/> = state;
 				try
 				{
-					// сохраняем сразу...
+					// я│п╬я┘я─п╟п╫я▐п╣п╪ я│я─п╟п╥я┐...
 					si.id = mid_<xsl:value-of select="../../@name"/>;
 					ui.saveState( si,m_<xsl:value-of select="../../@name"/>,UniversalIO::DigitalInput,getId() );
 					return true;
@@ -202,33 +202,33 @@
 		PassiveTimer ptResetMsg;
 		int resetMsgTime;
 
-		// Выполнение очередного шага программы
+		// п▓я▀п©п╬п╩п╫п╣п╫п╦п╣ п╬я┤п╣я─п╣п╢п╫п╬пЁп╬ я┬п╟пЁп╟ п©я─п╬пЁя─п╟п╪п╪я▀
 		virtual void step()=0;
 
-		int sleep_msec; /*!&lt; пауза между итерациями */
+		int sleep_msec; /*!&lt; п©п╟я┐п╥п╟ п╪п╣п╤п╢я┐ п╦я┌п╣я─п╟я├п╦я▐п╪п╦ */
 		bool active;
 		bool isTestMode;
 		Trigger trTestMode;
-		UniSetTypes::ObjectId idTestMode_S;		  	/*!&lt; идентификатор для флага тестовго режима (для всех) */
-		UniSetTypes::ObjectId idLocalTestMode_S;	/*!&lt; идентификатор для флага тестовго режима (для данного узла) */
+		UniSetTypes::ObjectId idTestMode_S;		  	/*!&lt; п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╩я▐ я└п╩п╟пЁп╟ я┌п╣я│я┌п╬п╡пЁп╬ я─п╣п╤п╦п╪п╟ (п╢п╩я▐ п╡я│п╣я┘) */
+		UniSetTypes::ObjectId idLocalTestMode_S;	/*!&lt; п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╩я▐ я└п╩п╟пЁп╟ я┌п╣я│я┌п╬п╡пЁп╬ я─п╣п╤п╦п╪п╟ (п╢п╩я▐ п╢п╟п╫п╫п╬пЁп╬ я┐п╥п╩п╟) */
 		bool in_TestMode_S;
 		bool in_LocalTestMode_S;
 
-		// управление датчиком "сердцебиения"
-		PassiveTimer ptHeartBeat;				/*! &lt; период "сердцебиения" */
-		UniSetTypes::ObjectId idHeartBeat;		/*! &lt; идентификатор датчика (AI) "сердцебиения" */
-		int maxHeartBeat;						/*! &lt; сохраняемое значение */
+		// я┐п©я─п╟п╡п╩п╣п╫п╦п╣ п╢п╟я┌я┤п╦п╨п╬п╪ "я│п╣я─п╢я├п╣п╠п╦п╣п╫п╦я▐"
+		PassiveTimer ptHeartBeat;				/*! &lt; п©п╣я─п╦п╬п╢ "я│п╣я─п╢я├п╣п╠п╦п╣п╫п╦я▐" */
+		UniSetTypes::ObjectId idHeartBeat;		/*! &lt; п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╟я┌я┤п╦п╨п╟ (AI) "я│п╣я─п╢я├п╣п╠п╦п╣п╫п╦я▐" */
+		int maxHeartBeat;						/*! &lt; я│п╬я┘я─п╟п╫я▐п╣п╪п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ */
 		
 		xmlNode* confnode;
-		/*! получить числовое свойство из конф. файла по привязанной confnode */
+		/*! п©п╬п╩я┐я┤п╦я┌я▄ я┤п╦я│п╩п╬п╡п╬п╣ я│п╡п╬п╧я│я┌п╡п╬ п╦п╥ п╨п╬п╫я└. я└п╟п╧п╩п╟ п©п╬ п©я─п╦п╡я▐п╥п╟п╫п╫п╬п╧ confnode */
 		int getIntProp(const std::string name) { return UniSetTypes::conf->getIntProp(confnode, name); }
-		/*! получить текстовое свойство из конф. файла по привязанной confnode */
+		/*! п©п╬п╩я┐я┤п╦я┌я▄ я┌п╣п╨я│я┌п╬п╡п╬п╣ я│п╡п╬п╧я│я┌п╡п╬ п╦п╥ п╨п╬п╫я└. я└п╟п╧п╩п╟ п©п╬ п©я─п╦п╡я▐п╥п╟п╫п╫п╬п╧ confnode */
 		const std::string getProp(const std::string name) { return UniSetTypes::conf->getProp(confnode, name); }
 
-		int smReadyTimeout; 	/*!&lt; время ожидания готовности SM */
+		int smReadyTimeout; 	/*!&lt; п╡я─п╣п╪я▐ п╬п╤п╦п╢п╟п╫п╦я▐ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ SM */
 		bool activated;
-		int activateTimeout;	/*!&lt; время ожидания готовности UniSetObject к работе */
-		PassiveTimer ptStartUpTimeout;	/*!&lt; время на блокировку обработки WatchDog, если недавно был StartUp */
+		int activateTimeout;	/*!&lt; п╡я─п╣п╪я▐ п╬п╤п╦п╢п╟п╫п╦я▐ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ UniSetObject п╨ я─п╟п╠п╬я┌п╣ */
+		PassiveTimer ptStartUpTimeout;	/*!&lt; п╡я─п╣п╪я▐ п╫п╟ п╠п╩п╬п╨п╦я─п╬п╡п╨я┐ п╬п╠я─п╟п╠п╬я┌п╨п╦ WatchDog, п╣я│п╩п╦ п╫п╣п╢п╟п╡п╫п╬ п╠я▀п╩ StartUp */
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PRIVATE">
@@ -281,14 +281,14 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* sm )
 			unideb &lt;&lt; myname &lt;&lt; "(sysCommand): WatchDog" &lt;&lt; endl;
 			if( !active || !ptStartUpTimeout.checkTime() )
 			{
-				unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; "(sysCommand): игнорируем WatchDog, потому-что только-что стартанули" &lt;&lt; endl;
+				unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; "(sysCommand): п╦пЁп╫п╬я─п╦я─я┐п╣п╪ WatchDog, п©п╬я┌п╬п╪я┐-я┤я┌п╬ я┌п╬п╩я▄п╨п╬-я┤я┌п╬ я│я┌п╟я─я┌п╟п╫я┐п╩п╦" &lt;&lt; endl;
 				break;
 			}
 		case SystemMessage::StartUp:
 		{
 			waitSM(smReadyTimeout);
 			ptStartUpTimeout.reset();
-			updateOutputs(true); // принудительное обновление выходов
+			updateOutputs(true); // п©я─п╦п╫я┐п╢п╦я┌п╣п╩я▄п╫п╬п╣ п╬п╠п╫п╬п╡п╩п╣п╫п╦п╣ п╡я▀я┘п╬п╢п╬п╡
 			updateValues();
 			askSensors(UniversalIO::UIONotify);
 			active = true;
@@ -302,7 +302,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* sm )
 		
 		case SystemMessage::LogRotate:
 		{
-			// переоткрываем логи
+			// п©п╣я─п╣п╬я┌п╨я─я▀п╡п╟п╣п╪ п╩п╬пЁп╦
 			unideb &lt;&lt; myname &lt;&lt; "(sysCommand): logRotate" &lt;&lt; endl;
 			string fname = unideb.getLogFile();
 			if( !fname.empty() )
@@ -328,7 +328,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* sm )
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::setState( UniSetTypes::ObjectId sid, bool state )
 {
-#warning сделать setState отдельной функцией, а не через setValue
+#warning я│п╢п╣п╩п╟я┌я▄ setState п╬я┌п╢п╣п╩я▄п╫п╬п╧ я└я┐п╫п╨я├п╦п╣п╧, п╟ п╫п╣ я┤п╣я─п╣п╥ setValue
 	setValue(sid, state ? 1 : 0 );
 }
 // -----------------------------------------------------------------------------
@@ -346,9 +346,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sigterm( int signo )
 // -----------------------------------------------------------------------------
 bool <xsl:value-of select="$CLASSNAME"/>_SK::activateObject()
 {
-	// блокирование обработки Startup 
-	// пока не пройдёт инициализация датчиков
-	// см. sysCommand()
+	// п╠п╩п╬п╨п╦я─п╬п╡п╟п╫п╦п╣ п╬п╠я─п╟п╠п╬я┌п╨п╦ Startup 
+	// п©п╬п╨п╟ п╫п╣ п©я─п╬п╧п╢я▒я┌ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ п╢п╟я┌я┤п╦п╨п╬п╡
+	// я│п╪. sysCommand()
 	{
 		activated = false;
 		<xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>::activateObject();</xsl:if>
@@ -364,7 +364,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askThreshold( UniSetTypes::ObjectId
 							CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Long sensibility,
 							UniSetTypes::ObjectId backid )
 {
-#warning askThreshold НЕ РЕАЛИЗОВАНА...
+#warning askThreshold п²п∙ п═п∙п░п⌡п≤п≈п·п▓п░п²п░...
 //	ui.askThreshold( sid,tid,cmd,lowLimit,hiLimit,sensibility,backid);
 }
 // -----------------------------------------------------------------------------
@@ -392,13 +392,13 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId tes
 	{
 		ostringstream err;
 		err &lt;&lt; myname 
-			&lt;&lt; "(waitSM): Не дождались готовности(exist) SharedMemory к работе в течение " 
-			&lt;&lt; wait_msec &lt;&lt; " мсек";
+			&lt;&lt; "(waitSM): п²п╣ п╢п╬п╤п╢п╟п╩п╦я│я▄ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦(exist) SharedMemory п╨ я─п╟п╠п╬я┌п╣ п╡ я┌п╣я┤п╣п╫п╦п╣ " 
+			&lt;&lt; wait_msec &lt;&lt; " п╪я│п╣п╨";
 
 		unideb[Debug::CRIT] &lt;&lt; err.str() &lt;&lt; endl;
 		terminate();
 		abort();
-		// kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
+		// kill(SIGTERM,getpid());	// п©я─п╣я─я▀п╡п╟п╣п╪ (п©п╣я─п╣п╥п╟п©я┐я│п╨п╟п╣п╪) п©я─п╬я├п╣я│я│...
 		throw SystemError(err.str());
 	}
 
@@ -408,13 +408,13 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId tes
 		{
 			ostringstream err;
 			err &lt;&lt; myname 
-				&lt;&lt; "(waitSM): Не дождались готовности(work) SharedMemory к работе в течение " 
-				&lt;&lt; wait_msec &lt;&lt; " мсек";
+				&lt;&lt; "(waitSM): п²п╣ п╢п╬п╤п╢п╟п╩п╦я│я▄ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦(work) SharedMemory п╨ я─п╟п╠п╬я┌п╣ п╡ я┌п╣я┤п╣п╫п╦п╣ " 
+				&lt;&lt; wait_msec &lt;&lt; " п╪я│п╣п╨";
 	
 			unideb[Debug::CRIT] &lt;&lt; err.str() &lt;&lt; endl;
 			terminate();
 			abort();
-			// kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
+			// kill(SIGTERM,getpid());	// п©я─п╣я─я▀п╡п╟п╣п╪ (п©п╣я─п╣п╥п╟п©я┐я│п╨п╟п╣п╪) п©я─п╬я├п╣я│я│...
 			throw SystemError(err.str());
 		}
 	}
@@ -429,8 +429,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId tes
  DO NOT EDIT THIS FILE. IT IS AUTOGENERATED FILE.
  ALL YOUR CHANGES WILL BE LOST.
  
- НЕ РЕДАКТИРУЙТЕ ЭТОТ ФАЙЛ. ЭТОТ ФАЙЛ СОЗДАН АВТОМАТИЧЕСКИ.
- ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
+ п²п∙ п═п∙п■п░п п╒п≤п═пёп≥п╒п∙ п╜п╒п·п╒ п╓п░п≥п⌡. п╜п╒п·п╒ п╓п░п≥п⌡ п║п·п≈п■п░п² п░п▓п╒п·п°п░п╒п≤п╖п∙п║п п≤.
+ п▓п║п∙ п▓п░п╗п≤ п≤п≈п°п∙п²п∙п²п≤п╞ п▒пёп■пёп╒ п÷п·п╒п∙п═п╞п²п╚.
 */ 
 // --------------------------------------------------------------------------
 // generate timestamp: <xsl:value-of select="date:date()"/>
@@ -448,12 +448,12 @@ using namespace UniSetTypes;
 <xsl:template name="COMMON-CC-FUNCS">
 // -----------------------------------------------------------------------------
 <xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK():
-// Инициализация идентификаторов (имена берутся из конф. файла)
+// п≤п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╬п╡ (п╦п╪п╣п╫п╟ п╠п╣я─я┐я┌я│я▐ п╦п╥ п╨п╬п╫я└. я└п╟п╧п╩п╟)
 <xsl:for-each select="//smap/item">
 	<xsl:value-of select="@name"/>(DefaultObjectId),
 node_<xsl:value-of select="@name"/>(DefaultObjectId),
 </xsl:for-each>
-// Используемые идентификаторы сообщений (имена берутся из конф. файла)
+// п≤я│п©п╬п╩я▄п╥я┐п╣п╪я▀п╣ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─я▀ я│п╬п╬п╠я┴п╣п╫п╦п╧ (п╦п╪п╣п╫п╟ п╠п╣я─я┐я┌я│я▐ п╦п╥ п╨п╬п╫я└. я└п╟п╧п╩п╟)
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="@name"/>(DefaultObjectId),
 node_<xsl:value-of select="@name"/>(DefaultObjectId),
 </xsl:for-each>
@@ -474,12 +474,12 @@ activated(false)
 <xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode ):
 <xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>(id),</xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">UniSetObject(id),</xsl:if>
-// Инициализация идентификаторов (имена берутся из конф. файла)
+// п≤п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╬п╡ (п╦п╪п╣п╫п╟ п╠п╣я─я┐я┌я│я▐ п╦п╥ п╨п╬п╫я└. я└п╟п╧п╩п╟)
 <xsl:for-each select="//smap/item">
 	<xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
 node_<xsl:value-of select="normalize-space(@name)"/>(<xsl:call-template name="setnode"/>),
 </xsl:for-each>
-// Используемые идентификаторы сообщений (имена берутся из конф. файла)
+// п≤я│п©п╬п╩я▄п╥я┐п╣п╪я▀п╣ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─я▀ я│п╬п╬п╠я┴п╣п╫п╦п╧ (п╦п╪п╣п╫п╟ п╠п╣я─я┐я┌я│я▐ п╦п╥ п╨п╬п╫я└. я└п╟п╧п╩п╟)
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
 node_<xsl:value-of select="normalize-space(@name)"/>(<xsl:call-template name="setnode"/>),
 </xsl:for-each>
@@ -526,7 +526,7 @@ activated(false)
 		if( idHeartBeat == DefaultObjectId )
 		{
 			ostringstream err;
-			err &lt;&lt; myname &lt;&lt; ": не найден идентификатор для датчика 'HeartBeat' " &lt;&lt; heart;
+			err &lt;&lt; myname &lt;&lt; ": п╫п╣ п╫п╟п╧п╢п╣п╫ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╩я▐ п╢п╟я┌я┤п╦п╨п╟ 'HeartBeat' " &lt;&lt; heart;
 			throw SystemError(err.str());
 		}
 
@@ -539,7 +539,7 @@ activated(false)
 		maxHeartBeat = conf->getArgPInt("--heartbeat-max",it.getProp("heartbeat_max"), 10);
 	}
 
-	// Инициализация значений
+	// п≤п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ п╥п╫п╟я┤п╣п╫п╦п╧
 	<xsl:for-each select="//smap/item">
 		<xsl:if test="normalize-space(@default)=''">
 			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = 0;
@@ -583,7 +583,7 @@ activated(false)
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 {
-	// Опрашиваем все входы...
+	// п·п©я─п╟я┬п╦п╡п╟п╣п╪ п╡я│п╣ п╡я┘п╬п╢я▀...
 	in_TestMode_S  		= (idTestMode_S!=DefaultObjectId) ? ui.getState(idTestMode_S):false;
 	in_LocalTestMode_S 	= (idLocalTestMode_S!=DefaultObjectId) ? ui.getState(idLocalTestMode_S):false;
 	
@@ -627,7 +627,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId code, 
 	if( code == UniSetTypes::DefaultObjectId )
 	{
 		unideb[Debug::CRIT]  &lt;&lt; getName()
-							&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId" 
+							&lt;&lt; "(alarm): п©п╬п©я▀я┌п╨п╟ п©п╬я│п╩п╟я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣ я│ DefaultObjectId" 
 							&lt;&lt; endl;
 		return false;	
 	}
@@ -647,7 +647,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId code, 
 		try
 		{
 			m_<xsl:value-of select="@name"/> = state;
-			// сохраняем сразу...
+			// я│п╬я┘я─п╟п╫я▐п╣п╪ я│я─п╟п╥я┐...
 			si.id = <xsl:value-of select="@name"/>;
 			si.node = node_<xsl:value-of select="@name"/>;
 			ui.saveState( si,m_<xsl:value-of select="@name"/>,UniversalIO::DigitalInput,getId() );
@@ -688,7 +688,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool state )
 	if( !state  )
 		return;
 
-	// отключаем все выходы
+	// п╬я┌п╨п╩я▌я┤п╟п╣п╪ п╡я│п╣ п╡я▀я┘п╬п╢я▀
 	<xsl:for-each select="//smap/item">
 	<xsl:choose>
 		<xsl:when test="normalize-space(@vartype)='out'"><xsl:call-template name="setdata_value"><xsl:with-param name="setval" select="0"/></xsl:call-template></xsl:when>
@@ -729,13 +729,13 @@ activated(false)
 <xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode ):
 <xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>(id),</xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">UniSetObject(id),</xsl:if>
-// Инициализация идентификаторов (имена берутся из конф. файла)
+// п≤п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╬п╡ (п╦п╪п╣п╫п╟ п╠п╣я─я┐я┌я│я▐ п╦п╥ п╨п╬п╫я└. я└п╟п╧п╩п╟)
 <xsl:for-each select="//sensors/item">
 	<xsl:call-template name="setvar">
 		<xsl:with-param name="GENTYPE" select="'C'"/>
 	</xsl:call-template>
 </xsl:for-each>
-// Используемые идентификаторы сообщений (имена берутся из конф. файла)
+// п≤я│п©п╬п╩я▄п╥я┐п╣п╪я▀п╣ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─я▀ я│п╬п╬п╠я┴п╣п╫п╦п╧ (п╦п╪п╣п╫п╟ п╠п╣я─я┐я┌я│я▐ п╦п╥ п╨п╬п╫я└. я└п╟п╧п╩п╟)
 <xsl:for-each select="//sensors/item">
 	<xsl:call-template name="setmsg">
 		<xsl:with-param name="GENTYPE" select="'C'"/>
@@ -769,7 +769,7 @@ activated(false)
 		if( idHeartBeat == DefaultObjectId )
 		{
 			ostringstream err;
-			err &lt;&lt; myname &lt;&lt; ": не найден идентификатор для датчика 'HeartBeat' " &lt;&lt; heart;
+			err &lt;&lt; myname &lt;&lt; ": п╫п╣ п╫п╟п╧п╢п╣п╫ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╩я▐ п╢п╟я┌я┤п╦п╨п╟ 'HeartBeat' " &lt;&lt; heart;
 			throw SystemError(err.str());
 		}
 
@@ -812,7 +812,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 	in_TestMode_S  		= (idTestMode_S!=DefaultObjectId) ? ui.getState(idTestMode_S):false;
 	in_LocalTestMode_S 	= (idLocalTestMode_S!=DefaultObjectId) ? ui.getState(idLocalTestMode_S):false;
 
-	// Опрашиваем все входы...
+	// п·п©я─п╟я┬п╦п╡п╟п╣п╪ п╡я│п╣ п╡я┘п╬п╢я▀...
 	<xsl:for-each select="//sensors/item/consumers/consumer">
 		<xsl:choose>
 			<xsl:when test="normalize-space(@vartype)='in'"><xsl:call-template name="getdata"/></xsl:when>
@@ -823,7 +823,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool state )
 {
-	// отключаем все выходы
+	// п╬я┌п╨п╩я▌я┤п╟п╣п╪ п╡я│п╣ п╡я▀я┘п╬п╢я▀
 <xsl:for-each select="//sensors/item/consumers/consumer">
 	<xsl:call-template name="setdata_value"><xsl:with-param name="setval" select="0"/></xsl:call-template>
 </xsl:for-each>
@@ -831,7 +831,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool state )
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::checkSensors()
 {
-	// Опрашиваем все входы...
+	// п·п©я─п╟я┬п╦п╡п╟п╣п╪ п╡я│п╣ п╡я┘п╬п╢я▀...
 	<xsl:for-each select="//sensors/item/consumers/consumer">
 		<xsl:choose>
 			<xsl:when test="normalize-space(@vartype)='in'"><xsl:call-template name="check_changes"/></xsl:when>
@@ -874,7 +874,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId code, 
 	if( code == UniSetTypes::DefaultObjectId )
 	{
 		unideb[Debug::CRIT]  &lt;&lt; getName()
-							&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId" 
+							&lt;&lt; "(alarm): п©п╬п©я▀я┌п╨п╟ п©п╬я│п╩п╟я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣ я│ DefaultObjectId" 
 							&lt;&lt; endl;
 		return false;	
 	}

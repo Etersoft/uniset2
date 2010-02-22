@@ -75,8 +75,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		string iodev = conf->getArgParam(s1.str(),it.getProp(s2.str()));
 		if( iodev.empty() || iodev == "/dev/null" )
 		{
-			unideb[Debug::LEVEL3] << myname << "(init): КАРТА N" << i 
-								<< " ОТКЛЮЧЕНА (TestMode)!!! в КАЧЕСТВЕ УСТРОЙСТВА УКАЗАНО '" 
+			unideb[Debug::LEVEL3] << myname << "(init): п п░п═п╒п░ N" << i 
+								<< " п·п╒п п⌡п╝п╖п∙п²п░ (TestMode)!!! п╡ п п░п╖п∙п║п╒п▓п∙ пёп║п╒п═п·п≥п║п╒п▓п░ пёп п░п≈п░п²п· '" 
 								<< iodev << "'" << endl;
 			cards[i] = NULL;
 			cout << "******************** CARD" << i << ": IO IMITATOR MODE ****************" << endl;
@@ -136,7 +136,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		if( testLamp_S == DefaultObjectId )
 		{
 			ostringstream err;
-			err << myname << ": не найден идентификатор для датчика ТестЛамп: " << testlamp;
+			err << myname << ": п╫п╣ п╫п╟п╧п╢п╣п╫ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╩я▐ п╢п╟я┌я┤п╦п╨п╟ п╒п╣я│я┌п⌡п╟п╪п©: " << testlamp;
 			unideb[Debug::CRIT] << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
@@ -146,7 +146,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 
 	shm = new SMInterface(icID,&ui,myid,ic);
 
-	// определяем фильтр
+	// п╬п©я─п╣п╢п╣п╩я▐п╣п╪ я└п╦п╩я▄я┌я─
 	s_field = conf->getArgParam("--io-s-filter-field");
 	s_fvalue = conf->getArgParam("--io-s-filter-value");
 
@@ -175,8 +175,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	{
 		sidTestSMReady = 4100; /* TestMode_S */
 		unideb[Debug::WARN] << myname 
-				<< "(init): не указан идентификатор датчика теста SM (--io-sm-ready-test-sid)." 
-				<< " Берём TestMode_S(4100)" << endl;
+				<< "(init): п╫п╣ я┐п╨п╟п╥п╟п╫ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╟я┌я┤п╦п╨п╟ я┌п╣я│я┌п╟ SM (--io-sm-ready-test-sid)." 
+				<< " п▒п╣я─я▒п╪ TestMode_S(4100)" << endl;
 	}
 	else
 		unideb[Debug::INFO] << myname << "(init): test-sid: " << sm_ready_sid << endl;
@@ -190,7 +190,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		if( sidHeartBeat == DefaultObjectId )
 		{
 			ostringstream err;
-			err << myname << ": не найден идентификатор для датчика 'HeartBeat' " << heart;
+			err << myname << ": п╫п╣ п╫п╟п╧п╢п╣п╫ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╩я▐ п╢п╟я┌я┤п╦п╨п╟ 'HeartBeat' " << heart;
 			unideb[Debug::CRIT] << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
@@ -214,8 +214,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 
 IOControl::~IOControl()
 {
-	// здесь бы ещё пройтись по списку с сделать delete для
-	// всех cdiagram созданных через new
+	// п╥п╢п╣я│я▄ п╠я▀ п╣я┴я▒ п©я─п╬п╧я┌п╦я│я▄ п©п╬ я│п©п╦я│п╨я┐ я│ я│п╢п╣п╩п╟я┌я▄ delete п╢п╩я▐
+	// п╡я│п╣я┘ cdiagram я│п╬п╥п╢п╟п╫п╫я▀я┘ я┤п╣я─п╣п╥ new
 	// 
 	for( unsigned int i=0; i<cards.size(); i++ )
 		delete cards[i];
@@ -229,7 +229,7 @@ void IOControl::execute()
 //	set_signals(true);
 	UniXML_iterator it(cnode);
 
-	waitSM(); // необходимо дождаться, чтобы нормально инициализировать итераторы
+	waitSM(); // п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╢п╬п╤п╢п╟я┌я▄я│я▐, я┤я┌п╬п╠я▀ п╫п╬я─п╪п╟п╩я▄п╫п╬ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟я┌я▄ п╦я┌п╣я─п╟я┌п╬я─я▀
 
 	PassiveTimer pt(UniSetTimer::WaitUpTime);
 	
@@ -249,7 +249,7 @@ void IOControl::execute()
 			shm->initAIterator(it->ait);
 			shm->initDIterator(it->dit);
 		}
-		readconf_ok = true; // т.к. waitSM() уже был...
+		readconf_ok = true; // я┌.п╨. waitSM() я┐п╤п╣ п╠я▀п╩...
 	}
 	
 	maxHalf = maxItem / 2;
@@ -257,7 +257,7 @@ void IOControl::execute()
 
 	cerr << myname << "(iomap size): " << iomap.size() << endl;
 
-	// чтение параметров по входам-выходам
+	// я┤я┌п╣п╫п╦п╣ п©п╟я─п╟п╪п╣я┌я─п╬п╡ п©п╬ п╡я┘п╬п╢п╟п╪-п╡я▀я┘п╬п╢п╟п╪
 	initIOCard();
 
 	bool skip_iout = conf->getArgInt("--io-skip-init-output");
@@ -366,7 +366,7 @@ void IOControl::execute()
 // --------------------------------------------------------------------------------
 void IOControl::iopoll()
 {
-	// Опрос приоритетной очереди
+	// п·п©я─п╬я│ п©я─п╦п╬я─п╦я┌п╣я┌п╫п╬п╧ п╬я┤п╣я─п╣п╢п╦
 	for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
 	{
 		if( it->priority > 0 )
@@ -384,8 +384,8 @@ void IOControl::iopoll()
 
 		ioread( (IOInfo*)&(*it) );
 		
-		// на середине 
-		// опять опросим приоритетные
+		// п╫п╟ я│п╣я─п╣п╢п╦п╫п╣ 
+		// п╬п©я▐я┌я▄ п╬п©я─п╬я│п╦п╪ п©я─п╦п╬я─п╦я┌п╣я┌п╫я▀п╣
 		if( !prior && i>maxHalf )
 		{
 			for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
@@ -398,7 +398,7 @@ void IOControl::iopoll()
 		}
 	}
 	
-	// Опрос приоритетной очереди
+	// п·п©я─п╬я│ п©я─п╦п╬я─п╦я┌п╣я┌п╫п╬п╧ п╬я┤п╣я─п╣п╢п╦
 	for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
 	{
 		if( it->priority > 2 )
@@ -472,8 +472,8 @@ void IOControl::ioread( IOInfo* it )
 				
 //				cout << "val=" << ib->value << endl;
 								
-				// немного оптимизации
-				// сразу выставляем.сбрасываем флаг тестирования
+				// п╫п╣п╪п╫п╬пЁп╬ п╬п©я┌п╦п╪п╦п╥п╟я├п╦п╦
+				// я│я─п╟п╥я┐ п╡я▀я│я┌п╟п╡п╩я▐п╣п╪.я│п╠я─п╟я│я▀п╡п╟п╣п╪ я└п╩п╟пЁ я┌п╣я│я┌п╦я─п╬п╡п╟п╫п╦я▐
 				if( it->si.id == testLamp_S )
 					isTestLamp = set;
 			}
@@ -484,7 +484,7 @@ void IOControl::ioread( IOInfo* it )
 					long rval = IOBase::processingAsAO( ib, shm, force_out );
 					card->setAnalogChannel(it->subdev,it->channel,rval,it->range,it->aref);
 				}
-				else // управление лампочками
+				else // я┐п©я─п╟п╡п╩п╣п╫п╦п╣ п╩п╟п╪п©п╬я┤п╨п╟п╪п╦
 				{
 					uniset_spin_lock lock(it->val_lock);
 					long prev_val = it->value;
@@ -532,7 +532,7 @@ void IOControl::ioread( IOInfo* it )
 								delBlink(it,lstBlink2);
 								delBlink(it,lstBlink3);
 								addBlink(it,lstBlink);
-								// и сразу зажигаем, чтобы не было паузы (так комфортнее выглядит для оператора)
+								// п╦ я│я─п╟п╥я┐ п╥п╟п╤п╦пЁп╟п╣п╪, я┤я┌п╬п╠я▀ п╫п╣ п╠я▀п╩п╬ п©п╟я┐п╥я▀ (я┌п╟п╨ п╨п╬п╪я└п╬я─я┌п╫п╣п╣ п╡я▀пЁп╩я▐п╢п╦я┌ п╢п╩я▐ п╬п©п╣я─п╟я┌п╬я─п╟)
 								card->setDigitalChannel(it->subdev,it->channel,1);
 							}
 						}
@@ -545,7 +545,7 @@ void IOControl::ioread( IOInfo* it )
 								delBlink(it,lstBlink);
 								delBlink(it,lstBlink3);
 								addBlink(it,lstBlink2);
-								// и сразу зажигаем, чтобы не было паузы (так комфортнее выглядит для оператора)
+								// п╦ я│я─п╟п╥я┐ п╥п╟п╤п╦пЁп╟п╣п╪, я┤я┌п╬п╠я▀ п╫п╣ п╠я▀п╩п╬ п©п╟я┐п╥я▀ (я┌п╟п╨ п╨п╬п╪я└п╬я─я┌п╫п╣п╣ п╡я▀пЁп╩я▐п╢п╦я┌ п╢п╩я▐ п╬п©п╣я─п╟я┌п╬я─п╟)
 								card->setDigitalChannel(it->subdev,it->channel,1);
 							}
 						}
@@ -558,7 +558,7 @@ void IOControl::ioread( IOInfo* it )
 								delBlink(it,lstBlink);
 								delBlink(it,lstBlink2);
 								addBlink(it,lstBlink3);
-								// и сразу зажигаем, чтобы не было паузы (так комфортнее выглядит для оператора)
+								// п╦ я│я─п╟п╥я┐ п╥п╟п╤п╦пЁп╟п╣п╪, я┤я┌п╬п╠я▀ п╫п╣ п╠я▀п╩п╬ п©п╟я┐п╥я▀ (я┌п╟п╨ п╨п╬п╪я└п╬я─я┌п╫п╣п╣ п╡я▀пЁп╩я▐п╢п╦я┌ п╢п╩я▐ п╬п©п╣я─п╟я┌п╬я─п╟)
 								card->setDigitalChannel(it->subdev,it->channel,1);
 							}
 						}
@@ -594,7 +594,7 @@ void IOControl::ioread( IOInfo* it )
 		}
 		catch(CORBA::SystemException& ex)
 		{
-			unideb[Debug::LEVEL3] << myname << "(iopoll): СORBA::SystemException: "
+			unideb[Debug::LEVEL3] << myname << "(iopoll): п║ORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 		}
 		catch(...)
@@ -645,11 +645,11 @@ bool IOControl::check_item( UniXML_iterator& it )
 	if( s_field.empty() )
 		return true;
 
-	// просто проверка на не пустой field
+	// п©я─п╬я│я┌п╬ п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п╫п╣ п©я┐я│я┌п╬п╧ field
 	if( s_fvalue.empty() && it.getProp(s_field).empty() )
 		return false;
 
-	// просто проверка что field = value
+	// п©я─п╬я│я┌п╬ п©я─п╬п╡п╣я─п╨п╟ я┤я┌п╬ field = value
 	if( !s_fvalue.empty() && it.getProp(s_field) != s_fvalue )
 		return false;
 
@@ -668,8 +668,8 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	if( c.empty() || inf.ncard < 0 || inf.ncard >= (int)cards.size() )
 	{
 		unideb[Debug::LEVEL3] << myname 
-							<< "(initIOItem): Не указан или неверный номер карты (" 
-							<< inf.ncard << ") для " << it.getProp("name") 
+							<< "(initIOItem): п²п╣ я┐п╨п╟п╥п╟п╫ п╦п╩п╦ п╫п╣п╡п╣я─п╫я▀п╧ п╫п╬п╪п╣я─ п╨п╟я─я┌я▀ (" 
+							<< inf.ncard << ") п╢п╩я▐ " << it.getProp("name") 
 							<< " set default=" << defCardNum << endl;
 		inf.ncard = defCardNum;
 	}
@@ -699,8 +699,8 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	inf.channel = it.getIntProp("channel");
 	if( inf.channel < 0 || inf.channel > 32 )
 	{
-		unideb[Debug::WARN] << myname << "(readItem): неизвестный канал: " << inf.channel
-							<< " для " << it.getProp("name") << endl;
+		unideb[Debug::WARN] << myname << "(readItem): п╫п╣п╦п╥п╡п╣я│я┌п╫я▀п╧ п╨п╟п╫п╟п╩: " << inf.channel
+							<< " п╢п╩я▐ " << it.getProp("name") << endl;
 		return false;
 	}
 
@@ -717,17 +717,17 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 		inf.range = it.getIntProp("range");
 		if( inf.range < 0 || inf.range > 3 )
 		{
-			unideb[Debug::CRIT] << myname << "(readItem): неизвестный коэффициент усиления(range): " << inf.range
-							<< " для " << it.getProp("name") 
-							<< " Разрешнный диапазон: range=[0..3]" << endl;
+			unideb[Debug::CRIT] << myname << "(readItem): п╫п╣п╦п╥п╡п╣я│я┌п╫я▀п╧ п╨п╬я█я└я└п╦я├п╦п╣п╫я┌ я┐я│п╦п╩п╣п╫п╦я▐(range): " << inf.range
+							<< " п╢п╩я▐ " << it.getProp("name") 
+							<< " п═п╟п╥я─п╣я┬п╫п╫я▀п╧ п╢п╦п╟п©п╟п╥п╬п╫: range=[0..3]" << endl;
 			return false;
 		}
 
 		inf.aref = it.getIntProp("aref");
 		if( inf.aref < 0 || inf.aref > 3 )
 		{
-			unideb[Debug::CRIT] << myname << "(readItem): неизвестный тип подключения: " << inf.aref
-							<< " для " << it.getProp("name") << endl;
+			unideb[Debug::CRIT] << myname << "(readItem): п╫п╣п╦п╥п╡п╣я│я┌п╫я▀п╧ я┌п╦п© п©п╬п╢п╨п╩я▌я┤п╣п╫п╦я▐: " << inf.aref
+							<< " п╢п╩я▐ " << it.getProp("name") << endl;
 			return false;
 		}
 	}
@@ -735,10 +735,10 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	if( unideb.debugging(Debug::LEVEL3) )
 		unideb[Debug::LEVEL3] << myname << "(readItem): add: " << inf.stype << " " << inf << endl;
 
-	// если вектор уже заполнен
-	// то увеличиваем его на 10 элементов (с запасом)
-	// после инициализации делается resize
-	// под реальное количество
+	// п╣я│п╩п╦ п╡п╣п╨я┌п╬я─ я┐п╤п╣ п╥п╟п©п╬п╩п╫п╣п╫
+	// я┌п╬ я┐п╡п╣п╩п╦я┤п╦п╡п╟п╣п╪ п╣пЁп╬ п╫п╟ 10 я█п╩п╣п╪п╣п╫я┌п╬п╡ (я│ п╥п╟п©п╟я│п╬п╪)
+	// п©п╬я│п╩п╣ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦п╦ п╢п╣п╩п╟п╣я┌я│я▐ resize
+	// п©п╬п╢ я─п╣п╟п╩я▄п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬
 	if( maxItem >= iomap.size() )
 		iomap.resize(maxItem+10);
 
@@ -759,9 +759,9 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 
 bool IOControl::activateObject()
 {
-	// блокирование обработки Startup 
-	// пока не пройдёт инициализация датчиков
-	// см. sysCommand()
+	// п╠п╩п╬п╨п╦я─п╬п╡п╟п╫п╦п╣ п╬п╠я─п╟п╠п╬я┌п╨п╦ Startup 
+	// п©п╬п╨п╟ п╫п╣ п©я─п╬п╧п╢я▒я┌ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ п╢п╟я┌я┤п╦п╨п╬п╡
+	// я│п╪. sysCommand()
 	{
 		activated = false;
 		UniSetObject::activateObject();
@@ -778,7 +778,7 @@ void IOControl::sigterm( int signo )
 	if( noCards )
 		return;
 
-	// выставляем безопасные состояния
+	// п╡я▀я│я┌п╟п╡п╩я▐п╣п╪ п╠п╣п╥п╬п©п╟я│п╫я▀п╣ я│п╬я│я┌п╬я▐п╫п╦я▐
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
 	{
 		if( it->ignore )
@@ -820,7 +820,7 @@ void IOControl::initOutputs()
 	if( noCards )
 		return;
 
-	// выставляем значение по умолчанию
+	// п╡я▀я│я┌п╟п╡п╩я▐п╣п╪ п╥п╫п╟я┤п╣п╫п╦п╣ п©п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
 	{
 		if( it->ignore )
@@ -864,8 +864,8 @@ void IOControl::initIOCard()
 
 		try
 		{	
-			// конфигурировать необходимо только дискретные входы/выходы
-			// или "лампочки" (т.к. они фиктивные аналоговые датчики)
+			// п╨п╬п╫я└п╦пЁя┐я─п╦я─п╬п╡п╟я┌я▄ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ я┌п╬п╩я▄п╨п╬ п╢п╦я│п╨я─п╣я┌п╫я▀п╣ п╡я┘п╬п╢я▀/п╡я▀я┘п╬п╢я▀
+			// п╦п╩п╦ "п╩п╟п╪п©п╬я┤п╨п╦" (я┌.п╨. п╬п╫п╦ я└п╦п╨я┌п╦п╡п╫я▀п╣ п╟п╫п╟п╩п╬пЁп╬п╡я▀п╣ п╢п╟я┌я┤п╦п╨п╦)
 			if( it->lamp )
 				card->configureChannel(it->subdev,it->channel,ComediInterface::DO);
 			else if( it->stype == UniversalIO::DigitalInput )
@@ -954,15 +954,15 @@ void IOControl::check_testlamp()
 			isTestLamp = shm->localGetState( ditTestLamp, testLamp_S );
 				
 		if( !trTestLamp.change(isTestLamp) )
-			return; // если состояние не менялось, то продолжаем работу...
+			return; // п╣я│п╩п╦ я│п╬я│я┌п╬я▐п╫п╦п╣ п╫п╣ п╪п╣п╫я▐п╩п╬я│я▄, я┌п╬ п©я─п╬п╢п╬п╩п╤п╟п╣п╪ я─п╟п╠п╬я┌я┐...
 		
 		if( isTestLamp )
-			blink_state = true; // первый такт всегда зажигаем...
+			blink_state = true; // п©п╣я─п╡я▀п╧ я┌п╟п╨я┌ п╡я│п╣пЁп╢п╟ п╥п╟п╤п╦пЁп╟п╣п╪...
 
 //		cout << myname << "(check_test_lamp): ************* test lamp " 
 //			<< isTestLamp << " *************" << endl;
 
-		// проходим по списку и формируем список мигающих выходов...
+		// п©я─п╬я┘п╬п╢п╦п╪ п©п╬ я│п©п╦я│п╨я┐ п╦ я└п╬я─п╪п╦я─я┐п╣п╪ я│п©п╦я│п╬п╨ п╪п╦пЁп╟я▌я┴п╦я┘ п╡я▀я┘п╬п╢п╬п╡...
 		for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
 		{
 			if( !it->lamp || it->no_testlamp )
@@ -1035,40 +1035,40 @@ IOControl* IOControl::init_iocontrol( int argc, const char* const* argv,
 // -----------------------------------------------------------------------------
 void IOControl::help_print( int argc, const char* const* argv )
 {
-	cout << "--io-confnode name - Использовать для настройки указанный xml-узел" << endl;
-	cout << "--io-name name		- ID процесса. По умолчанию IOController1." << endl;
-	cout << "--io-numcards		- Количество кард в/в. По умолчанию 1." << endl;
-	cout << "--iodev0 dev		- Использовать для card='0' указанный файл comedi-устройства." << endl;
-	cout << "--iodev1 dev		- Использовать для card='1' указанный файл comedi-устройства." << endl;
-	cout << "--iodev2 dev		- Использовать для card='2' указанный файл comedi-устройства." << endl;
-	cout << "--iodev3 dev		- Использовать для card='3' указанный файл comedi-устройства." << endl;
-	cout << "--iodevX dev		- Использовать для card='X' указанный файл comedi-устройства." << endl;
-	cout << "                     'X'  не должен быть больше --io-numcards" << endl;
+	cout << "--io-confnode name - п≤я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ п╢п╩я▐ п╫п╟я│я┌я─п╬п╧п╨п╦ я┐п╨п╟п╥п╟п╫п╫я▀п╧ xml-я┐п╥п╣п╩" << endl;
+	cout << "--io-name name		- ID п©я─п╬я├п╣я│я│п╟. п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ IOController1." << endl;
+	cout << "--io-numcards		- п п╬п╩п╦я┤п╣я│я┌п╡п╬ п╨п╟я─п╢ п╡/п╡. п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ 1." << endl;
+	cout << "--iodev0 dev		- п≤я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ п╢п╩я▐ card='0' я┐п╨п╟п╥п╟п╫п╫я▀п╧ я└п╟п╧п╩ comedi-я┐я│я┌я─п╬п╧я│я┌п╡п╟." << endl;
+	cout << "--iodev1 dev		- п≤я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ п╢п╩я▐ card='1' я┐п╨п╟п╥п╟п╫п╫я▀п╧ я└п╟п╧п╩ comedi-я┐я│я┌я─п╬п╧я│я┌п╡п╟." << endl;
+	cout << "--iodev2 dev		- п≤я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ п╢п╩я▐ card='2' я┐п╨п╟п╥п╟п╫п╫я▀п╧ я└п╟п╧п╩ comedi-я┐я│я┌я─п╬п╧я│я┌п╡п╟." << endl;
+	cout << "--iodev3 dev		- п≤я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ п╢п╩я▐ card='3' я┐п╨п╟п╥п╟п╫п╫я▀п╧ я└п╟п╧п╩ comedi-я┐я│я┌я─п╬п╧я│я┌п╡п╟." << endl;
+	cout << "--iodevX dev		- п≤я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ п╢п╩я▐ card='X' я┐п╨п╟п╥п╟п╫п╫я▀п╧ я└п╟п╧п╩ comedi-я┐я│я┌я─п╬п╧я│я┌п╡п╟." << endl;
+	cout << "                     'X'  п╫п╣ п╢п╬п╩п╤п╣п╫ п╠я▀я┌я▄ п╠п╬п╩я▄я┬п╣ --io-numcards" << endl;
 
-	cout << "--iodevX-subdevX-type name	- Настройка типа подустройства для UNIO." << endl ;
-	cout << "                             Разрешены: TBI0_24,TBI24_0,TBI16_8" << endl;
+	cout << "--iodevX-subdevX-type name	- п²п╟я│я┌я─п╬п╧п╨п╟ я┌п╦п©п╟ п©п╬п╢я┐я│я┌я─п╬п╧я│я┌п╡п╟ п╢п╩я▐ UNIO." << endl ;
+	cout << "                             п═п╟п╥я─п╣я┬п╣п╫я▀: TBI0_24,TBI24_0,TBI16_8" << endl;
 
-	cout << "--io-default_cardnum		- Номер карты по умолчанию. По умолчанию -1." << endl;
-	cout << "                             Если задать, то он будет использоватся для датчиков" << endl;
-	cout << "                             у которых не задано поле 'card'." << endl;
+	cout << "--io-default_cardnum		- п²п╬п╪п╣я─ п╨п╟я─я┌я▀ п©п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌. п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ -1." << endl;
+	cout << "                             п∙я│п╩п╦ п╥п╟п╢п╟я┌я▄, я┌п╬ п╬п╫ п╠я┐п╢п╣я┌ п╦я│п©п╬п╩я▄п╥п╬п╡п╟я┌я│я▐ п╢п╩я▐ п╢п╟я┌я┤п╦п╨п╬п╡" << endl;
+	cout << "                             я┐ п╨п╬я┌п╬я─я▀я┘ п╫п╣ п╥п╟п╢п╟п╫п╬ п©п╬п╩п╣ 'card'." << endl;
 
-	cout << "--io-test-lamp		- Для данного узла в качестве датчика кнопки 'ТестЛамп' использовать указанный датчик." << endl;
-	cout << "--io-conf-field fname	- Считывать из конф. файла все датчики с полем fname='1'" << endl;
-	cout << "--io-polltime msec	- Пауза между опросом карт. По умолчанию 200 мсек." << endl;
-	cout << "--io-filtersize val	- Размерность фильтра для аналоговых входов." << endl;
-	cout << "--io-filterT val		- Постоянная времени фильтра." << endl;
-	cout << "--io-s-filter-field	- Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
-	cout << "--io-s-filter-value	- Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
-	cout << "--io-blink-time msec	- Частота мигания, мсек. По умолчанию в configure.xml" << endl;
-	cout << "--io-blink2-time msec	- Вторая частота мигания (lmpBLINK2), мсек. По умолчанию в configure.xml" << endl;
-	cout << "--io-blink3-time msec	- Вторая частота мигания (lmpBLINK3), мсек. По умолчанию в configure.xml" << endl;
-	cout << "--io-heartbeat-id		- Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--io-heartbeat-max  	- Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--io-ready-timeout		- Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
-	cout << "--io-force				- Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
-	cout << "--io-force-out			- Обновлять выходы принудительно (не по заказу)" << endl;
-	cout << "--io-skip-init-output	- Не инициализировать 'выходы' при старте" << endl;
-	cout << "--io-sm-ready-test-sid - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
+	cout << "--io-test-lamp		- п■п╩я▐ п╢п╟п╫п╫п╬пЁп╬ я┐п╥п╩п╟ п╡ п╨п╟я┤п╣я│я┌п╡п╣ п╢п╟я┌я┤п╦п╨п╟ п╨п╫п╬п©п╨п╦ 'п╒п╣я│я┌п⌡п╟п╪п©' п╦я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ я┐п╨п╟п╥п╟п╫п╫я▀п╧ п╢п╟я┌я┤п╦п╨." << endl;
+	cout << "--io-conf-field fname	- п║я┤п╦я┌я▀п╡п╟я┌я▄ п╦п╥ п╨п╬п╫я└. я└п╟п╧п╩п╟ п╡я│п╣ п╢п╟я┌я┤п╦п╨п╦ я│ п©п╬п╩п╣п╪ fname='1'" << endl;
+	cout << "--io-polltime msec	- п÷п╟я┐п╥п╟ п╪п╣п╤п╢я┐ п╬п©я─п╬я│п╬п╪ п╨п╟я─я┌. п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ 200 п╪я│п╣п╨." << endl;
+	cout << "--io-filtersize val	- п═п╟п╥п╪п╣я─п╫п╬я│я┌я▄ я└п╦п╩я▄я┌я─п╟ п╢п╩я▐ п╟п╫п╟п╩п╬пЁп╬п╡я▀я┘ п╡я┘п╬п╢п╬п╡." << endl;
+	cout << "--io-filterT val		- п÷п╬я│я┌п╬я▐п╫п╫п╟я▐ п╡я─п╣п╪п╣п╫п╦ я└п╦п╩я▄я┌я─п╟." << endl;
+	cout << "--io-s-filter-field	- п≤п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╡ configure.xml п©п╬ п╨п╬я┌п╬я─п╬п╪я┐ я│я┤п╦я┌я▀п╡п╟п╣я┌я│я▐ я│п©п╦я│п╬п╨ п╬я┌п╫п╬я│я▐я┴п╦я┘я│я▐ п╨ я█я┌п╬ п©я─п╬я├п╣я│я│я┐ п╢п╟я┌я┤п╦п╨п╬п╡" << endl;
+	cout << "--io-s-filter-value	- п≈п╫п╟я┤п╣п╫п╦п╣ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╟ п©п╬ п╨п╬я┌п╬я─п╬п╪я┐ я│я┤п╦я┌я▀п╡п╟п╣я┌я│я▐ я│п©п╦я│п╬п╨ п╬я┌п╫п╬я│я▐я┴п╦я┘я│я▐ п╨ я█я┌п╬ п©я─п╬я├п╣я│я│я┐ п╢п╟я┌я┤п╦п╨п╬п╡" << endl;
+	cout << "--io-blink-time msec	- п╖п╟я│я┌п╬я┌п╟ п╪п╦пЁп╟п╫п╦я▐, п╪я│п╣п╨. п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ п╡ configure.xml" << endl;
+	cout << "--io-blink2-time msec	- п▓я┌п╬я─п╟я▐ я┤п╟я│я┌п╬я┌п╟ п╪п╦пЁп╟п╫п╦я▐ (lmpBLINK2), п╪я│п╣п╨. п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ п╡ configure.xml" << endl;
+	cout << "--io-blink3-time msec	- п▓я┌п╬я─п╟я▐ я┤п╟я│я┌п╬я┌п╟ п╪п╦пЁп╟п╫п╦я▐ (lmpBLINK3), п╪я│п╣п╨. п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ п╡ configure.xml" << endl;
+	cout << "--io-heartbeat-id		- п■п╟п╫п╫я▀п╧ п©я─п╬я├п╣я│я│ я│п╡я▐п╥п╟п╫ я│ я┐п╨п╟п╥п╟п╫п╫я▀п╪ п╟п╫п╟п╩п╬пЁп╬п╡я▀п╪ heartbeat-п╢п╟я┤п╦п╨п╬п╪." << endl;
+	cout << "--io-heartbeat-max  	- п°п╟п╨я│п╦п╪п╟п╩я▄п╫п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ heartbeat-я│я┤я▒я┌я┤п╦п╨п╟ п╢п╩я▐ п╢п╟п╫п╫п╬пЁп╬ п©я─п╬я├п╣я│я│п╟. п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ 10." << endl;
+	cout << "--io-ready-timeout		- п▓я─п╣п╪я▐ п╬п╤п╦п╢п╟п╫п╦я▐ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ SM п╨ я─п╟п╠п╬я┌п╣, п╪я│п╣п╨. (-1 - п╤п╢п╟я┌я▄ 'п╡п╣я┤п╫п╬')" << endl;    
+	cout << "--io-force				- п║п╬я┘я─п╟п╫я▐я┌я▄ п╥п╫п╟я┤п╣п╫п╦я▐ п╡ SM, п╫п╣п╥п╟п╡п╦я│п╦п╪п╬ п╬я┌, я┌п╬пЁп╬ п╪п╣п╫я▐п╩п╬я│я▄ п╩п╦ п╥п╫п╟я┤п╣п╫п╦п╣" << endl;
+	cout << "--io-force-out			- п·п╠п╫п╬п╡п╩я▐я┌я▄ п╡я▀я┘п╬п╢я▀ п©я─п╦п╫я┐п╢п╦я┌п╣п╩я▄п╫п╬ (п╫п╣ п©п╬ п╥п╟п╨п╟п╥я┐)" << endl;
+	cout << "--io-skip-init-output	- п²п╣ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟я┌я▄ 'п╡я▀я┘п╬п╢я▀' п©я─п╦ я│я┌п╟я─я┌п╣" << endl;
+	cout << "--io-sm-ready-test-sid - п≤я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ я┐п╨п╟п╥п╟п╫п╫я▀п╧ п╢п╟я┌я┤п╦п╨, п╢п╩я▐ п©я─п╬п╡п╣я─п╨п╦ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ SharedMemory" << endl;
 }
 // -----------------------------------------------------------------------------
 void IOControl::processingMessage( UniSetTypes::VoidMessage* msg )
@@ -1137,16 +1137,16 @@ void IOControl::sysCommand( SystemMessage* sm )
 		
 		case SystemMessage::WatchDog:
 		{
-			// ОПТИМИЗАЦИЯ (защита от двойного перезаказа при старте)
-			// Если идёт локальная работа 
-			// (т.е. IOControl  запущен в одном процессе с SharedMemory2)
-			// то обрабатывать WatchDog не надо, т.к. мы и так ждём готовности SM
-			// при заказе датчиков, а если SM вылетит, то вместе с этим процессом(IOControl)
+			// п·п÷п╒п≤п°п≤п≈п░п╕п≤п╞ (п╥п╟я┴п╦я┌п╟ п╬я┌ п╢п╡п╬п╧п╫п╬пЁп╬ п©п╣я─п╣п╥п╟п╨п╟п╥п╟ п©я─п╦ я│я┌п╟я─я┌п╣)
+			// п∙я│п╩п╦ п╦п╢я▒я┌ п╩п╬п╨п╟п╩я▄п╫п╟я▐ я─п╟п╠п╬я┌п╟ 
+			// (я┌.п╣. IOControl  п╥п╟п©я┐я┴п╣п╫ п╡ п╬п╢п╫п╬п╪ п©я─п╬я├п╣я│я│п╣ я│ SharedMemory2)
+			// я┌п╬ п╬п╠я─п╟п╠п╟я┌я▀п╡п╟я┌я▄ WatchDog п╫п╣ п╫п╟п╢п╬, я┌.п╨. п╪я▀ п╦ я┌п╟п╨ п╤п╢я▒п╪ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ SM
+			// п©я─п╦ п╥п╟п╨п╟п╥п╣ п╢п╟я┌я┤п╦п╨п╬п╡, п╟ п╣я│п╩п╦ SM п╡я▀п╩п╣я┌п╦я┌, я┌п╬ п╡п╪п╣я│я┌п╣ я│ я█я┌п╦п╪ п©я─п╬я├п╣я│я│п╬п╪(IOControl)
 			if( shm->isLocalwork() )
 				break;
 
 			askSensors(UniversalIO::UIONotify);
-			// принудительно обновляем состояния...
+			// п©я─п╦п╫я┐п╢п╦я┌п╣п╩я▄п╫п╬ п╬п╠п╫п╬п╡п╩я▐п╣п╪ я│п╬я│я┌п╬я▐п╫п╦я▐...
 			try
 			{
 				if( !force )
@@ -1163,7 +1163,7 @@ void IOControl::sysCommand( SystemMessage* sm )
 
 		case SystemMessage::LogRotate:
 		{
-			// переоткрываем логи
+			// п©п╣я─п╣п╬я┌п╨я─я▀п╡п╟п╣п╪ п╩п╬пЁп╦
 			unideb << myname << "(sysCommand): logRotate" << endl;
 			string fname = unideb.getLogFile();
 			if( !fname.empty() )
@@ -1198,11 +1198,11 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 	{
 		ostringstream err;
 		err << myname 
-			<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение " 
-			<< activateTimeout << " мсек";
+			<< "(askSensors): п²п╣ п╢п╬п╤п╢п╟п╩п╦я│я▄ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦(work) SharedMemory п╨ я─п╟п╠п╬я┌п╣ п╡ я┌п╣я┤п╣п╫п╦п╣ " 
+			<< activateTimeout << " п╪я│п╣п╨";
 
 		unideb[Debug::CRIT] << err.str() << endl;
-		kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
+		kill(SIGTERM,getpid());	// п©я─п╣я─я▀п╡п╟п╣п╪ (п©п╣я─п╣п╥п╟п©я┐я│п╨п╟п╣п╪) п©я─п╬я├п╣я│я│...
 		throw SystemError(err.str());
 	}
 
@@ -1317,8 +1317,8 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 								delBlink(&(*it),lstBlink2);
 								delBlink(&(*it),lstBlink3);
 								addBlink(&(*it),lstBlink);
-								// и сразу зажигаем, чтобы не было паузы
-								// (так комфортнее выглядит для оператора)
+								// п╦ я│я─п╟п╥я┐ п╥п╟п╤п╦пЁп╟п╣п╪, я┤я┌п╬п╠я▀ п╫п╣ п╠я▀п╩п╬ п©п╟я┐п╥я▀
+								// (я┌п╟п╨ п╨п╬п╪я└п╬я─я┌п╫п╣п╣ п╡я▀пЁп╩я▐п╢п╦я┌ п╢п╩я▐ п╬п©п╣я─п╟я┌п╬я─п╟)
 								if( it->ignore || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
 									break;
 
@@ -1337,8 +1337,8 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 								delBlink(&(*it),lstBlink);
 								delBlink(&(*it),lstBlink3);
 								addBlink(&(*it),lstBlink2);
-								// и сразу зажигаем, чтобы не было паузы
-								// (так комфортнее выглядит для оператора)
+								// п╦ я│я─п╟п╥я┐ п╥п╟п╤п╦пЁп╟п╣п╪, я┤я┌п╬п╠я▀ п╫п╣ п╠я▀п╩п╬ п©п╟я┐п╥я▀
+								// (я┌п╟п╨ п╨п╬п╪я└п╬я─я┌п╫п╣п╣ п╡я▀пЁп╩я▐п╢п╦я┌ п╢п╩я▐ п╬п©п╣я─п╟я┌п╬я─п╟)
 								if( it->ignore || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
 									break;
 								
@@ -1357,8 +1357,8 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 								delBlink(&(*it),lstBlink);
 								delBlink(&(*it),lstBlink2);
 								addBlink(&(*it),lstBlink3);
-								// и сразу зажигаем, чтобы не было паузы
-								// (так комфортнее выглядит для оператора)
+								// п╦ я│я─п╟п╥я┐ п╥п╟п╤п╦пЁп╟п╣п╪, я┤я┌п╬п╠я▀ п╫п╣ п╠я▀п╩п╬ п©п╟я┐п╥я▀
+								// (я┌п╟п╨ п╨п╬п╪я└п╬я─я┌п╫п╣п╣ п╡я▀пЁп╩я▐п╢п╦я┌ п╢п╩я▐ п╬п©п╣я─п╟я┌п╬я─п╟)
 								if( it->ignore || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
 									break;
 								
@@ -1401,8 +1401,8 @@ void IOControl::waitSM()
 	if( !shm->waitSMready(smReadyTimeout,50) )
 	{
 		ostringstream err;
-		err << myname << "(execute): Не дождались готовности SharedMemory к работе в течение "
-					<< smReadyTimeout << " мсек";
+		err << myname << "(execute): п²п╣ п╢п╬п╤п╢п╟п╩п╦я│я▄ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ SharedMemory п╨ я─п╟п╠п╬я┌п╣ п╡ я┌п╣я┤п╣п╫п╦п╣ "
+					<< smReadyTimeout << " п╪я│п╣п╨";
 
 		unideb[Debug::CRIT] << err.str() << endl;
 		throw SystemError(err.str());

@@ -12,7 +12,7 @@ int main(int argc, const char **argv)
 {   
 	if( argc>1 && strcmp(argv[1],"--help")==0 )
 	{
-		cout << "--confile	- éÓÐÏÌØÚÏ×ÁÔØ ÕËÁÚÁÎÎÙÊ ËÏÎÆ. ÆÁÊÌ. ðÏ ÕÍÏÌÞÁÎÉÀ configure.xml" << endl;
+		cout << "--confile	- Ð˜ÑÐ¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÑŒ ÑƒÐºÐ°Ð·Ð°Ð½Ð½Ñ‹Ð¹ ÐºÐ¾Ð½Ñ„. Ñ„Ð°Ð¹Ð». ÐŸÐ¾ ÑƒÐ¼Ð¾Ð»Ñ‡Ð°Ð½Ð¸ÑŽ configure.xml" << endl;
 		UniExchange::help_print(argc, argv);
 		return 0;
 	}

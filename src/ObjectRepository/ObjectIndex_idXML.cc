@@ -95,7 +95,7 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string sec )
 	if( secRoot.empty() )
 	{
 		ostringstream msg;
-		msg << "(ObjectIndex_idXML::build):: ÎÅ ÎÁÛÌÉ ÐÁÒÁÍÅÔÒ RootSection × ËÏÎÆ. ÆÁÊÌÅ ";
+		msg << "(ObjectIndex_idXML::build):: Ð½Ðµ Ð½Ð°ÑˆÐ»Ð¸ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€ RootSection Ð² ÐºÐ¾Ð½Ñ„. Ñ„Ð°Ð¹Ð»Ðµ ";
 		unideb[Debug::CRIT] << msg.str() << endl;
 		throw SystemError(msg.str());
 	}
@@ -104,16 +104,16 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string sec )
 	if( !root )
 	{
 		ostringstream msg;
-		msg << "(ObjectIndex_idXML::build): ÎÅ ÎÁÛÌÉ ËÏÒÎÅ×ÏÇÏ ÒÁÚÄÅÌÁ " << sec;
+		msg << "(ObjectIndex_idXML::build): Ð½Ðµ Ð½Ð°ÑˆÐ»Ð¸ ÐºÐ¾Ñ€Ð½ÐµÐ²Ð¾Ð³Ð¾ Ñ€Ð°Ð·Ð´ÐµÐ»Ð° " << sec;
 		throw NameNotFound(msg.str());
 	}
 
-	// óÞÉÔÙ×ÁÅÍ ÓÐÉÓÏË ÜÌÅÍÅÎÔÏ×
+	// Ð¡Ñ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÐ¼ ÑÐ¿Ð¸ÑÐ¾Ðº ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð²
 	UniXML_iterator it(root);
 	if( !it.goChildren() )
 	{
 		ostringstream msg;
-		msg << "(ObjectIndex_idXML::build): ÎÅ ÕÄÁÌÏÓØ ÐÅÒÅÊÔÉ Ë ÓÐÉÓËÕ ÜÌÅÍÅÎÔÏ× " << sec;
+		msg << "(ObjectIndex_idXML::build): Ð½Ðµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ Ð¿ÐµÑ€ÐµÐ¹Ñ‚Ð¸ Ðº ÑÐ¿Ð¸ÑÐºÑƒ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð² " << sec;
 		throw NameNotFound(msg.str());
 	}
 
@@ -124,11 +124,11 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string sec )
 	if( secname.empty() )
 	{
 		ostringstream msg;
-		msg << "(ObjectIndex_idXML::build): Õ ÓÅËÃÉÉ " << sec << " ÎÅ ÕËÁÚÁÎÏ Ó×ÏÊÓÔ×Ï 'name' ";
+		msg << "(ObjectIndex_idXML::build): Ñƒ ÑÐµÐºÑ†Ð¸Ð¸ " << sec << " Ð½Ðµ ÑƒÐºÐ°Ð·Ð°Ð½Ð¾ ÑÐ²Ð¾Ð¹ÑÑ‚Ð²Ð¾ 'name' ";
 		throw NameNotFound(msg.str());
 	}
 
-	// ÐÒÉÂÁ×ÉÍ ËÏÒÅÎØ
+	// Ð¿Ñ€Ð¸Ð±Ð°Ð²Ð¸Ð¼ ÐºÐ¾Ñ€ÐµÐ½ÑŒ
 	secname = secRoot+"/"+secname+"/";
 
 	for( ;it.getCurrent(); it.goNext() )
@@ -139,8 +139,8 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string sec )
 		if( inf.id <= 0 )
 		{
 			ostringstream msg;
-			msg << "(ObjectIndex_idXML::build): îå õëáúáî id ÄÌÑ " << it.getProp("name") 
-				<< " ÓÅËÃÉÑ " << sec;
+			msg << "(ObjectIndex_idXML::build): ÐÐ• Ð£ÐšÐÐ—ÐÐ id Ð´Ð»Ñ " << it.getProp("name") 
+				<< " ÑÐµÐºÑ†Ð¸Ñ " << sec;
 			throw NameNotFound(msg.str());
 		}
 
@@ -167,17 +167,17 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string sec )
 	if( !root )
 	{
 		ostringstream msg;
-		msg << "(ObjectIndex_idXML::build): ÎÅ ÎÁÛÌÉ ËÏÒÎÅ×ÏÇÏ ÒÁÚÄÅÌÁ " << sec;
+		msg << "(ObjectIndex_idXML::build): Ð½Ðµ Ð½Ð°ÑˆÐ»Ð¸ ÐºÐ¾Ñ€Ð½ÐµÐ²Ð¾Ð³Ð¾ Ñ€Ð°Ð·Ð´ÐµÐ»Ð° " << sec;
 		throw NameNotFound(msg.str());
 	}
 
-	// óÞÉÔÙ×ÁÅÍ ÓÐÉÓÏË ÜÌÅÍÅÎÔÏ×
+	// Ð¡Ñ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÐ¼ ÑÐ¿Ð¸ÑÐ¾Ðº ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð²
 	UniXML_iterator it(root);
 	if( !it.goChildren() )
 	{
 		ostringstream msg;
-		msg << "(ObjectIndex_idXML::build): ÎÅ ÕÄÁÌÏÓØ ÐÅÒÅÊÔÉ Ë ÓÐÉÓËÕ ÜÌÅÍÅÎÔÏ× "
-			<< " ÓÅËÃÉÑ " << sec;
+		msg << "(ObjectIndex_idXML::build): Ð½Ðµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ Ð¿ÐµÑ€ÐµÐ¹Ñ‚Ð¸ Ðº ÑÐ¿Ð¸ÑÐºÑƒ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð² "
+			<< " ÑÐµÐºÑ†Ð¸Ñ " << sec;
 		throw NameNotFound(msg.str());
 	}
 
@@ -191,7 +191,7 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string sec )
 		if( inf.id <= 0 )
 		{
 			ostringstream msg;
-			msg << "(ObjectIndex_idXML::build): îå õëáúáî id ÄÌÑ " << it.getProp("name") << endl;
+			msg << "(ObjectIndex_idXML::build): ÐÐ• Ð£ÐšÐÐ—ÐÐ id Ð´Ð»Ñ " << it.getProp("name") << endl;
 			throw NameNotFound(msg.str());
 		}
 		

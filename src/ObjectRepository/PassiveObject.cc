@@ -81,7 +81,7 @@ void PassiveObject::init( ProxyManager* _mngr )
 	if( _mngr == mngr || !_mngr )
 		return;
 
-	// ÅÓÌÉ ÕÖÅ ÉÎÉÃÉÁÌÉÚÉÒÏ×ÁÎ ÄÒÕÇÉÍ mngr (ÓÍ. ËÏÎÓÔÒÕËÔÏÒ)
+	// ÐµÑÐ»Ð¸ ÑƒÐ¶Ðµ Ð¸Ð½Ð¸Ñ†Ð¸Ð°Ð»Ð¸Ð·Ð¸Ñ€Ð¾Ð²Ð°Ð½ Ð´Ñ€ÑƒÐ³Ð¸Ð¼ mngr (ÑÐ¼. ÐºÐ¾Ð½ÑÑ‚Ñ€ÑƒÐºÑ‚Ð¾Ñ€)
 	if( mngr )
 		mngr->detachObject(id);
 
@@ -119,7 +119,7 @@ void PassiveObject::processingMessage( UniSetTypes::VoidMessage* msg )
 			}
 
 			default:
-				//unideb[Debug::WARN] << myname << ": ÎÅÉÚ×ÅÓÔÎÏÅ ÓÏÏÂÝÅÎÉÅ  " << msg->type << endl;
+				//unideb[Debug::WARN] << myname << ": Ð½ÐµÐ¸Ð·Ð²ÐµÑÑ‚Ð½Ð¾Ðµ ÑÐ¾Ð¾Ð±Ñ‰ÐµÐ½Ð¸Ðµ  " << msg->type << endl;
 				break;
 		}	
 	}

@@ -41,23 +41,23 @@ using namespace UniSetTypes;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 /*
- 	Завершение работы организовано следующим образом.
-	Имеется глобальный указатель gActivator (т.к. активатор в системе должен быть только один).
-	Он заказывает на себя все сигналы связанные с завершением работы.
+ 	п≈п╟п╡п╣я─я┬п╣п╫п╦п╣ я─п╟п╠п╬я┌я▀ п╬я─пЁп╟п╫п╦п╥п╬п╡п╟п╫п╬ я│п╩п╣п╢я┐я▌я┴п╦п╪ п╬п╠я─п╟п╥п╬п╪.
+	п≤п╪п╣п╣я┌я│я▐ пЁп╩п╬п╠п╟п╩я▄п╫я▀п╧ я┐п╨п╟п╥п╟я┌п╣п╩я▄ gActivator (я┌.п╨. п╟п╨я┌п╦п╡п╟я┌п╬я─ п╡ я│п╦я│я┌п╣п╪п╣ п╢п╬п╩п╤п╣п╫ п╠я▀я┌я▄ я┌п╬п╩я▄п╨п╬ п╬п╢п╦п╫).
+	п·п╫ п╥п╟п╨п╟п╥я▀п╡п╟п╣я┌ п╫п╟ я│п╣п╠я▐ п╡я│п╣ я│п╦пЁп╫п╟п╩я▀ я│п╡я▐п╥п╟п╫п╫я▀п╣ я│ п╥п╟п╡п╣я─я┬п╣п╫п╦п╣п╪ я─п╟п╠п╬я┌я▀.
 	
-	В качестве обработчика сигналов регистрируется ObjectsActivator::terminated( int signo ).
-	В этом обработчике происходит вызов ObjectsActivator::oaDestroy(int signo) для фактического
-	завершения работы и заказывается сигнал SIG_ALRM на время TERMINATE_TIMEOUT,
-	c обработчиком ObjectsActivator::finishterm в котором происходит
-	"надежное" прибивание текущего процесса (raise(SIGKILL)). Это сделано на тот случай, если
-	в oaDestroy произойдет зависание.
+	п▓ п╨п╟я┤п╣я│я┌п╡п╣ п╬п╠я─п╟п╠п╬я┌я┤п╦п╨п╟ я│п╦пЁп╫п╟п╩п╬п╡ я─п╣пЁп╦я│я┌я─п╦я─я┐п╣я┌я│я▐ ObjectsActivator::terminated( int signo ).
+	п▓ я█я┌п╬п╪ п╬п╠я─п╟п╠п╬я┌я┤п╦п╨п╣ п©я─п╬п╦я│я┘п╬п╢п╦я┌ п╡я▀п╥п╬п╡ ObjectsActivator::oaDestroy(int signo) п╢п╩я▐ я└п╟п╨я┌п╦я┤п╣я│п╨п╬пЁп╬
+	п╥п╟п╡п╣я─я┬п╣п╫п╦я▐ я─п╟п╠п╬я┌я▀ п╦ п╥п╟п╨п╟п╥я▀п╡п╟п╣я┌я│я▐ я│п╦пЁп╫п╟п╩ SIG_ALRM п╫п╟ п╡я─п╣п╪я▐ TERMINATE_TIMEOUT,
+	c п╬п╠я─п╟п╠п╬я┌я┤п╦п╨п╬п╪ ObjectsActivator::finishterm п╡ п╨п╬я┌п╬я─п╬п╪ п©я─п╬п╦я│я┘п╬п╢п╦я┌
+	"п╫п╟п╢п╣п╤п╫п╬п╣" п©я─п╦п╠п╦п╡п╟п╫п╦п╣ я┌п╣п╨я┐я┴п╣пЁп╬ п©я─п╬я├п╣я│я│п╟ (raise(SIGKILL)). п╜я┌п╬ я│п╢п╣п╩п╟п╫п╬ п╫п╟ я┌п╬я┌ я│п╩я┐я┤п╟п╧, п╣я│п╩п╦
+	п╡ oaDestroy п©я─п╬п╦п╥п╬п╧п╢п╣я┌ п╥п╟п╡п╦я│п╟п╫п╦п╣.
 */
 // ------------------------------------------------------------------------------------------
-/*! замок для блокирования совместного доступа к функции обрабтки сигналов */
+/*! п╥п╟п╪п╬п╨ п╢п╩я▐ п╠п╩п╬п╨п╦я─п╬п╡п╟п╫п╦я▐ я│п╬п╡п╪п╣я│я┌п╫п╬пЁп╬ п╢п╬я│я┌я┐п©п╟ п╨ я└я┐п╫п╨я├п╦п╦ п╬п╠я─п╟п╠я┌п╨п╦ я│п╦пЁп╫п╟п╩п╬п╡ */
 static UniSetTypes::uniset_mutex signalMutex("Activator::signalMutex");
 // static UniSetTypes::uniset_mutex waittermMutex("Activator::waittermMutex");
 
-/*! замок для блокирования совместного к списку получателей сигналов */
+/*! п╥п╟п╪п╬п╨ п╢п╩я▐ п╠п╩п╬п╨п╦я─п╬п╡п╟п╫п╦я▐ я│п╬п╡п╪п╣я│я┌п╫п╬пЁп╬ п╨ я│п©п╦я│п╨я┐ п©п╬п╩я┐я┤п╟я┌п╣п╩п╣п╧ я│п╦пЁп╫п╟п╩п╬п╡ */
 //UniSetTypes::uniset_mutex sigListMutex("Activator::sigListMutex");
 
 //static omni_mutex pmutex;
@@ -70,7 +70,7 @@ static ObjectsActivator* gActivator=0;
 //static ThreadCreator<ObjectsActivator>* termthread=0;
 static int SIGNO;
 static int MYPID;
-static const int TERMINATE_TIMEOUT = 2; //  время отведенное на завершение процесса [сек]
+static const int TERMINATE_TIMEOUT = 2; //  п╡я─п╣п╪я▐ п╬я┌п╡п╣п╢п╣п╫п╫п╬п╣ п╫п╟ п╥п╟п╡п╣я─я┬п╣п╫п╦п╣ п©я─п╬я├п╣я│я│п╟ [я│п╣п╨]
 volatile sig_atomic_t procterm = 0;
 volatile sig_atomic_t doneterm = 0;
 
@@ -91,7 +91,7 @@ orbthr(0),
 omDestroy(false),
 sig(false)
 {
-//	thread(false);	//	отключаем поток (раз не задан id)
+//	thread(false);	//	п╬я┌п╨п╩я▌я┤п╟п╣п╪ п©п╬я┌п╬п╨ (я─п╟п╥ п╫п╣ п╥п╟п╢п╟п╫ id)
 	ObjectsActivator::init();
 }
 
@@ -110,7 +110,7 @@ void ObjectsActivator::init()
 
 	gActivator=this;
 	atexit( ObjectsActivator::normalexit );
-	set_terminate( ObjectsActivator::normalterminate ); // ловушка для неизвестных исключений
+	set_terminate( ObjectsActivator::normalterminate ); // п╩п╬п╡я┐я┬п╨п╟ п╢п╩я▐ п╫п╣п╦п╥п╡п╣я│я┌п╫я▀я┘ п╦я│п╨п╩я▌я┤п╣п╫п╦п╧
 }
 
 // ------------------------------------------------------------------------------------------
@@ -176,28 +176,28 @@ void ObjectsActivator::oaDestroy(int signo)
 
 // ------------------------------------------------------------------------------------------
 /*! 
- *	Если thread=true то функция создает отдельный поток для обработки приходящих сообщений.
- * 	И передает все ресурсы этого потока orb. А также регистрирует процесс в репозитории.
- *	\note Только после этого объект становится доступен другим процессам
- *	А далее выходит...
- *	Иначе все ресурсы основного потока передаются для обработки приходящих сообщений (и она не выходит)
+ *	п∙я│п╩п╦ thread=true я┌п╬ я└я┐п╫п╨я├п╦я▐ я│п╬п╥п╢п╟п╣я┌ п╬я┌п╢п╣п╩я▄п╫я▀п╧ п©п╬я┌п╬п╨ п╢п╩я▐ п╬п╠я─п╟п╠п╬я┌п╨п╦ п©я─п╦я┘п╬п╢я▐я┴п╦я┘ я│п╬п╬п╠я┴п╣п╫п╦п╧.
+ * 	п≤ п©п╣я─п╣п╢п╟п╣я┌ п╡я│п╣ я─п╣я│я┐я─я│я▀ я█я┌п╬пЁп╬ п©п╬я┌п╬п╨п╟ orb. п░ я┌п╟п╨п╤п╣ я─п╣пЁп╦я│я┌я─п╦я─я┐п╣я┌ п©я─п╬я├п╣я│я│ п╡ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╦.
+ *	\note п╒п╬п╩я▄п╨п╬ п©п╬я│п╩п╣ я█я┌п╬пЁп╬ п╬п╠я┼п╣п╨я┌ я│я┌п╟п╫п╬п╡п╦я┌я│я▐ п╢п╬я│я┌я┐п©п╣п╫ п╢я─я┐пЁп╦п╪ п©я─п╬я├п╣я│я│п╟п╪
+ *	п░ п╢п╟п╩п╣п╣ п╡я▀я┘п╬п╢п╦я┌...
+ *	п≤п╫п╟я┤п╣ п╡я│п╣ я─п╣я│я┐я─я│я▀ п╬я│п╫п╬п╡п╫п╬пЁп╬ п©п╬я┌п╬п╨п╟ п©п╣я─п╣п╢п╟я▌я┌я│я▐ п╢п╩я▐ п╬п╠я─п╟п╠п╬я┌п╨п╦ п©я─п╦я┘п╬п╢я▐я┴п╦я┘ я│п╬п╬п╠я┴п╣п╫п╦п╧ (п╦ п╬п╫п╟ п╫п╣ п╡я▀я┘п╬п╢п╦я┌)
  *
 */
 void ObjectsActivator::run(bool thread)
 {
-	unideb[Debug::SYSTEM] << myname << "(run): создаю менеджер "<< endl;
+	unideb[Debug::SYSTEM] << myname << "(run): я│п╬п╥п╢п╟я▌ п╪п╣п╫п╣п╢п╤п╣я─ "<< endl;
 
 	ObjectsManager::initPOA(this);
 
 	if( getId() == UniSetTypes::DefaultObjectId )
-		offThread(); // отключение потока обработки сообщений, раз не задан ObjectId
+		offThread(); // п╬я┌п╨п╩я▌я┤п╣п╫п╦п╣ п©п╬я┌п╬п╨п╟ п╬п╠я─п╟п╠п╬я┌п╨п╦ я│п╬п╬п╠я┴п╣п╫п╦п╧, я─п╟п╥ п╫п╣ п╥п╟п╢п╟п╫ ObjectId
 	
-	ObjectsManager::activate(); // а там вызывается активация всех подчиненных объектов и менеджеров
+	ObjectsManager::activate(); // п╟ я┌п╟п╪ п╡я▀п╥я▀п╡п╟п╣я┌я│я▐ п╟п╨я┌п╦п╡п╟я├п╦я▐ п╡я│п╣я┘ п©п╬п╢я┤п╦п╫п╣п╫п╫я▀я┘ п╬п╠я┼п╣п╨я┌п╬п╡ п╦ п╪п╣п╫п╣п╢п╤п╣я─п╬п╡
 
-	getinfo();		// заполнение информации об объектах
+	getinfo();		// п╥п╟п©п╬п╩п╫п╣п╫п╦п╣ п╦п╫я└п╬я─п╪п╟я├п╦п╦ п╬п╠ п╬п╠я┼п╣п╨я┌п╟я┘
 	active=true;
 
-	unideb[Debug::SYSTEM] << myname << "(run): активизируем менеджер"<<endl;	
+	unideb[Debug::SYSTEM] << myname << "(run): п╟п╨я┌п╦п╡п╦п╥п╦я─я┐п╣п╪ п╪п╣п╫п╣п╢п╤п╣я─"<<endl;	
 	pman->activate();
 	msleep(50);
 
@@ -205,25 +205,25 @@ void ObjectsActivator::run(bool thread)
 	if( thread )
 	{
 		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << myname << "(run): запускаемся с созданием отдельного потока...  "<< endl;
+			unideb[Debug::INFO] << myname << "(run): п╥п╟п©я┐я│п╨п╟п╣п╪я│я▐ я│ я│п╬п╥п╢п╟п╫п╦п╣п╪ п╬я┌п╢п╣п╩я▄п╫п╬пЁп╬ п©п╬я┌п╬п╨п╟...  "<< endl;
 		orbthr = new ThreadCreator<ObjectsActivator>(this, &ObjectsActivator::work);
 		if( !orbthr->start() )
 		{
-			unideb[Debug::CRIT] << myname << "(run):  НЕ СМОГЛИ СОЗДАТЬ ORB-поток"<<endl;	
+			unideb[Debug::CRIT] << myname << "(run):  п²п∙ п║п°п·п⌠п⌡п≤ п║п·п≈п■п░п╒п╛ ORB-п©п╬я┌п╬п╨"<<endl;	
 			throw SystemError("(ObjectsActivator::run): CREATE ORB THREAD FAILED");
 		}	
 	}
 	else
 	{
 		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << myname << "(run): запускаемся без создания отдельного потока...  "<< endl;
+			unideb[Debug::INFO] << myname << "(run): п╥п╟п©я┐я│п╨п╟п╣п╪я│я▐ п╠п╣п╥ я│п╬п╥п╢п╟п╫п╦я▐ п╬я┌п╢п╣п╩я▄п╫п╬пЁп╬ п©п╬я┌п╬п╨п╟...  "<< endl;
 		work();
 	}
 }
 // ------------------------------------------------------------------------------------------
 /*! 
- *	Функция останавливает работу orb и завершает поток. А так же удаляет ссылку из репозитория.
- *	\note Объект становится недоступен другим процессам
+ *	п╓я┐п╫п╨я├п╦я▐ п╬я│я┌п╟п╫п╟п╡п╩п╦п╡п╟п╣я┌ я─п╟п╠п╬я┌я┐ orb п╦ п╥п╟п╡п╣я─я┬п╟п╣я┌ п©п╬я┌п╬п╨. п░ я┌п╟п╨ п╤п╣ я┐п╢п╟п╩я▐п╣я┌ я│я│я▀п╩п╨я┐ п╦п╥ я─п╣п©п╬п╥п╦я┌п╬я─п╦я▐.
+ *	\note п·п╠я┼п╣п╨я┌ я│я┌п╟п╫п╬п╡п╦я┌я│я▐ п╫п╣п╢п╬я│я┌я┐п©п╣п╫ п╢я─я┐пЁп╦п╪ п©я─п╬я├п╣я│я│п╟п╪
 */
 void ObjectsActivator::stop()
 {
@@ -260,7 +260,7 @@ void ObjectsActivator::stop()
 void ObjectsActivator::work()
 {
 	if( unideb.debugging(Debug::SYSTEM) )	
-		unideb[Debug::SYSTEM] << myname << "(work): запускаем orb на обработку запросов..."<< endl;
+		unideb[Debug::SYSTEM] << myname << "(work): п╥п╟п©я┐я│п╨п╟п╣п╪ orb п╫п╟ п╬п╠я─п╟п╠п╬я┌п╨я┐ п╥п╟п©я─п╬я│п╬п╡..."<< endl;
 	try
 	{
 		if(orbthr)
@@ -272,15 +272,15 @@ void ObjectsActivator::work()
 	}
 	catch(CORBA::SystemException& ex)
     {
-		unideb[Debug::CRIT] << myname << "(work): поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
+		unideb[Debug::CRIT] << myname << "(work): п©п╬п╧п╪п╟п╩п╦ CORBA::SystemException: " << ex.NP_minorString() << endl;
     }
     catch(CORBA::Exception& ex)
     {
-		unideb[Debug::CRIT] << myname << "(work): поймали CORBA::Exception." << endl;
+		unideb[Debug::CRIT] << myname << "(work): п©п╬п╧п╪п╟п╩п╦ CORBA::Exception." << endl;
     }
     catch(omniORB::fatalException& fe)
     {
-		unideb[Debug::CRIT] << myname << "(work): : поймали omniORB::fatalException:" << endl;
+		unideb[Debug::CRIT] << myname << "(work): : п©п╬п╧п╪п╟п╩п╦ omniORB::fatalException:" << endl;
         unideb[Debug::CRIT] << myname << "(work):   file: " << fe.file() << endl;
 		unideb[Debug::CRIT] << myname << "(work):   line: " << fe.line() << endl;
         unideb[Debug::CRIT] << myname << "(work):   mesg: " << fe.errmsg() << endl;
@@ -291,7 +291,7 @@ void ObjectsActivator::work()
 	}
 	
 	if( unideb.debugging(Debug::SYSTEM) )	
-		unideb[Debug::SYSTEM] << myname << "(work): orb стоп!!!"<< endl;
+		unideb[Debug::SYSTEM] << myname << "(work): orb я│я┌п╬п©!!!"<< endl;
 
 /*
 	unideb[Debug::SYSTEM] << myname << "(oaDestroy): orb destroy... " << endl;		
@@ -356,7 +356,7 @@ void ObjectsActivator::sysCommand( UniSetTypes::SystemMessage *sm )
 		case SystemMessage::LogRotate:
 		{
 			unideb[Debug::SYSTEM] << myname << "(sysCommand): logRotate" << endl;
-			// переоткрываем логи
+			// п©п╣я─п╣п╬я┌п╨я─я▀п╡п╟п╣п╪ п╩п╬пЁп╦
 			string fname = unideb.getLogFile();
 			if( !fname.empty() )
 			{
@@ -372,7 +372,7 @@ void ObjectsActivator::sysCommand( UniSetTypes::SystemMessage *sm )
 /*
 void ObjectsActivator::sig_child(int signo)
 {
-	unideb[Debug::SYSTEM] << gActivator->getName() << "(sig_child): дочерний процесс закончил работу...(sig=" << signo << ")" << endl;
+	unideb[Debug::SYSTEM] << gActivator->getName() << "(sig_child): п╢п╬я┤п╣я─п╫п╦п╧ п©я─п╬я├п╣я│я│ п╥п╟п╨п╬п╫я┤п╦п╩ я─п╟п╠п╬я┌я┐...(sig=" << signo << ")" << endl;
 	while( waitpid(-1, 0, WNOHANG) > 0);
 }
 */
@@ -383,8 +383,8 @@ void ObjectsActivator::set_signals(bool ask)
 	struct sigaction act, oact;
 	sigemptyset(&act.sa_mask);
 
-	// добавляем сигналы, которые будут игнорироваться
-	// при обработке сигнала 
+	// п╢п╬п╠п╟п╡п╩я▐п╣п╪ я│п╦пЁп╫п╟п╩я▀, п╨п╬я┌п╬я─я▀п╣ п╠я┐п╢я┐я┌ п╦пЁп╫п╬я─п╦я─п╬п╡п╟я┌я▄я│я▐
+	// п©я─п╦ п╬п╠я─п╟п╠п╬я┌п╨п╣ я│п╦пЁп╫п╟п╩п╟ 
 	sigaddset(&act.sa_mask, SIGINT);
 	sigaddset(&act.sa_mask, SIGTERM);
 	sigaddset(&act.sa_mask, SIGABRT );
@@ -416,7 +416,7 @@ void ObjectsActivator::finishterm( int signo )
 	{
 		if( unideb.debugging(Debug::SYSTEM) && gActivator )
 			unideb[Debug::SYSTEM] << gActivator->getName() 
-				<< "(finishterm): прерываем процесс завершения...!" << endl<< flush;
+				<< "(finishterm): п©я─п╣я─я▀п╡п╟п╣п╪ п©я─п╬я├п╣я│я│ п╥п╟п╡п╣я─я┬п╣п╫п╦я▐...!" << endl<< flush;
 
 		ObjectsActivator::set_signals(false);
 		sigset(SIGALRM, SIG_DFL);
@@ -432,7 +432,7 @@ void ObjectsActivator::terminated( int signo )
 
 	{	// lock
 
-		// на случай прихода нескольких сигналов
+		// п╫п╟ я│п╩я┐я┤п╟п╧ п©я─п╦я┘п╬п╢п╟ п╫п╣я│п╨п╬п╩я▄п╨п╦я┘ я│п╦пЁп╫п╟п╩п╬п╡
 		uniset_mutex_lock l(signalMutex, TERMINATE_TIMEOUT*1000);
 		if( !procterm )
 		{
@@ -442,8 +442,8 @@ void ObjectsActivator::terminated( int signo )
 			if( unideb.debugging(Debug::SYSTEM) && gActivator )
 			{
 				unideb[Debug::SYSTEM] << gActivator->getName() << "(terminated): catch SIGNO="<< signo << "("<< strsignal(signo) <<")"<< endl << flush;
-					unideb[Debug::SYSTEM] << gActivator->getName() << "(terminated): устанавливаем timer завершения на "
-						<< TERMINATE_TIMEOUT << " сек " << endl << flush;
+					unideb[Debug::SYSTEM] << gActivator->getName() << "(terminated): я┐я│я┌п╟п╫п╟п╡п╩п╦п╡п╟п╣п╪ timer п╥п╟п╡п╣я─я┬п╣п╫п╦я▐ п╫п╟ "
+						<< TERMINATE_TIMEOUT << " я│п╣п╨ " << endl << flush;
 			}
 			sighold(SIGALRM);
 			sigset(SIGALRM, ObjectsActivator::finishterm);
@@ -454,7 +454,7 @@ void ObjectsActivator::terminated( int signo )
 
 			doneterm = 1;
 			if( unideb.debugging(Debug::SYSTEM) )				
-				unideb[Debug::SYSTEM] << gActivator->getName() << "(terminated): завершаемся..."<< endl<< flush;
+				unideb[Debug::SYSTEM] << gActivator->getName() << "(terminated): п╥п╟п╡п╣я─я┬п╟п╣п╪я│я▐..."<< endl<< flush;
 			if( gActivator )
 				ObjectsActivator::set_signals(false);
 
@@ -474,7 +474,7 @@ void ObjectsActivator::normalexit()
 void ObjectsActivator::normalterminate()
 {
 	if( gActivator )
-		unideb[Debug::CRIT] << gActivator->getName() << "(default exception terminate): Никто не выловил исключение!!! Good bye."<< endl<< flush;
+		unideb[Debug::CRIT] << gActivator->getName() << "(default exception terminate): п²п╦п╨я┌п╬ п╫п╣ п╡я▀п╩п╬п╡п╦п╩ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣!!! Good bye."<< endl<< flush;
 //	abort();
 }
 // ------------------------------------------------------------------------------------------
@@ -492,7 +492,7 @@ void ObjectsActivator::term( int signo )
 	try
 	{
 		if( unideb.debugging(Debug::SYSTEM) )
-			unideb[Debug::SYSTEM] << myname << "(term): вызываем sigterm()" << endl;
+			unideb[Debug::SYSTEM] << myname << "(term): п╡я▀п╥я▀п╡п╟п╣п╪ sigterm()" << endl;
 		sigterm(signo);
 	
 		if( unideb.debugging(Debug::SYSTEM) )

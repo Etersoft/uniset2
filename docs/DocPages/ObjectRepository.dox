@@ -1,31 +1,31 @@
 /* OBSOLETE DOC!!!
-	\page ObjectRepositoryPage Репозиторий объектов
+	\page ObjectRepositoryPage п═п╣п©п╬п╥п╦я┌п╬я─п╦п╧ п╬п╠я┼п╣п╨я┌п╬п╡
 
-  	Репозиторий объектов предназначен для хранения и получения ссылок на объекты, с целью дальнейшего
-	использования функций предоставленных этими объектами. Объекты регистрирующиеся в репозитории могут быть удаленными...
+  	п═п╣п©п╬п╥п╦я┌п╬я─п╦п╧ п╬п╠я┼п╣п╨я┌п╬п╡ п©я─п╣п╢п╫п╟п╥п╫п╟я┤п╣п╫ п╢п╩я▐ я┘я─п╟п╫п╣п╫п╦я▐ п╦ п©п╬п╩я┐я┤п╣п╫п╦я▐ я│я│я▀п╩п╬п╨ п╫п╟ п╬п╠я┼п╣п╨я┌я▀, я│ я├п╣п╩я▄я▌ п╢п╟п╩я▄п╫п╣п╧я┬п╣пЁп╬
+	п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╫п╦я▐ я└я┐п╫п╨я├п╦п╧ п©я─п╣п╢п╬я│я┌п╟п╡п╩п╣п╫п╫я▀я┘ я█я┌п╦п╪п╦ п╬п╠я┼п╣п╨я┌п╟п╪п╦. п·п╠я┼п╣п╨я┌я▀ я─п╣пЁп╦я│я┌я─п╦я─я┐я▌я┴п╦п╣я│я▐ п╡ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╦ п╪п╬пЁя┐я┌ п╠я▀я┌я▄ я┐п╢п╟п╩п╣п╫п╫я▀п╪п╦...
 
 	- \ref subRegCommon
 	- \ref subReg
 	- \ref subResolve
 
 
-	\section subRegCommon Вводная
-		При наследовании от UniSetObject (и его потомков) регистрация в репозитории происходит автоматически. 
-	Поэтому регистрироватся отдельно нет необходимости. 
+	\section subRegCommon п▓п╡п╬п╢п╫п╟я▐
+		п÷я─п╦ п╫п╟я│п╩п╣п╢п╬п╡п╟п╫п╦п╦ п╬я┌ UniSetObject (п╦ п╣пЁп╬ п©п╬я┌п╬п╪п╨п╬п╡) я─п╣пЁп╦я│я┌я─п╟я├п╦я▐ п╡ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╦ п©я─п╬п╦я│я┘п╬п╢п╦я┌ п╟п╡я┌п╬п╪п╟я┌п╦я┤п╣я│п╨п╦. 
+	п÷п╬я█я┌п╬п╪я┐ я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟я┌я│я▐ п╬я┌п╢п╣п╩я▄п╫п╬ п╫п╣я┌ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬я│я┌п╦. 
 	 
 
-	\section subReg Регистрация 
-		Для регистрации существует следующие функции.
+	\section subReg п═п╣пЁп╦я│я┌я─п╟я├п╦я▐ 
+		п■п╩я▐ я─п╣пЁп╦я│я┌я─п╟я├п╦п╦ я│я┐я┴п╣я│я┌п╡я┐п╣я┌ я│п╩п╣п╢я┐я▌я┴п╦п╣ я└я┐п╫п╨я├п╦п╦.
 		
-		По текстовому имени
+		п÷п╬ я┌п╣п╨я│я┌п╬п╡п╬п╪я┐ п╦п╪п╣п╫п╦
 		- void ObjectRepository::registration(const ObjectName name, const ObjectPtr oRef, const string section)
 		- void ObjectRepository::registration(const ObjectName fullName, const ObjectPtr oRef)
 
-		По идентификатору
+		п÷п╬ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─я┐
 		- void UniversalInterface::registered(UniSetTypes::ObjectId id, const UniSetTypes::ObjectPtr oRef)throw(ORepFailed);
 		- void UniversalInterface::registered(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node, const UniSetTypes::ObjectPtr oRef)throw(ORepFailed);
 
-		Пример:
+		п÷я─п╦п╪п╣я─:
 		\code
 			#include "ObjectRepository.h"
 
@@ -41,12 +41,12 @@
 			}
 			cacth(ORepFailed)
 			{
-				cerr << "Не удалось зарегестировать объект " << endl;
+				cerr << "п²п╣ я┐п╢п╟п╩п╬я│я▄ п╥п╟я─п╣пЁп╣я│я┌п╦я─п╬п╡п╟я┌я▄ п╬п╠я┼п╣п╨я┌ " << endl;
 			}
 			
 		\endcode
 		
-		Или при помощи UniverslaInterface
+		п≤п╩п╦ п©я─п╦ п©п╬п╪п╬я┴п╦ UniverslaInterface
 		\code
 			class MyObject:
 				public UniSetObject
@@ -72,16 +72,16 @@
 			
 		\endcode
 	
-	\section subResolve Получение ссылки на объект
+	\section subResolve п÷п╬п╩я┐я┤п╣п╫п╦п╣ я│я│я▀п╩п╨п╦ п╫п╟ п╬п╠я┼п╣п╨я┌
 
-		Для получения ссылки лучше всего пользоваться 
+		п■п╩я▐ п©п╬п╩я┐я┤п╣п╫п╦я▐ я│я│я▀п╩п╨п╦ п╩я┐я┤я┬п╣ п╡я│п╣пЁп╬ п©п╬п╩я▄п╥п╬п╡п╟я┌я▄я│я▐ 
 		- UniSetTypes::ObjectPtr UniversalInterface::resolve( UniSetTypes::ObjectId id )
 		- UniSetTypes::ObjectPtr UniversalInterface::resolve( UniSetTypes::ObjectId id, UniSetTypes::ObjectId nodeName, int timeoutMS=UniversalIO::defaultTimeOut)
 				throw(ResolveNameError, TimeOut);
 
-		т.к. UniversalInterface::resolve() пытается получиться ссылку, в том числе через резервный каналы связи.
+		я┌.п╨. UniversalInterface::resolve() п©я▀я┌п╟п╣я┌я│я▐ п©п╬п╩я┐я┤п╦я┌я▄я│я▐ я│я│я▀п╩п╨я┐, п╡ я┌п╬п╪ я┤п╦я│п╩п╣ я┤п╣я─п╣п╥ я─п╣п╥п╣я─п╡п╫я▀п╧ п╨п╟п╫п╟п╩я▀ я│п╡я▐п╥п╦.
 
-		Пример:
+		п÷я─п╦п╪п╣я─:
 		\code
 			...
 			

@@ -90,10 +90,10 @@ int main(int argc, char* argv[])
 				printf("	2	- analog ref = differential\n");
 				printf("	3	- analog ref = other (undefined)\n");
 				printf("range:\n");
-				printf("	0	-  -10В - 10В\n");
-				printf("	1	-  -5В - 5В\n");
-				printf("	2	-  -2.5В - 2.5В\n");
-				printf("	3	-  -1.25В - 1.25В\n");
+				printf("	0	-  -10п▓ - 10п▓\n");
+				printf("	1	-  -5п▓ - 5п▓\n");
+				printf("	2	-  -2.5п▓ - 2.5п▓\n");
+				printf("	3	-  -1.25п▓ - 1.25п▓\n");
 				printf("[--blink]			- (blink output): ONLY FOR 'write': 0-1-0-1-0-...\n");
 				printf("[--blink-msec] val	- Blink pause [msec]. Default: 300 msec\n");
 			return 0;
@@ -224,7 +224,7 @@ int main(int argc, char* argv[])
 					exret = EXIT_FAILURE;
 				}
 			}
-			// реализация мигания
+			// я─п╣п╟п╩п╦п╥п╟я├п╦я▐ п╪п╦пЁп╟п╫п╦я▐
 			while(1)
 			{
 				for( int k=0; chan[k]!=-1; k++ )

@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *  \brief ∆¡ Ã “≈¡Ã…⁄¡√…… DB-”≈“◊≈“¡
+ *  \brief —Ñ–∞–π–ª —Ä–µ–∞–ª–∏–∑–∞—Ü–∏–∏ DB-—Å–µ—Ä–≤–µ—Ä–∞
  *  \author Pavel Vainerman
  *  \date   $Date: 2006/12/20 13:43:41 $
  *  \version $Id: DBServer.cc,v 1.12 2006/12/20 13:43:41 vpashka Exp $
@@ -47,7 +47,7 @@ DBServer::DBServer(ObjectId id):
 		if( id == DefaultObjectId )
 		{
 			ostringstream msg;
-			msg << "(DBServer): ˙¡–’”À Œ≈◊œ⁄Õœ÷≈Œ! ÓÂ ÔÚÂ‰ÂÏ≥Ó ObjectId !!!!!\n";
+			msg << "(DBServer): –ó–∞–ø—É—Å–∫ –Ω–µ–≤–æ–∑–º–æ–∂–µ–Ω! –ù–ï –û–ü–†–ï–î–ï–õ–Å–ù ObjectId !!!!!\n";
 			throw Exception(msg.str());
 		}
 		setID(id);
@@ -63,7 +63,7 @@ DBServer::DBServer():
 		if( id == DefaultObjectId )
 		{
 			ostringstream msg;
-			msg << "(DBServer): ˙¡–’”À Œ≈◊œ⁄Õœ÷≈Œ! ÓÂ ÔÚÂ‰ÂÏ≥Ó ObjectId !!!!!\n";
+			msg << "(DBServer): –ó–∞–ø—É—Å–∫ –Ω–µ–≤–æ–∑–º–æ–∂–µ–Ω! –ù–ï –û–ü–†–ï–î–ï–õ–Å–ù ObjectId !!!!!\n";
 			throw Exception(msg.str());
 		}
 		setID(id);

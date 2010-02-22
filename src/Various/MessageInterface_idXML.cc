@@ -1,5 +1,5 @@
 /*! \file
- *  \brief Класс работы с сообщениями
+ *  \brief п п╩п╟я│я│ я─п╟п╠п╬я┌я▀ я│ я│п╬п╬п╠я┴п╣п╫п╦я▐п╪п╦
  *  \author Pavel Vainerman
  *  \date   $Date: 2008/11/22 23:22:25 $
  *  \version $Id: MessageInterface_idXML.cc,v 1.8 2008/11/22 23:22:25 vpashka Exp $
@@ -44,7 +44,7 @@ string MessageInterface_idXML::getMessage( UniSetTypes::MessageCode code )
 		return it->second.text;
 	
 	ostringstream err;
-	err  << "Неизвестное сообщение с кодом " << code; 
+	err  << "п²п╣п╦п╥п╡п╣я│я┌п╫п╬п╣ я│п╬п╬п╠я┴п╣п╫п╦п╣ я│ п╨п╬п╢п╬п╪ " << code; 
 	return err.str();
 }
 
@@ -85,16 +85,16 @@ void MessageInterface_idXML::build( UniXML& xml )
 	if( !root )
 	{
 		ostringstream msg;
-		msg << "(MessageInterface_idXML::build): не нашли корневого раздела <messages>";
+		msg << "(MessageInterface_idXML::build): п╫п╣ п╫п╟я┬п╩п╦ п╨п╬я─п╫п╣п╡п╬пЁп╬ я─п╟п╥п╢п╣п╩п╟ <messages>";
 		throw NameNotFound(msg.str());
 	}
 
-	// Считываем список элементов
+	// п║я┤п╦я┌я▀п╡п╟п╣п╪ я│п©п╦я│п╬п╨ я█п╩п╣п╪п╣п╫я┌п╬п╡
 	UniXML_iterator it(root);
 	if( !it.goChildren() )
 	{
 		ostringstream msg;
-		msg << "(MessageInterface_idXML::build): не удалось перейти к списку элементов <messages>";
+		msg << "(MessageInterface_idXML::build): п╫п╣ я┐п╢п╟п╩п╬я│я▄ п©п╣я─п╣п╧я┌п╦ п╨ я│п©п╦я│п╨я┐ я█п╩п╣п╪п╣п╫я┌п╬п╡ <messages>";
 		throw NameNotFound(msg.str());
 	}
 
@@ -106,7 +106,7 @@ void MessageInterface_idXML::build( UniXML& xml )
 		if( inf.code <= 0 )
 		{
 			ostringstream msg;
-			msg << "(MessageInterface_idXML::build): НЕ УКАЗАН id для " << it.getProp("name");
+			msg << "(MessageInterface_idXML::build): п²п∙ пёп п░п≈п░п² id п╢п╩я▐ " << it.getProp("name");
 			throw NameNotFound(msg.str());
 		}
 

@@ -26,12 +26,12 @@ class MBSlave:
 		MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0, std::string prefix="mbs" );
 		virtual ~MBSlave();
 	
-		/*! глобальная функция для инициализации объекта */
+		/*! пЁп╩п╬п╠п╟п╩я▄п╫п╟я▐ я└я┐п╫п╨я├п╦я▐ п╢п╩я▐ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦п╦ п╬п╠я┼п╣п╨я┌п╟ */
 		static MBSlave* init_mbslave( int argc, const char* const* argv,
 											UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
 											std::string prefix="mbs" );
 
-		/*! глобальная функция для вывода help-а */
+		/*! пЁп╩п╬п╠п╟п╩я▄п╫п╟я▐ я└я┐п╫п╨я├п╦я▐ п╢п╩я▐ п╡я▀п╡п╬п╢п╟ help-п╟ */
 		static void help_print( int argc, const char* const* argv );
 
 		static const int NoSafetyState=-1;
@@ -46,7 +46,7 @@ class MBSlave:
 		struct IOProperty:
 			public IOBase
 		{
-			ModbusRTU::ModbusData mbreg;	/*!< регистр */
+			ModbusRTU::ModbusData mbreg;	/*!< я─п╣пЁп╦я│я┌я─ */
 			AccessMode amode;
 			VTypes::VType vtype;	/*!< type of value */
 
@@ -62,47 +62,47 @@ class MBSlave:
 
 	protected:
 
-		/*! обработка 0x01 */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x01 */
 		ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query, 
 													ModbusRTU::ReadCoilRetMessage& reply );
-		/*! обработка 0x02 */		
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x02 */		
 		ModbusRTU::mbErrCode readInputStatus( ModbusRTU::ReadInputStatusMessage& query, 
 													ModbusRTU::ReadInputStatusRetMessage& reply );
 
-		/*! обработка 0x03 */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x03 */
 		ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query, 
 													ModbusRTU::ReadOutputRetMessage& reply );
 
-		/*! обработка 0x04 */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x04 */
 		ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query, 
 													ModbusRTU::ReadInputRetMessage& reply );
 
-		/*! обработка 0x05 */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x05 */
 		ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query, 
 														ModbusRTU::ForceSingleCoilRetMessage& reply );
 
-		/*! обработка 0x0F */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x0F */
 		ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query, 
 													ModbusRTU::ForceCoilsRetMessage& reply );
 
 
-		/*! обработка 0x10 */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x10 */
 		ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query, 
 														ModbusRTU::WriteOutputRetMessage& reply );
 
-		/*! обработка 0x06 */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x06 */
 		ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query, 
 														ModbusRTU::WriteSingleOutputRetMessage& reply );
 
-		/*! обработка запросов на чтение ошибок */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ п╥п╟п©я─п╬я│п╬п╡ п╫п╟ я┤я┌п╣п╫п╦п╣ п╬я┬п╦п╠п╬п╨ */
 //		ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query, 
 //															ModbusRTU::JournalCommandRetMessage& reply );
 
-		/*! обработка запроса на установку времени */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ п╥п╟п©я─п╬я│п╟ п╫п╟ я┐я│я┌п╟п╫п╬п╡п╨я┐ п╡я─п╣п╪п╣п╫п╦ */
 		ModbusRTU::mbErrCode setDateTime( ModbusRTU::SetDateTimeMessage& query, 
 															ModbusRTU::SetDateTimeRetMessage& reply );
 
-		/*! обработка запроса удалённого сервиса */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ п╥п╟п©я─п╬я│п╟ я┐п╢п╟п╩я▒п╫п╫п╬пЁп╬ я│п╣я─п╡п╦я│п╟ */
 		ModbusRTU::mbErrCode remoteService( ModbusRTU::RemoteServiceMessage& query, 
 															ModbusRTU::RemoteServiceRetMessage& reply );
 
@@ -110,17 +110,17 @@ class MBSlave:
 															ModbusRTU::FileTransferRetMessage& reply );
 
 
-		/*! Проверка корректности регистра перед сохранением.
-			Вызывается для каждого регистра не зависимо от используемой функции (06 или 10)
+		/*! п÷я─п╬п╡п╣я─п╨п╟ п╨п╬я─я─п╣п╨я┌п╫п╬я│я┌п╦ я─п╣пЁп╦я│я┌я─п╟ п©п╣я─п╣п╢ я│п╬я┘я─п╟п╫п╣п╫п╦п╣п╪.
+			п▓я▀п╥я▀п╡п╟п╣я┌я│я▐ п╢п╩я▐ п╨п╟п╤п╢п╬пЁп╬ я─п╣пЁп╦я│я┌я─п╟ п╫п╣ п╥п╟п╡п╦я│п╦п╪п╬ п╬я┌ п╦я│п©п╬п╩я▄п╥я┐п╣п╪п╬п╧ я└я┐п╫п╨я├п╦п╦ (06 п╦п╩п╦ 10)
 		*/
 		virtual ModbusRTU::mbErrCode checkRegister( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val )
 		{ return ModbusRTU::erNoError; }
 
 		typedef std::map<ModbusRTU::ModbusData,IOProperty> IOMap;
-		IOMap iomap;			/*!< список входов/выходов */
+		IOMap iomap;			/*!< я│п©п╦я│п╬п╨ п╡я┘п╬п╢п╬п╡/п╡я▀я┘п╬п╢п╬п╡ */
 
 		ModbusServerSlot* mbslot;
-		ModbusRTU::ModbusAddr addr;			/*!< адрес данного узла */
+		ModbusRTU::ModbusAddr addr;			/*!< п╟п╢я─п╣я│ п╢п╟п╫п╫п╬пЁп╬ я┐п╥п╩п╟ */
 
 		UniSetTypes::uniset_mutex mbMutex;
 
@@ -140,7 +140,7 @@ class MBSlave:
 
 		virtual bool activateObject();
 		
-		// действия при завершении работы
+		// п╢п╣п╧я│я┌п╡п╦я▐ п©я─п╦ п╥п╟п╡п╣я─я┬п╣п╫п╦п╦ я─п╟п╠п╬я┌я▀
 		virtual void sigterm( int signo );
 
 		void initIterators();
@@ -172,13 +172,13 @@ class MBSlave:
 		ModbusRTU::mbErrCode prev;
 		long askCount;
 		typedef std::map<ModbusRTU::mbErrCode,unsigned int> ExchangeErrorMap;
-		ExchangeErrorMap errmap; 	/*!< статистика обмена */
+		ExchangeErrorMap errmap; 	/*!< я│я┌п╟я┌п╦я│я┌п╦п╨п╟ п╬п╠п╪п╣п╫п╟ */
 		
 		bool activated;
 		int activateTimeout;
 		bool pingOK;
 		timeout_t wait_msec;
-		bool force;		/*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
+		bool force;		/*!< я└п╩п╟пЁ п╬п╥п╫п╟я┤п╟я▌я┴п╦п╧, я┤я┌п╬ п╫п╟п╢п╬ я│п╬я┘я─п╟п╫я▐я┌я▄ п╡ SM, п╢п╟п╤п╣ п╣я│п╩п╦ п╥п╫п╟я┤п╣п╫п╦п╣ п╫п╣ п╪п╣п╫я▐п╩п╬я│я▄ */
 
 		bool mbregFromID;
 

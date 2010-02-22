@@ -175,7 +175,7 @@ void ModbusClient::fileTransfer( ModbusAddr addr, ModbusData numfile,
 									const char* save2filename, timeout_t part_timeout_msec )
 												throw(ModbusRTU::mbException)
 {
-//#warning Необходимо реализовать
+//#warning п²п╣п╬п╠я┘п╬п╢п╦п╪п╬ я─п╣п╟п╩п╦п╥п╬п╡п╟я┌я▄
 //	throw mbException(erUnExpectedPacketType);
 	mbErrCode res = erNoError;
 
@@ -275,12 +275,12 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 								ModbusMessage& rbuf, timeout_t timeout )
 {
 	if( timeout == UniSetTimer::WaitUpTime )
-		timeout = 15*60*1000*1000; // используем просто большое время (15 минут). Переведя его в наносекунды.
+		timeout = 15*60*1000*1000; // п╦я│п©п╬п╩я▄п╥я┐п╣п╪ п©я─п╬я│я┌п╬ п╠п╬п╩я▄я┬п╬п╣ п╡я─п╣п╪я▐ (15 п╪п╦п╫я┐я┌). п÷п╣я─п╣п╡п╣п╢я▐ п╣пЁп╬ п╡ п╫п╟п╫п╬я│п╣п╨я┐п╫п╢я▀.
 
 	setChannelTimeout(timeout);
 	PassiveTimer tmAbort(timeout);
 
-	// предварительно чистим буфер
+	// п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫п╬ я┤п╦я│я┌п╦п╪ п╠я┐я└п╣я─
 	memset(&rbuf,0,sizeof(rbuf));
 	int bcnt=0;	// receive bytes count
 	
@@ -300,9 +300,9 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 		if( !begin )
 			return erTimeOut;
 
-#warning Может стоит всё-таки получать весь пакет, а проверять кому он адресован на уровне выше?!	
-// Lav: конечно стоит, нам же надо буфер чистить
-		// Проверка кому адресован пакет...
+#warning п°п╬п╤п╣я┌ я│я┌п╬п╦я┌ п╡я│я▒-я┌п╟п╨п╦ п©п╬п╩я┐я┤п╟я┌я▄ п╡п╣я│я▄ п©п╟п╨п╣я┌, п╟ п©я─п╬п╡п╣я─я▐я┌я▄ п╨п╬п╪я┐ п╬п╫ п╟п╢я─п╣я│п╬п╡п╟п╫ п╫п╟ я┐я─п╬п╡п╫п╣ п╡я▀я┬п╣?!	
+// Lav: п╨п╬п╫п╣я┤п╫п╬ я│я┌п╬п╦я┌, п╫п╟п╪ п╤п╣ п╫п╟п╢п╬ п╠я┐я└п╣я─ я┤п╦я│я┌п╦я┌я▄
+		// п÷я─п╬п╡п╣я─п╨п╟ п╨п╬п╪я┐ п╟п╢я─п╣я│п╬п╡п╟п╫ п©п╟п╨п╣я┌...
 		if( rbuf.addr!=addr && rbuf.addr!=BroadcastAddr )
 		{
 			ostringstream err;
@@ -341,7 +341,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 		if( k < sizeof(ModbusByte) )
 		{
 			dlog[Debug::WARN] << "(recv): " << (ModbusHeader*)(&rbuf) << endl;
-			dlog[Debug::WARN] << "(recv): заголовок меньше положенного..." << endl;
+			dlog[Debug::WARN] << "(recv): п╥п╟пЁп╬п╩п╬п╡п╬п╨ п╪п╣п╫я▄я┬п╣ п©п╬п╩п╬п╤п╣п╫п╫п╬пЁп╬..." << endl;
 			return erInvalidFormat;
 		}
 
@@ -351,7 +351,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 		if( dlog.debugging(Debug::INFO) )
 			dlog[Debug::INFO] << "(recv): header: " << rbuf << endl;
 
-		// обработка сообщения об ошибке...
+		// п╬п╠я─п╟п╠п╬я┌п╨п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ п╬п╠ п╬я┬п╦п╠п╨п╣...
 		if( rbuf.func == (qfunc|MBErrMask) )
 		{
 			rbuf.len = ErrorRetMessage::szData();
@@ -365,7 +365,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 				{
 					dlog[Debug::WARN] << "(recv:Error): buf: " << rbuf << endl;
 					dlog[Debug::WARN] << "(recv:Error)(" << rbuf.func 
-							<< "): Получили данных меньше чем ждали...(recv=" 
+							<< "): п÷п╬п╩я┐я┤п╦п╩п╦ п╢п╟п╫п╫я▀я┘ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╤п╢п╟п╩п╦...(recv=" 
 							<< rlen << " < wait=" << rbuf.len << ")" << endl;
 				}
 				return erInvalidFormat;
@@ -392,7 +392,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 		if( qfunc!=rbuf.func )
 			return erUnExpectedPacketType;
 	
-		// Определяем тип сообщения
+		// п·п©я─п╣п╢п╣п╩я▐п╣п╪ я┌п╦п© я│п╬п╬п╠я┴п╣п╫п╦я▐
 		switch( rbuf.func )
 		{
 			case fnReadCoilStatus:
@@ -459,10 +459,10 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 		}
 
 
-		// ДЛЯ ТОГО ЧТОБЫ НЕ ЖДАТЬ ПРОДОЛЖЕНИЯ БЕЗКОНЕЧНО СБРАСЫВАЕМ TIMEOUT
+		// п■п⌡п╞ п╒п·п⌠п· п╖п╒п·п▒п╚ п²п∙ п√п■п░п╒п╛ п÷п═п·п■п·п⌡п√п∙п²п≤п╞ п▒п∙п≈п п·п²п∙п╖п²п· п║п▒п═п░п║п╚п▓п░п∙п° TIMEOUT
 		setChannelTimeout(10); // 10 msec
 
-		// Получаем остальную часть сообщения
+		// п÷п╬п╩я┐я┤п╟п╣п╪ п╬я│я┌п╟п╩я▄п╫я┐я▌ я┤п╟я│я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦я▐
 		int rlen = getNextData((unsigned char*)(rbuf.data),rbuf.len);
 		if( rlen < rbuf.len )
 		{
@@ -471,7 +471,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			{
 				dlog[Debug::WARN] << "(recv): buf: " << rbuf << endl;
 				dlog[Debug::WARN] << "(recv)(" << rbuf.func 
-						<< "): Получили данных меньше чем ждали...(recv=" 
+						<< "): п÷п╬п╩я┐я┤п╦п╩п╦ п╢п╟п╫п╫я▀я┘ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╤п╢п╟п╩п╦...(recv=" 
 						<< rlen << " < wait=" << rbuf.len << ")" << endl;
 			}
 			return erInvalidFormat;
@@ -479,7 +479,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 		
 		bcnt+=rlen;
 
-		// получаем остальное...
+		// п©п╬п╩я┐я┤п╟п╣п╪ п╬я│я┌п╟п╩я▄п╫п╬п╣...
 		if( rbuf.func == fnReadCoilStatus )
 		{
 			int szDataLen = ReadCoilRetMessage::getDataLen(rbuf)+szCRC;
@@ -487,9 +487,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				szDataLen -= szCRC;
 			
-			// Мы получили только предварительный загловок
-			// Теперь необходимо дополучить данные 
-			// (c позиции rlen, т.к. часть уже получили)
+			// п°я▀ п©п╬п╩я┐я┤п╦п╩п╦ я┌п╬п╩я▄п╨п╬ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╧ п╥п╟пЁп╩п╬п╡п╬п╨
+			// п╒п╣п©п╣я─я▄ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╢п╬п©п╬п╩я┐я┤п╦я┌я▄ п╢п╟п╫п╫я▀п╣ 
+			// (c п©п╬п╥п╦я├п╦п╦ rlen, я┌.п╨. я┤п╟я│я┌я▄ я┐п╤п╣ п©п╬п╩я┐я┤п╦п╩п╦)
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
@@ -499,7 +499,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 					dlog[Debug::WARN] << "(0x01): buf: " << rbuf << endl;
 					dlog[Debug::WARN] << "(0x01)(" 
 						<< (int)rbuf.func << "):(fnReadCoilStatus) "
-						<< "Получили данных меньше чем ждали...(" 
+						<< "п÷п╬п╩я┐я┤п╦п╩п╦ п╢п╟п╫п╫я▀я┘ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╤п╢п╟п╩п╦...(" 
 						<< rlen1 << " < " << szDataLen << ")" << endl;
 				}
 
@@ -517,9 +517,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) 
-			// и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+			// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRead.crc )
@@ -541,9 +541,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				szDataLen -= szCRC;
 			
-			// Мы получили только предварительный загловок
-			// Теперь необходимо дополучить данные 
-			// (c позиции rlen, т.к. часть уже получили)
+			// п°я▀ п©п╬п╩я┐я┤п╦п╩п╦ я┌п╬п╩я▄п╨п╬ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╧ п╥п╟пЁп╩п╬п╡п╬п╨
+			// п╒п╣п©п╣я─я▄ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╢п╬п©п╬п╩я┐я┤п╦я┌я▄ п╢п╟п╫п╫я▀п╣ 
+			// (c п©п╬п╥п╦я├п╦п╦ rlen, я┌.п╨. я┤п╟я│я┌я▄ я┐п╤п╣ п©п╬п╩я┐я┤п╦п╩п╦)
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
@@ -553,7 +553,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 					dlog[Debug::WARN] << "(0x02): buf: " << rbuf << endl;
 					dlog[Debug::WARN] << "(0x02)(" 
 						<< (int)rbuf.func << "):(fnReadInputStatus) "
-						<< "Получили данных меньше чем ждали...(" 
+						<< "п÷п╬п╩я┐я┤п╦п╩п╦ п╢п╟п╫п╫я▀я┘ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╤п╢п╟п╩п╦...(" 
 						<< rlen1 << " < " << szDataLen << ")" << endl;
 				}
 
@@ -571,9 +571,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) 
-			// и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+			// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRead.crc )
@@ -595,9 +595,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				szDataLen -= szCRC;
 			
-			// Мы получили только предварительный загловок
-			// Теперь необходимо дополучить данные 
-			// (c позиции rlen, т.к. часть уже получили)
+			// п°я▀ п©п╬п╩я┐я┤п╦п╩п╦ я┌п╬п╩я▄п╨п╬ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╧ п╥п╟пЁп╩п╬п╡п╬п╨
+			// п╒п╣п©п╣я─я▄ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╢п╬п©п╬п╩я┐я┤п╦я┌я▄ п╢п╟п╫п╫я▀п╣ 
+			// (c п©п╬п╥п╦я├п╦п╦ rlen, я┌.п╨. я┤п╟я│я┌я▄ я┐п╤п╣ п©п╬п╩я┐я┤п╦п╩п╦)
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
@@ -607,7 +607,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 					dlog[Debug::WARN] << "(0x04): buf: " << rbuf << endl;
 					dlog[Debug::WARN] << "(0x04)(" 
 						<< (int)rbuf.func << "):(fnReadInputRegisters) "
-						<< "Получили данных меньше чем ждали...(" 
+						<< "п÷п╬п╩я┐я┤п╦п╩п╦ п╢п╟п╫п╫я▀я┘ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╤п╢п╟п╩п╦...(" 
 						<< rlen1 << " < " << szDataLen << ")" << endl;
 				}
 
@@ -625,9 +625,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) 
-			// и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+			// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRead.crc )
@@ -648,9 +648,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				szDataLen -= szCRC;
 			
-			// Мы получили только предварительный загловок
-			// Теперь необходимо дополучить данные 
-			// (c позиции rlen, т.к. часть уже получили)
+			// п°я▀ п©п╬п╩я┐я┤п╦п╩п╦ я┌п╬п╩я▄п╨п╬ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╧ п╥п╟пЁп╩п╬п╡п╬п╨
+			// п╒п╣п©п╣я─я▄ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╢п╬п©п╬п╩я┐я┤п╦я┌я▄ п╢п╟п╫п╫я▀п╣ 
+			// (c п©п╬п╥п╦я├п╦п╦ rlen, я┌.п╨. я┤п╟я│я┌я▄ я┐п╤п╣ п©п╬п╩я┐я┤п╦п╩п╦)
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
@@ -660,7 +660,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 					dlog[Debug::WARN] << "(0x03): buf: " << rbuf << endl;
 					dlog[Debug::WARN] << "(0x03)(" 
 						<< (int)rbuf.func << "):(fnReadInputRegisters) "
-						<< "Получили данных меньше чем ждали...(" 
+						<< "п÷п╬п╩я┐я┤п╦п╩п╦ п╢п╟п╫п╫я▀я┘ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╤п╢п╟п╩п╦...(" 
 						<< rlen1 << " < " << szDataLen << ")" << endl;
 				}
 
@@ -678,9 +678,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) 
-			// и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+			// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRead.crc )
@@ -706,9 +706,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) 
-			// и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+			// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mWrite.crc )
@@ -732,9 +732,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) 
-			// и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+			// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mWrite.crc )
@@ -758,9 +758,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) 
-			// и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+			// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			// int mlen = szModbusHeader + mWrite.szHead() + mWrite.bcnt;
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mWrite.crc )
@@ -784,9 +784,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) 
-			// и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+			// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			// int mlen = szModbusHeader + mWrite.szHead() + mWrite.bcnt;
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mWrite.crc )
@@ -807,8 +807,8 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 
 			if( !crcNoCheckit )
 			{
-				// Проверяем контрольную сумму
-				// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
+				// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+				// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 				if( tcrc != mSet.crc )
 				{
@@ -822,7 +822,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			
 			if( !mSet.checkFormat() )
 			{
-				dlog[Debug::WARN] << "(0x50): некорректные значения..." << endl;
+				dlog[Debug::WARN] << "(0x50): п╫п╣п╨п╬я─я─п╣п╨я┌п╫я▀п╣ п╥п╫п╟я┤п╣п╫п╦я▐..." << endl;
 				return erBadDataValue; // return erInvalidFormat;
 			}
 
@@ -834,9 +834,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				szDataLen -= szCRC;
 
-			// Мы получили только предварительный загловок
-			// Теперь необходимо дополучить данные 
-			// (c позиции rlen, т.к. часть уже получили)
+			// п°я▀ п©п╬п╩я┐я┤п╦п╩п╦ я┌п╬п╩я▄п╨п╬ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╧ п╥п╟пЁп╩п╬п╡п╬п╨
+			// п╒п╣п©п╣я─я▄ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╢п╬п©п╬п╩я┐я┤п╦я┌я▄ п╢п╟п╫п╫я▀п╣ 
+			// (c п©п╬п╥п╦я├п╦п╦ rlen, я┌.п╨. я┤п╟я│я┌я▄ я┐п╤п╣ п©п╬п╩я┐я┤п╦п╩п╦)
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
@@ -844,7 +844,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 				dlog[Debug::WARN] << "(0x66): buf: " << rbuf << endl;
 				dlog[Debug::WARN] << "(0x66)(" 
 					<< rbuf.func << "):(fnFileTransfer) "
-					<< "Получили данных меньше чем ждали...(" 
+					<< "п÷п╬п╩я┐я┤п╦п╩п╦ п╢п╟п╫п╫я▀я┘ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╤п╢п╟п╩п╦...(" 
 					<< rlen1 << " < " << szDataLen << ")" << endl;
 
 				return erInvalidFormat;
@@ -860,9 +860,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) 
-			// и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+			// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mFT.crc )
@@ -886,8 +886,8 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			// ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),sizeof(ReadOutputMessage)-szCRC);
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRead.crc )
@@ -908,9 +908,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				szDataLen -= szCRC;
 
-			// Мы получили только предварительный загловок
-			// Теперь необходимо дополучить данные 
-			// (c позиции rlen, т.к. часть уже получили)
+			// п°я▀ п©п╬п╩я┐я┤п╦п╩п╦ я┌п╬п╩я▄п╨п╬ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╧ п╥п╟пЁп╩п╬п╡п╬п╨
+			// п╒п╣п©п╣я─я▄ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╢п╬п©п╬п╩я┐я┤п╦я┌я▄ п╢п╟п╫п╫я▀п╣ 
+			// (c п©п╬п╥п╦я├п╦п╦ rlen, я┌.п╨. я┤п╟я│я┌я▄ я┐п╤п╣ п©п╬п╩я┐я┤п╦п╩п╦)
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
@@ -918,7 +918,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 				dlog[Debug::WARN] << "(0x53): buf: " << rbuf << endl;
 				dlog[Debug::WARN] << "(0x53)(" 
 					<< rbuf.func << "):(fnWriteOutputRegisters) "
-					<< "Получили данных меньше чем ждали...(" 
+					<< "п÷п╬п╩я┐я┤п╦п╩п╦ п╢п╟п╫п╫я▀я┘ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╤п╢п╟п╩п╦...(" 
 					<< rlen1 << " < " << szDataLen << ")" << endl;
 
 				return erInvalidFormat;
@@ -935,9 +935,9 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) 
-			// и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+			// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRServ.crc )
@@ -955,7 +955,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 
 		else
 		{
-			// А как мы сюда добрались?!!!!!!
+			// п░ п╨п╟п╨ п╪я▀ я│я▌п╢п╟ п╢п╬п╠я─п╟п╩п╦я│я▄?!!!!!!
 			return erUnExpectedPacketType;
 		}		
 	}
@@ -977,7 +977,7 @@ mbErrCode ModbusClient::send( ModbusMessage& msg )
 {
 	if( msg.len > MAXLENPACKET + szModbusHeader )
 	{
-		dlog[Debug::WARN] << "(send): длина пакета больше разрешённой..." << endl;
+		dlog[Debug::WARN] << "(send): п╢п╩п╦п╫п╟ п©п╟п╨п╣я┌п╟ п╠п╬п╩я▄я┬п╣ я─п╟п╥я─п╣я┬я▒п╫п╫п╬п╧..." << endl;
 		return erPacketTooLong;
 	}
 
@@ -998,10 +998,10 @@ mbErrCode ModbusClient::send( ModbusMessage& msg )
 		return erHardwareError;
 	}
 
-	// Пауза, чтобы не ловить свою посылку
+	// п÷п╟я┐п╥п╟, я┤я┌п╬п╠я▀ п╫п╣ п╩п╬п╡п╦я┌я▄ я│п╡п╬я▌ п©п╬я│я▀п╩п╨я┐
 	if( aftersend_msec >= 0 )
 		msleep(aftersend_msec);
-//#warning Разобраться с паузой после посылки...
+//#warning п═п╟п╥п╬п╠я─п╟я┌я▄я│я▐ я│ п©п╟я┐п╥п╬п╧ п©п╬я│п╩п╣ п©п╬я│я▀п╩п╨п╦...
 //	msleep(10);
 
 	return erNoError;
@@ -1027,7 +1027,7 @@ void ModbusClient::printProcessingTime()
 	if( dlog.debugging(Debug::INFO) )
 	{
 		dlog[Debug::INFO] << "(processingTime): " 
-			<< tmProcessing.getCurrent() << " [мсек]" << endl;
+			<< tmProcessing.getCurrent() << " [п╪я│п╣п╨]" << endl;
 	}
 }
 // -------------------------------------------------------------------------

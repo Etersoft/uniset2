@@ -36,11 +36,11 @@
 using namespace UniSetTypes;
 using namespace std;
 //---------------------------------------------------------------------------
-static int SleepTickMS		= 500;	// ÍÉÎÉÍÁÌØÎÙÊ ÉÎÔÅÒ×ÁÌ [ÍÓÅË]
-static int PingNodeTimeOut	= 5;	// ÉÎÔÅÒ×ÁÌ ÐÒÏ×ÅÒËÉ Ó×ÑÚÉ Ó ÕÚÌÁÍÉ [ÓÅË]
-static int WatchDogTimeOut	= 15;	// ÉÎÔÅÒ×ÁÌ ÐÏÓÙÌËÉ WathDog message [ÍÉÎ]
-static int AutoStartUpTimeOut=1;	// ÉÎÔÅÒ×ÁÌ ÐÅÒÅÄ ÐÏÓÙÌËÏÊ StartUp-Á
-static int DumpStateTime	= 0;	// ÉÎÔÅÒ×ÁÌ ÚÁÐÉÓÉ ×ÎÕÔÒÅÎÎÅÇÏ ÓÏÓÔÏÑÎÉÑ ÏÂßÅËÔÏ×
+static int SleepTickMS		= 500;	// Ð¼Ð¸Ð½Ð¸Ð¼Ð°Ð»ÑŒÐ½Ñ‹Ð¹ Ð¸Ð½Ñ‚ÐµÑ€Ð²Ð°Ð» [Ð¼ÑÐµÐº]
+static int PingNodeTimeOut	= 5;	// Ð¸Ð½Ñ‚ÐµÑ€Ð²Ð°Ð» Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ¸ ÑÐ²ÑÐ·Ð¸ Ñ ÑƒÐ·Ð»Ð°Ð¼Ð¸ [ÑÐµÐº]
+static int WatchDogTimeOut	= 15;	// Ð¸Ð½Ñ‚ÐµÑ€Ð²Ð°Ð» Ð¿Ð¾ÑÑ‹Ð»ÐºÐ¸ WathDog message [Ð¼Ð¸Ð½]
+static int AutoStartUpTimeOut=1;	// Ð¸Ð½Ñ‚ÐµÑ€Ð²Ð°Ð» Ð¿ÐµÑ€ÐµÐ´ Ð¿Ð¾ÑÑ‹Ð»ÐºÐ¾Ð¹ StartUp-Ð°
+static int DumpStateTime	= 0;	// Ð¸Ð½Ñ‚ÐµÑ€Ð²Ð°Ð» Ð·Ð°Ð¿Ð¸ÑÐ¸ Ð²Ð½ÑƒÑ‚Ñ€ÐµÐ½Ð½ÐµÐ³Ð¾ ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ñ Ð¾Ð±ÑŠÐµÐºÑ‚Ð¾Ð²
 
 //---------------------------------------------------------------------------
 SystemGuard::SystemGuard():
@@ -98,7 +98,7 @@ void SystemGuard::execute()
 
 	expid = getpid();
 
-	// óÐÅÒ×Á ÉÎÉÃÉÁÌÉÚÉÒÕÅÍ ÓÅÔØ...
+	// Ð¡Ð¿ÐµÑ€Ð²Ð° Ð¸Ð½Ð¸Ñ†Ð¸Ð°Ð»Ð¸Ð·Ð¸Ñ€ÑƒÐµÐ¼ ÑÐµÑ‚ÑŒ...
 	pingNode();
 
 
@@ -184,7 +184,7 @@ void SystemGuard::execute()
 // -------------------------------------------------------------------------
 void SystemGuard::watchDogTime()
 {
-	// òÁÓÓÙÌÁÅÍ ÍÅÎÅÄÖÅÒÁÍ
+	// Ð Ð°ÑÑÑ‹Ð»Ð°ÐµÐ¼ Ð¼ÐµÐ½ÐµÐ´Ð¶ÐµÑ€Ð°Ð¼
 	SystemMessage sm(SystemMessage::WatchDog); 
 	broadcast( sm.transport_msg() );
 }
@@ -198,12 +198,12 @@ bool SystemGuard::pingNode()
 		bool prev = it->connected;
 		try
 		{
-			unideb[Debug::SYSTEM] << myname << "(pingNode): ÐÒÏ×ÅÒÑÅÍ " << conf->oind->getMapName(it->id) << endl << flush;
+			unideb[Debug::SYSTEM] << myname << "(pingNode): Ð¿Ñ€Ð¾Ð²ÐµÑ€ÑÐµÐ¼ " << conf->oind->getMapName(it->id) << endl << flush;
 			CosNaming::NamingContext_var ctx = ORepHelpers::getRootNamingContext( getORB(), 
 							conf->oind->getRealNodeName(it->id) );
 
 			it->connected = true;	
-			unideb[Debug::SYSTEM] << myname << "(pingNode): c ÕÚÌÏÍ "<< conf->oind->getMapName(it->id)<< " Ó×ÑÚØ ÅÓÔØ ..." << endl;
+			unideb[Debug::SYSTEM] << myname << "(pingNode): c ÑƒÐ·Ð»Ð¾Ð¼ "<< conf->oind->getMapName(it->id)<< " ÑÐ²ÑÐ·ÑŒ ÐµÑÑ‚ÑŒ ..." << endl;
 		}
 		catch(...)
 		{
@@ -216,7 +216,7 @@ bool SystemGuard::pingNode()
 		}
 		catch(...){}
 
-		// òÁÓÓÙÌÁÅÍ Õ×ÅÄÏÍÌÅÎÉÅ ÏÂ ÉÚÍÅÎÅÎÉÉ ÓÏÓÔÏÑÎÉÑ × ÓÅÔÉ
+		// Ð Ð°ÑÑÑ‹Ð»Ð°ÐµÐ¼ ÑƒÐ²ÐµÐ´Ð¾Ð¼Ð»ÐµÐ½Ð¸Ðµ Ð¾Ð± Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ð¸ ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ñ Ð² ÑÐµÑ‚Ð¸
 		if( prev != it->connected )
 		{
 			SystemMessage sm(SystemMessage::NetworkInfo); 
@@ -224,7 +224,7 @@ bool SystemGuard::pingNode()
 			sm.data[1] = it->connected;
 			broadcast( sm.transport_msg() );
 			if(!it->connected )
-				unideb[Debug::SYSTEM] << myname <<"(pingNode): ÕÚÅÌ "<< conf->oind->getMapName(it->id)<< " îåäïóôõðåî!!!!" << endl;
+				unideb[Debug::SYSTEM] << myname <<"(pingNode): ÑƒÐ·ÐµÐ» "<< conf->oind->getMapName(it->id)<< " ÐÐ•Ð”ÐžÐ¡Ð¢Ð£ÐŸÐ•Ð!!!!" << endl;
 		}
 	}
 	
@@ -234,7 +234,7 @@ bool SystemGuard::pingNode()
 
 void SystemGuard::autostart()
 {
-	unideb[Debug::SYSTEM] << myname << ": òÁÓÓÙÌÁÅÍ StartUp!!!!!"<< endl;
+	unideb[Debug::SYSTEM] << myname << ": Ð Ð°ÑÑÑ‹Ð»Ð°ÐµÐ¼ StartUp!!!!!"<< endl;
 	SystemMessage sm(SystemMessage::StartUp); 
 	broadcast( sm.transport_msg() );
 	unideb[Debug::SYSTEM] << myname << ": StartUp ok."<< endl;
@@ -264,7 +264,7 @@ void SystemGuard::stop()
 	unideb[Debug::WARN] << myname << "(stop): disactivate..." << endl;	
 	ObjectsActivator::stop();
 //	active = false;
-//	uniset_mutex_lock ml(actMutex, 2000); // ÖÄ£Í ÏÔËÌÀÞÅÎÉÑ
+//	uniset_mutex_lock ml(actMutex, 2000); // Ð¶Ð´Ñ‘Ð¼ Ð¾Ñ‚ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ñ
 }
 // -------------------------------------------------------------------------
 void SystemGuard::run( bool thread )
@@ -272,7 +272,7 @@ void SystemGuard::run( bool thread )
 	thr = new ThreadCreator<SystemGuard>(this, &SystemGuard::execute);
 	if( !thr->start() )
 	{
-		unideb[Debug::CRIT] << myname << ":  îå óíïçìé óïúäáôø ÐÏÔÏË"<<endl;	
+		unideb[Debug::CRIT] << myname << ":  ÐÐ• Ð¡ÐœÐžÐ“Ð›Ð˜ Ð¡ÐžÐ—Ð”ÐÐ¢Ð¬ Ð¿Ð¾Ñ‚Ð¾Ðº"<<endl;	
 		throw SystemError("CREATE SYSTEMGUARD THREAD FAILED");
 	}
 	ObjectsActivator::run(thread);
@@ -283,7 +283,7 @@ void SystemGuard::oaDestroy( int signo )
 	try
 	{
 		active = false;
-		uniset_mutex_lock ml(actMutex, 2000); // ÖÄ£Í ÏÔËÌÀÞÅÎÉÑ
+		uniset_mutex_lock ml(actMutex, 2000); // Ð¶Ð´Ñ‘Ð¼ Ð¾Ñ‚ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ñ
 		ObjectsActivator::oaDestroy(signo);
 	}
 	catch(...)
@@ -309,7 +309,7 @@ void SystemGuard::dumpStateInfo()
 	fstream fout( fname.str().c_str(), ios::out | ios::trunc );
 	if(!fout)
 	{
-		unideb[Debug::CRIT] << "îå óíïç ïôëòùôø æáêì " << fname.str() << endl;
+		unideb[Debug::CRIT] << "ÐÐ• Ð¡ÐœÐžÐ“ ÐžÐ¢ÐšÐ Ð«Ð¢Ð¬ Ð¤ÐÐ™Ð› " << fname.str() << endl;
 		return;
 	}
 
@@ -317,7 +317,7 @@ void SystemGuard::dumpStateInfo()
 	fout << ui.dateToString(time(0),"/")<< "\t" << ui.timeToString(time(0),";") << endl;
 	fout << "==========================================================================" << endl;
 //	fout << "\n--------------------------------------------------------------------------" << endl;
-	fout << "\nóÅÔØ:\n";
+	fout << "\nÐ¡ÐµÑ‚ÑŒ:\n";
 	fout << "--------------------------------------------------------------------------" << endl;	
 
 
@@ -330,7 +330,7 @@ void SystemGuard::dumpStateInfo()
 
 
 	fout << "\n\n--------------------------------------------------------------------------";
-	fout << "\néÎÆÏÒÍÁÃÉÑ ÐÏ ÏÂßÅËÔÁÍ:";
+	fout << "\nÐ˜Ð½Ñ„Ð¾Ñ€Ð¼Ð°Ñ†Ð¸Ñ Ð¿Ð¾ Ð¾Ð±ÑŠÐµÐºÑ‚Ð°Ð¼:";
 	fout << "\n--------------------------------------------------------------------------" << endl;
 //	fout << setw(40)<< "name"<< setw(6) << "\tid"<< setw(8) << "\tmsgTID \textinfo" << endl;	
 //	fout << "--------------------------------------------------------------------------\n" << endl;

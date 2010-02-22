@@ -59,10 +59,10 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 			}
 		}
 
-		// защита от непрерывного потока сообщений
+		// п╥п╟я┴п╦я┌п╟ п╬я┌ п╫п╣п©я─п╣я─я▀п╡п╫п╬пЁп╬ п©п╬я┌п╬п╨п╟ я│п╬п╬п╠я┴п╣п╫п╦п╧
 		if( tmLast.getCurrent() < UniSetTimer::MinQuantityTime )
 		{
-			// корректируем сперва sleepTime
+			// п╨п╬я─я─п╣п╨я┌п╦я─я┐п╣п╪ я│п©п╣я─п╡п╟ sleepTime
 			sleepTime = tmLast.getLeft(sleepTime);
 			if( sleepTime < UniSetTimer::MinQuantityTime )
 			{
@@ -79,11 +79,11 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 			{
 				if( li->tmr.checkTime() )
 				{	
-					// помещаем себе в очередь сообщение
+					// п©п╬п╪п╣я┴п╟п╣п╪ я│п╣п╠п╣ п╡ п╬я┤п╣я─п╣п╢я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣
 					TransportMessage tm = TimerMessage(li->id, li->priority, obj->getId()).transport_msg();
 					obj->push(tm);
 	
-					// Проверка на количество заданных тактов
+					// п÷я─п╬п╡п╣я─п╨п╟ п╫п╟ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╥п╟п╢п╟п╫п╫я▀я┘ я┌п╟п╨я┌п╬п╡
 					if( !li->curTick )
 					{
 						li = tlst.erase(li);
@@ -102,12 +102,12 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 					li->curTimeMS = tmLast.getLeft(li->curTimeMS);
 				}
 
-				// ищем минимальное оставшееся время
+				// п╦я┴п╣п╪ п╪п╦п╫п╦п╪п╟п╩я▄п╫п╬п╣ п╬я│я┌п╟п╡я┬п╣п╣я│я▐ п╡я─п╣п╪я▐
 				if( li->curTimeMS < sleepTime || sleepTime == UniSetTimer::WaitUpTime )
 					sleepTime = li->curTimeMS;
 			}	
 
-			if( resort )	// пересортировываем в связи с обновлением списка
+			if( resort )	// п©п╣я─п╣я│п╬я─я┌п╦я─п╬п╡я▀п╡п╟п╣п╪ п╡ я│п╡я▐п╥п╦ я│ п╬п╠п╫п╬п╡п╩п╣п╫п╦п╣п╪ я│п©п╦я│п╨п╟
 				tlst.sort();
 			
 			if( sleepTime < UniSetTimer::MinQuantityTime )
@@ -127,21 +127,21 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 
 timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks, UniSetTypes::Message::Priority p )
 {
-	if( timeMS > 0 ) // заказ
+	if( timeMS > 0 ) // п╥п╟п╨п╟п╥
 	{
 		if( timeMS < UniSetTimer::MinQuantityTime )
 		{
-			unideb[Debug::CRIT] << "(LT_askTimer): [мс] попытка заказть таймер со временем срабатыания "
-						<< " меньше разрешённого " << UniSetTimer::MinQuantityTime << endl;
+			unideb[Debug::CRIT] << "(LT_askTimer): [п╪я│] п©п╬п©я▀я┌п╨п╟ п╥п╟п╨п╟п╥я┌я▄ я┌п╟п╧п╪п╣я─ я│п╬ п╡я─п╣п╪п╣п╫п╣п╪ я│я─п╟п╠п╟я┌я▀п╟п╫п╦я▐ "
+						<< " п╪п╣п╫я▄я┬п╣ я─п╟п╥я─п╣я┬я▒п╫п╫п╬пЁп╬ " << UniSetTimer::MinQuantityTime << endl;
 			timeMS = UniSetTimer::MinQuantityTime;
 		}
 			
 		{	// lock
 			if( !lstMutex.isRelease() && unideb.debugging(Debug::INFO) )
-				unideb[Debug::INFO] << "(LT_askTimer): придется подождать освобождения lstMutex-а" << endl;
+				unideb[Debug::INFO] << "(LT_askTimer): п©я─п╦п╢п╣я┌я│я▐ п©п╬п╢п╬п╤п╢п╟я┌я▄ п╬я│п╡п╬п╠п╬п╤п╢п╣п╫п╦я▐ lstMutex-п╟" << endl;
 
 			uniset_mutex_lock lock(lstMutex, 2000);
-			// поищем а может уж такой есть
+			// п©п╬п╦я┴п╣п╪ п╟ п╪п╬п╤п╣я┌ я┐п╤ я┌п╟п╨п╬п╧ п╣я│я┌я▄
 			if( !tlst.empty() )
 			{
 				for( TimersList::iterator li=tlst.begin(); li!=tlst.end(); ++li )
@@ -150,8 +150,8 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
 					{
 						li->curTick = ticks;
 						li->tmr.setTiming(timeMS);
-						unideb[Debug::INFO] << "(LT_askTimer): заказ на таймер(id="
-							<< timerid << ") " << timeMS << " [мс] уже есть...\n";	
+						unideb[Debug::INFO] << "(LT_askTimer): п╥п╟п╨п╟п╥ п╫п╟ я┌п╟п╧п╪п╣я─(id="
+							<< timerid << ") " << timeMS << " [п╪я│] я┐п╤п╣ п╣я│я┌я▄...\n";	
 						return sleepTime;
 					}
 				}
@@ -164,17 +164,17 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
 		}	// unlock
 	
 		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << "(LT_askTimer): поступил заказ на таймер(id="<< timerid << ") " << timeMS << " [мс]\n";
+			unideb[Debug::INFO] << "(LT_askTimer): п©п╬я│я┌я┐п©п╦п╩ п╥п╟п╨п╟п╥ п╫п╟ я┌п╟п╧п╪п╣я─(id="<< timerid << ") " << timeMS << " [п╪я│]\n";
 	}
-	else // отказ (при timeMS == 0)
+	else // п╬я┌п╨п╟п╥ (п©я─п╦ timeMS == 0)
 	{
 		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << "(LT_askTimer): поступил отказ по таймеру id="<< timerid << endl;	
+			unideb[Debug::INFO] << "(LT_askTimer): п©п╬я│я┌я┐п©п╦п╩ п╬я┌п╨п╟п╥ п©п╬ я┌п╟п╧п╪п╣я─я┐ id="<< timerid << endl;	
 		{	// lock
 			if( !lstMutex.isRelease() && unideb.debugging(Debug::INFO) )
-				unideb[Debug::INFO] << "(LT_askTimer): придется подождать освобождения lstMutex-а\n";
+				unideb[Debug::INFO] << "(LT_askTimer): п©я─п╦п╢п╣я┌я│я▐ п©п╬п╢п╬п╤п╢п╟я┌я▄ п╬я│п╡п╬п╠п╬п╤п╢п╣п╫п╦я▐ lstMutex-п╟\n";
  			uniset_mutex_lock lock(lstMutex, 2000);
-			tlst.remove_if(Timer_eq(timerid));	// STL - способ
+			tlst.remove_if(Timer_eq(timerid));	// STL - я│п©п╬я│п╬п╠
 			tlst.sort();
 		}	// unlock
 	}
@@ -182,7 +182,7 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
 
 	{	// lock
 		if( !lstMutex.isRelease() && unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << "(LT_askTimer): придется подождать освобождения lstMutex-а\n";
+			unideb[Debug::INFO] << "(LT_askTimer): п©я─п╦п╢п╣я┌я│я▐ п©п╬п╢п╬п╤п╢п╟я┌я▄ п╬я│п╡п╬п╠п╬п╤п╢п╣п╫п╦я▐ lstMutex-п╟\n";
 
 		uniset_mutex_lock lock(lstMutex, 2000);
 

@@ -30,7 +30,7 @@ void Schema::link(Element::ElementID rootID, Element::ElementID childID, int num
 	if( it == emap.end() )
 	{
 		ostringstream msg;
-		msg << "Schema: ‹Ã≈Õ≈Œ‘ id=" << rootID << " ÓÂ Ó·Í‰ÂÓ!!!";
+		msg << "Schema: —ç–ª–µ–º–µ–Ω—Ç id=" << rootID << " –ù–ï –ù–ê–ô–î–ï–ù!!!";
 		throw LogicException(msg.str());
 	}
 	e1 = it->second;
@@ -39,14 +39,14 @@ void Schema::link(Element::ElementID rootID, Element::ElementID childID, int num
 	if( it == emap.end() )
 	{
 		ostringstream msg;
-		msg << "Schema: ‹Ã≈Õ≈Œ‘ id=" << childID << " ÓÂ Ó·Í‰ÂÓ!!!";
+		msg << "Schema: —ç–ª–µ–º–µ–Ω—Ç id=" << childID << " –ù–ï –ù–ê–ô–î–ï–ù!!!";
 		throw LogicException(msg.str());
 	}
 	e2 = it->second;
 
 	e1->addChildOut(e2, numIn);
 	
-	// ”œ»“¡Œ—≈Õ ◊ ”–…”œÀ ”œ≈ƒ…Œ≈Œ… 
+	// —Å–æ—Ö—Ä–∞–Ω—è–µ–º –≤ —Å–ø–∏—Å–æ–∫ —Å–æ–µ–¥–∏–Ω–µ–Ω–∏–π
 	inLinks.push_front(INLink(e1,e2,numIn));
 }
 // -------------------------------------------------------------------------
@@ -59,7 +59,7 @@ void Schema::unlink( Element::ElementID rootID, Element::ElementID childID )
 	if( it == emap.end() )
 	{
 		ostringstream msg;
-		msg << "Schema: ‹Ã≈Õ≈Œ‘ id=" << rootID << " ÓÂ Ó·Í‰ÂÓ!!!";
+		msg << "Schema: —ç–ª–µ–º–µ–Ω—Ç id=" << rootID << " –ù–ï –ù–ê–ô–î–ï–ù!!!";
 		throw LogicException(msg.str());
 	}
 	e1 = it->second;
@@ -68,14 +68,14 @@ void Schema::unlink( Element::ElementID rootID, Element::ElementID childID )
 	if( it == emap.end() )
 	{
 		ostringstream msg;
-		msg << "Schema: ‹Ã≈Õ≈Œ‘ id=" << childID << " ÓÂ Ó·Í‰ÂÓ!!!";
+		msg << "Schema: —ç–ª–µ–º–µ–Ω—Ç id=" << childID << " –ù–ï –ù–ê–ô–î–ï–ù!!!";
 		throw LogicException(msg.str());
 	}
 	e2 = it->second;
 
 	e1->delChildOut(e2);
 
-	// ’ƒ¡Ã—≈Õ …⁄ ”–…”À¡ ”œ≈ƒ…Œ≈Œ… 
+	// —É–¥–∞–ª—è–µ–º –∏–∑ —Å–ø–∏—Å–∫–∞ —Å–æ–µ–¥–∏–Ω–µ–Ω–∏–π
 	for( InternalList::iterator lit=inLinks.begin(); lit!=inLinks.end(); ++lit )
 	{
 		if( lit->from == e1 && lit->to == e2 )
@@ -92,17 +92,17 @@ void Schema::extlink(string name, Element::ElementID childID, int numIn )
 	if( it == emap.end() )
 	{
 		ostringstream msg;
-		msg << "Schema: ‹Ã≈Õ≈Œ‘ id=" << childID << " ÓÂ Ó·Í‰ÂÓ!!!";
+		msg << "Schema: —ç–ª–µ–º–µ–Ω—Ç id=" << childID << " –ù–ï –ù–ê–ô–î–ï–ù!!!";
 		throw LogicException(msg.str());
 	}
 
 	Element* el(it->second);
 
-// 	ƒœ¬¡◊Ã—≈Õ Œœ◊œ≈ ”œ≈ƒ…Œ≈Œ…≈	
+// 	–¥–æ–±–∞–≤–ª—è–µ–º –Ω–æ–≤–æ–µ —Å–æ–µ–¥–∏–Ω–µ–Ω–∏–µ	
 //	el->addInput(numIn);
-//	’÷≈ ƒœÃ÷≈Œ ¬Ÿ‘ÿ
+//	—É–∂–µ –¥–æ–ª–∂–µ–Ω –±—ã—Ç—å
 
-	// ⁄¡Œœ”…Õ ◊ ”–…”œÀ
+	// –∑–∞–Ω–æ—Å–∏–º –≤ —Å–ø–∏—Å–æ–∫
 	extLinks.push_front( EXTLink(name,el,numIn) );
 }
 // -------------------------------------------------------------------------
@@ -127,7 +127,7 @@ void Schema::remove( Element* el )
 		}
 	}
 
-	// –œÕ≈ﬁ¡≈Õ ◊Œ’‘“≈ŒŒ…≈ ”◊—⁄…
+	// –ø–æ–º–µ—á–∞–µ–º –≤–Ω—É—Ç—Ä–µ–Ω–Ω–∏–µ —Å–≤—è–∑–∏
 	for( InternalList::iterator lit=inLinks.begin(); lit!=inLinks.end(); ++lit )
 	{
 		if( lit->from == el )
@@ -137,7 +137,7 @@ void Schema::remove( Element* el )
 			lit->to = 0;
 	}
 
-	// –œÕ≈ﬁ¡≈Õ ◊Œ≈€Œ…≈ ”◊—⁄…
+	// –ø–æ–º–µ—á–∞–µ–º –≤–Ω–µ—à–Ω–∏–µ —Å–≤—è–∑–∏
 	for( ExternalList::iterator lit=extLinks.begin(); lit!=extLinks.end(); ++lit )
 	{
 		if( lit->to == el )
@@ -160,7 +160,7 @@ bool Schema::getOut( Element::ElementID ID )
 		return it->second->getOut();
 
 	ostringstream msg;
-	msg << "Schema: ‹Ã≈Õ≈Œ‘ id=" <<ID << " ÓÂ Ó·Í‰ÂÓ!!!";
+	msg << "Schema: —ç–ª–µ–º–µ–Ω—Ç id=" <<ID << " –ù–ï –ù–ê–ô–î–ï–ù!!!";
 	throw LogicException(msg.str());
 }
 // -------------------------------------------------------------------------
@@ -174,7 +174,7 @@ Element* Schema::find(Element::ElementID id)
 // -------------------------------------------------------------------------
 Element* Schema::findExtLink(const string name)
 {
-	// –œÕ≈ﬁ¡≈Õ ◊Œ≈€Œ…≈ ”◊—⁄…
+	// –ø–æ–º–µ—á–∞–µ–º –≤–Ω–µ—à–Ω–∏–µ —Å–≤—è–∑–∏
 	for( ExternalList::iterator it=extLinks.begin(); it!=extLinks.end(); ++it )
 	{
 		if( it->name == name )

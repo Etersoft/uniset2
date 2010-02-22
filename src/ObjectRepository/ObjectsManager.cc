@@ -40,7 +40,7 @@
 using namespace UniSetTypes;
 using namespace std;
 // ------------------------------------------------------------------------------------------
-// объект-функция для посылки сообщения менеджеру
+// п╬п╠я┼п╣п╨я┌-я└я┐п╫п╨я├п╦я▐ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ я│п╬п╬п╠я┴п╣п╫п╦я▐ п╪п╣п╫п╣п╢п╤п╣я─я┐
 class MPush: public unary_function<ObjectsManager*, bool>
 {
 	public: 
@@ -61,7 +61,7 @@ class MPush: public unary_function<ObjectsManager*, bool>
 		const UniSetTypes::TransportMessage& msg;
 };
 
-// объект-функция для посылки сообщения объекту
+// п╬п╠я┼п╣п╨я┌-я└я┐п╫п╨я├п╦я▐ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ я│п╬п╬п╠я┴п╣п╫п╦я▐ п╬п╠я┼п╣п╨я┌я┐
 class OPush: public unary_function<UniSetObject*, bool>
 {
 	public: 
@@ -134,7 +134,7 @@ void ObjectsManager::initPOA( ObjectsManager* rmngr )
 	if( CORBA::is_nil(poa) )
 		unideb[Debug::CRIT] << myname << "(initPOA): failed init poa " << endl;
 
-	// Инициализация самого менеджера и его подобъектов
+	// п≤п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ я│п╟п╪п╬пЁп╬ п╪п╣п╫п╣п╢п╤п╣я─п╟ п╦ п╣пЁп╬ п©п╬п╢п╬п╠я┼п╣п╨я┌п╬п╡
 	UniSetObject::init(rmngr);
 	objects(initial);	
 	managers(initial);	
@@ -148,7 +148,7 @@ bool ObjectsManager::addObject( UniSetObject *obj )
 		if( li==olist.end() )
 		{
 			if( unideb.debugging(Debug::INFO) )
-				unideb[Debug::INFO] << myname << "(activator): добавляем объект "<< obj->getName()<< endl;
+				unideb[Debug::INFO] << myname << "(activator): п╢п╬п╠п╟п╡п╩я▐п╣п╪ п╬п╠я┼п╣п╨я┌ "<< obj->getName()<< endl;
 		 	olist.push_back(obj);
 		}
 	} // unlock	
@@ -164,7 +164,7 @@ bool ObjectsManager::removeObject(UniSetObject* obj)
 		if( li!=olist.end() )
 		{
 			if( unideb.debugging(Debug::INFO) )
-				unideb[Debug::INFO] << myname << "(activator): удаляем объект "<< obj->getName()<< endl;				
+				unideb[Debug::INFO] << myname << "(activator): я┐п╢п╟п╩я▐п╣п╪ п╬п╠я┼п╣п╨я┌ "<< obj->getName()<< endl;				
 			try
 			{
 				obj->disactivate();
@@ -175,7 +175,7 @@ bool ObjectsManager::removeObject(UniSetObject* obj)
 			}
 			catch(CORBA::SystemException& ex)
 		    {
-				unideb[Debug::WARN] << myname << "(removeObject): поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
+				unideb[Debug::WARN] << myname << "(removeObject): п©п╬п╧п╪п╟п╩п╦ CORBA::SystemException: " << ex.NP_minorString() << endl;
 	    	}
 	    	catch(CORBA::Exception& ex)
 		    {
@@ -199,7 +199,7 @@ bool ObjectsManager::removeObject(UniSetObject* obj)
 
 // ------------------------------------------------------------------------------------------
 /*! 
- *	Функция работы со списком менеджеров
+ *	п╓я┐п╫п╨я├п╦я▐ я─п╟п╠п╬я┌я▀ я│п╬ я│п©п╦я│п╨п╬п╪ п╪п╣п╫п╣п╢п╤п╣я─п╬п╡
 */
 void ObjectsManager::managers(OManagerCommand cmd)
 {
@@ -236,11 +236,11 @@ void ObjectsManager::managers(OManagerCommand cmd)
 			catch( Exception& ex )
 			{
 				unideb[Debug::CRIT] << myname << "(managers): " << ex << endl;
-				unideb[Debug::CRIT] << myname << "(managers): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
+				unideb[Debug::CRIT] << myname << "(managers): п╫п╣ я│п╪п╬пЁ п╥п╟я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟я┌я▄ (я─п╟п╥я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟я┌я▄) п╬п╠я┼п╣п╨я┌ -->"<< (*li)->getName() << endl;
 			}
 			catch(CORBA::SystemException& ex)
 		    {
-				unideb[Debug::CRIT] << myname << "(managers): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+				unideb[Debug::CRIT] << myname << "(managers): п©п╬п╧п╪п╟п╩п╦ CORBA::SystemException:" << ex.NP_minorString() << endl;
 		    }
 			catch( CORBA::Exception& ex )
 			{
@@ -258,7 +258,7 @@ void ObjectsManager::managers(OManagerCommand cmd)
 }
 // ------------------------------------------------------------------------------------------
 /*! 
- *	Функция работы со списком объектов.
+ *	п╓я┐п╫п╨я├п╦я▐ я─п╟п╠п╬я┌я▀ я│п╬ я│п©п╦я│п╨п╬п╪ п╬п╠я┼п╣п╨я┌п╬п╡.
 */
 void ObjectsManager::objects(OManagerCommand cmd)
 {
@@ -296,11 +296,11 @@ void ObjectsManager::objects(OManagerCommand cmd)
 			catch( Exception& ex )
 			{
 				unideb[Debug::CRIT] << myname << "(objects): " << ex << endl;
-				unideb[Debug::CRIT] << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
+				unideb[Debug::CRIT] << myname << "(objects): п╫п╣ я│п╪п╬пЁ п╥п╟я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟я┌я▄ (я─п╟п╥я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟я┌я▄) п╬п╠я┼п╣п╨я┌ -->"<< (*li)->getName() << endl;
 			}
 			catch(CORBA::SystemException& ex)
 		    {
-				unideb[Debug::CRIT] << myname << "(objects): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+				unideb[Debug::CRIT] << myname << "(objects): п©п╬п╧п╪п╟п╩п╦ CORBA::SystemException:" << ex.NP_minorString() << endl;
 		    }
 			catch( CORBA::Exception& ex )
 			{
@@ -320,13 +320,13 @@ void ObjectsManager::objects(OManagerCommand cmd)
 }
 // ------------------------------------------------------------------------------------------
 /*! 
- *	Регистрирация объекта и всех его подобъектов в репозитории.
- *	\note Только после этого он (и они) становятся доступны другим процессам
+ *	п═п╣пЁп╦я│я┌я─п╦я─п╟я├п╦я▐ п╬п╠я┼п╣п╨я┌п╟ п╦ п╡я│п╣я┘ п╣пЁп╬ п©п╬п╢п╬п╠я┼п╣п╨я┌п╬п╡ п╡ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╦.
+ *	\note п╒п╬п╩я▄п╨п╬ п©п╬я│п╩п╣ я█я┌п╬пЁп╬ п╬п╫ (п╦ п╬п╫п╦) я│я┌п╟п╫п╬п╡я▐я┌я│я▐ п╢п╬я│я┌я┐п©п╫я▀ п╢я─я┐пЁп╦п╪ п©я─п╬я├п╣я│я│п╟п╪
 */
 bool ObjectsManager::activateObject()
 {
 	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname << "(activateObjects):  активизирую объекты"<< endl;
+		unideb[Debug::INFO] << myname << "(activateObjects):  п╟п╨я┌п╦п╡п╦п╥п╦я─я┐я▌ п╬п╠я┼п╣п╨я┌я▀"<< endl;
 	UniSetObject::activateObject();
 	managers(activ);
 	objects(activ);
@@ -334,14 +334,14 @@ bool ObjectsManager::activateObject()
 }
 // ------------------------------------------------------------------------------------------
 /*! 
- *	Удаление объекта и всех его подобъектов из репозитория.
- *	\note Объект становится недоступен другим процессам
+ *	пёп╢п╟п╩п╣п╫п╦п╣ п╬п╠я┼п╣п╨я┌п╟ п╦ п╡я│п╣я┘ п╣пЁп╬ п©п╬п╢п╬п╠я┼п╣п╨я┌п╬п╡ п╦п╥ я─п╣п©п╬п╥п╦я┌п╬я─п╦я▐.
+ *	\note п·п╠я┼п╣п╨я┌ я│я┌п╟п╫п╬п╡п╦я┌я│я▐ п╫п╣п╢п╬я│я┌я┐п©п╣п╫ п╢я─я┐пЁп╦п╪ п©я─п╬я├п╣я│я│п╟п╪
 */
 bool ObjectsManager::disactivateObject()
 {
 	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname << "(disactivateObjects):  деактивизирую объекты"<< endl;
-	// именно в такой последовательности!
+		unideb[Debug::INFO] << myname << "(disactivateObjects):  п╢п╣п╟п╨я┌п╦п╡п╦п╥п╦я─я┐я▌ п╬п╠я┼п╣п╨я┌я▀"<< endl;
+	// п╦п╪п╣п╫п╫п╬ п╡ я┌п╟п╨п╬п╧ п©п╬я│п╩п╣п╢п╬п╡п╟я┌п╣п╩я▄п╫п╬я│я┌п╦!
 	objects(deactiv);
 	managers(deactiv);
 	return true;
@@ -359,19 +359,19 @@ void ObjectsManager::sigterm( int signo )
 
 void ObjectsManager::broadcast(const TransportMessage& msg)
 {
-	// себя не забыть...
+	// я│п╣п╠я▐ п╫п╣ п╥п╟п╠я▀я┌я▄...
 //	push(msg);
 	
-	// Всем объектам...
+	// п▓я│п╣п╪ п╬п╠я┼п╣п╨я┌п╟п╪...
 	{	//lock
 		uniset_mutex_lock lock(olistMutex, 2000);
-		for_each(olist.begin(),olist.end(),OPush(msg)); // STL метод
+		for_each(olist.begin(),olist.end(),OPush(msg)); // STL п╪п╣я┌п╬п╢
 	} // unlock
 
-	// Всем менеджерам....
+	// п▓я│п╣п╪ п╪п╣п╫п╣п╢п╤п╣я─п╟п╪....
 	{	//lock
 		uniset_mutex_lock lock(mlistMutex, 2000);
-		for_each(mlist.begin(),mlist.end(),MPush(msg)); // STL метод
+		for_each(mlist.begin(),mlist.end(),MPush(msg)); // STL п╪п╣я┌п╬п╢
 	} // unlock
 }
 
@@ -381,16 +381,16 @@ bool ObjectsManager::addManager( ObjectsManager *child )
 	{	//lock
 		uniset_mutex_lock lock(mlistMutex, 1000);
 
-		// Проверка на совпадение
+		// п÷я─п╬п╡п╣я─п╨п╟ п╫п╟ я│п╬п╡п©п╟п╢п╣п╫п╦п╣
 		ObjectsManagerList::iterator it= find(mlist.begin(),mlist.end(),child);
 		if(it == mlist.end() )
 		{
 		 	mlist.push_back( child );
 			if( unideb.debugging(Debug::INFO) )
-				unideb[Debug::INFO] << myname << ": добавляем менеджер "<< child->getName()<< endl;
+				unideb[Debug::INFO] << myname << ": п╢п╬п╠п╟п╡п╩я▐п╣п╪ п╪п╣п╫п╣п╢п╤п╣я─ "<< child->getName()<< endl;
 		}
 		else
-			unideb[Debug::WARN] << myname << ": попытка повторного добавления объекта "<< child->getName() << endl;
+			unideb[Debug::WARN] << myname << ": п©п╬п©я▀я┌п╨п╟ п©п╬п╡я┌п╬я─п╫п╬пЁп╬ п╢п╬п╠п╟п╡п╩п╣п╫п╦я▐ п╬п╠я┼п╣п╨я┌п╟ "<< child->getName() << endl;
 	} // unlock	
 	
 	return true;
@@ -461,7 +461,7 @@ int ObjectsManager::getObjectsInfo( ObjectsManager* mngr, SimpleInfoSeq* seq,
 {
 	int ind = begin;
 
-	// получаем у самого менджера
+	// п©п╬п╩я┐я┤п╟п╣п╪ я┐ я│п╟п╪п╬пЁп╬ п╪п╣п╫п╢п╤п╣я─п╟
 	SimpleInfo_var msi=mngr->getInfo();
 	(*seq)[ind] = msi;
 	
@@ -486,15 +486,15 @@ int ObjectsManager::getObjectsInfo( ObjectsManager* mngr, SimpleInfoSeq* seq,
 	    }
 		catch(...)
 		{
-			unideb[Debug::WARN] << myname << "(getObjectsInfo): не смог получить у объекта "
-					<< conf->oind->getNameById( (*it)->getId() ) << " информацию" << endl;
+			unideb[Debug::WARN] << myname << "(getObjectsInfo): п╫п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ я┐ п╬п╠я┼п╣п╨я┌п╟ "
+					<< conf->oind->getNameById( (*it)->getId() ) << " п╦п╫я└п╬я─п╪п╟я├п╦я▌" << endl;
 		}	
 	}
 
 	if( ind > uplimit )
 		return ind;
 
-	// а далее у его менеджеров (рекурсивно)
+	// п╟ п╢п╟п╩п╣п╣ я┐ п╣пЁп╬ п╪п╣п╫п╣п╢п╤п╣я─п╬п╡ (я─п╣п╨я┐я─я│п╦п╡п╫п╬)
 	for( ObjectsManagerList::const_iterator it=mngr->beginMList();
 		 it!=mngr->endMList(); ++it )
 	{
@@ -509,15 +509,15 @@ int ObjectsManager::getObjectsInfo( ObjectsManager* mngr, SimpleInfoSeq* seq,
 
 SimpleInfoSeq* ObjectsManager::getObjectsInfo( CORBA::Long maxlength )
 {
-	SimpleInfoSeq* res = new SimpleInfoSeq();	// ЗА ОСВОБОЖДЕНИЕ ПАМЯТИ ОТВЕЧАЕТ КЛИЕНТ!!!!!!
-												// поэтому ему лучше пользоваться при получении _var-классом
+	SimpleInfoSeq* res = new SimpleInfoSeq();	// п≈п░ п·п║п▓п·п▒п·п√п■п∙п²п≤п∙ п÷п░п°п╞п╒п≤ п·п╒п▓п∙п╖п░п∙п╒ п п⌡п≤п∙п²п╒!!!!!!
+												// п©п╬я█я┌п╬п╪я┐ п╣п╪я┐ п╩я┐я┤я┬п╣ п©п╬п╩я▄п╥п╬п╡п╟я┌я▄я│я▐ п©я─п╦ п©п╬п╩я┐я┤п╣п╫п╦п╦ _var-п╨п╩п╟я│я│п╬п╪
 	int length = objectsCount()+1;
 	if( length >= maxlength )
 		length = maxlength;
 	
 	res->length(length);
 
-	// используем рекурсивную функцию
+	// п╦я│п©п╬п╩я▄п╥я┐п╣п╪ я─п╣п╨я┐я─я│п╦п╡п╫я┐я▌ я└я┐п╫п╨я├п╦я▌
 	int ind = 0;
 	const int limit = length; 
 	ind = getObjectsInfo( this, res, ind, limit );

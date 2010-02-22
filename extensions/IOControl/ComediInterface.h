@@ -7,7 +7,7 @@
 #include <comedilib.h>
 #include "Exceptions.h"
 // -----------------------------------------------------------------------------
-/*! Интерфейс для работы с в/в */
+/*! п≤п╫я┌п╣я─я└п╣п╧я│ п╢п╩я▐ я─п╟п╠п╬я┌я▀ я│ п╡/п╡ */
 class ComediInterface
 {
 	public:
@@ -27,7 +27,7 @@ class ComediInterface
 				throw(UniSetTypes::Exception);
 
 
-		// Конфигурирование входов / выходов
+		// п п╬п╫я└п╦пЁя┐я─п╦я─п╬п╡п╟п╫п╦п╣ п╡я┘п╬п╢п╬п╡ / п╡я▀я┘п╬п╢п╬п╡
 		enum ChannelType
 		{
 			DI 	= INSN_CONFIG_DIO_INPUT,
@@ -57,7 +57,7 @@ class ComediInterface
 		
 	protected:
 
-		comedi_t* card;	/*!< интерфейс для работы с картами в/в */
+		comedi_t* card;	/*!< п╦п╫я┌п╣я─я└п╣п╧я│ п╢п╩я▐ я─п╟п╠п╬я┌я▀ я│ п╨п╟я─я┌п╟п╪п╦ п╡/п╡ */
 		std::string dname;
 
 	private:

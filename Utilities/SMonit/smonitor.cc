@@ -29,9 +29,9 @@ int main( int argc, const char **argv )
 		ID = conf->getObjectID(name);
 		if( ID == UniSetTypes::DefaultObjectId )
 		{
-			cerr << "(main): ÉÄÅÎÔÉÆÉËÁÔÏÒ '" << name 
-				<< "' ÎÅ ÎÁÊÄÅÎ × ËÏÎÆ. ÆÁÊÌÅ!"
-				<< " × ÓÅËÃÉÉ " << conf->getObjectsSection() << endl;
+			cerr << "(main): Ð¸Ð´ÐµÐ½Ñ‚Ð¸Ñ„Ð¸ÐºÐ°Ñ‚Ð¾Ñ€ '" << name 
+				<< "' Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½ Ð² ÐºÐ¾Ð½Ñ„. Ñ„Ð°Ð¹Ð»Ðµ!"
+				<< " Ð² ÑÐµÐºÑ†Ð¸Ð¸ " << conf->getObjectsSection() << endl;
 			return 0;
 		}
 
@@ -49,7 +49,7 @@ int main( int argc, const char **argv )
 	}
 	catch(...)
 	{
-		cout << "(main): îÅÉÚ×ÅÓÔÎÏÅ ÉÓËÌÀÞÅÎÉÅ!!!!"<< endl;
+		cout << "(main): ÐÐµÐ¸Ð·Ð²ÐµÑÑ‚Ð½Ð¾Ðµ Ð¸ÑÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ðµ!!!!"<< endl;
 	}
 
 	return 0;

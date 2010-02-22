@@ -41,8 +41,8 @@ namespace ORepHelpers
 
 // --------------------------------------------------------------------------
     /*!
-     *	\param cname - полное имя контекста ссылку на который, возвратит функция. 
-     *	\param argc, argv  - параметры инициализации ORB      
+     *	\param cname - п©п╬п╩п╫п╬п╣ п╦п╪я▐ п╨п╬п╫я┌п╣п╨я│я┌п╟ я│я│я▀п╩п╨я┐ п╫п╟ п╨п╬я┌п╬я─я▀п╧, п╡п╬п╥п╡я─п╟я┌п╦я┌ я└я┐п╫п╨я├п╦я▐. 
+     *	\param argc, argv  - п©п╟я─п╟п╪п╣я┌я─я▀ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦п╦ ORB      
     */
 	CosNaming::NamingContext_ptr getContext(const string& cname, int argc, const char* const* argv, const string& nsName )throw(ORepFailed)
     {
@@ -62,8 +62,8 @@ namespace ORepHelpers
 
         if( CORBA::is_nil(rootC) )
 		{
-			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "OREPHELPER: не смог получить ссылку на NameServices"<< endl;
-			throw ORepFailed("OREPHELPER(getContext): не смог получить ссылку на NameServices");
+			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "OREPHELPER: п╫п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ NameServices"<< endl;
+			throw ORepFailed("OREPHELPER(getContext): п╫п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ NameServices");
         }
 
 		if ( cname.empty() )
@@ -77,21 +77,21 @@ namespace ORepHelpers
 			ctx = CosNaming::NamingContext::_narrow( rootC->resolve(ctxName) );
 			if( CORBA::is_nil(ctx) )
 			{
-	    		const string err("OREPHELPER(getContext): не смог получить ссылку на контекст(is_nil) "+cname);
+	    		const string err("OREPHELPER(getContext): п╫п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╨п╬п╫я┌п╣п╨я│я┌(is_nil) "+cname);
 			    throw ORepFailed(err.c_str());
 			}
         }
 		catch(const CosNaming::NamingContext::InvalidName &nf)
         {
 			ostringstream err;
-	    	err << "OREPHELPER(getContext): не смог получить ссылку на контекст " << cname;
+	    	err << "OREPHELPER(getContext): п╫п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╨п╬п╫я┌п╣п╨я│я┌ " << cname;
 		    unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << err.str() << endl;			
 		    throw ORepFailed(err.str());
         }
 		catch(const CosNaming::NamingContext::NotFound &nf)
         {
 			ostringstream err;
-			err << "OREPHELPER(getContext): не найден контекст " << cname;
+			err << "OREPHELPER(getContext): п╫п╣ п╫п╟п╧п╢п╣п╫ п╨п╬п╫я┌п╣п╨я│я┌ " << cname;
 	  		unideb[Debug::WARN] << err.str() << endl;
 			throw ORepFailed(err.str());
         }
@@ -106,19 +106,19 @@ namespace ORepHelpers
 	    catch(CORBA::SystemException& ex)
 	    {
 			ostringstream err;
-			err << "OREPHELPER(getContext): поймали CORBA::SystemException: " << ex.NP_minorString();
+			err << "OREPHELPER(getContext): п©п╬п╧п╪п╟п╩п╦ CORBA::SystemException: " << ex.NP_minorString();
 			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] <<  err.str() << endl;
 			throw ORepFailed(err.str());
 	    }	
 	    catch(CORBA::Exception&)
     	{
-			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "OREPHELPER(getContext): поймали CORBA::Exception." << endl;
+			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "OREPHELPER(getContext): п©п╬п╧п╪п╟п╩п╦ CORBA::Exception." << endl;
 			throw ORepFailed();
 	    }
     	catch(omniORB::fatalException& fe)
 	    {
 			ostringstream err;
-			err << "OREPHELPER(getContext): поймали omniORB::fatalException:";
+			err << "OREPHELPER(getContext): п©п╬п╧п╪п╟п╩п╦ omniORB::fatalException:";
 			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] <<  err << endl;
         	unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "  file: " << fe.file() << endl;
 			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "  line: " << fe.line() << endl;
@@ -126,18 +126,18 @@ namespace ORepHelpers
 			throw ORepFailed(err.str());
 	    }
 
-		unideb[Debug::REPOSITORY] << "getContext: получили "<< cname << endl;
+		unideb[Debug::REPOSITORY] << "getContext: п©п╬п╩я┐я┤п╦п╩п╦ "<< cname << endl;
 
-		// Если _var
+		// п∙я│п╩п╦ _var
 // 	 	return CosNaming::NamingContext::_duplicate(ctx);
 		return ctx._retn();
 
-		// Если _ptr
+		// п∙я│п╩п╦ _ptr
 //		return ctx;
 	}
 
     // ---------------------------------------------------------------------------------------------------------------
-    /*!	\param orb - ссылка на ORB */
+    /*!	\param orb - я│я│я▀п╩п╨п╟ п╫п╟ ORB */
     CosNaming::NamingContext_ptr getRootNamingContext(CORBA::ORB_ptr orb, const string& nsName, int timeoutSec)
     {
 		CosNaming::NamingContext_var rootContext;
@@ -149,7 +149,7 @@ namespace ORepHelpers
 		rootContext = CosNaming::NamingContext::_narrow(initServ);
 		if (CORBA::is_nil(rootContext))
 		{
-    		string err("ORepHelpers: Не удалось преобразовать ссылку к нужному типу.");
+    		string err("ORepHelpers: п²п╣ я┐п╢п╟п╩п╬я│я▄ п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟я┌я▄ я│я│я▀п╩п╨я┐ п╨ п╫я┐п╤п╫п╬п╪я┐ я┌п╦п©я┐.");
 			throw ORepFailed(err.c_str());
 		}
 		
@@ -165,7 +165,7 @@ namespace ORepHelpers
 	catch (CORBA::COMM_FAILURE& ex)
 	{
 		ostringstream err;
-		err << "ORepHelpers(getRootNamingContext): Не смог получить ссылку на контекст ->" << nsName;
+		err << "ORepHelpers(getRootNamingContext): п²п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╨п╬п╫я┌п╣п╨я│я┌ ->" << nsName;
 		throw ORepFailed(err.str());
 	}
 	catch(omniORB::fatalException& ex)
@@ -181,16 +181,16 @@ namespace ORepHelpers
 
 	unideb[Debug::REPOSITORY] << "OREPHELP: gett root context ok"<< endl;
 
-//	// Если создан как _ptr
+//	// п∙я│п╩п╦ я│п╬п╥п╢п╟п╫ п╨п╟п╨ _ptr
 //	return rootContext;
 
-//	Если создан как _var
+//	п∙я│п╩п╦ я│п╬п╥п╢п╟п╫ п╨п╟п╨ _var
 	return rootContext._retn();
     }
     // ---------------------------------------------------------------------------------------------------------------
     /*!
-     *	\param fname - полное имя включающее в себя путь ("Root/Section1/name|Node:Alias")
-     *	\param brk  - используемый символ разделитель      
+     *	\param fname - п©п╬п╩п╫п╬п╣ п╦п╪я▐ п╡п╨п╩я▌я┤п╟я▌я┴п╣п╣ п╡ я│п╣п╠я▐ п©я┐я┌я▄ ("Root/Section1/name|Node:Alias")
+     *	\param brk  - п╦я│п©п╬п╩я▄п╥я┐п╣п╪я▀п╧ я│п╦п╪п╡п╬п╩ я─п╟п╥п╢п╣п╩п╦я┌п╣п╩я▄      
     */
     const string getShortName( const string& fname, const std::string brk )
     {
@@ -217,9 +217,9 @@ namespace ORepHelpers
 
     // ---------------------------------------------------------------------------------------------------------------
     /*!
-     *	\param fullName - полное имя включающее в себя путь
-     *	\param brk  - используемый символ разделитель      
-     *  \note Функция возвращает путь без последнего символа разделителя ("Root/Section1/name" -> "Root/Section1")
+     *	\param fullName - п©п╬п╩п╫п╬п╣ п╦п╪я▐ п╡п╨п╩я▌я┤п╟я▌я┴п╣п╣ п╡ я│п╣п╠я▐ п©я┐я┌я▄
+     *	\param brk  - п╦я│п©п╬п╩я▄п╥я┐п╣п╪я▀п╧ я│п╦п╪п╡п╬п╩ я─п╟п╥п╢п╣п╩п╦я┌п╣п╩я▄      
+     *  \note п╓я┐п╫п╨я├п╦я▐ п╡п╬п╥п╡я─п╟я┴п╟п╣я┌ п©я┐я┌я▄ п╠п╣п╥ п©п╬я│п╩п╣п╢п╫п╣пЁп╬ я│п╦п╪п╡п╬п╩п╟ я─п╟п╥п╢п╣п╩п╦я┌п╣п╩я▐ ("Root/Section1/name" -> "Root/Section1")
     */
     const string getSectionName( const string& fullName, const std::string brk )
     {
@@ -232,8 +232,8 @@ namespace ORepHelpers
 
     // ---------------------------------------------------------------------------------------------------------------
 	/*
-	 *	Запрещенные символы см. UniSetTypes::BadSymbols[]
-	 *	\return Если не найдено запрещенных символов то будет возвращен 0, иначе найденный символ
+	 *	п≈п╟п©я─п╣я┴п╣п╫п╫я▀п╣ я│п╦п╪п╡п╬п╩я▀ я│п╪. UniSetTypes::BadSymbols[]
+	 *	\return п∙я│п╩п╦ п╫п╣ п╫п╟п╧п╢п╣п╫п╬ п╥п╟п©я─п╣я┴п╣п╫п╫я▀я┘ я│п╦п╪п╡п╬п╩п╬п╡ я┌п╬ п╠я┐п╢п╣я┌ п╡п╬п╥п╡я─п╟я┴п╣п╫ 0, п╦п╫п╟я┤п╣ п╫п╟п╧п╢п╣п╫п╫я▀п╧ я│п╦п╪п╡п╬п╩
 	*/
     char checkBadSymbols(const string& str)
     {
@@ -261,7 +261,7 @@ namespace ORepHelpers
 			bad+="', ";
 
 		}
-		string err("Имя не должно сожержать символы: "+ bad);
+		string err("п≤п╪я▐ п╫п╣ п╢п╬п╩п╤п╫п╬ я│п╬п╤п╣я─п╤п╟я┌я▄ я│п╦п╪п╡п╬п╩я▀: "+ bad);
 		return err;
 	}
     // ---------------------------------------------------------------------------------------------------------------

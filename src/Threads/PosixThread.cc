@@ -62,7 +62,7 @@ void PosixThread::start( void *args )
 
 	reinit();
 
-//	cout << "Создаю поток..."<< endl;
+//	cout << "п║п╬п╥п╢п╟я▌ п©п╬я┌п╬п╨..."<< endl;
 	
 	if( pthread_create( &tid, attrPtr, PosixThread::funcp, args ) == -1 )
 		{/*throw ThreadNotCreate;*/}
@@ -72,7 +72,7 @@ void PosixThread::start( void *args )
 		pthread_attr_destroy( attrPtr );
 	}
 	
-//	cout << "создал поток..."<< endl;
+//	cout << "я│п╬п╥п╢п╟п╩ п©п╬я┌п╬п╨..."<< endl;
 }
 
 //----------------------------------------------------------------------------------------
@@ -86,7 +86,7 @@ void PosixThread::stop()
 	countThreads--;
 
 	pthread_exit( NULL );	
-//	cout << "PosixThread: завершил поток"<< endl;
+//	cout << "PosixThread: п╥п╟п╡п╣я─я┬п╦п╩ п©п╬я┌п╬п╨"<< endl;
 //	tid = 0;
 //	countThreads--;
 
@@ -100,7 +100,7 @@ void PosixThread::reinit()
 		
 	attrPtr = new pthread_attr_t;
 	if( pthread_attr_init( attrPtr ) == -1 )
-		{/*throw AttrNotInit;*/cerr << "PosixThread(reinit): не удалось..."<< endl;}
+		{/*throw AttrNotInit;*/cerr << "PosixThread(reinit): п╫п╣ я┐п╢п╟п╩п╬я│я▄..."<< endl;}
 		
 }
 //----------------------------------------------------------------------------------------

@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *  \brief Класс работы с конфигурацией
+ *  \brief п п╩п╟я│я│ я─п╟п╠п╬я┌я▀ я│ п╨п╬п╫я└п╦пЁя┐я─п╟я├п╦п╣п╧
  *  \author Vitaly Lipatov, Pavel Vainerman
  *  \date   $Date: 2008/02/21 19:59:57 $
  *  \version $Id: Configuration.h,v 1.25 2008/02/21 19:59:57 vpashka Exp $
@@ -27,7 +27,7 @@
 #ifndef Configuration_H_
 #define Configuration_H_
 // --------------------------------------------------------------------------
-// Убрать UniXML.h, сменить unixml на указатель!!!!!!!!
+// пёп╠я─п╟я┌я▄ UniXML.h, я│п╪п╣п╫п╦я┌я▄ unixml п╫п╟ я┐п╨п╟п╥п╟я┌п╣п╩я▄!!!!!!!!
 #include <string>
 #include <ostream>
 #include "UniXML.h"
@@ -39,61 +39,61 @@
 
 class SystemGuard;
 /*
-	В функции main нужно вызвать конструктор класса Configuration
-	fileConf - название файла конфигурации, который будет открываться
-	из в каталоге conf того каталога, откуда была запущена программа.
-	getTopDir позволяет получить каталог, откуда запущена программа
+	п▓ я└я┐п╫п╨я├п╦п╦ main п╫я┐п╤п╫п╬ п╡я▀п╥п╡п╟я┌я▄ п╨п╬п╫я│я┌я─я┐п╨я┌п╬я─ п╨п╩п╟я│я│п╟ Configuration
+	fileConf - п╫п╟п╥п╡п╟п╫п╦п╣ я└п╟п╧п╩п╟ п╨п╬п╫я└п╦пЁя┐я─п╟я├п╦п╦, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╬я┌п╨я─я▀п╡п╟я┌я▄я│я▐
+	п╦п╥ п╡ п╨п╟я┌п╟п╩п╬пЁп╣ conf я┌п╬пЁп╬ п╨п╟я┌п╟п╩п╬пЁп╟, п╬я┌п╨я┐п╢п╟ п╠я▀п╩п╟ п╥п╟п©я┐я┴п╣п╫п╟ п©я─п╬пЁя─п╟п╪п╪п╟.
+	getTopDir п©п╬п╥п╡п╬п╩я▐п╣я┌ п©п╬п╩я┐я┤п╦я┌я▄ п╨п╟я┌п╟п╩п╬пЁ, п╬я┌п╨я┐п╢п╟ п╥п╟п©я┐я┴п╣п╫п╟ п©я─п╬пЁя─п╟п╪п╪п╟
 */
 
 namespace UniSetTypes
 {
 	/*!
-		 Конфигуратор системы 
-		 \note В случае обнаружения критической ошибки в настроечном файле файле. 
-		 Вырабатывает исключение и прекращает работу.
+		 п п╬п╫я└п╦пЁя┐я─п╟я┌п╬я─ я│п╦я│я┌п╣п╪я▀ 
+		 \note п▓ я│п╩я┐я┤п╟п╣ п╬п╠п╫п╟я─я┐п╤п╣п╫п╦я▐ п╨я─п╦я┌п╦я┤п╣я│п╨п╬п╧ п╬я┬п╦п╠п╨п╦ п╡ п╫п╟я│я┌я─п╬п╣я┤п╫п╬п╪ я└п╟п╧п╩п╣ я└п╟п╧п╩п╣. 
+		 п▓я▀я─п╟п╠п╟я┌я▀п╡п╟п╣я┌ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣ п╦ п©я─п╣п╨я─п╟я┴п╟п╣я┌ я─п╟п╠п╬я┌я┐.
 	*/
 	class Configuration
 	{
 	public:
 			virtual ~Configuration();
 
-			/*!	конфигурирование xml-файлом ( предпочтительный способ )	*/
+			/*!	п╨п╬п╫я└п╦пЁя┐я─п╦я─п╬п╡п╟п╫п╦п╣ xml-я└п╟п╧п╩п╬п╪ ( п©я─п╣п╢п©п╬я┤я┌п╦я┌п╣п╩я▄п╫я▀п╧ я│п©п╬я│п╬п╠ )	*/
 			Configuration( int argc, const char* const* argv, const std::string xmlfile="" );
 
-			/*!	конфигурирование xml-файлом	*/
+			/*!	п╨п╬п╫я└п╦пЁя┐я─п╦я─п╬п╡п╟п╫п╦п╣ xml-я└п╟п╧п╩п╬п╪	*/
 			Configuration( int argc, const char* const* argv, ObjectIndex* oind, const std::string xmlfile="" );
 
-			/*! устаревший вариант, для поддержки старых проектов */
+			/*! я┐я│я┌п╟я─п╣п╡я┬п╦п╧ п╡п╟я─п╦п╟п╫я┌, п╢п╩я▐ п©п╬п╢п╢п╣я─п╤п╨п╦ я│я┌п╟я─я▀я┘ п©я─п╬п╣п╨я┌п╬п╡ */
 			Configuration( int argc, const char* const* argv,
 							const std::string fileConf, UniSetTypes::ObjectInfo* objectsMap );
 
-		/// Получить значение полей с путём path
+		/// п÷п╬п╩я┐я┤п╦я┌я▄ п╥п╫п╟я┤п╣п╫п╦п╣ п©п╬п╩п╣п╧ я│ п©я┐я┌я▒п╪ path
 		std::string getField(const std::string path);
-		/// Получить число из поле с путём path
+		/// п÷п╬п╩я┐я┤п╦я┌я▄ я┤п╦я│п╩п╬ п╦п╥ п©п╬п╩п╣ я│ п©я┐я┌я▒п╪ path
 		int getIntField(const std::string path);
-		/// Получить число из поле с путём path (или def, если значение <= 0)
+		/// п÷п╬п╩я┐я┤п╦я┌я▄ я┤п╦я│п╩п╬ п╦п╥ п©п╬п╩п╣ я│ п©я┐я┌я▒п╪ path (п╦п╩п╦ def, п╣я│п╩п╦ п╥п╫п╟я┤п╣п╫п╦п╣ <= 0)
 		int getPIntField(const std::string path, int def);
 
 		xmlNode* findNode(xmlNode* node, const std::string searchnode, const std::string name = "" );
 		
-		// Получить узел
+		// п÷п╬п╩я┐я┤п╦я┌я▄ я┐п╥п╣п╩
 		xmlNode* getNode(const std::string& path);
-		// Получить указанное свойство пути
+		// п÷п╬п╩я┐я┤п╦я┌я▄ я┐п╨п╟п╥п╟п╫п╫п╬п╣ я│п╡п╬п╧я│я┌п╡п╬ п©я┐я┌п╦
 		std::string getProp(xmlNode*, const std::string name);
 		int getIntProp(xmlNode*, const std::string name);
 		int getPIntProp(xmlNode*, const std::string name, int def);
-		// Получить указанное свойство по имени узла
+		// п÷п╬п╩я┐я┤п╦я┌я▄ я┐п╨п╟п╥п╟п╫п╫п╬п╣ я│п╡п╬п╧я│я┌п╡п╬ п©п╬ п╦п╪п╣п╫п╦ я┐п╥п╩п╟
 		std::string getPropByNodeName(const std::string& nodename, const std::string& prop);
 
 		static std::ostream& help(std::ostream& os);
 
-		std::string getRootDir(); /*!< Получение каталога, в котором находится выполняющаяся программа */
+		std::string getRootDir(); /*!< п÷п╬п╩я┐я┤п╣п╫п╦п╣ п╨п╟я┌п╟п╩п╬пЁп╟, п╡ п╨п╬я┌п╬я─п╬п╪ п╫п╟я┘п╬п╢п╦я┌я│я▐ п╡я▀п©п╬п╩п╫я▐я▌я┴п╟я▐я│я▐ п©я─п╬пЁя─п╟п╪п╪п╟ */
 		inline int getArgc(){ return _argc; }
 		inline const char* const* getArgv() const { return _argv; }
-		inline ObjectId getTimerService() const { return localTimerService; } /*!< получение идентификатора TimerServic-а */
-		inline ObjectId getDBServer() const { return localDBServer; }		/*!< получение идентификатора DBServer-а */
-		inline ObjectId getInfoServer() const { return localInfoServer; }	/*!< получение идентификатора InfoServer-а */
-		inline ObjectId getLocalNode() const { return localNode; }		/*!< получение идентификатора локального узла */
+		inline ObjectId getTimerService() const { return localTimerService; } /*!< п©п╬п╩я┐я┤п╣п╫п╦п╣ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╟ TimerServic-п╟ */
+		inline ObjectId getDBServer() const { return localDBServer; }		/*!< п©п╬п╩я┐я┤п╣п╫п╦п╣ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╟ DBServer-п╟ */
+		inline ObjectId getInfoServer() const { return localInfoServer; }	/*!< п©п╬п╩я┐я┤п╣п╫п╦п╣ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╟ InfoServer-п╟ */
+		inline ObjectId getLocalNode() const { return localNode; }		/*!< п©п╬п╩я┐я┤п╣п╫п╦п╣ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╟ п╩п╬п╨п╟п╩я▄п╫п╬пЁп╬ я┐п╥п╩п╟ */
 		inline const std::string getNSName() const { return NSName; }		
 	
 		// repository
@@ -120,7 +120,7 @@ namespace UniSetTypes
 		UniSetTypes::ObjectId getNodeID( const std::string name, const std::string alias="" );
 
 		inline const std::string getConfFileName() const { return fileConfName; }
-		inline std::string getImagesDir() const { return imagesDir; }	// временно
+		inline std::string getImagesDir() const { return imagesDir; }	// п╡я─п╣п╪п╣п╫п╫п╬
 
 		inline int getHeartBeatTime(){ return heartbeat_msec; }
 
@@ -136,11 +136,11 @@ namespace UniSetTypes
 		inline bool isLocalIOR(){ return localIOR; }
 		inline bool isTransientIOR(){ return transientIOR; }
 		
-		/*! получить значение указанного параметра, или значение по умолчанию */
+		/*! п©п╬п╩я┐я┤п╦я┌я▄ п╥п╫п╟я┤п╣п╫п╦п╣ я┐п╨п╟п╥п╟п╫п╫п╬пЁп╬ п©п╟я─п╟п╪п╣я┌я─п╟, п╦п╩п╦ п╥п╫п╟я┤п╣п╫п╦п╣ п©п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ */
 		std::string getArgParam(const std::string name, const std::string defval="");
-		/*! получить числовое значение параметра, если не число, то 0. Если параметра нет, используется значение defval */
+		/*! п©п╬п╩я┐я┤п╦я┌я▄ я┤п╦я│п╩п╬п╡п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ п©п╟я─п╟п╪п╣я┌я─п╟, п╣я│п╩п╦ п╫п╣ я┤п╦я│п╩п╬, я┌п╬ 0. п∙я│п╩п╦ п©п╟я─п╟п╪п╣я┌я─п╟ п╫п╣я┌, п╦я│п©п╬п╩я▄п╥я┐п╣я┌я│я▐ п╥п╫п╟я┤п╣п╫п╦п╣ defval */
 		int getArgInt(const std::string name, const std::string defval="");
-		/*! получить числовое значение параметра, но если оно не положительное, вернуть defval */
+		/*! п©п╬п╩я┐я┤п╦я┌я▄ я┤п╦я│п╩п╬п╡п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ п©п╟я─п╟п╪п╣я┌я─п╟, п╫п╬ п╣я│п╩п╦ п╬п╫п╬ п╫п╣ п©п╬п╩п╬п╤п╦я┌п╣п╩я▄п╫п╬п╣, п╡п╣я─п╫я┐я┌я▄ defval */
 		int getArgPInt(const std::string name, int defval);
 		int getArgPInt(const std::string name, const std::string strdefval, int defval);
 
@@ -156,16 +156,16 @@ namespace UniSetTypes
 			return lnodes.end();
 		}
 		
-		/*! интерфейс к карте сообщений	*/
+		/*! п╦п╫я┌п╣я─я└п╣п╧я│ п╨ п╨п╟я─я┌п╣ я│п╬п╬п╠я┴п╣п╫п╦п╧	*/
 		MessageInterface* mi;
 		
-		/*! интерфейс к карте объектов */
+		/*! п╦п╫я┌п╣я─я└п╣п╧я│ п╨ п╨п╟я─я┌п╣ п╬п╠я┼п╣п╨я┌п╬п╡ */
 		ObjectIndex* oind;
 		
-		/*! интерфейс к работе с локальнымми ior-файлами */
+		/*! п╦п╫я┌п╣я─я└п╣п╧я│ п╨ я─п╟п╠п╬я┌п╣ я│ п╩п╬п╨п╟п╩я▄п╫я▀п╪п╪п╦ ior-я└п╟п╧п╩п╟п╪п╦ */
 		IORFile iorfile;
 
-		/*! указатель на конфигурационный xml */
+		/*! я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ п╨п╬п╫я└п╦пЁя┐я─п╟я├п╦п╬п╫п╫я▀п╧ xml */
 		inline UniXML* getConfXML(){ return &unixml; }
 
 		CORBA::ORB_ptr getORB() { return CORBA::ORB::_duplicate(orb); }
@@ -197,12 +197,12 @@ namespace UniSetTypes
 		CORBA::ORB_var orb;
 		CORBA::PolicyList policyList;
 		
-		const std::string NSName;		/*!< имя сервиса именования на ланной машине (обычно "NameService") */
-		unsigned int countOfNet;	/*!< количество резервных каналов */
-		unsigned int repeatCount;	/*!< количество попыток получить доступ к удаленному объекту
-											прежде чем будет выработано исключение TimeOut.		*/
+		const std::string NSName;		/*!< п╦п╪я▐ я│п╣я─п╡п╦я│п╟ п╦п╪п╣п╫п╬п╡п╟п╫п╦я▐ п╫п╟ п╩п╟п╫п╫п╬п╧ п╪п╟я┬п╦п╫п╣ (п╬п╠я▀я┤п╫п╬ "NameService") */
+		unsigned int countOfNet;	/*!< п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ я─п╣п╥п╣я─п╡п╫я▀я┘ п╨п╟п╫п╟п╩п╬п╡ */
+		unsigned int repeatCount;	/*!< п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п©п╬п©я▀я┌п╬п╨ п©п╬п╩я┐я┤п╦я┌я▄ п╢п╬я│я┌я┐п© п╨ я┐п╢п╟п╩п╣п╫п╫п╬п╪я┐ п╬п╠я┼п╣п╨я┌я┐
+											п©я─п╣п╤п╢п╣ я┤п╣п╪ п╠я┐п╢п╣я┌ п╡я▀я─п╟п╠п╬я┌п╟п╫п╬ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣ TimeOut.		*/
 
-		unsigned int repeatTimeout;	/*!< пауза между попытками [мс] */
+		unsigned int repeatTimeout;	/*!< п©п╟я┐п╥п╟ п╪п╣п╤п╢я┐ п©п╬п©я▀я┌п╨п╟п╪п╦ [п╪я│] */
 
 		UniSetTypes::ListOfNode lnodes;
 
@@ -239,15 +239,15 @@ namespace UniSetTypes
 		int heartbeat_msec;
 	};
 
-	/*! Глобальный указатель на конфигуратор */
+	/*! п⌠п╩п╬п╠п╟п╩я▄п╫я▀п╧ я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ п╨п╬п╫я└п╦пЁя┐я─п╟я┌п╬я─ */
 	extern Configuration* conf;
 	
-	/*! Глобальный объект для вывода логов */
+	/*! п⌠п╩п╬п╠п╟п╩я▄п╫я▀п╧ п╬п╠я┼п╣п╨я┌ п╢п╩я▐ п╡я▀п╡п╬п╢п╟ п╩п╬пЁп╬п╡ */
 	extern DebugStream unideb;
 	
 	
-	// Инициализация UniSetTypes::conf.
-	// ( учитываются параметры командной строки --confile и --id-from-config )
+	// п≤п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ UniSetTypes::conf.
+	// ( я┐я┤п╦я┌я▀п╡п╟я▌я┌я│я▐ п©п╟я─п╟п╪п╣я┌я─я▀ п╨п╬п╪п╟п╫п╢п╫п╬п╧ я│я┌я─п╬п╨п╦ --confile п╦ --id-from-config )
 	void uniset_init( int argc, const char* const* argv, const std::string xmlfile="configure.xml" );
 	
 	

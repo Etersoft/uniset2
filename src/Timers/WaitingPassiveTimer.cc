@@ -38,7 +38,7 @@ void WaitingPassiveTimer::checkCount()
 	if ( countTimers >= MAX_COUNT_THRPASSIVE_TIMERS )
 	{
 		char err[200];
-		sprintf(err,"LimitThrPassiveTimers: превышено максимальное количество таймеров %d", MAX_COUNT_THRPASSIVE_TIMERS);
+		sprintf(err,"LimitThrPassiveTimers: п©я─п╣п╡я▀я┬п╣п╫п╬ п╪п╟п╨я│п╦п╪п╟п╩я▄п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ я┌п╟п╧п╪п╣я─п╬п╡ %d", MAX_COUNT_THRPASSIVE_TIMERS);
 		throw LimitWaitingPTimers(err); 
 	}
 	
@@ -62,7 +62,7 @@ WaitingPassiveTimer::WaitingPassiveTimer( void(*fp)(void) ):
 */
 // ------------------------------------------------------------------------------------------
 /*!
- * \param  *value - указатель на объект подлежащий изменению
+ * \param  *value - я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ п╬п╠я┼п╣п╨я┌ п©п╬п╢п╩п╣п╤п╟я┴п╦п╧ п╦п╥п╪п╣п╫п╣п╫п╦я▌
 */
 WaitingPassiveTimer::WaitingPassiveTimer(bool *value )throw(LimitWaitingPTimers):
 	pValue(value),
@@ -109,7 +109,7 @@ void WaitingPassiveTimer::work()
 	check = true;
 */	
 	stop();
-//	cout << "Timer: завершил поток..."<< endl;
+//	cout << "Timer: п╥п╟п╡п╣я─я┬п╦п╩ п©п╬я┌п╬п╨..."<< endl;
 }
 // ------------------------------------------------------------------------------------------
 void WaitingPassiveTimer::terminate()

@@ -71,7 +71,7 @@ bool UObject_SK::alarm( UniSetTypes::ObjectId code, bool state )
 	if( code == UniSetTypes::DefaultObjectId )
 	{
 		dlog[Debug::CRIT]  << getName()
-							<< "(alarm): ÐÏÐÙÔËÁ ÐÏÓÌÁÔØ ÓÏÏÂÝÅÎÉÅ Ó DefaultObjectId" 
+							<< "(alarm): Ð¿Ð¾Ð¿Ñ‹Ñ‚ÐºÐ° Ð¿Ð¾ÑÐ»Ð°Ñ‚ÑŒ ÑÐ¾Ð¾Ð±Ñ‰ÐµÐ½Ð¸Ðµ Ñ DefaultObjectId" 
 							<< endl;
 		return false;	
 	}
@@ -139,7 +139,7 @@ void UObject_SK::processingMessage( UniSetTypes::VoidMessage* msg )
 // -----------------------------------------------------------------------------
 void UObject_SK::setState( UniSetTypes::ObjectId sid, bool state )
 {
-#warning ÓÄÅÌÁÔØ setState ÏÔÄÅÌØÎÏÊ ÆÕÎËÃÉÅÊ, Á ÎÅ ÞÅÒÅÚ setValue
+#warning ÑÐ´ÐµÐ»Ð°Ñ‚ÑŒ setState Ð¾Ñ‚Ð´ÐµÐ»ÑŒÐ½Ð¾Ð¹ Ñ„ÑƒÐ½ÐºÑ†Ð¸ÐµÐ¹, Ð° Ð½Ðµ Ñ‡ÐµÑ€ÐµÐ· setValue
 	setValue(sid, state ? 1 : 0 );
 }
 // -----------------------------------------------------------------------------
@@ -156,9 +156,9 @@ void UObject_SK::sigterm( int signo )
 // -----------------------------------------------------------------------------
 bool UObject_SK::activateObject()
 {
-	// ÂÌÏËÉÒÏ×ÁÎÉÅ ÏÂÒÁÂÏÔËÉ Startup 
-	// ÐÏËÁ ÎÅ ÐÒÏÊÄ£Ô ÉÎÉÃÉÁÌÉÚÁÃÉÑ ÄÁÔÞÉËÏ×
-	// ÓÍ. sysCommand()
+	// Ð±Ð»Ð¾ÐºÐ¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ Ð¾Ð±Ñ€Ð°Ð±Ð¾Ñ‚ÐºÐ¸ Startup 
+	// Ð¿Ð¾ÐºÐ° Ð½Ðµ Ð¿Ñ€Ð¾Ð¹Ð´Ñ‘Ñ‚ Ð¸Ð½Ð¸Ñ†Ð¸Ð°Ð»Ð¸Ð·Ð°Ñ†Ð¸Ñ Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÐ¾Ð²
+	// ÑÐ¼. sysCommand()
 	{
 		activated = false;
 		UniSetObject::activateObject();
@@ -173,7 +173,7 @@ void UObject_SK::askThreshold( UniSetTypes::ObjectId sid, UniSetTypes::Threshold
 							CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Long sensibility,
 							UniSetTypes::ObjectId backid )
 {
-#warning askThreshold îå òåáìéúï÷áîá...
+#warning askThreshold ÐÐ• Ð Ð•ÐÐ›Ð˜Ð—ÐžÐ’ÐÐÐ...
 //	shm.askThreshold( sid,tid,cmd,lowLimit,hiLimit,sensibility,backid);
 }
 // -----------------------------------------------------------------------------
@@ -188,11 +188,11 @@ void UObject_SK::waitSM( int wait_msec )
 	{
 		ostringstream err;
 		err << myname 
-			<< "(waitSM): îÅ ÄÏÖÄÁÌÉÓØ ÇÏÔÏ×ÎÏÓÔÉ(exist) SharedMemory Ë ÒÁÂÏÔÅ × ÔÅÞÅÎÉÅ " 
-			<< wait_msec << " ÍÓÅË";
+			<< "(waitSM): ÐÐµ Ð´Ð¾Ð¶Ð´Ð°Ð»Ð¸ÑÑŒ Ð³Ð¾Ñ‚Ð¾Ð²Ð½Ð¾ÑÑ‚Ð¸(exist) SharedMemory Ðº Ñ€Ð°Ð±Ð¾Ñ‚Ðµ Ð² Ñ‚ÐµÑ‡ÐµÐ½Ð¸Ðµ " 
+			<< wait_msec << " Ð¼ÑÐµÐº";
 
 		dlog[Debug::CRIT] << err.str() << endl;
-		kill(SIGTERM,getpid());	// ÐÒÅÒÙ×ÁÅÍ (ÐÅÒÅÚÁÐÕÓËÁÅÍ) ÐÒÏÃÅÓÓ...
+		kill(SIGTERM,getpid());	// Ð¿Ñ€ÐµÑ€Ñ‹Ð²Ð°ÐµÐ¼ (Ð¿ÐµÑ€ÐµÐ·Ð°Ð¿ÑƒÑÐºÐ°ÐµÐ¼) Ð¿Ñ€Ð¾Ñ†ÐµÑÑ...
 		throw SystemError(err.str());
 	}
 
@@ -202,11 +202,11 @@ void UObject_SK::waitSM( int wait_msec )
 		{
 			ostringstream err;
 			err << myname 
-				<< "(waitSM): îÅ ÄÏÖÄÁÌÉÓØ ÇÏÔÏ×ÎÏÓÔÉ(work) SharedMemory Ë ÒÁÂÏÔÅ × ÔÅÞÅÎÉÅ " 
-				<< wait_msec << " ÍÓÅË";
+				<< "(waitSM): ÐÐµ Ð´Ð¾Ð¶Ð´Ð°Ð»Ð¸ÑÑŒ Ð³Ð¾Ñ‚Ð¾Ð²Ð½Ð¾ÑÑ‚Ð¸(work) SharedMemory Ðº Ñ€Ð°Ð±Ð¾Ñ‚Ðµ Ð² Ñ‚ÐµÑ‡ÐµÐ½Ð¸Ðµ " 
+				<< wait_msec << " Ð¼ÑÐµÐº";
 	
 			dlog[Debug::CRIT] << err.str() << endl;
-			kill(SIGTERM,getpid());	// ÐÒÅÒÙ×ÁÅÍ (ÐÅÒÅÚÁÐÕÓËÁÅÍ) ÐÒÏÃÅÓÓ...
+			kill(SIGTERM,getpid());	// Ð¿Ñ€ÐµÑ€Ñ‹Ð²Ð°ÐµÐ¼ (Ð¿ÐµÑ€ÐµÐ·Ð°Ð¿ÑƒÑÐºÐ°ÐµÐ¼) Ð¿Ñ€Ð¾Ñ†ÐµÑÑ...
 			throw SystemError(err.str());
 		}
 	}
@@ -220,7 +220,7 @@ void UObject_SK::callback()
 		return;
 	try
 	{	
-#warning óÄÅÌÁÔØ ÒÁÂÏÔÕ Ó TestMode ÎÁ ÏÓÎÏ×Å ÚÁËÁÚÁ!
+#warning Ð¡Ð´ÐµÐ»Ð°Ñ‚ÑŒ Ñ€Ð°Ð±Ð¾Ñ‚Ñƒ Ñ TestMode Ð½Ð° Ð¾ÑÐ½Ð¾Ð²Ðµ Ð·Ð°ÐºÐ°Ð·Ð°!
 		isTestMode = checkTestMode();
 		if( trTestMode.change(isTestMode) )
 			testMode(isTestMode);
@@ -234,17 +234,17 @@ void UObject_SK::callback()
 			return;
 		}
 
-		// ÐÒÏ×ÅÒËÁ ÔÁÊÍÅÒÏ×
+		// Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ° Ñ‚Ð°Ð¹Ð¼ÐµÑ€Ð¾Ð²
 		checkTimers(this);
 
-#warning óÄÅÌÁÔØ ÒÁÂÏÔÕ Ó ResetMsg ÎÁ ÏÓÎÏ×Å askTimer!
+#warning Ð¡Ð´ÐµÐ»Ð°Ñ‚ÑŒ Ñ€Ð°Ð±Ð¾Ñ‚Ñƒ Ñ ResetMsg Ð½Ð° Ð¾ÑÐ½Ð¾Ð²Ðµ askTimer!
 		if( resetMsgTime>0 && trResetMsg.hi(ptResetMsg.checkTime()) )
 		{
 //			cout << myname <<  ": ********* reset messages *********" << endl;
 			resetMsg();
 		}
 
-		// ÏÂÒÁÂÏÔËÁ ÓÏÏÂÝÅÎÉÊ (ÔÁÊÍÅÒÏ× É Ô.Ð.)
+		// Ð¾Ð±Ñ€Ð°Ð±Ð¾Ñ‚ÐºÐ° ÑÐ¾Ð¾Ð±Ñ‰ÐµÐ½Ð¸Ð¹ (Ñ‚Ð°Ð¹Ð¼ÐµÑ€Ð¾Ð² Ð¸ Ñ‚.Ð¿.)
 		for( int i=0; i<30; i++ )
 		{
 			if( !receiveMessage(msg) )
@@ -254,10 +254,10 @@ void UObject_SK::callback()
 			updatePreviousValues();
 		}
 
-		// ÷ÙÐÏÌÎÅÎÉÅ ÛÁÇÁ ÐÒÏÇÒÁÍÍÙ
+		// Ð’Ñ‹Ð¿Ð¾Ð»Ð½ÐµÐ½Ð¸Ðµ ÑˆÐ°Ð³Ð° Ð¿Ñ€Ð¾Ð³Ñ€Ð°Ð¼Ð¼Ñ‹
 		step();
 
-		// ÏÂÎÏ×ÌÅÎÉÅ ×ÙÈÏÄÏ×
+		// Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ðµ Ð²Ñ‹Ñ…Ð¾Ð´Ð¾Ð²
 		updateOutputs(false);
 		updatePreviousValues();
 	}
@@ -267,7 +267,7 @@ void UObject_SK::callback()
 	}
 	catch(CORBA::SystemException& ex)
 	{
-		dlog[Debug::CRIT] << myname << "(execute): óORBA::SystemException: "
+		dlog[Debug::CRIT] << myname << "(execute): Ð¡ORBA::SystemException: "
 			<< ex.NP_minorString() << endl;
 	}
 	catch(...)
@@ -325,7 +325,7 @@ void UObject_SK::askSensors( UniversalIO::UIOCommand cmd )
 		{
 			dlog[Debug::CRIT] << myname << "(askSensors): catch(...)" << endl;
 		}
-#warning óÄÅÌÁÔØ ÐÁÕÚÕ ÍÅÖÄÕ ÚÁËÁÚÁÍÉ ÎÁÓÔÒÁÉ×ÁÅÍÏÊ	ÉÚ ËÏÎÆ. ÆÁÊÌÁ
+#warning Ð¡Ð´ÐµÐ»Ð°Ñ‚ÑŒ Ð¿Ð°ÑƒÐ·Ñƒ Ð¼ÐµÐ¶Ð´Ñƒ Ð·Ð°ÐºÐ°Ð·Ð°Ð¼Ð¸ Ð½Ð°ÑÑ‚Ñ€Ð°Ð¸Ð²Ð°ÐµÐ¼Ð¾Ð¹	Ð¸Ð· ÐºÐ¾Ð½Ñ„. Ñ„Ð°Ð¹Ð»Ð°
 		msleep(2000);
 	}
 }
@@ -335,8 +335,8 @@ void UObject_SK::setInfo( UniSetTypes::ObjectId code, bool state )
 	alarm( code, state );
 	if( state )
 	{
-#warning óÄÅÌÁÔØ ×ÒÅÍÑ ÎÁÓÔÒÁÉ×ÁÅÍÙÍ
-		msleep(50);	// ÓÂÒÁÓÙ×ÁÅÍ ÓÒÁÚÕ...
+#warning Ð¡Ð´ÐµÐ»Ð°Ñ‚ÑŒ Ð²Ñ€ÐµÐ¼Ñ Ð½Ð°ÑÑ‚Ñ€Ð°Ð¸Ð²Ð°ÐµÐ¼Ñ‹Ð¼
+		msleep(50);	// ÑÐ±Ñ€Ð°ÑÑ‹Ð²Ð°ÐµÐ¼ ÑÑ€Ð°Ð·Ñƒ...
 		alarm( code, false );
 	}
 }	

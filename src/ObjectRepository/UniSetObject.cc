@@ -138,7 +138,7 @@ MaxCountRemoveOfMessage(10),
 stMaxQueueMessages(0),
 stCountOfQueueFull(0)
 {
-	/*! \warning UniverslalInterface не инициализируется идентификатором объекта */
+	/*! \warning UniverslalInterface п╫п╣ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─я┐п╣я┌я│я▐ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╬п╪ п╬п╠я┼п╣п╨я┌п╟ */
 	tmr = CREATE_TIMER;
 	myname = section + "/" + name;
 	myid = ui.getIdByName(myname);
@@ -171,8 +171,8 @@ UniSetObject::~UniSetObject()
 }
 // ------------------------------------------------------------------------------------------
 /*!
- *	\param om - указазтель на менджер управляющий объектом
- *	\return Возращает \a true если инициализация прошда успешно, и \a false если нет
+ *	\param om - я┐п╨п╟п╥п╟п╥я┌п╣п╩я▄ п╫п╟ п╪п╣п╫п╢п╤п╣я─ я┐п©я─п╟п╡п╩я▐я▌я┴п╦п╧ п╬п╠я┼п╣п╨я┌п╬п╪
+ *	\return п▓п╬п╥я─п╟я┴п╟п╣я┌ \a true п╣я│п╩п╦ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ п©я─п╬я┬п╢п╟ я┐я│п©п╣я┬п╫п╬, п╦ \a false п╣я│п╩п╦ п╫п╣я┌
 */
 bool UniSetObject::init( ObjectsManager* om )
 {
@@ -198,8 +198,8 @@ void UniSetObject::setID( UniSetTypes::ObjectId id )
 
 // ------------------------------------------------------------------------------------------
 /*!
- *	\param  vm - указатель на структуру, которая заполняется если есть сообщение
- *	\return Возвращает \a true если сообщение есть, и \a false если нет
+ *	\param  vm - я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ я│я┌я─я┐п╨я┌я┐я─я┐, п╨п╬я┌п╬я─п╟я▐ п╥п╟п©п╬п╩п╫я▐п╣я┌я│я▐ п╣я│п╩п╦ п╣я│я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣
+ *	\return п▓п╬п╥п╡я─п╟я┴п╟п╣я┌ \a true п╣я│п╩п╦ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╣я│я┌я▄, п╦ \a false п╣я│п╩п╦ п╫п╣я┌
 */
 bool UniSetObject::receiveMessage( VoidMessage& vm )
 {
@@ -208,13 +208,13 @@ bool UniSetObject::receiveMessage( VoidMessage& vm )
 			
 		if( !queueMsg.empty() )
 		{
-			// контроль переполнения
+			// п╨п╬п╫я┌я─п╬п╩я▄ п©п╣я─п╣п©п╬п╩п╫п╣п╫п╦я▐
 			if( queueMsg.size() > SizeOfMessageQueue ) 
 			{
 				if( unideb.debugging(Debug::CRIT) )
 				  unideb[Debug::CRIT] << myname <<"(receiveMessages): messages queue overflow!" << endl << flush;
 				cleanMsgQueue(queueMsg);
-				// обновляем статистику по переполнениям
+				// п╬п╠п╫п╬п╡п╩я▐п╣п╪ я│я┌п╟я┌п╦я│я┌п╦п╨я┐ п©п╬ п©п╣я─п╣п©п╬п╩п╫п╣п╫п╦я▐п╪
 				stCountOfQueueFull++;
 				stMaxQueueMessages=0;	
 			}
@@ -224,10 +224,10 @@ bool UniSetObject::receiveMessage( VoidMessage& vm )
 //			      if( unideb.debugging(Debug::CRIT) )
 //				unideb[Debug::CRIT] << myname <<"(receiveMessages): get new msg.." << endl << flush;
 
-				vm = queueMsg.top(); // получили сообщение
-//				Проверка на последовательное вынимание			
+				vm = queueMsg.top(); // п©п╬п╩я┐я┤п╦п╩п╦ я│п╬п╬п╠я┴п╣п╫п╦п╣
+//				п÷я─п╬п╡п╣я─п╨п╟ п╫п╟ п©п╬я│п╩п╣п╢п╬п╡п╟я┌п╣п╩я▄п╫п╬п╣ п╡я▀п╫п╦п╪п╟п╫п╦п╣			
 //				cout << myname << ": receive message....tm=" << vm.time << " msec=" << vm.time_msec << "\tprior="<< vm.priority << endl;
-				queueMsg.pop(); // удалили сообщение из очереди
+				queueMsg.pop(); // я┐п╢п╟п╩п╦п╩п╦ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╦п╥ п╬я┤п╣я─п╣п╢п╦
 				return true;
 			}
 		}	
@@ -237,9 +237,9 @@ bool UniSetObject::receiveMessage( VoidMessage& vm )
 }
 
 // ------------------------------------------------------------------------------------------
-// структура определяющая минимальное количество полей
-// по которым можно судить о схожести сообщений
-// используется локально и только в функции очистки очереди сообщений
+// я│я┌я─я┐п╨я┌я┐я─п╟ п╬п©я─п╣п╢п╣п╩я▐я▌я┴п╟я▐ п╪п╦п╫п╦п╪п╟п╩я▄п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п©п╬п╩п╣п╧
+// п©п╬ п╨п╬я┌п╬я─я▀п╪ п╪п╬п╤п╫п╬ я│я┐п╢п╦я┌я▄ п╬ я│я┘п╬п╤п╣я│я┌п╦ я│п╬п╬п╠я┴п╣п╫п╦п╧
+// п╦я│п©п╬п╩я▄п╥я┐п╣я┌я│я▐ п╩п╬п╨п╟п╩я▄п╫п╬ п╦ я┌п╬п╩я▄п╨п╬ п╡ я└я┐п╫п╨я├п╦п╦ п╬я┤п╦я│я┌п╨п╦ п╬я┤п╣я─п╣п╢п╦ я│п╬п╬п╠я┴п╣п╫п╦п╧
 struct MsgInfo
 {
 	MsgInfo():
@@ -287,12 +287,12 @@ struct MsgInfo
 	{}
 
 	int type;
-	ObjectId id;		// от кого
-	MessageCode acode;	// код сообщения
-	MessageCode ccode;	// код причины
-	int ch;				// характер
-	struct timeval tm;	// время
-	ObjectId node;		// откуда
+	ObjectId id;		// п╬я┌ п╨п╬пЁп╬
+	MessageCode acode;	// п╨п╬п╢ я│п╬п╬п╠я┴п╣п╫п╦я▐
+	MessageCode ccode;	// п╨п╬п╢ п©я─п╦я┤п╦п╫я▀
+	int ch;				// я┘п╟я─п╟п╨я┌п╣я─
+	struct timeval tm;	// п╡я─п╣п╪я▐
+	ObjectId node;		// п╬я┌п╨я┐п╢п╟
 
    	inline bool operator < ( const MsgInfo& mi ) const
 	{
@@ -365,20 +365,20 @@ void UniSetObject::registered()
 			catch( ObjectNameAlready& al )
 			{
 /*! 
-	\warning По умолчанию объекты должны быть уникальны! Поэтому если идёт попытка повторной регистрации. 
-	Мы чистим существующую ссылку и заменяем её на новую.	
-	Это сделано для более надежной работы, иначе может получится, что если объект перед завершением
-	не очистил за собой ссылку(не разрегистрировался), то больше он никогда не сможет вновь зарегистрироваться.
-	Т.к. \b надёжной функции проверки "жив" ли объект пока нет...
-	(так бы можно было проверить и если "не жив", то смело заменять ссылку на новую). Но существует обратная сторона:
-	если заменяемый объект "жив" и завершит свою работу, то он может почистить за собой ссылку и это тогда наш(новый) 
-	объект станет недоступен другим, а знать об этом не будет!!!
+	\warning п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ п╬п╠я┼п╣п╨я┌я▀ п╢п╬п╩п╤п╫я▀ п╠я▀я┌я▄ я┐п╫п╦п╨п╟п╩я▄п╫я▀! п÷п╬я█я┌п╬п╪я┐ п╣я│п╩п╦ п╦п╢я▒я┌ п©п╬п©я▀я┌п╨п╟ п©п╬п╡я┌п╬я─п╫п╬п╧ я─п╣пЁп╦я│я┌я─п╟я├п╦п╦. 
+	п°я▀ я┤п╦я│я┌п╦п╪ я│я┐я┴п╣я│я┌п╡я┐я▌я┴я┐я▌ я│я│я▀п╩п╨я┐ п╦ п╥п╟п╪п╣п╫я▐п╣п╪ п╣я▒ п╫п╟ п╫п╬п╡я┐я▌.	
+	п╜я┌п╬ я│п╢п╣п╩п╟п╫п╬ п╢п╩я▐ п╠п╬п╩п╣п╣ п╫п╟п╢п╣п╤п╫п╬п╧ я─п╟п╠п╬я┌я▀, п╦п╫п╟я┤п╣ п╪п╬п╤п╣я┌ п©п╬п╩я┐я┤п╦я┌я│я▐, я┤я┌п╬ п╣я│п╩п╦ п╬п╠я┼п╣п╨я┌ п©п╣я─п╣п╢ п╥п╟п╡п╣я─я┬п╣п╫п╦п╣п╪
+	п╫п╣ п╬я┤п╦я│я┌п╦п╩ п╥п╟ я│п╬п╠п╬п╧ я│я│я▀п╩п╨я┐(п╫п╣ я─п╟п╥я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟п╩я│я▐), я┌п╬ п╠п╬п╩я▄я┬п╣ п╬п╫ п╫п╦п╨п╬пЁп╢п╟ п╫п╣ я│п╪п╬п╤п╣я┌ п╡п╫п╬п╡я▄ п╥п╟я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟я┌я▄я│я▐.
+	п╒.п╨. \b п╫п╟п╢я▒п╤п╫п╬п╧ я└я┐п╫п╨я├п╦п╦ п©я─п╬п╡п╣я─п╨п╦ "п╤п╦п╡" п╩п╦ п╬п╠я┼п╣п╨я┌ п©п╬п╨п╟ п╫п╣я┌...
+	(я┌п╟п╨ п╠я▀ п╪п╬п╤п╫п╬ п╠я▀п╩п╬ п©я─п╬п╡п╣я─п╦я┌я▄ п╦ п╣я│п╩п╦ "п╫п╣ п╤п╦п╡", я┌п╬ я│п╪п╣п╩п╬ п╥п╟п╪п╣п╫я▐я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╫п╬п╡я┐я▌). п²п╬ я│я┐я┴п╣я│я┌п╡я┐п╣я┌ п╬п╠я─п╟я┌п╫п╟я▐ я│я┌п╬я─п╬п╫п╟:
+	п╣я│п╩п╦ п╥п╟п╪п╣п╫я▐п╣п╪я▀п╧ п╬п╠я┼п╣п╨я┌ "п╤п╦п╡" п╦ п╥п╟п╡п╣я─я┬п╦я┌ я│п╡п╬я▌ я─п╟п╠п╬я┌я┐, я┌п╬ п╬п╫ п╪п╬п╤п╣я┌ п©п╬я┤п╦я│я┌п╦я┌я▄ п╥п╟ я│п╬п╠п╬п╧ я│я│я▀п╩п╨я┐ п╦ я█я┌п╬ я┌п╬пЁп╢п╟ п╫п╟я┬(п╫п╬п╡я▀п╧) 
+	п╬п╠я┼п╣п╨я┌ я│я┌п╟п╫п╣я┌ п╫п╣п╢п╬я│я┌я┐п©п╣п╫ п╢я─я┐пЁп╦п╪, п╟ п╥п╫п╟я┌я▄ п╬п╠ я█я┌п╬п╪ п╫п╣ п╠я┐п╢п╣я┌!!!
 	
 */
 				unideb[Debug::CRIT] << myname << "(registered): replace object (ObjectNameAlready)" << endl;
 				reg = true;
 				unregister();
-//				unideb[Debug::CRIT] << myname << "(registered): не смог зарегестрироваться в репозитории объектов (ObjectNameAlready)" << endl;
+//				unideb[Debug::CRIT] << myname << "(registered): п╫п╣ я│п╪п╬пЁ п╥п╟я─п╣пЁп╣я│я┌я─п╦я─п╬п╡п╟я┌я▄я│я▐ п╡ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╦ п╬п╠я┼п╣п╨я┌п╬п╡ (ObjectNameAlready)" << endl;
 //				throw al;
 			}
 		}
@@ -461,14 +461,14 @@ void UniSetObject::push(const TransportMessage& tm)
 {
 	{ // lock
 		uniset_mutex_lock mlk(qmutex,pushMutexTimeout);
-		// контроль переполнения
+		// п╨п╬п╫я┌я─п╬п╩я▄ п©п╣я─п╣п©п╬п╩п╫п╣п╫п╦я▐
 		if( !queueMsg.empty() && queueMsg.size()>SizeOfMessageQueue )
 		{
 			if( unideb.debugging(Debug::CRIT) )
 			  unideb[Debug::CRIT] << myname <<"(push): message queue overflow!" << endl << flush;
 			cleanMsgQueue(queueMsg);
 
-			// обновляем статистику
+			// п╬п╠п╫п╬п╡п╩я▐п╣п╪ я│я┌п╟я┌п╦я│я┌п╦п╨я┐
 			stCountOfQueueFull++;
 			stMaxQueueMessages=0;	
 		}
@@ -479,7 +479,7 @@ void UniSetObject::push(const TransportMessage& tm)
 		VoidMessage v(tm);
 		queueMsg.push(v);
 		
-		// максимальное число ( для статистики )
+		// п╪п╟п╨я│п╦п╪п╟п╩я▄п╫п╬п╣ я┤п╦я│п╩п╬ ( п╢п╩я▐ я│я┌п╟я┌п╦я│я┌п╦п╨п╦ )
 		if( queueMsg.size() > stMaxQueueMessages )
 			stMaxQueueMessages = queueMsg.size();
 
@@ -492,8 +492,8 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 {
  	unideb[Debug::CRIT] << myname << "(cleanMsgQueue): msg queue cleaning..." << endl << flush;
 
-	// проходим по всем известным нам типам(базовым)
-	// ищем все совпадающие сообщения и оставляем только последние...
+	// п©я─п╬я┘п╬п╢п╦п╪ п©п╬ п╡я│п╣п╪ п╦п╥п╡п╣я│я┌п╫я▀п╪ п╫п╟п╪ я┌п╦п©п╟п╪(п╠п╟п╥п╬п╡я▀п╪)
+	// п╦я┴п╣п╪ п╡я│п╣ я│п╬п╡п©п╟п╢п╟я▌я┴п╦п╣ я│п╬п╬п╠я┴п╣п╫п╦я▐ п╦ п╬я│я┌п╟п╡п╩я▐п╣п╪ я┌п╬п╩я▄п╨п╬ п©п╬я│п╩п╣п╢п╫п╦п╣...
 	unideb[Debug::CRIT] << myname << "(cleanMsgQueue): current size of queue: " << q.size() << endl << flush;
 
 	VoidMessage m;
@@ -506,8 +506,8 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 	map<MsgInfo,VoidMessage> cmap;
 
 //		while( receiveMessage(vm) );
-//		while нельзя использовать потому-что, из параллельного потока
-//		могут запихивать в очередь ещё сообщения.. И это цикл никогда не прервётся...
+//		while п╫п╣п╩я▄п╥я▐ п╦я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ п©п╬я┌п╬п╪я┐-я┤я┌п╬, п╦п╥ п©п╟я─п╟п╩п╩п╣п╩я▄п╫п╬пЁп╬ п©п╬я┌п╬п╨п╟
+//		п╪п╬пЁя┐я┌ п╥п╟п©п╦я┘п╦п╡п╟я┌я▄ п╡ п╬я┤п╣я─п╣п╢я▄ п╣я┴я▒ я│п╬п╬п╠я┴п╣п╫п╦я▐.. п≤ я█я┌п╬ я├п╦п╨п╩ п╫п╦п╨п╬пЁп╢п╟ п╫п╣ п©я─п╣я─п╡я▒я┌я│я▐...
 
 		while( !q.empty() )
 		{
@@ -520,8 +520,8 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 				{
 					SensorMessage sm(&m);
 					UniSetTypes::KeyType k(key(sm.id,sm.node));
-					// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
-					// то достаточно просто сохранять последнее сообщение для одинаковых Key
+					// я┌.п╨. п╦п╥ п╬я┤п╣я─п╣п╢п╦ я│п╬п╬п╠я┴п╣п╫п╦п╧ я│п©п╣я─п╡п╟ п╡я▀п╫п╦п╪п╟я▌я┌я│я▐ я│п╟п╪я▀п╣ я│я┌п╟я─я▀п╣, п©п╬я┌п╬п╪ я│п╡п╣п╤п╣п╣ п╦ я┌.п©.
+					// я┌п╬ п╢п╬я│я┌п╟я┌п╬я┤п╫п╬ п©я─п╬я│я┌п╬ я│п╬я┘я─п╟п╫я▐я┌я▄ п©п╬я│п╩п╣п╢п╫п╣п╣ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╢п╩я▐ п╬п╢п╦п╫п╟п╨п╬п╡я▀я┘ Key
 					smap[k] = m;
 				}
 				break;
@@ -529,8 +529,8 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 				case Message::Timer:
 				{
 					TimerMessage tm(&m);
-					// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
-					// то достаточно просто сохранять последнее сообщение для одинаковых TimerId
+					// я┌.п╨. п╦п╥ п╬я┤п╣я─п╣п╢п╦ я│п╬п╬п╠я┴п╣п╫п╦п╧ я│п©п╣я─п╡п╟ п╡я▀п╫п╦п╪п╟я▌я┌я│я▐ я│п╟п╪я▀п╣ я│я┌п╟я─я▀п╣, п©п╬я┌п╬п╪ я│п╡п╣п╤п╣п╣ п╦ я┌.п©.
+					// я┌п╬ п╢п╬я│я┌п╟я┌п╬я┤п╫п╬ п©я─п╬я│я┌п╬ я│п╬я┘я─п╟п╫я▐я┌я▄ п©п╬я│п╩п╣п╢п╫п╣п╣ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╢п╩я▐ п╬п╢п╦п╫п╟п╨п╬п╡я▀я┘ TimerId
 					tmap[tm.id] = m;
 				}
 				break;
@@ -546,8 +546,8 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 				{
 					AlarmMessage am(&m);
 					MsgInfo mi(am);
-					// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
-					// то достаточно просто сохранять последнее сообщение для одинаковых MsgInfo
+					// я┌.п╨. п╦п╥ п╬я┤п╣я─п╣п╢п╦ я│п╬п╬п╠я┴п╣п╫п╦п╧ я│п©п╣я─п╡п╟ п╡я▀п╫п╦п╪п╟я▌я┌я│я▐ я│п╟п╪я▀п╣ я│я┌п╟я─я▀п╣, п©п╬я┌п╬п╪ я│п╡п╣п╤п╣п╣ п╦ я┌.п©.
+					// я┌п╬ п╢п╬я│я┌п╟я┌п╬я┤п╫п╬ п©я─п╬я│я┌п╬ я│п╬я┘я─п╟п╫я▐я┌я▄ п©п╬я│п╩п╣п╢п╫п╣п╣ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╢п╩я▐ п╬п╢п╦п╫п╟п╨п╬п╡я▀я┘ MsgInfo
 					amap[mi] = m;
 				}
 				break;
@@ -556,8 +556,8 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 				{
 					InfoMessage im(&m);
 					MsgInfo mi(im);
-					// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
-					// то достаточно просто сохранять последнее сообщение для одинаковых MsgInfo
+					// я┌.п╨. п╦п╥ п╬я┤п╣я─п╣п╢п╦ я│п╬п╬п╠я┴п╣п╫п╦п╧ я│п©п╣я─п╡п╟ п╡я▀п╫п╦п╪п╟я▌я┌я│я▐ я│п╟п╪я▀п╣ я│я┌п╟я─я▀п╣, п©п╬я┌п╬п╪ я│п╡п╣п╤п╣п╣ п╦ я┌.п©.
+					// я┌п╬ п╢п╬я│я┌п╟я┌п╬я┤п╫п╬ п©я─п╬я│я┌п╬ я│п╬я┘я─п╟п╫я▐я┌я▄ п©п╬я│п╩п╣п╢п╫п╣п╣ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╢п╩я▐ п╬п╢п╦п╫п╟п╨п╬п╡я▀я┘ MsgInfo
 					imap[mi] = m;
 				}
 				break;
@@ -566,18 +566,18 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 				{
 					ConfirmMessage cm(&m);
 					MsgInfo mi(cm);
-					// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
-					// то достаточно просто сохранять последнее сообщение для одинаковых MsgInfo
+					// я┌.п╨. п╦п╥ п╬я┤п╣я─п╣п╢п╦ я│п╬п╬п╠я┴п╣п╫п╦п╧ я│п©п╣я─п╡п╟ п╡я▀п╫п╦п╪п╟я▌я┌я│я▐ я│п╟п╪я▀п╣ я│я┌п╟я─я▀п╣, п©п╬я┌п╬п╪ я│п╡п╣п╤п╣п╣ п╦ я┌.п©.
+					// я┌п╬ п╢п╬я│я┌п╟я┌п╬я┤п╫п╬ п©я─п╬я│я┌п╬ я│п╬я┘я─п╟п╫я▐я┌я▄ п©п╬я│п╩п╣п╢п╫п╣п╣ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╢п╩я▐ п╬п╢п╦п╫п╟п╨п╬п╡я▀я┘ MsgInfo
 					cmap[mi] = m;
 				}
 				break;
 
 				case Message::Unused:
-					// просто выкидываем (игнорируем)
+					// п©я─п╬я│я┌п╬ п╡я▀п╨п╦п╢я▀п╡п╟п╣п╪ (п╦пЁп╫п╬я─п╦я─я┐п╣п╪)
 				break;
 				
 				default:
-					// сразу пизаем
+					// я│я─п╟п╥я┐ п©п╦п╥п╟п╣п╪
 					lstOther.push_front(m);
 				break;
 
@@ -595,7 +595,7 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 		  unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean other: " << lstOther.size() << endl;
 		}
 		
-		// теперь ОСТАВШИЕСЯ запихиваем обратно в очередь...
+		// я┌п╣п©п╣я─я▄ п·п║п╒п░п▓п╗п≤п∙п║п╞ п╥п╟п©п╦я┘п╦п╡п╟п╣п╪ п╬п╠я─п╟я┌п╫п╬ п╡ п╬я┤п╣я─п╣п╢я▄...
 
 		map<UniSetTypes::KeyType,VoidMessage>::iterator it=smap.begin();
 		for( ; it!=smap.end(); ++it )
@@ -687,10 +687,10 @@ bool UniSetObject::disactivate()
 		return true;
 	}
 
-	active=false; // завершаем поток обработки сообщений
+	active=false; // п╥п╟п╡п╣я─я┬п╟п╣п╪ п©п╬я┌п╬п╨ п╬п╠я─п╟п╠п╬я┌п╨п╦ я│п╬п╬п╠я┴п╣п╫п╦п╧
 	tmr->stop();
 
-	// Очищаем очередь
+	// п·я┤п╦я┴п╟п╣п╪ п╬я┤п╣я─п╣п╢я▄
 	{ // lock
 		uniset_mutex_lock mlk(qmutex, 400);
 		while( !queueMsg.empty() )
@@ -721,15 +721,15 @@ bool UniSetObject::disactivate()
 	}
 	catch(CORBA::TRANSIENT)
 	{
-		unideb[Debug::WARN] << "isExist: нет связи..."<< endl;
+		unideb[Debug::WARN] << "isExist: п╫п╣я┌ я│п╡я▐п╥п╦..."<< endl;
 	}
 	catch( CORBA::SystemException& ex )
     {
-		unideb[Debug::WARN] << "UniSetObject: "<<"поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
+		unideb[Debug::WARN] << "UniSetObject: "<<"п©п╬п╧п╪п╟п╩п╦ CORBA::SystemException: " << ex.NP_minorString() << endl;
     }
     catch(CORBA::Exception& ex)
     {
-		unideb[Debug::WARN] << "UniSetObject: "<<"поймали CORBA::Exception." << endl;
+		unideb[Debug::WARN] << "UniSetObject: "<<"п©п╬п╧п╪п╟п╩п╦ CORBA::Exception." << endl;
     }
 	catch(Exception& ex)
     {
@@ -758,7 +758,7 @@ bool UniSetObject::activate()
 	PortableServer::POA_var poa = mymngr->getPOA();
 	if( poa == NULL || CORBA::is_nil(poa) )
 	{
-		string err(myname+": не задан менеджер");
+		string err(myname+": п╫п╣ п╥п╟п╢п╟п╫ п╪п╣п╫п╣п╢п╤п╣я─");
 		throw ORepFailed(err.c_str());
 	}
 
@@ -769,14 +769,14 @@ bool UniSetObject::activate()
 	}
 	else
 	{
-		// А если myid==UniSetTypes::DefaultObjectId 
-		// то myname = noname. ВСЕГДА! 
+		// п░ п╣я│п╩п╦ myid==UniSetTypes::DefaultObjectId 
+		// я┌п╬ myname = noname. п▓п║п∙п⌠п■п░! 
 		if( myid == UniSetTypes::DefaultObjectId )
 		{
-			unideb[Debug::CRIT] << myname << "(activate): Не задан ID!!! activate failure..." << endl;
-			// вызываем на случай если она переопределена в дочерних классах
-			// Например в ObjectsManager, если здесь не вызвать, то не будут инициализированы подчинённые объекты.
-			// (см. ObjectsManager::activateObject)
+			unideb[Debug::CRIT] << myname << "(activate): п²п╣ п╥п╟п╢п╟п╫ ID!!! activate failure..." << endl;
+			// п╡я▀п╥я▀п╡п╟п╣п╪ п╫п╟ я│п╩я┐я┤п╟п╧ п╣я│п╩п╦ п╬п╫п╟ п©п╣я─п╣п╬п©я─п╣п╢п╣п╩п╣п╫п╟ п╡ п╢п╬я┤п╣я─п╫п╦я┘ п╨п╩п╟я│я│п╟я┘
+			// п²п╟п©я─п╦п╪п╣я─ п╡ ObjectsManager, п╣я│п╩п╦ п╥п╢п╣я│я▄ п╫п╣ п╡я▀п╥п╡п╟я┌я▄, я┌п╬ п╫п╣ п╠я┐п╢я┐я┌ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟п╫я▀ п©п╬п╢я┤п╦п╫я▒п╫п╫я▀п╣ п╬п╠я┼п╣п╨я┌я▀.
+			// (я│п╪. ObjectsManager::activateObject)
 			activateObject();
 			return false;
 		}
@@ -796,7 +796,7 @@ bool UniSetObject::activate()
 	oref = poa->servant_to_reference(static_cast<PortableServer::ServantBase*>(this) );
 
 	registered();
-	// Запускаем поток обработки сообщений
+	// п≈п╟п©я┐я│п╨п╟п╣п╪ п©п╬я┌п╬п╨ п╬п╠я─п╟п╠п╬я┌п╨п╦ я│п╬п╬п╠я┴п╣п╫п╦п╧
 	active=true;
 
 	if( myid!=UniSetTypes::DefaultObjectId && threadcreate )
@@ -808,7 +808,7 @@ bool UniSetObject::activate()
 	{
 		if( unideb.debugging(Debug::INFO) )
 		{
-			unideb[Debug::INFO] << myname << ": ?? не задан ObjectId...(" 
+			unideb[Debug::INFO] << myname << ": ?? п╫п╣ п╥п╟п╢п╟п╫ ObjectId...(" 
 					<< "myid=" << myid << " threadcreate=" << threadcreate 
 					<< ")" << endl;
 		}
@@ -860,14 +860,14 @@ UniSetTypes::SimpleInfo* UniSetObject::getInfo()
 	{
 		if(thr)	
 		{
-			msgpid = thr->getTID();	// заодно(на всякий) обновим и внутреннюю информацию
+			msgpid = thr->getTID();	// п╥п╟п╬п╢п╫п╬(п╫п╟ п╡я│я▐п╨п╦п╧) п╬п╠п╫п╬п╡п╦п╪ п╦ п╡п╫я┐я┌я─п╣п╫п╫я▌я▌ п╦п╫я└п╬я─п╪п╟я├п╦я▌
 			info << msgpid;  
 		}
 		else
-			info << "не запущен";
+			info << "п╫п╣ п╥п╟п©я┐я┴п╣п╫";
 	}
 	else
-		info << "откл.";  
+		info << "п╬я┌п╨п╩.";  
 	
 	info << "\tcount=" << countMessages();
 	info << "\tmaxMsg=" << stMaxQueueMessages;

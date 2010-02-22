@@ -1,13 +1,13 @@
-// эти разделы сформируются автоматически из описаний сделанных в соответствующих h-файлах
+// я█я┌п╦ я─п╟п╥п╢п╣п╩я▀ я│я└п╬я─п╪п╦я─я┐я▌я┌я│я▐ п╟п╡я┌п╬п╪п╟я┌п╦я┤п╣я│п╨п╦ п╦п╥ п╬п©п╦я│п╟п╫п╦п╧ я│п╢п╣п╩п╟п╫п╫я▀я┘ п╡ я│п╬п╬я┌п╡п╣я┌я│я┌п╡я┐я▌я┴п╦я┘ h-я└п╟п╧п╩п╟я┘
 /*! 
- \page ServicesPage Сервисы
+ \page ServicesPage п║п╣я─п╡п╦я│я▀
 
 	 - \ref secDBServer
 	 - \ref secInfoService
 	 - \ref secTimerService
 
 
-    \section secDBServer Сервер БД
+    \section secDBServer п║п╣я─п╡п╣я─ п▒п■
 
 	\sa \ref page_DBServer_MySQL
 */

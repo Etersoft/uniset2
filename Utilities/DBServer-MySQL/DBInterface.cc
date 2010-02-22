@@ -94,7 +94,7 @@ bool DBInterface::query(const string q)
 
 		
 	lastQ = q;
-	result = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
+	result = mysql_store_result(mysql); // _use_result - п╫п╣п╨п╬я─я─п╣п╨я┌п╫п╬ я─п╟п╠п╬я┌п╟п╣я┌ я│ _num_rows
 	if( numRows()==0 )
 	{
 		queryok=false;
@@ -222,8 +222,8 @@ bool DBInterface::ping()
 	if(!mysql)
 		return false;
 
-	// внимание mysql_ping возвращает 0 
-	// если всё хорошо.... (поэтому мы инвертируем)
+	// п╡п╫п╦п╪п╟п╫п╦п╣ mysql_ping п╡п╬п╥п╡я─п╟я┴п╟п╣я┌ 0 
+	// п╣я│п╩п╦ п╡я│я▒ я┘п╬я─п╬я┬п╬.... (п©п╬я█я┌п╬п╪я┐ п╪я▀ п╦п╫п╡п╣я─я┌п╦я─я┐п╣п╪)
 	return !mysql_ping(mysql);
 }
 // -----------------------------------------------------------------------------------------			

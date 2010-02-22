@@ -30,7 +30,7 @@
 #include "PassiveTimer.h"
 
 //----------------------------------------------------------------------------------------
-// CLK_TCK устарела по новому стандарту
+// CLK_TCK я┐я│я┌п╟я─п╣п╩п╟ п©п╬ п╫п╬п╡п╬п╪я┐ я│я┌п╟п╫п╢п╟я─я┌я┐
 #ifndef CLK_TCK
 #define CLK_TCK sysconf(_SC_CLK_TCK)
 #endif
@@ -74,7 +74,7 @@ bool PassiveTimer::checkTime()
 }
 
 //------------------------------------------------------------------------------
-// Установить время таймера
+// пёя│я┌п╟п╫п╬п╡п╦я┌я▄ п╡я─п╣п╪я▐ я┌п╟п╧п╪п╣я─п╟
 timeout_t PassiveTimer::setTiming( timeout_t timeMS )
 {
 	if( timeMS == WaitUpTime )
@@ -83,16 +83,16 @@ timeout_t PassiveTimer::setTiming( timeout_t timeMS )
 	}
 	else
 	{
-		timeSS=timeMS/10; // задержка в сантисекундах
+		timeSS=timeMS/10; // п╥п╟п╢п╣я─п╤п╨п╟ п╡ я│п╟п╫я┌п╦я│п╣п╨я┐п╫п╢п╟я┘
 		if (timeMS%10)
-			timeSS++; // Округляем в большую сторону
+			timeSS++; // п·п╨я─я┐пЁп╩я▐п╣п╪ п╡ п╠п╬п╩я▄я┬я┐я▌ я│я┌п╬я─п╬п╫я┐
 	}
 	PassiveTimer::reset();
 	return getInterval();
 }
 
 //------------------------------------------------------------------------------
-// Запустить таймер
+// п≈п╟п©я┐я│я┌п╦я┌я▄ я┌п╟п╧п╪п╣я─
 void PassiveTimer::reset(void)
 {
 	timeStart = times();
@@ -101,7 +101,7 @@ void PassiveTimer::reset(void)
 	timeAct = (timeSS*clock_ticks)/100 + timeStart;
 }
 //------------------------------------------------------------------------------
-// получить текущее значение таймера
+// п©п╬п╩я┐я┤п╦я┌я▄ я┌п╣п╨я┐я┴п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣ я┌п╟п╧п╪п╣я─п╟
 timeout_t PassiveTimer::getCurrent()
 {
 	return (times()-timeStart)*1000/clock_ticks;
@@ -115,7 +115,7 @@ void PassiveTimer::terminate()
 //------------------------------------------------------------------------------
 clock_t PassiveTimer::times()
 {
-	// Не в Linux запрещено вызывать с NULL
+	// п²п╣ п╡ Linux п╥п╟п©я─п╣я┴п╣п╫п╬ п╡я▀п╥я▀п╡п╟я┌я▄ я│ NULL
 	struct tms tm;
 	return ::times(&tm);
 }

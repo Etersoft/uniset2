@@ -68,7 +68,7 @@ bool Restorer_XML::getConsumerInfo( UniXML_iterator& it,
 	if( cname.empty() )
 	{
 		if( unideb.debugging(Debug::WARN) )
-			unideb[Debug::WARN] << "(Restorer_XML:getConsumerInfo): ÎÅ ÕËÁÚÁÎÏ ÉÍÑ ÚÁËÁÚÞÉËÁ..." << endl;
+			unideb[Debug::WARN] << "(Restorer_XML:getConsumerInfo): Ð½Ðµ ÑƒÐºÐ°Ð·Ð°Ð½Ð¾ Ð¸Ð¼Ñ Ð·Ð°ÐºÐ°Ð·Ñ‡Ð¸ÐºÐ°..." << endl;
 		return false;
 	}
 
@@ -83,7 +83,7 @@ bool Restorer_XML::getConsumerInfo( UniXML_iterator& it,
 	{
 		if( unideb.debugging(Debug::WARN) )
 		{
-			unideb[Debug::WARN] << "(Restorer_XML:getConsumerInfo): ÎÅÉÚ×ÅÓÔÎÙÊ ÔÉÐ ÏÂßÅËÔÁ " 
+			unideb[Debug::WARN] << "(Restorer_XML:getConsumerInfo): Ð½ÐµÐ¸Ð·Ð²ÐµÑÑ‚Ð½Ñ‹Ð¹ Ñ‚Ð¸Ð¿ Ð¾Ð±ÑŠÐµÐºÑ‚Ð° " 
 							<< otype << endl;
 		}
 		return false;
@@ -92,7 +92,7 @@ bool Restorer_XML::getConsumerInfo( UniXML_iterator& it,
 	cid = conf->oind->getIdByName(cname);
 	if( cid == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::CRIT] << "(Restorer_XML:getConsumerInfo): îå îáêäåî éäåîôéæéëáôïò ÚÁËÁÚÞÉËÁ -->" 
+		unideb[Debug::CRIT] << "(Restorer_XML:getConsumerInfo): ÐÐ• ÐÐÐ™Ð”Ð•Ð Ð˜Ð”Ð•ÐÐ¢Ð˜Ð¤Ð˜ÐšÐÐ¢ÐžÐ  Ð·Ð°ÐºÐ°Ð·Ñ‡Ð¸ÐºÐ° -->" 
 							<< cname << endl;
 		return false;
 	}
@@ -111,7 +111,7 @@ bool Restorer_XML::getConsumerInfo( UniXML_iterator& it,
 
 	if( cnode == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::CRIT] << "(Restorer_XML:getConsumerInfo): îå îáêäåî éäåîôéæéëáôïò ÕÚÌÁ -->" 
+		unideb[Debug::CRIT] << "(Restorer_XML:getConsumerInfo): ÐÐ• ÐÐÐ™Ð”Ð•Ð Ð˜Ð”Ð•ÐÐ¢Ð˜Ð¤Ð˜ÐšÐÐ¢ÐžÐ  ÑƒÐ·Ð»Ð° -->" 
 							<< cnodename << endl;
 		return false;
 	}
@@ -131,7 +131,7 @@ bool Restorer_XML::old_getConsumerInfo( UniXML_iterator& it,
 	if( cname.empty() )
 	{
 		if( unideb.debugging(Debug::WARN) )
-			unideb[Debug::WARN] << "(Restorer_XML:old_getConsumerInfo): ÎÅ ÕËÁÚÁÎÏ ÉÍÑ ÚÁËÁÚÞÉËÁ... ÐÒÏÐÕÓËÁÅÍ..." << endl;
+			unideb[Debug::WARN] << "(Restorer_XML:old_getConsumerInfo): Ð½Ðµ ÑƒÐºÐ°Ð·Ð°Ð½Ð¾ Ð¸Ð¼Ñ Ð·Ð°ÐºÐ°Ð·Ñ‡Ð¸ÐºÐ°... Ð¿Ñ€Ð¾Ð¿ÑƒÑÐºÐ°ÐµÐ¼..." << endl;
 		
 		return false;
 	}
@@ -139,7 +139,7 @@ bool Restorer_XML::old_getConsumerInfo( UniXML_iterator& it,
 	cid = conf->oind->getIdByName(cname);
 	if( cid == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::CRIT] << "(Restorer_XML:old_getConsumerInfo): îå îáêäåî éäåîôéæéëáôïò ÚÁËÁÚÞÉËÁ -->" 
+		unideb[Debug::CRIT] << "(Restorer_XML:old_getConsumerInfo): ÐÐ• ÐÐÐ™Ð”Ð•Ð Ð˜Ð”Ð•ÐÐ¢Ð˜Ð¤Ð˜ÐšÐÐ¢ÐžÐ  Ð·Ð°ÐºÐ°Ð·Ñ‡Ð¸ÐºÐ° -->" 
 							<< cname << endl;
 		return false;
 	}
@@ -158,7 +158,7 @@ bool Restorer_XML::old_getConsumerInfo( UniXML_iterator& it,
 
 	if( cnode == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::CRIT] << "(Restorer_XML:old_getConsumerInfo): îå îáêäåî éäåîôéæéëáôïò ÕÚÌÁ -->" 
+		unideb[Debug::CRIT] << "(Restorer_XML:old_getConsumerInfo): ÐÐ• ÐÐÐ™Ð”Ð•Ð Ð˜Ð”Ð•ÐÐ¢Ð˜Ð¤Ð˜ÐšÐÐ¢ÐžÐ  ÑƒÐ·Ð»Ð° -->" 
 							<< cnodename << endl;
 		return false;
 	}
@@ -176,11 +176,11 @@ bool Restorer_XML::check_list_item( UniXML_iterator& it )
 	if( i_filterField.empty() )
 		return true;
 
-	// ÐÒÏÓÔÏ ÐÒÏ×ÅÒËÁ ÎÁ ÎÅ ÐÕÓÔÏÊ field
+	// Ð¿Ñ€Ð¾ÑÑ‚Ð¾ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð½Ð° Ð½Ðµ Ð¿ÑƒÑÑ‚Ð¾Ð¹ field
 	if( i_filterValue.empty() && it.getProp(i_filterField).empty() )
 		return false;
 
-	// ÐÒÏÓÔÏ ÐÒÏ×ÅÒËÁ ÞÔÏ field = value
+	// Ð¿Ñ€Ð¾ÑÑ‚Ð¾ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ° Ñ‡Ñ‚Ð¾ field = value
 	if( !i_filterValue.empty() && it.getProp(i_filterField)!=i_filterValue )
 		return false;
 
@@ -192,11 +192,11 @@ bool Restorer_XML::check_consumer_item( UniXML_iterator& it )
 	if( c_filterField.empty() )
 		return true;
 
-	// ÐÒÏÓÔÏ ÐÒÏ×ÅÒËÁ ÎÁ ÎÅ ÐÕÓÔÏÊ field
+	// Ð¿Ñ€Ð¾ÑÑ‚Ð¾ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð½Ð° Ð½Ðµ Ð¿ÑƒÑÑ‚Ð¾Ð¹ field
 	if( c_filterValue.empty() && it.getProp(c_filterField).empty() )
 		return false;
 
-	// ÐÒÏÓÔÏ ÐÒÏ×ÅÒËÁ ÞÔÏ field = value
+	// Ð¿Ñ€Ð¾ÑÑ‚Ð¾ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ° Ñ‡Ñ‚Ð¾ field = value
 	if( !c_filterValue.empty() && it.getProp(c_filterField)!=c_filterValue )
 		return false;
 

@@ -43,7 +43,7 @@ int main( int argc, const char **argv )
 	}
 	catch(...)
 	{
-		cout << "îÅÉÚ×ÅÓÔÎÏÅ ÉÓËÌÀÞÅÎÉÅ!!!!"<< endl;
+		cout << "ÐÐµÐ¸Ð·Ð²ÐµÑÑ‚Ð½Ð¾Ðµ Ð¸ÑÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ðµ!!!!"<< endl;
 	}
 
 	return 0;

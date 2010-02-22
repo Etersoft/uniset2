@@ -100,7 +100,7 @@ std::ostream& ObjectIndex_XML::printMap( std::ostream& os )
 // -----------------------------------------------------------------------------------------
 void ObjectIndex_XML::build(UniXML& xml)
 {
-	// ×ÙÄÅÌÑÅÍ ÐÁÍÑÔØ
+	// Ð²Ñ‹Ð´ÐµÐ»ÑÐµÐ¼ Ð¿Ð°Ð¼ÑÑ‚ÑŒ
 //	ObjectInfo* omap = new ObjectInfo[maxSize];
 	ObjectId ind=1;
 	ind = read_section(xml,"sensors",ind);
@@ -121,9 +121,9 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string sec, 
 	if( (unsigned)ind >= omap.size() )
 	{
 		ostringstream msg;
-		msg << "(ObjectIndex_XML::build): ÎÅ È×ÁÔÉÌÏ ÒÁÚÍÅÒÁ ÍÁÓÓÉ×Á maxSize=" << omap.size();
+		msg << "(ObjectIndex_XML::build): Ð½Ðµ Ñ…Ð²Ð°Ñ‚Ð¸Ð»Ð¾ Ñ€Ð°Ð·Ð¼ÐµÑ€Ð° Ð¼Ð°ÑÑÐ¸Ð²Ð° maxSize=" << omap.size();
 //		throw OutOfRange(msg.str());
-		unideb[Debug::WARN] << msg.str() << "... äÅÌÁÅÍ resize + 100\n";
+		unideb[Debug::WARN] << msg.str() << "... Ð”ÐµÐ»Ð°ÐµÐ¼ resize + 100\n";
 		omap.resize(omap.size()+100);
 	}
 
@@ -131,7 +131,7 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string sec, 
 	if( secRoot.empty() )
 	{
 		ostringstream msg;
-		msg << "(ObjectIndex_XML::build):: ÎÅ ÎÁÛÌÉ ÐÁÒÁÍÅÔÒ RootSection × ËÏÎÆ. ÆÁÊÌÅ ";
+		msg << "(ObjectIndex_XML::build):: Ð½Ðµ Ð½Ð°ÑˆÐ»Ð¸ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€ RootSection Ð² ÐºÐ¾Ð½Ñ„. Ñ„Ð°Ð¹Ð»Ðµ ";
 		unideb[Debug::CRIT] << msg.str() << endl;
 		throw SystemError(msg.str());
 	}
@@ -140,16 +140,16 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string sec, 
 	if( !root )
 	{
 		ostringstream msg;
-		msg << "(ObjectIndex_XML::build): ÎÅ ÎÁÛÌÉ ËÏÒÎÅ×ÏÇÏ ÒÁÚÄÅÌÁ " << sec;
+		msg << "(ObjectIndex_XML::build): Ð½Ðµ Ð½Ð°ÑˆÐ»Ð¸ ÐºÐ¾Ñ€Ð½ÐµÐ²Ð¾Ð³Ð¾ Ñ€Ð°Ð·Ð´ÐµÐ»Ð° " << sec;
 		throw NameNotFound(msg.str());
 	}
 
-	// óÞÉÔÙ×ÁÅÍ ÓÐÉÓÏË ÜÌÅÍÅÎÔÏ×
+	// Ð¡Ñ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÐ¼ ÑÐ¿Ð¸ÑÐ¾Ðº ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð²
 	UniXML_iterator it(root);
 	if( !it.goChildren() )
 	{
 		ostringstream msg;
-		msg << "(ObjectIndex_XML::build): ÎÅ ÕÄÁÌÏÓØ ÐÅÒÅÊÔÉ Ë ÓÐÉÓËÕ ÜÌÅÍÅÎÔÏ× " << sec;
+		msg << "(ObjectIndex_XML::build): Ð½Ðµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ Ð¿ÐµÑ€ÐµÐ¹Ñ‚Ð¸ Ðº ÑÐ¿Ð¸ÑÐºÑƒ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð² " << sec;
 		throw NameNotFound(msg.str());
 	}
 
@@ -160,11 +160,11 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string sec, 
 	if( secname.empty() )
 	{
 		ostringstream msg;
-		msg << "(ObjectIndex_XML::build): Õ ÓÅËÃÉÉ " << sec << " ÎÅ ÕËÁÚÁÎÏ Ó×ÏÊÓÔ×Ï 'name' ";
+		msg << "(ObjectIndex_XML::build): Ñƒ ÑÐµÐºÑ†Ð¸Ð¸ " << sec << " Ð½Ðµ ÑƒÐºÐ°Ð·Ð°Ð½Ð¾ ÑÐ²Ð¾Ð¹ÑÑ‚Ð²Ð¾ 'name' ";
 		throw NameNotFound(msg.str());
 	}
 
-	// ÐÒÉÂÁ×ÉÍ ËÏÒÅÎØ
+	// Ð¿Ñ€Ð¸Ð±Ð°Ð²Ð¸Ð¼ ÐºÐ¾Ñ€ÐµÐ½ÑŒ
 	secname = secRoot+"/"+secname + "/";
 
 	for( ;it.getCurrent(); it.goNext() )
@@ -195,9 +195,9 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string sec, 
 		if( (unsigned)ind >= omap.size() )
 		{
 			ostringstream msg;
-			msg << "(ObjectIndex_XML::build): ÎÅ È×ÁÔÉÌÏ ÒÁÚÍÅÒÁ ÍÁÓÓÉ×Á maxSize=" << omap.size();
+			msg << "(ObjectIndex_XML::build): Ð½Ðµ Ñ…Ð²Ð°Ñ‚Ð¸Ð»Ð¾ Ñ€Ð°Ð·Ð¼ÐµÑ€Ð° Ð¼Ð°ÑÑÐ¸Ð²Ð° maxSize=" << omap.size();
 //			throw OutOfRange(msg.str());
-			unideb[Debug::WARN] << msg.str() << "... äÅÌÁÅÍ resize + 100\n";
+			unideb[Debug::WARN] << msg.str() << "... Ð”ÐµÐ»Ð°ÐµÐ¼ resize + 100\n";
 			omap.resize(omap.size()+100);
 		}
 	}
@@ -210,9 +210,9 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string sec, un
 	if( ind >= omap.size() )
 	{
 		ostringstream msg;
-		msg << "(ObjectIndex_XML::build): ÎÅ È×ÁÔÉÌÏ ÒÁÚÍÅÒÁ ÍÁÓÓÉ×Á maxSize=" << omap.size();
+		msg << "(ObjectIndex_XML::build): Ð½Ðµ Ñ…Ð²Ð°Ñ‚Ð¸Ð»Ð¾ Ñ€Ð°Ð·Ð¼ÐµÑ€Ð° Ð¼Ð°ÑÑÐ¸Ð²Ð° maxSize=" << omap.size();
 //		throw OutOfRange(msg.str());
-		unideb[Debug::WARN] << msg.str() << "... äÅÌÁÅÍ resize + 100\n";
+		unideb[Debug::WARN] << msg.str() << "... Ð”ÐµÐ»Ð°ÐµÐ¼ resize + 100\n";
 		omap.resize(omap.size()+100);
 	}
 
@@ -220,16 +220,16 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string sec, un
 	if( !root )
 	{
 		ostringstream msg;
-		msg << "(ObjectIndex_XML::build): ÎÅ ÎÁÛÌÉ ËÏÒÎÅ×ÏÇÏ ÒÁÚÄÅÌÁ " << sec;
+		msg << "(ObjectIndex_XML::build): Ð½Ðµ Ð½Ð°ÑˆÐ»Ð¸ ÐºÐ¾Ñ€Ð½ÐµÐ²Ð¾Ð³Ð¾ Ñ€Ð°Ð·Ð´ÐµÐ»Ð° " << sec;
 		throw NameNotFound(msg.str());
 	}
 
-	// óÞÉÔÙ×ÁÅÍ ÓÐÉÓÏË ÜÌÅÍÅÎÔÏ×
+	// Ð¡Ñ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÐ¼ ÑÐ¿Ð¸ÑÐ¾Ðº ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð²
 	UniXML_iterator it(root);
 	if( !it.goChildren() )
 	{
 		ostringstream msg;
-		msg << "(ObjectIndex_XML::build): ÎÅ ÕÄÁÌÏÓØ ÐÅÒÅÊÔÉ Ë ÓÐÉÓËÕ ÜÌÅÍÅÎÔÏ× " << sec;
+		msg << "(ObjectIndex_XML::build): Ð½Ðµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ Ð¿ÐµÑ€ÐµÐ¹Ñ‚Ð¸ Ðº ÑÐ¿Ð¸ÑÐºÑƒ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð² " << sec;
 		throw NameNotFound(msg.str());
 	}
 
@@ -265,9 +265,9 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string sec, un
 		if( (unsigned)ind >= omap.size() )
 		{
 			ostringstream msg;
-			msg << "(ObjectIndex_XML::build): ÎÅ È×ÁÔÉÌÏ ÒÁÚÍÅÒÁ ÍÁÓÓÉ×Á maxSize=" << omap.size();
+			msg << "(ObjectIndex_XML::build): Ð½Ðµ Ñ…Ð²Ð°Ñ‚Ð¸Ð»Ð¾ Ñ€Ð°Ð·Ð¼ÐµÑ€Ð° Ð¼Ð°ÑÑÐ¸Ð²Ð° maxSize=" << omap.size();
 //			throw OutOfRange(msg.str());
-			unideb[Debug::WARN] << msg.str() << "... äÅÌÁÅÍ resize + 100\n";
+			unideb[Debug::WARN] << msg.str() << "... Ð”ÐµÐ»Ð°ÐµÐ¼ resize + 100\n";
 			omap.resize(omap.size()+100);
 		}
 	}

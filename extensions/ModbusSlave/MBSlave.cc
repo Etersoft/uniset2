@@ -43,7 +43,7 @@ prefix(prefix)
 
 	UniXML_iterator it(cnode);
 
-	// определяем фильтр
+	// п╬п©я─п╣п╢п╣п╩я▐п╣п╪ я└п╦п╩я▄я┌я─
 	s_field = conf->getArgParam("--" + prefix + "-filter-field");
 	s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
 	dlog[Debug::INFO] << myname << "(init): read s_field='" << s_field
@@ -145,7 +145,7 @@ prefix(prefix)
 		if( sidHeartBeat == DefaultObjectId )
 		{
 			ostringstream err;
-			err << myname << ": не найден идентификатор для датчика 'HeartBeat' " << heart;
+			err << myname << ": п╫п╣ п╫п╟п╧п╢п╣п╫ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╩я▐ п╢п╟я┌я┤п╦п╨п╟ 'HeartBeat' " << heart;
 			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
@@ -256,7 +256,7 @@ void MBSlave::waitSMReady()
 	if( !shm->waitSMready(ready_timeout,50) )
 	{
 		ostringstream err;
-		err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
+		err << myname << "(waitSMReady): п²п╣ п╢п╬п╤п╢п╟п╩п╦я│я▄ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ SharedMemory п╨ я─п╟п╠п╬я┌п╣ п╡ я┌п╣я┤п╣п╫п╦п╣ " << ready_timeout << " п╪я│п╣п╨";
 		dlog[Debug::CRIT] << err.str() << endl;
 		throw SystemError(err.str());
 	}
@@ -275,10 +275,10 @@ void MBSlave::execute_rtu()
 			if( res!=ModbusRTU::erTimeOut )
 				ptTimeout.reset();
 	
-			// собираем статистику обмена
+			// я│п╬п╠п╦я─п╟п╣п╪ я│я┌п╟я┌п╦я│я┌п╦п╨я┐ п╬п╠п╪п╣п╫п╟
 			if( prev!=ModbusRTU::erTimeOut )
 			{
-				//  с проверкой на переполнение
+				//  я│ п©я─п╬п╡п╣я─п╨п╬п╧ п╫п╟ п©п╣я─п╣п©п╬п╩п╫п╣п╫п╦п╣
 				askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
 				if( res!=ModbusRTU::erNoError )
 					errmap[res]++;
@@ -339,10 +339,10 @@ void MBSlave::execute_tcp()
 			if( res!=ModbusRTU::erTimeOut )
 				ptTimeout.reset();
 	
-			// собираем статистику обмена
+			// я│п╬п╠п╦я─п╟п╣п╪ я│я┌п╟я┌п╦я│я┌п╦п╨я┐ п╬п╠п╪п╣п╫п╟
 			if( prev!=ModbusRTU::erTimeOut )
 			{
-				//  с проверкой на переполнение
+				//  я│ п©я─п╬п╡п╣я─п╨п╬п╧ п╫п╟ п©п╣я─п╣п©п╬п╩п╫п╣п╫п╦п╣
 				askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
 				if( res!=ModbusRTU::erNoError )
 					errmap[res]++;
@@ -446,8 +446,8 @@ void MBSlave::sysCommand(UniSetTypes::SystemMessage *sm)
 		
 			waitSMReady();
 
-			// подождать пока пройдёт инициализация датчиков
-			// см. activateObject()
+			// п©п╬п╢п╬п╤п╢п╟я┌я▄ п©п╬п╨п╟ п©я─п╬п╧п╢я▒я┌ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ п╢п╟я┌я┤п╦п╨п╬п╡
+			// я│п╪. activateObject()
 			msleep(initPause);
 			PassiveTimer ptAct(activateTimeout);
 			while( !activated && !ptAct.checkTime() )
@@ -476,11 +476,11 @@ void MBSlave::sysCommand(UniSetTypes::SystemMessage *sm)
 		
 		case SystemMessage::WatchDog:
 		{
-			// ОПТИМИЗАЦИЯ (защита от двойного перезаказа при старте)
-			// Если идёт локальная работа 
-			// (т.е. MBSlave  запущен в одном процессе с SharedMemory2)
-			// то обрабатывать WatchDog не надо, т.к. мы и так ждём готовности SM
-			// при заказе датчиков, а если SM вылетит, то вместе с этим процессом(MBSlave)
+			// п·п÷п╒п≤п°п≤п≈п░п╕п≤п╞ (п╥п╟я┴п╦я┌п╟ п╬я┌ п╢п╡п╬п╧п╫п╬пЁп╬ п©п╣я─п╣п╥п╟п╨п╟п╥п╟ п©я─п╦ я│я┌п╟я─я┌п╣)
+			// п∙я│п╩п╦ п╦п╢я▒я┌ п╩п╬п╨п╟п╩я▄п╫п╟я▐ я─п╟п╠п╬я┌п╟ 
+			// (я┌.п╣. MBSlave  п╥п╟п©я┐я┴п╣п╫ п╡ п╬п╢п╫п╬п╪ п©я─п╬я├п╣я│я│п╣ я│ SharedMemory2)
+			// я┌п╬ п╬п╠я─п╟п╠п╟я┌я▀п╡п╟я┌я▄ WatchDog п╫п╣ п╫п╟п╢п╬, я┌.п╨. п╪я▀ п╦ я┌п╟п╨ п╤п╢я▒п╪ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ SM
+			// п©я─п╦ п╥п╟п╨п╟п╥п╣ п╢п╟я┌я┤п╦п╨п╬п╡, п╟ п╣я│п╩п╦ SM п╡я▀п╩п╣я┌п╦я┌, я┌п╬ п╡п╪п╣я│я┌п╣ я│ я█я┌п╦п╪ п©я─п╬я├п╣я│я│п╬п╪(MBSlave)
 			if( shm->isLocalwork() )
 				break;
 
@@ -489,7 +489,7 @@ void MBSlave::sysCommand(UniSetTypes::SystemMessage *sm)
 
 		case SystemMessage::LogRotate:
 		{
-			// переоткрываем логи
+			// п©п╣я─п╣п╬я┌п╨я─я▀п╡п╟п╣п╪ п╩п╬пЁп╦
 			unideb << myname << "(sysCommand): logRotate" << std::endl;
 			string fname = unideb.getLogFile();
 			if( !fname.empty() )
@@ -519,11 +519,11 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 	{
 		ostringstream err;
 		err << myname 
-			<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение " 
-			<< activateTimeout << " мсек";
+			<< "(askSensors): п²п╣ п╢п╬п╤п╢п╟п╩п╦я│я▄ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦(work) SharedMemory п╨ я─п╟п╠п╬я┌п╣ п╡ я┌п╣я┤п╣п╫п╦п╣ " 
+			<< activateTimeout << " п╪я│п╣п╨";
 	
 		dlog[Debug::CRIT] << err.str() << endl;
-		kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
+		kill(SIGTERM,getpid());	// п©я─п╣я─я▀п╡п╟п╣п╪ (п©п╣я─п╣п╥п╟п©я┐я│п╨п╟п╣п╪) п©я─п╬я├п╣я│я│...
 		throw SystemError(err.str());
 	}
 
@@ -579,9 +579,9 @@ void MBSlave::sensorInfo( UniSetTypes::SensorMessage* sm )
 // ------------------------------------------------------------------------------------------
 bool MBSlave::activateObject()
 {
-	// блокирование обработки Starsp 
-	// пока не пройдёт инициализация датчиков
-	// см. sysCommand()
+	// п╠п╩п╬п╨п╦я─п╬п╡п╟п╫п╦п╣ п╬п╠я─п╟п╠п╬я┌п╨п╦ Starsp 
+	// п©п╬п╨п╟ п╫п╣ п©я─п╬п╧п╢я▒я┌ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ п╢п╟я┌я┤п╦п╨п╬п╡
+	// я│п╪. sysCommand()
 	{
 		activated = false;
 		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
@@ -607,14 +607,14 @@ void MBSlave::readConfiguration()
 	if(!root)
 	{
 		ostringstream err;
-		err << myname << "(readConfiguration): не нашли корневого раздела <sensors>";
+		err << myname << "(readConfiguration): п╫п╣ п╫п╟я┬п╩п╦ п╨п╬я─п╫п╣п╡п╬пЁп╬ я─п╟п╥п╢п╣п╩п╟ <sensors>";
 		throw SystemError(err.str());
 	}
 
 	UniXML_iterator it(root);
 	if( !it.goChildren() )
 	{
-		std::cerr << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
+		std::cerr << myname << "(readConfiguration): я─п╟п╥п╢п╣п╩ <sensors> п╫п╣ я│п╬п╢п╣я─п╤п╦я┌ я│п╣п╨я├п╦п╧ ?!!\n";
 		return;
 	}
 
@@ -632,11 +632,11 @@ bool MBSlave::check_item( UniXML_iterator& it )
 	if( s_field.empty() )
 		return true;
 
-	// просто проверка на не пустой field
+	// п©я─п╬я│я┌п╬ п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п╫п╣ п©я┐я│я┌п╬п╧ field
 	if( s_fvalue.empty() && it.getProp(s_field).empty() )
 		return false;
 
-	// просто проверка что field = value
+	// п©я─п╬я│я┌п╬ п©я─п╬п╡п╣я─п╨п╟ я┤я┌п╬ field = value
 	if( !s_fvalue.empty() && it.getProp(s_field)!=s_fvalue )
 		return false;
 
@@ -734,22 +734,22 @@ void MBSlave::initIterators()
 void MBSlave::help_print( int argc, const char* const* argv )
 {
 	cout << "Default: prefix='mbtcp'" << endl;
-	cout << "--prefix-heartbeat-id		- Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--prefix-heartbeat-max  	- Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--prefix-ready-timeout	- Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
-	cout << "--prefix-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
-	cout << "--prefix-notRespondSensor - датчик связи для данного процесса " << endl;
-	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
-	cout << "--prefix-recv-timeout - Таймаут на ожидание ответа." << endl;
+	cout << "--prefix-heartbeat-id		- п■п╟п╫п╫я▀п╧ п©я─п╬я├п╣я│я│ я│п╡я▐п╥п╟п╫ я│ я┐п╨п╟п╥п╟п╫п╫я▀п╪ п╟п╫п╟п╩п╬пЁп╬п╡я▀п╪ heartbeat-п╢п╟я┤п╦п╨п╬п╪." << endl;
+	cout << "--prefix-heartbeat-max  	- п°п╟п╨я│п╦п╪п╟п╩я▄п╫п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ heartbeat-я│я┤я▒я┌я┤п╦п╨п╟ п╢п╩я▐ п╢п╟п╫п╫п╬пЁп╬ п©я─п╬я├п╣я│я│п╟. п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ 10." << endl;
+	cout << "--prefix-ready-timeout	- п▓я─п╣п╪я▐ п╬п╤п╦п╢п╟п╫п╦я▐ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ SM п╨ я─п╟п╠п╬я┌п╣, п╪я│п╣п╨. (-1 - п╤п╢п╟я┌я▄ 'п╡п╣я┤п╫п╬')" << endl;    
+	cout << "--prefix-initPause		- п≈п╟п╢п╣я─п╤п╨п╟ п©п╣я─п╣п╢ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦п╣п╧ (п╡я─п╣п╪я▐ п╫п╟ п╟п╨я┌п╦п╡п╦п╥п╟я├п╦я▐ п©я─п╬я├п╣я│я│п╟)" << endl;
+	cout << "--prefix-notRespondSensor - п╢п╟я┌я┤п╦п╨ я│п╡я▐п╥п╦ п╢п╩я▐ п╢п╟п╫п╫п╬пЁп╬ п©я─п╬я├п╣я│я│п╟ " << endl;
+	cout << "--prefix-sm-ready-timeout - п╡я─п╣п╪я▐ п╫п╟ п╬п╤п╦п╢п╟п╫п╦п╣ я│я┌п╟я─я┌п╟ SM" << endl;
+	cout << "--prefix-recv-timeout - п╒п╟п╧п╪п╟я┐я┌ п╫п╟ п╬п╤п╦п╢п╟п╫п╦п╣ п╬я┌п╡п╣я┌п╟." << endl;
 	cout << "--prefix-allow-setdatetime - On set date and time (0x50) modbus function" << endl;
-	cout << "--prefix-my-addr      - адрес текущего узла" << endl;
+	cout << "--prefix-my-addr      - п╟п╢я─п╣я│ я┌п╣п╨я┐я┴п╣пЁп╬ я┐п╥п╩п╟" << endl;
 	cout << "--prefix-type [RTU|TCP] - modbus server type." << endl;
 
-	cout << " Настройки протокола RTU: " << endl;
-	cout << "--prefix-dev devname  - файл устройства" << endl;
-	cout << "--prefix-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
+	cout << " п²п╟я│я┌я─п╬п╧п╨п╦ п©я─п╬я┌п╬п╨п╬п╩п╟ RTU: " << endl;
+	cout << "--prefix-dev devname  - я└п╟п╧п╩ я┐я│я┌я─п╬п╧я│я┌п╡п╟" << endl;
+	cout << "--prefix-speed        - п║п╨п╬я─п╬я│я┌я▄ п╬п╠п╪п╣п╫п╟ (9600,19920,38400,57600,115200)." << endl;
 
-	cout << " Настройки протокола TCP: " << endl;
+	cout << " п²п╟я│я┌я─п╬п╧п╨п╦ п©я─п╬я┌п╬п╨п╬п╩п╟ TCP: " << endl;
 	cout << "--prefix-inet-addr [xxx.xxx.xxx.xxx | hostname ]  - this modbus server address" << endl;
 	cout << "--prefix-inet-port num - this modbus server port. Default: 502" << endl;
 }
@@ -760,16 +760,16 @@ MBSlave* MBSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::
 	string name = conf->getArgParam("--" + prefix + "-name","MBSlave1");
 	if( name.empty() )
 	{
-		cerr << "(mbslave): Не задан name'" << endl;
+		cerr << "(mbslave): п²п╣ п╥п╟п╢п╟п╫ name'" << endl;
 		return 0;
 	}
 
 	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		cerr << "(mbslave): идентификатор '" << name 
-			<< "' не найден в конф. файле!"
-			<< " в секции " << conf->getObjectsSection() << endl;
+		cerr << "(mbslave): п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ '" << name 
+			<< "' п╫п╣ п╫п╟п╧п╢п╣п╫ п╡ п╨п╬п╫я└. я└п╟п╧п╩п╣!"
+			<< " п╡ я│п╣п╨я├п╦п╦ " << conf->getObjectsSection() << endl;
 		return 0;
 	}
 
@@ -815,8 +815,8 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage&
 			return ret;
 		}
 
-		// Фомирование ответа:
-		int num=0; // добавленное количество данных
+		// п╓п╬п╪п╦я─п╬п╡п╟п╫п╦п╣ п╬я┌п╡п╣я┌п╟:
+		int num=0; // п╢п╬п╠п╟п╡п╩п╣п╫п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╢п╟п╫п╫я▀я┘
 		ModbusRTU::ModbusData d = 0;
 		ModbusRTU::ModbusData reg = query.start;
 		for( ; num<query.count; num++, reg++ )
@@ -828,8 +828,8 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage&
 				reply.addData(0);
 		}
 
-		// Если мы в начале проверили, что запрос входит в разрешёный диапазон
-		// то теоретически этой ситуации возникнуть не может...
+		// п∙я│п╩п╦ п╪я▀ п╡ п╫п╟я┤п╟п╩п╣ п©я─п╬п╡п╣я─п╦п╩п╦, я┤я┌п╬ п╥п╟п©я─п╬я│ п╡я┘п╬п╢п╦я┌ п╡ я─п╟п╥я─п╣я┬я▒п╫я▀п╧ п╢п╦п╟п©п╟п╥п╬п╫
+		// я┌п╬ я┌п╣п╬я─п╣я┌п╦я┤п╣я│п╨п╦ я█я┌п╬п╧ я│п╦я┌я┐п╟я├п╦п╦ п╡п╬п╥п╫п╦п╨п╫я┐я┌я▄ п╫п╣ п╪п╬п╤п╣я┌...
 		if( reply.count < query.count )
 		{
 			dlog[Debug::WARN] << myname 
@@ -853,7 +853,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage&
 	catch( CORBA::SystemException& ex )
 	{
 		if( pingOK )
-			dlog[Debug::CRIT] << myname << "(readOutputRegisters): СORBA::SystemException: "
+			dlog[Debug::CRIT] << myname << "(readOutputRegisters): п║ORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 	}
 	catch(...)
@@ -875,7 +875,7 @@ ModbusRTU::mbErrCode MBSlave::writeOutputRegisters( ModbusRTU::WriteOutputMessag
 
 	ModbusRTU::mbErrCode ret = ModbusRTU::erNoError;
 
-	// Формирование ответа:
+	// п╓п╬я─п╪п╦я─п╬п╡п╟п╫п╦п╣ п╬я┌п╡п╣я┌п╟:
 	int write_ok = 0;
 	ModbusRTU::ModbusData reg = query.start;
 	for( int num=0; num<query.quant; num++,reg++ )
@@ -885,7 +885,7 @@ ModbusRTU::mbErrCode MBSlave::writeOutputRegisters( ModbusRTU::WriteOutputMessag
 			write_ok++;
 	}			
 
-	// формируем ответ
+	// я└п╬я─п╪п╦я─я┐п╣п╪ п╬я┌п╡п╣я┌
 	if( write_ok > 0 )
 		reply.set(query.start,query.quant);
 
@@ -1021,7 +1021,7 @@ ModbusRTU::mbErrCode MBSlave::real_write( ModbusRTU::ModbusData reg,
 	catch( CORBA::SystemException& ex )
 	{
 		if( pingOK )
-			dlog[Debug::CRIT] << myname << "(write): СORBA::SystemException: "
+			dlog[Debug::CRIT] << myname << "(write): п║ORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 	}
 	catch(...)
@@ -1125,8 +1125,8 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 			return ret;
 		}
 
-		// Фомирование ответа:
-		int num=0; // добавленное количество данных
+		// п╓п╬п╪п╦я─п╬п╡п╟п╫п╦п╣ п╬я┌п╡п╣я┌п╟:
+		int num=0; // п╢п╬п╠п╟п╡п╩п╣п╫п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╢п╟п╫п╫я▀я┘
 		ModbusRTU::ModbusData d = 0;
 		ModbusRTU::ModbusData reg = query.start;
 		for( ; num<query.count; num++, reg++ )
@@ -1138,8 +1138,8 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 				reply.addData(0);
 		}
 
-		// Если мы в начале проверили, что запрос входит в разрешёный диапазон
-		// то теоретически этой ситуации возникнуть не может...
+		// п∙я│п╩п╦ п╪я▀ п╡ п╫п╟я┤п╟п╩п╣ п©я─п╬п╡п╣я─п╦п╩п╦, я┤я┌п╬ п╥п╟п©я─п╬я│ п╡я┘п╬п╢п╦я┌ п╡ я─п╟п╥я─п╣я┬я▒п╫я▀п╧ п╢п╦п╟п©п╟п╥п╬п╫
+		// я┌п╬ я┌п╣п╬я─п╣я┌п╦я┤п╣я│п╨п╦ я█я┌п╬п╧ я│п╦я┌я┐п╟я├п╦п╦ п╡п╬п╥п╫п╦п╨п╫я┐я┌я▄ п╫п╣ п╪п╬п╤п╣я┌...
 		if( reply.count < query.count )
 		{
 			dlog[Debug::WARN] << myname 
@@ -1163,7 +1163,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 	catch( CORBA::SystemException& ex )
 	{
 		if( pingOK )
-			dlog[Debug::CRIT] << myname << "(readInputRegisters): СORBA::SystemException: "
+			dlog[Debug::CRIT] << myname << "(readInputRegisters): п║ORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 	}
 	catch(...)
@@ -1233,8 +1233,8 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 			return ret;
 		}
 
-		// Фомирование ответа:
-		int num=0; // добавленное количество данных
+		// п╓п╬п╪п╦я─п╬п╡п╟п╫п╦п╣ п╬я┌п╡п╣я┌п╟:
+		int num=0; // п╢п╬п╠п╟п╡п╩п╣п╫п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╢п╟п╫п╫я▀я┘
 		ModbusRTU::ModbusData d = 0;
 		ModbusRTU::ModbusData reg = query.start;
 		for( ; num<query.count; num++, reg++ )
@@ -1246,8 +1246,8 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 				reply.addData(0);
 		}
 
-		// Если мы в начале проверили, что запрос входит в разрешёный диапазон
-		// то теоретически этой ситуации возникнуть не может...
+		// п∙я│п╩п╦ п╪я▀ п╡ п╫п╟я┤п╟п╩п╣ п©я─п╬п╡п╣я─п╦п╩п╦, я┤я┌п╬ п╥п╟п©я─п╬я│ п╡я┘п╬п╢п╦я┌ п╡ я─п╟п╥я─п╣я┬я▒п╫я▀п╧ п╢п╦п╟п©п╟п╥п╬п╫
+		// я┌п╬ я┌п╣п╬я─п╣я┌п╦я┤п╣я│п╨п╦ я█я┌п╬п╧ я│п╦я┌я┐п╟я├п╦п╦ п╡п╬п╥п╫п╦п╨п╫я┐я┌я▄ п╫п╣ п╪п╬п╤п╣я┌...
 //		if( reply.bcnt < query.count )
 //		{
 //			dlog[Debug::WARN] << myname 
@@ -1271,7 +1271,7 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 	catch( CORBA::SystemException& ex )
 	{
 		if( pingOK )
-			dlog[Debug::CRIT] << myname << "(readInputStatus): СORBA::SystemException: "
+			dlog[Debug::CRIT] << myname << "(readInputStatus): п║ORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 	}
 	catch(...)

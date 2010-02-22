@@ -42,7 +42,7 @@ int main(int argc, const char **argv)
 		timeout_t timeMS = conf->getArgInt("--polltime");
 		if( timeMS )
 		{
-			cout << "(main): ÐÒÏÓÍÁÔÒÉ×ÁÅÍ Ó ÐÅÒÉÏÄÏÍ " << timeMS << "[ÍÓÅË]" <<  endl;
+			cout << "(main): Ð¿Ñ€Ð¾ÑÐ¼Ð°Ñ‚Ñ€Ð¸Ð²Ð°ÐµÐ¼ Ñ Ð¿ÐµÑ€Ð¸Ð¾Ð´Ð¾Ð¼ " << timeMS << "[Ð¼ÑÐµÐº]" <<  endl;
 			sv.monitor(timeMS);
 		}
 		else
@@ -50,11 +50,11 @@ int main(int argc, const char **argv)
 	}
 	catch(Exception& ex )
     {
-		cerr << "(main): ðÏÊÍÁÌÉ ÉÓËÌÀÞÅÎÉÅ " << ex <<  endl;
+		cerr << "(main): ÐŸÐ¾Ð¹Ð¼Ð°Ð»Ð¸ Ð¸ÑÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ðµ " << ex <<  endl;
     }
     catch(...)
     {
-    	cerr << "(main): îÅÉÚ×ÅÓÔÎÏÅ ÉÓËÌÀÞÅÎÉÅ!!!!"<< endl;
+    	cerr << "(main): ÐÐµÐ¸Ð·Ð²ÐµÑÑ‚Ð½Ð¾Ðµ Ð¸ÑÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ðµ!!!!"<< endl;
     }
 
 	return 0;

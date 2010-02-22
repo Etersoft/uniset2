@@ -28,7 +28,7 @@
 // ---------------------------------------------------------------------------
 #include <string>
 #include <iostream>
-//#warning Для использования mysql_create нужен define USE_OLD_FUNCTIONS
+//#warning п■п╩я▐ п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╫п╦я▐ mysql_create п╫я┐п╤п╣п╫ define USE_OLD_FUNCTIONS
 //#define USE_OLD_FUNCTIONS
 #include <mysql/mysql.h>
 using std::string;
@@ -56,12 +56,12 @@ class DBInterface
 			string addslashes(const string& str);
 			
 			/*! 
-				проверка связи с БД.
-				в случае отсутсвия попытка восстановить...
+				п©я─п╬п╡п╣я─п╨п╟ я│п╡я▐п╥п╦ я│ п▒п■.
+				п╡ я│п╩я┐я┤п╟п╣ п╬я┌я│я┐я┌я│п╡п╦я▐ п©п╬п©я▀я┌п╨п╟ п╡п╬я│я│я┌п╟п╫п╬п╡п╦я┌я▄...
 			*/
 			bool ping();
 
-			/*! связь с БД установлена (была) */
+			/*! я│п╡я▐п╥я▄ я│ п▒п■ я┐я│я┌п╟п╫п╬п╡п╩п╣п╫п╟ (п╠я▀п╩п╟) */
 			bool isConnection();
 			
 			bool nextRecord();
@@ -88,7 +88,7 @@ class DBInterface
 		MYSQL_RES *result;
 		MYSQL *mysql;
 		string lastQ;
-		bool queryok;	// успешность текущего запроса
+		bool queryok;	// я┐я│п©п╣я┬п╫п╬я│я┌я▄ я┌п╣п╨я┐я┴п╣пЁп╬ п╥п╟п©я─п╬я│п╟
 };
 // ----------------------------------------------------------------------------------
 #endif

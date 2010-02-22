@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \brief Универсальный интерфейс для взаимодействия с объектами системы
+ * \brief пёп╫п╦п╡п╣я─я│п╟п╩я▄п╫я▀п╧ п╦п╫я┌п╣я─я└п╣п╧я│ п╢п╩я▐ п╡п╥п╟п╦п╪п╬п╢п╣п╧я│я┌п╡п╦я▐ я│ п╬п╠я┼п╣п╨я┌п╟п╪п╦ я│п╦я│я┌п╣п╪я▀
  * \author Pavel Vainerman
  * \version $Id: UniversalInterface.h,v 1.24 2008/12/14 21:57:51 vpashka Exp $
  * \date   $Date: 2008/12/14 21:57:51 $
@@ -42,27 +42,27 @@
 
 // -----------------------------------------------------------------------------------------
 /*! \namespace UniversalIO
- * Пространство имен содержащее классы, функции и т.п. для работы с вводом/выводом 
+ * п÷я─п╬я│я┌я─п╟п╫я│я┌п╡п╬ п╦п╪п╣п╫ я│п╬п╢п╣я─п╤п╟я┴п╣п╣ п╨п╩п╟я│я│я▀, я└я┐п╫п╨я├п╦п╦ п╦ я┌.п©. п╢п╩я▐ я─п╟п╠п╬я┌я▀ я│ п╡п╡п╬п╢п╬п╪/п╡я▀п╡п╬п╢п╬п╪ 
 */
 namespace UniversalIO
 {
-    /*! Время ожидания ответа */
-    const unsigned int defaultTimeOut=3;	// [сек]
+    /*! п▓я─п╣п╪я▐ п╬п╤п╦п╢п╟п╫п╦я▐ п╬я┌п╡п╣я┌п╟ */
+    const unsigned int defaultTimeOut=3;	// [я│п╣п╨]
 }
 
 // -----------------------------------------------------------------------------------------
-//#define REPEAT_TIMEOUT	100 // [мс] пауза между попытками вызвать удаленную функцию объекта
-//#define REPEAT_COUNT	5 	// количество попыток, после которого вырабатывается TimeOut
+//#define REPEAT_TIMEOUT	100 // [п╪я│] п©п╟я┐п╥п╟ п╪п╣п╤п╢я┐ п©п╬п©я▀я┌п╨п╟п╪п╦ п╡я▀п╥п╡п╟я┌я▄ я┐п╢п╟п╩п╣п╫п╫я┐я▌ я└я┐п╫п╨я├п╦я▌ п╬п╠я┼п╣п╨я┌п╟
+//#define REPEAT_COUNT	5 	// п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п©п╬п©я▀я┌п╬п╨, п©п╬я│п╩п╣ п╨п╬я┌п╬я─п╬пЁп╬ п╡я▀я─п╟п╠п╟я┌я▀п╡п╟п╣я┌я│я▐ TimeOut
 
 #define IO_THROW_EXCEPTIONS UniSetTypes::TimeOut,UniSetTypes::IOBadParam,UniSetTypes::ORepFailed
 
 // -----------------------------------------------------------------------------------------
 /*!
  * \class UniversalInterface
- * ... а здесь идет кратенькое описание... (коротенько минут на 40!...)
- * Для увеличения производительности в функции встроен cache обращений...
+ * ... п╟ п╥п╢п╣я│я▄ п╦п╢п╣я┌ п╨я─п╟я┌п╣п╫я▄п╨п╬п╣ п╬п©п╦я│п╟п╫п╦п╣... (п╨п╬я─п╬я┌п╣п╫я▄п╨п╬ п╪п╦п╫я┐я┌ п╫п╟ 40!...)
+ * п■п╩я▐ я┐п╡п╣п╩п╦я┤п╣п╫п╦я▐ п©я─п╬п╦п╥п╡п╬п╢п╦я┌п╣п╩я▄п╫п╬я│я┌п╦ п╡ я└я┐п╫п╨я├п╦п╦ п╡я│я┌я─п╬п╣п╫ cache п╬п╠я─п╟я┴п╣п╫п╦п╧...
  *
- * См. также \ref UniversalIOControllerPage
+ * п║п╪. я┌п╟п╨п╤п╣ \ref UniversalIOControllerPage
 */ 
 class UniversalInterface
 {
@@ -74,18 +74,18 @@ class UniversalInterface
 		
 		inline UniSetTypes::ObjectIndex* getObjectIndex() { return oind; }
 
-		// -------- Функции работы с группой датчиков -----------
+		// -------- п╓я┐п╫п╨я├п╦п╦ я─п╟п╠п╬я┌я▀ я│ пЁя─я┐п©п©п╬п╧ п╢п╟я┌я┤п╦п╨п╬п╡ -----------
 
-		// Группа должна принадлежать одному процессу!
+		// п⌠я─я┐п©п©п╟ п╢п╬п╩п╤п╫п╟ п©я─п╦п╫п╟п╢п╩п╣п╤п╟я┌я▄ п╬п╢п╫п╬п╪я┐ п©я─п╬я├п╣я│я│я┐!
 		
-		//! Получение состояния для списка указанных датчиков
+		//! п÷п╬п╩я┐я┤п╣п╫п╦п╣ я│п╬я│я┌п╬я▐п╫п╦я▐ п╢п╩я▐ я│п©п╦я│п╨п╟ я┐п╨п╟п╥п╟п╫п╫я▀я┘ п╢п╟я┌я┤п╦п╨п╬п╡
 		IOController_i::ASensorInfoSeq_var getSensorSeq( UniSetTypes::IDList& lst );
 
-		// Изменения состояния списка входов/выходов
-		// Возвращает список не найденных идентификаторов
+		// п≤п╥п╪п╣п╫п╣п╫п╦я▐ я│п╬я│я┌п╬я▐п╫п╦я▐ я│п©п╦я│п╨п╟ п╡я┘п╬п╢п╬п╡/п╡я▀я┘п╬п╢п╬п╡
+		// п▓п╬п╥п╡я─п╟я┴п╟п╣я┌ я│п©п╦я│п╬п╨ п╫п╣ п╫п╟п╧п╢п╣п╫п╫я▀я┘ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╬п╡
 		UniSetTypes::IDSeq_var setOutputSeq( const IOController_i::OutSeq& lst, UniSetTypes::ObjectId sup_id );
 
-		//! Заказ по списку
+		//! п≈п╟п╨п╟п╥ п©п╬ я│п©п╦я│п╨я┐
 		UniSetTypes::IDSeq_var askSensorsSeq( UniSetTypes::IDList& lst, UniversalIO::UIOCommand cmd,
 												UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
@@ -93,47 +93,47 @@ class UniversalInterface
 		// ------------------------------------------------------
 
 
-		//! Получение состояния дискретного датчика
+		//! п÷п╬п╩я┐я┤п╣п╫п╦п╣ я│п╬я│я┌п╬я▐п╫п╦я▐ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
 		bool getState ( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
 		bool getState ( UniSetTypes::ObjectId id );
 
-		//! Получение состояния аналогового датчика
+		//! п÷п╬п╩я┐я┤п╣п╫п╦п╣ я│п╬я│я┌п╬я▐п╫п╦я▐ п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
 		long getValue ( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )throw(IO_THROW_EXCEPTIONS);
 		long getValue ( UniSetTypes::ObjectId id );
 		
-		//! Вывод для дискретного датчика
+		//! п▓я▀п╡п╬п╢ п╢п╩я▐ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
 		void setState ( UniSetTypes::ObjectId id, bool state, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
 		void setState ( UniSetTypes::ObjectId id, bool state );
 		void setState ( IOController_i::SensorInfo& si, bool state, UniSetTypes::ObjectId supplier );
 
-		//! Вывод для аналогового датчика
+		//! п▓я▀п╡п╬п╢ п╢п╩я▐ п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
 		void setValue ( UniSetTypes::ObjectId id, long value, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
 		void setValue ( UniSetTypes::ObjectId id, long value);
 		void setValue ( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
 
-		//! Запись состояния дискретного датчика на удаленный контроллер
+		//! п≈п╟п©п╦я│я▄ я│п╬я│я┌п╬я▐п╫п╦я▐ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟ п╫п╟ я┐п╢п╟п╩п╣п╫п╫я▀п╧ п╨п╬п╫я┌я─п╬п╩п╩п╣я─
 		bool saveState ( UniSetTypes::ObjectId id, bool state, UniversalIO::IOTypes type, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
 		bool saveState ( UniSetTypes::ObjectId id, bool state, UniversalIO::IOTypes type );
 		bool saveState ( IOController_i::SensorInfo& si, bool state, UniversalIO::IOTypes type, UniSetTypes::ObjectId supplier );
 		
-		//! Запись состояния аналогового датчика на удаленный контроллер
+		//! п≈п╟п©п╦я│я▄ я│п╬я│я┌п╬я▐п╫п╦я▐ п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟ п╫п╟ я┐п╢п╟п╩п╣п╫п╫я▀п╧ п╨п╬п╫я┌я─п╬п╩п╩п╣я─
 		bool saveValue ( UniSetTypes::ObjectId id, long value, UniversalIO::IOTypes type, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
 		bool saveValue ( UniSetTypes::ObjectId id, long value, UniversalIO::IOTypes type );
 		bool saveValue ( IOController_i::SensorInfo& si, long value, UniversalIO::IOTypes type, UniSetTypes::ObjectId supplier );
 		
-		// функции не вырабатывающие исключений...
+		// я└я┐п╫п╨я├п╦п╦ п╫п╣ п╡я▀я─п╟п╠п╟я┌я▀п╡п╟я▌я┴п╦п╣ п╦я│п╨п╩я▌я┤п╣п╫п╦п╧...
 		void fastSaveValue( IOController_i::SensorInfo& si, long value, UniversalIO::IOTypes type, UniSetTypes::ObjectId supplier );
 		void fastSaveState( IOController_i::SensorInfo& si, bool state, UniversalIO::IOTypes type, UniSetTypes::ObjectId supplier );
 		void fastSetState( IOController_i::SensorInfo& si, bool state, UniSetTypes::ObjectId supplier );
 		void fastSetValue( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
 
-		// установка неопределённого состояния
+		// я┐я│я┌п╟п╫п╬п╡п╨п╟ п╫п╣п╬п©я─п╣п╢п╣п╩я▒п╫п╫п╬пЁп╬ я│п╬я│я┌п╬я▐п╫п╦я▐
 		void setUndefinedState( IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId supplier );
 
 
 		CORBA::Long getRawValue( const IOController_i::SensorInfo& si );
 
-		//! калибровка
+		//! п╨п╟п╩п╦п╠я─п╬п╡п╨п╟
 		void calibrate(const IOController_i::SensorInfo& si, 
 					   const IOController_i::CalibrateInfo& ci,
 					   UniSetTypes::ObjectId adminId = UniSetTypes::DefaultObjectId );
@@ -141,14 +141,14 @@ class UniversalInterface
 		IOController_i::CalibrateInfo getCalibrateInfo( const IOController_i::SensorInfo& si );
 
 
-		//! Заказ информации об изменении дискретного датчика
+		//! п≈п╟п╨п╟п╥ п╦п╫я└п╬я─п╪п╟я├п╦п╦ п╬п╠ п╦п╥п╪п╣п╫п╣п╫п╦п╦ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
 		void askRemoteState( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node,
 							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId )throw(IO_THROW_EXCEPTIONS);		
 
 		void askState( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, 
 						UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
-		//! Заказ информации об изменении аналогового датчика						
+		//! п≈п╟п╨п╟п╥ п╦п╫я└п╬я─п╪п╟я├п╦п╦ п╬п╠ п╦п╥п╪п╣п╫п╣п╫п╦п╦ п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟						
 		void askRemoteValue ( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node,
 						UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId ) throw(IO_THROW_EXCEPTIONS);
 		void askValue ( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd,
@@ -164,7 +164,7 @@ class UniversalInterface
 								 CORBA::Long lowLimit=0, CORBA::Long hiLimit=0, CORBA::Long sensibility=0, 
 								 UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
-		//! Универсальный заказ информации об изменении датчика
+		//! пёп╫п╦п╡п╣я─я│п╟п╩я▄п╫я▀п╧ п╥п╟п╨п╟п╥ п╦п╫я└п╬я─п╪п╟я├п╦п╦ п╬п╠ п╦п╥п╪п╣п╫п╣п╫п╦п╦ п╢п╟я┌я┤п╦п╨п╟
 		void askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd,
 							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
@@ -178,12 +178,12 @@ class UniversalInterface
 		void askRemoteOutput( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node,
 							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId )throw(IO_THROW_EXCEPTIONS);
 
-		//! Заказ таймера
+		//! п≈п╟п╨п╟п╥ я┌п╟п╧п╪п╣я─п╟
 		void askTimer( UniSetTypes::TimerId timerid, CORBA::Long timeMS, CORBA::Short ticks=-1,
 						UniSetTypes::Message::Priority piority=UniSetTypes::Message::High,
 						UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId) throw(IO_THROW_EXCEPTIONS);
 
-		//! Заказ сообщения
+		//! п≈п╟п╨п╟п╥ я│п╬п╬п╠я┴п╣п╫п╦я▐
 		void askMessage( UniSetTypes::MessageCode mid, UniversalIO::UIOCommand cmd, bool ack = true,
 							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId ) throw(IO_THROW_EXCEPTIONS);
 		void askMessageRange( UniSetTypes::MessageCode from, UniSetTypes::MessageCode to,
@@ -200,15 +200,15 @@ class UniversalInterface
 		IOController_i::ShortMapSeq* getSensors( UniSetTypes::ObjectId id, 
 													UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode() );
 
-//		/*! регистрация объекта в репозитории */
+//		/*! я─п╣пЁп╦я│я┌я─п╟я├п╦я▐ п╬п╠я┼п╣п╨я┌п╟ п╡ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╦ */
 		void registered(UniSetTypes::ObjectId id, const UniSetTypes::ObjectPtr oRef, bool force=false)throw(UniSetTypes::ORepFailed);
 		void registered(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node, const UniSetTypes::ObjectPtr oRef, bool force=false)throw(UniSetTypes::ORepFailed);
 
-//		/*! разрегистрация объекта */
+//		/*! я─п╟п╥я─п╣пЁп╦я│я┌я─п╟я├п╦я▐ п╬п╠я┼п╣п╨я┌п╟ */
 		void unregister(UniSetTypes::ObjectId id)throw(UniSetTypes::ORepFailed);
 		void unregister(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node)throw(UniSetTypes::ORepFailed);
 
-		/*! получение ссылки на объект */
+		/*! п©п╬п╩я┐я┤п╣п╫п╦п╣ я│я│я▀п╩п╨п╦ п╫п╟ п╬п╠я┼п╣п╨я┌ */
 		inline UniSetTypes::ObjectPtr resolve(const char* name)
 		{
 		    return rep.resolve(name);
@@ -227,7 +227,7 @@ class UniversalInterface
 		bool isExist( UniSetTypes::ObjectId id );
 		bool isExist( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
 
-		/*! получение идентификатора объекта по имени */
+		/*! п©п╬п╩я┐я┤п╣п╫п╦п╣ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╟ п╬п╠я┼п╣п╨я┌п╟ п©п╬ п╦п╪п╣п╫п╦ */
 		inline UniSetTypes::ObjectId getIdByName(const char* name)
 		{
 		    return oind->getIdByName(name);
@@ -237,7 +237,7 @@ class UniversalInterface
 		    return getIdByName(name.c_str());
 		}
 
-		/*! получение имени по идентификатору объекта */
+		/*! п©п╬п╩я┐я┤п╣п╫п╦п╣ п╦п╪п╣п╫п╦ п©п╬ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─я┐ п╬п╠я┼п╣п╨я┌п╟ */
 		inline std::string getNameById( UniSetTypes::ObjectId id )
 		{
 			return oind->getNameById(id);
@@ -263,10 +263,10 @@ class UniversalInterface
 		    return oind->getTextName(id);
 		}
 
-		static std::string timeToString(time_t tm=time(0), const std::string brk=":"); /*!< Преобразование времени в строку HH:MM:SS */
-		static std::string dateToString(time_t tm=time(0), const std::string brk="/"); /*!< Преобразование даты в строку DD/MM/YYYY */
+		static std::string timeToString(time_t tm=time(0), const std::string brk=":"); /*!< п÷я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╡я─п╣п╪п╣п╫п╦ п╡ я│я┌я─п╬п╨я┐ HH:MM:SS */
+		static std::string dateToString(time_t tm=time(0), const std::string brk="/"); /*!< п÷я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╟я┌я▀ п╡ я│я┌я─п╬п╨я┐ DD/MM/YYYY */
 
-		/*! посылка сообщения msg объекту name на узел node */
+		/*! п©п╬я│я▀п╩п╨п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ msg п╬п╠я┼п╣п╨я┌я┐ name п╫п╟ я┐п╥п╣п╩ node */
 		void send( UniSetTypes::ObjectId name, UniSetTypes::TransportMessage& msg, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
 		void send( UniSetTypes::ObjectId name, UniSetTypes::TransportMessage& msg);
 
@@ -295,7 +295,7 @@ class UniversalInterface
 		}
 
 		/*!
-			\todo Убедится в уникальности возвращаемого результата	hash(...)	
+			\todo пёп╠п╣п╢п╦я┌я│я▐ п╡ я┐п╫п╦п╨п╟п╩я▄п╫п╬я│я┌п╦ п╡п╬п╥п╡я─п╟я┴п╟п╣п╪п╬пЁп╬ я─п╣п╥я┐п╩я▄я┌п╟я┌п╟	hash(...)	
 		*/
 		class CacheOfResolve
 		{
@@ -319,15 +319,15 @@ class UniversalInterface
 					CacheOfResolve(){};
 			private:
 			
-				bool clean(); 		/*!< функция очистки кэш-а от старых ссылок */
-				inline void clear() /*!< удаление всей информации */
+				bool clean(); 		/*!< я└я┐п╫п╨я├п╦я▐ п╬я┤п╦я│я┌п╨п╦ п╨я█я┬-п╟ п╬я┌ я│я┌п╟я─я▀я┘ я│я│я▀п╩п╬п╨ */
+				inline void clear() /*!< я┐п╢п╟п╩п╣п╫п╦п╣ п╡я│п╣п╧ п╦п╫я└п╬я─п╪п╟я├п╦п╦ */
 				{
 					UniSetTypes::uniset_mutex_lock l(cmutex,200);
 					mcache.clear();	
 				}; 
 								
 				/*!
-					\todo можно добавить поле CleanTime для каждой ссылки отдельно...
+					\todo п╪п╬п╤п╫п╬ п╢п╬п╠п╟п╡п╦я┌я▄ п©п╬п╩п╣ CleanTime п╢п╩я▐ п╨п╟п╤п╢п╬п╧ я│я│я▀п╩п╨п╦ п╬я┌п╢п╣п╩я▄п╫п╬...
 				*/
 				struct Info
 				{
@@ -342,7 +342,7 @@ class UniversalInterface
 						ptr(NULL), timestamp(0){};
 
 					UniSetTypes::ObjectVar ptr;
-					time_t timestamp; // время последнего обращения 
+					time_t timestamp; // п╡я─п╣п╪я▐ п©п╬я│п╩п╣п╢п╫п╣пЁп╬ п╬п╠я─п╟я┴п╣п╫п╦я▐ 
 
 					bool operator<( const CacheOfResolve::Info& rhs ) const
 					{
@@ -354,14 +354,14 @@ class UniversalInterface
 				typedef std::map<int, Info> CacheMap;
 				CacheMap mcache;
 				UniSetTypes::uniset_mutex cmutex;
-				unsigned int MaxSize;	/*!< максимальный размер кэша */
-				unsigned int CleanTime;	/*!< период устаревания ссылок [мин] */
+				unsigned int MaxSize;	/*!< п╪п╟п╨я│п╦п╪п╟п╩я▄п╫я▀п╧ я─п╟п╥п╪п╣я─ п╨я█я┬п╟ */
+				unsigned int CleanTime;	/*!< п©п╣я─п╦п╬п╢ я┐я│я┌п╟я─п╣п╡п╟п╫п╦я▐ я│я│я▀п╩п╬п╨ [п╪п╦п╫] */
 
 /*
-				// В последствии написать функцию для использования
+				// п▓ п©п╬я│п╩п╣п╢я│я┌п╡п╦п╦ п╫п╟п©п╦я│п╟я┌я▄ я└я┐п╫п╨я├п╦я▌ п╢п╩я▐ п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╫п╦я▐
 				// remove_if
 				typedef std::pair<int, Info> CacheItem;
-				// функция-объект для поиска устаревших(по времени) ссылок
+				// я└я┐п╫п╨я├п╦я▐-п╬п╠я┼п╣п╨я┌ п╢п╩я▐ п©п╬п╦я│п╨п╟ я┐я│я┌п╟я─п╣п╡я┬п╦я┘(п©п╬ п╡я─п╣п╪п╣п╫п╦) я│я│я▀п╩п╬п╨
 				struct OldRef_eq: public unary_function<CacheItem, bool>
 				{		
 					OldRef_eq(time_t tm):tm(tm){}

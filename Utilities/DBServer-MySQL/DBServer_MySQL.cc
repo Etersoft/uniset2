@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *  \brief файл реализации DB-сервера
+ *  \brief я└п╟п╧п╩ я─п╣п╟п╩п╦п╥п╟я├п╦п╦ DB-я│п╣я─п╡п╣я─п╟
  *  \author Pavel Vainerman
  *  \date   $Date: 2009/02/26 19:55:37 $
  *  \version $Id: DBServer_MySQL.cc,v 1.10 2009/02/26 19:55:37 vpashka Exp $
@@ -51,7 +51,7 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id):
 	if( getId() == DefaultObjectId )
 	{
 		ostringstream msg;
-		msg << "(DBServer_MySQL): Запуск невозможен! НЕ ОПРЕДЕЛЁН ObjectId !!!!!\n";
+		msg << "(DBServer_MySQL): п≈п╟п©я┐я│п╨ п╫п╣п╡п╬п╥п╪п╬п╤п╣п╫! п²п∙ п·п÷п═п∙п■п∙п⌡п│п² ObjectId !!!!!\n";
 //		unideb[Debug::CRIT] << msg.str() << endl;
 		throw Exception(msg.str());
 	}
@@ -69,7 +69,7 @@ DBServer_MySQL::DBServer_MySQL():
 	if( getId() == DefaultObjectId )
 	{
 		ostringstream msg;
-		msg << "(DBServer_MySQL): Запуск невозможен! Для данного узла НЕ ОПРЕДЕЛЁН ObjectId !!!!!\n";
+		msg << "(DBServer_MySQL): п≈п╟п©я┐я│п╨ п╫п╣п╡п╬п╥п╪п╬п╤п╣п╫! п■п╩я▐ п╢п╟п╫п╫п╬пЁп╬ я┐п╥п╩п╟ п²п∙ п·п÷п═п∙п■п∙п⌡п│п² ObjectId !!!!!\n";
 //		unideb[Debug::CRIT] << msg.str() << endl;
 		throw Exception(msg.str());
 	}
@@ -133,7 +133,7 @@ void DBServer_MySQL::parse( UniSetTypes::DBMessage* dbm )
 {
 	if( dbm->tblid == UniSetTypes::Message::Unused )
 	{
-		unideb[Debug::CRIT] << myname <<  "(dbmessage): не задан tblId...\n";
+		unideb[Debug::CRIT] << myname <<  "(dbmessage): п╫п╣ п╥п╟п╢п╟п╫ tblId...\n";
 		return;
 	}
 		
@@ -173,7 +173,7 @@ void DBServer_MySQL::parse( UniSetTypes::InfoMessage* im )
 	if( !message.empty() )
 		message = db->addslashes(message);
 
-	// Прежде чем формировать строку обязательно смотрите формат базы данных(порядок полей таблицы)!!!
+	// п÷я─п╣п╤п╢п╣ я┤п╣п╪ я└п╬я─п╪п╦я─п╬п╡п╟я┌я▄ я│я┌я─п╬п╨я┐ п╬п╠я▐п╥п╟я┌п╣п╩я▄п╫п╬ я│п╪п╬я┌я─п╦я┌п╣ я└п╬я─п╪п╟я┌ п╠п╟п╥я▀ п╢п╟п╫п╫я▀я┘(п©п╬я─я▐п╢п╬п╨ п©п╬п╩п╣п╧ я┌п╟п╠п╩п╦я├я▀)!!!
 	ostringstream ostr;
 	ostr << "INSERT INTO " << tblName(im->type);
 	ostr << "(num,node,id,date,time,time_usec,code,text,haracter,type,confirm,causeid) VALUES(";
@@ -200,7 +200,7 @@ void DBServer_MySQL::parse( UniSetTypes::AlarmMessage* am )
 	if( !message.empty() )
 		message = db->addslashes(message);
 
-	// Прежде чем формировать строку обязательно смотрите формат базы данных(порядок полей таблицы)!!!
+	// п÷я─п╣п╤п╢п╣ я┤п╣п╪ я└п╬я─п╪п╦я─п╬п╡п╟я┌я▄ я│я┌я─п╬п╨я┐ п╬п╠я▐п╥п╟я┌п╣п╩я▄п╫п╬ я│п╪п╬я┌я─п╦я┌п╣ я└п╬я─п╪п╟я┌ п╠п╟п╥я▀ п╢п╟п╫п╫я▀я┘(п©п╬я─я▐п╢п╬п╨ п©п╬п╩п╣п╧ я┌п╟п╠п╩п╦я├я▀)!!!
 	ostringstream ostr;
 	ostr << "INSERT INTO " << tblName(am->type);
 	ostr << "(num,node,id,date,time,time_usec,code,text,haracter,type,confirm,causeid) VALUES(";
@@ -219,7 +219,7 @@ void DBServer_MySQL::parse( UniSetTypes::AlarmMessage* am )
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::parse( UniSetTypes::ConfirmMessage* am )
 {
-	// Сохраняем ПОДТВЕРЖДЕНИЕ в базу
+	// п║п╬я┘я─п╟п╫я▐п╣п╪ п÷п·п■п╒п▓п∙п═п√п■п∙п²п≤п∙ п╡ п╠п╟п╥я┐
 	ostringstream query;
 	query << "UPDATE " << tblName(am->orig_type) << " SET ";
 	query << "confirm='" << ui.timeToString(am->tm.tv_sec,":") << "'";
@@ -246,17 +246,17 @@ bool DBServer_MySQL::writeToBase( const string& query )
 //	cout << "DBServer_MySQL: " << query << endl;
 	if( !db || !connect_ok )
 	{
-		unideb[Debug::CRIT] << myname << "(writeToBase): соединение с БД не установлено\n"
+		unideb[Debug::CRIT] << myname << "(writeToBase): я│п╬п╣п╢п╦п╫п╣п╫п╦п╣ я│ п▒п■ п╫п╣ я┐я│я┌п╟п╫п╬п╡п╩п╣п╫п╬\n"
 					<< myname << "(writeToBase): lost query: " 
 					<< query << endl;
 		return false;
 	}
 
 	db->query( query ); 
-	// Дело в том что на INSERT И UPDATE запросы 
-	// db->query() может возвращать false и надо самому
-	// отдельно проверять действительно ли произошла ошибка
-	// см. DBInterface::query.
+	// п■п╣п╩п╬ п╡ я┌п╬п╪ я┤я┌п╬ п╫п╟ INSERT п≤ UPDATE п╥п╟п©я─п╬я│я▀ 
+	// db->query() п╪п╬п╤п╣я┌ п╡п╬п╥п╡я─п╟я┴п╟я┌я▄ false п╦ п╫п╟п╢п╬ я│п╟п╪п╬п╪я┐
+	// п╬я┌п╢п╣п╩я▄п╫п╬ п©я─п╬п╡п╣я─я▐я┌я▄ п╢п╣п╧я│я┌п╡п╦я┌п╣п╩я▄п╫п╬ п╩п╦ п©я─п╬п╦п╥п╬я┬п╩п╟ п╬я┬п╦п╠п╨п╟
+	// я│п╪. DBInterface::query.
 	string err(db->error());
 	if( err.empty() )
 	{
@@ -271,17 +271,17 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 {
 	try
 	{
-		// если время не было выставлено (указываем время сохранения в БД)
+		// п╣я│п╩п╦ п╡я─п╣п╪я▐ п╫п╣ п╠я▀п╩п╬ п╡я▀я│я┌п╟п╡п╩п╣п╫п╬ (я┐п╨п╟п╥я▀п╡п╟п╣п╪ п╡я─п╣п╪я▐ я│п╬я┘я─п╟п╫п╣п╫п╦я▐ п╡ п▒п■)
 		if( !si->tm.tv_sec )
 		{
 			struct timezone tz;
 			gettimeofday(&si->tm,&tz);
 		}
 	  		
-		// см. DBTABLE AnalogSensors, DigitalSensors 	
+		// я│п╪. DBTABLE AnalogSensors, DigitalSensors 	
 		ostringstream data;
 		data << " VALUES( ";
-												// Поля таблицы
+												// п÷п╬п╩я▐ я┌п╟п╠п╩п╦я├я▀
 		data << "NULL,'"<< si->node << "','";		// num, node
 		data << si->id << "','";					// id (sensorid)
 		data << ui.dateToString(si->sm_tv_sec,"/") << "','";	// date
@@ -309,7 +309,7 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 				break;
 
 			default:
-				unideb[Debug::WARN] << myname << "(log sensor): неизвестный тип датчика....(сообщение игнорировано)" << endl;
+				unideb[Debug::WARN] << myname << "(log sensor): п╫п╣п╦п╥п╡п╣я│я┌п╫я▀п╧ я┌п╦п© п╢п╟я┌я┤п╦п╨п╟....(я│п╬п╬п╠я┴п╣п╫п╦п╣ п╦пЁп╫п╬я─п╦я─п╬п╡п╟п╫п╬)" << endl;
 				return;
 		}
 
@@ -327,7 +327,7 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 	}
 	catch( ...  )
 	{	
-		unideb[Debug::CRIT] << myname << "(parse SensorMessage): неизвестное исключние..." << endl;
+		unideb[Debug::CRIT] << myname << "(parse SensorMessage): п╫п╣п╦п╥п╡п╣я│я┌п╫п╬п╣ п╦я│п╨п╩я▌я┤п╫п╦п╣..." << endl;
 	}
 		
 }
@@ -347,17 +347,17 @@ void DBServer_MySQL::init_dbserver()
 	if( conf->getDBServer() == UniSetTypes::DefaultObjectId )
 	{
 		ostringstream msg;
-		msg << myname << "(init): на данном узле DBServer - отключён."
-			<< " В " << conf->getConfFileName() 
-			<< " для данного узла указан параметр dbserver=''";
+		msg << myname << "(init): п╫п╟ п╢п╟п╫п╫п╬п╪ я┐п╥п╩п╣ DBServer - п╬я┌п╨п╩я▌я┤я▒п╫."
+			<< " п▓ " << conf->getConfFileName() 
+			<< " п╢п╩я▐ п╢п╟п╫п╫п╬пЁп╬ я┐п╥п╩п╟ я┐п╨п╟п╥п╟п╫ п©п╟я─п╟п╪п╣я┌я─ dbserver=''";
 		throw NameNotFound(msg.str());
 	}
 
 	xmlNode* node = conf->getNode("LocalDBServer");
 	if( !node )
-		throw NameNotFound(string(myname+"(init): в конфигурационном файле не найден раздел LocalDBServer"));
+		throw NameNotFound(string(myname+"(init): п╡ п╨п╬п╫я└п╦пЁя┐я─п╟я├п╦п╬п╫п╫п╬п╪ я└п╟п╧п╩п╣ п╫п╣ п╫п╟п╧п╢п╣п╫ я─п╟п╥п╢п╣п╩ LocalDBServer"));
 
-	unideb[Debug::INFO] << myname << "(init): инициализируем соединение" << endl;
+	unideb[Debug::INFO] << myname << "(init): п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─я┐п╣п╪ я│п╬п╣п╢п╦п╫п╣п╫п╦п╣" << endl;
 	string dbname(conf->getProp(node,"dbname"));
 	string dbnode(conf->getProp(node,"dbnode"));
 	string user(conf->getProp(node,"dbuser"));
@@ -382,9 +382,9 @@ void DBServer_MySQL::init_dbserver()
 	{
 //		ostringstream err;
 		unideb[Debug::CRIT] << myname 
-			<< "(init): не смог создать соединение с БД err:\n"
+			<< "(init): п╫п╣ я│п╪п╬пЁ я│п╬п╥п╢п╟я┌я▄ я│п╬п╣п╢п╦п╫п╣п╫п╦п╣ я│ п▒п■ err:\n"
 			<< db->error() << endl;
-//		throw Exception( string(myname+"(init): не смогли создать соединение с БД "+db->error()) );
+//		throw Exception( string(myname+"(init): п╫п╣ я│п╪п╬пЁп╩п╦ я│п╬п╥п╢п╟я┌я▄ я│п╬п╣п╢п╦п╫п╣п╫п╦п╣ я│ п▒п■ "+db->error()) );
 		askTimer(DBServer_MySQL::ReconnectTimer,ReconnectTime);
 	}
 	else
@@ -404,7 +404,7 @@ void DBServer_MySQL::createTables( DBInterface *db )
 	UniXML_iterator it( conf->getNode("Tables") );
 	if(!it)
 	{
-		unideb[Debug::CRIT] << myname << ": не найден раздел Tables...."<< endl;
+		unideb[Debug::CRIT] << myname << ": п╫п╣ п╫п╟п╧п╢п╣п╫ я─п╟п╥п╢п╣п╩ Tables...."<< endl;
 		throw Exception();
 	}
 
@@ -412,7 +412,7 @@ void DBServer_MySQL::createTables( DBInterface *db )
 	{
 		if( it.getName() != "comment" )
 		{
-			unideb[Debug::INFO] << myname  << "(createTables): создаем " << it.getName() << endl;
+			unideb[Debug::INFO] << myname  << "(createTables): я│п╬п╥п╢п╟п╣п╪ " << it.getName() << endl;
 			ostringstream query;
 			query << "CREATE TABLE " << conf->getProp(it,"name") << "(" << conf->getProp(it,"create") << ")";
 			if( !db->query(query.str()) )
@@ -429,7 +429,7 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
 		{
 			if( !db->ping() )
 			{
-				unideb[Debug::WARN] << myname << "(timerInfo): потеряно соединение с сервером БД" << endl;
+				unideb[Debug::WARN] << myname << "(timerInfo): п©п╬я┌п╣я─я▐п╫п╬ я│п╬п╣п╢п╦п╫п╣п╫п╦п╣ я│ я│п╣я─п╡п╣я─п╬п╪ п▒п■" << endl;
 				connect_ok = false;
 				askTimer(DBServer_MySQL::PingTimer,0);
 				askTimer(DBServer_MySQL::ReconnectTimer,ReconnectTime);
@@ -454,7 +454,7 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
 					askTimer(DBServer_MySQL::PingTimer,PingTime);
 				}
 				connect_ok = false;
-				unideb[Debug::WARN] << myname << "(timerInfo): нет связи с БД" << endl;
+				unideb[Debug::WARN] << myname << "(timerInfo): п╫п╣я┌ я│п╡я▐п╥п╦ я│ п▒п■" << endl;
 			}
 			else
 				init_dbserver();
@@ -462,7 +462,7 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
 		break;
 
 		default:
-			unideb[Debug::WARN] << myname << "(timerInfo): неизвестный таймер tid=" << tm->id << endl;
+			unideb[Debug::WARN] << myname << "(timerInfo): п╫п╣п╦п╥п╡п╣я│я┌п╫я▀п╧ я┌п╟п╧п╪п╣я─ tid=" << tm->id << endl;
 		break;
 	}
 }

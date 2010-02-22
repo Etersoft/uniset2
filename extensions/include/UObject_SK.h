@@ -58,24 +58,24 @@ class UObject_SK:
 		PassiveTimer ptResetMsg;
 		int resetMsgTime;
 
-		// Выполнение очередного шага программы
+		// п▓я▀п©п╬п╩п╫п╣п╫п╦п╣ п╬я┤п╣я─п╣п╢п╫п╬пЁп╬ я┬п╟пЁп╟ п©я─п╬пЁя─п╟п╪п╪я▀
 		virtual void step()=0;
 
-		int sleep_msec; /*!< пауза между итерациями */
+		int sleep_msec; /*!< п©п╟я┐п╥п╟ п╪п╣п╤п╢я┐ п╦я┌п╣я─п╟я├п╦я▐п╪п╦ */
 		bool active;
 		bool isTestMode;
 		Trigger trTestMode;
-		UniSetTypes::ObjectId idTestMode_S;		  	/*!< идентификатор для флага тестовго режима (для всех) */
-		UniSetTypes::ObjectId idLocalTestMode_S;	/*!< идентификатор для флага тестовго режима (для данного узла) */
+		UniSetTypes::ObjectId idTestMode_S;		  	/*!< п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╩я▐ я└п╩п╟пЁп╟ я┌п╣я│я┌п╬п╡пЁп╬ я─п╣п╤п╦п╪п╟ (п╢п╩я▐ п╡я│п╣я┘) */
+		UniSetTypes::ObjectId idLocalTestMode_S;	/*!< п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╩я▐ я└п╩п╟пЁп╟ я┌п╣я│я┌п╬п╡пЁп╬ я─п╣п╤п╦п╪п╟ (п╢п╩я▐ п╢п╟п╫п╫п╬пЁп╬ я┐п╥п╩п╟) */
 		bool in_TestMode_S;
 		bool in_LocalTestMode_S;
 		
 		xmlNode* confnode;
 		SMInterface shm;
-		int smReadyTimeout; 	/*!< время ожидания готовности SM */
+		int smReadyTimeout; 	/*!< п╡я─п╣п╪я▐ п╬п╤п╦п╢п╟п╫п╦я▐ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ SM */
 		bool activated;
-		int activateTimeout;	/*!< время ожидания готовности UniSetObject к работе */
-		PassiveTimer ptStartUpTimeout;	/*!< время на блокировку обработки WatchDog, если недавно был StartUp */
+		int activateTimeout;	/*!< п╡я─п╣п╪я▐ п╬п╤п╦п╢п╟п╫п╦я▐ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ UniSetObject п╨ я─п╟п╠п╬я┌п╣ */
+		PassiveTimer ptStartUpTimeout;	/*!< п╡я─п╣п╪я▐ п╫п╟ п╠п╩п╬п╨п╦я─п╬п╡п╨я┐ п╬п╠я─п╟п╠п╬я┌п╨п╦ WatchDog, п╣я│п╩п╦ п╫п╣п╢п╟п╡п╫п╬ п╠я▀п╩ StartUp */
 
 		
 	private:

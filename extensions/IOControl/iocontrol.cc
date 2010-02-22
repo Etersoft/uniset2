@@ -15,8 +15,8 @@ int main(int argc, const char **argv)
 {   
 	if( argc>1 && strcmp(argv[1],"--help")==0 )
 	{
-		cout << "--io-confile	- éÓÐÏÌØÚÏ×ÁÔØ ÕËÁÚÁÎÎÙÊ ËÏÎÆ. ÆÁÊÌ. ðÏ ÕÍÏÌÞÁÎÉÀ configure.xml" << endl;
-		cout << "--io-logfile fname	- ×Ù×ÏÄÉÔØ ÌÏÇÉ × ÆÁÊÌ fname. ðÏ ÕÍÏÌÞÁÎÉÀ iocontrol.log" << endl;
+		cout << "--io-confile	- Ð˜ÑÐ¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÑŒ ÑƒÐºÐ°Ð·Ð°Ð½Ð½Ñ‹Ð¹ ÐºÐ¾Ð½Ñ„. Ñ„Ð°Ð¹Ð». ÐŸÐ¾ ÑƒÐ¼Ð¾Ð»Ñ‡Ð°Ð½Ð¸ÑŽ configure.xml" << endl;
+		cout << "--io-logfile fname	- Ð²Ñ‹Ð²Ð¾Ð´Ð¸Ñ‚ÑŒ Ð»Ð¾Ð³Ð¸ Ð² Ñ„Ð°Ð¹Ð» fname. ÐŸÐ¾ ÑƒÐ¼Ð¾Ð»Ñ‡Ð°Ð½Ð¸ÑŽ iocontrol.log" << endl;
 		IOControl::help_print(argc,argv);
 		return 0;
 	}
@@ -50,7 +50,7 @@ int main(int argc, const char **argv)
 		IOControl* ic = IOControl::init_iocontrol(argc,argv,shmID);
 		if( !ic )
 		{
-			dlog[Debug::CRIT] << "(iocontrol): init ÎÅ ÐÒÏÛ£Ì..." << endl;
+			dlog[Debug::CRIT] << "(iocontrol): init Ð½Ðµ Ð¿Ñ€Ð¾ÑˆÑ‘Ð»..." << endl;
 			return 1;
 		}
 

@@ -107,11 +107,11 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 		
 		case SystemMessage::WatchDog:
 		{
-			// ОПТИМИЗАЦИЯ (защита от двойного перезаказа при старте)
-			// Если идёт локальная работа 
-			// (т.е. RTUExchange  запущен в одном процессе с SharedMemory2)
-			// то обрабатывать WatchDog не надо, т.к. мы и так ждём готовности SM
-			// при заказе датчиков, а если SM вылетит, то вместе с этим процессом(RTUExchange)
+			// п·п÷п╒п≤п°п≤п≈п░п╕п≤п╞ (п╥п╟я┴п╦я┌п╟ п╬я┌ п╢п╡п╬п╧п╫п╬пЁп╬ п©п╣я─п╣п╥п╟п╨п╟п╥п╟ п©я─п╦ я│я┌п╟я─я┌п╣)
+			// п∙я│п╩п╦ п╦п╢я▒я┌ п╩п╬п╨п╟п╩я▄п╫п╟я▐ я─п╟п╠п╬я┌п╟ 
+			// (я┌.п╣. RTUExchange  п╥п╟п©я┐я┴п╣п╫ п╡ п╬п╢п╫п╬п╪ п©я─п╬я├п╣я│я│п╣ я│ SharedMemory2)
+			// я┌п╬ п╬п╠я─п╟п╠п╟я┌я▀п╡п╟я┌я▄ WatchDog п╫п╣ п╫п╟п╢п╬, я┌.п╨. п╪я▀ п╦ я┌п╟п╨ п╤п╢я▒п╪ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ SM
+			// п©я─п╦ п╥п╟п╨п╟п╥п╣ п╢п╟я┌я┤п╦п╨п╬п╡, п╟ п╣я│п╩п╦ SM п╡я▀п╩п╣я┌п╦я┌, я┌п╬ п╡п╪п╣я│я┌п╣ я│ я█я┌п╦п╪ п©я─п╬я├п╣я│я│п╬п╪(RTUExchange)
 			if( shm->isLocalwork() )
 				break;
 
@@ -121,7 +121,7 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 
 		case SystemMessage::LogRotate:
 		{
-			// переоткрываем логи
+			// п©п╣я─п╣п╬я┌п╨я─я▀п╡п╟п╣п╪ п╩п╬пЁп╦
 			unideb << myname << "(sysCommand): logRotate" << std::endl;
 			string fname = unideb.getLogFile();
 			if( !fname.empty() )
@@ -147,7 +147,7 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 // -------------------------------------------------------------------------
 void PassiveLProcessor::setOuts()
 {
-	// выcтавляем выходы
+	// п╡я▀cя┌п╟п╡п╩я▐п╣п╪ п╡я▀я┘п╬п╢я▀
 	for( OUTList::iterator it=extOuts.begin(); it!=extOuts.end(); ++it )
 	{
 		try
@@ -163,7 +163,7 @@ void PassiveLProcessor::setOuts()
 				break;
 				
 				default:
-					cerr << "(LProcessor::setOuts): неподдерживаемый тип iotype=" << it->iotype << endl;
+					cerr << "(LProcessor::setOuts): п╫п╣п©п╬п╢п╢п╣я─п╤п╦п╡п╟п╣п╪я▀п╧ я┌п╦п© iotype=" << it->iotype << endl;
 					break;
 			}
 		}
@@ -195,7 +195,7 @@ void PassiveLProcessor::sigterm( int signo )
 				break;
 				
 				default:
-					cerr << "(LProcessor::sigterm): неподдерживаемый тип iotype=" << it->iotype << endl;
+					cerr << "(LProcessor::sigterm): п╫п╣п©п╬п╢п╢п╣я─п╤п╦п╡п╟п╣п╪я▀п╧ я┌п╦п© iotype=" << it->iotype << endl;
 					break;
 			}
 		}

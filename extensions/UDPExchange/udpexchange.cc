@@ -54,7 +54,7 @@ int main( int argc, char** argv )
 		UDPExchange* rs = UDPExchange::init_udpexchange(argc,argv,shmID);
 		if( !rs )
 		{
-			dlog[Debug::CRIT] << "(udpexchange): init не прошёл..." << endl;
+			dlog[Debug::CRIT] << "(udpexchange): init п╫п╣ п©я─п╬я┬я▒п╩..." << endl;
 			return 1;
 		}
 

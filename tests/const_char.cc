@@ -6,8 +6,8 @@ main(int argc, char **argv)
 {
 	char **t1;
 	const char **t2;
-	const char **t3 = new const char *[10]; // t3 - массив указателей на const char*
-	char * const *t4 = new char*[10]; // t4 - константный массив указателей на char*
+	const char **t3 = new const char *[10]; // t3 - п╪п╟я│я│п╦п╡ я┐п╨п╟п╥п╟я┌п╣п╩п╣п╧ п╫п╟ const char*
+	char * const *t4 = new char*[10]; // t4 - п╨п╬п╫я│я┌п╟п╫я┌п╫я▀п╧ п╪п╟я│я│п╦п╡ я┐п╨п╟п╥п╟я┌п╣п╩п╣п╧ п╫п╟ char*
 	const char * const * t5;
 	t1 = argv;
 	// t2 = argv; // error: invalid conversion from 'char**' to 'const char**'

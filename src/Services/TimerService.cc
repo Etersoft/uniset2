@@ -67,16 +67,16 @@ TimerService::~TimerService()
 
 // ------------------------------------------------------------------------------------------
 /*
- * \param ti.timerid - идентификатор заказываемого таймера
- * \param ti.timeMS - интервал (0 - означает отказ от таймера)
- * \param ci.fromId - идентификатор заказчика
- * \param ci.node - узел, на котором находится заказчик
- * \exception TimerService_i::TimerAlreadyExist  - вырабатывается если от данного заказчика
- * \b уже \b есть заказ на таймер с таким идентификатором
+ * \param ti.timerid - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╥п╟п╨п╟п╥я▀п╡п╟п╣п╪п╬пЁп╬ я┌п╟п╧п╪п╣я─п╟
+ * \param ti.timeMS - п╦п╫я┌п╣я─п╡п╟п╩ (0 - п╬п╥п╫п╟я┤п╟п╣я┌ п╬я┌п╨п╟п╥ п╬я┌ я┌п╟п╧п╪п╣я─п╟)
+ * \param ci.fromId - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╥п╟п╨п╟п╥я┤п╦п╨п╟
+ * \param ci.node - я┐п╥п╣п╩, п╫п╟ п╨п╬я┌п╬я─п╬п╪ п╫п╟я┘п╬п╢п╦я┌я│я▐ п╥п╟п╨п╟п╥я┤п╦п╨
+ * \exception TimerService_i::TimerAlreadyExist  - п╡я▀я─п╟п╠п╟я┌я▀п╡п╟п╣я┌я│я▐ п╣я│п╩п╦ п╬я┌ п╢п╟п╫п╫п╬пЁп╬ п╥п╟п╨п╟п╥я┤п╦п╨п╟
+ * \b я┐п╤п╣ \b п╣я│я┌я▄ п╥п╟п╨п╟п╥ п╫п╟ я┌п╟п╧п╪п╣я─ я│ я┌п╟п╨п╦п╪ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╬п╪
 */
 void TimerService::askTimer( const TimerService_i::Timer& ti, const UniSetTypes::ConsumerInfo& ci )
 {
-	if( ti.timeMS > 0 ) // заказ
+	if( ti.timeMS > 0 ) // п╥п╟п╨п╟п╥
 	{
 			if( tlst.size() >= MaxCountTimers )
 			{
@@ -95,10 +95,10 @@ void TimerService::askTimer( const TimerService_i::Timer& ti, const UniSetTypes:
 //			unideb[Debug::INFO] << "size: "<< tlst.size() << endl;	
 			{	// lock
 				if( !lstMutex.isRelease() )
-					unideb[Debug::INFO] << myname << ": придется подождать освобождения lstMutex-а" << endl;
+					unideb[Debug::INFO] << myname << ": п©я─п╦п╢п╣я┌я│я▐ п©п╬п╢п╬п╤п╢п╟я┌я▄ п╬я│п╡п╬п╠п╬п╤п╢п╣п╫п╦я▐ lstMutex-п╟" << endl;
  				uniset_mutex_lock lock(lstMutex, 2000);
 
-				// поищем а может уж такой есть
+				// п©п╬п╦я┴п╣п╪ п╟ п╪п╬п╤п╣я┌ я┐п╤ я┌п╟п╨п╬п╧ п╣я│я┌я▄
 				if( !tlst.empty() )
 				{
 					for( TimersList::iterator li=tlst.begin(); li!=tlst.end(); ++li )
@@ -109,9 +109,9 @@ void TimerService::askTimer( const TimerService_i::Timer& ti, const UniSetTypes:
 							li->tmr.setTiming(ti.timeMS);
 							li->not_ping = false;
 							li->lifetmr.reset();
-							unideb[Debug::INFO] << myname << ": заказ на таймер(id="<< ti.timerid << ") "
-									<< ti.timeMS << " [мс] от " << ui.getNameById(ci.id)
-									<< " уже есть... " << endl;	
+							unideb[Debug::INFO] << myname << ": п╥п╟п╨п╟п╥ п╫п╟ я┌п╟п╧п╪п╣я─(id="<< ti.timerid << ") "
+									<< ti.timeMS << " [п╪я│] п╬я┌ " << ui.getNameById(ci.id)
+									<< " я┐п╤п╣ п╣я│я┌я▄... " << endl;	
 							throw TimerService_i::TimerAlreadyExist();
 						}
 					}
@@ -130,21 +130,21 @@ void TimerService::askTimer( const TimerService_i::Timer& ti, const UniSetTypes:
 				newti.reset();
 			}	// unlock
 		
-			unideb[Debug::INFO] << myname << "(askTimer): поступил заказ на таймер(id="
+			unideb[Debug::INFO] << myname << "(askTimer): п©п╬я│я┌я┐п©п╦п╩ п╥п╟п╨п╟п╥ п╫п╟ я┌п╟п╧п╪п╣я─(id="
 				<< ti.timerid << ") " << ti.timeMS 
-				<< " [мс] от " << ui.getNameById(ci.id,ci.node) << endl;	
+				<< " [п╪я│] п╬я┌ " << ui.getNameById(ci.id,ci.node) << endl;	
 	}
-	else // отказ
+	else // п╬я┌п╨п╟п╥
 	{
-		unideb[Debug::INFO] << myname << ": поступил отказ от "
+		unideb[Debug::INFO] << myname << ": п©п╬я│я┌я┐п©п╦п╩ п╬я┌п╨п╟п╥ п╬я┌ "
 				<< ui.getNameById(ci.id,ci.node)
-				<< " по таймеру id="<< ti.timerid << endl;	
+				<< " п©п╬ я┌п╟п╧п╪п╣я─я┐ id="<< ti.timerid << endl;	
 
 		{	// lock
 			if( !lstMutex.isRelease() )
-				unideb[Debug::INFO] << myname << ": придется подождать освобождения lstMutex-а" << endl;
+				unideb[Debug::INFO] << myname << ": п©я─п╦п╢п╣я┌я│я▐ п©п╬п╢п╬п╤п╢п╟я┌я▄ п╬я│п╡п╬п╠п╬п╤п╢п╣п╫п╦я▐ lstMutex-п╟" << endl;
  			uniset_mutex_lock lock(lstMutex, 2000);
-			tlst.remove_if(Timer_eq(ci,ti.timerid));	// STL - способ
+			tlst.remove_if(Timer_eq(ci,ti.timerid));	// STL - я│п©п╬я│п╬п╠
 			tlst.sort();
 		}	// unlock
 	}
@@ -163,7 +163,7 @@ void TimerService::askTimer( const TimerService_i::Timer& ti, const UniSetTypes:
 bool TimerService::send( TimerInfo& ti )
 {
 	TransportMessage tm = TimerMessage(ti.id, ti.priority, ti.cinf.id).transport_msg();
-	for(int i=0; i<2; i++ )	// на каждый объект по две поптыки
+	for(int i=0; i<2; i++ )	// п╫п╟ п╨п╟п╤п╢я▀п╧ п╬п╠я┼п╣п╨я┌ п©п╬ п╢п╡п╣ п©п╬п©я┌я▀п╨п╦
 	{
 	    try
 	    {
@@ -177,14 +177,14 @@ bool TimerService::send( TimerInfo& ti )
 			return true;	
 	    }
 		catch(...){}
-//		unideb[Debug::WARN] << ui.getNameById( ti.cinf.id, ti.cinf.node ) << " недоступен!!" << endl;
+//		unideb[Debug::WARN] << ui.getNameById( ti.cinf.id, ti.cinf.node ) << " п╫п╣п╢п╬я│я┌я┐п©п╣п╫!!" << endl;
 		ti.ref=UniSetObject_i::_nil();
 	}
 
 	return false;
 }
 // ------------------------------------------------------------------------------------------
-// Без повторной сортировки
+// п▒п╣п╥ п©п╬п╡я┌п╬я─п╫п╬п╧ я│п╬я─я┌п╦я─п╬п╡п╨п╦
 void TimerService::work()
 {
 	execute_pid = getpid();
@@ -194,7 +194,7 @@ void TimerService::work()
 
 	while(!terminate)
 	{
-		timeout_t sleepTime = UniSetTimer::MinQuantityTime; // мс
+		timeout_t sleepTime = UniSetTimer::MinQuantityTime; // п╪я│
 		{	// lock
 			uniset_mutex_lock lock(lstMutex, 5000);
 			resort = false;
@@ -207,10 +207,10 @@ void TimerService::work()
 					{
 						if( !li->not_ping )
 						{
-							unideb[Debug::WARN] << myname << ": не смогли послать сообщение "<< ui.getNameById(li->cinf.id,li->cinf.node) << endl;
+							unideb[Debug::WARN] << myname << ": п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬я│п╩п╟я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣ "<< ui.getNameById(li->cinf.id,li->cinf.node) << endl;
 							if( !AskLifeTimeSEC )
 							{
-								unideb[Debug::WARN] << myname << ": удаляем из списка "<< ui.getNameById(li->cinf.id,li->cinf.node) << endl;
+								unideb[Debug::WARN] << myname << ": я┐п╢п╟п╩я▐п╣п╪ п╦п╥ я│п©п╦я│п╨п╟ "<< ui.getNameById(li->cinf.id,li->cinf.node) << endl;
 								li = tlst.erase(li);
 								if( tlst.empty() )
 									isSleep = true;
@@ -223,7 +223,7 @@ void TimerService::work()
 						}
 						else if( li->lifetmr.checkTime() )
 						{	
-							unideb[Debug::WARN] << myname << ": удаляем из списка "<< ui.getNameById(li->cinf.id,li->cinf.node) << endl;
+							unideb[Debug::WARN] << myname << ": я┐п╢п╟п╩я▐п╣п╪ п╦п╥ я│п©п╦я│п╨п╟ "<< ui.getNameById(li->cinf.id,li->cinf.node) << endl;
 							li = tlst.erase(li);
 							if( tlst.empty() )
 								isSleep = true;
@@ -233,7 +233,7 @@ void TimerService::work()
 					else
 					{
 						li->not_ping = true;
-						// Проверка на количество заданных тактов
+						// п÷я─п╬п╡п╣я─п╨п╟ п╫п╟ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╥п╟п╢п╟п╫п╫я▀я┘ я┌п╟п╨я┌п╬п╡
 						if( !li->curTick )
 						{
 							li = tlst.erase(li);
@@ -261,13 +261,13 @@ void TimerService::work()
 					sleepTime = li->curTimeMS;
 			}	
 
-			/*! \warning и не оптимально, пересортировывать каждый раз весь список
-			 * \todo потом можно написать самому более оптимальное решение
-			 * т.к. список и так отсортирован, нужно всего лишь перемещать элемент
-			 * в нужное место (у кого больше curTimeMS). Лучше поискать что-нибудь в 
+			/*! \warning п╦ п╫п╣ п╬п©я┌п╦п╪п╟п╩я▄п╫п╬, п©п╣я─п╣я│п╬я─я┌п╦я─п╬п╡я▀п╡п╟я┌я▄ п╨п╟п╤п╢я▀п╧ я─п╟п╥ п╡п╣я│я▄ я│п©п╦я│п╬п╨
+			 * \todo п©п╬я┌п╬п╪ п╪п╬п╤п╫п╬ п╫п╟п©п╦я│п╟я┌я▄ я│п╟п╪п╬п╪я┐ п╠п╬п╩п╣п╣ п╬п©я┌п╦п╪п╟п╩я▄п╫п╬п╣ я─п╣я┬п╣п╫п╦п╣
+			 * я┌.п╨. я│п©п╦я│п╬п╨ п╦ я┌п╟п╨ п╬я┌я│п╬я─я┌п╦я─п╬п╡п╟п╫, п╫я┐п╤п╫п╬ п╡я│п╣пЁп╬ п╩п╦я┬я▄ п©п╣я─п╣п╪п╣я┴п╟я┌я▄ я█п╩п╣п╪п╣п╫я┌
+			 * п╡ п╫я┐п╤п╫п╬п╣ п╪п╣я│я┌п╬ (я┐ п╨п╬пЁп╬ п╠п╬п╩я▄я┬п╣ curTimeMS). п⌡я┐я┤я┬п╣ п©п╬п╦я│п╨п╟я┌я▄ я┤я┌п╬-п╫п╦п╠я┐п╢я▄ п╡ 
 			 * stl...
 			 */
-			if( resort )	// пересортировываем в связи с обновлением списка
+			if( resort )	// п©п╣я─п╣я│п╬я─я┌п╦я─п╬п╡я▀п╡п╟п╣п╪ п╡ я│п╡я▐п╥п╦ я│ п╬п╠п╫п╬п╡п╩п╣п╫п╦п╣п╪ я│п©п╦я│п╨п╟
 				tlst.sort();
 			
 			if( sleepTime < UniSetTimer::MinQuantityTime )
@@ -278,14 +278,14 @@ void TimerService::work()
 		
 		if( isSleep ) 
 		{
-			unideb[Debug::INFO] << myname << "(execute): нет активных таймеров... спим..." << endl;
+			unideb[Debug::INFO] << myname << "(execute): п╫п╣я┌ п╟п╨я┌п╦п╡п╫я▀я┘ я┌п╟п╧п╪п╣я─п╬п╡... я│п©п╦п╪..." << endl;
 			sleepTimer->wait(UniSetTimer::WaitUpTime);
 		}
 		else if( sleepTime ) 
 			sleepTimer->wait(sleepTime); // msleep(sleepTime);
 	}
 	
-	unideb[Debug::INFO] << myname << "(excecute): работу закончил..." << endl << flush;
+	unideb[Debug::INFO] << myname << "(excecute): я─п╟п╠п╬я┌я┐ п╥п╟п╨п╬п╫я┤п╦п╩..." << endl << flush;
 	terminate = true;
 }
 // ------------------------------------------------------------------------------------------
@@ -328,7 +328,7 @@ void TimerService::insert(TimerInfo& ti)
 //		if( (*li)->curTimeMS > ti.curTimeMS )
 		if( (*li)->tmr.getInterval() > ti.tmr.getInterval() )
 		{
-			// вставляем между(перед ним) и выходим
+			// п╡я│я┌п╟п╡п╩я▐п╣п╪ п╪п╣п╤п╢я┐(п©п╣я─п╣п╢ п╫п╦п╪) п╦ п╡я▀я┘п╬п╢п╦п╪
 			tlst.insert(li, ti);	
 			return;
 		}
@@ -346,12 +346,12 @@ void TimerService::printList()
 // ------------------------------------------------------------------------------------------
 void TimerService::init(const string& confnode)
 {
-	// инициализация из conf-файла
+	// п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ п╦п╥ conf-я└п╟п╧п╩п╟
 	xmlNode* node = conf->getNode(confnode);
 	if(!node)
 	{
-		unideb[Debug::WARN] << myname << "(init): Не найден конфигурационный раздел " << confnode << endl;
-		unideb[Debug::WARN] << myname << "(init): инициализируемся по умолчанию "
+		unideb[Debug::WARN] << myname << "(init): п²п╣ п╫п╟п╧п╢п╣п╫ п╨п╬п╫я└п╦пЁя┐я─п╟я├п╦п╬п╫п╫я▀п╧ я─п╟п╥п╢п╣п╩ " << confnode << endl;
+		unideb[Debug::WARN] << myname << "(init): п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─я┐п╣п╪я│я▐ п©п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ "
 			<< "MaxCountTimers=" << MaxCountTimers 
 			<< " AskLifeTimeSEC=" << AskLifeTimeSEC << endl;
 		return;

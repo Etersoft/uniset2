@@ -7,28 +7,28 @@
 #include <bitset>
 #include "ModbusRTUErrors.h"
 // -------------------------------------------------------------------------
-/* Основные предположения:	
- * - младший и старший байт переворачиваются только в CRC
- * - В случае неправильного формата пакета(запроса), логической ошибки и т.п
- * 		ОТВЕТ просто не посылается, а пакет отбрасывается...
- * - CRC считается по всей посылке (с начальным адресом)
- * - CRC инициализируется значением 0xffff
- * - CRC не переворачивается
- * - Все двухбайтовые слова переворачиваются. Порядок байт: старший младший
+/* п·я│п╫п╬п╡п╫я▀п╣ п©я─п╣п╢п©п╬п╩п╬п╤п╣п╫п╦я▐:	
+ * - п╪п╩п╟п╢я┬п╦п╧ п╦ я│я┌п╟я─я┬п╦п╧ п╠п╟п╧я┌ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟я▌я┌я│я▐ я┌п╬п╩я▄п╨п╬ п╡ CRC
+ * - п▓ я│п╩я┐я┤п╟п╣ п╫п╣п©я─п╟п╡п╦п╩я▄п╫п╬пЁп╬ я└п╬я─п╪п╟я┌п╟ п©п╟п╨п╣я┌п╟(п╥п╟п©я─п╬я│п╟), п╩п╬пЁп╦я┤п╣я│п╨п╬п╧ п╬я┬п╦п╠п╨п╦ п╦ я┌.п©
+ * 		п·п╒п▓п∙п╒ п©я─п╬я│я┌п╬ п╫п╣ п©п╬я│я▀п╩п╟п╣я┌я│я▐, п╟ п©п╟п╨п╣я┌ п╬я┌п╠я─п╟я│я▀п╡п╟п╣я┌я│я▐...
+ * - CRC я│я┤п╦я┌п╟п╣я┌я│я▐ п©п╬ п╡я│п╣п╧ п©п╬я│я▀п╩п╨п╣ (я│ п╫п╟я┤п╟п╩я▄п╫я▀п╪ п╟п╢я─п╣я│п╬п╪)
+ * - CRC п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─я┐п╣я┌я│я▐ п╥п╫п╟я┤п╣п╫п╦п╣п╪ 0xffff
+ * - CRC п╫п╣ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣я┌я│я▐
+ * - п▓я│п╣ п╢п╡я┐я┘п╠п╟п╧я┌п╬п╡я▀п╣ я│п╩п╬п╡п╟ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟я▌я┌я│я▐. п÷п╬я─я▐п╢п╬п╨ п╠п╟п╧я┌: я│я┌п╟я─я┬п╦п╧ п╪п╩п╟п╢я┬п╦п╧
 */
 // -------------------------------------------------------------------------
 namespace ModbusRTU
 {
-	// Базовые типы 
-	typedef unsigned char ModbusByte;	/*!< modbus-байт */
+	// п▒п╟п╥п╬п╡я▀п╣ я┌п╦п©я▀ 
+	typedef unsigned char ModbusByte;	/*!< modbus-п╠п╟п╧я┌ */
 	const int BitsPerByte = 8;
-	typedef unsigned char ModbusAddr;	/*!< адрес узла в modbus-сети */
-	typedef unsigned short ModbusData;	/*!< размер данных в modbus-сообщениях */
+	typedef unsigned char ModbusAddr;	/*!< п╟п╢я─п╣я│ я┐п╥п╩п╟ п╡ modbus-я│п╣я┌п╦ */
+	typedef unsigned short ModbusData;	/*!< я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘ п╡ modbus-я│п╬п╬п╠я┴п╣п╫п╦я▐я┘ */
 	const int BitsPerData = 16;
-	typedef unsigned short ModbusCRC;	/*!< размер CRC16 в modbus-сообщениях */
+	typedef unsigned short ModbusCRC;	/*!< я─п╟п╥п╪п╣я─ CRC16 п╡ modbus-я│п╬п╬п╠я┴п╣п╫п╦я▐я┘ */
 
 	// ---------------------------------------------------------------------
-	/*! Коды используемых функций (согласно описанию modbus) */
+	/*! п п╬п╢я▀ п╦я│п©п╬п╩я▄п╥я┐п╣п╪я▀я┘ я└я┐п╫п╨я├п╦п╧ (я│п╬пЁп╩п╟я│п╫п╬ п╬п©п╦я│п╟п╫п╦я▌ modbus) */
 	enum SlaveFunctionCode
 	{
 		fnUnknown				= 0x00,
@@ -48,23 +48,23 @@ namespace ModbusRTU
 		fnFileTransfer			= 0x66	/*!< file transfer */
 	};
 
-	/*! различные базовые константы */
+	/*! я─п╟п╥п╩п╦я┤п╫я▀п╣ п╠п╟п╥п╬п╡я▀п╣ п╨п╬п╫я│я┌п╟п╫я┌я▀ */
 	enum
 	{
-		/*! максимальное количество данных в пакете (c учётом контрольной суммы) */
-		MAXLENPACKET 	= 508,	/*!< максимальная длина пакета 512 - header(2) - CRC(2) */
-		BroadcastAddr	= 255	/*!< адрес для широковещательных сообщений */
+		/*! п╪п╟п╨я│п╦п╪п╟п╩я▄п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╢п╟п╫п╫я▀я┘ п╡ п©п╟п╨п╣я┌п╣ (c я┐я┤я▒я┌п╬п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫п╬п╧ я│я┐п╪п╪я▀) */
+		MAXLENPACKET 	= 508,	/*!< п╪п╟п╨я│п╦п╪п╟п╩я▄п╫п╟я▐ п╢п╩п╦п╫п╟ п©п╟п╨п╣я┌п╟ 512 - header(2) - CRC(2) */
+		BroadcastAddr	= 255	/*!< п╟п╢я─п╣я│ п╢п╩я▐ я┬п╦я─п╬п╨п╬п╡п╣я┴п╟я┌п╣п╩я▄п╫я▀я┘ я│п╬п╬п╠я┴п╣п╫п╦п╧ */
 	};
 
 	const unsigned char MBErrMask = 0x80;
 	// ---------------------------------------------------------------------
 	unsigned short SWAPSHORT(unsigned short x);
 	// ---------------------------------------------------------------------
-	/*! Расчёт контрольной суммы */
+	/*! п═п╟я│я┤я▒я┌ п╨п╬п╫я┌я─п╬п╩я▄п╫п╬п╧ я│я┐п╪п╪я▀ */
 	ModbusCRC checkCRC( ModbusByte* start, int len );
-	const int szCRC = sizeof(ModbusCRC); /*!< размер данных для контрольной суммы */
+	const int szCRC = sizeof(ModbusCRC); /*!< я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘ п╢п╩я▐ п╨п╬п╫я┌я─п╬п╩я▄п╫п╬п╧ я│я┐п╪п╪я▀ */
 	// ---------------------------------------------------------------------
-	/*! вывод сообщения */
+	/*! п╡я▀п╡п╬п╢ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 	std::ostream& mbPrintMessage( std::ostream& os, ModbusByte* b, int len );
 	// -------------------------------------------------------------------------
 	ModbusAddr str2mbAddr( const std::string val );
@@ -77,11 +77,11 @@ namespace ModbusRTU
 	// -------------------------------------------------------------------------
 	bool isWriteFunction( SlaveFunctionCode c );
 	// -------------------------------------------------------------------------
-	/*! Заголовок сообщений */
+	/*! п≈п╟пЁп╬п╩п╬п╡п╬п╨ я│п╬п╬п╠я┴п╣п╫п╦п╧ */
 	struct ModbusHeader
 	{
-		ModbusAddr addr;		/*!< адрес в сети */
-		ModbusByte func;		/*!< код функции */
+		ModbusAddr addr;		/*!< п╟п╢я─п╣я│ п╡ я│п╣я┌п╦ */
+		ModbusByte func;		/*!< п╨п╬п╢ я└я┐п╫п╨я├п╦п╦ */
 
 		ModbusHeader():addr(0),func(0){}
 	}__attribute__((packed));
@@ -91,23 +91,23 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, ModbusHeader* m );
 	// -----------------------------------------------------------------------
 
-	/*! Базовое (сырое) сообщение 
-		\todo Может переименовать ModbusMessage в TransportMessage?
+	/*! п▒п╟п╥п╬п╡п╬п╣ (я│я▀я─п╬п╣) я│п╬п╬п╠я┴п╣п╫п╦п╣ 
+		\todo п°п╬п╤п╣я┌ п©п╣я─п╣п╦п╪п╣п╫п╬п╡п╟я┌я▄ ModbusMessage п╡ TransportMessage?
 	*/
 	struct ModbusMessage:
 		public ModbusHeader
 	{
 		ModbusMessage();
-		ModbusByte data[MAXLENPACKET+szCRC]; 	/*!< данные */
+		ModbusByte data[MAXLENPACKET+szCRC]; 	/*!< п╢п╟п╫п╫я▀п╣ */
 
-		// Это поле вспомогательное и игнорируется при пересылке
-		int len;	/*!< фактическая длина */
+		// п╜я┌п╬ п©п╬п╩п╣ п╡я│п©п╬п╪п╬пЁп╟я┌п╣п╩я▄п╫п╬п╣ п╦ п╦пЁп╫п╬я─п╦я─я┐п╣я┌я│я▐ п©я─п╦ п©п╣я─п╣я│я▀п╩п╨п╣
+		int len;	/*!< я└п╟п╨я┌п╦я┤п╣я│п╨п╟я▐ п╢п╩п╦п╫п╟ */
 	}__attribute__((packed));
 
 	std::ostream& operator<<(std::ostream& os, ModbusMessage& m );
 	std::ostream& operator<<(std::ostream& os, ModbusMessage* m );
 	// -----------------------------------------------------------------------
-	/*! Ответ сообщающий об ошибке */	
+	/*! п·я┌п╡п╣я┌ я│п╬п╬п╠я┴п╟я▌я┴п╦п╧ п╬п╠ п╬я┬п╦п╠п╨п╣ */	
 	struct ErrorRetMessage:
 		public ModbusHeader
 	{
@@ -122,11 +122,11 @@ namespace ModbusRTU
 		// ------- to master -------
 		ErrorRetMessage( ModbusAddr _from, ModbusByte _func, ModbusByte ecode );
 
-		/*! преобразование для посылки в сеть */	
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */	
 		ModbusMessage transport_msg();
 
-		/*! размер данных(после заголовка) у данного типа сообщения 
-			Для данного типа он постоянный..
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ 
+			п■п╩я▐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ п╬п╫ п©п╬я│я┌п╬я▐п╫п╫я▀п╧..
 		*/
 		inline static int szData(){ return sizeof(ModbusByte)+szCRC; }
 	};
@@ -173,7 +173,7 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, DataBits16& m );
 	std::ostream& operator<<(std::ostream& os, DataBits16* m ); 
 	// -----------------------------------------------------------------------
-	/*! Запрос 0x01 */	
+	/*! п≈п╟п©я─п╬я│ 0x01 */	
 	struct ReadCoilMessage:
 		public ModbusHeader
 	{
@@ -183,7 +183,7 @@ namespace ModbusRTU
 		
 		// ------- to slave -------
 		ReadCoilMessage( ModbusAddr addr, ModbusData start, ModbusData count );
-		/*! преобразование для посылки в сеть */
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */
 		ModbusMessage transport_msg();
 
 		// ------- from master -------
@@ -191,7 +191,7 @@ namespace ModbusRTU
 		ReadCoilMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		inline static int szData(){ return sizeof(ModbusData)*2 + szCRC; }
 
 	}__attribute__((packed));
@@ -201,75 +201,75 @@ namespace ModbusRTU
 
 	// -----------------------------------------------------------------------
 	
-	/*! Ответ на 0x01 */	
+	/*! п·я┌п╡п╣я┌ п╫п╟ 0x01 */	
 	struct ReadCoilRetMessage:
 		public ModbusHeader
 	{
 		ModbusByte bcnt;				/*!< numbers of bytes */
-		ModbusByte data[MAXLENPACKET];	/*!< данные */
+		ModbusByte data[MAXLENPACKET];	/*!< п╢п╟п╫п╫я▀п╣ */
 
 		// ------- from slave -------
 		ReadCoilRetMessage( ModbusMessage& m );
 		ReadCoilRetMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
-		/*! размер предварительного заголовка 
-		 * (после основного до фактических данных) 
+		/*! я─п╟п╥п╪п╣я─ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫п╬пЁп╬ п╥п╟пЁп╬п╩п╬п╡п╨п╟ 
+		 * (п©п╬я│п╩п╣ п╬я│п╫п╬п╡п╫п╬пЁп╬ п╢п╬ я└п╟п╨я┌п╦я┤п╣я│п╨п╦я┘ п╢п╟п╫п╫я▀я┘) 
 		*/
 		static inline int szHead()
 		{
 			return sizeof(ModbusByte); // bcnt
 		}
 
-		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
+		/*! я┐п╥п╫п╟я┌я▄ п╢п╩п╦п╫я┐ п╢п╟п╫п╫я▀я┘ я│п╩п╣п╢я┐я▌я┴п╦п╧ п╥п╟ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╪ п╥п╟пЁп╬п╩п╬п╡п╨п╬п╪ ( п╡ п╠п╟п╧я┌п╟я┘ ) */
 		static int getDataLen( ModbusMessage& m );
 		ModbusCRC crc;
 		
 		// ------- to master -------
 		ReadCoilRetMessage( ModbusAddr _from );
 
-		/*! добавление данных.
-		 * \return TRUE - если удалось
-		 * \return FALSE - если НЕ удалось
+		/*! п╢п╬п╠п╟п╡п╩п╣п╫п╦п╣ п╢п╟п╫п╫я▀я┘.
+		 * \return TRUE - п╣я│п╩п╦ я┐п╢п╟п╩п╬я│я▄
+		 * \return FALSE - п╣я│п╩п╦ п²п∙ я┐п╢п╟п╩п╬я│я▄
 		*/
 		bool addData( DataBits d );
 
-		/*! установить бит.
-		 * \param dnum  - номер байта
-		 * \param bnum  - номер бита
-		 * \param state - состояние
-		 * \return TRUE - если есть
-		 * \return FALSE - если НЕ найдено
+		/*! я┐я│я┌п╟п╫п╬п╡п╦я┌я▄ п╠п╦я┌.
+		 * \param dnum  - п╫п╬п╪п╣я─ п╠п╟п╧я┌п╟
+		 * \param bnum  - п╫п╬п╪п╣я─ п╠п╦я┌п╟
+		 * \param state - я│п╬я│я┌п╬я▐п╫п╦п╣
+		 * \return TRUE - п╣я│п╩п╦ п╣я│я┌я▄
+		 * \return FALSE - п╣я│п╩п╦ п²п∙ п╫п╟п╧п╢п╣п╫п╬
 		*/
 		bool setBit( unsigned char dnum, unsigned char bnum, bool state );
 
-		/*! получение данных.
-		 * \param bnum  - номер байта
-		 * \param d     - найденные данные
-		 * \return TRUE - если есть
-		 * \return FALSE - если НЕ найдено
+		/*! п©п╬п╩я┐я┤п╣п╫п╦п╣ п╢п╟п╫п╫я▀я┘.
+		 * \param bnum  - п╫п╬п╪п╣я─ п╠п╟п╧я┌п╟
+		 * \param d     - п╫п╟п╧п╢п╣п╫п╫я▀п╣ п╢п╟п╫п╫я▀п╣
+		 * \return TRUE - п╣я│п╩п╦ п╣я│я┌я▄
+		 * \return FALSE - п╣я│п╩п╦ п²п∙ п╫п╟п╧п╢п╣п╫п╬
 		*/
 		bool getData( unsigned char bnum, DataBits& d );
 
-		/*! очистка данных */
+		/*! п╬я┤п╦я│я┌п╨п╟ п╢п╟п╫п╫я▀я┘ */
 		void clear();
 		
-		/*! проверка на переполнение */	
+		/*! п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п©п╣я─п╣п©п╬п╩п╫п╣п╫п╦п╣ */	
 		inline bool isFull()
 		{
 			return ( bcnt >= MAXLENPACKET );
 		}
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		int szData();
 		
-		/*! преобразование для посылки в сеть */
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */
 		ModbusMessage transport_msg();
 	};
 
 	std::ostream& operator<<(std::ostream& os, ReadCoilRetMessage& m );
 	std::ostream& operator<<(std::ostream& os, ReadCoilRetMessage* m );
 	// -----------------------------------------------------------------------
-	/*! Запрос 0x02 */	
+	/*! п≈п╟п©я─п╬я│ 0x02 */	
 	struct ReadInputStatusMessage:
 		public ModbusHeader
 	{
@@ -279,7 +279,7 @@ namespace ModbusRTU
 		
 		// ------- to slave -------
 		ReadInputStatusMessage( ModbusAddr addr, ModbusData start, ModbusData count );
-		/*! преобразование для посылки в сеть */
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */
 		ModbusMessage transport_msg();
 
 		// ------- from master -------
@@ -287,7 +287,7 @@ namespace ModbusRTU
 		ReadInputStatusMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		inline static int szData(){ return sizeof(ModbusData)*2 + szCRC; }
 
 	}__attribute__((packed));
@@ -295,68 +295,68 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, ReadInputStatusMessage& m ); 
 	std::ostream& operator<<(std::ostream& os, ReadInputStatusMessage* m ); 
 	// -----------------------------------------------------------------------
-	/*! Ответ на 0x02 */	
+	/*! п·я┌п╡п╣я┌ п╫п╟ 0x02 */	
 	struct ReadInputStatusRetMessage:
 		public ModbusHeader
 	{
 		ModbusByte bcnt;				/*!< numbers of bytes */
-		ModbusByte data[MAXLENPACKET];	/*!< данные */
+		ModbusByte data[MAXLENPACKET];	/*!< п╢п╟п╫п╫я▀п╣ */
 
 		// ------- from slave -------
 		ReadInputStatusRetMessage( ModbusMessage& m );
 		ReadInputStatusRetMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
-		/*! размер предварительного заголовка 
-		 * (после основного до фактических данных) 
+		/*! я─п╟п╥п╪п╣я─ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫п╬пЁп╬ п╥п╟пЁп╬п╩п╬п╡п╨п╟ 
+		 * (п©п╬я│п╩п╣ п╬я│п╫п╬п╡п╫п╬пЁп╬ п╢п╬ я└п╟п╨я┌п╦я┤п╣я│п╨п╦я┘ п╢п╟п╫п╫я▀я┘) 
 		*/
 		static inline int szHead()
 		{
 			return sizeof(ModbusByte); // bcnt
 		}
 
-		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
+		/*! я┐п╥п╫п╟я┌я▄ п╢п╩п╦п╫я┐ п╢п╟п╫п╫я▀я┘ я│п╩п╣п╢я┐я▌я┴п╦п╧ п╥п╟ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╪ п╥п╟пЁп╬п╩п╬п╡п╨п╬п╪ ( п╡ п╠п╟п╧я┌п╟я┘ ) */
 		static int getDataLen( ModbusMessage& m );
 		ModbusCRC crc;
 		
 		// ------- to master -------
 		ReadInputStatusRetMessage( ModbusAddr _from );
 
-		/*! добавление данных.
-		 * \return TRUE - если удалось
-		 * \return FALSE - если НЕ удалось
+		/*! п╢п╬п╠п╟п╡п╩п╣п╫п╦п╣ п╢п╟п╫п╫я▀я┘.
+		 * \return TRUE - п╣я│п╩п╦ я┐п╢п╟п╩п╬я│я▄
+		 * \return FALSE - п╣я│п╩п╦ п²п∙ я┐п╢п╟п╩п╬я│я▄
 		*/
 		bool addData( DataBits d );
 
-		/*! установить бит.
-		 * \param dnum  - номер байта
-		 * \param bnum  - номер бита
-		 * \param state - состояние
-		 * \return TRUE - если есть
-		 * \return FALSE - если НЕ найдено
+		/*! я┐я│я┌п╟п╫п╬п╡п╦я┌я▄ п╠п╦я┌.
+		 * \param dnum  - п╫п╬п╪п╣я─ п╠п╟п╧я┌п╟
+		 * \param bnum  - п╫п╬п╪п╣я─ п╠п╦я┌п╟
+		 * \param state - я│п╬я│я┌п╬я▐п╫п╦п╣
+		 * \return TRUE - п╣я│п╩п╦ п╣я│я┌я▄
+		 * \return FALSE - п╣я│п╩п╦ п²п∙ п╫п╟п╧п╢п╣п╫п╬
 		*/
 		bool setBit( unsigned char dnum, unsigned char bnum, bool state );
 
-		/*! получение данных.
-		 * \param dnum  - номер байта
-		 * \param d     - найденные данные
-		 * \return TRUE - если есть
-		 * \return FALSE - если НЕ найдено
+		/*! п©п╬п╩я┐я┤п╣п╫п╦п╣ п╢п╟п╫п╫я▀я┘.
+		 * \param dnum  - п╫п╬п╪п╣я─ п╠п╟п╧я┌п╟
+		 * \param d     - п╫п╟п╧п╢п╣п╫п╫я▀п╣ п╢п╟п╫п╫я▀п╣
+		 * \return TRUE - п╣я│п╩п╦ п╣я│я┌я▄
+		 * \return FALSE - п╣я│п╩п╦ п²п∙ п╫п╟п╧п╢п╣п╫п╬
 		*/
 		bool getData( unsigned char dnum, DataBits& d );
 
-		/*! очистка данных */
+		/*! п╬я┤п╦я│я┌п╨п╟ п╢п╟п╫п╫я▀я┘ */
 		void clear();
 		
-		/*! проверка на переполнение */	
+		/*! п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п©п╣я─п╣п©п╬п╩п╫п╣п╫п╦п╣ */	
 		inline bool isFull() 		
 		{
 			return ( bcnt >= MAXLENPACKET );
 		}
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		int szData();
 		
-		/*! преобразование для посылки в сеть */	
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */	
 		ModbusMessage transport_msg();
 	};
 
@@ -364,7 +364,7 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, ReadInputStatusRetMessage* m );
 	// -----------------------------------------------------------------------
 
-	/*! Запрос 0x03 */	
+	/*! п≈п╟п©я─п╬я│ 0x03 */	
 	struct ReadOutputMessage:
 		public ModbusHeader
 	{
@@ -374,7 +374,7 @@ namespace ModbusRTU
 		
 		// ------- to slave -------
 		ReadOutputMessage( ModbusAddr addr, ModbusData start, ModbusData count );
-		/*! преобразование для посылки в сеть */
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */
 		ModbusMessage transport_msg();
 
 		// ------- from master -------
@@ -382,7 +382,7 @@ namespace ModbusRTU
 		ReadOutputMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		inline static int szData(){ return sizeof(ModbusData)*2 + szCRC; }
 
 	}__attribute__((packed));
@@ -390,19 +390,19 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, ReadOutputMessage& m ); 
 	std::ostream& operator<<(std::ostream& os, ReadOutputMessage* m ); 
 	// -----------------------------------------------------------------------
-	/*! Ответ для 0x03 */	
+	/*! п·я┌п╡п╣я┌ п╢п╩я▐ 0x03 */	
 	struct ReadOutputRetMessage:
 		public ModbusHeader
 	{
 		ModbusByte bcnt;									/*!< numbers of bytes */
-		ModbusData data[MAXLENPACKET/sizeof(ModbusData)];	/*!< данные */
+		ModbusData data[MAXLENPACKET/sizeof(ModbusData)];	/*!< п╢п╟п╫п╫я▀п╣ */
 
 		// ------- from slave -------
 		ReadOutputRetMessage( ModbusMessage& m );
 		ReadOutputRetMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
-		/*! размер предварительного заголовка 
-		 * (после основного до фактических данных) 
+		/*! я─п╟п╥п╪п╣я─ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫п╬пЁп╬ п╥п╟пЁп╬п╩п╬п╡п╨п╟ 
+		 * (п©п╬я│п╩п╣ п╬я│п╫п╬п╡п╫п╬пЁп╬ п╢п╬ я└п╟п╨я┌п╦я┤п╣я│п╨п╦я┘ п╢п╟п╫п╫я▀я┘) 
 		*/
 		static inline int szHead()
 		{
@@ -410,46 +410,46 @@ namespace ModbusRTU
 			return sizeof(ModbusByte);
 		}
 
-		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
+		/*! я┐п╥п╫п╟я┌я▄ п╢п╩п╦п╫я┐ п╢п╟п╫п╫я▀я┘ я│п╩п╣п╢я┐я▌я┴п╦п╧ п╥п╟ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╪ п╥п╟пЁп╬п╩п╬п╡п╨п╬п╪ ( п╡ п╠п╟п╧я┌п╟я┘ ) */
 		static int getDataLen( ModbusMessage& m );
 		ModbusCRC crc;
 		
 		// ------- to master -------
 		ReadOutputRetMessage( ModbusAddr _from );
 
-		/*! добавление данных.
-		 * \return TRUE - если удалось
-		 * \return FALSE - если НЕ удалось
+		/*! п╢п╬п╠п╟п╡п╩п╣п╫п╦п╣ п╢п╟п╫п╫я▀я┘.
+		 * \return TRUE - п╣я│п╩п╦ я┐п╢п╟п╩п╬я│я▄
+		 * \return FALSE - п╣я│п╩п╦ п²п∙ я┐п╢п╟п╩п╬я│я▄
 		*/
 		bool addData( ModbusData d );
 
-		/*! очистка данных */
+		/*! п╬я┤п╦я│я┌п╨п╟ п╢п╟п╫п╫я▀я┘ */
 		void clear();
 		
-		/*! проверка на переполнение */	
+		/*! п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п©п╣я─п╣п©п╬п╩п╫п╣п╫п╦п╣ */	
 		inline bool isFull() 		
 		{
 			return ( count*sizeof(ModbusData) >= MAXLENPACKET );
 		}
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		int szData();
 		
-		/*! преобразование для посылки в сеть */	
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */	
 		ModbusMessage transport_msg();
 		
-		// Это поле не входит в стандарт modbus
-		// оно вспомогательное и игнорируется при 
-		// преобразовании в ModbusMessage.
-		// Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно. 
-		// Используйте специальную функцию transport_msg()
-		int	count;	/*!< фактическое количество данных в сообщении */
+		// п╜я┌п╬ п©п╬п╩п╣ п╫п╣ п╡я┘п╬п╢п╦я┌ п╡ я│я┌п╟п╫п╢п╟я─я┌ modbus
+		// п╬п╫п╬ п╡я│п©п╬п╪п╬пЁп╟я┌п╣п╩я▄п╫п╬п╣ п╦ п╦пЁп╫п╬я─п╦я─я┐п╣я┌я│я▐ п©я─п╦ 
+		// п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╦ п╡ ModbusMessage.
+		// п■п╣п╩п╟я┌я▄ я┤я┌п╬-я┌п╦п©п╟ memcpy(buf,this,sizeof(*this)); п╠я┐п╢п╣я┌ п╫п╣ п╡п╣я─п╫п╬. 
+		// п≤я│п©п╬п╩я▄п╥я┐п╧я┌п╣ я│п©п╣я├п╦п╟п╩я▄п╫я┐я▌ я└я┐п╫п╨я├п╦я▌ transport_msg()
+		int	count;	/*!< я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╢п╟п╫п╫я▀я┘ п╡ я│п╬п╬п╠я┴п╣п╫п╦п╦ */
 	};
 
 	std::ostream& operator<<(std::ostream& os, ReadOutputRetMessage& m );
 	std::ostream& operator<<(std::ostream& os, ReadOutputRetMessage* m );
 	// -----------------------------------------------------------------------
-	/*! Запрос 0x04 */	
+	/*! п≈п╟п©я─п╬я│ 0x04 */	
 	struct ReadInputMessage:
 		public ModbusHeader
 	{
@@ -459,7 +459,7 @@ namespace ModbusRTU
 		
 		// ------- to slave -------
 		ReadInputMessage( ModbusAddr addr, ModbusData start, ModbusData count );
-		/*! преобразование для посылки в сеть */
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */
 		ModbusMessage transport_msg();
 
 		// ------- from master -------
@@ -467,7 +467,7 @@ namespace ModbusRTU
 		ReadInputMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		inline static int szData(){ return sizeof(ModbusData)*2 + szCRC; }
 
 	}__attribute__((packed));
@@ -476,19 +476,19 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, ReadInputMessage* m ); 
 	// -----------------------------------------------------------------------
 
-	/*! Ответ для 0x04 */
+	/*! п·я┌п╡п╣я┌ п╢п╩я▐ 0x04 */
 	struct ReadInputRetMessage:
 		public ModbusHeader
 	{
 		ModbusByte bcnt;									/*!< numbers of bytes */
-		ModbusData data[MAXLENPACKET/sizeof(ModbusData)];	/*!< данные */
+		ModbusData data[MAXLENPACKET/sizeof(ModbusData)];	/*!< п╢п╟п╫п╫я▀п╣ */
 
 		// ------- from slave -------
 		ReadInputRetMessage( ModbusMessage& m );
 		ReadInputRetMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
-		/*! размер предварительного заголовка 
-		 * (после основного до фактических данных) 
+		/*! я─п╟п╥п╪п╣я─ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫п╬пЁп╬ п╥п╟пЁп╬п╩п╬п╡п╨п╟ 
+		 * (п©п╬я│п╩п╣ п╬я│п╫п╬п╡п╫п╬пЁп╬ п╢п╬ я└п╟п╨я┌п╦я┤п╣я│п╨п╦я┘ п╢п╟п╫п╫я▀я┘) 
 		*/
 		static inline int szHead()
 		{
@@ -496,23 +496,23 @@ namespace ModbusRTU
 			return sizeof(ModbusByte);
 		}
 
-		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
+		/*! я┐п╥п╫п╟я┌я▄ п╢п╩п╦п╫я┐ п╢п╟п╫п╫я▀я┘ я│п╩п╣п╢я┐я▌я┴п╦п╧ п╥п╟ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╪ п╥п╟пЁп╬п╩п╬п╡п╨п╬п╪ ( п╡ п╠п╟п╧я┌п╟я┘ ) */
 		static int getDataLen( ModbusMessage& m );
 		ModbusCRC crc;
 		
 		// ------- to master -------
 		ReadInputRetMessage( ModbusAddr _from );
 
-		/*! добавление данных.
-		 * \return TRUE - если удалось
-		 * \return FALSE - если НЕ удалось
+		/*! п╢п╬п╠п╟п╡п╩п╣п╫п╦п╣ п╢п╟п╫п╫я▀я┘.
+		 * \return TRUE - п╣я│п╩п╦ я┐п╢п╟п╩п╬я│я▄
+		 * \return FALSE - п╣я│п╩п╦ п²п∙ я┐п╢п╟п╩п╬я│я▄
 		*/
 		bool addData( ModbusData d );
 
-		/*! очистка данных */
+		/*! п╬я┤п╦я│я┌п╨п╟ п╢п╟п╫п╫я▀я┘ */
 		void clear();
 		
-		/*! проверка на переполнение */	
+		/*! п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п©п╣я─п╣п©п╬п╩п╫п╣п╫п╦п╣ */	
 		inline bool isFull()
 		{
 			return ( count*sizeof(ModbusData) >= MAXLENPACKET );
@@ -520,42 +520,42 @@ namespace ModbusRTU
 		
 		void swapData();
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		int szData();
 		
-		/*! преобразование для посылки в сеть */
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */
 		ModbusMessage transport_msg();
 		
-		// Это поле не входит в стандарт modbus
-		// оно вспомогательное и игнорируется при 
-		// преобразовании в ModbusMessage.
-		// Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно. 
-		// Используйте специальную функцию transport_msg()
-		int	count;	/*!< фактическое количество данных в сообщении */
+		// п╜я┌п╬ п©п╬п╩п╣ п╫п╣ п╡я┘п╬п╢п╦я┌ п╡ я│я┌п╟п╫п╢п╟я─я┌ modbus
+		// п╬п╫п╬ п╡я│п©п╬п╪п╬пЁп╟я┌п╣п╩я▄п╫п╬п╣ п╦ п╦пЁп╫п╬я─п╦я─я┐п╣я┌я│я▐ п©я─п╦ 
+		// п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╦ п╡ ModbusMessage.
+		// п■п╣п╩п╟я┌я▄ я┤я┌п╬-я┌п╦п©п╟ memcpy(buf,this,sizeof(*this)); п╠я┐п╢п╣я┌ п╫п╣ п╡п╣я─п╫п╬. 
+		// п≤я│п©п╬п╩я▄п╥я┐п╧я┌п╣ я│п©п╣я├п╦п╟п╩я▄п╫я┐я▌ я└я┐п╫п╨я├п╦я▌ transport_msg()
+		int	count;	/*!< я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╢п╟п╫п╫я▀я┘ п╡ я│п╬п╬п╠я┴п╣п╫п╦п╦ */
 	};
 
 	std::ostream& operator<<(std::ostream& os, ReadInputRetMessage& m );
 	std::ostream& operator<<(std::ostream& os, ReadInputRetMessage* m );
 	// -----------------------------------------------------------------------
-	/*! Запрос на запись 0x0F */	
+	/*! п≈п╟п©я─п╬я│ п╫п╟ п╥п╟п©п╦я│я▄ 0x0F */	
 	struct ForceCoilsMessage:
 		public ModbusHeader
 	{
-		ModbusData start;	/*!< стартовый адрес записи */
-		ModbusData quant;	/*!< количество записываемых битов */ 
-		ModbusByte bcnt;	/*!< количество байт данных */
-		/*! данные */
+		ModbusData start;	/*!< я│я┌п╟я─я┌п╬п╡я▀п╧ п╟п╢я─п╣я│ п╥п╟п©п╦я│п╦ */
+		ModbusData quant;	/*!< п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╥п╟п©п╦я│я▀п╡п╟п╣п╪я▀я┘ п╠п╦я┌п╬п╡ */ 
+		ModbusByte bcnt;	/*!< п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╠п╟п╧я┌ п╢п╟п╫п╫я▀я┘ */
+		/*! п╢п╟п╫п╫я▀п╣ */
 		ModbusByte data[MAXLENPACKET-sizeof(ModbusData)*2-sizeof(ModbusByte)];
-		ModbusCRC crc;		/*!< контрольная сумма */
+		ModbusCRC crc;		/*!< п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟ */
 
 		// ------- to slave -------
 		ForceCoilsMessage( ModbusAddr addr, ModbusData start );
-		/*! преобразование для посылки в сеть */
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */
 		ModbusMessage transport_msg();
 
-		/*! добавление данных.
-		 * \return TRUE - если удалось
-		 * \return FALSE - если НЕ удалось
+		/*! п╢п╬п╠п╟п╡п╩п╣п╫п╦п╣ п╢п╟п╫п╫я▀я┘.
+		 * \return TRUE - п╣я│п╩п╦ я┐п╢п╟п╩п╬я│я▄
+		 * \return FALSE - п╣я│п╩п╦ п²п∙ я┐п╢п╟п╩п╬я│я▄
 		*/
 		bool addData( DataBits d );
 		
@@ -567,11 +567,11 @@ namespace ModbusRTU
 		
 		inline int last(){ return quant; }
 
-		/*! получение данных.
-		 * \param dnum  - номер байта
-		 * \param d     - найденные данные
-		 * \return TRUE - если есть
-		 * \return FALSE - если НЕ найдено
+		/*! п©п╬п╩я┐я┤п╣п╫п╦п╣ п╢п╟п╫п╫я▀я┘.
+		 * \param dnum  - п╫п╬п╪п╣я─ п╠п╟п╧я┌п╟
+		 * \param d     - п╫п╟п╧п╢п╣п╫п╫я▀п╣ п╢п╟п╫п╫я▀п╣
+		 * \return TRUE - п╣я│п╩п╦ п╣я│я┌я▄
+		 * \return FALSE - п╣я│п╩п╦ п²п∙ п╫п╟п╧п╢п╣п╫п╬
 		*/
 		bool getData( unsigned char dnum, DataBits& d );
 		
@@ -588,11 +588,11 @@ namespace ModbusRTU
 		ForceCoilsMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		int szData();
 
-		/*! размер предварительного заголовка 
-		 * (после основного до фактических данных) 
+		/*! я─п╟п╥п╪п╣я─ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫п╬пЁп╬ п╥п╟пЁп╬п╩п╬п╡п╨п╟ 
+		 * (п©п╬я│п╩п╣ п╬я│п╫п╬п╡п╫п╬пЁп╬ п╢п╬ я└п╟п╨я┌п╦я┤п╣я│п╨п╦я┘ п╢п╟п╫п╫я▀я┘) 
 		*/
 		static inline int szHead()
 		{
@@ -600,11 +600,11 @@ namespace ModbusRTU
 			return sizeof(ModbusData)*2+sizeof(ModbusByte);
 		}
 		
-		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
+		/*! я┐п╥п╫п╟я┌я▄ п╢п╩п╦п╫я┐ п╢п╟п╫п╫я▀я┘ я│п╩п╣п╢я┐я▌я┴п╦п╧ п╥п╟ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╪ п╥п╟пЁп╬п╩п╬п╡п╨п╬п╪ ( п╡ п╠п╟п╧я┌п╟я┘ ) */
 		static int getDataLen( ModbusMessage& m );
 
-		/*! проверка корректности данных 
-			что quant и bcnt - совпадают...
+		/*! п©я─п╬п╡п╣я─п╨п╟ п╨п╬я─я─п╣п╨я┌п╫п╬я│я┌п╦ п╢п╟п╫п╫я▀я┘ 
+			я┤я┌п╬ quant п╦ bcnt - я│п╬п╡п©п╟п╢п╟я▌я┌...
 		*/
 		bool checkFormat();
 		
@@ -613,12 +613,12 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, ForceCoilsMessage& m );
 	std::ostream& operator<<(std::ostream& os, ForceCoilsMessage* m );
 	// -----------------------------------------------------------------------
-	/*! Ответ для запроса на запись 0x0F */	
+	/*! п·я┌п╡п╣я┌ п╢п╩я▐ п╥п╟п©я─п╬я│п╟ п╫п╟ п╥п╟п©п╦я│я▄ 0x0F */	
 	struct ForceCoilsRetMessage:
 		public ModbusHeader
 	{
-		ModbusData start; 	/*!< записанный начальный адрес */
-		ModbusData quant;	/*!< количество записанных битов */
+		ModbusData start; 	/*!< п╥п╟п©п╦я│п╟п╫п╫я▀п╧ п╫п╟я┤п╟п╩я▄п╫я▀п╧ п╟п╢я─п╣я│ */
+		ModbusData quant;	/*!< п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╥п╟п©п╦я│п╟п╫п╫я▀я┘ п╠п╦я┌п╬п╡ */
 		ModbusCRC crc;
 
 		// ------- from slave -------
@@ -628,20 +628,20 @@ namespace ModbusRTU
 		
 		// ------- to master -------
 		/*! 
-		 * \param _from - адрес отправителя
-		 * \param start	- записанный регистр
-		 * \param quant	- количество записанных слов
+		 * \param _from - п╟п╢я─п╣я│ п╬я┌п©я─п╟п╡п╦я┌п╣п╩я▐
+		 * \param start	- п╥п╟п©п╦я│п╟п╫п╫я▀п╧ я─п╣пЁп╦я│я┌я─
+		 * \param quant	- п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╥п╟п©п╦я│п╟п╫п╫я▀я┘ я│п╩п╬п╡
 		*/
 		ForceCoilsRetMessage( ModbusAddr _from, ModbusData start=0, ModbusData quant=0 );
 
-		/*! записать данные */
+		/*! п╥п╟п©п╦я│п╟я┌я▄ п╢п╟п╫п╫я▀п╣ */
 		void set( ModbusData start, ModbusData quant );
 
-		/*! преобразование для посылки в сеть */	
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */	
 		ModbusMessage transport_msg();
 		
-		/*! размер данных(после заголовка) у данного типа сообщения 
-			Для данного типа он постоянный..
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ 
+			п■п╩я▐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ п╬п╫ п©п╬я│я┌п╬я▐п╫п╫я▀п╧..
 		*/
 		inline static int szData(){ return sizeof(ModbusData)*2+sizeof(ModbusCRC); }
 	};
@@ -650,20 +650,20 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, ForceCoilsRetMessage* m );
 	// -----------------------------------------------------------------------
 
-	/*! Запрос на запись 0x10 */	
+	/*! п≈п╟п©я─п╬я│ п╫п╟ п╥п╟п©п╦я│я▄ 0x10 */	
 	struct WriteOutputMessage:
 		public ModbusHeader
 	{
-		ModbusData start;	/*!< стартовый адрес записи */
-		ModbusData quant;	/*!< количество слов данных */ 
-		ModbusByte bcnt;	/*!< количество байт данных */
-		/*! данные */
+		ModbusData start;	/*!< я│я┌п╟я─я┌п╬п╡я▀п╧ п╟п╢я─п╣я│ п╥п╟п©п╦я│п╦ */
+		ModbusData quant;	/*!< п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ я│п╩п╬п╡ п╢п╟п╫п╫я▀я┘ */ 
+		ModbusByte bcnt;	/*!< п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╠п╟п╧я┌ п╢п╟п╫п╫я▀я┘ */
+		/*! п╢п╟п╫п╫я▀п╣ */
 		ModbusData data[MAXLENPACKET/sizeof(ModbusData)-sizeof(ModbusData)*2-sizeof(ModbusByte)];
-		ModbusCRC crc;		/*!< контрольная сумма */
+		ModbusCRC crc;		/*!< п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟ */
 
 		// ------- to slave -------
 		WriteOutputMessage( ModbusAddr addr, ModbusData start );
-		/*! преобразование для посылки в сеть */
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */
 		ModbusMessage transport_msg();
 
 		bool addData( ModbusData d );
@@ -678,11 +678,11 @@ namespace ModbusRTU
 		WriteOutputMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		int szData();
 
-		/*! размер предварительного заголовка 
-		 * (после основного до фактических данных) 
+		/*! я─п╟п╥п╪п╣я─ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫п╬пЁп╬ п╥п╟пЁп╬п╩п╬п╡п╨п╟ 
+		 * (п©п╬я│п╩п╣ п╬я│п╫п╬п╡п╫п╬пЁп╬ п╢п╬ я└п╟п╨я┌п╦я┤п╣я│п╨п╦я┘ п╢п╟п╫п╫я▀я┘) 
 		*/
 		static inline int szHead()
 		{
@@ -690,11 +690,11 @@ namespace ModbusRTU
 			return sizeof(ModbusData)*2+sizeof(ModbusByte);
 		}
 		
-		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
+		/*! я┐п╥п╫п╟я┌я▄ п╢п╩п╦п╫я┐ п╢п╟п╫п╫я▀я┘ я│п╩п╣п╢я┐я▌я┴п╦п╧ п╥п╟ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╪ п╥п╟пЁп╬п╩п╬п╡п╨п╬п╪ ( п╡ п╠п╟п╧я┌п╟я┘ ) */
 		static int getDataLen( ModbusMessage& m );
 
-		/*! проверка корректности данных 
-			что quant и bcnt - совпадают...
+		/*! п©я─п╬п╡п╣я─п╨п╟ п╨п╬я─я─п╣п╨я┌п╫п╬я│я┌п╦ п╢п╟п╫п╫я▀я┘ 
+			я┤я┌п╬ quant п╦ bcnt - я│п╬п╡п©п╟п╢п╟я▌я┌...
 		*/
 		bool checkFormat();
 		
@@ -704,12 +704,12 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, WriteOutputMessage& m );
 	std::ostream& operator<<(std::ostream& os, WriteOutputMessage* m );
 
-	/*! Ответ для запроса на запись 0x10 */	
+	/*! п·я┌п╡п╣я┌ п╢п╩я▐ п╥п╟п©я─п╬я│п╟ п╫п╟ п╥п╟п©п╦я│я▄ 0x10 */	
 	struct WriteOutputRetMessage:
 		public ModbusHeader
 	{
-		ModbusData start; 	/*!< записанный начальный адрес */
-		ModbusData quant;	/*!< количество записанных слов данных */
+		ModbusData start; 	/*!< п╥п╟п©п╦я│п╟п╫п╫я▀п╧ п╫п╟я┤п╟п╩я▄п╫я▀п╧ п╟п╢я─п╣я│ */
+		ModbusData quant;	/*!< п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╥п╟п©п╦я│п╟п╫п╫я▀я┘ я│п╩п╬п╡ п╢п╟п╫п╫я▀я┘ */
 
 		// ------- from slave -------
 		WriteOutputRetMessage( ModbusMessage& m );
@@ -719,20 +719,20 @@ namespace ModbusRTU
 
 		// ------- to master -------
 		/*! 
-		 * \param _from - адрес отправителя
-		 * \param start	- записанный регистр
-		 * \param quant	- количество записанных слов
+		 * \param _from - п╟п╢я─п╣я│ п╬я┌п©я─п╟п╡п╦я┌п╣п╩я▐
+		 * \param start	- п╥п╟п©п╦я│п╟п╫п╫я▀п╧ я─п╣пЁп╦я│я┌я─
+		 * \param quant	- п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╥п╟п©п╦я│п╟п╫п╫я▀я┘ я│п╩п╬п╡
 		*/
 		WriteOutputRetMessage( ModbusAddr _from, ModbusData start=0, ModbusData quant=0 );
 
-		/*! записать данные */
+		/*! п╥п╟п©п╦я│п╟я┌я▄ п╢п╟п╫п╫я▀п╣ */
 		void set( ModbusData start, ModbusData quant );
 
-		/*! преобразование для посылки в сеть */	
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */	
 		ModbusMessage transport_msg();
 		
-		/*! размер данных(после заголовка) у данного типа сообщения 
-			Для данного типа он постоянный..
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ 
+			п■п╩я▐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ п╬п╫ п©п╬я│я┌п╬я▐п╫п╫я▀п╧..
 		*/
 		inline static int szData(){ return sizeof(ModbusData)*2+sizeof(ModbusCRC); }
 	};
@@ -740,15 +740,15 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, WriteOutputRetMessage& m );
 	std::ostream& operator<<(std::ostream& os, WriteOutputRetMessage* m );
 	// -----------------------------------------------------------------------
-	/*! Запрос 0x05 */	
+	/*! п≈п╟п©я─п╬я│ 0x05 */	
 	struct ForceSingleCoilMessage:
 		public ModbusHeader
 	{
-		ModbusData start;	/*!< стартовый адрес записи */
-		ModbusData data;	/*!< команда ON - true | OFF - false */
-		ModbusCRC crc;		/*!< контрольная сумма */
+		ModbusData start;	/*!< я│я┌п╟я─я┌п╬п╡я▀п╧ п╟п╢я─п╣я│ п╥п╟п©п╦я│п╦ */
+		ModbusData data;	/*!< п╨п╬п╪п╟п╫п╢п╟ ON - true | OFF - false */
+		ModbusCRC crc;		/*!< п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟ */
 
-		/*! получить значение команды */
+		/*! п©п╬п╩я┐я┤п╦я┌я▄ п╥п╫п╟я┤п╣п╫п╦п╣ п╨п╬п╪п╟п╫п╢я▀ */
 		inline bool cmd()
 		{
 			return (data & 0xFF00);
@@ -757,7 +757,7 @@ namespace ModbusRTU
 
 		// ------- to slave -------
 		ForceSingleCoilMessage( ModbusAddr addr, ModbusData reg, bool state );
-		/*! преобразование для посылки в сеть */
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */
 		ModbusMessage transport_msg();
 	
 		// ------- from master -------
@@ -765,24 +765,24 @@ namespace ModbusRTU
 		ForceSingleCoilMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		int szData();
 
-		/*! размер предварительного заголовка 
-		 * (после основного до фактических данных) 
+		/*! я─п╟п╥п╪п╣я─ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫п╬пЁп╬ п╥п╟пЁп╬п╩п╬п╡п╨п╟ 
+		 * (п©п╬я│п╩п╣ п╬я│п╫п╬п╡п╫п╬пЁп╬ п╢п╬ я└п╟п╨я┌п╦я┤п╣я│п╨п╦я┘ п╢п╟п╫п╫я▀я┘) 
 		*/
 		static inline int szHead()
 		{
 			return sizeof(ModbusData);
 		}
 		
-		/*! узнать длину данных следующий за 
-			предварительным заголовком ( в байтах ) 
+		/*! я┐п╥п╫п╟я┌я▄ п╢п╩п╦п╫я┐ п╢п╟п╫п╫я▀я┘ я│п╩п╣п╢я┐я▌я┴п╦п╧ п╥п╟ 
+			п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╪ п╥п╟пЁп╬п╩п╬п╡п╨п╬п╪ ( п╡ п╠п╟п╧я┌п╟я┘ ) 
 		*/
 		static int getDataLen( ModbusMessage& m );
 
-		/*! проверка корректности данных 
-			что quant и bcnt - совпадают...
+		/*! п©я─п╬п╡п╣я─п╨п╟ п╨п╬я─я─п╣п╨я┌п╫п╬я│я┌п╦ п╢п╟п╫п╫я▀я┘ 
+			я┤я┌п╬ quant п╦ bcnt - я│п╬п╡п©п╟п╢п╟я▌я┌...
 		*/
 		bool checkFormat();
 	}__attribute__((packed));
@@ -792,12 +792,12 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, ForceSingleCoilMessage* m );
 	// -----------------------------------------------------------------------
 
-	/*! Ответ для запроса 0x05 */	
+	/*! п·я┌п╡п╣я┌ п╢п╩я▐ п╥п╟п©я─п╬я│п╟ 0x05 */	
 	struct ForceSingleCoilRetMessage:
 		public ModbusHeader
 	{
-		ModbusData start; 	/*!< записанный начальный адрес */
-		ModbusData data; 	/*!< данные */
+		ModbusData start; 	/*!< п╥п╟п©п╦я│п╟п╫п╫я▀п╧ п╫п╟я┤п╟п╩я▄п╫я▀п╧ п╟п╢я─п╣я│ */
+		ModbusData data; 	/*!< п╢п╟п╫п╫я▀п╣ */
 		ModbusCRC crc;
 
 
@@ -808,19 +808,19 @@ namespace ModbusRTU
 
 		// ------- to master -------
 		/*! 
-		 * \param _from - адрес отправителя
-		 * \param start	- записанный регистр
+		 * \param _from - п╟п╢я─п╣я│ п╬я┌п©я─п╟п╡п╦я┌п╣п╩я▐
+		 * \param start	- п╥п╟п©п╦я│п╟п╫п╫я▀п╧ я─п╣пЁп╦я│я┌я─
 		*/
 		ForceSingleCoilRetMessage( ModbusAddr _from );
 
-		/*! записать данные */
+		/*! п╥п╟п©п╦я│п╟я┌я▄ п╢п╟п╫п╫я▀п╣ */
 		void set( ModbusData start, bool cmd );
 
-		/*! преобразование для посылки в сеть */	
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */	
 		ModbusMessage transport_msg();
 		
-		/*! размер данных(после заголовка) у данного типа сообщения 
-			Для данного типа он постоянный..
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ 
+			п■п╩я▐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ п╬п╫ п©п╬я│я┌п╬я▐п╫п╫я▀п╧..
 		*/
 		inline static int szData(){ return 2*sizeof(ModbusData)+sizeof(ModbusCRC); }
 	};
@@ -829,18 +829,18 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, ForceSingleCoilRetMessage* m );
 	// -----------------------------------------------------------------------
 
-	/*! Запрос на запись одного регистра 0x06 */	
+	/*! п≈п╟п©я─п╬я│ п╫п╟ п╥п╟п©п╦я│я▄ п╬п╢п╫п╬пЁп╬ я─п╣пЁп╦я│я┌я─п╟ 0x06 */	
 	struct WriteSingleOutputMessage:
 		public ModbusHeader
 	{
-		ModbusData start;	/*!< стартовый адрес записи */
-		ModbusData data;	/*!< данные */
-		ModbusCRC crc;		/*!< контрольная сумма */
+		ModbusData start;	/*!< я│я┌п╟я─я┌п╬п╡я▀п╧ п╟п╢я─п╣я│ п╥п╟п©п╦я│п╦ */
+		ModbusData data;	/*!< п╢п╟п╫п╫я▀п╣ */
+		ModbusCRC crc;		/*!< п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟ */
 
 
 		// ------- to slave -------
 		WriteSingleOutputMessage( ModbusAddr addr, ModbusData reg=0, ModbusData data=0 );
-		/*! преобразование для посылки в сеть */
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */
 		ModbusMessage transport_msg();
 	
 		// ------- from master -------
@@ -848,24 +848,24 @@ namespace ModbusRTU
 		WriteSingleOutputMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		int szData();
 
-		/*! размер предварительного заголовка 
-		 * (после основного до фактических данных) 
+		/*! я─п╟п╥п╪п╣я─ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫п╬пЁп╬ п╥п╟пЁп╬п╩п╬п╡п╨п╟ 
+		 * (п©п╬я│п╩п╣ п╬я│п╫п╬п╡п╫п╬пЁп╬ п╢п╬ я└п╟п╨я┌п╦я┤п╣я│п╨п╦я┘ п╢п╟п╫п╫я▀я┘) 
 		*/
 		static inline int szHead()
 		{
 			return sizeof(ModbusData);
 		}
 		
-		/*! узнать длину данных следующий за 
-			предварительным заголовком ( в байтах ) 
+		/*! я┐п╥п╫п╟я┌я▄ п╢п╩п╦п╫я┐ п╢п╟п╫п╫я▀я┘ я│п╩п╣п╢я┐я▌я┴п╦п╧ п╥п╟ 
+			п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╪ п╥п╟пЁп╬п╩п╬п╡п╨п╬п╪ ( п╡ п╠п╟п╧я┌п╟я┘ ) 
 		*/
 		static int getDataLen( ModbusMessage& m );
 
-		/*! проверка корректности данных 
-			что quant и bcnt - совпадают...
+		/*! п©я─п╬п╡п╣я─п╨п╟ п╨п╬я─я─п╣п╨я┌п╫п╬я│я┌п╦ п╢п╟п╫п╫я▀я┘ 
+			я┤я┌п╬ quant п╦ bcnt - я│п╬п╡п©п╟п╢п╟я▌я┌...
 		*/
 		bool checkFormat();
 	}__attribute__((packed));
@@ -875,12 +875,12 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, WriteSingleOutputMessage* m );
 	// -----------------------------------------------------------------------
 
-	/*! Ответ для запроса на запись */	
+	/*! п·я┌п╡п╣я┌ п╢п╩я▐ п╥п╟п©я─п╬я│п╟ п╫п╟ п╥п╟п©п╦я│я▄ */	
 	struct WriteSingleOutputRetMessage:
 		public ModbusHeader
 	{
-		ModbusData start; 	/*!< записанный начальный адрес */
-		ModbusData data; 	/*!< записанный начальный адрес */
+		ModbusData start; 	/*!< п╥п╟п©п╦я│п╟п╫п╫я▀п╧ п╫п╟я┤п╟п╩я▄п╫я▀п╧ п╟п╢я─п╣я│ */
+		ModbusData data; 	/*!< п╥п╟п©п╦я│п╟п╫п╫я▀п╧ п╫п╟я┤п╟п╩я▄п╫я▀п╧ п╟п╢я─п╣я│ */
 		ModbusCRC crc;
 
 
@@ -891,19 +891,19 @@ namespace ModbusRTU
 
 		// ------- to master -------
 		/*! 
-		 * \param _from - адрес отправителя
-		 * \param start	- записанный регистр
+		 * \param _from - п╟п╢я─п╣я│ п╬я┌п©я─п╟п╡п╦я┌п╣п╩я▐
+		 * \param start	- п╥п╟п©п╦я│п╟п╫п╫я▀п╧ я─п╣пЁп╦я│я┌я─
 		*/
 		WriteSingleOutputRetMessage( ModbusAddr _from, ModbusData start=0 );
 
-		/*! записать данные */
+		/*! п╥п╟п©п╦я│п╟я┌я▄ п╢п╟п╫п╫я▀п╣ */
 		void set( ModbusData start, ModbusData data );
 
-		/*! преобразование для посылки в сеть */	
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */	
 		ModbusMessage transport_msg();
 		
-		/*! размер данных(после заголовка) у данного типа сообщения 
-			Для данного типа он постоянный..
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ 
+			п■п╩я▐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ п╬п╫ п©п╬я│я┌п╬я▐п╫п╫я▀п╧..
 		*/
 		inline static int szData(){ return 2*sizeof(ModbusData)+sizeof(ModbusCRC); }
 	};
@@ -912,19 +912,19 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, WriteSingleOutputRetMessage* m );
 	// -----------------------------------------------------------------------
 
-	/*! Чтение информации об ошибке */	
+	/*! п╖я┌п╣п╫п╦п╣ п╦п╫я└п╬я─п╪п╟я├п╦п╦ п╬п╠ п╬я┬п╦п╠п╨п╣ */	
 	struct JournalCommandMessage:
 		public ModbusHeader
 	{
-		ModbusData cmd;			/*!< код операции */
-		ModbusData num;			/*!< номер записи */
+		ModbusData cmd;			/*!< п╨п╬п╢ п╬п©п╣я─п╟я├п╦п╦ */
+		ModbusData num;			/*!< п╫п╬п╪п╣я─ п╥п╟п©п╦я│п╦ */
 		ModbusCRC crc;
 		
 		// -------------
 		JournalCommandMessage( ModbusMessage& m );
 		JournalCommandMessage& operator=( ModbusMessage& m );
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		inline static int szData(){ return sizeof(ModbusByte)*4 + szCRC; }
 
 	}__attribute__((packed));
@@ -932,57 +932,57 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, JournalCommandMessage& m ); 
 	std::ostream& operator<<(std::ostream& os, JournalCommandMessage* m ); 
 	// -----------------------------------------------------------------------
-	/*! Ответ для запроса на чтение ошибки */	
+	/*! п·я┌п╡п╣я┌ п╢п╩я▐ п╥п╟п©я─п╬я│п╟ п╫п╟ я┤я┌п╣п╫п╦п╣ п╬я┬п╦п╠п╨п╦ */	
 	struct JournalCommandRetMessage:
 		public ModbusHeader
 	{
 		ModbusByte bcnt;					/*!< numbers of bytes */
-//		ModbusByte data[MAXLENPACKET-1];	/*!< данные */
+//		ModbusByte data[MAXLENPACKET-1];	/*!< п╢п╟п╫п╫я▀п╣ */
 
-		// В связи со спецификой реализации ответной части (т.е. modbus master)
-		// данные приходится делать не байтовым потоком, а "словами"
-		// которые в свою очередь будут перевёрнуты при посылке...
-		ModbusData data[MAXLENPACKET/sizeof(ModbusData)];	/*!< данные */
+		// п▓ я│п╡я▐п╥п╦ я│п╬ я│п©п╣я├п╦я└п╦п╨п╬п╧ я─п╣п╟п╩п╦п╥п╟я├п╦п╦ п╬я┌п╡п╣я┌п╫п╬п╧ я┤п╟я│я┌п╦ (я┌.п╣. modbus master)
+		// п╢п╟п╫п╫я▀п╣ п©я─п╦я┘п╬п╢п╦я┌я│я▐ п╢п╣п╩п╟я┌я▄ п╫п╣ п╠п╟п╧я┌п╬п╡я▀п╪ п©п╬я┌п╬п╨п╬п╪, п╟ "я│п╩п╬п╡п╟п╪п╦"
+		// п╨п╬я┌п╬я─я▀п╣ п╡ я│п╡п╬я▌ п╬я┤п╣я─п╣п╢я▄ п╠я┐п╢я┐я┌ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀ п©я─п╦ п©п╬я│я▀п╩п╨п╣...
+		ModbusData data[MAXLENPACKET/sizeof(ModbusData)];	/*!< п╢п╟п╫п╫я▀п╣ */
 
 		// -------------
 		JournalCommandRetMessage( ModbusAddr _from );
 
-		/*! Добавление данных
-			\warning Старые данные будут затёрты
-			\warning Используется указатель ModbusByte*
-				т.к. копируемые сюда данные могут быть
-				не выровнены по словам!
+		/*! п■п╬п╠п╟п╡п╩п╣п╫п╦п╣ п╢п╟п╫п╫я▀я┘
+			\warning п║я┌п╟я─я▀п╣ п╢п╟п╫п╫я▀п╣ п╠я┐п╢я┐я┌ п╥п╟я┌я▒я─я┌я▀
+			\warning п≤я│п©п╬п╩я▄п╥я┐п╣я┌я│я▐ я┐п╨п╟п╥п╟я┌п╣п╩я▄ ModbusByte*
+				я┌.п╨. п╨п╬п©п╦я─я┐п╣п╪я▀п╣ я│я▌п╢п╟ п╢п╟п╫п╫я▀п╣ п╪п╬пЁя┐я┌ п╠я▀я┌я▄
+				п╫п╣ п╡я▀я─п╬п╡п╫п╣п╫я▀ п©п╬ я│п╩п╬п╡п╟п╪!
 		*/
 		bool setData( ModbusByte* b, int len );
 
-		/*! очистка данных */
+		/*! п╬я┤п╦я│я┌п╨п╟ п╢п╟п╫п╫я▀я┘ */
 		void clear();
 		
-		/*! проверка на переполнение */	
+		/*! п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п©п╣я─п╣п©п╬п╩п╫п╣п╫п╦п╣ */	
 		inline bool isFull() 		
 		{
 			return ( count*sizeof(ModbusData) >= MAXLENPACKET );
 		}
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		int szData();
 		
-		/*! преобразование для посылки в сеть */	
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */	
 		ModbusMessage transport_msg();
 		
-		// Это поле не входит в стандарт modbus
-		// оно вспомогательное и игнорируется при 
-		// преобразовании в ModbusMessage.
-		// Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно. 
-		// Используйте специальную функцию transport_msg()
-		int	count;	/*!< фактическое количество данных в сообщении */
+		// п╜я┌п╬ п©п╬п╩п╣ п╫п╣ п╡я┘п╬п╢п╦я┌ п╡ я│я┌п╟п╫п╢п╟я─я┌ modbus
+		// п╬п╫п╬ п╡я│п©п╬п╪п╬пЁп╟я┌п╣п╩я▄п╫п╬п╣ п╦ п╦пЁп╫п╬я─п╦я─я┐п╣я┌я│я▐ п©я─п╦ 
+		// п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╦ п╡ ModbusMessage.
+		// п■п╣п╩п╟я┌я▄ я┤я┌п╬-я┌п╦п©п╟ memcpy(buf,this,sizeof(*this)); п╠я┐п╢п╣я┌ п╫п╣ п╡п╣я─п╫п╬. 
+		// п≤я│п©п╬п╩я▄п╥я┐п╧я┌п╣ я│п©п╣я├п╦п╟п╩я▄п╫я┐я▌ я└я┐п╫п╨я├п╦я▌ transport_msg()
+		int	count;	/*!< я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╢п╟п╫п╫я▀я┘ п╡ я│п╬п╬п╠я┴п╣п╫п╦п╦ */
 	};
 
 	std::ostream& operator<<(std::ostream& os, JournalCommandRetMessage& m );
 	std::ostream& operator<<(std::ostream& os, JournalCommandRetMessage* m );
 	// -----------------------------------------------------------------------
-	/*! ответ в случае необходимости подтверждения команды 
-		(просто пакует в JournalCommandRetMessage код команды и ошибки )
+	/*! п╬я┌п╡п╣я┌ п╡ я│п╩я┐я┤п╟п╣ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬я│я┌п╦ п©п╬п╢я┌п╡п╣я─п╤п╢п╣п╫п╦я▐ п╨п╬п╪п╟п╫п╢я▀ 
+		(п©я─п╬я│я┌п╬ п©п╟п╨я┐п╣я┌ п╡ JournalCommandRetMessage п╨п╬п╢ п╨п╬п╪п╟п╫п╢я▀ п╦ п╬я┬п╦п╠п╨п╦ )
 	*/
 	struct JournalCommandRetOK:
 		public JournalCommandRetMessage
@@ -997,23 +997,23 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, JournalCommandRetOK* m ); 
 	// -----------------------------------------------------------------------
 
-	/*! Установка времени */	
+	/*! пёя│я┌п╟п╫п╬п╡п╨п╟ п╡я─п╣п╪п╣п╫п╦ */	
 	struct SetDateTimeMessage:
 		public ModbusHeader
 	{
-		ModbusByte hour;	/*!< часы [0..23] */
-		ModbusByte min;		/*!< минуты [0..59] */
-		ModbusByte sec;		/*!< секунды [0..59] */
-		ModbusByte day;		/*!< день [1..31] */
-		ModbusByte mon;		/*!< месяц [1..12] */
-		ModbusByte year;	/*!< год [0..99] */
-		ModbusByte century;	/*!< столетие [19-20] */
+		ModbusByte hour;	/*!< я┤п╟я│я▀ [0..23] */
+		ModbusByte min;		/*!< п╪п╦п╫я┐я┌я▀ [0..59] */
+		ModbusByte sec;		/*!< я│п╣п╨я┐п╫п╢я▀ [0..59] */
+		ModbusByte day;		/*!< п╢п╣п╫я▄ [1..31] */
+		ModbusByte mon;		/*!< п╪п╣я│я▐я├ [1..12] */
+		ModbusByte year;	/*!< пЁп╬п╢ [0..99] */
+		ModbusByte century;	/*!< я│я┌п╬п╩п╣я┌п╦п╣ [19-20] */
 
 		ModbusCRC crc;
 		
 		// ------- to slave -------
 		SetDateTimeMessage( ModbusAddr addr );
-		/*! преобразование для посылки в сеть */
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */
 		ModbusMessage transport_msg();
 		
 		// ------- from master -------
@@ -1023,7 +1023,7 @@ namespace ModbusRTU
 
 		bool checkFormat();
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		inline static int szData(){ return sizeof(ModbusByte)*7 + szCRC; }
 
 	}__attribute__((packed));
@@ -1032,7 +1032,7 @@ namespace ModbusRTU
 	std::ostream& operator<<(std::ostream& os, SetDateTimeMessage* m ); 
 	// -----------------------------------------------------------------------
 
-	/*! Ответ (просто повторяет запрос) */
+	/*! п·я┌п╡п╣я┌ (п©я─п╬я│я┌п╬ п©п╬п╡я┌п╬я─я▐п╣я┌ п╥п╟п©я─п╬я│) */
 	struct SetDateTimeRetMessage:
 		public SetDateTimeMessage
 	{
@@ -1047,36 +1047,36 @@ namespace ModbusRTU
 		SetDateTimeRetMessage( const SetDateTimeMessage& query );
 		static void cpy( SetDateTimeRetMessage& reply, SetDateTimeMessage& query );
 
-		/*! преобразование для посылки в сеть */	
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */	
 		ModbusMessage transport_msg();
 	};
 	// -----------------------------------------------------------------------
 
-	/*! Вызов удалённого сервиса */	
+	/*! п▓я▀п╥п╬п╡ я┐п╢п╟п╩я▒п╫п╫п╬пЁп╬ я│п╣я─п╡п╦я│п╟ */	
 	struct RemoteServiceMessage:
 		public ModbusHeader
 	{
-		ModbusByte bcnt;	/*!< количество байт */
+		ModbusByte bcnt;	/*!< п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╠п╟п╧я┌ */
 
-		/*! данные */
+		/*! п╢п╟п╫п╫я▀п╣ */
 		ModbusByte data[MAXLENPACKET-sizeof(ModbusByte)];
-		ModbusCRC crc;		/*!< контрольная сумма */
+		ModbusCRC crc;		/*!< п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟ */
 	
 		// -----------
 		RemoteServiceMessage( ModbusMessage& m );
 		RemoteServiceMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		int szData();
 
-		/*! размер предварительного заголовка 
-		 * (после основного до фактических данных) 
+		/*! я─п╟п╥п╪п╣я─ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫п╬пЁп╬ п╥п╟пЁп╬п╩п╬п╡п╨п╟ 
+		 * (п©п╬я│п╩п╣ п╬я│п╫п╬п╡п╫п╬пЁп╬ п╢п╬ я└п╟п╨я┌п╦я┤п╣я│п╨п╦я┘ п╢п╟п╫п╫я▀я┘) 
 		*/
 		static inline int szHead()
 		{ return sizeof(ModbusByte); } // bcnt
 		
-		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
+		/*! я┐п╥п╫п╟я┌я▄ п╢п╩п╦п╫я┐ п╢п╟п╫п╫я▀я┘ я│п╩п╣п╢я┐я▌я┴п╦п╧ п╥п╟ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╪ п╥п╟пЁп╬п╩п╬п╡п╨п╬п╪ ( п╡ п╠п╟п╧я┌п╟я┘ ) */
 		static int getDataLen( ModbusMessage& m );
 
 	}__attribute__((packed));
@@ -1087,37 +1087,37 @@ namespace ModbusRTU
 	struct RemoteServiceRetMessage:
 		public ModbusHeader
 	{
-		ModbusByte bcnt;	/*!< количество байт */
-		/*! данные */
+		ModbusByte bcnt;	/*!< п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╠п╟п╧я┌ */
+		/*! п╢п╟п╫п╫я▀п╣ */
 		ModbusByte data[MAXLENPACKET-sizeof(ModbusByte)];
 
 		RemoteServiceRetMessage( ModbusAddr _from );
 
-		/*! Добавление данных
-			\warning Старые данные будут затёрты
-			\warning Используется указатель ModbusByte*
-				т.к. копируемые сюда данные могут быть
-				не выровнены по словам!
+		/*! п■п╬п╠п╟п╡п╩п╣п╫п╦п╣ п╢п╟п╫п╫я▀я┘
+			\warning п║я┌п╟я─я▀п╣ п╢п╟п╫п╫я▀п╣ п╠я┐п╢я┐я┌ п╥п╟я┌я▒я─я┌я▀
+			\warning п≤я│п©п╬п╩я▄п╥я┐п╣я┌я│я▐ я┐п╨п╟п╥п╟я┌п╣п╩я▄ ModbusByte*
+				я┌.п╨. п╨п╬п©п╦я─я┐п╣п╪я▀п╣ я│я▌п╢п╟ п╢п╟п╫п╫я▀п╣ п╪п╬пЁя┐я┌ п╠я▀я┌я▄
+				п╫п╣ п╡я▀я─п╬п╡п╫п╣п╫я▀ п©п╬ я│п╩п╬п╡п╟п╪!
 		*/
 		bool setData( ModbusByte* b, int len );
 
-		/*! очистка данных */
+		/*! п╬я┤п╦я│я┌п╨п╟ п╢п╟п╫п╫я▀я┘ */
 		void clear();
 		
-		/*! проверка на переполнение */	
+		/*! п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п©п╣я─п╣п©п╬п╩п╫п╣п╫п╦п╣ */	
 		inline bool isFull() 		
 			{ return ( count >= sizeof(data) ); }
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		int szData();
 		
-		/*! преобразование для посылки в сеть */	
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */	
 		ModbusMessage transport_msg();
 		
-		// Это поле не входит в стандарт modbus
-		// оно вспомогательное и игнорируется при 
-		// преобразовании в ModbusMessage.
-		unsigned int	count;	/*!< фактическое количество данных в сообщении */
+		// п╜я┌п╬ п©п╬п╩п╣ п╫п╣ п╡я┘п╬п╢п╦я┌ п╡ я│я┌п╟п╫п╢п╟я─я┌ modbus
+		// п╬п╫п╬ п╡я│п©п╬п╪п╬пЁп╟я┌п╣п╩я▄п╫п╬п╣ п╦ п╦пЁп╫п╬я─п╦я─я┐п╣я┌я│я▐ п©я─п╦ 
+		// п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╦ п╡ ModbusMessage.
+		unsigned int	count;	/*!< я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╢п╟п╫п╫я▀я┘ п╡ я│п╬п╬п╠я┴п╣п╫п╦п╦ */
 	};
 	// -----------------------------------------------------------------------
 
@@ -1132,34 +1132,34 @@ namespace ModbusRTU
 			ModbusData reglen;  /*!< registers length */
 		}__attribute__((packed));	
 
-		ModbusByte bcnt;	/*!< количество байт 0x07 to 0xF5 */
+		ModbusByte bcnt;	/*!< п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╠п╟п╧я┌ 0x07 to 0xF5 */
  
-		/*! данные */
+		/*! п╢п╟п╫п╫я▀п╣ */
 		SubRequest data[MAXLENPACKET/sizeof(SubRequest)-sizeof(ModbusByte)];
-		ModbusCRC crc;		/*!< контрольная сумма */
+		ModbusCRC crc;		/*!< п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟ */
 	
 		// -----------
 		ReadFileRecordMessage( ModbusMessage& m );
 		ReadFileRecordMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		int szData();
 
-		/*! размер предварительного заголовка 
-		 * (после основного до фактических данных) 
+		/*! я─п╟п╥п╪п╣я─ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫п╬пЁп╬ п╥п╟пЁп╬п╩п╬п╡п╨п╟ 
+		 * (п©п╬я│п╩п╣ п╬я│п╫п╬п╡п╫п╬пЁп╬ п╢п╬ я└п╟п╨я┌п╦я┤п╣я│п╨п╦я┘ п╢п╟п╫п╫я▀я┘) 
 		*/
 		static inline int szHead()
 		{ return sizeof(ModbusByte); } // bcnt
 		
-		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
+		/*! я┐п╥п╫п╟я┌я▄ п╢п╩п╦п╫я┐ п╢п╟п╫п╫я▀я┘ я│п╩п╣п╢я┐я▌я┴п╦п╧ п╥п╟ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╪ п╥п╟пЁп╬п╩п╬п╡п╨п╬п╪ ( п╡ п╠п╟п╧я┌п╟я┘ ) */
 		static int getDataLen( ModbusMessage& m );
 
-		/*! проверка корректности данных */
+		/*! п©я─п╬п╡п╣я─п╨п╟ п╨п╬я─я─п╣п╨я┌п╫п╬я│я┌п╦ п╢п╟п╫п╫я▀я┘ */
 		bool checkFormat();
 		
-		// это поле служебное и не используется в релальном обмене
-		int count; /*!< фактическое количество данных */
+		// я█я┌п╬ п©п╬п╩п╣ я│п╩я┐п╤п╣п╠п╫п╬п╣ п╦ п╫п╣ п╦я│п©п╬п╩я▄п╥я┐п╣я┌я│я▐ п╡ я─п╣п╩п╟п╩я▄п╫п╬п╪ п╬п╠п╪п╣п╫п╣
+		int count; /*!< я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╢п╟п╫п╫я▀я┘ */
 	};
 
 	std::ostream& operator<<(std::ostream& os, ReadFileRecordMessage& m ); 
@@ -1171,18 +1171,18 @@ namespace ModbusRTU
 	{
 		ModbusData numfile; 	/*!< file number 0x0000 to 0xFFFF */
 		ModbusData numpacket;  	/*!< number of packet */
-		ModbusCRC crc;			/*!< контрольная сумма */
+		ModbusCRC crc;			/*!< п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟ */
 	
 		// ------- to slave -------
 		FileTransferMessage( ModbusAddr addr, ModbusData numfile, ModbusData numpacket );
-		ModbusMessage transport_msg(); 	/*!< преобразование для посылки в сеть */
+		ModbusMessage transport_msg(); 	/*!< п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */
 	
 		// ------- from master -------
 		FileTransferMessage( ModbusMessage& m );
 		FileTransferMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
 
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		static inline int szData()
 		{	return sizeof(ModbusData)*2 + szCRC; }
 
@@ -1199,11 +1199,11 @@ namespace ModbusRTU
 //		static const int MaxDataLen = 255 - szCRC - szModbusHeader - sizeof(ModbusData)*3 - sizeof(ModbusByte)*2;
 		static const int MaxDataLen = MAXLENPACKET - sizeof(ModbusData)*3 - sizeof(ModbusByte)*2;
 
-		ModbusByte bcnt;		/*!< общее количество байт в ответе */
+		ModbusByte bcnt;		/*!< п╬п╠я┴п╣п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╠п╟п╧я┌ п╡ п╬я┌п╡п╣я┌п╣ */
 		ModbusData numfile; 	/*!< file number 0x0000 to 0xFFFF */
 		ModbusData numpacks; 	/*!< all count packages (file size) */
 		ModbusData packet;  	/*!< number of packet */
-		ModbusByte dlen;		/*!< количество байт данных в ответе */
+		ModbusByte dlen;		/*!< п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╠п╟п╧я┌ п╢п╟п╫п╫я▀я┘ п╡ п╬я┌п╡п╣я┌п╣ */
 		ModbusByte data[MaxDataLen];
 
 	
@@ -1218,18 +1218,18 @@ namespace ModbusRTU
 		// ------- to master -------
 		FileTransferRetMessage( ModbusAddr _from );
 
-		/*! Добавление данных
-			\warning Старые данные будут затёрты
+		/*! п■п╬п╠п╟п╡п╩п╣п╫п╦п╣ п╢п╟п╫п╫я▀я┘
+			\warning п║я┌п╟я─я▀п╣ п╢п╟п╫п╫я▀п╣ п╠я┐п╢я┐я┌ п╥п╟я┌я▒я─я┌я▀
 		*/
 		bool set( ModbusData numfile, ModbusData file_num_packets, ModbusData packet, ModbusByte* b, ModbusByte len );
 
-		/*! очистка данных */
+		/*! п╬я┤п╦я│я┌п╨п╟ п╢п╟п╫п╫я▀я┘ */
 		void clear();
 		
-		/*! размер данных(после заголовка) у данного типа сообщения */
+		/*! я─п╟п╥п╪п╣я─ п╢п╟п╫п╫я▀я┘(п©п╬я│п╩п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟) я┐ п╢п╟п╫п╫п╬пЁп╬ я┌п╦п©п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		int szData();
 		
-		/*! преобразование для посылки в сеть */	
+		/*! п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ п╡ я│п╣я┌я▄ */	
 		ModbusMessage transport_msg();
 	};
 

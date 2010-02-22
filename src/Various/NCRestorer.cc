@@ -46,8 +46,8 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 {
 	UniSetTypes::KeyType k( key(inf.si.id,inf.si.node) );
 
-	// Проверка зарегистрирован-ли данный датчик	
-	// если такого дискретного датчика нет, то здесь сработает исключение...
+	// п÷я─п╬п╡п╣я─п╨п╟ п╥п╟я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟п╫-п╩п╦ п╢п╟п╫п╫я▀п╧ п╢п╟я┌я┤п╦п╨	
+	// п╣я│п╩п╦ я┌п╟п╨п╬пЁп╬ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟ п╫п╣я┌, я┌п╬ п╥п╢п╣я│я▄ я│я─п╟п╠п╬я┌п╟п╣я┌ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣...
 	if( !force )
 	{
 		try
@@ -56,7 +56,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 		}
 		catch(...)
 		{
-			// Регистрируем (если не найден)
+			// п═п╣пЁп╦я│я┌я─п╦я─я┐п╣п╪ (п╣я│п╩п╦ п╫п╣ п╫п╟п╧п╢п╣п╫)
 			switch(inf.type)
 			{
 				case UniversalIO::DigitalInput:
@@ -70,7 +70,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 				break;
 	
 				default:
-					unideb[Debug::CRIT] << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА! -> "
+					unideb[Debug::CRIT] << ic->getName() << "(askDumper::addlist): п²п∙п≤п≈п▓п∙п║п╒п²п╚п≥ п╒п≤п÷ п■п░п╒п╖п≤п п░! -> "
 									<< conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
 					return;
 				break;
@@ -98,7 +98,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 		break;
 
 		default:
-			unideb[Debug::CRIT] << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА!-> "
+			unideb[Debug::CRIT] << ic->getName() << "(askDumper::addlist): п²п∙п≤п≈п▓п∙п║п╒п²п╚п≥ п╒п≤п÷ п■п░п╒п╖п≤п п░!-> "
 								<< conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
 		break;
 	}
@@ -106,8 +106,8 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 // ------------------------------------------------------------------------------------------
 void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyController::ThresholdExtList& lst, bool force )
 {
-	// Проверка зарегистрирован-ли данный датчик	
-	// если такого дискретного датчика нет сдесь сработает исключение...
+	// п÷я─п╬п╡п╣я─п╨п╟ п╥п╟я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟п╫-п╩п╦ п╢п╟п╫п╫я▀п╧ п╢п╟я┌я┤п╦п╨	
+	// п╣я│п╩п╦ я┌п╟п╨п╬пЁп╬ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟ п╫п╣я┌ я│п╢п╣я│я▄ я│я─п╟п╠п╬я┌п╟п╣я┌ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣...
 	if( !force )
 	{
 		try
@@ -116,7 +116,7 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
 		}
 		catch(...)
 		{
-			// Регистрируем (если не найден)
+			// п═п╣пЁп╦я│я┌я─п╦я─я┐п╣п╪ (п╣я│п╩п╦ п╫п╣ п╫п╟п╧п╢п╣п╫)
 			switch(inf.type)
 			{
 				case UniversalIO::DigitalInput:
@@ -168,13 +168,13 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
 	catch(Exception& ex)
 	{
 	   	unideb[Debug::WARN] << ic->getName() << "(NCRestorer::addthresholdlist): " << ex
-				<< " для " << conf->oind->getNameById(inf.si.id, inf.si.node) << endl;
+				<< " п╢п╩я▐ " << conf->oind->getNameById(inf.si.id, inf.si.node) << endl;
 		throw;
 	}
 	catch( CORBA::SystemException& ex )
 	{
 	  	unideb[Debug::WARN] << ic->getName() << "(NCRestorer::addthresholdlist): " 
-				<< conf->oind->getNameById(inf.si.id,inf.si.node) << " недоступен!!(CORBA::SystemException): "
+				<< conf->oind->getNameById(inf.si.id,inf.si.node) << " п╫п╣п╢п╬я│я┌я┐п©п╣п╫!!(CORBA::SystemException): "
 				<< ex.NP_minorString() << endl;
 		throw;
 	}

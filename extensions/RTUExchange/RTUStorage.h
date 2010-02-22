@@ -34,8 +34,8 @@ class RTUStorage
 			nJ1,	// UNIO48 (FPGA0)
 			nJ2,	// UNIO48 (FPGA1)
 			nJ5,	// DIO 16
-			nX1,	// ·„ (8)
-			nX2,	// ·„ (8)
+			nX1,	// –ê–¶–ü (8)
+			nX2,	// –ê–¶–ü (8)
 			nX4,	// DI (8)
 			nX5		// DI (8)
 		};
@@ -49,7 +49,7 @@ class RTUStorage
 
 		static ModbusRTU::ModbusData getRegister( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
 	
-		// ‰Ô‰ÂÏ·Ù¯: setState, setValue
+		// –î–û–î–ï–õ–ê–¢–¨: setState, setValue
 		void print();
 	
 		friend std::ostream& operator<<(std::ostream& os, RTUStorage& m );
@@ -65,16 +65,16 @@ class RTUStorage
 		bool pollUNIO;
 		
 
-		float adc[8]; 		// ·„
-		bool di[16]; 		// œ“‘ 16DI
-		bool dio_do[16]; 	// œ“‘ 16DIO DO
-		bool dio_di[16]; 	// œ“‘ 16DIO DI
-		float dio_ai[16]; 	// œ“‘ 16DIO AI
-		float dio_ao[16]; 	// œ“‘ 16DIO AO
-		bool unio_do[48]; 	// œ“‘ UNIO48 DO
-		bool unio_di[48]; 	// œ“‘ UNIO48 DI
-		float unio_ai[24]; 	// œ“‘ UNIO48 AI
-		float unio_ao[24]; 	// œ“‘ UNIO48 AO
+		float adc[8]; 		// –ê–¶–ü
+		bool di[16]; 		// –ü–æ—Ä—Ç 16DI
+		bool dio_do[16]; 	// –ü–æ—Ä—Ç 16DIO DO
+		bool dio_di[16]; 	// –ü–æ—Ä—Ç 16DIO DI
+		float dio_ai[16]; 	// –ü–æ—Ä—Ç 16DIO AI
+		float dio_ao[16]; 	// –ü–æ—Ä—Ç 16DIO AO
+		bool unio_do[48]; 	// –ü–æ—Ä—Ç UNIO48 DO
+		bool unio_di[48]; 	// –ü–æ—Ä—Ç UNIO48 DI
+		float unio_ai[24]; 	// –ü–æ—Ä—Ç UNIO48 AI
+		float unio_ao[24]; 	// –ü–æ—Ä—Ç UNIO48 AO
 };
 // --------------------------------------------------------------------------
 #endif // _RTUSTORAGE_H_

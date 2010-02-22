@@ -1,19 +1,19 @@
 /*!
-	\page ConfigurationPage Конфигурирование системы
+	\page ConfigurationPage п п╬п╫я└п╦пЁя┐я─п╦я─п╬п╡п╟п╫п╦п╣ я│п╦я│я┌п╣п╪я▀
 
 	- \ref ConfigurationPage_secCommon
 	- \ref ConfigurationPage_secConfFile
 
-	\section ConfigurationPage_secCommon Общее описание
+	\section ConfigurationPage_secCommon п·п╠я┴п╣п╣ п╬п©п╦я│п╟п╫п╦п╣
 
-	Для конфигурирования сиситемы используется файл (обычно "configure.xml").
-	Все параметры програмно можно получить при помощи указателя на конфигуратор UniSetTypes::conf (см. UniSetTypes::Configuration).
-	Он позволяет работать с картой объектов при помощи вызова UniSetTypes::conf->oind (см. UniSetTypes::Configuration::oind),
-	картой сообщений при помощи вызова UniSetTypes::conf->mi (см. UniSetTypes::Configuration::mi),
-	получать идентификаторы сервисов...
+	п■п╩я▐ п╨п╬п╫я└п╦пЁя┐я─п╦я─п╬п╡п╟п╫п╦я▐ я│п╦я│п╦я┌п╣п╪я▀ п╦я│п©п╬п╩я▄п╥я┐п╣я┌я│я▐ я└п╟п╧п╩ (п╬п╠я▀я┤п╫п╬ "configure.xml").
+	п▓я│п╣ п©п╟я─п╟п╪п╣я┌я─я▀ п©я─п╬пЁя─п╟п╪п╫п╬ п╪п╬п╤п╫п╬ п©п╬п╩я┐я┤п╦я┌я▄ п©я─п╦ п©п╬п╪п╬я┴п╦ я┐п╨п╟п╥п╟я┌п╣п╩я▐ п╫п╟ п╨п╬п╫я└п╦пЁя┐я─п╟я┌п╬я─ UniSetTypes::conf (я│п╪. UniSetTypes::Configuration).
+	п·п╫ п©п╬п╥п╡п╬п╩я▐п╣я┌ я─п╟п╠п╬я┌п╟я┌я▄ я│ п╨п╟я─я┌п╬п╧ п╬п╠я┼п╣п╨я┌п╬п╡ п©я─п╦ п©п╬п╪п╬я┴п╦ п╡я▀п╥п╬п╡п╟ UniSetTypes::conf->oind (я│п╪. UniSetTypes::Configuration::oind),
+	п╨п╟я─я┌п╬п╧ я│п╬п╬п╠я┴п╣п╫п╦п╧ п©я─п╦ п©п╬п╪п╬я┴п╦ п╡я▀п╥п╬п╡п╟ UniSetTypes::conf->mi (я│п╪. UniSetTypes::Configuration::mi),
+	п©п╬п╩я┐я┤п╟я┌я▄ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─я▀ я│п╣я─п╡п╦я│п╬п╡...
 	
-	Указатель UniSetTypes::conf должен быть обязательно инициализирован. Обычно это происходит в начале
-	функции main. Например так:
+	пёп╨п╟п╥п╟я┌п╣п╩я▄ UniSetTypes::conf п╢п╬п╩п╤п╣п╫ п╠я▀я┌я▄ п╬п╠я▐п╥п╟я┌п╣п╩я▄п╫п╬ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟п╫. п·п╠я▀я┤п╫п╬ я█я┌п╬ п©я─п╬п╦я│я┘п╬п╢п╦я┌ п╡ п╫п╟я┤п╟п╩п╣
+	я└я┐п╫п╨я├п╦п╦ main. п²п╟п©я─п╦п╪п╣я─ я┌п╟п╨:
 \code
 ...
 #include "ObjectsMap.h"
@@ -29,24 +29,24 @@ int main(int argc, char **argv)
 	}
 	catch(Exception& ex )
     {
-		unideb[Debug::CRIT] << "(main): Поймали исключение " << ex <<  endl;
+		unideb[Debug::CRIT] << "(main): п÷п╬п╧п╪п╟п╩п╦ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣ " << ex <<  endl;
     }
     catch(...)
     {
-    	unideb[Debug::CRIT] << "Неизвестное исключение!!!!"<< endl;
+    	unideb[Debug::CRIT] << "п²п╣п╦п╥п╡п╣я│я┌п╫п╬п╣ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣!!!!"<< endl;
     }
 	
 	...
 }	
 \endcode
 	
-	\section ConfigurationPage_secConfFile Пример конфигурационного файла
+	\section ConfigurationPage_secConfFile п÷я─п╦п╪п╣я─ п╨п╬п╫я└п╦пЁя┐я─п╟я├п╦п╬п╫п╫п╬пЁп╬ я└п╟п╧п╩п╟
 	
 \code
 <?xml version = '1.0' encoding = 'koi8-r' ?>
 <UniSetTestConfiguration>
 
-	<!-- Общие параметры по UniSet -->
+	<!-- п·п╠я┴п╦п╣ п©п╟я─п╟п╪п╣я┌я─я▀ п©п╬ UniSet -->
 	<UniSet>
 		<LocalNode name="LocalhostNode"/>
 		<RootSection name="UniSet"/>
@@ -57,14 +57,14 @@ int main(int argc, char **argv)
 		<RepeatTimeoutMS name="50"/>
 		<UniSetDebug name="unideb" levels="crit,warn" file=""/>
 
-		<!-- параметры для SystemGuard -->
-		<WatchDogTime 	name="0"/> <!-- [мин] -->
-		<PingNodeTime 	name="15"/> <!-- [сек] -->
-		<AutoStartUpTime name="1"/> <!-- [сек] -->
-		<DumpStateTime 	name="0"/><!-- [сек] -->
-		<SleepTickMS	name="2000"/><!-- [мсек] -->
+		<!-- п©п╟я─п╟п╪п╣я┌я─я▀ п╢п╩я▐ SystemGuard -->
+		<WatchDogTime 	name="0"/> <!-- [п╪п╦п╫] -->
+		<PingNodeTime 	name="15"/> <!-- [я│п╣п╨] -->
+		<AutoStartUpTime name="1"/> <!-- [я│п╣п╨] -->
+		<DumpStateTime 	name="0"/><!-- [я│п╣п╨] -->
+		<SleepTickMS	name="2000"/><!-- [п╪я│п╣п╨] -->
 
-		<!-- Если не указано, то считается текущий каталог -->
+		<!-- п∙я│п╩п╦ п╫п╣ я┐п╨п╟п╥п╟п╫п╬, я┌п╬ я│я┤п╦я┌п╟п╣я┌я│я▐ я┌п╣п╨я┐я┴п╦п╧ п╨п╟я┌п╟п╩п╬пЁ -->
 		<ConfDir name=""/>
 		<DataDir name=""/>
 		<BinDir name=""/>
@@ -89,12 +89,12 @@ int main(int argc, char **argv)
 		
 	</Services>
 
-	<!-- список узлов в сиситеме -->
+	<!-- я│п©п╦я│п╬п╨ я┐п╥п╩п╬п╡ п╡ я│п╦я│п╦я┌п╣п╪п╣ -->
 	<ListOfNodes>
 	<!-- 
-		Параметры:
-			infserver - id инфо-сервера на данном узле(если указать "", значит нет)
-			dbnode - id db-сервера на данном узле DB(если указать "", значит нет)
+		п÷п╟я─п╟п╪п╣я┌я─я▀:
+			infserver - id п╦п╫я└п╬-я│п╣я─п╡п╣я─п╟ п╫п╟ п╢п╟п╫п╫п╬п╪ я┐п╥п╩п╣(п╣я│п╩п╦ я┐п╨п╟п╥п╟я┌я▄ "", п╥п╫п╟я┤п╦я┌ п╫п╣я┌)
+			dbnode - id db-я│п╣я─п╡п╣я─п╟ п╫п╟ п╢п╟п╫п╫п╬п╪ я┐п╥п╩п╣ DB(п╣я│п╩п╦ я┐п╨п╟п╥п╟я┌я▄ "", п╥п╫п╟я┤п╦я┌ п╫п╣я┌)
 	-->
 
 		<Node name="LocalhostNode" infserver="InfoServer1" dbserver="DBServer1"/>

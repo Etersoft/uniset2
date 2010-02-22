@@ -1,7 +1,7 @@
 <?xml version = '1.0' encoding = 'koi8-r' ?>
 <UNISETPLC>
 <UserData></UserData>
-<!-- ïÂÝÉÅ(ÓÔÁÒÔÏ×ÙÅ) ÐÁÒÁÍÅÔÒÙ ÐÏ UniSet -->
+<!-- ÐžÐ±Ñ‰Ð¸Ðµ(ÑÑ‚Ð°Ñ€Ñ‚Ð¾Ð²Ñ‹Ðµ) Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ñ‹ Ð¿Ð¾ UniSet -->
 <Configure>
 		<NameService host="localhost" port="2817"/>
 		<LocalNode	 name="LocalhostNode"/>
@@ -11,16 +11,16 @@
 		<RepeatCount 		name="2"/>
 		<RepeatTimeoutMS 	name="50"/>
 
-		<WatchDogTime 		name="0"/> <!-- [ÍÉÎ] -->
-		<PingNodeTime 		name="0"/> <!-- [ÓÅË] -->
-		<AutoStartUpTime 	name="1"/> <!-- [ÓÅË] -->
-		<DumpStateTime 		name="10"/><!-- [ÓÅË] -->
-		<SleepTickMS		name="500"/><!-- [ÍÓÅË] -->
+		<WatchDogTime 		name="0"/> <!-- [Ð¼Ð¸Ð½] -->
+		<PingNodeTime 		name="0"/> <!-- [ÑÐµÐº] -->
+		<AutoStartUpTime 	name="1"/> <!-- [ÑÐµÐº] -->
+		<DumpStateTime 		name="10"/><!-- [ÑÐµÐº] -->
+		<SleepTickMS		name="500"/><!-- [Ð¼ÑÐµÐº] -->
 
 		<!-- Debug, logs -->
 		<UniSetDebug name="unideb" levels="crit,warn" file=""/>
 
-		<!-- åÓÌÉ ÎÅ ÕËÁÚÁÎÏ, ÔÏ ÓÞÉÔÁÅÔÓÑ ÔÅËÕÝÉÊ ËÁÔÁÌÏÇ -->
+		<!-- Ð•ÑÐ»Ð¸ Ð½Ðµ ÑƒÐºÐ°Ð·Ð°Ð½Ð¾, Ñ‚Ð¾ ÑÑ‡Ð¸Ñ‚Ð°ÐµÑ‚ÑÑ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¹ ÐºÐ°Ñ‚Ð°Ð»Ð¾Ð³ -->
 		<ConfDir name=""/>
 		<DataDir name=""/>
 		<BinDir name=""/>
@@ -35,20 +35,20 @@
 		<LocalPrintServer device="/dev/lp0" checkTime="5000" />
 	</Services>
 
-	<!-- îÁÓÔÒÏÊËÉ ÄÌÑ SimpleObject -->
+	<!-- ÐÐ°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ð´Ð»Ñ SimpleObject -->
     <SimpleObject OnTime="1000" OffTime="2000" CommandTime="500"/>
 
 </Configure>
 <ObjectsMap>
 <!--
-	ëÒÁÔËÉÅ ÐÏÑÓÎÅÎÉÑ Ë ÐÏÌÑÍ ÓÅËÃÉÉ 'sensors'
+	ÐšÑ€Ð°Ñ‚ÐºÐ¸Ðµ Ð¿Ð¾ÑÑÐ½ÐµÐ½Ð¸Ñ Ðº Ð¿Ð¾Ð»ÑÐ¼ ÑÐµÐºÑ†Ð¸Ð¸ 'sensors'
 	==========================================
-	usedby - ÕËÁÚÁÎÉÅ ÎÁ ËÁËÏÍ ÕÚÌÅ ÉÓÐÏÌØÚÕÀÔÓÑ ÄÁÎÎÙÅ ÎÁÓÔÒÏÊËÉ.
-		äÌÑ "consumer" ÅÓÌÉ ÎÅ ÕËÁÚÁÎ, ÇÅÎÅÒÉÒÕÅÔÓÑ ÄÌÑ ×ÓÅÈ ÕÚÌÏ×. éÎÁÞÅ ÍÏÖÎÏ ÕËÁÚÁÔØ
-		ÞÅÒÅÚ ',' ÄÌÑ ËÁËÉÈ ÕÚÌÏ× ÇÅÎÅÒÉÔØ...
+	usedby - ÑƒÐºÐ°Ð·Ð°Ð½Ð¸Ðµ Ð½Ð° ÐºÐ°ÐºÐ¾Ð¼ ÑƒÐ·Ð»Ðµ Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÑŽÑ‚ÑÑ Ð´Ð°Ð½Ð½Ñ‹Ðµ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸.
+		Ð”Ð»Ñ "consumer" ÐµÑÐ»Ð¸ Ð½Ðµ ÑƒÐºÐ°Ð·Ð°Ð½, Ð³ÐµÐ½ÐµÑ€Ð¸Ñ€ÑƒÐµÑ‚ÑÑ Ð´Ð»Ñ Ð²ÑÐµÑ… ÑƒÐ·Ð»Ð¾Ð². Ð˜Ð½Ð°Ñ‡Ðµ Ð¼Ð¾Ð¶Ð½Ð¾ ÑƒÐºÐ°Ð·Ð°Ñ‚ÑŒ
+		Ñ‡ÐµÑ€ÐµÐ· ',' Ð´Ð»Ñ ÐºÐ°ÐºÐ¸Ñ… ÑƒÐ·Ð»Ð¾Ð² Ð³ÐµÐ½ÐµÑ€Ð¸Ñ‚ÑŒ...
 
 			
-	pageid - ÉÄÅÎÔÉÆÉËÁÔÏÒ ÜËÒÁÎÁ GUI, Ó ËÏÔÏÒÙÍ Ó×ÑÚÁÎ ÄÁÎÎÙÊ ÄÁÔÞÉË
+	pageid - Ð¸Ð´ÐµÐ½Ñ‚Ð¸Ñ„Ð¸ÐºÐ°Ñ‚Ð¾Ñ€ ÑÐºÑ€Ð°Ð½Ð° GUI, Ñ ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ð¼ ÑÐ²ÑÐ·Ð°Ð½ Ð´Ð°Ð½Ð½Ñ‹Ð¹ Ð´Ð°Ñ‚Ñ‡Ð¸Ðº
 	
 	matrix -
 	channel - 
@@ -56,31 +56,31 @@
 	lamptest - 
 	blink - 
 
-	node - ÕÚÅÌ ÎÁ ËÏÔÏÒÏÍ ÆÉÚÉÞÅÓËÉ ÎÁÈÏÄÉÔÓÑ ÄÁÎÎÙÊ ÄÁÔÞÉË
-	iotype - ÔÉÐ ÄÁÔÞÉËÁ
-	priority - ÐÒÉÏÒÉÔÅÔ ÓÏÏÂÝÅÎÉÑ ÏÂ ÉÚÍÅÎÅÎÉÉ ÄÁÎÎÏÇÏ ÄÁÔÞÉËÁ
-	textname - ÔÅËÓÔÏ×ÏÅ ÉÍÑ ÄÁÔÞÉËÁ
+	node - ÑƒÐ·ÐµÐ» Ð½Ð° ÐºÐ¾Ñ‚Ð¾Ñ€Ð¾Ð¼ Ñ„Ð¸Ð·Ð¸Ñ‡ÐµÑÐºÐ¸ Ð½Ð°Ñ…Ð¾Ð´Ð¸Ñ‚ÑÑ Ð´Ð°Ð½Ð½Ñ‹Ð¹ Ð´Ð°Ñ‚Ñ‡Ð¸Ðº
+	iotype - Ñ‚Ð¸Ð¿ Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÐ°
+	priority - Ð¿Ñ€Ð¸Ð¾Ñ€Ð¸Ñ‚ÐµÑ‚ ÑÐ¾Ð¾Ð±Ñ‰ÐµÐ½Ð¸Ñ Ð¾Ð± Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ð¸ Ð´Ð°Ð½Ð½Ð¾Ð³Ð¾ Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÐ°
+	textname - Ñ‚ÐµÐºÑÑ‚Ð¾Ð²Ð¾Ðµ Ð¸Ð¼Ñ Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÐ°
 	
 -->
 	<nodes port="2817">
-		<item name="LocalhostNode"	alias="" textname="ìÏËÁÌØÎÙÊ ÕÚÅÌ"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
+		<item name="LocalhostNode"	alias="" textname="Ð›Ð¾ÐºÐ°Ð»ÑŒÐ½Ñ‹Ð¹ ÑƒÐ·ÐµÐ»"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
 	</nodes>
 
-	<!-- ************************ äÁÔÞÉËÉ ********************** -->
+	<!-- ************************ Ð”Ð°Ñ‚Ñ‡Ð¸ÐºÐ¸ ********************** -->
 	<sensors name="Sensors">
-		<item name="Input1_S" textname="ëÏÍÁÎÄÁ 1" node="" iotype="DI" priority="Medium"/>
-		<item name="Input2_S" textname="ëÏÍÁÎÄÁ 2" node="" iotype="DI" priority="Medium"/>
-		<item name="Input3_S" textname="ëÏÍÁÎÄÁ 3" node="" iotype="DI" priority="Medium"/>
-		<item name="Input4_S" textname="ëÏÍÁÎÄÁ 4" node="" iotype="DI" priority="Medium"/>
-		<item name="Input5_S" textname="ëÏÍÁÎÄÁ 5" node="" iotype="DI" priority="Medium"/>
-		<item name="Input6_S" textname="ëÏÍÁÎÄÁ 6" node="" iotype="DI" priority="Medium"/>
+		<item name="Input1_S" textname="ÐšÐ¾Ð¼Ð°Ð½Ð´Ð° 1" node="" iotype="DI" priority="Medium"/>
+		<item name="Input2_S" textname="ÐšÐ¾Ð¼Ð°Ð½Ð´Ð° 2" node="" iotype="DI" priority="Medium"/>
+		<item name="Input3_S" textname="ÐšÐ¾Ð¼Ð°Ð½Ð´Ð° 3" node="" iotype="DI" priority="Medium"/>
+		<item name="Input4_S" textname="ÐšÐ¾Ð¼Ð°Ð½Ð´Ð° 4" node="" iotype="DI" priority="Medium"/>
+		<item name="Input5_S" textname="ÐšÐ¾Ð¼Ð°Ð½Ð´Ð° 5" node="" iotype="DI" priority="Medium"/>
+		<item name="Input6_S" textname="ÐšÐ¾Ð¼Ð°Ð½Ð´Ð° 6" node="" iotype="DI" priority="Medium"/>
 	</sensors>
 
 	<controllers name="Controllers">
 		<item name="IOCardController"/>
 	</controllers>
 
-	<!-- ******************* éÄÅÎÔÉÆÉËÁÔÏÒÙ ÓÅÒ×ÉÓÏ× ***************** -->
+	<!-- ******************* Ð˜Ð´ÐµÐ½Ñ‚Ð¸Ñ„Ð¸ÐºÐ°Ñ‚Ð¾Ñ€Ñ‹ ÑÐµÑ€Ð²Ð¸ÑÐ¾Ð² ***************** -->
 	<services name="Services">
 		<item name="InfoServer"/>
 		<item name="DBServer"/>
@@ -88,7 +88,7 @@
 		<item name="TimerService"/>
 	</services>
 
-	<!-- ******************* éÄÅÎÔÉÆÉËÁÔÏÒÙ ÏÂßÅËÔÏ× ***************** -->
+	<!-- ******************* Ð˜Ð´ÐµÐ½Ñ‚Ð¸Ñ„Ð¸ÐºÐ°Ñ‚Ð¾Ñ€Ñ‹ Ð¾Ð±ÑŠÐµÐºÑ‚Ð¾Ð² ***************** -->
 	<objects name="UniObjects">
 		<item name="TestObject"/>
 		<item name="TestObject2"/>
@@ -96,31 +96,31 @@
 </ObjectsMap>
 <map-settings>
 <!--
-  	ðÏÄÄÅÒÖÉ×ÁÅÍÙÅ ÔÉÐÙ:
-	string 	- ÓÔÒÏËÁ
+  	ÐŸÐ¾Ð´Ð´ÐµÑ€Ð¶Ð¸Ð²Ð°ÐµÐ¼Ñ‹Ðµ Ñ‚Ð¸Ð¿Ñ‹:
+	string 	- ÑÑ‚Ñ€Ð¾ÐºÐ°
 	bool	- {1|0}
-	int		- ÞÉÓÌÏ 
-  	äÌÑ 'int' ÍÏÖÎÏ ÄÏÐÏÌÎÉÔÅÌØÎÏ ÚÁÄÁÔØ ÐÏÌÑ:
-		digits 	- ËÏÌÉÞÅÓÔ×Ï ÃÉÆÒ ÐÏÓÌÅ ÚÁÐÑÔÏÊ
-		step 	- ÛÁÇ ÉÚÍÅÎÅÎÉÑ
-	 	min 	- ÍÉÎÉÍÁÌØÎÏÅ ÞÉÓÌÏ
-	 	max 	- ÍÁËÓÉÍÁÌØÎÏÅ ÞÉÓÌÏ
+	int		- Ñ‡Ð¸ÑÐ»Ð¾ 
+  	Ð”Ð»Ñ 'int' Ð¼Ð¾Ð¶Ð½Ð¾ Ð´Ð¾Ð¿Ð¾Ð»Ð½Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð¾ Ð·Ð°Ð´Ð°Ñ‚ÑŒ Ð¿Ð¾Ð»Ñ:
+		digits 	- ÐºÐ¾Ð»Ð¸Ñ‡ÐµÑÑ‚Ð²Ð¾ Ñ†Ð¸Ñ„Ñ€ Ð¿Ð¾ÑÐ»Ðµ Ð·Ð°Ð¿ÑÑ‚Ð¾Ð¹
+		step 	- ÑˆÐ°Ð³ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ
+	 	min 	- Ð¼Ð¸Ð½Ð¸Ð¼Ð°Ð»ÑŒÐ½Ð¾Ðµ Ñ‡Ð¸ÑÐ»Ð¾
+	 	max 	- Ð¼Ð°ÐºÑÐ¸Ð¼Ð°Ð»ÑŒÐ½Ð¾Ðµ Ñ‡Ð¸ÑÐ»Ð¾
 
-	list 	- ÓÐÉÓÏË
-		äÌÑ 'list' ÏÂÑÚÁÔÅÌØÎÏ ÎÅÏÂÈÏÄÉÍÏ ÚÁÄÁÔØ
-		section - ÓÅËÃÉÑ ÓÏÄÅÒÖÁÝÁÑ ÓÐÉÓÏË (× ÜÔÏÍ ÆÁÊÌÅ) 
+	list 	- ÑÐ¿Ð¸ÑÐ¾Ðº
+		Ð”Ð»Ñ 'list' Ð¾Ð±ÑÐ·Ð°Ñ‚ÐµÐ»ÑŒÐ½Ð¾ Ð½ÐµÐ¾Ð±Ñ…Ð¾Ð´Ð¸Ð¼Ð¾ Ð·Ð°Ð´Ð°Ñ‚ÑŒ
+		section - ÑÐµÐºÑ†Ð¸Ñ ÑÐ¾Ð´ÐµÑ€Ð¶Ð°Ñ‰Ð°Ñ ÑÐ¿Ð¸ÑÐ¾Ðº (Ð² ÑÑ‚Ð¾Ð¼ Ñ„Ð°Ð¹Ð»Ðµ) 
 
-	NODES	- ÓÐÉÓÏË ÕÚÌÏ×
-	OBJECTS - ÓÐÉÓÏË ÏÂßÅËÔÏ×
-	SENSORS -  ÓÐÉÓÏË ÄÁÔÞÉËÏ×
-	ALL_OBJECTS -  ÓÐÉÓÏË ÏÂßÅËÔÏ× É ËÏÎÔÒÏÌÌÅÒÏ×
+	NODES	- ÑÐ¿Ð¸ÑÐ¾Ðº ÑƒÐ·Ð»Ð¾Ð²
+	OBJECTS - ÑÐ¿Ð¸ÑÐ¾Ðº Ð¾Ð±ÑŠÐµÐºÑ‚Ð¾Ð²
+	SENSORS -  ÑÐ¿Ð¸ÑÐ¾Ðº Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÐ¾Ð²
+	ALL_OBJECTS -  ÑÐ¿Ð¸ÑÐ¾Ðº Ð¾Ð±ÑŠÐµÐºÑ‚Ð¾Ð² Ð¸ ÐºÐ¾Ð½Ñ‚Ñ€Ð¾Ð»Ð»ÐµÑ€Ð¾Ð²
 
-	\todo äÌÑ ×ÓÅÈ ÓÐÉÓËÏ× ÍÏÖÎÏ ÚÁÄÁÔØ Ó×ÏÊÓÔ×Ï 
-			multi="1" - ÒÁÚÒÅÛÅÎÉÅ ×ÙÂÏÒÁ ÎÅÓËÏÌØËÉÈ ÜÌÅÍÅÎÔÏ× ÓÐÉÓËÁ (ÂÕÄÕÔ ÐÅÒÅÞÉÓÌÅÎÙ ÞÅÒÅÚ ÚÁÐÑÔÕÀ
+	\todo Ð”Ð»Ñ Ð²ÑÐµÑ… ÑÐ¿Ð¸ÑÐºÐ¾Ð² Ð¼Ð¾Ð¶Ð½Ð¾ Ð·Ð°Ð´Ð°Ñ‚ÑŒ ÑÐ²Ð¾Ð¹ÑÑ‚Ð²Ð¾ 
+			multi="1" - Ñ€Ð°Ð·Ñ€ÐµÑˆÐµÐ½Ð¸Ðµ Ð²Ñ‹Ð±Ð¾Ñ€Ð° Ð½ÐµÑÐºÐ¾Ð»ÑŒÐºÐ¸Ñ… ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð² ÑÐ¿Ð¸ÑÐºÐ° (Ð±ÑƒÐ´ÑƒÑ‚ Ð¿ÐµÑ€ÐµÑ‡Ð¸ÑÐ»ÐµÐ½Ñ‹ Ñ‡ÐµÑ€ÐµÐ· Ð·Ð°Ð¿ÑÑ‚ÑƒÑŽ
 		
   -->
     <nodes>
-<!-- 'name' - Ñ×ÌÑÅÔÓÑ ÏÂÑÚÁÔÅÌØÎÙÍ ÐÁÒÁÍÅÔÒÏÍ É ÄÏÂÁ×ÌÑÅÔÓÑ Á×ÔÏÍÁÔÉÞÅÓËÉ -->
+<!-- 'name' - ÑÐ²Ð»ÑÐµÑ‚ÑÑ Ð¾Ð±ÑÐ·Ð°Ñ‚ÐµÐ»ÑŒÐ½Ñ‹Ð¼ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ð¾Ð¼ Ð¸ Ð´Ð¾Ð±Ð°Ð²Ð»ÑÐµÑ‚ÑÑ Ð°Ð²Ñ‚Ð¾Ð¼Ð°Ñ‚Ð¸Ñ‡ÐµÑÐºÐ¸ -->
       <item name="ip" default="localhost"/>
       <item name="port" default="" type="int" min="1024" max="65535"/>
       <item name="textname" default=""/>
@@ -132,7 +132,7 @@
       <item name="priority" type="list" section="priority"/>
       <item name="character" type="list" section="characters"/>
     </sensors>
-<!--  ôÉÐÙ ÄÌÑ ÓÐÉÓËÏ× -->
+<!--  Ð¢Ð¸Ð¿Ñ‹ Ð´Ð»Ñ ÑÐ¿Ð¸ÑÐºÐ¾Ð² -->
     <iotypes>
       <item name="DI" default="1"/>
       <item name="DO"/>
@@ -150,17 +150,17 @@
       <item name="Normal"/>
     </characters>
     <controllers>
-	  <!-- 'name' - Ñ×ÌÑÅÔÓÑ ÏÂÑÚÁÔÅÌØÎÙÍ ÐÁÒÁÍÅÔÒÏÍ É ÄÏÂÁ×ÌÑÅÔÓÑ Á×ÔÏÍÁÔÉÞÅÓËÉ -->
+	  <!-- 'name' - ÑÐ²Ð»ÑÐµÑ‚ÑÑ Ð¾Ð±ÑÐ·Ð°Ñ‚ÐµÐ»ÑŒÐ½Ñ‹Ð¼ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ð¾Ð¼ Ð¸ Ð´Ð¾Ð±Ð°Ð²Ð»ÑÐµÑ‚ÑÑ Ð°Ð²Ñ‚Ð¾Ð¼Ð°Ñ‚Ð¸Ñ‡ÐµÑÐºÐ¸ -->
       <item name="node" type="NODES"/>
     </controllers>
     <objects>
-	  <!-- 'name' - Ñ×ÌÑÅÔÓÑ ÏÂÑÚÁÔÅÌØÎÙÍ ÐÁÒÁÍÅÔÒÏÍ É ÄÏÂÁ×ÌÑÅÔÓÑ Á×ÔÏÍÁÔÉÞÅÓËÉ -->
+	  <!-- 'name' - ÑÐ²Ð»ÑÐµÑ‚ÑÑ Ð¾Ð±ÑÐ·Ð°Ñ‚ÐµÐ»ÑŒÐ½Ñ‹Ð¼ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ð¾Ð¼ Ð¸ Ð´Ð¾Ð±Ð°Ð²Ð»ÑÐµÑ‚ÑÑ Ð°Ð²Ñ‚Ð¾Ð¼Ð°Ñ‚Ð¸Ñ‡ÐµÑÐºÐ¸ -->
     </objects>
     <services>
-	  <!-- 'name' - Ñ×ÌÑÅÔÓÑ ÏÂÑÚÁÔÅÌØÎÙÍ ÐÁÒÁÍÅÔÒÏÍ É ÄÏÂÁ×ÌÑÅÔÓÑ Á×ÔÏÍÁÔÉÞÅÓËÉ -->
+	  <!-- 'name' - ÑÐ²Ð»ÑÐµÑ‚ÑÑ Ð¾Ð±ÑÐ·Ð°Ñ‚ÐµÐ»ÑŒÐ½Ñ‹Ð¼ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ð¾Ð¼ Ð¸ Ð´Ð¾Ð±Ð°Ð²Ð»ÑÐµÑ‚ÑÑ Ð°Ð²Ñ‚Ð¾Ð¼Ð°Ñ‚Ð¸Ñ‡ÐµÑÐºÐ¸ -->
     </services>
     <consumers>
-	  <!-- 'name' - Ñ×ÌÑÅÔÓÑ ÏÂÑÚÁÔÅÌØÎÙÍ ÐÁÒÁÍÅÔÒÏÍ É ÄÏÂÁ×ÌÑÅÔÓÑ Á×ÔÏÍÁÔÉÞÅÓËÉ -->
+	  <!-- 'name' - ÑÐ²Ð»ÑÐµÑ‚ÑÑ Ð¾Ð±ÑÐ·Ð°Ñ‚ÐµÐ»ÑŒÐ½Ñ‹Ð¼ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ð¾Ð¼ Ð¸ Ð´Ð¾Ð±Ð°Ð²Ð»ÑÐµÑ‚ÑÑ Ð°Ð²Ñ‚Ð¾Ð¼Ð°Ñ‚Ð¸Ñ‡ÐµÑÐºÐ¸ -->
       <item name="usedby" default="" type="NODES" multi="1"/>
     </consumers>
 </map-settings>

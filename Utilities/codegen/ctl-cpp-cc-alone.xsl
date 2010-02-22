@@ -4,7 +4,7 @@
 
 <xsl:import href="ctl-cpp-common.xsl"/>
 <xsl:output method="text" indent="yes" encoding="koi8-r"/>
-<!-- Генерирование cc-файла -->
+<!-- п⌠п╣п╫п╣я─п╦я─п╬п╡п╟п╫п╦п╣ cc-я└п╟п╧п╩п╟ -->
 
 <xsl:variable name="CLASSNAME">
 	<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'class-name'"/></xsl:call-template>
@@ -30,8 +30,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		return;
 	try
 	{	
-		// NOTE: Нужно ли здесь опрашивать текущее значение выходов?!!
-		// Опрос входов
+		// NOTE: п²я┐п╤п╫п╬ п╩п╦ п╥п╢п╣я│я▄ п╬п©я─п╟я┬п╦п╡п╟я┌я▄ я┌п╣п╨я┐я┴п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣ п╡я▀я┘п╬п╢п╬п╡?!!
+		// п·п©я─п╬я│ п╡я┘п╬п╢п╬п╡
 		updateValues();
 
 		if( idLocalTestMode_S != DefaultObjectId )
@@ -50,7 +50,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 			}
 		}
 
-		// проверка таймеров
+		// п©я─п╬п╡п╣я─п╨п╟ я┌п╟п╧п╪п╣я─п╬п╡
 		checkTimers(this);
 
 		if( resetMsgTime&gt;0 &amp;&amp; trResetMsg.hi(ptResetMsg.checkTime()) )
@@ -59,7 +59,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 			resetMsg();
 		}
 
-		// обработка сообщений (таймеров и т.п.)
+		// п╬п╠я─п╟п╠п╬я┌п╨п╟ я│п╬п╬п╠я┴п╣п╫п╦п╧ (я┌п╟п╧п╪п╣я─п╬п╡ п╦ я┌.п©.)
 		for( int i=0; i&lt;<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'msg-count'"/></xsl:call-template>; i++ )
 		{
 			if( !receiveMessage(msg) )
@@ -67,23 +67,23 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 			processingMessage(&amp;msg);
 		}
 
-		// Проверка изменения состояния датчиков
+		// п÷я─п╬п╡п╣я─п╨п╟ п╦п╥п╪п╣п╫п╣п╫п╦я▐ я│п╬я│я┌п╬я▐п╫п╦я▐ п╢п╟я┌я┤п╦п╨п╬п╡
 		checkSensors();
 		
-		// Выполнение шага программы
+		// п▓я▀п©п╬п╩п╫п╣п╫п╦п╣ я┬п╟пЁп╟ п©я─п╬пЁя─п╟п╪п╪я▀
 		step();
 
-		// "сердцебиение"
+		// "я│п╣я─п╢я├п╣п╠п╦п╣п╫п╦п╣"
 		if( idHeartBeat!=DefaultObjectId &amp;&amp; ptHeartBeat.checkTime() )
 		{
 			ui.saveValue(idHeartBeat,maxHeartBeat,UniversalIO::AnalogInput);
 			ptHeartBeat.reset();
 		}
 
-		// обновление выходов
+		// п╬п╠п╫п╬п╡п╩п╣п╫п╦п╣ п╡я▀я┘п╬п╢п╬п╡
 		updateOutputs(false);
 
-		// обновление списка предыдущих состояний
+		// п╬п╠п╫п╬п╡п╩п╣п╫п╦п╣ я│п©п╦я│п╨п╟ п©я─п╣п╢я▀п╢я┐я┴п╦я┘ я│п╬я│я┌п╬я▐п╫п╦п╧
 		updatePreviousValues();
 	}
 	catch( Exception&amp; ex )
@@ -92,7 +92,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 	}
 	catch(CORBA::SystemException&amp; ex)
 	{
-		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(execute): п║ORBA::SystemException: "
 			&lt;&lt; ex.NP_minorString() &lt;&lt; endl;
 	}
 	catch(...)
@@ -108,7 +108,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::askSensors( UniversalIO::UIOCommand cmd )
 {
-	// имитируем изменения для посылки сообщений при старте
+	// п╦п╪п╦я┌п╦я─я┐п╣п╪ п╦п╥п╪п╣п╫п╣п╫п╦я▐ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ я│п╬п╬п╠я┴п╣п╫п╦п╧ п©я─п╦ я│я┌п╟я─я┌п╣
 	if( cmd == UniversalIO::UIONotify )
 	{
 	<xsl:for-each select="//sensors/item/consumers/consumer">
@@ -127,7 +127,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( UniSetTypes::SensorM
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::askState( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node )
 {
-// #warning НЕ РЕАЛИЗОВАНА...
+// #warning п²п∙ п═п∙п░п⌡п≤п≈п·п▓п░п²п░...
 	if( cmd == UniversalIO::UIONotify )
 	{
 		SensorMessage sm( sid, (bool)ui.getState(sid,node) );
@@ -139,7 +139,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askState( UniSetTypes::ObjectId sid
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::askValue( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node )
 {
-// #warning НЕ РЕАЛИЗОВАНА..
+// #warning п²п∙ п═п∙п░п⌡п≤п≈п·п▓п░п²п░..
 	if( cmd == UniversalIO::UIONotify )
 	{
 		SensorMessage sm( sid, (long)ui.getValue(sid,node) );
@@ -187,7 +187,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::getState( UniSetTypes::ObjectId sid
 	</xsl:if>
 	</xsl:for-each>
 
-	unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getState): Обращение к неизвестному ДИСКРЕТНОМУ датчику sid="
+	unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getState): п·п╠я─п╟я┴п╣п╫п╦п╣ п╨ п╫п╣п╦п╥п╡п╣я│я┌п╫п╬п╪я┐ п■п≤п║п п═п∙п╒п²п·п°пё п╢п╟я┌я┤п╦п╨я┐ sid="
 		&lt;&lt; sid &lt;&lt; endl;
 
 	return false;
@@ -211,7 +211,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool force )
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code, bool state )
 {
-	// блокируем сброс (т.к. он автоматически по таймеру)
+	// п╠п╩п╬п╨п╦я─я┐п╣п╪ я│п╠я─п╬я│ (я┌.п╨. п╬п╫ п╟п╡я┌п╬п╪п╟я┌п╦я┤п╣я│п╨п╦ п©п╬ я┌п╟п╧п╪п╣я─я┐)
 	if( !state )
 	{
 		ptResetMsg.reset();

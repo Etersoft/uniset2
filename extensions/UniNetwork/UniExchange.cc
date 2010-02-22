@@ -126,8 +126,8 @@ void UniExchange::execute()
 	if( !shm->waitSMready(smReadyTimeout,50) )
 	{
 		ostringstream err;
-		err << myname << "(execute): Не дождались готовности SharedMemory к работе в течение "
-					<< smReadyTimeout << " мсек";
+		err << myname << "(execute): п²п╣ п╢п╬п╤п╢п╟п╩п╦я│я▄ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ SharedMemory п╨ я─п╟п╠п╬я┌п╣ п╡ я┌п╣я┤п╣п╫п╦п╣ "
+					<< smReadyTimeout << " п╪я│п╣п╨";
 
 		unideb[Debug::CRIT] << err.str() << endl;
 		throw SystemError(err.str());
@@ -409,21 +409,21 @@ UniExchange* UniExchange::init_exchange( int argc, const char* const* argv,
 // -----------------------------------------------------------------------------
 void UniExchange::readConfiguration()
 {
-#warning Сделать сортировку по диапазонам адресов!!!
-// чтобы запрашивать одним запросом, сразу несколько входов...
+#warning п║п╢п╣п╩п╟я┌я▄ я│п╬я─я┌п╦я─п╬п╡п╨я┐ п©п╬ п╢п╦п╟п©п╟п╥п╬п╫п╟п╪ п╟п╢я─п╣я│п╬п╡!!!
+// я┤я┌п╬п╠я▀ п╥п╟п©я─п╟я┬п╦п╡п╟я┌я▄ п╬п╢п╫п╦п╪ п╥п╟п©я─п╬я│п╬п╪, я│я─п╟п╥я┐ п╫п╣я│п╨п╬п╩я▄п╨п╬ п╡я┘п╬п╢п╬п╡...
 //	readconf_ok = false;
 	xmlNode* root = conf->getXMLSensorsSection();
 	if(!root)
 	{
 		ostringstream err;
-		err << myname << "(readConfiguration): не нашли корневого раздела <sensors>";
+		err << myname << "(readConfiguration): п╫п╣ п╫п╟я┬п╩п╦ п╨п╬я─п╫п╣п╡п╬пЁп╬ я─п╟п╥п╢п╣п╩п╟ <sensors>";
 		throw SystemError(err.str());
 	}
 
 	UniXML_iterator it(root);
 	if( !it.goChildren() )
 	{
-		std::cerr << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
+		std::cerr << myname << "(readConfiguration): я─п╟п╥п╢п╣п╩ <sensors> п╫п╣ я│п╬п╢п╣я─п╤п╦я┌ я│п╣п╨я├п╦п╧ ?!!\n";
 		return;
 	}
 
@@ -441,11 +441,11 @@ bool UniExchange::check_item( UniXML_iterator& it )
 	if( s_field.empty() )
 		return true;
 
-	// просто проверка на не пустой field
+	// п©я─п╬я│я┌п╬ п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п╫п╣ п©я┐я│я┌п╬п╧ field
 	if( s_fvalue.empty() && it.getProp(s_field).empty() )
 		return false;
 
-	// просто проверка что field = value
+	// п©я─п╬я│я┌п╬ п©я─п╬п╡п╣я─п╨п╟ я┤я┌п╬ field = value
 	if( !s_fvalue.empty() && it.getProp(s_field)!=s_fvalue )
 		return false;
 
@@ -503,9 +503,9 @@ bool UniExchange::initItem( UniXML_iterator& it )
 // ------------------------------------------------------------------------------------------
 void UniExchange::help_print( int argc, const char** argv )
 {
-	cout << "--unet-polltime msec     - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
-//	cout << "--unet-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-//	cout << "--unet-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--unet-sm-ready-timeout - время на ожидание старта SM" << endl;
+	cout << "--unet-polltime msec     - п÷п╟я┐п╥п╟ п╪п╣п╤п╢я┐ п╬п©я─п╬я│п╟п╬п╪ п╨п╟я─я┌. п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ 200 п╪я│п╣п╨." << endl;
+//	cout << "--unet-heartbeat-id      - п■п╟п╫п╫я▀п╧ п©я─п╬я├п╣я│я│ я│п╡я▐п╥п╟п╫ я│ я┐п╨п╟п╥п╟п╫п╫я▀п╪ п╟п╫п╟п╩п╬пЁп╬п╡я▀п╪ heartbeat-п╢п╟я┤п╦п╨п╬п╪." << endl;
+//	cout << "--unet-heartbeat-max     - п°п╟п╨я│п╦п╪п╟п╩я▄п╫п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ heartbeat-я│я┤я▒я┌я┤п╦п╨п╟ п╢п╩я▐ п╢п╟п╫п╫п╬пЁп╬ п©я─п╬я├п╣я│я│п╟. п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ 10." << endl;
+	cout << "--unet-sm-ready-timeout - п╡я─п╣п╪я▐ п╫п╟ п╬п╤п╦п╢п╟п╫п╦п╣ я│я┌п╟я─я┌п╟ SM" << endl;
 }
 // -----------------------------------------------------------------------------

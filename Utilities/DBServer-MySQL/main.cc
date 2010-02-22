@@ -27,28 +27,28 @@ int main(int argc, char** argv)
 
 		ObjectId ID = conf->getDBServer();
 
-		// ÏÐÒÅÄÅÌÑÅÍ ID ÏÂßÅËÔÁ
+		// Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»ÑÐµÐ¼ ID Ð¾Ð±ÑŠÐµÐºÑ‚Ð°
 		string name = conf->getArgParam("--name");
 		if( !name.empty())
 		{
 			if( ID != UniSetTypes::DefaultObjectId )
 			{
-				unideb[Debug::WARN] << "(DBServer::main): ÐÅÒÅÏÐÒÅÄÅÌÑÅÍ ID ÚÁÄÁÎÎÊ × " 
+				unideb[Debug::WARN] << "(DBServer::main): Ð¿ÐµÑ€ÐµÐ¾Ð¿Ñ€ÐµÐ´ÐµÐ»ÑÐµÐ¼ ID Ð·Ð°Ð´Ð°Ð½Ð½Ð¹ Ð² " 
 						<< conf->getConfFileName() << endl;
 			}
 
 			ID = conf->oind->getIdByName(conf->getServicesSection()+"/"+name);
 			if( ID == UniSetTypes::DefaultObjectId )
 			{
-				cerr << "(DBServer::main): ÉÄÅÎÔÉÆÉËÁÔÏÒ '" << name 
-					<< "' ÎÅ ÎÁÊÄÅÎ × ËÏÎÆ. ÆÁÊÌÅ!"
-					<< " × ÓÅËÃÉÉ " << conf->getServicesSection() << endl;
+				cerr << "(DBServer::main): Ð¸Ð´ÐµÐ½Ñ‚Ð¸Ñ„Ð¸ÐºÐ°Ñ‚Ð¾Ñ€ '" << name 
+					<< "' Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½ Ð² ÐºÐ¾Ð½Ñ„. Ñ„Ð°Ð¹Ð»Ðµ!"
+					<< " Ð² ÑÐµÐºÑ†Ð¸Ð¸ " << conf->getServicesSection() << endl;
 				return 1;
 			}
 		}
 		else if( ID == UniSetTypes::DefaultObjectId )
 		{
-			cerr << "(DBServer::main): îÅ ÕÄÁÌÏÓØ ÏÐÒÅÄÅÌÉÔØ éäåîôéæéëáôïò ÓÅÒ×ÅÒÁ" << endl; 
+			cerr << "(DBServer::main): ÐÐµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»Ð¸Ñ‚ÑŒ Ð˜Ð”Ð•ÐÐ¢Ð˜Ð¤Ð˜ÐšÐÐ¢ÐžÐ  ÑÐµÑ€Ð²ÐµÑ€Ð°" << endl; 
 			short_usage();
 			return 1;
 		}

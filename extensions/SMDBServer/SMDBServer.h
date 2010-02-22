@@ -15,12 +15,12 @@ class SMDBServer:
 					const std::string prefix="dbserver" );
 		virtual ~SMDBServer();
 	
-		/*! глобальная функция для инициализации объекта */
+		/*! пЁп╩п╬п╠п╟п╩я▄п╫п╟я▐ я└я┐п╫п╨я├п╦я▐ п╢п╩я▐ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦п╦ п╬п╠я┼п╣п╨я┌п╟ */
 		static SMDBServer* init_smdbserver( int argc, const char* const* argv, 
 						    UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
 							const std::string prefix="dbserver" );
 
-		/*! глобальная функция для вывода help-а */
+		/*! пЁп╩п╬п╠п╟п╩я▄п╫п╟я▐ я└я┐п╫п╨я├п╦я▐ п╢п╩я▐ п╡я▀п╡п╬п╢п╟ help-п╟ */
 		static void help_print( int argc, const char* const* argv );
 
 	protected:

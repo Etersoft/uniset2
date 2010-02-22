@@ -10,7 +10,7 @@ TDelay::TDelay( Element::ElementID id, int delayMS, int inCount):
 {
 	if( inCount!=0 )
 	{
-		// создаём заданное количество входов
+		// я│п╬п╥п╢п╟я▒п╪ п╥п╟п╢п╟п╫п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╡я┘п╬п╢п╬п╡
 		for( int i=1;i<=inCount;i++ )
 			ins.push_front(InputInfo(i,false)); // addInput(i,st);
 	}
@@ -23,7 +23,7 @@ TDelay::~TDelay()
 void TDelay::setIn( int num, bool state )
 {
 	bool prev = myout;
-	// сбрасываем сразу
+	// я│п╠я─п╟я│я▀п╡п╟п╣п╪ я│я─п╟п╥я┐
 	if( !state )
 	{
 		pt.setTiming(0); // reset timer
@@ -36,7 +36,7 @@ void TDelay::setIn( int num, bool state )
 
 //	if( state )
 	
-	// выставляем без задержки
+	// п╡я▀я│я┌п╟п╡п╩я▐п╣п╪ п╠п╣п╥ п╥п╟п╢п╣я─п╤п╨п╦
 	if( delay <= 0 )
 	{
 		pt.setTiming(0); // reset timer
@@ -47,8 +47,8 @@ void TDelay::setIn( int num, bool state )
 		return;
 	}
 
-	// засекаем, если ещё не установлен таймер
-	if( !myout && !prev  ) // т.е. !myout && prev != myout
+	// п╥п╟я│п╣п╨п╟п╣п╪, п╣я│п╩п╦ п╣я┴я▒ п╫п╣ я┐я│я┌п╟п╫п╬п╡п╩п╣п╫ я┌п╟п╧п╪п╣я─
+	if( !myout && !prev  ) // я┌.п╣. !myout && prev != myout
 	{
 		cout << this << ": set timer " << delay << " [msec]" << endl;	
 		pt.setTiming(delay);

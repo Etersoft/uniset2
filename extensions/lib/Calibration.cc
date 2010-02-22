@@ -20,7 +20,7 @@ Calibration::Part::Part( Point& pleft, Point& pright ):
 		p_left	= t;
 	}
 
-	// вычисление коэффициента наклона (один раз в конструкторе)
+	// п╡я▀я┤п╦я│п╩п╣п╫п╦п╣ п╨п╬я█я└я└п╦я├п╦п╣п╫я┌п╟ п╫п╟п╨п╩п╬п╫п╟ (п╬п╢п╦п╫ я─п╟п╥ п╡ п╨п╬п╫я│я┌я─я┐п╨я┌п╬я─п╣)
 	// k = (y2-y1)/(x2-x1)
 	if( (p_right.y==0 && p_left.y==0) || (p_right.x==0 && p_left.x==0) )
 		k=0;
@@ -28,10 +28,10 @@ Calibration::Part::Part( Point& pleft, Point& pright ):
 		k = ( p_right.y - p_left.y ) / ( p_right.x - p_left.x );
 }
 // ----------------------------------------------------------------------------
-// чтобы участки между собой не пересекались
-// нижняя граница (по x и y) 
-// не входит в диапазон
-// (т.е. как бы относится к предыдущему участку)
+// я┤я┌п╬п╠я▀ я┐я┤п╟я│я┌п╨п╦ п╪п╣п╤п╢я┐ я│п╬п╠п╬п╧ п╫п╣ п©п╣я─п╣я│п╣п╨п╟п╩п╦я│я▄
+// п╫п╦п╤п╫я▐я▐ пЁя─п╟п╫п╦я├п╟ (п©п╬ x п╦ y) 
+// п╫п╣ п╡я┘п╬п╢п╦я┌ п╡ п╢п╦п╟п©п╟п╥п╬п╫
+// (я┌.п╣. п╨п╟п╨ п╠я▀ п╬я┌п╫п╬я│п╦я┌я│я▐ п╨ п©я─п╣п╢я▀п╢я┐я┴п╣п╪я┐ я┐я┤п╟я│я┌п╨я┐)
 bool Calibration::Part::check( Point& p )
 {
 	return ( checkX(p.x) && checkY(p.y) );
@@ -122,8 +122,8 @@ void Calibration::build( const string name, const string confile, xmlNode* root 
 			if( !root )
 			{
 				ostringstream err;
-				err << myname << "(Calibration::build): в файле " << confile
-					<< " НЕ НАЙДЕНА диаграмма name=" << name;
+				err << myname << "(Calibration::build): п╡ я└п╟п╧п╩п╣ " << confile
+					<< " п²п∙ п²п░п≥п■п∙п²п░ п╢п╦п╟пЁя─п╟п╪п╪п╟ name=" << name;
 
 				cerr << err.str() << endl; 
 				throw Exception(err.str());
@@ -135,9 +135,9 @@ void Calibration::build( const string name, const string confile, xmlNode* root 
 		if( !it.goChildren() )
 		{
 			ostringstream err;
-			err << myname << "(Calibration::build): в файле " << confile
-				<< " диаграмма name=" << name 
-				<< " НЕ содержит элементов (point) " << endl;
+			err << myname << "(Calibration::build): п╡ я└п╟п╧п╩п╣ " << confile
+				<< " п╢п╦п╟пЁя─п╟п╪п╪п╟ name=" << name 
+				<< " п²п∙ я│п╬п╢п╣я─п╤п╦я┌ я█п╩п╣п╪п╣п╫я┌п╬п╡ (point) " << endl;
 
 			cerr << err.str() << endl; 
 			throw Exception(err.str());
@@ -180,7 +180,7 @@ long Calibration::getValue( long raw )
 {
 	PartsList::iterator it=plist.begin();
 
-	// если l левее первого отрезка то берём первую точку...
+	// п╣я│п╩п╦ l п╩п╣п╡п╣п╣ п©п╣я─п╡п╬пЁп╬ п╬я┌я─п╣п╥п╨п╟ я┌п╬ п╠п╣я─я▒п╪ п©п╣я─п╡я┐я▌ я┌п╬я┤п╨я┐...
 	if( raw < it->left_x() )
 		return it->left_x();
 
@@ -191,7 +191,7 @@ long Calibration::getValue( long raw )
 			return tRound(q);
 	}
 
-	// берём последний отрезок и вычисляем по нему...
+	// п╠п╣я─я▒п╪ п©п╬я│п╩п╣п╢п╫п╦п╧ п╬я┌я─п╣п╥п╬п╨ п╦ п╡я▀я┤п╦я│п╩я▐п╣п╪ п©п╬ п╫п╣п╪я┐...
 	it = plist.end();
 	it--;
 

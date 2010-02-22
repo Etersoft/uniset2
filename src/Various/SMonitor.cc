@@ -23,7 +23,7 @@ SMonitor::SMonitor(ObjectId id):
 	lst = UniSetTypes::explode(sid);
 
 	if( lst.empty() )
-		throw SystemError("îÅ ÚÁÄÁÎ ÓÐÉÓÏË ÄÁÔÞÉËÏ× (--sid)");
+		throw SystemError("ÐÐµ Ð·Ð°Ð´Ð°Ð½ ÑÐ¿Ð¸ÑÐ¾Ðº Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÐ¾Ð² (--sid)");
 
 	script = conf->getArgParam("--script");
 }
@@ -66,7 +66,7 @@ void SMonitor::processingMessage( UniSetTypes::VoidMessage *msg)
 			}		
 
 			default:
-				cout << myname << ": ÎÅÉÚ×ÅÓÔÎÏÅ ÓÏÏÂÝÅÎÉÅ  "<<  msg->type << endl;	
+				cout << myname << ": Ð½ÐµÐ¸Ð·Ð²ÐµÑÑ‚Ð½Ð¾Ðµ ÑÐ¾Ð¾Ð±Ñ‰ÐµÐ½Ð¸Ðµ  "<<  msg->type << endl;	
 			break;
 
 		}
@@ -105,7 +105,7 @@ void SMonitor::sysCommand( SystemMessage *sm )
 				}
 				catch(...)
 				{
-					cerr << myname << ": îå óíïç úáëáúôø ÄÁÔÞÉËÉ "<< endl;
+					cerr << myname << ": ÐÐ• Ð¡ÐœÐžÐ“ Ð—ÐÐšÐÐ—Ð¢Ð¬ Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÐ¸ "<< endl;
 					raise(SIGTERM);
 				}
 			}
@@ -116,7 +116,7 @@ void SMonitor::sysCommand( SystemMessage *sm )
 				int sz = badlst->length();
 				if( sz > 0 )
 				{
-					cerr << myname << "(askSensrosSeq): ******** îå õäáìïóø úáëáúáôø: ";
+					cerr << myname << "(askSensrosSeq): ******** ÐÐ• Ð£Ð”ÐÐ›ÐžÐ¡Ð¬ Ð—ÐÐšÐÐ—ÐÐ¢Ð¬: ";
 					for( int i=0; i<sz; i++ )
 						cerr << badlst[i] << " ";
 					cerr << endl;
@@ -129,7 +129,7 @@ void SMonitor::sysCommand( SystemMessage *sm )
 			}
 			catch(...)
 			{
-				cerr << myname << ": îå óíïç úáëáúôø ÄÁÔÞÉËÉ "<< endl;
+				cerr << myname << ": ÐÐ• Ð¡ÐœÐžÐ“ Ð—ÐÐšÐÐ—Ð¢Ð¬ Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÐ¸ "<< endl;
 				raise(SIGTERM);
 			}
 */
@@ -163,8 +163,8 @@ void SMonitor::sensorInfo( SensorMessage *si )
 	if( !script.empty() )
 	{
 		ostringstream cmd;
-		// ÅÓÌÉ ÚÁÄÁÎ ÐÏÌÎÙÊ ÐÕÔØ ÉÌÉ ÐÕÔØ ÎÁÞÉÎÁÑ Ó '.'
-		// ÔÏ ÂÅÒ£Í ËÁË ÅÓÔØ, ÉÎÁÞÅ ÐÒÉÂÁ×ÌÑÅÍ bindir ÉÚ ÆÁÊÌÁ ÎÁÓÔÒÏÅË
+		// ÐµÑÐ»Ð¸ Ð·Ð°Ð´Ð°Ð½ Ð¿Ð¾Ð»Ð½Ñ‹Ð¹ Ð¿ÑƒÑ‚ÑŒ Ð¸Ð»Ð¸ Ð¿ÑƒÑ‚ÑŒ Ð½Ð°Ñ‡Ð¸Ð½Ð°Ñ Ñ '.'
+		// Ñ‚Ð¾ Ð±ÐµÑ€Ñ‘Ð¼ ÐºÐ°Ðº ÐµÑÑ‚ÑŒ, Ð¸Ð½Ð°Ñ‡Ðµ Ð¿Ñ€Ð¸Ð±Ð°Ð²Ð»ÑÐµÐ¼ bindir Ð¸Ð· Ñ„Ð°Ð¹Ð»Ð° Ð½Ð°ÑÑ‚Ñ€Ð¾ÐµÐº
 		if( script[0] == '.' || script[0] == '/' )
 			cmd << script;
 		else

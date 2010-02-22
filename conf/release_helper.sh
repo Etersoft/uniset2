@@ -1,5 +1,5 @@
 #!/bin/sh
-# Вспомогательный скрипт для подготовки и сборки rpm-пакета с системой
+# п▓я│п©п╬п╪п╬пЁп╟я┌п╣п╩я▄п╫я▀п╧ я│п╨я─п╦п©я┌ п╢п╩я▐ п©п╬п╢пЁп╬я┌п╬п╡п╨п╦ п╦ я│п╠п╬я─п╨п╦ rpm-п©п╟п╨п╣я┌п╟ я│ я│п╦я│я┌п╣п╪п╬п╧
 
 ETERBUILDVERSION=163
 . /usr/share/eterbuild/eterbuild
@@ -38,9 +38,9 @@ function send_notify()
 	export EMAIL="$USER@$MAILDOMAIN"
 	CURDATE=`date`
 	MAILTO="devel@$MAILDOMAIN"
-# FIXME: проверка отправки
+# FIXME: п©я─п╬п╡п╣я─п╨п╟ п╬я┌п©я─п╟п╡п╨п╦
 mutt $MAILTO -s "[$PROJECT] New build: $BUILDNAME" <<EOF
-Готова новая сборка: $BUILDNAME
+п⌠п╬я┌п╬п╡п╟ п╫п╬п╡п╟я▐ я│п╠п╬я─п╨п╟: $BUILDNAME
 -- 
 your $0
 $CURDATE
@@ -71,9 +71,9 @@ cp2ftp
 rpmbs $SPECNAME
 #send_notify
 
-# Увеличиваем релиз и запоминаем спек после успешной сборки
+# пёп╡п╣п╩п╦я┤п╦п╡п╟п╣п╪ я─п╣п╩п╦п╥ п╦ п╥п╟п©п╬п╪п╦п╫п╟п╣п╪ я│п©п╣п╨ п©п╬я│п╩п╣ я┐я│п©п╣я┬п╫п╬п╧ я│п╠п╬я─п╨п╦
 inc_release $SPECNAME
-# и запоминаем спек после успешной сборки
+# п╦ п╥п╟п©п╬п╪п╦п╫п╟п╣п╪ я│п©п╣п╨ п©п╬я│п╩п╣ я┐я│п©п╣я┬п╫п╬п╧ я│п╠п╬я─п╨п╦
 #cvs commit -m "Auto updated by $0 for $BUILDNAME" $SPECNAME || fatal "Can't commit spec"
 
 # Note: we in topscrdir

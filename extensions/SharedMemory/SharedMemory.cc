@@ -57,8 +57,8 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 
 	
 //	rxml->setSensorFilter(s_filterField, s_filterValue);
-//#warning Ó¡Õ≈“≈ŒŒœ œ‘ÀÃ¿ﬁ¡≈Õ œ¬“¡¬œ‘À’ ”–…”À¡ ⁄¡À¡⁄ﬁ…Àœ◊ (◊ ƒ¡ŒŒœÕ –“œ≈À‘≈)...
-	// ƒÃ— œ‘ÀÃ¿ﬁ≈Œ…— –“œ”‘œ ’À¡÷≈Õ Œ≈”’›≈”‘◊’¿›…≈ –œÃ— ƒÃ— ∆…Ãÿ‘“¡
+//#warning –ù–∞–º–µ—Ä–µ–Ω–Ω–æ –æ—Ç–∫–ª—é—á–∞–µ–º –æ–±—Ä–∞–±–æ—Ç–∫—É —Å–ø–∏—Å–∫–∞ –∑–∞–∫–∞–∑—á–∏–∫–æ–≤ (–≤ –¥–∞–Ω–Ω–æ–º –ø—Ä–æ–µ–∫—Ç–µ)...
+	// –¥–ª—è –æ—Ç–∫–ª—é—á–µ–Ω–∏—è –ø—Ä–æ—Å—Ç–æ —É–∫–∞–∂–µ–º –Ω–µ—Å—É—â–µ—Å—Ç–≤—É—é—â–∏–µ –ø–æ–ª—è –¥–ª—è —Ñ–∏–ª—å—Ç—Ä–∞
 //	rxml->setConsumerFilter("dummy","yes");
 
 	rxml->setItemFilter(s_field, s_fvalue);
@@ -160,7 +160,7 @@ void SharedMemory::processingMessage( UniSetTypes::VoidMessage *msg )
 
 
 			default:
-				//dlog[Debug::WARN] << myname << ": Œ≈…⁄◊≈”‘Œœ≈ ”œœ¬›≈Œ…≈  " << msg->type << endl;
+				//dlog[Debug::WARN] << myname << ": –Ω–µ–∏–∑–≤–µ—Å—Ç–Ω–æ–µ —Å–æ–æ–±—â–µ–Ω–∏–µ  " << msg->type << endl;
 				break;
 		}	
 	}
@@ -204,7 +204,7 @@ void SharedMemory::timerInfo( TimerMessage *tm )
 	else if( tm->id == tmEvent )
 	{
 		workready = true;
-		// “¡””ŸÃ¡≈Õ ’◊≈ƒœÕÃ≈Œ…≈, œ ‘œÕ, ﬁ‘œ¬Ÿ ”‘¡“‘¡Œ’Ã…
+		// —Ä–∞—Å—Å—ã–ª–∞–µ–º —É–≤–µ–¥–æ–º–ª–µ–Ω–∏–µ, –æ —Ç–æ–º, —á—Ç–æ–±—ã —Å—Ç–∞—Ä—Ç–∞–Ω—É–ª–∏
 		SystemMessage sm1(SystemMessage::WatchDog);
 		sendEvent(sm1);
 		askTimer(tm->id,0);
@@ -245,8 +245,8 @@ void SharedMemory::sysCommand( SystemMessage *sm )
 			if( !activated )
 				dlog[Debug::CRIT] << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 		
-			// –œƒœ÷ƒ¡‘ÿ –œÀ¡ –“œ ƒ£‘ …Œ…√…¡Ã…⁄¡√…—
-			// ”Õ. activateObject()
+			// –ø–æ–¥–æ–∂–¥–∞—Ç—å –ø–æ–∫–∞ –ø—Ä–æ–π–¥—ë—Ç –∏–Ω–∏—Ü–∏–∞–ª–∏–∑–∞—Ü–∏—è
+			// —Å–º. activateObject()
 			UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
 			askTimer(tmHeartBeatCheck,heartbeatCheckTime);
 			askTimer(tmEvent,evntPause,1);
@@ -301,15 +301,15 @@ bool SharedMemory::activateObject()
 	PassiveTimer pt(UniSetTimer::WaitUpTime);
 	bool res = true;
 	
-	// ¬ÃœÀ…“œ◊¡Œ…≈ œ¬“¡¬œ‘À… Startup 
-	// –œÀ¡ Œ≈ –“œ ƒ£‘ …Œ…√…¡Ã…⁄¡√…— ƒ¡‘ﬁ…Àœ◊
-	// ”Õ. sysCommand()
+	// –±–ª–æ–∫–∏—Ä–æ–≤–∞–Ω–∏–µ –æ–±—Ä–∞–±–æ—Ç–∫–∏ Startup 
+	// –ø–æ–∫–∞ –Ω–µ –ø—Ä–æ–π–¥—ë—Ç –∏–Ω–∏—Ü–∏–∞–ª–∏–∑–∞—Ü–∏—è –¥–∞—Ç—á–∏–∫–æ–≤
+	// —Å–º. sysCommand()
 	{
 		activated = false;
 		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
 		res = IONotifyController_LT::activateObject();
 
-		// …Œ…√…¡Ã…⁄…“’≈Õ ’À¡⁄¡‘≈Ã…		
+		// –∏–Ω–∏—Ü–∏–∞–ª–∏–∑–∏—Ä—É–µ–º —É–∫–∞–∑–∞—Ç–µ–ª–∏		
 		for( HeartBeatList::iterator it=hlist.begin(); it!=hlist.end(); ++it )
 		{
 			it->ait = myaioEnd();
@@ -380,7 +380,7 @@ void SharedMemory::checkHeartBeat()
 			else
 				localSaveState(it->dit,si,false,getId());
 
-			// –“œ◊≈“—≈Õ Œ’÷Œ¡ Ã… "–≈“≈⁄¡«“’⁄À¡" –œ ƒ¡ŒŒœÕ’ ƒ¡‘ﬁ…À’
+			// –ø—Ä–æ–≤–µ—Ä—è–µ–º –Ω—É–∂–Ω–∞ –ª–∏ "–ø–µ—Ä–µ–∑–∞–≥—Ä—É–∑–∫–∞" –ø–æ –¥–∞–Ω–Ω–æ–º—É –¥–∞—Ç—á–∏–∫—É
 			if( wdt && it->ptReboot.getInterval() )
 			{
 				if( val > 0  )
@@ -439,9 +439,9 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 	if( it.getProp("iotype") != "AI" )
 	{
 		ostringstream msg;
-		msg << "(SharedMemory::readItem): ‘…– ƒÃ— 'heartbeat' ƒ¡‘ﬁ…À¡ (" << it.getProp("name")
-			<< ") ’À¡⁄¡Œ Œ≈◊≈“Œœ ("
-			<< it.getProp("iotype") << ") ƒœÃ÷≈Œ ¬Ÿ‘ÿ 'AI'";
+		msg << "(SharedMemory::readItem): —Ç–∏–ø –¥–ª—è 'heartbeat' –¥–∞—Ç—á–∏–∫–∞ (" << it.getProp("name")
+			<< ") —É–∫–∞–∑–∞–Ω –Ω–µ–≤–µ—Ä–Ω–æ ("
+			<< it.getProp("iotype") << ") –¥–æ–ª–∂–µ–Ω –±—ã—Ç—å 'AI'";
 	
 		dlog[Debug::CRIT] << msg.str() << endl;
 		kill(getpid(),SIGTERM);
@@ -456,9 +456,9 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 		if( hi.d_sid == DefaultObjectId )
 		{
 			ostringstream msg;
-			msg << "(SharedMemory::readItem): ƒ…”À“≈‘ŒŸ  ƒ¡‘ﬁ…À (heartbeat_ds_name) ”◊—⁄¡ŒŒŸ  ” " << it.getProp("name");
+			msg << "(SharedMemory::readItem): –¥–∏—Å–∫—Ä–µ—Ç–Ω—ã–π –¥–∞—Ç—á–∏–∫ (heartbeat_ds_name) —Å–≤—è–∑–∞–Ω–Ω—ã–π —Å " << it.getProp("name");
 			dlog[Debug::WARN] << msg.str() << endl;
-#warning ‰≈Ã¡‘ÿ œ¬—⁄¡‘≈ÃÿŒŸÕ?!			
+#warning –î–µ–ª–∞—Ç—å –æ–±—è–∑–∞—Ç–µ–ª—å–Ω—ã–º?!			
 //			dlog[Debug::CRIT] << msg.str() << endl;
 //			kill(getpid(),SIGTERM);
 			// throw NameNotFound(msg.str());
@@ -470,7 +470,7 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 		if( hi.d_sid == DefaultObjectId )
 		{
 			ostringstream msg;
-			msg << "(SharedMemory::readItem): Ó≈ Œ¡ ƒ≈Œ ID ƒÃ— ƒ…”À“≈‘Œœ«œ ƒ¡‘ﬁ…À¡ (heartbeat_ds_name) ”◊—⁄¡ŒŒœ«œ ” " << it.getProp("name");
+			msg << "(SharedMemory::readItem): –ù–µ –Ω–∞–π–¥–µ–Ω ID –¥–ª—è –¥–∏—Å–∫—Ä–µ—Ç–Ω–æ–≥–æ –¥–∞—Ç—á–∏–∫–∞ (heartbeat_ds_name) —Å–≤—è–∑–∞–Ω–Ω–æ–≥–æ —Å " << it.getProp("name");
 			dlog[Debug::CRIT] << msg.str() << endl;
 			kill(getpid(),SIGTERM);
 //			throw NameNotFound(msg.str());
@@ -483,16 +483,16 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 	if( hi.a_sid <= 0 )
 	{
 		ostringstream msg;
-		msg << "(SharedMemory::readItem): ÓÂ ıÎ·˙·Ó id ƒÃ— " 
-			<< it.getProp("name") << " ”≈À√…— " << sec;
+		msg << "(SharedMemory::readItem): –ù–ï –£–ö–ê–ó–ê–ù id –¥–ª—è " 
+			<< it.getProp("name") << " —Å–µ–∫—Ü–∏—è " << sec;
 
 		dlog[Debug::CRIT] << msg.str() << endl;
 		kill(getpid(),SIGTERM);
 //		throw NameNotFound(msg.str());
 	};
 
-	// ¬≈⁄ –“œ◊≈“À… Œ¡ ƒ’¬Ã…“œ◊¡Œ…≈ ‘.À. 
-	// id - «¡“¡Œ‘…“’≈‘ ’Œ…À¡ÃÿŒœ”‘ÿ ◊ Œ¡€≈Õ configure.xml
+	// –±–µ–∑ –ø—Ä–æ–≤–µ—Ä–∫–∏ –Ω–∞ –¥—É–±–ª–∏—Ä–æ–≤–∞–Ω–∏–µ —Ç.–∫. 
+	// id - –≥–∞—Ä–∞–Ω—Ç–∏—Ä—É–µ—Ç —É–Ω–∏–∫–∞–ª—å–Ω–æ—Å—Ç—å –≤ –Ω–∞—à–µ–º configure.xml
 	hlist.push_back(hi);
 	return true;
 }
@@ -562,8 +562,8 @@ SharedMemory* SharedMemory::init_smemory( int argc, const char* const* argv )
 	UniSetTypes::ObjectId ID = conf->getControllerID(conf->getArgParam("--smemory-id","SharedMemory"));
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		cerr << "(smemory): ÓÂ ˙·‰·Ó …ƒ≈Œ‘…∆…À¡‘œ“ '" 
-			<< " …Ã… Œ≈ Œ¡ ƒ≈Œ ◊ " << conf->getControllersSection()
+		cerr << "(smemory): –ù–ï –ó–ê–î–ê–ù –∏–¥–µ–Ω—Ç–∏—Ñ–∏–∫–∞—Ç–æ—Ä '" 
+			<< " –∏–ª–∏ –Ω–µ –Ω–∞–π–¥–µ–Ω –≤ " << conf->getControllersSection()
                         << endl;
 		return 0;
 	}
@@ -573,20 +573,20 @@ SharedMemory* SharedMemory::init_smemory( int argc, const char* const* argv )
 void SharedMemory::help_print( int argc, const char* const* argv )
 {
 	cout << "--smemory-id           - SharedMemeory ID" << endl;
-	cout << "--logfile fname	- ◊Ÿ◊œƒ…‘ÿ Ãœ«… ◊ ∆¡ Ã fname. œ ’ÕœÃﬁ¡Œ…¿ smemory.log" << endl;
-	cout << "--datfile fname	- Ê¡ Ã ” À¡“‘œ  ƒ¡‘ﬁ…Àœ◊. œ ’ÕœÃﬁ¡Œ…¿ configure.xml" << endl;
-	cout << "--s-filter-field	- Ê…Ãÿ‘“ ƒÃ— ⁄¡«“’⁄À… ”–…”À¡ ƒ¡‘ﬁ…Àœ◊." << endl;
-	cout << "--s-filter-value	- ˙Œ¡ﬁ≈Œ…≈ ∆…Ãÿ‘“¡ ƒÃ— ⁄¡«“’⁄À… ”–…”À¡ ƒ¡‘ﬁ…Àœ◊." << endl;
-	cout << "--c-filter-field	- Ê…Ãÿ‘“ ƒÃ— ⁄¡«“’⁄À… ”–…”À¡ ⁄¡À¡⁄ﬁ…Àœ◊." << endl;
-	cout << "--c-filter-value	- ˙Œ¡ﬁ≈Œ…≈ ∆…Ãÿ‘“ ƒÃ— ⁄¡«“’⁄À… ”–…”À¡ ⁄¡À¡⁄ﬁ…Àœ◊." << endl;
-	cout << "--d-filter-field	- Ê…Ãÿ‘“ ƒÃ— ⁄¡«“’⁄À… ”–…”À¡ ⁄¡◊…”…Õœ”‘≈ ." << endl;
-	cout << "--d-filter-value	- ˙Œ¡ﬁ≈Œ…≈ ∆…Ãÿ‘“ ƒÃ— ⁄¡«“’⁄À… ”–…”À¡ ⁄¡◊…”…Õœ”‘≈ ." << endl;
-	cout << "--wdt-device		- È”–œÃÿ⁄œ◊¡‘ÿ ◊ À¡ﬁ≈”‘◊≈ WDT ’À¡⁄¡ŒŒŸ  ∆¡ Ã." << endl;
-	cout << "--heartbeat-node	- ˙¡«“’÷¡‘ÿ heartbeat ƒ¡‘ﬁ…À… ƒÃ— ’À¡⁄¡ŒŒœ«œ ’⁄Ã¡." << endl;
-	cout << "--lock-value-pause - –¡’⁄¡ Õ≈÷ƒ’ –“œ◊≈“Àœ  spin-¬ÃœÀ…“œ◊À… Œ¡ ⁄Œ¡ﬁ≈Œ…≈" << endl;
-	cout << "--e-filter 		- ∆…Ãÿ‘“ ƒÃ— ”ﬁ…‘Ÿ◊¡Œ…— <eventlist>" << endl;
-	cout << "--e-startup-pause 	- –¡’⁄¡ –≈“≈ƒ –œ”ŸÃÀœ  ’◊≈ƒœÕÃ≈Œ…— œ ”‘¡“‘≈ SM. (œ ’ÕœÃﬁ¡Œ…¿: 1500 Õ”≈À)." << endl;
-	cout << "--activate-timeout - ◊“≈Õ— œ÷…ƒ¡Œ…— ¡À‘…◊…⁄¡√…… (œ ’ÕœÃﬁ¡Œ…¿: 15000 Õ”≈À)." << endl;
+	cout << "--logfile fname	- –≤—ã–≤–æ–¥–∏—Ç—å –ª–æ–≥–∏ –≤ —Ñ–∞–π–ª fname. –ü–æ —É–º–æ–ª—á–∞–Ω–∏—é smemory.log" << endl;
+	cout << "--datfile fname	- –§–∞–π–ª —Å –∫–∞—Ä—Ç–æ–π –¥–∞—Ç—á–∏–∫–æ–≤. –ü–æ —É–º–æ–ª—á–∞–Ω–∏—é configure.xml" << endl;
+	cout << "--s-filter-field	- –§–∏–ª—å—Ç—Ä –¥–ª—è –∑–∞–≥—Ä—É–∑–∫–∏ —Å–ø–∏—Å–∫–∞ –¥–∞—Ç—á–∏–∫–æ–≤." << endl;
+	cout << "--s-filter-value	- –ó–Ω–∞—á–µ–Ω–∏–µ —Ñ–∏–ª—å—Ç—Ä–∞ –¥–ª—è –∑–∞–≥—Ä—É–∑–∫–∏ —Å–ø–∏—Å–∫–∞ –¥–∞—Ç—á–∏–∫–æ–≤." << endl;
+	cout << "--c-filter-field	- –§–∏–ª—å—Ç—Ä –¥–ª—è –∑–∞–≥—Ä—É–∑–∫–∏ —Å–ø–∏—Å–∫–∞ –∑–∞–∫–∞–∑—á–∏–∫–æ–≤." << endl;
+	cout << "--c-filter-value	- –ó–Ω–∞—á–µ–Ω–∏–µ —Ñ–∏–ª—å—Ç—Ä –¥–ª—è –∑–∞–≥—Ä—É–∑–∫–∏ —Å–ø–∏—Å–∫–∞ –∑–∞–∫–∞–∑—á–∏–∫–æ–≤." << endl;
+	cout << "--d-filter-field	- –§–∏–ª—å—Ç—Ä –¥–ª—è –∑–∞–≥—Ä—É–∑–∫–∏ —Å–ø–∏—Å–∫–∞ –∑–∞–≤–∏—Å–∏–º–æ—Å—Ç–µ–π." << endl;
+	cout << "--d-filter-value	- –ó–Ω–∞—á–µ–Ω–∏–µ —Ñ–∏–ª—å—Ç—Ä –¥–ª—è –∑–∞–≥—Ä—É–∑–∫–∏ —Å–ø–∏—Å–∫–∞ –∑–∞–≤–∏—Å–∏–º–æ—Å—Ç–µ–π." << endl;
+	cout << "--wdt-device		- –ò—Å–ø–æ–ª—å–∑–æ–≤–∞—Ç—å –≤ –∫–∞—á–µ—Å—Ç–≤–µ WDT —É–∫–∞–∑–∞–Ω–Ω—ã–π —Ñ–∞–π–ª." << endl;
+	cout << "--heartbeat-node	- –ó–∞–≥—Ä—É–∂–∞—Ç—å heartbeat –¥–∞—Ç—á–∏–∫–∏ –¥–ª—è —É–∫–∞–∑–∞–Ω–Ω–æ–≥–æ —É–∑–ª–∞." << endl;
+	cout << "--lock-value-pause - –ø–∞—É–∑–∞ –º–µ–∂–¥—É –ø—Ä–æ–≤–µ—Ä–∫–æ–π spin-–±–ª–æ–∫–∏—Ä–æ–≤–∫–∏ –Ω–∞ –∑–Ω–∞—á–µ–Ω–∏–µ" << endl;
+	cout << "--e-filter 		- —Ñ–∏–ª—å—Ç—Ä –¥–ª—è —Å—á–∏—Ç—ã–≤–∞–Ω–∏—è <eventlist>" << endl;
+	cout << "--e-startup-pause 	- –ø–∞—É–∑–∞ –ø–µ—Ä–µ–¥ –ø–æ—Å—ã–ª–∫–æ–π —É–≤–µ–¥–æ–º–ª–µ–Ω–∏—è –æ —Å—Ç–∞—Ä—Ç–µ SM. (–ü–æ —É–º–æ–ª—á–∞–Ω–∏—é: 1500 –º—Å–µ–∫)." << endl;
+	cout << "--activate-timeout - –≤—Ä–µ–º—è –æ–∂–∏–¥–∞–Ω–∏—è –∞–∫—Ç–∏–≤–∏–∑–∞—Ü–∏–∏ (–ü–æ —É–º–æ–ª—á–∞–Ω–∏—é: 15000 –º—Å–µ–∫)." << endl;
 
 }
 // -----------------------------------------------------------------------------
@@ -602,14 +602,14 @@ void SharedMemory::readEventList( std::string oname )
 	xmlNode* enode = conf->getNode(oname);
 	if( enode == NULL )
 	{
-		dlog[Debug::WARN] << myname << "(readEventList): " << oname << " Œ≈ Œ¡ ƒ≈Œ..." << endl;
+		dlog[Debug::WARN] << myname << "(readEventList): " << oname << " –Ω–µ –Ω–∞–π–¥–µ–Ω..." << endl;
 		return;
 	}
 
 	UniXML_iterator it(enode);
 	if( !it.goChildren() )
 	{
-		dlog[Debug::WARN] << myname << "(readEventList): <eventlist> –’”‘œ ..." << endl;
+		dlog[Debug::WARN] << myname << "(readEventList): <eventlist> –ø—É—Å—Ç–æ–π..." << endl;
 		return;
 	}
 
@@ -626,7 +626,7 @@ void SharedMemory::readEventList( std::string oname )
 			elst.push_back(oid);
 		}
 		else
-			dlog[Debug::CRIT] << myname << "(readEventList): Ó≈ Œ¡ ƒ≈Œ ID ƒÃ— " 
+			dlog[Debug::CRIT] << myname << "(readEventList): –ù–µ –Ω–∞–π–¥–µ–Ω ID –¥–ª—è " 
 				<< it.getProp("name") << endl;
 	}
 }
@@ -650,7 +650,7 @@ void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
 		}
 		
 		if(!ok)
-			dlog[Debug::CRIT] << myname << "(sendEvent): Ô¬ﬂ≈À‘ " << (*it) << " ÓÂ‰ÔÛÙıÂÓ" << endl;
+			dlog[Debug::CRIT] << myname << "(sendEvent): –û–±—ä–µ–∫—Ç " << (*it) << " –ù–ï–î–û–°–¢–£–ü–ï–ù" << endl;
 	}	
 }
 // -----------------------------------------------------------------------------

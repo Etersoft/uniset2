@@ -70,15 +70,15 @@ void MBSlave::setLog( DebugStream& dlog )
 // -------------------------------------------------------------------------
 void MBSlave::execute()
 {
-	// Работа...
+	// п═п╟п╠п╬я┌п╟...
 	while(1)
 	{
 		ModbusRTU::mbErrCode res = rscomm->receive( addr, UniSetTimer::WaitUpTime );
 #if 0
-		// собираем статистику обмена
+		// я│п╬п╠п╦я─п╟п╣п╪ я│я┌п╟я┌п╦я│я┌п╦п╨я┐ п╬п╠п╪п╣п╫п╟
 		if( prev!=ModbusRTU::erTimeOut )
 		{
-			//  с проверкой на переполнение
+			//  я│ п©я─п╬п╡п╣я─п╨п╬п╧ п╫п╟ п©п╣я─п╣п©п╬п╩п╫п╣п╫п╦п╣
 			askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
 			if( res!=ModbusRTU::erNoError )
 				errmap[res]++;
@@ -108,7 +108,7 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
 	d.b[4] = 1;
 	d.b[6] = 1;
 
-	// Фомирование ответа:
+	// п╓п╬п╪п╦я─п╬п╡п╟п╫п╦п╣ п╬я┌п╡п╣я┌п╟:
 	int bcnt = query.count / ModbusRTU::BitsPerByte;
 	if( (query.count % ModbusRTU::BitsPerByte) > 0 )
 		bcnt++;
@@ -165,8 +165,8 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 		return ModbusRTU::erNoError;
 	}
 
-	// Фомирование ответа:
-	int num=0; // добавленное количество данных
+	// п╓п╬п╪п╦я─п╬п╡п╟п╫п╦п╣ п╬я┌п╡п╣я┌п╟:
+	int num=0; // п╢п╬п╠п╟п╡п╩п╣п╫п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╢п╟п╫п╫я▀я┘
 	ModbusData reg = query.start;
 	for( ; num<query.count; num++, reg++ )
 	{
@@ -176,12 +176,12 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 			reply.addData(reg);
 	}
 
-	// Если мы в начале проверили, что запрос входит в разрешёный диапазон
-	// то теоретически этой ситуации возникнуть не может...
+	// п∙я│п╩п╦ п╪я▀ п╡ п╫п╟я┤п╟п╩п╣ п©я─п╬п╡п╣я─п╦п╩п╦, я┤я┌п╬ п╥п╟п©я─п╬я│ п╡я┘п╬п╢п╦я┌ п╡ я─п╟п╥я─п╣я┬я▒п╫я▀п╧ п╢п╦п╟п©п╟п╥п╬п╫
+	// я┌п╬ я┌п╣п╬я─п╣я┌п╦я┤п╣я│п╨п╦ я█я┌п╬п╧ я│п╦я┌я┐п╟я├п╦п╦ п╡п╬п╥п╫п╦п╨п╫я┐я┌я▄ п╫п╣ п╪п╬п╤п╣я┌...
 	if( reply.count < query.count )
 	{
-		cerr << "(readInputRegisters): Получили меньше чем ожидали. "
-			<< " Запросили " << query.count << " получили " << reply.count << endl;
+		cerr << "(readInputRegisters): п÷п╬п╩я┐я┤п╦п╩п╦ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╬п╤п╦п╢п╟п╩п╦. "
+			<< " п≈п╟п©я─п╬я│п╦п╩п╦ " << query.count << " п©п╬п╩я┐я┤п╦п╩п╦ " << reply.count << endl;
 	}
 
 	return ModbusRTU::erNoError;
@@ -202,8 +202,8 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters(
 		return ModbusRTU::erNoError;
 	}
 
-	// Фомирование ответа:
-	int num=0; // добавленное количество данных
+	// п╓п╬п╪п╦я─п╬п╡п╟п╫п╦п╣ п╬я┌п╡п╣я┌п╟:
+	int num=0; // п╢п╬п╠п╟п╡п╩п╣п╫п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╢п╟п╫п╫я▀я┘
 	ModbusData reg = query.start;
 	for( ; num<query.count; num++, reg++ )
 	{
@@ -212,12 +212,12 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters(
 		else
 			reply.addData(reg);
 	}
-	// Если мы в начале проверили, что запрос входит в разрешёный диапазон
-	// то теоретически этой ситуации возникнуть не может...
+	// п∙я│п╩п╦ п╪я▀ п╡ п╫п╟я┤п╟п╩п╣ п©я─п╬п╡п╣я─п╦п╩п╦, я┤я┌п╬ п╥п╟п©я─п╬я│ п╡я┘п╬п╢п╦я┌ п╡ я─п╟п╥я─п╣я┬я▒п╫я▀п╧ п╢п╦п╟п©п╟п╥п╬п╫
+	// я┌п╬ я┌п╣п╬я─п╣я┌п╦я┤п╣я│п╨п╦ я█я┌п╬п╧ я│п╦я┌я┐п╟я├п╦п╦ п╡п╬п╥п╫п╦п╨п╫я┐я┌я▄ п╫п╣ п╪п╬п╤п╣я┌...
 	if( reply.count < query.count )
 	{
-		cerr << "(readOutputRegisters): Получили меньше чем ожидали. "
-			<< " Запросили " << query.count << " получили " << reply.count << endl;
+		cerr << "(readOutputRegisters): п÷п╬п╩я┐я┤п╦п╩п╦ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╬п╤п╦п╢п╟п╩п╦. "
+			<< " п≈п╟п©я─п╬я│п╦п╩п╦ " << query.count << " п©п╬п╩я┐я┤п╦п╩п╦ " << reply.count << endl;
 	}
 
 	return ModbusRTU::erNoError;
@@ -293,10 +293,10 @@ ModbusRTU::mbErrCode MBSlave::journalCommand( ModbusRTU::JournalCommandMessage& 
 		}
 		break;
 
-		case 2: // write по modbus пока не поддерживается
+		case 2: // write п©п╬ modbus п©п╬п╨п╟ п╫п╣ п©п╬п╢п╢п╣я─п╤п╦п╡п╟п╣я┌я│я▐
 		default:
 		{
-			// формируем ответ		
+			// я└п╬я─п╪п╦я─я┐п╣п╪ п╬я┌п╡п╣я┌		
 			ModbusRTU::JournalCommandRetOK::set(reply,2,1);
 			return ModbusRTU::erNoError;	
 		}
@@ -312,8 +312,8 @@ ModbusRTU::mbErrCode MBSlave::setDateTime( ModbusRTU::SetDateTimeMessage& query,
 	if( verbose )
 		cout << "(setDateTime): " << query << endl;
 
-	// подтверждаем сохранение
-	// в ответе возвращаем установленное время...
+	// п©п╬п╢я┌п╡п╣я─п╤п╢п╟п╣п╪ я│п╬я┘я─п╟п╫п╣п╫п╦п╣
+	// п╡ п╬я┌п╡п╣я┌п╣ п╡п╬п╥п╡я─п╟я┴п╟п╣п╪ я┐я│я┌п╟п╫п╬п╡п╩п╣п╫п╫п╬п╣ п╡я─п╣п╪я▐...
 	ModbusRTU::SetDateTimeRetMessage::cpy(reply,query);
 	return ModbusRTU::erNoError;
 }				
@@ -360,7 +360,7 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
 		return ModbusRTU::erOperationFailed;
 	}
 
-	// вычисляем общий размер файла в "пакетах"
+	// п╡я▀я┤п╦я│п╩я▐п╣п╪ п╬п╠я┴п╦п╧ я─п╟п╥п╪п╣я─ я└п╟п╧п╩п╟ п╡ "п©п╟п╨п╣я┌п╟я┘"
 //	(void)lseek(fd,0,SEEK_END);
 //	int numpacks = lseek(fd,0,SEEK_CUR) / ModbusRTU::FileTransferRetMessage::MaxDataLen;
 //	if( lseek(fd,0,SEEK_CUR) % ModbusRTU::FileTransferRetMessage::MaxDataLen )

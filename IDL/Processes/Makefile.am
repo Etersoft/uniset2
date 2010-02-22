@@ -2,11 +2,11 @@
 # This file is part of the UniSet library                                  #
 ############################################################################
 
-# Каталоги для размещения генерируемых CC- и HH-файлов соответственно
+# п п╟я┌п╟п╩п╬пЁп╦ п╢п╩я▐ я─п╟п╥п╪п╣я┴п╣п╫п╦я▐ пЁп╣п╫п╣я─п╦я─я┐п╣п╪я▀я┘ CC- п╦ HH-я└п╟п╧п╩п╬п╡ я│п╬п╬я┌п╡п╣я┌я│я┌п╡п╣п╫п╫п╬
 CCDIR=$(top_builddir)/src/Processes
 HHDIR=$(top_builddir)/include
 
-# Исходные файлы IDL
+# п≤я│я┘п╬п╢п╫я▀п╣ я└п╟п╧п╩я▀ IDL
 IDLFILES=IOController_i.idl
 #UniSetObserver_i.idl
 

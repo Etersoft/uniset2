@@ -13,13 +13,13 @@ static void short_usage()
 {
 	cout << "Usage: uniset-nullController"
 		 << " --name ObjectId [--confile configure.xml] [--askfile filename] \n"
-		 << " --s-filter-field name - ÐÏÌÅ ÄÌÑ ÆÉÌØÔÒÏ×ÁÎÉÑ ÓÐÉÓËÁ ÄÁÔÞÉËÏ×\n"
-		 << " --s-filter-value value - ÚÎÁÞÅÎÉÅ ÄÌÑ ÐÏÌÑ ÆÉÌØÔÒÏ×ÁÎÉÑ ÓÐÉÓËÁ ÄÁÔÞÉËÏ× \n"
-		 << " --c-filter-field name - ÐÏÌÅ ÄÌÑ ÆÉÌØÔÒÏ×ÁÎÉÑ ÓÐÉÓËÁ ÚÁËÁÚÞÉËÏ× ÐÏ ËÁÖÄÏÍÕ ÄÁÔÞÉËÕ\n"
-		 << " --c-filter-value value - ÚÎÁÞÅÎÉÅ ÄÌÑ ÐÏÌÑ ÆÉÌØÔÒÏ×ÁÎÉÑ ÓÐÉÓËÁ ÚÁËÁÚÞÉËÏ× ÐÏ ËÁÖÄÏÍÕ ÄÁÔÞÉËÕ\n"
-		 << " --d-filter-field name - ÐÏÌÅ ÄÌÑ ÆÉÌØÔÒÏ×ÁÎÉÑ ÓÐÉÓËÁ ÚÁ×ÉÓÉÍÏÓÔÅÊ ÐÏ ËÁÖÄÏÍÕ ÄÁÔÞÉËÕ\n"
-		 << " --d-filter-value value - ÚÎÁÞÅÎÉÅ ÄÌÑ ÐÏÌÑ ÆÉÌØÔÒÏ×ÁÎÉÑ ÓÐÉÓËÁ ÚÁ×ÉÓÉÍÏÓÔÅÊ ÐÏ ËÁÖÄÏÍÕ ÄÁÔÞÉËÕ\n"
-		 << " --dbDumping [0,1] - ÓÏÚÄÁ×ÁÔØ ÌÉ dump-ÆÁÊÌ \n";
+		 << " --s-filter-field name - Ð¿Ð¾Ð»Ðµ Ð´Ð»Ñ Ñ„Ð¸Ð»ÑŒÑ‚Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ ÑÐ¿Ð¸ÑÐºÐ° Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÐ¾Ð²\n"
+		 << " --s-filter-value value - Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ Ð´Ð»Ñ Ð¿Ð¾Ð»Ñ Ñ„Ð¸Ð»ÑŒÑ‚Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ ÑÐ¿Ð¸ÑÐºÐ° Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÐ¾Ð² \n"
+		 << " --c-filter-field name - Ð¿Ð¾Ð»Ðµ Ð´Ð»Ñ Ñ„Ð¸Ð»ÑŒÑ‚Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ ÑÐ¿Ð¸ÑÐºÐ° Ð·Ð°ÐºÐ°Ð·Ñ‡Ð¸ÐºÐ¾Ð² Ð¿Ð¾ ÐºÐ°Ð¶Ð´Ð¾Ð¼Ñƒ Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÑƒ\n"
+		 << " --c-filter-value value - Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ Ð´Ð»Ñ Ð¿Ð¾Ð»Ñ Ñ„Ð¸Ð»ÑŒÑ‚Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ ÑÐ¿Ð¸ÑÐºÐ° Ð·Ð°ÐºÐ°Ð·Ñ‡Ð¸ÐºÐ¾Ð² Ð¿Ð¾ ÐºÐ°Ð¶Ð´Ð¾Ð¼Ñƒ Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÑƒ\n"
+		 << " --d-filter-field name - Ð¿Ð¾Ð»Ðµ Ð´Ð»Ñ Ñ„Ð¸Ð»ÑŒÑ‚Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ ÑÐ¿Ð¸ÑÐºÐ° Ð·Ð°Ð²Ð¸ÑÐ¸Ð¼Ð¾ÑÑ‚ÐµÐ¹ Ð¿Ð¾ ÐºÐ°Ð¶Ð´Ð¾Ð¼Ñƒ Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÑƒ\n"
+		 << " --d-filter-value value - Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ Ð´Ð»Ñ Ð¿Ð¾Ð»Ñ Ñ„Ð¸Ð»ÑŒÑ‚Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ ÑÐ¿Ð¸ÑÐºÐ° Ð·Ð°Ð²Ð¸ÑÐ¸Ð¼Ð¾ÑÑ‚ÐµÐ¹ Ð¿Ð¾ ÐºÐ°Ð¶Ð´Ð¾Ð¼Ñƒ Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÑƒ\n"
+		 << " --dbDumping [0,1] - ÑÐ¾Ð·Ð´Ð°Ð²Ð°Ñ‚ÑŒ Ð»Ð¸ dump-Ñ„Ð°Ð¹Ð» \n";
 }
 // --------------------------------------------------------------------------
 int main(int argc, char** argv)
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 	{
 		if( argc <=1 )
 		{
-			cerr << "\nîÅ ÕËÁÚÁÎÙ ÎÅÏÂÈÏÄÉÍÙÅ ÐÁÒÁÍÅÔÒÙ\n\n";
+			cerr << "\nÐÐµ ÑƒÐºÐ°Ð·Ð°Ð½Ñ‹ Ð½ÐµÐ¾Ð±Ñ…Ð¾Ð´Ð¸Ð¼Ñ‹Ðµ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ñ‹\n\n";
 			short_usage();
 			return 0;
 		}
@@ -42,29 +42,29 @@ int main(int argc, char** argv)
 		uniset_init(argc,argv,"configure.xml");
 			
 
-		// ÏÐÒÅÄÅÌÑÅÍ ID ÏÂßÅËÔÁ
+		// Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»ÑÐµÐ¼ ID Ð¾Ð±ÑŠÐµÐºÑ‚Ð°
 		string name = conf->getArgParam("--name");
 		if( name.empty())
 		{
-			cerr << "(nullController): ÎÅ ÚÁÄÁÎ ObjectId!!! (--name)\n";
+			cerr << "(nullController): Ð½Ðµ Ð·Ð°Ð´Ð°Ð½ ObjectId!!! (--name)\n";
 			return 0;
 		}
 
 		ObjectId ID = conf->oind->getIdByName(conf->getControllersSection()+"/"+name);	
 		if( ID == UniSetTypes::DefaultObjectId )
 		{
-			cerr << "(nullController): ÉÄÅÎÔÉÆÉËÁÔÏÒ '" << name 
-				<< "' ÎÅ ÎÁÊÄÅÎ × ËÏÎÆ. ÆÁÊÌÅ!"
-				<< " × ÓÅËÃÉÉ " << conf->getControllersSection() << endl;
+			cerr << "(nullController): Ð¸Ð´ÐµÐ½Ñ‚Ð¸Ñ„Ð¸ÐºÐ°Ñ‚Ð¾Ñ€ '" << name 
+				<< "' Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½ Ð² ÐºÐ¾Ð½Ñ„. Ñ„Ð°Ð¹Ð»Ðµ!"
+				<< " Ð² ÑÐµÐºÑ†Ð¸Ð¸ " << conf->getControllersSection() << endl;
 			return 0;
 		}
 
-		// ÏÐÒÅÄÅÌÑÅÍ ask-ÆÁÊÌ
+		// Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»ÑÐµÐ¼ ask-Ñ„Ð°Ð¹Ð»
 		string askfile = conf->getArgParam("--askfile");
 		if( askfile.empty())
 			askfile = conf->getConfFileName();
 
-		// ÏÐÒÅÄÅÌÑÅÍ ÆÉÌØÔÒ
+		// Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»ÑÐµÐ¼ Ñ„Ð¸Ð»ÑŒÑ‚Ñ€
 		string s_field = conf->getArgParam("--s-filter-field");
 		string s_fvalue = conf->getArgParam("--s-filter-value");
 		string c_field = conf->getArgParam("--c-filter-field");
@@ -72,7 +72,7 @@ int main(int argc, char** argv)
 		string d_field = conf->getArgParam("--d-filter-field");
 		string d_fvalue = conf->getArgParam("--d-filter-value");
 
-		// ÎÁÄÏ ÌÉ ÐÉÓÁÔØ ÉÚÍÅÎÅÎÉÑ × âä
+		// Ð½Ð°Ð´Ð¾ Ð»Ð¸ Ð¿Ð¸ÑÐ°Ñ‚ÑŒ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ Ð² Ð‘Ð”
 		bool dbDumping = conf->getArgInt("--dbDumping");
 
 		NullController nc(ID,askfile,s_field,s_fvalue,c_field,c_fvalue,d_field,d_fvalue,dbDumping);

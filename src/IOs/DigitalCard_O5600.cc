@@ -3,7 +3,7 @@
 * Copyright (C) 1999-2002 SET Research Institute. All rights reserved.     *
 ***************************************************************************/
 /*! \file
- *  \brief ëÌÁÓÓ ÄÌÑ ÄÉÓËÒÅÔÎÏÊ ËÁÒÔÙ O5600
+ *  \brief ĞšĞ»Ğ°ÑÑ Ğ´Ğ»Ñ Ğ´Ğ¸ÑĞºÑ€ĞµÑ‚Ğ½Ğ¾Ğ¹ ĞºĞ°Ñ€Ñ‚Ñ‹ O5600
  *  \author Vitaly Lipatov
  *  \date   $Date: 2006/12/19 15:46:14 $
  *  \version $Id: DigitalCard_O5600.cc,v 1.6 2006/12/19 15:46:14 vpashka Exp $
@@ -20,14 +20,14 @@
 
 using namespace std;
 
-// ğÏÌÕŞÉÔØ ÍÁÓËÕ ÄÌÑ ÍÏÄÕÌÑ module
+// ĞŸĞ¾Ğ»ÑƒÑ‡Ğ¸Ñ‚ÑŒ Ğ¼Ğ°ÑĞºÑƒ Ğ´Ğ»Ñ Ğ¼Ğ¾Ğ´ÑƒĞ»Ñ module
 char DigitalCard_O5600::getMask( int module )
 {
 	assert ( module >= 0 && module < 24 );
 	return 1 << ( module & 0x07 );
 }
 
-// ğÏÌÕŞÉÔØ ÁÄÒÅÓ ĞÏÒÔÁ ÄÌÑ  ÕËÁÚÁÎÎÏÇÏ ÍÏÄÕÌÑ
+// ĞŸĞ¾Ğ»ÑƒÑ‡Ğ¸Ñ‚ÑŒ Ğ°Ğ´Ñ€ĞµÑ Ğ¿Ğ¾Ñ€Ñ‚Ğ° Ğ´Ğ»Ñ  ÑƒĞºĞ°Ğ·Ğ°Ğ½Ğ½Ğ¾Ğ³Ğ¾ Ğ¼Ğ¾Ğ´ÑƒĞ»Ñ
 int DigitalCard_O5600::getPort( int module )
 {
 	//assert( baseadr + 2 < SIZE_OF_PORTMAP );
@@ -43,9 +43,9 @@ int DigitalCard_O5600::getPort( int module )
 	{
 		return baseadr + 1; // B
 	}
-	//	şÅÇÏ ÚÁ ÅÒÕÎÄÕ ĞÅÒÅÄÁÅÔÅ?!!
+	//	Ğ§ĞµĞ³Ğ¾ Ğ·Ğ° ĞµÑ€ÑƒĞ½Ğ´Ñƒ Ğ¿ĞµÑ€ĞµĞ´Ğ°ĞµÑ‚Ğµ?!!
 
-	//logErr.Save( "îÅĞÒÁ×ÉÌØÎÙÊ ÎÏÍÅÒ ÍÏÄÕÌÑ ÄÌÑ ÆÕÎËÃÉÉ GetPort, module=%d", module );
+	//logErr.Save( "ĞĞµĞ¿Ñ€Ğ°Ğ²Ğ¸Ğ»ÑŒĞ½Ñ‹Ğ¹ Ğ½Ğ¾Ğ¼ĞµÑ€ Ğ¼Ğ¾Ğ´ÑƒĞ»Ñ Ğ´Ğ»Ñ Ñ„ÑƒĞ½ĞºÑ†Ğ¸Ğ¸ GetPort, module=%d", module );
 	//throw Exceptions::OutOfRange();
 	return baseadr;
 
@@ -99,20 +99,20 @@ void DigitalCard_O5600::set( int module, bool state )
 bool DigitalCard_O5600::init( bool flagInit, int numOfCard, int base_address, char mode )
 {
 	//if ( !Card.portmap )
-	//	logIO.Save( "DigitalCard_O5600: ÷ÙÚ×ÁÎÁ Init ÂÅÚ ĞÒÅÄ×ÁÒÉÔÅÌØÎÏÇÏ ĞÏÌÕŞÅÎÉÑ ĞÁÍÑÔÉ" );
+	//	logIO.Save( "DigitalCard_O5600: Ğ’Ñ‹Ğ·Ğ²Ğ°Ğ½Ğ° Init Ğ±ĞµĞ· Ğ¿Ñ€ĞµĞ´Ğ²Ğ°Ñ€Ğ¸Ñ‚ĞµĞ»ÑŒĞ½Ğ¾Ğ³Ğ¾ Ğ¿Ğ¾Ğ»ÑƒÑ‡ĞµĞ½Ğ¸Ñ Ğ¿Ğ°Ğ¼ÑÑ‚Ğ¸" );
 	//this->numOfCard = numOfCard;
 	baseadr = base_address;
 	cout << "baseadr=" << baseadr << endl;
 	iomode = mode;
-	//logReg.Save( "DigitalCard_O5600: îÁŞÁÌÉ" );
-	out( baseadr + 0x03, iomode | 0x80  ); // îÁÓÔÒÏÊËÁ ÒÅÖÉÍÁ ËÁÒÔÙ
+	//logReg.Save( "DigitalCard_O5600: ĞĞ°Ñ‡Ğ°Ğ»Ğ¸" );
+	out( baseadr + 0x03, iomode | 0x80  ); // ĞĞ°ÑÑ‚Ñ€Ğ¾Ğ¹ĞºĞ° Ñ€ĞµĞ¶Ğ¸Ğ¼Ğ° ĞºĞ°Ñ€Ñ‚Ñ‹
 	for ( int k = 0;k < 3;k++ )
 	{
 		putByte( baseadr + k, 0 );
 	}
-	if ( in( baseadr + 0x03 ) == 0xff )  // îÅÔ ËÁÒÔÙ
+	if ( in( baseadr + 0x03 ) == 0xff )  // ĞĞµÑ‚ ĞºĞ°Ñ€Ñ‚Ñ‹
 		return false;
-	//logReg.Save( "DigitalCard_O5600: õÓÔÁÎÏ×ÌÅÎ" );
+	//logReg.Save( "DigitalCard_O5600: Ğ£ÑÑ‚Ğ°Ğ½Ğ¾Ğ²Ğ»ĞµĞ½" );
 	return true;
 }
 

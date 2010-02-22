@@ -18,7 +18,7 @@
  */
 //----------------------------------------------------------------------------------------
 /*! \file
- * \brief Создатель потоков
+ * \brief п║п╬п╥п╢п╟я┌п╣п╩я▄ п©п╬я┌п╬п╨п╬п╡
  * \author Pavel Vainerman
  * \date $Date: 2005/01/28 20:52:21 $
  * \version $Id: ThreadCreator.h,v 1.5 2005/01/28 20:52:21 vitlav Exp $
@@ -30,8 +30,8 @@
 #include "PosixThread.h"
 //----------------------------------------------------------------------------------------
 /*! \class ThreadCreator
- *	Шаблон для создания потоков с указанием функции вызова. 
- * Пример использования:
+ *	п╗п╟п╠п╩п╬п╫ п╢п╩я▐ я│п╬п╥п╢п╟п╫п╦я▐ п©п╬я┌п╬п╨п╬п╡ я│ я┐п╨п╟п╥п╟п╫п╦п╣п╪ я└я┐п╫п╨я├п╦п╦ п╡я▀п╥п╬п╡п╟. 
+ * п÷я─п╦п╪п╣я─ п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╫п╦я▐:
  *	
 	\code
 		class MyClass
@@ -62,16 +62,16 @@
 		{
 			while(active)
 			{
-				//что-то делать
+				//я┤я┌п╬-я┌п╬ п╢п╣п╩п╟я┌я▄
 			}
 		}
 
 		void MyClass::execute()
 		{
-			// создаем поток
+			// я│п╬п╥п╢п╟п╣п╪ п©п╬я┌п╬п╨
 			thr->start();
 
-			// делаем что-то еще
+			// п╢п╣п╩п╟п╣п╪ я┤я┌п╬-я┌п╬ п╣я┴п╣
 		}
 
 		main()
@@ -89,7 +89,7 @@ class ThreadCreator:
 {
 	public:
 	
-		/*! прототип функции вызова */
+		/*! п©я─п╬я┌п╬я┌п╦п© я└я┐п╫п╨я├п╦п╦ п╡я▀п╥п╬п╡п╟ */
 		typedef void(ThreadMaster::* Action)(void);	
 
 		pthread_t start();
@@ -100,7 +100,7 @@ class ThreadCreator:
 			PosixThread::stop();
 		}
 		
-		inline void kill( int signo )		/*!< послать сигнал signo */	
+		inline void kill( int signo )		/*!< п©п╬я│п╩п╟я┌я▄ я│п╦пЁп╫п╟п╩ signo */	
 		{
 			PosixThread::thrkill(signo);
 		}
@@ -109,7 +109,7 @@ class ThreadCreator:
 		~ThreadCreator();
 
 	protected:
-		virtual void work(); /*!< Функция выполняемая в потоке */
+		virtual void work(); /*!< п╓я┐п╫п╨я├п╦я▐ п╡я▀п©п╬п╩п╫я▐п╣п╪п╟я▐ п╡ п©п╬я┌п╬п╨п╣ */
 
 	private:
 		ThreadCreator();

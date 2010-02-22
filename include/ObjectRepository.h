@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \brief Интерфейсный класс для работы с репозитарием объектов  
+ * \brief п≤п╫я┌п╣я─я└п╣п╧я│п╫я▀п╧ п╨п╩п╟я│я│ п╢п╩я▐ я─п╟п╠п╬я┌я▀ я│ я─п╣п©п╬п╥п╦я┌п╟я─п╦п╣п╪ п╬п╠я┼п╣п╨я┌п╬п╡  
  * \author Pavel Vainerman
  * \date $Date: 2007/11/18 19:13:35 $
  * \version $Id: ObjectRepository.h,v 1.9 2007/11/18 19:13:35 vpashka Exp $	 *
@@ -39,10 +39,10 @@
 
 	/*! \class ObjectRepository  
 	 * \par
-	 * ... а здесь идет кратенькое описание... (коротенько минут на 40!...)
+	 * ... п╟ п╥п╢п╣я│я▄ п╦п╢п╣я┌ п╨я─п╟я┌п╣п╫я▄п╨п╬п╣ п╬п©п╦я│п╟п╫п╦п╣... (п╨п╬я─п╬я┌п╣п╫я▄п╨п╬ п╪п╦п╫я┐я┌ п╫п╟ 40!...)
 	 *
-	 *	\note Репозиторий работает только, с локальным репозиторием 
-	 * \todo получение списка начиная с элемента номер N.
+	 *	\note п═п╣п©п╬п╥п╦я┌п╬я─п╦п╧ я─п╟п╠п╬я┌п╟п╣я┌ я┌п╬п╩я▄п╨п╬, я│ п╩п╬п╨п╟п╩я▄п╫я▀п╪ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╣п╪ 
+	 * \todo п©п╬п╩я┐я┤п╣п╫п╦п╣ я│п©п╦я│п╨п╟ п╫п╟я┤п╦п╫п╟я▐ я│ я█п╩п╣п╪п╣п╫я┌п╟ п╫п╬п╪п╣я─ N.
 	*/ 
     class ObjectRepository
     {
@@ -52,50 +52,50 @@
 			~ObjectRepository();
 			
 		/**
-   		 @defgroup ORepGroup Группа функций регистрации в репозитории объектов
+   		 @defgroup ORepGroup п⌠я─я┐п©п©п╟ я└я┐п╫п╨я├п╦п╧ я─п╣пЁп╦я│я┌я─п╟я├п╦п╦ п╡ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╦ п╬п╠я┼п╣п╨я┌п╬п╡
 	     @{ 	*/
-			//! Функция регистрации объекта по имени с указанием секции 
+			//! п╓я┐п╫п╨я├п╦я▐ я─п╣пЁп╦я│я┌я─п╟я├п╦п╦ п╬п╠я┼п╣п╨я┌п╟ п©п╬ п╦п╪п╣п╫п╦ я│ я┐п╨п╟п╥п╟п╫п╦п╣п╪ я│п╣п╨я├п╦п╦ 
 			void registration(const std::string& name, const UniSetTypes::ObjectPtr oRef, const std::string& section, bool force=false)
 					throw(UniSetTypes::ORepFailed, UniSetTypes::ObjectNameAlready, UniSetTypes::InvalidObjectName, UniSetTypes::NameNotFound);
 	
-			//! Функция регистрации объекта по полному имени.
+			//! п╓я┐п╫п╨я├п╦я▐ я─п╣пЁп╦я│я┌я─п╟я├п╦п╦ п╬п╠я┼п╣п╨я┌п╟ п©п╬ п©п╬п╩п╫п╬п╪я┐ п╦п╪п╣п╫п╦.
 			void registration(const std::string& fullName, const UniSetTypes::ObjectPtr oRef, bool force=false)
 					throw(UniSetTypes::ORepFailed, UniSetTypes::ObjectNameAlready,UniSetTypes::InvalidObjectName, UniSetTypes::NameNotFound);
 
-			//! Удаление записи об объекте name в секции section
+			//! пёп╢п╟п╩п╣п╫п╦п╣ п╥п╟п©п╦я│п╦ п╬п╠ п╬п╠я┼п╣п╨я┌п╣ name п╡ я│п╣п╨я├п╦п╦ section
 			void unregistration(const std::string& name, const std::string& section)throw(UniSetTypes::ORepFailed, UniSetTypes::NameNotFound);
-			//! Удаление записи об объекте по полному имени
+			//! пёп╢п╟п╩п╣п╫п╦п╣ п╥п╟п©п╦я│п╦ п╬п╠ п╬п╠я┼п╣п╨я┌п╣ п©п╬ п©п╬п╩п╫п╬п╪я┐ п╦п╪п╣п╫п╦
 			void unregistration(const std::string& fullName)throw(UniSetTypes::ORepFailed, UniSetTypes::NameNotFound);
 		// @} 
 		// end of ORepGroup
 
-		/*! Получение ссылки по заданному полному имени (разыменовывание) */
+		/*! п÷п╬п╩я┐я┤п╣п╫п╦п╣ я│я│я▀п╩п╨п╦ п©п╬ п╥п╟п╢п╟п╫п╫п╬п╪я┐ п©п╬п╩п╫п╬п╪я┐ п╦п╪п╣п╫п╦ (я─п╟п╥я▀п╪п╣п╫п╬п╡я▀п╡п╟п╫п╦п╣) */
 		UniSetTypes::ObjectPtr resolve(const std::string& name, const std::string NSName="NameService")throw(UniSetTypes::ORepFailed, UniSetTypes::NameNotFound);
 
-		// Функции не со строковыми именами, а с идентификаторами
+		// п╓я┐п╫п╨я├п╦п╦ п╫п╣ я│п╬ я│я┌я─п╬п╨п╬п╡я▀п╪п╦ п╦п╪п╣п╫п╟п╪п╦, п╟ я│ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╟п╪п╦
 //		void setListId( ListObjectId *lst );
 
-		/*!  Проверка существования и доступности объекта */
+		/*!  п÷я─п╬п╡п╣я─п╨п╟ я│я┐я┴п╣я│я┌п╡п╬п╡п╟п╫п╦я▐ п╦ п╢п╬я│я┌я┐п©п╫п╬я│я┌п╦ п╬п╠я┼п╣п╨я┌п╟ */
 		bool isExist( UniSetTypes::ObjectPtr oref );
-		/*!  Проверка существования и доступности объекта */
+		/*!  п÷я─п╬п╡п╣я─п╨п╟ я│я┐я┴п╣я│я┌п╡п╬п╡п╟п╫п╦я▐ п╦ п╢п╬я│я┌я┐п©п╫п╬я│я┌п╦ п╬п╠я┼п╣п╨я┌п╟ */
 		bool isExist( const std::string& fullName );
 
 
 		/**
-		 @defgroup ORepServiceGroup Группа сервисных функций Репозитория объектов
+		 @defgroup ORepServiceGroup п⌠я─я┐п©п©п╟ я│п╣я─п╡п╦я│п╫я▀я┘ я└я┐п╫п╨я├п╦п╧ п═п╣п©п╬п╥п╦я┌п╬я─п╦я▐ п╬п╠я┼п╣п╨я┌п╬п╡
 		 @{
 		*/
 		
-		 /*! Тип объекта  */
+		 /*! п╒п╦п© п╬п╠я┼п╣п╨я┌п╟  */
 		 enum ObjectType{
-		 					ObjectRef,  /*!< ссылка на объект  */
-							Section		/*!< подсекция 	*/
+		 					ObjectRef,  /*!< я│я│я▀п╩п╨п╟ п╫п╟ п╬п╠я┼п╣п╨я┌  */
+							Section		/*!< п©п╬п╢я│п╣п╨я├п╦я▐ 	*/
 						};
 
-		//! Получение списка how_many объектов из секции section.
+		//! п÷п╬п╩я┐я┤п╣п╫п╦п╣ я│п©п╦я│п╨п╟ how_many п╬п╠я┼п╣п╨я┌п╬п╡ п╦п╥ я│п╣п╨я├п╦п╦ section.
 		bool list(const std::string& section, UniSetTypes::ListObjectName *ls, unsigned int how_many=300)throw(UniSetTypes::ORepFailed);
 		
-		//! Получние списка how_many подсекций из секции in_section.
+		//! п÷п╬п╩я┐я┤п╫п╦п╣ я│п©п╦я│п╨п╟ how_many п©п╬п╢я│п╣п╨я├п╦п╧ п╦п╥ я│п╣п╨я├п╦п╦ in_section.
 		bool listSections(const std::string& in_section, UniSetTypes::ListObjectName *ls, unsigned int how_many=300)throw(UniSetTypes::ORepFailed);
 //		bool list_at(unsigned int start_pos, const char* section, ListObjectName *ls, unsigned int how_many=300)throw(ORepFailed);		
 		

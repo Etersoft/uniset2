@@ -75,8 +75,8 @@ UniversalInterface::~UniversalInterface()
 
 void UniversalInterface::init()
 {
-	// пытаемся получить ссылку на NameSerivice
-	// в любом случае. даже если включён режим
+	// п©я▀я┌п╟п╣п╪я│я▐ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ NameSerivice
+	// п╡ п╩я▌п╠п╬п╪ я│п╩я┐я┤п╟п╣. п╢п╟п╤п╣ п╣я│п╩п╦ п╡п╨п╩я▌я┤я▒п╫ я─п╣п╤п╦п╪
 	// localIOR
 	localctx=CosNaming::NamingContext::_nil();
 	try
@@ -111,7 +111,7 @@ void UniversalInterface::initBackId( UniSetTypes::ObjectId backid )
 }
 // ------------------------------------------------------------------------------------------------------------
 /*!
- * \param name - полное имя дискретного датчика
+ * \param name - п©п╬п╩п╫п╬п╣ п╦п╪я▐ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
  * \sa UniversalInterface::getState( ObjectId id ) 
 */
 /*
@@ -122,10 +122,10 @@ bool UniversalInterface::getState ( const string name, const string node="NameSe
 */
 
 /*
- * \param id - идентификатор датчика
- *═\return текущее состояние датчика
- * \exception IOBadParam - генерируется если указано неправильное имя датчика или секции
- * \exception IOTimeOut - генерируется если в течение времени timeout небыл получен ответ
+ * \param id - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╟я┌я┤п╦п╨п╟
+ *Б∙░\return я┌п╣п╨я┐я┴п╣п╣ я│п╬я│я┌п╬я▐п╫п╦п╣ п╢п╟я┌я┤п╦п╨п╟
+ * \exception IOBadParam - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ я┐п╨п╟п╥п╟п╫п╬ п╫п╣п©я─п╟п╡п╦п╩я▄п╫п╬п╣ п╦п╪я▐ п╢п╟я┌я┤п╦п╨п╟ п╦п╩п╦ я│п╣п╨я├п╦п╦
+ * \exception IOTimeOut - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ п╡ я┌п╣я┤п╣п╫п╦п╣ п╡я─п╣п╪п╣п╫п╦ timeout п╫п╣п╠я▀п╩ п©п╬п╩я┐я┤п╣п╫ п╬я┌п╡п╣я┌
 */
 bool UniversalInterface::getState(ObjectId name, ObjectId node) 
 	throw(IO_THROW_EXCEPTIONS)
@@ -184,11 +184,11 @@ bool UniversalInterface::getState(ObjectId name, ObjectId node)
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(getState): CORBA::SystemException" << endl;
 	}	
 
@@ -203,7 +203,7 @@ bool UniversalInterface::getState( ObjectId name )
 
 // ---------------------------------------------------------------------
 /*!
- * \param name - полное имя аналогового датчика
+ * \param name - п©п╬п╩п╫п╬п╣ п╦п╪я▐ п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
  * \sa UniversalInterface::getValue( ObjectId id ) 
 */
 /*
@@ -214,10 +214,10 @@ long UniversalInterface::getValue(const string name, const string node="NameServ
 */
 
 /*!
- * \param id - идентификатор датчика
- *═\return текущее значение датчика
- * \exception IOBadParam - генерируется если указано неправильное имя датчика или секции
- * \exception IOTimeOut - генерируется если в течение времени timeout небыл получен ответ
+ * \param id - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╟я┌я┤п╦п╨п╟
+ *Б∙░\return я┌п╣п╨я┐я┴п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣ п╢п╟я┌я┤п╦п╨п╟
+ * \exception IOBadParam - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ я┐п╨п╟п╥п╟п╫п╬ п╫п╣п©я─п╟п╡п╦п╩я▄п╫п╬п╣ п╦п╪я▐ п╢п╟я┌я┤п╦п╨п╟ п╦п╩п╦ я│п╣п╨я├п╦п╦
+ * \exception IOTimeOut - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ п╡ я┌п╣я┤п╣п╫п╦п╣ п╡я─п╣п╪п╣п╫п╦ timeout п╫п╣п╠я▀п╩ п©п╬п╩я┐я┤п╣п╫ п╬я┌п╡п╣я┌
 */
 long UniversalInterface::getValue(ObjectId name, ObjectId node) 
 	throw(IO_THROW_EXCEPTIONS)
@@ -263,7 +263,7 @@ long UniversalInterface::getValue(ObjectId name, ObjectId node)
 	catch(ORepFailed)
 	{
 		rcache.erase(name, node);		
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(getValue): ORepFailed",name,node));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -278,11 +278,11 @@ long UniversalInterface::getValue(ObjectId name, ObjectId node)
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(getValue): CORBA::SystemException" << endl;
 	}	
 	rcache.erase(name, node);		
@@ -297,10 +297,10 @@ long UniversalInterface::getValue( ObjectId name )
 
 // ------------------------------------------------------------------------------------------------------------
 /*!
- * \param id - идентификатор датчика
- * \param state - состояние в которое его необходимо перевести
- *═\return текущее значение датчика
- * \exception IOBadParam - генерируется если указано неправильное имя вывода или секции
+ * \param id - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╟я┌я┤п╦п╨п╟
+ * \param state - я│п╬я│я┌п╬я▐п╫п╦п╣ п╡ п╨п╬я┌п╬я─п╬п╣ п╣пЁп╬ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п©п╣я─п╣п╡п╣я│я┌п╦
+ *Б∙░\return я┌п╣п╨я┐я┴п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣ п╢п╟я┌я┤п╦п╨п╟
+ * \exception IOBadParam - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ я┐п╨п╟п╥п╟п╫п╬ п╫п╣п©я─п╟п╡п╦п╩я▄п╫п╬п╣ п╦п╪я▐ п╡я▀п╡п╬п╢п╟ п╦п╩п╦ я│п╣п╨я├п╦п╦
 */
 void UniversalInterface::setState(ObjectId name, bool state, ObjectId node) 
 	throw(IO_THROW_EXCEPTIONS)
@@ -347,7 +347,7 @@ void UniversalInterface::setState(ObjectId name, bool state, ObjectId node)
 	catch(ORepFailed)
 	{
 		rcache.erase(name, node);		
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(setState): ORepFailed",name,node));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -362,12 +362,12 @@ void UniversalInterface::setState(ObjectId name, bool state, ObjectId node)
 	}	
 	catch(CORBA::COMM_FAILURE)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(setState): CORBA::COMM_FAILURE " << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(setState): CORBA::SystemException" << endl;
 	}	
 			
@@ -398,7 +398,7 @@ void UniversalInterface::setState( IOController_i::SensorInfo& si, bool state, U
 }
 
 // ------------------------------------------------------------------------------------------------------------
-// функция не вырабатывает исключений!
+// я└я┐п╫п╨я├п╦я▐ п╫п╣ п╡я▀я─п╟п╠п╟я┌я▀п╡п╟п╣я┌ п╦я│п╨п╩я▌я┤п╣п╫п╦п╧!
 void UniversalInterface::fastSetState( IOController_i::SensorInfo& si, bool state, UniSetTypes::ObjectId sup_id ) 
 {
 	if( si.id == DefaultObjectId )
@@ -446,7 +446,7 @@ void UniversalInterface::fastSetState( IOController_i::SensorInfo& si, bool stat
 	catch(ORepFailed)
 	{
 		rcache.erase(si.id, si.node);	
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		unideb[Debug::WARN] << set_err("UI(fastSetState): resolve failed",si.id,si.node) << endl;
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -516,7 +516,7 @@ void UniversalInterface::setUndefinedState( IOController_i::SensorInfo& si, bool
 	catch(ORepFailed)
 	{
 		rcache.erase(si.id, si.node);
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		unideb[Debug::WARN] << set_err("UI(setUndefinedState): resolve failed",si.id,si.node) << endl;
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -538,16 +538,16 @@ void UniversalInterface::setUndefinedState( IOController_i::SensorInfo& si, bool
 }
 // ------------------------------------------------------------------------------------------------------------
 /*!
- * \param id - идентификатор датчика
- * \param value - значение которое необходимо установить
- * \return текущее значение датчика
- * \exception IOBadParam - генерируется если указано неправильное имя вывода или секции
+ * \param id - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╟я┌я┤п╦п╨п╟
+ * \param value - п╥п╫п╟я┤п╣п╫п╦п╣ п╨п╬я┌п╬я─п╬п╣ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ я┐я│я┌п╟п╫п╬п╡п╦я┌я▄
+ * \return я┌п╣п╨я┐я┴п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣ п╢п╟я┌я┤п╦п╨п╟
+ * \exception IOBadParam - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ я┐п╨п╟п╥п╟п╫п╬ п╫п╣п©я─п╟п╡п╦п╩я▄п╫п╬п╣ п╦п╪я▐ п╡я▀п╡п╬п╢п╟ п╦п╩п╦ я│п╣п╨я├п╦п╦
 */
 void UniversalInterface::setValue(ObjectId name, long value, ObjectId node) 
 	throw(IO_THROW_EXCEPTIONS)
 {
 	if ( name == DefaultObjectId )
-		throw ORepFailed("UI(setValue): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(setValue): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -583,12 +583,12 @@ void UniversalInterface::setValue(ObjectId name, long value, ObjectId node)
 	catch(IOController_i::NameNotFound &ex)
 	{
 		rcache.erase(name, node);
-		throw NameNotFound(set_err("UI(setValue): NameNotFound для объекта",name,node));
+		throw NameNotFound(set_err("UI(setValue): NameNotFound п╢п╩я▐ п╬п╠я┼п╣п╨я┌п╟",name,node));
 	}
 	catch(ORepFailed)
 	{
 		rcache.erase(name, node);
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(setValue): resolve failed ",name,node));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -603,11 +603,11 @@ void UniversalInterface::setValue(ObjectId name, long value, ObjectId node)
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(setValue): CORBA::SystemException" << endl;
 	}	
 	rcache.erase(name, node);
@@ -638,7 +638,7 @@ void UniversalInterface::setValue( IOController_i::SensorInfo& si, long value, U
 }
 
 // ------------------------------------------------------------------------------------------------------------
-// функция не вырабатывает исключий!
+// я└я┐п╫п╨я├п╦я▐ п╫п╣ п╡я▀я─п╟п╠п╟я┌я▀п╡п╟п╣я┌ п╦я│п╨п╩я▌я┤п╦п╧!
 void UniversalInterface::fastSetValue( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId sup_id )
 {
 	if ( si.id == DefaultObjectId )
@@ -681,12 +681,12 @@ void UniversalInterface::fastSetValue( IOController_i::SensorInfo& si, long valu
 	catch(IOController_i::NameNotFound &ex)
 	{
 		rcache.erase(si.id,si.node);
-		unideb[Debug::WARN] << set_err("UI(fastSetValue): NameNotFound для объекта",si.id,si.node) << endl;
+		unideb[Debug::WARN] << set_err("UI(fastSetValue): NameNotFound п╢п╩я▐ п╬п╠я┼п╣п╨я┌п╟",si.id,si.node) << endl;
 	}
 	catch(ORepFailed)
 	{
 		rcache.erase(si.id,si.node);	
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		unideb[Debug::WARN] << set_err("UI(fastSetValue): resolve failed ",si.id,si.node) << endl;
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -701,11 +701,11 @@ void UniversalInterface::fastSetValue( IOController_i::SensorInfo& si, long valu
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(setValue): CORBA::SystemException" << endl;
 	}	
 	catch(...){}
@@ -717,8 +717,8 @@ void UniversalInterface::fastSetValue( IOController_i::SensorInfo& si, long valu
 
 // ------------------------------------------------------------------------------------------------------------
 /*!
- * \param name - имя дискретного датчика
- * \param fromName - имя объекта(заказчика) кому присылать сообщение об изменении
+ * \param name - п╦п╪я▐ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
+ * \param fromName - п╦п╪я▐ п╬п╠я┼п╣п╨я┌п╟(п╥п╟п╨п╟п╥я┤п╦п╨п╟) п╨п╬п╪я┐ п©я─п╦я│я▀п╩п╟я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╬п╠ п╦п╥п╪п╣п╫п╣п╫п╦п╦
  * \sa UniversalInterface::askState( ObjectId id, ObjectId backid, UniversalIO::UIOCommand cmd)
 */
 /*
@@ -730,10 +730,10 @@ void UniversalInterface::askState(const string name, const string fromName, Univ
 */
 
 /*!
- * \param sensor 	- идентификатор датчика
- * \param node		- идентификатор узла на котором заказывается датчик
- * \param cmd - команда см. \ref UniversalIO::UIOCommand
- * \param backid - обратный адрес (идентификатор заказчика)
+ * \param sensor 	- п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╟я┌я┤п╦п╨п╟
+ * \param node		- п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ я┐п╥п╩п╟ п╫п╟ п╨п╬я┌п╬я─п╬п╪ п╥п╟п╨п╟п╥я▀п╡п╟п╣я┌я│я▐ п╢п╟я┌я┤п╦п╨
+ * \param cmd - п╨п╬п╪п╟п╫п╢п╟ я│п╪. \ref UniversalIO::UIOCommand
+ * \param backid - п╬п╠я─п╟я┌п╫я▀п╧ п╟п╢я─п╣я│ (п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╥п╟п╨п╟п╥я┤п╦п╨п╟)
 */
 void UniversalInterface::askRemoteState( ObjectId name, UniversalIO::UIOCommand cmd, ObjectId node,
 									UniSetTypes::ObjectId backid ) throw(IO_THROW_EXCEPTIONS)
@@ -790,7 +790,7 @@ void UniversalInterface::askRemoteState( ObjectId name, UniversalIO::UIOCommand 
 	catch(ORepFailed)
 	{
 		rcache.erase(name, node);		
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(askState): resolve failed ",name,node));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -805,12 +805,12 @@ void UniversalInterface::askRemoteState( ObjectId name, UniversalIO::UIOCommand 
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
-		// unideb[Debug::WARN] << "UI(askState): ошибка системы коммуникации" << endl;
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
+		// unideb[Debug::WARN] << "UI(askState): п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦" << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(askState): CORBA::SystemException" << endl;
 	}	
 
@@ -825,10 +825,10 @@ void UniversalInterface::askState( ObjectId name, UniversalIO::UIOCommand cmd, U
 
 // ------------------------------------------------------------------------------------------------------------
 /*!
- * \param sensor 	- идентификатор датчика
- * \param node		- идентификатор узла на котором заказывается датчик
- * \param cmd - команда см. \ref UniversalIO::UIOCommand
- * \param backid - обратный адрес (идентификатор заказчика)
+ * \param sensor 	- п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╟я┌я┤п╦п╨п╟
+ * \param node		- п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ я┐п╥п╩п╟ п╫п╟ п╨п╬я┌п╬я─п╬п╪ п╥п╟п╨п╟п╥я▀п╡п╟п╣я┌я│я▐ п╢п╟я┌я┤п╦п╨
+ * \param cmd - п╨п╬п╪п╟п╫п╢п╟ я│п╪. \ref UniversalIO::UIOCommand
+ * \param backid - п╬п╠я─п╟я┌п╫я▀п╧ п╟п╢я─п╣я│ (п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╥п╟п╨п╟п╥я┤п╦п╨п╟)
 */
 void UniversalInterface::askRemoteSensor( ObjectId name, UniversalIO::UIOCommand cmd, ObjectId node,
 									UniSetTypes::ObjectId backid ) throw(IO_THROW_EXCEPTIONS)
@@ -885,7 +885,7 @@ void UniversalInterface::askRemoteSensor( ObjectId name, UniversalIO::UIOCommand
 	catch(ORepFailed)
 	{
 		rcache.erase(name, node);		
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(askSensor): resolve failed ",name,node));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -900,12 +900,12 @@ void UniversalInterface::askRemoteSensor( ObjectId name, UniversalIO::UIOCommand
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
-		// unideb[Debug::WARN] << "UI(askSensor): ошибка системы коммуникации" << endl;
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
+		// unideb[Debug::WARN] << "UI(askSensor): п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦" << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(askSensor): CORBA::SystemException" << endl;
 	}	
 
@@ -921,8 +921,8 @@ void UniversalInterface::askSensor( ObjectId name, UniversalIO::UIOCommand cmd, 
 // ------------------------------------------------------------------------------------------------------------
 
 /*!
- * \param name - имя аналогового датчика
- * \param fromName - имя объекта(заказчика) кому присылать сообщение об изменении
+ * \param name - п╦п╪я▐ п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
+ * \param fromName - п╦п╪я▐ п╬п╠я┼п╣п╨я┌п╟(п╥п╟п╨п╟п╥я┤п╦п╨п╟) п╨п╬п╪я┐ п©я─п╦я│я▀п╩п╟я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╬п╠ п╦п╥п╪п╣п╫п╣п╫п╦п╦
  * \sa UniversalInterface::askValue( ObjectId id, ObjectId backid, UniversalIO::UIOCommand cmd) 
 */
 /*
@@ -934,12 +934,12 @@ void UniversalInterface::askValue(const string name, const string fromName, Univ
 */
 
 /*!
- * \param id - идентификатор датчика
- * \param backid - идентификатор заказчика, кому присылать сообщение об изменении
- * \param cmd - команда см. \ref UniversalIO::UIOCommand
- * \param backid - обратный адрес (идентификатор заказчика)
- * \exception IOBadParam - генерируется если указано неправильное имя вывода или секции
- * \exception TimeOut - генерируется если нет связи объектом отвечающим за инф-ию об этом датчике
+ * \param id - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╟я┌я┤п╦п╨п╟
+ * \param backid - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╥п╟п╨п╟п╥я┤п╦п╨п╟, п╨п╬п╪я┐ п©я─п╦я│я▀п╩п╟я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╬п╠ п╦п╥п╪п╣п╫п╣п╫п╦п╦
+ * \param cmd - п╨п╬п╪п╟п╫п╢п╟ я│п╪. \ref UniversalIO::UIOCommand
+ * \param backid - п╬п╠я─п╟я┌п╫я▀п╧ п╟п╢я─п╣я│ (п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╥п╟п╨п╟п╥я┤п╦п╨п╟)
+ * \exception IOBadParam - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ я┐п╨п╟п╥п╟п╫п╬ п╫п╣п©я─п╟п╡п╦п╩я▄п╫п╬п╣ п╦п╪я▐ п╡я▀п╡п╬п╢п╟ п╦п╩п╦ я│п╣п╨я├п╦п╦
+ * \exception TimeOut - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ п╫п╣я┌ я│п╡я▐п╥п╦ п╬п╠я┼п╣п╨я┌п╬п╪ п╬я┌п╡п╣я┤п╟я▌я┴п╦п╪ п╥п╟ п╦п╫я└-п╦я▌ п╬п╠ я█я┌п╬п╪ п╢п╟я┌я┤п╦п╨п╣
 */
 void UniversalInterface::askRemoteValue( ObjectId sensid, UniversalIO::UIOCommand cmd, ObjectId node, 
 									UniSetTypes::ObjectId backid) throw(IO_THROW_EXCEPTIONS)	
@@ -1011,12 +1011,12 @@ void UniversalInterface::askRemoteValue( ObjectId sensid, UniversalIO::UIOComman
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
-		// unideb[Debug::WARN] << "UI(askValue): ошибка системы коммуникации" << endl;
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
+		// unideb[Debug::WARN] << "UI(askValue): п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦" << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(askValue): CORBA::SystemException" << endl;
 	}	
 	rcache.erase(sensid, node);	
@@ -1030,12 +1030,12 @@ void UniversalInterface::askValue( ObjectId name, UniversalIO::UIOCommand cmd, U
 
 // ------------------------------------------------------------------------------------------------------------
 /*!
- * \param id - идентификатор датчика
- * \param backid - идентификатор заказчика, кому присылать сообщение об изменении
- * \param cmd - команда см. \ref UniversalIO::UIOCommand
- * \param backid - обратный адрес (идентификатор заказчика)
- * \exception IOBadParam - генерируется если указано неправильное имя вывода или секции
- * \exception TimeOut - генерируется если нет связи объектом отвечающим за инф-ию об этом датчике
+ * \param id - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╟я┌я┤п╦п╨п╟
+ * \param backid - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╥п╟п╨п╟п╥я┤п╦п╨п╟, п╨п╬п╪я┐ п©я─п╦я│я▀п╩п╟я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╬п╠ п╦п╥п╪п╣п╫п╣п╫п╦п╦
+ * \param cmd - п╨п╬п╪п╟п╫п╢п╟ я│п╪. \ref UniversalIO::UIOCommand
+ * \param backid - п╬п╠я─п╟я┌п╫я▀п╧ п╟п╢я─п╣я│ (п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╥п╟п╨п╟п╥я┤п╦п╨п╟)
+ * \exception IOBadParam - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ я┐п╨п╟п╥п╟п╫п╬ п╫п╣п©я─п╟п╡п╦п╩я▄п╫п╬п╣ п╦п╪я▐ п╡я▀п╡п╬п╢п╟ п╦п╩п╦ я│п╣п╨я├п╦п╦
+ * \exception TimeOut - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ п╫п╣я┌ я│п╡я▐п╥п╦ п╬п╠я┼п╣п╨я┌п╬п╪ п╬я┌п╡п╣я┤п╟я▌я┴п╦п╪ п╥п╟ п╦п╫я└-п╦я▌ п╬п╠ я█я┌п╬п╪ п╢п╟я┌я┤п╦п╨п╣
 */
 void UniversalInterface::askRemoteOutput( ObjectId sensid, UniversalIO::UIOCommand cmd, ObjectId node, 
 									UniSetTypes::ObjectId backid) throw(IO_THROW_EXCEPTIONS)	
@@ -1047,7 +1047,7 @@ void UniversalInterface::askRemoteOutput( ObjectId sensid, UniversalIO::UIOComma
 		throw IOBadParam("UI(askRemoteOutput): unknown back ID");
 
 	if ( sensid == DefaultObjectId )
-		throw ORepFailed("UI(askRemoteOutput): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(askRemoteOutput): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -1107,12 +1107,12 @@ void UniversalInterface::askRemoteOutput( ObjectId sensid, UniversalIO::UIOComma
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
-		// unideb[Debug::WARN] << "UI(askOutput): ошибка системы коммуникации" << endl;
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
+		// unideb[Debug::WARN] << "UI(askOutput): п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦" << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(askOutput): CORBA::SystemException" << endl;
 	}	
 	rcache.erase(sensid, node);	
@@ -1128,10 +1128,10 @@ void UniversalInterface::askOutput( ObjectId name, UniversalIO::UIOCommand cmd, 
 // ------------------------------------------------------------------------------------------------------------
 
 /*!
- * \param timerid - идентификатор таймера
- * \param timeMS - интервал (0 -  означает отказ)
- * \param ticks - количество уведомлений (0 - постоянно)
- * \param backid - обратный адрес (идентификатор заказчика)
+ * \param timerid - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ я┌п╟п╧п╪п╣я─п╟
+ * \param timeMS - п╦п╫я┌п╣я─п╡п╟п╩ (0 -  п╬п╥п╫п╟я┤п╟п╣я┌ п╬я┌п╨п╟п╥)
+ * \param ticks - п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦п╧ (0 - п©п╬я│я┌п╬я▐п╫п╫п╬)
+ * \param backid - п╬п╠я─п╟я┌п╫я▀п╧ п╟п╢я─п╣я│ (п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╥п╟п╨п╟п╥я┤п╦п╨п╟)
 */
 void UniversalInterface::askTimer( UniSetTypes::TimerId timerid, CORBA::Long timeMS, CORBA::Short ticks, 
 									UniSetTypes::Message::Priority priority, UniSetTypes::ObjectId backid) 
@@ -1183,20 +1183,20 @@ void UniversalInterface::askTimer( UniSetTypes::TimerId timerid, CORBA::Long tim
 	}
 	catch(TimerService_i::TimerAlreadyExist)
 	{
-		// unideb[Debug::WARN] << "UI(askTimer): таймер с таким id уже заказан " << endl;
+		// unideb[Debug::WARN] << "UI(askTimer): я┌п╟п╧п╪п╣я─ я│ я┌п╟п╨п╦п╪ id я┐п╤п╣ п╥п╟п╨п╟п╥п╟п╫ " << endl;
 		return;
 	}
 	catch(TimerService_i::LimitTimers& ex )
 	{
 		ostringstream err;
-		err << "UI(askTimer): Превышено максимальное количество заказчиков " << ex.maxTimers;
+		err << "UI(askTimer): п÷я─п╣п╡я▀я┬п╣п╫п╬ п╪п╟п╨я│п╦п╪п╟п╩я▄п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╥п╟п╨п╟п╥я┤п╦п╨п╬п╡ " << ex.maxTimers;
 //		unideb[Debug::WARN] <<  err.str() << endl;
 		throw Exception(err.str());
 	}
 	catch(TimerService_i::TimeMSLowLimit& ex )
 	{
 		ostringstream err;
-		err << "UI(askTimer): Временной интервал меньше разрешённого " << ex.lowLimitMS  << " [мс]";
+		err << "UI(askTimer): п▓я─п╣п╪п╣п╫п╫п╬п╧ п╦п╫я┌п╣я─п╡п╟п╩ п╪п╣п╫я▄я┬п╣ я─п╟п╥я─п╣я┬я▒п╫п╫п╬пЁп╬ " << ex.lowLimitMS  << " [п╪я│]";
 //		unideb[Debug::WARN] <<  err.str() << endl;
 		throw OutOfRange(err.str());
 	}
@@ -1217,12 +1217,12 @@ void UniversalInterface::askTimer( UniSetTypes::TimerId timerid, CORBA::Long tim
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
-		// unideb[Debug::WARN] << "UI(askTimer): ошибка системы коммуникации" << endl;
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
+		// unideb[Debug::WARN] << "UI(askTimer): п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦" << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(askTimer): CORBA::SystemException" << endl;
 	}	
 	// unideb[Debug::WARN] << "UI(askTimer): catch...." << endl;
@@ -1231,10 +1231,10 @@ void UniversalInterface::askTimer( UniSetTypes::TimerId timerid, CORBA::Long tim
 }
 // ------------------------------------------------------------------------------------------------------------
 /*!
- * \param mid - код заказываемого сообщения
- * \param cmd - команда см. \ref UniversalIO::UIOCommand
- * \param ask - присылать уведомление о подтверждении
- * \param backid - обратный адрес (идентификатор заказчика)
+ * \param mid - п╨п╬п╢ п╥п╟п╨п╟п╥я▀п╡п╟п╣п╪п╬пЁп╬ я│п╬п╬п╠я┴п╣п╫п╦я▐
+ * \param cmd - п╨п╬п╪п╟п╫п╢п╟ я│п╪. \ref UniversalIO::UIOCommand
+ * \param ask - п©я─п╦я│я▀п╩п╟я┌я▄ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦п╣ п╬ п©п╬п╢я┌п╡п╣я─п╤п╢п╣п╫п╦п╦
+ * \param backid - п╬п╠я─п╟я┌п╫я▀п╧ п╟п╢я─п╣я│ (п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╥п╟п╨п╟п╥я┤п╦п╨п╟)
 */
 void UniversalInterface::askMessage( UniSetTypes::MessageCode mid, UniversalIO::UIOCommand cmd, bool ack, 
 										UniSetTypes::ObjectId backid ) throw(IO_THROW_EXCEPTIONS)
@@ -1280,13 +1280,13 @@ void UniversalInterface::askMessage( UniSetTypes::MessageCode mid, UniversalIO::
 	catch(InfoServer_i::MsgNotFound& ex)
 	{
 		ostringstream err;
-		err << "UI(askMessage): неизвестный код сообщения " << ex.bad_code;
+		err << "UI(askMessage): п╫п╣п╦п╥п╡п╣я│я┌п╫я▀п╧ п╨п╬п╢ я│п╬п╬п╠я┴п╣п╫п╦я▐ " << ex.bad_code;
 //		unideb[Debug::WARN] <<  err.str() << endl;
 		throw NameNotFound(err.str());
 	}
 	catch(ORepFailed)
 	{
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(askMessage): resolve failed ",uconf->getInfoServer(), uconf->getLocalNode()));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -1301,12 +1301,12 @@ void UniversalInterface::askMessage( UniSetTypes::MessageCode mid, UniversalIO::
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
-		// unideb[Debug::WARN] << "UI(askTimer): ошибка системы коммуникации" << endl;
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
+		// unideb[Debug::WARN] << "UI(askTimer): п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦" << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(askTimer): CORBA::SystemException" << endl;
 	}	
 
@@ -1315,11 +1315,11 @@ void UniversalInterface::askMessage( UniSetTypes::MessageCode mid, UniversalIO::
 }
 // ------------------------------------------------------------------------------------------------------------
 /*!
- * \param from - код начального сообщения
- * \param to - код конечного сообщения
- * \param cmd - команда см. \ref UniversalIO::UIOCommand
- * \param ask - присылать уведомление о подтверждении
- * \param backid - обратный адрес (идентификатор заказчика)
+ * \param from - п╨п╬п╢ п╫п╟я┤п╟п╩я▄п╫п╬пЁп╬ я│п╬п╬п╠я┴п╣п╫п╦я▐
+ * \param to - п╨п╬п╢ п╨п╬п╫п╣я┤п╫п╬пЁп╬ я│п╬п╬п╠я┴п╣п╫п╦я▐
+ * \param cmd - п╨п╬п╪п╟п╫п╢п╟ я│п╪. \ref UniversalIO::UIOCommand
+ * \param ask - п©я─п╦я│я▀п╩п╟я┌я▄ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦п╣ п╬ п©п╬п╢я┌п╡п╣я─п╤п╢п╣п╫п╦п╦
+ * \param backid - п╬п╠я─п╟я┌п╫я▀п╧ п╟п╢я─п╣я│ (п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╥п╟п╨п╟п╥я┤п╦п╨п╟)
 */
 void UniversalInterface::askMessageRange( UniSetTypes::MessageCode from, UniSetTypes::MessageCode to,
 			UniversalIO::UIOCommand cmd, bool ack, UniSetTypes::ObjectId backid ) throw(IO_THROW_EXCEPTIONS)
@@ -1365,19 +1365,19 @@ void UniversalInterface::askMessageRange( UniSetTypes::MessageCode from, UniSetT
 	catch(InfoServer_i::MsgNotFound& ex)
 	{
 		ostringstream err;
-		err << "UI(askMessage): неизвестный код сообщения " << ex.bad_code;
+		err << "UI(askMessage): п╫п╣п╦п╥п╡п╣я│я┌п╫я▀п╧ п╨п╬п╢ я│п╬п╬п╠я┴п╣п╫п╦я▐ " << ex.bad_code;
 //		unideb[Debug::WARN] <<  err.str() << endl;
 		throw NameNotFound(err.str());
 	}
 	catch(InfoServer_i::MsgBadRange)
 	{
-//		unideb[Debug::WARN] << "UI(askMessageRange): неверно задан диапазон " << endl;
-		throw OutOfRange("UI(askMessageRange): неверно задан диапазон");
+//		unideb[Debug::WARN] << "UI(askMessageRange): п╫п╣п╡п╣я─п╫п╬ п╥п╟п╢п╟п╫ п╢п╦п╟п©п╟п╥п╬п╫ " << endl;
+		throw OutOfRange("UI(askMessageRange): п╫п╣п╡п╣я─п╫п╬ п╥п╟п╢п╟п╫ п╢п╦п╟п©п╟п╥п╬п╫");
 	}
 	catch(ORepFailed)
 	{
 		rcache.erase( uconf->getInfoServer(), uconf->getLocalNode());	
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(askMessageRange): resolve failed ",uconf->getInfoServer(), uconf->getLocalNode()));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -1392,12 +1392,12 @@ void UniversalInterface::askMessageRange( UniSetTypes::MessageCode from, UniSetT
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
-		// unideb[Debug::WARN] << "UI(askTimer): ошибка системы коммуникации" << endl;
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
+		// unideb[Debug::WARN] << "UI(askTimer): п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦" << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(askTimer): CORBA::SystemException" << endl;
 	}	
 	// unideb[Debug::WARN] << "UI(askTimer): catch...." << endl;
@@ -1406,14 +1406,14 @@ void UniversalInterface::askMessageRange( UniSetTypes::MessageCode from, UniSetT
 }								
 // ------------------------------------------------------------------------------------------------------------
 /*!
- * \param name - идентификатор объекта
- * \param node - идентификатор узла
+ * \param name - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╬п╠я┼п╣п╨я┌п╟
+ * \param node - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ я┐п╥п╩п╟
 */
 IOTypes UniversalInterface::getIOType(ObjectId name, ObjectId node)
 	throw(IO_THROW_EXCEPTIONS)	
 {
 	if ( name == DefaultObjectId )
-		throw ORepFailed("UI(getIOType): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(getIOType): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -1452,7 +1452,7 @@ IOTypes UniversalInterface::getIOType(ObjectId name, ObjectId node)
 	catch(ORepFailed)
 	{
 		rcache.erase(name, node);		
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(getIOType): resolve failed ",name,node));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -1467,12 +1467,12 @@ IOTypes UniversalInterface::getIOType(ObjectId name, ObjectId node)
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
-		// unideb[Debug::WARN] << "UI(getIOType): ошибка системы коммуникации" << endl;
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
+		// unideb[Debug::WARN] << "UI(getIOType): п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦" << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(getIOType): CORBA::SystemException" << endl;
 	}	
 
@@ -1486,14 +1486,14 @@ IOTypes UniversalInterface::getIOType(ObjectId name)
 }
 // ------------------------------------------------------------------------------------------------------------
 /*!
- * \param name - идентификатор объекта
- * \param node - идентификатор узла
+ * \param name - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╬п╠я┼п╣п╨я┌п╟
+ * \param node - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ я┐п╥п╩п╟
 */
 ObjectType UniversalInterface::getType(ObjectId name, ObjectId node)
 	throw(IO_THROW_EXCEPTIONS)
 {
 	if ( name == DefaultObjectId )
-		throw ORepFailed("UI(getType): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(getType): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -1524,7 +1524,7 @@ ObjectType UniversalInterface::getType(ObjectId name, ObjectId node)
 	catch(ORepFailed)
 	{
 		rcache.erase(name, node);		
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(getType): resolve failed ",name,node));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -1539,12 +1539,12 @@ ObjectType UniversalInterface::getType(ObjectId name, ObjectId node)
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
-		// unideb[Debug::WARN] << "UI(getType): ошибка системы коммуникации" << endl;
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
+		// unideb[Debug::WARN] << "UI(getType): п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦" << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(getType): CORBA::SystemException" << endl;
 	}	
 	catch(UniSetTypes::TimeOut){}
@@ -1569,8 +1569,8 @@ void UniversalInterface::registered(UniSetTypes::ObjectId id, const UniSetTypes:
 void UniversalInterface::registered( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node, 
 			const UniSetTypes::ObjectPtr oRef, bool force ) throw(ORepFailed)
 {
-	// если влючён режим использования локальных файлов
-	// то пишем IOR в файл
+	// п╣я│п╩п╦ п╡п╩я▌я┤я▒п╫ я─п╣п╤п╦п╪ п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╫п╦я▐ п╩п╬п╨п╟п╩я▄п╫я▀я┘ я└п╟п╧п╩п╬п╡
+	// я┌п╬ п©п╦я┬п╣п╪ IOR п╡ я└п╟п╧п╩
 	if( uconf->isLocalIOR() )
 	{
 		if( CORBA::is_nil(orb) )
@@ -1635,24 +1635,24 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 			if( !sior.empty() )
 			{
 				CORBA::Object_var nso = orb->string_to_object(sior.c_str());
-				rcache.cache(rid, node, nso); // заносим в кэш 
+				rcache.cache(rid, node, nso); // п╥п╟п╫п╬я│п╦п╪ п╡ п╨я█я┬ 
 				return nso._retn();
 			}
 			else
 			{
-				// если NameService недоступен то,
-				// сразу выдаём ошибку
+				// п╣я│п╩п╦ NameService п╫п╣п╢п╬я│я┌я┐п©п╣п╫ я┌п╬,
+				// я│я─п╟п╥я┐ п╡я▀п╢п╟я▒п╪ п╬я┬п╦п╠п╨я┐
 //				if( CORBA::is_nil(localctx) )
 //				{
 					if( unideb.debugging(Debug::WARN) )
 					{
-						unideb[Debug::WARN] << "не найден IOR-файл для " << uconf->oind->getNameById(rid,node) << endl;
+						unideb[Debug::WARN] << "п╫п╣ п╫п╟п╧п╢п╣п╫ IOR-я└п╟п╧п╩ п╢п╩я▐ " << uconf->oind->getNameById(rid,node) << endl;
 					}
 					throw UniSetTypes::ResolveNameError();
 //				}
-				// иначе пытаемся получить ссылку через NameService (omniNames)
-//				unideb[Debug::WARN] << "не найден IOR-файл для " << uconf->oind->getNameById(rid,node) 
-//									<< " пытаемся получить доступ через NameService \n";
+				// п╦п╫п╟я┤п╣ п©я▀я┌п╟п╣п╪я│я▐ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ я┤п╣я─п╣п╥ NameService (omniNames)
+//				unideb[Debug::WARN] << "п╫п╣ п╫п╟п╧п╢п╣п╫ IOR-я└п╟п╧п╩ п╢п╩я▐ " << uconf->oind->getNameById(rid,node) 
+//									<< " п©я▀я┌п╟п╣п╪я│я▐ п©п╬п╩я┐я┤п╦я┌я▄ п╢п╬я│я┌я┐п© я┤п╣я─п╣п╥ NameService \n";
 
 			}
 		}
@@ -1660,14 +1660,14 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 	
 		if( node!=uconf->getLocalNode() )
 		{
-			// Получаем доступ к NameService на данном узле
+			// п÷п╬п╩я┐я┤п╟п╣п╪ п╢п╬я│я┌я┐п© п╨ NameService п╫п╟ п╢п╟п╫п╫п╬п╪ я┐п╥п╩п╣
 			string nodeName( oind->getRealNodeName(node) );
-			string bname(nodeName); // сохраняем базовое название
+			string bname(nodeName); // я│п╬я┘я─п╟п╫я▐п╣п╪ п╠п╟п╥п╬п╡п╬п╣ п╫п╟п╥п╡п╟п╫п╦п╣
 			for(unsigned int curNet=1; curNet<=uconf->getCountOfNet(); curNet++)
 			{
 				try
 				{
-//					// unideb[Debug::INFO] << "пытаемся связаться с "<< node << endl;
+//					// unideb[Debug::INFO] << "п©я▀я┌п╟п╣п╪я│я▐ я│п╡я▐п╥п╟я┌я▄я│я▐ я│ "<< node << endl;
 					if( CORBA::is_nil(orb) )
 						orb = uconf->getORB();
 
@@ -1678,9 +1678,9 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 //				catch(CORBA::COMM_FAILURE& ex )
 				catch(ORepFailed& ex)
 				{
-					// нет связи с этим узлом
-					// пробуем связатся по другой сети
-					// ПО ПРАВИЛАМ узел в другой должен иметь имя NodeName1...NodeNameX
+					// п╫п╣я┌ я│п╡я▐п╥п╦ я│ я█я┌п╦п╪ я┐п╥п╩п╬п╪
+					// п©я─п╬п╠я┐п╣п╪ я│п╡я▐п╥п╟я┌я│я▐ п©п╬ п╢я─я┐пЁп╬п╧ я│п╣я┌п╦
+					// п÷п· п÷п═п░п▓п≤п⌡п░п° я┐п╥п╣п╩ п╡ п╢я─я┐пЁп╬п╧ п╢п╬п╩п╤п╣п╫ п╦п╪п╣я┌я▄ п╦п╪я▐ NodeName1...NodeNameX
 					ostringstream s;
 					s << bname << curNet;
 					nodeName=s.str();
@@ -1689,7 +1689,7 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 			
 			if( CORBA::is_nil(ctx) )
 			{
-				// unideb[Debug::WARN] << "NameService недоступен на узле "<< node << endl;
+				// unideb[Debug::WARN] << "NameService п╫п╣п╢п╬я│я┌я┐п©п╣п╫ п╫п╟ я┐п╥п╩п╣ "<< node << endl;
 				throw NSResolveError();
 			}
 		}
@@ -1705,8 +1705,8 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 				if( CORBA::is_nil(nso) )
 					throw UniSetTypes::ResolveNameError();
 
-				// Для var
-				rcache.cache(rid, node, nso); // заносим в кэш 
+				// п■п╩я▐ var
+				rcache.cache(rid, node, nso); // п╥п╟п╫п╬я│п╦п╪ п╡ п╨я█я┬ 
 				return nso._retn();
 			}
 			catch(CORBA::TRANSIENT){}
@@ -1730,7 +1730,7 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(resolve): CORBA::SystemException" << endl;
 		throw UniSetTypes::TimeOut();
 	}	
@@ -1766,7 +1766,7 @@ void UniversalInterface::send( ObjectId name, TransportMessage& msg, ObjectId no
 	throw(IO_THROW_EXCEPTIONS)
 {
 	if ( name == DefaultObjectId )
-		throw ORepFailed("UI(send): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(send): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -1812,12 +1812,12 @@ void UniversalInterface::send( ObjectId name, TransportMessage& msg, ObjectId no
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
-		// unideb[Debug::WARN] << "UI(send): ошибка системы коммуникации" << endl;
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
+		// unideb[Debug::WARN] << "UI(send): п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦" << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(send): CORBA::SystemException" << endl;
 	}	
 
@@ -1832,16 +1832,16 @@ void UniversalInterface::send( ObjectId name, TransportMessage& msg )
 
 // ------------------------------------------------------------------------------------------------------------
 /*!
- * \param id - идентификатор датчика
- * \param node - идентификатор узла
- * \param type - тип датчика 
- * \param value - значение которое необходимо установить
+ * \param id - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╟я┌я┤п╦п╨п╟
+ * \param node - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ я┐п╥п╩п╟
+ * \param type - я┌п╦п© п╢п╟я┌я┤п╦п╨п╟ 
+ * \param value - п╥п╫п╟я┤п╣п╫п╦п╣ п╨п╬я┌п╬я─п╬п╣ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ я┐я│я┌п╟п╫п╬п╡п╦я┌я▄
 */
 bool UniversalInterface::saveValue(ObjectId name, long value, IOTypes type, ObjectId node) 
 	throw(IO_THROW_EXCEPTIONS)
 {
 	if ( name == DefaultObjectId )
-		throw ORepFailed("UI(saveValue): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(saveValue): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -1896,11 +1896,11 @@ bool UniversalInterface::saveValue(ObjectId name, long value, IOTypes type, Obje
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(saveValue): CORBA::SystemException" << endl;
 	}	
 	
@@ -1941,7 +1941,7 @@ void UniversalInterface::fastSaveValue( IOController_i::SensorInfo& si, long val
 {
 	if ( si.id == DefaultObjectId )
 	{
-		unideb[Debug::WARN] << "UI(fastSaveValue): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId" << endl;
+		unideb[Debug::WARN] << "UI(fastSaveValue): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId" << endl;
 		return;
 	}
 
@@ -1995,11 +1995,11 @@ void UniversalInterface::fastSaveValue( IOController_i::SensorInfo& si, long val
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(saveValue): CORBA::SystemException" << endl;
 	}	
 	catch(...){}
@@ -2010,16 +2010,16 @@ void UniversalInterface::fastSaveValue( IOController_i::SensorInfo& si, long val
 // ------------------------------------------------------------------------------------------------------------
 
 /*!
- * \param id - идентификатор датчика
- * \param state - состояние в которое его необходимо перевести
- * \param type - тип датчика
- * \param node - идентификатор узла
+ * \param id - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╟я┌я┤п╦п╨п╟
+ * \param state - я│п╬я│я┌п╬я▐п╫п╦п╣ п╡ п╨п╬я┌п╬я─п╬п╣ п╣пЁп╬ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п©п╣я─п╣п╡п╣я│я┌п╦
+ * \param type - я┌п╦п© п╢п╟я┌я┤п╦п╨п╟
+ * \param node - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ я┐п╥п╩п╟
 */
 bool UniversalInterface::saveState(ObjectId name, bool state, IOTypes type, ObjectId node) 
 	throw(IO_THROW_EXCEPTIONS)
 {
 	if ( name == DefaultObjectId )
-		throw ORepFailed("UI(saveState): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(saveState): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -2074,12 +2074,12 @@ bool UniversalInterface::saveState(ObjectId name, bool state, IOTypes type, Obje
 	}	
 	catch(CORBA::COMM_FAILURE)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(saveState): CORBA::COMM_FAILURE " << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(saveState): CORBA::SystemException" << endl;
 	}	
 
@@ -2119,7 +2119,7 @@ void UniversalInterface::fastSaveState( IOController_i::SensorInfo& si, bool sta
 {
 	if( si.id == DefaultObjectId )
 	{
-		unideb[Debug::WARN] << "UI(fastSaveState): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId" << endl;
+		unideb[Debug::WARN] << "UI(fastSaveState): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId" << endl;
 		return;
 	}
 
@@ -2173,12 +2173,12 @@ void UniversalInterface::fastSaveState( IOController_i::SensorInfo& si, bool sta
 	}	
 	catch(CORBA::COMM_FAILURE)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(saveState): CORBA::COMM_FAILURE " << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(saveState): CORBA::SystemException" << endl;
 	}	
 	catch(...){}
@@ -2246,12 +2246,12 @@ IOController_i::ShortIOInfo UniversalInterface::getChangedTime( UniSetTypes::Obj
 	}	
 	catch(CORBA::COMM_FAILURE)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(saveState): CORBA::COMM_FAILURE " << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(saveState): CORBA::SystemException" << endl;
 	}	
 	catch(...){}
@@ -2266,18 +2266,18 @@ ObjectPtr UniversalInterface::CacheOfResolve::resolve( ObjectId id, ObjectId nod
 {
 	UniSetTypes::uniset_mutex_lock l(cmutex,200);
 
-//#warning Временно отключён кэш
+//#warning п▓я─п╣п╪п╣п╫п╫п╬ п╬я┌п╨п╩я▌я┤я▒п╫ п╨я█я┬
 //	throw NameNotFound();
 
 	CacheMap::iterator it = mcache.find( key(id,node) );
 	if( it == mcache.end() )
 		throw NameNotFound();
 
-	it->second.timestamp = time(NULL); // фиксируем время последнего обращения
+	it->second.timestamp = time(NULL); // я└п╦п╨я│п╦я─я┐п╣п╪ п╡я─п╣п╪я▐ п©п╬я│п╩п╣п╢п╫п╣пЁп╬ п╬п╠я─п╟я┴п╣п╫п╦я▐
 	
-	// т.к. функция возвращает указатель
-	// и тот кто вызывает отвечает за освобождение памяти
-	// то мы делаем _duplicate....
+	// я┌.п╨. я└я┐п╫п╨я├п╦я▐ п╡п╬п╥п╡я─п╟я┴п╟п╣я┌ я┐п╨п╟п╥п╟я┌п╣п╩я▄
+	// п╦ я┌п╬я┌ п╨я┌п╬ п╡я▀п╥я▀п╡п╟п╣я┌ п╬я┌п╡п╣я┤п╟п╣я┌ п╥п╟ п╬я│п╡п╬п╠п╬п╤п╢п╣п╫п╦п╣ п©п╟п╪я▐я┌п╦
+	// я┌п╬ п╪я▀ п╢п╣п╩п╟п╣п╪ _duplicate....
 	
 	if( !CORBA::is_nil(it->second.ptr) )
 	    return it->second.ptr._retn();
@@ -2291,13 +2291,13 @@ ObjectPtr UniversalInterface::CacheOfResolve::resolve( ObjectId id, ObjectId nod
 void UniversalInterface::CacheOfResolve::cache( ObjectId id, ObjectId node, ObjectVar ptr )
 {
 	UniSetTypes::uniset_mutex_lock l(cmutex,220);
-//#warning Временно отключён кэш
+//#warning п▓я─п╣п╪п╣п╫п╫п╬ п╬я┌п╨п╩я▌я┤я▒п╫ п╨я█я┬
 //	return;
 
 //	if( mcache.size() > MaxSize )
 //	{
 //		if( !clean() )
-//			 unideb[Debug::CRIT] << "UI(resolve cache): не удалось уменьшить размер кэш-а!!!!"<< endl;
+//			 unideb[Debug::CRIT] << "UI(resolve cache): п╫п╣ я┐п╢п╟п╩п╬я│я▄ я┐п╪п╣п╫я▄я┬п╦я┌я▄ я─п╟п╥п╪п╣я─ п╨я█я┬-п╟!!!!"<< endl;
 //	}
 
 	UniSetTypes::KeyType k(key(id,node));
@@ -2340,7 +2340,7 @@ bool UniversalInterface::CacheOfResolve::clean()
 void UniversalInterface::CacheOfResolve::erase( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
 {
 	UniSetTypes::uniset_mutex_lock l(cmutex,220);
-//#warning Временно отключён кэш
+//#warning п▓я─п╣п╪п╣п╫п╫п╬ п╬я┌п╨п╩я▌я┤я▒п╫ п╨я█я┬
 //	return;
 
 	CacheMap::iterator it = mcache.find( key(id,node) );
@@ -2356,7 +2356,7 @@ bool UniversalInterface::info( string msg, ObjectId messenger, ObjectId node,
 		from = myid;
 
 	if( from==UniSetTypes::DefaultObjectId )
-		unideb[Debug::WARN] << "UI(info): не указан идентификатор атора" << endl;
+		unideb[Debug::WARN] << "UI(info): п╫п╣ я┐п╨п╟п╥п╟п╫ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╟я┌п╬я─п╟" << endl;
 		
 	InfoMessage im(from, msg, node, ch);
 	return info(im, messenger);
@@ -2370,7 +2370,7 @@ bool UniversalInterface::alarm( string msg, ObjectId messenger, ObjectId node,
 		from = myid;
 
 	if( from==UniSetTypes::DefaultObjectId )
-		unideb[Debug::WARN] << "UI(alarm): не указан идентификатор атора" << endl;
+		unideb[Debug::WARN] << "UI(alarm): п╫п╣ я┐п╨п╟п╥п╟п╫ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╟я┌п╬я─п╟" << endl;
 		
 	AlarmMessage am(from, msg, node, ch);
 	return alarm(am, messenger);
@@ -2489,7 +2489,7 @@ void UniversalInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTy
 		throw IOBadParam("UI(askRemoteThreshold): unknown back ID");
 
 	if ( sid == DefaultObjectId )
-		throw ORepFailed("UI(askRemoteThreshold): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(askRemoteThreshold): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -2549,12 +2549,12 @@ void UniversalInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTy
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
-		// unideb[Debug::WARN] << "UI(askThreshold): ошибка системы коммуникации" << endl;
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
+		// unideb[Debug::WARN] << "UI(askThreshold): п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦" << endl;
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(askThreshold): CORBA::SystemException" << endl;
 	}	
 	rcache.erase(sid, node);	
@@ -2565,7 +2565,7 @@ void UniversalInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTy
 CORBA::Long UniversalInterface::getRawValue( const IOController_i::SensorInfo& si )
 {
 	if ( si.id == DefaultObjectId )
-		throw ORepFailed("UI(getRawValue): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(getRawValue): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -2602,7 +2602,7 @@ CORBA::Long UniversalInterface::getRawValue( const IOController_i::SensorInfo& s
 	catch(ORepFailed)
 	{
 		rcache.erase(si.id, si.node);		
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(getRawValue): resolve failed ",si.id,si.node));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -2617,11 +2617,11 @@ CORBA::Long UniversalInterface::getRawValue( const IOController_i::SensorInfo& s
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(getValue): CORBA::SystemException" << endl;
 	}	
 	rcache.erase(si.id, si.node);		
@@ -2636,10 +2636,10 @@ void UniversalInterface::calibrate(const IOController_i::SensorInfo& si,
 		admId = myid;
 		
 //	if( admId==UniSetTypes::DefaultObjectId )
-//		throw IOBadParam("UI(askTreshold): неизвестен ID администратора");
+//		throw IOBadParam("UI(askTreshold): п╫п╣п╦п╥п╡п╣я│я┌п╣п╫ ID п╟п╢п╪п╦п╫п╦я│я┌я─п╟я┌п╬я─п╟");
 
 	if ( si.id == DefaultObjectId )
-		throw ORepFailed("UI(calibrate): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(calibrate): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -2677,7 +2677,7 @@ void UniversalInterface::calibrate(const IOController_i::SensorInfo& si,
 	catch(ORepFailed)
 	{
 		rcache.erase(si.id, si.node);		
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(calibrate): resolve failed ",si.id,si.node));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -2692,11 +2692,11 @@ void UniversalInterface::calibrate(const IOController_i::SensorInfo& si,
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(getValue): CORBA::SystemException" << endl;
 	}	
 	rcache.erase(si.id, si.node);		
@@ -2706,7 +2706,7 @@ void UniversalInterface::calibrate(const IOController_i::SensorInfo& si,
 IOController_i::CalibrateInfo UniversalInterface::getCalibrateInfo( const IOController_i::SensorInfo& si )
 {
 	if ( si.id == DefaultObjectId )
-		throw ORepFailed("UI(getCalibrateInfo): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(getCalibrateInfo): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -2743,7 +2743,7 @@ IOController_i::CalibrateInfo UniversalInterface::getCalibrateInfo( const IOCont
 	catch(ORepFailed)
 	{
 		rcache.erase(si.id, si.node);		
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(getCalibrateInfo): resolve failed ",si.id,si.node));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -2758,11 +2758,11 @@ IOController_i::CalibrateInfo UniversalInterface::getCalibrateInfo( const IOCont
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(getValue): CORBA::SystemException" << endl;
 	}	
 	rcache.erase(si.id, si.node);		
@@ -2777,7 +2777,7 @@ IOController_i::ASensorInfoSeq_var UniversalInterface::getSensorSeq( UniSetTypes
 	ObjectId sid = lst.getFirst();
 
 	if ( sid == DefaultObjectId )
-		throw ORepFailed("UI(getSensorSeq): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(getSensorSeq): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -2816,7 +2816,7 @@ IOController_i::ASensorInfoSeq_var UniversalInterface::getSensorSeq( UniSetTypes
 	catch(ORepFailed)
 	{
 		rcache.erase(sid,conf->getLocalNode());
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(getSensorSeq): resolve failed ",sid,conf->getLocalNode()));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -2831,11 +2831,11 @@ IOController_i::ASensorInfoSeq_var UniversalInterface::getSensorSeq( UniSetTypes
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(getValue): CORBA::SystemException" << endl;
 	}	
 	rcache.erase(sid,conf->getLocalNode());
@@ -2850,7 +2850,7 @@ IDSeq_var UniversalInterface::setOutputSeq( const IOController_i::OutSeq& lst, U
 
 
 	if ( lst[0].si.id == DefaultObjectId )
-		throw ORepFailed("UI(setOutputSeq): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(setOutputSeq): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -2887,7 +2887,7 @@ IDSeq_var UniversalInterface::setOutputSeq( const IOController_i::OutSeq& lst, U
 	catch(ORepFailed)
 	{
 		rcache.erase(lst[0].si.id,lst[0].si.node);
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(setOutputSeq): resolve failed ",lst[0].si.id,lst[0].si.node));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -2902,11 +2902,11 @@ IDSeq_var UniversalInterface::setOutputSeq( const IOController_i::OutSeq& lst, U
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(getValue): CORBA::SystemException" << endl;
 	}	
 	rcache.erase(lst[0].si.id,lst[0].si.node);
@@ -2928,7 +2928,7 @@ UniSetTypes::IDSeq_var UniversalInterface::askSensorsSeq( UniSetTypes::IDList& l
 	ObjectId sid = lst.getFirst();
 
 	if ( sid == DefaultObjectId )
-		throw ORepFailed("UI(askSensorSeq): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(askSensorSeq): п©п╬п©я▀я┌п╨п╟ п╬п╠я─п╟я┌п╦я┌я▄я│я▐ п╨ п╬п╠я┼п╣п╨я┌я┐ я│ id=UniSetTypes::DefaultObjectId");
 
 	try
 	{
@@ -2971,7 +2971,7 @@ UniSetTypes::IDSeq_var UniversalInterface::askSensorsSeq( UniSetTypes::IDList& l
 	catch(ORepFailed)
 	{
 		rcache.erase(sid,conf->getLocalNode());
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(askSensorSeq): resolve failed ",sid,conf->getLocalNode()));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -2986,11 +2986,11 @@ UniSetTypes::IDSeq_var UniversalInterface::askSensorsSeq( UniSetTypes::IDList& l
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(getValue): CORBA::SystemException" << endl;
 	}	
 	rcache.erase(sid,conf->getLocalNode());
@@ -3034,7 +3034,7 @@ IOController_i::ShortMapSeq* UniversalInterface::getSensors( UniSetTypes::Object
 	catch(ORepFailed)
 	{
 		rcache.erase(id,node);
-		// не смогли получить ссылку на объект
+		// п╫п╣ я│п╪п╬пЁп╩п╦ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╬п╠я┼п╣п╨я┌
 		throw IOBadParam(set_err("UI(getSensors): resolve failed ",id,node));
 	}	
 	catch(CORBA::NO_IMPLEMENT)
@@ -3049,11 +3049,11 @@ IOController_i::ShortMapSeq* UniversalInterface::getSensors( UniSetTypes::Object
 	}	
 	catch(CORBA::COMM_FAILURE& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 	}	
 	catch(CORBA::SystemException& ex)
 	{
-		// ошибка системы коммуникации
+		// п╬я┬п╦п╠п╨п╟ я│п╦я│я┌п╣п╪я▀ п╨п╬п╪п╪я┐п╫п╦п╨п╟я├п╦п╦
 		// unideb[Debug::WARN] << "UI(getValue): CORBA::SystemException" << endl;
 	}	
 	rcache.erase(id,node);

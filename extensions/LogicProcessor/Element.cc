@@ -12,7 +12,7 @@ void Element::addChildOut( Element* el, int num )
 	if( el == this )
 	{
 		ostringstream msg;
-		msg << "(" << myid << "): ðïðôëá óäåìáôØ óóùìëõ îá óáíïçï óåâñ!!!";
+		msg << "(" << myid << "): ÐŸÐžÐŸÐ¢ÐšÐ Ð¡Ð”Ð•Ð›ÐÐ¢ÑŒ Ð¡Ð¡Ð«Ð›ÐšÐ£ ÐÐ Ð¡ÐÐœÐžÐ“Ðž Ð¡Ð•Ð‘Ð¯!!!";
 		throw LogicException(msg.str());
 	}
 
@@ -22,18 +22,18 @@ void Element::addChildOut( Element* el, int num )
 		if( it->el == el )
 		{
 			ostringstream msg;
-			msg << "(" << myid << "):" << el->getId() << " ÕÖÅ ÅÓÔØ × ÓÐÉÓËÅ ÄÏÞÅÒÎÉÈ(ÔÁËÏÅ ÓÏÅÄÉÎÅÎÉÅ ÕÖÅ ÅÓÔØ)...";
+			msg << "(" << myid << "):" << el->getId() << " ÑƒÐ¶Ðµ ÐµÑÑ‚ÑŒ Ð² ÑÐ¿Ð¸ÑÐºÐµ Ð´Ð¾Ñ‡ÐµÑ€Ð½Ð¸Ñ…(Ñ‚Ð°ÐºÐ¾Ðµ ÑÐ¾ÐµÐ´Ð¸Ð½ÐµÐ½Ð¸Ðµ ÑƒÐ¶Ðµ ÐµÑÑ‚ÑŒ)...";
 			throw LogicException(msg.str());
 		}
 	}
 
-	// ÐÒÏ×ÅÒËÁ ÎÁ ÃÉËÌÉÞÅÓËÕÀ ÚÁ×ÉÓÉÍÏÓÔØ
-	// el ÎÅ ÄÏÌÖÅÎ ÓÏÄÅÒÖÁÔØ × Ó×ÏÉÈ ÐÏÔÏÍËÁÈ myid
+	// Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð½Ð° Ñ†Ð¸ÐºÐ»Ð¸Ñ‡ÐµÑÐºÑƒÑŽ Ð·Ð°Ð²Ð¸ÑÐ¸Ð¼Ð¾ÑÑ‚ÑŒ
+	// el Ð½Ðµ Ð´Ð¾Ð»Ð¶ÐµÐ½ ÑÐ¾Ð´ÐµÑ€Ð¶Ð°Ñ‚ÑŒ Ð² ÑÐ²Ð¾Ð¸Ñ… Ð¿Ð¾Ñ‚Ð¾Ð¼ÐºÐ°Ñ… myid
 	if( el->find(myid) != NULL )
 	{
 		ostringstream msg;
-		msg << "(" << myid << "):  ðïðùôëá óïúäáôø ãéëìéþåëõà úá÷éóéíïóôø!!!\n";
-		msg << " id" << el->getId() << " ÉÍÅÅÔ × Ó×ÏÉÈ 'ÐÏÔÏÍËÁÈ' Element id=" << myid << endl;
+		msg << "(" << myid << "):  ÐŸÐžÐŸÐ«Ð¢ÐšÐ Ð¡ÐžÐ—Ð”ÐÐ¢Ð¬ Ð¦Ð˜ÐšÐ›Ð˜Ð§Ð•ÐšÐ£Ð® Ð—ÐÐ’Ð˜Ð¡Ð˜ÐœÐžÐ¡Ð¢Ð¬!!!\n";
+		msg << " id" << el->getId() << " Ð¸Ð¼ÐµÐµÑ‚ Ð² ÑÐ²Ð¾Ð¸Ñ… 'Ð¿Ð¾Ñ‚Ð¾Ð¼ÐºÐ°Ñ…' Element id=" << myid << endl;
 		throw LogicException(msg.str());
 	}
 	
@@ -88,7 +88,7 @@ void Element::addInput(int num, bool state)
 		if( it->num == num )
 		{
 			ostringstream msg;
-			msg << "(" << myid << "): ÐÏÐÙÔËÁ ×ÔÏÒÏÊ ÒÁÚ ÄÏÂÁ×ÉÔØ input N" << num;
+			msg << "(" << myid << "): Ð¿Ð¾Ð¿Ñ‹Ñ‚ÐºÐ° Ð²Ñ‚Ð¾Ñ€Ð¾Ð¹ Ñ€Ð°Ð· Ð´Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ input N" << num;
 			throw LogicException(msg.str());
 		}
 	}

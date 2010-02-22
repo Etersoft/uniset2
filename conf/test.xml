@@ -2,7 +2,7 @@
 <UNISETPLC>
 <UserData></UserData>
 
-<!-- ïÂÝÉÅ(ÓÔÁÒÔÏ×ÙÅ) ÐÁÒÁÍÅÔÒÙ ÐÏ UniSet -->
+<!-- ÐžÐ±Ñ‰Ð¸Ðµ(ÑÑ‚Ð°Ñ€Ñ‚Ð¾Ð²Ñ‹Ðµ) Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ñ‹ Ð¿Ð¾ UniSet -->
 <UniSet>
 		<NameService host="localhost" port="2809"/>
 		<LocalNode	 name="LocalhostNode"/>
@@ -12,16 +12,16 @@
 		<RepeatCount 		name="3"/>
 		<RepeatTimeoutMS 	name="50"/>
 
-		<WatchDogTime 		name="0"/> <!-- [ÍÉÎ] -->
-		<PingNodeTime 		name="0"/> <!-- [ÓÅË] -->
-		<AutoStartUpTime 	name="1"/> <!-- [ÓÅË] -->
-		<DumpStateTime 		name="10"/><!-- [ÓÅË] -->
-		<SleepTickMS		name="500"/><!-- [ÍÓÅË] -->
+		<WatchDogTime 		name="0"/> <!-- [Ð¼Ð¸Ð½] -->
+		<PingNodeTime 		name="0"/> <!-- [ÑÐµÐº] -->
+		<AutoStartUpTime 	name="1"/> <!-- [ÑÐµÐº] -->
+		<DumpStateTime 		name="10"/><!-- [ÑÐµÐº] -->
+		<SleepTickMS		name="500"/><!-- [Ð¼ÑÐµÐº] -->
 
 		<!-- Debug, logs -->
 		<UniSetDebug name="unideb" levels="crit,warn" file=""/>
 
-		<!-- åÓÌÉ ÎÅ ÕËÁÚÁÎÏ, ÔÏ ÓÞÉÔÁÅÔÓÑ ÔÅËÕÝÉÊ ËÁÔÁÌÏÇ -->
+		<!-- Ð•ÑÐ»Ð¸ Ð½Ðµ ÑƒÐºÐ°Ð·Ð°Ð½Ð¾, Ñ‚Ð¾ ÑÑ‡Ð¸Ñ‚Ð°ÐµÑ‚ÑÑ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¹ ÐºÐ°Ñ‚Ð°Ð»Ð¾Ð³ -->
 		<ConfDir name=""/>
 		<DataDir name=""/>
 		<BinDir name=""/>
@@ -68,11 +68,11 @@
 			 aftersend-pause="0" levels="info,warn,crit" poll_time="200" reply_timeout="60"
 	>
 		<filelist>
-		<!-- óÐÉÓÏË ÆÁÊÌÏ× ÒÁÚÒÅÛ£ÎÎÙÈ ÄÌÑ ÐÅÒÅÄÁÞÉ ÐÏ modbus
-			directory - ËÁÔÁÌÏÇ ÇÄÅ ÌÅÖÉÔ ÆÁÊÌ. íÏÖÎÏ ÎÅ ÚÁÄÁ×ÁÔØ
-				'ConfDir' - ÂÅÒ£ÔÓÑ ÉÚ ÎÁÓÔÒÏÅË (ÓÍ. ÎÁÞÁÌÏ ÜÔÏÇÏ ÆÁÊÌÁ)
-				'DataDir' - ÂÅÒ£ÔÓÑ ÉÚ ÎÁÓÔÒÏÅË (ÓÍ. ÎÁÞÁÌÏ ÜÔÏÇÏ ÆÁÊÌÁ)
-				'xxx'  - ÐÒÑÍÏÅ ÕËÁÚÁÎÉÅ ËÁÔÁÌÏÇÁ
+		<!-- Ð¡Ð¿Ð¸ÑÐ¾Ðº Ñ„Ð°Ð¹Ð»Ð¾Ð² Ñ€Ð°Ð·Ñ€ÐµÑˆÑ‘Ð½Ð½Ñ‹Ñ… Ð´Ð»Ñ Ð¿ÐµÑ€ÐµÐ´Ð°Ñ‡Ð¸ Ð¿Ð¾ modbus
+			directory - ÐºÐ°Ñ‚Ð°Ð»Ð¾Ð³ Ð³Ð´Ðµ Ð»ÐµÐ¶Ð¸Ñ‚ Ñ„Ð°Ð¹Ð». ÐœÐ¾Ð¶Ð½Ð¾ Ð½Ðµ Ð·Ð°Ð´Ð°Ð²Ð°Ñ‚ÑŒ
+				'ConfDir' - Ð±ÐµÑ€Ñ‘Ñ‚ÑÑ Ð¸Ð· Ð½Ð°ÑÑ‚Ñ€Ð¾ÐµÐº (ÑÐ¼. Ð½Ð°Ñ‡Ð°Ð»Ð¾ ÑÑ‚Ð¾Ð³Ð¾ Ñ„Ð°Ð¹Ð»Ð°)
+				'DataDir' - Ð±ÐµÑ€Ñ‘Ñ‚ÑÑ Ð¸Ð· Ð½Ð°ÑÑ‚Ñ€Ð¾ÐµÐº (ÑÐ¼. Ð½Ð°Ñ‡Ð°Ð»Ð¾ ÑÑ‚Ð¾Ð³Ð¾ Ñ„Ð°Ð¹Ð»Ð°)
+				'xxx'  - Ð¿Ñ€ÑÐ¼Ð¾Ðµ ÑƒÐºÐ°Ð·Ð°Ð½Ð¸Ðµ ÐºÐ°Ñ‚Ð°Ð»Ð¾Ð³Ð°
 		-->
 			<item id="1" name="configure.xml" directory="ConfDir"/>
 			<item id="2" name="VERSION" directory="ConfDir"/>
@@ -95,27 +95,27 @@
 
 <ObjectsMap idfromfile="0">
 <!--
-	ëÒÁÔËÉÅ ÐÏÑÓÎÅÎÉÑ Ë ÐÏÌÑÍ ÓÅËÃÉÉ 'sensors'
+	ÐšÑ€Ð°Ñ‚ÐºÐ¸Ðµ Ð¿Ð¾ÑÑÐ½ÐµÐ½Ð¸Ñ Ðº Ð¿Ð¾Ð»ÑÐ¼ ÑÐµÐºÑ†Ð¸Ð¸ 'sensors'
 	==========================================
-	node 		- ÕÚÅÌ ÎÁ ËÏÔÏÒÏÍ ÆÉÚÉÞÅÓËÉ ÎÁÈÏÄÉÔÓÑ ÄÁÎÎÙÊ ÄÁÔÞÉË
-	iotype 		- ÔÉÐ ÄÁÔÞÉËÁ
-	priority 	- ÐÒÉÏÒÉÔÅÔ ÓÏÏÂÝÅÎÉÑ ÏÂ ÉÚÍÅÎÅÎÉÉ ÄÁÎÎÏÇÏ ÄÁÔÞÉËÁ
-	textname 	- ÔÅËÓÔÏ×ÏÅ ÉÍÑ ÄÁÔÞÉËÁ
+	node 		- ÑƒÐ·ÐµÐ» Ð½Ð° ÐºÐ¾Ñ‚Ð¾Ñ€Ð¾Ð¼ Ñ„Ð¸Ð·Ð¸Ñ‡ÐµÑÐºÐ¸ Ð½Ð°Ñ…Ð¾Ð´Ð¸Ñ‚ÑÑ Ð´Ð°Ð½Ð½Ñ‹Ð¹ Ð´Ð°Ñ‚Ñ‡Ð¸Ðº
+	iotype 		- Ñ‚Ð¸Ð¿ Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÐ°
+	priority 	- Ð¿Ñ€Ð¸Ð¾Ñ€Ð¸Ñ‚ÐµÑ‚ ÑÐ¾Ð¾Ð±Ñ‰ÐµÐ½Ð¸Ñ Ð¾Ð± Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ð¸ Ð´Ð°Ð½Ð½Ð¾Ð³Ð¾ Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÐ°
+	textname 	- Ñ‚ÐµÐºÑÑ‚Ð¾Ð²Ð¾Ðµ Ð¸Ð¼Ñ Ð´Ð°Ñ‚Ñ‡Ð¸ÐºÐ°
 -->
 	<nodes port="2809">
-		<item name="LocalhostNode"	alias="" textname="ìÏËÁÌØÎÙÊ ÕÚÅÌ"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
-		<item name="Node2"			alias="" textname="ìÏËÁÌØÎÙÊ ÕÚÅÌ"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
+		<item name="LocalhostNode"	alias="" textname="Ð›Ð¾ÐºÐ°Ð»ÑŒÐ½Ñ‹Ð¹ ÑƒÐ·ÐµÐ»"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
+		<item name="Node2"			alias="" textname="Ð›Ð¾ÐºÐ°Ð»ÑŒÐ½Ñ‹Ð¹ ÑƒÐ·ÐµÐ»"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
 	</nodes>
 
-	<!-- ************************ äÁÔÞÉËÉ ********************** -->
+	<!-- ************************ Ð”Ð°Ñ‚Ñ‡Ð¸ÐºÐ¸ ********************** -->
 	<sensors name="Sensors">
-		<item name="Input1_S" textname="ëÏÍÁÎÄÁ 1" node="" iotype="DI" priority="Medium" default="1" />
-		<item name="Input2_S" textname="ëÏÍÁÎÄÁ 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" rs="2" />
-		<item name="Input3_S" textname="ëÏÍÁÎÄÁ 3" node="" iotype="DI" priority="Medium" 
+		<item name="Input1_S" textname="ÐšÐ¾Ð¼Ð°Ð½Ð´Ð° 1" node="" iotype="DI" priority="Medium" default="1" />
+		<item name="Input2_S" textname="ÐšÐ¾Ð¼Ð°Ð½Ð´Ð° 2" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" rs="2" />
+		<item name="Input3_S" textname="ÐšÐ¾Ð¼Ð°Ð½Ð´Ð° 3" node="" iotype="DI" priority="Medium" 
 			  mbtcp="1" tcp_mbtype="rtu" tcp_mbaddr="0x02" tcp_mbfunc="0x06" tcp_mbreg="0x02" tcp_preinit="1" />
-		<item name="Input4_S" textname="ëÏÍÁÎÄÁ 4" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" rs="2" />
-		<item name="Input5_S" textname="ëÏÍÁÎÄÁ 5" node="" iotype="DI" priority="Medium" udp="2"/>
-		<item name="Input6_S" textname="ëÏÍÁÎÄÁ 6" node="" iotype="DI" priority="Medium" udp="2">
+		<item name="Input4_S" textname="ÐšÐ¾Ð¼Ð°Ð½Ð´Ð° 4" node="" iotype="DI" priority="Medium" mbtype="rtu" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" rs="2" />
+		<item name="Input5_S" textname="ÐšÐ¾Ð¼Ð°Ð½Ð´Ð° 5" node="" iotype="DI" priority="Medium" udp="2"/>
+		<item name="Input6_S" textname="ÐšÐ¾Ð¼Ð°Ð½Ð´Ð° 6" node="" iotype="DI" priority="Medium" udp="2">
 			<depends>
 				<depend name="Input4_S"/>
 			</depends>
@@ -132,7 +132,7 @@
 				<consumer name="PLCProcessor" type="objects"/>
 			</consumers>
 		</item>
-		<item name="Threshold1_S" textname="ðÏÒÏÇ" node="" iotype="DI" priority="Medium"/>
+		<item name="Threshold1_S" textname="ÐŸÐ¾Ñ€Ð¾Ð³" node="" iotype="DI" priority="Medium"/>
 		<item name="TestMode_S" textname="test" node="" iotype="DI" priority="Medium"/>
 		
 		<item name="RespondRTU_S" textname="respond rtu" node="" iotype="DI"/>
@@ -168,7 +168,7 @@
 		<item name="UniExchange2"/>
 	</controllers>
 
-	<!-- ******************* éÄÅÎÔÉÆÉËÁÔÏÒÙ ÓÅÒ×ÉÓÏ× ***************** -->
+	<!-- ******************* Ð˜Ð´ÐµÐ½Ñ‚Ð¸Ñ„Ð¸ÐºÐ°Ñ‚Ð¾Ñ€Ñ‹ ÑÐµÑ€Ð²Ð¸ÑÐ¾Ð² ***************** -->
 	<services name="Services">
 		<item name="InfoServer"/>
 		<item name="DBServer"/>
@@ -176,7 +176,7 @@
 		<item name="TimeService"/>
 	</services>
 
-	<!-- ******************* éÄÅÎÔÉÆÉËÁÔÏÒÙ ÏÂßÅËÔÏ× ***************** -->
+	<!-- ******************* Ð˜Ð´ÐµÐ½Ñ‚Ð¸Ñ„Ð¸ÐºÐ°Ñ‚Ð¾Ñ€Ñ‹ Ð¾Ð±ÑŠÐµÐºÑ‚Ð¾Ð² ***************** -->
 	<objects name="UniObjects">
 		<item name="TestProc"/>
 		<item name="LProcessor"/>

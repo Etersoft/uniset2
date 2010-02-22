@@ -81,7 +81,7 @@ bool IOController::disactivateObject()
 // ------------------------------------------------------------------------------------------
 void IOController::sensorsUnregistration()
 {
-	// Разрегистрируем дискретные датчики
+	// п═п╟п╥я─п╣пЁп╦я│я┌я─п╦я─я┐п╣п╪ п╢п╦я│п╨я─п╣я┌п╫я▀п╣ п╢п╟я┌я┤п╦п╨п╦
 	for( DIOStateList::iterator li = dioList.begin();
 		 li != dioList.end(); ++li)
 	{
@@ -96,7 +96,7 @@ void IOController::sensorsUnregistration()
 		catch(...){}
 	}
 
-	// Разрегистрируем аналоговые датчики
+	// п═п╟п╥я─п╣пЁп╦я│я┌я─п╦я─я┐п╣п╪ п╟п╫п╟п╩п╬пЁп╬п╡я▀п╣ п╢п╟я┌я┤п╦п╨п╦
 	for( AIOStateList::iterator li = aioList.begin();
 		 li != aioList.end(); ++li)
 	{
@@ -151,8 +151,8 @@ bool IOController::localGetState( IOController::DIOStateList::iterator& li,
 
 	// -------------
 	ostringstream err;
-	err << myname << "(localGetState): дискретный вход(выход) с именем " 
-		<< conf->oind->getNameById(si.id) << " не найден";
+	err << myname << "(localGetState): п╢п╦я│п╨я─п╣я┌п╫я▀п╧ п╡я┘п╬п╢(п╡я▀я┘п╬п╢) я│ п╦п╪п╣п╫п╣п╪ " 
+		<< conf->oind->getNameById(si.id) << " п╫п╣ п╫п╟п╧п╢п╣п╫";
 	unideb[Debug::INFO] << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
@@ -174,8 +174,8 @@ long IOController::localGetValue( IOController::AIOStateList::iterator& li,
 	
 	// -------------
 	ostringstream err;
-	err << myname << "(localGetValue): аналоговый вход(выход) с именем " 
-		<< conf->oind->getNameById(si.id) << " не найден";
+	err << myname << "(localGetValue): п╟п╫п╟п╩п╬пЁп╬п╡я▀п╧ п╡я┘п╬п╢(п╡я▀я┘п╬п╢) я│ п╦п╪п╣п╫п╣п╪ " 
+		<< conf->oind->getNameById(si.id) << " п╫п╣ п╫п╟п╧п╢п╣п╫";
 	unideb[Debug::INFO] << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
@@ -208,16 +208,16 @@ void IOController::setUndefinedState(const IOController_i::SensorInfo& si,
 void IOController::localSetUndefinedState( AIOStateList::iterator& li, 
 											bool undefined,	const IOController_i::SensorInfo& si )
 {
-	// сохранение текущего состояния
+	// я│п╬я┘я─п╟п╫п╣п╫п╦п╣ я┌п╣п╨я┐я┴п╣пЁп╬ я│п╬я│я┌п╬я▐п╫п╦я▐
 	if( li == aioList.end() )
 		li = aioList.find(key(si.id, si.node));
 
 	if( li==aioList.end() )
 	{
 		ostringstream err;
-		err << myname << "(localSetUndefined): не зарегистрирован датчик "
-			<< "имя: " << conf->oind->getNameById(si.id)
-			<< " узел: " << conf->oind->getMapName(si.node); 
+		err << myname << "(localSetUndefined): п╫п╣ п╥п╟я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟п╫ п╢п╟я┌я┤п╦п╨ "
+			<< "п╦п╪я▐: " << conf->oind->getNameById(si.id)
+			<< " я┐п╥п╣п╩: " << conf->oind->getMapName(si.node); 
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
@@ -235,25 +235,25 @@ void IOController::localSaveState( IOController::DIOStateList::iterator& li,
 	if( sup_id == UniSetTypes::DefaultObjectId )
 		sup_id = getId();
 
-	// сохранение текущего состояния
+	// я│п╬я┘я─п╟п╫п╣п╫п╦п╣ я┌п╣п╨я┐я┴п╣пЁп╬ я│п╬я│я┌п╬я▐п╫п╦я▐
 	if( li == dioList.end() )
 		li = dioList.find(key(si.id, si.node));
 	
 	if( li==dioList.end() )
 	{
 		ostringstream err;
-		err << myname << "(saveState): не зарегистрирован датчик "
-			<< "имя: " << conf->oind->getNameById(si.id)
-			<< " узел: " << conf->oind->getMapName(si.node); 
+		err << myname << "(saveState): п╫п╣ п╥п╟я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟п╫ п╢п╟я┌я┤п╦п╨ "
+			<< "п╦п╪я▐: " << conf->oind->getNameById(si.id)
+			<< " я┐п╥п╣п╩: " << conf->oind->getMapName(si.node); 
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
 	if( li->second.type != UniversalIO::DigitalInput ) // && li->second.type != UniversalIO::DigitalOutput )
 	{
 		ostringstream err;
-		err << myname << "(saveState): неверно указан тип( " << li->second.type << ") дискретного датчика имя: " 
+		err << myname << "(saveState): п╫п╣п╡п╣я─п╫п╬ я┐п╨п╟п╥п╟п╫ я┌п╦п©( " << li->second.type << ") п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟ п╦п╪я▐: " 
 			<< conf->oind->getNameById(si.id)
-			<< " узел: " << conf->oind->getMapName(si.node); 
+			<< " я┐п╥п╣п╩: " << conf->oind->getMapName(si.node); 
 		throw IOController_i::IOBadParam(err.str().c_str());
 	}
 
@@ -288,7 +288,7 @@ void IOController::localSaveState( IOController::DIOStateList::iterator& li,
 
 			} 	// unlock
 
-			// запоминаем время изменения
+			// п╥п╟п©п╬п╪п╦п╫п╟п╣п╪ п╡я─п╣п╪я▐ п╦п╥п╪п╣п╫п╣п╫п╦я▐
 			struct timeval tm;
 			struct timezone tz;
 			tm.tv_sec 	= 0;
@@ -301,7 +301,7 @@ void IOController::localSaveState( IOController::DIOStateList::iterator& li,
 
 		if( unideb.debugging(Debug::INFO) )	
 		{
-			unideb[Debug::INFO] << myname << ": сохраняем состояние дискретного датчика "
+			unideb[Debug::INFO] << myname << ": я│п╬я┘я─п╟п╫я▐п╣п╪ я│п╬я│я┌п╬я▐п╫п╦п╣ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟ "
 								<< conf->oind->getNameById(si.id, si.node) 
 								<< " = " << state 
 								<< " blocked=" << blocked 
@@ -311,7 +311,7 @@ void IOController::localSaveState( IOController::DIOStateList::iterator& li,
 								<< endl;
 		}									
 
-		// обновляем список зависимых				
+		// п╬п╠п╫п╬п╡п╩я▐п╣п╪ я│п©п╦я│п╬п╨ п╥п╟п╡п╦я│п╦п╪я▀я┘				
 		if( changed )
 			updateBlockDepends( li->second.dlst, blk_set, li->second.dlst_lock );
 }
@@ -341,7 +341,7 @@ void IOController::localSaveValue( IOController::AIOStateList::iterator& li,
 	if( sup_id == UniSetTypes::DefaultObjectId )
 		sup_id = getId();
 
-	// сохранение текущего состояния
+	// я│п╬я┘я─п╟п╫п╣п╫п╦п╣ я┌п╣п╨я┐я┴п╣пЁп╬ я│п╬я│я┌п╬я▐п╫п╦я▐
 //	AIOStateList::iterator li( aioList.end() );
 	if( li == aioList.end() )
 		li = aioList.find(key(si.id, si.node));
@@ -349,26 +349,26 @@ void IOController::localSaveValue( IOController::AIOStateList::iterator& li,
 	if( li==aioList.end() )
 	{	
 		ostringstream err;
-		err << myname << "(saveValue): не зарегистрирован датчик "
-			<< "имя: " << conf->oind->getNameById(si.id)
-			<< " узел: " << conf->oind->getMapName(si.node);  
+		err << myname << "(saveValue): п╫п╣ п╥п╟я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟п╫ п╢п╟я┌я┤п╦п╨ "
+			<< "п╦п╪я▐: " << conf->oind->getNameById(si.id)
+			<< " я┐п╥п╣п╩: " << conf->oind->getMapName(si.node);  
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
 	if( li->second.type != UniversalIO::AnalogInput ) // && li->second.type != UniversalIO::AnalogOutput )
 	{
 		ostringstream err;
-		err << myname << "(saveValue): неверно указан тип(" << li->second.type
-			<< ") аналогового датчика имя: " << conf->oind->getNameById(si.id)
-			<< " узел: " << conf->oind->getMapName(si.node); 
+		err << myname << "(saveValue): п╫п╣п╡п╣я─п╫п╬ я┐п╨п╟п╥п╟п╫ я┌п╦п©(" << li->second.type
+			<< ") п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟ п╦п╪я▐: " << conf->oind->getNameById(si.id)
+			<< " я┐п╥п╣п╩: " << conf->oind->getMapName(si.node); 
 		throw IOController_i::IOBadParam(err.str().c_str());
 	}
 
 	{	// lock
 		uniset_spin_lock lock(li->second.val_lock,checkLockValuePause);
 
-		// фильтрам может потребоваться измениять исходное значение (например для усреднения)
-		// поэтому передаём (и затем сохраняем) напрямую(ссылку) value (а не const value)
+		// я└п╦п╩я▄я┌я─п╟п╪ п╪п╬п╤п╣я┌ п©п╬я┌я─п╣п╠п╬п╡п╟я┌я▄я│я▐ п╦п╥п╪п╣п╫п╦я▐я┌я▄ п╦я│я┘п╬п╢п╫п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ (п╫п╟п©я─п╦п╪п╣я─ п╢п╩я▐ я┐я│я─п╣п╢п╫п╣п╫п╦я▐)
+		// п©п╬я█я┌п╬п╪я┐ п©п╣я─п╣п╢п╟я▒п╪ (п╦ п╥п╟я┌п╣п╪ я│п╬я┘я─п╟п╫я▐п╣п╪) п╫п╟п©я─я▐п╪я┐я▌(я│я│я▀п╩п╨я┐) value (п╟ п╫п╣ const value)
 		
 		bool blocked = ( li->second.blocked || li->second.undefined );
 		
@@ -376,7 +376,7 @@ void IOController::localSaveValue( IOController::AIOStateList::iterator& li,
 		{
 			if( unideb.debugging(Debug::INFO) )	
 			{
-				unideb[Debug::INFO] << myname << ": сохраняем состояние аналогового датчика "
+				unideb[Debug::INFO] << myname << ": я│п╬я┘я─п╟п╫я▐п╣п╪ я│п╬я│я┌п╬я▐п╫п╦п╣ п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟ "
 							<< conf->oind->getNameById(si.id, si.node) 
 							<< " = "<< value << endl;
 			}
@@ -394,7 +394,7 @@ void IOController::localSaveValue( IOController::AIOStateList::iterator& li,
 				li->second.real_value = value;
 			}
 
-			// запоминаем время изменения
+			// п╥п╟п©п╬п╪п╦п╫п╟п╣п╪ п╡я─п╣п╪я▐ п╦п╥п╪п╣п╫п╣п╫п╦я▐
 			struct timeval tm;
 			struct timezone tz;
 			tm.tv_sec 	= 0;
@@ -409,18 +409,18 @@ void IOController::localSaveValue( IOController::AIOStateList::iterator& li,
 IOTypes IOController::getIOType( const IOController_i::SensorInfo& si )
 {
 	UniSetTypes::KeyType k = key(si.id,si.node);
-	// Проверяем в списке дискретных 
+	// п÷я─п╬п╡п╣я─я▐п╣п╪ п╡ я│п©п╦я│п╨п╣ п╢п╦я│п╨я─п╣я┌п╫я▀я┘ 
 	DIOStateList::iterator li = dioList.find(k);
 	if( li!=dioList.end() )
 		return li->second.type;
 
-	// Проверяем в списке аналоговых
+	// п÷я─п╬п╡п╣я─я▐п╣п╪ п╡ я│п©п╦я│п╨п╣ п╟п╫п╟п╩п╬пЁп╬п╡я▀я┘
 	AIOStateList::iterator ali = aioList.find(k);
 	if( ali!=aioList.end() )
 		return ali->second.type;
 	
 	ostringstream err;
-	err << myname << "(getIOType): датчик имя: " << conf->oind->getNameById(si.id) << " не найден";			
+	err << myname << "(getIOType): п╢п╟я┌я┤п╦п╨ п╦п╪я▐: " << conf->oind->getNameById(si.id) << " п╫п╣ п╫п╟п╧п╢п╣п╫";			
 //	unideb[Debug::INFO] << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
@@ -520,7 +520,7 @@ void IOController::localSetState( IOController::DIOStateList::iterator& li,
 		if( unideb.debugging(Debug::INFO) )	
 		{
 			unideb[Debug::INFO] << myname 
-					<< ": сохраняем состояние дискретного выхода "
+					<< ": я│п╬я┘я─п╟п╫я▐п╣п╪ я│п╬я│я┌п╬я▐п╫п╦п╣ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╡я▀я┘п╬п╢п╟ "
 					<< conf->oind->getNameById(si.id, si.node) << " = " << state
 					<< " blocked=" << li->second.blocked 
 					<<" --> state=" << li->second.state 
@@ -537,7 +537,7 @@ void IOController::localSetState( IOController::DIOStateList::iterator& li,
 	
 	// -------------
 	ostringstream err;
-	err << myname << "(localSetState): выход с именем " << conf->oind->getNameById(si.id) << " не найден";
+	err << myname << "(localSetState): п╡я▀я┘п╬п╢ я│ п╦п╪п╣п╫п╣п╪ " << conf->oind->getNameById(si.id) << " п╫п╣ п╫п╟п╧п╢п╣п╫";
 	unideb[Debug::INFO] << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }										
@@ -562,7 +562,7 @@ void IOController::localSetValue( IOController::AIOStateList::iterator& li,
 				li->second.real_value = value;
 			}
 
-			// запоминаем время изменения
+			// п╥п╟п©п╬п╪п╦п╫п╟п╣п╪ п╡я─п╣п╪я▐ п╦п╥п╪п╣п╫п╣п╫п╦я▐
 			struct timeval tm;
 			struct timezone tz;
 			tm.tv_sec = 0;
@@ -572,7 +572,7 @@ void IOController::localSetValue( IOController::AIOStateList::iterator& li,
 			li->second.tv_usec = tm.tv_usec;
 			if( unideb.debugging(Debug::INFO) )	
 			{
-				unideb[Debug::INFO] << myname << "(localSetValue): сохраняем состояние аналогового выхода "
+				unideb[Debug::INFO] << myname << "(localSetValue): я│п╬я┘я─п╟п╫я▐п╣п╪ я│п╬я│я┌п╬я▐п╫п╦п╣ п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╡я▀я┘п╬п╢п╟ "
 								<< conf->oind->getNameById(si.id, si.node) << " = " << value 
 								<< " blocked=" << li->second.blocked 
 								<<" --> val=" << li->second.value << endl;
@@ -583,18 +583,18 @@ void IOController::localSetValue( IOController::AIOStateList::iterator& li,
 	
 	// -------------
 	ostringstream err;
-	err << myname << "(localSetValue): выход с именем " << conf->oind->getNameById(si.id) << " не найден";
+	err << myname << "(localSetValue): п╡я▀я┘п╬п╢ я│ п╦п╪п╣п╫п╣п╪ " << conf->oind->getNameById(si.id) << " п╫п╣ п╫п╟п╧п╢п╣п╫";
 	unideb[Debug::INFO] << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }												
 // ---------------------------------------------------------------------------
 void IOController::dsRegistration( const UniDigitalIOInfo& dinf, bool force )
 {
-	// проверка задан ли контроллеру идентификатор
+	// п©я─п╬п╡п╣я─п╨п╟ п╥п╟п╢п╟п╫ п╩п╦ п╨п╬п╫я┌я─п╬п╩п╩п╣я─я┐ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─
 	if( getId() == DefaultObjectId )
 	{
 		ostringstream err;
-		err << "(IOCOntroller::dsRegistration): КОНТРОЛЛЕРУ НЕ ЗАДАН ObjectId. Регистрация невозможна.";
+		err << "(IOCOntroller::dsRegistration): п п·п²п╒п═п·п⌡п⌡п∙п═пё п²п∙ п≈п░п■п░п² ObjectId. п═п╣пЁп╦я│я┌я─п╟я├п╦я▐ п╫п╣п╡п╬п╥п╪п╬п╤п╫п╟.";
 		unideb[Debug::WARN] << err.str() << endl;
 		throw ResolveNameError(err.str().c_str());
 	}
@@ -608,15 +608,15 @@ void IOController::dsRegistration( const UniDigitalIOInfo& dinf, bool force )
 			if( li!=dioList.end() )
 			{
 				ostringstream err;
-				err << "Попытка повторной регистрации датчика("<< k << "). имя: " 
+				err << "п÷п╬п©я▀я┌п╨п╟ п©п╬п╡я┌п╬я─п╫п╬п╧ я─п╣пЁп╦я│я┌я─п╟я├п╦п╦ п╢п╟я┌я┤п╦п╨п╟("<< k << "). п╦п╪я▐: " 
 					<< conf->oind->getNameById(dinf.si.id)
-					<< " узел: " << conf->oind->getMapName(dinf.si.node); 
+					<< " я┐п╥п╣п╩: " << conf->oind->getMapName(dinf.si.node); 
 				throw ObjectNameAlready(err.str().c_str());
 			}
 		}
 
 		DIOStateList::mapped_type di(dinf);
-		// запоминаем начальное время
+		// п╥п╟п©п╬п╪п╦п╫п╟п╣п╪ п╫п╟я┤п╟п╩я▄п╫п╬п╣ п╡я─п╣п╪я▐
 		struct timeval tm;
 		struct timezone tz;
 		tm.tv_sec 	= 0;
@@ -626,7 +626,7 @@ void IOController::dsRegistration( const UniDigitalIOInfo& dinf, bool force )
 		di.tv_usec 	= tm.tv_usec;
 		di.state 	= di.default_val;
 
-		// более оптимальный способ (при условии вставки первый раз)
+		// п╠п╬п╩п╣п╣ п╬п©я┌п╦п╪п╟п╩я▄п╫я▀п╧ я│п©п╬я│п╬п╠ (п©я─п╦ я┐я│п╩п╬п╡п╦п╦ п╡я│я┌п╟п╡п╨п╦ п©п╣я─п╡я▀п╧ я─п╟п╥)
 		dioList.insert(DIOStateList::value_type(k,di));
 	}
 
@@ -639,7 +639,7 @@ void IOController::dsRegistration( const UniDigitalIOInfo& dinf, bool force )
 				if( unideb.debugging(Debug::INFO) )	
 				{
 					unideb[Debug::INFO] << myname 
-						<< "(dsRegistration): регистрирую " 
+						<< "(dsRegistration): я─п╣пЁп╦я│я┌я─п╦я─я┐я▌ " 
 						<< conf->oind->getNameById(dinf.si.id, dinf.si.node) << endl;
 				}
 				ui.registered( dinf.si.id, dinf.si.node, getRef(), true );
@@ -650,7 +650,7 @@ void IOController::dsRegistration( const UniDigitalIOInfo& dinf, bool force )
 				if( unideb.debugging(Debug::WARN) )
 				{
 					unideb[Debug::WARN] << myname 
-						<< "(dsRegistration): ЗАМЕНЯЮ СУЩЕСТВУЮЩИЙ ОБЪЕКТ (ObjectNameAlready)" << endl;
+						<< "(dsRegistration): п≈п░п°п∙п²п╞п╝ п║пёп╘п∙п║п╒п▓пёп╝п╘п≤п≥ п·п▒п╙п∙п п╒ (ObjectNameAlready)" << endl;
 				}
 				ui.unregister(dinf.si.id,dinf.si.node);
 			}
@@ -668,11 +668,11 @@ void IOController::dsRegistration( const UniDigitalIOInfo& dinf, bool force )
 // ---------------------------------------------------------------------------
 void IOController::asRegistration( const UniAnalogIOInfo& ainf, bool force )
 {
-	// проверка задан ли контроллеру идентификатор
+	// п©я─п╬п╡п╣я─п╨п╟ п╥п╟п╢п╟п╫ п╩п╦ п╨п╬п╫я┌я─п╬п╩п╩п╣я─я┐ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─
 	if( getId() == DefaultObjectId )
 	{
 		ostringstream err;
-		err << "(IOCOntroller::dsRegistration): КОНТРОЛЛЕРУ НЕ ЗАДАН ObjectId. Регистрация невозможна.";
+		err << "(IOCOntroller::dsRegistration): п п·п²п╒п═п·п⌡п⌡п∙п═пё п²п∙ п≈п░п■п░п² ObjectId. п═п╣пЁп╦я│я┌я─п╟я├п╦я▐ п╫п╣п╡п╬п╥п╪п╬п╤п╫п╟.";
 		unideb[Debug::WARN] << err.str() << endl;
 		throw ResolveNameError(err.str().c_str());
 	}
@@ -686,15 +686,15 @@ void IOController::asRegistration( const UniAnalogIOInfo& ainf, bool force )
 			if( li!=aioList.end() )
 			{
 				ostringstream err;
-				err << "Попытка повторной регистрации датчика("<< k << "). имя: " 
+				err << "п÷п╬п©я▀я┌п╨п╟ п©п╬п╡я┌п╬я─п╫п╬п╧ я─п╣пЁп╦я│я┌я─п╟я├п╦п╦ п╢п╟я┌я┤п╦п╨п╟("<< k << "). п╦п╪я▐: " 
 					<< conf->oind->getNameById(ainf.si.id)
-					<< " узел: " << conf->oind->getMapName(ainf.si.node); 
+					<< " я┐п╥п╣п╩: " << conf->oind->getMapName(ainf.si.node); 
 				throw ObjectNameAlready(err.str().c_str());
 			}
 		}
 
 		AIOStateList::mapped_type ai(ainf);
-		// запоминаем начальное время
+		// п╥п╟п©п╬п╪п╦п╫п╟п╣п╪ п╫п╟я┤п╟п╩я▄п╫п╬п╣ п╡я─п╣п╪я▐
 		struct timeval tm;
 		struct timezone tz;
 		tm.tv_sec 	= 0;
@@ -704,7 +704,7 @@ void IOController::asRegistration( const UniAnalogIOInfo& ainf, bool force )
 		ai.tv_usec 	= tm.tv_usec;
 		ai.value 	= ai.default_val;
 
-		// более оптимальный способ(при условии вставки первый раз)
+		// п╠п╬п╩п╣п╣ п╬п©я┌п╦п╪п╟п╩я▄п╫я▀п╧ я│п©п╬я│п╬п╠(п©я─п╦ я┐я│п╩п╬п╡п╦п╦ п╡я│я┌п╟п╡п╨п╦ п©п╣я─п╡я▀п╧ я─п╟п╥)
 		aioList.insert(AIOStateList::value_type(k,ai));
 	}
 
@@ -717,7 +717,7 @@ void IOController::asRegistration( const UniAnalogIOInfo& ainf, bool force )
 				if( unideb.debugging(Debug::INFO) )	
 				{
 					unideb[Debug::INFO] << myname 
-						<< "(asRegistration): регистрирую " 
+						<< "(asRegistration): я─п╣пЁп╦я│я┌я─п╦я─я┐я▌ " 
 						<< conf->oind->getNameById(ainf.si.id, ainf.si.node) << endl;
 				}
 				ui.registered( ainf.si.id, ainf.si.node, getRef(), true );
@@ -728,7 +728,7 @@ void IOController::asRegistration( const UniAnalogIOInfo& ainf, bool force )
 				if( unideb.debugging(Debug::WARN) )
 				{
 					unideb[Debug::WARN] << myname 
-					<< "(asRegistration): ЗАМЕНЯЮ СУЩЕСТВУЮЩИЙ ОБЪЕКТ (ObjectNameAlready)" << endl;
+					<< "(asRegistration): п≈п░п°п∙п²п╞п╝ п║пёп╘п∙п║п╒п▓пёп╝п╘п≤п≥ п·п▒п╙п∙п п╒ (ObjectNameAlready)" << endl;
 				}
 				ui.unregister(ainf.si.id,ainf.si.node);
 			}
@@ -757,7 +757,7 @@ void IOController::logging( UniSetTypes::SensorMessage& sm )
 //		struct timezone tz;
 //		gettimeofday(&sm.tm,&tz);
 		ObjectId dbID = conf->getDBServer();
-		// значит на этом узле нет DBServer-а
+		// п╥п╫п╟я┤п╦я┌ п╫п╟ я█я┌п╬п╪ я┐п╥п╩п╣ п╫п╣я┌ DBServer-п╟
 		if( dbID == UniSetTypes::DefaultObjectId )
 			return;
  		
@@ -773,7 +773,7 @@ void IOController::logging( UniSetTypes::SensorMessage& sm )
 	{
 		if(isPingDBServer)
 		{
-			unideb[Debug::CRIT] << myname << "(logging): DBServer недоступен" << endl;
+			unideb[Debug::CRIT] << myname << "(logging): DBServer п╫п╣п╢п╬я│я┌я┐п©п╣п╫" << endl;
 			isPingDBServer = false;
 		}
 	}
@@ -781,11 +781,11 @@ void IOController::logging( UniSetTypes::SensorMessage& sm )
 // --------------------------------------------------------------------------------------------------------------
 void IOController::dumpToDB()
 {
-	// значит на этом узле нет DBServer-а
+	// п╥п╫п╟я┤п╦я┌ п╫п╟ я█я┌п╬п╪ я┐п╥п╩п╣ п╫п╣я┌ DBServer-п╟
 	if( conf->getDBServer() == UniSetTypes::DefaultObjectId )
 		return;
 
-	// Проходим по списку дискретных 
+	// п÷я─п╬я┘п╬п╢п╦п╪ п©п╬ я│п©п╦я│п╨я┐ п╢п╦я│п╨я─п╣я┌п╫я▀я┘ 
 	{	// lock
 //		uniset_mutex_lock lock(dioMutex, 100);
 		for( DIOStateList::iterator li = dioList.begin(); li!=dioList.end(); ++li ) 
@@ -805,7 +805,7 @@ void IOController::dumpToDB()
 		}
 	}	// unlock 
 
-	// Проходим по списку аналоговых
+	// п÷я─п╬я┘п╬п╢п╦п╪ п©п╬ я│п©п╦я│п╨я┐ п╟п╫п╟п╩п╬пЁп╬п╡я▀я┘
 	{	// lock
 //		uniset_mutex_lock lock(aioMutex, 100);
 		for( AIOStateList::iterator li = aioList.begin(); li!=aioList.end(); ++li ) 
@@ -829,8 +829,8 @@ void IOController::dumpToDB()
 // --------------------------------------------------------------------------------------------------------------
 IOController_i::ASensorInfoSeq* IOController::getAnalogSensorsMap()
 {
-	// ЗА ОСВОБОЖДЕНИЕ ПАМЯТИ ОТВЕЧАЕТ КЛИЕНТ!!!!!!
-	// поэтому ему лучше пользоваться при получении _var-классом
+	// п≈п░ п·п║п▓п·п▒п·п√п■п∙п²п≤п∙ п÷п░п°п╞п╒п≤ п·п╒п▓п∙п╖п░п∙п╒ п п⌡п≤п∙п²п╒!!!!!!
+	// п©п╬я█я┌п╬п╪я┐ п╣п╪я┐ п╩я┐я┤я┬п╣ п©п╬п╩я▄п╥п╬п╡п╟я┌я▄я│я▐ п©я─п╦ п©п╬п╩я┐я┤п╣п╫п╦п╦ _var-п╨п╩п╟я│я│п╬п╪
 	IOController_i::ASensorInfoSeq* res = new IOController_i::ASensorInfoSeq();	
 	res->length( aioList.size());
 
@@ -850,8 +850,8 @@ IOController_i::ASensorInfoSeq* IOController::getAnalogSensorsMap()
 // --------------------------------------------------------------------------------------------------------------
 IOController_i::DSensorInfoSeq* IOController::getDigitalSensorsMap()
 {
-	// ЗА ОСВОБОЖДЕНИЕ ПАМЯТИ ОТВЕЧАЕТ КЛИЕНТ!!!!!!
-	// поэтому ему лучше пользоваться при получении _var-классом
+	// п≈п░ п·п║п▓п·п▒п·п√п■п∙п²п≤п∙ п÷п░п°п╞п╒п≤ п·п╒п▓п∙п╖п░п∙п╒ п п⌡п≤п∙п²п╒!!!!!!
+	// п©п╬я█я┌п╬п╪я┐ п╣п╪я┐ п╩я┐я┤я┬п╣ п©п╬п╩я▄п╥п╬п╡п╟я┌я▄я│я▐ п©я─п╦ п©п╬п╩я┐я┤п╣п╫п╦п╦ _var-п╨п╩п╟я│я│п╬п╪
 	IOController_i::DSensorInfoSeq* res = new IOController_i::DSensorInfoSeq();	
 	res->length(dioList.size());
 
@@ -923,7 +923,7 @@ IOController_i::DigitalIOInfo IOController::getDInfo(const IOController_i::Senso
 
 	// -------------
 	ostringstream err;
-	err << myname << "(getDInfo): дискретный вход(выход) с именем " << conf->oind->getNameById(si.id) << " не найден";
+	err << myname << "(getDInfo): п╢п╦я│п╨я─п╣я┌п╫я▀п╧ п╡я┘п╬п╢(п╡я▀я┘п╬п╢) я│ п╦п╪п╣п╫п╣п╪ " << conf->oind->getNameById(si.id) << " п╫п╣ п╫п╟п╧п╢п╣п╫";
 	unideb[Debug::INFO] << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
@@ -939,7 +939,7 @@ IOController_i::AnalogIOInfo IOController::getAInfo(const IOController_i::Sensor
 
 	// -------------
 	ostringstream err;
-	err << myname << "(getAInfo): аналоговый вход(выход) с именем " << conf->oind->getNameById(si.id) << " не найден";
+	err << myname << "(getAInfo): п╟п╫п╟п╩п╬пЁп╬п╡я▀п╧ п╡я┘п╬п╢(п╡я▀я┘п╬п╢) я│ п╦п╪п╣п╫п╣п╪ " << conf->oind->getNameById(si.id) << " п╫п╣ п╫п╟п╧п╢п╣п╫";
 	unideb[Debug::INFO] << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
@@ -950,12 +950,12 @@ CORBA::Long IOController::getRawValue(const IOController_i::SensorInfo& si)
 	if( it==aioList.end() )
 	{
 		ostringstream err;
-		err << myname << "(calibrate): аналоговый вход(выход) с именем " 
-			<< conf->oind->getNameById(si.id,si.node) << " не найден";
+		err << myname << "(calibrate): п╟п╫п╟п╩п╬пЁп╬п╡я▀п╧ п╡я┘п╬п╢(п╡я▀я┘п╬п╢) я│ п╦п╪п╣п╫п╣п╪ " 
+			<< conf->oind->getNameById(si.id,si.node) << " п╫п╣ п╫п╟п╧п╢п╣п╫";
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
-	// ??? получаем raw из калиброванного значения ???
+	// ??? п©п╬п╩я┐я┤п╟п╣п╪ raw п╦п╥ п╨п╟п╩п╦п╠я─п╬п╡п╟п╫п╫п╬пЁп╬ п╥п╫п╟я┤п╣п╫п╦я▐ ???
 	IOController_i::CalibrateInfo& ci(it->second.ci);
 
 	if( ci.maxCal!=0 && ci.maxCal!=ci.minCal )
@@ -963,7 +963,7 @@ CORBA::Long IOController::getRawValue(const IOController_i::SensorInfo& si)
 		if( it->second.type == UniversalIO::AnalogInput )
 			return UniSetTypes::lcalibrate(it->second.value,ci.minRaw,ci.maxRaw,ci.minCal,ci.maxCal,true);
 
-		// п╨п╟п╩п╦п╠я─я┐п╣п╪ п╡ п╬п╠я─п╟я┌п╫я┐я▌ я│я┌п╬я─п╬п╫я┐ (п╫п╟ п╡я▀я┘п╬п╢)
+		// п©Б∙╗п©Б∙÷п©Б∙╘п©Б∙╕п©Б∙═я▐Б■─я▐Б■░п©Б∙ёп©Б∙╙ п©Б∙║ п©Б∙╛п©Б∙═я▐Б■─п©Б∙÷я▐Б■▄п©Б∙╚я▐Б■░я▐Б√▄ я▐Б■┌я▐Б■▄п©Б∙╛я▐Б■─п©Б∙╛п©Б∙╚я▐Б■░ (п©Б∙╚п©Б∙÷ п©Б∙║я▐Б√─я▐Б■≤п©Б∙╛п©Б∙╒)
 		if( it->second.type == UniversalIO::AnalogOutput ) 
 			return UniSetTypes::lcalibrate(it->second.value,ci.minCal,ci.maxCal,ci.minRaw,ci.maxRaw,true);
 	}
@@ -979,7 +979,7 @@ void IOController::calibrate(const IOController_i::SensorInfo& si,
 	if( it==aioList.end() )
 	{
 		ostringstream err;
-		err << myname << "(calibrate): аналоговый вход(выход) с именем " << conf->oind->getNameById(si.id,si.node) << " не найден";
+		err << myname << "(calibrate): п╟п╫п╟п╩п╬пЁп╬п╡я▀п╧ п╡я┘п╬п╢(п╡я▀я┘п╬п╢) я│ п╦п╪п╣п╫п╣п╪ " << conf->oind->getNameById(si.id,si.node) << " п╫п╣ п╫п╟п╧п╢п╣п╫";
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
@@ -995,8 +995,8 @@ IOController_i::CalibrateInfo IOController::getCalibrateInfo(const IOController_
 	if( it==aioList.end() )
 	{
 		ostringstream err;
-		err << myname << "(calibrate): аналоговый вход(выход) с именем " 
-			<< conf->oind->getNameById(si.id,si.node) << " не найден";
+		err << myname << "(calibrate): п╟п╫п╟п╩п╬пЁп╬п╡я▀п╧ п╡я┘п╬п╢(п╡я▀я┘п╬п╢) я│ п╦п╪п╣п╫п╣п╪ " 
+			<< conf->oind->getNameById(si.id,si.node) << " п╫п╣ п╫п╟п╧п╢п╣п╫";
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 	return it->second.ci;	
@@ -1213,7 +1213,7 @@ IOController::DependsInfo::DependsInfo( IOController_i::SensorInfo& si,
 // -----------------------------------------------------------------------------
 void IOController::updateDepends( IOController::DependsList& lst, bool undefined, bool& lst_lock )
 {
-	// защита от "зацикливания" рекурсивного вызова функции
+	// п╥п╟я┴п╦я┌п╟ п╬я┌ "п╥п╟я├п╦п╨п╩п╦п╡п╟п╫п╦я▐" я─п╣п╨я┐я─я│п╦п╡п╫п╬пЁп╬ п╡я▀п╥п╬п╡п╟ я└я┐п╫п╨я├п╦п╦
 	if( lst_lock || lst.empty() )	
 		return;
 
@@ -1245,7 +1245,7 @@ void IOController::updateDepends( IOController::DependsList& lst, bool undefined
 // -----------------------------------------------------------------------------
 void IOController::updateBlockDepends( IOController::DependsList& lst, bool blk_state, bool& lst_lock )
 {
-	// защита от "зацикливания" рекурсивного вызова функции
+	// п╥п╟я┴п╦я┌п╟ п╬я┌ "п╥п╟я├п╦п╨п╩п╦п╡п╟п╫п╦я▐" я─п╣п╨я┐я─я│п╦п╡п╫п╬пЁп╬ п╡я▀п╥п╬п╡п╟ я└я┐п╫п╨я├п╦п╦
 	if( lst_lock || lst.empty() )	
 		return;
 
@@ -1333,7 +1333,7 @@ IOController_i::ASensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
 			}
 		}
 
-		// элемент не найден...
+		// я█п╩п╣п╪п╣п╫я┌ п╫п╣ п╫п╟п╧п╢п╣п╫...
 		(*res)[i].si.id 	= DefaultObjectId;
 		(*res)[i].si.node 	= DefaultObjectId;
 		(*res)[i].undefined = true;
@@ -1344,7 +1344,7 @@ IOController_i::ASensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
 // -----------------------------------------------------------------------------
 IDSeq* IOController::setOutputSeq(const IOController_i::OutSeq& lst, ObjectId sup_id )
 {
-	UniSetTypes::IDList badlist; // писок не найденных идентификаторов
+	UniSetTypes::IDList badlist; // п©п╦я│п╬п╨ п╫п╣ п╫п╟п╧п╢п╣п╫п╫я▀я┘ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╬п╡
 
 	int size = lst.length();
 
@@ -1375,7 +1375,7 @@ IDSeq* IOController::setOutputSeq(const IOController_i::OutSeq& lst, ObjectId su
 			}
 		}
 
-		// не найден
+		// п╫п╣ п╫п╟п╧п╢п╣п╫
 		badlist.add( lst[i].si.id );
 	}
 
@@ -1408,16 +1408,16 @@ IOController_i::ShortIOInfo IOController::getChangedTime( const IOController_i::
 
 	// -------------
 	ostringstream err;
-	err << myname << "(getChangedTime): дискретный вход(выход) с именем " 
-		<< conf->oind->getNameById(si.id) << " не найден";
+	err << myname << "(getChangedTime): п╢п╦я│п╨я─п╣я┌п╫я▀п╧ п╡я┘п╬п╢(п╡я▀я┘п╬п╢) я│ п╦п╪п╣п╫п╣п╪ " 
+		<< conf->oind->getNameById(si.id) << " п╫п╣ п╫п╟п╧п╢п╣п╫";
 	unideb[Debug::INFO] << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // -----------------------------------------------------------------------------
 IOController_i::ShortMapSeq* IOController::getSensors()
 {
-	// ЗА ОСВОБОЖДЕНИЕ ПАМЯТИ ОТВЕЧАЕТ КЛИЕНТ!!!!!!
-	// поэтому ему лучше пользоваться при получении _var-классом
+	// п≈п░ п·п║п▓п·п▒п·п√п■п∙п²п≤п∙ п÷п░п°п╞п╒п≤ п·п╒п▓п∙п╖п░п∙п╒ п п⌡п≤п∙п²п╒!!!!!!
+	// п©п╬я█я┌п╬п╪я┐ п╣п╪я┐ п╩я┐я┤я┬п╣ п©п╬п╩я▄п╥п╬п╡п╟я┌я▄я│я▐ п©я─п╦ п©п╬п╩я┐я┤п╣п╫п╦п╦ _var-п╨п╩п╟я│я│п╬п╪
 	IOController_i::ShortMapSeq* res = new IOController_i::ShortMapSeq();
 	res->length( aioList.size() + dioList.size() );
 

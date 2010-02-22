@@ -61,7 +61,7 @@ int main(int argc, const char **argv)
 		MBSlave* s = MBSlave::init_mbslave(argc,argv,shmID);
 		if( !s )
 		{
-			dlog[Debug::CRIT] << "(mbslave): init не прошёл..." << endl;
+			dlog[Debug::CRIT] << "(mbslave): init п╫п╣ п©я─п╬я┬я▒п╩..." << endl;
 			return 1;
 		}
 

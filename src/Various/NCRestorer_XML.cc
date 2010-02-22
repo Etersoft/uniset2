@@ -63,8 +63,8 @@ NCRestorer_XML::~NCRestorer_XML()
 void NCRestorer_XML::init( std::string fname )
 {
 	/*! 
-		\warning Файл открывается только при создании... 
-		Т.е. не будут учтены изменения в промежутке между записью(dump-а) файла
+		\warning п╓п╟п╧п╩ п╬я┌п╨я─я▀п╡п╟п╣я┌я│я▐ я┌п╬п╩я▄п╨п╬ п©я─п╦ я│п╬п╥п╢п╟п╫п╦п╦... 
+		п╒.п╣. п╫п╣ п╠я┐п╢я┐я┌ я┐я┤я┌п╣п╫я▀ п╦п╥п╪п╣п╫п╣п╫п╦я▐ п╡ п©я─п╬п╪п╣п╤я┐я┌п╨п╣ п╪п╣п╤п╢я┐ п╥п╟п©п╦я│я▄я▌(dump-п╟) я└п╟п╧п╩п╟
 	*/
 	try
 	{
@@ -72,7 +72,7 @@ void NCRestorer_XML::init( std::string fname )
 	}
 	catch(UniSetTypes::NameNotFound& ex)
 	{
-		unideb[Debug::WARN] << "(NCRestorer_XML): файл " << fname << " не найден, создаём новый...\n";
+		unideb[Debug::WARN] << "(NCRestorer_XML): я└п╟п╧п╩ " << fname << " п╫п╣ п╫п╟п╧п╢п╣п╫, я│п╬п╥п╢п╟я▒п╪ п╫п╬п╡я▀п╧...\n";
 	}
 }
 // ------------------------------------------------------------------------------------------
@@ -105,15 +105,15 @@ void NCRestorer_XML::read_list( UniXML& xml, xmlNode* node, IONotifyController* 
 	
 		if( !getSensorInfo(xml,it,inf) )
 		{
-			unideb[Debug::WARN] << ic->getName() << "(read_list): не смог получить информацию по датчику " << endl;
+			unideb[Debug::WARN] << ic->getName() << "(read_list): п╫п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ п╦п╫я└п╬я─п╪п╟я├п╦я▌ п©п╬ п╢п╟я┌я┤п╦п╨я┐ " << endl;
 			continue;
 		}
 		
 		inf.undefined = false;
 
-		// т.к. в функции может обновится inf
-		// вызываем перед регистрацией
-		// (потому-что в xxRegistration inf будет скопирована
+		// я┌.п╨. п╡ я└я┐п╫п╨я├п╦п╦ п╪п╬п╤п╣я┌ п╬п╠п╫п╬п╡п╦я┌я│я▐ inf
+		// п╡я▀п╥я▀п╡п╟п╣п╪ п©п╣я─п╣п╢ я─п╣пЁп╦я│я┌я─п╟я├п╦п╣п╧
+		// (п©п╬я┌п╬п╪я┐-я┤я┌п╬ п╡ xxRegistration inf п╠я┐п╢п╣я┌ я│п╨п╬п©п╦я─п╬п╡п╟п╫п╟
 		ncrslot(xml,it,node,inf);
 
 		switch(inf.type)
@@ -163,7 +163,7 @@ void NCRestorer_XML::read( IONotifyController* ic, const string fn )
 
 	if( !fn.empty() )
 	{
-		 // оптимизация (не загружаем второй раз xml-файл)
+		 // п╬п©я┌п╦п╪п╦п╥п╟я├п╦я▐ (п╫п╣ п╥п╟пЁя─я┐п╤п╟п╣п╪ п╡я┌п╬я─п╬п╧ я─п╟п╥ xml-я└п╟п╧п╩)
 		if( fn == conf->getConfFileName() && confxml )
 			read( ic, *confxml );
 		else
@@ -175,7 +175,7 @@ void NCRestorer_XML::read( IONotifyController* ic, const string fn )
 	}
 	else if( !fname.empty() )
 	{
-		// оптимизация (не загружаем второй раз xml-файл)
+		// п╬п©я┌п╦п╪п╦п╥п╟я├п╦я▐ (п╫п╣ п╥п╟пЁя─я┐п╤п╟п╣п╪ п╡я┌п╬я─п╬п╧ я─п╟п╥ xml-я└п╟п╧п╩)
 		if( fname == conf->getConfFileName() && confxml )
 			read( ic, *confxml );
 		else
@@ -210,11 +210,11 @@ bool NCRestorer_XML::getBaseInfo( UniXML& xml, xmlNode* it, IOController_i::Sens
 	string sname( xml.getProp(it,"name"));
 	if( sname.empty() )
 	{
-		unideb[Debug::WARN] << "(getSensorInfo): не указано имя датчика... пропускаем..." << endl;
+		unideb[Debug::WARN] << "(getSensorInfo): п╫п╣ я┐п╨п╟п╥п╟п╫п╬ п╦п╪я▐ п╢п╟я┌я┤п╦п╨п╟... п©я─п╬п©я┐я│п╨п╟п╣п╪..." << endl;
 		return false;
 	}
 
-	// преобразуем в полное имя
+	// п©я─п╣п╬п╠я─п╟п╥я┐п╣п╪ п╡ п©п╬п╩п╫п╬п╣ п╦п╪я▐
 	ObjectId sid = UniSetTypes::DefaultObjectId;
 
 	string id(xml.getProp(it,"id"));
@@ -225,7 +225,7 @@ bool NCRestorer_XML::getBaseInfo( UniXML& xml, xmlNode* it, IOController_i::Sens
 
 	if( sid == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::CRIT] << "(getSensorInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР датчика --> " << sname << endl;
+		unideb[Debug::CRIT] << "(getSensorInfo): п²п∙ п²п░п≥п■п∙п² п≤п■п∙п²п╒п≤п╓п≤п п░п╒п·п═ п╢п╟я┌я┤п╦п╨п╟ --> " << sname << endl;
 		return false;
 	}
 	
@@ -236,7 +236,7 @@ bool NCRestorer_XML::getBaseInfo( UniXML& xml, xmlNode* it, IOController_i::Sens
 
 	if( snode == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::CRIT] << "(getSensorInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла --> " << snodename << endl;
+		unideb[Debug::CRIT] << "(getSensorInfo): п²п∙ п²п░п≥п■п∙п² п≤п■п∙п²п╒п≤п╓п≤п п░п╒п·п═ я┐п╥п╩п╟ --> " << snodename << endl;
 		return false;
 	}
 
@@ -265,7 +265,7 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
 		inf.priority = Message::Medium;
 		if( unideb.debugging(Debug::WARN) )
 		{
-			unideb[Debug::WARN] << "(NCRestorer_XML:getSensorInfo): не указан приоритет для " 
+			unideb[Debug::WARN] << "(NCRestorer_XML:getSensorInfo): п╫п╣ я┐п╨п╟п╥п╟п╫ п©я─п╦п╬я─п╦я┌п╣я┌ п╢п╩я▐ " 
 				<< xml.getProp(it,"name") << endl;
 		}
 	}
@@ -279,7 +279,7 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
 		return false;
 	}
 
-	// калибровка
+	// п╨п╟п╩п╦п╠я─п╬п╡п╨п╟
 	if( inf.type == UniversalIO::AnalogInput || inf.type == UniversalIO::AnalogOutput )
 	{
 		inf.ci.minRaw = xml.getIntProp(it,"rmin");
@@ -321,7 +321,7 @@ void NCRestorer_XML::read_thresholds(UniXML& xml, xmlNode* node, IONotifyControl
 		if( !getSensorInfo(xml,it.getCurrent(),inf) )
 		{
 			unideb[Debug::WARN] << ic->getName() 
-				<< "(read_thresholds): не смог получить информацию по датчику" << endl;
+				<< "(read_thresholds): п╫п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ п╦п╫я└п╬я─п╪п╟я├п╦я▌ п©п╬ п╢п╟я┌я┤п╦п╨я┐" << endl;
 			continue;
 		}
 
@@ -343,8 +343,8 @@ void NCRestorer_XML::read_thresholds(UniXML& xml, xmlNode* node, IONotifyControl
 			if( !getThresholdInfo(xml,tit,ti) )
 			{
 				unideb[Debug::WARN] << ic->getName() 
-							<< "(read_thresholds): не смог получить информацию о пороге"
-							<< " для датчика "
+							<< "(read_thresholds): п╫п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ п╦п╫я└п╬я─п╪п╟я├п╦я▌ п╬ п©п╬я─п╬пЁп╣"
+							<< " п╢п╩я▐ п╢п╟я┌я┤п╦п╨п╟ "
 							<< conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
 				continue;
 			}
@@ -368,14 +368,14 @@ void NCRestorer_XML::read_thresholds(UniXML& xml, xmlNode* node, IONotifyControl
 					if( !getConsumerList(xml,ask_it,ti.clst) )
 					{
 						unideb[Debug::WARN] << ic->getName() 
-								<< "(read_thresholds): не смог получить список заказчиков"
-								<< " для порога " << ti.id 
-								<< " датчика " << conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
+								<< "(read_thresholds): п╫п╣ я│п╪п╬пЁ п©п╬п╩я┐я┤п╦я┌я▄ я│п©п╦я│п╬п╨ п╥п╟п╨п╟п╥я┤п╦п╨п╬п╡"
+								<< " п╢п╩я▐ п©п╬я─п╬пЁп╟ " << ti.id 
+								<< " п╢п╟я┌я┤п╦п╨п╟ " << conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
 					}
 				}
 			}
 		
-			// порог добавляем в любом случае, даже если список заказчиков пуст...
+			// п©п╬я─п╬пЁ п╢п╬п╠п╟п╡п╩я▐п╣п╪ п╡ п╩я▌п╠п╬п╪ я│п╩я┐я┤п╟п╣, п╢п╟п╤п╣ п╣я│п╩п╦ я│п©п╦я│п╬п╨ п╥п╟п╨п╟п╥я┤п╦п╨п╬п╡ п©я┐я│я┌...
 			tlst.push_back(ti);
 			rtslot(xml,tit,it);
 		}
@@ -388,7 +388,7 @@ void NCRestorer_XML::read_thresholds(UniXML& xml, xmlNode* node, IONotifyControl
 void NCRestorer_XML::read_consumers( UniXML& xml, xmlNode* it, 
 										NCRestorer_XML::SInfo& inf, IONotifyController* ic )
 {
-	// в новых ask-файлах список выделен <consumers>...</consumers>,
+	// п╡ п╫п╬п╡я▀я┘ ask-я└п╟п╧п╩п╟я┘ я│п©п╦я│п╬п╨ п╡я▀п╢п╣п╩п╣п╫ <consumers>...</consumers>,
 	xmlNode* cnode = find_node(xml,it,"consumers","");
 	if( cnode )
 	{
@@ -435,8 +435,8 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 		if( ti.sid == UniSetTypes::DefaultObjectId )
 		{
 			unideb[Debug::CRIT] << "(NCRestorer_XML:getThresholdInfo): " 
-					<< " Неверно указан НАЗВАНИЕ датчика " << sid_name 
-					<< " Не найден ID для данного дачика\n" << flush;
+					<< " п²п╣п╡п╣я─п╫п╬ я┐п╨п╟п╥п╟п╫ п²п░п≈п▓п░п²п≤п∙ п╢п╟я┌я┤п╦п╨п╟ " << sid_name 
+					<< " п²п╣ п╫п╟п╧п╢п╣п╫ ID п╢п╩я▐ п╢п╟п╫п╫п╬пЁп╬ п╢п╟я┤п╦п╨п╟\n" << flush;
 		}
 	}
 
@@ -457,8 +457,8 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 			if( ti.sid == UniSetTypes::DefaultObjectId )
 			{
 				unideb[Debug::CRIT] << "(NCRestorer_XML:getThresholdInfo): " 
-						<< " Неверно указан НАЗВАНИЕ датчика " << sid_name 
-						<< " Не найден ID для данного дачика\n" << flush;
+						<< " п²п╣п╡п╣я─п╫п╬ я┐п╨п╟п╥п╟п╫ п²п░п≈п▓п░п²п≤п∙ п╢п╟я┌я┤п╦п╨п╟ " << sid_name 
+						<< " п²п╣ п╫п╟п╧п╢п╣п╫ ID п╢п╩я▐ п╢п╟п╫п╫п╬пЁп╬ п╢п╟я┤п╦п╨п╟\n" << flush;
 			}
 		}
 	}
@@ -468,7 +468,7 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 // ------------------------------------------------------------------------------------------
 bool NCRestorer_XML::check_thresholds_item( UniXML_iterator& it )
 {	
-	// формат тот же как и <sensors> 
+	// я└п╬я─п╪п╟я┌ я┌п╬я┌ п╤п╣ п╨п╟п╨ п╦ <sensors> 
 	return check_list_item(it);
 }
 // ------------------------------------------------------------------------------------------
@@ -498,7 +498,7 @@ void NCRestorer_XML::buildDependsList( IONotifyController* ic, const std::string
 	UniXML* confxml = conf->getConfXML();
 	if( !fn.empty() )
 	{
-		 // оптимизация (не загружаем второй раз xml-файл)
+		 // п╬п©я┌п╦п╪п╦п╥п╟я├п╦я▐ (п╫п╣ п╥п╟пЁя─я┐п╤п╟п╣п╪ п╡я┌п╬я─п╬п╧ я─п╟п╥ xml-я└п╟п╧п╩)
 		if( fn == conf->getConfFileName() && confxml )
 			buildDependsList( ic, *confxml );
 		else
@@ -510,7 +510,7 @@ void NCRestorer_XML::buildDependsList( IONotifyController* ic, const std::string
 	}
 	else if( !fname.empty() )
 	{
-		// оптимизация (не загружаем второй раз xml-файл)
+		// п╬п©я┌п╦п╪п╦п╥п╟я├п╦я▐ (п╫п╣ п╥п╟пЁя─я┐п╤п╟п╣п╪ п╡я┌п╬я─п╬п╧ я─п╟п╥ xml-я└п╟п╧п╩)
 		if( fname == conf->getConfFileName() && confxml )
 			buildDependsList( ic, *confxml );
 		else
@@ -568,9 +568,9 @@ void NCRestorer_XML::build_depends( UniXML& xml, xmlNode* node, IONotifyControll
 		mydepinfo.ait = aioFind(ic,k);
 		if( mydepinfo.dit==dioEnd(ic) && mydepinfo.ait==aioEnd(ic) )
 		{
-			unideb[Debug::CRIT] << "(NCRestorer_XML:build_depends): Датчик " 
+			unideb[Debug::CRIT] << "(NCRestorer_XML:build_depends): п■п╟я┌я┤п╦п╨ " 
 				<< xml.getProp(node,"name")
-				<< " НЕ НАЙДЕН ВО ВНУТРЕННЕМ СПИСКЕ! " << endl;
+				<< " п²п∙ п²п░п≥п■п∙п² п▓п· п▓п²пёп╒п═п∙п²п²п∙п° п║п÷п≤п║п п∙! " << endl;
 				continue;
 		}		
 
@@ -582,7 +582,7 @@ void NCRestorer_XML::build_depends( UniXML& xml, xmlNode* node, IONotifyControll
 				if( !check_depend_item(dit) )
 					continue;
 			
-				IOController::DependsInfo blk; // информации о блокировщике данного датчика
+				IOController::DependsInfo blk; // п╦п╫я└п╬я─п╪п╟я├п╦п╦ п╬ п╠п╩п╬п╨п╦я─п╬п╡я┴п╦п╨п╣ п╢п╟п╫п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
 				if( getDependsInfo(xml,dit,blk) )
 				{	
 					k = UniSetTypes::key(blk.si.id,blk.si.node);
@@ -591,8 +591,8 @@ void NCRestorer_XML::build_depends( UniXML& xml, xmlNode* node, IONotifyControll
 					if( blk.dit==dioEnd(ic) && blk.ait==aioEnd(ic) )
 					{
 						unideb[Debug::CRIT] << ic->getName() << "(NCRestorer_XML:build_depends): " 
-							<< " Не найдена зависимость на " << xml.getProp(dit,"name")
-							<< " для " << xml.getProp(node,"name") << endl;
+							<< " п²п╣ п╫п╟п╧п╢п╣п╫п╟ п╥п╟п╡п╦я│п╦п╪п╬я│я┌я▄ п╫п╟ " << xml.getProp(dit,"name")
+							<< " п╢п╩я▐ " << xml.getProp(node,"name") << endl;
 						continue;
 					}
 							
@@ -605,7 +605,7 @@ void NCRestorer_XML::build_depends( UniXML& xml, xmlNode* node, IONotifyControll
 					else if( blk.ait != aioEnd(ic) )
 						defval = blk.ait->second.default_val;
 
-					// Проверка начальных условий для высталения блокировки
+					// п÷я─п╬п╡п╣я─п╨п╟ п╫п╟я┤п╟п╩я▄п╫я▀я┘ я┐я│п╩п╬п╡п╦п╧ п╢п╩я▐ п╡я▀я│я┌п╟п╩п╣п╫п╦я▐ п╠п╩п╬п╨п╦я─п╬п╡п╨п╦
 					bool blk_set = defval ? false : true;
 					if( mydepinfo.block_invert )
 						blk_set ^= true;
@@ -630,10 +630,10 @@ void NCRestorer_XML::build_depends( UniXML& xml, xmlNode* node, IONotifyControll
 						}
 					}
 
-					// вносим 'себя' в список зависимостей для указанного датчика
-					// (без проверки на дублирование
-					// т.к. не может быть два одинаковых ID 
-					// в конф. файле...
+					// п╡п╫п╬я│п╦п╪ 'я│п╣п╠я▐' п╡ я│п©п╦я│п╬п╨ п╥п╟п╡п╦я│п╦п╪п╬я│я┌п╣п╧ п╢п╩я▐ я┐п╨п╟п╥п╟п╫п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
+					// (п╠п╣п╥ п©я─п╬п╡п╣я─п╨п╦ п╫п╟ п╢я┐п╠п╩п╦я─п╬п╡п╟п╫п╦п╣
+					// я┌.п╨. п╫п╣ п╪п╬п╤п╣я┌ п╠я▀я┌я▄ п╢п╡п╟ п╬п╢п╦п╫п╟п╨п╬п╡я▀я┘ ID 
+					// п╡ п╨п╬п╫я└. я└п╟п╧п╩п╣...
 					if( blk.dit != dioEnd(ic) )
 					{
 						blk.dit->second.dlst.push_back(mydepinfo);
@@ -672,11 +672,11 @@ bool NCRestorer_XML::check_depend_item( UniXML_iterator& it )
 	if( d_filterField.empty() )
 		return true;
 
-	// просто проверка на не пустой field
+	// п©я─п╬я│я┌п╬ п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п╫п╣ п©я┐я│я┌п╬п╧ field
 	if( d_filterValue.empty() && it.getProp(d_filterField).empty() )
 		return false;
 
-	// просто проверка что field = value
+	// п©я─п╬я│я┌п╬ п©я─п╬п╡п╣я─п╨п╟ я┤я┌п╬ field = value
 	if( !d_filterValue.empty() && it.getProp(d_filterField)!=d_filterValue )
 		return false;
 

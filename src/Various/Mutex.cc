@@ -112,13 +112,13 @@ uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, int timeMS ):
 		if( !mutex->name().empty() && unideb.debugging( Debug::type(Debug::LEVEL9|Debug::WARN)) )
 		{
 			unideb[Debug::type(Debug::LEVEL9|Debug::WARN)] 
-				<< "(mutex_lock): вышло заданное время ожидания " 
-				<< timeMS << " msec для " << mutex->name() << endl;
+				<< "(mutex_lock): п╡я▀я┬п╩п╬ п╥п╟п╢п╟п╫п╫п╬п╣ п╡я─п╣п╪я▐ п╬п╤п╦п╢п╟п╫п╦я▐ " 
+				<< timeMS << " msec п╢п╩я▐ " << mutex->name() << endl;
 		}
 
 		mutex_atomic_set(&mlock,0);
 		mutex->mtx.unlock();
-		return;	//	ресурс не захватываем
+		return;	//	я─п╣я│я┐я─я│ п╫п╣ п╥п╟я┘п╡п╟я┌я▀п╡п╟п╣п╪
 	}
 
 	mutex_atomic_set(&mlock,1);

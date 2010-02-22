@@ -21,7 +21,7 @@
  *  \author Pavel Vainerman
  *  \date   $Date: 2009/01/16 23:16:42 $
  *  \version $Id: UniSetTypes.h,v 1.12 2009/01/16 23:16:42 vpashka Exp $
- *	\brief базовые типы библиотеки UniSet
+ *	\brief п╠п╟п╥п╬п╡я▀п╣ я┌п╦п©я▀ п╠п╦п╠п╩п╦п╬я┌п╣п╨п╦ UniSet
 */
 // -------------------------------------------------------------------------- 
 #ifndef UniSetTypes_H_
@@ -39,19 +39,19 @@
 #include "IOController_i.hh"
 #include "Mutex.h"
 // -----------------------------------------------------------------------------------------
-/*! Задержка в миллисекундах */
+/*! п≈п╟п╢п╣я─п╤п╨п╟ п╡ п╪п╦п╩п╩п╦я│п╣п╨я┐п╫п╢п╟я┘ */
 inline void msleep( unsigned int m ) { usleep(m*1000); }
 
-/*! Определения базовых типов библиотеки UniSet */
+/*! п·п©я─п╣п╢п╣п╩п╣п╫п╦я▐ п╠п╟п╥п╬п╡я▀я┘ я┌п╦п©п╬п╡ п╠п╦п╠п╩п╦п╬я┌п╣п╨п╦ UniSet */
 namespace UniSetTypes
 {
-	typedef std::list<std::string> ListObjectName;	/*!< Список объектов типа ObjectName */
+	typedef std::list<std::string> ListObjectName;	/*!< п║п©п╦я│п╬п╨ п╬п╠я┼п╣п╨я┌п╬п╡ я┌п╦п©п╟ ObjectName */
 
 	typedef ObjectId SysId;
-	typedef	CORBA::Object_ptr ObjectPtr;	/*!< Ссылка на объект регистрируемый в ObjectRepository */
-	typedef	CORBA::Object_var ObjectVar;	/*!< Ссылка на объект регистрируемый в ObjectRepository */
+	typedef	CORBA::Object_ptr ObjectPtr;	/*!< п║я│я▀п╩п╨п╟ п╫п╟ п╬п╠я┼п╣п╨я┌ я─п╣пЁп╦я│я┌я─п╦я─я┐п╣п╪я▀п╧ п╡ ObjectRepository */
+	typedef	CORBA::Object_var ObjectVar;	/*!< п║я│я▀п╩п╨п╟ п╫п╟ п╬п╠я┼п╣п╨я┌ я─п╣пЁп╦я│я┌я─п╦я─я┐п╣п╪я▀п╧ п╡ ObjectRepository */
 
-	/*! Функция делает ObjectType из const char * (переводит const-строку в обычную, что плохо, но мы обещаем не писать в неё :) )  */
+	/*! п╓я┐п╫п╨я├п╦я▐ п╢п╣п╩п╟п╣я┌ ObjectType п╦п╥ const char * (п©п╣я─п╣п╡п╬п╢п╦я┌ const-я│я┌я─п╬п╨я┐ п╡ п╬п╠я▀я┤п╫я┐я▌, я┤я┌п╬ п©п╩п╬я┘п╬, п╫п╬ п╪я▀ п╬п╠п╣я┴п╟п╣п╪ п╫п╣ п©п╦я│п╟я┌я▄ п╡ п╫п╣я▒ :) )  */
 	inline static UniSetTypes::ObjectType getObjectType(const char * name) { const void *t = name;  return (UniSetTypes::ObjectType)t; }
 
 	UniversalIO::IOTypes getIOType( const std::string s );
@@ -60,14 +60,14 @@ namespace UniSetTypes
 	std::ostream& operator<<( std::ostream& os, const IOController_i::CalibrateInfo c );
 
 
-	/*! Команды для управления лампочками */
+	/*! п п╬п╪п╟п╫п╢я▀ п╢п╩я▐ я┐п©я─п╟п╡п╩п╣п╫п╦я▐ п╩п╟п╪п©п╬я┤п╨п╟п╪п╦ */
 	enum LampCommand
 	{
-		lmpOFF		= 0,	/*!< выключить */
-		lmpON		= 1,	/*!< включить */
-		lmpBLINK	= 2,	/*!< мигать */
-		lmpBLINK2	= 3,	/*!< мигать */
-		lmpBLINK3	= 4		/*!< мигать */
+		lmpOFF		= 0,	/*!< п╡я▀п╨п╩я▌я┤п╦я┌я▄ */
+		lmpON		= 1,	/*!< п╡п╨п╩я▌я┤п╦я┌я▄ */
+		lmpBLINK	= 2,	/*!< п╪п╦пЁп╟я┌я▄ */
+		lmpBLINK2	= 3,	/*!< п╪п╦пЁп╟я┌я▄ */
+		lmpBLINK3	= 4		/*!< п╪п╦пЁп╟я┌я▄ */
 	};
 
 	static const long ChannelBreakValue = std::numeric_limits<long>::max();
@@ -86,52 +86,52 @@ namespace UniSetTypes
 		
 			std::list<ObjectId> getList();
 
-			// за освобождение выделеной памяти
-			// отвечает вызывающий!
+			// п╥п╟ п╬я│п╡п╬п╠п╬п╤п╢п╣п╫п╦п╣ п╡я▀п╢п╣п╩п╣п╫п╬п╧ п©п╟п╪я▐я┌п╦
+			// п╬я┌п╡п╣я┤п╟п╣я┌ п╡я▀п╥я▀п╡п╟я▌я┴п╦п╧!
 			IDSeq* getIDSeq();
 		
 			// 
 			ObjectId getFirst();
-			ObjectId node;	// узел, на котором находятся датчики
+			ObjectId node;	// я┐п╥п╣п╩, п╫п╟ п╨п╬я┌п╬я─п╬п╪ п╫п╟я┘п╬п╢я▐я┌я│я▐ п╢п╟я┌я┤п╦п╨п╦
 		
 		private:
 			std::list<ObjectId> lst;
 	};
 
-	const ObjectId DefaultObjectId = -1;	/*!< Идентификатор объекта по умолчанию */
+	const ObjectId DefaultObjectId = -1;	/*!< п≤п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╬п╠я┼п╣п╨я┌п╟ п©п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ */
 
 //	typedef long MessageCode;					
-	const MessageCode DefaultMessageCode = 0;	/*!< код пустого сообщения */
+	const MessageCode DefaultMessageCode = 0;	/*!< п╨п╬п╢ п©я┐я│я┌п╬пЁп╬ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 
-	const ThresholdId DefaultThresholdId = -1;  	/*!< идентификатор порогов по умолчанию */
-	const ThresholdId DefaultTimerId = -1;  	/*!< идентификатор таймера по умолчанию */
+	const ThresholdId DefaultThresholdId = -1;  	/*!< п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п©п╬я─п╬пЁп╬п╡ п©п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ */
+	const ThresholdId DefaultTimerId = -1;  	/*!< п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ я┌п╟п╧п╪п╣я─п╟ п©п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ */
 	
 	
-	/*! Информация о сообщении */
+	/*! п≤п╫я└п╬я─п╪п╟я├п╦я▐ п╬ я│п╬п╬п╠я┴п╣п╫п╦п╦ */
 	struct MessageInfo
 	{
-	   UniSetTypes::MessageCode code;	/*!< идентификатор */
-	   std::string text;				/*!< текст */
-	   std::string idname;				/*!< текстовое название идентификатора */
+	   UniSetTypes::MessageCode code;	/*!< п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ */
+	   std::string text;				/*!< я┌п╣п╨я│я┌ */
+	   std::string idname;				/*!< я┌п╣п╨я│я┌п╬п╡п╬п╣ п╫п╟п╥п╡п╟п╫п╦п╣ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╟ */
 	};
 
-	/*! Информация об имени объекта */
+	/*! п≤п╫я└п╬я─п╪п╟я├п╦я▐ п╬п╠ п╦п╪п╣п╫п╦ п╬п╠я┼п╣п╨я┌п╟ */
 	struct ObjectInfo
 	{
-	    ObjectId id;		/*!< идентификатор */
-	    char* repName;		/*!< текстовое имя для регистрации в репозитории */
-	    char* textName;		/*!< текстовое имя */
+	    ObjectId id;		/*!< п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ */
+	    char* repName;		/*!< я┌п╣п╨я│я┌п╬п╡п╬п╣ п╦п╪я▐ п╢п╩я▐ я─п╣пЁп╦я│я┌я─п╟я├п╦п╦ п╡ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╦ */
+	    char* textName;		/*!< я┌п╣п╨я│я┌п╬п╡п╬п╣ п╦п╪я▐ */
 	};
 	
 	typedef std::list<NodeInfo> ListOfNode;
 
-	/*! Запрещенные для использования в именах объектов символы */
+	/*! п≈п╟п©я─п╣я┴п╣п╫п╫я▀п╣ п╢п╩я▐ п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╫п╦я▐ п╡ п╦п╪п╣п╫п╟я┘ п╬п╠я┼п╣п╨я┌п╬п╡ я│п╦п╪п╡п╬п╩я▀ */
 	const char BadSymbols[]={'.','/'};
 
 	class uniset_mutex;
 	class uniset_mutex_lock;
 
-	/// Преобразование строки в число (воспринимает префикс 0, как 8-ное, префикс 0x, как 16-ное, минус для отриц. чисел)
+	/// п÷я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ я│я┌я─п╬п╨п╦ п╡ я┤п╦я│п╩п╬ (п╡п╬я│п©я─п╦п╫п╦п╪п╟п╣я┌ п©я─п╣я└п╦п╨я│ 0, п╨п╟п╨ 8-п╫п╬п╣, п©я─п╣я└п╦п╨я│ 0x, п╨п╟п╨ 16-п╫п╬п╣, п╪п╦п╫я┐я│ п╢п╩я▐ п╬я┌я─п╦я├. я┤п╦я│п╣п╩)
 	inline int uni_atoi( const char* str )
 	{
 		int n = 0; // if str is NULL or sscanf failed, we return 0
@@ -146,22 +146,22 @@ namespace UniSetTypes
 	}
 
 
-	typedef long KeyType;	/*!< уникальный ключ объекта */
+	typedef long KeyType;	/*!< я┐п╫п╦п╨п╟п╩я▄п╫я▀п╧ п╨п╩я▌я┤ п╬п╠я┼п╣п╨я┌п╟ */
 	
-	/*! генератор уникального положительного ключа
-	 *	Уникальность гарантируется только для пары значений
-	 *  id и node.
-	 * \warning Уникальность генерируемого ключа еще не проверялась, 
-		 но нареканий по использованию тоже не было :)
+	/*! пЁп╣п╫п╣я─п╟я┌п╬я─ я┐п╫п╦п╨п╟п╩я▄п╫п╬пЁп╬ п©п╬п╩п╬п╤п╦я┌п╣п╩я▄п╫п╬пЁп╬ п╨п╩я▌я┤п╟
+	 *	пёп╫п╦п╨п╟п╩я▄п╫п╬я│я┌я▄ пЁп╟я─п╟п╫я┌п╦я─я┐п╣я┌я│я▐ я┌п╬п╩я▄п╨п╬ п╢п╩я▐ п©п╟я─я▀ п╥п╫п╟я┤п╣п╫п╦п╧
+	 *  id п╦ node.
+	 * \warning пёп╫п╦п╨п╟п╩я▄п╫п╬я│я┌я▄ пЁп╣п╫п╣я─п╦я─я┐п╣п╪п╬пЁп╬ п╨п╩я▌я┤п╟ п╣я┴п╣ п╫п╣ п©я─п╬п╡п╣я─я▐п╩п╟я│я▄, 
+		 п╫п╬ п╫п╟я─п╣п╨п╟п╫п╦п╧ п©п╬ п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╫п╦я▌ я┌п╬п╤п╣ п╫п╣ п╠я▀п╩п╬ :)
 	*/ 
 	inline static KeyType key( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
 	{
 		return KeyType((id*node)+(id+2*node));
 	}
 
-	/*! Получение параметра командной строки 
-		\param name - название параметра
-		\param defval - значение, которое будет возвращено, если параметр не найден
+	/*! п÷п╬п╩я┐я┤п╣п╫п╦п╣ п©п╟я─п╟п╪п╣я┌я─п╟ п╨п╬п╪п╟п╫п╢п╫п╬п╧ я│я┌я─п╬п╨п╦ 
+		\param name - п╫п╟п╥п╡п╟п╫п╦п╣ п©п╟я─п╟п╪п╣я┌я─п╟
+		\param defval - п╥п╫п╟я┤п╣п╫п╦п╣, п╨п╬я┌п╬я─п╬п╣ п╠я┐п╢п╣я┌ п╡п╬п╥п╡я─п╟я┴п╣п╫п╬, п╣я│п╩п╦ п©п╟я─п╟п╪п╣я┌я─ п╫п╣ п╫п╟п╧п╢п╣п╫
 	*/
 	inline std::string getArgParam( const std::string name, 
 										int _argc, const char* const* _argv,
@@ -182,10 +182,10 @@ namespace UniSetTypes
 		return uni_atoi(getArgParam(name, _argc, _argv, defval));
 	}
 
-	/*! Проверка наличия параметра в командной строке
-		\param name - название параметра
-		\return Возвращает -1, если параметр не найден. 
-			Или позицию параметра, если найден.
+	/*! п÷я─п╬п╡п╣я─п╨п╟ п╫п╟п╩п╦я┤п╦я▐ п©п╟я─п╟п╪п╣я┌я─п╟ п╡ п╨п╬п╪п╟п╫п╢п╫п╬п╧ я│я┌я─п╬п╨п╣
+		\param name - п╫п╟п╥п╡п╟п╫п╦п╣ п©п╟я─п╟п╪п╣я┌я─п╟
+		\return п▓п╬п╥п╡я─п╟я┴п╟п╣я┌ -1, п╣я│п╩п╦ п©п╟я─п╟п╪п╣я┌я─ п╫п╣ п╫п╟п╧п╢п╣п╫. 
+			п≤п╩п╦ п©п╬п╥п╦я├п╦я▌ п©п╟я─п╟п╪п╣я┌я─п╟, п╣я│п╩п╦ п╫п╟п╧п╢п╣п╫.
 	*/
 	inline int findArgParam( const std::string name, int _argc, const char* const* _argv )
 	{
@@ -197,7 +197,7 @@ namespace UniSetTypes
 		return -1;
 	}
 
-	/*! алгоритм копирования элементов последовательности удовлетворяющих условию */
+	/*! п╟п╩пЁп╬я─п╦я┌п╪ п╨п╬п©п╦я─п╬п╡п╟п╫п╦я▐ я█п╩п╣п╪п╣п╫я┌п╬п╡ п©п╬я│п╩п╣п╢п╬п╡п╟я┌п╣п╩я▄п╫п╬я│я┌п╦ я┐п╢п╬п╡п╩п╣я┌п╡п╬я─я▐я▌я┴п╦я┘ я┐я│п╩п╬п╡п╦я▌ */
 	template<typename InputIterator,
 			 typename OutputIterator,
 			 typename Predicate>
@@ -214,19 +214,19 @@ namespace UniSetTypes
 		return destBegin;
 	}
 
-	// Функции калибровки значений
-	// raw 		- преобразуемое значение
-	// rawMin 	- минимальная граница исходного диапазона
-	// rawMax 	- максимальная граница исходного диапазона
-	// calMin 	- минимальная граница калиброванного диапазона
-	// calMin 	- минимальная граница калиброванного диапазона
-	// limit	- обрезать итоговое значение по границам 
+	// п╓я┐п╫п╨я├п╦п╦ п╨п╟п╩п╦п╠я─п╬п╡п╨п╦ п╥п╫п╟я┤п╣п╫п╦п╧
+	// raw 		- п©я─п╣п╬п╠я─п╟п╥я┐п╣п╪п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣
+	// rawMin 	- п╪п╦п╫п╦п╪п╟п╩я▄п╫п╟я▐ пЁя─п╟п╫п╦я├п╟ п╦я│я┘п╬п╢п╫п╬пЁп╬ п╢п╦п╟п©п╟п╥п╬п╫п╟
+	// rawMax 	- п╪п╟п╨я│п╦п╪п╟п╩я▄п╫п╟я▐ пЁя─п╟п╫п╦я├п╟ п╦я│я┘п╬п╢п╫п╬пЁп╬ п╢п╦п╟п©п╟п╥п╬п╫п╟
+	// calMin 	- п╪п╦п╫п╦п╪п╟п╩я▄п╫п╟я▐ пЁя─п╟п╫п╦я├п╟ п╨п╟п╩п╦п╠я─п╬п╡п╟п╫п╫п╬пЁп╬ п╢п╦п╟п©п╟п╥п╬п╫п╟
+	// calMin 	- п╪п╦п╫п╦п╪п╟п╩я▄п╫п╟я▐ пЁя─п╟п╫п╦я├п╟ п╨п╟п╩п╦п╠я─п╬п╡п╟п╫п╫п╬пЁп╬ п╢п╦п╟п©п╟п╥п╬п╫п╟
+	// limit	- п╬п╠я─п╣п╥п╟я┌я▄ п╦я┌п╬пЁп╬п╡п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ п©п╬ пЁя─п╟п╫п╦я├п╟п╪ 
 	float fcalibrate(float raw, float rawMin, float rawMax, float calMin, float calMax, bool limit=true );
 	long lcalibrate(long raw, long rawMin, long rawMax, long calMin, long calMax, bool limit=true );
 
-	// установка значения в нужный диапазон
+	// я┐я│я┌п╟п╫п╬п╡п╨п╟ п╥п╫п╟я┤п╣п╫п╦я▐ п╡ п╫я┐п╤п╫я▀п╧ п╢п╦п╟п©п╟п╥п╬п╫
 	long setinregion(long raw, long rawMin, long rawMax);
-	// установка значения вне диапазона
+	// я┐я│я┌п╟п╫п╬п╡п╨п╟ п╥п╫п╟я┤п╣п╫п╦я▐ п╡п╫п╣ п╢п╦п╟п©п╟п╥п╬п╫п╟
 	long setoutregion(long raw, long rawMin, long rawMax);
 
 

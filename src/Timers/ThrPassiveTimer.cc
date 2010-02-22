@@ -38,8 +38,8 @@ using namespace std;
 ThrPassiveTimer::ThrPassiveTimer():
 	terminated(1)
 {
-	// ÂÙÌÉ ÓÄÅÌÁÎÙ ÕËÁÚÁÔÅÌÑÍÉ
-	// ÞÔÏÂÙ ÕÊÔÉ ÏÔ include × head-ÆÁÊÌÅ
+	// Ð±Ñ‹Ð»Ð¸ ÑÐ´ÐµÐ»Ð°Ð½Ñ‹ ÑƒÐºÐ°Ð·Ð°Ñ‚ÐµÐ»ÑÐ¼Ð¸
+	// Ñ‡Ñ‚Ð¾Ð±Ñ‹ ÑƒÐ¹Ñ‚Ð¸ Ð¾Ñ‚ include Ð² head-Ñ„Ð°Ð¹Ð»Ðµ
 	tmutex = new omni_mutex();
 	tcondx = new omni_condition(tmutex);
 }
@@ -68,17 +68,17 @@ bool ThrPassiveTimer::wait(timeout_t timeMS)
 	terminated = 0;
 	{
 		tmutex->lock();
-		timeout_t tmMS = PassiveTimer::setTiming(timeMS); // ×ÙÚÙ×ÁÅÍ ÄÌÑ ÓÏ×ÍÅÓÔÉÍÏÓÔÉ Ó ÏÂÙÞÎÙÍ PassiveTimer-ÏÍ
+		timeout_t tmMS = PassiveTimer::setTiming(timeMS); // Ð²Ñ‹Ð·Ñ‹Ð²Ð°ÐµÐ¼ Ð´Ð»Ñ ÑÐ¾Ð²Ð¼ÐµÑÑ‚Ð¸Ð¼Ð¾ÑÑ‚Ð¸ Ñ Ð¾Ð±Ñ‹Ñ‡Ð½Ñ‹Ð¼ PassiveTimer-Ð¾Ð¼
 		if( timeMS == WaitUpTime )
 		{
-			while( !terminated )	// ÎÁ ×ÓÑËÉÊ, ×ÄÒÕÇ ÐÒÏÓÎÅÔÓÑ ÐÏ ÏÛÉÂËÅ...
+			while( !terminated )	// Ð½Ð° Ð²ÑÑÐºÐ¸Ð¹, Ð²Ð´Ñ€ÑƒÐ³ Ð¿Ñ€Ð¾ÑÐ½ÐµÑ‚ÑÑ Ð¿Ð¾ Ð¾ÑˆÐ¸Ð±ÐºÐµ...
 				tcondx->wait();
 		}
 		else
 		{
 			unsigned long sec, msec;
 			omni_thread::get_time(&sec,&msec, tmMS/1000, (tmMS%1000)*1000000 );
-//			cout <<"timer: ÓÐÉÍ "<< timeMS/1000 << "[ÓÅË] É " << (timeMS%1000)*1000000 <<"[ÍÓÅË]" << endl;
+//			cout <<"timer: ÑÐ¿Ð¸Ð¼ "<< timeMS/1000 << "[ÑÐµÐº] Ð¸ " << (timeMS%1000)*1000000 <<"[Ð¼ÑÐµÐº]" << endl;
 			tcondx->timedwait(sec, msec);
 		}
 

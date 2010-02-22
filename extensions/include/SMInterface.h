@@ -61,14 +61,14 @@ class SMInterface
 	  	long localGetValue( IOController::AIOStateList::iterator& it, 
 							UniSetTypes::ObjectId sid );
 
-		/*! функция выставления признака неопределённого состояния для аналоговых датчиков 
-			// для дискретных датчиков необходимости для подобной функции нет.
-			// см. логику выставления в функции localSaveState
+		/*! я└я┐п╫п╨я├п╦я▐ п╡я▀я│я┌п╟п╡п╩п╣п╫п╦я▐ п©я─п╦п╥п╫п╟п╨п╟ п╫п╣п╬п©я─п╣п╢п╣п╩я▒п╫п╫п╬пЁп╬ я│п╬я│я┌п╬я▐п╫п╦я▐ п╢п╩я▐ п╟п╫п╟п╩п╬пЁп╬п╡я▀я┘ п╢п╟я┌я┤п╦п╨п╬п╡ 
+			// п╢п╩я▐ п╢п╦я│п╨я─п╣я┌п╫я▀я┘ п╢п╟я┌я┤п╦п╨п╬п╡ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬я│я┌п╦ п╢п╩я▐ п©п╬п╢п╬п╠п╫п╬п╧ я└я┐п╫п╨я├п╦п╦ п╫п╣я┌.
+			// я│п╪. п╩п╬пЁп╦п╨я┐ п╡я▀я│я┌п╟п╡п╩п╣п╫п╦я▐ п╡ я└я┐п╫п╨я├п╦п╦ localSaveState
 		*/
 		void localSetUndefinedState( IOController::AIOStateList::iterator& it, 
 									bool undefined, UniSetTypes::ObjectId sid );
 	
-		// специальные функции
+		// я│п©п╣я├п╦п╟п╩я▄п╫я▀п╣ я└я┐п╫п╨я├п╦п╦
 		IOController::DIOStateList::iterator dioEnd();
 		IOController::AIOStateList::iterator aioEnd();
 		void initAIterator( IOController::AIOStateList::iterator& it );

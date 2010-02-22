@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \brief Интефес для создания и управления потоками
+ * \brief п≤п╫я┌п╣я└п╣я│ п╢п╩я▐ я│п╬п╥п╢п╟п╫п╦я▐ п╦ я┐п©я─п╟п╡п╩п╣п╫п╦я▐ п©п╬я┌п╬п╨п╟п╪п╦
  * \author Anthony Korbin
  * \date $Date: 2007/06/17 21:30:55 $
  * \version $Id: PosixThread.h,v 1.7 2007/06/17 21:30:55 vpashka Exp $
@@ -38,10 +38,10 @@ public:
 		PosixThread();
 		virtual ~PosixThread();
 
-		void start( void *args );	/*!< запуск */
+		void start( void *args );	/*!< п╥п╟п©я┐я│п╨ */
 		void stop();		
 
-		void thrkill( int signo );		/*!< послать сигнал signo */	
+		void thrkill( int signo );		/*!< п©п╬я│п╩п╟я┌я▄ я│п╦пЁп╫п╟п╩ signo */	
 
 		enum TAttr{ SCOPE, DETACH, PRIORITY };
 
@@ -59,7 +59,7 @@ protected:
 
 		void reinit();	
 
-		virtual void work() = 0; /*!< Функция выполняемая в потоке */
+		virtual void work() = 0; /*!< п╓я┐п╫п╨я├п╦я▐ п╡я▀п©п╬п╩п╫я▐п╣п╪п╟я▐ п╡ п©п╬я┌п╬п╨п╣ */
 
 		void readlock( pthread_rwlock_t *lock = &lockx );
 		void writelock( pthread_rwlock_t *lock = &lockx );

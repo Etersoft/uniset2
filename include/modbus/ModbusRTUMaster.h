@@ -13,7 +13,7 @@
 #include "ModbusClient.h"
 // -------------------------------------------------------------------------
 /*!	Modbus RTU master mode 
-	\todo Добавить ведение статистики по ошибкам
+	\todo п■п╬п╠п╟п╡п╦я┌я▄ п╡п╣п╢п╣п╫п╦п╣ я│я┌п╟я┌п╦я│я┌п╦п╨п╦ п©п╬ п╬я┬п╦п╠п╨п╟п╪
 */
 class ModbusRTUMaster:
 	public ModbusClient
@@ -51,13 +51,13 @@ class ModbusRTUMaster:
 
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len );
 
-		/*! функция запрос-ответ */
+		/*! я└я┐п╫п╨я├п╦я▐ п╥п╟п©я─п╬я│-п╬я┌п╡п╣я┌ */
 		virtual ModbusRTU::mbErrCode query( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& msg, 
 											ModbusRTU::ModbusMessage& reply, timeout_t timeout );
 
 
-		std::string dev; 		/*!< устройство */
-		ComPort* port;			/*!< устройство для работы с COM-портом */
+		std::string dev; 		/*!< я┐я│я┌я─п╬п╧я│я┌п╡п╬ */
+		ComPort* port;			/*!< я┐я│я┌я─п╬п╧я│я┌п╡п╬ п╢п╩я▐ я─п╟п╠п╬я┌я▀ я│ COM-п©п╬я─я┌п╬п╪ */
 		bool myport;
 
 	private:

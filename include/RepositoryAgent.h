@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \brief Ú≈¡Ã…⁄¡√…— RepositoryAgent
+ * \brief –†–µ–∞–ª–∏–∑–∞—Ü–∏—è RepositoryAgent
  * \author Pavel Vainerman
  * \date  $Date: 2005/01/28 20:52:21 $
  * \version $Id: RepositoryAgent.h,v 1.5 2005/01/28 20:52:21 vitlav Exp $

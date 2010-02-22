@@ -51,14 +51,14 @@ void LProcessor::build( const string& lfile )
 {
 	sch.read(lfile);
 	
-	// составляем карту внешних входов
-	// считая, что в поле name записано название датчика
+	// я│п╬я│я┌п╟п╡п╩я▐п╣п╪ п╨п╟я─я┌я┐ п╡п╫п╣я┬п╫п╦я┘ п╡я┘п╬п╢п╬п╡
+	// я│я┤п╦я┌п╟я▐, я┤я┌п╬ п╡ п©п╬п╩п╣ name п╥п╟п©п╦я│п╟п╫п╬ п╫п╟п╥п╡п╟п╫п╦п╣ п╢п╟я┌я┤п╦п╨п╟
 	for( Schema::EXTiterator it=sch.extBegin(); it!=sch.extEnd(); ++it )
 	{
 		UniSetTypes::ObjectId sid = conf->getSensorID(it->name);
 		if( sid == DefaultObjectId )
 		{
-			cerr << "НЕ НАЙДЕН ИДЕНТИФИКАТОР ДАТЧИКА: " << it->name << endl;
+			cerr << "п²п∙ п²п░п≥п■п∙п² п≤п■п∙п²п╒п≤п╓п≤п п░п╒п·п═ п■п░п╒п╖п≤п п░: " << it->name << endl;
 			continue;	
 		}
 		
@@ -66,7 +66,7 @@ void LProcessor::build( const string& lfile )
 		ei.sid = sid;
 		ei.state = false;
 		ei.lnk = &(*it);
-#warning Пока тип сделан принудительно
+#warning п÷п╬п╨п╟ я┌п╦п© я│п╢п╣п╩п╟п╫ п©я─п╦п╫я┐п╢п╦я┌п╣п╩я▄п╫п╬
 		ei.iotype = UniversalIO::DigitalInput;
 		extInputs.push_front(ei);
 	}
@@ -76,14 +76,14 @@ void LProcessor::build( const string& lfile )
 		UniSetTypes::ObjectId sid = conf->getSensorID(it->name);
 		if( sid == DefaultObjectId )
 		{
-			cerr << "НЕ НАЙДЕН ИДЕНТИФИКАТОР ВЫХОДА: " << it->name << endl;
+			cerr << "п²п∙ п²п░п≥п■п∙п² п≤п■п∙п²п╒п≤п╓п≤п п░п╒п·п═ п▓п╚п╔п·п■п░: " << it->name << endl;
 			continue;
 		}
 
 		EXTOutInfo ei;
 		ei.sid = sid;
 		ei.lnk = &(*it);
-#warning Пока тип сделан принудительно
+#warning п÷п╬п╨п╟ я┌п╦п© я│п╢п╣п╩п╟п╫ п©я─п╦п╫я┐п╢п╦я┌п╣п╩я▄п╫п╬
 		ei.iotype = UniversalIO::DigitalOutput;
 
 		extOuts.push_front(ei);
@@ -92,9 +92,9 @@ void LProcessor::build( const string& lfile )
 }
 // -------------------------------------------------------------------------
 /*!
-	Опрос всех датчиков. Являющхся входами для логических элементов.
-Исключение специально НЕ ловится. Т.к. если не удалось опросить хотя бы один
-датчик, то проверку вообще лучше прервать. Иначе схема может работать не так, как надо
+	п·п©я─п╬я│ п╡я│п╣я┘ п╢п╟я┌я┤п╦п╨п╬п╡. п╞п╡п╩я▐я▌я┴я┘я│я▐ п╡я┘п╬п╢п╟п╪п╦ п╢п╩я▐ п╩п╬пЁп╦я┤п╣я│п╨п╦я┘ я█п╩п╣п╪п╣п╫я┌п╬п╡.
+п≤я│п╨п╩я▌я┤п╣п╫п╦п╣ я│п©п╣я├п╦п╟п╩я▄п╫п╬ п²п∙ п╩п╬п╡п╦я┌я│я▐. п╒.п╨. п╣я│п╩п╦ п╫п╣ я┐п╢п╟п╩п╬я│я▄ п╬п©я─п╬я│п╦я┌я▄ я┘п╬я┌я▐ п╠я▀ п╬п╢п╦п╫
+п╢п╟я┌я┤п╦п╨, я┌п╬ п©я─п╬п╡п╣я─п╨я┐ п╡п╬п╬п╠я┴п╣ п╩я┐я┤я┬п╣ п©я─п╣я─п╡п╟я┌я▄. п≤п╫п╟я┤п╣ я│я┘п╣п╪п╟ п╪п╬п╤п╣я┌ я─п╟п╠п╬я┌п╟я┌я▄ п╫п╣ я┌п╟п╨, п╨п╟п╨ п╫п╟п╢п╬
 
 */
 void LProcessor::getInputs()
@@ -110,18 +110,18 @@ void LProcessor::getInputs()
 // -------------------------------------------------------------------------
 void LProcessor::processing()
 {
-	// выcтавляем все внешние входы
+	// п╡я▀cя┌п╟п╡п╩я▐п╣п╪ п╡я│п╣ п╡п╫п╣я┬п╫п╦п╣ п╡я┘п╬п╢я▀
 	for( EXTList::iterator it=extInputs.begin(); it!=extInputs.end();++it )
 		it->lnk->to->setIn(it->lnk->numInput,it->state);
 
-	// проходим по всем элементам
+	// п©я─п╬я┘п╬п╢п╦п╪ п©п╬ п╡я│п╣п╪ я█п╩п╣п╪п╣п╫я┌п╟п╪
 	for( Schema::iterator it=sch.begin(); it!=sch.end(); ++it )
 		it->second->tick();
 }
 // -------------------------------------------------------------------------
 void LProcessor::setOuts()
 {
-	// выcтавляем выходы
+	// п╡я▀cя┌п╟п╡п╩я▐п╣п╪ п╡я▀я┘п╬п╢я▀
 	for( OUTList::iterator it=extOuts.begin(); it!=extOuts.end(); ++it )
 	{
 		try
@@ -137,7 +137,7 @@ void LProcessor::setOuts()
 				break;
 				
 				default:
-					cerr << "(LProcessor::setOuts): неподдерживаемый тип iotype=" << it->iotype << endl;
+					cerr << "(LProcessor::setOuts): п╫п╣п©п╬п╢п╢п╣я─п╤п╦п╡п╟п╣п╪я▀п╧ я┌п╦п© iotype=" << it->iotype << endl;
 					break;
 			}
 		}

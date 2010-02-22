@@ -34,8 +34,8 @@
 template <class Caller> class CallBackTimer;
 
 // ------------------------------------------------------------------------------------------
-/*! Создание таймера
-	\param r - указатель на заказчика
+/*! п║п╬п╥п╢п╟п╫п╦п╣ я┌п╟п╧п╪п╣я─п╟
+	\param r - я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ п╥п╟п╨п╟п╥я┤п╦п╨п╟
 */
 template <class Caller>
 CallBackTimer<Caller>::CallBackTimer( Caller* r, Action a ):
@@ -111,7 +111,7 @@ void CallBackTimer<Caller>::add( int id, int timeMS )throw(UniSetTypes::LimitTim
 	if( lst.size() >= MAXCallBackTimer )
 	{
 		ostringstream err;
-		err << "CallBackTimers: превышено максимальное количество таймеров" << MAXCallBackTimer;
+		err << "CallBackTimers: п©я─п╣п╡я▀я┬п╣п╫п╬ п╪п╟п╨я│п╦п╪п╟п╩я▄п╫п╬п╣ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ я┌п╟п╧п╪п╣я─п╬п╡" << MAXCallBackTimer;
 		throw UniSetTypes::LimitTimers(err.str()); 
 	}
 	
@@ -125,7 +125,7 @@ void CallBackTimer<Caller>::add( int id, int timeMS )throw(UniSetTypes::LimitTim
 template <class Caller>
 void CallBackTimer<Caller>::remove( int id )
 {
-	// STL - способ поиска
+	// STL - я│п©п╬я│п╬п╠ п©п╬п╦я│п╨п╟
 	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));	
 	if( li!=lst.end() )
 		lst.erase(li);

@@ -43,11 +43,11 @@ class ObjectIndex
 		// info
 		virtual const ObjectInfo* getObjectInfo( const ObjectId )=0;
 
-		// создание полного имени в репозитории по паре имя:узел
+		// я│п╬п╥п╢п╟п╫п╦п╣ п©п╬п╩п╫п╬пЁп╬ п╦п╪п╣п╫п╦ п╡ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╦ п©п╬ п©п╟я─п╣ п╦п╪я▐:я┐п╥п╣п╩
 		static std::string mkRepName( const std::string repname, const std::string nodename );
-		// создание имени узла по реальному и виртуальному
+		// я│п╬п╥п╢п╟п╫п╦п╣ п╦п╪п╣п╫п╦ я┐п╥п╩п╟ п©п╬ я─п╣п╟п╩я▄п╫п╬п╪я┐ п╦ п╡п╦я─я┌я┐п╟п╩я▄п╫п╬п╪я┐
 		static std::string mkFullNodeName( const std::string realnode, const std::string virtnode );
-		// получить имя для регистрации в репозитории (т.е. без секции)
+		// п©п╬п╩я┐я┤п╦я┌я▄ п╦п╪я▐ п╢п╩я▐ я─п╣пЁп╦я│я┌я─п╟я├п╦п╦ п╡ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╦ (я┌.п╣. п╠п╣п╥ я│п╣п╨я├п╦п╦)
 		static std::string getBaseName( const std::string fname );
 
 		// object id
@@ -90,7 +90,7 @@ class ObjectIndex
 	
 	
 	protected:
-		std::string nmLocalNode;	// для оптимизации
+		std::string nmLocalNode;	// п╢п╩я▐ п╬п©я┌п╦п╪п╦п╥п╟я├п╦п╦
 
 	private:
 	

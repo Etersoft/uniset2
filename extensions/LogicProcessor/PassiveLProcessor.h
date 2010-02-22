@@ -39,7 +39,7 @@ class PassiveLProcessor:
 		void askSensors( UniversalIO::UIOCommand cmd );	
 //		void initOutput();
 
-		// действия при завершении работы
+		// п╢п╣п╧я│я┌п╡п╦я▐ п©я─п╦ п╥п╟п╡п╣я─я┬п╣п╫п╦п╦ я─п╟п╠п╬я┌я▀
 		virtual void sigterm( int signo );
 
 		SMInterface* shm;

@@ -31,26 +31,26 @@
 // --------------------------------------------------------------------------
 /*!
  * \interface InfoServer_i
- * \brief Интерфейс к серверу сообщений
+ * \brief п≤п╫я┌п╣я─я└п╣п╧я│ п╨ я│п╣я─п╡п╣я─я┐ я│п╬п╬п╠я┴п╣п╫п╦п╧
 */ 
 interface InfoServer_i: UniSetObject_i
 {
-	// исключения
+	// п╦я│п╨п╩я▌я┤п╣п╫п╦я▐
 	exception MsgNotFound
 	{	
 		UniSetTypes::MessageCode bad_code;
 	};
 
-	// исключения
+	// п╦я│п╨п╩я▌я┤п╣п╫п╦я▐
 	exception MsgBadRange
 	{	
 	};
 
-	/*! Заказ информации о приходе сообщения */
+	/*! п≈п╟п╨п╟п╥ п╦п╫я└п╬я─п╪п╟я├п╦п╦ п╬ п©я─п╦я┘п╬п╢п╣ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 	void ackMessage(in UniSetTypes::MessageCode mid, in UniSetTypes::ConsumerInfo ci, 
 					in UniversalIO::UIOCommand cmd, in boolean acknotify ) raises(MsgNotFound);
 	
-	/*! Заказ информации о приходе сообщений из диапазона */
+	/*! п≈п╟п╨п╟п╥ п╦п╫я└п╬я─п╪п╟я├п╦п╦ п╬ п©я─п╦я┘п╬п╢п╣ я│п╬п╬п╠я┴п╣п╫п╦п╧ п╦п╥ п╢п╦п╟п©п╟п╥п╬п╫п╟ */
 	void ackMessageRange(in UniSetTypes::MessageCode from, in UniSetTypes::MessageCode to, 
 							in UniSetTypes::ConsumerInfo ci, 
 							in UniversalIO::UIOCommand cmd, in boolean acknotify ) raises(MsgNotFound,MsgBadRange);

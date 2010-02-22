@@ -20,5 +20,5 @@ libUniSet_la_LIBADD		= \
 
 #libUniSet_la_LIBADD		= $(shell find $(top_builddir)/src/ \-name \*.la | grep \-v .libs)
 
-# `0:0:0' (CURRENT=0, REVISION-0, AGE=0). Формат версии C:R:A.
+# `0:0:0' (CURRENT=0, REVISION-0, AGE=0). п╓п╬я─п╪п╟я┌ п╡п╣я─я│п╦п╦ C:R:A.
 # -release 1

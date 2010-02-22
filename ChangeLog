@@ -164,17 +164,17 @@
 2007-03-21 19:12  vpashka
 
 	* include/modbus/ModbusSlave.h,
-	  src/Communications/Modbus/ModbusSlave.cc: отключил по умолчанию
-	  работу с broadcast
+	  src/Communications/Modbus/ModbusSlave.cc: п╬я┌п╨п╩я▌я┤п╦п╩ п©п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌
+	  я─п╟п╠п╬я┌я┐ я│ broadcast
 
 2007-02-24 17:03  vpashka
 
-	* include/: PosixThread.h: подправил ошибку (проявившуюся при
-	  компиляции в cygwin)
+	* include/: PosixThread.h: п©п╬п╢п©я─п╟п╡п╦п╩ п╬я┬п╦п╠п╨я┐ (п©я─п╬я▐п╡п╦п╡я┬я┐я▌я│я▐ п©я─п╦
+	  п╨п╬п╪п©п╦п╩я▐я├п╦п╦ п╡ cygwin)
 
 2007-02-20 00:54  vpashka
 
-	* src/Services/InfoServer.cc: немного оптимизировал вывод лога
+	* src/Services/InfoServer.cc: п╫п╣п╪п╫п╬пЁп╬ п╬п©я┌п╦п╪п╦п╥п╦я─п╬п╡п╟п╩ п╡я▀п╡п╬п╢ п╩п╬пЁп╟
 
 2007-02-18 14:01  vpashka
 
@@ -353,8 +353,8 @@
 
 2007-01-12 18:01  vpashka
 
-	* include/ComPort.h, src/IOs/ComPort.cc: Встроил предварительную
-	  версию функции очистки буфера
+	* include/ComPort.h, src/IOs/ComPort.cc: п▓я│я┌я─п╬п╦п╩ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я┐я▌
+	  п╡п╣я─я│п╦я▌ я└я┐п╫п╨я├п╦п╦ п╬я┤п╦я│я┌п╨п╦ п╠я┐я└п╣я─п╟
 
 2007-01-12 01:22  vpashka
 
@@ -597,8 +597,8 @@
 2007-01-03 22:22  vpashka
 
 	* include/IONotifyController.h,
-	  src/Processes/IONotifyController.cc: удалил неиспользуемый
-	  параметр функции
+	  src/Processes/IONotifyController.cc: я┐п╢п╟п╩п╦п╩ п╫п╣п╦я│п©п╬п╩я▄п╥я┐п╣п╪я▀п╧
+	  п©п╟я─п╟п╪п╣я┌я─ я└я┐п╫п╨я├п╦п╦
 
 2007-01-03 20:02  vpashka
 
@@ -918,8 +918,8 @@
 
 2006-10-27 16:57  vitlav
 
-	* src/Timers/PassiveTimer.cc: замечание по CLK_TCK (не
-	  использовать)
+	* src/Timers/PassiveTimer.cc: п╥п╟п╪п╣я┤п╟п╫п╦п╣ п©п╬ CLK_TCK (п╫п╣
+	  п╦я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄)
 
 2006-10-14 20:53  vpashka
 
@@ -937,7 +937,7 @@
 2006-10-01 14:55  vpashka
 
 	* src/ObjectRepository/UniSetObject.cc, include/UniSetObject.h:
-	  Переделана функция очистки очереди (введён прямой доступ)
+	  п÷п╣я─п╣п╢п╣п╩п╟п╫п╟ я└я┐п╫п╨я├п╦я▐ п╬я┤п╦я│я┌п╨п╦ п╬я┤п╣я─п╣п╢п╦ (п╡п╡п╣п╢я▒п╫ п©я─я▐п╪п╬п╧ п╢п╬я│я┌я┐п©)
 
 2006-07-30 17:10  vitlav
 
@@ -957,7 +957,7 @@
 
 2006-05-26 21:44  vitlav
 
-	* src/IOs/ComPort.cc: добавлены комментарии по коду
+	* src/IOs/ComPort.cc: п╢п╬п╠п╟п╡п╩п╣п╫я▀ п╨п╬п╪п╪п╣п╫я┌п╟я─п╦п╦ п©п╬ п╨п╬п╢я┐
 
 2006-05-19 01:10  vpashka
 
@@ -1632,7 +1632,7 @@
 	  Communications/Modbus/ModbusRTUExchange.cc,
 	  IOs/AnalogCard_AI165A.cc, IOs/ComPort.cc,
 	  IOs/DigitalCard_O5600.cc, IOs/Makefile, IOs/Makefile.am,
-	  IOs/предложение_по_организации_IO.txt, Interfaces/DBInterface.cc,
+	  IOs/п©я─п╣п╢п╩п╬п╤п╣п╫п╦п╣_п©п╬_п╬я─пЁп╟п╫п╦п╥п╟я├п╦п╦_IO.txt, Interfaces/DBInterface.cc,
 	  Interfaces/Makefile, Interfaces/Makefile.am,
 	  Interfaces/UniversalIOController.cc,
 	  Interfaces/UniversalInterface.cc: update to current version
@@ -1928,8 +1928,8 @@
 	  src/Various/MessageType.cc, src/Various/Mutex.cc,
 	  src/Various/RunLock.cc, src/Various/SViewer.cc,
 	  src/Various/SystemGuard.cc, src/Various/TextFileIndex.cc,
-	  src/Various/TextIndex.cc, src/Various/UniXML.cc:  Очередной виток
-	  исправлений и дополнений
+	  src/Various/TextIndex.cc, src/Various/UniXML.cc:  п·я┤п╣я─п╣п╢п╫п╬п╧ п╡п╦я┌п╬п╨
+	  п╦я│п©я─п╟п╡п╩п╣п╫п╦п╧ п╦ п╢п╬п©п╬п╩п╫п╣п╫п╦п╧
 
 2004-03-28 14:27  vpashka
 
@@ -1964,8 +1964,8 @@
 	  ObjectRepository/ProxyManager.cc,
 	  ObjectRepository/ServiceActivator.cc,
 	  ObjectRepository/UniSetObject.cc, Processes/IOController.cc,
-	  Processes/IONotifyController.cc:  Измененены комментарии
-	   Подправлены ошибки
+	  Processes/IONotifyController.cc:  п≤п╥п╪п╣п╫п╣п╫п╣п╫я▀ п╨п╬п╪п╪п╣п╫я┌п╟я─п╦п╦
+	   п÷п╬п╢п©я─п╟п╡п╩п╣п╫я▀ п╬я┬п╦п╠п╨п╦
 
 2004-03-27 00:27  vpashka
 
@@ -1983,17 +1983,17 @@
 	  TriggerAND.h, TriggerAND_template.h, TriggerOR.h,
 	  TriggerOR_template.h, TriggerOutput.h, TriggerOutput_template.h,
 	  UniSetObject.h, UniXML.h, UniversalIOController.h,
-	  UniversalInterface.h, config.h, config.h.in:	Внесены новые
-	  коментарии, а также исправлены некоторые ошибки
+	  UniversalInterface.h, config.h, config.h.in:	п▓п╫п╣я│п╣п╫я▀ п╫п╬п╡я▀п╣
+	  п╨п╬п╪п╣п╫я┌п╟я─п╦п╦, п╟ я┌п╟п╨п╤п╣ п╦я│п©я─п╟п╡п╩п╣п╫я▀ п╫п╣п╨п╬я┌п╬я─я▀п╣ п╬я┬п╦п╠п╨п╦
 
 2004-03-27 00:23  vpashka
 
-	* include/BaseObjectTypes.hh:  добавлен в репозиторий по ошибке,
-	   он не нужен т.к. генерируется из IDL
+	* include/BaseObjectTypes.hh:  п╢п╬п╠п╟п╡п╩п╣п╫ п╡ я─п╣п©п╬п╥п╦я┌п╬я─п╦п╧ п©п╬ п╬я┬п╦п╠п╨п╣,
+	   п╬п╫ п╫п╣ п╫я┐п╤п╣п╫ я┌.п╨. пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╦п╥ IDL
 
 2004-03-27 00:22  vpashka
 
-	* src/ObjectRepository/ObjectIndex.cc.new:  Удалён за ненадобностью
+	* src/ObjectRepository/ObjectIndex.cc.new:  пёп╢п╟п╩я▒п╫ п╥п╟ п╫п╣п╫п╟п╢п╬п╠п╫п╬я│я┌я▄я▌
 
 2004-03-11 01:44  vitlav
 
@@ -2015,7 +2015,7 @@
 	  conf/setting, lib/Makefile, src/Makefile,
 	  src/IOs/AnalogCard_AI165A.cc, src/IOs/ComPort.cc,
 	  src/IOs/DigitalCard_O5600.cc, src/IOs/Makefile,
-	  src/IOs/предложение_по_организации_IO.txt,
+	  src/IOs/п©я─п╣п╢п╩п╬п╤п╣п╫п╦п╣_п©п╬_п╬я─пЁп╟п╫п╦п╥п╟я├п╦п╦_IO.txt,
 	  src/Interfaces/DBInterface.cc, src/Interfaces/Makefile,
 	  src/Interfaces/UniversalIOController.cc,
 	  src/Interfaces/UniversalInterface.cc,
@@ -2101,7 +2101,7 @@
 	  conf/setting, lib/Makefile, src/Makefile,
 	  src/IOs/AnalogCard_AI165A.cc, src/IOs/ComPort.cc,
 	  src/IOs/DigitalCard_O5600.cc, src/IOs/Makefile,
-	  src/IOs/предложение_по_организации_IO.txt,
+	  src/IOs/п©я─п╣п╢п╩п╬п╤п╣п╫п╦п╣_п©п╬_п╬я─пЁп╟п╫п╦п╥п╟я├п╦п╦_IO.txt,
 	  src/Interfaces/DBInterface.cc, src/Interfaces/Makefile,
 	  src/Interfaces/UniversalIOController.cc,
 	  src/Interfaces/UniversalInterface.cc,

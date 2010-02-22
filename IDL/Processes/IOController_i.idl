@@ -32,14 +32,14 @@
 
 /*! 
  * \interface IOController_i 
- * \brief Базовый интерфейс для создания координаторов ввода/вывода  
+ * \brief п▒п╟п╥п╬п╡я▀п╧ п╦п╫я┌п╣я─я└п╣п╧я│ п╢п╩я▐ я│п╬п╥п╢п╟п╫п╦я▐ п╨п╬п╬я─п╢п╦п╫п╟я┌п╬я─п╬п╡ п╡п╡п╬п╢п╟/п╡я▀п╡п╬п╢п╟  
  *
 */ 
 interface IOController_i : ObjectsManager_i	
 {
-	// исключения
+	// п╦я│п╨п╩я▌я┤п╣п╫п╦я▐
 	
-	/*! Датчик не найден */
+	/*! п■п╟я┌я┤п╦п╨ п╫п╣ п╫п╟п╧п╢п╣п╫ */
 	exception NameNotFound
 	{	
     	string err;
@@ -51,19 +51,19 @@ interface IOController_i : ObjectsManager_i
 	};
 
 
-	/*! Значение не определено
-		(например: обрыв датчика)
+	/*! п≈п╫п╟я┤п╣п╫п╦п╣ п╫п╣ п╬п©я─п╣п╢п╣п╩п╣п╫п╬
+		(п╫п╟п©я─п╦п╪п╣я─: п╬п╠я─я▀п╡ п╢п╟я┌я┤п╦п╨п╟)
 	*/
 	exception Undefined
 	{	
 	};
 
 
-	/*! Информация о датчике */
+	/*! п≤п╫я└п╬я─п╪п╟я├п╦я▐ п╬ п╢п╟я┌я┤п╦п╨п╣ */
 	struct SensorInfo
 	{
-		UniSetTypes::ObjectId id;	/*!< идентификатор датчика */
-		UniSetTypes::ObjectId node;	/*!< узел на котором он находится */
+		UniSetTypes::ObjectId id;	/*!< п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╟я┌я┤п╦п╨п╟ */
+		UniSetTypes::ObjectId node;	/*!< я┐п╥п╣п╩ п╫п╟ п╨п╬я┌п╬я─п╬п╪ п╬п╫ п╫п╟я┘п╬п╢п╦я┌я│я▐ */
 	};
 
 	boolean getState(in SensorInfo si) raises(NameNotFound,Undefined);
@@ -78,12 +78,12 @@ interface IOController_i : ObjectsManager_i
 	void saveValue(in SensorInfo si, in long value, in UniversalIO::IOTypes type, 
 						in UniSetTypes::ObjectId sup_id) raises(IOBadParam,NameNotFound);
 
-	// установка неопределённого состояния
-	// (пока работает только для аналоговых датчиков)
+	// я┐я│я┌п╟п╫п╬п╡п╨п╟ п╫п╣п╬п©я─п╣п╢п╣п╩я▒п╫п╫п╬пЁп╬ я│п╬я│я┌п╬я▐п╫п╦я▐
+	// (п©п╬п╨п╟ я─п╟п╠п╬я┌п╟п╣я┌ я┌п╬п╩я▄п╨п╬ п╢п╩я▐ п╟п╫п╟п╩п╬пЁп╬п╡я▀я┘ п╢п╟я┌я┤п╦п╨п╬п╡)
 	void setUndefinedState(in SensorInfo si, in boolean undefined, in UniSetTypes::ObjectId sup_id ) 
 							raises(NameNotFound);
 
-	// fast version (не вырабатывает исключения)
+	// fast version (п╫п╣ п╡я▀я─п╟п╠п╟я┌я▀п╡п╟п╣я┌ п╦я│п╨п╩я▌я┤п╣п╫п╦я▐)
 	oneway void fastSaveState(in SensorInfo si, in boolean state, in UniversalIO::IOTypes type,
 						in UniSetTypes::ObjectId sup_id);
 	oneway void fastSaveValue(in SensorInfo si, in long value, in UniversalIO::IOTypes type, 
@@ -94,55 +94,55 @@ interface IOController_i : ObjectsManager_i
 
 	UniversalIO::IOTypes getIOType(in SensorInfo si) raises(NameNotFound);
 
-	// --- Интерфейс для конфигурирования ---
+	// --- п≤п╫я┌п╣я─я└п╣п╧я│ п╢п╩я▐ п╨п╬п╫я└п╦пЁя┐я─п╦я─п╬п╡п╟п╫п╦я▐ ---
 
-	/*! Получение неколиброванного значения */
+	/*! п÷п╬п╩я┐я┤п╣п╫п╦п╣ п╫п╣п╨п╬п╩п╦п╠я─п╬п╡п╟п╫п╫п╬пЁп╬ п╥п╫п╟я┤п╣п╫п╦я▐ */
 	long getRawValue( in SensorInfo si ) raises(NameNotFound);
 	
 	struct CalibrateInfo
 	{
-		long minRaw;		/*!< минимальное "сырое" значение */
-		long maxRaw; 		/*!< максимальное "сырое" значение */
-		long minCal; 		/*!< минимальное калиброванное значение */
-		long maxCal; 		/*!< максимальное калиброванное значение */
-		long sensibility; 	/*!< чуствительность (для первичного фильтрования) */
-		short precision;	/*!< точность */
+		long minRaw;		/*!< п╪п╦п╫п╦п╪п╟п╩я▄п╫п╬п╣ "я│я▀я─п╬п╣" п╥п╫п╟я┤п╣п╫п╦п╣ */
+		long maxRaw; 		/*!< п╪п╟п╨я│п╦п╪п╟п╩я▄п╫п╬п╣ "я│я▀я─п╬п╣" п╥п╫п╟я┤п╣п╫п╦п╣ */
+		long minCal; 		/*!< п╪п╦п╫п╦п╪п╟п╩я▄п╫п╬п╣ п╨п╟п╩п╦п╠я─п╬п╡п╟п╫п╫п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ */
+		long maxCal; 		/*!< п╪п╟п╨я│п╦п╪п╟п╩я▄п╫п╬п╣ п╨п╟п╩п╦п╠я─п╬п╡п╟п╫п╫п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ */
+		long sensibility; 	/*!< я┤я┐я│я┌п╡п╦я┌п╣п╩я▄п╫п╬я│я┌я▄ (п╢п╩я▐ п©п╣я─п╡п╦я┤п╫п╬пЁп╬ я└п╦п╩я▄я┌я─п╬п╡п╟п╫п╦я▐) */
+		short precision;	/*!< я┌п╬я┤п╫п╬я│я┌я▄ */
 	};
 
 	void calibrate( in SensorInfo si, in CalibrateInfo ci, in UniSetTypes::ObjectId adminId ) raises(NameNotFound);
 	CalibrateInfo getCalibrateInfo( in SensorInfo si ) raises(NameNotFound);
 
-	// --- Интерфес получения информации о всех датчиках ---
+	// --- п≤п╫я┌п╣я─я└п╣я│ п©п╬п╩я┐я┤п╣п╫п╦я▐ п╦п╫я└п╬я─п╪п╟я├п╦п╦ п╬ п╡я│п╣я┘ п╢п╟я┌я┤п╦п╨п╟я┘ ---
 
-	/*! Информация о дискретном датчике */
+	/*! п≤п╫я└п╬я─п╪п╟я├п╦я▐ п╬ п╢п╦я│п╨я─п╣я┌п╫п╬п╪ п╢п╟я┌я┤п╦п╨п╣ */
 	struct DigitalIOInfo
 	{
-		boolean state;				/*!< состояние */
-		boolean undefined; 			/*!< признак неопределённости значения */
-		boolean blocked; 			/*!< данное значение блокировано другим */		
-		boolean real_state;			/*!< запомненное состояние, до блокировки */
-		UniversalIO::IOTypes type;	/*!< тип */	
-		long priority;	 			/*!< приоритет уведомления */	
+		boolean state;				/*!< я│п╬я│я┌п╬я▐п╫п╦п╣ */
+		boolean undefined; 			/*!< п©я─п╦п╥п╫п╟п╨ п╫п╣п╬п©я─п╣п╢п╣п╩я▒п╫п╫п╬я│я┌п╦ п╥п╫п╟я┤п╣п╫п╦я▐ */
+		boolean blocked; 			/*!< п╢п╟п╫п╫п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ п╠п╩п╬п╨п╦я─п╬п╡п╟п╫п╬ п╢я─я┐пЁп╦п╪ */		
+		boolean real_state;			/*!< п╥п╟п©п╬п╪п╫п╣п╫п╫п╬п╣ я│п╬я│я┌п╬я▐п╫п╦п╣, п╢п╬ п╠п╩п╬п╨п╦я─п╬п╡п╨п╦ */
+		UniversalIO::IOTypes type;	/*!< я┌п╦п© */	
+		long priority;	 			/*!< п©я─п╦п╬я─п╦я┌п╣я┌ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦я▐ */	
 		IOController_i::SensorInfo si;
-		boolean default_val; 		/*!< значение по умолчанию */
-		long tv_sec;	/*!< время последнего изменения датчика, секунды (gettimeofday) */
-		long tv_usec;	/*!< время последнего изменения датчика, мксек (gettimeofday) */
+		boolean default_val; 		/*!< п╥п╫п╟я┤п╣п╫п╦п╣ п©п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ */
+		long tv_sec;	/*!< п╡я─п╣п╪я▐ п©п╬я│п╩п╣п╢п╫п╣пЁп╬ п╦п╥п╪п╣п╫п╣п╫п╦я▐ п╢п╟я┌я┤п╦п╨п╟, я│п╣п╨я┐п╫п╢я▀ (gettimeofday) */
+		long tv_usec;	/*!< п╡я─п╣п╪я▐ п©п╬я│п╩п╣п╢п╫п╣пЁп╬ п╦п╥п╪п╣п╫п╣п╫п╦я▐ п╢п╟я┌я┤п╦п╨п╟, п╪п╨я│п╣п╨ (gettimeofday) */
 	};
 
-	/*! Информация об аналоговом датчике */
+	/*! п≤п╫я└п╬я─п╪п╟я├п╦я▐ п╬п╠ п╟п╫п╟п╩п╬пЁп╬п╡п╬п╪ п╢п╟я┌я┤п╦п╨п╣ */
 	struct AnalogIOInfo
 	{
-		long value;					/*!< значение */
-		boolean undefined; 			/*!< признак неопределённости значения */
-		boolean blocked; 			/*!< данное значение блокировано другим */
-		long real_value;			/*!< запомненное состояние, до блокировки */
-		UniversalIO::IOTypes type;	/*!< тип */	
-		long priority;	 			/*!< приоритет уведомления */	
+		long value;					/*!< п╥п╫п╟я┤п╣п╫п╦п╣ */
+		boolean undefined; 			/*!< п©я─п╦п╥п╫п╟п╨ п╫п╣п╬п©я─п╣п╢п╣п╩я▒п╫п╫п╬я│я┌п╦ п╥п╫п╟я┤п╣п╫п╦я▐ */
+		boolean blocked; 			/*!< п╢п╟п╫п╫п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ п╠п╩п╬п╨п╦я─п╬п╡п╟п╫п╬ п╢я─я┐пЁп╦п╪ */
+		long real_value;			/*!< п╥п╟п©п╬п╪п╫п╣п╫п╫п╬п╣ я│п╬я│я┌п╬я▐п╫п╦п╣, п╢п╬ п╠п╩п╬п╨п╦я─п╬п╡п╨п╦ */
+		UniversalIO::IOTypes type;	/*!< я┌п╦п© */	
+		long priority;	 			/*!< п©я─п╦п╬я─п╦я┌п╣я┌ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦я▐ */	
 		IOController_i::SensorInfo si;
-		long default_val; 			/*!< значение по умолчанию */
-		CalibrateInfo ci; 			/*!< калибровочные параметры */
-		long tv_sec;				/*!< время последнего изменения датчика, секунды (gettimeofday) */
-		long tv_usec;				/*!< время последнего изменения датчика, мксек (gettimeofday) */
+		long default_val; 			/*!< п╥п╫п╟я┤п╣п╫п╦п╣ п©п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ */
+		CalibrateInfo ci; 			/*!< п╨п╟п╩п╦п╠я─п╬п╡п╬я┤п╫я▀п╣ п©п╟я─п╟п╪п╣я┌я─я▀ */
+		long tv_sec;				/*!< п╡я─п╣п╪я▐ п©п╬я│п╩п╣п╢п╫п╣пЁп╬ п╦п╥п╪п╣п╫п╣п╫п╦я▐ п╢п╟я┌я┤п╦п╨п╟, я│п╣п╨я┐п╫п╢я▀ (gettimeofday) */
+		long tv_usec;				/*!< п╡я─п╣п╪я▐ п©п╬я│п╩п╣п╢п╫п╣пЁп╬ п╦п╥п╪п╣п╫п╣п╫п╦я▐ п╢п╟я┌я┤п╦п╨п╟, п╪п╨я│п╣п╨ (gettimeofday) */
 	};
 
 	typedef sequence<AnalogIOInfo> ASensorInfoSeq;
@@ -155,47 +155,47 @@ interface IOController_i : ObjectsManager_i
 	AnalogIOInfo getAInfo(in SensorInfo si) raises(NameNotFound);
 
 
-	// -- Функции работы со списком датчиков --
+	// -- п╓я┐п╫п╨я├п╦п╦ я─п╟п╠п╬я┌я▀ я│п╬ я│п©п╦я│п╨п╬п╪ п╢п╟я┌я┤п╦п╨п╬п╡ --
 	
-	// Для простоты функции сделаны универсальными и не различающими
-	// дискретные или аналоговые датчики или выходы
+	// п■п╩я▐ п©я─п╬я│я┌п╬я┌я▀ я└я┐п╫п╨я├п╦п╦ я│п╢п╣п╩п╟п╫я▀ я┐п╫п╦п╡п╣я─я│п╟п╩я▄п╫я▀п╪п╦ п╦ п╫п╣ я─п╟п╥п╩п╦я┤п╟я▌я┴п╦п╪п╦
+	// п╢п╦я│п╨я─п╣я┌п╫я▀п╣ п╦п╩п╦ п╟п╫п╟п╩п╬пЁп╬п╡я▀п╣ п╢п╟я┌я┤п╦п╨п╦ п╦п╩п╦ п╡я▀я┘п╬п╢я▀
 
 
-	/*! Получение состояния дискретных или аналоговых датчиков. 
-		При этом используется структура аналоговых (как наиболее полная).
-		Для определения типа используйте поле 'type'.
+	/*! п÷п╬п╩я┐я┤п╣п╫п╦п╣ я│п╬я│я┌п╬я▐п╫п╦я▐ п╢п╦я│п╨я─п╣я┌п╫я▀я┘ п╦п╩п╦ п╟п╫п╟п╩п╬пЁп╬п╡я▀я┘ п╢п╟я┌я┤п╦п╨п╬п╡. 
+		п÷я─п╦ я█я┌п╬п╪ п╦я│п©п╬п╩я▄п╥я┐п╣я┌я│я▐ я│я┌я─я┐п╨я┌я┐я─п╟ п╟п╫п╟п╩п╬пЁп╬п╡я▀я┘ (п╨п╟п╨ п╫п╟п╦п╠п╬п╩п╣п╣ п©п╬п╩п╫п╟я▐).
+		п■п╩я▐ п╬п©я─п╣п╢п╣п╩п╣п╫п╦я▐ я┌п╦п©п╟ п╦я│п©п╬п╩я▄п╥я┐п╧я┌п╣ п©п╬п╩п╣ 'type'.
 	*/
 	ASensorInfoSeq getSensorSeq( in UniSetTypes::IDSeq lst );
 
-	/*! Информация о "выходе" */
+	/*! п≤п╫я└п╬я─п╪п╟я├п╦я▐ п╬ "п╡я▀я┘п╬п╢п╣" */
 	struct OutInfo
 	{
-		SensorInfo si;	/*!< идентификатор выхода */
-		long value;		/*!< значение */
+		SensorInfo si;	/*!< п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╡я▀я┘п╬п╢п╟ */
+		long value;		/*!< п╥п╫п╟я┤п╣п╫п╦п╣ */
 	};
 
 	typedef sequence<OutInfo> OutSeq;
 
 	/*!
-		Выставить состояние группы датчиков/выходов (дискретных или аналоговых).
-		\return Возвращает список входов/выходов изменить состояние которых не удалось. 
-			Будет пустым если всё хорошо.
+		п▓я▀я│я┌п╟п╡п╦я┌я▄ я│п╬я│я┌п╬я▐п╫п╦п╣ пЁя─я┐п©п©я▀ п╢п╟я┌я┤п╦п╨п╬п╡/п╡я▀я┘п╬п╢п╬п╡ (п╢п╦я│п╨я─п╣я┌п╫я▀я┘ п╦п╩п╦ п╟п╫п╟п╩п╬пЁп╬п╡я▀я┘).
+		\return п▓п╬п╥п╡я─п╟я┴п╟п╣я┌ я│п©п╦я│п╬п╨ п╡я┘п╬п╢п╬п╡/п╡я▀я┘п╬п╢п╬п╡ п╦п╥п╪п╣п╫п╦я┌я▄ я│п╬я│я┌п╬я▐п╫п╦п╣ п╨п╬я┌п╬я─я▀я┘ п╫п╣ я┐п╢п╟п╩п╬я│я▄. 
+			п▒я┐п╢п╣я┌ п©я┐я│я┌я▀п╪ п╣я│п╩п╦ п╡я│я▒ я┘п╬я─п╬я┬п╬.
 	*/
 	UniSetTypes::IDSeq setOutputSeq( in OutSeq lst, in UniSetTypes::ObjectId sup_id );
 
 
-	/*! Информация о дискретном датчике */
+	/*! п≤п╫я└п╬я─п╪п╟я├п╦я▐ п╬ п╢п╦я│п╨я─п╣я┌п╫п╬п╪ п╢п╟я┌я┤п╦п╨п╣ */
 	struct ShortIOInfo
 	{
 		long value;
-		long tv_sec;	/*!< время последнего изменения датчика, секунды (gettimeofday) */
-		long tv_usec;	/*!< время последнего изменения датчика, мксек (gettimeofday) */
+		long tv_sec;	/*!< п╡я─п╣п╪я▐ п©п╬я│п╩п╣п╢п╫п╣пЁп╬ п╦п╥п╪п╣п╫п╣п╫п╦я▐ п╢п╟я┌я┤п╦п╨п╟, я│п╣п╨я┐п╫п╢я▀ (gettimeofday) */
+		long tv_usec;	/*!< п╡я─п╣п╪я▐ п©п╬я│п╩п╣п╢п╫п╣пЁп╬ п╦п╥п╪п╣п╫п╣п╫п╦я▐ п╢п╟я┌я┤п╦п╨п╟, п╪п╨я│п╣п╨ (gettimeofday) */
 	};
 
 	ShortIOInfo getChangedTime(in SensorInfo si) raises(NameNotFound);
 
 
-	/*! Информация о дискретном датчике */
+	/*! п≤п╫я└п╬я─п╪п╟я├п╦я▐ п╬ п╢п╦я│п╨я─п╣я┌п╫п╬п╪ п╢п╟я┌я┤п╦п╨п╣ */
 	struct ShortMap
 	{
 		UniversalIO::IOTypes type;
@@ -211,86 +211,86 @@ interface IOController_i : ObjectsManager_i
 // --------------------------------------------------------------------------------------------------------------
 /*!
  * \interface IONotifyController_i
- * \brief Базовый интерфейс для создания процессов рассылающих сообщения об изменении состояния
+ * \brief п▒п╟п╥п╬п╡я▀п╧ п╦п╫я┌п╣я─я└п╣п╧я│ п╢п╩я▐ я│п╬п╥п╢п╟п╫п╦я▐ п©я─п╬я├п╣я│я│п╬п╡ я─п╟я│я│я▀п╩п╟я▌я┴п╦я┘ я│п╬п╬п╠я┴п╣п╫п╦я▐ п╬п╠ п╦п╥п╪п╣п╫п╣п╫п╦п╦ я│п╬я│я┌п╬я▐п╫п╦я▐
  * \author Pavel Vainerman
  * \version
  * \date   September 2001-
  *
- * ... а здесь идет кратенькое описание...
+ * ... п╟ п╥п╢п╣я│я▄ п╦п╢п╣я┌ п╨я─п╟я┌п╣п╫я▄п╨п╬п╣ п╬п©п╦я│п╟п╫п╦п╣...
 */
 interface IONotifyController_i : IOController_i
 {
-	/*! Неверно указаны пределы */
+	/*! п²п╣п╡п╣я─п╫п╬ я┐п╨п╟п╥п╟п╫я▀ п©я─п╣п╢п╣п╩я▀ */
 	exception BadRange
 	{	
 	};
 
 
-	/*! Заказ уведомления об изменении дискретного датчика
+	/*! п≈п╟п╨п╟п╥ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦я▐ п╬п╠ п╦п╥п╪п╣п╫п╣п╫п╦п╦ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
 	 * \sa UniversalIO::UniversalIOController::askState()
 	*/
 	void askState(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
 
-	/*! Заказ уведомления об изменении аналогового датчика
+	/*! п≈п╟п╨п╟п╥ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦я▐ п╬п╠ п╦п╥п╪п╣п╫п╣п╫п╦п╦ п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
 	 * \sa UniversalIO::UniversalIOController::askValue()
 	*/					
 	void askValue(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
 
-	/*! Универсальная функция заказа уведомления об изменнии датчика.
-	 *	Позволяет заказывать как дискретные так и аналоговые датчики
+	/*! пёп╫п╦п╡п╣я─я│п╟п╩я▄п╫п╟я▐ я└я┐п╫п╨я├п╦я▐ п╥п╟п╨п╟п╥п╟ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦я▐ п╬п╠ п╦п╥п╪п╣п╫п╫п╦п╦ п╢п╟я┌я┤п╦п╨п╟.
+	 *	п÷п╬п╥п╡п╬п╩я▐п╣я┌ п╥п╟п╨п╟п╥я▀п╡п╟я┌я▄ п╨п╟п╨ п╢п╦я│п╨я─п╣я┌п╫я▀п╣ я┌п╟п╨ п╦ п╟п╫п╟п╩п╬пЁп╬п╡я▀п╣ п╢п╟я┌я┤п╦п╨п╦
 	 * \sa UniversalIO::UniversalIOController::askSensor()
 	*/					
 	void askSensor(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
 
-	/*! Заказ порогового датчика
+	/*! п≈п╟п╨п╟п╥ п©п╬я─п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
 	 * \sa UniversalIO::UniversalIOController::askThreshold()
-	 * \param tid - идентификатор порога
-	 * \param lowLimit - нижний порог срабатыания
-	 * \param hiLimit - верхний порог срабатывания
-	 * \param sensibility - чуствительность
+	 * \param tid - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п©п╬я─п╬пЁп╟
+	 * \param lowLimit - п╫п╦п╤п╫п╦п╧ п©п╬я─п╬пЁ я│я─п╟п╠п╟я┌я▀п╟п╫п╦я▐
+	 * \param hiLimit - п╡п╣я─я┘п╫п╦п╧ п©п╬я─п╬пЁ я│я─п╟п╠п╟я┌я▀п╡п╟п╫п╦я▐
+	 * \param sensibility - я┤я┐я│я┌п╡п╦я┌п╣п╩я▄п╫п╬я│я┌я▄
 	 * 
-	 *	Датчик срабатывает при условии, что значение меньше (lowLimit-sensibility) или
-	 *  больше (hiLimit+sensibility)
+	 *	п■п╟я┌я┤п╦п╨ я│я─п╟п╠п╟я┌я▀п╡п╟п╣я┌ п©я─п╦ я┐я│п╩п╬п╡п╦п╦, я┤я┌п╬ п╥п╫п╟я┤п╣п╫п╦п╣ п╪п╣п╫я▄я┬п╣ (lowLimit-sensibility) п╦п╩п╦
+	 *  п╠п╬п╩я▄я┬п╣ (hiLimit+sensibility)
 	*/					
 	void askThreshold(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniSetTypes::ThresholdId tid,
 						in long lowLimit, in long hiLimit, in long sensibility,
 						in UniversalIO::UIOCommand cmd ) raises(NameNotFound, IOBadParam, BadRange);
 
 
-	/*! Универсальная функция заказа уведомления об изменнии выхода.
-	 *	Позволяет заказывать как дискретные так и аналоговые выходы
+	/*! пёп╫п╦п╡п╣я─я│п╟п╩я▄п╫п╟я▐ я└я┐п╫п╨я├п╦я▐ п╥п╟п╨п╟п╥п╟ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦я▐ п╬п╠ п╦п╥п╪п╣п╫п╫п╦п╦ п╡я▀я┘п╬п╢п╟.
+	 *	п÷п╬п╥п╡п╬п╩я▐п╣я┌ п╥п╟п╨п╟п╥я▀п╡п╟я┌я▄ п╨п╟п╨ п╢п╦я│п╨я─п╣я┌п╫я▀п╣ я┌п╟п╨ п╦ п╟п╫п╟п╩п╬пЁп╬п╡я▀п╣ п╡я▀я┘п╬п╢я▀
 	 * \sa UniversalIO::UniversalIOController::askOutput()
 	*/					
 	void askOutput(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
 
 
 	/*! 
-		Заказ сразу списка объектов. 
-		\return Возвращает список объектов заказ по котором не прошёл.
-			Будет пустым если всё хорошо.
+		п≈п╟п╨п╟п╥ я│я─п╟п╥я┐ я│п©п╦я│п╨п╟ п╬п╠я┼п╣п╨я┌п╬п╡. 
+		\return п▓п╬п╥п╡я─п╟я┴п╟п╣я┌ я│п©п╦я│п╬п╨ п╬п╠я┼п╣п╨я┌п╬п╡ п╥п╟п╨п╟п╥ п©п╬ п╨п╬я┌п╬я─п╬п╪ п╫п╣ п©я─п╬я┬я▒п╩.
+			п▒я┐п╢п╣я┌ п©я┐я│я┌я▀п╪ п╣я│п╩п╦ п╡я│я▒ я┘п╬я─п╬я┬п╬.
 	*/
 	UniSetTypes::IDSeq askSensorsSeq( in UniSetTypes::IDSeq lst, 
 										in UniSetTypes::ConsumerInfo ci,
 										in UniversalIO::UIOCommand cmd );
 
 
-	/*! Состояние порогового датчика */
+	/*! п║п╬я│я┌п╬я▐п╫п╦п╣ п©п╬я─п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟ */
 	enum ThresholdState
 	{
-		LowThreshold,		/*!< сработал нижний порог  (значение меньше нижнего) */
-		NormalThreshold,	/*!< значение в заданных пределах (не достигли порога) */
-		HiThreshold			/*!< сработал верхний порог  (значение больше верхнего) */
+		LowThreshold,		/*!< я│я─п╟п╠п╬я┌п╟п╩ п╫п╦п╤п╫п╦п╧ п©п╬я─п╬пЁ  (п╥п╫п╟я┤п╣п╫п╦п╣ п╪п╣п╫я▄я┬п╣ п╫п╦п╤п╫п╣пЁп╬) */
+		NormalThreshold,	/*!< п╥п╫п╟я┤п╣п╫п╦п╣ п╡ п╥п╟п╢п╟п╫п╫я▀я┘ п©я─п╣п╢п╣п╩п╟я┘ (п╫п╣ п╢п╬я│я┌п╦пЁп╩п╦ п©п╬я─п╬пЁп╟) */
+		HiThreshold			/*!< я│я─п╟п╠п╬я┌п╟п╩ п╡п╣я─я┘п╫п╦п╧ п©п╬я─п╬пЁ  (п╥п╫п╟я┤п╣п╫п╦п╣ п╠п╬п╩я▄я┬п╣ п╡п╣я─я┘п╫п╣пЁп╬) */
 	};
 
 	struct ThresholdInfo
 	{
 		UniSetTypes::ThresholdId id;
-		long hilimit;			/*!< верхняя граница срабатывания */
-		long lowlimit;			/*!< нижняя гранийа срабатывания */
-		long sensibility;		/*!< точность определения границ (?) */
+		long hilimit;			/*!< п╡п╣я─я┘п╫я▐я▐ пЁя─п╟п╫п╦я├п╟ я│я─п╟п╠п╟я┌я▀п╡п╟п╫п╦я▐ */
+		long lowlimit;			/*!< п╫п╦п╤п╫я▐я▐ пЁя─п╟п╫п╦п╧п╟ я│я─п╟п╠п╟я┌я▀п╡п╟п╫п╦я▐ */
+		long sensibility;		/*!< я┌п╬я┤п╫п╬я│я┌я▄ п╬п©я─п╣п╢п╣п╩п╣п╫п╦я▐ пЁя─п╟п╫п╦я├ (?) */
 		ThresholdState state;	
-		long tv_sec;			/*!< время последнего изменения датчика, секунды (gettimeofday) */
-		long tv_usec;			/*!< время последнего изменения датчика, мксек (gettimeofday) */
+		long tv_sec;			/*!< п╡я─п╣п╪я▐ п©п╬я│п╩п╣п╢п╫п╣пЁп╬ п╦п╥п╪п╣п╫п╣п╫п╦я▐ п╢п╟я┌я┤п╦п╨п╟, я│п╣п╨я┐п╫п╢я▀ (gettimeofday) */
+		long tv_usec;			/*!< п╡я─п╣п╪я▐ п©п╬я│п╩п╣п╢п╫п╣пЁп╬ п╦п╥п╪п╣п╫п╣п╫п╦я▐ п╢п╟я┌я┤п╦п╨п╟, п╪п╨я│п╣п╨ (gettimeofday) */
 	};
 
 	typedef sequence<ThresholdInfo> ThresholdInfoSeq;

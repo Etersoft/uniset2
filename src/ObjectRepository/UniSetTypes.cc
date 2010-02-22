@@ -35,13 +35,13 @@ using namespace UniSetTypes;
 	float UniSetTypes::fcalibrate( float raw, float rawMin, float rawMax, 
 				float calMin, float calMax, bool limit )
 	{
-		if( rawMax == rawMin ) return 0; // ÄÅÌÅÎÉÅ ÎÁ 0!!!
+		if( rawMax == rawMin ) return 0; // Ð´ÐµÐ»ÐµÐ½Ð¸Ðµ Ð½Ð° 0!!!
 		float ret = (raw - rawMin) * (calMax - calMin) / ( rawMax - rawMin ) + calMin;
 
 		if( !limit )
 			return ret;
 
-		// ðÅÒÅ×ÏÒÁÞÉ×ÁÅÍ calMin É calMax ÄÌÑ ÐÒÏ×ÅÒËÉ, ÅÓÌÉ calMin > calMax
+		// ÐŸÐµÑ€ÐµÐ²Ð¾Ñ€Ð°Ñ‡Ð¸Ð²Ð°ÐµÐ¼ calMin Ð¸ calMax Ð´Ð»Ñ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ¸, ÐµÑÐ»Ð¸ calMin > calMax
 		if (calMin < calMax) {
 			if( ret < calMin )
 				return calMin;
@@ -57,10 +57,10 @@ using namespace UniSetTypes;
 		return ret;
 	}
 	// -------------------------------------------------------------------------
-	// ðÅÒÅÓÞÉÔÙ×ÁÅÍ ÉÚ ÉÓÈÏÄÎÙÈ ÐÒÅÄÅÌÏ× × ÚÁÄÁÎÎÙÅ
+	// ÐŸÐµÑ€ÐµÑÑ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÐ¼ Ð¸Ð· Ð¸ÑÑ…Ð¾Ð´Ð½Ñ‹Ñ… Ð¿Ñ€ÐµÐ´ÐµÐ»Ð¾Ð² Ð² Ð·Ð°Ð´Ð°Ð½Ð½Ñ‹Ðµ
 	long UniSetTypes::lcalibrate(long raw, long rawMin, long rawMax, long calMin, long calMax, bool limit )
 	{
-		if( rawMax == rawMin ) return 0; // ÄÅÌÅÎÉÅ ÎÁ 0!!!
+		if( rawMax == rawMin ) return 0; // Ð´ÐµÐ»ÐµÐ½Ð¸Ðµ Ð½Ð° 0!!!
 
 		long ret = lroundf( (float)(raw - rawMin) * (float)(calMax - calMin) / 
 						(float)( rawMax - rawMin ) + calMin );
@@ -71,10 +71,10 @@ using namespace UniSetTypes;
 	}
 
 	// -------------------------------------------------------------------------
-	// ðÒÉ×ÏÄÉÍ ÕËÁÚÁÎÎÏÅ ÚÎÁÞÅÎÉÅ × ÚÁÄÁÎÎÙÅ ÐÒÅÄÅÌÙ
+	// ÐŸÑ€Ð¸Ð²Ð¾Ð´Ð¸Ð¼ ÑƒÐºÐ°Ð·Ð°Ð½Ð½Ð¾Ðµ Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ Ð² Ð·Ð°Ð´Ð°Ð½Ð½Ñ‹Ðµ Ð¿Ñ€ÐµÐ´ÐµÐ»Ñ‹
 	long UniSetTypes::setinregion(long ret, long calMin, long calMax)
 	{
-		// ðÅÒÅ×ÏÒÁÞÉ×ÁÅÍ calMin É calMax ÄÌÑ ÐÒÏ×ÅÒËÉ, ÅÓÌÉ calMin > calMax
+		// ÐŸÐµÑ€ÐµÐ²Ð¾Ñ€Ð°Ñ‡Ð¸Ð²Ð°ÐµÐ¼ calMin Ð¸ calMax Ð´Ð»Ñ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ¸, ÐµÑÐ»Ð¸ calMin > calMax
 		if (calMin < calMax) {
 			if( ret < calMin )
 				return calMin;
@@ -90,7 +90,7 @@ using namespace UniSetTypes;
 		return ret;
 	}
 
-	// ÷Ù×ÏÄÉÍ ÕËÁÚÁÎÎÏÅ ÚÎÁÞÅÎÉÅ ÉÚ ÚÁÄÁÎÎÙÈ ÐÒÅÄÅÌÏ× (ÎÁ ÇÒÁÎÉÃÙ)
+	// Ð’Ñ‹Ð²Ð¾Ð´Ð¸Ð¼ ÑƒÐºÐ°Ð·Ð°Ð½Ð½Ð¾Ðµ Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ Ð¸Ð· Ð·Ð°Ð´Ð°Ð½Ð½Ñ‹Ñ… Ð¿Ñ€ÐµÐ´ÐµÐ»Ð¾Ð² (Ð½Ð° Ð³Ñ€Ð°Ð½Ð¸Ñ†Ñ‹)
 	long UniSetTypes::setoutregion(long ret, long calMin, long calMax)
 	{
 		if ((ret > calMin) && (ret < calMax))
@@ -151,8 +151,8 @@ using namespace UniSetTypes;
 		return (*lst.begin());
 	}
 
-	// ÚÁ ÏÓ×ÏÂÏÖÄÅÎÉÅ ×ÙÄÅÌÅÎÏÊ ÐÁÍÑÔÉ
-	// ÏÔ×ÅÞÁÅÔ ×ÙÚÙ×ÁÀÝÉÊ!
+	// Ð·Ð° Ð¾ÑÐ²Ð¾Ð±Ð¾Ð¶Ð´ÐµÐ½Ð¸Ðµ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð¾Ð¹ Ð¿Ð°Ð¼ÑÑ‚Ð¸
+	// Ð¾Ñ‚Ð²ÐµÑ‡Ð°ÐµÑ‚ Ð²Ñ‹Ð·Ñ‹Ð²Ð°ÑŽÑ‰Ð¸Ð¹!
 	IDSeq* UniSetTypes::IDList::getIDSeq()
 	{
 		IDSeq* seq = new IDSeq();

@@ -15,8 +15,8 @@ class Pulse
 		{}
 		~Pulse(){}
 	
-		// t1_msec - интервал "вкл"
-		// t0_msec - интерфал "откл"
+		// t1_msec - п╦п╫я┌п╣я─п╡п╟п╩ "п╡п╨п╩"
+		// t0_msec - п╦п╫я┌п╣я─я└п╟п╩ "п╬я┌п╨п╩"
 		inline void run( int _t1_msec, int _t0_msec )
 		{
 			t1_msec = _t1_msec;
@@ -88,8 +88,8 @@ class Pulse
 
 		
 	protected:
-		PassiveTimer t1;	// таймер "1"
-		PassiveTimer t0;	// таймер "0"
+		PassiveTimer t1;	// я┌п╟п╧п╪п╣я─ "1"
+		PassiveTimer t0;	// я┌п╟п╧п╪п╣я─ "0"
 		bool ostate;
 		bool isOn;
 		long t1_msec;

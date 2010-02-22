@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *  \brief файл реализации Info-сервера
+ *  \brief я└п╟п╧п╩ я─п╣п╟п╩п╦п╥п╟я├п╦п╦ Info-я│п╣я─п╡п╣я─п╟
  *  \author Pavel Vainerman
  *  \date   $Date: 2007/01/17 23:33:41 $
  *  \version $Id: InfoServer.cc,v 1.14 2007/01/17 23:33:41 vpashka Exp $
@@ -46,7 +46,7 @@ InfoServer::InfoServer( ObjectId id, ISRestorer* d ):
 		if( id == DefaultObjectId )
 		{
 			ostringstream msg;
-			msg << "(InfoServer): Запуск невозможен! НЕ ЗАДАН ObjectId !!!!!\n";
+			msg << "(InfoServer): п≈п╟п©я┐я│п╨ п╫п╣п╡п╬п╥п╪п╬п╤п╣п╫! п²п∙ п≈п░п■п░п² ObjectId !!!!!\n";
 //			unideb[Debug::CRIT] << msg.str() << endl;
 			throw Exception(msg.str());
 		}
@@ -67,7 +67,7 @@ InfoServer::InfoServer( ObjectId id, ISRestorer* d ):
 			
 			xmlNode* node(xml->findNode(root,"RouteList"));
 			if(!node) 
-				unideb[Debug::WARN] << myname << ": старый формат конф-файла. Нет раздела RouteList" << endl;
+				unideb[Debug::WARN] << myname << ": я│я┌п╟я─я▀п╧ я└п╬я─п╪п╟я┌ п╨п╬п╫я└-я└п╟п╧п╩п╟. п²п╣я┌ я─п╟п╥п╢п╣п╩п╟ RouteList" << endl;
 			else
 			{
 				UniXML_iterator it(node);
@@ -80,7 +80,7 @@ InfoServer::InfoServer( ObjectId id, ISRestorer* d ):
 						ci.id =	 conf->oind->getIdByName(cname);
 						if( ci.id == UniSetTypes::DefaultObjectId )
 						{
-							unideb[Debug::CRIT] << myname << ": НЕ НАЙДЕН ИДЕНТИФИКАТОР объекта -->" << cname << endl;
+							unideb[Debug::CRIT] << myname << ": п²п∙ п²п░п≥п■п∙п² п≤п■п∙п²п╒п≤п╓п≤п п░п╒п·п═ п╬п╠я┼п╣п╨я┌п╟ -->" << cname << endl;
 							continue;
 						}
 					
@@ -90,7 +90,7 @@ InfoServer::InfoServer( ObjectId id, ISRestorer* d ):
 							ci.node = conf->oind->getIdByName(cnodename);
 						if( ci.node == UniSetTypes::DefaultObjectId )
 						{
-							unideb[Debug::CRIT] << myname << ": НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->" << cnodename << endl;
+							unideb[Debug::CRIT] << myname << ": п²п∙ п²п░п≥п■п∙п² п≤п■п∙п²п╒п≤п╓п≤п п░п╒п·п═ я┐п╥п╩п╟ -->" << cnodename << endl;
 							continue;
 						}
 						routeList.push_back(ci);
@@ -110,7 +110,7 @@ void InfoServer::preprocessing(TransportMessage& tmsg, bool broadcast)
 {
 //	unideb[Debug::INFO] << myname << "... preprocessing... "<< endl;
 
-	// Пересылаем на другие узлы
+	// п÷п╣я─п╣я│я▀п╩п╟п╣п╪ п╫п╟ п╢я─я┐пЁп╦п╣ я┐п╥п╩я▀
 	if( broadcast )
 	{
 		for ( UniSetTypes::ListOfNode::const_iterator it = conf->listNodesBegin();
@@ -124,7 +124,7 @@ void InfoServer::preprocessing(TransportMessage& tmsg, bool broadcast)
 				}
 				catch(...)
 				{
-					unideb[Debug::CRIT] << myname << "(preprocessing): не смог послать сообщение узлу "<< conf->oind->getMapName(it->id)<< endl;
+					unideb[Debug::CRIT] << myname << "(preprocessing): п╫п╣ я│п╪п╬пЁ п©п╬я│п╩п╟я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣ я┐п╥п╩я┐ "<< conf->oind->getMapName(it->id)<< endl;
 				}
 			}
 		}
@@ -132,8 +132,8 @@ void InfoServer::preprocessing(TransportMessage& tmsg, bool broadcast)
 
 	
 
-//	unideb[Debug::INFO] << myname << " пишем в базу... "<< endl;
-	// Сохраняем в базу
+//	unideb[Debug::INFO] << myname << " п©п╦я┬п╣п╪ п╡ п╠п╟п╥я┐... "<< endl;
+	// п║п╬я┘я─п╟п╫я▐п╣п╪ п╡ п╠п╟п╥я┐
 	try
 	{
 		if( dbrepeat )
@@ -141,11 +141,11 @@ void InfoServer::preprocessing(TransportMessage& tmsg, bool broadcast)
 	}
 	catch(...)
 	{
-		unideb[Debug::CRIT] << myname << "(preprocessing): не смог послать сообщение DBServer-у" << endl;
+		unideb[Debug::CRIT] << myname << "(preprocessing): п╫п╣ я│п╪п╬пЁ п©п╬я│п╩п╟я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣ DBServer-я┐" << endl;
 	}
 
 	
-	// Пересылаем по routeList-у
+	// п÷п╣я─п╣я│я▀п╩п╟п╣п╪ п©п╬ routeList-я┐
 	for( list<UniSetTypes::ConsumerInfo>::const_iterator it=routeList.begin(); it!=routeList.end(); ++it )
 	{
 		try
@@ -155,7 +155,7 @@ void InfoServer::preprocessing(TransportMessage& tmsg, bool broadcast)
 		catch(...)
 		{
 			unideb[Debug::CRIT] << myname << "(preprocessing):"
-				<< " не смог послать сообщение объекту "
+				<< " п╫п╣ я│п╪п╬пЁ п©п╬я│п╩п╟я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╬п╠я┼п╣п╨я┌я┐ "
 				<< conf->oind->getNameById(it->id,it->node)<< endl;
 		}
 	}
@@ -167,7 +167,7 @@ void InfoServer::preprocessingConfirm(UniSetTypes::ConfirmMessage& am, bool broa
 //	unideb[Debug::INFO] << myname << "... preprocessing... "<< endl;
 
 	TransportMessage tmsg(am.transport_msg());
-	// Пересылаем на другие узлы
+	// п÷п╣я─п╣я│я▀п╩п╟п╣п╪ п╫п╟ п╢я─я┐пЁп╦п╣ я┐п╥п╩я▀
 	if( broadcast )
 	{
 		for ( UniSetTypes::ListOfNode::const_iterator it = conf->listNodesBegin();
@@ -182,7 +182,7 @@ void InfoServer::preprocessingConfirm(UniSetTypes::ConfirmMessage& am, bool broa
 				catch(...)
 				{
 					unideb[Debug::CRIT] << myname << "(preprocessing):"
-						<< " не смог послать сообщение узлу "
+						<< " п╫п╣ я│п╪п╬пЁ п©п╬я│п╩п╟я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣ я┐п╥п╩я┐ "
 						<< conf->oind->getMapName(it->id)<< endl;
 				}
 			}
@@ -196,10 +196,10 @@ void InfoServer::preprocessingConfirm(UniSetTypes::ConfirmMessage& am, bool broa
 	}
 	catch(...)
 	{
-		unideb[Debug::CRIT] << myname << "(preprocessing): не смог послать сообщение DBServer-у" << endl;
+		unideb[Debug::CRIT] << myname << "(preprocessing): п╫п╣ я│п╪п╬пЁ п©п╬я│п╩п╟я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣ DBServer-я┐" << endl;
 	}
 
-	// Пересылаем по routeList-у
+	// п÷п╣я─п╣я│я▀п╩п╟п╣п╪ п©п╬ routeList-я┐
 	for( list<UniSetTypes::ConsumerInfo>::const_iterator it=routeList.begin(); it!=routeList.end(); ++it )
 	{
 		try
@@ -209,7 +209,7 @@ void InfoServer::preprocessingConfirm(UniSetTypes::ConfirmMessage& am, bool broa
 		catch(...)
 		{
 			unideb[Debug::CRIT] << myname << "(preprocessing):"
-					<< " не смог послать сообщение объекту "
+					<< " п╫п╣ я│п╪п╬пЁ п©п╬я│п╩п╟я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╬п╠я┼п╣п╨я┌я┐ "
 					<< conf->oind->getNameById(it->id,it->node) << endl;
 		}
 	}
@@ -227,11 +227,11 @@ void InfoServer::processingMessage( UniSetTypes::VoidMessage *msg )
 			unideb[Debug::INFO] << myname << " InfoMessage code= "<< im.infocode << endl;
 			try
 			{
-				// если это не пересланное сообщение 
-				// то обрабатываем его
+				// п╣я│п╩п╦ я█я┌п╬ п╫п╣ п©п╣я─п╣я│п╩п╟п╫п╫п╬п╣ я│п╬п╬п╠я┴п╣п╫п╦п╣ 
+				// я┌п╬ п╬п╠я─п╟п╠п╟я┌я▀п╡п╟п╣п╪ п╣пЁп╬
 				if( !im.route )
 				{
-					im.route = true;	// выставляем признак пересылки
+					im.route = true;	// п╡я▀я│я┌п╟п╡п╩я▐п╣п╪ п©я─п╦п╥п╫п╟п╨ п©п╣я─п╣я│я▀п╩п╨п╦
 					TransportMessage tm(im.transport_msg());
 					preprocessing(tm, im.broadcast);
 				}
@@ -245,7 +245,7 @@ void InfoServer::processingMessage( UniSetTypes::VoidMessage *msg )
 				unideb[Debug::CRIT] << myname << "(info preprocessing): catch ..." << endl;
 			}
 
-			// посылаем всем зазкачикам уведомление
+			// п©п╬я│я▀п╩п╟п╣п╪ п╡я│п╣п╪ п╥п╟п╥п╨п╟я┤п╦п╨п╟п╪ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦п╣
 			try
 			{
 				event(im.infocode, im, false);
@@ -284,11 +284,11 @@ void InfoServer::processingMessage( UniSetTypes::VoidMessage *msg )
 
 			try
 			{
-				// если это не пересланное сообщение 
-				// то обрабатываем его
+				// п╣я│п╩п╦ я█я┌п╬ п╫п╣ п©п╣я─п╣я│п╩п╟п╫п╫п╬п╣ я│п╬п╬п╠я┴п╣п╫п╦п╣ 
+				// я┌п╬ п╬п╠я─п╟п╠п╟я┌я▀п╡п╟п╣п╪ п╣пЁп╬
 				if( !am.route )
 				{
-					am.route = true;	// выставляем признак пересылки
+					am.route = true;	// п╡я▀я│я┌п╟п╡п╩я▐п╣п╪ п©я─п╦п╥п╫п╟п╨ п©п╣я─п╣я│я▀п╩п╨п╦
 					TransportMessage tm(am.transport_msg());
 					preprocessing(tm, am.broadcast);
 				}
@@ -304,7 +304,7 @@ void InfoServer::processingMessage( UniSetTypes::VoidMessage *msg )
 
 			try
 			{
-				// посылаем всем зазкачикам уведомление
+				// п©п╬я│я▀п╩п╟п╣п╪ п╡я│п╣п╪ п╥п╟п╥п╨п╟я┤п╦п╨п╟п╪ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦п╣
 				event(am.alarmcode, am, false);
 			}
 			catch(Exception& ex )
@@ -336,11 +336,11 @@ void InfoServer::processingMessage( UniSetTypes::VoidMessage *msg )
 		{
 			UniSetTypes::ConfirmMessage cm(msg);
 	
-			unideb[Debug::INFO] << myname << " ConfirmMessage на сообщение code= "<< cm.code << endl;
+			unideb[Debug::INFO] << myname << " ConfirmMessage п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦п╣ code= "<< cm.code << endl;
 			try
 			{
-				// если это не пересланное сообщение 
-				// то обрабатываем его
+				// п╣я│п╩п╦ я█я┌п╬ п╫п╣ п©п╣я─п╣я│п╩п╟п╫п╫п╬п╣ я│п╬п╬п╠я┴п╣п╫п╦п╣ 
+				// я┌п╬ п╬п╠я─п╟п╠п╟я┌я▀п╡п╟п╣п╪ п╣пЁп╬
 				if( !cm.route )
 				{
 					cm.route = true;
@@ -357,7 +357,7 @@ void InfoServer::processingMessage( UniSetTypes::VoidMessage *msg )
 			}
 
 		
-			// посылаем всем зазкачикам уведомление
+			// п©п╬я│я▀п╩п╟п╣п╪ п╡я│п╣п╪ п╥п╟п╥п╨п╟я┤п╦п╨п╟п╪ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦п╣
 			event(cm.code, cm, true);
 			
 			try
@@ -374,7 +374,7 @@ void InfoServer::processingMessage( UniSetTypes::VoidMessage *msg )
 			break;
 
 		default:
-			unideb[Debug::CRIT] << myname << ": НЕИЗВЕСТНОЕ СООБЩЕНИЕ"<< endl;
+			unideb[Debug::CRIT] << myname << ": п²п∙п≤п≈п▓п∙п║п╒п²п·п∙ п║п·п·п▒п╘п∙п²п≤п∙"<< endl;
 			break;
 	}
 	
@@ -383,15 +383,15 @@ void InfoServer::processingMessage( UniSetTypes::VoidMessage *msg )
 void InfoServer::ackMessage(UniSetTypes::MessageCode mid, const UniSetTypes::ConsumerInfo& ci, 
 							UniversalIO::UIOCommand cmd, CORBA::Boolean acknotify)
 {
-	unideb[Debug::INFO] << myname << "(askMessage): поступил заказ от "
+	unideb[Debug::INFO] << myname << "(askMessage): п©п╬я│я┌я┐п©п╦п╩ п╥п╟п╨п╟п╥ п╬я┌ "
 		<< conf->oind->getNameById(ci.id, ci.node)
-		<< " на сообщение " << mid << endl;
+		<< " п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦п╣ " << mid << endl;
 
-	// Проверка на существование
+	// п÷я─п╬п╡п╣я─п╨п╟ п╫п╟ я│я┐я┴п╣я│я┌п╡п╬п╡п╟п╫п╦п╣
 	if(!conf->mi->isExist(mid) )
 	{
-		unideb[Debug::CRIT] << myname << "(askMessage): сообщения с кодом "
-				<< mid << " НЕТ в MessagesMap" << endl;
+		unideb[Debug::CRIT] << myname << "(askMessage): я│п╬п╬п╠я┴п╣п╫п╦я▐ я│ п╨п╬п╢п╬п╪ "
+				<< mid << " п²п∙п╒ п╡ MessagesMap" << endl;
 
 //		InfoServer_i::MsgNotFound nf;
 //		nf.bad_code = mid;
@@ -400,7 +400,7 @@ void InfoServer::ackMessage(UniSetTypes::MessageCode mid, const UniSetTypes::Con
 
 	{	// lock
  		uniset_mutex_lock lock(askMutex, 200);
-		// а раз есть заносим(исключаем) заказчика 
+		// п╟ я─п╟п╥ п╣я│я┌я▄ п╥п╟п╫п╬я│п╦п╪(п╦я│п╨п╩я▌я┤п╟п╣п╪) п╥п╟п╨п╟п╥я┤п╦п╨п╟ 
 		ask( askList, mid, ci, cmd, acknotify);		
 	}	// unlock
 }
@@ -409,7 +409,7 @@ void InfoServer::ackMessageRange(UniSetTypes::MessageCode from, UniSetTypes::Mes
 						const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd, 
 						CORBA::Boolean acknotify)
 {
-	// Проверка корректности диапазона
+	// п÷я─п╬п╡п╣я─п╨п╟ п╨п╬я─я─п╣п╨я┌п╫п╬я│я┌п╦ п╢п╦п╟п©п╟п╥п╬п╫п╟
 	if( from>to )
 		throw InfoServer_i::MsgBadRange();
 
@@ -419,9 +419,9 @@ void InfoServer::ackMessageRange(UniSetTypes::MessageCode from, UniSetTypes::Mes
 }
 // ------------------------------------------------------------------------------------------
 /*!
- *	\param lst - указатель на список в который необходимо внести потребителя
- *	\param name - имя вносимого потребителя
- *	\note Добавление произойдет только если такого потребителя не существует в списке
+ *	\param lst - я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ я│п©п╦я│п╬п╨ п╡ п╨п╬я┌п╬я─я▀п╧ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╡п╫п╣я│я┌п╦ п©п╬я┌я─п╣п╠п╦я┌п╣п╩я▐
+ *	\param name - п╦п╪я▐ п╡п╫п╬я│п╦п╪п╬пЁп╬ п©п╬я┌я─п╣п╠п╦я┌п╣п╩я▐
+ *	\note п■п╬п╠п╟п╡п╩п╣п╫п╦п╣ п©я─п╬п╦п╥п╬п╧п╢п╣я┌ я┌п╬п╩я▄п╨п╬ п╣я│п╩п╦ я┌п╟п╨п╬пЁп╬ п©п╬я┌я─п╣п╠п╦я┌п╣п╩я▐ п╫п╣ я│я┐я┴п╣я│я┌п╡я┐п╣я┌ п╡ я│п©п╦я│п╨п╣
 */
 bool InfoServer::addConsumer(ConsumerList& lst, const ConsumerInfo& ci, CORBA::Boolean acknotify )
 {
@@ -433,7 +433,7 @@ bool InfoServer::addConsumer(ConsumerList& lst, const ConsumerInfo& ci, CORBA::B
 	
 	ConsumerInfoExt cinf(ci);
 	cinf.ask = acknotify;
-	// получаем ссылку
+	// п©п╬п╩я┐я┤п╟п╣п╪ я│я│я▀п╩п╨я┐
 	try
 	{
 		UniSetTypes::ObjectVar op = ui.resolve(ci.id,ci.node);
@@ -447,8 +447,8 @@ bool InfoServer::addConsumer(ConsumerList& lst, const ConsumerInfo& ci, CORBA::B
 
 // ------------------------------------------------------------------------------------------
 /*!
- *	\param lst - указатель на список из которго происходит удаление потребителя
- *	\param name - имя удаляемого потребителя
+ *	\param lst - я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ я│п©п╦я│п╬п╨ п╦п╥ п╨п╬я┌п╬я─пЁп╬ п©я─п╬п╦я│я┘п╬п╢п╦я┌ я┐п╢п╟п╩п╣п╫п╦п╣ п©п╬я┌я─п╣п╠п╦я┌п╣п╩я▐
+ *	\param name - п╦п╪я▐ я┐п╢п╟п╩я▐п╣п╪п╬пЁп╬ п©п╬я┌я─п╣п╠п╦я┌п╣п╩я▐
 */
 bool InfoServer::removeConsumer(ConsumerList& lst, const ConsumerInfo& cons, CORBA::Boolean acknotify )
 {
@@ -470,29 +470,29 @@ void InfoServer::ask(AskMap& askLst, UniSetTypes::MessageCode key,
 					UniversalIO::UIOCommand cmd,
 					CORBA::Boolean acknotify)
 {
-	// поиск датчика в списке 
+	// п©п╬п╦я│п╨ п╢п╟я┌я┤п╦п╨п╟ п╡ я│п©п╦я│п╨п╣ 
 	AskMap::iterator askIterator = askLst.find(key);
 
   	switch( cmd )
 	{
-		case UniversalIO::UIONotify: // заказ
+		case UniversalIO::UIONotify: // п╥п╟п╨п╟п╥
 		{
    			if( askIterator==askLst.end() ) 
 			{
-				ConsumerList lst; // создаем новый список
+				ConsumerList lst; // я│п╬п╥п╢п╟п╣п╪ п╫п╬п╡я▀п╧ я│п©п╦я│п╬п╨
 				addConsumer(lst,cons, acknotify);	  
-				askLst.insert(AskMap::value_type(key,lst));	// более оптимальный способ(при условии вставки первый раз)
+				askLst.insert(AskMap::value_type(key,lst));	// п╠п╬п╩п╣п╣ п╬п©я┌п╦п╪п╟п╩я▄п╫я▀п╧ я│п©п╬я│п╬п╠(п©я─п╦ я┐я│п╩п╬п╡п╦п╦ п╡я│я┌п╟п╡п╨п╦ п©п╣я─п╡я▀п╧ я─п╟п╥)
 				try
 				{
 					dumpOrdersList(key,lst);
 				}
 				catch(Exception& ex)
 				{
-					unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+					unideb[Debug::WARN] << myname << " п╫п╣ я│п╪п╬пЁп╩п╦ я│п╢п╣п╩п╟я┌я▄ dump: " << ex << endl;
 				}
 				catch(...)
 				{
-			    	unideb[Debug::WARN] << myname << " не смогли сделать dump" << endl;
+			    	unideb[Debug::WARN] << myname << " п╫п╣ я│п╪п╬пЁп╩п╦ я│п╢п╣п╩п╟я┌я▄ dump" << endl;
 				}
 		    }
 			else
@@ -505,16 +505,16 @@ void InfoServer::ask(AskMap& askLst, UniSetTypes::MessageCode key,
 					}
 					catch(...)
 					{	
-				    	unideb[Debug::WARN] << myname << " не смогли сделать dump" << endl;
+				    	unideb[Debug::WARN] << myname << " п╫п╣ я│п╪п╬пЁп╩п╦ я│п╢п╣п╩п╟я┌я▄ dump" << endl;
 					}
 				}
 		    }
 			break;
 		}
 
-		case UniversalIO::UIODontNotify: 	// отказ
+		case UniversalIO::UIODontNotify: 	// п╬я┌п╨п╟п╥
 		{
-			if( askIterator!=askLst.end() )	// существует
+			if( askIterator!=askLst.end() )	// я│я┐я┴п╣я│я┌п╡я┐п╣я┌
 			{
 				if( removeConsumer(askIterator->second, cons, acknotify) )
 				{
@@ -528,11 +528,11 @@ void InfoServer::ask(AskMap& askLst, UniSetTypes::MessageCode key,
 						}
 						catch(Exception& ex)
 						{
-							unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+							unideb[Debug::WARN] << myname << " п╫п╣ я│п╪п╬пЁп╩п╦ я│п╢п╣п╩п╟я┌я▄ dump: " << ex << endl;
 						}
 						catch(...)
 						{	
-				    		unideb[Debug::WARN] << myname << " не смогли сделать dump" << endl;
+				    		unideb[Debug::WARN] << myname << " п╫п╣ я│п╪п╬пЁп╩п╦ я│п╢п╣п╩п╟я┌я▄ dump" << endl;
 						}
 					}
 				}
@@ -580,18 +580,18 @@ void InfoServer::readDump()
 }
 // ------------------------------------------------------------------------------------------
 /*!
-	\warning В случае зависания в функции push, будет остановлена рассылка другим объектам.
+	\warning п▓ я│п╩я┐я┤п╟п╣ п╥п╟п╡п╦я│п╟п╫п╦я▐ п╡ я└я┐п╫п╨я├п╦п╦ push, п╠я┐п╢п╣я┌ п╬я│я┌п╟п╫п╬п╡п╩п╣п╫п╟ я─п╟я│я│я▀п╩п╨п╟ п╢я─я┐пЁп╦п╪ п╬п╠я┼п╣п╨я┌п╟п╪.
 */
 template<class TMessage>
 void InfoServer::send(ConsumerList& lst, TMessage& msg, CORBA::Boolean askn)
 {
 	for( ConsumerList::iterator li=lst.begin();li!=lst.end();++li )
 	{
-		// пропускаем всех кто не хочет знать о подтверждении
+		// п©я─п╬п©я┐я│п╨п╟п╣п╪ п╡я│п╣я┘ п╨я┌п╬ п╫п╣ я┘п╬я┤п╣я┌ п╥п╫п╟я┌я▄ п╬ п©п╬п╢я┌п╡п╣я─п╤п╢п╣п╫п╦п╦
 		if( askn && !li->ask )
 			continue;
 		
-		for(int i=0; i<2; i++ )	// на каждый объект по две поптыки
+		for(int i=0; i<2; i++ )	// п╫п╟ п╨п╟п╤п╢я▀п╧ п╬п╠я┼п╣п╨я┌ п©п╬ п╢п╡п╣ п©п╬п©я┌я▀п╨п╦
 		{
 		    try
 		    {
@@ -603,7 +603,7 @@ void InfoServer::send(ConsumerList& lst, TMessage& msg, CORBA::Boolean askn)
 
 				msg.consumer = li->id;
 				li->ref->push( msg.transport_msg() );
-//				unideb[Debug::INFO] << myname << "(send): посылаем "<< conf->oind->getMapName( li->node ) << "/" << ui.getNameById( li->id ) << " notify" << endl;
+//				unideb[Debug::INFO] << myname << "(send): п©п╬я│я▀п╩п╟п╣п╪ "<< conf->oind->getMapName( li->node ) << "/" << ui.getNameById( li->id ) << " notify" << endl;
 				break;					
 		    }
 			catch(Exception& ex)
@@ -614,13 +614,13 @@ void InfoServer::send(ConsumerList& lst, TMessage& msg, CORBA::Boolean askn)
 		    {
 		    	unideb[Debug::CRIT] << myname << "(send): " 
 						<< conf->oind->getNameById( li->id )
-						<< " недоступен!! " << ex.NP_minorString() << endl;
+						<< " п╫п╣п╢п╬я│я┌я┐п©п╣п╫!! " << ex.NP_minorString() << endl;
 	    	}
 			catch(...)
 			{
 				unideb[Debug::CRIT] << myname << "(send): "
 						<< conf->oind->getNameById( li->id ) 
-						<< " недоступен!!(...)" << endl;
+						<< " п╫п╣п╢п╬я│я┌я┐п©п╣п╫!!(...)" << endl;
 			}	
 			
 //			li->ref = 0;
@@ -635,7 +635,7 @@ void InfoServer::event(UniSetTypes::MessageCode key, TMessage& msg, CORBA::Boole
 	{	// lock
 		uniset_mutex_lock lock(askMutex, 1000);	
 
-		// поcылка сообщения об изменении всем потребителям
+		// п©п╬cя▀п╩п╨п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐ п╬п╠ п╦п╥п╪п╣п╫п╣п╫п╦п╦ п╡я│п╣п╪ п©п╬я┌я─п╣п╠п╦я┌п╣п╩я▐п╪
 		AskMap::iterator it = askList.find(key);
 		if( it!=askList.end() )
 			send(it->second, msg,askn);

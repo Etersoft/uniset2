@@ -33,16 +33,16 @@ void SchemaXML::read( const string xmlfile )
 	if( !root )
 	{
 		ostringstream msg;
-		msg << "(SchemaXML::read): ÎÅ ÎÁÛÌÉ ËÏÒÎÅ×ÏÇÏ ÒÁÚÄÅÌÁ " << sec;
+		msg << "(SchemaXML::read): Ð½Ðµ Ð½Ð°ÑˆÐ»Ð¸ ÐºÐ¾Ñ€Ð½ÐµÐ²Ð¾Ð³Ð¾ Ñ€Ð°Ð·Ð´ÐµÐ»Ð° " << sec;
 		throw LogicException(msg.str());
 	}
 
-	// óÞÉÔÙ×ÁÅÍ ÓÐÉÓÏË ÜÌÅÍÅÎÔÏ×
+	// Ð¡Ñ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÐ¼ ÑÐ¿Ð¸ÑÐ¾Ðº ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð²
 	UniXML_iterator it(root);
 	if( !it.goChildren() )
 	{
 		ostringstream msg;
-		msg << "(SchemaXML::read): ÎÅ ÕÄÁÌÏÓØ ÐÅÒÅÊÔÉ Ë ÓÐÉÓËÕ ÜÌÅÍÅÎÔÏ× " << sec;
+		msg << "(SchemaXML::read): Ð½Ðµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ Ð¿ÐµÑ€ÐµÐ¹Ñ‚Ð¸ Ðº ÑÐ¿Ð¸ÑÐºÑƒ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð² " << sec;
 		throw LogicException(msg.str());
 	}
 
@@ -69,17 +69,17 @@ void SchemaXML::read( const string xmlfile )
 		else
 		{
 			ostringstream msg;
-			msg << "(SchemaXML::read): îåéú÷åóôîùê ôéð üìåíåîôá -->" << type;
+			msg << "(SchemaXML::read): ÐÐ•Ð˜Ð—Ð’Ð•Ð¡Ð¢ÐÐ«Ð™ Ð¢Ð˜ÐŸ Ð­Ð›Ð•ÐœÐ•ÐÐ¢Ð -->" << type;
 			throw LogicException(msg.str());
 		}
 	}
 
-	// óÔÒÏÉÍ Ó×ÑÚÉ
+	// Ð¡Ñ‚Ñ€Ð¾Ð¸Ð¼ ÑÐ²ÑÐ·Ð¸
 	xmlNode* conNode( xml.findNode(xml.getFirstNode(),conn_sec) );
 	if( !conNode )
 	{
 		ostringstream msg;
-		msg << "(SchemaXML::read): ÎÅ ÎÁÛÌÉ ËÏÒÎÅ×ÏÇÏ ÒÁÚÄÅÌÁ " << conn_sec;
+		msg << "(SchemaXML::read): Ð½Ðµ Ð½Ð°ÑˆÐ»Ð¸ ÐºÐ¾Ñ€Ð½ÐµÐ²Ð¾Ð³Ð¾ Ñ€Ð°Ð·Ð´ÐµÐ»Ð° " << conn_sec;
 		throw LogicException(msg.str());
 	}
 	
@@ -87,7 +87,7 @@ void SchemaXML::read( const string xmlfile )
 	if( !it.goChildren() )
 	{
 		ostringstream msg;
-		msg << "(SchemaXML::read): ÎÅ ÕÄÁÌÏÓØ ÐÅÒÅÊÔÉ Ë ÓÐÉÓËÕ ÜÌÅÍÅÎÔÏ× " << conn_sec;
+		msg << "(SchemaXML::read): Ð½Ðµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ Ð¿ÐµÑ€ÐµÐ¹Ñ‚Ð¸ Ðº ÑÐ¿Ð¸ÑÐºÑƒ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð² " << conn_sec;
 		throw LogicException(msg.str());
 	}
 
@@ -114,7 +114,7 @@ void SchemaXML::read( const string xmlfile )
 			if( el== 0 )
 			{
 				ostringstream msg;
-				msg << "(SchemaXML::read): îå îáêäåî üìåíåîô ó ID=" << fID;
+				msg << "(SchemaXML::read): ÐÐ• ÐÐÐ™Ð”Ð•Ð Ð­Ð›Ð•ÐœÐ•ÐÐ¢ Ð¡ ID=" << fID;
 				throw LogicException(msg.str());			
 			}
 		

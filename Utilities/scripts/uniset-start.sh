@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# œ¬›…≈ ∆’ŒÀ√……
+# –æ–±—â–∏–µ —Ñ—É–Ω–∫—Ü–∏–∏
 . uniset-functions.sh
 
 WITH_PID=0
@@ -17,21 +17,21 @@ case $1 in
 		COMLINE=$*
 		if [ -z "$COMLINE" ]
 		then
-			echo "Ó≈ ’À¡⁄¡Œ¡ ÀœÕ¡Œƒ¡ ƒÃ— ⁄¡–’”À¡"
+			echo "–ù–µ —É–∫–∞–∑–∞–Ω–∞ –∫–æ–º–∞–Ω–¥–∞ –¥–ª—è –∑–∞–ø—É—Å–∫–∞"
 			exit 0
 		fi
 		
 		COMLINE="$COMLINE --uniset-port $OMNIPORT"
-		echo ˙¡–’”À¡≈Õ "$COMLINE"
+		echo –ó–∞–ø—É—Å–∫–∞–µ–º "$COMLINE"
 		$COMLINE 
-		echo ˜Ÿ»œƒ…Õ
+		echo –í—ã—Ö–æ–¥–∏–º
 		exit 1
 		;;
 esac
 
 if [ -z "$*" ]
 then
-	echo "Ó≈ ’À¡⁄¡Œ¡ ÀœÕ¡Œƒ¡ ƒÃ— ⁄¡–’”À¡"
+	echo "–ù–µ —É–∫–∞–∑–∞–Ω–∞ –∫–æ–º–∞–Ω–¥–∞ –¥–ª—è –∑–∞–ø—É—Å–∫–∞"
 	exit 0
 fi
 
@@ -45,14 +45,14 @@ fi
 		PIDFILE="$RUNDIR/$(basename $NAMEPROG).pid"
 	fi
 
-	echo -n ˙¡–’”À¡≈Õ $NAMEPROG ◊ ∆œŒœ◊œÕ “≈÷…Õ≈...
+	echo -n –ó–∞–ø—É—Å–∫–∞–µ–º $NAMEPROG –≤ —Ñ–æ–Ω–æ–≤–æ–º —Ä–µ–∂–∏–º–µ...
 	echo ""
     ulimit -S -c 0 >/dev/null 2>&1
 #	$* --uniset-port $OMNIPORT &
-	echo ˙·ıÛÎ: "$* --uniset-port $OMNIPORT"
+	echo –ó–ê–ü–£–°–ö: "$* --uniset-port $OMNIPORT"
 	
 	pid=$!
-	echo $pid >$PIDFILE # ”œ⁄ƒ¡£Õ pid-∆¡ Ã
+	echo $pid >$PIDFILE # —Å–æ–∑–¥–∞—ë–º pid-—Ñ–∞–π–ª
 
 	PROGLINE=$(ps -x | grep -q $(basename $NAMEPROG) | grep -v $0 | grep -v grep)
 

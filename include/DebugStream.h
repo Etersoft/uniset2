@@ -1,7 +1,7 @@
 // -*- C++ -*-
 
-// Created by Lars Gullik BjЬnnes
-// Copyright 1999 Lars Gullik BjЬnnes (larsbj@lyx.org)
+// Created by Lars Gullik Bjп╛nnes
+// Copyright 1999 Lars Gullik Bjп╛nnes (larsbj@lyx.org)
 // Released into the public domain.
 
 // Implemented and tested on g++ 2.7.2.3
@@ -136,14 +136,14 @@ public:
 
 	/** This is an operator to give a more convenient use:
 	    dbgstream[Debug::INFO] << "Info!\n";
-		Вывод осуществляется с датой и временем (если они не отключены)
+		п▓я▀п╡п╬п╢ п╬я│я┐я┴п╣я│я┌п╡п╩я▐п╣я┌я│я▐ я│ п╢п╟я┌п╬п╧ п╦ п╡я─п╣п╪п╣п╫п╣п╪ (п╣я│п╩п╦ п╬п╫п╦ п╫п╣ п╬я┌п╨п╩я▌я┤п╣п╫я▀)
 	*/
 	std::ostream & operator[](Debug::type t) {
 		return debug(t);
 	}
 
 	/**	
-		Вывод продолжения логов (без даты и времени)
+		п▓я▀п╡п╬п╢ п©я─п╬п╢п╬п╩п╤п╣п╫п╦я▐ п╩п╬пЁп╬п╡ (п╠п╣п╥ п╢п╟я┌я▀ п╦ п╡я─п╣п╪п╣п╫п╦)
 	*/
 	inline std::ostream& to_end(Debug::type t)
 	{
@@ -151,7 +151,7 @@ public:
 	}
 
 	/**	
-		Вывод продолжения логов (без даты и времени)
+		п▓я▀п╡п╬п╢ п©я─п╬п╢п╬п╩п╤п╣п╫п╦я▐ п╩п╬пЁп╬п╡ (п╠п╣п╥ п╢п╟я┌я▀ п╦ п╡я─п╣п╪п╣п╫п╦)
 	*/
 	std::ostream& operator()(Debug::type t);
 

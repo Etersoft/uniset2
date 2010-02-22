@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \brief Реализация IOController_i
+ * \brief п═п╣п╟п╩п╦п╥п╟я├п╦я▐ IOController_i
  * \author Pavel Vainerman
  * \date $Date: 2008/11/29 21:24:25 $
  * \version $Id: IOController.h,v 1.28 2008/11/29 21:24:25 vpashka Exp $
@@ -36,7 +36,7 @@
 #include "Configuration.h"
 #include "Mutex.h"
 //---------------------------------------------------------------------------
-/*! Реализация интерфейса IOController-а */ 
+/*! п═п╣п╟п╩п╦п╥п╟я├п╦я▐ п╦п╫я┌п╣я─я└п╣п╧я│п╟ IOController-п╟ */ 
 class IOController: 
 		public ObjectsManager,
 		public POA_IOController_i
@@ -53,8 +53,8 @@ class IOController:
 	  	virtual CORBA::Long getValue( const IOController_i::SensorInfo& si );	
 
 //     -------------------- !!!!!!!!! ---------------------------------
-//		Реализуются конкретным i/o контроллером
-//		Не забывайте писать реализацию этих функций
+//		п═п╣п╟п╩п╦п╥я┐я▌я┌я│я▐ п╨п╬п╫п╨я─п╣я┌п╫я▀п╪ i/o п╨п╬п╫я┌я─п╬п╩п╩п╣я─п╬п╪
+//		п²п╣ п╥п╟п╠я▀п╡п╟п╧я┌п╣ п©п╦я│п╟я┌я▄ я─п╣п╟п╩п╦п╥п╟я├п╦я▌ я█я┌п╦я┘ я└я┐п╫п╨я├п╦п╧
 	  	virtual void setState( const IOController_i::SensorInfo& si, CORBA::Boolean state,
 								UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
 		virtual void setValue( const IOController_i::SensorInfo& si, CORBA::Long value,
@@ -67,7 +67,7 @@ class IOController:
 
 //     ----------------------------------------------------------------
 
-		/*! \warning Не сделано проверки, зарегистрирован ли такой датчик */
+		/*! \warning п²п╣ я│п╢п╣п╩п╟п╫п╬ п©я─п╬п╡п╣я─п╨п╦, п╥п╟я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟п╫ п╩п╦ я┌п╟п╨п╬п╧ п╢п╟я┌я┤п╦п╨ */
 		virtual void saveState(const IOController_i::SensorInfo& si, CORBA::Boolean state,
 								UniversalIO::IOTypes type = UniversalIO::DigitalInput,
 								UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
@@ -76,7 +76,7 @@ class IOController:
 								UniversalIO::IOTypes type = UniversalIO::DigitalInput,
 								UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
 
-		/*! \warning Не сделано проверки, зарегистрирован ли такой датчик */
+		/*! \warning п²п╣ я│п╢п╣п╩п╟п╫п╬ п©я─п╬п╡п╣я─п╨п╦, п╥п╟я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟п╫ п╩п╦ я┌п╟п╨п╬п╧ п╢п╟я┌я┤п╦п╨ */
 	    virtual void saveValue(const IOController_i::SensorInfo& si, CORBA::Long value,
 								UniversalIO::IOTypes type = UniversalIO::AnalogInput,
 								UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
@@ -131,19 +131,19 @@ class IOController:
 		struct DependsInfo;
 		typedef std::list<DependsInfo> DependsList;
 
-		/*! слот для подключения функции вызываемой при изменении состояния датчика 
-			\param it 	- интератор из DependsList
-			\param bool	- текущее состояние undefined (TRUE|FALSE)
+		/*! я│п╩п╬я┌ п╢п╩я▐ п©п╬п╢п╨п╩я▌я┤п╣п╫п╦я▐ я└я┐п╫п╨я├п╦п╦ п╡я▀п╥я▀п╡п╟п╣п╪п╬п╧ п©я─п╦ п╦п╥п╪п╣п╫п╣п╫п╦п╦ я│п╬я│я┌п╬я▐п╫п╦я▐ п╢п╟я┌я┤п╦п╨п╟ 
+			\param it 	- п╦п╫я┌п╣я─п╟я┌п╬я─ п╦п╥ DependsList
+			\param bool	- я┌п╣п╨я┐я┴п╣п╣ я│п╬я│я┌п╬я▐п╫п╦п╣ undefined (TRUE|FALSE)
 		*/
 		typedef sigc::slot<void,DependsList::iterator,bool> DependsSlot;
 		
-		/*! \warning В данной реализации call-back функция только одна!
-			Потом можно будет перейти на список (типа AFilter и DFilter)
+		/*! \warning п▓ п╢п╟п╫п╫п╬п╧ я─п╣п╟п╩п╦п╥п╟я├п╦п╦ call-back я└я┐п╫п╨я├п╦я▐ я┌п╬п╩я▄п╨п╬ п╬п╢п╫п╟!
+			п÷п╬я┌п╬п╪ п╪п╬п╤п╫п╬ п╠я┐п╢п╣я┌ п©п╣я─п╣п╧я┌п╦ п╫п╟ я│п©п╦я│п╬п╨ (я┌п╦п©п╟ AFilter п╦ DFilter)
 		*/
 		void setDependsSlot( DependsSlot sl );
 		void setBlockDependsSlot( DependsSlot sl );
 
-		// структуры для внутреннего хранения информации по датчикам
+		// я│я┌я─я┐п╨я┌я┐я─я▀ п╢п╩я▐ п╡п╫я┐я┌я─п╣п╫п╫п╣пЁп╬ я┘я─п╟п╫п╣п╫п╦я▐ п╦п╫я└п╬я─п╪п╟я├п╦п╦ п©п╬ п╢п╟я┌я┤п╦п╨п╟п╪
 		struct UniDigitalIOInfo:
 			public IOController_i::DigitalIOInfo
 		{
@@ -159,13 +159,13 @@ class IOController:
 			UniDigitalIOInfo& operator=(IOController_i::DigitalIOInfo* r);
 			const UniDigitalIOInfo& operator=(const IOController_i::DigitalIOInfo& r);
 		
-			void* any; 			/*!< расширение для возможности хранения своей информации */
+			void* any; 			/*!< я─п╟я│я┬п╦я─п╣п╫п╦п╣ п╢п╩я▐ п╡п╬п╥п╪п╬п╤п╫п╬я│я┌п╦ я┘я─п╟п╫п╣п╫п╦я▐ я│п╡п╬п╣п╧ п╦п╫я└п╬я─п╪п╟я├п╦п╦ */
 			
-			DependsList dlst; 	/*!< список io зависящих от данного */
-			bool dlst_lock;		/*!< флаг блокирующий работу со списком */
+			DependsList dlst; 	/*!< я│п©п╦я│п╬п╨ io п╥п╟п╡п╦я│я▐я┴п╦я┘ п╬я┌ п╢п╟п╫п╫п╬пЁп╬ */
+			bool dlst_lock;		/*!< я└п╩п╟пЁ п╠п╩п╬п╨п╦я─я┐я▌я┴п╦п╧ я─п╟п╠п╬я┌я┐ я│п╬ я│п©п╦я│п╨п╬п╪ */
 			bool block_state;
 
-			UniSetTypes::uniset_spin_mutex val_lock; /*!< флаг блокирующий работу со значением */
+			UniSetTypes::uniset_spin_mutex val_lock; /*!< я└п╩п╟пЁ п╠п╩п╬п╨п╦я─я┐я▌я┴п╦п╧ я─п╟п╠п╬я┌я┐ я│п╬ п╥п╫п╟я┤п╣п╫п╦п╣п╪ */
 		};
 
 		struct UniAnalogIOInfo:
@@ -183,16 +183,16 @@ class IOController:
 			const UniAnalogIOInfo& operator=(const IOController_i::AnalogIOInfo& r);
 			UniAnalogIOInfo& operator=(IOController_i::AnalogIOInfo* r);
 		
-			void* any; 			/*!< расширение для возможности хранения своей информации */
-			DependsList dlst; 	/*!< список io зависящих от данного (для выставления поля undefined) */
-			bool dlst_lock; 	/*!< флаг блокирующий работу со списком */
+			void* any; 			/*!< я─п╟я│я┬п╦я─п╣п╫п╦п╣ п╢п╩я▐ п╡п╬п╥п╪п╬п╤п╫п╬я│я┌п╦ я┘я─п╟п╫п╣п╫п╦я▐ я│п╡п╬п╣п╧ п╦п╫я└п╬я─п╪п╟я├п╦п╦ */
+			DependsList dlst; 	/*!< я│п©п╦я│п╬п╨ io п╥п╟п╡п╦я│я▐я┴п╦я┘ п╬я┌ п╢п╟п╫п╫п╬пЁп╬ (п╢п╩я▐ п╡я▀я│я┌п╟п╡п╩п╣п╫п╦я▐ п©п╬п╩я▐ undefined) */
+			bool dlst_lock; 	/*!< я└п╩п╟пЁ п╠п╩п╬п╨п╦я─я┐я▌я┴п╦п╧ я─п╟п╠п╬я┌я┐ я│п╬ я│п©п╦я│п╨п╬п╪ */
 			long block_value;
 
-			UniSetTypes::uniset_spin_mutex val_lock; /*!< флаг блокирующий работу со значением */
+			UniSetTypes::uniset_spin_mutex val_lock; /*!< я└п╩п╟пЁ п╠п╩п╬п╨п╦я─я┐я▌я┴п╦п╧ я─п╟п╠п╬я┌я┐ я│п╬ п╥п╫п╟я┤п╣п╫п╦п╣п╪ */
 		};
 
 
-		// Функции работы со списками датчиков (без изменения 'const')
+		// п╓я┐п╫п╨я├п╦п╦ я─п╟п╠п╬я┌я▀ я│п╬ я│п©п╦я│п╨п╟п╪п╦ п╢п╟я┌я┤п╦п╨п╬п╡ (п╠п╣п╥ п╦п╥п╪п╣п╫п╣п╫п╦я▐ 'const')
 		typedef std::map<UniSetTypes::KeyType, UniDigitalIOInfo> DIOStateList;
 		typedef std::map<UniSetTypes::KeyType, UniAnalogIOInfo> AIOStateList;
 	
@@ -215,11 +215,11 @@ class IOController:
 			IOController_i::SensorInfo si;
 			DIOStateList::iterator dit;
 			AIOStateList::iterator ait;
-			bool block_invert;	/*!< инвертирование логики для блокирования */
+			bool block_invert;	/*!< п╦п╫п╡п╣я─я┌п╦я─п╬п╡п╟п╫п╦п╣ п╩п╬пЁп╦п╨п╦ п╢п╩я▐ п╠п╩п╬п╨п╦я─п╬п╡п╟п╫п╦я▐ */
 			bool init;
 		};
 
-		// доступ к элементам через итератор
+		// п╢п╬я│я┌я┐п© п╨ я█п╩п╣п╪п╣п╫я┌п╟п╪ я┤п╣я─п╣п╥ п╦я┌п╣я─п╟я┌п╬я─
 		virtual void localSaveValue( AIOStateList::iterator& it, const IOController_i::SensorInfo& si,
 										CORBA::Long newvalue, UniSetTypes::ObjectId sup_id );
 		virtual void localSaveState( DIOStateList::iterator& it, const IOController_i::SensorInfo& si,
@@ -235,37 +235,37 @@ class IOController:
 	  	virtual long localGetValue( AIOStateList::iterator& it, const IOController_i::SensorInfo& si );
 		
 
-		/*! функция выставления признака неопределённого состояния для аналоговых датчиков 
-			// для дискретных датчиков необходимости для подобной функции нет.
-			// см. логику выставления в функции localSaveState
+		/*! я└я┐п╫п╨я├п╦я▐ п╡я▀я│я┌п╟п╡п╩п╣п╫п╦я▐ п©я─п╦п╥п╫п╟п╨п╟ п╫п╣п╬п©я─п╣п╢п╣п╩я▒п╫п╫п╬пЁп╬ я│п╬я│я┌п╬я▐п╫п╦я▐ п╢п╩я▐ п╟п╫п╟п╩п╬пЁп╬п╡я▀я┘ п╢п╟я┌я┤п╦п╨п╬п╡ 
+			// п╢п╩я▐ п╢п╦я│п╨я─п╣я┌п╫я▀я┘ п╢п╟я┌я┤п╦п╨п╬п╡ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬я│я┌п╦ п╢п╩я▐ п©п╬п╢п╬п╠п╫п╬п╧ я└я┐п╫п╨я├п╦п╦ п╫п╣я┌.
+			// я│п╪. п╩п╬пЁп╦п╨я┐ п╡я▀я│я┌п╟п╡п╩п╣п╫п╦я▐ п╡ я└я┐п╫п╨я├п╦п╦ localSaveState
 		*/
 		virtual void localSetUndefinedState( AIOStateList::iterator& it, bool undefined,
 												const IOController_i::SensorInfo& si );
 
 
 	protected:
-			// переопределяем для добавления вызова регистрации датчиков
+			// п©п╣я─п╣п╬п©я─п╣п╢п╣п╩я▐п╣п╪ п╢п╩я▐ п╢п╬п╠п╟п╡п╩п╣п╫п╦я▐ п╡я▀п╥п╬п╡п╟ я─п╣пЁп╦я│я┌я─п╟я├п╦п╦ п╢п╟я┌я┤п╦п╨п╬п╡
 			virtual bool disactivateObject();
 			virtual bool activateObject();
 
-			/*! регистрация датчиков, за информацию о которых отвечает данный IOController */
+			/*! я─п╣пЁп╦я│я┌я─п╟я├п╦я▐ п╢п╟я┌я┤п╦п╨п╬п╡, п╥п╟ п╦п╫я└п╬я─п╪п╟я├п╦я▌ п╬ п╨п╬я┌п╬я─я▀я┘ п╬я┌п╡п╣я┤п╟п╣я┌ п╢п╟п╫п╫я▀п╧ IOController */
 		    virtual void sensorsRegistration(){};
-			/*! удаление из репозитория датчиков за информацию о которых отвечает данный IOController */
+			/*! я┐п╢п╟п╩п╣п╫п╦п╣ п╦п╥ я─п╣п©п╬п╥п╦я┌п╬я─п╦я▐ п╢п╟я┌я┤п╦п╨п╬п╡ п╥п╟ п╦п╫я└п╬я─п╪п╟я├п╦я▌ п╬ п╨п╬я┌п╬я─я▀я┘ п╬я┌п╡п╣я┤п╟п╣я┌ п╢п╟п╫п╫я▀п╧ IOController */
 			virtual void sensorsUnregistration();
 	
-			/*! регистрация дискретного датчика 
-				force=true - не проверять на дублирование (оптимизация)
+			/*! я─п╣пЁп╦я│я┌я─п╟я├п╦я▐ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟ 
+				force=true - п╫п╣ п©я─п╬п╡п╣я─я▐я┌я▄ п╫п╟ п╢я┐п╠п╩п╦я─п╬п╡п╟п╫п╦п╣ (п╬п©я┌п╦п╪п╦п╥п╟я├п╦я▐)
 			*/
 			void dsRegistration( const UniDigitalIOInfo&, bool force=false );
 			
 
-			/*! регистрация аналогового датчика
-				force=true - не проверять на дублирование (оптимизация)
+			/*! я─п╣пЁп╦я│я┌я─п╟я├п╦я▐ п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
+				force=true - п╫п╣ п©я─п╬п╡п╣я─я▐я┌я▄ п╫п╟ п╢я┐п╠п╩п╦я─п╬п╡п╟п╫п╦п╣ (п╬п©я┌п╦п╪п╦п╥п╟я├п╦я▐)
 			*/
 			void asRegistration( const UniAnalogIOInfo&, bool force=false );
 
 			
-			/*! разрегистрация датчика */
+			/*! я─п╟п╥я─п╣пЁп╦я│я┌я─п╟я├п╦я▐ п╢п╟я┌я┤п╦п╨п╟ */
 			void sUnRegistration(const IOController_i::SensorInfo& si);
 			
 			
@@ -316,16 +316,16 @@ class IOController:
 			};
 
 
-			//! сохранение информации об изменении состояния датчика
+			//! я│п╬я┘я─п╟п╫п╣п╫п╦п╣ п╦п╫я└п╬я─п╪п╟я├п╦п╦ п╬п╠ п╦п╥п╪п╣п╫п╣п╫п╦п╦ я│п╬я│я┌п╬я▐п╫п╦я▐ п╢п╟я┌я┤п╦п╨п╟
 			virtual void logging(UniSetTypes::SensorMessage& sm);
 			
-			//! сохранение состояния всех датчиков в БД
+			//! я│п╬я┘я─п╟п╫п╣п╫п╦п╣ я│п╬я│я┌п╬я▐п╫п╦я▐ п╡я│п╣я┘ п╢п╟я┌я┤п╦п╨п╬п╡ п╡ п▒п■
 			virtual void dumpToDB();
 
 
 		IOController();	
 
-		// доступ к списку c изменением только для своих
+		// п╢п╬я│я┌я┐п© п╨ я│п©п╦я│п╨я┐ c п╦п╥п╪п╣п╫п╣п╫п╦п╣п╪ я┌п╬п╩я▄п╨п╬ п╢п╩я▐ я│п╡п╬п╦я┘
 		DIOStateList::iterator mydioBegin();
 		DIOStateList::iterator mydioEnd();
 		AIOStateList::iterator myaioBegin();
@@ -334,7 +334,7 @@ class IOController:
 		DIOStateList::iterator mydfind(UniSetTypes::KeyType k);
 
 		// --------------------------
-		// ФИЛЬТРОВАНИЕ
+		// п╓п≤п⌡п╛п╒п═п·п▓п░п²п≤п∙
 		// 
 		typedef sigc::slot<bool,const UniAnalogIOInfo&, CORBA::Long, UniSetTypes::ObjectId> AFilterSlot;
 		typedef sigc::slot<bool,const UniDigitalIOInfo&, CORBA::Boolean, UniSetTypes::ObjectId> DFilterSlot;
@@ -342,11 +342,11 @@ class IOController:
 		typedef std::list<DFilterSlot> DFilterSlotList;
 
 		/*
-			Фильтрующая функция должна возвращать:
-			TRUE - если значение 'нормальное'
-			FALSE - если значение не подходит (отбрасывается)
+			п╓п╦п╩я▄я┌я─я┐я▌я┴п╟я▐ я└я┐п╫п╨я├п╦я▐ п╢п╬п╩п╤п╫п╟ п╡п╬п╥п╡я─п╟я┴п╟я┌я▄:
+			TRUE - п╣я│п╩п╦ п╥п╫п╟я┤п╣п╫п╦п╣ 'п╫п╬я─п╪п╟п╩я▄п╫п╬п╣'
+			FALSE - п╣я│п╩п╦ п╥п╫п╟я┤п╣п╫п╦п╣ п╫п╣ п©п╬п╢я┘п╬п╢п╦я┌ (п╬я┌п╠я─п╟я│я▀п╡п╟п╣я┌я│я▐)
 		
-			Пример использования: 
+			п÷я─п╦п╪п╣я─ п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╫п╦я▐: 
 				addAFilter( sigc::mem_fun(my,&MyClass::my_filter) );
 		*/
 		AFilterSlotList::iterator addAFilter( AFilterSlot sl, bool push_front=false );
@@ -354,7 +354,7 @@ class IOController:
 		void eraseAFilter(AFilterSlotList::iterator& it);
 		void eraseDFilter(DFilterSlotList::iterator& it);
 
-		// функии проверки текущего значения
+		// я└я┐п╫п╨п╦п╦ п©я─п╬п╡п╣я─п╨п╦ я┌п╣п╨я┐я┴п╣пЁп╬ п╥п╫п╟я┤п╣п╫п╦я▐
 		bool checkDFilters( const UniDigitalIOInfo& ai, CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id );
 		bool checkAFilters( const UniAnalogIOInfo& ai, CORBA::Long& newvalue, UniSetTypes::ObjectId sup_id );
 
@@ -364,7 +364,7 @@ class IOController:
 		inline int dfiltersSize(){ return dfilters.size(); }
 
 		// ---------------------------
-		// note: функция вызывается рекурсивно!!!
+		// note: я└я┐п╫п╨я├п╦я▐ п╡я▀п╥я▀п╡п╟п╣я┌я│я▐ я─п╣п╨я┐я─я│п╦п╡п╫п╬!!!
 		void updateDepends( IOController::DependsList& lst, bool undefined, bool& lock );
 		void updateBlockDepends( IOController::DependsList& lst, bool blk_state, bool& lock );
 
@@ -374,16 +374,16 @@ class IOController:
 	private:		
 		friend class AskDumper;
 	
-		DIOStateList dioList;	/*!< список с текущим состоянием дискретных входов/выходов */
-		AIOStateList aioList;	/*!< список с текущим состоянием аналоговых входов/выходов */
+		DIOStateList dioList;	/*!< я│п©п╦я│п╬п╨ я│ я┌п╣п╨я┐я┴п╦п╪ я│п╬я│я┌п╬я▐п╫п╦п╣п╪ п╢п╦я│п╨я─п╣я┌п╫я▀я┘ п╡я┘п╬п╢п╬п╡/п╡я▀я┘п╬п╢п╬п╡ */
+		AIOStateList aioList;	/*!< я│п©п╦я│п╬п╨ я│ я┌п╣п╨я┐я┴п╦п╪ я│п╬я│я┌п╬я▐п╫п╦п╣п╪ п╟п╫п╟п╩п╬пЁп╬п╡я▀я┘ п╡я┘п╬п╢п╬п╡/п╡я▀я┘п╬п╢п╬п╡ */
 		
-		UniSetTypes::uniset_mutex dioMutex;	/*!< замок для блокирования совместного доступа к dioList */
-		UniSetTypes::uniset_mutex aioMutex; /*!< замок для блокирования совместного доступа к aioList */
+		UniSetTypes::uniset_mutex dioMutex;	/*!< п╥п╟п╪п╬п╨ п╢п╩я▐ п╠п╩п╬п╨п╦я─п╬п╡п╟п╫п╦я▐ я│п╬п╡п╪п╣я│я┌п╫п╬пЁп╬ п╢п╬я│я┌я┐п©п╟ п╨ dioList */
+		UniSetTypes::uniset_mutex aioMutex; /*!< п╥п╟п╪п╬п╨ п╢п╩я▐ п╠п╩п╬п╨п╦я─п╬п╡п╟п╫п╦я▐ я│п╬п╡п╪п╣я│я┌п╫п╬пЁп╬ п╢п╬я│я┌я┐п©п╟ п╨ aioList */
 		
-		bool isPingDBServer;	// флаг связи с DBServer-ом 
+		bool isPingDBServer;	// я└п╩п╟пЁ я│п╡я▐п╥п╦ я│ DBServer-п╬п╪ 
 
-		AFilterSlotList afilters; /*!< список фильтров для аналоговых значений */
-		DFilterSlotList dfilters; /*!< список фильтров для дискретных значений */
+		AFilterSlotList afilters; /*!< я│п©п╦я│п╬п╨ я└п╦п╩я▄я┌я─п╬п╡ п╢п╩я▐ п╟п╫п╟п╩п╬пЁп╬п╡я▀я┘ п╥п╫п╟я┤п╣п╫п╦п╧ */
+		DFilterSlotList dfilters; /*!< я│п©п╦я│п╬п╨ я└п╦п╩я▄я┌я─п╬п╡ п╢п╩я▐ п╢п╦я│п╨я─п╣я┌п╫я▀я┘ п╥п╫п╟я┤п╣п╫п╦п╧ */
 
 		DependsSlot dslot; /*!< undefined depends slot */
 		DependsSlot bslot; /*!< block depends slot */

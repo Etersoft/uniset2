@@ -20,7 +20,7 @@
  */
 // -----------------------------------------------------------------------------------------
 /*! 
-	\todo Добавить проверку на предельный номер id 
+	\todo п■п╬п╠п╟п╡п╦я┌я▄ п©я─п╬п╡п╣я─п╨я┐ п╫п╟ п©я─п╣п╢п╣п╩я▄п╫я▀п╧ п╫п╬п╪п╣я─ id 
 */
 // -----------------------------------------------------------------------------------------
 #include <sstream>
@@ -55,8 +55,8 @@ void IORFile::setIOR( const ObjectId id, const ObjectId node, const string sior 
 	
 	if( !ior_file )
 	{
-		unideb[Debug::CRIT] << "(IORFile): не смог открыть файл "+fname << endl;
-		throw TimeOut("(IORFile): не смог создать ior-файл "+fname);
+		unideb[Debug::CRIT] << "(IORFile): п╫п╣ я│п╪п╬пЁ п╬я┌п╨я─я▀я┌я▄ я└п╟п╧п╩ "+fname << endl;
+		throw TimeOut("(IORFile): п╫п╣ я│п╪п╬пЁ я│п╬п╥п╢п╟я┌я▄ ior-я└п╟п╧п╩ "+fname);
 	}
 	
 	ior_file << sior << endl;

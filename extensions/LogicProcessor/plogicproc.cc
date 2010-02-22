@@ -53,16 +53,16 @@ int main(int argc, const char **argv)
 		string name = conf->getArgParam("--name","LProcessor");
 		if( name.empty() )
 		{
-			cerr << "(plogicproc): îÅ ÚÁÄÁÎ name'" << endl;
+			cerr << "(plogicproc): ÐÐµ Ð·Ð°Ð´Ð°Ð½ name'" << endl;
 			return 1;
 		}
 
 		ObjectId ID = conf->getObjectID(name);
 		if( ID == UniSetTypes::DefaultObjectId )
 		{
-			cerr << "(plogicproc): ÉÄÅÎÔÉÆÉËÁÔÏÒ '" << name 
-				<< "' ÎÅ ÎÁÊÄÅÎ × ËÏÎÆ. ÆÁÊÌÅ!"
-				<< " × ÓÅËÃÉÉ " << conf->getObjectsSection() << endl;
+			cerr << "(plogicproc): Ð¸Ð´ÐµÐ½Ñ‚Ð¸Ñ„Ð¸ÐºÐ°Ñ‚Ð¾Ñ€ '" << name 
+				<< "' Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½ Ð² ÐºÐ¾Ð½Ñ„. Ñ„Ð°Ð¹Ð»Ðµ!"
+				<< " Ð² ÑÐµÐºÑ†Ð¸Ð¸ " << conf->getObjectsSection() << endl;
 			return 1;
 		}
 

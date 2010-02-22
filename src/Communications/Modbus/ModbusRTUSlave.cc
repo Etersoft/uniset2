@@ -72,8 +72,8 @@ mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout
 		res = recv(addr,buf,timeout);
 		if( res != erNoError && res != erBadReplyNodeAddress )
 		{
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
+			// п∙я│п╩п╦ п╬я┬п╦п╠п╨п╟ п©п╬п╢я─п╟п╥я┐п╪п╣п╡п╟п╣я┌ п©п╬я│я▀п╩п╨я┐ п╬я┌п╡п╣я┌п╟ я│ я│п╬п╬п╠я┴п╣п╫п╦п╣п╪ п╬п╠ п╬я┬п╦п╠п╨п╣
+			// я┌п╬ п©п╬я│я▀п╩п╟п╣п╪
 			if( res < erInternalErrorCode )
 			{
 				ErrorRetMessage em( buf.addr, buf.func, res ); 
@@ -87,9 +87,9 @@ mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout
 			return res;
 		}
 
-		// если полученный пакет адресован 
-		// не данному узлу (и не широковещательный)
-		// то ждать следующий...
+		// п╣я│п╩п╦ п©п╬п╩я┐я┤п╣п╫п╫я▀п╧ п©п╟п╨п╣я┌ п╟п╢я─п╣я│п╬п╡п╟п╫ 
+		// п╫п╣ п╢п╟п╫п╫п╬п╪я┐ я┐п╥п╩я┐ (п╦ п╫п╣ я┬п╦я─п╬п╨п╬п╡п╣я┴п╟я┌п╣п╩я▄п╫я▀п╧)
+		// я┌п╬ п╤п╢п╟я┌я▄ я│п╩п╣п╢я┐я▌я┴п╦п╧...
 	}
 	while( res == erBadReplyNodeAddress );
 
@@ -130,7 +130,7 @@ int ModbusRTUSlave::getNextData( unsigned char* buf, int len )
 void ModbusRTUSlave::setChannelTimeout( timeout_t msec )
 {
 	if( msec == UniSetTimer::WaitUpTime )
-		port->setTimeout(15*60*1000*1000); // используем просто большое время (15 минут). Переведя его в наносекунды.
+		port->setTimeout(15*60*1000*1000); // п╦я│п©п╬п╩я▄п╥я┐п╣п╪ п©я─п╬я│я┌п╬ п╠п╬п╩я▄я┬п╬п╣ п╡я─п╣п╪я▐ (15 п╪п╦п╫я┐я┌). п÷п╣я─п╣п╡п╣п╢я▐ п╣пЁп╬ п╡ п╫п╟п╫п╬я│п╣п╨я┐п╫п╢я▀.
 	else
 		port->setTimeout(msec*1000);
 }

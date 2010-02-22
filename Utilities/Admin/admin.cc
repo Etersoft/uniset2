@@ -23,7 +23,7 @@
 using namespace std;
 using namespace UniSetTypes;
 // --------------------------------------------------------------------------
-// \todo п╫п╟п╢п╬ п©п╣я─п╣п©п╦я│п╟я┌я▄ я─п╣п╟п╩п╦п╥п╟я├п╦я▌ !!!!
+// \todo п©Б∙╚п©Б∙÷п©Б∙╒п©Б∙╛ п©б╘п©Б∙ёя▐Б■─п©Б∙ёп©б╘п©Б∙╕я▐Б■┌п©Б∙÷я▐Б■▄я▐Б√└ я▐Б■─п©Б∙ёп©Б∙÷п©Б∙╘п©Б∙╕п©Б∙╔п©Б∙÷я▐Б■°п©Б∙╕я▐Б√▄ !!!!
 // --------------------------------------------------------------------------
 
 enum Command
@@ -93,8 +93,8 @@ int oinfo( string args, UniversalInterface &ui );
 // --------------------------------------------------------------------------
 static void print_help(int width, const string cmd, const string help, const string tab=" " )
 {
-	// чтобы не менчять параметры основного потока
-	// создаём свой stream...
+	// я┤я┌п╬п╠я▀ п╫п╣ п╪п╣п╫я┤я▐я┌я▄ п©п╟я─п╟п╪п╣я┌я─я▀ п╬я│п╫п╬п╡п╫п╬пЁп╬ п©п╬я┌п╬п╨п╟
+	// я│п╬п╥п╢п╟я▒п╪ я│п╡п╬п╧ stream...
 	ostringstream info;
 	info.setf(ios::left, ios::adjustfield);
 	info << tab << setw(width) << cmd << " - " << help;
@@ -112,43 +112,43 @@ static void usage()
 	cout << "\nUsage: \n\tuniset-admin [--confile configure.xml] --command [arg]\n";
 	cout << "commands list:\n";
 	cout << "-----------------------------------------\n";
-	print_help(24, "-с|--confile file.xml ","Используемый конфигурационный файл\n");	
+	print_help(24, "-я│|--confile file.xml ","п≤я│п©п╬п╩я▄п╥я┐п╣п╪я▀п╧ п╨п╬п╫я└п╦пЁя┐я─п╟я├п╦п╬п╫п╫я▀п╧ я└п╟п╧п╩\n");	
 	cout << endl;
-	print_help(24, "-b|--create ","Создание репозитория\n");
-	print_help(24, "-e|--exist ","Вызов функции exist() показывающей какие объекты зарегистрированы и доступны.\n");
-	print_help(24, "-o|--omap ","Вывод на экран списка объектов с идентификаторами.\n");
-	print_help(24, "-m|--msgmap ","Вывод на экран списка сообщений с идентификаторами.\n");
-	print_help(24, "-s|--start ","Посылка SystemMessage::StartUp всем объектам (процессам)\n");
-	print_help(24, "-u|--foldUp ","Посылка SystemMessage::FoldUp всем объектам (процессам)\n");
-	print_help(24, "-f|--finish ","Посылка SystemMessage::Finish всем объектам (процессам)\n");
-	print_help(24, "-h|--help  ","Вывести это сообщение.\n");	
+	print_help(24, "-b|--create ","п║п╬п╥п╢п╟п╫п╦п╣ я─п╣п©п╬п╥п╦я┌п╬я─п╦я▐\n");
+	print_help(24, "-e|--exist ","п▓я▀п╥п╬п╡ я└я┐п╫п╨я├п╦п╦ exist() п©п╬п╨п╟п╥я▀п╡п╟я▌я┴п╣п╧ п╨п╟п╨п╦п╣ п╬п╠я┼п╣п╨я┌я▀ п╥п╟я─п╣пЁп╦я│я┌я─п╦я─п╬п╡п╟п╫я▀ п╦ п╢п╬я│я┌я┐п©п╫я▀.\n");
+	print_help(24, "-o|--omap ","п▓я▀п╡п╬п╢ п╫п╟ я█п╨я─п╟п╫ я│п©п╦я│п╨п╟ п╬п╠я┼п╣п╨я┌п╬п╡ я│ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╟п╪п╦.\n");
+	print_help(24, "-m|--msgmap ","п▓я▀п╡п╬п╢ п╫п╟ я█п╨я─п╟п╫ я│п©п╦я│п╨п╟ я│п╬п╬п╠я┴п╣п╫п╦п╧ я│ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╟п╪п╦.\n");
+	print_help(24, "-s|--start ","п÷п╬я│я▀п╩п╨п╟ SystemMessage::StartUp п╡я│п╣п╪ п╬п╠я┼п╣п╨я┌п╟п╪ (п©я─п╬я├п╣я│я│п╟п╪)\n");
+	print_help(24, "-u|--foldUp ","п÷п╬я│я▀п╩п╨п╟ SystemMessage::FoldUp п╡я│п╣п╪ п╬п╠я┼п╣п╨я┌п╟п╪ (п©я─п╬я├п╣я│я│п╟п╪)\n");
+	print_help(24, "-f|--finish ","п÷п╬я│я▀п╩п╨п╟ SystemMessage::Finish п╡я│п╣п╪ п╬п╠я┼п╣п╨я┌п╟п╪ (п©я─п╬я├п╣я│я│п╟п╪)\n");
+	print_help(24, "-h|--help  ","п▓я▀п╡п╣я│я┌п╦ я█я┌п╬ я│п╬п╬п╠я┴п╣п╫п╦п╣.\n");	
 	cout << endl;
-	print_help(36, "-r|--configure [FullObjName] ","Посылка SystemMessage::ReConfiguration всем объектам (процессам) или заданному по имени (FullObjName).\n");
-	print_help(36, "-l|--logrotate [FullObjName] ","Посылка SystemMessage::LogRotate всем объектам (процессам) или заданному по имени (FullObjName).\n");
-	print_help(36, "-a|--alarm [code,cause,character] ","Посылка AlarmMessage(character: 1-Normal, 2-Warning, 3-Alarm, default: Alarm)\n");
-	print_help(36, "-i|--info [code] ","Посылка InfoMessage\n");
-	print_help(36, "-p|--oinfo OID ","Получить информацию об объекте (SimpleInfo).\n");	
+	print_help(36, "-r|--configure [FullObjName] ","п÷п╬я│я▀п╩п╨п╟ SystemMessage::ReConfiguration п╡я│п╣п╪ п╬п╠я┼п╣п╨я┌п╟п╪ (п©я─п╬я├п╣я│я│п╟п╪) п╦п╩п╦ п╥п╟п╢п╟п╫п╫п╬п╪я┐ п©п╬ п╦п╪п╣п╫п╦ (FullObjName).\n");
+	print_help(36, "-l|--logrotate [FullObjName] ","п÷п╬я│я▀п╩п╨п╟ SystemMessage::LogRotate п╡я│п╣п╪ п╬п╠я┼п╣п╨я┌п╟п╪ (п©я─п╬я├п╣я│я│п╟п╪) п╦п╩п╦ п╥п╟п╢п╟п╫п╫п╬п╪я┐ п©п╬ п╦п╪п╣п╫п╦ (FullObjName).\n");
+	print_help(36, "-a|--alarm [code,cause,character] ","п÷п╬я│я▀п╩п╨п╟ AlarmMessage(character: 1-Normal, 2-Warning, 3-Alarm, default: Alarm)\n");
+	print_help(36, "-i|--info [code] ","п÷п╬я│я▀п╩п╨п╟ InfoMessage\n");
+	print_help(36, "-p|--oinfo OID ","п÷п╬п╩я┐я┤п╦я┌я▄ п╦п╫я└п╬я─п╪п╟я├п╦я▌ п╬п╠ п╬п╠я┼п╣п╨я┌п╣ (SimpleInfo).\n");	
 	cout << endl;
-	print_help(48, "-n|--anotify ObjectId,SensorId,value ","Посылка SensorMessage (аналоговый датчик) объекту ObjectId\n");
-	print_help(48, "-d|--dnotify ObjectId,SensorId,state ","Посылка SensorMessage (дискретный датчик) объекту ObjectId\n");	
-	print_help(48, "-v|--saveValue SensorId=value[,SId2=v2,...] ","Установить значение аналогоых датчиков SensorId в значение value.\n");
-	print_help(48, "-t|--saveState SensorId=state[,SId2=s2,...] ","Установить значение дискретных датчиков SensorId в значение state.\n");	
-	print_help(48, "-x|--setValue OutputId=value[,SId2=v2,...] ","Подать на аналоговые выходы OuputId значение value.\n");
-	print_help(48, "-j|--setState OutputId=state[,SId2=s2,...] ","Подать на дискретные выходы OuputId значение state.\n");	
+	print_help(48, "-n|--anotify ObjectId,SensorId,value ","п÷п╬я│я▀п╩п╨п╟ SensorMessage (п╟п╫п╟п╩п╬пЁп╬п╡я▀п╧ п╢п╟я┌я┤п╦п╨) п╬п╠я┼п╣п╨я┌я┐ ObjectId\n");
+	print_help(48, "-d|--dnotify ObjectId,SensorId,state ","п÷п╬я│я▀п╩п╨п╟ SensorMessage (п╢п╦я│п╨я─п╣я┌п╫я▀п╧ п╢п╟я┌я┤п╦п╨) п╬п╠я┼п╣п╨я┌я┐ ObjectId\n");	
+	print_help(48, "-v|--saveValue SensorId=value[,SId2=v2,...] ","пёя│я┌п╟п╫п╬п╡п╦я┌я▄ п╥п╫п╟я┤п╣п╫п╦п╣ п╟п╫п╟п╩п╬пЁп╬я▀я┘ п╢п╟я┌я┤п╦п╨п╬п╡ SensorId п╡ п╥п╫п╟я┤п╣п╫п╦п╣ value.\n");
+	print_help(48, "-t|--saveState SensorId=state[,SId2=s2,...] ","пёя│я┌п╟п╫п╬п╡п╦я┌я▄ п╥п╫п╟я┤п╣п╫п╦п╣ п╢п╦я│п╨я─п╣я┌п╫я▀я┘ п╢п╟я┌я┤п╦п╨п╬п╡ SensorId п╡ п╥п╫п╟я┤п╣п╫п╦п╣ state.\n");	
+	print_help(48, "-x|--setValue OutputId=value[,SId2=v2,...] ","п÷п╬п╢п╟я┌я▄ п╫п╟ п╟п╫п╟п╩п╬пЁп╬п╡я▀п╣ п╡я▀я┘п╬п╢я▀ OuputId п╥п╫п╟я┤п╣п╫п╦п╣ value.\n");
+	print_help(48, "-j|--setState OutputId=state[,SId2=s2,...] ","п÷п╬п╢п╟я┌я▄ п╫п╟ п╢п╦я│п╨я─п╣я┌п╫я▀п╣ п╡я▀я┘п╬п╢я▀ OuputId п╥п╫п╟я┤п╣п╫п╦п╣ state.\n");	
 	cout << endl;
-	print_help(36, "-g|--getValue SensorId[,SId2,...] ","Получить значение аналоговых датчиков SensorId.\n");
-	print_help(36, "-k|--getState SensorId[,SId2,...] ","Получить значение дискретных датчиков SensorId.\n");
-	print_help(36, "-w|--getRawValue SensorId? ","Получить значение аналогового датчика RawSensorId?.\n");
-	print_help(36, "-y|--getCalibrate SensorId? ","Получить калибровачную диаграмму?.\n");
+	print_help(36, "-g|--getValue SensorId[,SId2,...] ","п÷п╬п╩я┐я┤п╦я┌я▄ п╥п╫п╟я┤п╣п╫п╦п╣ п╟п╫п╟п╩п╬пЁп╬п╡я▀я┘ п╢п╟я┌я┤п╦п╨п╬п╡ SensorId.\n");
+	print_help(36, "-k|--getState SensorId[,SId2,...] ","п÷п╬п╩я┐я┤п╦я┌я▄ п╥п╫п╟я┤п╣п╫п╦п╣ п╢п╦я│п╨я─п╣я┌п╫я▀я┘ п╢п╟я┌я┤п╦п╨п╬п╡ SensorId.\n");
+	print_help(36, "-w|--getRawValue SensorId? ","п÷п╬п╩я┐я┤п╦я┌я▄ п╥п╫п╟я┤п╣п╫п╦п╣ п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟ RawSensorId?.\n");
+	print_help(36, "-y|--getCalibrate SensorId? ","п÷п╬п╩я┐я┤п╦я┌я▄ п╨п╟п╩п╦п╠я─п╬п╡п╟я┤п╫я┐я▌ п╢п╦п╟пЁя─п╟п╪п╪я┐?.\n");
 	cout << endl;
 }
 
 // --------------------------------------------------------------------------------------
 /*! 
-	\todo Сделать по умолчанию режим silent и ключ --verbose.
-	\todo Оптимизировать commandToAll, т.к. сейчас НА КАЖДОМ ШАГЕ цикла 
-		создаётся сообщение и происходит преобразование в TransportMessage. 
-		TransportMessage можно создать один раз до цикла.
+	\todo п║п╢п╣п╩п╟я┌я▄ п©п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ я─п╣п╤п╦п╪ silent п╦ п╨п╩я▌я┤ --verbose.
+	\todo п·п©я┌п╦п╪п╦п╥п╦я─п╬п╡п╟я┌я▄ commandToAll, я┌.п╨. я│п╣п╧я┤п╟я│ п²п░ п п░п√п■п·п° п╗п░п⌠п∙ я├п╦п╨п╩п╟ 
+		я│п╬п╥п╢п╟я▒я┌я│я▐ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╦ п©я─п╬п╦я│я┘п╬п╢п╦я┌ п©я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ п╡ TransportMessage. 
+		TransportMessage п╪п╬п╤п╫п╬ я│п╬п╥п╢п╟я┌я▄ п╬п╢п╦п╫ я─п╟п╥ п╢п╬ я├п╦п╨п╩п╟.
 */
 // --------------------------------------------------------------------------------------
 int main(int argc, char** argv)
@@ -161,7 +161,7 @@ int main(int argc, char** argv)
 
 	while( (opt = getopt_long(argc, argv, "hc:beomsfur:l:a:n:d:i:v:t:x:j:g:k:w:p:y:",longopts,&optindex)) != -1 ) 
 	{
-		switch (opt) //разбираем параметры 
+		switch (opt) //я─п╟п╥п╠п╦я─п╟п╣п╪ п©п╟я─п╟п╪п╣я┌я─я▀ 
 		{
 			case 'h':	//--help
 			{
@@ -424,7 +424,7 @@ int main(int argc, char** argv)
 		}	
 	}
 
-		cout <<"\nвсе."<< endl;
+		cout <<"\nп╡я│п╣."<< endl;
     	return 0;
     }
 	catch(Exception& ex)
@@ -433,22 +433,22 @@ int main(int argc, char** argv)
 	}
 	catch(CORBA::SystemException& ex)
     {
-		cerr << "поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+		cerr << "п©п╬п╧п╪п╟п╩п╦ CORBA::SystemException:" << ex.NP_minorString() << endl;
     }
     catch(CORBA::Exception&)
     {
-		cerr << "поймали CORBA::Exception." << endl;
+		cerr << "п©п╬п╧п╪п╟п╩п╦ CORBA::Exception." << endl;
     }
     catch(omniORB::fatalException& fe)
     {
-		cerr << "поймали omniORB::fatalException:" << endl;
+		cerr << "п©п╬п╧п╪п╟п╩п╦ omniORB::fatalException:" << endl;
         cerr << "  file: " << fe.file() << endl;
 		cerr << "  line: " << fe.line() << endl;
         cerr << "  mesg: " << fe.errmsg() << endl;
     }
     catch(...)
     {
-		cerr << "неизвестное исключение" << endl;
+		cerr << "п╫п╣п╦п╥п╡п╣я│я┌п╫п╬п╣ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣" << endl;
     }
 }
 
@@ -463,7 +463,7 @@ static bool commandToAll(const string section, ObjectRepository *rep, Command cm
 	  	rep->list(section.c_str(),&ls);
 		if(ls.empty())
 		{
-			cout << "пусто!!!!!!" << endl;
+			cout << "п©я┐я│я┌п╬!!!!!!" << endl;
 			return false;
 		}
 
@@ -540,7 +540,7 @@ static bool commandToAll(const string section, ObjectRepository *rep, Command cm
 						
 					default:
 					{
-						cout << "неизвестная команда -" << cmd << endl;
+						cout << "п╫п╣п╦п╥п╡п╣я│я┌п╫п╟я▐ п╨п╬п╪п╟п╫п╢п╟ -" << cmd << endl;
 						return false;
 					}	
 				}
@@ -551,7 +551,7 @@ static bool commandToAll(const string section, ObjectRepository *rep, Command cm
 			}
 			catch( CORBA::SystemException& ex )
 			{
-				cout << setw(55) << ob  << "   <--- недоступен!!(CORBA::SystemException): " << ex.NP_minorString() << endl;
+				cout << setw(55) << ob  << "   <--- п╫п╣п╢п╬я│я┌я┐п©п╣п╫!!(CORBA::SystemException): " << ex.NP_minorString() << endl;
 			}
 		}
 	}
@@ -638,11 +638,11 @@ int alarm(string args, UniversalInterface &ui)
 
 	if( args.size() == 0 || strncmp(args.c_str(),"-",1)==0 )
 	{
-		AlarmMessage am(UniSetTypes::DefaultObjectId, "Administrator Alarm: Тестовое сообщение",
+		AlarmMessage am(UniSetTypes::DefaultObjectId, "Administrator Alarm: п╒п╣я│я┌п╬п╡п╬п╣ я│п╬п╬п╠я┴п╣п╫п╦п╣",
 						UniSetTypes::DefaultObjectId, conf->getLocalNode());
 
 		TransportMessage tm(am.transport_msg());
-		cout <<  "Administrator Alarm: Тестовое сообщение " << endl;
+		cout <<  "Administrator Alarm: п╒п╣я│я┌п╬п╡п╬п╣ я│п╬п╬п╠я┴п╣п╫п╦п╣ " << endl;
 		ui.send(conf->getInfoServer(), tm);
 		return 0;
 	}
@@ -720,9 +720,9 @@ int info(string arg, UniversalInterface &ui)
 {
 	if( arg.size() == 0 || strncmp(arg.c_str(),"-",1)==0 )
 	{
-		InfoMessage im(UniSetTypes::DefaultObjectId, "Administrator Info: Тестовое сообщение");
+		InfoMessage im(UniSetTypes::DefaultObjectId, "Administrator Info: п╒п╣я│я┌п╬п╡п╬п╣ я│п╬п╬п╠я┴п╣п╫п╦п╣");
 		TransportMessage tm(im.transport_msg());
-		cout <<  "Administrator Info: Тестовое сообщение " << endl;
+		cout <<  "Administrator Info: п╒п╣я│я┌п╬п╡п╬п╣ я│п╬п╬п╠я┴п╣п╫п╦п╣ " << endl;
 		ui.send(conf->getInfoServer(), tm);
 		return 0;
 	}
@@ -755,7 +755,7 @@ int anotify(string args, UniversalInterface &ui)
 
 	if( sscanf( args.c_str(),"%ld,%ld,%ld",&id,&sid,&val ) < 3 )
 	{
-		cerr << "(anotify): Неверный параметр ObjectId,SensorId,Value"<< endl;
+		cerr << "(anotify): п²п╣п╡п╣я─п╫я▀п╧ п©п╟я─п╟п╪п╣я┌я─ ObjectId,SensorId,Value"<< endl;
 		return 1;
 	}
 		
@@ -763,7 +763,7 @@ int anotify(string args, UniversalInterface &ui)
 	cout << "  value: " << val << endl;
 	cout << " sensor: (" << sid << ") " << conf->oind->getMapName(sid) << endl;
 	cout << "   text: " << conf->oind->getTextName(sid) << endl;
-	cout << "адресат: " << conf->oind->getMapName(id) << "\n"<<endl;
+	cout << "п╟п╢я─п╣я│п╟я┌: " << conf->oind->getMapName(id) << "\n"<<endl;
 
 	SensorMessage sm(sid,(long)val);
 	sm.consumer = id;
@@ -782,7 +782,7 @@ int dnotify(string args, UniversalInterface &ui)
 
 	if( sscanf( args.c_str(),"%ld,%ld,%d",&id,&sid,&ival ) < 3 )
 	{
-		cerr << "(anotify): Неверный параметр ObjectId,SensorId,State"<< endl;
+		cerr << "(anotify): п²п╣п╡п╣я─п╫я▀п╧ п©п╟я─п╟п╪п╣я┌я─ ObjectId,SensorId,State"<< endl;
 		return 1;
 	}
 	if (ival == 0)
@@ -791,7 +791,7 @@ int dnotify(string args, UniversalInterface &ui)
 		val = true;
 	else	
 	{
-		cerr << "(anotify): Неверный параметр State. Должен быть булевым!"<< endl;
+		cerr << "(anotify): п²п╣п╡п╣я─п╫я▀п╧ п©п╟я─п╟п╪п╣я┌я─ State. п■п╬п╩п╤п╣п╫ п╠я▀я┌я▄ п╠я┐п╩п╣п╡я▀п╪!"<< endl;
 		return 1;
 	}
 
@@ -799,7 +799,7 @@ int dnotify(string args, UniversalInterface &ui)
 	cout << "  state: " << val << endl;
 	cout << " sensor: (" << sid << ") " << conf->oind->getMapName(sid) << endl;
 	cout << "   text: " << conf->oind->getTextName(sid) << endl;
-	cout << "адресат: " << conf->oind->getMapName(id) << "\n\n";
+	cout << "п╟п╢я─п╣я│п╟я┌: " << conf->oind->getMapName(id) << "\n\n";
 
 	SensorMessage sm(sid,(bool)val);
 	sm.consumer = id;
@@ -827,7 +827,7 @@ int saveValue(string args, UniversalInterface &ui)
 			if( sscanf( arg.c_str(),"%ld=%ld",&sid,&val ) < 2 )
 			{
 				cout << i <<"\t------------------------"<< endl;
-				cerr << "(digit): !!! пара SensorId=Value #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
+				cerr << "(digit): !!! п©п╟я─п╟ SensorId=Value #"<<i<<" '"<<arg<<"' п╥п╟п╢п╟п╫п╟ п╫п╣п╡п╣я─п╫п╬!!!!!!\n"<< endl;
 				err=1;
 				continue;
 			}
@@ -844,7 +844,7 @@ int saveValue(string args, UniversalInterface &ui)
 			if( sid == UniSetTypes::DefaultObjectId || (sscanf( strval.c_str(),"%ld",&val ) < 1) )
 			{
 				cout << i <<"\t------------------------"<< endl;
-				cerr << "(name): !!! пара SensorName=Value #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
+				cerr << "(name): !!! п©п╟я─п╟ SensorName=Value #"<<i<<" '"<<arg<<"' п╥п╟п╢п╟п╫п╟ п╫п╣п╡п╣я─п╫п╬!!!!!!\n"<< endl;
 				err=1;
 				continue;
 			}
@@ -888,7 +888,7 @@ int saveState(string args, UniversalInterface &ui)
 			if( sscanf( arg.c_str(),"%ld=%ld",&sid,&inval ) < 2 )
 			{
 				cout << i <<"\t------------------------"<< endl;		
-				cerr << "!!!!!!!!! пара SensorId=State #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
+				cerr << "!!!!!!!!! п©п╟я─п╟ SensorId=State #"<<i<<" '"<<arg<<"' п╥п╟п╢п╟п╫п╟ п╫п╣п╡п╣я─п╫п╬!!!!!!\n"<< endl;
 				err=1;
 				continue;
 			}
@@ -905,7 +905,7 @@ int saveState(string args, UniversalInterface &ui)
 			if( sid == UniSetTypes::DefaultObjectId || (sscanf( strval.c_str(),"%ld",&inval ) < 1) )
 			{
 				cout << i <<"\t------------------------"<< endl;		
-				cerr << "!!!!!!!!! пара SensorName=State #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
+				cerr << "!!!!!!!!! п©п╟я─п╟ SensorName=State #"<<i<<" '"<<arg<<"' п╥п╟п╢п╟п╫п╟ п╫п╣п╡п╣я─п╫п╬!!!!!!\n"<< endl;
 				err=1;
 				continue;
 			}
@@ -917,7 +917,7 @@ int saveState(string args, UniversalInterface &ui)
 		else
 		{
 			cout << i <<"\t------------------------"<< endl;
-			cerr << "!!!!!!!!! State в паре SensorId=State #"<<i<<" '"<<arg<<"' должен быть булевым !!!!!!\n"<< endl;
+			cerr << "!!!!!!!!! State п╡ п©п╟я─п╣ SensorId=State #"<<i<<" '"<<arg<<"' п╢п╬п╩п╤п╣п╫ п╠я▀я┌я▄ п╠я┐п╩п╣п╡я▀п╪ !!!!!!\n"<< endl;
 			err=1;
 			continue;
 		}		
@@ -957,7 +957,7 @@ int setValue(string args, UniversalInterface &ui)
 			if( sscanf( arg.c_str(),"%ld=%ld",&sid,&val ) < 2 )
 			{
 				cout << i <<"\t------------------------"<< endl;		
-				cerr << "!!!!!!!!! пара SensorId=Value #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
+				cerr << "!!!!!!!!! п©п╟я─п╟ SensorId=Value #"<<i<<" '"<<arg<<"' п╥п╟п╢п╟п╫п╟ п╫п╣п╡п╣я─п╫п╬!!!!!!\n"<< endl;
 				err=1;
 				continue;
 			}
@@ -974,7 +974,7 @@ int setValue(string args, UniversalInterface &ui)
 			if( sid == UniSetTypes::DefaultObjectId || (sscanf( strval.c_str(),"%ld",&val ) < 1) )
 			{
 				cout << i <<"\t------------------------"<< endl;		
-				cerr << "!!!!!!!!! пара SensorName=Value #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
+				cerr << "!!!!!!!!! п©п╟я─п╟ SensorName=Value #"<<i<<" '"<<arg<<"' п╥п╟п╢п╟п╫п╟ п╫п╣п╡п╣я─п╫п╬!!!!!!\n"<< endl;
 				err=1;
 				continue;
 			}
@@ -1017,7 +1017,7 @@ int setState(string args, UniversalInterface &ui)
 			if( sscanf( arg.c_str(),"%ld=%ld",&sid,&inval ) < 2 )
 			{
 				cout << i <<"\t------------------------"<< endl;		
-				cerr << "!!!!!!!!! пара SensorId=State #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
+				cerr << "!!!!!!!!! п©п╟я─п╟ SensorId=State #"<<i<<" '"<<arg<<"' п╥п╟п╢п╟п╫п╟ п╫п╣п╡п╣я─п╫п╬!!!!!!\n"<< endl;
 				err=1;
 				continue;
 			}
@@ -1034,7 +1034,7 @@ int setState(string args, UniversalInterface &ui)
 			if( sid == UniSetTypes::DefaultObjectId || (sscanf( strval.c_str(),"%ld",&inval ) < 1) )
 			{
 				cout << i <<"\t------------------------"<< endl;
-				cerr << "!!!!!!!!! пара SensorName=State #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
+				cerr << "!!!!!!!!! п©п╟я─п╟ SensorName=State #"<<i<<" '"<<arg<<"' п╥п╟п╢п╟п╫п╟ п╫п╣п╡п╣я─п╫п╬!!!!!!\n"<< endl;
 				err=1;
 				continue;
 			}
@@ -1047,7 +1047,7 @@ int setState(string args, UniversalInterface &ui)
 		else
 		{
 			cout << i <<"\t------------------------"<< endl;
-			cerr << "!!!!!!!!! State в паре SensorId=State #"<<i<<" '"<<arg<<"' должен быть булевым !!!!!!\n"<< endl;
+			cerr << "!!!!!!!!! State п╡ п©п╟я─п╣ SensorId=State #"<<i<<" '"<<arg<<"' п╢п╬п╩п╤п╣п╫ п╠я▀я┌я▄ п╠я┐п╩п╣п╡я▀п╪ !!!!!!\n"<< endl;
 			err=1;
 			continue;
 		}		
@@ -1089,9 +1089,9 @@ int getState(string args, UniversalInterface &ui)
 			if( sscanf( arg.c_str(),"%ld",&sid ) < 1 )
 			{
 				cout << i <<"\t------------------------"<< endl;
-				cerr << "!!!!!!!!  SensorID #"<<i<<" '"<<arg<<"' задан неверно!!!!!!!\n"<< endl;
+				cerr << "!!!!!!!!  SensorID #"<<i<<" '"<<arg<<"' п╥п╟п╢п╟п╫ п╫п╣п╡п╣я─п╫п╬!!!!!!!\n"<< endl;
 				err = 1;
-				vout<<"| "<<arg<<"\t| ?\t| SensorID задан неверно !!!\n-----------------\n";
+				vout<<"| "<<arg<<"\t| ?\t| SensorID п╥п╟п╢п╟п╫ п╫п╣п╡п╣я─п╫п╬ !!!\n-----------------\n";
 				continue;
 			}
 		}	
@@ -1102,9 +1102,9 @@ int getState(string args, UniversalInterface &ui)
 			if( sid == UniSetTypes::DefaultObjectId )
 			{
 				cout << i <<"\t------------------------"<< endl;		
-				cerr << "!!!!!!!!!  SensorName #"<<i<<" '"<<arg<<"' задан неверно!!!!!!\n"<< endl;
+				cerr << "!!!!!!!!!  SensorName #"<<i<<" '"<<arg<<"' п╥п╟п╢п╟п╫ п╫п╣п╡п╣я─п╫п╬!!!!!!\n"<< endl;
 				err=1;
-				vout<<"| "<<arg<<"\t| ?\t| SensorName задан неверно !!!\n-----------------\n";				
+				vout<<"| "<<arg<<"\t| ?\t| SensorName п╥п╟п╢п╟п╫ п╫п╣п╡п╣я─п╫п╬ !!!\n-----------------\n";				
 				continue;
 			}
 		}
@@ -1151,9 +1151,9 @@ int getValue(string args, UniversalInterface &ui )
 			if( sscanf( arg.c_str(),"%ld",&sid ) < 1 )
 			{
 				cout << i <<"\t------------------------"<< endl;
-				cerr << "!!!!!!!!  SensorID #"<<i<<" '"<<arg<<"' задан неверно!!!!!!!\n"<< endl;
+				cerr << "!!!!!!!!  SensorID #"<<i<<" '"<<arg<<"' п╥п╟п╢п╟п╫ п╫п╣п╡п╣я─п╫п╬!!!!!!!\n"<< endl;
 				err = 1;
-				vout<<"| "<<arg<<"\t| ?\t| SensorID задан неверно !!!\n-----------------\n";
+				vout<<"| "<<arg<<"\t| ?\t| SensorID п╥п╟п╢п╟п╫ п╫п╣п╡п╣я─п╫п╬ !!!\n-----------------\n";
 				continue;
 			}
 		}	
@@ -1164,9 +1164,9 @@ int getValue(string args, UniversalInterface &ui )
 			if( sid == UniSetTypes::DefaultObjectId )
 			{
 				cout << i <<"\t------------------------"<< endl;		
-				cerr << "!!!!!!!!!  SensorName #"<<i<<" '"<<arg<<"' задан неверно!!!!!!\n"<< endl;
+				cerr << "!!!!!!!!!  SensorName #"<<i<<" '"<<arg<<"' п╥п╟п╢п╟п╫ п╫п╣п╡п╣я─п╫п╬!!!!!!\n"<< endl;
 				err=1;
-				vout<<"| "<<arg<<"\t| ?\t| SensorName задан неверно !!!\n-----------------\n";				
+				vout<<"| "<<arg<<"\t| ?\t| SensorName п╥п╟п╢п╟п╫ п╫п╣п╡п╣я─п╫п╬ !!!\n-----------------\n";				
 				continue;
 			}
 		}
@@ -1196,14 +1196,14 @@ int getCalibrate(string arg, UniversalInterface &ui)
 	UniSetTypes::ObjectId sid(uni_atoi(arg));
 	if( sid <= 0 )
 	{
-		cout << "(getCalibrate): Не задан SensorId аналогового датчика!!!!!!"<< endl;
+		cout << "(getCalibrate): п²п╣ п╥п╟п╢п╟п╫ SensorId п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟!!!!!!"<< endl;
 		return 1;
 	}
 
 	cout << "getCalibrate --------\n";
 	cout << "      name: (" << sid << ") " << conf->oind->getMapName(sid) << endl;
 	cout << "      text: " << conf->oind->getTextName(sid) << "\n";
-	cout << "калибровка: ";
+	cout << "п╨п╟п╩п╦п╠я─п╬п╡п╨п╟: ";
 	IOController_i::SensorInfo si;
 	si.id = sid;
 	si.node = conf->getLocalNode();
@@ -1218,7 +1218,7 @@ int getRawValue(string arg, UniversalInterface &ui )
 	UniSetTypes::ObjectId sid(uni_atoi(arg));
 	if( sid==0 )
 	{
-		cout << "(getRawValue): Не задан SensorId аналогового датчика!!!!!!"<< endl;
+		cout << "(getRawValue): п²п╣ п╥п╟п╢п╟п╫ SensorId п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟!!!!!!"<< endl;
 		return 1;
 	}
 	IOController_i::SensorInfo si;
@@ -1235,7 +1235,7 @@ int getRawValue(string arg, UniversalInterface &ui )
 // --------------------------------------------------------------------------------------
 int logRotate(string arg, UniversalInterface &ui )
 {
-	// посылка всем
+	// п©п╬я│я▀п╩п╨п╟ п╡я│п╣п╪
 	if( arg.empty() || (arg.c_str())[0]!='-' )
 	{
 		ObjectRepository* rep = new ObjectRepository(conf);
@@ -1244,12 +1244,12 @@ int logRotate(string arg, UniversalInterface &ui )
 		commandToAll(conf->getObjectsSection(), rep, (Command)LogRotate);
 	 	delete rep;
 	}
-	else // посылка определённому объекту
+	else // п©п╬я│я▀п╩п╨п╟ п╬п©я─п╣п╢п╣п╩я▒п╫п╫п╬п╪я┐ п╬п╠я┼п╣п╨я┌я┐
 	{
 		UniSetTypes::ObjectId id = conf->oind->getIdByName(arg);
 		if( id == DefaultObjectId )
 		{
-			cout << "(logrotate): name='" << arg << "' не найдено!!!\n";
+			cout << "(logrotate): name='" << arg << "' п╫п╣ п╫п╟п╧п╢п╣п╫п╬!!!\n";
 			return 1;
 		}
 			
@@ -1264,7 +1264,7 @@ int logRotate(string arg, UniversalInterface &ui )
 // --------------------------------------------------------------------------------------
 int configure(string arg, UniversalInterface &ui )
 {
-	// посылка всем
+	// п©п╬я│я▀п╩п╨п╟ п╡я│п╣п╪
 	if( arg.empty() || (arg.c_str())[0]!='-' )
 	{
 		ObjectRepository* rep = new ObjectRepository(conf);
@@ -1273,12 +1273,12 @@ int configure(string arg, UniversalInterface &ui )
 		commandToAll(conf->getObjectsSection(), rep, (Command)Configure);
 	 	delete rep;
 	}
-	else // посылка определённому объекту
+	else // п©п╬я│я▀п╩п╨п╟ п╬п©я─п╣п╢п╣п╩я▒п╫п╫п╬п╪я┐ п╬п╠я┼п╣п╨я┌я┐
 	{
 		UniSetTypes::ObjectId id = conf->oind->getIdByName(arg);
 		if( id == DefaultObjectId )
 		{
-			cout << "(configure): name='" << arg << "' не найдено!!!\n";
+			cout << "(configure): name='" << arg << "' п╫п╣ п╫п╟п╧п╢п╣п╫п╬!!!\n";
 			return 1;
 		}
 		SystemMessage sm(SystemMessage::ReConfiguration);
@@ -1295,7 +1295,7 @@ int oinfo(string arg, UniversalInterface &ui )
 	UniSetTypes::ObjectId oid(uni_atoi(arg));
 	if( oid==0 )
 	{
-		cout << "(oinfo): Не задан OID!"<< endl;
+		cout << "(oinfo): п²п╣ п╥п╟п╢п╟п╫ OID!"<< endl;
 		return 1;
 	}
 			
@@ -1303,7 +1303,7 @@ int oinfo(string arg, UniversalInterface &ui )
 	UniSetObject_i_var obj = UniSetObject_i::_narrow(o);
 	if(CORBA::is_nil(obj))
 	{
-		cout << "(oinfo): объект " << oid << " недоступен" << endl;
+		cout << "(oinfo): п╬п╠я┼п╣п╨я┌ " << oid << " п╫п╣п╢п╬я│я┌я┐п©п╣п╫" << endl;
 	}
 	else
 	{
@@ -1323,9 +1323,9 @@ bool getID( const string arg, ObjectId id, ObjectId node )
 			if( sscanf( arg.c_str(),"%ld",&id ) < 1 )
 			{
 				cout << i <<"\t------------------------"<< endl;
-				cerr << "!!!!!!!!  SensorID #"<<i<<" '"<<arg<<"' задан неверно!!!!!!!\n"<< endl;
+				cerr << "!!!!!!!!  SensorID #"<<i<<" '"<<arg<<"' п╥п╟п╢п╟п╫ п╫п╣п╡п╣я─п╫п╬!!!!!!!\n"<< endl;
 				err = 1;
-				vout<<"| "<<arg<<"\t| ?\t| SensorID задан неверно !!!\n-----------------\n";
+				vout<<"| "<<arg<<"\t| ?\t| SensorID п╥п╟п╢п╟п╫ п╫п╣п╡п╣я─п╫п╬ !!!\n-----------------\n";
 				continue;
 			}
 		}	

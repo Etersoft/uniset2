@@ -58,7 +58,7 @@ IONotifyController::IONotifyController(const string name, const string section, 
 	trshMutex(name+"trshMutex"),
 	maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 {
-	// добавляем фильтры
+	// п╢п╬п╠п╟п╡п╩я▐п╣п╪ я└п╦п╩я▄я┌я─я▀
 	addAFilter( sigc::mem_fun(this,&IONotifyController::myAFilter) );
 	addDFilter( sigc::mem_fun(this,&IONotifyController::myDFilter) );
 	setDependsSlot( sigc::mem_fun(this,&IONotifyController::onChangeUndefined) );
@@ -72,7 +72,7 @@ IONotifyController::IONotifyController( ObjectId id, NCRestorer* d ):
 	trshMutex(string(conf->oind->getMapName(id))+"_trshMutex"),
 	maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 {
-	// добавляем фильтры
+	// п╢п╬п╠п╟п╡п╩я▐п╣п╪ я└п╦п╩я▄я┌я─я▀
 	addAFilter( sigc::mem_fun(this,&IONotifyController::myAFilter) );
 	addDFilter( sigc::mem_fun(this,&IONotifyController::myDFilter) );
 	setDependsSlot( sigc::mem_fun(this,&IONotifyController::onChangeUndefined) );
@@ -83,9 +83,9 @@ IONotifyController::~IONotifyController()
 }
 
 // ------------------------------------------------------------------------------------------
-// функция-объект для поиска
-// !!!! для ассоциативных контейнеров должна возвращать false 
-// в случае равенства!!!!!!!!!!! (проверка эквивалетности. а не равенства)
+// я└я┐п╫п╨я├п╦я▐-п╬п╠я┼п╣п╨я┌ п╢п╩я▐ п©п╬п╦я│п╨п╟
+// !!!! п╢п╩я▐ п╟я│я│п╬я├п╦п╟я┌п╦п╡п╫я▀я┘ п╨п╬п╫я┌п╣п╧п╫п╣я─п╬п╡ п╢п╬п╩п╤п╫п╟ п╡п╬п╥п╡я─п╟я┴п╟я┌я▄ false 
+// п╡ я│п╩я┐я┤п╟п╣ я─п╟п╡п╣п╫я│я┌п╡п╟!!!!!!!!!!! (п©я─п╬п╡п╣я─п╨п╟ я█п╨п╡п╦п╡п╟п╩п╣я┌п╫п╬я│я┌п╦. п╟ п╫п╣ я─п╟п╡п╣п╫я│я┌п╡п╟)
 /*
 struct FindCons_eq: public unary_function<UniSetTypes::ConsumerInfo, bool>
 {
@@ -100,9 +100,9 @@ struct FindCons_eq: public unary_function<UniSetTypes::ConsumerInfo, bool>
 
 // ------------------------------------------------------------------------------------------
 /*!
- *	\param lst - указатель на список в который необходимо внести потребителя
- *	\param name - имя вносимого потребителя
- *	\note Добавление произойдет только если такого потребителя не существует в списке
+ *	\param lst - я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ я│п©п╦я│п╬п╨ п╡ п╨п╬я┌п╬я─я▀п╧ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╡п╫п╣я│я┌п╦ п©п╬я┌я─п╣п╠п╦я┌п╣п╩я▐
+ *	\param name - п╦п╪я▐ п╡п╫п╬я│п╦п╪п╬пЁп╬ п©п╬я┌я─п╣п╠п╦я┌п╣п╩я▐
+ *	\note п■п╬п╠п╟п╡п╩п╣п╫п╦п╣ п©я─п╬п╦п╥п╬п╧п╢п╣я┌ я┌п╬п╩я▄п╨п╬ п╣я│п╩п╦ я┌п╟п╨п╬пЁп╬ п©п╬я┌я─п╣п╠п╦я┌п╣п╩я▐ п╫п╣ я│я┐я┴п╣я│я┌п╡я┐п╣я┌ п╡ я│п©п╦я│п╨п╣
 */
 bool IONotifyController::addConsumer(ConsumerList& lst, const ConsumerInfo& ci )
 {
@@ -116,7 +116,7 @@ bool IONotifyController::addConsumer(ConsumerList& lst, const ConsumerInfo& ci )
 	}
 
 	ConsumerInfoExt cinf(ci,0,maxAttemtps);
-	// получаем ссылку
+	// п©п╬п╩я┐я┤п╟п╣п╪ я│я│я▀п╩п╨я┐
 	try
 	{
 		UniSetTypes::ObjectVar op = ui.resolve(ci.id,ci.node);
@@ -129,8 +129,8 @@ bool IONotifyController::addConsumer(ConsumerList& lst, const ConsumerInfo& ci )
 }
 // ------------------------------------------------------------------------------------------
 /*!
- *	\param lst - указатель на список из которго происходит удаление потребителя
- *	\param name - имя удаляемого потребителя
+ *	\param lst - я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ я│п©п╦я│п╬п╨ п╦п╥ п╨п╬я┌п╬я─пЁп╬ п©я─п╬п╦я│я┘п╬п╢п╦я┌ я┐п╢п╟п╩п╣п╫п╦п╣ п©п╬я┌я─п╣п╠п╦я┌п╣п╩я▐
+ *	\param name - п╦п╪я▐ я┐п╢п╟п╩я▐п╣п╪п╬пЁп╬ п©п╬я┌я─п╣п╠п╦я┌п╣п╩я▐
 */
 bool IONotifyController::removeConsumer(ConsumerList& lst, const ConsumerInfo& cons )
 {
@@ -141,7 +141,7 @@ bool IONotifyController::removeConsumer(ConsumerList& lst, const ConsumerInfo& c
 		if( li->id == cons.id && li->node == cons.node  )		
 		{
 			lst.erase(li);
-//			unideb[Debug::INFO] << name.c_name() <<": удаляем "<< name << " из списка потребителей" << endl;
+//			unideb[Debug::INFO] << name.c_name() <<": я┐п╢п╟п╩я▐п╣п╪ "<< name << " п╦п╥ я│п©п╦я│п╨п╟ п©п╬я┌я─п╣п╠п╦я┌п╣п╩п╣п╧" << endl;
 			return true;
 		}
 	}
@@ -151,9 +151,9 @@ bool IONotifyController::removeConsumer(ConsumerList& lst, const ConsumerInfo& c
 
 // ------------------------------------------------------------------------------------------
 /*! 
- *	\param si 		- информация о датчике
- *	\param ci	 	- информация о заказчике
- *	\param cmd 		- команда см. UniversalIO::UIOCommand
+ *	\param si 		- п╦п╫я└п╬я─п╪п╟я├п╦я▐ п╬ п╢п╟я┌я┤п╦п╨п╣
+ *	\param ci	 	- п╦п╫я└п╬я─п╪п╟я├п╦я▐ п╬ п╥п╟п╨п╟п╥я┤п╦п╨п╣
+ *	\param cmd 		- п╨п╬п╪п╟п╫п╢п╟ я│п╪. UniversalIO::UIOCommand
 */
 void IONotifyController::askSensor(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, 
 				UniversalIO::UIOCommand cmd)
@@ -177,7 +177,7 @@ void IONotifyController::askSensor(const IOController_i::SensorInfo& si, const U
 		default:
 		{
 			ostringstream err;
-			err << myname << "(askSensor): Неизвестен тип для " << conf->oind->getNameById(si.id);
+			err << myname << "(askSensor): п²п╣п╦п╥п╡п╣я│я┌п╣п╫ я┌п╦п© п╢п╩я▐ " << conf->oind->getNameById(si.id);
 			if( unideb.debugging(Debug::INFO) )
 				unideb[Debug::INFO] << err.str() << endl;
 			throw IOController_i::NameNotFound(err.str().c_str());
@@ -188,39 +188,39 @@ void IONotifyController::askSensor(const IOController_i::SensorInfo& si, const U
 				
 // ------------------------------------------------------------------------------------------
 /*! 
- *	\param si 		- информация о датчике
- *	\param ci	 	- информация о заказчике
- *	\param cmd 		- команда см. UniversalIO::UIOCommand
+ *	\param si 		- п╦п╫я└п╬я─п╪п╟я├п╦я▐ п╬ п╢п╟я┌я┤п╦п╨п╣
+ *	\param ci	 	- п╦п╫я└п╬я─п╪п╟я├п╦я▐ п╬ п╥п╟п╨п╟п╥я┤п╦п╨п╣
+ *	\param cmd 		- п╨п╬п╪п╟п╫п╢п╟ я│п╪. UniversalIO::UIOCommand
 */
 void IONotifyController::askState( const IOController_i::SensorInfo& si, 
 									const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd )
 {
-	// провреки на несуществующий датчик проводить не надо т.к. заказчик принципиально
-	// не может обратится к этому контроллеру по ссылке на другой датчик
-	// (ведь ссылка на датчик это ссылка на контроллер который за него отвечает)
-	// контроль заказа типа датчика(дискретного) здесь производится
+	// п©я─п╬п╡я─п╣п╨п╦ п╫п╟ п╫п╣я│я┐я┴п╣я│я┌п╡я┐я▌я┴п╦п╧ п╢п╟я┌я┤п╦п╨ п©я─п╬п╡п╬п╢п╦я┌я▄ п╫п╣ п╫п╟п╢п╬ я┌.п╨. п╥п╟п╨п╟п╥я┤п╦п╨ п©я─п╦п╫я├п╦п©п╦п╟п╩я▄п╫п╬
+	// п╫п╣ п╪п╬п╤п╣я┌ п╬п╠я─п╟я┌п╦я┌я│я▐ п╨ я█я┌п╬п╪я┐ п╨п╬п╫я┌я─п╬п╩п╩п╣я─я┐ п©п╬ я│я│я▀п╩п╨п╣ п╫п╟ п╢я─я┐пЁп╬п╧ п╢п╟я┌я┤п╦п╨
+	// (п╡п╣п╢я▄ я│я│я▀п╩п╨п╟ п╫п╟ п╢п╟я┌я┤п╦п╨ я█я┌п╬ я│я│я▀п╩п╨п╟ п╫п╟ п╨п╬п╫я┌я─п╬п╩п╩п╣я─ п╨п╬я┌п╬я─я▀п╧ п╥п╟ п╫п╣пЁп╬ п╬я┌п╡п╣я┤п╟п╣я┌)
+	// п╨п╬п╫я┌я─п╬п╩я▄ п╥п╟п╨п╟п╥п╟ я┌п╦п©п╟ п╢п╟я┌я┤п╦п╨п╟(п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬) п╥п╢п╣я│я▄ п©я─п╬п╦п╥п╡п╬п╢п╦я┌я│я▐
 	if( unideb.debugging(Debug::INFO) )
 	{
-		unideb[Debug::INFO] << "поступил заказ от "
-			<< conf->oind->getNameById(ci.id, ci.node) << " на дискретный датчик "
+		unideb[Debug::INFO] << "п©п╬я│я┌я┐п©п╦п╩ п╥п╟п╨п╟п╥ п╬я┌ "
+			<< conf->oind->getNameById(ci.id, ci.node) << " п╫п╟ п╢п╦я│п╨я─п╣я┌п╫я▀п╧ п╢п╟я┌я┤п╦п╨ "
 			<< conf->oind->getNameById(si.id,si.node) << endl;
 	}
 	
-	// если такого дискретного датчика нет, здесь сработает исключение...
+	// п╣я│п╩п╦ я┌п╟п╨п╬пЁп╬ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟ п╫п╣я┌, п╥п╢п╣я│я▄ я│я─п╟п╠п╬я┌п╟п╣я┌ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣...
 	DIOStateList::iterator li = mydioEnd();
 	localGetState(li,si);
 	// lock ???
 	if( li==mydioEnd() )
 	{
 		ostringstream err;
-		err << myname << "(askState): датчик имя: " << conf->oind->getNameById(si.id) << " не найден";
+		err << myname << "(askState): п╢п╟я┌я┤п╦п╨ п╦п╪я▐: " << conf->oind->getNameById(si.id) << " п╫п╣ п╫п╟п╧п╢п╣п╫";
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
 	if( li->second.type != UniversalIO::DigitalInput )
 	{
 		ostringstream err;
-		err << myname << "(askState): ВХОДНОЙ ДИСКРЕТНЫЙ ДАТЧИК с именем " << conf->oind->getNameById(si.id) << " не найден";
+		err << myname << "(askState): п▓п╔п·п■п²п·п≥ п■п≤п║п п═п∙п╒п²п╚п≥ п■п░п╒п╖п≤п  я│ п╦п╪п╣п╫п╣п╪ " << conf->oind->getNameById(si.id) << " п╫п╣ п╫п╟п╧п╢п╣п╫";
 		if( unideb.debugging(Debug::INFO) )	
 			unideb[Debug::INFO] << err.str() << endl;
 		throw IOController_i::NameNotFound(err.str().c_str());
@@ -228,11 +228,11 @@ void IONotifyController::askState( const IOController_i::SensorInfo& si,
 
 	{	//lock
 		uniset_mutex_lock lock(askDMutex, 200);
-		// а раз есть заносим(исключаем) заказчика 
+		// п╟ я─п╟п╥ п╣я│я┌я▄ п╥п╟п╫п╬я│п╦п╪(п╦я│п╨п╩я▌я┤п╟п╣п╪) п╥п╟п╨п╟п╥я┤п╦п╨п╟ 
 		ask( askDIOList, si, ci, cmd);		
 	} // unlock			
 
-	// посылка первый раз состояния 
+	// п©п╬я│я▀п╩п╨п╟ п©п╣я─п╡я▀п╧ я─п╟п╥ я│п╬я│я┌п╬я▐п╫п╦я▐ 
 	if( cmd==UniversalIO::UIONotify || (cmd==UIONotifyFirstNotNull && li->second.state) )
 	{
 		SensorMessage  smsg;
@@ -263,7 +263,7 @@ void IONotifyController::askState( const IOController_i::SensorInfo& si,
 		}
 	    catch( CORBA::SystemException& ex )
 	    {
-    		unideb[Debug::WARN] << conf->oind->getNameById(ci.id, ci.node) << " недоступен!!(CORBA::SystemException): "
+    		unideb[Debug::WARN] << conf->oind->getNameById(ci.id, ci.node) << " п╫п╣п╢п╬я│я┌я┐п©п╣п╫!!(CORBA::SystemException): "
 				<< ex.NP_minorString() << endl;
 	    }
 		catch(...){}
@@ -272,33 +272,33 @@ void IONotifyController::askState( const IOController_i::SensorInfo& si,
 
 // ------------------------------------------------------------------------------------------
 /*! 
- *	\param si 		- информация о датчике
- *	\param ci	 	- информация о заказчике
- *	\param cmd 		- команда см. UniversalIO::UIOCommand
+ *	\param si 		- п╦п╫я└п╬я─п╪п╟я├п╦я▐ п╬ п╢п╟я┌я┤п╦п╨п╣
+ *	\param ci	 	- п╦п╫я└п╬я─п╪п╟я├п╦я▐ п╬ п╥п╟п╨п╟п╥я┤п╦п╨п╣
+ *	\param cmd 		- п╨п╬п╪п╟п╫п╢п╟ я│п╪. UniversalIO::UIOCommand
 */
 void IONotifyController::askValue(const IOController_i::SensorInfo& si, 
 									const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd )
 {
-	// провреки на несуществующий датчик проводить не надо т.к. заказчик ппинципиально
-	// не может обратится к этому контроллеру по ссылке на другой датчик
-	// (ведь ссылка на датчик это ссылка на контроллер который за него отвечает)
-	// контроль заказа именно АНАЛОГОВО датчика производится
+	// п©я─п╬п╡я─п╣п╨п╦ п╫п╟ п╫п╣я│я┐я┴п╣я│я┌п╡я┐я▌я┴п╦п╧ п╢п╟я┌я┤п╦п╨ п©я─п╬п╡п╬п╢п╦я┌я▄ п╫п╣ п╫п╟п╢п╬ я┌.п╨. п╥п╟п╨п╟п╥я┤п╦п╨ п©п©п╦п╫я├п╦п©п╦п╟п╩я▄п╫п╬
+	// п╫п╣ п╪п╬п╤п╣я┌ п╬п╠я─п╟я┌п╦я┌я│я▐ п╨ я█я┌п╬п╪я┐ п╨п╬п╫я┌я─п╬п╩п╩п╣я─я┐ п©п╬ я│я│я▀п╩п╨п╣ п╫п╟ п╢я─я┐пЁп╬п╧ п╢п╟я┌я┤п╦п╨
+	// (п╡п╣п╢я▄ я│я│я▀п╩п╨п╟ п╫п╟ п╢п╟я┌я┤п╦п╨ я█я┌п╬ я│я│я▀п╩п╨п╟ п╫п╟ п╨п╬п╫я┌я─п╬п╩п╩п╣я─ п╨п╬я┌п╬я─я▀п╧ п╥п╟ п╫п╣пЁп╬ п╬я┌п╡п╣я┤п╟п╣я┌)
+	// п╨п╬п╫я┌я─п╬п╩я▄ п╥п╟п╨п╟п╥п╟ п╦п╪п╣п╫п╫п╬ п░п²п░п⌡п·п⌠п·п▓п· п╢п╟я┌я┤п╦п╨п╟ п©я─п╬п╦п╥п╡п╬п╢п╦я┌я│я▐
 
 	if( unideb.debugging(Debug::INFO) )	
 	{
-		unideb[Debug::INFO] << "поступил заказ от "<< conf->oind->getNameById(ci.id, ci.node)
-			<< " на аналоговый датчик "
+		unideb[Debug::INFO] << "п©п╬я│я┌я┐п©п╦п╩ п╥п╟п╨п╟п╥ п╬я┌ "<< conf->oind->getNameById(ci.id, ci.node)
+			<< " п╫п╟ п╟п╫п╟п╩п╬пЁп╬п╡я▀п╧ п╢п╟я┌я┤п╦п╨ "
 			<< conf->oind->getNameById(si.id,si.node) << endl;
 	}
 	
-	// если такого аналогового датчика нет, здесь сработает исключение...
+	// п╣я│п╩п╦ я┌п╟п╨п╬пЁп╬ п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟ п╫п╣я┌, п╥п╢п╣я│я▄ я│я─п╟п╠п╬я┌п╟п╣я┌ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣...
 	AIOStateList::iterator li = myaioEnd();
 	localGetValue(li,si);
 	if( li->second.type != UniversalIO::AnalogInput )
 	{
 		ostringstream err;
-		err << myname << "(askState): ВХОДНОЙ АНАЛОГОВЫЙ ДАТЧИК с именем " << conf->oind->getNameById(si.id) 
-			<< " не найден";
+		err << myname << "(askState): п▓п╔п·п■п²п·п≥ п░п²п░п⌡п·п⌠п·п▓п╚п≥ п■п░п╒п╖п≤п  я│ п╦п╪п╣п╫п╣п╪ " << conf->oind->getNameById(si.id) 
+			<< " п╫п╣ п╫п╟п╧п╢п╣п╫";
 		if( unideb.debugging(Debug::INFO) )	
 			unideb[Debug::INFO] << err.str() << endl;
 		throw IOController_i::NameNotFound(err.str().c_str());
@@ -306,11 +306,11 @@ void IONotifyController::askValue(const IOController_i::SensorInfo& si,
 
 	{	// lock
  		uniset_mutex_lock lock(askAMutex, 200);
-		// а раз есть заносим(исключаем) заказчика 
+		// п╟ я─п╟п╥ п╣я│я┌я▄ п╥п╟п╫п╬я│п╦п╪(п╦я│п╨п╩я▌я┤п╟п╣п╪) п╥п╟п╨п╟п╥я┤п╦п╨п╟ 
 		ask( askAIOList, si, ci, cmd);		
 	}	// unlock
 
-	// посылка первый раз состояния 
+	// п©п╬я│я▀п╩п╨п╟ п©п╣я─п╡я▀п╧ я─п╟п╥ я│п╬я│я┌п╬я▐п╫п╦я▐ 
 	if( cmd==UniversalIO::UIONotify || (cmd==UIONotifyFirstNotNull && li->second.value) )
 	{
 		SensorMessage  smsg;
@@ -344,7 +344,7 @@ void IONotifyController::askValue(const IOController_i::SensorInfo& si,
 	    catch( CORBA::SystemException& ex )
 	    {
 	    	unideb[Debug::WARN] << conf->oind->getNameById(ci.id, ci.node) 
-	    		<< " недоступен!!(CORBA::SystemException): "
+	    		<< " п╫п╣п╢п╬я│я┌я┐п©п╣п╫!!(CORBA::SystemException): "
 				<< ex.NP_minorString() << endl;
 	    }	
 		catch(...){}
@@ -355,21 +355,21 @@ void IONotifyController::askValue(const IOController_i::SensorInfo& si,
 void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& si, 
 								const UniSetTypes::ConsumerInfo& cons, UniversalIO::UIOCommand cmd)
 {
-	// поиск датчика в списке 
+	// п©п╬п╦я│п╨ п╢п╟я┌я┤п╦п╨п╟ п╡ я│п©п╦я│п╨п╣ 
 	UniSetTypes::KeyType k( key(si.id,si.node) );
 	AskMap::iterator askIterator = askLst.find(k);
 
   	switch (cmd)
 	{
-		case UniversalIO::UIONotify: // заказ
+		case UniversalIO::UIONotify: // п╥п╟п╨п╟п╥
 		case UniversalIO::UIONotifyChange:
 		case UniversalIO::UIONotifyFirstNotNull:
 		{
    			if( askIterator==askLst.end() ) 
 			{
-				ConsumerList lst; // создаем новый список
+				ConsumerList lst; // я│п╬п╥п╢п╟п╣п╪ п╫п╬п╡я▀п╧ я│п©п╦я│п╬п╨
 				addConsumer(lst,cons);	  
-				// более оптимальный способ(при условии вставки первый раз) //	askLst[key]=lst;
+				// п╠п╬п╩п╣п╣ п╬п©я┌п╦п╪п╟п╩я▄п╫я▀п╧ я│п©п╬я│п╬п╠(п©я─п╦ я┐я│п╩п╬п╡п╦п╦ п╡я│я┌п╟п╡п╨п╦ п©п╣я─п╡я▀п╧ я─п╟п╥) //	askLst[key]=lst;
 				askLst.insert(AskMap::value_type(k,lst));
 				
 				try
@@ -378,11 +378,11 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
 				}
 				catch(Exception& ex)
 				{
-					unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+					unideb[Debug::WARN] << myname << " п╫п╣ я│п╪п╬пЁп╩п╦ я│п╢п╣п╩п╟я┌я▄ dump: " << ex << endl;
 				}
 				catch(...)
 				{
-			    	unideb[Debug::WARN] << myname << " не смогли сделать dump" << endl;
+			    	unideb[Debug::WARN] << myname << " п╫п╣ я│п╪п╬пЁп╩п╦ я│п╢п╣п╩п╟я┌я▄ dump" << endl;
 				}
 		    }
 			else
@@ -395,19 +395,19 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
 					}
 					catch(Exception& ex)
 					{
-						unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+						unideb[Debug::WARN] << myname << " п╫п╣ я│п╪п╬пЁп╩п╦ я│п╢п╣п╩п╟я┌я▄ dump: " << ex << endl;
 					}
 					catch(...)
 					{	
-			    		unideb[Debug::WARN] << myname << " не смогли сделать dump" << endl;
+			    		unideb[Debug::WARN] << myname << " п╫п╣ я│п╪п╬пЁп╩п╦ я│п╢п╣п╩п╟я┌я▄ dump" << endl;
 					}
 				}
 		    }
 			break;
 		}
-		case UniversalIO::UIODontNotify: 	// отказ
+		case UniversalIO::UIODontNotify: 	// п╬я┌п╨п╟п╥
 		{
-			if( askIterator!=askLst.end() )	// существует
+			if( askIterator!=askLst.end() )	// я│я┐я┴п╣я│я┌п╡я┐п╣я┌
 			{
 //				ConsumerList lst(askIterator->second);
 				if( removeConsumer(askIterator->second, cons) )
@@ -422,11 +422,11 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
 						}
 						catch(Exception& ex)
 						{
-							unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+							unideb[Debug::WARN] << myname << " п╫п╣ я│п╪п╬пЁп╩п╦ я│п╢п╣п╩п╟я┌я▄ dump: " << ex << endl;
 						}
 						catch(...)
 						{		
-				    		unideb[Debug::WARN] << myname << " не смогли сделать dump" << endl;
+				    		unideb[Debug::WARN] << myname << " п╫п╣ я│п╪п╬пЁп╩п╦ я│п╢п╣п╩п╟я┌я▄ dump" << endl;
 						}
 					}
 				}
@@ -465,21 +465,21 @@ void IONotifyController::localSaveState( IOController::DIOStateList::iterator& i
 											CORBA::Boolean state,
 											UniSetTypes::ObjectId sup_id )
 {
-	// Если датчик не найден здесь сработает исключение NameNotFound
+	// п∙я│п╩п╦ п╢п╟я┌я┤п╦п╨ п╫п╣ п╫п╟п╧п╢п╣п╫ п╥п╢п╣я│я▄ я│я─п╟п╠п╬я┌п╟п╣я┌ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣ NameNotFound
 	bool prevState = IOController::localGetState( it, si );
 
 	IOController::localSaveState( it, si, state, sup_id );
 
-	// сравниваем именно с li->second.state
-	// т.к. фактическое сохранённое значение может быть изменено
-	// фильтрами или блокировками..
+	// я│я─п╟п╡п╫п╦п╡п╟п╣п╪ п╦п╪п╣п╫п╫п╬ я│ li->second.state
+	// я┌.п╨. я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ я│п╬я┘я─п╟п╫я▒п╫п╫п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ п╪п╬п╤п╣я┌ п╠я▀я┌я▄ п╦п╥п╪п╣п╫п╣п╫п╬
+	// я└п╦п╩я▄я┌я─п╟п╪п╦ п╦п╩п╦ п╠п╩п╬п╨п╦я─п╬п╡п╨п╟п╪п╦..
 	SensorMessage sm(si.id, state);
 	{	// lock
 		uniset_spin_lock lock(it->second.val_lock,getCheckLockValuePause());
 		if( prevState == it->second.state )
 			return;
 
-		// Уведомления рассылаем только в случае смены состояния...
+		// пёп╡п╣п╢п╬п╪п╩п╣п╫п╦я▐ я─п╟я│я│я▀п╩п╟п╣п╪ я┌п╬п╩я▄п╨п╬ п╡ я│п╩я┐я┤п╟п╣ я│п╪п╣п╫я▀ я│п╬я│я┌п╬я▐п╫п╦я▐...
 		sm.id 			= si.id;
 		sm.node 		= si.node;
 		sm.state 		= it->second.state;
@@ -516,13 +516,13 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 										const IOController_i::SensorInfo& si, 
 										CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
-	// Если датчик не найден сдесь сработает исключение
+	// п∙я│п╩п╦ п╢п╟я┌я┤п╦п╨ п╫п╣ п╫п╟п╧п╢п╣п╫ я│п╢п╣я│я▄ я│я─п╟п╠п╬я┌п╟п╣я┌ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣
 	long prevValue = IOController::localGetValue( li, si );
 	if( li == myaioEnd() ) // ???
 	{
 		ostringstream err;
-		err << myname << "(localSaveValue): аналоговый вход(выход) с именем " 
-						<< conf->oind->getNameById(si.id) << " не найден";
+		err << myname << "(localSaveValue): п╟п╫п╟п╩п╬пЁп╬п╡я▀п╧ п╡я┘п╬п╢(п╡я▀я┘п╬п╢) я│ п╦п╪п╣п╫п╣п╪ " 
+						<< conf->oind->getNameById(si.id) << " п╫п╣ п╫п╟п╧п╢п╣п╫";
 
 		if( unideb.debugging(Debug::INFO) )	
 			unideb[Debug::INFO] << err.str() << endl;
@@ -531,9 +531,9 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 
 	IOController::localSaveValue(li,si, value,sup_id);
 
-	// сравниваем именно с li->second.value
-	// т.к. фактическое сохранённое значение может быть изменено
-	// фильтрами или блокировками..
+	// я│я─п╟п╡п╫п╦п╡п╟п╣п╪ п╦п╪п╣п╫п╫п╬ я│ li->second.value
+	// я┌.п╨. я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ я│п╬я┘я─п╟п╫я▒п╫п╫п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ п╪п╬п╤п╣я┌ п╠я▀я┌я▄ п╦п╥п╪п╣п╫п╣п╫п╬
+	// я└п╦п╩я▄я┌я─п╟п╪п╦ п╦п╩п╦ п╠п╩п╬п╨п╦я─п╬п╡п╨п╟п╪п╦..
 	SensorMessage sm(si.id,li->second.value);
 	{ // lock
 		uniset_spin_lock lock(li->second.val_lock,getCheckLockValuePause());
@@ -541,7 +541,7 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 		if( prevValue == li->second.value )
 			return;
 
-		// Рассылаем уведомления только в слуае изменения значения
+		// п═п╟я│я│я▀п╩п╟п╣п╪ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦я▐ я┌п╬п╩я▄п╨п╬ п╡ я│п╩я┐п╟п╣ п╦п╥п╪п╣п╫п╣п╫п╦я▐ п╥п╫п╟я┤п╣п╫п╦я▐
 		sm.id 			= si.id;
 		sm.node 		= si.node;
 		sm.state 		= li->second.value!=0 ? true:false;
@@ -574,7 +574,7 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 		send(it->second, sm);
 	}
 
-	// проверка порогов
+	// п©я─п╬п╡п╣я─п╨п╟ п©п╬я─п╬пЁп╬п╡
 	try
 	{	
 		checkThreshold(li,si,true);
@@ -584,15 +584,15 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 // ------------------------------------------------------------------------------------------
 
 /*!
-	\note В случае зависания в функции push, будут остановлены рассылки другим объектам.
-	Возможно нужно ввести своего агента на удалённой стороне, который будет заниматься
-	только приёмом сообщений и локальной рассылкой. Lav
+	\note п▓ я│п╩я┐я┤п╟п╣ п╥п╟п╡п╦я│п╟п╫п╦я▐ п╡ я└я┐п╫п╨я├п╦п╦ push, п╠я┐п╢я┐я┌ п╬я│я┌п╟п╫п╬п╡п╩п╣п╫я▀ я─п╟я│я│я▀п╩п╨п╦ п╢я─я┐пЁп╦п╪ п╬п╠я┼п╣п╨я┌п╟п╪.
+	п▓п╬п╥п╪п╬п╤п╫п╬ п╫я┐п╤п╫п╬ п╡п╡п╣я│я┌п╦ я│п╡п╬п╣пЁп╬ п╟пЁп╣п╫я┌п╟ п╫п╟ я┐п╢п╟п╩я▒п╫п╫п╬п╧ я│я┌п╬я─п╬п╫п╣, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╥п╟п╫п╦п╪п╟я┌я▄я│я▐
+	я┌п╬п╩я▄п╨п╬ п©я─п╦я▒п╪п╬п╪ я│п╬п╬п╠я┴п╣п╫п╦п╧ п╦ п╩п╬п╨п╟п╩я▄п╫п╬п╧ я─п╟я│я│я▀п╩п╨п╬п╧. Lav
 */
 void IONotifyController::send(ConsumerList& lst, UniSetTypes::SensorMessage& sm)
 {
 	for( ConsumerList::iterator li=lst.begin();li!=lst.end();++li )
 	{
-		for(int i=0; i<2; i++ )	// на каждый объект по две поптыки
+		for(int i=0; i<2; i++ )	// п╫п╟ п╨п╟п╤п╢я▀п╧ п╬п╠я┼п╣п╨я┌ п©п╬ п╢п╡п╣ п©п╬п©я┌я▀п╨п╦
 		{
 			try
 			{
@@ -750,14 +750,14 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 	if( lowLimit > hiLimit )
 		throw IONotifyController_i::BadRange();
 
-	// если такого дискретного датчика нет сдесь сработает исключение...
+	// п╣я│п╩п╦ я┌п╟п╨п╬пЁп╬ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟ п╫п╣я┌ я│п╢п╣я│я▄ я│я─п╟п╠п╬я┌п╟п╣я┌ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣...
 	AIOStateList::iterator li = myaioEnd();
 	CORBA::Long val = localGetValue(li,si);
 
 	{	// lock
 		uniset_mutex_lock lock(trshMutex, 300);
 
-		// поиск датчика в списке 
+		// п©п╬п╦я│п╨ п╢п╟я┌я┤п╦п╨п╟ п╡ я│п©п╦я│п╨п╣ 
 		UniSetTypes::KeyType skey( key(si.id,si.node) );
 		AskThresholdMap::iterator it = askTMap.find(skey);
 		ThresholdInfoExt ti(tid,lowLimit, hiLimit,sb);
@@ -765,12 +765,12 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 
 	  	switch( cmd )
 		{
-			case UniversalIO::UIONotify: // заказ
+			case UniversalIO::UIONotify: // п╥п╟п╨п╟п╥
 			case UniversalIO::UIONotifyChange:
 			{
    				if( it==askTMap.end() ) 
 				{
-					ThresholdExtList lst;	// создаем новый список
+					ThresholdExtList lst;	// я│п╬п╥п╢п╟п╣п╪ п╫п╬п╡я▀п╧ я│п©п╦я│п╬п╨
 					ThresholdsListInfo tli;
 					tli.si 		= si;
 					tli.list 	= lst;
@@ -784,11 +784,11 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 					}
 					catch(Exception& ex)
 					{
-						unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+						unideb[Debug::WARN] << myname << " п╫п╣ я│п╪п╬пЁп╩п╦ я│п╢п╣п╩п╟я┌я▄ dump: " << ex << endl;
 					}
 					catch(...)
 					{	
-			    		unideb[Debug::WARN] << myname << " не смогли сделать dump" << endl;
+			    		unideb[Debug::WARN] << myname << " п╫п╣ я│п╪п╬пЁп╩п╦ я│п╢п╣п╩п╟я┌я▄ dump" << endl;
 					}
 			    }
 				else
@@ -813,7 +813,7 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 				if( cmd == UniversalIO::UIONotifyChange )
 					break;
 				
-				// посылка первый раз состояния 
+				// п©п╬я│я▀п╩п╨п╟ п©п╣я─п╡я▀п╧ я─п╟п╥ я│п╬я│я┌п╬я▐п╫п╦я▐ 
 			    try
 			    {
 					SensorMessage sm;
@@ -830,7 +830,7 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 					sm.sm_tv_usec	= ti.tv_usec;
 					sm.ci			= li->second.ci;
 	
-						// Проверка нижнего предела
+						// п÷я─п╬п╡п╣я─п╨п╟ п╫п╦п╤п╫п╣пЁп╬ п©я─п╣п╢п╣п╩п╟
 					if( val <= (lowLimit-sb) )
 					{
 						sm.threshold = false;
@@ -839,7 +839,7 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 						if(!CORBA::is_nil(ref))
 							ref->push(sm.transport_msg());
 					}
-					// Проверка верхнего предела
+					// п÷я─п╬п╡п╣я─п╨п╟ п╡п╣я─я┘п╫п╣пЁп╬ п©я─п╣п╢п╣п╩п╟
 					else if( val >= (hiLimit+sb) )
 					{
 						sm.threshold = true;
@@ -862,7 +862,7 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 		    }
 			break;
 
-			case UniversalIO::UIODontNotify: 	// отказ
+			case UniversalIO::UIODontNotify: 	// п╬я┌п╨п╟п╥
 			{
 				if( it!=askTMap.end() )
 				{
@@ -910,7 +910,7 @@ bool IONotifyController::addThreshold(ThresholdExtList& lst, ThresholdInfoExt& t
 	addConsumer(ti.clst, ci);
 
 
-	// запоминаем начальное время
+	// п╥п╟п©п╬п╪п╦п╫п╟п╣п╪ п╫п╟я┤п╟п╩я▄п╫п╬п╣ п╡я─п╣п╪я▐
 	struct timeval tm;
 	struct timezone tz;
 	tm.tv_sec = 0; tm.tv_usec = 0;
@@ -947,7 +947,7 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 	{	// lock
 		uniset_mutex_lock lock(trshMutex, 300);
 
-		// поиск списка порогов
+		// п©п╬п╦я│п╨ я│п©п╦я│п╨п╟ п©п╬я─п╬пЁп╬п╡
 		UniSetTypes::KeyType skey( key(si.id,si.node) );
 		AskThresholdMap::iterator lst = askTMap.find(skey);
 		if( lst==askTMap.end() )
@@ -977,7 +977,7 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 			sm.sm_tv_usec 	= li->second.tv_usec;
 		}
 
-		// текущее время
+		// я┌п╣п╨я┐я┴п╣п╣ п╡я─п╣п╪я▐
 		struct timeval tm;
 		struct timezone tz;
 		tm.tv_sec = 0; tm.tv_usec = 0;
@@ -985,8 +985,8 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 
 		for( ThresholdExtList::iterator it=lst->second.list.begin(); it!=lst->second.list.end(); ++it) 
 		{
-			// Проверка нижнего предела
-			// значение должно быть меньше lowLimit-чуствительность
+			// п÷я─п╬п╡п╣я─п╨п╟ п╫п╦п╤п╫п╣пЁп╬ п©я─п╣п╢п╣п╩п╟
+			// п╥п╫п╟я┤п╣п╫п╦п╣ п╢п╬п╩п╤п╫п╬ п╠я▀я┌я▄ п╪п╣п╫я▄я┬п╣ lowLimit-я┤я┐я│я┌п╡п╦я┌п╣п╩я▄п╫п╬я│я┌я▄
 			if( li->second.value <= (it->lowlimit-it->sensibility) )
 			{
 				if( it->state == IONotifyController_i::LowThreshold )
@@ -996,19 +996,19 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 				sm.threshold = false;
 				sm.tid = it->id;
 
-				// запоминаем время изменения состояния
+				// п╥п╟п©п╬п╪п╦п╫п╟п╣п╪ п╡я─п╣п╪я▐ п╦п╥п╪п╣п╫п╣п╫п╦я▐ я│п╬я│я┌п╬я▐п╫п╦я▐
 				it->tv_sec 		= tm.tv_sec;
 				it->tv_usec 	= tm.tv_usec;
 				sm.sm_tv_sec 	= tm.tv_sec;
 				sm.sm_tv_usec 	= tm.tv_usec;
 
-				// порог связан с дискретным датчиком
+				// п©п╬я─п╬пЁ я│п╡я▐п╥п╟п╫ я│ п╢п╦я│п╨я─п╣я┌п╫я▀п╪ п╢п╟я┌я┤п╦п╨п╬п╪
 				if( it->sid != UniSetTypes::DefaultObjectId )
 				{
 					try
 					{
 						bool state(sm.threshold);
-						// проверка на инвертированную логику
+						// п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п╦п╫п╡п╣я─я┌п╦я─п╬п╡п╟п╫п╫я┐я▌ п╩п╬пЁп╦п╨я┐
 						if( it->inverse )
 							state^=1;
 						
@@ -1024,8 +1024,8 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 				if( send_msg )
 					send(it->clst, sm);				
 			}
-			// Проверка верхнего предела
-			// значение должно быть больше hiLimit+чуствительность
+			// п÷я─п╬п╡п╣я─п╨п╟ п╡п╣я─я┘п╫п╣пЁп╬ п©я─п╣п╢п╣п╩п╟
+			// п╥п╫п╟я┤п╣п╫п╦п╣ п╢п╬п╩п╤п╫п╬ п╠я▀я┌я▄ п╠п╬п╩я▄я┬п╣ hiLimit+я┤я┐я│я┌п╡п╦я┌п╣п╩я▄п╫п╬я│я┌я▄
 			else if( li->second.value >= (it->hilimit+it->sensibility) )
 			{ 
 				if( it->state == IONotifyController_i::HiThreshold )
@@ -1034,19 +1034,19 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 				it->state = IONotifyController_i::HiThreshold;
 				sm.threshold = true;
 				sm.tid = it->id;
-				// запоминаем время изменения состояния
+				// п╥п╟п©п╬п╪п╦п╫п╟п╣п╪ п╡я─п╣п╪я▐ п╦п╥п╪п╣п╫п╣п╫п╦я▐ я│п╬я│я┌п╬я▐п╫п╦я▐
 				it->tv_sec 		= tm.tv_sec;
 				it->tv_usec 	= tm.tv_usec;
 				sm.sm_tv_sec 	= tm.tv_sec;
 				sm.sm_tv_usec 	= tm.tv_usec;
 		
-				// порог связан с дискретным датчиком
+				// п©п╬я─п╬пЁ я│п╡я▐п╥п╟п╫ я│ п╢п╦я│п╨я─п╣я┌п╫я▀п╪ п╢п╟я┌я┤п╦п╨п╬п╪
 				if( it->sid != UniSetTypes::DefaultObjectId )
 				{								
 					try
 					{
 						bool state(sm.threshold);
-						// проверка на инвертированную логику
+						// п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п╦п╫п╡п╣я─я┌п╦я─п╬п╡п╟п╫п╫я┐я▌ п╩п╬пЁп╦п╨я┐
 						if( it->inverse ) 
 							state^=1;
 
@@ -1072,27 +1072,27 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 void IONotifyController::askOutput(const IOController_i::SensorInfo& si, 
 									const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd)
 {
-	// провреки на несуществующий выход проводить не надо т.к. заказчик принципиально
-	// не может обратится к этому контроллеру по ссылке на другой датчик
-	// (ведь ссылка на датчик это ссылка на контроллер который за него отвечает)
-	// контроль заказа типа выхода здесь производится
+	// п©я─п╬п╡я─п╣п╨п╦ п╫п╟ п╫п╣я│я┐я┴п╣я│я┌п╡я┐я▌я┴п╦п╧ п╡я▀я┘п╬п╢ п©я─п╬п╡п╬п╢п╦я┌я▄ п╫п╣ п╫п╟п╢п╬ я┌.п╨. п╥п╟п╨п╟п╥я┤п╦п╨ п©я─п╦п╫я├п╦п©п╦п╟п╩я▄п╫п╬
+	// п╫п╣ п╪п╬п╤п╣я┌ п╬п╠я─п╟я┌п╦я┌я│я▐ п╨ я█я┌п╬п╪я┐ п╨п╬п╫я┌я─п╬п╩п╩п╣я─я┐ п©п╬ я│я│я▀п╩п╨п╣ п╫п╟ п╢я─я┐пЁп╬п╧ п╢п╟я┌я┤п╦п╨
+	// (п╡п╣п╢я▄ я│я│я▀п╩п╨п╟ п╫п╟ п╢п╟я┌я┤п╦п╨ я█я┌п╬ я│я│я▀п╩п╨п╟ п╫п╟ п╨п╬п╫я┌я─п╬п╩п╩п╣я─ п╨п╬я┌п╬я─я▀п╧ п╥п╟ п╫п╣пЁп╬ п╬я┌п╡п╣я┤п╟п╣я┌)
+	// п╨п╬п╫я┌я─п╬п╩я▄ п╥п╟п╨п╟п╥п╟ я┌п╦п©п╟ п╡я▀я┘п╬п╢п╟ п╥п╢п╣я│я▄ п©я─п╬п╦п╥п╡п╬п╢п╦я┌я│я▐
 
 	string name = conf->oind->getNameById(ci.id, ci.node);
 	if( unideb.debugging(Debug::INFO) )	
 	{
-		unideb[Debug::INFO] << "(askOutput): поступил заказ от ("<< ci.id << ") " 
-				<< name << " на выход "
+		unideb[Debug::INFO] << "(askOutput): п©п╬я│я┌я┐п©п╦п╩ п╥п╟п╨п╟п╥ п╬я┌ ("<< ci.id << ") " 
+				<< name << " п╫п╟ п╡я▀я┘п╬п╢ "
 				<< conf->oind->getNameById(si.id,si.node) << endl;
 	}
 	
-	// если такого выхода нет, то здесь сработает исключение...
+	// п╣я│п╩п╦ я┌п╟п╨п╬пЁп╬ п╡я▀я┘п╬п╢п╟ п╫п╣я┌, я┌п╬ п╥п╢п╣я│я▄ я│я─п╟п╠п╬я┌п╟п╣я┌ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣...
 	IOTypes type = IOController::getIOType(si);
 	switch(type)
 	{
 		case UniversalIO::DigitalOutput:
 		{	//lock
 			uniset_mutex_lock lock(askDOMutex, 200);
-			// а раз есть заносим(исключаем) заказчика 
+			// п╟ я─п╟п╥ п╣я│я┌я▄ п╥п╟п╫п╬я│п╦п╪(п╦я│п╨п╩я▌я┤п╟п╣п╪) п╥п╟п╨п╟п╥я┤п╦п╨п╟ 
 			ask( askDOList, si, ci, cmd );
 		} // unlock			
 		break;
@@ -1100,7 +1100,7 @@ void IONotifyController::askOutput(const IOController_i::SensorInfo& si,
 		case UniversalIO::AnalogOutput:
 		{	//lock
 			uniset_mutex_lock lock(askAOMutex, 200);
-			// а раз есть заносим(исключаем) заказчика 
+			// п╟ я─п╟п╥ п╣я│я┌я▄ п╥п╟п╫п╬я│п╦п╪(п╦я│п╨п╩я▌я┤п╟п╣п╪) п╥п╟п╨п╟п╥я┤п╦п╨п╟ 
 			ask( askAOList, si, ci, cmd );
 		} // unlock			
 		break;
@@ -1108,7 +1108,7 @@ void IONotifyController::askOutput(const IOController_i::SensorInfo& si,
 		default:
 		{
 			ostringstream err;
-			err << myname << "(askOutput): 'выход' с именем " << conf->oind->getNameById(si.id) << " не найден";			
+			err << myname << "(askOutput): 'п╡я▀я┘п╬п╢' я│ п╦п╪п╣п╫п╣п╪ " << conf->oind->getNameById(si.id) << " п╫п╣ п╫п╟п╧п╢п╣п╫";			
 			if( unideb.debugging(Debug::INFO) )	
 				unideb[Debug::INFO] << err.str() << endl;
 			throw IOController_i::NameNotFound(err.str().c_str());
@@ -1116,7 +1116,7 @@ void IONotifyController::askOutput(const IOController_i::SensorInfo& si,
 		break;
 	}
 
-	// посылка первый раз состояния 
+	// п©п╬я│я▀п╩п╨п╟ п©п╣я─п╡я▀п╧ я─п╟п╥ я│п╬я│я┌п╬я▐п╫п╦я▐ 
 	if( cmd==UniversalIO::UIONotify )
 	{
 	    try
@@ -1159,7 +1159,7 @@ void IONotifyController::askOutput(const IOController_i::SensorInfo& si,
 	    catch( CORBA::SystemException& ex )
 	    {
 	    	unideb[Debug::WARN] << myname << "(askOutput): " << name 
-				<< " недоступен!!(CORBA::SystemException)" 
+				<< " п╫п╣п╢п╬я│я┌я┐п©п╣п╫!!(CORBA::SystemException)" 
 				<< ex.NP_minorString() << endl;
 	    }
 		catch(...){}
@@ -1170,18 +1170,18 @@ void IONotifyController::localSetState( IOController::DIOStateList::iterator& it
 										const IOController_i::SensorInfo& si, 
 										CORBA::Boolean state, UniSetTypes::ObjectId sup_id )
 {
-	// Если датчик не найден сдесь сработает исключение NameNotFound
+	// п∙я│п╩п╦ п╢п╟я┌я┤п╦п╨ п╫п╣ п╫п╟п╧п╢п╣п╫ я│п╢п╣я│я▄ я│я─п╟п╠п╬я┌п╟п╣я┌ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣ NameNotFound
 	bool prevState = IOController::localGetState( it, si );
 	if( unideb.debugging(Debug::INFO) )	
 	{
 		unideb[Debug::INFO] << myname << "(IONotifyController::setState): state=" << state 
-			<< " для выхода " << conf->oind->getNameById(si.id,si.node) << endl;
+			<< " п╢п╩я▐ п╡я▀я┘п╬п╢п╟ " << conf->oind->getNameById(si.id,si.node) << endl;
 	}
 	
-	// сохраняем состояние 
+	// я│п╬я┘я─п╟п╫я▐п╣п╪ я│п╬я│я┌п╬я▐п╫п╦п╣ 
 	IOController::localSetState(it,si,state,sup_id);
 
-	// Рассылаем уведомления только если значение изменилось...
+	// п═п╟я│я│я▀п╩п╟п╣п╪ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦я▐ я┌п╬п╩я▄п╨п╬ п╣я│п╩п╦ п╥п╫п╟я┤п╣п╫п╦п╣ п╦п╥п╪п╣п╫п╦п╩п╬я│я▄...
 	SensorMessage sm(si.id, state);
 	{	// lock
 		uniset_spin_lock lock(it->second.val_lock,getCheckLockValuePause());
@@ -1224,18 +1224,18 @@ void IONotifyController::localSetValue( IOController::AIOStateList::iterator& li
 										const IOController_i::SensorInfo& si, 
 										CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
-	// Если датчик не найден сдесь сработает исключение NameNotFound
+	// п∙я│п╩п╦ п╢п╟я┌я┤п╦п╨ п╫п╣ п╫п╟п╧п╢п╣п╫ я│п╢п╣я│я▄ я│я─п╟п╠п╬я┌п╟п╣я┌ п╦я│п╨п╩я▌я┤п╣п╫п╦п╣ NameNotFound
 	long prevValue = IOController::localGetValue( li,si );
 	if( unideb.debugging(Debug::INFO) )	
 	{
 		unideb[Debug::INFO] << myname << "(IONotifyController::setValue): value=" << value 
-							<< " для выхода " << conf->oind->getNameById(si.id,si.node) << endl;
+							<< " п╢п╩я▐ п╡я▀я┘п╬п╢п╟ " << conf->oind->getNameById(si.id,si.node) << endl;
 	}
 
-	// сохраняем новое состояние 
+	// я│п╬я┘я─п╟п╫я▐п╣п╪ п╫п╬п╡п╬п╣ я│п╬я│я┌п╬я▐п╫п╦п╣ 
 	IOController::localSetValue( li, si, value, sup_id );
 
-	// Рассылаем уведомления только если значение изменилось...
+	// п═п╟я│я│я▀п╩п╟п╣п╪ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦я▐ я┌п╬п╩я▄п╨п╬ п╣я│п╩п╦ п╥п╫п╟я┤п╣п╫п╦п╣ п╦п╥п╪п╣п╫п╦п╩п╬я│я▄...
 	SensorMessage sm;
 	{	// lock 
 		uniset_spin_lock lock(li->second.val_lock,getCheckLockValuePause());
@@ -1274,7 +1274,7 @@ void IONotifyController::localSetValue( IOController::AIOStateList::iterator& li
 		send(dit->second, sm);
 	}
 
-//	// проверка порогов
+//	// п©я─п╬п╡п╣я─п╨п╟ п©п╬я─п╬пЁп╬п╡
 //	try
 //	{	
 //		checkThreshold(li,si, value);
@@ -1288,7 +1288,7 @@ IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold
 {
 	{	// lock
 		uniset_mutex_lock lock(trshMutex, 300);
-		// поиск списка порогов
+		// п©п╬п╦я│п╨ я│п©п╦я│п╨п╟ п©п╬я─п╬пЁп╬п╡
 //		UniSetTypes::KeyType skey( key(si.id,si.node) );
 		AskThresholdMap::iterator lst = askTMap.find(key);
 
@@ -1327,7 +1327,7 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 			}
 			catch(Exception& ex)
 			{
-				unideb[Debug::WARN] << myname << "(getThresholdsList): для датчика " 
+				unideb[Debug::WARN] << myname << "(getThresholdsList): п╢п╩я▐ п╢п╟я┌я┤п╦п╨п╟ " 
 					<< conf->oind->getNameById(it->second.si.id, it->second.si.node)
 					<< " " << ex << endl;
 				continue;
@@ -1415,7 +1415,7 @@ IDSeq* IONotifyController::askSensorsSeq( const UniSetTypes::IDSeq& lst,
 											const UniSetTypes::ConsumerInfo& ci,
 											UniversalIO::UIOCommand cmd)
 {
-	UniSetTypes::IDList badlist; // писок не найденных идентификаторов
+	UniSetTypes::IDList badlist; // п©п╦я│п╬п╨ п╫п╣ п╫п╟п╧п╢п╣п╫п╫я▀я┘ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─п╬п╡
 	
 	IOController_i::SensorInfo si;
 

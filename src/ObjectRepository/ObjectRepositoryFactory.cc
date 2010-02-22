@@ -48,10 +48,10 @@ ObjectRepositoryFactory::~ObjectRepositoryFactory()
 
 // -------------------------------------------------------------------------------------------------------
 /*!
- * \param name - имя создаваемой секции
- * \param in_section - полное имя секции внутри которой создается новая
- * \param section - полное имя секции начиная с Root. 
- * \exception ORepFailed - генерируется если произошла при получении доступа к секции
+ * \param name - п╦п╪я▐ я│п╬п╥п╢п╟п╡п╟п╣п╪п╬п╧ я│п╣п╨я├п╦п╦
+ * \param in_section - п©п╬п╩п╫п╬п╣ п╦п╪я▐ я│п╣п╨я├п╦п╦ п╡п╫я┐я┌я─п╦ п╨п╬я┌п╬я─п╬п╧ я│п╬п╥п╢п╟п╣я┌я│я▐ п╫п╬п╡п╟я▐
+ * \param section - п©п╬п╩п╫п╬п╣ п╦п╪я▐ я│п╣п╨я├п╦п╦ п╫п╟я┤п╦п╫п╟я▐ я│ Root. 
+ * \exception ORepFailed - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ п©я─п╬п╦п╥п╬я┬п╩п╟ п©я─п╦ п©п╬п╩я┐я┤п╣п╫п╦п╦ п╢п╬я│я┌я┐п©п╟ п╨ я│п╣п╨я├п╦п╦
 */
 bool ObjectRepositoryFactory::createSection( const char* name, const char* in_section)throw(ORepFailed,InvalidObjectName )
 {
@@ -62,7 +62,7 @@ bool ObjectRepositoryFactory::createSection( const char* name, const char* in_se
 	{
 		ostringstream err;
 		err << "ObjectRepository(registration): (InvalidObjectName) " << str;
-		err << " содержит недопустимый символ " << bad;
+		err << " я│п╬п╢п╣я─п╤п╦я┌ п╫п╣п╢п╬п©я┐я│я┌п╦п╪я▀п╧ я│п╦п╪п╡п╬п╩ " << bad;
 		throw ( InvalidObjectName(err.str().c_str()) );
 	}
 
@@ -86,8 +86,8 @@ bool ObjectRepositoryFactory::createSection(const string& name, const string& in
 
 // -------------------------------------------------------------------------------------------------------
 /*!
- * \param fullName - полное имя создаваемой секции
- * \exception ORepFailed - генерируется если произошла при получении доступа к секции
+ * \param fullName - п©п╬п╩п╫п╬п╣ п╦п╪я▐ я│п╬п╥п╢п╟п╡п╟п╣п╪п╬п╧ я│п╣п╨я├п╦п╦
+ * \exception ORepFailed - пЁп╣п╫п╣я─п╦я─я┐п╣я┌я│я▐ п╣я│п╩п╦ п©я─п╬п╦п╥п╬я┬п╩п╟ п©я─п╦ п©п╬п╩я┐я┤п╣п╫п╦п╦ п╢п╬я│я┌я┐п©п╟ п╨ я│п╣п╨я├п╦п╦
 */
 bool ObjectRepositoryFactory::createSectionF(const string& fullName)throw(ORepFailed,InvalidObjectName)
 {
@@ -100,7 +100,7 @@ bool ObjectRepositoryFactory::createSectionF(const string& fullName)throw(ORepFa
 	if ( sec.empty() )
 	{
 		unideb[Debug::REPOSITORY] << "SectionName is empty!!!"<< endl;
-		unideb[Debug::REPOSITORY] << "Добавляем в "<< uconf->getRootSection() << endl;
+		unideb[Debug::REPOSITORY] << "п■п╬п╠п╟п╡п╩я▐п╣п╪ п╡ "<< uconf->getRootSection() << endl;
 		return createSection(name, uconf->getRootSection());
 	}
 	else
@@ -127,15 +127,15 @@ bool ObjectRepositoryFactory::createContext(const char *cname, CosNaming::Naming
 	CosNaming::Name_var nc = omniURI::stringToName(cname);
 	try
 	{
-		unideb[Debug::REPOSITORY] << "ORepFactory(createContext): создаю новый контекст "<< cname << endl;
+		unideb[Debug::REPOSITORY] << "ORepFactory(createContext): я│п╬п╥п╢п╟я▌ п╫п╬п╡я▀п╧ п╨п╬п╫я┌п╣п╨я│я┌ "<< cname << endl;
 		ctx->bind_new_context(nc);
-		unideb[Debug::REPOSITORY] << "ORepFactory(createContext): создал. " << endl;
+		unideb[Debug::REPOSITORY] << "ORepFactory(createContext): я│п╬п╥п╢п╟п╩. " << endl;
 		return true;
 	}
 	catch(const CosNaming::NamingContext::AlreadyBound &ab)
 	{
 //		ctx->resolve(nc);
-		unideb[Debug::REPOSITORY] <<"ORepFactory(createContext): context "<< cname << " уже есть"<< endl;		
+		unideb[Debug::REPOSITORY] <<"ORepFactory(createContext): context "<< cname << " я┐п╤п╣ п╣я│я┌я▄"<< endl;		
 		return true;
 	}
 	catch(CosNaming::NamingContext::NotFound)
@@ -162,11 +162,11 @@ bool ObjectRepositoryFactory::createContext(const char *cname, CosNaming::Naming
 	}
 	catch(CORBA::Exception&)
     {
-		unideb[Debug::type(Debug::CRIT|Debug::REPOSITORY)] << "поймали CORBA::Exception." << endl;
+		unideb[Debug::type(Debug::CRIT|Debug::REPOSITORY)] << "п©п╬п╧п╪п╟п╩п╦ CORBA::Exception." << endl;
     }
     catch(omniORB::fatalException& fe)
     {
-		unideb[Debug::type(Debug::CRIT|Debug::REPOSITORY)] << "поймали omniORB::fatalException:" << endl;
+		unideb[Debug::type(Debug::CRIT|Debug::REPOSITORY)] << "п©п╬п╧п╪п╟п╩п╦ omniORB::fatalException:" << endl;
         unideb[Debug::type(Debug::CRIT|Debug::REPOSITORY)] << "  file: " << fe.file() << endl;
 		unideb[Debug::type(Debug::CRIT|Debug::REPOSITORY)] << "  line: " << fe.line() << endl;
         unideb[Debug::type(Debug::CRIT|Debug::REPOSITORY)] << "  mesg: " << fe.errmsg() << endl;
@@ -177,7 +177,7 @@ bool ObjectRepositoryFactory::createContext(const char *cname, CosNaming::Naming
 
 // -----------------------------------------------------------------------------------------------------------
 /*!
-    \note Функция не вывести список, если не сможет получить доступ к секции
+    \note п╓я┐п╫п╨я├п╦я▐ п╫п╣ п╡я▀п╡п╣я│я┌п╦ я│п©п╦я│п╬п╨, п╣я│п╩п╦ п╫п╣ я│п╪п╬п╤п╣я┌ п©п╬п╩я┐я┤п╦я┌я▄ п╢п╬я│я┌я┐п© п╨ я│п╣п╨я├п╦п╦
 */
 void ObjectRepositoryFactory::printSection(const string& fullName)
 {
@@ -189,7 +189,7 @@ void ObjectRepositoryFactory::printSection(const string& fullName)
 		list(fullName.c_str(),&ls);
 
 		if( ls.empty() )
-			cout << fullName << " пуст!!!"<< endl;
+			cout << fullName << " п©я┐я│я┌!!!"<< endl;
 	}
 	catch( ORepFailed )
 	{
@@ -209,9 +209,9 @@ void ObjectRepositoryFactory::printSection(const string& fullName)
 
 // -----------------------------------------------------------------------------------------------------------
 /*!
- * \param fullName - имя удаляемой секции
- * \param recursive - удлаять рекурсивно все секции или возвращать не удалять и ошибку ( временно )
- * \warning Функция вынимает только первые 1000 объектов, остальные игнорируются...
+ * \param fullName - п╦п╪я▐ я┐п╢п╟п╩я▐п╣п╪п╬п╧ я│п╣п╨я├п╦п╦
+ * \param recursive - я┐п╢п╩п╟я▐я┌я▄ я─п╣п╨я┐я─я│п╦п╡п╫п╬ п╡я│п╣ я│п╣п╨я├п╦п╦ п╦п╩п╦ п╡п╬п╥п╡я─п╟я┴п╟я┌я▄ п╫п╣ я┐п╢п╟п╩я▐я┌я▄ п╦ п╬я┬п╦п╠п╨я┐ ( п╡я─п╣п╪п╣п╫п╫п╬ )
+ * \warning п╓я┐п╫п╨я├п╦я▐ п╡я▀п╫п╦п╪п╟п╣я┌ я┌п╬п╩я▄п╨п╬ п©п╣я─п╡я▀п╣ 1000 п╬п╠я┼п╣п╨я┌п╬п╡, п╬я│я┌п╟п╩я▄п╫я▀п╣ п╦пЁп╫п╬я─п╦я─я┐я▌я┌я│я▐...
 */
 bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursive)
 {
@@ -240,14 +240,14 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
 	if(how_many>bl->length())
 		how_many = bl->length();
 
-	bool rem = true; // удалять или нет 
+	bool rem = true; // я┐п╢п╟п╩я▐я┌я▄ п╦п╩п╦ п╫п╣я┌ 
 	
 	for(unsigned int i=0; i<how_many;i++)
 	{
 	
 		if(	bl[i].binding_type == CosNaming::nobject)
 	  	{
-//			cout <<"удаляем "<< omniURI::nameToString(bl[i].binding_name) << endl;
+//			cout <<"я┐п╢п╟п╩я▐п╣п╪ "<< omniURI::nameToString(bl[i].binding_name) << endl;
 			ctx->unbind(bl[i].binding_name);
 		}
 		else if( bl[i].binding_type == CosNaming::ncontext)
@@ -255,31 +255,31 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
 			
 			if( recursive )
 			{
-				unideb[Debug::REPOSITORY] << "ORepFactory: удаляем рекурсивно..." << endl;
+				unideb[Debug::REPOSITORY] << "ORepFactory: я┐п╢п╟п╩я▐п╣п╪ я─п╣п╨я┐я─я│п╦п╡п╫п╬..." << endl;
 				string rctx = fullName+"/"+omniURI::nameToString(bl[i].binding_name);
 				unideb[Debug::REPOSITORY] << rctx << endl;
 				if ( !removeSection(rctx))
 				{
-					unideb[Debug::REPOSITORY] << "рекурсивно удалить не удалось" << endl;
+					unideb[Debug::REPOSITORY] << "я─п╣п╨я┐я─я│п╦п╡п╫п╬ я┐п╢п╟п╩п╦я┌я▄ п╫п╣ я┐п╢п╟п╩п╬я│я▄" << endl;
 					rem = false;
 				}
 			}
 			else
 			{
-				unideb[Debug::REPOSITORY] << "ORepFactory: " << omniURI::nameToString(bl[i].binding_name) << " - контекст!!! ";
-				unideb[Debug::REPOSITORY] << "ORepFactory: пока не удаляем" << endl;
+				unideb[Debug::REPOSITORY] << "ORepFactory: " << omniURI::nameToString(bl[i].binding_name) << " - п╨п╬п╫я┌п╣п╨я│я┌!!! ";
+				unideb[Debug::REPOSITORY] << "ORepFactory: п©п╬п╨п╟ п╫п╣ я┐п╢п╟п╩я▐п╣п╪" << endl;
 				rem = false;
 			}
 		}
 	}
 
 
-	// Удаляем контекст, если он уже пустой
+	// пёп╢п╟п╩я▐п╣п╪ п╨п╬п╫я┌п╣п╨я│я┌, п╣я│п╩п╦ п╬п╫ я┐п╤п╣ п©я┐я│я┌п╬п╧
 	if (rem)
 	{
-		// Получаем имя контекста содержащего удаляемый
+		// п÷п╬п╩я┐я┤п╟п╣п╪ п╦п╪я▐ п╨п╬п╫я┌п╣п╨я│я┌п╟ я│п╬п╢п╣я─п╤п╟я┴п╣пЁп╬ я┐п╢п╟п╩я▐п╣п╪я▀п╧
 		string in_sec(ORepHelpers::getSectionName(fullName));
-		//Получаем имя удаляемого контекста
+		//п÷п╬п╩я┐я┤п╟п╣п╪ п╦п╪я▐ я┐п╢п╟п╩я▐п╣п╪п╬пЁп╬ п╨п╬п╫я┌п╣п╨я│я┌п╟
 		string name(ObjectIndex::getBaseName(fullName));
 
 		try
@@ -293,12 +293,12 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
 		}
 		catch(const CosNaming::NamingContext::NotEmpty &ne)
 		{
-			unideb[Debug::REPOSITORY] << "ORepFactory: контекст" << fullName << " не пустой " << endl;
+			unideb[Debug::REPOSITORY] << "ORepFactory: п╨п╬п╫я┌п╣п╨я│я┌" << fullName << " п╫п╣ п©я┐я│я┌п╬п╧ " << endl;
 			rem = false;				
 		}
 		catch( ORepFailed )
 		{
-			unideb[Debug::REPOSITORY] << "ORepFactory: не удаось получить ссылку на контекст " << in_sec << endl;
+			unideb[Debug::REPOSITORY] << "ORepFactory: п╫п╣ я┐п╢п╟п╬я│я▄ п©п╬п╩я┐я┤п╦я┌я▄ я│я│я▀п╩п╨я┐ п╫п╟ п╨п╬п╫я┌п╣п╨я│я┌ " << in_sec << endl;
 			rem=false;
 		}
 	}
@@ -310,8 +310,8 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
 
 // -----------------------------------------------------------------------------------------------------------
 /*!
- * \param newFName - полное имя новой секции
- * \param oldFName - полное имя удаляемрй секции
+ * \param newFName - п©п╬п╩п╫п╬п╣ п╦п╪я▐ п╫п╬п╡п╬п╧ я│п╣п╨я├п╦п╦
+ * \param oldFName - п©п╬п╩п╫п╬п╣ п╦п╪я▐ я┐п╢п╟п╩я▐п╣п╪я─п╧ я│п╣п╨я├п╦п╦
 */
 bool ObjectRepositoryFactory::renameSection( const string& newFName, const string& oldFName )
 {
@@ -324,14 +324,14 @@ bool ObjectRepositoryFactory::renameSection( const string& newFName, const strin
 
 	try
 	{	
-//		unideb[Debug::REPOSITORY] << "ORepFactory: в контексте "<< in_sec << endl; 
-//		unideb[Debug::REPOSITORY] << "ORepFactory: переименовываем " << oldFName << " в " << newFName << endl;				
+//		unideb[Debug::REPOSITORY] << "ORepFactory: п╡ п╨п╬п╫я┌п╣п╨я│я┌п╣ "<< in_sec << endl; 
+//		unideb[Debug::REPOSITORY] << "ORepFactory: п©п╣я─п╣п╦п╪п╣п╫п╬п╡я▀п╡п╟п╣п╪ " << oldFName << " п╡ " << newFName << endl;				
 		int argc(uconf->getArgc());
 		const char * const* argv(uconf->getArgv());
 		CosNaming::NamingContext_var in_ctx = ORepHelpers::getContext(in_sec, argc, argv, nsName);    
 		CosNaming::NamingContext_var ctx = ORepHelpers::getContext(oldFName, argc, argv, nsName);    
 
-		// заменит контекст newFName если он существовал
+		// п╥п╟п╪п╣п╫п╦я┌ п╨п╬п╫я┌п╣п╨я│я┌ newFName п╣я│п╩п╦ п╬п╫ я│я┐я┴п╣я│я┌п╡п╬п╡п╟п╩
 		in_ctx->rebind_context(ctxNewName, ctx);
 		in_ctx->unbind(ctxOldName);
 	}

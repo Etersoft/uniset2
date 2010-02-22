@@ -8,12 +8,12 @@
 using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------------
-/*! замок для блокирования совместного доступа к функции обрабтки сигналов */
+/*! п╥п╟п╪п╬п╨ п╢п╩я▐ п╠п╩п╬п╨п╦я─п╬п╡п╟п╫п╦я▐ я│п╬п╡п╪п╣я│я┌п╫п╬пЁп╬ п╢п╬я│я┌я┐п©п╟ п╨ я└я┐п╫п╨я├п╦п╦ п╬п╠я─п╟п╠я┌п╨п╦ я│п╦пЁп╫п╟п╩п╬п╡ */
 static UniSetTypes::uniset_mutex signalMutex("Main::signalMutex");
 static volatile sig_atomic_t procterm = 0;
 static volatile sig_atomic_t doneterm = 0;
 static SingleProcess* gMain = NULL;
-static const int TERMINATE_TIMEOUT = 2; //  время отведенное на завершение процесса [сек]
+static const int TERMINATE_TIMEOUT = 2; //  п╡я─п╣п╪я▐ п╬я┌п╡п╣п╢п╣п╫п╫п╬п╣ п╫п╟ п╥п╟п╡п╣я─я┬п╣п╫п╦п╣ п©я─п╬я├п╣я│я│п╟ [я│п╣п╨]
 // --------------------------------------------------------------------------------
 SingleProcess::SingleProcess()
 {
@@ -29,7 +29,7 @@ void SingleProcess::finishterm( int signo )
 {
 	if( !doneterm )
 	{
-		cerr << "(SingleProcess:finishterm): прерываем процесс завершения...!" << endl << flush;
+		cerr << "(SingleProcess:finishterm): п©я─п╣я─я▀п╡п╟п╣п╪ п©я─п╬я├п╣я│я│ п╥п╟п╡п╣я─я┬п╣п╫п╦я▐...!" << endl << flush;
 		sigset(SIGALRM, SIG_DFL);
 		gMain->set_signals(false);	
 		doneterm = 1;
@@ -44,7 +44,7 @@ void SingleProcess::terminated( int signo )
 
 	{	// lock
 
-		// на случай прихода нескольких сигналов
+		// п╫п╟ я│п╩я┐я┤п╟п╧ п©я─п╦я┘п╬п╢п╟ п╫п╣я│п╨п╬п╩я▄п╨п╦я┘ я│п╦пЁп╫п╟п╩п╬п╡
 		uniset_mutex_lock l(signalMutex, 1000);
 		
 		if( !procterm )
@@ -67,8 +67,8 @@ void SingleProcess::set_signals( bool ask )
 	struct sigaction act, oact;
 	sigemptyset(&act.sa_mask);
 
-	// добавляем сигналы, которые будут игнорироваться
-	// при обработке сигнала 
+	// п╢п╬п╠п╟п╡п╩я▐п╣п╪ я│п╦пЁп╫п╟п╩я▀, п╨п╬я┌п╬я─я▀п╣ п╠я┐п╢я┐я┌ п╦пЁп╫п╬я─п╦я─п╬п╡п╟я┌я▄я│я▐
+	// п©я─п╦ п╬п╠я─п╟п╠п╬я┌п╨п╣ я│п╦пЁп╫п╟п╩п╟ 
 	sigaddset(&act.sa_mask, SIGINT);
 	sigaddset(&act.sa_mask, SIGTERM);
 	sigaddset(&act.sa_mask, SIGABRT );

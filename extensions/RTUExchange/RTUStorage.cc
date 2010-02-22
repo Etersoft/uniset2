@@ -43,7 +43,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 	{
 		pingOK = true;
 
-		// опрос АЦП
+		// п╬п©я─п╬я│ п░п╕п÷
 		if( pollADC )
 		{
 			ModbusRTU::ReadInputRetMessage ret = mb->read04( addr,1016, 16 );
@@ -51,7 +51,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 				adc[k] = ModbusRTU::dat2f(ret.data[i],ret.data[i+1]);
 		}
 		// -----------------------------------
-		// опрос 16 DI
+		// п╬п©я─п╬я│ 16 DI
 		if( pollDI )
 		{
 			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02( addr,0,16 );
@@ -66,7 +66,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 			}
 		}
 		// -----------------------------------
-		// опрос 16DIO DO
+		// п╬п©я─п╬я│ 16DIO DO
 		if( pollDIO )
 		{
 			{
@@ -82,7 +82,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 				}
 			}
 			// -----------------------------------
-			// опрос 16DIO DI
+			// п╬п©я─п╬я│ 16DIO DI
 			{
 				ModbusRTU::ReadInputStatusRetMessage ret = mb->read02( addr,16,16 );
 				ModbusRTU::DataBits bits;
@@ -96,7 +96,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 				}
 			}
 			// -----------------------------------
-			// опрос 16DIO AI
+			// п╬п©я─п╬я│ 16DIO AI
 			{
 				ModbusRTU::ReadInputRetMessage ret = mb->read04( addr, 1000, 16 );
 				int k = 0;
@@ -104,7 +104,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 					dio_ai[k] = ModbusRTU::dat2f(ret.data[i],ret.data[i+1]);
 			}
 			// -----------------------------------
-			// опрос 16DIO AO
+			// п╬п©я─п╬я│ 16DIO AO
 			{
 				ModbusRTU::ReadOutputRetMessage ret = mb->read03( addr, 1000, 16 );
 				int k = 0;
@@ -114,7 +114,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 			// -----------------------------------
 		}
 		
-		// опрос UNIO48 DO
+		// п╬п©я─п╬я│ UNIO48 DO
 		if( pollUNIO )
 		{
 			{
@@ -130,7 +130,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 				}
 			}
 			// -----------------------------------
-			// опрос UNIO48 DI
+			// п╬п©я─п╬я│ UNIO48 DI
 			{
 				ModbusRTU::ReadInputStatusRetMessage ret = mb->read02( addr,32,48 );
 				ModbusRTU::DataBits bits;
@@ -144,7 +144,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 				}
 			}
 			// -----------------------------------
-			// опрос UNIO48 AI
+			// п╬п©я─п╬я│ UNIO48 AI
 			{
 				ModbusRTU::ReadInputRetMessage ret = mb->read04( addr, 1032, 48 );
 				int k = 0;
@@ -152,7 +152,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 					unio_ai[k] = ModbusRTU::dat2f(ret.data[i],ret.data[i+1]);
 			}
 			// -----------------------------------
-			// опрос UNIO48 AO
+			// п╬п©я─п╬я│ UNIO48 AO
 			{
 				ModbusRTU::ReadOutputRetMessage ret = mb->read03( addr, 1016, 48 );
 				int k = 0;
@@ -359,16 +359,16 @@ ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, unsigned short chan
 std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 {
 	os << "-------------------" << endl 
-		 << " АЦП (8 каналов): " << endl;
-	for( int i=0; i<8; i++ ) // номера каналов
+		 << " п░п╕п÷ (8 п╨п╟п╫п╟п╩п╬п╡): " << endl;
+	for( int i=0; i<8; i++ ) // п╫п╬п╪п╣я─п╟ п╨п╟п╫п╟п╩п╬п╡
 		os << setw(12) << i << "|";
 	os << endl;
 	for( int i=0; i<8; i++ )
 		os << setw(12) << m.adc[i] << "|";
 	os << endl;
 	os << "-------------------" << endl
-		 << " DI (16 каналов): " << endl; 
-	for( int i=0; i<16; i++ ) // номера каналов
+		 << " DI (16 п╨п╟п╫п╟п╩п╬п╡): " << endl; 
+	for( int i=0; i<16; i++ ) // п╫п╬п╪п╣я─п╟ п╨п╟п╫п╟п╩п╬п╡
 		os << setw(2) << i << "|";
 	os << endl;		
 	for( int i=0; i<16; i++ )
@@ -376,8 +376,8 @@ std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 	os << endl;
 
 	os << "-------------------" << endl
-		 << " DIO DO(16 каналов): " << endl; 
-	for( int i=0; i<16; i++ ) // номера каналов
+		 << " DIO DO(16 п╨п╟п╫п╟п╩п╬п╡): " << endl; 
+	for( int i=0; i<16; i++ ) // п╫п╬п╪п╣я─п╟ п╨п╟п╫п╟п╩п╬п╡
 		os << setw(2) << i << " | ";
 	os << endl;
 	for( int i=0; i<16; i++ )
@@ -385,8 +385,8 @@ std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 	os << endl;		
 
 	os << "-------------------" << endl
-		 << " DIO DI(16 каналов): " << endl; 
-	for( int i=0; i<16; i++ ) // номера каналов
+		 << " DIO DI(16 п╨п╟п╫п╟п╩п╬п╡): " << endl; 
+	for( int i=0; i<16; i++ ) // п╫п╬п╪п╣я─п╟ п╨п╟п╫п╟п╩п╬п╡
 		os << setw(2) << i << " | ";
 	os << endl;		
 	for( int i=0; i<16; i++ )
@@ -394,8 +394,8 @@ std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 	os << endl;
 
 	os << "-------------------" << endl
-		 << " DIO AI (16 каналов): " << endl; 
-	for( int i=0; i<16; i++ ) // номера каналов
+		 << " DIO AI (16 п╨п╟п╫п╟п╩п╬п╡): " << endl; 
+	for( int i=0; i<16; i++ ) // п╫п╬п╪п╣я─п╟ п╨п╟п╫п╟п╩п╬п╡
 		os << setw(2) << i << " | ";
 	os << endl;		
 	for( int i=0; i<16; i++ )
@@ -403,8 +403,8 @@ std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 	os << endl;
 
 	os << "-------------------" << endl
-		 << " DIO AO (16 каналов): " << endl; 
-	for( int i=0; i<16; i++ ) // номера каналов
+		 << " DIO AO (16 п╨п╟п╫п╟п╩п╬п╡): " << endl; 
+	for( int i=0; i<16; i++ ) // п╫п╬п╪п╣я─п╟ п╨п╟п╫п╟п╩п╬п╡
 		os << setw(2) << i << " | ";
 	os << endl;		
 	for( int i=0; i<16; i++ )
@@ -413,13 +413,13 @@ std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 
 	os << "-------------------" << endl
 		 << " UNIO48 DI: " << endl; 
-	for( int i=0; i<24; i++ ) // номера каналов
+	for( int i=0; i<24; i++ ) // п╫п╬п╪п╣я─п╟ п╨п╟п╫п╟п╩п╬п╡
 		os << setw(2) << i << " | ";
 	os << endl;		
 	for( int i=0; i<24; i++ )
 		os << setw(2) << m.unio_di[i] << " | ";
 	os << endl;
-	for( int i=24; i<48; i++ ) // номера каналов
+	for( int i=24; i<48; i++ ) // п╫п╬п╪п╣я─п╟ п╨п╟п╫п╟п╩п╬п╡
 		os << setw(2) << i << " | ";
 	os << endl;		
 	for( int i=24; i<48; i++ )
@@ -428,13 +428,13 @@ std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 
 	os << "-------------------" << endl
 		 << " UNIO48 DO: " << endl; 
-	for( int i=0; i<24; i++ ) // номера каналов
+	for( int i=0; i<24; i++ ) // п╫п╬п╪п╣я─п╟ п╨п╟п╫п╟п╩п╬п╡
 		os << setw(2) << i << " | ";
 	os << endl;
 	for( int i=0; i<24; i++ )
 		os << setw(2) << m.unio_do[i] << " | ";
 	os << endl;
-	for( int i=24; i<48; i++ ) // номера каналов
+	for( int i=24; i<48; i++ ) // п╫п╬п╪п╣я─п╟ п╨п╟п╫п╟п╩п╬п╡
 		os << setw(2) << i << " | ";
 	os << endl;
 	for( int i=24; i<48; i++ )
@@ -443,13 +443,13 @@ std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 
 	os << "-------------------" << endl
 		 << " UNIO48 AI: " << endl; 
-	for( int i=0; i<12; i++ ) // номера каналов
+	for( int i=0; i<12; i++ ) // п╫п╬п╪п╣я─п╟ п╨п╟п╫п╟п╩п╬п╡
 		os << setw(6) << i << " | ";
 	os << endl;
 	for( int i=0; i<12; i++ )
 		os << setw(6) << m.unio_ai[i] << " | ";
 	os << endl;
-	for( int i=12; i<24; i++ ) // номера каналов
+	for( int i=12; i<24; i++ ) // п╫п╬п╪п╣я─п╟ п╨п╟п╫п╟п╩п╬п╡
 		os << setw(6) << i << " | ";
 	os << endl;
 	for( int i=12; i<24; i++ )
@@ -458,13 +458,13 @@ std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 
 	os << "-------------------" << endl
 		 << " UNIO48 AO: " << endl; 
-	for( int i=0; i<12; i++ ) // номера каналов
+	for( int i=0; i<12; i++ ) // п╫п╬п╪п╣я─п╟ п╨п╟п╫п╟п╩п╬п╡
 		os << setw(6) << i << " | ";
 	os << endl;		
 	for( int i=0; i<12; i++ )
 		os << setw(6) << m.unio_ao[i] << " | ";
 	os << endl;
-	for( int i=12; i<24; i++ ) // номера каналов
+	for( int i=12; i<24; i++ ) // п╫п╬п╪п╣я─п╟ п╨п╟п╫п╟п╩п╬п╡
 		os << setw(6) << i << " | ";
 	os << endl;		
 	for( int i=12; i<24; i++ )

@@ -15,7 +15,7 @@ int main(int argc, const char **argv)
 {   
 	if( argc>1 && strcmp(argv[1],"--help")==0 )
 	{
-		cout << "--confile	- éÓÐÏÌØÚÏ×ÁÔØ ÕËÁÚÁÎÎÙÊ ËÏÎÆ. ÆÁÊÌ. ðÏ ÕÍÏÌÞÁÎÉÀ configure.xml" << endl;
+		cout << "--confile	- Ð˜ÑÐ¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÑŒ ÑƒÐºÐ°Ð·Ð°Ð½Ð½Ñ‹Ð¹ ÐºÐ¾Ð½Ñ„. Ñ„Ð°Ð¹Ð». ÐŸÐ¾ ÑƒÐ¼Ð¾Ð»Ñ‡Ð°Ð½Ð¸ÑŽ configure.xml" << endl;
 		SharedMemory::help_print(argc, argv);
 		return 0;
 	}
@@ -42,7 +42,7 @@ int main(int argc, const char **argv)
 		act.broadcast( sm.transport_msg() );
 		act.run(false);
 
-//		pause();	// ÐÁÕÚÁ, ÞÔÏÂÙ ÄÏÞÅÒÎÉÅ ÐÏÔÏËÉ ÕÓÐÅÌÉ ÚÁ×ÅÒÛÉÔØ ÒÁÂÏÔÕ
+//		pause();	// Ð¿Ð°ÑƒÐ·Ð°, Ñ‡Ñ‚Ð¾Ð±Ñ‹ Ð´Ð¾Ñ‡ÐµÑ€Ð½Ð¸Ðµ Ð¿Ð¾Ñ‚Ð¾ÐºÐ¸ ÑƒÑÐ¿ÐµÐ»Ð¸ Ð·Ð°Ð²ÐµÑ€ÑˆÐ¸Ñ‚ÑŒ Ñ€Ð°Ð±Ð¾Ñ‚Ñƒ
 		return 0;
 	}
 	catch(SystemError& err)

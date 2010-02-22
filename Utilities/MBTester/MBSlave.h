@@ -8,7 +8,7 @@
 #include "modbus/ModbusRTUSlaveSlot.h"
 
 // -------------------------------------------------------------------------
-/*! Ничего не делающая реализация MBSlave для тестирования */
+/*! п²п╦я┤п╣пЁп╬ п╫п╣ п╢п╣п╩п╟я▌я┴п╟я▐ я─п╣п╟п╩п╦п╥п╟я├п╦я▐ MBSlave п╢п╩я▐ я┌п╣я│я┌п╦я─п╬п╡п╟п╫п╦я▐ */
 class MBSlave
 {
 	public:
@@ -25,56 +25,56 @@ class MBSlave
 			replyVal = val;
 		}
 
-		void execute();	/*!< основной цикл работы */
+		void execute();	/*!< п╬я│п╫п╬п╡п╫п╬п╧ я├п╦п╨п╩ я─п╟п╠п╬я┌я▀ */
 
 
 		void setLog( DebugStream& dlog );
 
 	protected:
-		// действия при завершении работы
+		// п╢п╣п╧я│я┌п╡п╦я▐ п©я─п╦ п╥п╟п╡п╣я─я┬п╣п╫п╦п╦ я─п╟п╠п╬я┌я▀
 		void sigterm( int signo );
 
-		/*! обработка 0x01 */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x01 */
 		ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query, 
 													ModbusRTU::ReadCoilRetMessage& reply );
-		/*! обработка 0x02 */		
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x02 */		
 		ModbusRTU::mbErrCode readInputStatus( ModbusRTU::ReadInputStatusMessage& query, 
 													ModbusRTU::ReadInputStatusRetMessage& reply );
 
-		/*! обработка 0x03 */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x03 */
 		ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query, 
 													ModbusRTU::ReadOutputRetMessage& reply );
 
-		/*! обработка 0x04 */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x04 */
 		ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query, 
 													ModbusRTU::ReadInputRetMessage& reply );
 
-		/*! обработка 0x05 */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x05 */
 		ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query, 
 														ModbusRTU::ForceSingleCoilRetMessage& reply );
 
-		/*! обработка 0x0F */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x0F */
 		ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query, 
 													ModbusRTU::ForceCoilsRetMessage& reply );
 
 
-		/*! обработка 0x10 */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x10 */
 		ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query, 
 														ModbusRTU::WriteOutputRetMessage& reply );
 
-		/*! обработка 0x06 */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ 0x06 */
 		ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query, 
 														ModbusRTU::WriteSingleOutputRetMessage& reply );
 
-		/*! обработка запросов на чтение ошибок */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ п╥п╟п©я─п╬я│п╬п╡ п╫п╟ я┤я┌п╣п╫п╦п╣ п╬я┬п╦п╠п╬п╨ */
 		ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query, 
 															ModbusRTU::JournalCommandRetMessage& reply );
 
-		/*! обработка запроса на установку времени */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ п╥п╟п©я─п╬я│п╟ п╫п╟ я┐я│я┌п╟п╫п╬п╡п╨я┐ п╡я─п╣п╪п╣п╫п╦ */
 		ModbusRTU::mbErrCode setDateTime( ModbusRTU::SetDateTimeMessage& query, 
 															ModbusRTU::SetDateTimeRetMessage& reply );
 
-		/*! обработка запроса удалённого сервиса */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ п╥п╟п©я─п╬я│п╟ я┐п╢п╟п╩я▒п╫п╫п╬пЁп╬ я│п╣я─п╡п╦я│п╟ */
 		ModbusRTU::mbErrCode remoteService( ModbusRTU::RemoteServiceMessage& query, 
 															ModbusRTU::RemoteServiceRetMessage& reply );
 
@@ -82,20 +82,20 @@ class MBSlave
 															ModbusRTU::FileTransferRetMessage& reply );
 
 
-		/*! интерфейс ModbusRTUSlave для обмена по RS */
+		/*! п╦п╫я┌п╣я─я└п╣п╧я│ ModbusRTUSlave п╢п╩я▐ п╬п╠п╪п╣п╫п╟ п©п╬ RS */
 		ModbusRTUSlaveSlot* rscomm;
-		ModbusRTU::ModbusAddr addr;			/*!< адрес данного узла */
+		ModbusRTU::ModbusAddr addr;			/*!< п╟п╢я─п╣я│ п╢п╟п╫п╫п╬пЁп╬ я┐п╥п╩п╟ */
 
 		bool verbose;
 #if 0		
 		typedef std::map<ModbusRTU::mbErrCode,unsigned int> ExchangeErrorMap;
-		ExchangeErrorMap errmap; 	/*!< статистика обмена */
+		ExchangeErrorMap errmap; 	/*!< я│я┌п╟я┌п╦я│я┌п╦п╨п╟ п╬п╠п╪п╣п╫п╟ */
 		ModbusRTU::mbErrCode prev;
 
 
-		// можно было бы сделать unsigned, но аналоговые датчики у нас имеют 
-		// тип long. А это число передаётся в графику в виде аналогового датчика
-		long askCount;	/*!< количество принятых запросов */
+		// п╪п╬п╤п╫п╬ п╠я▀п╩п╬ п╠я▀ я│п╢п╣п╩п╟я┌я▄ unsigned, п╫п╬ п╟п╫п╟п╩п╬пЁп╬п╡я▀п╣ п╢п╟я┌я┤п╦п╨п╦ я┐ п╫п╟я│ п╦п╪п╣я▌я┌ 
+		// я┌п╦п© long. п░ я█я┌п╬ я┤п╦я│п╩п╬ п©п╣я─п╣п╢п╟я▒я┌я│я▐ п╡ пЁя─п╟я└п╦п╨я┐ п╡ п╡п╦п╢п╣ п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟
+		long askCount;	/*!< п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п©я─п╦п╫я▐я┌я▀я┘ п╥п╟п©я─п╬я│п╬п╡ */
 
 
 		typedef std::map<int,std::string> FileList;

@@ -24,8 +24,8 @@
  */
 // --------------------------------------------------------------------------
 
-/*!	Функции класса TableBlockStorage, таблицы ключ-значение с ограниченным кол-вом перезаписей для
-	каждого блока памяти, при достижении предела, происходит переход в следующий блок
+/*!	п╓я┐п╫п╨я├п╦п╦ п╨п╩п╟я│я│п╟ TableBlockStorage, я┌п╟п╠п╩п╦я├я▀ п╨п╩я▌я┤-п╥п╫п╟я┤п╣п╫п╦п╣ я│ п╬пЁя─п╟п╫п╦я┤п╣п╫п╫я▀п╪ п╨п╬п╩-п╡п╬п╪ п©п╣я─п╣п╥п╟п©п╦я│п╣п╧ п╢п╩я▐
+	п╨п╟п╤п╢п╬пЁп╬ п╠п╩п╬п╨п╟ п©п╟п╪я▐я┌п╦, п©я─п╦ п╢п╬я│я┌п╦п╤п╣п╫п╦п╦ п©я─п╣п╢п╣п╩п╟, п©я─п╬п╦я│я┘п╬п╢п╦я┌ п©п╣я─п╣я┘п╬п╢ п╡ я│п╩п╣п╢я┐я▌я┴п╦п╧ п╠п╩п╬п╨
 */
 
 #include "Storages.h"
@@ -76,7 +76,7 @@ void* TableBlockStorage::valPointer(int num)
 
 void TableBlockStorage::filewrite(int seek, bool needflush)
 {
-	/*! Запись элемента с номером i из памяти в текущий блок файла */
+	/*! п≈п╟п©п╦я│я▄ я█п╩п╣п╪п╣п╫я┌п╟ я│ п╫п╬п╪п╣я─п╬п╪ i п╦п╥ п©п╟п╪я▐я┌п╦ п╡ я┌п╣п╨я┐я┴п╦п╧ п╠п╩п╬п╨ я└п╟п╧п╩п╟ */
 	fseek(file,seekpos+(seek+cur_block*block_size)*full_size,0);
 	fwrite(elemPointer(seek),full_size,1,file);
 	if(needflush) fflush(file);
@@ -84,7 +84,7 @@ void TableBlockStorage::filewrite(int seek, bool needflush)
 
 bool TableBlockStorage::copyToNextBlock(void)
 {
-	/*! Переход на следующий блок файла */
+	/*! п÷п╣я─п╣я┘п╬п╢ п╫п╟ я│п╩п╣п╢я┐я▌я┴п╦п╧ п╠п╩п╬п╨ я└п╟п╧п╩п╟ */
 	max=-1;
 
 	int tmp=mem->count;
@@ -97,7 +97,7 @@ bool TableBlockStorage::copyToNextBlock(void)
 	else
 		cur_block++;
 
-	/*! Параллельно заново заполняются счетчики записей */
+	/*! п÷п╟я─п╟п╩п╩п╣п╩я▄п╫п╬ п╥п╟п╫п╬п╡п╬ п╥п╟п©п╬п╩п╫я▐я▌я┌я│я▐ я│я┤п╣я┌я┤п╦п╨п╦ п╥п╟п©п╦я│п╣п╧ */
 	for(int i=0;i<block_size;i++)
 	{
 		if(elemPointer(i)->count>=0)
@@ -108,14 +108,14 @@ bool TableBlockStorage::copyToNextBlock(void)
 	}
 
 	fflush(file);
-	/*! если достигнут максимальный, возвращается false */ 
+	/*! п╣я│п╩п╦ п╢п╬я│я┌п╦пЁп╫я┐я┌ п╪п╟п╨я│п╦п╪п╟п╩я▄п╫я▀п╧, п╡п╬п╥п╡я─п╟я┴п╟п╣я┌я│я▐ false */ 
 	if(cur_block>=block_number-1)
 		return false;
 
 	return true;
 }
 
-/*! Использовать для проверки совпадения заголовков */
+/*! п≤я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ п╢п╩я▐ п©я─п╬п╡п╣я─п╨п╦ я│п╬п╡п©п╟п╢п╣п╫п╦я▐ п╥п╟пЁп╬п╩п╬п╡п╨п╬п╡ */
 bool TableBlockStorage::checkAttr( int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek )
 {
 	if( file==NULL ) return false;
@@ -124,11 +124,11 @@ bool TableBlockStorage::checkAttr( int key_sz, int inf_sz, int inf_count, int bl
 
 	fseek(file, seek, 0);
 
-	/*! Чтение заголовка таблицы */
+	/*! п╖я┌п╣п╫п╦п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╟ я┌п╟п╠п╩п╦я├я▀ */
 	StorageAttr sa;
 	fread(&sa,sizeof(StorageAttr),1,file);
 
-	/*! Проверяем заголовок на совпадение с нашими значениями */
+	/*! п÷я─п╬п╡п╣я─я▐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨ п╫п╟ я│п╬п╡п©п╟п╢п╣п╫п╦п╣ я│ п╫п╟я┬п╦п╪п╦ п╥п╫п╟я┤п╣п╫п╦я▐п╪п╦ */
 	if((sa.k_size!=key_sz)||(sa.inf_size!=inf_sz)||(sa.size!=tmpsize)||(sa.block_number!=block_num)||(sa.lim!=block_lim)||(sa.seekpos!=seek))
 	{
 		fclose(file);
@@ -140,7 +140,7 @@ bool TableBlockStorage::checkAttr( int key_sz, int inf_sz, int inf_count, int bl
 
 bool TableBlockStorage::open(const char* name, int byte_sz, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek)
 {
-	/*! Если уже был открыт файл в переменной данного класса, он закрывается и открывается новый */
+	/*! п∙я│п╩п╦ я┐п╤п╣ п╠я▀п╩ п╬я┌п╨я─я▀я┌ я└п╟п╧п╩ п╡ п©п╣я─п╣п╪п╣п╫п╫п╬п╧ п╢п╟п╫п╫п╬пЁп╬ п╨п╩п╟я│я│п╟, п╬п╫ п╥п╟п╨я─я▀п╡п╟п╣я┌я│я▐ п╦ п╬я┌п╨я─я▀п╡п╟п╣я┌я│я▐ п╫п╬п╡я▀п╧ */
 	if(file!=NULL) fclose(file);
 
 	file = fopen(name, "r+");
@@ -175,13 +175,13 @@ bool TableBlockStorage::open(const char* name, int byte_sz, int key_sz, int inf_
 
 	max=-1;
 
-	/*! Инициализация памяти */
+	/*! п≤п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ п©п╟п╪я▐я┌п╦ */
 	mem = (TableBlockStorageElem*) new char[block_size*full_size];
 
 	TableBlockStorageElem *t = (TableBlockStorageElem*)new char[full_size];
 	
 	seekpos+=sizeof(StorageAttr);
-	/*! Поиск непустого блока, либо если все пустые, текущий устанавливается 0 */
+	/*! п÷п╬п╦я│п╨ п╫п╣п©я┐я│я┌п╬пЁп╬ п╠п╩п╬п╨п╟, п╩п╦п╠п╬ п╣я│п╩п╦ п╡я│п╣ п©я┐я│я┌я▀п╣, я┌п╣п╨я┐я┴п╦п╧ я┐я│я┌п╟п╫п╟п╡п╩п╦п╡п╟п╣я┌я│я▐ 0 */
 	for(cur_block=0; cur_block < block_num; cur_block++)
 	{
 		fseek(file,seekpos+cur_block*block_size*(full_size),0);
@@ -192,7 +192,7 @@ bool TableBlockStorage::open(const char* name, int byte_sz, int key_sz, int inf_
 	if( t->count < 0 )
 		cur_block = 0;
 
-	/*! Чтение в память из нужного блока */
+	/*! п╖я┌п╣п╫п╦п╣ п╡ п©п╟п╪я▐я┌я▄ п╦п╥ п╫я┐п╤п╫п╬пЁп╬ п╠п╩п╬п╨п╟ */
 	fseek(file,seekpos+(cur_block*block_size)*(full_size),0);
 	for(int i=0;i<block_size;i++)
 	{
@@ -238,7 +238,7 @@ bool TableBlockStorage::create(const char* name, int byte_sz, int key_sz, int in
 
 	if(fseek(file,seekpos,0)==-1) return false;
 
-	/*! Инициализация памяти */
+	/*! п≤п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ п©п╟п╪я▐я┌п╦ */
 	mem = (TableBlockStorageElem*) new char[block_size*full_size];
 
 	for( i=0; i<block_size*full_size; i++ )
@@ -252,21 +252,21 @@ bool TableBlockStorage::create(const char* name, int byte_sz, int key_sz, int in
 	sa.lim=lim;
 	sa.seekpos=seekpos;
 
-	/*! Запись заголовка таблицы */
+	/*! п≈п╟п©п╦я│я▄ п╥п╟пЁп╬п╩п╬п╡п╨п╟ я┌п╟п╠п╩п╦я├я▀ */
 	cur_block=0;
 	fwrite(&sa,sizeof(StorageAttr),1,file);
 	fflush(file);
 	seekpos+=sizeof(StorageAttr);
 
-	/*!	Поле счетчика записей при создании служит флагом на используемость блока и на пустоту ячейки записи:
-		EMPTY_BLOCK=(-5) - заполняются первые элементы каждого блока, если там другое значение, то этот блок используется, EMPTY_ELEM=(-1) - все остальные пустые записи
+	/*!	п÷п╬п╩п╣ я│я┤п╣я┌я┤п╦п╨п╟ п╥п╟п©п╦я│п╣п╧ п©я─п╦ я│п╬п╥п╢п╟п╫п╦п╦ я│п╩я┐п╤п╦я┌ я└п╩п╟пЁп╬п╪ п╫п╟ п╦я│п©п╬п╩я▄п╥я┐п╣п╪п╬я│я┌я▄ п╠п╩п╬п╨п╟ п╦ п╫п╟ п©я┐я│я┌п╬я┌я┐ я▐я┤п╣п╧п╨п╦ п╥п╟п©п╦я│п╦:
+		EMPTY_BLOCK=(-5) - п╥п╟п©п╬п╩п╫я▐я▌я┌я│я▐ п©п╣я─п╡я▀п╣ я█п╩п╣п╪п╣п╫я┌я▀ п╨п╟п╤п╢п╬пЁп╬ п╠п╩п╬п╨п╟, п╣я│п╩п╦ я┌п╟п╪ п╢я─я┐пЁп╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣, я┌п╬ я█я┌п╬я┌ п╠п╩п╬п╨ п╦я│п©п╬п╩я▄п╥я┐п╣я┌я│я▐, EMPTY_ELEM=(-1) - п╡я│п╣ п╬я│я┌п╟п╩я▄п╫я▀п╣ п©я┐я│я┌я▀п╣ п╥п╟п©п╦я│п╦
 	*/
 
 	mem->count=EMPTY_BLOCK;
 	for(i=1;i<block_size;i++)
 		elemPointer(i)->count=EMPTY_ELEM;
 
-	/*!	Цикл инициализирует все блоки в файле*/
+	/*!	п╕п╦п╨п╩ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─я┐п╣я┌ п╡я│п╣ п╠п╩п╬п╨п╦ п╡ я└п╟п╧п╩п╣*/
 	for(i=0;i<size;i++) 
 	{
 		if((i!=0)&&(i%block_size==0)) cur_block++;
@@ -291,11 +291,11 @@ bool TableBlockStorage::addRow(void* key, void* value)
 		if((elemPointer(i)->count<0)&&(empty<0)) empty=i;
 	}
 
-	/*! если нашли совпадение ключа, то pos>=0, записываем на это место, иначе пишем на пустое место empty */
+	/*! п╣я│п╩п╦ п╫п╟я┬п╩п╦ я│п╬п╡п©п╟п╢п╣п╫п╦п╣ п╨п╩я▌я┤п╟, я┌п╬ pos>=0, п╥п╟п©п╦я│я▀п╡п╟п╣п╪ п╫п╟ я█я┌п╬ п╪п╣я│я┌п╬, п╦п╫п╟я┤п╣ п©п╦я┬п╣п╪ п╫п╟ п©я┐я│я┌п╬п╣ п╪п╣я│я┌п╬ empty */
 	if(pos>=0) empty=pos;
 	else
 	{
-		if( empty<0 ) return false; /*! Возвращаем false, если место в блоке закончилось */
+		if( empty<0 ) return false; /*! п▓п╬п╥п╡я─п╟я┴п╟п╣п╪ false, п╣я│п╩п╦ п╪п╣я│я┌п╬ п╡ п╠п╩п╬п╨п╣ п╥п╟п╨п╬п╫я┤п╦п╩п╬я│я▄ */
 		memcpy(keyPointer(empty),key,k_size);
 	}
 
@@ -310,7 +310,7 @@ bool TableBlockStorage::delRow(void* key)
 	int i;
 	if(file==NULL) return false;
 
-	/*! При удалении счетчик перезаписей также увеличивается */
+	/*! п÷я─п╦ я┐п╢п╟п╩п╣п╫п╦п╦ я│я┤п╣я┌я┤п╦п╨ п©п╣я─п╣п╥п╟п©п╦я│п╣п╧ я┌п╟п╨п╤п╣ я┐п╡п╣п╩п╦я┤п╦п╡п╟п╣я┌я│я▐ */
 	if(max==lim-1) copyToNextBlock();
 	for(i=0;i<block_size;i++)
 	{
@@ -327,14 +327,14 @@ bool TableBlockStorage::delRow(void* key)
 	return false;
 }
 
-/*! TODO: можно убрать из параметров val, просто возвращать значение */
+/*! TODO: п╪п╬п╤п╫п╬ я┐п╠я─п╟я┌я▄ п╦п╥ п©п╟я─п╟п╪п╣я┌я─п╬п╡ val, п©я─п╬я│я┌п╬ п╡п╬п╥п╡я─п╟я┴п╟я┌я▄ п╥п╫п╟я┤п╣п╫п╦п╣ */
 void* TableBlockStorage::findKeyValue(void* key, void* val)
 {
 	int i;
 	if(file==NULL) return 0;
 	for(i=0;i<block_size;i++)
 	{
-		/*! Сравниваем ключи только если счетчик >= 0, т.е. запись существует */
+		/*! п║я─п╟п╡п╫п╦п╡п╟п╣п╪ п╨п╩я▌я┤п╦ я┌п╬п╩я▄п╨п╬ п╣я│п╩п╦ я│я┤п╣я┌я┤п╦п╨ >= 0, я┌.п╣. п╥п╟п©п╦я│я▄ я│я┐я┴п╣я│я┌п╡я┐п╣я┌ */
 		if(elemPointer(i)->count < 0)
 			continue;
 		if(keyCompare(i,key))

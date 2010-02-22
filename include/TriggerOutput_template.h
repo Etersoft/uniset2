@@ -80,12 +80,12 @@ void TriggerOutput<Caller,OutIdType,ValueType>::set(OutIdType out, ValueType val
 	if( it==outs.end() )
 		return;
 
-	// ÐÏÔÏÍ val
+	// Ð¿Ð¾Ñ‚Ð¾Ð¼ val
 	ValueType prev(it->second);
 	it->second = val;
 	if( prev != val )
 	{
-		check(out);	 // ×ÙÓÔÁ×ÌÑÅÍ ÓÐÅÒ×Á ×ÓÅ ÎÕÌÉ
+		check(out);	 // Ð²Ñ‹ÑÑ‚Ð°Ð²Ð»ÑÐµÐ¼ ÑÐ¿ÐµÑ€Ð²Ð° Ð²ÑÐµ Ð½ÑƒÐ»Ð¸
 		try
 		{
 			(cal->*act)(it->first, it->second);

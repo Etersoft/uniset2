@@ -33,9 +33,9 @@ namespace UniSetExtensions
 		if( shmID == UniSetTypes::DefaultObjectId )
 		{
 			ostringstream err;
-			err << ": ÉÄÅÎÔÉÆÉËÁÔÏÒ '" << it.getProp("shmID")
-				<< "' ÎÅ ÎÁÊÄÅÎ × ËÏÎÆ. ÆÁÊÌÅ!"
-				<< " × ÓÅËÃÉÉ " << conf->getControllersSection() << endl;
+			err << ": Ð¸Ð´ÐµÐ½Ñ‚Ð¸Ñ„Ð¸ÐºÐ°Ñ‚Ð¾Ñ€ '" << it.getProp("shmID")
+				<< "' Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½ Ð² ÐºÐ¾Ð½Ñ„. Ñ„Ð°Ð¹Ð»Ðµ!"
+				<< " Ð² ÑÐµÐºÑ†Ð¸Ð¸ " << conf->getControllersSection() << endl;
 	
 			dlog[Debug::CRIT] << err.str() << endl;
 			throw SystemError(err.str());
@@ -45,7 +45,7 @@ namespace UniSetExtensions
 		return shmID;
 	}
 	// -------------------------------------------------------------------------
-	static int heartBeatTime = -1; // ÎÁÞÁÌØÎÁÑ ÉÎÉÃÉÁÌÉÚÁÃÉÑ
+	static int heartBeatTime = -1; // Ð½Ð°Ñ‡Ð°Ð»ÑŒÐ½Ð°Ñ Ð¸Ð½Ð¸Ñ†Ð¸Ð°Ð»Ð¸Ð·Ð°Ñ†Ð¸Ñ
 	int getHeartBeatTime()
 	{
 		if( heartBeatTime != -1 )
@@ -66,7 +66,7 @@ namespace UniSetExtensions
 		if( heartBeatTime <= 0 )
 		{
 			heartBeatTime = 0;
-			dlog[Debug::WARN] << "(getHeartBeatTime): ÍÅÈÁÎÉÚÍ 'HEARTBEAT' ïôëìàþ³î!" << endl;
+			dlog[Debug::WARN] << "(getHeartBeatTime): Ð¼ÐµÑ…Ð°Ð½Ð¸Ð·Ð¼ 'HEARTBEAT' ÐžÐ¢ÐšÐ›Ð®Ð§ÐÐ!" << endl;
 		}
 
 		if( dlog.debugging(Debug::INFO) )
@@ -126,7 +126,7 @@ namespace UniSetExtensions
 		if( !root )
 		{
 			ostringstream err;
-			err << "(buildCalibrationDiagram): îå îáêäåî ËÏÒÎÅ×ÏÊ ÕÚÅÌ ÄÌÑ ËÁÌÉÂÒÏ×ÏÞÎÙÈ ÄÉÁÇÒÁÍÍ";
+			err << "(buildCalibrationDiagram): ÐÐ• ÐÐÐ™Ð”Ð•Ð ÐºÐ¾Ñ€Ð½ÐµÐ²Ð¾Ð¹ ÑƒÐ·ÐµÐ» Ð´Ð»Ñ ÐºÐ°Ð»Ð¸Ð±Ñ€Ð¾Ð²Ð¾Ñ‡Ð½Ñ‹Ñ… Ð´Ð¸Ð°Ð³Ñ€Ð°Ð¼Ð¼";
 			dlog[Debug::CRIT] << err.str() << endl;
 			throw SystemError( err.str());
 		}
@@ -135,7 +135,7 @@ namespace UniSetExtensions
 		if( !dnode )
 		{
 			ostringstream err;
-			err << "(buildCalibrationDiagram): îå îáêäåîá ËÁÌÉÂÒÏ×ÏÞÎÁÑ ÄÉÁÇÒÁÍÍÁ '" << dname << "'";
+			err << "(buildCalibrationDiagram): ÐÐ• ÐÐÐ™Ð”Ð•ÐÐ ÐºÐ°Ð»Ð¸Ð±Ñ€Ð¾Ð²Ð¾Ñ‡Ð½Ð°Ñ Ð´Ð¸Ð°Ð³Ñ€Ð°Ð¼Ð¼Ð° '" << dname << "'";
 			dlog[Debug::CRIT] << err.str() << endl;
 			throw SystemError( err.str());
 		}

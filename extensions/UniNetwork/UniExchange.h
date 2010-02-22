@@ -24,7 +24,7 @@ class UniExchange:
 									UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
 									const std::string prefix="unet" );
 
-		/*! глобальная функция для вывода help-а */
+		/*! пЁп╩п╬п╠п╟п╩я▄п╫п╟я▐ я└я┐п╫п╨я├п╦я▐ п╢п╩я▐ п╡я▀п╡п╬п╢п╟ help-п╟ */
 		static void help_print( int argc, const char** argv );
 
 		virtual IOController_i::ShortMapSeq* getSensors();
@@ -69,7 +69,7 @@ class UniExchange:
 			IOController_i_var shm;
 			UniSetTypes::ObjectId id;
 			UniSetTypes::ObjectId node;
-			UniSetTypes::ObjectId sidConnection; /*!< датчик связи */
+			UniSetTypes::ObjectId sidConnection; /*!< п╢п╟я┌я┤п╦п╨ я│п╡я▐п╥п╦ */
 			IOController::DIOStateList::iterator conn_dit;
 			SList smap;
 			

@@ -1,5 +1,5 @@
 /*! \file
- *  \brief Класс работы с сообщениями
+ *  \brief п п╩п╟я│я│ я─п╟п╠п╬я┌я▀ я│ я│п╬п╬п╠я┴п╣п╫п╦я▐п╪п╦
  *  \author Pavel Vainerman
  *  \date   $Date: 2008/11/22 23:22:24 $
  *  \version $Id: MessageInterface_idXML.h,v 1.5 2008/11/22 23:22:24 vpashka Exp $

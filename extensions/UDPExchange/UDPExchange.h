@@ -22,11 +22,11 @@ class UDPExchange:
 		UDPExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
 		virtual ~UDPExchange();
 	
-		/*! глобальная функция для инициализации объекта */
+		/*! пЁп╩п╬п╠п╟п╩я▄п╫п╟я▐ я└я┐п╫п╨я├п╦я▐ п╢п╩я▐ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦п╦ п╬п╠я┼п╣п╨я┌п╟ */
 		static UDPExchange* init_udpexchange( int argc, char* argv[], 
 											UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
 
-		/*! глобальная функция для вывода help-а */
+		/*! пЁп╩п╬п╠п╟п╩я▄п╫п╟я▐ я└я┐п╫п╨я├п╦я▐ п╢п╩я▐ п╡я▀п╡п╬п╢п╟ help-п╟ */
 		static void help_print( int argc, char* argv[] );
 
 		struct UItem
@@ -67,7 +67,7 @@ class UDPExchange:
 
 		virtual bool activateObject();
 		
-		// действия при завершении работы
+		// п╢п╣п╧я│я┌п╡п╦я▐ п©я─п╦ п╥п╟п╡п╣я─я┬п╣п╫п╦п╦ я─п╟п╠п╬я┌я▀
 		virtual void sigterm( int signo );
 
 		void initIterators();
@@ -88,7 +88,7 @@ class UDPExchange:
 		IOController::AIOStateList::iterator aitHeartBeat;
 		UniSetTypes::ObjectId test_id;
 
-		int polltime;	/*!< переодичность обновления данных, [мсек] */
+		int polltime;	/*!< п©п╣я─п╣п╬п╢п╦я┤п╫п╬я│я┌я▄ п╬п╠п╫п╬п╡п╩п╣п╫п╦я▐ п╢п╟п╫п╫я▀я┘, [п╪я│п╣п╨] */
 
 		ost::UDPDuplex* udp;
 		ost::IPV4Host host;

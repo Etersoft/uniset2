@@ -4,7 +4,7 @@
 
 <xsl:import href="ctl-cpp-common.xsl"/>
 <xsl:output method="text" indent="yes" encoding="koi8-r"/>
-<!-- Генерирование cc-файла -->
+<!-- п⌠п╣п╫п╣я─п╦я─п╬п╡п╟п╫п╦п╣ cc-я└п╟п╧п╩п╟ -->
 
 <xsl:variable name="CLASSNAME">
 	<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'class-name'"/></xsl:call-template>
@@ -18,7 +18,7 @@
 
 <xsl:template match="/">
 <!-- BEGIN CC-FILE -->
-// Метод с использованием заказа датчиков
+// п°п╣я┌п╬п╢ я│ п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╫п╦п╣п╪ п╥п╟п╨п╟п╥п╟ п╢п╟я┌я┤п╦п╨п╬п╡
 // --------------------------------------------------------------------------
 <xsl:call-template name="COMMON-CC-HEAD"/>
 // --------------------------------------------------------------------------
@@ -32,7 +32,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		return;
 	try
 	{	
-#warning Сделать работу с TestMode на основе заказа!
+#warning п║п╢п╣п╩п╟я┌я▄ я─п╟п╠п╬я┌я┐ я│ TestMode п╫п╟ п╬я│п╫п╬п╡п╣ п╥п╟п╨п╟п╥п╟!
 		isTestMode = checkTestMode();
 		if( trTestMode.change(isTestMode) )
 			testMode(isTestMode);
@@ -46,39 +46,39 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 			return;
 		}
 
-		// проверка таймеров
+		// п©я─п╬п╡п╣я─п╨п╟ я┌п╟п╧п╪п╣я─п╬п╡
 		checkTimers(this);
 
-#warning Сделать работу с ResetMsg на основе askTimer!
+#warning п║п╢п╣п╩п╟я┌я▄ я─п╟п╠п╬я┌я┐ я│ ResetMsg п╫п╟ п╬я│п╫п╬п╡п╣ askTimer!
 		if( resetMsgTime&gt;0 &amp;&amp; trResetMsg.hi(ptResetMsg.checkTime()) )
 		{
 //			cout &lt;&lt; myname &lt;&lt;  ": ********* reset messages *********" &lt;&lt; endl;
 			resetMsg();
 		}
 
-		// обработка сообщений (таймеров и т.п.)
+		// п╬п╠я─п╟п╠п╬я┌п╨п╟ я│п╬п╬п╠я┴п╣п╫п╦п╧ (я┌п╟п╧п╪п╣я─п╬п╡ п╦ я┌.п©.)
 		for( int i=0; i&lt;<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'msg-count'"/></xsl:call-template>; i++ )
 		{
 			if( !receiveMessage(msg) )
 				break;
 			processingMessage(&amp;msg);
 
-			// обновление выходов
+			// п╬п╠п╫п╬п╡п╩п╣п╫п╦п╣ п╡я▀я┘п╬п╢п╬п╡
 			updateOutputs(false);
 			updatePreviousValues();
 		}
 
-		// Выполнение шага программы
+		// п▓я▀п©п╬п╩п╫п╣п╫п╦п╣ я┬п╟пЁп╟ п©я─п╬пЁя─п╟п╪п╪я▀
 		step();
 
-		// "сердцебиение"
+		// "я│п╣я─п╢я├п╣п╠п╦п╣п╫п╦п╣"
 		if( idHeartBeat!=DefaultObjectId &amp;&amp; ptHeartBeat.checkTime() )
 		{
 			ui.saveValue(idHeartBeat,maxHeartBeat,UniversalIO::AnalogInput);
 			ptHeartBeat.reset();
 		}
 
-		// обновление выходов
+		// п╬п╠п╫п╬п╡п╩п╣п╫п╦п╣ п╡я▀я┘п╬п╢п╬п╡
 		updateOutputs(false);
 		updatePreviousValues();
 	}
@@ -88,7 +88,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 	}
 	catch(CORBA::SystemException&amp; ex)
 	{
-		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(execute): п║ORBA::SystemException: "
 			&lt;&lt; ex.NP_minorString() &lt;&lt; endl;
 	}
 	catch(...)
@@ -169,7 +169,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askSensors( UniversalIO::UIOCommand
 		{
 			unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(askSensors): catch(...)" &lt;&lt; endl;
 		}
-#warning Сделать паузу между заказами настраиваемой	из конф. файла
+#warning п║п╢п╣п╩п╟я┌я▄ п©п╟я┐п╥я┐ п╪п╣п╤п╢я┐ п╥п╟п╨п╟п╥п╟п╪п╦ п╫п╟я│я┌я─п╟п╦п╡п╟п╣п╪п╬п╧	п╦п╥ п╨п╬п╫я└. я└п╟п╧п╩п╟
 		msleep(2000);
 	}
 }
@@ -242,7 +242,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::getState( UniSetTypes::ObjectId sid
 	</xsl:if>
 	</xsl:if>
 	</xsl:for-each>
-	unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getState): Обращение к неизвестному ДИСКРЕТНОМУ датчику sid="
+	unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getState): п·п╠я─п╟я┴п╣п╫п╦п╣ п╨ п╫п╣п╦п╥п╡п╣я│я┌п╫п╬п╪я┐ п■п≤п║п п═п∙п╒п²п·п°пё п╢п╟я┌я┤п╦п╨я┐ sid="
 		&lt;&lt; sid &lt;&lt; endl;
 
 	return false;
@@ -289,7 +289,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool force )
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code, bool state )
 {
-	// блокируем сброс (т.к. он автоматически по таймеру)
+	// п╠п╩п╬п╨п╦я─я┐п╣п╪ я│п╠я─п╬я│ (я┌.п╨. п╬п╫ п╟п╡я┌п╬п╪п╟я┌п╦я┤п╣я│п╨п╦ п©п╬ я┌п╟п╧п╪п╣я─я┐)
 	if( !state )
 	{
 		ptResetMsg.reset();

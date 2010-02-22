@@ -50,7 +50,7 @@ void ProxyManager::attachObject( PassiveObject* po, UniSetTypes::ObjectId id )
 {
 	if( id == DefaultObjectId )
 	{
-		unideb[Debug::WARN] << myname << "(attachObject): ÐÏÐÙÔËÁ ÄÏÂÁ×ÉÔØ ÏÂßÅËÔ Ó id="
+		unideb[Debug::WARN] << myname << "(attachObject): Ð¿Ð¾Ð¿Ñ‹Ñ‚ÐºÐ° Ð´Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ Ð¾Ð±ÑŠÐµÐºÑ‚ Ñ id="
 			<< DefaultObjectId << " PassiveObject=" << po->getName() << endl;
 		
 		return;
@@ -74,7 +74,7 @@ bool ProxyManager::activateObject()
 	if( !ret )
 		return false;
 
-	// òÅÇÉÓÔÒÉÒÕÅÍÓÑ ÏÔ ÉÍÅÎÉ ÏÂßÅËÔÏ×
+	// Ð ÐµÐ³Ð¸ÑÑ‚Ñ€Ð¸Ñ€ÑƒÐµÐ¼ÑÑ Ð¾Ñ‚ Ð¸Ð¼ÐµÐ½Ð¸ Ð¾Ð±ÑŠÐµÐºÑ‚Ð¾Ð²
 	for( PObjectMap::const_iterator it=omap.begin();it!=omap.end();++it )
 	{
 		try
@@ -85,8 +85,8 @@ bool ProxyManager::activateObject()
 				{
 					if( unideb.debugging(Debug::INFO) )	
 					{
-						unideb[Debug::INFO] << myname << "(registered): ÐÏÐÙÔËÁ " 
-									<< i+1 << " ÒÅÇÉÓÔÒÉÕÀ (id=" << it->first << ") "
+						unideb[Debug::INFO] << myname << "(registered): Ð¿Ð¾Ð¿Ñ‹Ñ‚ÐºÐ° " 
+									<< i+1 << " Ñ€ÐµÐ³Ð¸ÑÑ‚Ñ€Ð¸ÑƒÑŽ (id=" << it->first << ") "
 									<< " (pname=" << it->second->getName() << ") "
 									<< conf->oind->getNameById(it->first) << endl;
 					}
@@ -95,7 +95,7 @@ bool ProxyManager::activateObject()
 				}
 				catch( UniSetTypes::ObjectNameAlready& ex )
 				{
-					unideb[Debug::CRIT] << myname << "(registered): óðåò÷á òáúòåçéóôòéòõà (ObjectNameAlready)" << endl;				
+					unideb[Debug::CRIT] << myname << "(registered): Ð¡ÐŸÐ•Ð Ð’Ð Ð ÐÐ—Ð Ð•Ð“Ð˜Ð¡Ð¢Ð Ð˜Ð Ð£Ð® (ObjectNameAlready)" << endl;				
 					try
 					{
 						ui.unregister(it->first);
@@ -150,7 +150,7 @@ void ProxyManager::processingMessage( UniSetTypes::VoidMessage *msg )
 					it->second->processingMessage(msg);
 				else
 				{
-					unideb[Debug::CRIT] << myname << "(processingMessage): ÎÅ ÎÁÊÄÅÎ ÏÂßÅËÔ "
+					unideb[Debug::CRIT] << myname << "(processingMessage): Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½ Ð¾Ð±ÑŠÐµÐºÑ‚ "
 						<< " consumer= " << msg->consumer << endl;
 				}
 			}

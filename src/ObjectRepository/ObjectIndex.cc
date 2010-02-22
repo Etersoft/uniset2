@@ -21,7 +21,7 @@
  */
 // -----------------------------------------------------------------------------------------
 /*! 
-	\todo Добавить проверку на предельный номер id 
+	\todo п■п╬п╠п╟п╡п╦я┌я▄ п©я─п╬п╡п╣я─п╨я┐ п╫п╟ п©я─п╣п╢п╣п╩я▄п╫я▀п╧ п╫п╬п╪п╣я─ id 
 */
 // -----------------------------------------------------------------------------------------
 #include "ObjectIndex.h"
@@ -50,7 +50,7 @@ string ObjectIndex::getNameById( const ObjectId id, const ObjectId node )
 	if( t.empty() )
 	    return "";
 	
-	// оптимизация
+	// п╬п©я┌п╦п╪п╦п╥п╟я├п╦я▐
 	if( node == conf->getLocalNode() )
 		return mkRepName(t,nmLocalNode);
 	
@@ -64,8 +64,8 @@ string ObjectIndex::mkRepName( const std::string repname, const std::string node
 // -----------------------------------------------------------------------------------------
 string ObjectIndex::mkFullNodeName( const std::string realnode, const std::string virtnode )
 {
-	// realnode справа, что поиск и вырезание происходили быстрее
-	// эта функция часто используется...
+	// realnode я│п©я─п╟п╡п╟, я┤я┌п╬ п©п╬п╦я│п╨ п╦ п╡я▀я─п╣п╥п╟п╫п╦п╣ п©я─п╬п╦я│я┘п╬п╢п╦п╩п╦ п╠я▀я│я┌я─п╣п╣
+	// я█я┌п╟ я└я┐п╫п╨я├п╦я▐ я┤п╟я│я┌п╬ п╦я│п©п╬п╩я▄п╥я┐п╣я┌я│я▐...
 	return virtnode + sepNode + realnode; 
 }
 // -----------------------------------------------------------------------------------------
@@ -84,8 +84,8 @@ string ObjectIndex::getFullNodeName( const string& oname )
 	if( pos != string::npos )
 		return oname.substr(pos+1);
 
-	// Если не нашли разделитель name@vnode:rnode
-	// то пытаемся найти в данной строке сочетание vnode:rnode
+	// п∙я│п╩п╦ п╫п╣ п╫п╟я┬п╩п╦ я─п╟п╥п╢п╣п╩п╦я┌п╣п╩я▄ name@vnode:rnode
+	// я┌п╬ п©я▀я┌п╟п╣п╪я│я▐ п╫п╟п╧я┌п╦ п╡ п╢п╟п╫п╫п╬п╧ я│я┌я─п╬п╨п╣ я│п╬я┤п╣я┌п╟п╫п╦п╣ vnode:rnode
 	string vnode = getVirtualNodeName(oname);
 	string rnode = getRealNodeName(oname);
 	if( !rnode.empty() )
@@ -95,8 +95,8 @@ string ObjectIndex::getFullNodeName( const string& oname )
 		return mkFullNodeName(rnode,vnode);
 	}
 
-	// Если не нашли, то возвращаем, полное имя 
-	// ЛОКАЛЬНОГО узла...(для оптимизации хранимого в классе)
+	// п∙я│п╩п╦ п╫п╣ п╫п╟я┬п╩п╦, я┌п╬ п╡п╬п╥п╡я─п╟я┴п╟п╣п╪, п©п╬п╩п╫п╬п╣ п╦п╪я▐ 
+	// п⌡п·п п░п⌡п╛п²п·п⌠п· я┐п╥п╩п╟...(п╢п╩я▐ п╬п©я┌п╦п╪п╦п╥п╟я├п╦п╦ я┘я─п╟п╫п╦п╪п╬пЁп╬ п╡ п╨п╩п╟я│я│п╣)
 	if( !nmLocalNode.empty() )
 		return mkFullNodeName(nmLocalNode,nmLocalNode);
 	

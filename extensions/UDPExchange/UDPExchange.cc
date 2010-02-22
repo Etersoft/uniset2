@@ -32,7 +32,7 @@ maxItem(0)
 
 	UniXML_iterator it(cnode);
 
-	// определяем фильтр
+	// п╬п©я─п╣п╢п╣п╩я▐п╣п╪ я└п╦п╩я▄я┌я─
 	s_field = conf->getArgParam("--udp-filter-field");
 	s_fvalue = conf->getArgParam("--udp-filter-value");
 	dlog[Debug::INFO] << myname << "(init): read fileter-field='" << s_field
@@ -91,7 +91,7 @@ maxItem(0)
 		if( sidHeartBeat == DefaultObjectId )
 		{
 			ostringstream err;
-			err << myname << ": не найден идентификатор для датчика 'HeartBeat' " << heart;
+			err << myname << ": п╫п╣ п╫п╟п╧п╢п╣п╫ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╢п╩я▐ п╢п╟я┌я┤п╦п╨п╟ 'HeartBeat' " << heart;
 			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
@@ -145,7 +145,7 @@ void UDPExchange::waitSMReady()
 	if( !shm->waitSMready(ready_timeout,50) )
 	{
 		ostringstream err;
-		err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
+		err << myname << "(waitSMReady): п²п╣ п╢п╬п╤п╢п╟п╩п╦я│я▄ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ SharedMemory п╨ я─п╟п╠п╬я┌п╣ п╡ я┌п╣я┤п╣п╫п╦п╣ " << ready_timeout << " п╪я│п╣п╨";
 		dlog[Debug::CRIT] << err.str() << endl;
 		throw SystemError(err.str());
 	}
@@ -355,8 +355,8 @@ void UDPExchange::sysCommand(UniSetTypes::SystemMessage *sm)
 		{
 			waitSMReady();
 
-			// подождать пока пройдёт инициализация датчиков
-			// см. activateObject()
+			// п©п╬п╢п╬п╤п╢п╟я┌я▄ п©п╬п╨п╟ п©я─п╬п╧п╢я▒я┌ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ п╢п╟я┌я┤п╦п╨п╬п╡
+			// я│п╪. activateObject()
 			msleep(initPause);
 			PassiveTimer ptAct(activateTimeout);
 			while( !activated && !ptAct.checkTime() )
@@ -384,11 +384,11 @@ void UDPExchange::sysCommand(UniSetTypes::SystemMessage *sm)
 		
 		case SystemMessage::WatchDog:
 		{
-			// ОПТИМИЗАЦИЯ (защита от двойного перезаказа при старте)
-			// Если идёт локальная работа 
-			// (т.е. UDPExchange  запущен в одном процессе с SharedMemory2)
-			// то обрабатывать WatchDog не надо, т.к. мы и так ждём готовности SM
-			// при заказе датчиков, а если SM вылетит, то вместе с этим процессом(UDPExchange)
+			// п·п÷п╒п≤п°п≤п≈п░п╕п≤п╞ (п╥п╟я┴п╦я┌п╟ п╬я┌ п╢п╡п╬п╧п╫п╬пЁп╬ п©п╣я─п╣п╥п╟п╨п╟п╥п╟ п©я─п╦ я│я┌п╟я─я┌п╣)
+			// п∙я│п╩п╦ п╦п╢я▒я┌ п╩п╬п╨п╟п╩я▄п╫п╟я▐ я─п╟п╠п╬я┌п╟ 
+			// (я┌.п╣. UDPExchange  п╥п╟п©я┐я┴п╣п╫ п╡ п╬п╢п╫п╬п╪ п©я─п╬я├п╣я│я│п╣ я│ SharedMemory2)
+			// я┌п╬ п╬п╠я─п╟п╠п╟я┌я▀п╡п╟я┌я▄ WatchDog п╫п╣ п╫п╟п╢п╬, я┌.п╨. п╪я▀ п╦ я┌п╟п╨ п╤п╢я▒п╪ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ SM
+			// п©я─п╦ п╥п╟п╨п╟п╥п╣ п╢п╟я┌я┤п╦п╨п╬п╡, п╟ п╣я│п╩п╦ SM п╡я▀п╩п╣я┌п╦я┌, я┌п╬ п╡п╪п╣я│я┌п╣ я│ я█я┌п╦п╪ п©я─п╬я├п╣я│я│п╬п╪(UDPExchange)
 			if( shm->isLocalwork() )
 				break;
 
@@ -398,7 +398,7 @@ void UDPExchange::sysCommand(UniSetTypes::SystemMessage *sm)
 
 		case SystemMessage::LogRotate:
 		{
-			// переоткрываем логи
+			// п©п╣я─п╣п╬я┌п╨я─я▀п╡п╟п╣п╪ п╩п╬пЁп╦
 			unideb << myname << "(sysCommand): logRotate" << std::endl;
 			string fname = unideb.getLogFile();
 			if( !fname.empty() )
@@ -428,11 +428,11 @@ void UDPExchange::askSensors( UniversalIO::UIOCommand cmd )
 	{
 		ostringstream err;
 		err << myname 
-			<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение " 
-			<< activateTimeout << " мсек";
+			<< "(askSensors): п²п╣ п╢п╬п╤п╢п╟п╩п╦я│я▄ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦(work) SharedMemory п╨ я─п╟п╠п╬я┌п╣ п╡ я┌п╣я┤п╣п╫п╦п╣ " 
+			<< activateTimeout << " п╪я│п╣п╨";
 	
 		dlog[Debug::CRIT] << err.str() << endl;
-		kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
+		kill(SIGTERM,getpid());	// п©я─п╣я─я▀п╡п╟п╣п╪ (п©п╣я─п╣п╥п╟п©я┐я│п╨п╟п╣п╪) п©я─п╬я├п╣я│я│...
 		throw SystemError(err.str());
 	}
 
@@ -469,9 +469,9 @@ void UDPExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 // ------------------------------------------------------------------------------------------
 bool UDPExchange::activateObject()
 {
-	// блокирование обработки Starsp 
-	// пока не пройдёт инициализация датчиков
-	// см. sysCommand()
+	// п╠п╩п╬п╨п╦я─п╬п╡п╟п╫п╦п╣ п╬п╠я─п╟п╠п╬я┌п╨п╦ Starsp 
+	// п©п╬п╨п╟ п╫п╣ п©я─п╬п╧п╢я▒я┌ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦я▐ п╢п╟я┌я┤п╦п╨п╬п╡
+	// я│п╪. sysCommand()
 	{
 		activated = false;
 		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
@@ -493,21 +493,21 @@ void UDPExchange::sigterm( int signo )
 // ------------------------------------------------------------------------------------------
 void UDPExchange::readConfiguration()
 {
-#warning Сделать сортировку по диапазонам адресов!!!
-// чтобы запрашивать одним запросом, сразу несколько входов...
+#warning п║п╢п╣п╩п╟я┌я▄ я│п╬я─я┌п╦я─п╬п╡п╨я┐ п©п╬ п╢п╦п╟п©п╟п╥п╬п╫п╟п╪ п╟п╢я─п╣я│п╬п╡!!!
+// я┤я┌п╬п╠я▀ п╥п╟п©я─п╟я┬п╦п╡п╟я┌я▄ п╬п╢п╫п╦п╪ п╥п╟п©я─п╬я│п╬п╪, я│я─п╟п╥я┐ п╫п╣я│п╨п╬п╩я▄п╨п╬ п╡я┘п╬п╢п╬п╡...
 //	readconf_ok = false;
 	xmlNode* root = conf->getXMLSensorsSection();
 	if(!root)
 	{
 		ostringstream err;
-		err << myname << "(readConfiguration): не нашли корневого раздела <sensors>";
+		err << myname << "(readConfiguration): п╫п╣ п╫п╟я┬п╩п╦ п╨п╬я─п╫п╣п╡п╬пЁп╬ я─п╟п╥п╢п╣п╩п╟ <sensors>";
 		throw SystemError(err.str());
 	}
 
 	UniXML_iterator it(root);
 	if( !it.goChildren() )
 	{
-		std::cerr << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
+		std::cerr << myname << "(readConfiguration): я─п╟п╥п╢п╣п╩ <sensors> п╫п╣ я│п╬п╢п╣я─п╤п╦я┌ я│п╣п╨я├п╦п╧ ?!!\n";
 		return;
 	}
 
@@ -525,11 +525,11 @@ bool UDPExchange::check_item( UniXML_iterator& it )
 	if( s_field.empty() )
 		return true;
 
-	// просто проверка на не пустой field
+	// п©я─п╬я│я┌п╬ п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п╫п╣ п©я┐я│я┌п╬п╧ field
 	if( s_fvalue.empty() && it.getProp(s_field).empty() )
 		return false;
 
-	// просто проверка что field = value
+	// п©я─п╬я│я┌п╬ п©я─п╬п╡п╣я─п╨п╟ я┤я┌п╬ field = value
 	if( !s_fvalue.empty() && it.getProp(s_field)!=s_fvalue )
 		return false;
 
@@ -600,18 +600,18 @@ void UDPExchange::initIterators()
 // -----------------------------------------------------------------------------
 void UDPExchange::help_print( int argc, char* argv[] )
 {
-	cout << "--udp-polltime msec     - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
-	cout << "--udp-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--udp-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--udp-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
-	cout << "--udp-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
-	cout << "--udp-notRespondSensor - датчик связи для данного процесса " << endl;
-	cout << "--udp-sm-ready-timeout - время на ожидание старта SM" << endl;
-	cout << " Настройки протокола RS: " << endl;
-	cout << "--udp-dev devname  - файл устройства" << endl;
-	cout << "--udp-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
-	cout << "--udp-my-addr      - адрес текущего узла" << endl;
-	cout << "--udp-recv-timeout - Таймаут на ожидание ответа." << endl;
+	cout << "--udp-polltime msec     - п÷п╟я┐п╥п╟ п╪п╣п╤п╢я┐ п╬п©я─п╬я│п╟п╬п╪ п╨п╟я─я┌. п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ 200 п╪я│п╣п╨." << endl;
+	cout << "--udp-heartbeat-id      - п■п╟п╫п╫я▀п╧ п©я─п╬я├п╣я│я│ я│п╡я▐п╥п╟п╫ я│ я┐п╨п╟п╥п╟п╫п╫я▀п╪ п╟п╫п╟п╩п╬пЁп╬п╡я▀п╪ heartbeat-п╢п╟я┤п╦п╨п╬п╪." << endl;
+	cout << "--udp-heartbeat-max     - п°п╟п╨я│п╦п╪п╟п╩я▄п╫п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣ heartbeat-я│я┤я▒я┌я┤п╦п╨п╟ п╢п╩я▐ п╢п╟п╫п╫п╬пЁп╬ п©я─п╬я├п╣я│я│п╟. п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ 10." << endl;
+	cout << "--udp-ready-timeout     - п▓я─п╣п╪я▐ п╬п╤п╦п╢п╟п╫п╦я▐ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦ SM п╨ я─п╟п╠п╬я┌п╣, п╪я│п╣п╨. (-1 - п╤п╢п╟я┌я▄ 'п╡п╣я┤п╫п╬')" << endl;    
+	cout << "--udp-initPause		- п≈п╟п╢п╣я─п╤п╨п╟ п©п╣я─п╣п╢ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦п╣п╧ (п╡я─п╣п╪я▐ п╫п╟ п╟п╨я┌п╦п╡п╦п╥п╟я├п╦я▐ п©я─п╬я├п╣я│я│п╟)" << endl;
+	cout << "--udp-notRespondSensor - п╢п╟я┌я┤п╦п╨ я│п╡я▐п╥п╦ п╢п╩я▐ п╢п╟п╫п╫п╬пЁп╬ п©я─п╬я├п╣я│я│п╟ " << endl;
+	cout << "--udp-sm-ready-timeout - п╡я─п╣п╪я▐ п╫п╟ п╬п╤п╦п╢п╟п╫п╦п╣ я│я┌п╟я─я┌п╟ SM" << endl;
+	cout << " п²п╟я│я┌я─п╬п╧п╨п╦ п©я─п╬я┌п╬п╨п╬п╩п╟ RS: " << endl;
+	cout << "--udp-dev devname  - я└п╟п╧п╩ я┐я│я┌я─п╬п╧я│я┌п╡п╟" << endl;
+	cout << "--udp-speed        - п║п╨п╬я─п╬я│я┌я▄ п╬п╠п╪п╣п╫п╟ (9600,19920,38400,57600,115200)." << endl;
+	cout << "--udp-my-addr      - п╟п╢я─п╣я│ я┌п╣п╨я┐я┴п╣пЁп╬ я┐п╥п╩п╟" << endl;
+	cout << "--udp-recv-timeout - п╒п╟п╧п╪п╟я┐я┌ п╫п╟ п╬п╤п╦п╢п╟п╫п╦п╣ п╬я┌п╡п╣я┌п╟." << endl;
 }
 // -----------------------------------------------------------------------------
 UDPExchange* UDPExchange::init_udpexchange( int argc, char* argv[], UniSetTypes::ObjectId icID, SharedMemory* ic )
@@ -619,16 +619,16 @@ UDPExchange* UDPExchange::init_udpexchange( int argc, char* argv[], UniSetTypes:
 	string name = conf->getArgParam("--udp-name","UDPExchange1");
 	if( name.empty() )
 	{
-		cerr << "(udpexchange): Не задан name'" << endl;
+		cerr << "(udpexchange): п²п╣ п╥п╟п╢п╟п╫ name'" << endl;
 		return 0;
 	}
 
 	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		cerr << "(udpexchange): идентификатор '" << name 
-			<< "' не найден в конф. файле!"
-			<< " в секции " << conf->getObjectsSection() << endl;
+		cerr << "(udpexchange): п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ '" << name 
+			<< "' п╫п╣ п╫п╟п╧п╢п╣п╫ п╡ п╨п╬п╫я└. я└п╟п╧п╩п╣!"
+			<< " п╡ я│п╣п╨я├п╦п╦ " << conf->getObjectsSection() << endl;
 		return 0;
 	}
 

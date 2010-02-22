@@ -40,18 +40,18 @@ using namespace UniSetTypes;
 using namespace std;
 
 /* FIXME:
-По хорошему, надо отказаться от этого перекодирования
-на ходу, потому что в поиске это наверняка чрезвычайно замедляет.
-Возможно стоит использовать в качестве основы libxmlmm.
-Перед переделкой нужно написать полный тест на все функции UniXML.
-Особенно проверить распознавание кодировки XML-файла
-В качестве начальной мере добавлены функции getPropUtf8
+п÷п╬ я┘п╬я─п╬я┬п╣п╪я┐, п╫п╟п╢п╬ п╬я┌п╨п╟п╥п╟я┌я▄я│я▐ п╬я┌ я█я┌п╬пЁп╬ п©п╣я─п╣п╨п╬п╢п╦я─п╬п╡п╟п╫п╦я▐
+п╫п╟ я┘п╬п╢я┐, п©п╬я┌п╬п╪я┐ я┤я┌п╬ п╡ п©п╬п╦я│п╨п╣ я█я┌п╬ п╫п╟п╡п╣я─п╫я▐п╨п╟ я┤я─п╣п╥п╡я▀я┤п╟п╧п╫п╬ п╥п╟п╪п╣п╢п╩я▐п╣я┌.
+п▓п╬п╥п╪п╬п╤п╫п╬ я│я┌п╬п╦я┌ п╦я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ п╡ п╨п╟я┤п╣я│я┌п╡п╣ п╬я│п╫п╬п╡я▀ libxmlmm.
+п÷п╣я─п╣п╢ п©п╣я─п╣п╢п╣п╩п╨п╬п╧ п╫я┐п╤п╫п╬ п╫п╟п©п╦я│п╟я┌я▄ п©п╬п╩п╫я▀п╧ я┌п╣я│я┌ п╫п╟ п╡я│п╣ я└я┐п╫п╨я├п╦п╦ UniXML.
+п·я│п╬п╠п╣п╫п╫п╬ п©я─п╬п╡п╣я─п╦я┌я▄ я─п╟я│п©п╬п╥п╫п╟п╡п╟п╫п╦п╣ п╨п╬п╢п╦я─п╬п╡п╨п╦ XML-я└п╟п╧п╩п╟
+п▓ п╨п╟я┤п╣я│я┌п╡п╣ п╫п╟я┤п╟п╩я▄п╫п╬п╧ п╪п╣я─п╣ п╢п╬п╠п╟п╡п╩п╣п╫я▀ я└я┐п╫п╨я├п╦п╦ getPropUtf8
 */
 const string UniXML::InternalEncoding("koi8-r");
 const string UniXML::ExternalEncoding("koi8-r");
 const string UniXML::xmlEncoding("utf-8");
 
-// Временная переменная для подсчёта рекурсии
+// п▓я─п╣п╪п╣п╫п╫п╟я▐ п©п╣я─п╣п╪п╣п╫п╫п╟я▐ п╢п╩я▐ п©п╬п╢я│я┤я▒я┌п╟ я─п╣п╨я┐я─я│п╦п╦
 int UniXML::recur=0;
 
 UniXML::UniXML(const string filename):
@@ -74,7 +74,7 @@ UniXML::~UniXML()
 
 void UniXML::newDoc(const string& root_node, string xml_ver)
 {
-	assert(doc==0);	// предыдущий doc не удален из памяти
+	assert(doc==0);	// п©я─п╣п╢я▀п╢я┐я┴п╦п╧ doc п╫п╣ я┐п╢п╟п╩п╣п╫ п╦п╥ п©п╟п╪я▐я┌п╦
 
 	xmlKeepBlanksDefault(0);
 	xmlNode* rootnode;
@@ -84,7 +84,7 @@ void UniXML::newDoc(const string& root_node, string xml_ver)
 	xmlDocSetRootElement(doc, rootnode);
 	//assert(doc != NULL);
 	if(doc == NULL)
-		throw NameNotFound("UniXML(open): не смогли создать doc="+root_node);
+		throw NameNotFound("UniXML(open): п╫п╣ я│п╪п╬пЁп╩п╦ я│п╬п╥п╢п╟я┌я▄ doc="+root_node);
 	cur = getFirstNode();
 }
 
@@ -92,7 +92,7 @@ void UniXML::open(const string _filename)
 {
 //	if(doc)
 //		close();
-	assert(doc==0);	// предыдущий doc не удален из памяти
+	assert(doc==0);	// п©я─п╣п╢я▀п╢я┐я┴п╦п╧ doc п╫п╣ я┐п╢п╟п╩п╣п╫ п╦п╥ п©п╟п╪я▐я┌п╦
 
 	xmlKeepBlanksDefault(0);
 	doc = xmlParseFile(_filename.c_str());
@@ -113,7 +113,7 @@ void UniXML::close()
 	filename = "";
 }
 
-// Преобразование текстовой строки из XML в строку нашего внутреннего представления
+// п÷я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ я┌п╣п╨я│я┌п╬п╡п╬п╧ я│я┌я─п╬п╨п╦ п╦п╥ XML п╡ я│я┌я─п╬п╨я┐ п╫п╟я┬п╣пЁп╬ п╡п╫я┐я┌я─п╣п╫п╫п╣пЁп╬ п©я─п╣п╢я│я┌п╟п╡п╩п╣п╫п╦я▐
 
 string UniXML::xml2local(const string t)
 {
@@ -156,8 +156,8 @@ string UniXML::xml2local(const string t)
 
 static char tmpbuf_l2x[500];
 
-// Преобразование текстовой строки из нашего внутреннего представления в строку для XML
-// Возвращает указатель на временный буфер, который один на все вызовы функции.
+// п÷я─п╣п╬п╠я─п╟п╥п╬п╡п╟п╫п╦п╣ я┌п╣п╨я│я┌п╬п╡п╬п╧ я│я┌я─п╬п╨п╦ п╦п╥ п╫п╟я┬п╣пЁп╬ п╡п╫я┐я┌я─п╣п╫п╫п╣пЁп╬ п©я─п╣п╢я│я┌п╟п╡п╩п╣п╫п╦я▐ п╡ я│я┌я─п╬п╨я┐ п╢п╩я▐ XML
+// п▓п╬п╥п╡я─п╟я┴п╟п╣я┌ я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ п╡я─п╣п╪п╣п╫п╫я▀п╧ п╠я┐я└п╣я─, п╨п╬я┌п╬я─я▀п╧ п╬п╢п╦п╫ п╫п╟ п╡я│п╣ п╡я▀п╥п╬п╡я▀ я└я┐п╫п╨я├п╦п╦.
 const xmlChar* UniXML::local2xml(string text)
 {
 
@@ -249,7 +249,7 @@ xmlNode* UniXML::createNext(xmlNode* node, const string title, const string text
 	return 0;
 }
 
-/// Удаление указанного узла со всеми вложенными
+/// пёп╢п╟п╩п╣п╫п╦п╣ я┐п╨п╟п╥п╟п╫п╫п╬пЁп╬ я┐п╥п╩п╟ я│п╬ п╡я│п╣п╪п╦ п╡п╩п╬п╤п╣п╫п╫я▀п╪п╦
 void UniXML::removeNode(xmlNode* node)
 {
 	::xmlUnlinkNode(node);
@@ -261,13 +261,13 @@ xmlNode* UniXML::copyNode(xmlNode* node, int recursive)
 //	return ::xmlCopyNode(node,recursive);
 
 	xmlNode* copynode(::xmlCopyNode(node,recursive));
-/*!	\bug Почему-то портятся русские имена (точнее становятся UTF8)
-		независимо от текущей локали файла
- 		спасает только такое вот дополнительное копирование списка свойств
-	\bug Непонятный параметр 'target' 
-		- при указании NULL нормально работает
-		- при указании copynode - проблеммы с русским при сохранении
-		- при указании node - SEGFAULT при попытке удалить исходный(node) узел
+/*!	\bug п÷п╬я┤п╣п╪я┐-я┌п╬ п©п╬я─я┌я▐я┌я│я▐ я─я┐я│я│п╨п╦п╣ п╦п╪п╣п╫п╟ (я┌п╬я┤п╫п╣п╣ я│я┌п╟п╫п╬п╡я▐я┌я│я▐ UTF8)
+		п╫п╣п╥п╟п╡п╦я│п╦п╪п╬ п╬я┌ я┌п╣п╨я┐я┴п╣п╧ п╩п╬п╨п╟п╩п╦ я└п╟п╧п╩п╟
+ 		я│п©п╟я│п╟п╣я┌ я┌п╬п╩я▄п╨п╬ я┌п╟п╨п╬п╣ п╡п╬я┌ п╢п╬п©п╬п╩п╫п╦я┌п╣п╩я▄п╫п╬п╣ п╨п╬п©п╦я─п╬п╡п╟п╫п╦п╣ я│п©п╦я│п╨п╟ я│п╡п╬п╧я│я┌п╡
+	\bug п²п╣п©п╬п╫я▐я┌п╫я▀п╧ п©п╟я─п╟п╪п╣я┌я─ 'target' 
+		- п©я─п╦ я┐п╨п╟п╥п╟п╫п╦п╦ NULL п╫п╬я─п╪п╟п╩я▄п╫п╬ я─п╟п╠п╬я┌п╟п╣я┌
+		- п©я─п╦ я┐п╨п╟п╥п╟п╫п╦п╦ copynode - п©я─п╬п╠п╩п╣п╪п╪я▀ я│ я─я┐я│я│п╨п╦п╪ п©я─п╦ я│п╬я┘я─п╟п╫п╣п╫п╦п╦
+		- п©я─п╦ я┐п╨п╟п╥п╟п╫п╦п╦ node - SEGFAULT п©я─п╦ п©п╬п©я▀я┌п╨п╣ я┐п╢п╟п╩п╦я┌я▄ п╦я│я┘п╬п╢п╫я▀п╧(node) я┐п╥п╣п╩
 */
 	copynode->properties = ::xmlCopyPropList(NULL,node->properties);
 	if( copynode != 0 && node->parent )
@@ -288,7 +288,7 @@ bool UniXML::save(const string filename, int level)
 	string fn(filename);
 	if (fn.empty())
 		fn = this->filename;
-	// Если файл уже существует, переименовываем его в *.xml.bak
+	// п∙я│п╩п╦ я└п╟п╧п╩ я┐п╤п╣ я│я┐я┴п╣я│я┌п╡я┐п╣я┌, п©п╣я─п╣п╦п╪п╣п╫п╬п╡я▀п╡п╟п╣п╪ п╣пЁп╬ п╡ *.xml.bak
 	string bakfilename(fn+".bak");
 	rename(fn.c_str(),bakfilename.c_str());
 //	xmlEncodeEntitiesReentrant(doc, (const xmlChar*)ExternalEncoding.c_str());
@@ -298,7 +298,7 @@ bool UniXML::save(const string filename, int level)
 	return res > 0;
 }
 
-// Переместить указатель к следующему узлу, обходит по всему дереву
+// п÷п╣я─п╣п╪п╣я│я┌п╦я┌я▄ я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╨ я│п╩п╣п╢я┐я▌я┴п╣п╪я┐ я┐п╥п╩я┐, п╬п╠я┘п╬п╢п╦я┌ п©п╬ п╡я│п╣п╪я┐ п╢п╣я─п╣п╡я┐
 xmlNode* UniXML::nextNode(xmlNode* n)
 {
 	if (!n)
@@ -323,7 +323,7 @@ xmlNode* UniXML::findNodeUtf8(xmlNode* node, const string searchnode, const stri
 	{
 		if (searchnode == (const char*)node->name)
 		{
-			/* Если name не задано, не сверяем. Иначе ищем, пока не найдём с таким именем */
+			/* п∙я│п╩п╦ name п╫п╣ п╥п╟п╢п╟п╫п╬, п╫п╣ я│п╡п╣я─я▐п╣п╪. п≤п╫п╟я┤п╣ п╦я┴п╣п╪, п©п╬п╨п╟ п╫п╣ п╫п╟п╧п╢я▒п╪ я│ я┌п╟п╨п╦п╪ п╦п╪п╣п╫п╣п╪ */
 			if( name.empty() )
 				return node;
 			if( name == getPropUtf8(node, "name") )
@@ -454,7 +454,7 @@ bool UniXML_iterator::goChildren()
 
 	xmlNode* tmp(curNode);
 	curNode = curNode->children;
-	// использовать везде xmlIsBlankNode, если подходит
+	// п╦я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ п╡п╣п╥п╢п╣ xmlIsBlankNode, п╣я│п╩п╦ п©п╬п╢я┘п╬п╢п╦я┌
 	if ( getName() == "text" )
 		return goNext();
 	if ( getName() == "comment" )

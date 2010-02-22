@@ -56,7 +56,7 @@ int main( int argc, const char** argv )
 		SMDBServer* db = SMDBServer::init_smdbserver(argc,argv,shmID);
 		if( !db )
 		{
-			dlog[Debug::CRIT] << "(smdbserver): init не прошёл..." << endl;
+			dlog[Debug::CRIT] << "(smdbserver): init п╫п╣ п©я─п╬я┬я▒п╩..." << endl;
 			return 1;
 		}
 

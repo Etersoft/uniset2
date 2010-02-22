@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \brief Интерфейсный класс для создания структуры репозитария объектов 
+ * \brief п≤п╫я┌п╣я─я└п╣п╧я│п╫я▀п╧ п╨п╩п╟я│я│ п╢п╩я▐ я│п╬п╥п╢п╟п╫п╦я▐ я│я┌я─я┐п╨я┌я┐я─я▀ я─п╣п©п╬п╥п╦я┌п╟я─п╦я▐ п╬п╠я┼п╣п╨я┌п╬п╡ 
  * \author Pavel Vainerman
  * \version $Id: ObjectRepositoryFactory.h,v 1.8 2007/07/07 18:58:42 vpashka Exp $
  * \date  $Date: 2007/07/07 18:58:42 $
@@ -41,34 +41,34 @@
     {
     	public:
 //		  	ObjectRepositoryFactory();
-//			ObjectRepositoryFactory(int* argc=argc_ptr, char* **argv=argv_ptr); // параметры инициализации ORB
+//			ObjectRepositoryFactory(int* argc=argc_ptr, char* **argv=argv_ptr); // п©п╟я─п╟п╪п╣я┌я─я▀ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦п╦ ORB
 			ObjectRepositoryFactory( UniSetTypes::Configuration* conf );
 			~ObjectRepositoryFactory();
 			
-			//! Создание секции		
+			//! п║п╬п╥п╢п╟п╫п╦п╣ я│п╣п╨я├п╦п╦		
 			bool createSection(const char* name, const char* in_section )throw(UniSetTypes::ORepFailed,UniSetTypes::InvalidObjectName);
 			/*! \overload */
 			bool createSection(const std::string& name, const std::string& in_section)throw(UniSetTypes::ORepFailed,UniSetTypes::InvalidObjectName);
-			/*! Создание секции по полному имени */
+			/*! п║п╬п╥п╢п╟п╫п╦п╣ я│п╣п╨я├п╦п╦ п©п╬ п©п╬п╩п╫п╬п╪я┐ п╦п╪п╣п╫п╦ */
 			bool createSectionF(const std::string& fullName)throw(UniSetTypes::ORepFailed,UniSetTypes::InvalidObjectName);
 
-			//! Функция создания секции в корневом 'каталоге'
+			//! п╓я┐п╫п╨я├п╦я▐ я│п╬п╥п╢п╟п╫п╦я▐ я│п╣п╨я├п╦п╦ п╡ п╨п╬я─п╫п╣п╡п╬п╪ 'п╨п╟я┌п╟п╩п╬пЁп╣'
 			bool createRootSection(const char* name);
 			/*! \overload */
 			bool createRootSection(const std::string& name);
 
 
-			//! Функция удаления секции 
+			//! п╓я┐п╫п╨я├п╦я▐ я┐п╢п╟п╩п╣п╫п╦я▐ я│п╣п╨я├п╦п╦ 
 			bool removeSection(const std::string& fullName, bool recursive=false);
 
-			//! Функция переименования секции 
+			//! п╓я┐п╫п╨я├п╦я▐ п©п╣я─п╣п╦п╪п╣п╫п╬п╡п╟п╫п╦я▐ я│п╣п╨я├п╦п╦ 
 			bool renameSection(const std::string& newName, const std::string& fullName);
 		/**
 		    @addtogroup ORepServiceGroup 
 	    	    @{
 		*/
 			
-			/*! Функция выводящая на экран список всех объектов расположенных в данной секции */
+			/*! п╓я┐п╫п╨я├п╦я▐ п╡я▀п╡п╬п╢я▐я┴п╟я▐ п╫п╟ я█п╨я─п╟п╫ я│п©п╦я│п╬п╨ п╡я│п╣я┘ п╬п╠я┼п╣п╨я┌п╬п╡ я─п╟я│п©п╬п╩п╬п╤п╣п╫п╫я▀я┘ п╡ п╢п╟п╫п╫п╬п╧ я│п╣п╨я├п╦п╦ */
 			void printSection(const std::string& fullName);
 //			void printSection(CosNaming::NamingContext_ptr ctx);
 		// @}
@@ -77,7 +77,7 @@
 		protected:
 
 		private:
-			/*! Создание нового контекста(секции) */
+			/*! п║п╬п╥п╢п╟п╫п╦п╣ п╫п╬п╡п╬пЁп╬ п╨п╬п╫я┌п╣п╨я│я┌п╟(я│п╣п╨я├п╦п╦) */
 			bool createContext(const char *cname, CosNaming::NamingContext_ptr ctx);
     };
 //};

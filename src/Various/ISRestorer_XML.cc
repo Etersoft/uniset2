@@ -49,8 +49,8 @@ ISRestorer_XML::~ISRestorer_XML()
 void ISRestorer_XML::init( std::string fname )
 {
 	/*! 
-		\warning æÁÊÌ ÏÔËÒÙ×ÁÅÔÓÑ ÔÏÌØËÏ ÐÒÉ ÓÏÚÄÁÎÉÉ... 
-		ô.Å. ÎÅ ÂÕÄÕÔ ÕÞÔÅÎÙ ÉÚÍÅÎÅÎÉÑ × ÐÒÏÍÅÖÕÔËÅ ÍÅÖÄÕ ÚÁÐÉÓØÀ(dump-Á) ÆÁÊÌÁ
+		\warning Ð¤Ð°Ð¹Ð» Ð¾Ñ‚ÐºÑ€Ñ‹Ð²Ð°ÐµÑ‚ÑÑ Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ð¿Ñ€Ð¸ ÑÐ¾Ð·Ð´Ð°Ð½Ð¸Ð¸... 
+		Ð¢.Ðµ. Ð½Ðµ Ð±ÑƒÐ´ÑƒÑ‚ ÑƒÑ‡Ñ‚ÐµÐ½Ñ‹ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ Ð² Ð¿Ñ€Ð¾Ð¼ÐµÐ¶ÑƒÑ‚ÐºÐµ Ð¼ÐµÐ¶Ð´Ñƒ Ð·Ð°Ð¿Ð¸ÑÑŒÑŽ(dump-Ð°) Ñ„Ð°Ð¹Ð»Ð°
 	*/
 	try
 	{
@@ -72,7 +72,7 @@ void ISRestorer_XML::read( InfoServer* is, const string fn )
 
 	if( !fn.empty() )
 	{
-		 // ÏÐÔÉÍÉÚÁÃÉÑ (ÎÅ ÚÁÇÒÕÖÁÅÍ ×ÔÏÒÏÊ ÒÁÚ xml-ÆÁÊÌ)
+		 // Ð¾Ð¿Ñ‚Ð¸Ð¼Ð¸Ð·Ð°Ñ†Ð¸Ñ (Ð½Ðµ Ð·Ð°Ð³Ñ€ÑƒÐ¶Ð°ÐµÐ¼ Ð²Ñ‚Ð¾Ñ€Ð¾Ð¹ Ñ€Ð°Ð· xml-Ñ„Ð°Ð¹Ð»)
 		if( fn == conf->getConfFileName() && confxml )
 			read( is, *confxml );
 		else
@@ -84,7 +84,7 @@ void ISRestorer_XML::read( InfoServer* is, const string fn )
 	}
 	else
 	{
-		// ÏÐÔÉÍÉÚÁÃÉÑ (ÎÅ ÚÁÇÒÕÖÁÅÍ ×ÔÏÒÏÊ ÒÁÚ xml-ÆÁÊÌ)
+		// Ð¾Ð¿Ñ‚Ð¸Ð¼Ð¸Ð·Ð°Ñ†Ð¸Ñ (Ð½Ðµ Ð·Ð°Ð³Ñ€ÑƒÐ¶Ð°ÐµÐ¼ Ð²Ñ‚Ð¾Ñ€Ð¾Ð¹ Ñ€Ð°Ð· xml-Ñ„Ð°Ð¹Ð»)
 		if( fname == conf->getConfFileName() && confxml )
 			read( is, *confxml );
 		else
@@ -129,7 +129,7 @@ void ISRestorer_XML::read_list(UniXML& xml, xmlNode* node, InfoServer* is )
 		
 		if( code == UniSetTypes::DefaultMessageCode )
 		{
-			unideb[Debug::WARN] << "(read_list): ÎÅ ÓÍÏÇ ÐÏÌÕÞÉÔØ message code ÄÌÑ "
+			unideb[Debug::WARN] << "(read_list): Ð½Ðµ ÑÐ¼Ð¾Ð³ Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ message code Ð´Ð»Ñ "
 				<< it.getProp("name") << endl;
 			continue;
 		}

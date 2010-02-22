@@ -3,8 +3,8 @@
 SIG=-TERM
 ARGS=$1
 
-# внимание при сборке пакета эта строка меняется,
-# поэтому лучше её не трогать :) (см. makefile :install)
+# п╡п╫п╦п╪п╟п╫п╦п╣ п©я─п╦ я│п╠п╬я─п╨п╣ п©п╟п╨п╣я┌п╟ я█я┌п╟ я│я┌я─п╬п╨п╟ п╪п╣п╫я▐п╣я┌я│я▐,
+# п©п╬я█я┌п╬п╪я┐ п╩я┐я┤я┬п╣ п╣я▒ п╫п╣ я┌я─п╬пЁп╟я┌я▄ :) (я│п╪. makefile :install)
 . uniset-functions.sh
 
 std=0
@@ -28,14 +28,14 @@ fi
 
 if [ ! -e $RANSERVICES ]
 then
-	echo Не существует $RANSERVICES с запущенными сервисами
+	echo п²п╣ я│я┐я┴п╣я│я┌п╡я┐п╣я┌ $RANSERVICES я│ п╥п╟п©я┐я┴п╣п╫п╫я▀п╪п╦ я│п╣я─п╡п╦я│п╟п╪п╦
 	exit -1
 fi
 
 for i in $(tac $RANSERVICES | cut -d " " -f 2)
 do
 	TOKILL=$(basename $i)
-	echo -n Завершаем $TOKILL... 
+	echo -n п≈п╟п╡п╣я─я┬п╟п╣п╪ $TOKILL... 
 	if [ $(ps ax | grep $TOKILL | wc -l) = 0 ]
 	then
 		echo " already stoppped [ OK ]"

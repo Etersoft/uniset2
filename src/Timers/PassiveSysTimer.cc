@@ -84,7 +84,7 @@ void PassiveSysTimer::terminate()
 	{
 		timeAct = 0;
 		terminated = 1;
-//		cout << "PassiveTimer("<< pid <<"): ÐÒÅÒÙ×ÁÀ ÒÁÂÏÔÕ "<< endl;
+//		cout << "PassiveTimer("<< pid <<"): Ð¿Ñ€ÐµÑ€Ñ‹Ð²Ð°ÑŽ Ñ€Ð°Ð±Ð¾Ñ‚Ñƒ "<< endl;
 		kill(pid, SIGALRM);
 	}
 }
@@ -131,12 +131,12 @@ bool PassiveSysTimer::wait(timeout_t timeMS)
 	mtimer.it_interval.tv_usec = 0;
 	setitimer( ITIMER_REAL, &mtimer, (struct itimerval *)0 );
 
-	PassiveTimer::setTiming(timeMS); // ×ÙÚÙ×ÁÅÍ ÄÌÑ ÓÏ×ÍÅÓÔÉÍÏÓÔÉ Ó ÏÂÙÞÎÙÍ PassiveTimer-ÏÍ
+	PassiveTimer::setTiming(timeMS); // Ð²Ñ‹Ð·Ñ‹Ð²Ð°ÐµÐ¼ Ð´Ð»Ñ ÑÐ¾Ð²Ð¼ÐµÑÑ‚Ð¸Ð¼Ð¾ÑÑ‚Ð¸ Ñ Ð¾Ð±Ñ‹Ñ‡Ð½Ñ‹Ð¼ PassiveTimer-Ð¾Ð¼
 	
 	sigset_t mask, oldmask;
 
 	sigemptyset(&mask);
-	// ÂÌÏËÉÒÕÅÍ ×ÓÅ ÓÉÇÎÁÌÙ ËÒÏÍÅ ÜÔÉÈ
+	// Ð±Ð»Ð¾ÐºÐ¸Ñ€ÑƒÐµÐ¼ Ð²ÑÐµ ÑÐ¸Ð³Ð½Ð°Ð»Ñ‹ ÐºÑ€Ð¾Ð¼Ðµ ÑÑ‚Ð¸Ñ…
 	sigaddset( &mask, SIGALRM );
 	sigprocmask( SIG_BLOCK, &mask, &oldmask );
 	if (timeMS == WaitUpTime)

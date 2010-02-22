@@ -28,11 +28,11 @@ class RTUExchange:
 		RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
 		virtual ~RTUExchange();
 	
-		/*! глобальная функция для инициализации объекта */
+		/*! пЁп╩п╬п╠п╟п╩я▄п╫п╟я▐ я└я┐п╫п╨я├п╦я▐ п╢п╩я▐ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦п╦ п╬п╠я┼п╣п╨я┌п╟ */
 		static RTUExchange* init_rtuexchange( int argc, const char* const* argv,
 											UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
 
-		/*! глобальная функция для вывода help-а */
+		/*! пЁп╩п╬п╠п╟п╩я▄п╫п╟я▐ я└я┐п╫п╨я├п╦я▐ п╢п╩я▐ п╡я▀п╡п╬п╢п╟ help-п╟ */
 		static void help_print( int argc, const char* const* argv );
 
 		static const int NoSafetyState=-1;
@@ -44,7 +44,7 @@ class RTUExchange:
 
 		enum DeviceType
 		{
-			dtUnknown,		/*!< неизвестный */
+			dtUnknown,		/*!< п╫п╣п╦п╥п╡п╣я│я┌п╫я▀п╧ */
 			dtRTU,			/*!< RTU (default) */
 			dtRTU188,		/*!< RTU188 (Fastwell) */
 			dtMTR			/*!< MTR (DEIF) */
@@ -91,12 +91,12 @@ class RTUExchange:
 			{}
 
 			ModbusRTU::ModbusData mbval;
-			ModbusRTU::ModbusData mbreg;			/*!< регистр */
-			ModbusRTU::SlaveFunctionCode mbfunc;	/*!< функция для чтения/записи */
+			ModbusRTU::ModbusData mbreg;			/*!< я─п╣пЁп╦я│я┌я─ */
+			ModbusRTU::SlaveFunctionCode mbfunc;	/*!< я└я┐п╫п╨я├п╦я▐ п╢п╩я▐ я┤я┌п╣п╫п╦я▐/п╥п╟п©п╦я│п╦ */
 			PList slst;
 
 			// only for MTR
-			MTR::MTRType mtrType;	/*!< тип регистра (согласно спецификации на MTR) */
+			MTR::MTRType mtrType;	/*!< я┌п╦п© я─п╣пЁп╦я│я┌я─п╟ (я│п╬пЁп╩п╟я│п╫п╬ я│п©п╣я├п╦я└п╦п╨п╟я├п╦п╦ п╫п╟ MTR) */
 
 			// only for RTU188
 			RTUStorage::RTUJack rtuJack;
@@ -140,10 +140,10 @@ class RTUExchange:
 			
 			ComPort::Speed speed;
 			bool respnond;
-			ModbusRTU::ModbusAddr mbaddr;	/*!< адрес устройства */
+			ModbusRTU::ModbusAddr mbaddr;	/*!< п╟п╢я─п╣я│ я┐я│я┌я─п╬п╧я│я┌п╡п╟ */
 			RegMap regmap;
 
-			DeviceType dtype;	/*!< тип устройства */
+			DeviceType dtype;	/*!< я┌п╦п© я┐я│я┌я─п╬п╧я│я┌п╡п╟ */
 
 			UniSetTypes::ObjectId resp_id;
 			IOController::DIOStateList::iterator resp_dit;
@@ -206,7 +206,7 @@ class RTUExchange:
 
 		virtual bool activateObject();
 		
-		// действия при завершении работы
+		// п╢п╣п╧я│я┌п╡п╦я▐ п©я─п╦ п╥п╟п╡п╣я─я┬п╣п╫п╦п╦ я─п╟п╠п╬я┌я▀
 		virtual void sigterm( int signo );
 		
 		void initMB( bool reopen=false );
@@ -239,10 +239,10 @@ class RTUExchange:
 		bool initPause;
 		UniSetTypes::uniset_mutex mutex_start;
 
-		bool force;		/*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
-		bool force_out;	/*!< флаг означающий, принудительного чтения выходов */
+		bool force;		/*!< я└п╩п╟пЁ п╬п╥п╫п╟я┤п╟я▌я┴п╦п╧, я┤я┌п╬ п╫п╟п╢п╬ я│п╬я┘я─п╟п╫я▐я┌я▄ п╡ SM, п╢п╟п╤п╣ п╣я│п╩п╦ п╥п╫п╟я┤п╣п╫п╦п╣ п╫п╣ п╪п╣п╫я▐п╩п╬я│я▄ */
+		bool force_out;	/*!< я└п╩п╟пЁ п╬п╥п╫п╟я┤п╟я▌я┴п╦п╧, п©я─п╦п╫я┐п╢п╦я┌п╣п╩я▄п╫п╬пЁп╬ я┤я┌п╣п╫п╦я▐ п╡я▀я┘п╬п╢п╬п╡ */
 		bool mbregFromID;
-		int polltime;	/*!< переодичность обновления данных, [мсек] */
+		int polltime;	/*!< п©п╣я─п╣п╬п╢п╦я┤п╫п╬я│я┌я▄ п╬п╠п╫п╬п╡п╩п╣п╫п╦я▐ п╢п╟п╫п╫я▀я┘, [п╪я│п╣п╨] */
 
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;

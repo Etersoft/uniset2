@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *  \brief Класс работы с конфигурацией
+ *  \brief п п╩п╟я│я│ я─п╟п╠п╬я┌я▀ я│ п╨п╬п╫я└п╦пЁя┐я─п╟я├п╦п╣п╧
  *  \author Vitaly Lipatov, Pavel Vainerman
  *  \date   $Date: 2008/09/16 19:02:46 $
  *  \version $Id: Configuration.cc,v 1.41 2008/09/16 19:02:46 vpashka Exp $
@@ -51,8 +51,8 @@ static const string UniSetDefaultPort = "2809";
 static ostream& print_help( ostream& os, int width, const string cmd, 
 							const string help, const string tab="" )
 {
-	// чтобы не менчять параметры основного потока
-	// создаём свой stream...
+	// я┤я┌п╬п╠я▀ п╫п╣ п╪п╣п╫я┤я▐я┌я▄ п©п╟я─п╟п╪п╣я┌я─я▀ п╬я│п╫п╬п╡п╫п╬пЁп╬ п©п╬я┌п╬п╨п╟
+	// я│п╬п╥п╢п╟я▒п╪ я│п╡п╬п╧ stream...
 	ostringstream info;
 	info.setf(ios::left, ios::adjustfield);
 	info << tab << setw(width) << cmd << " - " << help;
@@ -62,18 +62,18 @@ static ostream& print_help( ostream& os, int width, const string cmd,
 ostream& UniSetTypes::Configuration::help(ostream& os)
 {
 	os << "\n UniSet Configure command: " << endl;
-	print_help(os,20,"--confile","полный путь до файла конфигурации\n");
+	print_help(os,20,"--confile","п©п╬п╩п╫я▀п╧ п©я┐я┌я▄ п╢п╬ я└п╟п╧п╩п╟ п╨п╬п╫я└п╦пЁя┐я─п╟я├п╦п╦\n");
 	os << "\n Debug command:\n";
-	print_help(os,25,"  [debname]","имя DebugStream указанное в конфигурационном файле\n");
-	print_help(os,25,"--[debname]-no-debug","отключение логов\n");
-	print_help(os,25,"--[debname]-log-in-file","перенаправление лога в файл\n");
-	print_help(os,25,"--[debname]-add-levels","добавить уровень вывода логов\n");
-	print_help(os,25,"--[debname]-del-levels","удалить уровень вывода логов\n");
-	print_help(os,25,"--uniport num","использовать заданный порт (переопеределяет 'defaultport' заданный в конф. файле в разделе <nodes>)\n");
-	print_help(os,25,"--localIOR {1,0}","использовать локальные файлы для получения IOR (т.е. не использовать omniNames). Переопределяет параметр в конфигурационном файле.\n");
-	print_help(os,25,"--transientIOR {1,0}","использовать генерируемые IOR(не постоянные). Переопределяет параметр в конфигурационном файле. Default=1\n");
+	print_help(os,25,"  [debname]","п╦п╪я▐ DebugStream я┐п╨п╟п╥п╟п╫п╫п╬п╣ п╡ п╨п╬п╫я└п╦пЁя┐я─п╟я├п╦п╬п╫п╫п╬п╪ я└п╟п╧п╩п╣\n");
+	print_help(os,25,"--[debname]-no-debug","п╬я┌п╨п╩я▌я┤п╣п╫п╦п╣ п╩п╬пЁп╬п╡\n");
+	print_help(os,25,"--[debname]-log-in-file","п©п╣я─п╣п╫п╟п©я─п╟п╡п╩п╣п╫п╦п╣ п╩п╬пЁп╟ п╡ я└п╟п╧п╩\n");
+	print_help(os,25,"--[debname]-add-levels","п╢п╬п╠п╟п╡п╦я┌я▄ я┐я─п╬п╡п╣п╫я▄ п╡я▀п╡п╬п╢п╟ п╩п╬пЁп╬п╡\n");
+	print_help(os,25,"--[debname]-del-levels","я┐п╢п╟п╩п╦я┌я▄ я┐я─п╬п╡п╣п╫я▄ п╡я▀п╡п╬п╢п╟ п╩п╬пЁп╬п╡\n");
+	print_help(os,25,"--uniport num","п╦я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ п╥п╟п╢п╟п╫п╫я▀п╧ п©п╬я─я┌ (п©п╣я─п╣п╬п©п╣я─п╣п╢п╣п╩я▐п╣я┌ 'defaultport' п╥п╟п╢п╟п╫п╫я▀п╧ п╡ п╨п╬п╫я└. я└п╟п╧п╩п╣ п╡ я─п╟п╥п╢п╣п╩п╣ <nodes>)\n");
+	print_help(os,25,"--localIOR {1,0}","п╦я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ п╩п╬п╨п╟п╩я▄п╫я▀п╣ я└п╟п╧п╩я▀ п╢п╩я▐ п©п╬п╩я┐я┤п╣п╫п╦я▐ IOR (я┌.п╣. п╫п╣ п╦я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ omniNames). п÷п╣я─п╣п╬п©я─п╣п╢п╣п╩я▐п╣я┌ п©п╟я─п╟п╪п╣я┌я─ п╡ п╨п╬п╫я└п╦пЁя┐я─п╟я├п╦п╬п╫п╫п╬п╪ я└п╟п╧п╩п╣.\n");
+	print_help(os,25,"--transientIOR {1,0}","п╦я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ пЁп╣п╫п╣я─п╦я─я┐п╣п╪я▀п╣ IOR(п╫п╣ п©п╬я│я┌п╬я▐п╫п╫я▀п╣). п÷п╣я─п╣п╬п©я─п╣п╢п╣п╩я▐п╣я┌ п©п╟я─п╟п╪п╣я┌я─ п╡ п╨п╬п╫я└п╦пЁя┐я─п╟я├п╦п╬п╫п╫п╬п╪ я└п╟п╧п╩п╣. Default=1\n");
 	
-	return os << "\nПример использования:\t myUniSetProgram "
+	return os << "\nп÷я─п╦п╪п╣я─ п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╫п╦я▐:\t myUniSetProgram "
 			  << "--unideb-add-levels level1,info,system,warn --unideb-log-in-file myprogrpam.log\n\n";
 }
 // -------------------------------------------------------------------------
@@ -263,7 +263,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 			}
 		}
 		
-		// Настраиваем отладочные логи
+		// п²п╟я│я┌я─п╟п╦п╡п╟п╣п╪ п╬я┌п╩п╟п╢п╬я┤п╫я▀п╣ п╩п╬пЁп╦
 		initDebug(unideb, "UniSetDebug");
 
 //		cerr << "*************** initConfiguration: oind: " << pt.getCurrent() << " msec " << endl;
@@ -303,24 +303,24 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 //		cerr << "*************** initConfiguration: parameters...: " << pt.getCurrent() << " msec " << endl;
 //		pt.reset();
 		
-		// считываем список узлов
+		// я│я┤п╦я┌я▀п╡п╟п╣п╪ я│п©п╦я│п╬п╨ я┐п╥п╩п╬п╡
 		createNodesList();
 
 		// ---------------------------------------------------------------------------------
-		// добавляем новые параметры в argv
-		// для передачи параметров orb по списку узлов
-		// взятому из configure.xml
+		// п╢п╬п╠п╟п╡п╩я▐п╣п╪ п╫п╬п╡я▀п╣ п©п╟я─п╟п╪п╣я┌я─я▀ п╡ argv
+		// п╢п╩я▐ п©п╣я─п╣п╢п╟я┤п╦ п©п╟я─п╟п╪п╣я┌я─п╬п╡ orb п©п╬ я│п©п╦я│п╨я┐ я┐п╥п╩п╬п╡
+		// п╡п╥я▐я┌п╬п╪я┐ п╦п╥ configure.xml
 		// +N --> -ORBIniRef NodeName=
 		// +2 --> -ORBIniRef NameService=
 		_argc 	= argc+2*lnodes.size()+2;
 		const char** new_argv	= new const char*[_argc];
 
 		int i = 0;
-		// перегоняем старые параметры
+		// п©п╣я─п╣пЁп╬п╫я▐п╣п╪ я│я┌п╟я─я▀п╣ п©п╟я─п╟п╪п╣я┌я─я▀
 		for( ; i < argc; i++ )
 			new_argv[i] = strdup(argv[i]);
 
-		// формируем новые, используя i в качестве индекса
+		// я└п╬я─п╪п╦я─я┐п╣п╪ п╫п╬п╡я▀п╣, п╦я│п©п╬п╩я▄п╥я┐я▐ i п╡ п╨п╟я┤п╣я│я┌п╡п╣ п╦п╫п╢п╣п╨я│п╟
 		for( UniSetTypes::ListOfNode::iterator it=lnodes.begin(); it!=lnodes.end(); ++it )
 		{
 			new_argv[i] = "-ORBInitRef";
@@ -331,36 +331,36 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 			new_argv[i+1] = strdup(param.str().c_str());
 
 			if( unideb.debugging(Debug::INFO) )
-				unideb[Debug::INFO] << "(Configuration): внесли параметр " << param.str() << endl;
+				unideb[Debug::INFO] << "(Configuration): п╡п╫п╣я│п╩п╦ п©п╟я─п╟п╪п╣я┌я─ " << param.str() << endl;
 			i+=2;
 
 			assert( i < _argc );
 		}
 		
-		// т..к _argc уже изменился, то и _argv надо обновить
-		// чтобы вызов getArgParam не привел к SIGSEGV
+		// я┌..п╨ _argc я┐п╤п╣ п╦п╥п╪п╣п╫п╦п╩я│я▐, я┌п╬ п╦ _argv п╫п╟п╢п╬ п╬п╠п╫п╬п╡п╦я┌я▄
+		// я┤я┌п╬п╠я▀ п╡я▀п╥п╬п╡ getArgParam п╫п╣ п©я─п╦п╡п╣п╩ п╨ SIGSEGV
 		_argv = new_argv;
 
 		// NameService (+2)
 		xmlNode* nsnode = getNode("NameService");
 		if( !nsnode )
 		{
-			unideb[Debug::WARN] << "(Configuration): не нашли раздела 'NameService' \n";
+			unideb[Debug::WARN] << "(Configuration): п╫п╣ п╫п╟я┬п╩п╦ я─п╟п╥п╢п╣п╩п╟ 'NameService' \n";
 			new_argv[i] 	= "";
 			new_argv[i+1] 	= "";
 		}
 		else
 		{
 			new_argv[i] = "-ORBInitRef";
-			new_argv[i+1] 	= ""; // сперва инициализиуем пустой строкой (т.к. будет вызываться getArgParam)
+			new_argv[i+1] 	= ""; // я│п©п╣я─п╡п╟ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я┐п╣п╪ п©я┐я│я┌п╬п╧ я│я┌я─п╬п╨п╬п╧ (я┌.п╨. п╠я┐п╢п╣я┌ п╡я▀п╥я▀п╡п╟я┌я▄я│я▐ getArgParam)
 			
-			string defPort( getPort( getProp(nsnode,"port") ) ); // здесь вызывается getArgParam! проходящий по _argv
+			string defPort( getPort( getProp(nsnode,"port") ) ); // п╥п╢п╣я│я▄ п╡я▀п╥я▀п╡п╟п╣я┌я│я▐ getArgParam! п©я─п╬я┘п╬п╢я▐я┴п╦п╧ п©п╬ _argv
 
 			ostringstream param;
 			param <<"NameService=corbaname::" << getProp(nsnode,"host") << ":" << defPort;
 			new_argv[i+1] = strdup(param.str().c_str());
 			if( unideb.debugging(Debug::INFO) )
-				unideb[Debug::INFO] << "(Configuration): внесли параметр " << param.str() << endl;
+				unideb[Debug::INFO] << "(Configuration): п╡п╫п╣я│п╩п╦ п©п╟я─п╟п╪п╣я┌я─ " << param.str() << endl;
 		}
 		
 		_argv = new_argv;
@@ -479,7 +479,7 @@ void Configuration::initParameters()
 			if( localTimerService == DefaultObjectId )
 			{
 				ostringstream msg;
-				msg << "Configuration: TimerService  '" << secTime << "' ?? ?????? ????????????? ÷ ObjectsMap!!!";
+				msg << "Configuration: TimerService  '" << secTime << "' ?? ?????? ????????????? ц╥ ObjectsMap!!!";
 				unideb[Debug::CRIT] << msg.str() << endl;
 				throw Exception(msg.str());
 			}
@@ -493,7 +493,7 @@ void Configuration::initParameters()
 			if( localInfoServer == DefaultObjectId )
 			{
 				ostringstream msg;
-				msg << "Configuration: InfoServer '" << secInfo << "' ?? ?????? ????????????? ÷ ObjectsMap!!!";
+				msg << "Configuration: InfoServer '" << secInfo << "' ?? ?????? ????????????? ц╥ ObjectsMap!!!";
 				unideb[Debug::CRIT] << msg.str() << endl;
 				throw Exception(msg.str());
 			}
@@ -507,7 +507,7 @@ void Configuration::initParameters()
 			if( localDBServer == DefaultObjectId )
 			{
 				ostringstream msg;
-				msg << "Configuration: DBServer '" << secDB << "' ?? ?????? ????????????? ÷ ObjectsMap!!!";
+				msg << "Configuration: DBServer '" << secDB << "' ?? ?????? ????????????? ц╥ ObjectsMap!!!";
 				unideb[Debug::CRIT] << msg.str() << endl;
 				throw Exception(msg.str());
 			}
@@ -664,7 +664,7 @@ void Configuration::createNodesList()
 	UniXML_iterator it(node);
 	it.goChildren();
 
-	// определяем порт
+	// п╬п©я─п╣п╢п╣п╩я▐п╣п╪ п©п╬я─я┌
 	string defPort(getPort(unixml.getProp(node,"port")));
 
 	lnodes.clear();
@@ -684,7 +684,7 @@ void Configuration::createNodesList()
 			nodename = oind->mkFullNodeName(nodename,nodename);
 
 		NodeInfo ninf;
-//		unideb[Debug::INFO] << "Configuration(createNodesList): вносим узел " << nodename << endl;
+//		unideb[Debug::INFO] << "Configuration(createNodesList): п╡п╫п╬я│п╦п╪ я┐п╥п╣п╩ " << nodename << endl;
 		ninf.id = oind->getIdByName(nodename);
 		if( ninf.id == DefaultObjectId )
 		{
@@ -794,7 +794,7 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
 		}
 	}
 
-	// смотрим настройки файла
+	// я│п╪п╬я┌я─п╦п╪ п╫п╟я│я┌я─п╬п╧п╨п╦ я└п╟п╧п╩п╟
 	if( dnode )
 	{
 		string conf_debug_levels(getProp(dnode,"levels"));
@@ -808,12 +808,12 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
 				deb.logFile(debug_file);
 	}
 	
-	// теперь смотрим командную строку
+	// я┌п╣п©п╣я─я▄ я│п╪п╬я┌я─п╦п╪ п╨п╬п╪п╟п╫п╢п╫я┐я▌ я│я┌я─п╬п╨я┐
 	string log_in("--"+debname+"-log-in-file");
 	string add_level("--"+debname+"-add-levels");
 	string del_level("--"+debname+"-del-levels");
 		
-	// смотрим командную строку
+	// я│п╪п╬я┌я─п╦п╪ п╨п╬п╪п╟п╫п╢п╫я┐я▌ я│я┌я─п╬п╨я┐
 	for (int i=1; i < (_argc - 1); i++)
 	{
 		if( log_in == _argv[i] )		// "--debug-log_in_file"
@@ -835,7 +835,7 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
 // -------------------------------------------------------------------------
 void Configuration::initRepSections()
 {
-	// Реализация под жёсткую структуру репозитория
+	// п═п╣п╟п╩п╦п╥п╟я├п╦я▐ п©п╬п╢ п╤я▒я│я┌п╨я┐я▌ я│я┌я─я┐п╨я┌я┐я─я┐ я─п╣п©п╬п╥п╦я┌п╬я─п╦я▐
 	xmlNode* node( unixml.findNode(unixml.getFirstNode(),"RootSection") );
 	if( node == NULL )
 	{
@@ -880,8 +880,8 @@ void Configuration::setConfFileName( const string fn )
 		return;
 	}
 
-	// Определение конфигурационного файла
-	// в порядке убывания приоритета
+	// п·п©я─п╣п╢п╣п╩п╣п╫п╦п╣ п╨п╬п╫я└п╦пЁя┐я─п╟я├п╦п╬п╫п╫п╬пЁп╬ я└п╟п╧п╩п╟
+	// п╡ п©п╬я─я▐п╢п╨п╣ я┐п╠я▀п╡п╟п╫п╦я▐ п©я─п╦п╬я─п╦я┌п╣я┌п╟
 
 	string tmp( getArgParam("--confile") );
 	if( !tmp.empty() )
@@ -906,23 +906,23 @@ void Configuration::setConfFileName( const string fn )
 // -------------------------------------------------------------------------
 string Configuration::getPort(const string port)
 {
-	// Порт задан в параметрах программы
+	// п÷п╬я─я┌ п╥п╟п╢п╟п╫ п╡ п©п╟я─п╟п╪п╣я┌я─п╟я┘ п©я─п╬пЁя─п╟п╪п╪я▀
 	string defport(getArgParam("--uniset-port"));
 	if( !defport.empty() )
 		return defport;
 
-	// Порт задан в переменной окружения
+	// п÷п╬я─я┌ п╥п╟п╢п╟п╫ п╡ п©п╣я─п╣п╪п╣п╫п╫п╬п╧ п╬п╨я─я┐п╤п╣п╫п╦я▐
 	if( getenv("UNISET_PORT") != NULL )
 	{
 		defport = getenv("UNISET_PORT");
 		return defport;
 	}
 
-	// Порт задан в параметрах
+	// п÷п╬я─я┌ п╥п╟п╢п╟п╫ п╡ п©п╟я─п╟п╪п╣я┌я─п╟я┘
 	if( !port.empty() )
 		return port;
 
-	// Порт по умолчанию
+	// п÷п╬я─я┌ п©п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌
 	return UniSetDefaultPort;
 }
 // -------------------------------------------------------------------------

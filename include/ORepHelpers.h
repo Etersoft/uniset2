@@ -34,15 +34,15 @@
 // -----------------------------------------------------------------------------------------
 /*!
  * \namespace ORepHelpers
- * В этом пространстве имен заключены вспомогательные функции используемые функциями ObjectRepository
+ * п▓ я█я┌п╬п╪ п©я─п╬я│я┌я─п╟п╫я│я┌п╡п╣ п╦п╪п╣п╫ п╥п╟п╨п╩я▌я┤п╣п╫я▀ п╡я│п©п╬п╪п╬пЁп╟я┌п╣п╩я▄п╫я▀п╣ я└я┐п╫п╨я├п╦п╦ п╦я│п©п╬п╩я▄п╥я┐п╣п╪я▀п╣ я└я┐п╫п╨я├п╦я▐п╪п╦ ObjectRepository
 */
 namespace ORepHelpers
 {
-    //! Получение ссылки на корень репозитория 
+    //! п÷п╬п╩я┐я┤п╣п╫п╦п╣ я│я│я▀п╩п╨п╦ п╫п╟ п╨п╬я─п╣п╫я▄ я─п╣п©п╬п╥п╦я┌п╬я─п╦я▐ 
     CosNaming::NamingContext_ptr getRootNamingContext(CORBA::ORB_ptr orb, 
 														const std::string& nsName, int timeOutSec=2);
 
-    //! Получение контекста по заданному имени 
+    //! п÷п╬п╩я┐я┤п╣п╫п╦п╣ п╨п╬п╫я┌п╣п╨я│я┌п╟ п©п╬ п╥п╟п╢п╟п╫п╫п╬п╪я┐ п╦п╪п╣п╫п╦ 
     CosNaming::NamingContext_ptr getContext(const std::string& cname, int argc,
 						const char* const* argv, const std::string& nsName)
 						throw(UniSetTypes::ORepFailed);
@@ -51,17 +51,17 @@ namespace ORepHelpers
 											const std::string& nsName)
 															throw(UniSetTypes::ORepFailed);
     
-    //! Функция отделяющая имя секции от полного имени 
+    //! п╓я┐п╫п╨я├п╦я▐ п╬я┌п╢п╣п╩я▐я▌я┴п╟я▐ п╦п╪я▐ я│п╣п╨я├п╦п╦ п╬я┌ п©п╬п╩п╫п╬пЁп╬ п╦п╪п╣п╫п╦ 
     const std::string getSectionName(const std::string& fullName, const std::string brk="/");
     
-    //! Функция выделения имени из полного имени 
+    //! п╓я┐п╫п╨я├п╦я▐ п╡я▀п╢п╣п╩п╣п╫п╦я▐ п╦п╪п╣п╫п╦ п╦п╥ п©п╬п╩п╫п╬пЁп╬ п╦п╪п╣п╫п╦ 
     const std::string getShortName(const std::string& fullName, const std::string brk="/");
 	
 	
-	//! Проверка на наличие недопустимых символов
+	//! п÷я─п╬п╡п╣я─п╨п╟ п╫п╟ п╫п╟п╩п╦я┤п╦п╣ п╫п╣п╢п╬п©я┐я│я┌п╦п╪я▀я┘ я│п╦п╪п╡п╬п╩п╬п╡
 	char checkBadSymbols(const std::string& str);
 	
-	/*! Получение строки запрещенных символов в виде '.', '/', и т.д. */
+	/*! п÷п╬п╩я┐я┤п╣п╫п╦п╣ я│я┌я─п╬п╨п╦ п╥п╟п©я─п╣я┴п╣п╫п╫я▀я┘ я│п╦п╪п╡п╬п╩п╬п╡ п╡ п╡п╦п╢п╣ '.', '/', п╦ я┌.п╢. */
 	std::string BadSymbolsToStr();
 
 }

@@ -15,7 +15,7 @@ std::ostream& operator<<( std::ostream& os, IOBase& inf )
 // -----------------------------------------------------------------------------
 bool IOBase::check_channel_break( long val )
 {
-	// порог не задан... (проверка отключена)
+	// п©п╬я─п╬пЁ п╫п╣ п╥п╟п╢п╟п╫... (п©я─п╬п╡п╣я─п╨п╟ п╬я┌п╨п╩я▌я┤п╣п╫п╟)
 	if( breaklim <= 0 )
 		return false;
 		
@@ -24,7 +24,7 @@ bool IOBase::check_channel_break( long val )
 // -----------------------------------------------------------------------------
 bool IOBase::check_jar( bool val )
 {
-	// нет защиты от дребезга
+	// п╫п╣я┌ п╥п╟я┴п╦я┌я▀ п╬я┌ п╢я─п╣п╠п╣п╥пЁп╟
 	if( ptJar.getInterval() <= 0 )
 	{
 		jar_state = val;
@@ -35,7 +35,7 @@ bool IOBase::check_jar( bool val )
 	{
 		if( !jar_pause )
 		{	
-			// засекаем время...
+			// п╥п╟я│п╣п╨п╟п╣п╪ п╡я─п╣п╪я▐...
 			jar_pause = true;
 			ptJar.reset();
 		}
@@ -43,19 +43,19 @@ bool IOBase::check_jar( bool val )
 	
 	if( jar_pause && ptJar.checkTime() )
 	{
-		// пауза на дребезг кончилась
-		// сохраняем значение
+		// п©п╟я┐п╥п╟ п╫п╟ п╢я─п╣п╠п╣п╥пЁ п╨п╬п╫я┤п╦п╩п╟я│я▄
+		// я│п╬я┘я─п╟п╫я▐п╣п╪ п╥п╫п╟я┤п╣п╫п╦п╣
 		jar_state = val;
 		jar_pause = false;
 	}
 
-	// возвращаем ТЕКУЩЕЕ, А НЕ НОВОЕ значение
+	// п╡п╬п╥п╡я─п╟я┴п╟п╣п╪ п╒п∙п пёп╘п∙п∙, п░ п²п∙ п²п·п▓п·п∙ п╥п╫п╟я┤п╣п╫п╦п╣
 	return jar_state;
 }
 // -----------------------------------------------------------------------------
 bool IOBase::check_on_delay( bool val )
 {
-	// нет задержки на включение
+	// п╫п╣я┌ п╥п╟п╢п╣я─п╤п╨п╦ п╫п╟ п╡п╨п╩я▌я┤п╣п╫п╦п╣
 	if( ptOnDelay.getInterval() <= 0 )
 	{
 		ondelay_state = val;
@@ -65,12 +65,12 @@ bool IOBase::check_on_delay( bool val )
 	if( trOnDelay.hi(val) )
 		ptOnDelay.reset();
 
-	// обновляем значение только если наступило время
-	// или если оно "0"...
+	// п╬п╠п╫п╬п╡п╩я▐п╣п╪ п╥п╫п╟я┤п╣п╫п╦п╣ я┌п╬п╩я▄п╨п╬ п╣я│п╩п╦ п╫п╟я│я┌я┐п©п╦п╩п╬ п╡я─п╣п╪я▐
+	// п╦п╩п╦ п╣я│п╩п╦ п╬п╫п╬ "0"...
 	if( !val || (val && ptOnDelay.checkTime()) )
 		ondelay_state = val;
 
-	// возвращаем ТЕКУЩЕЕ, А НЕ НОВОЕ значение
+	// п╡п╬п╥п╡я─п╟я┴п╟п╣п╪ п╒п∙п пёп╘п∙п∙, п░ п²п∙ п²п·п▓п·п∙ п╥п╫п╟я┤п╣п╫п╦п╣
 	return ondelay_state;
 }
 // -----------------------------------------------------------------------------
@@ -85,18 +85,18 @@ bool IOBase::check_off_delay( bool val )
 	if( trOffDelay.low(val) )
 		ptOffDelay.reset();
 
-	// обновляем значение только если наступило время
-	// или если оно "1"...
+	// п╬п╠п╫п╬п╡п╩я▐п╣п╪ п╥п╫п╟я┤п╣п╫п╦п╣ я┌п╬п╩я▄п╨п╬ п╣я│п╩п╦ п╫п╟я│я┌я┐п©п╦п╩п╬ п╡я─п╣п╪я▐
+	// п╦п╩п╦ п╣я│п╩п╦ п╬п╫п╬ "1"...
 	if( val || (!val && ptOffDelay.checkTime()) )
 		offdelay_state = val;
 
-	// возвращаем ТЕКУЩЕЕ, А НЕ НОВОЕ значение
+	// п╡п╬п╥п╡я─п╟я┴п╟п╣п╪ п╒п∙п пёп╘п∙п∙, п░ п²п∙ п²п·п▓п·п∙ п╥п╫п╟я┤п╣п╫п╦п╣
 	return offdelay_state;
 }
 // -----------------------------------------------------------------------------
 void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force )
 {
-	// проверка на обрыв
+	// п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п╬п╠я─я▀п╡
 	if( it->check_channel_break(val) )
 	{
 		uniset_spin_lock lock(it->val_lock);
@@ -117,7 +117,7 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 			val = it->df.filterRC(val);
 	}
 
-	if( it->cdiagram )	// задана специальная калибровочная диаграмма
+	if( it->cdiagram )	// п╥п╟п╢п╟п╫п╟ я│п©п╣я├п╦п╟п╩я▄п╫п╟я▐ п╨п╟п╩п╦п╠я─п╬п╡п╬я┤п╫п╟я▐ п╢п╦п╟пЁя─п╟п╪п╪п╟
 	{
 		if( it->craw != val )
 		{	
@@ -126,12 +126,12 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 			it->cprev = val;
 		}
 		else
-			val = it->cprev;	// просто передаём предыдущее значение
+			val = it->cprev;	// п©я─п╬я│я┌п╬ п©п╣я─п╣п╢п╟я▒п╪ п©я─п╣п╢я▀п╢я┐я┴п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣
 	}
 	else
 	{
 		IOController_i::CalibrateInfo* cal( &(it->cal) );
-		if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
+		if( cal->maxRaw!=cal->minRaw ) // п╥п╟п╢п╟п╫п╟ п╬п╠я▀я┤п╫п╟я▐ п╨п╟п╩п╦п╠я─п╬п╡п╨п╟
 			val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
 	}
 
@@ -139,8 +139,8 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 		val *= lround(pow10(it->cal.precision));
 
 
-	// если предыдущее значение "обрыв",
-	// то сбрасываем признак 
+	// п╣я│п╩п╦ п©я─п╣п╢я▀п╢я┐я┴п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣ "п╬п╠я─я▀п╡",
+	// я┌п╬ я│п╠я─п╟я│я▀п╡п╟п╣п╪ п©я─п╦п╥п╫п╟п╨ 
 	{
 		uniset_spin_lock lock(it->val_lock);
 		if( it->value == ChannelBreakValue )
@@ -169,7 +169,7 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 	if( it->cal.precision > 0 )
 		val = lroundf( fval * pow10(it->cal.precision) );
 
-	// проверка на обрыв
+	// п©я─п╬п╡п╣я─п╨п╟ п╫п╟ п╬п╠я─я▀п╡
 	if( it->check_channel_break(val) )
 	{
 		uniset_spin_lock lock(it->val_lock);
@@ -178,7 +178,7 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 		return;
 	}
 
-	// Читаем с использованием фильтра...
+	// п╖п╦я┌п╟п╣п╪ я│ п╦я│п©п╬п╩я▄п╥п╬п╡п╟п╫п╦п╣п╪ я└п╦п╩я▄я┌я─п╟...
 	if( !it->nofilter )
 	{
 		if( it->df.size() > 1 )
@@ -188,11 +188,11 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 	}
 
 	IOController_i::CalibrateInfo* cal( &(it->cal) );
-	if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
+	if( cal->maxRaw!=cal->minRaw ) // п╥п╟п╢п╟п╫п╟ п╬п╠я▀я┤п╫п╟я▐ п╨п╟п╩п╦п╠я─п╬п╡п╨п╟
 		val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
 
-	// если предыдущее значение "обрыв",
-	// то сбрасываем признак 
+	// п╣я│п╩п╦ п©я─п╣п╢я▀п╢я┐я┴п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣ "п╬п╠я─я▀п╡",
+	// я┌п╬ я│п╠я─п╟я│я▀п╡п╟п╣п╪ п©я─п╦п╥п╫п╟п╨ 
 	{
 		uniset_spin_lock lock(it->val_lock);
 		if( it->value == ChannelBreakValue )
@@ -221,12 +221,12 @@ void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force 
 		set ^= true;
 //	cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (inv)state=" << set << endl;
 
-	// Проверяем именно в такой последовательности!
-	set = it->check_jar(set);		// фильтр дребезга
+	// п÷я─п╬п╡п╣я─я▐п╣п╪ п╦п╪п╣п╫п╫п╬ п╡ я┌п╟п╨п╬п╧ п©п╬я│п╩п╣п╢п╬п╡п╟я┌п╣п╩я▄п╫п╬я│я┌п╦!
+	set = it->check_jar(set);		// я└п╦п╩я▄я┌я─ п╢я─п╣п╠п╣п╥пЁп╟
 //	cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (jar)state=" << set << endl;
-	set = it->check_on_delay(set);	// фильтр на срабатывание
+	set = it->check_on_delay(set);	// я└п╦п╩я▄я┌я─ п╫п╟ я│я─п╟п╠п╟я┌я▀п╡п╟п╫п╦п╣
 //	cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (on_delay)state=" << set << endl;
-	set = it->check_off_delay(set);	// фильтр на отпускание
+	set = it->check_off_delay(set);	// я└п╦п╩я▄я┌я─ п╫п╟ п╬я┌п©я┐я│п╨п╟п╫п╦п╣
 //	cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (off_delay)state=" << set << endl;
 
 	{
@@ -265,7 +265,7 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 	if( it->stype == UniversalIO::AnalogOutput ||
 		it->stype == UniversalIO::AnalogInput )
 	{
-		if( it->cdiagram )	// задана специальная калибровочная диаграмма
+		if( it->cdiagram )	// п╥п╟п╢п╟п╫п╟ я│п©п╣я├п╦п╟п╩я▄п╫п╟я▐ п╨п╟п╩п╦п╠я─п╬п╡п╬я┤п╫п╟я▐ п╢п╦п╟пЁя─п╟п╪п╪п╟
 		{
 			if( it->cprev != it->value )
 			{	
@@ -274,14 +274,14 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 				it->craw = val;
 			}
 			else
-				val = it->craw; // просто передаём предыдущее значение
+				val = it->craw; // п©я─п╬я│я┌п╬ п©п╣я─п╣п╢п╟я▒п╪ п©я─п╣п╢я▀п╢я┐я┴п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣
 		}
 		else
 		{
 			IOController_i::CalibrateInfo* cal( &(it->cal) );
-			if( cal && cal->maxRaw!=cal->minRaw ) // задана калибровка
+			if( cal && cal->maxRaw!=cal->minRaw ) // п╥п╟п╢п╟п╫п╟ п╨п╟п╩п╦п╠я─п╬п╡п╨п╟
 			{
-				// Калибруем в обратную сторону!!!
+				// п п╟п╩п╦п╠я─я┐п╣п╪ п╡ п╬п╠я─п╟я┌п╫я┐я▌ я│я┌п╬я─п╬п╫я┐!!!
 				val = UniSetTypes::lcalibrate(it->value,
 							cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, true );
 			}
@@ -328,7 +328,7 @@ float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
 	if( it->stype == UniversalIO::AnalogOutput ||
 		it->stype == UniversalIO::AnalogInput )
 	{
-		if( it->cdiagram )	// задана специальная калибровочная диаграмма
+		if( it->cdiagram )	// п╥п╟п╢п╟п╫п╟ я│п©п╣я├п╦п╟п╩я▄п╫п╟я▐ п╨п╟п╩п╦п╠я─п╬п╡п╬я┤п╫п╟я▐ п╢п╦п╟пЁя─п╟п╪п╪п╟
 		{
 			if( it->cprev != it->value )
 			{	
@@ -337,15 +337,15 @@ float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
 				it->craw = val;
 			}
 			else
-				val = it->craw; // просто передаём предыдущее значение
+				val = it->craw; // п©я─п╬я│я┌п╬ п©п╣я─п╣п╢п╟я▒п╪ п©я─п╣п╢я▀п╢я┐я┴п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣
 		}
 		else
 		{
 			float fval = val;
 			IOController_i::CalibrateInfo* cal( &(it->cal) );
-			if( cal->maxRaw!=cal->minRaw ) // задана калибровка
+			if( cal->maxRaw!=cal->minRaw ) // п╥п╟п╢п╟п╫п╟ п╨п╟п╩п╦п╠я─п╬п╡п╨п╟
 			{
-				// Калибруем в обратную сторону!!!
+				// п п╟п╩п╦п╠я─я┐п╣п╪ п╡ п╬п╠я─п╟я┌п╫я┐я▌ я│я┌п╬я─п╬п╫я┐!!!
 				fval = UniSetTypes::fcalibrate(fval,
 							cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, true );
 			}
@@ -367,8 +367,8 @@ void IOBase::processingThreshold( IOBase* it, SMInterface* shm, bool force )
 	bool set = it->value ? true : false;
 
 //	cout  << "val=" << val << " set=" << set << endl;
-	// Проверка нижнего предела
-	// значение должно быть меньше lowLimit-чуствительность
+	// п÷я─п╬п╡п╣я─п╨п╟ п╫п╦п╤п╫п╣пЁп╬ п©я─п╣п╢п╣п╩п╟
+	// п╥п╫п╟я┤п╣п╫п╦п╣ п╢п╬п╩п╤п╫п╬ п╠я▀я┌я▄ п╪п╣п╫я▄я┬п╣ lowLimit-я┤я┐я│я┌п╡п╦я┌п╣п╩я▄п╫п╬я│я┌я▄
 	if( val <= (it->ti.lowlimit-it->ti.sensibility) )
 		set = false;
 	else if( val >= (it->ti.hilimit+it->ti.sensibility) )
@@ -397,7 +397,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	if( sid == DefaultObjectId )
 	{
 		if( dlog )
-			dlog[Debug::CRIT] << myname << "(readItem): (-1) Не удалось получить ID для датчика: "
+			dlog[Debug::CRIT] << myname << "(readItem): (-1) п²п╣ я┐п╢п╟п╩п╬я│я▄ п©п╬п╩я┐я┤п╦я┌я▄ ID п╢п╩я▐ п╢п╟я┌я┤п╦п╨п╟: "
 						<< sname << endl;
 		return false;
 	}
@@ -428,8 +428,8 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	if( b->stype == UniversalIO::UnknownIOType )
 	{
 		if( dlog )
-			dlog[Debug::CRIT] << myname << "(IOBase::readItem): неизвестный iotype=: " 
-				<< it.getProp("iotype") << " для " << sname << endl;
+			dlog[Debug::CRIT] << myname << "(IOBase::readItem): п╫п╣п╦п╥п╡п╣я│я┌п╫я▀п╧ iotype=: " 
+				<< it.getProp("iotype") << " п╢п╩я▐ " << sname << endl;
 		return false;
 	}
 
@@ -475,7 +475,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 				b->f_filter_iir = true;
 			if( !it.getProp("filtersize").empty() )
 			{
-				#warning "почему здесь 0, хотя f_size инициализируется def_filtersize?"
+				#warning "п©п╬я┤п╣п╪я┐ п╥п╢п╣я│я▄ 0, я┘п╬я┌я▐ f_size п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─я┐п╣я┌я│я▐ def_filtersize?"
 				f_size = it.getPIntProp("filtersize",def_filtersize);
 			}
 		}
@@ -531,7 +531,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	}
 //	else
 //	{
-//		dlog[Debug::CRIT] << myname << "(IOBase::readItem): неизвестный iotype=: " << stype << " для " << sname << endl;
+//		dlog[Debug::CRIT] << myname << "(IOBase::readItem): п╫п╣п╦п╥п╡п╣я│я┌п╫я▀п╧ iotype=: " << stype << " п╢п╩я▐ " << sname << endl;
 //		return false;
 //	}
 

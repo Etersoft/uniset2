@@ -111,7 +111,7 @@ void MessageInterface_XML::read( UniXML& xml )
 	if( !root )
 	{
 		ostringstream msg;
-		msg << "(MessageInterface_XML::read): ÎÅ ÎÁÛÌÉ ËÏÒÎÅ×ÏÇÏ ÒÁÚÄÅÌÁ 'messages'";
+		msg << "(MessageInterface_XML::read): Ð½Ðµ Ð½Ð°ÑˆÐ»Ð¸ ÐºÐ¾Ñ€Ð½ÐµÐ²Ð¾Ð³Ð¾ Ñ€Ð°Ð·Ð´ÐµÐ»Ð° 'messages'";
 		throw NameNotFound(msg.str());
 	}
 
@@ -119,7 +119,7 @@ void MessageInterface_XML::read( UniXML& xml )
 	if( !it.goChildren() )
 	{
 		ostringstream msg;
-		msg << "(MessageInterface_XML::read): ÎÅ ÕÄÁÌÏÓØ ÐÅÒÅÊÔÉ Ë ÓÐÉÓËÕ ÜÌÅÍÅÎÔÏ× 'messages'";
+		msg << "(MessageInterface_XML::read): Ð½Ðµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ Ð¿ÐµÑ€ÐµÐ¹Ñ‚Ð¸ Ðº ÑÐ¿Ð¸ÑÐºÑƒ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð² 'messages'";
 		throw NameNotFound(msg.str());
 	}
 
@@ -135,13 +135,13 @@ void MessageInterface_XML::read( UniXML& xml )
 		if( ind >= msgmap.size() )
 		{
 			ostringstream msg;
-			msg << "(MessageInterface_XML::read): ÎÅ È×ÁÔÉÌÏ ÒÁÚÍÅÒÁ ÍÁÓÓÉ×Á maxSize=" << msgmap.size();
-			unideb[Debug::WARN] << msg.str() << "... äÅÌÁÅÍ resize + 100\n";
+			msg << "(MessageInterface_XML::read): Ð½Ðµ Ñ…Ð²Ð°Ñ‚Ð¸Ð»Ð¾ Ñ€Ð°Ð·Ð¼ÐµÑ€Ð° Ð¼Ð°ÑÑÐ¸Ð²Ð° maxSize=" << msgmap.size();
+			unideb[Debug::WARN] << msg.str() << "... Ð”ÐµÐ»Ð°ÐµÐ¼ resize + 100\n";
 			msgmap.resize(msgmap.size()+100);
 		}
 	}
 	
-	// ÐÏÄÇÏÎÑÅÍ ÐÏÄ ÒÅÁÌØÎÙÊ ÒÁÚÍÅÒ
+	// Ð¿Ð¾Ð´Ð³Ð¾Ð½ÑÐµÐ¼ Ð¿Ð¾Ð´ Ñ€ÐµÐ°Ð»ÑŒÐ½Ñ‹Ð¹ Ñ€Ð°Ð·Ð¼ÐµÑ€
 	msgmap.resize(ind);
 }
 

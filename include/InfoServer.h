@@ -36,33 +36,33 @@ class ISRestorer;
 //---------------------------------------------------------------------------
 /*!
 	\page ServicesPage
-	\section secInfoServer Сервис сообщений
-	 \subsection subIS_common Общие сведения
-		В его задачи входит обработка всех сообщений для оператора.
-	При приходе сообщения он производит следующие действия:
-	- переправляет сообщение в БД (\ref secDBServer)
-	- рассылает сообщение на все узлы, если оно помечено как broadcast.
-	- рассылает сообщение всем занесённым в RouteList(см. конф.файл).
-	- обрабатывает сообщение специфичным для каждого проекта образом (т.е. вызывает виртуальную 
-	функцию InfoServer::processing() )
+	\section secInfoServer п║п╣я─п╡п╦я│ я│п╬п╬п╠я┴п╣п╫п╦п╧
+	 \subsection subIS_common п·п╠я┴п╦п╣ я│п╡п╣п╢п╣п╫п╦я▐
+		п▓ п╣пЁп╬ п╥п╟п╢п╟я┤п╦ п╡я┘п╬п╢п╦я┌ п╬п╠я─п╟п╠п╬я┌п╨п╟ п╡я│п╣я┘ я│п╬п╬п╠я┴п╣п╫п╦п╧ п╢п╩я▐ п╬п©п╣я─п╟я┌п╬я─п╟.
+	п÷я─п╦ п©я─п╦я┘п╬п╢п╣ я│п╬п╬п╠я┴п╣п╫п╦я▐ п╬п╫ п©я─п╬п╦п╥п╡п╬п╢п╦я┌ я│п╩п╣п╢я┐я▌я┴п╦п╣ п╢п╣п╧я│я┌п╡п╦я▐:
+	- п©п╣я─п╣п©я─п╟п╡п╩я▐п╣я┌ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╡ п▒п■ (\ref secDBServer)
+	- я─п╟я│я│я▀п╩п╟п╣я┌ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╫п╟ п╡я│п╣ я┐п╥п╩я▀, п╣я│п╩п╦ п╬п╫п╬ п©п╬п╪п╣я┤п╣п╫п╬ п╨п╟п╨ broadcast.
+	- я─п╟я│я│я▀п╩п╟п╣я┌ я│п╬п╬п╠я┴п╣п╫п╦п╣ п╡я│п╣п╪ п╥п╟п╫п╣я│я▒п╫п╫я▀п╪ п╡ RouteList(я│п╪. п╨п╬п╫я└.я└п╟п╧п╩).
+	- п╬п╠я─п╟п╠п╟я┌я▀п╡п╟п╣я┌ я│п╬п╬п╠я┴п╣п╫п╦п╣ я│п©п╣я├п╦я└п╦я┤п╫я▀п╪ п╢п╩я▐ п╨п╟п╤п╢п╬пЁп╬ п©я─п╬п╣п╨я┌п╟ п╬п╠я─п╟п╥п╬п╪ (я┌.п╣. п╡я▀п╥я▀п╡п╟п╣я┌ п╡п╦я─я┌я┐п╟п╩я▄п╫я┐я▌ 
+	я└я┐п╫п╨я├п╦я▌ InfoServer::processing() )
 
-	\subsection subIS_idea Сценарий работы
-	 	На узле, где ведётся БД запускается один экземпляр сервиса. Клиенты могут получить доступ, несколькими способами:
-		- через NameService
-		- при помощи UniversalInterface::send()
+	\subsection subIS_idea п║я├п╣п╫п╟я─п╦п╧ я─п╟п╠п╬я┌я▀
+	 	п²п╟ я┐п╥п╩п╣, пЁп╢п╣ п╡п╣п╢я▒я┌я│я▐ п▒п■ п╥п╟п©я┐я│п╨п╟п╣я┌я│я▐ п╬п╢п╦п╫ я█п╨п╥п╣п╪п©п╩я▐я─ я│п╣я─п╡п╦я│п╟. п п╩п╦п╣п╫я┌я▀ п╪п╬пЁя┐я┌ п©п╬п╩я┐я┤п╦я┌я▄ п╢п╬я│я┌я┐п©, п╫п╣я│п╨п╬п╩я▄п╨п╦п╪п╦ я│п©п╬я│п╬п╠п╟п╪п╦:
+		- я┤п╣я─п╣п╥ NameService
+		- п©я─п╦ п©п╬п╪п╬я┴п╦ UniversalInterface::send()
 		
 	\par 		
-	Сервис является системным, поэтому его идентификатор можно получить при помощи 
-	UniSetTypes::Configuration::getInfoServer() объекта UniSetTypes::conf.
+	п║п╣я─п╡п╦я│ я▐п╡п╩я▐п╣я┌я│я▐ я│п╦я│я┌п╣п╪п╫я▀п╪, п©п╬я█я┌п╬п╪я┐ п╣пЁп╬ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ п╪п╬п╤п╫п╬ п©п╬п╩я┐я┤п╦я┌я▄ п©я─п╦ п©п╬п╪п╬я┴п╦ 
+	UniSetTypes::Configuration::getInfoServer() п╬п╠я┼п╣п╨я┌п╟ UniSetTypes::conf.
 
-	\subsection subIS_interface Интерфейс	
-	InfoServer позволяет заказывать уведомелние о приходе тех или иных сообщений, 
-	а также подтверждения(квитирования). Можно производить заказ сообщения по коду
+	\subsection subIS_interface п≤п╫я┌п╣я─я└п╣п╧я│	
+	InfoServer п©п╬п╥п╡п╬п╩я▐п╣я┌ п╥п╟п╨п╟п╥я▀п╡п╟я┌я▄ я┐п╡п╣п╢п╬п╪п╣п╩п╫п╦п╣ п╬ п©я─п╦я┘п╬п╢п╣ я┌п╣я┘ п╦п╩п╦ п╦п╫я▀я┘ я│п╬п╬п╠я┴п╣п╫п╦п╧, 
+	п╟ я┌п╟п╨п╤п╣ п©п╬п╢я┌п╡п╣я─п╤п╢п╣п╫п╦я▐(п╨п╡п╦я┌п╦я─п╬п╡п╟п╫п╦я▐). п°п╬п╤п╫п╬ п©я─п╬п╦п╥п╡п╬п╢п╦я┌я▄ п╥п╟п╨п╟п╥ я│п╬п╬п╠я┴п╣п╫п╦я▐ п©п╬ п╨п╬п╢я┐
 	\code
 		InfoServer::ackMessage(UniSetTypes::MessageCode msgid, const UniSetTypes::ConsumerInfo& ci, 
 									UniversalIO::UIOCommand cmd, CORBA::Boolean acknotify);
 	\endcode
-	или сразу из диапазона кодов
+	п╦п╩п╦ я│я─п╟п╥я┐ п╦п╥ п╢п╦п╟п©п╟п╥п╬п╫п╟ п╨п╬п╢п╬п╡
 	\code
 		InfoServer::ackMessageRange(UniSetTypes::MessageCode from, UniSetTypes::MessageCode to,
 									const UniSetTypes::ConsumerInfo& ci, 
@@ -70,12 +70,12 @@ class ISRestorer;
 	\endcode
 
 
-	Реализацию см. \ref InfoServer				
+	п═п╣п╟п╩п╦п╥п╟я├п╦я▌ я│п╪. \ref InfoServer				
 */
 
 /*!
  * \class InfoServer
- * \brief Интерфейс для вывода информации
+ * \brief п≤п╫я┌п╣я─я└п╣п╧я│ п╢п╩я▐ п╡я▀п╡п╬п╢п╟ п╦п╫я└п╬я─п╪п╟я├п╦п╦
 */ 
 class InfoServer: 
 	public UniSetObject,
@@ -88,17 +88,17 @@ class InfoServer:
 		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("InfoServer"); }
 
 		
-		// реализация IDL интерфейса
-		/*! заказ уведомления о приходе сообщения */
+		// я─п╣п╟п╩п╦п╥п╟я├п╦я▐ IDL п╦п╫я┌п╣я─я└п╣п╧я│п╟
+		/*! п╥п╟п╨п╟п╥ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦я▐ п╬ п©я─п╦я┘п╬п╢п╣ я│п╬п╬п╠я┴п╣п╫п╦я▐ */
 		virtual void ackMessage(UniSetTypes::MessageCode msgid, const UniSetTypes::ConsumerInfo& ci, 
 							UniversalIO::UIOCommand cmd, CORBA::Boolean acknotify);
-		/*! заказ уведомления о приходе сообщения из диапазона */
+		/*! п╥п╟п╨п╟п╥ я┐п╡п╣п╢п╬п╪п╩п╣п╫п╦я▐ п╬ п©я─п╦я┘п╬п╢п╣ я│п╬п╬п╠я┴п╣п╫п╦я▐ п╦п╥ п╢п╦п╟п©п╟п╥п╬п╫п╟ */
 		virtual void ackMessageRange(UniSetTypes::MessageCode from, UniSetTypes::MessageCode to,
 									const UniSetTypes::ConsumerInfo& ci, 
 									UniversalIO::UIOCommand cmd, CORBA::Boolean acknotify);
 
 
-		/*! информация о потребителе (заказчике) */
+		/*! п╦п╫я└п╬я─п╪п╟я├п╦я▐ п╬ п©п╬я┌я─п╣п╠п╦я┌п╣п╩п╣ (п╥п╟п╨п╟п╥я┤п╦п╨п╣) */
 		struct ConsumerInfoExt:
 			public	UniSetTypes::ConsumerInfo
 		{
@@ -110,30 +110,30 @@ class InfoServer:
 			CORBA::Boolean ask;
 		};
 
-		/*! Список потребителей */
+		/*! п║п©п╦я│п╬п╨ п©п╬я┌я─п╣п╠п╦я┌п╣п╩п╣п╧ */
 		typedef std::list<ConsumerInfoExt> ConsumerList; 				
 
-		/*! массив пар идентификатор->список потребителей */
+		/*! п╪п╟я│я│п╦п╡ п©п╟я─ п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─->я│п©п╦я│п╬п╨ п©п╬я┌я─п╣п╠п╦я┌п╣п╩п╣п╧ */
 		typedef std::map<UniSetTypes::MessageCode,ConsumerList> AskMap;		
 
 	
 	protected:
-		// Функции обработки пришедших сообщений 
+		// п╓я┐п╫п╨я├п╦п╦ п╬п╠я─п╟п╠п╬я┌п╨п╦ п©я─п╦я┬п╣п╢я┬п╦я┘ я│п╬п╬п╠я┴п╣п╫п╦п╧ 
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
 
-		/*! Функция обработки UniSetTypes::AlarmMessage.
-		 Переопределяется в кокретном проекте, если требуется специфичная обработка. */
+		/*! п╓я┐п╫п╨я├п╦я▐ п╬п╠я─п╟п╠п╬я┌п╨п╦ UniSetTypes::AlarmMessage.
+		 п÷п╣я─п╣п╬п©я─п╣п╢п╣п╩я▐п╣я┌я│я▐ п╡ п╨п╬п╨я─п╣я┌п╫п╬п╪ п©я─п╬п╣п╨я┌п╣, п╣я│п╩п╦ я┌я─п╣п╠я┐п╣я┌я│я▐ я│п©п╣я├п╦я└п╦я┤п╫п╟я▐ п╬п╠я─п╟п╠п╬я┌п╨п╟. */
 		virtual void processing(UniSetTypes::AlarmMessage &amsg){};
-		/*! Функция обработки UniSetTypes::InfoMessage.
-		 Переопределяется в кокретном проекте, если требуется специфичная обработка. */
+		/*! п╓я┐п╫п╨я├п╦я▐ п╬п╠я─п╟п╠п╬я┌п╨п╦ UniSetTypes::InfoMessage.
+		 п÷п╣я─п╣п╬п©я─п╣п╢п╣п╩я▐п╣я┌я│я▐ п╡ п╨п╬п╨я─п╣я┌п╫п╬п╪ п©я─п╬п╣п╨я┌п╣, п╣я│п╩п╦ я┌я─п╣п╠я┐п╣я┌я│я▐ я│п©п╣я├п╦я└п╦я┤п╫п╟я▐ п╬п╠я─п╟п╠п╬я┌п╨п╟. */
 		virtual void processing(UniSetTypes::InfoMessage &imsg){};
-		/*! Функция обработки UniSetTypes::AckMessage.
-		 Переопределяется в кокретном проекте, если требуется специфичная обработка. */
+		/*! п╓я┐п╫п╨я├п╦я▐ п╬п╠я─п╟п╠п╬я┌п╨п╦ UniSetTypes::AckMessage.
+		 п÷п╣я─п╣п╬п©я─п╣п╢п╣п╩я▐п╣я┌я│я▐ п╡ п╨п╬п╨я─п╣я┌п╫п╬п╪ п©я─п╬п╣п╨я┌п╣, п╣я│п╩п╦ я┌я─п╣п╠я┐п╣я┌я│я▐ я│п©п╣я├п╦я└п╦я┤п╫п╟я▐ п╬п╠я─п╟п╠п╬я┌п╨п╟. */
 		virtual void processing(UniSetTypes::ConfirmMessage &cmsg){};		
 
 		
-		/*! Предварительная обработка сообщения. Пересылка на другие узлы и
-			сохранение в базе.
+		/*! п÷я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫п╟я▐ п╬п╠я─п╟п╠п╬я┌п╨п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐. п÷п╣я─п╣я│я▀п╩п╨п╟ п╫п╟ п╢я─я┐пЁп╦п╣ я┐п╥п╩я▀ п╦
+			я│п╬я┘я─п╟п╫п╣п╫п╦п╣ п╡ п╠п╟п╥п╣.
 		*/
 		void preprocessing( UniSetTypes::TransportMessage& tmsg, bool broadcast );
 		void preprocessingConfirm( UniSetTypes::ConfirmMessage& am, bool broadcast );
@@ -141,41 +141,41 @@ class InfoServer:
 		virtual bool activateObject();
 
 
-		/*! сохранение списка заказчиков 
-			По умолчанию делает dump, если объявлен dumper.
+		/*! я│п╬я┘я─п╟п╫п╣п╫п╦п╣ я│п©п╦я│п╨п╟ п╥п╟п╨п╟п╥я┤п╦п╨п╬п╡ 
+			п÷п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ п╢п╣п╩п╟п╣я┌ dump, п╣я│п╩п╦ п╬п╠я┼я▐п╡п╩п╣п╫ dumper.
 		*/
 		virtual void dumpOrdersList(UniSetTypes::MessageCode mid, const ConsumerList& lst);
 
-		/*! чтение dump-файла */
+		/*! я┤я┌п╣п╫п╦п╣ dump-я└п╟п╧п╩п╟ */
 		virtual void readDump();
 
-		//! посылка информации об приходе сообщения
+		//! п©п╬я│я▀п╩п╨п╟ п╦п╫я└п╬я─п╪п╟я├п╦п╦ п╬п╠ п©я─п╦я┘п╬п╢п╣ я│п╬п╬п╠я┴п╣п╫п╦я▐
 		template<class TMessage>
 		void event(UniSetTypes::MessageCode key, TMessage& msg, CORBA::Boolean askn);
 
 		//----------------------
-		//! посылка информации об изменении состояния датчика
+		//! п©п╬я│я▀п╩п╨п╟ п╦п╫я└п╬я─п╪п╟я├п╦п╦ п╬п╠ п╦п╥п╪п╣п╫п╣п╫п╦п╦ я│п╬я│я┌п╬я▐п╫п╦я▐ п╢п╟я┌я┤п╦п╨п╟
 		template <class TMessage>
 		void send(ConsumerList& lst, TMessage& msg, CORBA::Boolean acknotify);
-		bool addConsumer(ConsumerList& lst, const UniSetTypes::ConsumerInfo& cons, CORBA::Boolean acknotify); 	//!< добавить потребителя сообщения
-		bool removeConsumer(ConsumerList& lst, const UniSetTypes::ConsumerInfo& cons, CORBA::Boolean acknotify);	//!< удалить потребителя сообщения
+		bool addConsumer(ConsumerList& lst, const UniSetTypes::ConsumerInfo& cons, CORBA::Boolean acknotify); 	//!< п╢п╬п╠п╟п╡п╦я┌я▄ п©п╬я┌я─п╣п╠п╦я┌п╣п╩я▐ я│п╬п╬п╠я┴п╣п╫п╦я▐
+		bool removeConsumer(ConsumerList& lst, const UniSetTypes::ConsumerInfo& cons, CORBA::Boolean acknotify);	//!< я┐п╢п╟п╩п╦я┌я▄ п©п╬я┌я─п╣п╠п╦я┌п╣п╩я▐ я│п╬п╬п╠я┴п╣п╫п╦я▐
 
 		
-		//! обработка заказа 
+		//! п╬п╠я─п╟п╠п╬я┌п╨п╟ п╥п╟п╨п╟п╥п╟ 
 		void ask(AskMap& askLst, UniSetTypes::MessageCode key, 
 					const UniSetTypes::ConsumerInfo& cons, UniversalIO::UIOCommand cmd,
 					CORBA::Boolean acknotify);
 
-		/*! указатель на объект реализующий дамп списка заказчиков */
+		/*! я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ п╬п╠я┼п╣п╨я┌ я─п╣п╟п╩п╦п╥я┐я▌я┴п╦п╧ п╢п╟п╪п© я│п©п╦я│п╨п╟ п╥п╟п╨п╟п╥я┤п╦п╨п╬п╡ */
 		ISRestorer* restorer;		
 
 	private:
 		friend class ISRestorer;
-		bool dbrepeat; /*!< флаг пересылки сообщений DBServer-у */
+		bool dbrepeat; /*!< я└п╩п╟пЁ п©п╣я─п╣я│я▀п╩п╨п╦ я│п╬п╬п╠я┴п╣п╫п╦п╧ DBServer-я┐ */
 
 
-		AskMap askList;	/*!< список потребителей */
-		/*! замок для блокирования совместного доступа к cписку потребителей */			
+		AskMap askList;	/*!< я│п©п╦я│п╬п╨ п©п╬я┌я─п╣п╠п╦я┌п╣п╩п╣п╧ */
+		/*! п╥п╟п╪п╬п╨ п╢п╩я▐ п╠п╩п╬п╨п╦я─п╬п╡п╟п╫п╦я▐ я│п╬п╡п╪п╣я│я┌п╫п╬пЁп╬ п╢п╬я│я┌я┐п©п╟ п╨ cп©п╦я│п╨я┐ п©п╬я┌я─п╣п╠п╦я┌п╣п╩п╣п╧ */			
 		UniSetTypes::uniset_mutex askMutex; 
 		
 		std::list<UniSetTypes::ConsumerInfo> routeList;

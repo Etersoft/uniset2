@@ -19,79 +19,79 @@ class ModbusClient
 		ModbusClient();
 		virtual ~ModbusClient();
 
-		// ------------- Modbus-функции ----------------------------------------
-		/*! Чтение группы регистров (0x01) 
-			\param addr - адрес slave-узла
-			\param start - начальный регистр с которого читать
-			\param count - сколько регистров читать 
+		// ------------- Modbus-я└я┐п╫п╨я├п╦п╦ ----------------------------------------
+		/*! п╖я┌п╣п╫п╦п╣ пЁя─я┐п©п©я▀ я─п╣пЁп╦я│я┌я─п╬п╡ (0x01) 
+			\param addr - п╟п╢я─п╣я│ slave-я┐п╥п╩п╟
+			\param start - п╫п╟я┤п╟п╩я▄п╫я▀п╧ я─п╣пЁп╦я│я┌я─ я│ п╨п╬я┌п╬я─п╬пЁп╬ я┤п╦я┌п╟я┌я▄
+			\param count - я│п╨п╬п╩я▄п╨п╬ я─п╣пЁп╦я│я┌я─п╬п╡ я┤п╦я┌п╟я┌я▄ 
 		*/
 		ModbusRTU::ReadCoilRetMessage read01( ModbusRTU::ModbusAddr addr,
 												ModbusRTU::ModbusData start, ModbusRTU::ModbusData count )
 													throw(ModbusRTU::mbException);
 
-		/*! Чтение группы регистров (0x02) 
-			\param addr - адрес slave-узла
-			\param start - начальный регистр с которого читать
-			\param count - сколько регистров читать 
+		/*! п╖я┌п╣п╫п╦п╣ пЁя─я┐п©п©я▀ я─п╣пЁп╦я│я┌я─п╬п╡ (0x02) 
+			\param addr - п╟п╢я─п╣я│ slave-я┐п╥п╩п╟
+			\param start - п╫п╟я┤п╟п╩я▄п╫я▀п╧ я─п╣пЁп╦я│я┌я─ я│ п╨п╬я┌п╬я─п╬пЁп╬ я┤п╦я┌п╟я┌я▄
+			\param count - я│п╨п╬п╩я▄п╨п╬ я─п╣пЁп╦я│я┌я─п╬п╡ я┤п╦я┌п╟я┌я▄ 
 		*/
 		ModbusRTU::ReadInputStatusRetMessage read02( ModbusRTU::ModbusAddr addr,
 												ModbusRTU::ModbusData start, ModbusRTU::ModbusData count )
 													throw(ModbusRTU::mbException);
 
 
-		/*! Чтение группы регистров (0x03) 
-			\param addr - адрес slave-узла
-			\param start - начальный регистр с которого читать
-			\param count - сколько регистров читать 
+		/*! п╖я┌п╣п╫п╦п╣ пЁя─я┐п©п©я▀ я─п╣пЁп╦я│я┌я─п╬п╡ (0x03) 
+			\param addr - п╟п╢я─п╣я│ slave-я┐п╥п╩п╟
+			\param start - п╫п╟я┤п╟п╩я▄п╫я▀п╧ я─п╣пЁп╦я│я┌я─ я│ п╨п╬я┌п╬я─п╬пЁп╬ я┤п╦я┌п╟я┌я▄
+			\param count - я│п╨п╬п╩я▄п╨п╬ я─п╣пЁп╦я│я┌я─п╬п╡ я┤п╦я┌п╟я┌я▄ 
 		*/
 		ModbusRTU::ReadOutputRetMessage read03( ModbusRTU::ModbusAddr addr,
 												ModbusRTU::ModbusData start, ModbusRTU::ModbusData count )
 													throw(ModbusRTU::mbException);
 
-		/*! Чтение группы регистров (0x04) 
-			\param addr - адрес slave-узла
-			\param start - начальный регистр с которого читать
-			\param count - сколько регистров читать 
+		/*! п╖я┌п╣п╫п╦п╣ пЁя─я┐п©п©я▀ я─п╣пЁп╦я│я┌я─п╬п╡ (0x04) 
+			\param addr - п╟п╢я─п╣я│ slave-я┐п╥п╩п╟
+			\param start - п╫п╟я┤п╟п╩я▄п╫я▀п╧ я─п╣пЁп╦я│я┌я─ я│ п╨п╬я┌п╬я─п╬пЁп╬ я┤п╦я┌п╟я┌я▄
+			\param count - я│п╨п╬п╩я▄п╨п╬ я─п╣пЁп╦я│я┌я─п╬п╡ я┤п╦я┌п╟я┌я▄ 
 		*/
 		ModbusRTU::ReadInputRetMessage read04( ModbusRTU::ModbusAddr addr,
 												ModbusRTU::ModbusData start, ModbusRTU::ModbusData count )
 													throw(ModbusRTU::mbException);
 
 		/*! 0x05 
-			\param addr - адрес slave-узла
-			\param reg - записываемый регистр
-			\param cmd - команда ON | OFF
+			\param addr - п╟п╢я─п╣я│ slave-я┐п╥п╩п╟
+			\param reg - п╥п╟п©п╦я│я▀п╡п╟п╣п╪я▀п╧ я─п╣пЁп╦я│я┌я─
+			\param cmd - п╨п╬п╪п╟п╫п╢п╟ ON | OFF
 		*/
 		ModbusRTU::ForceSingleCoilRetMessage write05( ModbusRTU::ModbusAddr addr,
 															ModbusRTU::ModbusData reg, bool cmd )
 																throw(ModbusRTU::mbException);
 
-		/*! Запись одного регистра (0x06) 
-			\param addr - адрес slave-узла
-			\param reg - записываемый регистр
-			\param data	- данные
+		/*! п≈п╟п©п╦я│я▄ п╬п╢п╫п╬пЁп╬ я─п╣пЁп╦я│я┌я─п╟ (0x06) 
+			\param addr - п╟п╢я─п╣я│ slave-я┐п╥п╩п╟
+			\param reg - п╥п╟п©п╦я│я▀п╡п╟п╣п╪я▀п╧ я─п╣пЁп╦я│я┌я─
+			\param data	- п╢п╟п╫п╫я▀п╣
 		*/
 		ModbusRTU::WriteSingleOutputRetMessage write06( ModbusRTU::ModbusAddr addr,
 															ModbusRTU::ModbusData reg, ModbusRTU::ModbusData data )
 																throw(ModbusRTU::mbException);
 
-		/*! Запись группы выходов (0x0F) */
+		/*! п≈п╟п©п╦я│я▄ пЁя─я┐п©п©я▀ п╡я▀я┘п╬п╢п╬п╡ (0x0F) */
 		ModbusRTU::ForceCoilsRetMessage write0F( ModbusRTU::ForceCoilsMessage& msg )
 														throw(ModbusRTU::mbException);
 
-		/*! Запись группы регистров (0x10) */
+		/*! п≈п╟п©п╦я│я▄ пЁя─я┐п©п©я▀ я─п╣пЁп╦я│я┌я─п╬п╡ (0x10) */
 		ModbusRTU::WriteOutputRetMessage write10( ModbusRTU::WriteOutputMessage& msg )
 														throw(ModbusRTU::mbException);
 
 
-		/*! Установить системное время (0x50)
-			hour	- часы [0..23]
-			min		- минуты [0..59]
-			sec		- секунды [0..59]
-			day		- день [1..31]
-			mon		- месяц [1..12]
-			year	- год [0..99]
-			century - столетие [19-20]
+		/*! пёя│я┌п╟п╫п╬п╡п╦я┌я▄ я│п╦я│я┌п╣п╪п╫п╬п╣ п╡я─п╣п╪я▐ (0x50)
+			hour	- я┤п╟я│я▀ [0..23]
+			min		- п╪п╦п╫я┐я┌я▀ [0..59]
+			sec		- я│п╣п╨я┐п╫п╢я▀ [0..59]
+			day		- п╢п╣п╫я▄ [1..31]
+			mon		- п╪п╣я│я▐я├ [1..12]
+			year	- пЁп╬п╢ [0..99]
+			century - я│я┌п╬п╩п╣я┌п╦п╣ [19-20]
 		*/
 		ModbusRTU::SetDateTimeRetMessage setDateTime( ModbusRTU::ModbusAddr addr, 
 							ModbusRTU::ModbusByte hour, ModbusRTU::ModbusByte min, ModbusRTU::ModbusByte sec,
@@ -100,31 +100,31 @@ class ModbusClient
 								throw(ModbusRTU::mbException);
 
 
-		/*! Загрузить файл (0x66) 
-			\param idFile - идентификатор файла
-			\param numpack - номер очередного запрашиваемого пакета
-			\param save2filename - имя файла, под которым будет сохранён полученный файл
-			\param part_timeout_msec - таймаут на получение очередной части файла.
+		/*! п≈п╟пЁя─я┐п╥п╦я┌я▄ я└п╟п╧п╩ (0x66) 
+			\param idFile - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ я└п╟п╧п╩п╟
+			\param numpack - п╫п╬п╪п╣я─ п╬я┤п╣я─п╣п╢п╫п╬пЁп╬ п╥п╟п©я─п╟я┬п╦п╡п╟п╣п╪п╬пЁп╬ п©п╟п╨п╣я┌п╟
+			\param save2filename - п╦п╪я▐ я└п╟п╧п╩п╟, п©п╬п╢ п╨п╬я┌п╬я─я▀п╪ п╠я┐п╢п╣я┌ я│п╬я┘я─п╟п╫я▒п╫ п©п╬п╩я┐я┤п╣п╫п╫я▀п╧ я└п╟п╧п╩
+			\param part_timeout_msec - я┌п╟п╧п╪п╟я┐я┌ п╫п╟ п©п╬п╩я┐я┤п╣п╫п╦п╣ п╬я┤п╣я─п╣п╢п╫п╬п╧ я┤п╟я│я┌п╦ я└п╟п╧п╩п╟.
 		*/
 		ModbusRTU::FileTransferRetMessage partOfFileTransfer( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusData idFile, 
 																ModbusRTU::ModbusData numpack, timeout_t part_timeout_msec=2000 )
 																	throw(ModbusRTU::mbException);
 
-		/*! Загрузить файл
-			\param idFile - идентификатор файла
-			\param save2filename - имя файла, под которым будет сохранён полученный файл
-			\param part_timeout_msec - таймаут на получение очередной части файла.
+		/*! п≈п╟пЁя─я┐п╥п╦я┌я▄ я└п╟п╧п╩
+			\param idFile - п╦п╢п╣п╫я┌п╦я└п╦п╨п╟я┌п╬я─ я└п╟п╧п╩п╟
+			\param save2filename - п╦п╪я▐ я└п╟п╧п╩п╟, п©п╬п╢ п╨п╬я┌п╬я─я▀п╪ п╠я┐п╢п╣я┌ я│п╬я┘я─п╟п╫я▒п╫ п©п╬п╩я┐я┤п╣п╫п╫я▀п╧ я└п╟п╧п╩
+			\param part_timeout_msec - я┌п╟п╧п╪п╟я┐я┌ п╫п╟ п©п╬п╩я┐я┤п╣п╫п╦п╣ п╬я┤п╣я─п╣п╢п╫п╬п╧ я┤п╟я│я┌п╦ я└п╟п╧п╩п╟.
 		*/
 		void fileTransfer( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusData idFile, 
 							const char* save2filename, timeout_t part_timeout_msec=2000 )
 														throw(ModbusRTU::mbException);
 
 		// ---------------------------------------------------------------------
-		/*! установить время ожидания по умолчанию */
+		/*! я┐я│я┌п╟п╫п╬п╡п╦я┌я▄ п╡я─п╣п╪я▐ п╬п╤п╦п╢п╟п╫п╦я▐ п©п╬ я┐п╪п╬п╩я┤п╟п╫п╦я▌ */
 		void setTimeout( timeout_t msec );
 		
-		/*! Установка паузы после посылки запроса
-			\return старое значение
+		/*! пёя│я┌п╟п╫п╬п╡п╨п╟ п©п╟я┐п╥я▀ п©п╬я│п╩п╣ п©п╬я│я▀п╩п╨п╦ п╥п╟п©я─п╬я│п╟
+			\return я│я┌п╟я─п╬п╣ п╥п╫п╟я┤п╣п╫п╦п╣
 		*/
 		int setAfterSendPause( timeout_t msec );
 
@@ -150,15 +150,15 @@ class ModbusClient
 
 		virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len )=0;
 
-		/*! функция запрос-ответ */
+		/*! я└я┐п╫п╨я├п╦я▐ п╥п╟п©я─п╬я│-п╬я┌п╡п╣я┌ */
 		virtual ModbusRTU::mbErrCode query( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& msg, 
 											ModbusRTU::ModbusMessage& reply, timeout_t timeout )=0;
 
 		// -------------------------------------
-		/*! посылка запроса */
+		/*! п©п╬я│я▀п╩п╨п╟ п╥п╟п©я─п╬я│п╟ */
 		virtual ModbusRTU::mbErrCode send( ModbusRTU::ModbusMessage& msg );
 
-		/*! обработка ответа */
+		/*! п╬п╠я─п╟п╠п╬я┌п╨п╟ п╬я┌п╡п╣я┌п╟ */
 		virtual ModbusRTU::mbErrCode recv( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusByte qfunc, 
 									ModbusRTU::ModbusMessage& rbuf, timeout_t timeout );
 
@@ -167,11 +167,11 @@ class ModbusClient
 
 
 
-		ModbusRTU::ModbusMessage reply;	/*!< буфер для приёма сообщений */
-		ModbusRTU::ModbusMessage qbuf; 	/*!< буфер для посылки сообщений */
+		ModbusRTU::ModbusMessage reply;	/*!< п╠я┐я└п╣я─ п╢п╩я▐ п©я─п╦я▒п╪п╟ я│п╬п╬п╠я┴п╣п╫п╦п╧ */
+		ModbusRTU::ModbusMessage qbuf; 	/*!< п╠я┐я└п╣я─ п╢п╩я▐ п©п╬я│я▀п╩п╨п╦ я│п╬п╬п╠я┴п╣п╫п╦п╧ */
 
-		timeout_t replyTimeOut_ms;	/*!< таймаут на ожидание ответа */
-		timeout_t aftersend_msec;		/*!< пауза после посылки запроса */
+		timeout_t replyTimeOut_ms;	/*!< я┌п╟п╧п╪п╟я┐я┌ п╫п╟ п╬п╤п╦п╢п╟п╫п╦п╣ п╬я┌п╡п╣я┌п╟ */
+		timeout_t aftersend_msec;		/*!< п©п╟я┐п╥п╟ п©п╬я│п╩п╣ п©п╬я│я▀п╩п╨п╦ п╥п╟п©я─п╬я│п╟ */
 		
 		bool crcNoCheckit;
 

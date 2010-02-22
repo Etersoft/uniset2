@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \brief Интерфейс к объекту сохраняющему список заказчиков для NotifyController-ов
+ * \brief п≤п╫я┌п╣я─я└п╣п╧я│ п╨ п╬п╠я┼п╣п╨я┌я┐ я│п╬я┘я─п╟п╫я▐я▌я┴п╣п╪я┐ я│п©п╦я│п╬п╨ п╥п╟п╨п╟п╥я┤п╦п╨п╬п╡ п╢п╩я▐ NotifyController-п╬п╡
  * \author Pavel Vainerman
  * \version $Id: NCRestorer.h,v 1.17 2008/12/14 21:57:51 vpashka Exp $
  * \date $Date: 2008/12/14 21:57:51 $
@@ -35,7 +35,7 @@
 #include "IONotifyController.h"
 // ------------------------------------------------------------------------------------------
 /*!
-	Это абстрактный интерфейс. В чистом виде не используется.
+	п╜я┌п╬ п╟п╠я│я┌я─п╟п╨я┌п╫я▀п╧ п╦п╫я┌п╣я─я└п╣п╧я│. п▓ я┤п╦я│я┌п╬п╪ п╡п╦п╢п╣ п╫п╣ п╦я│п©п╬п╩я▄п╥я┐п╣я┌я│я▐.
 */ 
 class NCRestorer
 {
@@ -76,19 +76,19 @@ class NCRestorer
 
 	protected:
 
-		// добавление списка заказчиков
+		// п╢п╬п╠п╟п╡п╩п╣п╫п╦п╣ я│п©п╦я│п╨п╟ п╥п╟п╨п╟п╥я┤п╦п╨п╬п╡
 		static void addlist( IONotifyController* ic, SInfo& inf, IONotifyController::ConsumerList& lst, bool force=false );
 
-		// добавление списка порогов и заказчиков
+		// п╢п╬п╠п╟п╡п╩п╣п╫п╦п╣ я│п©п╦я│п╨п╟ п©п╬я─п╬пЁп╬п╡ п╦ п╥п╟п╨п╟п╥я┤п╦п╨п╬п╡
 		static void addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyController::ThresholdExtList& lst, bool force=false );
 		
-		/*! регистрация дискретного датчика*/
+		/*! я─п╣пЁп╦я│я┌я─п╟я├п╦я▐ п╢п╦я│п╨я─п╣я┌п╫п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟*/
 		static inline void dsRegistration( IONotifyController* ic, IOController::UniDigitalIOInfo& inf, bool force=false )
 		{
 			ic->dsRegistration(inf,force);
 		}
 
-		/*! регистрация аналогового датчика*/
+		/*! я─п╣пЁп╦я│я┌я─п╟я├п╦я▐ п╟п╫п╟п╩п╬пЁп╬п╡п╬пЁп╬ п╢п╟я┌я┤п╦п╨п╟*/
 		static inline void asRegistration( IONotifyController* ic, IOController::UniAnalogIOInfo& inf, bool force=false )
 		{
 			ic->asRegistration(inf,force);
@@ -124,8 +124,8 @@ class NCRestorer
 };
 // ------------------------------------------------------------------------------------------
 /*!
- * \brief Реализация сохранения списка заказчиков в xml(работа с файлом проекта)
- *	Реализует сохранение списка заказчиков в xml-файле (версия для работы с файлом проекта).
+ * \brief п═п╣п╟п╩п╦п╥п╟я├п╦я▐ я│п╬я┘я─п╟п╫п╣п╫п╦я▐ я│п©п╦я│п╨п╟ п╥п╟п╨п╟п╥я┤п╦п╨п╬п╡ п╡ xml(я─п╟п╠п╬я┌п╟ я│ я└п╟п╧п╩п╬п╪ п©я─п╬п╣п╨я┌п╟)
+ *	п═п╣п╟п╩п╦п╥я┐п╣я┌ я│п╬я┘я─п╟п╫п╣п╫п╦п╣ я│п©п╦я│п╨п╟ п╥п╟п╨п╟п╥я┤п╦п╨п╬п╡ п╡ xml-я└п╟п╧п╩п╣ (п╡п╣я─я│п╦я▐ п╢п╩я▐ я─п╟п╠п╬я┌я▀ я│ я└п╟п╧п╩п╬п╪ п©я─п╬п╣п╨я┌п╟).
 */ 
 class NCRestorer_XML:
 	public Restorer_XML,
@@ -134,46 +134,46 @@ class NCRestorer_XML:
 	public:
 
 		/*!
-			\param fname - файл. (формата uniset-project)
+			\param fname - я└п╟п╧п╩. (я└п╬я─п╪п╟я┌п╟ uniset-project)
 		*/	
 		NCRestorer_XML(const std::string fname);
 
 		/*!
-			\param fname - файл. (формата uniset-project)
-			\param sensor_filterField - читать из списка только те узлы, у которых filterField="filterValue"
-			\param sensor_filterValue - значение для фильтрования списка
+			\param fname - я└п╟п╧п╩. (я└п╬я─п╪п╟я┌п╟ uniset-project)
+			\param sensor_filterField - я┤п╦я┌п╟я┌я▄ п╦п╥ я│п©п╦я│п╨п╟ я┌п╬п╩я▄п╨п╬ я┌п╣ я┐п╥п╩я▀, я┐ п╨п╬я┌п╬я─я▀я┘ filterField="filterValue"
+			\param sensor_filterValue - п╥п╫п╟я┤п╣п╫п╦п╣ п╢п╩я▐ я└п╦п╩я▄я┌я─п╬п╡п╟п╫п╦я▐ я│п©п╦я│п╨п╟
 		*/	
 		NCRestorer_XML( const std::string fname, const std::string sensor_filterField, const std::string sensor_filterValue="" );
 
 	    virtual ~NCRestorer_XML();
 		NCRestorer_XML();
 
-		/*! Установить фильтр на чтение списка 'зависимостей')
-			\note Функцию необходимо вызывать до вызова buildDependsList(...)
+		/*! пёя│я┌п╟п╫п╬п╡п╦я┌я▄ я└п╦п╩я▄я┌я─ п╫п╟ я┤я┌п╣п╫п╦п╣ я│п©п╦я│п╨п╟ 'п╥п╟п╡п╦я│п╦п╪п╬я│я┌п╣п╧')
+			\note п╓я┐п╫п╨я├п╦я▌ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╡я▀п╥я▀п╡п╟я┌я▄ п╢п╬ п╡я▀п╥п╬п╡п╟ buildDependsList(...)
 		 */
 		void setDependsFilter( const std::string filterField, const std::string filterValue="" );
 
 		bool setFileName( const std::string& file, bool create );
 		inline std::string getFileName(){ return fname; }
 
-		/*! установить функцию для callback-вызова 
-			при чтении списка пороговых датчиков. 
+		/*! я┐я│я┌п╟п╫п╬п╡п╦я┌я▄ я└я┐п╫п╨я├п╦я▌ п╢п╩я▐ callback-п╡я▀п╥п╬п╡п╟ 
+			п©я─п╦ я┤я┌п╣п╫п╦п╦ я│п©п╦я│п╨п╟ п©п╬я─п╬пЁп╬п╡я▀я┘ п╢п╟я┌я┤п╦п╨п╬п╡. 
 
 			bool xxxMyClass::myfunc(UniXML& xml, 
 									UniXML_iterator& it, xmlNode* sec)
-			uxml	- интерфейс для работы с xml-файлом
-			it 	- интератор(указатель) на текущий считываемый xml-узел (<sensor>)
-			sec	- указатель на корневой узел секции (<threshold>)
+			uxml	- п╦п╫я┌п╣я─я└п╣п╧я│ п╢п╩я▐ я─п╟п╠п╬я┌я▀ я│ xml-я└п╟п╧п╩п╬п╪
+			it 	- п╦п╫я┌п╣я─п╟я┌п╬я─(я┐п╨п╟п╥п╟я┌п╣п╩я▄) п╫п╟ я┌п╣п╨я┐я┴п╦п╧ я│я┤п╦я┌я▀п╡п╟п╣п╪я▀п╧ xml-я┐п╥п╣п╩ (<sensor>)
+			sec	- я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ п╨п╬я─п╫п╣п╡п╬п╧ я┐п╥п╣п╩ я│п╣п╨я├п╦п╦ (<threshold>)
 		*/
 		void setReadThresholdItem( ReaderSlot sl );
 
-		/*! установить функцию для callback-вызова при чтении списка зависимостей. 
+		/*! я┐я│я┌п╟п╫п╬п╡п╦я┌я▄ я└я┐п╫п╨я├п╦я▌ п╢п╩я▐ callback-п╡я▀п╥п╬п╡п╟ п©я─п╦ я┤я┌п╣п╫п╦п╦ я│п©п╦я│п╨п╟ п╥п╟п╡п╦я│п╦п╪п╬я│я┌п╣п╧. 
 
 			bool xxxMyClass::myfunc(UniXML& xml, 
 									UniXML_iterator& it, xmlNode* sec)
-			uxml	- интерфейс для работы с xml-файлом
-			it 	- интератор(указатель) на текущий считываемый xml-узел (<sensor>)
-			sec	- указатель на корневой узел секции (<depend>)
+			uxml	- п╦п╫я┌п╣я─я└п╣п╧я│ п╢п╩я▐ я─п╟п╠п╬я┌я▀ я│ xml-я└п╟п╧п╩п╬п╪
+			it 	- п╦п╫я┌п╣я─п╟я┌п╬я─(я┐п╨п╟п╥п╟я┌п╣п╩я▄) п╫п╟ я┌п╣п╨я┐я┴п╦п╧ я│я┤п╦я┌я▀п╡п╟п╣п╪я▀п╧ xml-я┐п╥п╣п╩ (<sensor>)
+			sec	- я┐п╨п╟п╥п╟я┌п╣п╩я▄ п╫п╟ п╨п╬я─п╫п╣п╡п╬п╧ я┐п╥п╣п╩ я│п╣п╨я├п╦п╦ (<depend>)
 		*/
 		void setReadDependItem( ReaderSlot sl );
 

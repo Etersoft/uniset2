@@ -13,9 +13,9 @@ using namespace std;
 // -------------------------------------------------------------------------
 //#define SWAPSHORT(x) ((((x)>>8)&0xff)|(((x)<<8)&0xff00))
 // -------------------------------------------------------------------------
-#define USE_CRC_TAB 1 // при расчёте использовать таблицы 
+#define USE_CRC_TAB 1 // п©я─п╦ я─п╟я│я┤я▒я┌п╣ п╦я│п©п╬п╩я▄п╥п╬п╡п╟я┌я▄ я┌п╟п╠п╩п╦я├я▀ 
 // -------------------------------------------------------------------------
-// Lav: не используется, см. ниже
+// Lav: п╫п╣ п╦я│п©п╬п╩я▄п╥я┐п╣я┌я│я▐, я│п╪. п╫п╦п╤п╣
 
 #ifdef USE_CRC_TAB
 #if 0
@@ -90,7 +90,7 @@ static unsigned short crc_16_tab[] = {
  0x8201, 0x42c0, 0x4380, 0x8341, 0x4100, 0x81c1, 0x8081, 0x4040
 };
 #endif
-// Lav: отключил, раз не используем
+// Lav: п╬я┌п╨п╩я▌я┤п╦п╩, я─п╟п╥ п╫п╣ п╦я│п©п╬п╩я▄п╥я┐п╣п╪
 #if 0
 // -------------------------------------------------------------------------
 static int get_crc_ccitt( unsigned short crc, unsigned char* buf, int size )
@@ -143,8 +143,8 @@ static int get_crc_16( unsigned short crc, unsigned char* buf, int size )
 }
 // -------------------------------------------------------------------------
 
-/*! \todo Необходимо разобраться с разными версиями и функциями расчёта CRC
-	и по возможности вынести их в отдельный модуль или класс
+/*! \todo п²п╣п╬п╠я┘п╬п╢п╦п╪п╬ я─п╟п╥п╬п╠я─п╟я┌я▄я│я▐ я│ я─п╟п╥п╫я▀п╪п╦ п╡п╣я─я│п╦я▐п╪п╦ п╦ я└я┐п╫п╨я├п╦я▐п╪п╦ я─п╟я│я┤я▒я┌п╟ CRC
+	п╦ п©п╬ п╡п╬п╥п╪п╬п╤п╫п╬я│я┌п╦ п╡я▀п╫п╣я│я┌п╦ п╦я┘ п╡ п╬я┌п╢п╣п╩я▄п╫я▀п╧ п╪п╬п╢я┐п╩я▄ п╦п╩п╦ п╨п╩п╟я│я│
 */
 ModbusCRC ModbusRTU::checkCRC( ModbusByte* buf, int len )
 {
@@ -157,11 +157,11 @@ ModbusCRC ModbusRTU::checkCRC( ModbusByte* buf, int len )
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, int len )
 {
-	// Чтобы не менять настройки 'os'
-	// сперва создаём свой поток вывода...
+	// п╖я┌п╬п╠я▀ п╫п╣ п╪п╣п╫я▐я┌я▄ п╫п╟я│я┌я─п╬п╧п╨п╦ 'os'
+	// я│п©п╣я─п╡п╟ я│п╬п╥п╢п╟я▒п╪ я│п╡п╬п╧ п©п╬я┌п╬п╨ п╡я▀п╡п╬п╢п╟...
 	ostringstream s;
 
-	// << setiosflags(ios::showbase) // для вывода в формате 0xNN
+	// << setiosflags(ios::showbase) // п╢п╩я▐ п╡я▀п╡п╬п╢п╟ п╡ я└п╬я─п╪п╟я┌п╣ 0xNN
 	s << hex << showbase << setfill('0'); // << showbase;
 	for( int i=0; i<len; i++ )
 		s << setw(2) << (short)(m[i]) << " ";
@@ -222,7 +222,7 @@ ErrorRetMessage::ErrorRetMessage( ModbusAddr _from,
 									ModbusByte _func, ModbusByte _ecode )
 {
 	addr = _from;
-	func = _func|MBErrMask;  // выставляем старший бит
+	func = _func|MBErrMask;  // п╡я▀я│я┌п╟п╡п╩я▐п╣п╪ я│я┌п╟я─я┬п╦п╧ п╠п╦я┌
 	ecode = _ecode;
 }
 // -------------------------------------------------------------------------
@@ -230,21 +230,21 @@ ModbusMessage ErrorRetMessage::transport_msg()
 {
 	ModbusMessage mm;
 
-	// копируем заголовок
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨
 	memcpy(&mm,this,szModbusHeader);
 
 	memcpy(&mm.data,&ecode,sizeof(ecode));
 
 	int ind = sizeof(ecode);
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[ind]),&crc,szCRC);
 
 	ind += szCRC;
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = ind; // szData();
 	return mm;
 }
@@ -277,21 +277,21 @@ ModbusMessage ReadCoilMessage::transport_msg()
 
 	ModbusMessage mm;
 
-	// копируем заголовок
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨
 	memcpy(&mm,this,szModbusHeader);
 
-	// копируем данные (переворачиваем байты)
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣ (п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
 
-	int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
+	int last = sizeof(d); // п╦п╫п╢п╣п╨я│ п╡ п╪п╟я│я│п╦п╡п╣ п╢п╟п╫п╫я▀я┘ ( п╠п╟п╧я┌п╬п╡я▀п╧ п╪п╟я│я│п╦п╡!!! )
 
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[last]),&crc,szCRC);
 
 	mm.len = szData();
@@ -316,7 +316,7 @@ void ReadCoilMessage::init( ModbusMessage& m )
 	memset(this,0,sizeof(*this));
 	memcpy(this,&m,sizeof(*this)); // m.len
 	
-	// переворачиваем слова
+	// п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ я│п╩п╬п╡п╟
 	start = SWAPSHORT(start);
 	count = SWAPSHORT(count);
 }
@@ -534,31 +534,31 @@ ModbusMessage ReadCoilRetMessage::transport_msg()
 //	assert(sizeof(ModbusMessage)>=sizeof(ReadCoilRetMessage));
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨ п╦ п╢п╟п╫п╫я▀п╣
 	memcpy(&mm,this,szModbusHeader);
 
 	memcpy(&mm.data,&bcnt,sizeof(bcnt));	
 	int ind = sizeof(bcnt);
 
-	// копируем данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣
 	memcpy(&(mm.data[ind]),data,bcnt);
 	ind+=bcnt;
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(bcnt)+bcnt );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[ind]),&crc,szCRC);
 	ind+=szCRC;
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = ind; 
 	return mm;
 }
 // -------------------------------------------------------------------------
 int ReadCoilRetMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
+	// я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ я┤п╦я│п╩п╬ п╢п╟п╫п╫я▀я┘ + п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟
 	return sizeof(bcnt)+bcnt+szCRC;
 }
 // -------------------------------------------------------------------------
@@ -587,21 +587,21 @@ ModbusMessage ReadInputStatusMessage::transport_msg()
 
 	ModbusMessage mm;
 
-	// копируем заголовок
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨
 	memcpy(&mm,this,szModbusHeader);
 
-	// копируем данные (переворачиваем байты)
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣ (п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
 
-	int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
+	int last = sizeof(d); // п╦п╫п╢п╣п╨я│ п╡ п╪п╟я│я│п╦п╡п╣ п╢п╟п╫п╫я▀я┘ ( п╠п╟п╧я┌п╬п╡я▀п╧ п╪п╟я│я│п╦п╡!!! )
 
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[last]),&crc,szCRC);
 
 	mm.len = szData();
@@ -626,7 +626,7 @@ void ReadInputStatusMessage::init( ModbusMessage& m )
 	memset(this,0,sizeof(*this));
 	memcpy(this,&m,sizeof(*this)); // m.len
 	
-	// переворачиваем слова
+	// п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ я│п╩п╬п╡п╟
 	start = SWAPSHORT(start);
 	count = SWAPSHORT(count);
 }
@@ -732,31 +732,31 @@ ModbusMessage ReadInputStatusRetMessage::transport_msg()
 //	assert(sizeof(ModbusMessage)>=sizeof(ReadCoilRetMessage));
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨ п╦ п╢п╟п╫п╫я▀п╣
 	memcpy(&mm,this,szModbusHeader);
 
 	memcpy(&mm.data,&bcnt,sizeof(bcnt));	
 	int ind = sizeof(bcnt);
 
-	// копируем данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣
 	memcpy(&(mm.data[ind]),data,bcnt);
 	ind+=bcnt;
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(bcnt)+bcnt );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[ind]),&crc,szCRC);
 	ind+=szCRC;
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = ind; 
 	return mm;
 }
 // -------------------------------------------------------------------------
 int ReadInputStatusRetMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
+	// я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ я┤п╦я│п╩п╬ п╢п╟п╫п╫я▀я┘ + п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟
 	return sizeof(bcnt)+bcnt+szCRC;
 }
 // -------------------------------------------------------------------------
@@ -786,24 +786,24 @@ ModbusMessage ReadOutputMessage::transport_msg()
 
 	ModbusMessage mm;
 
-	// копируем заголовок
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨
 	memcpy(&mm,this,szModbusHeader);
 
-	// копируем данные (переворачиваем байты)
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣ (п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
 
-	int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
+	int last(sizeof(d)); // п╦п╫п╢п╣п╨я│ п╡ п╪п╟я│я│п╦п╡п╣ п╢п╟п╫п╫я▀я┘ ( п╠п╟п╧я┌п╬п╡я▀п╧ п╪п╟я│я│п╦п╡!!! )
 
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[last]),&crc,szCRC);
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = szData();
 
 	return mm;
@@ -827,7 +827,7 @@ void ReadOutputMessage::init( ModbusMessage& m )
 	memset(this,0,sizeof(*this));
 	memcpy(this,&m,sizeof(*this)); // m.len
 	
-	// переворачиваем слова
+	// п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ я│п╩п╬п╡п╟
 	start = SWAPSHORT(start);
 	count = SWAPSHORT(count);
 }
@@ -877,7 +877,7 @@ void ReadOutputRetMessage::init( ModbusMessage& m )
 	bcnt 	= m.data[0];
 	memcpy(&data,&(m.data[1]),bcnt);
 	
-	// переворачиваем данные
+	// п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╢п╟п╫п╫я▀п╣
 	for( int i=0; i<cnt; i++ )
 		data[i] = SWAPSHORT(data[i]);
 
@@ -928,7 +928,7 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
 //	assert(sizeof(ModbusMessage)>=sizeof(ReadOutputRetMessage));
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨ п╦ п╢п╟п╫п╫я▀п╣
 	memcpy(&mm,this,szModbusHeader);
 	
 	int ind=0;
@@ -938,33 +938,33 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
 	memcpy(&mm.data,&bcnt,sizeof(bcnt));
 	ind+=sizeof(bcnt);
 
-	// копируем данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣
 //	int dlen = count*sizeof(ModbusData);
-//	прямое копирование
+//	п©я─я▐п╪п╬п╣ п╨п╬п©п╦я─п╬п╡п╟п╫п╦п╣
 //	memcpy(&(mm.data[sizeof(bcnt)]),data,dlen);
 
-	// Создаём временно массив, переворачиваем байты
+	// п║п╬п╥п╢п╟я▒п╪ п╡я─п╣п╪п╣п╫п╫п╬ п╪п╟я│я│п╦п╡, п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀
 	ModbusData* dtmp = new ModbusData[count];
 	for( int i=0; i<count; i++ )
 		dtmp[i] = SWAPSHORT(data[i]);
 
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy(&(mm.data[ind]),dtmp,bcnt);
 
 	delete dtmp;
 
 	ind+=bcnt;
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(bcnt)+bcnt );
 
 //	crc = SWAPSHORT(crc);
 	
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[ind]),&crc,szCRC);
 	ind+=szCRC;
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = ind; 
 
 	return mm;
@@ -972,7 +972,7 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
 // -------------------------------------------------------------------------
 int ReadOutputRetMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
+	// я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ я┤п╦я│п╩п╬ п╢п╟п╫п╫я▀я┘ + п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟
 	return sizeof(bcnt)+count*sizeof(ModbusData)+szCRC;
 }
 // -------------------------------------------------------------------------
@@ -1003,24 +1003,24 @@ ModbusMessage ReadInputMessage::transport_msg()
 
 	ModbusMessage mm;
 
-	// копируем заголовок
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨
 	memcpy(&mm,this,szModbusHeader);
 
-	// копируем данные (переворачиваем байты)
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣ (п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
 
-	int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
+	int last(sizeof(d)); // п╦п╫п╢п╣п╨я│ п╡ п╪п╟я│я│п╦п╡п╣ п╢п╟п╫п╫я▀я┘ ( п╠п╟п╧я┌п╬п╡я▀п╧ п╪п╟я│я│п╦п╡!!! )
 
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[last]),&crc,szCRC);
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = szData();
 	return mm;
 }
@@ -1043,7 +1043,7 @@ void ReadInputMessage::init( ModbusMessage& m )
 	memset(this,0,sizeof(*this));
 	memcpy(this,&m,sizeof(*this)); // m.len
 	
-	// переворачиваем слова
+	// п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ я│п╩п╬п╡п╟
 	start = SWAPSHORT(start);
 	count = SWAPSHORT(count);
 }
@@ -1089,7 +1089,7 @@ void ReadInputRetMessage::init( ModbusMessage& m )
 	bcnt 	= m.data[0];
 	memcpy(&data,&(m.data[1]),bcnt);
 	
-	// переворачиваем данные
+	// п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╢п╟п╫п╫я▀п╣
 	for( int i=0; i<cnt; i++ )
 		data[i] = SWAPSHORT(data[i]);
 
@@ -1135,7 +1135,7 @@ ModbusMessage ReadInputRetMessage::transport_msg()
 	ModbusMessage mm;
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨ п╦ п╢п╟п╫п╫я▀п╣
 	memcpy(&mm,this,szModbusHeader);
 	
 	int ind=0;
@@ -1145,33 +1145,33 @@ ModbusMessage ReadInputRetMessage::transport_msg()
 	memcpy(&mm.data,&bcnt,sizeof(bcnt));
 	ind+=sizeof(bcnt);
 
-	// Создаём временно массив, переворачиваем байты
+	// п║п╬п╥п╢п╟я▒п╪ п╡я─п╣п╪п╣п╫п╫п╬ п╪п╟я│я│п╦п╡, п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀
 	ModbusData* dtmp = new ModbusData[count];
 	for( int i=0; i<count; i++ )
 		dtmp[i] = SWAPSHORT(data[i]);
 
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy(&(mm.data[ind]),dtmp,bcnt);
 
 	delete dtmp;
 
 	ind+=bcnt;
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(bcnt)+bcnt );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[ind]),&crc,szCRC);
 	ind+=szCRC;
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = ind; 
 	return mm;
 }
 // -------------------------------------------------------------------------
 int ReadInputRetMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
+	// я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ я┤п╦я│п╩п╬ п╢п╟п╫п╫я▀я┘ + п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟
 	return sizeof(bcnt)+count*sizeof(ModbusData)+szCRC;
 }
 // -------------------------------------------------------------------------
@@ -1242,16 +1242,16 @@ ModbusMessage ForceCoilsMessage::transport_msg()
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 	ModbusMessage mm;
 
-	// копируем заголовок
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨
 	memcpy(&mm,this,szModbusHeader);
 	
 	int ind = 0;
 
-	// данные (переворачиваем байты)
+	// п╢п╟п╫п╫я▀п╣ (п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
 	ind += sizeof(d);
 
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy(mm.data,&d,ind);
 
 	// copy bcnt	
@@ -1259,25 +1259,25 @@ ModbusMessage ForceCoilsMessage::transport_msg()
 	memcpy(&(mm.data[ind]),&bcnt,sizeof(bcnt));
 	ind+=sizeof(bcnt);
 
-	// Создаём временно массив, переворачиваем байты
+	// п║п╬п╥п╢п╟я▒п╪ п╡я─п╣п╪п╣п╫п╫п╬ п╪п╟я│я│п╦п╡, п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀
 	ModbusData* dtmp = new ModbusData[quant];
 	for( int i=0; i<quant; i++ )
 		dtmp[i] = SWAPSHORT(data[i]);
 
-	// копируем данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣
 	memcpy(&(mm.data[ind]),dtmp,bcnt);
 	delete dtmp;
 
 	ind+=bcnt;
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[ind]),&crc,szCRC);
 	ind+=szCRC;
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = ind; 
 	return mm;
 }
@@ -1303,11 +1303,11 @@ void ForceCoilsMessage::init( ModbusMessage& m )
 	// copy not include CRC
 	memcpy(this,&m,szModbusHeader+m.len); 
 	
-	// Сперва переворачиваем обратно слова
+	// п║п©п╣я─п╡п╟ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╬п╠я─п╟я┌п╫п╬ я│п╩п╬п╡п╟
 	start = SWAPSHORT(start);
 	quant = SWAPSHORT(quant);
 
-	// потом проверяем
+	// п©п╬я┌п╬п╪ п©я─п╬п╡п╣я─я▐п╣п╪
 	if( !checkFormat() )
 	{
 #ifdef DEBUG
@@ -1316,15 +1316,15 @@ void ForceCoilsMessage::init( ModbusMessage& m )
 			<< " quant=" << (int)quant
 			<< endl;
 #endif
-		// Если данные не корректны
-		// чистим сообщение (в безопасные значения)
+		// п∙я│п╩п╦ п╢п╟п╫п╫я▀п╣ п╫п╣ п╨п╬я─я─п╣п╨я┌п╫я▀
+		// я┤п╦я│я┌п╦п╪ я│п╬п╬п╠я┴п╣п╫п╦п╣ (п╡ п╠п╣п╥п╬п©п╟я│п╫я▀п╣ п╥п╫п╟я┤п╣п╫п╦я▐)
 //		start=0;
-//		quant=0; // это нельзя обнулять (иначе данные станут корректны!!!)
+//		quant=0; // я█я┌п╬ п╫п╣п╩я▄п╥я▐ п╬п╠п╫я┐п╩я▐я┌я▄ (п╦п╫п╟я┤п╣ п╢п╟п╫п╫я▀п╣ я│я┌п╟п╫я┐я┌ п╨п╬я─я─п╣п╨я┌п╫я▀!!!)
 		bcnt=0;
 		memset(data,0,sizeof(data));
 	}
 
-	// последний элемент это CRC
+	// п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я█я┌п╬ CRC
 	memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 
 	for( int i=0; i<quant; i++ )
@@ -1392,15 +1392,15 @@ void ForceCoilsRetMessage::init( ModbusMessage& m )
 	// copy not include CRC
 	memcpy(this,&m,szModbusHeader+m.len); 
 
-#warning (WriteOutputRetMessage): необходимо встроить проверку на корректность данных
+#warning (WriteOutputRetMessage): п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╡я│я┌я─п╬п╦я┌я▄ п©я─п╬п╡п╣я─п╨я┐ п╫п╟ п╨п╬я─я─п╣п╨я┌п╫п╬я│я┌я▄ п╢п╟п╫п╫я▀я┘
 	
-	// Сперва переворачиваем обратно слова
+	// п║п©п╣я─п╡п╟ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╬п╠я─п╟я┌п╫п╬ я│п╩п╬п╡п╟
 	start = SWAPSHORT(start);
 	quant = SWAPSHORT(quant);
 	
 	int ind = sizeof(quant)+sizeof(start);
 	
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&crc,&(m.data[ind]),szCRC);
 }
 // -------------------------------------------------------------------------
@@ -1425,21 +1425,21 @@ ModbusMessage ForceCoilsRetMessage::transport_msg()
 
 	ModbusMessage mm;
 
-	// копируем заголовок
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨
 	memcpy(&mm,this,szModbusHeader);
 
-	// данные (переворачиваем байты)
+	// п╢п╟п╫п╫я▀п╣ (п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
 	int last(sizeof(d));
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+last );
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[last]),&crc,szCRC);
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = szData();
 
 	return mm;
@@ -1487,16 +1487,16 @@ ModbusMessage WriteOutputMessage::transport_msg()
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 	ModbusMessage mm;
 
-	// копируем заголовок
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨
 	memcpy(&mm,this,szModbusHeader);
 	
 	int ind = 0;
 
-	// данные (переворачиваем байты)
+	// п╢п╟п╫п╫я▀п╣ (п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
 	ind += sizeof(d);
 
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy(mm.data,&d,ind);
 
 	// copy bcnt	
@@ -1504,25 +1504,25 @@ ModbusMessage WriteOutputMessage::transport_msg()
 	memcpy(&(mm.data[ind]),&bcnt,sizeof(bcnt));
 	ind+=sizeof(bcnt);
 
-	// Создаём временно массив, переворачиваем байты
+	// п║п╬п╥п╢п╟я▒п╪ п╡я─п╣п╪п╣п╫п╫п╬ п╪п╟я│я│п╦п╡, п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀
 	ModbusData* dtmp = new ModbusData[quant];
 	for( int i=0; i<quant; i++ )
 		dtmp[i] = SWAPSHORT(data[i]);
 
-	// копируем данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣
 	memcpy(&(mm.data[ind]),dtmp,bcnt);
 	delete dtmp;
 
 	ind+=bcnt;
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[ind]),&crc,szCRC);
 	ind+=szCRC;
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = ind; 
 	return mm;
 }
@@ -1548,11 +1548,11 @@ void WriteOutputMessage::init( ModbusMessage& m )
 	// copy not include CRC
 	memcpy(this,&m,szModbusHeader+m.len); 
 	
-	// Сперва переворачиваем обратно слова
+	// п║п©п╣я─п╡п╟ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╬п╠я─п╟я┌п╫п╬ я│п╩п╬п╡п╟
 	start = SWAPSHORT(start);
 	quant = SWAPSHORT(quant);
 
-	// потом проверяем
+	// п©п╬я┌п╬п╪ п©я─п╬п╡п╣я─я▐п╣п╪
 	if( !checkFormat() )
 	{
 #ifdef DEBUG
@@ -1561,15 +1561,15 @@ void WriteOutputMessage::init( ModbusMessage& m )
 			<< " quant=" << (int)quant
 			<< endl;
 #endif
-		// Если данные не корректны
-		// чистим сообщение (в безопасные значения)
+		// п∙я│п╩п╦ п╢п╟п╫п╫я▀п╣ п╫п╣ п╨п╬я─я─п╣п╨я┌п╫я▀
+		// я┤п╦я│я┌п╦п╪ я│п╬п╬п╠я┴п╣п╫п╦п╣ (п╡ п╠п╣п╥п╬п©п╟я│п╫я▀п╣ п╥п╫п╟я┤п╣п╫п╦я▐)
 //		start=0;
-//		quant=0; // это нельзя обнулять (иначе данные станут корректны!!!)
+//		quant=0; // я█я┌п╬ п╫п╣п╩я▄п╥я▐ п╬п╠п╫я┐п╩я▐я┌я▄ (п╦п╫п╟я┤п╣ п╢п╟п╫п╫я▀п╣ я│я┌п╟п╫я┐я┌ п╨п╬я─я─п╣п╨я┌п╫я▀!!!)
 		bcnt=0;
 		memset(data,0,sizeof(data));
 	}
 
-	// последний элемент это CRC
+	// п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я█я┌п╬ CRC
 	memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 
 	int count( bcnt/sizeof(ModbusData) );
@@ -1593,13 +1593,13 @@ int WriteOutputMessage::getDataLen( ModbusMessage& m )
 	if( m.len < 0 )
 		return 0;
 
-	// копируем только часть заголовка возвращаем count
-	// считается, что в ModbusMessage необходимая часть уже получена...
+	// п╨п╬п©п╦я─я┐п╣п╪ я┌п╬п╩я▄п╨п╬ я┤п╟я│я┌я▄ п╥п╟пЁп╬п╩п╬п╡п╨п╟ п╡п╬п╥п╡я─п╟я┴п╟п╣п╪ count
+	// я│я┤п╦я┌п╟п╣я┌я│я▐, я┤я┌п╬ п╡ ModbusMessage п╫п╣п╬п╠я┘п╬п╢п╦п╪п╟я▐ я┤п╟я│я┌я▄ я┐п╤п╣ п©п╬п╩я┐я┤п╣п╫п╟...
 //	memcpy(&m,&wm,szModbusHeader+szHead());
 
-	WriteOutputMessage wm(m); // может просто смотреть m.data[0] ?!
+	WriteOutputMessage wm(m); // п╪п╬п╤п╣я┌ п©я─п╬я│я┌п╬ я│п╪п╬я┌я─п╣я┌я▄ m.data[0] ?!
 
-//#warning Может ли быть адрес нулевым или отрицательным?!
+//#warning п°п╬п╤п╣я┌ п╩п╦ п╠я▀я┌я▄ п╟п╢я─п╣я│ п╫я┐п╩п╣п╡я▀п╪ п╦п╩п╦ п╬я┌я─п╦я├п╟я┌п╣п╩я▄п╫я▀п╪?!
 //	assert( wm.start > 0 ); // ???
 
 	return (int)(wm.bcnt);
@@ -1607,11 +1607,11 @@ int WriteOutputMessage::getDataLen( ModbusMessage& m )
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteOutputMessage& m )
 {
-//  вывод потока байт (с неперевёрнутыми словами)
+//  п╡я▀п╡п╬п╢ п©п╬я┌п╬п╨п╟ п╠п╟п╧я┌ (я│ п╫п╣п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪п╦ я│п╩п╬п╡п╟п╪п╦)
 //	mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() - szCRC );
 //	return mbPrintMessage(os,(ModbusByte*)(&m.crc), szCRC );
 
-//	интелектуальный вывод :)
+//	п╦п╫я┌п╣п╩п╣п╨я┌я┐п╟п╩я▄п╫я▀п╧ п╡я▀п╡п╬п╢ :)
 	os << "addr=" << addr2str(m.addr) 
 		<< " start=" << dat2str(m.start) 
 		<< " quant=" << dat2str(m.quant) 
@@ -1649,15 +1649,15 @@ void WriteOutputRetMessage::init( ModbusMessage& m )
 	// copy not include CRC
 	memcpy(this,&m,szModbusHeader+m.len); 
 
-#warning (WriteOutputRetMessage): необходимо встроить проверку на корректность данных
+#warning (WriteOutputRetMessage): п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╡я│я┌я─п╬п╦я┌я▄ п©я─п╬п╡п╣я─п╨я┐ п╫п╟ п╨п╬я─я─п╣п╨я┌п╫п╬я│я┌я▄ п╢п╟п╫п╫я▀я┘
 	
-	// Сперва переворачиваем обратно слова
+	// п║п©п╣я─п╡п╟ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╬п╠я─п╟я┌п╫п╬ я│п╩п╬п╡п╟
 	start = SWAPSHORT(start);
 	quant = SWAPSHORT(quant);
 	
 	int ind = sizeof(quant)+sizeof(start);
 	
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&crc,&(m.data[ind]),szCRC);
 }
 // -------------------------------------------------------------------------
@@ -1682,21 +1682,21 @@ ModbusMessage WriteOutputRetMessage::transport_msg()
 
 	ModbusMessage mm;
 
-	// копируем заголовок
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨
 	memcpy(&mm,this,szModbusHeader);
 
-	// данные (переворачиваем байты)
+	// п╢п╟п╫п╫я▀п╣ (п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
 	int last(sizeof(d));
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+last );
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[last]),&crc,szCRC);
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = szData();
 
 	return mm;
@@ -1726,11 +1726,11 @@ ModbusMessage ForceSingleCoilMessage::transport_msg()
 	ModbusMessage mm;
 	memcpy(&mm,this,szModbusHeader);
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
-	int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
+	int last = sizeof(d); // п╦п╫п╢п╣п╨я│ п╡ п╪п╟я│я│п╦п╡п╣ п╢п╟п╫п╫я▀я┘ ( п╠п╟п╧я┌п╬п╡я▀п╧ п╪п╟я│я│п╦п╡!!! )
 	memcpy(mm.data,&d,last);
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+last );
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[last]),&crc,szCRC);
 	mm.len = szData();
 	return mm;
@@ -1753,21 +1753,21 @@ void ForceSingleCoilMessage::init( ModbusMessage& m )
 	assert( m.func == fnForceSingleCoil );
 	memset(this,0,sizeof(*this));
 
-	// копируем данные вместе с CRC	
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣ п╡п╪п╣я│я┌п╣ я│ CRC	
 	memcpy(this,&m,szModbusHeader+m.len+szCRC); 
 	
-	// Сперва переворачиваем обратно слова
+	// п║п©п╣я─п╡п╟ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╬п╠я─п╟я┌п╫п╬ я│п╩п╬п╡п╟
 	start 	= SWAPSHORT(start);
 	data 	= SWAPSHORT(data);
 
-	// потом проверяем
+	// п©п╬я┌п╬п╪ п©я─п╬п╡п╣я─я▐п╣п╪
 	if( !checkFormat() )
 	{
 #ifdef DEBUG	
 		cerr << "(ForceSingleCoil): BAD format!" << endl;
 #endif
-		// Если собщение некорректно
-		// чистим сообщение (в безопасные значения)
+		// п∙я│п╩п╦ я│п╬п╠я┴п╣п╫п╦п╣ п╫п╣п╨п╬я─я─п╣п╨я┌п╫п╬
+		// я┤п╦я│я┌п╦п╪ я│п╬п╬п╠я┴п╣п╫п╦п╣ (п╡ п╠п╣п╥п╬п©п╟я│п╫я▀п╣ п╥п╫п╟я┤п╣п╫п╦я▐)
 		data = 0;
 	}
 }
@@ -1821,9 +1821,9 @@ void ForceSingleCoilRetMessage::init( ModbusMessage& m )
 	// copy not include CRC
 	memcpy(this,&m,szModbusHeader+m.len); 
 
-#warning (ForceSingleCoilRetMessage): необходимо встроить проверку на корректность данных
+#warning (ForceSingleCoilRetMessage): п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╡я│я┌я─п╬п╦я┌я▄ п©я─п╬п╡п╣я─п╨я┐ п╫п╟ п╨п╬я─я─п╣п╨я┌п╫п╬я│я┌я▄ п╢п╟п╫п╫я▀я┘
 	
-	// переворачиваем обратно слова
+	// п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╬п╠я─п╟я┌п╫п╬ я│п╩п╬п╡п╟
 	start 	= SWAPSHORT(start);
 	data 	= SWAPSHORT(data);
 }
@@ -1848,24 +1848,24 @@ ModbusMessage ForceSingleCoilRetMessage::transport_msg()
 
 	ModbusMessage mm;
 
-	// копируем заголовок
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨
 	memcpy(&mm,this,szModbusHeader);
 
-	// копируем данные (переворачиваем байты)
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣ (п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
 
-	int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
+	int last(sizeof(d)); // п╦п╫п╢п╣п╨я│ п╡ п╪п╟я│я│п╦п╡п╣ п╢п╟п╫п╫я▀я┘ ( п╠п╟п╧я┌п╬п╡я▀п╧ п╪п╟я│я│п╦п╡!!! )
 
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[last]),&crc,szCRC);
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = szData();
 
 	return mm;
@@ -1896,11 +1896,11 @@ ModbusMessage WriteSingleOutputMessage::transport_msg()
 	ModbusMessage mm;
 	memcpy(&mm,this,szModbusHeader);
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
-	int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
+	int last = sizeof(d); // п╦п╫п╢п╣п╨я│ п╡ п╪п╟я│я│п╦п╡п╣ п╢п╟п╫п╫я▀я┘ ( п╠п╟п╧я┌п╬п╡я▀п╧ п╪п╟я│я│п╦п╡!!! )
 	memcpy(mm.data,&d,last);
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+last );
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[last]),&crc,szCRC);
 	mm.len = szData();
 	return mm;
@@ -1923,21 +1923,21 @@ void WriteSingleOutputMessage::init( ModbusMessage& m )
 	assert( m.func == fnWriteOutputSingleRegister );
 	memset(this,0,sizeof(*this));
 
-	// копируем данные вместе с CRC	
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣ п╡п╪п╣я│я┌п╣ я│ CRC	
 	memcpy(this,&m,szModbusHeader+m.len+szCRC); 
 	
-	// Сперва переворачиваем обратно слова
+	// п║п©п╣я─п╡п╟ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╬п╠я─п╟я┌п╫п╬ я│п╩п╬п╡п╟
 	start 	= SWAPSHORT(start);
 	data 	= SWAPSHORT(data);
 
-	// потом проверяем
+	// п©п╬я┌п╬п╪ п©я─п╬п╡п╣я─я▐п╣п╪
 	if( !checkFormat() )
 	{
 #ifdef DEBUG	
 		cerr << "(WriteSingleOutputMessage): BAD format!" << endl;
 #endif
-		// Если собщение некорректно
-		// чистим сообщение (в безопасные значения)
+		// п∙я│п╩п╦ я│п╬п╠я┴п╣п╫п╦п╣ п╫п╣п╨п╬я─я─п╣п╨я┌п╫п╬
+		// я┤п╦я│я┌п╦п╪ я│п╬п╬п╠я┴п╣п╫п╦п╣ (п╡ п╠п╣п╥п╬п©п╟я│п╫я▀п╣ п╥п╫п╟я┤п╣п╫п╦я▐)
 		data = 0;
 	}
 }
@@ -1964,11 +1964,11 @@ int WriteSingleOutputMessage::getDataLen( ModbusMessage& m )
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteSingleOutputMessage& m )
 {
-//  вывод потока байт (с неперевёрнутыми словами)
+//  п╡я▀п╡п╬п╢ п©п╬я┌п╬п╨п╟ п╠п╟п╧я┌ (я│ п╫п╣п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪п╦ я│п╩п╬п╡п╟п╪п╦)
 //	mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() - szCRC );
 //	return mbPrintMessage(os,(ModbusByte*)(&m.crc), szCRC );
 
-//	интелектуальный вывод :)
+//	п╦п╫я┌п╣п╩п╣п╨я┌я┐п╟п╩я▄п╫я▀п╧ п╡я▀п╡п╬п╢ :)
 	return os << "addr=" << addr2str(m.addr) 
 		<< " start=" << dat2str(m.start) 
 		<< " data=" << dat2str(m.data) << "  ";
@@ -1997,9 +1997,9 @@ void WriteSingleOutputRetMessage::init( ModbusMessage& m )
 	// copy not include CRC
 	memcpy(this,&m,szModbusHeader+m.len); 
 
-#warning (WriteSingleOutputRetMessage): необходимо встроить проверку на корректность данных
+#warning (WriteSingleOutputRetMessage): п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╡я│я┌я─п╬п╦я┌я▄ п©я─п╬п╡п╣я─п╨я┐ п╫п╟ п╨п╬я─я─п╣п╨я┌п╫п╬я│я┌я▄ п╢п╟п╫п╫я▀я┘
 	
-	// переворачиваем обратно слова
+	// п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╬п╠я─п╟я┌п╫п╬ я│п╩п╬п╡п╟
 	start 	= SWAPSHORT(start);
 	data 	= SWAPSHORT(data);
 }
@@ -2025,24 +2025,24 @@ ModbusMessage WriteSingleOutputRetMessage::transport_msg()
 
 	ModbusMessage mm;
 
-	// копируем заголовок
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨
 	memcpy(&mm,this,szModbusHeader);
 
-	// копируем данные (переворачиваем байты)
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣ (п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀)
 	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
 
-	int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
+	int last(sizeof(d)); // п╦п╫п╢п╣п╨я│ п╡ п╪п╟я│я│п╦п╡п╣ п╢п╟п╫п╫я▀я┘ ( п╠п╟п╧я┌п╬п╡я▀п╧ п╪п╟я│я│п╦п╡!!! )
 
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[last]),&crc,szCRC);
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = szData();
 
 	return mm;
@@ -2064,7 +2064,7 @@ JournalCommandMessage::JournalCommandMessage( ModbusMessage& m )
 	memset(this,0,sizeof(*this));
 	memcpy(this,&m,sizeof(*this)); // m.len
 
-	// переворачиваем слова
+	// п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ я│п╩п╬п╡п╟
 	cmd = SWAPSHORT(cmd);
 	num = SWAPSHORT(num);
 }
@@ -2075,7 +2075,7 @@ JournalCommandMessage& JournalCommandMessage::operator=( ModbusMessage& m )
 	memset(this,0,sizeof(*this));
 	memcpy(this,&m,sizeof(*this)); // m.len
 
-	// переворачиваем слова
+	// п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ я│п╩п╬п╡п╟
 	cmd = SWAPSHORT(cmd);
 	num = SWAPSHORT(num);
 
@@ -2109,14 +2109,14 @@ bool JournalCommandRetMessage::setData( ModbusByte* buf, int len )
 	if( sizeof(ModbusByte)*len > sizeof(data) )
 		return false;
 
-	// стираем старые данные
+	// я│я┌п╦я─п╟п╣п╪ я│я┌п╟я─я▀п╣ п╢п╟п╫п╫я▀п╣
 	memset(data,0,sizeof(data));
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy( data,buf,len );
 
 	count 	= len / sizeof(ModbusData);
 
-	// выравниваем до границы слова..
+	// п╡я▀я─п╟п╡п╫п╦п╡п╟п╣п╪ п╢п╬ пЁя─п╟п╫п╦я├я▀ я│п╩п╬п╡п╟..
 	if( len%sizeof(ModbusData) )
 		 count++;
 
@@ -2137,7 +2137,7 @@ ModbusMessage JournalCommandRetMessage::transport_msg()
 //	assert(sizeof(ModbusMessage)>=sizeof(ReadOutputRetMessage));
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨ п╦ п╢п╟п╫п╫я▀п╣
 	memcpy(&mm,this,szModbusHeader);
 	
 	int ind = 0;
@@ -2148,35 +2148,35 @@ ModbusMessage JournalCommandRetMessage::transport_msg()
 	ind += sizeof(bcnt);
 
 	// --------------------
-	// копируем данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣
 	// --------------------
-	// копирование с переворотом данных (для ModbusData)
+	// п╨п╬п©п╦я─п╬п╡п╟п╫п╦п╣ я│ п©п╣я─п╣п╡п╬я─п╬я┌п╬п╪ п╢п╟п╫п╫я▀я┘ (п╢п╩я▐ ModbusData)
 	ModbusData* dtmp = new ModbusData[count];
 	for( int i=0; i<count; i++ )
 		dtmp[i] = SWAPSHORT(data[i]);
 
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy(&(mm.data[ind]),dtmp,bcnt);
 
 	delete dtmp;
 
 	ind += bcnt;
 
-	// пересчитываем CRC по данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[ind]),&crc,szCRC);
 	ind += szCRC;
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = ind; 
 	return mm;
 }
 // -------------------------------------------------------------------------
 int JournalCommandRetMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
+	// я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ я┤п╦я│п╩п╬ п╢п╟п╫п╫я▀я┘ + п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟
 	return sizeof(bcnt)+count*sizeof(ModbusData)+szCRC;
 }
 // -------------------------------------------------------------------------
@@ -2276,46 +2276,46 @@ std::string ModbusRTU::mbErr2Str( ModbusRTU::mbErrCode e )
 			return "";
 
 		case erInvalidFormat:
-			return "неправильный формат";
+			return "п╫п╣п©я─п╟п╡п╦п╩я▄п╫я▀п╧ я└п╬я─п╪п╟я┌";
 		
 		case erBadCheckSum:
-			return "У пакета не сошлась контрольная сумма";
+			return "пё п©п╟п╨п╣я┌п╟ п╫п╣ я│п╬я┬п╩п╟я│я▄ п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟";
 			
 		case erBadReplyNodeAddress:
-			return "Ответ на запрос адресован не мне или от станции,которую не спрашивали";
+			return "п·я┌п╡п╣я┌ п╫п╟ п╥п╟п©я─п╬я│ п╟п╢я─п╣я│п╬п╡п╟п╫ п╫п╣ п╪п╫п╣ п╦п╩п╦ п╬я┌ я│я┌п╟п╫я├п╦п╦,п╨п╬я┌п╬я─я┐я▌ п╫п╣ я│п©я─п╟я┬п╦п╡п╟п╩п╦";
 			
 		case erTimeOut:
-			return "Тайм-аут при приеме";
+			return "п╒п╟п╧п╪-п╟я┐я┌ п©я─п╦ п©я─п╦п╣п╪п╣";
 			
 		case erUnExpectedPacketType:
-			return "Неожидаемый тип пакета";
+			return "п²п╣п╬п╤п╦п╢п╟п╣п╪я▀п╧ я┌п╦п© п©п╟п╨п╣я┌п╟";
 				
 		case erPacketTooLong:
-			return "пакет длинее буфера приема";
+			return "п©п╟п╨п╣я┌ п╢п╩п╦п╫п╣п╣ п╠я┐я└п╣я─п╟ п©я─п╦п╣п╪п╟";
 			
 		case erHardwareError:
-			return "ошибка оборудования";
+			return "п╬я┬п╦п╠п╨п╟ п╬п╠п╬я─я┐п╢п╬п╡п╟п╫п╦я▐";
 	
 		case erBadDataAddress:
-			return "регистр не существует или запрещён к опросу";
+			return "я─п╣пЁп╦я│я┌я─ п╫п╣ я│я┐я┴п╣я│я┌п╡я┐п╣я┌ п╦п╩п╦ п╥п╟п©я─п╣я┴я▒п╫ п╨ п╬п©я─п╬я│я┐";
 
 		case erBadDataValue:
-			return "значение не входит в разрешённый диапазон";
+			return "п╥п╫п╟я┤п╣п╫п╦п╣ п╫п╣ п╡я┘п╬п╢п╦я┌ п╡ я─п╟п╥я─п╣я┬я▒п╫п╫я▀п╧ п╢п╦п╟п©п╟п╥п╬п╫";
 
 		case erAnknowledge:
-			return "запрос принят в исполнению, но ещё не выполнен";
+			return "п╥п╟п©я─п╬я│ п©я─п╦п╫я▐я┌ п╡ п╦я│п©п╬п╩п╫п╣п╫п╦я▌, п╫п╬ п╣я┴я▒ п╫п╣ п╡я▀п©п╬п╩п╫п╣п╫";
 
 		case erSlaveBusy:
-			return "контроллер занят длительной операцией (повторить запрос позже)";
+			return "п╨п╬п╫я┌я─п╬п╩п╩п╣я─ п╥п╟п╫я▐я┌ п╢п╩п╦я┌п╣п╩я▄п╫п╬п╧ п╬п©п╣я─п╟я├п╦п╣п╧ (п©п╬п╡я┌п╬я─п╦я┌я▄ п╥п╟п©я─п╬я│ п©п╬п╥п╤п╣)";
 		
 		case erOperationFailed:
-			return "сбой при выполнении операции (например: доступ запрещён)";
+			return "я│п╠п╬п╧ п©я─п╦ п╡я▀п©п╬п╩п╫п╣п╫п╦п╦ п╬п©п╣я─п╟я├п╦п╦ (п╫п╟п©я─п╦п╪п╣я─: п╢п╬я│я┌я┐п© п╥п╟п©я─п╣я┴я▒п╫)";
 			
 		case erMemoryParityError:
-			return "ошибка паритета при чтении памяти";
+			return "п╬я┬п╦п╠п╨п╟ п©п╟я─п╦я┌п╣я┌п╟ п©я─п╦ я┤я┌п╣п╫п╦п╦ п©п╟п╪я▐я┌п╦";
 
 		default:
-			return "Неизвестный код ошибки";
+			return "п²п╣п╦п╥п╡п╣я│я┌п╫я▀п╧ п╨п╬п╢ п╬я┬п╦п╠п╨п╦";
 	}
 }
 // -------------------------------------------------------------------------
@@ -2363,7 +2363,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage* m )
 bool SetDateTimeMessage::checkFormat()
 {
 /*
-	// Lav: проверка >=0 бессмысленна, потому что в типе данных Modbusbyte не могут храниться отрицательные числа 
+	// Lav: п©я─п╬п╡п╣я─п╨п╟ >=0 п╠п╣я│я│п╪я▀я│п╩п╣п╫п╫п╟, п©п╬я┌п╬п╪я┐ я┤я┌п╬ п╡ я┌п╦п©п╣ п╢п╟п╫п╫я▀я┘ Modbusbyte п╫п╣ п╪п╬пЁя┐я┌ я┘я─п╟п╫п╦я┌я▄я│я▐ п╬я┌я─п╦я├п╟я┌п╣п╩я▄п╫я▀п╣ я┤п╦я│п╩п╟ 
 	return 	( hour>=0 && hour<=23 ) &&
 			( min>=0 && min<=59 ) &&
 			( sec>=0 && sec<=59 ) &&
@@ -2392,7 +2392,7 @@ ModbusMessage SetDateTimeMessage::transport_msg()
 	ModbusMessage mm;
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨ п╦ п╢п╟п╫п╫я▀п╣
 	memcpy(&mm,this,szModbusHeader);
 /*	
 	mm.data[0] = hour;
@@ -2406,11 +2406,11 @@ ModbusMessage SetDateTimeMessage::transport_msg()
 	int bcnt = 7;
 	memcpy( mm.data, &hour, bcnt );
 
-	// пересчитываем CRC
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + bcnt );
 
  	memcpy(&(mm.data[bcnt]),&crc,szCRC);
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = szData(); // bcnt + szCRC
 	return mm;
 }
@@ -2465,7 +2465,7 @@ ModbusMessage SetDateTimeRetMessage::transport_msg()
 	ModbusMessage mm;
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨ п╦ п╢п╟п╫п╫я▀п╣
 	memcpy(&mm,this,szModbusHeader);
 
 /*	
@@ -2480,13 +2480,13 @@ ModbusMessage SetDateTimeRetMessage::transport_msg()
 	int bcnt = 7;
 	memcpy( mm.data, &hour, bcnt );
 
-	// пересчитываем CRC
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + bcnt );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[bcnt]),&crc,szCRC);
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = szData(); // bcnt + szCRC
 
 	return mm;
@@ -2511,7 +2511,7 @@ void RemoteServiceMessage::init( ModbusMessage& m )
 	// copy not include CRC
 	memcpy(this,&m,szModbusHeader+m.len);
 	
-	// последний элемент это CRC
+	// п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я█я┌п╬ CRC
 	memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 }
 // -------------------------------------------------------------------------
@@ -2558,10 +2558,10 @@ bool RemoteServiceRetMessage::setData( ModbusByte* buf, int len )
 	if( len*sizeof(ModbusByte) > sizeof(data) )
 		return false;
 
-	// стираем старые данные
+	// я│я┌п╦я─п╟п╣п╪ я│я┌п╟я─я▀п╣ п╢п╟п╫п╫я▀п╣
 	memset(data,0,sizeof(data));
 
-	// копируем
+	// п╨п╬п©п╦я─я┐п╣п╪
 	memcpy(data,buf,len);
 
 	bcnt	= len;
@@ -2577,7 +2577,7 @@ void RemoteServiceRetMessage::clear()
 // -------------------------------------------------------------------------
 int RemoteServiceRetMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
+	// я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ я┤п╦я│п╩п╬ п╢п╟п╫п╫я▀я┘ + п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟
 	return sizeof(bcnt)+count*sizeof(ModbusByte)+szCRC;
 }
 // -------------------------------------------------------------------------
@@ -2586,7 +2586,7 @@ ModbusMessage RemoteServiceRetMessage::transport_msg()
 	ModbusMessage mm;
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨ п╦ п╢п╟п╫п╫я▀п╣
 	memcpy(&mm,this,szModbusHeader);
 	
 	int ind = 0;
@@ -2597,19 +2597,19 @@ ModbusMessage RemoteServiceRetMessage::transport_msg()
 	ind += sizeof(bcnt);
 
 	// --------------------
-	// копируем данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣
 	// --------------------
 	memcpy(&(mm.data[1]),data,bcnt);
 	ind += bcnt;
 
-	// пересчитываем CRC по данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[ind]),&crc,szCRC);
 	ind += szCRC;
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = ind; 
 	return mm;
 }
@@ -2639,7 +2639,7 @@ void ReadFileRecordMessage::init( ModbusMessage& m )
 	// copy not include CRC
 	memcpy(this,&m,szModbusHeader+m.len); 
 	
-	// потом проверяем
+	// п©п╬я┌п╬п╪ п©я─п╬п╡п╣я─я▐п╣п╪
 	if( !checkFormat() )
 	{
 #ifdef DEBUG
@@ -2650,7 +2650,7 @@ void ReadFileRecordMessage::init( ModbusMessage& m )
 		memset(data,0,sizeof(data));
 	}
 
-	// последний элемент это CRC
+	// п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я█я┌п╬ CRC
 	memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 
 	count = bcnt/sizeof(SubRequest);
@@ -2664,7 +2664,7 @@ void ReadFileRecordMessage::init( ModbusMessage& m )
 // -------------------------------------------------------------------------
 int ReadFileRecordMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
+	// я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ я┤п╦я│п╩п╬ п╢п╟п╫п╫я▀я┘ + п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟
 	return sizeof(bcnt)+count*sizeof(SubRequest)+szCRC;
 }
 // -------------------------------------------------------------------------
@@ -2675,7 +2675,7 @@ int ReadFileRecordMessage::getDataLen( ModbusMessage& m )
 
 	return (int)(m.data[0]);
 	
-//	ReadFileRecordMessage rfm(m); // может просто смотреть m.data[0] ?!
+//	ReadFileRecordMessage rfm(m); // п╪п╬п╤п╣я┌ п©я─п╬я│я┌п╬ я│п╪п╬я┌я─п╣я┌я▄ m.data[0] ?!
 //	return (int)(rfm.bcnt);
 }
 // -------------------------------------------------------------------------
@@ -2701,21 +2701,21 @@ ModbusMessage FileTransferMessage::transport_msg()
 {
 	ModbusMessage mm;
 
-	// копируем заголовок
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨
 	memcpy(&mm,this,szModbusHeader);
 
-	// копируем данные (переворачиваем байты)
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣ (п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╣п╪ п╠п╟п╧я┌я▀)
 	ModbusData d[2] = { SWAPSHORT(numfile), SWAPSHORT(numpacket) };
 	int last = sizeof(d);
 	memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п©п╣я─п╣п╡я▒я─п╫я┐я┌я▀п╪ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[last]),&crc,szCRC);
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = szData();
 	return mm;
 }
@@ -2740,7 +2740,7 @@ void FileTransferMessage::init( ModbusMessage& m )
 	// copy not include CRC
 	memcpy(this,&m,szModbusHeader+m.len); 
 	
-	// последний элемент это CRC
+	// п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я█я┌п╬ CRC
 	memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 
 	numfile	= SWAPSHORT(numfile);
@@ -2834,7 +2834,7 @@ int FileTransferRetMessage::getDataLen( ModbusMessage& m )
 // -----------------------------------------------------------------------
 int FileTransferRetMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
+	// я└п╟п╨я┌п╦я┤п╣я│п╨п╬п╣ я┤п╦я│п╩п╬ п╢п╟п╫п╫я▀я┘ + п╨п╬п╫я┌я─п╬п╩я▄п╫п╟я▐ я│я┐п╪п╪п╟
 	return sizeof(ModbusByte)*2+sizeof(ModbusData)*3+dlen+szCRC;
 }
 // -----------------------------------------------------------------------
@@ -2843,16 +2843,16 @@ ModbusMessage FileTransferRetMessage::transport_msg()
 	ModbusMessage mm;
 	assert( sizeof(ModbusMessage) >= (unsigned int)(szModbusHeader+szData()) );
 
-	// копируем заголовок и данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╥п╟пЁп╬п╩п╬п╡п╬п╨ п╦ п╢п╟п╫п╫я▀п╣
 	memcpy(&mm,this,szModbusHeader);
 	
 	int ind = 0;
-	bcnt = szData() - szCRC - 1; // -1 - это сам байт содержащий количество байт (bcnt)...
+	bcnt = szData() - szCRC - 1; // -1 - я█я┌п╬ я│п╟п╪ п╠п╟п╧я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ п╠п╟п╧я┌ (bcnt)...
 
 	// copy bcnt
 	mm.data[ind++] = bcnt;
 
-	// копируем предварительный заголовок
+	// п╨п╬п©п╦я─я┐п╣п╪ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╧ п╥п╟пЁп╬п╩п╬п╡п╬п╨
 	ModbusData dhead[] = { numfile, numpacks, packet };
 	for( unsigned int i=0; i<sizeof(dhead)/sizeof(ModbusData); i++ )
 		dhead[i] = SWAPSHORT(dhead[i]);
@@ -2863,19 +2863,19 @@ ModbusMessage FileTransferRetMessage::transport_msg()
 	mm.data[ind++] = dlen;
 
 	// --------------------
-	// копируем данные
+	// п╨п╬п©п╦я─я┐п╣п╪ п╢п╟п╫п╫я▀п╣
 	// --------------------
 	memcpy(&(mm.data[ind]),data,dlen);
 	ind += dlen;
 
-	// пересчитываем CRC по данным
+	// п©п╣я─п╣я│я┤п╦я┌я▀п╡п╟п╣п╪ CRC п©п╬ п╢п╟п╫п╫я▀п╪
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
 
-	// копируем CRC (последний элемент). Без переворачивания...
+	// п╨п╬п©п╦я─я┐п╣п╪ CRC (п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌). п▒п╣п╥ п©п╣я─п╣п╡п╬я─п╟я┤п╦п╡п╟п╫п╦я▐...
  	memcpy(&(mm.data[ind]),&crc,szCRC);
 	ind += szCRC;
 
-	// длина сообщения...
+	// п╢п╩п╦п╫п╟ я│п╬п╬п╠я┴п╣п╫п╦я▐...
 	mm.len = ind;
 	return mm;
 }

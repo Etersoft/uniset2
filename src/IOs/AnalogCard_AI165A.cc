@@ -1,7 +1,7 @@
 // This file is part of the NCS project. (c) 1999-2000 All rights reserved.
 // $Id: AnalogCard_AI165A.cc,v 1.5 2005/01/28 21:04:08 vitlav Exp $
 
-// 14-ти битная аналоговая карта 16 входов (8 дифф), 2 выхода (12-ти битные)
+// 14-я┌п╦ п╠п╦я┌п╫п╟я▐ п╟п╫п╟п╩п╬пЁп╬п╡п╟я▐ п╨п╟я─я┌п╟ 16 п╡я┘п╬п╢п╬п╡ (8 п╢п╦я└я└), 2 п╡я▀я┘п╬п╢п╟ (12-я┌п╦ п╠п╦я┌п╫я▀п╣)
 /*
 #include <assert.h>
 
@@ -16,12 +16,12 @@
 AnalogCardAI165A::AnalogCardAI165A( void )
 {
 	if( ioperm( base_io_adr, 0x10, PORT_PERMISSION ) == -1 )
-		throw GlobalError("Невозможно открыть порты");
+		throw GlobalError("п²п╣п╡п╬п╥п╪п╬п╤п╫п╬ п╬я┌п╨я─я▀я┌я▄ п©п╬я─я┌я▀");
 	if (!((inb(base_io_adr+14)=='A')&&(inb(base_io_adr+15)==17)))
-		throw GlobalError("Модуль AI16-5a-STB с FIFO не найден !");
+		throw GlobalError("п°п╬п╢я┐п╩я▄ AI16-5a-STB я│ FIFO п╫п╣ п╫п╟п╧п╢п╣п╫ !");
 
 	outw(0x0000,base_io_adr+0); 
-	// Умножение входного сигнала
+	// пёп╪п╫п╬п╤п╣п╫п╦п╣ п╡я┘п╬п╢п╫п╬пЁп╬ я│п╦пЁп╫п╟п╩п╟
 	int u=0x0000;
 //    u=0x5555;
 //      case 2 :  n=0xAAAA; break;
@@ -48,12 +48,12 @@ int AnalogCardAI165A::getValue( int io_channel )
 //		printf("%d\n",io_channel);
 //	io_channel&=0x0F;
 	outb(0x00, base_io_adr+0);
-	io_channel|=0x20; // Однопроводное подключение
+	io_channel|=0x20; // п·п╢п╫п╬п©я─п╬п╡п╬п╢п╫п╬п╣ п©п╬п╢п╨п╩я▌я┤п╣п╫п╦п╣
 	outb(io_channel, base_io_adr+2);
-	msleep(10); // можно поставить for (int i=0;i<90;i++);
+	msleep(10); // п╪п╬п╤п╫п╬ п©п╬я│я┌п╟п╡п╦я┌я▄ for (int i=0;i<90;i++);
 	//int o=inb(base_io_adr+0);
 	//outb((o&240)|0x80, base_io_adr+0);
-	outb(0x80, base_io_adr+0); // ST_RDY  Старт АЦП
+	outb(0x80, base_io_adr+0); // ST_RDY  п║я┌п╟я─я┌ п░п╕п÷
 	//for (int i=0; i<60; i++); // pause
 	//while(!(inb(base_io_adr+0)&0x80)); // ST_RDY
 	while(!(inb(base_io_adr+0)&0x20));
@@ -69,21 +69,21 @@ void AnalogCardAI165A::getChainValue( long * data, const int NumChannel )
 	assert(NumChannel<16);
 	outw(0x00, base_io_adr+0);
 	int io_channel=0;
-	io_channel|=0x20; // Однопроводное подключение
+	io_channel|=0x20; // п·п╢п╫п╬п©я─п╬п╡п╬п╢п╫п╬п╣ п©п╬п╢п╨п╩я▌я┤п╣п╫п╦п╣
 	outb(io_channel, base_io_adr+2);
 	msleep(1);
 	for(int n=0; n< NumChannel; n++)
 	{
 		outb(0x80|0x01, base_io_adr+0); // ST_RDY | n++
-		while(!(inb(base_io_adr+0)&0x80)); // ST_RDY // Опрос бита готовности
+		while(!(inb(base_io_adr+0)&0x80)); // ST_RDY // п·п©я─п╬я│ п╠п╦я┌п╟ пЁп╬я┌п╬п╡п╫п╬я│я┌п╦
 		data[n]=inw(base_io_adr+2);
-		// может быть здесь все же нужна пауза?
+		// п╪п╬п╤п╣я┌ п╠я▀я┌я▄ п╥п╢п╣я│я▄ п╡я│п╣ п╤п╣ п╫я┐п╤п╫п╟ п©п╟я┐п╥п╟?
 	}
 	outw(0x00, base_io_adr+0);
 }
 
 //-----------------------------------------------------------------------------
-// !!! Не устанавливается номер канала
+// !!! п²п╣ я┐я│я┌п╟п╫п╟п╡п╩п╦п╡п╟п╣я┌я│я▐ п╫п╬п╪п╣я─ п╨п╟п╫п╟п╩п╟
 void AnalogCardAI165A::setValue( int io_channel, int value )
 	// io_channel -- 0 or 1
 {

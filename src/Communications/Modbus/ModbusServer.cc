@@ -41,7 +41,7 @@ timeout_t ModbusServer::setReplyTimeout( timeout_t msec )
 	if( msec == UniSetTimer::WaitUpTime )
 		return replyTimeout_ms;
 
-	timeout_t old = replyTimeout_ms; // запоминаем текущее значение, чтобы вернуть в конце
+	timeout_t old = replyTimeout_ms; // п╥п╟п©п╬п╪п╦п╫п╟п╣п╪ я┌п╣п╨я┐я┴п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣, я┤я┌п╬п╠я▀ п╡п╣я─п╫я┐я┌я▄ п╡ п╨п╬п╫я├п╣
 	replyTimeout_ms = msec;
 	tmProcessing.setTiming(replyTimeout_ms);
 	return old;
@@ -60,15 +60,15 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 	{
 		ReadCoilMessage mRead(buf);
 		ReadCoilRetMessage reply(buf.addr); // addr?
-		// вызываем обработчик..
+		// п╡я▀п╥я▀п╡п╟п╣п╪ п╬п╠я─п╟п╠п╬я┌я┤п╦п╨..
 		mbErrCode res = readCoilStatus( mRead,reply );
-		// в случае ошибок ответа не посылаем
+		// п╡ я│п╩я┐я┤п╟п╣ п╬я┬п╦п╠п╬п╨ п╬я┌п╡п╣я┌п╟ п╫п╣ п©п╬я│я▀п╩п╟п╣п╪
 		if( res != erNoError )
 		{
 			dlog[Debug::WARN] << "(0x01): err reply: " << mbErr2Str(res) << endl;
 
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
+			// п∙я│п╩п╦ п╬я┬п╦п╠п╨п╟ п©п╬п╢я─п╟п╥я┐п╪п╣п╡п╟п╣я┌ п©п╬я│я▀п╩п╨я┐ п╬я┌п╡п╣я┌п╟ я│ я│п╬п╬п╠я┴п╣п╫п╦п╣п╪ п╬п╠ п╬я┬п╦п╠п╨п╣
+			// я┌п╬ п©п╬я│я▀п╩п╟п╣п╪
 			if( res < erInternalErrorCode )
 			{
 				ErrorRetMessage em( mRead.addr, mRead.func, res ); 
@@ -79,7 +79,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 			return res;
 		}
 
-		// отвечаем (используя тотже буфер, который будет очищен!!!)...
+		// п╬я┌п╡п╣я┤п╟п╣п╪ (п╦я│п©п╬п╩я▄п╥я┐я▐ я┌п╬я┌п╤п╣ п╠я┐я└п╣я─, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╬я┤п╦я┴п╣п╫!!!)...
 		buf = reply.transport_msg();
 		// -----------------------------------
 		// return send(buf);
@@ -92,15 +92,15 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 	{
 		ReadInputStatusMessage mRead(buf);
 		ReadInputStatusRetMessage reply(buf.addr); // addr?
-		// вызываем обработчик..
+		// п╡я▀п╥я▀п╡п╟п╣п╪ п╬п╠я─п╟п╠п╬я┌я┤п╦п╨..
 		mbErrCode res = readInputStatus( mRead,reply );
-		// в случае ошибок ответа не посылаем
+		// п╡ я│п╩я┐я┤п╟п╣ п╬я┬п╦п╠п╬п╨ п╬я┌п╡п╣я┌п╟ п╫п╣ п©п╬я│я▀п╩п╟п╣п╪
 		if( res != erNoError )
 		{
 			dlog[Debug::WARN] << "(0x02): err reply: " << mbErr2Str(res) << endl;
 
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
+			// п∙я│п╩п╦ п╬я┬п╦п╠п╨п╟ п©п╬п╢я─п╟п╥я┐п╪п╣п╡п╟п╣я┌ п©п╬я│я▀п╩п╨я┐ п╬я┌п╡п╣я┌п╟ я│ я│п╬п╬п╠я┴п╣п╫п╦п╣п╪ п╬п╠ п╬я┬п╦п╠п╨п╣
+			// я┌п╬ п©п╬я│я▀п╩п╟п╣п╪
 			if( res < erInternalErrorCode )
 			{
 				ErrorRetMessage em( mRead.addr, mRead.func, res ); 
@@ -111,7 +111,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 			return res;
 		}
 
-		// отвечаем (используя тотже буфер, который будет очищен!!!)...
+		// п╬я┌п╡п╣я┤п╟п╣п╪ (п╦я│п©п╬п╩я▄п╥я┐я▐ я┌п╬я┌п╤п╣ п╠я┐я└п╣я─, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╬я┤п╦я┴п╣п╫!!!)...
 		buf = reply.transport_msg();
 		// -----------------------------------
 		// return send(buf);
@@ -124,15 +124,15 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 	{
 		ReadOutputMessage mRead(buf);
 		ReadOutputRetMessage reply(buf.addr); // addr?
-		// вызываем обработчик..
+		// п╡я▀п╥я▀п╡п╟п╣п╪ п╬п╠я─п╟п╠п╬я┌я┤п╦п╨..
 		mbErrCode res = readOutputRegisters( mRead,reply );
-		// в случае ошибок ответа не посылаем
+		// п╡ я│п╩я┐я┤п╟п╣ п╬я┬п╦п╠п╬п╨ п╬я┌п╡п╣я┌п╟ п╫п╣ п©п╬я│я▀п╩п╟п╣п╪
 		if( res != erNoError )
 		{
 			dlog[Debug::WARN] << "(0x03): err reply: " << mbErr2Str(res) << endl;
 
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
+			// п∙я│п╩п╦ п╬я┬п╦п╠п╨п╟ п©п╬п╢я─п╟п╥я┐п╪п╣п╡п╟п╣я┌ п©п╬я│я▀п╩п╨я┐ п╬я┌п╡п╣я┌п╟ я│ я│п╬п╬п╠я┴п╣п╫п╦п╣п╪ п╬п╠ п╬я┬п╦п╠п╨п╣
+			// я┌п╬ п©п╬я│я▀п╩п╟п╣п╪
 			if( res < erInternalErrorCode )
 			{
 				ErrorRetMessage em( mRead.addr, mRead.func, res ); 
@@ -143,7 +143,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 			return res;
 		}
 
-		// отвечаем (используя тотже буфер, который будет очищен!!!)...
+		// п╬я┌п╡п╣я┤п╟п╣п╪ (п╦я│п©п╬п╩я▄п╥я┐я▐ я┌п╬я┌п╤п╣ п╠я┐я└п╣я─, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╬я┤п╦я┴п╣п╫!!!)...
 		buf = reply.transport_msg();
 		// -----------------------------------
 		// return send(buf);
@@ -156,15 +156,15 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 	{
 		ReadInputMessage mRead(buf);
 		ReadInputRetMessage reply(buf.addr); // addr?
-		// вызываем обработчик..
+		// п╡я▀п╥я▀п╡п╟п╣п╪ п╬п╠я─п╟п╠п╬я┌я┤п╦п╨..
 		mbErrCode res = readInputRegisters( mRead,reply );
-		// в случае ошибок ответа не посылаем
+		// п╡ я│п╩я┐я┤п╟п╣ п╬я┬п╦п╠п╬п╨ п╬я┌п╡п╣я┌п╟ п╫п╣ п©п╬я│я▀п╩п╟п╣п╪
 		if( res != erNoError )
 		{
 			dlog[Debug::WARN] << "(0x04): err reply: " << mbErr2Str(res) << endl;
 
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
+			// п∙я│п╩п╦ п╬я┬п╦п╠п╨п╟ п©п╬п╢я─п╟п╥я┐п╪п╣п╡п╟п╣я┌ п©п╬я│я▀п╩п╨я┐ п╬я┌п╡п╣я┌п╟ я│ я│п╬п╬п╠я┴п╣п╫п╦п╣п╪ п╬п╠ п╬я┬п╦п╠п╨п╣
+			// я┌п╬ п©п╬я│я▀п╩п╟п╣п╪
 			if( res < erInternalErrorCode )
 			{
 				ErrorRetMessage em( mRead.addr, mRead.func, res ); 
@@ -175,7 +175,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 			return res;
 		}
 
-		// отвечаем (используя тотже буфер, который будет очищен!!!)...
+		// п╬я┌п╡п╣я┤п╟п╣п╪ (п╦я│п©п╬п╩я▄п╥я┐я▐ я┌п╬я┌п╤п╣ п╠я┐я└п╣я─, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╬я┤п╦я┴п╣п╫!!!)...
 		buf = reply.transport_msg();
 		// -----------------------------------
 		// return send(buf);
@@ -189,15 +189,15 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		ForceCoilsMessage mWrite(buf);
 		ForceCoilsRetMessage reply(buf.addr); // addr?
 
-		// вызываем обработчик..
+		// п╡я▀п╥я▀п╡п╟п╣п╪ п╬п╠я─п╟п╠п╬я┌я┤п╦п╨..
 		mbErrCode res = forceMultipleCoils( mWrite,reply );
-		// в случае ошибок ответа не посылаем
+		// п╡ я│п╩я┐я┤п╟п╣ п╬я┬п╦п╠п╬п╨ п╬я┌п╡п╣я┌п╟ п╫п╣ п©п╬я│я▀п╩п╟п╣п╪
 		if( res != erNoError )
 		{
 			dlog[Debug::WARN] << "(0x0F): err reply: " << mbErr2Str(res) << endl;
 
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
+			// п∙я│п╩п╦ п╬я┬п╦п╠п╨п╟ п©п╬п╢я─п╟п╥я┐п╪п╣п╡п╟п╣я┌ п©п╬я│я▀п╩п╨я┐ п╬я┌п╡п╣я┌п╟ я│ я│п╬п╬п╠я┴п╣п╫п╦п╣п╪ п╬п╠ п╬я┬п╦п╠п╨п╣
+			// я┌п╬ п©п╬я│я▀п╩п╟п╣п╪
 			if( res < erInternalErrorCode )
 			{
 				ErrorRetMessage em( mWrite.addr, mWrite.func, res ); 
@@ -208,7 +208,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 			return res;
 		}
 
-		// отвечаем (используя тотже буфер, который будет очищен!!!)...
+		// п╬я┌п╡п╣я┤п╟п╣п╪ (п╦я│п©п╬п╩я▄п╥я┐я▐ я┌п╬я┌п╤п╣ п╠я┐я└п╣я─, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╬я┤п╦я┴п╣п╫!!!)...
 		buf = reply.transport_msg();
 		// -----------------------------------
 //		return send(buf);
@@ -222,15 +222,15 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		WriteOutputMessage mWrite(buf);
 		WriteOutputRetMessage reply(buf.addr); // addr?
 
-		// вызываем обработчик..
+		// п╡я▀п╥я▀п╡п╟п╣п╪ п╬п╠я─п╟п╠п╬я┌я┤п╦п╨..
 		mbErrCode res = writeOutputRegisters( mWrite,reply );
-		// в случае ошибок ответа не посылаем
+		// п╡ я│п╩я┐я┤п╟п╣ п╬я┬п╦п╠п╬п╨ п╬я┌п╡п╣я┌п╟ п╫п╣ п©п╬я│я▀п╩п╟п╣п╪
 		if( res != erNoError )
 		{
 			dlog[Debug::WARN] << "(0x10): err reply: " << mbErr2Str(res) << endl;
 
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
+			// п∙я│п╩п╦ п╬я┬п╦п╠п╨п╟ п©п╬п╢я─п╟п╥я┐п╪п╣п╡п╟п╣я┌ п©п╬я│я▀п╩п╨я┐ п╬я┌п╡п╣я┌п╟ я│ я│п╬п╬п╠я┴п╣п╫п╦п╣п╪ п╬п╠ п╬я┬п╦п╠п╨п╣
+			// я┌п╬ п©п╬я│я▀п╩п╟п╣п╪
 			if( res < erInternalErrorCode )
 			{
 				ErrorRetMessage em( mWrite.addr, mWrite.func, res ); 
@@ -241,7 +241,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 			return res;
 		}
 
-		// отвечаем (используя тотже буфер, который будет очищен!!!)...
+		// п╬я┌п╡п╣я┤п╟п╣п╪ (п╦я│п©п╬п╩я▄п╥я┐я▐ я┌п╬я┌п╤п╣ п╠я┐я└п╣я─, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╬я┤п╦я┴п╣п╫!!!)...
 		buf = reply.transport_msg();
 		// -----------------------------------
 //		return send(buf);
@@ -255,15 +255,15 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		ForceSingleCoilMessage mWrite(buf);
 		ForceSingleCoilRetMessage reply(buf.addr); // addr?
 
-		// вызываем обработчик..
+		// п╡я▀п╥я▀п╡п╟п╣п╪ п╬п╠я─п╟п╠п╬я┌я┤п╦п╨..
 		mbErrCode res = forceSingleCoil( mWrite, reply );
-		// в случае ошибок ответа не посылаем
+		// п╡ я│п╩я┐я┤п╟п╣ п╬я┬п╦п╠п╬п╨ п╬я┌п╡п╣я┌п╟ п╫п╣ п©п╬я│я▀п╩п╟п╣п╪
 		if( res != erNoError )
 		{
 			dlog[Debug::WARN] << "(0x05): reply: " << mbErr2Str(res) << endl;
 
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
+			// п∙я│п╩п╦ п╬я┬п╦п╠п╨п╟ п©п╬п╢я─п╟п╥я┐п╪п╣п╡п╟п╣я┌ п©п╬я│я▀п╩п╨я┐ п╬я┌п╡п╣я┌п╟ я│ я│п╬п╬п╠я┴п╣п╫п╦п╣п╪ п╬п╠ п╬я┬п╦п╠п╨п╣
+			// я┌п╬ п©п╬я│я▀п╩п╟п╣п╪
 			if( res < erInternalErrorCode )
 			{
 				ErrorRetMessage em( mWrite.addr, mWrite.func, res ); 
@@ -274,7 +274,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 			return res;
 		}
 
-		// отвечаем (используя тотже буфер, который будет очищен!!!)...
+		// п╬я┌п╡п╣я┤п╟п╣п╪ (п╦я│п©п╬п╩я▄п╥я┐я▐ я┌п╬я┌п╤п╣ п╠я┐я└п╣я─, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╬я┤п╦я┴п╣п╫!!!)...
 		buf = reply.transport_msg();
 		// -----------------------------------
 //		return send(buf);
@@ -288,15 +288,15 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		WriteSingleOutputMessage mWrite(buf);
 		WriteSingleOutputRetMessage reply(buf.addr); // addr?
 
-		// вызываем обработчик..
+		// п╡я▀п╥я▀п╡п╟п╣п╪ п╬п╠я─п╟п╠п╬я┌я┤п╦п╨..
 		mbErrCode res = writeOutputSingleRegister( mWrite, reply );
-		// в случае ошибок ответа не посылаем
+		// п╡ я│п╩я┐я┤п╟п╣ п╬я┬п╦п╠п╬п╨ п╬я┌п╡п╣я┌п╟ п╫п╣ п©п╬я│я▀п╩п╟п╣п╪
 		if( res != erNoError )
 		{
 			dlog[Debug::WARN] << "(0x06): reply: " << mbErr2Str(res) << endl;
 
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
+			// п∙я│п╩п╦ п╬я┬п╦п╠п╨п╟ п©п╬п╢я─п╟п╥я┐п╪п╣п╡п╟п╣я┌ п©п╬я│я▀п╩п╨я┐ п╬я┌п╡п╣я┌п╟ я│ я│п╬п╬п╠я┴п╣п╫п╦п╣п╪ п╬п╠ п╬я┬п╦п╠п╨п╣
+			// я┌п╬ п©п╬я│я▀п╩п╟п╣п╪
 			if( res < erInternalErrorCode )
 			{
 				ErrorRetMessage em( mWrite.addr, mWrite.func, res ); 
@@ -307,7 +307,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 			return res;
 		}
 
-		// отвечаем (используя тотже буфер, который будет очищен!!!)...
+		// п╬я┌п╡п╣я┤п╟п╣п╪ (п╦я│п©п╬п╩я▄п╥я┐я▐ я┌п╬я┌п╤п╣ п╠я┐я└п╣я─, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╬я┤п╦я┴п╣п╫!!!)...
 		buf = reply.transport_msg();
 		// -----------------------------------
 //		return send(buf);
@@ -320,15 +320,15 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 	{
 		JournalCommandMessage mJournal(buf);
 		JournalCommandRetMessage reply(buf.addr); // addr?
-		// вызываем обработчик..
+		// п╡я▀п╥я▀п╡п╟п╣п╪ п╬п╠я─п╟п╠п╬я┌я┤п╦п╨..
 		mbErrCode res = journalCommand( mJournal,reply );
-		// в случае ошибок ответа не посылаем
+		// п╡ я│п╩я┐я┤п╟п╣ п╬я┬п╦п╠п╬п╨ п╬я┌п╡п╣я┌п╟ п╫п╣ п©п╬я│я▀п╩п╟п╣п╪
 		if( res != erNoError )
 		{
 			dlog[Debug::WARN] << "(0x65): reply: " << mbErr2Str(res) << endl;
 
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
+			// п∙я│п╩п╦ п╬я┬п╦п╠п╨п╟ п©п╬п╢я─п╟п╥я┐п╪п╣п╡п╟п╣я┌ п©п╬я│я▀п╩п╨я┐ п╬я┌п╡п╣я┌п╟ я│ я│п╬п╬п╠я┴п╣п╫п╦п╣п╪ п╬п╠ п╬я┬п╦п╠п╨п╣
+			// я┌п╬ п©п╬я│я▀п╩п╟п╣п╪
 			if( res < erInternalErrorCode )
 			{
 				ErrorRetMessage em( mJournal.addr, mJournal.func, res ); 
@@ -338,7 +338,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 			return res;
 		}
 
-		// отвечаем (используя тотже буфер, который будет очищен!!!)...
+		// п╬я┌п╡п╣я┤п╟п╣п╪ (п╦я│п©п╬п╩я▄п╥я┐я▐ я┌п╬я┌п╤п╣ п╠я┐я└п╣я─, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╬я┤п╦я┴п╣п╫!!!)...
 		buf = reply.transport_msg();
 		// -----------------------------------
 		// return send(buf);
@@ -351,15 +351,15 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 	{
 		SetDateTimeMessage mSet(buf);
 		SetDateTimeRetMessage reply(buf.addr); // addr?
-		// вызываем обработчик..
+		// п╡я▀п╥я▀п╡п╟п╣п╪ п╬п╠я─п╟п╠п╬я┌я┤п╦п╨..
 		mbErrCode res = setDateTime( mSet,reply );
-		// в случае ошибок ответа не посылаем
+		// п╡ я│п╩я┐я┤п╟п╣ п╬я┬п╦п╠п╬п╨ п╬я┌п╡п╣я┌п╟ п╫п╣ п©п╬я│я▀п╩п╟п╣п╪
 		if( res != erNoError )
 		{
 			dlog[Debug::WARN] << "(0x50): reply: " << mbErr2Str(res) << endl;
 
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
+			// п∙я│п╩п╦ п╬я┬п╦п╠п╨п╟ п©п╬п╢я─п╟п╥я┐п╪п╣п╡п╟п╣я┌ п©п╬я│я▀п╩п╨я┐ п╬я┌п╡п╣я┌п╟ я│ я│п╬п╬п╠я┴п╣п╫п╦п╣п╪ п╬п╠ п╬я┬п╦п╠п╨п╣
+			// я┌п╬ п©п╬я│я▀п╩п╟п╣п╪
 			if( res < erInternalErrorCode )
 			{
 				ErrorRetMessage em( mSet.addr, mSet.func, res ); 
@@ -369,7 +369,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 			return res;
 		}
 
-		// отвечаем (используя тотже буфер, который будет очищен!!!)...
+		// п╬я┌п╡п╣я┤п╟п╣п╪ (п╦я│п©п╬п╩я▄п╥я┐я▐ я┌п╬я┌п╤п╣ п╠я┐я└п╣я─, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╬я┤п╦я┴п╣п╫!!!)...
 		buf = reply.transport_msg();
 		// -----------------------------------
 		// return send(buf);
@@ -382,15 +382,15 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 	{
 		RemoteServiceMessage query(buf);
 		RemoteServiceRetMessage reply(buf.addr);
-		// вызываем обработчик..
+		// п╡я▀п╥я▀п╡п╟п╣п╪ п╬п╠я─п╟п╠п╬я┌я┤п╦п╨..
 		mbErrCode res = remoteService( query,reply );
-		// в случае ошибок ответа не посылаем
+		// п╡ я│п╩я┐я┤п╟п╣ п╬я┬п╦п╠п╬п╨ п╬я┌п╡п╣я┌п╟ п╫п╣ п©п╬я│я▀п╩п╟п╣п╪
 		if( res != erNoError )
 		{
 			dlog[Debug::WARN] << "(0x53): error reply: " << mbErr2Str(res) << endl;
 
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
+			// п∙я│п╩п╦ п╬я┬п╦п╠п╨п╟ п©п╬п╢я─п╟п╥я┐п╪п╣п╡п╟п╣я┌ п©п╬я│я▀п╩п╨я┐ п╬я┌п╡п╣я┌п╟ я│ я│п╬п╬п╠я┴п╣п╫п╦п╣п╪ п╬п╠ п╬я┬п╦п╠п╨п╣
+			// я┌п╬ п©п╬я│я▀п╩п╟п╣п╪
 			if( res < erInternalErrorCode )
 			{
 				ErrorRetMessage em( query.addr, query.func, res ); 
@@ -400,7 +400,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 			return res;
 		}
 
-		// отвечаем (используя тотже буфер, который будет очищен!!!)...
+		// п╬я┌п╡п╣я┤п╟п╣п╪ (п╦я│п©п╬п╩я▄п╥я┐я▐ я┌п╬я┌п╤п╣ п╠я┐я└п╣я─, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╬я┤п╦я┴п╣п╫!!!)...
 		buf = reply.transport_msg();
 		// -----------------------------------
 		// return send(buf);
@@ -413,15 +413,15 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 	{
 		FileTransferMessage query(buf);
 		FileTransferRetMessage reply(buf.addr);
-		// вызываем обработчик..
+		// п╡я▀п╥я▀п╡п╟п╣п╪ п╬п╠я─п╟п╠п╬я┌я┤п╦п╨..
 		mbErrCode res = fileTransfer( query,reply );
-		// в случае ошибок ответа не посылаем
+		// п╡ я│п╩я┐я┤п╟п╣ п╬я┬п╦п╠п╬п╨ п╬я┌п╡п╣я┌п╟ п╫п╣ п©п╬я│я▀п╩п╟п╣п╪
 		if( res != erNoError )
 		{
 			dlog[Debug::WARN] << "(0x66): error reply: " << mbErr2Str(res) << endl;
 
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
+			// п∙я│п╩п╦ п╬я┬п╦п╠п╨п╟ п©п╬п╢я─п╟п╥я┐п╪п╣п╡п╟п╣я┌ п©п╬я│я▀п╩п╨я┐ п╬я┌п╡п╣я┌п╟ я│ я│п╬п╬п╠я┴п╣п╫п╦п╣п╪ п╬п╠ п╬я┬п╦п╠п╨п╣
+			// я┌п╬ п©п╬я│я▀п╩п╟п╣п╪
 			if( res < erInternalErrorCode )
 			{
 				ErrorRetMessage em( query.addr, query.func, res ); 
@@ -431,7 +431,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 			return res;
 		}
 
-		// отвечаем (используя тотже буфер, который будет очищен!!!)...
+		// п╬я┌п╡п╣я┤п╟п╣п╪ (п╦я│п©п╬п╩я▄п╥я┐я▐ я┌п╬я┌п╤п╣ п╠я┐я└п╣я─, п╨п╬я┌п╬я─я▀п╧ п╠я┐п╢п╣я┌ п╬я┤п╦я┴п╣п╫!!!)...
 		buf = reply.transport_msg();
 		// -----------------------------------
 		// return send(buf);
@@ -454,12 +454,12 @@ mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, t
 {
 	assert(timeout);
 	if( timeout == UniSetTimer::WaitUpTime )
-		timeout = 15*60*1000; // используем просто большое время (15 минут), переведя его в наносекунды.
+		timeout = 15*60*1000; // п╦я│п©п╬п╩я▄п╥я┐п╣п╪ п©я─п╬я│я┌п╬ п╠п╬п╩я▄я┬п╬п╣ п╡я─п╣п╪я▐ (15 п╪п╦п╫я┐я┌), п©п╣я─п╣п╡п╣п╢я▐ п╣пЁп╬ п╡ п╫п╟п╫п╬я│п╣п╨я┐п╫п╢я▀.
 
 	setChannelTimeout(timeout);
 	PassiveTimer tmAbort(timeout);
 
-	// предварительно чистим буфер
+	// п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫п╬ я┤п╦я│я┌п╦п╪ п╠я┐я└п╣я─
 	memset(&rbuf,0,sizeof(rbuf));
 	int bcnt=0;	// receive bytes count
 	
@@ -480,9 +480,9 @@ mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, t
 		if( !begin )
 			return erTimeOut;
 
-#warning Может стоит всё-таки получать весь пакет, а проверять кому он адресован на уровне выше?!	
-// Lav: конечно стоит, нам же надо буфер чистить
-		// Проверка кому адресован пакет...
+#warning п°п╬п╤п╣я┌ я│я┌п╬п╦я┌ п╡я│я▒-я┌п╟п╨п╦ п©п╬п╩я┐я┤п╟я┌я▄ п╡п╣я│я▄ п©п╟п╨п╣я┌, п╟ п©я─п╬п╡п╣я─я▐я┌я▄ п╨п╬п╪я┐ п╬п╫ п╟п╢я─п╣я│п╬п╡п╟п╫ п╫п╟ я┐я─п╬п╡п╫п╣ п╡я▀я┬п╣?!	
+// Lav: п╨п╬п╫п╣я┤п╫п╬ я│я┌п╬п╦я┌, п╫п╟п╪ п╤п╣ п╫п╟п╢п╬ п╠я┐я└п╣я─ я┤п╦я│я┌п╦я┌я▄
+		// п÷я─п╬п╡п╣я─п╨п╟ п╨п╬п╪я┐ п╟п╢я─п╣я│п╬п╡п╟п╫ п©п╟п╨п╣я┌...
 		if( rbuf.addr!=addr && rbuf.addr!=BroadcastAddr )
 		{
 			ostringstream err;
@@ -520,7 +520,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		if( k < sizeof(ModbusByte) )
 		{
 			dlog[Debug::WARN] << "(recv): " << (ModbusHeader*)(&rbuf) << endl;
-			dlog[Debug::WARN] << "(recv): заголовок меньше положенного..." << endl;
+			dlog[Debug::WARN] << "(recv): п╥п╟пЁп╬п╩п╬п╡п╬п╨ п╪п╣п╫я▄я┬п╣ п©п╬п╩п╬п╤п╣п╫п╫п╬пЁп╬..." << endl;
 			return erInvalidFormat;
 		}
 
@@ -530,7 +530,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		if( dlog.debugging(Debug::INFO) )
 			dlog[Debug::INFO] << "(recv): header: " << rbuf << endl;
 
-		// Определяем тип сообщения
+		// п·п©я─п╣п╢п╣п╩я▐п╣п╪ я┌п╦п© я│п╬п╬п╠я┴п╣п╫п╦я▐
 		switch( rbuf.func )
 		{
 			case fnReadCoilStatus:
@@ -600,32 +600,32 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		}
 
 
-		// ДЛЯ ТОГО ЧТОБЫ НЕ ЖДАТЬ ПРОДОЛЖЕНИЯ БЕЗКОНЕЧНО СБРАСЫВАЕМ TIMEOUT
+		// п■п⌡п╞ п╒п·п⌠п· п╖п╒п·п▒п╚ п²п∙ п√п■п░п╒п╛ п÷п═п·п■п·п⌡п√п∙п²п≤п╞ п▒п∙п≈п п·п²п∙п╖п²п· п║п▒п═п░п║п╚п▓п░п∙п° TIMEOUT
 		setChannelTimeout(10); // 10 msec
 
-		// Получаем остальную часть сообщения
+		// п÷п╬п╩я┐я┤п╟п╣п╪ п╬я│я┌п╟п╩я▄п╫я┐я▌ я┤п╟я│я┌я▄ я│п╬п╬п╠я┴п╣п╫п╦я▐
 		int rlen = getNextData((unsigned char*)(rbuf.data),rbuf.len);
 		if( rlen < rbuf.len )
 		{
 //			rbuf.len = bcnt + rlen - szModbusHeader;
 			dlog[Debug::WARN] << "(recv): buf: " << rbuf << endl;
 			dlog[Debug::WARN] << "(recv)(" << rbuf.func 
-					<< "): Получили данных меньше чем ждали...(recv=" 
+					<< "): п÷п╬п╩я┐я┤п╦п╩п╦ п╢п╟п╫п╫я▀я┘ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╤п╢п╟п╩п╦...(recv=" 
 					<< rlen << " < wait=" << (int)rbuf.len << ")" << endl;
 			return erInvalidFormat;
 		}
 		
 		bcnt+=rlen;
 
-		// получаем остальное...
+		// п©п╬п╩я┐я┤п╟п╣п╪ п╬я│я┌п╟п╩я▄п╫п╬п╣...
 		if( rbuf.func == fnReadCoilStatus )
 		{
 			ReadCoilMessage mRead(rbuf);
 			if( dlog.debugging(Debug::INFO) )
 				dlog[Debug::INFO] << "(0x01): recv buf: " << rbuf << endl;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			if( crcNoCheckit )
 				return erNoError;
 
@@ -647,8 +647,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			if( dlog.debugging(Debug::INFO) )
 				dlog[Debug::INFO] << "(r0x02): recv buf: " << rbuf << endl;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			if( crcNoCheckit )
 				return erNoError;
 
@@ -673,8 +673,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			if( crcNoCheckit )
 					return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRead.crc )
 			{
@@ -696,8 +696,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRead.crc )
 			{
@@ -716,9 +716,9 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			if( crcNoCheckit )
 				szDataLen -= szCRC;
 			
-			// Мы получили только предварительный загловок
-			// Теперь необходимо дополучить данные 
-			// (c позиции rlen, т.к. часть уже получили)
+			// п°я▀ п©п╬п╩я┐я┤п╦п╩п╦ я┌п╬п╩я▄п╨п╬ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╧ п╥п╟пЁп╩п╬п╡п╬п╨
+			// п╒п╣п©п╣я─я▄ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╢п╬п©п╬п╩я┐я┤п╦я┌я▄ п╢п╟п╫п╫я▀п╣ 
+			// (c п©п╬п╥п╦я├п╦п╦ rlen, я┌.п╨. я┤п╟я│я┌я▄ я┐п╤п╣ п©п╬п╩я┐я┤п╦п╩п╦)
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
@@ -726,7 +726,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				dlog[Debug::WARN] << "(0x0F): buf: " << rbuf << endl;
 				dlog[Debug::WARN] << "(0x0F)(" 
 					<< rbuf.func << "):(fnForceMultipleCoils) "
-					<< "Получили данных меньше чем ждали...(" 
+					<< "п÷п╬п╩я┐я┤п╦п╩п╦ п╢п╟п╫п╫я▀я┘ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╤п╢п╟п╩п╦...(" 
 					<< rlen1 << " < " << szDataLen << ")" << endl;
 
 				return erInvalidFormat;
@@ -742,9 +742,9 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			if( !crcNoCheckit )
 			{
-				// Проверяем контрольную сумму
-				// от начала(включая заголовок) 
-				// и до конца (исключив последний элемент содержащий CRC)
+				// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+				// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+				// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 				// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
 				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 				if( tcrc != mWrite.crc )
@@ -757,12 +757,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				}
 			}
 
-#warning Стоит ли здесь проверять
+#warning п║я┌п╬п╦я┌ п╩п╦ п╥п╢п╣я│я▄ п©я─п╬п╡п╣я─я▐я┌я▄
 			if( !mWrite.checkFormat() )
 			{
 				dlog[Debug::WARN] << "(0x0F): (" << rbuf.func 
 					<< ")(fnForceMultipleCoils): "
-					<< ": некорректный формат сообщения..." << endl; 
+					<< ": п╫п╣п╨п╬я─я─п╣п╨я┌п╫я▀п╧ я└п╬я─п╪п╟я┌ я│п╬п╬п╠я┴п╣п╫п╦я▐..." << endl; 
 				return erInvalidFormat;
 			}
 
@@ -775,9 +775,9 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			if( crcNoCheckit )
 				szDataLen -= szCRC;
 				
-			// Мы получили только предварительный загловок
-			// Теперь необходимо дополучить данные 
-			// (c позиции rlen, т.к. часть уже получили)
+			// п°я▀ п©п╬п╩я┐я┤п╦п╩п╦ я┌п╬п╩я▄п╨п╬ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╧ п╥п╟пЁп╩п╬п╡п╬п╨
+			// п╒п╣п©п╣я─я▄ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╢п╬п©п╬п╩я┐я┤п╦я┌я▄ п╢п╟п╫п╫я▀п╣ 
+			// (c п©п╬п╥п╦я├п╦п╦ rlen, я┌.п╨. я┤п╟я│я┌я▄ я┐п╤п╣ п©п╬п╩я┐я┤п╦п╩п╦)
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
@@ -785,7 +785,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				dlog[Debug::WARN] << "(0x10): buf: " << rbuf << endl;
 				dlog[Debug::WARN] << "(0x10)(" 
 					<< rbuf.func << "):(fnWriteOutputRegisters) "
-					<< "Получили данных меньше чем ждали...(" 
+					<< "п÷п╬п╩я┐я┤п╦п╩п╦ п╢п╟п╫п╫я▀я┘ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╤п╢п╟п╩п╦...(" 
 					<< rlen1 << " < " << szDataLen << ")" << endl;
 
 				return erInvalidFormat;
@@ -801,9 +801,9 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			if( !crcNoCheckit )
 			{
-				// Проверяем контрольную сумму
-				// от начала(включая заголовок) 
-				// и до конца (исключив последний элемент содержащий CRC)
+				// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+				// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+				// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 				// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
 				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 				if( tcrc != mWrite.crc )
@@ -816,12 +816,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				}
 			}
 			
-#warning Стоит ли здесь проверять
+#warning п║я┌п╬п╦я┌ п╩п╦ п╥п╢п╣я│я▄ п©я─п╬п╡п╣я─я▐я┌я▄
 			if( !mWrite.checkFormat() )
 			{
 				dlog[Debug::WARN] << "(0x10): (" << rbuf.func 
 					<< ")(fnWriteOutputRegisters): "
-					<< ": некорректный формат сообщения..." << endl; 
+					<< ": п╫п╣п╨п╬я─я─п╣п╨я┌п╫я▀п╧ я└п╬я─п╪п╟я┌ я│п╬п╬п╠я┴п╣п╫п╦я▐..." << endl; 
 				return erInvalidFormat;
 			}
 
@@ -834,9 +834,9 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			if( crcNoCheckit )
 				szDataLen -= szCRC;
 			
-			// Мы получили только предварительный загловок
-			// Теперь необходимо дополучить данные 
-			// (c позиции rlen, т.к. часть уже получили)
+			// п°я▀ п©п╬п╩я┐я┤п╦п╩п╦ я┌п╬п╩я▄п╨п╬ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╧ п╥п╟пЁп╩п╬п╡п╬п╨
+			// п╒п╣п©п╣я─я▄ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╢п╬п©п╬п╩я┐я┤п╦я┌я▄ п╢п╟п╫п╫я▀п╣ 
+			// (c п©п╬п╥п╦я├п╦п╦ rlen, я┌.п╨. я┤п╟я│я┌я▄ я┐п╤п╣ п©п╬п╩я┐я┤п╦п╩п╦)
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
@@ -844,7 +844,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				dlog[Debug::WARN] << "(0x05): buf: " << rbuf << endl;
 				dlog[Debug::WARN] << "(0x05)(" 
 					<< rbuf.func << "):(fnForceSingleCoil) "
-					<< "Получили данных меньше чем ждали...(" 
+					<< "п÷п╬п╩я┐я┤п╦п╩п╦ п╢п╟п╫п╫я▀я┘ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╤п╢п╟п╩п╦...(" 
 					<< rlen1 << " < " << szDataLen << ")" << endl;
 
 				return erInvalidFormat;
@@ -860,9 +860,9 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			if( !crcNoCheckit )
 			{
-				// Проверяем контрольную сумму
-				// от начала(включая заголовок) 
-				// и до конца (исключив последний элемент содержащий CRC)
+				// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+				// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+				// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 				// int mlen = szModbusHeader + mWrite.szHead() + mWrite.bcnt;
 				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 				if( tcrc != mWrite.crc )
@@ -874,12 +874,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 					return erBadCheckSum;
 				}
 			}
-#warning Стоит ли здесь проверять
+#warning п║я┌п╬п╦я┌ п╩п╦ п╥п╢п╣я│я▄ п©я─п╬п╡п╣я─я▐я┌я▄
 			if( !mWrite.checkFormat() )
 			{
 				dlog[Debug::WARN] << "(0x05): (" << rbuf.func 
 					<< ")(fnForceSingleCoil): "
-					<< ": некорректный формат сообщения..." << endl; 
+					<< ": п╫п╣п╨п╬я─я─п╣п╨я┌п╫я▀п╧ я└п╬я─п╪п╟я┌ я│п╬п╬п╠я┴п╣п╫п╦я▐..." << endl; 
 				return erInvalidFormat;
 			}
 
@@ -892,9 +892,9 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			if( crcNoCheckit )
 				szDataLen -= szCRC;
 			
-			// Мы получили только предварительный загловок
-			// Теперь необходимо дополучить данные 
-			// (c позиции rlen, т.к. часть уже получили)
+			// п°я▀ п©п╬п╩я┐я┤п╦п╩п╦ я┌п╬п╩я▄п╨п╬ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╧ п╥п╟пЁп╩п╬п╡п╬п╨
+			// п╒п╣п©п╣я─я▄ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╢п╬п©п╬п╩я┐я┤п╦я┌я▄ п╢п╟п╫п╫я▀п╣ 
+			// (c п©п╬п╥п╦я├п╦п╦ rlen, я┌.п╨. я┤п╟я│я┌я▄ я┐п╤п╣ п©п╬п╩я┐я┤п╦п╩п╦)
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
@@ -902,7 +902,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				dlog[Debug::WARN] << "(0x06): buf: " << rbuf << endl;
 				dlog[Debug::WARN] << "(0x06)(" 
 					<< rbuf.func << "):(fnWriteOutputSingleRegisters) "
-					<< "Получили данных меньше чем ждали...(" 
+					<< "п÷п╬п╩я┐я┤п╦п╩п╦ п╢п╟п╫п╫я▀я┘ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╤п╢п╟п╩п╦...(" 
 					<< rlen1 << " < " << szDataLen << ")" << endl;
 
 				return erInvalidFormat;
@@ -918,9 +918,9 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			if( !crcNoCheckit )
 			{
-				// Проверяем контрольную сумму
-				// от начала(включая заголовок) 
-				// и до конца (исключив последний элемент содержащий CRC)
+				// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+				// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+				// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 				// int mlen = szModbusHeader + mWrite.szHead() + mWrite.bcnt;
 				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 				if( tcrc != mWrite.crc )
@@ -932,12 +932,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 					return erBadCheckSum;
 				}
 			}
-#warning Стоит ли здесь проверять
+#warning п║я┌п╬п╦я┌ п╩п╦ п╥п╢п╣я│я▄ п©я─п╬п╡п╣я─я▐я┌я▄
 			if( !mWrite.checkFormat() )
 			{
 				dlog[Debug::WARN] << "(0x06): (" << rbuf.func 
 					<< ")(fnWriteOutputSingleRegisters): "
-					<< ": некорректный формат сообщения..." << endl; 
+					<< ": п╫п╣п╨п╬я─я─п╣п╨я┌п╫я▀п╧ я└п╬я─п╪п╟я┌ я│п╬п╬п╠я┴п╣п╫п╦я▐..." << endl; 
 				return erInvalidFormat;
 			}
 
@@ -952,8 +952,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			// ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),sizeof(ReadOutputMessage)-szCRC);
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRead.crc )
@@ -975,8 +975,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			if( !crcNoCheckit )
 			{
-				// Проверяем контрольную сумму
-				// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
+				// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+				// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 				// ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),sizeof(ReadOutputMessage)-szCRC);
 				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 				if( tcrc != mSet.crc )
@@ -991,7 +991,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			
 			if( !mSet.checkFormat() )
 			{
-				dlog[Debug::WARN] << "(0x50): некорректные значения..." << endl;
+				dlog[Debug::WARN] << "(0x50): п╫п╣п╨п╬я─я─п╣п╨я┌п╫я▀п╣ п╥п╫п╟я┤п╣п╫п╦я▐..." << endl;
 				return erBadDataValue; // return erInvalidFormat;
 			}
 
@@ -1004,9 +1004,9 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			if( crcNoCheckit )
 				szDataLen -= szCRC;
 
-			// Мы получили только предварительный загловок
-			// Теперь необходимо дополучить данные 
-			// (c позиции rlen, т.к. часть уже получили)
+			// п°я▀ п©п╬п╩я┐я┤п╦п╩п╦ я┌п╬п╩я▄п╨п╬ п©я─п╣п╢п╡п╟я─п╦я┌п╣п╩я▄п╫я▀п╧ п╥п╟пЁп╩п╬п╡п╬п╨
+			// п╒п╣п©п╣я─я▄ п╫п╣п╬п╠я┘п╬п╢п╦п╪п╬ п╢п╬п©п╬п╩я┐я┤п╦я┌я▄ п╢п╟п╫п╫я▀п╣ 
+			// (c п©п╬п╥п╦я├п╦п╦ rlen, я┌.п╨. я┤п╟я│я┌я▄ я┐п╤п╣ п©п╬п╩я┐я┤п╦п╩п╦)
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
@@ -1014,7 +1014,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				dlog[Debug::WARN] << "(0x53): buf: " << rbuf << endl;
 				dlog[Debug::WARN] << "(0x53)(" 
 					<< rbuf.func << "):(fnWriteOutputRegisters) "
-					<< "Получили данных меньше чем ждали...(" 
+					<< "п÷п╬п╩я┐я┤п╦п╩п╦ п╢п╟п╫п╫я▀я┘ п╪п╣п╫я▄я┬п╣ я┤п╣п╪ п╤п╢п╟п╩п╦...(" 
 					<< rlen1 << " < " << szDataLen << ")" << endl;
 
 				return erInvalidFormat;
@@ -1031,9 +1031,9 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) 
-			// и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+			// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRServ.crc )
@@ -1056,9 +1056,9 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			if( crcNoCheckit )
 				return erNoError;
 
-			// Проверяем контрольную сумму
-			// от начала(включая заголовок) 
-			// и до конца (исключив последний элемент содержащий CRC)
+			// п÷я─п╬п╡п╣я─я▐п╣п╪ п╨п╬п╫я┌я─п╬п╩я▄п╫я┐я▌ я│я┐п╪п╪я┐
+			// п╬я┌ п╫п╟я┤п╟п╩п╟(п╡п╨п╩я▌я┤п╟я▐ п╥п╟пЁп╬п╩п╬п╡п╬п╨) 
+			// п╦ п╢п╬ п╨п╬п╫я├п╟ (п╦я│п╨п╩я▌я┤п╦п╡ п©п╬я│п╩п╣п╢п╫п╦п╧ я█п╩п╣п╪п╣п╫я┌ я│п╬п╢п╣я─п╤п╟я┴п╦п╧ CRC)
 			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mFT.crc )
@@ -1074,7 +1074,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		}
 		else
 		{
-			// А как мы сюда добрались?!!!!!!
+			// п░ п╨п╟п╨ п╪я▀ я│я▌п╢п╟ п╢п╬п╠я─п╟п╩п╦я│я▄?!!!!!!
 			return erUnExpectedPacketType;
 		}		
 	}
@@ -1191,8 +1191,8 @@ ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessa
 
 		if( settimeofday(&set,&tz)==0 )
 		{
-			// подтверждаем сохранение
-			// в ответе возвращаем установленное время...
+			// п©п╬п╢я┌п╡п╣я─п╤п╢п╟п╣п╪ я│п╬я┘я─п╟п╫п╣п╫п╦п╣
+			// п╡ п╬я┌п╡п╣я┌п╣ п╡п╬п╥п╡я─п╟я┴п╟п╣п╪ я┐я│я┌п╟п╫п╬п╡п╩п╣п╫п╫п╬п╣ п╡я─п╣п╪я▐...
 			ModbusRTU::SetDateTimeRetMessage::cpy(reply,query);
 			return ModbusRTU::erNoError;
 		}
@@ -1214,7 +1214,7 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 
 	if( msg.len > MAXLENPACKET + szModbusHeader )
 	{
-		dlog[Debug::WARN] << "(send): длина пакета больше разрешённой..." << endl;
+		dlog[Debug::WARN] << "(send): п╢п╩п╦п╫п╟ п©п╟п╨п╣я┌п╟ п╠п╬п╩я▄я┬п╣ я─п╟п╥я─п╣я┬я▒п╫п╫п╬п╧..." << endl;
 		return erPacketTooLong;
 	}
 
@@ -1242,7 +1242,7 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 		return erHardwareError;
 	}
 
-	// Пауза, чтобы не ловить свою посылку
+	// п÷п╟я┐п╥п╟, я┤я┌п╬п╠я▀ п╫п╣ п╩п╬п╡п╦я┌я▄ я│п╡п╬я▌ п©п╬я│я▀п╩п╨я┐
 	if( aftersend_msec >= 0 )
 		msleep(aftersend_msec);
 
