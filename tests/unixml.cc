@@ -37,6 +37,24 @@ int main()
 			 << " int id=" << it.getIntProp("dbrepeat")
 			 << endl;
 		}
+
+                {
+		xmlNode* cnode = xml.findNode(xml.getFirstNode(),"ObjectsMap");
+		if( cnode == NULL )
+		{
+			cerr << "<testnode> not found" << endl;
+			return 1;
+		} 
+		UniXML_iterator it = xml.findNode(xml.getFirstNode(),"item", "LocalhostNode");
+		if( it == NULL )
+		{
+			cerr << "<testnode> not found" << endl;
+			return 1;
+		} 
+		cout << "textname=" << it.getProp("textname");
+                }
+
+		xml.save("test.out.xml");
 /*
 	}
 	catch( UniSetTypes::Exception& ex )
