@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
- * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Vitaly Lipatov
+ * Copyright (c) 2002-2010 Free Software Foundation, Inc.
+ * Copyright (c) 2002, 2009, 2010 Vitaly Lipatov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,13 +61,6 @@ public:
 	xmlNode* cur;
 	xmlDoc* doc;
 	std::string filename;
-	
-	// Кодировки внутренняя (в программе) и внешняя (хранение в XML)
-	static const std::string InternalEncoding;
-	static const std::string ExternalEncoding;
-	static const std::string xmlEncoding;
-	
-
 	
 	// Создать новый XML-документ
 	void newDoc(const std::string& root_node, std::string xml_ver="1.0");

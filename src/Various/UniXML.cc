@@ -1,6 +1,6 @@
 /* This file is part of the UniSet project
- * Copyright (c) 2002 Free Software Foundation, Inc.
- * Copyright (c) 2002 Vitaly Lipatov
+ * Copyright (c) 2002-2010 Free Software Foundation, Inc.
+ * Copyright (c) 2002, 2009, 2010 Vitaly Lipatov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,16 +40,10 @@ using namespace UniSetTypes;
 using namespace std;
 
 /* FIXME:
-По хорошему, надо отказаться от этого перекодирования
-на ходу, потому что в поиске это наверняка чрезвычайно замедляет.
 Возможно стоит использовать в качестве основы libxmlmm.
 Перед переделкой нужно написать полный тест на все функции UniXML.
 Особенно проверить распознавание кодировки XML-файла
-В качестве начальной мере добавлены функции getPropUtf8
 */
-const string UniXML::InternalEncoding("koi8-r");
-const string UniXML::ExternalEncoding("koi8-r");
-const string UniXML::xmlEncoding("utf-8");
 
 // Временная переменная для подсчёта рекурсии
 int UniXML::recur=0;
@@ -80,7 +74,7 @@ void UniXML::newDoc(const string& root_node, string xml_ver)
 	xmlNode* rootnode;
 	doc = xmlNewDoc((const xmlChar*)xml_ver.c_str());
 //	xmlEncodeEntitiesReentrant(doc, (const xmlChar*)ExternalEncoding.c_str());
-    rootnode = xmlNewDocNode(doc, NULL, (const xmlChar*)root_node.c_str(), NULL);
+	rootnode = xmlNewDocNode(doc, NULL, (const xmlChar*)root_node.c_str(), NULL);
 	xmlDocSetRootElement(doc, rootnode);
 	//assert(doc != NULL);
 	if(doc == NULL)
@@ -93,8 +87,8 @@ void UniXML::open(const string _filename)
 //	if(doc)
 //		close();
 	assert(doc==0);	// предыдущий doc не удален из памяти
-
 	xmlKeepBlanksDefault(0);
+	// Can read files in any encoding, recode to UTF-8 internally
 	doc = xmlParseFile(_filename.c_str());
 	if(doc == NULL)
 		throw NameNotFound("UniXML(open): NotFound file="+_filename);
@@ -113,103 +107,13 @@ void UniXML::close()
 	filename = "";
 }
 
-// Преобразование текстовой строки из XML в строку нашего внутреннего представления
-
-string UniXML::xml2local(const string t)
+/* FIXME: compatibility, remove later */
+string UniXML::getPropUtf8(const xmlNode* node, const string name)
 {
-	const char* text= t.c_str();
-	iconv_t frt;
-	frt = iconv_open(InternalEncoding.c_str(), xmlEncoding.c_str());
-	if (frt == (iconv_t) -1)
-	{
-		perror("iconv_open()");
-		return "";
-	}
-
-	size_t inl=strlen(text);
-	size_t outl=inl;
-
-	char* buf = new char[outl+1];
-	char* inbuf = new char[inl+1];
-
-	strncpy(inbuf,text,inl);
-	char* bufptr = buf;
-	char* inbufptr = inbuf;
-	unsigned int result = iconv (frt, &inbufptr, &inl, &bufptr, &outl);
-    if (result == (size_t) - 1)
-	{
-		perror ("iconv()");
-		delete[] buf;
-		delete[] inbuf;
-		return "";
-	}
-	buf[strlen(text)-outl]=0;
-	string tmp(buf);
-	if (iconv_close(frt) != 0)
-		perror ("iconv_close()");
-
-	delete[] buf;
-	delete[] inbuf;
-	return tmp;
-	
+	return getProp(node, name);
 }
-
-static char tmpbuf_l2x[500];
-
-// Преобразование текстовой строки из нашего внутреннего представления в строку для XML
-// Возвращает указатель на временный буфер, который один на все вызовы функции.
-const xmlChar* UniXML::local2xml(string text)
-{
-
-	iconv_t frt;
-	frt = iconv_open(xmlEncoding.c_str(), InternalEncoding.c_str() );
-	if (frt == (iconv_t) -1)
-	{
-		perror("iconv_open()");
-		return (xmlChar*)"";
-	}
-	size_t inl=text.size(), outl, soutl;
-	outl=inl*4;
-	if (outl > 100)
-		outl = 100;
-	soutl=outl;
-
-	char* inbuf = new char[inl+1];
-
-	strncpy(inbuf,text.c_str(),inl+1);
-	char* bufptr = tmpbuf_l2x;
-	char* inbufptr = inbuf;
-
-	unsigned int result = iconv (frt, &inbufptr, &inl, &bufptr, &outl);
-
-    if (result == (size_t) - 1)
-	{
-		perror ("iconv()");
-		delete[] inbuf;
-		return (xmlChar*)"";
-	}
-	tmpbuf_l2x[soutl-outl]=0;
-
-	if (iconv_close(frt) != 0)
-		perror ("iconv_close()");
-//	cout << "L2XML" << tmpbuf_l2x << endl;
-
-	delete[] inbuf;
-	return (xmlChar*)tmpbuf_l2x;
-}
-
-string UniXML::local2utf8(const string text)
-{
-	return string((const char*)local2xml(text));
-}
-
 
 string UniXML::getProp(const xmlNode* node, const string name)
-{
-	return xml2local(getPropUtf8(node, name));
-}
-
-string UniXML::getPropUtf8(const xmlNode* node, const string name)
 {
 	const char * text = (const char*)::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
 	if (text == NULL)
@@ -219,7 +123,7 @@ string UniXML::getPropUtf8(const xmlNode* node, const string name)
 
 int UniXML::getIntProp(const xmlNode* node, const string name )
 {
-	return UniSetTypes::uni_atoi(getPropUtf8(node, name));
+	return UniSetTypes::uni_atoi(getProp(node, name));
 }
 
 int UniXML::getPIntProp(const xmlNode* node, const string name, int def )
@@ -232,18 +136,16 @@ int UniXML::getPIntProp(const xmlNode* node, const string name, int def )
 
 void UniXML::setProp(xmlNode* node, string name, string text)
 {
-	xmlSetProp(node, (const xmlChar*)name.c_str(), local2xml(text));
+	::xmlSetProp(node, (const xmlChar*)name.c_str(), (const xmlChar*)text.c_str());
 }
 
 xmlNode* UniXML::createChild(xmlNode* node, string title, string text)
 {
-	return ::xmlNewChild(node, NULL, (const xmlChar*)title.c_str(), local2xml(text.c_str()));
-//	return ::xmlNewChild(node, NULL, (const xmlChar*)title.c_str(), (const xmlChar*)text.c_str());
+	return ::xmlNewChild(node, NULL, (const xmlChar*)title.c_str(), (const xmlChar*)text.c_str());
 }
 
 xmlNode* UniXML::createNext(xmlNode* node, const string title, const string text)
 {
-//	cerr << "createNext is not yet realized" << endl;
 	if( node->parent )
 		return createChild(node->parent, title,text);
 	return 0;
@@ -269,6 +171,7 @@ xmlNode* UniXML::copyNode(xmlNode* node, int recursive)
 		- при указании copynode - проблеммы с русским при сохранении
 		- при указании node - SEGFAULT при попытке удалить исходный(node) узел
 */
+	#warning "Нужно тест написать на copyNode"
 	copynode->properties = ::xmlCopyPropList(NULL,node->properties);
 	if( copynode != 0 && node->parent )
 	{
@@ -291,9 +194,9 @@ bool UniXML::save(const string filename, int level)
 	// Если файл уже существует, переименовываем его в *.xml.bak
 	string bakfilename(fn+".bak");
 	rename(fn.c_str(),bakfilename.c_str());
-//	xmlEncodeEntitiesReentrant(doc, (const xmlChar*)ExternalEncoding.c_str());
-	int res = ::xmlSaveFormatFileEnc(fn.c_str(), doc, ExternalEncoding.c_str(), level);
-//	int res = ::xmlSaveFormatFile(fn.c_str(), doc, 2);
+//	int res = ::xmlSaveFormatFileEnc(fn.c_str(), doc, ExternalEncoding.c_str(), level);
+	// Write in UTF-8 without XML encoding in the header */
+	int res = ::xmlSaveFormatFile(fn.c_str(), doc, level);
 //	int res = ::xmlSaveFile(fn.c_str(), doc);
 	return res > 0;
 }
@@ -317,7 +220,7 @@ xmlNode* UniXML::nextNode(xmlNode* n)
 	return n;
 }
 
-xmlNode* UniXML::findNodeUtf8(xmlNode* node, const string searchnode, const string name ) const
+xmlNode* UniXML::findNode(xmlNode* node, const string searchnode, const string name ) const
 {
 	while (node != NULL)
 	{
@@ -326,11 +229,11 @@ xmlNode* UniXML::findNodeUtf8(xmlNode* node, const string searchnode, const stri
 			/* Если name не задано, не сверяем. Иначе ищем, пока не найдём с таким именем */
 			if( name.empty() )
 				return node;
-			if( name == getPropUtf8(node, "name") )
+			if( name == getProp(node, "name") )
 				return node;
 
 		}
-		xmlNode * nodeFound = findNodeUtf8(node->children, searchnode, name);
+		xmlNode * nodeFound = findNode(node->children, searchnode, name);
 		if ( nodeFound != NULL )
 			return nodeFound;
 
@@ -339,9 +242,9 @@ xmlNode* UniXML::findNodeUtf8(xmlNode* node, const string searchnode, const stri
 	return NULL;
 }
 
-xmlNode* UniXML::findNode(xmlNode* node, const string searchnode, const string name ) const
+xmlNode* UniXML::findNodeUtf8(xmlNode* node, const string searchnode, const string name ) const
 {
-	return findNodeUtf8(node, local2utf8(searchnode), local2utf8(name));
+	return findNode(node, searchnode, name);
 }
 
 
@@ -351,7 +254,7 @@ xmlNode* UniXML::findNode(xmlNode* node, const string searchnode, const string n
 
 //width means number of nodes of the same level as node in 1-st parameter (width number includes first node)
 //depth means number of times we can go to the children, if 0 we can't go only to elements of the same level
-xmlNode* UniXML::extFindNodeUtf8(xmlNode* node, int depth, int width, const string searchnode, const string name, bool top )
+xmlNode* UniXML::extFindNode(xmlNode* node, int depth, int width, const string searchnode, const string name, bool top )
 {
 	int i=0;
 	while (node != NULL)
@@ -359,7 +262,7 @@ xmlNode* UniXML::extFindNodeUtf8(xmlNode* node, int depth, int width, const stri
 		if(top&&(i>=width)) return NULL;
 		if (searchnode == (const char*)node->name)
 		{
-			if( name == getPropUtf8(node, "name") )
+			if( name == getProp(node, "name") )
 				return node;
 
 			if( name.empty() )
@@ -367,7 +270,7 @@ xmlNode* UniXML::extFindNodeUtf8(xmlNode* node, int depth, int width, const stri
 		}
 		if(depth > 0)
 		{
-			xmlNode* nodeFound = extFindNodeUtf8(node->children, depth-1,width, searchnode, name, false);
+			xmlNode* nodeFound = extFindNode(node->children, depth-1,width, searchnode, name, false);
 			if ( nodeFound != NULL )
 				return nodeFound;
 		}
@@ -377,9 +280,9 @@ xmlNode* UniXML::extFindNodeUtf8(xmlNode* node, int depth, int width, const stri
 	return NULL;
 }
 
-xmlNode* UniXML::extFindNode(xmlNode* node, int depth, int width, const string searchnode, const string name, bool top )
+xmlNode* UniXML::extFindNodeUtf8(xmlNode* node, int depth, int width, const string searchnode, const string name, bool top )
 {
-	return extFindNodeUtf8(node, depth, width, local2utf8(searchnode), local2utf8(name), top );
+	return extFindNode(node, depth, width, searchnode, name, top );
 }
 
 
@@ -484,13 +387,13 @@ const string UniXML_iterator::getContent() const
 // -------------------------------------------------------------------------
 string UniXML_iterator::getPropUtf8( const string name ) const
 {
-	return UniXML::getPropUtf8(curNode, name);
+	return UniXML::getProp(curNode, name);
 }
 
 // -------------------------------------------------------------------------
 int UniXML_iterator::getIntProp( const string name ) const
 {
-	return UniSetTypes::uni_atoi((char*)::xmlGetProp(curNode, (const xmlChar*)name.c_str()));
+	return UniSetTypes::uni_atoi(UniXML::getProp(curNode, name));
 }
 
 int UniXML_iterator::getPIntProp( const string name, int def ) const
