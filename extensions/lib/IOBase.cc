@@ -369,10 +369,20 @@ void IOBase::processingThreshold( IOBase* it, SMInterface* shm, bool force )
 //	cout  << "val=" << val << " set=" << set << endl;
 	// Проверка нижнего предела
 	// значение должно быть меньше lowLimit-чуствительность
-	if( val <= (it->ti.lowlimit-it->ti.sensibility) )
-		set = false;
-	else if( val >= (it->ti.hilimit+it->ti.sensibility) )
-		set = true;
+	if (it->ti.inverse)
+	{
+		if( val <= (it->ti.lowlimit-it->ti.sensibility) )
+			set = true;
+		else if( val >= (it->ti.hilimit+it->ti.sensibility) )
+			set = false;
+	}
+	else
+	{
+		if( val <= (it->ti.lowlimit-it->ti.sensibility) )
+			set = false;
+		else if( val >= (it->ti.hilimit+it->ti.sensibility) )
+			set = true;
+	}
 
 //	cout  << "thresh: set=" << set << endl;
 	processingAsDI(it,set,shm,force);
@@ -527,6 +537,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 			b->ti.lowlimit 	= it.getIntProp("lowlimit");
 			b->ti.hilimit 		= it.getIntProp("hilimit");
 			b->ti.sensibility 	= it.getIntProp("sensibility");
+			b->ti.inverse 		= it.getIntProp("inverse");
 		}
 	}
 //	else
