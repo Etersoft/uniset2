@@ -209,7 +209,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool force )
 -->
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::setInfo( UniSetTypes::ObjectId code, bool state )
+void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code, bool state )
 {
 	// блокируем сброс (т.к. он автоматически по таймеру)
 	if( !state )

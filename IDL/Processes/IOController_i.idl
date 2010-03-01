@@ -291,6 +291,7 @@ interface IONotifyController_i : IOController_i
 		ThresholdState state;	
 		long tv_sec;			/*!< время последнего изменения датчика, секунды (gettimeofday) */
 		long tv_usec;			/*!< время последнего изменения датчика, мксек (gettimeofday) */
+		boolean inverse;		/*!< инверсная логика */
 	};
 
 	typedef sequence<ThresholdInfo> ThresholdInfoSeq;

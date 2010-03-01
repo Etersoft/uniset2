@@ -122,8 +122,18 @@
 			</xsl:when>		
 			<xsl:when test="$GENTYPE='R'">
 				m_<xsl:value-of select="../../@name"/> = 0;
-				si.id = mid_<xsl:value-of select="../../@name"/>;
-				ui.saveState( si,false,UniversalIO::DigitalInput,getId() );
+				if( mid_<xsl:value-of select="../../@name"/> != UniSetTypes::DefaultObjectId )
+				{
+				 	try
+					{
+						si.id = mid_<xsl:value-of select="../../@name"/>;
+						ui.saveState( si,false,UniversalIO::DigitalInput,getId() );
+					}
+					catch( UniSetTypes::Exception&amp; ex )
+					{
+						unideb[Debug::LEVEL1] &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
+					}
+				}
 			</xsl:when>
 			</xsl:choose>
 		</xsl:if>
@@ -166,7 +176,7 @@
 							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
 		void updateValues();
-		void setInfo( UniSetTypes::ObjectId code, bool state );
+		void setMsg( UniSetTypes::ObjectId code, bool state );
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PROTECTED">
@@ -550,7 +560,7 @@ activated(false)
 	
 	sleep_msec = conf->getArgPInt("--sleep-msec","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
 
-	resetMsgTime = conf->getPIntProp(cnode,"resetMsgTime", 200);
+	resetMsgTime = conf->getPIntProp(cnode,"resetMsgTime", 2000);
 	ptResetMsg.setTiming(resetMsgTime);
 
 	smReadyTimeout = conf->getArgInt("--sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
@@ -657,9 +667,19 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 // reset messages
 <xsl:for-each select="//msgmap/item">
 	m_<xsl:value-of select="@name"/> = 0;
-	si.id = <xsl:value-of select="@name"/>;
-	si.node = node_<xsl:value-of select="@name"/>;
-	ui.saveState( si,false,UniversalIO::DigitalInput,getId() );
+	if( <xsl:value-of select="@name"/> != UniSetTypes::DefaultObjectId )
+	{
+		try
+		{
+			si.id = <xsl:value-of select="@name"/>;
+			si.node = node_<xsl:value-of select="@name"/>;
+			ui.saveState( si,false,UniversalIO::DigitalInput,getId() );
+		}
+		catch( UniSetTypes::Exception&amp; ex )
+		{
+			unideb[Debug::LEVEL1] &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
+		}
+	}
 </xsl:for-each>
 }
 // -----------------------------------------------------------------------------
@@ -766,7 +786,7 @@ activated(false)
 
 	sleep_msec = conf->getArgPInt("--sleep-msec","<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
 
-	resetMsgTime = conf->getPIntProp(cnode,"resetMsgTime", 0);
+	resetMsgTime = conf->getPIntProp(cnode,"resetMsgTime", 2000);
 	ptResetMsg.setTiming(resetMsgTime);
 
 	smReadyTimeout = conf->getArgInt("--sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
