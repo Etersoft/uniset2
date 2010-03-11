@@ -101,7 +101,7 @@ prefix(prefix)
 	{
 		string iaddr = conf->getArgParam("--" + prefix + "-inet-addr",it.getProp("iaddr"));
 		if( iaddr.empty() )
-			throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown TCP server address. Use: --mbs-inet-addr [ XXX.XXX.XXX.XXX| hostname ]");
+			throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown TCP server address. Use: --prefix-inet-addr [ XXX.XXX.XXX.XXX| hostname ]");
 		
 		int port = conf->getArgPInt("--" + prefix + "-inet-port",it.getProp("iport"), 502);
 
@@ -816,7 +816,7 @@ MBSlave* MBSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::
 	}
 
 	dlog[Debug::INFO] << "(mbslave): name = " << name << "(" << ID << ")" << endl;
-	return new MBSlave(ID,icID,ic);
+	return new MBSlave(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, MBSlave::IOProperty& p )
