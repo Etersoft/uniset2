@@ -104,13 +104,15 @@ prefix(prefix)
 			throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown TCP server address. Use: --mbs-inet-addr [ XXX.XXX.XXX.XXX| hostname ]");
 		
 		int port = conf->getArgPInt("--" + prefix + "-inet-port",it.getProp("iport"), 502);
+
+		dlog[Debug::INFO] << myname << "(init): type=TCP myaddr=" << ModbusRTU::addr2str(addr) 
+			<< " inet=" << iaddr << " port=" << port << endl;
 	
 		ost::InetAddress ia(iaddr.c_str());
 		mbslot	= new ModbusTCPServerSlot(ia,port);
 		thr = new ThreadCreator<MBSlave>(this,&MBSlave::execute_tcp);
 
-		dlog[Debug::INFO] << myname << "(init): type=TCP myaddr=" << ModbusRTU::addr2str(addr) 
-			<< " inet=" << iaddr << " port=" << port << endl;
+		dlog[Debug::INFO] << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
 	}
 	else
 		throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown slave type. Use: --mbs-type [RTU|TCP]");
@@ -124,7 +126,7 @@ prefix(prefix)
 	mbslot->connectWriteOutput( sigc::mem_fun(this, &MBSlave::writeOutputRegisters) );
 	mbslot->connectWriteSingleOutput( sigc::mem_fun(this, &MBSlave::writeOutputSingleRegister) );
 
-	if( findArgParam("--mbs-allow-setdatetime",conf->getArgc(),conf->getArgv())!=-1 )
+	if( findArgParam("--" + prefix + "-allow-setdatetime",conf->getArgc(),conf->getArgv())!=-1 )
 		mbslot->connectSetDateTime( sigc::mem_fun(this, &MBSlave::setDateTime) );
 	
 	mbslot->connectFileTransfer( sigc::mem_fun(this, &MBSlave::fileTransfer) );	
