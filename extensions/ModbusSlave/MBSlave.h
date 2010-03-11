@@ -168,6 +168,10 @@ class MBSlave:
 		IOController::AIOStateList::iterator aitAskCount;
 		UniSetTypes::ObjectId askcount_id;
 
+		IOController::DIOStateList::iterator ditRespond;
+		UniSetTypes::ObjectId respond_id;
+		bool respond_invert;
+
 		PassiveTimer ptTimeout;
 		ModbusRTU::mbErrCode prev;
 		long askCount;
