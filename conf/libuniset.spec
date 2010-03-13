@@ -2,8 +2,8 @@
 %define oname uniset
 
 Name: libuniset
-Version: 0.98
-Release: eter1
+Version: 0.97
+Release: eter56
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -183,8 +183,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
-* Wed Mar 03 2010 Ilya Shpigor <elly@altlinux.org> 0.98-eter1
-- new build for Sisyphus with utf8 support
+
+* Fri Mar 12 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter55
+- new build
 
 * Sat Feb 13 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter54
 - fixed bug in codegen
