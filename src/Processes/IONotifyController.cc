@@ -494,6 +494,7 @@ void IONotifyController::localSaveState( IOController::DIOStateList::iterator& i
 
 	try
 	{	
+		uniset_mutex_lock l(sig_mutex,500);
 		changeSignal.emit(&sm);
 	}
 	catch(...){}
@@ -557,6 +558,7 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 
 	try
 	{	
+		uniset_mutex_lock l(sig_mutex,500);
 		changeSignal.emit(&sm);
 	}
 	catch(...){}
@@ -1201,6 +1203,7 @@ void IONotifyController::localSetState( IOController::DIOStateList::iterator& it
 
 	try
 	{	
+		uniset_mutex_lock l(sig_mutex,500);
 		changeSignal.emit(&sm);
 	}
 	catch(...){}
@@ -1257,6 +1260,7 @@ void IONotifyController::localSetValue( IOController::AIOStateList::iterator& li
 
 	try
 	{	
+		uniset_mutex_lock l(sig_mutex,500);
 		changeSignal.emit(&sm);
 	}
 	catch(...){}
