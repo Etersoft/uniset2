@@ -5,9 +5,12 @@
 #define _MTR_H_
 // -----------------------------------------------------------------------------
 #include <string>
+#include <map>
+#include <list>
 #include <cstring>
 #include <cmath>
 #include "modbus/ModbusTypes.h"
+#include "ComPort.h"
 // -----------------------------------------------------------------------------
 class ModbusRTUMaster;
 // -----------------------------------------------------------------------------
@@ -79,7 +82,25 @@ namespace MTR
 	bool setStopBit( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, bool state );
 	bool setParity( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, mtrParity p );
 	bool setDataBits( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, mtrDataBits d );
+	ComPort::Parity get_parity( ModbusRTU::ModbusData data );
+	ComPort::Speed get_speed( ModbusRTU::ModbusData data );
+	// -------------------------------------------------------------------------
+	// Настройка из конфю файла.
+	bool update_configuration( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, 
+				    const std::string mtrconfile, int verbose=0 );
+	// ---------------------------
+	// вспомогательные функции и типы данных
+	typedef std::list<ModbusRTU::ModbusData> DataList;
+	typedef std::map<ModbusRTU::ModbusData,DataList> DataMap;
+	static int attempts = 3; //
+	static const ModbusRTU::ModbusData skip[] = {48, 49, 59};  // registers which should not write
+
 	
+	bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr, int verb );
+	bool read_param( const std::string str, std::string& str1, std::string& str2 );
+	DataMap read_confile( const std::string f );
+	void update_communication_params( ModbusRTU::ModbusAddr reg, ModbusRTU::ModbusData data,
+				  ModbusRTUMaster* mb, ModbusRTU::ModbusAddr& addr, int verb );
 	// -------------------------------------------------------------------------
 	static const int u2size = 2;
 	// -------------------------------------------------------------------------

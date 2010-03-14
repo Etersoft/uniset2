@@ -248,7 +248,35 @@ int main( int argc, char **argv )
 
 			case cmdSave:
 			{
-				return  MTR::update_configuration(&mb,slaveaddr,mtrconfile,verb,speed) ? 0 : 1;
+				if( slaveaddr == 0x00 )
+				{
+					if( verb )
+						cout << "(mtr-setup): save: autodetect slave addr... (speed=" << speed <<  ")" << endl;
+
+					mb.setTimeout(50);
+					slaveaddr = ModbusHelpers::autodetectSlave(&mb,beg,end,MTR::regModelNumber,ModbusRTU::fnReadInputRegisters);
+					mb.setTimeout(tout);
+				}
+
+				if( speed.empty() )
+				{
+					if( verb )
+						cout << "(mtr-setup): save: autodetect speed... (addr=" << ModbusRTU::addr2str(slaveaddr) << ")" << endl;
+
+					mb.setTimeout(50);
+					ComPort::Speed s = ModbusHelpers::autodetectSpeed(&mb,slaveaddr,MTR::regModelNumber,ModbusRTU::fnReadInputRegisters);
+					mb.setSpeed(s);
+					mb.setTimeout(tout);
+				}
+
+				if( verb )
+					cout << "(mtr-setup): save: "
+						 << " slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+						 << " confile=" << mtrconfile
+						 << " speed=" << speed
+						 << endl;
+
+				return  MTR::update_configuration(&mb,slaveaddr,mtrconfile,verb) ? 0 : 1;
 			}
 			break;
 
