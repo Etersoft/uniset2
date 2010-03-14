@@ -3106,12 +3106,11 @@ UniversalIO::IOTypes UniversalInterface::getConfIOType( UniSetTypes::ObjectId id
 	if( !conf )
 		return UniversalIO::UnknownIOType;
 		
-	xmlNode* x = conf->getObjectInfo(id);
+	xmlNode* x = conf->getXMLObjectNode(id);
 	if( !x )
 		return UniversalIO::UnknownIOType;
 	
 	UniXML_iterator it(x);
-		
 	return UniSetTypes::getIOType( it.getProp("iotype") );
 }
 // -----------------------------------------------------------------------------

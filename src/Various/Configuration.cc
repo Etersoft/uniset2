@@ -1012,7 +1012,7 @@ xmlNode* Configuration::getXMLServicesSection()
 	return xmlServicesSec;
 }
 // -------------------------------------------------------------------------
-xmlNode* Configuration::getObjectInfo( UniSetTypes::ObjectId id )
+xmlNode* Configuration::getXMLObjectNode( UniSetTypes::ObjectId id )
 {
 	const ObjectInfo* i = oind->getObjectInfo(id);
 	if( i )
