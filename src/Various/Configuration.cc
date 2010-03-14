@@ -1012,6 +1012,15 @@ xmlNode* Configuration::getXMLServicesSection()
 	return xmlServicesSec;
 }
 // -------------------------------------------------------------------------
+xmlNode* Configuration::getObjectInfo( UniSetTypes::ObjectId id )
+{
+	const ObjectInfo* i = oind->getObjectInfo(id);
+	if( i )
+		return (xmlNode*)(i->data);
+
+	return 0;
+}
+// -------------------------------------------------------------------------
 void uniset_init( int argc, const char* const* argv, const std::string xmlfile )
 {
 	string confile = UniSetTypes::getArgParam( "--confile", argc, argv, xmlfile );

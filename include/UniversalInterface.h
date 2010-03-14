@@ -196,6 +196,9 @@ class UniversalInterface
 		UniSetTypes::ObjectType getType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
 		UniSetTypes::ObjectType getType(UniSetTypes::ObjectId id);
 
+		// read from xml (only for xml!)
+		UniversalIO::IOTypes getConfIOType( UniSetTypes::ObjectId id );
+
 		IOController_i::ShortIOInfo getChangedTime( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
 		IOController_i::ShortMapSeq* getSensors( UniSetTypes::ObjectId id, 
 													UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode() );

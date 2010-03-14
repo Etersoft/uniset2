@@ -107,6 +107,7 @@ namespace UniSetTypes
 		xmlNode* getXMLObjectsSection();
 		xmlNode* getXMLControllersSection();
 		xmlNode* getXMLServicesSection();
+		xmlNode* getObjectInfo( UniSetTypes::ObjectId );
 	
 		// net
 		inline unsigned int getCountOfNet() const { return countOfNet; }

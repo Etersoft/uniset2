@@ -188,6 +188,8 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string sec, 
 		delete[] omap[ind].textName;
 		omap[ind].textName = new char[textname.size()+1];
 		strcpy( omap[ind].textName, textname.c_str() );
+		
+		omap[ind].data = (void*)(xmlNode*)it;
 
 //		cout << "read: " << "(" << ind << ") " << omap[ind].repName << "\t" << omap[ind].textName << endl;
 		ind++;
@@ -257,6 +259,7 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string sec, un
 		omap[ind].textName = new char[textname.size()+1];
 		strcpy( omap[ind].textName, textname.c_str() );
 
+		omap[ind].data = (void*)(xmlNode*)(it);
 		// 
 		mok[omap[ind].repName] = ind;
 
