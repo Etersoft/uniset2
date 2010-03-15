@@ -118,9 +118,14 @@ namespace UniSetTypes
 	/*! Информация об имени объекта */
 	struct ObjectInfo
 	{
+		ObjectInfo():
+			id(DefaultObjectId),
+			repName(0),textName(0),data(0){}
+
 	    ObjectId id;		/*!< идентификатор */
 	    char* repName;		/*!< текстовое имя для регистрации в репозитории */
 	    char* textName;		/*!< текстовое имя */
+	    void* data;
 	};
 	
 	typedef std::list<NodeInfo> ListOfNode;

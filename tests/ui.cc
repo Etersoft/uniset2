@@ -11,6 +11,25 @@ int main( int argc, const char **argv )
 	{
 
 		uniset_init(argc,argv,"test.xml");
+		UniversalInterface ui;
+
+
+		cout << "** check getSensorID function **" << endl;
+		ObjectId id1 = conf->getSensorID("Input1_S");
+		if( id1 != 1 )
+		{
+			cout << "** FAILED! check getSensorID function **" << endl;
+			return 1;
+		}
+
+		cout << "** check getConfIOType function **" << endl;
+		UniversalIO::IOTypes t = ui.getConfIOType(id1);
+		cout << "sensor ID=" << id1 << " iotype=" << t << endl;
+		if( t != UniversalIO::DigitalInput )
+		{
+			cout << "** FAILED! check getSensorID function **" << endl;
+			return 1;
+		}
 
 		int id = conf->getArgInt("--sid");
 		if( id <= 0 )
@@ -19,9 +38,8 @@ int main( int argc, const char **argv )
 			return 1;
 		}
 	
-		UniversalInterface ui;
 
-		cout << "getChangedTime for ID=" << id << ":" << endl;
+		cout << "** check getChangedTime for ID=" << id << ":" << endl;
 
 		IOController_i::ShortIOInfo inf = ui.getChangedTime(id,conf->getLocalNode());
 
@@ -33,6 +51,7 @@ int main( int argc, const char **argv )
 		cout << "id=" << id
 			<< " value=" << inf.value
 			<< " last changed: " << string(t_str) << endl;
+
 	}
 	catch( Exception& ex )
 	{

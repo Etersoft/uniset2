@@ -157,6 +157,9 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string sec )
 
 		inf.textName = new char[textname.size()+1];
 		strcpy( inf.textName, textname.c_str() );
+		
+		inf.data = (void*)(xmlNode*)(it);
+
 		omap[inf.id] = inf;
 	}
 }
@@ -211,6 +214,8 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string sec )
 
 		inf.textName = new char[textname.size()+1];
 		strcpy( inf.textName, textname.c_str() );
+		
+		inf.data = (void*)(xmlNode*)(it);
 
 		omap[inf.id] = inf;
 	}

@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.97
-Release: eter56
+Release: eter59
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -143,7 +143,8 @@ rm -f %buildroot%_libdir/*.la
 %_bindir/%oname-iocalibr
 %_bindir/%oname-logicproc
 %_bindir/%oname-plogicproc
-%_bindir/mtrconv
+%_bindir/mtr-conv
+%_bindir/mtr-setup
 %_bindir/vtconv
 %_bindir/rtustate
 %_bindir/%oname-rtuexchange
@@ -183,6 +184,15 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+
+* Sun Mar 14 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter58
+- minor fixes in MTR setup API
+
+* Sun Mar 14 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter57
+- add MTR setup (API and utility)
+
+* Sat Mar 13 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter56
+- new build
 
 * Fri Mar 12 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter55
 - new build
