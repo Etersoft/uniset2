@@ -779,11 +779,9 @@ void MBSlave::help_print( int argc, const char* const* argv )
 	cout << "--prefix-heartbeat-max  	- Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 	cout << "--prefix-ready-timeout	- Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
 	cout << "--prefix-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
-	cout << "--prefix-notRespondSensor - датчик связи для данного процесса " << endl;
-	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
-	cout << "--prefix-recv-timeout - Таймаут на ожидание ответа." << endl;
 	cout << "--prefix-respond-id - respond sensor id" << endl;
 	cout << "--prefix-respond-invert [0|1] - invert respond logic" << endl;
+	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
 	cout << "--prefix-timeout msec - timeout for check link" << endl;
 	cout << "--prefix-allow-setdatetime - On set date and time (0x50) modbus function" << endl;
 	cout << "--prefix-my-addr      - адрес текущего узла" << endl;
