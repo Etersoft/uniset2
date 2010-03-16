@@ -1,4 +1,4 @@
-bin_PROGRAMS 			= @PACKAGE@-rtuexchange mtrconv rtustate vtconv
+bin_PROGRAMS 			= @PACKAGE@-rtuexchange mtr-conv rtustate vtconv mtr-setup
 
 lib_LTLIBRARIES 			= libUniSetRTU.la
 libUniSetRTU_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
@@ -15,9 +15,13 @@ libUniSetRTU_la_SOURCES 	= RTUStorage.cc RTUExchange.cc
 									$(SIGC_LIBS)
 @PACKAGE@_rtuexchange_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
 
-mtrconv_SOURCES	= mtrconv.cc
-mtrconv_LDADD	= $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la
-mtrconv_CXXFLAGS = -I$(top_builddir)/extensions/include
+mtr_conv_SOURCES	= mtrconv.cc
+mtr_conv_LDADD	= $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la
+mtr_conv_CXXFLAGS = -I$(top_builddir)/extensions/include
+
+mtr_setup_SOURCES	= mtr-setup.cc
+mtr_setup_LDADD	= $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la
+mtr_setup_CXXFLAGS = -I$(top_builddir)/extensions/include
 
 vtconv_SOURCES	= vtconv.cc
 vtconv_LDADD	= $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la

@@ -280,6 +280,7 @@ class IONotifyController:
 
 		void onChangeUndefined( DependsList::iterator it, bool undefined );
 
+		UniSetTypes::uniset_mutex sig_mutex;
 		ChangeSignal changeSignal;
 
 	private:
