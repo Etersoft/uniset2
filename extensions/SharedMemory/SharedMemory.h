@@ -262,12 +262,11 @@ class SharedMemory:
 		ReadSlotList lstRSlot;
 
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
-		void sysCommand( UniSetTypes::SystemMessage *sm );
-		void sensorInfo( UniSetTypes::SensorMessage *sm );
-		void timerInfo( UniSetTypes::TimerMessage *tm );
-		void askSensors( UniversalIO::UIOCommand cmd );
-		void sendEvent( UniSetTypes::SystemMessage& sm );
-
+		virtual void sysCommand( UniSetTypes::SystemMessage *sm );
+		virtual void sensorInfo( UniSetTypes::SensorMessage *sm );
+		virtual void timerInfo( UniSetTypes::TimerMessage *tm );
+		virtual void askSensors( UniversalIO::UIOCommand cmd );
+		virtual void sendEvent( UniSetTypes::SystemMessage& sm );
 
 		virtual void localSaveValue( AIOStateList::iterator& it, const IOController_i::SensorInfo& si,
 										CORBA::Long newvalue, UniSetTypes::ObjectId sup_id );

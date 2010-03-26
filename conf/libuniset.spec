@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.97
-Release: eter61
+Release: eter62
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -184,6 +184,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Sat Mar 27 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter62
+- minor fixes in SM (add virtual function)
+
 * Thu Mar 18 2010 Pavel Vainerman <pv@etersoft.ru> 0.97-eter61
 - fixed bug in SandClock interface
 

@@ -95,6 +95,11 @@ int main( int argc, char **argv )
 	ComPort::StopBits sbits = ComPort::OneBit;
 	ComPort::Parity parity = ComPort::NoParity;
 
+//	ModbusRTU::ModbusAddr b=255;
+//	
+//	cout << "b=" << (int)b << " b++=" << (int)(b++) << endl;
+//	return 0;
+
 	try
 	{
 		while( (opt = getopt_long(argc, argv, "hvw:r:x:d:s:t:l:n:yb:e:x:z:",longopts,&optindex)) != -1 ) 
