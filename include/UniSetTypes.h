@@ -110,9 +110,14 @@ namespace UniSetTypes
 	/*! Информация о сообщении */
 	struct MessageInfo
 	{
-	   UniSetTypes::MessageCode code;	/*!< идентификатор */
-	   std::string text;				/*!< текст */
-	   std::string idname;				/*!< текстовое название идентификатора */
+		UniSetTypes::MessageCode code;	/*!< идентификатор */
+		std::string text;				/*!< текст */
+		std::string idname;				/*!< текстовое название идентификатора */
+
+		inline bool operator < ( const MessageInfo& m ) const
+		{
+			return (code < m.code);
+		}
 	};
 
 	/*! Информация об имени объекта */
@@ -122,10 +127,15 @@ namespace UniSetTypes
 			id(DefaultObjectId),
 			repName(0),textName(0),data(0){}
 
-	    ObjectId id;		/*!< идентификатор */
-	    char* repName;		/*!< текстовое имя для регистрации в репозитории */
-	    char* textName;		/*!< текстовое имя */
-	    void* data;
+		ObjectId id;		/*!< идентификатор */
+		char* repName;		/*!< текстовое имя для регистрации в репозитории */
+		char* textName;		/*!< текстовое имя */
+		void* data;
+	
+		inline bool operator < ( const ObjectInfo& o ) const
+		{
+			return (id < o.id);
+		}
 	};
 	
 	typedef std::list<NodeInfo> ListOfNode;

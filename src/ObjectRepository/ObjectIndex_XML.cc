@@ -284,12 +284,5 @@ const ObjectInfo* ObjectIndex_XML::getObjectInfo( const ObjectId id )
 		return &omap[id];
 
 	return NULL;
-/*
-	ObjectInfo ret;
-	ret.id = DefaultObjectId;
-	ret.repName = "";
-	ret.textName = "";
-	return ret;
-*/	
 }
 // ------------------------------------------------------------------------------------------
