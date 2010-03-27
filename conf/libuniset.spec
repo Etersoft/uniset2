@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.97
-Release: eter59
+Release: eter62
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -184,6 +184,17 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Sat Mar 27 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter62
+- minor fixes in SM (add virtual function)
+
+* Thu Mar 18 2010 Pavel Vainerman <pv@etersoft.ru> 0.97-eter61
+- fixed bug in SandClock interface
+
+* Thu Mar 18 2010 Pavel Vainerman <pv@etersoft.ru> 0.97-eter60
+- new build
+
+* Thu Mar 18 2010 Pavel Vainerman <pv@etersoft.ru> 0.97-eter59
+- fixed bug in ModbuRTU::autedetect slave adress function
 
 * Sun Mar 14 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter58
 - minor fixes in MTR setup API

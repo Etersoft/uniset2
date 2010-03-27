@@ -25,6 +25,13 @@ ModbusAddr ModbusHelpers::autodetectSlave( ModbusRTUMaster* m,
 							ModbusData reg,
 							SlaveFunctionCode fn )
 {
+	if( beg > end )
+	{
+		ModbusAddr tmp = beg;
+		beg = end;
+		end = tmp;
+	}
+
 	for( ModbusAddr a=beg; a<=end; a++ )
 	{
 		try
@@ -56,6 +63,9 @@ ModbusAddr ModbusHelpers::autodetectSlave( ModbusRTUMaster* m,
 				return a; // узел ответил ошибкой (но связь то есть)
 		}
 		catch(...){}
+
+		if( (beg == 0xff) || (end == 0xff) )
+			break;
 	}
 	
 	throw TimeOut();

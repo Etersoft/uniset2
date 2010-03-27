@@ -29,26 +29,26 @@
 class SandClock
 {
 	public:
-		SandClock(): state(false),sand(0),size(0){}
+		SandClock(): _state(false),_sand(0),_size(0){}
 		~SandClock(){}
 	
 		// запустить часы (заново)
 		inline void run( int msec )
 		{
 			t.setTiming(msec);
-			state 	= true;
-			sand	= msec;
-			size	= msec;
+			_state 	= true;
+			_sand	= msec;
+			_size	= msec;
 		}
 		
 		inline void reset ()
 		{
-			run(size);
+			run(_size);
 		}
 
 		inline int duration()
 		{
-			return size;
+			return _size;
 		}
 		// перевернуть часы
 		// true - засечь время
@@ -56,17 +56,17 @@ class SandClock
 		// возвращает аргумент (т.е. идёт ли отсчёт времени)
 		inline bool rotate( bool st )
 		{
-			if( st == state )
+			if( st == _state )
 				return st;
 				
-			state = st;
-			if( !state )
+			_state = st;
+			if( !_state )
 			{
 				int cur = t.getCurrent();
-				sand -= cur;
+				_sand -= cur;
 
-				if( sand < 0 )
-					sand = 0;
+				if( _sand < 0 )
+					_sand = 0;
 
 //				std::cout << "перевернули: прошло " << cur
 //							<< " осталось " << sand 
@@ -76,15 +76,15 @@ class SandClock
 			}
 			else
 			{
-				sand += t.getCurrent();
-				if( sand > size )
-					sand = size;
+				_sand += t.getCurrent();
+				if( _sand > _size )
+					_sand = _size;
 
 //				std::cout << "вернули: прошло " << t.getCurrent()
 //							<< " осталось " << sand 
 //							<< " засекам " << sand << endl;
 	
-				t.setTiming(sand);
+				t.setTiming(_sand);
 			}
 			return st;
 		}
@@ -108,19 +108,19 @@ class SandClock
 		{
 			// пока часы не "стоят"
 			// всегда false
-			if( !state )
+			if( !_state )
 				return false;
 
 			return t.checkTime();
 		}
 
-		inline bool state(){ return state; }
+		inline bool state(){ return _state; }
 		
 	protected:
 		PassiveTimer t;
-		bool state;
-		int sand;
-		int size;
+		bool _state;
+		int _sand;
+		int _size;
 };
 // --------------------------------------------------------------------------
 #endif
