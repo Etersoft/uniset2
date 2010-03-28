@@ -87,7 +87,7 @@ namespace UniSetTypes
 	    	inline bool operator < ( const VoidMessage& msg ) const
 			{
 				if( priority != msg.priority )
-					return priority < msg.priority; 					
+					return priority < msg.priority;
 	
 				if( tm.tv_sec != msg.tm.tv_sec )
 					return tm.tv_sec >= msg.tm.tv_sec;

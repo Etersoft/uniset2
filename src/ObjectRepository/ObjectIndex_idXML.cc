@@ -228,12 +228,5 @@ const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id )
 		return &(it->second);
 
 	return NULL;
-/*
-	ObjectInfo ret;
-	ret.id = DefaultObjectId;
-	ret.repName = "";
-	ret.textName = "";
-	return ret;
-*/	
 }
 // ------------------------------------------------------------------------------------------

@@ -82,11 +82,11 @@
 
 	</MBSlave1>
 
-	<RSExchange name="RSExchange" speed="38400">
+	<RTUExchange name="RTUExchange" speed="38400">
 		<DeviceList>
 			<item addr="0x02" force_disconnect="1" speed="9600" respondSensor="RespondRTU_S" timeout="5000" invert="0"/>
 		</DeviceList>
-	</RSExchange>
+	</RTUExchange>
 
 	<UDPExchange name="UDPExchange"/>
 	<UDPExchange2 name="UDPExchange2"/>

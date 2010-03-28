@@ -2280,10 +2280,7 @@ ObjectPtr UniversalInterface::CacheOfResolve::resolve( ObjectId id, ObjectId nod
 	// то мы делаем _duplicate....
 	
 	if( !CORBA::is_nil(it->second.ptr) )
-	    return it->second.ptr._retn();
-//	    return it->second.ptr;
-//	    return CORBA::Object::_duplicate(it->second.ptr);
-//		return it->second.ptr.out(); // CORBA::Object::_duplicate(it->second.ptr);
+	    return CORBA::Object::_duplicate(it->second.ptr);
 
 	throw NameNotFound();
 }
