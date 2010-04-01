@@ -90,6 +90,8 @@ SMInterface::SMInterface( UniSetTypes::ObjectId _shmID, UniversalInterface* _ui,
 	shmID(_shmID),
 	myid(_myid)
 {
+	if( shmID == DefaultObjectId )
+		throw UniSetTypes::SystemError("(SMInterface): Unknown shmID!" );
 }
 // --------------------------------------------------------------------------
 SMInterface::~SMInterface()
