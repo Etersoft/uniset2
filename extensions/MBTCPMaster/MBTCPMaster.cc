@@ -1470,14 +1470,18 @@ bool MBTCPMaster::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
 	dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) 
 			<< " force_disconnect=" << d->second->force_disconnect
 			<< " ask_every_reg=" << d->second->ask_every_reg << endl;
-	
-	d->second->resp_id = conf->getSensorID(it.getProp("respondSensor"));
-	if( d->second->resp_id == DefaultObjectId )
-	{
-		dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for noRespondSensor=" << it.getProp("respondSensor") << endl;
-		return true;
-	}
 
+	string s(it.getProp("respondSensor"));
+	if( !s.empty() )
+	{
+		d->second->resp_id = conf->getSensorID(s);
+		if( d->second->resp_id == DefaultObjectId )
+		{
+			dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for noRespondSensor=" << s << endl;
+			return false;
+		}
+    }
+    
 	dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
 	int tout = it.getPIntProp("timeout", UniSetTimer::WaitUpTime);
 	d->second->resp_ptTimeout.setTiming(tout);
