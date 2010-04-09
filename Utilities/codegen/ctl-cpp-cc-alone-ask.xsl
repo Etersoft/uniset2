@@ -354,7 +354,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 <xsl:template name="gensetdata">
 <xsl:choose>
 	<xsl:when test="normalize-space(../../@iotype)='DO'">
-		ui.setState( <xsl:value-of select="../../@name"/>, <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, node_<xsl:value-of select="../../@name"/>, );
+		ui.setState( <xsl:value-of select="../../@name"/>, <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, node_<xsl:value-of select="../../@name"/> );
 	</xsl:when>
 	<xsl:when test="normalize-space(../../@iotype)='AO'">
 		ui.setValue( <xsl:value-of select="../../@name"/>, <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, node_<xsl:value-of select="../../@name"/> );
