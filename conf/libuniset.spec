@@ -184,6 +184,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Fri Apr 09 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter64
+- fixed bug in uniset-codegen
+
 * Sun Mar 28 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter63
 - optimization
 
