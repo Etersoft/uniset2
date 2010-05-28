@@ -53,15 +53,11 @@ CXXFLAGS="-pedantic -Wall -funsigned-char -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
 
-# check IDL-compile
-IDL=""
-AC_CHECK_PROG(IDL, omniidl,[yes])
-if test "x$IDL" != x ; then
-	IDL="omniidl"
-else
-	AC_MSG_ERROR([*** omniidl not found.])
-fi
+# check IDL compiler
+AC_CHECK_PROG([IDL], [omniidl], [omniidl], , , AC_MSG_ERROR([*** omniidl not found.]))
+#UNISET_IDLFLAGS=$(pkg-config omniORB4 --variable=idldir"
 AC_SUBST(IDL)
+#AC_SUBST(UNISET_IDLFLAGS)
 
 #check mysql support
 AC_MSG_CHECKING([mysql support])
