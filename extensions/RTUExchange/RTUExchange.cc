@@ -1607,7 +1607,7 @@ bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
 		if( d->second->resp_id == DefaultObjectId )
 		{
 			dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for noRespondSensor=" << it.getProp("respondSensor") << endl;
-			return true;
+			return false;
 		}
 	}
 

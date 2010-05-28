@@ -35,7 +35,7 @@
 
 	--io-confnode name      - Использовать для настройки указанный xml-узел 
 	--io-name name		- ID процесса. По умолчанию IOController1. 
-	--io-numcards		- Количество кард в/в. По умолчанию 1. 
+	--io-numcards		- Количество карт в/в. По умолчанию 1. 
 	--iodev0 dev		- Использовать для card='0' указанный файл comedi-устройства. 
 	--iodev1 dev		- Использовать для card='1' указанный файл comedi-устройства. 
 	--iodev2 dev		- Использовать для card='2' указанный файл comedi-устройства. 
@@ -118,7 +118,7 @@
 	                  Т.е. на самом деле дискретный выход, который может иметь три состояния
 			  UniSetTypes::lmpOFF      - выключен
 			  UniSetTypes::lmpON       - включен
-			  UniSetTypes::lmpBLINK1   - мигание с частотой 1
+			  UniSetTypes::lmpBLINK    - мигание с частотой 1
 			  UniSetTypes::lmpBLINK2   - мигание с частотой 2
 			  UniSetTypes::lmpBLINK3   - мигание с частотой 3
 			  
