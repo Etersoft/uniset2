@@ -1,5 +1,6 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
+# See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
 AC_INIT([uniset], [0.97], pv@etersoft.ru)
@@ -16,7 +17,7 @@ AC_PROG_INSTALL
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_CPP
-AC_LANG_CPLUSPLUS dnl switch to C++
+AC_LANG_CPLUSPLUS
 AC_PROG_INSTALL
 
 AC_PROG_LN_S
@@ -35,28 +36,19 @@ AC_SUBST(LIBVER)
 # Checks for libraries.
 PKG_CHECK_MODULES(XML, libxml-2.0)
 PKG_CHECK_MODULES(OMNI, omniORB4)
-#OMNI_CFLAGS=-D__OMNIORB4
-#OMNI_LIBS=-lomniORB4 
-
 PKG_CHECK_MODULES(SIGC, sigc++-2.0)
-AC_SUBST(SIGC_CFLAGS)
-AC_SUBST(SIGC_LIBS)
-
 PKG_CHECK_MODULES(COMCPP, libccgnu2)
-AC_SUBST(COMCPP_CFLAGS)
-AC_SUBST(COMCPP_LIBS)
 
 # export
 LDFLAGS="${OMNI_LIBS} ${XML_LIBS}"
 CXXFLAGS="-pedantic -Wall -funsigned-char -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} -I\$(top_builddir)/include"
-
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
 
 # check IDL compiler
-AC_CHECK_PROG([IDL], [omniidl], [omniidl], , , AC_MSG_ERROR([*** omniidl not found.]))
+AC_PATH_PROG([IDL], [omniidl])
+test "x$IDL" = "x" && AC_MSG_ERROR([*** omniidl not found.])
 #UNISET_IDLFLAGS=$(pkg-config omniORB4 --variable=idldir"
-AC_SUBST(IDL)
 #AC_SUBST(UNISET_IDLFLAGS)
 
 #check mysql support
@@ -102,12 +94,8 @@ AC_ARG_ENABLE(docs,AC_HELP_STRING([--disable-docs], [disable build docs]),
 
 if test ${doc} = true; then
 	AC_MSG_RESULT([yes])
-	AC_CHECK_PROG(dox,doxygen,[yes])
-	if test "x$dox" != x ; then
-		DOXYGEN="doxygen"
-	else
-		AC_MSG_WARN([*** Doxygen not found])
-	fi
+	AC_PATH_PROG([DOXYGEN], [doxygen])
+	test "x$DOXYGEN" = "x" && AC_MSG_WARN([*** Doxygen not found])
 else
 	DOXYGEN=
 	AC_MSG_RESULT([no])
