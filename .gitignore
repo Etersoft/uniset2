@@ -7,6 +7,7 @@ autom4te.cache
 *.Plo
 *.loT
 *~
+.#*
 
 traces.*
 output.*
@@ -109,6 +110,22 @@ Utilities/Admin/stop.sh
 Utilities/Admin/test.xml
 Utilities/Admin/uniset-functions.sh
 Utilities/Admin/uniset-start.sh
+Utilities/SImitator/uniset-simitator
+
 extensions/SharedMemory/uniset-functions.sh
 extensions/SharedMemory/uniset-start.sh
 extensions/UniNetwork/uniset-network
+extensions/RTUExchange/mtr-conv
+extensions/RTUExchange/mtr-setup
+extensions/SharedMemory/smemory.log
+
+tests/conftest
+tests/passivetimer
+tests/stop.sh
+tests/test.out.xml
+tests/test.out.xml.bak
+tests/test.xml
+tests/ui
+tests/umutex
+tests/unixml
+
