@@ -2,8 +2,8 @@
 %define oname uniset
 
 Name: libuniset
-Version: 0.97
-Release: eter64
+Version: 0.98
+Release: eter2
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -184,35 +184,13 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
-* Fri Apr 09 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter64
+* Tue Jun 01 2010 Vitaly Lipatov <lav@altlinux.ru> 0.98-eter1
 - fixed bug in uniset-codegen
-
-* Sun Mar 28 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter63
-- optimization
-
-* Sat Mar 27 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter62
 - minor fixes in SM (add virtual function)
-
-* Thu Mar 18 2010 Pavel Vainerman <pv@etersoft.ru> 0.97-eter61
 - fixed bug in SandClock interface
-
-* Thu Mar 18 2010 Pavel Vainerman <pv@etersoft.ru> 0.97-eter60
-- new build
-
-* Thu Mar 18 2010 Pavel Vainerman <pv@etersoft.ru> 0.97-eter59
 - fixed bug in ModbuRTU::autedetect slave adress function
-
-* Sun Mar 14 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter58
 - minor fixes in MTR setup API
-
-* Sun Mar 14 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter57
 - add MTR setup (API and utility)
-
-* Sat Mar 13 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter56
-- new build
-
-* Fri Mar 12 2010 Pavel Vainerman <pv@altlinux.ru> 0.97-eter55
-- new build
 
 * Wed Mar 03 2010 Ilya Shpigor <elly@altlinux.org> 0.98-eter1
 - new build for Sisyphus with utf8 support
