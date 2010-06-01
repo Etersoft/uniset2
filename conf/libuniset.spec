@@ -184,7 +184,7 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
-* Tue Jun 01 2010 Vitaly Lipatov <lav@altlinux.ru> 0.98-eter1
+* Tue Jun 01 2010 Vitaly Lipatov <lav@altlinux.ru> 0.98-eter2
 - fixed bug in uniset-codegen
 - minor fixes in SM (add virtual function)
 - fixed bug in SandClock interface
