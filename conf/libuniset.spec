@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.98
-Release: eter2
+Release: eter4
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -184,6 +184,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Jun 16 2010 Ivan Donchevskiy <yv@etersoft.ru> 0.98-eter3
+- new build
+
 * Tue Jun 01 2010 Vitaly Lipatov <lav@altlinux.ru> 0.98-eter2
 - fixed bug in uniset-codegen
 - minor fixes in SM (add virtual function)

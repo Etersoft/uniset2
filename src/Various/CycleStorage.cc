@@ -493,9 +493,13 @@ bool CycleStorage::setSize(int count)
 /*! Некоторые операции для итератора */
 CycleStorage::iterator& CycleStorage::iterator::operator++()
 {
-	if( current>=cs->getSize() )
-		throw "Trying to perform operator ++ at the end of collection";
 	current++;
+	if( current>=cs->getSize() )
+	{
+		str = NULL;
+		current = cs->getSize();
+		return *this;
+	}
 	cs->readRow(current,str);
 	return *this;
 }
@@ -503,18 +507,26 @@ CycleStorage::iterator& CycleStorage::iterator::operator++()
 CycleStorage::iterator CycleStorage::iterator::operator++(int)
 {
 	Self temp = *this;
-	if(current>=cs->getSize())
-		throw "Trying to perform operator ++ at the end of collection";
-	current++;
-	cs->readRow(current,str);
+	temp.current++;
+	if(temp.current>=temp.cs->getSize())
+	{
+		temp.str = NULL;
+		temp.current = temp.cs->getSize();
+		return temp;
+	}
+	temp.cs->readRow(current,str);
 	return temp;
 }
 
 CycleStorage::iterator& CycleStorage::iterator::operator--()
 {
-	if(current<=0)
-		throw "Trying to perform operator -- at the begining of collection";
 	current--;
+	if(current<=0)
+	{
+		str = NULL;
+		current = -1;;
+		return *this;
+	}
 	cs->readRow(current,str);
 	return *this;
 }
@@ -522,9 +534,13 @@ CycleStorage::iterator& CycleStorage::iterator::operator--()
 CycleStorage::iterator CycleStorage::iterator::operator--(int)
 {
 	Self temp = *this;
-	if(current<=0)
-		throw "Trying to perform operator -- at the begining of collection";
-	current--;
-	cs->readRow(current,str);
+	temp.current--;
+	if(temp.current<=0)
+	{
+		temp.str = NULL;
+		temp.current = -1;
+		return temp;
+	}
+	temp.cs->readRow(current,str);
 	return temp;
 }

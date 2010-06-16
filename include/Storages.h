@@ -179,6 +179,13 @@ class CycleStorage
 
 				inline bool operator==(const Self& other) const
 				{
+					if( str==NULL || other.str==NULL )
+					{
+						if( str==NULL && other.str==NULL )
+							return true;
+						else
+							return false;
+					}
 					if( memcmp(str, other.str, cs->getInfSize())==0 )
 						return true;
 					return false;
@@ -186,6 +193,13 @@ class CycleStorage
 
 				inline bool operator!=(const Self& other) const
 				{
+					if( str==NULL || other.str==NULL )
+					{
+						if( str==NULL && other.str==NULL )
+							return false;
+						else
+							return true;
+					}
 					if( memcmp(str, other.str, cs->getInfSize())==0 )
 						return false;
 					return true;
