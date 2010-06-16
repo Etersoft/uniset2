@@ -490,3 +490,41 @@ bool CycleStorage::setSize(int count)
 	return true;
 }
 
+/*! Некоторые операции для итератора */
+CycleStorage::iterator& CycleStorage::iterator::operator++()
+{
+	if( current>=cs->getSize() )
+		throw "Trying to perform operator ++ at the end of collection";
+	current++;
+	cs->readRow(current,str);
+	return *this;
+}
+
+CycleStorage::iterator CycleStorage::iterator::operator++(int)
+{
+	Self temp = *this;
+	if(current>=cs->getSize())
+		throw "Trying to perform operator ++ at the end of collection";
+	current++;
+	cs->readRow(current,str);
+	return temp;
+}
+
+CycleStorage::iterator& CycleStorage::iterator::operator--()
+{
+	if(current<=0)
+		throw "Trying to perform operator -- at the begining of collection";
+	current--;
+	cs->readRow(current,str);
+	return *this;
+}
+
+CycleStorage::iterator CycleStorage::iterator::operator--(int)
+{
+	Self temp = *this;
+	if(current<=0)
+		throw "Trying to perform operator -- at the begining of collection";
+	current--;
+	cs->readRow(current,str);
+	return temp;
+}

@@ -147,6 +147,57 @@ class TableBlockStorage
 class CycleStorage
 {
 	public:
+
+		class CycleStorageIterator
+		{
+			public:
+				typedef CycleStorageIterator Self;
+				CycleStorageIterator():
+					str(NULL), cs(NULL), current(0) {}
+				CycleStorageIterator(CycleStorage* cstor)
+				{
+					cs = cstor;
+					current = 0;
+				}
+				CycleStorageIterator(CycleStorage* cstor, int num)
+				{
+					cs = cstor;
+					if( num<0 || num>=cs->getSize() ) current = 0;
+					current = num;
+				}
+
+				void* operator *() const
+				{
+					return str;
+				}
+
+				Self& operator++();
+				Self operator++(int);
+
+				Self& operator--();
+				Self operator--(int);
+
+				inline bool operator==(const Self& other) const
+				{
+					if( memcmp(str, other.str, cs->getInfSize())==0 )
+						return true;
+					return false;
+				}
+
+				inline bool operator!=(const Self& other) const
+				{
+					if( memcmp(str, other.str, cs->getInfSize())==0 )
+						return false;
+					return true;
+				}
+			private:
+				void* str;
+				CycleStorage* cs;
+				int current;
+		};
+
+		typedef CycleStorageIterator iterator;
+
 		/*! Конструктор по умолчанию не открывает и не создает нового журнала */
 		CycleStorage();
 
@@ -187,13 +238,26 @@ class CycleStorage
 
 		/*! Изменение размера журнала (количества записей в нем) */
 		bool setSize(int count);
-		
+
 		inline int getByteSize() { return (size*full_size + sizeof(CycleStorageAttr)); }
 		inline int getSize(){ return size; }
 		inline int getInfSize(){ return inf_size; }
 		inline int getFullSize(){ return full_size; }
 
 		bool checkAttr(int inf_sz, int inf_count, int seek);
+
+		inline int getHead(){ return head; }
+		inline int getTail(){ return tail; }
+
+		iterator begin()
+		{
+			return iterator(this);
+		}
+
+		iterator end()
+		{
+			return iterator(this,this->getTail());
+		}
 
 	protected:
 		FILE *file;
