@@ -30,9 +30,11 @@ no_extimer(false)
 		throw UniSetTypes::SystemError("(MBTCPMaster): objId=-1?!! Use --" + prefix + "-name" );
 
 //	xmlNode* cnode = conf->getNode(myname);
-	cnode = conf->getNode(myname);
+	string conf_name = conf->getArgParam("--" + prefix + "-confnode",myname);
+
+	cnode = conf->getNode(conf_name);
 	if( cnode == NULL )
-		throw UniSetTypes::SystemError("(MBTCPMaster): Not find conf-node for " + myname );
+		throw UniSetTypes::SystemError("(MBTCPMaster): Not found node <" + conf_name + " ...> for " + myname );
 
 	shm = new SMInterface(shmId,&ui,objId,ic);
 
