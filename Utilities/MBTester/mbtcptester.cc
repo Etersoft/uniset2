@@ -199,7 +199,6 @@ int main( int argc, char **argv )
 		mb.connect(ia,port);
 		
 		mb.setForceDisconnect(!persist);
-		mb.setForceDisconnect(true);
 
 		if( verb )
 			cout << "connection: " << (mb.isConnection() ? "YES" : "NO") << endl;

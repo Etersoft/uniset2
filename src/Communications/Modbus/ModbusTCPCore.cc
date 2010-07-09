@@ -57,10 +57,23 @@ mbErrCode ModbusTCPCore::sendData( unsigned char* buf, int len, ost::TCPStream* 
 {
 	if( !tcp || !tcp->isConnected() )
 		return erTimeOut;
-	
-	for( int i=0; i<len; i++ )
-		(*tcp) << buf[i];
 
-	return erNoError;
+	try
+	{
+		for( int i=0; i<len; i++ )
+			(*tcp) << buf[i];
+		
+		return erNoError;
+	}
+	catch( ost::SockException& e ) 
+	{
+//		cerr << "(send): " << e.getString() << ": " << e.getSystemErrorString() << endl;
+	}
+	catch(...)
+	{
+//		cerr << "(send): cath..." << endl;
+	}	
+
+	return erHardwareError;
 }
 // -------------------------------------------------------------------------

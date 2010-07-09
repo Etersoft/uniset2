@@ -441,7 +441,6 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		return res;
 	}
 
-
 	ErrorRetMessage em( buf.addr, buf.func, erUnExpectedPacketType );
 	buf = em.transport_msg();
 	send(buf);
@@ -1226,11 +1225,14 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 
 	int len = szModbusHeader+msg.len;
 	if( crcNoCheckit )
+	{
+	    msg.len -= szCRC;
 		len -= szCRC;
+	}
 
 //	printf("send to %02x type=%d size=%d\n",m.dest,(m.type&TypeMask),slen);
 	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "(send data)(" << len << " bytes): " << msg << endl;
+		dlog[Debug::INFO] << "(send): data(" << len << " bytes): " << msg << endl;
 
 	try
 	{

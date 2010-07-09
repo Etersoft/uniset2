@@ -27,10 +27,11 @@ class ModbusTCPMaster:
 		{
 			force_disconnect = s;
 		}
-	protected:
 		
 		void reconnect();
 		void cleanInputStream();
+
+	protected:
 		
 		virtual int getNextData( unsigned char* buf, int len );
 		virtual void setChannelTimeout( timeout_t msec );
@@ -40,7 +41,7 @@ class ModbusTCPMaster:
 
 	private:
 		ost::TCPStream* tcp;
-		int nTransaction;
+		ModbusRTU::ModbusData nTransaction;
 		std::queue<unsigned char> qrecv;
 		PassiveTimer ptTimeout;
 		std::string iaddr;
