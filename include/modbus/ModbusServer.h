@@ -49,6 +49,9 @@ class ModbusServer
 		inline void setBroadcastMode( bool set ){ onBroadcast = set; }
 		inline bool getBroadcastMode(){ return onBroadcast; }
 
+		inline void setAnyAddressMode( bool set ){ anyAddr = set; }
+		inline bool getAnyAddressMode(){ return anyAddr; }
+
 
 		/*! Вспомогательная функция реализующая обработку запроса на установку времени.
 			Основана на использовании gettimeofday и settimeofday.
@@ -202,6 +205,7 @@ class ModbusServer
 		timeout_t replyTimeout_ms;	/*!< таймаут на формирование ответа */
 		timeout_t aftersend_msec;		/*!< пауза после посылки ответа */
 		bool onBroadcast;		/*!< включен режим работы с broadcst-сообщениями */
+		bool anyAddr;			/*!< режим обработки запросов на любой адрес устройства */
 		bool crcNoCheckit;
 
 		void printProcessingTime();

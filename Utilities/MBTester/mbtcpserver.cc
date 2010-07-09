@@ -16,6 +16,7 @@ static struct option longopts[] = {
 	{ "verbose", no_argument, 0, 'v' },
 	{ "myaddr", required_argument, 0, 'a' },
 	{ "port", required_argument, 0, 'p' },
+	{ "any-address", no_argument, 0, 'b' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -27,6 +28,7 @@ static void print_help()
 	printf("[-i|--iaddr] ip                   - Server listen ip. Default 127.0.0.1\n");
 	printf("[-a|--myaddr] addr                - Modbus address for master. Default: 0x01.\n");
 	printf("[-p|--port] port                  - Server port. Default: 502.\n");
+	printf("[-b|--any-address]                - Respond for any RTU address. Ignore [--myaddr|-a]\n");
 	printf("[-v|--verbose]                    - Print all messages to stdout\n");
 }
 // --------------------------------------------------------------------------
@@ -36,6 +38,7 @@ int main( int argc, char **argv )
 	int opt = 0;
 	int verb = 0;
 	int port = 502;
+	int anyaddr = 0;
 	string iaddr("127.0.0.1");
 	ModbusRTU::ModbusAddr myaddr = 0x01;
 	int tout = 2000;
@@ -45,7 +48,7 @@ int main( int argc, char **argv )
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "ht:va:p:i:",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "ht:va:p:i:b",longopts,&optindex)) != -1 ) 
 		{
 			switch (opt) 
 			{
@@ -72,6 +75,10 @@ int main( int argc, char **argv )
 				case 'v':	
 					verb = 1;
 				break;
+				
+				case 'b':	
+					anyaddr = 1;
+				break;
 
 				case '?':
 				default:
@@ -83,7 +90,7 @@ int main( int argc, char **argv )
 		if( verb )
 		{
 			cout << "(init): iaddr: " << iaddr << ":" << port
-					<< " myaddr=" << ModbusRTU::addr2str(myaddr)
+					<< " myaddr=" << ( anyaddr ? "'any'" : ModbusRTU::addr2str(myaddr) ) 
 					<< " timeout=" << tout << " msec "
 					<< endl;					
 	
@@ -93,6 +100,7 @@ int main( int argc, char **argv )
 		MBTCPServer mbs(myaddr,iaddr,port,verb);
 		mbs.setLog(dlog);
 		mbs.setVerbose(verb);
+		mbs.setAnyAddressMode(anyaddr);
 		mbs.execute();
 	}
 	catch( ModbusRTU::mbException& ex )
