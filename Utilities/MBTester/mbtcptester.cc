@@ -23,6 +23,7 @@ static struct option longopts[] = {
 	{ "verbose", no_argument, 0, 'v' },
 	{ "myaddr", required_argument, 0, 'a' },
 	{ "port", required_argument, 0, 'p' },
+	{ "persistent-connection", no_argument, 0, 'o' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -41,6 +42,7 @@ static void print_help()
 	printf("[-a|--myaddr] addr                - Modbus address for master. Default: 0x01.\n");
 	printf("[-p|--port] port                  - Modbus server port. Default: 502.\n");
 	printf("[-t|--timeout] msec               - Timeout. Default: 2000.\n");
+	printf("[-o|--persistent-connection]      - Use persistent-connection.\n");
 	printf("[-v|--verbose]                    - Print all messages to stdout\n");
 }
 // --------------------------------------------------------------------------
@@ -64,6 +66,7 @@ int main( int argc, char **argv )
 	int optindex = 0;
 	int opt = 0;
 	int verb = 0;
+	bool persist = false;
 	string iaddr("127.0.0.1");
 	int port=502;
 	ModbusRTU::ModbusData reg = 0;
@@ -76,7 +79,7 @@ int main( int argc, char **argv )
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:w:z:r:x:c:b:d:s:t:p:i:",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "hva:w:z:r:x:c:b:d:s:t:p:i:o",longopts,&optindex)) != -1 ) 
 		{
 			switch (opt) 
 			{
@@ -166,6 +169,10 @@ int main( int argc, char **argv )
 					verb = 1;
 				break;
 
+				case 'o':	
+					persist = true;
+				break;
+
 				case '?':
 				default:
 					printf("? argumnet\n");
@@ -176,7 +183,7 @@ int main( int argc, char **argv )
 		if( verb )
 		{
 			cout << "(init): ip=" << iaddr << ":" << port
-					<< " myaddr=" << ModbusRTU::addr2str(myaddr)
+					<< ModbusRTU::addr2str(myaddr)
 					<< " timeout=" << tout << " msec "
 					<< endl;
 
@@ -190,13 +197,17 @@ int main( int argc, char **argv )
 		ost::InetAddress ia(iaddr.c_str());
 		mb.setTimeout(tout);
 		mb.connect(ia,port);
+		
+		mb.setForceDisconnect(!persist);
+		mb.setForceDisconnect(true);
 
 		if( verb )
 			cout << "connection: " << (mb.isConnection() ? "YES" : "NO") << endl;
 
-		while( 1)
+		while(1)
 		{
-
+			try
+			{
 			switch(cmd)
 			{
 				case cmdRead01:
@@ -372,6 +383,14 @@ int main( int argc, char **argv )
 					cerr << "No command. Use -h for help." << endl;
 					return 1;
 			}
+            }
+            catch( ModbusRTU::mbException& ex )
+            {
+            	if( ex.err != ModbusRTU::erTimeOut )
+            		throw ex;
+            	
+            	cout << "timeout..." << endl;
+            }
 
 			msleep(200);
 		} // end of while
