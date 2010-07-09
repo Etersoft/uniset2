@@ -20,11 +20,7 @@ class MBTCPServer
 			verbose = state;
 		}
 
-		inline void setAnyAddressMode(bool set){ if( sslot ) sslot->setAnyAddressMode(set); }
-
 		void execute();	/*!< основной цикл работы */
-
-
 		void setLog( DebugStream& dlog );
 
 	protected:

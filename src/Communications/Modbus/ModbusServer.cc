@@ -18,7 +18,6 @@ ModbusServer::ModbusServer():
 	replyTimeout_ms(2000),
 	aftersend_msec(0),
 	onBroadcast(false),
-	anyAddr(false),
 	crcNoCheckit(false)
 {
 	tmProcessing.setTiming(replyTimeout_ms);
@@ -471,7 +470,7 @@ mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, t
 		while( !tmAbort.checkTime() )
 		{
 			bcnt = getNextData((unsigned char*)(&rbuf),sizeof(ModbusAddr));
-			if( bcnt>0 && ( rbuf.addr==addr || anyAddr || (onBroadcast && rbuf.addr==BroadcastAddr) ) )
+			if( bcnt>0 && ( rbuf.addr==addr || (onBroadcast && rbuf.addr==BroadcastAddr) ) )
 			{
 				begin = true;
 				break;
