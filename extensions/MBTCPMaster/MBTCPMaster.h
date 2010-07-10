@@ -85,7 +85,9 @@
       \b --xxx-force или \b foce [1|0] 
        - 1 - перечитывать значения входов из SharedMemory на каждом цикле
        - 0 - обновлять значения только по изменению
-      
+
+      \b --xxx-force-disconnect или \b force_disconnect - закрывать соединение после каждого запроса.
+
       \b --xxx-force-out или \b foce_out [1|0]
        - 1 - перечитывать значения выходов из SharedMemory на каждом цикле
        - 0 - обновлять значения только по изменению
@@ -249,8 +251,7 @@ class MBTCPMaster:
 			resp_invert(false),
 			resp_real(false),
 			resp_init(false),
-			ask_every_reg(false),
-			force_disconnect(false)
+			ask_every_reg(false)
 			{
 				resp_trTimeout.change(false);
 			}
@@ -270,7 +271,6 @@ class MBTCPMaster:
 			bool resp_real;
 			bool resp_init;
 			bool ask_every_reg;
-			bool force_disconnect;
 
 			// return TRUE if state changed
 			bool checkRespond();
@@ -367,6 +367,7 @@ class MBTCPMaster:
 		int activateTimeout;
 		
 		bool noQueryOptimization;
+		bool force_disconnect;
 		
 		bool allNotRespond;
 		Trigger trAllNotRespond;

@@ -20,6 +20,7 @@ force_out(false),
 mbregFromID(false),
 activated(false),
 noQueryOptimization(false),
+force_disconnect(false),
 allNotRespond(false),
 prefix(prefix),
 no_extimer(false)
@@ -74,6 +75,7 @@ no_extimer(false)
 
 	force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
 	force_out = conf->getArgInt("--" + prefix + "-force-out",it.getProp("force_out"));
+	force_disconnect = conf->getArgInt("--" + prefix + "-force-disconnect",it.getProp("force_disconnect"));
 
 	if( shm->isLocalwork() )
 	{
@@ -161,6 +163,7 @@ void MBTCPMaster::initMB( bool reopen )
 	
 		ost::InetAddress ia(iaddr.c_str());
 		mb->connect(ia,port);
+		mb->setForceDisconnect(force_disconnect);
 
 		if( recv_timeout > 0 )
 			mb->setTimeout(recv_timeout);
@@ -264,8 +267,6 @@ void MBTCPMaster::poll()
 	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
-	
-		mb->setForceDisconnect(d->force_disconnect);
 	
 		if( dlog.debugging(Debug::INFO) )
 			dlog[Debug::INFO] << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
@@ -1467,10 +1468,8 @@ bool MBTCPMaster::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
 	}
 
 	d->second->ask_every_reg = it.getIntProp("ask_every_reg");
-	d->second->force_disconnect = it.getIntProp("force_disconnect");
 
 	dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) 
-			<< " force_disconnect=" << d->second->force_disconnect
 			<< " ask_every_reg=" << d->second->ask_every_reg << endl;
 
 	string s(it.getProp("respondSensor"));
