@@ -47,6 +47,10 @@ no_extimer(false)
 	dlog[Debug::INFO] << myname << "(init): read fileter-field='" << s_field
 						<< "' filter-value='" << s_fvalue << "'" << endl;
 
+	//задаем тестовое время (если нет, то оно равно 0)
+	test_time = 0;
+	test_time = conf->getArgInt("--" + prefix + "-statistic-sec");
+
 	// ---------- init MBTCP ----------
 	string pname("--" + prefix + "-gateway-iaddr");
 	iaddr	= conf->getArgParam(pname,it.getProp("gateway_iaddr"));
@@ -128,6 +132,8 @@ no_extimer(false)
 
 	printMap(rmap);
 //	abort();
+
+	poll_count = 0;
 }
 // -----------------------------------------------------------------------------
 MBTCPMaster::~MBTCPMaster()
@@ -267,40 +273,51 @@ void MBTCPMaster::poll()
 	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
-	
+
 		if( dlog.debugging(Debug::INFO) )
 			dlog[Debug::INFO] << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
 				<< " regs=" << d->regmap.size() << endl;
-	
-			d->resp_real = true;
-			for( MBTCPMaster::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
-			{
-				try
-				{
-					if( d->dtype==MBTCPMaster::dtRTU )
-					{
-//						if( pollRTU(d,it) )
-//							d->resp_real = true;
-						pollRTU(d,it);
-					}
-				}
-				catch( ModbusRTU::mbException& ex )
-				{ 
-					if( d->resp_real )
-					{
-						dlog[Debug::CRIT] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
-							<< " reg=" << ModbusRTU::dat2str(it->second->mbreg)
-							<< " -> " << ex << endl;
-					}
 
-					d->resp_real = false;
-					if( !d->ask_every_reg )
-						break;
+		d->resp_real = true;
+		for( MBTCPMaster::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+		{
+			try
+			{
+				if( d->dtype==MBTCPMaster::dtRTU )
+				{
+					pollRTU(d,it);
 				}
-				
-				if( it==d->regmap.end() )
+			}
+			catch( ModbusRTU::mbException& ex )
+			{ 
+				if( d->resp_real )
+				{
+					dlog[Debug::CRIT] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
+						<< " reg=" << ModbusRTU::dat2str(it->second->mbreg)
+						<< " -> " << ex << endl;
+				}
+
+				d->resp_real = false;
+				if( !d->ask_every_reg )
 					break;
 			}
+
+			if( it==d->regmap.end() )
+				break;
+		}
+
+		if( test_time==0 )
+			continue;
+
+		if(poll_count==0)
+			pt = PassiveTimer();
+		if((pt.getCurrent()>=test_time*1000) && (poll_count!=-1))
+		{
+			cout << endl << "numbr of calls is " << poll_count << endl << endl;
+			poll_count=-1;
+			pt.reset();
+		}
+		poll_count++;
 
 //			mb->disconnect();
 	}
