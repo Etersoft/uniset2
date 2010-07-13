@@ -23,7 +23,8 @@ noQueryOptimization(false),
 force_disconnect(false),
 allNotRespond(false),
 prefix(prefix),
-no_extimer(false)
+no_extimer(false),
+poll_count(0)
 {
 //	cout << "$ $" << endl;
 
@@ -47,9 +48,9 @@ no_extimer(false)
 	dlog[Debug::INFO] << myname << "(init): read fileter-field='" << s_field
 						<< "' filter-value='" << s_fvalue << "'" << endl;
 
-	//задаем тестовое время (если нет, то оно равно 0)
-	test_time = 0;
-	test_time = conf->getArgInt("--" + prefix + "-statistic-sec");
+	stat_time = conf->getArgPInt("--" + prefix + "-statistic-sec",it.getProp("statistic_sec"),0);
+	if( stat_time > 0 )
+		ptStatistic.setTiming(stat_time*1000);
 
 	// ---------- init MBTCP ----------
 	string pname("--" + prefix + "-gateway-iaddr");
@@ -306,17 +307,15 @@ void MBTCPMaster::poll()
 				break;
 		}
 
-		if( test_time==0 )
-			continue;
-
-		poll_count++;
-		if(poll_count==0)
-			pt = PassiveTimer();
-		if(pt.getCurrent()>=test_time*1000)
+		if( stat_time > 0 )
 		{
-			cout << endl << "numbr of calls is " << poll_count << endl << endl;
-			pt.reset();
-			poll_count=0;
+			poll_count++;
+			if( ptStatistic.checkTime() )
+			{
+				cout << endl << "(poll statistic): number of calls is " << poll_count << " (poll time: " << stat_time << " sec)" << endl << endl;
+				ptStatistic.reset();
+				poll_count=0;
+			}
 		}
 
 //			mb->disconnect();

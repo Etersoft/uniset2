@@ -378,9 +378,9 @@ class MBTCPMaster:
 		
 		bool no_extimer;
 
-		timeout_t test_time; /*! При тестировании это время, за которое мы веведем в консоль кол-во посланных запросов MBTCPMaster-ом */
+		timeout_t stat_time; 		/*!< время сбора статистики обмена */
 		int poll_count;
-		PassiveTimer pt;
+		PassiveTimer ptStatistic;   /*!< таймер для сбора статистики обмена */
 };
 // -----------------------------------------------------------------------------
 #endif // _MBTCPMaster_H_
