@@ -133,7 +133,7 @@ no_extimer(false)
 	printMap(rmap);
 //	abort();
 
-	poll_count = 0;
+	poll_count = -1;
 }
 // -----------------------------------------------------------------------------
 MBTCPMaster::~MBTCPMaster()
@@ -309,15 +309,15 @@ void MBTCPMaster::poll()
 		if( test_time==0 )
 			continue;
 
+		poll_count++;
 		if(poll_count==0)
 			pt = PassiveTimer();
-		if((pt.getCurrent()>=test_time*1000) && (poll_count!=-1))
+		if(pt.getCurrent()>=test_time*1000)
 		{
 			cout << endl << "numbr of calls is " << poll_count << endl << endl;
-			poll_count=-1;
 			pt.reset();
+			poll_count=0;
 		}
-		poll_count++;
 
 //			mb->disconnect();
 	}
