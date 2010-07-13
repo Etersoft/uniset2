@@ -184,6 +184,10 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Jul 13 2010 Vitaly Lipatov <lav@altlinux.ru> 0.98-eter4
+- iterator for CycleStorage
+- some fixes for CycleStorage iterator
+
 * Wed Jun 16 2010 Ivan Donchevskiy <yv@etersoft.ru> 0.98-eter3
 - new build
 
