@@ -284,7 +284,7 @@ void MBTCPMaster::poll()
 		{
 			try
 			{
-				if( d->dtype==MBTCPMaster::dtRTU )
+				if( d->dtype==MBTCPMaster::dtRTU || d->dtype==MBTCPMaster::dtMTR )
 				{
 					pollRTU(d,it);
 				}
@@ -606,6 +606,8 @@ void MBTCPMaster::updateSM()
 			{
 				if( d->dtype == dtRTU )
 					updateRTU(it);
+				else if( d->dtype == dtMTR )
+					updateMTR(it);
 			}
 			catch(IOController_i::NameNotFound &ex)
 			{
@@ -1179,7 +1181,14 @@ bool MBTCPMaster::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBTCPMaster::RT
 				<< "' for " << it.getProp("name") << endl;
 		return false;
 	}
-
+	else if( dev->dtype == MBTCPMaster::dtMTR )
+	{
+		// only for MTR
+		if( !initMTRitem(it,r) )
+			return false;
+	}
+	
+	
 	if( mbregFromID )
 	{
 		if( it.getProp("id").empty() )
@@ -1231,7 +1240,10 @@ MBTCPMaster::DeviceType MBTCPMaster::getDeviceType( const std::string dtype )
 {
 	if( dtype.empty() )
 		return dtUnknown;
-
+	
+	if( dtype == "mtr" || dtype == "MTR" )
+		return dtMTR;
+	
 	if( dtype == "rtu" || dtype == "RTU" )
 		return dtRTU;
 	
@@ -1300,7 +1312,17 @@ bool MBTCPMaster::initItem( UniXML_iterator& it )
 	}
 
 	RegInfo* ri = addReg(dev->regmap,mbreg,it,dev);
-
+	
+	if( dev->dtype == dtMTR )
+	{
+		p.rnum = MTR::wsize(ri->mtrType);
+		if( p.rnum <= 0 )
+		{
+			dlog[Debug::CRIT] << myname << "(initItem): unknown word size for " << it.getProp("name") << endl;
+			return false;
+		}
+	}
+	
 	if( !ri )
 		return false;
 
@@ -1359,7 +1381,21 @@ bool MBTCPMaster::initItem( UniXML_iterator& it )
 	
 	return true;
 }
+// ------------------------------------------------------------------------------------------
+bool MBTCPMaster::initMTRitem( UniXML_iterator& it, RegInfo* p )
+{
+	p->mtrType = MTR::str2type(it.getProp("mtrtype"));
+	if( p->mtrType == MTR::mtUnknown )
+	{
+		dlog[Debug::CRIT] << myname << "(readMTRItem): Unknown mtrtype '" 
+					<< it.getProp("mtrtype")
+					<< "' for " << it.getProp("name") << endl;
 
+		return false;
+	}
+
+	return true;
+}
 // ------------------------------------------------------------------------------------------
 void MBTCPMaster::initIterators()
 {
@@ -1424,7 +1460,11 @@ std::ostream& operator<<( std::ostream& os, const MBTCPMaster::DeviceType& dt )
 		case MBTCPMaster::dtRTU:
 			os << "RTU";
 		break;
-
+		
+		case MBTCPMaster::dtMTR:
+			os << "MTR";
+		break;
+		
 		default:
 			os << "Unknown device type (" << (int)dt << ")";
 		break;
@@ -1554,6 +1594,7 @@ std::ostream& operator<<( std::ostream& os, MBTCPMaster::RegInfo& r )
 		<< " q_num=" << r.q_num
 		<< " q_count=" << r.q_count
 		<< " value=" << ModbusRTU::dat2str(r.mbval) << "(" << (int)r.mbval << ")"
+		<< " mtrType=" << MTR::type2str(r.mtrType)
 		<< endl;
 
 	for( MBTCPMaster::PList::iterator it=r.slst.begin(); it!=r.slst.end(); ++it )
@@ -1860,6 +1901,200 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 		{
 			dlog[Debug::LEVEL3] << myname << "(updateRSProperty): catch ..." << endl;
 		}
+}
+// -----------------------------------------------------------------------------
+void MBTCPMaster::updateMTR( RegMap::iterator& rit )
+{
+	RegInfo* r(rit->second);
+	using namespace ModbusRTU;
+	bool save = isWriteFunction( r->mbfunc );
+
+	{
+		for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
+		{
+			try
+			{
+				if( r->mtrType == MTR::mtT1 )
+				{
+					if( save )
+						r->mbval = IOBase::processingAsAO( &(*it), shm, force_out );
+					else
+					{
+						MTR::T1 t(r->mbval);
+						IOBase::processingAsAI( &(*it), t.val, shm, force );
+					}
+					continue;
+				}
+			
+				if( r->mtrType == MTR::mtT2 )
+				{
+					if( save )
+					{
+						MTR::T2 t(IOBase::processingAsAO( &(*it), shm, force_out ));
+						r->mbval = t.val; 
+					}
+					else
+					{
+						MTR::T2 t(r->mbval);
+						IOBase::processingAsAI( &(*it), t.val, shm, force );
+					}
+					continue;
+				}
+		
+				if( r->mtrType == MTR::mtT3 )
+				{
+					RegMap::iterator i(rit);
+					if( save )
+					{
+						MTR::T3 t(IOBase::processingAsAO( &(*it), shm, force_out ));
+						for( int k=0; k<MTR::T3::wsize(); k++, i++ )
+							i->second->mbval = t.raw.v[k];
+					}
+					else
+					{
+						ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T3::wsize()];
+						for( int k=0; k<MTR::T3::wsize(); k++, i++ )
+							data[k] = i->second->mbval;
+		
+						MTR::T3 t(data,MTR::T3::wsize());
+						delete[] data;
+						IOBase::processingAsAI( &(*it), (long)t, shm, force );
+					}
+					continue;
+				}
+		
+				if( r->mtrType == MTR::mtT4 )
+				{
+					if( save )
+						cerr << myname << "(updateMTR): write (T4) reg(" << dat2str(r->mbreg) << ") to MTR NOT YET!!!" << endl;
+					else
+					{
+						MTR::T4 t(r->mbval);
+						IOBase::processingAsAI( &(*it), uni_atoi(t.sval), shm, force );
+					}
+					continue;
+				}
+		
+				if( r->mtrType == MTR::mtT5 )
+				{
+					RegMap::iterator i(rit);
+					if( save )
+					{
+						MTR::T5 t(IOBase::processingAsAO( &(*it), shm, force_out ));
+						for( int k=0; k<MTR::T5::wsize(); k++, i++ )
+							i->second->mbval = t.raw.v[k];
+					}
+					else
+					{
+						ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T5::wsize()];
+						for( int k=0; k<MTR::T5::wsize(); k++, i++ )
+							data[k] = i->second->mbval;
+		
+						MTR::T5 t(data,MTR::T5::wsize());
+						delete[] data;
+					
+						IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
+					}
+					continue;
+				}
+		
+				if( r->mtrType == MTR::mtT6 )
+				{
+					RegMap::iterator i(rit);
+					if( save )
+					{
+						MTR::T6 t(IOBase::processingAsAO( &(*it), shm, force_out ));
+						for( int k=0; k<MTR::T6::wsize(); k++, i++ )
+							i->second->mbval = t.raw.v[k];
+					}
+					else
+					{
+						ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T6::wsize()];
+						for( int k=0; k<MTR::T6::wsize(); k++, i++ )
+							data[k] = i->second->mbval;
+		
+						MTR::T6 t(data,MTR::T6::wsize());
+						delete[] data;
+					
+						IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
+					}
+					continue;
+				}
+		
+				if( r->mtrType == MTR::mtT7 )
+				{
+					RegMap::iterator i(rit);
+					if( save )
+					{
+						MTR::T7 t(IOBase::processingAsAO( &(*it), shm, force_out ));
+						for( int k=0; k<MTR::T7::wsize(); k++, i++ )
+							i->second->mbval = t.raw.v[k];
+					}
+					else
+					{
+						ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T7::wsize()];
+						for( int k=0; k<MTR::T7::wsize(); k++, i++ )
+							data[k] = i->second->mbval;
+		
+						MTR::T7 t(data,MTR::T7::wsize());
+						delete[] data;
+					
+						IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
+					}
+					continue;
+				}
+		
+				if( r->mtrType == MTR::mtF1 )
+				{
+					RegMap::iterator i(rit);
+					if( save )
+					{
+						float f = IOBase::processingFasAO( &(*it), shm, force_out );
+						MTR::F1 f1(f);
+						for( int k=0; k<MTR::F1::wsize(); k++, i++ )
+							i->second->mbval = f1.raw.v[k];
+					}
+					else
+					{
+						ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::F1::wsize()];
+						for( int k=0; k<MTR::F1::wsize(); k++, i++ )
+							data[k] = i->second->mbval;
+		
+						MTR::F1 t(data,MTR::F1::wsize());
+						delete[] data;
+					
+						IOBase::processingFasAI( &(*it), (float)t, shm, force );
+					}
+					continue;
+				}
+			}
+			catch(IOController_i::NameNotFound &ex)
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateMTR):(NameNotFound) " << ex.err << endl;
+			}
+			catch(IOController_i::IOBadParam& ex )
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateMTR):(IOBadParam) " << ex.err << endl;
+			}
+			catch(IONotifyController_i::BadRange )
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateMTR): (BadRange)..." << endl;
+			}
+			catch( Exception& ex )
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateMTR): " << ex << endl;
+			}
+			catch(CORBA::SystemException& ex)
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateMTR): CORBA::SystemException: "
+					<< ex.NP_minorString() << endl;
+			}
+			catch(...)
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateMTR): catch ..." << endl;
+			}
+		}
+	}
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::execute()

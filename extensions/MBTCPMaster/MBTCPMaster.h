@@ -16,6 +16,7 @@
 #include "SharedMemory.h"
 #include "IOBase.h"
 #include "VTypes.h"
+#include "MTR.h"
 // -----------------------------------------------------------------------------
 /*!
       \page page_ModbusTCP Реализация ModbusTCP master
@@ -180,7 +181,8 @@ class MBTCPMaster:
 		enum DeviceType
 		{
 			dtUnknown,		/*!< неизвестный */
-			dtRTU			/*!< RTU (default) */
+			dtRTU,			/*!< RTU (default) */
+			dtMTR			/*!< MTR (DEIF) */
 		};
 
 		static DeviceType getDeviceType( const std::string dtype );
@@ -216,7 +218,7 @@ class MBTCPMaster:
 		{
 			RegInfo():
 				mbval(0),mbreg(0),mbfunc(ModbusRTU::fnUnknown),
-				dev(0),offset(0),
+				dev(0),offset(0),mtrType(MTR::mtUnknown),
 				q_num(0),q_count(1),mb_init(false),sm_init(false),
 				mb_init_mbreg(0)
 			{}
@@ -229,10 +231,13 @@ class MBTCPMaster:
 			RTUDevice* dev;
 
 			int offset;
-
+			
+			// only for MTR
+			MTR::MTRType mtrType;	/*!< тип регистра (согласно спецификации на MTR) */
+			
 			// optimization
-			int q_num;		/*! number in query */
-			int q_count;	/*! count registers for query */
+			int q_num;		/*!< number in query */
+			int q_count;	/*!< count registers for query */
 			
 			RegMap::iterator rit;
 			bool mb_init;	/*!< init before use */
@@ -309,6 +314,7 @@ class MBTCPMaster:
 		
 		void updateSM();
 		void updateRTU(RegMap::iterator& it);
+		void updateMTR(RegMap::iterator& it);
 		void updateRSProperty( RSProperty* p, bool write_only=false );
 
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
@@ -337,6 +343,7 @@ class MBTCPMaster:
 							RTUDevice* dev, RegInfo* rcopy=0 );
 		RSProperty* addProp( PList& plist, RSProperty& p );
 
+		bool initMTRitem( UniXML_iterator& it, RegInfo* p );
 		bool initRSProperty( RSProperty& p, UniXML_iterator& it );
 		bool initRegInfo( RegInfo* r, UniXML_iterator& it, RTUDevice* dev  );
 		bool initRTUDevice( RTUDevice* d, UniXML_iterator& it );
