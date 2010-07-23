@@ -2209,28 +2209,28 @@ void RTUExchange::updateRTU188( RegMap::iterator& it )
 		}
 		catch(IOController_i::NameNotFound &ex)
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateMTR):(NameNotFound) " << ex.err << endl;
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188):(NameNotFound) " << ex.err << endl;
 		}
 		catch(IOController_i::IOBadParam& ex )
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateMTR):(IOBadParam) " << ex.err << endl;
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188):(IOBadParam) " << ex.err << endl;
 		}
 		catch(IONotifyController_i::BadRange )
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateMTR): (BadRange)..." << endl;
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188): (BadRange)..." << endl;
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateMTR): " << ex << endl;
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188): " << ex << endl;
 		}
 		catch(CORBA::SystemException& ex)
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateMTR): CORBA::SystemException: "
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188): CORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateMTR): catch ..." << endl;
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188): catch ..." << endl;
 		}
 	}
 }
