@@ -801,7 +801,8 @@ void IOController::dumpToDB()
 			sm.priority 	= (Message::Priority)li->second.priority;
 			sm.sm_tv_sec 	= li->second.tv_sec;
 			sm.sm_tv_usec 	= li->second.tv_usec;
-			logging(sm);
+			if ( !li->second.db_ignore )
+				logging(sm);
 		}
 	}	// unlock 
 
@@ -822,7 +823,8 @@ void IOController::dumpToDB()
 			sm.sm_tv_sec 	= li->second.tv_sec;
 			sm.sm_tv_usec 	= li->second.tv_usec;
 			sm.ci			= li->second.ci;
-			logging(sm); //	alogging( li->second.si,li->second.value,li->second.type );
+			if ( !li->second.db_ignore )
+				logging(sm); //	alogging( li->second.si,li->second.value,li->second.type );
 		}
 	}	// unlock 
 }

@@ -186,11 +186,13 @@ NCRestorer::SInfo& NCRestorer::SInfo::operator=(IOController_i::DigitalIOInfo& i
 	this->type = inf.type;
 	this->priority = inf.priority;
 	this->default_val = inf.default_val;
+	this->real_value = inf.real_state ? 1 : 0;
 	this->ci.minRaw = 0;
 	this->ci.maxRaw = 0;
 	this->ci.minCal = 0;
 	this->ci.maxCal = 0;
 	this->ci.sensibility = 0;
+	this->db_ignore = false;
 	this->undefined = false;
 	this->any = 0;
 	return *this;
@@ -202,8 +204,10 @@ NCRestorer::SInfo& NCRestorer::SInfo::operator=(IOController_i::AnalogIOInfo& in
 	this->type 		= inf.type;
 	this->priority 	= inf.priority;
 	this->default_val = inf.default_val;
+	this->real_value = inf.real_value;
 	this->ci 		= inf.ci;
 	this->undefined = false;
+	this->db_ignore = false;
 	this->any = 0;
 	return *this;
 }
@@ -219,6 +223,7 @@ NCRestorer::SInfo::operator IOController::UniDigitalIOInfo()
 	ret.default_val = this->default_val ? true : false;
 	ret.any 		= this->any;
 	ret.undefined 	= this->undefined;
+	ret.db_ignore 	= this->db_ignore;
 	return ret;
 }
 // ------------------------------------------------------------------------------------------

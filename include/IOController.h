@@ -147,7 +147,7 @@ class IOController:
 		struct UniDigitalIOInfo:
 			public IOController_i::DigitalIOInfo
 		{
-			UniDigitalIOInfo():any(0),dlst_lock(false),block_state(false)
+			UniDigitalIOInfo():any(0),dlst_lock(false),block_state(false),db_ignore(false)
 				{ undefined = false; blocked=false; }
 			virtual ~UniDigitalIOInfo(){}
 			
@@ -164,6 +164,7 @@ class IOController:
 			DependsList dlst; 	/*!< список io зависящих от данного */
 			bool dlst_lock;		/*!< флаг блокирующий работу со списком */
 			bool block_state;
+			bool db_ignore;		/*!< не писать изменения в БД */
 
 			UniSetTypes::uniset_spin_mutex val_lock; /*!< флаг блокирующий работу со значением */
 		};
@@ -171,7 +172,7 @@ class IOController:
 		struct UniAnalogIOInfo:
 			public IOController_i::AnalogIOInfo
 		{
-			UniAnalogIOInfo():any(0),dlst_lock(false),block_value(0)
+			UniAnalogIOInfo():any(0),dlst_lock(false),block_value(0),db_ignore(false)
 				{ undefined = false; blocked=false; }
 			virtual ~UniAnalogIOInfo(){}
 
@@ -187,7 +188,8 @@ class IOController:
 			DependsList dlst; 	/*!< список io зависящих от данного (для выставления поля undefined) */
 			bool dlst_lock; 	/*!< флаг блокирующий работу со списком */
 			long block_value;
-
+            bool db_ignore;		/*!< не писать изменения в БД */
+			
 			UniSetTypes::uniset_spin_mutex val_lock; /*!< флаг блокирующий работу со значением */
 		};
 

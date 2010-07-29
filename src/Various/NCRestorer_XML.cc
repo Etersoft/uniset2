@@ -300,6 +300,7 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
 	}
 
 	inf.default_val = xml.getIntProp(it,"default");
+	inf.db_ignore = xml.getIntProp(it,"db_ignore");
 	inf.value 		= inf.default_val;
 	inf.undefined = false;
 	inf.real_value = inf.value;

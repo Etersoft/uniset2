@@ -501,7 +501,8 @@ void IONotifyController::localSaveState( IOController::DIOStateList::iterator& i
 
 	try
 	{	
-		loggingInfo(sm);
+		if( !it->second.db_ignore )
+			loggingInfo(sm);
 	}
 	catch(...){}
 
@@ -565,7 +566,8 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 
 	try
 	{	
-		loggingInfo(sm);
+		if( !li->second.db_ignore )
+			loggingInfo(sm);
 	}
 	catch(...){}
 
@@ -1210,7 +1212,8 @@ void IONotifyController::localSetState( IOController::DIOStateList::iterator& it
 	
 	try
 	{	
-		loggingInfo(sm);
+	    if( !it->second.db_ignore )
+			loggingInfo(sm);
 	}
 	catch(...){}
 
@@ -1267,7 +1270,8 @@ void IONotifyController::localSetValue( IOController::AIOStateList::iterator& li
 
 	try
 	{	
-		loggingInfo(sm);
+		if( !li->second.db_ignore )
+			loggingInfo(sm);
 	}
 	catch(...){}
 
@@ -1403,7 +1407,8 @@ void IONotifyController::onChangeUndefined( DependsList::iterator it, bool undef
 
 	try
 	{	
-		loggingInfo(sm);
+		if( !it->ait->second.db_ignore )
+			loggingInfo(sm);
 	}
 	catch(...){}
 
