@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.98
-Release: eter4
+Release: eter6
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -184,6 +184,10 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Fri Jul 30 2010 Ilya Shpigor <elly@altlinux.org> 0.98-eter6
+- add MTR support
+- add db_ignore parameter for DBServer
+
 * Tue Jul 13 2010 Vitaly Lipatov <lav@altlinux.ru> 0.98-eter4
 - iterator for CycleStorage
 - some fixes for CycleStorage iterator
