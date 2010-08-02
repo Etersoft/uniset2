@@ -1175,11 +1175,9 @@ bool MBTCPMaster::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBTCPMaster::RT
 	r->offset = it.getIntProp("tcp_mboffset");
 	r->mb_init = it.getIntProp("tcp_mbinit");
 	
-	if( dev->dtype != MBTCPMaster::dtRTU )
+	if( dev->dtype == MBTCPMaster::dtRTU )
 	{
-		dlog[Debug::CRIT] << myname << "(initRegInfo): Unknown mbtype='" << dev->dtype
-				<< "' for " << it.getProp("name") << endl;
-		return false;
+//		dlog[Debug::INFO] << myname << "(initRegInfo): init RTU.." 
 	}
 	else if( dev->dtype == MBTCPMaster::dtMTR )
 	{
@@ -1187,7 +1185,12 @@ bool MBTCPMaster::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBTCPMaster::RT
 		if( !initMTRitem(it,r) )
 			return false;
 	}
-	
+	else
+	{
+		dlog[Debug::CRIT] << myname << "(initRegInfo): Unknown mbtype='" << dev->dtype
+				<< "' for " << it.getProp("name") << endl;
+		return false;
+	}
 	
 	if( mbregFromID )
 	{
