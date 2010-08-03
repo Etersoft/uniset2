@@ -256,6 +256,8 @@ class SharedMemory:
 
 		typedef sigc::signal<void,HistoryInfo*> HistorySlot;
 		HistorySlot signal_history(); /*!< сигнал о срабатывании условий "сборса" дампа истории */
+
+		inline int getHistoryStep(){ return histSaveTime; } /*!< период между точками "дампа", мсек */
 		
 	protected:
 		typedef std::list<Restorer_XML::ReaderSlot> ReadSlotList;
