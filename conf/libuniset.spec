@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.98
-Release: eter7
+Release: eter8
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -184,6 +184,10 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Aug 11 2010 Pavel Vainerman <pv@altlinux.ru> 0.98-eter7
+- add new types for MTR
+- minor fixes in SharedMemory::HistoryInfo (add timestamp)
+
 * Fri Jul 30 2010 Ilya Shpigor <elly@altlinux.org> 0.98-eter6
 - add MTR support
 - add db_ignore parameter for DBServer

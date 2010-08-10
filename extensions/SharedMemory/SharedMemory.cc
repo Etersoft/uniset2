@@ -834,6 +834,7 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 					if( dlog.debugging(Debug::INFO) )
 						dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 			
+					it->fuse_tm = sm->tm;
 					m_historySignal.emit( &(*it) );
 				}
 			}
@@ -847,7 +848,8 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 					{
 						if( dlog.debugging(Debug::INFO) )
 							dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
-			
+
+						it->fuse_tm = sm->tm;			
 						m_historySignal.emit( &(*it) );
 					}
 				}
@@ -858,6 +860,7 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 						if( dlog.debugging(Debug::INFO) )
 							dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 			
+						it->fuse_tm = sm->tm;
 						m_historySignal.emit( &(*it) );
 					}
 				}

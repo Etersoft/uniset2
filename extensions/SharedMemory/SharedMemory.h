@@ -238,16 +238,21 @@ class SharedMemory:
 				id(0),
 				size(0),filter(""),
 				fuse_id(UniSetTypes::DefaultObjectId),
-				fuse_invert(false),fuse_use_val(false),fuse_val(0){}
+				fuse_invert(false),fuse_use_val(false),fuse_val(0)
+				{
+					  struct timezone tz;
+					  gettimeofday(&fuse_tm,&tz);
+				}
 			
 			long id;						// ID
 			HistoryList hlst;				// history list
 			int size;
-			std::string filter;		// filter field
+			std::string filter;				// filter field
 			UniSetTypes::ObjectId fuse_id; 	// fuse sesnsor
 			bool fuse_invert;
 			bool fuse_use_val;
 			long fuse_val;
+			struct timeval fuse_tm;			// timestamp
 		};
 		
 		friend std::ostream& operator<<( std::ostream& os, const HistoryInfo& h );
