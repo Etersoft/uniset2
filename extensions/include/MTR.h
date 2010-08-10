@@ -29,6 +29,8 @@ namespace MTR
 		mtT7,
 		mtT8,
 		mtT9,
+		mtT16,
+		mtT17,
 		mtF1,
 		mtT_Str16,
 		mtT_Str8
@@ -461,6 +463,72 @@ namespace MTR
 			static MTRType type(){ return mtT9; }
 			// ------------------------------------------
 			T9mem raw;
+	};
+	// -------------------------------------------------------------------------
+	class T16
+	{
+		public:
+			T16():val(0){}
+			T16( unsigned short v ):val(v)
+			{ 
+				fval = (float)(val)/100.0;
+			}
+			T16( const ModbusRTU::ModbusData* data ):val(data[0])
+			{
+				fval = (float)(val)/100.0;
+			}
+			T16( float f ):fval(f)
+			{
+				val = lroundf(fval*100);
+			}
+
+			~T16(){}
+			// ------------------------------------------
+			/*! размер в словах */
+			static int wsize(){ return 1; }
+			/*! тип значения */
+			static MTRType type(){ return mtT16; }
+			// ------------------------------------------
+			operator float(){ return fval; }
+			operator unsigned short(){ return val; }
+
+			unsigned short val;
+			float fval;
+	};
+	// --------------------------------------------------------------------------
+	class T17
+	{
+		public:
+			T17():val(0){}
+			T17( signed short v ):val(v)
+			{ 
+				fval = (float)(v)/100.0;
+			}
+			T17( unsigned short v ):val(v)
+			{ 
+				fval = (float)( (signed short)(v) )/100.0;
+			}
+
+			T17( const ModbusRTU::ModbusData* data ):val(data[0])
+			{
+				fval = (float)(val)/100.0;
+			}
+			T17( float f ):fval(f)
+			{
+				val = lroundf(fval*100);
+			}
+			~T17(){}
+			// ------------------------------------------
+			/*! размер в словах */
+			static int wsize(){ return 1; }
+			/*! тип значения */
+			static MTRType type(){ return mtT17; }
+			// ------------------------------------------
+			operator float(){ return fval; }
+			operator signed short(){ return val; }
+
+			signed short val;
+			float fval;
 	};
 	// --------------------------------------------------------------------------
 	class F1

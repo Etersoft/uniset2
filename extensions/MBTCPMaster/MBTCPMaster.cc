@@ -2046,7 +2046,37 @@ void MBTCPMaster::updateMTR( RegMap::iterator& rit )
 					}
 					continue;
 				}
-		
+				
+				if( r->mtrType == MTR::mtT16 )
+				{
+					if( save )
+					{
+						MTR::T16 t(IOBase::processingFasAO( &(*it), shm, force_out ));
+						r->mbval = t.val;
+					}
+					else
+					{
+						MTR::T16 t(r->mbval);
+						IOBase::processingFasAI( &(*it), t.fval, shm, force );
+					}
+					continue;
+				}
+
+				if( r->mtrType == MTR::mtT17 )
+				{
+					if( save )
+					{
+						MTR::T17 t(IOBase::processingFasAO( &(*it), shm, force_out ));
+						r->mbval = t.val;
+					}
+					else
+					{
+						MTR::T17 t(r->mbval);
+						IOBase::processingFasAI( &(*it), t.fval, shm, force );
+					}
+					continue;
+				}		
+				
 				if( r->mtrType == MTR::mtF1 )
 				{
 					RegMap::iterator i(rit);

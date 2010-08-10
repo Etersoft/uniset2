@@ -11,7 +11,7 @@ using namespace MTR;
 // --------------------------------------------------------------------------
 static void print_help()
 {
-	printf("Usage: mtrconv TYPE[T1...T12] hex1 hex2\n");
+	printf("Usage: mtrconv TYPE[T1...T12,T16,T17] hex1 hex2\n");
 }
 // --------------------------------------------------------------------------
 int main( int argc, const char **argv )
@@ -40,6 +40,16 @@ int main( int argc, const char **argv )
 		cout << "(T1): v1=" << v1 << " --> (unsigned) " << v1 << endl;
 	else if( !strcmp(type,"T2") )
 		cout << "(T2): v1=" << v1 << " --> (signed) " << (signed short)v1 << endl;
+	else if( !strcmp(type,"T16") )
+	{
+		T16 t(v1);
+		cout << "(T16): v1=" << t.val << " float=" << t.fval << endl;
+	}
+	else if( !strcmp(type,"T17") )
+	{
+		T17 t(v1);
+		cout << "(T17): v1=" << t.val << " float=" << t.fval << endl;
+	}
 	else if( !strcmp(type,"T3") )
 	{
 		T3 t(v1,v2);

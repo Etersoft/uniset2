@@ -25,8 +25,6 @@ rs_pre_clean(false),
 noQueryOptimization(false),
 allNotRespond(false)
 {
-	cout << "$Id: RTUExchange.cc,v 1.4 2009/01/23 23:56:54 vpashka Exp $" << endl;
-
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(RTUExchange): objId=-1?!! Use --rs-name" );
 
@@ -2116,6 +2114,36 @@ void RTUExchange::updateMTR( RegMap::iterator& rit )
 						delete[] data;
 					
 						IOBase::processingFasAI( &(*it), (float)t.val, shm, force );
+					}
+					continue;
+				}
+
+				if( r->mtrType == MTR::mtT16 )
+				{
+					if( save )
+					{
+						MTR::T16 t(IOBase::processingFasAO( &(*it), shm, force_out ));
+						r->mbval = t.val;
+					}
+					else
+					{
+						MTR::T16 t(r->mbval);
+						IOBase::processingFasAI( &(*it), t.fval, shm, force );
+					}
+					continue;
+				}
+
+				if( r->mtrType == MTR::mtT17 )
+				{
+					if( save )
+					{
+						MTR::T17 t(IOBase::processingFasAO( &(*it), shm, force_out ));
+						r->mbval = t.val;
+					}
+					else
+					{
+						MTR::T17 t(r->mbval);
+						IOBase::processingFasAI( &(*it), t.fval, shm, force );
 					}
 					continue;
 				}
