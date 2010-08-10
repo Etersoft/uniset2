@@ -104,6 +104,15 @@ int main( int argc, const char **argv )
 			<< ":" << setw(2) << t.sec() << "." << setw(2) << t.ssec()
 			<< endl;
 	}
+	else if( !strcmp(type,"T10") )
+	{
+		T10 t(v1,v2);
+		cout << "(T10): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
+			<< " ===> " << setfill('0') << dec
+			<< setw(4) << t.year() << "/" << setw(2) << t.mon()
+			<< "/" << setw(2) << t.day()
+			<< endl;
+	}
 	else if( !strcmp(type,"F1") )
 	{
 		F1 f(v1,v2);

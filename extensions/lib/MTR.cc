@@ -34,6 +34,8 @@ MTRType str2type( const std::string s )
 		return mtT8;
 	if( s == "T9" )
 		return mtT9;
+	if( s == "T10" )
+		return mtT10;
 	if( s == "T16" )
 		return mtT16;
 	if( s == "T17" )
@@ -68,6 +70,8 @@ string type2str( MTRType t )
 		return "T8";
 	if( t == mtT9 )
 		return "T9";
+	if( t == mtT10 )
+		return "T10";
 	if( t == mtT16 )
 		return "T16";
 	if( t == mtT17 )
@@ -102,6 +106,8 @@ int wsize(  MTRType t )
 		return T8::wsize();
 	if( t == mtT9 )
 		return T9::wsize();
+	if( t == mtT10 )
+		return T10::wsize();
 	if( t == mtT16 )
 		return T16::wsize();
 	if( t == mtT17 )

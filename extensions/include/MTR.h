@@ -29,6 +29,7 @@ namespace MTR
 		mtT7,
 		mtT8,
 		mtT9,
+		mtT10,
 		mtT16,
 		mtT17,
 		mtF1,
@@ -465,6 +466,54 @@ namespace MTR
 			T9mem raw;
 	};
 	// -------------------------------------------------------------------------
+	class T10
+	{
+		public:
+			// ------------------------------------------
+			/*! тип хранения в памяти */
+			typedef union
+			{
+				unsigned short v[u2size];
+				struct u_T10
+				{
+					unsigned short year:16;
+					unsigned short mon:8;
+					unsigned short day:8;
+				}__attribute__( ( packed ) ) u2;
+			} T10mem;
+			// ------------------------------------------
+			// конструкторы на разные случаи...
+			T10(){ memset(raw.v,0,sizeof(raw.v)); }
+			T10( unsigned short v1, unsigned short v2 )
+			{
+				raw.v[0] = v1;
+				raw.v[1] = v2;
+			}
+
+			T10( const ModbusRTU::ModbusData* data, int size )
+			{
+				if( size >= u2size )
+				{
+					for( int i=0; i<u2size; i++ )
+						raw.v[i] = data[i];
+				}
+			}
+			
+			inline unsigned short year(){ return raw.u2.year; }
+			inline unsigned short mon(){ return raw.u2.mon; }
+			inline unsigned short day(){ return raw.u2.day; }
+
+			~T10(){}
+			// ------------------------------------------
+			/*! размер в словах */
+			static int wsize(){ return u2size; }
+			/*! тип значения */
+			static MTRType type(){ return mtT10; }
+			// ------------------------------------------
+			T10mem raw;
+	};
+	// --------------------------------------------------------------------------
+	
 	class T16
 	{
 		public:
