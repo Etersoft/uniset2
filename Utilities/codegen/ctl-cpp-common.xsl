@@ -236,30 +236,30 @@
 </xsl:template>
 
 <xsl:template name="COMMON-CC-FILE">
-void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::VoidMessage* msg )
+void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::VoidMessage* _msg )
 {
 	try
 	{
-		switch( msg->type )
+		switch( _msg->type )
 		{
 			case Message::SensorInfo:
 			{
-				SensorMessage sm( msg );
-				preSensorInfo( &amp;sm );
+				SensorMessage _sm( _msg );
+				preSensorInfo( &amp;_sm );
 				break;
 			}
 
 			case Message::Timer:
 			{
-				TimerMessage tm(msg);
-				preTimerInfo(&amp;tm);
+				TimerMessage _tm(_msg);
+				preTimerInfo(&amp;_tm);
 				break;
 			}
 
 			case Message::SysCommand:
 			{
-				SystemMessage sm( msg );
-				sysCommand( &amp;sm );
+				SystemMessage _sm( _msg );
+				sysCommand( &amp;_sm );
 				break;
 			}
 
@@ -273,9 +273,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::Voi
 	}
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* sm )
+void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* _sm )
 {
-	switch( sm->command )
+	switch( _sm->command )
 	{
 		case SystemMessage::WatchDog:
 			unideb &lt;&lt; myname &lt;&lt; "(sysCommand): WatchDog" &lt;&lt; endl;
@@ -326,10 +326,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* sm )
 	}
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::setState( UniSetTypes::ObjectId sid, bool state )
+void <xsl:value-of select="$CLASSNAME"/>_SK::setState( UniSetTypes::ObjectId _sid, bool _state )
 {
 #warning сделать setState отдельной функцией, а не через setValue
-	setValue(sid, state ? 1 : 0 );
+	setValue(_sid, _state ? 1 : 0 );
 }
 // -----------------------------------------------------------------------------
 bool <xsl:value-of select="$CLASSNAME"/>_SK::checkTestMode()
@@ -359,36 +359,36 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::activateObject()
 	return true;
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::askThreshold( UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid,
-							UniversalIO::UIOCommand cmd,
-							CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Long sensibility,
-							UniSetTypes::ObjectId backid )
+void <xsl:value-of select="$CLASSNAME"/>_SK::askThreshold( UniSetTypes::ObjectId _sid, UniSetTypes::ThresholdId _tid,
+							UniversalIO::UIOCommand _cmd,
+							CORBA::Long lowLimit, CORBA::Long _hiLimit, CORBA::Long _sensibility,
+							UniSetTypes::ObjectId _backid )
 {
 #warning askThreshold НЕ РЕАЛИЗОВАНА...
-//	ui.askThreshold( sid,tid,cmd,lowLimit,hiLimit,sensibility,backid);
+//	ui.askThreshold( _sid,_tid,_cmd,_lowLimit,_hiLimit,_sensibility,_backid);
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::preTimerInfo( UniSetTypes::TimerMessage* tm )
+void <xsl:value-of select="$CLASSNAME"/>_SK::preTimerInfo( UniSetTypes::TimerMessage* _tm )
 {
-	timerInfo(tm);
+	timerInfo(_tm);
 }
 // ----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId testID )
+void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _testID )
 {
-	if( testID == DefaultObjectId )
-		testID = idTestMode_S;
+	if( _testID == DefaultObjectId )
+		_testID = idTestMode_S;
 		
-	if( testID == DefaultObjectId )
+	if( _testID == DefaultObjectId )
 		return;
 		
 	if( unideb.debugging(Debug::INFO) )
 	{
 		unideb[Debug::INFO] &lt;&lt; myname &lt;&lt; "(waitSM): waiting SM ready " 
 			&lt;&lt; wait_msec &lt;&lt; " msec"
-			&lt;&lt; " testID=" &lt;&lt; testID &lt;&lt; endl;
+			&lt;&lt; " testID=" &lt;&lt; _testID &lt;&lt; endl;
 	}
 		
-	if( !ui.waitReady(testID,wait_msec) )
+	if( !ui.waitReady(_testID,wait_msec) )
 	{
 		ostringstream err;
 		err &lt;&lt; myname 
@@ -622,9 +622,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::checkSensors()
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
-bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId code, bool state )
+bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code, bool _state )
 {
-	if( code == UniSetTypes::DefaultObjectId )
+	if( _code == UniSetTypes::DefaultObjectId )
 	{
 		unideb[Debug::CRIT]  &lt;&lt; getName()
 							&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId" 
@@ -633,7 +633,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId code, 
 	}
 
 	unideb[Debug::LEVEL1]  &lt;&lt; getName()  &lt;&lt; "(alarm): ";
-	if( state )
+	if( _state )
 		unideb(Debug::LEVEL1) &lt;&lt; "SEND ";
 	else
 		unideb(Debug::LEVEL1) &lt;&lt; "RESET ";
@@ -641,12 +641,12 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId code, 
 	unideb(Debug::LEVEL1) &lt;&lt; endl;
 	
 	<xsl:for-each select="//msgmap/item">
-	if( code == <xsl:value-of select="@name"/> )
+	if( _code == <xsl:value-of select="@name"/> )
 	{				
 		unideb[Debug::LEVEL1] &lt;&lt; "<xsl:value-of select="@name"/>" &lt;&lt; endl;
 		try
 		{
-			m_<xsl:value-of select="@name"/> = state;
+			m_<xsl:value-of select="@name"/> = _state;
 			// сохраняем сразу...
 			si.id = <xsl:value-of select="@name"/>;
 			si.node = node_<xsl:value-of select="@name"/>;
@@ -683,9 +683,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 </xsl:for-each>
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool state )
+void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 {
-	if( !state  )
+	if( !_state  )
 		return;
 
 	// отключаем все выходы
@@ -821,7 +821,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool state )
+void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 {
 	// отключаем все выходы
 <xsl:for-each select="//sensors/item/consumers/consumer">
@@ -869,9 +869,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 
 }
 // -----------------------------------------------------------------------------
-bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId code, bool state )
+bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code, bool _state )
 {
-	if( code == UniSetTypes::DefaultObjectId )
+	if( _code == UniSetTypes::DefaultObjectId )
 	{
 		unideb[Debug::CRIT]  &lt;&lt; getName()
 							&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId" 
@@ -880,10 +880,10 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId code, 
 	}
 
 	unideb[Debug::LEVEL1]  &lt;&lt; getName()  &lt;&lt; "(alarm): ";
-	if( state )
-		unideb(Debug::LEVEL1) &lt;&lt; "SEND (" &lt;&lt; code &lt;&lt; ")";
+	if( _state )
+		unideb(Debug::LEVEL1) &lt;&lt; "SEND (" &lt;&lt; _code &lt;&lt; ")";
 	else
-		unideb(Debug::LEVEL1) &lt;&lt; "RESET (" &lt;&lt; code &lt;&lt; ")";
+		unideb(Debug::LEVEL1) &lt;&lt; "RESET (" &lt;&lt; _code &lt;&lt; ")";
 
 
 <xsl:for-each select="//sensors/item">
