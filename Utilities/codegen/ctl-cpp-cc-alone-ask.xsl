@@ -405,8 +405,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 		</xsl:if>
 		{
 		<xsl:if test="normalize-space($onlymsg)=''">		
-			cout &lt;&lt; myname &lt;&lt; ": (DI) change state <xsl:value-of select="../../@name"/> set " 
-					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
+//			cout &lt;&lt; myname &lt;&lt; ": (DI) change state <xsl:value-of select="../../@name"/> set " 
+//					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
 		</xsl:if>
 			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (bool)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
 //			push( _sm.transport_msg() );
@@ -419,8 +419,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 		</xsl:if>
 		{
 		<xsl:if test="normalize-space($onlymsg)=''">		
-			cout &lt;&lt; myname &lt;&lt; ": (AI) change value <xsl:value-of select="../../@name"/> set " 
-					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
+//			cout &lt;&lt; myname &lt;&lt; ": (AI) change value <xsl:value-of select="../../@name"/> set " 
+//					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
 		</xsl:if>
 			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
 //			push( _sm.transport_msg() );
@@ -433,8 +433,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 		</xsl:if>
 		{
 		<xsl:if test="normalize-space($onlymsg)=''">		
-			cout &lt;&lt; myname &lt;&lt; ": (DO) change state <xsl:value-of select="../../@name"/> set " 
-					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
+//			cout &lt;&lt; myname &lt;&lt; ": (DO) change state <xsl:value-of select="../../@name"/> set " 
+//					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
 		</xsl:if>
 			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (bool)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
 			push( _sm.transport_msg() );
@@ -446,8 +446,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 		</xsl:if>
 		{
 		<xsl:if test="normalize-space($onlymsg)=''">		
-			cout &lt;&lt; myname &lt;&lt; ": (AO) change value <xsl:value-of select="../../@name"/> set " 
-					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
+//			cout &lt;&lt; myname &lt;&lt; ": (AO) change value <xsl:value-of select="../../@name"/> set " 
+//					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
 		</xsl:if>
 			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
 			push( _sm.transport_msg() );
