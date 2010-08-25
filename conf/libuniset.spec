@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.98
-Release: eter8
+Release: eter9
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -125,7 +125,7 @@ rm -f %buildroot%_libdir/*.la
 %_includedir/%oname/mysql/
 
 %_libdir/libUniSet.so
-#%_datadir/idl/%oname/
+%_datadir/idl/%oname/
 %_pkgconfigdir/libUniSet.pc
 
 %files mysql-dbserver
@@ -184,6 +184,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Aug 25 2010 Pavel Vainerman <pv@server> 0.98-eter8
+- fixed bug for install IDL-files
+
 * Wed Aug 11 2010 Pavel Vainerman <pv@altlinux.ru> 0.98-eter7
 - add new types for MTR
 - minor fixes in SharedMemory::HistoryInfo (add timestamp)

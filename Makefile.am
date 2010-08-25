@@ -16,3 +16,6 @@ all-local:
 
 clean-local:
 	$(MAKE) -C $(FIRSTSUBDIRS) clean
+
+install-data-local:
+	$(MAKE) -C $(FIRSTSUBDIRS) -j1 install
