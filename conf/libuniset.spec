@@ -184,6 +184,10 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Sep 07 2010 Evgeny Sinelnikov <sin@altlinux.ru> 0.98-eter9
+- Build for Sisyphus Etersoft addon:
+  commit fc7fb2eefaf900088d7e6583df440c914aeb9560
+
 * Wed Aug 25 2010 Pavel Vainerman <pv@server> 0.98-eter8
 - fixed bug for install IDL-files
 
