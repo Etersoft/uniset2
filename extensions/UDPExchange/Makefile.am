@@ -1,4 +1,4 @@
-bin_PROGRAMS 			= @PACKAGE@-udpexchange
+bin_PROGRAMS 			= @PACKAGE@-udpexchange @PACKAGE@-udpsender @PACKAGE@-udpreceiver
 
 lib_LTLIBRARIES 			= libUniSetUDP.la
 libUniSetUDP_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
@@ -6,7 +6,9 @@ libUniSetUDP_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
 								$(top_builddir)/extensions/lib/libUniSetExtensions.la \
 								$(SIGC_LIBS) $(COMCPP_LIBS)
 libUniSetUDP_la_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
-libUniSetUDP_la_SOURCES 	= UDPPacket.cc UDPExchange.cc
+libUniSetUDP_la_SOURCES 	= UDPPacket.cc UDPExchange.cc UDPSender.cc UDPReceiver.cc
+
+#UDPSender.cc
 
 @PACKAGE@_udpexchange_SOURCES 	= udpexchange.cc
 @PACKAGE@_udpexchange_LDADD 	= libUniSetUDP.la $(top_builddir)/lib/libUniSet.la \
@@ -14,6 +16,20 @@ libUniSetUDP_la_SOURCES 	= UDPPacket.cc UDPExchange.cc
 									$(top_builddir)/extensions/lib/libUniSetExtensions.la \
 									$(SIGC_LIBS) $(COMCPP_LIBS)
 @PACKAGE@_udpexchange_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+
+@PACKAGE@_udpsender_SOURCES 	= udpsender.cc
+@PACKAGE@_udpsender_LDADD 		= libUniSetUDP.la $(top_builddir)/lib/libUniSet.la \
+									$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
+									$(top_builddir)/extensions/lib/libUniSetExtensions.la \
+									$(SIGC_LIBS) $(COMCPP_LIBS)
+@PACKAGE@_udpsender_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+
+@PACKAGE@_udpreceiver_SOURCES 		= udpreceiver.cc
+@PACKAGE@_udpreceiver_LDADD 		= libUniSetUDP.la $(top_builddir)/lib/libUniSet.la \
+									$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
+									$(top_builddir)/extensions/lib/libUniSetExtensions.la \
+									$(SIGC_LIBS) $(COMCPP_LIBS)
+@PACKAGE@_udpreceiver_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
 
 
 # install

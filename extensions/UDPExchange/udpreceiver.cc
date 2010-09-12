@@ -3,7 +3,7 @@
 #include <sstream>
 #include "ObjectsActivator.h"
 #include "Extensions.h"
-#include "UDPExchange.h"
+#include "UDPReceiver.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -11,46 +11,6 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
-	ost::IPV4Host host = "192.168.56.10";
-	ost::tpport_t port = 2050;
-	try
-	{
-		ost::UDPSocket* udp = new ost::UDPSocket();
-		udp->setPeer(host,port);
-//		udp->UDPTransmit::setBroadcast(false);
-//		udp->UDPTransmit::setRouting(false);
-		UniSetUDP::UDPHeader h;
-		h.nodeID = 20;
-		h.procID = 20;
-		h.dcount = 0;
-		
-//		udp->connect(host,port);
-		
-		
-//		ost::IPV4Host h1 = udp->getPeer();
-//		cout << "peer: " << h1 << endl;
-		
-		//if( udp->isOutputReady(5000) )
-		while(1)
-		{
-		  ssize_t ret = udp->send((char*)(&h),sizeof(h));
-		  if( ret<(ssize_t)sizeof(h) )
-		  {
-			  cerr << "(send data header): ret=" << ret << " sizeof=" << sizeof(h) << endl;
-//			  return 0;
-		  }
-		  else
-			  cout << "SEND OK..." << endl;
-		  
-		  msleep(1000);
-		}
-	}
-	catch( ost::SockException& e )
-	{
-		cerr  << e.getString() << ": " << e.getSystemErrorString() << endl;
-		return 0;
-	}  
-  
 	try
 	{
 		if( argc>1 && (!strcmp(argv[1],"--help") || !strcmp(argv[1],"-h")) )
@@ -59,7 +19,7 @@ int main( int argc, char** argv )
 			cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
 			cout << "--udp-logfile filename    - logfilename. Default: udpexchange.log" << endl;
 			cout << endl;
-			UDPExchange::help_print(argc,argv);
+			UDPReceiver::help_print(argc,argv);
 			return 0;
 		}
 
@@ -91,23 +51,23 @@ int main( int argc, char** argv )
 			return 1;
 		}
 
-		UDPExchange* rs = UDPExchange::init_udpexchange(argc,argv,shmID);
-		if( !rs )
+		UDPReceiver* udp = UDPReceiver::init_udpreceiver(argc,argv,shmID);
+		if( !udp )
 		{
-			dlog[Debug::CRIT] << "(udpexchange): init не прошёл..." << endl;
+			dlog[Debug::CRIT] << "(udpreceiver): init не прошёл..." << endl;
 			return 1;
 		}
 
 		ObjectsActivator act;
-		act.addObject(static_cast<class UniSetObject*>(rs));
+		act.addObject(static_cast<class UniSetObject*>(udp));
 
 		SystemMessage sm(SystemMessage::StartUp); 
 		act.broadcast( sm.transport_msg() );
 
 		unideb(Debug::ANY) << "\n\n\n";
-		unideb[Debug::ANY] << "(main): -------------- RTU Exchange START -------------------------\n\n";
+		unideb[Debug::ANY] << "(main): -------------- UDPRecevier START -------------------------\n\n";
 		dlog(Debug::ANY) << "\n\n\n";
-		dlog[Debug::ANY] << "(main): -------------- RTU Exchange START -------------------------\n\n";
+		dlog[Debug::ANY] << "(main): -------------- UDPReceiver START -------------------------\n\n";
 
 		act.run(false);
 //		msleep(500);
@@ -116,6 +76,12 @@ int main( int argc, char** argv )
 	catch( Exception& ex )
 	{
 		dlog[Debug::CRIT] << "(udpexchange): " << ex << std::endl;
+	}
+	catch( ost::SockException& e )
+	{
+		ostringstream s;
+		s << e.getString() << ": " << e.getSystemErrorString();
+		dlog[Debug::CRIT] << s.str() << endl;
 	}
 	catch(...)
 	{
