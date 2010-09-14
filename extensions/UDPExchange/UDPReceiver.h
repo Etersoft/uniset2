@@ -1,6 +1,4 @@
-// $Id: UDPExchange.h,v 1.1 2009/02/10 20:38:27 vpashka Exp $
-// -----------------------------------------------------------------------------
-#ifndef UDPExchange_H_
+#ifndef UDPReceiver_H_
 #define UDPReceiver_H_
 // -----------------------------------------------------------------------------
 #include <ostream>
@@ -28,22 +26,6 @@ class UDPReceiver:
 
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, char* argv[] );
-
-		struct UItem
-		{
-			UItem():
-				val(0)
-			{}
-
-			IOController_i::SensorInfo si;
-			IOController::AIOStateList::iterator ait;
-			IOController::DIOStateList::iterator dit;
-			UniSetTypes::uniset_spin_mutex val_lock;
-			UniSetUDP::UDPMessage::UDPDataList::iterator pack_it;
-			long val;
-
-			friend std::ostream& operator<<( std::ostream& os, UItem& p );
-		};
 
 	protected:
 
@@ -90,7 +72,6 @@ class UDPReceiver:
 		UniSetTypes::uniset_mutex pollMutex;
 		Trigger trTimeout;
 		int recvTimeout;
-		int sendTimeout;
 		
 		bool activated;
 		int activateTimeout;

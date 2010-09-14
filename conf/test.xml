@@ -103,8 +103,9 @@
 	textname 	- текстовое имя датчика
 -->
 	<nodes port="2809">
-		<item name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
-		<item name="Node2"			alias="" textname="Локальный узел"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
+		<item name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1" udp_port="3000" infserver="InfoServer" dbserver=""/>
+		<item name="Node1"			alias="" textname="Node1" ip="192.168.56.10" udp_port="3001" />
+		<item name="Node2"			alias="" textname="Node2" ip="192.168.56.11" udp_port="3002" />
 	</nodes>
 
 	<!-- ************************ Датчики ********************** -->

@@ -1,5 +1,3 @@
-// $Id: UDPReceiver.cc,v 1.1 2009/02/10 20:38:27 vpashka Exp $
-// -----------------------------------------------------------------------------
 #include <sstream>
 #include "Exceptions.h"
 #include "Extensions.h"
@@ -62,9 +60,6 @@ activated(false)
 	thr = new ThreadCreator<UDPReceiver>(this, &UDPReceiver::poll);
 
 	recvTimeout = conf->getArgPInt("--udp-recv-timeout",it.getProp("recvTimeout"), 5000);
-
-	sendTimeout = conf->getArgPInt("--udp-send-timeout",it.getProp("sendTimeout"), 5000);
-
 	polltime = conf->getArgPInt("--udp-polltime",it.getProp("polltime"), 100);
 
 	// -------------------------------
@@ -462,10 +457,5 @@ UDPReceiver* UDPReceiver::init_udpreceiver( int argc, char* argv[], UniSetTypes:
 
 	dlog[Debug::INFO] << "(rsexchange): name = " << name << "(" << ID << ")" << endl;
 	return new UDPReceiver(ID,icID,ic);
-}
-// -----------------------------------------------------------------------------
-std::ostream& operator<<( std::ostream& os, UDPReceiver::UItem& p )
-{
-	return os 	<< " sid=" << p.si.id;
 }
 // -----------------------------------------------------------------------------

@@ -80,6 +80,8 @@ class SMInterface
 
 		inline bool isLocalwork(){ return (ic==NULL); }
 		inline UniSetTypes::ObjectId ID(){ return myid; }
+		inline IONotifyController* SM(){ return ic; }
+		inline UniSetTypes::ObjectId getSMID(){ return shmID; }
 		
 	protected:
 		IONotifyController* ic;

@@ -11,46 +11,6 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
-	ost::IPV4Host host = "192.168.56.10";
-	ost::tpport_t port = 2050;
-	try
-	{
-		ost::UDPSocket* udp = new ost::UDPSocket();
-		udp->setPeer(host,port);
-//		udp->UDPTransmit::setBroadcast(false);
-//		udp->UDPTransmit::setRouting(false);
-		UniSetUDP::UDPHeader h;
-		h.nodeID = 20;
-		h.procID = 20;
-		h.dcount = 0;
-		
-//		udp->connect(host,port);
-		
-		
-//		ost::IPV4Host h1 = udp->getPeer();
-//		cout << "peer: " << h1 << endl;
-		
-		//if( udp->isOutputReady(5000) )
-		while(1)
-		{
-		  ssize_t ret = udp->send((char*)(&h),sizeof(h));
-		  if( ret<(ssize_t)sizeof(h) )
-		  {
-			  cerr << "(send data header): ret=" << ret << " sizeof=" << sizeof(h) << endl;
-//			  return 0;
-		  }
-		  else
-			  cout << "SEND OK..." << endl;
-		  
-		  msleep(1000);
-		}
-	}
-	catch( ost::SockException& e )
-	{
-		cerr  << e.getString() << ": " << e.getSystemErrorString() << endl;
-		return 0;
-	}  
-  
 	try
 	{
 		if( argc>1 && (!strcmp(argv[1],"--help") || !strcmp(argv[1],"-h")) )
@@ -105,9 +65,9 @@ int main( int argc, char** argv )
 		act.broadcast( sm.transport_msg() );
 
 		unideb(Debug::ANY) << "\n\n\n";
-		unideb[Debug::ANY] << "(main): -------------- RTU Exchange START -------------------------\n\n";
+		unideb[Debug::ANY] << "(main): -------------- UDP Exchange START -------------------------\n\n";
 		dlog(Debug::ANY) << "\n\n\n";
-		dlog[Debug::ANY] << "(main): -------------- RTU Exchange START -------------------------\n\n";
+		dlog[Debug::ANY] << "(main): -------------- UDP Exchange START -------------------------\n\n";
 
 		act.run(false);
 //		msleep(500);

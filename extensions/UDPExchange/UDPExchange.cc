@@ -1,5 +1,3 @@
-// $Id: UDPExchange.cc,v 1.1 2009/02/10 20:38:27 vpashka Exp $
-// -----------------------------------------------------------------------------
 #include <sstream>
 #include "Exceptions.h"
 #include "Extensions.h"
@@ -18,8 +16,6 @@ activated(false),
 dlist(100),
 maxItem(0)
 {
-	cout << "$Id: UDPExchange.cc,v 1.1 2009/02/10 20:38:27 vpashka Exp $" << endl;
-
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(UDPExchange): objId=-1?!! Use --udp-name" );
 
@@ -40,23 +36,24 @@ maxItem(0)
 
 	// ---------- init RS ----------
 //	UniXML_iterator it(cnode);
-	string s_host	= conf->getArgParam("--udp-host",it.getProp("host"));
+	s_host	= conf->getArgParam("--udp-host",it.getProp("host"));
 	if( s_host.empty() )
 		throw UniSetTypes::SystemError(myname+"(UDPExchange): Unknown host. Use --udp-host" );
 
-	port = conf->getArgInt("--udp-port",it.getProp("port"));
-	if( port <= 0 )
-		throw UniSetTypes::SystemError(myname+"(UDPExchange): Unknown port address. Use --udp-port" );
+	host = s_host.c_str();
+
+	buildReceiverList();
+
+//	port = conf->getArgInt("--udp-port",it.getProp("port"));
+	if( port <= 0 || port == DefaultObjectId )
+		throw UniSetTypes::SystemError(myname+"(UDPExchange): Unknown port address" );
 
 	if( dlog.debugging(Debug::INFO) )
 		dlog[Debug::INFO] << "(UDPExchange): UDP set to " << s_host << ":" << port << endl;
 	
-	host = s_host.c_str();
 	try
 	{
-		udp = new ost::UDPDuplex(host,port);
-//		udp->UDPTransmit::setBroadcast(false);
-//		udp->UDPTransmit::setRouting(false);
+		udp = new ost::UDPBroadcast(host,port);	  
 	}
 	catch( ost::SockException& e )
 	{
@@ -68,9 +65,7 @@ maxItem(0)
 	thr = new ThreadCreator<UDPExchange>(this, &UDPExchange::poll);
 
 	recvTimeout = conf->getArgPInt("--udp-recv-timeout",it.getProp("recvTimeout"), 5000);
-
 	sendTimeout = conf->getArgPInt("--udp-send-timeout",it.getProp("sendTimeout"), 5000);
-
 	polltime = conf->getArgPInt("--udp-polltime",it.getProp("polltime"), 100);
 
 	// -------------------------------
@@ -128,6 +123,9 @@ maxItem(0)
 // -----------------------------------------------------------------------------
 UDPExchange::~UDPExchange()
 {
+	for( ReceiverList::iterator it=rlist.begin(); it!=rlist.end(); it++ )
+		delete (*it);
+
 	delete udp;
 	delete shm;
 	delete thr;
@@ -151,21 +149,8 @@ void UDPExchange::waitSMReady()
 	}
 }
 // -----------------------------------------------------------------------------
-/*
-void UDPExchange::timerInfo( TimerMessage *tm )
-{
-	if( tm->id == tmExchange )
-		step();
-}
-*/
-// -----------------------------------------------------------------------------
 void UDPExchange::step()
 {
-//	{
-//		uniset_mutex_lock l(pollMutex,2000);
-//		poll();
-//	}
-
 	if( !activated )
 		return;
 
@@ -190,24 +175,31 @@ void UDPExchange::poll()
 	dlist.resize(maxItem);
 	dlog[Debug::INFO] << myname << "(init): dlist size = " << dlist.size() << endl;
 
+	for( ReceiverList::iterator it=rlist.begin(); it!=rlist.end(); it++ )
+	{
+		(*it)->setReceiveTimeout(recvTimeout);		
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << myname << "(poll): start exchange for " << (*it)->getName() << endl;
+		(*it)->start();
+	}
+
+	ost::IPV4Broadcast h = s_host.c_str();
 	try
-	{
-		udp->connect(host,port);
+	{			
+		udp->setPeer(h,port);
 	}
-	catch( UniSetTypes::Exception& ex)
+	catch( ost::SockException& e )
 	{
-		cerr << myname << "(step): " << ex << std::endl;
-//		reise(SIGTERM);
-		return;
+		ostringstream s;
+		s << e.getString() << ": " << e.getSystemErrorString();
+		dlog[Debug::CRIT] << myname << "(poll): " << s.str() << endl;
+		throw SystemError(s.str());
 	}
-
-
 
 	while( activated )
 	{
 		try
 		{
-			recv();
 			send();
 		}
 		catch( ost::SockException& e )
@@ -229,82 +221,40 @@ void UDPExchange::poll()
 	cerr << "************* execute FINISH **********" << endl;
 }
 // -----------------------------------------------------------------------------
-void UDPExchange::recv()
-{	
-	cout << myname << ": recv...." << endl;
-	UniSetUDP::UDPHeader h;
-	// receive
-	if( udp->isInputReady(recvTimeout) )
-	{
-		ssize_t ret = udp->UDPReceive::receive(&h,sizeof(h));
-		if( ret<(ssize_t)sizeof(h) )
-		{
-			cerr << myname << "(receive): ret=" << ret << " sizeof=" << sizeof(h) << endl;
-			return;
-		}
-		
-		cout << myname << "(receive): header: " << h << endl;
-
-		UniSetUDP::UDPData d;
-		// ignore echo...
-#if 0
-		if( h.nodeID == conf->getLocalNode() && h.procID == getId() )
-		{
-			for( int i=0; i<h.dcount;i++ )
-			{
-				ssize_t ret = udp->UDPReceive::receive(&d,sizeof(d));
-				if( ret < (ssize_t)sizeof(d) )
-					return;
-			}
-			return;
-		}
-#endif 		
-		for( int i=0; i<h.dcount;i++ )
-		{
-			ssize_t ret = udp->UDPReceive::receive(&d,sizeof(d));
-			if( ret<(ssize_t)sizeof(d) )
-			{
-				cerr << myname << "(receive data " << i << "): ret=" << ret << " sizeof=" << sizeof(d) << endl;
-				break;
-			}
-			
-			cout << myname << "(receive data " << i << "): " << d << endl;
-		}
-	}
-}
-// -----------------------------------------------------------------------------
 void UDPExchange::send()
 {
 	cout << myname << ": send..." << endl;
-
+/*
 	UniSetUDP::UDPHeader h;
 	h.nodeID = conf->getLocalNode();
 	h.procID = getId();
 	h.dcount = mypack.size();
-	// receive
-	if( udp->isOutputReady(sendTimeout) )
+	if( udp->isPending(ost::Socket::pendingOutput) )
 	{
-		ssize_t ret = udp->transmit((char*)(&h),sizeof(h));
+		ssize_t ret = udp->send((char*)(&h),sizeof(h));
 		if( ret<(ssize_t)sizeof(h) )
 		{
 			cerr << myname << "(send data header): ret=" << ret << " sizeof=" << sizeof(h) << endl;
 			return;
 		}
-
+*/
 #warning use mutex for list!!!
 		UniSetUDP::UDPMessage::UDPDataList::iterator it = mypack.dlist.begin();
+		
 		for( ; it!=mypack.dlist.end(); ++it )
 		{
-			cout << myname << "(send): " << (*it) << endl;
-			ssize_t ret = udp->transmit((char*)(&(*it)),sizeof(*it));
-			if( ret<(ssize_t)sizeof(*it) )
+//			while( !udp->isPending(ost::Socket::pendingOutput) )
+//				msleep(30);
+
+        	cout << myname << "(send): " << (*it) << endl;
+			ssize_t ret = udp->send((char*)(&(*it)),sizeof(UniSetUDP::UDPData));
+			if( ret<(ssize_t)sizeof(UniSetUDP::UDPData) )
 			{
-				cerr << myname << "(send data): ret=" << ret << " sizeof=" << sizeof(*it) << endl;
+				cerr << myname << "(send data): ret=" << ret << " sizeof=" << sizeof(UniSetUDP::UDPData) << endl;
 				break;
 			}
 		}
-	}
-	
+//	}
 }
 // -----------------------------------------------------------------------------
 void UDPExchange::processingMessage(UniSetTypes::VoidMessage *msg)
@@ -488,6 +438,9 @@ void UDPExchange::sigterm( int signo )
 	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
 	activated = false;
 	udp->disconnect();
+	for( ReceiverList::iterator it=rlist.begin(); it!=rlist.end(); it++ )
+		(*it)->stop();
+
 	UniSetObject_LT::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
@@ -607,11 +560,9 @@ void UDPExchange::help_print( int argc, char* argv[] )
 	cout << "--udp-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
 	cout << "--udp-notRespondSensor - датчик связи для данного процесса " << endl;
 	cout << "--udp-sm-ready-timeout - время на ожидание старта SM" << endl;
-	cout << " Настройки протокола RS: " << endl;
-	cout << "--udp-dev devname  - файл устройства" << endl;
-	cout << "--udp-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
-	cout << "--udp-my-addr      - адрес текущего узла" << endl;
-	cout << "--udp-recv-timeout - Таймаут на ожидание ответа." << endl;
+	cout << " Настройки протокола UDP: " << endl;
+	cout << "--udp-host [ip|hostname]  - Адрес сервера" << endl;
+	cout << "--udp-send-timeout - Таймаут на посылку ответа." << endl;
 }
 // -----------------------------------------------------------------------------
 UDPExchange* UDPExchange::init_udpexchange( int argc, char* argv[], UniSetTypes::ObjectId icID, SharedMemory* ic )
@@ -641,3 +592,46 @@ std::ostream& operator<<( std::ostream& os, UDPExchange::UItem& p )
 	return os 	<< " sid=" << p.si.id;
 }
 // -----------------------------------------------------------------------------
+void UDPExchange::buildReceiverList()
+{
+	xmlNode* n = conf->getXMLNodesSection();
+	if( !n )
+	{
+		dlog[Debug::WARN] << myname << "(buildReceiverList): <nodes> not found! ignore..." << endl;
+		return;
+	}
+	
+	UniXML_iterator it(n);
+	if( !it.goChildren() )
+	{
+		dlog[Debug::WARN] << myname << "(buildReceiverList): <nodes> is empty?! ignore..." << endl;
+		return;
+	}
+	
+	for( ; it.getCurrent(); it.goNext() )
+	{
+		ObjectId n_id = conf->getNodeID( it.getProp("name") );
+		if( n_id == conf->getLocalNode() )
+		{
+			port = it.getIntProp("udp_port");
+			if( port<=0 )
+				port = n_id;
+			dlog[Debug::INFO] << myname << "(buildReceiverList): init myport port=" << port << endl;
+			continue;
+		}
+
+		int p = it.getIntProp("udp_port");
+		if( p <=0 )
+			p = n_id;
+
+		if( p == DefaultObjectId )
+		{
+			dlog[Debug::WARN] << myname << "(buildReceiverList): node=" << it.getProp("name") << " unknown port. ignore..." << endl;
+			continue;
+		}
+
+		UDPNReceiver* r = new UDPNReceiver(p,host,shm->getSMID(),shm->SM());
+		rlist.push_back(r);
+	}
+}
+// ------------------------------------------------------------------------------------------

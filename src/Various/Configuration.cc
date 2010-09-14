@@ -974,6 +974,7 @@ xmlNode* Configuration::xmlSensorsSec = 0;
 xmlNode* Configuration::xmlObjectsSec = 0;
 xmlNode* Configuration::xmlControllersSec = 0;
 xmlNode* Configuration::xmlServicesSec = 0;
+xmlNode* Configuration::xmlNodesSec = 0;
 // -------------------------------------------------------------------------
 xmlNode* Configuration::getXMLSensorsSection()
 {
@@ -1010,6 +1011,15 @@ xmlNode* Configuration::getXMLServicesSection()
 	
 	xmlServicesSec = unixml.findNode(unixml.getFirstNode(),"services");
 	return xmlServicesSec;
+}
+// -------------------------------------------------------------------------
+xmlNode* Configuration::getXMLNodesSection()
+{
+	if( xmlNodesSec )
+		return xmlNodesSec;
+	
+	xmlNodesSec = unixml.findNode(unixml.getFirstNode(),"nodes");
+	return xmlNodesSec;
 }
 // -------------------------------------------------------------------------
 xmlNode* Configuration::getXMLObjectNode( UniSetTypes::ObjectId id )

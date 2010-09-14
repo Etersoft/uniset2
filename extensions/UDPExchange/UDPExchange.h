@@ -1,5 +1,3 @@
-// $Id: UDPExchange.h,v 1.1 2009/02/10 20:38:27 vpashka Exp $
-// -----------------------------------------------------------------------------
 #ifndef UDPExchange_H_
 #define UDPExchange_H_
 // -----------------------------------------------------------------------------
@@ -14,6 +12,7 @@
 #include "SharedMemory.h"
 #include "ThreadCreator.h"
 #include "UDPPacket.h"
+#include "UDPNReceiver.h"
 // -----------------------------------------------------------------------------
 class UDPExchange:
 	public UniSetObject_LT
@@ -76,6 +75,7 @@ class UDPExchange:
 
 		void readConfiguration();
 		bool check_item( UniXML_iterator& it );
+		void buildReceiverList();
 
 	private:
 		UDPExchange();
@@ -90,9 +90,10 @@ class UDPExchange:
 
 		int polltime;	/*!< переодичность обновления данных, [мсек] */
 
-		ost::UDPDuplex* udp;
+		ost::UDPBroadcast* udp;
 		ost::IPV4Host host;
 		ost::tpport_t port;
+		std::string s_host;
 
 		UniSetTypes::uniset_mutex pollMutex;
 		Trigger trTimeout;
@@ -107,6 +108,9 @@ class UDPExchange:
 		DMap dlist;
 		int maxItem;
 		
+
+		typedef std::list<UDPNReceiver*> ReceiverList;
+		ReceiverList rlist;
 		
 		ThreadCreator<UDPExchange>* thr;
 };

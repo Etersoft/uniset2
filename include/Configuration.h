@@ -107,6 +107,7 @@ namespace UniSetTypes
 		xmlNode* getXMLObjectsSection();
 		xmlNode* getXMLControllersSection();
 		xmlNode* getXMLServicesSection();
+		xmlNode* getXMLNodesSection();
 		xmlNode* getXMLObjectNode( UniSetTypes::ObjectId );
 	
 		// net
@@ -219,6 +220,7 @@ namespace UniSetTypes
 		static xmlNode* xmlObjectsSec;
 		static xmlNode* xmlControllersSec;
 		static xmlNode* xmlServicesSec;
+		static xmlNode* xmlNodesSec;
 
 		ObjectId localTimerService;
 		ObjectId localDBServer;
