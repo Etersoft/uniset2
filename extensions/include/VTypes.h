@@ -16,11 +16,13 @@ namespace VTypes
 		enum VType
 		{
 			vtUnknown,
-			vtF2,		/*!< двойное слово (4 байта). В виде строки задаётся как \b "F2". */
-			vtF4,		/*!< 8-х байтовое слово. В виде строки задаётся как \b "F4". */
+			vtF2,		/*!< двойное слово float(4 байта). В виде строки задаётся как \b "F2". */
+			vtF4,		/*!< 8-х байтовое слово (double). В виде строки задаётся как \b "F4". */
 			vtByte,		/*!< байт.  В виде строки задаётся как \b "byte". */
-			vtUnsigned,	/*!< беззнаковое.  В виде строки задаётся как \b "unsigned". */
-			vtSigned	/*!< знаковое. В виде строки задаётся как \b "signed". */
+			vtUnsigned,	/*!< беззнаковое целое (2 байта).  В виде строки задаётся как \b "unsigned". */
+			vtSigned,	/*!< знаковое целое (2 байта). В виде строки задаётся как \b "signed". */
+			vtI2,		/*!< целое (4 байта). В виде строки задаётся как \b "I4".*/
+			vtU2		/*!< беззнаковое целое (4 байта). В виде строки задаётся как \b "U4".*/
 		};
 
 		std::ostream& operator<<( std::ostream& os, const VType& vt );
@@ -201,6 +203,76 @@ namespace VTypes
 			operator long(){ return raw; }
 
 			signed short raw;
+	};
+	// --------------------------------------------------------------------------
+	class I2
+	{
+		public:
+		
+			// ------------------------------------------
+			static const int i2Size=2;
+			/*! тип хранения в памяти */
+			typedef union
+			{
+				unsigned short v[i2Size];
+				int val; // 
+			} I2mem;
+			// ------------------------------------------
+			// конструкторы на разные случаи...
+			I2(){ memset(raw.v,0,sizeof(raw.v)); }
+			
+			I2( int v ){ raw.val = v; }
+			I2( const ModbusRTU::ModbusData* data, int size )
+			{
+				for( int i=0; i<wsize() && i<size; i++ )
+					raw.v[i] = data[i];
+			}
+
+			~I2(){}
+			// ------------------------------------------
+			/*! размер в словах */
+			static int wsize(){ return i2Size; }
+			/*! тип значения */
+			static VType type(){ return vtI2; }
+			// ------------------------------------------
+			operator int(){ return raw.val; }
+			
+			I2mem raw;
+	};
+	// --------------------------------------------------------------------------
+	class U2
+	{
+		public:
+		
+			// ------------------------------------------
+			static const int u2Size=2;
+			/*! тип хранения в памяти */
+			typedef union
+			{
+				unsigned short v[u2Size];
+				unsigned int val; // 
+			} U2mem;
+			// ------------------------------------------
+			// конструкторы на разные случаи...
+			U2(){ memset(raw.v,0,sizeof(raw.v)); }
+			
+			U2( unsigned int v ){ raw.val = v; }
+			U2( const ModbusRTU::ModbusData* data, int size )
+			{
+				for( int i=0; i<wsize() && i<size; i++ )
+					raw.v[i] = data[i];
+			}
+
+			~U2(){}
+			// ------------------------------------------
+			/*! размер в словах */
+			static int wsize(){ return u2Size; }
+			/*! тип значения */
+			static VType type(){ return vtU2; }
+			// ------------------------------------------
+			operator unsigned int(){ return raw.val; }
+			
+			U2mem raw;
 	};
 	// --------------------------------------------------------------------------
 

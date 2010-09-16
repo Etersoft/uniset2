@@ -19,6 +19,9 @@
 #include "VTypes.h"
 #include "ThreadCreator.h"
 // -----------------------------------------------------------------------------
+/*!
+	\todo Доделать многорегистровую запись (т.е. запись для vtype=[F2,F4,I2,I4,U2,U4]
+*/
 class MBSlave:
 	public UniSetObject_LT
 {
@@ -49,10 +52,12 @@ class MBSlave:
 			ModbusRTU::ModbusData mbreg;	/*!< регистр */
 			AccessMode amode;
 			VTypes::VType vtype;	/*!< type of value */
+			int wnum;				/*!< номер слова (для типов с размеров больше 2х байт */
 
 			IOProperty():
 				mbreg(0),
-				vtype(VTypes::vtUnknown)
+				vtype(VTypes::vtUnknown),
+				wnum(0)
 			{}
 
 			friend std::ostream& operator<<( std::ostream& os, IOProperty& p );
@@ -152,7 +157,8 @@ class MBSlave:
 
 		ModbusRTU::mbErrCode real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val );
 		ModbusRTU::mbErrCode real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val );
-
+		ModbusRTU::mbErrCode much_real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count );
+		ModbusRTU::mbErrCode real_read_it( IOMap::iterator& it, ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val );
 	private:
 		MBSlave();
 		bool initPause;
@@ -189,6 +195,8 @@ class MBSlave:
 		typedef std::map<int,std::string> FileList;
 		FileList flist;
 		std::string prefix;
+		
+		ModbusRTU::ModbusData buf[ModbusRTU::MAXLENPACKET/2+1];  /*!< буфер для формирования ответов */
 };
 // -----------------------------------------------------------------------------
 #endif // _MBSlave_H_

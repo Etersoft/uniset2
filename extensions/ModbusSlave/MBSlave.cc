@@ -31,8 +31,6 @@ force(false),
 mbregFromID(false),
 prefix(prefix)
 {
-	cout << "$Id: MBSlave.cc,v 1.1 2009/01/11 19:08:45 vpashka Exp $" << endl;
-
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(MBSlave): objId=-1?!! Use --mbs-name" );
 
@@ -717,14 +715,12 @@ bool MBSlave::initItem( UniXML_iterator& it )
 	if( stype.empty() )
 		stype = it.getProp("iotype");
 
-	if( stype == "AI" )
-		p.stype 	= UniversalIO::AnalogInput;
-	else if ( stype == "DI" )
-		p.stype 	= UniversalIO::DigitalInput;
-	else if ( stype == "AO" )
-		p.stype 	= UniversalIO::AnalogOutput;
-	else if ( stype == "DO" )
-		p.stype 	= UniversalIO::DigitalOutput;
+	p.stype = UniSetTypes::getIOType(stype);
+	if( p.stype == UniversalIO::UnknownIOType )
+	{
+		dlog[Debug::CRIT] << myname << "(initItem): Unknown 'iotype' or 'mb_iotype' for " << it.getProp("name") << endl;
+		return false;
+	}
 
 	p.amode = MBSlave::amRW;
 	string am(it.getProp("mb_accessmode"));
@@ -735,7 +731,14 @@ bool MBSlave::initItem( UniXML_iterator& it )
 
 	string vt(it.getProp("mb_vtype"));
 	if( vt.empty() )
+	{
 		p.vtype = VTypes::vtUnknown;
+		p.wnum = 0;
+		iomap[p.mbreg] = p;
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << myname << "(initItem): add " << p << endl;
+
+	}
 	else
 	{
 		VTypes::VType v(VTypes::str2type(vt));
@@ -748,12 +751,16 @@ bool MBSlave::initItem( UniXML_iterator& it )
 			return false;
 		}
 		p.vtype = v;
+		p.wnum = 0;
+		for( int i=0; i<VTypes::wsize(p.vtype); i++ )
+		{
+			p.mbreg += i;
+			p.wnum+= i;
+			iomap[p.mbreg] = p;
+			if( dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << myname << "(initItem): add " << p << endl;
+		}
 	}
-
-	iomap[p.mbreg] = p;
-	
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << myname << "(initItem): add " << p << endl;
 	
 	return true;
 }
@@ -824,6 +831,7 @@ std::ostream& operator<<( std::ostream& os, MBSlave::IOProperty& p )
 	os 	<< " reg=" << ModbusRTU::dat2str(p.mbreg)
 		<< " sid=" << p.si.id
 		<< " stype=" << p.stype
+		<< " wnum=" << p.wnum
 		<< " safety=" << p.safety
 		<< " invert=" << p.invert;
 
@@ -1076,14 +1084,54 @@ ModbusRTU::mbErrCode MBSlave::real_write( ModbusRTU::ModbusData reg,
 	return ModbusRTU::erTimeOut;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::real_read( ModbusRTU::ModbusData reg, 
-											ModbusRTU::ModbusData& val )
+ModbusRTU::mbErrCode MBSlave::much_real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count )
+{
+	if( dlog.debugging(Debug::INFO) )
+	{
+		dlog[Debug::INFO] << myname << "(mush_real_read): read mbID=" 
+			<< ModbusRTU::dat2str(reg) << " count=" << count << endl;
+	}
+
+	IOMap::iterator it = iomap.find(reg);
+	if( it == iomap.end() )
+		return ModbusRTU::erBadDataAddress;
+
+	int i=0;
+	ModbusRTU::ModbusData val=0;
+	for( ; (it!=iomap.end()) && (i<count); it++,i++,reg++ )
+	{
+		val=0;
+		// если регистры идут не подряд, то просто вернём ноль
+		if( it->first == reg )
+			real_read_it(it,reg,val);
+		dat[i] = val;
+	}
+	
+	return ModbusRTU::erNoError;
+}
+// -------------------------------------------------------------------------
+ModbusRTU::mbErrCode MBSlave::real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val )
+{
+	if( dlog.debugging(Debug::INFO) )
+	{
+		dlog[Debug::INFO] << myname << "(real_read): read mbID=" 
+			<< ModbusRTU::dat2str(reg) << endl;
+	}
+
+	IOMap::iterator it = iomap.find(reg);
+	if( it == iomap.end() )
+		return ModbusRTU::erBadDataAddress;
+	
+	return real_read_it(it,reg,val);
+}
+// -------------------------------------------------------------------------
+ModbusRTU::mbErrCode MBSlave::real_read_it( IOMap::iterator& it, ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val )
 {
 	try
 	{
 		if( dlog.debugging(Debug::INFO) )
 		{
-			dlog[Debug::INFO] << myname << "(real_read): read mbID=" 
+			dlog[Debug::INFO] << myname << "(real_read_it): read mbID=" 
 				<< ModbusRTU::dat2str(reg) << endl;
 		}
 
@@ -1105,7 +1153,52 @@ ModbusRTU::mbErrCode MBSlave::real_read( ModbusRTU::ModbusData reg,
 		else if( p->stype == UniversalIO::AnalogInput ||
 				p->stype == UniversalIO::AnalogOutput )
 		{
-			val = IOBase::processingAsAO(p,shm,force);
+			if( p->vtype == VTypes::vtUnknown )
+			{
+				val = IOBase::processingAsAO(p,shm,force);
+			}		
+			if( p->vtype == VTypes::vtF2 )
+			{
+				float f = IOBase::processingFasAO(p,shm,force);
+				VTypes::F2 f2(f);
+				// оптимизируем и проверку не делаем
+				// считая, что при "загрузке" всё было правильно
+				// инициализировано
+				// if( p->wnum >=0 && p->wnum < f4.wsize()
+				val = f2.raw.v[p->wnum];
+			}
+			else if( p->vtype == VTypes::vtF4 )
+			{
+				float f = IOBase::processingFasAO(p,shm,force);
+				VTypes::F4 f4(f);
+				// оптимизируем и проверку не делаем
+				// считая, что при "загрузке" всё было правильно
+				// инициализировано
+				// if( p->wnum >=0 && p->wnum < f4.wsize()
+				val = f4.raw.v[p->wnum];
+			}
+			else if( p->vtype == VTypes::vtI2 )
+			{
+				long v = IOBase::processingAsAO(p,shm,force);
+				VTypes::I2 i2(v);
+				// оптимизируем и проверку не делаем
+				// считая, что при "загрузке" всё было правильно
+				// инициализировано
+				// if( p->wnum >=0 && p->wnum < i2.wsize()
+				val = i2.raw.v[p->wnum];
+			}
+			else if( p->vtype == VTypes::vtU2 )
+			{
+				unsigned long v = IOBase::processingAsAO(p,shm,force);
+				VTypes::U2 u2(v);
+				// оптимизируем и проверку не делаем
+				// считая, что при "загрузке" всё было правильно
+				// инициализировано
+				// if( p->wnum >=0 && p->wnum < u2.wsize()
+				val = u2.raw.v[p->wnum];
+			}
+			else
+				val = IOBase::processingAsAO(p,shm,force);
 		}
 		else
 			return ModbusRTU::erBadDataAddress;
@@ -1115,29 +1208,29 @@ ModbusRTU::mbErrCode MBSlave::real_read( ModbusRTU::ModbusData reg,
 	}
 	catch( UniSetTypes::NameNotFound& ex )
 	{
-		dlog[Debug::WARN] << myname << "(real_read): " << ex << endl;
+		dlog[Debug::WARN] << myname << "(real_read_it): " << ex << endl;
 		return ModbusRTU::erBadDataAddress;
 	}
 	catch( UniSetTypes::OutOfRange& ex )
 	{
-		dlog[Debug::WARN] << myname << "(real_read): " << ex << endl;
+		dlog[Debug::WARN] << myname << "(real_read_it): " << ex << endl;
 		return ModbusRTU::erBadDataValue;
 	}
 	catch( Exception& ex )
 	{
 		if( pingOK )
-			dlog[Debug::CRIT] << myname << "(real_read): " << ex << endl;
+			dlog[Debug::CRIT] << myname << "(real_read_it): " << ex << endl;
 	}
 	catch( CORBA::SystemException& ex )
 	{
 		if( pingOK )
-			dlog[Debug::CRIT] << myname << "(real_read): CORBA::SystemException: "
+			dlog[Debug::CRIT] << myname << "(real_read_it): CORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 	}
 	catch(...)
 	{
 		if( pingOK )
-			dlog[Debug::CRIT] << myname << "(real_read) catch ..." << endl;
+			dlog[Debug::CRIT] << myname << "(real_read_it) catch ..." << endl;
 	}
 	
 	pingOK = false;
@@ -1162,15 +1255,27 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 			else
 				reply.addData(0);
 			
-			
 			pingOK = true;
 			return ret;
 		}
 
 		// Фомирование ответа:
-		int num=0; // добавленное количество данных
-		ModbusRTU::ModbusData d = 0;
+		much_real_read(query.start,buf,query.count);
+		for( int i=0; i<query.count; i++ )
+			reply.addData( buf[i] );
+/*		
+		ModbusRTU::ModbusData* dat = new ModbusRTU::ModbusData[query.count];
 		ModbusRTU::ModbusData reg = query.start;
+		try
+		{
+			much_real_read(reg,dat,query.count);
+		}
+		catch(...){}
+		
+
+		delete[] dat;
+*/		
+/*		
 		for( ; num<query.count; num++, reg++ )
 		{
 			ModbusRTU::mbErrCode ret = real_read(reg,d);
@@ -1188,7 +1293,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 				<< "(readInputRegisters): query.count=" << (int)query.count 
 					<< " > reply.count=" << (int)reply.count << endl;
 		}
-
+*/
 		pingOK = true;
 		return ModbusRTU::erNoError;
 	}
@@ -1276,6 +1381,10 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 		}
 
 		// Фомирование ответа:
+		much_real_read(query.start,buf,query.count);
+		for( int i=0; i<query.count; i++ )
+			reply.addData( buf[i] );
+/*		
 		int num=0; // добавленное количество данных
 		ModbusRTU::ModbusData d = 0;
 		ModbusRTU::ModbusData reg = query.start;
@@ -1287,7 +1396,7 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 			else
 				reply.addData(0);
 		}
-
+*/
 		// Если мы в начале проверили, что запрос входит в разрешёный диапазон
 		// то теоретически этой ситуации возникнуть не может...
 //		if( reply.bcnt < query.count )

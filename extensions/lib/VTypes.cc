@@ -26,6 +26,10 @@ VType str2type( const std::string s )
 		return vtUnsigned;
 	if( s == "Signed" || s == "signed" )
 		return vtSigned;
+	if( s == "I2" || s == "i2" )
+		return vtI2;
+	if( s == "U2" || s == "u2" )
+		return vtU2;
 
 	return vtUnknown;
 }
@@ -42,6 +46,10 @@ string type2str( VType t )
 		return "Unsigned";
 	if( t == vtSigned )
 		return "Signed";
+	if( t == vtI2 )
+		return "I2";
+	if( t == vtU2 )
+		return "U2";
 
 	return "vtUnknown";
 }
@@ -58,6 +66,10 @@ int wsize(  VType t )
 		return Unsigned::wsize();
 	if( t == vtSigned )
 		return Signed::wsize();
+	if( t == vtI2 )
+		return I2::wsize();
+	if( t == vtU2 )
+		return U2::wsize();
 
 	return 1;
 }

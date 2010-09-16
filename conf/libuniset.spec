@@ -2,8 +2,8 @@
 %define oname uniset
 
 Name: libuniset
-Version: 0.98
-Release: eter9
+Version: 0.99
+Release: eter2
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -184,6 +184,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Sep 14 2010 Pavel Vainerman <pv@altlinux.ru> 0.99-eter1
+- test UDP build
+
 * Tue Sep 07 2010 Evgeny Sinelnikov <sin@altlinux.ru> 0.98-eter9
 - Build for Sisyphus Etersoft addon:
   commit fc7fb2eefaf900088d7e6583df440c914aeb9560

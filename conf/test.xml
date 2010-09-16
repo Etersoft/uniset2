@@ -150,7 +150,13 @@
 		<item name="DumpSensor6_S" textname="alarm dumpm sensor 6" a2="1" node="" iotype="DI" priority="Medium"/>
 		<item name="DumpSensor7_S" textname="alarm dumpm sensor 7" a2="1" node="" iotype="DI" priority="Medium"/>
 		<item name="DumpSensor8_S" textname="alarm dumpm sensor 8" a2="1" node="" iotype="DI" priority="Medium"/>
-		
+
+		<item name="MB1_AS" textname="Analog input" node="" iotype="AI" default="-655360" priority="Medium"
+				mbtcp="2" mbtype="rtu" mbaddr="0x01" mbreg="0x12" mb_vtype="I2"/>
+		<item name="MB2_AS" textname="Analog input" node="" iotype="AI" default="6553604" priority="Medium"
+				mbtcp="2" mbtype="rtu" mbaddr="0x01" mbreg="0x14" mb_vtype="U2"/>
+		<item name="MB3_AS" textname="Analog input" node="" iotype="AI" default="65536045" priority="Medium"
+				mbtcp="2" mbtype="rtu" mbaddr="0x01" mbreg="0x17" mb_vtype="F2"/>
 	</sensors>
 
 	<thresholds name="thresholds">
