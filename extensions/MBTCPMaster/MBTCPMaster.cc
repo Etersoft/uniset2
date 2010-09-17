@@ -1878,6 +1878,50 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 					IOBase::processingFasAI( p, (float)f, shm, force );
 				}
 			}
+			else if( p->vType == VTypes::vtI2 )
+			{
+				RegMap::iterator i(p->reg->rit);
+				if( save && r->mb_init )
+				{
+					long v = IOBase::processingAsAO( p, shm, force_out );
+					VTypes::I2 i2(v);
+					for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
+						i->second->mbval = i2.raw.v[k];
+				}
+				else
+				{
+					ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::I2::wsize()];
+					for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
+						data[k] = i->second->mbval;
+				
+					VTypes::I2 i2(data,VTypes::I2::wsize());
+					delete[] data;
+				
+					IOBase::processingAsAI( p, (int)i2, shm, force );
+				}
+			}
+			else if( p->vType == VTypes::vtU2 )
+			{
+				RegMap::iterator i(p->reg->rit);
+				if( save && r->mb_init )
+				{
+					long v = IOBase::processingAsAO( p, shm, force_out );
+					VTypes::U2 u2(v);
+					for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
+						i->second->mbval = u2.raw.v[k];
+				}
+				else
+				{
+					ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::U2::wsize()];
+					for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
+						data[k] = i->second->mbval;
+				
+					VTypes::U2 u2(data,VTypes::U2::wsize());
+					delete[] data;
+				
+					IOBase::processingAsAI( p, (unsigned int)u2, shm, force );
+				}
+			}
 		}
 		catch(IOController_i::NameNotFound &ex)
 		{
