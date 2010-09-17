@@ -62,7 +62,11 @@
 
 	<MBMaster1 name="MBMaster1" iaddr="127.0.0.1" addr="0x31" port="30000" 
 			 levels="info,warn,crit" poll_time="200" reply_timeout="60"
-	/>
+	>
+		<DeviceList>
+			<item addr="0x02" respondSensor="RespondRTU_S" timeout="5000" invert="0"/>
+		</DeviceList>
+	</MBMaster1>
 
 	<MBSlave1 name="MBSlave1" dev="/dev/ttyS0" addr="0x31" speed="9600" 
 			 aftersend-pause="0" levels="info,warn,crit" poll_time="200" reply_timeout="60"
@@ -84,7 +88,7 @@
 
 	<RTUExchange name="RTUExchange" speed="38400">
 		<DeviceList>
-			<item addr="0x02" force_disconnect="1" speed="9600" respondSensor="RespondRTU_S" timeout="5000" invert="0"/>
+			<item addr="0x01" speed="9600" respondSensor="RespondRTU_S" timeout="5000" invert="0"/>
 		</DeviceList>
 	</RTUExchange>
 

@@ -564,7 +564,7 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 bool RTUExchange::RTUDevice::checkRespond()
 {
 	bool prev = resp_state;
-	if( resp_trTimeout.change(resp_real) )
+	if( resp_trTimeout.hi(resp_real) )
 	{	
 		if( resp_real )
 			resp_state = true;
@@ -579,7 +579,9 @@ bool RTUExchange::RTUDevice::checkRespond()
 	// то возвращаем true, чтобы оно принудительно сохранилось
 	if( !resp_init )
 	{
+		resp_state = resp_real;
 		resp_init = true;
+		prev = resp_state;
 		return true;
 	}
 
