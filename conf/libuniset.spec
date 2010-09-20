@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.99
-Release: eter4
+Release: eter5
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -184,6 +184,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Mon Sep 20 2010 Ilya Shpigor <elly@altlinux.org> 0.99-eter4
+- new build 0.99-eter4
+
 * Fri Sep 17 2010 Pavel Vainerman <pv@etersoft.ru> 0.99-eter3
 - add new value types (I2,U2) in to MBTCPMaster
 
