@@ -1471,18 +1471,21 @@ void IOControl::buildCardsList()
 			break;
 	}
 
-	if( lastnum >= cards.size() )
-		cards.resize(lastnum+5); 
-	
-	for( ; it.getCurrent(); it.goNext() )
+	for( ; it.getCurrent(); it.goNext(),lastnum++ )
 	{
+		// резервируем место (память)..
+		if( lastnum+1 >= cards.size() )
+			cards.resize(lastnum+5); 
+
 		std::string iodev(it.getProp("dev"));
 
 		if( iodev.empty() || iodev == "/dev/null" )
 		{
-			cards[lastnum++] = NULL;
-			if( lastnum >= cards.size() )
-				cards.resize(lastnum+5); 
+			cards[lastnum] = NULL;
+			unideb[Debug::LEVEL3] << myname << "(init): КАРТА N" << lastnum 
+								<< " ОТКЛЮЧЕНА (TestMode)!!! в КАЧЕСТВЕ УСТРОЙСТВА УКАЗАНО '" 
+								<< iodev << "'" << endl;
+			cout << "******************** CARD" << lastnum << ": IO IMITATOR MODE ****************" << endl;
 			continue;
 		}
 
@@ -1547,15 +1550,9 @@ void IOControl::buildCardsList()
 				cards[lastnum]->configureSubdev(i,st);
 			}
 		}
-		else 
-			continue;
-
-
-		lastnum++;
-		if( lastnum+1 >= cards.size() )
-			cards.resize(lastnum+5); 
 	}
-	
+
+	// освобождаем неиспользуемое место (память)
 	cards.resize(lastnum); 
 }
 // -----------------------------------------------------------------------------
