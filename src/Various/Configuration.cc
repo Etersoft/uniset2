@@ -92,6 +92,7 @@ Configuration::Configuration():
 	localDBServer(UniSetTypes::DefaultObjectId),
 	localInfoServer(UniSetTypes::DefaultObjectId),
 	localNode(UniSetTypes::DefaultObjectId),
+	localNodeName(""),
 	fileConfName(""),
 	heartbeat_msec(10000)
 {
@@ -136,6 +137,7 @@ Configuration::Configuration( int argc, const char* const* argv, const string xm
 	localDBServer(UniSetTypes::DefaultObjectId),
 	localInfoServer(UniSetTypes::DefaultObjectId),
 	localNode(UniSetTypes::DefaultObjectId),
+	localNodeName(""),
 	fileConfName(xmlfile)
 {
 	if( xmlfile.empty() )
@@ -156,6 +158,7 @@ Configuration::Configuration( int argc, const char* const* argv, ObjectIndex* _o
 	localDBServer(UniSetTypes::DefaultObjectId),
 	localInfoServer(UniSetTypes::DefaultObjectId),
 	localNode(UniSetTypes::DefaultObjectId),
+	localNodeName(""),
 	fileConfName(fileConf)
 {
 	if( fileConf.empty() )
@@ -177,6 +180,7 @@ Configuration::Configuration( int argc, const char* const* argv, const string fi
 	localDBServer(UniSetTypes::DefaultObjectId),
 	localInfoServer(UniSetTypes::DefaultObjectId),
 	localNode(UniSetTypes::DefaultObjectId),
+	localNodeName(""),
 	fileConfName(fileConf)
 {
 	if( fileConf.empty() )
@@ -587,6 +591,8 @@ void Configuration::setLocalNode( string nodename )
 		unideb[Debug::CRIT] << err.str() << endl;
 		throw Exception(err.str());
 	}
+	
+	localNodeName = oind->getRealNodeName(nodename);
 	oind->initLocalNode(localNode);
 }
 // -------------------------------------------------------------------------

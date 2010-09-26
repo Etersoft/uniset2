@@ -259,6 +259,7 @@ class IOControl:
 		bool initIOItem( UniXML_iterator& it );
 		bool check_item( UniXML_iterator& it );
 		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
+		void buildCardsList();
 
 		void waitSM();
 

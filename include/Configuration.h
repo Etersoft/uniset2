@@ -94,6 +94,7 @@ namespace UniSetTypes
 		inline ObjectId getDBServer() const { return localDBServer; }		/*!< получение идентификатора DBServer-а */
 		inline ObjectId getInfoServer() const { return localInfoServer; }	/*!< получение идентификатора InfoServer-а */
 		inline ObjectId getLocalNode() const { return localNode; }		/*!< получение идентификатора локального узла */
+		inline std::string getLocalNodeName() const { return localNodeName; }		/*!< получение название локального узла */
 		inline const std::string getNSName() const { return NSName; }		
 	
 		// repository
@@ -227,6 +228,7 @@ namespace UniSetTypes
 		ObjectId localInfoServer;
 		ObjectId localNode;
 		
+		std::string localNodeName;
 		std::string fileConfName;
 		std::string imagesDir;
 

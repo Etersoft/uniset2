@@ -107,16 +107,23 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 						err << "Unknown subdev type '" << stype << " for " << t1 << " OR " << t2;
 						throw SystemError(err.str());
 					}
-
-					unideb[Debug::INFO] << myname 
+					
+					if( !stype.empty() )
+					{
+						unideb[Debug::INFO] << myname 
 										<< "(init): card" << i 
 										<< " subdev" << s << " set type " << stype << endl;
 
-					cards[i]->configureSubdev(s,st);
+						cards[i]->configureSubdev(s,st);
+					}
 				}
 			}
 		}
 	}
+	
+	buildCardsList();
+
+	unideb[Debug::INFO] << myname << "(init): result numcards=" << cards.size() << endl;
 	
 	polltime = conf->getArgInt("--io-polltime",it.getProp("polltime"));
 	if( !polltime )
@@ -1407,5 +1414,148 @@ void IOControl::waitSM()
 		unideb[Debug::CRIT] << err.str() << endl;
 		throw SystemError(err.str());
 	}
+}
+// -----------------------------------------------------------------------------
+void IOControl::buildCardsList()
+{
+	xmlNode* nnode = conf->getXMLNodesSection();
+	if( !nnode )
+	{
+		unideb[Debug::WARN] << myname << "(buildCardsList): <nodes> not found?!" << endl;
+		return;
+	}
+
+	UniXML* xml = conf->getConfXML();
+	if( !xml )
+	{
+		unideb[Debug::WARN] << myname << "(buildCardsList): xml=NULL?!" << endl;
+		return;
+	}
+
+	xmlNode* mynode = 0;
+	UniXML_iterator it1(nnode);
+	it1.goChildren();
+	for( ; it1.getCurrent(); it1.goNext() )
+	{
+		if( it1.getProp("name") == conf->getLocalNodeName() )
+		{
+			mynode = it1.getCurrent();
+			break;
+		}
+	}
+
+	if( !mynode )
+	{
+		unideb[Debug::WARN] << myname << "(buildCardsList): node='" << conf->getLocalNodeName() << "' not found.." << endl;
+		return;
+	}
+		
+	xmlNode* cnode = xml->findNode(mynode,"iocards","");
+	if( !cnode )
+	{
+		unideb[Debug::WARN] << myname << "(buildCardsList): <iocards> not found.." << endl;
+		return;
+	}
+	
+	UniXML_iterator it(cnode);
+	if( !it.goChildren() )
+	{
+		unideb[Debug::WARN] << myname << "(buildCardsList): <iocards> empty.." << endl;
+		return;
+	}
+
+	int lastnum = 0;
+	for( ; lastnum<cards.size(); lastnum++ )
+	{
+		if( cards[lastnum] == 0 )
+			break;
+	}
+
+	if( lastnum >= cards.size() )
+		cards.resize(lastnum+5); 
+	
+	for( ; it.getCurrent(); it.goNext() )
+	{
+		std::string iodev(it.getProp("dev"));
+
+		if( iodev.empty() || iodev == "/dev/null" )
+		{
+			cards[lastnum++] = NULL;
+			if( lastnum >= cards.size() )
+				cards.resize(lastnum+5); 
+			continue;
+		}
+
+		std::string cname(it.getProp("name"));
+
+		try
+		{
+			cards[lastnum] = new ComediInterface(iodev);
+		}
+		catch( Exception& ex )
+		{
+			unideb[Debug::CRIT] << myname << "(buildCardsList): " << ex << endl;
+			throw;
+		}
+
+		unideb[Debug::INFO] << myname << "(buildCardsList): card" << lastnum << "  name=" << cname << endl;
+		
+		if( cname == "DI32" )
+		{
+		}			
+		else if( cname == "AI16-5A-3" || cname == "AIC123xx" )
+		{
+		}
+		else if( cname == "AO16-xx" )
+		{
+		}
+		else if( cname == "UNIO48" )
+		{
+			// инициализация subdev-ов
+			for( int i=0; i<2; i++ )
+			{
+				ostringstream s;
+				s << "subdev" << i;
+				ComediInterface::SubdevType st = ComediInterface::str2type( it.getProp(s.str()).c_str() );  
+ 				if( st == ComediInterface::Unknown )
+				{
+					ostringstream err;
+					err << "Unknown subdev type '" << it.getProp(s.str()) << " for " << cname;
+					throw SystemError(err.str());
+				}
+				
+				unideb[Debug::INFO] << myname << "(buildCardsList): init subdev" << i << " " << it.getProp(s.str()) << endl;
+				cards[lastnum]->configureSubdev(i,st);
+			}
+		}
+		else if( cname == "UNIO96" )
+		{
+			// инициализация subdev-ов
+			for( int i=0; i<4; i++ )
+			{
+				ostringstream s;
+				s << "subdev" << i;
+				ComediInterface::SubdevType st = ComediInterface::str2type( it.getProp(s.str()).c_str() );  
+ 				if( st == ComediInterface::Unknown )
+				{
+					ostringstream err;
+					err << "Unknown subdev type '" << it.getProp(s.str()) << " for " << cname;
+					throw SystemError(err.str());
+				}
+				
+				unideb[Debug::INFO] << myname << "(buildCardsList): init subdev" << i << " " << it.getProp(s.str()) << endl;				
+				cards[lastnum]->configureSubdev(i,st);
+			}
+		}
+		else 
+			continue;
+
+
+		lastnum++;
+		if( lastnum+1 >= cards.size() )
+			cards.resize(lastnum+5); 
+	}
+	
+	cards.resize(lastnum); 
 }
 // -----------------------------------------------------------------------------
