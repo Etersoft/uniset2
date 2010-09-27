@@ -41,7 +41,7 @@ static void print_help()
 	printf("[--write05] slaveaddr reg val  - write val to reg for slaveaddr\n");
 	printf("[--write06] slaveaddr reg val  - write val to reg for slaveaddr\n");
 	printf("[--write0F] slaveaddr reg val  - write val to reg for slaveaddr\n");
-	printf("[--write10] slaveaddr reg val  - write val to reg for slaveaddr\n");
+	printf("[--write10] slaveaddr reg val count - write val to reg for slaveaddr\n");
 	printf("[--read01] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read02] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read03] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
@@ -180,6 +180,9 @@ int main( int argc, char **argv )
 						else
 							val = ModbusRTU::str2mbData(argv[optind+1]);
 					}
+
+					if( cmd == cmdWrite10 && checkArg(optind+2,argc,argv) )
+						count = ModbusRTU::str2mbData(argv[optind+2]);
 				}
 				break;
 
@@ -470,14 +473,17 @@ int main( int argc, char **argv )
 			{
 				if( verb )
 				{
-					cout << "write06: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+					cout << "write10: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
 						 << " reg=" << ModbusRTU::dat2str(reg) 
 						 << " val=" << ModbusRTU::dat2str(val) 
+						 << " count=" << count
 						 << endl;
 				}
 				
 				ModbusRTU::WriteOutputMessage msg(slaveaddr,reg);
-				msg.addData(val);
+				for( int i=0; i<count; i++ )
+					msg.addData(val);
+	
 				ModbusRTU::WriteOutputRetMessage  ret = mb.write10(msg);
 				if( verb )
 					cout << "(reply): " << ret << endl;
