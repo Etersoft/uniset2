@@ -158,7 +158,10 @@ class MBSlave:
 		ModbusRTU::mbErrCode real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val );
 		ModbusRTU::mbErrCode real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val );
 		ModbusRTU::mbErrCode much_real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count );
-		ModbusRTU::mbErrCode real_read_it( IOMap::iterator& it, ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val );
+		ModbusRTU::mbErrCode much_real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count );
+		
+		ModbusRTU::mbErrCode real_read_it( IOMap::iterator& it, ModbusRTU::ModbusData& val );
+		ModbusRTU::mbErrCode real_write_it( IOMap::iterator& it, ModbusRTU::ModbusData& val );
 	private:
 		MBSlave();
 		bool initPause;
