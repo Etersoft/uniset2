@@ -153,6 +153,8 @@ AC_CONFIG_FILES([Makefile
 				 include/modbus/Makefile
 				 include/IOs/Makefile
 				 tests/Makefile
+				 tests/JrnTests/Makefile
+				 tests/UniXmlTest/Makefile
 				 docs/Makefile
 				 docs/UniSetDox.cfg
 				 docs/UniSetDoxDevel.cfg
@@ -166,8 +168,6 @@ AC_CONFIG_FILES([Makefile
 				 Utilities/MBTester/Makefile
 				 Utilities/DBServer-MySQL/Makefile
 				 Utilities/SImitator/Makefile
-				 Utilities/JrnTests/Makefile
-				 Utilities/UniXmlTest/Makefile
 				 Utilities/codegen/Makefile
 				 Utilities/codegen/uniset-codegen
 				 Utilities/codegen/tests/Makefile

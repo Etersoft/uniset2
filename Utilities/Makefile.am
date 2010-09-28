@@ -3,7 +3,7 @@
 ############################################################################
 
 UTILS = scripts Admin NullController SViewer-text \
-	InfoServer SMonit MBTester codegen JrnTests SImitator
+	InfoServer SMonit MBTester codegen SImitator
 #MapSourceParser ClassGen
 
 if DISABLE_MYSQL
