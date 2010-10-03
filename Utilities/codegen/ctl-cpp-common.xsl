@@ -105,10 +105,10 @@
 				ui.saveState( si,m_<xsl:value-of select="../../@name"/>, UniversalIO::DigitalInput, getId() );
 			</xsl:when>		
 			<xsl:when test="$GENTYPE='A'">
-			if( code == mid_<xsl:value-of select="../../@name"/> )
+			if( _code == mid_<xsl:value-of select="../../@name"/> )
 			{				
 				unideb(Debug::LEVEL8) &lt;&lt; "<xsl:value-of select="../../@name"/>" &lt;&lt; endl;
-				m_<xsl:value-of select="../../@name"/> = state;
+				m_<xsl:value-of select="../../@name"/> = _state;
 				try
 				{
 					// сохраняем сразу...
@@ -422,6 +422,20 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 // ----------------------------------------------------------------------------
 </xsl:template>
 
+<xsl:template name="COMMON-ID-LIST">
+	if( UniSetTypes::findArgParam("--print-id-list",conf->getArgc(),conf->getArgv()) != -1 )
+	{
+<xsl:for-each select="//smap/item">
+		if( <xsl:value-of select="normalize-space(@name)"/> != UniSetTypes::DefaultObjectId )
+    		cout &lt;&lt; "id:" &lt;&lt; <xsl:value-of select="normalize-space(@name)"/> &lt;&lt; endl;
+</xsl:for-each>
+<xsl:for-each select="//msgmap/item">
+		if( <xsl:value-of select="normalize-space(@name)"/> != UniSetTypes::DefaultObjectId )
+    		cout &lt;&lt; "id:" &lt;&lt; <xsl:value-of select="normalize-space(@name)"/> &lt;&lt; endl;
+</xsl:for-each>
+//		abort();
+	}
+</xsl:template>
 
 <xsl:template name="COMMON-CC-HEAD">
 // --------------------------------------------------------------------------
@@ -496,6 +510,8 @@ confnode(cnode),
 smReadyTimeout(0),
 activated(false)
 {
+	<xsl:call-template name="COMMON-ID-LIST"/>
+
 <xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
