@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2007/06/17 21:30:49 $
- *  \version $Id: DBInterface.cc,v 1.5 2007/06/17 21:30:49 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 #include <sstream>

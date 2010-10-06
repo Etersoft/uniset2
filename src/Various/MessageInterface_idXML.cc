@@ -2,7 +2,6 @@
  *  \brief Класс работы с сообщениями
  *  \author Pavel Vainerman
  *  \date   $Date: 2008/11/22 23:22:25 $
- *  \version $Id: MessageInterface_idXML.cc,v 1.8 2008/11/22 23:22:25 vpashka Exp $
  */
 /**************************************************************************/
 #include <sstream>

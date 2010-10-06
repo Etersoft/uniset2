@@ -21,7 +21,6 @@
  *  \brief Блокировка повторного запуска программы
  *  \author Ahton Korbin<ahtoh>, Pavel Vainerman
  *  \date   $Date: 2006/12/20 13:43:41 $
- *  \version $Id: RunLock.cc,v 1.8 2006/12/20 13:43:41 vpashka Exp $
 */
 // --------------------------------------------------------------------------
 #include <dirent.h>

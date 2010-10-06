@@ -21,7 +21,6 @@
  *  \brief файл реализации Info-сервера
  *  \author Pavel Vainerman
  *  \date   $Date: 2007/01/17 23:33:41 $
- *  \version $Id: InfoServer.cc,v 1.14 2007/01/17 23:33:41 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 #include <string>

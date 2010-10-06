@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2009/01/16 23:16:42 $
- *  \version $Id: UniSetTypes.cc,v 1.4 2009/01/16 23:16:42 vpashka Exp $
 */
 // -----------------------------------------------------------------------------
 #include <cmath>

@@ -1,5 +1,4 @@
 // This file is part of the NCS project. (c) 1999-2000 All rights reserved.
-// $Id: AnalogCard_AI165A.cc,v 1.5 2005/01/28 21:04:08 vitlav Exp $
 
 // 14-ти битная аналоговая карта 16 входов (8 дифф), 2 выхода (12-ти битные)
 /*

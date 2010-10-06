@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2008/12/14 21:57:51 $
- *  \version $Id: ISRestorer_XML.cc,v 1.6 2008/12/14 21:57:51 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 #include <sstream>

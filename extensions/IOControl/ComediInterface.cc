@@ -1,5 +1,3 @@
-// $Id: ComediInterface.cc,v 1.2 2009/01/16 23:16:41 vpashka Exp $
-// -----------------------------------------------------------------------------
 #include <sstream>
 #include <cstdlib>
 #include <cstring>

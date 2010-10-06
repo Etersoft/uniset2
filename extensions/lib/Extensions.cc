@@ -1,5 +1,3 @@
-// $Id: Extensions.cc,v 1.2 2009/01/17 14:34:41 vpashka Exp $
-// -------------------------------------------------------------------------
 #include <sstream>
 #include <string>
 #include "Configuration.h"

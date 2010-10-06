@@ -1,5 +1,4 @@
 // This file is part of the UniSet project.
-// $Id: ObjectIndex_XML.cc,v 1.12 2008/11/22 23:22:25 vpashka Exp $
 
 /* This file is part of the UniSet project
  * Copyright (C) 2003 Pavel Vainerman <pv@etersoft.ru>

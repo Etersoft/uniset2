@@ -1,5 +1,3 @@
-/*! $Id: ModbusRTUMaster.cc,v 1.3 2009/02/24 20:27:25 vpashka Exp $ */
-// -------------------------------------------------------------------------
 #include <string.h>
 #include <errno.h>
 #include <iostream>

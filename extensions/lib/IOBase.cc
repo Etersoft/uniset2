@@ -1,5 +1,3 @@
-// $Id: IOBase.cc,v 1.3 2009/01/23 23:56:54 vpashka Exp $
-// -----------------------------------------------------------------------------
 #include "Configuration.h"
 #include "Extensions.h"
 #include "IOBase.h"

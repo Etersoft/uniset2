@@ -20,11 +20,8 @@
 /*! \file
  *  \author Ivan Donchevskiy
  *  \date   $Date: 2009/07/15 15:55:00 $
- *  \version $Id: Jrn.h,v 1.0 2009/07/28 16:55:00 vpashka Exp $
  */
 // --------------------------------------------------------------------------
-
-
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"

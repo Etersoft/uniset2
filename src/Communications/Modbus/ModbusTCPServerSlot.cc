@@ -1,5 +1,3 @@
-/*! $Id: ModbusTCPServerSlot.cc,v 1.2 2009/01/11 19:08:46 vpashka Exp $ */
-// -------------------------------------------------------------------------
 #include "modbus/ModbusTCPServerSlot.h"
 // -------------------------------------------------------------------------
 using namespace ModbusRTU;

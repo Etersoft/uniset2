@@ -1,5 +1,3 @@
-// $Id: smonitor.cc,v 1.10 2008/11/29 21:24:24 vpashka Exp $
-// --------------------------------------------------------------------------
 #include <iostream>
 #include <string>
 #include "ObjectsActivator.h"

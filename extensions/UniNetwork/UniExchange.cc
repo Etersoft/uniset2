@@ -1,5 +1,3 @@
-// $Id: NetExchange.cc,v 1.2 2009/04/07 16:11:23 pv Exp $
-// --------------------------------------------------------------------------
 #include "Configuration.h"
 #include "Extensions.h"
 #include "Exceptions.h"

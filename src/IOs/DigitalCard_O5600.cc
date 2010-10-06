@@ -6,7 +6,6 @@
  *  \brief Класс для дискретной карты O5600
  *  \author Vitaly Lipatov
  *  \date   $Date: 2006/12/19 15:46:14 $
- *  \version $Id: DigitalCard_O5600.cc,v 1.6 2006/12/19 15:46:14 vpashka Exp $
  *  
  *  
  */

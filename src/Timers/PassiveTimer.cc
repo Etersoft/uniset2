@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2007/11/29 22:19:54 $
- *  \version $Id: PassiveTimer.cc,v 1.13 2007/11/29 22:19:54 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 #include <time.h>

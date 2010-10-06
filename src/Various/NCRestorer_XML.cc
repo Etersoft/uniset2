@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2009/01/11 19:08:46 $
- *  \version $Id: NCRestorer_XML.cc,v 1.19 2009/01/11 19:08:46 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 #include <sstream>

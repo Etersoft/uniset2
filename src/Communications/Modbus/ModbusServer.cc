@@ -1,5 +1,3 @@
-/*! $Id: ModbusServer.cc,v 1.3 2008/11/23 22:47:29 vpashka Exp $ */
-// -------------------------------------------------------------------------
 #include <sys/time.h>
 #include <fcntl.h>
 #include <string.h>

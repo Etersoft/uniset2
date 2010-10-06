@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2009/02/07 13:25:59 $
- *  \version $Id: IOController.cc,v 1.30 2009/02/07 13:25:59 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 //#include <stream.h>

@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2007/11/18 19:13:35 $
- *  \version: $Id: ORepHelpers.cc,v 1.12 2007/11/18 19:13:35 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 #include <omniORB4/CORBA.h>

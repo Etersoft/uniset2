@@ -1,5 +1,3 @@
-// $Id: main.cc,v 1.13 2008/12/14 21:57:49 vpashka Exp $
-// --------------------------------------------------------------------------
 #include "Configuration.h"
 #include "InfoServer.h"
 #include "ISRestorer.h"

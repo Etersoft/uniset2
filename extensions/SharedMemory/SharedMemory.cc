@@ -20,8 +20,6 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	iotypePulsar(UniversalIO::DigitalInput),
 	msecPulsar(0)
 {
-//	cout << "$Id: SharedMemory.cc,v 1.4 2009/01/24 11:20:19 vpashka Exp $" << endl;
-
 	xmlNode* cnode = conf->getNode("SharedMemory");
 	if( cnode == NULL )
 		throw SystemError("Not find conf-node for SharedMemory");

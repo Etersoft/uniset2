@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2007/11/27 21:54:19 $
- *  \version $Id: ObjectRepository.cc,v 1.13 2007/11/27 21:54:19 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 #include <omniORB4/CORBA.h>

@@ -1,5 +1,3 @@
-/*! $Id: ModbusTCPServer.cc,v 1.2 2008/11/23 22:16:04 vpashka Exp $ */
-// -------------------------------------------------------------------------
 #include <iostream>
 #include <sstream>
 #include "Exceptions.h"

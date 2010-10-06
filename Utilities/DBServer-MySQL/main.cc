@@ -1,5 +1,3 @@
-// $Id: main.cc,v 1.8 2008/02/10 03:21:41 vpashka Exp $
-// --------------------------------------------------------------------------
 #include "Configuration.h"
 #include "DBServer_MySQL.h"
 #include "ObjectsActivator.h"

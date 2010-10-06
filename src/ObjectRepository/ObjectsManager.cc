@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2009/02/10 20:38:27 $
- *  \version $Id: ObjectsManager.cc,v 1.22 2009/02/10 20:38:27 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 #include <cstdlib>

@@ -21,7 +21,6 @@
  *  \brief Класс работы с конфигурацией
  *  \author Vitaly Lipatov, Pavel Vainerman
  *  \date   $Date: 2008/09/16 19:02:46 $
- *  \version $Id: Configuration.cc,v 1.41 2008/09/16 19:02:46 vpashka Exp $
  */
 // --------------------------------------------------------------------------
 

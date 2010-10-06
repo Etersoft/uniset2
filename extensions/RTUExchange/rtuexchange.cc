@@ -1,5 +1,3 @@
-// $Id: rtuexchange.cc,v 1.3 2009/01/17 14:34:41 vpashka Exp $
-// -----------------------------------------------------------------------------
 #include <sstream>
 #include "ObjectsActivator.h"
 #include "Extensions.h"

@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2008/12/14 21:57:51 $
- *  \version $Id: ObjectsActivator.cc,v 1.15 2008/12/14 21:57:51 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 

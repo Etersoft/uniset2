@@ -1,5 +1,3 @@
-/*! $Id: ModbusTypes.cc,v 1.9 2008/11/23 22:16:04 vpashka Exp $ */
-// -------------------------------------------------------------------------
 #include <assert.h>
 #include <string>
 #include <iostream>

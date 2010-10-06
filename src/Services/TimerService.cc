@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2007/06/17 21:30:58 $
- *  \version $Id: TimerService.cc,v 1.8 2007/06/17 21:30:58 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 #include <unistd.h>

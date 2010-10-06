@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2005/01/28 21:09:33 $
- *  \version $Id: UniSetObserver.cc,v 1.5 2005/01/28 21:09:33 vitlav Exp $
 */
 // -------------------------------------------------------------------------- 
 

@@ -1,5 +1,3 @@
-/*! $Id: ModbusHelpers.cc,v 1.1 2009/01/12 20:40:28 vpashka Exp $ */
-// -------------------------------------------------------------------------
 #include "modbus/ModbusHelpers.h"
 #include "modbus/ModbusRTUMaster.h"
 #include "Exceptions.h"

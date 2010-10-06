@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2008/11/29 21:24:25 $
- *  \version $Id: IONotifyController.cc,v 1.31 2008/11/29 21:24:25 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 

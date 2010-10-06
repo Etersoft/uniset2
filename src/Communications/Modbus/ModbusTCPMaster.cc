@@ -1,5 +1,3 @@
-/*! $Id: ModbusTCPMaster.cc,v 1.3 2009/02/07 13:27:01 vpashka Exp $ */
-// -------------------------------------------------------------------------
 #include <string.h>
 #include <errno.h>
 #include <iostream>

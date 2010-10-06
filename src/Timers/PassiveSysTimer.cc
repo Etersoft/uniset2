@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2005/01/28 21:12:49 $
- *  \version $Id: PassiveSysTimer.cc,v 1.6 2005/01/28 21:12:49 vitlav Exp $
 */
 // -------------------------------------------------------------------------- 
 

@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2005/01/28 21:07:41 $
- *  \version $Id: UniSetObject_LT.cc,v 1.5 2005/01/28 21:07:41 vitlav Exp $
 */
 // -------------------------------------------------------------------------- 
 #include "Exceptions.h"

@@ -1,4 +1,3 @@
-/*! $Id: MBSlave.cc,v 1.7 2009/02/24 20:27:24 vpashka Exp $ */
 // -------------------------------------------------------------------------
 //#include <sys/time.h>
 //#include <string.h>
@@ -19,8 +18,6 @@ MBSlave::MBSlave( ModbusRTU::ModbusAddr addr, const std::string dev, const std::
 	verbose(false),
 	replyVal(-1)
 {
-	cout << "$Id: MBSlave.cc,v 1.7 2009/02/24 20:27:24 vpashka Exp $" << endl;
-
 //	int replyTimeout = uni_atoi( conf->getArgParam("--reply-timeout",it.getProp("reply_timeout")).c_str() );
 //	if( replyTimeout <= 0 )
 //		replyTimeout = 2000;

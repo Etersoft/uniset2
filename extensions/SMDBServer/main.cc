@@ -1,5 +1,3 @@
-// $Id: rsexchange.cc,v 1.2 2008/06/06 11:03:32 pv Exp $
-// -----------------------------------------------------------------------------
 #include <sstream>
 #include "SMDBServer.h"
 #include "Configuration.h"

@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2008/12/14 21:57:51 $
- *  \version $Id: UniversalInterface.cc,v 1.26 2008/12/14 21:57:51 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 #include <omniORB4/CORBA.h>

@@ -1,5 +1,3 @@
-/*! $Id: ModbusClient.cc,v 1.4 2009/01/11 19:08:46 vpashka Exp $ */
-// -------------------------------------------------------------------------
 #include <string.h>
 #include <errno.h>
 #include <iostream>

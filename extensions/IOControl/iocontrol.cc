@@ -1,5 +1,3 @@
-// $Id: iocontrol.cc,v 1.3 2009/01/17 14:34:40 vpashka Exp $
-// --------------------------------------------------------------------------
 #include <string>
 #include "Debug.h"
 #include "ObjectsActivator.h"

@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2008/02/21 19:59:57 $
- *  \version $Id: PassiveObject.cc,v 1.12 2008/02/21 19:59:57 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 

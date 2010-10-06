@@ -1,4 +1,3 @@
-// $Id: main.cc,v 1.1 2009/03/03 12:27:37 pv Exp $
 #include <iostream>
 #include "Exceptions.h"
 #include "UniversalInterface.h"

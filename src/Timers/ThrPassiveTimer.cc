@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2007/08/02 22:52:28 $
- *  \version $Id: ThrPassiveTimer.cc,v 1.7 2007/08/02 22:52:28 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 

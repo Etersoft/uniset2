@@ -1,5 +1,3 @@
-// $Id: IOControl.cc,v 1.3 2009/01/23 23:56:54 vpashka Exp $
-// -----------------------------------------------------------------------------
 #include <sstream>
 #include "ORepHelpers.h"
 #include "UniSetTypes.h"
@@ -47,7 +45,6 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	readconf_ok(false),
 	term(false)
 {
-//	cout << "$Id: IOControl.cc,v 1.3 2009/01/23 23:56:54 vpashka Exp $" << endl;
 //	{
 //		string myfullname = conf->oind->getNameById(id);
 //		myname = ORepHelpers::getShortName(myfullname.c_str());

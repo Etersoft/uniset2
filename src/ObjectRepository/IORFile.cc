@@ -1,5 +1,4 @@
 // This file is part of the UniSet project.
-// $Id: IORFile.cc,v 1.5 2008/09/16 22:48:39 vpashka Exp $
 
 /* This file is part of the UniSet project
  * Copyright (C) 2002 Vitaly Lipatov

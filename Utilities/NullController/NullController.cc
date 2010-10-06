@@ -1,5 +1,3 @@
-// $Id: NullController.cc,v 1.15 2008/12/14 21:57:49 vpashka Exp $
-// --------------------------------------------------------------------------
 #include "Configuration.h"
 #include "NCRestorer.h"
 #include "NullController.h"

@@ -20,7 +20,6 @@
 /*! \file
  *  \author Pavel Vainerman
  *  \date   $Date: 2008/11/29 21:24:25 $
- *  \version $Id: ProxyManager.cc,v 1.13 2008/11/29 21:24:25 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 #include <sstream>

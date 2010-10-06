@@ -20,7 +20,6 @@
 /*! \file
  *  \author Vitaly Lipatov
  *  \date   $Date: 2005/01/28 21:14:18 $
- *  \version $Id: TextIndex.cc,v 1.6 2005/01/28 21:14:18 vitlav Exp $
  *  \par
  * Базовый класс получения строки по её индексу
  */
