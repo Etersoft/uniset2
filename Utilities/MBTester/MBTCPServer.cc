@@ -180,6 +180,9 @@ mbErrCode MBTCPServer::readInputRegisters( ReadInputMessage& query,
 	for( ; num<query.count; num++, reg++ )
 		reply.addData(reg);
 
+//	cerr << "************ reply: cnt=" << reply.count << endl;
+//	cerr << "reply: " << reply << endl;
+
 	// Если мы в начале проверили, что запрос входит в разрешёный диапазон
 	// то теоретически этой ситуации возникнуть не может...
 	if( reply.count < query.count )

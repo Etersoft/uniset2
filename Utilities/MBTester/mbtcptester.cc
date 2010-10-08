@@ -206,6 +206,10 @@ int main( int argc, char **argv )
 		if( verb )
 			cout << "connection: " << (mb.isConnection() ? "YES" : "NO") << endl;
 
+
+		if( count > ModbusRTU::MAXDATALEN && verb )
+			cout << "Too long packet! Max count=" << ModbusRTU::MAXDATALEN << " (ignore...)" << endl;
+		
 		while(1)
 		{
 			try
