@@ -184,6 +184,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Sat Oct 09 2010 Pavel Vainerman <pv@altlinux.ru> 0.99-eter7
+- fixed bug in MBTCPMaster
+
 * Sun Oct 03 2010 Pavel Vainerman <pv@altlinux.ru> 0.99-eter6
 - test codegen build
 

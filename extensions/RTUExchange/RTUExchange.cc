@@ -1698,10 +1698,6 @@ void RTUExchange::rtuQueryOptimization( RTUDeviceMap& m )
 
 	dlog[Debug::INFO] << myname << "(rtuQueryOptimization): optimization..." << endl;
 
-	// MAXLEN/2 - я█я┌п╬ п╨п╬п╩п╦я┤п╣я│я┌п╡п╬ я│п╩п╬п╡ п╢п╟п╫п╫я▀я┘ п╡ п╬я┌п╡п╣я┌п╣
-	// 10 - п╫п╟ п╡я│я▐п╨п╦п╣ я│п╩я┐п╤п╣п╠п╫я▀п╣ п╥п╟пЁп╬п╩п╬п╡п╨п╦
-	int maxcount = ModbusRTU::MAXLENPACKET/2 - 10;
-
 	for( RTUExchange::RTUDeviceMap::iterator it1=m.begin(); it1!=m.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
@@ -1722,8 +1718,9 @@ void RTUExchange::rtuQueryOptimization( RTUDeviceMap& m )
 					break;
 
 				beg->second->q_count++;
-				if( beg->second->q_count > maxcount )
-					break;
+
+				if( beg->second->q_count >= ModbusRTU::MAXDATALEN  )                                                                                                                
+                    break;  
 
 				reg = it->second->mbreg + it->second->offset;
 				it->second->q_num = beg->second->q_count;
