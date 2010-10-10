@@ -1036,6 +1036,30 @@ xmlNode* Configuration::getXMLObjectNode( UniSetTypes::ObjectId id )
 	return 0;
 }
 // -------------------------------------------------------------------------
+UniversalIO::IOTypes Configuration::getIOType( UniSetTypes::ObjectId id )
+{
+	const ObjectInfo* i = oind->getObjectInfo(id);
+	if( i && (xmlNode*)(i->data) )
+	{
+		UniXML_iterator it((xmlNode*)(i->data));
+		return UniSetTypes::getIOType( it.getProp("iotype") );
+	}
+
+	return UniversalIO::UnknownIOType;
+}
+// -------------------------------------------------------------------------
+UniversalIO::IOTypes Configuration::getIOType( const std::string name )
+{
+	const ObjectInfo* i = oind->getObjectInfo(name);
+	if( i && (xmlNode*)(i->data) )
+	{
+		UniXML_iterator it((xmlNode*)(i->data));
+		return UniSetTypes::getIOType( it.getProp("iotype") );
+	}
+
+	return UniversalIO::UnknownIOType;
+}
+// -------------------------------------------------------------------------
 void uniset_init( int argc, const char* const* argv, const std::string xmlfile )
 {
 	string confile = UniSetTypes::getArgParam( "--confile", argc, argv, xmlfile );

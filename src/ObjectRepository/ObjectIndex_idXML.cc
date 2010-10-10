@@ -229,3 +229,15 @@ const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id )
 	return NULL;
 }
 // ------------------------------------------------------------------------------------------
+const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const std::string name )
+{
+	const char* n = name.c_str();
+	for( MapObjects::iterator it=omap.begin(); it!=omap.end(); it++ )
+	{
+		  if( !strcmp(it->second.repName,n) )
+			  return &(it->second);
+	}
+
+	return NULL;
+}
+// ------------------------------------------------------------------------------------------

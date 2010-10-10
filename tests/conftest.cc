@@ -20,8 +20,16 @@ int main(int argc, const char **argv)
 		conf = new Configuration(argc, argv, confile);
 
 		string t(conf->oind->getTextName(1));
-
 		cout << "**** check getTextName: " << ( t.empty() ?  "FAILED" : "OK" ) << endl;
+
+		string mn(conf->oind->getMapName(1));
+		cout << "**** check getMapName: " << ( mn.empty() ?  "FAILED" : "OK" ) << endl;
+
+		UniversalIO::IOTypes t1=conf->getIOType(1);
+		cout << "**** check getIOType(id): (" << t1 << ") " << ( t1 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;		
+		UniversalIO::IOTypes t2=conf->getIOType(mn);
+		cout << "**** check getIOType(name): (" << t2 << ") " << ( t2 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;		
+
 		return 0;
 	}
 	catch(SystemError& err)

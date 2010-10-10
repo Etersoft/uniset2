@@ -42,6 +42,7 @@ class ObjectIndex
 
 		// info
 		virtual const ObjectInfo* getObjectInfo( const ObjectId )=0;
+		virtual const ObjectInfo* getObjectInfo( const std::string name )=0;
 
 		// создание полного имени в репозитории по паре имя:узел
 		static std::string mkRepName( const std::string repname, const std::string nodename );

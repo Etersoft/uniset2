@@ -285,3 +285,12 @@ const ObjectInfo* ObjectIndex_XML::getObjectInfo( const ObjectId id )
 	return NULL;
 }
 // ------------------------------------------------------------------------------------------
+const ObjectInfo* ObjectIndex_XML::getObjectInfo( const std::string name )
+{
+	MapObjectKey::iterator it = mok.find(name);
+	if( it != mok.end() )
+		return &(omap[it->second]);
+
+	return NULL;
+}
+// ------------------------------------------------------------------------------------------

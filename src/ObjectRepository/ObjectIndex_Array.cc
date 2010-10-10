@@ -117,3 +117,12 @@ const ObjectInfo* ObjectIndex_Array::getObjectInfo( const ObjectId id )
 
 }
 // -----------------------------------------------------------------------------------------
+const ObjectInfo* ObjectIndex_Array::getObjectInfo( const std::string name )
+{
+	MapObjectKey::iterator it = mok.find(name);
+	if( it != mok.end() )
+	  	return &(objectInfo[it->second]);
+
+	return NULL;
+}
+// ------------------------------------------------------------------------------------------

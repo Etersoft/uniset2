@@ -110,6 +110,8 @@ namespace UniSetTypes
 		xmlNode* getXMLServicesSection();
 		xmlNode* getXMLNodesSection();
 		xmlNode* getXMLObjectNode( UniSetTypes::ObjectId );
+		UniversalIO::IOTypes getIOType( UniSetTypes::ObjectId );
+		UniversalIO::IOTypes getIOType( const std::string name );
 	
 		// net
 		inline unsigned int getCountOfNet() const { return countOfNet; }

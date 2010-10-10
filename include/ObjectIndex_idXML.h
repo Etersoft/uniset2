@@ -17,6 +17,7 @@ class ObjectIndex_idXML:
 		virtual ~ObjectIndex_idXML();
 
 		virtual const UniSetTypes::ObjectInfo* getObjectInfo( const UniSetTypes::ObjectId );
+		virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string name );
 		virtual UniSetTypes::ObjectId getIdByName( const std::string& name );
 		virtual std::string getMapName( const UniSetTypes::ObjectId id );
 		virtual std::string getTextName( const UniSetTypes::ObjectId id );

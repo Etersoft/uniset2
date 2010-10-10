@@ -48,6 +48,7 @@ class ObjectIndex_Array:
 
 
 		virtual const ObjectInfo* getObjectInfo(const ObjectId);
+		virtual const ObjectInfo* getObjectInfo( const std::string name );
 		virtual ObjectId getIdByName(const std::string& name);
 		virtual std::string getMapName(const ObjectId id);
 		virtual std::string getTextName(const ObjectId id);
