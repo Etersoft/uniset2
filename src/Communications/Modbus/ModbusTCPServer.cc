@@ -69,6 +69,13 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
 					}
 				}
 
+				// Если получили пакет по TCP 
+				// то вроде задержек с остальной частью быть не должно
+				// а если пакет, не нам, то обработка пройдёт быстро..
+				// (поэтому ставим условный timeout)
+				// не != 0, т.к. в recv стоит assert(timeout)
+				timeout = 1;
+
 				do
 				{
 					// buf.addr = curQueryHeader.uID;
