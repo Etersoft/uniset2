@@ -14,7 +14,7 @@ static struct option longopts[] = {
 	{ "verbose", no_argument, 0, 'v' },
 	{ "myaddr", required_argument, 0, 'a' },
 	{ "port", required_argument, 0, 'p' },
-	{ "ignore-addr", required_argument, 0, 'x' },
+	{ "ignore-addr", no_argument, 0, 'x' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
