@@ -69,45 +69,49 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
 					}
 				}
 
-				// Если получили пакет по TCP 
-				// то вроде задержек с остальной частью быть не должно
-				// а если пакет, не нам, то обработка пройдёт быстро..
-				// (поэтому ставим условный timeout)
-				// не != 0, т.к. в recv стоит assert(timeout)
-				timeout = 1;
-
-				do
+				if( !qrecv.empty() )
 				{
-					// buf.addr = curQueryHeader.uID;
-					// res = recv_pdu(buf,mec);
-					res = recv( addr, buf, timeout );
-
-					if( res!=erNoError && res!=erBadReplyNodeAddress )
+					// check addr
+				 	unsigned char _addr = qrecv.front();
+					if( _addr != addr )
 					{
-						if( res < erInternalErrorCode )
-						{
-							ErrorRetMessage em( buf.addr, buf.func, res ); 
-							buf = em.transport_msg();
-							send(buf);
-							printProcessingTime();
-						}
-
-						usleep(10000);
+						tmProcessing.setTiming(replyTimeout_ms);
+						ErrorRetMessage em( buf.addr, buf.func, erBadReplyNodeAddress ); 
+						buf = em.transport_msg();
+						send(buf);
+						printProcessingTime();
+						usleep(1000);
 						tcp.disconnect();
 						return res;
 					}
-					
-					if( timeout != UniSetTimer::WaitUpTime )
+    			}
+    			
+				res = recv( addr, buf, timeout );
+
+				if( res!=erNoError ) // && res!=erBadReplyNodeAddress )
+				{
+					if( res < erInternalErrorCode )
 					{
-						timeout = ptTimeout.getLeft(timeout);
-						if( timeout == 0 )
-						{
-							tcp.disconnect();
-							return erTimeOut;
-						}
+						ErrorRetMessage em( buf.addr, buf.func, res ); 
+						buf = em.transport_msg();
+						send(buf);
+						printProcessingTime();
+					}
+
+					usleep(1000);
+					tcp.disconnect();
+					return res;
+				}
+					
+				if( timeout != UniSetTimer::WaitUpTime )
+				{
+					timeout = ptTimeout.getLeft(timeout);
+					if( timeout == 0 )
+					{
+						tcp.disconnect();
+						return erTimeOut;
 					}
 				}
-				while( res == erBadReplyNodeAddress );
 				
 				if( res!=erNoError )
 				{
