@@ -20,6 +20,12 @@ class MBTCPServer
 			verbose = state;
 		}
 
+		inline void setIgnoreAddrMode( bool state )
+		{
+			if( sslot )
+				sslot->setIgnoreAddrMode(state);
+		}
+
 		void execute();	/*!< основной цикл работы */
 		void setLog( DebugStream& dlog );
 

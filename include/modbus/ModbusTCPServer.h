@@ -24,6 +24,9 @@ class ModbusTCPServer:
 		virtual ~ModbusTCPServer();
 		
 		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout );
+
+		inline void setIgnoreAddrMode( bool st ){ ignoreAddr = st; }
+		inline bool getIgnoreAddrMode(){ return ignoreAddr; }
 		
 	protected:
 
@@ -37,12 +40,13 @@ class ModbusTCPServer:
 
 		virtual ModbusRTU::mbErrCode tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPHeader& mhead );
 
-
 		ost::tpport_t port;
 		ost::TCPStream tcp;
 		ost::InetAddress iaddr;
 		std::queue<unsigned char> qrecv;
 		ModbusTCP::MBAPHeader curQueryHeader;
+
+		bool ignoreAddr;
 
 	private:
 

@@ -14,6 +14,7 @@ static struct option longopts[] = {
 	{ "verbose", no_argument, 0, 'v' },
 	{ "myaddr", required_argument, 0, 'a' },
 	{ "port", required_argument, 0, 'p' },
+	{ "ignore-addr", required_argument, 0, 'x' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -24,6 +25,7 @@ static void print_help()
 	printf("[-v|--verbose]                    - Print all messages to stdout\n");
 	printf("[-i|--iaddr] ip                   - Server listen ip. Default 127.0.0.1\n");
 	printf("[-a|--myaddr] addr                - Modbus address for master. Default: 0x01.\n");
+	printf("[-x|--ignore-addr]           	  - Ignore modbus RTU-address.\n");
 	printf("[-p|--port] port                  - Server port. Default: 502.\n");
 	printf("[-v|--verbose]                    - Print all messages to stdout\n");
 }
@@ -38,12 +40,13 @@ int main( int argc, char **argv )
 	ModbusRTU::ModbusAddr myaddr = 0x01;
 	int tout = 2000;
 	DebugStream dlog;
+	bool ignoreAddr = false;
 	
 	ost::Thread::setException(ost::Thread::throwException);
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "ht:va:p:i:b",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "ht:va:p:i:bx",longopts,&optindex)) != -1 ) 
 		{
 			switch (opt) 
 			{
@@ -70,6 +73,10 @@ int main( int argc, char **argv )
 				case 'v':	
 					verb = 1;
 				break;
+
+				case 'x':	
+					ignoreAddr = true;
+				break;
 				
 				case '?':
 				default:
@@ -91,6 +98,7 @@ int main( int argc, char **argv )
 		MBTCPServer mbs(myaddr,iaddr,port,verb);
 		mbs.setLog(dlog);
 		mbs.setVerbose(verb);
+		mbs.setIgnoreAddrMode(ignoreAddr);
 		mbs.execute();
 	}
 	catch( ModbusRTU::mbException& ex )

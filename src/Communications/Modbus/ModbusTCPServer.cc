@@ -10,7 +10,8 @@ using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 ModbusTCPServer::ModbusTCPServer( ost::InetAddress &ia, int port ):
 	TCPSocket(ia,port),
-	iaddr(ia)
+	iaddr(ia),
+	ignoreAddr(false)
 {
 	setCRCNoCheckit(true);
 }
@@ -73,14 +74,19 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
 				{
 					// check addr
 				 	unsigned char _addr = qrecv.front();
-					if( _addr != addr )
+					
+					// для режима игнорирования RTU-адреса
+					// просто подменяем его на то который пришёл
+					// чтобы проверка всегда была успешной...
+					if( ignoreAddr ) 
+						addr = _addr;
+					else if( _addr != addr )
 					{
 						tmProcessing.setTiming(replyTimeout_ms);
 						ErrorRetMessage em( buf.addr, buf.func, erBadReplyNodeAddress ); 
 						buf = em.transport_msg();
 						send(buf);
 						printProcessingTime();
-						usleep(1000);
 						tcp.disconnect();
 						return res;
 					}
@@ -97,8 +103,9 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
 						send(buf);
 						printProcessingTime();
 					}
+					else if( aftersend_msec >= 0 )                                                                                                                                                       
+				        msleep(aftersend_msec);  
 
-					usleep(1000);
 					tcp.disconnect();
 					return res;
 				}

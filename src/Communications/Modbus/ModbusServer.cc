@@ -1242,7 +1242,6 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 		return erHardwareError;
 	}
 
-	// Пауза, чтобы не ловить свою посылку
 	if( aftersend_msec >= 0 )
 		msleep(aftersend_msec);
 
