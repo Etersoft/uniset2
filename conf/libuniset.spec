@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.99
-Release: eter8
+Release: eter9
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -184,6 +184,10 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Oct 13 2010 Ilya Shpigor <elly@altlinux.org> 0.99-eter8
+- fix bug in ModbusTCPServer
+- add gateway imitation to uniset-mbtcpserver-echo
+
 * Sat Oct 09 2010 Pavel Vainerman <pv@altlinux.ru> 0.99-eter7
 - fixed bug in MBTCPMaster
 
