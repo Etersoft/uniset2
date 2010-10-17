@@ -299,20 +299,18 @@ void ComPort::cleanupChannel()
 	if( fd < 0 )
 		return;
 
-	int fd2 = dup(fd);
-	if( fd2 < 0 )
-		return;
-		
-	fcntl(fd2,F_SETFL,O_NONBLOCK);
+	int oldfl = fcntl(fd, F_GETFL);
+
+	fcntl(fd,F_SETFL,O_NONBLOCK);
 	unsigned char tmpbuf[100];
 	int k = 0;
 	do
 	{
-		k = ::read(fd2,tmpbuf,sizeof(tmpbuf));
+		k = ::read(fd,tmpbuf,sizeof(tmpbuf));
 	}
 	while( k>0 );
 
-	close(fd2);
+	fcntl(fd,F_SETFL,oldfl);
 
 	curSym = 0;
 	bufLength=-1;

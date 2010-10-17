@@ -576,6 +576,10 @@ int main( int argc, char **argv )
 			msleep(200);
 		}
 	}
+    catch( ModbusRTU::mbException& ex )
+	{
+		cerr << "(mbtester): " << ex << endl;
+	}
 	catch(SystemError& err)
 	{
 		cerr << "(mbtester): " << err << endl;
