@@ -27,7 +27,9 @@ class ModbusTCPServer:
 
 		inline void setIgnoreAddrMode( bool st ){ ignoreAddr = st; }
 		inline bool getIgnoreAddrMode(){ return ignoreAddr; }
-		
+
+		void cleanInputStream();
+		virtual void cleanupChannel(){ cleanInputStream(); }		
 	protected:
 
 		virtual ModbusRTU::mbErrCode pre_send_request( ModbusRTU::ModbusMessage& request );

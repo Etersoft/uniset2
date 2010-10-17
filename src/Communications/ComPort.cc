@@ -198,12 +198,12 @@ unsigned char ComPort::m_receiveByte( bool wait )
 			/* select' returns 0 if timeout, 1 if input available, -1 if error. */
 
 			if(select(FD_SETSIZE, &set, NULL, NULL, &timeout)==1)
-				bufLength=read(fd,buf,BufSize);
+				bufLength= ::read(fd,buf,BufSize);
 			else
 				bufLength=-1;
 		}
 		else
-			bufLength=read(fd,buf,BufSize);
+			bufLength= ::read(fd,buf,BufSize);
 		if(bufLength <= 0)
 		{
 			throw UniSetTypes::TimeOut();
@@ -299,18 +299,23 @@ void ComPort::cleanupChannel()
 	if( fd < 0 )
 		return;
 
-//	PassiveTimer pt(t_msec);
+	int fd2 = dup(fd);
+	if( fd2 < 0 )
+		return;
+		
+	fcntl(fd2,F_SETFL,O_NONBLOCK);
 	unsigned char tmpbuf[100];
 	int k = 0;
 	do
 	{
-		k = ::read(fd,tmpbuf,sizeof(tmpbuf));
+		k = ::read(fd2,tmpbuf,sizeof(tmpbuf));
 	}
 	while( k>0 );
 
-// #warning Обнулять нельзя, может надо делать что-то интелектуальнее...
-//	curSym 		= 0;
-//	bufLength 	= 0;
+	close(fd2);
+
+	curSym = 0;
+	bufLength=-1;
 }
 // --------------------------------------------------------------------------------
 void ComPort::setSpeed( std::string s )

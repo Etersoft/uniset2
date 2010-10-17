@@ -24,7 +24,7 @@ class ModbusRTUMaster:
 		ModbusRTUMaster( const std::string dev, bool use485=false, bool tr_ctl=false );
 		virtual ~ModbusRTUMaster();
 
-		inline void cleanupChannel(){ if( port ) port->cleanupChannel(); }
+		virtual void cleanupChannel(){ if( port ) port->cleanupChannel(); }
 		
 		void setSpeed( ComPort::Speed s );
 		void setSpeed( const std::string s );

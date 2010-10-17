@@ -30,6 +30,8 @@ class ModbusTCPMaster:
 		
 		void reconnect();
 		void cleanInputStream();
+		
+		virtual void cleanupChannel(){ cleanInputStream(); }
 
 	protected:
 		

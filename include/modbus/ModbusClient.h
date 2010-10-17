@@ -135,6 +135,8 @@ class ModbusClient
 		inline void setCRCNoCheckit( bool set ){ crcNoCheckit = set; }
 		inline bool isCRCNoCheckit(){ return crcNoCheckit; }
 
+		virtual void cleanupChannel(){}
+
 	protected:
 
 		/*! get next data block from channel ot recv buffer 

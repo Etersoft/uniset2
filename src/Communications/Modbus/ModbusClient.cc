@@ -340,6 +340,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 		{
 			dlog[Debug::WARN] << "(recv): " << (ModbusHeader*)(&rbuf) << endl;
 			dlog[Debug::WARN] << "(recv): заголовок меньше положенного..." << endl;
+			cleanupChannel();
 			return erInvalidFormat;
 		}
 
@@ -366,6 +367,8 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 							<< "): Получили данных меньше чем ждали...(recv=" 
 							<< rlen << " < wait=" << rbuf.len << ")" << endl;
 				}
+				
+				cleanupChannel();
 				return erInvalidFormat;
 			}
 			bcnt+=rlen;
@@ -388,7 +391,10 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 		}
 
 		if( qfunc!=rbuf.func )
+		{
+			cleanupChannel();
 			return erUnExpectedPacketType;
+		}
 	
 		// Определяем тип сообщения
 		switch( rbuf.func )
@@ -453,6 +459,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			break;
 */			
 			default:
+				cleanupChannel();
 				return erUnExpectedPacketType;
 		}
 
@@ -472,6 +479,8 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 						<< "): Получили данных меньше чем ждали...(recv=" 
 						<< rlen << " < wait=" << rbuf.len << ")" << endl;
 			}
+
+			cleanupChannel();
 			return erInvalidFormat;
 		}
 		
@@ -501,6 +510,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 						<< rlen1 << " < " << szDataLen << ")" << endl;
 				}
 
+				cleanupChannel();
 				return erInvalidFormat;
 			}
 			
@@ -554,7 +564,8 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 						<< "Получили данных меньше чем ждали...(" 
 						<< rlen1 << " < " << szDataLen << ")" << endl;
 				}
-
+					
+				cleanupChannel();
 				return erInvalidFormat;
 			}
 			
@@ -609,6 +620,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 						<< rlen1 << " < " << szDataLen << ")" << endl;
 				}
 
+				cleanupChannel();
 				return erInvalidFormat;
 			}
 			
@@ -662,6 +674,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 						<< rlen1 << " < " << szDataLen << ")" << endl;
 				}
 
+				cleanupChannel();
 				return erInvalidFormat;
 			}
 			
@@ -844,7 +857,8 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 					<< rbuf.func << "):(fnFileTransfer) "
 					<< "Получили данных меньше чем ждали...(" 
 					<< rlen1 << " < " << szDataLen << ")" << endl;
-
+				
+				cleanupChannel();
 				return erInvalidFormat;
 			}
 			
@@ -919,6 +933,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 					<< "Получили данных меньше чем ждали...(" 
 					<< rlen1 << " < " << szDataLen << ")" << endl;
 
+				cleanupChannel();
 				return erInvalidFormat;
 			}
 			
@@ -954,6 +969,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 		else
 		{
 			// А как мы сюда добрались?!!!!!!
+			cleanupChannel();
 			return erUnExpectedPacketType;
 		}		
 	}

@@ -68,6 +68,8 @@ class ModbusServer
 															ModbusRTU::FileTransferRetMessage& reply,
 															DebugStream* dlog=0 );
 
+		virtual void cleanupChannel(){}
+
 	protected:
 
 		/*! Обработка запроса на чтение данных (0x01).

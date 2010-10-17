@@ -33,6 +33,8 @@ class ModbusRTUSlave:
 		ComPort::Speed getSpeed();
 
 		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout );
+
+		virtual void cleanupChannel(){ if(port) port->cleanupChannel(); }
 		
 	protected:
 

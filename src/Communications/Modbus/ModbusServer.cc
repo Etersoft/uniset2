@@ -593,6 +593,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			break;
 			
 			default:
+				cleanupChannel();
 				return erUnExpectedPacketType;
 		}
 
