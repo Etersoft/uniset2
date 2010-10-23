@@ -2,6 +2,7 @@
 #include <string>
 #include "Debug.h"
 #include "Configuration.h"
+#include "ORepHelpers.h"
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -21,6 +22,10 @@ int main(int argc, const char **argv)
 
 		string t(conf->oind->getTextName(1));
 		cout << "**** check getTextName: " << ( t.empty() ?  "FAILED" : "OK" ) << endl;
+
+		string ln("/Projects/Sensors/VeryVeryLongNameSensor_ForTest_AS");
+		string ln_t("VeryVeryLongNameSensor_ForTest_AS");
+		cout << "**** check getShortName: " << ( ln_t == ORepHelpers::getShortName(ln) ? "OK" : "FAILED" ) << endl;
 
 		string mn(conf->oind->getMapName(1));
 		cout << "**** check getMapName: " << ( mn.empty() ?  "FAILED" : "OK" ) << endl;

@@ -193,12 +193,13 @@ namespace ORepHelpers
     */
     const string getShortName( const string& fname, const std::string brk )
     {
-//		string::size_type pos = fullName.rfind(brk);
-//		if( pos == string::npos )
-//			return fullName;
-//
-//		return fullName.substr( pos+1, fullName.length() );
+/*    
+		string::size_type pos = fname.rfind(brk);
+		if( pos == string::npos )
+			return fname;
 
+		return fname.substr( pos+1, fname.length() );
+*/
 		string::size_type pos1 = fname.rfind(brk);
 		string::size_type pos2 = fname.rfind(conf->oind->sepName);
 
@@ -209,7 +210,7 @@ namespace ORepHelpers
 			return fname.substr( 0, pos2 );
 	
 		if( pos2 == string::npos )
-			return fname.substr( pos1+1, pos1-1 );
+			return fname.substr( pos1+1, fname.length() );
 
 			return fname.substr( pos1+1, pos2-pos1-1 );
 	}

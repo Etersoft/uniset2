@@ -19,6 +19,11 @@
 - Везде где используется sstream и вызов str(), надо делать ss.rdbuf()->freeze(0);
 (http://www.intuit.ru/department/pl/cpp/17/2.html)
 
+- (IONotifyController): Разработать механизм заказа переодических уведомлений (msec), независимо от того, менялись ли датчики..
+- (IONotifyController): Разработать механизм заказа группы датчиков сразу (и ответ тоже группой)
+
+
+
 
 Вынести IOController_i::SensorInfo просто в UniSetTypes
 (там же где ConsumerInfo и т.п.). И перевести uniset-codegen,
