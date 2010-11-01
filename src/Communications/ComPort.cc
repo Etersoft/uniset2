@@ -312,8 +312,8 @@ void ComPort::cleanupChannel()
 
 	fcntl(fd,F_SETFL,oldfl);
 
-	curSym = 0;
-	bufLength=-1;
+//	curSym = 0;
+//	bufLength=-1;
 }
 // --------------------------------------------------------------------------------
 void ComPort::setSpeed( std::string s )
