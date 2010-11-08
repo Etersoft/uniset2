@@ -154,17 +154,13 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( UniSetTypes::SensorMessage* _sm )
 {
-	if( _sm->id == DefaultObjectId )
-	{
-		// dummy if...
-	}
 	<xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@vartype)='in'">
-	else if( _sm->id == <xsl:value-of select="@name"/> )
+	if( _sm->id == <xsl:value-of select="@name"/> )
 			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = _sm->value;
 	</xsl:if>
 	<xsl:if test="normalize-space(@vartype)='io'">
-	else if( _sm->id == <xsl:value-of select="@name"/> )
+	if( _sm->id == <xsl:value-of select="@name"/> )
 			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = _sm->value;
 	</xsl:if>
 	</xsl:for-each>
