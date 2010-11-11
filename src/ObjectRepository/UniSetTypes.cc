@@ -179,7 +179,6 @@ using namespace UniSetTypes;
 		 return result;
 	}
 	// -------------------------------------------------------------------------
-	
 	UniSetTypes::IDList UniSetTypes::explode( const string str, char sep )
 	{
 		UniSetTypes::IDList l;
@@ -200,7 +199,105 @@ using namespace UniSetTypes;
 	
 		return l;
 	}
+	// -------------------------------------------------------------------------
+	std::list<std::string> UniSetTypes::explode_str( const string str, char sep )
+	{
+		std::list<std::string> l;
+
+		string::size_type prev = 0;
+		string::size_type pos = 0;
+		do
+		{
+			pos = str.find(sep,prev);
+			string s(str.substr(prev,pos-prev));
+			if( !s.empty() )
+			{
+				l.push_back(s);
+				prev=pos+1;
+			}
+		}
+		while( pos!=string::npos );
+	
+		return l;
+	}	
 	// ------------------------------------------------------------------------------------------
+	bool UniSetTypes::is_digit( const std::string s )
+	{
+		for( std::string::const_iterator it=s.begin(); it!=s.end(); it++ )
+		{
+			if( !isdigit(*it) )
+				return false;
+		}
+	
+		return true;
+	  //return (std::count_if(s.begin(),s.end(),std::isdigit) == s.size()) ? true : false;
+	}
+	// --------------------------------------------------------------------------------------
+	std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( string str, Configuration* conf )
+	{
+		std::list<UniSetTypes::ParamSInfo> res;
+		
+		std::list<std::string> l = UniSetTypes::explode_str(str,',');
+		for( std::list<std::string>::iterator it=l.begin(); it!=l.end(); it++ )
+		{
+			UniSetTypes::ParamSInfo item;
+			
+			std::list<std::string> p = UniSetTypes::explode_str((*it),'=');
+			std::string s = "";
+			if( p.size() == 1 )
+			{
+				s = *(p.begin());
+				item.val = 0;
+			}
+			else if( p.size() == 2 )
+			{
+			  	s = *(p.begin());
+				item.val = uni_atoi(*(++p.begin()));
+			}
+			else
+			{
+				cerr << "WARNING: parse error for '" << (*it) << "'. IGNORE..." << endl;
+				continue;
+			}			  
+		  	
+		  	item.fname = s;
+			std::list<std::string> t = UniSetTypes::explode_str(s,'@');
+			if( t.size() == 1 )
+			{
+				std::string s_id = *(t.begin());
+				if( is_digit(s_id) )
+					item.si.id = uni_atoi(s_id);
+				else
+					item.si.id = conf->getSensorID(s_id);
+				item.si.node = DefaultObjectId;
+			}
+			else if( t.size() == 2 )
+			{
+				std::string s_id = *(t.begin());
+				std::string s_node = *(++t.begin());
+				if( is_digit(s_id) )
+					item.si.id = uni_atoi(s_id);
+				else
+					item.si.id = conf->getSensorID(s_id);
+			  
+				if( is_digit(s_node.c_str()) )
+					item.si.node = uni_atoi(s_node);
+				else
+					item.si.node= conf->getNodeID(s_node);
+			}
+			else
+			{
+				cerr << "WARNING: parse error for '" << s << "'. IGNORE..." << endl;
+				continue;
+			}
+
+			res.push_back(item);
+		}
+	 
+		return res;
+	}
+	// --------------------------------------------------------------------------------------
+	
 	UniversalIO::IOTypes UniSetTypes::getIOType( const std::string stype )
 	{
 		if ( stype == "DI" || stype == "di" )

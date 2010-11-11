@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
 #include <getopt.h>
 // --------------------------------------------------------------------------
 #include "ORepHelpers.h"
@@ -10,10 +11,9 @@
 #include "ObjectRepositoryFactory.h"
 #include "Exceptions.h"
 #include "UniSetObject.h"
+#include "UniSetTypes.h"
 #include "ObjectsManager.h"
 #include "MessageType.h"
-//#include "DBServer.h"
-//#include "InfoServer.h"
 #include "Configuration.h"
 #include "ObjectIndex_XML.h"
 #include "Debug.h"
@@ -21,9 +21,6 @@
 using namespace std;
 using namespace UniSetTypes;
 // --------------------------------------------------------------------------
-// \todo п╫п╟п╢п╬ п©п╣я─п╣п©п╦я│п╟я┌я▄ я─п╣п╟п╩п╦п╥п╟я├п╦я▌ !!!!
-// --------------------------------------------------------------------------
-
 enum Command
 {
 	StartUp, 
@@ -46,16 +43,9 @@ static struct option longopts[] = {
 	{ "foldUp", no_argument, 0, 'u' },
 	{ "configure", required_argument, 0, 'r' },
 	{ "logrotate", required_argument, 0, 'l' },
-	{ "alarm", required_argument, 0, 'a' },
-	{ "anotify", required_argument, 0, 'n' },
-	{ "dnotify", required_argument, 0, 'd' },
 	{ "info", required_argument, 0, 'i' },
-	{ "saveValue", required_argument, 0, 'v' },
-	{ "saveState", required_argument, 0, 't' },
 	{ "setValue", required_argument, 0, 'x' },
-	{ "setState", required_argument, 0, 'j' },
 	{ "getValue", required_argument, 0, 'g' },
-	{ "getState", required_argument, 0, 'k' },
 	{ "getRawValue", required_argument, 0, 'w' },
 	{ "getCalibrate", required_argument, 0, 'y' },
 	{ "oinfo", required_argument, 0, 'p' },
@@ -67,27 +57,17 @@ string conffile("configure.xml");
 // --------------------------------------------------------------------------
 static bool commandToAll(const string section, ObjectRepository *rep, Command cmd);
 static void createSections(UniSetTypes::Configuration* c);
-static bool separateArgs(string &args, string &arg);
-//static bool getID( const string arg, ObjectId id, ObjectId node );
 // --------------------------------------------------------------------------
 int omap();
 int msgmap();
-int configure( string args, UniversalInterface &ui );
-int logRotate( string args, UniversalInterface &ui );
-int alarm( string args, UniversalInterface &ui );
-int anotify( string args, UniversalInterface &ui );
-int dnotify( string args, UniversalInterface &ui );
-int info( string args, UniversalInterface &ui );
-int saveValue( string args, UniversalInterface &ui );
-int saveState( string args, UniversalInterface &ui );
-int setValue( string args, UniversalInterface &ui );
-int setState( string args, UniversalInterface &ui );
-int getValue( string args, UniversalInterface &ui );
-int getRawValue( string args, UniversalInterface &ui );
-int getState( string args, UniversalInterface &ui );
-int getCalibrate( string args, UniversalInterface &ui );
-int oinfo( string args, UniversalInterface &ui );
-
+int configure( const string args, UniversalInterface &ui );
+int logRotate( const string args, UniversalInterface &ui );
+int setValue( const string args, UniversalInterface &ui, Configuration* conf = UniSetTypes::conf );
+int getValue( const string args, UniversalInterface &ui, Configuration* conf = UniSetTypes::conf );
+int getRawValue( const string args, UniversalInterface &ui );
+int getState( const string args, UniversalInterface &ui );
+int getCalibrate( const string args, UniversalInterface &ui );
+int oinfo( const string args, UniversalInterface &ui );
 // --------------------------------------------------------------------------
 static void print_help(int width, const string cmd, const string help, const string tab=" " )
 {
@@ -123,21 +103,13 @@ static void usage()
 	cout << endl;
 	print_help(36, "-r|--configure [FullObjName] ","Посылка SystemMessage::ReConfiguration всем объектам (процессам) или заданному по имени (FullObjName).\n");
 	print_help(36, "-l|--logrotate [FullObjName] ","Посылка SystemMessage::LogRotate всем объектам (процессам) или заданному по имени (FullObjName).\n");
-	print_help(36, "-a|--alarm [code,cause,character] ","Посылка AlarmMessage(character: 1-Normal, 2-Warning, 3-Alarm, default: Alarm)\n");
-	print_help(36, "-i|--info [code] ","Посылка InfoMessage\n");
 	print_help(36, "-p|--oinfo OID ","Получить информацию об объекте (SimpleInfo).\n");	
 	cout << endl;
-	print_help(48, "-n|--anotify ObjectId,SensorId,value ","Посылка SensorMessage (аналоговый датчик) объекту ObjectId\n");
-	print_help(48, "-d|--dnotify ObjectId,SensorId,state ","Посылка SensorMessage (дискретный датчик) объекту ObjectId\n");	
-	print_help(48, "-v|--saveValue SensorId=value[,SId2=v2,...] ","Установить значение аналогоых датчиков SensorId в значение value.\n");
-	print_help(48, "-t|--saveState SensorId=state[,SId2=s2,...] ","Установить значение дискретных датчиков SensorId в значение state.\n");	
-	print_help(48, "-x|--setValue OutputId=value[,SId2=v2,...] ","Подать на аналоговые выходы OuputId значение value.\n");
-	print_help(48, "-j|--setState OutputId=state[,SId2=s2,...] ","Подать на дискретные выходы OuputId значение state.\n");	
+	print_help(48, "-x|--setValue id1@node1=val,id2@node2=val2,id3=val3,.. ","Выставить значения датчиков\n");
+	print_help(36, "-g|--getValue id1@node1,id2@node2,id3,id4 ","Получить значения датчиков.\n");
 	cout << endl;
-	print_help(36, "-g|--getValue SensorId[,SId2,...] ","Получить значение аналоговых датчиков SensorId.\n");
-	print_help(36, "-k|--getState SensorId[,SId2,...] ","Получить значение дискретных датчиков SensorId.\n");
-	print_help(36, "-w|--getRawValue SensorId? ","Получить значение аналогового датчика RawSensorId?.\n");
-	print_help(36, "-y|--getCalibrate SensorId? ","Получить калибровачную диаграмму?.\n");
+	print_help(36, "-w|--getRawValue id1@node1=val,id2@node2=val2,id3=val3,.. ","Получить 'сырое' значение.\n");
+	print_help(36, "-y|--getCalibrate id1@node1=val,id2@node2=val2,id3=val3,.. ","Получить параметры калибровки.\n");
 	cout << endl;
 }
 
@@ -157,27 +129,20 @@ int main(int argc, char** argv)
 		char opt = 0;
 
 
-	while( (opt = getopt_long(argc, argv, "hc:beomsfur:l:a:n:d:i:v:t:x:j:g:k:w:p:y:",longopts,&optindex)) != -1 ) 
+	while( (opt = getopt_long(argc, argv, "hc:beomsfur:l:i:x:g:w:y:p:",longopts,&optindex)) != -1 ) 
 	{
 		switch (opt) //разбираем параметры 
 		{
 			case 'h':	//--help
-			{
-//				cout<<"(main):received option --help"<<endl;
 				usage();
-			}
 			return 0;
 
 			case 'c':	//--confile
-			{
-//				cout<<"(main):received option --confile='"<<optarg<<"'"<<endl;
 				conffile = optarg;
-			}
 			break;
 			
 			case 'o':	//--omap
 			{
-//				cout<<"(main):received option --omap"<<endl;
 				uniset_init(argc,argv,conffile);
 				return omap();
 			}
@@ -185,7 +150,6 @@ int main(int argc, char** argv)
 
 			case 'b':	//--create
 			{
-//				cout<<"(main):received option --create"<<endl;
 				uniset_init(argc,argv,conffile);
 				createSections(conf);
 			}
@@ -193,81 +157,16 @@ int main(int argc, char** argv)
 			
 			case 'm':	//--msgmap
 			{
-//				cout<<"(main):received option --msgmap"<<endl;
 				uniset_init(argc,argv,conffile);
 				return msgmap();
 			}	
 			break;
 
-			case 'a':	//--alarm
-			{
-//				cout<<"(main):received option --alarm='"<<optarg<<"'"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return alarm(optarg,ui);
-			}
-			break;
-
-			case 'i':	//--info
-			{
-//				cout<<"(main):received option -info='"<<optarg<<"'"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return info(optarg,ui);
-			}
-			break;
-
-			case 'n':	//--anotify
-			{
-//				cout<<"(main):received option --anotify='"<<optarg<<"'"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return anotify(optarg,ui);
-			}
-			break;
-
-			case 'd':	//--dnotify
-			{
-//				cout<<"(main):received option --dnotify='"<<optarg<<"'"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return dnotify(optarg,ui);
-			}
-			break;
-
-			case 'v':	//--saveValue
-			{
-//				cout<<"(main):received option --saveValue='"<<optarg<<"'"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return saveValue(optarg,ui);
-			}
-			break;
-
-			case 't':	//--saveState
-			{
-//				cout<<"(main):received option --saveState='"<<optarg<<"'"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return saveState(optarg,ui);
-			}
-			break;
-
 			case 'x':	//--setValue
 			{
-//				cout<<"(main):received option --setValue='"<<optarg<<"'"<<endl;
 				uniset_init(argc,argv,conffile);
 				UniversalInterface ui(conf);
 				return setValue(optarg,ui);
-			}
-			break;
-
-			case 'j':	//--setState
-			{
-//				cout<<"(main):received option --setState='"<<optarg<<"'"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return setState(optarg,ui);
 			}
 			break;
 
@@ -277,15 +176,6 @@ int main(int argc, char** argv)
 				uniset_init(argc,argv,conffile);
 				UniversalInterface ui(conf);
 				return getValue(optarg,ui);
-			}
-			break;
-
-			case 'k':	//--getState
-			{
-//				cout<<"(main):received option --getState='"<<optarg<<"'"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return getState(optarg,ui);
 			}
 			break;
 
@@ -340,19 +230,10 @@ int main(int argc, char** argv)
 
 			case 'r':	//--configure
 			{
-//				cout<<"(main):received option --configure='"<<optarg<<"'"<<endl;
 				uniset_init(argc,argv,conffile);
 				UniversalInterface ui(conf);
-				
 				return configure(optarg,ui);
-/*				
-				Command cmd=Configure;	
-				ObjectRepository* rep = new ObjectRepository(conf);
-				commandToAll(conf->getServicesSection(), rep, (Command)cmd);
-				commandToAll(conf->getControllersSection(), rep, (Command)cmd);
-				commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
-			 	delete rep;
-*/			}
+			}
 			break;
 
 			case 'f':	//--finish
@@ -373,18 +254,10 @@ int main(int argc, char** argv)
 
 			case 'l':	//--logrotate
 			{
-//				cout<<"(main):received option --logrotate='"<<optarg<<"'"<<endl;
 				uniset_init(argc,argv,conffile);
 				UniversalInterface ui(conf);
 				return logRotate(optarg, ui);
-/*				
-				Command cmd=LogRotate;	
-				ObjectRepository* rep = new ObjectRepository(conf);
-				commandToAll(conf->getServicesSection(), rep, (Command)cmd);
-				commandToAll(conf->getControllersSection(), rep, (Command)cmd);
-				commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
-			 	delete rep;
-*/			}
+			}
 			break;
 
 			case 'y':	//--getCalibrate
@@ -422,7 +295,6 @@ int main(int argc, char** argv)
 		}	
 	}
 
-		cout <<"\nвсе."<< endl;
     	return 0;
     }
 	catch(Exception& ex)
@@ -575,24 +447,6 @@ static void createSections( UniSetTypes::Configuration* rconf )
 }
 
 // ==============================================================================================
-bool separateArgs(string &args,string &arg)
-{
-	int ind;
-
-	if(args=="")
-		return false;
-	
-	ind = args.find_first_of(",");
-	arg = args.substr(0,ind);
-	args = args.substr(ind+1,args.size());
-
-	if (args==arg)
-		args="";
-
-	return true;
-}
-
-// ==============================================================================================
 int omap()
 {
 	try
@@ -630,438 +484,161 @@ int msgmap()
 }
 
 // --------------------------------------------------------------------------------------
-int alarm(string args, UniversalInterface &ui)
+int setValue( const string args, UniversalInterface &ui, Configuration* conf )
 {
-	string arg="";
-
-	if( args.size() == 0 || strncmp(args.c_str(),"-",1)==0 )
-	{
-		AlarmMessage am(UniSetTypes::DefaultObjectId, "Administrator Alarm: Тестовое сообщение",
-						UniSetTypes::DefaultObjectId, conf->getLocalNode());
-
-		TransportMessage tm(am.transport_msg());
-		cout <<  "Administrator Alarm: Тестовое сообщение " << endl;
-		ui.send(conf->getInfoServer(), tm);
-		return 0;
-	}
+	int err = 0;
 	
-	if(separateArgs(args,arg))
-	{
-		UniSetTypes::MessageCode code = uni_atoi(arg);
-		UniSetTypes::MessageCode cause(UniSetTypes::DefaultMessageCode);
-
-		if(separateArgs(args,arg))
-		{
-			cause = uni_atoi(arg);
-		}
-		else
-		{
-			cerr<<"(alarm): cause is not specified ! \n";
-			unideb[Debug::WARN] << "cause is not specified ! \n";
-			return 1;
-		}
-	
-		AlarmMessage::Character ch(AlarmMessage::Alarm);
-		
-		int chid ;
-//		cout<<"!!!!!! args="<<args<<" arg="<<arg<<" cause="<<cause<<" code="<<code<<endl;
-			
-		if( sscanf( args.c_str(),"%d",&chid) < 1 )
-		{
-			cerr<<"(alarm): ch is not specified ! \n";
-			unideb[Debug::WARN] << "ch is not specified ! \n";
-			return 1;
-		}
-
-		switch(chid)
-		{
-			case 1:
-				ch = AlarmMessage::Normal;
-			break;
-					
-			case 2:
-				ch = AlarmMessage::Warning;
-			break;
-
-			case 3:
-				ch = AlarmMessage::Alarm;
-			break;
-		}
-		cout << "alarm character(" << chid << "):\t" << ch << endl;
-				
-		AlarmMessage am(UniSetTypes::DefaultObjectId,code,cause, conf->getLocalNode(), ch);
-		TransportMessage tm(am.transport_msg());
-
-		cout << "alarm message(" << code << "):\t";
-		cout << conf->mi->getMessage(code) << endl;
-		if( cause )
-		{
-			cout << "alarm cause(" << cause << "):\t";
-			cout << conf->mi->getMessage(cause) << endl;
-		}
-		cout << endl;
-		ui.send(conf->getInfoServer(), tm);
-		cout << "send alarm OK" <<   endl;
-	}
-	else
-	{
-		cerr<<"(alarm): params are not specified ! \n";
-		unideb[Debug::WARN] << "params are not specified ! \n";
-		return 1;		
-	}
-	
-	return 0;
-}
-
-// --------------------------------------------------------------------------------------
-int info(string arg, UniversalInterface &ui)
-{
-	if( arg.size() == 0 || strncmp(arg.c_str(),"-",1)==0 )
-	{
-		InfoMessage im(UniSetTypes::DefaultObjectId, "Administrator Info: Тестовое сообщение");
-		TransportMessage tm(im.transport_msg());
-		cout <<  "Administrator Info: Тестовое сообщение " << endl;
-		ui.send(conf->getInfoServer(), tm);
-		return 0;
-	}
-			
-	int icode;
-	if( sscanf( arg.c_str(),"%d",&icode) < 1 )
-	{
-		cerr<<"(info): code is not specified ! \n";
-		unideb[Debug::WARN] << "code is not specified ! \n";
-		return 1;		
-	}
-	
-	UniSetTypes::MessageCode code = icode;
-	InfoMessage im(UniSetTypes::DefaultObjectId, code);
-	TransportMessage tm(im.transport_msg());
-	cout << "info: (" << code << ") ";
-	cout << conf->mi->getMessage(code);
-	ui.send(conf->getInfoServer(), tm);
-	cout << "send info OK" <<   endl;
-
-	return 0;
-}
-
-// --------------------------------------------------------------------------------------
-int anotify(string args, UniversalInterface &ui)
-{
-	UniSetTypes::ObjectId id;
-	UniSetTypes::ObjectId sid;
-	long val;
-
-	if( sscanf( args.c_str(),"%ld,%ld,%ld",&id,&sid,&val ) < 3 )
-	{
-		cerr << "(anotify): Неверный параметр ObjectId,SensorId,Value"<< endl;
-		return 1;
-	}
-		
-	cout << "anotify --------\n";	
-	cout << "  value: " << val << endl;
-	cout << " sensor: (" << sid << ") " << conf->oind->getMapName(sid) << endl;
-	cout << "   text: " << conf->oind->getTextName(sid) << endl;
-	cout << "адресат: " << conf->oind->getMapName(id) << "\n"<<endl;
-
-	SensorMessage sm(sid,(long)val);
-	sm.consumer = id;
-	TransportMessage tm(sm.transport_msg());
-	ui.send(id,tm);
-
-	return 0;
-}
-// --------------------------------------------------------------------------------------
-int dnotify(string args, UniversalInterface &ui)
-{
-	UniSetTypes::ObjectId id;
-	UniSetTypes::ObjectId sid;
-	int ival;
-	bool val;
-
-	if( sscanf( args.c_str(),"%ld,%ld,%d",&id,&sid,&ival ) < 3 )
-	{
-		cerr << "(anotify): Неверный параметр ObjectId,SensorId,State"<< endl;
-		return 1;
-	}
-	if (ival == 0)
-		val = false;
-	else if( ival == 1 )
-		val = true;
-	else	
-	{
-		cerr << "(anotify): Неверный параметр State. Должен быть булевым!"<< endl;
-		return 1;
-	}
-
-	cout << "dnotify --------\n";
-	cout << "  state: " << val << endl;
-	cout << " sensor: (" << sid << ") " << conf->oind->getMapName(sid) << endl;
-	cout << "   text: " << conf->oind->getTextName(sid) << endl;
-	cout << "адресат: " << conf->oind->getMapName(id) << "\n\n";
-
-	SensorMessage sm(sid,(bool)val);
-	sm.consumer = id;
-	TransportMessage tm(sm.transport_msg());
-	ui.send(id,tm);
-
-	return 0;
-}
-
-// --------------------------------------------------------------------------------------
-int saveValue(string args, UniversalInterface &ui)
-{
-	int err;
-	err=0;
-	string arg;
-	UniSetTypes::ObjectId sid = DefaultObjectId;
-	UniSetTypes::ObjectId node = DefaultObjectId;
-	long val;
-
-	cout << "====== saveValue ======" << endl;
-	for(int i=1;separateArgs(args,arg);i++)
-	{
-		if( isdigit( arg[0] ) )
-		{
-			if( sscanf( arg.c_str(),"%ld=%ld",&sid,&val ) < 2 )
-			{
-				cout << i <<"\t------------------------"<< endl;
-				cerr << "(digit): !!! пара SensorId=Value #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
-				err=1;
-				continue;
-			}
-		}
-		else
-		{
-			int ind;
-			string strval;
-			ind = arg.find_first_of("=");
-			string name(arg.substr(0,ind));
-			strval = arg.substr( ind + 1, arg.length() );
-			sid = conf->getSensorID(name);
-
-			if( sid == UniSetTypes::DefaultObjectId || (sscanf( strval.c_str(),"%ld",&val ) < 1) )
-			{
-				cout << i <<"\t------------------------"<< endl;
-				cerr << "(name): !!! пара SensorName=Value #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
-				err=1;
-				continue;
-			}
-		}
-		cout << i <<"\t------------------------"<< endl;
-		try
-		{		
-//			cout <<"\n\t"<<sid<<"\t"<<val<<endl;
-			cout << "  value: " << val << endl;
-			cout << "   name: (" << sid << ") " << conf->oind->getMapName(sid) << endl;
-			cout << "   text: " << conf->oind->getTextName(sid) << "\n\n";
-			if( node == DefaultObjectId )
-				node = conf->getLocalNode();
-
-			ui.saveValue(sid,val,UniversalIO::AnalogInput,node);
-		}
-		catch(Exception& ex)
-		{
-			unideb[Debug::CRIT] << "(saveValue): " << ex << endl;;
-			err = 1;
-		}	
-	}
-	return err;
-}
-
-// --------------------------------------------------------------------------------------
-int saveState(string args, UniversalInterface &ui)
-{
-	int err;
-	err=0;
-	string arg;
-	UniSetTypes::ObjectId sid(DefaultObjectId);
-	long inval;
-	bool val;
-
-	cout << "====== saveState ======" << endl;
-	for(int i=1;separateArgs(args,arg);i++)
-	{
-		if( isdigit( arg[0] ) )
-		{
-			if( sscanf( arg.c_str(),"%ld=%ld",&sid,&inval ) < 2 )
-			{
-				cout << i <<"\t------------------------"<< endl;		
-				cerr << "!!!!!!!!! пара SensorId=State #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
-				err=1;
-				continue;
-			}
-		}
-		else
-		{
-			int ind;
-			string strval;
-			ind = arg.find_first_of("=");
-			string name(arg.substr(0,ind));
-			strval = arg.substr( ind + 1, arg.length() );
-			sid = conf->getSensorID(name);
-
-			if( sid == UniSetTypes::DefaultObjectId || (sscanf( strval.c_str(),"%ld",&inval ) < 1) )
-			{
-				cout << i <<"\t------------------------"<< endl;		
-				cerr << "!!!!!!!!! пара SensorName=State #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
-				err=1;
-				continue;
-			}
-		}
-		if(inval==1)
-			val=true;
-		else if(inval==0)
-			val=false;
-		else
-		{
-			cout << i <<"\t------------------------"<< endl;
-			cerr << "!!!!!!!!! State в паре SensorId=State #"<<i<<" '"<<arg<<"' должен быть булевым !!!!!!\n"<< endl;
-			err=1;
-			continue;
-		}		
-
-		cout << i <<"\t------------------------"<< endl;		
-		try
-		{		
-//			cout <<"\n\t"<<sid<<"\t"<<val<<endl;		
-			cout << "  state: " << val << endl;
-			cout << "   name: (" << sid << ") " << conf->oind->getMapName(sid) << endl;
-			cout << "   text: " << conf->oind->getTextName(sid) << "\n\n";
-			ui.saveState(sid,val,UniversalIO::DigitalInput);
-		}
-		catch(Exception& ex)
-		{
-			unideb[Debug::CRIT] << "(saveState): " << ex << endl;;
-			err = 1;
-		}	
-	}
-	return err;
-}
-
-// --------------------------------------------------------------------------------------
-int setValue(string args, UniversalInterface &ui)
-{
-	int err;
-	err=0;
-	string arg;
-	UniSetTypes::ObjectId sid(DefaultObjectId);
-	long val;
-
+	typedef std::list<UniSetTypes::ParamSInfo> SList;
+	SList sl = UniSetTypes::getSInfoList(args, conf);
 	cout << "====== setValue ======" << endl;
-	for(int i=1;separateArgs(args,arg);i++)
-	{
-		if( isdigit( arg[0] ) )
-		{
-			if( sscanf( arg.c_str(),"%ld=%ld",&sid,&val ) < 2 )
-			{
-				cout << i <<"\t------------------------"<< endl;		
-				cerr << "!!!!!!!!! пара SensorId=Value #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
-				err=1;
-				continue;
-			}
-		}
-		else
-		{
-			int ind;
-			string strval;
-			ind = arg.find_first_of("=");
-			string name(arg.substr(0,ind));
-			strval = arg.substr( ind + 1, arg.length() );
-			sid = conf->getSensorID(name);
-
-			if( sid == UniSetTypes::DefaultObjectId || (sscanf( strval.c_str(),"%ld",&val ) < 1) )
-			{
-				cout << i <<"\t------------------------"<< endl;		
-				cerr << "!!!!!!!!! пара SensorName=Value #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
-				err=1;
-				continue;
-			}
-		}
-
-
-		cout << i <<"\t------------------------"<< endl;		
+	for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
+	{	
 		try
-		{		
-//			cout <<"\n\t"<<sid<<"\t"<<val<<endl;		
-			cout << "  value: " << val << endl;
-			cout << "   name: (" << sid << ") " << conf->oind->getMapName(sid) << endl;
-			cout << "   text: " << conf->oind->getTextName(sid) << "\n\n";
-			ui.setValue(sid,val);
+		{
+			UniversalIO::IOTypes t = conf->getIOType(it->si.id);
+			cout << "  value: " << it->val << endl;
+			cout << "   name: (" << it->si.id << ") " << it->fname << endl;
+			cout << "   iotype: " << t << endl;
+			cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
+			
+			if( it->si.node == DefaultObjectId )
+				it->si.node = conf->getLocalNode();
+			
+			switch(t)
+			{
+				case UniversalIO::DigitalInput:
+				  ui.saveState(it->si.id,(it->val?true:false),t,it->si.node);
+				break;
+				
+				case UniversalIO::DigitalOutput:
+				  ui.setState(it->si.id,(it->val?true:false),it->si.node);
+				break;
+				
+				case UniversalIO::AnalogInput:
+					ui.saveValue(it->si.id,it->val,t,it->si.node);
+				break;
+				
+				case UniversalIO::AnalogOutput:
+					ui.setValue(it->si.id,it->val,it->si.node);
+				break;
+				
+				default:
+					cerr << "FAILED: Unknown 'iotype' for " << it->fname << endl;
+					err = 1;
+					break;
+			}
 		}
 		catch(Exception& ex)
 		{
-			unideb[Debug::CRIT] << "(setValue): " << ex << endl;;
+			cerr << "(setValue): " << ex << endl;;
 			err = 1;
 		}	
 	}
+	
 	return err;
 }
 
 // --------------------------------------------------------------------------------------
-int setState(string args, UniversalInterface &ui)
+int getValue( const string args, UniversalInterface &ui, Configuration* conf )
 {
-	int err;
-	err=0;
-	string arg;
-	UniSetTypes::ObjectId sid(DefaultObjectId);
-	long inval;
-	bool val;
-
-	cout << "====== setState ======" << endl;
-	for(int i=1;separateArgs(args,arg);i++)
-	{
-		if( isdigit( arg[0] ) )
+	int err = 0;
+	
+	typedef std::list<UniSetTypes::ParamSInfo> SList;
+	SList sl = UniSetTypes::getSInfoList( args, UniSetTypes::conf );
+	cout << "====== getValue ======" << endl;
+	for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
+	{	
+		try
 		{
-			if( sscanf( arg.c_str(),"%ld=%ld",&sid,&inval ) < 2 )
+			UniversalIO::IOTypes t = conf->getIOType(it->si.id);
+			cout << "  value: " << it->val << endl;
+			cout << "   name: (" << it->si.id << ") " << it->fname << endl;
+			cout << "   iotype: " << t << endl;
+			cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
+			
+			if( it->si.node == DefaultObjectId )
+				it->si.node = conf->getLocalNode();
+			
+			switch(t)
 			{
-				cout << i <<"\t------------------------"<< endl;		
-				cerr << "!!!!!!!!! пара SensorId=State #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
-				err=1;
-				continue;
+				case UniversalIO::DigitalOutput:
+				case UniversalIO::DigitalInput:
+					cout << "  state: " << ui.getState(it->si.id,it->si.node) << endl;
+				break;
+				
+				case UniversalIO::AnalogOutput:
+				case UniversalIO::AnalogInput:
+					cout << "  value: " << ui.getValue(it->si.id,it->si.node) << endl;
+				break;
+				
+				default:
+					cerr << "FAILED: Unknown 'iotype' for " << it->fname << endl;
+					err = 1;
+					break;
 			}
 		}
-		else
+		catch(Exception& ex)
 		{
-			int ind;
-			string strval;
-			ind = arg.find_first_of("=");
-			string name(arg.substr(0,ind));
-			strval = arg.substr( ind + 1, arg.length() );
-			sid = conf->getSensorID(name);
-
-			if( sid == UniSetTypes::DefaultObjectId || (sscanf( strval.c_str(),"%ld",&inval ) < 1) )
-			{
-				cout << i <<"\t------------------------"<< endl;
-				cerr << "!!!!!!!!! пара SensorName=State #"<<i<<" '"<<arg<<"' задана неверно!!!!!!\n"<< endl;
-				err=1;
-				continue;
-			}
+			cerr << "(getValue): " << ex << endl;
+			err = 1;
+		}	
+	}
+	
+	return err;
+}
+// --------------------------------------------------------------------------------------
+int getCalibrate( const std::string args, UniversalInterface &ui )
+{
+	int err = 0;
+  	typedef std::list<UniSetTypes::ParamSInfo> SList;
+	SList sl = UniSetTypes::getSInfoList( args, UniSetTypes::conf );
+	cout << "====== getValue ======" << endl;
+	for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
+	{	
+		if( it->si.node == DefaultObjectId )
+			it->si.node = conf->getLocalNode();
+	  
+		cout << "getCalibrate --------\n";
+		cout << "      name: (" << it->si.id << ") " << it->fname << endl;
+		cout << "      text: " << conf->oind->getTextName(it->si.id) << "\n";
+		try
+		{
+			cout << "калибровка: ";
+			IOController_i::CalibrateInfo ci = ui.getCalibrateInfo(it->si);
+			cout << ci << endl;
 		}
+		catch(Exception& ex)
+		{
+			cerr << "(getCalibrate): " << ex << endl;;
+			err = 1;
+		}	
+	}
+	
+	return err;
+}
+
+// --------------------------------------------------------------------------------------
+int getRawValue( const std::string args, UniversalInterface &ui )
+{
+	int err = 0;
+  	typedef std::list<UniSetTypes::ParamSInfo> SList;
+	SList sl = UniSetTypes::getSInfoList( args, UniSetTypes::conf );
+	cout << "====== getValue ======" << endl;
+	for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
+	{	
+		if( it->si.node == DefaultObjectId )
+			it->si.node = conf->getLocalNode();	  
 		
-		if(inval==1)
-			val=true;
-		else if(inval==0)
-			val=false;
-		else
-		{
-			cout << i <<"\t------------------------"<< endl;
-			cerr << "!!!!!!!!! State в паре SensorId=State #"<<i<<" '"<<arg<<"' должен быть булевым !!!!!!\n"<< endl;
-			err=1;
-			continue;
-		}		
-
-		cout << i <<"\t------------------------"<< endl;		
+		cout << "getRawValue --------\n";
+		cout << "   name: (" << it->si.id << ") " << it->fname << endl;
+		cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
 		try
-		{		
-//			cout <<"\n\t"<<sid<<"\t"<<val<<endl;		
-			cout << "  state: " << val << endl;
-			cout << "   name: (" << sid << ") " << conf->oind->getMapName(sid) << endl;
-			cout << "   text: " << conf->oind->getTextName(sid) << "\n\n";
-			ui.setState(sid,val);
+		{
+			cout << "  value: " << ui.getRawValue(it->si) << endl;
 		}
 		catch(Exception& ex)
 		{
-			unideb[Debug::CRIT] << "(setState): " << ex << endl;;
+			cerr << "(getRawValue): " << ex << endl;;
 			err = 1;
 		}	
 	}
@@ -1069,169 +646,7 @@ int setState(string args, UniversalInterface &ui)
 }
 
 // --------------------------------------------------------------------------------------
-int getState(string args, UniversalInterface &ui)
-{
-	int err;
-	err=0;
-	string arg;
-	ostringstream vout;
-	vout<<"-----------------\n| ID\t| State\t|\n-----------------\n";
-	UniSetTypes::ObjectId sid(DefaultObjectId);
-	int state;
-
-	cout << " getState ==============================\n";
-	for(int i=1;separateArgs(args,arg);i++)
-	{
-		if( isdigit( arg[0] ) )
-		{
-			if( sscanf( arg.c_str(),"%ld",&sid ) < 1 )
-			{
-				cout << i <<"\t------------------------"<< endl;
-				cerr << "!!!!!!!!  SensorID #"<<i<<" '"<<arg<<"' задан неверно!!!!!!!\n"<< endl;
-				err = 1;
-				vout<<"| "<<arg<<"\t| ?\t| SensorID задан неверно !!!\n-----------------\n";
-				continue;
-			}
-		}	
-		else
-		{
-			sid = conf->getSensorID(arg);
-
-			if( sid == UniSetTypes::DefaultObjectId )
-			{
-				cout << i <<"\t------------------------"<< endl;		
-				cerr << "!!!!!!!!!  SensorName #"<<i<<" '"<<arg<<"' задан неверно!!!!!!\n"<< endl;
-				err=1;
-				vout<<"| "<<arg<<"\t| ?\t| SensorName задан неверно !!!\n-----------------\n";				
-				continue;
-			}
-		}
-
-		cout << i <<"\t-----------------------"<< endl;
-		try
-		{
-			cout << "    name: (" << sid << ") " << conf->oind->getMapName(sid) << endl;
-			cout << "    text: " << conf->oind->getTextName(sid) << endl;
-			state = ui.getState(sid);
-			cout << "   state: " <<state << "\n\n";
-			vout<<"| "<<arg<<"\t| "<<state<<"\t|\n-----------------\n";
-		}
-		catch(Exception& ex)
-		{
-			cout <<"!!!!!!!!! err: " << ex << endl<<endl;
-			vout<<"| "<<arg<<"\t| ?\t| "<<ex<<" !!!\n-----------------\n";
-			err = 1;
-		}
-	}
-	
-	if( !err )
-		cout << vout.str() << endl;
-	
-	return err;
-}
-
-// --------------------------------------------------------------------------------------
-int getValue(string args, UniversalInterface &ui )
-{
-	int err;
-	long value;
-	err=0;
-	string arg;
-	ostringstream vout;
-	vout<<"-----------------\n| ID\t| Value\t|\n-----------------\n";
-	UniSetTypes::ObjectId sid(DefaultObjectId);
-
-	cout << "\n getValue ==============================\n";
-	for(int i=1;separateArgs(args,arg);i++)
-	{
-		if( isdigit( arg[0] ) )
-		{
-			if( sscanf( arg.c_str(),"%ld",&sid ) < 1 )
-			{
-				cout << i <<"\t------------------------"<< endl;
-				cerr << "!!!!!!!!  SensorID #"<<i<<" '"<<arg<<"' задан неверно!!!!!!!\n"<< endl;
-				err = 1;
-				vout<<"| "<<arg<<"\t| ?\t| SensorID задан неверно !!!\n-----------------\n";
-				continue;
-			}
-		}	
-		else
-		{
-			sid = conf->getSensorID(arg);
-
-			if( sid == UniSetTypes::DefaultObjectId )
-			{
-				cout << i <<"\t------------------------"<< endl;		
-				cerr << "!!!!!!!!!  SensorName #"<<i<<" '"<<arg<<"' задан неверно!!!!!!\n"<< endl;
-				err=1;
-				vout<<"| "<<arg<<"\t| ?\t| SensorName задан неверно !!!\n-----------------\n";				
-				continue;
-			}
-		}
-
-		cout << i <<"\t-----------------------"<< endl;
-		try
-		{
-			cout << "    name: (" << sid << ") " << conf->oind->getMapName(sid) << endl;
-			cout << "    text: " << conf->oind->getTextName(sid) << endl;
-			value = ui.getValue(sid);
-			cout << "   value: " << value << "\n\n";
-			vout<<"| "<<arg<<"\t| "<< value <<"\t|\n-----------------\n";
-		}
-		catch(Exception& ex)
-		{
-			unideb[Debug::CRIT] << "(getValue): " << ex << endl;;
-			err = 1;
-		}
-	}
-	
-	cout <<vout.str()<<endl;
-	return err;
-}
-// --------------------------------------------------------------------------------------
-int getCalibrate(string arg, UniversalInterface &ui)
-{
-	UniSetTypes::ObjectId sid(uni_atoi(arg));
-	if( sid <= 0 )
-	{
-		cout << "(getCalibrate): Не задан SensorId аналогового датчика!!!!!!"<< endl;
-		return 1;
-	}
-
-	cout << "getCalibrate --------\n";
-	cout << "      name: (" << sid << ") " << conf->oind->getMapName(sid) << endl;
-	cout << "      text: " << conf->oind->getTextName(sid) << "\n";
-	cout << "калибровка: ";
-	IOController_i::SensorInfo si;
-	si.id = sid;
-	si.node = conf->getLocalNode();
-	IOController_i::CalibrateInfo ci = ui.getCalibrateInfo(si);
-	cout << ci << endl;
-	return 0;
-}
-
-// --------------------------------------------------------------------------------------
-int getRawValue(string arg, UniversalInterface &ui )
-{
-	UniSetTypes::ObjectId sid(uni_atoi(arg));
-	if( sid==0 )
-	{
-		cout << "(getRawValue): Не задан SensorId аналогового датчика!!!!!!"<< endl;
-		return 1;
-	}
-	IOController_i::SensorInfo si;
-	si.id = sid;
-	si.node = conf->getLocalNode();
-	cout << "getRawValue --------\n";
-	cout << "   name: (" << sid << ") " << conf->oind->getMapName(sid) << endl;
-	cout << "   text: " << conf->oind->getTextName(sid) << "\n\n";
-	cout << "  value: " << ui.getRawValue(si) << endl;
-
-	return 0;
-}
-
-// --------------------------------------------------------------------------------------
-int logRotate(string arg, UniversalInterface &ui )
+int logRotate( const string arg, UniversalInterface &ui )
 {
 	// посылка всем
 	if( arg.empty() || (arg.c_str())[0]!='-' )
@@ -1260,7 +675,7 @@ int logRotate(string arg, UniversalInterface &ui )
 }
 
 // --------------------------------------------------------------------------------------
-int configure(string arg, UniversalInterface &ui )
+int configure( const string arg, UniversalInterface &ui )
 {
 	// посылка всем
 	if( arg.empty() || (arg.c_str())[0]!='-' )
@@ -1288,7 +703,7 @@ int configure(string arg, UniversalInterface &ui )
 }
 
 // --------------------------------------------------------------------------------------
-int oinfo(string arg, UniversalInterface &ui )
+int oinfo( const string arg, UniversalInterface &ui )
 {
 	UniSetTypes::ObjectId oid(uni_atoi(arg));
 	if( oid==0 )
@@ -1312,33 +727,4 @@ int oinfo(string arg, UniversalInterface &ui )
 	return 0;
 }
 
-// --------------------------------------------------------------------------------------
-/*
-bool getID( const string arg, ObjectId id, ObjectId node )
-{
-		if( isdigit( arg[0] ) )
-		{
-			if( sscanf( arg.c_str(),"%ld",&id ) < 1 )
-			{
-				cout << i <<"\t------------------------"<< endl;
-				cerr << "!!!!!!!!  SensorID #"<<i<<" '"<<arg<<"' задан неверно!!!!!!!\n"<< endl;
-				err = 1;
-				vout<<"| "<<arg<<"\t| ?\t| SensorID задан неверно !!!\n-----------------\n";
-				continue;
-			}
-		}	
-
-
-	string::size_type pos = arg.find_first_of(":");
-	if( pos == string::npos )
-	{
-		id = uni_atoi(arg);
-		return true;
-	}
-
-	id = uni_atoi(name.substr(0,pos-1));
-	node = uni_atoi( name.substr(pos+1,name.size()) );
-	return true;
-}
-*/
 // --------------------------------------------------------------------------------------

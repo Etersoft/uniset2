@@ -45,6 +45,9 @@ inline void msleep( unsigned int m ) { usleep(m*1000); }
 /*! Определения базовых типов библиотеки UniSet */
 namespace UniSetTypes
 {
+	class Configuration;
+	extern Configuration* conf;
+
 	typedef std::list<std::string> ListObjectName;	/*!< Список объектов типа ObjectName */
 
 	typedef ObjectId SysId;
@@ -249,6 +252,21 @@ namespace UniSetTypes
 	bool file_exist( const std::string filename );
 	
 	IDList explode( const std::string str, char sep=',' );
+	std::list<std::string> explode_str( const std::string str, char sep=',' );
+	
+	
+	struct ParamSInfo
+	{
+		IOController_i::SensorInfo si;
+		long val;
+		std::string fname; // fullname id@node or id
+	};
+	
+	// Функция разбора строки вида: id1@node1=val1,id2@node2=val2,...
+	// Если '=' не указано, возвращается val=0
+	// Если @node не указано, возвращается node=DefaultObjectId
+	std::list<ParamSInfo> getSInfoList( std::string s, Configuration* conf=UniSetTypes::conf);
+	bool is_digit( const std::string s );
 }
 
 #define atoi atoi##_Do_not_use_atoi_function_directly_Use_getIntProp90,_getArgInt_or_uni_atoi
