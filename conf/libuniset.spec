@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.99
-Release: eter13
+Release: eter15
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -184,6 +184,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Fri Nov 12 2010 Pavel Vainerman <pv@etersoft.ru> 0.99-eter14
+- new build
+
 * Thu Nov 11 2010 Pavel Vainerman <pv@altlinux.ru> 0.99-eter13
 - uniset-admin refactor. ( [get|set]Value, call remote sensors)
 

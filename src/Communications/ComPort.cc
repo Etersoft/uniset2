@@ -4,7 +4,7 @@
 ***************************************************************************/
 /*! \file
  *  \brief Обращения к последовательным интерфейсам
- *  \author Nick Lezzhov
+ *  \author Nick Lezzhov, Pavel Veynerman, Vitaly Lipatov
  *  \date   $Date: 2009/02/24 20:27:25 $
  */
 /**************************************************************************/
@@ -198,12 +198,12 @@ unsigned char ComPort::m_receiveByte( bool wait )
 			/* select' returns 0 if timeout, 1 if input available, -1 if error. */
 
 			if(select(FD_SETSIZE, &set, NULL, NULL, &timeout)==1)
-				bufLength= ::read(fd,buf,BufSize);
+				bufLength = ::read(fd,buf,BufSize);
 			else
-				bufLength=-1;
+				bufLength = -1;
 		}
 		else
-			bufLength= ::read(fd,buf,BufSize);
+			bufLength = ::read(fd,buf,BufSize);
 		if(bufLength <= 0)
 		{
 			throw UniSetTypes::TimeOut();
@@ -299,9 +299,6 @@ void ComPort::cleanupChannel()
 	if( fd < 0 )
 		return;
 
-	int oldfl = fcntl(fd, F_GETFL);
-
-	fcntl(fd,F_SETFL,O_NONBLOCK);
 	unsigned char tmpbuf[100];
 	int k = 0;
 	do
@@ -310,10 +307,9 @@ void ComPort::cleanupChannel()
 	}
 	while( k>0 );
 
-	fcntl(fd,F_SETFL,oldfl);
-
-//	curSym = 0;
-//	bufLength=-1;
+// #warning Обнулять нельзя, может надо делать что-то интелектуальнее...
+//	curSym 		= 0;
+//	bufLength 	= 0;
 }
 // --------------------------------------------------------------------------------
 void ComPort::setSpeed( std::string s )
