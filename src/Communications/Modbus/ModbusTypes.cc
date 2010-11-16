@@ -643,6 +643,8 @@ void ReadInputStatusMessage::init( ModbusMessage& m )
 	// переворачиваем слова
 	start = SWAPSHORT(start);
 	count = SWAPSHORT(count);
+	if( count > MAXDATALEN )
+		throw mbException(erPacketTooLong);
 }
 
 // -------------------------------------------------------------------------
@@ -845,6 +847,8 @@ void ReadOutputMessage::init( ModbusMessage& m )
 	// переворачиваем слова
 	start = SWAPSHORT(start);
 	count = SWAPSHORT(count);
+	if( count > MAXDATALEN )
+		throw mbException(erPacketTooLong);
 }
 
 // -------------------------------------------------------------------------
@@ -1063,6 +1067,8 @@ void ReadInputMessage::init( ModbusMessage& m )
 	// переворачиваем слова
 	start = SWAPSHORT(start);
 	count = SWAPSHORT(count);
+	if( count > MAXDATALEN )
+		throw mbException(erPacketTooLong);
 }
 
 // -------------------------------------------------------------------------

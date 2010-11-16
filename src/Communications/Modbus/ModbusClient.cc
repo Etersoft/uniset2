@@ -323,7 +323,7 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 	}
 
 	return erTimeOut;
-		
+	
 }
 
 // --------------------------------------------------------------------------------
@@ -540,7 +540,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 				return erBadCheckSum;
 			}
 
-			return erNoError;			
+			return erNoError;
 		}
 		else if( rbuf.func == fnReadInputStatus )
 		{
@@ -650,7 +650,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 				return erBadCheckSum;
 			}
 
-			return erNoError;			
+			return erNoError;
 		}
 		else if( rbuf.func == fnReadOutputRegisters )
 		{
@@ -704,7 +704,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 				return erBadCheckSum;
 			}
 
-			return erNoError;			
+			return erNoError;
 		}
 		else if( rbuf.func == fnForceMultipleCoils )
 		{
@@ -730,7 +730,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 				dlog[Debug::WARN] << err.str() << endl;
 				return erBadCheckSum;
 			}
-			return erNoError;			
+			return erNoError;
 		}
 		else if( rbuf.func == fnWriteOutputRegisters )
 		{
@@ -837,7 +837,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 				return erBadDataValue; // return erInvalidFormat;
 			}
 
-			return erNoError;			
+			return erNoError;
 		}
 		else if( rbuf.func == fnFileTransfer )
 		{
@@ -911,7 +911,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 				return erBadCheckSum;
 			}
 
-			return erNoError;			
+			return erNoError;
 		}
 		else if( rbuf.func == fnRemoteService )
 		{
@@ -962,7 +962,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 				return erBadCheckSum;
 			}
 
-			return erNoError;			
+			return erNoError;
 		}
 #endif // not standart commands
 
@@ -972,6 +972,11 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 			cleanupChannel();
 			return erUnExpectedPacketType;
 		}		
+	}
+	catch( mbException& ex )
+	{
+		dlog[Debug::CRIT] << "(recv): " << ex << endl;
+		return ex.err;
 	}
 	catch( UniSetTypes::TimeOut )
 	{
@@ -1005,6 +1010,11 @@ mbErrCode ModbusClient::send( ModbusMessage& msg )
 	try
 	{
 		sendData((unsigned char*)(&msg),len);
+	}
+	catch( mbException& ex )
+	{
+		dlog[Debug::CRIT] << "(send): " << ex << endl;
+		return ex.err;
 	}
 	catch( Exception& ex ) // SystemError
 	{
