@@ -1004,7 +1004,7 @@ IOController_i::CalibrateInfo IOController::getCalibrateInfo(const IOController_
 }
 // --------------------------------------------------------------------------------------------------------------
 
-IOController::UniDigitalIOInfo::UniDigitalIOInfo& 
+IOController::UniDigitalIOInfo& 
 			IOController::UniDigitalIOInfo::operator=(IOController_i::DigitalIOInfo& r)
 {
 	(*this) = r;
@@ -1012,7 +1012,7 @@ IOController::UniDigitalIOInfo::UniDigitalIOInfo&
 	return *this;
 }
 
-IOController::UniDigitalIOInfo::UniDigitalIOInfo& 
+IOController::UniDigitalIOInfo& 
 				IOController::UniDigitalIOInfo::operator=(IOController_i::DigitalIOInfo* r)
 {
 	(*this) = (*r);
@@ -1020,7 +1020,7 @@ IOController::UniDigitalIOInfo::UniDigitalIOInfo&
 	return *this;
 }
 
-const IOController::UniDigitalIOInfo::UniDigitalIOInfo& 
+const IOController::UniDigitalIOInfo& 
 				IOController::UniDigitalIOInfo::operator=(const IOController_i::DigitalIOInfo& r)
 {
 	(*this) = r;
@@ -1063,7 +1063,7 @@ IOController::UniAnalogIOInfo::UniAnalogIOInfo(IOController_i::AnalogIOInfo* ai)
 	dlst_lock(false)
 {}
 
-IOController::UniAnalogIOInfo::UniAnalogIOInfo& 
+IOController::UniAnalogIOInfo& 
 			IOController::UniAnalogIOInfo::operator=(IOController_i::AnalogIOInfo& r)
 {
 	(*this) = r;
@@ -1071,7 +1071,7 @@ IOController::UniAnalogIOInfo::UniAnalogIOInfo&
 	return *this;
 }
 
-IOController::UniAnalogIOInfo::UniAnalogIOInfo& 
+IOController::UniAnalogIOInfo& 
 				IOController::UniAnalogIOInfo::operator=(IOController_i::AnalogIOInfo* r)
 {
 	(*this) = (*r);
@@ -1080,7 +1080,7 @@ IOController::UniAnalogIOInfo::UniAnalogIOInfo&
 	return *this;
 }
 
-const IOController::UniAnalogIOInfo::UniAnalogIOInfo& 
+const IOController::UniAnalogIOInfo& 
 				IOController::UniAnalogIOInfo::operator=(const IOController_i::AnalogIOInfo& r)
 {
 	(*this) = r;
