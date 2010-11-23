@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.99
-Release: eter18
+Release: eter20
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -146,7 +146,7 @@ rm -f %buildroot%_libdir/*.la
 %_bindir/mtr-conv
 %_bindir/mtr-setup
 %_bindir/vtconv
-%_bindir/rtustate
+%_bindir/%oname-rtu188-state
 %_bindir/%oname-rtuexchange
 %_bindir/%oname-smemory
 %_bindir/%oname-smviewer

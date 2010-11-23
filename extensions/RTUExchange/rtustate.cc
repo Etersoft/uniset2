@@ -13,6 +13,7 @@ static struct option longopts[] = {
 	{ "device", required_argument, 0, 'd' },
 	{ "verbose", no_argument, 0, 'v' },
 	{ "speed", required_argument, 0, 's' },
+	{ "use485F", no_argument, 0, 'y' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -25,6 +26,7 @@ static void print_help()
 	printf("[-s|--speed] speed                - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
 	printf("[-t|--timeout] msec               - Timeout. Default: 2000.\n");
 	printf("[-v|--verbose]                    - Print all messages to stdout\n");
+	printf("[-y|--use485F]                    - use RS485 Fastwel.\n");
 }
 // --------------------------------------------------------------------------
 int main( int argc, char **argv )
@@ -37,6 +39,7 @@ int main( int argc, char **argv )
 	ModbusRTU::ModbusAddr slaveaddr = 0x01;
 	int tout = 2000;
 	DebugStream dlog;
+	int use485 = 0;
 
 	try
 	{
@@ -68,6 +71,10 @@ int main( int argc, char **argv )
 					verb = 1;
 				break;
 
+				case 'y':
+					use485 = 1;
+				break;
+				
 				case '?':
 				default:
 					printf("? argumnet\n");
@@ -83,7 +90,7 @@ int main( int argc, char **argv )
 					<< endl;					
 		}		
 		
-		ModbusRTUMaster mb(dev);
+		ModbusRTUMaster mb(dev,use485);
 
 		if( verb )
 			dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );

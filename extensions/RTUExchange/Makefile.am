@@ -1,4 +1,4 @@
-bin_PROGRAMS 			= @PACKAGE@-rtuexchange mtr-conv rtustate vtconv mtr-setup
+bin_PROGRAMS 			= @PACKAGE@-rtuexchange mtr-conv uniset-rtu188-state vtconv mtr-setup
 
 lib_LTLIBRARIES 			= libUniSetRTU.la
 libUniSetRTU_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
@@ -27,9 +27,9 @@ vtconv_SOURCES	= vtconv.cc
 vtconv_LDADD	= $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la
 vtconv_CXXFLAGS = -I$(top_builddir)/extensions/include
 
-rtustate_LDADD 		= libUniSetRTU.la $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la
-rtustate__CXXFLAGS	= -I$(top_builddir)/extensions/include
-rtustate_SOURCES	= rtustate.cc
+uniset_rtu188_state_LDADD 		= libUniSetRTU.la $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la
+uniset_rtu188_state__CXXFLAGS	= -I$(top_builddir)/extensions/include
+uniset_rtu188_state_SOURCES		= rtustate.cc
 
 # install
 devel_include_HEADERS = *.h
