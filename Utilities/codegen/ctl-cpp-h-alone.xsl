@@ -52,6 +52,7 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 				<xsl:value-of select="$CLASSNAME"/>_SK( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::conf->getNode("<xsl:value-of select="normalize-space($OID)"/>") );
 		</xsl:if>
 		<xsl:value-of select="$CLASSNAME"/>_SK();
+
 		virtual ~<xsl:value-of select="$CLASSNAME"/>_SK();
 
 		<xsl:call-template name="COMMON-HEAD-PUBLIC"/>

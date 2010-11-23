@@ -13,12 +13,6 @@ TestGenAlone::~TestGenAlone()
 {
 }
 // -----------------------------------------------------------------------------
-TestGenAlone::TestGenAlone()
-{
-	cerr << ": init failed!!!!!!!!!!!!!!!"<< endl;
-	throw Exception();
-}
-// -----------------------------------------------------------------------------
 void TestGenAlone::step()
 {
 	cout << "input2 state=" << in_input2_s << endl;

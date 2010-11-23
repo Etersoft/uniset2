@@ -159,24 +159,20 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askSensors( UniversalIO::UIOCommand
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::askState( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node )
 {
-// #warning НЕ РЕАЛИЗОВАНА...
 	if( cmd == UniversalIO::UIONotify )
 	{
 		SensorMessage sm( sid, (bool)ui.getState(sid,node) );
 		sm.node = node;
-//		push( sm.transport_msg() );
 		sensorInfo(&amp;sm);
 	}
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::askValue( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node )
 {
-// #warning НЕ РЕАЛИЗОВАНА..
 	if( cmd == UniversalIO::UIONotify )
 	{
 		SensorMessage sm( sid, (long)ui.getValue(sid,node) );
 		sm.node = node;
-//		push( sm.transport_msg() );
 		sensorInfo(&amp;sm);
 	}
 }

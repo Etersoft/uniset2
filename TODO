@@ -32,3 +32,8 @@
 ----------
 smonit: processing "precision"
 admin: processing "precision"
+
+
+codegen:
+- Сделать работу с TestMode на основе заказа! 
+- Сделать работу с ResetMsg на основе askTimer! (подумать нужно ли..)

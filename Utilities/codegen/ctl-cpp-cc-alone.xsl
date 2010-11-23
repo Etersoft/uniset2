@@ -127,24 +127,20 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( UniSetTypes::SensorM
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::askState( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
 {
-// #warning НЕ РЕАЛИЗОВАНА...
 	if( _cmd == UniversalIO::UIONotify )
 	{
 		SensorMessage _sm( _sid, (bool)ui.getState(_sid,_node) );
 		_sm.node = _node;
-//		push( _sm.transport_msg() );
 		sensorInfo(&amp;_sm);
 	}
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::askValue( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
 {
-// #warning НЕ РЕАЛИЗОВАНА..
 	if( _cmd == UniversalIO::UIONotify )
 	{
 		SensorMessage _sm( _sid, (long)ui.getValue(_sid,_node) );
 		_sm.node = _node;
-//		push( _sm.transport_msg() );
 		sensorInfo(&amp;_sm);
 	}
 }

@@ -170,11 +170,6 @@
 		void setState( UniSetTypes::ObjectId sid, bool state );
 		void askState( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );
 		void askValue( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );
-		void askThreshold ( UniSetTypes::ObjectId sensorId, UniSetTypes::ThresholdId tid,
-							UniversalIO::UIOCommand cmd,
-							CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Long sensibility,
-							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
-
 		void updateValues();
 		void setMsg( UniSetTypes::ObjectId code, bool state );
 </xsl:template>
@@ -229,6 +224,7 @@
 		bool activated;
 		int activateTimeout;	/*!&lt; время ожидания готовности UniSetObject к работе */
 		PassiveTimer ptStartUpTimeout;	/*!&lt; время на блокировку обработки WatchDog, если недавно был StartUp */
+		int askPause; /*!&lt; пауза между неудачными попытками заказать датчики */
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PRIVATE">
@@ -328,7 +324,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* _sm )
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::setState( UniSetTypes::ObjectId _sid, bool _state )
 {
-#warning сделать setState отдельной функцией, а не через setValue
 	setValue(_sid, _state ? 1 : 0 );
 }
 // -----------------------------------------------------------------------------
@@ -357,15 +352,6 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::activateObject()
 	}
 
 	return true;
-}
-// -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::askThreshold( UniSetTypes::ObjectId _sid, UniSetTypes::ThresholdId _tid,
-							UniversalIO::UIOCommand _cmd,
-							CORBA::Long lowLimit, CORBA::Long _hiLimit, CORBA::Long _sensibility,
-							UniSetTypes::ObjectId _backid )
-{
-#warning askThreshold НЕ РЕАЛИЗОВАНА...
-//	ui.askThreshold( _sid,_tid,_cmd,_lowLimit,_hiLimit,_sensibility,_backid);
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::preTimerInfo( UniSetTypes::TimerMessage* _tm )
@@ -479,7 +465,8 @@ idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(0),
 smReadyTimeout(0),
-activated(false)
+activated(false),
+askPause(2000)
 {
 	unideb[Debug::CRIT] &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
 	throw Exception( string(myname+": init failed!!!") );
@@ -508,7 +495,8 @@ idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(cnode),
 smReadyTimeout(0),
-activated(false)
+activated(false),
+askPause(conf->getPIntProp(cnode,"askPause",2000))
 {
 	<xsl:call-template name="COMMON-ID-LIST"/>
 
@@ -736,7 +724,8 @@ idLocalTestMode_S(DefaultObjectId),
 idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(0),
-activated(false)
+activated(false),
+askPause(2000)
 {
 	unideb[Debug::CRIT] &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
 	throw Exception( string(myname+": init failed!!!") );
@@ -767,7 +756,8 @@ in_LocalTestMode_S(false),
 idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(cnode),
-activated(false)
+activated(false),
+askPause(conf->getPIntProp(cnode,"askPause",2000))
 {
 	si.node = conf->getLocalNode();
 

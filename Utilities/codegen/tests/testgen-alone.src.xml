@@ -13,7 +13,7 @@
 <GlobalConfigure>
 
 	<settings>
-		<TestGenAlone>
+		<TestGenAlone name="TestGenAlone">
 			<set name="ID" val="TestGenAlone"/>
 		  	<set name="class-name" val="TestGenAlone"/>
 		  	<set name="msg-count" val="20"/>

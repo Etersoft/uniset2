@@ -32,7 +32,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		return;
 	try
 	{	
-#warning Сделать работу с TestMode на основе заказа!
 		isTestMode = checkTestMode();
 		if( trTestMode.change(isTestMode) )
 			testMode(isTestMode);
@@ -49,7 +48,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		// проверка таймеров
 		checkTimers(this);
 
-#warning Сделать работу с ResetMsg на основе askTimer!
 		if( resetMsgTime&gt;0 &amp;&amp; trResetMsg.hi(ptResetMsg.checkTime()) )
 		{
 //			cout &lt;&lt; myname &lt;&lt;  ": ********* reset messages *********" &lt;&lt; endl;
@@ -165,8 +163,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askSensors( UniversalIO::UIOCommand
 		{
 			unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(askSensors): catch(...)" &lt;&lt; endl;
 		}
-#warning Сделать паузу между заказами настраиваемой	из конф. файла
-		msleep(2000);
+		msleep(askPause);
 	}
 }
 // -----------------------------------------------------------------------------

@@ -14,8 +14,6 @@ class TestGenAlone:
 
 
 	protected:
-		TestGenAlone();
-		
 		virtual void step();
 		void sensorInfo( UniSetTypes::SensorMessage *sm );
 		void timerInfo( UniSetTypes::TimerMessage *tm );
