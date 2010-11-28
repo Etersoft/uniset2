@@ -19,7 +19,8 @@ SMonitor::SMonitor(ObjectId id):
 	script("")
 {
 	string sid(conf->getArgParam("--sid"));
-	lst = UniSetTypes::explode(sid);
+	
+	lst = UniSetTypes::getSInfoList(sid,UniSetTypes::conf); 
 
 	if( lst.empty() )
 		throw SystemError("Не задан список датчиков (--sid)");
@@ -89,13 +90,15 @@ void SMonitor::sysCommand( SystemMessage *sm )
 	{
 		case SystemMessage::StartUp:
 		{
-			std::list<ObjectId> l = lst.getList();
-			for( std::list<ObjectId>::iterator it=l.begin(); it!=l.end(); ++it )
-			{
+ 			for( MyIDList::iterator it=lst.begin(); it!=lst.end(); it++ )
+			{                                                                                                                                                                               
+				if( it->si.node == DefaultObjectId )
+					it->si.node = conf->getLocalNode();
+
 				try
 				{
-					if( (*it) != DefaultObjectId )
-						ui.askSensor((*it),UniversalIO::UIONotify);
+					if( it->si.id != DefaultObjectId )
+						ui.askRemoteSensor(it->si.id,UniversalIO::UIONotify,it->si.node);
 				}
 				catch(Exception& ex)
 				{
@@ -108,30 +111,6 @@ void SMonitor::sysCommand( SystemMessage *sm )
 					raise(SIGTERM);
 				}
 			}
-/*
-			try
-			{
-				UniSetTypes::IDSeq_var badlst = ui.askSensorsSeq(lst,UniversalIO::UIONotify);
-				int sz = badlst->length();
-				if( sz > 0 )
-				{
-					cerr << myname << "(askSensrosSeq): ******** НЕ УДАЛОСЬ ЗАКАЗАТЬ: ";
-					for( int i=0; i<sz; i++ )
-						cerr << badlst[i] << " ";
-					cerr << endl;
-				}			
-			}
-			catch(Exception& ex)
-			{
-				cerr << myname << ":(askSensor): " << ex << endl;
-				raise(SIGTERM);
-			}
-			catch(...)
-			{
-				cerr << myname << ": НЕ СМОГ ЗАКАЗТЬ датчики "<< endl;
-				raise(SIGTERM);
-			}
-*/
 		}
 		break;
 						

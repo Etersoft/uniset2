@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.99
-Release: eter21
+Release: eter22
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -14,8 +14,8 @@ Packager: Pavel Vainerman <pv@altlinux.ru>
 Source: /var/ftp/pvt/Etersoft/Ourside/unstable/sources/tarball/%name-%version.tar
 
 # manually removed: glibc-devel-static
-# Automatically added by buildreq on Tue Jul 14 2009
-BuildRequires: glibc-devel libMySQL-devel libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel python-modules xsltproc
+# Automatically added by buildreq on Fri Nov 26 2010
+BuildRequires: glibc-devel-static libcomedi-devel libcommoncpp2-devel libmysqlclient-devel libomniORB-devel libsigc++2.0-devel python-modules xsltproc
 
 %set_verify_elf_method textrel=strict,rpath=strict,unresolved=strict
 
@@ -184,6 +184,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Mon Nov 29 2010 Pavel Vainerman <pv@altlinux.ru> 0.99-eter22
+- smonitor new format (id@node)
+
 * Tue Nov 23 2010 Pavel Vainerman <pv@altlinux.ru> 0.99-eter20
 - new build
 

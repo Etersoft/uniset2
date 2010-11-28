@@ -13,7 +13,7 @@ int main( int argc, const char **argv )
 	{
 		if( argc>1 && ( !strcmp(argv[1],"--help") || !strcmp(argv[1],"-h") ) )
 		{
-			cout << "Usage: uniset-smonit [ args ] --sid id1,id2,id2,... "
+			cout << "Usage: uniset-smonit [ args ] --sid id1@node1,Sensor2@node2,id2,sensorname3,... "
 //				 << " --script scriptname \n"
 				 << " --confile configure.xml \n";
 			return 0;

@@ -26,7 +26,8 @@ class SMonitor:
 	    SMonitor();
 		
 	private:
-		UniSetTypes::IDList lst;
+		typedef std::list<UniSetTypes::ParamSInfo> MyIDList;
+		MyIDList lst;
 		std::string script;
 };
 
