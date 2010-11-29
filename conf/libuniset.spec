@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.99
-Release: eter22
+Release: eter23
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -184,6 +184,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Mon Nov 29 2010 Pavel Vainerman <pv@altlinux.ru> 0.99-eter23
+- fixed bug in Modbus<-->SM (signed and unsigned value)
+
 * Mon Nov 29 2010 Pavel Vainerman <pv@altlinux.ru> 0.99-eter22
 - smonitor new format (id@node)
 
