@@ -1818,7 +1818,7 @@ void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
 							IOBase::processingAsDI( p, r->mbval, shm, force );
 						}
 						else
-							IOBase::processingAsAI( p,r->mbval, shm, force );
+							IOBase::processingAsAI( p, (signed short)r->mbval, shm, force );
 					}
 					return;
 				}
