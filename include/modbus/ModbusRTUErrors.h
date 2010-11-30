@@ -1,10 +1,9 @@
-/*! $Id: ModbusRTUErrors.h,v 1.2 2008/01/01 00:26:23 vpashka Exp $ */
-// -------------------------------------------------------------------------
 #ifndef ModbusRTUErrors_H_
 #define ModbusRTUErrors_H_
 // -------------------------------------------------------------------------
 #include <string>
 #include <iostream>
+#include "Exceptions.h"
 // -------------------------------------------------------------------------
 namespace ModbusRTU
 {
@@ -34,12 +33,16 @@ namespace ModbusRTU
 	// ---------------------------------------------------------------------
 	std::string mbErr2Str( mbErrCode e );
 	// ---------------------------------------------------------------------
-	class mbException
+	class mbException:
+		UniSetTypes::Exception
 	{
 		public:
-			mbException():err(ModbusRTU::erNoError){}
-			mbException( ModbusRTU::mbErrCode err):err(err){}
-		
+			mbException():
+				UniSetTypes::Exception("mbException"),err(ModbusRTU::erNoError){}
+			mbException( ModbusRTU::mbErrCode err ):
+				UniSetTypes::Exception(mbErr2Str(err)),err(err){}
+			
+			
 			ModbusRTU::mbErrCode err;
 
 			friend std::ostream& operator<<(std::ostream& os, mbException& ex )
