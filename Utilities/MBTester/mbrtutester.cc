@@ -94,7 +94,7 @@ int main( int argc, char **argv )
 	string dev("/dev/ttyS0");
 	string speed("38400");
 	ModbusRTU::ModbusData reg = 0;
-	ModbusRTU::ModbusData val = 0;
+	int val = 0;
 	ModbusRTU::ModbusData count = 1;
 	ModbusRTU::ModbusAddr myaddr = 0x01;
 	ModbusRTU::ModbusAddr slaveaddr = 0x00;
@@ -174,6 +174,12 @@ int main( int argc, char **argv )
 							string sb(v,1);
 							ModbusRTU::DataBits d(sb);
 							val = d.mbyte();
+						}
+						else if( (argv[optind+1])[0] == 'm' )
+						{
+							string v(argv[optind+1]);
+							string sb(v,1);
+							val = -1*ModbusRTU::str2mbData(sb);
 						}
 						else
 							val = ModbusRTU::str2mbData(argv[optind+1]);

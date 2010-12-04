@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.99
-Release: eter24
+Release: eter25
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -184,6 +184,10 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Sat Dec 04 2010 Pavel Vainerman <pv@altlinux.ru> 0.99-eter25
+- fixed bug in uniset-mbtcptest (writexx)
+- minor fixes ( add 'm'-parametes for set value < 0 )
+
 * Tue Nov 30 2010 Pavel Vainerman <pv@altlinux.ru> 0.99-eter24
 - ModbusRTU::mbException: public Exception
 

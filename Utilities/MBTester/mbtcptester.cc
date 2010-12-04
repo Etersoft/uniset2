@@ -71,7 +71,7 @@ int main( int argc, char **argv )
 	string iaddr("127.0.0.1");
 	int port=502;
 	ModbusRTU::ModbusData reg = 0;
-	ModbusRTU::ModbusData val = 0;
+	int val = 0;
 	ModbusRTU::ModbusData count = 1;
 	ModbusRTU::ModbusAddr myaddr = 0x01;
 	ModbusRTU::ModbusAddr slaveaddr = 0x00;
@@ -135,7 +135,7 @@ int main( int argc, char **argv )
 					}
 					reg = ModbusRTU::str2mbData(argv[optind]);
 
-					if( !checkArg(optind+1,argc,argv) )
+					if( checkArg(optind+1,argc,argv) )
 					{
 						if( (argv[optind+1])[0] == 'b' )
 						{
@@ -143,6 +143,12 @@ int main( int argc, char **argv )
 							string sb(v,1);
 							ModbusRTU::DataBits d(sb);
 							val = d.mbyte();
+						}
+						else if( (argv[optind+1])[0] == 'm' )
+						{
+							string v(argv[optind+1]);
+							string sb(v,1);
+							val = -1 * ModbusRTU::str2mbData(sb);
 						}
 						else
 							val = ModbusRTU::str2mbData(argv[optind+1]);
