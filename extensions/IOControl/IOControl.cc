@@ -440,10 +440,10 @@ void IOControl::ioread( IOInfo* it )
 
 	// если включён режим "в соответсвии с конфигурационным файлом"
 	// и при этом не стоит для этого канал "игнорировать в тестовом режиме"
-	if( testmode == tmConfigIgnore && !it->ignore_testmode )
+	if( testmode == tmConfigEnable && !it->enable_testmode )
 		return;
 
-	if( testmode == tmConfigEnable && !it->enable_testmode )
+	if( testmode == tmConfigDisable && it->disable_testmode )
 		return;
 
 	ComediInterface* card = cards.getCard(it->ncard);
@@ -744,8 +744,8 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 
 	inf.lamp = it.getIntProp("lamp");
 	inf.no_testlamp = it.getIntProp("no_iotestlamp");
-	inf.ignore_testmode = it.getIntProp("ignore_testmode");
 	inf.enable_testmode = it.getIntProp("enable_testmode");
+	inf.disable_testmode = it.getIntProp("disable_testmode");
 	inf.aref = 0;
 	inf.range = 0;
 
@@ -1009,6 +1009,12 @@ void IOControl::check_testmode()
 
 				if( card == NULL )
 					continue;
+
+				if( testmode == tmConfigEnable && !it->enable_testmode )
+					return;
+
+				 if( testmode == tmConfigDisable && it->disable_testmode )
+					 return;
 
 				try
 				{

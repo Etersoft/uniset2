@@ -122,11 +122,28 @@
 			  UniSetTypes::lmpBLINK2   - мигание с частотой 2
 			  UniSetTypes::lmpBLINK3   - мигание с частотой 3
 			  
-	no_iotestlamp  - игнорировать данную лампочку при тесте ламп. 
+	no_iotestlamp  - игнорировать данную лампочку при тесте ламп.
 	range          - диапазон измерения аналогового входа (см. libcomedi)
 	aref           - тип подключения (см. libcomedi)
 
+	enable_testmode  - включить в работу во время тестового режима tmConfigEnable
+	disable_testmode  - исключить из работы в тестовом режиме tmConfigDisable.
+
 	\section sec_IOC_ConfList Список датчиков для процесса в/в
+
+	\section sec_IOC_TestMode Тестовый режим
+		В IOControl встроена возможнось переводить его в один из тестовых режимов.
+	Для этого необходимо указать для IOControl аналоговый датчик в который будет записан "код"
+	режима работы. Датчик можно задать либо аргументом командной строки
+	--io-test-mode ID либо в конфигурационном файле testmode_as="ID"
+	Сейчас поддерживаются следующий режимы (см. IOControl::TestModeID):
+
+	"0" - тестовый режим отключён. Обычная работа.
+	"1" - полностью отключить работу с картами в/в. При этом все выходы будут переведены в безопасное состояние.
+	"2" - Режим "разрешённых" каналов. В этом режиме отключается работа со свсеми каналами, кроме тех, у которых
+		  указан параметр enable_testmode="1".
+	"3" - Режим "запрещённых" каналов. В этом режиме отключается работа ТОЛЬКО для каналов, у которых
+		указан параметр disable_testmode="1".
 */
 // -----------------------------------------------------------------------------
 #warning Сделать обработку сигналов завершения....
@@ -192,8 +209,8 @@ class IOControl:
 				range(0),
 				lamp(false),
 				no_testlamp(false),
-				ignore_testmode(false),
-				enable_testmode(false)
+				enable_testmode(false),
+				disable_testmode(false)
 			{}
 
 
@@ -219,8 +236,8 @@ class IOControl:
 
 			bool lamp;		/*!< признак, что данный выход является лампочкой (или сигнализатором) */
 			bool no_testlamp; /*!< флаг исключения из 'проверки ламп' */
-			bool ignore_testmode; /*!< флаг для режима тестирования tmConfigIgnore */
 			bool enable_testmode; /*!< флаг для режима тестирования tmConfigEnable */
+			bool disable_testmode; /*!< флаг для режима тестирования tmConfigDisable */
 			
 			friend std::ostream& operator<<(std::ostream& os, IOInfo& inf );
 		};
@@ -238,8 +255,8 @@ class IOControl:
 		{
 			tmNone		= 0, 		/*!< тестовый режим отключён */
 			tmOffPoll	= 1,		/*!< отключить опрос */
-			tmConfigIgnore	= 2, 	/*!< специальный режим, в соответсвии с настройкой 'ignore_testmode' */
-			tmConfigEnable	= 3	 	/*!< специальный режим, в соответсвии с настройкой 'enable_testmode' */
+			tmConfigEnable	= 2, 	/*!< специальный режим, в соответсвии с настройкой 'enable_testmode' */
+			tmConfigDisable	= 3	 	/*!< специальный режим, в соответсвии с настройкой 'disable_testmode' */
 		};
 
 		void execute();
