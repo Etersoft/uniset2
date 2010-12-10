@@ -438,15 +438,26 @@ void IOControl::ioread( IOInfo* it )
 	if( it->ignore || it->ncard == defCardNum )
 		return;
 
-	// если включён режим "в соответсвии с конфигурационным файлом"
-	// и при этом не стоит для этого канал "игнорировать в тестовом режиме"
-	if( testmode == tmConfigEnable && !it->enable_testmode )
-		return;
+	 if( testmode != tmNone )
+	 {
+		if( testmode == tmConfigEnable && !it->enable_testmode )
+			return;
 
-	if( testmode == tmConfigDisable && it->disable_testmode )
-		return;
+		if( testmode == tmConfigDisable && it->disable_testmode )
+			return;
 
-	ComediInterface* card = cards.getCard(it->ncard);
+		if( testmode == tmOnlyInputs &&
+			it->stype != UniversalIO::AnalogInput &&
+			it->stype != UniversalIO::DigitalInput )
+			return;
+
+		if( testmode == tmOnlyOutputs &&
+			it->stype != UniversalIO::AnalogOutput &&
+			it->stype != UniversalIO::DigitalOutput )
+			return;
+	 }
+
+	 ComediInterface* card = cards.getCard(it->ncard);
 
 //		cout  << conf->oind->getMapName(it->si.id) 
 //				<< " card=" << card << " ncard=" << it->ncard
