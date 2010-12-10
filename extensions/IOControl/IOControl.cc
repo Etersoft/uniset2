@@ -43,7 +43,10 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	force_out(false),
 	activated(false),
 	readconf_ok(false),
-	term(false)
+	term(false),
+	testMode_as(UniSetTypes::DefaultObjectId),
+	testmode(tmNone),
+	prev_testmode(tmNone)
 {
 //	{
 //		string myfullname = conf->oind->getNameById(id);
@@ -140,12 +143,27 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		if( testLamp_S == DefaultObjectId )
 		{
 			ostringstream err;
-			err << myname << ": не найден идентификатор для датчика ТестЛамп: " << testlamp;
+			err << myname << ": Unkown ID for " << testlamp;
 			unideb[Debug::CRIT] << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 	
 		unideb[Debug::INFO] << myname << "(init): testLamp_S='" << testlamp << "'" << endl;
+	}
+
+	string tmode = conf->getArgParam("--io-test-mode",it.getProp("testmode_as"));
+	if( !tmode.empty() )
+	{
+		testMode_as = conf->getSensorID(tmode);
+		if( testMode_as == DefaultObjectId )
+		{
+			ostringstream err;
+			err << myname << ": Unknown ID for " << tmode;
+			unideb[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			throw SystemError(err.str());
+		}
+
+		unideb[Debug::INFO] << myname << "(init): testMode_as='" << testmode << "'" << endl;
 	}
 
 	shm = new SMInterface(icID,&ui,myid,ic);
@@ -270,6 +288,7 @@ void IOControl::execute()
 
 	shm->initAIterator(aitHeartBeat);
 	shm->initDIterator(ditTestLamp);
+	shm->initAIterator(aitTestMode);
 
 	PassiveTimer ptAct(activateTimeout);
 	while( !activated && !ptAct.checkTime() )
@@ -302,9 +321,10 @@ void IOControl::execute()
 	while(!term)
 	{
 		try
-		{	
+		{
 			if( !noCards )
 			{
+				check_testmode();
 				check_testlamp();
 			
 				if( ptBlink.checkTime() )
@@ -370,6 +390,9 @@ void IOControl::execute()
 // --------------------------------------------------------------------------------
 void IOControl::iopoll()
 {
+	if( testmode == tmOffPoll )
+		return;
+  
 	// Опрос приоритетной очереди
 	for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
 	{
@@ -415,7 +438,15 @@ void IOControl::ioread( IOInfo* it )
 	if( it->ignore || it->ncard == defCardNum )
 		return;
 
-		ComediInterface* card = cards.getCard(it->ncard);
+	// если включён режим "в соответсвии с конфигурационным файлом"
+	// и при этом не стоит для этого канал "игнорировать в тестовом режиме"
+	if( testmode == tmConfigIgnore && !it->ignore_testmode )
+		return;
+
+	if( testmode == tmConfigEnable && !it->enable_testmode )
+		return;
+
+	ComediInterface* card = cards.getCard(it->ncard);
 
 //		cout  << conf->oind->getMapName(it->si.id) 
 //				<< " card=" << card << " ncard=" << it->ncard
@@ -713,6 +744,8 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 
 	inf.lamp = it.getIntProp("lamp");
 	inf.no_testlamp = it.getIntProp("no_iotestlamp");
+	inf.ignore_testmode = it.getIntProp("ignore_testmode");
+	inf.enable_testmode = it.getIntProp("enable_testmode");
 	inf.aref = 0;
 	inf.range = 0;
 
@@ -944,6 +977,70 @@ void IOControl::delBlink( IOInfo* io, BlinkList& lst )
 			lst.erase(it);
 			return;
 		}
+	}
+}
+// -----------------------------------------------------------------------------
+void IOControl::check_testmode()
+{
+	if( testMode_as == DefaultObjectId )
+		return;
+
+	try
+	{
+		if( force_out )
+			testmode = shm->localGetValue( aitTestMode, testMode_as );
+
+		if( prev_testmode == testmode )
+			return;
+		
+		prev_testmode = testmode;
+		
+		// если режим "выключено всё"
+		// то гасим все выходы
+		if( testmode == tmOffPoll )
+		{
+			// выставляем безопасные состояния
+			for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+			{
+				if( it->ignore )
+					continue;
+
+				ComediInterface* card = cards.getCard(it->ncard);
+
+				if( card == NULL )
+					continue;
+
+				try
+				{
+					if( it->subdev==DefaultSubdev || it->safety == NoSafety )
+						continue;
+
+					if( it->stype == UniversalIO::DigitalOutput || it->lamp )
+					{
+						bool set = it->invert ? !((bool)it->safety) : (bool)it->safety;
+						card->setDigitalChannel(it->subdev,it->channel,set);
+					}
+					else if( it->stype == UniversalIO::AnalogOutput )				
+					{
+						card->setAnalogChannel(it->subdev,it->channel,it->safety,it->range,it->aref);
+					}
+				}
+				catch( Exception& ex )
+				{
+					unideb[Debug::LEVEL3] << myname << "(sigterm): " << ex << endl;
+				}
+				catch(...){}
+			}
+		}
+
+	}
+	catch( Exception& ex)
+	{
+		unideb[Debug::CRIT] << myname << "(check_testmode): " << ex << endl;
+	}
+	catch(...)
+	{
+		
 	}
 }
 // -----------------------------------------------------------------------------
@@ -1232,6 +1329,16 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 		unideb[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
 	}
 
+	try
+	{
+		if( testMode_as != DefaultObjectId )
+			shm->askSensor(testMode_as,cmd);
+	}
+	catch( Exception& ex)
+	{
+		unideb[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
+	}	
+
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
 	{
 		if( it->ignore )
@@ -1272,6 +1379,11 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 	{
 		unideb[Debug::INFO] << myname << "(sensorInfo): test_lamp=" << sm->state << endl;
 		isTestLamp = sm->state;
+	}
+	else if( sm->id == testMode_as )
+	{
+		testmode = sm->value;
+		check_testmode();
 	}
 
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )

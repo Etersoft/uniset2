@@ -191,7 +191,9 @@ class IOControl:
 				aref(0),
 				range(0),
 				lamp(false),
-				no_testlamp(false)
+				no_testlamp(false),
+				ignore_testmode(false),
+				enable_testmode(false)
 			{}
 
 
@@ -217,6 +219,8 @@ class IOControl:
 
 			bool lamp;		/*!< признак, что данный выход является лампочкой (или сигнализатором) */
 			bool no_testlamp; /*!< флаг исключения из 'проверки ламп' */
+			bool ignore_testmode; /*!< флаг для режима тестирования tmConfigIgnore */
+			bool enable_testmode; /*!< флаг для режима тестирования tmConfigEnable */
 			
 			friend std::ostream& operator<<(std::ostream& os, IOInfo& inf );
 		};
@@ -229,6 +233,14 @@ class IOControl:
 			int priority;
 			int index;
 		};
+		
+		enum TestModeID
+		{
+			tmNone		= 0, 		/*!< тестовый режим отключён */
+			tmOffPoll	= 1,		/*!< отключить опрос */
+			tmConfigIgnore	= 2, 	/*!< специальный режим, в соответсвии с настройкой 'ignore_testmode' */
+			tmConfigEnable	= 3	 	/*!< специальный режим, в соответсвии с настройкой 'enable_testmode' */
+		};
 
 		void execute();
 
@@ -237,6 +249,7 @@ class IOControl:
 		void iopoll(); /*!< опрос карт в/в */
 		void ioread( IOInfo* it );
 		void check_testlamp();
+		void check_testmode();
 		void blink();
 	
 		// действия при завершении работы
@@ -333,6 +346,12 @@ class IOControl:
 		int activateTimeout;
 		UniSetTypes::ObjectId sidTestSMReady;
 		bool term;
+
+
+		UniSetTypes::ObjectId testMode_as;
+		IOController::AIOStateList::iterator aitTestMode;
+		long testmode;
+		long prev_testmode;
 
 	private:
 };
