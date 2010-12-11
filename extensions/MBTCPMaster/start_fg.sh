@@ -4,7 +4,7 @@ uniset-start.sh -f ./uniset-mbtcpmaster \
 --confile test.xml \
 --mbtcp-name MBMaster1 \
 --smemory-id SharedMemory \
---dlog-add-levels info,crit,warn,level4 \
+--dlog-add-levels info,crit,warn,level4,level3 \
 --mbtcp-filter-field mbtcp \
 --mbtcp-filter-value 1 \
 --mbtcp-gateway-iaddr 127.0.0.1 \

@@ -279,26 +279,31 @@ void MBTCPMaster::poll()
 			dlog[Debug::INFO] << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
 				<< " regs=" << d->regmap.size() << endl;
 
-		d->resp_real = true;
+		d->resp_real = false;
 		for( MBTCPMaster::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
 			try
 			{
 				if( d->dtype==MBTCPMaster::dtRTU || d->dtype==MBTCPMaster::dtMTR )
 				{
-					pollRTU(d,it);
+					if( pollRTU(d,it) )
+						d->resp_real = true;
 				}
 			}
 			catch( ModbusRTU::mbException& ex )
 			{ 
-				if( d->resp_real )
-				{
-					dlog[Debug::CRIT] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
-						<< " reg=" << ModbusRTU::dat2str(it->second->mbreg)
-						<< " -> " << ex << endl;
-				}
+//				if( d->resp_real )
+//				{
+					if( dlog.debugging(Debug::LEVEL3) )
+					{
+						dlog[Debug::LEVEL3] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
+							<< " reg=" << ModbusRTU::dat2str(it->second->mbreg)
+							<< " for sensors: "; print_plist(dlog(Debug::LEVEL3),it->second->slst);
+							dlog(Debug::LEVEL3) << " err: " << ex << endl;
+					}
+//				}
 
-				d->resp_real = false;
+				// d->resp_real = false;
 				if( !d->ask_every_reg )
 					break;
 			}
@@ -2210,5 +2215,16 @@ void MBTCPMaster::execute()
 
 		msleep(polltime);
 	}
+}
+// -----------------------------------------------------------------------------
+//std::ostream& operator<<( std::ostream& os, MBTCPMaster::PList& lst )
+std::ostream& MBTCPMaster::print_plist( std::ostream& os, MBTCPMaster::PList& lst )
+{
+	os << "[ ";
+	for( MBTCPMaster::PList::const_iterator it=lst.begin(); it!=lst.end(); ++it )
+		os << "(" << it->si.id << ")" << conf->oind->getBaseName(conf->oind->getMapName(it->si.id)) << " ";
+	os << "]";
+
+	return os;
 }
 // -----------------------------------------------------------------------------

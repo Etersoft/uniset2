@@ -305,8 +305,11 @@ void RTUExchange::poll()
 			{ 
 				if( d->resp_real )
 				{
-					dlog[Debug::CRIT] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
-						<< " -> " << ex << endl;
+					if( dlog.debugging(Debug::LEVEL3) )
+					{
+  						dlog[Debug::CRIT] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
+							<< " -> " << ex << endl;
+					}					
 					d->resp_real = false;
 				}
 			}
@@ -328,13 +331,17 @@ void RTUExchange::poll()
 				}
 				catch( ModbusRTU::mbException& ex )
 				{ 
-					if( d->resp_real )
-					{
-						dlog[Debug::CRIT] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
-							<< " reg=" << ModbusRTU::dat2str(it->second->mbreg)
-							<< " -> " << ex << endl;
+//					if( d->resp_real )
+//					{
+						if( dlog.debugging(Debug::LEVEL3) )
+						{
+							 dlog[Debug::LEVEL3] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
+								<< " reg=" << ModbusRTU::dat2str(it->second->mbreg)
+								<< " for sensors: "; print_plist(dlog(Debug::LEVEL3), it->second->slst);
+								dlog(Debug::LEVEL3) << " err: " << ex << endl;
+						}
 				//		d->resp_real = false;
-					}
+//					}
 				}
 
 				if( it==d->regmap.end() )
@@ -2260,5 +2267,16 @@ void RTUExchange::updateRTU188( RegMap::iterator& it )
 			dlog[Debug::LEVEL3] << myname << "(updateRTU188): catch ..." << endl;
 		}
 	}
+}
+// -----------------------------------------------------------------------------
+//std::ostream& operator<<( std::ostream& os, MBTCPMaster::PList& lst )
+std::ostream& RTUExchange::print_plist( std::ostream& os, RTUExchange::PList& lst )
+{
+	os << "[ ";
+	for( RTUExchange::PList::const_iterator it=lst.begin(); it!=lst.end(); ++it )
+		os << "(" << it->si.id << ")" << conf->oind->getBaseName(conf->oind->getMapName(it->si.id)) << " ";
+	os << "]";
+
+	return os;
 }
 // -----------------------------------------------------------------------------

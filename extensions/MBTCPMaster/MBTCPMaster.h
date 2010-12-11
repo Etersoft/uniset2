@@ -212,6 +212,7 @@ class MBTCPMaster:
 		friend std::ostream& operator<<( std::ostream& os, const RSProperty& p );
 
 		typedef std::list<RSProperty> PList;
+		static std::ostream& print_plist( std::ostream& os, PList& p );
 
 		typedef std::map<ModbusRTU::ModbusData,RegInfo*> RegMap;
 		struct RegInfo
