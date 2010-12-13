@@ -11,6 +11,7 @@ namespace UniSetUDP
 {
 	struct UDPHeader
 	{
+		long num;
 		long nodeID;
 		long procID;
 		long dcount;

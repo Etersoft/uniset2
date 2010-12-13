@@ -117,7 +117,7 @@ void UDPNReceiver::recv()
 			return;
 		}
 #endif 		
-		cout << "***** request: " << udp->UDPSocket::getIPV4Peer() << endl;
+		//cout << "***** request: " << udp->UDPSocket::getIPV4Peer() << endl;
 		for( int i=0; i<100;i++ )
 		{
 			ssize_t ret = udp->UDPReceive::receive(&d,sizeof(d));

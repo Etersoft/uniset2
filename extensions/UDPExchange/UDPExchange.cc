@@ -14,7 +14,8 @@ initPause(0),
 udp(0),
 activated(false),
 dlist(100),
-maxItem(0)
+maxItem(0),
+packetnum(1)
 {
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(UDPExchange): objId=-1?!! Use --udp-name" );
@@ -224,11 +225,43 @@ void UDPExchange::poll()
 void UDPExchange::send()
 {
 	cout << myname << ": send..." << endl;
-/*
 	UniSetUDP::UDPHeader h;
 	h.nodeID = conf->getLocalNode();
 	h.procID = getId();
 	h.dcount = mypack.size();
+	h.num = packetnum++;
+
+	int ind = 0;
+	memcpy(udpbuf,(char*)(&h),sizeof(h));
+	ind += sizeof(h);
+
+	UniSetUDP::UDPMessage::UDPDataList::iterator it = mypack.dlist.begin();
+	for( ; it!=mypack.dlist.end(); ++it )
+	{
+		memcpy( &(udpbuf[ind]),&(*it),sizeof(UniSetUDP::UDPData));
+		ind +=sizeof(UniSetUDP::UDPData);
+
+		if( ind >= MaxDataLen )
+		{
+			cerr << myname << "(send data): data len  > " << MaxDataLen << "!!!!" << endl;
+			return;
+		}
+	}
+
+	if( udp->isPending(ost::Socket::pendingOutput) )
+	{
+		ssize_t ret = udp->send(udpbuf,ind);
+		if( ret<(ssize_t)ind )
+		{
+			cerr << myname << "(send data header): ret=" << ret << " byte count=" << ind << endl;
+			return;
+		}
+
+		cout << "send OK. byte count=" << ret << endl;
+	}
+
+#if 0
+/*
 	if( udp->isPending(ost::Socket::pendingOutput) )
 	{
 		ssize_t ret = udp->send((char*)(&h),sizeof(h));
@@ -245,7 +278,6 @@ void UDPExchange::send()
 		{
 //			while( !udp->isPending(ost::Socket::pendingOutput) )
 //				msleep(30);
-
         	cout << myname << "(send): " << (*it) << endl;
 			ssize_t ret = udp->send((char*)(&(*it)),sizeof(UniSetUDP::UDPData));
 			if( ret<(ssize_t)sizeof(UniSetUDP::UDPData) )
@@ -255,6 +287,7 @@ void UDPExchange::send()
 			}
 		}
 //	}
+#endif
 }
 // -----------------------------------------------------------------------------
 void UDPExchange::processingMessage(UniSetTypes::VoidMessage *msg)
