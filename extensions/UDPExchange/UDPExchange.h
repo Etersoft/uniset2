@@ -113,6 +113,10 @@ class UDPExchange:
 		ReceiverList rlist;
 		
 		ThreadCreator<UDPExchange>* thr;
+
+		static const int MaxDataLen = 8192;
+		char udpbuf[MaxDataLen];
+		long packetnum;
 };
 // -----------------------------------------------------------------------------
 #endif // UDPExchange_H_
