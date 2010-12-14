@@ -3,7 +3,6 @@
 // -----------------------------------------------------------------------------
 #include <ostream>
 #include <string>
-#include <map>
 #include <queue>
 #include <cc++/socket.h>
 #include "UniSetObject_LT.h"
@@ -37,8 +36,8 @@ class UDPReceiver:
 
 		void poll();
 		void recv();
-		virtual void step();
-		void update_data();
+		void step();
+		void update();
 
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
 		void sysCommand( UniSetTypes::SystemMessage *msg );
@@ -56,7 +55,8 @@ class UDPReceiver:
 
 		enum Timer
 		{
-			tmExchange
+			tmUpdate,
+			tmStep
 		};
 
 	private:
@@ -70,7 +70,9 @@ class UDPReceiver:
 		IOController::AIOStateList::iterator aitHeartBeat;
 		UniSetTypes::ObjectId test_id;
 
-		int polltime;	/*!< переодичность обновления данных, [мсек] */
+		int polltime;	/*!< пауза меджду приёмами пакетов, [мсек] */
+		int updatetime;	/*!< переодичность обновления данных в SM, [мсек] */
+		int steptime;	/*!< периодичность вызова step, [мсек] */
 
 		ost::UDPDuplex* udp;
 		ost::IPV4Host host;
@@ -83,14 +85,7 @@ class UDPReceiver:
 		bool activated;
 		int activateTimeout;
 		
-		long pnum;
-		
 		ThreadCreator<UDPReceiver>* thr;
-
-//		typedef std::map<unsigned long,UniSetUDP::UDPMessage> QueuePacket;
-//		QueuePacket qpack;
-		UniSetUDP::UDPMessage pack;
-		UniSetTypes::uniset_mutex packMutex;
 
 		// функция определения приоритетного сообщения для обработки
 		struct PacketCompare:
@@ -100,10 +95,18 @@ class UDPReceiver:
 							const UniSetUDP::UDPMessage& rhs) const;
 		};
 		typedef std::priority_queue<UniSetUDP::UDPMessage,std::vector<UniSetUDP::UDPMessage>,PacketCompare> PacketQueue;
-		PacketQueue qpack;
-		static const int max_buf_size = 20;
-		
-		PassiveTimer ptUpdate;
+		PacketQueue qpack;	/*!< очередь принятых пакетов (отсортированных по возрастанию номера пакета) */
+		UniSetUDP::UDPMessage pack;		/*!< прсто буфер для получения очерещного сообщения */
+		UniSetTypes::uniset_mutex packMutex; /*!< mutex для работы с очередью */
+		long pnum;	/*!< текущий номер обработанного сообщения, для проверки непрерывности последовательности пакетов */
+
+		/*! Минимальный размер очереди.
+		 * Предназначен для создания буфера, чтобы обработка сообщений шла
+		 * в порядке возрастания номеров пакетов. Даже если при приёме последовательность нарушалась
+		 */
+		int minBufSize;
+
+		int maxProcessingCount; /*! максимальное число обрабатываемых за один раз сообщений */
 };
 // -----------------------------------------------------------------------------
 #endif // UDPReceiver_H_
