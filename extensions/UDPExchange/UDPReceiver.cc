@@ -220,7 +220,8 @@ void UDPReceiver::recv()
 			return;
 		}
 
-		cerr << myname << "(receive): OK. ret=" << ret << " sizeof=" << sizeof(pack.msg) << endl;
+		cerr << myname << "(receive): OK. ret=" << ret << " sizeof=" << sizeof(pack.msg)
+			  << " header: " << pack.msg.header << endl;
 	}
 /*
 	cout << myname << ": recv....(timeout=" << recvTimeout << ")" << endl;
