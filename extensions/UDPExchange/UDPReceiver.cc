@@ -21,7 +21,9 @@ UniSetObject_LT(objId),
 shm(0),
 initPause(0),
 udp(0),
-activated(false)
+activated(false),
+icache(200),
+cache_init_ok(false)
 {
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(UDPReceiver): objId=-1?!! Use --udp-name" );
@@ -188,7 +190,7 @@ void UDPReceiver::update()
 	}
 
 	int k = maxProcessingCount;
-	while( buf_ok && k>0)
+	while( buf_ok && k>0 )
 	{
 		{
 			uniset_mutex_lock l(packMutex);
@@ -210,13 +212,32 @@ void UDPReceiver::update()
 			buf_ok =  ( qpack.size() > minBufSize );
 		}
 
-		// cerr << myname << "(step): recv DATA OK. header: " << p.msg.header << endl;
+		initCache(p, !cache_init_ok);
+
 		for( int i=0; i<p.msg.header.dcount; i++ )
 		{
 			try
 			{
 				UniSetUDP::UDPData& d = p.msg.dat[i];
-				shm->setValue(d.id,d.val);
+				ItemInfo& ii(icache[i]);
+				if( ii.id != d.id )
+				{
+					dlog[Debug::WARN] << myname << "(update): reinit cache for sid=" << d.id << endl;
+					ii.id = d.id;
+					shm->initAIterator(ii.ait);
+					shm->initDIterator(ii.dit);
+				}
+
+				if( ii.iotype == UniversalIO::DigitalInput )
+					shm->localSaveState(ii.dit,d.id,d.val,getId());
+				else if( ii.iotype == UniversalIO::AnalogInput )
+					shm->localSaveValue(ii.ait,d.id,d.val,getId());
+				else if( ii.iotype == UniversalIO::AnalogOutput )
+					shm->localSetValue(ii.ait,d.id,d.val,getId());
+ 				else if( ii.iotype == UniversalIO::DigitalOutput )
+					shm->localSetState(ii.dit,d.id,d.val,getId());
+				else
+				  dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << d.id << endl;
 			}
 			catch( UniSetTypes::Exception& ex)
 			{
@@ -470,6 +491,11 @@ void UDPReceiver::sigterm( int signo )
 void UDPReceiver::initIterators()
 {
 	shm->initAIterator(aitHeartBeat);
+	for( ItemVec::iterator it=icache.begin(); it!=icache.end(); ++it )
+	{
+		shm->initAIterator(it->ait);
+		shm->initDIterator(it->dit);
+	}
 }
 // -----------------------------------------------------------------------------
 void UDPReceiver::help_print( int argc, char* argv[] )
@@ -508,5 +534,27 @@ UDPReceiver* UDPReceiver::init_udpreceiver( int argc, char* argv[], UniSetTypes:
 
 	dlog[Debug::INFO] << "(rsexchange): name = " << name << "(" << ID << ")" << endl;
 	return new UDPReceiver(ID,icID,ic);
+}
+// -----------------------------------------------------------------------------
+void UDPReceiver::initCache( UniSetUDP::UDPMessage& pack, bool force )
+{
+	 if( !force && pack.msg.header.dcount == icache.size() )
+		  return;
+
+	 dlog[Debug::INFO] << myname << ": init icache.." << endl;
+	 cache_init_ok = true;
+
+	 icache.resize(pack.msg.header.dcount);
+	 for( int i=0; i<icache.size(); i++ )
+	 {
+		  ItemInfo& d(icache[i]);
+		  if( d.id != pack.msg.dat[i].id )
+		  {
+				d.id = pack.msg.dat[i].id;
+				d.iotype = conf->getIOType(d.id);
+				shm->initAIterator(d.ait);
+				shm->initDIterator(d.dit);
+		  }
+	 }
 }
 // -----------------------------------------------------------------------------
