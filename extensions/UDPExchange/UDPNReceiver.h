@@ -26,6 +26,9 @@ class UDPNReceiver
 		inline void setReceiveTimeout( int t ){ recvTimeout = t; }
 		inline std::string getName(){ return myname; }
 
+		/*! глобальная функция для инициализации объекта */
+		static UDPNReceiver* init_udpreceiver( int argc, char* argv[],
+											UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
 
 	protected:
 		SMInterface* shm;

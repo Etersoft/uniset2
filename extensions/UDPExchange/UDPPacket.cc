@@ -20,19 +20,24 @@ std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPMessage& p 
 	return os;
 }
 // -----------------------------------------------------------------------------
-UDPMessage::UDPMessage()
+UDPMessage::UDPMessage():
+count(0)
 {
+}
+// -----------------------------------------------------------------------------
+bool UDPMessage::addData( const UniSetUDP::UDPData& dat )
+{
+	if( count >= MaxDataCount )
+		return false;
 
+	msg.dat[sizeof(UniSetUDP::UDPHeader)+count] = dat;
+	count++;
+	return true;
 }
 // -----------------------------------------------------------------------------
-void UDPMessage::addData( const UniSetUDP::UDPData& dat )
-{
-	dlist.push_back(dat);
-}
-// -----------------------------------------------------------------------------
-void UDPMessage::addData( long id, long val)
+bool UDPMessage::addData( long id, long val)
 {
 	UDPData d(id,val);
-	addData(d);
+	return addData(d);
 }
 // -----------------------------------------------------------------------------

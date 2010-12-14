@@ -30,21 +30,34 @@ namespace UniSetUDP
 		friend std::ostream& operator<<( std::ostream& os, UDPData& p );
 	}__attribute__((packed));
 
+	static const int MaxDataLen = 8192;
+	static const int MaxDataCount = ( MaxDataLen - sizeof(UniSetUDP::UDPHeader) ) / sizeof(UDPData);
+
+	 struct DataPacket
+	 {
+		UDPHeader header;
+		UDPData dat[MaxDataCount];
+	 }__attribute__((packed));
+
+
 	struct UDPMessage:
 		public UDPHeader
 	{
 		UDPMessage();
 
-		void addData( const UDPData& dat );
-		void addData( long id, long val );
+		bool addData( const UDPData& dat );
+		bool addData( long id, long val );
 
-		inline int size(){ return dlist.size(); }
+		inline bool isFull(){ return count<MaxDataCount; }
+		inline int size(){ return count; }
 
-		typedef std::list<UDPData> UDPDataList;
-		UDPDataList dlist;
+		DataPacket msg;
+		int count;
 
 		friend std::ostream& operator<<( std::ostream& os, UDPMessage& p );
 	};
+
+
 }
 // -----------------------------------------------------------------------------
 #endif // UDPPacket_H_

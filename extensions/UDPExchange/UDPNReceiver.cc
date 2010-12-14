@@ -86,25 +86,30 @@ void UDPNReceiver::recv()
 	cout << myname << ": recv....(timeout=" << recvTimeout << ")" << endl;
 //	UniSetUDP::UDPHeader h;
 	// receive
+	UniSetUDP::UDPMessage pack;
 	if( udp->isInputReady(recvTimeout) )
 	{
-/*
-		ssize_t ret = udp->UDPReceive::receive(&h,sizeof(h));
-		if( ret<(ssize_t)sizeof(h) )
+		ssize_t ret = udp->UDPReceive::receive(&(pack.msg),sizeof(pack.msg));
+		if( ret<(ssize_t)sizeof(pack.msg) )
 		{
-			cerr << myname << "(receive): ret=" << ret << " sizeof=" << sizeof(h) << endl;
+			cerr << myname << "(receive): ret=" << ret << " sizeof=" << sizeof(pack.msg) << endl;
 			return;
 		}
 
+		cerr << myname << "(receive): OK. ret=" << ret << " sizeof=" << sizeof(pack.msg) << endl;
+	}
+/*
 		cout << myname << "(receive): header: " << h << endl;
 		if( h.dcount <=0 )
 		{
 			cout << " data=0" << endl;
 			return;
 		}
-*/
 		UniSetUDP::UDPData d;
 		// ignore echo...
+*/
+
+
 #if 0
 		if( h.nodeID == conf->getLocalNode() && h.procID == getId() )
 		{
@@ -117,6 +122,7 @@ void UDPNReceiver::recv()
 			return;
 		}
 #endif
+#if 0
 		//cout << "***** request: " << udp->UDPSocket::getIPV4Peer() << endl;
 		for( int i=0; i<100;i++ )
 		{
@@ -134,5 +140,30 @@ void UDPNReceiver::recv()
 //	{
 //		cout << "no InputReady.." << endl;
 //	}
+#endif
+}
+// -----------------------------------------------------------------------------
+UDPNReceiver* UDPNReceiver::init_udpreceiver( int argc, char* argv[], UniSetTypes::ObjectId icID, SharedMemory* ic )
+{
+	string name = conf->getArgParam("--udp-name","UDPReceiver1");
+	if( name.empty() )
+	{
+		cerr << "(udpexchange): Не задан name'" << endl;
+		return 0;
+	}
+
+	ObjectId ID = conf->getObjectID(name);
+	if( ID == UniSetTypes::DefaultObjectId )
+	{
+		cerr << "(udpexchange): идентификатор '" << name
+			<< "' не найден в конф. файле!"
+			<< " в секции " << conf->getObjectsSection() << endl;
+		return 0;
+	}
+
+	dlog[Debug::INFO] << "(rsexchange): name = " << name << "(" << ID << ")" << endl;
+	//return new UDPNReceiver(ID,icID,ic);
+	//return new UDPNReceiver(ID,icID,ic);
+	return 0;
 }
 // -----------------------------------------------------------------------------
