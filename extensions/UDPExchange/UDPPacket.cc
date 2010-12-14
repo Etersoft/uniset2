@@ -7,7 +7,8 @@ std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPHeader& p )
 {
 	return os << "nodeID=" << p.nodeID
 				<< " procID=" << p.procID
-				<< " dcount=" << p.dcount;
+				<< " dcount=" << p.dcount
+				<< " pnum=" << p.num;
 }
 // -----------------------------------------------------------------------------
 std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPData& p )

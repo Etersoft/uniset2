@@ -1,4 +1,5 @@
-bin_PROGRAMS 			= @PACKAGE@-udpexchange @PACKAGE@-udpreceiver
+bin_PROGRAMS 	= @PACKAGE@-udpexchange
+noinst_PROGRAMS = @PACKAGE@-udpreceiver
 #@PACKAGE@-udpsender
 
 UUDP_VER=@LIBVER@
