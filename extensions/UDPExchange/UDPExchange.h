@@ -38,7 +38,8 @@ class UDPExchange:
 			IOController::AIOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;
 			UniSetTypes::uniset_spin_mutex val_lock;
-			UniSetUDP::UDPMessage::UDPDataList::iterator pack_it;
+//			UniSetUDP::UDPMessage::UDPDataList::iterator pack_it;
+			int pack_ind;
 			long val;
 
 			friend std::ostream& operator<<( std::ostream& os, UItem& p );
@@ -113,9 +114,6 @@ class UDPExchange:
 		ReceiverList rlist;
 		
 		ThreadCreator<UDPExchange>* thr;
-
-		static const int MaxDataLen = 8192;
-		char udpbuf[MaxDataLen];
 		long packetnum;
 };
 // -----------------------------------------------------------------------------

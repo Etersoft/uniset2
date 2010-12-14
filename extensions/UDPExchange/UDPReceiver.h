@@ -21,7 +21,7 @@ class UDPReceiver:
 		virtual ~UDPReceiver();
 	
 		/*! глобальная функция для инициализации объекта */
-		static UDPReceiver* init_udpreceiver( int argc, char* argv[], 
+		static UDPReceiver* init_udpreceiver( int argc, char* argv[],
 											UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
 
 		/*! глобальная функция для вывода help-а */

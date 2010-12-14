@@ -231,35 +231,28 @@ void UDPExchange::send()
 	h.dcount = mypack.size();
 	h.num = packetnum++;
 
+	mypack.msg.header = h;
+/*
 	int ind = 0;
 	memcpy(udpbuf,(char*)(&h),sizeof(h));
 	ind += sizeof(h);
-	
-	UniSetUDP::UDPMessage::UDPDataList::iterator it = mypack.dlist.begin();
-	for( ; it!=mypack.dlist.end(); ++it )
-	{
-		memcpy( &(udpbuf[ind]),&(*it),sizeof(UniSetUDP::UDPData));
-		ind +=sizeof(UniSetUDP::UDPData);
 
-		if( ind >= MaxDataLen )
-		{
-			cerr << myname << "(send data): data len  > " << MaxDataLen << "!!!!" << endl;
-			return;
-		}
-	}
-
+	memcpy( &(udpbuf[ind]),&(mypack.data),mypack.size());
+	ind += mypack.size();
+*/
 	if( udp->isPending(ost::Socket::pendingOutput) )
 	{
-		ssize_t ret = udp->send(udpbuf,ind);
-		if( ret<(ssize_t)ind )
+		ssize_t ret = udp->send( (char*)&(mypack.msg),sizeof(mypack.msg));
+		if( ret<sizeof(mypack.msg) )
 		{
-			cerr << myname << "(send data header): ret=" << ret << " byte count=" << ind << endl;
+			cerr << myname << "(send data header): ret=" << ret << " sizeof=" << sizeof(mypack.msg) << endl;
 			return;
 		}
 
 		cout << "send OK. byte count=" << ret << endl;
 	}
-	
+
+
 #if 0
 /*
 	if( udp->isPending(ost::Socket::pendingOutput) )
@@ -443,8 +436,10 @@ void UDPExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 		{
 			uniset_spin_lock lock(it->val_lock);
 			it->val = sm->value;
-			if( it->pack_it != mypack.dlist.end() )
-				it->pack_it->val = sm->value;
+/*			
+			if( it->pack_ind != -1 )
+				mypack.it->pack_it->val = sm->value;
+*/			
 		}
 		break;
 	}
@@ -557,9 +552,9 @@ bool UDPExchange::initItem( UniXML_iterator& it )
 	p.si.id = sid;
 	p.si.node = conf->getLocalNode();
 	mypack.addData(sid,0);
-	p.pack_it = (mypack.dlist.end()--);
+	p.pack_ind = mypack.size()-1;
 
-	if( maxItem >= dlist.size() )
+	if( maxItem >= mypack.size() )
 		dlist.resize(maxItem+10);
 	
 	dlist[maxItem] = p;

@@ -206,7 +206,23 @@ void UDPReceiver::poll()
 }
 // -----------------------------------------------------------------------------
 void UDPReceiver::recv()
-{	
+{
+	cout << myname << ": recv....(timeout=" << recvTimeout << ")" << endl;
+//	UniSetUDP::UDPHeader h;
+	// receive
+	UniSetUDP::UDPMessage pack;
+	if( udp->isInputReady(recvTimeout) )
+	{
+  		ssize_t ret = udp->UDPReceive::receive(&(pack.msg),sizeof(pack.msg));
+		if( ret<(ssize_t)sizeof(pack.msg) )
+		{
+			cerr << myname << "(receive): FAILED ret=" << ret << " sizeof=" << sizeof(pack.msg) << endl;
+			return;
+		}
+
+		cerr << myname << "(receive): OK. ret=" << ret << " sizeof=" << sizeof(pack.msg) << endl;
+	}
+/*
 	cout << myname << ": recv....(timeout=" << recvTimeout << ")" << endl;
 	UniSetUDP::UDPHeader h;
 	// receive
@@ -228,6 +244,7 @@ void UDPReceiver::recv()
 
 		UniSetUDP::UDPData d;
 		// ignore echo...
+*/		
 #if 0
 		if( h.nodeID == conf->getLocalNode() && h.procID == getId() )
 		{
@@ -239,7 +256,8 @@ void UDPReceiver::recv()
 			}
 			return;
 		}
-#endif 		
+#endif
+#if 0
 		for( int i=0; i<h.dcount;i++ )
 		{
 			ssize_t ret = udp->UDPReceive::receive(&d,sizeof(d));
@@ -256,6 +274,7 @@ void UDPReceiver::recv()
 //	{
 //		cout << "no InputReady.." << endl;
 //	}
+#endif
 }
 // -----------------------------------------------------------------------------
 void UDPReceiver::processingMessage(UniSetTypes::VoidMessage *msg)
