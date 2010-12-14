@@ -7,6 +7,15 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
+bool UDPReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
+											const UniSetUDP::UDPMessage& rhs) const
+{
+//	if( lhs.msg.header.num == rhs.msg.header.num )
+//		return (lhs.msg < rhs.msg);
+
+	return lhs.msg.header.num > rhs.msg.header.num;
+}
+// ------------------------------------------------------------------------------------------
 UDPReceiver::UDPReceiver( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic ):
 UniSetObject_LT(objId),
 shm(0),
@@ -61,6 +70,8 @@ activated(false)
 
 	recvTimeout = conf->getArgPInt("--udp-recv-timeout",it.getProp("recvTimeout"), 5000);
 	polltime = conf->getArgPInt("--udp-polltime",it.getProp("polltime"), 100);
+
+	ptUpdate.setTiming(100);
 
 	// -------------------------------
 	// ********** HEARTBEAT *************
@@ -131,23 +142,22 @@ void UDPReceiver::waitSMReady()
 	}
 }
 // -----------------------------------------------------------------------------
-/*
 void UDPReceiver::timerInfo( TimerMessage *tm )
 {
 	if( tm->id == tmExchange )
 		step();
 }
-*/
 // -----------------------------------------------------------------------------
 void UDPReceiver::step()
 {
-//	{
-//		uniset_mutex_lock l(pollMutex,2000);
-//		poll();
-//	}
-
 	if( !activated )
 		return;
+
+//	if(  ptUpdate.checkTime() )
+//	{
+		  update_data();
+		  ptUpdate.reset();
+//	}
 
 	if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
 	{
@@ -165,26 +175,56 @@ void UDPReceiver::step()
 }
 
 // -----------------------------------------------------------------------------
-void UDPReceiver::poll()
+void UDPReceiver::update_data()
 {
-	try
-	{
-//		udp->connect(host,port);
-//		udp->UDPSocket::setPeer(host,port);
-	}
-	catch( UniSetTypes::Exception& ex)
-	{
-		cerr << myname << "(step): " << ex << std::endl;
-//		reise(SIGTERM);
+	if( !activated )
 		return;
+
+	UniSetUDP::UDPMessage p;
+	bool buf_ok = false;
+	{
+		uniset_mutex_lock l(packMutex);
+		if( qpack.size() <= max_buf_size )
+			return;
+
+		buf_ok = true;
 	}
 
+	while( buf_ok )
+	{
+		{
+			uniset_mutex_lock l(packMutex);
+			p = qpack.top();
+			qpack.pop();
+		}
+
+		if( labs(p.msg.header.num - pnum) > 1 )
+		{
+			cerr << "************ FAILED! ORDER PACKETS! recv.num=" << pack.msg.header.num
+				  << " num=" << pnum << endl;
+		}
+
+		pnum = p.msg.header.num;
+
+		{
+			uniset_mutex_lock l(packMutex);
+			buf_ok =  ( qpack.size() > max_buf_size );
+		}
+
+		cerr << myname << "(step): recv DATA OK. header: " << p.msg.header << endl;
+	}
+}
+
+// -----------------------------------------------------------------------------
+
+void UDPReceiver::poll()
+{
+	cerr << "******************* pool start" << endl;
 	while( activated )
 	{
 		try
 		{
 			recv();
-//			send();
 		}
 		catch( ost::SockException& e )
 		{
@@ -192,11 +232,11 @@ void UDPReceiver::poll()
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
-			cerr << myname << "(step): " << ex << std::endl;
+			cerr << myname << "(poll): " << ex << std::endl;
 		}
 		catch(...)
 		{
-			cerr << myname << "(step): catch ..." << std::endl;
+			cerr << myname << "(poll): catch ..." << std::endl;
 		}	
 
 		msleep(polltime);
@@ -207,75 +247,42 @@ void UDPReceiver::poll()
 // -----------------------------------------------------------------------------
 void UDPReceiver::recv()
 {
-	cout << myname << ": recv....(timeout=" << recvTimeout << ")" << endl;
-//	UniSetUDP::UDPHeader h;
-	// receive
-	UniSetUDP::UDPMessage pack;
 	if( udp->isInputReady(recvTimeout) )
 	{
-  		ssize_t ret = udp->UDPReceive::receive(&(pack.msg),sizeof(pack.msg));
-		if( ret<(ssize_t)sizeof(pack.msg) )
+		ssize_t ret = udp->UDPReceive::receive(&(pack.msg),sizeof(pack.msg));
+		if( ret < sizeof(UniSetUDP::UDPHeader) )
 		{
-			cerr << myname << "(receive): FAILED ret=" << ret << " sizeof=" << sizeof(pack.msg) << endl;
-			return;
-		}
-
-		cerr << myname << "(receive): OK. ret=" << ret << " sizeof=" << sizeof(pack.msg)
-			  << " header: " << pack.msg.header << endl;
-	}
-/*
-	cout << myname << ": recv....(timeout=" << recvTimeout << ")" << endl;
-	UniSetUDP::UDPHeader h;
-	// receive
-	if( udp->isInputReady(recvTimeout) )
-	{
-		ssize_t ret = udp->UDPReceive::receive(&h,sizeof(h));
-		if( ret<(ssize_t)sizeof(h) )
-		{
-			cerr << myname << "(receive): ret=" << ret << " sizeof=" << sizeof(h) << endl;
+			cerr << myname << "(receive): FAILED header ret=" << ret << " sizeof=" << sizeof(UniSetUDP::UDPHeader) << endl;
 			return;
 		}
 		
-		cout << myname << "(receive): header: " << h << endl;
-		if( h.dcount <=0 )
+		ssize_t sz = pack.msg.header.dcount * sizeof(UniSetUDP::UDPData) + sizeof(UniSetUDP::UDPHeader);
+		if( ret < sz )
 		{
-			cout << " data=0" << endl;
+			cerr << myname << "(receive): FAILED data ret=" << ret << " sizeof=" << sz << endl;
 			return;
+		}
+		
+
+//		cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
+//			  << " header: " << pack.msg.header << endl;
+/*		
+		if( labs(pack.msg.header.num - pnum) > 1 )
+		{
+			cerr << "************ FAILED! ORDER PACKETS! recv.num=" << pack.msg.header.num
+					<< " num=" << pnum << endl;
+		}
+		
+		pnum = pack.msg.header.num;
+*/
+		{
+			uniset_mutex_lock l(packMutex);
+//			qpack[pack.msg.header.num] = pack;
+			qpack.push(pack);
 		}
 
-		UniSetUDP::UDPData d;
-		// ignore echo...
-*/		
-#if 0
-		if( h.nodeID == conf->getLocalNode() && h.procID == getId() )
-		{
-			for( int i=0; i<h.dcount;i++ )
-			{
-				ssize_t ret = udp->UDPReceive::receive(&d,sizeof(d));
-				if( ret < (ssize_t)sizeof(d) )
-					return;
-			}
-			return;
-		}
-#endif
-#if 0
-		for( int i=0; i<h.dcount;i++ )
-		{
-			ssize_t ret = udp->UDPReceive::receive(&d,sizeof(d));
-			if( ret<(ssize_t)sizeof(d) )
-			{
-				cerr << myname << "(receive data " << i << "): ret=" << ret << " sizeof=" << sizeof(d) << endl;
-				break;
-			}
-			
-			cout << myname << "(receive data " << i << "): " << d << endl;
-		}
+		return;
 	}
-//	else
-//	{
-//		cout << "no InputReady.." << endl;
-//	}
-#endif
 }
 // -----------------------------------------------------------------------------
 void UDPReceiver::processingMessage(UniSetTypes::VoidMessage *msg)
@@ -295,6 +302,13 @@ void UDPReceiver::processingMessage(UniSetTypes::VoidMessage *msg)
 			{
 				SensorMessage sm( msg );
 				sensorInfo(&sm);
+			}
+			break;
+
+			case Message::Timer:
+			{
+				TimerMessage tm(msg);
+				timerInfo(&tm);
 			}
 			break;
 
@@ -318,7 +332,7 @@ void UDPReceiver::processingMessage(UniSetTypes::VoidMessage *msg)
 	}
 }
 // -----------------------------------------------------------------------------
-void UDPReceiver::sysCommand(UniSetTypes::SystemMessage *sm)
+void UDPReceiver::sysCommand( UniSetTypes::SystemMessage *sm )
 {
 	switch( sm->command )
 	{
@@ -346,6 +360,7 @@ void UDPReceiver::sysCommand(UniSetTypes::SystemMessage *sm)
 				askSensors(UniversalIO::UIONotify);
 			}
 			thr->start();
+			askTimer(tmExchange,1000);
 		}
 
 		case SystemMessage::FoldUp:

@@ -3,7 +3,8 @@
 // -----------------------------------------------------------------------------
 #include <ostream>
 #include <string>
-#include <vector>
+#include <map>
+#include <queue>
 #include <cc++/socket.h>
 #include "UniSetObject_LT.h"
 #include "Trigger.h"
@@ -26,7 +27,6 @@ class UDPReceiver:
 
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, char* argv[] );
-
 	protected:
 
 		xmlNode* cnode;
@@ -37,11 +37,13 @@ class UDPReceiver:
 
 		void poll();
 		void recv();
-		void step();
+		virtual void step();
+		void update_data();
 
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
 		void sysCommand( UniSetTypes::SystemMessage *msg );
 		void sensorInfo( UniSetTypes::SensorMessage*sm );
+		void timerInfo( UniSetTypes::TimerMessage *tm );
 		void askSensors( UniversalIO::UIOCommand cmd );
 		void waitSMReady();
 
@@ -51,6 +53,11 @@ class UDPReceiver:
 		virtual void sigterm( int signo );
 
 		void initIterators();
+
+		enum Timer
+		{
+			tmExchange
+		};
 
 	private:
 		UDPReceiver();
@@ -76,7 +83,27 @@ class UDPReceiver:
 		bool activated;
 		int activateTimeout;
 		
+		long pnum;
+		
 		ThreadCreator<UDPReceiver>* thr;
+
+//		typedef std::map<unsigned long,UniSetUDP::UDPMessage> QueuePacket;
+//		QueuePacket qpack;
+		UniSetUDP::UDPMessage pack;
+		UniSetTypes::uniset_mutex packMutex;
+
+		// функция определения приоритетного сообщения для обработки
+		struct PacketCompare:
+		public std::binary_function<UniSetUDP::UDPMessage, UniSetUDP::UDPMessage, bool>
+		{
+			bool operator()(const UniSetUDP::UDPMessage& lhs,
+							const UniSetUDP::UDPMessage& rhs) const;
+		};
+		typedef std::priority_queue<UniSetUDP::UDPMessage,std::vector<UniSetUDP::UDPMessage>,PacketCompare> PacketQueue;
+		PacketQueue qpack;
+		static const int max_buf_size = 20;
+		
+		PassiveTimer ptUpdate;
 };
 // -----------------------------------------------------------------------------
 #endif // UDPReceiver_H_

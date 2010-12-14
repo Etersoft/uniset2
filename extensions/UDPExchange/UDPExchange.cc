@@ -228,7 +228,7 @@ void UDPExchange::send()
 	UniSetUDP::UDPHeader h;
 	h.nodeID = conf->getLocalNode();
 	h.procID = getId();
-	h.dcount = mypack.size();
+	h.dcount = mypack.msg.header.dcount;
 	h.num = packetnum++;
 
 	mypack.msg.header = h;
@@ -240,12 +240,16 @@ void UDPExchange::send()
 	memcpy( &(udpbuf[ind]),&(mypack.data),mypack.size());
 	ind += mypack.size();
 */
+	cout << "************* send header: " << mypack.msg.header << endl;
+	int sz = mypack.size() * sizeof(UniSetUDP::UDPHeader);
 	if( udp->isPending(ost::Socket::pendingOutput) )
 	{
-		ssize_t ret = udp->send( (char*)&(mypack.msg),sizeof(mypack.msg));
-		if( ret<sizeof(mypack.msg) )
+//		ssize_t ret = udp->send( (char*)&(mypack.msg),sizeof(mypack.msg));
+//		if( ret<sizeof(mypack.msg) )
+		ssize_t ret = udp->send( (char*)&(mypack.msg),sz);
+		if( ret < sz )
 		{
-			cerr << myname << "(send data header): ret=" << ret << " sizeof=" << sizeof(mypack.msg) << endl;
+			cerr << myname << "(send data header): ret=" << ret << " sizeof=" << sz << endl;
 			return;
 		}
 

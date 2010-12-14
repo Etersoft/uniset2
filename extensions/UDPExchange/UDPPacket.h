@@ -11,10 +11,11 @@ namespace UniSetUDP
 {
 	struct UDPHeader
 	{
-		long num;
+		UDPHeader():num(0),nodeID(0),procID(0),dcount(0){}
+		unsigned long num;
 		long nodeID;
 		long procID;
-		long dcount;
+		size_t dcount;
 		
 		friend std::ostream& operator<<( std::ostream& os, UDPHeader& p );
 	}__attribute__((packed));

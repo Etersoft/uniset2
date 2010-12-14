@@ -31,8 +31,9 @@ bool UDPMessage::addData( const UniSetUDP::UDPData& dat )
 	if( count >= MaxDataCount )
 		return false;
 
-	msg.dat[sizeof(UniSetUDP::UDPHeader)+count] = dat;
+	msg.dat[count] = dat;
 	count++;
+	msg.header.dcount = count;
 	return true;
 }
 // -----------------------------------------------------------------------------
