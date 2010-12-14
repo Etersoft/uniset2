@@ -69,9 +69,11 @@ activated(false)
 	thr = new ThreadCreator<UDPReceiver>(this, &UDPReceiver::poll);
 
 	recvTimeout = conf->getArgPInt("--udp-recv-timeout",it.getProp("recvTimeout"), 5000);
-	polltime = conf->getArgPInt("--udp-polltime",it.getProp("polltime"), 100);
-
-	ptUpdate.setTiming(100);
+	polltime = conf->getArgPInt("--udp-polltime",it.getProp("polltime"), 10);
+	updatetime = conf->getArgPInt("--udp-updatetime",it.getProp("updatetime"), 100);
+	steptime = conf->getArgPInt("--udp-steptime",it.getProp("steptime"), 100);
+	minBufSize = conf->getArgPInt("--udp-minbufsize",it.getProp("minBufSize"), 30);
+	maxProcessingCount = conf->getArgPInt("--udp-maxprocessingcount",it.getProp("maxProcessingCount"), 100);
 
 	// -------------------------------
 	// ********** HEARTBEAT *************
@@ -144,20 +146,19 @@ void UDPReceiver::waitSMReady()
 // -----------------------------------------------------------------------------
 void UDPReceiver::timerInfo( TimerMessage *tm )
 {
-	if( tm->id == tmExchange )
+	if( !activated )
+		return;
+
+	if( tm->id == tmStep )
 		step();
+	else if( tm->id == tmUpdate )
+		update();
 }
 // -----------------------------------------------------------------------------
 void UDPReceiver::step()
 {
 	if( !activated )
 		return;
-
-//	if(  ptUpdate.checkTime() )
-//	{
-		  update_data();
-		  ptUpdate.reset();
-//	}
 
 	if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
 	{
@@ -168,29 +169,26 @@ void UDPReceiver::step()
 		}
 		catch(Exception& ex)
 		{
-			dlog[Debug::CRIT] << myname
-				<< "(step): (hb) " << ex << std::endl;
+			dlog[Debug::CRIT] << myname << "(step): (hb) " << ex << std::endl;
 		}
 	}
 }
 
 // -----------------------------------------------------------------------------
-void UDPReceiver::update_data()
+void UDPReceiver::update()
 {
-	if( !activated )
-		return;
-
 	UniSetUDP::UDPMessage p;
 	bool buf_ok = false;
 	{
 		uniset_mutex_lock l(packMutex);
-		if( qpack.size() <= max_buf_size )
+		if( qpack.size() <= minBufSize )
 			return;
 
 		buf_ok = true;
 	}
 
-	while( buf_ok )
+	int k = maxProcessingCount;
+	while( buf_ok && k>0)
 	{
 		{
 			uniset_mutex_lock l(packMutex);
@@ -200,18 +198,35 @@ void UDPReceiver::update_data()
 
 		if( labs(p.msg.header.num - pnum) > 1 )
 		{
-			cerr << "************ FAILED! ORDER PACKETS! recv.num=" << pack.msg.header.num
+			dlog[Debug::CRIT] << "************ FAILED! ORDER PACKETS! recv.num=" << pack.msg.header.num
 				  << " num=" << pnum << endl;
 		}
 
 		pnum = p.msg.header.num;
+		k--;
 
 		{
 			uniset_mutex_lock l(packMutex);
-			buf_ok =  ( qpack.size() > max_buf_size );
+			buf_ok =  ( qpack.size() > minBufSize );
 		}
 
-		cerr << myname << "(step): recv DATA OK. header: " << p.msg.header << endl;
+		// cerr << myname << "(step): recv DATA OK. header: " << p.msg.header << endl;
+		for( int i=0; i<p.msg.header.dcount; i++ )
+		{
+			try
+			{
+				UniSetUDP::UDPData& d = p.msg.dat[i];
+				shm->setValue(d.id,d.val);
+			}
+			catch( UniSetTypes::Exception& ex)
+			{
+				dlog[Debug::CRIT] << myname << "(update): " << ex << std::endl;
+			}
+			catch(...)
+			{
+				dlog[Debug::CRIT] << myname << "(update): catch ..." << std::endl;
+			}
+		}
 	}
 }
 
@@ -360,7 +375,8 @@ void UDPReceiver::sysCommand( UniSetTypes::SystemMessage *sm )
 				askSensors(UniversalIO::UIONotify);
 			}
 			thr->start();
-			askTimer(tmExchange,1000);
+			askTimer(tmUpdate,updatetime);
+			askTimer(tmStep,steptime);
 		}
 
 		case SystemMessage::FoldUp:
