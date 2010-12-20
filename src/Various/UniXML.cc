@@ -34,6 +34,7 @@
 #include "UniSetTypes.h"
 #include "UniXML.h"
 #include "Exceptions.h"
+#include <libxml/xinclude.h>
 
 using namespace UniSetTypes;
 using namespace std;
@@ -91,6 +92,12 @@ void UniXML::open(const string _filename)
 	doc = xmlParseFile(_filename.c_str());
 	if(doc == NULL)
 		throw NameNotFound("UniXML(open): NotFound file="+_filename);
+
+	// Support for XInclude (see eterbug #6304)
+	// main tag must to have follow property: xmlns:xi="http://www.w3.org/2001/XInclude"
+	//For include: <xi:include href="test2.xml"/>
+	xmlXIncludeProcess(doc);
+
 	cur = getFirstNode();
 	filename = _filename;
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<UNISETPLC>
+<UNISETPLC xmlns:xi="http://www.w3.org/2001/XInclude">
 	<UserData/>
 	<!-- Общие(стартовые) параметры по UniSet -->
 	<UniSet>
@@ -171,4 +171,6 @@
 		<item id="104" name="midMsg4" text="Text for message 4"/>
 		<item id="105" name="midMsg5" text="Text for message 5"/>
 	</messages>
+	<!-- <xi:include href="testID.xml"/> -->
+	<!-- <xi:include href="testIDnon-exist.xml"/> -->
 </UNISETPLC>
