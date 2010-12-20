@@ -82,7 +82,7 @@
 	textname 	- текстовое имя датчика
 -->
 		<nodes port="2809">
-			<item infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="1">
+			<item infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="1" unet_port="3000" unet_ip="192.168.56.255">
 				<iocards>
 					<item card="1" name="DI32"/>
 					<item card="2" name="DO32"/>

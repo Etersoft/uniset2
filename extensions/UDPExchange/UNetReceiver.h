@@ -73,7 +73,7 @@ class UNetReceiver
 		int recvpause;		/*!< пауза меджду приёмами пакетов, [мсек] */
 		int updatepause;	/*!< переодичность обновления данных в SM, [мсек] */
 
-		ost::UDPDuplex* udp;
+		ost::UDPReceive* udp;
 		ost::IPV4Address addr;
 		ost::tpport_t port;
 		std::string myname;
