@@ -12,6 +12,7 @@
 #include "SharedMemory.h"
 #include "ThreadCreator.h"
 #include "UNetReceiver.h"
+#include "UNetSender.h"
 // -----------------------------------------------------------------------------
 class UNetExchange:
 	public UniSetObject_LT
@@ -26,7 +27,6 @@ class UNetExchange:
 
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, char* argv[] );
-
 
 		bool checkExistUNetHost( const std::string host, ost::tpport_t port );
 
@@ -53,6 +53,7 @@ class UNetExchange:
 
 		void initIterators();
 		void startReceivers();
+		void initSender( const std::string host, const ost::tpport_t port, UniXML_iterator& it );
 
 		enum Timer
 		{
@@ -77,6 +78,9 @@ class UNetExchange:
 
 		typedef std::list<UNetReceiver*> ReceiverList;
 		ReceiverList recvlist;
+
+		bool no_sender;  /*!< флаг отключения посылки сообщений */
+		UNetSender* sender;
 };
 // -----------------------------------------------------------------------------
 #endif // UNetExchange_H_
