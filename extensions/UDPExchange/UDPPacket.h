@@ -51,6 +51,7 @@ namespace UniSetUDP
 
 		inline bool isFull(){ return count<MaxDataCount; }
 		inline int size(){ return count; }
+		inline int byte_size(){ return count*sizeof(UDPData); }
 
 		DataPacket msg;
 		int count;

@@ -245,7 +245,8 @@ bool UNetReceiver::recv()
 	ssize_t sz = pack.msg.header.dcount * sizeof(UniSetUDP::UDPData) + sizeof(UniSetUDP::UDPHeader);
 	if( ret < sz )
 	{
-		cerr << myname << "(receive): FAILED data ret=" << ret << " sizeof=" << sz << endl;
+		cerr << myname << "(receive): FAILED data ret=" << ret << " sizeof=" << sz
+			  << " packnum=" << pack.msg.header.num << endl;
 		return false;
 	}
 
