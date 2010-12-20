@@ -1,5 +1,5 @@
-#ifndef UDPReceiver_H_
-#define UDPReceiver_H_
+#ifndef UNetReceiver_H_
+#define UNetReceiver_H_
 // -----------------------------------------------------------------------------
 #include <ostream>
 #include <string>
@@ -34,80 +34,58 @@
  * Если количество пришедших данных не совпадают с размером кэша.. кэш обновляется.
  */
 // -----------------------------------------------------------------------------
-class UDPReceiver:
-	public UniSetObject_LT
+class UNetReceiver
 {
 	public:
-		UDPReceiver( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
-		virtual ~UDPReceiver();
-	
-		/*! глобальная функция для инициализации объекта */
-		static UDPReceiver* init_udpreceiver( int argc, char* argv[],
-											UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
+		UNetReceiver( const std::string host, const ost::tpport_t port, SMInterface* smi );
+		~UNetReceiver();
 
-		/*! глобальная функция для вывода help-а */
-		static void help_print( int argc, char* argv[] );
+		 void start();
+
+		 void receive();
+		 void update();
+
+		 inline bool isRecvOK(){ return ptRecvTimeout.checkTime(); }
+
+		 void setReceiveTimeout( int msec );
+		 void setReceivePause( int msec );
+		 void setUpdatePause( int msec );
+
+		 void setMinBudSize( int set );
+		 void setMaxProcessingCount( int set );
+
+		 inline ost::IPV4Address getAddress(){ return addr; }
+		 inline ost::tpport_t getPort(){ return port; }
 
 	protected:
 
-		xmlNode* cnode;
-		std::string s_field;
-		std::string s_fvalue;
-
 		SMInterface* shm;
 
-		void poll();
-		void recv();
+		bool recv();
 		void step();
-		void update();
-
-		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
-		void sysCommand( UniSetTypes::SystemMessage *msg );
-		void sensorInfo( UniSetTypes::SensorMessage*sm );
-		void timerInfo( UniSetTypes::TimerMessage *tm );
-		void askSensors( UniversalIO::UIOCommand cmd );
-		void waitSMReady();
-
-		virtual bool activateObject();
-		
-		// действия при завершении работы
-		virtual void sigterm( int signo );
+		void real_update();
 
 		void initIterators();
 
-		enum Timer
-		{
-			tmUpdate,
-			tmStep
-		};
-
 	private:
-		UDPReceiver();
-		bool initPause;
-		UniSetTypes::uniset_mutex mutex_start;
+		UNetReceiver();
 
-		PassiveTimer ptHeartBeat;
-		UniSetTypes::ObjectId sidHeartBeat;
-		int maxHeartBeat;
-		IOController::AIOStateList::iterator aitHeartBeat;
-		UniSetTypes::ObjectId test_id;
-
-		int polltime;	/*!< пауза меджду приёмами пакетов, [мсек] */
-		int updatetime;	/*!< переодичность обновления данных в SM, [мсек] */
-		int steptime;	/*!< периодичность вызова step, [мсек] */
+		int recvpause;		/*!< пауза меджду приёмами пакетов, [мсек] */
+		int updatepause;	/*!< переодичность обновления данных в SM, [мсек] */
 
 		ost::UDPDuplex* udp;
-		ost::IPV4Host host;
+		ost::IPV4Address addr;
 		ost::tpport_t port;
+		std::string myname;
 
 		UniSetTypes::uniset_mutex pollMutex;
-		Trigger trTimeout;
+		PassiveTimer ptRecvTimeout;
 		int recvTimeout;
-		
-		bool activated;
-		int activateTimeout;
 
-		ThreadCreator<UDPReceiver>* thr;
+		bool activated;
+
+		ThreadCreator<UNetReceiver>* r_thr;		// receive thread
+		ThreadCreator<UNetReceiver>* u_thr;		// update thread
 
 		// функция определения приоритетного сообщения для обработки
 		struct PacketCompare:
@@ -145,5 +123,5 @@ class UDPReceiver:
 
 };
 // -----------------------------------------------------------------------------
-#endif // UDPReceiver_H_
+#endif // UNetReceiver_H_
 // -----------------------------------------------------------------------------
