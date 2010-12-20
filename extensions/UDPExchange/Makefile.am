@@ -1,5 +1,5 @@
 bin_PROGRAMS 	= @PACKAGE@-udpexchange 
-noinst_PROGRAMS = @PACKAGE@-udpreceiver
+noinst_PROGRAMS = @PACKAGE@-udpreceiver @PACKAGE@-unetexchange
 #@PACKAGE@-udpsender
 
 lib_LTLIBRARIES 			= libUniSetUDP.la
@@ -8,7 +8,7 @@ libUniSetUDP_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
 								$(top_builddir)/extensions/lib/libUniSetExtensions.la \
 								$(SIGC_LIBS) $(COMCPP_LIBS)
 libUniSetUDP_la_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
-libUniSetUDP_la_SOURCES 	= UDPPacket.cc UDPExchange.cc UDPNReceiver.cc UDPReceiver.cc
+libUniSetUDP_la_SOURCES 	= UDPPacket.cc UDPExchange.cc UDPNReceiver.cc UDPReceiver.cc UNetReceiver.cc UNetExchange.cc
 
 #UDPSender.cc 
 #UDPSender.cc
@@ -33,6 +33,13 @@ libUniSetUDP_la_SOURCES 	= UDPPacket.cc UDPExchange.cc UDPNReceiver.cc UDPReceiv
 									$(top_builddir)/extensions/lib/libUniSetExtensions.la \
 									$(SIGC_LIBS) $(COMCPP_LIBS)
 @PACKAGE@_udpreceiver_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+
+@PACKAGE@_unetexchange_SOURCES 		= unetexchange.cc
+@PACKAGE@_unetexchange_LDADD 		= libUniSetUDP.la $(top_builddir)/lib/libUniSet.la \
+									$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
+									$(top_builddir)/extensions/lib/libUniSetExtensions.la \
+									$(SIGC_LIBS) $(COMCPP_LIBS)
+@PACKAGE@_unetexchange_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
 
 
 # install
