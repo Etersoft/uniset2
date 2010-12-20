@@ -30,6 +30,12 @@ maxProcessingCount(100),
 icache(200),
 cache_init_ok(false)
 {
+	{
+		ostringstream s;
+		s << "(" << s_host << ":" << port << ")";
+		myname = s.str();
+	}
+
 	try
 	{
 //		ost::IPV4Cidr ci(s_host.c_str());
@@ -50,11 +56,6 @@ cache_init_ok(false)
 	r_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::receive);
 	u_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::update);
 
-	{
-		ostringstream s;
-		s << "(" << s_host << ":" << port << ")";
-		myname = s.str();
-	}
 
 	ptRecvTimeout.setTiming(recvTimeout);
 }
@@ -249,8 +250,8 @@ bool UNetReceiver::recv()
 	}
 
 
-	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
-		  << " header: " << pack.msg.header << endl;
+//	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
+//		  << " header: " << pack.msg.header << endl;
 /*
 	if( labs(pack.msg.header.num - pnum) > 1 )
 	{

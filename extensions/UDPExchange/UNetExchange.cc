@@ -10,7 +10,9 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 UniSetObject_LT(objId),
 shm(0),
 initPause(0),
-activated(false)
+activated(false),
+no_sender(false),
+sender(0)
 {
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(UNetExchange): objId=-1?!! Use --unet-name" );
@@ -32,10 +34,13 @@ activated(false)
 
 	int recvTimeout = conf->getArgPInt("--unet-recv-timeout",it.getProp("recvTimeout"), 5000);
 	int recvpause = conf->getArgPInt("--unet-recvpause",it.getProp("recvpause"), 10);
+	int sendpause = conf->getArgPInt("--unet-sendpause",it.getProp("sendpause"), 150);
 	int updatepause = conf->getArgPInt("--unet-updatepause",it.getProp("updatepause"), 100);
 	steptime = conf->getArgPInt("--unet-steptime",it.getProp("steptime"), 1000);
 	int minBufSize = conf->getArgPInt("--unet-minbufsize",it.getProp("minBufSize"), 30);
 	int maxProcessingCount = conf->getArgPInt("--unet-maxprocessingcount",it.getProp("maxProcessingCount"), 100);
+
+	no_sender = conf->getArgInt("--unet-nosender",it.getProp("nosender"));
 
 	xmlNode* nodes = conf->getXMLNodesSection();
 	if( !nodes )
@@ -47,19 +52,28 @@ activated(false)
 
 	for( ; n_it.getCurrent(); n_it.goNext() )
 	{
-		if( !n_it.getProp("unet_ignore").empty() )
-		{
-			dlog[Debug::INFO] << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
-			continue;
-		}
-
-		string h = n_it.getProp("ip");
+		string h(n_it.getProp("ip"));
 		if( !n_it.getProp("unet_ip").empty() )
 			h = n_it.getProp("unet_ip");
 
 		int p = n_it.getIntProp("id");
 		if( !n_it.getProp("unet_port").empty() )
 			p = n_it.getIntProp("unet_port");
+
+		string n(n_it.getProp("name"));
+		if( n == conf->getLocalNodeName() )
+		{
+			dlog[Debug::INFO] << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
+			sender = new UNetSender(h,p,shm,s_field,s_fvalue,ic);
+			sender->setSendPause(sendpause);
+			continue;
+		}
+
+		if( !n_it.getProp("unet_ignore").empty() )
+		{
+			dlog[Debug::INFO] << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
+			continue;
+		}
 
 		dlog[Debug::INFO] << myname << "(init): add UNetReceiver for " << h << ":" << p << endl;
 
@@ -128,6 +142,7 @@ UNetExchange::~UNetExchange()
 	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
 		delete (*it);
 
+	delete sender;
 	delete shm;
 }
 // -----------------------------------------------------------------------------
@@ -147,6 +162,12 @@ void UNetExchange::startReceivers()
 {
 	 for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
 		  (*it)->start();
+}
+// -----------------------------------------------------------------------------
+void UNetExchange::initSender(  const std::string s_host, const ost::tpport_t port, UniXML_iterator& it )
+{
+	if( no_sender )
+		return;
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::waitSMReady()
@@ -272,6 +293,8 @@ void UNetExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 			}
 			askTimer(tmStep,steptime);
 			startReceivers();
+			if( sender )
+				sender->start();
 		}
 
 		case SystemMessage::FoldUp:
@@ -336,6 +359,8 @@ void UNetExchange::askSensors( UniversalIO::UIOCommand cmd )
 // ------------------------------------------------------------------------------------------
 void UNetExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
+	if( sender )
+		sender->update(sm->id,sm->value);
 }
 // ------------------------------------------------------------------------------------------
 bool UNetExchange::activateObject()
