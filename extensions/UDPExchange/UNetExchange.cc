@@ -33,11 +33,12 @@ sender(0)
 						<< "' filter-value='" << s_fvalue << "'" << endl;
 
 	int recvTimeout = conf->getArgPInt("--unet-recv-timeout",it.getProp("recvTimeout"), 5000);
+	int lostTimeout = conf->getArgPInt("--unet-lost-timeout",it.getProp("lostTimeout"), recvTimeout);
 	int recvpause = conf->getArgPInt("--unet-recvpause",it.getProp("recvpause"), 10);
 	int sendpause = conf->getArgPInt("--unet-sendpause",it.getProp("sendpause"), 150);
 	int updatepause = conf->getArgPInt("--unet-updatepause",it.getProp("updatepause"), 100);
 	steptime = conf->getArgPInt("--unet-steptime",it.getProp("steptime"), 1000);
-	int minBufSize = conf->getArgPInt("--unet-minbufsize",it.getProp("minBufSize"), 30);
+	int maxDiff = conf->getArgPInt("--unet-maxdifferense",it.getProp("maxDifferense"), 1000);
 	int maxProcessingCount = conf->getArgPInt("--unet-maxprocessingcount",it.getProp("maxProcessingCount"), 100);
 
 	no_sender = conf->getArgInt("--unet-nosender",it.getProp("nosender"));
@@ -86,9 +87,10 @@ sender(0)
 		UNetReceiver* r = new UNetReceiver(h,p,shm);
 
 		r->setReceiveTimeout(recvTimeout);
+		r->setLostTimeout(lostTimeout);
 		r->setReceivePause(recvpause);
 		r->setUpdatePause(updatepause);
-		r->setMinBudSize(minBufSize);
+		r->setMaxDifferens(maxDiff);
 		r->setMaxProcessingCount(maxProcessingCount);
 		recvlist.push_back(r);
 	}
