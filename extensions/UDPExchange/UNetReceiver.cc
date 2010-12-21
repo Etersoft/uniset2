@@ -146,10 +146,17 @@ void UNetReceiver::real_update()
 			qpack.pop();
 		}
 
+		cerr << "************ update recv.num=" << p.msg.header.num << " num=" << pnum << endl;
+
 		if( labs(p.msg.header.num - pnum) > 1 )
 		{
-			dlog[Debug::CRIT] << "************ FAILED! ORDER PACKETS! recv.num=" << pack.msg.header.num
+			dlog[Debug::CRIT] << "************ FAILED! ORDER PACKETS! recv.num=" << p.msg.header.num
 				  << " num=" << pnum << endl;
+
+			// запоминаем новый номер и откидываем пакет
+			pnum = p.msg.header.num;
+			k--;
+			continue;
 		}
 
 		pnum = p.msg.header.num;
@@ -251,8 +258,8 @@ bool UNetReceiver::recv()
 	}
 
 
-//	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
-//		  << " header: " << pack.msg.header << endl;
+	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
+		  << " header: " << pack.msg.header << endl;
 	{
 		uniset_mutex_lock l(packMutex);
 		qpack.push(pack);
