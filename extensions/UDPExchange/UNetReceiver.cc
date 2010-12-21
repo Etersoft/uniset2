@@ -253,15 +253,6 @@ bool UNetReceiver::recv()
 
 //	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
 //		  << " header: " << pack.msg.header << endl;
-/*		
-	if( labs(pack.msg.header.num - pnum) > 1 )
-	{
-		cerr << "************ FAILED! ORDER PACKETS! recv.num=" << pack.msg.header.num
-				<< " num=" << pnum << endl;
-	}
-		
-	pnum = pack.msg.header.num;
-*/
 	{
 		uniset_mutex_lock l(packMutex);
 		qpack.push(pack);
