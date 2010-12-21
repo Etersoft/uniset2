@@ -152,13 +152,33 @@ void UNetReceiver::real_update()
 				return;
 
 			p = qpack.top();
-
-			if( pnum > 0 && labs(p.msg.header.num - pnum) > 1 )
+			unsigned long sub = labs(p.msg.header.num - pnum);
+			if( pnum > 0 )
 			{
-				if( !ptLostTimeout.checkTime() )
-					return;
+				// если sub > maxDifferens
+				// значит это просто "разрыв"
+				// и нам ждать lostTimeout не надо
+				// сразу начинаем обрабатывать новые пакеты
+				// а если > 1 && < maxDifferens
+				// значит это временная "дырка"
+				// и надо подождать lostTimeout
+				// чтобы констатировать потерю пакета..
+				if( sub > 1 && sub < maxDifferens )
+				{
+					if( !ptLostTimeout.checkTime() )
+						return;
 
-				lostPackets++;
+					lostPackets++;
+				}
+				else if( p.msg.header.num == pnum )
+				{
+				   /* а что делать если идут повторные пакеты ?!
+					* для надёжности лучше обрабатывать..
+					* для "оптимизации".. лучше игнорировать
+					*/
+					qpack.pop(); // пока выбрали вариант "оптимизации"
+					continue;
+				}
 			}
 
 			ptLostTimeout.reset();
@@ -170,6 +190,8 @@ void UNetReceiver::real_update()
 		} // unlock qpack
 
 		k--;
+
+//		cerr << myname << "(update): " << p.msg.header << endl;
 
 		initCache(p, !cache_init_ok);
 
@@ -261,11 +283,32 @@ bool UNetReceiver::recv()
 		return false;
 	}
 
-//	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
-//		  << " header: " << pack.msg.header << endl;
 
 	if( rnum>0 && labs(pack.msg.header.num - rnum) > maxDifferens )
+	{
+		/* А что делать если мы уже ждём и ещё не "разгребли предыдущее".. а тут уже повторный "разрыв"
+		 * Можно откинуть всё.. что сложили во временную очередь и заново "копить" (но тогда теряем информацию)
+		 * А можно породолжать складывать во временную, но тогда есть риск "никогда" не разгрести временную
+		 * очередь, при "частых обрывах". Потому-что update будет на каждом разрыве ждать ещё lostTimeout..
+		 */
+		// Пока выбираю.. чистить qtmp. Это будет соотвествовать логике работы с картами у которых ограничен буфер приёма.
+		// Обычно "кольцевой". Т.е. если не успели обработать и "вынуть" из буфера информацию.. он будет переписан новыми данными
+		if( waitClean )
+		{
+			dlog[Debug::CRIT] << myname << "(receive): reset qtmp.." << endl;
+			while( !qtmp.empty() )
+				qtmp.pop();
+		}
+
 		waitClean = true;
+	}
+
+	rnum = pack.msg.header.num;
+
+//	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
+//		  << " header: " << pack.msg.header
+//		  << " waitClean=" << waitClean
+//		  << endl;
 
 	{	// lock qpack
 		uniset_mutex_lock l(packMutex,500);
@@ -276,9 +319,15 @@ bool UNetReceiver::recv()
 		}
 
 		if( !qpack.empty() )
+		{
+//			cerr << myname << "(receive): copy to qtmp..."
+//							  << " header: " << pack.msg.header
+//							  << endl;
 			qtmp.push(pack);
+		}
 		else
 		{
+//		  	cerr << myname << "(receive): copy from qtmp..." << endl;
 			// очередь освободилась..
 			// то копируем в неё всё что набралось...
 			while( !qtmp.empty() )
@@ -286,6 +335,9 @@ bool UNetReceiver::recv()
 				qpack.push(qtmp.top());
 				qtmp.pop();
 			}
+
+			// не забываем и текущий поместить в очередь..
+			qpack.push(pack);
 			waitClean = false;
 		}
 	}	// unlock qpack
