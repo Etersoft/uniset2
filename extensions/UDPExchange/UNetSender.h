@@ -14,6 +14,11 @@
 #include "UDPPacket.h"
 #include "UDPNReceiver.h"
 // -----------------------------------------------------------------------------
+/*
+ * Для защиты от потери пакета при переполнении "номера пакета".
+ * UNetReceiver при обнаружении "разрыва" в последовательнности, просто игнорирует пакет, обновляет счётчик
+ * и начинает обработку пока буфер опять не заполнится..
+ */
 class UNetSender
 {
 	public:
@@ -76,7 +81,7 @@ class UNetSender
 		typedef std::vector<UItem> DMap;
 		DMap dlist;
 		int maxItem;
-		PassiveTimer ptPack;
+		unsigned long packetnum;
 
 		ThreadCreator<UNetSender>* s_thr;	// send thread
 };
