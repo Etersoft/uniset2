@@ -20,12 +20,17 @@ UNetReceiver::UNetReceiver( const std::string s_host, const ost::tpport_t port, 
 shm(smi),
 recvpause(10),
 updatepause(100),
-recvTimeout(5000),
 udp(0),
+recvTimeout(5000),
+lostTimeout(5000),
+lostPackets(0),
 activated(false),
 r_thr(0),
 u_thr(0),
-minBufSize(30),
+pnum(0),
+maxDifferens(1000),
+waitClean(false),
+rnum(0),
 maxProcessingCount(100),
 icache(200),
 cache_init_ok(false)
@@ -67,30 +72,36 @@ UNetReceiver::~UNetReceiver()
 	delete udp;
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setReceiveTimeout( int msec )
+void UNetReceiver::setReceiveTimeout( timeout_t msec )
 {
 	recvTimeout = msec;
 	ptRecvTimeout.setTiming(msec);
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setReceivePause( int msec )
+void UNetReceiver::setLostTimeout( timeout_t msec )
+{
+	lostTimeout = msec;
+	ptLostTimeout.setTiming(msec);
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::setReceivePause( timeout_t msec )
 {
 	recvpause = msec;
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setUpdatePause( int msec )
+void UNetReceiver::setUpdatePause( timeout_t msec )
 {
 	updatepause = msec;
-}
-// -----------------------------------------------------------------------------
-void UNetReceiver::setMinBudSize( int set )
-{
-	minBufSize = set;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setMaxProcessingCount( int set )
 {
 	maxProcessingCount = set;
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::setMaxDifferens( unsigned long set )
+{
+	maxDifferens = set;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::start()
@@ -128,41 +139,41 @@ void UNetReceiver::update()
 void UNetReceiver::real_update()
 {
 	UniSetUDP::UDPMessage p;
-	bool buf_ok = false;
-	{
-		uniset_mutex_lock l(packMutex);
-		if( qpack.size() <= minBufSize )
-			return;
-
-		buf_ok = true;
-	}
-
+	// обрабатываем пока, очередь либо не опустеет
+	// либо обнаружится "дырка" в последовательности
+	// но при этом обрабатываем не больше maxProcessingCount
+	// за один раз..
 	int k = maxProcessingCount;
-	while( buf_ok && k>0 )
+	while( k>0 )
 	{
-		{
+		{ // lock qpack
 			uniset_mutex_lock l(packMutex);
+			if( qpack.empty() )
+				return;
+
 			p = qpack.top();
+
+			if( pnum > 0 && labs(p.msg.header.num - pnum) > 1 )
+			{
+				if( !ptLostTimeout.checkTime() )
+					return;
+
+				lostPackets++;
+			}
+
+			ptLostTimeout.reset();
+
+			// удаляем из очереди, только если
+			// всё в порядке с последовательностью..
 			qpack.pop();
-		}
+			pnum = p.msg.header.num;
+		} // unlock qpack
 
-		if( labs(p.msg.header.num - pnum) > 1 )
-		{
-			dlog[Debug::CRIT] << "************ FAILED! ORDER PACKETS! recv.num=" << pack.msg.header.num
-				  << " num=" << pnum << endl;
-		}
-
-		pnum = p.msg.header.num;
 		k--;
-
-		{
-			uniset_mutex_lock l(packMutex);
-			buf_ok =  ( qpack.size() > minBufSize );
-		}
 
 		initCache(p, !cache_init_ok);
 
-		for( int i=0; i<p.msg.header.dcount; i++ )
+		for( size_t i=0; i<p.msg.header.dcount; i++ )
 		{
 			try
 			{
@@ -238,25 +249,46 @@ bool UNetReceiver::recv()
 	ssize_t ret = udp->UDPReceive::receive(&(pack.msg),sizeof(pack.msg));
 	if( ret < sizeof(UniSetUDP::UDPHeader) )
 	{
-		cerr << myname << "(receive): FAILED header ret=" << ret << " sizeof=" << sizeof(UniSetUDP::UDPHeader) << endl;
+		dlog[Debug::CRIT] << myname << "(receive): FAILED header ret=" << ret << " sizeof=" << sizeof(UniSetUDP::UDPHeader) << endl;
 		return false;
 	}
 		
 	ssize_t sz = pack.msg.header.dcount * sizeof(UniSetUDP::UDPData) + sizeof(UniSetUDP::UDPHeader);
 	if( ret < sz )
 	{
-		cerr << myname << "(receive): FAILED data ret=" << ret << " sizeof=" << sz
+		dlog[Debug::CRIT] << myname << "(receive): FAILED data ret=" << ret << " sizeof=" << sz
 			  << " packnum=" << pack.msg.header.num << endl;
 		return false;
 	}
-		
 
 //	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
 //		  << " header: " << pack.msg.header << endl;
-	{
-		uniset_mutex_lock l(packMutex);
-		qpack.push(pack);
-	}
+
+	if( rnum>0 && labs(pack.msg.header.num - rnum) > maxDifferens )
+		waitClean = true;
+
+	{	// lock qpack
+		uniset_mutex_lock l(packMutex,500);
+		if( !waitClean )
+		{
+			qpack.push(pack);
+			return true;
+		}
+
+		if( !qpack.empty() )
+			qtmp.push(pack);
+		else
+		{
+			// очередь освободилась..
+			// то копируем в неё всё что набралось...
+			while( !qtmp.empty() )
+			{
+				qpack.push(qtmp.top());
+				qtmp.pop();
+			}
+			waitClean = false;
+		}
+	}	// unlock qpack
 
 	return true;
 }
@@ -279,7 +311,7 @@ void UNetReceiver::initCache( UniSetUDP::UDPMessage& pack, bool force )
 	 cache_init_ok = true;
 
 	 icache.resize(pack.msg.header.dcount);
-	 for( int i=0; i<icache.size(); i++ )
+	 for( size_t i=0; i<icache.size(); i++ )
 	 {
 		  ItemInfo& d(icache[i]);
 		  if( d.id != pack.msg.dat[i].id )
