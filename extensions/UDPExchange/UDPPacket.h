@@ -19,7 +19,7 @@ namespace UniSetUDP
 		friend std::ostream& operator<<( std::ostream& os, UDPHeader& p );
 	}__attribute__((packed));
 
-	// static unsigned long MaxPacketNum = 50; // std::numeric_limits<unsigned long>::max();
+	static unsigned long MaxPacketNum = std::numeric_limits<unsigned long>::max();
 	
 	struct UDPData
 	{
