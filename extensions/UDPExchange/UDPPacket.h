@@ -3,9 +3,7 @@
 #ifndef UDPPacket_H_
 #define UDPPacket_H_
 // -----------------------------------------------------------------------------
-#include <list>
-#include <limits> 
-#include <ostream>
+#include <cc++/socket.h>
 #include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
 namespace UniSetUDP
@@ -13,7 +11,7 @@ namespace UniSetUDP
 	struct UDPHeader
 	{
 		UDPHeader():num(0),nodeID(0),procID(0),dcount(0){}
-		unsigned long num;
+		timeout_t num;
 		long nodeID;
 		long procID;
 		size_t dcount;
@@ -21,7 +19,7 @@ namespace UniSetUDP
 		friend std::ostream& operator<<( std::ostream& os, UDPHeader& p );
 	}__attribute__((packed));
 
-	static unsigned long MaxPacketNum = 50; // std::numeric_limits<unsigned long>::max();
+	// static unsigned long MaxPacketNum = 50; // std::numeric_limits<unsigned long>::max();
 	
 	struct UDPData
 	{
