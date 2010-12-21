@@ -134,25 +134,37 @@ void UNetSender::real_send()
 	h.procID = shm->ID();
 	h.dcount = mypack.msg.header.dcount;
 	h.num = packetnum++;
-
 	mypack.msg.header = h;
 
 //	cout << "************* send header: " << mypack.msg.header << endl;
 	int sz = mypack.byte_size() + sizeof(UniSetUDP::UDPHeader);
-	if( udp->isPending(ost::Socket::pendingOutput) )
-	{
-//		ssize_t ret = udp->send( (char*)&(mypack.msg),sizeof(mypack.msg));
-//		if( ret<sizeof(mypack.msg) )
-		ssize_t ret = udp->send( (char*)&(mypack.msg),sz);
-		if( ret < sz )
-		{
-//			cerr << myname << "(send data header): ret=" << ret << " sizeof=" << sz << endl;
-			return;
-		}
+	if( !udp->isPending(ost::Socket::pendingOutput) )
+		return;
 
-//		cout << "send OK. byte count=" << ret << endl;
+	ssize_t ret = udp->send( (char*)&(mypack.msg),sz);
+	if( ret < sz )
+	{
+		dlog[Debug::CRIT] << myname << "(send): FAILED ret=" << ret << " < sizeof=" << sz << endl;
+		return;
 	}
 
+	// если вышли за границы..
+	// посылаем несколько одинаковых пакетов с новыми номерами..
+	// т.к. первый будет откинут (см. UNetReceiver::update)
+	if( packetnum >= UniSetUDP::MaxPacketNum )
+	{
+		packetnum = 1;
+		for( int i=0; i<3; i++ )
+		{
+			mypack.msg.header.num = packetnum++;
+			if( udp->isPending(ost::Socket::pendingOutput) )
+			{
+				ssize_t ret = udp->send( (char*)&(mypack.msg),sz);
+				if( res < sz )
+					dlog[Debug::CRIT] << myname << "(send): FAILED. ret=" << ret << " < sizeof=" << sz << endl;
+			}
+		 }
+	}
 }
 // -----------------------------------------------------------------------------
 void UNetSender::start()
