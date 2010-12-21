@@ -17,9 +17,9 @@ sendpause(150),
 activated(false),
 dlist(100),
 maxItem(0),
-packetnum(1),
 s_thr(0)
 {
+	ptPack.setTiming(UniSetTimer::WaitUpTime);
 
 	{
 		ostringstream s;
@@ -133,7 +133,7 @@ void UNetSender::real_send()
 	h.nodeID = conf->getLocalNode();
 	h.procID = shm->ID();
 	h.dcount = mypack.msg.header.dcount;
-	h.num = packetnum++;
+	h.num = ptPack.getCurrent();
 	mypack.msg.header = h;
 
 //	cout << "************* send header: " << mypack.msg.header << endl;
@@ -143,28 +143,7 @@ void UNetSender::real_send()
 
 	ssize_t ret = udp->send( (char*)&(mypack.msg),sz);
 	if( ret < sz )
-	{
 		dlog[Debug::CRIT] << myname << "(send): FAILED ret=" << ret << " < sizeof=" << sz << endl;
-		return;
-	}
-
-	// если вышли за границы..
-	// посылаем несколько одинаковых пакетов с новыми номерами..
-	// т.к. первый будет откинут (см. UNetReceiver::update)
-	if( packetnum >= UniSetUDP::MaxPacketNum )
-	{
-		packetnum = 1;
-		for( int i=0; i<3; i++ )
-		{
-			mypack.msg.header.num = packetnum++;
-			if( udp->isPending(ost::Socket::pendingOutput) )
-			{
-				ssize_t ret = udp->send( (char*)&(mypack.msg),sz);
-				if( res < sz )
-					dlog[Debug::CRIT] << myname << "(send): FAILED. ret=" << ret << " < sizeof=" << sz << endl;
-			}
-		 }
-	}
 }
 // -----------------------------------------------------------------------------
 void UNetSender::start()
