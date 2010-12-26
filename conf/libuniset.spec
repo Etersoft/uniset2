@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.99
-Release: eter25
+Release: eter26
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
