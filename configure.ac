@@ -182,6 +182,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/UDPExchange/Makefile
 				 extensions/UDPExchange/libUniSetUDP.pc
 				 extensions/UNet2/Makefile
+				 extensions/UNet2/libUniSetUNet2.pc
 				 extensions/ModbusSlave/Makefile
 				 extensions/ModbusSlave/libUniSetMBSlave.pc
 				 extensions/MBTCPMaster/Makefile
