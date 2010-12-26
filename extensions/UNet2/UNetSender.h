@@ -12,7 +12,6 @@
 #include "SharedMemory.h"
 #include "ThreadCreator.h"
 #include "UDPPacket.h"
-#include "UDPNReceiver.h"
 // -----------------------------------------------------------------------------
 /*
  * Для защиты от потери пакета при переполнении "номера пакета".
