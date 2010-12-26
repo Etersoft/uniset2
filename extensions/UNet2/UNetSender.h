@@ -11,22 +11,22 @@
 #include "SMInterface.h"
 #include "SharedMemory.h"
 #include "ThreadCreator.h"
-#include "UNetPacket.h"
+#include "UDPPacket.h"
+#include "UDPNReceiver.h"
 // -----------------------------------------------------------------------------
-class UNetSender:
-	public UniSetObject_LT
+/*
+ * Для защиты от потери пакета при переполнении "номера пакета".
+ * UNetReceiver при обнаружении "разрыва" в последовательнности, просто игнорирует пакет, обновляет счётчик
+ * и начинает обработку пока буфер опять не заполнится..
+ */
+class UNetSender
 {
 	public:
-		UNetSender( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
-		virtual ~UNetSender();
+		UNetSender( const std::string host, const ost::tpport_t port, SMInterface* smi,
+					const std::string s_field="", const std::string s_fvalue="", SharedMemory* ic=0 );
+
+		~UNetSender();
 	
-		/*! глобальная функция для инициализации объекта */
-		static UNetSender* init_udpsender( int argc, char* argv[], 
-											UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
-
-		/*! глобальная функция для вывода help-а */
-		static void help_print( int argc, char* argv[] );
-
 		struct UItem
 		{
 			UItem():
@@ -37,36 +37,26 @@ class UNetSender:
 			IOController::AIOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;
 			UniSetTypes::uniset_spin_mutex val_lock;
-			UniSetUNet::UNetMessage::UNetDataList::iterator pack_it;
+			int pack_ind;
 			long val;
 
 			friend std::ostream& operator<<( std::ostream& os, UItem& p );
 		};
 
+		void start();
+
+		void send();
+		void real_send();
+		void update( UniSetTypes::ObjectId id, long value );
+
+		inline void setSendPause( int msec ){ sendpause = msec; }
+		
 	protected:
 
-		xmlNode* cnode;
 		std::string s_field;
 		std::string s_fvalue;
 
 		SMInterface* shm;
-
-		void poll();
-		void recv();
-		void send();
-
-		void step();
-
-		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
-		void sysCommand( UniSetTypes::SystemMessage *msg );
-		void sensorInfo( UniSetTypes::SensorMessage*sm );
-		void askSensors( UniversalIO::UIOCommand cmd );
-		void waitSMReady();
-
-		virtual bool activateObject();
-		
-		// действия при завершении работы
-		virtual void sigterm( int signo );
 
 		void initIterators();
 		bool initItem( UniXML_iterator& it );
@@ -77,36 +67,23 @@ class UNetSender:
 
 	private:
 		UNetSender();
-		bool initPause;
-		UniSetTypes::uniset_mutex mutex_start;
 
-		PassiveTimer ptHeartBeat;
-		UniSetTypes::ObjectId sidHeartBeat;
-		int maxHeartBeat;
-		IOController::AIOStateList::iterator aitHeartBeat;
-		UniSetTypes::ObjectId test_id;
-
-		int sendtime;	/*!< переодичность посылки данных, [мсек] */
-
-		ost::TCPStream* tcp;
-//		ost::TCPSocket* tcp;
-		ost::IPV4Host host;
+		ost::UDPBroadcast* udp;
+		ost::IPV4Address addr;
 		ost::tpport_t port;
+		std::string s_host;
 
-		UniSetTypes::uniset_mutex sendMutex;
-		Trigger trTimeout;
-		int sendTimeout;
-		
+		std::string myname;
+		int sendpause;
 		bool activated;
-		int activateTimeout;
 		
-		UniSetUNet::UNetMessage mypack;
+		UniSetUDP::UDPMessage mypack;
 		typedef std::vector<UItem> DMap;
 		DMap dlist;
 		int maxItem;
-		
-		
-		ThreadCreator<UNetSender>* thr;
+		unsigned long packetnum;
+
+		ThreadCreator<UNetSender>* s_thr;	// send thread
 };
 // -----------------------------------------------------------------------------
 #endif // UNetSender_H_

@@ -6,80 +6,98 @@
 using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
-// -----------------------------------------------------------------------------
 UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic ):
 UniSetObject_LT(objId),
 shm(0),
 initPause(0),
-UNet(0),
 activated(false),
-dlist(100),
-maxItem(0)
+no_sender(false),
+sender(0)
 {
 	if( objId == DefaultObjectId )
-		throw UniSetTypes::SystemError("(UNetExchange): objId=-1?!! Use --UNet-name" );
+		throw UniSetTypes::SystemError("(UNetExchange): objId=-1?!! Use --unet-name" );
 
 //	xmlNode* cnode = conf->getNode(myname);
 	cnode = conf->getNode(myname);
 	if( cnode == NULL )
-		throw UniSetTypes::SystemError("(UNetExchange): Not find conf-node for " + myname );
+		throw UniSetTypes::SystemError("(UNetExchange): Not found conf-node for " + myname );
 
 	shm = new SMInterface(shmId,&ui,objId,ic);
 
 	UniXML_iterator it(cnode);
 
 	// определяем фильтр
-	s_field = conf->getArgParam("--UNet-filter-field");
-	s_fvalue = conf->getArgParam("--UNet-filter-value");
+	s_field = conf->getArgParam("--unet-filter-field");
+	s_fvalue = conf->getArgParam("--unet-filter-value");
 	dlog[Debug::INFO] << myname << "(init): read fileter-field='" << s_field
 						<< "' filter-value='" << s_fvalue << "'" << endl;
 
-	// ---------- init RS ----------
-//	UniXML_iterator it(cnode);
-	s_host	= conf->getArgParam("--UNet-host",it.getProp("host"));
-	if( s_host.empty() )
-		throw UniSetTypes::SystemError(myname+"(UNetExchange): Unknown host. Use --UNet-host" );
+	int recvTimeout = conf->getArgPInt("--unet-recv-timeout",it.getProp("recvTimeout"), 5000);
+	int lostTimeout = conf->getArgPInt("--unet-lost-timeout",it.getProp("lostTimeout"), recvTimeout);
+	int recvpause = conf->getArgPInt("--unet-recvpause",it.getProp("recvpause"), 10);
+	int sendpause = conf->getArgPInt("--unet-sendpause",it.getProp("sendpause"), 150);
+	int updatepause = conf->getArgPInt("--unet-updatepause",it.getProp("updatepause"), 100);
+	steptime = conf->getArgPInt("--unet-steptime",it.getProp("steptime"), 1000);
+	int maxDiff = conf->getArgPInt("--unet-maxdifferense",it.getProp("maxDifferense"), 1000);
+	int maxProcessingCount = conf->getArgPInt("--unet-maxprocessingcount",it.getProp("maxProcessingCount"), 100);
 
-	host = s_host.c_str();
+	no_sender = conf->getArgInt("--unet-nosender",it.getProp("nosender"));
 
-	buildReceiverList();
+	xmlNode* nodes = conf->getXMLNodesSection();
+	if( !nodes )
+	  throw UniSetTypes::SystemError("(UNetExchange): Not found <nodes>");
 
-//	port = conf->getArgInt("--UNet-port",it.getProp("port"));
-	if( port <= 0 || port == DefaultObjectId )
-		throw UniSetTypes::SystemError(myname+"(UNetExchange): Unknown port address" );
+	UniXML_iterator n_it(nodes);
+	if( !n_it.goChildren() )
+		throw UniSetTypes::SystemError("(UNetExchange): Items not found for <nodes>");
 
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "(UNetExchange): UNet set to " << s_host << ":" << port << endl;
+	for( ; n_it.getCurrent(); n_it.goNext() )
+	{
+		string h(n_it.getProp("ip"));
+		if( !n_it.getProp("unet_ip").empty() )
+			h = n_it.getProp("unet_ip");
+
+		int p = n_it.getIntProp("id");
+		if( !n_it.getProp("unet_port").empty() )
+			p = n_it.getIntProp("unet_port");
+
+		string n(n_it.getProp("name"));
+		if( n == conf->getLocalNodeName() )
+		{
+			dlog[Debug::INFO] << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
+			sender = new UNetSender(h,p,shm,s_field,s_fvalue,ic);
+			sender->setSendPause(sendpause);
+			continue;
+		}
+
+		if( !n_it.getProp("unet_ignore").empty() )
+		{
+			dlog[Debug::INFO] << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
+			continue;
+		}
+
+		dlog[Debug::INFO] << myname << "(init): add UNetReceiver for " << h << ":" << p << endl;
+
+		if( checkExistUNetHost(h,p) )
+		{
+			dlog[Debug::INFO] << myname << "(init): " << h << ":" << p << " already added! Ignore.." << endl;
+			continue;
+		}
+		
+		UNetReceiver* r = new UNetReceiver(h,p,shm);
+
+		r->setReceiveTimeout(recvTimeout);
+		r->setLostTimeout(lostTimeout);
+		r->setReceivePause(recvpause);
+		r->setUpdatePause(updatepause);
+		r->setMaxDifferens(maxDiff);
+		r->setMaxProcessingCount(maxProcessingCount);
+		recvlist.push_back(r);
+	}
 	
-	try
-	{
-		UNet = new ost::UNetBroadcast(host,port);	  
-	}
-	catch( ost::SockException& e )
-	{
-		ostringstream s;
-		s << e.getString() << ": " << e.getSystemErrorString() << endl;
-		throw SystemError(s.str());
-	}
-
-	thr = new ThreadCreator<UNetExchange>(this, &UNetExchange::poll);
-
-	recvTimeout = conf->getArgPInt("--UNet-recv-timeout",it.getProp("recvTimeout"), 5000);
-	sendTimeout = conf->getArgPInt("--UNet-send-timeout",it.getProp("sendTimeout"), 5000);
-	polltime = conf->getArgPInt("--UNet-polltime",it.getProp("polltime"), 100);
-
 	// -------------------------------
-	if( shm->isLocalwork() )
-	{
-		readConfiguration();
-		dlist.resize(maxItem);
-		dlog[Debug::INFO] << myname << "(init): dlist size = " << dlist.size() << endl;
-	}
-	else
-		ic->addReadItem( sigc::mem_fun(this,&UNetExchange::readItem) );
-
 	// ********** HEARTBEAT *************
-	string heart = conf->getArgParam("--UNet-heartbeat-id",it.getProp("heartbeat_id"));
+	string heart = conf->getArgParam("--unet-heartbeat-id",it.getProp("heartbeat_id"));
 	if( !heart.empty() )
 	{
 		sidHeartBeat = conf->getSensorID(heart);
@@ -97,7 +115,7 @@ maxItem(0)
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = conf->getArgPInt("--UNet-heartbeat-max", it.getProp("heartbeat_max"), 10);
+		maxHeartBeat = conf->getArgPInt("--unet-heartbeat-max", it.getProp("heartbeat_max"), 10);
 		test_id = sidHeartBeat;
 	}
 	else
@@ -116,25 +134,48 @@ maxItem(0)
 
 	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
 
-	timeout_t msec = conf->getArgPInt("--UNet-timeout",it.getProp("timeout"), 3000);
+	timeout_t msec = conf->getArgPInt("--unet-timeout",it.getProp("timeout"), 3000);
 
-	dlog[Debug::INFO] << myname << "(init): UNet-timeout=" << msec << " msec" << endl;
+	dlog[Debug::INFO] << myname << "(init): udp-timeout=" << msec << " msec" << endl;
 }
 // -----------------------------------------------------------------------------
 UNetExchange::~UNetExchange()
 {
-	for( ReceiverList::iterator it=rlist.begin(); it!=rlist.end(); it++ )
+	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
 		delete (*it);
 
-	delete UNet;
+	delete sender;
 	delete shm;
-	delete thr;
+}
+// -----------------------------------------------------------------------------
+bool UNetExchange::checkExistUNetHost( const std::string addr, ost::tpport_t port )
+{
+	ost::IPV4Address a1(addr.c_str());
+	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
+	{
+		if( (*it)->getAddress() == a1.getAddress() && (*it)->getPort() == port )
+			return true;
+	}
+
+	return false;
+}
+// -----------------------------------------------------------------------------
+void UNetExchange::startReceivers()
+{
+	 for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
+		  (*it)->start();
+}
+// -----------------------------------------------------------------------------
+void UNetExchange::initSender(  const std::string s_host, const ost::tpport_t port, UniXML_iterator& it )
+{
+	if( no_sender )
+		return;
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::waitSMReady()
 {
 	// waiting for SM is ready...
-	int ready_timeout = conf->getArgInt("--UNet-sm-ready-timeout","15000");
+	int ready_timeout = conf->getArgInt("--unet-sm-ready-timeout","15000");
 	if( ready_timeout == 0 )
 		ready_timeout = 15000;
 	else if( ready_timeout < 0 )
@@ -147,6 +188,15 @@ void UNetExchange::waitSMReady()
 		dlog[Debug::CRIT] << err.str() << endl;
 		throw SystemError(err.str());
 	}
+}
+// -----------------------------------------------------------------------------
+void UNetExchange::timerInfo( TimerMessage *tm )
+{
+	if( !activated )
+		return;
+
+	if( tm->id == tmStep )
+		step();
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::step()
@@ -163,99 +213,11 @@ void UNetExchange::step()
 		}
 		catch(Exception& ex)
 		{
-			dlog[Debug::CRIT] << myname
-				<< "(step): (hb) " << ex << std::endl;
+			dlog[Debug::CRIT] << myname << "(step): (hb) " << ex << std::endl;
 		}
 	}
 }
 
-// -----------------------------------------------------------------------------
-void UNetExchange::poll()
-{
-	dlist.resize(maxItem);
-	dlog[Debug::INFO] << myname << "(init): dlist size = " << dlist.size() << endl;
-
-	for( ReceiverList::iterator it=rlist.begin(); it!=rlist.end(); it++ )
-	{
-		(*it)->setReceiveTimeout(recvTimeout);		
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << myname << "(poll): start exchange for " << (*it)->getName() << endl;
-		(*it)->start();
-	}
-
-	ost::IPV4Broadcast h = s_host.c_str();
-	try
-	{			
-		UNet->setPeer(h,port);
-	}
-	catch( ost::SockException& e )
-	{
-		ostringstream s;
-		s << e.getString() << ": " << e.getSystemErrorString();
-		dlog[Debug::CRIT] << myname << "(poll): " << s.str() << endl;
-		throw SystemError(s.str());
-	}
-
-	while( activated )
-	{
-		try
-		{
-			send();
-		}
-		catch( ost::SockException& e )
-		{
-			cerr  << e.getString() << ": " << e.getSystemErrorString() << endl;
-		}
-		catch( UniSetTypes::Exception& ex)
-		{
-			cerr << myname << "(step): " << ex << std::endl;
-		}
-		catch(...)
-		{
-			cerr << myname << "(step): catch ..." << std::endl;
-		}	
-
-		msleep(polltime);
-	}
-
-	cerr << "************* execute FINISH **********" << endl;
-}
-// -----------------------------------------------------------------------------
-void UNetExchange::send()
-{
-	cout << myname << ": send..." << endl;
-/*
-	UniSetUNet::UNetHeader h;
-	h.nodeID = conf->getLocalNode();
-	h.procID = getId();
-	h.dcount = mypack.size();
-	if( UNet->isPending(ost::Socket::pendingOutput) )
-	{
-		ssize_t ret = UNet->send((char*)(&h),sizeof(h));
-		if( ret<(ssize_t)sizeof(h) )
-		{
-			cerr << myname << "(send data header): ret=" << ret << " sizeof=" << sizeof(h) << endl;
-			return;
-		}
-*/
-#warning use mutex for list!!!
-		UniSetUNet::UNetMessage::UNetDataList::iterator it = mypack.dlist.begin();
-		
-		for( ; it!=mypack.dlist.end(); ++it )
-		{
-//			while( !UNet->isPending(ost::Socket::pendingOutput) )
-//				msleep(30);
-
-        	cout << myname << "(send): " << (*it) << endl;
-			ssize_t ret = UNet->send((char*)(&(*it)),sizeof(UniSetUNet::UNetData));
-			if( ret<(ssize_t)sizeof(UniSetUNet::UNetData) )
-			{
-				cerr << myname << "(send data): ret=" << ret << " sizeof=" << sizeof(UniSetUNet::UNetData) << endl;
-				break;
-			}
-		}
-//	}
-}
 // -----------------------------------------------------------------------------
 void UNetExchange::processingMessage(UniSetTypes::VoidMessage *msg)
 {
@@ -274,6 +236,13 @@ void UNetExchange::processingMessage(UniSetTypes::VoidMessage *msg)
 			{
 				SensorMessage sm( msg );
 				sensorInfo(&sm);
+			}
+			break;
+
+			case Message::Timer:
+			{
+				TimerMessage tm(msg);
+				timerInfo(&tm);
 			}
 			break;
 
@@ -297,7 +266,7 @@ void UNetExchange::processingMessage(UniSetTypes::VoidMessage *msg)
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetExchange::sysCommand(UniSetTypes::SystemMessage *sm)
+void UNetExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 {
 	switch( sm->command )
 	{
@@ -324,7 +293,10 @@ void UNetExchange::sysCommand(UniSetTypes::SystemMessage *sm)
 				UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
 				askSensors(UniversalIO::UIONotify);
 			}
-			thr->start();
+			askTimer(tmStep,steptime);
+			startReceivers();
+			if( sender )
+				sender->start();
 		}
 
 		case SystemMessage::FoldUp:
@@ -385,36 +357,12 @@ void UNetExchange::askSensors( UniversalIO::UIOCommand cmd )
 		kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
 		throw SystemError(err.str());
 	}
-
-	DMap::iterator it=dlist.begin();
-	for( ; it!=dlist.end(); ++it )
-	{
-		try
-		{
-			shm->askSensor(it->si.id,cmd);
-		}
-		catch( UniSetTypes::Exception& ex )
-		{
-			dlog[Debug::WARN] << myname << "(askSensors): " << ex << std::endl;
-		}
-		catch(...){}
-	}
 }
 // ------------------------------------------------------------------------------------------
 void UNetExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
-	DMap::iterator it=dlist.begin();
-	for( ; it!=dlist.end(); ++it )
-	{
-		if( it->si.id == sm->id )
-		{
-			uniset_spin_lock lock(it->val_lock);
-			it->val = sm->value;
-			if( it->pack_it != mypack.dlist.end() )
-				it->pack_it->val = sm->value;
-		}
-		break;
-	}
+	if( sender )
+		sender->update(sm->id,sm->value);
 }
 // ------------------------------------------------------------------------------------------
 bool UNetExchange::activateObject()
@@ -437,201 +385,46 @@ void UNetExchange::sigterm( int signo )
 {
 	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
 	activated = false;
-	UNet->disconnect();
-	for( ReceiverList::iterator it=rlist.begin(); it!=rlist.end(); it++ )
-		(*it)->stop();
-
 	UniSetObject_LT::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
-void UNetExchange::readConfiguration()
-{
-#warning Сделать сортировку по диапазонам адресов!!!
-// чтобы запрашивать одним запросом, сразу несколько входов...
-//	readconf_ok = false;
-	xmlNode* root = conf->getXMLSensorsSection();
-	if(!root)
-	{
-		ostringstream err;
-		err << myname << "(readConfiguration): не нашли корневого раздела <sensors>";
-		throw SystemError(err.str());
-	}
-
-	UniXML_iterator it(root);
-	if( !it.goChildren() )
-	{
-		std::cerr << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
-		return;
-	}
-
-	for( ;it.getCurrent(); it.goNext() )
-	{
-		if( check_item(it) )
-			initItem(it);
-	}
-	
-//	readconf_ok = true;
-}
-// ------------------------------------------------------------------------------------------
-bool UNetExchange::check_item( UniXML_iterator& it )
-{
-	if( s_field.empty() )
-		return true;
-
-	// просто проверка на не пустой field
-	if( s_fvalue.empty() && it.getProp(s_field).empty() )
-		return false;
-
-	// просто проверка что field = value
-	if( !s_fvalue.empty() && it.getProp(s_field)!=s_fvalue )
-		return false;
-
-	return true;
-}
-// ------------------------------------------------------------------------------------------
-bool UNetExchange::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
-{
-	if( check_item(it) )
-		initItem(it);
-	return true;
-}
-// ------------------------------------------------------------------------------------------
-bool UNetExchange::initItem( UniXML_iterator& it )
-{
-	string sname( it.getProp("name") );
-
-	string tid = it.getProp("id");
-	
-	ObjectId sid;
-	if( !tid.empty() )
-	{
-		sid = UniSetTypes::uni_atoi(tid);
-		if( sid <= 0 )
-			sid = DefaultObjectId;
-	}
-	else
-		sid = conf->getSensorID(sname);
-
-	if( sid == DefaultObjectId )
-	{
-		if( dlog )
-			dlog[Debug::CRIT] << myname << "(readItem): ID not found for "
-							<< sname << endl;
-		return false;
-	}
-	
-	UItem p;
-	p.si.id = sid;
-	p.si.node = conf->getLocalNode();
-	mypack.addData(sid,0);
-	p.pack_it = (mypack.dlist.end()--);
-
-	if( maxItem >= dlist.size() )
-		dlist.resize(maxItem+10);
-	
-	dlist[maxItem] = p;
-	maxItem++;
-
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << myname << "(initItem): add " << p << endl;
-
-	return true;
-}
-
-// ------------------------------------------------------------------------------------------
 void UNetExchange::initIterators()
 {
-	DMap::iterator it=dlist.begin();
-	for( ; it!=dlist.end(); it++ )
-	{
-		shm->initDIterator(it->dit);
-		shm->initAIterator(it->ait);
-	}
-
 	shm->initAIterator(aitHeartBeat);
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::help_print( int argc, char* argv[] )
 {
-	cout << "--UNet-polltime msec     - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
-	cout << "--UNet-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--UNet-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--UNet-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
-	cout << "--UNet-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
-	cout << "--UNet-notRespondSensor - датчик связи для данного процесса " << endl;
-	cout << "--UNet-sm-ready-timeout - время на ожидание старта SM" << endl;
-	cout << " Настройки протокола UNet: " << endl;
-	cout << "--UNet-host [ip|hostname]  - Адрес сервера" << endl;
-	cout << "--UNet-send-timeout - Таймаут на посылку ответа." << endl;
+	cout << "--unet-recvpause msec    - Пауза между получением пакетов. По умолчанию 10 мсек." << endl;
+	cout << "--unet-updatepause msec  - Пауза между обновлением данных в SM. По умолчанию 100 мсек." << endl;
+	cout << "--unet-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+	cout << "--unet-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
+	cout << "--unet-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
+	cout << "--unet-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
+	cout << "--unet-notRespondSensor - датчик связи для данного процесса " << endl;
+	cout << "--unet-sm-ready-timeout - время на ожидание старта SM" << endl;
+	cout << " Настройки протокола RS: " << endl;
 }
 // -----------------------------------------------------------------------------
-UNetExchange* UNetExchange::init_UNetexchange( int argc, char* argv[], UniSetTypes::ObjectId icID, SharedMemory* ic )
+UNetExchange* UNetExchange::init_unetexchange( int argc, char* argv[], UniSetTypes::ObjectId icID, SharedMemory* ic )
 {
-	string name = conf->getArgParam("--UNet-name","UNetExchange1");
+	string name = conf->getArgParam("--unet-name","UNetExchange1");
 	if( name.empty() )
 	{
-		cerr << "(UNetexchange): Не задан name'" << endl;
+		cerr << "(unetexchange): Не задан name'" << endl;
 		return 0;
 	}
 
 	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		cerr << "(UNetexchange): идентификатор '" << name 
+		cerr << "(unetexchange): идентификатор '" << name
 			<< "' не найден в конф. файле!"
 			<< " в секции " << conf->getObjectsSection() << endl;
 		return 0;
 	}
 
-	dlog[Debug::INFO] << "(rsexchange): name = " << name << "(" << ID << ")" << endl;
+	dlog[Debug::INFO] << "(unetexchange): name = " << name << "(" << ID << ")" << endl;
 	return new UNetExchange(ID,icID,ic);
 }
 // -----------------------------------------------------------------------------
-std::ostream& operator<<( std::ostream& os, UNetExchange::UItem& p )
-{
-	return os 	<< " sid=" << p.si.id;
-}
-// -----------------------------------------------------------------------------
-void UNetExchange::buildReceiverList()
-{
-	xmlNode* n = conf->getXMLNodesSection();
-	if( !n )
-	{
-		dlog[Debug::WARN] << myname << "(buildReceiverList): <nodes> not found! ignore..." << endl;
-		return;
-	}
-	
-	UniXML_iterator it(n);
-	if( !it.goChildren() )
-	{
-		dlog[Debug::WARN] << myname << "(buildReceiverList): <nodes> is empty?! ignore..." << endl;
-		return;
-	}
-	
-	for( ; it.getCurrent(); it.goNext() )
-	{
-		ObjectId n_id = conf->getNodeID( it.getProp("name") );
-		if( n_id == conf->getLocalNode() )
-		{
-			port = it.getIntProp("UNet_port");
-			if( port<=0 )
-				port = n_id;
-			dlog[Debug::INFO] << myname << "(buildReceiverList): init myport port=" << port << endl;
-			continue;
-		}
-
-		int p = it.getIntProp("UNet_port");
-		if( p <=0 )
-			p = n_id;
-
-		if( p == DefaultObjectId )
-		{
-			dlog[Debug::WARN] << myname << "(buildReceiverList): node=" << it.getProp("name") << " unknown port. ignore..." << endl;
-			continue;
-		}
-
-		UNetNReceiver* r = new UNetNReceiver(p,host,shm->getSMID(),shm->SM());
-		rlist.push_back(r);
-	}
-}
-// ------------------------------------------------------------------------------------------

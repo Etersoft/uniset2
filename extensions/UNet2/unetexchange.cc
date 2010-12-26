@@ -1,7 +1,7 @@
 #include <sstream>
 #include "ObjectsActivator.h"
 #include "Extensions.h"
-#include "UDPExchange.h"
+#include "UNetExchange.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -15,16 +15,16 @@ int main( int argc, char** argv )
 		{
 			cout << "--smemory-id objectName  - SharedMemory objectID. Default: read from <SharedMemory>" << endl;
 			cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
-			cout << "--udp-logfile filename    - logfilename. Default: udpexchange.log" << endl;
+			cout << "--unet-logfile filename    - logfilename. Default: udpexchange.log" << endl;
 			cout << endl;
-			UDPExchange::help_print(argc,argv);
+			UNetExchange::help_print(argc,argv);
 			return 0;
 		}
 
 		string confile=UniSetTypes::getArgParam("--confile",argc,argv,"configure.xml");
 		conf = new Configuration( argc, argv, confile );
 
-		string logfilename(conf->getArgParam("--udp-logfile"));
+		string logfilename(conf->getArgParam("--unet-logfile"));
 		if( logfilename.empty() )
 			logfilename = "udpexchange.log";
 	
@@ -49,35 +49,39 @@ int main( int argc, char** argv )
 			return 1;
 		}
 
-		UDPExchange* rs = UDPExchange::init_udpexchange(argc,argv,shmID);
-		if( !rs )
+		UNetExchange* unet = UNetExchange::init_unetexchange(argc,argv,shmID);
+		if( !unet )
 		{
-			dlog[Debug::CRIT] << "(udpexchange): init не прошёл..." << endl;
+			dlog[Debug::CRIT] << "(unetexchange): init failed.." << endl;
 			return 1;
 		}
 
 		ObjectsActivator act;
-		act.addObject(static_cast<class UniSetObject*>(rs));
+		act.addObject(static_cast<class UniSetObject*>(unet));
 
 		SystemMessage sm(SystemMessage::StartUp); 
 		act.broadcast( sm.transport_msg() );
 
 		unideb(Debug::ANY) << "\n\n\n";
-		unideb[Debug::ANY] << "(main): -------------- UDP Exchange START -------------------------\n\n";
+		unideb[Debug::ANY] << "(main): -------------- UDPRecevier START -------------------------\n\n";
 		dlog(Debug::ANY) << "\n\n\n";
-		dlog[Debug::ANY] << "(main): -------------- UDP Exchange START -------------------------\n\n";
+		dlog[Debug::ANY] << "(main): -------------- UDPReceiver START -------------------------\n\n";
 
 		act.run(false);
-//		msleep(500);
-//		rs->execute();
 	}
 	catch( Exception& ex )
 	{
-		dlog[Debug::CRIT] << "(udpexchange): " << ex << std::endl;
+		dlog[Debug::CRIT] << "(unetexchange): " << ex << std::endl;
+	}
+	catch( ost::SockException& e )
+	{
+		ostringstream s;
+		s << e.getString() << ": " << e.getSystemErrorString();
+		dlog[Debug::CRIT] << s.str() << endl;
 	}
 	catch(...)
 	{
-		dlog[Debug::CRIT] << "(udpexchange): catch ..." << std::endl;
+		dlog[Debug::CRIT] << "(unetexchange): catch ..." << std::endl;
 	}
 
 	return 0;
