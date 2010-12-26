@@ -1,7 +1,6 @@
 #!/bin/sh
 
-uniset-start.sh -f ./uniset-udpexchange --udp-name UDPExchange --udp-host 192.168.56.255 \
-	--udp-broadcast 1 --udp-polltime 1000 \
+uniset-start.sh -f ./uniset-unetexchange --unet-name UNetExchange \
 	--confile test.xml \
+	--unet-filter-field rs --unet-filter-value 2 --unet-maxdifferense 40 \
 	--dlog-add-levels info,crit,warn
-#	--udp-filter-field udp --udp-filter-value 1 \

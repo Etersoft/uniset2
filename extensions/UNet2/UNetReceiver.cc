@@ -7,184 +7,242 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-UNetReceiver::UNetReceiver( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic ):
-UniSetObject_LT(objId),
-shm(0),
-initPause(0),
-udp(0),
-activated(false)
+bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
+											const UniSetUDP::UDPMessage& rhs) const
 {
-	if( objId == DefaultObjectId )
-		throw UniSetTypes::SystemError("(UNetReceiver): objId=-1?!! Use --udp-name" );
+//	if( lhs.msg.header.num == rhs.msg.header.num )
+//		return (lhs.msg < rhs.msg);
 
-//	xmlNode* cnode = conf->getNode(myname);
-	cnode = conf->getNode(myname);
-	if( cnode == NULL )
-		throw UniSetTypes::SystemError("(UNetReceiver): Not find conf-node for " + myname );
+	return lhs.msg.header.num > rhs.msg.header.num;
+}
+// ------------------------------------------------------------------------------------------
+UNetReceiver::UNetReceiver( const std::string s_host, const ost::tpport_t port, SMInterface* smi ):
+shm(smi),
+recvpause(10),
+updatepause(100),
+udp(0),
+recvTimeout(5000),
+lostTimeout(5000),
+lostPackets(0),
+activated(false),
+r_thr(0),
+u_thr(0),
+pnum(0),
+maxDifferens(1000),
+waitClean(false),
+rnum(0),
+maxProcessingCount(100),
+icache(200),
+cache_init_ok(false)
+{
+	{
+		ostringstream s;
+		s << "(" << s_host << ":" << port << ")";
+		myname = s.str();
+	}
 
-	shm = new SMInterface(shmId,&ui,objId,ic);
-
-	UniXML_iterator it(cnode);
-
-	// определяем фильтр
-	s_field = conf->getArgParam("--udp-filter-field");
-	s_fvalue = conf->getArgParam("--udp-filter-value");
-	dlog[Debug::INFO] << myname << "(init): read fileter-field='" << s_field
-						<< "' filter-value='" << s_fvalue << "'" << endl;
-
-	// ---------- init RS ----------
-//	UniXML_iterator it(cnode);
-	string s_host	= conf->getArgParam("--udp-host",it.getProp("host"));
-	if( s_host.empty() )
-		throw UniSetTypes::SystemError(myname+"(UNetReceiver): Unknown host. Use --udp-host" );
-
-	port = conf->getArgInt("--udp-port",it.getProp("port"));
-	if( port <= 0 )
-		throw UniSetTypes::SystemError(myname+"(UNetReceiver): Unknown port address. Use --udp-port" );
-
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "(UNetReceiver): UNet set to " << s_host << ":" << port << endl;
-
-	host = s_host.c_str();
 	try
 	{
-		udp = new ost::UNetDuplex(host,port);
+//		ost::IPV4Cidr ci(s_host.c_str());
+//		addr = ci.getBroadcast();
+//		cerr << "****************** addr: " << addr << endl;
+		addr = s_host.c_str();
+		udp = new ost::UDPDuplex(addr,port);
 	}
 	catch( ost::SockException& e )
 	{
 		ostringstream s;
-		s << e.getString() << ": " << e.getSystemErrorString() << endl;
+		s << e.getString() << ": " << e.getSystemErrorString();
+		dlog[Debug::CRIT] << myname << "(init): " << s.str() << std::endl;
+
 		throw SystemError(s.str());
 	}
 
-	thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::poll);
+	r_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::receive);
+	u_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::update);
 
-	recvTimeout = conf->getArgPInt("--udp-recv-timeout",it.getProp("recvTimeout"), 5000);
-	polltime = conf->getArgPInt("--udp-polltime",it.getProp("polltime"), 100);
 
-	// -------------------------------
-	// ********** HEARTBEAT *************
-	string heart = conf->getArgParam("--udp-heartbeat-id",it.getProp("heartbeat_id"));
-	if( !heart.empty() )
-	{
-		sidHeartBeat = conf->getSensorID(heart);
-		if( sidHeartBeat == DefaultObjectId )
-		{
-			ostringstream err;
-			err << myname << ": не найден идентификатор для датчика 'HeartBeat' " << heart;
-			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
-			throw SystemError(err.str());
-		}
-
-		int heartbeatTime = getHeartBeatTime();
-		if( heartbeatTime )
-			ptHeartBeat.setTiming(heartbeatTime);
-		else
-			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
-
-		maxHeartBeat = conf->getArgPInt("--udp-heartbeat-max", it.getProp("heartbeat_max"), 10);
-		test_id = sidHeartBeat;
-	}
-	else
-	{
-		test_id = conf->getSensorID("TestMode_S");
-		if( test_id == DefaultObjectId )
-		{
-			ostringstream err;
-			err << myname << "(init): test_id unknown. 'TestMode_S' not found...";
-			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
-			throw SystemError(err.str());
-		}
-	}
-
-	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
-
-	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
-
-	timeout_t msec = conf->getArgPInt("--udp-timeout",it.getProp("timeout"), 3000);
-
-	dlog[Debug::INFO] << myname << "(init): udp-timeout=" << msec << " msec" << endl;
+	ptRecvTimeout.setTiming(recvTimeout);
 }
 // -----------------------------------------------------------------------------
 UNetReceiver::~UNetReceiver()
 {
+	delete r_thr;
+	delete u_thr;
 	delete udp;
-	delete shm;
-	delete thr;
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::waitSMReady()
+void UNetReceiver::setReceiveTimeout( timeout_t msec )
 {
-	// waiting for SM is ready...
-	int ready_timeout = conf->getArgInt("--udp-sm-ready-timeout","15000");
-	if( ready_timeout == 0 )
-		ready_timeout = 15000;
-	else if( ready_timeout < 0 )
-		ready_timeout = UniSetTimer::WaitUpTime;
-
-	if( !shm->waitSMready(ready_timeout,50) )
+	recvTimeout = msec;
+	ptRecvTimeout.setTiming(msec);
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::setLostTimeout( timeout_t msec )
+{
+	lostTimeout = msec;
+	ptLostTimeout.setTiming(msec);
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::setReceivePause( timeout_t msec )
+{
+	recvpause = msec;
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::setUpdatePause( timeout_t msec )
+{
+	updatepause = msec;
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::setMaxProcessingCount( int set )
+{
+	maxProcessingCount = set;
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::setMaxDifferens( unsigned long set )
+{
+	maxDifferens = set;
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::start()
+{
+	if( !activated )
 	{
-		ostringstream err;
-		err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
-		dlog[Debug::CRIT] << err.str() << endl;
-		throw SystemError(err.str());
+		activated = true;
+		u_thr->start();
+		r_thr->start();
 	}
 }
 // -----------------------------------------------------------------------------
-/*
-void UNetReceiver::timerInfo( TimerMessage *tm )
+void UNetReceiver::update()
 {
-	if( tm->id == tmExchange )
-		step();
-}
-*/
-// -----------------------------------------------------------------------------
-void UNetReceiver::step()
-{
-//	{
-//		uniset_mutex_lock l(pollMutex,2000);
-//		poll();
-//	}
-
-	if( !activated )
-		return;
-
-	if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
+	cerr << "******************* udpate start" << endl;
+	while(activated)
 	{
 		try
 		{
-			shm->localSaveValue(aitHeartBeat,sidHeartBeat,maxHeartBeat,getId());
-			ptHeartBeat.reset();
+			real_update();
 		}
-		catch(Exception& ex)
+		catch( UniSetTypes::Exception& ex)
 		{
-			dlog[Debug::CRIT] << myname
-				<< "(step): (hb) " << ex << std::endl;
+			dlog[Debug::CRIT] << myname << "(update): " << ex << std::endl;
+		}
+		catch(...)
+		{
+			dlog[Debug::CRIT] << myname << "(update): catch ..." << std::endl;
+		}
+
+		msleep(updatepause);
+	}
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::real_update()
+{
+	UniSetUDP::UDPMessage p;
+	// обрабатываем пока, очередь либо не опустеет
+	// либо обнаружится "дырка" в последовательности
+	// но при этом обрабатываем не больше maxProcessingCount
+	// за один раз..
+	int k = maxProcessingCount;
+	while( k>0 )
+	{
+		{ // lock qpack
+			uniset_mutex_lock l(packMutex);
+			if( qpack.empty() )
+				return;
+
+			p = qpack.top();
+			unsigned long sub = labs(p.msg.header.num - pnum);
+			if( pnum > 0 )
+			{
+				// если sub > maxDifferens
+				// значит это просто "разрыв"
+				// и нам ждать lostTimeout не надо
+				// сразу начинаем обрабатывать новые пакеты
+				// а если > 1 && < maxDifferens
+				// значит это временная "дырка"
+				// и надо подождать lostTimeout
+				// чтобы констатировать потерю пакета..
+				if( sub > 1 && sub < maxDifferens )
+				{
+					if( !ptLostTimeout.checkTime() )
+						return;
+
+					lostPackets++;
+				}
+				else if( p.msg.header.num == pnum )
+				{
+				   /* а что делать если идут повторные пакеты ?!
+					* для надёжности лучше обрабатывать..
+					* для "оптимизации".. лучше игнорировать
+					*/
+					qpack.pop(); // пока выбрали вариант "оптимизации"
+					continue;
+				}
+			}
+
+			ptLostTimeout.reset();
+
+			// удаляем из очереди, только если
+			// всё в порядке с последовательностью..
+			qpack.pop();
+			pnum = p.msg.header.num;
+		} // unlock qpack
+
+		k--;
+
+//		cerr << myname << "(update): " << p.msg.header << endl;
+
+		initCache(p, !cache_init_ok);
+
+		for( size_t i=0; i<p.msg.header.dcount; i++ )
+		{
+			try
+			{
+				UniSetUDP::UDPData& d = p.msg.dat[i];
+				ItemInfo& ii(icache[i]);
+				if( ii.id != d.id )
+				{
+					dlog[Debug::WARN] << myname << "(update): reinit cache for sid=" << d.id << endl;
+					ii.id = d.id;
+					shm->initAIterator(ii.ait);
+					shm->initDIterator(ii.dit);
+				}
+
+				if( ii.iotype == UniversalIO::DigitalInput )
+					shm->localSaveState(ii.dit,d.id,d.val,shm->ID());
+				else if( ii.iotype == UniversalIO::AnalogInput )
+					shm->localSaveValue(ii.ait,d.id,d.val,shm->ID());
+				else if( ii.iotype == UniversalIO::AnalogOutput )
+					shm->localSetValue(ii.ait,d.id,d.val,shm->ID());
+				else if( ii.iotype == UniversalIO::DigitalOutput )
+					shm->localSetState(ii.dit,d.id,d.val,shm->ID());
+				else
+				  dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << d.id << endl;
+			}
+			catch( UniSetTypes::Exception& ex)
+			{
+				dlog[Debug::CRIT] << myname << "(update): " << ex << std::endl;
+			}
+			catch(...)
+			{
+				dlog[Debug::CRIT] << myname << "(update): catch ..." << std::endl;
+			}
 		}
 	}
 }
 
 // -----------------------------------------------------------------------------
-void UNetReceiver::poll()
+void UNetReceiver::receive()
 {
-	try
-	{
-//		udp->connect(host,port);
-//		udp->UNetSocket::setPeer(host,port);
-	}
-	catch( UniSetTypes::Exception& ex)
-	{
-		cerr << myname << "(step): " << ex << std::endl;
-//		reise(SIGTERM);
-		return;
-	}
-
+	cerr << "******************* receive start" << endl;
+	ptRecvTimeout.setTiming(recvTimeout);
 	while( activated )
 	{
 		try
 		{
-			recv();
-//			send();
+			if( recv() )
+			  ptRecvTimeout.reset();
 		}
 		catch( ost::SockException& e )
 		{
@@ -192,270 +250,129 @@ void UNetReceiver::poll()
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
-			cerr << myname << "(step): " << ex << std::endl;
+			cerr << myname << "(poll): " << ex << std::endl;
 		}
 		catch(...)
 		{
-			cerr << myname << "(step): catch ..." << std::endl;
+			cerr << myname << "(poll): catch ..." << std::endl;
 		}
 
-		msleep(polltime);
+		msleep(recvpause);
 	}
 
 	cerr << "************* execute FINISH **********" << endl;
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::recv()
+bool UNetReceiver::recv()
 {
-	cout << myname << ": recv....(timeout=" << recvTimeout << ")" << endl;
-	UniSetUNet::UNetHeader h;
-	// receive
-	if( udp->isInputReady(recvTimeout) )
+	if( !udp->isInputReady(recvTimeout) )
+		return false;
+
+	ssize_t ret = udp->UDPReceive::receive(&(pack.msg),sizeof(pack.msg));
+	if( ret < sizeof(UniSetUDP::UDPHeader) )
 	{
-		ssize_t ret = udp->UNetReceive::receive(&h,sizeof(h));
-		if( ret<(ssize_t)sizeof(h) )
+		dlog[Debug::CRIT] << myname << "(receive): FAILED header ret=" << ret << " sizeof=" << sizeof(UniSetUDP::UDPHeader) << endl;
+		return false;
+	}
+
+	ssize_t sz = pack.msg.header.dcount * sizeof(UniSetUDP::UDPData) + sizeof(UniSetUDP::UDPHeader);
+	if( ret < sz )
+	{
+		dlog[Debug::CRIT] << myname << "(receive): FAILED data ret=" << ret << " sizeof=" << sz
+			  << " packnum=" << pack.msg.header.num << endl;
+		return false;
+	}
+
+
+	if( rnum>0 && labs(pack.msg.header.num - rnum) > maxDifferens )
+	{
+		/* А что делать если мы уже ждём и ещё не "разгребли предыдущее".. а тут уже повторный "разрыв"
+		 * Можно откинуть всё.. что сложили во временную очередь и заново "копить" (но тогда теряем информацию)
+		 * А можно породолжать складывать во временную, но тогда есть риск "никогда" не разгрести временную
+		 * очередь, при "частых обрывах". Потому-что update будет на каждом разрыве ждать ещё lostTimeout..
+		 */
+		// Пока выбираю.. чистить qtmp. Это будет соотвествовать логике работы с картами у которых ограничен буфер приёма.
+		// Обычно "кольцевой". Т.е. если не успели обработать и "вынуть" из буфера информацию.. он будет переписан новыми данными
+		if( waitClean )
 		{
-			cerr << myname << "(receive): ret=" << ret << " sizeof=" << sizeof(h) << endl;
-			return;
+			dlog[Debug::CRIT] << myname << "(receive): reset qtmp.." << endl;
+			while( !qtmp.empty() )
+				qtmp.pop();
 		}
 
-		cout << myname << "(receive): header: " << h << endl;
-		if( h.dcount <=0 )
+		waitClean = true;
+	}
+
+	rnum = pack.msg.header.num;
+
+//	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
+//		  << " header: " << pack.msg.header
+//		  << " waitClean=" << waitClean
+//		  << endl;
+
+	{	// lock qpack
+		uniset_mutex_lock l(packMutex,500);
+		if( !waitClean )
 		{
-			cout << " data=0" << endl;
-			return;
+			qpack.push(pack);
+			return true;
 		}
 
-		UniSetUNet::UNetData d;
-		// ignore echo...
-#if 0
-		if( h.nodeID == conf->getLocalNode() && h.procID == getId() )
+		if( !qpack.empty() )
 		{
-			for( int i=0; i<h.dcount;i++ )
-			{
-				ssize_t ret = udp->UNetReceive::receive(&d,sizeof(d));
-				if( ret < (ssize_t)sizeof(d) )
-					return;
-			}
-			return;
+//			cerr << myname << "(receive): copy to qtmp..."
+//							  << " header: " << pack.msg.header
+//							  << endl;
+			qtmp.push(pack);
 		}
-#endif
-		for( int i=0; i<h.dcount;i++ )
+		else
 		{
-			ssize_t ret = udp->UNetReceive::receive(&d,sizeof(d));
-			if( ret<(ssize_t)sizeof(d) )
+//		  	cerr << myname << "(receive): copy from qtmp..." << endl;
+			// очередь освободилась..
+			// то копируем в неё всё что набралось...
+			while( !qtmp.empty() )
 			{
-				cerr << myname << "(receive data " << i << "): ret=" << ret << " sizeof=" << sizeof(d) << endl;
-				break;
+				qpack.push(qtmp.top());
+				qtmp.pop();
 			}
 
-			cout << myname << "(receive data " << i << "): " << d << endl;
+			// не забываем и текущий поместить в очередь..
+			qpack.push(pack);
+			waitClean = false;
 		}
-	}
-//	else
-//	{
-//		cout << "no InputReady.." << endl;
-//	}
-}
-// -----------------------------------------------------------------------------
-void UNetReceiver::processingMessage(UniSetTypes::VoidMessage *msg)
-{
-	try
-	{
-		switch(msg->type)
-		{
-			case UniSetTypes::Message::SysCommand:
-			{
-				UniSetTypes::SystemMessage sm( msg );
-				sysCommand( &sm );
-			}
-			break;
-
-			case Message::SensorInfo:
-			{
-				SensorMessage sm( msg );
-				sensorInfo(&sm);
-			}
-			break;
-
-			default:
-				break;
-		}
-	}
-	catch( SystemError& ex )
-	{
-		dlog[Debug::CRIT] << myname << "(SystemError): " << ex << std::endl;
-//		throw SystemError(ex);
-		raise(SIGTERM);
-	}
-	catch( Exception& ex )
-	{
-		dlog[Debug::CRIT] << myname << "(processingMessage): " << ex << std::endl;
-	}
-	catch(...)
-	{
-		dlog[Debug::CRIT] << myname << "(processingMessage): catch ...\n";
-	}
-}
-// -----------------------------------------------------------------------------
-void UNetReceiver::sysCommand(UniSetTypes::SystemMessage *sm)
-{
-	switch( sm->command )
-	{
-		case SystemMessage::StartUp:
-		{
-			waitSMReady();
-
-			// подождать пока пройдёт инициализация датчиков
-			// см. activateObject()
-			msleep(initPause);
-			PassiveTimer ptAct(activateTimeout);
-			while( !activated && !ptAct.checkTime() )
-			{
-				cout << myname << "(sysCommand): wait activate..." << endl;
-				msleep(300);
-				if( activated )
-					break;
-			}
-
-			if( !activated )
-				dlog[Debug::CRIT] << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
-
-			{
-				UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
-				askSensors(UniversalIO::UIONotify);
-			}
-			thr->start();
-		}
-
-		case SystemMessage::FoldUp:
-		case SystemMessage::Finish:
-			askSensors(UniversalIO::UIODontNotify);
-			break;
-
-		case SystemMessage::WatchDog:
-		{
-			// ОПТИМИЗАЦИЯ (защита от двойного перезаказа при старте)
-			// Если идёт локальная работа
-			// (т.е. UNetReceiver  запущен в одном процессе с SharedMemory2)
-			// то обрабатывать WatchDog не надо, т.к. мы и так ждём готовности SM
-			// при заказе датчиков, а если SM вылетит, то вместе с этим процессом(UNetReceiver)
-			if( shm->isLocalwork() )
-				break;
-
-			askSensors(UniversalIO::UIONotify);
-		}
-		break;
-
-		case SystemMessage::LogRotate:
-		{
-			// переоткрываем логи
-			unideb << myname << "(sysCommand): logRotate" << std::endl;
-			string fname = unideb.getLogFile();
-			if( !fname.empty() )
-			{
-				unideb.logFile(fname);
-				unideb << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << std::endl;
-			}
-
-			dlog << myname << "(sysCommand): logRotate" << std::endl;
-			fname = dlog.getLogFile();
-			if( !fname.empty() )
-			{
-				dlog.logFile(fname);
-				dlog << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
-			}
-		}
-		break;
-
-		default:
-			break;
-	}
-}
-// ------------------------------------------------------------------------------------------
-void UNetReceiver::askSensors( UniversalIO::UIOCommand cmd )
-{
-	if( !shm->waitSMworking(test_id,activateTimeout,50) )
-	{
-		ostringstream err;
-		err << myname
-			<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение "
-			<< activateTimeout << " мсек";
-
-		dlog[Debug::CRIT] << err.str() << endl;
-		kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
-		throw SystemError(err.str());
-	}
-}
-// ------------------------------------------------------------------------------------------
-void UNetReceiver::sensorInfo( UniSetTypes::SensorMessage* sm )
-{
-}
-// ------------------------------------------------------------------------------------------
-bool UNetReceiver::activateObject()
-{
-	// блокирование обработки Starsp
-	// пока не пройдёт инициализация датчиков
-	// см. sysCommand()
-	{
-		activated = false;
-		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
-		UniSetObject_LT::activateObject();
-		initIterators();
-		activated = true;
-	}
+	}	// unlock qpack
 
 	return true;
 }
-// ------------------------------------------------------------------------------------------
-void UNetReceiver::sigterm( int signo )
-{
-	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
-	activated = false;
-	udp->disconnect();
-	UniSetObject_LT::sigterm(signo);
-}
-// ------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void UNetReceiver::initIterators()
 {
-	shm->initAIterator(aitHeartBeat);
+	for( ItemVec::iterator it=icache.begin(); it!=icache.end(); ++it )
+	{
+		shm->initAIterator(it->ait);
+		shm->initDIterator(it->dit);
+	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::help_print( int argc, char* argv[] )
+void UNetReceiver::initCache( UniSetUDP::UDPMessage& pack, bool force )
 {
-	cout << "--udp-polltime msec     - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
-	cout << "--udp-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--udp-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--udp-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
-	cout << "--udp-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
-	cout << "--udp-notRespondSensor - датчик связи для данного процесса " << endl;
-	cout << "--udp-sm-ready-timeout - время на ожидание старта SM" << endl;
-	cout << " Настройки протокола RS: " << endl;
-	cout << "--udp-dev devname  - файл устройства" << endl;
-	cout << "--udp-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
-	cout << "--udp-my-addr      - адрес текущего узла" << endl;
-	cout << "--udp-recv-timeout - Таймаут на ожидание ответа." << endl;
-}
-// -----------------------------------------------------------------------------
-UNetReceiver* UNetReceiver::init_udpreceiver( int argc, char* argv[], UniSetTypes::ObjectId icID, SharedMemory* ic )
-{
-	string name = conf->getArgParam("--udp-name","UNetReceiver1");
-	if( name.empty() )
-	{
-		cerr << "(udpexchange): Не задан name'" << endl;
-		return 0;
-	}
+	 if( !force && pack.msg.header.dcount == icache.size() )
+		  return;
 
-	ObjectId ID = conf->getObjectID(name);
-	if( ID == UniSetTypes::DefaultObjectId )
-	{
-		cerr << "(udpexchange): идентификатор '" << name
-			<< "' не найден в конф. файле!"
-			<< " в секции " << conf->getObjectsSection() << endl;
-		return 0;
-	}
+	 dlog[Debug::INFO] << myname << ": init icache.." << endl;
+	 cache_init_ok = true;
 
-	dlog[Debug::INFO] << "(rsexchange): name = " << name << "(" << ID << ")" << endl;
-	return new UNetReceiver(ID,icID,ic);
+	 icache.resize(pack.msg.header.dcount);
+	 for( size_t i=0; i<icache.size(); i++ )
+	 {
+		  ItemInfo& d(icache[i]);
+		  if( d.id != pack.msg.dat[i].id )
+		  {
+				d.id = pack.msg.dat[i].id;
+				d.iotype = conf->getIOType(d.id);
+				shm->initAIterator(d.ait);
+				shm->initDIterator(d.dit);
+		  }
+	 }
 }
 // -----------------------------------------------------------------------------
