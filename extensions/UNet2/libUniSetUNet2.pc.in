@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libUniSetUNet2
+Description: Support library for UniSetUNet2
+Requires: libUniSetExtensions
+Version: @VERSION@
+Libs: -L${libdir} -lUniSetUNet2
+Cflags: -I${includedir}/uniset
