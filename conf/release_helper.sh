@@ -72,7 +72,7 @@ rpmbs $SPECNAME
 #send_notify
 
 # Увеличиваем релиз и запоминаем спек после успешной сборки
-inc_release $SPECNAME
+# inc_release $SPECNAME
 # и запоминаем спек после успешной сборки
 #cvs commit -m "Auto updated by $0 for $BUILDNAME" $SPECNAME || fatal "Can't commit spec"
 

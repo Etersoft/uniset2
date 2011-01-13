@@ -1761,7 +1761,7 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 							IOBase::processingAsDI( p, r->mbval, shm, force );
 						}
 						else
-							IOBase::processingAsAI( p, (unsigned short)(r->mbval), shm, force );
+							IOBase::processingAsAI( p, (signed short)(r->mbval), shm, force );
 					}
 					return;
 				}

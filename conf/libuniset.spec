@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 0.99
-Release: eter25
+Release: eter26
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -187,6 +187,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Fri Jan 14 2011 Pavel Vainerman <pv@etersoft.ru> 0.99-eter26
+- fixed bug in ModbusTCP Master. Set default signed type for data
+
 * Sat Dec 04 2010 Pavel Vainerman <pv@altlinux.ru> 0.99-eter25
 - fixed bug in uniset-mbtcptest (writexx)
 - minor fixes ( add 'm'-parametes for set value < 0 )
