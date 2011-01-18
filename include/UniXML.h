@@ -38,83 +38,6 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
-class UniXML
-{
-public:
-
-	inline xmlNode* getFirstNode()
-	{
-		return xmlDocGetRootElement(doc);
-	}
-
-	// Загружает указанный файл
-	void open(const std::string filename);
-
-	void close();
-	inline bool isOpen(){ return doc!=0; }
-	UniXML(const std::string filename);
-
-	UniXML();
-
-	~UniXML();
-
-	xmlNode* cur;
-	xmlDoc* doc;
-	std::string filename;
-	
-	// Создать новый XML-документ
-	void newDoc(const std::string& root_node, std::string xml_ver="1.0");
-
-	// Получить свойство name указанного узла node
-	static std::string getProp(const xmlNode* node, const std::string name);
-	static std::string getPropUtf8(const xmlNode* node, const std::string name);
-	static int getIntProp(const xmlNode* node, const std::string name);
-	/// if value if not positive ( <= 0 ), returns def
-	static int getPIntProp(const xmlNode* node, const std::string name, int def);
-	
-	// Установить свойство name указанного узла node
-	static void setProp(xmlNode* node, const std::string name, const std::string text);
-	
-	// Добавить новый дочерний узел
-	static xmlNode* createChild(xmlNode* node, const std::string title, const std::string text);
-	
-	// Добавить следующий узел
-	static xmlNode* createNext(xmlNode* node, const std::string title, const std::string text);
-	
-	// Удалить указанный узел и все вложенные узлы
-	static void removeNode(xmlNode* node);
-	
-	// Удалить указанный узел и все вложенные узлы
-	static xmlNode* copyNode(xmlNode* node, int recursive=1);
-	
-	// Сохранить в файл, если параметр не указан, сохраняет в тот файл
-	// который был загружен последним.
-	bool save(const std::string filename="", int level = 2);
-
-	// Переместить указатель к следующему узлу
-	static xmlNode* nextNode(xmlNode* node);
-
-	// После проверки исправить рекурсивный алгоритм на обычный,
-	// используя ->parent
-	xmlNode* findNode(xmlNode* node, const std::string searchnode, const std::string name = "") const;
-	xmlNode* findNodeUtf8(xmlNode* node, const std::string searchnode, const std::string name = "") const;
-
-	xmlNode* extFindNode(xmlNode* node, int depth, int width, const std::string searchnode, const std::string name = "", bool top=true );
-	xmlNode* extFindNodeUtf8(xmlNode* node, int depth, int width, const std::string searchnode, const std::string name = "", bool top=true );
-
-
-protected:
-	// Преобразование текстовой строки из XML в строку нашего внутреннего представления
-	static std::string xml2local(const std::string text);
-
-	// Преобразование текстовой строки из нашего внутреннего представления в строку для XML
-	// Возвращает указатель на временный буфер, который один на все вызовы функции.
-	static const xmlChar* local2xml(std::string text);
-	static std::string local2utf8(const std::string text);
-
-	static int recur;
-
-};
 
 class UniXML_iterator
 {
@@ -202,5 +125,82 @@ class UniXML_iterator
 		xmlNode* curNode;
 };
 
+class UniXML
+{
+public:
+
+	inline xmlNode* getFirstNode()
+	{
+		return xmlDocGetRootElement(doc);
+	}
+
+	// Загружает указанный файл
+	void open(const std::string filename);
+
+	void close();
+	inline bool isOpen(){ return doc!=0; }
+	UniXML(const std::string filename);
+
+	UniXML();
+
+	~UniXML();
+
+	xmlNode* cur;
+	xmlDoc* doc;
+	std::string filename;
+	
+	// Создать новый XML-документ
+	void newDoc(const std::string& root_node, std::string xml_ver="1.0");
+
+	// Получить свойство name указанного узла node
+	static std::string getProp(const xmlNode* node, const std::string name);
+	static std::string getPropUtf8(const xmlNode* node, const std::string name);
+	static int getIntProp(const xmlNode* node, const std::string name);
+	/// if value if not positive ( <= 0 ), returns def
+	static int getPIntProp(const xmlNode* node, const std::string name, int def);
+	
+	// Установить свойство name указанного узла node
+	static void setProp(xmlNode* node, const std::string name, const std::string text);
+	
+	// Добавить новый дочерний узел
+	static xmlNode* createChild(xmlNode* node, const std::string title, const std::string text);
+	
+	// Добавить следующий узел
+	static xmlNode* createNext(xmlNode* node, const std::string title, const std::string text);
+	
+	// Удалить указанный узел и все вложенные узлы
+	static void removeNode(xmlNode* node);
+	
+	// Удалить указанный узел и все вложенные узлы
+	static xmlNode* copyNode(xmlNode* node, int recursive=1);
+	
+	// Сохранить в файл, если параметр не указан, сохраняет в тот файл
+	// который был загружен последним.
+	bool save(const std::string filename="", int level = 2);
+
+	// Переместить указатель к следующему узлу
+	static xmlNode* nextNode(xmlNode* node);
+
+	// После проверки исправить рекурсивный алгоритм на обычный,
+	// используя ->parent
+	xmlNode* findNode(xmlNode* node, const std::string searchnode, const std::string name = "") const;
+	xmlNode* findNodeUtf8(xmlNode* node, const std::string searchnode, const std::string name = "") const;
+
+	xmlNode* extFindNode(xmlNode* node, int depth, int width, const std::string searchnode, const std::string name = "", bool top=true );
+	xmlNode* extFindNodeUtf8(xmlNode* node, int depth, int width, const std::string searchnode, const std::string name = "", bool top=true );
+
+
+protected:
+	// Преобразование текстовой строки из XML в строку нашего внутреннего представления
+	static std::string xml2local(const std::string text);
+
+	// Преобразование текстовой строки из нашего внутреннего представления в строку для XML
+	// Возвращает указатель на временный буфер, который один на все вызовы функции.
+	static const xmlChar* local2xml(std::string text);
+	static std::string local2utf8(const std::string text);
+
+	static int recur;
+
+};
 
 #endif
