@@ -39,7 +39,7 @@
 #include <libxml/tree.h>
 
 
-class UniXML_iterator
+class UniXML_iterator : public std::iterator<std::bidirectional_iterator_tag, xmlNode, ptrdiff_t,                                            	xmlNode*, xmlNode&>
 {
 	public:
 		UniXML_iterator(xmlNode* node) :
@@ -54,6 +54,9 @@ class UniXML_iterator
 		int getPIntProp(const std::string name, int def) const;
 		void setProp(const std::string name, const std::string text);
 		
+		bool findName(const std::string node, const std::string searchname); 
+		bool find(const std::string searchnode);
+	
 		/*! Перейти к следующему узлу. Возвращает false, если некуда перейти */
 		bool goNext();
 
@@ -67,16 +70,12 @@ class UniXML_iterator
 		bool canNext();
 		
 		// Перейти к следующему узлу
-		void operator ++()
-		{
-			goNext();
-		}
+		UniXML_iterator operator ++(int);
+		UniXML_iterator operator ++();
 		
 		// Перейти к предыдущему узлу
-		void operator --()
-		{
-			goPrev();
-		}
+		UniXML_iterator operator --(int);
+		UniXML_iterator operator --();
 		
 		/*! Перейти на один уровень выше 
 			\note Если перейти не удалось, итератор остаётся указывать на прежний узел
@@ -121,17 +120,30 @@ class UniXML_iterator
 			while(canNext()){goNext();}
 		}
 
-	private:
+	protected:
 		xmlNode* curNode;
 };
 
 class UniXML
 {
 public:
+	
+	typedef UniXML_iterator                 iterator;
 
 	inline xmlNode* getFirstNode()
 	{
 		return xmlDocGetRootElement(doc);
+	}
+
+	/*! возвращает итератор на самый первый узел документа */
+	inline iterator begin()
+	{
+		return iterator(getFirstNode());
+	}
+
+	inline iterator end()
+	{
+		return  iterator(NULL);
 	}
 
 	// Загружает указанный файл

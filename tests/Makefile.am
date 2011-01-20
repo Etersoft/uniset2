@@ -4,7 +4,7 @@
 
 SUBDIRS=JrnTests
 
-noinst_PROGRAMS 		= passivetimer unixml ui umutex conftest
+noinst_PROGRAMS 		= passivetimer unixml ui umutex conftest iterator_test
 
 passivetimer_SOURCES 	= passivetimer.cc
 passivetimer_LDADD 		= $(top_builddir)/lib/libUniSet.la
@@ -13,6 +13,10 @@ passivetimer_CPPFLAGS	= -I$(top_builddir)/include
 unixml_SOURCES 	= unixml.cc
 unixml_LDADD 	= $(top_builddir)/lib/libUniSet.la
 unixml_CPPFLAGS	= -I$(top_builddir)/include
+
+iterator_test_SOURCES 	= iterator_test.cc
+iterator_test_LDADD 	= $(top_builddir)/lib/libUniSet.la
+iterator_test_CPPFLAGS	= -I$(top_builddir)/include
 
 ui_SOURCES 	= ui.cc
 ui_LDADD 	= $(top_builddir)/lib/libUniSet.la
