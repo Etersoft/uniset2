@@ -23,7 +23,7 @@ std::ostream& operator<<( std::ostream& os, IOControl::IOInfo& inf )
 // -----------------------------------------------------------------------------
 
 IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
-						SharedMemory* ic, int numcards ):
+						SharedMemory* ic, int numcards, const std::string prefix_ ):
 	UniSetObject(id),
 	polltime(150),
 	cards(numcards+1),
@@ -33,6 +33,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	filterT(0),
 	shm(0),
 	myid(id),
+	prefix(prefix_),
 	blink_state(true),
 	blink2_state(true),
 	blink3_state(true),
@@ -53,12 +54,12 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 //		myname = ORepHelpers::getShortName(myfullname.c_str());
 //	}
 
-	string cname = conf->getArgParam("--io-confnode",myname);
+	string cname = conf->getArgParam("--"+prefix+"-confnode",myname);
 	cnode = conf->getNode(cname);
 	if( cnode == NULL )
 		throw SystemError("Not find conf-node " + cname + " for " + myname);
 
-	defCardNum = conf->getArgInt("--io-default-cardnum","-1");
+	defCardNum = conf->getArgInt("--"+prefix+"-default-cardnum","-1");
 
 	unideb[Debug::INFO] << myname << "(init): numcards=" << numcards << endl;
 
@@ -68,7 +69,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	for( unsigned int i=1; i<cards.size(); i++ )
 	{
 		stringstream s1;
-		s1 << "--iodev" << i;
+		s1 << "--" << prefix << "-dev" << i;
 		stringstream s2;
 		s2 << "iodev" << i;
 
@@ -125,18 +126,18 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 
 	unideb[Debug::INFO] << myname << "(init): result numcards=" << cards.size() << endl;
 	
-	polltime = conf->getArgInt("--io-polltime",it.getProp("polltime"));
+	polltime = conf->getArgInt("--"+prefix+"-polltime",it.getProp("polltime"));
 	if( !polltime )
 		polltime = 100;
 
-	force 		= conf->getArgInt("--io-force",it.getProp("force"));
-	force_out 	= conf->getArgInt("--io-force-out",it.getProp("force_out"));
+	force 		= conf->getArgInt("--"+prefix+"-force",it.getProp("force"));
+	force_out 	= conf->getArgInt("--"+prefix+"-force-out",it.getProp("force_out"));
 
-	filtersize = conf->getArgPInt("--io-filtersize",it.getProp("filtersize"), 1);
+	filtersize = conf->getArgPInt("--"+prefix+"-filtersize",it.getProp("filtersize"), 1);
 
-	filterT = atof(conf->getArgParam("--io-filterT",it.getProp("filterT")).c_str());
+	filterT = atof(conf->getArgParam("--"+prefix+"-filterT",it.getProp("filterT")).c_str());
 
-	string testlamp = conf->getArgParam("--io-test-lamp",it.getProp("testlamp_s"));
+	string testlamp = conf->getArgParam("--"+prefix+"-test-lamp",it.getProp("testlamp_s"));
 	if( !testlamp.empty() )
 	{
 		testLamp_S = conf->getSensorID(testlamp);
@@ -151,7 +152,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		unideb[Debug::INFO] << myname << "(init): testLamp_S='" << testlamp << "'" << endl;
 	}
 
-	string tmode = conf->getArgParam("--io-test-mode",it.getProp("testmode_as"));
+	string tmode = conf->getArgParam("--"+prefix+"-test-mode",it.getProp("testmode_as"));
 	if( !tmode.empty() )
 	{
 		testMode_as = conf->getSensorID(tmode);
@@ -169,35 +170,35 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	shm = new SMInterface(icID,&ui,myid,ic);
 
 	// определяем фильтр
-	s_field = conf->getArgParam("--io-s-filter-field");
-	s_fvalue = conf->getArgParam("--io-s-filter-value");
+	s_field = conf->getArgParam("--"+prefix+"-s-filter-field");
+	s_fvalue = conf->getArgParam("--"+prefix+"-s-filter-value");
 
 	unideb[Debug::INFO] << myname << "(init): read s_field='" << s_field
 						<< "' s_fvalue='" << s_fvalue << "'" << endl;
 
-	int blink_msec = conf->getArgPInt("--io-blink-time",it.getProp("blink-time"), 300);
+	int blink_msec = conf->getArgPInt("--"+prefix+"-blink-time",it.getProp("blink-time"), 300);
 	ptBlink.setTiming(blink_msec);
 
-	int blink2_msec = conf->getArgPInt("--io-blink2-time",it.getProp("blink2-time"), 150);
+	int blink2_msec = conf->getArgPInt("--"+prefix+"-blink2-time",it.getProp("blink2-time"), 150);
 	ptBlink2.setTiming(blink2_msec);
 
-	int blink3_msec = conf->getArgPInt("--io-blink3-time",it.getProp("blink3-time"), 100);
+	int blink3_msec = conf->getArgPInt("--"+prefix+"-blink3-time",it.getProp("blink3-time"), 100);
 	ptBlink3.setTiming(blink3_msec);
 
-	smReadyTimeout = conf->getArgInt("--io-sm-ready-timeout",it.getProp("ready_timeout"));
+	smReadyTimeout = conf->getArgInt("--"+prefix+"-sm-ready-timeout",it.getProp("ready_timeout"));
 	if( smReadyTimeout == 0 )
 		smReadyTimeout = 15000;
 	else if( smReadyTimeout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 
 
-	string sm_ready_sid = conf->getArgParam("--io-sm-ready-test-sid",it.getProp("sm_ready_test_sid"));
+	string sm_ready_sid = conf->getArgParam("--"+prefix+"-sm-ready-test-sid",it.getProp("sm_ready_test_sid"));
 	sidTestSMReady = conf->getSensorID(sm_ready_sid);
 	if( sidTestSMReady == DefaultObjectId )
 	{
 		sidTestSMReady = 4100; /* TestMode_S */
 		unideb[Debug::WARN] << myname 
-				<< "(init): не указан идентификатор датчика теста SM (--io-sm-ready-test-sid)." 
+				<< "(init): не указан идентификатор датчика теста SM (--" << prefix << "-sm-ready-test-sid)."
 				<< " Берём TestMode_S(4100)" << endl;
 	}
 	else
@@ -205,7 +206,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 
 
 	// -----------------------
-	string heart = conf->getArgParam("--io-heartbeat-id",it.getProp("heartbeat_id"));
+	string heart = conf->getArgParam("--"+prefix+"-heartbeat-id",it.getProp("heartbeat_id"));
 	if( !heart.empty() )
 	{
 		sidHeartBeat = conf->getSensorID(heart);
@@ -223,10 +224,10 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = conf->getArgPInt("--io-heartbeat-max",it.getProp("heartbeat_max"), 10);
+		maxHeartBeat = conf->getArgPInt("--"+prefix+"-heartbeat-max",it.getProp("heartbeat_max"), 10);
 	}
 
-	activateTimeout	= conf->getArgPInt("--activate-timeout", 25000);
+	activateTimeout	= conf->getArgPInt("--"+prefix+"-activate-timeout", 25000);
 
 	if( !shm->isLocalwork() ) // ic
 		ic->addReadItem( sigc::mem_fun(this,&IOControl::readItem) );
@@ -282,7 +283,7 @@ void IOControl::execute()
 	// чтение параметров по входам-выходам
 	initIOCard();
 
-	bool skip_iout = conf->getArgInt("--io-skip-init-output");
+	bool skip_iout = conf->getArgInt("--"+prefix+"-skip-init-output");
 	if( !skip_iout )
 		initOutputs();
 
@@ -1128,12 +1129,13 @@ void IOControl::check_testlamp()
 
 // -----------------------------------------------------------------------------
 IOControl* IOControl::init_iocontrol( int argc, const char* const* argv,
-										UniSetTypes::ObjectId icID, SharedMemory* ic )
+										UniSetTypes::ObjectId icID, SharedMemory* ic,
+										const std::string prefix )
 {
-	string name = conf->getArgParam("--io-name","IOControl1");
+	string name = conf->getArgParam("--"+prefix+"-name","IOControl1");
 	if( name.empty() )
 	{
-		cerr << "(iocontrol): Unknown name. Use --io-name " << endl;
+		cerr << "(iocontrol): Unknown name. Use --" << prefix << "-name " << endl;
 		return 0;
 	}
 
@@ -1145,10 +1147,10 @@ IOControl* IOControl::init_iocontrol( int argc, const char* const* argv,
 		return 0;
 	}
 
-	int numcards = conf->getArgPInt("--io-numcards",1);
+	int numcards = conf->getArgPInt("--"+prefix+"-numcards",1);
 
 	unideb[Debug::INFO] << "(iocontrol): name = " << name << "(" << ID << ")" << endl;
-	return new IOControl(ID,icID,ic,numcards);
+	return new IOControl(ID,icID,ic,numcards,prefix);
 }
 // -----------------------------------------------------------------------------
 void IOControl::help_print( int argc, const char* const* argv )

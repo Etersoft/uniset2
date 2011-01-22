@@ -32,6 +32,8 @@
       \section sec_IOC_Comm Общее описание процесса в/в
 
       \section sec_IOC_Conf Конфигурирование процесса в/в
+	в качестве префикса по умолчанию используется "io", но в конструкторе можно задать другой
+	если используется несколько процессов ввода/вывода.
 
 	--io-confnode name      - Использовать для настройки указанный xml-узел 
 	--io-name name		- ID процесса. По умолчанию IOController1. 
@@ -189,12 +191,13 @@ class IOControl:
 	public UniSetObject
 {
 	public:
-		IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID, SharedMemory* ic=0, int numcards=2 );
+		IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID, SharedMemory* ic=0, int numcards=2, const std::string prefix="io" );
 		virtual ~IOControl();
 
 		/*! глобальная функция для инициализации объекта */
 		static IOControl* init_iocontrol( int argc, const char* const* argv,
-											UniSetTypes::ObjectId icID, SharedMemory* ic=0 );
+											UniSetTypes::ObjectId icID, SharedMemory* ic=0,
+											const std::string prefix="io" );
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
@@ -324,6 +327,7 @@ class IOControl:
 		SMInterface* shm;
 		UniversalInterface ui;
 		UniSetTypes::ObjectId myid;
+		std::string prefix;
 
 		typedef std::list<IOInfo*> BlinkList;
 
