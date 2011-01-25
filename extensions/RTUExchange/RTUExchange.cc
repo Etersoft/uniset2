@@ -935,7 +935,8 @@ void RTUExchange::sigterm( int signo )
 {
 	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
 	activated = false;
-#warning Доделать...
+
+/*! \todo Нужно ли выставлять безопасное состояние. МОжно ведь не успеть совершить "обемен" */
 	// выставление безопасного состояния на выходы....
 /*
 	RSMap::iterator it=rsmap.begin();
@@ -962,8 +963,6 @@ void RTUExchange::sigterm( int signo )
 // ------------------------------------------------------------------------------------------
 void RTUExchange::readConfiguration()
 {
-#warning Сделать сортировку по диапазонам адресов!!!
-// чтобы запрашивать одним запросом, сразу несколько входов...
 //	readconf_ok = false;
 	xmlNode* root = conf->getXMLSensorsSection();
 	if(!root)

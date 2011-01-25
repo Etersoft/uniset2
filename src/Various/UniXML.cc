@@ -176,8 +176,9 @@ xmlNode* UniXML::copyNode(xmlNode* node, int recursive)
 		- при указании NULL нормально работает
 		- при указании copynode - проблеммы с русским при сохранении
 		- при указании node - SEGFAULT при попытке удалить исходный(node) узел
+	\todo "Нужно тест написать на copyNode"
 */
-	#warning "Нужно тест написать на copyNode"
+
 	copynode->properties = ::xmlCopyPropList(NULL,node->properties);
 	if( copynode != 0 && node->parent )
 	{

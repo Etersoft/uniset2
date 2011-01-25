@@ -407,8 +407,6 @@ UniExchange* UniExchange::init_exchange( int argc, const char* const* argv,
 // -----------------------------------------------------------------------------
 void UniExchange::readConfiguration()
 {
-#warning Сделать сортировку по диапазонам адресов!!!
-// чтобы запрашивать одним запросом, сразу несколько входов...
 //	readconf_ok = false;
 	xmlNode* root = conf->getXMLSensorsSection();
 	if(!root)

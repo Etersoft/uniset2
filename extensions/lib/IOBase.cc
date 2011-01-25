@@ -285,7 +285,8 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 			}
 			else
 				val = it->value;
-#warning Precision!!!
+
+/*! \todo Разобратся, нужно ли здесь учитывать Precision! */
 //			if( it->cal.precision > 0 )
 //				val = it->value / lround(pow10(it->cal.precision));
 		}
@@ -482,10 +483,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 			if( f_iir > 0 )
 				b->f_filter_iir = true;
 			if( !it.getProp("filtersize").empty() )
-			{
-				#warning "почему здесь 0, хотя f_size инициализируется def_filtersize?"
 				f_size = it.getPIntProp("filtersize",def_filtersize);
-			}
 		}
 		
 		if( !it.getProp("filterT").empty() )

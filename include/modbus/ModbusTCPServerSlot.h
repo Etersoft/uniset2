@@ -16,7 +16,9 @@ class ModbusTCPServerSlot:
 	public:
 		ModbusTCPServerSlot( ost::InetAddress &ia, int port=502 );
 		virtual ~ModbusTCPServerSlot();
-		
+
+		virtual void sigterm( int signo );
+	
 	protected:
 
 		virtual ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query, 

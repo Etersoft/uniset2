@@ -30,6 +30,9 @@ class ModbusTCPServer:
 
 		void cleanInputStream();
 		virtual void cleanupChannel(){ cleanInputStream(); }		
+		
+		virtual void terminate();
+		
 	protected:
 
 		virtual ModbusRTU::mbErrCode pre_send_request( ModbusRTU::ModbusMessage& request );

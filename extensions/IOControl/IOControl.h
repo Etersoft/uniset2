@@ -150,7 +150,7 @@
 	"5" - Режим "только выходы"
 */
 // -----------------------------------------------------------------------------
-#warning Сделать обработку сигналов завершения....
+/*! \todo (IOControl): Сделать обработку сигналов завершения */
 
 class CardList:
 	public std::vector<ComediInterface*>
@@ -324,7 +324,7 @@ class IOControl:
 		std::string s_field;
 		std::string s_fvalue;
 
-		SMInterface* shm;
+		SMInterface* shm;         
 		UniversalInterface ui;
 		UniSetTypes::ObjectId myid;
 		std::string prefix;

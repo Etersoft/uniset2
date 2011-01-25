@@ -633,6 +633,13 @@ void MBSlave::sigterm( int signo )
 {
 	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
 	activated = false;
+	try
+	{
+		if( mbslot )
+			mbslot->sigterm(signo);
+	}
+	catch(...){}
+	
 	UniSetObject_LT::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------

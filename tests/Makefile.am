@@ -11,8 +11,8 @@ passivetimer_LDADD 		= $(top_builddir)/lib/libUniSet.la
 passivetimer_CPPFLAGS	= -I$(top_builddir)/include
 
 unixml_SOURCES 	= unixml.cc
-unixml_LDADD 	= $(top_builddir)/lib/libUniSet.la
-unixml_CPPFLAGS	= -I$(top_builddir)/include
+unixml_LDADD 	= $(top_builddir)/lib/libUniSet.la ${SIGC_LIBS}
+unixml_CPPFLAGS	= -I$(top_builddir)/include ${SIGC_CFLAGS}
 
 ui_SOURCES 	= ui.cc
 ui_LDADD 	= $(top_builddir)/lib/libUniSet.la

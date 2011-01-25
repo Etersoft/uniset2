@@ -35,6 +35,8 @@ class ModbusRTUSlave:
 		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout );
 
 		virtual void cleanupChannel(){ if(port) port->cleanupChannel(); }
+
+		virtual void terminate();
 		
 	protected:
 

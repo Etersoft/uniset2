@@ -95,7 +95,7 @@ namespace MTR
 	// вспомогательные функции и типы данных
 	typedef std::list<ModbusRTU::ModbusData> DataList;
 	typedef std::map<ModbusRTU::ModbusData,DataList> DataMap;
-	static int attempts = 3; //
+	const int attempts = 3; //
 	static const ModbusRTU::ModbusData skip[] = {48, 49, 59};  // registers which should not write
 
 	

@@ -61,9 +61,10 @@ static void setRTS(int fd, int state)
 // --------------------------------------------------------------------------------
 ComPort485F::ComPort485F( string dev, int gpio_num, bool tmit_ctrl ):
 	ComPort(dev,false),
-	gpio_num(gpio_num)
+	gpio_num(gpio_num),
+	tmit_ctrl_on(tmit_ctrl)
 {
-	if( tmit_ctrl_on = tmit_ctrl )
+	if( tmit_ctrl_on )
 	{
 		iopl(3);
 		gpio_low_out_en(gpio_num);

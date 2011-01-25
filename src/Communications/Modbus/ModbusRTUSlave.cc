@@ -148,3 +148,10 @@ mbErrCode ModbusRTUSlave::sendData( unsigned char* buf, int len )
 	return erNoError;
 }
 // -------------------------------------------------------------------------
+void ModbusRTUSlave::terminate()
+{
+	try
+	{
+	}
+	catch(...){}
+}

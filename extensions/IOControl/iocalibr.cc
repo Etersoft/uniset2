@@ -33,7 +33,7 @@ void openXML();
 void dispDiagram();
 void sortData(bool rise, bool cal);
 
-static void insn_config( comedi_t* card, int subdev, int channel, lsampl_t iotype, int range, int aref );
+//static void insn_config( comedi_t* card, int subdev, int channel, lsampl_t iotype, int range, int aref );
 
 // --------------------------------------------------------------------------
 char buf[5];
@@ -275,6 +275,7 @@ int main(int argc, char* argv[])
 }
 
 // --------------------------------------------------------------------------
+/*
 void insn_config( comedi_t* card, int subdev, int channel, lsampl_t iotype, int range, int aref )
 {
 	comedi_insn insn;
@@ -290,7 +291,7 @@ void insn_config( comedi_t* card, int subdev, int channel, lsampl_t iotype, int 
 	  	exit(EXIT_FAILURE);
 	}
 }
-
+*/
 // --------------------------------------------------------------------------
 void readCalibr(int fixed)
 {

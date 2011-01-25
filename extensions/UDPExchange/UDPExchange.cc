@@ -238,7 +238,7 @@ void UDPExchange::send()
 			return;
 		}
 */
-#warning use mutex for list!!!
+/*! \todo Подумать нужен ли здесь mutex */
 		UniSetUDP::UDPMessage::UDPDataList::iterator it = mypack.dlist.begin();
 		
 		for( ; it!=mypack.dlist.end(); ++it )
@@ -446,8 +446,6 @@ void UDPExchange::sigterm( int signo )
 // ------------------------------------------------------------------------------------------
 void UDPExchange::readConfiguration()
 {
-#warning Сделать сортировку по диапазонам адресов!!!
-// чтобы запрашивать одним запросом, сразу несколько входов...
 //	readconf_ok = false;
 	xmlNode* root = conf->getXMLSensorsSection();
 	if(!root)

@@ -1592,7 +1592,7 @@ void IOControl::buildCardsList()
 		return;
 	}
 
-	int lastnum = 0;
+	size_t lastnum = 0;
 	for( ; lastnum<cards.size(); lastnum++ )
 	{
 		if( cards[lastnum] == 0 )

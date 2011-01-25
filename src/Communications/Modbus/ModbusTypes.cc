@@ -1122,7 +1122,7 @@ void ReadInputRetMessage::init( ModbusMessage& m )
 void ReadInputRetMessage::swapData()
 {
 	// переворачиваем данные
-	for( unsigned int i=0; i<count; i++ )
+	for( int i=0; i<count; i++ )
 		data[i] = SWAPSHORT(data[i]);
 }
 // -------------------------------------------------------------------------
@@ -1428,7 +1428,7 @@ void ForceCoilsRetMessage::init( ModbusMessage& m )
 	// copy not include CRC
 	memcpy(this,&m,szModbusHeader+m.len); 
 
-#warning (WriteOutputRetMessage): необходимо встроить проверку на корректность данных
+/*! \todo (WriteOutputRetMessage): необходимо встроить проверку на корректность данных */
 	
 	// Сперва переворачиваем обратно слова
 	start = SWAPSHORT(start);
@@ -1685,7 +1685,7 @@ void WriteOutputRetMessage::init( ModbusMessage& m )
 	// copy not include CRC
 	memcpy(this,&m,szModbusHeader+m.len); 
 
-#warning (WriteOutputRetMessage): необходимо встроить проверку на корректность данных
+/*! \todo (WriteOutputRetMessage): необходимо встроить проверку на корректность данных */
 	
 	// Сперва переворачиваем обратно слова
 	start = SWAPSHORT(start);
@@ -1857,7 +1857,7 @@ void ForceSingleCoilRetMessage::init( ModbusMessage& m )
 	// copy not include CRC
 	memcpy(this,&m,szModbusHeader+m.len); 
 
-#warning (ForceSingleCoilRetMessage): необходимо встроить проверку на корректность данных
+/*! \todo (ForceSingleCoilRetMessage): необходимо встроить проверку на корректность данных */
 	
 	// переворачиваем обратно слова
 	start 	= SWAPSHORT(start);
@@ -2033,7 +2033,7 @@ void WriteSingleOutputRetMessage::init( ModbusMessage& m )
 	// copy not include CRC
 	memcpy(this,&m,szModbusHeader+m.len); 
 
-#warning (WriteSingleOutputRetMessage): необходимо встроить проверку на корректность данных
+/*! \todo (WriteSingleOutputRetMessage): необходимо встроить проверку на корректность данных */
 	
 	// переворачиваем обратно слова
 	start 	= SWAPSHORT(start);

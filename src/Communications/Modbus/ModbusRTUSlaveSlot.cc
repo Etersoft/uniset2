@@ -137,3 +137,12 @@ ModbusRTU::mbErrCode ModbusRTUSlaveSlot::fileTransfer( ModbusRTU::FileTransferMe
 	return slFileTransfer(query,reply);
 }									
 // -------------------------------------------------------------------------
+void ModbusRTUSlaveSlot::sigterm( int signo )
+{
+	try
+	{
+		terminate();
+	}
+	catch(...){}
+}
+// -------------------------------------------------------------------------

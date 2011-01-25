@@ -269,7 +269,7 @@ DataMap read_confile( const std::string f )
 					DataList dlst;
 					int k=0;
 					std::vector<unsigned char> v(4);
-					for( int i=0; i<s_data.size(); i++ )
+					for( size_t i=0; i<s_data.size(); i++ )
 					{
 						v[k++] = s_data[i];
 						if( k>3 )

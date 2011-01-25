@@ -53,12 +53,6 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 
 	heartbeatCheckTime = conf->getArgInt("--heartbeat-check-time","1000");
 
-	
-//	rxml->setSensorFilter(s_filterField, s_filterValue);
-//#warning Намеренно отключаем обработку списка заказчиков (в данном проекте)...
-	// для отключения просто укажем несуществующие поля для фильтра
-//	rxml->setConsumerFilter("dummy","yes");
-
 	rxml->setItemFilter(s_field, s_fvalue);
 	rxml->setConsumerFilter(c_field, c_fvalue);
 	rxml->setDependsFilter(d_field, d_fvalue);
@@ -456,10 +450,6 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 			ostringstream msg;
 			msg << "(SharedMemory::readItem): дискретный датчик (heartbeat_ds_name) связанный с " << it.getProp("name");
 			dlog[Debug::WARN] << msg.str() << endl;
-#warning Делать обязательным?!			
-//			dlog[Debug::CRIT] << msg.str() << endl;
-//			kill(getpid(),SIGTERM);
-			// throw NameNotFound(msg.str());
 		}
 	}
 	else
@@ -469,6 +459,9 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 		{
 			ostringstream msg;
 			msg << "(SharedMemory::readItem): Не найден ID для дискретного датчика (heartbeat_ds_name) связанного с " << it.getProp("name");
+			
+			// Если уж задали имя для датчика, то он должен существовать..
+			// поэтому завершаем процесс, если не нашли..
 			dlog[Debug::CRIT] << msg.str() << endl;
 			kill(getpid(),SIGTERM);
 //			throw NameNotFound(msg.str());

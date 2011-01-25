@@ -19,6 +19,7 @@ ModbusTCPServer::ModbusTCPServer( ost::InetAddress &ia, int port ):
 // -------------------------------------------------------------------------
 ModbusTCPServer::~ModbusTCPServer()
 {
+	terminate();
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout )
@@ -234,4 +235,13 @@ void ModbusTCPServer::cleanInputStream()
     }                                                                                                                                                                               
     while( ret > 0);                                                                                                                                                                
 }                                                                                                                                                                                   
+// -------------------------------------------------------------------------
+void ModbusTCPServer::terminate()
+{
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << "(ModbusTCPServer): terminate..." << endl;
+	
+	if( tcp && tcp.isConnected() )
+		tcp.disconnect();
+}
 // -------------------------------------------------------------------------

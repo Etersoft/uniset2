@@ -66,8 +66,7 @@ void LProcessor::build( const string& lfile )
 		ei.sid = sid;
 		ei.state = false;
 		ei.lnk = &(*it);
-#warning Пока тип сделан принудительно
-		ei.iotype = UniversalIO::DigitalInput;
+		ei.iotype = UniversalIO::UnknownIOType;
 		extInputs.push_front(ei);
 	}
 	
@@ -83,8 +82,7 @@ void LProcessor::build( const string& lfile )
 		EXTOutInfo ei;
 		ei.sid = sid;
 		ei.lnk = &(*it);
-#warning Пока тип сделан принудительно
-		ei.iotype = UniversalIO::DigitalOutput;
+		ei.iotype = UniversalIO::UnknownIOType;
 
 		extOuts.push_front(ei);
 	}

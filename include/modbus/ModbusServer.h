@@ -69,6 +69,7 @@ class ModbusServer
 															DebugStream* dlog=0 );
 
 		virtual void cleanupChannel(){}
+		virtual void terminate(){}
 
 	protected:
 

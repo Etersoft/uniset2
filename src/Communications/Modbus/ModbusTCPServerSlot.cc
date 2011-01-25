@@ -131,3 +131,12 @@ ModbusRTU::mbErrCode ModbusTCPServerSlot::fileTransfer( ModbusRTU::FileTransferM
 	return slFileTransfer(query,reply);
 }									
 // -------------------------------------------------------------------------
+void ModbusTCPServerSlot::sigterm( int signo )
+{
+	try
+	{
+		terminate();
+	}
+	catch(...){}
+}
+// -------------------------------------------------------------------------

@@ -476,9 +476,9 @@ mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, t
 
 		if( !begin )
 			return erTimeOut;
-
-#warning Может стоит всё-таки получать весь пакет, а проверять кому он адресован на уровне выше?!	
-// Lav: конечно стоит, нам же надо буфер чистить
+/*! \todo Подумать Может стоит всё-таки получать весь пакет, а проверять кому он адресован на уровне выше?!	
+			// Lav: конечно стоит, нам же надо буфер чистить
+*/
 		// Проверка кому адресован пакет...
 		if( rbuf.addr!=addr && rbuf.addr!=BroadcastAddr )
 		{
@@ -755,7 +755,6 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				}
 			}
 
-#warning Стоит ли здесь проверять
 			if( !mWrite.checkFormat() )
 			{
 				dlog[Debug::WARN] << "(0x0F): (" << rbuf.func 
@@ -814,7 +813,6 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				}
 			}
 			
-#warning Стоит ли здесь проверять
 			if( !mWrite.checkFormat() )
 			{
 				dlog[Debug::WARN] << "(0x10): (" << rbuf.func 
@@ -872,7 +870,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 					return erBadCheckSum;
 				}
 			}
-#warning Стоит ли здесь проверять
+			
 			if( !mWrite.checkFormat() )
 			{
 				dlog[Debug::WARN] << "(0x05): (" << rbuf.func 
@@ -930,7 +928,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 					return erBadCheckSum;
 				}
 			}
-#warning Стоит ли здесь проверять
+
 			if( !mWrite.checkFormat() )
 			{
 				dlog[Debug::WARN] << "(0x06): (" << rbuf.func 

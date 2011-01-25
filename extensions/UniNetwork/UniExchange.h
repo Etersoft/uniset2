@@ -91,7 +91,7 @@ class UniExchange:
 		bool init_ok;
 		
 		SList mymap;
-		int maxIndex;
+		size_t maxIndex;
 		int smReadyTimeout;
 		
 	private:

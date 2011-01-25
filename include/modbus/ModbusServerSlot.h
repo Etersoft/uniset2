@@ -98,6 +98,8 @@ class ModbusServerSlot
 		/*! подключение обработчика 'передача файла' 0x66 */
 		void connectFileTransfer( FileTransferSlot sl );
 
+		virtual void sigterm( int signo ){}
+	
 	protected:
 		ReadCoilSlot slReadCoil;
 		ReadInputStatusSlot slReadInputStatus;

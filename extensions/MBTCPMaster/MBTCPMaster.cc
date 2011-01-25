@@ -918,7 +918,11 @@ void MBTCPMaster::sigterm( int signo )
 {
 	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
 	activated = false;
-#warning Доделать...
+
+/*! \todo Доделать выставление безопасного состояния на выходы. 
+          И нужно ли это. Ведь может не хватить времени на "обмен" 
+*/
+	
 	// выставление безопасного состояния на выходы....
 /*
 	RSMap::iterator it=rsmap.begin();
@@ -945,8 +949,6 @@ void MBTCPMaster::sigterm( int signo )
 // ------------------------------------------------------------------------------------------
 void MBTCPMaster::readConfiguration()
 {
-#warning Сделать сортировку по диапазонам адресов!!!
-// чтобы запрашивать одним запросом, сразу несколько входов...
 //	readconf_ok = false;
 	xmlNode* root = conf->getXMLSensorsSection();
 	if(!root)
