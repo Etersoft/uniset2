@@ -1,0 +1,64 @@
+<?xml version = '1.0' encoding = 'UTF-8' ?>
+<UNISETPLC>
+
+<UniSet>
+
+    <test name="testattr_0">
+    
+	    <a1 name="1abc"/>
+	    <a2 name="2abc"/>
+	    
+        
+	    <testI name="testattr_1">
+	
+		    <b3 name="3abc"/>
+		    <a2 name="3abc"/>
+	    
+		    <testII name="testattr_2">
+			        
+			    <c4 name="4abc"/>
+			    <c5 name="5abc"/>
+		    
+		    </testII>
+		    
+		    
+		    <testIII name="testattr_3">
+			    
+			    <d6 name="6abc"/>
+			    <d7 name="7abc"/>
+			    <a2 name="4abc"/>
+			    <c5 name="6abc"/>
+		
+		    </testIII>
+		    
+	    </testI>
+	
+		
+	    <testIV name="testattr_4">
+	    
+		    <e8 name="8abc"/>
+		    
+		    <e9>
+		    
+			<f10 name="10abc">
+			</f10>
+			
+		    </e9>
+		    
+	    </testIV>
+	    <a2 name="5abc"/>
+	    <c5 name="7abc"/>
+	
+    </test>
+    
+</UniSet>
+
+<dlog name="dlog" levels="" file=""/>
+
+<ObjectsMap idfromfile="1">
+
+</ObjectsMap>
+
+	<messages name="messages" idfromfile="1" >
+	</messages>
+</UNISETPLC>
