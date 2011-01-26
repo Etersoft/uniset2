@@ -1,6 +1,9 @@
 bin_PROGRAMS 			= @PACKAGE@-mbtcpmaster
 
+UMBTCP_VER=@LIBVER@
+
 lib_LTLIBRARIES 				= libUniSetMBTCPMaster.la
+libUniSetMBTCPMaster_la_LDFLAGS  = -version-info $(UMBTCP_VER) 
 libUniSetMBTCPMaster_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
 								$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
 								$(top_builddir)/extensions/lib/libUniSetExtensions.la \

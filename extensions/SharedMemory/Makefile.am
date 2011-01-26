@@ -1,11 +1,14 @@
 bin_PROGRAMS		= @PACKAGE@-smemory
 
+USM_VER=@LIBVER@
+
+
 lib_LTLIBRARIES 	= libUniSetSharedMemory.la
+libUniSetSharedMemory_la_LDFLAGS	= -version-info $(USM_VER)
 libUniSetSharedMemory_la_LIBADD		= $(SIGC_LIBS) $(top_builddir)/lib/libUniSet.la \
 	$(top_builddir)/extensions/lib/libUniSetExtensions.la
 libUniSetSharedMemory_la_CPPFLAGS	= $(SIGC_CFLAGS) -I$(top_builddir)/extensions/include
 libUniSetSharedMemory_la_SOURCES 	= SharedMemory.cc 
-#libUniSetSharedMemory_la_LDFLAGS	= -version-info @LIBVER@
 
 
 @PACKAGE@_smemory_LDADD 	= libUniSetSharedMemory.la

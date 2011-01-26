@@ -1,6 +1,9 @@
 bin_PROGRAMS = @PACKAGE@-iocontrol @PACKAGE@-iotest @PACKAGE@-iocalibr
 
+UIO_VER=@LIBVER@
+
 lib_LTLIBRARIES 	= libUniSetIOControl.la
+libUniSetIOControl_la_LDFLAGS  = -version-info $(UIO_VER) 
 libUniSetIOControl_la_LIBADD		= $(COMEDI_LIBS) $(SIGC_LIBS) \
 		$(top_builddir)/extensions/lib/libUniSetExtensions.la \
 		$(top_builddir)/lib/libUniSet.la \

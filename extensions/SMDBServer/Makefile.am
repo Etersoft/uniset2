@@ -1,6 +1,9 @@
 bin_PROGRAMS 			= @PACKAGE@-smdbserver
 
+USMDB_VER=@LIBVER@
+
 lib_LTLIBRARIES 			= libUniSetSMDBServer.la
+libUniSetSMDBServer_la_LDFLAGS  = -version-info $(USMDB_VER) 
 libUniSetSMDBServer_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
 									$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
 									$(top_builddir)/extensions/lib/libUniSetExtensions.la \

@@ -1,9 +1,11 @@
+ULPROC_VER=@LIBVER@
+
 lib_LTLIBRARIES 			= libUniSetLProcessor.la
-libUniSetLProcessor_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
+libUniSetLProcessor_la_LDFLAGS  = -version-info $(ULPROC_VER) 
+libUniSetLProcessor_la_LIBADD	= $(top_builddir)/lib/libUniSet.la \
 							$(top_builddir)/extensions/lib/libUniSetExtensions.la $(SIGC_LIBS)
 libUniSetLProcessor_la_CXXFLAGS	= -I$(top_builddir)/extensions/include \
-							-I$(top_builddir)/extensions/SharedMemory \
-							$(SIGC_CFLAGS)
+							-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
 libUniSetLProcessor_la_SOURCES 	= Element.cc TOR.cc TAND.cc TDelay.cc TNOT.cc \
 Schema.cc SchemaXML.cc LProcessor.cc PassiveLProcessor.cc
 

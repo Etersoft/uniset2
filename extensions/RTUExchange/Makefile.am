@@ -1,6 +1,9 @@
 bin_PROGRAMS 			= @PACKAGE@-rtuexchange mtr-conv uniset-rtu188-state vtconv mtr-setup
 
+URTU_VER=@LIBVER@
+
 lib_LTLIBRARIES 			= libUniSetRTU.la
+libUniSetRTU_la_LDFLAGS  = -version-info $(URTU_VER) 
 libUniSetRTU_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
 								$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
 								$(top_builddir)/extensions/lib/libUniSetExtensions.la \

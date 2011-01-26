@@ -1,6 +1,9 @@
 bin_PROGRAMS 			= @PACKAGE@-udpexchange @PACKAGE@-udpsender @PACKAGE@-udpreceiver
 
+UUDP_VER=@LIBVER@
+
 lib_LTLIBRARIES 			= libUniSetUDP.la
+libUniSetUDP_la_LDFLAGS  	= -version-info $(UUDP_VER) 
 libUniSetUDP_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
 								$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
 								$(top_builddir)/extensions/lib/libUniSetExtensions.la \

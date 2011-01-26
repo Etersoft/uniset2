@@ -1,6 +1,9 @@
 bin_PROGRAMS 			= @PACKAGE@-mbslave
 
+UMBS_VER=@LIBVER@
+
 lib_LTLIBRARIES 				= libUniSetMBSlave.la
+libUniSetMBSlave_la_LDFLAGS  = -version-info $(UMBS_VER) 
 libUniSetMBSlave_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
 								$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
 								$(top_builddir)/extensions/lib/libUniSetExtensions.la \

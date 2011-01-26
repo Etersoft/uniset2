@@ -1,6 +1,9 @@
 bin_PROGRAMS		= @PACKAGE@-network
 
+UNET_VER=@LIBVER@
+
 lib_LTLIBRARIES 	= libUniSetNetwork.la
+libUniSetNetwork_la_LDFLAGS  = -version-info $(UNET_VER) 
 libUniSetNetwork_la_LIBADD		= $(SIGC_LIBS) $(top_builddir)/lib/libUniSet.la \
 	$(top_builddir)/extensions/lib/libUniSetExtensions.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la
