@@ -2,8 +2,8 @@
 %define oname uniset
 
 Name: libuniset
-Version: 0.99
-Release: alt30
+Version: 1.0
+Release: alt0.1
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -187,6 +187,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Jan 26 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt0.1
+- pre-release build
+
 * Sat Jan 22 2011 Pavel Vainerman <pv@altlinux.ru> 0.99-alt30
 - add "prefix" for IOControl
 
