@@ -786,7 +786,7 @@ void MBSlave::initIterators()
 // -----------------------------------------------------------------------------
 void MBSlave::help_print( int argc, const char* const* argv )
 {
-	cout << "Default: prefix='mbtcp'" << endl;
+	cout << "Default: prefix='mbs'" << endl;
 	cout << "--prefix-heartbeat-id		- Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
 	cout << "--prefix-heartbeat-max  	- Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 	cout << "--prefix-ready-timeout	- Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
