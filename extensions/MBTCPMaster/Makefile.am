@@ -1,5 +1,6 @@
 bin_PROGRAMS 			= @PACKAGE@-mbtcpmaster
 
+# не забывайте править версию в pc-файле 
 UMBTCP_VER=@LIBVER@
 
 lib_LTLIBRARIES 				= libUniSetMBTCPMaster.la

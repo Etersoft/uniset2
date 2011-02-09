@@ -1,5 +1,6 @@
 bin_PROGRAMS 			= @PACKAGE@-rtuexchange mtr-conv uniset-rtu188-state vtconv mtr-setup
 
+# не забывайте править версию в pc-файле
 URTU_VER=2:0:0
 
 lib_LTLIBRARIES 			= libUniSetRTU.la

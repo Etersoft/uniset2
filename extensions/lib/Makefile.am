@@ -1,3 +1,4 @@
+# не забывайте править версию в pc-файле
 UEXT_VER=@LIBVER@
 
 lib_LTLIBRARIES 			= libUniSetExtensions.la

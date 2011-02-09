@@ -1,5 +1,6 @@
 bin_PROGRAMS 			= @PACKAGE@-udpexchange @PACKAGE@-udpsender @PACKAGE@-udpreceiver
 
+# не забывайте править версию в pc-файле 
 UUDP_VER=@LIBVER@
 
 lib_LTLIBRARIES 			= libUniSetUDP.la

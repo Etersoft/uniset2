@@ -1,5 +1,6 @@
 bin_PROGRAMS		= @PACKAGE@-smemory
 
+# не забывайте править версию в pc-файле 
 USM_VER=@LIBVER@
 
 
