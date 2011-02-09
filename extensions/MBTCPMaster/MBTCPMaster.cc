@@ -195,7 +195,7 @@ void MBTCPMaster::initMB( bool reopen )
 void MBTCPMaster::waitSMReady()
 {
 	// waiting for SM is ready...
-	int ready_timeout = conf->getArgInt("--mbm-sm-ready-timeout","15000");
+	int ready_timeout = conf->getArgInt("--" + prefix +"-sm-ready-timeout","15000");
 	if( ready_timeout == 0 )
 		ready_timeout = 15000;
 	else if( ready_timeout < 0 )
@@ -1440,15 +1440,16 @@ void MBTCPMaster::initIterators()
 // -----------------------------------------------------------------------------
 void MBTCPMaster::help_print( int argc, const char* const* argv )
 {
-	cout << "--mbm-polltime msec     - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
-	cout << "--mbm-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--mbm-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--mbm-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
-	cout << "--mbm-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
-	cout << "--mbm-initPause         - Задержка перед инициализацией (время на активизация процесса)" << endl;
-//	cout << "--mbm-sm-ready-timeout - время на ожидание старта SM" << endl;
+	cout << "Default: prefix='mbtcp'" << endl;
+	cout << "--prefix-polltime msec     - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
+	cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+	cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
+	cout << "--prefix-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
+	cout << "--prefix-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
+	cout << "--prefix-initPause         - Задержка перед инициализацией (время на активизация процесса)" << endl;
+//	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
 	cout << " Настройки протокола TCP: " << endl;
-	cout << "--mbm-recv-timeout - Таймаут на ожидание ответа." << endl;
+	cout << "--prefix-recv-timeout - Таймаут на ожидание ответа." << endl;
 }
 // -----------------------------------------------------------------------------
 MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv, UniSetTypes::ObjectId icID, SharedMemory* ic, 
