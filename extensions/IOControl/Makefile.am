@@ -1,5 +1,6 @@
 bin_PROGRAMS = @PACKAGE@-iocontrol @PACKAGE@-iotest @PACKAGE@-iocalibr
 
+# не забывайте править версию в pc-файле
 UIO_VER=@LIBVER@
 
 lib_LTLIBRARIES 	= libUniSetIOControl.la

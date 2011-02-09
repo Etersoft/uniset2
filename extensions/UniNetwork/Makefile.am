@@ -1,5 +1,6 @@
 bin_PROGRAMS		= @PACKAGE@-network
 
+# не забывайте править версию в pc-файле
 UNET_VER=@LIBVER@
 
 lib_LTLIBRARIES 	= libUniSetNetwork.la

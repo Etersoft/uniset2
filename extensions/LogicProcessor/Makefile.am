@@ -1,3 +1,4 @@
+# не забывайте править версию в pc-файле
 ULPROC_VER=@LIBVER@
 
 lib_LTLIBRARIES 			= libUniSetLProcessor.la

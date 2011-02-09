@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt0.1
+Release: alt1
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -190,6 +190,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Feb 09 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt1
+- fixed bug in VERSION (bad pc-files)
+
 * Wed Jan 26 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt0.1
 - pre-release build
 
