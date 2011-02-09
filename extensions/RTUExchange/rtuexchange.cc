@@ -49,7 +49,7 @@ int main( int argc, char** argv )
 			return 1;
 		}
 
-		RTUExchange* rs = RTUExchange::init_rtuexchange(argc,argv,shmID);
+		RTUExchange* rs = RTUExchange::init_rtuexchange(argc,argv,shmID,0,"rs");
 		if( !rs )
 		{
 			dlog[Debug::CRIT] << "(rtuexchange): init не прошёл..." << endl;

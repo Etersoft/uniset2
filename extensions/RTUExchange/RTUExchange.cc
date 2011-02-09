@@ -9,7 +9,8 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-RTUExchange::RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic ):
+RTUExchange::RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic,
+						  const std::string prefix_ ):
 UniSetObject_LT(objId),
 mb(0),
 defSpeed(ComPort::ComSpeed0),
@@ -23,10 +24,11 @@ mbregFromID(false),
 activated(false),
 rs_pre_clean(false),
 noQueryOptimization(false),
-allNotRespond(false)
+allNotRespond(false),
+prefix(prefix_)
 {
 	if( objId == DefaultObjectId )
-		throw UniSetTypes::SystemError("(RTUExchange): objId=-1?!! Use --rs-name" );
+		throw UniSetTypes::SystemError("(RTUExchange): objId=-1?!! Use --" + prefix + "-name" );
 
 //	xmlNode* cnode = conf->getNode(myname);
 	cnode = conf->getNode(myname);
@@ -38,43 +40,43 @@ allNotRespond(false)
 	UniXML_iterator it(cnode);
 
 	// определяем фильтр
-	s_field = conf->getArgParam("--rs-filter-field");
-	s_fvalue = conf->getArgParam("--rs-filter-value");
+	s_field = conf->getArgParam("--"+prefix+"-filter-field");
+	s_fvalue = conf->getArgParam("--"+prefix+"-filter-value");
 	dlog[Debug::INFO] << myname << "(init): read fileter-field='" << s_field
 						<< "' filter-value='" << s_fvalue << "'" << endl;
 
 	// ---------- init RS ----------
 //	UniXML_iterator it(cnode);
-	devname	= conf->getArgParam("--rs-dev",it.getProp("device"));
+	devname	= conf->getArgParam("--"+prefix+"-dev",it.getProp("device"));
 	if( devname.empty() )
 		throw UniSetTypes::SystemError(myname+"(RTUExchange): Unknown device..." );
 
-	string speed = conf->getArgParam("--rs-speed",it.getProp("speed"));
+	string speed = conf->getArgParam("--"+prefix+"-speed",it.getProp("speed"));
 	if( speed.empty() )
 		speed = "38400";
 
-	use485F = conf->getArgInt("--rs-use485F",it.getProp("use485F"));
-	transmitCtl = conf->getArgInt("--rs-transmit-ctl",it.getProp("transmitCtl"));
+	use485F = conf->getArgInt("--"+prefix+"-use485F",it.getProp("use485F"));
+	transmitCtl = conf->getArgInt("--"+prefix+"-transmit-ctl",it.getProp("transmitCtl"));
 	defSpeed = ComPort::getSpeed(speed);
 
-	recv_timeout = conf->getArgPInt("--rs-recv-timeout",it.getProp("recv_timeout"), 50);
+	recv_timeout = conf->getArgPInt("--"+prefix+"-recv-timeout",it.getProp("recv_timeout"), 50);
 
-	int alltout = conf->getArgPInt("--rs-all-timeout",it.getProp("all_timeout"), 2000);
+	int alltout = conf->getArgPInt("--"+prefix+"-all-timeout",it.getProp("all_timeout"), 2000);
 
 	ptAllNotRespond.setTiming(alltout);
 
-	rs_pre_clean = conf->getArgInt("--rs-pre-clean",it.getProp("pre_clean"));
-	noQueryOptimization = conf->getArgInt("--rs-no-query-optimization",it.getProp("no_query_optimization"));
+	rs_pre_clean = conf->getArgInt("--"+prefix+"-pre-clean",it.getProp("pre_clean"));
+	noQueryOptimization = conf->getArgInt("--"+prefix+"-no-query-optimization",it.getProp("no_query_optimization"));
 
 	mbregFromID = conf->getArgInt("--mbs-reg-from-id",it.getProp("reg_from_id"));
 	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
-	polltime = conf->getArgPInt("--rs-polltime",it.getProp("polltime"), 100);
+	polltime = conf->getArgPInt("--"+prefix+"-polltime",it.getProp("polltime"), 100);
 
-	initPause = conf->getArgPInt("--rs-initPause",it.getProp("initPause"), 3000);
+	initPause = conf->getArgPInt("--"+prefix+"-initPause",it.getProp("initPause"), 3000);
 
-	force = conf->getArgInt("--rs-force",it.getProp("force"));
-	force_out = conf->getArgInt("--rs-force-out",it.getProp("force_out"));
+	force = conf->getArgInt("--"+prefix+"-force",it.getProp("force"));
+	force_out = conf->getArgInt("--"+prefix+"-force-out",it.getProp("force_out"));
 
 	if( shm->isLocalwork() )
 	{
@@ -86,7 +88,7 @@ allNotRespond(false)
 		ic->addReadItem( sigc::mem_fun(this,&RTUExchange::readItem) );
 
 	// ********** HEARTBEAT *************
-	string heart = conf->getArgParam("--rs-heartbeat-id",it.getProp("heartbeat_id"));
+	string heart = conf->getArgParam("--"+prefix+"-heartbeat-id",it.getProp("heartbeat_id"));
 	if( !heart.empty() )
 	{
 		sidHeartBeat = conf->getSensorID(heart);
@@ -104,7 +106,7 @@ allNotRespond(false)
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = conf->getArgPInt("--rs-heartbeat-max",it.getProp("heartbeat_max"), 10);
+		maxHeartBeat = conf->getArgPInt("--"+prefix+"-heartbeat-max",it.getProp("heartbeat_max"), 10);
 		test_id = sidHeartBeat;
 	}
 	else
@@ -121,7 +123,7 @@ allNotRespond(false)
 
 	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
 
-	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
+	activateTimeout	= conf->getArgPInt("--"+prefix+"-activate-timeout", 20000);
 
 	initMB(false);
 
@@ -196,7 +198,7 @@ void RTUExchange::initMB( bool reopen )
 void RTUExchange::waitSMReady()
 {
 	// waiting for SM is ready...
-	int ready_timeout = conf->getArgInt("--rs-sm-ready-timeout","15000");
+	int ready_timeout = conf->getArgInt("--"+prefix+"-sm-ready-timeout","15000");
 	if( ready_timeout == 0 )
 		ready_timeout = 15000;
 	else if( ready_timeout < 0 )
@@ -1497,40 +1499,42 @@ void RTUExchange::initIterators()
 // -----------------------------------------------------------------------------
 void RTUExchange::help_print( int argc, const char* const* argv )
 {
-	cout << "--rs-polltime msec     - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
-	cout << "--rs-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--rs-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--rs-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
-	cout << "--rs-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
-	cout << "--rs-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
-	cout << "--rs-sm-ready-timeout - время на ожидание старта SM" << endl;
+	cout << "Default: prefix='rs'" << endl;
+	cout << "--prefix-polltime msec     - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
+	cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+	cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
+	cout << "--prefix-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
+	cout << "--prefix-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
+	cout << "--prefix-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
+	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
 	cout << " Настройки протокола RS: " << endl;
-	cout << "--rs-dev devname  - файл устройства" << endl;
-	cout << "--rs-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
-	cout << "--rs-my-addr      - адрес текущего узла" << endl;
-	cout << "--rs-recv-timeout - Таймаут на ожидание ответа." << endl;
+	cout << "--prefix-dev devname  - файл устройства" << endl;
+	cout << "--prefix-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
+	cout << "--prefix-my-addr      - адрес текущего узла" << endl;
+	cout << "--prefix-recv-timeout - Таймаут на ожидание ответа." << endl;
 }
 // -----------------------------------------------------------------------------
-RTUExchange* RTUExchange::init_rtuexchange( int argc, const char* const* argv, UniSetTypes::ObjectId icID, SharedMemory* ic )
+RTUExchange* RTUExchange::init_rtuexchange( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
+											SharedMemory* ic, const std::string prefix )
 {
-	string name = conf->getArgParam("--rs-name","RTUExchange1");
+	string name = conf->getArgParam("--" + prefix + "-name","RTUExchange1");
 	if( name.empty() )
 	{
-		cerr << "(rtuexchange): Не задан name'" << endl;
+		cerr << "(rtuexchange): Unknown 'name'. Use --" << prefix << "-name" << endl;
 		return 0;
 	}
 
 	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		cerr << "(rtuexchange): идентификатор '" << name
-			<< "' не найден в конф. файле!"
-			<< " в секции " << conf->getObjectsSection() << endl;
+		cerr << "(rtuexchange): Not found ID for '" << name
+			<< "'!"
+			<< " in section <" << conf->getObjectsSection() << ">" << endl;
 		return 0;
 	}
 
 	dlog[Debug::INFO] << "(rtuexchange): name = " << name << "(" << ID << ")" << endl;
-	return new RTUExchange(ID,icID,ic);
+	return new RTUExchange(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, const RTUExchange::DeviceType& dt )
