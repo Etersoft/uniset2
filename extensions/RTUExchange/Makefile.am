@@ -1,6 +1,6 @@
 bin_PROGRAMS 			= @PACKAGE@-rtuexchange mtr-conv uniset-rtu188-state vtconv mtr-setup
 
-URTU_VER=@LIBVER@
+URTU_VER=2:0:0
 
 lib_LTLIBRARIES 			= libUniSetRTU.la
 libUniSetRTU_la_LDFLAGS  = -version-info $(URTU_VER) 

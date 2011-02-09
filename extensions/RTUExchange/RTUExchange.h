@@ -1,5 +1,3 @@
-// $Id: RTUExchange.h,v 1.2 2009/01/11 19:08:45 vpashka Exp $
-// -----------------------------------------------------------------------------
 #ifndef _RTUEXCHANGE_H_
 #define _RTUEXCHANGE_H_
 // -----------------------------------------------------------------------------
@@ -25,12 +23,14 @@ class RTUExchange:
 	public UniSetObject_LT
 {
 	public:
-		RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
+		RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID,
+					  SharedMemory* ic=0, const std::string prefix="rs" );
 		virtual ~RTUExchange();
 	
 		/*! глобальная функция для инициализации объекта */
 		static RTUExchange* init_rtuexchange( int argc, const char* const* argv,
-											UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
+											UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
+											const std::string prefix="rs" );
 
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
@@ -262,6 +262,8 @@ class RTUExchange:
 		bool allNotRespond;
 		Trigger trAllNotRespond;
 		PassiveTimer ptAllNotRespond;
+
+		std::string prefix;
 };
 // -----------------------------------------------------------------------------
 #endif // _RS_EXCHANGE_H_
