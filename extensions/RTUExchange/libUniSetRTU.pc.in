@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: libUniSetRTU
 Description: Support library for UniSetRTUExchange
 Requires: libUniSetExtensions
-Version: 2:0:0
+Version: 2.0.0
 Libs: -L${libdir} -lUniSetRTU
 Cflags: -I${includedir}/uniset
