@@ -20,7 +20,7 @@ force_out(false),
 mbregFromID(false),
 activated(false),
 noQueryOptimization(false),
-force_disconnect(false),
+force_disconnect(true),
 allNotRespond(false),
 prefix(prefix),
 no_extimer(false),
@@ -80,7 +80,8 @@ poll_count(0)
 
 	force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
 	force_out = conf->getArgInt("--" + prefix + "-force-out",it.getProp("force_out"));
-	force_disconnect = conf->getArgInt("--" + prefix + "-force-disconnect",it.getProp("force_disconnect"));
+
+	force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection",it.getProp("persistent_connection")) ? false : true;
 
 	if( shm->isLocalwork() )
 	{
@@ -590,7 +591,7 @@ void MBTCPMaster::updateSM()
 		if( dlog.debugging(Debug::LEVEL4) )
 		{
 			dlog[Debug::LEVEL4] << "check respond addr=" << ModbusRTU::addr2str(d->mbaddr) 
-				<< " respond=" << d->resp_id 
+				<< " respond_id=" << d->resp_id 
 				<< " real=" << d->resp_real
 				<< " state=" << d->resp_state
 				<< endl;
@@ -1450,6 +1451,7 @@ void MBTCPMaster::help_print( int argc, const char* const* argv )
 //	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
 	cout << " Настройки протокола TCP: " << endl;
 	cout << "--prefix-recv-timeout - Таймаут на ожидание ответа." << endl;
+	cout << "--prefix-persistent-connection - Не закрывать соединение на каждом цикле опроса" << endl;
 }
 // -----------------------------------------------------------------------------
 MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv, UniSetTypes::ObjectId icID, SharedMemory* ic, 
