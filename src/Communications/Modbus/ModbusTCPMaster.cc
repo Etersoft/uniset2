@@ -14,7 +14,7 @@ ModbusTCPMaster::ModbusTCPMaster():
 tcp(0),
 nTransaction(0),
 iaddr(""),
-force_disconnect(false)
+force_disconnect(true)
 {
 	setCRCNoCheckit(true);
 }
