@@ -214,12 +214,14 @@ class MBTCPMaster:
 		typedef std::list<RSProperty> PList;
 		static std::ostream& print_plist( std::ostream& os, PList& p );
 
-		typedef std::map<ModbusRTU::ModbusData,RegInfo*> RegMap;
+		typedef unsigned long RegID;
+
+		typedef std::map<RegID,RegInfo*> RegMap;
 		struct RegInfo
 		{
 			RegInfo():
 				mbval(0),mbreg(0),mbfunc(ModbusRTU::fnUnknown),
-				dev(0),offset(0),mtrType(MTR::mtUnknown),
+				id(0),dev(0),mtrType(MTR::mtUnknown),
 				q_num(0),q_count(1),sm_init(false),mb_init(false)
 			{}
 
@@ -227,10 +229,9 @@ class MBTCPMaster:
 			ModbusRTU::ModbusData mbreg;			/*!< регистр */
 			ModbusRTU::SlaveFunctionCode mbfunc;	/*!< функция для чтения/записи */
 			PList slst;
+			RegID id;
 
 			RTUDevice* dev;
-
-			int offset;
 
 			// only for MTR
 			MTR::MTRType mtrType;	/*!< тип регистра (согласно спецификации на MTR) */
@@ -242,8 +243,8 @@ class MBTCPMaster:
 			RegMap::iterator rit;
 
 			// начальная инициалиазция
-			bool sm_init;	/*!< что инициализировалось ли значение в SM */
-			bool mb_init;	/*!< требуется или нет */
+			bool sm_init;	/*!< инициализировалось ли значение в SM */
+			bool mb_init;	/*!< инициализировалось ли в обмене */
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, RegInfo& r );
@@ -359,9 +360,9 @@ class MBTCPMaster:
 		void initDeviceList();
 		void initOffsetList();
 
-
+		static RegID genRegID( const ModbusRTU::ModbusData r, const int fn );
 		RTUDevice* addDev( RTUDeviceMap& dmap, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
-		RegInfo* addReg( RegMap& rmap, ModbusRTU::ModbusData r, UniXML_iterator& it,
+		RegInfo* addReg( RegMap& rmap, RegID id, ModbusRTU::ModbusData r, UniXML_iterator& it,
 							RTUDevice* dev, RegInfo* rcopy=0 );
 		RSProperty* addProp( PList& plist, RSProperty& p );
 
