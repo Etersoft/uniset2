@@ -34,6 +34,14 @@ using namespace UniversalIO;
 using namespace UniSetTypes;
 // ------------------------------------------------------------------------------------------
 NCRestorer_XML::NCRestorer_XML( const string fname ):
+s_filterField(""),
+s_filterValue(""),
+c_filterField(""),
+c_filterValue(""),
+d_filterField(""),
+d_filterValue(""),
+t_filterField(""),
+t_filterValue(""),
 fname(fname)
 {
 	init(fname);
@@ -42,6 +50,14 @@ fname(fname)
 NCRestorer_XML::NCRestorer_XML(const string fname, 
 									const std::string f_field, 
 									const std::string f_value):
+s_filterField(f_field),
+s_filterValue(f_value),
+c_filterField(""),
+c_filterValue(""),
+d_filterField(""),
+d_filterValue(""),
+t_filterField(""),
+t_filterValue(""),
 fname(fname)
 {
 	init(fname);
@@ -468,8 +484,18 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 // ------------------------------------------------------------------------------------------
 bool NCRestorer_XML::check_thresholds_item( UniXML_iterator& it )
 {	
-	// формат тот же как и <sensors> 
-	return check_consumer_item(it);
+	if( t_filterField.empty() )
+		return true;
+
+	// просто проверка на не пустой field
+	if( t_filterValue.empty() && it.getProp(t_filterField).empty() )
+		return false;
+
+	// просто проверка что field = value
+	if( !t_filterValue.empty() && it.getProp(t_filterField)!=t_filterValue )
+		return false;
+
+	return true;
 }
 // ------------------------------------------------------------------------------------------
 void NCRestorer_XML::setReadThresholdItem( ReaderSlot sl )
@@ -486,6 +512,12 @@ void NCRestorer_XML::setDependsFilter( const std::string field, const std::strin
 {
 	d_filterField = field;
 	d_filterValue = val;
+}
+// -----------------------------------------------------------------------------
+void NCRestorer_XML::setThresholdsFilter( const std::string field, const std::string val )
+{
+	t_filterField = field;
+	t_filterValue = val;
 }
 // -----------------------------------------------------------------------------
 void NCRestorer_XML::setNCReadItem( NCReaderSlot sl )

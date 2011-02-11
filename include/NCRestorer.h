@@ -20,9 +20,7 @@
 /*! \file
  * \brief Интерфейс к объекту сохраняющему список заказчиков для NotifyController-ов
  * \author Pavel Vainerman
- * \version $Id: NCRestorer.h,v 1.17 2008/12/14 21:57:51 vpashka Exp $
- * \date $Date: 2008/12/14 21:57:51 $
- */
+*/
 // --------------------------------------------------------------------------
 #ifndef NCRestorer_H_
 #define NCRestorer_H_
@@ -153,6 +151,11 @@ class NCRestorer_XML:
 		 */
 		void setDependsFilter( const std::string filterField, const std::string filterValue="" );
 
+		/*! Установить фильтр на чтение списка 'порогов')
+			\note Функцию необходимо вызывать до вызова buildDependsList(...)
+		 */
+		void setThresholdsFilter( const std::string filterField, const std::string filterValue="" );
+
 		bool setFileName( const std::string& file, bool create );
 		inline std::string getFileName(){ return fname; }
 
@@ -218,6 +221,8 @@ class NCRestorer_XML:
 		std::string c_filterValue;
 		std::string d_filterField;
 		std::string d_filterValue;
+		std::string t_filterField;
+		std::string t_filterValue;
 
 		std::string fname;
 		UniXML uxml;
