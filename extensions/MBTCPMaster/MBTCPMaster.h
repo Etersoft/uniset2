@@ -87,7 +87,7 @@
        - 1 - перечитывать значения входов из SharedMemory на каждом цикле
        - 0 - обновлять значения только по изменению
 
-      \b --xxx-force-disconnect или \b force_disconnect - закрывать соединение после каждого запроса.
+      \b --xxx-persistent-connection или \b persistent_connection - НЕ закрывать соединение после каждого запроса.
 
       \b --xxx-force-out или \b force_out [1|0]
        - 1 - перечитывать значения выходов из SharedMemory на каждом цикле
@@ -220,8 +220,7 @@ class MBTCPMaster:
 			RegInfo():
 				mbval(0),mbreg(0),mbfunc(ModbusRTU::fnUnknown),
 				dev(0),offset(0),mtrType(MTR::mtUnknown),
-				q_num(0),q_count(1),mb_init(false),sm_init(false),
-				mb_init_mbreg(0)
+				q_num(0),q_count(1),sm_init(false),mb_init(false)
 			{}
 
 			ModbusRTU::ModbusData mbval;
@@ -241,9 +240,10 @@ class MBTCPMaster:
 			int q_count;	/*!< count registers for query */
 
 			RegMap::iterator rit;
-			bool mb_init;	/*!< init before use */
-			bool sm_init;	/*!< SM init value */
-			ModbusRTU::ModbusData mb_init_mbreg;	/*!< mb_init register */
+
+			// начальная инициалиазция
+			bool sm_init;	/*!< что инициализировалось ли значение в SM */
+			bool mb_init;	/*!< требуется или нет */
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, RegInfo& r );
@@ -293,8 +293,29 @@ class MBTCPMaster:
 		void printMap(RTUDeviceMap& d);
 // ----------------------------------
 	protected:
+		struct InitRegInfo
+		{
+			InitRegInfo():
+			dev(0),mbreg(0),
+			mbfunc(ModbusRTU::fnUnknown),
+			initOK(false),ri(0)
+			{}
+			RSProperty p;
+			RTUDevice* dev;
+			ModbusRTU::ModbusData mbreg;
+			ModbusRTU::SlaveFunctionCode mbfunc;
+			bool initOK;
+			RegInfo* ri;
+		};
+		typedef std::list<InitRegInfo> InitList;
+
+		void firstInitRegisters();
+		bool preInitRead( InitList::iterator& p );
+		bool initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty* p );
+		bool allInitOK;
 
 		RTUDeviceMap rmap;
+		InitList initRegList;	/*!< список регистров для инициализации */
 
 		ModbusTCPMaster* mb;
 		UniSetTypes::uniset_mutex mbMutex;
@@ -355,7 +376,8 @@ class MBTCPMaster:
 		void readConfiguration();
 		bool check_item( UniXML_iterator& it );
 
-	private:
+
+	 private:
 		MBTCPMaster();
 		bool initPause;
 		UniSetTypes::uniset_mutex mutex_start;

@@ -607,7 +607,7 @@ void RTUExchange::updateSM()
 		if( dlog.debugging(Debug::LEVEL4) )
 		{
 			dlog[Debug::LEVEL4] << "check respond addr=" << ModbusRTU::addr2str(d->mbaddr)
-				<< " respond=" << d->resp_id
+				<< " respond_id=" << d->resp_id
 				<< " real=" << d->resp_real
 				<< " state=" << d->resp_state
 				<< endl;
