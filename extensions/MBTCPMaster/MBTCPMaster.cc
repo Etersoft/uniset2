@@ -12,6 +12,7 @@ using namespace UniSetExtensions;
 MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, 
 							SharedMemory* ic, const std::string prefix ):
 UniSetObject_LT(objId),
+allInitOK(false),
 mb(0),
 shm(0),
 initPause(0),
@@ -271,7 +272,9 @@ void MBTCPMaster::poll()
 		return;
 	}
 
-		
+	if( !allInitOK )
+		firstInitRegisters();
+	
 	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
@@ -436,13 +439,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			}
 			
 			if( !p->mb_init )
-			{
-//				cerr << "******* mb_init: mbreg=" << ModbusRTU::dat2str(p->mbreg) << endl;
-				ModbusRTU::ReadInputRetMessage ret1 = mb->read04(dev->mbaddr,p->mb_init_mbreg,1);
-				p->mbval = ret1.data[0];
-				p->sm_init = true;
 				return true;
-			}
 
 //			cerr << "**** mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
 			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg+p->offset,p->mbval);
@@ -453,21 +450,8 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		{
 			ModbusRTU::WriteOutputMessage msg(dev->mbaddr,p->mbreg+p->offset);
 			for( int i=0; i<p->q_count; i++,it++ )
-			{
-				if( !it->second->mb_init )
-				{
-//					cerr << "******* mb_init: mbreg=" << ModbusRTU::dat2str(it->second->mbreg) 
-//						<< " mb_init mbreg=" << ModbusRTU::dat2str(it->second->mb_init_mbreg) << endl;
-					ModbusRTU::ReadOutputRetMessage ret1 = mb->read03(dev->mbaddr,it->second->mb_init_mbreg,1);
-//					cerr << "******* mb_init: mbreg=" << ModbusRTU::dat2str(it->second->mbreg) 
-//						<< " mb_init mbreg=" << ModbusRTU::dat2str(it->second->mb_init_mbreg)
-//						<< " mbval=" << ret1.data[0] << endl;
-					it->second->mbval = ret1.data[0];
-					it->second->sm_init = true;
-				}
-			
 				msg.addData(it->second->mbval);
-			}
+
 			it--;
 			ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
 		}
@@ -483,17 +467,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			}
 
 			if( !p->mb_init )
-			{
-//				cerr << "******* mb_init: mbreg=" << ModbusRTU::dat2str(p->mbreg)
-//						<< " init mbreg=" << ModbusRTU::dat2str(p->mb_init_mbreg) << endl;
-				ModbusRTU::ReadInputStatusRetMessage ret1 = mb->read02(dev->mbaddr,p->mb_init_mbreg,1);
-				ModbusRTU::DataBits b(ret1.data[0]);
-//				cerr << "******* mb_init_mbreg=" << ModbusRTU::dat2str(p->mb_init_mbreg) 
-//						<< " read val=" << (int)b[0] << endl;
-				p->mbval = b[0];
-				p->sm_init = true;
 				return true;
-			}
 
 //			cerr << "****(coil) mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
 			ModbusRTU::ForceSingleCoilRetMessage ret = mb->write05(dev->mbaddr,p->mbreg+p->offset,p->mbval);
@@ -502,6 +476,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 
 		case ModbusRTU::fnForceMultipleCoils:
 		{
+#if 0		  
 			if( !p->mb_init )
 			{
 				// every register ask... (for mb_init_mbreg no some)
@@ -512,25 +487,11 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 					it->second->mbval = b[0] ? 1 : 0;
 					it->second->sm_init = true;
 				}
-/*
-				// alone query for all register (if mb_init_mbreg ++ )
-				ModbusRTU::ReadInputStatusRetMessage ret1 = mb->read02(dev->mbaddr,p->mb_init_mbreg,p->q_count);
-				int m=0;
-				for( int i=0; i<ret1.bcnt; i++ )
-				{
-					ModbusRTU::DataBits b(ret1.data[i]);
-					for( int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
-					{
-						it->second->mbval = b[k] ? 1 : 0;
-						it->second->sm_init = true;
-					}
-				}
-*/
 				p->sm_init = true;
 				it--;
 				return true;
 			}
-
+#endif
 			ModbusRTU::ForceCoilsMessage msg(dev->mbaddr,p->mbreg+p->offset);
 			for( int i=0; i<p->q_count; i++,it++ )
 				msg.addBit( (it->second->mbval ? true : false) );
@@ -552,6 +513,229 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 	}
 	
 	return true;
+}
+// -----------------------------------------------------------------------------
+void MBTCPMaster::firstInitRegisters()
+{
+	// если все вернут TRUE, значит OK.
+	allInitOK = true;
+	for( InitList::iterator it=initRegList.begin(); it!=initRegList.end(); ++it )
+	{
+		it->initOK = preInitRead( it );
+		allInitOK = it->initOK;
+	}
+}
+// -----------------------------------------------------------------------------
+bool MBTCPMaster::preInitRead( InitList::iterator& p )
+{
+	if( p->initOK )
+		return true;
+
+	RTUDevice* dev = p->dev;
+	int q_count = p->p.rnum;
+
+	if( dlog.debugging(Debug::LEVEL3)  )
+	{
+		dlog[Debug::LEVEL3] << myname << "(preInitRead): poll "
+			<< " mbaddr=" << ModbusRTU::addr2str(dev->mbaddr)
+			<< " mbreg=" << ModbusRTU::dat2str(p->mbreg)
+			<< " mbfunc=" << p->mbfunc
+			<< " q_count=" << q_count
+			<< endl;
+
+			if( q_count > ModbusRTU::MAXDATALEN )
+			{
+					dlog[Debug::LEVEL3] << myname << "(preInitRead): count(" << q_count
+					<< ") > MAXDATALEN(" << ModbusRTU::MAXDATALEN
+					<< " ..ignore..."
+					<< endl;
+			}
+	}
+
+	switch( p->mbfunc )
+	{
+		case ModbusRTU::fnReadOutputRegisters:
+		{
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr,p->mbreg,q_count);
+			p->initOK = initSMValue(ret.data, ret.count,&(p->p));
+		}
+		break;
+
+		case ModbusRTU::fnReadInputRegisters:
+		{
+			ModbusRTU::ReadInputRetMessage ret1 = mb->read04(dev->mbaddr,p->mbreg,q_count);
+			p->initOK = initSMValue(ret1.data,ret1.count, &(p->p));
+		}
+		break;
+		case ModbusRTU::fnReadInputStatus:
+		{
+			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr,p->mbreg,q_count);
+			ModbusRTU::ModbusData* dat = new ModbusRTU::ModbusData[q_count];
+			int m=0;
+			for( int i=0; i<ret.bcnt; i++ )
+			{
+				ModbusRTU::DataBits b(ret.data[i]);
+				for( int k=0;k<ModbusRTU::BitsPerByte && m<q_count; k++,m++ )
+					dat[m] = b[k];
+			}
+
+			p->initOK = initSMValue(dat,q_count, &(p->p));
+			delete[] dat;
+		}
+		break;
+
+		case ModbusRTU::fnReadCoilStatus:
+		{
+			ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr,p->mbreg,q_count);
+			ModbusRTU::ModbusData* dat = new ModbusRTU::ModbusData[q_count];
+			int m = 0;
+			for( int i=0; i<ret.bcnt; i++ )
+			{
+				ModbusRTU::DataBits b(ret.data[i]);
+				for( int k=0;k<ModbusRTU::BitsPerByte && m<q_count; k++,m++ )
+					dat[m] = b[k];
+			}
+
+			p->initOK = initSMValue(dat,q_count, &(p->p));
+			delete[] dat;
+		}
+		break;
+
+		default:
+			p->initOK = false;
+			break;
+	}
+
+	if( p->initOK )
+	{
+		 p->ri->mb_init = true;
+		 p->ri->sm_init = true;
+	}
+
+	return p->initOK;
+}
+// -----------------------------------------------------------------------------
+bool MBTCPMaster::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty* p )
+{
+	using namespace ModbusRTU;
+
+	try
+	{
+		if( p->vType == VTypes::vtUnknown )
+		{
+			ModbusRTU::DataBits16 b(data[0]);
+			if( p->nbit >= 0 )
+			{
+				bool set = b[p->nbit];
+				IOBase::processingAsDI( p, set, shm, force );
+				return true;
+			}
+
+			if( p->rnum <= 1 )
+			{
+				if( p->stype == UniversalIO::DigitalInput ||
+					p->stype == UniversalIO::DigitalOutput )
+				{
+					IOBase::processingAsDI( p, data[0], shm, force );
+				}
+				else
+					IOBase::processingAsAI( p, (signed short)(data[0]), shm, force );
+
+				return true;
+			}
+
+			dlog[Debug::CRIT] << myname << "(initSMValue): IGNORE item: rnum=" << p->rnum
+					<< " > 1 ?!! for id=" << p->si.id << endl;
+
+			return false;
+		}
+		else if( p->vType == VTypes::vtSigned )
+		{
+			if( p->stype == UniversalIO::DigitalInput ||
+				p->stype == UniversalIO::DigitalOutput )
+			{
+				IOBase::processingAsDI( p, data[0], shm, force );
+			}
+			else
+				IOBase::processingAsAI( p, (signed short)(data[0]), shm, force );
+
+			return true;
+		}
+		else if( p->vType == VTypes::vtUnsigned )
+		{
+			if( p->stype == UniversalIO::DigitalInput ||
+				p->stype == UniversalIO::DigitalOutput )
+			{
+				IOBase::processingAsDI( p, data[0], shm, force );
+			}
+			else
+				IOBase::processingAsAI( p, (unsigned short)data[0], shm, force );
+
+			return true;
+		}
+		else if( p->vType == VTypes::vtByte )
+		{
+			if( p->nbyte <= 0 || p->nbyte > VTypes::Byte::bsize )
+			{
+				dlog[Debug::CRIT] << myname << "(initSMValue): IGNORE item: sid=" << ModbusRTU::dat2str(p->si.id)
+						<< " vtype=" << p->vType << " but nbyte=" << p->nbyte << endl;
+				return false;
+			}
+
+			VTypes::Byte b(data[0]);
+			IOBase::processingAsAI( p, b.raw.b[p->nbyte-1], shm, force );
+			return true;
+		}
+		else if( p->vType == VTypes::vtF2 )
+		{
+			VTypes::F2 f(data,VTypes::F2::wsize());
+			IOBase::processingFasAI( p, (float)f, shm, force );
+		}
+		else if( p->vType == VTypes::vtF4 )
+		{
+			VTypes::F4 f(data,VTypes::F4::wsize());
+			IOBase::processingFasAI( p, (float)f, shm, force );
+		}
+		else if( p->vType == VTypes::vtI2 )
+		{
+			VTypes::I2 i2(data,VTypes::I2::wsize());
+			IOBase::processingAsAI( p, (int)i2, shm, force );
+		}
+		else if( p->vType == VTypes::vtU2 )
+		{
+			VTypes::U2 u2(data,VTypes::U2::wsize());
+			IOBase::processingAsAI( p, (unsigned int)u2, shm, force );
+		}
+
+		return true;
+	}
+	catch(IOController_i::NameNotFound &ex)
+	{
+		dlog[Debug::LEVEL3] << myname << "(initSMValue):(NameNotFound) " << ex.err << endl;
+	}
+	catch(IOController_i::IOBadParam& ex )
+	{
+		dlog[Debug::LEVEL3] << myname << "(initSMValue):(IOBadParam) " << ex.err << endl;
+	}
+	catch(IONotifyController_i::BadRange )
+	{
+		dlog[Debug::LEVEL3] << myname << "(initSMValue): (BadRange)..." << endl;
+	}
+	catch( Exception& ex )
+	{
+		dlog[Debug::LEVEL3] << myname << "(initSMValue): " << ex << endl;
+	}
+	catch(CORBA::SystemException& ex)
+	{
+		dlog[Debug::LEVEL3] << myname << "(initSMValue): CORBA::SystemException: "
+			<< ex.NP_minorString() << endl;
+	}
+	catch(...)
+	{
+		dlog[Debug::LEVEL3] << myname << "(initSMValue): catch ..." << endl;
+	}
+
+	return false;
 }
 // -----------------------------------------------------------------------------
 bool MBTCPMaster::RTUDevice::checkRespond()
@@ -1229,19 +1413,6 @@ bool MBTCPMaster::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBTCPMaster::RT
 		r->mbreg = ModbusRTU::str2mbData(sr);
 	}
 
-	{
-		string sr = it.getProp("tcp_init_mbreg");
-		if( sr == "-1" )
-		{
-			r->mb_init = true; // OFF mb_init
-			r->sm_init = true;
-		}
-		else if( sr.empty() )
-			r->mb_init_mbreg = r->mbreg;
-		else
-			r->mb_init_mbreg = ModbusRTU::str2mbData(sr);
-	}
-
 	r->mbfunc 	= ModbusRTU::fnUnknown;
 	string f = it.getProp("tcp_mbfunc");
 	if( !f.empty() )
@@ -1254,7 +1425,7 @@ bool MBTCPMaster::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBTCPMaster::RT
 			return false;
 		}
 	}
-	
+
 	return true;
 }
 // ------------------------------------------------------------------------------------------
@@ -1305,7 +1476,7 @@ bool MBTCPMaster::initItem( UniXML_iterator& it )
 	string addr = it.getProp("tcp_mbaddr");
 	if( addr.empty() )
 	{
-		dlog[Debug::CRIT] << myname << "(initItem): Unknown mbaddr='" << addr << " for " << it.getProp("name") << endl;
+		dlog[Debug::CRIT] << myname << "(initItem): Unknown mbaddr='" << addr << "' for " << it.getProp("name") << endl;
 		return false;
 	}
 
@@ -1350,16 +1521,16 @@ bool MBTCPMaster::initItem( UniXML_iterator& it )
 
 	ri->dev = dev;
 
-	// п÷п═п·п▓п•п═п п░!
-	// п╣я│п╩п╦ я└я┐п╫п╨я├п╦я▐ п╫п╟ п╥п╟п©п╦я│я▄, я┌п╬ п╫п╟п╢п╬ п©я─п╬п╡п╣я─п╦я┌я▄
-	// я┤я┌п╬ п╬п╢п╦п╫ п╦ я┌п╬я┌п╤п╣ я─п╣пЁп╦я│я┌я─ п╫п╣ п©п╣я─п╣п╥п╟п©п╦я┬я┐я┌ п╫п╣я│п╨п╬п╩я▄п╨п╬ п╢п╟я┌я┤п╦п╨п╬п╡
-	// я█я┌п╬ п╡п╬п╥п╪п╬п╤п╫п╬ я┌п╬п╩я▄п╨п╬, п╣я│п╩п╦ п╬п╫п╦ п©п╦я┬я┐я┌ п╠п╦я┌я▀!!
-	// п≤п╒п·п⌠:
-	// п•я│п╩п╦ п╢п╩я▐ я└я┐п╫п╨я├п╦п╧ п╥п╟п©п╦я│п╦ я│п©п╦я│п╬п╨ п╢п╟я┌я┤п╦п╨п╬п╡ п╫п╟ п╬п╢п╦п╫ я─п╣пЁп╦я│я┌я─ > 1
-	// п╥п╫п╟я┤п╦я┌ п╡ я│п©п╦я│п╨п╣ п╪п╬пЁя┐я┌ п╠я▀я┌я▄ я┌п╬п╩я▄п╨п╬ п╠п╦я┌п╬п╡я▀п╣ п╢п╟я┌я┤п╦п╨п╦
-	// п╦ п╣я│п╩п╦ п╦п╢я▒я┌ п©п╬п©я▀я┌п╨п╟ п╡п╫п╣я│я┌п╦ п╡ я│п©п╦я│п╬п╨ п╫п╣ п╠п╦я┌п╬п╡я▀п╧ п╢п╟я┌я┤п╦п╨ я┌п╬ п·п╗п≤п▒п п░!
-	// п≤ п╫п╟п╬п╠п╬я─п╬я┌: п╣я│п╩п╦ п╦п╢я▒я┌ п©п╬п©я▀я┌п╨п╟ п╡п╫п╣я│я┌п╦ п╠п╦я┌п╬п╡я▀п╧ п╢п╟я┌я┤п╦п╨, п╟ п╡ я│п©п╦я│п╨п╣
-	// я┐п╤п╣ я│п╦п╢п╦я┌ п╢п╟я┌я┤п╦п╨ п╥п╟п╫п╦п╪п╟я▌я┴п╦п╧ я├п╣п╩я▀п╧ я─п╣пЁп╦я│я┌я─, я┌п╬ я┌п╬п╤п╣ п·п╗п≤п▒п п░!
+	// ПРОВЕРКА!
+    // если функция на запись, то надо проверить
+    // что один и тотже регистр не перезапишут несколько датчиков
+    // это возможно только, если они пишут биты!!
+    // ИТОГ:
+    // Если для функций записи список датчиков для регистра > 1
+    // значит в списке могут быть только битовые датчики
+    // и если идёт попытка внести в список не битовый датчик то ОШИБКА!
+    // И наоборот: если идёт попытка внести битовый датчик, а в списке
+    // уже сидит датчик занимающий целый регистр, то тоже ОШИБКА!
 	if(	ModbusRTU::isWriteFunction(ri->mbfunc) )
 	{
 		if( p.nbit<0 &&  ri->slst.size() > 1 )
@@ -1395,10 +1566,74 @@ bool MBTCPMaster::initItem( UniXML_iterator& it )
 	if( p1->rnum > 1 )
 	{
 		for( int i=1; i<p1->rnum; i++ )
+			addReg(dev->regmap,mbreg+i,it,dev,ri);
+	}
+
+
+	// Фомируем список инициализации
+	bool need_init = it.getIntProp("tcp_preinit");
+	if( need_init && ModbusRTU::isWriteFunction(ri->mbfunc) )
+	{
+		InitRegInfo	ii;
+		ii.p = p;
+		ii.dev = dev;
+		ii.ri = ri;
+
+		string s_reg(it.getProp("tcp_init_mbreg"));
+		if( !s_reg.empty() )
+			ii.mbreg = ModbusRTU::str2mbData(s_reg);
+		else
+			ii.mbreg = ri->mbreg;
+
+		string s_offset(it.getProp("tcp_init_offset"));
+		if( !s_offset.empty() )
+			ii.mbreg += uni_atoi(s_offset);
+		else
+			ii.mbreg += ri->offset;
+		
+		string s_mbfunc(it.getProp("tcp_init_mbfunc"));
+		if( !s_mbfunc.empty() )
 		{
-			MBTCPMaster::RegInfo* ri1 = addReg(dev->regmap,mbreg+i,it,dev,ri);
-			ri1->mb_init_mbreg = ri->mb_init_mbreg+i;
+			ii.mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(s_mbfunc);
+			if( ii.mbfunc == ModbusRTU::fnUnknown )
+			{
+				dlog[Debug::CRIT] << myname << "(initItem): Unknown tcp_init_mbfunc ='" << s_mbfunc
+						<< "' for " << it.getProp("name") << endl;
+				return false;
+			}
 		}
+		else
+		{
+			switch(ri->mbfunc)
+			{
+				case ModbusRTU::fnWriteOutputSingleRegister:
+					ii.mbfunc = ModbusRTU::fnReadOutputRegisters;
+				break;
+
+				case ModbusRTU::fnForceSingleCoil:
+					ii.mbfunc = ModbusRTU::fnReadCoilStatus;
+				break;
+				
+				case ModbusRTU::fnWriteOutputRegisters:
+					ii.mbfunc = ModbusRTU::fnReadOutputRegisters;
+				break;
+
+				case ModbusRTU::fnForceMultipleCoils:
+					ii.mbfunc = ModbusRTU::fnReadCoilStatus;
+				break;
+
+				default:
+					ii.mbfunc = ModbusRTU::fnReadOutputRegisters;	  
+				break;
+			}
+		}
+
+		initRegList.push_back(ii);
+	}
+	else
+	{
+		 ri->mb_init = true;
+		 ri->sm_init = true;
 	}
 	
 	return true;
