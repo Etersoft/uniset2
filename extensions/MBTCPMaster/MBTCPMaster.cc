@@ -1,5 +1,6 @@
 // -----------------------------------------------------------------------------
 #include <cmath>
+#include <limits>
 #include <sstream>
 #include <Exceptions.h>
 #include <extensions/Extensions.h>
@@ -357,7 +358,6 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		dlog[Debug::LEVEL3] << myname << "(pollRTU): poll "
 			<< " mbaddr=" << ModbusRTU::addr2str(dev->mbaddr)
 			<< " mbreg=" << ModbusRTU::dat2str(p->mbreg)
-			<< " mboffset=" << p->offset
 			<< " mbfunc=" << p->mbfunc
 			<< " q_count=" << p->q_count
 			<< " mb_init=" << p->mb_init
@@ -385,7 +385,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 	{
 		case ModbusRTU::fnReadInputRegisters:
 		{
-			ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr,p->mbreg+p->offset,p->q_count);
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr,p->mbreg,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
 			it--;
@@ -394,7 +394,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 
 		case ModbusRTU::fnReadOutputRegisters:
 		{
-			ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr, p->mbreg+p->offset,p->q_count);
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr, p->mbreg,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
 			it--;
@@ -403,7 +403,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		
 		case ModbusRTU::fnReadInputStatus:
 		{
-			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr,p->mbreg+p->offset,p->q_count);
+			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr,p->mbreg,p->q_count);
 			int m=0;
 			for( int i=0; i<ret.bcnt; i++ )
 			{
@@ -417,7 +417,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		
 		case ModbusRTU::fnReadCoilStatus:
 		{
-			ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr,p->mbreg+p->offset,p->q_count);
+			ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr,p->mbreg,p->q_count);
 			int m = 0;
 			for( int i=0; i<ret.bcnt; i++ )
 			{
@@ -442,13 +442,13 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 				return true;
 
 //			cerr << "**** mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
-			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg+p->offset,p->mbval);
+			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg,p->mbval);
 		}
 		break;
 
 		case ModbusRTU::fnWriteOutputRegisters:
 		{
-			ModbusRTU::WriteOutputMessage msg(dev->mbaddr,p->mbreg+p->offset);
+			ModbusRTU::WriteOutputMessage msg(dev->mbaddr,p->mbreg);
 			for( int i=0; i<p->q_count; i++,it++ )
 				msg.addData(it->second->mbval);
 
@@ -470,7 +470,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 				return true;
 
 //			cerr << "****(coil) mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
-			ModbusRTU::ForceSingleCoilRetMessage ret = mb->write05(dev->mbaddr,p->mbreg+p->offset,p->mbval);
+			ModbusRTU::ForceSingleCoilRetMessage ret = mb->write05(dev->mbaddr,p->mbreg,p->mbval);
 		}
 		break;
 
@@ -492,7 +492,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 				return true;
 			}
 #endif
-			ModbusRTU::ForceCoilsMessage msg(dev->mbaddr,p->mbreg+p->offset);
+			ModbusRTU::ForceCoilsMessage msg(dev->mbaddr,p->mbreg);
 			for( int i=0; i<p->q_count; i++,it++ )
 				msg.addBit( (it->second->mbval ? true : false) );
 
@@ -1217,23 +1217,23 @@ MBTCPMaster::RTUDevice* MBTCPMaster::addDev( RTUDeviceMap& mp, ModbusRTU::Modbus
 	return d;
 }
 // ------------------------------------------------------------------------------------------
-MBTCPMaster::RegInfo* MBTCPMaster::addReg( RegMap& mp, ModbusRTU::ModbusData r, 
+MBTCPMaster::RegInfo* MBTCPMaster::addReg( RegMap& mp, RegID id, ModbusRTU::ModbusData r,
 											UniXML_iterator& xmlit, MBTCPMaster::RTUDevice* dev,
 											MBTCPMaster::RegInfo* rcopy )
 {
-	RegMap::iterator it = mp.find(r);
+	RegMap::iterator it = mp.find(id);
 	if( it != mp.end() )
 	{
 		if( !it->second->dev )
 		{
-			dlog[Debug::CRIT] << myname << "(addReg): for reg=" << ModbusRTU::dat2str(r) 
+			dlog[Debug::CRIT] << myname << "(addReg): for " << xmlit.getProp("name")
 				<< " dev=0!!!! " << endl;
 			return 0;
 		}
 	
 		if( it->second->dev->dtype != dev->dtype )
 		{
-			dlog[Debug::CRIT] << myname << "(addReg): OTHER mbtype=" << dev->dtype << " for reg=" << ModbusRTU::dat2str(r) 
+			dlog[Debug::CRIT] << myname << "(addReg): OTHER mbtype=" << dev->dtype << " for " << xmlit.getProp("name")
 				<< ". Already used devtype=" <<  it->second->dev->dtype << " for " << it->second->dev << endl;
 			return 0;
 		}
@@ -1265,9 +1265,11 @@ MBTCPMaster::RegInfo* MBTCPMaster::addReg( RegMap& mp, ModbusRTU::ModbusData r,
 		}
 		ri->mbreg = r;
 	}
+
+	ri->id = id;
 	
-	mp.insert(RegMap::value_type(r,ri));
-	ri->rit = mp.find(r);
+	mp.insert(RegMap::value_type(id,ri));
+	ri->rit = mp.find(id);
 	
 	return ri;
 }
@@ -1375,7 +1377,6 @@ bool MBTCPMaster::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBTCPMaster::RT
 {
 	r->dev = dev;
 	r->mbval = it.getIntProp("default");
-	r->offset = it.getIntProp("tcp_mboffset");
 	r->mb_init = it.getIntProp("tcp_mbinit");
 	
 	if( dev->dtype == MBTCPMaster::dtRTU )
@@ -1466,7 +1467,15 @@ bool MBTCPMaster::initRTUDevice( RTUDevice* d, UniXML_iterator& it )
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-
+MBTCPMaster::RegID MBTCPMaster::genRegID( const ModbusRTU::ModbusData mbreg, const int fn )
+{
+	// формула для вычисления ID
+	// требования:
+	//  - ID > диапазона возможных регитров
+	//  - разные функции должны давать разный ID
+	return numeric_limits<ModbusRTU::ModbusData>::max() + mbreg + fn;
+}
+// ------------------------------------------------------------------------------------------
 bool MBTCPMaster::initItem( UniXML_iterator& it )
 {
 	RSProperty p;
@@ -1504,7 +1513,15 @@ bool MBTCPMaster::initItem( UniXML_iterator& it )
 		mbreg = ModbusRTU::str2mbData(reg);
 	}
 
-	RegInfo* ri = addReg(dev->regmap,mbreg,it,dev);
+	int fn = it.getIntProp("tcp_mbfunc");
+
+	// формула для вычисления ID
+	// требования:
+	//  - ID > диапазона возможных регитров
+	//  - разные функции должны давать разный ID
+	RegID rID = genRegID(mbreg,fn);
+
+	RegInfo* ri = addReg(dev->regmap,rID,mbreg,it,dev);
 	
 	if( dev->dtype == dtMTR )
 	{
@@ -1566,7 +1583,10 @@ bool MBTCPMaster::initItem( UniXML_iterator& it )
 	if( p1->rnum > 1 )
 	{
 		for( int i=1; i<p1->rnum; i++ )
-			addReg(dev->regmap,mbreg+i,it,dev,ri);
+		{
+			RegID id1 = genRegID(mbreg+i,fn);
+			addReg(dev->regmap,id1,mbreg+i,it,dev,ri);
+		}
 	}
 
 
@@ -1585,12 +1605,6 @@ bool MBTCPMaster::initItem( UniXML_iterator& it )
 		else
 			ii.mbreg = ri->mbreg;
 
-		string s_offset(it.getProp("tcp_init_offset"));
-		if( !s_offset.empty() )
-			ii.mbreg += uni_atoi(s_offset);
-		else
-			ii.mbreg += ri->offset;
-		
 		string s_mbfunc(it.getProp("tcp_init_mbfunc"));
 		if( !s_mbfunc.empty() )
 		{
@@ -1848,7 +1862,8 @@ std::ostream& operator<<( std::ostream& os, MBTCPMaster::RTUDevice& d )
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, MBTCPMaster::RegInfo& r )
 {
-	os << " mbreg=" << ModbusRTU::dat2str(r.mbreg)
+	os << " id=" << r.id
+		<< " mbreg=" << ModbusRTU::dat2str(r.mbreg)
 		<< " mbfunc=" << r.mbfunc
 		<< " q_num=" << r.q_num
 		<< " q_count=" << r.q_count
@@ -1875,14 +1890,14 @@ void MBTCPMaster::rtuQueryOptimization( RTUDeviceMap& m )
 		for( MBTCPMaster::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
 			MBTCPMaster::RegMap::iterator beg = it;
-			ModbusRTU::ModbusData reg = it->second->mbreg + it->second->offset;
+			ModbusRTU::ModbusData reg = it->second->mbreg;
 
 			beg->second->q_num = 1;
 			beg->second->q_count = 1;
 			it++;
 			for( ;it!=d->regmap.end(); ++it )
 			{
-				if( (it->second->mbreg + it->second->offset - reg) > 1 )
+				if( (it->second->mbreg - reg) > 1 )
 					break;
 				
 				if( beg->second->mbfunc != it->second->mbfunc )
@@ -1893,7 +1908,7 @@ void MBTCPMaster::rtuQueryOptimization( RTUDeviceMap& m )
 				if( beg->second->q_count >= ModbusRTU::MAXDATALEN  )
 					break;
 
-				reg = it->second->mbreg + it->second->offset;
+				reg = it->second->mbreg;
 				it->second->q_num = beg->second->q_count;
 				it->second->q_count = 0;
 			}
