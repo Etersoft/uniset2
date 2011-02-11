@@ -269,6 +269,7 @@ void MBTCPMaster::poll()
 				it->second->resp_real = false;
 		}
 		updateSM();
+		allInitOK = false;
 		return;
 	}
 
@@ -308,8 +309,12 @@ void MBTCPMaster::poll()
 //				}
 
 				// d->resp_real = false;
-				if( !d->ask_every_reg )
+				if( ex.err == ModbusRTU::erTimeOut && !d->ask_every_reg )
 					break;
+
+				// если контроллер хоть что-то ответил, то вроде как связь есть..
+				if( ex.err !=  ModbusRTU::erTimeOut )
+					d->resp_real = true;
 			}
 
 			if( it==d->regmap.end() )
@@ -359,7 +364,9 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			<< " mbreg=" << ModbusRTU::dat2str(p->mbreg)
 			<< " mbfunc=" << p->mbfunc
 			<< " q_count=" << p->q_count
-			<< " mb_init=" << p->mb_init
+			<< " mb_initOK=" << p->mb_initOK
+			<< " sm_initOK=" << p->sm_initOK
+			<< " mbval=" << p->mbval
 			<< endl;
 
 			if( p->q_count > ModbusRTU::MAXDATALEN )
@@ -437,8 +444,13 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 				return false;
 			}
 
-			if( !p->mb_init )
+			if( !p->sm_initOK )
+			{
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
+						<< " IGNORE...(sm_initOK=false)" << endl;
 				return true;
+			}
 
 //			cerr << "**** mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
 			ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(dev->mbaddr,p->mbreg,p->mbval);
@@ -447,6 +459,14 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 
 		case ModbusRTU::fnWriteOutputRegisters:
 		{
+			if( !p->sm_initOK )
+			{
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
+						<< " IGNORE...(sm_initOK=false)" << endl;
+				return true;
+			}
+
 			ModbusRTU::WriteOutputMessage msg(dev->mbaddr,p->mbreg);
 			for( int i=0; i<p->q_count; i++,it++ )
 				msg.addData(it->second->mbval);
@@ -464,9 +484,13 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 					<< " IGNORE FORCE SINGLE COIL (0x05) q_count=" << p->q_count << " ..." << endl;
 				return false;
 			}
-
-			if( !p->mb_init )
+			if( !p->sm_initOK )
+			{
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
+						<< " IGNORE...(sm_initOK=false)" << endl;
 				return true;
+			}
 
 //			cerr << "****(coil) mbreg=" << ModbusRTU::dat2str(p->mbreg) << " val=" << ModbusRTU::dat2str(p->mbval) << endl;
 			ModbusRTU::ForceSingleCoilRetMessage ret = mb->write05(dev->mbaddr,p->mbreg,p->mbval);
@@ -475,22 +499,14 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 
 		case ModbusRTU::fnForceMultipleCoils:
 		{
-#if 0
-			if( !p->mb_init )
+			if( !p->sm_initOK )
 			{
-				// every register ask... (for mb_init_mbreg no some)
-				for( int i=0; i<p->q_count; i++,it++ )
-				{
-					ModbusRTU::ReadInputStatusRetMessage ret1 = mb->read02(dev->mbaddr,it->second->mb_init_mbreg,1);
-					ModbusRTU::DataBits b(ret1.data[0]);
-					it->second->mbval = b[0] ? 1 : 0;
-					it->second->sm_init = true;
-				}
-				p->sm_init = true;
-				it--;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
+						<< " IGNORE...(sm_initOK=false)" << endl;
 				return true;
 			}
-#endif
+
 			ModbusRTU::ForceCoilsMessage msg(dev->mbaddr,p->mbreg);
 			for( int i=0; i<p->q_count; i++,it++ )
 				msg.addBit( (it->second->mbval ? true : false) );
@@ -520,8 +536,24 @@ void MBTCPMaster::firstInitRegisters()
 	allInitOK = true;
 	for( InitList::iterator it=initRegList.begin(); it!=initRegList.end(); ++it )
 	{
-		it->initOK = preInitRead( it );
-		allInitOK = it->initOK;
+		try
+		{
+			it->initOK = preInitRead( it );
+			allInitOK = it->initOK;
+		}
+		catch( ModbusRTU::mbException& ex )
+		{
+			allInitOK = false;
+			if( dlog.debugging(Debug::LEVEL3) )
+			{
+				dlog[Debug::LEVEL3] << myname << "(preInitRead): FAILED ask addr=" << ModbusRTU::addr2str(it->dev->mbaddr)
+					<< " reg=" << ModbusRTU::dat2str(it->mbreg)
+					<< " err: " << ex << endl;
+			}
+
+			if( !it->dev->ask_every_reg )
+				break;
+		}
 	}
 }
 // -----------------------------------------------------------------------------
@@ -607,8 +639,13 @@ bool MBTCPMaster::preInitRead( InitList::iterator& p )
 
 	if( p->initOK )
 	{
-		 p->ri->mb_init = true;
-		 p->ri->sm_init = true;
+		 p->ri->mb_initOK = true;
+		 p->ri->sm_initOK = false;
+		 bool f_out = force_out;
+		 // выставляем флаг принудительного обновления
+		 force_out = true;
+		 updateRTU(p->ri->rit);
+		 force_out = f_out;
 	}
 
 	return p->initOK;
@@ -617,7 +654,6 @@ bool MBTCPMaster::preInitRead( InitList::iterator& p )
 bool MBTCPMaster::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty* p )
 {
 	using namespace ModbusRTU;
-
 	try
 	{
 		if( p->vType == VTypes::vtUnknown )
@@ -1065,14 +1101,14 @@ void MBTCPMaster::sensorInfo( UniSetTypes::SensorMessage* sm )
 						dlog[Debug::INFO] << myname<< "(sensorInfo): si.id=" << sm->id
 							<< " reg=" << ModbusRTU::dat2str(i->reg->mbreg)
 							<< " val=" << sm->value
-							<< " mb_init=" << i->reg->mb_init << endl;
+							<< " mb_initOK=" << i->reg->mb_initOK << endl;
 					}
 
-					if( !i->reg->mb_init )
+					if( !i->reg->mb_initOK )
 						continue;
 
 					i->value = sm->value;
-					updateRSProperty( &(*i),true);
+					updateRSProperty( &(*i),true );
 					return;
 				}
 			}
@@ -1376,7 +1412,6 @@ bool MBTCPMaster::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBTCPMaster::RT
 {
 	r->dev = dev;
 	r->mbval = it.getIntProp("default");
-	r->mb_init = it.getIntProp("tcp_mbinit");
 
 	if( dev->dtype == MBTCPMaster::dtRTU )
 	{
@@ -1571,7 +1606,20 @@ bool MBTCPMaster::initItem( UniXML_iterator& it )
 					return false;
 			}
 		}
+
+		// Раз это регистр для записи, то как минимум надо сперва
+		// инициализировать значением из SM
+		ri->sm_initOK = it.getIntProp("tcp_sm_initOK");
+		ri->mb_initOK = true;  // может быть переопределён если будет указан tcp_preinit="1" (см. ниже)
 	}
+	else
+	{
+		// Если это регистр для чтения, то сразу можно работать
+		// инициализировать не надо
+		ri->mb_initOK = true;
+		ri->sm_initOK = true;
+	}
+
 
 	RSProperty* p1 = addProp(ri->slst,p);
 	if( !p1 )
@@ -1642,11 +1690,8 @@ bool MBTCPMaster::initItem( UniXML_iterator& it )
 		}
 
 		initRegList.push_back(ii);
-	}
-	else
-	{
-		 ri->mb_init = true;
-		 ri->sm_init = true;
+		ri->mb_initOK = false;
+		ri->sm_initOK = false;
 	}
 
 	return true;
@@ -1947,8 +1992,6 @@ void MBTCPMaster::updateRTU( RegMap::iterator& rit )
 	for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
 		updateRSProperty( &(*it),false );
 
-	if( r->sm_init )
-		r->mb_init = true;
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
@@ -1961,6 +2004,11 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 	if( !save && write_only )
 		return;
 
+	// если требуется инициализация и она ещё не произведена,
+	// то игнорируем
+	if( save && !r->mb_initOK )
+		return;
+
 	if( dlog.debugging(Debug::LEVEL3) )
 		dlog[Debug::LEVEL3] << "updateP: sid=" << p->si.id
 				<< " mbval=" << r->mbval
@@ -1969,7 +2017,8 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 				<< " nbit=" << p->nbit
 				<< " save=" << save
 				<< " ioype=" << p->stype
-				<< " mb_init=" << r->mb_init
+				<< " mb_initOK=" << r->mb_initOK
+				<< " sm_initOK=" << r->sm_initOK
 				<< endl;
 
 		try
@@ -1979,11 +2028,15 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 				ModbusRTU::DataBits16 b(r->mbval);
 				if( p->nbit >= 0 )
 				{
-					if( save && r->mb_init )
+					if( save )
 					{
-						bool set = IOBase::processingAsDO( p, shm, force_out );
-						b.set(p->nbit,set);
-						r->mbval = b.mdata();
+						if( r->mb_initOK )
+						{
+							bool set = IOBase::processingAsDO( p, shm, force_out );
+							b.set(p->nbit,set);
+							r->mbval = b.mdata();
+							r->sm_initOK = true;
+						}
 					}
 					else
 					{
@@ -1996,15 +2049,20 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 
 				if( p->rnum <= 1 )
 				{
-					if( save && r->mb_init )
+					if( save )
 					{
-						if( p->stype == UniversalIO::DigitalInput ||
-							p->stype == UniversalIO::DigitalOutput )
-						{
-							r->mbval = IOBase::processingAsDO( p, shm, force_out );
-						}
-						else
-							r->mbval = IOBase::processingAsAO( p, shm, force_out );
+						  if(  r->mb_initOK )
+						  {
+								if( p->stype == UniversalIO::DigitalInput ||
+									p->stype == UniversalIO::DigitalOutput )
+								{
+									r->mbval = IOBase::processingAsDO( p, shm, force_out );
+								}
+								else
+									r->mbval = IOBase::processingAsAO( p, shm, force_out );
+
+								r->sm_initOK = true;
+						  }
 					}
 					else
 					{
@@ -2016,6 +2074,7 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 						else
 							IOBase::processingAsAI( p, (signed short)(r->mbval), shm, force );
 					}
+
 					return;
 				}
 
@@ -2025,15 +2084,20 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 			}
 			else if( p->vType == VTypes::vtSigned )
 			{
-				if( save && r->mb_init )
+				if( save )
 				{
-					if( p->stype == UniversalIO::DigitalInput ||
-						p->stype == UniversalIO::DigitalOutput )
+					if( r->mb_initOK )
 					{
-						r->mbval = (signed short)IOBase::processingAsDO( p, shm, force_out );
+						  if( p->stype == UniversalIO::DigitalInput ||
+							  p->stype == UniversalIO::DigitalOutput )
+						  {
+							  r->mbval = (signed short)IOBase::processingAsDO( p, shm, force_out );
+						  }
+						  else
+							  r->mbval = (signed short)IOBase::processingAsAO( p, shm, force_out );
+
+						  r->sm_initOK = true;
 					}
-					else
-						r->mbval = (signed short)IOBase::processingAsAO( p, shm, force_out );
 				}
 				else
 				{
@@ -2051,15 +2115,20 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 			}
 			else if( p->vType == VTypes::vtUnsigned )
 			{
-				if( save && r->mb_init )
+				if( save )
 				{
-					if( p->stype == UniversalIO::DigitalInput ||
-						p->stype == UniversalIO::DigitalOutput )
-					{
-						r->mbval = (unsigned short)IOBase::processingAsDO( p, shm, force_out );
-					}
-					else
-						r->mbval = (unsigned short)IOBase::processingAsAO( p, shm, force_out );
+					  if( r->mb_initOK )
+					  {
+						  if( p->stype == UniversalIO::DigitalInput ||
+							  p->stype == UniversalIO::DigitalOutput )
+						  {
+							  r->mbval = (unsigned short)IOBase::processingAsDO( p, shm, force_out );
+						  }
+						  else
+							  r->mbval = (unsigned short)IOBase::processingAsAO( p, shm, force_out );
+
+						  r->sm_initOK = true;
+					  }
 				}
 				else
 				{
@@ -2084,12 +2153,16 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 					return;
 				}
 
-				if( save && r->mb_init )
+				if( save && r->sm_initOK )
 				{
-					long v = IOBase::processingAsAO( p, shm, force_out );
-					VTypes::Byte b(r->mbval);
-					b.raw.b[p->nbyte-1] = v;
-					r->mbval = b.raw.w;
+					  if( r->mb_initOK )
+					  {
+						  long v = IOBase::processingAsAO( p, shm, force_out );
+						  VTypes::Byte b(r->mbval);
+						  b.raw.b[p->nbyte-1] = v;
+						  r->mbval = b.raw.w;
+						  r->sm_initOK = true;
+					  }
 				}
 				else
 				{
@@ -2102,12 +2175,17 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 			else if( p->vType == VTypes::vtF2 )
 			{
 				RegMap::iterator i(p->reg->rit);
-				if( save && r->mb_init )
+				if( save )
 				{
-					float f = IOBase::processingFasAO( p, shm, force_out );
-					VTypes::F2 f2(f);
-					for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
-						i->second->mbval = f2.raw.v[k];
+					if( r->mb_initOK )
+					{
+						float f = IOBase::processingFasAO( p, shm, force_out );
+						VTypes::F2 f2(f);
+						for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
+							i->second->mbval = f2.raw.v[k];
+
+						r->sm_initOK = true;
+					}
 				}
 				else
 				{
@@ -2124,12 +2202,15 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 			else if( p->vType == VTypes::vtF4 )
 			{
 				RegMap::iterator i(p->reg->rit);
-				if( save && r->mb_init )
+				if( save )
 				{
-					float f = IOBase::processingFasAO( p, shm, force_out );
-					VTypes::F4 f4(f);
-					for( int k=0; k<VTypes::F4::wsize(); k++, i++ )
-						i->second->mbval = f4.raw.v[k];
+					if( r->mb_initOK )
+					{
+						float f = IOBase::processingFasAO( p, shm, force_out );
+						VTypes::F4 f4(f);
+						for( int k=0; k<VTypes::F4::wsize(); k++, i++ )
+							i->second->mbval = f4.raw.v[k];
+					}
 				}
 				else
 				{
@@ -2146,12 +2227,17 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 			else if( p->vType == VTypes::vtI2 )
 			{
 				RegMap::iterator i(p->reg->rit);
-				if( save && r->mb_init )
+				if( save )
 				{
-					long v = IOBase::processingAsAO( p, shm, force_out );
-					VTypes::I2 i2(v);
-					for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
-						i->second->mbval = i2.raw.v[k];
+					if( r->mb_initOK )
+					{
+						long v = IOBase::processingAsAO( p, shm, force_out );
+						VTypes::I2 i2(v);
+						for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
+							i->second->mbval = i2.raw.v[k];
+
+						r->sm_initOK = true;
+					}
 				}
 				else
 				{
@@ -2168,12 +2254,17 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 			else if( p->vType == VTypes::vtU2 )
 			{
 				RegMap::iterator i(p->reg->rit);
-				if( save && r->mb_init )
+				if( save )
 				{
-					long v = IOBase::processingAsAO( p, shm, force_out );
-					VTypes::U2 u2(v);
-					for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
-						i->second->mbval = u2.raw.v[k];
+					if( r->mb_initOK )
+					{
+						long v = IOBase::processingAsAO( p, shm, force_out );
+						VTypes::U2 u2(v);
+						for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
+							i->second->mbval = u2.raw.v[k];
+
+						r->sm_initOK = true;
+					}
 				}
 				else
 				{
@@ -2187,6 +2278,8 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 					IOBase::processingAsAI( p, (unsigned int)u2, shm, force );
 				}
 			}
+
+			return;
 		}
 		catch(IOController_i::NameNotFound &ex)
 		{
@@ -2213,6 +2306,10 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 		{
 			dlog[Debug::LEVEL3] << myname << "(updateRSProperty): catch ..." << endl;
 		}
+
+	// Если SM стала (или была) недоступна
+	// то флаг инициализации надо сбросить
+	r->sm_initOK = false;
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::updateMTR( RegMap::iterator& rit )
