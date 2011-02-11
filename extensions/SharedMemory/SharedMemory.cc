@@ -39,6 +39,8 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	string c_fvalue = conf->getArgParam("--c-filter-value");
 	string d_field = conf->getArgParam("--d-filter-field");
 	string d_fvalue = conf->getArgParam("--d-filter-value");
+	string t_field = conf->getArgParam("--t-filter-field");
+	string t_fvalue = conf->getArgParam("--t-filter-value");
 	
 	int lock_msec = conf->getArgPInt("--lock-value-pause",0);
 	if( lock_msec < 0 )
@@ -56,6 +58,7 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	rxml->setItemFilter(s_field, s_fvalue);
 	rxml->setConsumerFilter(c_field, c_fvalue);
 	rxml->setDependsFilter(d_field, d_fvalue);
+	rxml->setThresholdsFilter(t_field, t_fvalue);
 
 	restorer = rxml;
 
