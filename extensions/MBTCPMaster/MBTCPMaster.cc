@@ -23,10 +23,10 @@ mbregFromID(false),
 activated(false),
 noQueryOptimization(false),
 force_disconnect(true),
-allNotRespond(false),
 prefix(prefix),
 no_extimer(false),
-poll_count(0)
+poll_count(0),
+pollThread(0)
 {
 //	cout << "$ $" << endl;
 
@@ -66,10 +66,10 @@ poll_count(0)
 		throw UniSetTypes::SystemError(myname+"(MBMaster): Unknown inet port...(Use: " + tmp +")" );
 
 
-	recv_timeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recv_timeout"), 50);
+	recv_timeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recv_timeout"), 500);
 
-	int alltout = conf->getArgPInt("--" + prefix + "-all-timeout",it.getProp("all_timeout"), 2000);
-	ptAllNotRespond.setTiming(alltout);
+	int tout = conf->getArgPInt("--" + prefix + "-timeout",it.getProp("timeout"), 5000);
+	ptTimeout.setTiming(tout);
 
 	noQueryOptimization = conf->getArgInt("--" + prefix + "-no-query-optimization",it.getProp("no_query_optimization"));
 
@@ -84,6 +84,7 @@ poll_count(0)
 	force_out = conf->getArgInt("--" + prefix + "-force-out",it.getProp("force_out"));
 
 	force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection",it.getProp("persistent_connection")) ? false : true;
+	dlog[Debug::INFO] << myname << "(init): persisten-connection=" << (!force_disconnect) << endl;
 
 	if( shm->isLocalwork() )
 	{
@@ -138,6 +139,8 @@ poll_count(0)
 //	abort();
 
 	poll_count = -1;
+
+	pollThread = new ThreadCreator<MBTCPMaster>(this, &MBTCPMaster::poll_thread);
 }
 // -----------------------------------------------------------------------------
 MBTCPMaster::~MBTCPMaster()
@@ -150,7 +153,8 @@ MBTCPMaster::~MBTCPMaster()
 
 		delete it1->second;
 	}
-	
+
+	delete pollThread;
 	delete mb;
 	delete shm;
 }
@@ -193,6 +197,8 @@ void MBTCPMaster::initMB( bool reopen )
 			delete mb;
 		mb = 0;
 	}
+
+	
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::waitSMReady()
@@ -226,11 +232,8 @@ void MBTCPMaster::timerInfo( TimerMessage *tm )
 // -----------------------------------------------------------------------------
 void MBTCPMaster::step()
 {
-	{
-		uniset_mutex_lock l(pollMutex,2000);
-		poll();
-	}
-
+	updateRespondSensors();
+	
 	if( !activated )
 		return;
 
@@ -250,33 +253,121 @@ void MBTCPMaster::step()
 }
 
 // -----------------------------------------------------------------------------
+void MBTCPMaster::updateRespondSensors()
+{
+	bool tcpIsTimeout = false;
+	{
+		uniset_mutex_lock l(tcpMutex);
+		tcpIsTimeout = pollActivated && ptTimeout.checkTime();
+	}
+
+	if( dlog.debugging(Debug::LEVEL4) )
+		dlog[Debug::LEVEL4] << myname << ": tcpTimeout=" << tcpIsTimeout << endl;
+
+	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+	{
+		RTUDevice* d(it1->second);
+
+		if( tcpIsTimeout )
+			d->resp_real = false;
+
+		if( dlog.debugging(Debug::LEVEL4) )
+		{
+			dlog[Debug::LEVEL4] << myname << ": check respond addr=" << ModbusRTU::addr2str(d->mbaddr)
+				<< " respond_id=" << d->resp_id
+				<< " real=" << d->resp_real
+				<< " state=" << d->resp_state
+				<< endl;
+		}
+
+		if( d->checkRespond() && d->resp_id != DefaultObjectId  )
+		{
+			try
+			{
+				bool set = d->resp_invert ? !d->resp_state : d->resp_state;
+				shm->localSaveState(d->resp_dit,d->resp_id,set,getId());
+			}
+			catch( Exception& ex )
+			{
+				dlog[Debug::CRIT] << myname << "(step): (respond) " << ex << std::endl;
+			}
+		}
+	}
+}
+// -----------------------------------------------------------------------------
+void MBTCPMaster::poll_thread()
+{
+	cerr << "*********** polling starting.." << endl;
+  
+	{
+		uniset_mutex_lock l(pollMutex,300);
+		ptTimeout.reset();
+	}
+
+	while( checkProcActive() )
+	{
+		try
+		{
+			poll();
+		}
+		catch(...){}
+
+		if( !checkProcActive() )
+			break;
+
+		msleep(polltime);
+	}
+
+	cerr << "*********** polling finished.." << endl;
+}
+// -----------------------------------------------------------------------------
+bool MBTCPMaster::checkProcActive()
+{
+	uniset_mutex_lock l(actMutex, 300);
+	return activated;
+}
+// -----------------------------------------------------------------------------
+void MBTCPMaster::setProcActive( bool st )
+{
+	uniset_mutex_lock l(actMutex, 400);
+	activated = st;
+}
+// -----------------------------------------------------------------------------
 void MBTCPMaster::poll()
 {
-	if( trAllNotRespond.hi(allNotRespond) )
-		ptAllNotRespond.reset();
-	
-	if( allNotRespond && mb && ptAllNotRespond.checkTime() )
-	{
-		ptAllNotRespond.reset();
-//		initMB(true);
-	}
-	
 	if( !mb )
 	{
-		initMB(false);
-		if( !mb )
 		{
-			for( MBTCPMaster::RTUDeviceMap::iterator it=rmap.begin(); it!=rmap.end(); ++it )
-				it->second->resp_real = false;
+			uniset_mutex_lock l(pollMutex, 300);
+			pollActivated = false;
+			initMB(false);
+			if( !mb )
+			{
+				for( MBTCPMaster::RTUDeviceMap::iterator it=rmap.begin(); it!=rmap.end(); ++it )
+					it->second->resp_real = false;
+			}
 		}
+
+		if( !checkProcActive() )
+			return;
+
 		updateSM();
 		allInitOK = false;
 		return;
 	}
 
+	{
+		uniset_mutex_lock l(pollMutex);
+		pollActivated = true;
+		ptTimeout.reset();
+	}
+
 	if( !allInitOK )
 		firstInitRegisters();
-	
+
+	if( !checkProcActive() )
+		return;
+
 	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
@@ -288,6 +379,9 @@ void MBTCPMaster::poll()
 		d->resp_real = false;
 		for( MBTCPMaster::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
+			if( !checkProcActive() )
+				return;
+		  
 			try
 			{
 				if( d->dtype==MBTCPMaster::dtRTU || d->dtype==MBTCPMaster::dtMTR )
@@ -320,6 +414,9 @@ void MBTCPMaster::poll()
 
 			if( it==d->regmap.end() )
 				break;
+
+			if( !checkProcActive() )
+				return;
 		}
 
 		if( stat_time > 0 )
@@ -336,6 +433,14 @@ void MBTCPMaster::poll()
 //			mb->disconnect();
 	}
 
+	{
+		uniset_mutex_lock l(pollMutex);
+		pollActivated = false;
+	}
+
+	if( !checkProcActive() )
+		return;
+
 	// update SharedMemory...
 	updateSM();
 	
@@ -345,6 +450,9 @@ void MBTCPMaster::poll()
 		RTUDevice* d(it1->second);
 		for( MBTCPMaster::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
+			if( !checkProcActive() )
+				return;		  
+
 			RegInfo* r(it->second);
 			for( PList::iterator i=r->slst.begin(); i!=r->slst.end(); ++i )
 				IOBase::processingThreshold( &(*i),shm,force);
@@ -777,6 +885,13 @@ bool MBTCPMaster::initSMValue( ModbusRTU::ModbusData* data, int count, RSPropert
 bool MBTCPMaster::RTUDevice::checkRespond()
 {
 	bool prev = resp_state;
+
+	if( resp_ptTimeout.getInterval() <= 0 )
+	{
+		resp_state = resp_real;
+		return (prev != resp_state);
+	}
+	
 	if( resp_trTimeout.hi(resp_real) )
 	{	
 		if( resp_real )
@@ -803,38 +918,13 @@ bool MBTCPMaster::RTUDevice::checkRespond()
 // -----------------------------------------------------------------------------
 void MBTCPMaster::updateSM()
 {
-	allNotRespond = true;
 	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
-		
-		if( dlog.debugging(Debug::LEVEL4) )
-		{
-			dlog[Debug::LEVEL4] << "check respond addr=" << ModbusRTU::addr2str(d->mbaddr) 
-				<< " respond_id=" << d->resp_id 
-				<< " real=" << d->resp_real
-				<< " state=" << d->resp_state
-				<< endl;
-		}
-		if( d->resp_real )
-			allNotRespond = false;
-				
-		// update respond sensors...
-		if( d->checkRespond() && d->resp_id != DefaultObjectId  )
-		{
-			try
-			{
-				bool set = d->resp_invert ? !d->resp_state : d->resp_state;
-				shm->localSaveState(d->resp_dit,d->resp_id,set,getId());
-			}
-			catch(Exception& ex)
-			{
-				dlog[Debug::CRIT] << myname
-					<< "(step): (respond) " << ex << std::endl;
-			}
-		}
 
-//		cerr << "*********** allNotRespond=" << allNotRespond << endl;
+		// обновление датчиков связи происходит в другом потоке
+		// чтобы не зависеть от TCP таймаутов
+		// см. updateRespondSensors()
 
 		// update values...
 		for( MBTCPMaster::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
@@ -967,15 +1057,8 @@ void MBTCPMaster::sysCommand( UniSetTypes::SystemMessage *sm )
 				initOutput();
 			}
 
-			// начальная инициализация
-			if( !force )
-			{
-				uniset_mutex_lock l(pollMutex,2000);
-				force = true;
-				poll();
-				force = false;
-			}
 			askTimer(tmExchange,polltime);
+			pollThread->start();
 			break;
 		}
 
@@ -1123,13 +1206,13 @@ bool MBTCPMaster::activateObject()
 	// пока не пройдёт инициализация датчиков
 	// см. sysCommand()
 	{
-		activated = false;
+		setProcActive(false);
 		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
 		UniSetObject_LT::activateObject();
 		if( !shm->isLocalwork() )
 			rtuQueryOptimization(rmap);
 		initIterators();
-		activated = true;
+		setProcActive(true);
 	}
 
 	return true;
@@ -1138,7 +1221,7 @@ bool MBTCPMaster::activateObject()
 void MBTCPMaster::sigterm( int signo )
 {
 	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
-	activated = false;
+	setProcActive(false);
 
 /*! \todo Доделать выставление безопасного состояния на выходы. 
           И нужно ли это. Ведь может не хватить времени на "обмен" 
@@ -1182,7 +1265,7 @@ void MBTCPMaster::readConfiguration()
 	UniXML_iterator it(root);
 	if( !it.goChildren() )
 	{
-		std::cerr << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
+		dlog[Debug::CRIT] << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
 		return;
 	}
 
@@ -1736,16 +1819,29 @@ void MBTCPMaster::initIterators()
 void MBTCPMaster::help_print( int argc, const char* const* argv )
 {
 	cout << "Default: prefix='mbtcp'" << endl;
-	cout << "--prefix-polltime msec     - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
-	cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--prefix-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
-	cout << "--prefix-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
-	cout << "--prefix-initPause         - Задержка перед инициализацией (время на активизация процесса)" << endl;
+	cout << "--prefix-name name              - ObjectId (имя) процесса. По умолчанию: MBTCPMaster1" << endl;
+	cout << "--prefix-confnode name          - Настроечная секция в конф. файле <name>. " << endl;
+	cout << "--prefix-polltime msec          - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
+	cout << "--prefix-heartbeat-id  name     - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+	cout << "--prefix-heartbeat-max val      - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
+	cout << "--prefix-ready-timeout msec     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
+	cout << "--prefix-force 0,1              - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
+	cout << "--prefix-force-out 0,1          - Считывать значения 'выходов' кажый раз SM (а не по изменению)" << endl;
+	cout << "--prefix-initPause msec         - Задержка перед инициализацией (время на активизация процесса)" << endl;
+	cout << "--prefix-no-query-optimization 0,1 - Не оптимизировать запросы (не объединять соседние регистры в один запрос)" << endl;
+	cout << "--prefix-reg-from-id 0,1        - Использовать в качестве регистра sensor ID" << endl;
+	cout << "--prefix-filter-field name      - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
+	cout << "--prefix-filter-value val       - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
+	cout << "--prefix-statistic-sec sec      - Выводить статистику опроса каждые sec секунд" << endl;
+	
+	// ---------- init MBTCP ----------
 //	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
 	cout << " Настройки протокола TCP: " << endl;
-	cout << "--prefix-recv-timeout - Таймаут на ожидание ответа." << endl;
-	cout << "--prefix-persistent-connection - Не закрывать соединение на каждом цикле опроса" << endl;
+	cout << "--prefix-gateway hostname,IP           - IP опрашиваемого узла" << endl;
+	cout << "--prefix-gateway-port num              - port на опрашиваемом узле" << endl;
+	cout << "--prefix-recv-timeout msec             - Таймаут на приём одного сообщения." << endl;
+	cout << "--prefix-timeout msec                  - Таймаут для определения отсутсвия соединения.в" << endl;
+	cout << "--prefix-persistent-connection 0,1     - Не закрывать соединение на каждом цикле опроса" << endl;
 }
 // -----------------------------------------------------------------------------
 MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv, UniSetTypes::ObjectId icID, SharedMemory* ic, 
@@ -1858,12 +1954,12 @@ bool MBTCPMaster::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
     }
     
 	dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
-	int tout = it.getPIntProp("timeout", UniSetTimer::WaitUpTime);
+	int tout = it.getPIntProp("timeout",5000);
 	d->second->resp_ptTimeout.setTiming(tout);
 	d->second->resp_invert = it.getIntProp("invert");
 //	d->second->no_clean_input = it.getIntProp("no_clean_input");
 	
-//	dlog[Debug::INFO] << myname << "(initDeviceInfo): add " << d->second << endl;
+	dlog[Debug::INFO] << myname << "(initDeviceInfo): add " << d->second << endl;
 	
 	return true;
 }
