@@ -10,7 +10,7 @@ PassiveTimer pt(1000);
 int main()
 {
 	PassiveTimer pt1(5000);
-	cout << " pt1.getInterval()=" << pt1.getInterval() << endl;
+	cout << " pt1.getInterval()=" << pt1.getInterval() << " TEST: " << ((pt1.getInterval()==5000) ? "OK" : "FAILED") << endl;
 	
 	PassiveTimer pt2;
 	cout << " pt2.getInterval()=" << pt2.getInterval() << endl;

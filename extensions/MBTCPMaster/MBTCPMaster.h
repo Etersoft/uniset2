@@ -14,6 +14,7 @@
 #include "Calibration.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"
+#include "ThreadCreator.h"
 #include "IOBase.h"
 #include "VTypes.h"
 #include "MTR.h"
@@ -68,10 +69,11 @@
       Порт задаётся в конфигурационном файле параметром \b gateway_port или
       параметром командной строки \b --xxx-gateway-port. По умолчанию используется порт \b 502.
       
-      \b --xxx-recv-timeout или \b recv_timeout msec - таймаут на приём сообщений. По умолчанию 2000 мсек.
+      \b --xxx-recv-timeout или \b recv_timeout msec - таймаут на приём одного сообщения. По умолчанию 100 мсек.
       
-      \b --xxx-all-timeout или \b all_timeout msec  - таймаут на определение отсутсвия связи 
+      \b --xxx-timeout или \b timeout msec  - таймаут на определение отсутсвия связи
                                                    (после этого идёт попытка реинициализировать соединение)
+                                                   По умолчанию 5000 мсек.
       
       \b --xxx-no-query-optimization или \b no_query_optimization   - [1|0] отключить оптимизацию запросов
        
@@ -158,14 +160,18 @@
 
    При этом будет записывыться значение "default".
 
-
    \warning Регистр должен быть уникальным. И может повторятся только если указан параметр \a nbit или \a nbyte.
 
 */
 // -----------------------------------------------------------------------------
 /*!
-	Реализация Modbus TCP Master для обмена с многими ModbusRTU устройствами
+	\par Реализация Modbus TCP Master для обмена с многими ModbusRTU устройствами
 	через один modbus tcp шлюз.
+
+	\par Чтобы не зависеть от таймаутов TCP соединений, которые могут неопределённо зависать
+	на создании соединения с недоступным хостом. Обмен вынесен в отдельный поток.
+	При этом в этом же потоке обновляются данные в SM. В свою очередь информация о датчиках
+	связи обновляется в основном потоке (чтобы не зависеть от TCP).
 */
 class MBTCPMaster:
 	public UniSetObject_LT
@@ -353,6 +359,7 @@ class MBTCPMaster:
 		SMInterface* shm;
 		
 		void step();
+		void poll_thread();
 		void poll();
 		bool pollRTU( RTUDevice* dev, RegMap::iterator& it );
 		
@@ -360,6 +367,7 @@ class MBTCPMaster:
 		void updateRTU(RegMap::iterator& it);
 		void updateMTR(RegMap::iterator& it);
 		void updateRSProperty( RSProperty* p, bool write_only=false );
+		void updateRespondSensors();
 
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
 		void sysCommand( UniSetTypes::SystemMessage *msg );
@@ -398,6 +406,8 @@ class MBTCPMaster:
 		void readConfiguration();
 		bool check_item( UniXML_iterator& it );
 
+		bool checkProcActive();
+		void setProcActive( bool st );
 
 	 private:
 		MBTCPMaster();
@@ -415,17 +425,13 @@ class MBTCPMaster:
 		IOController::AIOStateList::iterator aitHeartBeat;
 		UniSetTypes::ObjectId test_id;
 
-		UniSetTypes::uniset_mutex pollMutex;
-
+		UniSetTypes::uniset_mutex actMutex;
 		bool activated;
 		int activateTimeout;
 		
 		bool noQueryOptimization;
 		bool force_disconnect;
 		
-		bool allNotRespond;
-		Trigger trAllNotRespond;
-		PassiveTimer ptAllNotRespond;
 		std::string prefix;
 		
 		bool no_extimer;
@@ -433,6 +439,16 @@ class MBTCPMaster:
 		timeout_t stat_time; 		/*!< время сбора статистики обмена */
 		int poll_count;
 		PassiveTimer ptStatistic;   /*!< таймер для сбора статистики обмена */
+
+		// т.к. TCP может "зависнуть" на подключении к недоступному узлу
+		// делаем опрос в отдельном потоке
+		ThreadCreator<MBTCPMaster>* pollThread; /*!< поток опроса */
+		bool pollActivated;
+		UniSetTypes::uniset_mutex pollMutex;
+
+		// определение timeout для соединения
+		PassiveTimer ptTimeout;
+		UniSetTypes::uniset_mutex tcpMutex;
 };
 // -----------------------------------------------------------------------------
 #endif // _MBTCPMaster_H_
