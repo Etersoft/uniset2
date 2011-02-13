@@ -20,8 +20,6 @@
 /*! \file
  *  \brief Класс работы с конфигурацией
  *  \author Vitaly Lipatov, Pavel Vainerman
- *  \date   $Date: 2008/02/21 19:59:57 $
- *  \version $Id: Configuration.h,v 1.25 2008/02/21 19:59:57 vpashka Exp $
  */
 // --------------------------------------------------------------------------
 #ifndef Configuration_H_

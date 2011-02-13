@@ -1,4 +1,3 @@
-// $Id: IOControl.h,v 1.1 2008/12/14 21:57:50 vpashka Exp $
 // -----------------------------------------------------------------------------
 #ifndef IOControl_H_
 #define IOControl_H_

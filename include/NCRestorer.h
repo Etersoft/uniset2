@@ -20,7 +20,7 @@
 /*! \file
  * \brief Интерфейс к объекту сохраняющему список заказчиков для NotifyController-ов
  * \author Pavel Vainerman
-*/
+ */
 // --------------------------------------------------------------------------
 #ifndef NCRestorer_H_
 #define NCRestorer_H_

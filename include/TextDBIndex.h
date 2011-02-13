@@ -19,8 +19,6 @@
 
 /*! \file
  *  \author Vitaly Lipatov
- *  \date   $Date: 2007/01/02 22:30:48 $
- *  \version $Id: TextDBIndex.h,v 1.6 2007/01/02 22:30:48 vpashka Exp $
  *  \par
  * Базовый класс получения строки по её индексу
  */

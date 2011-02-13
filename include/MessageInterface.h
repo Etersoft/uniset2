@@ -20,8 +20,6 @@
 /*! \file
  *  \brief Класс работы с сообщениями
  *  \author Pavel Vainerman
- *  \date   $Date: 2006/12/22 13:37:48 $
- *  \version $Id: MessageInterface.h,v 1.7 2006/12/22 13:37:48 vpashka Exp $
  *
  *	Получение сообщения по id
  */

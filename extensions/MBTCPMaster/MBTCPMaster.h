@@ -14,6 +14,7 @@
 #include "Calibration.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"
+#include "ThreadCreator.h"
 #include "IOBase.h"
 #include "VTypes.h"
 #include "MTR.h"
@@ -68,10 +69,11 @@
       Порт задаётся в конфигурационном файле параметром \b gateway_port или
       параметром командной строки \b --xxx-gateway-port. По умолчанию используется порт \b 502.
       
-      \b --xxx-recv-timeout или \b recv_timeout msec - таймаут на приём сообщений. По умолчанию 2000 мсек.
+      \b --xxx-recv-timeout или \b recv_timeout msec - таймаут на приём одного сообщения. По умолчанию 100 мсек.
       
-      \b --xxx-all-timeout или \b all_timeout msec  - таймаут на определение отсутсвия связи 
+      \b --xxx-timeout или \b timeout msec  - таймаут на определение отсутсвия связи
                                                    (после этого идёт попытка реинициализировать соединение)
+                                                   По умолчанию 5000 мсек.
       
       \b --xxx-no-query-optimization или \b no_query_optimization   - [1|0] отключить оптимизацию запросов
        
@@ -87,7 +89,7 @@
        - 1 - перечитывать значения входов из SharedMemory на каждом цикле
        - 0 - обновлять значения только по изменению
 
-      \b --xxx-force-disconnect или \b force_disconnect - закрывать соединение после каждого запроса.
+      \b --xxx-persistent-connection или \b persistent_connection - НЕ закрывать соединение после каждого запроса.
 
       \b --xxx-force-out или \b force_out [1|0]
        - 1 - перечитывать значения выходов из SharedMemory на каждом цикле
@@ -137,7 +139,7 @@
    
    Помимо этого можно задавать следующие параметры:
    - \b tcp_vtype     - тип переменной. см VTypes::VType.
-   - \b tcp_rawdata   - [1|0]  - игнорировать или нет параметры калибровки
+   - \b tcp_rawdata   - [0|1]  - игнорировать или нет параметры калибровки
    - \b tcp_iotype    - [DI,DO,AI,AO] - переназначить тип датчика. По умолчанию используется поле iotype.
    - \b tcp_nbit      - номер бита в слове. Используется для DI,DO в случае когда для опроса используется
 			 функция читающая слова (03
@@ -145,13 +147,31 @@
    - \b tcp_mboffset  - "сдвиг"(может быть отрицательным) при опросе/записи. 
                         Т.е. фактически будет опрошен/записан регистр "mbreg+mboffset".
 
+   Для инициализации "выходов" (регистров которые пишутся) можно использовать поля:
+   - \b tcp_preinit      - [0|1] считать регистр перед использованием (при запуске процесса)
+   - \b tcp_init_mbfunc  - Номер функции для инициализации. Если не указана, будет определена автоматически исходя из tcp_mbfunc.
+   - \b tcp_init_mbreg   - Номер регистра откуда считывать значение для инициализации. Если это поле не указано используется tcp_mbreg.
+
+   Если указано tcp_preinit="1", то прежде чем начать писать регистр в устройство, будет произведено его чтение.
+
+   По умолчанию все "записываемые" регистры инициализируются значением из SM. Т.е. пока не будет первый раз считано значение из SM,
+   регистры в устройство писатся не будут. Чтобы отключить это поведение, можно указать параметр
+   - \b tcp_sm_initOK    - [0|1] Игнорировать начальную инициализацию из SM (сразу писать в устройство)
+
+   При этом будет записывыться значение "default".
+
    \warning Регистр должен быть уникальным. И может повторятся только если указан параметр \a nbit или \a nbyte.
 
 */
 // -----------------------------------------------------------------------------
 /*!
-	Реализация Modbus TCP Master для обмена с многими ModbusRTU устройствами
+	\par Реализация Modbus TCP Master для обмена с многими ModbusRTU устройствами
 	через один modbus tcp шлюз.
+
+	\par Чтобы не зависеть от таймаутов TCP соединений, которые могут неопределённо зависать
+	на создании соединения с недоступным хостом. Обмен вынесен в отдельный поток.
+	При этом в этом же потоке обновляются данные в SM. В свою очередь информация о датчиках
+	связи обновляется в основном потоке (чтобы не зависеть от TCP).
 */
 class MBTCPMaster:
 	public UniSetObject_LT
@@ -214,25 +234,25 @@ class MBTCPMaster:
 		typedef std::list<RSProperty> PList;
 		static std::ostream& print_plist( std::ostream& os, PList& p );
 
-		typedef std::map<ModbusRTU::ModbusData,RegInfo*> RegMap;
+		typedef unsigned long RegID;
+
+		typedef std::map<RegID,RegInfo*> RegMap;
 		struct RegInfo
 		{
 			RegInfo():
 				mbval(0),mbreg(0),mbfunc(ModbusRTU::fnUnknown),
-				dev(0),offset(0),mtrType(MTR::mtUnknown),
-				q_num(0),q_count(1),mb_init(false),sm_init(false),
-				mb_init_mbreg(0)
+				id(0),dev(0),mtrType(MTR::mtUnknown),
+				q_num(0),q_count(1),mb_initOK(true),sm_initOK(true)
 			{}
 
 			ModbusRTU::ModbusData mbval;
 			ModbusRTU::ModbusData mbreg;			/*!< регистр */
 			ModbusRTU::SlaveFunctionCode mbfunc;	/*!< функция для чтения/записи */
 			PList slst;
+			RegID id;
 
 			RTUDevice* dev;
 
-			int offset;
-			
 			// only for MTR
 			MTR::MTRType mtrType;	/*!< тип регистра (согласно спецификации на MTR) */
 			
@@ -241,9 +261,17 @@ class MBTCPMaster:
 			int q_count;	/*!< count registers for query */
 			
 			RegMap::iterator rit;
-			bool mb_init;	/*!< init before use */
-			bool sm_init;	/*!< SM init value */
-			ModbusRTU::ModbusData mb_init_mbreg;	/*!< mb_init register */
+
+			// начальная инициалиазция для "записываемых" регистров
+			// Механизм:
+			// Если tcp_preinit="1", то сперва будет сделано чтение значения из устройства.
+			// при этом флаг mb_init=false пока не пройдёт успешной инициализации
+			// Если tcp_preinit="0", то флаг mb_init сразу выставляется в true.
+			bool mb_initOK;	/*!< инициализировалось ли значение из устройства */
+
+			// Флаг sm_init означает, что писать в устройство нельзя, т.к. значение в "карте регистров"
+			// ещё не инициализировано из SM
+			bool sm_initOK;	/*!< инициализировалось ли значение из SM */
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, RegInfo& r );
@@ -293,9 +321,30 @@ class MBTCPMaster:
 		void printMap(RTUDeviceMap& d);
 // ----------------------------------
 	protected:
+		struct InitRegInfo
+		{
+			InitRegInfo():
+			dev(0),mbreg(0),
+			mbfunc(ModbusRTU::fnUnknown),
+			initOK(false),ri(0)
+			{}
+			RSProperty p;
+			RTUDevice* dev;
+			ModbusRTU::ModbusData mbreg;
+			ModbusRTU::SlaveFunctionCode mbfunc;
+			bool initOK;
+			RegInfo* ri;
+		};
+		typedef std::list<InitRegInfo> InitList;
 
+		void firstInitRegisters();
+		bool preInitRead( InitList::iterator& p );
+		bool initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty* p );
+		bool allInitOK;
+	  
 		RTUDeviceMap rmap;
-
+		InitList initRegList;	/*!< список регистров для инициализации */
+		
 		ModbusTCPMaster* mb;
 		UniSetTypes::uniset_mutex mbMutex;
 		std::string iaddr;
@@ -310,6 +359,7 @@ class MBTCPMaster:
 		SMInterface* shm;
 		
 		void step();
+		void poll_thread();
 		void poll();
 		bool pollRTU( RTUDevice* dev, RegMap::iterator& it );
 		
@@ -317,6 +367,7 @@ class MBTCPMaster:
 		void updateRTU(RegMap::iterator& it);
 		void updateMTR(RegMap::iterator& it);
 		void updateRSProperty( RSProperty* p, bool write_only=false );
+		void updateRespondSensors();
 
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
 		void sysCommand( UniSetTypes::SystemMessage *msg );
@@ -338,9 +389,9 @@ class MBTCPMaster:
 		void initDeviceList();
 		void initOffsetList();
 
-
+		static RegID genRegID( const ModbusRTU::ModbusData r, const int fn );
 		RTUDevice* addDev( RTUDeviceMap& dmap, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
-		RegInfo* addReg( RegMap& rmap, ModbusRTU::ModbusData r, UniXML_iterator& it, 
+		RegInfo* addReg( RegMap& rmap, RegID id, ModbusRTU::ModbusData r, UniXML_iterator& it,
 							RTUDevice* dev, RegInfo* rcopy=0 );
 		RSProperty* addProp( PList& plist, RSProperty& p );
 
@@ -355,7 +406,10 @@ class MBTCPMaster:
 		void readConfiguration();
 		bool check_item( UniXML_iterator& it );
 
-	private:
+		bool checkProcActive();
+		void setProcActive( bool st );
+
+	 private:
 		MBTCPMaster();
 		bool initPause;
 		UniSetTypes::uniset_mutex mutex_start;
@@ -371,17 +425,13 @@ class MBTCPMaster:
 		IOController::AIOStateList::iterator aitHeartBeat;
 		UniSetTypes::ObjectId test_id;
 
-		UniSetTypes::uniset_mutex pollMutex;
-
+		UniSetTypes::uniset_mutex actMutex;
 		bool activated;
 		int activateTimeout;
 		
 		bool noQueryOptimization;
 		bool force_disconnect;
 		
-		bool allNotRespond;
-		Trigger trAllNotRespond;
-		PassiveTimer ptAllNotRespond;
 		std::string prefix;
 		
 		bool no_extimer;
@@ -389,6 +439,16 @@ class MBTCPMaster:
 		timeout_t stat_time; 		/*!< время сбора статистики обмена */
 		int poll_count;
 		PassiveTimer ptStatistic;   /*!< таймер для сбора статистики обмена */
+
+		// т.к. TCP может "зависнуть" на подключении к недоступному узлу
+		// делаем опрос в отдельном потоке
+		ThreadCreator<MBTCPMaster>* pollThread; /*!< поток опроса */
+		bool pollActivated;
+		UniSetTypes::uniset_mutex pollMutex;
+
+		// определение timeout для соединения
+		PassiveTimer ptTimeout;
+		UniSetTypes::uniset_mutex tcpMutex;
 };
 // -----------------------------------------------------------------------------
 #endif // _MBTCPMaster_H_

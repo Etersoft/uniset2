@@ -20,8 +20,6 @@
 /*! \file
  * \brief Интерфейсный класс для работы с репозитарием объектов  
  * \author Pavel Vainerman
- * \date $Date: 2007/11/18 19:13:35 $
- * \version $Id: ObjectRepository.h,v 1.9 2007/11/18 19:13:35 vpashka Exp $	 *
  */
 // -------------------------------------------------------------------------- 
 #ifndef ObjectRepository_H_

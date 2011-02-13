@@ -20,8 +20,6 @@
 /*! \file
  * \brief Интерфейс к объекту сохраняющему список заказчиков и сообщений для InfoServer-а
  * \author Pavel Vainerman
- * \version $Id: ISRestorer.h,v 1.9 2008/12/14 21:57:51 vpashka Exp $
- * \date $Date: 2008/12/14 21:57:51 $
  */
 // --------------------------------------------------------------------------
 #ifndef ISRestorer_H_
@@ -58,8 +56,6 @@ class ISRestorer
 /*!
  * \brief Реализация сохранения списка заказчиков в xml.
  * \author Pavel Vainerman
- * \version $Id: ISRestorer.h,v 1.9 2008/12/14 21:57:51 vpashka Exp $
- * \date $Date: 2008/12/14 21:57:51 $
  *
  	Реализует сохранение списка заказчиков в xml-файле.
 	\sa ISRestorer

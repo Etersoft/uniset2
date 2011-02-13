@@ -1,4 +1,3 @@
-/*! $Id: ModbusTCPCore.h,v 1.1 2008/11/22 23:22:24 vpashka Exp $ */
 // -------------------------------------------------------------------------
 #ifndef ModbusTCPCore_H_
 #define ModbusTCPCore_H_

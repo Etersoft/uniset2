@@ -1,10 +1,9 @@
-/* $Id: SMInterface.h,v 1.1 2008/12/14 21:57:50 vpashka Exp $ */
-//--------------------------------------------------------------------------
 #ifndef SMInterface_H_
 #define SMInterface_H_
 //--------------------------------------------------------------------------
 #include <string>
 #include "UniSetTypes.h"
+#include "Mutex.h"
 #include "IONotifyController.h"
 #include "UniversalInterface.h"
 class SMInterface
@@ -89,6 +88,7 @@ class SMInterface
 		CORBA::Object_var oref;
 		UniSetTypes::ObjectId shmID;
 		UniSetTypes::ObjectId myid;
+		UniSetTypes::uniset_mutex shmMutex;
 };
 
 //--------------------------------------------------------------------------

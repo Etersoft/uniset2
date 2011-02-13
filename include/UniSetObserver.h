@@ -20,8 +20,6 @@
 /*! \file
  * \brief Базовый класс для реализации шаблона "наблюдатель" 
  * \author Pavel Vainerman
- * \date $Date: 2006/12/20 10:39:04 $
- * \version $Id: UniSetObserver.h,v 1.3 2006/12/20 10:39:04 vpashka Exp $
  */
 //---------------------------------------------------------------------------
 #ifndef UniSetObserver_H_

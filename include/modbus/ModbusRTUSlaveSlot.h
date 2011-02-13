@@ -1,4 +1,3 @@
-/*! $Id: ModbusRTUSlaveSlot.h,v 1.2 2009/02/24 20:27:25 vpashka Exp $ */
 // -------------------------------------------------------------------------
 #ifndef ModbusRTUSlaveSlot_H_
 #define ModbusRTUSlaveSlot_H_

@@ -1,4 +1,3 @@
-/*! $Id: ModbusRTUSlave.h,v 1.3 2009/02/24 20:27:25 vpashka Exp $ */
 // -------------------------------------------------------------------------
 #ifndef ModbusRTUSlave_H_
 #define ModbusRTUSlave_H_

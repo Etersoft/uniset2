@@ -1,4 +1,3 @@
-// $Id: Extensions.h,v 1.1 2008/12/14 21:57:50 vpashka Exp $
 // -------------------------------------------------------------------------
 #ifndef Extensions_H_
 #define Extensions_H_

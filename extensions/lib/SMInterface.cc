@@ -10,6 +10,7 @@ using namespace UniSetTypes;
 #define BEG_FUNC(name) \
 	try \
 	{	 \
+		uniset_mutex_lock l(shmMutex,500); \
 		IONotifyController_i_var shm;\
 		for( unsigned int i=0; i<conf->getRepeatCount(); i++)\
 		{\
@@ -32,6 +33,7 @@ using namespace UniSetTypes;
 #define BEG_FUNC1(name) \
 	try \
 	{	 \
+		uniset_mutex_lock l(shmMutex,500); \
 		if( true ) \
 		{ \
 			try \
