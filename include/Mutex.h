@@ -19,8 +19,6 @@
 // --------------------------------------------------------------------------
 /*! \file
  * \author Pavel Vainerman
- * \date   $Date: 2007/11/18 19:13:35 $
- * \version $Id: Mutex.h,v 1.14 2007/11/18 19:13:35 vpashka Exp $
  */
 // -------------------------------------------------------------------------- 
 #ifndef UniSet_MUTEX_H_
@@ -75,8 +73,6 @@ namespace UniSetTypes
 
 	/*! \class uniset_mutex_lock
 	 * \author Pavel Vainerman
-	 * \date   $Date: 2007/11/18 19:13:35 $
-	 * \version $Id: Mutex.h,v 1.14 2007/11/18 19:13:35 vpashka Exp $
 	 *
 	 *	Предназначен для блокирования совместного доступа. Как пользоваться см. \ref MutexHowToPage
 	 *	\note Если ресурс уже занят, то lock ждет его освобождения... 

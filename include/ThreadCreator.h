@@ -20,8 +20,6 @@
 /*! \file
  * \brief Создатель потоков
  * \author Pavel Vainerman
- * \date $Date: 2005/01/28 20:52:21 $
- * \version $Id: ThreadCreator.h,v 1.5 2005/01/28 20:52:21 vitlav Exp $
  */
 //--------------------------------------------------------------------------------
 #ifndef ThreadCreator_h_

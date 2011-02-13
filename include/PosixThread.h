@@ -20,8 +20,6 @@
 /*! \file
  * \brief Интефес для создания и управления потоками
  * \author Anthony Korbin
- * \date $Date: 2007/06/17 21:30:55 $
- * \version $Id: PosixThread.h,v 1.7 2007/06/17 21:30:55 vpashka Exp $
 */
 //---------------------------------------------------------------------------- 
 #ifndef PosixThread_h_

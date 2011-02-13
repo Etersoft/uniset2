@@ -20,8 +20,6 @@
 /*! \file
  * \brief Реализация IONotifyController_i
  * \author Pavel Vainerman
- * \date  $Date: 2007/12/16 21:32:07 $
- * \version $Id: IONotifyController.h,v 1.23 2007/12/16 21:32:07 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 #ifndef IONotifyController_H_

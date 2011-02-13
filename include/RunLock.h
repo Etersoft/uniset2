@@ -20,8 +20,6 @@
 /*! \file
  *  \brief Блокировка повторного запуска программы
  *  \author Ahton Korbin, Pavel Vainerman
- *  \date   $Date: 2006/12/20 10:39:01 $
- *  \version $Id: RunLock.h,v 1.6 2006/12/20 10:39:01 vpashka Exp $
 */
 // ---------------------------------------------------------------------------
 #ifndef RunLock_H_

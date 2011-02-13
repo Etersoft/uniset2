@@ -20,8 +20,6 @@
 /*! \file
  *  \brief Базовые типы сообщений
  *  \author Vitaly Lipatov, Pavel Vainerman
- *  \date   $Date: 2008/12/14 21:57:51 $
- *  \version $Id: MessageType.h,v 1.14 2008/12/14 21:57:51 vpashka Exp $
  */
 // -------------------------------------------------------------------------- 
 #ifndef MessageType_H_

@@ -20,9 +20,6 @@
 /*! \file
  *  \brief "Пустая" реализация интерфейса работы с сообщениями
  *  \author Pavel Vainerman
- *  \date   $Date: 2006/12/22 13:37:48 $
- *  \version $Id: DefaultMessageInterface.h,v 1.3 2006/12/22 13:37:48 vpashka Exp $
- *
  */
 // --------------------------------------------------------------------------
 #ifndef DefaultMessageInterface_H_

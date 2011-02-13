@@ -20,9 +20,6 @@
 /*! \file
  *  \brief Реализация интерфейса работы с сообщениями на основе XML
  *  \author Pavel Vainerman
- *  \date   $Date: 2008/11/22 23:22:24 $
- *  \version $Id: MessageInterface_XML.h,v 1.7 2008/11/22 23:22:24 vpashka Exp $
- *
  */
 // --------------------------------------------------------------------------
 #ifndef __MESSAGEINTERFACE_XML_H__

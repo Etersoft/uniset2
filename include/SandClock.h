@@ -19,7 +19,6 @@
 // --------------------------------------------------------------------------
 // idea: lav@etersoft.ru
 // realisation: pv@etersoft.ru, lav@etersoft.ru
-//!  \version $Id: SandClock.h,v 1.1 2008/10/05 19:00:53 vpashka Exp $
 // --------------------------------------------------------------------------
 #ifndef SandClock_H_
 #define SandClock_H_

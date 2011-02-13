@@ -19,8 +19,6 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \author Vitaly Lipatov, Pavel Vainerman
- *  \date   $Date: 2007/08/02 22:52:27 $
- *  \version $Id: PassiveTimer.h,v 1.9 2007/08/02 22:52:27 vpashka Exp $
 */
 //---------------------------------------------------------------------------- 
 # ifndef PASSIVETIMER_H_
@@ -36,8 +34,6 @@
 /*! \class UniSetTimer
  * \brief Базовый интерфейс пасивных таймеров
  * \author Pavel Vainerman
- * \date  $Date: 2007/08/02 22:52:27 $
- * \version $Id: PassiveTimer.h,v 1.9 2007/08/02 22:52:27 vpashka Exp $
 */ 
 class UniSetTimer
 {
@@ -78,8 +74,6 @@ class UniSetTimer
 /*! \class PassiveTimer
  * \brief Пассивный таймер
  * \author Vitaly Lipatov
- * \date  $Date: 2007/08/02 22:52:27 $
- * \version $Id: PassiveTimer.h,v 1.9 2007/08/02 22:52:27 vpashka Exp $
  * \par
  * Установив таймер в конструкторе или с помощью setTiming,
  * можно с помощью checkTime проверять, не наступило ли нужное время
@@ -125,8 +119,6 @@ class omni_condition;
 /*! \class ThrPassiveTimer
  * \brief Пассивный таймер с режимом засыпания (ожидания)
  * \author Pavel Vainerman
- * \date  $Date: 2007/08/02 22:52:27 $
- * \version $Id: PassiveTimer.h,v 1.9 2007/08/02 22:52:27 vpashka Exp $
  * \par
  * Позволяет заснуть на заданное время wait(timeout_t timeMS).
  * Механизм работает на основе взаимных блокировок потоков (mutex и condition). 
@@ -154,8 +146,6 @@ class ThrPassiveTimer:
 /*! \class PassiveSysTimer
  * \brief Пассивный таймер с режимом засыпания (ожидания)
  * \author Pavel Vainerman
- * \date  $Date: 2007/08/02 22:52:27 $
- * \version $Id: PassiveTimer.h,v 1.9 2007/08/02 22:52:27 vpashka Exp $
  * \par
  * Создан на основе сигнала (SIGALRM).
 */ 

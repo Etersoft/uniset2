@@ -20,8 +20,6 @@
 /*! \file
  * \brief Реализация IOController_i
  * \author Pavel Vainerman
- * \date $Date: 2008/11/29 21:24:25 $
- * \version $Id: IOController.h,v 1.28 2008/11/29 21:24:25 vpashka Exp $
 */
 // -------------------------------------------------------------------------- 
 #ifndef IOController_H_

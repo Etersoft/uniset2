@@ -1,4 +1,3 @@
-//	$Id: ObjectIndex_idXML.h,v 1.6 2008/11/22 23:22:24 vpashka Exp $
 // -------------------------------------------------------------------------- 
 #ifndef ObjectIndex_idXML_H_
 #define ObjectIndex_idXML_H_

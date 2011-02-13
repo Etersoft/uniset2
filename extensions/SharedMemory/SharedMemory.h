@@ -1,4 +1,3 @@
-/* $Id: SharedMemory.h,v 1.2 2009/01/22 02:11:24 vpashka Exp $ */
 // -----------------------------------------------------------------------------
 #ifndef SharedMemory_H_
 #define SharedMemory_H_

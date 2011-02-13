@@ -1,4 +1,3 @@
-/*! $Id: ModbusRTUMaster.h,v 1.3 2009/02/24 20:27:25 vpashka Exp $ */
 // -------------------------------------------------------------------------
 #ifndef ModbusRTUMaster_H_
 #define ModbusRTUMaster_H_

@@ -20,8 +20,6 @@
 /*! \file
  * \brief Активатор объектов
  * \author Pavel Vainerman
- * \date   $Date: 2007/06/17 21:30:55 $
- * \version $Id: ObjectsActivator.h,v 1.13 2007/06/17 21:30:55 vpashka Exp $
  */
 // -------------------------------------------------------------------------- 
 #ifndef ObjectsActivator_H_
