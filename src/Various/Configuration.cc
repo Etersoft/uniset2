@@ -1049,6 +1049,15 @@ UniversalIO::IOTypes Configuration::getIOType( UniSetTypes::ObjectId id )
 // -------------------------------------------------------------------------
 UniversalIO::IOTypes Configuration::getIOType( const std::string name )
 {
+	// Если указано "короткое" имя
+	// то просто сперва ищём ID, а потом по нему 
+	// iotype
+	ObjectId id = getSensorID(name);
+	if( id != DefaultObjectId )
+		return getIOType(id);
+
+	// Пробуем искать, считая, что задано mapname
+	// ("RootSection/Sensors/name")
 	const ObjectInfo* i = oind->getObjectInfo(name);
 	if( i && (xmlNode*)(i->data) )
 	{
