@@ -20,8 +20,6 @@
 /*! \file
  * \brief Реализация SystemGuard
  * \author Pavel Vainerman
- * \date $Date: 2007/06/17 21:30:55 $
- * \version $Id: SystemGuard.h,v 1.9 2007/06/17 21:30:55 vpashka Exp $
  */
 //--------------------------------------------------------------------------------
 #ifndef SystemGuard_H_

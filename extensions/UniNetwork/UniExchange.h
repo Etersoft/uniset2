@@ -1,4 +1,3 @@
-// $Id: UniExchange.h,v 1.2 2009/04/07 16:11:23 pv Exp $
 // -----------------------------------------------------------------------------
 #ifndef UniExchange_H_
 #define UniExchange_H_

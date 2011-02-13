@@ -1,4 +1,3 @@
-// $Id: ComediInterface.h,v 1.1 2008/12/14 21:57:50 vpashka Exp $
 // -----------------------------------------------------------------------------
 #ifndef ComediInterface_H_
 #define ComediInterface_H_

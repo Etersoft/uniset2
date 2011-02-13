@@ -1,4 +1,3 @@
-/* $Id: WDTInterface.h,v 1.1 2008/12/14 21:57:51 vpashka Exp $ */
 //--------------------------------------------------------------------------
 #ifndef WDTInterface_H_
 #define WDTInterface_H_

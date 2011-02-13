@@ -20,8 +20,6 @@
 /*! \file
  * \brief Универсальный интерфейс для взаимодействия с объектами системы
  * \author Pavel Vainerman
- * \version $Id: UniversalInterface.h,v 1.24 2008/12/14 21:57:51 vpashka Exp $
- * \date   $Date: 2008/12/14 21:57:51 $
  */
 // --------------------------------------------------------------------------
 #ifndef UniversalInterface_H_

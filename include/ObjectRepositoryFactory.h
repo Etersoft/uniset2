@@ -20,8 +20,6 @@
 /*! \file
  * \brief Интерфейсный класс для создания структуры репозитария объектов 
  * \author Pavel Vainerman
- * \version $Id: ObjectRepositoryFactory.h,v 1.8 2007/07/07 18:58:42 vpashka Exp $
- * \date  $Date: 2007/07/07 18:58:42 $
  */
 // -------------------------------------------------------------------------- 
 #ifndef ObjectRepositoryFactory_H_

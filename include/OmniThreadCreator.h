@@ -20,8 +20,6 @@
 /*! \file
  * \brief Создатель потоков
  * \author Pavel Vainerman
- * \date $Date: 2005/01/28 20:52:21 $
- * \version $Id: OmniThreadCreator.h,v 1.5 2005/01/28 20:52:21 vitlav Exp $
  */
 // -------------------------------------------------------------------------- 
 #ifndef OmniThreadCreator_h_

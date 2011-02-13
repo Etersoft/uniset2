@@ -20,8 +20,6 @@
 /*! \file
  * \brief Реализация TimerService
  * \author Pavel Vainerman
- * \date $Date: 2007/06/17 21:30:56 $
- * \version $Id: TimerService.h,v 1.7 2007/06/17 21:30:56 vpashka Exp $
  */
 //---------------------------------------------------------------------------
 #ifndef TimerService_H_

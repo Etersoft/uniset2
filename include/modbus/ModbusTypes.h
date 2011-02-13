@@ -1,4 +1,3 @@
-/*! $Id: ModbusTypes.h,v 1.11 2008/11/22 23:22:24 vpashka Exp $ */
 // -------------------------------------------------------------------------
 #ifndef ModbusTypes_H_
 #define ModbusTypes_H_

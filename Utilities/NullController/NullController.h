@@ -1,4 +1,3 @@
-// $Id: NullController.h,v 1.11 2008/02/10 03:21:41 vpashka Exp $
 // --------------------------------------------------------------------------
 #ifndef NullController_H_
 #define NullController_H_

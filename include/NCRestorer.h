@@ -20,8 +20,6 @@
 /*! \file
  * \brief Интерфейс к объекту сохраняющему список заказчиков для NotifyController-ов
  * \author Pavel Vainerman
- * \version $Id: NCRestorer.h,v 1.17 2008/12/14 21:57:51 vpashka Exp $
- * \date $Date: 2008/12/14 21:57:51 $
  */
 // --------------------------------------------------------------------------
 #ifndef NCRestorer_H_

@@ -20,8 +20,6 @@
 /*! \file
  * \brief Реализация интерфейса менеджера объектов.
  * \author Pavel Vainerman
- * \date  $Date: 2009/01/16 23:16:42 $
- * \version $Id: ObjectsManager.h,v 1.13 2009/01/16 23:16:42 vpashka Exp $
  */
 // -------------------------------------------------------------------------- 
 #ifndef ObjectsManager_H_

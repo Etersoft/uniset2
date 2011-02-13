@@ -1,4 +1,3 @@
-/*! $Id: ModbusTCPServer.h,v 1.2 2008/11/23 22:16:03 vpashka Exp $ */
 // -------------------------------------------------------------------------
 #ifndef ModbusTCPServer_H_
 #define ModbusTCPServer_H_
