@@ -427,41 +427,37 @@ bool NCRestorer_XML::getConsumerList( UniXML& xml,xmlNode* node,
 bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node, 
 										IONotifyController::ThresholdInfoExt& ti )
 {
-	string sid_name = xml.getProp(node,"sid");
+	UniXML_iterator uit(node);
+
+	string sid_name = uit.getProp("sid");
 	if( !sid_name.empty() )
 	{
 		ti.sid = conf->getSensorID(sid_name);
 		if( ti.sid == UniSetTypes::DefaultObjectId )
 		{
 			unideb[Debug::CRIT] << "(NCRestorer_XML:getThresholdInfo): " 
-					<< " Неверно указан НАЗВАНИЕ датчика " << sid_name 
-					<< " Не найден ID для данного дачика\n" << flush;
+					<< " Not found ID for " << sid_name << endl;
+		}
+		else
+		{
+			UniversalIO::IOTypes iotype = conf->getIOType(sid_name);
+			// Пока что IONotifyController поддерживает работу только с 'DI'.
+			if( iotype != UniversalIO::DigitalInput )
+			{
+				 unideb[Debug::CRIT] << "(NCRestorer_XML:getThresholdInfo): "
+					<< " Bad iotype for " << sid_name << ". iotype must be 'DI'!" << endl;
+				return false;
+			}
+			  
 		}
 	}
 
-	UniXML_iterator uit(node);
 	ti.id 			= uit.getIntProp("id");
 	ti.lowlimit 	= uit.getIntProp("lowlimit");
 	ti.hilimit 		= uit.getIntProp("hilimit");
 	ti.sensibility 	= uit.getIntProp("sensibility");
 	ti.inverse 		= uit.getIntProp("inverse");
 	ti.state 		= IONotifyController_i::NormalThreshold;
-
-	if( ti.sid == UniSetTypes::DefaultObjectId )
-	{
-		string sid_name(uit.getProp("sid"));
-		if( !sid_name.empty() )
-		{
-			ti.sid = conf->getSensorID(sid_name);
-			if( ti.sid == UniSetTypes::DefaultObjectId )
-			{
-				unideb[Debug::CRIT] << "(NCRestorer_XML:getThresholdInfo): " 
-						<< " Неверно указан НАЗВАНИЕ датчика " << sid_name 
-						<< " Не найден ID для данного дачика\n" << flush;
-			}
-		}
-	}
-
 	return true;
 }
 // ------------------------------------------------------------------------------------------
