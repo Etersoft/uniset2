@@ -5,7 +5,6 @@
 /*! \file
  *  \brief Обращения к последовательным интерфейсам
  *  \author Nick Lezzhov, Pavel Veynerman, Vitaly Lipatov
- *  \date   $Date: 2009/02/24 20:27:25 $
  */
 /**************************************************************************/
 #include <cstdlib>
