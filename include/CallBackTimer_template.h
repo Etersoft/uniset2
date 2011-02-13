@@ -19,8 +19,6 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \author Pavel Vainerman
- *  \date   $Date: 2008/02/07 21:04:56 $
- *  \version $Id: CallBackTimer_template.h,v 1.6 2008/02/07 21:04:56 vpashka Exp $
 */
 // --------------------------------------------------------------------------
 # ifndef CallBackTimer_TEMPLATE_H_
