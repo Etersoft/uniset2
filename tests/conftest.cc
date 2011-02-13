@@ -31,9 +31,12 @@ int main(int argc, const char **argv)
 		cout << "**** check getMapName: " << ( mn.empty() ?  "FAILED" : "OK" ) << endl;
 
 		UniversalIO::IOTypes t1=conf->getIOType(1);
+		cout << "**** getIOType for " << mn << endl;
 		cout << "**** check getIOType(id): (" << t1 << ") " << ( t1 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;		
 		UniversalIO::IOTypes t2=conf->getIOType(mn);
 		cout << "**** check getIOType(name): (" << t2 << ") " << ( t2 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;		
+		UniversalIO::IOTypes t3=conf->getIOType("Input1_S");
+		cout << "**** check getIOType(name): for short name 'Input1_S': (" << t3 << ") " << ( t3 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;
 
 		return 0;
 	}

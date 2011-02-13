@@ -456,12 +456,12 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 		}
 		else
 		{
-			UniversalIO::IOTypes iotype = conf->getIOType(sid_name);
+			UniversalIO::IOTypes iotype = conf->getIOType(ti.sid);
 			// Пока что IONotifyController поддерживает работу только с 'DI'.
 			if( iotype != UniversalIO::DigitalInput )
 			{
 				 unideb[Debug::CRIT] << "(NCRestorer_XML:getThresholdInfo): "
-					<< " Bad iotype for " << sid_name << ". iotype must be 'DI'!" << endl;
+					<< " Bad iotype(" << iotype << ") for " << sid_name << ". iotype must be 'DI'!" << endl;
 				return false;
 			}
 
