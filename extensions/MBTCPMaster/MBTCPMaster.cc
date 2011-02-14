@@ -1589,9 +1589,9 @@ MBTCPMaster::RegID MBTCPMaster::genRegID( const ModbusRTU::ModbusData mbreg, con
 {
 	// формула для вычисления ID
 	// требования:
-	//  - ID > диапазона возможных регитров
+	//  - ID > диапазона возможных регистров
 	//  - разные функции должны давать разный ID
-	return numeric_limits<ModbusRTU::ModbusData>::max() + mbreg + fn;
+	return numeric_limits<ModbusRTU::ModbusData>::max() + UniSetTypes::key(mbreg,fn);
 }
 // ------------------------------------------------------------------------------------------
 bool MBTCPMaster::initItem( UniXML_iterator& it )
@@ -1959,7 +1959,7 @@ bool MBTCPMaster::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
 	d->second->resp_invert = it.getIntProp("invert");
 //	d->second->no_clean_input = it.getIntProp("no_clean_input");
 	
-	dlog[Debug::INFO] << myname << "(initDeviceInfo): add " << d->second << endl;
+//	dlog[Debug::INFO] << myname << "(initDeviceInfo): add " << (*d->second) << endl;
 	
 	return true;
 }
