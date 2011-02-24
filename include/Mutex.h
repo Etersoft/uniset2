@@ -28,11 +28,9 @@
 #include <omnithread.h>
 #include <signal.h>
 // -----------------------------------------------------------------------------------------
-//#warning Необходимо разобраться с atomic_add и т.п. (и вообще использовать futex-ы)
-// -----------------------------------------------------------------------------------------
 namespace UniSetTypes
 {
-	typedef sig_atomic_t mutex_atomic_t;
+	typedef volatile sig_atomic_t mutex_atomic_t;
 	// typedef _Atomic_word mutex_atomic_t;
 	
 
@@ -101,7 +99,7 @@ namespace UniSetTypes
 			uniset_spin_mutex();
 			~uniset_spin_mutex();
 
-			void lock( int check_pause_msec=0 );
+			void lock( int check_pause_msec=1 );
 			void unlock();
 
 		   	uniset_spin_mutex (const uniset_spin_mutex& r);
@@ -115,7 +113,7 @@ namespace UniSetTypes
 	class uniset_spin_lock
 	{
 		public:
-			uniset_spin_lock( uniset_spin_mutex& m, int check_pause_msec=0 );
+			uniset_spin_lock( uniset_spin_mutex& m, int check_pause_msec=1 );
 			~uniset_spin_lock();
 
 		private:

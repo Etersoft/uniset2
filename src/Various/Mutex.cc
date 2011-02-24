@@ -73,7 +73,7 @@ void uniset_mutex::unlock()
 
 bool uniset_mutex::isRelease()
 {
-	return (bool)!mutex_atomic_read(&locked);
+	return !(bool)mutex_atomic_read(&locked);
 }
 // -----------------------------------------------------------------------------
 const uniset_mutex &uniset_mutex::operator=(const uniset_mutex& r)
@@ -179,7 +179,7 @@ void uniset_spin_mutex::lock( int check_pause_msec )
 
 void uniset_spin_mutex::unlock()
 {
-	m = 0;
+	mutex_atomic_set(&m,0);
 }
 // -------------------------------------------------------------------------------------------
 uniset_spin_lock::uniset_spin_lock( uniset_spin_mutex& _m, int check_pause_msec ):
