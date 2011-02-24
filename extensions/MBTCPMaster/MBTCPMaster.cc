@@ -892,17 +892,14 @@ bool MBTCPMaster::RTUDevice::checkRespond()
 		return (prev != resp_state);
 	}
 
-	if( resp_trTimeout.hi(resp_real) )
-	{	
-		if( resp_real )
-			resp_state = true;
-
+	if( resp_trTimeout.hi(resp_state && !resp_real) )
 		resp_ptTimeout.reset();
-	}
 
-	if( resp_state && !resp_real && resp_ptTimeout.checkTime() )
-		resp_state = false; 
-	
+	if( resp_real )
+		resp_state = true;
+	else if( resp_state && !resp_real && resp_ptTimeout.checkTime() )
+		resp_state = false;
+
 	// если ещё не инициализировали значение в SM
 	// то возвращаем true, чтобы оно принудительно сохранилось
 	if( !resp_init )
