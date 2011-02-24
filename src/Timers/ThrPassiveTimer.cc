@@ -50,32 +50,42 @@ ThrPassiveTimer::~ThrPassiveTimer()
 	delete tmutex;
 }
 // ------------------------------------------------------------------------------------------
+bool ThrPassiveTimer::isTerminated()
+{
+	UniSetTypes::uniset_mutex_lock l(term_mutex,100);
+	return terminated;
+}
+// ------------------------------------------------------------------------------------------
+void ThrPassiveTimer::setTerminated( bool set )
+{
+	UniSetTypes::uniset_mutex_lock l(term_mutex,200);
+	terminated = set;
+}
+// ------------------------------------------------------------------------------------------
 void ThrPassiveTimer::terminate()
 {
-	if( !terminated )
+	if( !isTerminated() )
 	{
-//		tmutex->lock();
-		terminated = 1;
+		setTerminated(true);
 		tcondx->signal();
-//		tmutex->unlock();
 	}
 }
 // ------------------------------------------------------------------------------------------
-bool ThrPassiveTimer::wait(timeout_t timeMS)
+bool ThrPassiveTimer::wait( timeout_t time_msec )
 {
-	terminated = 0;
+	setTerminated(false);
 	{
 		tmutex->lock();
-		timeout_t tmMS = PassiveTimer::setTiming(timeMS); // вызываем для совместимости с обычным PassiveTimer-ом
-		if( timeMS == WaitUpTime )
+		timeout_t t_msec = PassiveTimer::setTiming(time_msec); // вызываем для совместимости с обычным PassiveTimer-ом
+		if( time_msec == WaitUpTime )
 		{
-			while( !terminated )	// на всякий, вдруг проснется по ошибке...
+			while( !isTerminated() )	// на всякий, вдруг проснется по ошибке...
 				tcondx->wait();
 		}
 		else
 		{
 			unsigned long sec, msec;
-			omni_thread::get_time(&sec,&msec, tmMS/1000, (tmMS%1000)*1000000 );
+			omni_thread::get_time(&sec,&msec, t_msec/1000, (t_msec%1000)*1000000 );
 //			cout <<"timer: спим "<< timeMS/1000 << "[сек] и " << (timeMS%1000)*1000000 <<"[мсек]" << endl;
 			tcondx->timedwait(sec, msec);
 		}
@@ -83,7 +93,7 @@ bool ThrPassiveTimer::wait(timeout_t timeMS)
 		tmutex->unlock();
 	}
 
-	terminated = 1;
+	setTerminated(true);
 	return true;
 }
 // ------------------------------------------------------------------------------------------

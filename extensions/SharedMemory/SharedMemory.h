@@ -391,12 +391,15 @@ class SharedMemory:
 
 		void buildHistoryList( xmlNode* cnode );
 		void checkHistoryFilter( UniXML_iterator& it );
+		bool isActivated();
 
 
 		DIOStateList::iterator ditPulsar;
 		IOController_i::SensorInfo siPulsar;
 		UniversalIO::IOTypes iotypePulsar;
 		int msecPulsar;
+
+		UniSetTypes::uniset_mutex act_mutex;
 
 	private:
 		HistorySlot m_historySignal;

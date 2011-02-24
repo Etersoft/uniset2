@@ -151,7 +151,9 @@ bool IOController::localGetState( IOController::DIOStateList::iterator& li,
 	ostringstream err;
 	err << myname << "(localGetState): дискретный вход(выход) с именем " 
 		<< conf->oind->getNameById(si.id) << " не найден";
-	unideb[Debug::INFO] << err.str() << endl;
+
+	if( unideb.debugging(Debug::INFO) )
+		unideb[Debug::INFO] << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ---------------------------------------------------------------------------
@@ -174,7 +176,8 @@ long IOController::localGetValue( IOController::AIOStateList::iterator& li,
 	ostringstream err;
 	err << myname << "(localGetValue): аналоговый вход(выход) с именем " 
 		<< conf->oind->getNameById(si.id) << " не найден";
-	unideb[Debug::INFO] << err.str() << endl;
+	if( unideb.debugging(Debug::INFO) )
+		unideb[Debug::INFO] << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ------------------------------------------------------------------------------------------

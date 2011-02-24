@@ -27,9 +27,7 @@
 #include <signal.h>
 #include <sys/time.h>
 #include <cc++/socket.h>
-//#include "Exceptions.h"
-
-
+#include "Mutex.h"
 //----------------------------------------------------------------------------------------
 /*! \class UniSetTimer
  * \brief Базовый интерфейс пасивных таймеров
@@ -136,10 +134,14 @@ class ThrPassiveTimer:
 		virtual bool wait(timeout_t timeMS);	/*!< блокировать вызывающий поток на заданное время */
 		virtual void terminate();		/*!< прервать работу таймера */
 	protected:
+		  bool isTerminated();
+		  void setTerminated( bool set );
+
 	private:
-		volatile sig_atomic_t terminated;
+		bool terminated;
 		omni_mutex* tmutex;
 		omni_condition* tcondx;
+		UniSetTypes::uniset_mutex term_mutex;
 };
 //----------------------------------------------------------------------------------------
 

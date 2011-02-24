@@ -72,7 +72,8 @@ namespace ORepHelpers
         CosNaming::NamingContext_var ctx;
         try
 		{
-			ctx = CosNaming::NamingContext::_narrow( rootC->resolve(ctxName) );
+			CORBA::Object_var o = rootC->resolve(ctxName);
+			ctx = CosNaming::NamingContext::_narrow(o);
 			if( CORBA::is_nil(ctx) )
 			{
 	    		const string err("OREPHELPER(getContext): не смог получить ссылку на контекст(is_nil) "+cname);
@@ -142,7 +143,7 @@ namespace ORepHelpers
 	try
 	{
 //		cout << "ORepHelpers(getRootNamingContext): nsName->" << nsName << endl;
-		CORBA::Object_var initServ(orb->resolve_initial_references(nsName.c_str()));
+		CORBA::Object_var initServ = orb->resolve_initial_references(nsName.c_str());
 		unideb[Debug::REPOSITORY] << "OREPHELP: get rootcontext...(nsName = "<< nsName << ")" <<endl;
 		rootContext = CosNaming::NamingContext::_narrow(initServ);
 		if (CORBA::is_nil(rootContext))

@@ -119,10 +119,14 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string sec, 
 {
 	if( (unsigned)ind >= omap.size() )
 	{
-		ostringstream msg;
-		msg << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size();
-//		throw OutOfRange(msg.str());
-		unideb[Debug::WARN] << msg.str() << "... Делаем resize + 100\n";
+		if( unideb.debugging(Debug::INFO) )
+		{
+			ostringstream msg;
+			msg << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size();
+//			throw OutOfRange(msg.str());
+			unideb[Debug::WARN] << msg.str() << "... Делаем resize + 100\n";
+		}
+
 		omap.resize(omap.size()+100);
 	}
 
@@ -171,7 +175,7 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string sec, 
 		omap[ind].id = ind;
 		
 		// name
-		string name(secname+xml.getProp(it,"name"));
+		const string name(secname + xml.getProp(it,"name"));
 		delete[] omap[ind].repName;
 		omap[ind].repName = new char[name.size()+1];
 	    strcpy( omap[ind].repName, name.c_str() );
@@ -195,10 +199,13 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string sec, 
 
 		if( (unsigned)ind >= omap.size() )
 		{
-			ostringstream msg;
-			msg << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size();
-//			throw OutOfRange(msg.str());
-			unideb[Debug::WARN] << msg.str() << "... Делаем resize + 100\n";
+			if( unideb.debugging(Debug::INFO) )
+			{
+				ostringstream msg;
+				msg << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size();
+//				throw OutOfRange(msg.str());
+				unideb[Debug::INFO] << msg.str() << "... Делаем resize + 100\n";
+			}
 			omap.resize(omap.size()+100);
 		}
 	}

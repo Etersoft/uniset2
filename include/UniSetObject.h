@@ -186,6 +186,8 @@ class UniSetObject:
 			void setPushMutexTimeout( unsigned long msec );
 			unsigned long getPushMutexTimeout(){ return pushMutexTimeout; }
 
+			bool isActive();
+			void setActive( bool set );
 
 			UniSetTypes::VoidMessage msg;	
 			ObjectsManager* mymngr; 
@@ -216,6 +218,7 @@ class UniSetObject:
 			pid_t msgpid; // pid потока обработки сообщений
 			bool reg;
 			bool active;
+			UniSetTypes::uniset_mutex act_mutex;
 			bool threadcreate;
 			UniSetTimer* tmr;
 			UniSetTypes::ObjectId myid;

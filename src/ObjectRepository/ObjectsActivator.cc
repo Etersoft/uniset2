@@ -380,6 +380,7 @@ void ObjectsActivator::set_signals(bool ask)
 	
 	struct sigaction act, oact;
 	sigemptyset(&act.sa_mask);
+	sigemptyset(&oact.sa_mask);
 
 	// добавляем сигналы, которые будут игнорироваться
 	// при обработке сигнала 
@@ -416,7 +417,9 @@ void ObjectsActivator::finishterm( int signo )
 			unideb[Debug::SYSTEM] << gActivator->getName() 
 				<< "(finishterm): прерываем процесс завершения...!" << endl<< flush;
 
-		ObjectsActivator::set_signals(false);
+		if( gActivator )
+			gActivator->set_signals(false);
+
 		sigset(SIGALRM, SIG_DFL);
 		doneterm = 1;
 		raise(SIGKILL);

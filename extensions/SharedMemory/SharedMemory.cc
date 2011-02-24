@@ -229,15 +229,13 @@ void SharedMemory::sysCommand( SystemMessage *sm )
 		case SystemMessage::StartUp:
 		{
 			PassiveTimer ptAct(activateTimeout);
-			while( !activated && !ptAct.checkTime() )
+			while( !isActivated() && !ptAct.checkTime() )
 			{	
 				cout << myname << "(sysCommand): wait activate..." << endl;
 				msleep(100);
-				if( activated )
-					break;
 			}
 			
-			if( !activated )
+			if( !isActivated() )
 				dlog[Debug::CRIT] << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 		
 			// подождать пока пройдёт инициализация
@@ -300,7 +298,11 @@ bool SharedMemory::activateObject()
 	// пока не пройдёт инициализация датчиков
 	// см. sysCommand()
 	{
-		activated = false;
+		{
+			uniset_mutex_lock l(act_mutex,100);
+			activated = false;
+		}
+
 		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
 		res = IONotifyController_LT::activateObject();
 
@@ -324,7 +326,10 @@ bool SharedMemory::activateObject()
 			}
 		}
 
-		activated = true;
+		{
+			uniset_mutex_lock l(act_mutex,100);
+			activated = true;
+		}
 	}
 
 	cerr << "************************** activate: " << pt.getCurrent() << " msec " << endl;
@@ -881,5 +886,11 @@ std::ostream& operator<<( std::ostream& os, const SharedMemory::HistoryInfo& h )
 	}
 	
 	return os;
+}
+// ------------------------------------------------------------------------------------------
+bool SharedMemory::isActivated()
+{
+	uniset_mutex_lock l(act_mutex,300);
+	return activated;
 }
 // ------------------------------------------------------------------------------------------
