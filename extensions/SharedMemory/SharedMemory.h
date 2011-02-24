@@ -437,6 +437,8 @@ class SharedMemory:
 		
 		UniSetTypes::uniset_mutex act_mutex;
 
+		UniSetTypes::uniset_mutex act_mutex;
+
 	private:
 		HistorySlot m_historySignal;
 };
