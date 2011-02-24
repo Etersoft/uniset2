@@ -297,8 +297,6 @@ void MBTCPMaster::updateRespondSensors()
 // -----------------------------------------------------------------------------
 void MBTCPMaster::poll_thread()
 {
-	cerr << "*********** polling starting.." << endl;
-  
 	{
 		uniset_mutex_lock l(pollMutex,300);
 		ptTimeout.reset();
@@ -317,8 +315,6 @@ void MBTCPMaster::poll_thread()
 
 		msleep(polltime);
 	}
-
-	cerr << "*********** polling finished.." << endl;
 }
 // -----------------------------------------------------------------------------
 bool MBTCPMaster::checkProcActive()
