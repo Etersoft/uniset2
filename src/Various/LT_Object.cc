@@ -27,22 +27,22 @@
 #include "LT_Object.h"
 #include "Debug.h"
 
-// ------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 
-// ------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 LT_Object::LT_Object():
 sleepTime(UniSetTimer::WaitUpTime)
 {
 	tmLast.setTiming(UniSetTimer::WaitUpTime);
 }
 
-// ------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 LT_Object::~LT_Object() 
 {
 }
-// ------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 timeout_t LT_Object::checkTimers( UniSetObject* obj )
 {
 	try
@@ -71,7 +71,6 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 		
 		{	// lock
 			uniset_mutex_lock lock(lstMutex, 5000);
-			bool resort(false);
 			sleepTime = UniSetTimer::WaitUpTime;
 			for( TimersList::iterator li=tlst.begin();li!=tlst.end();++li)
 			{
@@ -93,7 +92,6 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 						li->curTick--;
 
 					li->reset();
-					resort = true;
 				}
 				else
 				{
@@ -105,9 +103,6 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 					sleepTime = li->curTimeMS;
 			}	
 
-			if( resort )	// пересортировываем в связи с обновлением списка
-				tlst.sort();
-			
 			if( sleepTime < UniSetTimer::MinQuantityTime )
 				sleepTime=UniSetTimer::MinQuantityTime;
 		} // unlock		
@@ -135,7 +130,7 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
 		}
 			
 		{	// lock
-			if( !lstMutex.isRelease() && unideb.debugging(Debug::INFO) )
+			if( unideb.debugging(Debug::INFO) && !lstMutex.isRelease() )
 				unideb[Debug::INFO] << "(LT_askTimer): придется подождать освобождения lstMutex-а" << endl;
 
 			uniset_mutex_lock lock(lstMutex, 2000);
@@ -148,8 +143,11 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
 					{
 						li->curTick = ticks;
 						li->tmr.setTiming(timeMS);
-						unideb[Debug::INFO] << "(LT_askTimer): заказ на таймер(id="
-							<< timerid << ") " << timeMS << " [мс] уже есть...\n";	
+						if( unideb.debugging(Debug::INFO) )
+						{
+							unideb[Debug::INFO] << "(LT_askTimer): заказ на таймер(id="
+								<< timerid << ") " << timeMS << " [мс] уже есть..." << endl;
+						}
 						return sleepTime;
 					}
 				}
@@ -157,7 +155,6 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
 
 			TimerInfo newti(timerid, timeMS, ticks, p);
 			tlst.push_back(newti);
-			tlst.sort();
 			newti.reset();
 		}	// unlock
 	
@@ -169,17 +166,17 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
 		if( unideb.debugging(Debug::INFO) )
 			unideb[Debug::INFO] << "(LT_askTimer): поступил отказ по таймеру id="<< timerid << endl;	
 		{	// lock
-			if( !lstMutex.isRelease() && unideb.debugging(Debug::INFO) )
+			if( unideb.debugging(Debug::INFO) && !lstMutex.isRelease() )
 				unideb[Debug::INFO] << "(LT_askTimer): придется подождать освобождения lstMutex-а\n";
+
  			uniset_mutex_lock lock(lstMutex, 2000);
 			tlst.remove_if(Timer_eq(timerid));	// STL - способ
-			tlst.sort();
 		}	// unlock
 	}
 	
 
 	{	// lock
-		if( !lstMutex.isRelease() && unideb.debugging(Debug::INFO) )
+		if( unideb.debugging(Debug::INFO) && !lstMutex.isRelease() )
 			unideb[Debug::INFO] << "(LT_askTimer): придется подождать освобождения lstMutex-а\n";
 
 		uniset_mutex_lock lock(lstMutex, 2000);
@@ -192,4 +189,4 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
 
 	return sleepTime;
 }
-// ------------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
