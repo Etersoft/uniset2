@@ -122,7 +122,8 @@ string UniXML::getProp(const xmlNode* node, const string name)
 	const char * text = (const char*)::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
 	if (text == NULL)
 		return "";
-	return text;
+	
+	return string(text);
 }
 
 int UniXML::getIntProp(const xmlNode* node, const string name )

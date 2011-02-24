@@ -675,7 +675,7 @@ unsigned int UniSetObject::countMessages()
 // ------------------------------------------------------------------------------------------
 bool UniSetObject::disactivate()
 {
-	if( !active )
+	if( !isActive() )
 	{
 		try
 		{
@@ -685,7 +685,7 @@ bool UniSetObject::disactivate()
 		return true;
 	}
 
-	active=false; // завершаем поток обработки сообщений
+	setActive(false); // завершаем поток обработки сообщений
 	tmr->stop();
 
 	// Очищаем очередь
@@ -795,7 +795,7 @@ bool UniSetObject::activate()
 
 	registered();
 	// Запускаем поток обработки сообщений
-	active=true;
+	setActive(true);
 
 	if( myid!=UniSetTypes::DefaultObjectId && threadcreate )
 	{
@@ -825,7 +825,7 @@ void UniSetObject::work()
 		unideb[Debug::INFO] << myname << ": thread processing messages run..." << endl;
 	if( thr )
 		msgpid = thr->getTID();
-	while( active )
+	while( isActive() )
 	{
 		callback();
 	}
@@ -899,5 +899,16 @@ bool UniSetObject::PriorVMsgCompare::operator()(const UniSetTypes::VoidMessage& 
 	return lhs.priority < rhs.priority;
 }
 // ------------------------------------------------------------------------------------------
-
+void UniSetObject::setActive( bool set )
+{
+	uniset_mutex_lock l(act_mutex,300);
+	active = set;
+}
+// ------------------------------------------------------------------------------------------
+bool UniSetObject::isActive()
+{
+	uniset_mutex_lock l(act_mutex,200);
+	return active;
+}
+// ------------------------------------------------------------------------------------------
 #undef CREATE_TIMER
