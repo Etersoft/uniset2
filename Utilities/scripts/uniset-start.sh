@@ -8,12 +8,64 @@ std=0
 standart_control $std
 set_omni
 set_omni_port $*
+FG=
+DBG=
 
 runOmniNames
 
-case $1 in
-	--foreground|-f)
-		shift 1
+print_usage()
+{
+    [ "$1" = 0 ] || exec >&2
+    cat <<EOF
+Usage: ${0##*/} [options] programm
+
+Valid options are:
+  -h, --help	display help screen
+  -f, --foreground   start programm on foreground. Default 'background'.
+
+  -g, --gdb     start programm with gdb
+  -vmem, --vg-memcheck        start programm with valgrind tool=memcheck
+  -vcall, --vg-callgrind      start programm with valgrind tool=callgrind
+  -vcache, --vg-cachegrind    start programm with valgrind tool=cachegrind
+  -vhel, --vg-helgrind        start programm with valgrind tool=helgrind
+
+EOF
+    [ -n "$1" ] && exit "$1" || exit
+}
+
+#parse command line options
+case "$1" in
+	-h|--help) print_usage 0;;
+    -f|--foreground) FG=1;;
+	-vmem|--vg-memcheck) DBG="mem";;
+	-vcall|--vg-callgrind) DBG="call";;
+	-vcache|--vg-cachegrind) DBG="cache";;
+    -vhel|--vg-helgrind) DBG="hel";;
+	-g|--gdb) DBG="gdb";;
+esac
+shift
+
+if [ -n "$DBG" ]
+then
+	COMLINE="$* --uniset-port $OMNIPORT"	
+	start_line=
+	[ "$DBG" == "mem" ] && start_line="valgrind --tool=memcheck --leak-check=full --trace-children=yes --log-file=valgrind.log $COMLINE"
+	[ "$DBG" == "call" ] && start_line="valgrind --tool=callgrind --trace-children=yes --log-file=valgrind.log $COMLINE"
+	[ "$DBG" == "cache" ] && start_line="valgrind --tool=cachegrind --trace-children=yes --log-file=valgrind.log $COMLINE"
+	[ "$DBG" == "hel" ] && start_line="valgrind --tool=helgrind --trace-children=yes --log-file=valgrind.log $COMLINE"
+	
+	if [ "$DBG" == "gdb" ]; then
+        PRG="$1"; shift
+  		start_line="gdb --args $PRG -- $@"
+	fi
+
+	echo Running "$start_line"
+    $start_line
+	exit 0
+fi
+
+if [ -n "$FG" ]
+then
 		COMLINE=$*
 		if [ -z "$COMLINE" ]
 		then
@@ -26,8 +78,7 @@ case $1 in
 		$COMLINE 
 		echo Выходим
 		exit 1
-		;;
-esac
+fi
 
 if [ -z "$*" ]
 then
