@@ -553,6 +553,7 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			{
 				if( dlog.debugging(Debug::LEVEL3) )
 					dlog[Debug::LEVEL3] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
+					    << " slist=" << (*p)
 						<< " IGNORE...(sm_initOK=false)" << endl;
 				return true;
 			}
@@ -566,6 +567,23 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		{
 			if( !p->sm_initOK )
 			{
+				// может быть такая ситуация, что
+				// некоторые регистры уже инициализированы, а другие ещё нет
+				// при этом после оптимизации они попадают в один запрос
+				// поэтому здесь сделано так:
+				// если q_num > 1, значит этот регистр относится к предыдущему запросу
+				// и его просто надо пропустить..
+				if( p->q_num > 1 )
+					return true;
+
+				// смещаем итератор, если данный запрос содержит много регистров
+//				if( q->count > 1 )
+//				{
+//  				for( int i=0; i<p->q_count; i++ )
+//					it++;
+//					return true;
+//				}
+
 				if( dlog.debugging(Debug::LEVEL3) )
 					dlog[Debug::LEVEL3] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
 						<< " IGNORE...(sm_initOK=false)" << endl;
@@ -744,13 +762,13 @@ bool MBTCPMaster::preInitRead( InitList::iterator& p )
 
 	if( p->initOK )
 	{
-		 p->ri->mb_initOK = true;
-		 p->ri->sm_initOK = false;
-		 bool f_out = force_out;
-		 // выставляем флаг принудительного обновления
-		 force_out = true;
-		 updateRTU(p->ri->rit);
-		 force_out = f_out;
+		bool f_out = force_out;
+		// выставляем флаг принудительного обновления
+		force_out = true;
+		p->ri->mb_initOK = true;
+		p->ri->sm_initOK = false;
+		updateRTU(p->ri->rit);
+		force_out = f_out;
 	}
 
 	return p->initOK;
@@ -1353,7 +1371,9 @@ MBTCPMaster::RegInfo* MBTCPMaster::addReg( RegMap& mp, RegID id, ModbusRTU::Modb
 		if( dlog.debugging(Debug::INFO) )
 		{
 			dlog[Debug::INFO] << myname << "(addReg): reg=" << ModbusRTU::dat2str(r) 
-				<< " already added. Ignore register params for " << xmlit.getProp("name") << " ..." << endl;
+			    << "(id=" << id << ")"
+				<< " already added for " << (*it->second)
+				<< " Ignore register params for " << xmlit.getProp("name") << " ..." << endl;
 		}
 
 		it->second->rit = it;
@@ -1582,9 +1602,18 @@ MBTCPMaster::RegID MBTCPMaster::genRegID( const ModbusRTU::ModbusData mbreg, con
 {
 	// формула для вычисления ID
 	// требования:
-	//  - ID > диапазона возможных регистров
-	//  - разные функции должны давать разный ID
-	return numeric_limits<ModbusRTU::ModbusData>::max() + UniSetTypes::key(mbreg,fn);
+	//  1. ID > диапазона возможных регистров
+	//  2. одинаковые регистры, но разные функции должны давать разный ID
+	//  3. регистры идущие подряд, должна давать ID идущий тоже подряд
+
+	// Вообще диапазоны:
+	// mbreg: 0..65535
+	// fn: 0...255
+	int max = numeric_limits<ModbusRTU::ModbusData>::max(); // по идее 65535
+	int fn_max = numeric_limits<ModbusRTU::ModbusByte>::max(); // по идее 255
+
+	// fn необходимо привести к диапазону 0..max
+	return max + mbreg + max + UniSetTypes::lcalibrate(fn,0,fn_max,0,max,false);
 }
 // ------------------------------------------------------------------------------------------
 bool MBTCPMaster::initItem( UniXML_iterator& it )
@@ -1704,15 +1733,38 @@ bool MBTCPMaster::initItem( UniXML_iterator& it )
 
 	p1->reg = ri;
 
+
 	if( p1->rnum > 1 )
 	{
+		ri->q_count = p1->rnum;
+		ri->q_num = 1;
 		for( int i=1; i<p1->rnum; i++ )
 		{
-			RegID id1 = genRegID(mbreg+i,fn);
-			addReg(dev->regmap,id1,mbreg+i,it,dev,ri);
+			RegID id1 = genRegID(mbreg+i,ri->mbfunc);
+			RegInfo* r = addReg(dev->regmap,id1,mbreg+i,it,dev,ri);
+			r->q_num=i+1;
+			r->q_count=1;
+			r->mbfunc = ri->mbfunc;
+			r->mb_initOK = true;
+			r->sm_initOK = true;
+			if( ModbusRTU::isWriteFunction(ri->mbfunc) )
+			{
+				// Если занимает несколько регистров, а указана функция записи "одного",
+				// то это ошибка..
+				if( ri->mbfunc != ModbusRTU::fnWriteOutputRegisters &&
+					ri->mbfunc != ModbusRTU::fnForceMultipleCoils )
+				{
+					dlog[Debug::CRIT] << myname << "(initItem): Bad write function ='" << ModbusRTU::fnWriteOutputSingleRegister
+						<< "' for vtype='" << p1->vType << "'"
+						<< " tcp_mbreg=" << ModbusRTU::dat2str(ri->mbreg)
+						<< " for " << it.getProp("name") << endl;
+
+					abort(); 	// ABORT PROGRAM!!!!
+					return false;
+				}
+			}
 		}
 	}
-
 
 	// Фомируем список инициализации
 	bool need_init = it.getIntProp("tcp_preinit");

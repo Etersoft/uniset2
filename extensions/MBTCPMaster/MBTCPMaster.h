@@ -320,6 +320,9 @@ class MBTCPMaster:
 		friend std::ostream& operator<<( std::ostream& os, RTUDeviceMap& d );
 		void printMap(RTUDeviceMap& d);
 // ----------------------------------
+		static RegID genRegID( const ModbusRTU::ModbusData r, const int fn );
+
+
 	protected:
 		struct InitRegInfo
 		{
@@ -389,7 +392,6 @@ class MBTCPMaster:
 		void initDeviceList();
 		void initOffsetList();
 
-		static RegID genRegID( const ModbusRTU::ModbusData r, const int fn );
 		RTUDevice* addDev( RTUDeviceMap& dmap, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
 		RegInfo* addReg( RegMap& rmap, RegID id, ModbusRTU::ModbusData r, UniXML_iterator& it,
 							RTUDevice* dev, RegInfo* rcopy=0 );
