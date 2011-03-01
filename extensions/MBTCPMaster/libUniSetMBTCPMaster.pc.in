@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: libUniSetMBTCPMaster
 Description: Support library for UniSetModbusTCPMaster
 Requires: libUniSetExtensions libUniSetSharedMemory
-Version: 1.1.0
+Version: 1.1.1
 Libs: -L${libdir} -lUniSetMBTCPMaster
 Cflags: -I${includedir}/uniset
