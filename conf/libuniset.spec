@@ -154,6 +154,7 @@ rm -f %buildroot%_libdir/*.la
 %_bindir/%oname-smemory
 %_bindir/%oname-smviewer
 %_bindir/%oname-network
+%_bindir/%oname-unet*
 #%_bindir/%oname-smdbserver
 
 %_libdir/*Extensions.so.*
@@ -163,6 +164,7 @@ rm -f %buildroot%_libdir/*.la
 %_libdir/libUniSetRT*.so.*
 %_libdir/libUniSetShared*.so.*
 %_libdir/libUniSetNetwork*.so.*
+%_libdir/libUniSetUNet2*.so.*
 #%_libdir/libUniSetSMDBServer*.so.*
 
 %files extensions-devel
@@ -182,6 +184,7 @@ rm -f %buildroot%_libdir/*.la
 %_pkgconfigdir/libUniSetRT*.pc
 %_pkgconfigdir/libUniSetShared*.pc
 %_pkgconfigdir/libUniSetNetwork*.pc
+%_pkgconfigdir/libUniSetUNet*.pc
 #%_pkgconfigdir/libUniSetSMDBServer.pc
 #%_pkgconfigdir/libUniSet*.pc
 %exclude %_pkgconfigdir/libUniSet.pc
