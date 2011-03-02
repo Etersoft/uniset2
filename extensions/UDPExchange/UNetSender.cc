@@ -17,9 +17,9 @@ sendpause(150),
 activated(false),
 dlist(100),
 maxItem(0),
+packetnum(1),
 s_thr(0)
 {
-	ptPack.setTiming(UniSetTimer::WaitUpTime);
 
 	{
 		ostringstream s;
