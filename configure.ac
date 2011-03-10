@@ -53,17 +53,18 @@ test "x$IDL" = "x" && AC_MSG_ERROR([*** omniidl not found.])
 
 #check mysql support
 AC_MSG_CHECKING([mysql support])
-dmysql=false
+buildmysql=true
 AC_ARG_ENABLE(mysql, AC_HELP_STRING([--disable-mysql], [disable MySQL support]),
-[ if test $enableval = yes; then dmysql=false; else dmysql=true; fi],[ dmysql=false; ])
+[ if test $enableval = yes; then buildmysql=true; else buildmysql=false; fi],[ buildmysql=true; ])
 
-if test ${dmysql} = false; then
-	AC_MSG_RESULT([yes])
+if test ${buildmysql} = true; then
+	AC_MSG_RESULT([enabled])
+	AC_CHECK_HEADERS([mysql/mysql.h])
 else
-	AC_MSG_RESULT([no])
+	AC_MSG_RESULT([disabled])
 fi
 
-AM_CONDITIONAL(DISABLE_MYSQL, test ${dmysql} = true)
+AM_CONDITIONAL(DISABLE_MYSQL, test ${buildmysql} = false)
 
 #check build extensions
 ext=true
