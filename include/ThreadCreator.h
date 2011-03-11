@@ -108,6 +108,11 @@ class ThreadCreator:
 			PosixThread::setPriority(priority);
 		}
 
+		inline void setPriority( int priority )
+		{
+			PosixThread::setPriority(priority);
+		}
+
 		ThreadCreator( ThreadMaster* m, Action a );
 		~ThreadCreator();
 
