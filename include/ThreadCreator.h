@@ -103,6 +103,11 @@ class ThreadCreator:
 			PosixThread::thrkill(signo);
 		}
 
+		inline void setPriority( int priority )
+		{
+			PosixThread::setPriority(priority);
+		}
+
 		ThreadCreator( ThreadMaster* m, Action a );
 		~ThreadCreator();
 
