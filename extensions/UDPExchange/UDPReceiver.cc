@@ -285,8 +285,8 @@ void UDPReceiver::recv()
 {
 	if( udp->isInputReady(recvTimeout) )
 	{
-		ssize_t ret = udp->UDPReceive::receive(&(pack.msg),sizeof(pack.msg));
-		if( ret < sizeof(UniSetUDP::UDPHeader) )
+		size_t ret = udp->UDPReceive::receive(&h,sizeof(h));
+		if( ret < sizeof(h) )
 		{
 			cerr << myname << "(receive): FAILED header ret=" << ret << " sizeof=" << sizeof(UniSetUDP::UDPHeader) << endl;
 			return;
@@ -305,16 +305,26 @@ void UDPReceiver::recv()
 /*
 		if( labs(pack.msg.header.num - pnum) > 1 )
 		{
-			cerr << "************ FAILED! ORDER PACKETS! recv.num=" << pack.msg.header.num
-					<< " num=" << pnum << endl;
+			for( int i=0; i<h.dcount;i++ )
+			{
+				size_t ret = udp->UDPReceive::receive(&d,sizeof(d));
+				if( ret < sizeof(d) )
+					return;
+			}
+			return;
 		}
 
 		pnum = pack.msg.header.num;
 */
 		{
-			uniset_mutex_lock l(packMutex);
-//			qpack[pack.msg.header.num] = pack;
-			qpack.push(pack);
+			size_t ret = udp->UDPReceive::receive(&d,sizeof(d));
+			if( ret < sizeof(d) )
+			{
+				cerr << myname << "(receive data " << i << "): ret=" << ret << " sizeof=" << sizeof(d) << endl;
+				break;
+			}
+
+			cout << myname << "(receive data " << i << "): " << d << endl;
 		}
 
 		return;
