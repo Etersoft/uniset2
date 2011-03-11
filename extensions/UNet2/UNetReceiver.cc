@@ -246,15 +246,15 @@ void UNetReceiver::receive()
 		}
 		catch( ost::SockException& e )
 		{
-			cerr  << e.getString() << ": " << e.getSystemErrorString() << endl;
+			cerr  << myname << "(receive): " << e.getString() << endl;
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
-			cerr << myname << "(poll): " << ex << std::endl;
+			cerr << myname << "(receive): " << ex << std::endl;
 		}
 		catch(...)
 		{
-			cerr << myname << "(poll): catch ..." << std::endl;
+			cerr << myname << "(preceive): catch ..." << std::endl;
 		}
 
 		msleep(recvpause);
