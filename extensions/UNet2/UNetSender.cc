@@ -91,7 +91,7 @@ void UNetSender::update( UniSetTypes::ObjectId id, long value )
 void UNetSender::send()
 {
 	dlist.resize(maxItem);
-	dlog[Debug::INFO] << myname << "(init): dlist size = " << dlist.size() << endl;
+	dlog[Debug::INFO] << myname << "(send): dlist size = " << dlist.size() << endl;
 /*
 	ost::IPV4Broadcast h = s_host.c_str();
 	try
@@ -114,7 +114,7 @@ void UNetSender::send()
 		}
 		catch( ost::SockException& e )
 		{
-			cerr  << e.getString() << ": " << e.getSystemErrorString() << endl;
+			cerr  << myname << "(send): " << e.getString() << endl;
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
@@ -145,7 +145,7 @@ void UNetSender::real_send()
 
 	size_t ret = udp->send( (char*)&(mypack.msg),sz);
 	if( ret < sz )
-		dlog[Debug::CRIT] << myname << "(send): FAILED ret=" << ret << " < sizeof=" << sz << endl;
+		dlog[Debug::CRIT] << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << sz << endl;
 }
 // -----------------------------------------------------------------------------
 void UNetSender::start()
