@@ -38,6 +38,40 @@ int main(int argc, const char **argv)
 		UniversalIO::IOTypes t3=conf->getIOType("Input1_S");
 		cout << "**** check getIOType(name): for short name 'Input1_S': (" << t3 << ") " << ( t3 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;
 
+
+		int i1 = uni_atoi("-100");
+		cout << "**** check uni_atoi: '-100' " << ( ( i1 != -100 ) ? "FAILED" : "OK" ) << endl;
+
+		int i2 = uni_atoi("20");
+		cout << "**** check uni_atoi: '20' " << ( ( i2 != 20 ) ? "FAILED" : "OK" ) << endl;
+
+		xmlNode* cnode = conf->getNode("testnode");
+        if( cnode == NULL )
+        {
+            cerr << "<testnode name='testnode'> not found" << endl;
+            return 1;
+        }
+
+        cout << "**** check conf->getNode function [OK] " << endl;
+
+        UniXML_iterator it(cnode);
+
+        int prop2 = conf->getArgInt("--prop-id2",it.getProp("id2"));
+		cerr << "**** check conf->getArgInt(arg1,...): " << ( (prop2 == 0) ? "[FAILED]" : "OK" ) << endl;
+
+        int prop3 = conf->getArgInt("--prop-dummy",it.getProp("id2"));
+		cerr << "**** check conf->getArgInt(...,arg2): " << ( (prop3 != -100) ? "[FAILED]" : "OK" ) << endl;
+
+        int prop1 = conf->getArgPInt("--prop-id2",it.getProp("id2"),0);
+		cerr << "**** check conf->getArgPInt(...): " << ( (prop1 == 0) ? "[FAILED]" : "OK" ) << endl;
+
+        int prop4 = conf->getArgPInt("--prop-dummy",it.getProp("dummy"),20);
+		cerr << "**** check conf->getArgPInt(...,...,defval): " << ( (prop4 != 20) ? "[FAILED]" : "OK" ) << endl;
+
+        int prop5 = conf->getArgPInt("--prop-dummy",it.getProp("dummy"),0);
+		cerr << "**** check conf->getArgPInt(...,...,defval): " << ( (prop5 != 0) ? "[FAILED]" : "OK" ) << endl;
+
+
 		return 0;
 	}
 	catch(SystemError& err)

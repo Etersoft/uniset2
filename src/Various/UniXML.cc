@@ -133,10 +133,11 @@ int UniXML::getIntProp(const xmlNode* node, const string name )
 
 int UniXML::getPIntProp(const xmlNode* node, const string name, int def )
 {
-	int i = getIntProp(node, name);
-	if (i <= 0)
+	string param = getProp(node,name);
+	if( param.empty() )
 		return def;
-	return i;
+
+	return UniSetTypes::uni_atoi(param);
 }
 
 void UniXML::setProp(xmlNode* node, string name, string text)

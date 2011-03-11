@@ -33,7 +33,7 @@
 	</UniSet>
 	<dlog name="dlog"/>
 	<IOControl name="IOControl"/>
-	<testnode id="1000"/>
+	<testnode name="testnode" id="1000" id2="-100"/>
 	<SharedMemory name="SharedMemory" shmID="SharedMemory">
 		<History savetime="200">
 			<item filter="a1" fuse_id="AlarmFuse1_S" fuse_invert="1" id="1" size="30"/>
