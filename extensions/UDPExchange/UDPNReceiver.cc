@@ -89,8 +89,9 @@ void UDPNReceiver::recv()
 	UniSetUDP::UDPMessage pack;
 	if( udp->isInputReady(recvTimeout) )
 	{
-		ssize_t ret = udp->UDPReceive::receive(&(pack.msg),sizeof(pack.msg));
-		if( ret<(ssize_t)sizeof(pack.msg) )
+/*	  
+		size_t ret = udp->UDPReceive::receive(&h,sizeof(h));
+		if( ret<(size_t)sizeof(h) )
 		{
 			cerr << myname << "(receive): ret=" << ret << " sizeof=" << sizeof(pack.msg) << endl;
 			return;
@@ -115,19 +116,17 @@ void UDPNReceiver::recv()
 		{
 			for( int i=0; i<h.dcount;i++ )
 			{
-				ssize_t ret = udp->UDPReceive::receive(&d,sizeof(d));
-				if( ret < (ssize_t)sizeof(d) )
+				size_t ret = udp->UDPReceive::receive(&d,sizeof(d));
+				if( ret < (size_t)sizeof(d) )
 					return;
 			}
 			return;
 		}
-#endif
-#if 0
-		//cout << "***** request: " << udp->UDPSocket::getIPV4Peer() << endl;
+#endif 		
 		for( int i=0; i<100;i++ )
 		{
-			ssize_t ret = udp->UDPReceive::receive(&d,sizeof(d));
-			if( ret<(ssize_t)sizeof(d) )
+			size_t ret = udp->UDPReceive::receive(&d,sizeof(d));
+			if( ret<(size_t)sizeof(d) )
 			{
 				cerr << myname << "(receive data " << i << "): ret=" << ret << " sizeof=" << sizeof(d) << endl;
 				break;
