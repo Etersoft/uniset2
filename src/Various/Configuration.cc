@@ -422,18 +422,20 @@ int Configuration::getArgInt( const string name, const string defval )
 
 int Configuration::getArgPInt( const string name, int defval )
 {
-	int i = getArgInt(name);
-	if ( i <= 0 )
+	string param = getArgParam(name,"");
+	if( param.empty() )
 		return defval;
-	return i;
+
+	return UniSetTypes::uni_atoi(param);
 }
 
 int Configuration::getArgPInt( const string name, const string strdefval, int defval )
 {
-	int i = getArgInt(name, strdefval);
-	if ( i <= 0 )
+	string param = getArgParam(name,strdefval);
+	if( param.empty() && strdefval.empty() )
 		return defval;
-	return i;
+
+	return UniSetTypes::uni_atoi(param);
 }
 
 

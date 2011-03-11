@@ -5,8 +5,8 @@ bool check(const char *t, int nres)
 	int n = 105;
 	sscanf(t, "%i", &n);
 	printf("res=%d\n", n);
-	if ( n != nres)
-		printf("FAILED\n");
+	if ( n != nres )
+		printf("check %d   [FAILED]\n",nres);
 	return n == nres;
 }
 
@@ -20,4 +20,5 @@ int main()
 	check("-1000",-1000);
 	check("",0);
 	// check(NULL,0); // SegFault
+	return 0;
 }
