@@ -231,8 +231,8 @@ void UDPExchange::send()
 	h.dcount = mypack.size();
 	if( udp->isPending(ost::Socket::pendingOutput) )
 	{
-		ssize_t ret = udp->send((char*)(&h),sizeof(h));
-		if( ret<(ssize_t)sizeof(h) )
+		size_t ret = udp->send((char*)(&h),sizeof(h));
+		if( ret<(size_t)sizeof(h) )
 		{
 			cerr << myname << "(send data header): ret=" << ret << " sizeof=" << sizeof(h) << endl;
 			return;
@@ -247,8 +247,8 @@ void UDPExchange::send()
 //				msleep(30);
 
         	cout << myname << "(send): " << (*it) << endl;
-			ssize_t ret = udp->send((char*)(&(*it)),sizeof(UniSetUDP::UDPData));
-			if( ret<(ssize_t)sizeof(UniSetUDP::UDPData) )
+			size_t ret = udp->send((char*)(&(*it)),sizeof(UniSetUDP::UDPData));
+			if( ret<(size_t)sizeof(UniSetUDP::UDPData) )
 			{
 				cerr << myname << "(send data): ret=" << ret << " sizeof=" << sizeof(UniSetUDP::UDPData) << endl;
 				break;

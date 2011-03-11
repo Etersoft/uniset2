@@ -223,8 +223,8 @@ void UDPSender::send()
 	h.procID = getId();
 	h.dcount = mypack.size();
 	// receive
-		ssize_t ret = udp->send((char*)(&h),sizeof(h));
-		if( ret<(ssize_t)sizeof(h) )
+		size_t ret = udp->send((char*)(&h),sizeof(h));
+		if( ret<(size_t)sizeof(h) )
 		{
 			cerr << myname << "(send data header): ret=" << ret << " sizeof=" << sizeof(h) << endl;
 			return;
@@ -235,8 +235,8 @@ void UDPSender::send()
 		for( ; it!=mypack.dlist.end(); ++it )
 		{
 			cout << myname << "(send): " << (*it) << endl;
-			ssize_t ret = udp->send((char*)(&(*it)),sizeof(*it));
-			if( ret<(ssize_t)sizeof(*it) )
+			size_t ret = udp->send((char*)(&(*it)),sizeof(*it));
+			if( ret<(size_t)sizeof(*it) )
 			{
 				cerr << myname << "(send data): ret=" << ret << " sizeof=" << sizeof(*it) << endl;
 				break;

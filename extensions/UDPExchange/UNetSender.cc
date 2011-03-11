@@ -143,7 +143,7 @@ void UNetSender::real_send()
 	if( !udp->isPending(ost::Socket::pendingOutput) )
 		return;
 
-	ssize_t ret = udp->send( (char*)&(mypack.msg),sz);
+	size_t ret = udp->send( (char*)&(mypack.msg),sz);
 	if( ret < sz )
 		dlog[Debug::CRIT] << myname << "(send): FAILED ret=" << ret << " < sizeof=" << sz << endl;
 }
