@@ -130,6 +130,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askState( UniSetTypes::ObjectId _si
 	if( _cmd == UniversalIO::UIONotify )
 	{
 		SensorMessage _sm( _sid, (bool)ui.getState(_sid,_node) );
+		_sm.sensor_type = UniversalIO::DigitalInput;
 		_sm.node = _node;
 		sensorInfo(&amp;_sm);
 	}
@@ -141,6 +142,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askValue( UniSetTypes::ObjectId _si
 	{
 		SensorMessage _sm( _sid, (long)ui.getValue(_sid,_node) );
 		_sm.node = _node;
+		_sm.sensor_type = UniversalIO::AnalogInput;
 		sensorInfo(&amp;_sm);
 	}
 }
@@ -327,7 +329,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 //					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
 		</xsl:if>
 			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (bool)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
-//			push( _sm.transport_msg() );
+			_sm.sensor_type = UniversalIO::DigitalInput;
 			sensorInfo(&amp;_sm);
 		}
 	</xsl:when>
@@ -341,7 +343,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 //					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
 		</xsl:if>
 			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
-//			push( _sm.transport_msg() );
+			_sm.sensor_type = UniversalIO::AnalogInput;
 			sensorInfo(&amp;_sm);
 		}
 	</xsl:when>
@@ -355,7 +357,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 //					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
 		</xsl:if>
 			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (bool)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
-			push( _sm.transport_msg() );
+			_sm.sensor_type = UniversalIO::DigitalOutput;
+			sensorInfo(&amp;_sm);
 		}
 	</xsl:when>
 	<xsl:when test="normalize-space(../../@iotype)='AO'">
@@ -368,7 +371,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 //					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
 		</xsl:if>
 			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
-			push( _sm.transport_msg() );
+			_sm.sensor_type = UniversalIO::AnalogOutput;
+			sensorInfo(&amp;_sm);
 		}
 	</xsl:when>
 </xsl:choose>
