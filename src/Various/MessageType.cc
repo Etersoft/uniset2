@@ -116,7 +116,7 @@ tid(UniSetTypes::DefaultThresholdId)
 	ci.precision = 0;
 }
 
-SensorMessage::SensorMessage(ObjectId id, long value, IOController_i::CalibrateInfo& ci,
+SensorMessage::SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci,
 							Priority priority, 
 							UniversalIO::IOTypes st, ObjectId consumer):
 id(id),
@@ -172,7 +172,7 @@ route(false)
 {
 	type = Message::Info;
 }
-InfoMessage::InfoMessage(ObjectId id,  string str, ObjectId node, Character ch, 
+InfoMessage::InfoMessage(ObjectId id, const string str, ObjectId node, Character ch,
 							Priority priority, ObjectId consumer):
 id(id),
 infocode( UniSetTypes::DefaultMessageCode ),
@@ -219,7 +219,7 @@ route(false)
 	type = Message::Alarm;
 }
 
-AlarmMessage::AlarmMessage(ObjectId id,  string str, ObjectId node, 
+AlarmMessage::AlarmMessage(ObjectId id, const string str, ObjectId node,
 						Character ch, Priority prior, ObjectId cons):
 id(id),
 alarmcode(UniSetTypes::DefaultMessageCode),
@@ -236,7 +236,7 @@ route(false)
 	this->consumer = cons;
 }
 
-AlarmMessage::AlarmMessage(ObjectId id,  string str, MessageCode ccode, 
+AlarmMessage::AlarmMessage(ObjectId id, const string str, MessageCode ccode,
 							ObjectId node, Character ch, 
 							Priority prior, ObjectId cons):
 id(id),
