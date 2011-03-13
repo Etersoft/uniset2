@@ -127,7 +127,7 @@ namespace UniSetTypes
 							UniversalIO::IOTypes st = UniversalIO::DigitalInput,
 							ObjectId consumer=UniSetTypes::DefaultObjectId);
 
-			SensorMessage(ObjectId id, long value, IOController_i::CalibrateInfo ci,
+			SensorMessage(ObjectId id, long value, IOController_i::CalibrateInfo& ci,
 							Priority priority = Message::Medium, 
 							UniversalIO::IOTypes st = UniversalIO::AnalogInput,
 							ObjectId consumer=UniSetTypes::DefaultObjectId);

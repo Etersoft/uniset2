@@ -161,7 +161,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askState( UniSetTypes::ObjectId sid
 {
 	if( cmd == UniversalIO::UIONotify )
 	{
-		SensorMessage sm( sid, (bool)ui.getState(sid,node) );
+		SensorMessage sm( sid, (bool)ui.getState(sid,node), Message::Medium );
 		sm.sensor_type = UniversalIO::DigitalInput;
 		sm.node = node;
 		sensorInfo(&amp;sm);
@@ -172,7 +172,11 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askValue( UniSetTypes::ObjectId sid
 {
 	if( cmd == UniversalIO::UIONotify )
 	{
-		SensorMessage sm( sid, (long)ui.getValue(sid,node) );
+		// приходится искуственно использовать третий параметр,
+		// что-бы компилятор выбрал
+		// правильный(для аналоговых) конструктор у SensorMessage
+		IOController_i::CalibrateInfo _ci;
+		SensorMessage sm( sid, (long)ui.getValue(sid,node), _ci );
 		sm.sensor_type = UniversalIO::AnalogInput;
 		sm.node = node;
 		sensorInfo(&amp;sm);
@@ -323,7 +327,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 //				cout &lt;&lt; myname &lt;&lt; ": (DI) change state <xsl:value-of select="@name"/> set " 
 //					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> &lt;&lt; endl;
 			</xsl:if>
-				SensorMessage _sm( <xsl:value-of select="@name"/>, (bool)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
+				SensorMessage _sm( <xsl:value-of select="@name"/>, (bool)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, Message::Medium);
 				_sm.sensor_type = UniversalIO::DigitalInput;
 				sensorInfo(&amp;_sm);
 			}
@@ -338,7 +342,11 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 //			cout &lt;&lt; myname &lt;&lt; ": (AI) change value <xsl:value-of select="@name"/> set " 
 //					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> &lt;&lt; endl;
 		</xsl:if>
-			SensorMessage _sm( <xsl:value-of select="@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
+		  // приходится искуственно использовать третий параметр,
+		  // что-бы компилятор выбрал
+		  // правильный(для аналоговых) конструктор у SensorMessage
+			IOController_i::CalibrateInfo _ci;
+			SensorMessage _sm( <xsl:value-of select="@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, _ci);
 			_sm.sensor_type = UniversalIO::AnalogInput;
 			sensorInfo(&amp;_sm);
 		}
@@ -354,7 +362,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 //				cout &lt;&lt; myname &lt;&lt; ": (DO) change state <xsl:value-of select="@name"/> set " 
 //						&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> &lt;&lt; endl;
 			</xsl:if>
-				SensorMessage _sm( <xsl:value-of select="@name"/>, (bool)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
+				SensorMessage _sm( <xsl:value-of select="@name"/>, (bool)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, Message::Medium);
 				_sm.sensor_type = UniversalIO::DigitalOutput;
 				sensorInfo(&amp;_sm);
 			}
@@ -371,7 +379,11 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 //				cout &lt;&lt; myname &lt;&lt; ": (AO) change value <xsl:value-of select="@name"/> set " 
 //						&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> &lt;&lt; endl;
 			</xsl:if>
-				SensorMessage _sm( <xsl:value-of select="@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
+				// приходится искуственно использовать третий параметр,
+				// что-бы компилятор выбрал
+				// правильный(для аналоговых) конструктор у SensorMessage
+				IOController_i::CalibrateInfo _ci;
+				SensorMessage _sm( <xsl:value-of select="@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, _ci);
 				_sm.sensor_type = UniversalIO::AnalogOutput;
 				sensorInfo(&amp;_sm);
 			}
