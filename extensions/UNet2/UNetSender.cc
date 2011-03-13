@@ -139,7 +139,7 @@ void UNetSender::real_send()
 		packetnum = 1;
 
 //	cout << "************* send header: " << mypack.msg.header << endl;
-	int sz = mypack.byte_size() + sizeof(UniSetUDP::UDPHeader);
+	size_t sz = mypack.byte_size() + sizeof(UniSetUDP::UDPHeader);
 	if( !udp->isPending(ost::Socket::pendingOutput) )
 		return;
 
