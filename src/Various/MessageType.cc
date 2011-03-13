@@ -116,7 +116,7 @@ tid(UniSetTypes::DefaultThresholdId)
 	ci.precision = 0;
 }
 
-SensorMessage::SensorMessage(ObjectId id, long value, IOController_i::CalibrateInfo ci,
+SensorMessage::SensorMessage(ObjectId id, long value, IOController_i::CalibrateInfo& ci,
 							Priority priority, 
 							UniversalIO::IOTypes st, ObjectId consumer):
 id(id),
