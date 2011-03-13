@@ -324,7 +324,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 //					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> &lt;&lt; endl;
 			</xsl:if>
 				SensorMessage _sm( <xsl:value-of select="@name"/>, (bool)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
-				_sm.sensor_type == UniversalIO::DigitalInput;
+				_sm.sensor_type = UniversalIO::DigitalInput;
 				sensorInfo(&amp;_sm);
 			}
 		}
@@ -339,7 +339,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 //					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> &lt;&lt; endl;
 		</xsl:if>
 			SensorMessage _sm( <xsl:value-of select="@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
-			_sm.sensor_type == UniversalIO::AnalogInput;
+			_sm.sensor_type = UniversalIO::AnalogInput;
 			sensorInfo(&amp;_sm);
 		}
 	</xsl:when>
@@ -355,7 +355,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 //						&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> &lt;&lt; endl;
 			</xsl:if>
 				SensorMessage _sm( <xsl:value-of select="@name"/>, (bool)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
-				_sm.sensor_type == UniversalIO::DigitalOutput;
+				_sm.sensor_type = UniversalIO::DigitalOutput;
 				sensorInfo(&amp;_sm);
 			}
 		}
@@ -372,7 +372,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 //						&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> &lt;&lt; endl;
 			</xsl:if>
 				SensorMessage _sm( <xsl:value-of select="@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>);
-				_sm.sensor_type == UniversalIO::AnalogOutput;
+				_sm.sensor_type = UniversalIO::AnalogOutput;
 				sensorInfo(&amp;_sm);
 			}
 		}
