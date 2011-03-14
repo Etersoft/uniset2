@@ -1491,7 +1491,7 @@ bool MBTCPMaster::initRSProperty( RSProperty& p, UniXML_iterator& it )
 		VTypes::VType v(VTypes::str2type(vt));
 		if( v == VTypes::vtUnknown )
 		{
-			dlog[Debug::CRIT] << myname << "(initRSProperty): Unknown rtuVType=" << vt << " for " 
+			dlog[Debug::CRIT] << myname << "(initRSProperty): Unknown tcp_vtype='" << vt << "' for "
 					<< it.getProp("name") 
 					<< endl;
 
