@@ -246,15 +246,15 @@ void UNetReceiver::receive()
 		}
 		catch( ost::SockException& e )
 		{
-			cerr  << e.getString() << ": " << e.getSystemErrorString() << endl;
+			cerr  << myname << "(receive): " << e.getString() << endl;
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
-			cerr << myname << "(poll): " << ex << std::endl;
+			cerr << myname << "(receive): " << ex << std::endl;
 		}
 		catch(...)
 		{
-			cerr << myname << "(poll): catch ..." << std::endl;
+			cerr << myname << "(preceive): catch ..." << std::endl;
 		}	
 
 		msleep(recvpause);
@@ -268,14 +268,14 @@ bool UNetReceiver::recv()
 	if( !udp->isInputReady(recvTimeout) )
 		return false;
 
-	ssize_t ret = udp->UDPReceive::receive(&(pack.msg),sizeof(pack.msg));
+	size_t ret = udp->UDPReceive::receive(&(pack.msg),sizeof(pack.msg));
 	if( ret < sizeof(UniSetUDP::UDPHeader) )
 	{
 		dlog[Debug::CRIT] << myname << "(receive): FAILED header ret=" << ret << " sizeof=" << sizeof(UniSetUDP::UDPHeader) << endl;
 		return false;
 	}
 		
-	ssize_t sz = pack.msg.header.dcount * sizeof(UniSetUDP::UDPData) + sizeof(UniSetUDP::UDPHeader);
+	size_t sz = pack.msg.header.dcount * sizeof(UniSetUDP::UDPData) + sizeof(UniSetUDP::UDPHeader);
 	if( ret < sz )
 	{
 		dlog[Debug::CRIT] << myname << "(receive): FAILED data ret=" << ret << " sizeof=" << sz

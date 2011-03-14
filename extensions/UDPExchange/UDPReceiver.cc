@@ -212,8 +212,8 @@ void UDPReceiver::recv()
 	// receive
 	if( udp->isInputReady(recvTimeout) )
 	{
-		ssize_t ret = udp->UDPReceive::receive(&h,sizeof(h));
-		if( ret<(ssize_t)sizeof(h) )
+		size_t ret = udp->UDPReceive::receive(&h,sizeof(h));
+		if( ret < sizeof(h) )
 		{
 			cerr << myname << "(receive): ret=" << ret << " sizeof=" << sizeof(h) << endl;
 			return;
@@ -233,8 +233,8 @@ void UDPReceiver::recv()
 		{
 			for( int i=0; i<h.dcount;i++ )
 			{
-				ssize_t ret = udp->UDPReceive::receive(&d,sizeof(d));
-				if( ret < (ssize_t)sizeof(d) )
+				size_t ret = udp->UDPReceive::receive(&d,sizeof(d));
+				if( ret < sizeof(d) )
 					return;
 			}
 			return;
@@ -242,8 +242,8 @@ void UDPReceiver::recv()
 #endif 		
 		for( int i=0; i<h.dcount;i++ )
 		{
-			ssize_t ret = udp->UDPReceive::receive(&d,sizeof(d));
-			if( ret<(ssize_t)sizeof(d) )
+			size_t ret = udp->UDPReceive::receive(&d,sizeof(d));
+			if( ret < sizeof(d) )
 			{
 				cerr << myname << "(receive data " << i << "): ret=" << ret << " sizeof=" << sizeof(d) << endl;
 				break;

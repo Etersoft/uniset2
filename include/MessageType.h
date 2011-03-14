@@ -127,7 +127,7 @@ namespace UniSetTypes
 							UniversalIO::IOTypes st = UniversalIO::DigitalInput,
 							ObjectId consumer=UniSetTypes::DefaultObjectId);
 
-			SensorMessage(ObjectId id, long value, IOController_i::CalibrateInfo ci,
+			SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci,
 							Priority priority = Message::Medium, 
 							UniversalIO::IOTypes st = UniversalIO::AnalogInput,
 							ObjectId consumer=UniSetTypes::DefaultObjectId);
@@ -181,7 +181,7 @@ namespace UniSetTypes
 								Warning
 							};
 			InfoMessage();
-			InfoMessage(ObjectId id,  std::string str, ObjectId node = conf->getLocalNode(), 
+			InfoMessage(ObjectId id, const std::string str, ObjectId node = conf->getLocalNode(), 
 						Character ch = InfoMessage::Normal, 
 						Priority priority = Message::Medium, ObjectId consumer=UniSetTypes::DefaultObjectId);
 
@@ -231,11 +231,11 @@ namespace UniSetTypes
 							};
 
 			AlarmMessage();
-			AlarmMessage(ObjectId id,  std::string str, 	ObjectId node = conf->getLocalNode(), 
+			AlarmMessage(ObjectId id, const std::string str, ObjectId node = conf->getLocalNode(), 
 						Character ch = AlarmMessage::Alarm, 
 						Priority prior = Message::Medium, ObjectId cons=UniSetTypes::DefaultObjectId);
 
-			AlarmMessage(ObjectId id,  std::string str, MessageCode ccode, 
+			AlarmMessage(ObjectId id, const std::string str, MessageCode ccode, 
 							ObjectId node = conf->getLocalNode(), 				
 							Character ch = AlarmMessage::Alarm, 
 							Priority prior = Message::Medium, ObjectId cons=UniSetTypes::DefaultObjectId);

@@ -89,8 +89,8 @@ void UDPNReceiver::recv()
 	if( udp->isInputReady(recvTimeout) )
 	{
 /*	  
-		ssize_t ret = udp->UDPReceive::receive(&h,sizeof(h));
-		if( ret<(ssize_t)sizeof(h) )
+		size_t ret = udp->UDPReceive::receive(&h,sizeof(h));
+		if( ret<(size_t)sizeof(h) )
 		{
 			cerr << myname << "(receive): ret=" << ret << " sizeof=" << sizeof(h) << endl;
 			return;
@@ -110,18 +110,17 @@ void UDPNReceiver::recv()
 		{
 			for( int i=0; i<h.dcount;i++ )
 			{
-				ssize_t ret = udp->UDPReceive::receive(&d,sizeof(d));
-				if( ret < (ssize_t)sizeof(d) )
+				size_t ret = udp->UDPReceive::receive(&d,sizeof(d));
+				if( ret < (size_t)sizeof(d) )
 					return;
 			}
 			return;
 		}
 #endif 		
-		cout << "***** request: " << udp->UDPSocket::getIPV4Peer() << endl;
 		for( int i=0; i<100;i++ )
 		{
-			ssize_t ret = udp->UDPReceive::receive(&d,sizeof(d));
-			if( ret<(ssize_t)sizeof(d) )
+			size_t ret = udp->UDPReceive::receive(&d,sizeof(d));
+			if( ret<(size_t)sizeof(d) )
 			{
 				cerr << myname << "(receive data " << i << "): ret=" << ret << " sizeof=" << sizeof(d) << endl;
 				break;
