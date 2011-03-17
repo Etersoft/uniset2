@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <error.h>
+#include <errno.h>
 #include <comedilib.h>
 #include <getopt.h>
 
@@ -195,17 +197,23 @@ int main(int argc, char* argv[])
 	{
 		case cmdDRead:
 		{
+			if( autoconf )
+			{
+				for( int k=0; chan[k]!=-1; k++ )
+				{
+					if( comedi_dio_config(card, subdev, chan[k],INSN_CONFIG_DIO_INPUT) < 0)
+					{
+						comedi_perror("can't configure DI channels");
+						exret = EXIT_FAILURE;
+					}
+				}
+			}
+			
 			for( int k=0; chan[k]!=-1; k++ )
 			{
-				if( comedi_dio_config(card, subdev, chan[k],INSN_CONFIG_DIO_INPUT) < 0)
-				{
-					comedi_perror("can't configure DI channels");
-					exret = EXIT_FAILURE;
-				}
-
 				if( comedi_dio_read(card, subdev, chan[k],&data) < 0)
 				{
-					fprintf(stderr, "can't read from channel %d\n",chan[k]);
+					fprintf(stderr, "can't read from channel %d (err(%d): %s)\n",chan[k],errno,strerror(errno));
 			  		exret = EXIT_FAILURE;
 				}
 	
@@ -216,12 +224,15 @@ int main(int argc, char* argv[])
 
 		case cmdDWrite:
 		{
-			for( int k=0; chan[k]!=-1; k++ )
+			if( autoconf )
 			{
-				if( comedi_dio_config(card, subdev, chan[k],INSN_CONFIG_DIO_OUTPUT) < 0 )
+				for( int k=0; chan[k]!=-1; k++ )
 				{
-					comedi_perror("can't configure DO channels");
-					exret = EXIT_FAILURE;
+					if( comedi_dio_config(card, subdev, chan[k],INSN_CONFIG_DIO_OUTPUT) < 0 )
+					{
+						fprintf(stderr,"can't configure DO channels. (%d) %s", errno,strerror(errno));
+						exret = EXIT_FAILURE;
+					}
 				}
 			}
 			// реализация мигания
@@ -234,7 +245,7 @@ int main(int argc, char* argv[])
 
 				  	if( comedi_dio_write(card, subdev, chan[k], val) < 0)
 					{
-						comedi_perror("can't write 1 to channel\n");
+						fprintf(stderr,"can't write 1 to channel %d. (%d) %s\n",k,errno,strerror(errno));
 				  		exret = EXIT_FAILURE;
 					}
 				}	
@@ -258,7 +269,7 @@ int main(int argc, char* argv[])
 				int ret = comedi_data_read(card, subdev, chan[k], range, aref, &data);
 				if( ret < 0)
 				{
-					fprintf(stderr, "can't read from channel %d: (%d) %s\n",chan[k],ret,strerror(ret));
+					fprintf(stderr, "can't read from channel %d: (%d) %s\n",chan[k],errno,strerror(errno));
 				  	exret = EXIT_FAILURE;
 				}
 
@@ -277,7 +288,7 @@ int main(int argc, char* argv[])
 				int ret = comedi_data_write(card, subdev, chan[k], range, aref, val);
 				if( ret < 0)
 				{
-					fprintf(stderr, "can't write to channel %d: (%d) %s\n",chan[k],ret,strerror(ret));
+					fprintf(stderr, "can't write to channel %d: (%d) %s\n",chan[k],errno,strerror(errno));
 					exret = EXIT_FAILURE;
 				}
 			}
@@ -364,7 +375,7 @@ void insn_subdev_config( comedi_t* card, int subdev, lsampl_t type )
 	
 	if( comedi_do_insn(card,&insn) < 0 )
 	{
-		fprintf(stderr, "can`t configure subdev subdev=%d type=%d",subdev,type);
+		fprintf(stderr, "can`t configure subdev subdev=%d type=%d. Err(%d): %s",subdev,type,errno,strerror(errno));
 	  	exit(EXIT_FAILURE);
 	}
 }
