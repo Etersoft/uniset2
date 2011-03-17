@@ -189,7 +189,7 @@ void MBTCPMaster::initMB( bool reopen )
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
-		cerr << "(init): " << ex << endl;
+		dlog[Debug::WARN] << "(init): " << ex << endl;
 	}
 	catch(...)
 	{
@@ -1231,7 +1231,7 @@ bool MBTCPMaster::activateObject()
 // ------------------------------------------------------------------------------------------
 void MBTCPMaster::sigterm( int signo )
 {
-	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
+	dlog[Debug::WARN] << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
 	setProcActive(false);
 
 /*! \todo Доделать выставление безопасного состояния на выходы. 
@@ -1895,14 +1895,14 @@ MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv, UniS
 	string name = conf->getArgParam("--" + prefix + "-name","MBTCPMaster1");
 	if( name.empty() )
 	{
-		cerr << "(MBTCPMaster): Не задан name'" << endl;
+		dlog[Debug::CRIT] << "(MBTCPMaster): Не задан name'" << endl;
 		return 0;
 	}
 
 	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		cerr << "(MBTCPMaster): идентификатор '" << name 
+		dlog[Debug::CRIT] << "(MBTCPMaster): идентификатор '" << name
 			<< "' не найден в конф. файле!"
 			<< " в секции " << conf->getObjectsSection() << endl;
 		return 0;
@@ -2073,28 +2073,31 @@ void MBTCPMaster::rtuQueryOptimization( RTUDeviceMap& m )
 	for( MBTCPMaster::RTUDeviceMap::iterator it1=m.begin(); it1!=m.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
+
+		// Вообще в map они уже лежат в нужном порядке, т.е. функция genRegID() гарантирует
+		// что регистры идущие подряд с одниковой функцией чтения/записи получат подряд идущие ID.
+		// так что оптимтизация это просто нахождение мест где id идут не подряд...
 		for( MBTCPMaster::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
 			MBTCPMaster::RegMap::iterator beg = it;
-			ModbusRTU::ModbusData reg = it->second->mbreg;
-
+			RegID id = it->second->id; // или собственно it->first
 			beg->second->q_num = 1;
 			beg->second->q_count = 1;
 			it++;
 			for( ;it!=d->regmap.end(); ++it )
 			{
-				if( (it->second->mbreg - reg) > 1 )
+				if( (it->second->id - id) > 1 )
+				{
+					it--;  // раз это регистр уже следующий, то надо вернуть на шаг обратно..
 					break;
-				
-				if( beg->second->mbfunc != it->second->mbfunc )
-					break;
+				}
 				
 				beg->second->q_count++;
 
 				if( beg->second->q_count >= ModbusRTU::MAXDATALEN  )
 					break;
 
-				reg = it->second->mbreg;
+				id = it->second->id;
 				it->second->q_num = beg->second->q_count;
 				it->second->q_count = 0;
 			}
@@ -2123,8 +2126,6 @@ void MBTCPMaster::rtuQueryOptimization( RTUDeviceMap& m )
 			
 			if( it==d->regmap.end() )
 				break;
-
-			it--;
 		}
 	}
 }
@@ -2518,7 +2519,7 @@ void MBTCPMaster::updateMTR( RegMap::iterator& rit )
 				if( r->mtrType == MTR::mtT4 )
 				{
 					if( save )
-						cerr << myname << "(updateMTR): write (T4) reg(" << dat2str(r->mbreg) << ") to MTR NOT YET!!!" << endl;
+						dlog[Debug::WARN] << myname << "(updateMTR): write (T4) reg(" << dat2str(r->mbreg) << ") to MTR NOT YET!!!" << endl;
 					else
 					{
 						MTR::T4 t(r->mbval);
