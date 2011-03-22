@@ -55,8 +55,7 @@ then
 	[ "$DBG" == "hel" ] && start_line="valgrind --tool=helgrind --trace-children=yes --log-file=valgrind.log $COMLINE"
 	
 	if [ "$DBG" == "gdb" ]; then
-        PRG="$1"; shift
-  		start_line="gdb --args $PRG -- $@"
+  		start_line="gdb --args $COMLINE"
 	fi
 
 	echo Running "$start_line"
