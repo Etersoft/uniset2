@@ -29,7 +29,8 @@
 #include "Storages.h"
 
 
-TableStorage::TableStorage(const char* name, int inf_sz, int sz, int seek)
+TableStorage::TableStorage( const char* name, int inf_sz, int sz, int seek ):
+	file(0)
 {
 	file = fopen(name, "r+");
 	inf_size=inf_sz;
@@ -105,7 +106,8 @@ TableStorage::TableStorage(const char* name, int inf_sz, int sz, int seek)
 
 TableStorage::~TableStorage()
 {
-	fclose(file);
+	if( file )
+		fclose(file);
 }
 
 int TableStorage::addRow(char* key, char* value)
