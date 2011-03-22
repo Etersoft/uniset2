@@ -149,8 +149,8 @@ bool IOController::localGetState( IOController::DIOStateList::iterator& li,
 
 	// -------------
 	ostringstream err;
-	err << myname << "(localGetState): дискретный вход(выход) с именем " 
-		<< conf->oind->getNameById(si.id) << " не найден";
+	err << myname << "(localGetState): Not found digital sensor (" << si.id << ":" << si.node << ") "
+		<< conf->oind->getNameById(si.id);
 
 	if( unideb.debugging(Debug::INFO) )
 		unideb[Debug::INFO] << err.str() << endl;
@@ -174,10 +174,12 @@ long IOController::localGetValue( IOController::AIOStateList::iterator& li,
 	
 	// -------------
 	ostringstream err;
-	err << myname << "(localGetValue): аналоговый вход(выход) с именем " 
-		<< conf->oind->getNameById(si.id) << " не найден";
+	err << myname << "(localGetValue): Not found analog sensor (" << si.id << ":" << si.node << ") "
+		<< conf->oind->getNameById(si.id);
+
 	if( unideb.debugging(Debug::INFO) )
 		unideb[Debug::INFO] << err.str() << endl;
+
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ------------------------------------------------------------------------------------------
@@ -216,9 +218,9 @@ void IOController::localSetUndefinedState( AIOStateList::iterator& li,
 	if( li==aioList.end() )
 	{
 		ostringstream err;
-		err << myname << "(localSetUndefined): не зарегистрирован датчик "
-			<< "имя: " << conf->oind->getNameById(si.id)
-			<< " узел: " << conf->oind->getMapName(si.node); 
+		err << myname << "(localSetUndefined): Unknown sensor (" << si.id << ":" << si.node << ")"
+			<< "name: " << conf->oind->getNameById(si.id)
+			<< "node: " << conf->oind->getMapName(si.node);
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
@@ -243,18 +245,19 @@ void IOController::localSaveState( IOController::DIOStateList::iterator& li,
 	if( li==dioList.end() )
 	{
 		ostringstream err;
-		err << myname << "(saveState): не зарегистрирован датчик "
-			<< "имя: " << conf->oind->getNameById(si.id)
-			<< " узел: " << conf->oind->getMapName(si.node); 
+		err << myname << "(localSaveState): Unknown sensor (" << si.id << ":" << si.node << ")"
+			<< "name: " << conf->oind->getNameById(si.id)
+			<< "node: " << conf->oind->getMapName(si.node);
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
 	if( li->second.type != UniversalIO::DigitalInput ) // && li->second.type != UniversalIO::DigitalOutput )
 	{
 		ostringstream err;
-		err << myname << "(saveState): неверно указан тип( " << li->second.type << ") дискретного датчика имя: " 
-			<< conf->oind->getNameById(si.id)
-			<< " узел: " << conf->oind->getMapName(si.node); 
+		err << myname << "(localSaveState): Bad sensor iotype=" << li->second.type
+			<< ". Sensor must be 'DI'. (" << si.id << ":" << si.node << ")"
+			<< " name: " << conf->oind->getNameById(si.id)
+			<< " node: " << conf->oind->getMapName(si.node);
 		throw IOController_i::IOBadParam(err.str().c_str());
 	}
 
@@ -302,7 +305,7 @@ void IOController::localSaveState( IOController::DIOStateList::iterator& li,
 
 		if( unideb.debugging(Debug::INFO) )	
 		{
-			unideb[Debug::INFO] << myname << ": сохраняем состояние дискретного датчика "
+			unideb[Debug::INFO] << myname << ": save digital sensor (" << si.id << ":" << si.node << ")"
 								<< conf->oind->getNameById(si.id, si.node) 
 								<< " = " << state 
 								<< " blocked=" << blocked 
@@ -350,18 +353,19 @@ void IOController::localSaveValue( IOController::AIOStateList::iterator& li,
 	if( li==aioList.end() )
 	{	
 		ostringstream err;
-		err << myname << "(saveValue): не зарегистрирован датчик "
-			<< "имя: " << conf->oind->getNameById(si.id)
-			<< " узел: " << conf->oind->getMapName(si.node);  
+		err << myname << "(localSaveValue): Unknown sensor (" << si.id << ":" << si.node << ")"
+			<< "name: " << conf->oind->getNameById(si.id)
+			<< "node: " << conf->oind->getMapName(si.node);
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
 	if( li->second.type != UniversalIO::AnalogInput ) // && li->second.type != UniversalIO::AnalogOutput )
 	{
 		ostringstream err;
-		err << myname << "(saveValue): неверно указан тип(" << li->second.type
-			<< ") аналогового датчика имя: " << conf->oind->getNameById(si.id)
-			<< " узел: " << conf->oind->getMapName(si.node); 
+		err << myname << "(localSaveValue): Bad sensor iotype=" << li->second.type
+			<< ". Sensor must be 'AI'. (" << si.id << ":" << si.node << ")"
+			<< " name: " << conf->oind->getNameById(si.id)
+			<< " node: " << conf->oind->getMapName(si.node);
 		throw IOController_i::IOBadParam(err.str().c_str());
 	}
 
@@ -377,9 +381,10 @@ void IOController::localSaveValue( IOController::AIOStateList::iterator& li,
 		{
 			if( unideb.debugging(Debug::INFO) )	
 			{
-				unideb[Debug::INFO] << myname << ": сохраняем состояние аналогового датчика "
-							<< conf->oind->getNameById(si.id, si.node) 
-							<< " = "<< value << endl;
+				unideb[Debug::INFO] << myname << ": save analog sensor value (" << si.id << ":" << si.node << ")"
+					<< " name: " << conf->oind->getNameById(si.id)
+					<< " node: " << conf->oind->getMapName(si.node)
+					<< " value="<< value << endl;
 			}
 			if( !blocked )
 				li->second.real_value = li->second.value;
@@ -521,7 +526,7 @@ void IOController::localSetState( IOController::DIOStateList::iterator& li,
 		if( unideb.debugging(Debug::INFO) )	
 		{
 			unideb[Debug::INFO] << myname 
-					<< ": сохраняем состояние дискретного выхода "
+					<< ": save state for DO (" << si.id << ":" << si.node << ")"
 					<< conf->oind->getNameById(si.id, si.node) << " = " << state
 					<< " blocked=" << li->second.blocked 
 					<<" --> state=" << li->second.state 
@@ -538,7 +543,7 @@ void IOController::localSetState( IOController::DIOStateList::iterator& li,
 	
 	// -------------
 	ostringstream err;
-	err << myname << "(localSetState): выход с именем " << conf->oind->getNameById(si.id) << " не найден";
+	err << myname << "(localSetState): Unknown sensor (" << si.id << ":" << si.node << ")" << conf->oind->getNameById(si.id);
 	unideb[Debug::INFO] << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }										
@@ -573,7 +578,8 @@ void IOController::localSetValue( IOController::AIOStateList::iterator& li,
 			li->second.tv_usec = tm.tv_usec;
 			if( unideb.debugging(Debug::INFO) )	
 			{
-				unideb[Debug::INFO] << myname << "(localSetValue): сохраняем состояние аналогового выхода "
+				unideb[Debug::INFO] << myname << "(localSetValue): save analog value for ("
+								<< si.id << ":" << si.node << ")"
 								<< conf->oind->getNameById(si.id, si.node) << " = " << value 
 								<< " blocked=" << li->second.blocked 
 								<<" --> val=" << li->second.value << endl;
@@ -584,7 +590,7 @@ void IOController::localSetValue( IOController::AIOStateList::iterator& li,
 	
 	// -------------
 	ostringstream err;
-	err << myname << "(localSetValue): выход с именем " << conf->oind->getNameById(si.id) << " не найден";
+	err << myname << "(localSetValue): Unknown sensor (" << si.id << ":" << si.node << ")" << conf->oind->getNameById(si.id);
 	unideb[Debug::INFO] << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }												
@@ -774,7 +780,7 @@ void IOController::logging( UniSetTypes::SensorMessage& sm )
 	{
 		if(isPingDBServer)
 		{
-			unideb[Debug::CRIT] << myname << "(logging): DBServer недоступен" << endl;
+			unideb[Debug::CRIT] << myname << "(logging): DBServer unavailable" << endl;
 			isPingDBServer = false;
 		}
 	}
@@ -926,8 +932,12 @@ IOController_i::DigitalIOInfo IOController::getDInfo(const IOController_i::Senso
 
 	// -------------
 	ostringstream err;
-	err << myname << "(getDInfo): дискретный вход(выход) с именем " << conf->oind->getNameById(si.id) << " не найден";
-	unideb[Debug::INFO] << err.str() << endl;
+	err << myname << "(getDInfo): Unknown digital sensor (" << si.id << ":" << si.node << ")"
+		<< conf->oind->getNameById(si.id,si.node);
+
+	if( unideb.debugging(Debug::INFO) )
+		unideb[Debug::INFO] << err.str() << endl;
+
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -942,8 +952,12 @@ IOController_i::AnalogIOInfo IOController::getAInfo(const IOController_i::Sensor
 
 	// -------------
 	ostringstream err;
-	err << myname << "(getAInfo): аналоговый вход(выход) с именем " << conf->oind->getNameById(si.id) << " не найден";
-	unideb[Debug::INFO] << err.str() << endl;
+	err << myname << "(getAInfo): Unknown analog sensor (" << si.id << ":" << si.node << ")"
+		<< conf->oind->getNameById(si.id,si.node);
+
+	if( unideb.debugging(Debug::INFO) )
+		unideb[Debug::INFO] << err.str() << endl;
+
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -953,8 +967,8 @@ CORBA::Long IOController::getRawValue(const IOController_i::SensorInfo& si)
 	if( it==aioList.end() )
 	{
 		ostringstream err;
-		err << myname << "(calibrate): аналоговый вход(выход) с именем " 
-			<< conf->oind->getNameById(si.id,si.node) << " не найден";
+		err << myname << "(getRawValue): Unknown analog sensor (" << si.id << ":" << si.node << ")"
+			<< conf->oind->getNameById(si.id,si.node);
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
@@ -982,7 +996,8 @@ void IOController::calibrate(const IOController_i::SensorInfo& si,
 	if( it==aioList.end() )
 	{
 		ostringstream err;
-		err << myname << "(calibrate): аналоговый вход(выход) с именем " << conf->oind->getNameById(si.id,si.node) << " не найден";
+		err << myname << "(calibrate): Unknown analog sensor (" << si.id << ":" << si.node << ")"
+			<< conf->oind->getNameById(si.id,si.node);
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
@@ -998,8 +1013,8 @@ IOController_i::CalibrateInfo IOController::getCalibrateInfo(const IOController_
 	if( it==aioList.end() )
 	{
 		ostringstream err;
-		err << myname << "(calibrate): аналоговый вход(выход) с именем " 
-			<< conf->oind->getNameById(si.id,si.node) << " не найден";
+		err << myname << "(calibrate): Unknown analog sensor (" << si.id << ":" << si.node << ")"
+			<< conf->oind->getNameById(si.id,si.node);
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 	return it->second.ci;	
