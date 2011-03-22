@@ -28,14 +28,16 @@
 
 #include "Storages.h"
 
-TableBlockStorage::TableBlockStorage()
+TableBlockStorage::TableBlockStorage():
+	file(NULL),
+	mem(0)
 {
-	file=NULL;
 }
 
-TableBlockStorage::TableBlockStorage(const char* name, int byte_sz, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek, bool cr)
+TableBlockStorage::TableBlockStorage(const char* name, int byte_sz, int key_sz, int inf_sz, int inf_count, int block_num, int block_lim, int seek, bool cr):
+	file(NULL),
+	mem(0)
 {
-	file=NULL;
 	if(!open(name, byte_sz, key_sz, inf_sz, inf_count, block_num, block_lim, seek))
 	{
 		if(cr)
@@ -47,9 +49,8 @@ TableBlockStorage::TableBlockStorage(const char* name, int byte_sz, int key_sz, 
 
 TableBlockStorage::~TableBlockStorage()
 {
-	if( mem!=NULL ) delete mem;
-
-	if(file!=NULL) fclose(file);
+	delete mem;
+    if(file!=NULL) fclose(file);
 }
 
 bool TableBlockStorage::keyCompare(int i, void* key)

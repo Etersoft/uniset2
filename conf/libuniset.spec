@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt11
+Release: alt12
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -191,6 +191,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Mar 23 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt12
+- fixed bug in TableBlockStorage interface
+
 * Thu Mar 17 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt11
 - fixed bug in MBTCPMaster (query optimization)
 
