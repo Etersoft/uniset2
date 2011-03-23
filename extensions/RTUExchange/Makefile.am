@@ -1,4 +1,4 @@
-bin_PROGRAMS 			= @PACKAGE@-rtuexchange mtr-conv uniset-rtu188-state vtconv mtr-setup
+bin_PROGRAMS 			= @PACKAGE@-rtuexchange @PACKAGE@-mtr-conv @PACKAGE@-rtu188-state @PACKAGE@-vtconv @PACKAGE@-mtr-setup
 
 # не забывайте править версию в pc-файле
 URTU_VER=2:0:0
@@ -19,21 +19,21 @@ libUniSetRTU_la_SOURCES 	= RTUStorage.cc RTUExchange.cc
 									$(SIGC_LIBS)
 @PACKAGE@_rtuexchange_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
 
-mtr_conv_SOURCES	= mtrconv.cc
-mtr_conv_LDADD	= $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la
-mtr_conv_CXXFLAGS = -I$(top_builddir)/extensions/include
+@PACKAGE@_mtr_conv_SOURCES	= mtrconv.cc
+@PACKAGE@_mtr_conv_LDADD	= $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la
+@PACKAGE@_mtr_conv_CXXFLAGS = -I$(top_builddir)/extensions/include
 
-mtr_setup_SOURCES	= mtr-setup.cc
-mtr_setup_LDADD	= $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la
-mtr_setup_CXXFLAGS = -I$(top_builddir)/extensions/include
+@PACKAGE@_mtr_setup_SOURCES	= mtr-setup.cc
+@PACKAGE@_mtr_setup_LDADD	= $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la
+@PACKAGE@_mtr_setup_CXXFLAGS = -I$(top_builddir)/extensions/include
 
-vtconv_SOURCES	= vtconv.cc
-vtconv_LDADD	= $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la
-vtconv_CXXFLAGS = -I$(top_builddir)/extensions/include
+@PACKAGE@_vtconv_SOURCES	= vtconv.cc
+@PACKAGE@_vtconv_LDADD	= $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la
+@PACKAGE@_vtconv_CXXFLAGS = -I$(top_builddir)/extensions/include
 
-uniset_rtu188_state_LDADD 		= libUniSetRTU.la $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la
-uniset_rtu188_state__CXXFLAGS	= -I$(top_builddir)/extensions/include
-uniset_rtu188_state_SOURCES		= rtustate.cc
+@PACKAGE@_rtu188_state_LDADD 		= libUniSetRTU.la $(top_builddir)/extensions/lib/libUniSetExtensions.la $(top_builddir)/lib/libUniSet.la
+@PACKAGE@_rtu188_state__CXXFLAGS	= -I$(top_builddir)/extensions/include
+@PACKAGE@_rtu188_state_SOURCES		= rtustate.cc
 
 # install
 devel_include_HEADERS = *.h
