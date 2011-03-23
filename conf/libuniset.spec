@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt12
+Release: alt13
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -146,9 +146,9 @@ rm -f %buildroot%_libdir/*.la
 %_bindir/%oname-iocalibr
 %_bindir/%oname-logicproc
 %_bindir/%oname-plogicproc
-%_bindir/mtr-conv
-%_bindir/mtr-setup
-%_bindir/vtconv
+%_bindir/%oname-mtr-conv
+%_bindir/%oname-mtr-setup
+%_bindir/%oname-vtconv
 %_bindir/%oname-rtu188-state
 %_bindir/%oname-rtuexchange
 %_bindir/%oname-smemory
@@ -191,6 +191,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Thu Mar 24 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt13
+- rename some utilities (mtr-xxx --> uniset-mtr-xxx, vtconv --> uniset-vtconv)
+
 * Wed Mar 23 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt12
 - fixed bug in TableBlockStorage interface
 
