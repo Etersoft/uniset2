@@ -608,6 +608,30 @@ void MBSlave::sensorInfo( UniSetTypes::SensorMessage* sm )
 				uniset_spin_lock lock(p->val_lock);
 				p->value = sm->value;
 			}
+
+			int sz = VTypes::wsize(p->vtype);
+			if( sz < 1 )
+				break;
+
+			// если размер больше одного слова
+			// то надо обновить значение "везде"
+			// они если "всё верно инициализировано" идут подряд
+			int i=0;
+			for( ;i<sz && it!=iomap.end(); i++,it++ )
+			{
+				p  = &it->second;
+				if( p->si.id == sm->id )
+					p->value = sm->value;
+			}
+
+			if( dlog.debugging(Debug::CRIT) )
+			{
+				// вообще этого не может случиться
+				// потому-что корректность проверяется при загрузке
+				if( i != sz )
+					dlog[Debug::CRIT] << myname << "(sensorInfo): update failed for sid=" << sm->id
+						<< " (i=" << i << " sz=" << sz << ")" << endl;
+			}
 			break;
 		}
 	}
@@ -906,7 +930,12 @@ ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleO
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::much_real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, 
 						int count )
-{
+{	if( dlog.debugging(Debug::INFO) )
+	{
+		dlog[Debug::INFO] << myname << "(much_real_write): read mbID="
+			<< ModbusRTU::dat2str(reg) << " count=" << count << endl;
+	}
+
 	int i=0;
 	IOMap::iterator it = iomap.end();
 	for( ; i<count; i++ )
@@ -1070,7 +1099,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( ModbusRTU::ModbusData reg, ModbusR
 {
 	if( dlog.debugging(Debug::INFO) )
 	{
-		dlog[Debug::INFO] << myname << "(mush_real_read): read mbID=" 
+		dlog[Debug::INFO] << myname << "(much_real_read): read mbID="
 			<< ModbusRTU::dat2str(reg) << " count=" << count << endl;
 	}
 	
