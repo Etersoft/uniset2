@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt13
+Release: alt14
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -191,6 +191,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Thu Mar 24 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt14
+- fixed bug in MBSlave
+
 * Thu Mar 24 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt13
 - rename some utilities (mtr-xxx --> uniset-mtr-xxx, vtconv --> uniset-vtconv)
 
