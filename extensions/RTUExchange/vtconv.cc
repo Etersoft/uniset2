@@ -14,7 +14,7 @@ static void print_help()
 // --------------------------------------------------------------------------
 int main( int argc, const char **argv )
 {   
-
+/*
 	VTypes::F2 f2;
 	f2.raw.val = 2.345;
 	
@@ -58,8 +58,7 @@ int main( int argc, const char **argv )
 	cout << "-------------" << endl << endl;
 
 //	return 0;
-
-
+*/
 	unsigned short v[4];
 	memset(v,0,sizeof(v));
 
