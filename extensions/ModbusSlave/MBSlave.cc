@@ -611,7 +611,7 @@ void MBSlave::sensorInfo( UniSetTypes::SensorMessage* sm )
 
 			int sz = VTypes::wsize(p->vtype);
 			if( sz < 1 )
-				break;
+				return;
 
 			// если размер больше одного слова
 			// то надо обновить значение "везде"
@@ -632,7 +632,7 @@ void MBSlave::sensorInfo( UniSetTypes::SensorMessage* sm )
 					dlog[Debug::CRIT] << myname << "(sensorInfo): update failed for sid=" << sm->id
 						<< " (i=" << i << " sz=" << sz << ")" << endl;
 			}
-			break;
+			return;
 		}
 	}
 }
