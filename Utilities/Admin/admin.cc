@@ -128,172 +128,170 @@ int main(int argc, char** argv)
 		int optindex = 0;
 		char opt = 0;
 
-
-	while( (opt = getopt_long(argc, argv, "hc:beomsfur:l:i:x:g:w:y:p:",longopts,&optindex)) != -1 ) 
-	{
-		switch (opt) //разбираем параметры 
+		while( (opt = getopt_long(argc, argv, "hc:beomsfur:l:i:x:g:w:y:p:",longopts,&optindex)) != -1 )
 		{
-			case 'h':	//--help
-				usage();
-			return 0;
-
-			case 'c':	//--confile
-				conffile = optarg;
-			break;
-			
-			case 'o':	//--omap
+			switch (opt) //разбираем параметры
 			{
-				uniset_init(argc,argv,conffile);
-				return omap();
-			}
-			break;			
-
-			case 'b':	//--create
-			{
-				uniset_init(argc,argv,conffile);
-				createSections(conf);
-			}
-			return 0;
-			
-			case 'm':	//--msgmap
-			{
-				uniset_init(argc,argv,conffile);
-				return msgmap();
-			}	
-			break;
-
-			case 'x':	//--setValue
-			{
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return setValue(optarg,ui);
-			}
-			break;
-
-			case 'g':	//--getValue
-			{
-//				cout<<"(main):received option --getValue='"<<optarg<<"'"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return getValue(optarg,ui);
-			}
-			break;
-
-			case 'w':	//--getRawValue
-			{
-//				cout<<"(main):received option --getRawValue='"<<optarg<<"'"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return getRawValue(optarg,ui);
-			}
-			break;
-
-			case 'p':	//--oinfo
-			{
-//				cout<<"(main):received option --oinfo='"<<optarg<<"'"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return oinfo(optarg,ui);
-			}
-			break;
-
-			case 'e':	//--exist
-			{
-//				cout<<"(main):received option --exist"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				
-				Command cmd=Exist;	
-				ObjectRepository* rep = new ObjectRepository(conf);
-				commandToAll(conf->getServicesSection(), rep, (Command)cmd);
-				commandToAll(conf->getControllersSection(), rep, (Command)cmd);
-				commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
-			 	delete rep;
-//				cout<<"(exist): done"<<endl;
-			}
-			return 0;
-
-			case 's':	//--start
-			{
-//				cout<<"(main):received option --start"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				
-				Command cmd=StartUp;
-				ObjectRepository* rep = new ObjectRepository(conf);
-				commandToAll(conf->getServicesSection(), rep, (Command)cmd);
-				commandToAll(conf->getControllersSection(), rep, (Command)cmd);
-				commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
-			 	delete rep;
-			}
-			return 0;
-
-			case 'r':	//--configure
-			{
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return configure(optarg,ui);
-			}
-			break;
-
-			case 'f':	//--finish
-			{
-//				cout<<"(main):received option --finish"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				
-				Command cmd=Finish;	
-				ObjectRepository* rep = new ObjectRepository(conf);
-				commandToAll(conf->getServicesSection(), rep, (Command)cmd);
-				commandToAll(conf->getControllersSection(), rep, (Command)cmd);
-				commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
-			 	delete rep;
-				cout<<"(finish): done"<<endl;
-			}
-			return 0;
-
-			case 'l':	//--logrotate
-			{
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return logRotate(optarg, ui);
-			}
-			break;
-
-			case 'y':	//--getCalibrate
-			{
-//				cout<<"(main):received option --getCalibrate='"<<optarg<<"'"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				return getCalibrate(optarg, ui);
-			}
-			break;
-
-			case 'u':	//--foldUp
-			{
-//				cout<<"(main):received option --foldUp"<<endl;
-				uniset_init(argc,argv,conffile);
-				UniversalInterface ui(conf);
-				
-				Command cmd=FoldUp;	
-				ObjectRepository* rep = new ObjectRepository(conf);
-				commandToAll(conf->getServicesSection(), rep, (Command)cmd);
-				commandToAll(conf->getControllersSection(), rep, (Command)cmd);
-				commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
-			 	delete rep;
-//				cout<<"(foldUp): done"<<endl;
-			}
-			return 0;
-
-			case '?':
-			default:
-			{
-				short_usage();
+				case 'h':	//--help
+					usage();
 				return 0;
-			}
+
+				case 'c':	//--confile
+					conffile = optarg;
+				break;
+			
+				case 'o':	//--omap
+				{
+					uniset_init(argc,argv,conffile);
+					return omap();
+				}
+				break;
+
+				case 'b':	//--create
+				{
+					uniset_init(argc,argv,conffile);
+					createSections(conf);
+				}
+				return 0;
+
+				case 'm':	//--msgmap
+				{
+					uniset_init(argc,argv,conffile);
+					return msgmap();
+				}
+				break;
+
+				case 'x':	//--setValue
+				{
+					uniset_init(argc,argv,conffile);
+					UniversalInterface ui(conf);
+					return setValue(optarg,ui);
+				}
+				break;
+
+				case 'g':	//--getValue
+				{
+//					cout<<"(main):received option --getValue='"<<optarg<<"'"<<endl;
+					uniset_init(argc,argv,conffile);
+					UniversalInterface ui(conf);
+					return getValue(optarg,ui);
+				}
+				break;
+
+				case 'w':	//--getRawValue
+				{
+	//				cout<<"(main):received option --getRawValue='"<<optarg<<"'"<<endl;
+					uniset_init(argc,argv,conffile);
+					UniversalInterface ui(conf);
+					return getRawValue(optarg,ui);
+				}
+				break;
+
+				case 'p':	//--oinfo
+				{
+//					cout<<"(main):received option --oinfo='"<<optarg<<"'"<<endl;
+					uniset_init(argc,argv,conffile);
+					UniversalInterface ui(conf);
+					return oinfo(optarg,ui);
+				}
+				break;
+
+				case 'e':	//--exist
+				{
+//					cout<<"(main):received option --exist"<<endl;
+					uniset_init(argc,argv,conffile);
+					UniversalInterface ui(conf);
 				
-		}	
-	}
+					Command cmd=Exist;
+					ObjectRepository* rep = new ObjectRepository(conf);
+					commandToAll(conf->getServicesSection(), rep, (Command)cmd);
+					commandToAll(conf->getControllersSection(), rep, (Command)cmd);
+					commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
+					delete rep;
+//					cout<<"(exist): done"<<endl;
+				}
+				return 0;
+
+				case 's':	//--start
+				{
+//					cout<<"(main):received option --start"<<endl;
+					uniset_init(argc,argv,conffile);
+					UniversalInterface ui(conf);
+
+					Command cmd=StartUp;
+					ObjectRepository* rep = new ObjectRepository(conf);
+					commandToAll(conf->getServicesSection(), rep, (Command)cmd);
+					commandToAll(conf->getControllersSection(), rep, (Command)cmd);
+					commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
+					delete rep;
+				}
+				return 0;
+
+				case 'r':	//--configure
+				{
+					uniset_init(argc,argv,conffile);
+					UniversalInterface ui(conf);
+					return configure(optarg,ui);
+				}
+				break;
+
+				case 'f':	//--finish
+				{
+//					cout<<"(main):received option --finish"<<endl;
+					uniset_init(argc,argv,conffile);
+					UniversalInterface ui(conf);
+
+					Command cmd=Finish;
+					ObjectRepository* rep = new ObjectRepository(conf);
+					commandToAll(conf->getServicesSection(), rep, (Command)cmd);
+					commandToAll(conf->getControllersSection(), rep, (Command)cmd);
+					commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
+					delete rep;
+					cout<<"(finish): done"<<endl;
+				}
+				return 0;
+
+				case 'l':	//--logrotate
+				{
+					uniset_init(argc,argv,conffile);
+					UniversalInterface ui(conf);
+					return logRotate(optarg, ui);
+				}
+				break;
+
+				case 'y':	//--getCalibrate
+				{
+//					cout<<"(main):received option --getCalibrate='"<<optarg<<"'"<<endl;
+					uniset_init(argc,argv,conffile);
+					UniversalInterface ui(conf);
+					return getCalibrate(optarg, ui);
+				}
+				break;
+
+				case 'u':	//--foldUp
+				{
+//					cout<<"(main):received option --foldUp"<<endl;
+					uniset_init(argc,argv,conffile);
+					UniversalInterface ui(conf);
+				
+					Command cmd=FoldUp;
+					ObjectRepository* rep = new ObjectRepository(conf);
+					commandToAll(conf->getServicesSection(), rep, (Command)cmd);
+					commandToAll(conf->getControllersSection(), rep, (Command)cmd);
+					commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
+					delete rep;
+//					cout<<"(foldUp): done"<<endl;
+				}
+				return 0;
+
+				case '?':
+				default:
+				{
+					short_usage();
+					return 1;
+				}
+			}
+		}
 
     	return 0;
     }
@@ -320,6 +318,8 @@ int main(int argc, char** argv)
     {
 		cerr << "неизвестное исключение" << endl;
     }
+
+    return 1;
 }
 
 // ==============================================================================================
@@ -507,11 +507,11 @@ int setValue( const string args, UniversalInterface &ui, Configuration* conf )
 			switch(t)
 			{
 				case UniversalIO::DigitalInput:
-				  ui.saveState(it->si.id,(it->val?true:false),t,it->si.node);
+					ui.saveState(it->si.id,(it->val?true:false),t,it->si.node);
 				break;
 				
 				case UniversalIO::DigitalOutput:
-				  ui.setState(it->si.id,(it->val?true:false),it->si.node);
+					ui.setState(it->si.id,(it->val?true:false),it->si.node);
 				break;
 				
 				case UniversalIO::AnalogInput:
