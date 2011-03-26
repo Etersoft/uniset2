@@ -60,7 +60,7 @@ then
 
 	echo Running "$start_line"
     $start_line
-	exit 0
+	exit $?
 fi
 
 if [ -n "$FG" ]
@@ -69,20 +69,19 @@ then
 		if [ -z "$COMLINE" ]
 		then
 			echo "Не указана команда для запуска"
-			exit 0
+			exit 1
 		fi
 		
 		COMLINE="$COMLINE --uniset-port $OMNIPORT"
 		echo Запускаем "$COMLINE"
 		$COMLINE 
-		echo Выходим
-		exit 1
+		exit $?
 fi
 
 if [ -z "$*" ]
 then
 	echo "Не указана команда для запуска"
-	exit 0
+	exit 1
 fi
 
 	checkPID=$(echo "$1" | grep pidfile=)
