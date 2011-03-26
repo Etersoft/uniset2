@@ -74,7 +74,7 @@ int main(int argc, const char **argv)
 		dlog[Debug::ANY] << "(main): -------------- MBSlave START -------------------------\n\n";
 
 		act.run(false);
-
+		return 0;
 	}
 	catch( SystemError& err )
 	{
@@ -93,6 +93,6 @@ int main(int argc, const char **argv)
 		dlog[Debug::CRIT] << "(mbslave): catch(...)" << endl;
 	}
 
-	return 0;
+	return 1;
 }
 // --------------------------------------------------------------------------

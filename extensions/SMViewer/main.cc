@@ -36,6 +36,7 @@ int main( int argc, const char **argv )
 
 		SMViewer smv(shmID);
 		smv.run();
+		return 0;
 	}
 	catch( Exception& ex )
 	{
@@ -46,6 +47,6 @@ int main( int argc, const char **argv )
 		cout << "Неизвестное исключение!!!!"<< endl;
 	}
 
-	return 0;
+	return 1;
 }
 // ------------------------------------------------------------------------------------------

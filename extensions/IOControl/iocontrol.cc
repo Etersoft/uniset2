@@ -65,6 +65,7 @@ int main(int argc, const char **argv)
 		act.run(true);
 		msleep(500);
 		ic->execute();
+		return 0;
 	}
 	catch(SystemError& err)
 	{
@@ -79,5 +80,5 @@ int main(int argc, const char **argv)
 		dlog[Debug::CRIT] << "(iocontrol): catch(...)" << endl;
 	}
 
-	return 0;
+	return 1;
 }
