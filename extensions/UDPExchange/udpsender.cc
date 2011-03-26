@@ -70,6 +70,7 @@ int main( int argc, char** argv )
 		act.run(false);
 //		msleep(500);
 //		rs->execute();
+		return 0;
 	}
 	catch( Exception& ex )
 	{
@@ -84,5 +85,5 @@ int main( int argc, char** argv )
 		dlog[Debug::CRIT] << "(udpsender): catch ..." << std::endl;
 	}
 
-	return 0;
+	return 1;
 }

@@ -40,6 +40,7 @@ int main( int argc, const char **argv )
 		SystemMessage sm(SystemMessage::StartUp);
 		act.broadcast( sm.transport_msg() );
 		act.run(false);
+		return 0;
 	}
 	catch( Exception& ex )
 	{
@@ -50,6 +51,6 @@ int main( int argc, const char **argv )
 		cout << "(main): Неизвестное исключение!!!!"<< endl;
 	}
 
-	return 0;
+	return 1;
 }
 // ------------------------------------------------------------------------------------------
