@@ -120,6 +120,7 @@ int main( int argc, const char **argv )
 	else 
 	{
 		cout << " Unknown type: " << type << endl;
+		return 1;
 	}
 
 	return 0;

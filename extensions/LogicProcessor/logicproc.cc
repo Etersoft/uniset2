@@ -35,6 +35,7 @@ int main(int argc, const char **argv)
 
 		LProcessor plc;
 		plc.execute(schema);
+		return 0;
 	}
 	catch( LogicException& ex )
 	{
@@ -49,6 +50,6 @@ int main(int argc, const char **argv)
 		cerr << " catch ... " << endl;
 	}
 	
-	return 0;
+	return 1;
 }
 // -----------------------------------------------------------------------------

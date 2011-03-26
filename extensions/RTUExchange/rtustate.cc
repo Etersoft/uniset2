@@ -108,6 +108,8 @@ int main( int argc, char **argv )
 			cout << "UNIO1 AI" << i << ": " << rtu.getFloat( RTUStorage::nJ1, i, UniversalIO::AnalogInput ) << endl;
 		for( int i=0; i<24; i++ )
 			cout << "UNIO1 DI" << i << ": " << rtu.getState( RTUStorage::nJ1, i, UniversalIO::DigitalInput ) << endl;
+
+		return 0;
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
@@ -126,6 +128,6 @@ int main( int argc, char **argv )
 		cerr << "(rtustate): catch(...)" << endl;
 	}
 
-	return 0;
+	return 1;
 }
 // --------------------------------------------------------------------------

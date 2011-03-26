@@ -81,7 +81,7 @@ int main(int argc, const char **argv)
 		dlog(Debug::ANY) << "\n\n\n";
 		dlog[Debug::ANY] << "(main): -------------- IOControl START -------------------------\n\n";
 		act.run(false);
-		pause();
+		return 0;
 	}
 	catch( LogicException& ex )
 	{
@@ -96,6 +96,6 @@ int main(int argc, const char **argv)
 		cerr << " catch ... " << endl;
 	}
 	
-	return 0;
+	return 1;
 }
 // -----------------------------------------------------------------------------

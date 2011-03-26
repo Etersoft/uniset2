@@ -46,6 +46,8 @@ int main(int argc, const char **argv)
 		}
 		else
 			sv.view();
+
+		return 0;
 	}
 	catch(Exception& ex )
     {
@@ -56,5 +58,5 @@ int main(int argc, const char **argv)
     	cerr << "(main): Неизвестное исключение!!!!"<< endl;
     }
 
-	return 0;
+	return 1;
 }

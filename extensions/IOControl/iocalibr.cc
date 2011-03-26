@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 			case '?':
 			default:
 				printf("? argument\n");
-				return 0;
+				return 1;
 		}	
 	}
 
@@ -419,7 +419,6 @@ void openXML()
 			}
 
 			uxml.close();
-			return;
 		}
 		catch( ... )
 		{

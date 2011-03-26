@@ -363,6 +363,7 @@ int main( int argc, char **argv )
 				return 1;
 		}
 		
+		return 0;
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
@@ -381,7 +382,7 @@ int main( int argc, char **argv )
 		cerr << "(mtr-setup): catch(...)" << endl;
 	}
 
-	return 0;
+	return 1;
 }
 // --------------------------------------------------------------------------
 char* checkArg( int i, int argc, char* argv[] )
