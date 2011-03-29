@@ -387,7 +387,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='DO'">
 		<xsl:if test="normalize-space($onlymsg)=''">
-		if( prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> != <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, Message::Medium)
+		if( prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> != <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> )
 		</xsl:if>
 		{
 			if( <xsl:value-of select="@name"/> != DefaultObjectId )
