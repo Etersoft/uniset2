@@ -1,9 +1,9 @@
-<?xml version='1.0' encoding="koi8-r" ?>
+<?xml version='1.0' encoding="utf-8" ?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version='1.0'
 		             xmlns:date="http://exslt.org/dates-and-times">
 
 <xsl:import href="ctl-cpp-common.xsl"/>
-<xsl:output method="text" indent="yes" encoding="koi8-r"/>
+<xsl:output method="text" indent="yes" encoding="utf-8"/>
 
 <xsl:variable name="CLASSNAME">
 	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'class-name'"/></xsl:call-template>
