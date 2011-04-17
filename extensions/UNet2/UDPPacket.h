@@ -59,8 +59,6 @@ namespace UniSetUDP
 		
 		friend std::ostream& operator<<( std::ostream& os, UDPMessage& p );
 	};
-
-
 }
 // -----------------------------------------------------------------------------
 #endif // UDPPacket_H_
