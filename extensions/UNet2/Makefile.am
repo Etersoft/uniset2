@@ -1,4 +1,4 @@
-bin_PROGRAMS 	= @PACKAGE@-unetexchange
+bin_PROGRAMS 	= @PACKAGE@-unetexchange @PACKAGE@-unet2-tester
 
 # не забывайте править версию в pc-файле 
 UNET2_VER=@LIBVER@
@@ -18,6 +18,11 @@ libUniSetUNet2_la_SOURCES 	= UDPPacket.cc UNetReceiver.cc UNetSender.cc UNetExch
 									$(top_builddir)/extensions/lib/libUniSetExtensions.la \
 									$(SIGC_LIBS) $(COMCPP_LIBS)
 @PACKAGE@_unetexchange_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+
+
+@PACKAGE@_unet2_tester_SOURCES	= UDPPacket.cc unet2-tester.cc
+@PACKAGE@_unet2_tester_LDADD 	= $(COMCPP_LIBS)
+@PACKAGE@_unet2_tester_CXXFLAGS	= $(COMCPP_CFLAGS)
 
 # install
 devel_include_HEADERS = *.h
