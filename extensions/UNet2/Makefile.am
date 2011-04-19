@@ -32,4 +32,4 @@ pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSetUNet2.pc
 
 all-local:
-	ln -sf ../UDPExchange/$(devel_include_HEADERS) ../include
+	ln -sf ../UNet2/$(devel_include_HEADERS) ../include
