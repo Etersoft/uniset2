@@ -180,10 +180,6 @@ AC_CONFIG_FILES([Makefile
 				 extensions/IOControl/libUniSetIOControl.pc
 				 extensions/RTUExchange/Makefile
 				 extensions/RTUExchange/libUniSetRTU.pc
-				 extensions/UDPExchange/Makefile
-				 extensions/UDPExchange/libUniSetUDP.pc
-				 extensions/UNet2/Makefile
-				 extensions/UNet2/libUniSetUNet2.pc
 				 extensions/ModbusSlave/Makefile
 				 extensions/ModbusSlave/libUniSetMBSlave.pc
 				 extensions/MBTCPMaster/Makefile
@@ -193,6 +189,8 @@ AC_CONFIG_FILES([Makefile
 				 extensions/SMViewer/Makefile
 				 extensions/UniNetwork/Makefile
 				 extensions/UniNetwork/libUniSetNetwork.pc
+				 extensions/UNet2/Makefile
+				 extensions/UNet2/libUniSetUNet2.pc
 				 extensions/SharedMemory/Makefile
 				 extensions/SharedMemory/libUniSetSharedMemory.pc
 				 extensions/SharedMemoryPlus/Makefile])
