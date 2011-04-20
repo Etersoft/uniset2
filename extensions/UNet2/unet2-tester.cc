@@ -16,6 +16,7 @@ static struct option longopts[] = {
 	{ "timeout", required_argument, 0, 't' },
 	{ "data-count", required_argument, 0, 'c' },
 	{ "disable-broadcast", no_argument, 0, 'b' },
+	{ "check-lost", no_argument, 0, 'l' },
 	{ "verbode", required_argument, 0, 'v' },
 	{ NULL, 0, 0, 0 }
 };
@@ -58,8 +59,9 @@ int main(int argc, char* argv[])
 	int procID = 1;
 	int nodeID = 1;
 	int count = 50;
+	bool lost = false;
 
-	while( (opt = getopt_long(argc, argv, "hs:r:vp:n:tb:",longopts,&optindex)) != -1 )
+	while( (opt = getopt_long(argc, argv, "hs:r:vp:n:t:bx:l",longopts,&optindex)) != -1 )
 	{
 		switch (opt)
 		{
@@ -73,6 +75,7 @@ int main(int argc, char* argv[])
 				cout << "[-t|--timeout] msec      - timeout for receive. Default: 0 msec (waitup)." << endl;
 				cout << "[-x|--send-pause] msec   - pause for send packets. Default: 200 msec." << endl;
 				cout << "[-b|--disable-broadcast] - Disable broadcast mode." << endl;
+				cout << "[-l|--check-lost]        - Check the lost packets." << endl;
 				cout << "[-v|--verbose]           - verbose mode." << endl;
 				cout << endl;
 			return 0;
@@ -109,6 +112,10 @@ int main(int argc, char* argv[])
 
 			case 'b':
 				broadcast = false;
+			break;
+
+			case 'l':
+				lost = true;
 			break;
 
 			case 'v':
@@ -167,6 +174,7 @@ int main(int argc, char* argv[])
 
 //				char buf[UniSetUDP::MaxDataLen];
 				UniSetUDP::UDPMessage pack;
+				unsigned long prev_num=1;
 
 				while(1)
 				{
@@ -192,6 +200,15 @@ int main(int argc, char* argv[])
 							cerr << "(recv): FAILED data ret=" << ret
 								<< " sizeof=" << sz << " packnum=" << pack.msg.header.num << endl;
 							continue;
+						}
+
+						if( lost )
+						{
+							if( prev_num != (pack.msg.header.num-1) )
+								cerr << "WARNING! Incorrect sequence of packets! current=" << pack.msg.header.num
+									<< " prev=" << prev_num << endl;
+
+							prev_num = pack.msg.header.num;
 						}
 
 						if( verb )
