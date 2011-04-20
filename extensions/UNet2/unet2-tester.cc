@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 	int count = 50;
 	bool lost = false;
 
-	while( (opt = getopt_long(argc, argv, "hs:r:vp:n:t:bx:l",longopts,&optindex)) != -1 ) 
+	while( (opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blv",longopts,&optindex)) != -1 ) 
 	{
 		switch (opt) 
 		{
