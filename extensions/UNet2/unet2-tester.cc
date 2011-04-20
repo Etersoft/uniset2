@@ -15,7 +15,7 @@ static struct option longopts[] = {
 	{ "send-pause", required_argument, 0, 'x' },
 	{ "timeout", required_argument, 0, 't' },
 	{ "data-count", required_argument, 0, 'c' },
-	{ "broadcast", no_argument, 0, 'b' },
+	{ "disable-broadcast", no_argument, 0, 'b' },
 	{ "verbode", required_argument, 0, 'v' },
 	{ NULL, 0, 0, 0 }
 };
@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 				cout << "[-n|--node-id] id        - Set packet header. From 'nodeID'. Default: 1" << endl;
 				cout << "[-t|--timeout] msec      - timeout for receive. Default: 0 msec (waitup)." << endl;
 				cout << "[-x|--send-pause] msec   - pause for send packets. Default: 200 msec." << endl;
-				cout << "[-b|--broadcast]         - Set broadcast mode. Default: TRUE" << endl;
+				cout << "[-b|--disable-broadcast] - Disable broadcast mode." << endl;
 				cout << "[-v|--verbose]           - verbose mode." << endl;
 				cout << endl;
 			return 0;
@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
 			break;	
 			
 			case 'b':
-				broadcast = true;
+				broadcast = false;
 			break;	
 			
 			case 'v':	

@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt19
+Release: alt20
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -191,6 +191,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Apr 20 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt20
+- (uniset-unet2-tester): rename command line parameters
+
 * Tue Apr 19 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt19
 - a little cleaning
 
