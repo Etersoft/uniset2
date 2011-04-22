@@ -212,7 +212,8 @@ int main(int argc, char* argv[])
 						}
 
 						if( verb )
-							cout << "receive OK. header: " << pack.msg.header << endl;
+							cout << "receive OK. header: " << pack.msg.header 
+								 << " bytes: " << ret << endl;
 					}
 					catch( ost::SockException& e )
 					{
