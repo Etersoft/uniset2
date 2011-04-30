@@ -235,7 +235,7 @@ void UNetReceiver::real_update()
 // -----------------------------------------------------------------------------
 void UNetReceiver::receive()
 {
-	cerr << "******************* receive start" << endl;
+	cout << myname << ": ******************* receive start" << endl;
 	ptRecvTimeout.setTiming(recvTimeout);
 	while( activated )
 	{
@@ -254,13 +254,13 @@ void UNetReceiver::receive()
 		}
 		catch(...)
 		{
-			cerr << myname << "(preceive): catch ..." << std::endl;
+			cerr << myname << "(receive): catch ..." << std::endl;
 		}
 
 		msleep(recvpause);
 	}
 
-	cerr << "************* execute FINISH **********" << endl;
+	cout << myname << ": ************* receive FINISH **********" << endl;
 }
 // -----------------------------------------------------------------------------
 bool UNetReceiver::recv()
