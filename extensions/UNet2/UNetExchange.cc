@@ -367,12 +367,15 @@ void UNetExchange::askSensors( UniversalIO::UIOCommand cmd )
 		kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
 		throw SystemError(err.str());
 	}
+
+	if( sender )
+		sender->askSensors(cmd);
 }
 // ------------------------------------------------------------------------------------------
 void UNetExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
 	if( sender )
-		sender->update(sm->id,sm->value);
+		sender->updateSensor(sm->id,sm->value);
 }
 // ------------------------------------------------------------------------------------------
 bool UNetExchange::activateObject()
@@ -395,12 +398,30 @@ void UNetExchange::sigterm( int signo )
 {
 	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
 	activated = false;
+	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
+	{
+		try
+		{
+			(*it)->stop();
+		}
+		catch(...){}
+	}
+
+	try
+	{
+		if( sender )
+			sender->stop();
+	}
+	catch(...){}
+
 	UniSetObject_LT::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
 void UNetExchange::initIterators()
 {
 	shm->initAIterator(aitHeartBeat);
+	if( sender )
+		sender->initIterators();
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::help_print( int argc, const char* argv[] )
