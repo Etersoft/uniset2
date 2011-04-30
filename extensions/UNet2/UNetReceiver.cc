@@ -209,6 +209,8 @@ void UNetReceiver::real_update()
 					shm->initDIterator(ii.dit);
 				}
 
+				if( d.id == 121 )
+					cerr << "****** save id=" << d.id << " val=" << d.val << endl;
 				if( ii.iotype == UniversalIO::DigitalInput )
 					shm->localSaveState(ii.dit,d.id,d.val,shm->ID());
 				else if( ii.iotype == UniversalIO::AnalogInput )
@@ -232,6 +234,14 @@ void UNetReceiver::real_update()
 	}
 }
 
+// -----------------------------------------------------------------------------
+void UNetReceiver::stop()
+{
+	activated = false;
+//	msleep(10);
+//	u_thr->stop();
+//	r_thr->stop();
+}
 // -----------------------------------------------------------------------------
 void UNetReceiver::receive()
 {
@@ -274,7 +284,7 @@ bool UNetReceiver::recv()
 		dlog[Debug::CRIT] << myname << "(receive): FAILED header ret=" << ret << " sizeof=" << sizeof(UniSetUDP::UDPHeader) << endl;
 		return false;
 	}
-		
+	
 	size_t sz = pack.msg.header.dcount * sizeof(UniSetUDP::UDPData) + sizeof(UniSetUDP::UDPHeader);
 	if( ret < sz )
 	{
@@ -305,10 +315,15 @@ bool UNetReceiver::recv()
 
 	rnum = pack.msg.header.num;
 
-//	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
-//		  << " header: " << pack.msg.header
-//		  << " waitClean=" << waitClean
-//		  << endl;
+	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
+		  << " header: " << pack.msg.header
+		  << " waitClean=" << waitClean
+		  << endl;
+	for( size_t i=0; i<pack.msg.header.dcount; i++ )
+	{
+		UniSetUDP::UDPData& d = pack.msg.dat[i];
+		cerr << "****** save id=" << d.id << " val=" << d.val << endl;
+	}
 
 	{	// lock qpack
 		uniset_mutex_lock l(packMutex,500);

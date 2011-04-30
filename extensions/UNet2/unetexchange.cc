@@ -1,4 +1,5 @@
 #include <sstream>
+#include <sys/wait.h>
 #include "ObjectsActivator.h"
 #include "Extensions.h"
 #include "UNetExchange.h"
@@ -68,6 +69,7 @@ int main( int argc, const char** argv )
 		dlog[Debug::ANY] << "(main): -------------- UDPReceiver START -------------------------\n\n";
 
 		act.run(false);
+		while (waitpid(-1, 0, 0));
 	}
 	catch( Exception& ex )
 	{
@@ -84,5 +86,6 @@ int main( int argc, const char** argv )
 		dlog[Debug::CRIT] << "(unetexchange): catch ..." << std::endl;
 	}
 
+	while (waitpid(-1, 0, 0));
 	return 0;
 }

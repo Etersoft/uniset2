@@ -43,3 +43,14 @@ bool UDPMessage::addData( long id, long val)
 	return addData(d);
 }
 // -----------------------------------------------------------------------------
+bool UDPMessage::setData( unsigned int index, long val )
+{
+	if( index < MaxDataCount )
+	{
+		msg.dat[index].val = val;
+		return true;
+	}
+	
+	return false;
+}
+// -----------------------------------------------------------------------------

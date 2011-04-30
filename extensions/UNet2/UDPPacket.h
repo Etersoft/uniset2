@@ -49,6 +49,7 @@ namespace UniSetUDP
 
 		bool addData( const UDPData& dat );
 		bool addData( long id, long val );
+		bool setData( unsigned int index, long val );
 
 		inline bool isFull(){ return count<MaxDataCount; }
 		inline int size(){ return count; }
