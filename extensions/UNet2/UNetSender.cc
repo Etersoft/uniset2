@@ -74,18 +74,47 @@ UNetSender::~UNetSender()
 	delete shm;
 }
 // -----------------------------------------------------------------------------
-void UNetSender::update( UniSetTypes::ObjectId id, long value )
+void UNetSender::updateFromSM()
 {
 	DMap::iterator it=dlist.begin();
 	for( ; it!=dlist.end(); ++it )
 	{
-		if( it->si.id == id )
+		long value = 0;
+
+		if( it->iotype == UniversalIO::DigitalInput || it->iotype == UniversalIO::DigitalOutput )
+			value = shm->localGetState(it->dit,it->id) ? 1 : 0;
+		else if( it->iotype == UniversalIO::AnalogInput || it->iotype == UniversalIO::AnalogOutput )
+			value = shm->localGetValue(it->ait,it->id);
+		else
 		{
-			uniset_spin_lock lock(it->val_lock);
-			it->val = value;
+			dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << it->id << endl;
+			continue;
 		}
-		break;
+
+		updateItem(it,value);
 	}
+}
+// -----------------------------------------------------------------------------
+void UNetSender::updateSensor( UniSetTypes::ObjectId id, long value )
+{
+	DMap::iterator it=dlist.begin();
+	for( ; it!=dlist.end(); ++it )
+	{
+		if( it->id == id )
+		{
+			updateItem( it, value );
+			break;
+		}
+	}
+}
+// -----------------------------------------------------------------------------
+void UNetSender::updateItem( DMap::iterator& it, long value )
+{
+	if( it != dlist.end() )
+		return;
+
+	UniSetTypes::uniset_mutex_lock l(pack_mutex,100);
+	mypack.setData(it->pack_ind,value);
 }
 // -----------------------------------------------------------------------------
 void UNetSender::send()
@@ -133,6 +162,7 @@ void UNetSender::send()
 // -----------------------------------------------------------------------------
 void UNetSender::real_send()
 {
+	UniSetTypes::uniset_mutex_lock l(pack_mutex,300);
 	mypack.msg.header.num = packetnum++;
 
 	if( packetnum > UniSetUDP::MaxPacketNum )
@@ -146,6 +176,12 @@ void UNetSender::real_send()
 	size_t ret = udp->send( (char*)&(mypack.msg),sz);
 	if( ret < sz )
 		dlog[Debug::CRIT] << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << sz << endl;
+}
+// -----------------------------------------------------------------------------
+void UNetSender::stop()
+{
+	activated = false;
+//	s_thr->stop();
 }
 // -----------------------------------------------------------------------------
 void UNetSender::start()
@@ -229,10 +265,22 @@ bool UNetSender::initItem( UniXML_iterator& it )
 	}
 
 	UItem p;
-	p.si.id = sid;
-	p.si.node = conf->getLocalNode();
+	p.id = sid;
 	mypack.addData(sid,0);
 	p.pack_ind = mypack.size()-1;
+	p.iotype = UniSetTypes::getIOType(it.getProp("iotype"));
+
+	if( p.iotype == UniversalIO::UnknownIOType )
+	{
+		dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << sid << endl;
+		return false;
+	}
+
+	if( shm )
+	{
+		shm->initDIterator(p.dit);
+		shm->initAIterator(p.ait);
+	}
 
 	if( maxItem >= dlist.size() )
 		dlist.resize(maxItem+10);
@@ -247,6 +295,11 @@ bool UNetSender::initItem( UniXML_iterator& it )
 }
 
 // ------------------------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, UNetSender::UItem& p )
+{
+	return os << " sid=" << p.id;
+}
+// -----------------------------------------------------------------------------
 void UNetSender::initIterators()
 {
 	DMap::iterator it=dlist.begin();
@@ -257,8 +310,10 @@ void UNetSender::initIterators()
 	}
 }
 // -----------------------------------------------------------------------------
-std::ostream& operator<<( std::ostream& os, UNetSender::UItem& p )
+void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
 {
-	return os 	<< " sid=" << p.si.id;
+	DMap::iterator it=dlist.begin();
+	for( ; it!=dlist.end(); it++ )
+		shm->askSensor(it->id,cmd);
 }
 // -----------------------------------------------------------------------------

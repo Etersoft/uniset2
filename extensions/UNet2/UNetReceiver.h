@@ -53,6 +53,7 @@ class UNetReceiver
 		~UNetReceiver();
 
 		 void start();
+		 void stop();
 
 		 void receive();
 		 void update();
