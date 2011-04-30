@@ -53,11 +53,11 @@ class UNetExchange:
 		virtual ~UNetExchange();
 
 		/*! глобальная функция для инициализации объекта */
-		static UNetExchange* init_unetexchange( int argc, char* argv[],
+		static UNetExchange* init_unetexchange( int argc, const char* argv[],
 											UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
 
 		/*! глобальная функция для вывода help-а */
-		static void help_print( int argc, char* argv[] );
+		static void help_print( int argc, const char* argv[] );
 
 		bool checkExistUNetHost( const std::string host, ost::tpport_t port );
 

@@ -208,7 +208,7 @@ bool UNetSender::initItem( UniXML_iterator& it )
 {
 	string sname( it.getProp("name") );
 
-	string tid = it.getProp("id");
+	string tid(it.getProp("id"));
 
 	ObjectId sid;
 	if( !tid.empty() )
@@ -234,7 +234,7 @@ bool UNetSender::initItem( UniXML_iterator& it )
 	mypack.addData(sid,0);
 	p.pack_ind = mypack.size()-1;
 
-	if( maxItem >= mypack.size() )
+	if( maxItem >= dlist.size() )
 		dlist.resize(maxItem+10);
 
 	dlist[maxItem] = p;
