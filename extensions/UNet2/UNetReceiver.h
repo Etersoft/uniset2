@@ -134,6 +134,10 @@ class UNetReceiver
 			IOController::AIOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;
 			UniversalIO::IOTypes iotype;
+
+			ItemInfo():
+				id(UniSetTypes::DefaultObjectId),
+				iotype(UniversalIO::UnknownIOType){}
 		};
 
 		typedef std::vector<ItemInfo> ItemVec;
