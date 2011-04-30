@@ -29,7 +29,7 @@ sender(0)
 	// определяем фильтр
 	s_field = conf->getArgParam("--unet-filter-field");
 	s_fvalue = conf->getArgParam("--unet-filter-value");
-	dlog[Debug::INFO] << myname << "(init): read fileter-field='" << s_field
+	dlog[Debug::INFO] << myname << "(init): read filter-field='" << s_field
 						<< "' filter-value='" << s_fvalue << "'" << endl;
 
 	int recvTimeout = conf->getArgPInt("--unet-recv-timeout",it.getProp("recvTimeout"), 5000);
@@ -393,20 +393,25 @@ void UNetExchange::initIterators()
 	shm->initAIterator(aitHeartBeat);
 }
 // -----------------------------------------------------------------------------
-void UNetExchange::help_print( int argc, char* argv[] )
+void UNetExchange::help_print( int argc, const char* argv[] )
 {
-	cout << "--unet-recvpause msec    - Пауза между получением пакетов. По умолчанию 10 мсек." << endl;
-	cout << "--unet-updatepause msec  - Пауза между обновлением данных в SM. По умолчанию 100 мсек." << endl;
-	cout << "--unet-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--unet-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--unet-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
-	cout << "--unet-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
-	cout << "--unet-notRespondSensor - датчик связи для данного процесса " << endl;
-	cout << "--unet-sm-ready-timeout - время на ожидание старта SM" << endl;
-	cout << " Настройки протокола RS: " << endl;
+	cout << "--unet-name NameID            - Идентификтора процесса." << endl;
+	cout << "--unet-recv-timeout msec      - Время для фиксации события 'отсутсвие связи'" << endl;
+	cout << "--unet-lost-timeout msec      - Время ожидания заполнения 'дырки' между пакетами. По умолчанию 5000 мсек." << endl;
+	cout << "--unet-recvpause msec         - Пауза между приёмами. По умолчанию 10" << endl;
+	cout << "--unet-sendpause msec         - Пауза между посылками. По умолчанию 150" << endl;
+	cout << "--unet-updatepause msec       - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
+	cout << "--unet-steptime msec		   - Шаг..." << endl;
+	cout << "--unet-maxdifferense num      - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
+	cout << "--unet-maxprocessingcount num - время на ожидание старта SM" << endl;
+	cout << "--unet-nosender [0,1]         - Отключить посылку." << endl;
+	cout << "--unet-sm-ready-timeout msec  - Время ожидание я готовности SM к работе. По умолчанию 15000" << endl;
+	cout << "--unet-filter-field name      - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
+	cout << "--unet-filter-value name      - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
+	
 }
 // -----------------------------------------------------------------------------
-UNetExchange* UNetExchange::init_unetexchange( int argc, char* argv[], UniSetTypes::ObjectId icID, SharedMemory* ic )
+UNetExchange* UNetExchange::init_unetexchange( int argc, const char* argv[], UniSetTypes::ObjectId icID, SharedMemory* ic )
 {
 	string name = conf->getArgParam("--unet-name","UNetExchange1");
 	if( name.empty() )

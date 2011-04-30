@@ -32,7 +32,7 @@ namespace UniSetUDP
 		friend std::ostream& operator<<( std::ostream& os, UDPData& p );
 	}__attribute__((packed));
 
-	static const int MaxDataLen = 8192;
+	static const int MaxDataLen = 8192; // ~ 1000 параметров
 	static const int MaxDataCount = ( MaxDataLen - sizeof(UniSetUDP::UDPHeader) ) / sizeof(UDPData);
 
 	 struct DataPacket
