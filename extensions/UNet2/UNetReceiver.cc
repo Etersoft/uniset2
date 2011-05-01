@@ -209,8 +209,8 @@ void UNetReceiver::real_update()
 					shm->initDIterator(ii.dit);
 				}
 
-				if( d.id == 121 )
-					cerr << "****** save id=" << d.id << " val=" << d.val << endl;
+//				if( d.id == 121 )
+//					cerr << "****** save id=" << d.id << " val=" << d.val << endl;
 				if( ii.iotype == UniversalIO::DigitalInput )
 					shm->localSaveState(ii.dit,d.id,d.val,shm->ID());
 				else if( ii.iotype == UniversalIO::AnalogInput )
@@ -315,6 +315,7 @@ bool UNetReceiver::recv()
 
 	rnum = pack.msg.header.num;
 
+#if 0
 	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
 		  << " header: " << pack.msg.header
 		  << " waitClean=" << waitClean
@@ -324,6 +325,7 @@ bool UNetReceiver::recv()
 		UniSetUDP::UDPData& d = pack.msg.dat[i];
 		cerr << "****** save id=" << d.id << " val=" << d.val << endl;
 	}
+#endif
 
 	{	// lock qpack
 		uniset_mutex_lock l(packMutex,500);

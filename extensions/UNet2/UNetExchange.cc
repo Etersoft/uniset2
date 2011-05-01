@@ -6,6 +6,7 @@
 using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
+// -----------------------------------------------------------------------------
 UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic ):
 UniSetObject_LT(objId),
 shm(0),
@@ -17,7 +18,6 @@ sender(0)
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(UNetExchange): objId=-1?!! Use --unet-name" );
 
-//	xmlNode* cnode = conf->getNode(myname);
 	cnode = conf->getNode(myname);
 	if( cnode == NULL )
 		throw UniSetTypes::SystemError("(UNetExchange): Not found conf-node for " + myname );
@@ -143,10 +143,6 @@ sender(0)
 	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
 
 	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
-
-	timeout_t msec = conf->getArgPInt("--unet-timeout",it.getProp("timeout"), 3000);
-
-	dlog[Debug::INFO] << myname << "(init): udp-timeout=" << msec << " msec" << endl;
 }
 // -----------------------------------------------------------------------------
 UNetExchange::~UNetExchange()
@@ -174,12 +170,6 @@ void UNetExchange::startReceivers()
 {
 	 for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
 		  (*it)->start();
-}
-// -----------------------------------------------------------------------------
-void UNetExchange::initSender(  const std::string s_host, const ost::tpport_t port, UniXML_iterator& it )
-{
-	if( no_sender )
-		return;
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::waitSMReady()
@@ -229,7 +219,7 @@ void UNetExchange::step()
 }
 
 // -----------------------------------------------------------------------------
-void UNetExchange::processingMessage(UniSetTypes::VoidMessage *msg)
+void UNetExchange::processingMessage( UniSetTypes::VoidMessage *msg )
 {
 	try
 	{
@@ -272,7 +262,7 @@ void UNetExchange::processingMessage(UniSetTypes::VoidMessage *msg)
 	}
 	catch(...)
 	{
-		dlog[Debug::CRIT] << myname << "(processingMessage): catch ...\n";
+		dlog[Debug::CRIT] << myname << "(processingMessage): catch ..." << std::endl;
 	}
 }
 // -----------------------------------------------------------------------------
@@ -301,30 +291,32 @@ void UNetExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 			
 			{
 				UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
-				askSensors(UniversalIO::UIONotify);
+				if( shm->isLocalwork() )
+					askSensors(UniversalIO::UIONotify);
 			}
+			
 			askTimer(tmStep,steptime);
 			startReceivers();
 			if( sender )
 				sender->start();
 		}
+		break;
 
 		case SystemMessage::FoldUp:
 		case SystemMessage::Finish:
-			askSensors(UniversalIO::UIODontNotify);
+			if( shm->isLocalwork() )
+				askSensors(UniversalIO::UIODontNotify);
 			break;
 		
 		case SystemMessage::WatchDog:
 		{
 			// ОПТИМИЗАЦИЯ (защита от двойного перезаказа при старте)
-			// Если идёт локальная работа 
-			// (т.е. UNetExchange  запущен в одном процессе с SharedMemory2)
+			// Если идёт автономная работа, то нужно заказывать датчики
+			// если запущены в одном процессе с SharedMemory2,
 			// то обрабатывать WatchDog не надо, т.к. мы и так ждём готовности SM
 			// при заказе датчиков, а если SM вылетит, то вместе с этим процессом(UNetExchange)
 			if( shm->isLocalwork() )
-				break;
-
-			askSensors(UniversalIO::UIONotify);
+				askSensors(UniversalIO::UIONotify);
 		}
 		break;
 
@@ -375,7 +367,7 @@ void UNetExchange::askSensors( UniversalIO::UIOCommand cmd )
 void UNetExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
 	if( sender )
-		sender->updateSensor(sm->id,sm->value);
+		sender->updateSensor( sm->id , sm->value );
 }
 // ------------------------------------------------------------------------------------------
 bool UNetExchange::activateObject()
@@ -396,7 +388,7 @@ bool UNetExchange::activateObject()
 // ------------------------------------------------------------------------------------------
 void UNetExchange::sigterm( int signo )
 {
-	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
+	dlog[Debug::INFO] << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
 	activated = false;
 	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
 	{

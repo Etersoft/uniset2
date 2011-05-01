@@ -84,7 +84,6 @@ class UNetExchange:
 
 		void initIterators();
 		void startReceivers();
-		void initSender( const std::string host, const ost::tpport_t port, UniXML_iterator& it );
 
 		enum Timer
 		{
