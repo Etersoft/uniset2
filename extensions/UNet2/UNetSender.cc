@@ -97,6 +97,7 @@ void UNetSender::updateFromSM()
 // -----------------------------------------------------------------------------
 void UNetSender::updateSensor( UniSetTypes::ObjectId id, long value )
 {
+//	cerr << myname << ": UPDATE SENSOR id=" << id << " value=" << value << endl;
 	DMap::iterator it=dlist.begin();
 	for( ; it!=dlist.end(); ++it )
 	{
@@ -110,7 +111,7 @@ void UNetSender::updateSensor( UniSetTypes::ObjectId id, long value )
 // -----------------------------------------------------------------------------
 void UNetSender::updateItem( DMap::iterator& it, long value )
 {
-	if( it != dlist.end() )
+	if( it == dlist.end() )
 		return;
 
 	UniSetTypes::uniset_mutex_lock l(pack_mutex,100);
@@ -139,25 +140,28 @@ void UNetSender::send()
 	{
 		try
 		{
+			if( !shm->isLocalwork() )
+				updateFromSM();
+
 			real_send();
 		}
 		catch( ost::SockException& e )
 		{
-			cerr  << myname << "(send): " << e.getString() << endl;
+			dlog[Debug::WARN]  << myname << "(send): " << e.getString() << endl;
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
-			cerr << myname << "(send): " << ex << std::endl;
+			dlog[Debug::WARN] << myname << "(send): " << ex << std::endl;
 		}
 		catch(...)
 		{
-			cerr << myname << "(send): catch ..." << std::endl;
+			dlog[Debug::WARN] << myname << "(send): catch ..." << std::endl;
 		}
 
 		msleep(sendpause);
 	}
 
-	cerr << "************* execute FINISH **********" << endl;
+	dlog[Debug::INFO] << "************* execute FINISH **********" << endl;
 }
 // -----------------------------------------------------------------------------
 void UNetSender::real_send()
@@ -274,12 +278,6 @@ bool UNetSender::initItem( UniXML_iterator& it )
 	{
 		dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << sid << endl;
 		return false;
-	}
-
-	if( shm )
-	{
-		shm->initDIterator(p.dit);
-		shm->initAIterator(p.ait);
 	}
 
 	if( maxItem >= dlist.size() )
