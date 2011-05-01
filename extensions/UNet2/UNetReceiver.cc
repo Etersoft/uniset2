@@ -209,8 +209,6 @@ void UNetReceiver::real_update()
 					shm->initDIterator(ii.dit);
 				}
 
-//				if( d.id == 121 )
-//					cerr << "****** save id=" << d.id << " val=" << d.val << endl;
 				if( ii.iotype == UniversalIO::DigitalInput )
 					shm->localSaveState(ii.dit,d.id,d.val,shm->ID());
 				else if( ii.iotype == UniversalIO::AnalogInput )
@@ -245,7 +243,7 @@ void UNetReceiver::stop()
 // -----------------------------------------------------------------------------
 void UNetReceiver::receive()
 {
-	cout << myname << ": ******************* receive start" << endl;
+	dlog[Debug::INFO] << myname << ": ******************* receive start" << endl;
 	ptRecvTimeout.setTiming(recvTimeout);
 	while( activated )
 	{
@@ -256,21 +254,21 @@ void UNetReceiver::receive()
 		}
 		catch( ost::SockException& e )
 		{
-			cerr  << myname << "(receive): " << e.getString() << endl;
+			dlog[Debug::WARN] << myname << "(receive): " << e.getString() << endl;
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
-			cerr << myname << "(receive): " << ex << std::endl;
+			dlog[Debug::WARN] << myname << "(receive): " << ex << std::endl;
 		}
 		catch(...)
 		{
-			cerr << myname << "(receive): catch ..." << std::endl;
+			dlog[Debug::WARN] << myname << "(receive): catch ..." << std::endl;
 		}
 
 		msleep(recvpause);
 	}
 
-	cout << myname << ": ************* receive FINISH **********" << endl;
+	dlog[Debug::INFO] << myname << ": ************* receive FINISH **********" << endl;
 }
 // -----------------------------------------------------------------------------
 bool UNetReceiver::recv()
