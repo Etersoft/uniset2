@@ -45,7 +45,15 @@ s_thr(0)
 	catch( ost::SockException& e )
 	{
 		ostringstream s;
-		s << e.getString() << ": " << e.getSystemErrorString() << endl;
+		s << "(" << s_host << ":" << port << "): " << e.getString() << ": " << e.getSystemErrorString();
+		dlog[Debug::CRIT] << myname << "(init): (ost::SocketException) " << s.str() << std::endl;
+		throw SystemError(s.str());
+	}
+	catch(ost::Socket& socket)
+	{
+		ostringstream s;
+		s << "Could not create connection for " << s_host << ":" << port;
+		dlog[Debug::CRIT] << myname << "(init): (ost::Socket) " << s.str() << std::endl;
 		throw SystemError(s.str());
 	}
 
