@@ -259,13 +259,13 @@ void UNetReceiver::receive()
 			if( recv() )
 			  ptRecvTimeout.reset();
 		}
-		catch( ost::SockException& e )
-		{
-			dlog[Debug::WARN] << myname << "(receive): " << e.getString() << endl;
-		}
 		catch( UniSetTypes::Exception& ex)
 		{
 			dlog[Debug::WARN] << myname << "(receive): " << ex << std::endl;
+		}
+		catch( std::exception& e )
+		{
+			dlog[Debug::WARN] << myname << "(receive): " << e.what()<< std::endl;
 		}
 		catch(...)
 		{

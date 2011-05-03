@@ -54,6 +54,10 @@ int main(int argc, const char **argv)
 	{
 		dlog[Debug::CRIT] << "(smemory): " << e.what() << endl;
 	}
+	catch( std::exception& e )
+	{
+		unideb[Debug::CRIT] << "(smemory): " << e.what() << endl;
+	}
 	catch(...)
 	{
 		dlog[Debug::CRIT] << "(smemory): catch(...)" << endl;
