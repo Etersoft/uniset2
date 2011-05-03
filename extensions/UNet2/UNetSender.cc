@@ -161,6 +161,10 @@ void UNetSender::send()
 		{
 			dlog[Debug::WARN] << myname << "(send): " << ex << std::endl;
 		}
+		catch( std::exception& e )
+		{
+			dlog[Debug::WARN] << myname << "(send): " << e.what() << std::endl;
+		}
 		catch(...)
 		{
 			dlog[Debug::WARN] << myname << "(send): catch ..." << std::endl;
