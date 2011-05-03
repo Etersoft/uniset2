@@ -86,9 +86,9 @@ int main(int argc, const char **argv)
 	{
 		dlog[Debug::CRIT] << "(mbslave): " << ex << endl;
 	}
-	catch( ost::SockException& e )
+	catch( std::exception& e )
 	{
-		dlog[Debug::CRIT] << e.getString() << ": " << e.getSystemErrorString() << endl;
+		dlog[Debug::CRIT] << "(mbslave): " << e.what() << endl;
 	}
 	catch(...)
 	{

@@ -289,10 +289,9 @@ int main(int argc, char* argv[])
 			break;
 		}
 	}
-	catch( ost::SockException& e )
+	catch( std::exception& e )
 	{
-		cerr << "(main): " << e.getString() << " (" << addr << ")" << endl;
-		return 1;
+		cerr << "(main): " << e.what() << endl;
 	}
 	catch( ... )
 	{

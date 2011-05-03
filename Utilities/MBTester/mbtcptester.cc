@@ -423,9 +423,9 @@ int main( int argc, char **argv )
 	{
 		cerr << "(mbtester): " << ex << endl;
 	}
-	catch( ost::SockException& e ) 
+	catch( std::exception& e )
 	{
-		cerr << e.getString() << ": " << e.getSystemErrorString() << endl;
+		cerr << "(mbtester): " << e.what() << endl;
 	}
 	catch(...)
 	{
