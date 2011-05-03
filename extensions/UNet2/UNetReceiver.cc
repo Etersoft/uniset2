@@ -53,15 +53,15 @@ cache_init_ok(false)
 	catch( std::exception& e )
 	{
 		ostringstream s;
-		s << "Could not create connection for " << s_host << ":" << port << " err: " << e.what();
-		dlog[Debug::CRIT] << myname << "(init): " << s.str() << std::endl;
+		s << myname << ": " << e.what();
+		dlog[Debug::CRIT] << s.str() << std::endl;
 		throw SystemError(s.str());
 	}
 	catch( ... )
 	{
 		ostringstream s;
-		s << "Could not create connection for " << s_host << ":" << port;
-		dlog[Debug::CRIT] << myname << "(init): " << s.str() << std::endl;
+		s << myname << ": catch...";
+		dlog[Debug::CRIT] << s.str() << std::endl;
 		throw SystemError(s.str());
 	}
 	
