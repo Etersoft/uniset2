@@ -36,27 +36,27 @@ s_thr(0)
 	if( dlog.debugging(Debug::INFO) )
 		dlog[Debug::INFO] << "(UNetSender): UDP set to " << s_host << ":" << port << endl;
 
-	
+	ost::Thread::setException(ost::Thread::throwException);
 	try
 	{
 		addr = s_host.c_str();
 		udp = new ost::UDPBroadcast(addr,port);
 	}
-	catch( ost::SockException& e )
+	catch( std::exception& e )
 	{
 		ostringstream s;
-		s << "(" << s_host << ":" << port << "): " << e.getString() << ": " << e.getSystemErrorString();
-		dlog[Debug::CRIT] << myname << "(init): (ost::SocketException) " << s.str() << std::endl;
+		s << "Could not create broadcast connection for " << s_host << ":" << port << " err: " << e.what();
+		dlog[Debug::CRIT] << myname << "(init): " << s.str() << std::endl;
 		throw SystemError(s.str());
 	}
-	catch(ost::Socket& socket)
+	catch( ... )
 	{
 		ostringstream s;
 		s << "Could not create connection for " << s_host << ":" << port;
-		dlog[Debug::CRIT] << myname << "(init): (ost::Socket) " << s.str() << std::endl;
+		dlog[Debug::CRIT] << myname << "(init): " << s.str() << std::endl;
 		throw SystemError(s.str());
 	}
-	
+
 	s_thr = new ThreadCreator<UNetSender>(this, &UNetSender::send);
 
 	// -------------------------------
