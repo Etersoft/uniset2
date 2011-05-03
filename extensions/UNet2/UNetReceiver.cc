@@ -52,12 +52,18 @@ cache_init_ok(false)
 	catch( ost::SockException& e )
 	{
 		ostringstream s;
-		s << e.getString() << ": " << e.getSystemErrorString();
-		dlog[Debug::CRIT] << myname << "(init): " << s.str() << std::endl;
-
+		s << "(" << s_host << ":" << port << "): " << e.getString() << ": " << e.getSystemErrorString();
+		dlog[Debug::CRIT] << myname << "(init): (ost::SocketException) " << s.str() << std::endl;
 		throw SystemError(s.str());
 	}
-
+	catch(ost::Socket& socket)
+	{
+		ostringstream s;
+		s << "Could not create connection for " << s_host << ":" << port;
+		dlog[Debug::CRIT] << myname << "(init): (ost::Socket) " << s.str() << std::endl;
+		throw SystemError(s.str());
+	}
+	
 	r_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::receive);
 	u_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::update);
 
