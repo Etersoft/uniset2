@@ -288,11 +288,13 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 		while( !tmAbort.checkTime() )
 		{
 			bcnt = getNextData((unsigned char*)(&rbuf),sizeof(ModbusAddr));
-			if( bcnt!=0 && ( rbuf.addr==addr ) ) // || (onBroadcast && rbuf.addr==BroadcastAddr) ) )
+			if( bcnt>0 && ( rbuf.addr==addr ) ) // || (onBroadcast && rbuf.addr==BroadcastAddr) ) )
 			{
 				begin = true;
 				break;
 			}
+			
+			usleep(100);
 		}
 
 		if( !begin )

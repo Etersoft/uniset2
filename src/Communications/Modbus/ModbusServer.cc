@@ -472,6 +472,8 @@ mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, t
 				begin = true;
 				break;
 			}
+			
+			usleep(100);
 		}
 
 		if( !begin )
