@@ -17,6 +17,11 @@ iaddr(""),
 force_disconnect(true)
 {
 	setCRCNoCheckit(true);
+/*
+	dlog.addLevel(Debug::INFO);
+	dlog.addLevel(Debug::WARN);
+	dlog.addLevel(Debug::CRIT);
+*/
 }
 
 // -------------------------------------------------------------------------
@@ -172,7 +177,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				disconnect();
 				return erTimeOut; // return erHardwareError;
 			}
-            
+
 			rmh.swapdata();
 			
 			if( rmh.tID != mh.tID )
@@ -187,8 +192,9 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 			}
 			//
 
-//			return recv(addr,msg.func,reply,timeout);
-			mbErrCode res = recv(addr,msg.func,reply,timeout);
+			// timeout = ptTimeout.getLeft(timeout);
+			// в tcp ответе задержек уже не должно быть..
+			mbErrCode res = recv(addr,msg.func,reply,1); //timeout);
 			
 			if( force_disconnect )
 			{
@@ -235,6 +241,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 	catch( std::exception& e )
 	{
 		dlog[Debug::CRIT] << "(query): " << e.what() << std::endl;
+		return erTimeOut;
 	}
 	catch(...)
 	{
@@ -268,7 +275,7 @@ void ModbusTCPMaster::reconnect()
 		tcp = 0;
 	}
 
-	ost::Thread::setException(ost::Thread::throwException);
+	// ost::Thread::setException(ost::Thread::throwException);
 
 	try
 	{
