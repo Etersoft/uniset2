@@ -127,6 +127,9 @@ class ModbusClient
 		*/
 		int setAfterSendPause( timeout_t msec );
 
+		/*! установить паузу при ожидании символа */
+		inline void setSleepPause( timeout_t usec ){ sleepPause_usec = usec; }
+
 		void initLog( UniSetTypes::Configuration* conf, const std::string name, const std::string logfile="" );
 		void setLog( DebugStream& dlog );
 
@@ -172,7 +175,8 @@ class ModbusClient
 		ModbusRTU::ModbusMessage qbuf; 	/*!< буфер для посылки сообщений */
 
 		timeout_t replyTimeOut_ms;	/*!< таймаут на ожидание ответа */
-		timeout_t aftersend_msec;		/*!< пауза после посылки запроса */
+		timeout_t aftersend_msec;	/*!< пауза после посылки запроса */
+		timeout_t sleepPause_usec; 	/*!< пауза между попытками чтения символа из канала */
 		
 		bool crcNoCheckit;
 
@@ -181,6 +185,8 @@ class ModbusClient
 
 		void printProcessingTime();
 		PassiveTimer tmProcessing;
+
+
 
 	private:
 };

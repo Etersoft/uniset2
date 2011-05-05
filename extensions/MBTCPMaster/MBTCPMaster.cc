@@ -80,6 +80,9 @@ pollThread(0)
 
 	initPause = conf->getArgPInt("--" + prefix + "-initPause",it.getProp("initPause"), 3000);
 
+	sleepPause_usec = conf->getArgPInt("--" + prefix + "-sleepPause-usec",it.getProp("slepePause"), 100);
+
+
 	force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
 	force_out = conf->getArgInt("--" + prefix + "-force-out",it.getProp("force_out"));
 
@@ -181,6 +184,8 @@ void MBTCPMaster::initMB( bool reopen )
 
 		if( recv_timeout > 0 )
 			mb->setTimeout(recv_timeout);
+
+		mb->setSleepPause(sleepPause_usec);
 
 		dlog[Debug::INFO] << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
 		
