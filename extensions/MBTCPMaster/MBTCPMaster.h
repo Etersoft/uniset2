@@ -410,6 +410,7 @@ class MBTCPMaster:
 		bool force_out;	/*!< флаг означающий, принудительного чтения выходов */
 		bool mbregFromID;
 		int polltime;	/*!< переодичность обновления данных, [мсек] */
+		timeout_t sleepPause_usec;
 
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;
