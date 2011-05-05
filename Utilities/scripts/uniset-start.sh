@@ -17,7 +17,7 @@ print_usage()
 {
     [ "$1" = 0 ] || exec >&2
     cat <<EOF
-Usage: ${0##*/} [options] programm [arguments]
+Usage: ${0##*/} [options] programm
 
 Valid options are:
   -h, --help	display help screen
@@ -32,9 +32,6 @@ Valid options are:
 EOF
     [ -n "$1" ] && exit "$1" || exit
 }
-
-
-[ -z "$1" ]  && print_usage 1
 
 #parse command line options
 case "$1" in
@@ -56,19 +53,9 @@ then
 	[ "$DBG" == "call" ] && start_line="valgrind --tool=callgrind --trace-children=yes --log-file=valgrind.log $COMLINE"
 	[ "$DBG" == "cache" ] && start_line="valgrind --tool=cachegrind --trace-children=yes --log-file=valgrind.log $COMLINE"
 	[ "$DBG" == "hel" ] && start_line="valgrind --tool=helgrind --trace-children=yes --log-file=valgrind.log $COMLINE"
-	
-	PROG=`basename $1`
-	if [ "$DBG" == "gdb" ]; then
-		if [ -a "./.libs/lt-$PROG" ]; then
-			PROG="./.libs/lt-$PROG"
-		else
-			if [ -a "./.libs/$PROG" ]; then
-				PROG="./.libs/$PROG"
-			fi
-		fi
 
-  		shift
-  		start_line="gdb --args $PROG $* --uniset-port $OMNIPORT"
+	if [ "$DBG" == "gdb" ]; then
+		start_line="gdb --args $COMLINE"
 	fi
 
 	echo Running "$start_line"
