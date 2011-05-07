@@ -186,7 +186,7 @@ int main(int argc, char* argv[])
 							continue;
 						}
 
-						size_t ret = udp.UDPReceive::receive(&(pack.msg),sizeof(pack.msg));
+						size_t ret = udp.UDPReceive::receive( &pack, sizeof(pack) );
 						if( ret < sizeof(UniSetUDP::UDPHeader) )
 						{
 							cerr << "(recv): FAILED header ret=" << ret
@@ -194,7 +194,8 @@ int main(int argc, char* argv[])
 							continue;
 						}
 
-						size_t sz = pack.msg.header.dcount * sizeof(UniSetUDP::UDPData) + sizeof(UniSetUDP::UDPHeader);
+						//size_t sz = pack.msg.header.dcount * sizeof(UniSetUDP::UDPData) + sizeof(UniSetUDP::UDPHeader);
+						size_t sz =	sizeof(UniSetUDP::UDPMessage);
 						if( ret < sz )
 						{
 							cerr << "(recv): FAILED data ret=" << ret
@@ -239,13 +240,17 @@ int main(int argc, char* argv[])
 				mypack.msg.header.nodeID = nodeID;
 				mypack.msg.header.procID = procID;
 
-				for( int i=0; i<count; i++ )
+				for( size_t i=0; i < count && i < UniSetUDP::MaxACount; i++ )
 				{
-					UDPData d(i,i);
-					mypack.addData(d);
+					UDPAData d(i,i);
+					mypack.addAData(d);
 				}
 
-				size_t sz = mypack.byte_size() + sizeof(UniSetUDP::UDPHeader);
+				for( int i=0; i<count; i++ )
+					mypack.addDData(i,i);
+
+				//size_t sz = mypack.byte_size() + sizeof(UniSetUDP::UDPHeader);
+				size_t sz =	sizeof(UniSetUDP::UDPMessage);
 
 				udp->setPeer(host,port);
 				unsigned long packetnum = 0;
