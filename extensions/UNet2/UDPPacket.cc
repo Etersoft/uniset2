@@ -125,4 +125,64 @@ bool UDPMessage::dValue( size_t index )
 	return ( d_dat[nbyte] & (1<<nbit) );
 }
 // -----------------------------------------------------------------------------
+size_t UDPMessage::transport_msg( UDPPacket& p )
+{
+	memset(&p,0,sizeof(UDPPacket));
 
+	size_t i = 0;
+	memcpy(&(p.data[i]),this,sizeof(UDPHeader));
+	i += sizeof(UDPHeader);
+
+	// копируем аналоговые данные
+	size_t sz = acount*sizeof(UDPAData);
+    memcpy(&(p.data[i]),a_dat,sz);
+	i += sz;
+	
+	// копируем булеве индексы
+	sz = dcount*sizeof(long);
+    memcpy(&(p.data[i]),d_id,sz);
+	i += sz;
+	
+	// копируем булевые данные
+	size_t nbyte = dcount / sizeof(unsigned char);
+	size_t nbit =  dcount % sizeof(unsigned char);
+	sz = nbit > 0 ? nbyte + 1 : nbyte;
+	memcpy(&(p.data[i]),d_dat,sz);
+	i += sz;
+
+	p.len = i;
+	return i;
+}
+// -----------------------------------------------------------------------------
+UDPMessage::UDPMessage( UDPPacket& p )
+{
+	getMessage(*this,p);
+}
+// -----------------------------------------------------------------------------
+size_t UDPMessage::getMessage( UDPMessage& m, UDPPacket& p )
+{
+	memset(&m,0,sizeof(m));
+	
+	size_t i = 0;
+	memcpy(&m,&(p.data[i]),sizeof(UDPHeader));
+	i += sizeof(UDPHeader);
+
+	// копируем аналоговые данные
+	size_t sz = m.acount*sizeof(UDPAData);
+    memcpy(m.a_dat,&(p.data[i]),sz);
+	i += sz;
+	
+	// копируем булеве индексы
+	sz = m.dcount*sizeof(long);
+    memcpy(m.d_id,&(p.data[i]),sz);
+	i += sz;
+	
+	// копируем булевые данные
+	size_t nbyte = m.dcount / sizeof(unsigned char);
+	size_t nbit =  m.dcount % sizeof(unsigned char);
+	sz = nbit > 0 ? nbyte + 1 : nbyte;
+	memcpy(m.d_dat,&(p.data[i]),sz);
+	
+	return i+sz;
+}
+// -----------------------------------------------------------------------------

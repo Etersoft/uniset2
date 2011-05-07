@@ -41,14 +41,28 @@ namespace UniSetUDP
 		friend std::ostream& operator<<( std::ostream& os, UDPAData& p );
 	}__attribute__((packed));
 	
+	static const size_t MaxACount = 100;
 	static const size_t MaxDCount = 256;
 	static const size_t MaxDDataCount = MaxDCount / sizeof(unsigned char);
-	static const size_t MaxACount = 100;
+
+	struct UDPPacket
+	{
+		UDPPacket():len(0){}
+
+		int len;
+		unsigned char data[ sizeof(UDPHeader) + MaxDCount*sizeof(long) + MaxDDataCount + MaxACount*sizeof(UDPAData) ];
+	}__attribute__((packed));
+
+	static const int MaxDataLen = sizeof(UDPPacket);
 
 	struct UDPMessage:
 		public UDPHeader
 	{
 		UDPMessage();
+
+		UDPMessage( UDPPacket& p );
+ 		size_t transport_msg( UDPPacket& p );
+		static size_t getMessage( UDPMessage& m, UDPPacket& p );
 
 		size_t addDData( long id, bool val );
 		bool setDData( size_t index, bool val );
@@ -64,15 +78,15 @@ namespace UniSetUDP
 		inline int asize(){ return acount; }
 //		inline int byte_size(){ return (dcount*sizeof(long)*UDPDData) + acount*sizeof(UDPAData)); }
 		
+		// количество байт в пакете с булевыми переменными...
+		int d_byte(){ return dcount*sizeof(long) + dcount; }
+		
 		UDPAData a_dat[MaxACount]; /*!< аналоговые величины */
 		long d_id[MaxDCount];      /*!< список дискретных ID */
 		unsigned char d_dat[MaxDDataCount];  /*!< битовые значения */
 		
 		friend std::ostream& operator<<( std::ostream& os, UDPMessage& p );
-	
-	}__attribute__((packed));
-
-	static const int MaxDataLen = sizeof(UDPMessage);
+	};
 }
 // -----------------------------------------------------------------------------
 #endif // UDPPacket_H_
