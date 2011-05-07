@@ -15,6 +15,7 @@ ModbusServer::ModbusServer():
 	recvTimeOut_ms(50),
 	replyTimeout_ms(2000),
 	aftersend_msec(0),
+	sleepPause_usec(100),
 	onBroadcast(false),
 	crcNoCheckit(false)
 {
@@ -473,7 +474,7 @@ mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, t
 				break;
 			}
 			
-			usleep(100);
+			usleep(sleepPause_usec);
 		}
 
 		if( !begin )
