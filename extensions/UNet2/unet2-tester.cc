@@ -16,6 +16,7 @@ static struct option longopts[] = {
 	{ "timeout", required_argument, 0, 't' },
 	{ "data-count", required_argument, 0, 'c' },
 	{ "disable-broadcast", no_argument, 0, 'b' },
+	{ "show-data", no_argument, 0, 'd' },
 	{ "check-lost", no_argument, 0, 'l' },
 	{ "verbode", required_argument, 0, 'v' },
 	{ NULL, 0, 0, 0 }
@@ -58,10 +59,11 @@ int main(int argc, char* argv[])
 	bool broadcast = true;
 	int procID = 1;
 	int nodeID = 1;
-	int count = 50;
+	size_t count = 50;
 	bool lost = false;
+	bool show = false;
 
-	while( (opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blv",longopts,&optindex)) != -1 )
+	while( (opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvd",longopts,&optindex)) != -1 )
 	{
 		switch (opt)
 		{
@@ -77,6 +79,7 @@ int main(int argc, char* argv[])
 				cout << "[-b|--disable-broadcast] - Disable broadcast mode." << endl;
 				cout << "[-l|--check-lost]        - Check the lost packets." << endl;
 				cout << "[-v|--verbose]           - verbose mode." << endl;
+				cout << "[-d|--show-data]         - show receive data." << endl;
 				cout << endl;
 			return 0;
 
@@ -112,6 +115,10 @@ int main(int argc, char* argv[])
 
 			case 'b':
 				broadcast = false;
+			break;
+
+			case 'd':
+				show = true;
 			break;
 
 			case 'l':
@@ -199,22 +206,25 @@ int main(int argc, char* argv[])
 						if( ret < sz )
 						{
 							cerr << "(recv): FAILED data ret=" << ret
-								<< " sizeof=" << sz << " packnum=" << pack.msg.header.num << endl;
+								<< " sizeof=" << sz << " packnum=" << pack.num << endl;
 							continue;
 						}
 
 						if( lost )
 						{
-							if( prev_num != (pack.msg.header.num-1) )
-								cerr << "WARNING! Incorrect sequence of packets! current=" << pack.msg.header.num
+							if( prev_num != (pack.num-1) )
+								cerr << "WARNING! Incorrect sequence of packets! current=" << pack.num
 									<< " prev=" << prev_num << endl;
 
-							prev_num = pack.msg.header.num;
+							prev_num = pack.num;
 						}
 
-						if( verb )
-							cout << "receive OK. header: " << pack.msg.header
-								 << " bytes: " << ret << endl;
+//						if( verb )
+//							cout << "receive OK. header: " << pack.msg.header
+//								 << " bytes: " << ret << endl;
+
+						if( show )
+							cout << "receive data: " << pack << endl;
 					}
 					catch( ost::SockException& e )
 					{
@@ -237,16 +247,16 @@ int main(int argc, char* argv[])
 			        udp = new ost::UDPBroadcast(host,port);
 
 				UniSetUDP::UDPMessage mypack;
-				mypack.msg.header.nodeID = nodeID;
-				mypack.msg.header.procID = procID;
+				mypack.nodeID = nodeID;
+				mypack.procID = procID;
 
-				for( size_t i=0; i < count && i < UniSetUDP::MaxACount; i++ )
+				for( size_t i=0; i < count; i++ )
 				{
 					UDPAData d(i,i);
 					mypack.addAData(d);
 				}
 
-				for( int i=0; i<count; i++ )
+				for( int i=0; i < count; i++ )
 					mypack.addDData(i,i);
 
 				//size_t sz = mypack.byte_size() + sizeof(UniSetUDP::UDPHeader);
@@ -257,7 +267,7 @@ int main(int argc, char* argv[])
 
 				while(1)
 				{
-					mypack.msg.header.num = packetnum++;
+					mypack.num = packetnum++;
 					if( packetnum > UniSetUDP::MaxPacketNum )
 						packetnum = 1;
 
@@ -268,7 +278,7 @@ int main(int argc, char* argv[])
 							if( verb )
 								cout << "(send): to addr=" << addr << " count=" << count << " bytes=" << sz << endl;
 
-							size_t ret = udp->send((char*)&(mypack.msg), sz);
+							size_t ret = udp->send((char*)&mypack, sz);
 
 							if( ret < sz )
 							cerr << "(send): FAILED ret=" << ret << " < sizeof=" << sz << endl;

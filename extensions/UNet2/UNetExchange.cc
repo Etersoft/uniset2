@@ -49,21 +49,34 @@ sender(0)
 
 	UniXML_iterator n_it(nodes);
 
-	string default_ip(n_it.getProp("unet_ip"));
+	string default_ip(n_it.getProp("unet_broadcast_ip"));
 
 	if( !n_it.goChildren() )
 		throw UniSetTypes::SystemError("(UNetExchange): Items not found for <nodes>");
 
 	for( ; n_it.getCurrent(); n_it.goNext() )
 	{
+		if( n_it.getIntProp("unet_ignore") )
+		{
+			dlog[Debug::INFO] << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
+			continue;
+		}
+
 		// Если указано поле unet_ip непосредственно у узла - берём его
 		// если указано общий broadcast ip для всех узлов - берём его
-		// Иначе берём из поля "ip"
-		string h(n_it.getProp("ip"));
+		string h("");
 		if( !default_ip.empty() )
 			h = default_ip;
-		if( !n_it.getProp("unet_ip").empty() )
-			h = n_it.getProp("unet_ip");
+		if( !n_it.getProp("unet_broadcast_ip").empty() )
+			h = n_it.getProp("unet_broadcast_ip");
+
+		if( h.empty() )
+		{
+			ostringstream err;
+			err << myname << "(init): Unkown broadcast IP for " << n_it.getProp("name");
+			dlog[Debug::CRIT] << err.str() << endl;
+			throw UniSetTypes::SystemError(err.str());
+		}
 
 		// Если указано поле unet_port - используем его
 		// Иначе port = идентификатору узла
@@ -80,11 +93,6 @@ sender(0)
 			continue;
 		}
 
-		if( n_it.getIntProp("unet_ignore") )
-		{
-			dlog[Debug::INFO] << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
-			continue;
-		}
 
 		dlog[Debug::INFO] << myname << "(init): add UNetReceiver for " << h << ":" << p << endl;
 

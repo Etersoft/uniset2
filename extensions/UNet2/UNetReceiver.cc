@@ -10,10 +10,10 @@ using namespace UniSetExtensions;
 bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 											const UniSetUDP::UDPMessage& rhs) const
 {
-//	if( lhs.msg.header.num == rhs.msg.header.num )
-//		return (lhs.msg < rhs.msg);
+//	if( lhs.num == rhs.num )
+//		return (lhs < rhs);
 
-	return lhs.msg.header.num > rhs.msg.header.num;
+	return lhs.num > rhs.num;
 }
 // ------------------------------------------------------------------------------------------
 UNetReceiver::UNetReceiver( const std::string s_host, const ost::tpport_t port, SMInterface* smi ):
@@ -161,7 +161,7 @@ void UNetReceiver::real_update()
 				return;
 
 			p = qpack.top();
-			unsigned long sub = labs(p.msg.header.num - pnum);
+			unsigned long sub = labs(p.num - pnum);
 			if( pnum > 0 )
 			{
 				// если sub > maxDifferens
@@ -179,7 +179,7 @@ void UNetReceiver::real_update()
 
 					lostPackets++;
 				}
-				else if( p.msg.header.num == pnum )
+				else if( p.num == pnum )
 				{
 				   /* а что делать если идут повторные пакеты ?!
 					* для надёжности лучше обрабатывать..
@@ -195,7 +195,7 @@ void UNetReceiver::real_update()
 			// удаляем из очереди, только если
 			// всё в порядке с последовательностью..
 			qpack.pop();
-			pnum = p.msg.header.num;
+			pnum = p.num;
 		} // unlock qpack
 
 		k--;
@@ -207,7 +207,7 @@ void UNetReceiver::real_update()
 
 		// Обработка дискретных
 		size_t nbit = 0;
-		for( size_t i=0; i<p.msg.header.dcount; i++, nbit++ )
+		for( size_t i=0; i<p.dcount; i++, nbit++ )
 		{
 			try
 			{
@@ -246,11 +246,11 @@ void UNetReceiver::real_update()
 		}
 
 		// Обрабока аналоговых
-		for( size_t i=0; i<p.msg.header.acount; i++ )
+		for( size_t i=0; i<p.acount; i++ )
 		{
 			try
 			{
-				UniSetUDP::UDPAData& d = p.msg.a_dat[i];
+				UniSetUDP::UDPAData& d = p.a_dat[i];
 				ItemInfo& ii(a_icache[i]);
 				if( ii.id != d.id )
 				{
@@ -327,7 +327,7 @@ bool UNetReceiver::recv()
 	if( !udp->isInputReady(recvTimeout) )
 		return false;
 
-	size_t ret = udp->UDPReceive::receive(&(pack.msg),sizeof(pack.msg));
+	size_t ret = udp->UDPReceive::receive(&pack,sizeof(pack));
 	if( ret < sizeof(UniSetUDP::UDPHeader) )
 	{
 		dlog[Debug::CRIT] << myname << "(receive): FAILED header ret=" << ret << " sizeof=" << sizeof(UniSetUDP::UDPHeader) << endl;
@@ -339,12 +339,12 @@ bool UNetReceiver::recv()
 	if( ret < sz )
 	{
 		dlog[Debug::CRIT] << myname << "(receive): FAILED data ret=" << ret << " sizeof=" << sz
-			  << " packnum=" << pack.msg.header.num << endl;
+			  << " packnum=" << pack.num << endl;
 		return false;
 	}
 
 
-	if( rnum>0 && labs(pack.msg.header.num - rnum) > maxDifferens )
+	if( rnum>0 && labs(pack.num - rnum) > maxDifferens )
 	{
 		/* А что делать если мы уже ждём и ещё не "разгребли предыдущее".. а тут уже повторный "разрыв"
 		 * Можно откинуть всё.. что сложили во временную очередь и заново "копить" (но тогда теряем информацию)
@@ -363,7 +363,7 @@ bool UNetReceiver::recv()
 		waitClean = true;
 	}
 
-	rnum = pack.msg.header.num;
+	rnum = pack.num;
 
 #if 0
 	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
@@ -428,20 +428,20 @@ void UNetReceiver::initIterators()
 // -----------------------------------------------------------------------------
 void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 {
-	 if( !force && pack.msg.header.dcount == d_icache.size() )
+	 if( !force && pack.dcount == d_icache.size() )
 		  return;
 
 	 dlog[Debug::INFO] << myname << ": init icache.." << endl;
 	 d_cache_init_ok = true;
 
-	 d_icache.resize(pack.msg.header.dcount);
+	 d_icache.resize(pack.dcount);
 	 for( size_t i=0; i<d_icache.size(); i++ )
 	 {
 		  ItemInfo& d(d_icache[i]);
 
-		  if( d.id != pack.msg.d_id[i] )
+		  if( d.id != pack.d_id[i] )
 		  {
-				d.id = pack.msg.d_id[i];
+				d.id = pack.d_id[i];
 				d.iotype = conf->getIOType(d.id);
 				shm->initAIterator(d.ait);
 				shm->initDIterator(d.dit);
@@ -451,19 +451,19 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 // -----------------------------------------------------------------------------
 void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 {
-	 if( !force && pack.msg.header.acount == a_icache.size() )
+	 if( !force && pack.acount == a_icache.size() )
 		  return;
 
 	 dlog[Debug::INFO] << myname << ": init icache.." << endl;
 	 a_cache_init_ok = true;
 
-	 a_icache.resize(pack.msg.header.acount);
+	 a_icache.resize(pack.acount);
 	 for( size_t i=0; i<a_icache.size(); i++ )
 	 {
 		  ItemInfo& d(a_icache[i]);
-		  if( d.id != pack.msg.a_dat[i].id )
+		  if( d.id != pack.a_dat[i].id )
 		  {
-				d.id = pack.msg.a_dat[i].id;
+				d.id = pack.a_dat[i].id;
 				d.iotype = conf->getIOType(d.id);
 				shm->initAIterator(d.ait);
 				shm->initDIterator(d.dit);
