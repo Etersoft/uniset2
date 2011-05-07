@@ -142,10 +142,14 @@ class UNetReceiver
 		};
 
 		typedef std::vector<ItemInfo> ItemVec;
-		ItemVec icache;	/*!< кэш итераторов */
-		bool cache_init_ok;
-		void initCache( UniSetUDP::UDPMessage& pack, bool force=false );
+		ItemVec d_icache;	/*!< кэш итераторов для булевых */
+		ItemVec a_icache;	/*!< кэш итераторов для аналоговых */
 
+		bool d_cache_init_ok;
+		bool a_cache_init_ok;
+
+		void initDCache( UniSetUDP::UDPMessage& pack, bool force=false );
+		void initACache( UniSetUDP::UDPMessage& pack, bool force=false );
 };
 // -----------------------------------------------------------------------------
 #endif // UNetReceiver_H_

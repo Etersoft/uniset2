@@ -32,8 +32,10 @@ maxDifferens(1000),
 waitClean(false),
 rnum(0),
 maxProcessingCount(100),
-icache(200),
-cache_init_ok(false)
+d_icache(UniSetUDP::MaxDCount),
+a_icache(UniSetUDP::MaxACount),
+d_cache_init_ok(false),
+a_cache_init_ok(false)
 {
 	{
 		ostringstream s;
@@ -200,14 +202,56 @@ void UNetReceiver::real_update()
 
 //		cerr << myname << "(update): " << p.msg.header << endl;
 
-		initCache(p, !cache_init_ok);
+		initDCache(p, !d_cache_init_ok);
+		initACache(p, !a_cache_init_ok);
 
-		for( size_t i=0; i<p.msg.header.dcount; i++ )
+		// Обработка дискретных
+		size_t nbit = 0;
+		for( size_t i=0; i<p.msg.header.dcount; i++, nbit++ )
 		{
 			try
 			{
-				UniSetUDP::UDPData& d = p.msg.dat[i];
-				ItemInfo& ii(icache[i]);
+				
+				long id = p.dID(i);
+				bool val = p.dValue(i);
+				
+				ItemInfo& ii(d_icache[i]);
+				if( ii.id != id )
+				{
+					dlog[Debug::WARN] << myname << "(update): reinit cache for sid=" << id << endl;
+					ii.id = id;
+					shm->initAIterator(ii.ait);
+					shm->initDIterator(ii.dit);
+				}
+
+				if( ii.iotype == UniversalIO::DigitalInput )
+					shm->localSaveState(ii.dit,id,val,shm->ID());
+				else if( ii.iotype == UniversalIO::AnalogInput )
+					shm->localSaveValue(ii.ait,id,val,shm->ID());
+				else if( ii.iotype == UniversalIO::AnalogOutput )
+					shm->localSetValue(ii.ait,id,val,shm->ID());
+ 				else if( ii.iotype == UniversalIO::DigitalOutput )
+					shm->localSetState(ii.dit,id,val,shm->ID());
+				else
+				  dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << id << endl;
+			}
+			catch( UniSetTypes::Exception& ex)
+			{
+				dlog[Debug::CRIT] << myname << "(update): " << ex << std::endl;
+			}
+			catch(...)
+			{
+				dlog[Debug::CRIT] << myname << "(update): catch ..." << std::endl;
+			}
+		}
+		
+		// Обрабока аналоговых
+		for( size_t i=0; i<p.msg.header.acount; i++ )
+		{
+			try
+			{
+				UniSetUDP::UDPAData& d = p.msg.a_dat[i];
+				ItemInfo& ii(a_icache[i]);
 				if( ii.id != d.id )
 				{
 					dlog[Debug::WARN] << myname << "(update): reinit cache for sid=" << d.id << endl;
@@ -290,7 +334,8 @@ bool UNetReceiver::recv()
 		return false;
 	}
 	
-	size_t sz = pack.msg.header.dcount * sizeof(UniSetUDP::UDPData) + sizeof(UniSetUDP::UDPHeader);
+	// size_t sz = pack.msg.header.acount * sizeof(UniSetUDP::UDPAData) + sizeof(UniSetUDP::UDPHeader);
+	size_t sz = sizeof(UniSetUDP::UDPMessage); 
 	if( ret < sz )
 	{
 		dlog[Debug::CRIT] << myname << "(receive): FAILED data ret=" << ret << " sizeof=" << sz
@@ -369,28 +414,56 @@ bool UNetReceiver::recv()
 // -----------------------------------------------------------------------------
 void UNetReceiver::initIterators()
 {
-	for( ItemVec::iterator it=icache.begin(); it!=icache.end(); ++it )
+	for( ItemVec::iterator it=d_icache.begin(); it!=d_icache.end(); ++it )
+	{
+		shm->initAIterator(it->ait);
+		shm->initDIterator(it->dit);
+	}
+	for( ItemVec::iterator it=a_icache.begin(); it!=a_icache.end(); ++it )
 	{
 		shm->initAIterator(it->ait);
 		shm->initDIterator(it->dit);
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::initCache( UniSetUDP::UDPMessage& pack, bool force )
+void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 {
-	 if( !force && pack.msg.header.dcount == icache.size() )
+	 if( !force && pack.msg.header.dcount == d_icache.size() )
 		  return;
 
 	 dlog[Debug::INFO] << myname << ": init icache.." << endl;
-	 cache_init_ok = true;
+	 d_cache_init_ok = true;
 
-	 icache.resize(pack.msg.header.dcount);
-	 for( size_t i=0; i<icache.size(); i++ )
+	 d_icache.resize(pack.msg.header.dcount);
+	 for( size_t i=0; i<d_icache.size(); i++ )
 	 {
-		  ItemInfo& d(icache[i]);
-		  if( d.id != pack.msg.dat[i].id )
+		  ItemInfo& d(d_icache[i]);
+
+		  if( d.id != pack.msg.d_id[i] )
 		  {
-				d.id = pack.msg.dat[i].id;
+				d.id = pack.msg.d_id[i];
+				d.iotype = conf->getIOType(d.id);
+				shm->initAIterator(d.ait);
+				shm->initDIterator(d.dit);
+		  }
+	 }
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
+{
+	 if( !force && pack.msg.header.acount == a_icache.size() )
+		  return;
+
+	 dlog[Debug::INFO] << myname << ": init icache.." << endl;
+	 a_cache_init_ok = true;
+
+	 a_icache.resize(pack.msg.header.acount);
+	 for( size_t i=0; i<a_icache.size(); i++ )
+	 {
+		  ItemInfo& d(a_icache[i]);
+		  if( d.id != pack.msg.a_dat[i].id )
+		  {
+				d.id = pack.msg.a_dat[i].id;
 				d.iotype = conf->getIOType(d.id);
 				shm->initAIterator(d.ait);
 				shm->initDIterator(d.dit);

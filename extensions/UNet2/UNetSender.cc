@@ -122,8 +122,16 @@ void UNetSender::updateItem( DMap::iterator& it, long value )
 	if( it == dlist.end() )
 		return;
 
-	UniSetTypes::uniset_mutex_lock l(pack_mutex,100);
-	mypack.setData(it->pack_ind,value);
+	if( it->iotype == UniversalIO::DigitalInput || it->iotype == UniversalIO::DigitalOutput )
+	{
+		UniSetTypes::uniset_mutex_lock l(pack_mutex,100);
+		mypack.setDData(it->pack_ind,value);
+	}
+	else if( it->iotype == UniversalIO::AnalogInput || it->iotype == UniversalIO::AnalogOutput )
+	{
+		UniSetTypes::uniset_mutex_lock l(pack_mutex,100);
+		mypack.setAData(it->pack_ind,value);
+	}
 }
 // -----------------------------------------------------------------------------
 void UNetSender::send()
@@ -185,7 +193,8 @@ void UNetSender::real_send()
 		packetnum = 1;
 
 //	cout << "************* send header: " << mypack.msg.header << endl;
-	size_t sz = mypack.byte_size() + sizeof(UniSetUDP::UDPHeader);
+//	size_t sz = mypack.byte_size() + sizeof(UniSetUDP::UDPHeader);
+	size_t sz =	sizeof(UniSetUDP::UDPMessage);
 	if( !udp->isPending(ost::Socket::pendingOutput) )
 		return;
 
@@ -281,15 +290,37 @@ bool UNetSender::initItem( UniXML_iterator& it )
 	}
 	
 	UItem p;
-	p.id = sid;
-	mypack.addData(sid,0);
-	p.pack_ind = mypack.size()-1;
 	p.iotype = UniSetTypes::getIOType(it.getProp("iotype"));
 	
 	if( p.iotype == UniversalIO::UnknownIOType )
 	{
-		dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << sid << endl;
+		dlog[Debug::CRIT] << myname << "(readItem): Unknown iotype for sid=" << sid << endl;
 		return false;
+	}
+
+	p.id = sid;
+
+	if( p.iotype == UniversalIO::DigitalInput || p.iotype == UniversalIO::DigitalOutput )
+	{
+		p.pack_ind = mypack.addDData(sid,0);
+		if ( p.pack_ind >= UniSetUDP::MaxDCount )
+		{
+			dlog[Debug::CRIT] << myname 
+					<< "(readItem): OVERFLOW! MAX UDP DIGITAL DATA LIMIT! max=" 
+					<< UniSetUDP::MaxDCount << endl;
+			return false;
+		}
+	}
+	else if( p.iotype == UniversalIO::AnalogInput || p.iotype == UniversalIO::AnalogOutput )
+	{
+		p.pack_ind = mypack.addAData(sid,0);
+		if ( p.pack_ind >= UniSetUDP::MaxACount )
+		{
+			dlog[Debug::CRIT] << myname 
+					<< "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max=" 
+					<< UniSetUDP::MaxACount << endl;
+			return false;
+		}
 	}
 	
 	if( maxItem >= dlist.size() )

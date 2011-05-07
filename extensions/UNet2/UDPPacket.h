@@ -8,55 +8,73 @@
 // -----------------------------------------------------------------------------
 namespace UniSetUDP
 {
+	/*! Для оптимизации размера передаваемх данных, но с учёто того, что ID могут идти не подряд.
+		Сделан следующие формат.
+		Для аналоговых величин передаётся массив пар "id-value".
+		Для булевых величин - отдельно массив ID и отдельно битовый массив со значениями,
+		(по количеству битов такого же размера).
+	*/
+
 	struct UDPHeader
 	{
-		UDPHeader():num(0),nodeID(0),procID(0),dcount(0){}
+		UDPHeader():num(0),nodeID(0),procID(0),dcount(0),acount(0){}
 		unsigned long num;
 		long nodeID;
 		long procID;
-		size_t dcount;
+		size_t dcount; /*!< количество булевых величин */
+		size_t acount; /*!< количество аналоговых величин */
 		
 		friend std::ostream& operator<<( std::ostream& os, UDPHeader& p );
 	}__attribute__((packed));
 
 	static unsigned long MaxPacketNum = std::numeric_limits<unsigned long>::max();
 	
-	struct UDPData
+	struct UDPAData
 	{
-		UDPData():id(UniSetTypes::DefaultObjectId),val(0){}
-		UDPData(long id, long val):id(id),val(val){}
+		UDPAData():id(UniSetTypes::DefaultObjectId),val(0){}
+		UDPAData(long id, long val):id(id),val(val){}
 
 		long id;
 		long val;
 		
-		friend std::ostream& operator<<( std::ostream& os, UDPData& p );
+		friend std::ostream& operator<<( std::ostream& os, UDPAData& p );
 	}__attribute__((packed));
-
-	static const int MaxDataLen = 8192; // ~ 1000 параметров
-	static const int MaxDataCount = ( MaxDataLen - sizeof(UniSetUDP::UDPHeader) ) / sizeof(UDPData);
+	
+	static const size_t MaxDCount = 256;
+	static const size_t MaxDDataCount = MaxDCount / sizeof(unsigned char);
+	static const size_t MaxACount = 100;
 
 	 struct DataPacket
 	 {
 		UDPHeader header;
-		UDPData dat[MaxDataCount];
+		UDPAData a_dat[MaxACount];  /*!< аналоговые величины */
+		long d_id[MaxDCount];      /*!< список дискретных ID */
+		unsigned char d_dat[MaxDDataCount];  /*!< битовые значения */
+		
 	 }__attribute__((packed));
 
+	static const int MaxDataLen = sizeof(DataPacket);
 
 	struct UDPMessage:
 		public UDPHeader
 	{
 		UDPMessage();
 
-		bool addData( const UDPData& dat );
-		bool addData( long id, long val );
-		bool setData( unsigned int index, long val );
+		size_t addDData( long id, bool val );
+		bool setDData( size_t index, bool val );
+		long dID( size_t index );
+		bool dValue( size_t index );
+		
+		size_t addAData( const UDPAData& dat );
+		size_t addAData( long id, long val );
+		bool setAData( size_t index, long val );
 
-		inline bool isFull(){ return count<MaxDataCount; }
-		inline int size(){ return count; }
-		inline int byte_size(){ return count*sizeof(UDPData); }
+		inline bool isFull(){ return ((dcount<MaxDCount) && (acount<MaxACount)); }
+		inline int dsize(){ return dcount; }
+		inline int asize(){ return acount; }
+//		inline int byte_size(){ return (dcount*sizeof(long)*UDPDData) + acount*sizeof(UDPAData)); }
 		
 		DataPacket msg;
-		int count;
 		
 		friend std::ostream& operator<<( std::ostream& os, UDPMessage& p );
 	};
