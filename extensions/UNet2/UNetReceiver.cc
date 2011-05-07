@@ -327,22 +327,14 @@ bool UNetReceiver::recv()
 	if( !udp->isInputReady(recvTimeout) )
 		return false;
 
-	size_t ret = udp->UDPReceive::receive(&pack,sizeof(pack));
-	if( ret < sizeof(UniSetUDP::UDPHeader) )
+	size_t ret = udp->UDPReceive::receive((char*)(&r_buf),sizeof(r_buf));
+
+	size_t sz = UniSetUDP::UDPMessage::getMessage(pack,r_buf);
+	if( sz == 0 )
 	{
-		dlog[Debug::CRIT] << myname << "(receive): FAILED header ret=" << ret << " sizeof=" << sizeof(UniSetUDP::UDPHeader) << endl;
+		dlog[Debug::CRIT] << myname << "(receive): FAILED RECEIVE DATA ret=" << ret << endl;
 		return false;
 	}
-
-	// size_t sz = pack.msg.header.acount * sizeof(UniSetUDP::UDPAData) + sizeof(UniSetUDP::UDPHeader);
-	size_t sz = sizeof(UniSetUDP::UDPMessage);
-	if( ret < sz )
-	{
-		dlog[Debug::CRIT] << myname << "(receive): FAILED data ret=" << ret << " sizeof=" << sz
-			  << " packnum=" << pack.num << endl;
-		return false;
-	}
-
 
 	if( rnum>0 && labs(pack.num - rnum) > maxDifferens )
 	{

@@ -192,15 +192,14 @@ void UNetSender::real_send()
 	if( packetnum > UniSetUDP::MaxPacketNum )
 		packetnum = 1;
 
-//	cout << "************* send header: " << mypack.msg.header << endl;
-//	size_t sz = mypack.byte_size() + sizeof(UniSetUDP::UDPHeader);
-	size_t sz =	sizeof(UniSetUDP::UDPMessage);
 	if( !udp->isPending(ost::Socket::pendingOutput) )
 		return;
 
-	size_t ret = udp->send( (char*)(&mypack),sz);
-	if( ret < sz )
-		dlog[Debug::CRIT] << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << sz << endl;
+
+	mypack.transport_msg(s_msg);
+	size_t ret = udp->send( (char*)s_msg.data,s_msg.len );
+	if( ret < s_msg.len )
+		dlog[Debug::CRIT] << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
 }
 // -----------------------------------------------------------------------------
 void UNetSender::stop()
