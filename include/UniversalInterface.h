@@ -71,6 +71,7 @@ class UniversalInterface
 		~UniversalInterface();
 		
 		inline UniSetTypes::ObjectIndex* getObjectIndex() { return oind; }
+		inline UniSetTypes::Configuration* getConf() { return uconf; }
 
 		// -------- Функции работы с группой датчиков -----------
 

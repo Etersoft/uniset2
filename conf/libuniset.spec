@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt28
+Release: alt30
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -191,6 +191,12 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed May 11 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt30
+- add new function to UniversalInterface
+
+* Sat May 07 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt29
+- (unet2): new protocol implementation
+
 * Thu May 05 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt28
 - add setup function for ModbusTCPMaster and ModbusTCPServer
 
