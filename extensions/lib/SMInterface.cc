@@ -63,7 +63,7 @@ using namespace UniSetTypes;
 	} \
 	catch(CORBA::SystemException& ex) \
 	{ \
-		unideb[Debug::WARN] << "(" << __STRING(fname) << "): óORBA::SystemException: " \
+		unideb[Debug::WARN] << "(" << __STRING(fname) << "): CORBA::SystemException: " \
 			<< ex.NP_minorString() << endl; \
 	} \
 	catch(...) \
