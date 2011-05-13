@@ -20,7 +20,7 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #include <sstream>
 #include "DBInterface.h"
 using namespace std;
@@ -31,12 +31,12 @@ DBInterface::DBInterface():
 result(0),
 lastQ(""),
 queryok(false)
-{ 
+{
 	mysql = new MYSQL();
 }
 
 DBInterface::~DBInterface()
-{ 
+{
 	close();
 	delete mysql;
 }
@@ -54,7 +54,7 @@ bool DBInterface::connect( const string host, const string user, const string ps
 		mysql_close(mysql);
 		return false;
 	}
-	
+
 	return true;
 }
 // -----------------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ bool DBInterface::close()
 	mysql_close(mysql);
 	return true;
 }
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 bool DBInterface::insert(const string q)
 {
 	if( !mysql )
@@ -74,11 +74,11 @@ bool DBInterface::insert(const string q)
 		queryok=false;
 		return false;
 	}
-	
+
 	queryok=true;
 	return true;
 }
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 bool DBInterface::query(const string q)
 {
 	if( !mysql )
@@ -90,7 +90,7 @@ bool DBInterface::query(const string q)
 		return false;
 	}
 
-		
+
 	lastQ = q;
 	result = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
 	if( numRows()==0 )
@@ -99,7 +99,7 @@ bool DBInterface::query(const string q)
 		return false;
 	}
 
-	queryok=true;	
+	queryok=true;
 	return true;
 }
 // -----------------------------------------------------------------------------------------
@@ -149,25 +149,25 @@ unsigned int DBInterface::numCols()
 	return 0;
 }
 
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 unsigned int DBInterface::numRows()
 {
 	if( result )
 		return mysql_num_rows(result);
 	return 0;
 }
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 const MYSQL_ROW DBInterface::getRow()
 {
 	return Row;
 }
 
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 const char* DBInterface::gethostinfo()
 {
 	return mysql_get_host_info(mysql);
 }
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 /*
 bool DBInterface::createDB(const string dbname)
 {
@@ -177,7 +177,7 @@ bool DBInterface::createDB(const string dbname)
 		return true;
 	return false;
 }
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 
 bool DBInterface::dropDB(const string dbname)
 {
@@ -186,7 +186,7 @@ bool DBInterface::dropDB(const string dbname)
 	return false;
 }
 */
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 MYSQL_RES* DBInterface::listFields(const string table, const string wild )
 {
 	if( !mysql || !result )
@@ -199,37 +199,37 @@ MYSQL_RES* DBInterface::listFields(const string table, const string wild )
 //	MYSQL_FIELD *field = mysql_fetch_fields(res);
 //	cout << field << " | ";
 	for( unsigned int i = 0; i<cols; i++)
-	{	
+	{
 		cout << row[i] << " | ";
 	}
 
 	return  res; // mysql_list_fields(mysql, table,wild);
 }
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 bool DBInterface::moveToRow(int ind)
 {
-	if(!mysql || !result) 
-		return false;	
+	if(!mysql || !result)
+		return false;
 
 	mysql_data_seek(result, ind);
 	return true;
 }
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 bool DBInterface::ping()
 {
 	if(!mysql)
 		return false;
 
-	// внимание mysql_ping возвращает 0 
+	// внимание mysql_ping возвращает 0
 	// если всё хорошо.... (поэтому мы инвертируем)
 	return !mysql_ping(mysql);
 }
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 bool DBInterface::isConnection()
 {
 	return ping(); //!mysql;
 }
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 string DBInterface::addslashes(const string& str)
 {
 	ostringstream tmp;
@@ -240,6 +240,6 @@ string DBInterface::addslashes(const string& str)
 			tmp << "\\";
 		tmp << str[i];
 	}
-	
-	return tmp.str();	
+
+	return tmp.str();
 }

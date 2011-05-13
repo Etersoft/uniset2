@@ -125,7 +125,7 @@ CREATE TABLE Network(
 	num int(11) NOT NULL auto_increment,
 	date date NOT NULL default '0000-00-00',
 	time time NOT NULL default '00:00:00',
-	time_usec int(8) unsigned default 0,  	
+	time_usec int(8) unsigned default 0,
 	master int(3) default NULL,
 	slave int(3) default NULL,
 	connection int(2) default NULL,

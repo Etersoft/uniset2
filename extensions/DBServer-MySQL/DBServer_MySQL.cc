@@ -21,7 +21,7 @@
  *  \brief файл реализации DB-сервера
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 
 #include <sys/time.h>
 #include <sstream>
@@ -38,7 +38,7 @@ using namespace std;
 
 // ------------------------------------------------------------------------------------------
 
-DBServer_MySQL::DBServer_MySQL(ObjectId id): 
+DBServer_MySQL::DBServer_MySQL(ObjectId id):
 	DBServer(id),
 	db(new DBInterface()),
 	PingTime(300000),
@@ -55,7 +55,7 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id):
 	}
 }
 
-DBServer_MySQL::DBServer_MySQL(): 
+DBServer_MySQL::DBServer_MySQL():
 	DBServer(conf->getDBServer()),
 	db(new DBInterface()),
 	PingTime(300000),
@@ -93,10 +93,10 @@ void DBServer_MySQL::processingMessage( UniSetTypes::VoidMessage *msg )
 			timerInfo(&tm);
 			break;
 		}
-	
+
 		default:
 			DBServer::processingMessage(msg);
-			break; 	
+			break;
 	}
 
 }
@@ -134,7 +134,7 @@ void DBServer_MySQL::parse( UniSetTypes::DBMessage* dbm )
 		unideb[Debug::CRIT] << myname <<  "(dbmessage): не задан tblId...\n";
 		return;
 	}
-		
+
 	ostringstream query;
 	switch( dbm->qtype )
 	{
@@ -184,9 +184,9 @@ void DBServer_MySQL::parse( UniSetTypes::InfoMessage* im )
 	if( !writeToBase(ostr.str()) )
 	{
 		unideb[Debug::CRIT] << myname <<  "(insert): info msg error: "<< db->error() << endl;
-//		db->freeResult();					
+//		db->freeResult();
 	}
-	
+
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::parse( UniSetTypes::AlarmMessage* am )
@@ -203,7 +203,7 @@ void DBServer_MySQL::parse( UniSetTypes::AlarmMessage* am )
 	ostr << "INSERT INTO " << tblName(am->type);
 	ostr << "(num,node,id,date,time,time_usec,code,text,haracter,type,confirm,causeid) VALUES(";
 	ostr << "NULL,'"<< am->node << "','" << am->id;
-	ostr << "','" << ui.dateToString(am->tm.tv_sec,"/") << "','" 
+	ostr << "','" << ui.dateToString(am->tm.tv_sec,"/") << "','"
 			<< ui.timeToString(am->tm.tv_sec,":")<< "','" << am->tm.tv_usec;
 	ostr << "','" << am->alarmcode<< "','" << message;
 	ostr << "','" << am->character << "','" << am->type << "',0,'" << am->causecode << "')";
@@ -211,7 +211,7 @@ void DBServer_MySQL::parse( UniSetTypes::AlarmMessage* am )
 	if( !writeToBase(ostr.str()) )
 	{
 		unideb[Debug::CRIT] << myname <<  "(insert): alarm msg error: "<< db->error() << endl;
-//		db->freeResult();			
+//		db->freeResult();
 	}
 }
 //--------------------------------------------------------------------------------------------
@@ -222,19 +222,19 @@ void DBServer_MySQL::parse( UniSetTypes::ConfirmMessage* am )
 	query << "UPDATE " << tblName(am->orig_type) << " SET ";
 	query << "confirm='" << ui.timeToString(am->tm.tv_sec,":") << "'";
 	query << " where ";
-	query << " id='" << am->orig_id << "'"; 
-	query << " AND type='" << am->orig_type << "'"; 
+	query << " id='" << am->orig_id << "'";
+	query << " AND type='" << am->orig_type << "'";
 	query << " AND node='" << am->orig_node << "'";
-	query << " AND code='" << am->code << "'"; 
-//	query << " AND cause='" << am->cause << "'"; 
+	query << " AND code='" << am->code << "'";
+//	query << " AND cause='" << am->cause << "'";
 	query << " AND date='" << ui.dateToString(am->orig_tm.tv_sec,"/") << "'";
 	query << " AND time='" << ui.timeToString(am->orig_tm.tv_sec,":") << "'";
-	query << " AND time_usec='" << am->orig_tm.tv_usec << "'"; 		
-		
+	query << " AND time_usec='" << am->orig_tm.tv_usec << "'";
+
 	if( !writeToBase(query.str()) )
 	{
 		unideb[Debug::CRIT] << myname <<  "(insert): confirm msg error: "<< db->error() << endl;
-//		db->freeResult();			
+//		db->freeResult();
 	}
 }
 //--------------------------------------------------------------------------------------------
@@ -245,13 +245,13 @@ bool DBServer_MySQL::writeToBase( const string& query )
 	if( !db || !connect_ok )
 	{
 		unideb[Debug::CRIT] << myname << "(writeToBase): соединение с БД не установлено\n"
-					<< myname << "(writeToBase): lost query: " 
+					<< myname << "(writeToBase): lost query: "
 					<< query << endl;
 		return false;
 	}
 
-	db->query( query ); 
-	// Дело в том что на INSERT И UPDATE запросы 
+	db->query( query );
+	// Дело в том что на INSERT И UPDATE запросы
 	// db->query() может возвращать false и надо самому
 	// отдельно проверять действительно ли произошла ошибка
 	// см. DBInterface::query.
@@ -261,7 +261,7 @@ bool DBServer_MySQL::writeToBase( const string& query )
 		db->freeResult();
 		return true;
 	}
-	
+
 	return false;
 }
 //--------------------------------------------------------------------------------------------
@@ -275,8 +275,8 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 			struct timezone tz;
 			gettimeofday(&si->tm,&tz);
 		}
-	  		
-		// см. DBTABLE AnalogSensors, DigitalSensors 	
+
+		// см. DBTABLE AnalogSensors, DigitalSensors
 		ostringstream data;
 		data << " VALUES( ";
 												// Поля таблицы
@@ -299,7 +299,7 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 				table = "DigitalSensors(num,node,id,date,time,time_usec,state)";
 				data << si->state;				// state
 				break;
-			
+
 			case UniversalIO::AnalogInput:
 			case UniversalIO::AnalogOutput:
 				table = "AnalogSensors(num,node,id,date,time,time_usec,value)";
@@ -316,18 +316,18 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 		if( !writeToBase("INSERT INTO "+table+data.str()) )
 		{
 			unideb[Debug::CRIT] << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
-			db->freeResult();			
+			db->freeResult();
 		}
 	}
 	catch( Exception& ex )
-	{	
+	{
 		unideb[Debug::CRIT] << myname << "(parse SensorMessage): " << ex << endl;
 	}
 	catch( ...  )
-	{	
+	{
 		unideb[Debug::CRIT] << myname << "(parse SensorMessage): неизвестное исключние..." << endl;
 	}
-		
+
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::init_dbserver()
@@ -337,7 +337,7 @@ void DBServer_MySQL::init_dbserver()
 
 	if( connect_ok )
 	{
-		initDBTableMap(tblMap);	
+		initDBTableMap(tblMap);
 		initDB(db);
 		return;
 	}
@@ -346,7 +346,7 @@ void DBServer_MySQL::init_dbserver()
 	{
 		ostringstream msg;
 		msg << myname << "(init): на данном узле DBServer - отключён."
-			<< " В " << conf->getConfFileName() 
+			<< " В " << conf->getConfFileName()
 			<< " для данного узла указан параметр dbserver=''";
 		throw NameNotFound(msg.str());
 	}
@@ -364,22 +364,22 @@ void DBServer_MySQL::init_dbserver()
 	tblMap[UniSetTypes::Message::Info] = "Messages";
 	tblMap[UniSetTypes::Message::Alarm] = "Messages";
 	tblMap[UniSetTypes::Message::SensorInfo] = "AnalogSensors";
-	
+
 	PingTime = conf->getIntProp(node,"pingTime");
 	ReconnectTime = conf->getIntProp(node,"reconnectTime");
-	
+
 	if( dbnode.empty() )
 		dbnode = "localhost";
 
-	unideb[Debug::INFO] << myname << "(init): connect dbnode=" << dbnode 
+	unideb[Debug::INFO] << myname << "(init): connect dbnode=" << dbnode
 		<< "\tdbname=" << dbname
-		<< " pingTime=" << PingTime 
+		<< " pingTime=" << PingTime
 		<< " ReconnectTime=" << ReconnectTime << endl;
 
 	if( !db->connect(dbnode, user, password, dbname) )
 	{
 //		ostringstream err;
-		unideb[Debug::CRIT] << myname 
+		unideb[Debug::CRIT] << myname
 			<< "(init): не смог создать соединение с БД err:\n"
 			<< db->error() << endl;
 //		throw Exception( string(myname+"(init): не смогли создать соединение с БД "+db->error()) );
@@ -393,7 +393,7 @@ void DBServer_MySQL::init_dbserver()
 		askTimer(DBServer_MySQL::PingTimer,PingTime);
 //		createTables(db);
 		initDB(db);
-		initDBTableMap(tblMap);	
+		initDBTableMap(tblMap);
 	}
 }
 //--------------------------------------------------------------------------------------------
@@ -416,7 +416,7 @@ void DBServer_MySQL::createTables( DBInterface *db )
 			if( !db->query(query.str()) )
 				unideb[Debug::CRIT] << myname << "(createTables): error: \t\t" << db->error() << endl;
 		}
-	}	
+	}
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
@@ -439,7 +439,7 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
 			}
 		}
 		break;
-	
+
 		case DBServer_MySQL::ReconnectTimer:
 		{
 			unideb[Debug::INFO] << myname << "(timerInfo): reconnect timer" << endl;

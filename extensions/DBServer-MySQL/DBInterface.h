@@ -34,7 +34,7 @@ using std::string;
 class DBInterface
 {
 	public:
-	
+
 			DBInterface();
 			~DBInterface();
 
@@ -46,14 +46,14 @@ class DBInterface
 			bool connect( const string host, const string user, const string pswd,
 							const string dbname);
 			bool close();
-			
+
 			bool query(const string q);
 			const string lastQuery();
 			bool insert(const string q);
 
 			string addslashes(const string& str);
-			
-			/*! 
+
+			/*!
 				проверка связи с БД.
 				в случае отсутсвия попытка восстановить...
 			*/
@@ -61,7 +61,7 @@ class DBInterface
 
 			/*! связь с БД установлена (была) */
 			bool isConnection();
-			
+
 			bool nextRecord();
 			void freeResult();
 
@@ -69,20 +69,20 @@ class DBInterface
 			unsigned int numRows();
 
 			bool moveToRow(int ind);
-			
+
 			int insert_id();
 
 			const MYSQL_ROW getRow();
 			const string error();
-			
+
 			MYSQL_ROW Row;
 
 			// *******************
 			const char* gethostinfo();
 	protected:
-	
+
 	private:
-	
+
 		MYSQL_RES *result;
 		MYSQL *mysql;
 		string lastQ;
