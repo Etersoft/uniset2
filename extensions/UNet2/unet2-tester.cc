@@ -19,6 +19,7 @@ static struct option longopts[] = {
 	{ "show-data", no_argument, 0, 'd' },
 	{ "check-lost", no_argument, 0, 'l' },
 	{ "verbode", required_argument, 0, 'v' },
+	{ "num-cycles", required_argument, 0, 'z' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -62,8 +63,9 @@ int main(int argc, char* argv[])
 	size_t count = 50;
 	bool lost = false;
 	bool show = false;
+	int ncycles = -1;
 
-	while( (opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvd",longopts,&optindex)) != -1 )
+	while( (opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvdz:",longopts,&optindex)) != -1 )
 	{
 		switch (opt)
 		{
@@ -80,6 +82,7 @@ int main(int argc, char* argv[])
 				cout << "[-l|--check-lost]        - Check the lost packets." << endl;
 				cout << "[-v|--verbose]           - verbose mode." << endl;
 				cout << "[-d|--show-data]         - show receive data." << endl;
+				cout << "[-z|--num-cycles] num    - Number of cycles of exchange. Default: -1 - infinitely." << endl;
 				cout << endl;
 			return 0;
 
@@ -127,6 +130,10 @@ int main(int argc, char* argv[])
 
 			case 'v':
 				verb = 1;
+			break;
+
+			case 'z':
+				ncycles = UniSetTypes::uni_atoi(optarg);
 			break;
 
 			case '?':
@@ -184,7 +191,11 @@ int main(int argc, char* argv[])
 				UniSetUDP::UDPPacket buf;
 				unsigned long prev_num=1;
 
-				while(1)
+				int nc = 1;
+				if( ncycles > 0 )
+					nc = ncycles;
+
+				while( nc )
 				{
 					try
 					{
@@ -227,6 +238,13 @@ int main(int argc, char* argv[])
 					{
 						cerr << "(recv): catch ..." << endl;
 					}
+
+					if( ncycles > 0 )
+					{
+						nc--;
+						if( nc <=0 )
+							break;
+					}
 				}
 			}
 			break;
@@ -257,7 +275,11 @@ int main(int argc, char* argv[])
 
 				UniSetUDP::UDPPacket s_buf;
 
-				while(1)
+				int nc = 1;
+				if( ncycles > 0 )
+					nc = ncycles;
+
+				while( nc )
 				{
 					mypack.num = packetnum++;
 					if( packetnum > UniSetUDP::MaxPacketNum )
@@ -285,6 +307,13 @@ int main(int argc, char* argv[])
 					catch( ... )
 					{
 						cerr << "(send): catch ..." << endl;
+					}
+
+					if( ncycles > 0 )
+					{
+						nc--;
+						if( nc <=0 )
+							break;
 					}
 
 					usleep(usecpause);
