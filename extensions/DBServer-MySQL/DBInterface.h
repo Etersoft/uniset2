@@ -29,32 +29,31 @@
 //#warning Для использования mysql_create нужен define USE_OLD_FUNCTIONS
 //#define USE_OLD_FUNCTIONS
 #include <mysql/mysql.h>
+using std::string;
 // ----------------------------------------------------------------------------
 class DBInterface
 {
 	public:
-	
+
 			DBInterface();
 			~DBInterface();
 
-//			bool createDB(const std::string dbname);
-//			bool dropDB(const std::string dbname);
-			MYSQL_RES * listFields(const std::string& table, const std::string& wild );
+//			bool createDB(const string dbname);
+//			bool dropDB(const string dbname);
+			MYSQL_RES * listFields(const string table, const string wild );
 
 
-			bool connect( const std::string& host, const std::string& user, const std::string& pswd,
-							const std::string& dbname);
+			bool connect( const string host, const string user, const string pswd,
+							const string dbname);
 			bool close();
-			
-			bool query(const std::string& q);
-			bool query( const char* q, bool noLastQ=false ); // noLastQ - не запоминать запрос
 
-			const std::string lastQuery();
-			bool insert(const std::string& q);
+			bool query(const string q);
+			const string lastQuery();
+			bool insert(const string q);
 
-			std::string addslashes(const std::string& str);
-			
-			/*! 
+			string addslashes(const string& str);
+
+			/*!
 				проверка связи с БД.
 				в случае отсутсвия попытка восстановить...
 			*/
@@ -62,7 +61,7 @@ class DBInterface
 
 			/*! связь с БД установлена (была) */
 			bool isConnection();
-			
+
 			bool nextRecord();
 			void freeResult();
 
@@ -70,25 +69,24 @@ class DBInterface
 			unsigned int numRows();
 
 			bool moveToRow(int ind);
-			
+
 			int insert_id();
 
 			const MYSQL_ROW getRow();
-			const std::string error();
-			
+			const string error();
+
 			MYSQL_ROW Row;
 
 			// *******************
 			const char* gethostinfo();
 	protected:
-	
+
 	private:
-	
+
 		MYSQL_RES *result;
 		MYSQL *mysql;
-		std::string lastQ;
+		string lastQ;
 		bool queryok;	// успешность текущего запроса
-		bool connected;
 };
 // ----------------------------------------------------------------------------------
 #endif

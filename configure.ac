@@ -167,7 +167,6 @@ AC_CONFIG_FILES([Makefile
 				 Utilities/SMonit/Makefile
 				 Utilities/InfoServer/Makefile
 				 Utilities/MBTester/Makefile
-				 Utilities/DBServer-MySQL/Makefile
 				 Utilities/SImitator/Makefile
 				 Utilities/codegen/Makefile
 				 Utilities/codegen/uniset-codegen
@@ -176,6 +175,8 @@ AC_CONFIG_FILES([Makefile
 				 extensions/libUniSetExtensions.pc
 				 extensions/lib/Makefile
 				 extensions/include/Makefile
+				 extensions/DBServer-MySQL/Makefile
+				 extensions/DBServer-MySQL/libUniSetMySQL.pc
 				 extensions/IOControl/Makefile
 				 extensions/IOControl/libUniSetIOControl.pc
 				 extensions/RTUExchange/Makefile
