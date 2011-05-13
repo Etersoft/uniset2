@@ -1,3 +1,7 @@
+if DISABLE_MYSQL
+
+else
+
 UMYSQL_VER=@LIBVER@
 
 lib_LTLIBRARIES 			= libUniSet-mysql.la
@@ -14,3 +18,5 @@ include $(top_builddir)/conf/setting.mk
 # install
 devel_include_HEADERS = *.h
 devel_includedir = $(includedir)/@PACKAGE@/mysql
+
+endif

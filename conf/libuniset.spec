@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt30
+Release: alt31
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -43,6 +43,16 @@ Obsoletes: %oname-mysql-dbserver
 %description mysql-dbserver
 MySQL dbserver for %name
 
+%package mysql-devel
+Group: Development/Databases
+Summary: Libraries needed to develop for uniset MySQL
+Requires: %name = %version-%release
+Provides: %oname-mysql-devel
+Obsoletes: %oname-mysql-devel
+
+%description mysql-devel
+Libraries needed to develop for uniset MySQL
+
 %package utils
 Summary: UniSet utilities
 Group: Development/Tools
@@ -54,7 +64,7 @@ Obsoletes: %oname-utils
 UniSet utilities
 
 %package doc
-Group: Development/C
+Group: Development/C++
 Summary: Documentations for developing with UniSet
 Requires: lib%name = %version-%release
 
@@ -62,7 +72,7 @@ Requires: lib%name = %version-%release
 Documentations for developing with UniSet
 
 %package extensions
-Group: Development/Databases
+Group: Development/C++
 Summary: libUniSet extensions
 Requires: %name = %version-%release
 Provides: %oname-extentions
@@ -74,7 +84,7 @@ Obsoletes: %name-extentions
 Extensions for libuniset
 
 %package extensions-devel
-Group: Development/Databases
+Group: Development/C++
 Summary: Libraries needed to develop for uniset extensions
 Requires: %name-extensions = %version-%release
 Provides: %name-extentions-devel
@@ -135,6 +145,9 @@ rm -f %buildroot%_libdir/*.la
 %_bindir/%oname-mysql-*dbserver
 %_libdir/*-mysql.so*
 
+%files mysql-devel
+%_pkgconfigdir/libUniSetMySQL.pc
+
 %if_enabled doc
 %files doc
 %_docdir/%name
@@ -186,9 +199,12 @@ rm -f %buildroot%_libdir/*.la
 %_pkgconfigdir/libUniSetShared*.pc
 %_pkgconfigdir/libUniSetNetwork*.pc
 %_pkgconfigdir/libUniSetUNet*.pc
+
 #%_pkgconfigdir/libUniSetSMDBServer.pc
 #%_pkgconfigdir/libUniSet*.pc
 %exclude %_pkgconfigdir/libUniSet.pc
+
+
 
 %changelog
 * Wed May 11 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt30
