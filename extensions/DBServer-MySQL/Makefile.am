@@ -19,4 +19,7 @@ include $(top_builddir)/conf/setting.mk
 devel_include_HEADERS = *.h
 devel_includedir = $(includedir)/@PACKAGE@/mysql
 
+pkgconfigdir    = $(libdir)/pkgconfig
+pkgconfig_DATA  = libUniSetMySQL.pc
+
 endif
