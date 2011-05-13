@@ -207,6 +207,12 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Fri May 13 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt31
+- move DBServer-MySQL to extensions directory
+- add pc-file for libUniSet-mysql
+- create new devel package - "libuniset-mysql-devel"
+- minor fixes
+
 * Wed May 11 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt30
 - add new function to UniversalInterface
 
