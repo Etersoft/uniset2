@@ -3,7 +3,7 @@
 # See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset], [1.1.0], pv@etersoft.ru)
+AC_INIT([uniset], [1.2.0], pv@etersoft.ru)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 
 # AC_CONFIG_MACRO_DIR([m4])
@@ -30,7 +30,7 @@ AC_ENABLE_SHARED(yes)
 AC_ENABLE_STATIC(no)
 AM_PROG_LIBTOOL
 
-LIBVER=1:1:0
+LIBVER=1:2:0
 AC_SUBST(LIBVER)
 
 # Checks for libraries.
@@ -167,7 +167,6 @@ AC_CONFIG_FILES([Makefile
 				 Utilities/SMonit/Makefile
 				 Utilities/InfoServer/Makefile
 				 Utilities/MBTester/Makefile
-				 Utilities/DBServer-MySQL/Makefile
 				 Utilities/SImitator/Makefile
 				 Utilities/codegen/Makefile
 				 Utilities/codegen/uniset-codegen
@@ -176,14 +175,12 @@ AC_CONFIG_FILES([Makefile
 				 extensions/libUniSetExtensions.pc
 				 extensions/lib/Makefile
 				 extensions/include/Makefile
+				 extensions/DBServer-MySQL/Makefile
+				 extensions/DBServer-MySQL/libUniSetMySQL.pc
 				 extensions/IOControl/Makefile
 				 extensions/IOControl/libUniSetIOControl.pc
 				 extensions/RTUExchange/Makefile
 				 extensions/RTUExchange/libUniSetRTU.pc
-				 extensions/UDPExchange/Makefile
-				 extensions/UDPExchange/libUniSetUDP.pc
-				 extensions/UNet2/Makefile
-				 extensions/UNet2/libUniSetUNet2.pc
 				 extensions/ModbusSlave/Makefile
 				 extensions/ModbusSlave/libUniSetMBSlave.pc
 				 extensions/MBTCPMaster/Makefile
@@ -193,6 +190,8 @@ AC_CONFIG_FILES([Makefile
 				 extensions/SMViewer/Makefile
 				 extensions/UniNetwork/Makefile
 				 extensions/UniNetwork/libUniSetNetwork.pc
+				 extensions/UNet2/Makefile
+				 extensions/UNet2/libUniSetUNet2.pc
 				 extensions/SharedMemory/Makefile
 				 extensions/SharedMemory/libUniSetSharedMemory.pc
 				 extensions/SharedMemoryPlus/Makefile])

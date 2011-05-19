@@ -6,6 +6,7 @@
 using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
+// -----------------------------------------------------------------------------
 UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic ):
 UniSetObject_LT(objId),
 shm(0),
@@ -17,7 +18,6 @@ sender(0)
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(UNetExchange): objId=-1?!! Use --unet-name" );
 
-//	xmlNode* cnode = conf->getNode(myname);
 	cnode = conf->getNode(myname);
 	if( cnode == NULL )
 		throw UniSetTypes::SystemError("(UNetExchange): Not found conf-node for " + myname );
@@ -29,7 +29,7 @@ sender(0)
 	// определяем фильтр
 	s_field = conf->getArgParam("--unet-filter-field");
 	s_fvalue = conf->getArgParam("--unet-filter-value");
-	dlog[Debug::INFO] << myname << "(init): read fileter-field='" << s_field
+	dlog[Debug::INFO] << myname << "(init): read filter-field='" << s_field
 						<< "' filter-value='" << s_fvalue << "'" << endl;
 
 	int recvTimeout = conf->getArgPInt("--unet-recv-timeout",it.getProp("recvTimeout"), 5000);
@@ -48,15 +48,38 @@ sender(0)
 	  throw UniSetTypes::SystemError("(UNetExchange): Not found <nodes>");
 
 	UniXML_iterator n_it(nodes);
+	
+	string default_ip(n_it.getProp("unet_broadcast_ip"));
+
 	if( !n_it.goChildren() )
 		throw UniSetTypes::SystemError("(UNetExchange): Items not found for <nodes>");
 
 	for( ; n_it.getCurrent(); n_it.goNext() )
 	{
-		string h(n_it.getProp("ip"));
-		if( !n_it.getProp("unet_ip").empty() )
-			h = n_it.getProp("unet_ip");
+		if( n_it.getIntProp("unet_ignore") )
+		{
+			dlog[Debug::INFO] << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
+			continue;
+		}
 
+		// Если указано поле unet_ip непосредственно у узла - берём его
+		// если указано общий broadcast ip для всех узлов - берём его
+		string h("");
+		if( !default_ip.empty() )
+			h = default_ip;
+		if( !n_it.getProp("unet_broadcast_ip").empty() )
+			h = n_it.getProp("unet_broadcast_ip");
+
+		if( h.empty() )
+		{
+			ostringstream err;
+			err << myname << "(init): Unkown broadcast IP for " << n_it.getProp("name");
+			dlog[Debug::CRIT] << err.str() << endl;
+			throw UniSetTypes::SystemError(err.str());
+		}
+
+		// Если указано поле unet_port - используем его
+		// Иначе port = идентификатору узла
 		int p = n_it.getIntProp("id");
 		if( !n_it.getProp("unet_port").empty() )
 			p = n_it.getIntProp("unet_port");
@@ -70,11 +93,6 @@ sender(0)
 			continue;
 		}
 
-		if( !n_it.getProp("unet_ignore").empty() )
-		{
-			dlog[Debug::INFO] << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
-			continue;
-		}
 
 		dlog[Debug::INFO] << myname << "(init): add UNetReceiver for " << h << ":" << p << endl;
 
@@ -133,10 +151,6 @@ sender(0)
 	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
 
 	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
-
-	timeout_t msec = conf->getArgPInt("--unet-timeout",it.getProp("timeout"), 3000);
-
-	dlog[Debug::INFO] << myname << "(init): udp-timeout=" << msec << " msec" << endl;
 }
 // -----------------------------------------------------------------------------
 UNetExchange::~UNetExchange()
@@ -164,12 +178,6 @@ void UNetExchange::startReceivers()
 {
 	 for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
 		  (*it)->start();
-}
-// -----------------------------------------------------------------------------
-void UNetExchange::initSender(  const std::string s_host, const ost::tpport_t port, UniXML_iterator& it )
-{
-	if( no_sender )
-		return;
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::waitSMReady()
@@ -219,7 +227,7 @@ void UNetExchange::step()
 }
 
 // -----------------------------------------------------------------------------
-void UNetExchange::processingMessage(UniSetTypes::VoidMessage *msg)
+void UNetExchange::processingMessage( UniSetTypes::VoidMessage *msg )
 {
 	try
 	{
@@ -262,7 +270,7 @@ void UNetExchange::processingMessage(UniSetTypes::VoidMessage *msg)
 	}
 	catch(...)
 	{
-		dlog[Debug::CRIT] << myname << "(processingMessage): catch ...\n";
+		dlog[Debug::CRIT] << myname << "(processingMessage): catch ..." << std::endl;
 	}
 }
 // -----------------------------------------------------------------------------
@@ -291,30 +299,32 @@ void UNetExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 			
 			{
 				UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
-				askSensors(UniversalIO::UIONotify);
+				if( shm->isLocalwork() )
+					askSensors(UniversalIO::UIONotify);
 			}
+			
 			askTimer(tmStep,steptime);
 			startReceivers();
 			if( sender )
 				sender->start();
 		}
+		break;
 
 		case SystemMessage::FoldUp:
 		case SystemMessage::Finish:
-			askSensors(UniversalIO::UIODontNotify);
+			if( shm->isLocalwork() )
+				askSensors(UniversalIO::UIODontNotify);
 			break;
 		
 		case SystemMessage::WatchDog:
 		{
 			// ОПТИМИЗАЦИЯ (защита от двойного перезаказа при старте)
-			// Если идёт локальная работа 
-			// (т.е. UNetExchange  запущен в одном процессе с SharedMemory2)
+			// Если идёт автономная работа, то нужно заказывать датчики
+			// если запущены в одном процессе с SharedMemory2,
 			// то обрабатывать WatchDog не надо, т.к. мы и так ждём готовности SM
 			// при заказе датчиков, а если SM вылетит, то вместе с этим процессом(UNetExchange)
 			if( shm->isLocalwork() )
-				break;
-
-			askSensors(UniversalIO::UIONotify);
+				askSensors(UniversalIO::UIONotify);
 		}
 		break;
 
@@ -357,12 +367,15 @@ void UNetExchange::askSensors( UniversalIO::UIOCommand cmd )
 		kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
 		throw SystemError(err.str());
 	}
+
+	if( sender )
+		sender->askSensors(cmd);
 }
 // ------------------------------------------------------------------------------------------
 void UNetExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
 	if( sender )
-		sender->update(sm->id,sm->value);
+		sender->updateSensor( sm->id , sm->value );
 }
 // ------------------------------------------------------------------------------------------
 bool UNetExchange::activateObject()
@@ -383,30 +396,53 @@ bool UNetExchange::activateObject()
 // ------------------------------------------------------------------------------------------
 void UNetExchange::sigterm( int signo )
 {
-	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
+	dlog[Debug::INFO] << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
 	activated = false;
+	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
+	{
+		try
+		{
+			(*it)->stop();
+		}
+		catch(...){}
+	}
+
+	try
+	{
+		if( sender )
+			sender->stop();
+	}
+	catch(...){}
+
 	UniSetObject_LT::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
 void UNetExchange::initIterators()
 {
 	shm->initAIterator(aitHeartBeat);
+	if( sender )
+		sender->initIterators();
 }
 // -----------------------------------------------------------------------------
-void UNetExchange::help_print( int argc, char* argv[] )
+void UNetExchange::help_print( int argc, const char* argv[] )
 {
-	cout << "--unet-recvpause msec    - Пауза между получением пакетов. По умолчанию 10 мсек." << endl;
-	cout << "--unet-updatepause msec  - Пауза между обновлением данных в SM. По умолчанию 100 мсек." << endl;
-	cout << "--unet-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--unet-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--unet-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
-	cout << "--unet-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
-	cout << "--unet-notRespondSensor - датчик связи для данного процесса " << endl;
-	cout << "--unet-sm-ready-timeout - время на ожидание старта SM" << endl;
-	cout << " Настройки протокола RS: " << endl;
+	cout << "--unet-name NameID            - Идентификтора процесса." << endl;
+	cout << "--unet-recv-timeout msec      - Время для фиксации события 'отсутсвие связи'" << endl;
+	cout << "--unet-lost-timeout msec      - Время ожидания заполнения 'дырки' между пакетами. По умолчанию 5000 мсек." << endl;
+	cout << "--unet-recvpause msec         - Пауза между приёмами. По умолчанию 10" << endl;
+	cout << "--unet-sendpause msec         - Пауза между посылками. По умолчанию 150" << endl;
+	cout << "--unet-updatepause msec       - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
+	cout << "--unet-steptime msec		   - Шаг..." << endl;
+	cout << "--unet-maxdifferense num      - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
+	cout << "--unet-maxprocessingcount num - время на ожидание старта SM" << endl;
+	cout << "--unet-nosender [0,1]         - Отключить посылку." << endl;
+	cout << "--unet-sm-ready-timeout msec  - Время ожидание я готовности SM к работе. По умолчанию 15000" << endl;
+	cout << "--unet-filter-field name      - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
+	cout << "--unet-filter-value name      - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
+	
 }
 // -----------------------------------------------------------------------------
-UNetExchange* UNetExchange::init_unetexchange( int argc, char* argv[], UniSetTypes::ObjectId icID, SharedMemory* ic )
+UNetExchange* UNetExchange::init_unetexchange( int argc, const char* argv[], UniSetTypes::ObjectId icID, SharedMemory* ic )
 {
 	string name = conf->getArgParam("--unet-name","UNetExchange1");
 	if( name.empty() )

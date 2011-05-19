@@ -199,7 +199,8 @@ void IONotifyController::askState( const IOController_i::SensorInfo& si,
 	// контроль заказа типа датчика(дискретного) здесь производится
 	if( unideb.debugging(Debug::INFO) )
 	{
-		unideb[Debug::INFO] << "поступил заказ от "
+		unideb[Debug::INFO] << "(askState): поступил " << ( cmd == UIODontNotify ? "отказ" :"заказ" ) 
+			<< " от "
 			<< conf->oind->getNameById(ci.id, ci.node) << " на дискретный датчик "
 			<< conf->oind->getNameById(si.id,si.node) << endl;
 	}
@@ -284,7 +285,8 @@ void IONotifyController::askValue(const IOController_i::SensorInfo& si,
 
 	if( unideb.debugging(Debug::INFO) )	
 	{
-		unideb[Debug::INFO] << "поступил заказ от "<< conf->oind->getNameById(ci.id, ci.node)
+		unideb[Debug::INFO] << "(askValue): поступил " << ( cmd == UIODontNotify ? "отказ" :"заказ" ) << " от "
+			<< conf->oind->getNameById(ci.id, ci.node)
 			<< " на аналоговый датчик "
 			<< conf->oind->getNameById(si.id,si.node) << endl;
 	}
@@ -1082,7 +1084,8 @@ void IONotifyController::askOutput(const IOController_i::SensorInfo& si,
 	string name = conf->oind->getNameById(ci.id, ci.node);
 	if( unideb.debugging(Debug::INFO) )	
 	{
-		unideb[Debug::INFO] << "(askOutput): поступил заказ от ("<< ci.id << ") " 
+		unideb[Debug::INFO] << "(askOutput): поступил " << ( cmd == UIODontNotify ? "отказ" :"заказ" ) 
+			<< " от ("<< ci.id << ") " 
 				<< name << " на выход "
 				<< conf->oind->getNameById(si.id,si.node) << endl;
 	}

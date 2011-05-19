@@ -23,6 +23,7 @@ static struct option longopts[] = {
 	{ "myaddr", required_argument, 0, 'a' },
 	{ "port", required_argument, 0, 'p' },
 	{ "persistent-connection", no_argument, 0, 'o' },
+	{ "num-cycles", required_argument, 0, 'l' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -42,6 +43,7 @@ static void print_help()
 	printf("[-p|--port] port                  - Modbus server port. Default: 502.\n");
 	printf("[-t|--timeout] msec               - Timeout. Default: 2000.\n");
 	printf("[-o|--persistent-connection]      - Use persistent-connection.\n");
+	printf("[-l|--num-cycles] num             - Number of cycles of exchange. Default: -1 - infinitely.\n");
 	printf("[-v|--verbose]                    - Print all messages to stdout\n");
 }
 // --------------------------------------------------------------------------
@@ -77,10 +79,11 @@ int main( int argc, char **argv )
 	ModbusRTU::ModbusAddr slaveaddr = 0x00;
 	int tout = 2000;
 	DebugStream dlog;
+	int ncycles = -1;
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:w:z:r:x:c:b:d:s:t:p:i:o",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "hva:w:z:r:x:c:b:d:s:t:p:i:ol:",longopts,&optindex)) != -1 ) 
 		{
 			switch (opt) 
 			{
@@ -182,6 +185,10 @@ int main( int argc, char **argv )
 					persist = true;
 				break;
 
+				case 'l':
+					ncycles = uni_atoi(optarg);
+				break;
+
 				case '?':
 				default:
 					printf("? argumnet\n");
@@ -216,7 +223,11 @@ int main( int argc, char **argv )
 		if( count > ModbusRTU::MAXDATALEN && verb )
 			cout << "Too long packet! Max count=" << ModbusRTU::MAXDATALEN << " (ignore...)" << endl;
 		
-		while(1)
+		int nc = 1;
+		if( ncycles > 0 )
+			nc = ncycles;
+
+		while( nc )
 		{
 			try
 			{
@@ -406,7 +417,15 @@ int main( int argc, char **argv )
             	cout << "timeout..." << endl;
             }
 
+			if( ncycles > 0 )
+			{
+				nc--;
+				if( nc <=0 )
+					break;
+			}
+
 			msleep(200);
+			
 		} // end of while
 
 		mb.disconnect();
@@ -423,9 +442,9 @@ int main( int argc, char **argv )
 	{
 		cerr << "(mbtester): " << ex << endl;
 	}
-	catch( ost::SockException& e ) 
+	catch( std::exception& e )
 	{
-		cerr << e.getString() << ": " << e.getSystemErrorString() << endl;
+		cerr << "(mbtester): " << e.what() << endl;
 	}
 	catch(...)
 	{

@@ -23,13 +23,14 @@ static struct option longopts[] = {
 //	{ "writefile15", required_argument, 0, 'p' },
 	{ "filetransfer66", required_argument, 0, 'u' },
 	{ "timeout", required_argument, 0, 't' },
-	{ "autodetect-slave", no_argument, 0, 'l' },
+	{ "autodetect-slave", no_argument, 0, 'q' },
 	{ "autodetect-speed", required_argument, 0, 'n' },
 	{ "device", required_argument, 0, 'd' },
 	{ "verbose", no_argument, 0, 'v' },
 	{ "myaddr", required_argument, 0, 'a' },
 	{ "speed", required_argument, 0, 's' },
 	{ "use485F", no_argument, 0, 'y' },
+	{ "num-cycles", required_argument, 0, 'q' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -61,6 +62,7 @@ static void print_help()
 	printf("[-a|--myaddr] addr                - Modbus address for master. Default: 0x01.\n");
 	printf("[-s|--speed] speed                - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
 	printf("[-t|--timeout] msec               - Timeout. Default: 2000.\n");
+	printf("[-l|--num-cycles] num             - Number of cycles of exchange. Default: -1 - infinitely.\n");
 	printf("[-v|--verbose]                    - Print all messages to stdout\n");
 }
 // --------------------------------------------------------------------------
@@ -105,10 +107,11 @@ int main( int argc, char **argv )
 	DebugStream dlog;
 	string tofile("");
 	int use485 = 0;
+	int ncycles = -1;
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:w:z:m:r:x:c:b:d:s:t:ln:u:y",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "hva:w:z:m:r:x:c:b:d:s:t:qn:u:yl:",longopts,&optindex)) != -1 ) 
 		{
 			switch (opt) 
 			{
@@ -255,7 +258,7 @@ int main( int argc, char **argv )
 					verb = 1;
 				break;
 				
-				case 'l':
+				case 'q':
 				{
 					if( cmd == cmdNOP )
 						cmd = cmdDetectSlave;
@@ -296,6 +299,10 @@ int main( int argc, char **argv )
 					fn = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(argv[optind+1]);
 				}
 				break;
+				
+				case 'l':
+					ncycles = uni_atoi(optarg);
+				break;
 
 				case '?':
 				default:
@@ -321,7 +328,11 @@ int main( int argc, char **argv )
 		mb.setSpeed(speed);
 		mb.setLog(dlog);
 
-		while(1)		
+		int nc = 1;
+		if( ncycles > 0 )
+			nc = ncycles;
+
+		while( nc )
 		{
 			try
 			{
@@ -578,7 +589,15 @@ int main( int argc, char **argv )
             		throw ex;
             	
             	cout << "timeout..." << endl;
-            }			
+            }
+			
+			if( ncycles > 0 )
+			{
+				nc--;
+				if( nc <=0 )
+					break;
+			}	
+			
 			msleep(200);
 		}
 	}

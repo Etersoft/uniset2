@@ -70,6 +70,8 @@ int main(int argc, char** argv)
 			act.addObject(static_cast<class UniSetObject*>(&is));
 			act.run(false);
 		}
+		
+		return 0;
 	}
 	catch(Exception& ex)
 	{
@@ -80,5 +82,5 @@ int main(int argc, char** argv)
 		cerr << "(InfoServer::main): catch ..." << endl;
 	}
 
-	return 0;
+	return 1;
 }

@@ -1,4 +1,5 @@
 #include <sstream>
+#include <sys/wait.h>
 #include "ObjectsActivator.h"
 #include "Extensions.h"
 #include "UNetExchange.h"
@@ -7,7 +8,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-int main( int argc, char** argv )
+int main( int argc, const char** argv )
 {
 	try
 	{
@@ -21,20 +22,19 @@ int main( int argc, char** argv )
 			return 0;
 		}
 
-		string confile=UniSetTypes::getArgParam("--confile",argc,argv,"configure.xml");
-		conf = new Configuration( argc, argv, confile );
+		uniset_init(argc,argv);
 
 		string logfilename(conf->getArgParam("--unet-logfile"));
 		if( logfilename.empty() )
 			logfilename = "udpexchange.log";
 	
-		conf->initDebug(dlog,"dlog");
 	
 		std::ostringstream logname;
 		string dir(conf->getLogDir());
 		logname << dir << logfilename;
 		unideb.logFile( logname.str() );
-		dlog.logFile( logname.str() );
+		UniSetExtensions::dlog.logFile( logname.str() );
+		conf->initDebug(UniSetExtensions::dlog,"dlog");
 
 		ObjectId shmID = DefaultObjectId;
 		string sID = conf->getArgParam("--smemory-id");
@@ -68,21 +68,17 @@ int main( int argc, char** argv )
 		dlog[Debug::ANY] << "(main): -------------- UDPReceiver START -------------------------\n\n";
 
 		act.run(false);
+		while( waitpid(-1, 0, 0) > 0 );
 	}
 	catch( Exception& ex )
 	{
 		dlog[Debug::CRIT] << "(unetexchange): " << ex << std::endl;
-	}
-	catch( ost::SockException& e )
-	{
-		ostringstream s;
-		s << e.getString() << ": " << e.getSystemErrorString();
-		dlog[Debug::CRIT] << s.str() << endl;
 	}
 	catch(...)
 	{
 		dlog[Debug::CRIT] << "(unetexchange): catch ..." << std::endl;
 	}
 
+	while( waitpid(-1, 0, 0) > 0 );
 	return 0;
 }

@@ -10,6 +10,7 @@
 #include "SMInterface.h"
 #include "LProcessor.h"
 // --------------------------------------------------------------------------
+/*! Реализация LogicProccessor основанная на заказе датчиков */
 class PassiveLProcessor:
 	public UniSetObject_LT,
 	protected LProcessor

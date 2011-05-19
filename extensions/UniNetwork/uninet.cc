@@ -1,3 +1,4 @@
+#include <sys/wait.h>
 #include <string>
 #include "Debug.h"
 #include "ObjectsActivator.h"
@@ -52,6 +53,7 @@ int main(int argc, const char **argv)
 		act.broadcast( sm.transport_msg() );
 		act.run(true);
 		shm->execute();
+		while( waitpid(-1, 0, 0) > 0 ); 
 		return 0;
 	}
 	catch(SystemError& err)
@@ -67,5 +69,6 @@ int main(int argc, const char **argv)
 		unideb[Debug::CRIT] << "(uninetwork): catch(...)" << endl;
 	}
 	
+	while( waitpid(-1, 0, 0) > 0 ); 
 	return 1;
 }

@@ -14,6 +14,39 @@
 #include "UNetReceiver.h"
 #include "UNetSender.h"
 // -----------------------------------------------------------------------------
+/*!
+	\page pageUNetExchange2 Сетевой обмен на основе UDP (UNet2)
+	
+	\par Обмен построен  на основе протокола UDP. 
+		Основная идея заключается в том, что каждый узел на порту равном своему ID
+	посылает в сеть UDP-пакеты содержащие данные считанные из локальной SM. Формат данных - это набор
+	пар "id - value". Другие узлы принимают их. Помимо этого процесс, данный процесс запускает 
+	по потоку приёма для каждого другого узла и ловит пакеты от них, сохраняя данные в SM.
+
+	\par При своём старте процесс считывает из секции <nodes> список узлов с которыми необходимо вести обмен.
+		Открывает по потоку приёма на каждый узел и поток передачи для своих данных. А так же параметры
+	своего узла.
+	
+	\par Пример конфигурирования
+		По умолчанию при считывании используются свойства \a ip и \a id - в качестве порта.
+	Но можно переопределять эти параметры, при помощи указания \a unet_port и/или \a unet_ip.
+	Помимо этого можно задать broadcast-адрес по умолчанию \a unet_ip для всех узлов  в 
+	свойствах секции <nodes unet_ip="xxx.255">
+	\code
+	<nodes port="2809" unet_ip="192.168.56.255">
+		<item ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="1" unet_port="3000" unet_ip="192.168.56.1">
+		<iocards>
+			...
+		</iocards>
+		</item>
+		<item ip="192.168.56.10" name="Node1" textname="Node1" unet_port="3001" unet_ip="192.168.56.2"/>
+		<item ip="192.168.56.11" name="Node2" textname="Node2" unet_port="3002" unet_ip="192.168.56.3"/>
+	</nodes>
+	\endcode
+
+	
+*/
+// -----------------------------------------------------------------------------
 class UNetExchange:
 	public UniSetObject_LT
 {
@@ -22,11 +55,11 @@ class UNetExchange:
 		virtual ~UNetExchange();
 	
 		/*! глобальная функция для инициализации объекта */
-		static UNetExchange* init_unetexchange( int argc, char* argv[],
+		static UNetExchange* init_unetexchange( int argc, const char* argv[],
 											UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
 
 		/*! глобальная функция для вывода help-а */
-		static void help_print( int argc, char* argv[] );
+		static void help_print( int argc, const char* argv[] );
 
 		bool checkExistUNetHost( const std::string host, ost::tpport_t port );
 
@@ -53,7 +86,6 @@ class UNetExchange:
 
 		void initIterators();
 		void startReceivers();
-		void initSender( const std::string host, const ost::tpport_t port, UniXML_iterator& it );
 
 		enum Timer
 		{

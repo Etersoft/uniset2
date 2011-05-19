@@ -53,6 +53,7 @@ class UNetReceiver
 		~UNetReceiver();
 
 		 void start();
+		 void stop();
 
 		 void receive();
 		 void update();
@@ -114,6 +115,7 @@ class UNetReceiver
 		typedef std::priority_queue<UniSetUDP::UDPMessage,std::vector<UniSetUDP::UDPMessage>,PacketCompare> PacketQueue;
 		PacketQueue qpack;	/*!< очередь принятых пакетов (отсортированных по возрастанию номера пакета) */
 		UniSetUDP::UDPMessage pack;		/*!< просто буфер для получения очереlного сообщения */
+		UniSetUDP::UDPPacket r_buf;
 		UniSetTypes::uniset_mutex packMutex; /*!< mutex для работы с очередью */
 		unsigned long pnum;	/*!< текущий номер обработанного сообщения, для проверки непрерывности последовательности пакетов */
 
@@ -134,13 +136,21 @@ class UNetReceiver
 			IOController::AIOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;
 			UniversalIO::IOTypes iotype;
+
+			ItemInfo():
+				id(UniSetTypes::DefaultObjectId),
+				iotype(UniversalIO::UnknownIOType){}
 		};
 
 		typedef std::vector<ItemInfo> ItemVec;
-		ItemVec icache;	/*!< кэш итераторов */
-		bool cache_init_ok;
-		void initCache( UniSetUDP::UDPMessage& pack, bool force=false );
+		ItemVec d_icache;	/*!< кэш итераторов для булевых */
+		ItemVec a_icache;	/*!< кэш итераторов для аналоговых */
 
+		bool d_cache_init_ok;
+		bool a_cache_init_ok;
+
+		void initDCache( UniSetUDP::UDPMessage& pack, bool force=false );
+		void initACache( UniSetUDP::UDPMessage& pack, bool force=false );
 };
 // -----------------------------------------------------------------------------
 #endif // UNetReceiver_H_

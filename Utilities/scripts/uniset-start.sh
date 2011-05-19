@@ -17,7 +17,7 @@ print_usage()
 {
     [ "$1" = 0 ] || exec >&2
     cat <<EOF
-Usage: ${0##*/} [options] programm
+Usage: ${0##*/} [options] programm [arguments]
 
 Valid options are:
   -h, --help	display help screen
@@ -33,6 +33,9 @@ EOF
     [ -n "$1" ] && exit "$1" || exit
 }
 
+
+[ -z "$1" ]  && print_usage 1
+
 #parse command line options
 case "$1" in
 	-h|--help) print_usage 0;;
@@ -47,20 +50,30 @@ shift
 
 if [ -n "$DBG" ]
 then
-	COMLINE="$* --uniset-port $OMNIPORT"	
+	COMLINE="$* --uniset-port $OMNIPORT"
 	start_line=
 	[ "$DBG" == "mem" ] && start_line="valgrind --tool=memcheck --leak-check=full --trace-children=yes --log-file=valgrind.log $COMLINE"
 	[ "$DBG" == "call" ] && start_line="valgrind --tool=callgrind --trace-children=yes --log-file=valgrind.log $COMLINE"
 	[ "$DBG" == "cache" ] && start_line="valgrind --tool=cachegrind --trace-children=yes --log-file=valgrind.log $COMLINE"
 	[ "$DBG" == "hel" ] && start_line="valgrind --tool=helgrind --trace-children=yes --log-file=valgrind.log $COMLINE"
 	
+	PROG=`basename $1`
 	if [ "$DBG" == "gdb" ]; then
-  		start_line="gdb --args $COMLINE"
+		if [ -a "./.libs/lt-$PROG" ]; then
+			PROG="./.libs/lt-$PROG"
+		else
+			if [ -a "./.libs/$PROG" ]; then
+				PROG="./.libs/$PROG"
+			fi
+		fi
+
+  		shift
+  		start_line="gdb --args $PROG $* --uniset-port $OMNIPORT"
 	fi
 
 	echo Running "$start_line"
     $start_line
-	exit 0
+	exit $?
 fi
 
 if [ -n "$FG" ]
@@ -69,20 +82,19 @@ then
 		if [ -z "$COMLINE" ]
 		then
 			echo "Не указана команда для запуска"
-			exit 0
+			exit 1
 		fi
 		
 		COMLINE="$COMLINE --uniset-port $OMNIPORT"
 		echo Запускаем "$COMLINE"
 		$COMLINE 
-		echo Выходим
-		exit 1
+		exit $?
 fi
 
 if [ -z "$*" ]
 then
 	echo "Не указана команда для запуска"
-	exit 0
+	exit 1
 fi
 
 	checkPID=$(echo "$1" | grep pidfile=)

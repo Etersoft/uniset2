@@ -1,3 +1,4 @@
+#include <sys/wait.h>
 #include <sstream>
 #include "MBTCPMaster.h"
 #include "Configuration.h"
@@ -69,6 +70,8 @@ int main( int argc, const char** argv )
 		dlog(Debug::ANY) << "\n\n\n";
 		dlog[Debug::ANY] << "(main): -------------- MBTCP Exchange START -------------------------\n\n";
 		act.run(false);
+		while( waitpid(-1, 0, 0) > 0 ); 
+		return 0;
 	}
 	catch( Exception& ex )
 	{
@@ -79,5 +82,6 @@ int main( int argc, const char** argv )
 		dlog[Debug::CRIT] << "(mbtcpmaster): catch ..." << std::endl;
 	}
 
-	return 0;
+	while( waitpid(-1, 0, 0) > 0 ); 
+	return 1;
 }

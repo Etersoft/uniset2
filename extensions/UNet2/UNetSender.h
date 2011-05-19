@@ -29,26 +29,43 @@ class UNetSender
 		struct UItem
 		{
 			UItem():
-				val(0)
-			{}
+				iotype(UniversalIO::UnknownIOType),
+				id(UniSetTypes::DefaultObjectId),
+				pack_ind(-1){}
 
-			IOController_i::SensorInfo si;
+			UniversalIO::IOTypes iotype;
+			UniSetTypes::ObjectId id;
 			IOController::AIOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;
-			UniSetTypes::uniset_spin_mutex val_lock;
 			int pack_ind;
-			long val;
 
 			friend std::ostream& operator<<( std::ostream& os, UItem& p );
 		};
+		
+		typedef std::vector<UItem> DMap;
 
 		void start();
+		void stop();
 
 		void send();
 		void real_send();
-		void update( UniSetTypes::ObjectId id, long value );
+		
+		/*! (принудительно) обновить все данные (из SM) */
+		void updateFromSM();
+
+		/*! Обновить значение по ID датчика */
+		void updateSensor( UniSetTypes::ObjectId id, long value );
+
+		/*! Обновить значение по итератору */
+		void updateItem( DMap::iterator& it, long value );
 
 		inline void setSendPause( int msec ){ sendpause = msec; }
+		
+		/*! заказать датчики */
+		void askSensors( UniversalIO::UIOCommand cmd );
+
+		/*! инициализация  итераторов */
+		void initIterators();
 		
 	protected:
 
@@ -57,7 +74,6 @@ class UNetSender
 
 		SMInterface* shm;
 
-		void initIterators();
 		bool initItem( UniXML_iterator& it );
 		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
 
@@ -76,11 +92,12 @@ class UNetSender
 		int sendpause;
 		bool activated;
 		
+		UniSetTypes::uniset_mutex pack_mutex;
 		UniSetUDP::UDPMessage mypack;
-		typedef std::vector<UItem> DMap;
 		DMap dlist;
 		int maxItem;
 		unsigned long packetnum;
+		UniSetUDP::UDPPacket s_msg;
 
 		ThreadCreator<UNetSender>* s_thr;	// send thread
 };

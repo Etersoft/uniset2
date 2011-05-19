@@ -9,6 +9,29 @@
 #include "SharedMemory.h"
 #include "PassiveTimer.h"
 // -----------------------------------------------------------------------------
+/*!
+		\page pageUniExchange Обмен между узлами на основе TCP/IP (UniNet).
+	
+	\par Обмен построен на основе функций IOControl-ера получения списка дискретных
+	и аналоговых датчиков. Работает через удалённые CORBA-вызовы.
+	
+	\par Процесс считывает из конфигурационного файла список узлов которые необходимо
+	опрашивать (точнее список IOControl-еров), запускается поток обмена, в котором
+	эти узлы ПОСЛЕДОВАТЕЛЬНО опрашиваются..
+	
+	\par Пример записи в конфигурационном файле для опроса пяти узлов...
+	\code
+	    <UniExchange name="UniExchange">
+    	    <item name="UniExchange2" node="Node2"/>
+        	<item id="3001" node_id="Node2"/>
+        	<item name="UniExchange3" node="Node3"/>
+        	<item name="UniExchange4" node="Node4"/>
+        	<item name="UniExchange5" node="Node5"/>
+	    </UniExchange>
+    \endcode
+    Запись можно делать по "id" или по "name"
+*/
+// -----------------------------------------------------------------------------
 class UniExchange:
 	public IOController
 {

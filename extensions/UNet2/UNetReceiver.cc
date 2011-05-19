@@ -10,10 +10,10 @@ using namespace UniSetExtensions;
 bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 											const UniSetUDP::UDPMessage& rhs) const
 {
-//	if( lhs.msg.header.num == rhs.msg.header.num )
-//		return (lhs.msg < rhs.msg);
+//	if( lhs.num == rhs.num )
+//		return (lhs < rhs);
 
-	return lhs.msg.header.num > rhs.msg.header.num;
+	return lhs.num > rhs.num;
 }
 // ------------------------------------------------------------------------------------------
 UNetReceiver::UNetReceiver( const std::string s_host, const ost::tpport_t port, SMInterface* smi ):
@@ -32,15 +32,18 @@ maxDifferens(1000),
 waitClean(false),
 rnum(0),
 maxProcessingCount(100),
-icache(200),
-cache_init_ok(false)
+d_icache(UniSetUDP::MaxDCount),
+a_icache(UniSetUDP::MaxACount),
+d_cache_init_ok(false),
+a_cache_init_ok(false)
 {
 	{
 		ostringstream s;
 		s << "(" << s_host << ":" << port << ")";
 		myname = s.str();
 	}
-
+	
+	ost::Thread::setException(ost::Thread::throwException);
 	try
 	{
 //		ost::IPV4Cidr ci(s_host.c_str());
@@ -49,15 +52,21 @@ cache_init_ok(false)
 		addr = s_host.c_str();
 		udp = new ost::UDPDuplex(addr,port);
 	}
-	catch( ost::SockException& e )
+	catch( std::exception& e )
 	{
 		ostringstream s;
-		s << e.getString() << ": " << e.getSystemErrorString();
-		dlog[Debug::CRIT] << myname << "(init): " << s.str() << std::endl;
-
+		s << myname << ": " << e.what();
+		dlog[Debug::CRIT] << s.str() << std::endl;
 		throw SystemError(s.str());
 	}
-
+	catch( ... )
+	{
+		ostringstream s;
+		s << myname << ": catch...";
+		dlog[Debug::CRIT] << s.str() << std::endl;
+		throw SystemError(s.str());
+	}
+	
 	r_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::receive);
 	u_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::update);
 
@@ -152,7 +161,7 @@ void UNetReceiver::real_update()
 				return;
 
 			p = qpack.top();
-			unsigned long sub = labs(p.msg.header.num - pnum);
+			unsigned long sub = labs(p.num - pnum);
 			if( pnum > 0 )
 			{
 				// если sub > maxDifferens
@@ -170,7 +179,7 @@ void UNetReceiver::real_update()
 
 					lostPackets++;
 				}
-				else if( p.msg.header.num == pnum )
+				else if( p.num == pnum )
 				{
 				   /* а что делать если идут повторные пакеты ?!
 					* для надёжности лучше обрабатывать..
@@ -186,21 +195,63 @@ void UNetReceiver::real_update()
 			// удаляем из очереди, только если
 			// всё в порядке с последовательностью..
 			qpack.pop();
-			pnum = p.msg.header.num;
+			pnum = p.num;
 		} // unlock qpack
 
 		k--;
 
 //		cerr << myname << "(update): " << p.msg.header << endl;
 
-		initCache(p, !cache_init_ok);
+		initDCache(p, !d_cache_init_ok);
+		initACache(p, !a_cache_init_ok);
 
-		for( size_t i=0; i<p.msg.header.dcount; i++ )
+		// Обработка дискретных
+		size_t nbit = 0;
+		for( size_t i=0; i<p.dcount; i++, nbit++ )
 		{
 			try
 			{
-				UniSetUDP::UDPData& d = p.msg.dat[i];
-				ItemInfo& ii(icache[i]);
+				
+				long id = p.dID(i);
+				bool val = p.dValue(i);
+				
+				ItemInfo& ii(d_icache[i]);
+				if( ii.id != id )
+				{
+					dlog[Debug::WARN] << myname << "(update): reinit cache for sid=" << id << endl;
+					ii.id = id;
+					shm->initAIterator(ii.ait);
+					shm->initDIterator(ii.dit);
+				}
+
+				if( ii.iotype == UniversalIO::DigitalInput )
+					shm->localSaveState(ii.dit,id,val,shm->ID());
+				else if( ii.iotype == UniversalIO::AnalogInput )
+					shm->localSaveValue(ii.ait,id,val,shm->ID());
+				else if( ii.iotype == UniversalIO::AnalogOutput )
+					shm->localSetValue(ii.ait,id,val,shm->ID());
+ 				else if( ii.iotype == UniversalIO::DigitalOutput )
+					shm->localSetState(ii.dit,id,val,shm->ID());
+				else
+				  dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << id << endl;
+			}
+			catch( UniSetTypes::Exception& ex)
+			{
+				dlog[Debug::CRIT] << myname << "(update): " << ex << std::endl;
+			}
+			catch(...)
+			{
+				dlog[Debug::CRIT] << myname << "(update): catch ..." << std::endl;
+			}
+		}
+		
+		// Обрабока аналоговых
+		for( size_t i=0; i<p.acount; i++ )
+		{
+			try
+			{
+				UniSetUDP::UDPAData& d = p.a_dat[i];
+				ItemInfo& ii(a_icache[i]);
 				if( ii.id != d.id )
 				{
 					dlog[Debug::WARN] << myname << "(update): reinit cache for sid=" << d.id << endl;
@@ -233,9 +284,17 @@ void UNetReceiver::real_update()
 }
 
 // -----------------------------------------------------------------------------
+void UNetReceiver::stop()
+{
+	activated = false;
+//	msleep(10);
+//	u_thr->stop();
+//	r_thr->stop();
+}
+// -----------------------------------------------------------------------------
 void UNetReceiver::receive()
 {
-	cerr << "******************* receive start" << endl;
+	dlog[Debug::INFO] << myname << ": ******************* receive start" << endl;
 	ptRecvTimeout.setTiming(recvTimeout);
 	while( activated )
 	{
@@ -244,23 +303,23 @@ void UNetReceiver::receive()
 			if( recv() )
 			  ptRecvTimeout.reset();
 		}
-		catch( ost::SockException& e )
-		{
-			cerr  << myname << "(receive): " << e.getString() << endl;
-		}
 		catch( UniSetTypes::Exception& ex)
 		{
-			cerr << myname << "(receive): " << ex << std::endl;
+			dlog[Debug::WARN] << myname << "(receive): " << ex << std::endl;
+		}
+		catch( std::exception& e )
+		{
+			dlog[Debug::WARN] << myname << "(receive): " << e.what()<< std::endl;
 		}
 		catch(...)
 		{
-			cerr << myname << "(preceive): catch ..." << std::endl;
+			dlog[Debug::WARN] << myname << "(receive): catch ..." << std::endl;
 		}	
 
 		msleep(recvpause);
 	}
 
-	cerr << "************* execute FINISH **********" << endl;
+	dlog[Debug::INFO] << myname << ": ************* receive FINISH **********" << endl;
 }
 // -----------------------------------------------------------------------------
 bool UNetReceiver::recv()
@@ -268,23 +327,16 @@ bool UNetReceiver::recv()
 	if( !udp->isInputReady(recvTimeout) )
 		return false;
 
-	size_t ret = udp->UDPReceive::receive(&(pack.msg),sizeof(pack.msg));
-	if( ret < sizeof(UniSetUDP::UDPHeader) )
+	size_t ret = udp->UDPReceive::receive((char*)(&r_buf),sizeof(r_buf));
+
+	size_t sz = UniSetUDP::UDPMessage::getMessage(pack,r_buf);
+	if( sz == 0 )
 	{
-		dlog[Debug::CRIT] << myname << "(receive): FAILED header ret=" << ret << " sizeof=" << sizeof(UniSetUDP::UDPHeader) << endl;
-		return false;
-	}
-		
-	size_t sz = pack.msg.header.dcount * sizeof(UniSetUDP::UDPData) + sizeof(UniSetUDP::UDPHeader);
-	if( ret < sz )
-	{
-		dlog[Debug::CRIT] << myname << "(receive): FAILED data ret=" << ret << " sizeof=" << sz
-			  << " packnum=" << pack.msg.header.num << endl;
+		dlog[Debug::CRIT] << myname << "(receive): FAILED RECEIVE DATA ret=" << ret << endl;
 		return false;
 	}
 
-
-	if( rnum>0 && labs(pack.msg.header.num - rnum) > maxDifferens )
+	if( rnum>0 && labs(pack.num - rnum) > maxDifferens )
 	{
 		/* А что делать если мы уже ждём и ещё не "разгребли предыдущее".. а тут уже повторный "разрыв"
 		 * Можно откинуть всё.. что сложили во временную очередь и заново "копить" (но тогда теряем информацию)
@@ -303,12 +355,19 @@ bool UNetReceiver::recv()
 		waitClean = true;
 	}
 
-	rnum = pack.msg.header.num;
+	rnum = pack.num;
 
-//	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
-//		  << " header: " << pack.msg.header
-//		  << " waitClean=" << waitClean
-//		  << endl;
+#if 0
+	cerr << myname << "(receive): recv DATA OK. ret=" << ret << " sizeof=" << sz
+		  << " header: " << pack.msg.header
+		  << " waitClean=" << waitClean
+		  << endl;
+	for( size_t i=0; i<pack.msg.header.dcount; i++ )
+	{
+		UniSetUDP::UDPData& d = pack.msg.dat[i];
+		cerr << "****** save id=" << d.id << " val=" << d.val << endl;
+	}
+#endif
 
 	{	// lock qpack
 		uniset_mutex_lock l(packMutex,500);
@@ -347,28 +406,56 @@ bool UNetReceiver::recv()
 // -----------------------------------------------------------------------------
 void UNetReceiver::initIterators()
 {
-	for( ItemVec::iterator it=icache.begin(); it!=icache.end(); ++it )
+	for( ItemVec::iterator it=d_icache.begin(); it!=d_icache.end(); ++it )
+	{
+		shm->initAIterator(it->ait);
+		shm->initDIterator(it->dit);
+	}
+	for( ItemVec::iterator it=a_icache.begin(); it!=a_icache.end(); ++it )
 	{
 		shm->initAIterator(it->ait);
 		shm->initDIterator(it->dit);
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::initCache( UniSetUDP::UDPMessage& pack, bool force )
+void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 {
-	 if( !force && pack.msg.header.dcount == icache.size() )
+	 if( !force && pack.dcount == d_icache.size() )
 		  return;
 
 	 dlog[Debug::INFO] << myname << ": init icache.." << endl;
-	 cache_init_ok = true;
+	 d_cache_init_ok = true;
 
-	 icache.resize(pack.msg.header.dcount);
-	 for( size_t i=0; i<icache.size(); i++ )
+	 d_icache.resize(pack.dcount);
+	 for( size_t i=0; i<d_icache.size(); i++ )
 	 {
-		  ItemInfo& d(icache[i]);
-		  if( d.id != pack.msg.dat[i].id )
+		  ItemInfo& d(d_icache[i]);
+
+		  if( d.id != pack.d_id[i] )
 		  {
-				d.id = pack.msg.dat[i].id;
+				d.id = pack.d_id[i];
+				d.iotype = conf->getIOType(d.id);
+				shm->initAIterator(d.ait);
+				shm->initDIterator(d.dit);
+		  }
+	 }
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
+{
+	 if( !force && pack.acount == a_icache.size() )
+		  return;
+
+	 dlog[Debug::INFO] << myname << ": init icache.." << endl;
+	 a_cache_init_ok = true;
+
+	 a_icache.resize(pack.acount);
+	 for( size_t i=0; i<a_icache.size(); i++ )
+	 {
+		  ItemInfo& d(a_icache[i]);
+		  if( d.id != pack.a_dat[i].id )
+		  {
+				d.id = pack.a_dat[i].id;
 				d.iotype = conf->getIOType(d.id);
 				shm->initAIterator(d.ait);
 				shm->initDIterator(d.dit);

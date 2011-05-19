@@ -17,6 +17,11 @@ iaddr(""),
 force_disconnect(true)
 {
 	setCRCNoCheckit(true);
+/*
+	dlog.addLevel(Debug::INFO);
+	dlog.addLevel(Debug::WARN);
+	dlog.addLevel(Debug::CRIT);
+*/
 }
 
 // -------------------------------------------------------------------------
@@ -172,7 +177,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				disconnect();
 				return erTimeOut; // return erHardwareError;
 			}
-            
+
 			rmh.swapdata();
 			
 			if( rmh.tID != mh.tID )
@@ -187,8 +192,9 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 			}
 			//
 
-//			return recv(addr,msg.func,reply,timeout);
-			mbErrCode res = recv(addr,msg.func,reply,timeout);
+			// timeout = ptTimeout.getLeft(timeout);
+			// в tcp ответе задержек уже не должно быть..
+			mbErrCode res = recv(addr,msg.func,reply,1); //timeout);
 			
 			if( force_disconnect )
 			{
@@ -217,7 +223,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
-		dlog[Debug::WARN]  << "(query): " << ex << endl;
+		dlog[Debug::WARN] << "(query): " << ex << endl;
 	}
 	catch( SystemError& err )
 	{
@@ -230,6 +236,11 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 	catch( ost::SockException& e ) 
 	{
 		dlog[Debug::WARN] << "(query): tcp error: " << e.getString() << endl;
+		return erTimeOut;
+	}
+	catch( std::exception& e )
+	{
+		dlog[Debug::CRIT] << "(query): " << e.what() << std::endl;
 		return erTimeOut;
 	}
 	catch(...)
@@ -264,7 +275,7 @@ void ModbusTCPMaster::reconnect()
 		tcp = 0;
 	}
 
-	ost::Thread::setException(ost::Thread::throwException);
+	// ost::Thread::setException(ost::Thread::throwException);
 
 	try
 	{
@@ -272,20 +283,17 @@ void ModbusTCPMaster::reconnect()
 		tcp = new ost::TCPStream(iaddr.c_str(),ost::Socket::IPV4,536,true,500);
 		tcp->setTimeout(replyTimeOut_ms);
 	}
-	catch(ost::Socket *socket)
+	catch( std::exception& e )
 	{
-		  ost::tpport_t port;
-		  int err = socket->getErrorNumber();
-		  ost::InetAddress saddr = (ost::InetAddress)socket->getPeer(&port);
-		  dlog[Debug::CRIT] << "tcp error " << saddr.getHostname() << ":" << port << " = " << err << endl;
+		ostringstream s;
+		s << "(ModbusTCPMaster): connection " << s.str() << " error: " << e.what();
+		dlog[Debug::CRIT] << s.str() << std::endl;
 	}
-	catch( ost::SockException& e)
+	catch( ... )
 	{
-		dlog[Debug::CRIT] << "tcp error: " << e.getString() << endl;
-	}
-	catch(...)
-	{
-		dlog[Debug::CRIT] << "create TCPStream[" << iaddr << "] error..." << endl;
+		ostringstream s;
+		s << "(ModbusTCPMaster): connection " << s.str() << " error: catch ...";
+		dlog[Debug::CRIT] << s.str() << std::endl;
 	}
 }
 // -------------------------------------------------------------------------
@@ -307,26 +315,25 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
 			dlog[Debug::INFO] << "(ModbusTCPMaster): connect to " << s.str() << endl;
 		
 		iaddr = s.str();
+		
+		ost::Thread::setException(ost::Thread::throwException);
 		try
 		{		
 			tcp = new ost::TCPStream(iaddr.c_str());
 			tcp->setTimeout(replyTimeOut_ms);
 		}
-		catch(ost::Socket *socket)
+		catch( std::exception& e )
 		{
-			  ost::tpport_t port;
-			  int err = socket->getErrorNumber();
-			  ost::InetAddress saddr = (ost::InetAddress)socket->getPeer(&port);
-			  dlog[Debug::CRIT] << ": tcp error " << saddr.getHostname() << ":" << port << " = " << err << endl;
+			ostringstream s;
+			s << "(ModbusTCPMaster): connection " << s.str() << " error: " << e.what();
+			dlog[Debug::CRIT] << s.str() << std::endl;
 		}
-		catch( ost::SockException& e)
+		catch( ... )
 		{
-			  dlog[Debug::CRIT] << "tcp error: " << e.getString() << endl;
+			ostringstream s;
+			s << "(ModbusTCPMaster): connection " << s.str() << " error: catch ...";
+			dlog[Debug::CRIT] << s.str() << std::endl;
 		}
-		catch(...)
-		{
-			dlog[Debug::CRIT] << "create TCPStream[" << iaddr << "] error..." << endl;
-		}			
 //	}
 }
 // -------------------------------------------------------------------------

@@ -62,8 +62,9 @@ prefix(prefix_)
 	recv_timeout = conf->getArgPInt("--"+prefix+"-recv-timeout",it.getProp("recv_timeout"), 50);
 
 	int alltout = conf->getArgPInt("--"+prefix+"-all-timeout",it.getProp("all_timeout"), 2000);
-		
 	ptAllNotRespond.setTiming(alltout);
+	
+	sleepPause_usec = conf->getArgPInt("--" + prefix + "-sleepPause-usec",it.getProp("slepePause"), 100);
 
 	rs_pre_clean = conf->getArgInt("--"+prefix+"-pre-clean",it.getProp("pre_clean"));
 	noQueryOptimization = conf->getArgInt("--"+prefix+"-no-query-optimization",it.getProp("no_query_optimization"));
@@ -184,6 +185,8 @@ void RTUExchange::initMB( bool reopen )
 
 		if( recv_timeout > 0 )
 			mb->setTimeout(recv_timeout);
+		
+		mb->setSleepPause(sleepPause_usec);
 
 		dlog[Debug::INFO] << myname << "(init): dev=" << devname << " speed=" << ComPort::getSpeed(defSpeed) << endl;
 	}
@@ -937,29 +940,6 @@ void RTUExchange::sigterm( int signo )
 {
 	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
 	activated = false;
-
-/*! \todo Нужно ли выставлять безопасное состояние. МОжно ведь не успеть совершить "обемен" */
-	// выставление безопасного состояния на выходы....
-/*
-	RSMap::iterator it=rsmap.begin();
-	for( ; it!=rsmap.end(); ++it )
-	{
-//		if( it->stype!=UniversalIO::DigitalOutput && it->stype!=UniversalIO::AnalogOutput )
-//			continue;
-		
-		if( it->safety == NoSafetyState )
-			continue;
-
-		try
-		{
-		}
-		catch( UniSetTypes::Exception& ex )
-		{
-			dlog[Debug::WARN] << myname << "(sigterm): " << ex << std::endl;
-		}
-		catch(...){}
-	}
-*/	
 	UniSetObject_LT::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------

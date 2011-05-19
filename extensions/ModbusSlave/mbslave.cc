@@ -1,4 +1,5 @@
 // --------------------------------------------------------------------------
+#include <sys/wait.h>
 #include <sstream>
 #include <string>
 #include <cc++/socket.h>
@@ -74,7 +75,8 @@ int main(int argc, const char **argv)
 		dlog[Debug::ANY] << "(main): -------------- MBSlave START -------------------------\n\n";
 
 		act.run(false);
-
+		while( waitpid(-1, 0, 0) > 0 ); 
+		return 0;
 	}
 	catch( SystemError& err )
 	{
@@ -84,15 +86,16 @@ int main(int argc, const char **argv)
 	{
 		dlog[Debug::CRIT] << "(mbslave): " << ex << endl;
 	}
-	catch( ost::SockException& e )
+	catch( std::exception& e )
 	{
-		dlog[Debug::CRIT] << e.getString() << ": " << e.getSystemErrorString() << endl;
+		dlog[Debug::CRIT] << "(mbslave): " << e.what() << endl;
 	}
 	catch(...)
 	{
 		dlog[Debug::CRIT] << "(mbslave): catch(...)" << endl;
 	}
 
-	return 0;
+	while( waitpid(-1, 0, 0) > 0 ); 
+	return 1;
 }
 // --------------------------------------------------------------------------

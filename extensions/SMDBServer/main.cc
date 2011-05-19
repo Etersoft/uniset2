@@ -69,6 +69,7 @@ int main( int argc, const char** argv )
 		dlog(Debug::ANY) << "\n\n\n";
 		dlog[Debug::ANY] << "(main): -------------- SMDBServer START -------------------------\n\n";
 		act.run(false);
+		return 0;
 	}
 	catch( Exception& ex )
 	{
@@ -79,5 +80,5 @@ int main( int argc, const char** argv )
 		dlog[Debug::CRIT] << "(smdbserver): catch ..." << std::endl;
 	}
 
-	return 0;
+	return 1;
 }

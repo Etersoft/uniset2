@@ -42,13 +42,17 @@ int main(int argc, const char **argv)
 //		pause();	// пауза, чтобы дочерние потоки успели завершить работу
 		return 0;
 	}
-	catch(SystemError& err)
+	catch( SystemError& err )
 	{
 		unideb[Debug::CRIT] << "(smemory): " << err << endl;
 	}
-	catch(Exception& ex)
+	catch( Exception& ex )
 	{
 		unideb[Debug::CRIT] << "(smemory): " << ex << endl;
+	}
+	catch( std::exception& e )
+	{
+		unideb[Debug::CRIT] << "(smemory): " << e.what() << endl;
 	}
 	catch(...)
 	{

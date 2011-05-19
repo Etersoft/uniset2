@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt14
+Release: alt31
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -43,6 +43,16 @@ Obsoletes: %oname-mysql-dbserver
 %description mysql-dbserver
 MySQL dbserver for %name
 
+%package mysql-devel
+Group: Development/Databases
+Summary: Libraries needed to develop for uniset MySQL
+Requires: %name = %version-%release
+Provides: %oname-mysql-devel
+Obsoletes: %oname-mysql-devel
+
+%description mysql-devel
+Libraries needed to develop for uniset MySQL
+
 %package utils
 Summary: UniSet utilities
 Group: Development/Tools
@@ -54,7 +64,7 @@ Obsoletes: %oname-utils
 UniSet utilities
 
 %package doc
-Group: Development/C
+Group: Development/C++
 Summary: Documentations for developing with UniSet
 Requires: lib%name = %version-%release
 
@@ -62,7 +72,7 @@ Requires: lib%name = %version-%release
 Documentations for developing with UniSet
 
 %package extensions
-Group: Development/Databases
+Group: Development/C++
 Summary: libUniSet extensions
 Requires: %name = %version-%release
 Provides: %oname-extentions
@@ -74,7 +84,7 @@ Obsoletes: %name-extentions
 Extensions for libuniset
 
 %package extensions-devel
-Group: Development/Databases
+Group: Development/C++
 Summary: Libraries needed to develop for uniset extensions
 Requires: %name-extensions = %version-%release
 Provides: %name-extentions-devel
@@ -135,6 +145,9 @@ rm -f %buildroot%_libdir/*.la
 %_bindir/%oname-mysql-*dbserver
 %_libdir/*-mysql.so*
 
+%files mysql-devel
+%_pkgconfigdir/libUniSetMySQL.pc
+
 %if_enabled doc
 %files doc
 %_docdir/%name
@@ -186,11 +199,69 @@ rm -f %buildroot%_libdir/*.la
 %_pkgconfigdir/libUniSetShared*.pc
 %_pkgconfigdir/libUniSetNetwork*.pc
 %_pkgconfigdir/libUniSetUNet*.pc
+
 #%_pkgconfigdir/libUniSetSMDBServer.pc
 #%_pkgconfigdir/libUniSet*.pc
 %exclude %_pkgconfigdir/libUniSet.pc
 
+
+
 %changelog
+* Fri May 13 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt31
+- move DBServer-MySQL to extensions directory
+- add pc-file for libUniSet-mysql
+- create new devel package - "libuniset-mysql-devel"
+- minor fixes
+
+* Wed May 11 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt30
+- add new function to UniversalInterface
+
+* Sat May 07 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt29
+- (unet2): new protocol implementation
+
+* Thu May 05 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt28
+- add setup function for ModbusTCPMaster and ModbusTCPServer
+
+* Wed May 04 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt27
+- fixed bug in ModbusTCPMaster and ModbusTCPServer
+
+* Wed May 04 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt26
+- minor fixes
+
+* Wed May 04 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt25
+- (unet2): minor fixes
+
+* Sun May 01 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt24
+- build for new uniset-unet2 version
+
+* Sun May 01 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt23
+- (uniset-unet2): fixed bug (SEGFAULT with a large number of items)
+
+* Wed Apr 20 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt22
+- (uniset-unet2-tester): fixed minor bugs 
+
+* Wed Apr 20 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt21
+- (uniset-unet2-tester): add new parameter 
+   -l | --check-lost   - Check the lost packets.
+
+* Wed Apr 20 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt20
+- (uniset-unet2-tester): rename command line parameters
+
+* Tue Apr 19 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt19
+- a little cleaning
+
+* Tue Apr 19 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt18
+- add unet2-tester
+
+* Tue Mar 29 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt17
+- set encoding="utf-8" for codegen templates
+
+* Tue Mar 29 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt16
+- fixed minor bug in codegen
+
+* Sat Mar 26 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt15
+- fixed return value in some utilities
+
 * Thu Mar 24 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt14
 - fixed bug in MBSlave
 

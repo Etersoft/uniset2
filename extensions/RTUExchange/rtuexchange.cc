@@ -1,3 +1,4 @@
+#include <sys/wait.h>
 #include <sstream>
 #include "ObjectsActivator.h"
 #include "Extensions.h"
@@ -68,8 +69,9 @@ int main( int argc, char** argv )
 		dlog[Debug::ANY] << "(main): -------------- RTU Exchange START -------------------------\n\n";
 
 		act.run(false);
-//		msleep(500);
-//		rs->execute();
+		
+		while( waitpid(-1, 0, 0) > 0 ); 
+		return 0;
 	}
 	catch( Exception& ex )
 	{
@@ -80,5 +82,6 @@ int main( int argc, char** argv )
 		dlog[Debug::CRIT] << "(rtuexchange): catch ..." << std::endl;
 	}
 
-	return 0;
+	while( waitpid(-1, 0, 0) > 0 ); 
+	return 1;
 }

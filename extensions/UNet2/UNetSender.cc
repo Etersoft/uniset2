@@ -36,16 +36,24 @@ s_thr(0)
 	if( dlog.debugging(Debug::INFO) )
 		dlog[Debug::INFO] << "(UNetSender): UDP set to " << s_host << ":" << port << endl;
 
-	
+	ost::Thread::setException(ost::Thread::throwException);
 	try
 	{
 		addr = s_host.c_str();
 		udp = new ost::UDPBroadcast(addr,port);
 	}
-	catch( ost::SockException& e )
+	catch( std::exception& e )
 	{
 		ostringstream s;
-		s << e.getString() << ": " << e.getSystemErrorString() << endl;
+		s << myname << ": " << e.what();
+		dlog[Debug::CRIT] << s.str() << std::endl;
+		throw SystemError(s.str());
+	}
+	catch( ... )
+	{
+		ostringstream s;
+		s << myname << ": catch...";
+		dlog[Debug::CRIT] << s.str() << std::endl;
 		throw SystemError(s.str());
 	}
 
@@ -63,8 +71,8 @@ s_thr(0)
 
 
 	// выставляем поля, которые не меняются
-	mypack.msg.header.nodeID = conf->getLocalNode();
-	mypack.msg.header.procID = shm->ID();
+	mypack.nodeID = conf->getLocalNode();
+	mypack.procID = shm->ID();
 }
 // -----------------------------------------------------------------------------
 UNetSender::~UNetSender()
@@ -74,17 +82,55 @@ UNetSender::~UNetSender()
 	delete shm;
 }
 // -----------------------------------------------------------------------------
-void UNetSender::update( UniSetTypes::ObjectId id, long value )
+void UNetSender::updateFromSM()
 {
 	DMap::iterator it=dlist.begin();
 	for( ; it!=dlist.end(); ++it )
 	{
-		if( it->si.id == id )
+		long value = 0;
+
+		if( it->iotype == UniversalIO::DigitalInput || it->iotype == UniversalIO::DigitalOutput )
+			value = shm->localGetState(it->dit,it->id) ? 1 : 0;
+		else if( it->iotype == UniversalIO::AnalogInput || it->iotype == UniversalIO::AnalogOutput )
+			value = shm->localGetValue(it->ait,it->id);
+		else
 		{
-			uniset_spin_lock lock(it->val_lock);
-			it->val = value;
+			dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << it->id << endl;
+			continue;
 		}
-		break;
+
+		updateItem(it,value);
+	}
+}
+// -----------------------------------------------------------------------------
+void UNetSender::updateSensor( UniSetTypes::ObjectId id, long value )
+{
+//	cerr << myname << ": UPDATE SENSOR id=" << id << " value=" << value << endl;
+	DMap::iterator it=dlist.begin();
+	for( ; it!=dlist.end(); ++it )
+	{
+		if( it->id == id )
+		{
+			updateItem( it, value );
+			break;
+		}
+	}
+}
+// -----------------------------------------------------------------------------
+void UNetSender::updateItem( DMap::iterator& it, long value )
+{
+	if( it == dlist.end() )
+		return;
+
+	if( it->iotype == UniversalIO::DigitalInput || it->iotype == UniversalIO::DigitalOutput )
+	{
+		UniSetTypes::uniset_mutex_lock l(pack_mutex,100);
+		mypack.setDData(it->pack_ind,value);
+	}
+	else if( it->iotype == UniversalIO::AnalogInput || it->iotype == UniversalIO::AnalogOutput )
+	{
+		UniSetTypes::uniset_mutex_lock l(pack_mutex,100);
+		mypack.setAData(it->pack_ind,value);
 	}
 }
 // -----------------------------------------------------------------------------
@@ -110,42 +156,56 @@ void UNetSender::send()
 	{
 		try
 		{
+			if( !shm->isLocalwork() )
+				updateFromSM();
+			
 			real_send();
 		}
 		catch( ost::SockException& e )
 		{
-			cerr  << myname << "(send): " << e.getString() << endl;
+			dlog[Debug::WARN]  << myname << "(send): " << e.getString() << endl;
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
-			cerr << myname << "(send): " << ex << std::endl;
+			dlog[Debug::WARN] << myname << "(send): " << ex << std::endl;
+		}
+		catch( std::exception& e )
+		{
+			dlog[Debug::WARN] << myname << "(send): " << e.what() << std::endl;
 		}
 		catch(...)
 		{
-			cerr << myname << "(send): catch ..." << std::endl;
+			dlog[Debug::WARN] << myname << "(send): catch ..." << std::endl;
 		}	
 
 		msleep(sendpause);
 	}
 
-	cerr << "************* execute FINISH **********" << endl;
+	dlog[Debug::INFO] << "************* execute FINISH **********" << endl;
 }
 // -----------------------------------------------------------------------------
 void UNetSender::real_send()
 {
-	mypack.msg.header.num = packetnum++;
+	UniSetTypes::uniset_mutex_lock l(pack_mutex,300);
+	mypack.num = packetnum++;
 
 	if( packetnum > UniSetUDP::MaxPacketNum )
 		packetnum = 1;
 
-//	cout << "************* send header: " << mypack.msg.header << endl;
-	size_t sz = mypack.byte_size() + sizeof(UniSetUDP::UDPHeader);
 	if( !udp->isPending(ost::Socket::pendingOutput) )
 		return;
 
-	size_t ret = udp->send( (char*)&(mypack.msg),sz);
-	if( ret < sz )
-		dlog[Debug::CRIT] << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << sz << endl;
+
+	mypack.transport_msg(s_msg);
+	size_t ret = udp->send( (char*)s_msg.data,s_msg.len );
+	if( ret < s_msg.len )
+		dlog[Debug::CRIT] << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
+}
+// -----------------------------------------------------------------------------
+void UNetSender::stop()
+{
+	activated = false;
+//	s_thr->stop();
 }
 // -----------------------------------------------------------------------------
 void UNetSender::start()
@@ -208,7 +268,7 @@ bool UNetSender::initItem( UniXML_iterator& it )
 {
 	string sname( it.getProp("name") );
 
-	string tid = it.getProp("id");
+	string tid(it.getProp("id"));
 	
 	ObjectId sid;
 	if( !tid.empty() )
@@ -229,12 +289,40 @@ bool UNetSender::initItem( UniXML_iterator& it )
 	}
 	
 	UItem p;
-	p.si.id = sid;
-	p.si.node = conf->getLocalNode();
-	mypack.addData(sid,0);
-	p.pack_ind = mypack.size()-1;
+	p.iotype = UniSetTypes::getIOType(it.getProp("iotype"));
+	
+	if( p.iotype == UniversalIO::UnknownIOType )
+	{
+		dlog[Debug::CRIT] << myname << "(readItem): Unknown iotype for sid=" << sid << endl;
+		return false;
+	}
 
-	if( maxItem >= mypack.size() )
+	p.id = sid;
+
+	if( p.iotype == UniversalIO::DigitalInput || p.iotype == UniversalIO::DigitalOutput )
+	{
+		p.pack_ind = mypack.addDData(sid,0);
+		if ( p.pack_ind >= UniSetUDP::MaxDCount )
+		{
+			dlog[Debug::CRIT] << myname 
+					<< "(readItem): OVERFLOW! MAX UDP DIGITAL DATA LIMIT! max=" 
+					<< UniSetUDP::MaxDCount << endl;
+			return false;
+		}
+	}
+	else if( p.iotype == UniversalIO::AnalogInput || p.iotype == UniversalIO::AnalogOutput )
+	{
+		p.pack_ind = mypack.addAData(sid,0);
+		if ( p.pack_ind >= UniSetUDP::MaxACount )
+		{
+			dlog[Debug::CRIT] << myname 
+					<< "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max=" 
+					<< UniSetUDP::MaxACount << endl;
+			return false;
+		}
+	}
+	
+	if( maxItem >= dlist.size() )
 		dlist.resize(maxItem+10);
 	
 	dlist[maxItem] = p;
@@ -247,6 +335,11 @@ bool UNetSender::initItem( UniXML_iterator& it )
 }
 
 // ------------------------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, UNetSender::UItem& p )
+{
+	return os << " sid=" << p.id;
+}
+// -----------------------------------------------------------------------------
 void UNetSender::initIterators()
 {
 	DMap::iterator it=dlist.begin();
@@ -257,8 +350,10 @@ void UNetSender::initIterators()
 	}
 }
 // -----------------------------------------------------------------------------
-std::ostream& operator<<( std::ostream& os, UNetSender::UItem& p )
+void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
 {
-	return os 	<< " sid=" << p.si.id;
+	DMap::iterator it=dlist.begin();
+	for( ; it!=dlist.end(); it++ )
+		shm->askSensor(it->id,cmd);
 }
 // -----------------------------------------------------------------------------

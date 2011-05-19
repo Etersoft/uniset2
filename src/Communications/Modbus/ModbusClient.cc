@@ -13,6 +13,7 @@ using namespace UniSetTypes;
 ModbusClient::ModbusClient():
 	replyTimeOut_ms(2000),
 	aftersend_msec(0),
+	sleepPause_usec(100),
 	crcNoCheckit(false)
 {
 	tmProcessing.setTiming(replyTimeOut_ms);
@@ -288,11 +289,13 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 		while( !tmAbort.checkTime() )
 		{
 			bcnt = getNextData((unsigned char*)(&rbuf),sizeof(ModbusAddr));
-			if( bcnt!=0 && ( rbuf.addr==addr ) ) // || (onBroadcast && rbuf.addr==BroadcastAddr) ) )
+			if( bcnt>0 && ( rbuf.addr==addr ) ) // || (onBroadcast && rbuf.addr==BroadcastAddr) ) )
 			{
 				begin = true;
 				break;
 			}
+			
+			usleep(sleepPause_usec);
 		}
 
 		if( !begin )

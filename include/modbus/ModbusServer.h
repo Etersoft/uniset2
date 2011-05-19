@@ -42,6 +42,9 @@ class ModbusServer
 		/*! установить время ожидания по умолчанию */
 		void setRecvTimeout( timeout_t msec );
 
+		/*! установить паузу при ожидании символа */
+		inline void setSleepPause( timeout_t usec ){ sleepPause_usec = usec; }
+
 		inline void setCRCNoCheckit( bool set ){ crcNoCheckit = set; }
 		inline bool isCRCNoCheckit(){ return crcNoCheckit; }
 
@@ -203,6 +206,7 @@ class ModbusServer
 		timeout_t recvTimeOut_ms;		/*!< таймаут на приём */
 		timeout_t replyTimeout_ms;	/*!< таймаут на формирование ответа */
 		timeout_t aftersend_msec;		/*!< пауза после посылки ответа */
+		timeout_t sleepPause_usec; 	/*!< пауза между попытками чтения символа из канала */
 		bool onBroadcast;		/*!< включен режим работы с broadcst-сообщениями */
 		bool crcNoCheckit;
 

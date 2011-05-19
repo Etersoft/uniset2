@@ -83,29 +83,36 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
 						addr = _addr;
 					else if( _addr != addr )
 					{
+						res = erTimeOut;
+						// На такие запросы просто не отвечаем...
+						/*
+						res = erBadReplyNodeAddress;
 						tmProcessing.setTiming(replyTimeout_ms);
-						ErrorRetMessage em( buf.addr, buf.func, erBadReplyNodeAddress ); 
+						ErrorRetMessage em( _addr, buf.func, res ); 
 						buf = em.transport_msg();
 						send(buf);
 						printProcessingTime();
+						if( aftersend_msec >= 0 )
+				        	msleep(aftersend_msec);
+						*/
 						tcp.disconnect();
 						return res;
 					}
     			}
-    			
+	
 				res = recv( addr, buf, timeout );
 
 				if( res!=erNoError ) // && res!=erBadReplyNodeAddress )
 				{
 					if( res < erInternalErrorCode )
 					{
-						ErrorRetMessage em( buf.addr, buf.func, res ); 
+						ErrorRetMessage em( addr, buf.func, res ); 
 						buf = em.transport_msg();
 						send(buf);
 						printProcessingTime();
 					}
-					else if( aftersend_msec >= 0 )                                                                                                                                                       
-				        msleep(aftersend_msec);  
+					else if( aftersend_msec >= 0 )
+				        msleep(aftersend_msec);
 
 					tcp.disconnect();
 					return res;
@@ -135,9 +142,9 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
 			tcp.disconnect();
 		}
 	}
-	catch( ost::SockException& e )
+	catch( ost::Exception& e )
 	{
-		cout << e.getString() << ": " << e.getSystemErrorString() << endl;
+		cout << "(ModbusTCPServer): " << e.what() << endl;
 		return erInternalErrorCode;
 	}
 	
@@ -225,16 +232,16 @@ mbErrCode ModbusTCPServer::pre_send_request( ModbusMessage& request )
 	return erNoError;
 }
 // -------------------------------------------------------------------------
-void ModbusTCPServer::cleanInputStream()                                                                                                                                            
-{                                                                                                                                                                                   
-    unsigned char buf[100];                                                                                                                                                         
-    int ret=0;                                                                                                                                                                      
-    do                                                                                                                                                                              
-    {                                                                                                                                                                               
-        ret = getNextData(buf,sizeof(buf));                                                                                                                                         
-    }                                                                                                                                                                               
-    while( ret > 0);                                                                                                                                                                
-}                                                                                                                                                                                   
+void ModbusTCPServer::cleanInputStream()
+{
+    unsigned char buf[100];
+    int ret=0;
+    do
+    {
+        ret = getNextData(buf,sizeof(buf));
+    }
+    while( ret > 0);
+}
 // -------------------------------------------------------------------------
 void ModbusTCPServer::terminate()
 {
