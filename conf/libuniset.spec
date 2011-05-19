@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt33
+Release: alt34
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -207,6 +207,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Thu May 19 2011 Pavel Vainerman <pv@etersoft.ru> 1.0-alt34
+- fixed bug in IOControl
+
 * Thu May 19 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt33
 - fixed bug in DBInterface::ping (again). Many thanks uzum
 
