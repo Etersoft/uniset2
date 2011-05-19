@@ -34,6 +34,9 @@ queryok(false),
 connected(false)
 { 
 	mysql = new MYSQL();
+	mysql_init(mysql);
+//	mysql_options(mysql,MYSQL_READ_DEFAULT_GROUP,"your_prog_name");
+	mysql_options(mysql,MYSQL_OPT_COMPRESS,0);
 }
 
 DBInterface::~DBInterface()
@@ -45,10 +48,6 @@ DBInterface::~DBInterface()
 // -----------------------------------------------------------------------------------------
 bool DBInterface::connect( const string host, const string user, const string pswd, const string dbname)
 {
-	mysql_init(mysql);
-//	mysql_options(mysql,MYSQL_READ_DEFAULT_GROUP,"your_prog_name");
-	mysql_options(mysql,MYSQL_OPT_COMPRESS,0);
-
 	if (!mysql_real_connect(mysql,host.c_str(), user.c_str(),pswd.c_str(),dbname.c_str(),0,NULL,0))
 	{
 		cout << error() << endl;
@@ -110,7 +109,8 @@ bool DBInterface::nextRecord()
 	if( !mysql || !result || !queryok )
 		return false;
 
-	if( Row = mysql_fetch_row(result) )
+	Row = mysql_fetch_row(result);
+	if( Row )
 		return true;
 
 	return false;
