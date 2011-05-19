@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt31
+Release: alt32
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -207,6 +207,10 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Thu May 19 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt32
+- fixed bug in DBInterface::nextRow function
+- fixed bug in DBInterface::ping
+
 * Fri May 13 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt31
 - move DBServer-MySQL to extensions directory
 - add pc-file for libUniSet-mysql
