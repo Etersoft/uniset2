@@ -30,7 +30,8 @@ using namespace std;
 DBInterface::DBInterface():
 result(0),
 lastQ(""),
-queryok(false)
+queryok(false),
+connected(false)
 { 
 	mysql = new MYSQL();
 }
@@ -52,9 +53,10 @@ bool DBInterface::connect( const string host, const string user, const string ps
 	{
 		cout << error() << endl;
 		mysql_close(mysql);
+		connected = false;
 		return false;
 	}
-	
+	connected = true;
 	return true;
 }
 // -----------------------------------------------------------------------------------------
@@ -108,7 +110,7 @@ bool DBInterface::nextRecord()
 	if( !mysql || !result || !queryok )
 		return false;
 
-	if( Row == mysql_fetch_row(result) )
+	if( Row = mysql_fetch_row(result) )
 		return true;
 
 	return false;
@@ -219,7 +221,8 @@ bool DBInterface::ping()
 {
 	if(!mysql)
 		return false;
-
+	if(!connected)
+		return false;
 	// внимание mysql_ping возвращает 0 
 	// если всё хорошо.... (поэтому мы инвертируем)
 	return !mysql_ping(mysql);
