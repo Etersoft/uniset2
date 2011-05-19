@@ -87,6 +87,7 @@ class DBInterface
 		MYSQL *mysql;
 		string lastQ;
 		bool queryok;	// успешность текущего запроса
+		bool connected;
 };
 // ----------------------------------------------------------------------------------
 #endif
