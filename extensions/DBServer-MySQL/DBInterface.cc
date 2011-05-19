@@ -220,11 +220,10 @@ bool DBInterface::moveToRow(int ind)
 // -----------------------------------------------------------------------------------------
 bool DBInterface::ping()
 {
-	if(!mysql)
+	if( !mysql || !connected )
 		return false;
-	if(!connected)
-		return false;
-	// внимание mysql_ping возвращает 0 
+
+	// внимание mysql_ping возвращает 0
 	// если всё хорошо.... (поэтому мы инвертируем)
 	return !mysql_ping(mysql);
 }
