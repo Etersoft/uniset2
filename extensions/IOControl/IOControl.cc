@@ -196,10 +196,10 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	sidTestSMReady = conf->getSensorID(sm_ready_sid);
 	if( sidTestSMReady == DefaultObjectId )
 	{
-		sidTestSMReady = 4100; /* TestMode_S */
+		sidTestSMReady = conf->getSensorID("TestMode_S");
 		unideb[Debug::WARN] << myname 
-				<< "(init): не указан идентификатор датчика теста SM (--" << prefix << "-sm-ready-test-sid)."
-				<< " Берём TestMode_S(4100)" << endl;
+				<< "(init): Unknown ID for sm-ready-test-sid (--" << prefix << "-sm-ready-test-sid)."
+				<< " Use 'TestMode_S'" << endl;
 	}
 	else
 		unideb[Debug::INFO] << myname << "(init): test-sid: " << sm_ready_sid << endl;
@@ -213,7 +213,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		if( sidHeartBeat == DefaultObjectId )
 		{
 			ostringstream err;
-			err << myname << ": не найден идентификатор для датчика 'HeartBeat' " << heart;
+			err << myname << ": Not found ID for 'HeartBeat' " << heart;
 			unideb[Debug::CRIT] << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
@@ -319,7 +319,7 @@ void IOControl::execute()
 	}
 	catch(...){}
 	
-	while(!term)
+	while( !term )
 	{
 		try
 		{
@@ -327,7 +327,7 @@ void IOControl::execute()
 			{
 				check_testmode();
 				check_testlamp();
-			
+
 				if( ptBlink.checkTime() )
 				{
 					ptBlink.reset();
@@ -356,8 +356,10 @@ void IOControl::execute()
 					catch(...){}
 				}
 
-				uniset_mutex_lock l(iopollMutex,5000);
-				iopoll();
+				{
+					uniset_mutex_lock l(iopollMutex,5000);
+					iopoll();
+				}
 			}
 
 			if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
@@ -460,10 +462,12 @@ void IOControl::ioread( IOInfo* it )
 
 	 ComediInterface* card = cards.getCard(it->ncard);
 
-//		cout  << conf->oind->getMapName(it->si.id) 
-//				<< " card=" << card << " ncard=" << it->ncard
-//				<< " subdev: " << it->subdev << " chan: " << it->channel << endl;
-
+/*
+		cout  << conf->oind->getMapName(it->si.id)
+				<< " card=" << card << " ncard=" << it->ncard
+				<< " dev="  << card->devname()
+				<< " subdev: " << it->subdev << " chan: " << it->channel << endl;
+*/
 
 		if( card == NULL || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
 			return;
@@ -505,7 +509,7 @@ void IOControl::ioread( IOInfo* it )
 				{
 					unideb[Debug::LEVEL3] << myname << "(iopoll): read DI "
 						<< " sid=" << it->si.id 
-						<< " subdev" << it->subdev 
+						<< " subdev=" << it->subdev
 						<< " chan=" << it->channel
 						<< " state=" << set
 						<< endl;
@@ -1592,7 +1596,7 @@ void IOControl::buildCardsList()
 		return;
 	}
 
-	size_t lastnum = 0;
+	size_t lastnum = 1;
 	for( ; lastnum<cards.size(); lastnum++ )
 	{
 		if( cards[lastnum] == 0 )
@@ -1622,6 +1626,7 @@ void IOControl::buildCardsList()
 		try
 		{
 			cards[lastnum] = new ComediInterface(iodev);
+			noCards = false;
 		}
 		catch( Exception& ex )
 		{
