@@ -719,8 +719,8 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	if( c.empty() || inf.ncard < 0 || inf.ncard >= (int)cards.size() )
 	{
 		unideb[Debug::LEVEL3] << myname 
-							<< "(initIOItem): Не указан или неверный номер карты (" 
-							<< inf.ncard << ") для " << it.getProp("name") 
+							<< "(initIOItem): Unknown or bad card number ("
+							<< inf.ncard << ") for " << it.getProp("name")
 							<< " set default=" << defCardNum << endl;
 		inf.ncard = defCardNum;
 	}
@@ -750,8 +750,8 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	inf.channel = it.getIntProp("channel");
 	if( inf.channel < 0 || inf.channel > 32 )
 	{
-		unideb[Debug::WARN] << myname << "(readItem): неизвестный канал: " << inf.channel
-							<< " для " << it.getProp("name") << endl;
+		unideb[Debug::WARN] << myname << "(readItem): Unknown channel: " << inf.channel
+							<< " for " << it.getProp("name") << endl;
 		return false;
 	}
 
@@ -770,17 +770,18 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 		inf.range = it.getIntProp("range");
 		if( inf.range < 0 || inf.range > 3 )
 		{
-			unideb[Debug::CRIT] << myname << "(readItem): неизвестный коэффициент усиления(range): " << inf.range
-							<< " для " << it.getProp("name") 
-							<< " Разрешнный диапазон: range=[0..3]" << endl;
+			unideb[Debug::CRIT] << myname << "(readItem): Unknown 'range': " << inf.range
+							<< " for " << it.getProp("name")
+							<< " Must be range=[0..3]" << endl;
 			return false;
 		}
 
 		inf.aref = it.getIntProp("aref");
 		if( inf.aref < 0 || inf.aref > 3 )
 		{
-			unideb[Debug::CRIT] << myname << "(readItem): неизвестный тип подключения: " << inf.aref
-							<< " для " << it.getProp("name") << endl;
+			unideb[Debug::CRIT] << myname << "(readItem): Unknown 'aref': " << inf.aref
+							<< " for " << it.getProp("name")
+							<< ". Must be aref=[0..3]" << endl;
 			return false;
 		}
 	}
@@ -1540,8 +1541,8 @@ void IOControl::waitSM()
 	if( !shm->waitSMready(smReadyTimeout,50) )
 	{
 		ostringstream err;
-		err << myname << "(execute): Не дождались готовности SharedMemory к работе в течение "
-					<< smReadyTimeout << " мсек";
+		err << myname << "(execute): did not wait for the ready 'SharedMemory'. Timeout "
+					<< smReadyTimeout << " msec";
 
 		unideb[Debug::CRIT] << err.str() << endl;
 		throw SystemError(err.str());
@@ -1614,8 +1615,8 @@ void IOControl::buildCardsList()
 		if( iodev.empty() || iodev == "/dev/null" )
 		{
 			cards[lastnum] = NULL;
-			unideb[Debug::LEVEL3] << myname << "(init): КАРТА N" << lastnum 
-								<< " ОТКЛЮЧЕНА (TestMode)!!! в КАЧЕСТВЕ УСТРОЙСТВА УКАЗАНО '" 
+			unideb[Debug::LEVEL3] << myname << "(init): Card N" << lastnum
+								<< " DISABLED (TestMode)!!! iodev='"
 								<< iodev << "'" << endl;
 			cout << "******************** CARD" << lastnum << ": IO IMITATOR MODE ****************" << endl;
 			continue;
