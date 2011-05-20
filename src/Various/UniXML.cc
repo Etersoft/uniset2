@@ -120,7 +120,7 @@ string UniXML::getPropUtf8(const xmlNode* node, const string name)
 string UniXML::getProp(const xmlNode* node, const string name)
 {
 	const char * text = (const char*)::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
-	if (text == NULL)
+	if( !text )
 		return "";
 	
 	return string(text);
