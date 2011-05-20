@@ -207,6 +207,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Fri May 20 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt35
+- minor fixed in UniXML::getProp()
+
 * Thu May 19 2011 Pavel Vainerman <pv@etersoft.ru> 1.0-alt34
 - fixed bug in IOControl
 
