@@ -31,7 +31,7 @@ EOF
 }
 
 #parse command line options
-TEMP=`getopt -n $PROG -o h,n:,m:,a,l -l help,name:,main:,no-main,topdir:,path:,alone,ask,local,local-include,add-cc-include,add-hh-include -- "$@"` || exit 1
+TEMP=`getopt -n $PROG -o h,n:,m:,a,l: -l help,name:,main:,no-main,topdir:,path:,alone,ask,local:,local-include,add-cc-include,add-hh-include -- "$@"` || exit 1
 eval set -- "$TEMP"
 
 name=
@@ -97,7 +97,9 @@ while :; do
 		;;
 
 	-l|--local)
-		xsltdir=.
+		shift
+		xsltdir=$1
+		[ -z "${xsltdir}" ] && xsltdir=.  
 		;;
 
 	--xsltdir)

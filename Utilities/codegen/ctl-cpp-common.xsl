@@ -23,13 +23,6 @@
 </xsl:choose>
 </xsl:template>
 
-<xsl:template name="setnode">
-<xsl:choose>
-	<xsl:when test="normalize-space(@node)=''">conf->getLocalNode()</xsl:when>
-	<xsl:when test="normalize-space(@node)!=''">conf->getNodeID(<xsl:value-of select="@node"/> )</xsl:when>
-</xsl:choose>
-</xsl:template>
-
 <xsl:template name="preinclude">
 	<xsl:if test="normalize-space($LOCALINC)!=''">
 	<xsl:text>&quot;</xsl:text>
@@ -55,13 +48,13 @@
 		<xsl:choose>
 		<xsl:when test="$GENTYPE='H'">
 		const UniSetTypes::ObjectId <xsl:value-of select="../../@name"/>; 		/*!&lt; <xsl:value-of select="../../@textname"/> */
-		const UniSetTypes::ObjectId node_<xsl:value-of select="../../@name"/>;
+		UniSetTypes::ObjectId node_<xsl:value-of select="../../@name"/>;
 		<xsl:call-template name="settype"><xsl:with-param name="iotype" select="../../@iotype" /></xsl:call-template><xsl:text> </xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>; /*!&lt; текущее значение */
 		<xsl:call-template name="settype"><xsl:with-param name="iotype" select="../../@iotype" /></xsl:call-template><xsl:text> prev_</xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>; /*!&lt; предыдущее значение */
 		</xsl:when>
 		<xsl:when test="$GENTYPE='C'"><xsl:value-of select="../../@name"/>(<xsl:value-of select="../../@id"/>),
 			<xsl:if test="not(normalize-space(../../@node)='')">
-				node_<xsl:value-of select="../../@name"/>(<xsl:value-of select="../../@node"/>),
+				node_<xsl:value-of select="../../@name"/>(conf->getNodeID("<xsl:value-of select="../../@node"/>")),
 			</xsl:if>
 			<xsl:if test="normalize-space(../../@node)=''">
 				node_<xsl:value-of select="../../@name"/>(UniSetTypes::conf->getLocalNode()),
@@ -96,7 +89,7 @@
 			</xsl:when>
 			<xsl:when test="$GENTYPE='CHECK'">
 				<xsl:if test="normalize-space(@no_check_id)!='1'">
-				<xsl:if test="normalize-space(../../@id)=''">unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": NotFound (Message)OID for mid_<xsl:value-of select="normalize-space(../../@name)"/>" &lt;&lt; endl;
+				<xsl:if test="normalize-space(../../@id)=''">unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": Not found (Message)OID for mid_<xsl:value-of select="normalize-space(../../@name)"/>" &lt;&lt; endl;
 				</xsl:if>
 				</xsl:if>
 			</xsl:when>
@@ -218,7 +211,7 @@
 		/*! получить числовое свойство из конф. файла по привязанной confnode */
 		int getIntProp(const std::string name) { return UniSetTypes::conf->getIntProp(confnode, name); }
 		/*! получить текстовое свойство из конф. файла по привязанной confnode */
-		const std::string getProp(const std::string name) { return UniSetTypes::conf->getProp(confnode, name); }
+		inline const std::string getProp(const std::string name) { return UniSetTypes::conf->getProp(confnode, name); }
 
 		int smReadyTimeout; 	/*!&lt; время ожидания готовности SM */
 		bool activated;
@@ -478,11 +471,11 @@ askPause(2000)
 // Инициализация идентификаторов (имена берутся из конф. файла)
 <xsl:for-each select="//smap/item">
 	<xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
-node_<xsl:value-of select="normalize-space(@name)"/>(<xsl:call-template name="setnode"/>),
+node_<xsl:value-of select="normalize-space(@name)"/>( conf->getNodeID("node_<xsl:value-of select="normalize-space(@name)"/>") ),
 </xsl:for-each>
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
-node_<xsl:value-of select="normalize-space(@name)"/>(<xsl:call-template name="setnode"/>),
+node_<xsl:value-of select="normalize-space(@name)"/>(conf->getNodeID("node_<xsl:value-of select="normalize-space(@name)"/>")),
 </xsl:for-each>
 sleep_msec(<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>),
 active(true),
@@ -503,20 +496,25 @@ askPause(conf->getPIntProp(cnode,"askPause",2000))
 <xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
-		throw Exception( myname + ": NotFound ID for (<xsl:value-of select="@name"/>) " + conf->getProp(cnode,"<xsl:value-of select="@name"/>") );
+		throw Exception( myname + ": Not found ID for (<xsl:value-of select="@name"/>) " + conf->getProp(cnode,"<xsl:value-of select="@name"/>") );
 	<xsl:if test="normalize-space(@node)!=''">
-	if( node_<xsl:value-of select="normalize-space(@node)"/> == UniSetTypes::DefaultObjectId )
-		throw Exception( myname + ": NotFound NodeID for (node=<xsl:value-of select="@node"/>) " + conf->getProp(cnode,"<xsl:value-of select="@node"/>") );
+	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
+	{
+		if( !conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>").empty() )
+			throw Exception( myname + ": Not found NodeID for (node=<xsl:value-of select="@node"/>) " + conf->getProp(cnode,"<xsl:value-of select="@node"/>") );
+		
+		node_<xsl:value-of select="normalize-space(@name)"/> = conf->getLocalNode();
+	}
 	</xsl:if>
 	</xsl:if>
 </xsl:for-each>
 
 <xsl:for-each select="//msgmap/item">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
-		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": NotFound (Message)OID for (<xsl:value-of select="normalize-space(@name)"/>) " &lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>") &lt;&lt; endl;
+		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": Not found (Message)OID for (<xsl:value-of select="normalize-space(@name)"/>) " &lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>") &lt;&lt; endl;
 	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": NotFound (Message)NodeID for node=(<xsl:value-of select="normalize-space(@node)"/>)" &lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@node)"/>") 
+		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": Not found (Message)NodeID for node=(<xsl:value-of select="normalize-space(@node)"/>)" &lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@node)"/>") 
 			&lt;&lt; ". Use localNode=" &lt;&lt; conf->getLocalNode()
 			&lt;&lt; endl;
 	}

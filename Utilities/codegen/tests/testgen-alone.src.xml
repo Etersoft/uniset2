@@ -34,7 +34,7 @@
 					<consumer name="TestGenAlone" vartype="in" type="objects"/>
 				</consumers>
 			</item>
-			<item id="31" name="output1_c" iotype="DO" textname="xxx">
+			<item id="31" name="output1_c" iotype="DO" textname="xxx" node="Test1Node">
 				<consumers>
 					<consumer name="TestGenAlone" vartype="out" type="objects"/>
 				</consumers>
