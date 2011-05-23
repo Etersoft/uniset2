@@ -56,13 +56,13 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 
 		// Используемые идентификаторы
 		<xsl:for-each select="//smap/item">const UniSetTypes::ObjectId <xsl:value-of select="@name"/>; 		/*!&lt; <xsl:value-of select="@comment"/> */
-		const UniSetTypes::ObjectId node_<xsl:value-of select="@name"/>;
+		UniSetTypes::ObjectId node_<xsl:value-of select="@name"/>;
 		</xsl:for-each>
 
 		// Используемые идентификаторы сообщений
 		<xsl:for-each select="//msgmap/item">
 		const UniSetTypes::ObjectId <xsl:value-of select="@name"/>; 	/*!&lt; <xsl:value-of select="@comment"/> */
-		const UniSetTypes::ObjectId node_<xsl:value-of select="@name"/>;
+		UniSetTypes::ObjectId node_<xsl:value-of select="@name"/>;
 		bool m_<xsl:value-of select="@name"/>; 							/*!&lt; текущее состояние /> */
 		bool prev_m_<xsl:value-of select="@name"/>; 					/*!&lt; предыдущее состояние /> */
 		</xsl:for-each>
