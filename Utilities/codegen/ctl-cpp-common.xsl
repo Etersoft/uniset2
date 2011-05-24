@@ -471,11 +471,11 @@ askPause(2000)
 // Инициализация идентификаторов (имена берутся из конф. файла)
 <xsl:for-each select="//smap/item">
 	<xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
-node_<xsl:value-of select="normalize-space(@name)"/>( conf->getNodeID("node_<xsl:value-of select="normalize-space(@name)"/>") ),
+node_<xsl:value-of select="normalize-space(@name)"/>( conf->getNodeID(conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>")) ),
 </xsl:for-each>
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
-node_<xsl:value-of select="normalize-space(@name)"/>(conf->getNodeID("node_<xsl:value-of select="normalize-space(@name)"/>")),
+node_<xsl:value-of select="normalize-space(@name)"/>(conf->getNodeID( conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>"))),
 </xsl:for-each>
 sleep_msec(<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>),
 active(true),
