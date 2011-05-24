@@ -501,7 +501,7 @@ askPause(conf->getPIntProp(cnode,"askPause",2000))
 	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 	{
 		if( !conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>").empty() )
-			throw Exception( myname + ": Not found NodeID for (node=<xsl:value-of select="@node"/>) " + conf->getProp(cnode,"<xsl:value-of select="@node"/>") );
+			throw Exception( myname + ": Not found NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
 		
 		node_<xsl:value-of select="normalize-space(@name)"/> = conf->getLocalNode();
 	}
