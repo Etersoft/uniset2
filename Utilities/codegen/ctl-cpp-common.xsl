@@ -497,7 +497,7 @@ askPause(conf->getPIntProp(cnode,"askPause",2000))
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 		throw Exception( myname + ": Not found ID for (<xsl:value-of select="@name"/>) " + conf->getProp(cnode,"<xsl:value-of select="@name"/>") );
-	<xsl:if test="normalize-space(@node)!=''">
+
 	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 	{
 		if( !conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>").empty() )
@@ -505,7 +505,6 @@ askPause(conf->getPIntProp(cnode,"askPause",2000))
 
 		node_<xsl:value-of select="normalize-space(@name)"/> = conf->getLocalNode();
 	}
-	</xsl:if>
 	</xsl:if>
 </xsl:for-each>
 
