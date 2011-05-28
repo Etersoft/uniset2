@@ -421,17 +421,14 @@ void MBTCPMaster::poll()
 		}
 
 		if( stat_time > 0 )
-		{
 			poll_count++;
-			if( ptStatistic.checkTime() )
-			{
-				cout << endl << "(poll statistic): number of calls is " << poll_count << " (poll time: " << stat_time << " sec)" << endl << endl;
-				ptStatistic.reset();
-				poll_count=0;
-			}
-		}
+	}
 
-//			mb->disconnect();
+	if( stat_time > 0 && ptStatistic.checkTime() )
+	{
+		cout << endl << "(poll statistic): number of calls is " << poll_count << " (poll time: " << stat_time << " sec)" << endl << endl;
+		ptStatistic.reset();
+		poll_count=0;
 	}
 
 	{
