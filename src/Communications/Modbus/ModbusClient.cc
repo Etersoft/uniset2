@@ -311,6 +311,7 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 			err << "(recv): BadNodeAddress. my= " << addr2str(addr)
 				<< " msg.addr=" << addr2str(rbuf.addr);
 			dlog[Debug::WARN] << err.str() << endl;
+			cleanupChannel();
 			return erBadReplyNodeAddress;
 		}
 
@@ -323,6 +324,7 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
 	catch( Exception& ex ) // SystemError
 	{
 		dlog[Debug::CRIT] << "(recv): " << ex << endl;
+		cleanupChannel();
 		return erHardwareError;
 	}
 
