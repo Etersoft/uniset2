@@ -17,7 +17,8 @@ ModbusServer::ModbusServer():
 	aftersend_msec(0),
 	sleepPause_usec(100),
 	onBroadcast(false),
-	crcNoCheckit(false)
+	crcNoCheckit(false),
+	cleanBeforeSend(false)
 {
 	tmProcessing.setTiming(replyTimeout_ms);
 }
@@ -1206,6 +1207,9 @@ ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessa
 // -------------------------------------------------------------------------
 mbErrCode ModbusServer::send( ModbusMessage& msg )
 {
+	if( cleanBeforeSend )
+		cleanupChannel();
+
 	mbErrCode ret = pre_send_request(msg);
 
 	if( ret!=erNoError )
