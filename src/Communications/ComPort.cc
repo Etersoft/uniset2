@@ -298,6 +298,7 @@ void ComPort::cleanupChannel()
 	if( fd < 0 )
 		return;
 
+/*
 	unsigned char tmpbuf[100];
 	int k = 0;
 	do
@@ -305,6 +306,18 @@ void ComPort::cleanupChannel()
 		k = ::read(fd,tmpbuf,sizeof(tmpbuf));
 	}
 	while( k>0 );
+*/
+	unsigned char tmpbuf[100];
+	int k = 0;
+	try
+	{
+		do
+		{
+			k = receiveBlock(tmpbuf,sizeof(tmpbuf));
+		}
+		while( k>0 );
+	}
+	catch(...){}
 
 // #warning Обнулять нельзя, может надо делать что-то интелектуальнее...
 //	curSym 		= 0;

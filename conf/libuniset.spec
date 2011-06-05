@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt36
+Release: alt37
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -207,6 +207,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Sun Jun 05 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt37
+- add cleanup before send for ComPort
+
 * Tue May 24 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt36
 - add 'node' param processing for uniset-codegen
 

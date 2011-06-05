@@ -22,6 +22,8 @@ class ModbusRTUSlaveSlot:
 		virtual ~ModbusRTUSlaveSlot();
 
 		virtual void sigterm( int signo );
+
+		inline ComPort* getComPort(){ return port; }
 	
 	protected:
 

@@ -51,6 +51,8 @@ class ModbusServer
 		inline void setBroadcastMode( bool set ){ onBroadcast = set; }
 		inline bool getBroadcastMode(){ return onBroadcast; }
 
+		inline void setCleanBeforeSend( bool set ){ cleanBeforeSend = set; }
+		inline bool getCleanBeforeSend(){ return cleanBeforeSend; }
 
 		/*! Вспомогательная функция реализующая обработку запроса на установку времени.
 			Основана на использовании gettimeofday и settimeofday.
@@ -209,6 +211,7 @@ class ModbusServer
 		timeout_t sleepPause_usec; 	/*!< пауза между попытками чтения символа из канала */
 		bool onBroadcast;		/*!< включен режим работы с broadcst-сообщениями */
 		bool crcNoCheckit;
+		bool cleanBeforeSend;
 
 		void printProcessingTime();
 		PassiveTimer tmProcessing;
