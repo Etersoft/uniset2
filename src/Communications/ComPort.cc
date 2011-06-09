@@ -309,6 +309,10 @@ void ComPort::cleanupChannel()
 */
 	unsigned char tmpbuf[100];
 	int k = 0;
+	bool old_waiting = waiting;
+	waiting = false;
+	int mask = fcntl(fd,F_GETFL);
+	fcntl(fd,F_SETFL,O_NONBLOCK);
 	try
 	{
 		do
@@ -319,9 +323,8 @@ void ComPort::cleanupChannel()
 	}
 	catch(...){}
 
-// #warning Обнулять нельзя, может надо делать что-то интелектуальнее...
-//	curSym 		= 0;
-//	bufLength 	= 0;
+	fcntl(fd,F_SETFL,mask);
+	waiting = old_waiting;
 }
 // --------------------------------------------------------------------------------
 void ComPort::setSpeed( std::string s )
