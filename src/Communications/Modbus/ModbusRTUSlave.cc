@@ -81,6 +81,7 @@ mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout
 			}
 
 //			dlog[Debug::WARN] << "(receive): " << mbErr2Str(res) << endl;
+//			cerr << "**** (receive): " << mbErr2Str(res) << endl;
 			usleep(10000);
 			return res;
 		}
