@@ -194,7 +194,8 @@ AC_CONFIG_FILES([Makefile
 				 extensions/UNet2/libUniSetUNet2.pc
 				 extensions/SharedMemory/Makefile
 				 extensions/SharedMemory/libUniSetSharedMemory.pc
-				 extensions/SharedMemoryPlus/Makefile])
+				 extensions/SharedMemoryPlus/Makefile
+				 extensions/tests/Makefile])
 				 
 AC_OUTPUT
 

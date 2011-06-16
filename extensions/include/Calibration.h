@@ -35,9 +35,10 @@ class Calibration
 		/*!
 			Получение калиброванного значения
 			\param raw - сырое значение
+			\param crop_raw - обрезать переданное значение по крайним точкам
 			\return Возвращает калиброванное
 		*/
-		long getValue( long raw );
+		long getValue( long raw, bool crop_raw=false );
 
 
 		/*!

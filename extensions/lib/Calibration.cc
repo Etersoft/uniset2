@@ -23,15 +23,11 @@ Calibration::Part::Part( Point& pleft, Point& pright ):
 	// вычисление коэффициента наклона (один раз в конструкторе)
 	// k = (y2-y1)/(x2-x1)
 	if( (p_right.y==0 && p_left.y==0) || (p_right.x==0 && p_left.x==0) )
-		k=0;
+		k = 0;
 	else 
 		k = ( p_right.y - p_left.y ) / ( p_right.x - p_left.x );
 }
 // ----------------------------------------------------------------------------
-// чтобы участки между собой не пересекались
-// нижняя граница (по x и y) 
-// не входит в диапазон
-// (т.е. как бы относится к предыдущему участку)
 bool Calibration::Part::check( Point& p )
 {
 	return ( checkX(p.x) && checkY(p.y) );
@@ -39,14 +35,14 @@ bool Calibration::Part::check( Point& p )
 
 bool Calibration::Part::checkX( TypeOfValue x )
 {
-	if( x <= p_left.x || x > p_right.x )
+	if( x < p_left.x || x > p_right.x )
 		return false;
 	return true;
 }
 
 bool Calibration::Part::checkY( TypeOfValue y )
 {
-	if( y <= p_left.y || y > p_right.y )
+	if( y < p_left.y || y > p_right.y )
 		return false;
 
 	return true;
@@ -58,6 +54,12 @@ Calibration::TypeOfValue Calibration::Part::getY( TypeOfValue x )
 	if( !checkX(x) )
 		return Calibration::outOfRange;
 
+	if( x == left_x() )
+		return left_y();
+	
+	if( x == right_x() )
+		return right_y();
+	
 	return calcY(x);
 }
 // ----------------------------------------------------------------------------
@@ -65,6 +67,12 @@ Calibration::TypeOfValue Calibration::Part::getX( TypeOfValue y )
 {
 	if( !checkY(y) )
 		return Calibration::outOfRange;
+	
+	if( y == left_y() )
+		return left_x();
+	
+	if( y == right_y() )
+		return right_x();
 	
 	return calcX(y);
 }
@@ -143,7 +151,7 @@ void Calibration::build( const string name, const string confile, xmlNode* root 
 			throw Exception(err.str());
 		}
 		
-		bool prev = true;
+		bool prev = false;
 		Point prev_point(0,0);
 		for(;it;it.goNext())
 		{
@@ -160,11 +168,20 @@ void Calibration::build( const string name, const string confile, xmlNode* root 
 //			cout << myname << "(Calibration::build):"
 //						<< "\tadd x=" << p.x << " y=" << p.y << endl;
 
-			Part pt(prev_point,p);
-			plist.push_back(pt);
+			if( prev )
+			{
+//				cout << myname << "(Calibration::build):"
+//						<< "\tadd x=" << p.x << " y=" << p.y
+//						<< " prev.x=" << prev_point.x
+//						<< " prev.y=" << prev_point.y
+//						<< endl;
+				Part pt(prev_point,p);
+				plist.push_back(pt);
+			}
+			else
+				prev = true;
 
 			prev_point = p;
-			prev = false;
 		}
 		
 		plist.sort();
@@ -176,14 +193,19 @@ void Calibration::build( const string name, const string confile, xmlNode* root 
 	}
 }
 // ----------------------------------------------------------------------------
-long Calibration::getValue( long raw )
+long Calibration::getValue( long raw, bool crop_raw )
 {
 	PartsList::iterator it=plist.begin();
 
-	// если l левее первого отрезка то берём первую точку...
-	if( raw < it->left_x() )
-		return it->left_x();
-
+	// если x левее первого отрезка то берём первую точку...
+	if( raw <= it->left_x() )
+	{
+		if( crop_raw )
+			return it->left_y();
+		
+		return it->calcY(raw);
+	}
+	
 	for( ; it!=plist.end(); ++it )
 	{
 		TypeOfValue q(it->getY(raw));
@@ -194,10 +216,11 @@ long Calibration::getValue( long raw )
 	// берём последний отрезок и вычисляем по нему...
 	it = plist.end();
 	it--;
+	
+	if( crop_raw && raw >= it->right_x() )
+		return it->right_y();
 
-	TypeOfValue q = it->calcY(raw);
-
-	return ( q<0 ) ? 0 : q;
+	return it->calcY(raw);
 }
 // ----------------------------------------------------------------------------
 long Calibration::getRawValue( long cal )
@@ -208,6 +231,7 @@ long Calibration::getRawValue( long cal )
 		if( q != outOfRange )
 			return tRound(q);
 	}
+	
 	return outOfRange;
 }
 // ----------------------------------------------------------------------------
@@ -216,7 +240,9 @@ std::ostream& operator<<( std::ostream& os, Calibration& c )
 	os << "*******************" << endl;
 	for( Calibration::PartsList::iterator it=c.plist.begin(); it!=c.plist.end(); ++it )
 	{
-		os << "[" << it->leftPoint().x << ": " << it->rightPoint().x << " ] --> " << it->leftPoint().y << endl;
+		os << "[" << it->leftPoint().x << " : " << it->rightPoint().x << " ] --> [" 
+			<< it->leftPoint().y  << " : " << it->rightPoint().y << " ]"
+			<< endl;
 	}
 	os << "*******************" << endl;
 	return os;
@@ -227,7 +253,9 @@ std::ostream& operator<<( std::ostream& os, Calibration* c )
 	os << "*******************" << endl;
 	for( Calibration::PartsList::iterator it=c->plist.begin(); it!=c->plist.end(); ++it )
 	{
-		os << "[" << it->leftPoint().x << ": " << it->rightPoint().x << " ] --> " << it->leftPoint().y << endl;
+		os << "[" << it->leftPoint().x << " : " << it->rightPoint().x << " ] --> [" 
+			<< it->leftPoint().y  << " : " << it->rightPoint().y << " ]"
+			<< endl;
 	}
 	os << "*******************" << endl;
 	

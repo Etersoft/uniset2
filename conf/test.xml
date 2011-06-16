@@ -175,4 +175,14 @@
 	</messages>
 	<!-- <xi:include href="testID.xml"/> -->
 	<!-- <xi:include href="testIDnon-exist.xml"/> -->
+	
+	<Calibrations name="Calibrations">
+		<diagram name="testcal">
+			<point x="-100" y="-60"/>
+			<point x="-50" y="-20"/>
+			<point x="0" y="0"/>
+			<point x="50" y="20"/>
+			<point x="100" y="60"/>
+		</diagram>
+	</Calibrations>
 </UNISETPLC>
