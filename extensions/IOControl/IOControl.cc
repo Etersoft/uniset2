@@ -71,7 +71,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		cards[i] = NULL;
 
 	buildCardsList();
-
+/*
 	for( unsigned int i=1; i<cards.size(); i++ )
 	{
 		stringstream s1;
@@ -127,7 +127,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 			}
 		}
 	}
-	
+*/
 
 
 	unideb[Debug::INFO] << myname << "(init): result numcards=" << cards.size() << endl;
