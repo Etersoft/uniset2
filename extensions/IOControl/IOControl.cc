@@ -1651,29 +1651,14 @@ void IOControl::buildCardsList()
 		else if( cname == "AO16-xx" )
 		{
 		}
-		else if( cname == "UNIO48" )
+		else if( cname == "UNIO48" || cname == "UNIO96" )
 		{
+			int k = 4;
+			if( cname == "UNIO48" )
+				k = 2;
+			
 			// инициализация subdev-ов
-			for( int i=0; i<2; i++ )
-			{
-				ostringstream s;
-				s << "subdev" << i;
-				ComediInterface::SubdevType st = ComediInterface::str2type( it.getProp(s.str()).c_str() );
- 				if( st == ComediInterface::Unknown )
-				{
-					ostringstream err;
-					err << "(buildCardsList): Unknown subdev (" << s.str() << ") type '" << it.getProp(s.str()) << "' for " << cname;
-					throw SystemError(err.str());
-				}
-				
-				unideb[Debug::INFO] << myname << "(buildCardsList): init subdev" << i << " " << it.getProp(s.str()) << endl;
-				//cards[lastnum]->configureSubdev(i-1,st);
-			}
-		}
-		else if( cname == "UNIO96" )
-		{
-			// инициализация subdev-ов
-			for( int i=1; i<=4; i++ )
+			for( int i=1; i<=k; i++ )
 			{
 				ostringstream s;
 				s << "subdev" << i;
