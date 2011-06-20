@@ -71,7 +71,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		cards[i] = NULL;
 
 	buildCardsList();
-/*
+
 	for( unsigned int i=1; i<cards.size(); i++ )
 	{
 		stringstream s1;
@@ -93,13 +93,14 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		else
 		{
 			noCards = false;
+			// if( cards[i] != NULL ) delete cards[i];
 			cards[i] = new ComediInterface(iodev);
 			cout << "card" << i << ": " << cards[i]->devname() << endl;
 		}
-		
+
 		if( cards[i] != NULL )
 		{
-			for( int s=0; s<4; s++ )
+			for( int s=1; s<=4; s++ )
 			{
 				stringstream t1;
 				t1 << s1.str() << "-subdev" << s << "-type";
@@ -118,20 +119,18 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 					if( !stype.empty() )
 					{
 						unideb[Debug::INFO] << myname 
-										<< "(init): card" << i 
+										<< "(init): card" << i
 										<< " subdev" << s << " set type " << stype << endl;
 
-						cards[i]->configureSubdev(s,st);
+						cards[i]->configureSubdev(s-1,st);
 					}
 				}
 			}
 		}
 	}
-*/
-
 
 	unideb[Debug::INFO] << myname << "(init): result numcards=" << cards.size() << endl;
-	
+
 	polltime = conf->getArgInt("--"+prefix+"-polltime",it.getProp("polltime"));
 	if( !polltime )
 		polltime = 100;
@@ -1659,22 +1658,22 @@ void IOControl::buildCardsList()
 			{
 				ostringstream s;
 				s << "subdev" << i;
-				ComediInterface::SubdevType st = ComediInterface::str2type( it.getProp(s.str()).c_str() );  
+				ComediInterface::SubdevType st = ComediInterface::str2type( it.getProp(s.str()).c_str() );
  				if( st == ComediInterface::Unknown )
 				{
 					ostringstream err;
-					err << "Unknown subdev type '" << it.getProp(s.str()) << " for " << cname;
+					err << "(buildCardsList): Unknown subdev (" << s.str() << ") type '" << it.getProp(s.str()) << "' for " << cname;
 					throw SystemError(err.str());
 				}
 				
 				unideb[Debug::INFO] << myname << "(buildCardsList): init subdev" << i << " " << it.getProp(s.str()) << endl;
-				cards[lastnum]->configureSubdev(i,st);
+				//cards[lastnum]->configureSubdev(i-1,st);
 			}
 		}
 		else if( cname == "UNIO96" )
 		{
 			// инициализация subdev-ов
-			for( int i=0; i<4; i++ )
+			for( int i=1; i<=4; i++ )
 			{
 				ostringstream s;
 				s << "subdev" << i;
@@ -1682,12 +1681,12 @@ void IOControl::buildCardsList()
  				if( st == ComediInterface::Unknown )
 				{
 					ostringstream err;
-					err << "Unknown subdev type '" << it.getProp(s.str()) << " for " << cname;
+					err << "(buildCardsList): Unknown subdev(" << s.str() << ") type '" << it.getProp(s.str()) << "' for " << cname;
 					throw SystemError(err.str());
 				}
 				
-				unideb[Debug::INFO] << myname << "(buildCardsList): init subdev" << i << " " << it.getProp(s.str()) << endl;				
-				cards[lastnum]->configureSubdev(i,st);
+				unideb[Debug::INFO] << myname << "(buildCardsList): init subdev" << i << " " << it.getProp(s.str()) << endl;
+				//cards[lastnum]->configureSubdev(i-1,st);
 			}
 		}
 	}
