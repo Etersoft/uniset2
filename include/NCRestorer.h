@@ -151,9 +151,7 @@ class NCRestorer_XML:
 		 */
 		void setDependsFilter( const std::string filterField, const std::string filterValue="" );
 
-		/*! Установить фильтр на чтение списка 'порогов')
-			\note Функцию необходимо вызывать до вызова buildDependsList(...)
-		 */
+		/*! Установить фильтр на чтение списка 'порогов' */
 		void setThresholdsFilter( const std::string filterField, const std::string filterValue="" );
 
 		bool setFileName( const std::string& file, bool create );

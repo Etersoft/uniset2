@@ -65,7 +65,13 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 
 	UniXML_iterator it(cnode);
 
+
 	noCards = true;
+	for( unsigned int i=1; i<cards.size(); i++ )
+		cards[i] = NULL;
+
+	buildCardsList();
+
 	for( unsigned int i=1; i<cards.size(); i++ )
 	{
 		stringstream s1;
@@ -76,11 +82,13 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		string iodev = conf->getArgParam(s1.str(),it.getProp(s2.str()));
 		if( iodev.empty() || iodev == "/dev/null" )
 		{
-			unideb[Debug::LEVEL3] << myname << "(init): КАРТА N" << i 
-								<< " ОТКЛЮЧЕНА (TestMode)!!! в КАЧЕСТВЕ УСТРОЙСТВА УКАЗАНО '" 
-								<< iodev << "'" << endl;
-			cards[i] = NULL;
-			cout << "******************** CARD" << i << ": IO IMITATOR MODE ****************" << endl;
+			if( cards[i] == NULL )
+			{
+				unideb[Debug::LEVEL3] << myname << "(init): КАРТА N" << i 
+									<< " ОТКЛЮЧЕНА (TestMode)!!! в КАЧЕСТВЕ УСТРОЙСТВА УКАЗАНО '" 
+									<< iodev << "'" << endl;
+				cout << "******************** CARD" << i << ": IO IMITATOR MODE ****************" << endl;
+			}
 		}
 		else
 		{
@@ -95,17 +103,15 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 			{
 				stringstream t1;
 				t1 << s1.str() << "-subdev" << s << "-type";
-				stringstream t2;
-				t2 << s2.str() << "-subdev" << s << "-type";
 				
-				string stype = conf->getArgParam(t1.str(),it.getProp(t2.str()));
+				string stype = conf->getArgParam(t1.str());
 				if( !stype.empty() )
 				{
 					ComediInterface::SubdevType st = ComediInterface::str2type(stype.c_str());
 					if( !stype.empty() && st == ComediInterface::Unknown )
 					{
 						ostringstream err;
-						err << "Unknown subdev type '" << stype << " for " << t1 << " OR " << t2;
+						err << "Unknown subdev type '" << stype << " for " << t1;
 						throw SystemError(err.str());
 					}
 					
@@ -122,7 +128,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		}
 	}
 	
-	buildCardsList();
+
 
 	unideb[Debug::INFO] << myname << "(init): result numcards=" << cards.size() << endl;
 	
