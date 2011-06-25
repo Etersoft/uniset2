@@ -344,16 +344,18 @@ void insn_config( comedi_t* card, int subdev, int channel, lsampl_t iotype, int 
 
 void insn_subdev_config( comedi_t* card, int subdev, lsampl_t type )
 {
-	lsampl_t cmd = 102;
+	lsampl_t data[2];
 	comedi_insn insn;
 	memset(&insn,0,sizeof(insn));
 	insn.insn = INSN_CONFIG;
-	insn.n = 1;
-	insn.data = &cmd;
-	insn.unused[0] = type;
+	insn.n = 2;
+	insn.data = data;
 	insn.subdev = subdev;
 	insn.chanspec = 0;
-	
+
+	data[0] = 102;
+	data[1] = type;
+
 	switch(type)
 	{
 		case 1:
@@ -375,7 +377,7 @@ void insn_subdev_config( comedi_t* card, int subdev, lsampl_t type )
 	
 	if( comedi_do_insn(card,&insn) < 0 )
 	{
-		fprintf(stderr, "can`t configure subdev subdev=%d type=%d. Err(%d): %s",subdev,type,errno,strerror(errno));
+		fprintf(stderr, "can`t configure subdev subdev=%d type=%d. Err(%d): %s\n",subdev,type,errno,strerror(errno));
 	  	exit(EXIT_FAILURE);
 	}
 }
