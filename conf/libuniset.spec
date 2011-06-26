@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt40
+Release: alt41
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -207,6 +207,10 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Sun Jun 26 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt41
+- fixed bug in ComediControl::cinfugureSubdev
+- and other minor fixes
+
 * Thu Jun 09 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt38
 - fied bug in ComPort::cleanupChannel()
 
