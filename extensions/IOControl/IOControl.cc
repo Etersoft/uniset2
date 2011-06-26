@@ -1671,7 +1671,7 @@ void IOControl::buildCardsList()
 				}
 				
 				unideb[Debug::INFO] << myname << "(buildCardsList): init subdev" << i << " " << it.getProp(s.str()) << endl;
-				//cards[lastnum]->configureSubdev(i-1,st);
+				cards[lastnum]->configureSubdev(i-1,st);
 			}
 		}
 	}

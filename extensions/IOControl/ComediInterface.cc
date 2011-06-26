@@ -134,23 +134,26 @@ void ComediInterface::configureChannel( int subdev, int channel, ChannelType t,
 	throw Exception(err.str());
 }
 // -----------------------------------------------------------------------------
-void ComediInterface::configureSubdev( int subdev, SubdevType t )	
+void ComediInterface::configureSubdev( int subdev, SubdevType type )
 								throw(UniSetTypes::Exception)
 {
-	lsampl_t cmd = 102;
+	lsampl_t data[2];
 	comedi_insn insn;
 	memset(&insn,0,sizeof(insn));
 	insn.insn = INSN_CONFIG;
-	insn.n = 1;
-	insn.data 		= &cmd;
-	insn.unused[0] 	= t;
+	insn.n = 2;
+	insn.data 	= data;
 	insn.subdev = subdev;
 	insn.chanspec = 0;
+
+	data[0] = 102;
+	data[1] = type;
+
 	if( comedi_do_insn(card,&insn) < 0 )
 	{
 		ostringstream err;
 		err << "(ComediInterface:configureSubdev): can`t configure subdev "
-			<< " subdev=" << subdev << " type=" << t;
+			<< " subdev=" << subdev << " type=" << type;
 		throw Exception(err.str());
 	}
 }
