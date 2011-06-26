@@ -131,6 +131,9 @@
 			<item default="6553604" iotype="AI" mb_vtype="U2" mbaddr="0x01" mbreg="0x14" mbtcp="2" mbtype="rtu" name="MB2_AS" priority="Medium" textname="Analog input"/>
 			<item default="65536045" iotype="AI" mb_vtype="F2" mbaddr="0x01" mbreg="0x17" mbtcp="2" mbtype="rtu" name="MB3_AS" priority="Medium" textname="Analog input"/>
 			<item iotype="AI" name="IOTestMode_AS" priority="Medium" textname="testmode for IOControl"/>
+			<item name="imitator_performance1" precision="6" textname="Производительность танка 1" iotype="AI" rs="mbslave" mbreg="43" mb_vtype="I2"/>
+			<item name="performance1" precision="6" noprecision="1" textname="Производительность танка 1" iotype="AI" rs="mbmaster" tcp_vtype="I2" tcp_mbtype="rtu"
+					 tcp_mbaddr="1" tcp_mbreg="43" tcp_mbfunc="0x04"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">
@@ -178,11 +181,13 @@
 
 	<Calibrations name="Calibrations">
 		<diagram name="testcal">
+			<point x="-200" y="-60"/>
 			<point x="-100" y="-60"/>
 			<point x="-50" y="-20"/>
 			<point x="0" y="0"/>
 			<point x="50" y="20"/>
 			<point x="100" y="60"/>
+			<point x="200" y="60"/>
 		</diagram>
 	</Calibrations>
 </UNISETPLC>
