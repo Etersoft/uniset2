@@ -510,12 +510,17 @@ askPause(conf->getPIntProp(cnode,"askPause",2000))
 
 <xsl:for-each select="//msgmap/item">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
-		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": Not found (Message)OID for (<xsl:value-of select="normalize-space(@name)"/>) " &lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>") &lt;&lt; endl;
+	{
+		if( !conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>").empty() )
+			throw Exception( myname + ": Not found Message::NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
+	}
+	
 	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": Not found (Message)NodeID for node=(<xsl:value-of select="normalize-space(@node)"/>)" &lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@node)"/>") 
-			&lt;&lt; ". Use localNode=" &lt;&lt; conf->getLocalNode()
-			&lt;&lt; endl;
+		if( !conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>").empty() )
+			throw Exception( myname + ": Not found Message::NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
+
+			node_<xsl:value-of select="normalize-space(@name)"/> = conf->getLocalNode();
 	}
 </xsl:for-each>
 

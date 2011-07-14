@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt41
+Release: alt42
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -207,6 +207,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Thu Jul 14 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt42
+- fixed bug in uniset-codegen
+
 * Sun Jun 26 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt41
 - fixed bug in ComediControl::cinfugureSubdev
 - and other minor fixes
