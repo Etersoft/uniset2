@@ -218,10 +218,12 @@
 		int activateTimeout;	/*!&lt; время ожидания готовности UniSetObject к работе */
 		PassiveTimer ptStartUpTimeout;	/*!&lt; время на блокировку обработки WatchDog, если недавно был StartUp */
 		int askPause; /*!&lt; пауза между неудачными попытками заказать датчики */
+		
+		IOController_i::SensorInfo si;
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PRIVATE">
-		IOController_i::SensorInfo si;
+
 </xsl:template>
 
 <xsl:template name="COMMON-CC-FILE">
