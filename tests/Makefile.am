@@ -4,7 +4,7 @@
 
 SUBDIRS=JrnTests
 
-noinst_PROGRAMS 		= passivetimer unixml ui umutex conftest iterator_test sscanf_hex
+noinst_PROGRAMS 		= passivetimer unixml ui umutex conftest iterator_test sscanf_hex calibration
 
 passivetimer_SOURCES 	= passivetimer.cc
 passivetimer_LDADD 		= $(top_builddir)/lib/libUniSet.la
@@ -31,6 +31,10 @@ conftest_LDADD 	= $(top_builddir)/lib/libUniSet.la
 conftest_CPPFLAGS	= -I$(top_builddir)/include
 
 sscanf_hex_SOURCES 	= sscanf_hex.cc
+
+calibration_SOURCES = calibration.cc
+calibration_LDADD 	= $(top_builddir)/lib/libUniSet.la ${SIGC_LIBS}
+calibration_CPPFLAGS	= -I$(top_builddir)/include ${SIGC_CFLAGS}
 
 
 include $(top_builddir)/conf/setting.mk
