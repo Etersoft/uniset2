@@ -328,6 +328,7 @@ void IOControl::execute()
 	{
 		try
 		{
+		
 			if( !noCards )
 			{
 				check_testmode();
@@ -443,6 +444,8 @@ void IOControl::iopoll()
 // --------------------------------------------------------------------------------
 void IOControl::ioread( IOInfo* it )
 {
+//	cout  << conf->oind->getMapName(it->si.id)  << " ignore=" << it->ignore << " ncard=" << it->ncard << endl;
+
 	if( it->ignore || it->ncard == defCardNum )
 		return;
 
@@ -1588,10 +1591,13 @@ void IOControl::buildCardsList()
 		return;
 	}
 		
-	xmlNode* cnode = xml->findNode(mynode,"iocards","");
+	//xmlNode* cnode = xml->findNode(mynode,"iocards","");
+	//xmlNode* extFindNode(xmlNode* node, int depth, int width, const std::string searchnode, const std::string name = "", bool top=true ); 
+	xmlNode* cnode = xml->extFindNode(mynode,1,1,"iocards","");
+	
 	if( !cnode )
 	{
-		unideb[Debug::WARN] << myname << "(buildCardsList): <iocards> not found.." << endl;
+		unideb[Debug::WARN] << myname << "(buildCardsList): Not found <iocards> for node=" << conf->getLocalNodeName() << "(" << conf->getLocalNode() << ")" << endl;
 		return;
 	}
 	
