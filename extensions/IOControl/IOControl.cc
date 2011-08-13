@@ -65,7 +65,6 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 
 	UniXML_iterator it(cnode);
 
-
 	noCards = true;
 	for( unsigned int i=1; i<cards.size(); i++ )
 		cards[i] = NULL;
@@ -79,13 +78,14 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		stringstream s2;
 		s2 << "iodev" << i;
 
+
 		string iodev = conf->getArgParam(s1.str(),it.getProp(s2.str()));
 		if( iodev.empty() || iodev == "/dev/null" )
 		{
 			if( cards[i] == NULL )
 			{
-				unideb[Debug::LEVEL3] << myname << "(init): КАРТА N" << i
-									<< " ОТКЛЮЧЕНА (TestMode)!!! в КАЧЕСТВЕ УСТРОЙСТВА УКАЗАНО '"
+				unideb[Debug::LEVEL3] << myname << "(init): Card N" << i
+									<< " DISABLE (TestMode)!!! dev='"
 									<< iodev << "'" << endl;
 				cout << "******************** CARD" << i << ": IO IMITATOR MODE ****************" << endl;
 			}
@@ -1619,21 +1619,42 @@ void IOControl::buildCardsList()
 	{
 		// резервируем место (память)..
 		if( lastnum+1 >= cards.size() )
-			cards.resize(lastnum+5); 
+			cards.resize(lastnum+5);
+
+		std::string cname(it.getProp("name"));
+
+		if( it.getIntProp("ignore") )
+		{
+			cards[lastnum] = NULL;
+			unideb[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
+								<< " DISABLED! ignore=1" << endl;
+			continue;
+		}
+
+		stringstream s;
+		s << "--" << prefix << "-card" << lastnum << "-ignore";
+
+		if( findArgParam( s.str(), conf->getArgc(), conf->getArgv()) != -1 )
+		{
+			cards[lastnum] = NULL;
+			unideb[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
+								<< " DISABLE! (" << s.str() << ")" << endl;
+			continue;
+		}
 
 		std::string iodev(it.getProp("dev"));
 
 		if( iodev.empty() || iodev == "/dev/null" )
 		{
 			cards[lastnum] = NULL;
-			unideb[Debug::LEVEL3] << myname << "(init): Card N" << lastnum
+			unideb[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
 								<< " DISABLED (TestMode)!!! iodev='"
 								<< iodev << "'" << endl;
-			cout << "******************** CARD" << lastnum << ": IO IMITATOR MODE ****************" << endl;
+			cout << "******************** CARD" << lastnum << ": DISABLE!" << endl;
 			continue;
 		}
 
-		std::string cname(it.getProp("name"));
+
 
 		try
 		{
@@ -1672,11 +1693,14 @@ void IOControl::buildCardsList()
  				if( st == ComediInterface::Unknown )
 				{
 					ostringstream err;
-					err << "(buildCardsList): Unknown subdev(" << s.str() << ") type '" << it.getProp(s.str()) << "' for " << cname;
+					err << "(buildCardsList): card=" << it.getProp("card") << "(" << cname
+						<< " Unknown subdev(" << s.str() << ") type '" << it.getProp(s.str()) << "' for " << cname;
 					throw SystemError(err.str());
 				}
 				
-				unideb[Debug::INFO] << myname << "(buildCardsList): init subdev" << i << " " << it.getProp(s.str()) << endl;
+				unideb[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card")
+						<< "(" << cname << ")"
+						<< " init subdev" << i << " " << it.getProp(s.str()) << endl;
 				cards[lastnum]->configureSubdev(i-1,st);
 			}
 		}
