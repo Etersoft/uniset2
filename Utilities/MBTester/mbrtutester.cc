@@ -111,9 +111,9 @@ int main( int argc, char **argv )
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:w:z:m:r:x:c:b:d:s:t:qn:u:yl:",longopts,&optindex)) != -1 )
+		while( (opt = getopt_long(argc, argv, "hva:w:z:m:r:x:c:b:d:s:t:qn:u:yl:t:",longopts,&optindex)) != -1 )
 		{
-			switch (opt) 
+			switch (opt)
 			{
 				case 'h':
 					print_help();	
