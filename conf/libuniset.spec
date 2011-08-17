@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt42
+Release: alt43
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
