@@ -82,22 +82,22 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		s2 << "iodev" << i;
 
 		string iodev = conf->getArgParam(s1.str(),it.getProp(s2.str()));
-		if( iodev.empty() || iodev == "/dev/null" )
+		if( iodev.empty() )
+			continue;
+			
+		if( iodev == "/dev/null" )
 		{
 			if( cards[i] == NULL )
 			{
 				unideb[Debug::LEVEL3] << myname << "(init): Card N" << i 
-									<< " DISABLE (TestMode)!!! dev='" 
+									<< " DISABLED! dev='" 
 									<< iodev << "'" << endl;
-				cout << "******************** CARD" << i << ": IO IMITATOR MODE ****************" << endl;
 			}
 		}
 		else
 		{
 			noCards = false;
-			// if( cards[i] != NULL ) delete cards[i];
 			cards[i] = new ComediInterface(iodev);
-//			cout << "card" << i << ": " << cards[i]->devname() << endl;
 			unideb[Debug::LEVEL3] << myname << "(init): ADD card" << i  << " dev=" << iodev << endl;
 		}
 
@@ -1611,7 +1611,7 @@ void IOControl::buildCardsList()
 		return;
 	}
 
-	for( int i=0; i<cards.size(); i++ )
+	for( size_t i=0; i<cards.size(); i++ )
 	{
 		if( cards[i] == 0 )
 			break;
@@ -1651,7 +1651,7 @@ void IOControl::buildCardsList()
 		{
 			cards[cardnum] = NULL;
 			unideb[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")" 
-								<< " DISABLE! (" << s.str() << ")" << endl;
+								<< " DISABLED! (" << s.str() << ")" << endl;
 			continue;			
 		}
 
@@ -1661,9 +1661,8 @@ void IOControl::buildCardsList()
 		{
 			cards[cardnum] = NULL;
 			unideb[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")" 
-								<< " DISABLED (TestMode)!!! iodev='" 
+								<< " DISABLED! iodev='" 
 								<< iodev << "'" << endl;
-			cout << "******************** CARD" << cardnum << ": DISABLE!" << endl;
 			continue;
 		}
 
