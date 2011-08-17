@@ -95,7 +95,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 			noCards = false;
 			// if( cards[i] != NULL ) delete cards[i];
 			cards[i] = new ComediInterface(iodev);
-			cout << "card" << i << ": " << cards[i]->devname() << endl;
+//			cout << "card" << i << ": " << cards[i]->devname() << endl;
+			unideb[Debug::LEVEL3] << myname << "(init): ADD card" << i  << " dev=" << iodev << endl;
 		}
 
 		if( cards[i] != NULL )
@@ -1655,6 +1656,8 @@ void IOControl::buildCardsList()
 		}
 
 
+
+		unideb[Debug::LEVEL3] << myname << "(init): ADD card=" << it.getProp("card") << "(" << cname << ")"  << " dev=" << iodev << endl;
 
 		try
 		{
