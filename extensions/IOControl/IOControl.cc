@@ -26,7 +26,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 						SharedMemory* ic, int numcards, const std::string prefix_ ):
 	UniSetObject(id),
 	polltime(150),
-	cards(numcards+1),
+	cards(11),
 	noCards(true),
 	iomap(100),
 	maxItem(0),
@@ -42,6 +42,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	sidHeartBeat(UniSetTypes::DefaultObjectId),
 	force(false),
 	force_out(false),
+	maxCardNum(10),
 	activated(false),
 	readconf_ok(false),
 	term(false),
@@ -60,6 +61,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		throw SystemError("Not find conf-node " + cname + " for " + myname);
 
 	defCardNum = conf->getArgInt("--"+prefix+"-default-cardnum","-1");
+	maxCardNum = conf->getArgInt("--"+prefix+"-max-cardnum","10");
+	cards.resize(maxCardNum+1);
 
 	unideb[Debug::INFO] << myname << "(init): numcards=" << numcards << endl;
 
@@ -77,7 +80,6 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		s1 << "--" << prefix << "-dev" << i;
 		stringstream s2;
 		s2 << "iodev" << i;
-
 
 		string iodev = conf->getArgParam(s1.str(),it.getProp(s2.str()));
 		if( iodev.empty() || iodev == "/dev/null" )
@@ -1609,35 +1611,45 @@ void IOControl::buildCardsList()
 		return;
 	}
 
-	size_t lastnum = 1;
-	for( ; lastnum<cards.size(); lastnum++ )
+	for( int i=0; i<cards.size(); i++ )
 	{
-		if( cards[lastnum] == 0 )
+		if( cards[i] == 0 )
 			break;
 	}
 
-	for( ; it.getCurrent(); it.goNext(),lastnum++ )
+	for( ; it.getCurrent(); it.goNext() )
 	{
-		// резервируем место (память)..
-		if( lastnum+1 >= cards.size() )
-			cards.resize(lastnum+5); 
-
 		std::string cname(it.getProp("name"));
+		
+		int cardnum = it.getIntProp("card");
+		
+		if( cardnum <=0 )
+		{
+			unideb[Debug::LEVEL3] << myname << "(init): Unknown card number?!  card=" << it.getIntProp("card") << "(" << cname << ")" << endl;
+			continue;
+		
+		}
 
+		if( cardnum > maxCardNum )
+		{
+			unideb[Debug::LEVEL3] << myname << "(init): BAD card number card='" << it.getIntProp("card") << "'(" << cname << "). Must be < " << maxCardNum << endl;
+			continue;
+		}
+		
 		if( it.getIntProp("ignore") )
 		{
-			cards[lastnum] = NULL;
+			cards[cardnum] = NULL;
 			unideb[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")" 
 								<< " DISABLED! ignore=1" << endl;
 			continue;
 		}
 
 		stringstream s;
-		s << "--" << prefix << "-card" << lastnum << "-ignore";
+		s << "--" << prefix << "-card" << cardnum << "-ignore";
 		
 		if( findArgParam( s.str(), conf->getArgc(), conf->getArgv()) != -1 ) 
 		{
-			cards[lastnum] = NULL;
+			cards[cardnum] = NULL;
 			unideb[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")" 
 								<< " DISABLE! (" << s.str() << ")" << endl;
 			continue;			
@@ -1647,11 +1659,11 @@ void IOControl::buildCardsList()
 
 		if( iodev.empty() || iodev == "/dev/null" )
 		{
-			cards[lastnum] = NULL;
+			cards[cardnum] = NULL;
 			unideb[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")" 
 								<< " DISABLED (TestMode)!!! iodev='" 
 								<< iodev << "'" << endl;
-			cout << "******************** CARD" << lastnum << ": DISABLE!" << endl;
+			cout << "******************** CARD" << cardnum << ": DISABLE!" << endl;
 			continue;
 		}
 
@@ -1659,7 +1671,7 @@ void IOControl::buildCardsList()
 
 		try
 		{
-			cards[lastnum] = new ComediInterface(iodev);
+			cards[cardnum] = new ComediInterface(iodev);
 			noCards = false;
 		}
 		catch( Exception& ex )
@@ -1700,12 +1712,9 @@ void IOControl::buildCardsList()
 				unideb[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card") 
 						<< "(" << cname << ")"
 						<< " init subdev" << i << " " << it.getProp(s.str()) << endl;
-				cards[lastnum]->configureSubdev(i-1,st);
+				cards[cardnum]->configureSubdev(i-1,st);
 			}
 		}
 	}
-
-	// освобождаем неиспользуемое место (память)
-	cards.resize(lastnum); 
 }
 // -----------------------------------------------------------------------------

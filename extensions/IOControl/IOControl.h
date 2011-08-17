@@ -363,6 +363,7 @@ class IOControl:
 		bool force_out;		/*!< флаг, включающий принудительное чтения выходов */
 		int smReadyTimeout; 	/*!< время ожидания готовности SM к работе, мсек */
 		int defCardNum;		/*!< номер карты по умолчанию */
+		int maxCardNum;		/*! максимально разрешённый номер для карты */
 		
 		UniSetTypes::uniset_mutex iopollMutex;
 		bool activated;
