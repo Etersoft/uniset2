@@ -33,6 +33,7 @@ static struct option longopts[] = {
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
+
 enum Command
 {
 	cmdNOP,
@@ -66,7 +67,7 @@ int main(int argc, char* argv[])
 	
 	memset(chan,-1,sizeof(chan));
 
-	while( (opt = getopt_long(argc, argv, "habr:w:i:o:s:d:c:p:m:q:",longopts,&optindex)) != -1 ) 
+	while( (opt = getopt_long(argc, argv, "habvr:w:i:o:s:d:c:p:m:q:x:z:",longopts,&optindex)) != -1 ) 	
 	{
 		switch (opt) 
 		{
