@@ -277,9 +277,9 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
 	else
 	{
 		inf.priority = Message::Medium;
-		if( unideb.debugging(Debug::WARN) )
+		if( unideb.debugging(Debug::INFO) )
 		{
-			unideb[Debug::WARN] << "(NCRestorer_XML:getSensorInfo): не указан приоритет для " 
+			unideb[Debug::INFO] << "(NCRestorer_XML:getSensorInfo): не указан приоритет для "
 				<< xml.getProp(it,"name") << endl;
 		}
 	}
