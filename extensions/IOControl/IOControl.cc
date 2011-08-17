@@ -1655,8 +1655,6 @@ void IOControl::buildCardsList()
 			continue;
 		}
 
-
-
 		unideb[Debug::LEVEL3] << myname << "(init): ADD card=" << it.getProp("card") << "(" << cname << ")"  << " dev=" << iodev << endl;
 
 		try
@@ -1670,8 +1668,6 @@ void IOControl::buildCardsList()
 			throw;
 		}
 
-		unideb[Debug::INFO] << myname << "(buildCardsList): card" << lastnum << "  name=" << cname << endl;
-		
 		if( cname == "DI32" )
 		{
 		}			
