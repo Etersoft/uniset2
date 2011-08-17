@@ -34,6 +34,7 @@ int ComediInterface::getAnalogChannel( int subdev, int channel, int range, int a
 		ostringstream err;
 		err << "(ComediInterface:getAnalogChannel): can`t read data from subdev=" << subdev
 			<< " channel=" << channel << " range=" << range <<" aref="<< aref
+			<< " dev=" << dname
 			<< " err: " << ret << " (" << strerror(ret) << ")";
 		throw Exception(err.str());
 	}
@@ -49,7 +50,8 @@ void ComediInterface::setAnalogChannel( int subdev, int channel, int data, int r
 		ostringstream err;
 		err << "(ComediInterface:setAnalogChannel): can`t write data=" << data 
 			<< " TO subdev=" << subdev
-			<< " channel=" << channel << " range=" << range;
+			<< " channel=" << channel << " range=" << range
+			<< " dev=" << dname;
 		throw Exception(err.str());
 	}
 }
@@ -62,7 +64,7 @@ bool ComediInterface::getDigitalChannel( int subdev, int channel ) throw(UniSetT
 	{
 		ostringstream err;
 		err << "(ComediInterface:getDigitalChannel): can`t read bit from subdev=" << subdev
-			<< " channel=" << channel;
+			<< " channel=" << channel << " dev=" << dname;
 		throw Exception(err.str());
 	}
 
@@ -76,7 +78,7 @@ void ComediInterface::setDigitalChannel( int subdev, int channel, bool bit )
 	{
 		ostringstream err;
 		err << "(ComediInterface:setDigitalChannel): can`t write bit=" << bit
-			<< " TO subdev=" << subdev << " channel=" << channel;
+			<< " TO subdev=" << subdev << " channel=" << channel << " dev=" << dname;
 		throw Exception(err.str());
 	}
 }
@@ -94,7 +96,8 @@ void ComediInterface::configureChannel( int subdev, int channel, ChannelType t,
 			{
 				ostringstream err;
 				err << "(ComediInterface:configureChannel): can`t configure (DIO) "
-					<< " subdev=" << subdev << " channel=" << channel << " type=" << t;
+					<< " subdev=" << subdev << " channel=" << channel << " type=" << t
+					<< " dev=" << dname;
 				throw Exception(err.str());
 			}
 
@@ -117,7 +120,8 @@ void ComediInterface::configureChannel( int subdev, int channel, ChannelType t,
 			{
 				ostringstream err;
 				err << "(ComediInterface:configureChannel): can`t configure (AIO) "
-					<< " subdev=" << subdev << " channel=" << channel << " type=" << t;
+					<< " subdev=" << subdev << " channel=" << channel << " type=" << t
+					<< " dev=" << dname;
 				throw Exception(err.str());
 			}
 			return;
@@ -130,7 +134,8 @@ void ComediInterface::configureChannel( int subdev, int channel, ChannelType t,
 	
 	ostringstream err;
 	err << "(ComediInterface:configureChannel): can`t configure (DIO) "
-		<< " subdev=" << subdev << " channel=" << channel << " type=" << t;
+		<< " subdev=" << subdev << " channel=" << channel << " type=" << t
+		<< " dev=" << dname;
 	throw Exception(err.str());
 }
 // -----------------------------------------------------------------------------
@@ -153,7 +158,8 @@ void ComediInterface::configureSubdev( int subdev, SubdevType type )
 	{
 		ostringstream err;
 		err << "(ComediInterface:configureSubdev): can`t configure subdev "
-			<< " subdev=" << subdev << " type=" << type;
+			<< " subdev=" << subdev << " type=" << type
+			<< " dev=" << dname;
 		throw Exception(err.str());
 	}
 }
