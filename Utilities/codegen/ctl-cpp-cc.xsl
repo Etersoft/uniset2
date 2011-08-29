@@ -222,18 +222,18 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 	{
 <xsl:choose>
 	<xsl:when test="normalize-space(@iotype)='DI'">
-		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getState(<xsl:value-of select="@name"/>);
+		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getState(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='AI'">
-		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getValue(<xsl:value-of select="@name"/>);
+		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getValue(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
 	</xsl:when>
 </xsl:choose>
 <xsl:choose>
 	<xsl:when test="normalize-space(@iotype)='DO'">
-		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getState(<xsl:value-of select="@name"/>);
+		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getState(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='AO'">
-		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getValue(<xsl:value-of select="@name"/>);
+		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getValue(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
 	</xsl:when>
 </xsl:choose>
 	}
