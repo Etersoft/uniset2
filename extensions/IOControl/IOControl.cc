@@ -1699,7 +1699,15 @@ void IOControl::buildCardsList()
 			{
 				ostringstream s;
 				s << "subdev" << i;
-				ComediInterface::SubdevType st = ComediInterface::str2type( it.getProp(s.str()).c_str() );  
+				
+				string subdev_name( it.getProp(s.str()) );
+				if( subdev_name.empty() )
+				{
+					unideb[Debug::INFO] << myname << "(buidCardList): empty subdev. ignore... (" << s.str() << ")" << endl;
+					continue;
+				}
+				
+				ComediInterface::SubdevType st = ComediInterface::str2type(subdev_name);  
  				if( st == ComediInterface::Unknown )
 				{
 					ostringstream err;
