@@ -1,4 +1,4 @@
-#include <sstream>
+#include <sstream>           
 #include "ORepHelpers.h"
 #include "UniSetTypes.h"
 #include "Extensions.h"
@@ -64,7 +64,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	maxCardNum = conf->getArgInt("--"+prefix+"-max-cardnum","10");
 	cards.resize(maxCardNum+1);
 
-	unideb[Debug::INFO] << myname << "(init): numcards=" << numcards << endl;
+	dlog[Debug::INFO] << myname << "(init): numcards=" << numcards << endl;
 
 	UniXML_iterator it(cnode);
 
@@ -89,7 +89,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		{
 			if( cards[i] == NULL )
 			{
-				unideb[Debug::LEVEL3] << myname << "(init): Card N" << i 
+				dlog[Debug::LEVEL3] << myname << "(init): Card N" << i 
 									<< " DISABLED! dev='" 
 									<< iodev << "'" << endl;
 			}
@@ -98,7 +98,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		{
 			noCards = false;
 			cards[i] = new ComediInterface(iodev);
-			unideb[Debug::LEVEL3] << myname << "(init): ADD card" << i  << " dev=" << iodev << endl;
+			dlog[Debug::LEVEL3] << myname << "(init): ADD card" << i  << " dev=" << iodev << endl;
 		}
 
 		if( cards[i] != NULL )
@@ -121,7 +121,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 					
 					if( !stype.empty() )
 					{
-						unideb[Debug::INFO] << myname 
+						dlog[Debug::INFO] << myname 
 										<< "(init): card" << i 
 										<< " subdev" << s << " set type " << stype << endl;
 
@@ -132,7 +132,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		}
 	}
 
-	unideb[Debug::INFO] << myname << "(init): result numcards=" << cards.size() << endl;
+	dlog[Debug::INFO] << myname << "(init): result numcards=" << cards.size() << endl;
 	
 	polltime = conf->getArgInt("--"+prefix+"-polltime",it.getProp("polltime"));
 	if( !polltime )
@@ -153,11 +153,11 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		{
 			ostringstream err;
 			err << myname << ": Unkown ID for " << testlamp;
-			unideb[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 	
-		unideb[Debug::INFO] << myname << "(init): testLamp_S='" << testlamp << "'" << endl;
+		dlog[Debug::INFO] << myname << "(init): testLamp_S='" << testlamp << "'" << endl;
 	}
 
 	string tmode = conf->getArgParam("--"+prefix+"-test-mode",it.getProp("testmode_as"));
@@ -168,11 +168,11 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		{
 			ostringstream err;
 			err << myname << ": Unknown ID for " << tmode;
-			unideb[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
-		unideb[Debug::INFO] << myname << "(init): testMode_as='" << testmode << "'" << endl;
+		dlog[Debug::INFO] << myname << "(init): testMode_as='" << testmode << "'" << endl;
 	}
 
 	shm = new SMInterface(icID,&ui,myid,ic);
@@ -181,7 +181,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	s_field = conf->getArgParam("--"+prefix+"-s-filter-field");
 	s_fvalue = conf->getArgParam("--"+prefix+"-s-filter-value");
 
-	unideb[Debug::INFO] << myname << "(init): read s_field='" << s_field
+	dlog[Debug::INFO] << myname << "(init): read s_field='" << s_field
 						<< "' s_fvalue='" << s_fvalue << "'" << endl;
 
 	int blink_msec = conf->getArgPInt("--"+prefix+"-blink-time",it.getProp("blink-time"), 300);
@@ -205,12 +205,12 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	if( sidTestSMReady == DefaultObjectId )
 	{
 		sidTestSMReady = conf->getSensorID("TestMode_S");
-		unideb[Debug::WARN] << myname 
+		dlog[Debug::WARN] << myname 
 				<< "(init): Unknown ID for sm-ready-test-sid (--" << prefix << "-sm-ready-test-sid)."
 				<< " Use 'TestMode_S'" << endl;
 	}
 	else
-		unideb[Debug::INFO] << myname << "(init): test-sid: " << sm_ready_sid << endl;
+		dlog[Debug::INFO] << myname << "(init): test-sid: " << sm_ready_sid << endl;
 
 
 	// -----------------------
@@ -222,7 +222,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		{
 			ostringstream err;
 			err << myname << ": Not found ID for 'HeartBeat' " << heart;
-			unideb[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
@@ -284,7 +284,7 @@ void IOControl::execute()
 	}
 	
 	maxHalf = maxItem / 2;
-	unideb[Debug::INFO] << myname << "(init): iomap size = " << iomap.size() << endl;
+	dlog[Debug::INFO] << myname << "(init): iomap size = " << iomap.size() << endl;
 
 	cerr << myname << "(iomap size): " << iomap.size() << endl;
 
@@ -312,7 +312,7 @@ void IOControl::execute()
 	}
 			
 	if( !activated )
-		unideb[Debug::CRIT] << myname << "(execute): ************* don`t activate?! ************" << endl;
+		dlog[Debug::CRIT] << myname << "(execute): ************* don`t activate?! ************" << endl;
 
 	try
 	{
@@ -379,16 +379,16 @@ void IOControl::execute()
 		}
 		catch( Exception& ex )
 		{
-			unideb[Debug::LEVEL3] << myname << "(execute): " << ex << endl;
+			dlog[Debug::LEVEL3] << myname << "(execute): " << ex << endl;
 		}
 		catch(CORBA::SystemException& ex)
 		{
-			unideb[Debug::LEVEL3] << myname << "(execute): CORBA::SystemException: "
+			dlog[Debug::LEVEL3] << myname << "(execute): CORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			unideb[Debug::LEVEL3] << myname << "(execute): catch ..." << endl;
+			dlog[Debug::LEVEL3] << myname << "(execute): catch ..." << endl;
 		}
 		
 		if( term )
@@ -502,7 +502,7 @@ void IOControl::ioread( IOInfo* it )
 /*
 				if( unideb.debugging(Debug::LEVEL3) )
 				{
-					unideb[Debug::LEVEL3] << myname << "(iopoll): read AI "
+					dlog[Debug::LEVEL3] << myname << "(iopoll): read AI "
 						<< " sid=" << it->si.id 
 						<< " subdev=" << it->subdev 
 						<< " chan=" << it->channel
@@ -518,7 +518,7 @@ void IOControl::ioread( IOInfo* it )
 /*
 				if( unideb.debugging(Debug::LEVEL3) )
 				{
-					unideb[Debug::LEVEL3] << myname << "(iopoll): read DI "
+					dlog[Debug::LEVEL3] << myname << "(iopoll): read DI "
 						<< " sid=" << it->si.id 
 						<< " subdev=" << it->subdev 
 						<< " chan=" << it->channel
@@ -640,28 +640,28 @@ void IOControl::ioread( IOInfo* it )
 		}
 		catch(IOController_i::NameNotFound &ex)
 		{
-			unideb[Debug::LEVEL3] << myname << "(iopoll):(NameNotFound) " << ex.err << endl;
+			dlog[Debug::LEVEL3] << myname << "(iopoll):(NameNotFound) " << ex.err << endl;
 		}
 		catch(IOController_i::IOBadParam& ex )
 		{
-			unideb[Debug::LEVEL3] << myname << "(iopoll):(IOBadParam) " << ex.err << endl;
+			dlog[Debug::LEVEL3] << myname << "(iopoll):(IOBadParam) " << ex.err << endl;
 		}
 		catch(IONotifyController_i::BadRange )
 		{
-			unideb[Debug::LEVEL3] << myname << "(iopoll): (BadRange)..." << endl;
+			dlog[Debug::LEVEL3] << myname << "(iopoll): (BadRange)..." << endl;
 		}
 		catch( Exception& ex )
 		{
-			unideb[Debug::LEVEL3] << myname << "(iopoll): " << ex << endl;
+			dlog[Debug::LEVEL3] << myname << "(iopoll): " << ex << endl;
 		}
 		catch(CORBA::SystemException& ex)
 		{
-			unideb[Debug::LEVEL3] << myname << "(iopoll): СORBA::SystemException: "
+			dlog[Debug::LEVEL3] << myname << "(iopoll): СORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			unideb[Debug::LEVEL3] << myname << "(iopoll): catch ..." << endl;
+			dlog[Debug::LEVEL3] << myname << "(iopoll): catch ..." << endl;
 		}
 	
 }
@@ -729,7 +729,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 
 	if( c.empty() || inf.ncard < 0 || inf.ncard >= (int)cards.size() )
 	{
-		unideb[Debug::LEVEL3] << myname 
+		dlog[Debug::LEVEL3] << myname 
 							<< "(initIOItem): Unknown or bad card number (" 
 							<< inf.ncard << ") for " << it.getProp("name") 
 							<< " set default=" << defCardNum << endl;
@@ -761,7 +761,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	inf.channel = it.getIntProp("channel");
 	if( inf.channel < 0 || inf.channel > 32 )
 	{
-		unideb[Debug::WARN] << myname << "(readItem): Unknown channel: " << inf.channel
+		dlog[Debug::WARN] << myname << "(readItem): Unknown channel: " << inf.channel
 							<< " for " << it.getProp("name") << endl;
 		return false;
 	}
@@ -781,7 +781,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 		inf.range = it.getIntProp("range");
 		if( inf.range < 0 || inf.range > 3 )
 		{
-			unideb[Debug::CRIT] << myname << "(readItem): Unknown 'range': " << inf.range
+			dlog[Debug::CRIT] << myname << "(readItem): Unknown 'range': " << inf.range
 							<< " for " << it.getProp("name") 
 							<< " Must be range=[0..3]" << endl;
 			return false;
@@ -790,7 +790,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 		inf.aref = it.getIntProp("aref");
 		if( inf.aref < 0 || inf.aref > 3 )
 		{
-			unideb[Debug::CRIT] << myname << "(readItem): Unknown 'aref': " << inf.aref
+			dlog[Debug::CRIT] << myname << "(readItem): Unknown 'aref': " << inf.aref
 							<< " for " << it.getProp("name")
 							<< ". Must be aref=[0..3]" << endl;
 			return false;
@@ -798,7 +798,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	}
 
 	if( unideb.debugging(Debug::LEVEL3) )
-		unideb[Debug::LEVEL3] << myname << "(readItem): add: " << inf.stype << " " << inf << endl;
+		dlog[Debug::LEVEL3] << myname << "(readItem): add: " << inf.stype << " " << inf << endl;
 
 	// если вектор уже заполнен
 	// то увеличиваем его на 10 элементов (с запасом)
@@ -812,7 +812,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	{
 		IOPriority p(prior,maxItem);
 		pmap.push_back(p);
-		unideb[Debug::LEVEL3] << myname << "(readItem): add to priority list: " << 
+		dlog[Debug::LEVEL3] << myname << "(readItem): add to priority list: " << 
 						it.getProp("name") 
 						<< " priority=" << prior << endl;
 	}
@@ -871,7 +871,7 @@ void IOControl::sigterm( int signo )
 		}
 		catch( Exception& ex )
 		{
-			unideb[Debug::LEVEL3] << myname << "(sigterm): " << ex << endl;
+			dlog[Debug::LEVEL3] << myname << "(sigterm): " << ex << endl;
 		}
 		catch(...){}
 	}
@@ -907,7 +907,7 @@ void IOControl::initOutputs()
 		}
 		catch( Exception& ex )
 		{
-			unideb[Debug::LEVEL3] << myname << "(initOutput): " << ex << endl;
+			dlog[Debug::LEVEL3] << myname << "(initOutput): " << ex << endl;
 		}
 	}
 }
@@ -948,7 +948,7 @@ void IOControl::initIOCard()
 		}
 		catch( Exception& ex)
 		{
-			unideb[Debug::CRIT] << myname << "(initIOCard): sid=" << it->si.id 
+			dlog[Debug::CRIT] << myname << "(initIOCard): sid=" << it->si.id 
 										<< " " << ex << endl;
 		}
 	}
@@ -1061,7 +1061,7 @@ void IOControl::check_testmode()
 				}
 				catch( Exception& ex )
 				{
-					unideb[Debug::LEVEL3] << myname << "(sigterm): " << ex << endl;
+					dlog[Debug::LEVEL3] << myname << "(sigterm): " << ex << endl;
 				}
 				catch(...){}
 			}
@@ -1070,7 +1070,7 @@ void IOControl::check_testmode()
 	}
 	catch( Exception& ex)
 	{
-		unideb[Debug::CRIT] << myname << "(check_testmode): " << ex << endl;
+		dlog[Debug::CRIT] << myname << "(check_testmode): " << ex << endl;
 	}
 	catch(...)
 	{
@@ -1135,7 +1135,7 @@ void IOControl::check_testlamp()
 	}
 	catch( Exception& ex)
 	{
-		unideb[Debug::CRIT] << myname << "(check_testlamp): " << ex << endl;
+		dlog[Debug::CRIT] << myname << "(check_testlamp): " << ex << endl;
 	}
 	catch(...)
 	{
@@ -1165,7 +1165,7 @@ IOControl* IOControl::init_iocontrol( int argc, const char* const* argv,
 
 	int numcards = conf->getArgPInt("--"+prefix+"-numcards",1);
 
-	unideb[Debug::INFO] << "(iocontrol): name = " << name << "(" << ID << ")" << endl;
+	dlog[Debug::INFO] << "(iocontrol): name = " << name << "(" << ID << ")" << endl;
 	return new IOControl(ID,icID,ic,numcards,prefix);
 }
 // -----------------------------------------------------------------------------
@@ -1260,7 +1260,7 @@ void IOControl::sysCommand( SystemMessage* sm )
 			}
 			
 			if( !activated )
-				unideb[Debug::CRIT] << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
+				dlog[Debug::CRIT] << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 		
 			askSensors(UniversalIO::UIONotify);
 			break;
@@ -1337,7 +1337,7 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 			<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение " 
 			<< activateTimeout << " мсек";
 
-		unideb[Debug::CRIT] << err.str() << endl;
+		dlog[Debug::CRIT] << err.str() << endl;
 		kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
 		throw SystemError(err.str());
 	}
@@ -1352,7 +1352,7 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 	}
 			
 	if( !readconf_ok )
-		unideb[Debug::CRIT] << myname << "(askSensors): ************* don`t read configuration?! ************" << endl;
+		dlog[Debug::CRIT] << myname << "(askSensors): ************* don`t read configuration?! ************" << endl;
 
 	try
 	{
@@ -1361,7 +1361,7 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 	}
 	catch( Exception& ex)
 	{
-		unideb[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
+		dlog[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
 	}
 
 	try
@@ -1371,7 +1371,7 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 	}
 	catch( Exception& ex)
 	{
-		unideb[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
+		dlog[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
 	}	
 
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
@@ -1393,7 +1393,7 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 			}
 			catch( Exception& ex)
 			{
-				unideb[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
+				dlog[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
 			}
 		}
 	}
@@ -1403,7 +1403,7 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
 	if( unideb.debugging(Debug::LEVEL1) )
 	{
-		unideb[Debug::LEVEL1] << myname << "(sensorInfo): sm->id=" << sm->id 
+		dlog[Debug::LEVEL1] << myname << "(sensorInfo): sm->id=" << sm->id 
 						<< " val=" << sm->value << endl;
 	}
 	
@@ -1412,7 +1412,7 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 
 	if( sm->id == testLamp_S )
 	{
-		unideb[Debug::INFO] << myname << "(sensorInfo): test_lamp=" << sm->state << endl;
+		dlog[Debug::INFO] << myname << "(sensorInfo): test_lamp=" << sm->state << endl;
 		isTestLamp = sm->state;
 	}
 	else if( sm->id == testMode_as )
@@ -1427,7 +1427,7 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 		{
 			if( unideb.debugging(Debug::INFO) )
 			{
-				unideb[Debug::INFO] << myname << "(sensorInfo): sid=" << sm->id
+				dlog[Debug::INFO] << myname << "(sensorInfo): sid=" << sm->id
 					<< " state=" << sm->state
 					<< " value=" << sm->value
 					<< endl;
@@ -1530,7 +1530,7 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 			{
 				if( unideb.debugging(Debug::LEVEL1) )
 				{
-					unideb[Debug::LEVEL1] << myname << "(sensorInfo): DO: sm->id=" << sm->id 
+					dlog[Debug::LEVEL1] << myname << "(sensorInfo): DO: sm->id=" << sm->id 
 							<< " val=" << sm->value << endl;
 				}
 				uniset_spin_lock lock(it->val_lock);
@@ -1555,7 +1555,7 @@ void IOControl::waitSM()
 		err << myname << "(execute): did not wait for the ready 'SharedMemory'. Timeout "
 					<< smReadyTimeout << " msec";
 
-		unideb[Debug::CRIT] << err.str() << endl;
+		dlog[Debug::CRIT] << err.str() << endl;
 		throw SystemError(err.str());
 	}
 }
@@ -1565,14 +1565,14 @@ void IOControl::buildCardsList()
 	xmlNode* nnode = conf->getXMLNodesSection();
 	if( !nnode )
 	{
-		unideb[Debug::WARN] << myname << "(buildCardsList): <nodes> not found?!" << endl;
+		dlog[Debug::WARN] << myname << "(buildCardsList): <nodes> not found?!" << endl;
 		return;
 	}
 
 	UniXML* xml = conf->getConfXML();
 	if( !xml )
 	{
-		unideb[Debug::WARN] << myname << "(buildCardsList): xml=NULL?!" << endl;
+		dlog[Debug::WARN] << myname << "(buildCardsList): xml=NULL?!" << endl;
 		return;
 	}
 
@@ -1590,7 +1590,7 @@ void IOControl::buildCardsList()
 
 	if( !mynode )
 	{
-		unideb[Debug::WARN] << myname << "(buildCardsList): node='" << conf->getLocalNodeName() << "' not found.." << endl;
+		dlog[Debug::WARN] << myname << "(buildCardsList): node='" << conf->getLocalNodeName() << "' not found.." << endl;
 		return;
 	}
 		
@@ -1600,14 +1600,14 @@ void IOControl::buildCardsList()
 	
 	if( !cnode )
 	{
-		unideb[Debug::WARN] << myname << "(buildCardsList): Not found <iocards> for node=" << conf->getLocalNodeName() << "(" << conf->getLocalNode() << ")" << endl;
+		dlog[Debug::WARN] << myname << "(buildCardsList): Not found <iocards> for node=" << conf->getLocalNodeName() << "(" << conf->getLocalNode() << ")" << endl;
 		return;
 	}
 	
 	UniXML_iterator it(cnode);
 	if( !it.goChildren() )
 	{
-		unideb[Debug::WARN] << myname << "(buildCardsList): <iocards> empty.." << endl;
+		dlog[Debug::WARN] << myname << "(buildCardsList): <iocards> empty.." << endl;
 		return;
 	}
 
@@ -1625,21 +1625,21 @@ void IOControl::buildCardsList()
 		
 		if( cardnum <=0 )
 		{
-			unideb[Debug::LEVEL3] << myname << "(init): Unknown card number?!  card=" << it.getIntProp("card") << "(" << cname << ")" << endl;
+			dlog[Debug::LEVEL3] << myname << "(init): Unknown card number?!  card=" << it.getIntProp("card") << "(" << cname << ")" << endl;
 			continue;
 		
 		}
 
 		if( cardnum > maxCardNum )
 		{
-			unideb[Debug::LEVEL3] << myname << "(init): BAD card number card='" << it.getIntProp("card") << "'(" << cname << "). Must be < " << maxCardNum << endl;
+			dlog[Debug::LEVEL3] << myname << "(init): BAD card number card='" << it.getIntProp("card") << "'(" << cname << "). Must be < " << maxCardNum << endl;
 			continue;
 		}
 		
 		if( it.getIntProp("ignore") )
 		{
 			cards[cardnum] = NULL;
-			unideb[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")" 
+			dlog[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")" 
 								<< " DISABLED! ignore=1" << endl;
 			continue;
 		}
@@ -1650,7 +1650,7 @@ void IOControl::buildCardsList()
 		if( findArgParam( s.str(), conf->getArgc(), conf->getArgv()) != -1 ) 
 		{
 			cards[cardnum] = NULL;
-			unideb[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")" 
+			dlog[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")" 
 								<< " DISABLED! (" << s.str() << ")" << endl;
 			continue;			
 		}
@@ -1660,13 +1660,13 @@ void IOControl::buildCardsList()
 		if( iodev.empty() || iodev == "/dev/null" )
 		{
 			cards[cardnum] = NULL;
-			unideb[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")" 
+			dlog[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")" 
 								<< " DISABLED! iodev='" 
 								<< iodev << "'" << endl;
 			continue;
 		}
 
-		unideb[Debug::LEVEL3] << myname << "(init): ADD card=" << it.getProp("card") << "(" << cname << ")"  << " dev=" << iodev << endl;
+		dlog[Debug::LEVEL3] << myname << "(init): ADD card=" << it.getProp("card") << "(" << cname << ")"  << " dev=" << iodev << endl;
 
 		try
 		{
@@ -1675,7 +1675,7 @@ void IOControl::buildCardsList()
 		}
 		catch( Exception& ex )
 		{
-			unideb[Debug::CRIT] << myname << "(buildCardsList): " << ex << endl;
+			dlog[Debug::CRIT] << myname << "(buildCardsList): " << ex << endl;
 			throw;
 		}
 
@@ -1703,7 +1703,7 @@ void IOControl::buildCardsList()
 				string subdev_name( it.getProp(s.str()) );
 				if( subdev_name.empty() )
 				{
-					unideb[Debug::INFO] << myname << "(buidCardList): empty subdev. ignore... (" << s.str() << ")" << endl;
+					dlog[Debug::INFO] << myname << "(buidCardList): empty subdev. ignore... (" << s.str() << ")" << endl;
 					continue;
 				}
 				
@@ -1716,7 +1716,7 @@ void IOControl::buildCardsList()
 					throw SystemError(err.str());
 				}
 				
-				unideb[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card") 
+				dlog[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card") 
 						<< "(" << cname << ")"
 						<< " init subdev" << i << " " << it.getProp(s.str()) << endl;
 				cards[cardnum]->configureSubdev(i-1,st);
