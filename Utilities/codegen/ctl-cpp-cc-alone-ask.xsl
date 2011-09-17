@@ -183,7 +183,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId _si
 	}
 	</xsl:if>
 	<xsl:if test="normalize-space(@vartype)='io'">
-	if( sid == <xsl:value-of select="../../@name"/> )
+	if( _sid == <xsl:value-of select="../../@name"/> )
 	{
 		unideb[Debug::LEVEL2] &lt;&lt;  "(setValue): <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = " &lt;&lt; _val &lt;&lt;  endl;
 		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>	= _val;
