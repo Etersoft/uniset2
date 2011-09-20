@@ -17,6 +17,7 @@ class ModbusTCPMaster:
 		ModbusTCPMaster();
 		virtual ~ModbusTCPMaster();
 
+		void connect( const std::string addr, int port );
 		void connect( ost::InetAddress addr, int port );
 		void disconnect();
 		bool isConnection();

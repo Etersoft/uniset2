@@ -297,6 +297,12 @@ void ModbusTCPMaster::reconnect()
 	}
 }
 // -------------------------------------------------------------------------
+void ModbusTCPMaster::connect( const std::string addr, int port )
+{
+	ost::InetAddress ia(iaddr.c_str());
+	connect(ia,port);
+}
+// -------------------------------------------------------------------------
 void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
 {
 	if( tcp )
