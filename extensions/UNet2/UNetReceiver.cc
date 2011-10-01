@@ -370,7 +370,7 @@ bool UNetReceiver::recv()
 #endif
 
 	{	// lock qpack
-		uniset_mutex_lock l(packMutex,500);
+		uniset_mutex_lock l(packMutex,2000);
 		if( !waitClean )
 		{
 			qpack.push(pack);
