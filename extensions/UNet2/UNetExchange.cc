@@ -73,7 +73,7 @@ sender(0)
 		if( h.empty() )
 		{
 			ostringstream err;
-			err << myname << "(init): Unkown broadcast IP for " << n_it.getProp("name");
+			err << myname << "(init): Unknown broadcast IP for " << n_it.getProp("name");
 			dlog[Debug::CRIT] << err.str() << endl;
 			throw UniSetTypes::SystemError(err.str());
 		}
