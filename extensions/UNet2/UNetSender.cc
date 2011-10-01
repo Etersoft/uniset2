@@ -30,7 +30,7 @@ s_thr(0)
 	// определяем фильтр
 //	s_field = conf->getArgParam("--udp-filter-field");
 //	s_fvalue = conf->getArgParam("--udp-filter-value");
-	dlog[Debug::INFO] << myname << "(init): read fileter-field='" << s_field
+	dlog[Debug::INFO] << myname << "(init): read filter-field='" << s_field
 						<< "' filter-value='" << s_fvalue << "'" << endl;
 
 	if( dlog.debugging(Debug::INFO) )
