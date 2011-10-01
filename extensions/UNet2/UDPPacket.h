@@ -41,8 +41,8 @@ namespace UniSetUDP
 		friend std::ostream& operator<<( std::ostream& os, UDPAData& p );
 	}__attribute__((packed));
 	
-	static const size_t MaxACount = 100;
-	static const size_t MaxDCount = 256;
+	static const size_t MaxACount = 200;
+	static const size_t MaxDCount = 400;
 	static const size_t MaxDDataCount = MaxDCount / sizeof(unsigned char);
 
 	struct UDPPacket
