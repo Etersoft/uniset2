@@ -138,7 +138,7 @@ size_t UDPMessage::transport_msg( UDPPacket& p )
     memcpy(&(p.data[i]),a_dat,sz);
 	i += sz;
 	
-	// копируем булеве индексы
+	// копируем булевые индексы
 	sz = dcount*sizeof(long);
     memcpy(&(p.data[i]),d_id,sz);
 	i += sz;
@@ -172,7 +172,7 @@ size_t UDPMessage::getMessage( UDPMessage& m, UDPPacket& p )
     memcpy(m.a_dat,&(p.data[i]),sz);
 	i += sz;
 	
-	// копируем булеве индексы
+	// копируем булевые индексы
 	sz = m.dcount*sizeof(long);
     memcpy(m.d_id,&(p.data[i]),sz);
 	i += sz;

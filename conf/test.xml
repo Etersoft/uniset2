@@ -89,6 +89,7 @@
 					<item baddr="0x110" card="3" dev="/dev/comedi1" name="UNIO48" subdev1="TBI24_0" subdev2="TBI16_8"/>
 				</iocards>
 			</item>
+			<item infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode1" textname="Локальный узел" unet_ignore="0" unet_port="2049"/>
 			<item ip="192.168.56.10" name="Node1" textname="Node1" unet_port="3001" unet_ip="192.168.56.255" unet_ignore="1"/>
 			<item ip="192.168.56.11" name="Node2" textname="Node2" unet_port="3002" unet_ip="192.168.56.255" unet_ignore="1"/>
 		</nodes>
