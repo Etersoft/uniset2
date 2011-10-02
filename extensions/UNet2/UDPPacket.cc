@@ -169,20 +169,29 @@ size_t UDPMessage::getMessage( UDPMessage& m, UDPPacket& p )
 
 	// копируем аналоговые данные
 	size_t sz = m.acount*sizeof(UDPAData);
-    memcpy(m.a_dat,&(p.data[i]),sz);
+	if( sz > sizeof(m.a_dat) )
+		sz = sizeof(m.a_dat);
+    
+	memcpy(m.a_dat,&(p.data[i]),sz);
 	i += sz;
-	
+
 	// копируем булевые индексы
 	sz = m.dcount*sizeof(long);
-    memcpy(m.d_id,&(p.data[i]),sz);
+	if( sz > sizeof(m.d_id) )
+		sz = sizeof(m.d_id);
+
+	memcpy(m.d_id,&(p.data[i]),sz);
 	i += sz;
 	
 	// копируем булевые данные
 	size_t nbyte = m.dcount / sizeof(unsigned char);
 	size_t nbit =  m.dcount % sizeof(unsigned char);
 	sz = nbit > 0 ? nbyte + 1 : nbyte;
+
+	if( sz > sizeof(m.d_dat) )
+		sz = sizeof(m.d_dat);
 	memcpy(m.d_dat,&(p.data[i]),sz);
 	
-	return i+sz;
+    return i+sz;
 }
 // -----------------------------------------------------------------------------
