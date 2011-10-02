@@ -192,8 +192,6 @@ void UNetSender::real_send()
 	if( packetnum > UniSetUDP::MaxPacketNum )
 		packetnum = 1;
 
-//	cout << "************* send header: " << mypack.msg.header << endl;
-//	size_t sz = mypack.byte_size() + sizeof(UniSetUDP::UDPHeader);
 	size_t sz =	sizeof(UniSetUDP::DataPacket);
 	if( !udp->isPending(ost::Socket::pendingOutput) )
 		return;
