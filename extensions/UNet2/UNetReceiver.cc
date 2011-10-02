@@ -327,7 +327,7 @@ bool UNetReceiver::recv()
 	if( !udp->isInputReady(recvTimeout) )
 		return false;
 
-	size_t ret = udp->UDPReceive::receive((char*)(&r_buf),sizeof(r_buf));
+	size_t ret = udp->UDPReceive::receive((char*)(r_buf.data),sizeof(r_buf.data));
 
 	size_t sz = UniSetUDP::UDPMessage::getMessage(pack,r_buf);
 	if( sz == 0 )
