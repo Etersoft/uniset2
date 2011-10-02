@@ -267,7 +267,7 @@ int main(int argc, char* argv[])
 					mypack.addAData(d);
 				}
 
-				for( int i=0; i < count; i++ )
+				for( unsigned int i=0; i < count; i++ )
 					mypack.addDData(i,i);
 
 				udp->setPeer(host,port);
