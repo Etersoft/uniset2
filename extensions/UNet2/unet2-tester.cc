@@ -211,9 +211,12 @@ int main(int argc, char* argv[])
 								<< " sizeof=" << sizeof(UniSetUDP::UDPHeader) << endl;
 							continue;
 						}
+
+						cout << "HEADER: " << pack.msg.header << endl;
 		
 						//size_t sz = pack.msg.header.dcount * sizeof(UniSetUDP::UDPData) + sizeof(UniSetUDP::UDPHeader);
-						size_t sz =	sizeof(UniSetUDP::UDPMessage);
+						//size_t sz =	sizeof(UniSetUDP::UDPMessage);
+						size_t sz =	sizeof(UniSetUDP::DataPacket);
 						if( ret < sz )
 						{
 							cerr << "(recv): FAILED data ret=" << ret 
@@ -278,7 +281,8 @@ int main(int argc, char* argv[])
 					mypack.addDData(i,i);
 
 				//size_t sz = mypack.byte_size() + sizeof(UniSetUDP::UDPHeader);
-				size_t sz =	sizeof(UniSetUDP::UDPMessage);
+				//size_t sz =	sizeof(UniSetUDP::UDPMessage);
+				size_t sz =	sizeof(UniSetUDP::DataPacket);
 
 				udp->setPeer(host,port);
 				unsigned long packetnum = 0;

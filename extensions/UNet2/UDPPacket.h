@@ -56,8 +56,7 @@ namespace UniSetUDP
 
 	static const int MaxDataLen = sizeof(DataPacket);
 
-	struct UDPMessage:
-		public UDPHeader
+	struct UDPMessage
 	{
 		UDPMessage();
 
@@ -70,9 +69,9 @@ namespace UniSetUDP
 		size_t addAData( long id, long val );
 		bool setAData( size_t index, long val );
 
-		inline bool isFull(){ return ((dcount<MaxDCount) && (acount<MaxACount)); }
-		inline int dsize(){ return dcount; }
-		inline int asize(){ return acount; }
+		inline bool isFull(){ return ((msg.header.dcount<MaxDCount) && (msg.header.acount<MaxACount)); }
+		inline int dsize(){ return msg.header.dcount; }
+		inline int asize(){ return msg.header.acount; }
 //		inline int byte_size(){ return (dcount*sizeof(long)*UDPDData) + acount*sizeof(UDPAData)); }
 		
 		DataPacket msg;

@@ -28,11 +28,11 @@ std::ostream& UniSetUDP::operator<<( std::ostream& os, UniSetUDP::UDPMessage& p 
 	os << (UDPHeader*)(&p) << endl;
 
 	os << "DIGITAL:" << endl;
-	for( size_t i=0; i<p.dcount; i++ )
+	for( size_t i=0; i<p.msg.header.dcount; i++ )
 		os << "[" << i << "]={" << p.dID(i) << "," << p.dValue(i) << "}" << endl;
 	
 	os << "ANALOG:" << endl;
-	for( size_t i=0; i<p.acount; i++ )
+	for( size_t i=0; i<p.msg.header.acount; i++ )
 		os << "[" << i << "]={" << p.msg.a_dat[i].id << "," << p.msg.a_dat[i].val << "}" << endl;
 	
 	return os;
