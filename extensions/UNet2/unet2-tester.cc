@@ -188,7 +188,6 @@ int main(int argc, char* argv[])
 
 //				char buf[UniSetUDP::MaxDataLen];
 				UniSetUDP::UDPMessage pack;
-				UniSetUDP::UDPPacket buf;
 				unsigned long prev_num=1;
 
 				int nc = 1;
@@ -205,27 +204,35 @@ int main(int argc, char* argv[])
 							continue;
 						}
 
-						size_t ret = udp.UDPReceive::receive( &(buf.data), sizeof(buf.data) );
-						size_t sz = UniSetUDP::UDPMessage::getMessage(pack,buf);
-						if( sz == 0 )
+						size_t ret = udp.UDPReceive::receive( &pack, sizeof(pack) );
+						if( ret < sizeof(UniSetUDP::UDPHeader) )
 						{
 							cerr << "(recv): FAILED header ret=" << ret
-								<< " sizeof=" << sz<< endl;
+								<< " sizeof=" << sizeof(UniSetUDP::UDPHeader) << endl;
+							continue;
+						}
+
+						//size_t sz = pack.msg.header.dcount * sizeof(UniSetUDP::UDPData) + sizeof(UniSetUDP::UDPHeader);
+						size_t sz =	sizeof(UniSetUDP::UDPMessage);
+						if( ret < sz )
+						{
+							cerr << "(recv): FAILED data ret=" << ret
+								<< " sizeof=" << sz << " packnum=" << pack.msg.header.num << endl;
 							continue;
 						}
 
 						if( lost )
 						{
-							if( prev_num != (pack.num-1) )
-								cerr << "WARNING! Incorrect sequence of packets! current=" << pack.num
+							if( prev_num != (pack.msg.header.num-1) )
+								cerr << "WARNING! Incorrect sequence of packets! current=" << pack.msg.header.num
 									<< " prev=" << prev_num << endl;
 
-							prev_num = pack.num;
+							prev_num = pack.msg.header.num;
 						}
 
-//						if( verb )
-//							cout << "receive OK. header: " << pack.msg.header
-//								 << " bytes: " << ret << endl;
+						if( verb )
+							cout << "receive OK. header: " << pack.msg.header
+								 << " bytes: " << ret << endl;
 
 						if( show )
 							cout << "receive data: " << pack << endl;
@@ -258,10 +265,10 @@ int main(int argc, char* argv[])
 			        udp = new ost::UDPBroadcast(host,port);
 
 				UniSetUDP::UDPMessage mypack;
-				mypack.nodeID = nodeID;
-				mypack.procID = procID;
+				mypack.msg.header.nodeID = nodeID;
+				mypack.msg.header.procID = procID;
 
-				for( size_t i=0; i < count; i++ )
+				for( size_t i=0; i < count && i < UniSetUDP::MaxACount; i++ )
 				{
 					UDPAData d(i,i);
 					mypack.addAData(d);
@@ -270,10 +277,11 @@ int main(int argc, char* argv[])
 				for( unsigned int i=0; i < count; i++ )
 					mypack.addDData(i,i);
 
+				//size_t sz = mypack.byte_size() + sizeof(UniSetUDP::UDPHeader);
+				size_t sz =	sizeof(UniSetUDP::UDPMessage);
+
 				udp->setPeer(host,port);
 				unsigned long packetnum = 0;
-
-				UniSetUDP::UDPPacket s_buf;
 
 				int nc = 1;
 				if( ncycles > 0 )
@@ -281,7 +289,7 @@ int main(int argc, char* argv[])
 
 				while( nc )
 				{
-					mypack.num = packetnum++;
+					mypack.msg.header.num = packetnum++;
 					if( packetnum > UniSetUDP::MaxPacketNum )
 						packetnum = 1;
 
@@ -289,15 +297,13 @@ int main(int argc, char* argv[])
 					{
 						if( udp->isPending(ost::Socket::pendingOutput,tout) )
 						{
-							mypack.transport_msg(s_buf);
-
 							if( verb )
-								cout << "(send): to addr=" << addr << " d_count=" << mypack.dcount
-									<< " a_count=" << mypack.acount << " bytes=" << s_buf.len << endl;
+								cout << "(send): to addr=" << addr << " count=" << count << " bytes=" << sz << endl;
 
-							size_t ret = udp->send((char*)&s_buf.data, s_buf.len);
-							if( ret < s_buf.len )
-							cerr << "(send): FAILED ret=" << ret << " < sizeof=" << s_buf.len << endl;
+							size_t ret = udp->send((char*)&(mypack.msg), sz);
+
+							if( ret < sz )
+							cerr << "(send): FAILED ret=" << ret << " < sizeof=" << sz << endl;
 						}
 					}
 					catch( ost::SockException& e )
