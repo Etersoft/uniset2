@@ -114,8 +114,7 @@ class UNetReceiver
 		};
 		typedef std::priority_queue<UniSetUDP::UDPMessage,std::vector<UniSetUDP::UDPMessage>,PacketCompare> PacketQueue;
 		PacketQueue qpack;	/*!< очередь принятых пакетов (отсортированных по возрастанию номера пакета) */
-		UniSetUDP::UDPMessage pack;		/*!< просто буфер для получения очередного сообщения */
-		UniSetUDP::UDPPacket r_buf;
+		UniSetUDP::UDPMessage pack;		/*!< просто буфер для получения очереlного сообщения */
 		UniSetTypes::uniset_mutex packMutex; /*!< mutex для работы с очередью */
 		unsigned long pnum;	/*!< текущий номер обработанного сообщения, для проверки непрерывности последовательности пакетов */
 

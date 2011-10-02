@@ -71,8 +71,8 @@ s_thr(0)
 
 
 	// выставляем поля, которые не меняются
-	mypack.nodeID = conf->getLocalNode();
-	mypack.procID = shm->ID();
+	mypack.msg.header.nodeID = conf->getLocalNode();
+	mypack.msg.header.procID = shm->ID();
 }
 // -----------------------------------------------------------------------------
 UNetSender::~UNetSender()
@@ -187,19 +187,20 @@ void UNetSender::send()
 void UNetSender::real_send()
 {
 	UniSetTypes::uniset_mutex_lock l(pack_mutex,300);
-	mypack.num = packetnum++;
+	mypack.msg.header.num = packetnum++;
 
 	if( packetnum > UniSetUDP::MaxPacketNum )
 		packetnum = 1;
 
+//	cout << "************* send header: " << mypack.msg.header << endl;
+//	size_t sz = mypack.byte_size() + sizeof(UniSetUDP::UDPHeader);
+	size_t sz =	sizeof(UniSetUDP::UDPMessage);
 	if( !udp->isPending(ost::Socket::pendingOutput) )
 		return;
 
-
-	mypack.transport_msg(s_msg);
-	size_t ret = udp->send( (char*)s_msg.data,s_msg.len );
-	if( ret < s_msg.len )
-		dlog[Debug::CRIT] << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
+	size_t ret = udp->send( (char*)&(mypack.msg),sz);
+	if( ret < sz )
+		dlog[Debug::CRIT] << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << sz << endl;
 }
 // -----------------------------------------------------------------------------
 void UNetSender::stop()
