@@ -95,6 +95,7 @@ class UNetSender
 		DMap dlist;
 		int maxItem;
 		unsigned long packetnum;
+		UniSetUDP::UDPPacket s_msg;
 
 		ThreadCreator<UNetSender>* s_thr;	// send thread
 };
