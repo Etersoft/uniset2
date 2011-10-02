@@ -335,7 +335,7 @@ bool UNetReceiver::recv()
 	}
 	
 	// size_t sz = pack.msg.header.acount * sizeof(UniSetUDP::UDPAData) + sizeof(UniSetUDP::UDPHeader);
-	size_t sz = sizeof(UniSetUDP::UDPMessage); 
+	size_t sz = sizeof(UniSetUDP::DataPacket);
 	if( ret < sz )
 	{
 		dlog[Debug::CRIT] << myname << "(receive): FAILED data ret=" << ret << " sizeof=" << sz
