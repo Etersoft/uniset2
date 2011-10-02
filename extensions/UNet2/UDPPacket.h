@@ -41,24 +41,28 @@ namespace UniSetUDP
 		friend std::ostream& operator<<( std::ostream& os, UDPAData& p );
 	}__attribute__((packed));
 	
+	static const size_t MaxACount = 200;
 	static const size_t MaxDCount = 400;
 	static const size_t MaxDDataCount = MaxDCount / sizeof(unsigned char);
-	static const size_t MaxACount = 200;
 
-	 struct DataPacket
-	 {
-		UDPHeader header;
-		UDPAData a_dat[MaxACount];  /*!< аналоговые величины */
-		long d_id[MaxDCount];      /*!< список дискретных ID */
-		unsigned char d_dat[MaxDDataCount];  /*!< битовые значения */
-		
-	 }__attribute__((packed));
+	struct UDPPacket
+	{
+		UDPPacket():len(0){}
 
-	static const int MaxDataLen = sizeof(DataPacket);
+		int len;
+		unsigned char data[ sizeof(UDPHeader) + MaxDCount*sizeof(long) + MaxDDataCount + MaxACount*sizeof(UDPAData) ];
+	}__attribute__((packed));
 
-	struct UDPMessage
+	static const int MaxDataLen = sizeof(UDPPacket);
+
+	struct UDPMessage:
+		public UDPHeader
 	{
 		UDPMessage();
+
+		UDPMessage( UDPPacket& p );
+ 		size_t transport_msg( UDPPacket& p );
+		static size_t getMessage( UDPMessage& m, UDPPacket& p );
 
 		size_t addDData( long id, bool val );
 		bool setDData( size_t index, bool val );
@@ -69,12 +73,17 @@ namespace UniSetUDP
 		size_t addAData( long id, long val );
 		bool setAData( size_t index, long val );
 
-		inline bool isFull(){ return ((msg.header.dcount<MaxDCount) && (msg.header.acount<MaxACount)); }
-		inline int dsize(){ return msg.header.dcount; }
-		inline int asize(){ return msg.header.acount; }
+		inline bool isFull(){ return ((dcount<MaxDCount) && (acount<MaxACount)); }
+		inline int dsize(){ return dcount; }
+		inline int asize(){ return acount; }
 //		inline int byte_size(){ return (dcount*sizeof(long)*UDPDData) + acount*sizeof(UDPAData)); }
 		
-		DataPacket msg;
+		// количество байт в пакете с булевыми переменными...
+		int d_byte(){ return dcount*sizeof(long) + dcount; }
+		
+		UDPAData a_dat[MaxACount]; /*!< аналоговые величины */
+		long d_id[MaxDCount];      /*!< список дискретных ID */
+		unsigned char d_dat[MaxDDataCount];  /*!< битовые значения */
 		
 		friend std::ostream& operator<<( std::ostream& os, UDPMessage& p );
 	};
