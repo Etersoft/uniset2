@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \author Pavel Vainerman
- *	\brief базовые типы библиотеки UniSet
+ *	\brief базовые типы и вспомогательные функции библиотеки UniSet
 */
 // -------------------------------------------------------------------------- 
 #ifndef UniSetTypes_H_
@@ -36,6 +36,7 @@
 #include "UniSetTypes_i.hh"
 #include "IOController_i.hh"
 #include "Mutex.h"
+#include "UniXML.h"
 // -----------------------------------------------------------------------------------------
 /*! Задержка в миллисекундах */
 inline void msleep( unsigned int m ) { usleep(m*1000); }
@@ -265,6 +266,11 @@ namespace UniSetTypes
 	// Если @node не указано, возвращается node=DefaultObjectId
 	std::list<ParamSInfo> getSInfoList( std::string s, Configuration* conf=UniSetTypes::conf);
 	bool is_digit( const std::string s );
+
+	// Проверка xml-узла на соответсвие <...f_prop="f_val">,
+	// если не задано f_val, то проверяется, что просто f_prop!=""
+	bool check_filter( UniXML_iterator& it, const std::string f_prop, const std::string f_val="" );
+// -----------------------------------------------------------------------------
 }
 
 #define atoi atoi##_Do_not_use_atoi_function_directly_Use_getIntProp90,_getArgInt_or_uni_atoi
