@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt44
+Release: alt45
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -207,6 +207,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Tue Oct 04 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt45
+- dependence on mandatory disabled launching a local omninames service
+
 * Mon Oct 03 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt44
 - add nodes filter for UNet2
 - minor optimization

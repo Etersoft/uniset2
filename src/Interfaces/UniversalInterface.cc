@@ -89,15 +89,15 @@ void UniversalInterface::init()
 	}
 	catch( Exception& ex )
 	{
-		if( !uconf->isLocalIOR() )
-			throw ex;
+//		if( !uconf->isLocalIOR() )
+//			throw ex;
 
 		localctx=CosNaming::NamingContext::_nil();
 	}
 	catch( ... )
 	{
-		if( !uconf->isLocalIOR() )
-			throw;
+//		if( !uconf->isLocalIOR() )
+//			throw;
 
 		localctx=CosNaming::NamingContext::_nil();
 	}
@@ -1692,7 +1692,20 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 			}
 		}
 		else
-			ctx = localctx;
+		{
+			if( CORBA::is_nil(localctx) )
+			{
+				if( CORBA::is_nil(orb) )
+				{
+					CORBA::ORB_var _orb = uconf->getORB();
+					localctx = ORepHelpers::getRootNamingContext( _orb, oind->getRealNodeName(uconf->getLocalNode()) );
+				}
+				else
+					localctx = ORepHelpers::getRootNamingContext( orb, oind->getRealNodeName(uconf->getLocalNode()) );
+			}
+			else
+				ctx = localctx;
+		}
 
 		CosNaming::Name_var oname = omniURI::stringToName( oind->getNameById(rid,node).c_str() );
 		for (unsigned int i=0; i<uconf->getRepeatCount(); i++)
