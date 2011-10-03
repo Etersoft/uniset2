@@ -102,7 +102,6 @@ class UniExchange:
 		NetNodeList nlst;
 
 		void readConfiguration();
-		bool check_item( UniXML_iterator& it );
 		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
 		bool initItem( UniXML_iterator& it );
 		void updateLocalData();
