@@ -479,7 +479,18 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 // ------------------------------------------------------------------------------------------
 bool NCRestorer_XML::check_thresholds_item( UniXML_iterator& it )
 {	
-	return UniSetTypes::check_filter(it,t_filterField,t_filterValue);
+	if( t_filterField.empty() )
+		return true;
+
+	// просто проверка на не пустой field
+	if( t_filterValue.empty() && it.getProp(t_filterField).empty() )
+		return false;
+
+	// просто проверка что field = value
+	if( !t_filterValue.empty() && it.getProp(t_filterField)!=t_filterValue )
+		return false;
+
+	return true;
 }
 // ------------------------------------------------------------------------------------------
 void NCRestorer_XML::setReadThresholdItem( ReaderSlot sl )
@@ -685,7 +696,18 @@ void NCRestorer_XML::build_depends( UniXML& xml, xmlNode* node, IONotifyControll
 
 bool NCRestorer_XML::check_depend_item( UniXML_iterator& it )
 {
-	return UniSetTypes::check_filter(it,d_filterField,d_filterValue);
+	if( d_filterField.empty() )
+		return true;
+
+	// просто проверка на не пустой field
+	if( d_filterValue.empty() && it.getProp(d_filterField).empty() )
+		return false;
+
+	// просто проверка что field = value
+	if( !d_filterValue.empty() && it.getProp(d_filterField)!=d_filterValue )
+		return false;
+
+	return true;
 }
 // ------------------------------------------------------------------------------------------
 bool NCRestorer_XML::getDependsInfo( UniXML& xml, xmlNode* it, IOController::DependsInfo& di )

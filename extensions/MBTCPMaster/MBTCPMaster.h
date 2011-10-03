@@ -399,6 +399,7 @@ class MBTCPMaster:
 		void rtuQueryOptimization( RTUDeviceMap& m );
 
 		void readConfiguration();
+		bool check_item( UniXML_iterator& it );
 
 
 	 private:

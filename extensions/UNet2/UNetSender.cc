@@ -236,14 +236,30 @@ void UNetSender::readConfiguration()
 
 	for( ;it.getCurrent(); it.goNext() )
 	{
-		if( check_filter(it,s_field,s_fvalue) )
+		if( check_item(it) )
 			initItem(it);
 	}
 }
 // ------------------------------------------------------------------------------------------
+bool UNetSender::check_item( UniXML_iterator& it )
+{
+	if( s_field.empty() )
+		return true;
+
+	// просто проверка на не пустой field
+	if( s_fvalue.empty() && it.getProp(s_field).empty() )
+		return false;
+
+	// просто проверка что field = value
+	if( !s_fvalue.empty() && it.getProp(s_field)!=s_fvalue )
+		return false;
+
+	return true;
+}
+// ------------------------------------------------------------------------------------------
 bool UNetSender::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 {
-	if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
+	if( check_item(it) )
 		initItem(it);
 	return true;
 }
