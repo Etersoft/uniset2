@@ -67,8 +67,8 @@ sender(0)
 			continue;
 		}
 		
-		// проверяем заданы ли фильтры для подсетей
-		if( !n_field.empty() && !check_filter(n_it,n_field,n_fvalue) )
+		// проверяем фильтры для подсетей
+		if( !UniSetTypes::check_filter(n_it,n_field,n_fvalue) )
 			continue;
 
 		// Если указано поле unet_broadcast_ip непосредственно у узла - берём его
