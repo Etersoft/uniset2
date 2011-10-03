@@ -31,6 +31,11 @@ sender(0)
 	s_fvalue = conf->getArgParam("--unet-filter-value");
 	dlog[Debug::INFO] << myname << "(init): read filter-field='" << s_field
 						<< "' filter-value='" << s_fvalue << "'" << endl;
+	
+	const string n_field(conf->getArgParam("--unet-nodes-filter-field"));
+	const string n_fvalue(conf->getArgParam("--unet-nodes-filter-value"));
+	dlog[Debug::INFO] << myname << "(init): read nodes-filter-field='" << n_field
+						<< "' nodes-filter-value='" << n_fvalue << "'" << endl;
 
 	int recvTimeout = conf->getArgPInt("--unet-recv-timeout",it.getProp("recvTimeout"), 5000);
 	int lostTimeout = conf->getArgPInt("--unet-lost-timeout",it.getProp("lostTimeout"), recvTimeout);
@@ -61,8 +66,12 @@ sender(0)
 			dlog[Debug::INFO] << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
 			continue;
 		}
+		
+		// проверяем заданы ли фильтры для подсетей
+		if( !n_field.empty() && !check_filter(n_it,n_field,n_fvalue) )
+			continue;
 
-		// Если указано поле unet_ip непосредственно у узла - берём его
+		// Если указано поле unet_broadcast_ip непосредственно у узла - берём его
 		// если указано общий broadcast ip для всех узлов - берём его
 		string h("");
 		if( !default_ip.empty() )
@@ -92,7 +101,6 @@ sender(0)
 			sender->setSendPause(sendpause);
 			continue;
 		}
-
 
 		dlog[Debug::INFO] << myname << "(init): add UNetReceiver for " << h << ":" << p << endl;
 

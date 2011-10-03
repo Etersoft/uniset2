@@ -336,3 +336,18 @@ using namespace UniSetTypes;
 					<< " sensibility=" << c.sensibility;
 	}
 	// ------------------------------------------------------------------------------------------
+	bool UniSetTypes::check_filter( UniXML_iterator& it, const std::string f_prop, const std::string f_val )
+	{
+		if( f_prop.empty() )
+			return true;
+
+		// просто проверка на не пустой field
+		if( f_val.empty() && it.getProp(f_prop).empty() )
+			return false;
+
+		// просто проверка что field = value
+		if( !f_val.empty() && it.getProp(f_prop)!=f_val )
+			return false;
+
+		return true;
+	}
