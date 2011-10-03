@@ -478,7 +478,7 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 }
 // ------------------------------------------------------------------------------------------
 bool NCRestorer_XML::check_thresholds_item( UniXML_iterator& it )
-{
+{	
 	return UniSetTypes::check_filter(it,t_filterField,t_filterValue);
 }
 // ------------------------------------------------------------------------------------------
