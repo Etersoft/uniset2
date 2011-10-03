@@ -171,12 +171,34 @@ bool Restorer_XML::old_getConsumerInfo( UniXML_iterator& it,
 // -----------------------------------------------------------------------------
 bool Restorer_XML::check_list_item( UniXML_iterator& it )
 {
-	return UniSetTypes::check_filter(it,i_filterField,i_filterValue);
+	if( i_filterField.empty() )
+		return true;
+
+	// просто проверка на не пустой field
+	if( i_filterValue.empty() && it.getProp(i_filterField).empty() )
+		return false;
+
+	// просто проверка что field = value
+	if( !i_filterValue.empty() && it.getProp(i_filterField)!=i_filterValue )
+		return false;
+
+	return true;
 }
 // -----------------------------------------------------------------------------
 bool Restorer_XML::check_consumer_item( UniXML_iterator& it )
 {
-	return UniSetTypes::check_filter(it,c_filterField,c_filterValue);
+	if( c_filterField.empty() )
+		return true;
+
+	// просто проверка на не пустой field
+	if( c_filterValue.empty() && it.getProp(c_filterField).empty() )
+		return false;
+
+	// просто проверка что field = value
+	if( !c_filterValue.empty() && it.getProp(c_filterField)!=c_filterValue )
+		return false;
+
+	return true;
 }
 // -----------------------------------------------------------------------------
 xmlNode* Restorer_XML::find_node( UniXML& xml, xmlNode* root, 

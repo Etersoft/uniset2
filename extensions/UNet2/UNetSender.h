@@ -76,6 +76,7 @@ class UNetSender
 		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
 
 		void readConfiguration();
+		bool check_item( UniXML_iterator& it );
 
 	private:
 		UNetSender();
