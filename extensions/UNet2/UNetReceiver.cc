@@ -24,6 +24,8 @@ udp(0),
 recvTimeout(5000),
 lostTimeout(5000),
 lostPackets(0),
+sidRespond(UniSetTypes::DefaultObjectId),
+sidLostPackets(UniSetTypes::DefaultObjectId),
 activated(false),
 r_thr(0),
 u_thr(0),
@@ -113,6 +115,18 @@ void UNetReceiver::setMaxDifferens( unsigned long set )
 	maxDifferens = set;
 }
 // -----------------------------------------------------------------------------
+void UNetReceiver::setRespondID( UniSetTypes::ObjectId id )
+{
+	sidRespond = id;
+	shm->initDIterator(ditRespond);
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::setLostPacketsID( UniSetTypes::ObjectId id )
+{
+	sidLostPackets = id;
+	shm->initAIterator(aitLostPackets);
+}
+// -----------------------------------------------------------------------------
 void UNetReceiver::start()
 {
 	if( !activated )
@@ -139,6 +153,30 @@ void UNetReceiver::update()
 		catch(...)
 		{
 			dlog[Debug::CRIT] << myname << "(update): catch ..." << std::endl;
+		}
+
+		if( sidRespond!=DefaultObjectId )
+		{
+			try
+			{
+				shm->localSaveState(ditRespond,sidRespond,isRecvOK(),shm->ID());
+			}
+			catch(Exception& ex)
+			{
+				dlog[Debug::CRIT] << myname << "(step): (respond) " << ex << std::endl;
+			}
+		}
+
+		if( sidLostPackets!=DefaultObjectId )
+		{
+			try
+			{
+				shm->localSaveValue(aitLostPackets,sidLostPackets,getLostPacketsNum(),shm->ID());
+			}
+			catch(Exception& ex)
+			{
+				dlog[Debug::CRIT] << myname << "(step): (lostPackets) " << ex << std::endl;
+			}
 		}
 
 		msleep(updatepause);
