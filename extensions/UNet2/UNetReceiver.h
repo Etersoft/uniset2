@@ -117,8 +117,9 @@ class UNetReceiver
 		struct PacketCompare:
 		public std::binary_function<UniSetUDP::UDPMessage, UniSetUDP::UDPMessage, bool>
 		{
-			bool operator()(const UniSetUDP::UDPMessage& lhs,
-							const UniSetUDP::UDPMessage& rhs) const;
+			inline bool operator()(const UniSetUDP::UDPMessage& lhs,
+							const UniSetUDP::UDPMessage& rhs) const
+					{ return lhs.num > rhs.num; }
 		};
 		typedef std::priority_queue<UniSetUDP::UDPMessage,std::vector<UniSetUDP::UDPMessage>,PacketCompare> PacketQueue;
 		PacketQueue qpack;	/*!< очередь принятых пакетов (отсортированных по возрастанию номера пакета) */
