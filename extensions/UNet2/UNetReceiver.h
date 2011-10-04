@@ -67,6 +67,9 @@ class UNetReceiver
 		 void setLostTimeout( timeout_t msec );
 		 void setMaxDifferens( unsigned long set );
 
+		 void setRespondID( UniSetTypes::ObjectId id );
+		 void setLostPacketsID( UniSetTypes::ObjectId id );
+
 		 void setMaxProcessingCount( int set );
 
 		 inline ost::IPV4Address getAddress(){ return addr; }
@@ -99,6 +102,11 @@ class UNetReceiver
 		timeout_t lostTimeout;
 		PassiveTimer ptLostTimeout;
 		unsigned long lostPackets; /*!< счётчик потерянных пакетов */
+
+		UniSetTypes::ObjectId sidRespond;
+		IOController::DIOStateList::iterator ditRespond;
+		UniSetTypes::ObjectId sidLostPackets;
+		IOController::AIOStateList::iterator aitLostPackets;
 
 		bool activated;
 		

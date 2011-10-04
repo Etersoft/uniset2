@@ -110,6 +110,34 @@ sender(0)
 			continue;
 		}
 		
+		string s_resp_id(n_it.getProp("respond_id"));
+		UniSetTypes::ObjectId resp_id = UniSetTypes::DefaultObjectId;
+		if( !s_resp_id.empty() )
+		{
+			resp_id = conf->getSensorID(s_resp_id);
+			if( resp_id == UniSetTypes::DefaultObjectId )
+			{
+				ostringstream err;
+				err << myname << ": Unknown RespondID.. Not found id for '" << s_resp_id << "'" << endl;
+				dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+				throw SystemError(err.str());
+			}
+		}
+		
+		string s_lp_id(n_it.getProp("lostpackets_id"));
+		UniSetTypes::ObjectId lp_id = UniSetTypes::DefaultObjectId;
+		if( !s_lp_id.empty() )
+		{
+			lp_id = conf->getSensorID(s_lp_id);
+			if( lp_id == UniSetTypes::DefaultObjectId )
+			{
+				ostringstream err;
+				err << myname << ": Unknown LostPacketsID.. Not found id for '" << s_lp_id << "'" << endl;
+				dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+				throw SystemError(err.str());
+			}
+		}
+
 		UNetReceiver* r = new UNetReceiver(h,p,shm);
 
 		r->setReceiveTimeout(recvTimeout);
@@ -118,6 +146,8 @@ sender(0)
 		r->setUpdatePause(updatepause);
 		r->setMaxDifferens(maxDiff);
 		r->setMaxProcessingCount(maxProcessingCount);
+		r->setRespondID(resp_id);
+		r->setLostPacketsID(lp_id);
 		recvlist.push_back(r);
 	}
 	
