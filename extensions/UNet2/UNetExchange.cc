@@ -110,7 +110,7 @@ sender(0)
 			continue;
 		}
 		
-		string s_resp_id(n_it.getProp("respond_id"));
+		string s_resp_id(n_it.getProp("unet_respond_id"));
 		UniSetTypes::ObjectId resp_id = UniSetTypes::DefaultObjectId;
 		if( !s_resp_id.empty() )
 		{
@@ -124,7 +124,7 @@ sender(0)
 			}
 		}
 		
-		string s_lp_id(n_it.getProp("lostpackets_id"));
+		string s_lp_id(n_it.getProp("unet_lostpackets_id"));
 		UniSetTypes::ObjectId lp_id = UniSetTypes::DefaultObjectId;
 		if( !s_lp_id.empty() )
 		{
