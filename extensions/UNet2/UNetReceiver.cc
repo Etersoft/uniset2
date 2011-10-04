@@ -7,6 +7,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
+/*
 bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 											const UniSetUDP::UDPMessage& rhs) const
 {
@@ -15,6 +16,7 @@ bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 
 	return lhs.num > rhs.num;
 }
+*/
 // ------------------------------------------------------------------------------------------
 UNetReceiver::UNetReceiver( const std::string s_host, const ost::tpport_t port, SMInterface* smi ):
 shm(smi),
@@ -71,7 +73,6 @@ a_cache_init_ok(false)
 
 	r_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::receive);
 	u_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::update);
-
 
 	ptRecvTimeout.setTiming(recvTimeout);
 }
@@ -186,8 +187,8 @@ void UNetReceiver::update()
 void UNetReceiver::real_update()
 {
 	UniSetUDP::UDPMessage p;
-	// обрабатываем пока, очередь либо не опустеет
-	// либо обнаружится "дырка" в последовательности
+	// обрабатываем, пока очередь либо не опустеет,
+	// либо обнаружится "дырка" в последовательности,
 	// но при этом обрабатываем не больше maxProcessingCount
 	// за один раз..
 	int k = maxProcessingCount;
@@ -283,7 +284,7 @@ void UNetReceiver::real_update()
 			}
 		}
 
-		// Обрабока аналоговых
+		// Обработка аналоговых
 		for( size_t i=0; i<p.acount; i++ )
 		{
 			try
