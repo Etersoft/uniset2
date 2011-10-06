@@ -4,13 +4,13 @@
 из которых складывается библиотека, и которые используются во многих
 местах данной документации. Здесь приводятся определения этих терминов.
 
-- \ref sec_Cnpt_Object
-- \ref sec_Cnpt_ObjectTypes
-- \ref sec_Cnpt_Message
-- \ref sec_Cnpt_ObjectId
-- \ref sec_Cnpt_Repository
-- \ref sec_Cnpt_Sensor
-- \ref sec_Cnpt_Process
+- \ref sec_Concept_Object
+- \ref sec_Concept_ObjectTypes
+- \ref sec_Concept_Message
+- \ref sec_Concept_ObjectId
+- \ref sec_Concept_Repository
+- \ref sec_Concept_Sensor
+- \ref sec_Concept_Process
   
 
 	\section sec_Concept_Object Объект
