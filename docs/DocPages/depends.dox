@@ -2,7 +2,9 @@
  \page DependsPage Зависимости между датчиками
 
 	Механизм зависимостей реализован в классе IOController.
-	В configure.xml настривается 
+
+	Пример записи "зависимости" в configure.xml:
+\code
 	<item textname="...." iotype="..." .../>
 		<consumers>
 		<consumers>
@@ -11,7 +13,7 @@
 			<depend name="Sensor2" filter2="val1" />
 		</depends>
 	</item>
-	
+\endcode
 	При считывании конф. файла можно задавать фильтры.
 	
 	
