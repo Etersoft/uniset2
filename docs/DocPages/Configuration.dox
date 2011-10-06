@@ -1,4 +1,4 @@
-/*!
+/* OBSOLETE DOC!!!
 	\page ConfigurationPage Конфигурирование системы
 
 	- \ref ConfigurationPage_secCommon
@@ -16,13 +16,14 @@
 	функции main. Например так:
 \code
 ...
-#include "ObjectsMap.h"
+#include <Configuration.h>
 using namespace UniSetTypes;
+
 int main(int argc, char **argv)
 {
     try
     {
-		conf = new Configuration(argc, (const char**)argv, "configure.xml", (ObjectInfo*)ObjectsMap);
+		uniset_init(argc, argv, "configure.xml");
 		...
 		...
 		

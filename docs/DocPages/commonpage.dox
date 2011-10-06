@@ -1,6 +1,5 @@
-<<<<<<< HEAD
-/*! OBSOLETE DOC!!
- \page CommitPage Общее описание библиотеки UniSet 
+/* OBSOLETE DOC!!
+ \page CommonPage Общее описание библиотеки UniSet 
 
   - \ref secSection1
   	- \ref subIO
@@ -123,10 +122,6 @@
 		(поток для "распихивания" приходящих сообщений по объектам). Хотя активатор может не порождать отдельного потока, а работать
 		в основном потоке программы. А также несколько потоков для orb.
 			
-			
-
-	
-	
   \section secResourses Используемые библиотеки
 	- libmysqlclient, libtcpwrapGK 	- работа с MySQL
 	- linomniORB3(4) - реализация CORBA (удаленный доступ к объектам)
