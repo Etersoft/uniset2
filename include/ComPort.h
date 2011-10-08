@@ -67,7 +67,7 @@ public:
 		TwoBits=3
 	};
 
-	ComPort( std::string comDevice, bool nocreate=false );
+	ComPort( const std::string comDevice, bool nocreate=false );
 	virtual ~ComPort();
 	
 	void setSpeed( Speed s );
@@ -95,7 +95,11 @@ public:
 	
 	void cleanupChannel();
 	
+	virtual void reopen();
+
 protected:
+	void openPort();
+
 	static const int BufSize=8192;
 	unsigned char buf[BufSize];
 	int curSym;
@@ -104,6 +108,7 @@ protected:
 	int uTimeout;
 	bool waiting;
 	Speed speed;
+	std::string dev;
 	
 	virtual unsigned char m_receiveByte( bool wait );
 	
