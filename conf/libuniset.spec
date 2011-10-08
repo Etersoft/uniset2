@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt45
+Release: alt46
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -207,6 +207,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Sat Oct 08 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt46
+- add reopen() for ComPort
+
 * Tue Oct 04 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt45
 - dependence on mandatory disabled launching a local omninames service
 
