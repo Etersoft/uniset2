@@ -27,53 +27,72 @@ using namespace std;
 ComPort::~ComPort()
 {
 //	printf("Destructor\n");
-	
-	tcsetattr(fd, TCSAFLUSH, &oldTermios);
-	close(fd);
+	if( fd > 0 )
+	{
+		tcsetattr(fd, TCSAFLUSH, &oldTermios);
+		close(fd);
+	}
 }
 // --------------------------------------------------------------------------------
-ComPort::ComPort( string comDevice, bool nocreate ):
-	curSym(0), bufLength(0), uTimeout(10000),
-	waiting(true)
+ComPort::ComPort( const string comDevice, bool nocreate ):
+	curSym(0), bufLength(0),fd(-1),uTimeout(10000),
+	waiting(true),dev(comDevice)
 {
 	if( !nocreate )
+		openPort();
+}
+// --------------------------------------------------------------------------------
+void ComPort::openPort()
+{
+	struct termios options;
+
+	fd = open(dev.c_str(), O_RDWR | O_NOCTTY /*| O_NDELAY*/);
+	if( fd == -1 )
+	{
+		string strErr="Unable to open "+dev+" [Error: "+strerror(errno)+"]";
+		throw UniSetTypes::SystemError(strErr.c_str());
+	}
+	
+     /* Get the current options for the port */
+	tcgetattr(fd, &options);
+
+	oldTermios=options;
+	
+	cfsetispeed(&options, B19200);	      /* Set the baud rates to 19200 */
+	cfsetospeed(&options, B19200);
+
+	cfmakeraw(&options);
+	options.c_lflag &= ~(ICANON|ECHO|ECHOE|ECHOK|ECHONL|ISIG|IEXTEN/*|NOFLUSH*/|TOSTOP);
+	options.c_cflag &= ~CSTOPB;
+	options.c_iflag &= ~(IGNBRK|BRKINT|PARMRK);
+	options.c_iflag &= ~(INLCR|IGNCR|ICRNL|IUCLC|IMAXBEL);
+	options.c_oflag &= ~OPOST;
+	options.c_cflag &= ~CRTSCTS;
+	options.c_cflag &= ~HUPCL;
+	options.c_iflag &= ~(IXON|IXOFF|IXANY);
+	options.c_cc[VMIN] = 0;
+	options.c_cc[VTIME] = 1;
+	options.c_cflag &= ~CSIZE;
+	options.c_cflag |= CS8;
+	options.c_cflag &= ~PARENB;
+	options.c_iflag &= ~INPCK;
+	options.c_cflag |= (CLOCAL|CREAD);
+
+	tcsetattr(fd, TCSAFLUSH, &options);
+}
+// --------------------------------------------------------------------------------
+void ComPort::reopen()
+{
+	if( fd > 0 )
 	{
 		struct termios options;
-	
-		fd = open(comDevice.c_str(), O_RDWR | O_NOCTTY /*| O_NDELAY*/);
-		if (fd == -1)
-		{
-			string strErr="Unable to open "+comDevice+" [Error: "+strerror(errno)+"]";
-			throw UniSetTypes::SystemError(strErr.c_str());
-		}
-	
-	     /* Get the current options for the port */
 		tcgetattr(fd, &options);
-
-		oldTermios=options;
-	
-		cfsetispeed(&options, B19200);	      /* Set the baud rates to 19200 */
-		cfsetospeed(&options, B19200);
-
-		cfmakeraw(&options);
-		options.c_lflag &= ~(ICANON|ECHO|ECHOE|ECHOK|ECHONL|ISIG|IEXTEN/*|NOFLUSH*/|TOSTOP);
-		options.c_cflag &= ~CSTOPB;
-		options.c_iflag &= ~(IGNBRK|BRKINT|PARMRK);
-		options.c_iflag &= ~(INLCR|IGNCR|ICRNL|IUCLC|IMAXBEL);
-		options.c_oflag &= ~OPOST;
-		options.c_cflag &= ~CRTSCTS;
-		options.c_cflag &= ~HUPCL;
-		options.c_iflag &= ~(IXON|IXOFF|IXANY);
-		options.c_cc[VMIN] = 0;
-		options.c_cc[VTIME] = 1;
-		options.c_cflag &= ~CSIZE;
-		options.c_cflag |= CS8;
-		options.c_cflag &= ~PARENB;
-		options.c_iflag &= ~INPCK;
-		options.c_cflag |= (CLOCAL|CREAD);
-
-		tcsetattr(fd, TCSAFLUSH, &options);
-	}
+		tcsetattr(fd, TCSAFLUSH, &oldTermios);
+		close(fd);
+		openPort();
+		if( fd > 0 )
+			tcsetattr(fd, TCSAFLUSH, &options);
+	}	
 }
 // --------------------------------------------------------------------------------
 void ComPort::setSpeed( Speed s )
@@ -87,7 +106,6 @@ void ComPort::setSpeed( Speed s )
 	cfsetospeed(&options, speed);
 
 	tcsetattr(fd, TCSADRAIN, &options);
-	
 }
 // --------------------------------------------------------------------------------
 void ComPort::setParity(Parity parity)
