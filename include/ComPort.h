@@ -97,6 +97,8 @@ public:
 	virtual void cleanupChannel();
 	virtual void reopen();
 	
+	virtual void reopen();
+
 protected:
 	void openPort();
 
