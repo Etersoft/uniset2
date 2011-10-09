@@ -104,7 +104,7 @@ Libraries needed to develop for uniset extensions
 %configure --disable-docs --disable-static
 %endif
 
-%make
+%make_build
 
 %install
 %makeinstall_std
