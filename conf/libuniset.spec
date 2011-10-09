@@ -70,7 +70,7 @@ UniSet utilities
 %package doc
 Group: Development/C++
 Summary: Documentations for developing with UniSet
-Requires: lib%name = %version-%release
+Requires: %name = %version-%release
 
 %description doc
 Documentations for developing with UniSet
