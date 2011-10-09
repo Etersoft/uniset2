@@ -20,6 +20,10 @@ BuildRequires: glibc-devel-static libcomedi-devel libcommoncpp2-devel libomniORB
 # Using old package name instead of libmysqlclient-devel it absent in branch 5.0 for yauza
 BuildRequires: libMySQL-devel
 
+%if_enabled doc
+BuildRequires: doxygen
+%endif
+
 %set_verify_elf_method textrel=strict,rpath=strict,unresolved=strict
 
 %description
