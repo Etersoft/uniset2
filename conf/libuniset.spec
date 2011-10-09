@@ -1,4 +1,4 @@
-%def_disable doc
+%def_enable doc
 %define oname uniset
 
 Name: libuniset
