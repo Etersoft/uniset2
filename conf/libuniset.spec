@@ -150,7 +150,7 @@ rm -f %buildroot%_libdir/*.la
 
 %if_enabled doc
 %files doc
-%_docdir/%name
+%_docdir/%oname
 %endif
 
 %files extensions
