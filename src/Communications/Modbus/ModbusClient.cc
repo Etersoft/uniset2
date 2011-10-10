@@ -462,8 +462,6 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 
 			case fnDiagnostics:
 				rbuf.len = DiagnosticRetMessage::szHead();
-				if( crcNoCheckit )
-					rbuf.len -= szCRC;
 			break;
 
 			case fnSetDateTime:
