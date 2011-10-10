@@ -215,6 +215,8 @@ class UniSetObject:
 			/* удаление ссылки из репозитория объектов 	*/
 			void unregister();
 
+			void init_object();
+
 			pid_t msgpid; // pid потока обработки сообщений
 			bool reg;
 			bool active;
