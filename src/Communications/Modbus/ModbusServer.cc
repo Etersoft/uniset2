@@ -256,6 +256,36 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
+	else if( buf.func == fnDiagnostics )
+	{
+		DiagnosticMessage mDiag(buf);
+		DiagnosticRetMessage reply(buf.addr, (DiagnosticsSubFunction)mDiag.subf );
+		mbErrCode res = diagnostics( mDiag, reply );
+		// в случае ошибок ответа не посылаем
+		if( res != erNoError )
+		{
+			dlog[Debug::WARN] << "(0x08): reply: " << mbErr2Str(res) << endl;
+
+			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
+			// то посылаем
+			if( res < erInternalErrorCode )
+			{
+				ErrorRetMessage em( mDiag.addr, mDiag.func, res );
+				buf = em.transport_msg();
+				return send(buf);
+			}
+
+			return res;
+		}
+
+		// отвечаем (используя тотже буфер, который будет очищен!!!)...
+		buf = reply.transport_msg();
+		// -----------------------------------
+		res = send(buf);
+		printProcessingTime();
+		// --------------------------------
+		return res;
+	}
 	else if( buf.func == fnForceSingleCoil )
 	{
 		ForceSingleCoilMessage mWrite(buf);
@@ -585,6 +615,10 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			case fnWriteOutputSingleRegister:
 				rbuf.len = WriteSingleOutputMessage::szHead(); 
+			break;
+
+			case fnDiagnostics:
+				rbuf.len = DiagnosticMessage::szHead();
 			break;
 
 			case fnJournalCommand:
@@ -1006,6 +1040,72 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			}
 
 			return erNoError;			
+		}
+		else if( rbuf.func == fnDiagnostics )
+		{
+			int szDataLen = DiagnosticMessage::getDataLen(rbuf)+szCRC;
+
+			if( crcNoCheckit )
+				szDataLen -= szCRC;
+
+			// Мы получили только предварительный загловок
+			// Теперь необходимо дополучить данные
+			// (c позиции rlen, т.к. часть уже получили)
+			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
+			if( rlen1 < szDataLen )
+			{
+				if( dlog.debugging(Debug::WARN) )
+				{
+					rbuf.len = bcnt + rlen1 - szModbusHeader;
+					dlog[Debug::WARN] << "(0x08): buf: " << rbuf << endl;
+					dlog[Debug::WARN] << "(0x08)("
+						<< rbuf.func << "):(fnDiagnostics) "
+						<< "Получили данных меньше чем ждали...("
+						<< rlen1 << " < " << szDataLen << ")" << endl;
+				}
+				cleanupChannel();
+				return erInvalidFormat;
+			}
+
+			bcnt += rlen1;
+			rbuf.len = bcnt - szModbusHeader;
+
+			DiagnosticMessage mDiag(rbuf);
+
+			if( dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << "(0x08): recv buf: " << rbuf << endl;
+
+			if( !crcNoCheckit )
+			{
+				// Проверяем контрольную сумму
+				// от начала(включая заголовок)
+				// и до конца (исключив последний элемент содержащий CRC)
+				// int mlen = szModbusHeader + mWrite.szHead() + mWrite.bcnt;
+				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
+				if( tcrc != mDiag.crc )
+				{
+					if( dlog.debugging(Debug::WARN) )
+					{
+						ostringstream err;
+						err << "(0x08): bad crc. calc.crc=" << dat2str(tcrc)
+							<< " msg.crc=" << dat2str(mDiag.crc);
+						dlog[Debug::WARN] << err.str() << endl;
+					}
+					cleanupChannel();
+					return erBadCheckSum;
+				}
+			}
+/*
+			if( !mDiag.checkFormat() )
+			{
+				dlog[Debug::WARN] << "(0x08): (" << rbuf.func
+					<< ")(fnDiagnostics): "
+					<< ": некорректный формат сообщения..." << endl;
+				cleanupChannel();
+				return erInvalidFormat;
+			}
+*/
+			return erNoError;
 		}
 		else if( rbuf.func == fnJournalCommand )
 		{

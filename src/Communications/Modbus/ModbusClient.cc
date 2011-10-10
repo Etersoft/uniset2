@@ -149,10 +149,11 @@ WriteOutputRetMessage ModbusClient::write10( WriteOutputMessage& msg )
 }
 // --------------------------------------------------------------------------------
 DiagnosticRetMessage ModbusClient::diag08( ModbusAddr addr,
-											DiagnosticsSubFunction subfunc )
+											DiagnosticsSubFunction subfunc,
+											ModbusRTU::ModbusData dat )
 												throw(ModbusRTU::mbException)
 {
-	DiagnosticMessage msg(addr,subfunc);
+	DiagnosticMessage msg(addr,subfunc,dat);
 	qbuf = msg.transport_msg();
 	mbErrCode res = query(msg.addr,qbuf,reply,replyTimeOut_ms);
 
@@ -455,6 +456,12 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 
 			case fnForceSingleCoil:
 				rbuf.len = ForceSingleCoilRetMessage::szData();
+				if( crcNoCheckit )
+					rbuf.len -= szCRC;
+			break;
+
+			case fnDiagnostics:
+				rbuf.len = DiagnosticRetMessage::szHead();
 				if( crcNoCheckit )
 					rbuf.len -= szCRC;
 			break;
@@ -828,6 +835,61 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 				dlog[Debug::WARN] << err.str() << endl;
 				return erBadCheckSum;
 			}
+			return erNoError;
+		}
+		else if( rbuf.func == fnDiagnostics )
+		{
+			int szDataLen = DiagnosticRetMessage::getDataLen(rbuf)+szCRC;
+
+			if( crcNoCheckit )
+				szDataLen -= szCRC;
+
+			// Мы получили только предварительный загловок
+			// Теперь необходимо дополучить данные
+			// (c позиции rlen, т.к. часть уже получили)
+			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
+			if( rlen1 < szDataLen )
+			{
+				rbuf.len = bcnt + rlen1 - szModbusHeader;
+				if( dlog.debugging(Debug::WARN) )
+				{
+					dlog[Debug::WARN] << "(0x08): buf: " << rbuf << endl;
+					dlog[Debug::WARN] << "(0x08)("
+						<< (int)rbuf.func << "):(fnDiagnostics) "
+						<< "Получили данных меньше чем ждали...("
+						<< rlen1 << " < " << szDataLen << ")" << endl;
+				}
+
+				cleanupChannel();
+				return erInvalidFormat;
+			}
+
+			bcnt += rlen1;
+			rbuf.len = bcnt - szModbusHeader;
+
+			DiagnosticRetMessage mDiag(rbuf);
+
+			if( dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << "(recv)(fnDiagnostics): recv buf: " << rbuf << endl;
+
+			if( crcNoCheckit )
+				return erNoError;
+
+			// Проверяем контрольную сумму
+			// от начала(включая заголовок)
+			// и до конца (исключив последний элемент содержащий CRC)
+			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
+			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
+			if( tcrc != mDiag.crc )
+			{
+				ostringstream err;
+				err << "(recv:fnDiagnostics): bad crc. calc.crc=" << dat2str(tcrc)
+					<< " msg.crc=" << dat2str(mDiag.crc);
+				if( dlog.debugging(Debug::WARN) )
+					dlog[Debug::WARN] << err.str() << endl;
+				return erBadCheckSum;
+			}
+
 			return erNoError;
 		}
 		else if( rbuf.func == fnSetDateTime )

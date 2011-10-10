@@ -966,7 +966,7 @@ namespace ModbusRTU
 		ModbusCRC crc;
 
 		// ------- to master -------
-		DiagnosticMessage( ModbusAddr _from, DiagnosticsSubFunction subf );
+		DiagnosticMessage( ModbusAddr _from, DiagnosticsSubFunction subf, ModbusData d=0 );
 
 		/*! добавление данных.
 		 * \return TRUE - если удалось
@@ -1005,6 +1005,7 @@ namespace ModbusRTU
 	{
 		DiagnosticRetMessage( ModbusMessage& m );
 		DiagnosticRetMessage( DiagnosticMessage& m );
+		DiagnosticRetMessage( ModbusAddr a, DiagnosticsSubFunction subf, ModbusData d=0 );
 	};
 
 	std::ostream& operator<<(std::ostream& os, DiagnosticRetMessage& m );
