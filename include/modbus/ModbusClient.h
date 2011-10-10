@@ -82,6 +82,10 @@ class ModbusClient
 		ModbusRTU::WriteOutputRetMessage write10( ModbusRTU::WriteOutputMessage& msg )
 														throw(ModbusRTU::mbException);
 
+		/*! Диагностика (0x08) */
+		ModbusRTU::DiagnosticRetMessage diag08( ModbusRTU::ModbusAddr addr,
+												ModbusRTU::DiagnosticsSubFunction subfunc )
+														throw(ModbusRTU::mbException);
 
 		/*! Установить системное время (0x50)
 			hour	- часы [0..23]

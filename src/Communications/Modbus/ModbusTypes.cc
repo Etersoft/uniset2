@@ -2145,67 +2145,10 @@ int ModbusRTU::szRequestDiagnosticData( DiagnosticsSubFunction f )
 	return -1;
 }
 // -------------------------------------------------------------------------
-DiagnosticMessage::DiagnosticMessage( ModbusAddr a, ModbusData sf ):
-	subf(sf),
-	dcount(0)
-{
-	addr = a;
-	func = fnDiagnostics;
-}
-// -------------------------------------------------------------------------
-int DiagnosticMessage::szData()
-{
-	int sz = szRequestDiagnosticData( (DiagnosticsSubFunction)subf );
-	if( sz >= 0 ) // return subf + szData + CRC
-		return (sizeof(ModbusData) + sizeof(ModbusData)*sz + szCRC);
-
-	return 0;
-}
-// -------------------------------------------------------------------------
-ModbusMessage DiagnosticMessage::transport_msg()
-{
-	assert(sizeof(ModbusMessage)>=sizeof(DiagnosticMessage));
-
-	ModbusMessage mm;
-
-	// копируем заголовок
-	memcpy(&mm,this,szModbusHeader);
-
-	// копируем данные (переворачиваем байты)
-	ModbusData d = SWAPSHORT(subf);
-	int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
-	memcpy(mm.data,&d,last);
-
-	int count = szRequestDiagnosticData((DiagnosticsSubFunction)subf );
-	// Создаём временно массив, переворачиваем байты
-	ModbusData* dtmp = new ModbusData[count];
-	for( int i=0; i<count; i++ )
-		dtmp[i] = SWAPSHORT(data[i]);
-
-	// копируем
-	memcpy(&(mm.data[last]),dtmp, sizeof(ModbusData)*count );
-
-	delete dtmp;
-	
-	last += sizeof(ModbusData)*count;
-	
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+last );
-
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[last]),&crc,szCRC);
-
-	// длина сообщения...
-	mm.len = szData();
-
-	return mm;
-}
-// -------------------------------------------------------------------------
 DiagnosticMessage::DiagnosticMessage( ModbusMessage& m )
 {
 	init(m);
 }
-
 // -------------------------------------------------------------------------
 DiagnosticMessage& DiagnosticMessage::operator=( ModbusMessage& m )
 {
@@ -2216,53 +2159,15 @@ DiagnosticMessage& DiagnosticMessage::operator=( ModbusMessage& m )
 void DiagnosticMessage::init( ModbusMessage& m )
 {
 	assert( m.func == fnDiagnostics );
-	memset(this,0,sizeof(*this));
-	memcpy(this,&m,sizeof(*this)); // m.len
-	
-	// переворачиваем слова
-	subf = SWAPSHORT(subf);
-
-	int count = szRequestDiagnosticData( (DiagnosticsSubFunction)subf );
-	if( count > MAXDATALEN )
-		throw mbException(erPacketTooLong);
-
-	if( count < 0 )
-		throw mbException(erBadDataValue);
-	
-	for( int i=0;i<count; i++ )
-		data[i] = SWAPSHORT(data[i]);
-}
-
-// -------------------------------------------------------------------------
-std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticMessage& m )
-{
-	return os << "addr=" << addr2str(m.addr) 
-				<< " subf=" << dat2str(m.subf);
-}
-std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticMessage* m )
-{
-	return os << (*m);
-}
-// -------------------------------------------------------------------------
-DiagnosticRetMessage::DiagnosticRetMessage( ModbusMessage& m )
-{
-	init(m);
-}
-// -------------------------------------------------------------------------
-DiagnosticRetMessage& DiagnosticRetMessage::operator=( ModbusMessage& m )
-{
-	init(m);
-	return *this;
-}
-// -------------------------------------------------------------------------
-void DiagnosticRetMessage::init( ModbusMessage& m )
-{
-	assert( m.func == fnDiagnostics );
  
 	memset(this,0,sizeof(*this));
 	addr = m.addr;
 	func = m.func;
+
+	memcpy( &subf,m.data,sizeof(subf) );
+	int last = sizeof(subf);
 	
+	subf = 	SWAPSHORT(subf);
 	int count = szRequestDiagnosticData((DiagnosticsSubFunction)subf );
 	if( count > MAXDATALEN )
 		throw mbException(erPacketTooLong);
@@ -2271,53 +2176,60 @@ void DiagnosticRetMessage::init( ModbusMessage& m )
 		throw mbException(erBadDataValue);
 
 	memcpy(&data,&(m.data[1]),sizeof(ModbusData)*count);
+	last +=sizeof(ModbusData)*count;
 	
 	// переворачиваем данные
-	for( unsigned int i=0; i<count; i++ )
+	for( int i=0; i<count; i++ )
 		data[i] = SWAPSHORT(data[i]);
 
- 	memcpy(&crc,&(m.data[sizeof(ModbusData)*count+1]),szCRC);
+ 	memcpy(&crc,&(m.data[last]),szCRC);
 }	
 // -------------------------------------------------------------------------
-int DiagnosticRetMessage::getDataLen( ModbusMessage& m )
+int DiagnosticMessage::getDataLen( ModbusMessage& m )
 {
 	if( m.len < 0 )
 		return 0;
 
-	return m.data[0];
-/*
-	DiagnosticMessage rm(m);
-	return (int)(rm.bcnt);
-*/	
+	ModbusData d;
+	memcpy( &d,m.data,sizeof(d) );
+	d = SWAPSHORT(d);
+
+	int sz = szRequestDiagnosticData((DiagnosticsSubFunction)d );
+	
+	if( sz >= 0 )
+		return sz + sizeof(d); // subf + sz
+
+	return	0;
 }
 // -------------------------------------------------------------------------
-DiagnosticRetMessage::DiagnosticRetMessage( ModbusAddr _addr ):
-	dcount(0)
+DiagnosticMessage::DiagnosticMessage( ModbusAddr _addr, DiagnosticsSubFunction sf ):
+	count(0)
 {
 	addr = _addr;
 	func = fnDiagnostics;
+	subf = sf;
 	memset(data,0,sizeof(data));
 }
 // -------------------------------------------------------------------------
-bool DiagnosticRetMessage::addData( ModbusData d )
+bool DiagnosticMessage::addData( ModbusData d )
 {
 	if( isFull() )
 		return false;
 	
-	data[dcount++] = d;
+	data[count++] = d;
 	return true;
 }
 // -------------------------------------------------------------------------
-void DiagnosticRetMessage::clear()
+void DiagnosticMessage::clear()
 {
 	memset(data,0,sizeof(data));
-	dcount	= 0;
+	count	= 0;
 }
 // -------------------------------------------------------------------------
-ModbusMessage DiagnosticRetMessage::transport_msg()
+ModbusMessage DiagnosticMessage::transport_msg()
 {
 	ModbusMessage mm;
-//	assert(sizeof(ModbusMessage)>=sizeof(DiagnosticRetMessage));
+//	assert(sizeof(ModbusMessage)>=sizeof(DiagnosticMessage));
 	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
 	// копируем заголовок и данные
@@ -2329,19 +2241,19 @@ ModbusMessage DiagnosticRetMessage::transport_msg()
 	ind+=sizeof(subf);
 
 	// Создаём временно массив, переворачиваем байты
-	ModbusData* dtmp = new ModbusData[dcount];
-	for( int i=0; i<dcount; i++ )
+	ModbusData* dtmp = new ModbusData[count];
+	for( int i=0; i<count; i++ )
 		dtmp[i] = SWAPSHORT(data[i]);
 
 	// копируем
-	memcpy(&(mm.data[ind]),dtmp,sizeof(ModbusData)*dcount);
+	memcpy(&(mm.data[ind]),dtmp,sizeof(ModbusData)*count);
 
 	delete dtmp;
 
-	ind+=sizeof(ModbusData)*dcount;
+	ind+=sizeof(ModbusData)*count;
 
 	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(subf)+sizeof(ModbusData)*dcount );
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(subf)+sizeof(ModbusData)*count );
 
 	// копируем CRC (последний элемент). Без переворачивания...
  	memcpy(&(mm.data[ind]),&crc,szCRC);
@@ -2353,15 +2265,38 @@ ModbusMessage DiagnosticRetMessage::transport_msg()
 	return mm;
 }
 // -------------------------------------------------------------------------
-int DiagnosticRetMessage::szData()
+int DiagnosticMessage::szData()
 {
 	// фактическое число данных + контрольная сумма
-	return dcount*sizeof(ModbusData)+szCRC;
+	return sizeof(subf)+count*sizeof(ModbusData)+szCRC;
+}
+// -------------------------------------------------------------------------
+DiagnosticRetMessage::DiagnosticRetMessage( ModbusMessage& m ):
+DiagnosticMessage(m)
+{
+}
+// -------------------------------------------------------------------------
+DiagnosticRetMessage::DiagnosticRetMessage( DiagnosticMessage& m ):
+DiagnosticMessage(m)
+{
+
+}
+// -------------------------------------------------------------------------
+std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticMessage& m )
+{
+//	return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
+	return os << "addr=" << addr2str(m.addr)
+				<< " subf=" << dat2str(m.subf);
+}
+
+std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticMessage* m )
+{
+	return os << (*m);
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticRetMessage& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
+	return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticRetMessage* m )

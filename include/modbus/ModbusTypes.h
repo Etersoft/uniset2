@@ -948,46 +948,17 @@ namespace ModbusRTU
 	{
 		ModbusData subf;
 		ModbusData data[MAXLENPACKET/sizeof(ModbusData)];	/*!< данные */
-		ModbusCRC crc;
-		
-		// ------- to slave -------
-		DiagnosticMessage( ModbusAddr addr, ModbusData dat );
-		/*! преобразование для посылки в сеть */
-		ModbusMessage transport_msg();
-
-		// ------- from master -------
-		DiagnosticMessage( ModbusMessage& m );
-		DiagnosticMessage& operator=( ModbusMessage& m );
-		void init( ModbusMessage& m );
-
-		/*! размер данных(после заголовка) у данного типа сообщения */
-		int szData();
-
-		// вспомогательное поле определяющее количество байт данных в данном сообщении 
-		int dcount;
-	}__attribute__((packed));
-
-	std::ostream& operator<<(std::ostream& os, DiagnosticMessage& m ); 
-	std::ostream& operator<<(std::ostream& os, DiagnosticMessage* m ); 
-	// -----------------------------------------------------------------------
-	/*! Ответ для 0x08 */	
-	struct DiagnosticRetMessage:
-		public ModbusHeader
-	{
-		ModbusData subf;
-		ModbusData data[MAXLENPACKET/sizeof(ModbusData)];	/*!< данные */
 
 		// ------- from slave -------
-		DiagnosticRetMessage( ModbusMessage& m );
-		DiagnosticRetMessage& operator=( ModbusMessage& m );
+		DiagnosticMessage( ModbusMessage& m );
+		DiagnosticMessage& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
 		/*! размер предварительного заголовка 
 		 * (после основного до фактических данных) 
 		*/
 		static inline int szHead()
 		{
-			// bcnt
-			return sizeof(ModbusByte);
+			return sizeof(subf);
 		}
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
@@ -995,7 +966,7 @@ namespace ModbusRTU
 		ModbusCRC crc;
 		
 		// ------- to master -------
-		DiagnosticRetMessage( ModbusAddr _from );
+		DiagnosticMessage( ModbusAddr _from, DiagnosticsSubFunction subf );
 
 		/*! добавление данных.
 		 * \return TRUE - если удалось
@@ -1009,7 +980,7 @@ namespace ModbusRTU
 		/*! проверка на переполнение */	
 		inline bool isFull() 		
 		{
-			return ( dcount*sizeof(ModbusData) >= MAXLENPACKET );
+			return ( sizeof(subf)+count*sizeof(ModbusData) >= MAXLENPACKET );
 		}
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
@@ -1023,7 +994,17 @@ namespace ModbusRTU
 		// преобразовании в ModbusMessage.
 		// Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно. 
 		// Используйте специальную функцию transport_msg()
-		int	dcount;	/*!< фактическое количество данных в сообщении */
+		int	count;	/*!< фактическое количество данных в сообщении */
+	};
+	std::ostream& operator<<(std::ostream& os, DiagnosticMessage& m );
+	std::ostream& operator<<(std::ostream& os, DiagnosticMessage* m );
+	// -----------------------------------------------------------------------
+	/*! Ответ для 0x08 */	
+	struct DiagnosticRetMessage:
+		public DiagnosticMessage
+	{
+		DiagnosticRetMessage( ModbusMessage& m );
+		DiagnosticRetMessage( DiagnosticMessage& m );
 	};
 
 	std::ostream& operator<<(std::ostream& os, DiagnosticRetMessage& m );

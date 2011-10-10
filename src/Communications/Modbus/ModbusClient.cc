@@ -148,6 +148,20 @@ WriteOutputRetMessage ModbusClient::write10( WriteOutputMessage& msg )
 	throw mbException(res);
 }
 // --------------------------------------------------------------------------------
+DiagnosticRetMessage ModbusClient::diag08( ModbusAddr addr,
+											DiagnosticsSubFunction subfunc )
+												throw(ModbusRTU::mbException)
+{
+	DiagnosticMessage msg(addr,subfunc);
+	qbuf = msg.transport_msg();
+	mbErrCode res = query(msg.addr,qbuf,reply,replyTimeOut_ms);
+
+	if( res==erNoError )
+		return DiagnosticRetMessage(reply);
+
+	throw mbException(res);
+}
+// --------------------------------------------------------------------------------
 SetDateTimeRetMessage ModbusClient::setDateTime( ModbusAddr addr, ModbusByte hour, ModbusByte min, ModbusByte sec,
 								ModbusByte day, ModbusByte mon, ModbusByte year,
 								ModbusByte century )

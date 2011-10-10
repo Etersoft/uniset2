@@ -50,6 +50,11 @@ void ModbusServerSlot::connectWriteSingleOutput( WriteSingleOutputSlot sl )
 }
 
 // -------------------------------------------------------------------------
+void ModbusServerSlot::connectDiagnostics( DiagnosticsSlot sl )
+{
+	slDiagnostics = sl;
+}
+// -------------------------------------------------------------------------
 void ModbusServerSlot::connectForceSingleCoil( ForceSingleCoilSlot sl )
 {
 	slForceSingleCoil = sl;
