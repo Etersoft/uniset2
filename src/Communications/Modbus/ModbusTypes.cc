@@ -2094,6 +2094,281 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteSingleOutputRetMessag
 }
 
 // -------------------------------------------------------------------------
+int ModbusRTU::szRequestDiagnosticData( DiagnosticsSubFunction f )
+{
+	if( f == subEcho )
+		return 1; 	// тут странно, вроде в стандарте количество динамическое
+					// но везде вроде в примерах.. "одно слово"..
+	
+	if( f == dgRestartComm )
+		return 1;
+		
+	if( f == dgDiagReg )
+		return 1;
+		
+	if( f == dgChangeASCII )
+		return 1;
+	
+	if( f == dgForceListen )
+		return 1;		
+
+	if( f == dgClearCounters) 
+		return 1;
+
+	if( f == dgBusMsgCount )
+		return 1;
+	
+	if( f == dgBusErrCount )
+		return 1;
+	
+	if( f == dgBusExceptCount )
+		return 1;
+	
+	if( f == dgMsgslavecount )
+		return 1;
+	
+	if( f == dgNoNoResponseCount )
+		return 1;
+	
+	if( f == dgSlaveNAKCount )
+		return 1;
+	
+	if( f == dgSlaveBusyCount )
+		return 1;
+	
+	if( f == dgBusCharOverrunCount )
+		return 1;
+	
+	if( f == dgClearOverrunCounter )
+		return 1;
+
+	return -1;
+}
+// -------------------------------------------------------------------------
+DiagnosticMessage::DiagnosticMessage( ModbusAddr a, ModbusData sf ):
+	subf(sf),
+	dcount(0)
+{
+	addr = a;
+	func = fnDiagnostics;
+}
+// -------------------------------------------------------------------------
+int DiagnosticMessage::szData()
+{
+	int sz = szRequestDiagnosticData( (DiagnosticsSubFunction)subf );
+	if( sz >= 0 ) // return subf + szData + CRC
+		return (sizeof(ModbusData) + sizeof(ModbusData)*sz + szCRC);
+
+	return 0;
+}
+// -------------------------------------------------------------------------
+ModbusMessage DiagnosticMessage::transport_msg()
+{
+	assert(sizeof(ModbusMessage)>=sizeof(DiagnosticMessage));
+
+	ModbusMessage mm;
+
+	// копируем заголовок
+	memcpy(&mm,this,szModbusHeader);
+
+	// копируем данные (переворачиваем байты)
+	ModbusData d = SWAPSHORT(subf);
+	int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
+	memcpy(mm.data,&d,last);
+
+	int count = szRequestDiagnosticData((DiagnosticsSubFunction)subf );
+	// Создаём временно массив, переворачиваем байты
+	ModbusData* dtmp = new ModbusData[count];
+	for( int i=0; i<count; i++ )
+		dtmp[i] = SWAPSHORT(data[i]);
+
+	// копируем
+	memcpy(&(mm.data[last]),dtmp, sizeof(ModbusData)*count );
+
+	delete dtmp;
+	
+	last += sizeof(ModbusData)*count;
+	
+	// пересчитываем CRC по перевёрнутым данным
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+last );
+
+	// копируем CRC (последний элемент). Без переворачивания...
+ 	memcpy(&(mm.data[last]),&crc,szCRC);
+
+	// длина сообщения...
+	mm.len = szData();
+
+	return mm;
+}
+// -------------------------------------------------------------------------
+DiagnosticMessage::DiagnosticMessage( ModbusMessage& m )
+{
+	init(m);
+}
+
+// -------------------------------------------------------------------------
+DiagnosticMessage& DiagnosticMessage::operator=( ModbusMessage& m )
+{
+	init(m);
+	return *this;
+}
+// -------------------------------------------------------------------------
+void DiagnosticMessage::init( ModbusMessage& m )
+{
+	assert( m.func == fnDiagnostics );
+	memset(this,0,sizeof(*this));
+	memcpy(this,&m,sizeof(*this)); // m.len
+	
+	// переворачиваем слова
+	subf = SWAPSHORT(subf);
+
+	int count = szRequestDiagnosticData( (DiagnosticsSubFunction)subf );
+	if( count > MAXDATALEN )
+		throw mbException(erPacketTooLong);
+
+	if( count < 0 )
+		throw mbException(erBadDataValue);
+	
+	for( int i=0;i<count; i++ )
+		data[i] = SWAPSHORT(data[i]);
+}
+
+// -------------------------------------------------------------------------
+std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticMessage& m )
+{
+	return os << "addr=" << addr2str(m.addr) 
+				<< " subf=" << dat2str(m.subf);
+}
+std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticMessage* m )
+{
+	return os << (*m);
+}
+// -------------------------------------------------------------------------
+DiagnosticRetMessage::DiagnosticRetMessage( ModbusMessage& m )
+{
+	init(m);
+}
+// -------------------------------------------------------------------------
+DiagnosticRetMessage& DiagnosticRetMessage::operator=( ModbusMessage& m )
+{
+	init(m);
+	return *this;
+}
+// -------------------------------------------------------------------------
+void DiagnosticRetMessage::init( ModbusMessage& m )
+{
+	assert( m.func == fnDiagnostics );
+ 
+	memset(this,0,sizeof(*this));
+	addr = m.addr;
+	func = m.func;
+	
+	int count = szRequestDiagnosticData((DiagnosticsSubFunction)subf );
+	if( count > MAXDATALEN )
+		throw mbException(erPacketTooLong);
+
+	if( count < 0 )
+		throw mbException(erBadDataValue);
+
+	memcpy(&data,&(m.data[1]),sizeof(ModbusData)*count);
+	
+	// переворачиваем данные
+	for( unsigned int i=0; i<count; i++ )
+		data[i] = SWAPSHORT(data[i]);
+
+ 	memcpy(&crc,&(m.data[sizeof(ModbusData)*count+1]),szCRC);
+}	
+// -------------------------------------------------------------------------
+int DiagnosticRetMessage::getDataLen( ModbusMessage& m )
+{
+	if( m.len < 0 )
+		return 0;
+
+	return m.data[0];
+/*
+	DiagnosticMessage rm(m);
+	return (int)(rm.bcnt);
+*/	
+}
+// -------------------------------------------------------------------------
+DiagnosticRetMessage::DiagnosticRetMessage( ModbusAddr _addr ):
+	dcount(0)
+{
+	addr = _addr;
+	func = fnDiagnostics;
+	memset(data,0,sizeof(data));
+}
+// -------------------------------------------------------------------------
+bool DiagnosticRetMessage::addData( ModbusData d )
+{
+	if( isFull() )
+		return false;
+	
+	data[dcount++] = d;
+	return true;
+}
+// -------------------------------------------------------------------------
+void DiagnosticRetMessage::clear()
+{
+	memset(data,0,sizeof(data));
+	dcount	= 0;
+}
+// -------------------------------------------------------------------------
+ModbusMessage DiagnosticRetMessage::transport_msg()
+{
+	ModbusMessage mm;
+//	assert(sizeof(ModbusMessage)>=sizeof(DiagnosticRetMessage));
+	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
+
+	// копируем заголовок и данные
+	memcpy(&mm,this,szModbusHeader);
+	
+	int ind=0;
+	// copy bcnt
+	memcpy(&mm.data,&subf,sizeof(subf));
+	ind+=sizeof(subf);
+
+	// Создаём временно массив, переворачиваем байты
+	ModbusData* dtmp = new ModbusData[dcount];
+	for( int i=0; i<dcount; i++ )
+		dtmp[i] = SWAPSHORT(data[i]);
+
+	// копируем
+	memcpy(&(mm.data[ind]),dtmp,sizeof(ModbusData)*dcount);
+
+	delete dtmp;
+
+	ind+=sizeof(ModbusData)*dcount;
+
+	// пересчитываем CRC по перевёрнутым данным
+	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(subf)+sizeof(ModbusData)*dcount );
+
+	// копируем CRC (последний элемент). Без переворачивания...
+ 	memcpy(&(mm.data[ind]),&crc,szCRC);
+	ind+=szCRC;
+
+	// длина сообщения...
+	mm.len = ind; 
+
+	return mm;
+}
+// -------------------------------------------------------------------------
+int DiagnosticRetMessage::szData()
+{
+	// фактическое число данных + контрольная сумма
+	return dcount*sizeof(ModbusData)+szCRC;
+}
+// -------------------------------------------------------------------------
+std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticRetMessage& m )
+{
+	return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
+}
+
+std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticRetMessage* m )
+{
+	return os << (*m);
+}
+// -------------------------------------------------------------------------
 JournalCommandMessage::JournalCommandMessage( ModbusMessage& m )
 {
 	assert( m.func == fnJournalCommand );

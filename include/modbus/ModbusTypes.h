@@ -37,6 +37,7 @@ namespace ModbusRTU
 		fnReadInputRegisters	= 0x04, /*!< read input registers or memories or read word outputs or memories */
 		fnForceSingleCoil		= 0x05, /*!< forces a single coil to either ON or OFF */
 		fnWriteOutputSingleRegister = 0x06,	/*!< write register outputs or memories */
+		fnDiagnostics			= 0x08, /*!< Diagnostics (Serial Line only) */
 		fnForceMultipleCoils	= 0x0F,	/*!< force multiple coils */
 		fnWriteOutputRegisters	= 0x10,	/*!< write register outputs or memories */
 		fnReadFileRecord		= 0x14,	/*!< read file record */
@@ -46,6 +47,33 @@ namespace ModbusRTU
 		fnJournalCommand		= 0x65,	/*!< read,write,delete alarm journal */
 		fnFileTransfer			= 0x66	/*!< file transfer */
 	};
+
+	/*! Коды диагностически подфункций (для запроса 0x08) */
+	enum DiagnosticsSubFunction
+	{
+		subEcho = 0x00, 		/*!< (0) Return Query Data (echo) */
+		dgRestartComm = 0x01, 	/*!< (1) Restart Communications Option */
+		dgDiagReg = 0x02, 		/*!< (2) Return Diagnostic Register */
+		dgChangeASCII = 0x03,	/*!< (3) Change ASCII Input Delimiter */
+		dgForceListen = 0x04,	/*!< (4) Force Listen Only Mode */
+		// 05.. 09 RESERVED
+		dgClearCounters = 0x0A, 	/*!< (10)Clear Counters and Diagnostic Register */
+		dgBusMsgCount = 0x0B,		/*!< (11) Return Bus Message Count */
+		dgBusErrCount = 0x0C,		/*!< (12) Return Bus Communication Error Count */
+		dgBusExceptCount = 0x0D,	/*!< (13) Return Bus Exception Error Count */
+		dgMsgslavecount = 0x0E,		/*!< (14) Return Slave Message Count */
+		dgNoNoResponseCount = 0x0F,	/*!< (15) Return Slave No Response Count */
+		dgSlaveNAKCount = 0x10,		/*!< (16) Return Slave NAK Count */
+		dgSlaveBusyCount = 0x11,		/*!< (17) Return Slave Busy Count */
+		dgBusCharOverrunCount = 0x12,	/*!< (18) Return Bus Character Overrun Count */
+		 // = 0x13,	/*!<  RESERVED */
+		dgClearOverrunCounter = 0x14	/*!< (20) Clear Overrun Counter and FlagN.A. */
+		 // 21 ...65535 RESERVED
+	};
+	
+	// определение размера данных в зависимости от типа сообщения
+	// возвращает -1 - если динамический размер сообщения или размер неизвестен
+	int szRequestDiagnosticData( DiagnosticsSubFunction f );
 
 	/*! различные базовые константы */
 	enum
@@ -913,6 +941,93 @@ namespace ModbusRTU
 	
 	std::ostream& operator<<(std::ostream& os, WriteSingleOutputRetMessage& m );
 	std::ostream& operator<<(std::ostream& os, WriteSingleOutputRetMessage* m );
+	// -----------------------------------------------------------------------
+	/*! Запрос 0x08 */	
+	struct DiagnosticMessage:
+		public ModbusHeader
+	{
+		ModbusData subf;
+		ModbusData data[MAXLENPACKET/sizeof(ModbusData)];	/*!< данные */
+		ModbusCRC crc;
+		
+		// ------- to slave -------
+		DiagnosticMessage( ModbusAddr addr, ModbusData dat );
+		/*! преобразование для посылки в сеть */
+		ModbusMessage transport_msg();
+
+		// ------- from master -------
+		DiagnosticMessage( ModbusMessage& m );
+		DiagnosticMessage& operator=( ModbusMessage& m );
+		void init( ModbusMessage& m );
+
+		/*! размер данных(после заголовка) у данного типа сообщения */
+		int szData();
+
+		// вспомогательное поле определяющее количество байт данных в данном сообщении 
+		int dcount;
+	}__attribute__((packed));
+
+	std::ostream& operator<<(std::ostream& os, DiagnosticMessage& m ); 
+	std::ostream& operator<<(std::ostream& os, DiagnosticMessage* m ); 
+	// -----------------------------------------------------------------------
+	/*! Ответ для 0x08 */	
+	struct DiagnosticRetMessage:
+		public ModbusHeader
+	{
+		ModbusData subf;
+		ModbusData data[MAXLENPACKET/sizeof(ModbusData)];	/*!< данные */
+
+		// ------- from slave -------
+		DiagnosticRetMessage( ModbusMessage& m );
+		DiagnosticRetMessage& operator=( ModbusMessage& m );
+		void init( ModbusMessage& m );
+		/*! размер предварительного заголовка 
+		 * (после основного до фактических данных) 
+		*/
+		static inline int szHead()
+		{
+			// bcnt
+			return sizeof(ModbusByte);
+		}
+
+		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
+		static int getDataLen( ModbusMessage& m );
+		ModbusCRC crc;
+		
+		// ------- to master -------
+		DiagnosticRetMessage( ModbusAddr _from );
+
+		/*! добавление данных.
+		 * \return TRUE - если удалось
+		 * \return FALSE - если НЕ удалось
+		*/
+		bool addData( ModbusData d );
+
+		/*! очистка данных */
+		void clear();
+		
+		/*! проверка на переполнение */	
+		inline bool isFull() 		
+		{
+			return ( dcount*sizeof(ModbusData) >= MAXLENPACKET );
+		}
+
+		/*! размер данных(после заголовка) у данного типа сообщения */
+		int szData();
+		
+		/*! преобразование для посылки в сеть */	
+		ModbusMessage transport_msg();
+		
+		// Это поле не входит в стандарт modbus
+		// оно вспомогательное и игнорируется при 
+		// преобразовании в ModbusMessage.
+		// Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно. 
+		// Используйте специальную функцию transport_msg()
+		int	dcount;	/*!< фактическое количество данных в сообщении */
+	};
+
+	std::ostream& operator<<(std::ostream& os, DiagnosticRetMessage& m );
+	std::ostream& operator<<(std::ostream& os, DiagnosticRetMessage* m );
 	// -----------------------------------------------------------------------
 
 	/*! Чтение информации об ошибке */	
