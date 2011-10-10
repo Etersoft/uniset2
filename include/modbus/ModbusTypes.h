@@ -61,7 +61,7 @@ namespace ModbusRTU
 		dgBusMsgCount = 0x0B,		/*!< (11) Return Bus Message Count */
 		dgBusErrCount = 0x0C,		/*!< (12) Return Bus Communication Error Count */
 		dgBusExceptCount = 0x0D,	/*!< (13) Return Bus Exception Error Count */
-		dgMsgslavecount = 0x0E,		/*!< (14) Return Slave Message Count */
+		dgMsgSlaveCount = 0x0E,		/*!< (14) Return Slave Message Count */
 		dgNoNoResponseCount = 0x0F,	/*!< (15) Return Slave No Response Count */
 		dgSlaveNAKCount = 0x10,		/*!< (16) Return Slave NAK Count */
 		dgSlaveBusyCount = 0x11,		/*!< (17) Return Slave Busy Count */

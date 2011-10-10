@@ -2124,7 +2124,7 @@ int ModbusRTU::szRequestDiagnosticData( DiagnosticsSubFunction f )
 	if( f == dgBusExceptCount )
 		return 1;
 	
-	if( f == dgMsgslavecount )
+	if( f == dgMsgSlaveCount )
 		return 1;
 	
 	if( f == dgNoNoResponseCount )
@@ -2175,7 +2175,7 @@ void DiagnosticMessage::init( ModbusMessage& m )
 	if( count < 0 )
 		throw mbException(erBadDataValue);
 
-	memcpy(&data,&(m.data[1]),sizeof(ModbusData)*count);
+	memcpy(&data,&(m.data[last]),sizeof(ModbusData)*count);
 	last +=sizeof(ModbusData)*count;
 	
 	// переворачиваем данные
@@ -2290,8 +2290,16 @@ DiagnosticRetMessage::DiagnosticRetMessage( ModbusAddr a, DiagnosticsSubFunction
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticMessage& m )
 {
 //	return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
-	return os << "addr=" << addr2str(m.addr)
-				<< " subf=" << dat2str(m.subf);
+	os << "addr=" << addr2str(m.addr)
+				<< " subf=" << dat2str(m.subf)
+			<< " data[" << m.count << "]={";
+
+	for( int i=0; i<m.count; i++ )
+		os << dat2str(m.data[i]) << "  ";
+	
+	os << "}";
+	
+	return os;
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticMessage* m )

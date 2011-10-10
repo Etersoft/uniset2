@@ -165,7 +165,7 @@ int main( int argc, char **argv )
 						subfunc = (ModbusRTU::DiagnosticsSubFunction)uni_atoi(argv[optind]);
 						
 					if( checkArg(optind+1,argc,argv) )
-						count = uni_atoi(argv[optind+1]);
+						dat = uni_atoi(argv[optind+1]);
 				break;
 
 				case 'f':
@@ -634,7 +634,7 @@ int main( int argc, char **argv )
 			{
 				if( ex.err != ModbusRTU::erTimeOut )
             		throw ex;
-            	
+
             	cout << "timeout..." << endl;
             }
 			

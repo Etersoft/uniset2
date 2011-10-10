@@ -111,7 +111,9 @@ class MBSlave:
 		ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query, 
 															ModbusRTU::FileTransferRetMessage& reply );
 
-
+		ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query, 
+														ModbusRTU::DiagnosticRetMessage& reply );
+		
 		/*! Проверка корректности регистра перед сохранением.
 			Вызывается для каждого регистра не зависимо от используемой функции (06 или 10)
 		*/
