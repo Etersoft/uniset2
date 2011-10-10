@@ -1,54 +1,24 @@
 %def_enable doc
-%def_enable mysql
-%def_enable sqlite
-%def_enable python
-%def_enable rrd
-
 %define oname uniset
 
 Name: libuniset
-Version: 1.7
-Release: alt15
-
+Version: 1.0
+Release: alt46
 Summary: UniSet - library for building distributed industrial control systems
-
 License: GPL
 Group: Development/C++
-Url: http://wiki.etersoft.ru/UniSet
+Url: http://sourceforge.net/uniset
 
 Packager: Pavel Vainerman <pv@altlinux.ru>
 
-# Git: http://git.etersoft.ru/projects/asu/uniset.git
-Source: %name-%version.tar
+Source: /var/ftp/pvt/Etersoft/Ourside/unstable/sources/tarball/%name-%version.tar
 
 # manually removed: glibc-devel-static
 # Automatically added by buildreq on Fri Nov 26 2010
-BuildRequires: libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel xsltproc
+BuildRequires: glibc-devel-static libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel python-modules xsltproc
 
-%if_enabled mysql
 # Using old package name instead of libmysqlclient-devel it absent in branch 5.0 for yauza
 BuildRequires: libMySQL-devel
-%endif
-
-%if_enabled sqlite
-BuildRequires: libsqlite3-devel
-%endif
-
-%if_enabled rrd
-BuildRequires: librrd-devel
-%endif
-
-%if_enabled python
-BuildRequires: python-devel
-BuildRequires(pre): rpm-build-python
-
-# swig
-# add_findprov_lib_path %python_sitelibdir/%oname
-%endif
-
-%if_enabled doc
-BuildRequires: doxygen
-%endif
 
 %if_enabled doc
 BuildRequires: doxygen
@@ -57,21 +27,7 @@ BuildRequires: doxygen
 %set_verify_elf_method textrel=strict,rpath=strict,unresolved=strict
 
 %description
-UniSet is a library for distributed control systems.
-There are set of base components to construct this kind of systems:
-* base interfaces for your implementation of control algorithms.
-* algorithms for the discrete and analog input/output based on COMEDI interface.
-* IPC mechanism based on CORBA (omniORB).
-* logging system based on MySQL database.
-* Web interface to display logging and statistic information.
-* utilities for system's configuration based on XML.
-
-UniSet have been written in C++ and IDL languages but you can use another languages in your
-add-on components. The main principle of the UniSet library's design is a maximum integration
-with open source third-party libraries. UniSet provide the consistent interface for all
-add-on components and third-party libraries.
-
-More information in Russian:
+The UniSet library intended for building distributed industrial control systems
 
 %package devel
 Group: Development/C
@@ -81,7 +37,6 @@ Requires: %name = %version-%release
 %description devel
 Libraries needed to develop for UniSet.
 
-%if_enabled mysql
 %package mysql-dbserver
 Group: Development/Databases
 Summary: MySQL-dbserver implementatioin for UniSet
@@ -101,41 +56,6 @@ Obsoletes: %oname-mysql-devel
 
 %description mysql-devel
 Libraries needed to develop for uniset MySQL
-%endif
-
-%if_enabled sqlite
-%package sqlite-dbserver
-Group: Development/Databases
-Summary: SQLite-dbserver implementatioin for UniSet
-Requires: %name = %version-%release
-Provides: %oname-sqlite-dbserver
-Obsoletes: %oname-sqlite-dbserver
-
-%description sqlite-dbserver
-SQLite dbserver for %name
-
-%package sqlite-devel
-Group: Development/Databases
-Summary: Libraries needed to develop for uniset SQLite
-Requires: %name = %version-%release
-Provides: %oname-sqlite-devel
-Obsoletes: %oname-sqlite-devel
-
-%description sqlite-devel
-Libraries needed to develop for uniset SQLite
-%endif
-
-%if_enabled python
-%package -n python-module-%oname
-Group: Development/Python
-Summary: python interface for libuniset
-Requires: %name = %version-%release
-
-# py_provides UGlobal UInterface UniXML uniset
-
-%description -n python-module-%oname
-Python interface for %name
-%endif
 
 %package utils
 Summary: UniSet utilities
@@ -147,8 +67,6 @@ Obsoletes: %oname-utils
 %description utils
 UniSet utilities
 
-%if_enabled doc
-
 %package doc
 Group: Development/C++
 Summary: Documentations for developing with UniSet
@@ -157,8 +75,6 @@ BuildArch: noarch
 
 %description doc
 Documentations for developing with UniSet
-%endif
-
 
 %package extensions
 Group: Development/C++
@@ -183,26 +99,21 @@ Obsoletes: %name-extentions-devel
 Libraries needed to develop for uniset extensions
 
 %prep
-%setup
+%setup -q
 
 %build
 %autoreconf
-%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable python} %{subst_enable rrd}
+%if_enabled doc
+%configure
+%else
+%configure --disable-docs --disable-static
+%endif
+
 %make
 
 %install
 %makeinstall_std
 rm -f %buildroot%_libdir/*.la
-
-%if_enabled python
-mkdir -p %buildroot%python_sitelibdir/%oname
-mv -f %buildroot%python_sitelibdir/*.* %buildroot%python_sitelibdir/%oname/
-
-%ifarch x86_64
-mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
-%endif
-
-%endif
 
 %files utils
 %_bindir/%oname-admin
@@ -219,7 +130,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %dir %_datadir/%oname/
 %dir %_datadir/%oname/xslt/
 %_datadir/%oname/xslt/*.xsl
-%_datadir/%oname/xslt/skel*
 
 %files
 %_libdir/libUniSet.so.*
@@ -228,46 +138,20 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %dir %_includedir/%oname/
 %_includedir/%oname/*.h
 %_includedir/%oname/*.hh
-%_includedir/%oname/*.tcc
 %_includedir/%oname/IOs/
 %_includedir/%oname/modbus/
-%if_enabled mysql
 %_includedir/%oname/mysql/
-%endif
-%if_enabled sqlite
-%_includedir/%oname/sqlite/
-%endif
 
 %_libdir/libUniSet.so
 %_datadir/idl/%oname/
 %_pkgconfigdir/libUniSet.pc
 
-%if_enabled mysql
 %files mysql-dbserver
 %_bindir/%oname-mysql-*dbserver
 %_libdir/*-mysql.so*
 
 %files mysql-devel
 %_pkgconfigdir/libUniSetMySQL.pc
-%endif
-
-%if_enabled sqlite
-
-%files sqlite-dbserver
-%_bindir/%oname-sqlite-*dbserver
-%_libdir/*-sqlite.so*
-
-%files sqlite-devel
-%_pkgconfigdir/libUniSetSQLite.pc
-%endif
-
-%if_enabled python
-%files -n python-module-%oname
-%dir %python_sitelibdir/%oname
-%python_sitelibdir/*
-%python_sitelibdir/%oname/*
-
-%endif
 
 %if_enabled doc
 %files doc
@@ -282,12 +166,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_bindir/%oname-plogicproc
 %_bindir/%oname-mtr-conv
 %_bindir/%oname-mtr-setup
-%_bindir/%oname-mtr-read
 %_bindir/%oname-vtconv
 %_bindir/%oname-rtu188-state
 %_bindir/%oname-rtuexchange
 %_bindir/%oname-smemory
-%_bindir/%oname-smemory-plus
 %_bindir/%oname-smviewer
 %_bindir/%oname-network
 %_bindir/%oname-unet*
@@ -300,14 +182,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_libdir/libUniSetRT*.so.*
 %_libdir/libUniSetShared*.so.*
 %_libdir/libUniSetNetwork*.so.*
-%_libdir/libUniSetUNetUDP*.so.*
+%_libdir/libUniSetUNet2*.so.*
 #%_libdir/libUniSetSMDBServer*.so.*
-
-%if_enabled rrd
-%_bindir/%oname-rrd*
-%_libdir/libUniSetRRD*.so.*
-%endif
-
 
 %files extensions-devel
 %_includedir/%oname/extensions/
@@ -318,7 +194,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_libdir/libUniSetRT*.so
 %_libdir/libUniSetShared*.so
 %_libdir/libUniSetNetwork.so
-%_libdir/libUniSetUNetUDP.so
+%_libdir/libUniSetUNet2.so
 #%_libdir/libUniSetSMDBServer.so
 %_pkgconfigdir/*Extensions.pc
 %_pkgconfigdir/libUniSetIO*.pc
@@ -329,312 +205,13 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_pkgconfigdir/libUniSetNetwork*.pc
 %_pkgconfigdir/libUniSetUNet*.pc
 
-%if_enabled rrd
-%_pkgconfigdir/libUniSetRRD*.pc
-%_libdir/libUniSetRRD*.so
-%endif
-
 #%_pkgconfigdir/libUniSetSMDBServer.pc
 #%_pkgconfigdir/libUniSet*.pc
 %exclude %_pkgconfigdir/libUniSet.pc
 
+
+
 %changelog
-* Sun Jun 22 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt15
-- optimization: add insert-buffer for DBServer_MySQL (see uniset-docs)
-
-* Sat Jun 14 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt14
-- backport UTCPStream for MBTCPMultiMaster
-
-* Tue Apr 29 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt13
-- (uniset-codegen): add "force" parameters for vartype="out"
-
-* Thu Apr 24 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt12
-- remove deprecated Extensions:getHeartBeatTime(). Use conf->getHeartBeatTime()
-- rename parameter:  "time_msec" --> "msec" for <HeartBeatTime msec=""/>
-
-* Thu Apr 24 2014 Pavel Vainerman <pv@server> 1.7-alt11
-- minor fixes IOControl::setValue
-
-* Tue Apr 01 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt10
-- add new vtype:  F2r, I2r, U2r  (reverse data order)
-
-* Wed Mar 19 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt9
-- add thresholds processing for ModbusMaster (TCP and RTU)
-- minor fixes
-
-* Fri Mar 07 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt8
-- fixed bug in ComPort class (getTimeout.  eterbug #9890)
-
-* Wed Feb 12 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt7
-- revert last changes ("ModbusMaster: add thread for check connection")
-
-* Wed Feb 12 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt6
-- ModbusMaster: add thread for check connection
-
-* Mon Feb 10 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt5
-- ModbusMaster: minor fixes
-
-* Thu Feb 06 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt4
-- ModbusExchange: fixed bug:  deadlock for pollMutex..
-
-* Tue Dec 10 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt3
-- add RRDServer
-
-* Fri Dec 06 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt2
-- (unetexchange): add 'prefix'
-
-* Wed Dec 04 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt1
-- (modbus): add ModbusMultiChannel
-
-* Fri Nov 29 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt17
-- (uniset-codegen): move 'arg-prefix' from <variables> to <settings>
-
-* Tue Nov 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt16
-- (uniset-codegen): add 'loglevel' parameters for src.xml
-
-* Mon Oct 28 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt15
-- (python): fixed bug in UInterface
-
-* Sat Oct 26 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt14
-- (python): fixed bug in UInterface
-
-* Thu Oct 24 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt13
-- (python): add getArgParam, getArgInt and checkArg functions for UGlobal.py
-
-* Thu Sep 19 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt12
-- (Modbus): Added ability to set the sensor mode (modeSensor) for each device
-- fixed bug in MTR types: T_Str16 and T_Str8 (tnx ilyap)
-- fixed bug in MTR::send_param
-
-* Thu Jun 13 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt11
-- fixed after cppcheck checking
-
-* Wed Jun 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt10
-- add for ModbusMaster (RTU|TCP) --xxx--aftersend-pause 
-
-* Tue May 14 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt9
-- add for Modbus (RTU|TCP) exchange  --xxx-reopen-timeout msec. (eterbug #9296)
-
-* Wed May 08 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt8
-- fixed minor bug in uniset-codegen (getValue) 
-
-* Wed Mar 20 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt7
-- modbus: add new function 0x2B/0x0E(43/14)"Read device identification"
-
-* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt6
-- python: add __init__.py
-
-* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt5
-- force add python provides
-
-* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt4
-- restote UInterface for python
-
-* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt3
-- add doc for python bindings
-- rebuild wrapper files with new swig
-
-* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt2
-- fixed build for x86_64
-
-* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt1
-- python: final build
-
-* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.5
-- python: test build
-
-* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.4
-- python: test build
-
-* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.3
-- python: test build
-
-* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.2
-- python: test build
-
-* Mon Mar 04 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.1
-- add python interface
-
-* Mon Jan 14 2013 Pavel Vainerman <pv@altlinux.ru> 1.5-alt10
-- add error code for MTR (eterbug #8659)
-- (uniset-codegen): add generate class Skeleton (--make-skel)
-
-* Sat Jan 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.5-alt9
-- add SQLite support
-
-* Mon Dec 03 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt8
-- add uniset-smemory-plus
-
-* Fri Nov 30 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt7
-- returned file 'SandClock.h' back and declared it obsolete
-
-* Thu Nov 29 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt6
-- add DelayTimer class
-- rename SandClock --> HourGlass
-
-* Fri Nov 23 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt5
-- (Calibration): add getLeftRaw(),getRightRaw(),getLeftVal(),getRightVal()
-- (Calibration): fixed bugs
-
-* Fri Nov 23 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt4
-- (uniset-codegen): fixed minor bug
-
-* Thu Nov 22 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt3
-- (Calibration): add getMinRaw(),getMaxRaw(),getMinVal(),getMaxVal()
-
-* Wed Nov 21 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt2
-- new ConfirmMessage format (eterbug #8842)
-
-* Tue Nov 06 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt1
-- add depends for IOBase
-
-* Tue Sep 04 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt11
-- minor fixes (IOControl::getState, isExist)
-
-* Wed Aug 29 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt10
-- (UDPNet): increase the resolution of the sensors over the network (600 analog, 600 digital)
-
-* Mon Aug 20 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt9
-- fixed bug in previous commit (bug in UniXML::iterator::find)
-
-* Tue Aug 07 2012 Pavel Vaynerman <pv@server> 1.4-alt8
-- fixed bug in UniXML::iterator::find
-
-* Wed Jul 25 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt7
-- (codegen): added support type 'long'
-- add setThreadPriority(..) for UniSetObject
-
-* Tue Jul 10 2012 Pavel Vaynerman <pv@server> 1.4-alt6
-- (unetudp): fixed bug in the logic of switching channels
-
-* Thu Jun 14 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt5
-- (codegen): fixed bug in validation 'iotype'
-
-* Sun Jun 10 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt4
-- (codegen): added validation 'iotype'
-
-* Sun Jun 10 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt3
-- (DBServer_MySQL): buffer is added to query
-
-* Fri Jun 08 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt2
-- added support type 'double' for uniset-codegen (<variables>)
-
-* Thu May 31 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt1
-- rename unet2 -->unetudp
-- release version 1.4
-
-* Thu May 31 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt19
-- DBServer: set log info level - LEVEL9
-- minor fixies for linker errors (new gcc)
-
-* Tue Apr 10 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt18
-- fixed bug in ComPort485F (reinit function)
-
-* Fri Mar 16 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt17
-- rebuild
-
-* Fri Mar 16 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt16
-- (unet2): fixed bug in respond sensors (again)
-
-* Thu Mar 15 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt15
-- (unet2): fixed bug in respond sensors
-
-* Thu Mar 15 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt14
-- (unet2): add 'unet_respond_invert' parameter
-
-* Sun Mar 11 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt13
-- minor fixes in uniset-codegen (add "preAskSensors")
-
-* Fri Mar 02 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt12
-- fixed bug in DigitalFilter 
-- fixed bug in RTU188 exchange
-
-* Tue Feb 28 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt11
-- (iocontrol): fixed bug in configuring UNIO96
-
-* Fri Feb 24 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt10
-- (modbus): realized exchange with RTU188
-
-* Wed Feb 22 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt9
-- (modbus): fixed bug in modbus exchange for RTU188 (initialization)
-
-* Tue Feb 21 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt8
-- (modbus): fixed bug in modbus exchange for RTU188
-
-* Sat Feb 18 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt7
-- changed implementation SharedMemory::History (optimization)
-
-* Fri Feb 17 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt6
-- (io): corrected a mistake in configuring analog I/O
-
-* Fri Feb 10 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt5
-- (IOControl): Added support for setting boards such as 'Grayhill'
-- (Modbus): Fixed minor bug in configuration with RTU188
-
-* Fri Feb 03 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt4
-- add commmon (respond and lostpackets) sensors for UNet2
-
-* Tue Jan 31 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt3
-- minor fixes in simitator
-
-* Tue Jan 24 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt2.1
-- rebuild
-
-* Mon Dec 26 2011 Pavel Vainerman <pv@altlinux.ru> 1.3-alt2
-- fixed buf in Configuration
-
-* Mon Dec 26 2011 Pavel Vainerman <pv@altlinux.ru> 1.3-alt1
-- Added support for multiple profiles(Configuration) simultaneously
-
-* Fri Dec 23 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt62
-- fixed bug in UniversalInterface
-
-* Fri Dec 23 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt61
-- minor fixes in LogicProcessor
-
-* Wed Dec 21 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt60
-- fixed bug in LogicProcessor
-
-* Mon Dec 19 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt59
-- add precision for output variables
-
-* Wed Nov 30 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt58
-- fixed bug in ModbusSlave::readInputStatus(0x02)
-
-* Sun Nov 27 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt57
-- add uniset-mtr-read utility
-
-* Sat Nov 26 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt56
-- (modbus): fixed bug (again) in ModbusSlave::readInputStatus(0x02)
-
-* Sat Nov 26 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt55
-- (modbus): fixed bug in ModbusSlave::readInputStatus(0x02)
-
-* Fri Nov 25 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt54
-- (modbus): added 'const-reply' for modbustcptester
-
-* Thu Nov 24 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt53
-- (modbus): added information log
-
-* Wed Nov 16 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt52
-- (modbus): An opportunity to change the prefix is added to the properties
-
-* Wed Nov 02 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt51
-- (unet2): added reserv channel exchange
-
-* Mon Oct 31 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt50
-- ModbusMaster extensions code refactoring
-
-* Tue Oct 25 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt49
-- added support 'const' and [private|protecte|public] 
-for <variables> in uniset-codegen
-
-* Sat Oct 22 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt48
-- added support for list of variables (<variables>) in uniset-codegen
-
-* Tue Oct 11 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt47
-- new build
-
 * Sat Oct 08 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt46
 - add reopen() for ComPort
 
@@ -705,10 +282,10 @@ for <variables> in uniset-codegen
 - (uniset-unet2): fixed bug (SEGFAULT with a large number of items)
 
 * Wed Apr 20 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt22
-- (uniset-unet2-tester): fixed minor bugs 
+- (uniset-unet2-tester): fixed minor bugs
 
 * Wed Apr 20 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt21
-- (uniset-unet2-tester): add new parameter 
+- (uniset-unet2-tester): add new parameter
    -l | --check-lost   - Check the lost packets.
 
 * Wed Apr 20 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt20
