@@ -71,6 +71,7 @@ UniSet utilities
 Group: Development/C++
 Summary: Documentations for developing with UniSet
 Requires: %name = %version-%release
+BuildArch: noarch
 
 %description doc
 Documentations for developing with UniSet
