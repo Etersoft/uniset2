@@ -75,6 +75,15 @@ mbErrCode ModbusTCPServerSlot::writeOutputRegisters( WriteOutputMessage& query,
 }
 
 // -------------------------------------------------------------------------
+mbErrCode ModbusTCPServerSlot::diagnostics( DiagnosticMessage& query,
+												DiagnosticRetMessage& reply )
+{
+	if( !slDiagnostics )
+		return erOperationFailed;
+
+	return slDiagnostics(query,reply);
+}
+// -------------------------------------------------------------------------
 mbErrCode ModbusTCPServerSlot::forceSingleCoil( ForceSingleCoilMessage& query, 
 											ForceSingleCoilRetMessage& reply )
 {

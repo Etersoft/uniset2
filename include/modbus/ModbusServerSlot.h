@@ -46,6 +46,10 @@ class ModbusServerSlot
 							ModbusRTU::WriteOutputRetMessage&> WriteOutputSlot;
 
 		typedef sigc::slot<ModbusRTU::mbErrCode,
+							ModbusRTU::DiagnosticMessage&,
+							ModbusRTU::DiagnosticRetMessage&> DiagnosticsSlot;
+
+		typedef sigc::slot<ModbusRTU::mbErrCode,
 							ModbusRTU::JournalCommandMessage&,
 							ModbusRTU::JournalCommandRetMessage&> JournalCommandSlot;
 
@@ -79,6 +83,9 @@ class ModbusServerSlot
 		/*! подключение обработчика 'записи данных' 0x06 */
 		void connectWriteSingleOutput( WriteSingleOutputSlot sl );
 
+		/*! подключение обработчика 'записи данных' 0x08 */
+		void connectDiagnostics( DiagnosticsSlot sl );
+
 		/*! подключение обработчика 'записи данных' 0x0F */
 		void connectForceCoils( ForceCoilsSlot sl );
 
@@ -108,6 +115,7 @@ class ModbusServerSlot
 		WriteOutputSlot slWriteOutputs;
 		ForceSingleCoilSlot slForceSingleCoil;
 		WriteSingleOutputSlot slWriteSingleOutputs;
+		DiagnosticsSlot slDiagnostics;
 		JournalCommandSlot slJournalCommand;
 		SetDateTimeSlot slSetDateTime;
 		RemoteServiceSlot slRemoteService;

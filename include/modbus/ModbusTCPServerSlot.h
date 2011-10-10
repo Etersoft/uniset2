@@ -44,6 +44,9 @@ class ModbusTCPServerSlot:
 		virtual ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query, 
 														ModbusRTU::WriteOutputRetMessage& reply );
 
+		virtual ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
+														ModbusRTU::DiagnosticRetMessage& reply );
+
 		virtual ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query, 
 														ModbusRTU::JournalCommandRetMessage& reply );
 

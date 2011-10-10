@@ -19,6 +19,7 @@ static struct option longopts[] = {
 	{ "write06", required_argument, 0, 'z' }, 
 	{ "write0F", required_argument, 0, 'm' },
 	{ "write10", required_argument, 0, 'w' },
+	{"diag08", required_argument, 0, 'o' },
 //	{ "readfile14", required_argument, 0, 'g' },
 //	{ "writefile15", required_argument, 0, 'p' },
 	{ "filetransfer66", required_argument, 0, 'u' },
@@ -45,6 +46,7 @@ static void print_help()
 	printf("[--read02] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read03] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read04] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
+	printf("[--diag08] slaveaddr subfunc   	 - diagnostics request\n");
 //	printf("[--readfile14] slaveaddr fileID  - read file from slaveaddr).\n");
 //	printf("[--writefile15] slaveaddr id filename  - write file to slaveaddr).\n");
 	printf("[--filetransfer66] slaveaddr fileID [filename] - get file from slaveaddr. Default save to 'fileID.transfer'\n");
@@ -81,7 +83,8 @@ enum Command
 	cmdDetectSlave,
 	cmdReadFile,
 	cmdWriteFile,
-	cmdFileTransfer
+	cmdFileTransfer,
+	cmdDiag
 };
 // --------------------------------------------------------------------------
 static char* checkArg( int ind, int argc, char* argv[] );
@@ -103,6 +106,7 @@ int main( int argc, char **argv )
 	ModbusRTU::SlaveFunctionCode fn = ModbusRTU::fnReadInputRegisters;
 	ModbusRTU::ModbusAddr beg = 0;
 	ModbusRTU::ModbusAddr end = 255;
+	ModbusRTU::DiagnosticsSubFunction subfunc = ModbusRTU::subEcho;
 	int tout = 2000;
 	DebugStream dlog;
 	string tofile("");
@@ -111,7 +115,7 @@ int main( int argc, char **argv )
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:w:z:m:r:x:c:b:d:s:t:qn:u:yl:t:",longopts,&optindex)) != -1 )
+		while( (opt = getopt_long(argc, argv, "hva:w:z:m:r:x:c:b:d:s:t:qn:u:yl:t:o:",longopts,&optindex)) != -1 )
 		{
 			switch (opt)
 			{
@@ -144,6 +148,20 @@ int main( int argc, char **argv )
 					
 					if( checkArg(optind+1,argc,argv) )
 						count = uni_atoi(argv[optind+1]);
+				break;
+
+				case 'o':
+
+					cmd = cmdDiag;
+					slaveaddr = ModbusRTU::str2mbAddr( optarg );
+
+					if( !checkArg(optind,argc,argv) )
+					{
+						cerr << "diagnostic command error: bad or no arguments..." << endl;
+						return 1;
+					}
+					else
+						subfunc = (ModbusRTU::DiagnosticsSubFunction)uni_atoi(argv[optind]);
 				break;
 
 				case 'f':
@@ -506,6 +524,30 @@ int main( int argc, char **argv )
 					ModbusRTU::WriteOutputRetMessage  ret = mb.write10(msg);
 					if( verb )
 						cout << "(reply): " << ret << endl;
+				}
+				break;
+
+				case cmdDiag:
+				{
+					if( verb )
+					{
+						cout << "diag08: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+							 << " subfunc=" << ModbusRTU::dat2str(subfunc) << "(" << (int)subfunc << ")"
+							 << endl;
+					}
+
+					ModbusRTU::DiagnosticRetMessage ret = mb.diag08(slaveaddr,subfunc);
+					if( verb )
+						cout << "(reply): " << ret << endl;
+					cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
+					for( int i=0; i<ret.count; i++ )
+					{
+						cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i])
+							<< " ("
+							<< ModbusRTU::dat2str(ret.data[i])
+							<< ")"
+							<< endl;
+					}
 				}
 				break;
 

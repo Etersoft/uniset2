@@ -142,6 +142,15 @@ class ModbusServer
 														ModbusRTU::WriteOutputRetMessage& reply )=0;
 
 
+		/*! Обработка запроса на запись данных (0x08).
+			\param query - запрос
+			\param reply - ответ. Заполняется в обработчике.
+			\return Результат обработки
+		*/
+		virtual ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
+														ModbusRTU::DiagnosticRetMessage& reply )=0;
+
+
 		/*! Обработка запроса по журналу (0x65)
 			\param query - запрос
 			\param reply - ответ. Заполняется в обработчике.

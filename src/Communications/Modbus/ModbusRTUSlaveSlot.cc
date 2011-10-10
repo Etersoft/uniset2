@@ -81,6 +81,15 @@ mbErrCode ModbusRTUSlaveSlot::writeOutputRegisters( WriteOutputMessage& query,
 }
 
 // -------------------------------------------------------------------------
+mbErrCode ModbusRTUSlaveSlot::diagnostics( DiagnosticMessage& query,
+												DiagnosticRetMessage& reply )
+{
+	if( !slDiagnostics )
+		return erOperationFailed;
+
+	return slDiagnostics(query,reply);
+}
+// -------------------------------------------------------------------------
 mbErrCode ModbusRTUSlaveSlot::forceSingleCoil( ForceSingleCoilMessage& query, 
 											ForceSingleCoilRetMessage& reply )
 {
