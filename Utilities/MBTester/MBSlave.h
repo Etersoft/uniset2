@@ -80,7 +80,9 @@ class MBSlave
 		ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query, 
 															ModbusRTU::FileTransferRetMessage& reply );
 
-
+		ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query, 
+														ModbusRTU::DiagnosticRetMessage& reply );
+		
 		/*! интерфейс ModbusRTUSlave для обмена по RS */
 		ModbusRTUSlaveSlot* rscomm;
 		ModbusRTU::ModbusAddr addr;			/*!< адрес данного узла */

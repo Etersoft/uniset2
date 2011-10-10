@@ -46,7 +46,7 @@ static void print_help()
 	printf("[--read02] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read03] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read04] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
-	printf("[--diag08] slaveaddr subfunc   	 - diagnostics request\n");
+	printf("[--diag08] slaveaddr subfunc [dat] - diagnostics request\n");
 //	printf("[--readfile14] slaveaddr fileID  - read file from slaveaddr).\n");
 //	printf("[--writefile15] slaveaddr id filename  - write file to slaveaddr).\n");
 	printf("[--filetransfer66] slaveaddr fileID [filename] - get file from slaveaddr. Default save to 'fileID.transfer'\n");
@@ -107,6 +107,7 @@ int main( int argc, char **argv )
 	ModbusRTU::ModbusAddr beg = 0;
 	ModbusRTU::ModbusAddr end = 255;
 	ModbusRTU::DiagnosticsSubFunction subfunc = ModbusRTU::subEcho;
+	ModbusRTU::ModbusData dat = 0;
 	int tout = 2000;
 	DebugStream dlog;
 	string tofile("");
@@ -147,7 +148,7 @@ int main( int argc, char **argv )
 						reg = ModbusRTU::str2mbData(argv[optind]);
 					
 					if( checkArg(optind+1,argc,argv) )
-						count = uni_atoi(argv[optind+1]);
+						dat = uni_atoi(argv[optind+1]);
 				break;
 
 				case 'o':
@@ -162,6 +163,9 @@ int main( int argc, char **argv )
 					}
 					else
 						subfunc = (ModbusRTU::DiagnosticsSubFunction)uni_atoi(argv[optind]);
+						
+					if( checkArg(optind+1,argc,argv) )
+						count = uni_atoi(argv[optind+1]);
 				break;
 
 				case 'f':
@@ -414,7 +418,7 @@ int main( int argc, char **argv )
 							 << " count=" << ModbusRTU::dat2str(count) 
 							 << endl;
 					}
-            	
+	
 					ModbusRTU::ReadOutputRetMessage ret = mb.read03(slaveaddr,reg,count);
 					if( verb )
 						cout << "(reply): " << ret << endl;
@@ -533,10 +537,11 @@ int main( int argc, char **argv )
 					{
 						cout << "diag08: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
 							 << " subfunc=" << ModbusRTU::dat2str(subfunc) << "(" << (int)subfunc << ")"
+							 << " dat=" << ModbusRTU::dat2str(dat) << "(" << (int)dat << ")"
 							 << endl;
 					}
 
-					ModbusRTU::DiagnosticRetMessage ret = mb.diag08(slaveaddr,subfunc);
+					ModbusRTU::DiagnosticRetMessage ret = mb.diag08(slaveaddr,subfunc,dat);
 					if( verb )
 						cout << "(reply): " << ret << endl;
 					cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;

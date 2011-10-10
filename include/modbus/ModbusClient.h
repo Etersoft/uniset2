@@ -84,7 +84,8 @@ class ModbusClient
 
 		/*! Диагностика (0x08) */
 		ModbusRTU::DiagnosticRetMessage diag08( ModbusRTU::ModbusAddr addr,
-												ModbusRTU::DiagnosticsSubFunction subfunc )
+												ModbusRTU::DiagnosticsSubFunction subfunc,
+												ModbusRTU::ModbusData dat=0 )
 														throw(ModbusRTU::mbException);
 
 		/*! Установить системное время (0x50)

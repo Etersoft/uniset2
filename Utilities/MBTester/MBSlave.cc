@@ -44,7 +44,9 @@ MBSlave::MBSlave( ModbusRTU::ModbusAddr addr, const std::string dev, const std::
 	rscomm->connectJournalCommand( sigc::mem_fun(this, &MBSlave::journalCommand) );
 	rscomm->connectSetDateTime( sigc::mem_fun(this, &MBSlave::setDateTime) );
 	rscomm->connectRemoteService( sigc::mem_fun(this, &MBSlave::remoteService) );
-	rscomm->connectFileTransfer( sigc::mem_fun(this, &MBSlave::fileTransfer) );	
+	rscomm->connectFileTransfer( sigc::mem_fun(this, &MBSlave::fileTransfer) );
+	rscomm->connectDiagnostics( sigc::mem_fun(this, &MBSlave::diagnostics) );
+
 
 	rscomm->setRecvTimeout(2000);
 //	rscomm->setAfterSendPause(afterSend);
@@ -390,3 +392,16 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
 
 }									
 // -------------------------------------------------------------------------
+ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query, 
+											ModbusRTU::DiagnosticRetMessage& reply )
+{
+	if( query.subf == ModbusRTU::subEcho )
+	{
+		reply = query;
+		return ModbusRTU::erNoError;
+	}
+	
+	return ModbusRTU::erOperationFailed; 
+}
+// -------------------------------------------------------------------------
+

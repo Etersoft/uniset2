@@ -2168,7 +2168,7 @@ void DiagnosticMessage::init( ModbusMessage& m )
 	int last = sizeof(subf);
 	
 	subf = 	SWAPSHORT(subf);
-	int count = szRequestDiagnosticData((DiagnosticsSubFunction)subf );
+	count = szRequestDiagnosticData((DiagnosticsSubFunction)subf );
 	if( count > MAXDATALEN )
 		throw mbException(erPacketTooLong);
 
@@ -2190,25 +2190,26 @@ int DiagnosticMessage::getDataLen( ModbusMessage& m )
 	if( m.len < 0 )
 		return 0;
 
-	ModbusData d;
-	memcpy( &d,m.data,sizeof(d) );
-	d = SWAPSHORT(d);
+	// data[0] = subfunction
+	ModbusData sf;
+	memcpy( &sf,&(m.data[0]),sizeof(sf) );
+	sf = SWAPSHORT(sf);
 
-	int sz = szRequestDiagnosticData((DiagnosticsSubFunction)d );
-	
+	int sz = szRequestDiagnosticData( (DiagnosticsSubFunction)sf );
 	if( sz >= 0 )
-		return sz + sizeof(d); // subf + sz
+		return sz*sizeof(ModbusData);
 
 	return	0;
 }
 // -------------------------------------------------------------------------
-DiagnosticMessage::DiagnosticMessage( ModbusAddr _addr, DiagnosticsSubFunction sf ):
+DiagnosticMessage::DiagnosticMessage( ModbusAddr _addr, DiagnosticsSubFunction sf, ModbusData d ):
 	count(0)
 {
 	addr = _addr;
 	func = fnDiagnostics;
 	subf = sf;
 	memset(data,0,sizeof(data));
+	addData(d);
 }
 // -------------------------------------------------------------------------
 bool DiagnosticMessage::addData( ModbusData d )
@@ -2260,8 +2261,7 @@ ModbusMessage DiagnosticMessage::transport_msg()
 	ind+=szCRC;
 
 	// длина сообщения...
-	mm.len = ind; 
-
+	mm.len = szData(); 
 	return mm;
 }
 // -------------------------------------------------------------------------
@@ -2282,6 +2282,11 @@ DiagnosticMessage(m)
 
 }
 // -------------------------------------------------------------------------
+DiagnosticRetMessage::DiagnosticRetMessage( ModbusAddr a, DiagnosticsSubFunction subf, ModbusData d ):
+	DiagnosticMessage(a,subf,d)
+{
+}
+// -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticMessage& m )
 {
 //	return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
@@ -2296,7 +2301,17 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticMessage* m )
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticRetMessage& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
+	//return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
+	os << "addr=" << addr2str(m.addr)
+				<< " subf=" << dat2str(m.subf)
+				<< " data[" << m.count << "]={";
+
+	for( int i=0; i<m.count; i++ )
+		os << dat2str(m.data[i]) << "  ";
+	
+	os << "}";
+	
+	return os;
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticRetMessage* m )
