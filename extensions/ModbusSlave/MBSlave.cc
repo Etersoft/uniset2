@@ -124,8 +124,10 @@ prefix(prefix)
 
 	if( findArgParam("--" + prefix + "-allow-setdatetime",conf->getArgc(),conf->getArgv())!=-1 )
 		mbslot->connectSetDateTime( sigc::mem_fun(this, &MBSlave::setDateTime) );
-	
+
+	mbslot->connectDiagnostics( sigc::mem_fun(this, &MBSlave::diagnostics) );
 	mbslot->connectFileTransfer( sigc::mem_fun(this, &MBSlave::fileTransfer) );	
+
 //	mbslot->connectJournalCommand( sigc::mem_fun(this, &MBSlave::journalCommand) );
 //	mbslot->connectRemoteService( sigc::mem_fun(this, &MBSlave::remoteService) );
 	// -------------------------------
@@ -1401,6 +1403,49 @@ ModbusRTU::mbErrCode MBSlave::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage
 											ModbusRTU::ForceSingleCoilRetMessage& reply )
 {
 //	cout << "(forceSingleCoil): " << query << endl;
+	return ModbusRTU::erOperationFailed;
+}
+// -------------------------------------------------------------------------
+ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
+											ModbusRTU::DiagnosticRetMessage& reply )
+{
+	if( query.subf == ModbusRTU::subEcho )
+	{
+		reply = query;
+		return ModbusRTU::erNoError;
+	}
+
+	if( query.subf == ModbusRTU::dgBusErrCount )
+	{
+		reply = query;
+		reply.data[0] = errmap[ModbusRTU::erBadCheckSum];
+		return ModbusRTU::erNoError;
+	}
+
+	if( query.subf == ModbusRTU::dgMsgSlaveCount || query.subf == ModbusRTU::dgBusMsgCount )
+	{
+		reply = query;
+		reply.data[0] = askCount;
+		return ModbusRTU::erNoError;
+	}
+
+	if( query.subf == ModbusRTU::dgSlaveNAKCount )
+	{
+		reply = query;
+		reply.data[0] = errmap[erOperationFailed];
+		return ModbusRTU::erNoError;
+	}
+
+	if( query.subf == ModbusRTU::dgClearCounters )
+	{
+		askCount = 0;
+		errmap[erOperationFailed] = 0;
+		errmap[ModbusRTU::erBadCheckSum] = 0;
+		// другие счётчики пока не сбрасываем..
+		reply = query;
+		return ModbusRTU::erNoError;
+	}
+
 	return ModbusRTU::erOperationFailed;
 }
 // -------------------------------------------------------------------------

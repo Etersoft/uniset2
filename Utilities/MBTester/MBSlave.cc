@@ -395,6 +395,9 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
 ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
 											ModbusRTU::DiagnosticRetMessage& reply )
 {
+	if( verbose )
+		cout << "(diagnostics): " << query << endl;
+
 	if( query.subf == ModbusRTU::subEcho )
 	{
 		reply = query;
