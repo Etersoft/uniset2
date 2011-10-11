@@ -212,6 +212,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Tue Oct 11 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt47
+- new build
+
 * Sat Oct 08 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt46
 - add reopen() for ComPort
 
