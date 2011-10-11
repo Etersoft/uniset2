@@ -1055,7 +1055,8 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 	}
 	catch( mbException& ex )
 	{
-		dlog[Debug::CRIT] << "(recv): " << ex << endl;
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << "(recv): " << ex << endl;
 		return ex.err;
 	}
 	catch( UniSetTypes::TimeOut )
@@ -1064,7 +1065,8 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 	}
 	catch( Exception& ex ) // SystemError
 	{
-		dlog[Debug::CRIT] << "(recv): " << ex << endl;
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << "(recv): " << ex << endl;
 		return erHardwareError;
 	}
 

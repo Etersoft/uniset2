@@ -34,7 +34,7 @@ namespace ModbusRTU
 	std::string mbErr2Str( mbErrCode e );
 	// ---------------------------------------------------------------------
 	class mbException:
-		UniSetTypes::Exception
+		public UniSetTypes::Exception
 	{
 		public:
 			mbException():

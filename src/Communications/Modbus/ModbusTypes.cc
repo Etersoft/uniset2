@@ -2164,7 +2164,7 @@ void DiagnosticMessage::init( ModbusMessage& m )
 	addr = m.addr;
 	func = m.func;
 
-	memcpy( &subf,m.data,sizeof(subf) );
+	memcpy( &subf,&(m.data[0]),sizeof(subf) );
 	int last = sizeof(subf);
 
 	subf = 	SWAPSHORT(subf);
@@ -2238,7 +2238,8 @@ ModbusMessage DiagnosticMessage::transport_msg()
 
 	int ind=0;
 	// copy bcnt
-	memcpy(&mm.data,&subf,sizeof(subf));
+	ModbusData d = SWAPSHORT(subf);
+	memcpy(&mm.data,&d,sizeof(d));
 	ind+=sizeof(subf);
 
 	// Создаём временно массив, переворачиваем байты

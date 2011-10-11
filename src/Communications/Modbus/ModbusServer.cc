@@ -1039,7 +1039,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				return erInvalidFormat;
 			}
 
-			return erNoError;			
+			return erNoError;
 		}
 		else if( rbuf.func == fnDiagnostics )
 		{
@@ -1262,13 +1262,21 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			return erUnExpectedPacketType;
 		}		
 	}
+	catch( ModbusRTU::mbException& ex ) // SystemError
+	{
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << "(recv): mbException: " << ex << endl;
+		cleanupChannel();
+		return ex.err;
+	}
 	catch( UniSetTypes::TimeOut )
 	{
 //		cout << "(recv): catch TimeOut " << endl;
 	}
-	catch( Exception& ex ) // SystemError
+	catch( UniSetTypes::Exception& ex ) // SystemError
 	{
-		dlog[Debug::CRIT] << "(recv): " << ex << endl;
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << "(recv): " << ex << endl;
 		cleanupChannel();
 		return erHardwareError;
 	}
