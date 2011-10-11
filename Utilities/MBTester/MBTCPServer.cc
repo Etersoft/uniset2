@@ -40,6 +40,7 @@ MBTCPServer::MBTCPServer( ModbusAddr myaddr, const string inetaddr, int port, bo
 	sslot->connectForceCoils( sigc::mem_fun(this, &MBTCPServer::forceMultipleCoils) );
 	sslot->connectWriteOutput( sigc::mem_fun(this, &MBTCPServer::writeOutputRegisters) );
 	sslot->connectWriteSingleOutput( sigc::mem_fun(this, &MBTCPServer::writeOutputSingleRegister) );
+	sslot->connectDiagnostics( sigc::mem_fun(this, &MBTCPServer::diagnostics) );
 	sslot->connectJournalCommand( sigc::mem_fun(this, &MBTCPServer::journalCommand) );
 	sslot->connectSetDateTime( sigc::mem_fun(this, &MBTCPServer::setDateTime) );
 	sslot->connectRemoteService( sigc::mem_fun(this, &MBTCPServer::remoteService) );
@@ -392,4 +393,43 @@ ModbusRTU::mbErrCode MBTCPServer::fileTransfer( ModbusRTU::FileTransferMessage& 
 #endif
 
 }									
+// -------------------------------------------------------------------------
+ModbusRTU::mbErrCode MBTCPServer::diagnostics( ModbusRTU::DiagnosticMessage& query,
+											ModbusRTU::DiagnosticRetMessage& reply )
+{
+	if( query.subf == ModbusRTU::subEcho )
+	{
+		reply = query;
+		return ModbusRTU::erNoError;
+	}
+
+	if( query.subf == ModbusRTU::dgBusErrCount )
+	{
+		reply = query;
+		reply.data[0] = 10;
+		return ModbusRTU::erNoError;
+	}
+
+	if( query.subf == ModbusRTU::dgMsgSlaveCount || query.subf == ModbusRTU::dgBusMsgCount )
+	{
+		reply = query;
+		reply.data[0] = 10;
+		return ModbusRTU::erNoError;
+	}
+
+	if( query.subf == ModbusRTU::dgSlaveNAKCount )
+	{
+		reply = query;
+		reply.data[0] = 10;
+		return ModbusRTU::erNoError;
+	}
+
+	if( query.subf == ModbusRTU::dgClearCounters )
+	{
+		reply = query;
+		return ModbusRTU::erNoError;
+	}
+
+	return ModbusRTU::erOperationFailed;
+}
 // -------------------------------------------------------------------------

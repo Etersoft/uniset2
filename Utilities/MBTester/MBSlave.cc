@@ -404,6 +404,33 @@ ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
 		return ModbusRTU::erNoError;
 	}
 
+	if( query.subf == ModbusRTU::dgBusErrCount )
+	{
+		reply = query;
+		reply.data[0] = 10;
+		return ModbusRTU::erNoError;
+	}
+
+	if( query.subf == ModbusRTU::dgMsgSlaveCount || query.subf == ModbusRTU::dgBusMsgCount )
+	{
+		reply = query;
+		reply.data[0] = 10;
+		return ModbusRTU::erNoError;
+	}
+
+	if( query.subf == ModbusRTU::dgSlaveNAKCount )
+	{
+		reply = query;
+		reply.data[0] = 10;
+		return ModbusRTU::erNoError;
+	}
+
+	if( query.subf == ModbusRTU::dgClearCounters )
+	{
+		reply = query;
+		return ModbusRTU::erNoError;
+	}
+
 	return ModbusRTU::erOperationFailed;
 }
 // -------------------------------------------------------------------------

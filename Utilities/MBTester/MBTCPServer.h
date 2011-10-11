@@ -63,6 +63,10 @@ class MBTCPServer
 		ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query, 
 														ModbusRTU::WriteSingleOutputRetMessage& reply );
 
+
+		ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
+											ModbusRTU::DiagnosticRetMessage& reply );
+
 		/*! обработка запросов на чтение ошибок */
 		ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query, 
 															ModbusRTU::JournalCommandRetMessage& reply );
