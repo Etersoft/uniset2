@@ -1077,7 +1077,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				return erInvalidFormat;
 			}
 
-			return erNoError;			
+			return erNoError;
 		}
 		else if( rbuf.func == fnDiagnostics )
 		{
