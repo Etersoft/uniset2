@@ -958,7 +958,7 @@ namespace ModbusRTU
 		*/
 		static inline int szHead()
 		{
-			return sizeof(subf);
+			return sizeof(ModbusData); // subf
 		}
 
 		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
