@@ -1,10 +1,10 @@
 bin_PROGRAMS 			= @PACKAGE@-mbslave
 
 # не забывайте править версию в pc-файле
-UMBS_VER=@LIBVER@
+UMBS_VER=1:1:1
 
 lib_LTLIBRARIES 				= libUniSetMBSlave.la
-libUniSetMBSlave_la_LDFLAGS  = -version-info $(UMBS_VER) 
+libUniSetMBSlave_la_LDFLAGS  = -version-info $(UMBS_VER)
 libUniSetMBSlave_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
 								$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
 								$(top_builddir)/extensions/lib/libUniSetExtensions.la \
