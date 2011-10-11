@@ -18,12 +18,14 @@ static struct option longopts[] = {
 	{ "write06", required_argument, 0, 'z' }, 
 	{ "write0F", required_argument, 0, 'm' },
 	{ "write10", required_argument, 0, 'w' },
+	{ "diag08", required_argument, 0, 'd' },
 	{ "iaddr", required_argument, 0, 'i' },
 	{ "verbose", no_argument, 0, 'v' },
 	{ "myaddr", required_argument, 0, 'a' },
 	{ "port", required_argument, 0, 'p' },
 	{ "persistent-connection", no_argument, 0, 'o' },
 	{ "num-cycles", required_argument, 0, 'l' },
+
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -38,6 +40,7 @@ static void print_help()
 	printf("[--read02] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read03] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read04] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
+	printf("[--diag08] slaveaddr subfunc [dat] - diagnostics request\n");
 	printf("[-i|--iaddr] ip                 - Modbus server ip. Default: 127.0.0.1\n");
 	printf("[-a|--myaddr] addr                - Modbus address for master. Default: 0x01.\n");
 	printf("[-p|--port] port                  - Modbus server port. Default: 502.\n");
@@ -57,7 +60,8 @@ enum Command
 	cmdWrite05,
 	cmdWrite06,
 	cmdWrite0F,
-	cmdWrite10
+	cmdWrite10,
+	cmdDiag
 };
 // --------------------------------------------------------------------------
 static char* checkArg( int ind, int argc, char* argv[] );
@@ -77,13 +81,15 @@ int main( int argc, char **argv )
 	ModbusRTU::ModbusData count = 1;
 	ModbusRTU::ModbusAddr myaddr = 0x01;
 	ModbusRTU::ModbusAddr slaveaddr = 0x00;
+	ModbusRTU::DiagnosticsSubFunction subfunc = ModbusRTU::subEcho;
+	ModbusRTU::ModbusData dat = 0;
 	int tout = 2000;
 	DebugStream dlog;
 	int ncycles = -1;
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:w:z:r:x:c:b:d:s:t:p:i:ol:",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "hva:w:z:r:x:c:b:d:s:t:p:i:ol:d:",longopts,&optindex)) != -1 ) 
 		{
 			switch (opt) 
 			{
@@ -187,6 +193,23 @@ int main( int argc, char **argv )
 
 				case 'l':
 					ncycles = uni_atoi(optarg);
+				break;
+
+				case 'd':
+
+					cmd = cmdDiag;
+					slaveaddr = ModbusRTU::str2mbAddr( optarg );
+					
+					if( !checkArg(optind,argc,argv) )
+					{
+						cerr << "diagnostic command error: bad or no arguments..." << endl;
+						return 1;
+					}
+					else
+						subfunc = (ModbusRTU::DiagnosticsSubFunction)uni_atoi(argv[optind]);
+						
+					if( checkArg(optind+1,argc,argv) )
+						dat = uni_atoi(argv[optind+1]);
 				break;
 
 				case '?':
@@ -403,6 +426,31 @@ int main( int argc, char **argv )
 				}
 				break;
 
+				case cmdDiag:
+				{
+					if( verb )
+					{
+						cout << "diag08: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+							 << " subfunc=" << ModbusRTU::dat2str(subfunc) << "(" << (int)subfunc << ")"
+							 << " dat=" << ModbusRTU::dat2str(dat) << "(" << (int)dat << ")"
+							 << endl;
+					}
+
+					ModbusRTU::DiagnosticRetMessage ret = mb.diag08(slaveaddr,subfunc,dat);
+					if( verb )
+						cout << "(reply): " << ret << endl;
+					cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
+					for( int i=0; i<ret.count; i++ )
+					{
+						cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i]) 
+							<< " (" 
+							<< ModbusRTU::dat2str(ret.data[i]) 
+							<< ")" 
+							<< endl;
+					}
+				}
+				break;
+
 				case cmdNOP:
 				default:
 					cerr << "No command. Use -h for help." << endl;
@@ -413,7 +461,7 @@ int main( int argc, char **argv )
             {
             	if( ex.err != ModbusRTU::erTimeOut )
             		throw ex;
-            	
+
             	cout << "timeout..." << endl;
             }
 
