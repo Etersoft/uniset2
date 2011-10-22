@@ -23,15 +23,19 @@ $PROG 	- generate source code for control process
 xmlfile - source xml-file
 
 Valid options are:
-  -m, --main filename for main.cc. Default: main.cc
-  -n, --name filename for *_SK files (base class implementation). Default: xmlfilename_SK
-  -h, --help	display help screen
+  -h, --help   - display help
+  -m, --main   - filename for main.cc. Default: main.cc
+  -n, --name   - filename for *_SK files (base class implementation). Default: xmlfilename_SK
+  --ask        - Use 'ask' templates. See the documentation.
+  --alone      - Use 'alone' templates. See the documentation.
+
+
 EOF
     [ -n "$1" ] && exit "$1" || exit
 }
 
 #parse command line options
-TEMP=`getopt -n $PROG -o h,n:,m:,a,l: -l help,name:,main:,no-main,topdir:,path:,alone,ask,local:,local-include,add-cc-include,add-hh-include -- "$@"` || exit 1
+TEMP=`getopt -n $PROG -o h,n:,m:,a,l:,z -l help,name:,main:,no-main,topdir:,path:,alone,ask,no-ask,local:,local-include,add-cc-include,add-hh-include -- "$@"` || exit 1
 eval set -- "$TEMP"
 
 name=
@@ -41,7 +45,7 @@ uni_main=
 no_main=
 xmlfile=
 alone=
-ask=
+ask=1
 localinc=0
 add_cc_inc=
 add_hh_inc=
@@ -76,10 +80,6 @@ while :; do
 		xls_m="ctl-cpp-main-alone.xsl"
 		;;
 
-	--with-prev-values)
-		prev_val=1
-		;;
-
 	--local-include)
 		localinc=1
 		;;
@@ -94,6 +94,10 @@ while :; do
 
 	--ask)
 		ask=1
+		;;
+
+	--no-ask|-z)
+		ask=
 		;;
 
 	-l|--local)
