@@ -75,7 +75,20 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 
 	protected:
 		<xsl:call-template name="COMMON-HEAD-PROTECTED"/>
-		
+
+		<xsl:text>
+		</xsl:text>
+		<xsl:for-each select="//variables/item">
+		<xsl:if test="normalize-space(@type)='int'">int <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='float'">float <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='bool'">bool <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='str'">std::string <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		</xsl:for-each>
+
 	private:
 		<xsl:call-template name="COMMON-HEAD-PRIVATE"/>
 

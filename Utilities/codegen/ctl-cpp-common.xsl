@@ -581,6 +581,43 @@ askPause(conf->getPIntProp(cnode,"askPause",2000))
 
 	int msec = conf->getArgPInt("--startup-timeout", 10000);
 	ptStartUpTimeout.setTiming(msec);
+
+	// ===================== &lt;variables&gt; =====================
+	<xsl:for-each select="//variables/item">
+	std::string tmp_<xsl:value-of select="@name"/>( conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>",it.getProp("<xsl:value-of select="@name"/>")) );
+	<xsl:if test="normalize-space(@default)!=''">if( tmp_<xsl:value-of select="@name"/>.empty() )
+		tmp_<xsl:value-of select="@name"/> = "<xsl:value-of select="@default"/>";
+	</xsl:if>
+
+	<xsl:if test="normalize-space(@type)='int'">
+	<xsl:value-of select="@name"/> = uni_atoi(tmp_<xsl:value-of select="@name"/>);
+	</xsl:if>
+	<xsl:if test="normalize-space(@type)='float'">
+	<xsl:value-of select="@name"/> = atof(tmp_<xsl:value-of select="@name"/>.c_str());
+	</xsl:if>
+	<xsl:if test="normalize-space(@type)='bool'">
+	<xsl:value-of select="@name"/> = uni_atoi(tmp_<xsl:value-of select="@name"/>);
+	</xsl:if>
+	<xsl:if test="normalize-space(@type)='str'">
+	<xsl:value-of select="@name"/> = tmp_<xsl:value-of select="@name"/>;
+	</xsl:if>
+	<xsl:if test="normalize-space(@min)!=''">
+	if( <xsl:value-of select="@name"/> &lt; <xsl:value-of select="@min"/> )
+	{
+		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": RANGE WARNING: <xsl:value-of select="@name"/>=" &lt;&lt; <xsl:value-of select="@name"/> &lt;&lt; " &lt; <xsl:value-of select="@min"/>" &lt;&lt; endl;
+		<xsl:if test="normalize-space(@no_range_exception)=''">throw UniSetTypes::SystemError(myname+"(init): <xsl:value-of select="@name"/> &lt; <xsl:value-of select="@min"/>");</xsl:if>
+	}
+	</xsl:if>
+	<xsl:if test="normalize-space(@max)!=''">
+	if( <xsl:value-of select="@name"/> &gt; <xsl:value-of select="@max"/> )
+	{
+		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": RANGE WARNING: <xsl:value-of select="@name"/>=" &lt;&lt; <xsl:value-of select="@name"/> &lt;&lt; " &gt; <xsl:value-of select="@max"/>" &lt;&lt; endl;
+		<xsl:if test="normalize-space(@no_range_exception)=''">throw UniSetTypes::SystemError(myname+"(init): <xsl:value-of select="@name"/> &gt; <xsl:value-of select="@max"/>");</xsl:if>
+	}
+	</xsl:if>
+	// ----------
+	</xsl:for-each>
+	// ===================== end of &lt;variables&gt; =====================
 }
 
 // -----------------------------------------------------------------------------
