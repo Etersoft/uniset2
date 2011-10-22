@@ -32,46 +32,54 @@
 		</Services>
 	</UniSet>
 	<dlog name="dlog"/>
-	<IOControl name="IOControl"/>
-	<testnode name="testnode" id="1000" id2="-100"/>
-	<SharedMemory name="SharedMemory" shmID="SharedMemory">
-		<History savetime="200">
-			<item filter="a1" fuse_id="AlarmFuse1_S" fuse_invert="1" id="1" size="30"/>
-			<item filter="a2" fuse_id="AlarmFuse2_AS" fuse_value="2" id="2" size="30"/>
-		</History>
-	</SharedMemory>
-	<UniExchange name="UniExchange">
-		<item name="UniExchange2" node="Node2"/>
-		<item id="3001" node_id="Node2"/>
-	</UniExchange>
-	<MBMaster1 addr="0x31" iaddr="127.0.0.1" levels="info,warn,crit" name="MBMaster1" poll_time="200" port="30000" reply_timeout="60">
-		<DeviceList>
-			<item addr="0x02" invert="0" respondSensor="RespondRTU_S" timeout="5000"/>
-		</DeviceList>
-	</MBMaster1>
-	<MBSlave1 addr="0x31" aftersend-pause="0" dev="/dev/ttyS0" levels="info,warn,crit" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600">
-		<filelist>
+	<settings>
+		<IOControl name="IOControl"/>
+		<testnode name="testnode" id="1000" id2="-100"/>
+		<SharedMemory name="SharedMemory" shmID="SharedMemory">
+			<History savetime="200">
+				<item filter="a1" fuse_id="AlarmFuse1_S" fuse_invert="1" id="1" size="30"/>
+				<item filter="a2" fuse_id="AlarmFuse2_AS" fuse_value="2" id="2" size="30"/>
+			</History>
+		</SharedMemory>
+		<UniExchange name="UniExchange">
+			<item name="UniExchange2" node="Node2"/>
+			<item id="3001" node_id="Node2"/>
+		</UniExchange>
+		<MBMaster1 addr="0x31" iaddr="127.0.0.1" levels="info,warn,crit" name="MBMaster1" poll_time="200" port="30000" reply_timeout="60">
+			<DeviceList>
+				<item addr="0x02" invert="0" respondSensor="RespondRTU_S" timeout="5000"/>
+			</DeviceList>
+		</MBMaster1>
+		<MBSlave1 addr="0x31" aftersend-pause="0" dev="/dev/ttyS0" levels="info,warn,crit" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600">
+			<filelist>
 			<!-- Список файлов разрешённых для передачи по modbus
 			directory - каталог где лежит файл. Можно не задавать
 				'ConfDir' - берётся из настроек (см. начало этого файла)
 				'DataDir' - берётся из настроек (см. начало этого файла)
 				'xxx'  - прямое указание каталога
 		-->
-			<item directory="ConfDir" id="1" name="configure.xml"/>
-			<item directory="ConfDir" id="2" name="VERSION"/>
-			<item directory="/tmp/" id="3" name="configure.xml.gz"/>
-			<item directory="ConfDir" id="4" name="SERIAL"/>
-		</filelist>
-	</MBSlave1>
-	<RTUExchange name="RTUExchange" speed="38400">
-		<DeviceList>
-			<item addr="0x01" invert="0" respondSensor="RespondRTU_S" speed="9600" timeout="5000"/>
-		</DeviceList>
-	</RTUExchange>
-	<UDPExchange name="UDPExchange"/>
-	<UDPExchange2 name="UDPExchange2"/>
-	<UNetExchange name="UNetExchange"/>
-	<HeartBeatTime time_msec="5000"/>
+				<item directory="ConfDir" id="1" name="configure.xml"/>
+				<item directory="ConfDir" id="2" name="VERSION"/>
+				<item directory="/tmp/" id="3" name="configure.xml.gz"/>
+				<item directory="ConfDir" id="4" name="SERIAL"/>
+			</filelist>
+		</MBSlave1>
+		<RTUExchange name="RTUExchange" speed="38400">
+			<DeviceList>
+				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" speed="9600" timeout="5000"/>
+			</DeviceList>
+		</RTUExchange>
+		<UDPExchange name="UDPExchange"/>
+		<UDPExchange2 name="UDPExchange2"/>
+		<UNetExchange name="UNetExchange"/>
+		<HeartBeatTime time_msec="5000"/>
+		<TestGen name="TestGen"
+			input1_s="Input1_S"
+			input2_s="DumpSensor1_S"
+			output1_c="DO_C"
+
+		/>
+	</settings>
 	<ObjectsMap idfromfile="0">
 		<!--
 	Краткие пояснения к полям секции 'sensors'

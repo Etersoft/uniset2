@@ -16,6 +16,24 @@
   	<set name="msg-count" val="20"/>
 	<set name="sleep-msec" val="150"/>
   </settings>
+  <variables arg_prefix="test-">
+      <!-- type = [int,str,bool,float]
+         int:  max,min,no_range_exception=[0,1]
+         str:
+         float: max,min,no_range_exception=[0,1]
+         bool:
+
+		 min - минимальное значение (может быть не задано)
+		 max - максимальное значение (может быть не задано)
+		 default - значение по умолчанию (может быть не задано)
+		 no_range_exception=1 - при выходе за границы min или max только писать unideb[WARN].
+      -->
+		<item name="test_int" type="int" min="0" comment="test int variable"/>
+		<item name="test_int2" type="int" max="100" default="110" no_range_exception="1"/>
+		<item name="test_float" type="float" max="100.0" default="50.0" />
+		<item name="test_bool" type="bool" />
+		<item name="test_str" type="str" default1="ddd"/>
+  </variables>
   <smap> 
 	<!-- name - название переменной в конф. файле -->
 	<item name="input1_s" vartype="in" iotype="DI" comment="comment for input1" node="K1Node"/>
