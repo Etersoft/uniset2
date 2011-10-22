@@ -143,6 +143,7 @@
 			<item name="imitator_performance1" precision="6" textname="Производительность танка 1" iotype="AI" rs="mbslave" mbreg="43" mb_vtype="I2"/> 
 			<item name="performance1" precision="6" noprecision="1" textname="Производительность танка 1" iotype="AI" rs="mbmaster" tcp_vtype="I2" tcp_mbtype="rtu" 
 					 tcp_mbaddr="1" tcp_mbreg="43" tcp_mbfunc="0x04"/>
+			<item iotype="DI" name="Message1" priority="Medium" textname="Текст сообщения 1"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">

@@ -13,10 +13,10 @@ GENERATED=TestGen_SK.h TestGen_SK.cc TestGen-main.cc
 GENERATED2=TestGenAlone_SK.h TestGenAlone_SK.cc TestGenAlone-main.cc
 
 $(GENERATED): ../@PACKAGE@-codegen testgen.src.xml ../*.xsl
-	../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen --local-include --ask -n TestGen testgen.src.xml
+	../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen --local-include -n TestGen testgen.src.xml
 
 $(GENERATED2): ../@PACKAGE@-codegen testgen-alone.src.xml ../*.xsl
-	../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen --local-include --ask --alone -n TestGenAlone testgen-alone.src.xml
+	../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen --local-include --alone -n TestGenAlone testgen-alone.src.xml
 
 clean-local:
 	rm -rf $(GENERATED) $(GENERATED2)
