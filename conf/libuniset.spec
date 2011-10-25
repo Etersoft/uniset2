@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt48
+Release: alt49
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -212,6 +212,10 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Tue Oct 25 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt49
+- added support 'const' and [private|protecte|public] 
+for <variables> in uniset-codegen
+
 * Sat Oct 22 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt48
 - added support for list of variables (<variables>) in uniset-codegen
 
