@@ -15,6 +15,8 @@ int main(int argc, const char **argv)
 		return 0;
 	}
 
+	cout << "**** uni_atoi('')=" << uni_atoi("") << endl;
+
 	try
 	{
 		string confile = UniSetTypes::getArgParam( "--confile", argc, argv, "test.xml" );
@@ -70,6 +72,8 @@ int main(int argc, const char **argv)
 
         int prop5 = conf->getArgPInt("--prop-dummy",it.getProp("dummy"),0);
 		cerr << "**** check conf->getArgPInt(...,...,defval): " << ( (prop5 != 0) ? "[FAILED]" : "OK" ) << endl;
+
+
 
 
 		return 0;
