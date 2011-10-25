@@ -452,6 +452,15 @@ node_<xsl:value-of select="@name"/>(DefaultObjectId),
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="@name"/>(DefaultObjectId),
 node_<xsl:value-of select="@name"/>(DefaultObjectId),
 </xsl:for-each>
+// const variables
+<xsl:for-each select="//variables/item">
+<xsl:if test="normalize-space(@const)!=''">
+<xsl:if test="normalize-space(@type)='int'"><xsl:value-of select="normalize-space(@name)"/>(0),</xsl:if>
+<xsl:if test="normalize-space(@type)='float'"><xsl:value-of select="normalize-space(@name)"/>(0),</xsl:if>
+<xsl:if test="normalize-space(@type)='bool'"><xsl:value-of select="normalize-space(@name)"/>(false),</xsl:if>
+<xsl:if test="normalize-space(@type)='str'"><xsl:value-of select="normalize-space(@name)"/>(""),</xsl:if>
+</xsl:if>
+</xsl:for-each>
 active(false),
 isTestMode(false),
 idTestMode_S(DefaultObjectId),
@@ -467,6 +476,17 @@ askPause(2000)
 	throw Exception( string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
+// ( val, confval, default val )
+static const std::string init3_str(const std::string s1, const std::string s2, const std::string s3 )
+{
+	if( !s1.empty() )
+		return s1;
+	if( !s2.empty() )
+		return s2;
+	
+	return s3;
+}
+// -----------------------------------------------------------------------------
 <xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode ):
 <xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>(id),</xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">UniSetObject(id),</xsl:if>
@@ -474,6 +494,21 @@ askPause(2000)
 <xsl:for-each select="//smap/item">
 	<xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
 node_<xsl:value-of select="normalize-space(@name)"/>( conf->getNodeID(conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>")) ),
+</xsl:for-each>
+// variables
+<xsl:for-each select="//variables/item">
+<xsl:if test="normalize-space(@type)='int'">
+<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='float'">
+<xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='bool'">
+<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='str'">
+<xsl:value-of select="normalize-space(@name)"/>(init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>")),
+</xsl:if>
 </xsl:for-each>
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
@@ -584,23 +619,6 @@ askPause(conf->getPIntProp(cnode,"askPause",2000))
 
 	// ===================== &lt;variables&gt; =====================
 	<xsl:for-each select="//variables/item">
-	std::string tmp_<xsl:value-of select="@name"/>( conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>",it.getProp("<xsl:value-of select="@name"/>")) );
-	<xsl:if test="normalize-space(@default)!=''">if( tmp_<xsl:value-of select="@name"/>.empty() )
-		tmp_<xsl:value-of select="@name"/> = "<xsl:value-of select="@default"/>";
-	</xsl:if>
-
-	<xsl:if test="normalize-space(@type)='int'">
-	<xsl:value-of select="@name"/> = uni_atoi(tmp_<xsl:value-of select="@name"/>);
-	</xsl:if>
-	<xsl:if test="normalize-space(@type)='float'">
-	<xsl:value-of select="@name"/> = atof(tmp_<xsl:value-of select="@name"/>.c_str());
-	</xsl:if>
-	<xsl:if test="normalize-space(@type)='bool'">
-	<xsl:value-of select="@name"/> = uni_atoi(tmp_<xsl:value-of select="@name"/>);
-	</xsl:if>
-	<xsl:if test="normalize-space(@type)='str'">
-	<xsl:value-of select="@name"/> = tmp_<xsl:value-of select="@name"/>;
-	</xsl:if>
 	<xsl:if test="normalize-space(@min)!=''">
 	if( <xsl:value-of select="@name"/> &lt; <xsl:value-of select="@min"/> )
 	{

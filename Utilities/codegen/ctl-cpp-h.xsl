@@ -73,12 +73,12 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		<xsl:call-template name="settype"><xsl:with-param name="iotype" select="@iotype"/></xsl:call-template><xsl:text> prev_</xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 		</xsl:for-each>
 
-	protected:
-		<xsl:call-template name="COMMON-HEAD-PROTECTED"/>
-
+		// --- public variables ---
 		<xsl:text>
 		</xsl:text>
 		<xsl:for-each select="//variables/item">
+        <xsl:if test="normalize-space(@public)!=''">
+		<xsl:if test="normalize-space(@const)!=''">const </xsl:if>
 		<xsl:if test="normalize-space(@type)='int'">int <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
 		<xsl:if test="normalize-space(@type)='float'">float <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
@@ -87,11 +87,51 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		</xsl:if>
 		<xsl:if test="normalize-space(@type)='str'">std::string <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
+		</xsl:if>
 		</xsl:for-each>
+		// --- end of public variables ---
+
+	protected:
+		<xsl:call-template name="COMMON-HEAD-PROTECTED"/>
+
+		// --- protected variables ---
+		<xsl:text>
+		</xsl:text>
+		<xsl:for-each select="//variables/item">
+        <xsl:if test="normalize-space(@private)=''">
+		<xsl:if test="normalize-space(@public)=''">
+		<xsl:if test="normalize-space(@const)!=''">const </xsl:if>
+		<xsl:if test="normalize-space(@type)='int'">int <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='float'">float <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='bool'">bool <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='str'">std::string <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		</xsl:if>
+		</xsl:if>
+		</xsl:for-each>
+		// ---- end of protected variables ----
 
 	private:
 		<xsl:call-template name="COMMON-HEAD-PRIVATE"/>
 
+		<xsl:text>
+		</xsl:text>// --- private variables ---
+		<xsl:for-each select="//variables/item">
+        <xsl:if test="normalize-space(@private)!=''">
+		<xsl:if test="normalize-space(@const)!=''">const </xsl:if>
+		<xsl:if test="normalize-space(@type)='int'">int <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='float'">float <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='bool'">bool <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='str'">std::string <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		</xsl:if>
+		</xsl:for-each>// --- end of private variables ---
 };
 
 // -----------------------------------------------------------------------------

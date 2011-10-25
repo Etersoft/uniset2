@@ -28,10 +28,10 @@
 		 default - значение по умолчанию (может быть не задано)
 		 no_range_exception=1 - при выходе за границы min или max только писать unideb[WARN].
       -->
-	  	<item name="test_int" type="int" min="0" comment="test int variable"/>
+	  	<item name="test_int" type="int" min="0" comment="test int variable" const="1" public="1"/>
 		<item name="test_int2" type="int" max="100" default="110" no_range_exception="1"/>
 		<item name="test_float" type="float" max="100.0" default="50.0" />
-		<item name="test_bool" type="bool" />
+		<item name="test_bool" type="bool" private="1"/>
 		<item name="test_str" type="str" default="ddd"/>
   </variables>
   <smap> 

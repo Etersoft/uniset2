@@ -79,7 +79,7 @@
       -->
 	  	<item name="startTimeout" type="int" min="0" comment="test int variable"/>
 		<item name="stopTimeout" type="int" max="100" default="110" no_range_exception="1"/>
-		<item name="test_float" type="float" max="100.0" default="50.0" />
+		<item name="test_float" type="float" max="100.0" default="50.0" public="1" const="1" />
 		<item name="test_bool" type="bool" />
 		<item name="test_str" type="str" default="ddd"/>
   </variables>
@@ -147,6 +147,8 @@
  - \b max - максимальное разрешенное значение
  - \b default - значение по умолчанию (при инициализации)
  - \b no_range_exception - не генерировать исключение в случае выхода переменной за указанный диапазон (\b min или \b max).
+ - \b const - const="1" - сгенерировать как константу.
+ - \b private | \b public | \b protected - Область видимости. По умолчанию: \b protected.
 
 Помимо этого в самой секции \<variables> можно указать свойство \b arg_prefix="...", которое используется при инициализации
 при помощи аргументов командной строки.
@@ -163,6 +165,9 @@
 Если указаны поля \b min или \b max происходит проверка значения (после инициализации) на соответсвие указанному диапазону.
 По умолчанию, при выходе за диапазон, генериурется исключение. Но если указано \b no_range_exception="1",
 то просто выдаётся warning в unideb[Debug::WARN].
+
+По умолчанию эти поля генерируются как \b protected. Но если есть необходимость, то можно указать свойство \b public="1" или
+\b private="1" и тогда они будут иметь соответствующую область видимости.
 
 
 \section pg_Codegen_Configuration Конфигурирование
