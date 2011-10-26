@@ -15,6 +15,9 @@
 <xsl:variable name="OID">
 	<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'ID'"/></xsl:call-template>
 </xsl:variable>
+<xsl:variable name="TESTMODE">
+	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'testmode'"/></xsl:call-template>
+</xsl:variable>
 
 <xsl:template match="/">
 <!-- BEGIN CC-FILE -->
@@ -33,7 +36,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		// NOTE: Нужно ли здесь опрашивать текущее значение выходов?!!
 		// Опрос входов
 		updateValues();
-
+<xsl:if test="normalize-space($TESTMODE)!=''">
 		if( idLocalTestMode_S != DefaultObjectId )
 		{
 			isTestMode = checkTestMode();
@@ -49,7 +52,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 				return;
 			}
 		}
-
+</xsl:if>
 		// проверка таймеров
 		checkTimers(this);
 

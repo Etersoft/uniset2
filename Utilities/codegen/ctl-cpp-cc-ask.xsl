@@ -14,6 +14,9 @@
 <xsl:variable name="OID">
 	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'ID'"/></xsl:call-template>
 </xsl:variable>
+<xsl:variable name="TESTMODE">
+	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'testmode'"/></xsl:call-template>
+</xsl:variable>
 
 <!-- Генерирование cc-файла -->
 <xsl:template match="/">
@@ -32,7 +35,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 	if( !active )
 		return;
 	try
-	{	
+	{
+<xsl:if test="normalize-space($TESTMODE)!=''">
 		isTestMode = checkTestMode();
 		if( trTestMode.change(isTestMode) )
 			testMode(isTestMode);
@@ -45,7 +49,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 			msleep( sleep_msec );
 			return;
 		}
-
+</xsl:if>
 		// проверка таймеров
 		checkTimers(this);
 
