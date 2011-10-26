@@ -180,7 +180,9 @@
 		void updatePreviousValues();
 		void checkSensors();
 		void updateOutputs( bool force );
+<xsl:if test="normalize-space($TESTMODE)!=''">
 		bool checkTestMode();
+</xsl:if>
 		void preSensorInfo( UniSetTypes::SensorMessage* sm );
 		void preTimerInfo( UniSetTypes::TimerMessage* tm );
 		void waitSM( int wait_msec, UniSetTypes::ObjectId testID = UniSetTypes::DefaultObjectId );
@@ -195,12 +197,15 @@
 
 		int sleep_msec; /*!&lt; пауза между итерациями */
 		bool active;
+<xsl:if test="normalize-space($TESTMODE)!=''">
 		bool isTestMode;
 		Trigger trTestMode;
 		UniSetTypes::ObjectId idTestMode_S;		  	/*!&lt; идентификатор для флага тестовго режима (для всех) */
 		UniSetTypes::ObjectId idLocalTestMode_S;	/*!&lt; идентификатор для флага тестовго режима (для данного узла) */
 		bool in_TestMode_S;
 		bool in_LocalTestMode_S;
+</xsl:if>
+		UniSetTypes::ObjectId smTestID; /*!&lt; идентификатор датчика для тестирования готовности SM */
 
 		// управление датчиком "сердцебиения"
 		PassiveTimer ptHeartBeat;				/*! &lt; период "сердцебиения" */
@@ -301,14 +306,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* _sm )
 				unideb.logFile(fname.c_str());
 				unideb &lt;&lt; myname &lt;&lt; "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" &lt;&lt; endl;
 			}
-
-			unideb &lt;&lt; myname &lt;&lt; "(sysCommand): logRotate" &lt;&lt; endl;
-			fname = unideb.getLogFile();
-			if( !fname.empty() )
-			{
-				unideb.logFile(fname.c_str());
-				unideb &lt;&lt; myname &lt;&lt; "(sysCommand): ***************** GGDEB LOG ROTATE *****************" &lt;&lt; endl;
-			}
 		}
 		break;
 
@@ -322,11 +319,13 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setState( UniSetTypes::ObjectId _si
 	setValue(_sid, _state ? 1 : 0 );
 }
 // -----------------------------------------------------------------------------
+<xsl:if test="normalize-space($TESTMODE)!=''">
 bool <xsl:value-of select="$CLASSNAME"/>_SK::checkTestMode()
 {
 	return (in_TestMode_S &amp;&amp; in_LocalTestMode_S);
 }
 // -----------------------------------------------------------------------------
+</xsl:if>
 void <xsl:value-of select="$CLASSNAME"/>_SK::sigterm( int signo )
 {
 	<xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>::sigterm(signo);</xsl:if>
@@ -356,9 +355,14 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preTimerInfo( UniSetTypes::TimerMes
 // ----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _testID )
 {
+<xsl:if test="normalize-space($TESTMODE)!=''">
 	if( _testID == DefaultObjectId )
 		_testID = idTestMode_S;
-		
+</xsl:if>
+
+	if( _testID == DefaultObjectId )
+		_testID = smTestID;
+
 	if( _testID == DefaultObjectId )
 		return;
 		
@@ -383,6 +387,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 		throw SystemError(err.str());
 	}
 
+<xsl:if test="normalize-space($TESTMODE)!=''">
 	if( idTestMode_S != DefaultObjectId )
 	{
 		if( !ui.waitWorking(idTestMode_S,wait_msec) )
@@ -399,6 +404,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			throw SystemError(err.str());
 		}
 	}
+</xsl:if>
 }
 // ----------------------------------------------------------------------------
 </xsl:template>
@@ -462,9 +468,11 @@ node_<xsl:value-of select="@name"/>(DefaultObjectId),
 </xsl:if>
 </xsl:for-each>
 active(false),
+<xsl:if test="normalize-space($TESTMODE)!=''">
 isTestMode(false),
 idTestMode_S(DefaultObjectId),
 idLocalTestMode_S(DefaultObjectId),
+</xsl:if>
 idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(0),
@@ -516,11 +524,13 @@ node_<xsl:value-of select="normalize-space(@name)"/>(conf->getNodeID( conf->getP
 </xsl:for-each>
 sleep_msec(<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>),
 active(true),
+<xsl:if test="normalize-space($TESTMODE)!=''">
 isTestMode(false),
 idTestMode_S(conf->getSensorID("TestMode_S")),
 idLocalTestMode_S(conf->getSensorID(conf->getProp(cnode,"LocalTestMode_S"))),
 in_TestMode_S(false),
 in_LocalTestMode_S(false),
+</xsl:if>
 idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(cnode),
@@ -612,6 +622,12 @@ askPause(conf->getPIntProp(cnode,"askPause",2000))
 	else if( smReadyTimeout &lt; 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 
+	std::string tmp_smtestID("");
+	<xsl:for-each select="//smap/item">
+	<xsl:if test="normalize-space(@smTestID)!=''">tmp_smtestID = "<xsl:value-of select="@name"/>";</xsl:if>
+	</xsl:for-each>
+	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/>sm-test-id"),conf->getProp(cnode,"smTestID"),tmp_smtestID));
+
 	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
 
 	int msec = conf->getArgPInt("--startup-timeout", 10000);
@@ -647,9 +663,10 @@ askPause(conf->getPIntProp(cnode,"askPause",2000))
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 {
 	// Опрашиваем все входы...
+<xsl:if test="normalize-space($TESTMODE)!=''">
 	in_TestMode_S  		= (idTestMode_S!=DefaultObjectId) ? ui.getState(idTestMode_S):false;
 	in_LocalTestMode_S 	= (idLocalTestMode_S!=DefaultObjectId) ? ui.getState(idLocalTestMode_S):false;
-	
+</xsl:if>
 		<xsl:for-each select="//smap/item">
 			<xsl:choose>
 				<xsl:when test="normalize-space(@vartype)='in'"><xsl:call-template name="getdata"/></xsl:when>
@@ -765,6 +782,17 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 
 <xsl:template name="COMMON-CC-ALONE-FUNCS">
 // -----------------------------------------------------------------------------
+// ( val, confval, default val )
+static const std::string init3_str(const std::string s1, const std::string s2, const std::string s3 )
+{
+	if( !s1.empty() )
+		return s1;
+	if( !s2.empty() )
+		return s2;
+
+	return s3;
+}
+// -----------------------------------------------------------------------------
 <xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK():
 <xsl:for-each select="//sensors/item">
 	<xsl:call-template name="setvar">
@@ -777,9 +805,11 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 	</xsl:call-template>
 </xsl:for-each>
 active(false),
+<xsl:if test="normalize-space($TESTMODE)!=''">
 isTestMode(false),
 idTestMode_S(DefaultObjectId),
 idLocalTestMode_S(DefaultObjectId),
+</xsl:if>
 idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(0),
@@ -807,11 +837,13 @@ askPause(2000)
 </xsl:for-each>
 sleep_msec(<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>),
 active(true),
+<xsl:if test="normalize-space($TESTMODE)!=''">
 isTestMode(false),
 idTestMode_S(conf->getSensorID("TestMode_S")),
 idLocalTestMode_S(conf->getSensorID(conf->getProp(cnode,"LocalTestMode_S"))),
 in_TestMode_S(false),
 in_LocalTestMode_S(false),
+</xsl:if>
 idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(cnode),
@@ -860,6 +892,7 @@ askPause(conf->getPIntProp(cnode,"askPause",2000))
 	else if( smReadyTimeout &lt; 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 
+	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/>sm-test-id"),conf->getProp(cnode,"smTestID"),""));
 	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
 
 	int msec = conf->getArgPInt("--startup-timeout", 10000);
@@ -874,9 +907,10 @@ askPause(conf->getPIntProp(cnode,"askPause",2000))
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 {
+<xsl:if test="normalize-space($TESTMODE)!=''">
 	in_TestMode_S  		= (idTestMode_S!=DefaultObjectId) ? ui.getState(idTestMode_S):false;
 	in_LocalTestMode_S 	= (idLocalTestMode_S!=DefaultObjectId) ? ui.getState(idLocalTestMode_S):false;
-
+</xsl:if>
 	// Опрашиваем все входы...
 	<xsl:for-each select="//sensors/item/consumers/consumer">
 		<xsl:choose>

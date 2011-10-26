@@ -14,6 +14,9 @@
 <xsl:variable name="OID">
 	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'ID'"/></xsl:call-template>
 </xsl:variable>
+<xsl:variable name="TESTMODE">
+	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'testmode'"/></xsl:call-template>
+</xsl:variable>
 
 <!-- Генерирование заголовочного файла -->
 <xsl:template match="/">
