@@ -95,8 +95,6 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		// --- end of public variables ---
 
 	protected:
-		<xsl:call-template name="COMMON-HEAD-PROTECTED"/>
-
 		// --- protected variables ---
 		<xsl:text>
 		</xsl:text>
@@ -117,9 +115,9 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		</xsl:for-each>
 		// ---- end of protected variables ----
 
-	private:
-		<xsl:call-template name="COMMON-HEAD-PRIVATE"/>
+		<xsl:call-template name="COMMON-HEAD-PROTECTED"/>
 
+	private:
 		<xsl:text>
 		</xsl:text>// --- private variables ---
 		<xsl:for-each select="//variables/item">
@@ -135,6 +133,10 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		</xsl:if>
 		</xsl:if>
 		</xsl:for-each>// --- end of private variables ---
+
+		<xsl:call-template name="COMMON-HEAD-PRIVATE"/>
+
+		bool end_private; // вспомогательное поле (для внутреннего использования при генерировании кода)
 };
 
 // -----------------------------------------------------------------------------

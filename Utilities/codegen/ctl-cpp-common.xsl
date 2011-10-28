@@ -426,6 +426,29 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 	}
 </xsl:template>
 
+<xsl:template name="default-init-variables">
+<xsl:if test="normalize-space(@const)!=''">
+<xsl:if test="normalize-space(@type)='int'"><xsl:value-of select="normalize-space(@name)"/>(0),</xsl:if>
+<xsl:if test="normalize-space(@type)='float'"><xsl:value-of select="normalize-space(@name)"/>(0),</xsl:if>
+<xsl:if test="normalize-space(@type)='bool'"><xsl:value-of select="normalize-space(@name)"/>(false),</xsl:if>
+<xsl:if test="normalize-space(@type)='str'"><xsl:value-of select="normalize-space(@name)"/>(""),</xsl:if>
+</xsl:if>
+</xsl:template>
+<xsl:template name="init-variables">
+<xsl:if test="normalize-space(@type)='int'">
+<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='float'">
+<xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='bool'">
+<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='str'">
+<xsl:value-of select="normalize-space(@name)"/>(init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>")),
+</xsl:if>
+</xsl:template>
+
 <xsl:template name="COMMON-CC-HEAD">
 // --------------------------------------------------------------------------
 /*
@@ -460,13 +483,15 @@ node_<xsl:value-of select="@name"/>(DefaultObjectId),
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="@name"/>(DefaultObjectId),
 node_<xsl:value-of select="@name"/>(DefaultObjectId),
 </xsl:for-each>
-// const variables
+// variables
 <xsl:for-each select="//variables/item">
-<xsl:if test="normalize-space(@const)!=''">
-<xsl:if test="normalize-space(@type)='int'"><xsl:value-of select="normalize-space(@name)"/>(0),</xsl:if>
-<xsl:if test="normalize-space(@type)='float'"><xsl:value-of select="normalize-space(@name)"/>(0),</xsl:if>
-<xsl:if test="normalize-space(@type)='bool'"><xsl:value-of select="normalize-space(@name)"/>(false),</xsl:if>
-<xsl:if test="normalize-space(@type)='str'"><xsl:value-of select="normalize-space(@name)"/>(""),</xsl:if>
+<xsl:if test="normalize-space(@public)!=''">
+<xsl:call-template name="default-init-variables"/>
+</xsl:if>
+<xsl:if test="normalize-space(@private)=''">
+<xsl:if test="normalize-space(@public)=''">
+<xsl:call-template name="default-init-variables"/>
+</xsl:if>
 </xsl:if>
 </xsl:for-each>
 active(false),
@@ -480,7 +505,13 @@ maxHeartBeat(10),
 confnode(0),
 smReadyTimeout(0),
 activated(false),
-askPause(2000)
+askPause(2000),
+<xsl:for-each select="//variables/item">
+<xsl:if test="normalize-space(@private)!=''">
+<xsl:call-template name="default-init-variables"/>
+</xsl:if>
+</xsl:for-each>
+end_private(false)
 {
 	unideb[Debug::CRIT] &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
 	throw Exception( string(myname+": init failed!!!") );
@@ -505,24 +536,20 @@ static const std::string init3_str(const std::string s1, const std::string s2, c
 	<xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
 node_<xsl:value-of select="normalize-space(@name)"/>( conf->getNodeID(conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>")) ),
 </xsl:for-each>
-// variables
-<xsl:for-each select="//variables/item">
-<xsl:if test="normalize-space(@type)='int'">
-<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='float'">
-<xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='bool'">
-<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
-</xsl:if>
-<xsl:if test="normalize-space(@type)='str'">
-<xsl:value-of select="normalize-space(@name)"/>(init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>")),
-</xsl:if>
-</xsl:for-each>
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
 node_<xsl:value-of select="normalize-space(@name)"/>(conf->getNodeID( conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>"))),
+</xsl:for-each>
+// variables
+<xsl:for-each select="//variables/item">
+<xsl:if test="normalize-space(@public)!=''">
+<xsl:call-template name="init-variables"/>
+</xsl:if>
+<xsl:if test="normalize-space(@private)=''">
+<xsl:if test="normalize-space(@public)=''">
+<xsl:call-template name="init-variables"/>
+</xsl:if>
+</xsl:if>
 </xsl:for-each>
 sleep_msec(<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>),
 active(true),
@@ -538,7 +565,13 @@ maxHeartBeat(10),
 confnode(cnode),
 smReadyTimeout(0),
 activated(false),
-askPause(conf->getPIntProp(cnode,"askPause",2000))
+askPause(conf->getPIntProp(cnode,"askPause",2000)),
+<xsl:for-each select="//variables/item">
+<xsl:if test="normalize-space(@private)!=''">
+<xsl:call-template name="init-variables"/>
+</xsl:if>
+</xsl:for-each>
+end_private(false)
 {
 	<xsl:call-template name="COMMON-ID-LIST"/>
 
