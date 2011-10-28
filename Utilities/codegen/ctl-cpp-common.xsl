@@ -284,8 +284,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* _sm )
 		{
 			waitSM(smReadyTimeout);
 			ptStartUpTimeout.reset();
-			updateOutputs(true); // принудительное обновление выходов
+			// т.к. для io-переменных важно соблюдать последовательность!
+			// сперва обновить входы.. а потом уже выходы
 			updateValues();
+			updateOutputs(true); // принудительное обновление выходов
 			askSensors(UniversalIO::UIONotify);
 			active = true;
 			break;
