@@ -117,54 +117,6 @@ void MBTCPMaster::sysCommand( UniSetTypes::SystemMessage *sm )
 		pollThread->start();
 }
 // -----------------------------------------------------------------------------
-void MBTCPMaster::step()
-{
-	updateRespondSensors();
-	MBExchange::step();
-}
-// -----------------------------------------------------------------------------
-void MBTCPMaster::updateRespondSensors()
-{
-	bool tcpIsTimeout = false;
-	{
-		uniset_mutex_lock l(tcpMutex);
-		tcpIsTimeout = pollActivated && ptTimeout.checkTime();
-	}
-
-	if( dlog.debugging(Debug::LEVEL4) )
-		dlog[Debug::LEVEL4] << myname << ": tcpTimeout=" << tcpIsTimeout << endl;
-
-	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
-	{
-		RTUDevice* d(it1->second);
-
-		if( tcpIsTimeout )
-			d->resp_real = false;
-
-		if( dlog.debugging(Debug::LEVEL4) )
-		{
-			dlog[Debug::LEVEL4] << myname << ": check respond addr=" << ModbusRTU::addr2str(d->mbaddr)
-				<< " respond_id=" << d->resp_id
-				<< " real=" << d->resp_real
-				<< " state=" << d->resp_state
-				<< endl;
-		}
-
-		if( d->checkRespond() && d->resp_id != DefaultObjectId  )
-		{
-			try
-			{
-				bool set = d->resp_invert ? !d->resp_state : d->resp_state;
-				shm->localSaveState(d->resp_dit,d->resp_id,set,getId());
-			}
-			catch( Exception& ex )
-			{
-				dlog[Debug::CRIT] << myname << "(step): (respond) " << ex << std::endl;
-			}
-		}
-	}
-}
-// -----------------------------------------------------------------------------
 void MBTCPMaster::poll_thread()
 {
 	{
@@ -193,39 +145,6 @@ void MBTCPMaster::poll_thread()
 	}
 }
 // -----------------------------------------------------------------------------
-void MBTCPMaster::sigterm( int signo )
-{
-	dlog[Debug::WARN] << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
-	setProcActive(false);
-
-/*! \todo Доделать выставление безопасного состояния на выходы. 
-          И нужно ли это. Ведь может не хватить времени на "обмен" 
-*/
-	
-	// выставление безопасного состояния на выходы....
-/*
-	RSMap::iterator it=rsmap.begin();
-	for( ; it!=rsmap.end(); ++it )
-	{
-//		if( it->stype!=UniversalIO::DigitalOutput && it->stype!=UniversalIO::AnalogOutput )
-//			continue;
-		
-		if( it->safety == NoSafetyState )
-			continue;
-
-		try
-		{
-		}
-		catch( UniSetTypes::Exception& ex )
-		{
-			dlog[Debug::WARN] << myname << "(sigterm): " << ex << std::endl;
-		}
-		catch(...){}
-	}
-*/	
-	UniSetObject_LT::sigterm(signo);
-}
-// ------------------------------------------------------------------------------------------
 void MBTCPMaster::help_print( int argc, const char* const* argv )
 {
 	cout << "Default: prefix='mbtcp'" << endl;
@@ -262,36 +181,5 @@ MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv,
 
 	dlog[Debug::INFO] << "(MBTCPMaster): name = " << name << "(" << ID << ")" << endl;
 	return new MBTCPMaster(ID,icID,ic,prefix);
-}
-// -----------------------------------------------------------------------------
-void MBTCPMaster::execute()
-{
-	no_extimer = true;
-
-	try
-	{
-		askTimer(tmExchange,0);
-	}
-	catch(...){}
-	
-	initMB(false);
-
-	while(1)
-	{
-		try
-		{
-			step();
-		}
-		catch( Exception& ex )
-		{
-			dlog[Debug::CRIT] << myname << "(execute): " << ex << std::endl;
-		}
-		catch(...)
-		{
-			dlog[Debug::CRIT] << myname << "(execute): catch ..." << endl;
-		}
-
-		msleep(polltime);
-	}
 }
 // -----------------------------------------------------------------------------

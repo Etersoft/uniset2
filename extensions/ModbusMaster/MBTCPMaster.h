@@ -194,8 +194,6 @@ class MBTCPMaster:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
-		void execute();
-	
 	protected:
 		virtual void sysCommand( UniSetTypes::SystemMessage *sm );
 
@@ -205,14 +203,10 @@ class MBTCPMaster:
 		int port;
 		int recv_timeout;
 
-		virtual void step();
+//		virtual void step();
 		virtual ModbusClient* initMB( bool reopen=false );
 		
 		void poll_thread();
-		void updateRespondSensors();
-
-		virtual void sigterm( int signo );
-		
 		bool force_disconnect;
 
 	 private:
