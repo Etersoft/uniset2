@@ -30,7 +30,7 @@ static void print_help()
 }
 // --------------------------------------------------------------------------
 int main( int argc, char **argv )
-{   
+{
 	int optindex = 0;
 	int opt = 0;
 	int verb = 0;
@@ -43,38 +43,38 @@ int main( int argc, char **argv )
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:d:s:t:q:",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "hva:d:s:t:q:",longopts,&optindex)) != -1 )
 		{
-			switch (opt) 
+			switch (opt)
 			{
 				case 'h':
-					print_help();	
+					print_help();
 				return 0;
 
-				case 'd':	
+				case 'd':
 					dev = string(optarg);
 				break;
 
-				case 's':	
+				case 's':
 					speed = string(optarg);
 				break;
 
-				case 't':	
+				case 't':
 					tout = uni_atoi(optarg);
 				break;
 
-				case 'q':	
+				case 'q':
 					slaveaddr = ModbusRTU::str2mbAddr(optarg);
 				break;
 
-				case 'v':	
+				case 'v':
 					verb = 1;
 				break;
 
 				case 'y':
 					use485 = 1;
 				break;
-				
+
 				case '?':
 				default:
 					printf("? argumnet\n");
@@ -84,26 +84,26 @@ int main( int argc, char **argv )
 
 		if( verb )
 		{
-			cout << "(init): dev=" << dev 
+			cout << "(init): dev=" << dev
 					<< " speed=" << speed
 					<< " timeout=" << tout << " msec "
-					<< endl;					
-		}		
-		
+					<< endl;
+		}
+
 		ModbusRTUMaster mb(dev,use485);
 
 		if( verb )
 			dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
-		
+
 		mb.setTimeout(tout);
 		mb.setSpeed(speed);
 		mb.setLog(dlog);
 
 		RTUStorage rtu(slaveaddr);
-		
+
 		rtu.poll(&mb);
 		cout << rtu << endl;
-		
+
 		for( int i=0; i<24; i++ )
 			cout << "UNIO1 AI" << i << ": " << rtu.getFloat( RTUStorage::nJ1, i, UniversalIO::AnalogInput ) << endl;
 		for( int i=0; i<24; i++ )

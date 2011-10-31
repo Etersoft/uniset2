@@ -10,7 +10,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, 
+MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
 							SharedMemory* ic, const std::string prefix ):
 MBExchange(objId,shmId,ic,prefix),
 force_disconnect(true),
@@ -59,15 +59,6 @@ pollThread(0)
 // -----------------------------------------------------------------------------
 MBTCPMaster::~MBTCPMaster()
 {
-	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
-	{
-		RTUDevice* d(it1->second);
-		for( MBTCPMaster::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
-			delete it->second;
-
-		delete it1->second;
-	}
-
 	delete pollThread;
 	delete mbtcp;
 }
@@ -78,7 +69,7 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
 	{
 		if( !reopen )
 			return mbtcp;
-		
+
 		delete mbtcp;
 		mb = 0;
 		mbtcp = 0;
@@ -88,7 +79,7 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
 	{
 		ost::Thread::setException(ost::Thread::throwException);
 		mbtcp = new ModbusTCPMaster();
-	
+
 		ost::InetAddress ia(iaddr.c_str());
 		mbtcp->connect(ia,port);
 		mbtcp->setForceDisconnect(force_disconnect);
@@ -99,7 +90,7 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
 		mbtcp->setSleepPause(sleepPause_usec);
 
 		dlog[Debug::INFO] << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
-		
+
 		if( dlog.debugging(Debug::LEVEL9) )
 			mbtcp->setLog(dlog);
 	}
@@ -200,37 +191,6 @@ void MBTCPMaster::poll_thread()
 
 		msleep(polltime);
 	}
-}
-// -----------------------------------------------------------------------------
-bool MBTCPMaster::RTUDevice::checkRespond()
-{
-	bool prev = resp_state;
-
-	if( resp_ptTimeout.getInterval() <= 0 )
-	{
-		resp_state = resp_real;
-		return (prev != resp_state);
-	}
-
-	if( resp_trTimeout.hi(resp_state && !resp_real) )
-		resp_ptTimeout.reset();
-
-	if( resp_real )
-		resp_state = true;
-	else if( resp_state && !resp_real && resp_ptTimeout.checkTime() )
-		resp_state = false;
-
-	// если ещё не инициализировали значение в SM
-	// то возвращаем true, чтобы оно принудительно сохранилось
-	if( !resp_init )
-	{
-		resp_state = resp_real;
-		resp_init = true;
-		prev = resp_state;
-		return true;
-	}
-
-	return ( prev != resp_state );
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::sigterm( int signo )

@@ -55,10 +55,10 @@ pollActivated(false)
 	if( stat_time > 0 )
 		ptStatistic.setTiming(stat_time*1000);
 
-//	recv_timeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recv_timeout"), 500);
-//
-//	int tout = conf->getArgPInt("--" + prefix + "-timeout",it.getProp("timeout"), 5000);
-//	ptTimeout.setTiming(tout);
+	recv_timeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recv_timeout"), 500);
+
+	int tout = conf->getArgPInt("--" + prefix + "-timeout",it.getProp("timeout"), 5000);
+	ptTimeout.setTiming(tout);
 
 	noQueryOptimization = conf->getArgInt("--" + prefix + "-no-query-optimization",it.getProp("no_query_optimization"));
 
@@ -148,6 +148,21 @@ void MBExchange::help_print( int argc, const char* const* argv )
 // -----------------------------------------------------------------------------
 MBExchange::~MBExchange()
 {
+	for( RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+	{
+		if( it1->second->rtu )
+		{
+			delete it1->second->rtu;
+			it1->second->rtu = 0;
+		}
+
+		RTUDevice* d(it1->second);
+		for( RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+			delete it->second;
+
+		delete it1->second;
+	}
+
 	delete shm;
 }
 // -----------------------------------------------------------------------------
@@ -2611,5 +2626,36 @@ void MBExchange::poll()
 	}
 
 //	printMap(rmap);
+}
+// -----------------------------------------------------------------------------
+bool MBExchange::RTUDevice::checkRespond()
+{
+	bool prev = resp_state;
+
+	if( resp_ptTimeout.getInterval() <= 0 )
+	{
+		resp_state = resp_real;
+		return (prev != resp_state);
+	}
+
+	if( resp_trTimeout.hi(resp_state && !resp_real) )
+		resp_ptTimeout.reset();
+
+	if( resp_real )
+		resp_state = true;
+	else if( resp_state && !resp_real && resp_ptTimeout.checkTime() )
+		resp_state = false;
+
+	// если ещё не инициализировали значение в SM
+	// то возвращаем true, чтобы оно принудительно сохранилось
+	if( !resp_init )
+	{
+		resp_state = resp_real;
+		resp_init = true;
+		prev = resp_state;
+		return true;
+	}
+
+	return ( prev != resp_state );
 }
 // -----------------------------------------------------------------------------

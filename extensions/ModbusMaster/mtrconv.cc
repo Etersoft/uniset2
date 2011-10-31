@@ -13,7 +13,7 @@ static void print_help()
 }
 // --------------------------------------------------------------------------
 int main( int argc, const char **argv )
-{   
+{
 	unsigned short v1 = 0;
 	unsigned short v2 = 0;
 	const char* type="";
@@ -22,11 +22,11 @@ int main( int argc, const char **argv )
 	{
 		print_help();
 		return 1;
-	} 
+	}
 
 	type = argv[1];
 	v1 = UniSetTypes::uni_atoi(argv[2]);
-	
+
 	if( argc>=4 )
 	{
 		v1 = UniSetTypes::uni_atoi(argv[3]);
@@ -63,23 +63,23 @@ int main( int argc, const char **argv )
 	else if( !strcmp(type,"T5") )
 	{
 		T5 t(v1,v2);
-		cout << "(T5): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
-			<< " --> " << t.raw.u2.val << " * 10^" << (int)t.raw.u2.exp 
+		cout << "(T5): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1]
+			<< " --> " << t.raw.u2.val << " * 10^" << (int)t.raw.u2.exp
 			<< " ===> " << t.val << endl;
 	}
 	else if( !strcmp(type,"T6") )
 	{
 		T6 t(v1,v2);
-		cout << "(T6): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
-			<< " --> " << t.raw.u2.val << " * 10^" << (int)t.raw.u2.exp 
+		cout << "(T6): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1]
+			<< " --> " << t.raw.u2.val << " * 10^" << (int)t.raw.u2.exp
 			<< " ===> " << t.val << endl;
 	}
 	else if( !strcmp(type,"T7") )
 	{
 		T7 t(v1,v2);
-		cout << "(T7): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
-//			<< " --> " << T7.val << " * 10^-4" 
-			<< " ===> " << t.val 
+		cout << "(T7): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1]
+//			<< " --> " << T7.val << " * 10^-4"
+			<< " ===> " << t.val
 			<< " [" << ( t.raw.u2.ic == 0xFF ? "CAP" : "IND" ) << "|"
 			<< ( t.raw.u2.ie == 0xFF ? "EXP" : "IMP" ) << "]"
 			<< endl;
@@ -87,7 +87,7 @@ int main( int argc, const char **argv )
 	else if( !strcmp(type,"T8") )
 	{
 		T8 t(v1,v2);
-		cout << "(T8): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
+		cout << "(T8): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1]
 			<< " ===> " << setfill('0') << hex
 			<< setw(2) << t.hour() << ":" << setw(2) << t.min()
 			<< " " << setw(2) << t.day() << "/" << setw(2) << t.mon()
@@ -105,7 +105,7 @@ int main( int argc, const char **argv )
 	else if( !strcmp(type,"T10") )
 	{
 		T10 t(v1,v2);
-		cout << "(T10): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
+		cout << "(T10): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1]
 			<< " ===> " << setfill('0') << dec
 			<< setw(4) << t.year() << "/" << setw(2) << t.mon()
 			<< "/" << setw(2) << t.day()
@@ -117,7 +117,7 @@ int main( int argc, const char **argv )
 		cout << "(F1): v1=" << f.raw.v[0] << " v2=" << f.raw.v[1]
 			<< " ===> " << f.raw.val << endl;
 	}
-	else 
+	else
 	{
 		cout << " Unknown type: " << type << endl;
 		return 1;

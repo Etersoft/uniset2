@@ -39,8 +39,6 @@ allNotRespond(false)
 	transmitCtl = conf->getArgInt("--"+prefix+"-transmit-ctl",it.getProp("transmitCtl"));
 	defSpeed = ComPort::getSpeed(speed);
 
-	recv_timeout = conf->getArgPInt("--"+prefix+"-recv-timeout",it.getProp("recv_timeout"), 50);
-
 	int alltout = conf->getArgPInt("--"+prefix+"-all-timeout",it.getProp("all_timeout"), 2000);
 	ptAllNotRespond.setTiming(alltout);
 
@@ -67,21 +65,6 @@ allNotRespond(false)
 // -----------------------------------------------------------------------------
 RTUExchange::~RTUExchange()
 {
-	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
-	{
-		if( it1->second->rtu )
-		{
-			delete it1->second->rtu;
-			it1->second->rtu = 0;
-		}
-		
-		RTUDevice* d(it1->second);
-		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
-			delete it->second;
-
-		delete it1->second;
-	}
-
 	delete mbrtu;
 }
 // -----------------------------------------------------------------------------
@@ -150,13 +133,13 @@ void RTUExchange::poll()
 {
 	if( trAllNotRespond.hi(allNotRespond) )
 		ptAllNotRespond.reset();
-	
+
 	if( allNotRespond && mb && ptAllNotRespond.checkTime() )
 	{
 		ptAllNotRespond.reset();
 		initMB(true);
 	}
-	
+
 	if( !mb )
 	{
 		initMB(false);
@@ -170,20 +153,20 @@ void RTUExchange::poll()
 	}
 
 	ComPort::Speed s = mbrtu->getSpeed();
-	
+
 	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
-	
+
 		if( d->speed != s )
 		{
 			s = d->speed;
 			mbrtu->setSpeed(d->speed);
 		}
-		
+
 		if( dlog.debugging(Debug::INFO) )
 			dlog[Debug::INFO] << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr) << endl;
-	
+
 		if( d->dtype==RTUExchange::dtRTU188 )
 		{
 			if( !d->rtu )
@@ -205,19 +188,19 @@ void RTUExchange::poll()
 				d->resp_real = true;
 			}
 			catch( ModbusRTU::mbException& ex )
-			{ 
+			{
 				if( d->resp_real )
 				{
 					if( dlog.debugging(Debug::LEVEL3) )
 					{
-  						dlog[Debug::CRIT] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
+						dlog[Debug::CRIT] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
 							<< " -> " << ex << endl;
-					}					
+					}
 					d->resp_real = false;
 				}
 			}
 		}
-		else 
+		else
 		{
 			d->resp_real = false;
 			for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
@@ -233,7 +216,7 @@ void RTUExchange::poll()
 					}
 				}
 				catch( ModbusRTU::mbException& ex )
-				{ 
+				{
 //					if( d->resp_real )
 //					{
 						if( dlog.debugging(Debug::LEVEL3) )
@@ -255,7 +238,7 @@ void RTUExchange::poll()
 
 	// update SharedMemory...
 	updateSM();
-	
+
 	// check thresholds
 	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
@@ -267,35 +250,8 @@ void RTUExchange::poll()
 				IOBase::processingThreshold( &(*i),shm,force);
 		}
 	}
-	
+
 //	printMap(rmap);
-}
-// -----------------------------------------------------------------------------
-bool RTUExchange::RTUDevice::checkRespond()
-{
-	bool prev = resp_state;
-	if( resp_trTimeout.hi(resp_real) )
-	{	
-		if( resp_real )
-			resp_state = true;
-
-		resp_ptTimeout.reset();
-	}
-
-	if( resp_state && !resp_real && resp_ptTimeout.checkTime() )
-		resp_state = false; 
-	
-	// если ещё не инициализировали значение в SM
-	// то возвращаем true, чтобы оно принудительно сохранилось
-	if( !resp_init )
-	{
-		resp_state = resp_real;
-		resp_init = true;
-		prev = resp_state;
-		return true;
-	}
-
-	return ( prev != resp_state );
 }
 // -----------------------------------------------------------------------------
 void RTUExchange::help_print( int argc, const char* const* argv )
