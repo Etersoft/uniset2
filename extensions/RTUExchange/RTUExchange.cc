@@ -1,7 +1,6 @@
 // -----------------------------------------------------------------------------
 #include <cmath>
 #include <sstream>
-#include "Exceptions.h"
 #include "Extensions.h"
 #include "RTUExchange.h"
 // -----------------------------------------------------------------------------
@@ -11,39 +10,18 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 RTUExchange::RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic,
 						  const std::string prefix_ ):
-UniSetObject_LT(objId),
+MBExchange(objId,shmId,ic,prefix_),
 mb(0),
 defSpeed(ComPort::ComSpeed0),
 use485F(false),
 transmitCtl(false),
-shm(0),
-initPause(0),
-force(false),
-force_out(false),
-mbregFromID(false),
-activated(false),
 rs_pre_clean(false),
-noQueryOptimization(false),
-allNotRespond(false),
-prefix(prefix_)
+allNotRespond(false)
 {
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(RTUExchange): objId=-1?!! Use --" + prefix + "-name" );
 
-//	xmlNode* cnode = conf->getNode(myname);
-	cnode = conf->getNode(myname);
-	if( cnode == NULL )
-		throw UniSetTypes::SystemError("(RTUExchange): Not find conf-node for " + myname );
-
-	shm = new SMInterface(shmId,&ui,objId,ic);
-
 	UniXML_iterator it(cnode);
-
-	// определяем фильтр
-	s_field = conf->getArgParam("--"+prefix+"-filter-field");
-	s_fvalue = conf->getArgParam("--"+prefix+"-filter-value");
-	dlog[Debug::INFO] << myname << "(init): read fileter-field='" << s_field
-						<< "' filter-value='" << s_fvalue << "'" << endl;
 
 	// ---------- init RS ----------
 //	UniXML_iterator it(cnode);
@@ -69,16 +47,6 @@ prefix(prefix_)
 	rs_pre_clean = conf->getArgInt("--"+prefix+"-pre-clean",it.getProp("pre_clean"));
 	noQueryOptimization = conf->getArgInt("--"+prefix+"-no-query-optimization",it.getProp("no_query_optimization"));
 
-	mbregFromID = conf->getArgInt("--mbs-reg-from-id",it.getProp("reg_from_id"));
-	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
-
-	polltime = conf->getArgPInt("--"+prefix+"-polltime",it.getProp("polltime"), 100);
-
-	initPause = conf->getArgPInt("--"+prefix+"-initPause",it.getProp("initPause"), 3000);
-
-	force = conf->getArgInt("--"+prefix+"-force",it.getProp("force"));
-	force_out = conf->getArgInt("--"+prefix+"-force-out",it.getProp("force_out"));
-
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
@@ -88,48 +56,11 @@ prefix(prefix_)
 	else
 		ic->addReadItem( sigc::mem_fun(this,&RTUExchange::readItem) );
 
-	// ********** HEARTBEAT *************
-	string heart = conf->getArgParam("--"+prefix+"-heartbeat-id",it.getProp("heartbeat_id"));
-	if( !heart.empty() )
-	{
-		sidHeartBeat = conf->getSensorID(heart);
-		if( sidHeartBeat == DefaultObjectId )
-		{
-			ostringstream err;
-			err << myname << ": ID not found ('HeartBeat') for " << heart;
-			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
-			throw SystemError(err.str());
-		}
-
-		int heartbeatTime = getHeartBeatTime();
-		if( heartbeatTime )
-			ptHeartBeat.setTiming(heartbeatTime);
-		else
-			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
-
-		maxHeartBeat = conf->getArgPInt("--"+prefix+"-heartbeat-max",it.getProp("heartbeat_max"), 10);
-		test_id = sidHeartBeat;
-	}
-	else
-	{
-		test_id = conf->getSensorID("TestMode_S");
-		if( test_id == DefaultObjectId )
-		{
-			ostringstream err;
-			err << myname << "(init): test_id unknown. 'TestMode_S' not found...";
-			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
-			throw SystemError(err.str());
-		}
-	}
-
-	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
-
-	activateTimeout	= conf->getArgPInt("--"+prefix+"-activate-timeout", 20000);
 
 	initMB(false);
 
-	printMap(rmap);
-//	abort();
+	if( dlog.debugging(Debug::INFO) )
+		printMap(rmap);
 }
 // -----------------------------------------------------------------------------
 RTUExchange::~RTUExchange()
@@ -150,7 +81,6 @@ RTUExchange::~RTUExchange()
 	}
 	
 	delete mb;
-	delete shm;
 }
 // -----------------------------------------------------------------------------
 void RTUExchange::initMB( bool reopen )
@@ -198,24 +128,6 @@ void RTUExchange::initMB( bool reopen )
 	}
 }
 // -----------------------------------------------------------------------------
-void RTUExchange::waitSMReady()
-{
-	// waiting for SM is ready...
-	int ready_timeout = conf->getArgInt("--"+prefix+"-sm-ready-timeout","15000");
-	if( ready_timeout == 0 )
-		ready_timeout = 15000;
-	else if( ready_timeout < 0 )
-		ready_timeout = UniSetTimer::WaitUpTime;
-
-	if( !shm->waitSMready(ready_timeout,50) )
-	{
-		ostringstream err;
-		err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
-		dlog[Debug::CRIT] << err.str() << endl;
-		throw SystemError(err.str());
-	}
-}
-// -----------------------------------------------------------------------------
 void RTUExchange::timerInfo( TimerMessage *tm )
 {
 	if( tm->id == tmExchange )
@@ -229,22 +141,7 @@ void RTUExchange::step()
 		poll();
 	}
 
-	if( !activated )
-		return;
-
-	if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
-	{
-		try
-		{
-			shm->localSaveValue(aitHeartBeat,sidHeartBeat,maxHeartBeat,getId());
-			ptHeartBeat.reset();
-		}
-		catch(Exception& ex)
-		{
-			dlog[Debug::CRIT] << myname
-				<< "(step): (hb) " << ex << std::endl;
-		}
-	}
+	MBExchange::step();
 }
 
 // -----------------------------------------------------------------------------
@@ -388,7 +285,10 @@ bool RTUExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			<< " mb_init=" << p->mb_init
 			<< endl;
 	}
-	
+
+	if( !checkPoll(ModbusRTU::isWriteFunction(p->mbfunc)) )
+		return true;
+
 	if( p->q_count == 0 )
 	{
 		if( dlog.debugging(Debug::INFO) )
@@ -886,6 +786,8 @@ void RTUExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 	if( force_out )
 		return;
 
+	MBExchange::sensorInfo(sm);
+
 	for( RTUExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
@@ -939,44 +841,8 @@ bool RTUExchange::activateObject()
 void RTUExchange::sigterm( int signo )
 {
 	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
-	activated = false;
-	UniSetObject_LT::sigterm(signo);
+	MBExchange::sigterm(signo);
 }
-// ------------------------------------------------------------------------------------------
-void RTUExchange::readConfiguration()
-{
-//	readconf_ok = false;
-	xmlNode* root = conf->getXMLSensorsSection();
-	if(!root)
-	{
-		ostringstream err;
-		err << myname << "(readConfiguration): не нашли корневого раздела <sensors>";
-		throw SystemError(err.str());
-	}
-
-	UniXML_iterator it(root);
-	if( !it.goChildren() )
-	{
-		std::cerr << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
-		return;
-	}
-
-	for( ;it.getCurrent(); it.goNext() )
-	{
-		if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
-			initItem(it);
-	}
-	
-//	readconf_ok = true;
-}
-// ------------------------------------------------------------------------------------------
-bool RTUExchange::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
-{
-	if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
-		initItem(it);
-	return true;
-}
-
 // ------------------------------------------------------------------------------------------
 RTUExchange::RTUDevice* RTUExchange::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAddr a, UniXML_iterator& xmlit )
 {
@@ -1223,24 +1089,6 @@ bool RTUExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  RTUExchange::RT
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-RTUExchange::DeviceType RTUExchange::getDeviceType( const std::string dtype )
-{
-	if( dtype.empty() )
-		return dtUnknown;
-
-	if( dtype == "mtr" || dtype == "MTR" )
-		return dtMTR;
-	
-	if( dtype == "rtu" || dtype == "RTU" )
-		return dtRTU;
-	
-	if ( dtype == "rtu188" || dtype == "RTU188" )
-		return dtRTU188;
-
-	return dtUnknown;
-
-}
-// ------------------------------------------------------------------------------------------
 bool RTUExchange::initRTUDevice( RTUDevice* d, UniXML_iterator& it )
 {
 	d->dtype = getDeviceType(it.getProp("mbtype"));
@@ -1442,7 +1290,7 @@ bool RTUExchange::initRTU188item( UniXML_iterator& it, RegInfo* p )
 // -----------------------------------------------------------------------------
 void RTUExchange::initIterators()
 {
-	shm->initAIterator(aitHeartBeat);
+	MBExchange::initIterators();
 
 	for( RTUExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
@@ -1463,14 +1311,8 @@ void RTUExchange::initIterators()
 void RTUExchange::help_print( int argc, const char* const* argv )
 {
 	cout << "Default: prefix='rs'" << endl;
-	cout << "--prefix-polltime msec     - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
-	cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--prefix-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
-	cout << "--prefix-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
-	cout << "--prefix-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
-	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
-	cout << " Настройки протокола RS: " << endl;
+	MBExchange::help_print(argc,argv);
+//	cout << " Настройки протокола RS: " << endl;
 	cout << "--prefix-dev devname  - файл устройства" << endl;
 	cout << "--prefix-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
 	cout << "--prefix-my-addr      - адрес текущего узла" << endl;
@@ -1498,30 +1340,6 @@ RTUExchange* RTUExchange::init_rtuexchange( int argc, const char* const* argv, U
 
 	dlog[Debug::INFO] << "(rtuexchange): name = " << name << "(" << ID << ")" << endl;
 	return new RTUExchange(ID,icID,ic,prefix);
-}
-// -----------------------------------------------------------------------------
-std::ostream& operator<<( std::ostream& os, const RTUExchange::DeviceType& dt )
-{
-	switch(dt)
-	{
-		case RTUExchange::dtRTU:
-			os << "RTU";
-		break;
-
-		case RTUExchange::dtRTU188:
-			os << "RTU188";
-		break;
-
-		case RTUExchange::dtMTR:
-			os << "MTR";
-		break;
-		
-		default:
-			os << "Unknown device type (" << (int)dt << ")";
-		break;
-	}
-	
-	return os;
 }
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, const RTUExchange::RSProperty& p )
@@ -1748,6 +1566,9 @@ void RTUExchange::updateRSProperty( RSProperty* p, bool write_only )
 	bool save = isWriteFunction( r->mbfunc );
 	
 	if( !save && write_only )
+		return;
+
+	if( !checkUpdateSM(save) )
 		return;
 
 		try

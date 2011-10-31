@@ -5,19 +5,8 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "IONotifyController.h"
-#include "UniSetObject_LT.h"
+#include "MBExchange.h"
 #include "modbus/ModbusTCPMaster.h"
-#include "PassiveTimer.h"
-#include "Trigger.h"
-#include "Mutex.h"
-#include "Calibration.h"
-#include "SMInterface.h"
-#include "SharedMemory.h"
-#include "ThreadCreator.h"
-#include "IOBase.h"
-#include "VTypes.h"
-#include "MTR.h"
 // -----------------------------------------------------------------------------
 /*!
       \page page_ModbusTCP Реализация ModbusTCP master
@@ -190,7 +179,7 @@
 	связи обновляется в основном потоке (чтобы не зависеть от TCP).
 */
 class MBTCPMaster:
-	public UniSetObject_LT
+	public MBExchange
 {
 	public:
 		MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
@@ -207,32 +196,12 @@ class MBTCPMaster:
 
 		void execute();
 	
-		static const int NoSafetyState=-1;
-
-		/*! Режимы работы процесса обмена */
-		enum ExchangeMode
-		{
-			emNone, 		/*!< нормальная работа (по умолчанию) */
-			emWriteOnly, 	/*!< "только посылка данных" (работают только write-функции) */
-			emReadOnly,		/*!< "только чтение" (работают только read-функции) */
-			emSkipSaveToSM	/*!< не писать данные в SM (при этом работают и read и write функции */
-		};
-
 		enum Timer
 		{
 			tmExchange
 		};
 
-		enum DeviceType
-		{
-			dtUnknown,		/*!< неизвестный */
-			dtRTU,			/*!< RTU (default) */
-			dtMTR			/*!< MTR (DEIF) */
-		};
-
-		static DeviceType getDeviceType( const std::string dtype );
-		friend std::ostream& operator<<( std::ostream& os, const DeviceType& dt );
-// -------------------------------------------------------------------------------
+		// -----------------------------------------------------
 		struct RTUDevice;
 		struct RegInfo;
 
@@ -347,7 +316,6 @@ class MBTCPMaster:
 // ----------------------------------
 		static RegID genRegID( const ModbusRTU::ModbusData r, const int fn );
 
-
 	protected:
 		struct InitRegInfo
 		{
@@ -380,13 +348,7 @@ class MBTCPMaster:
 		int port;
 		int recv_timeout;
 
-		xmlNode* cnode;
-		std::string s_field;
-		std::string s_fvalue;
-
-		SMInterface* shm;
-		
-		void step();
+		virtual void step();
 		void poll_thread();
 		void poll();
 		bool pollRTU( RTUDevice* dev, RegMap::iterator& it );
@@ -403,17 +365,12 @@ class MBTCPMaster:
 		void timerInfo( UniSetTypes::TimerMessage *tm );
 		void askSensors( UniversalIO::UIOCommand cmd );	
 		void initOutput();
-		void waitSMReady();
+		void initMB( bool reopen=false );
 
 		virtual bool activateObject();
-		
-		// действия при завершении работы
 		virtual void sigterm( int signo );
-		
-		void initMB( bool reopen=false );
-		void initIterators();
-		bool initItem( UniXML_iterator& it );
-		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
+		virtual void initIterators();
+		virtual bool initItem( UniXML_iterator& it );
 		void initDeviceList();
 		void initOffsetList();
 
@@ -430,46 +387,15 @@ class MBTCPMaster:
 		
 		void rtuQueryOptimization( RTUDeviceMap& m );
 
-		void readConfiguration();
-
-		bool checkProcActive();
-		void setProcActive( bool st );
-
-	 private:
-		MBTCPMaster();
-		bool initPause;
-		UniSetTypes::uniset_mutex mutex_start;
-
-		bool force;		/*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
-		bool force_out;	/*!< флаг означающий, принудительного чтения выходов */
-		bool mbregFromID;
-		int polltime;	/*!< переодичность обновления данных, [мсек] */
-		timeout_t sleepPause_usec;
-
-		PassiveTimer ptHeartBeat;
-		UniSetTypes::ObjectId sidHeartBeat;
-		int maxHeartBeat;
-		IOController::AIOStateList::iterator aitHeartBeat;
-		UniSetTypes::ObjectId test_id;
-
-		UniSetTypes::ObjectId sidExchangeMode; /*!< иденидентификатор для датчика режима работы */
-		IOController::AIOStateList::iterator aitExchangeMode;
-		long exchangeMode; /*!< режим работы см. ExchangeMode */
-
-		UniSetTypes::uniset_mutex actMutex;
-		bool activated;
-		int activateTimeout;
-		
-		bool noQueryOptimization;
-		bool force_disconnect;
-		
-		std::string prefix;
-		
 		bool no_extimer;
+		bool force_disconnect;
 
 		timeout_t stat_time; 		/*!< время сбора статистики обмена */
 		int poll_count;
 		PassiveTimer ptStatistic;   /*!< таймер для сбора статистики обмена */
+
+	 private:
+		MBTCPMaster();
 
 		// т.к. TCP может "зависнуть" на подключении к недоступному узлу
 		// делаем опрос в отдельном потоке
