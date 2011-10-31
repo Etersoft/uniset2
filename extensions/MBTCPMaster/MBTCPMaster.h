@@ -25,6 +25,7 @@
       - \ref sec_MBTCP_Comm
       - \ref sec_MBTCP_Conf
       - \ref sec_MBTCP_ConfList
+	  - \ref sec_MBTCP_ExchangeMode
       
       \section sec_MBTCP_Comm Общее описание ModbusTCP master
       Класс реализует процесс обмена (опрос/запись) с RTU-устройствами,
@@ -163,6 +164,20 @@
 
    \warning Регистр должен быть уникальным. И может повторятся только если указан параметр \a nbit или \a nbyte.
 
+
+	\section sec_MBTCP_ExchangeMode Управление режимом работы MBTCPMaster
+		В MBTCPMaster заложена возможность управлять режимом работы процесса. Поддерживаются
+	следующие режимы:
+	- \b emNone - нормальная работа (по умолчанию)
+    - \b emWriteOnly - "только посылка данных" (работают только write-функции)
+	- \b emReadOnly - "только чтение" (работают только read-функции)
+	- \b emSkipSaveToSM - "не записывать данные в SM", это особый режим, похожий на \b emWriteOnly,
+			но отличие в том, что при этом режиме ведётся полноценый обмен (и read и write),
+	только реально данные не записываются в SharedMemory(SM).
+
+	Режимы переключаются при помощи датчика, который можно задать либо аргументом командной строки
+	\b --prefix-exchange-mode-id либо в конф. файле параметром \b echangeModeID="". Константы определяющие режимы объявлены в MBTCPMaster::ExchangeMode.
+
 */
 // -----------------------------------------------------------------------------
 /*!
@@ -193,6 +208,15 @@ class MBTCPMaster:
 		void execute();
 	
 		static const int NoSafetyState=-1;
+
+		/*! Режимы работы процесса обмена */
+		enum ExchangeMode
+		{
+			emNone, 		/*!< нормальная работа (по умолчанию) */
+			emWriteOnly, 	/*!< "только посылка данных" (работают только write-функции) */
+			emReadOnly,		/*!< "только чтение" (работают только read-функции) */
+			emSkipSaveToSM	/*!< не писать данные в SM (при этом работают и read и write функции */
+		};
 
 		enum Timer
 		{
@@ -427,6 +451,10 @@ class MBTCPMaster:
 		int maxHeartBeat;
 		IOController::AIOStateList::iterator aitHeartBeat;
 		UniSetTypes::ObjectId test_id;
+
+		UniSetTypes::ObjectId sidExchangeMode; /*!< иденидентификатор для датчика режима работы */
+		IOController::AIOStateList::iterator aitExchangeMode;
+		long exchangeMode; /*!< режим работы см. ExchangeMode */
 
 		UniSetTypes::uniset_mutex actMutex;
 		bool activated;

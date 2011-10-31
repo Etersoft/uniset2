@@ -20,6 +20,7 @@ initPause(0),
 force(false),
 force_out(false),
 mbregFromID(false),
+sidExchangeMode(DefaultObjectId),
 activated(false),
 noQueryOptimization(false),
 force_disconnect(true),
@@ -134,15 +135,24 @@ pollThread(0)
 
 	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
 
+	string emode = conf->getArgParam("--" + prefix + "-exchange-mode-id",it.getProp("exchangeModeID"));
+	if( !emode.empty() )
+	{
+		sidExchangeMode = conf->getSensorID(emode);
+		if( sidExchangeMode == DefaultObjectId )
+		{
+			ostringstream err;
+			err << myname << ": ID not found ('ExchangeMode') for " << emode;
+			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			throw SystemError(err.str());
+		}
+	}
+
 	activateTimeout	= conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
-
-//	initMB(false);
-
-	printMap(rmap);
-//	abort();
+	if( dlog.debugging(Debug::INFO) )
+		printMap(rmap);
 
 	poll_count = -1;
-
 	pollThread = new ThreadCreator<MBTCPMaster>(this, &MBTCPMaster::poll_thread);
 }
 // -----------------------------------------------------------------------------
@@ -309,6 +319,12 @@ void MBTCPMaster::poll_thread()
 
 	while( checkProcActive() )
 	{
+		try
+		{
+			if( sidExchangeMode != DefaultObjectId && force_out )
+				exchangeMode = shm->localGetValue(aitExchangeMode,sidExchangeMode);
+		}
+		catch(...){}
 		try
 		{
 			poll();
@@ -484,6 +500,21 @@ bool MBTCPMaster::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 					<< endl;
 					
 			}
+	}
+
+	if( exchangeMode == emWriteOnly && !ModbusRTU::isWriteFunction(p->mbfunc) )
+	{
+		if( dlog.debugging(Debug::LEVEL3)  )
+			dlog[Debug::LEVEL3] << myname << "(pollRTU): skip.. mode='emWriteOnly'" << endl;
+		return true;
+	}
+	
+	if( exchangeMode == emReadOnly && ModbusRTU::isWriteFunction(p->mbfunc) )
+	{
+		if( dlog.debugging(Debug::LEVEL3)  )
+			dlog[Debug::LEVEL3] << myname << "(pollRTU): skip.. poll mode='emReadOnly'" << endl;
+
+		return false;
 	}
 
 	if( p->q_count == 0 )
@@ -1149,6 +1180,20 @@ void MBTCPMaster::askSensors( UniversalIO::UIOCommand cmd )
 	if( force_out )
 		return;
 
+	try
+	{
+		if( sidExchangeMode != DefaultObjectId )
+			shm->askSensor(sidExchangeMode,cmd);
+	}
+	catch( UniSetTypes::Exception& ex )
+	{
+		dlog[Debug::WARN] << myname << "(askSensors): " << ex << std::endl;
+	}
+	catch(...)
+	{
+		dlog[Debug::WARN] << myname << "(askSensors): 'sidExchangeMode' catch..." << std::endl;
+	}
+	
 	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
@@ -1180,6 +1225,14 @@ void MBTCPMaster::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
 	if( force_out )
 		return;
+
+	if( sm->id == sidExchangeMode )
+	{
+		exchangeMode = sm->value;
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(sensorInfo): exchange MODE=" << sm->value << std::endl;
+		return;
+	}
 
 	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
@@ -1829,6 +1882,7 @@ bool MBTCPMaster::initMTRitem( UniXML_iterator& it, RegInfo* p )
 void MBTCPMaster::initIterators()
 {
 	shm->initAIterator(aitHeartBeat);
+	shm->initAIterator(aitExchangeMode);
 
 	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
@@ -2132,6 +2186,30 @@ void MBTCPMaster::updateRSProperty( RSProperty* p, bool write_only )
 	
 	if( !save && write_only )
 		return;
+
+	if( save && exchangeMode == emReadOnly )
+	{
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << "updateP: sid=" << p->si.id 
+				<< " skip... mode='emReadOnly' " << endl;
+		return;
+	}
+
+	if( !save && exchangeMode == emWriteOnly )
+	{
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << "updateP: sid=" << p->si.id 
+				<< " skip... mode='emWriteOnly' " << endl;
+		return;
+	}
+	
+	if( save && exchangeMode == emSkipSaveToSM )
+	{
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << "updateP: sid=" << p->si.id 
+				<< " skip... mode='emSkipSaveToSM' " << endl;
+		return;
+	}
 
 	// если требуется инициализация и она ещё не произведена,
 	// то игнорируем
@@ -2446,6 +2524,30 @@ void MBTCPMaster::updateMTR( RegMap::iterator& rit )
 	RegInfo* r(rit->second);
 	using namespace ModbusRTU;
 	bool save = isWriteFunction( r->mbfunc );
+
+	if( save && exchangeMode == emReadOnly )
+	{
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(updateMTR):"
+				<< " skip... mode=emReadOnly " << endl;
+		return;
+	}
+
+	if( !save && exchangeMode == emWriteOnly )
+	{
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(updateMTR):"
+				<< " skip... mode=emWriteOnly " << endl;
+		return;
+	}
+	
+	if( save && exchangeMode == emSkipSaveToSM )
+	{
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(updateMTR):"
+				<< " skip... mode=emSkipSaveToSM " << endl;
+		return;
+	}
 
 	{
 		for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
