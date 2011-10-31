@@ -32,7 +32,7 @@ RTUStorage::~RTUStorage()
 {
 
 }
-// -----------------------------------------------------------------------------	
+// -----------------------------------------------------------------------------
 void RTUStorage::poll( ModbusRTUMaster* mb )
 						throw( ModbusRTU::mbException )
 {
@@ -54,7 +54,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 			ModbusRTU::ReadInputStatusRetMessage ret = mb->read02( addr,0,16 );
 			ModbusRTU::DataBits bits;
 			for( int b=0; b<2; b++ )
-			{	
+			{
 				if( ret.getData(b,bits) )
 				{
 					for( int i=0; i<8; i++ )
@@ -70,7 +70,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 				ModbusRTU::ReadCoilRetMessage ret = mb->read01( addr,0,16 );
 				ModbusRTU::DataBits bits;
 				for( int b=0; b<2; b++ )
-				{	
+				{
 					if( ret.getData(b,bits) )
 					{
 						for( int i=0; i<8; i++ )
@@ -84,7 +84,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 				ModbusRTU::ReadInputStatusRetMessage ret = mb->read02( addr,16,16 );
 				ModbusRTU::DataBits bits;
 				for( int b=0; b<2; b++ )
-				{	
+				{
 					if( ret.getData(b,bits) )
 					{
 						for( int i=0; i<8; i++ )
@@ -110,7 +110,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 			}
 			// -----------------------------------
 		}
-		
+
 		// опрос UNIO48 DO
 		if( pollUNIO )
 		{
@@ -118,7 +118,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 				ModbusRTU::ReadCoilRetMessage ret = mb->read01( addr,16,48 );
 				ModbusRTU::DataBits bits;
 				for( int b=0; b<8; b++ )
-				{	
+				{
 					if( ret.getData(b,bits) )
 					{
 						for( int i=0; i<8; i++ )
@@ -132,7 +132,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 				ModbusRTU::ReadInputStatusRetMessage ret = mb->read02( addr,32,48 );
 				ModbusRTU::DataBits bits;
 				for( int b=0; b<8; b++ )
-				{	
+				{
 					if( ret.getData(b,bits) )
 					{
 						for( int i=0; i<8; i++ )
@@ -186,11 +186,11 @@ float RTUStorage::getFloat( RTUJack jack, unsigned short int chan, UniversalIO::
 				return adc[chan];
 			case nX2:
 				return adc[4+chan];
-				
+
 			default:
 				break;
 		}
-		
+
 		return 0;
 	}
 
@@ -208,14 +208,14 @@ float RTUStorage::getFloat( RTUJack jack, unsigned short int chan, UniversalIO::
 				return adc[chan];
 			case nX2:
 				return adc[4+chan];
-				
+
 			default:
 				break;
 		}
-		
+
 		return 0;
 	}
-	
+
 	return 0;
 }
 // -----------------------------------------------------------------------------
@@ -235,11 +235,11 @@ bool RTUStorage::getState( RTUJack jack, unsigned short int chan, UniversalIO::I
 				return di[chan];
 			case nX5:
 				return di[8+chan];
-				
+
 			default:
 				break;
 		}
-		
+
 		return false;
 	}
 
@@ -253,14 +253,14 @@ bool RTUStorage::getState( RTUJack jack, unsigned short int chan, UniversalIO::I
 				return unio_do[24+chan];
 			case nJ5:
 				return dio_do[chan];
-				
+
 			default:
 				break;
 		}
-		
+
 		return false;
 	}
-	
+
 	return false;
 }
 // -----------------------------------------------------------------------------
@@ -280,11 +280,11 @@ ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, unsigned short chan
 				return 1016+chan;
 			case nX2:
 				return 1016+4+chan;
-				
+
 			default:
 				break;
 		}
-		
+
 		return -1;
 	}
 
@@ -302,14 +302,14 @@ ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, unsigned short chan
 				return 1016+chan;
 			case nX2:
 				return 1016+4+chan;
-				
+
 			default:
 				break;
 		}
-		
+
 		return -1;
 	}
-	
+
 	if( t == UniversalIO::DigitalInput )
 	{
 		switch( jack )
@@ -324,11 +324,11 @@ ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, unsigned short chan
 				return chan;
 			case nX5:
 				return 8+chan;
-				
+
 			default:
 				break;
 		}
-		
+
 		return -1;
 	}
 
@@ -342,20 +342,20 @@ ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, unsigned short chan
 				return 16+24+chan;
 			case nJ5:
 				return chan;
-				
+
 			default:
 				break;
 		}
-		
+
 		return -1;
 	}
-	
+
 	return -1;
 }
 // -----------------------------------------------------------------------------
 std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 {
-	os << "-------------------" << endl 
+	os << "-------------------" << endl
 		 << " АЦП (8 каналов): " << endl;
 	for( int i=0; i<8; i++ ) // номера каналов
 		os << setw(12) << i << "|";
@@ -364,67 +364,67 @@ std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 		os << setw(12) << m.adc[i] << "|";
 	os << endl;
 	os << "-------------------" << endl
-		 << " DI (16 каналов): " << endl; 
+		 << " DI (16 каналов): " << endl;
 	for( int i=0; i<16; i++ ) // номера каналов
 		os << setw(2) << i << "|";
-	os << endl;		
+	os << endl;
 	for( int i=0; i<16; i++ )
 		os << setw(2) << m.di[i] << "|";
 	os << endl;
 
 	os << "-------------------" << endl
-		 << " DIO DO(16 каналов): " << endl; 
+		 << " DIO DO(16 каналов): " << endl;
 	for( int i=0; i<16; i++ ) // номера каналов
 		os << setw(2) << i << " | ";
 	os << endl;
 	for( int i=0; i<16; i++ )
 		os << setw(2) << m.dio_do[i] << " | ";
-	os << endl;		
+	os << endl;
 
 	os << "-------------------" << endl
-		 << " DIO DI(16 каналов): " << endl; 
+		 << " DIO DI(16 каналов): " << endl;
 	for( int i=0; i<16; i++ ) // номера каналов
 		os << setw(2) << i << " | ";
-	os << endl;		
+	os << endl;
 	for( int i=0; i<16; i++ )
 		os << setw(2) << m.dio_di[i] << " | ";
 	os << endl;
 
 	os << "-------------------" << endl
-		 << " DIO AI (16 каналов): " << endl; 
+		 << " DIO AI (16 каналов): " << endl;
 	for( int i=0; i<16; i++ ) // номера каналов
 		os << setw(2) << i << " | ";
-	os << endl;		
+	os << endl;
 	for( int i=0; i<16; i++ )
 		os << setw(2) << m.dio_ai[i] << " | ";
 	os << endl;
 
 	os << "-------------------" << endl
-		 << " DIO AO (16 каналов): " << endl; 
+		 << " DIO AO (16 каналов): " << endl;
 	for( int i=0; i<16; i++ ) // номера каналов
 		os << setw(2) << i << " | ";
-	os << endl;		
+	os << endl;
 	for( int i=0; i<16; i++ )
 		os << setw(2) << m.dio_ao[i] << " | ";
 	os << endl;
 
 	os << "-------------------" << endl
-		 << " UNIO48 DI: " << endl; 
+		 << " UNIO48 DI: " << endl;
 	for( int i=0; i<24; i++ ) // номера каналов
 		os << setw(2) << i << " | ";
-	os << endl;		
+	os << endl;
 	for( int i=0; i<24; i++ )
 		os << setw(2) << m.unio_di[i] << " | ";
 	os << endl;
 	for( int i=24; i<48; i++ ) // номера каналов
 		os << setw(2) << i << " | ";
-	os << endl;		
+	os << endl;
 	for( int i=24; i<48; i++ )
 		os << setw(2) << m.unio_di[i] << " | ";
 	os << endl;
 
 	os << "-------------------" << endl
-		 << " UNIO48 DO: " << endl; 
+		 << " UNIO48 DO: " << endl;
 	for( int i=0; i<24; i++ ) // номера каналов
 		os << setw(2) << i << " | ";
 	os << endl;
@@ -439,7 +439,7 @@ std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 	os << endl;
 
 	os << "-------------------" << endl
-		 << " UNIO48 AI: " << endl; 
+		 << " UNIO48 AI: " << endl;
 	for( int i=0; i<12; i++ ) // номера каналов
 		os << setw(6) << i << " | ";
 	os << endl;
@@ -454,16 +454,16 @@ std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 	os << endl;
 
 	os << "-------------------" << endl
-		 << " UNIO48 AO: " << endl; 
+		 << " UNIO48 AO: " << endl;
 	for( int i=0; i<12; i++ ) // номера каналов
 		os << setw(6) << i << " | ";
-	os << endl;		
+	os << endl;
 	for( int i=0; i<12; i++ )
 		os << setw(6) << m.unio_ao[i] << " | ";
 	os << endl;
 	for( int i=12; i<24; i++ ) // номера каналов
 		os << setw(6) << i << " | ";
-	os << endl;		
+	os << endl;
 	for( int i=12; i<24; i++ )
 		os << setw(6) << m.unio_ao[i] << " | ";
 	os << endl;

@@ -1547,6 +1547,69 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
 	}
 }
 // -----------------------------------------------------------------------------
+void MBExchange::updateRTU188( RegMap::iterator& it )
+{
+	RegInfo* r(it->second);
+	if( !r->dev->rtu )
+		return;
+
+	using namespace ModbusRTU;
+
+//	bool save = false;
+	if( isWriteFunction(r->mbfunc) )
+	{
+//		save = true;
+		cerr << myname << "(updateRTU188): write reg(" << dat2str(r->mbreg) << ") to RTU188 NOT YET!!!" << endl;
+		return;
+	}
+
+	for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
+	{
+		try
+		{
+			if( it->stype == UniversalIO::DigitalInput )
+			{
+				bool set = r->dev->rtu->getState(r->rtuJack,r->rtuChan,it->stype);
+				IOBase::processingAsDI( &(*it), set, shm, force );
+				continue;
+			}
+
+			if( it->stype == UniversalIO::AnalogInput )
+			{
+				long val = r->dev->rtu->getInt(r->rtuJack,r->rtuChan,it->stype);
+				IOBase::processingAsAI( &(*it),val, shm, force );
+				continue;
+			}
+		}
+		catch(IOController_i::NameNotFound &ex)
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188):(NameNotFound) " << ex.err << endl;
+		}
+		catch(IOController_i::IOBadParam& ex )
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188):(IOBadParam) " << ex.err << endl;
+		}
+		catch(IONotifyController_i::BadRange )
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188): (BadRange)..." << endl;
+		}
+		catch( Exception& ex )
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188): " << ex << endl;
+		}
+		catch(CORBA::SystemException& ex)
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188): CORBA::SystemException: "
+				<< ex.NP_minorString() << endl;
+		}
+		catch(...)
+		{
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188): catch ..." << endl;
+		}
+	}
+}
+// -----------------------------------------------------------------------------
+
 MBExchange::RTUDevice* MBExchange::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAddr a, UniXML_iterator& xmlit )
 {
 	RTUDeviceMap::iterator it = mp.find(a);

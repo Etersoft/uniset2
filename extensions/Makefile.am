@@ -3,7 +3,7 @@
 ############################################################################
 
 if HAVE_EXTENTIONS
-SUBDIRS = lib include SharedMemory IOControl RTUExchange LogicProcessor \
+SUBDIRS = lib include ModbusMaster SharedMemory IOControl RTUExchange LogicProcessor \
 	ModbusSlave MBTCPMaster SMViewer UniNetwork UNet2 DBServer-MySQL tests
 #SMDBServer
 #SharedMemoryPlus
