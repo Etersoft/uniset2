@@ -97,8 +97,6 @@ class RTUExchange:
 
 		friend std::ostream& operator<<( std::ostream& os, RegInfo& r );
 
-
-
 		struct RTUDevice
 		{
 			RTUDevice():
