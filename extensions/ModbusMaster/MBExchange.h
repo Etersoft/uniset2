@@ -189,6 +189,8 @@ class MBExchange:
 			tmExchange
 		};
 
+		void execute();
+
 	protected:
 		virtual void step();
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
@@ -236,6 +238,7 @@ class MBExchange:
 		void updateMTR(RegMap::iterator& it);
 		void updateRTU188(RegMap::iterator& it);
 		void updateRSProperty( RSProperty* p, bool write_only=false );
+		virtual void updateRespondSensors();
 
 		bool checkUpdateSM( bool wrFunc );
 		bool checkPoll( bool wrFunc );

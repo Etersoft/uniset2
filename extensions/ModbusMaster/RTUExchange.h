@@ -46,7 +46,7 @@ class RTUExchange:
 		bool rs_pre_clean;
 		bool allNotRespond;
 		Trigger trAllNotRespond;
-		PassiveTimer ptAllNotRespond;
+//		PassiveTimer ptAllNotRespond;
 };
 // -----------------------------------------------------------------------------
 #endif // _RS_EXCHANGE_H_

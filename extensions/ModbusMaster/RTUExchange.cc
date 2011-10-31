@@ -15,8 +15,7 @@ mbrtu(0),
 defSpeed(ComPort::ComSpeed0),
 use485F(false),
 transmitCtl(false),
-rs_pre_clean(false),
-allNotRespond(false)
+rs_pre_clean(false)
 {
 	prop_prefix = "";
 
@@ -26,7 +25,6 @@ allNotRespond(false)
 	UniXML_iterator it(cnode);
 
 	// ---------- init RS ----------
-//	UniXML_iterator it(cnode);
 	devname	= conf->getArgParam("--"+prefix+"-dev",it.getProp("device"));
 	if( devname.empty() )
 		throw UniSetTypes::SystemError(myname+"(RTUExchange): Unknown device..." );
@@ -39,14 +37,9 @@ allNotRespond(false)
 	transmitCtl = conf->getArgInt("--"+prefix+"-transmit-ctl",it.getProp("transmitCtl"));
 	defSpeed = ComPort::getSpeed(speed);
 
-	int alltout = conf->getArgPInt("--"+prefix+"-all-timeout",it.getProp("all_timeout"), 2000);
-	ptAllNotRespond.setTiming(alltout);
-
 	sleepPause_usec = conf->getArgPInt("--" + prefix + "-sleepPause-usec",it.getProp("slepePause"), 100);
 
 	rs_pre_clean = conf->getArgInt("--"+prefix+"-pre-clean",it.getProp("pre_clean"));
-	noQueryOptimization = conf->getArgInt("--"+prefix+"-no-query-optimization",it.getProp("no_query_optimization"));
-
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
@@ -120,6 +113,13 @@ ModbusClient* RTUExchange::initMB( bool reopen )
 // -----------------------------------------------------------------------------
 void RTUExchange::step()
 {
+	try
+	{
+		if( sidExchangeMode != DefaultObjectId && force_out )
+			exchangeMode = shm->localGetValue(aitExchangeMode,sidExchangeMode);
+	}
+	catch(...){}
+
 	{
 		uniset_mutex_lock l(pollMutex,2000);
 		poll();
@@ -127,16 +127,15 @@ void RTUExchange::step()
 
 	MBExchange::step();
 }
-
 // -----------------------------------------------------------------------------
 void RTUExchange::poll()
 {
 	if( trAllNotRespond.hi(allNotRespond) )
-		ptAllNotRespond.reset();
+		ptTimeout.reset();
 
-	if( allNotRespond && mb && ptAllNotRespond.checkTime() )
+	if( allNotRespond && mb && ptTimeout.checkTime() )
 	{
-		ptAllNotRespond.reset();
+		ptTimeout.reset();
 		initMB(true);
 	}
 
