@@ -58,6 +58,9 @@ pollActivated(false)
 	recv_timeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recv_timeout"), 500);
 
 	int tout = conf->getArgPInt("--" + prefix + "-timeout",it.getProp("timeout"), 5000);
+	// для совместимости со старым RTUExchange
+	// надо обратывать и all-timeout
+	tout = conf->getArgPInt("--" + prefix + "-all-timeout",it.getProp("all_timeout"), tout);
 	ptTimeout.setTiming(tout);
 
 	noQueryOptimization = conf->getArgInt("--" + prefix + "-no-query-optimization",it.getProp("no_query_optimization"));
@@ -189,6 +192,8 @@ void MBExchange::step()
 	if( !checkProcActive() )
 		return;
 
+	updateRespondSensors();
+
 	if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
 	{
 		try
@@ -219,7 +224,7 @@ void MBExchange::setProcActive( bool st )
 // -----------------------------------------------------------------------------
 void MBExchange::sigterm( int signo )
 {
-	dlog[Debug::WARN] << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
+	dlog[Debug::WARN] << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
 	setProcActive(false);
 	UniSetObject_LT::sigterm(signo);
 }
@@ -2657,5 +2662,75 @@ bool MBExchange::RTUDevice::checkRespond()
 	}
 
 	return ( prev != resp_state );
+}
+// -----------------------------------------------------------------------------
+void MBExchange::updateRespondSensors()
+{
+	bool chanTimeout = false;
+	{
+		uniset_mutex_lock l(pollMutex);
+		chanTimeout = pollActivated && ptTimeout.checkTime();
+	}
+
+	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+	{
+		RTUDevice* d(it1->second);
+
+		if( chanTimeout )
+			it1->second->resp_real = false;
+
+		if( dlog.debugging(Debug::LEVEL4) )
+		{
+			dlog[Debug::LEVEL4] << myname << ": check respond addr=" << ModbusRTU::addr2str(d->mbaddr)
+				<< " respond_id=" << d->resp_id
+				<< " real=" << d->resp_real
+				<< " state=" << d->resp_state
+				<< endl;
+		}
+
+		if( d->checkRespond() && d->resp_id != DefaultObjectId  )
+		{
+			try
+			{
+				bool set = d->resp_invert ? !d->resp_state : d->resp_state;
+				shm->localSaveState(d->resp_dit,d->resp_id,set,getId());
+			}
+			catch( Exception& ex )
+			{
+				dlog[Debug::CRIT] << myname << "(step): (respond) " << ex << std::endl;
+			}
+		}
+	}
+}
+// -----------------------------------------------------------------------------
+void MBExchange::execute()
+{
+	no_extimer = true;
+
+	try
+	{
+		askTimer(tmExchange,0);
+	}
+	catch(...){}
+
+	initMB(false);
+
+	while(1)
+	{
+		try
+		{
+			step();
+		}
+		catch( Exception& ex )
+		{
+			dlog[Debug::CRIT] << myname << "(execute): " << ex << std::endl;
+		}
+		catch(...)
+		{
+			dlog[Debug::CRIT] << myname << "(execute): catch ..." << endl;
+		}
+
+		msleep(polltime);
+	}
 }
 // -----------------------------------------------------------------------------
