@@ -28,9 +28,9 @@ int main( int argc, char** argv )
 		string logfilename(conf->getArgParam("--rs-logfile"));
 		if( logfilename.empty() )
 			logfilename = "rtuexchange.log";
-	
+
 		conf->initDebug(dlog,"dlog");
-	
+
 		std::ostringstream logname;
 		string dir(conf->getLogDir());
 		logname << dir << logfilename;
@@ -60,7 +60,7 @@ int main( int argc, char** argv )
 		ObjectsActivator act;
 		act.addObject(static_cast<class UniSetObject*>(rs));
 
-		SystemMessage sm(SystemMessage::StartUp); 
+		SystemMessage sm(SystemMessage::StartUp);
 		act.broadcast( sm.transport_msg() );
 
 		unideb(Debug::ANY) << "\n\n\n";
@@ -69,8 +69,8 @@ int main( int argc, char** argv )
 		dlog[Debug::ANY] << "(main): -------------- RTU Exchange START -------------------------\n\n";
 
 		act.run(false);
-		
-		while( waitpid(-1, 0, 0) > 0 ); 
+
+		while( waitpid(-1, 0, 0) > 0 );
 		return 0;
 	}
 	catch( Exception& ex )
@@ -82,6 +82,6 @@ int main( int argc, char** argv )
 		dlog[Debug::CRIT] << "(rtuexchange): catch ..." << std::endl;
 	}
 
-	while( waitpid(-1, 0, 0) > 0 ); 
+	while( waitpid(-1, 0, 0) > 0 );
 	return 1;
 }

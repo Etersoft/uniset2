@@ -72,7 +72,7 @@ enum Command
 static char* checkArg( int ind, int argc, char* argv[] );
 // --------------------------------------------------------------------------
 int main( int argc, char **argv )
-{   
+{
 	Command cmd = cmdNOP;
 	int optindex = 0;
 	int opt = 0;
@@ -88,21 +88,21 @@ int main( int argc, char **argv )
 	ModbusRTU::ModbusAddr end = 255;
 	int tout = 20;
 	DebugStream dlog;
-	//string tofile("");
+	string tofile("");
 	int use485 = 0;
 	ComPort::StopBits sbits = ComPort::OneBit;
 	ComPort::Parity parity = ComPort::NoParity;
 
 //	ModbusRTU::ModbusAddr b=255;
-//	
+//
 //	cout << "b=" << (int)b << " b++=" << (int)(b++) << endl;
 //	return 0;
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hvw:r:x:d:s:t:l:n:yb:e:x:z:",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "hvw:r:x:d:s:t:l:n:yb:e:x:z:",longopts,&optindex)) != -1 )
 		{
-			switch (opt) 
+			switch (opt)
 			{
 				case 'h':
 					print_help();
@@ -112,7 +112,7 @@ int main( int argc, char **argv )
 						cmd = cmdRead;
 						slaveaddr = ModbusRTU::str2mbAddr(optarg);
 				break;
-				
+
 				case 'w':
 					cmd = cmdSave;
 					slaveaddr = ModbusRTU::str2mbAddr( optarg );
@@ -134,7 +134,7 @@ int main( int argc, char **argv )
 						cmd = cmdGetSerial;
 						slaveaddr = ModbusRTU::str2mbAddr(optarg);
 				break;
-		
+
 				case 'y':
 					use485 = 1;
 				break;
@@ -168,7 +168,7 @@ int main( int argc, char **argv )
 				case 'b':
 					beg = atoi(optarg);
 				break;
-	
+
 				case 'e':
 					end = atoi(optarg);
 				break;
@@ -180,12 +180,12 @@ int main( int argc, char **argv )
 				case 'v':
 					verb = 1;
 				break;
-				
+
 				case 'l':
 				{
 					if( cmd == cmdNOP )
 						cmd = cmdDetectSlave;
-		
+
 					if( !checkArg(optind,argc,argv) )
 						break;
 					reg = ModbusRTU::str2mbData(argv[optind+2]);
@@ -200,9 +200,9 @@ int main( int argc, char **argv )
 				{
 					if( cmd == cmdNOP )
 						cmd = cmdDetectSpeed;
-		
+
 					slaveaddr = ModbusRTU::str2mbAddr(optarg);
-		
+
 					if( !checkArg(optind,argc,argv) )
 						break;
 
@@ -226,20 +226,20 @@ int main( int argc, char **argv )
 		{
 			cout << "(init): dev=" << dev << " speed=" << speed
 					<< " timeout=" << tout << " msec "
-					<< endl;					
-		}		
-		
+					<< endl;
+		}
+
 		ModbusRTUMaster mb(dev,use485);
 
 		if( verb )
 			dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
-		
+
 		mb.setTimeout(tout);
 		mb.setSpeed(speed);
 		mb.setParity(parity);
 		mb.setStopBits(sbits);
 		mb.setLog(dlog);
-		
+
 		switch(cmd)
 		{
 			case cmdRead:
@@ -290,11 +290,11 @@ int main( int argc, char **argv )
 					cout << "(mtr-setup): autodetect slave: "
 						 << " beg=" << ModbusRTU::addr2str(beg)
 						 << " end=" << ModbusRTU::addr2str(end)
-						 << " reg=" << ModbusRTU::dat2str(reg) 
-						 << " fn=" << ModbusRTU::b2str(fn) 
+						 << " reg=" << ModbusRTU::dat2str(reg)
+						 << " fn=" << ModbusRTU::b2str(fn)
 						 << endl;
 				}
-				
+
 				try
 				{
 					ModbusRTU::ModbusAddr a = ModbusHelpers::autodetectSlave(&mb,beg,end,reg,fn);
@@ -312,20 +312,20 @@ int main( int argc, char **argv )
 				if( verb )
 				{
 					cout << "(mtr-setup): autodetect speed: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
-						 << " reg=" << ModbusRTU::dat2str(reg) 
-						 << " fn=" << ModbusRTU::b2str(fn) 
+						 << " reg=" << ModbusRTU::dat2str(reg)
+						 << " fn=" << ModbusRTU::b2str(fn)
 						 << endl;
 				}
-				
+
 				try
 				{
 					ComPort::Speed s = ModbusHelpers::autodetectSpeed(&mb,slaveaddr,reg,fn);
-					cout << "(mtr-setup): autodetect: slaveaddr=" << ModbusRTU::addr2str(slaveaddr) 
+					cout << "(mtr-setup): autodetect: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
 						<< " speed=" << ComPort::getSpeed(s) << endl;
 				}
 				catch( UniSetTypes::TimeOut )
 				{
-					cout << "(mtr-setup): speed not autodetect for slaveaddr=" 
+					cout << "(mtr-setup): speed not autodetect for slaveaddr="
 						<< ModbusRTU::addr2str(slaveaddr) << endl;
 				}
 			}
@@ -339,11 +339,11 @@ int main( int argc, char **argv )
 						 << " slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
 						 << endl;
 				}
-				
+
 				cout << "model: " << MTR::getModelNumber(&mb,slaveaddr) << endl;
 			}
 			break;
-		
+
 			case cmdGetSerial:
 			{
 				if( verb )
@@ -352,18 +352,17 @@ int main( int argc, char **argv )
 						 << " slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
 						 << endl;
 				}
-				
+
 				cout << "serial: " << MTR::getSerialNumber(&mb,slaveaddr) << endl;
 			}
 			break;
-		
+
 			case cmdNOP:
 			default:
 				cerr << "No command. Use -h for help." << endl;
 				return 1;
 		}
-		
-		return 0;
+
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
@@ -382,14 +381,14 @@ int main( int argc, char **argv )
 		cerr << "(mtr-setup): catch(...)" << endl;
 	}
 
-	return 1;
+	return 0;
 }
 // --------------------------------------------------------------------------
 char* checkArg( int i, int argc, char* argv[] )
 {
 	if( i<argc && (argv[i])[0]!='-' )
 		return argv[i];
-		
+
 	return 0;
 }
 // --------------------------------------------------------------------------

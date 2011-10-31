@@ -179,13 +179,11 @@ AC_CONFIG_FILES([Makefile
 				 extensions/DBServer-MySQL/libUniSetMySQL.pc
 				 extensions/IOControl/Makefile
 				 extensions/IOControl/libUniSetIOControl.pc
-				 extensions/RTUExchange/Makefile
-				 extensions/RTUExchange/libUniSetRTU.pc
 				 extensions/ModbusMaster/Makefile
+				 extensions/ModbusMaster/libUniSetRTU.pc
+				 extensions/ModbusMaster/libUniSetMBTCPMaster.pc
 				 extensions/ModbusSlave/Makefile
 				 extensions/ModbusSlave/libUniSetMBSlave.pc
-				 extensions/MBTCPMaster/Makefile
-				 extensions/MBTCPMaster/libUniSetMBTCPMaster.pc
 				 extensions/LogicProcessor/Makefile
 				 extensions/LogicProcessor/libUniSetLogicProcessor.pc
 				 extensions/SMViewer/Makefile

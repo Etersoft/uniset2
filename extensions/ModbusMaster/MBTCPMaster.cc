@@ -10,35 +10,18 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, 
+MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
 							SharedMemory* ic, const std::string prefix ):
 MBExchange(objId,shmId,ic,prefix),
 force_disconnect(true),
 mbtcp(0),
 pollThread(0)
 {
+//	cout << "$ $" << endl;
+	prop_prefix = "tcp_";
+
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(MBTCPMaster): objId=-1?!! Use --" + prefix + "-name" );
-
-	// префикс для "свойств" - по умолчанию
-	prop_prefix = "tcp_";
-	// если задано поле для "фильтрации"
-	// то в качестве префикса используем его
-	if( !s_field.empty() )
-		prop_prefix = s_field + "_";
-	// если "принудительно" задан префикс
-	// используем его.
-	{
-		string p("--" + prefix + "-set-prop-prefix");
-		string v = conf->getArgParam(p,"");
-		if( !v.empty() && v[0] != '-' )
-			prop_prefix = v;
-		// если параметр всё-таки указан, считаем, что это попытка задать "пустой" префикс
-		else if( findArgParam(p,conf->getArgc(),conf->getArgv()) != -1 )
-			prop_prefix = "";
-	}
-
-	dlog[Debug::INFO] << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
 	UniXML_iterator it(cnode);
 
@@ -57,6 +40,11 @@ pollThread(0)
 	force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection",it.getProp("persistent_connection")) ? false : true;
 	dlog[Debug::INFO] << myname << "(init): persisten-connection=" << (!force_disconnect) << endl;
 
+	recv_timeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recv_timeout"), 500);
+
+	int tout = conf->getArgPInt("--" + prefix + "-timeout",it.getProp("timeout"), 5000);
+	ptTimeout.setTiming(tout);
+
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
@@ -67,9 +55,6 @@ pollThread(0)
 		ic->addReadItem( sigc::mem_fun(this,&MBTCPMaster::readItem) );
 
 	pollThread = new ThreadCreator<MBTCPMaster>(this, &MBTCPMaster::poll_thread);
-
-	if( dlog.debugging(Debug::INFO) )
-		printMap(rmap);
 }
 // -----------------------------------------------------------------------------
 MBTCPMaster::~MBTCPMaster()
@@ -84,7 +69,7 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
 	{
 		if( !reopen )
 			return mbtcp;
-		
+
 		delete mbtcp;
 		mb = 0;
 		mbtcp = 0;
@@ -94,7 +79,7 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
 	{
 		ost::Thread::setException(ost::Thread::throwException);
 		mbtcp = new ModbusTCPMaster();
-	
+
 		ost::InetAddress ia(iaddr.c_str());
 		mbtcp->connect(ia,port);
 		mbtcp->setForceDisconnect(force_disconnect);
@@ -103,11 +88,9 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
 			mbtcp->setTimeout(recv_timeout);
 
 		mbtcp->setSleepPause(sleepPause_usec);
-		
-		mbtcp->setAfterSendPause(aftersend_pause);
 
 		dlog[Debug::INFO] << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
-		
+
 		if( dlog.debugging(Debug::LEVEL9) )
 			mbtcp->setLog(dlog);
 	}
@@ -134,6 +117,54 @@ void MBTCPMaster::sysCommand( UniSetTypes::SystemMessage *sm )
 		pollThread->start();
 }
 // -----------------------------------------------------------------------------
+void MBTCPMaster::step()
+{
+	updateRespondSensors();
+	MBExchange::step();
+}
+// -----------------------------------------------------------------------------
+void MBTCPMaster::updateRespondSensors()
+{
+	bool tcpIsTimeout = false;
+	{
+		uniset_mutex_lock l(tcpMutex);
+		tcpIsTimeout = pollActivated && ptTimeout.checkTime();
+	}
+
+	if( dlog.debugging(Debug::LEVEL4) )
+		dlog[Debug::LEVEL4] << myname << ": tcpTimeout=" << tcpIsTimeout << endl;
+
+	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+	{
+		RTUDevice* d(it1->second);
+
+		if( tcpIsTimeout )
+			d->resp_real = false;
+
+		if( dlog.debugging(Debug::LEVEL4) )
+		{
+			dlog[Debug::LEVEL4] << myname << ": check respond addr=" << ModbusRTU::addr2str(d->mbaddr)
+				<< " respond_id=" << d->resp_id
+				<< " real=" << d->resp_real
+				<< " state=" << d->resp_state
+				<< endl;
+		}
+
+		if( d->checkRespond() && d->resp_id != DefaultObjectId  )
+		{
+			try
+			{
+				bool set = d->resp_invert ? !d->resp_state : d->resp_state;
+				shm->localSaveState(d->resp_dit,d->resp_id,set,getId());
+			}
+			catch( Exception& ex )
+			{
+				dlog[Debug::CRIT] << myname << "(step): (respond) " << ex << std::endl;
+			}
+		}
+	}
+}
+// -----------------------------------------------------------------------------
 void MBTCPMaster::poll_thread()
 {
 	{
@@ -145,7 +176,7 @@ void MBTCPMaster::poll_thread()
 	{
 		try
 		{
-			if( sidExchangeMode != DefaultObjectId && force )
+			if( sidExchangeMode != DefaultObjectId && force_out )
 				exchangeMode = shm->localGetValue(aitExchangeMode,sidExchangeMode);
 		}
 		catch(...){}
@@ -162,19 +193,55 @@ void MBTCPMaster::poll_thread()
 	}
 }
 // -----------------------------------------------------------------------------
+void MBTCPMaster::sigterm( int signo )
+{
+	dlog[Debug::WARN] << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
+	setProcActive(false);
+
+/*! \todo Доделать выставление безопасного состояния на выходы.
+          И нужно ли это. Ведь может не хватить времени на "обмен"
+*/
+
+	// выставление безопасного состояния на выходы....
+/*
+	RSMap::iterator it=rsmap.begin();
+	for( ; it!=rsmap.end(); ++it )
+	{
+//		if( it->stype!=UniversalIO::DigitalOutput && it->stype!=UniversalIO::AnalogOutput )
+//			continue;
+
+		if( it->safety == NoSafetyState )
+			continue;
+
+		try
+		{
+		}
+		catch( UniSetTypes::Exception& ex )
+		{
+			dlog[Debug::WARN] << myname << "(sigterm): " << ex << std::endl;
+		}
+		catch(...){}
+	}
+*/
+	UniSetObject_LT::sigterm(signo);
+}
+// ------------------------------------------------------------------------------------------
 void MBTCPMaster::help_print( int argc, const char* const* argv )
 {
 	cout << "Default: prefix='mbtcp'" << endl;
 	MBExchange::help_print(argc,argv);
-	cout << endl;
+	// ---------- init MBTCP ----------
+//	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
 	cout << " Настройки протокола TCP: " << endl;
-	cout << "--prefix-gateway-iaddr hostname,IP     - IP опрашиваемого узла" << endl;
+	cout << "--prefix-gateway hostname,IP           - IP опрашиваемого узла" << endl;
 	cout << "--prefix-gateway-port num              - port на опрашиваемом узле" << endl;
+	cout << "--prefix-recv-timeout msec             - Таймаут на приём одного сообщения" << endl;
+	cout << "--prefix-timeout msec                  - Таймаут для определения отсутсвия соединения" << endl;
 	cout << "--prefix-persistent-connection 0,1     - Не закрывать соединение на каждом цикле опроса" << endl;
 }
 // -----------------------------------------------------------------------------
-MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv, 
-											UniSetTypes::ObjectId icID, SharedMemory* ic, 
+MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv,
+											UniSetTypes::ObjectId icID, SharedMemory* ic,
 											const std::string prefix )
 {
 	string name = conf->getArgParam("--" + prefix + "-name","MBTCPMaster1");
@@ -187,7 +254,7 @@ MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv,
 	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		dlog[Debug::CRIT] << "(MBTCPMaster): идентификатор '" << name 
+		dlog[Debug::CRIT] << "(MBTCPMaster): идентификатор '" << name
 			<< "' не найден в конф. файле!"
 			<< " в секции " << conf->getObjectsSection() << endl;
 		return 0;
@@ -195,5 +262,36 @@ MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv,
 
 	dlog[Debug::INFO] << "(MBTCPMaster): name = " << name << "(" << ID << ")" << endl;
 	return new MBTCPMaster(ID,icID,ic,prefix);
+}
+// -----------------------------------------------------------------------------
+void MBTCPMaster::execute()
+{
+	no_extimer = true;
+
+	try
+	{
+		askTimer(tmExchange,0);
+	}
+	catch(...){}
+
+	initMB(false);
+
+	while(1)
+	{
+		try
+		{
+			step();
+		}
+		catch( Exception& ex )
+		{
+			dlog[Debug::CRIT] << myname << "(execute): " << ex << std::endl;
+		}
+		catch(...)
+		{
+			dlog[Debug::CRIT] << myname << "(execute): catch ..." << endl;
+		}
+
+		msleep(polltime);
+	}
 }
 // -----------------------------------------------------------------------------
