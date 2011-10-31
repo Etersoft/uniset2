@@ -196,152 +196,9 @@ class MBTCPMaster:
 
 		void execute();
 	
-		enum Timer
-		{
-			tmExchange
-		};
-
-		// -----------------------------------------------------
-		struct RTUDevice;
-		struct RegInfo;
-
-		struct RSProperty:
-			public IOBase
-		{
-			// only for RTU
-			short nbit;				/*!< bit number) */
-			VTypes::VType vType;	/*!< type of value */
-			short rnum;				/*!< count of registers */
-			short nbyte;			/*!< byte number (1-2) */
-			
-			RSProperty():
-				nbit(-1),vType(VTypes::vtUnknown),
-				rnum(VTypes::wsize(VTypes::vtUnknown)),
-				nbyte(0),reg(0)
-			{}
-
-			RegInfo* reg;
-		};
-
-		friend std::ostream& operator<<( std::ostream& os, const RSProperty& p );
-
-		typedef std::list<RSProperty> PList;
-		static std::ostream& print_plist( std::ostream& os, PList& p );
-
-		typedef unsigned long RegID;
-
-		typedef std::map<RegID,RegInfo*> RegMap;
-		struct RegInfo
-		{
-			RegInfo():
-				mbval(0),mbreg(0),mbfunc(ModbusRTU::fnUnknown),
-				id(0),dev(0),mtrType(MTR::mtUnknown),
-				q_num(0),q_count(1),mb_initOK(true),sm_initOK(true)
-			{}
-
-			ModbusRTU::ModbusData mbval;
-			ModbusRTU::ModbusData mbreg;			/*!< регистр */
-			ModbusRTU::SlaveFunctionCode mbfunc;	/*!< функция для чтения/записи */
-			PList slst;
-			RegID id;
-
-			RTUDevice* dev;
-
-			// only for MTR
-			MTR::MTRType mtrType;	/*!< тип регистра (согласно спецификации на MTR) */
-			
-			// optimization
-			int q_num;		/*!< number in query */
-			int q_count;	/*!< count registers for query */
-			
-			RegMap::iterator rit;
-
-			// начальная инициалиазция для "записываемых" регистров
-			// Механизм:
-			// Если tcp_preinit="1", то сперва будет сделано чтение значения из устройства.
-			// при этом флаг mb_init=false пока не пройдёт успешной инициализации
-			// Если tcp_preinit="0", то флаг mb_init сразу выставляется в true.
-			bool mb_initOK;	/*!< инициализировалось ли значение из устройства */
-
-			// Флаг sm_init означает, что писать в устройство нельзя, т.к. значение в "карте регистров"
-			// ещё не инициализировано из SM
-			bool sm_initOK;	/*!< инициализировалось ли значение из SM */
-		};
-
-		friend std::ostream& operator<<( std::ostream& os, RegInfo& r );
-
-		struct RTUDevice
-		{
-			RTUDevice():
-			respnond(false),
-			mbaddr(0),
-			dtype(dtUnknown),
-			resp_id(UniSetTypes::DefaultObjectId),
-			resp_state(false),
-			resp_invert(false),
-			resp_real(false),
-			resp_init(false),
-			ask_every_reg(false)
-			{
-				resp_trTimeout.change(false);
-			}
-			
-			bool respnond;
-			ModbusRTU::ModbusAddr mbaddr;	/*!< адрес устройства */
-			RegMap regmap;
-
-			DeviceType dtype;	/*!< тип устройства */
-
-			UniSetTypes::ObjectId resp_id;
-			IOController::DIOStateList::iterator resp_dit;
-			PassiveTimer resp_ptTimeout;
-			Trigger resp_trTimeout;
-			bool resp_state;
-			bool resp_invert;
-			bool resp_real;
-			bool resp_init;
-			bool ask_every_reg;
-
-			// return TRUE if state changed
-			bool checkRespond();
-
-		};
-
-		friend std::ostream& operator<<( std::ostream& os, RTUDevice& d );
-		
-		typedef std::map<ModbusRTU::ModbusAddr,RTUDevice*> RTUDeviceMap;
-
-		friend std::ostream& operator<<( std::ostream& os, RTUDeviceMap& d );
-		void printMap(RTUDeviceMap& d);
-// ----------------------------------
-		static RegID genRegID( const ModbusRTU::ModbusData r, const int fn );
-		
 	protected:
-		struct InitRegInfo
-		{
-			InitRegInfo():
-			dev(0),mbreg(0),
-			mbfunc(ModbusRTU::fnUnknown),
-			initOK(false),ri(0)
-			{}
-			RSProperty p;
-			RTUDevice* dev;
-			ModbusRTU::ModbusData mbreg;
-			ModbusRTU::SlaveFunctionCode mbfunc;
-			bool initOK;
-			RegInfo* ri;
-		};
-		typedef std::list<InitRegInfo> InitList;
+		virtual void sysCommand( UniSetTypes::SystemMessage *sm );
 
-		void firstInitRegisters();
-		bool preInitRead( InitList::iterator& p );
-		bool initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty* p );
-		bool allInitOK;
-	  
-		RTUDeviceMap rmap;
-		InitList initRegList;	/*!< список регистров для инициализации */
-		
-		ModbusTCPMaster* mb;
 		UniSetTypes::uniset_mutex mbMutex;
 		std::string iaddr;
 //		ost::InetAddress* ia;
@@ -349,62 +206,23 @@ class MBTCPMaster:
 		int recv_timeout;
 
 		virtual void step();
-		void poll_thread();
-		void poll();
-		bool pollRTU( RTUDevice* dev, RegMap::iterator& it );
+		virtual ModbusClient* initMB( bool reopen=false );
 		
-		void updateSM();
-		void updateRTU(RegMap::iterator& it);
-		void updateMTR(RegMap::iterator& it);
-		void updateRSProperty( RSProperty* p, bool write_only=false );
+		void poll_thread();
 		void updateRespondSensors();
 
-		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
-		void sysCommand( UniSetTypes::SystemMessage *msg );
-		void sensorInfo( UniSetTypes::SensorMessage*sm );
-		void timerInfo( UniSetTypes::TimerMessage *tm );
-		void askSensors( UniversalIO::UIOCommand cmd );	
-		void initOutput();
-		void initMB( bool reopen=false );
-
-		virtual bool activateObject();
 		virtual void sigterm( int signo );
-		virtual void initIterators();
-		virtual bool initItem( UniXML_iterator& it );
-		void initDeviceList();
-		void initOffsetList();
-
-		RTUDevice* addDev( RTUDeviceMap& dmap, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
-		RegInfo* addReg( RegMap& rmap, RegID id, ModbusRTU::ModbusData r, UniXML_iterator& it,
-							RTUDevice* dev, RegInfo* rcopy=0 );
-		RSProperty* addProp( PList& plist, RSProperty& p );
-
-		bool initMTRitem( UniXML_iterator& it, RegInfo* p );
-		bool initRSProperty( RSProperty& p, UniXML_iterator& it );
-		bool initRegInfo( RegInfo* r, UniXML_iterator& it, RTUDevice* dev  );
-		bool initRTUDevice( RTUDevice* d, UniXML_iterator& it );
-		bool initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
 		
-		void rtuQueryOptimization( RTUDeviceMap& m );
-
-		bool no_extimer;
 		bool force_disconnect;
-
-		timeout_t stat_time; 		/*!< время сбора статистики обмена */
-		int poll_count;
-		PassiveTimer ptStatistic;   /*!< таймер для сбора статистики обмена */
 
 	 private:
 		MBTCPMaster();
 
+		ModbusTCPMaster* mbtcp;
+
 		// т.к. TCP может "зависнуть" на подключении к недоступному узлу
 		// делаем опрос в отдельном потоке
 		ThreadCreator<MBTCPMaster>* pollThread; /*!< поток опроса */
-		bool pollActivated;
-		UniSetTypes::uniset_mutex pollMutex;
-
-		// определение timeout для соединения
-		PassiveTimer ptTimeout;
 		UniSetTypes::uniset_mutex tcpMutex;
 };
 // -----------------------------------------------------------------------------
