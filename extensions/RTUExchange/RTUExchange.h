@@ -5,22 +5,12 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "IONotifyController.h"
-#include "UniSetObject_LT.h"
+#include "MBExchange.h"
 #include "modbus/ModbusRTUMaster.h"
-#include "PassiveTimer.h"
-#include "Trigger.h"
-#include "Mutex.h"
-#include "Calibration.h"
-#include "SMInterface.h"
-#include "SharedMemory.h"
-#include "MTR.h"
 #include "RTUStorage.h"
-#include "IOBase.h"
-#include "VTypes.h"
 // -----------------------------------------------------------------------------
 class RTUExchange:
-	public UniSetObject_LT
+	public MBExchange
 {
 	public:
 		RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID,
@@ -35,24 +25,12 @@ class RTUExchange:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* const* argv );
 
-		static const int NoSafetyState=-1;
-
 		enum Timer
 		{
 			tmExchange
 		};
 
-		enum DeviceType
-		{
-			dtUnknown,		/*!< неизвестный */
-			dtRTU,			/*!< RTU (default) */
-			dtRTU188,		/*!< RTU188 (Fastwell) */
-			dtMTR			/*!< MTR (DEIF) */
-		};
-
-		static DeviceType getDeviceType( const std::string dtype );
-		friend std::ostream& operator<<( std::ostream& os, const DeviceType& dt );
-// -------------------------------------------------------------------------------
+		// --------------------------------------------------------
 		struct RTUDevice;
 		struct RegInfo;
 
@@ -181,13 +159,7 @@ class RTUExchange:
 		bool use485F;
 		bool transmitCtl;
 
-		xmlNode* cnode;
-		std::string s_field;
-		std::string s_fvalue;
-
-		SMInterface* shm;
-		
-		void step();
+		virtual void step();
 		void poll();
 		bool pollRTU( RTUDevice* dev, RegMap::iterator& it );
 		
@@ -198,12 +170,11 @@ class RTUExchange:
 		void updateRSProperty( RSProperty* p, bool write_only=false );
 
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
-		void sysCommand( UniSetTypes::SystemMessage *msg );
-		void sensorInfo( UniSetTypes::SensorMessage*sm );
+		virtual void sysCommand( UniSetTypes::SystemMessage *msg );
+		virtual void sensorInfo( UniSetTypes::SensorMessage*sm );
 		void timerInfo( UniSetTypes::TimerMessage *tm );
 		void askSensors( UniversalIO::UIOCommand cmd );	
 		void initOutput();
-		void waitSMReady();
 
 		virtual bool activateObject();
 		
@@ -211,12 +182,10 @@ class RTUExchange:
 		virtual void sigterm( int signo );
 		
 		void initMB( bool reopen=false );
-		void initIterators();
+		virtual void initIterators();
 		bool initItem( UniXML_iterator& it );
-		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
 		void initDeviceList();
 		void initOffsetList();
-
 
 		RTUDevice* addDev( RTUDeviceMap& dmap, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
 		RegInfo* addReg( RegMap& rmap, ModbusRTU::ModbusData r, UniXML_iterator& it, 
@@ -232,38 +201,14 @@ class RTUExchange:
 		
 		void rtuQueryOptimization( RTUDeviceMap& m );
 
-		void readConfiguration();
-
 	private:
 		RTUExchange();
-		bool initPause;
-		UniSetTypes::uniset_mutex mutex_start;
-
-		bool force;		/*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
-		bool force_out;	/*!< флаг означающий, принудительного чтения выходов */
-		bool mbregFromID;
-		int polltime;	/*!< переодичность обновления данных, [мсек] */
-		timeout_t sleepPause_usec;
-
-		PassiveTimer ptHeartBeat;
-		UniSetTypes::ObjectId sidHeartBeat;
-		int maxHeartBeat;
-		IOController::AIOStateList::iterator aitHeartBeat;
-		UniSetTypes::ObjectId test_id;
 
 		UniSetTypes::uniset_mutex pollMutex;
-
-		bool activated;
-		int activateTimeout;
-		
 		bool rs_pre_clean;
-		bool noQueryOptimization;
-		
 		bool allNotRespond;
 		Trigger trAllNotRespond;
 		PassiveTimer ptAllNotRespond;
-
-		std::string prefix;
 };
 // -----------------------------------------------------------------------------
 #endif // _RS_EXCHANGE_H_
