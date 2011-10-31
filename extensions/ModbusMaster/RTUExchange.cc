@@ -39,8 +39,6 @@ allNotRespond(false)
 	transmitCtl = conf->getArgInt("--"+prefix+"-transmit-ctl",it.getProp("transmitCtl"));
 	defSpeed = ComPort::getSpeed(speed);
 
-	recv_timeout = conf->getArgPInt("--"+prefix+"-recv-timeout",it.getProp("recv_timeout"), 50);
-
 	int alltout = conf->getArgPInt("--"+prefix+"-all-timeout",it.getProp("all_timeout"), 2000);
 	ptAllNotRespond.setTiming(alltout);
 	
@@ -67,21 +65,6 @@ allNotRespond(false)
 // -----------------------------------------------------------------------------
 RTUExchange::~RTUExchange()
 {
-	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
-	{
-		if( it1->second->rtu )
-		{
-			delete it1->second->rtu;
-			it1->second->rtu = 0;
-		}
-		
-		RTUDevice* d(it1->second);
-		for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
-			delete it->second;
-
-		delete it1->second;
-	}
-	
 	delete mbrtu;
 }
 // -----------------------------------------------------------------------------
@@ -269,33 +252,6 @@ void RTUExchange::poll()
 	}
 	
 //	printMap(rmap);
-}
-// -----------------------------------------------------------------------------
-bool RTUExchange::RTUDevice::checkRespond()
-{
-	bool prev = resp_state;
-	if( resp_trTimeout.hi(resp_real) )
-	{	
-		if( resp_real )
-			resp_state = true;
-
-		resp_ptTimeout.reset();
-	}
-
-	if( resp_state && !resp_real && resp_ptTimeout.checkTime() )
-		resp_state = false; 
-	
-	// если ещё не инициализировали значение в SM
-	// то возвращаем true, чтобы оно принудительно сохранилось
-	if( !resp_init )
-	{
-		resp_state = resp_real;
-		resp_init = true;
-		prev = resp_state;
-		return true;
-	}
-
-	return ( prev != resp_state );
 }
 // -----------------------------------------------------------------------------
 void RTUExchange::help_print( int argc, const char* const* argv )

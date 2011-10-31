@@ -308,6 +308,7 @@ class MBExchange:
 		// определение timeout для соединения
 		PassiveTimer ptTimeout;
 		bool pollActivated;
+		int recv_timeout;
 
 	 private:
 		MBExchange();

@@ -7,8 +7,7 @@
 #include "ModbusTypes.h"
 #include "ModbusClient.h"
 // -------------------------------------------------------------------------
-/*!	Modbus TCP master interface 
-*/
+/*!	Modbus TCP master interface */
 class ModbusTCPMaster:
 	public ModbusClient
 {

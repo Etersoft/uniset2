@@ -30,7 +30,6 @@ class RTUExchange:
 		UniSetTypes::uniset_mutex mbMutex;
 		std::string devname;
 		ComPort::Speed defSpeed;
-		int recv_timeout;
 		bool use485F;
 		bool transmitCtl;
 

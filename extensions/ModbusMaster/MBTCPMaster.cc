@@ -59,15 +59,6 @@ pollThread(0)
 // -----------------------------------------------------------------------------
 MBTCPMaster::~MBTCPMaster()
 {
-	for( MBTCPMaster::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
-	{
-		RTUDevice* d(it1->second);
-		for( MBTCPMaster::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
-			delete it->second;
-
-		delete it1->second;
-	}
-
 	delete pollThread;
 	delete mbtcp;
 }
@@ -200,37 +191,6 @@ void MBTCPMaster::poll_thread()
 
 		msleep(polltime);
 	}
-}
-// -----------------------------------------------------------------------------
-bool MBTCPMaster::RTUDevice::checkRespond()
-{
-	bool prev = resp_state;
-
-	if( resp_ptTimeout.getInterval() <= 0 )
-	{
-		resp_state = resp_real;
-		return (prev != resp_state);
-	}
-	
-	if( resp_trTimeout.hi(resp_state && !resp_real) )
-		resp_ptTimeout.reset();
-	
-	if( resp_real )
-		resp_state = true;
-	else if( resp_state && !resp_real && resp_ptTimeout.checkTime() )
-		resp_state = false; 
-	
-	// если ещё не инициализировали значение в SM
-	// то возвращаем true, чтобы оно принудительно сохранилось
-	if( !resp_init )
-	{
-		resp_state = resp_real;
-		resp_init = true;
-		prev = resp_state;
-		return true;
-	}
-
-	return ( prev != resp_state );
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::sigterm( int signo )
