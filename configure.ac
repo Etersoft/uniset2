@@ -181,6 +181,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/IOControl/libUniSetIOControl.pc
 				 extensions/RTUExchange/Makefile
 				 extensions/RTUExchange/libUniSetRTU.pc
+				 extensions/ModbusMaster/Makefile
 				 extensions/ModbusSlave/Makefile
 				 extensions/ModbusSlave/libUniSetMBSlave.pc
 				 extensions/MBTCPMaster/Makefile

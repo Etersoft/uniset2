@@ -14,7 +14,7 @@ class RTUStorage
 	public:
 		RTUStorage( ModbusRTU::ModbusAddr addr );
 		~RTUStorage();
-	
+
 		void poll( ModbusRTUMaster* mb )
 					throw(ModbusRTU::mbException);
 
@@ -25,7 +25,7 @@ class RTUStorage
 		inline void setPollDI( bool set ){ pollDI = set; }
 		inline void setPollDIO( bool set ){ pollDIO = set; }
 		inline void setPollUNIO( bool set ){ pollUNIO = set; }
-		
+
 		enum RTUJack
 		{
 			nUnknown,
@@ -37,33 +37,31 @@ class RTUStorage
 			nX4,	// DI (8)
 			nX5		// DI (8)
 		};
-		
-		static RTUJack s2j( const std::string& jack );
+
+		static RTUJack s2j( const std::string jack );
 		static std::string j2s( RTUJack j );
-		
+
 		long getInt( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
 		float getFloat( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
 		bool getState( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
 
 		static ModbusRTU::ModbusData getRegister( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
-		
-		static ModbusRTU::SlaveFunctionCode getFunction( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
-	
+
 		// ДОДЕЛАТЬ: setState, setValue
 		void print();
-	
+
 		friend std::ostream& operator<<(std::ostream& os, RTUStorage& m );
 		friend std::ostream& operator<<(std::ostream& os, RTUStorage* m );
-	
+
 	protected:
 		ModbusRTU::ModbusAddr addr;
 		bool pingOK;
-		
+
 		bool pollADC;
 		bool pollDI;
 		bool pollDIO;
 		bool pollUNIO;
-		
+
 
 		float adc[8]; 		// АЦП
 		bool di[16]; 		// Порт 16DI
