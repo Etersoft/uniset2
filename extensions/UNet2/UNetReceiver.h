@@ -58,6 +58,9 @@ class UNetReceiver
 		 void receive();
 		 void update();
 
+		 // блокировать сохранение данный в SM
+		 void setLockUpdate( bool st ){ lockUpdate = st; }
+
 		 inline bool isRecvOK(){ return ptRecvTimeout.checkTime(); }
 		 inline unsigned long getLostPacketsNum(){ return lostPackets; }
 
@@ -137,7 +140,9 @@ class UNetReceiver
 		bool waitClean;		/*!< флаг означающий, что ждём очистики очереди до конца */
 		unsigned long rnum;	/*!< текущий номер принятого сообщения, для проверки "переполнения" или "сбоя" счётчика */
 		
-		int maxProcessingCount; /*! максимальное число обрабатываемых за один раз сообщений */
+		int maxProcessingCount; /*!< максимальное число обрабатываемых за один раз сообщений */
+		
+		bool lockUpdate; /*!< флаг блокировки сохранения принятых данных в SM */
 
 		struct ItemInfo
 		{

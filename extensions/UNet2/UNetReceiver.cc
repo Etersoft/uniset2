@@ -36,6 +36,7 @@ maxDifferens(1000),
 waitClean(false),
 rnum(0),
 maxProcessingCount(100),
+lockUpdate(false),
 d_icache(UniSetUDP::MaxDCount),
 a_icache(UniSetUDP::MaxACount),
 d_cache_init_ok(false),
@@ -263,6 +264,10 @@ void UNetReceiver::real_update()
 					shm->initDIterator(ii.dit);
 				}
 
+				// обновление данных в SM (блокировано)
+				if( lockUpdate )
+					continue;
+				
 				if( ii.iotype == UniversalIO::DigitalInput )
 					shm->localSaveState(ii.dit,id,val,shm->ID());
 				else if( ii.iotype == UniversalIO::AnalogInput )
@@ -272,7 +277,7 @@ void UNetReceiver::real_update()
  				else if( ii.iotype == UniversalIO::DigitalOutput )
 					shm->localSetState(ii.dit,id,val,shm->ID());
 				else
-				  dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << id << endl;
+				  	dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << id << endl;
 			}
 			catch( UniSetTypes::Exception& ex)
 			{
@@ -299,6 +304,10 @@ void UNetReceiver::real_update()
 					shm->initDIterator(ii.dit);
 				}
 
+				// обновление данных в SM (блокировано)
+				if( lockUpdate )
+					continue;
+				
 				if( ii.iotype == UniversalIO::DigitalInput )
 					shm->localSaveState(ii.dit,d.id,d.val,shm->ID());
 				else if( ii.iotype == UniversalIO::AnalogInput )
@@ -308,7 +317,7 @@ void UNetReceiver::real_update()
  				else if( ii.iotype == UniversalIO::DigitalOutput )
 					shm->localSetState(ii.dit,d.id,d.val,shm->ID());
 				else
-				  dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << d.id << endl;
+				  	dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << d.id << endl;
 			}
 			catch( UniSetTypes::Exception& ex)
 			{
