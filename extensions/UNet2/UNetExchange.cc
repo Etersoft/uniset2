@@ -13,7 +13,8 @@ shm(0),
 initPause(0),
 activated(false),
 no_sender(false),
-sender(0)
+sender(0),
+sender2(0)
 {
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(UNetExchange): objId=-1?!! Use --unet-name" );
@@ -55,6 +56,7 @@ sender(0)
 	UniXML_iterator n_it(nodes);
 
 	string default_ip(n_it.getProp("unet_broadcast_ip"));
+	string default_ip2(n_it.getProp("unet_broadcast_ip2"));
 
 	if( !n_it.goChildren() )
 		throw UniSetTypes::SystemError("(UNetExchange): Items not found for <nodes>");
@@ -74,10 +76,16 @@ sender(0)
 		// Если указано поле unet_broadcast_ip непосредственно у узла - берём его
 		// если указано общий broadcast ip для всех узлов - берём его
 		string h("");
+		string h2("");
 		if( !default_ip.empty() )
 			h = default_ip;
 		if( !n_it.getProp("unet_broadcast_ip").empty() )
 			h = n_it.getProp("unet_broadcast_ip");
+
+		if( !default_ip2.empty() )
+			h2 = default_ip2;
+		if( !n_it.getProp("unet_broadcast_ip2").empty() )
+			h2 = n_it.getProp("unet_broadcast_ip2");
 
 		if( h.empty() )
 		{
@@ -87,18 +95,41 @@ sender(0)
 			throw UniSetTypes::SystemError(err.str());
 		}
 
+		if( h2.empty() && dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << myname << "(init): ip2 not used..." << endl;
+
 		// Если указано поле unet_port - используем его
 		// Иначе port = идентификатору узла
 		int p = n_it.getIntProp("id");
 		if( !n_it.getProp("unet_port").empty() )
 			p = n_it.getIntProp("unet_port");
 
+		int p2 = p; // по умолчанию порт на втором канале такой же как на первом
+		if( !n_it.getProp("unet_port2").empty() )
+			p2 = n_it.getIntProp("unet_port2");
+
 		string n(n_it.getProp("name"));
 		if( n == conf->getLocalNodeName() )
 		{
+			if( no_sender )
+			{
+				dlog[Debug::INFO] << myname << "(init): sender OFF for this node...("
+						<< n_it.getProp("name") << ")" << endl;
+				continue;
+			}
+
 			dlog[Debug::INFO] << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
 			sender = new UNetSender(h,p,shm,s_field,s_fvalue,ic);
 			sender->setSendPause(sendpause);
+
+			// создаём "писателя" для второго канала если задан
+			if( !h2.empty() )
+			{
+				dlog[Debug::INFO] << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
+				sender2 = new UNetSender(h2,p2,shm,s_field,s_fvalue,ic);
+				sender2->setSendPause(sendpause);
+			}
+
 			continue;
 		}
 
@@ -124,6 +155,20 @@ sender(0)
 			}
 		}
 
+		string s_resp2_id(n_it.getProp("unet_respond2_id"));
+		UniSetTypes::ObjectId resp2_id = UniSetTypes::DefaultObjectId;
+		if( !s_resp2_id.empty() )
+		{
+			resp2_id = conf->getSensorID(s_resp2_id);
+			if( resp2_id == UniSetTypes::DefaultObjectId )
+			{
+				ostringstream err;
+				err << myname << ": Unknown RespondID(2).. Not found id for '" << s_resp2_id << "'" << endl;
+				dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+				throw SystemError(err.str());
+			}
+		}
+
 		string s_lp_id(n_it.getProp("unet_lostpackets_id"));
 		UniSetTypes::ObjectId lp_id = UniSetTypes::DefaultObjectId;
 		if( !s_lp_id.empty() )
@@ -138,7 +183,24 @@ sender(0)
 			}
 		}
 
+		string s_lp2_id(n_it.getProp("unet_lostpackets2_id"));
+		UniSetTypes::ObjectId lp2_id = UniSetTypes::DefaultObjectId;
+		if( !s_lp2_id.empty() )
+		{
+			lp2_id = conf->getSensorID(s_lp2_id);
+			if( lp2_id == UniSetTypes::DefaultObjectId )
+			{
+				ostringstream err;
+				err << myname << ": Unknown LostPacketsID(2).. Not found id for '" << s_lp2_id << "'" << endl;
+				dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+				throw SystemError(err.str());
+			}
+		}
 		UNetReceiver* r = new UNetReceiver(h,p,shm);
+
+		// на всякий принудительно разблокируем,
+		// чтобы не зависеть от значения по умолчанию
+		r->setLockUpdate(false);
 
 		r->setReceiveTimeout(recvTimeout);
 		r->setLostTimeout(lostTimeout);
@@ -148,7 +210,27 @@ sender(0)
 		r->setMaxProcessingCount(maxProcessingCount);
 		r->setRespondID(resp_id);
 		r->setLostPacketsID(lp_id);
-		recvlist.push_back(r);
+
+		UNetReceiver* r2 = 0;
+		if( !h2.empty() ) // создаём читателя впо второму каналу
+		{
+			r2 = new UNetReceiver(h2,p2,shm);
+
+			// т.к. это резервный канал (по началу блокируем его)
+			r2->setLockUpdate(true);
+
+			r2->setReceiveTimeout(recvTimeout);
+			r2->setLostTimeout(lostTimeout);
+			r2->setReceivePause(recvpause);
+			r2->setUpdatePause(updatepause);
+			r2->setMaxDifferens(maxDiff);
+			r2->setMaxProcessingCount(maxProcessingCount);
+			r2->setRespondID(resp2_id);
+			r2->setLostPacketsID(lp2_id);
+		}
+
+		ReceiverInfo ri(r,r2);
+		recvlist.push_back(ri);
 	}
 
 	// -------------------------------
@@ -194,9 +276,15 @@ sender(0)
 UNetExchange::~UNetExchange()
 {
 	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
-		delete (*it);
+	{
+		if( it->r1 )
+			delete it->r1;
+		if( it->r2 )
+			delete it->r2;
+	}
 
 	delete sender;
+	delete sender2;
 	delete shm;
 }
 // -----------------------------------------------------------------------------
@@ -205,7 +293,7 @@ bool UNetExchange::checkExistUNetHost( const std::string addr, ost::tpport_t por
 	ost::IPV4Address a1(addr.c_str());
 	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
 	{
-		if( (*it)->getAddress() == a1.getAddress() && (*it)->getPort() == port )
+		if( it->r1->getAddress() == a1.getAddress() && it->r1->getPort() == port )
 			return true;
 	}
 
@@ -214,8 +302,13 @@ bool UNetExchange::checkExistUNetHost( const std::string addr, ost::tpport_t por
 // -----------------------------------------------------------------------------
 void UNetExchange::startReceivers()
 {
-	 for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
-		  (*it)->start();
+	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
+	{
+		if( it->r1 )
+			it->r1->start();
+		if( it->r2 )
+			it->r2->start();
+	}
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::waitSMReady()
@@ -345,6 +438,8 @@ void UNetExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 			startReceivers();
 			if( sender )
 				sender->start();
+			if( sender2 )
+				sender2->start();
 		}
 		break;
 
@@ -408,12 +503,16 @@ void UNetExchange::askSensors( UniversalIO::UIOCommand cmd )
 
 	if( sender )
 		sender->askSensors(cmd);
+	if( sender2 )
+		sender2->askSensors(cmd);
 }
 // ------------------------------------------------------------------------------------------
 void UNetExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
 	if( sender )
 		sender->updateSensor( sm->id , sm->value );
+	if( sender2 )
+		sender2->updateSensor( sm->id , sm->value );
 }
 // ------------------------------------------------------------------------------------------
 bool UNetExchange::activateObject()
@@ -440,7 +539,14 @@ void UNetExchange::sigterm( int signo )
 	{
 		try
 		{
-			(*it)->stop();
+			if( it->r1 )
+				it->r1->stop();
+		}
+		catch(...){}
+		try
+		{
+			if( it->r2 )
+				it->r2->stop();
 		}
 		catch(...){}
 	}
@@ -449,6 +555,12 @@ void UNetExchange::sigterm( int signo )
 	{
 		if( sender )
 			sender->stop();
+	}
+	catch(...){}
+	try
+	{
+		if( sender2 )
+			sender2->stop();
 	}
 	catch(...){}
 
@@ -460,6 +572,8 @@ void UNetExchange::initIterators()
 	shm->initAIterator(aitHeartBeat);
 	if( sender )
 		sender->initIterators();
+	if( sender2 )
+		sender2->initIterators();
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::help_print( int argc, const char* argv[] )
