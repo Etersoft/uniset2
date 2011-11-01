@@ -206,6 +206,9 @@ sender2(0)
 				throw SystemError(err.str());
 			}
 		}
+
+		dlog[Debug::INFO] << myname << "(init): (node='" << n << "') add receiver "
+						<< h2 << ":" << p2 << endl;
 		UNetReceiver* r = new UNetReceiver(h,p,shm);
 
 		// на всякий принудительно разблокируем,
@@ -227,7 +230,7 @@ sender2(0)
 		{
 			if( !h2.empty() ) // создаём читателя впо второму каналу
 			{
-				dlog[Debug::INFO] << myname << "(init): add reserv receiver "
+				dlog[Debug::INFO] << myname << "(init): (node='" << n << "') add reserv receiver "
 						<< h2 << ":" << p2 << endl;
 
 				r2 = new UNetReceiver(h2,p2,shm);
