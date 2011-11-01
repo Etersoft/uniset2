@@ -1,4 +1,5 @@
 #include <sstream>
+#include <iomanip>
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetReceiver.h"
@@ -44,7 +45,7 @@ a_cache_init_ok(false)
 {
 	{
 		ostringstream s;
-		s << "R(" << s_host << ":" << port << ")";
+		s << "R(" << setw(15) << s_host << ":" << setw(4) << port << ")";
 		myname = s.str();
 	}
 	
@@ -133,6 +134,13 @@ void UNetReceiver::setLockUpdate( bool st )
 { 
 	uniset_mutex_lock l(lockMutex,200);
 	lockUpdate = st; 
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::resetTimeout()
+{ 
+	uniset_mutex_lock l(tmMutex,200);
+	ptRecvTimeout.reset(); 
+	trTimeout.change(false); 
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::start()
@@ -356,12 +364,16 @@ void UNetReceiver::receive()
 {
 	dlog[Debug::INFO] << myname << ": ******************* receive start" << endl;
 	ptRecvTimeout.setTiming(recvTimeout);
+	bool tout = false;
 	while( activated )
 	{
 		try
 		{
 			if( recv() )
+			{
+				uniset_mutex_lock l(tmMutex,100);
 				ptRecvTimeout.reset();
+			}
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
@@ -376,9 +388,16 @@ void UNetReceiver::receive()
 			dlog[Debug::WARN] << myname << "(receive): catch ..." << std::endl;
 		}	
 
-		if( trTimeout.change(ptRecvTimeout.checkTime()) )
+		// делаем через промежуточную переменную
+		// чтобы поскорее освободить mutex
 		{
-			if( ptRecvTimeout.checkTime() )
+			uniset_mutex_lock l(tmMutex,100);
+			tout = ptRecvTimeout.checkTime();
+		}
+		
+		if( trTimeout.change(tout) )
+		{
+			if( tout )
 				slEvent(this,evTimeout);
 			else
 				slEvent(this,evOK);

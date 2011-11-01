@@ -64,7 +64,7 @@ class UNetReceiver
 		 // блокировать сохранение данный в SM
 		 void setLockUpdate( bool st );
 
-		 inline void resetTimeout(){ ptRecvTimeout.reset(); trTimeout.change(false); }
+		 void resetTimeout();
 
 		 inline bool isRecvOK(){ return ptRecvTimeout.checkTime(); }
 		 inline unsigned long getLostPacketsNum(){ return lostPackets; }
@@ -162,6 +162,7 @@ class UNetReceiver
 		
 		EventSlot slEvent;
 		Trigger trTimeout;
+		UniSetTypes::uniset_mutex tmMutex;
 
 		struct ItemInfo
 		{
