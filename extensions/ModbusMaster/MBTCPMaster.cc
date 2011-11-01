@@ -40,11 +40,6 @@ pollThread(0)
 	force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection",it.getProp("persistent_connection")) ? false : true;
 	dlog[Debug::INFO] << myname << "(init): persisten-connection=" << (!force_disconnect) << endl;
 
-	recv_timeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recv_timeout"), 500);
-
-	int tout = conf->getArgPInt("--" + prefix + "-timeout",it.getProp("timeout"), 5000);
-	ptTimeout.setTiming(tout);
-
 	if( shm->isLocalwork() )
 	{
 		readConfiguration();
@@ -154,8 +149,6 @@ void MBTCPMaster::help_print( int argc, const char* const* argv )
 	cout << " Настройки протокола TCP: " << endl;
 	cout << "--prefix-gateway hostname,IP           - IP опрашиваемого узла" << endl;
 	cout << "--prefix-gateway-port num              - port на опрашиваемом узле" << endl;
-	cout << "--prefix-recv-timeout msec             - Таймаут на приём одного сообщения" << endl;
-	cout << "--prefix-timeout msec                  - Таймаут для определения отсутсвия соединения" << endl;
 	cout << "--prefix-persistent-connection 0,1     - Не закрывать соединение на каждом цикле опроса" << endl;
 }
 // -----------------------------------------------------------------------------
