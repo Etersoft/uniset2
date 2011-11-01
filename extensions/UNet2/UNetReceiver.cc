@@ -44,7 +44,7 @@ a_cache_init_ok(false)
 {
 	{
 		ostringstream s;
-		s << "(" << s_host << ":" << port << ")";
+		s << "R(" << s_host << ":" << port << ")";
 		myname = s.str();
 	}
 
@@ -127,6 +127,12 @@ void UNetReceiver::setLostPacketsID( UniSetTypes::ObjectId id )
 {
 	sidLostPackets = id;
 	shm->initAIterator(aitLostPackets);
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::setLockUpdate( bool st )
+{
+	uniset_mutex_lock l(lockMutex,200);
+	lockUpdate = st;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::start()
@@ -265,8 +271,11 @@ void UNetReceiver::real_update()
 				}
 
 				// обновление данных в SM (блокировано)
-				if( lockUpdate )
-					continue;
+				{
+					uniset_mutex_lock l(lockMutex,100);
+					if( lockUpdate )
+						continue;
+				}
 
 				if( ii.iotype == UniversalIO::DigitalInput )
 					shm->localSaveState(ii.dit,id,val,shm->ID());
@@ -305,8 +314,11 @@ void UNetReceiver::real_update()
 				}
 
 				// обновление данных в SM (блокировано)
-				if( lockUpdate )
-					continue;
+				{
+					uniset_mutex_lock l(lockMutex,100);
+					if( lockUpdate )
+						continue;
+				}
 
 				if( ii.iotype == UniversalIO::DigitalInput )
 					shm->localSaveState(ii.dit,d.id,d.val,shm->ID());
@@ -349,7 +361,7 @@ void UNetReceiver::receive()
 		try
 		{
 			if( recv() )
-			  ptRecvTimeout.reset();
+				ptRecvTimeout.reset();
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
@@ -362,6 +374,14 @@ void UNetReceiver::receive()
 		catch(...)
 		{
 			dlog[Debug::WARN] << myname << "(receive): catch ..." << std::endl;
+		}
+
+		if( trTimeout.change(ptRecvTimeout.checkTime()) )
+		{
+			if( ptRecvTimeout.checkTime() )
+				slEvent(this,evTimeout);
+			else
+				slEvent(this,evOK);
 		}
 
 		msleep(recvpause);
@@ -509,5 +529,10 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 				shm->initDIterator(d.dit);
 		  }
 	 }
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::connectEvent( UNetReceiver::EventSlot sl )
+{
+	slEvent = sl;
 }
 // -----------------------------------------------------------------------------

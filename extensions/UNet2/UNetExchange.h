@@ -106,6 +106,7 @@ class UNetExchange:
 		void timerInfo( UniSetTypes::TimerMessage *tm );
 		void askSensors( UniversalIO::UIOCommand cmd );
 		void waitSMReady();
+		void receiverEvent( UNetReceiver* r, UNetReceiver::Event ev );
 
 		virtual bool activateObject();
 
@@ -114,6 +115,7 @@ class UNetExchange:
 
 		void initIterators();
 		void startReceivers();
+
 
 		enum Timer
 		{
