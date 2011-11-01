@@ -1,4 +1,5 @@
 #include <sstream>
+#include <iomanip>
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UNetSender.h"
@@ -23,7 +24,7 @@ s_thr(0)
 
 	{
 		ostringstream s;
-		s << "S(" << s_host << ":" << port << ")";
+		s << "S(" << setw(15) << s_host << ":" << setw(4) << port << ")";
 		myname = s.str();
 	}
 
