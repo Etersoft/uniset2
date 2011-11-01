@@ -23,7 +23,7 @@ s_thr(0)
 
 	{
 		ostringstream s;
-		s << "(" << s_host << ":" << port << ")";
+		s << "S(" << s_host << ":" << port << ")";
 		myname = s.str();
 	}
 

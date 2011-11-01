@@ -5,6 +5,7 @@
 #include <string>
 #include <queue>
 #include <cc++/socket.h>
+#include <sigc++/sigc++.h>
 #include "UniSetObject_LT.h"
 #include "Trigger.h"
 #include "Mutex.h"
@@ -58,8 +59,12 @@ class UNetReceiver
 		 void receive();
 		 void update();
 
+		 inline std::string getName(){ return myname; }
+
 		 // блокировать сохранение данный в SM
-		 void setLockUpdate( bool st ){ lockUpdate = st; }
+		 void setLockUpdate( bool st );
+
+		 inline void resetTimeout(){ ptRecvTimeout.reset(); trTimeout.change(false); }
 
 		 inline bool isRecvOK(){ return ptRecvTimeout.checkTime(); }
 		 inline unsigned long getLostPacketsNum(){ return lostPackets; }
@@ -77,6 +82,16 @@ class UNetReceiver
 
 		 inline ost::IPV4Address getAddress(){ return addr; }
 		 inline ost::tpport_t getPort(){ return port; }
+
+		 /*! Коды событий */ 
+		 enum Event
+		 {
+			 evOK,		/*!< связь есть */
+			 evTimeout	/*!< потеря связи */
+		 };
+
+		 typedef sigc::slot<void,UNetReceiver*,Event> EventSlot;
+		 void connectEvent( EventSlot sl );
 
 	protected:
 
@@ -143,6 +158,10 @@ class UNetReceiver
 		int maxProcessingCount; /*!< максимальное число обрабатываемых за один раз сообщений */
 		
 		bool lockUpdate; /*!< флаг блокировки сохранения принятых данных в SM */
+		UniSetTypes::uniset_mutex lockMutex;
+		
+		EventSlot slEvent;
+		Trigger trTimeout;
 
 		struct ItemInfo
 		{

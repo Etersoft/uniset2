@@ -122,12 +122,22 @@ sender2(0)
 			sender = new UNetSender(h,p,shm,s_field,s_fvalue,ic);
 			sender->setSendPause(sendpause);
 
-			// создаём "писателя" для второго канала если задан
-			if( !h2.empty() )
+			try
 			{
-				dlog[Debug::INFO] << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
-				sender2 = new UNetSender(h2,p2,shm,s_field,s_fvalue,ic);
-				sender2->setSendPause(sendpause);
+				// создаём "писателя" для второго канала если задан
+				if( !h2.empty() )
+				{
+					dlog[Debug::INFO] << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
+					sender2 = new UNetSender(h2,p2,shm,s_field,s_fvalue,ic);
+					sender2->setSendPause(sendpause);
+				}
+			}
+			catch(...)
+			{
+				// т.е. это "резервный канал", то игнорируем ошибку его создания
+				// при запуске "интерфейс" может быть и не доступен...
+				sender2 = 0;
+				dlog[Debug::CRIT] << myname << "(ignore): DON`T CREATE 'UNetSender' for " << h2 << ":" << p2 << endl;
 			}
 
 			continue;
@@ -210,23 +220,38 @@ sender2(0)
 		r->setMaxProcessingCount(maxProcessingCount);
 		r->setRespondID(resp_id);
 		r->setLostPacketsID(lp_id);
+		r->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
 
 		UNetReceiver* r2 = 0;
-		if( !h2.empty() ) // создаём читателя впо второму каналу
+		try
 		{
-			r2 = new UNetReceiver(h2,p2,shm);
+			if( !h2.empty() ) // создаём читателя впо второму каналу
+			{
+				dlog[Debug::INFO] << myname << "(init): add reserv receiver " 
+						<< h2 << ":" << p2 << endl;
+				
+				r2 = new UNetReceiver(h2,p2,shm);
 
-			// т.к. это резервный канал (по началу блокируем его)
-			r2->setLockUpdate(true);
+				// т.к. это резервный канал (по началу блокируем его)
+				r2->setLockUpdate(true);
 
-			r2->setReceiveTimeout(recvTimeout);
-			r2->setLostTimeout(lostTimeout);
-			r2->setReceivePause(recvpause);
-			r2->setUpdatePause(updatepause);
-			r2->setMaxDifferens(maxDiff);
-			r2->setMaxProcessingCount(maxProcessingCount);
-			r2->setRespondID(resp2_id);
-			r2->setLostPacketsID(lp2_id);
+				r2->setReceiveTimeout(recvTimeout);
+				r2->setLostTimeout(lostTimeout);
+				r2->setReceivePause(recvpause);
+				r2->setUpdatePause(updatepause);
+				r2->setMaxDifferens(maxDiff);
+				r2->setMaxProcessingCount(maxProcessingCount);
+				r2->setRespondID(resp2_id);
+				r2->setLostPacketsID(lp2_id);
+				r2->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
+			}
+		}
+		catch(...)
+		{
+			// т.е. это "резервный канал", то игнорируем ошибку его создания
+			// при запуске "интерфейс" может быть и не доступен...
+			r2 = 0;
+			dlog[Debug::CRIT] << myname << "(ignore): DON`T CREATE 'UNetReceiver' for " << h2 << ":" << p2 << endl;
 		}
 
 		ReceiverInfo ri(r,r2);
@@ -616,3 +641,45 @@ UNetExchange* UNetExchange::init_unetexchange( int argc, const char* argv[], Uni
 	return new UNetExchange(ID,icID,ic);
 }
 // -----------------------------------------------------------------------------
+void UNetExchange::receiverEvent( UNetReceiver* r, UNetReceiver::Event ev )
+{
+	// пока, что другие события нас не интересуют
+	if( ev != UNetReceiver::evTimeout )
+		return;
+
+	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
+	{
+		if( it->r1 == r )
+		{
+			// если нет второго канала
+			// то и переключать некуда
+			if( !it->r2 )
+				return;
+
+			// пропала связь по первому каналу...
+			// переключаемся на второй
+			it->r1->setLockUpdate(true);
+			it->r2->setLockUpdate(false);
+			it->r2->resetTimeout();
+
+			if( dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << myname << "(event): " << r->getName() 
+					<< ": timeout for channel1.. select channel2" << endl;
+			return;
+		}
+		if( it->r2 == r )
+		{
+			// пропала связь по второму каналу...
+			// переключаемся на первый
+			it->r1->setLockUpdate(false);
+			it->r1->resetTimeout();
+			it->r2->setLockUpdate(true);
+			if( dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << myname << "(event): " << r->getName() 
+						<< ": timeout for channel2.. select channel1" << endl;
+			return;
+		}
+	}
+}
+// -----------------------------------------------------------------------------
+
