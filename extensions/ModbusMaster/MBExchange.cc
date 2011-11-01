@@ -135,6 +135,8 @@ void MBExchange::help_print( int argc, const char* const* argv )
 	cout << "--prefix-name name              - ObjectId (имя) процесса. По умолчанию: MBExchange1" << endl;
 	cout << "--prefix-confnode name          - Настроечная секция в конф. файле <name>. " << endl;
 	cout << "--prefix-polltime msec          - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
+	cout << "--prefix-recv-timeout msec      - Таймаут на приём одного сообщения" << endl;
+	cout << "--prefix-timeout msec           - Таймаут для определения отсутсвия соединения" << endl;
 	cout << "--prefix-heartbeat-id  name     - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
 	cout << "--prefix-heartbeat-max val      - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 	cout << "--prefix-ready-timeout msec     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
@@ -147,6 +149,7 @@ void MBExchange::help_print( int argc, const char* const* argv )
 	cout << "--prefix-filter-value val       - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
 	cout << "--prefix-statistic-sec sec      - Выводить статистику опроса каждые sec секунд" << endl;
 	cout << "--prefix-sm-ready-timeout       - время на ожидание старта SM" << endl;
+	cout << "--prefix-exchange-mode-id       - Идентификатор (AI) датчика, позволяющего управлять работой процесса" << endl;
 }
 // -----------------------------------------------------------------------------
 MBExchange::~MBExchange()
