@@ -56,6 +56,19 @@ rs_pre_clean(false)
 		printMap(rmap);
 }
 // -----------------------------------------------------------------------------
+void RTUExchange::help_print( int argc, const char* const* argv )
+{
+	cout << "Default: prefix='rs'" << endl;
+	MBExchange::help_print(argc,argv);
+//	cout << " Настройки протокола RS: " << endl;
+	cout << "--prefix-dev devname  - файл устройства" << endl;
+	cout << "--prefix-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
+	cout << "--prefix-my-addr      - адрес текущего узла" << endl;
+	cout << "--prefix-recv-timeout - Таймаут на ожидание ответа." << endl;
+	cout << "--prefix-pre-clean    - Очищать буфер перед каждым запросом" << endl;
+	cout << "--prefix-sleepPause-usec - Таймаут на ожидание очередного байта" << endl;
+}
+// -----------------------------------------------------------------------------
 RTUExchange::~RTUExchange()
 {
 	delete mbrtu;
@@ -251,17 +264,6 @@ void RTUExchange::poll()
 	}
 	
 //	printMap(rmap);
-}
-// -----------------------------------------------------------------------------
-void RTUExchange::help_print( int argc, const char* const* argv )
-{
-	cout << "Default: prefix='rs'" << endl;
-	MBExchange::help_print(argc,argv);
-//	cout << " Настройки протокола RS: " << endl;
-	cout << "--prefix-dev devname  - файл устройства" << endl;
-	cout << "--prefix-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
-	cout << "--prefix-my-addr      - адрес текущего узла" << endl;
-	cout << "--prefix-recv-timeout - Таймаут на ожидание ответа." << endl;
 }
 // -----------------------------------------------------------------------------
 RTUExchange* RTUExchange::init_rtuexchange( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
