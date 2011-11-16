@@ -150,6 +150,7 @@ void MBExchange::help_print( int argc, const char* const* argv )
 	cout << "--prefix-statistic-sec sec      - Выводить статистику опроса каждые sec секунд" << endl;
 	cout << "--prefix-sm-ready-timeout       - время на ожидание старта SM" << endl;
 	cout << "--prefix-exchange-mode-id       - Идентификатор (AI) датчика, позволяющего управлять работой процесса" << endl;
+	cout << "--prefix-set-prop-prefix val    - Использовать для свойств указанный или пустой префикс." << endl;
 }
 // -----------------------------------------------------------------------------
 MBExchange::~MBExchange()
