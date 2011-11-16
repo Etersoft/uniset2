@@ -17,10 +17,28 @@ use485F(false),
 transmitCtl(false),
 rs_pre_clean(false)
 {
-	prop_prefix = "";
-
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(RTUExchange): objId=-1?!! Use --" + prefix + "-name" );
+
+	// префикс для "свойств" - по умолчанию
+	prop_prefix = "";
+	// если задано поле для "фильтрации"
+	// то в качестве префикса используем его
+	if( !s_field.empty() )
+		prop_prefix = s_field + "_";
+	// если "принудительно" задан префикс
+	// используем его.
+	{
+		string p("--" + prefix + "-set-prop-prefix");
+		string v = conf->getArgParam(p,"");
+		if( !v.empty() )
+			prop_prefix = v;
+		// если параметр всё-таки указан, считаем, что это попытка задать "пустой" префикс
+		else if( findArgParam(p,conf->getArgc(),conf->getArgv()) !=-1 );
+			prop_prefix = "";
+	}
+
+	dlog[Debug::INFO] << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
 	UniXML_iterator it(cnode);
 
