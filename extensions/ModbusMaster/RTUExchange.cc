@@ -34,7 +34,7 @@ rs_pre_clean(false)
 		if( !v.empty() )
 			prop_prefix = v;
 		// если параметр всё-таки указан, считаем, что это попытка задать "пустой" префикс
-		else if( findArgParam(p,conf->getArgc(),conf->getArgv()) !=-1 );
+		else if( findArgParam(p,conf->getArgc(),conf->getArgv()) != -1 )
 			prop_prefix = "";
 	}
 
