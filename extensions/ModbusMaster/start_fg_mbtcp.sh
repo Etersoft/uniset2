@@ -13,6 +13,6 @@
 --mbtcp-force-disconnect 1 \
 --mbtcp-polltime 5000 \
 --mbtcp-exchange-mode-id MB1_Mode_AS \
---mbtcp-set-prop-prefix tcp_
+#--mbtcp-set-prop-prefix tcp_
 #--mbtcp-filter-field mbtcp --mbtcp-filter-value 1
 
