@@ -66,7 +66,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 				break;
 			processingMessage(&amp;msg);
 			updateOutputs(false);
-			updatePreviousValues();
+//			updatePreviousValues();
 		}
 
 		// Выполнение шага программы
