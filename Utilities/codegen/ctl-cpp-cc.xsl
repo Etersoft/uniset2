@@ -220,8 +220,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 
 <xsl:template name="getdata">
 <xsl:param name="output">0</xsl:param>	
-	if( <xsl:value-of select="@name"/> != DefaultObjectId )
+	try
 	{
+		if( <xsl:value-of select="@name"/> != DefaultObjectId )
+		{
 <xsl:choose>
 	<xsl:when test="normalize-space(@iotype)='DI'">
 		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getState(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
@@ -238,79 +240,109 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getValue(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
 	</xsl:when>
 </xsl:choose>
+		}
+	}
+	catch( Exception&amp; ex )
+	{
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
+		throw ex;
 	}
 </xsl:template>
 
 <xsl:template name="setdata">
-	if( <xsl:value-of select="@name"/> != DefaultObjectId )
+	try
 	{
+		if( <xsl:value-of select="@name"/> != DefaultObjectId )
+		{
 <xsl:choose>
 	<xsl:when test="normalize-space(@iotype)='DI'">
-		si.id 	= <xsl:value-of select="@name"/>;
-		si.node = node_<xsl:value-of select="@name"/>;
-		ui.saveState( si, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>,UniversalIO::DigitalInput,getId() );
+			si.id 	= <xsl:value-of select="@name"/>;
+			si.node = node_<xsl:value-of select="@name"/>;
+			ui.saveState( si, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>,UniversalIO::DigitalInput,getId() );
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='DO'">
-		ui.setState( <xsl:value-of select="@name"/>, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, node_<xsl:value-of select="@name"/> );
+			ui.setState( <xsl:value-of select="@name"/>, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, node_<xsl:value-of select="@name"/> );
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='AI'">
-		si.id 	= <xsl:value-of select="@name"/>;
-		si.node = node_<xsl:value-of select="@name"/>;
-		ui.saveValue( si, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>,UniversalIO::AnalogInput, getId() );
+			si.id 	= <xsl:value-of select="@name"/>;
+			si.node = node_<xsl:value-of select="@name"/>;
+			ui.saveValue( si, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>,UniversalIO::AnalogInput, getId() );
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='AO'">
-		ui.setValue( <xsl:value-of select="@name"/>, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, node_<xsl:value-of select="@name"/> );
+			ui.setValue( <xsl:value-of select="@name"/>, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, node_<xsl:value-of select="@name"/> );
 	</xsl:when>
 </xsl:choose>
+		}
+	}
+	catch( Exception&amp; ex )
+	{
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
+		throw ex;
 	}
 </xsl:template>
 
 <xsl:template name="setdata_value">
 <xsl:param name="setval">0</xsl:param>	
-	if( <xsl:value-of select="@name"/> != DefaultObjectId )
+	try
 	{
+		if( <xsl:value-of select="@name"/> != DefaultObjectId )
+		{
 <xsl:choose>
 	<xsl:when test="normalize-space(@iotype)='DI'">
-		si.id 	= <xsl:value-of select="@name"/>;
-		si.node	= node_<xsl:value-of select="@name"/>;
-		ui.saveState( si,<xsl:value-of select="$setval"/>,UniversalIO::DigitalInput,getId() );
+			si.id 	= <xsl:value-of select="@name"/>;
+			si.node	= node_<xsl:value-of select="@name"/>;
+			ui.saveState( si,<xsl:value-of select="$setval"/>,UniversalIO::DigitalInput,getId() );
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='DO'">
-		ui.setState( <xsl:value-of select="@name"/>,<xsl:value-of select="$setval"/>, node_<xsl:value-of select="@name"/>);
+			ui.setState( <xsl:value-of select="@name"/>,<xsl:value-of select="$setval"/>, node_<xsl:value-of select="@name"/>);
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='AI'">
-		si.id 	= <xsl:value-of select="@name"/>;
-		si.node = node_<xsl:value-of select="@name"/>;
-		ui.saveValue( si,<xsl:value-of select="$setval"/>,UniversalIO::AnalogInput, getId() );
+			si.id 	= <xsl:value-of select="@name"/>;
+			si.node = node_<xsl:value-of select="@name"/>;
+			ui.saveValue( si,<xsl:value-of select="$setval"/>,UniversalIO::AnalogInput, getId() );
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='AO'">
-		ui.setValue( <xsl:value-of select="@name"/>,<xsl:value-of select="$setval"/>,node_<xsl:value-of select="@name"/> );
+			ui.setValue( <xsl:value-of select="@name"/>,<xsl:value-of select="$setval"/>,node_<xsl:value-of select="@name"/> );
 	</xsl:when>
 </xsl:choose>
+		}
+	}
+	catch( Exception&amp; ex )
+	{
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
+		throw ex;
 	}
 </xsl:template>
 
 <xsl:template name="setmsg_val">
-	if( <xsl:value-of select="@name"/> != DefaultObjectId )
+	try
 	{
+		if( <xsl:value-of select="@name"/> != DefaultObjectId )
+		{
 <xsl:choose>
 	<xsl:when test="normalize-space(@iotype)='DI'">
-		si.id = <xsl:value-of select="@name"/>;
-		si.node = node_<xsl:value-of select="@name"/>;
-		ui.saveState( si,m_<xsl:value-of select="@name"/>,UniversalIO::DigitalInput,getId() );
+			si.id = <xsl:value-of select="@name"/>;
+			si.node = node_<xsl:value-of select="@name"/>;
+			ui.saveState( si,m_<xsl:value-of select="@name"/>,UniversalIO::DigitalInput,getId() );
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='DO'">
-		ui.setState( <xsl:value-of select="@name"/>,m_<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
+			ui.setState( <xsl:value-of select="@name"/>,m_<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='AI'">
-		si.id 	= <xsl:value-of select="@name"/>;
-		si.node = node_<xsl:value-of select="@name"/>;
-		ui.saveValue( si,(long)m_<xsl:value-of select="@name"/>,UniversalIO::AnalogInput, getId() );
+			si.id 	= <xsl:value-of select="@name"/>;
+			si.node = node_<xsl:value-of select="@name"/>;
+			ui.saveValue( si,(long)m_<xsl:value-of select="@name"/>,UniversalIO::AnalogInput, getId() );
 	</xsl:when>
 	<xsl:when test="normalize-space(@iotype)='AO'">
-		ui.setValue( <xsl:value-of select="@name"/>, (long)m_<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/> );
+			ui.setValue( <xsl:value-of select="@name"/>, (long)m_<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/> );
 	</xsl:when>
 </xsl:choose>
+		}
+	}
+	catch( Exception&amp; ex )
+	{
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(setmsg): " &lt;&lt; ex &lt;&lt; endl;
+		throw ex;
 	}
 </xsl:template>
 
