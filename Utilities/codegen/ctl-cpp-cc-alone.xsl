@@ -233,6 +233,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 
 <xsl:template name="getdata">
 <xsl:param name="output">0</xsl:param>	
+	try
+	{
 <xsl:if test="normalize-space(../../@msg)!='1'">
 <xsl:if test="normalize-space(@name)=$OID">
 <xsl:choose>
@@ -253,6 +255,12 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 </xsl:choose>
 </xsl:if>
 </xsl:if>
+	}
+	catch( Exception&amp; ex )
+	{
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
+		throw ex;
+	}
 </xsl:template>
 
 <xsl:template name="setdata">
@@ -279,6 +287,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 </xsl:template>
 
 <xsl:template name="gensetdata">
+	try
+	{
 <xsl:choose>
 	<xsl:when test="normalize-space(../../@iotype)='DO'">
 		ui.setState( <xsl:value-of select="../../@name"/>, <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> );
@@ -297,10 +307,18 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 		ui.saveValue( si,<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>,UniversalIO::AnalogInput, getId() );
 	</xsl:when>
 </xsl:choose>
+	}
+	catch( Exception&amp; ex )
+	{
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
+		throw ex;
+	}
 </xsl:template>
 
 <xsl:template name="setdata_val">
 <xsl:param name="setval"></xsl:param>	
+	try
+	{
 <xsl:choose>
 	<xsl:when test="normalize-space(../../@iotype)='DO'">
 		ui.setState( <xsl:value-of select="../../@name"/>,<xsl:value-of select="$setval"/> );
@@ -319,6 +337,13 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 		ui.saveValue( si,<xsl:value-of select="$setval"/>,UniversalIO::AnalogInput, getId() );
 	</xsl:when>
 </xsl:choose>
+	}
+	catch( Exception&amp; ex )
+	{
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
+		throw ex;
+	}
+
 </xsl:template>
 
 <xsl:template name="check_changes">
