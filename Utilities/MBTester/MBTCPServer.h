@@ -23,6 +23,11 @@ class MBTCPServer
 			replyVal = val;
 		}
 
+		inline void setReply( long val )
+		{
+			replyVal = val;
+		}
+
 		inline void setIgnoreAddrMode( bool state )
 		{
 			if( sslot )
