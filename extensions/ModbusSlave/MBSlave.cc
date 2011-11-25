@@ -1328,10 +1328,9 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 			ModbusRTU::ModbusData d = 0;
 			ModbusRTU::mbErrCode ret = real_read(query.start,d);
 			if( ret == ModbusRTU::erNoError )
-				reply.addData(d);
+				reply.setBit(0,0,d);
 			else
-				reply.addData(0);
-			
+				reply.setBit(0,0,0);
 			
 			pingOK = true;
 			return ret;
@@ -1339,29 +1338,13 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 
 		// Фомирование ответа:
 		much_real_read(query.start,buf,query.count);
-		for( int i=0; i<query.count; i++ )
-			reply.addData( buf[i] );
-/*		
-		int num=0; // добавленное количество данных
-		ModbusRTU::ModbusData d = 0;
-		ModbusRTU::ModbusData reg = query.start;
-		for( ; num<query.count; num++, reg++ )
+		int bnum = 0;
+		for( int i=0; i<query.count; i++, bnum++ )
 		{
-			ModbusRTU::mbErrCode ret = real_read(reg,d);
-			if( ret == ModbusRTU::erNoError )
-				reply.addData(d);
-			else
-				reply.addData(0);
+			reply.addData(0);
+			for( int nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
+				reply.setBit(bnum,nbit,buf[i]);
 		}
-*/
-		// Если мы в начале проверили, что запрос входит в разрешёный диапазон
-		// то теоретически этой ситуации возникнуть не может...
-//		if( reply.bcnt < query.count )
-//		{
-//			dlog[Debug::WARN] << myname 
-//				<< "(readInputStatus): query.count=" << query.count 
-//					<< " > reply.count=" << reply.count << endl;
-//		}
 
 		pingOK = true;
 		return ModbusRTU::erNoError;

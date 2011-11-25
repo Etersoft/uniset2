@@ -265,8 +265,8 @@ namespace ModbusRTU
 		bool addData( DataBits d );
 
 		/*! установить бит.
-		 * \param dnum  - номер байта
-		 * \param bnum  - номер бита
+		 * \param dnum  - номер байта (0..MAXLENPACKET)
+		 * \param bnum  - номер бита (0..7)
 		 * \param state - состояние
 		 * \return TRUE - если есть
 		 * \return FALSE - если НЕ найдено
@@ -274,7 +274,7 @@ namespace ModbusRTU
 		bool setBit( unsigned char dnum, unsigned char bnum, bool state );
 
 		/*! получение данных.
-		 * \param bnum  - номер байта
+		 * \param bnum  - номер байта(0..MAXLENPACKET)
 		 * \param d     - найденные данные
 		 * \return TRUE - если есть
 		 * \return FALSE - если НЕ найдено
@@ -359,8 +359,8 @@ namespace ModbusRTU
 		bool addData( DataBits d );
 
 		/*! установить бит.
-		 * \param dnum  - номер байта
-		 * \param bnum  - номер бита
+		 * \param dnum  - номер байта (0..MAXLENPACKET)
+		 * \param bnum  - номер бита (0...7)
 		 * \param state - состояние
 		 * \return TRUE - если есть
 		 * \return FALSE - если НЕ найдено
@@ -368,7 +368,7 @@ namespace ModbusRTU
 		bool setBit( unsigned char dnum, unsigned char bnum, bool state );
 
 		/*! получение данных.
-		 * \param dnum  - номер байта
+		 * \param dnum  - номер байта (0..MAXLENPACKET)
 		 * \param d     - найденные данные
 		 * \return TRUE - если есть
 		 * \return FALSE - если НЕ найдено
