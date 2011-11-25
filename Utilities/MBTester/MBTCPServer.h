@@ -18,6 +18,11 @@ class MBTCPServer
 			verbose = state;
 		}
 
+		inline void setReply( long val )
+		{
+			replyVal = val;
+		}
+
 		inline void setIgnoreAddrMode( bool state )
 		{
 			if( sslot )
@@ -88,6 +93,7 @@ class MBTCPServer
 		ModbusRTU::ModbusAddr addr;			/*!< адрес данного узла */
 
 		bool verbose;
+		long replyVal;
 #if 0		
 		typedef std::map<ModbusRTU::mbErrCode,unsigned int> ExchangeErrorMap;
 		ExchangeErrorMap errmap; 	/*!< статистика обмена */

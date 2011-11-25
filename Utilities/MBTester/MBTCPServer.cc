@@ -15,7 +15,8 @@ MBTCPServer::MBTCPServer( ModbusAddr myaddr, const string inetaddr, int port, bo
 	addr(myaddr),
 //	prev(ModbusRTU::erNoError),
 //	askCount(0),
-	verbose(verb)
+	verbose(verb),
+	replyVal(-1)
 {
 //	int replyTimeout = uni_atoi( conf->getArgParam("--reply-timeout",it.getProp("reply_timeout")).c_str() );
 //	if( replyTimeout <= 0 )
@@ -107,7 +108,10 @@ ModbusRTU::mbErrCode MBTCPServer::readCoilStatus( ReadCoilMessage& query,
 
 	if( query.count <= 1 )
 	{
-		reply.addData(d);
+		if( replyVal!=-1 )
+			reply.addData(replyVal);
+		else
+			reply.addData(d);
 		return ModbusRTU::erNoError;
 	}
 
@@ -115,7 +119,12 @@ ModbusRTU::mbErrCode MBTCPServer::readCoilStatus( ReadCoilMessage& query,
 	int num=0; // добавленное количество данных
 	ModbusData reg = query.start;
 	for( ; num<query.count; num++, reg++ )
-		reply.addData(d);
+	{
+		if( replyVal!=-1 )
+			reply.addData(replyVal);
+		else
+			reply.addData(d);
+	}
 
 	// Если мы в начале проверили, что запрос входит в разрешёный диапазон
 	// то теоретически этой ситуации возникнуть не может...
@@ -142,7 +151,10 @@ ModbusRTU::mbErrCode MBTCPServer::readInputStatus( ReadInputStatusMessage& query
 
 	if( query.count <= 1 )
 	{
-		reply.addData(d);
+		if( replyVal!=-1 )
+			reply.addData(replyVal);
+		else
+			reply.addData(d);
 		return ModbusRTU::erNoError;
 	}
 
@@ -150,7 +162,12 @@ ModbusRTU::mbErrCode MBTCPServer::readInputStatus( ReadInputStatusMessage& query
 	int num=0; // добавленное количество данных
 	ModbusData reg = query.start;
 	for( ; num<query.count; num++, reg++ )
-		reply.addData(d);
+	{
+		if( replyVal!=-1 )
+			reply.addData(replyVal);
+		else
+			reply.addData(d);
+	}
 
 	// Если мы в начале проверили, что запрос входит в разрешёный диапазон
 	// то теоретически этой ситуации возникнуть не может...
@@ -171,7 +188,11 @@ mbErrCode MBTCPServer::readInputRegisters( ReadInputMessage& query,
 
 	if( query.count <= 1 )
 	{
-		reply.addData(query.start);
+		if( replyVal!=-1 )
+			reply.addData(replyVal);
+		else
+			reply.addData(query.start);
+
 		return ModbusRTU::erNoError;
 	}
 
@@ -179,7 +200,12 @@ mbErrCode MBTCPServer::readInputRegisters( ReadInputMessage& query,
 	int num=0; // добавленное количество данных
 	ModbusData reg = query.start;
 	for( ; num<query.count; num++, reg++ )
-		reply.addData(reg);
+	{
+		if( replyVal!=-1 )
+			reply.addData(replyVal);
+		else
+			reply.addData(reg);
+	}
 
 //	cerr << "************ reply: cnt=" << reply.count << endl;
 //	cerr << "reply: " << reply << endl;
@@ -203,7 +229,10 @@ ModbusRTU::mbErrCode MBTCPServer::readOutputRegisters(
 
 	if( query.count <= 1 )
 	{
-		reply.addData(query.start);
+		if( replyVal!=-1 )
+			reply.addData(replyVal);
+		else
+			reply.addData(query.start);
 		return ModbusRTU::erNoError;
 	}
 
@@ -211,8 +240,12 @@ ModbusRTU::mbErrCode MBTCPServer::readOutputRegisters(
 	int num=0; // добавленное количество данных
 	ModbusData reg = query.start;
 	for( ; num<query.count; num++, reg++ )
-		reply.addData(reg);
-
+	{
+		if( replyVal!=-1 )
+			reply.addData(replyVal);
+		else
+			reply.addData(reg);
+	}
 	// Если мы в начале проверили, что запрос входит в разрешёный диапазон
 	// то теоретически этой ситуации возникнуть не может...
 	if( reply.count < query.count )
