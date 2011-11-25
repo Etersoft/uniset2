@@ -218,7 +218,7 @@ rm -f %buildroot%_libdir/*.la
 * Fri Nov 25 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt54
 - (modbus): added 'const-reply' for modbustcptester
 
-* Fri Nov 25 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt53
+* Thu Nov 24 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt53
 - (modbus): added information log
 
 * Wed Nov 16 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt52
