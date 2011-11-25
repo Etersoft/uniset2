@@ -80,7 +80,7 @@
 			
 		/>
 	</settings>
-	<ObjectsMap idfromfile="0">
+	<ObjectsMap idfromfile="1">
 		<!--
 	Краткие пояснения к полям секции 'sensors'
 	==========================================
@@ -90,61 +90,63 @@
 	textname 	- текстовое имя датчика
 -->
 		<nodes port="2809" unet_broadcast_ip="192.168.1.255" unet_broadcast_ip2="192.168.122.255">
-			<item infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="0" unet_port="2048">
+			<item id="3000" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="0" unet_port="2048">
 				<iocards>
 					<item card="1" name="DI32"/>
 					<item card="2" name="DO32"/>
 					<item baddr="0x110" card="3" dev="/dev/comedi1" name="UNIO48" subdev1="TBI24_0" subdev2="TBI16_8"/>
 				</iocards>
 			</item>
-			<item infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode1" textname="Локальный узел" unet_ignore="0" unet_port="2049"/>
-			<item ip="192.168.56.10" name="Node1" textname="Node1" unet_port="3001" unet_ip="192.168.56.255" unet_ignore="1"/>
-			<item ip="192.168.56.11" name="Node2" textname="Node2" unet_port="3002" unet_ip="192.168.56.255" unet_ignore="1"/>
+			<item id="3001" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode1" textname="Локальный узел" unet_ignore="0" unet_port="2049"/>
+			<item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_port="3001" unet_ip="192.168.56.255" unet_ignore="1"/>
+			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_port="3002" unet_ip="192.168.56.255" unet_ignore="1"/>
 		</nodes>
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">
-			<item db_ignore="1" default="1" iotype="DI" name="Input1_S" priority="Medium" textname="Команда 1"/>
-			<item iotype="DI" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input2_S" priority="Medium" rs="2" textname="Команда 2"/>
-			<item iotype="DI" mbtcp="1" name="Input3_S" priority="Medium" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" mbtcp_preinit="1" textname="Команда 3"/>
-			<item iotype="DI" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input4_S" priority="Medium" rs="2" textname="Команда 4"/>
-			<item iotype="DI" name="Input5_S" priority="Medium" textname="Команда 5" udp="2"/>
-			<item iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2">
+			<item id="1" db_ignore="1" default="1" iotype="DI" name="Input1_S" priority="Medium" textname="Команда 1"/>
+			<item id="2" iotype="DI" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input2_S" priority="Medium" rs="2" textname="Команда 2"/>
+			<item id="3" iotype="DI" mbtcp="1" name="Input3_S" priority="Medium" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" mbtcp_preinit="1" textname="Команда 3"/>
+			<item id="4" iotype="DI" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input4_S" priority="Medium" rs="2" textname="Команда 4"/>
+			<item id="5" iotype="DI" name="Input5_S" priority="Medium" textname="Команда 5" udp="2"/>
+			<item id="6" iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2">
 				<depends>
 					<depend name="Input4_S"/>
 				</depends>
 			</item>
-			<item iotype="DO" name="DO_C" priority="Medium" textname="Digital output"/>
-			<item iotype="DO" name="DO1_C" priority="Medium" textname="Digital output"/>
-			<item default="10" iotype="AO" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" mbtype="rtu" name="AO_AS" priority="Medium" rs="2" textname="Analog output"/>
-			<item default="378" iotype="AI" mbaddr="0x01" mbfunc="0x04" mbreg="0x01" mbtype="rtu" name="AI_AS" precision="45" priority="Medium" rs="1" textname="Analog input" vtype="F2">
+			<item id="7" iotype="DO" name="DO_C" priority="Medium" textname="Digital output"/>
+			<item id="8" iotype="DO" name="DO1_C" priority="Medium" textname="Digital output"/>
+			<item id="9" default="10" iotype="AO" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" mbtype="rtu" name="AO_AS" priority="Medium" rs="2" textname="Analog output"/>
+			<item id="10" default="378" iotype="AI" mbaddr="0x01" mbfunc="0x04" mbreg="0x01" mbtype="rtu" name="AI_AS" precision="45" priority="Medium" rs="1" textname="Analog input" vtype="F2">
 				<consumers>
 					<consumer cfilter="test1" name="TestProc" type="objects"/>
 					<consumer name="PLCProcessor" type="objects"/>
 				</consumers>
 			</item>
-			<item iotype="DI" name="Threshold1_S" priority="Medium" textname="Порог"/>
-			<item iotype="DI" name="TestMode_S" priority="Medium" textname="test"/>
-			<item iotype="DI" name="RespondRTU_S" textname="respond rtu"/>
-			<item iotype="DI" name="NoRespondRTU2_S" textname="no respond rtu"/>
-			<item iotype="DI" name="AlarmFuse1_S" priority="Medium" textname="alarm fuse sensor 1"/>
-			<item iotype="AI" name="AlarmFuse2_AS" priority="Medium" textname="alarm fuse sensor 2"/>
-			<item a1="1" iotype="DI" name="DumpSensor1_S" priority="Medium" textname="alarm dumpm sensor 1"/>
-			<item a1="1" iotype="DI" name="DumpSensor2_S" priority="Medium" textname="alarm dumpm sensor 2"/>
-			<item a1="1" iotype="DI" name="DumpSensor3_S" priority="Medium" textname="alarm dumpm sensor 3"/>
-			<item a1="1" iotype="DI" name="DumpSensor4_S" priority="Medium" textname="alarm dumpm sensor 4"/>
-			<item a2="1" iotype="DI" name="DumpSensor5_S" priority="Medium" textname="alarm dumpm sensor 5"/>
-			<item a2="1" iotype="DI" name="DumpSensor6_S" priority="Medium" textname="alarm dumpm sensor 6"/>
-			<item a2="1" iotype="DI" name="DumpSensor7_S" priority="Medium" textname="alarm dumpm sensor 7"/>
-			<item a2="1" iotype="DI" name="DumpSensor8_S" priority="Medium" textname="alarm dumpm sensor 8"/>
-			<item default="-655360" iotype="AI" mb_vtype="I2" mbaddr="0x01" mbreg="0x12" mbtcp="2" mbtype="rtu" name="MB1_AS" priority="Medium" textname="Analog input"/>
-			<item default="6553604" iotype="AI" mb_vtype="U2" mbaddr="0x01" mbreg="0x14" mbtcp="2" mbtype="rtu" name="MB2_AS" priority="Medium" textname="Analog input"/>
-			<item default="65536045" iotype="AI" mb_vtype="F2" mbaddr="0x01" mbreg="0x17" mbtcp="2" mbtype="rtu" name="MB3_AS" priority="Medium" textname="Analog input"/>
-			<item iotype="AI" name="IOTestMode_AS" priority="Medium" textname="testmode for IOControl"/>
-			<item name="imitator_performance1" precision="6" textname="Производительность танка 1" iotype="AI" rs="mbslave" mbreg="43" mb_vtype="I2"/> 
-			<item name="performance1" precision="6" noprecision="1" textname="Производительность танка 1" iotype="AI" rs="mbmaster" mbtcp_vtype="I2" mbtcp_mbtype="rtu" 
+			<item id="30044" iotype="DI" name="DI1_S" priority="Medium" textname="Test DI sensor" rs="1" rs_mbaddr="0x01" rs_mbfunc="0x02" rs_mbreg="30044" rs_mbtype="rtu"/>
+			<item id="30045" iotype="DI" name="DI2_S" priority="Medium" textname="Test DI sensor" rs="1" rs_mbaddr="0x01" rs_mbfunc="0x02" rs_mbreg="30045" rs_mbtype="rtu"/>
+			<item id="13" iotype="DI" name="Threshold1_S" priority="Medium" textname="Порог"/>
+			<item id="14" iotype="DI" name="TestMode_S" priority="Medium" textname="test"/>
+			<item id="15" iotype="DI" name="RespondRTU_S" textname="respond rtu"/>
+			<item id="16" iotype="DI" name="NoRespondRTU2_S" textname="no respond rtu"/>
+			<item id="17" iotype="DI" name="AlarmFuse1_S" priority="Medium" textname="alarm fuse sensor 1"/>
+			<item id="18" iotype="AI" name="AlarmFuse2_AS" priority="Medium" textname="alarm fuse sensor 2"/>
+			<item id="19" a1="1" iotype="DI" name="DumpSensor1_S" priority="Medium" textname="alarm dumpm sensor 1"/>
+			<item id="20" a1="1" iotype="DI" name="DumpSensor2_S" priority="Medium" textname="alarm dumpm sensor 2"/>
+			<item id="21" a1="1" iotype="DI" name="DumpSensor3_S" priority="Medium" textname="alarm dumpm sensor 3"/>
+			<item id="22" a1="1" iotype="DI" name="DumpSensor4_S" priority="Medium" textname="alarm dumpm sensor 4"/>
+			<item id="23" a2="1" iotype="DI" name="DumpSensor5_S" priority="Medium" textname="alarm dumpm sensor 5"/>
+			<item id="24" a2="1" iotype="DI" name="DumpSensor6_S" priority="Medium" textname="alarm dumpm sensor 6"/>
+			<item id="25" a2="1" iotype="DI" name="DumpSensor7_S" priority="Medium" textname="alarm dumpm sensor 7"/>
+			<item id="26" a2="1" iotype="DI" name="DumpSensor8_S" priority="Medium" textname="alarm dumpm sensor 8"/>
+			<item id="27" default="-655360" iotype="AI" mb_vtype="I2" mbaddr="0x01" mbreg="0x12" mbtcp="2" mbtype="rtu" name="MB1_AS" priority="Medium" textname="Analog input"/>
+			<item id="28" default="6553604" iotype="AI" mb_vtype="U2" mbaddr="0x01" mbreg="0x14" mbtcp="2" mbtype="rtu" name="MB2_AS" priority="Medium" textname="Analog input"/>
+			<item id="29" default="65536045" iotype="AI" mb_vtype="F2" mbaddr="0x01" mbreg="0x17" mbtcp="2" mbtype="rtu" name="MB3_AS" priority="Medium" textname="Analog input"/>
+			<item id="30" iotype="AI" name="IOTestMode_AS" priority="Medium" textname="testmode for IOControl"/>
+			<item id="31" name="imitator_performance1" precision="6" textname="Производительность танка 1" iotype="AI" rs="mbslave" mbreg="43" mb_vtype="I2"/> 
+			<item id="32" name="performance1" precision="6" noprecision="1" textname="Производительность танка 1" iotype="AI" rs="mbmaster" mbtcp_vtype="I2" mbtcp_mbtype="rtu" 
 					 mbtcp_mbaddr="1" mbtcp_mbreg="43" mbtcp_mbfunc="0x04"/>
-			<item iotype="DI" name="Message1" priority="Medium" textname="Текст сообщения 1"/>
-			<item iotype="AI" name="MB1_Mode_AS" priority="Medium" textname="ModbusExchange Mode"/>
+			<item id="33" iotype="DI" name="Message1" priority="Medium" textname="Текст сообщения 1"/>
+			<item id="34" iotype="AI" name="MB1_Mode_AS" priority="Medium" textname="ModbusExchange Mode"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">
@@ -156,28 +158,28 @@
 			</sensor>
 		</thresholds>
 		<controllers name="Controllers">
-			<item name="SharedMemory"/>
-			<item name="UniExchange"/>
-			<item name="UniExchange2"/>
+			<item id="5000" name="SharedMemory"/>
+			<item id="5001" name="UniExchange"/>
+			<item id="5002" name="UniExchange2"/>
 		</controllers>
 		<!-- ******************* Идентификаторы сервисов ***************** -->
 		<services name="Services">
-			<item name="InfoServer"/>
-			<item name="DBServer"/>
-			<item name="PrintServer"/>
-			<item name="TimeService"/>
+			<item id="5010" name="InfoServer"/>
+			<item id="5011" name="DBServer"/>
+			<item id="5012" name="PrintServer"/>
+			<item id="5013" name="TimeService"/>
 		</services>
 		<!-- ******************* Идентификаторы объектов ***************** -->
 		<objects name="UniObjects">
-			<item name="TestProc"/>
-			<item name="LProcessor"/>
-			<item name="IOControl"/>
-			<item name="RTUExchange"/>
-			<item name="MBSlave1"/>
-			<item name="MBMaster1"/>
-			<item name="UDPExchange"/>
-			<item name="UDPExchange2"/>
-			<item name="UNetExchange"/>
+			<item id="6000" name="TestProc"/>
+			<item id="6001" name="LProcessor"/>
+			<item id="6002" name="IOControl"/>
+			<item id="6003" name="RTUExchange"/>
+			<item id="6004" name="MBSlave1"/>
+			<item id="6005" name="MBMaster1"/>
+			<item id="6006" name="UDPExchange"/>
+			<item id="6007" name="UDPExchange2"/>
+			<item id="6008" name="UNetExchange"/>
 		</objects>
 	</ObjectsMap>
 	<messages idfromfile="1" name="messages">

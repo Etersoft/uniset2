@@ -10,6 +10,6 @@ uniset-start.sh -f ./uniset-rtuexchange --confile test.xml \
 	--dlog-add-levels info,crit,warn,level4,level3 \
 	--rs-force 0 \
 	--rs-force-out 0 \
-	--rs-polltime 3000
+	--rs-polltime 3000 \
 #,level3
 #	--rs-force 1 \
