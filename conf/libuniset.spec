@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt54
+Release: alt55
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -212,6 +212,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Sat Nov 26 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt55
+- (modbus): fixed bug in ModbusSlave::readInputStatus(0x02)
+
 * Fri Nov 25 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt54
 - (modbus): added 'const-reply' for modbustcptester
 
