@@ -15,6 +15,7 @@ static struct option longopts[] = {
 	{ "myaddr", required_argument, 0, 'a' },
 	{ "port", required_argument, 0, 'p' },
 	{ "ignore-addr", no_argument, 0, 'x' },
+	{ "const-reply", required_argument, 0, 'c' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -28,6 +29,7 @@ static void print_help()
 	printf("[-x|--ignore-addr]           	  - Ignore modbus RTU-address.\n");
 	printf("[-p|--port] port                  - Server port. Default: 502.\n");
 	printf("[-v|--verbose]                    - Print all messages to stdout\n");
+	printf("[-c|--const-reply] val            - Reply 'val' for all queries\n");
 }
 // --------------------------------------------------------------------------
 int main( int argc, char **argv )
@@ -41,12 +43,13 @@ int main( int argc, char **argv )
 	int tout = 2000;
 	DebugStream dlog;
 	bool ignoreAddr = false;
+	int replyVal=-1;
 	
 	ost::Thread::setException(ost::Thread::throwException);
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "ht:va:p:i:bx",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "ht:va:p:i:bxc:",longopts,&optindex)) != -1 ) 
 		{
 			switch (opt) 
 			{
@@ -77,7 +80,11 @@ int main( int argc, char **argv )
 				case 'x':	
 					ignoreAddr = true;
 				break;
-				
+
+				case 'c':
+					replyVal = uni_atoi(optarg);
+				break;
+
 				case '?':
 				default:
 					printf("? argumnet\n");
@@ -99,6 +106,8 @@ int main( int argc, char **argv )
 		mbs.setLog(dlog);
 		mbs.setVerbose(verb);
 		mbs.setIgnoreAddrMode(ignoreAddr);
+		if( replyVal!=-1 )
+			mbs.setReply(replyVal);
 		mbs.execute();
 	}
 	catch( ModbusRTU::mbException& ex )
