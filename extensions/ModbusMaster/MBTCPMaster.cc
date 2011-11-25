@@ -67,6 +67,9 @@ pollThread(0)
 		ic->addReadItem( sigc::mem_fun(this,&MBTCPMaster::readItem) );
 
 	pollThread = new ThreadCreator<MBTCPMaster>(this, &MBTCPMaster::poll_thread);
+
+	if( dlog.debugging(Debug::INFO) )
+		printMap(rmap);
 }
 // -----------------------------------------------------------------------------
 MBTCPMaster::~MBTCPMaster()
