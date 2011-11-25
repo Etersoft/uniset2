@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt52
+Release: alt53
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -212,6 +212,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Fri Nov 25 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt53
+- (modbus): added information log
+
 * Wed Nov 16 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt52
 - (modbus): An opportunity to change the prefix is added to the properties
 
