@@ -134,18 +134,28 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 	d.b[3] = 1;
 	d.b[7] = 1;
 
-	int bcnt = query.count / ModbusRTU::BitsPerByte;
-	if( (query.count % ModbusRTU::BitsPerByte) > 0 )
-		bcnt++;
-
-	for( int i=0; i<bcnt; i++ )
+	if( replyVal == -1 )
 	{
-		if( replyVal!=-1 )
-			reply.addData(replyVal);
-		else
-			reply.addData(d);
+		int bnum = 0;
+		int i=0;
+		while( i<query.count )
+		{
+			reply.addData(0);
+			for( int nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
+				reply.setBit(bnum,nbit,d.b[nbit]);
+			bnum++;
+		}
 	}
+	else
+	{
+		int bcnt = query.count / ModbusRTU::BitsPerByte;
+		if( (query.count % ModbusRTU::BitsPerByte) > 0 )
+			bcnt++;
 
+		for( int i=0; i<bcnt; i++ )
+			reply.addData(replyVal);
+	}
+	
 	return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------

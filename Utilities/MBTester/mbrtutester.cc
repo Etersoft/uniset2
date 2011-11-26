@@ -379,7 +379,7 @@ int main( int argc, char **argv )
 					{
 						ModbusRTU::DataBits b(ret.data[i]);
 					
-						cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = (" 
+						cout << i <<": (" << ModbusRTU::dat2str( reg + 8*i ) << ") = (" 
 							<< ModbusRTU::b2str(ret.data[i]) << ") " << b << endl;
 					}
 				}
@@ -403,7 +403,7 @@ int main( int argc, char **argv )
 					{
 						ModbusRTU::DataBits b(ret.data[i]);
 					
-						cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = (" 
+						cout << i <<": (" << ModbusRTU::dat2str( reg + 8*i ) << ") = (" 
 							<< ModbusRTU::b2str(ret.data[i]) << ") " << b << endl;
 					}
 				}

@@ -148,35 +148,28 @@ ModbusRTU::mbErrCode MBTCPServer::readInputStatus( ReadInputStatusMessage& query
 	d.b[3] = 1;
 	d.b[7] = 1;
 
-
-	if( query.count <= 1 )
+	if( replyVal == -1 )
 	{
-		if( replyVal!=-1 )
+		int bnum = 0;
+		int i=0;
+		while( i<query.count )
+		{
+			reply.addData(0);
+			for( int nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
+				reply.setBit(bnum,nbit,d.b[nbit]);
+			bnum++;
+		}
+	}
+	else
+	{
+		int bcnt = query.count / ModbusRTU::BitsPerByte;
+		if( (query.count % ModbusRTU::BitsPerByte) > 0 )
+			bcnt++;
+
+		for( int i=0; i<bcnt; i++ )
 			reply.addData(replyVal);
-		else
-			reply.addData(d);
-		return ModbusRTU::erNoError;
 	}
-
-	// Фомирование ответа:
-	int num=0; // добавленное количество данных
-	ModbusData reg = query.start;
-	for( ; num<query.count; num++, reg++ )
-	{
-		if( replyVal!=-1 )
-			reply.addData(replyVal);
-		else
-			reply.addData(d);
-	}
-
-	// Если мы в начале проверили, что запрос входит в разрешёный диапазон
-	// то теоретически этой ситуации возникнуть не может...
-	if( reply.bcnt < query.count )
-	{
-		cerr << "(readInputStatus): Получили меньше чем ожидали. "
-			<< " Запросили " << query.count << " получили " << reply.bcnt << endl;
-	}
-
+	
 	return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------

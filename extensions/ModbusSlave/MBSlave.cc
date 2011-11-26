@@ -1339,11 +1339,13 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 		// Фомирование ответа:
 		much_real_read(query.start,buf,query.count);
 		int bnum = 0;
-		for( int i=0; i<query.count; i++, bnum++ )
+		int i=0;
+		while( i<query.count )
 		{
 			reply.addData(0);
 			for( int nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
 				reply.setBit(bnum,nbit,buf[i]);
+			bnum++;
 		}
 
 		pingOK = true;
