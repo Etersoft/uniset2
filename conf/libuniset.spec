@@ -166,6 +166,7 @@ rm -f %buildroot%_libdir/*.la
 %_bindir/%oname-plogicproc
 %_bindir/%oname-mtr-conv
 %_bindir/%oname-mtr-setup
+%_bindir/%oname-mtr-read
 %_bindir/%oname-vtconv
 %_bindir/%oname-rtu188-state
 %_bindir/%oname-rtuexchange
