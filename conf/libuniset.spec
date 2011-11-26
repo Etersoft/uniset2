@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt56
+Release: alt57
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -212,6 +212,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Sun Nov 27 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt57
+- add uniset-mtr-read utility
+
 * Sat Nov 26 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt56
 - (modbus): fixed bug (again) in ModbusSlave::readInputStatus(0x02)
 
