@@ -3,27 +3,20 @@
 //#include <string.h>
 //#include <errno.h>
 #include <sstream>
-#include "UniSetTypes.h"
+#include <UniSetTypes.h>
 #include "MBSlave.h"
-#include "uniset-config.h"
-// -------------------------------------------------------------------------
-#ifndef PACKAGE_URL
-#define PACKAGE_URL "http://git.etersoft.ru/projects/?p=asu/uniset.git;a=summary"
-#endif
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
-MBSlave::MBSlave( ModbusRTU::ModbusAddr addr, const std::string& dev, const std::string& speed, bool use485 ):
+MBSlave::MBSlave( ModbusRTU::ModbusAddr addr, const std::string dev, const std::string speed, bool use485 ):
 	rscomm(NULL),
 	addr(addr),
 //	prev(ModbusRTU::erNoError),
 //	askCount(0),
 	verbose(false),
-	replyVal(-1),
-	replyVal2(-1),
-	replyVal3(-1)
+	replyVal(-1)
 {
 //	int replyTimeout = uni_atoi( conf->getArgParam("--reply-timeout",it.getProp("reply_timeout")).c_str() );
 //	if( replyTimeout <= 0 )
@@ -53,7 +46,6 @@ MBSlave::MBSlave( ModbusRTU::ModbusAddr addr, const std::string& dev, const std:
 	rscomm->connectRemoteService( sigc::mem_fun(this, &MBSlave::remoteService) );
 	rscomm->connectFileTransfer( sigc::mem_fun(this, &MBSlave::fileTransfer) );
 	rscomm->connectDiagnostics( sigc::mem_fun(this, &MBSlave::diagnostics) );
-	rscomm->connectMEIRDI( sigc::mem_fun(this, &MBSlave::read4314) );
 
 
 	rscomm->setRecvTimeout(2000);
@@ -161,16 +153,9 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 			bcnt++;
 
 		for( int i=0; i<bcnt; i++ )
-		{
-			if( i == 1 )
-				reply.addData(replyVal2);
-			else if( i == 2 )
-				reply.addData(replyVal3);
-			else
-				reply.addData(replyVal);
-		}
+			reply.addData(replyVal);
 	}
-	
+
 	return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------
@@ -195,14 +180,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 	for( ; num<query.count; num++, reg++ )
 	{
 		if( replyVal != -1 )
-		{
-			if( num == 1 && replyVal2 != -1  )
-				reply.addData(replyVal2);
-			else if( num == 2 && replyVal3 != -1 )
-				reply.addData(replyVal3);
-			else
-				reply.addData(replyVal);
-		}
+			reply.addData(replyVal);
 		else
 			reply.addData(reg);
 	}
@@ -239,14 +217,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters(
 	for( ; num<query.count; num++, reg++ )
 	{
 		if( replyVal != -1 )
-		{
-			if( num == 1 && replyVal2 != -1  )
-				reply.addData(replyVal2);
-			else if( num == 2 && replyVal3 != -1 )
-				reply.addData(replyVal3);
-			else
-				reply.addData(replyVal);
-		}
+			reply.addData(replyVal);
 		else
 			reply.addData(reg);
 	}
@@ -431,12 +402,12 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
 
 }									
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query, 
+ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
 											ModbusRTU::DiagnosticRetMessage& reply )
 {
 	if( verbose )
 		cout << "(diagnostics): " << query << endl;
-	
+
 	if( query.subf == ModbusRTU::subEcho )
 	{
 		reply = query;
@@ -449,7 +420,7 @@ ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
 		reply.data[0] = 10;
 		return ModbusRTU::erNoError;
 	}
-	
+
 	if( query.subf == ModbusRTU::dgMsgSlaveCount || query.subf == ModbusRTU::dgBusMsgCount )
 	{
 		reply = query;
@@ -468,73 +439,8 @@ ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
 	{
 		reply = query;
 		return ModbusRTU::erNoError;
-	}	
-	
-	return ModbusRTU::erOperationFailed; 
+	}
+
+	return ModbusRTU::erOperationFailed;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::read4314( ModbusRTU::MEIMessageRDI& query, 
-								ModbusRTU::MEIMessageRetRDI& reply )
-{
-	if( verbose )
-		cout << "(read4314): " << query << endl;
-
-	if( query.devID <= rdevMinNum || query.devID >= rdevMaxNum )
-		return erOperationFailed;
-
-	if( query.objID == rdiVendorName )
-	{
-		reply.mf = 0xFF;
-		reply.conformity = rdevBasicDevice;
-		reply.addData(query.objID,"etersoft");
-//		reply.addData(rdiProductCode, PACKAGE_NAME);
-//		reply.addData(rdiMajorMinorRevision,PACKAGE_VERSION);
-		return erNoError;
-	}
-	else if( query.objID == rdiProductCode )
-	{
-		reply.mf = 0xFF;
-		reply.conformity = rdevBasicDevice;
-		reply.addData(query.objID,PACKAGE_NAME);
-		return erNoError;
-	}
-	else if( query.objID == rdiMajorMinorRevision )
-	{
-		reply.mf = 0xFF;
-		reply.conformity = rdevBasicDevice;
-		reply.addData(query.objID,PACKAGE_VERSION);
-		return erNoError;
-	}
-	else if( query.objID == rdiVendorURL )
-	{
-		reply.mf = 0xFF;
-		reply.conformity = rdevRegularDevice;
-		reply.addData(query.objID,PACKAGE_URL);
-		return erNoError;
-	}
-	else if( query.objID == rdiProductName )
-	{
-		reply.mf = 0xFF;
-		reply.conformity = rdevRegularDevice;
-		reply.addData(query.objID,PACKAGE_NAME);
-		return erNoError;
-	}
-	else if( query.objID == rdiModelName )
-	{
-		reply.mf = 0xFF;
-		reply.conformity = rdevRegularDevice;
-		reply.addData(query.objID,"MBSlaveEcho");
-		return erNoError;
-	}
-	else if( query.objID == rdiUserApplicationName )
-	{
-		reply.mf = 0xFF;
-		reply.conformity = rdevRegularDevice;
-		reply.addData(query.objID,"uniset-mbrtuslave-echo");
-		return erNoError;
-	}
-	return ModbusRTU::erBadDataAddress; 
-}
-// -------------------------------------------------------------------------
-
-

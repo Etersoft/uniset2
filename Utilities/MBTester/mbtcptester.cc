@@ -14,8 +14,6 @@ static struct option longopts[] = {
 	{ "read02", required_argument, 0, 'b' },
 	{ "read03", required_argument, 0, 'r' },
 	{ "read04", required_argument, 0, 'x' },
-//	{ "read4313", required_argument, 0, 'u' },
-	{ "read4314", required_argument, 0, 'e' },
 	{ "write05", required_argument, 0, 'f' }, 
 	{ "write06", required_argument, 0, 'z' }, 
 	{ "write0F", required_argument, 0, 'm' },
@@ -42,16 +40,14 @@ static void print_help()
 	printf("[--read02] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read03] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read04] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
-	printf("[--diag08] slaveaddr subfunc [dat]  - diagnostics request\n");
-	printf("[--read4314] slaveaddr devID objID - (0x2B/0x0E): read device identification (devID=[1...4], objID=[0..254])\n");
-//	printf("[--read43-13] slaveaddr ...     - (0x2B/0x0D):  CANopen General Reference Request and Response PDU \n");
+	printf("[--diag08] slaveaddr subfunc [dat] - diagnostics request\n");
 	printf("[-i|--iaddr] ip                 - Modbus server ip. Default: 127.0.0.1\n");
-	printf("[-a|--myaddr] addr              - Modbus address for master. Default: 0x01.\n");
-	printf("[-p|--port] port                - Modbus server port. Default: 502.\n");
-	printf("[-t|--timeout] msec             - Timeout. Default: 2000.\n");
-	printf("[-o|--persistent-connection]    - Use persistent-connection.\n");
-	printf("[-l|--num-cycles] num           - Number of cycles of exchange. Default: -1 - infinitely.\n");
-	printf("[-v|--verbose]                  - Print all messages to stdout\n");
+	printf("[-a|--myaddr] addr                - Modbus address for master. Default: 0x01.\n");
+	printf("[-p|--port] port                  - Modbus server port. Default: 502.\n");
+	printf("[-t|--timeout] msec               - Timeout. Default: 2000.\n");
+	printf("[-o|--persistent-connection]      - Use persistent-connection.\n");
+	printf("[-l|--num-cycles] num             - Number of cycles of exchange. Default: -1 - infinitely.\n");
+	printf("[-v|--verbose]                    - Print all messages to stdout\n");
 }
 // --------------------------------------------------------------------------
 enum Command
@@ -61,8 +57,6 @@ enum Command
 	cmdRead02,
 	cmdRead03,
 	cmdRead04,
-	cmdRead43_13,
-	cmdRead43_14,
 	cmdWrite05,
 	cmdWrite06,
 	cmdWrite0F,
@@ -92,14 +86,12 @@ int main( int argc, char **argv )
 	int tout = 2000;
 	DebugStream dlog;
 	int ncycles = -1;
-	ModbusRTU::ModbusByte devID = 0;
-	ModbusRTU::ModbusByte objID = 0;
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:w:z:r:x:c:b:d:s:t:p:i:ol:d:e:u:",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "hva:w:z:r:x:c:b:d:s:t:p:i:ol:d:",longopts,&optindex)) != -1 )
 		{
-			switch (opt) 
+			switch (opt)
 			{
 				case 'h':
 					print_help();	
@@ -115,7 +107,7 @@ int main( int argc, char **argv )
 					if( cmd == cmdNOP )
 						cmd = cmdRead03;
 				case 'x':
-                {
+
 					if( cmd == cmdNOP )
 						cmd = cmdRead04;
 					slaveaddr = ModbusRTU::str2mbAddr( optarg );
@@ -130,29 +122,8 @@ int main( int argc, char **argv )
 					
 					if( checkArg(optind+1,argc,argv) )
 						count = uni_atoi(argv[optind+1]);
-				}
 				break;
 
-				case 'e':
-                {
-					if( cmd == cmdNOP )
-						cmd = cmdRead43_14;
-					
-					slaveaddr = ModbusRTU::str2mbAddr( optarg );
-					
-					if( optind > argc )
-					{
-						cerr << "read command error: bad or no arguments..." << endl;
-						return 1;
-					}
-
-					if( checkArg(optind,argc,argv) )
-						devID = ModbusRTU::str2mbData(argv[optind]);
-					
-					if( checkArg(optind+1,argc,argv) )
-						objID = uni_atoi(argv[optind+1]);
-				}
-				break;
 				case 'f':
 					cmd = cmdWrite05;
 				case 'z':
@@ -228,7 +199,7 @@ int main( int argc, char **argv )
 
 					cmd = cmdDiag;
 					slaveaddr = ModbusRTU::str2mbAddr( optarg );
-					
+
 					if( !checkArg(optind,argc,argv) )
 					{
 						cerr << "diagnostic command error: bad or no arguments..." << endl;
@@ -236,7 +207,7 @@ int main( int argc, char **argv )
 					}
 					else
 						subfunc = (ModbusRTU::DiagnosticsSubFunction)uni_atoi(argv[optind]);
-						
+
 					if( checkArg(optind+1,argc,argv) )
 						dat = uni_atoi(argv[optind+1]);
 				break;
@@ -251,7 +222,7 @@ int main( int argc, char **argv )
 		if( verb )
 		{
 			cout << "(init): ip=" << iaddr << ":" << port
-					<< " mbaddr=" << ModbusRTU::addr2str(myaddr)
+					<< ModbusRTU::addr2str(myaddr)
 					<< " timeout=" << tout << " msec "
 					<< endl;
 
@@ -303,7 +274,7 @@ int main( int argc, char **argv )
 					{
 						ModbusRTU::DataBits b(ret.data[i]);
 					
-						cout << i <<": (" << ModbusRTU::dat2str( reg + 8*i ) << ") = (" 
+						cout << i <<": (" << ModbusRTU::dat2str( reg + 8*i ) << ") = ("
 							<< ModbusRTU::b2str(ret.data[i]) << ") " << b << endl;
 					}
 				}
@@ -327,7 +298,7 @@ int main( int argc, char **argv )
 					{
 						ModbusRTU::DataBits b(ret.data[i]);
 					
-						cout << i <<": (" << ModbusRTU::dat2str( reg + 8*i ) << ") = (" 
+						cout << i <<": (" << ModbusRTU::dat2str( reg + 8*i ) << ") = ("
 							<< ModbusRTU::b2str(ret.data[i]) << ") " << b << endl;
 					}
 				}
@@ -380,24 +351,6 @@ int main( int argc, char **argv )
 							<< ")" 
 							<< endl;
 					}
-				}
-				break;
-
-				case cmdRead43_14:
-				{
-					if( verb )
-					{
-						cout << "read4314: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
-							 << " devID=" << ModbusRTU::dat2str(devID) 
-							 << " objID=" << ModbusRTU::dat2str(objID) 
-							 << endl;
-					}
-
-					ModbusRTU::MEIMessageRetRDI ret = mb.read4314(slaveaddr,devID,objID);
-					if( verb )
-						cout << "(reply): " << ret << endl;
-					else	
-						cout << "(reply): devID='" << (int)ret.devID << "' objNum='" << (int)ret.objNum << "'" << endl << ret.dlist << endl;
 				}
 				break;
 
@@ -489,10 +442,10 @@ int main( int argc, char **argv )
 					cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
 					for( int i=0; i<ret.count; i++ )
 					{
-						cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i]) 
-							<< " (" 
-							<< ModbusRTU::dat2str(ret.data[i]) 
-							<< ")" 
+						cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i])
+							<< " ("
+							<< ModbusRTU::dat2str(ret.data[i])
+							<< ")"
 							<< endl;
 					}
 				}
@@ -507,7 +460,7 @@ int main( int argc, char **argv )
             catch( ModbusRTU::mbException& ex )
             {
             	if( ex.err != ModbusRTU::erTimeOut )
-            		throw;
+            		throw ex;
 
             	cout << "timeout..." << endl;
             }
@@ -520,7 +473,7 @@ int main( int argc, char **argv )
 			}
 
 			msleep(200);
-			
+
 		} // end of while
 
 		mb.disconnect();

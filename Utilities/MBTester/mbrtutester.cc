@@ -16,11 +16,10 @@ static struct option longopts[] = {
 	{ "read03", required_argument, 0, 'r' },
 	{ "read04", required_argument, 0, 'x' },
 	{ "write05", required_argument, 0, 'f' }, 
-	{ "write06", required_argument, 0, 'z' }, 
+	{ "write06", required_argument, 0, 'z' },
 	{ "write0F", required_argument, 0, 'm' },
 	{ "write10", required_argument, 0, 'w' },
- 	{ "diag08", required_argument, 0, 'o' },
-	{ "read4314", required_argument, 0, 'e' },
+	{ "diag08", required_argument, 0, 'o' },
 //	{ "readfile14", required_argument, 0, 'g' },
 //	{ "writefile15", required_argument, 0, 'p' },
 	{ "filetransfer66", required_argument, 0, 'u' },
@@ -32,7 +31,7 @@ static struct option longopts[] = {
 	{ "myaddr", required_argument, 0, 'a' },
 	{ "speed", required_argument, 0, 's' },
 	{ "use485F", no_argument, 0, 'y' },
-	{ "num-cycles", required_argument, 0, 'l' },
+	{ "num-cycles", required_argument, 0, 'q' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -48,7 +47,6 @@ static void print_help()
 	printf("[--read03] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read04] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--diag08] slaveaddr subfunc [dat] - diagnostics request\n");
-	printf("[--read4314] slaveaddr devID objID - (0x2B/0x0E): read device identification (devID=[1...4], objID=[0..255])\n");
 //	printf("[--readfile14] slaveaddr fileID  - read file from slaveaddr).\n");
 //	printf("[--writefile15] slaveaddr id filename  - write file to slaveaddr).\n");
 	printf("[--filetransfer66] slaveaddr fileID [filename] - get file from slaveaddr. Default save to 'fileID.transfer'\n");
@@ -58,7 +56,7 @@ static void print_help()
 	printf("          fn - function of test [0x01,0x02,0x03,0x04]. Default: 0x04\n");
 	printf("[--autodetect-slave] [beg end reg fn]  - find slave\n");
 	printf("          beg - start addres Default: 0\n");
-	printf("          end - end addres Default: 254\n");
+	printf("          end - end addres Default: 255\n");
 	printf("          reg - register of test. Default: 0\n");
 	printf("          fn - function of test [0x01,0x02,0x03,0x04]. Default: 0x04\n");
 	printf("[-y|--use485F]                    - use RS485 Fastwel.\n");
@@ -77,8 +75,6 @@ enum Command
 	cmdRead02,
 	cmdRead03,
 	cmdRead04,
-	cmdRead43_13,
-	cmdRead43_14,
 	cmdWrite05,
 	cmdWrite06,
 	cmdWrite0F,
@@ -109,7 +105,7 @@ int main( int argc, char **argv )
 	ModbusRTU::ModbusAddr slaveaddr = 0x00;
 	ModbusRTU::SlaveFunctionCode fn = ModbusRTU::fnReadInputRegisters;
 	ModbusRTU::ModbusAddr beg = 0;
-	ModbusRTU::ModbusAddr end = 254;
+	ModbusRTU::ModbusAddr end = 255;
 	ModbusRTU::DiagnosticsSubFunction subfunc = ModbusRTU::subEcho;
 	ModbusRTU::ModbusData dat = 0;
 	int tout = 2000;
@@ -117,14 +113,12 @@ int main( int argc, char **argv )
 	string tofile("");
 	int use485 = 0;
 	int ncycles = -1;
-	ModbusRTU::ModbusByte devID = 0;
-	ModbusRTU::ModbusByte objID = 0;
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:w:z:m:r:x:c:b:d:s:t:qn:u:yl:t:o:e:",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "hva:w:z:m:r:x:c:b:d:s:t:qn:u:yl:t:o:",longopts,&optindex)) != -1 )
 		{
-			switch (opt) 
+			switch (opt)
 			{
 				case 'h':
 					print_help();	
@@ -154,14 +148,14 @@ int main( int argc, char **argv )
 						reg = ModbusRTU::str2mbData(argv[optind]);
 					
 					if( checkArg(optind+1,argc,argv) )
-						count = ModbusRTU::str2mbData(argv[optind+1]);
+						dat = uni_atoi(argv[optind+1]);
 				break;
 
 				case 'o':
 
 					cmd = cmdDiag;
 					slaveaddr = ModbusRTU::str2mbAddr( optarg );
-					
+
 					if( !checkArg(optind,argc,argv) )
 					{
 						cerr << "diagnostic command error: bad or no arguments..." << endl;
@@ -169,30 +163,11 @@ int main( int argc, char **argv )
 					}
 					else
 						subfunc = (ModbusRTU::DiagnosticsSubFunction)uni_atoi(argv[optind]);
-						
+
 					if( checkArg(optind+1,argc,argv) )
 						dat = uni_atoi(argv[optind+1]);
 				break;
-				case 'e':
-                {
-					if( cmd == cmdNOP )
-						cmd = cmdRead43_14;
-					
-					slaveaddr = ModbusRTU::str2mbAddr( optarg );
-					
-					if( optind > argc )
-					{
-						cerr << "read command error: bad or no arguments..." << endl;
-						return 1;
-					}
 
-					if( checkArg(optind,argc,argv) )
-						devID = ModbusRTU::str2mbData(argv[optind]);
-					
-					if( checkArg(optind+1,argc,argv) )
-						objID = uni_atoi(argv[optind+1]);
-				}
-				break;
 				case 'f':
 					cmd = cmdWrite05;
 				case 'z':
@@ -346,7 +321,7 @@ int main( int argc, char **argv )
 					fn = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(argv[optind+1]);
 				}
 				break;
-				
+
 				case 'l':
 					ncycles = uni_atoi(optarg);
 				break;
@@ -404,7 +379,7 @@ int main( int argc, char **argv )
 					{
 						ModbusRTU::DataBits b(ret.data[i]);
 					
-						cout << i <<": (" << ModbusRTU::dat2str( reg + 8*i ) << ") = (" 
+						cout << i <<": (" << ModbusRTU::dat2str( reg + 8*i ) << ") = ("
 							<< ModbusRTU::b2str(ret.data[i]) << ") " << b << endl;
 					}
 				}
@@ -428,7 +403,7 @@ int main( int argc, char **argv )
 					{
 						ModbusRTU::DataBits b(ret.data[i]);
 					
-						cout << i <<": (" << ModbusRTU::dat2str( reg + 8*i ) << ") = (" 
+						cout << i <<": (" << ModbusRTU::dat2str( reg + 8*i ) << ") = ("
 							<< ModbusRTU::b2str(ret.data[i]) << ") " << b << endl;
 					}
 				}
@@ -443,7 +418,7 @@ int main( int argc, char **argv )
 							 << " count=" << ModbusRTU::dat2str(count) 
 							 << endl;
 					}
-	
+
 					ModbusRTU::ReadOutputRetMessage ret = mb.read03(slaveaddr,reg,count);
 					if( verb )
 						cout << "(reply): " << ret << endl;
@@ -481,24 +456,6 @@ int main( int argc, char **argv )
 							<< ")" 
 							<< endl;
 					}
-				}
-				break;
-
-				case cmdRead43_14:
-				{
-					if( verb )
-					{
-						cout << "read4314: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
-							 << " devID=" << ModbusRTU::dat2str(devID) 
-							 << " objID=" << ModbusRTU::dat2str(objID) 
-							 << endl;
-					}
-
-					ModbusRTU::MEIMessageRetRDI ret = mb.read4314(slaveaddr,devID,objID);
-					if( verb )
-						cout << "(reply): " << ret << endl;
-					else	
-						cout << "(reply): devID='" << (int)ret.devID << "' objNum='" << (int)ret.objNum << "'" << endl << ret.dlist << endl;
 				}
 				break;
 
@@ -573,7 +530,7 @@ int main( int argc, char **argv )
 						cout << "(reply): " << ret << endl;
 				}
 				break;
-	
+
 				case cmdDiag:
 				{
 					if( verb )
@@ -590,15 +547,15 @@ int main( int argc, char **argv )
 					cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
 					for( int i=0; i<ret.count; i++ )
 					{
-						cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i]) 
-							<< " (" 
-							<< ModbusRTU::dat2str(ret.data[i]) 
-							<< ")" 
+						cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i])
+							<< " ("
+							<< ModbusRTU::dat2str(ret.data[i])
+							<< ")"
 							<< endl;
 					}
 				}
 				break;
-				
+
 				case cmdDetectSlave:
 				{
 					if( verb )
@@ -676,18 +633,18 @@ int main( int argc, char **argv )
             catch( ModbusRTU::mbException& ex )
 			{
 				if( ex.err != ModbusRTU::erTimeOut )
-            		throw;
+			throw ex;
 
-            	cout << "timeout..." << endl;
+		cout << "timeout..." << endl;
             }
-			
+
 			if( ncycles > 0 )
 			{
 				nc--;
 				if( nc <=0 )
 					break;
-			}	
-			
+			}
+
 			msleep(200);
 		}
 	}
