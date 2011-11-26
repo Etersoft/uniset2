@@ -31,7 +31,7 @@ static struct option longopts[] = {
 	{ "myaddr", required_argument, 0, 'a' },
 	{ "speed", required_argument, 0, 's' },
 	{ "use485F", no_argument, 0, 'y' },
-	{ "num-cycles", required_argument, 0, 'q' },
+	{ "num-cycles", required_argument, 0, 'l' },
 	{ NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
