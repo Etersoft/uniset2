@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <ostream>
 #include <cstring>
 #include <cmath>
 #include "modbus/ModbusTypes.h"
@@ -87,11 +88,11 @@ namespace MTR
 	ComPort::Parity get_parity( ModbusRTU::ModbusData data );
 	ComPort::Speed get_speed( ModbusRTU::ModbusData data );
 	// -------------------------------------------------------------------------
-	// Настройка из конфю файла.
+	// п²п╟я│я┌я─п╬п╧п╨п╟ п╦п╥ п╨п╬п╫я└. я└п╟п╧п╩п╟
 	bool update_configuration( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, 
 				    const std::string mtrconfile, int verbose=0 );
 	// ---------------------------
-	// вспомогательные функции и типы данных
+	// п╡я│п©п╬п╪п╬пЁп╟я┌п╣п╩я▄п╫я▀п╣ я└я┐п╫п╨я├п╦п╦ п╦ я┌п╦п©я▀ п╢п╟п╫п╫я▀я┘
 	typedef std::list<ModbusRTU::ModbusData> DataList;
 	typedef std::map<ModbusRTU::ModbusData,DataList> DataMap;
 	const int attempts = 3; //
@@ -121,6 +122,7 @@ namespace MTR
 			// ------------------------------------------
 			unsigned short val;
 	};	
+	std::ostream& operator<<(std::ostream& os, T1& t );
 	// -------------------------------------------------------------------------
 	class T2
 	{
@@ -137,6 +139,7 @@ namespace MTR
 			// ------------------------------------------
 			signed short val;
 	};
+	std::ostream& operator<<(std::ostream& os, T2& t );
 	// -------------------------------------------------------------------------
 	class T3
 	{
@@ -181,6 +184,7 @@ namespace MTR
 
 			T3mem raw;
 	};
+	std::ostream& operator<<(std::ostream& os, T3& t );
 	// --------------------------------------------------------------------------
 	class T4
 	{
@@ -213,6 +217,7 @@ namespace MTR
 			std::string sval;
 			unsigned short raw;
 	};
+	std::ostream& operator<<(std::ostream& os, T4& t );
 	// --------------------------------------------------------------------------
 	class T5
 	{
@@ -264,6 +269,7 @@ namespace MTR
 			double val;
 			T5mem raw;
 	};
+	std::ostream& operator<<(std::ostream& os, T5& t );
 	// --------------------------------------------------------------------------
 	class T6
 	{
@@ -315,6 +321,7 @@ namespace MTR
 			double val;
 			T6mem raw;
 	};
+	std::ostream& operator<<(std::ostream& os, T6& t );
 	// --------------------------------------------------------------------------
 	class T7
 	{
@@ -366,6 +373,7 @@ namespace MTR
 			double val;
 			T7mem raw;
 	};
+	std::ostream& operator<<(std::ostream& os, T7& t );
 	// --------------------------------------------------------------------------
 	class T8
 	{
@@ -415,6 +423,7 @@ namespace MTR
 			// ------------------------------------------
 			T8mem raw;
 	};
+	std::ostream& operator<<(std::ostream& os, T8& t );
 	// --------------------------------------------------------------------------
 	class T9
 	{
@@ -464,6 +473,7 @@ namespace MTR
 			// ------------------------------------------
 			T9mem raw;
 	};
+	std::ostream& operator<<(std::ostream& os, T9& t );
 	// -------------------------------------------------------------------------
 	class T10
 	{
@@ -511,6 +521,7 @@ namespace MTR
 			// ------------------------------------------
 			T10mem raw;
 	};
+	std::ostream& operator<<(std::ostream& os, T10& t );
 	// --------------------------------------------------------------------------
 	
 	class T16
@@ -543,6 +554,7 @@ namespace MTR
 			unsigned short val;
 			float fval;
 	};
+	std::ostream& operator<<(std::ostream& os, T16& t );
 	// --------------------------------------------------------------------------
 	class T17
 	{
@@ -578,6 +590,7 @@ namespace MTR
 			signed short val;
 			float fval;
 	};
+	std::ostream& operator<<(std::ostream& os, T17& t );
 	// --------------------------------------------------------------------------
 	class F1
 	{
@@ -624,6 +637,7 @@ namespace MTR
 			
 			F1mem raw;
 	};
+	std::ostream& operator<<(std::ostream& os, F1& t );
 	// --------------------------------------------------------------------------
 	class T_Str16
 	{
@@ -651,6 +665,7 @@ namespace MTR
 			// ------------------------------------------
 			std::string sval;
 	};
+	std::ostream& operator<<(std::ostream& os, T_Str16& t );
 	// --------------------------------------------------------------------------
 
 	class T_Str8
@@ -678,6 +693,7 @@ namespace MTR
 			// ------------------------------------------
 			std::string sval;
 	};
+	std::ostream& operator<<(std::ostream& os, T_Str8& t );
 	// --------------------------------------------------------------------------
 } // end of namespace MTR
 // --------------------------------------------------------------------------

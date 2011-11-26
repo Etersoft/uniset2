@@ -273,7 +273,7 @@ void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
 	{
 		MTR::T3 t(dat,MTR::T3::wsize());
 		cout << "(T3): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1]
-			<< " --> " << (long)t << endl;
+			<< " --> " << t << endl;
 		return;
 	}
 
@@ -281,7 +281,7 @@ void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
 	{
 		MTR::T4 t(dat[0]);
 		cout << "(T4): v1=" << t.raw
-			<< " --> " << t.sval << endl;
+			<< " --> " << t << endl;
 		return;
 	}
 		
@@ -289,8 +289,7 @@ void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
 	{
 		MTR::T5 t(dat,MTR::T5::wsize());
 		cout << "(T5): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
-			<< " --> " << t.raw.u2.val << " * 10^" << (int)t.raw.u2.exp 
-			<< " ===> " << t.val << endl;
+			<< " --> " << t << endl;
 		return;
 	}
 		
@@ -298,8 +297,7 @@ void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
 	{
 		MTR::T6 t(dat,MTR::T6::wsize());
 		cout << "(T6): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
-			<< " --> " << t.raw.u2.val << " * 10^" << (int)t.raw.u2.exp 
-			<< " ===> " << t.val << endl;
+			<< " --> " << t << endl;
 		return;
 	}
 		
@@ -307,10 +305,7 @@ void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
 	{
 		MTR::T7 t(dat,MTR::T7::wsize());
 		cout << "(T7): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
-			<< " ===> " << t.val 
-			<< " [" << ( t.raw.u2.ic == 0xFF ? "CAP" : "IND" ) << "|"
-			<< ( t.raw.u2.ie == 0xFF ? "EXP" : "IMP" ) << "]"
-			<< endl;
+			<< " ===> " << t << endl;
 		return;
 	}
 				
@@ -332,7 +327,7 @@ void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
 	{
 		MTR::F1 f(dat,MTR::F1::wsize());
 		cout << "(F1): v1=" << f.raw.v[0] << " v2=" << f.raw.v[1]
-			<< " ===> " << f.raw.val << endl;
+			<< " ===> " << f << endl;
 		return;
 	}
 
@@ -340,10 +335,7 @@ void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
 	{
 		MTR::T8 t(dat[0],dat[1]);
 		cout << "(T8): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
-			<< " ===> " << setfill('0') << hex
-			<< setw(2) << t.hour() << ":" << setw(2) << t.min()
-			<< " " << setw(2) << t.day() << "/" << setw(2) << t.mon()
-			<< endl;
+			<< " ===> " << t << endl;
 		return;
 	}
 	
@@ -351,10 +343,7 @@ void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
 	{
 		MTR::T9 t(dat[0],dat[1]);
 		cout << "(T9): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1]
-			<< " ===> " << setfill('0') << hex
-			<< setw(2) << t.hour() << ":" << setw(2) << t.min()
-			<< ":" << setw(2) << t.sec() << "." << setw(2) << t.ssec()
-			<< endl;
+			<< " ===> " << t << endl;
 	
 		return;
 	}
@@ -363,10 +352,7 @@ void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
 	{
 		MTR::T10 t(dat[0],dat[1]);
 		cout << "(T10): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
-			<< " ===> " << setfill('0') << dec
-			<< setw(4) << t.year() << "/" << setw(2) << t.mon()
-			<< "/" << setw(2) << t.day()
-			<< endl;
+			<< " ===> " << t << endl;
 
 		return;
 	}

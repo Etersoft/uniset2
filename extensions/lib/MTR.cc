@@ -1,6 +1,7 @@
 // --------------------------------------------------------------------------
 #include <cmath>
 #include <vector>
+#include <iomanip>
 #include <algorithm>
 #include "modbus/ModbusRTUMaster.h"
 #include "modbus/ModbusHelpers.h"
@@ -455,6 +456,77 @@ bool update_configuration( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr slaveaddr,
 		return true;
 
 	return false;
+}
+// ------------------------------------------------------------------------------------------
+std::ostream& operator<<(std::ostream& os, MTR::T1& t )
+{
+	return os << t.val;
+}
+std::ostream& operator<<(std::ostream& os, MTR::T2& t )
+{
+	return os << t.val;
+}
+std::ostream& operator<<(std::ostream& os, MTR::T3& t )
+{
+	return os << (long)(t);
+}
+std::ostream& operator<<(std::ostream& os, MTR::T4& t )
+{
+	return os << t.sval;
+}
+std::ostream& operator<<(std::ostream& os, MTR::T5& t )
+{
+	return os << t.raw.u2.val << " * 10^" << (int)t.raw.u2.exp
+			<< " [" << t.val << "]";
+}
+std::ostream& operator<<(std::ostream& os, MTR::T6& t )
+{
+	return os << t.raw.u2.val << " * 10^" << (int)t.raw.u2.exp
+			<< " [" << t.val << "]";
+}
+std::ostream& operator<<(std::ostream& os, MTR::T7& t )
+{
+	return os << t.val 
+			<< " [" << ( t.raw.u2.ic == 0xFF ? "CAP" : "IND" ) << "|"
+			<< ( t.raw.u2.ie == 0xFF ? "EXP" : "IMP" ) << "]";
+}
+std::ostream& operator<<(std::ostream& os, MTR::T8& t )
+{
+	return os << setfill('0') << hex
+			<< setw(2) << t.hour() << ":" << setw(2) << t.min()
+			<< " " << setw(2) << t.day() << "/" << setw(2) << t.mon();
+}
+std::ostream& operator<<(std::ostream& os, MTR::T9& t )
+{
+	return os << setfill('0') << hex
+			<< setw(2) << t.hour() << ":" << setw(2) << t.min()
+			<< ":" << setw(2) << t.sec() << "." << setw(2) << t.ssec();
+}
+std::ostream& operator<<(std::ostream& os, MTR::T10& t )
+{
+	return os << setfill('0') << dec
+			<< setw(4) << t.year() << "/" << setw(2) << t.mon()
+			<< "/" << setw(2) << t.day();
+}
+std::ostream& operator<<(std::ostream& os, MTR::T16& t )
+{
+	return os << t.fval;
+}
+std::ostream& operator<<(std::ostream& os, MTR::T17& t )
+{
+	return os << t.fval;
+}
+std::ostream& operator<<(std::ostream& os, MTR::F1& t )
+{
+	return os << t.raw.val;
+}
+std::ostream& operator<<(std::ostream& os, MTR::T_Str8& t )
+{
+	return os << t.sval;
+}
+std::ostream& operator<<(std::ostream& os, MTR::T_Str16& t )
+{
+	return os << t.sval;
 }
 // ------------------------------------------------------------------------------------------
 } // end of namespace MTR
