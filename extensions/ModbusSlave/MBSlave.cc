@@ -1327,6 +1327,7 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 		{
 			ModbusRTU::ModbusData d = 0;
 			ModbusRTU::mbErrCode ret = real_read(query.start,d);
+			reply.addData(0);
 			if( ret == ModbusRTU::erNoError )
 				reply.setBit(0,0,d);
 			else
