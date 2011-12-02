@@ -22,15 +22,17 @@ static struct option longopts[] = {
 static void print_help()
 {
 	printf("-h|--help 		- this message\n");
-	printf("[-t|--timeout] msec               - Timeout. Default: 2000.\n");
-	printf("[-v|--verbose]                    - Print all messages to stdout\n");
-	printf("[-d|--device] dev                 - use device dev. Default: /dev/ttyS0\n");
-	printf("[-a|--myaddr] addr                - Modbus address for master. Default: 0x01.\n");
-	printf("[-s|--speed] speed                - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
-	printf("[-y|--use485F]                    - use RS485 Fastwel.\n");
-	printf("[-v|--verbose]                    - Print all messages to stdout\n");
-	printf("[-c|--const-reply] val            - Reply val for all queries\n");	
+	printf("[-t|--timeout] msec                 - Timeout. Default: 2000.\n");
+	printf("[-v|--verbose]                      - Print all messages to stdout\n");
+	printf("[-d|--device] dev                   - use device dev. Default: /dev/ttyS0\n");
+	printf("[-a|--myaddr] addr                  - Modbus address for master. Default: 0x01.\n");
+	printf("[-s|--speed] speed                  - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
+	printf("[-y|--use485F]                      - use RS485 Fastwel.\n");
+	printf("[-v|--verbose]                      - Print all messages to stdout\n");
+	printf("[-c|--const-reply] val1 [val2 val3] - Reply val for all queries\n");
 }
+// --------------------------------------------------------------------------
+static char* checkArg( int ind, int argc, char* argv[] );
 // --------------------------------------------------------------------------
 int main( int argc, char **argv )
 {   
@@ -44,6 +46,8 @@ int main( int argc, char **argv )
 	DebugStream dlog;
 	int use485 = 0;
 	int replyVal=-1;
+	int replyVal2=-1;
+	int replyVal3=-1;
 
 	try
 	{
@@ -81,6 +85,10 @@ int main( int argc, char **argv )
 
 				case 'c':
 					replyVal = uni_atoi(optarg);
+					if( checkArg(optind,argc,argv) )
+						replyVal2 = uni_atoi(argv[optind]);
+					if( checkArg(optind+1,argc,argv) )
+						replyVal3 = uni_atoi(argv[optind+1]);
 				break;
 
 				case '?':
@@ -105,6 +113,10 @@ int main( int argc, char **argv )
 		mbs.setVerbose(verb);
 		if( replyVal!=-1 )
 			mbs.setReply(replyVal);
+		if( replyVal2!=-1 )
+			mbs.setReply2(replyVal2);
+		if( replyVal3!=-1 )
+			mbs.setReply3(replyVal3);
 		mbs.execute();
 	}
 	catch( ModbusRTU::mbException& ex )
@@ -123,6 +135,14 @@ int main( int argc, char **argv )
 	{
 		cerr << "(mbslave): catch(...)" << endl;
 	}
+
+	return 0;
+}
+// --------------------------------------------------------------------------
+char* checkArg( int i, int argc, char* argv[] )
+{
+	if( i<argc && (argv[i])[0]!='-' )
+		return argv[i];
 
 	return 0;
 }
