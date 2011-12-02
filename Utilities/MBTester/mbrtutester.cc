@@ -148,7 +148,7 @@ int main( int argc, char **argv )
 						reg = ModbusRTU::str2mbData(argv[optind]);
 					
 					if( checkArg(optind+1,argc,argv) )
-						dat = uni_atoi(argv[optind+1]);
+						count = ModbusRTU::str2mbData(argv[optind+1]);
 				break;
 
 				case 'o':

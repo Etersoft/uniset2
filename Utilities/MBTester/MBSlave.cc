@@ -16,7 +16,9 @@ MBSlave::MBSlave( ModbusRTU::ModbusAddr addr, const std::string dev, const std::
 //	prev(ModbusRTU::erNoError),
 //	askCount(0),
 	verbose(false),
-	replyVal(-1)
+	replyVal(-1),
+	replyVal2(-1),
+	replyVal3(-1)
 {
 //	int replyTimeout = uni_atoi( conf->getArgParam("--reply-timeout",it.getProp("reply_timeout")).c_str() );
 //	if( replyTimeout <= 0 )
@@ -153,7 +155,14 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 			bcnt++;
 
 		for( int i=0; i<bcnt; i++ )
-			reply.addData(replyVal);
+		{
+			if( i == 1 )
+				reply.addData(replyVal2);
+			else if( i == 2 )
+				reply.addData(replyVal3);
+			else
+				reply.addData(replyVal);
+		}
 	}
 
 	return ModbusRTU::erNoError;
@@ -180,7 +189,14 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query,
 	for( ; num<query.count; num++, reg++ )
 	{
 		if( replyVal != -1 )
-			reply.addData(replyVal);
+		{
+			if( num == 1 && replyVal2 != -1  )
+				reply.addData(replyVal2);
+			else if( num == 2 && replyVal3 != -1 )
+				reply.addData(replyVal3);
+			else
+				reply.addData(replyVal);
+		}
 		else
 			reply.addData(reg);
 	}
@@ -217,7 +233,14 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters(
 	for( ; num<query.count; num++, reg++ )
 	{
 		if( replyVal != -1 )
-			reply.addData(replyVal);
+		{
+			if( num == 1 && replyVal2 != -1  )
+				reply.addData(replyVal2);
+			else if( num == 2 && replyVal3 != -1 )
+				reply.addData(replyVal3);
+			else
+				reply.addData(replyVal);
+		}
 		else
 			reply.addData(reg);
 	}
