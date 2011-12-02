@@ -23,6 +23,14 @@ class MBSlave
 		{
 			replyVal = val;
 		}
+		inline void setReply2( long val )
+		{
+			replyVal2 = val;
+		}
+		inline void setReply3( long val )
+		{
+			replyVal3 = val;
+		}
 
 		void execute();	/*!< основной цикл работы */
 
@@ -103,6 +111,8 @@ class MBSlave
 		FileList flist;
 #endif 
 		long replyVal;
+		long replyVal2;
+		long replyVal3;
 	private:
 		
 };
