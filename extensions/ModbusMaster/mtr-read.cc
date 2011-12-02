@@ -242,12 +242,12 @@ void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
 	if( cmd == cmdRead03 )
 	{
 		ModbusRTU::ReadOutputRetMessage ret = mb->read03(addr,reg,count);
-		memcpy(dat,ret.data,ret.count);
+		memcpy(dat,ret.data,sizeof(ModbusRTU::ModbusData)*ret.count);
 	}
 	else if( cmd == cmdRead04 )
 	{
 		ModbusRTU::ReadInputRetMessage ret = mb->read04(addr,reg,count);
-		memcpy(dat,ret.data,ret.count);
+		memcpy(dat,ret.data,sizeof(ModbusRTU::ModbusData)*ret.count);
 	}
 	else
 	{
@@ -333,7 +333,7 @@ void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
 
 	if( mtrType == MTR::mtT8 )
 	{
-		MTR::T8 t(dat[0],dat[1]);
+		MTR::T8 t(dat,MTR::T8::wsize());
 		cout << "(T8): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
 			<< " ===> " << t << endl;
 		return;
@@ -341,7 +341,7 @@ void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
 	
 	if( mtrType == MTR::mtT9 )
 	{
-		MTR::T9 t(dat[0],dat[1]);
+		MTR::T9 t(dat,MTR::T9::wsize());
 		cout << "(T9): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1]
 			<< " ===> " << t << endl;
 	
@@ -350,7 +350,7 @@ void readMTR( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
 	
 	if( mtrType == MTR::mtT10 )
 	{
-		MTR::T10 t(dat[0],dat[1]);
+		MTR::T10 t(dat,MTR::T10::wsize());
 		cout << "(T10): v1=" << t.raw.v[0] << " v2=" << t.raw.v[1] 
 			<< " ===> " << t << endl;
 

@@ -167,8 +167,9 @@ namespace MTR
 			{
 				if( size >= u2size )
 				{
-					for( int i=0; i<u2size; i++ )
-						raw.v[i] = data[i];
+					// У MTR обратный порядок слов в ответе
+					raw.v[0] = data[1];
+					raw.v[1] = data[0];
 				}
 			}
 
@@ -253,8 +254,9 @@ namespace MTR
 			{
 				if( size >= u2size )
 				{
-					for( int i=0; i<u2size; i++ )
-						raw.v[i] = data[i];
+					// При получении данных от MTR слова необходимо перевернуть
+					raw.v[0] = data[1];
+					raw.v[1] = data[0];
 					val = raw.u2.val * pow(10,raw.u2.exp);
 				}
 			}
@@ -305,8 +307,9 @@ namespace MTR
 			{
 				if( size >= u2size )
 				{
-					for( int i=0; i<u2size; i++ )
-						raw.v[i] = data[i];
+					// При получении данных от MTR слова необходимо перевернуть
+					raw.v[0] = data[1];
+					raw.v[1] = data[0];
 					val = raw.u2.val * pow(10,raw.u2.exp);
 				}
 			}
@@ -357,8 +360,9 @@ namespace MTR
 			{
 				if( size >= u2size )
 				{
-					for( int i=0; i<u2size; i++ )
-						raw.v[i] = data[i];
+					// При получении данных от MTR слова необходимо перевернуть
+					raw.v[0] = data[1];
+					raw.v[1] = data[0];
 					val = raw.u2.val * pow(10,-4);
 				}
 			}
@@ -404,8 +408,9 @@ namespace MTR
 			{
 				if( size >= u2size )
 				{
-					for( int i=0; i<u2size; i++ )
-						raw.v[i] = data[i];
+					// При получении данных от MTR слова необходимо перевернуть
+					raw.v[1] = data[0];
+					raw.v[0] = data[1];
 				}
 			}
 			
@@ -454,8 +459,9 @@ namespace MTR
 			{
 				if( size >= u2size )
 				{
-					for( int i=0; i<u2size; i++ )
-						raw.v[i] = data[i];
+					// При получении данных от MTR слова необходимо перевернуть
+					raw.v[0] = data[1];
+					raw.v[1] = data[0];
 				}
 			}
 
@@ -503,8 +509,9 @@ namespace MTR
 			{
 				if( size >= u2size )
 				{
-					for( int i=0; i<u2size; i++ )
-						raw.v[i] = data[i];
+					// При получении данных от MTR слова необходимо перевернуть
+					raw.v[0] = data[1];
+					raw.v[1] = data[0];
 				}
 			}
 			
@@ -620,8 +627,9 @@ namespace MTR
 			{
 				if( size >= u2size )
 				{
-					for( int i=0; i<u2size; i++ )
-						raw.v[i] = data[i];
+					// При получении данных от MTR слова необходимо перевернуть
+					raw.v[0] = data[1];
+					raw.v[1] = data[0];
 				}
 			}
 
