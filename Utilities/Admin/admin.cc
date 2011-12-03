@@ -71,7 +71,7 @@ int oinfo( const string args, UniversalInterface &ui );
 // --------------------------------------------------------------------------
 static void print_help(int width, const string cmd, const string help, const string tab=" " )
 {
-	// чтобы не менчять параметры основного потока
+	// чтобы не менять параметры основного потока
 	// создаём свой stream...
 	ostringstream info;
 	info.setf(ios::left, ios::adjustfield);
