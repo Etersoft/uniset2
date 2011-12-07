@@ -117,8 +117,8 @@ prefix(prefix)
 	mbslot->connectReadInputStatus( sigc::mem_fun(this, &MBSlave::readInputStatus) );
 	mbslot->connectReadOutput( sigc::mem_fun(this, &MBSlave::readOutputRegisters) );
 	mbslot->connectReadInput( sigc::mem_fun(this, &MBSlave::readInputRegisters) );
-//	mbslot->connectForceSingleCoil( sigc::mem_fun(this, &MBSlave::forceSingleCoil) );
-//	mbslot->connectForceCoils( sigc::mem_fun(this, &MBSlave::forceMultipleCoils) );
+	mbslot->connectForceSingleCoil( sigc::mem_fun(this, &MBSlave::forceSingleCoil) );
+	mbslot->connectForceCoils( sigc::mem_fun(this, &MBSlave::forceMultipleCoils) );
 	mbslot->connectWriteOutput( sigc::mem_fun(this, &MBSlave::writeOutputRegisters) );
 	mbslot->connectWriteSingleOutput( sigc::mem_fun(this, &MBSlave::writeOutputSingleRegister) );
 
@@ -1381,15 +1381,40 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
 ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query, 
 													ModbusRTU::ForceCoilsRetMessage& reply )
 {
-//	cout << "(forceMultipleCoils): " << query << endl;
-	return ModbusRTU::erOperationFailed;
-}													
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << myname << "(forceMultipleCoils): " << query << endl;
+
+	ModbusRTU::mbErrCode ret = ModbusRTU::erNoError;
+	int nbit = 0;
+	for( int i = 0; i<query.bcnt; i++ )
+	{
+		ModbusRTU::DataBits b(query.data[i]);
+		for( int k=0; k<ModbusRTU::BitsPerByte && nbit<query.quant; k++, nbit++ )
+		{
+			// ModbusRTU::mbErrCode ret = 	
+			real_write(query.start+nbit, (b[k] ? 1 : 0) );
+			//if( ret == ModbusRTU::erNoError )
+		}
+	}
+	
+	//if( ret == ModbusRTU::erNoError )
+	if( nbit == query.quant )
+		reply.set(query.start,query.quant);
+	
+	return ret;
+}
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
 											ModbusRTU::ForceSingleCoilRetMessage& reply )
 {
-//	cout << "(forceSingleCoil): " << query << endl;
-	return ModbusRTU::erOperationFailed;
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << myname << "(forceSingleCoil): " << query << endl;
+
+	ModbusRTU::mbErrCode ret = real_write(query.start, (query.cmd() ? 1 : 0) );
+	if( ret == ModbusRTU::erNoError )
+		reply.set(query.start,query.data);
+
+	return ret;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query, 
