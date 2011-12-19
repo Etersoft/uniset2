@@ -286,9 +286,8 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 			else
 				val = it->value;
 
-/*! \todo Разобратся, нужно ли здесь учитывать Precision! */
-//			if( it->cal.precision > 0 )
-//				val = it->value / lround(pow10(it->cal.precision));
+			if( !it->noprecision && it->cal.precision > 0 )
+				return lroundf( (float)it->value / pow10(it->cal.precision) );
 		}
 	}
 	
@@ -349,7 +348,7 @@ float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
 							cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, true );
 			}
 
-			if( it->cal.precision > 0 )
+			if( !it->noprecision && it->cal.precision > 0 )
 				return ( fval / pow10(it->cal.precision) );
 		}
 	}
