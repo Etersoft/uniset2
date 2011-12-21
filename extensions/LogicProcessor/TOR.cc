@@ -1,9 +1,10 @@
 #include <sstream>
 #include <iostream>
+#include "Extensions.h"
 #include "Element.h"
 // -------------------------------------------------------------------------
 using namespace std;
-
+using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
 TOR::TOR(ElementID id, int num, bool st):
 	Element(id),
@@ -59,7 +60,8 @@ void TOR::setIn( int num, bool state )
 	if( !brk )
 		myout = false;
 
-	cout << this << ": myout " << myout << endl;	
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << this << ": myout " << myout << endl;
 	if( prev != myout )
 		Element::setChildOut();
 }

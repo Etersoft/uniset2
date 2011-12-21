@@ -1,8 +1,9 @@
 #include <iostream>
+#include "Extensions.h"
 #include "Element.h"
 // -------------------------------------------------------------------------
 using namespace std;
-
+using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
 TAND::TAND(ElementID id, int num, bool st):
 	TOR(id,num,st)
@@ -46,7 +47,9 @@ void TAND::setIn( int num, bool state )
 	if( !brk )
 		myout = true;
 
-	cout << this << ": myout " << myout << endl;	
+	if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << this << ": myout " << myout << endl;
+
 	if( prev != myout )
 		Element::setChildOut();
 }

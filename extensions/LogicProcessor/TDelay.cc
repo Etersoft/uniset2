@@ -1,7 +1,9 @@
 #include <iostream>
+#include "Extensions.h"
 #include "TDelay.h"
 // -------------------------------------------------------------------------
 using namespace std;
+using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
 TDelay::TDelay( Element::ElementID id, int delayMS, int inCount):
 	Element(id),
@@ -28,7 +30,8 @@ void TDelay::setIn( int num, bool state )
 	{
 		pt.setTiming(0); // reset timer
 		myout = false;
-		cout << this << ": set " << myout << endl;	
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << this << ": set " << myout << endl;
 		if( prev != myout )
 			Element::setChildOut();
 		return;
@@ -41,7 +44,8 @@ void TDelay::setIn( int num, bool state )
 	{
 		pt.setTiming(0); // reset timer
 		myout = true;
-		cout << this << ": set " << myout << endl;	
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << this << ": set " << myout << endl;
 		if( prev != myout )
 			Element::setChildOut();
 		return;
@@ -50,7 +54,8 @@ void TDelay::setIn( int num, bool state )
 	// засекаем, если ещё не установлен таймер
 	if( !myout && !prev  ) // т.е. !myout && prev != myout
 	{
-		cout << this << ": set timer " << delay << " [msec]" << endl;	
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << this << ": set timer " << delay << " [msec]" << endl;
 		pt.setTiming(delay);
 	}
 }
@@ -61,7 +66,8 @@ void TDelay::tick()
 	{
 		myout = true;
 		pt.setTiming(0); // reset timer
-		cout << getType() << "(" << myid << "): TIMER!!!! myout=" << myout << endl;	
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << getType() << "(" << myid << "): TIMER!!!! myout=" << myout << endl;
 		Element::setChildOut();
 	}
 }
