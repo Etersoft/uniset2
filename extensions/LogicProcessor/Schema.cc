@@ -1,8 +1,10 @@
 #include <sstream>
 #include <iostream>
+#include "Extensions.h"
 #include "Schema.h"
 // -------------------------------------------------------------------------
 using namespace std;
+using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
 
 Schema::Schema()
@@ -30,7 +32,7 @@ void Schema::link(Element::ElementID rootID, Element::ElementID childID, int num
 	if( it == emap.end() )
 	{
 		ostringstream msg;
-		msg << "Schema: элемент id=" << rootID << " НЕ НАЙДЕН!!!";
+		msg << "Schema: элемент id=" << rootID << " NOT FOUND!";
 		throw LogicException(msg.str());
 	}
 	e1 = it->second;
@@ -39,7 +41,7 @@ void Schema::link(Element::ElementID rootID, Element::ElementID childID, int num
 	if( it == emap.end() )
 	{
 		ostringstream msg;
-		msg << "Schema: элемент id=" << childID << " НЕ НАЙДЕН!!!";
+		msg << "Schema: элемент id=" << childID << " NOT FOUND!";
 		throw LogicException(msg.str());
 	}
 	e2 = it->second;
@@ -59,7 +61,7 @@ void Schema::unlink( Element::ElementID rootID, Element::ElementID childID )
 	if( it == emap.end() )
 	{
 		ostringstream msg;
-		msg << "Schema: элемент id=" << rootID << " НЕ НАЙДЕН!!!";
+		msg << "Schema: элемент id=" << rootID << " NOT FOUND!";
 		throw LogicException(msg.str());
 	}
 	e1 = it->second;
@@ -68,7 +70,7 @@ void Schema::unlink( Element::ElementID rootID, Element::ElementID childID )
 	if( it == emap.end() )
 	{
 		ostringstream msg;
-		msg << "Schema: элемент id=" << childID << " НЕ НАЙДЕН!!!";
+		msg << "Schema: element id=" << childID << " NOT FOUND!";
 		throw LogicException(msg.str());
 	}
 	e2 = it->second;
@@ -92,7 +94,7 @@ void Schema::extlink(string name, Element::ElementID childID, int numIn )
 	if( it == emap.end() )
 	{
 		ostringstream msg;
-		msg << "Schema: элемент id=" << childID << " НЕ НАЙДЕН!!!";
+		msg << "Schema: element id=" << childID << " NOT FOUND!";
 		throw LogicException(msg.str());
 	}
 
@@ -108,9 +110,10 @@ void Schema::extlink(string name, Element::ElementID childID, int numIn )
 // -------------------------------------------------------------------------
 Element* Schema::manage( Element* el )
 {
-	cout << "Schema: manage new element id=" << el->getId()
-		 << " type=" << el->getType()
-		 << " inputs=" << el->inCount() << endl;
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << "Schema: manage new element id=" << el->getId()
+			 << " type=" << el->getType()
+			 << " inputs=" << el->inCount() << endl;
 
 	emap[el->getId()] = el;
 	return el;
@@ -160,7 +163,7 @@ bool Schema::getOut( Element::ElementID ID )
 		return it->second->getOut();
 
 	ostringstream msg;
-	msg << "Schema: элемент id=" <<ID << " НЕ НАЙДЕН!!!";
+	msg << "Schema: element id=" <<ID << " NOT FOUND!";
 	throw LogicException(msg.str());
 }
 // -------------------------------------------------------------------------

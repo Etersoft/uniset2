@@ -50,7 +50,7 @@ void SchemaXML::read( const string xmlfile )
 	{
 		string type(xml.getProp(it, "type"));
 		string ID(xml.getProp(it, "id"));
-		int inCount(xml.getPIntProp(it, "inCount", 1));
+		int inCount = xml.getPIntProp(it, "inCount", 1);
 		
 		if( type == "OR" )
 			manage( new TOR(ID, inCount) );
@@ -96,7 +96,7 @@ void SchemaXML::read( const string xmlfile )
 		string type(xml.getProp(it, "type"));
 		string fID(xml.getProp(it, "from"));
 		string tID(xml.getProp(it, "to"));
-		int toIn(xml.getIntProp(it, "toInput"));
+		int toIn = xml.getIntProp(it, "toInput");
 		
 		if( type == "ext" )
 		{

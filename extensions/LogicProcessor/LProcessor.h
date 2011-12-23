@@ -94,7 +94,7 @@
 class LProcessor
 {
 	public:
-		LProcessor();
+		LProcessor( const std::string name="" );
 	    virtual ~LProcessor();
 
 		virtual void execute( const string lfile );
@@ -133,6 +133,9 @@ class LProcessor
 
 		UniversalInterface ui;
 		int sleepTime;
+		int smReadyTimeout; 	/*!< время ожидания готовности SM */
+
+		std::string logname;
 		
 	private:
 	

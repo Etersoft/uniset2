@@ -1,15 +1,22 @@
 #include <iostream>
 #include "Configuration.h"
 #include "Extensions.h"
+#include "PassiveTimer.h"
 #include "LProcessor.h"
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
-LProcessor::LProcessor()
+LProcessor::LProcessor( const std::string name ):
+logname(name)
 {
 	sleepTime = conf->getArgPInt("--sleepTime", 200);
+	smReadyTimeout = conf->getArgInt("--sm-ready-timeout","");
+	if( smReadyTimeout == 0 )
+		smReadyTimeout = 60000;
+	else if( smReadyTimeout < 0 )
+		smReadyTimeout = UniSetTimer::WaitUpTime;
 }
 
 LProcessor::~LProcessor()
@@ -28,15 +35,15 @@ void LProcessor::execute( const string lfile )
 		}
 		catch( LogicException& ex )
 		{
-			dlog[Debug::CRIT] << "(LProcessor::execute): " << ex << endl;
+			dlog[Debug::CRIT] << logname << "(execute): " << ex << endl;
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::CRIT] << "(LProcessor::execute): " << ex << endl;
+			dlog[Debug::CRIT] << logname << "(execute): " << ex << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::CRIT] << "(LProcessor::execute): catch...\n";
+			dlog[Debug::CRIT] << logname << "(execute): catch...\n";
 		}
 		msleep(sleepTime);
 	}
