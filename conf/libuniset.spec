@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.0
-Release: alt60
+Release: alt61
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -213,6 +213,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Fri Dec 23 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt61
+- minor fixes in LogicProcessor
+
 * Wed Dec 21 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt60
 - fixed bug in LogicProcessor
 
