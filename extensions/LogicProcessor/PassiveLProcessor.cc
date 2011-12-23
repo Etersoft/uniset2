@@ -59,7 +59,7 @@ void PassiveLProcessor::askSensors( UniversalIO::UIOCommand cmd )
 	try
 	{
 		for( EXTList::iterator it=extInputs.begin(); it!=extInputs.end(); ++it )
-			UniSetObject::ui.askState(it->sid,cmd);
+			shm->askSensor(it->sid,cmd);
 	}
 	catch( Exception& ex )
 	{
@@ -156,11 +156,11 @@ void PassiveLProcessor::setOuts()
 			switch(it->iotype)
 			{
 				case UniversalIO::DigitalInput:
-					UniSetObject::ui.saveState(it->sid,it->lnk->from->getOut(),it->iotype);
+					shm->saveLocalState(it->sid,it->lnk->from->getOut(),it->iotype);
 				break;
 
 				case UniversalIO::DigitalOutput:
-					UniSetObject::ui.setState(it->sid,it->lnk->from->getOut());
+					shm->setState(it->sid,it->lnk->from->getOut());
 				break;
 				
 				default:
@@ -188,11 +188,11 @@ void PassiveLProcessor::sigterm( int signo )
 			switch(it->iotype)
 			{
 				case UniversalIO::DigitalInput:
-					UniSetObject::ui.saveState(it->sid,false,it->iotype);
+					shm->saveLocalState(it->sid,false,it->iotype);
 				break;
 
 				case UniversalIO::DigitalOutput:
-					UniSetObject::ui.setState(it->sid,false);
+					shm->setState(it->sid,false);
 				break;
 				
 				default:
