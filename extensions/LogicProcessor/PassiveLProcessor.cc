@@ -11,6 +11,7 @@ PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId o
 	UniSetObject_LT(objId),
 	shm(0)
 {
+	logname = myname;
 	shm = new SMInterface(shmID,&(UniSetObject_LT::ui),objId,ic);
 	build(lfile);
 }
@@ -88,9 +89,9 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 	{
 		case SystemMessage::StartUp:
 		{
-			if( !shm->waitSMready(10000) )
+			if( !shm->waitSMready(smReadyTimeout) )
 			{
-				dlog[Debug::CRIT] << "(ERR): SM not ready. Terminated... " << endl;
+				dlog[Debug::CRIT] << myname << "(ERR): SM not ready. Terminated... " << endl;
 				raise(SIGTERM);
 				return;
 			}
@@ -163,17 +164,17 @@ void PassiveLProcessor::setOuts()
 				break;
 				
 				default:
-					dlog[Debug::CRIT] << "(LProcessor::setOuts): неподдерживаемый тип iotype=" << it->iotype << endl;
+					dlog[Debug::CRIT] << myname << "(setOuts): неподдерживаемый тип iotype=" << it->iotype << endl;
 					break;
 			}
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::CRIT] << "(LProcessor::setOuts): " << ex << endl;
+			dlog[Debug::CRIT] << myname << "(setOuts): " << ex << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::CRIT] << "(LProcessor::setOuts): catch...\n";
+			dlog[Debug::CRIT] << myname << "(setOuts): catch...\n";
 		}
 	}
 }
@@ -195,17 +196,17 @@ void PassiveLProcessor::sigterm( int signo )
 				break;
 				
 				default:
-					dlog[Debug::CRIT] << "(LProcessor::sigterm): неподдерживаемый тип iotype=" << it->iotype << endl;
+					dlog[Debug::CRIT] << myname << "(sigterm): неподдерживаемый тип iotype=" << it->iotype << endl;
 					break;
 			}
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::CRIT] << "(LProcessor::sigterm): " << ex << endl;
+			dlog[Debug::CRIT] << myname << "(sigterm): " << ex << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::CRIT] << "(LProcessor::sigterm): catch...\n";
+			dlog[Debug::CRIT] << myname << "(sigterm): catch...\n";
 		}
 	}
 }
