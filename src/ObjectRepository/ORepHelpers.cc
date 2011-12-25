@@ -45,7 +45,8 @@ namespace ORepHelpers
 	CosNaming::NamingContext_ptr getContext(const string& cname, int argc, const char* const* argv, const string& nsName )throw(ORepFailed)
     {
 		CORBA::ORB_var orb = CORBA::ORB_init( argc, (char**)argv );
-		unideb[Debug::REPOSITORY] << "OREPHELP: orb init ok"<< endl;
+		if( unideb.debugging(Debug::REPOSITORY) )
+			unideb[Debug::REPOSITORY] << "OREPHELP: orb init ok"<< endl;
 		return getContext(orb, cname, nsName);
 	}
 // --------------------------------------------------------------------------
@@ -53,10 +54,13 @@ namespace ORepHelpers
 	{
         CosNaming::NamingContext_var rootC;
 
-		unideb[Debug::REPOSITORY] << "OREPHELPER(getContext): get rootcontext...(servname = "<< servname << ")" <<endl;
+		if( unideb.debugging(Debug::REPOSITORY) )
+			unideb[Debug::REPOSITORY] << "OREPHELPER(getContext): get rootcontext...(servname = "<< servname << ")" <<endl;
+		
 		rootC = getRootNamingContext(orb, servname);
 
-		unideb[Debug::REPOSITORY] << "OREPHELPER(getContext): get rootContect ok " << endl;
+		if( unideb.debugging(Debug::REPOSITORY) )
+			unideb[Debug::REPOSITORY] << "OREPHELPER(getContext): get rootContect ok " << endl;
 
         if( CORBA::is_nil(rootC) )
 		{
@@ -67,7 +71,9 @@ namespace ORepHelpers
 		if ( cname.empty() )
 			return rootC._retn();
 
-		unideb[Debug::REPOSITORY] << "OREPHELPER(getContext): get ref context " << cname << endl;
+		if( unideb.debugging(Debug::REPOSITORY) )
+			unideb[Debug::REPOSITORY] << "OREPHELPER(getContext): get ref context " << cname << endl;
+
 		CosNaming::Name_var ctxName = omniURI::stringToName(cname.c_str());
         CosNaming::NamingContext_var ctx;
         try
@@ -125,7 +131,8 @@ namespace ORepHelpers
 			throw ORepFailed(err.str());
 	    }
 
-		unideb[Debug::REPOSITORY] << "getContext: получили "<< cname << endl;
+		if( unideb.debugging(Debug::REPOSITORY) )
+			unideb[Debug::REPOSITORY] << "getContext: получили "<< cname << endl;
 
 		// Если _var
 // 	 	return CosNaming::NamingContext::_duplicate(ctx);
@@ -144,7 +151,9 @@ namespace ORepHelpers
 	{
 //		cout << "ORepHelpers(getRootNamingContext): nsName->" << nsName << endl;
 		CORBA::Object_var initServ = orb->resolve_initial_references(nsName.c_str());
-		unideb[Debug::REPOSITORY] << "OREPHELP: get rootcontext...(nsName = "<< nsName << ")" <<endl;
+		if( unideb.debugging(Debug::REPOSITORY) )
+			unideb[Debug::REPOSITORY] << "OREPHELP: get rootcontext...(nsName = "<< nsName << ")" <<endl;
+
 		rootContext = CosNaming::NamingContext::_narrow(initServ);
 		if (CORBA::is_nil(rootContext))
 		{
@@ -152,7 +161,8 @@ namespace ORepHelpers
 			throw ORepFailed(err.c_str());
 		}
 		
-		unideb[Debug::REPOSITORY] << "OREPHELP: init NameService ok"<< endl;
+		if( unideb.debugging(Debug::REPOSITORY) )
+			unideb[Debug::REPOSITORY] << "OREPHELP: init NameService ok"<< endl;
 	}
 	catch(CORBA::ORB::InvalidName& ex)
 	{
@@ -178,7 +188,8 @@ namespace ORepHelpers
 		throw ORepFailed(err);
 	}
 
-	unideb[Debug::REPOSITORY] << "OREPHELP: gett root context ok"<< endl;
+	if( unideb.debugging(Debug::REPOSITORY) )
+		unideb[Debug::REPOSITORY] << "OREPHELP: get root context ok"<< endl;
 
 //	// Если создан как _ptr
 //	return rootContext;
@@ -261,7 +272,7 @@ namespace ORepHelpers
 			bad+="', ";
 
 		}
-		string err("Имя не должно сожержать символы: "+ bad);
+		string err("Имя не должно содержать символы: "+ bad);
 		return err;
 	}
     // ---------------------------------------------------------------------------------------------------------------
