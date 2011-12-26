@@ -9,16 +9,6 @@ int main( int argc, const char **argv )
 {
 	try
 	{
-	UniSetTypes::Configuration* myconf = new UniSetTypes::Configuration(argc,argv,"test.xml");
-		UniversalInterface* ui = new UniversalInterface(myconf);
-
-	UniSetTypes::Configuration* myconf2 = new UniSetTypes::Configuration(argc,argv,"conf21300.xml");
-		UniversalInterface* ui2 = new UniversalInterface(myconf2);
-
-		cout << "************************ conf1: " << ui->getValue(1) << endl;
-		cout << "************************ conf2: " << ui2->getValue(200033) << endl;
-
-#if 0
 		uniset_init(argc,argv,"test.xml");
 		UniversalInterface ui;
 
@@ -60,7 +50,6 @@ int main( int argc, const char **argv )
 		cout << "id=" << id
 			<< " value=" << inf.value
 			<< " last changed: " << string(t_str) << endl;
-#endif
 	}
 	catch( Exception& ex )
 	{
