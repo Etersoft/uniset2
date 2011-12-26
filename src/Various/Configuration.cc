@@ -80,7 +80,7 @@ ostream& UniSetTypes::Configuration::help(ostream& os)
 namespace UniSetTypes
 {
 	DebugStream unideb;
-	Configuration *conf;
+	Configuration *conf = 0;
 
 Configuration::Configuration():
 	mi(NULL),
@@ -199,7 +199,10 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 	getcwd(curdir,FILENAME_MAX);
 
 	rootDir = string(curdir) + "/";
-	UniSetTypes::conf = this;
+
+	/*! \todo Надо избавляться от глобального conf (!) */
+	if( !UniSetTypes::conf )
+		UniSetTypes::conf = this;
 
 	{
 		ostringstream s;
