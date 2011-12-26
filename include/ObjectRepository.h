@@ -103,7 +103,7 @@
 	protected:
 
 		ObjectRepository();
-		const std::string nsName;
+		std::string nsName;
 		UniSetTypes::Configuration* uconf;
 		
 		bool list(const std::string& section, UniSetTypes::ListObjectName *ls, unsigned int how_many, ObjectType type);

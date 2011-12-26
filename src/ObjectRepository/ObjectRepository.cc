@@ -67,6 +67,11 @@ bool ObjectRepository::init()
 	try
 	{
 		CORBA::ORB_var orb = uconf->getORB();
+		{
+			ostringstream s;
+			s << uconf << "NameService";
+			nsName = s.str();
+		}
 		localctx = ORepHelpers::getRootNamingContext(orb, nsName );
 		if( CORBA::is_nil(localctx) )
 			localctx=0;

@@ -200,6 +200,12 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 	rootDir = string(curdir) + "/";
 	UniSetTypes::conf = this;
 
+	{
+		ostringstream s;
+		s << this << "NameService";
+		NSName = s.str();
+	}
+
 	try
 	{
 
@@ -329,7 +335,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
 			string name(oind->getRealNodeName(it->id));
 			ostringstream param;
-			param << name << "=corbaname::" << it->host << ":" << it->port;
+			param << this << name << "=corbaname::" << it->host << ":" << it->port;
 			new_argv[i+1] = strdup(param.str().c_str());
 
 			if( unideb.debugging(Debug::INFO) )
@@ -359,7 +365,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 			string defPort( getPort( getProp(nsnode,"port") ) ); // здесь вызывается getArgParam! проходящий по _argv
 
 			ostringstream param;
-			param <<"NameService=corbaname::" << getProp(nsnode,"host") << ":" << defPort;
+			param << this << "NameService=corbaname::" << getProp(nsnode,"host") << ":" << defPort;
 			new_argv[i+1] = strdup(param.str().c_str());
 			if( unideb.debugging(Debug::INFO) )
 				unideb[Debug::INFO] << "(Configuration): внесли параметр " << param.str() << endl;

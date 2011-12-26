@@ -79,13 +79,16 @@ void UniversalInterface::init()
 	localctx=CosNaming::NamingContext::_nil();
 	try
 	{
+		ostringstream s;
+		s << uconf << oind->getRealNodeName(uconf->getLocalNode());
+
 		if( CORBA::is_nil(orb) )
 		{
 			CORBA::ORB_var _orb = uconf->getORB();
-			localctx = ORepHelpers::getRootNamingContext( _orb, oind->getRealNodeName(uconf->getLocalNode()) );
+			localctx = ORepHelpers::getRootNamingContext( _orb, s.str() );
 		}
 		else
-			localctx = ORepHelpers::getRootNamingContext( orb, oind->getRealNodeName(uconf->getLocalNode()) );
+			localctx = ORepHelpers::getRootNamingContext( orb, s.str() );
 	}
 	catch( Exception& ex )
 	{
@@ -1714,12 +1717,14 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 
 			}
 		}
-		
 	
 		if( node!=uconf->getLocalNode() )
 		{
+			cout << "******** Resolve REMOTE NODE ***" << endl;
 			// Получаем доступ к NameService на данном узле
-			string nodeName( oind->getRealNodeName(node) );
+			ostringstream s;
+			s << uconf << oind->getRealNodeName(node);
+			string nodeName(s.str());
 			string bname(nodeName); // сохраняем базовое название
 			for(unsigned int curNet=1; curNet<=uconf->getCountOfNet(); curNet++)
 			{
@@ -1753,20 +1758,26 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 		}
 		else
 		{
+			cout << "******** Resolve LOCAL NODE ***" << endl;
 			if( CORBA::is_nil(localctx) )
 			{
+				ostringstream s;
+				s << uconf << oind->getRealNodeName(node);
+				string nodeName(s.str());
 				if( CORBA::is_nil(orb) )
 				{
 					CORBA::ORB_var _orb = uconf->getORB();
-					localctx = ORepHelpers::getRootNamingContext( _orb, oind->getRealNodeName(uconf->getLocalNode()) );
+					localctx = ORepHelpers::getRootNamingContext( _orb, nodeName);
 				}
 				else
-					localctx = ORepHelpers::getRootNamingContext( orb, oind->getRealNodeName(uconf->getLocalNode()) );
+					localctx = ORepHelpers::getRootNamingContext( orb, nodeName );
 			}
 			else
 				ctx = localctx;
 		}
-
+		
+		ctx = localctx;
+		cout << "***resolve oname=" << oind->getNameById(rid,node).c_str() << endl;
 		CosNaming::Name_var oname = omniURI::stringToName( oind->getNameById(rid,node).c_str() );
 		for (unsigned int i=0; i<uconf->getRepeatCount(); i++)
 		{
