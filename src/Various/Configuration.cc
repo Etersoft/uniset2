@@ -29,7 +29,6 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
-#include <omniORB4/internal/initRefs.h>
 
 #include "Configuration.h"
 #include "Exceptions.h"
@@ -47,8 +46,8 @@ using namespace std;
 // -------------------------------------------------------------------------
 static const string UniSetDefaultPort = "2809";
 // -------------------------------------------------------------------------
-static ostream& print_help( ostream& os, int width, const string& cmd, 
-							const string& help, const string& tab="" )
+static ostream& print_help( ostream& os, int width, const string cmd, 
+							const string help, const string tab="" )
 {
 	// чтобы не менчять параметры основного потока
 	// создаём свой stream...
@@ -80,20 +79,20 @@ ostream& UniSetTypes::Configuration::help(ostream& os)
 namespace UniSetTypes
 {
 	DebugStream unideb;
-	Configuration *conf = 0;
+	Configuration *conf;
 
 Configuration::Configuration():
 	mi(NULL),
 	oind(NULL),
 	NSName("NameService"),
-	repeatCount(2),repeatTimeout(100),
+	repeatCount(2),repeatTimeout(100), 	
 	localTimerService(UniSetTypes::DefaultObjectId),
 	localDBServer(UniSetTypes::DefaultObjectId),
 	localInfoServer(UniSetTypes::DefaultObjectId),
 	localNode(UniSetTypes::DefaultObjectId),
 	localNodeName(""),
 	fileConfName(""),
-	heartbeat_msec(5000)
+	heartbeat_msec(10000)
 {
 //	unideb[Debug::CRIT] << " configuration FAILED!!!!!!!!!!!!!!!!!" << endl;
 //	throw Exception();
@@ -199,10 +198,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 	getcwd(curdir,FILENAME_MAX);
 
 	rootDir = string(curdir) + "/";
-
-	/*! \todo Надо избавляться от глобального conf (!) */
-	if( !UniSetTypes::conf )
-		UniSetTypes::conf = this;
+	UniSetTypes::conf = this;
 
 	{
 		ostringstream s;
@@ -228,6 +224,10 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 			throw;
 		}
 
+	
+		// default value
+		heartbeat_msec = 5000;
+
 //	cerr << "*************** initConfiguration: xmlOpen: " << pt.getCurrent() << " msec " << endl;
 //	pt.reset();
 	
@@ -252,7 +252,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 				catch(Exception& ex )
 				{
 					unideb[Debug::CRIT] << "(Configuration:init): INIT FAILED! from "  << fileConfName << endl;
-					throw;
+					throw ex;
 				}
 			}
 		}
@@ -274,6 +274,9 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 		// Настраиваем отладочные логи
 		initDebug(unideb, "UniSetDebug");
 
+//		cerr << "*************** initConfiguration: oind: " << pt.getCurrent() << " msec " << endl;
+//		pt.reset();
+
 		// default init...
 		transientIOR 	= false;
 		localIOR 	= false;
@@ -284,14 +287,20 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
 		initParameters();
 
+		// help
+//		if( !getArgParam("--help").empty() )
+//			help(cout);
+
 		initRepSections();
 
 		// localIOR
+//		localIOR = false; // ??. initParameters()
 		int lior = getArgInt("--localIOR");
 		if( lior )
 			localIOR = lior;
 
 		// transientIOR
+//		transientIOR = false; // ??. initParameters()
 		int tior = getArgInt("--transientIOR");
 		if( tior )
 			transientIOR = tior;
@@ -299,6 +308,9 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 		if( imagesDir[0]!='/' && imagesDir[0]!='.' )
 			imagesDir = dataDir + imagesDir + "/";
 
+//		cerr << "*************** initConfiguration: parameters...: " << pt.getCurrent() << " msec " << endl;
+//		pt.reset();
+		
 		// считываем список узлов
 		createNodesList();
 
@@ -323,19 +335,12 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
 			string name(oind->getRealNodeName(it->id));
 			ostringstream param;
-			param << this << name;
-			name = param.str();
-			param << "=corbaname::" << it->host << ":" << it->port;
+			param << this << name << "=corbaname::" << it->host << ":" << it->port;
 			new_argv[i+1] = strdup(param.str().c_str());
 
 			if( unideb.debugging(Debug::INFO) )
 				unideb[Debug::INFO] << "(Configuration): внесли параметр " << param.str() << endl;
 			i+=2;
-
- 			ostringstream uri;
-			uri << "corbaname::" << it->host << ":" << it->port;
-			if( !omni::omniInitialReferences::setFromArgs(name.c_str(), uri.str().c_str()) )
-				cerr << "**********************!!!! FAILED ADD name=" << name << " uri=" << uri.str() << endl; 
 
 			assert( i < _argc );
 		}
@@ -364,15 +369,6 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 			new_argv[i+1] = strdup(param.str().c_str());
 			if( unideb.debugging(Debug::INFO) )
 				unideb[Debug::INFO] << "(Configuration): внесли параметр " << param.str() << endl;
-
-			{
-				ostringstream ns_name;
-				ns_name << this << "NameService";
-				ostringstream uri;
-				uri << "corbaname::" << getProp(nsnode,"host") << ":" << defPort;
-				if( !omni::omniInitialReferences::setFromArgs(ns_name.str().c_str(), uri.str().c_str()) )
-					cerr << "**********************!!!! FAILED ADD name=" <<ns_name << " uri=" << uri.str() << endl; 
-			}
 		}
 		
 		_argv = new_argv;
@@ -580,16 +576,10 @@ void Configuration::initParameters()
 			if( confDir.empty() )
 				confDir = getRootDir();
 		}
-	}
-
-	// Heartbeat init...
-	xmlNode* cnode = conf->getNode("HeartBeatTime");
-	if( cnode )
-	{
-		UniXML_iterator hit(cnode);
-		heartbeat_msec = hit.getIntProp("msec");
-		if( heartbeat_msec <= 0 )
-			heartbeat_msec = 5000;
+		else if( name == "HeartBeatTime" )
+		{
+			heartbeat_msec = it.getIntProp("name");
+		}
 	}
 }
 // -------------------------------------------------------------------------
@@ -772,7 +762,7 @@ void Configuration::createNodesList()
 // -------------------------------------------------------------------------
 void Configuration::initNode( UniSetTypes::NodeInfo& ninfo, UniXML_iterator& it )
 {
-	if( ninfo.id == getLocalNode() )
+	if( ninfo.id == conf->getLocalNode() )
 		ninfo.connected = true;
 	else
 		ninfo.connected = false;
@@ -797,7 +787,7 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
 
 	string debname(_debname);
 
-	xmlNode* dnode = getNode(_debname);
+	xmlNode* dnode = conf->getNode(_debname);
 	if( dnode == NULL )
 		deb << "(Configuration)(initDebug):  WARNING! Not found conf. section for log '" << _debname  << "'" << endl;
 	else
@@ -953,7 +943,7 @@ ObjectId Configuration::getSensorID( const std::string name )
 	if( name.empty() )
 		return DefaultObjectId;
 		
-	return oind->getIdByName(getSensorsSection()+"/"+name);
+	return oind->getIdByName(conf->getSensorsSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
 ObjectId Configuration::getControllerID( const std::string name )
@@ -961,7 +951,7 @@ ObjectId Configuration::getControllerID( const std::string name )
 	if( name.empty() )
 		return DefaultObjectId;
 
-	return oind->getIdByName(getControllersSection()+"/"+name);
+	return oind->getIdByName(conf->getControllersSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
 ObjectId Configuration::getObjectID( const std::string name )
@@ -969,7 +959,7 @@ ObjectId Configuration::getObjectID( const std::string name )
 	if( name.empty() )
 		return DefaultObjectId;
 
-	return oind->getIdByName(getObjectsSection()+"/"+name);
+	return oind->getIdByName(conf->getObjectsSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
 ObjectId Configuration::getServiceID( const std::string name )
@@ -977,7 +967,7 @@ ObjectId Configuration::getServiceID( const std::string name )
 	if( name.empty() )
 		return DefaultObjectId;
 
-	return oind->getIdByName(getServicesSection()+"/"+name);
+	return oind->getIdByName(conf->getServicesSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
 UniSetTypes::ObjectId Configuration::getNodeID( const std::string name, std::string alias )
@@ -1068,7 +1058,7 @@ UniversalIO::IOTypes Configuration::getIOType( UniSetTypes::ObjectId id )
 UniversalIO::IOTypes Configuration::getIOType( const std::string name )
 {
 	// Если указано "короткое" имя
-	// то просто сперва ищём ID, а потом по нему 
+	// то просто сперва ищём ID, а потом по нему
 	// iotype
 	ObjectId id = getSensorID(name);
 	if( id != DefaultObjectId )
@@ -1086,7 +1076,7 @@ UniversalIO::IOTypes Configuration::getIOType( const std::string name )
 	return UniversalIO::UnknownIOType;
 }
 // -------------------------------------------------------------------------
-void uniset_init( int argc, const char* const* argv, const std::string& xmlfile )
+void uniset_init( int argc, const char* const* argv, const std::string xmlfile )
 {
 	string confile = UniSetTypes::getArgParam( "--confile", argc, argv, xmlfile );
 	UniSetTypes::conf = new Configuration(argc, argv, confile);
