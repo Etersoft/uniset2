@@ -1770,8 +1770,8 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 				else
 					localctx = ORepHelpers::getRootNamingContext( orb, nodeName );
 			}
-			else
-				ctx = localctx;
+
+			ctx = localctx;
 		}
 
 		CosNaming::Name_var oname = omniURI::stringToName( oind->getNameById(rid,node).c_str() );
