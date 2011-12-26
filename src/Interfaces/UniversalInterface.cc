@@ -1707,7 +1707,7 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 //				{
 					if( unideb.debugging(Debug::WARN) )
 					{
-						unideb[Debug::WARN] << "не найден IOR-файл для " << uconf->oind->getNameById(rid,node) << endl;
+						unideb[Debug::WARN] << "not found IOR-file for " << uconf->oind->getNameById(rid,node) << endl;
 					}
 					throw UniSetTypes::ResolveNameError();
 //				}
@@ -1720,7 +1720,6 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 	
 		if( node!=uconf->getLocalNode() )
 		{
-			cout << "******** Resolve REMOTE NODE ***" << endl;
 			// Получаем доступ к NameService на данном узле
 			ostringstream s;
 			s << uconf << oind->getRealNodeName(node);
@@ -1758,7 +1757,6 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 		}
 		else
 		{
-			cout << "******** Resolve LOCAL NODE ***" << endl;
 			if( CORBA::is_nil(localctx) )
 			{
 				ostringstream s;
@@ -1776,8 +1774,6 @@ ObjectPtr UniversalInterface::resolve( ObjectId rid , ObjectId node, int timeout
 				ctx = localctx;
 		}
 		
-		ctx = localctx;
-		cout << "***resolve oname=" << oind->getNameById(rid,node).c_str() << endl;
 		CosNaming::Name_var oname = omniURI::stringToName( oind->getNameById(rid,node).c_str() );
 		for (unsigned int i=0; i<uconf->getRepeatCount(); i++)
 		{
@@ -1848,7 +1844,7 @@ void UniversalInterface::send( ObjectId name, TransportMessage& msg, ObjectId no
 	throw(IO_THROW_EXCEPTIONS)
 {
 	if ( name == DefaultObjectId )
-		throw ORepFailed("UI(send): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+		throw ORepFailed("UI(send): ERROR: id=UniSetTypes::DefaultObjectId");
 
 	try
 	{

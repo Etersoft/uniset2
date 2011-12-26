@@ -29,6 +29,7 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <omniORB4/internal/initRefs.h>
 
 #include "Configuration.h"
 #include "Exceptions.h"
@@ -335,12 +336,19 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
 			string name(oind->getRealNodeName(it->id));
 			ostringstream param;
-			param << this << name << "=corbaname::" << it->host << ":" << it->port;
+			param << this << name;
+			name = param.str();
+			param << "=corbaname::" << it->host << ":" << it->port;
 			new_argv[i+1] = strdup(param.str().c_str());
 
 			if( unideb.debugging(Debug::INFO) )
 				unideb[Debug::INFO] << "(Configuration): внесли параметр " << param.str() << endl;
 			i+=2;
+
+ 			ostringstream uri;
+			uri << "corbaname::" << it->host << ":" << it->port;
+			if( !omni::omniInitialReferences::setFromArgs(name.c_str(), uri.str().c_str()) )
+				cerr << "**********************!!!! FAILED ADD name=" << name << " uri=" << uri.str() << endl; 
 
 			assert( i < _argc );
 		}
@@ -369,6 +377,15 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 			new_argv[i+1] = strdup(param.str().c_str());
 			if( unideb.debugging(Debug::INFO) )
 				unideb[Debug::INFO] << "(Configuration): внесли параметр " << param.str() << endl;
+
+			{
+				ostringstream ns_name;
+				ns_name << this << "NameService";
+				ostringstream uri;
+				uri << "corbaname::" << getProp(nsnode,"host") << ":" << defPort;
+				if( !omni::omniInitialReferences::setFromArgs(ns_name.str().c_str(), uri.str().c_str()) )
+					cerr << "**********************!!!! FAILED ADD name=" <<ns_name << " uri=" << uri.str() << endl; 
+			}
 		}
 		
 		_argv = new_argv;
