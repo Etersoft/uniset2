@@ -2,8 +2,8 @@
 %define oname uniset
 
 Name: libuniset
-Version: 1.0
-Release: alt62
+Version: 1.3
+Release: alt1
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -213,6 +213,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Mon Dec 26 2011 Pavel Vainerman <pv@altlinux.ru> 1.3-alt1
+- Added support for multiple profiles(Configuration) simultaneously
+
 * Fri Dec 23 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt62
 - fixed bug in UniversalInterface
 

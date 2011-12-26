@@ -4,19 +4,11 @@
 
 SUBDIRS=JrnTests
 
-noinst_PROGRAMS 		= passivetimer hourglass delaytimer unixml ui umutex conftest iterator_test sscanf_hex calibration
+noinst_PROGRAMS 		= passivetimer unixml ui umutex conftest iterator_test sscanf_hex calibration
 
 passivetimer_SOURCES 	= passivetimer.cc
 passivetimer_LDADD 		= $(top_builddir)/lib/libUniSet.la
 passivetimer_CPPFLAGS	= -I$(top_builddir)/include
-
-hourglass_SOURCES 	= hourglass.cc
-hourglass_LDADD 	= $(top_builddir)/lib/libUniSet.la
-hourglass_CPPFLAGS	= -I$(top_builddir)/include
-
-delaytimer_SOURCES 	= delaytimer.cc
-delaytimer_LDADD 	= $(top_builddir)/lib/libUniSet.la
-delaytimer_CPPFLAGS	= -I$(top_builddir)/include
 
 unixml_SOURCES 	= unixml.cc
 unixml_LDADD 	= $(top_builddir)/lib/libUniSet.la ${SIGC_LIBS}
