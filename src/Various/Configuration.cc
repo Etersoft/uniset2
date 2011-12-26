@@ -782,7 +782,7 @@ void Configuration::createNodesList()
 // -------------------------------------------------------------------------
 void Configuration::initNode( UniSetTypes::NodeInfo& ninfo, UniXML_iterator& it )
 {
-	if( ninfo.id == conf->getLocalNode() )
+	if( ninfo.id == getLocalNode() )
 		ninfo.connected = true;
 	else
 		ninfo.connected = false;
@@ -807,7 +807,7 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
 
 	string debname(_debname);
 
-	xmlNode* dnode = conf->getNode(_debname);
+	xmlNode* dnode = getNode(_debname);
 	if( dnode == NULL )
 		deb << "(Configuration)(initDebug):  WARNING! Not found conf. section for log '" << _debname  << "'" << endl;
 	else
@@ -963,7 +963,7 @@ ObjectId Configuration::getSensorID( const std::string name )
 	if( name.empty() )
 		return DefaultObjectId;
 		
-	return oind->getIdByName(conf->getSensorsSection()+"/"+name);
+	return oind->getIdByName(getSensorsSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
 ObjectId Configuration::getControllerID( const std::string name )
@@ -971,7 +971,7 @@ ObjectId Configuration::getControllerID( const std::string name )
 	if( name.empty() )
 		return DefaultObjectId;
 
-	return oind->getIdByName(conf->getControllersSection()+"/"+name);
+	return oind->getIdByName(getControllersSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
 ObjectId Configuration::getObjectID( const std::string name )
@@ -979,7 +979,7 @@ ObjectId Configuration::getObjectID( const std::string name )
 	if( name.empty() )
 		return DefaultObjectId;
 
-	return oind->getIdByName(conf->getObjectsSection()+"/"+name);
+	return oind->getIdByName(getObjectsSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
 ObjectId Configuration::getServiceID( const std::string name )
@@ -987,7 +987,7 @@ ObjectId Configuration::getServiceID( const std::string name )
 	if( name.empty() )
 		return DefaultObjectId;
 
-	return oind->getIdByName(conf->getServicesSection()+"/"+name);
+	return oind->getIdByName(getServicesSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
 UniSetTypes::ObjectId Configuration::getNodeID( const std::string name, std::string alias )
