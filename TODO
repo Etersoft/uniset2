@@ -1,43 +1,30 @@
-- делать возможность вывода в программе вывода версии (коммита) сборки
+Компиляция с отладкой
+Сделать возможность вывода в программе вывода версии (коммита) сборки
 
-- Внести в проект реализацию протокола PLCNet // нужно ли 
+Внести в проект реализацию PLCNet
 
 - написать "uniset-check" автоматический тест основных функций 
-(saveState/Value, getState/Value, setState/Value и т.п.)
+(saveState/Value, getState/Value), setState/Value и т.п.)
 
 - сделать, чтобы можно было Debug пускать через syslog (да ещё и на другую машину)
 
 - Подумать и реализовать механизм хранения ссылок (IOR) с использованием разделяемой памяти...
-(сейчас есть IORFile и omniNames). // нужно ли
+(сейчас есть IORFile и omniNames).
 
-- Сделать ObjectIndex_ArrayXML. т.е. использовать vector, при этом считывая индексы из XML.  // нужно ли
+- Сделать ObjectIndex_ArrayXML. т.е. использовать vector, при этом считывая индексы из XML.
+
+- Везде где используется sstream и вызов str(), надо делать ss.rdbuf()->freeze(0);
+(http://www.intuit.ru/department/pl/cpp/17/2.html)
 
 - (IONotifyController): Разработать механизм заказа переодических уведомлений (msec), независимо от того, менялись ли датчики..
 - (IONotifyController): Разработать механизм заказа группы датчиков сразу (и ответ тоже группой)
 
+
 ----------
-admin: 
-- processing "precision"
+smonit: processing "precision"
+admin: processing "precision"
 
 
 codegen:
 - Сделать работу с TestMode на основе заказа! 
-- Сделать работу с ResetMsg на основе askTimer! // подумать нужно ли..
-
-
-iocontrol:
-- добавить ещё один вид сигналов (настройку) "работа по переднему фронту".
-Т.е. сигнал меняет своё состояние по изменению входного (типа для кнопок без фиксации). "trigger"(обрабатывать после jar_delay)
-
-
-Version 2.0
-============
-- отказаться от функций getState,setState,saveState,saveValue и оставить только getValue/setValue.
-- (DBServer): сделать возможность задать для датчика в configure.xml dbignore="1". Видимо надо встроить это поле в SensorMessgage
-- удалить AlarmMessage,InfoMessage,InfoServer,TimerServer(подумать),ISRestorer,MessageInteface_xxx,SystemGuard 
-  т.к. активного распространения не получили (пока-что).
-- убрать неиспользуемые нынче классы include/IOs/DigitalCard..
-- удалить SandClock.h т.к. он deperecated (вместо него HourGlass.h)
-- перейти где нужно на rw-mutex-ы..
-- написать документацию по ModbusSlave
-
+- Сделать работу с ResetMsg на основе askTimer! (подумать нужно ли..)
