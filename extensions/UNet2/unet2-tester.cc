@@ -223,9 +223,9 @@ int main(int argc, char* argv[])
 							prev_num = pack.num;
 						}
 
-//						if( verb )
-//							cout << "receive OK. header: " << pack.msg.header
-//								 << " bytes: " << ret << endl;
+						if( verb )
+							cout << "receive OK:  "
+								 << " bytes: " << ret << endl;
 
 						if( show )
 							cout << "receive data: " << pack << endl;
