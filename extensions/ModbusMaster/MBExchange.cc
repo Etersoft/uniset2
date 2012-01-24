@@ -1913,7 +1913,7 @@ bool MBExchange::initItem( UniXML_iterator& it )
 	string addr = it.getProp(prop_prefix + "mbaddr");
 	if( addr.empty() )
 	{
-		dlog[Debug::CRIT] << myname << "(initItem): Unknown mbaddr='" << addr << "' for " << it.getProp("name") << endl;
+		dlog[Debug::CRIT] << myname << "(initItem): Unknown mbaddr(" << prop_prefix << "mbaddr)='" << addr << "' for " << it.getProp("name") << endl;
 		return false;
 	}
 
@@ -1935,7 +1935,7 @@ bool MBExchange::initItem( UniXML_iterator& it )
 		string reg = it.getProp(prop_prefix + "mbreg");
 		if( reg.empty() )
 		{	
-			dlog[Debug::CRIT] << myname << "(initItem): unknown mbreg for " << it.getProp("name") << endl;
+			dlog[Debug::CRIT] << myname << "(initItem): unknown mbreg(" << prop_prefix << ") for " << it.getProp("name") << endl;
 			return false;
 		}
 		mbreg = ModbusRTU::str2mbData(reg);
