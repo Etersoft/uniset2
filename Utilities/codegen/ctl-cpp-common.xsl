@@ -575,6 +575,13 @@ end_private(false)
 {
 	<xsl:call-template name="COMMON-ID-LIST"/>
 
+	if( getId() == DefaultObjectId )
+	{
+		ostringstream err;
+		err &lt;&lt; "(<xsl:value-of select="$CLASSNAME"/>::init): Unknown ObjectID!";
+		throw SystemError( err.str() );
+	}
+
 <xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
@@ -885,6 +892,13 @@ confnode(cnode),
 activated(false),
 askPause(conf->getPIntProp(cnode,"askPause",2000))
 {
+	if( getId() == DefaultObjectId )
+	{
+		ostringstream err;
+		err &lt;&lt; "(<xsl:value-of select="$CLASSNAME"/>::init): Unknown ObjectID!";
+		throw SystemError( err.str() );
+	}
+
 	si.node = conf->getLocalNode();
 
 <xsl:for-each select="//sensors/item">
