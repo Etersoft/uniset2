@@ -7,17 +7,18 @@ using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 void help_print()
 {
-	cout << endl << "--help        - Помощь по утилите" << endl;
-	cout << "--sid id1,..,idXX     - sensors ID (AI,AO)" << endl;
-	cout << "--min val             - Нижняя граница датчика. По умолчанию 0" << endl;
-	cout << "--max val             - Верхняя граница датчика. По умолчанию 100 " << endl;
-	cout << "--step val            - Шаг датчика. По умолчанию 1" << endl;
-	cout << "--pause msec          - Пауза. По умолчанию 200 мсек" << endl << endl;                                                           
+	cout << endl << "--help                      - Помощь по утилите" << endl;
+	cout << "--sid id1@Node1,id2,..,idXX@NodeXX  - Аналоговые датчики (AI,AO)" << endl;
+	cout << endl;
+	cout << "--min val       - Нижняя граница датчика. По умолчанию 0" << endl;
+	cout << "--max val       - Верхняя граница датчика. По умолчанию 100 " << endl;
+	cout << "--step val      - Шаг датчика. По умолчанию 1" << endl;
+	cout << "--pause msec    - Пауза. По умолчанию 200 мсек" << endl << endl;
 }
 // -----------------------------------------------------------------------------
-struct IInfo
+struct ExtInfo:
+	public UniSetTypes::ParamSInfo
 {
-	ObjectId id;
 	UniversalIO::IOTypes iotype;
 };
 // -----------------------------------------------------------------------------
@@ -43,27 +44,30 @@ int main( int argc, char **argv )
 			cerr << endl << "Use --sid id1,..,idXX" << endl << endl;
 			return 1;
 		}
-		UniSetTypes::IDList lst1 = UniSetTypes::explode(sid);
-		std::list<ObjectId> l1 = lst1.getList();
 
-		if( l1.empty() )
+		std::list<UniSetTypes::ParamSInfo> lst = UniSetTypes::getSInfoList(sid,UniSetTypes::conf);
+
+		if( lst.empty() )
 		{
 			cerr << endl << "Use --sid id1,..,idXX" << endl << endl;
 			return 1;
 		}
 
-		std::list<IInfo> l;
-		for( std::list<ObjectId>::iterator it = l1.begin(); it!=l1.end(); ++it )
+		std::list<ExtInfo> l;
+		for( std::list<UniSetTypes::ParamSInfo>::iterator it = lst.begin(); it!=lst.end(); ++it )
 		{
-			UniversalIO::IOTypes t = conf->getIOType( (*it) );
+			UniversalIO::IOTypes t = conf->getIOType( it->si.id );
 			if( t != UniversalIO::AnalogInput && t != UniversalIO::AnalogOutput )
 			{
-				cerr << endl << "Неверный типа датчика '" << t << "' для id='" << (*it) << "'. Тип должен быть AI или AO." << endl << endl;
+				cerr << endl << "Неверный типа датчика '" << t << "' для id='" << it->fname << "'. Тип должен быть AI или AO." << endl << endl;
 				return 1;
 			}
 
-			IInfo i;
-			i.id = (*it);
+			if( it->si.node == DefaultObjectId )
+				it->si.node = conf->getLocalNode();
+
+			ExtInfo i;
+			i.si = it->si;
 			i.iotype = t;
 			l.push_back(i);
 		}
@@ -113,21 +117,21 @@ int main( int argc, char **argv )
 						j = amin;
 				cout << "\r" << " i = " << j <<"     "<< flush;
 
-				for( std::list<IInfo>::iterator it=l.begin(); it!=l.end(); ++it )
+				for( std::list<ExtInfo>::iterator it=l.begin(); it!=l.end(); ++it )
 				{
 				      try
 				      {
 						if( it->iotype == UniversalIO::AnalogInput )
-						ui.saveValue(it->id, j, UniversalIO::AnalogInput);
+						ui.saveValue(it->si, j, UniversalIO::AnalogInput, DefaultObjectId);
 						else
-							ui.setValue(it->id, j);
+							ui.setValue(it->si, j, DefaultObjectId);
 				      }
 				      catch( Exception& ex )
 				      {
-						  cerr << endl << "save id="<< it->id << " " << ex << endl;
-			    	  }
+						  cerr << endl << "save id="<< it->fname << " " << ex << endl;
+				  }
 				}
-			
+
 				if(j<=amin)
 				{
 				    i = amin;
@@ -138,22 +142,22 @@ int main( int argc, char **argv )
 		    {
 				i += astep;
 					if(i>amax)                 // Принудительная установка верхней границы датчика
-						i = amax;                
-	   	     	cout << "\r" << " i = " << i <<"     "<< flush;
+						i = amax;
+			cout << "\r" << " i = " << i <<"     "<< flush;
 
-				for( std::list<IInfo>::iterator it=l.begin(); it!=l.end(); ++it )
+				for( std::list<ExtInfo>::iterator it=l.begin(); it!=l.end(); ++it )
 				{
 				      try
 				      {
 						if( it->iotype == UniversalIO::AnalogInput )
-						ui.saveValue(it->id, i, UniversalIO::AnalogInput);
+						ui.saveValue(it->si, i, UniversalIO::AnalogInput, DefaultObjectId);
 						else
-							ui.setValue(it->id, i);
+							ui.setValue(it->si, i, DefaultObjectId);
 				      }
 				      catch( Exception& ex )
 				      {
-						  cerr << endl << "save id="<< it->id << " " << ex << endl;
-			    	  }
+						  cerr << endl << "save id="<< it->fname << " " << ex << endl;
+				  }
 				}
 		    }
 		    msleep(amsec);
@@ -162,12 +166,12 @@ int main( int argc, char **argv )
 	}
 	catch( Exception& ex )
 	{
-		cerr << endl << "(main): " << ex << endl;
+		cerr << endl << "(simitator): " << ex << endl;
 		return 1;
 	}
 	catch( ... )
 	{
-		cerr << endl << "catch..." << endl;
+		cerr << endl << "(simitator): catch..." << endl;
 		return 1;
 	}
 	

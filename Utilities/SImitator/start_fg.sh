@@ -4,7 +4,7 @@ ulimit -Sc 1000000
 
 #for i in `seq 1 20`; 
 #do
-	uniset-start.sh -f ./uniset-simitator --confile test.xml --sid 10,16,9
+	uniset-start.sh -f ./uniset-simitator --confile test.xml --sid 10@localhost,9@3002
 #done
 
 #wait
