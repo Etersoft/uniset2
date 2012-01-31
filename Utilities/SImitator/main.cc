@@ -7,14 +7,13 @@ using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 void help_print()
 {
-	cout << endl;
-	cout << "--confile configure.xml. По умолчанию: configure.xml." << endl;
+	cout << endl << "--help                      - Помощь по утилите" << endl;
 	cout << "--sid id1@Node1,id2,..,idXX@NodeXX  - Аналоговые датчики (AI,AO)" << endl;
 	cout << endl;
 	cout << "--min val       - Нижняя граница датчика. По умолчанию 0" << endl;
 	cout << "--max val       - Верхняя граница датчика. По умолчанию 100 " << endl;
 	cout << "--step val      - Шаг датчика. По умолчанию 1" << endl;
-	cout << "--pause msec    - Пауза. По умолчанию 200 мсек" << endl << endl;                                                           
+	cout << "--pause msec    - Пауза. По умолчанию 200 мсек" << endl << endl;
 }
 // -----------------------------------------------------------------------------
 struct ExtInfo:
@@ -46,14 +45,14 @@ int main( int argc, char **argv )
 			return 1;
 		}
 
-		std::list<UniSetTypes::ParamSInfo> lst = UniSetTypes::getSInfoList(sid,UniSetTypes::conf); 
+		std::list<UniSetTypes::ParamSInfo> lst = UniSetTypes::getSInfoList(sid,UniSetTypes::conf);
 
 		if( lst.empty() )
 		{
 			cerr << endl << "Use --sid id1,..,idXX" << endl << endl;
 			return 1;
 		}
-		
+
 		std::list<ExtInfo> l;
 		for( std::list<UniSetTypes::ParamSInfo>::iterator it = lst.begin(); it!=lst.end(); ++it )
 		{
@@ -123,16 +122,16 @@ int main( int argc, char **argv )
 				      try
 				      {
 						if( it->iotype == UniversalIO::AnalogInput )
-					    	ui.saveValue(it->si, j, UniversalIO::AnalogInput, DefaultObjectId);
+						ui.saveValue(it->si, j, UniversalIO::AnalogInput, DefaultObjectId);
 						else
 							ui.setValue(it->si, j, DefaultObjectId);
 				      }
 				      catch( Exception& ex )
 				      {
 						  cerr << endl << "save id="<< it->fname << " " << ex << endl;
-			    	  }
+				  }
 				}
-			
+
 				if(j<=amin)
 				{
 				    i = amin;
@@ -143,22 +142,22 @@ int main( int argc, char **argv )
 		    {
 				i += astep;
 					if(i>amax)                 // Принудительная установка верхней границы датчика
-						i = amax;                
-	   	     	cout << "\r" << " i = " << i <<"     "<< flush;
+						i = amax;
+			cout << "\r" << " i = " << i <<"     "<< flush;
 
 				for( std::list<ExtInfo>::iterator it=l.begin(); it!=l.end(); ++it )
 				{
 				      try
 				      {
 						if( it->iotype == UniversalIO::AnalogInput )
-					    	ui.saveValue(it->si, i, UniversalIO::AnalogInput, DefaultObjectId);
+						ui.saveValue(it->si, i, UniversalIO::AnalogInput, DefaultObjectId);
 						else
 							ui.setValue(it->si, i, DefaultObjectId);
 				      }
 				      catch( Exception& ex )
 				      {
 						  cerr << endl << "save id="<< it->fname << " " << ex << endl;
-			    	  }
+				  }
 				}
 		    }
 		    msleep(amsec);
