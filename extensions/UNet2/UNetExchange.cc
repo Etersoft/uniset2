@@ -151,7 +151,7 @@ sender2(0)
 			continue;
 		}
 		
-		string s_resp_id(n_it.getProp("unet_respond_id"));
+		string s_resp_id(n_it.getProp("unet_respond1_id"));
 		UniSetTypes::ObjectId resp_id = UniSetTypes::DefaultObjectId;
 		if( !s_resp_id.empty() )
 		{
@@ -179,7 +179,7 @@ sender2(0)
 			}
 		}		
 		
-		string s_lp_id(n_it.getProp("unet_lostpackets_id"));
+		string s_lp_id(n_it.getProp("unet_lostpackets1_id"));
 		UniSetTypes::ObjectId lp_id = UniSetTypes::DefaultObjectId;
 		if( !s_lp_id.empty() )
 		{
@@ -206,6 +206,35 @@ sender2(0)
 				throw SystemError(err.str());
 			}
 		}
+
+		string s_lp_comm_id(n_it.getProp("unet_lostpackets_id"));
+		UniSetTypes::ObjectId lp_comm_id = UniSetTypes::DefaultObjectId;
+		if( !s_lp_comm_id.empty() )
+		{
+			lp_comm_id = conf->getSensorID(s_lp_comm_id);
+			if( lp_comm_id == UniSetTypes::DefaultObjectId )
+			{
+				ostringstream err;
+				err << myname << ": Unknown LostPacketsID(comm).. Not found id for '" << s_lp_comm_id << "'" << endl;
+				dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+				throw SystemError(err.str());
+			}
+		}
+
+		string s_resp_comm_id(n_it.getProp("unet_respond2_id"));
+		UniSetTypes::ObjectId resp_comm_id = UniSetTypes::DefaultObjectId;
+		if( !s_resp_comm_id.empty() )
+		{
+			resp_comm_id = conf->getSensorID(s_resp_comm_id);
+			if( resp_comm_id == UniSetTypes::DefaultObjectId )
+			{
+				ostringstream err;
+				err << myname << ": Unknown RespondID(2).. Not found id for '" << s_resp_comm_id << "'" << endl;
+				dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+				throw SystemError(err.str());
+			}
+		}	
+
 
 		dlog[Debug::INFO] << myname << "(init): (node='" << n << "') add receiver " 
 						<< h2 << ":" << p2 << endl;
@@ -258,6 +287,8 @@ sender2(0)
 		}
 
 		ReceiverInfo ri(r,r2);
+		ri.setRespondID(resp_comm_id);
+		ri.setLostPacketsID(lp_comm_id);
 		recvlist.push_back(ri);
 	}
 	
@@ -383,8 +414,45 @@ void UNetExchange::step()
 			dlog[Debug::CRIT] << myname << "(step): (hb) " << ex << std::endl;
 		}
 	}
+
+	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
+		it->step(shm, myname);
 }
 
+// -----------------------------------------------------------------------------
+void UNetExchange::ReceiverInfo::step( SMInterface* shm, const std::string myname )
+{
+	try
+	{
+		if( sidRespond != DefaultObjectId )
+		{
+			bool resp = ( (r1 && r1->isRecvOK()) || (r2 && r2->isRecvOK()) );
+			shm->localSaveState(ditRespond,sidRespond,resp,shm->ID());
+		}
+	}
+	catch( Exception& ex )
+	{
+		dlog[Debug::CRIT] << myname << "(ReceiverInfo::step): (respond): " << ex << std::endl;
+	}
+
+	try
+	{
+		if( sidLostPackets != DefaultObjectId )
+		{
+			long l = 0;
+			if( r1 )
+				l += r1->getLostPacketsNum();
+			if( r2 )
+				l += r2->getLostPacketsNum();
+
+			shm->localSaveValue(aitLostPackets,sidLostPackets,l,shm->ID());
+		}
+	}
+	catch( Exception& ex )
+	{
+		dlog[Debug::CRIT] << myname << "(ReceiverInfo::step): (lostpackets): " << ex << std::endl;
+	}	
+}
 // -----------------------------------------------------------------------------
 void UNetExchange::processingMessage( UniSetTypes::VoidMessage *msg )
 {
@@ -602,6 +670,9 @@ void UNetExchange::initIterators()
 		sender->initIterators();
 	if( sender2 )
 		sender2->initIterators();
+
+	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); it++ )
+		it->initIterators(shm);
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::help_print( int argc, const char* argv[] )
