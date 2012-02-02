@@ -140,11 +140,38 @@ class UNetExchange:
 
 		struct ReceiverInfo
 		{
-			ReceiverInfo():r1(0),r2(0){}
-			ReceiverInfo(UNetReceiver* _r1, UNetReceiver* _r2 ):r1(_r1),r2(_r2){}
+			ReceiverInfo():r1(0),r2(0),
+				sidRespond(UniSetTypes::DefaultObjectId),
+				sidLostPackets(UniSetTypes::DefaultObjectId)
+			{}
+
+			ReceiverInfo(UNetReceiver* _r1, UNetReceiver* _r2 ):
+				r1(_r1),r2(_r2),
+				sidRespond(UniSetTypes::DefaultObjectId),
+				sidLostPackets(UniSetTypes::DefaultObjectId)
+			{}
 
 			UNetReceiver* r1;  	/*!< приём по первому каналу */
 			UNetReceiver* r2;	/*!< приём по второму каналу */
+
+			void step( SMInterface* shm, const std::string myname );
+
+			inline void setRespondID( UniSetTypes::ObjectId id ){ sidRespond = id; }
+			inline void setLostPacketsID( UniSetTypes::ObjectId id ){ sidLostPackets = id; }
+			inline void initIterators( SMInterface* shm )
+			{
+				shm->initAIterator(aitLostPackets);
+				shm->initDIterator(ditRespond);
+			}
+
+			// Сводная информация по двум каналам
+			// сумма потерянных пакетов и наличие связи
+			// хотя бы по одному каналу
+			// ( реализацию см. ReceiverInfo::step() )
+			UniSetTypes::ObjectId sidRespond;
+			IOController::DIOStateList::iterator ditRespond;
+			UniSetTypes::ObjectId sidLostPackets;
+			IOController::AIOStateList::iterator aitLostPackets;
 		};
 
 		typedef std::list<ReceiverInfo> ReceiverList;
