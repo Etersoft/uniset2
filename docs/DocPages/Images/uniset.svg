@@ -408,8 +408,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.7"
-     inkscape:cx="586.32876"
-     inkscape:cy="1371.5894"
+     inkscape:cx="373.78145"
+     inkscape:cy="832.67741"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -429,7 +429,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -752,7 +752,7 @@
          sodipodi:role="line"
          id="tspan4020-3-1-8-6-6"
          x="153.86697"
-         y="344.40903">llibsigc++</tspan></text>
+         y="344.40903">libsigc++</tspan></text>
     <rect
        style="opacity:0.20895523;fill:#000086;fill-opacity:1;stroke:#000000;stroke-width:0.84457862;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
        id="rect3773-5-3-3-4-7-2-8"
@@ -776,7 +776,7 @@
          sodipodi:role="line"
          id="tspan4020-3-1-8-6-6-2"
          x="16.689299"
-         y="343.97449">llibcomedi</tspan></text>
+         y="343.97449">libcomedi</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:34.77907181px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
