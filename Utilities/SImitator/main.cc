@@ -7,7 +7,7 @@ using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 void help_print()
 {
-	cout << endl << "--help                      - Помощь по утилите" << endl;
+	cout << endl;
 	cout << "--sid id1@Node1,id2,..,idXX@NodeXX  - Аналоговые датчики (AI,AO)" << endl;
 	cout << endl;
 	cout << "--min val       - Нижняя граница датчика. По умолчанию 0" << endl;
