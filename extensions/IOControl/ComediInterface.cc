@@ -177,6 +177,9 @@ std::string ComediInterface::type2str( ComediInterface::SubdevType t )
 		case TBI16_8:
 			return "TBI16_8";
 
+		case GRAYHILL:
+			return "GRAYHILL";
+
 		default:
 			break;
 	}
@@ -194,6 +197,9 @@ ComediInterface::SubdevType ComediInterface::str2type( const std::string s )
 	
 	if( s == "TBI16_8" )
 		return TBI16_8;
+
+	if( s == "GRAYHILL" )
+		return GRAYHILL;
 		
 	return Unknown;
 }

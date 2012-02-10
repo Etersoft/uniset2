@@ -40,7 +40,8 @@ class ComediInterface
 			Unknown = 0,
 			TBI24_0 = 1,
 			TBI0_24 = 2,
-			TBI16_8 = 3
+			TBI16_8 = 3,
+			GRAYHILL = 4
 		};
 		
 		static std::string type2str( SubdevType t );
