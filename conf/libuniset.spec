@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.3
-Release: alt4
+Release: alt5
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -213,6 +213,10 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Fri Feb 10 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt5
+- (IOControl): Added support for setting boards such as 'Grayhill'
+- (Modbus): Fixed minor bug in configuration with RTU188
+
 * Fri Feb 03 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt4
 - add commmon (respond and lostpackets) sensors for UNet2
 
