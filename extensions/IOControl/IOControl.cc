@@ -1689,8 +1689,8 @@ void IOControl::buildCardsList()
 					dlog[Debug::INFO] << myname << "(buidCardList): empty subdev. ignore... (" << s.str() << ")" << endl;
 					continue;
 				}
-				
-				ComediInterface::SubdevType st = ComediInterface::str2type(subdev_name);  
+			
+				ComediInterface::SubdevType st = ComediInterface::str2type(subdev_name);
  				if( st == ComediInterface::Unknown )
 				{
 					ostringstream err;
@@ -1699,6 +1699,15 @@ void IOControl::buildCardsList()
 					throw SystemError(err.str());
 				}
 				
+				if( st == ComediInterface::GRAYHILL )
+				{
+					// для Grayhill конфигурирование не требуется
+					dlog[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card") 
+						<< "(" << cname << ")"
+						<< " subdev" << i << " is 'GRAYHILL'" << endl;
+					return;
+				}
+
 				dlog[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card") 
 						<< "(" << cname << ")"
 						<< " init subdev" << i << " " << it.getProp(s.str()) << endl;
