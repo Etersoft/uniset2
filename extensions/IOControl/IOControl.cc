@@ -1,4 +1,4 @@
-#include <sstream>           
+#include <sstream>
 #include "ORepHelpers.h"
 #include "UniSetTypes.h"
 #include "Extensions.h"
@@ -58,7 +58,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	string cname = conf->getArgParam("--"+prefix+"-confnode",myname);
 	cnode = conf->getNode(cname);
 	if( cnode == NULL )
-		throw SystemError("Not found conf-node " + cname + " for " + myname);
+		throw SystemError("Not find conf-node " + cname + " for " + myname);
 
 	defCardNum = conf->getArgInt("--"+prefix+"-default-cardnum","-1");
 	maxCardNum = conf->getArgInt("--"+prefix+"-max-cardnum","10");
@@ -84,13 +84,13 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		string iodev = conf->getArgParam(s1.str(),it.getProp(s2.str()));
 		if( iodev.empty() )
 			continue;
-			
+
 		if( iodev == "/dev/null" )
 		{
 			if( cards[i] == NULL )
 			{
-				dlog[Debug::LEVEL3] << myname << "(init): Card N" << i 
-									<< " DISABLED! dev='" 
+				dlog[Debug::LEVEL3] << myname << "(init): Card N" << i
+									<< " DISABLED! dev='"
 									<< iodev << "'" << endl;
 			}
 		}
@@ -118,11 +118,11 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 						err << "Unknown subdev type '" << stype << " for " << t1;
 						throw SystemError(err.str());
 					}
-					
+
 					if( !stype.empty() )
 					{
-						dlog[Debug::INFO] << myname 
-										<< "(init): card" << i 
+						dlog[Debug::INFO] << myname
+										<< "(init): card" << i
 										<< " subdev" << s << " set type " << stype << endl;
 
 						cards[i]->configureSubdev(s-1,st);
@@ -133,7 +133,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	}
 
 	dlog[Debug::INFO] << myname << "(init): result numcards=" << cards.size() << endl;
-	
+
 	polltime = conf->getArgInt("--"+prefix+"-polltime",it.getProp("polltime"));
 	if( !polltime )
 		polltime = 100;
@@ -205,7 +205,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	if( sidTestSMReady == DefaultObjectId )
 	{
 		sidTestSMReady = conf->getSensorID("TestMode_S");
-		dlog[Debug::WARN] << myname 
+		dlog[Debug::WARN] << myname
 				<< "(init): Unknown ID for sm-ready-test-sid (--" << prefix << "-sm-ready-test-sid)."
 				<< " Use 'TestMode_S'" << endl;
 	}
@@ -331,6 +331,7 @@ void IOControl::execute()
 	{
 		try
 		{
+
 			if( !noCards )
 			{
 				check_testmode();
@@ -408,10 +409,7 @@ void IOControl::iopoll()
 	for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
 	{
 		if( it->priority > 0 )
-		{
 			ioread( &(iomap[it->index]) );
-			IOBase::processingThreshold((IOBase*)&(iomap[it->index]),shm,force);
-		}
 	}
 
 	bool prior = false;
@@ -432,10 +430,7 @@ void IOControl::iopoll()
 			for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
 			{
 				if( it->priority > 1 )
-				{
 					ioread( &(iomap[it->index]) );
-					IOBase::processingThreshold((IOBase*)&(iomap[it->index]),shm,force);
-				}
 			}
 			
 			prior = true;
@@ -446,10 +441,7 @@ void IOControl::iopoll()
 	for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
 	{
 		if( it->priority > 2 )
-		{
 			ioread( &(iomap[it->index]) );
-			IOBase::processingThreshold((IOBase*)&(iomap[it->index]),shm,force);		
-		}
 	}
 }
 // --------------------------------------------------------------------------------
@@ -482,7 +474,7 @@ void IOControl::ioread( IOInfo* it )
 	 ComediInterface* card = cards.getCard(it->ncard);
 
 /*
-		cout  << conf->oind->getMapName(it->si.id) 
+		cout  << conf->oind->getMapName(it->si.id)
 				<< " card=" << card << " ncard=" << it->ncard
 				<< " dev="  << card->devname()
 				<< " subdev: " << it->subdev << " chan: " << it->channel << endl;
@@ -507,7 +499,7 @@ void IOControl::ioread( IOInfo* it )
 			if( it->stype == UniversalIO::AnalogInput )
 			{
 				int val = card->getAnalogChannel(it->subdev,it->channel, it->range, it->aref);
-
+/*
 				if( unideb.debugging(Debug::LEVEL3) )
 				{
 					dlog[Debug::LEVEL3] << myname << "(iopoll): read AI "
@@ -517,7 +509,7 @@ void IOControl::ioread( IOInfo* it )
 						<< " val=" << val
 						<< endl;
 				}
-				
+*/				
 				IOBase::processingAsAI( ib, val, shm, force );
 			}
 			else if( it->stype == UniversalIO::DigitalInput )
@@ -527,8 +519,8 @@ void IOControl::ioread( IOInfo* it )
 				if( unideb.debugging(Debug::LEVEL3) )
 				{
 					dlog[Debug::LEVEL3] << myname << "(iopoll): read DI "
-						<< " sid=" << it->si.id 
-						<< " subdev=" << it->subdev 
+						<< " sid=" << it->si.id
+						<< " subdev=" << it->subdev
 						<< " chan=" << it->channel
 						<< " state=" << set
 						<< endl;
@@ -720,9 +712,9 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 
 	if( c.empty() || inf.ncard < 0 || inf.ncard >= (int)cards.size() )
 	{
-		dlog[Debug::LEVEL3] << myname 
-							<< "(initIOItem): Unknown or bad card number (" 
-							<< inf.ncard << ") for " << it.getProp("name") 
+		dlog[Debug::LEVEL3] << myname
+							<< "(initIOItem): Unknown or bad card number ("
+							<< inf.ncard << ") for " << it.getProp("name")
 							<< " set default=" << defCardNum << endl;
 		inf.ncard = defCardNum;
 	}
@@ -748,37 +740,6 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 		else
 			inf.subdev = DefaultSubdev;
 	}
-
-	if( !IOBase::initItem(&inf,it,shm,&unideb,myname,filtersize,filterT) )
-		return false;
-
-	// если вектор уже заполнен
-	// то увеличиваем его на 30 элементов (с запасом)
-	// после инициализации делается resize
-	// под реальное количество
-	if( maxItem >= iomap.size() )
-		iomap.resize(maxItem+30);
-
-	int prior = it.getIntProp("iopriority");
-	if( prior > 0 )
-	{
-		IOPriority p(prior,maxItem);
-		pmap.push_back(p);
-		if( dlog.debugging(Debug::LEVEL3) )
-			dlog[Debug::LEVEL3] << myname << "(readItem): add to priority list: " << 
-						it.getProp("name") 
-						<< " priority=" << prior << endl;
-	}
-
-	// значит это пороговый датчик..
-	if( inf.t_ai != DefaultObjectId )
-	{
-		iomap[maxItem++] = inf;
-		if( dlog.debugging(Debug::LEVEL3) )
-			dlog[Debug::LEVEL3] << myname << "(readItem): add threshold '" << it.getProp("name")
-						<< " for '" << conf->oind->getNameById(inf.t_ai) << endl;
-		return true;
-	}
 	
 	inf.channel = it.getIntProp("channel");
 	if( inf.channel < 0 || inf.channel > 32 )
@@ -787,6 +748,9 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 							<< " for " << it.getProp("name") << endl;
 		return false;
 	}
+
+	if( !IOBase::initItem(&inf,it,shm,&unideb,myname,filtersize,filterT) )
+		return false;
 
 	inf.lamp = it.getIntProp("lamp");
 	inf.no_testlamp = it.getIntProp("no_iotestlamp");
@@ -801,7 +765,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 		if( inf.range < 0 || inf.range > 3 )
 		{
 			dlog[Debug::CRIT] << myname << "(readItem): Unknown 'range': " << inf.range
-							<< " for " << it.getProp("name") 
+							<< " for " << it.getProp("name")
 							<< " Must be range=[0..3]" << endl;
 			return false;
 		}
@@ -819,6 +783,23 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	if( unideb.debugging(Debug::LEVEL3) )
 		dlog[Debug::LEVEL3] << myname << "(readItem): add: " << inf.stype << " " << inf << endl;
 
+	// если вектор уже заполнен
+	// то увеличиваем его на 10 элементов (с запасом)
+	// после инициализации делается resize
+	// под реальное количество
+	if( maxItem >= iomap.size() )
+		iomap.resize(maxItem+10);
+
+	int prior = it.getIntProp("iopriority");
+	if( prior > 0 )
+	{
+		IOPriority p(prior,maxItem);
+		pmap.push_back(p);
+		dlog[Debug::LEVEL3] << myname << "(readItem): add to priority list: " <<
+						it.getProp("name") 
+						<< " priority=" << prior << endl;
+	}
+	
 	iomap[maxItem++] = inf;
 	return true;
 }
@@ -950,7 +931,7 @@ void IOControl::initIOCard()
 		}
 		catch( Exception& ex)
 		{
-			dlog[Debug::CRIT] << myname << "(initIOCard): sid=" << it->si.id 
+			dlog[Debug::CRIT] << myname << "(initIOCard): sid=" << it->si.id
 										<< " " << ex << endl;
 		}
 	}
@@ -1173,35 +1154,40 @@ IOControl* IOControl::init_iocontrol( int argc, const char* const* argv,
 // -----------------------------------------------------------------------------
 void IOControl::help_print( int argc, const char* const* argv )
 {
-	cout << "--prefix-confnode name   - Использовать для настройки указанный xml-узел" << endl;
-	cout << "--prefix-name name       - ID процесса. По умолчанию IOController1." << endl;
-	cout << "--prefix-numcards        - Количество кард в/в. По умолчанию 1." << endl;
-	cout << "--prefix-devX dev        - Использовать для card='X' указанный файл comedi-устройства." << endl;
-	cout << "                           'X'  не должен быть больше --prefix-numcards" << endl;
-	cout << "--prefix-devX-subdevX-type name  - Настройка типа подустройства для UNIO." << endl ;
-	cout << "                                   Разрешены: TBI0_24,TBI24_0,TBI16_8" << endl;
+	cout << "--io-confnode name - Использовать для настройки указанный xml-узел" << endl;
+	cout << "--io-name name		- ID процесса. По умолчанию IOController1." << endl;
+	cout << "--io-numcards		- Количество кард в/в. По умолчанию 1." << endl;
+	cout << "--iodev0 dev		- Использовать для card='0' указанный файл comedi-устройства." << endl;
+	cout << "--iodev1 dev		- Использовать для card='1' указанный файл comedi-устройства." << endl;
+	cout << "--iodev2 dev		- Использовать для card='2' указанный файл comedi-устройства." << endl;
+	cout << "--iodev3 dev		- Использовать для card='3' указанный файл comedi-устройства." << endl;
+	cout << "--iodevX dev		- Использовать для card='X' указанный файл comedi-устройства." << endl;
+	cout << "                     'X'  не должен быть больше --io-numcards" << endl;
 
-	cout << "--prefix-default_cardnum   - Номер карты по умолчанию. По умолчанию -1." << endl;
+	cout << "--iodevX-subdevX-type name	- Настройка типа подустройства для UNIO." << endl ;
+	cout << "                             Разрешены: TBI0_24,TBI24_0,TBI16_8" << endl;
+
+	cout << "--io-default_cardnum		- Номер карты по умолчанию. По умолчанию -1." << endl;
 	cout << "                             Если задать, то он будет использоватся для датчиков" << endl;
 	cout << "                             у которых не задано поле 'card'." << endl;
 
-	cout << "--prefix-test-lamp         - Для данного узла в качестве датчика кнопки 'ТестЛамп' использовать указанный датчик." << endl;
-	cout << "--prefix-conf-field fname  - Считывать из конф. файла все датчики с полем fname='1'" << endl;
-	cout << "--prefix-polltime msec     - Пауза между опросом карт. По умолчанию 200 мсек." << endl;
-	cout << "--prefix-filtersize val    - Размерность фильтра для аналоговых входов." << endl;
-	cout << "--prefix-filterT val       - Постоянная времени фильтра." << endl;
-	cout << "--prefix-s-filter-field    - Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
-	cout << "--prefix-s-filter-value    - Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
-	cout << "--prefix-blink-time msec   - Частота мигания, мсек. По умолчанию в configure.xml" << endl;
-	cout << "--prefix-blink2-time msec  - Вторая частота мигания (lmpBLINK2), мсек. По умолчанию в configure.xml" << endl;
-	cout << "--prefix-blink3-time msec  - Вторая частота мигания (lmpBLINK3), мсек. По умолчанию в configure.xml" << endl;
-	cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--prefix-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
-	cout << "--prefix-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
-	cout << "--prefix-force-out         - Обновлять выходы принудительно (не по заказу)" << endl;
-	cout << "--prefix-skip-init-output  - Не инициализировать 'выходы' при старте" << endl;
-	cout << "--prefix-sm-ready-test-sid - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
+	cout << "--io-test-lamp		- Для данного узла в качестве датчика кнопки 'ТестЛамп' использовать указанный датчик." << endl;
+	cout << "--io-conf-field fname	- Считывать из конф. файла все датчики с полем fname='1'" << endl;
+	cout << "--io-polltime msec	- Пауза между опросом карт. По умолчанию 200 мсек." << endl;
+	cout << "--io-filtersize val	- Размерность фильтра для аналоговых входов." << endl;
+	cout << "--io-filterT val		- Постоянная времени фильтра." << endl;
+	cout << "--io-s-filter-field	- Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
+	cout << "--io-s-filter-value	- Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
+	cout << "--io-blink-time msec	- Частота мигания, мсек. По умолчанию в configure.xml" << endl;
+	cout << "--io-blink2-time msec	- Вторая частота мигания (lmpBLINK2), мсек. По умолчанию в configure.xml" << endl;
+	cout << "--io-blink3-time msec	- Вторая частота мигания (lmpBLINK3), мсек. По умолчанию в configure.xml" << endl;
+	cout << "--io-heartbeat-id		- Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+	cout << "--io-heartbeat-max  	- Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
+	cout << "--io-ready-timeout		- Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
+	cout << "--io-force				- Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
+	cout << "--io-force-out			- Обновлять выходы принудительно (не по заказу)" << endl;
+	cout << "--io-skip-init-output	- Не инициализировать 'выходы' при старте" << endl;
+	cout << "--io-sm-ready-test-sid - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
 }
 // -----------------------------------------------------------------------------
 void IOControl::processingMessage( UniSetTypes::VoidMessage* msg )
@@ -1400,7 +1386,7 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
 	if( unideb.debugging(Debug::LEVEL1) )
 	{
-		dlog[Debug::LEVEL1] << myname << "(sensorInfo): sm->id=" << sm->id 
+		dlog[Debug::LEVEL1] << myname << "(sensorInfo): sm->id=" << sm->id
 						<< " val=" << sm->value << endl;
 	}
 	
@@ -1527,7 +1513,7 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 			{
 				if( unideb.debugging(Debug::LEVEL1) )
 				{
-					dlog[Debug::LEVEL1] << myname << "(sensorInfo): DO: sm->id=" << sm->id 
+					dlog[Debug::LEVEL1] << myname << "(sensorInfo): DO: sm->id=" << sm->id
 							<< " val=" << sm->value << endl;
 				}
 				uniset_spin_lock lock(it->val_lock);
@@ -1592,15 +1578,15 @@ void IOControl::buildCardsList()
 	}
 		
 	//xmlNode* cnode = xml->findNode(mynode,"iocards","");
-	//xmlNode* extFindNode(xmlNode* node, int depth, int width, const std::string searchnode, const std::string name = "", bool top=true ); 
+	//xmlNode* extFindNode(xmlNode* node, int depth, int width, const std::string searchnode, const std::string name = "", bool top=true );
 	xmlNode* cnode = xml->extFindNode(mynode,1,1,"iocards","");
-	
+
 	if( !cnode )
 	{
 		dlog[Debug::WARN] << myname << "(buildCardsList): Not found <iocards> for node=" << conf->getLocalNodeName() << "(" << conf->getLocalNode() << ")" << endl;
 		return;
 	}
-	
+
 	UniXML_iterator it(cnode);
 	if( !it.goChildren() )
 	{
@@ -1617,14 +1603,14 @@ void IOControl::buildCardsList()
 	for( ; it.getCurrent(); it.goNext() )
 	{
 		std::string cname(it.getProp("name"));
-		
+
 		int cardnum = it.getIntProp("card");
-		
+
 		if( cardnum <=0 )
 		{
 			dlog[Debug::LEVEL3] << myname << "(init): Unknown card number?!  card=" << it.getIntProp("card") << "(" << cname << ")" << endl;
 			continue;
-		
+
 		}
 
 		if( cardnum > maxCardNum )
@@ -1632,24 +1618,24 @@ void IOControl::buildCardsList()
 			dlog[Debug::LEVEL3] << myname << "(init): BAD card number card='" << it.getIntProp("card") << "'(" << cname << "). Must be < " << maxCardNum << endl;
 			continue;
 		}
-		
+
 		if( it.getIntProp("ignore") )
 		{
 			cards[cardnum] = NULL;
-			dlog[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")" 
+			dlog[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
 								<< " DISABLED! ignore=1" << endl;
 			continue;
 		}
 
 		stringstream s;
 		s << "--" << prefix << "-card" << cardnum << "-ignore";
-		
-		if( findArgParam( s.str(), conf->getArgc(), conf->getArgv()) != -1 ) 
+
+		if( findArgParam( s.str(), conf->getArgc(), conf->getArgv()) != -1 )
 		{
 			cards[cardnum] = NULL;
-			dlog[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")" 
+			dlog[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
 								<< " DISABLED! (" << s.str() << ")" << endl;
-			continue;			
+			continue;
 		}
 
 		std::string iodev(it.getProp("dev"));
@@ -1657,8 +1643,8 @@ void IOControl::buildCardsList()
 		if( iodev.empty() || iodev == "/dev/null" )
 		{
 			cards[cardnum] = NULL;
-			dlog[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")" 
-								<< " DISABLED! iodev='" 
+			dlog[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
+								<< " DISABLED! iodev='"
 								<< iodev << "'" << endl;
 			continue;
 		}
@@ -1690,39 +1676,39 @@ void IOControl::buildCardsList()
 			int k = 4;
 			if( cname == "UNIO48" )
 				k = 2;
-			
+
 			// инициализация subdev-ов
 			for( int i=1; i<=k; i++ )
 			{
 				ostringstream s;
 				s << "subdev" << i;
-				
+
 				string subdev_name( it.getProp(s.str()) );
 				if( subdev_name.empty() )
 				{
 					dlog[Debug::INFO] << myname << "(buidCardList): empty subdev. ignore... (" << s.str() << ")" << endl;
 					continue;
 				}
-			
+
 				ComediInterface::SubdevType st = ComediInterface::str2type(subdev_name);
- 				if( st == ComediInterface::Unknown )
+				if( st == ComediInterface::Unknown )
 				{
 					ostringstream err;
 					err << "(buildCardsList): card=" << it.getProp("card") << "(" << cname
 						<< " Unknown subdev(" << s.str() << ") type '" << it.getProp(s.str()) << "' for " << cname;
 					throw SystemError(err.str());
 				}
-				
+
 				if( st == ComediInterface::GRAYHILL )
 				{
 					// для Grayhill конфигурирование не требуется
-					dlog[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card") 
+					dlog[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card")
 						<< "(" << cname << ")"
-						<< " init subdev" << i << " 'GRAYHILL'" << endl;
-					continue;
+						<< " subdev" << i << " is 'GRAYHILL'" << endl;
+					return;
 				}
 
-				dlog[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card") 
+				dlog[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card")
 						<< "(" << cname << ")"
 						<< " init subdev" << i << " " << it.getProp(s.str()) << endl;
 				cards[cardnum]->configureSubdev(i-1,st);
