@@ -1867,13 +1867,6 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
 
 	r->mbfunc 	= ModbusRTU::fnUnknown;
 	string f = it.getProp(prop_prefix + "mbfunc");
-
-	// С RTU188 особенная работа. Там код функций
-	// "жётско вшит" в код обмена (см. RTUStorage)
-	// по этому здесь просто указываем по умолчанию
-	if( dev->dtype == MBExchange::dtRTU188 )
-		f = "0x04";
-
 	if( !f.empty() )
 	{
 		r->mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f.c_str());
@@ -1949,12 +1942,6 @@ bool MBExchange::initItem( UniXML_iterator& it )
 	}
 
 	int fn = it.getIntProp(prop_prefix + "mbfunc");
-
-	// С RTU188 особенная работа. Там код функций
-	// "жётско вшит" в код обмена (см. RTUStorage)
-	// по этому здесь просто указываем по умолчанию
-	if( dev->dtype == MBExchange::dtRTU188 )
-		fn = ModbusRTU::fnReadInputRegisters;
 
 	// формула для вычисления ID
 	// требования:
