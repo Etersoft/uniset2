@@ -278,6 +278,9 @@ MBExchange::DeviceType MBExchange::getDeviceType( const std::string dtype )
 	
 	if( dtype == "rtu" || dtype == "RTU" )
 		return dtRTU;
+
+	if( dtype == "rtu188" || dtype == "RTU188" )
+		return dtRTU188;
 	
 	return dtUnknown;
 }
@@ -1840,6 +1843,12 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
 		if( !initMTRitem(it,r) )
 			return false;
 	}
+	else if( dev->dtype == MBExchange::dtRTU188 )
+	{
+		// only for RTU188
+ 		if( !initRTU188item(it,r) )
+			return false;
+	}
 	else
 	{
 		dlog[Debug::CRIT] << myname << "(initRegInfo): Unknown mbtype='" << dev->dtype
@@ -2116,15 +2125,49 @@ bool MBExchange::initItem( UniXML_iterator& it )
 // ------------------------------------------------------------------------------------------
 bool MBExchange::initMTRitem( UniXML_iterator& it, RegInfo* p )
 {
-	p->mtrType = MTR::str2type(it.getProp("mtrtype"));
+	p->mtrType = MTR::str2type(it.getProp(prop_prefix + "mtrtype"));
 	if( p->mtrType == MTR::mtUnknown )
 	{
 		dlog[Debug::CRIT] << myname << "(readMTRItem): Unknown mtrtype '" 
-					<< it.getProp("mtrtype")
+					<< it.getProp(prop_prefix + "mtrtype")
 					<< "' for " << it.getProp("name") << endl;
 
 		return false;
 	}
+
+	return true;
+}
+// ------------------------------------------------------------------------------------------
+bool MBExchange::initRTU188item( UniXML_iterator& it, RegInfo* p )
+{
+	string jack(it.getProp(prop_prefix + "jack"));
+	string chan(it.getProp(prop_prefix + "channel"));
+	
+	if( jack.empty() )
+	{
+		dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown jack='' "
+					<< " for " << it.getProp("name") << endl;
+		return false;
+	}
+	p->rtuJack = RTUStorage::s2j(jack);
+	if( p->rtuJack == RTUStorage::nUnknown )
+	{
+		dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown jack=" << jack
+					<< " for " << it.getProp("name") << endl;
+		return false;
+	}
+
+	if( chan.empty() )
+	{
+		dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown channel='' "
+					<< " for " << it.getProp("name") << endl;
+		return false;
+	}
+	
+	p->rtuChan = UniSetTypes::uni_atoi(chan);
+
+	if( dlog.debugging(Debug::LEVEL2) )
+		dlog[Debug::LEVEL2] << myname << "(readRTU188Item): " << p << endl; 
 
 	return true;
 }
