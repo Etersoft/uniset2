@@ -9,6 +9,30 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
+void SharedMemory::help_print( int argc, const char* const* argv )
+{
+	cout << "--smemory-id           - SharedMemeory ID" << endl;
+	cout << "--logfile fname        - выводить логи в файл fname. По умолчанию smemory.log" << endl;
+	cout << "--datfile fname        - Файл с картой датчиков. По умолчанию configure.xml" << endl;
+	cout << "--s-filter-field       - Фильтр для загрузки списка датчиков." << endl;
+	cout << "--s-filter-value       - Значение фильтра для загрузки списка датчиков." << endl;
+	cout << "--c-filter-field       - Фильтр для загрузки списка заказчиков." << endl;
+	cout << "--c-filter-value       - Значение фильтр для загрузки списка заказчиков." << endl;
+	cout << "--d-filter-field       - Фильтр для загрузки списка зависимостей." << endl;
+	cout << "--d-filter-value       - Значение фильтр для загрузки списка зависимостей." << endl;
+	cout << "--wdt-device           - Использовать в качестве WDT указанный файл." << endl;
+	cout << "--heartbeat-node       - Загружать heartbeat датчики для указанного узла." << endl;
+	cout << "--heartbeat-check-time - период проверки 'счётчиков'. По умолчанию 1000 мсек" << endl;
+	cout << "--lock-value-pause     - пауза между проверкой spin-блокировки на значение" << endl;
+	cout << "--e-filter             - фильтр для считывания <eventlist>" << endl;
+	cout << "--e-startup-pause      - пауза перед посылкой уведомления о старте SM. (По умолчанию: 1500 мсек)." << endl;
+	cout << "--activate-timeout     - время ожидания активизации (По умолчанию: 15000 мсек)." << endl;
+	cout << "--sm-no-history        - отключить ведение истории (аварийного следа)" << endl;
+	cout << "--pulsar-id            - датчик 'мигания'" << endl;
+    cout << "--pulsar-msec          - период 'мигания'. По умолчанию: 5000." << endl;
+    cout << "--pulsar-iotype        - [DI|DO]тип датчика для 'мигания'. По умолчанию DI." << endl;	
+}
+// -----------------------------------------------------------------------------
 SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	IONotifyController_LT(id),
 	heartbeatCheckTime(5000),
@@ -569,26 +593,6 @@ SharedMemory* SharedMemory::init_smemory( int argc, const char* const* argv )
 	return new SharedMemory(ID,dfile);
 }
 // -----------------------------------------------------------------------------
-void SharedMemory::help_print( int argc, const char* const* argv )
-{
-	cout << "--smemory-id           - SharedMemeory ID" << endl;
-	cout << "--logfile fname	- выводить логи в файл fname. По умолчанию smemory.log" << endl;
-	cout << "--datfile fname	- Файл с картой датчиков. По умолчанию configure.xml" << endl;
-	cout << "--s-filter-field	- Фильтр для загрузки списка датчиков." << endl;
-	cout << "--s-filter-value	- Значение фильтра для загрузки списка датчиков." << endl;
-	cout << "--c-filter-field	- Фильтр для загрузки списка заказчиков." << endl;
-	cout << "--c-filter-value	- Значение фильтр для загрузки списка заказчиков." << endl;
-	cout << "--d-filter-field	- Фильтр для загрузки списка зависимостей." << endl;
-	cout << "--d-filter-value	- Значение фильтр для загрузки списка зависимостей." << endl;
-	cout << "--wdt-device		- Использовать в качестве WDT указанный файл." << endl;
-	cout << "--heartbeat-node	- Загружать heartbeat датчики для указанного узла." << endl;
-	cout << "--lock-value-pause - пауза между проверкой spin-блокировки на значение" << endl;
-	cout << "--e-filter 		- фильтр для считывания <eventlist>" << endl;
-	cout << "--e-startup-pause 	- пауза перед посылкой уведомления о старте SM. (По умолчанию: 1500 мсек)." << endl;
-	cout << "--activate-timeout - время ожидания активизации (По умолчанию: 15000 мсек)." << endl;
-
-}
-// -----------------------------------------------------------------------------
 void SharedMemory::buildEventList( xmlNode* cnode )
 {
 	readEventList("objects");
@@ -678,6 +682,14 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 	}
 
 	UniXML_iterator it(n);
+
+	bool no_history = conf->getArgInt("--sm-no-history",it.getProp("no_history"));
+	if( no_history )
+	{
+		dlog[Debug::WARN] << myname << "(buildHistoryList): no_history='1'.. history skipped..." << endl;
+		hist.clear();
+		return;
+	}
 	
 	histSaveTime = it.getIntProp("savetime");
 	if( histSaveTime <= 0 )
