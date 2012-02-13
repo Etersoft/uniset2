@@ -2218,7 +2218,11 @@ std::ostream& operator<<( std::ostream& os, const MBExchange::RSProperty& p )
 // -----------------------------------------------------------------------------
 void MBExchange::initDeviceList()
 {
-	xmlNode* respNode = conf->findNode(cnode,"DeviceList");
+	xmlNode* respNode = 0;
+	UniXML* xml = conf->getConfXML();
+	if( xml )
+		respNode = xml->extFindNode(cnode,1,1,"DeviceList");
+
 	if( respNode )
 	{
 		UniXML_iterator it1(respNode);

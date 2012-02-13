@@ -673,7 +673,14 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 	if( dlog.debugging(Debug::INFO) )
 		dlog[Debug::INFO] << myname << "(buildHistoryList): ..."  << endl;
 
-	xmlNode* n = conf->findNode(cnode,"History");
+	UniXML* xml = conf->getConfXML();
+	if( !xml )
+	{
+		dlog[Debug::WARN] << myname << "(buildHistoryList): xml=NULL?!" << endl;
+		return;
+	}
+	
+	xmlNode* n = xml->extFindNode(cnode,1,1,"History","");
 	if( !n )
 	{
 		dlog[Debug::WARN] << myname << "(buildHistoryList): <History> not found. ignore..." << endl;

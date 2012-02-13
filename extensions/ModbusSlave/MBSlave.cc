@@ -194,7 +194,11 @@ prefix(prefix)
 
 
 	// build file list...
-	xmlNode* fnode = conf->findNode(cnode,"filelist");
+	xmlNode* fnode = 0;
+	UniXML* xml = conf->getConfXML();
+	if( xml )
+		fnode = xml->extFindNode(cnode,1,1,"filelist");
+
 	if( fnode )
 	{
 		UniXML_iterator fit(fnode);
