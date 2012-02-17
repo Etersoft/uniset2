@@ -83,6 +83,11 @@ int main(int argc, char* argv[])
 				printf("[--range] val		- RANGE (Default: %d)\n",range);
 				printf("[-p|--plus] chan	- Add channel for command.\n");
 				printf("[-a|--autoconf] 	- autoconf channel type\n");
+				printf("[-c|--config] chan type	- Set 'type' for 'chan'.\n");
+				printf("    %3d  - DI\n",INSN_CONFIG_DIO_INPUT );
+				printf("    %3d  - DO\n",INSN_CONFIG_DIO_OUTPUT );
+				printf("    %3d  - AI\n",100 );
+				printf("    %3d  - AO\n",101 );
 				printf("[-q|--subdev-config] 	- subdev type configure\n");
 				printf("    1 	- TBI 24/0\n");
 				printf("    2 	- TBI 0/24\n");
@@ -123,6 +128,7 @@ int main(int argc, char* argv[])
 				cmd = cmdAWrite;
 				if( optind<argc && (argv[optind])[0]!='-' )
 						val = atoi(argv[optind]);
+						
 			break;
 
 			case 'd':	
@@ -146,8 +152,17 @@ int main(int argc, char* argv[])
 			break;
 			
 			case 'c':
+			{
 				cmd = cmdConfig;
-				val = atoi(optarg);
+				chan[cnum++] = atoi(optarg);
+				if( optind<argc && (argv[optind])[0]!='-' )
+					val = atoi(argv[optind]);
+				else
+				{
+					fprintf(stderr, "(config error: Unkown channel type. Use '-c chan type'\n");
+					exit(EXIT_FAILURE);
+			  	}
+			}
 			break;
 
 			case 'q':	
@@ -300,19 +315,23 @@ int main(int argc, char* argv[])
 		{
 			for( int k=0; chan[k]!=-1; k++ )
 			{
-
 				if( val != INSN_CONFIG_DIO_INPUT 
 					&& val != INSN_CONFIG_DIO_OUTPUT 
 					&& val != 100 /* INSN_CONFIG_AIO_INPUT */
 					&& val != 101 /* INSN_CONFIG_AIO_OUTPUT */
+					&& val != 200 /* INSN_CONFIG_AIO_INPUT */
+					&& val != 201 /* INSN_CONFIG_AIO_OUTPUT */
 				)
 				{
-	       		    fprintf(stderr, "can't config channel %d for type = %d (val=[%d,%d,%d,%d])\n"
-							,chan[k],val,INSN_CONFIG_DIO_INPUT,INSN_CONFIG_DIO_OUTPUT,100,101);
+	       		    fprintf(stderr, "Configure channel %d type error type='%d'. Type must be [%d,%d,%d,%d,%d,%d])\n"
+							,chan[k],val,INSN_CONFIG_DIO_INPUT,INSN_CONFIG_DIO_OUTPUT,100,101,200,201);
 					exret = EXIT_FAILURE;
 				}
+				else				
+					insn_config(card, subdev, chan[k], val, range, aref );
 			}
 		}
+		break;
 
 		case cmdSubConfig:
 			insn_subdev_config(card, subdev, val);
@@ -329,16 +348,21 @@ int main(int argc, char* argv[])
 
 void insn_config( comedi_t* card, int subdev, int channel, lsampl_t iotype, int range, int aref )
 {
+	lsampl_t data[2];
 	comedi_insn insn;
 	memset(&insn,0,sizeof(insn));
 	insn.insn = INSN_CONFIG;
-	insn.n = 1;
-	insn.data = &iotype;
+	insn.n = 2;
+	insn.data = data;
 	insn.subdev = subdev;
-	insn.chanspec = CR_PACK(channel,range,aref);
+	insn.chanspec = CR_PACK(channel,0,0); // range,aref);
+	
+	data[0] = iotype;
+	data[1] = iotype;
+	
 	if( comedi_do_insn(card,&insn) < 0 )
 	{
-		fprintf(stderr, "can`t configure (AIO) subdev=%d channel=%d type=%d",subdev,channel,iotype);
+		fprintf(stderr, "(insn_config): can`t configure (AIO) subdev=%d channel=%d type=%d. Err(%d): %s\n",subdev,channel,iotype,errno,strerror(errno));
 	  	exit(EXIT_FAILURE);
 	}
 }
@@ -378,7 +402,7 @@ void insn_subdev_config( comedi_t* card, int subdev, lsampl_t type )
 	
 	if( comedi_do_insn(card,&insn) < 0 )
 	{
-		fprintf(stderr, "can`t configure subdev subdev=%d type=%d. Err(%d): %s\n",subdev,type,errno,strerror(errno));
+		fprintf(stderr, "(insn_subdev_config): can`t configure subdev subdev=%d type=%d. Err(%d): %s\n",subdev,type,errno,strerror(errno));
 	  	exit(EXIT_FAILURE);
 	}
 }
