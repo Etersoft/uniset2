@@ -108,14 +108,17 @@ void ComediInterface::configureChannel( int subdev, int channel, ChannelType t,
 		case ComediInterface::AI:
 		case ComediInterface::AO:
 		{
+			lsampl_t data[2];
 			comedi_insn insn;
-			lsampl_t iotype = t;
 			memset(&insn,0,sizeof(insn));
 			insn.insn = INSN_CONFIG;
-			insn.n = 1;
-			insn.data = &iotype;
+			insn.n = 2;
+			insn.data = data;
 			insn.subdev = subdev;
 			insn.chanspec = CR_PACK(channel,range,aref);
+			data[0] = t;
+			data[1] = t;
+
 			if( comedi_do_insn(card,&insn) < 0 )
 			{
 				ostringstream err;
