@@ -302,10 +302,14 @@ class SharedMemory:
 				id(0),
 				size(0),filter(""),
 				fuse_id(UniSetTypes::DefaultObjectId),
-				fuse_invert(false),fuse_use_val(false),fuse_val(0)
+				fuse_invert(false),fuse_use_val(false),fuse_val(0),
+				fuse_sec(0),fuse_usec(0)
 				{
+					  struct timeval tv;
 					  struct timezone tz;
-					  gettimeofday(&fuse_tm,&tz);
+					  gettimeofday(&tv,&tz);
+					  fuse_sec = tv.tv_sec;
+					  fuse_usec = tv.tv_usec;
 				}
 			
 			long id;						// ID
@@ -316,12 +320,20 @@ class SharedMemory:
 			bool fuse_invert;
 			bool fuse_use_val;
 			long fuse_val;
-			struct timeval fuse_tm;			// timestamp
+			// timestamp
+			long fuse_sec;
+			long fuse_usec;
 		};
 		
 		friend std::ostream& operator<<( std::ostream& os, const HistoryInfo& h );
 		
 		typedef std::list<HistoryInfo> History;
+
+		// т.к. могуть быть одинаковые "детонаторы" для разных "историй" то, 
+		// вводим не просто map, а "map списка историй". 
+		// точнее итераторов-историй.
+		typedef std::list<History::iterator> HistoryItList;
+		typedef std::map<UniSetTypes::ObjectId,HistoryItList> HistoryFuseMap;
 
 		typedef sigc::signal<void,HistoryInfo*> HistorySlot;
 		HistorySlot signal_history(); /*!< сигнал о срабатывании условий "сборса" дампа истории */
@@ -355,7 +367,6 @@ class SharedMemory:
 //		virtual void logging(UniSetTypes::SensorMessage& sm){}
 //		virtual void dumpToDB(){}
 		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
-
 	
 		void buildEventList( xmlNode* cnode );
 		void readEventList( std::string oname );
@@ -420,6 +431,7 @@ class SharedMemory:
 		bool dblogging;
 
 		History hist;
+		HistoryFuseMap histmap;  /*!< map для оптимизации поиска */
 
 		virtual void updateHistory( UniSetTypes::SensorMessage* sm );
 		virtual void saveHistory();

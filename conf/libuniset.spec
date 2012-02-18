@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.3
-Release: alt6
+Release: alt7
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -213,6 +213,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Sat Feb 18 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt7
+- changed implementation SharedMemory::History (optimization)
+
 * Fri Feb 17 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt6
 - (io): corrected a mistake in configuring analog I/O
 

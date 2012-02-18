@@ -53,6 +53,8 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	// ----------------------
 	buildHistoryList(cnode);
 	signal_change_state().connect(sigc::mem_fun(*this, &SharedMemory::updateHistory));
+	for( History::iterator i=hist.begin(); i!=hist.end(); ++i )
+		histmap[i->fuse_id].push_back(i);
 	// ----------------------
 	restorer = NULL;
 	NCRestorer_XML* rxml = new NCRestorer_XML(datafile);
@@ -839,48 +841,54 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 			<< endl;
 	}
 
-	for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
+	HistoryFuseMap::iterator i = histmap.find(sm->id);
+	if( i == histmap.end() )
+		return;
+
+	for( HistoryItList::iterator it1=i->second.begin(); it1!=i->second.end(); ++it1 )
 	{
-		if( sm->id == it->fuse_id )
+		History::iterator it( (*it1) );
+
+		if( sm->sensor_type == UniversalIO::DigitalInput ||
+			sm->sensor_type == UniversalIO::DigitalOutput )
 		{
-			if( sm->sensor_type == UniversalIO::DigitalInput ||
-				sm->sensor_type == UniversalIO::DigitalOutput )
+			bool st = it->fuse_invert ? !sm->state : sm->state;
+			if( st )
+			{
+				if( dlog.debugging(Debug::INFO) )
+					dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+		
+				it->fuse_sec = sm->sm_tv_sec;
+				it->fuse_usec = sm->sm_tv_usec;
+				m_historySignal.emit( &(*it) );
+			}
+		}
+		else if( sm->sensor_type == UniversalIO::AnalogInput ||
+				 sm->sensor_type == UniversalIO::AnalogOutput )
+		{
+			if( !it->fuse_use_val )
 			{
 				bool st = it->fuse_invert ? !sm->state : sm->state;
-				if( st )
+				if( !st )
 				{
 					if( dlog.debugging(Debug::INFO) )
 						dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
-			
-					it->fuse_tm = sm->tm;
+
+					it->fuse_sec = sm->sm_tv_sec;
+					it->fuse_usec = sm->sm_tv_usec;
 					m_historySignal.emit( &(*it) );
 				}
 			}
-			else if( sm->sensor_type == UniversalIO::AnalogInput ||
-					 sm->sensor_type == UniversalIO::AnalogOutput )
+			else
 			{
-				if( !it->fuse_use_val )
+				if( sm->value == it->fuse_val )
 				{
-					bool st = it->fuse_invert ? !sm->state : sm->state;
-					if( !st )
-					{
-						if( dlog.debugging(Debug::INFO) )
-							dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+					if( dlog.debugging(Debug::INFO) )
+						dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
-						it->fuse_tm = sm->tm;			
-						m_historySignal.emit( &(*it) );
-					}
-				}
-				else
-				{
-					if( sm->value == it->fuse_val )
-					{
-						if( dlog.debugging(Debug::INFO) )
-							dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
-			
-						it->fuse_tm = sm->tm;
-						m_historySignal.emit( &(*it) );
-					}
+					it->fuse_sec = sm->sm_tv_sec;
+					it->fuse_usec = sm->sm_tv_usec;
+					m_historySignal.emit( &(*it) );
 				}
 			}
 		}
@@ -913,4 +921,3 @@ bool SharedMemory::isActivated()
 	return activated;
 }
 // ------------------------------------------------------------------------------------------
-                               
