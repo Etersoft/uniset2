@@ -4,7 +4,6 @@
 #include "NCRestorer.h"
 #include "SharedMemory.h"
 #include "Extensions.h"
-#include "ORepHelpers.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -31,8 +30,7 @@ void SharedMemory::help_print( int argc, const char* const* argv )
 	cout << "--sm-no-history        - отключить ведение истории (аварийного следа)" << endl;
 	cout << "--pulsar-id            - датчик 'мигания'" << endl;
     cout << "--pulsar-msec          - период 'мигания'. По умолчанию: 5000." << endl;
-    cout << "--pulsar-iotype        - [DI|DO]тип датчика для 'мигания'. По умолчанию DI." << endl;	
-    cout << "--db-logging [1,0]     - Включение логирования в DBServer. По умолчанию 0 (выключено)" << endl;	
+    cout << "--pulsar-iotype        - [DI|DO]тип датчика для 'мигания'. По умолчанию DI." << endl;
 }
 // -----------------------------------------------------------------------------
 SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname ):
@@ -52,15 +50,13 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 
 	xmlNode* cnode =  conf->getNode(cname);
 	if( cnode == NULL )
-		throw SystemError("Not found conf-node for " + cname );
+		throw SystemError("Not find conf-node for SharedMemory");
 
 	UniXML_iterator it(cnode);
 
 	// ----------------------
 	buildHistoryList(cnode);
 	signal_change_state().connect(sigc::mem_fun(*this, &SharedMemory::updateHistory));
-	for( History::iterator i=hist.begin(); i!=hist.end(); ++i )
-		histmap[i->fuse_id].push_back(i);
 	// ----------------------
 	restorer = NULL;
 	NCRestorer_XML* rxml = new NCRestorer_XML(datafile);
@@ -133,11 +129,10 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 		if( !t.empty() )
 		{
 			iotypePulsar = UniSetTypes::getIOType(t);
-			if( iotypePulsar == UniversalIO::UnknownIOType || 
-				iotypePulsar == UniversalIO::AnalogInput || iotypePulsar == UniversalIO::AnalogOutput )
+			if( iotypePulsar == UniversalIO::UnknownIOType )
 			{
 				ostringstream err;
-				err << myname << ": Invalid iotype '" << t << "' for pulsar. Must be 'DI' or 'DO'";
+				err << myname << ": Unknown iotype '" << t << "' for pulsar. Must be 'DI' or 'DO'";
 				dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
@@ -335,7 +330,7 @@ bool SharedMemory::activateObject()
 			uniset_mutex_lock l(act_mutex,100);
 			activated = false;
 		}
-		
+
 		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
 		res = IONotifyController_LT::activateObject();
 
@@ -529,6 +524,59 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 	return true;
 }
 // ------------------------------------------------------------------------------------------
+void SharedMemory::localSaveValue( AIOStateList::iterator& it, const IOController_i::SensorInfo& si,
+										CORBA::Long newvalue, UniSetTypes::ObjectId sup_id )
+{
+	if( hist.empty() )
+	{
+		IONotifyController_LT::localSaveValue( it, si, newvalue, sup_id );
+		return;
+	}
+
+	uniset_mutex_lock l(hbmutex);
+	IONotifyController_LT::localSaveValue( it, si, newvalue, sup_id );
+}
+// ------------------------------------------------------------------------------------------
+void SharedMemory::localSaveState( DIOStateList::iterator& it, const IOController_i::SensorInfo& si,
+										CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id )
+{
+	if( hist.empty() )
+	{
+		IONotifyController_LT::localSaveState( it, si, newstate, sup_id );
+		return;
+	}
+
+	uniset_mutex_lock l(hbmutex);
+	IONotifyController_LT::localSaveState( it, si, newstate, sup_id );
+}
+// ------------------------------------------------------------------------------------------
+void SharedMemory::localSetState( DIOStateList::iterator& it, const IOController_i::SensorInfo& si,
+										CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id )
+{
+	if( hist.empty() )
+	{
+		IONotifyController_LT::localSetState( it, si, newstate, sup_id );
+		return;
+	}
+
+	uniset_mutex_lock l(hbmutex);
+	IONotifyController_LT::localSetState( it, si, newstate, sup_id );
+}
+// ------------------------------------------------------------------------------------------
+void SharedMemory::localSetValue( AIOStateList::iterator& it, const IOController_i::SensorInfo& si,
+										CORBA::Long value, UniSetTypes::ObjectId sup_id )
+{
+	if( hist.empty() )
+	{
+		IONotifyController_LT::localSetValue( it, si, value, sup_id );
+		return;
+	}
+
+	uniset_mutex_lock l(hbmutex);
+	IONotifyController_LT::localSetValue( it, si, value, sup_id );
+}
+// ------------------------------------------------------------------------------------------
+
 SharedMemory* SharedMemory::init_smemory( int argc, const char* const* argv )
 {
 	string dfile = conf->getArgParam("--datfile", conf->getConfFileName());
@@ -546,9 +594,9 @@ SharedMemory* SharedMemory::init_smemory( int argc, const char* const* argv )
                         << endl;
 		return 0;
 	}
-	
+
 	string cname = conf->getArgParam("--smemory--confnode", ORepHelpers::getShortName(conf->oind->getMapName(ID)) );
-	
+
 	return new SharedMemory(ID,dfile,cname);
 }
 // -----------------------------------------------------------------------------
@@ -638,7 +686,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 		dlog[Debug::WARN] << myname << "(buildHistoryList): xml=NULL?!" << endl;
 		return;
 	}
-	
+
 	xmlNode* n = xml->extFindNode(cnode,1,1,"History","");
 	if( !n )
 	{
@@ -798,54 +846,48 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 			<< endl;
 	}
 
-	HistoryFuseMap::iterator i = histmap.find(sm->id);
-	if( i == histmap.end() )
-		return;
-
-	for( HistoryItList::iterator it1=i->second.begin(); it1!=i->second.end(); ++it1 )
+	for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
 	{
-		History::iterator it( (*it1) );
-
-		if( sm->sensor_type == UniversalIO::DigitalInput ||
-			sm->sensor_type == UniversalIO::DigitalOutput )
+		if( sm->id == it->fuse_id )
 		{
-			bool st = it->fuse_invert ? !sm->state : sm->state;
-			if( st )
-			{
-				if( dlog.debugging(Debug::INFO) )
-					dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
-		
-				it->fuse_sec = sm->sm_tv_sec;
-				it->fuse_usec = sm->sm_tv_usec;
-				m_historySignal.emit( &(*it) );
-			}
-		}
-		else if( sm->sensor_type == UniversalIO::AnalogInput ||
-				 sm->sensor_type == UniversalIO::AnalogOutput )
-		{
-			if( !it->fuse_use_val )
+			if( sm->sensor_type == UniversalIO::DigitalInput ||
+				sm->sensor_type == UniversalIO::DigitalOutput )
 			{
 				bool st = it->fuse_invert ? !sm->state : sm->state;
-				if( !st )
+				if( st )
 				{
 					if( dlog.debugging(Debug::INFO) )
 						dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
-
-					it->fuse_sec = sm->sm_tv_sec;
-					it->fuse_usec = sm->sm_tv_usec;
+			
+					it->fuse_tm = sm->tm;
 					m_historySignal.emit( &(*it) );
 				}
 			}
-			else
+			else if( sm->sensor_type == UniversalIO::AnalogInput ||
+					 sm->sensor_type == UniversalIO::AnalogOutput )
 			{
-				if( sm->value == it->fuse_val )
+				if( !it->fuse_use_val )
 				{
-					if( dlog.debugging(Debug::INFO) )
-						dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+					bool st = it->fuse_invert ? !sm->state : sm->state;
+					if( !st )
+					{
+						if( dlog.debugging(Debug::INFO) )
+							dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
-					it->fuse_sec = sm->sm_tv_sec;
-					it->fuse_usec = sm->sm_tv_usec;
-					m_historySignal.emit( &(*it) );
+						it->fuse_tm = sm->tm;			
+						m_historySignal.emit( &(*it) );
+					}
+				}
+				else
+				{
+					if( sm->value == it->fuse_val )
+					{
+						if( dlog.debugging(Debug::INFO) )
+							dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+			
+						it->fuse_tm = sm->tm;
+						m_historySignal.emit( &(*it) );
+					}
 				}
 			}
 		}
