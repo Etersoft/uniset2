@@ -257,7 +257,7 @@ class SharedMemory:
 	public IONotifyController_LT
 {
 	public:
-		SharedMemory( UniSetTypes::ObjectId id, std::string datafile );
+		SharedMemory( UniSetTypes::ObjectId id, std::string datafile, std::string confname="" );
 		virtual ~SharedMemory();
 
 		/*! глобальная функция для инициализации объекта */

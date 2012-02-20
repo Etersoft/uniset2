@@ -34,7 +34,7 @@ void SharedMemory::help_print( int argc, const char* const* argv )
     cout << "--pulsar-iotype        - [DI|DO]тип датчика для 'мигания'. По умолчанию DI." << endl;	
 }
 // -----------------------------------------------------------------------------
-SharedMemory::SharedMemory( ObjectId id, string datafile ):
+SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname ):
 	IONotifyController_LT(id),
 	heartbeatCheckTime(5000),
 	histSaveTime(0),
@@ -45,7 +45,9 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	iotypePulsar(UniversalIO::DigitalInput),
 	msecPulsar(0)
 {
-	string cname( ORepHelpers::getShortName(conf->oind->getMapName(id)) );
+	string cname(confname);
+	if( cname.empty() )
+		cname = ORepHelpers::getShortName(conf->oind->getMapName(id));
 
 	xmlNode* cnode =  conf->getNode(cname);
 	if( cnode == NULL )
@@ -595,7 +597,10 @@ SharedMemory* SharedMemory::init_smemory( int argc, const char* const* argv )
                         << endl;
 		return 0;
 	}
-	return new SharedMemory(ID,dfile);
+	
+	string cname = conf->getArgParam("--smemory--confnode", ORepHelpers::getShortName(conf->oind->getMapName(ID)) );
+	
+	return new SharedMemory(ID,dfile,cname);
 }
 // -----------------------------------------------------------------------------
 void SharedMemory::buildEventList( xmlNode* cnode )
