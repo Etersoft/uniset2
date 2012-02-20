@@ -4,6 +4,7 @@
 #include "NCRestorer.h"
 #include "SharedMemory.h"
 #include "Extensions.h"
+#include "ORepHelpers.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -44,9 +45,11 @@ SharedMemory::SharedMemory( ObjectId id, string datafile ):
 	iotypePulsar(UniversalIO::DigitalInput),
 	msecPulsar(0)
 {
-	xmlNode* cnode = conf->getNode("SharedMemory");
+	string cname( ORepHelpers::getShortName(conf->oind->getMapName(id)) );
+
+	xmlNode* cnode =  conf->getNode(cname);
 	if( cnode == NULL )
-		throw SystemError("Not find conf-node for SharedMemory");
+		throw SystemError("Not find conf-node for " + cname );
 
 	UniXML_iterator it(cnode);
 
