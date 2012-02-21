@@ -111,9 +111,9 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 			// -----------------------------------
 		}
 		
-		// опрос UNIO48 DO
 		if( pollUNIO )
 		{
+			// опрос UNIO48 DO
 			{
 				ModbusRTU::ReadCoilRetMessage ret = mb->read01( addr,16,48 );
 				ModbusRTU::DataBits bits;
@@ -353,6 +353,84 @@ ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, unsigned short chan
 	return -1;
 }
 // -----------------------------------------------------------------------------
+ModbusRTU::SlaveFunctionCode RTUStorage::getFunction( RTUJack jack, unsigned short chan, UniversalIO::IOTypes t )
+{
+	if( t == UniversalIO::AnalogInput )
+	{
+		switch( jack )
+		{
+			case nJ1:
+			case nJ2:
+			case nJ5:
+			case nX1:
+			case nX2:
+				return ModbusRTU::fnReadInputRegisters;
+				
+			default:
+				break;
+		}
+		
+		return ModbusRTU::fnUnknown;
+	}
+
+	if( t == UniversalIO::AnalogOutput )
+	{
+		switch( jack )
+		{
+			case nJ1:
+			case nJ2:
+			case nJ5:
+				return ModbusRTU::fnReadOutputRegisters;
+
+			case nX1:
+			case nX2:
+				return ModbusRTU::fnReadInputRegisters;
+				
+			default:
+				break;
+		}
+		
+		return ModbusRTU::fnUnknown;
+	}
+	
+	if( t == UniversalIO::DigitalInput )
+	{
+		switch( jack )
+		{
+			case nJ1:
+			case nJ2:
+			case nJ5:
+			case nX4:
+			case nX5:
+				return ModbusRTU::fnReadInputStatus;
+				
+			default:
+				break;
+		}
+		
+		return ModbusRTU::fnUnknown;
+	}
+
+	if( t == UniversalIO::DigitalOutput )
+	{
+		switch( jack )
+		{
+			case nJ1:
+			case nJ2:
+			case nJ5:
+				return ModbusRTU::fnReadCoilStatus;
+				
+			default:
+				break;
+		}
+		
+		return ModbusRTU::fnUnknown;
+	}
+	
+	return ModbusRTU::fnUnknown;
+}
+// -----------------------------------------------------------------------------
+
 std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 {
 	os << "-------------------" << endl 
@@ -483,20 +561,20 @@ void RTUStorage::print()
 // -----------------------------------------------------------------------------
 RTUStorage::RTUJack RTUStorage::s2j( const std::string jack )
 {
-	if( jack == "J1" )
+	if( jack == "J1" || jack == "j1" )
 		return nJ1;
-	if( jack == "J2" )
+	if( jack == "J2" || jack == "j2" )
 		return nJ2;
-	if( jack == "J5" )
+	if( jack == "J5" || jack == "j5" )
 		return nJ5;
 
-	if( jack == "X1" )
+	if( jack == "X1" || jack == "x1" )
 		return nX1;
-	if( jack == "X2" )
+	if( jack == "X2" || jack == "x2" )
 		return nX2;
-	if( jack == "X4" )
+	if( jack == "X4" || jack == "x4" )
 		return nX4;
-	if( jack == "X5" )
+	if( jack == "X5" || jack == "x5" )
 		return nX5;
 
 	return nUnknown;

@@ -46,6 +46,8 @@ class RTUStorage
 		bool getState( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
 
 		static ModbusRTU::ModbusData getRegister( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
+		
+		static ModbusRTU::SlaveFunctionCode getFunction( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
 	
 		// ДОДЕЛАТЬ: setState, setValue
 		void print();
