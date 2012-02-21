@@ -499,7 +499,7 @@ void IOControl::ioread( IOInfo* it )
 			if( it->stype == UniversalIO::AnalogInput )
 			{
 				int val = card->getAnalogChannel(it->subdev,it->channel, it->range, it->aref);
-/*
+
 				if( unideb.debugging(Debug::LEVEL3) )
 				{
 					dlog[Debug::LEVEL3] << myname << "(iopoll): read AI "
@@ -509,7 +509,7 @@ void IOControl::ioread( IOInfo* it )
 						<< " val=" << val
 						<< endl;
 				}
-*/				
+				
 				IOBase::processingAsAI( ib, val, shm, force );
 			}
 			else if( it->stype == UniversalIO::DigitalInput )
@@ -1704,7 +1704,7 @@ void IOControl::buildCardsList()
 					// для Grayhill конфигурирование не требуется
 					dlog[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card") 
 						<< "(" << cname << ")"
-						<< " subdev" << i << " is 'GRAYHILL'" << endl;
+						<< " init subdev" << i << " 'GRAYHILL'" << endl;
 					return;
 				}
 
