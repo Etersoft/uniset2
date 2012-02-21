@@ -3,6 +3,7 @@
 #include <limits>
 #include <sstream>
 #include <Exceptions.h>
+#include <UniSetTypes.h>
 #include <extensions/Extensions.h>
 #include "MBExchange.h"
 // -----------------------------------------------------------------------------
@@ -1848,6 +1849,15 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
 		// only for RTU188
 		if( !initRTU188item(it,r) )
 			return false;
+
+		UniversalIO::IOTypes t = UniSetTypes::getIOType(it.getProp("iotype"));
+		r->mbreg = RTUStorage::getRegister(r->rtuJack,r->rtuChan,t);
+		r->mbfunc = RTUStorage::getFunction(r->rtuJack,r->rtuChan,t);
+
+		// т.к. с RTU188 свой обмен
+		// mbreg и mbfunc поля не используются
+		return true;
+
 	}
 	else
 	{
@@ -2145,14 +2155,14 @@ bool MBExchange::initRTU188item( UniXML_iterator& it, RegInfo* p )
 
 	if( jack.empty() )
 	{
-		dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown jack='' "
+		dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown " << prop_prefix << "jack='' "
 					<< " for " << it.getProp("name") << endl;
 		return false;
 	}
 	p->rtuJack = RTUStorage::s2j(jack);
 	if( p->rtuJack == RTUStorage::nUnknown )
 	{
-		dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown jack=" << jack
+		dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown " << prop_prefix << "jack=" << jack
 					<< " for " << it.getProp("name") << endl;
 		return false;
 	}
