@@ -131,6 +131,7 @@ class MBExchange:
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, RegInfo& r );
+		friend std::ostream& operator<<( std::ostream& os, RegInfo* r );
 
 		struct RTUDevice
 		{
