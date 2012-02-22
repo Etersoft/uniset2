@@ -409,6 +409,11 @@ std::ostream& operator<<( std::ostream& os, MBExchange::RTUDevice& d )
 	return os;
 }
 // -----------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, MBExchange::RegInfo* r )
+{
+	return os << (*r);
+}
+// -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, MBExchange::RegInfo& r )
 {
 	os << " id=" << r.id
@@ -1945,22 +1950,36 @@ bool MBExchange::initItem( UniXML_iterator& it )
 		return false;
 	}
 
-	ModbusRTU::ModbusData mbreg;
+	ModbusRTU::ModbusData mbreg = 0;
+	int fn = it.getIntProp(prop_prefix + "mbfunc");
 
-	if( mbregFromID )
-		mbreg = p.si.id; // conf->getSensorID(it.getProp("name"));
-	else
+	if( dev->dtype == dtRTU188 )
 	{
-		string reg = it.getProp(prop_prefix + "mbreg");
-		if( reg.empty() )
+		RegInfo r_tmp;
+		if( !initRTU188item(it, &r_tmp) )
 		{
-			dlog[Debug::CRIT] << myname << "(initItem): unknown mbreg(" << prop_prefix << ") for " << it.getProp("name") << endl;
+			dlog[Debug::CRIT] << myname << "(initItem): init RTU188 failed for " << it.getProp("name") << endl;
 			return false;
 		}
-		mbreg = ModbusRTU::str2mbData(reg);
-	}
 
-	int fn = it.getIntProp(prop_prefix + "mbfunc");
+		mbreg = RTUStorage::getRegister(r_tmp.rtuJack,r_tmp.rtuChan,p.stype);
+		fn = RTUStorage::getFunction(r_tmp.rtuJack,r_tmp.rtuChan,p.stype);
+	}
+	else
+	{
+		if( mbregFromID )
+			mbreg = p.si.id; // conf->getSensorID(it.getProp("name"));
+		else
+		{
+			string reg = it.getProp(prop_prefix + "mbreg");
+			if( reg.empty() )
+			{
+				dlog[Debug::CRIT] << myname << "(initItem): unknown mbreg(" << prop_prefix << ") for " << it.getProp("name") << endl;
+				return false;
+			}
+			mbreg = ModbusRTU::str2mbData(reg);
+		}
+	}
 
 	// формула для вычисления ID
 	// требования:
@@ -2177,7 +2196,8 @@ bool MBExchange::initRTU188item( UniXML_iterator& it, RegInfo* p )
 	p->rtuChan = UniSetTypes::uni_atoi(chan);
 
 	if( dlog.debugging(Debug::LEVEL2) )
-		dlog[Debug::LEVEL2] << myname << "(readRTU188Item): " << p << endl;
+		dlog[Debug::LEVEL2] << myname << "(readRTU188Item): add jack='" << jack << "'"
+			<< " channel='" << p->rtuChan << "'" << endl;
 
 	return true;
 }
