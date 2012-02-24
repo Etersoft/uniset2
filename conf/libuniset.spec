@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.3
-Release: alt9
+Release: alt10
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -213,6 +213,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Fri Feb 24 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt10
+- (modbus): realized exchange with RTU188
+
 * Wed Feb 22 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt9
 - (modbus): fixed bug in modbus exchange for RTU188 (initialization)
 
