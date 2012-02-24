@@ -34,7 +34,7 @@ class RTUExchange:
 		bool transmitCtl;
 
 		virtual void step();
-		void poll();
+		virtual void poll();
 
 		virtual ModbusClient* initMB( bool reopen=false );
 		virtual bool initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
