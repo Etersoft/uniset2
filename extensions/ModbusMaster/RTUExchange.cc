@@ -131,11 +131,21 @@ ModbusClient* RTUExchange::initMB( bool reopen )
 
 		dlog[Debug::INFO] << myname << "(init): dev=" << devname << " speed=" << ComPort::getSpeed(defSpeed) << endl;
 	}
+	catch( Exception& ex )
+	{
+		if( mbrtu )
+			delete mbrtu;
+		mbrtu = 0;
+		
+		dlog[Debug::WARN] << myname << "(init): " << ex << endl;
+	}
 	catch(...)
 	{
 		if( mbrtu )
 			delete mbrtu;
 		mbrtu = 0;
+		
+		dlog[Debug::INFO] << myname << "(init): catch...." << endl;
 	}
 
 	mb = mbrtu;
@@ -161,26 +171,38 @@ void RTUExchange::step()
 // -----------------------------------------------------------------------------
 void RTUExchange::poll()
 {
-	if( trAllNotRespond.hi(allNotRespond) )
-		ptTimeout.reset();
-	
-	if( allNotRespond && mb && ptTimeout.checkTime() )
-	{
-		ptTimeout.reset();
-		initMB(true);
-	}
-	
 	if( !mb )
 	{
-		initMB(false);
-		if( !mb )
 		{
-			for( MBExchange::RTUDeviceMap::iterator it=rmap.begin(); it!=rmap.end(); ++it )
-				it->second->resp_real = false;
+			uniset_mutex_lock l(pollMutex, 300);
+			pollActivated = false;
+			mb = initMB(false);
+			if( !mb )
+			{
+				for( MBExchange::RTUDeviceMap::iterator it=rmap.begin(); it!=rmap.end(); ++it )
+					it->second->resp_real = false;
+			}
 		}
+
+		if( !checkProcActive() )
+			return;
+
 		updateSM();
+		allInitOK = false;
 		return;
 	}
+
+	{
+		uniset_mutex_lock l(pollMutex,200);
+		pollActivated = true;
+		ptTimeout.reset();
+	}
+
+	if( !allInitOK )
+		firstInitRegisters();
+
+	if( !checkProcActive() )
+		return;
 
 	ComPort::Speed s = mbrtu->getSpeed();
 	
@@ -193,11 +215,8 @@ void RTUExchange::poll()
 			s = d->speed;
 			mbrtu->setSpeed(d->speed);
 		}
-		
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr) << endl;
-	
-		if( d->dtype==RTUExchange::dtRTU188 )
+
+		if( d->dtype == MBExchange::dtRTU188 )
 		{
 			if( !d->rtu )
 				continue;
@@ -232,6 +251,10 @@ void RTUExchange::poll()
 		}
 		else 
 		{
+			if( dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
+				<< " regs=" << d->regmap.size() << endl;
+
 			d->resp_real = false;
 			for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 			{
@@ -262,6 +285,9 @@ void RTUExchange::poll()
 
 				if( it==d->regmap.end() )
 					break;
+
+				if( !checkProcActive() )
+					return;
 			}
 		}
 	}

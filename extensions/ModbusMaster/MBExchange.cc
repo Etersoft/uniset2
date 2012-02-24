@@ -1925,6 +1925,13 @@ bool MBExchange::initRTUDevice( RTUDevice* d, UniXML_iterator& it )
 	}
 
 	d->mbaddr = ModbusRTU::str2mbAddr(addr);
+
+	if( d->dtype == MBExchange::dtRTU188 )
+	{
+		if( !d->rtu )
+			d->rtu = new RTUStorage(d->mbaddr);
+	}
+
 	return true;
 }
 // ------------------------------------------------------------------------------------------
