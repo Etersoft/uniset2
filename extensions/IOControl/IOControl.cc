@@ -1705,7 +1705,7 @@ void IOControl::buildCardsList()
 					dlog[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card") 
 						<< "(" << cname << ")"
 						<< " init subdev" << i << " 'GRAYHILL'" << endl;
-					return;
+					continue;
 				}
 
 				dlog[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card") 
