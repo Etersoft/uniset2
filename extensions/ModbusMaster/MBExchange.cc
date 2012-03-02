@@ -969,6 +969,8 @@ void MBExchange::updateSM()
 					updateRTU(it);
 				else if( d->dtype == dtMTR )
 					updateMTR(it);
+				else if( d->dtype == dtRTU188 )
+					updateRTU188(it);
 			}
 			catch(IOController_i::NameNotFound &ex)
 			{
@@ -1580,19 +1582,45 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
 	}
 }
 // -----------------------------------------------------------------------------
-void MBExchange::updateRTU188( RegMap::iterator& it )
+void MBExchange::updateRTU188( RegMap::iterator& rit )
 {
-	RegInfo* r(it->second);
-	if( !r->dev->rtu )
+	RegInfo* r(rit->second);
+	if( !r || !r->dev || !r->dev->rtu )
 		return;
 
 	using namespace ModbusRTU;
 
-//	bool save = false;
+	bool save = isWriteFunction( r->mbfunc );
+
+	// пока-что функции записи в обмене с RTU188 
+	// не реализованы
 	if( isWriteFunction(r->mbfunc) )
 	{
-//		save = true;
 		cerr << myname << "(updateRTU188): write reg(" << dat2str(r->mbreg) << ") to RTU188 NOT YET!!!" << endl;
+		return;
+	}
+
+	if( save && exchangeMode == emReadOnly )
+	{
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188):"
+				<< " skip... mode=emReadOnly " << endl;
+		return;
+	}
+
+	if( !save && exchangeMode == emWriteOnly )
+	{
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188):"
+				<< " skip... mode=emWriteOnly " << endl;
+		return;
+	}
+	
+	if( save && exchangeMode == emSkipSaveToSM )
+	{
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(updateRT188):"
+				<< " skip... mode=emSkipSaveToSM " << endl;
 		return;
 	}
 
@@ -1604,14 +1632,11 @@ void MBExchange::updateRTU188( RegMap::iterator& it )
 			{
 				bool set = r->dev->rtu->getState(r->rtuJack,r->rtuChan,it->stype);
 				IOBase::processingAsDI( &(*it), set, shm, force );
-				continue;
 			}
-	
-			if( it->stype == UniversalIO::AnalogInput )
+			else if( it->stype == UniversalIO::AnalogInput )
 			{
 				long val = r->dev->rtu->getInt(r->rtuJack,r->rtuChan,it->stype);
-				IOBase::processingAsAI( &(*it),val, shm, force );
-				continue;
+				IOBase::processingAsAI( &(*it), val, shm, force );
 			}
 		}
 		catch(IOController_i::NameNotFound &ex)
