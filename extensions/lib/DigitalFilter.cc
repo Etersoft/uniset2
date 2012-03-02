@@ -58,6 +58,8 @@ void DigitalFilter::setSettings( unsigned int bufsize, double T, double lsq,
 	if( w.size() != maxsize || lsq != lsparam )
 		w.assign(maxsize, 1.0/maxsize);
 	lsparam = lsq;
+
+	mvec.resize(maxsize);
 }
 //--------------------------------------------------------------------------
 void DigitalFilter::init( int val )
@@ -192,12 +194,10 @@ int DigitalFilter::median( int newval )
 
 	add(newval);
 
-	// ???????? ? ??????
 	FIFOBuffer::iterator it = buf.begin();
 	for( unsigned int i=0; i<maxsize && it!=buf.end(); i++,it++ )
 		mvec[i] = (*it);
 
-	// ????????? ??????
 	sort(mvec.begin(),mvec.end());
 
 	return mvec[maxsize/2];
