@@ -194,9 +194,10 @@ int DigitalFilter::median( int newval )
 
 	add(newval);
 
-	FIFOBuffer::iterator it = buf.begin();
-	for( unsigned int i=0; i<maxsize && it!=buf.end(); i++,it++ )
-		mvec[i] = (*it);
+//	FIFOBuffer::iterator it = buf.begin();
+//	for( unsigned int i=0; i<maxsize && it!=buf.end(); i++,it++ )
+//		mvec[i] = (*it);
+	copy(buf.begin(),buf.end(),mvec.begin());
 
 	sort(mvec.begin(),mvec.end());
 
