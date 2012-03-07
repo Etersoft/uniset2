@@ -15,30 +15,19 @@ namespace UniSetExtensions
 	UniSetTypes::ObjectId getSharedMemoryID()
 	{
 		if( shmID != DefaultObjectId )
-			return shmID;
+            return shmID;
+
+        string sname = conf->getArgParam("--smemory-id","SharedMemory1");
+        shmID = conf->getControllerID(sname);
+
+        if( shmID == UniSetTypes::DefaultObjectId )
+        {
+            ostringstream err;
+            err << ": Unknown ID for '" << sname << "'" << endl;
+            dlog[Debug::CRIT] << err.str() << endl;
+            throw SystemError(err.str());
+        }
 	
-		xmlNode* cnode = conf->getNode("SharedMemory");
-		if( cnode == NULL )
-		{
-			ostringstream err;
-			err << "Not find conf-node for SharedMemory";
-			cerr << err.str() << endl;
-			throw SystemError(err.str()); 
-		}
-	
-		UniXML_iterator it(cnode);
-		shmID = conf->getControllerID(it.getProp("shmID"));
-		if( shmID == UniSetTypes::DefaultObjectId )
-		{
-			ostringstream err;
-			err << ": идентификатор '" << it.getProp("shmID")
-				<< "' не найден в конф. файле!"
-				<< " в секции " << conf->getControllersSection() << endl;
-	
-			dlog[Debug::CRIT] << err.str() << endl;
-			throw SystemError(err.str());
-		}
-		
 		// cout << "(uniset): shm=" << name << " id=" << shmID << endl;
 		return shmID;
 	}
