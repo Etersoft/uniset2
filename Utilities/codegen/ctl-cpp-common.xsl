@@ -171,9 +171,9 @@
 		virtual void callback();
 		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
 		virtual void sysCommand( UniSetTypes::SystemMessage* sm );
-		virtual void askSensors( UniversalIO::UIOCommand cmd );
-		virtual void sensorInfo( UniSetTypes::SensorMessage* sm ){};
-		virtual void timerInfo( UniSetTypes::TimerMessage* tm ){};
+		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
+		virtual void sensorInfo( UniSetTypes::SensorMessage* sm ){}
+		virtual void timerInfo( UniSetTypes::TimerMessage* tm ){}
 		virtual void sigterm( int signo );
 		virtual bool activateObject();
 		virtual void testMode( bool state );
@@ -183,6 +183,7 @@
 <xsl:if test="normalize-space($TESTMODE)!=''">
 		bool checkTestMode();
 </xsl:if>
+		void preAskSensors( UniversalIO::UIOCommand cmd );
 		void preSensorInfo( UniSetTypes::SensorMessage* sm );
 		void preTimerInfo( UniSetTypes::TimerMessage* tm );
 		void waitSM( int wait_msec, UniSetTypes::ObjectId testID = UniSetTypes::DefaultObjectId );
@@ -288,6 +289,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* _sm )
 			// сперва обновить входы.. а потом уже выходы
 			updateValues();
 			updateOutputs(true); // принудительное обновление выходов
+			preAskSensors(UniversalIO::UIONotify);
 			askSensors(UniversalIO::UIONotify);
 			active = true;
 			break;
@@ -295,6 +297,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* _sm )
 		
 		case SystemMessage::FoldUp:
 		case SystemMessage::Finish:
+			preAskSensors(UniversalIO::UIODontNotify);
 			askSensors(UniversalIO::UIODontNotify);
 			break;
 		
