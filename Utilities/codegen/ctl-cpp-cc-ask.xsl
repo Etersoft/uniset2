@@ -220,12 +220,12 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::getState( UniSetTypes::ObjectId _si
 }
 // -----------------------------------------------------------------------------
 
-void <xsl:value-of select="$CLASSNAME"/>_SK::askSensors( UniversalIO::UIOCommand _cmd )
+void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOCommand _cmd )
 {
 	PassiveTimer ptAct(activateTimeout);
 	while( !activated &amp;&amp; !ptAct.checkTime() )
 	{	
-		cout &lt;&lt; myname &lt;&lt; "(askSensors): wait activate..." &lt;&lt; endl;
+		cout &lt;&lt; myname &lt;&lt; "(preAskSensors): wait activate..." &lt;&lt; endl;
 		msleep(300);
 		if( activated )
 			break;
@@ -233,7 +233,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askSensors( UniversalIO::UIOCommand
 			
 	if( !activated )
 		unideb[Debug::CRIT] &lt;&lt; myname 
-			&lt;&lt; "(askSensors): ************* don`t activated?! ************" &lt;&lt; endl;
+			&lt;&lt; "(preAskSensors): ************* don`t activated?! ************" &lt;&lt; endl;
 
 	for( ;; )
 	{
@@ -253,15 +253,15 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askSensors( UniversalIO::UIOCommand
 		}
 		catch(SystemError&amp; err)
 		{
-			unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(askSensors): " &lt;&lt; err &lt;&lt; endl;
+			unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(preAskSensors): " &lt;&lt; err &lt;&lt; endl;
 		}
 		catch(Exception&amp; ex)
 		{
-			unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(askSensors): " &lt;&lt; ex &lt;&lt; endl;
+			unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(preAskSensors): " &lt;&lt; ex &lt;&lt; endl;
 		}
 		catch(...)
 		{
-			unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(askSensors): catch(...)" &lt;&lt; endl;
+			unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(preAskSensors): catch(...)" &lt;&lt; endl;
 		}
 		msleep(askPause);
 	}

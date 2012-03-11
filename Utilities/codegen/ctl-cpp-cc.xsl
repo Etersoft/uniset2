@@ -149,7 +149,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool force )
 -->
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::askSensors( UniversalIO::UIOCommand cmd )
+void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOCommand cmd )
 {
 	<xsl:for-each select="//smap/item">
 		<xsl:choose>

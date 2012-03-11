@@ -109,7 +109,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 	msleep( sleep_msec );
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::askSensors( UniversalIO::UIOCommand _cmd )
+void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOCommand _cmd )
 {
 	// имитируем изменения для посылки сообщений при старте
 	if( _cmd == UniversalIO::UIONotify )
