@@ -81,7 +81,7 @@ static void print_help(int width, const string cmd, const string help, const str
 // --------------------------------------------------------------------------
 static void short_usage()
 {
-	cout << "Usage: uniset-admin [--confile configure.xml] --command [arg]	\n for detailed information arg --help";
+	cout << "Usage: uniset-admin [--confile configure.xml] --command [arg]	\n for detailed information arg --help" << endl;
 }
 
 // --------------------------------------------------------------------------
