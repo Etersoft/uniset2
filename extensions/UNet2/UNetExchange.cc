@@ -223,7 +223,7 @@ sender2(0)
 			}
 		}
 
-		string s_resp_comm_id(n_it.getProp("unet_respond2_id"));
+		string s_resp_comm_id(n_it.getProp("unet_respond_id"));
 		UniSetTypes::ObjectId resp_comm_id = UniSetTypes::DefaultObjectId;
 		if( !s_resp_comm_id.empty() )
 		{
@@ -231,7 +231,7 @@ sender2(0)
 			if( resp_comm_id == UniSetTypes::DefaultObjectId )
 			{
 				ostringstream err;
-				err << myname << ": Unknown RespondID(2).. Not found id for '" << s_resp_comm_id << "'" << endl;
+				err << myname << ": Unknown RespondID(comm).. Not found id for '" << s_resp_comm_id << "'" << endl;
 				dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
