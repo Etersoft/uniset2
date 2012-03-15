@@ -157,7 +157,7 @@ class UNetExchange:
 
 			void step( SMInterface* shm, const std::string myname );
 
-			inline void setRespondID( UniSetTypes::ObjectId id, bool invert=false)
+			inline void setRespondID( UniSetTypes::ObjectId id, bool invert=false )
 			{ 
 				sidRespond = id; 
 				respondInvert = invert;
