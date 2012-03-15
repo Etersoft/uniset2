@@ -35,7 +35,9 @@ int main(int argc, const char **argv)
 		for(int i=0; i<size; i++)
 			cout << "id=" << seq[i].si.id << " val=" << seq[i].value << endl;
 */			
-		bool fullname = conf->getArgInt("--fullname");
+		bool fullname = false;
+		if( findArgParam("--fullname",conf->getArgc(),conf->getArgv()) != -1 )
+			fullname = true;
 
 		SViewer sv(conf->getControllersSection(),!fullname);
 		timeout_t timeMS = conf->getArgInt("--polltime");

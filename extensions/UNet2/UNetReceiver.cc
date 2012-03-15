@@ -28,6 +28,7 @@ recvTimeout(5000),
 lostTimeout(5000),
 lostPackets(0),
 sidRespond(UniSetTypes::DefaultObjectId),
+respondInvert(false),
 sidLostPackets(UniSetTypes::DefaultObjectId),
 activated(false),
 r_thr(0),
@@ -118,9 +119,10 @@ void UNetReceiver::setMaxDifferens( unsigned long set )
 	maxDifferens = set;
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::setRespondID( UniSetTypes::ObjectId id )
+void UNetReceiver::setRespondID( UniSetTypes::ObjectId id, bool invert )
 {
 	sidRespond = id;
+	respondInvert = invert;
 	shm->initDIterator(ditRespond);
 }
 // -----------------------------------------------------------------------------
@@ -175,7 +177,8 @@ void UNetReceiver::update()
 		{
 			try
 			{
-				shm->localSaveState(ditRespond,sidRespond,isRecvOK(),shm->ID());
+				bool r = respondInvert ? !isRecvOK() : isRecvOK();
+				shm->localSaveState(ditRespond,sidRespond,r,shm->ID());
 			}
 			catch(Exception& ex)
 			{

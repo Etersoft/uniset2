@@ -148,6 +148,7 @@ class UNetExchange:
 			ReceiverInfo(UNetReceiver* _r1, UNetReceiver* _r2 ):
 				r1(_r1),r2(_r2),
 				sidRespond(UniSetTypes::DefaultObjectId),
+				respondInvert(false),
 				sidLostPackets(UniSetTypes::DefaultObjectId)
 			{}
 			
@@ -156,7 +157,11 @@ class UNetExchange:
 
 			void step( SMInterface* shm, const std::string myname );
 
-			inline void setRespondID( UniSetTypes::ObjectId id ){ sidRespond = id; }
+			inline void setRespondID( UniSetTypes::ObjectId id, bool invert=false)
+			{ 
+				sidRespond = id; 
+				respondInvert = invert;
+			}
 			inline void setLostPacketsID( UniSetTypes::ObjectId id ){ sidLostPackets = id; }
 			inline void initIterators( SMInterface* shm )
 			{
@@ -170,6 +175,7 @@ class UNetExchange:
 			// ( реализацию см. ReceiverInfo::step() )
 			UniSetTypes::ObjectId sidRespond;
 			IOController::DIOStateList::iterator ditRespond;
+			bool respondInvert;
 			UniSetTypes::ObjectId sidLostPackets;
 			IOController::AIOStateList::iterator aitLostPackets;
 		};

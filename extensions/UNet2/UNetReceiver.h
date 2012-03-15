@@ -75,7 +75,7 @@ class UNetReceiver
 		 void setLostTimeout( timeout_t msec );
 		 void setMaxDifferens( unsigned long set );
 
-		 void setRespondID( UniSetTypes::ObjectId id );
+		 void setRespondID( UniSetTypes::ObjectId id, bool invert=false );
 		 void setLostPacketsID( UniSetTypes::ObjectId id );
 
 		 void setMaxProcessingCount( int set );
@@ -123,6 +123,7 @@ class UNetReceiver
 
 		UniSetTypes::ObjectId sidRespond;
 		IOController::DIOStateList::iterator ditRespond;
+		bool respondInvert;
 		UniSetTypes::ObjectId sidLostPackets;
 		IOController::AIOStateList::iterator aitLostPackets;
 
