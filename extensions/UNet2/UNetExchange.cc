@@ -151,6 +151,8 @@ sender2(0)
 			continue;
 		}
 
+		bool resp_invert = n_it.getIntProp("unet_respond_invert");
+
 		string s_resp_id(n_it.getProp("unet_respond1_id"));
 		UniSetTypes::ObjectId resp_id = UniSetTypes::DefaultObjectId;
 		if( !s_resp_id.empty() )
@@ -250,7 +252,7 @@ sender2(0)
 		r->setUpdatePause(updatepause);
 		r->setMaxDifferens(maxDiff);
 		r->setMaxProcessingCount(maxProcessingCount);
-		r->setRespondID(resp_id);
+		r->setRespondID(resp_id,resp_invert);
 		r->setLostPacketsID(lp_id);
 		r->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
 
@@ -273,7 +275,7 @@ sender2(0)
 				r2->setUpdatePause(updatepause);
 				r2->setMaxDifferens(maxDiff);
 				r2->setMaxProcessingCount(maxProcessingCount);
-				r2->setRespondID(resp2_id);
+				r2->setRespondID(resp2_id,resp_invert);
 				r2->setLostPacketsID(lp2_id);
 				r2->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
 			}
@@ -287,7 +289,7 @@ sender2(0)
 		}
 
 		ReceiverInfo ri(r,r2);
-		ri.setRespondID(resp_comm_id);
+		ri.setRespondID(resp_comm_id,resp_invert);
 		ri.setLostPacketsID(lp_comm_id);
 		recvlist.push_back(ri);
 	}
@@ -427,6 +429,9 @@ void UNetExchange::ReceiverInfo::step( SMInterface* shm, const std::string mynam
 		if( sidRespond != DefaultObjectId )
 		{
 			bool resp = ( (r1 && r1->isRecvOK()) || (r2 && r2->isRecvOK()) );
+			if( respondInvert )
+				resp = !resp;
+
 			shm->localSaveState(ditRespond,sidRespond,resp,shm->ID());
 		}
 	}

@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.3
-Release: alt13
+Release: alt14
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -213,6 +213,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Thu Mar 15 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt14
+- (unet2): add 'unet_respond_invert' parameter
+
 * Sun Mar 11 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt13
 - minor fixes in uniset-codegen (add "preAskSensors")
 
