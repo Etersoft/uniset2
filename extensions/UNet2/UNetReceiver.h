@@ -66,7 +66,7 @@ class UNetReceiver
 
 		 void resetTimeout();
 
-		 inline bool isRecvOK(){ return ptRecvTimeout.checkTime(); }
+		 inline bool isRecvOK(){ return !ptRecvTimeout.checkTime(); }
 		 inline unsigned long getLostPacketsNum(){ return lostPackets; }
 
 		 void setReceiveTimeout( timeout_t msec );
