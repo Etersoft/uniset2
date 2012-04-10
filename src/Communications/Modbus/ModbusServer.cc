@@ -1302,7 +1302,7 @@ void ModbusServer::initLog( UniSetTypes::Configuration* conf,
 void ModbusServer::printProcessingTime()
 {
 	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "(processingTime): " << tmProcessing.getCurrent() << " [msec]" << endl;
+		dlog[Debug::INFO] << "(processingTime): " << tmProcessing.getCurrent() << " [msec] (lim: " << tmProcessing.getInterval() << ")" << endl;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string fname, 
@@ -1416,7 +1416,7 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 
 	if( tmProcessing.checkTime() )
 	{
-		dlog[Debug::WARN] << "(send): reply timeout(" << replyTimeout_ms << ")...!!!" << endl;
+		dlog[Debug::WARN] << "(send): reply timeout(" << tmProcessing.getInterval() << ")...!!!" << endl;
 		return erTimeOut;
 	}
 
