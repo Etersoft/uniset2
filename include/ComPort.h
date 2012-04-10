@@ -93,8 +93,7 @@ public:
 	
 	void setBlocking(bool blocking);
 	
-	void cleanupChannel();
-	
+	virtual void cleanupChannel();
 	virtual void reopen();
 	
 protected:

@@ -27,6 +27,9 @@ class ComPort485F:
 		virtual void setTimeout( int timeout );
 		virtual int sendBlock( unsigned char*msg,int len );
 
+		virtual void cleanupChannel();
+		virtual void reopen();
+		
 	protected:
 
 		virtual unsigned char m_receiveByte( bool wait );

@@ -274,3 +274,23 @@ void ComPort485F::m_read( int tmsec )
 	}
 }
 // --------------------------------------------------------------------------------
+void ComPort485F::cleanupChannel()
+{
+	while( !wq.empty() )
+		wq.pop();
+	while( !rq.empty() )
+		rq.pop();
+
+	ComPort::cleanupChannel();
+}
+// --------------------------------------------------------------------------------
+void ComPort485F::reopen()
+{
+	while( !wq.empty() )
+		wq.pop();
+	while( !rq.empty() )
+		rq.pop();
+
+	ComPort::reopen();
+}
+// --------------------------------------------------------------------------------
