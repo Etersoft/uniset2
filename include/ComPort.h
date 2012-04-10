@@ -90,11 +90,10 @@ public:
 
 	virtual int receiveBlock(unsigned char*msg,int len);
 	virtual int sendBlock(unsigned char*msg,int len);
-	
+
 	void setBlocking(bool blocking);
-	
-	void cleanupChannel();
-	
+
+	virtual void cleanupChannel();
 	virtual void reopen();
 
 protected:
