@@ -1883,6 +1883,16 @@ void UniversalInterface::send( ObjectId name, TransportMessage& msg, ObjectId no
 			oref = CORBA::Object::_nil();
 		}
 	}
+	catch(IOController_i::NameNotFound& ex)
+	{
+		rcache.erase(name, node);
+		throw UniSetTypes::NameNotFound("UI(getType): "+string(ex.err));
+	}
+	catch(IOController_i::IOBadParam& ex)
+	{
+		rcache.erase(name, node);
+		throw UniSetTypes::IOBadParam("UI(getType): "+string(ex.err));
+	}
 	catch(ORepFailed)
 	{
 		rcache.erase(name, node);
