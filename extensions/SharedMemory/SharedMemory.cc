@@ -50,7 +50,7 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 
 	xmlNode* cnode =  conf->getNode(cname);
 	if( cnode == NULL )
-		throw SystemError("Not find conf-node for SharedMemory");
+		throw SystemError("Not found conf-node for " + cname );
 
 	UniXML_iterator it(cnode);
 
