@@ -35,7 +35,7 @@ prefix(prefix)
 //	xmlNode* cnode = conf->getNode(myname);
 	cnode = conf->getNode(myname);
 	if( cnode == NULL )
-		throw UniSetTypes::SystemError("(MBSlave): Not find conf-node for " + myname );
+		throw UniSetTypes::SystemError("(MBSlave): Not found conf-node for " + myname );
 
 	shm = new SMInterface(shmId,&ui,objId,ic);
 
