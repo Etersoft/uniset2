@@ -58,7 +58,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	string cname = conf->getArgParam("--"+prefix+"-confnode",myname);
 	cnode = conf->getNode(cname);
 	if( cnode == NULL )
-		throw SystemError("Not find conf-node " + cname + " for " + myname);
+		throw SystemError("Not found conf-node " + cname + " for " + myname);
 
 	defCardNum = conf->getArgInt("--"+prefix+"-default-cardnum","-1");
 	maxCardNum = conf->getArgInt("--"+prefix+"-max-cardnum","10");

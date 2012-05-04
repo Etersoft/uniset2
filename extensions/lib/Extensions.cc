@@ -42,7 +42,7 @@ namespace UniSetExtensions
 		if( cnode == NULL )
 		{
 			ostringstream err;
-			err << "Not find conf-node for HeartBeatTime";
+			err << "Not found conf-node for HeartBeatTime";
 			cerr << err.str() << endl;
 			throw SystemError(err.str());
 		}
