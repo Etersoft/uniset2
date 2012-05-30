@@ -10,6 +10,7 @@ using namespace std;
 static void short_usage()
 {
 	cout << "Usage: uniset-nullController"
+	 	 << "--confile configure.xml. По умолчанию: configure.xml." << endl
 		 << " --name ObjectId [--confile configure.xml] [--askfile filename] \n"
 		 << " --s-filter-field name - поле для фильтрования списка датчиков\n"
 		 << " --s-filter-value value - значение для поля фильтрования списка датчиков \n"
