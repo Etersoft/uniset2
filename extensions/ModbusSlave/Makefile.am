@@ -1,7 +1,7 @@
-bin_PROGRAMS 			= @PACKAGE@-mbslave
+bin_PROGRAMS = @PACKAGE@-mbslave
 
 # не забывайте править версию в pc-файле
-UMBS_VER=1:1:1
+UMBS_VER=@LIBVER@
 
 lib_LTLIBRARIES 				= libUniSetMBSlave.la
 libUniSetMBSlave_la_LDFLAGS  = -version-info $(UMBS_VER)

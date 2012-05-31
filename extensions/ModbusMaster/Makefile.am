@@ -11,7 +11,7 @@ lib_LTLIBRARIES 	= libUniSetMBTCPMaster.la libUniSetRTU.la
 
 # -------------------- Mobus TCP -------------------
 # не забывайте править версию в pc-файле
-UMBTCP_VER=1:3:1
+UMBTCP_VER=@LIBVER@
 
 
 libUniSetMBTCPMaster_la_LDFLAGS  = -version-info $(UMBTCP_VER)

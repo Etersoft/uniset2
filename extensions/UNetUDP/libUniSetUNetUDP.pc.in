@@ -3,9 +3,9 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libUniSetUNet2
-Description: Support library for UniSetUNet2
+Name: libUniSetUNetUDP
+Description: Support library for UniSetUNetUDP
 Requires: libUniSetExtensions
 Version: @VERSION@
-Libs: -L${libdir} -lUniSetUNet2
+Libs: -L${libdir} -lUniSetUNetUDP
 Cflags: -I${includedir}/uniset
