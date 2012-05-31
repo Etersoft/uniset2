@@ -23,7 +23,7 @@ eval $(head -n1 $PCFILE)
 
 test -d "$prefix" || exit 1
 
-export PKG_CONFIG_PATH=$EXPORTPATH:$EXPORTPATH/extensions:$EXPORTPATH/extensions/SharedMemory:$EXPORTPATH/extensions/UniNetwork:$PKG_CONFIG_PATH
+export PKG_CONFIG_PATH=$EXPORTPATH:$EXPORTPATH/extensions:$EXPORTPATH/extensions/SharedMemory:$EXPORTPATH/extensions/UniNetwork:$EXPORTPATH/extensions/LogicProcessor:$EXPORTPATH/extensions/UNetUDP:$EXPORTPATH/extensions/DBServer-MySQL:$PKG_CONFIG_PATH
 
 cflags()
 {
@@ -69,7 +69,7 @@ EXFILE="$EXPORTPATH/extensions/ModbusSlave libUniSetMBSlave.pc"
 export UNISET_EXT_MBS_CFLAGS="$( ext_cflags $EXFILE )"
 export UNISET_EXT_MBS_LIBS="$( ext_libs $EXFILE )"
 
-EXFILE="$EXPORTPATH/extensions/MBTCPMaster libUniSetMBTCPMaster.pc"
+EXFILE="$EXPORTPATH/extensions/ModbusMaster libUniSetMBTCPMaster.pc"
 export UNISET_EXT_MBM_CFLAGS="$( ext_cflags $EXFILE )"
 export UNISET_EXT_MBM_LIBS="$( ext_libs $EXFILE )"
 
@@ -77,8 +77,20 @@ EXFILE="$EXPORTPATH/extensions/UniNetwork libUniSetNetwork.pc"
 export UNISET_EXT_NET_CFLAGS="$( ext_cflags $EXFILE )"
 export UNISET_EXT_NET_LIBS="$( ext_libs $EXFILE )"
 
-EXFILE="$EXPORTPATH/extensions/RTUExchange libUniSetRTU.pc"
+EXFILE="$EXPORTPATH/extensions/UNetUDP libUniSetUNetUDP.pc"
+export UNISET_EXT_UNETUDP_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_UNETUDP_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/ModbusMaster libUniSetRTU.pc"
 export UNISET_EXT_RTU_CFLAGS="$( ext_cflags $EXFILE )"
 export UNISET_EXT_RTU_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/DBServer-MySQL libUniSetMySQL.pc"
+export UNISET_EXT_MYSQL_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_MYSQL_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/LogicProcessor libUniSetLogicProcessor.pc"
+export UNISET_EXT_LP_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_LP_LIBS="$( ext_libs $EXFILE )"
 
 export UNISET_CODEGEN="sh $EXPORTPATH/Utilities/codegen/uniset-codegen --path $EXPORTPATH/Utilities/codegen"
