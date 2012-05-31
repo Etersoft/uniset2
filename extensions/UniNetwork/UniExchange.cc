@@ -482,7 +482,7 @@ bool UniExchange::initItem( UniXML_iterator& it )
 // ------------------------------------------------------------------------------------------
 void UniExchange::help_print( int argc, const char** argv )
 {
-	cout << "--unet-polltime msec     - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
+	cout << "--unet-polltime msec     - Пауза между опросами узлов. По умолчанию 200 мсек." << endl;
 //	cout << "--unet-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
 //	cout << "--unet-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 	cout << "--unet-sm-ready-timeout - время на ожидание старта SM" << endl;
