@@ -32,6 +32,7 @@
  
 #include <assert.h>
 #include <string>
+#include <cstddef>
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>
