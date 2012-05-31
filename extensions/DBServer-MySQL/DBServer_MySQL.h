@@ -138,6 +138,8 @@ class DBServer_MySQL:
 		DBServer_MySQL();
 		~DBServer_MySQL();
 
+		static const Debug::type DBLogInfoLevel = Debug::LEVEL9;
+
 	protected:
 		typedef std::map<int, std::string> DBTableMap;
 

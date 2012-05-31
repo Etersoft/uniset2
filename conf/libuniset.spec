@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.3
-Release: alt18
+Release: alt19
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -213,6 +213,10 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Thu May 31 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt19
+- DBServer: set log info level - LEVEL9
+- minor fixies for linker errors (new gcc)
+
 * Tue Apr 10 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt18
 - fixed bug in ComPort485F (reinit function)
 
