@@ -78,7 +78,7 @@ s_thr(0)
 // -----------------------------------------------------------------------------
 UNetSender::~UNetSender()
 {
-  	delete s_thr;
+	delete s_thr;
 	delete udp;
 	delete shm;
 }
@@ -106,9 +106,6 @@ void UNetSender::updateFromSM()
 // -----------------------------------------------------------------------------
 void UNetSender::updateSensor( UniSetTypes::ObjectId id, long value )
 {
-	if( !shm->isLocalwork() )
-		return;
-
 //	cerr << myname << ": UPDATE SENSOR id=" << id << " value=" << value << endl;
 	DMap::iterator it=dlist.begin();
 	for( ; it!=dlist.end(); ++it )
@@ -145,7 +142,7 @@ void UNetSender::send()
 /*
 	ost::IPV4Broadcast h = s_host.c_str();
 	try
-	{			
+	{
 		udp->setPeer(h,port);
 	}
 	catch( ost::SockException& e )
@@ -162,7 +159,7 @@ void UNetSender::send()
 		{
 			if( !shm->isLocalwork() )
 				updateFromSM();
-			
+
 			real_send();
 		}
 		catch( ost::SockException& e )
@@ -180,7 +177,7 @@ void UNetSender::send()
 		catch(...)
 		{
 			dlog[Debug::WARN] << myname << "(send): catch ..." << std::endl;
-		}	
+		}
 
 		msleep(sendpause);
 	}
@@ -257,7 +254,7 @@ bool UNetSender::initItem( UniXML_iterator& it )
 	string sname( it.getProp("name") );
 
 	string tid(it.getProp("id"));
-	
+
 	ObjectId sid;
 	if( !tid.empty() )
 	{
@@ -275,10 +272,10 @@ bool UNetSender::initItem( UniXML_iterator& it )
 							<< sname << endl;
 		return false;
 	}
-	
+
 	UItem p;
 	p.iotype = UniSetTypes::getIOType(it.getProp("iotype"));
-	
+
 	if( p.iotype == UniversalIO::UnknownIOType )
 	{
 		dlog[Debug::CRIT] << myname << "(readItem): Unknown iotype for sid=" << sid << endl;
@@ -292,11 +289,9 @@ bool UNetSender::initItem( UniXML_iterator& it )
 		p.pack_ind = mypack.addDData(sid,0);
 		if ( p.pack_ind >= UniSetUDP::MaxDCount )
 		{
-			dlog[Debug::CRIT] << myname 
-					<< "(readItem): OVERFLOW! MAX UDP DIGITAL DATA LIMIT! max=" 
+			dlog[Debug::CRIT] << myname
+					<< "(readItem): OVERFLOW! MAX UDP DIGITAL DATA LIMIT! max="
 					<< UniSetUDP::MaxDCount << endl;
-					
-			raise(SIGTERM);
 			return false;
 		}
 	}
@@ -305,17 +300,16 @@ bool UNetSender::initItem( UniXML_iterator& it )
 		p.pack_ind = mypack.addAData(sid,0);
 		if ( p.pack_ind >= UniSetUDP::MaxACount )
 		{
-			dlog[Debug::CRIT] << myname 
-					<< "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max=" 
+			dlog[Debug::CRIT] << myname
+					<< "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max="
 					<< UniSetUDP::MaxACount << endl;
-			raise(SIGTERM);
 			return false;
 		}
 	}
-	
+
 	if( maxItem >= dlist.size() )
 		dlist.resize(maxItem+10);
-	
+
 	dlist[maxItem] = p;
 	maxItem++;
 

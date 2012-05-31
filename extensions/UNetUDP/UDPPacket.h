@@ -2,7 +2,7 @@
 #define UDPPacket_H_
 // -----------------------------------------------------------------------------
 #include <list>
-#include <limits> 
+#include <limits>
 #include <ostream>
 #include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
@@ -23,13 +23,13 @@ namespace UniSetUDP
 		long procID;
 		size_t dcount; /*!< количество булевых величин */
 		size_t acount; /*!< количество аналоговых величин */
-		
+
 		friend std::ostream& operator<<( std::ostream& os, UDPHeader& p );
 		friend std::ostream& operator<<( std::ostream& os, UDPHeader* p );
 	}__attribute__((packed));
 
 	static unsigned long MaxPacketNum = std::numeric_limits<unsigned long>::max();
-	
+
 	struct UDPAData
 	{
 		UDPAData():id(UniSetTypes::DefaultObjectId),val(0){}
@@ -37,15 +37,13 @@ namespace UniSetUDP
 
 		long id;
 		long val;
-		
+
 		friend std::ostream& operator<<( std::ostream& os, UDPAData& p );
 	}__attribute__((packed));
-	
-	// Хотелось бы не вылезать за общий размер посылаемых пакетов 8192. (550,900 --> 8133)
-	
-	static const size_t MaxACount = 550;
-	static const size_t MaxDCount = 900;
-	static const size_t MaxDDataCount = 1 + MaxDCount / 8*sizeof(unsigned char);
+
+	static const size_t MaxACount = 200;
+	static const size_t MaxDCount = 400;
+	static const size_t MaxDDataCount = MaxDCount / sizeof(unsigned char);
 
 	struct UDPPacket
 	{
@@ -63,14 +61,14 @@ namespace UniSetUDP
 		UDPMessage();
 
 		UDPMessage( UDPPacket& p );
- 		size_t transport_msg( UDPPacket& p );
+		size_t transport_msg( UDPPacket& p );
 		static size_t getMessage( UDPMessage& m, UDPPacket& p );
 
 		size_t addDData( long id, bool val );
 		bool setDData( size_t index, bool val );
 		long dID( size_t index );
 		bool dValue( size_t index );
-		
+
 		size_t addAData( const UDPAData& dat );
 		size_t addAData( long id, long val );
 		bool setAData( size_t index, long val );
@@ -79,14 +77,14 @@ namespace UniSetUDP
 		inline int dsize(){ return dcount; }
 		inline int asize(){ return acount; }
 //		inline int byte_size(){ return (dcount*sizeof(long)*UDPDData) + acount*sizeof(UDPAData)); }
-		
+
 		// количество байт в пакете с булевыми переменными...
 		int d_byte(){ return dcount*sizeof(long) + dcount; }
-		
+
 		UDPAData a_dat[MaxACount]; /*!< аналоговые величины */
 		long d_id[MaxDCount];      /*!< список дискретных ID */
 		unsigned char d_dat[MaxDDataCount];  /*!< битовые значения */
-		
+
 		friend std::ostream& operator<<( std::ostream& os, UDPMessage& p );
 	};
 }

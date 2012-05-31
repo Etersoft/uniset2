@@ -19,13 +19,12 @@ bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 }
 */
 // ------------------------------------------------------------------------------------------
-UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port, SMInterface* smi ):
+UNetReceiver::UNetReceiver( const std::string s_host, const ost::tpport_t port, SMInterface* smi ):
 shm(smi),
 recvpause(10),
 updatepause(100),
 udp(0),
 recvTimeout(5000),
-prepareTime(2000),
 lostTimeout(5000),
 lostPackets(0),
 sidRespond(UniSetTypes::DefaultObjectId),
@@ -50,7 +49,7 @@ a_cache_init_ok(false)
 		s << "R(" << setw(15) << s_host << ":" << setw(4) << port << ")";
 		myname = s.str();
 	}
-	
+
 	ost::Thread::setException(ost::Thread::throwException);
 	try
 	{
@@ -74,12 +73,11 @@ a_cache_init_ok(false)
 		dlog[Debug::CRIT] << s.str() << std::endl;
 		throw SystemError(s.str());
 	}
-	
+
 	r_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::receive);
 	u_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::update);
 
 	ptRecvTimeout.setTiming(recvTimeout);
-	ptPrepare.setTiming(prepareTime);
 }
 // -----------------------------------------------------------------------------
 UNetReceiver::~UNetReceiver()
@@ -93,12 +91,6 @@ void UNetReceiver::setReceiveTimeout( timeout_t msec )
 {
 	recvTimeout = msec;
 	ptRecvTimeout.setTiming(msec);
-}
-// -----------------------------------------------------------------------------
-void UNetReceiver::setPrepareTime( timeout_t msec )
-{
-	prepareTime = msec;
-	ptPrepare.setTiming(msec);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setLostTimeout( timeout_t msec )
@@ -141,18 +133,16 @@ void UNetReceiver::setLostPacketsID( UniSetTypes::ObjectId id )
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setLockUpdate( bool st )
-{ 
+{
 	uniset_mutex_lock l(lockMutex,200);
-	lockUpdate = st; 
-	if( !st )
-	  ptPrepare.reset();
+	lockUpdate = st;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::resetTimeout()
-{ 
+{
 	uniset_mutex_lock l(tmMutex,200);
-	ptRecvTimeout.reset(); 
-	trTimeout.change(false); 
+	ptRecvTimeout.reset();
+	trTimeout.change(false);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::start()
@@ -167,7 +157,7 @@ void UNetReceiver::start()
 // -----------------------------------------------------------------------------
 void UNetReceiver::update()
 {
-	cerr << "******************* update start" << endl;
+	cerr << "******************* udpate start" << endl;
 	while(activated)
 	{
 		try
@@ -182,7 +172,7 @@ void UNetReceiver::update()
 		{
 			dlog[Debug::CRIT] << myname << "(update): catch ..." << std::endl;
 		}
-	
+
 		if( sidRespond!=DefaultObjectId )
 		{
 			try
@@ -195,7 +185,7 @@ void UNetReceiver::update()
 				dlog[Debug::CRIT] << myname << "(step): (respond) " << ex << std::endl;
 			}
 		}
-		
+
 		if( sidLostPackets!=DefaultObjectId )
 		{
 			try
@@ -207,7 +197,7 @@ void UNetReceiver::update()
 				dlog[Debug::CRIT] << myname << "(step): (lostPackets) " << ex << std::endl;
 			}
 		}
-		
+
 		msleep(updatepause);
 	}
 }
@@ -278,10 +268,10 @@ void UNetReceiver::real_update()
 		{
 			try
 			{
-				
+
 				long id = p.dID(i);
 				bool val = p.dValue(i);
-				
+
 				ItemInfo& ii(d_icache[i]);
 				if( ii.id != id )
 				{
@@ -297,17 +287,17 @@ void UNetReceiver::real_update()
 					if( lockUpdate )
 						continue;
 				}
-				
+
 				if( ii.iotype == UniversalIO::DigitalInput )
 					shm->localSaveState(ii.dit,id,val,shm->ID());
 				else if( ii.iotype == UniversalIO::AnalogInput )
 					shm->localSaveValue(ii.ait,id,val,shm->ID());
 				else if( ii.iotype == UniversalIO::AnalogOutput )
 					shm->localSetValue(ii.ait,id,val,shm->ID());
- 				else if( ii.iotype == UniversalIO::DigitalOutput )
+				else if( ii.iotype == UniversalIO::DigitalOutput )
 					shm->localSetState(ii.dit,id,val,shm->ID());
 				else
-				  	dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << id << endl;
+					dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << id << endl;
 			}
 			catch( UniSetTypes::Exception& ex)
 			{
@@ -318,7 +308,7 @@ void UNetReceiver::real_update()
 				dlog[Debug::CRIT] << myname << "(update): catch ..." << std::endl;
 			}
 		}
-		
+
 		// Обработка аналоговых
 		for( size_t i=0; i<p.acount; i++ )
 		{
@@ -340,17 +330,17 @@ void UNetReceiver::real_update()
 					if( lockUpdate )
 						continue;
 				}
-				
+
 				if( ii.iotype == UniversalIO::DigitalInput )
 					shm->localSaveState(ii.dit,d.id,d.val,shm->ID());
 				else if( ii.iotype == UniversalIO::AnalogInput )
 					shm->localSaveValue(ii.ait,d.id,d.val,shm->ID());
 				else if( ii.iotype == UniversalIO::AnalogOutput )
 					shm->localSetValue(ii.ait,d.id,d.val,shm->ID());
- 				else if( ii.iotype == UniversalIO::DigitalOutput )
+				else if( ii.iotype == UniversalIO::DigitalOutput )
 					shm->localSetState(ii.dit,d.id,d.val,shm->ID());
 				else
-				  	dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << d.id << endl;
+					dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << d.id << endl;
 			}
 			catch( UniSetTypes::Exception& ex)
 			{
@@ -399,7 +389,7 @@ void UNetReceiver::receive()
 		catch(...)
 		{
 			dlog[Debug::WARN] << myname << "(receive): catch ..." << std::endl;
-		}	
+		}
 
 		// делаем через промежуточную переменную
 		// чтобы поскорее освободить mutex
@@ -407,9 +397,8 @@ void UNetReceiver::receive()
 			uniset_mutex_lock l(tmMutex,100);
 			tout = ptRecvTimeout.checkTime();
 		}
-		
-		// только если "режим подготовки закончился, то можем генерировать "события"
-		if( ptPrepare.checkTime() && trTimeout.change(tout) )
+
+		if( trTimeout.change(tout) )
 		{
 			if( tout )
 				slEvent(this,evTimeout);
@@ -452,7 +441,7 @@ bool UNetReceiver::recv()
 			while( !qtmp.empty() )
 				qtmp.pop();
 		}
-		
+
 		waitClean = true;
 	}
 

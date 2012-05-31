@@ -50,7 +50,7 @@
 class UNetReceiver
 {
 	public:
-		UNetReceiver( const std::string& host, const ost::tpport_t port, SMInterface* smi );
+		UNetReceiver( const std::string host, const ost::tpport_t port, SMInterface* smi );
 		~UNetReceiver();
 
 		 void start();
@@ -73,7 +73,6 @@ class UNetReceiver
 		 void setReceivePause( timeout_t msec );
 		 void setUpdatePause( timeout_t msec );
 		 void setLostTimeout( timeout_t msec );
-		 void setPrepareTime( timeout_t msec );
 		 void setMaxDifferens( unsigned long set );
 
 		 void setRespondID( UniSetTypes::ObjectId id, bool invert=false );
@@ -84,7 +83,7 @@ class UNetReceiver
 		 inline ost::IPV4Address getAddress(){ return addr; }
 		 inline ost::tpport_t getPort(){ return port; }
 
-		 /*! Коды событий */ 
+		 /*! Коды событий */
 		 enum Event
 		 {
 			 evOK,		/*!< связь есть */
@@ -117,9 +116,7 @@ class UNetReceiver
 
 		UniSetTypes::uniset_mutex pollMutex;
 		PassiveTimer ptRecvTimeout;
-		PassiveTimer ptPrepare;
 		timeout_t recvTimeout;
-		timeout_t prepareTime;
 		timeout_t lostTimeout;
 		PassiveTimer ptLostTimeout;
 		unsigned long lostPackets; /*!< счётчик потерянных пакетов */
@@ -131,7 +128,7 @@ class UNetReceiver
 		IOController::AIOStateList::iterator aitLostPackets;
 
 		bool activated;
-		
+
 		ThreadCreator<UNetReceiver>* r_thr;		// receive thread
 		ThreadCreator<UNetReceiver>* u_thr;		// update thread
 
@@ -158,12 +155,12 @@ class UNetReceiver
 		PacketQueue qtmp;	/*!< очередь на время обработки(очистки) основной очереди */
 		bool waitClean;		/*!< флаг означающий, что ждём очистики очереди до конца */
 		unsigned long rnum;	/*!< текущий номер принятого сообщения, для проверки "переполнения" или "сбоя" счётчика */
-		
+
 		int maxProcessingCount; /*!< максимальное число обрабатываемых за один раз сообщений */
-		
+
 		bool lockUpdate; /*!< флаг блокировки сохранения принятых данных в SM */
 		UniSetTypes::uniset_mutex lockMutex;
-		
+
 		EventSlot slEvent;
 		Trigger trTimeout;
 		UniSetTypes::uniset_mutex tmMutex;

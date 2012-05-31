@@ -33,7 +33,7 @@ enum Command
 	cmdReceive
 };
 // --------------------------------------------------------------------------
-static bool split_addr( const string& addr, string& host, ost::tpport_t& port )
+static bool split_addr( const string addr, string& host, ost::tpport_t& port )
 {
 	string::size_type pos = addr.rfind(':');
 	if(  pos != string::npos )
@@ -43,7 +43,7 @@ static bool split_addr( const string& addr, string& host, ost::tpport_t& port )
 		port = UniSetTypes::uni_atoi(s_port.c_str());
 		return true;
 	}
-	
+
 	return false;
 }
 // --------------------------------------------------------------------------
@@ -65,11 +65,11 @@ int main(int argc, char* argv[])
 	bool show = false;
 	int ncycles = -1;
 
-	while( (opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvdz:",longopts,&optindex)) != -1 ) 
+	while( (opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvdz:",longopts,&optindex)) != -1 )
 	{
-		switch (opt) 
+		switch (opt)
 		{
-			case 'h':	
+			case 'h':
 				cout << "-h|--help                - this message" << endl;
 				cout << "[-s|--send] host:port    - Send message." << endl;
 				cout << "[-c|--data-count] num    - Send num count of value. Default: 50." << endl;
@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 				cout << endl;
 			return 0;
 
-			case 'r':	
+			case 'r':
 				cmd = cmdReceive;
 				addr = string(optarg);
 			break;
@@ -95,54 +95,54 @@ int main(int argc, char* argv[])
 				addr = string(optarg);
 				cmd = cmdSend;
 			break;
-			
+
 			case 't':
 				tout = UniSetTypes::uni_atoi(optarg);
-			break;	
+			break;
 
 			case 'x':
 				usecpause = UniSetTypes::uni_atoi(optarg)*1000;
-			break;	
-			
+			break;
+
 			case 'c':
 				count = UniSetTypes::uni_atoi(optarg);
-			break;	
+			break;
 
 			case 'p':
 				procID = UniSetTypes::uni_atoi(optarg);
-			break;	
+			break;
 
 			case 'n':
 				nodeID = UniSetTypes::uni_atoi(optarg);
-			break;	
-			
+			break;
+
 			case 'b':
 				broadcast = false;
-			break;	
+			break;
 
 			case 'd':
 				show = true;
-			break;	
-			
+			break;
+
 			case 'l':
 				lost = true;
-			break;	
-			
-			case 'v':	
+			break;
+
+			case 'v':
 				verb = 1;
 			break;
-			
+
 			case 'z':
 				ncycles = UniSetTypes::uni_atoi(optarg);
 			break;
-			
+
 			case '?':
 			default:
 				cerr << "? argumnet" << endl;
 				return 0;
 		}
 	}
-	
+
 	if( cmd == cmdNOP )
 	{
 		cerr << "No command... Use -h for help" << endl;
@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
 		tout = TIMEOUT_INF;
 
 	ost::Thread::setException(ost::Thread::throwException);
-	
+
 	try
 	{
 		string s_host;
@@ -162,10 +162,10 @@ int main(int argc, char* argv[])
 			cerr << "(main): Unknown 'host:port' for '" << addr << "'" << endl;
 			return 1;
 		}
-		
+
 		if( verb )
 		{
-			cout << " host=" << s_host 
+			cout << " host=" << s_host
 				<< " port=" << port
 				<< " timeout=";
 			if( tout == TIMEOUT_INF )
@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
 			else
 				cout << tout;
 
-			cout << " msecpause=" << usecpause/1000 
+			cout << " msecpause=" << usecpause/1000
 				<< endl;
 		}
 
@@ -185,7 +185,7 @@ int main(int argc, char* argv[])
 			case cmdReceive:
 			{
 				ost::UDPDuplex udp(host,port);
-				
+
 //				char buf[UniSetUDP::MaxDataLen];
 				UniSetUDP::UDPMessage pack;
 				UniSetUDP::UDPPacket buf;
@@ -204,22 +204,22 @@ int main(int argc, char* argv[])
 							cout << "(recv): Timeout.." << endl;
 							continue;
 						}
-						
+
 						size_t ret = udp.UDPReceive::receive( &(buf.data), sizeof(buf.data) );
 						size_t sz = UniSetUDP::UDPMessage::getMessage(pack,buf);
 						if( sz == 0 )
 						{
-							cerr << "(recv): FAILED header ret=" << ret 
+							cerr << "(recv): FAILED header ret=" << ret
 								<< " sizeof=" << sz<< endl;
 							continue;
 						}
-		
+
 						if( lost )
 						{
 							if( prev_num != (pack.num-1) )
 								cerr << "WARNING! Incorrect sequence of packets! current=" << pack.num
 									<< " prev=" << prev_num << endl;
-							
+
 							prev_num = pack.num;
 						}
 
@@ -238,7 +238,7 @@ int main(int argc, char* argv[])
 					{
 						cerr << "(recv): catch ..." << endl;
 					}
-			
+
 					if( ncycles > 0 )
 					{
 						nc--;
@@ -248,14 +248,14 @@ int main(int argc, char* argv[])
 				}
 			}
 			break;
-	
+
 			case cmdSend:
-			{	
+			{
 				ost::UDPSocket* udp;
-      			if( !broadcast )
-            		udp = new ost::UDPSocket();
-        		else
-			        udp = new ost::UDPBroadcast(host,port); 
+			if( !broadcast )
+			udp = new ost::UDPSocket();
+			else
+			        udp = new ost::UDPBroadcast(host,port);
 
 				UniSetUDP::UDPMessage mypack;
 				mypack.nodeID = nodeID;
@@ -266,7 +266,7 @@ int main(int argc, char* argv[])
 					UDPAData d(i,i);
 					mypack.addAData(d);
 				}
-				
+
 				for( unsigned int i=0; i < count; i++ )
 					mypack.addDData(i,i);
 
@@ -274,7 +274,7 @@ int main(int argc, char* argv[])
 				unsigned long packetnum = 0;
 
 				UniSetUDP::UDPPacket s_buf;
-				
+
 				int nc = 1;
 				if( ncycles > 0 )
 					nc = ncycles;
@@ -292,12 +292,12 @@ int main(int argc, char* argv[])
 							mypack.transport_msg(s_buf);
 
 							if( verb )
-								cout << "(send): to addr=" << addr << " d_count=" << mypack.dcount 
+								cout << "(send): to addr=" << addr << " d_count=" << mypack.dcount
 									<< " a_count=" << mypack.acount << " bytes=" << s_buf.len << endl;
- 							
+
 							size_t ret = udp->send((char*)&s_buf.data, s_buf.len);
 							if( ret < s_buf.len )
-        						cerr << "(send): FAILED ret=" << ret << " < sizeof=" << s_buf.len << endl;
+							cerr << "(send): FAILED ret=" << ret << " < sizeof=" << s_buf.len << endl;
 						}
 					}
 					catch( ost::SockException& e )
@@ -315,7 +315,7 @@ int main(int argc, char* argv[])
 						if( nc <=0 )
 							break;
 					}
-					
+
 					usleep(usecpause);
 				}
 			}
@@ -336,7 +336,7 @@ int main(int argc, char* argv[])
 		cerr << "(main): catch ..." << endl;
 		return 1;
 	}
-	
+
 	return 0;
 }
 // --------------------------------------------------------------------------

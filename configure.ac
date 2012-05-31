@@ -3,7 +3,7 @@
 # See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset], [1.3.0], pv@etersoft.ru)
+AC_INIT([uniset], [1.4.0], pv@etersoft.ru)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 
 # AC_CONFIG_MACRO_DIR([m4])
@@ -30,7 +30,7 @@ AC_ENABLE_SHARED(yes)
 AC_ENABLE_STATIC(no)
 AM_PROG_LIBTOOL
 
-LIBVER=1:3:0
+LIBVER=1:4:0
 AC_SUBST(LIBVER)
 
 # Checks for libraries.
@@ -189,8 +189,8 @@ AC_CONFIG_FILES([Makefile
 				 extensions/SMViewer/Makefile
 				 extensions/UniNetwork/Makefile
 				 extensions/UniNetwork/libUniSetNetwork.pc
-				 extensions/UNet2/Makefile
-				 extensions/UNet2/libUniSetUNet2.pc
+				 extensions/UNetUDP/Makefile
+				 extensions/UNetUDP/libUniSetUNetUDP.pc
 				 extensions/SharedMemory/Makefile
 				 extensions/SharedMemory/libUniSetSharedMemory.pc
 				 extensions/SharedMemoryPlus/Makefile

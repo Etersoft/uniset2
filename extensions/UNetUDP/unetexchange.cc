@@ -27,8 +27,8 @@ int main( int argc, const char** argv )
 		string logfilename(conf->getArgParam("--unet-logfile"));
 		if( logfilename.empty() )
 			logfilename = "udpexchange.log";
-	
-	
+
+
 		std::ostringstream logname;
 		string dir(conf->getLogDir());
 		logname << dir << logfilename;
@@ -59,7 +59,7 @@ int main( int argc, const char** argv )
 		ObjectsActivator act;
 		act.addObject(static_cast<class UniSetObject*>(unet));
 
-		SystemMessage sm(SystemMessage::StartUp); 
+		SystemMessage sm(SystemMessage::StartUp);
 		act.broadcast( sm.transport_msg() );
 
 		unideb(Debug::ANY) << "\n\n\n";

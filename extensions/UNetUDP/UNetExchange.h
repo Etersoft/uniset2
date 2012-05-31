@@ -15,26 +15,26 @@
 #include "UNetSender.h"
 // -----------------------------------------------------------------------------
 /*!
-	\page pageUNetExchangeUDP Сетевой обмен на основе UDP (UNetUDP)
-		
-		- \ref pgUNetUDP_Common
-		- \ref pgUNetUDP_Conf
-		- \ref pgUNetUDP_Reserv
+	\page pageUNetExchange2 Сетевой обмен на основе UDP (UNet2)
 
-	\section pgUNetUDP_Common Общее описание
-		Обмен построен  на основе протокола UDP. 
+		- \ref pgUnet2_Common
+		- \ref pgUnet2_Conf
+		- \ref pgUnet2_Reserv
+
+	\section pgUnet2_Common Общее описание
+		Обмен построен  на основе протокола UDP.
 		Основная идея заключается в том, что каждый узел на порту равном своему ID
 	посылает в сеть UDP-пакеты содержащие данные считанные из локальной SM. Формат данных - это набор
-	пар [id,value]. Другие узлы принимают их. Помимо этого данный процесс запускает 
+	пар "id - value". Другие узлы принимают их. Помимо этого данный процесс запускает
 	по потоку приёма для каждого другого узла и ловит пакеты от них, сохраняя данные в SM.
 
-	\par 
-		При своём старте процесс считывает из секции \<nodes> список узлов которые необходимо "слушать", 
-	а также параметры своего узла. Открывает по потоку приёма на каждый узел и поток
+	\par
+		При своём старте процесс считывает из секции \<nodes> список узлов с которыми необходимо
+	вести обмен, а также параметры своего узла. Открывает по потоку приёма на каждый узел и поток
 	передачи для своих данных. Помимо этого такие же потоки для резервных каналов, если они включены
-	(см. \ref pgUNetUDP_Reserv ).
-	
-	\section pgUNetUDP_Conf Пример конфигурирования
+	(см. \ref pgUnet2_Reserv ).
+
+	\section pgUnet2_Conf Пример конфигурирования
 		По умолчанию при считывании используется \b unet_broadcast_ip (указанный в секции \<nodes>)
 	и \b id узла - в качестве порта.
 	Но можно переопределять эти параметры, при помощи указания \b unet_port и/или \b unet_broadcast_ip,
@@ -51,25 +51,25 @@
 	</nodes>
 	\endcode
 
-	\section pgUNetUDP_Reserv Настройка резервного канала связи
+	\section pgUnet2_Reserv Настройка резервного канала связи
 		В текущей реализации поддерживается возможность обмена по двум подсетям (эзернет-каналам).
 	Она основана на том, что, для каждого узла помимо основного "читателя",
-	создаётся дополнительный "читатель"(поток) слушающий другой ip-адрес и порт. 
-	А так же, для локального узла создаётся дополнительный "писатель"(поток), 
-	который посылает данные в (указанную) вторую подсеть. Для того, чтобы задействовать 
+	создаётся дополнительный "читатель"(поток) слушающий другой ip-адрес и порт.
+	А так же, для локального узла создаётся дополнительный "писатель"(поток),
+	который посылает данные в (указанную) вторую подсеть. Для того, чтобы задействовать
 	второй канал, достаточно объявить в настройках переменные
-	\b unet_broadcast_ip2. А также в случае необходимости для конкретного узла 
+	\b unet_broadcast_ip2. А также в случае необходимости для конкретного узла
 	можно указать \b unet_broadcast_ip2 и \b unet_port2.
 
 	Переключение между "каналами" происходит по следующей логике:
 
-	При старте включается только первый канал. Второй канал работает в режиме "пассивного" чтения. 
-	Т.е. все пакеты принимаются, но данные в SharedMemory не сохраняются. 
-	Если во время работы пропадает связь по первому каналу, идёт переключение на второй канал. 
+	При старте включается только первый канал. Второй канал работает в режиме "пассивного" чтения.
+	Т.е. все пакеты принимаются, но данные в SharedMemory не обновляются.
+	Если во время работы пропадает связь по первому каналу, идёт переключение на второй канал.
 	Первый канал переводиться в "пассивный" режим, а второй канал, переводится в "нормальный"(активный)
-	режим. Далее работа ведётся по второму каналу, независимо от того, что связь на первом 
-	канале может восстановиться. Это сделано для защиты от постоянных перескакиваний 
-	с канала на канал. Работа на втором канале будет вестись, пока не пропадёт связь 
+	режим. Далее работа ведётся по второму каналу, независимо от того, что связь на первом
+	канале может восстановиться. Это сделано для защиты от постоянных перескакиваний
+	с канала на канал. Работа на втором канале будет вестись, пока не пропадёт связь
 	на нём. Тогда будет попытка переключиться обратно на первый канал и так "по кругу".
 
 	В свою очередь "писатели"(если они не отключены) всегда посылают данные в оба канала.
@@ -79,17 +79,17 @@ class UNetExchange:
 	public UniSetObject_LT
 {
 	public:
-		UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="unet" );
+		UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
 		virtual ~UNetExchange();
-	
+
 		/*! глобальная функция для инициализации объекта */
 		static UNetExchange* init_unetexchange( int argc, const char* argv[],
-											UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="unet" );
+											UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
 
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* argv[] );
 
-		bool checkExistUNetHost( const std::string& host, ost::tpport_t port );
+		bool checkExistUNetHost( const std::string host, ost::tpport_t port );
 
 	protected:
 
@@ -109,13 +109,13 @@ class UNetExchange:
 		void receiverEvent( UNetReceiver* r, UNetReceiver::Event ev );
 
 		virtual bool activateObject();
-		
+
 		// действия при завершении работы
 		virtual void sigterm( int signo );
 
 		void initIterators();
 		void startReceivers();
-		
+
 
 		enum Timer
 		{
@@ -142,7 +142,6 @@ class UNetExchange:
 		{
 			ReceiverInfo():r1(0),r2(0),
 				sidRespond(UniSetTypes::DefaultObjectId),
-				respondInvert(false),
 				sidLostPackets(UniSetTypes::DefaultObjectId)
 			{}
 
@@ -152,21 +151,21 @@ class UNetExchange:
 				respondInvert(false),
 				sidLostPackets(UniSetTypes::DefaultObjectId)
 			{}
-			
+
 			UNetReceiver* r1;  	/*!< приём по первому каналу */
 			UNetReceiver* r2;	/*!< приём по второму каналу */
 
-			void step( SMInterface* shm, const std::string& myname );
+			void step( SMInterface* shm, const std::string myname );
 
 			inline void setRespondID( UniSetTypes::ObjectId id, bool invert=false )
-			{ 
-				sidRespond = id; 
+			{
+				sidRespond = id;
 				respondInvert = invert;
 			}
 			inline void setLostPacketsID( UniSetTypes::ObjectId id ){ sidLostPackets = id; }
 			inline void initIterators( SMInterface* shm )
 			{
- 				shm->initAIterator(aitLostPackets);
+				shm->initAIterator(aitLostPackets);
 				shm->initDIterator(ditRespond);
 			}
 
@@ -180,7 +179,7 @@ class UNetExchange:
 			UniSetTypes::ObjectId sidLostPackets;
 			IOController::AIOStateList::iterator aitLostPackets;
 		};
-		
+
 		typedef std::list<ReceiverInfo> ReceiverList;
 		ReceiverList recvlist;
 
