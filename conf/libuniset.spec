@@ -2,8 +2,8 @@
 %define oname uniset
 
 Name: libuniset
-Version: 1.3
-Release: alt19
+Version: 1.4
+Release: alt1
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -183,7 +183,7 @@ rm -f %buildroot%_libdir/*.la
 %_libdir/libUniSetRT*.so.*
 %_libdir/libUniSetShared*.so.*
 %_libdir/libUniSetNetwork*.so.*
-%_libdir/libUniSetUNet2*.so.*
+%_libdir/libUniSetUNetUDP*.so.*
 #%_libdir/libUniSetSMDBServer*.so.*
 
 %files extensions-devel
@@ -195,7 +195,7 @@ rm -f %buildroot%_libdir/*.la
 %_libdir/libUniSetRT*.so
 %_libdir/libUniSetShared*.so
 %_libdir/libUniSetNetwork.so
-%_libdir/libUniSetUNet2.so
+%_libdir/libUniSetUNetUDP.so
 #%_libdir/libUniSetSMDBServer.so
 %_pkgconfigdir/*Extensions.pc
 %_pkgconfigdir/libUniSetIO*.pc
@@ -213,6 +213,10 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Thu May 31 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt1
+- rename unet2 -->unetudp
+- release version 1.4
+
 * Thu May 31 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt19
 - DBServer: set log info level - LEVEL9
 - minor fixies for linker errors (new gcc)
