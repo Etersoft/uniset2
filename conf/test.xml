@@ -73,16 +73,7 @@
 		<UDPExchange2 name="UDPExchange2"/>
 		<UNetExchange name="UNetExchange"/>
 		<HeartBeatTime time_msec="5000"/>
-<<<<<<< HEAD
-		<TestGen name="TestGen"
-			input1_s="Input1_S"
-			input2_s="DumpSensor1_S"
-			output1_c="DO_C"
-
-		/>
-=======
 		<TestGen input1_s="Input1_S" input2_s="DumpSensor1_S" name="TestGen" output1_c="DO_C"/>
->>>>>>> (unet2): исправил ошибку в конфигурировании датчика связи
 	</settings>
 	<ObjectsMap idfromfile="0">
 		<!--
@@ -167,10 +158,10 @@
 		</controllers>
 		<!-- ******************* Идентификаторы сервисов ***************** -->
 		<services name="Services">
-			<item name="InfoServer"/>
-			<item name="DBServer"/>
-			<item name="PrintServer"/>
-			<item name="TimeService"/>
+			<item id="5010" name="InfoServer"/>
+			<item id="5011" name="DBServer1"/>
+			<item id="5012" name="PrintServer"/>
+			<item id="5013" name="TimeService"/>
 		</services>
 		<!-- ******************* Идентификаторы объектов ***************** -->
 		<objects name="UniObjects">
