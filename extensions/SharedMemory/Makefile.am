@@ -12,7 +12,8 @@ libUniSetSharedMemory_la_CPPFLAGS	= $(SIGC_CFLAGS) -I$(top_builddir)/extensions/
 libUniSetSharedMemory_la_SOURCES 	= SharedMemory.cc 
 
 
-@PACKAGE@_smemory_LDADD 	= libUniSetSharedMemory.la
+@PACKAGE@_smemory_LDADD 	= libUniSetSharedMemory.la $(top_builddir)/lib/libUniSet.la \
+	$(top_builddir)/extensions/lib/libUniSetExtensions.la
 @PACKAGE@_smemory_CPPFLAGS	= $(SIGC_CFLAGS) -I$(top_builddir)/extensions/include
 @PACKAGE@_smemory_SOURCES 	= smemory.cc
 

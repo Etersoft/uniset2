@@ -6,9 +6,9 @@ UIO_VER=@LIBVER@
 lib_LTLIBRARIES 	= libUniSetIOControl.la
 libUniSetIOControl_la_LDFLAGS  = -version-info $(UIO_VER) 
 libUniSetIOControl_la_LIBADD		= $(COMEDI_LIBS) $(SIGC_LIBS) \
-		$(top_builddir)/extensions/lib/libUniSetExtensions.la \
-		$(top_builddir)/lib/libUniSet.la \
-		$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la
+	$(top_builddir)/extensions/lib/libUniSetExtensions.la \
+	$(top_builddir)/lib/libUniSet.la \
+	$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la
 
 libUniSetIOControl_la_CXXFLAGS 	= $(COMEDI_CFLAGS) $(SIGC_CFLAGS) \
 	-I$(top_builddir)/extensions/include \
@@ -16,7 +16,9 @@ libUniSetIOControl_la_CXXFLAGS 	= $(COMEDI_CFLAGS) $(SIGC_CFLAGS) \
 
 libUniSetIOControl_la_SOURCES 	= ComediInterface.cc IOControl.cc
 
-@PACKAGE@_iocontrol_LDADD 	= libUniSetIOControl.la $(COMEDI_LIBS)
+@PACKAGE@_iocontrol_LDADD 	= libUniSetIOControl.la \
+	$(top_builddir)/lib/libUniSet.la \
+	$(top_builddir)/extensions/lib/libUniSetExtensions.la $(COMEDI_LIBS)
 @PACKAGE@_iocontrol_CXXFLAGS 	= $(COMEDI_CFLAGS) $(SIGC_CFLAGS) \
 	-I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/SharedMemory
