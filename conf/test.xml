@@ -159,7 +159,7 @@
 		<!-- ******************* Идентификаторы сервисов ***************** -->
 		<services name="Services">
 			<item id="5010" name="InfoServer"/>
-			<item id="5011" name="DBServer"/>
+			<item id="5011" name="DBServer1"/>
 			<item id="5012" name="PrintServer"/>
 			<item id="5013" name="TimeService"/>
 		</services>
