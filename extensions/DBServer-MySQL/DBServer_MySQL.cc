@@ -241,7 +241,7 @@ void DBServer_MySQL::parse( UniSetTypes::ConfirmMessage* am )
 bool DBServer_MySQL::writeToBase( const string& query )
 {
 	if( unideb.debugging(DBLogInfoLevel) )
-		unideb[DBLogInfoLevel] << "DBServer_MySQL: " << query << endl;
+		unideb[DBLogInfoLevel] << myname << "(writeToBase): " << query << endl;
 //	cout << "DBServer_MySQL: " << query << endl;
 	if( !db || !connect_ok )
 	{
