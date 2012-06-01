@@ -7,7 +7,7 @@ Release: alt1
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
-Url: http://sourceforge.net/uniset
+Url: http://git.etersoft.ru/projects/?p=asu/uniset.git;a=summary
 
 Packager: Pavel Vainerman <pv@altlinux.ru>
 
