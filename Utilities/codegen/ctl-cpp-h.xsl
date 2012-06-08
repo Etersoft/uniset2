@@ -86,6 +86,8 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		</xsl:if>
 		<xsl:if test="normalize-space(@type)='float'">float <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
+		<xsl:if test="normalize-space(@type)='double'">double <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
 		<xsl:if test="normalize-space(@type)='bool'">bool <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
 		<xsl:if test="normalize-space(@type)='str'">std::string <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
@@ -105,6 +107,8 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		<xsl:if test="normalize-space(@type)='int'">int <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
 		<xsl:if test="normalize-space(@type)='float'">float <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='double'">double <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
 		<xsl:if test="normalize-space(@type)='bool'">bool <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
@@ -126,6 +130,8 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		<xsl:if test="normalize-space(@type)='int'">int <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
 		<xsl:if test="normalize-space(@type)='float'">float <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='double'">double <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
 		<xsl:if test="normalize-space(@type)='bool'">bool <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
