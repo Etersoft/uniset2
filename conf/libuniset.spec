@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.4
-Release: alt1
+Release: alt2
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -213,6 +213,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Fri Jun 08 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt2
+- added support type 'double' for uniset-codegen (<variables>)
+
 * Thu May 31 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt1
 - rename unet2 -->unetudp
 - release version 1.4
