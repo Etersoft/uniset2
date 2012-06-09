@@ -339,16 +339,6 @@ class SharedMemory:
 		virtual void askSensors( UniversalIO::UIOCommand cmd );
 		virtual void sendEvent( UniSetTypes::SystemMessage& sm );
 
-		virtual void localSaveValue( AIOStateList::iterator& it, const IOController_i::SensorInfo& si,
-										CORBA::Long newvalue, UniSetTypes::ObjectId sup_id );
-		virtual void localSaveState( DIOStateList::iterator& it, const IOController_i::SensorInfo& si,
-										CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id );
-	  	virtual void localSetState( DIOStateList::iterator& it, const IOController_i::SensorInfo& si,
-										CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id );
-		virtual void localSetValue( AIOStateList::iterator& it, const IOController_i::SensorInfo& si,
-										CORBA::Long value, UniSetTypes::ObjectId sup_id );
-
-
 		// действия при завершении работы
 		virtual void sigterm( int signo );
 		bool activateObject();
@@ -402,7 +392,6 @@ class SharedMemory:
 
 		typedef std::list<HeartBeatInfo> HeartBeatList;
 		HeartBeatList hlist; // список датчиков "сердцебиения"
-		UniSetTypes::uniset_mutex hbmutex;
 		WDTInterface* wdt;
 		bool activated;
 		bool workready;
