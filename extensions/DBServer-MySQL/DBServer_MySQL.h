@@ -25,6 +25,7 @@
 #define DBServer_MySQL_H_
 // --------------------------------------------------------------------------
 #include <map>
+#include <queue>
 #include "UniSetTypes.h"
 #include "DBInterface.h"
 #include "DBServer.h"
@@ -35,6 +36,7 @@
       - \ref sec_DBS_Comm
       - \ref sec_DBS_Conf
       - \ref sec_DBS_Tables
+      - \ref sec_DBS_Buffer
 
 
 	\section sec_DBS_Comm Общее описание работы DBServer_MySQL
@@ -67,7 +69,16 @@
 	- \b dbpass - пароль для доступа к БД
 	- \b pingTime - период проверки связи с сервером MySQL
 	- \b reconnectTime - время повторной попытки соединения с БД
+	
+	\section sec_DBS_Buffer Защита от потери данных
+     Для того, чтобы не момент осутствия связи с БД данные по возможности не потерялись,
+	сделан "кольцевой" буфер. Размер которго можно решулировать параметром "--dbserver-buffer-size"
+	или параметром \b bufferSize=".." в конфигурационном файле секции "<LocalDBSErver...>".
 
+	Механизм построен на том, что если связь с mysql сервером отсутствует или пропала,
+	то сообщения помещаются в колевой буфер, который "опустошается" как только она восстановится.
+    Если связь не восстановилась а буфер достиг максимального заданного размера, то удаляются
+	более ранние сообщения. Эту логику можно сменить, если указать параметр "--dbserver-buffer-last-remove" или \b bufferLastRemove="1", то терятся будут сообщения добавляемые в конец.
 
 	\section sec_DBS_Tables Таблицы MySQL
 	  К основным таблицам относятся следующие:
@@ -180,6 +191,14 @@ class DBServer_MySQL:
 		bool connect_ok; 	/*! признак наличия соеднинения с сервером БД */
 
 		bool activate;
+
+		typedef std::queue<std::string> QueryBuffer;
+
+		QueryBuffer qbuf;
+		unsigned int qbufSize; // размер буфера сообщений.
+		bool lastRemove;
+
+		void flushBuffer();
 
 	private:
 		DBTableMap tblMap;
