@@ -524,59 +524,6 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-void SharedMemory::localSaveValue( AIOStateList::iterator& it, const IOController_i::SensorInfo& si,
-										CORBA::Long newvalue, UniSetTypes::ObjectId sup_id )
-{
-	if( hist.empty() )
-	{
-		IONotifyController_LT::localSaveValue( it, si, newvalue, sup_id );
-		return;
-	}
-
-	uniset_mutex_lock l(hbmutex);
-	IONotifyController_LT::localSaveValue( it, si, newvalue, sup_id );
-}
-// ------------------------------------------------------------------------------------------
-void SharedMemory::localSaveState( DIOStateList::iterator& it, const IOController_i::SensorInfo& si,
-										CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id )
-{
-	if( hist.empty() )
-	{
-		IONotifyController_LT::localSaveState( it, si, newstate, sup_id );
-		return;
-	}
-
-	uniset_mutex_lock l(hbmutex);
-	IONotifyController_LT::localSaveState( it, si, newstate, sup_id );
-}
-// ------------------------------------------------------------------------------------------
-void SharedMemory::localSetState( DIOStateList::iterator& it, const IOController_i::SensorInfo& si,
-										CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id )
-{
-	if( hist.empty() )
-	{
-		IONotifyController_LT::localSetState( it, si, newstate, sup_id );
-		return;
-	}
-
-	uniset_mutex_lock l(hbmutex);
-	IONotifyController_LT::localSetState( it, si, newstate, sup_id );
-}
-// ------------------------------------------------------------------------------------------
-void SharedMemory::localSetValue( AIOStateList::iterator& it, const IOController_i::SensorInfo& si,
-										CORBA::Long value, UniSetTypes::ObjectId sup_id )
-{
-	if( hist.empty() )
-	{
-		IONotifyController_LT::localSetValue( it, si, value, sup_id );
-		return;
-	}
-
-	uniset_mutex_lock l(hbmutex);
-	IONotifyController_LT::localSetValue( it, si, value, sup_id );
-}
-// ------------------------------------------------------------------------------------------
-
 SharedMemory* SharedMemory::init_smemory( int argc, const char* const* argv )
 {
 	string dfile = conf->getArgParam("--datfile", conf->getConfFileName());
