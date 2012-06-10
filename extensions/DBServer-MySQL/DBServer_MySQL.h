@@ -199,6 +199,7 @@ class DBServer_MySQL:
 		bool lastRemove;
 
 		void flushBuffer();
+		UniSetTypes::uniset_mutex mqbuf;
 
 	private:
 		DBTableMap tblMap;

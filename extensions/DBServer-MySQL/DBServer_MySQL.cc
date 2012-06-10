@@ -245,6 +245,7 @@ bool DBServer_MySQL::writeToBase( const string& query )
 //	cout << "DBServer_MySQL: " << query << endl;
 	if( !db || !connect_ok )
 	{
+		uniset_mutex_lock l(mqbuf,200);
 		qbuf.push(query);
 		if( qbuf.size() > qbufSize )
 		{
@@ -285,6 +286,8 @@ bool DBServer_MySQL::writeToBase( const string& query )
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::flushBuffer()
 {
+	uniset_mutex_lock l(mqbuf,400);
+
 	// Сперва пробуем очистить всё что накопилось в очереди до этого...
 	while( !qbuf.empty() )
 	{
