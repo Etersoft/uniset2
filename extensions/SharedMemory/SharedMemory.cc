@@ -129,10 +129,11 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 		if( !t.empty() )
 		{
 			iotypePulsar = UniSetTypes::getIOType(t);
-			if( iotypePulsar == UniversalIO::UnknownIOType )
+			if( iotypePulsar == UniversalIO::UnknownIOType ||
+				iotypePulsar == UniversalIO::AnalogInput || iotypePulsar == UniversalIO::AnalogOutput )
 			{
 				ostringstream err;
-				err << myname << ": Unknown iotype '" << t << "' for pulsar. Must be 'DI' or 'DO'";
+				err << myname << ": Invalid iotype '" << t << "' for pulsar. Must be 'DI' or 'DO'";
 				dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
 				throw SystemError(err.str());
 			}
