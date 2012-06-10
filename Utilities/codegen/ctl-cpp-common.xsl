@@ -13,6 +13,15 @@
 	<xsl:when test="$iotype='AI'">long</xsl:when>
 </xsl:choose>
 </xsl:template>
+<xsl:template name="gettype">
+	<xsl:param name="iotype"/>
+<xsl:choose>
+	<xsl:when test="$iotype='DO'">UniversalIO::DigitalOutput</xsl:when>
+	<xsl:when test="$iotype='DI'">UniversalIO::DigitalInput</xsl:when>
+	<xsl:when test="$iotype='AO'">UniversalIO::AnalogOutput</xsl:when>
+	<xsl:when test="$iotype='AI'">UniversalIO::AnalogInput</xsl:when>
+</xsl:choose>
+</xsl:template>
 
 <xsl:template name="setprefix">
 <xsl:choose>
@@ -602,6 +611,16 @@ end_private(false)
 		
 		node_<xsl:value-of select="normalize-space(@name)"/> = conf->getLocalNode();
 	}
+	
+	<xsl:if test="normalize-space(@no_check_iotype)!='1'">	
+	if( conf->getIOType( <xsl:value-of select="normalize-space(@name)"/> ) !=  <xsl:call-template name="gettype"><xsl:with-param name="iotype" select="@iotype"/></xsl:call-template> )
+	{
+		ostringstream err;
+		err &lt;&lt; myname &lt;&lt;  "(init): Invalid 'iotype' for '<xsl:value-of select="normalize-space(@name)"/>' set '<xsl:value-of select="normalize-space(@iotype)"/>' but " 
+			&lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>") &lt;&lt; "='" &lt;&lt; conf->getIOType( <xsl:value-of select="normalize-space(@name)"/> ) &lt;&lt; "'";
+		throw Exception( err.str() );
+	}
+	</xsl:if>
 </xsl:for-each>
 
 <xsl:for-each select="//msgmap/item">
