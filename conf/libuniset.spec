@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.4
-Release: alt4
+Release: alt5
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -213,6 +213,9 @@ rm -f %buildroot%_libdir/*.la
 
 
 %changelog
+* Thu Jun 14 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt5
+- (codegen): fixed bug in validation 'iotype'
+
 * Sun Jun 10 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt4
 - (codegen): added validation 'iotype'
 

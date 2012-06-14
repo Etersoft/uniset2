@@ -602,15 +602,6 @@ end_private(false)
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 		throw Exception( myname + ": Not found ID for (<xsl:value-of select="@name"/>) " + conf->getProp(cnode,"<xsl:value-of select="@name"/>") );
-	</xsl:if>
-	
-	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
-	{
-		if( !conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>").empty() )
-			throw Exception( myname + ": Not found NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
-		
-		node_<xsl:value-of select="normalize-space(@name)"/> = conf->getLocalNode();
-	}
 	
 	<xsl:if test="normalize-space(@no_check_iotype)!='1'">	
 	if( conf->getIOType( <xsl:value-of select="normalize-space(@name)"/> ) !=  <xsl:call-template name="gettype"><xsl:with-param name="iotype" select="@iotype"/></xsl:call-template> )
@@ -621,6 +612,17 @@ end_private(false)
 		throw Exception( err.str() );
 	}
 	</xsl:if>
+	</xsl:if>
+	
+	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
+	{
+		<xsl:if test="normalize-space(@no_check_id)!='1'">
+		if( !conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>").empty() )
+			throw Exception( myname + ": Not found NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
+		</xsl:if>
+		node_<xsl:value-of select="normalize-space(@name)"/> = conf->getLocalNode();
+	}
+
 </xsl:for-each>
 
 <xsl:for-each select="//msgmap/item">
