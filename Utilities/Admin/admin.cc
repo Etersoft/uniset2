@@ -551,7 +551,6 @@ int getValue( const string args, UniversalInterface &ui, Configuration* conf )
 		try
 		{
 			UniversalIO::IOTypes t = conf->getIOType(it->si.id);
-			cout << "  value: " << it->val << endl;
 			cout << "   name: (" << it->si.id << ") " << it->fname << endl;
 			cout << "   iotype: " << t << endl;
 			cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
@@ -592,13 +591,12 @@ int getCalibrate( const std::string args, UniversalInterface &ui )
 	int err = 0;
   	typedef std::list<UniSetTypes::ParamSInfo> SList;
 	SList sl = UniSetTypes::getSInfoList( args, UniSetTypes::conf );
-	cout << "====== getValue ======" << endl;
+	cout << "====== getCalibrate ======" << endl;
 	for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
 	{	
 		if( it->si.node == DefaultObjectId )
 			it->si.node = conf->getLocalNode();
 	  
-		cout << "getCalibrate --------\n";
 		cout << "      name: (" << it->si.id << ") " << it->fname << endl;
 		cout << "      text: " << conf->oind->getTextName(it->si.id) << "\n";
 		try
@@ -623,13 +621,12 @@ int getRawValue( const std::string args, UniversalInterface &ui )
 	int err = 0;
   	typedef std::list<UniSetTypes::ParamSInfo> SList;
 	SList sl = UniSetTypes::getSInfoList( args, UniSetTypes::conf );
-	cout << "====== getValue ======" << endl;
+	cout << "====== getRawValue ======" << endl;
 	for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
 	{	
 		if( it->si.node == DefaultObjectId )
 			it->si.node = conf->getLocalNode();	  
 		
-		cout << "getRawValue --------\n";
 		cout << "   name: (" << it->si.id << ") " << it->fname << endl;
 		cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
 		try
