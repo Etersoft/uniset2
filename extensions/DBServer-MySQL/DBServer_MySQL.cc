@@ -22,7 +22,6 @@
  *  \author Pavel Vainerman
 */
 // -------------------------------------------------------------------------- 
-
 #include <sys/time.h>
 #include <sstream>
 #include <iomanip>
@@ -32,11 +31,10 @@
 #include "Configuration.h"
 #include "Debug.h"
 #include "UniXML.h"
-
+// -------------------------------------------------------------------------- 
 using namespace UniSetTypes;
 using namespace std;
-
-// ------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------
 
 DBServer_MySQL::DBServer_MySQL(ObjectId id): 
 	DBServer(id),
@@ -44,13 +42,13 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id):
 	PingTime(300000),
 	ReconnectTime(180000),
 	connect_ok(false),
-	activate(true)
+	activate(true),
+	lastRemove(false)
 {
 	if( getId() == DefaultObjectId )
 	{
 		ostringstream msg;
-		msg << "(DBServer_MySQL): Запуск невозможен! НЕ ОПРЕДЕЛЁН ObjectId !!!!!\n";
-//		unideb[Debug::CRIT] << msg.str() << endl;
+		msg << "(DBServer_MySQL): init failed! Unknown ID!" << endl;
 		throw Exception(msg.str());
 	}
 }
@@ -61,14 +59,14 @@ DBServer_MySQL::DBServer_MySQL():
 	PingTime(300000),
 	ReconnectTime(180000),
 	connect_ok(false),
-	activate(true)
+	activate(true),
+	lastRemove(false)
 {
 //	init();
 	if( getId() == DefaultObjectId )
 	{
 		ostringstream msg;
-		msg << "(DBServer_MySQL): Запуск невозможен! Для данного узла НЕ ОПРЕДЕЛЁН ObjectId !!!!!\n";
-//		unideb[Debug::CRIT] << msg.str() << endl;
+		msg << "(DBServer_MySQL): init failed! Unknown ID!" << endl;
 		throw Exception(msg.str());
 	}
 }
@@ -98,28 +96,30 @@ void DBServer_MySQL::processingMessage( UniSetTypes::VoidMessage *msg )
 			DBServer::processingMessage(msg);
 			break; 	
 	}
-
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::sysCommand( UniSetTypes::SystemMessage *sm )
 {
-
 	switch( sm->command )
 	{
 		case SystemMessage::StartUp:
 			break;
 
 		case SystemMessage::Finish:
+		{
 			activate = false;
 			db->freeResult();
 			db->close();
-			break;
+		}
+		break;
 
 		case SystemMessage::FoldUp:
+		{
 			activate = false;
 			db->freeResult();
 			db->close();
-			break;
+		}
+		break;
 
 		default:
 			break;
@@ -240,17 +240,36 @@ void DBServer_MySQL::parse( UniSetTypes::ConfirmMessage* am )
 //--------------------------------------------------------------------------------------------
 bool DBServer_MySQL::writeToBase( const string& query )
 {
-	unideb[Debug::INFO] << "DBServer_MySQL: " << query << endl;
+	if( unideb.debugging(DBLogInfoLevel) )
+		unideb[DBLogInfoLevel] << myname << "(writeToBase): " << query << endl;
 //	cout << "DBServer_MySQL: " << query << endl;
 	if( !db || !connect_ok )
 	{
-		unideb[Debug::CRIT] << myname << "(writeToBase): соединение с БД не установлено\n"
-					<< myname << "(writeToBase): lost query: " 
-					<< query << endl;
+		uniset_mutex_lock l(mqbuf,200);
+		qbuf.push(query);
+		if( qbuf.size() > qbufSize )
+		{
+			std::string qlost;
+			if( lastRemove )
+				qlost = qbuf.back();
+			else
+				qlost = qbuf.front();
+
+			qbuf.pop();
+
+			if( unideb.debugging(Debug::CRIT) )
+				unideb[Debug::CRIT] << myname << "(writeToBase): DB not connected! buffer(" << qbufSize 
+						<< ") overflow! lost query: " << qlost << endl;
+		}
 		return false;
 	}
 
-	db->query( query ); 
+	// На всякий скидываем очередь
+	flushBuffer();
+
+	// А теперь собственно запрос..
+	db->query(query); 
+
 	// Дело в том что на INSERT И UPDATE запросы 
 	// db->query() может возвращать false и надо самому
 	// отдельно проверять действительно ли произошла ошибка
@@ -263,6 +282,32 @@ bool DBServer_MySQL::writeToBase( const string& query )
 	}
 	
 	return false;
+}
+//--------------------------------------------------------------------------------------------
+void DBServer_MySQL::flushBuffer()
+{
+	uniset_mutex_lock l(mqbuf,400);
+
+	// Сперва пробуем очистить всё что накопилось в очереди до этого...
+	while( !qbuf.empty() ) 
+	{
+		db->query( qbuf.front() ); 
+
+		// Дело в том что на INSERT И UPDATE запросы 
+		// db->query() может возвращать false и надо самому
+		// отдельно проверять действительно ли произошла ошибка
+		// см. DBInterface::query.
+		string err(db->error());
+		if( err.empty() )
+			db->freeResult();
+		else if( unideb.debugging(Debug::CRIT) )
+		{
+			unideb[Debug::CRIT] << myname << "(writeToBase): error: " << err <<
+				" lost query: " << qbuf.front() << endl;
+		}
+
+		qbuf.pop();
+	}
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
@@ -307,7 +352,8 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 				break;
 
 			default:
-				unideb[Debug::WARN] << myname << "(log sensor): неизвестный тип датчика....(сообщение игнорировано)" << endl;
+				unideb[Debug::WARN] << myname << "(log sensor): Unknown iotype='" 
+						<< si->sensor_type << "'.. ignore SensorMessage..." << endl;
 				return;
 		}
 
@@ -315,17 +361,20 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 
 		if( !writeToBase("INSERT INTO "+table+data.str()) )
 		{
-			unideb[Debug::CRIT] << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
+			if( unideb.debugging(Debug::CRIT) )
+				unideb[Debug::CRIT] << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
 			db->freeResult();			
 		}
 	}
 	catch( Exception& ex )
 	{	
-		unideb[Debug::CRIT] << myname << "(parse SensorMessage): " << ex << endl;
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << myname << "(parse SensorMessage): " << ex << endl;
 	}
 	catch( ...  )
 	{	
-		unideb[Debug::CRIT] << myname << "(parse SensorMessage): неизвестное исключние..." << endl;
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << myname << "(parse SensorMessage): catch..." << endl;
 	}
 		
 }
@@ -333,7 +382,8 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 void DBServer_MySQL::init_dbserver()
 {
 	DBServer::init_dbserver();
-	unideb[Debug::INFO] << myname << "(init): ..." << endl;
+	if( unideb.debugging(DBLogInfoLevel) )
+		unideb[DBLogInfoLevel] << myname << "(init): ..." << endl;
 
 	if( connect_ok )
 	{
@@ -345,17 +395,19 @@ void DBServer_MySQL::init_dbserver()
 	if( conf->getDBServer() == UniSetTypes::DefaultObjectId )
 	{
 		ostringstream msg;
-		msg << myname << "(init): на данном узле DBServer - отключён."
-			<< " В " << conf->getConfFileName() 
-			<< " для данного узла указан параметр dbserver=''";
+		msg << myname << "(init): DBServer OFF for this node.."
+			<< " In " << conf->getConfFileName() 
+			<< " for this node dbserver=''";
 		throw NameNotFound(msg.str());
 	}
 
 	xmlNode* node = conf->getNode("LocalDBServer");
 	if( !node )
-		throw NameNotFound(string(myname+"(init): в конфигурационном файле не найден раздел LocalDBServer"));
+		throw NameNotFound(string(myname+"(init): section <LocalDBServer> not found.."));
 
-	unideb[Debug::INFO] << myname << "(init): инициализируем соединение" << endl;
+	UniXML::iterator it(node);
+
+	unideb[DBLogInfoLevel] << myname << "(init): init connection.." << endl;
 	string dbname(conf->getProp(node,"dbname"));
 	string dbnode(conf->getProp(node,"dbnode"));
 	string user(conf->getProp(node,"dbuser"));
@@ -367,11 +419,20 @@ void DBServer_MySQL::init_dbserver()
 	
 	PingTime = conf->getIntProp(node,"pingTime");
 	ReconnectTime = conf->getIntProp(node,"reconnectTime");
+	qbufSize = conf->getArgPInt("--dbserver-buffer-size",it.getProp("bufferSize"),200);
+
+	if( findArgParam("--dbserver-buffer-last-remove",conf->getArgc(),conf->getArgv()) != -1 )
+		lastRemove = true;
+	else if( it.getIntProp("bufferLastRemove" ) !=0 )
+		lastRemove = true;
+	else
+		lastRemove = false;
 	
 	if( dbnode.empty() )
 		dbnode = "localhost";
 
-	unideb[Debug::INFO] << myname << "(init): connect dbnode=" << dbnode 
+	if( unideb.debugging(DBLogInfoLevel) )
+		unideb[DBLogInfoLevel] << myname << "(init): connect dbnode=" << dbnode 
 		<< "\tdbname=" << dbname
 		<< " pingTime=" << PingTime 
 		<< " ReconnectTime=" << ReconnectTime << endl;
@@ -379,21 +440,24 @@ void DBServer_MySQL::init_dbserver()
 	if( !db->connect(dbnode, user, password, dbname) )
 	{
 //		ostringstream err;
-		unideb[Debug::CRIT] << myname 
-			<< "(init): не смог создать соединение с БД err:\n"
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << myname 
+			<< "(init): DB connection error: "
 			<< db->error() << endl;
 //		throw Exception( string(myname+"(init): не смогли создать соединение с БД "+db->error()) );
 		askTimer(DBServer_MySQL::ReconnectTimer,ReconnectTime);
 	}
 	else
 	{
-		unideb[Debug::INFO] << myname << "(init): connect ok\n";
+		if( unideb.debugging(DBLogInfoLevel) )
+			unideb[DBLogInfoLevel] << myname << "(init): connect [OK]" << endl;
 		connect_ok = true;
 		askTimer(DBServer_MySQL::ReconnectTimer,0);
 		askTimer(DBServer_MySQL::PingTimer,PingTime);
 //		createTables(db);
 		initDB(db);
 		initDBTableMap(tblMap);	
+		flushBuffer();
 	}
 }
 //--------------------------------------------------------------------------------------------
@@ -402,7 +466,8 @@ void DBServer_MySQL::createTables( DBInterface *db )
 	UniXML_iterator it( conf->getNode("Tables") );
 	if(!it)
 	{
-		unideb[Debug::CRIT] << myname << ": не найден раздел Tables...."<< endl;
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << myname << ": section <Tables> not found.."<< endl;
 		throw Exception();
 	}
 
@@ -410,10 +475,11 @@ void DBServer_MySQL::createTables( DBInterface *db )
 	{
 		if( it.getName() != "comment" )
 		{
-			unideb[Debug::INFO] << myname  << "(createTables): создаем " << it.getName() << endl;
+			if( unideb.debugging(DBLogInfoLevel) )
+				unideb[DBLogInfoLevel] << myname  << "(createTables): create " << it.getName() << endl;
 			ostringstream query;
 			query << "CREATE TABLE " << conf->getProp(it,"name") << "(" << conf->getProp(it,"create") << ")";
-			if( !db->query(query.str()) )
+			if( !db->query(query.str()) && unideb.debugging(Debug::CRIT) )
 				unideb[Debug::CRIT] << myname << "(createTables): error: \t\t" << db->error() << endl;
 		}
 	}	
@@ -427,7 +493,8 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
 		{
 			if( !db->ping() )
 			{
-				unideb[Debug::WARN] << myname << "(timerInfo): потеряно соединение с сервером БД" << endl;
+				if( unideb.debugging(Debug::WARN) )
+					unideb[Debug::WARN] << myname << "(timerInfo): DB lost connection.." << endl;
 				connect_ok = false;
 				askTimer(DBServer_MySQL::PingTimer,0);
 				askTimer(DBServer_MySQL::ReconnectTimer,ReconnectTime);
@@ -435,14 +502,16 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
 			else
 			{
 				connect_ok = true;
-				unideb[Debug::INFO] << myname << "(timerInfo): DB ping ok\n";
+				if( unideb.debugging(DBLogInfoLevel) )
+					unideb[DBLogInfoLevel] << myname << "(timerInfo): DB ping ok" << endl;
 			}
 		}
 		break;
 	
 		case DBServer_MySQL::ReconnectTimer:
 		{
-			unideb[Debug::INFO] << myname << "(timerInfo): reconnect timer" << endl;
+			if( unideb.debugging(DBLogInfoLevel) )
+				unideb[DBLogInfoLevel] << myname << "(timerInfo): reconnect timer" << endl;
 			if( db->isConnection() )
 			{
 				if( db->ping() )
@@ -452,7 +521,8 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
 					askTimer(DBServer_MySQL::PingTimer,PingTime);
 				}
 				connect_ok = false;
-				unideb[Debug::WARN] << myname << "(timerInfo): нет связи с БД" << endl;
+				if( unideb.debugging(Debug::WARN) )
+					unideb[Debug::WARN] << myname << "(timerInfo): DB no connection.." << endl;
 			}
 			else
 				init_dbserver();
@@ -460,7 +530,8 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
 		break;
 
 		default:
-			unideb[Debug::WARN] << myname << "(timerInfo): неизвестный таймер tid=" << tm->id << endl;
+			if( unideb.debugging(Debug::WARN) )
+				unideb[Debug::WARN] << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
 		break;
 	}
 }

@@ -25,6 +25,7 @@
 #define DBServer_MySQL_H_
 // --------------------------------------------------------------------------
 #include <map>
+#include <queue>
 #include "UniSetTypes.h"
 #include "DBInterface.h"
 #include "DBServer.h"
@@ -35,6 +36,7 @@
       - \ref sec_DBS_Comm
       - \ref sec_DBS_Conf
       - \ref sec_DBS_Tables
+      - \ref sec_DBS_Buffer
 
 
 	\section sec_DBS_Comm Общее описание работы DBServer_MySQL
@@ -50,8 +52,9 @@
 	
 	\par
 		Для повышения надежности DBServer переодически ( DBServer_MySQL::PingTimer ) проверяет наличие связи с сервером БД.
-	В случае если связь пропала (или не была установлена при старте) DBServer пытается вновь переодически ( DBServer::ReconnectTimer )
-	произвести соединение.	При этом все запросы которые поступают для запии в БД, пишутся в лог-файл.
+	В случае если связь пропала (или не была установлена при старте) DBServer пытается вновь каждые DBServer::ReconnectTimer
+	произвести соединение.	При этом все запросы которые поступают для запии в БД, но не мгут быть записаны складываются
+	в буфер (см. \ref sec_DBS_Buffer).
 	\warning При каждой попытке восстановить соединение DBServer заново читает конф. файл. Поэтому он может подхватить
 	новые настройки.
 
@@ -68,7 +71,17 @@
 	- \b pingTime - период проверки связи с сервером MySQL
 	- \b reconnectTime - время повторной попытки соединения с БД
 	
-	
+	\section sec_DBS_Buffer Защита от потери данных
+     Для того, чтобы на момент отсутствия связи с БД данные по возможности не потерялись,
+	сделан "кольцевой" буфер. Размер которго можно регулировать параметром "--dbserver-buffer-size"
+	или параметром \b bufferSize=".." в конфигурационном файле секции "<LocalDBSErver...>".
+
+	Механизм построен на том, что если связь с mysql сервером отсутствует или пропала,
+	то сообщения помещаются в колевой буфер, который "опустошается" как только она восстановится.
+    Если связь не восстановилась, а буфер достиг максимального заданного размера, то удаляются
+	более ранние сообщения. Эту логику можно сменить, если указать параметр "--dbserver-buffer-last-remove" 
+	или \b bufferLastRemove="1", то терятся будут сообщения добавляемые в конец.
+
 	\section sec_DBS_Tables Таблицы MySQL
 	  К основным таблицам относятся следующие:
 \code
@@ -138,6 +151,8 @@ class DBServer_MySQL:
 		DBServer_MySQL();
 		~DBServer_MySQL();
 
+		static const Debug::type DBLogInfoLevel = Debug::LEVEL9;
+
 	protected:
 		typedef std::map<int, std::string> DBTableMap;
 
@@ -166,8 +181,9 @@ class DBServer_MySQL:
 
 		enum Timers
 		{
-			PingTimer,  	/*!< таймер на переодическую проверку соединения  с сервером БД */
-			ReconnectTimer 	/*!< таймер на повторную попытку соединения с сервером БД (или восстановления связи) */
+			PingTimer,        /*!< таймер на переодическую проверку соединения  с сервером БД */
+			ReconnectTimer,   /*!< таймер на повторную попытку соединения с сервером БД (или восстановления связи) */
+			lastNumberOfTimer
 		};
 
 
@@ -177,6 +193,15 @@ class DBServer_MySQL:
 		bool connect_ok; 	/*! признак наличия соеднинения с сервером БД */
 
 		bool activate;
+
+		typedef std::queue<std::string> QueryBuffer;
+
+		QueryBuffer qbuf;
+		unsigned int qbufSize; // размер буфера сообщений.
+		bool lastRemove;
+
+		void flushBuffer();
+		UniSetTypes::uniset_mutex mqbuf;
 
 	private:
 		DBTableMap tblMap;

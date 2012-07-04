@@ -32,12 +32,13 @@
  
 #include <assert.h>
 #include <string>
+#include <cstddef>
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>
-
-
-class UniXML_iterator : public std::iterator<std::bidirectional_iterator_tag, xmlNode, ptrdiff_t,                                            	xmlNode*, xmlNode&>
+// --------------------------------------------------------------------------
+class UniXML_iterator:
+	public std::iterator<std::bidirectional_iterator_tag, xmlNode, ptrdiff_t,xmlNode*, xmlNode&>
 {
 	public:
 		UniXML_iterator(xmlNode* node) :
@@ -121,12 +122,12 @@ class UniXML_iterator : public std::iterator<std::bidirectional_iterator_tag, xm
 	protected:
 		xmlNode* curNode;
 };
-
+// --------------------------------------------------------------------------
 class UniXML
 {
 public:
 	
-	typedef UniXML_iterator                 iterator;
+	typedef UniXML_iterator iterator;
 
 	inline xmlNode* getFirstNode()
 	{
@@ -212,5 +213,5 @@ protected:
 	static int recur;
 
 };
-
+// --------------------------------------------------------------------------
 #endif

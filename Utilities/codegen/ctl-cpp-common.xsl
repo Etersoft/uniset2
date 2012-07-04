@@ -13,6 +13,15 @@
 	<xsl:when test="$iotype='AI'">long</xsl:when>
 </xsl:choose>
 </xsl:template>
+<xsl:template name="gettype">
+	<xsl:param name="iotype"/>
+<xsl:choose>
+	<xsl:when test="$iotype='DO'">UniversalIO::DigitalOutput</xsl:when>
+	<xsl:when test="$iotype='DI'">UniversalIO::DigitalInput</xsl:when>
+	<xsl:when test="$iotype='AO'">UniversalIO::AnalogOutput</xsl:when>
+	<xsl:when test="$iotype='AI'">UniversalIO::AnalogInput</xsl:when>
+</xsl:choose>
+</xsl:template>
 
 <xsl:template name="setprefix">
 <xsl:choose>
@@ -433,6 +442,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 <xsl:if test="normalize-space(@const)!=''">
 <xsl:if test="normalize-space(@type)='int'"><xsl:value-of select="normalize-space(@name)"/>(0),</xsl:if>
 <xsl:if test="normalize-space(@type)='float'"><xsl:value-of select="normalize-space(@name)"/>(0),</xsl:if>
+<xsl:if test="normalize-space(@type)='double'"><xsl:value-of select="normalize-space(@name)"/>(0),</xsl:if>
 <xsl:if test="normalize-space(@type)='bool'"><xsl:value-of select="normalize-space(@name)"/>(false),</xsl:if>
 <xsl:if test="normalize-space(@type)='str'"><xsl:value-of select="normalize-space(@name)"/>(""),</xsl:if>
 </xsl:if>
@@ -442,6 +452,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 <xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
 </xsl:if>
 <xsl:if test="normalize-space(@type)='float'">
+<xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='double'">
 <xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(conf->getArgParam("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
 </xsl:if>
 <xsl:if test="normalize-space(@type)='bool'">
@@ -589,15 +602,27 @@ end_private(false)
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 		throw Exception( myname + ": Not found ID for (<xsl:value-of select="@name"/>) " + conf->getProp(cnode,"<xsl:value-of select="@name"/>") );
+	
+	<xsl:if test="normalize-space(@no_check_iotype)!='1'">	
+	if( conf->getIOType( <xsl:value-of select="normalize-space(@name)"/> ) !=  <xsl:call-template name="gettype"><xsl:with-param name="iotype" select="@iotype"/></xsl:call-template> )
+	{
+		ostringstream err;
+		err &lt;&lt; myname &lt;&lt;  "(init): Invalid 'iotype' for '<xsl:value-of select="normalize-space(@name)"/>' set '<xsl:value-of select="normalize-space(@iotype)"/>' but " 
+			&lt;&lt; conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>") &lt;&lt; "='" &lt;&lt; conf->getIOType( <xsl:value-of select="normalize-space(@name)"/> ) &lt;&lt; "'";
+		throw Exception( err.str() );
+	}
+	</xsl:if>
 	</xsl:if>
 	
 	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 	{
+		<xsl:if test="normalize-space(@no_check_id)!='1'">
 		if( !conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>").empty() )
 			throw Exception( myname + ": Not found NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
-		
+		</xsl:if>
 		node_<xsl:value-of select="normalize-space(@name)"/> = conf->getLocalNode();
 	}
+
 </xsl:for-each>
 
 <xsl:for-each select="//msgmap/item">

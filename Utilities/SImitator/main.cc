@@ -8,6 +8,7 @@ using namespace UniSetTypes;
 void help_print()
 {
 	cout << endl;
+	cout << "--confile configure.xml. По умолчанию: configure.xml." << endl;
 	cout << "--sid id1@Node1,id2,..,idXX@NodeXX  - Аналоговые датчики (AI,AO)" << endl;
 	cout << endl;
 	cout << "--min val       - Нижняя граница датчика. По умолчанию 0" << endl;
