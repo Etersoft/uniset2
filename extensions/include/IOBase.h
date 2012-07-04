@@ -57,7 +57,7 @@ static const int NoSafety = -1;
 			long craw;		/*!< текущее 'сырое' значение до калибровки */
 			long cprev;		/*!< предыдущее значение после калибровки */
 			long safety;	/*!< безопасное состояние при завершении процесса */
-			long defval;	/*!< безопасное состояние при завершении процесса */
+			long defval;	/*!< состояние по умолчанию (при запуске) */
 
 			DigitalFilter df;	/*!< реализация программного фильтра */
 			bool nofilter;		/*!< отключение фильтра */
@@ -83,7 +83,6 @@ static const int NoSafety = -1;
 			bool offdelay_state;	/*!< значение для задержки отключения */
 			
 			
-			
 			// Порог
 			UniSetTypes::ObjectId t_ai; /*!< если данный датчик дискретный,
 												и является пороговым, то в данном поле
@@ -94,7 +93,7 @@ static const int NoSafety = -1;
 			
 			IOController::AIOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;
-			UniSetTypes::uniset_spin_mutex val_lock; 	/*!< флаг блокирующий работу со значением */
+			UniSetTypes::uniset_spin_mutex val_lock; 	/*!< блокировка на время "работы" со значением */
 			
 			friend std::ostream& operator<<(std::ostream& os, IOBase& inf );
 
