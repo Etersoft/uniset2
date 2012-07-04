@@ -1,6 +1,7 @@
 // ------------------------------------------------------------------------------------------
 #include <sstream>
 #include <iomanip>
+#include <cmath>
 #include "SMonitor.h"
 #include "Configuration.h"
 #include "ORepHelpers.h"
@@ -134,7 +135,7 @@ void SMonitor::sensorInfo( SensorMessage *si )
 	if( si->sensor_type == UniversalIO::DigitalInput || si->sensor_type == UniversalIO::DigitalOutput )
 		cout << "\tstate=" << si->state << endl;
 	else if( si->sensor_type == UniversalIO::AnalogInput || si->sensor_type == UniversalIO::AnalogOutput )
-		cout << "\tvalue=" << si->value << endl;
+		cout << "\tvalue=" << si->value << "\tfvalue=" << ( (float)si->value / pow(10.0,si->ci.precision) ) << endl;
 	
 
 
