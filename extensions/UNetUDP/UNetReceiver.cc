@@ -25,6 +25,7 @@ recvpause(10),
 updatepause(100),
 udp(0),
 recvTimeout(5000),
+prepareTime(2000),
 lostTimeout(5000),
 lostPackets(0),
 sidRespond(UniSetTypes::DefaultObjectId),
@@ -78,6 +79,7 @@ a_cache_init_ok(false)
 	u_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::update);
 
 	ptRecvTimeout.setTiming(recvTimeout);
+	ptPrepare.setTiming(prepareTime);
 }
 // -----------------------------------------------------------------------------
 UNetReceiver::~UNetReceiver()
@@ -91,6 +93,12 @@ void UNetReceiver::setReceiveTimeout( timeout_t msec )
 {
 	recvTimeout = msec;
 	ptRecvTimeout.setTiming(msec);
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::setPrepareTime( timeout_t msec )
+{
+	prepareTime = msec;
+	ptPrepare.setTiming(msec);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setLostTimeout( timeout_t msec )
@@ -136,6 +144,8 @@ void UNetReceiver::setLockUpdate( bool st )
 {
 	uniset_mutex_lock l(lockMutex,200);
 	lockUpdate = st;
+	if( !st )
+	  ptPrepare.reset();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::resetTimeout()
@@ -157,7 +167,7 @@ void UNetReceiver::start()
 // -----------------------------------------------------------------------------
 void UNetReceiver::update()
 {
-	cerr << "******************* udpate start" << endl;
+	cerr << "******************* update start" << endl;
 	while(activated)
 	{
 		try
@@ -398,7 +408,8 @@ void UNetReceiver::receive()
 			tout = ptRecvTimeout.checkTime();
 		}
 
-		if( trTimeout.change(tout) )
+		// только если "режим подготовки закончился, то можем генерировать "события"
+		if( ptPrepare.checkTime() && trTimeout.change(tout) )
 		{
 			if( tout )
 				slEvent(this,evTimeout);
