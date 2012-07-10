@@ -39,6 +39,7 @@ sender2(0)
 						<< "' nodes-filter-value='" << n_fvalue << "'" << endl;
 
 	int recvTimeout = conf->getArgPInt("--unet-recv-timeout",it.getProp("recvTimeout"), 5000);
+	int prepareTime = conf->getArgPInt("--unet-preapre-time",it.getProp("prepareTime"), 2000);
 	int lostTimeout = conf->getArgPInt("--unet-lost-timeout",it.getProp("lostTimeout"), recvTimeout);
 	int recvpause = conf->getArgPInt("--unet-recvpause",it.getProp("recvpause"), 10);
 	int sendpause = conf->getArgPInt("--unet-sendpause",it.getProp("sendpause"), 150);
@@ -247,6 +248,7 @@ sender2(0)
 		r->setLockUpdate(false);
 
 		r->setReceiveTimeout(recvTimeout);
+		r->setPrepareTime(prepareTime);
 		r->setLostTimeout(lostTimeout);
 		r->setReceivePause(recvpause);
 		r->setUpdatePause(updatepause);

@@ -73,6 +73,7 @@ class UNetReceiver
 		 void setReceivePause( timeout_t msec );
 		 void setUpdatePause( timeout_t msec );
 		 void setLostTimeout( timeout_t msec );
+		 void setPrepareTime( timeout_t msec );
 		 void setMaxDifferens( unsigned long set );
 
 		 void setRespondID( UniSetTypes::ObjectId id, bool invert=false );
@@ -116,7 +117,9 @@ class UNetReceiver
 
 		UniSetTypes::uniset_mutex pollMutex;
 		PassiveTimer ptRecvTimeout;
+		PassiveTimer ptPrepare;
 		timeout_t recvTimeout;
+		timeout_t prepareTime;
 		timeout_t lostTimeout;
 		PassiveTimer ptLostTimeout;
 		unsigned long lostPackets; /*!< счётчик потерянных пакетов */
