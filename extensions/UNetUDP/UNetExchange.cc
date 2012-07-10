@@ -686,6 +686,7 @@ void UNetExchange::help_print( int argc, const char* argv[] )
 {
 	cout << "--unet-name NameID            - Идентификтора процесса." << endl;
 	cout << "--unet-recv-timeout msec      - Время для фиксации события 'отсутсвие связи'" << endl;
+	cout << "--unet-prepare-time msec      - Время необходимое на подготовку (восстановление связи) при переключении на другой канал" << endl;
 	cout << "--unet-lost-timeout msec      - Время ожидания заполнения 'дырки' между пакетами. По умолчанию 5000 мсек." << endl;
 	cout << "--unet-recvpause msec         - Пауза между приёмами. По умолчанию 10" << endl;
 	cout << "--unet-sendpause msec         - Пауза между посылками. По умолчанию 150" << endl;
