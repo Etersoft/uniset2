@@ -742,23 +742,23 @@ void UNetExchange::receiverEvent( UNetReceiver* r, UNetReceiver::Event ev )
 			// переключаемся на второй
 			it->r1->setLockUpdate(true);
 			it->r2->setLockUpdate(false);
-			it->r2->resetTimeout();
 
 			if( dlog.debugging(Debug::INFO) )
 				dlog[Debug::INFO] << myname << "(event): " << r->getName()
-					<< ": timeout for channel1.. select channel2" << endl;
+					<< ": timeout for channel1.. select channel 2" << endl;
 			return;
 		}
+
 		if( it->r2 == r )
 		{
 			// пропала связь по второму каналу...
 			// переключаемся на первый
 			it->r1->setLockUpdate(false);
-			it->r1->resetTimeout();
 			it->r2->setLockUpdate(true);
+
 			if( dlog.debugging(Debug::INFO) )
 				dlog[Debug::INFO] << myname << "(event): " << r->getName()
-						<< ": timeout for channel2.. select channel1" << endl;
+						<< ": timeout for channel2.. select channel 1" << endl;
 			return;
 		}
 	}
