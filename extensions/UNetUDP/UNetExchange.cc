@@ -42,7 +42,7 @@ sender2(0)
 	int prepareTime = conf->getArgPInt("--unet-preapre-time",it.getProp("prepareTime"), 2000);
 	int lostTimeout = conf->getArgPInt("--unet-lost-timeout",it.getProp("lostTimeout"), recvTimeout);
 	int recvpause = conf->getArgPInt("--unet-recvpause",it.getProp("recvpause"), 10);
-	int sendpause = conf->getArgPInt("--unet-sendpause",it.getProp("sendpause"), 150);
+	int sendpause = conf->getArgPInt("--unet-sendpause",it.getProp("sendpause"), 100);
 	int updatepause = conf->getArgPInt("--unet-updatepause",it.getProp("updatepause"), 100);
 	steptime = conf->getArgPInt("--unet-steptime",it.getProp("steptime"), 1000);
 	int maxDiff = conf->getArgPInt("--unet-maxdifferense",it.getProp("maxDifferense"), 1000);
@@ -689,7 +689,7 @@ void UNetExchange::help_print( int argc, const char* argv[] )
 	cout << "--unet-prepare-time msec      - Время необходимое на подготовку (восстановление связи) при переключении на другой канал" << endl;
 	cout << "--unet-lost-timeout msec      - Время ожидания заполнения 'дырки' между пакетами. По умолчанию 5000 мсек." << endl;
 	cout << "--unet-recvpause msec         - Пауза между приёмами. По умолчанию 10" << endl;
-	cout << "--unet-sendpause msec         - Пауза между посылками. По умолчанию 150" << endl;
+	cout << "--unet-sendpause msec         - Пауза между посылками. По умолчанию 100" << endl;
 	cout << "--unet-updatepause msec       - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
 	cout << "--unet-steptime msec		   - Шаг..." << endl;
 	cout << "--unet-maxdifferense num      - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
