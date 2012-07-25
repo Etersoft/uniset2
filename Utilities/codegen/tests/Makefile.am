@@ -21,5 +21,6 @@ $(GENERATED2): ../@PACKAGE@-codegen testgen-alone.src.xml ../*.xsl
 clean-local:
 	rm -rf $(GENERATED) $(GENERATED2)
 
-#all-local: $(GENERATED)
-#	
+all-local: $(GENERATED) $(GENERATED2)
+	
+	
