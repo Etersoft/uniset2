@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.4
-Release: alt6
+Release: alt7
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -210,9 +210,11 @@ rm -f %buildroot%_libdir/*.la
 #%_pkgconfigdir/libUniSet*.pc
 %exclude %_pkgconfigdir/libUniSet.pc
 
-
-
 %changelog
+* Wed Jul 25 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt7
+- (codegen): added support type 'long'
+- add setThreadPriority(..) for UniSetObject
+
 * Tue Jul 10 2012 Pavel Vaynerman <pv@server> 1.4-alt6
 - (unetudp): fixed bug in the logic of switching channels
 

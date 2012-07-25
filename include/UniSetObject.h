@@ -192,6 +192,8 @@ class UniSetObject:
 			UniSetTypes::VoidMessage msg;	
 			ObjectsManager* mymngr; 
 
+			void setThreadPriority( int p );
+			
 	private:
 
 			friend class ObjectsManager;
@@ -247,5 +249,6 @@ class UniSetObject:
 			unsigned long stMaxQueueMessages;	/*<! Максимальное число сообщений хранившихся в очереди */
 			unsigned long stCountOfQueueFull; 	/*! количество переполнений очереди сообщений */
 };
-
+//---------------------------------------------------------------------------
 #endif
+//---------------------------------------------------------------------------

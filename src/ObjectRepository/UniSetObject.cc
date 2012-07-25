@@ -451,6 +451,12 @@ void UniSetObject::setPushMutexTimeout( unsigned long msec )
 	pushMutexTimeout = msec;
 }
 // ------------------------------------------------------------------------------------------
+void UniSetObject::setThreadPriority( int p )
+{
+	if( thr )
+		thr->setPriority(p);
+}
+// ------------------------------------------------------------------------------------------
 void UniSetObject::push(const TransportMessage& tm)
 {
 	{ // lock
