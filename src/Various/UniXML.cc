@@ -443,11 +443,6 @@ bool UniXML_iterator::find( const std::string searchnode )
 				return true;
 		}
 
-		while(!curNode->next && curNode->parent)
-		{	
-			curNode=curNode->parent;
-		}
-		
 		curNode=curNode->next;
 	
 		if ( curNode && searchnode == (const char*)curNode->name )
