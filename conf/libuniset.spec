@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.4
-Release: alt7
+Release: alt8
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -211,6 +211,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Aug 07 2012 Pavel Vaynerman <pv@server> 1.4-alt8
+- fixed bug in UniXML::iterator::find
+
 * Wed Jul 25 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt7
 - (codegen): added support type 'long'
 - add setThreadPriority(..) for UniSetObject
