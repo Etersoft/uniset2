@@ -287,7 +287,7 @@ namespace ModbusRTU
 		/*! проверка на переполнение */	
 		inline bool isFull()
 		{
-			return ( bcnt >= MAXLENPACKET );
+			return ( (int)bcnt >= MAXLENPACKET );
 		}
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
@@ -381,7 +381,7 @@ namespace ModbusRTU
 		/*! проверка на переполнение */	
 		inline bool isFull() 		
 		{
-			return ( bcnt >= MAXLENPACKET );
+			return ( (int)bcnt >= MAXLENPACKET );
 		}
 
 		/*! размер данных(после заголовка) у данного типа сообщения */
@@ -611,7 +611,7 @@ namespace ModbusRTU
 		void clear();
 		inline bool isFull()
 		{
-			return ( bcnt >= MAXLENPACKET );
+			return ( (int)bcnt >= MAXLENPACKET );
 		}
 
 		// ------- from master -------	
