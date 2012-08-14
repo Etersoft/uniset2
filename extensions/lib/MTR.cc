@@ -439,9 +439,9 @@ bool update_configuration( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr slaveaddr,
 						    const std::string mtrconfile,  int verb )
 {
 	std::string m = MTR::getModelNumber(mb, slaveaddr);
-	if( m != "MTR315Transducer" && m != "MTR415Transducer" )
+	if( m != "MTR315Transducer" )
 	{
-		cerr << "(mtr-setup): model must be 'MTR315Transducer' or 'MTR415Transducer'. (read: '" << m << "')" << endl;
+		cerr << "(mtr-setup): model number != 'MTR315Transducer' (read: " << m << ")" << endl;
 		return false;
 	}
 
