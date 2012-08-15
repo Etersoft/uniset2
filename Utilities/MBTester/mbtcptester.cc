@@ -222,7 +222,7 @@ int main( int argc, char **argv )
 		if( verb )
 		{
 			cout << "(init): ip=" << iaddr << ":" << port
-					<< ModbusRTU::addr2str(myaddr)
+					<< " mbaddr=" << ModbusRTU::addr2str(myaddr)
 					<< " timeout=" << tout << " msec "
 					<< endl;
 
