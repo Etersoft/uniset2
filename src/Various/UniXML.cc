@@ -120,7 +120,7 @@ string UniXML::getPropUtf8(const xmlNode* node, const string name)
 string UniXML::getProp(const xmlNode* node, const string name)
 {
 	const char * text = (const char*)::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
-	if( !text )
+	if (text == NULL)
 		return "";
 	
 	return string(text);
@@ -433,17 +433,30 @@ bool UniXML_iterator::findName( const std::string node, const std::string search
 // -------------------------------------------------------------------------	
 bool UniXML_iterator::find( const std::string searchnode )
 {	
+	// Функция ищет "в ширину и в глубь"
+
+	xmlNode* rnode = curNode;
+	
 	while (curNode != NULL)
 	{	
 		while( curNode->children )
 		{
-			curNode=curNode->children;
+			curNode = curNode->children;
 			
 			if ( searchnode == (const char*)curNode->name )
 				return true;
 		}
 
-		curNode=curNode->next;
+		while( !curNode->next && curNode->parent )
+		{	
+			// выше исходного узла "подыматься" нельзя
+			if( curNode == rnode )
+				break;			
+
+			curNode = curNode->parent;
+		}
+		
+		curNode = curNode->next;
 	
 		if ( curNode && searchnode == (const char*)curNode->name )
 		{	

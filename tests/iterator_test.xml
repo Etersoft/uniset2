@@ -60,5 +60,7 @@
 </ObjectsMap>
 
 	<messages name="messages" idfromfile="1" >
+		<child>
+		</child>
 	</messages>
 </UNISETPLC>
