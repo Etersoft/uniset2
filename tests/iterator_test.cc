@@ -66,6 +66,13 @@ int main()
 
 		cout<<"\nCorrect result for algoryhtm 'for_each()':\n"<<"UniSet \n"<<"dlog \n"
 		<<"ObjectsMap \n"<<"messages \n";
+
+
+		it=xml.begin();
+		it.find("test");
+		if( it.find("messages") )
+			cout << "ERROR! begin=<UniSet> but find <messages>!" << endl;
+
 		
 	return 0;
 }
