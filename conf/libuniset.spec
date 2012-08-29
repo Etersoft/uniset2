@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.4
-Release: alt9
+Release: alt10
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -211,6 +211,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Aug 29 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt10
+- (UDPNet): increase the resolution of the sensors over the network (600 analog, 600 digital)
+
 * Mon Aug 20 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt9
 - fixed bug in previous commit (bug in UniXML::iterator::find)
 

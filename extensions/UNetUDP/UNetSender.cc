@@ -292,6 +292,8 @@ bool UNetSender::initItem( UniXML_iterator& it )
 			dlog[Debug::CRIT] << myname 
 					<< "(readItem): OVERFLOW! MAX UDP DIGITAL DATA LIMIT! max=" 
 					<< UniSetUDP::MaxDCount << endl;
+					
+			raise(SIGTERM);
 			return false;
 		}
 	}
@@ -303,6 +305,7 @@ bool UNetSender::initItem( UniXML_iterator& it )
 			dlog[Debug::CRIT] << myname 
 					<< "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max=" 
 					<< UniSetUDP::MaxACount << endl;
+			raise(SIGTERM);
 			return false;
 		}
 	}
