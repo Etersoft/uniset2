@@ -409,7 +409,10 @@ void IOControl::iopoll()
 	for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
 	{
 		if( it->priority > 0 )
+		{
 			ioread( &(iomap[it->index]) );
+			IOBase::processingThreshold((IOBase*)&(iomap[it->index]),shm,force);
+		}
 	}
 
 	bool prior = false;
@@ -430,7 +433,10 @@ void IOControl::iopoll()
 			for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
 			{
 				if( it->priority > 1 )
+				{
 					ioread( &(iomap[it->index]) );
+					IOBase::processingThreshold((IOBase*)&(iomap[it->index]),shm,force);
+				}
 			}
 			
 			prior = true;
@@ -441,7 +447,10 @@ void IOControl::iopoll()
 	for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
 	{
 		if( it->priority > 2 )
+		{
 			ioread( &(iomap[it->index]) );
+			IOBase::processingThreshold((IOBase*)&(iomap[it->index]),shm,force);		
+		}
 	}
 }
 // --------------------------------------------------------------------------------
