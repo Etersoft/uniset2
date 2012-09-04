@@ -3239,7 +3239,7 @@ bool UniversalInterface::waitWorking( UniSetTypes::ObjectId id, int msec, int pm
 	{
 		try
 		{
-			getState(id,node);
+			getValue(id,node); // getValue подходит и для Dx и для Ax
 			ready = true;
 			break;
 		}
