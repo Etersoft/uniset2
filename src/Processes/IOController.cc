@@ -114,7 +114,15 @@ void IOController::sensorsUnregistration()
 CORBA::Boolean IOController::getState( const IOController_i::SensorInfo& si )
 {
 	DIOStateList::iterator li(dioList.end());
-	return localGetState(li,si);
+	try
+	{
+		return localGetState(li,si);
+	} // getValue if not found...
+	catch( IOController_i::NameNotFound )
+	{
+		AIOStateList::iterator a(aioList.end());
+		return (localGetValue(a,si) ? true : false);
+	}
 }
 
 // ------------------------------------------------------------------------------------------
@@ -127,8 +135,8 @@ CORBA::Long IOController::getValue( const IOController_i::SensorInfo& si )
 	} // getState if not found...
 	catch( IOController_i::NameNotFound )
 	{
-		DIOStateList::iterator li(dioList.end());
-		return (localGetState(li,si) ? 1 : 0);
+		DIOStateList::iterator d(dioList.end());
+		return (localGetState(d,si) ? 1 : 0);
 	}
 }
 // ------------------------------------------------------------------------------------------
