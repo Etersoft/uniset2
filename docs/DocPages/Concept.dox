@@ -45,9 +45,9 @@ UniSetTypes::Message::TheLastFieldOfTypeOfMessage.
   enum MyMessageTypes
   {
       myBegin = UniSetTypes::Message::TheLastFieldOfTypeOfMessage,
-      myMessgeType1,
-      myMessgeType2,
-      myMessgeType3,
+      myMessageType1,
+      myMessageType2,
+      myMessageType3,
       ...
   };
 \endcode
