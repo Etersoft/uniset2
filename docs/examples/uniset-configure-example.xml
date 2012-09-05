@@ -39,7 +39,7 @@
     <SimpleObject OnTime="1000" OffTime="2000" CommandTime="500"/>
 
 </Configure>
-<ObjectsMap>
+<ObjectsMap idfromfile="1">
 <!--
 	Краткие пояснения к полям секции 'sensors'
 	==========================================
@@ -63,105 +63,35 @@
 	
 -->
 	<nodes port="2817">
-		<item name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
+		<item id="1000" name="LocalhostNode" alias="" textname="Локальный узел"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
 	</nodes>
 
 	<!-- ************************ Датчики ********************** -->
 	<sensors name="Sensors">
-		<item name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium"/>
-		<item name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium"/>
-		<item name="Input3_S" textname="Команда 3" node="" iotype="DI" priority="Medium"/>
-		<item name="Input4_S" textname="Команда 4" node="" iotype="DI" priority="Medium"/>
-		<item name="Input5_S" textname="Команда 5" node="" iotype="DI" priority="Medium"/>
-		<item name="Input6_S" textname="Команда 6" node="" iotype="DI" priority="Medium"/>
+		<item id="1" name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium"/>
+		<item id="2" name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium"/>
+		<item id="3" name="Input3_S" textname="Команда 3" node="" iotype="DI" priority="Medium"/>
+		<item id="4" name="Input4_S" textname="Команда 4" node="" iotype="DI" priority="Medium"/>
+		<item id="5" name="Input5_S" textname="Команда 5" node="" iotype="DI" priority="Medium"/>
+		<item id="6" name="Input6_S" textname="Команда 6" node="" iotype="DI" priority="Medium"/>
 	</sensors>
 
 	<controllers name="Controllers">
-		<item name="IOCardController"/>
+		<item id="100" name="IOCardController"/>
 	</controllers>
 
 	<!-- ******************* Идентификаторы сервисов ***************** -->
 	<services name="Services">
-		<item name="InfoServer"/>
-		<item name="DBServer"/>
-		<item name="PrintServer"/>
-		<item name="TimerService"/>
+		<item id="200" name="InfoServer"/>
+		<item id="201" name="DBServer"/>
+		<item id="202" name="PrintServer"/>
+		<item id="203" name="TimerService"/>
 	</services>
 
 	<!-- ******************* Идентификаторы объектов ***************** -->
 	<objects name="UniObjects">
-		<item name="TestObject"/>
-		<item name="TestObject2"/>
+		<item id="300" name="TestObject"/>
+		<item id="301" name="TestObject2"/>
 	</objects>
 </ObjectsMap>
-<map-settings>
-<!--
-  	Поддерживаемые типы:
-	string 	- строка
-	bool	- {1|0}
-	int		- число 
-  	Для 'int' можно дополнительно задать поля:
-		digits 	- количество цифр после запятой
-		step 	- шаг изменения
-	 	min 	- минимальное число
-	 	max 	- максимальное число
-
-	list 	- список
-		Для 'list' обязательно необходимо задать
-		section - секция содержащая список (в этом файле) 
-
-	NODES	- список узлов
-	OBJECTS - список объектов
-	SENSORS -  список датчиков
-	ALL_OBJECTS -  список объектов и контроллеров
-
-	\todo Для всех списков можно задать свойство 
-			multi="1" - разрешение выбора нескольких элементов списка (будут перечислены через запятую
-		
-  -->
-    <nodes>
-<!-- 'name' - является обязательным параметром и добавляется автоматически -->
-      <item name="ip" default="localhost"/>
-      <item name="port" default="" type="int" min="1024" max="65535"/>
-      <item name="textname" default=""/>
-      <item name="alias" default=""/>
-    </nodes>
-    <sensors>
-      <item name="iotype" type="list" section="iotypes"/>
-      <item name="node" type="NODES"/>
-      <item name="priority" type="list" section="priority"/>
-      <item name="character" type="list" section="characters"/>
-    </sensors>
-<!--  Типы для списков -->
-    <iotypes>
-      <item name="DI" default="1"/>
-      <item name="DO"/>
-      <item name="AI"/>
-      <item name="AO"/>
-    </iotypes>
-    <priority>
-      <item name="Hi"/>
-      <item name="Medium" default="1"/>
-      <item name="Low"/>
-    </priority>
-    <characters>
-      <item name="Alarm"/>
-      <item name="Warning" default="1"/>
-      <item name="Normal"/>
-    </characters>
-    <controllers>
-	  <!-- 'name' - является обязательным параметром и добавляется автоматически -->
-      <item name="node" type="NODES"/>
-    </controllers>
-    <objects>
-	  <!-- 'name' - является обязательным параметром и добавляется автоматически -->
-    </objects>
-    <services>
-	  <!-- 'name' - является обязательным параметром и добавляется автоматически -->
-    </services>
-    <consumers>
-	  <!-- 'name' - является обязательным параметром и добавляется автоматически -->
-      <item name="usedby" default="" type="NODES" multi="1"/>
-    </consumers>
-</map-settings>
 </UNISETPLC>
