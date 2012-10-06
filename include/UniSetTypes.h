@@ -31,6 +31,7 @@
 #include <list>
 #include <limits>
 #include <ostream>
+#include <unistd.h>
 
 #include <omniORB4/CORBA.h>
 #include "UniSetTypes_i.hh"

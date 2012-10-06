@@ -1,6 +1,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <signal.h>
+#include <unistd.h>
 #include <iostream>
 #include "Mutex.h"
 #include "SingleProcess.h"
