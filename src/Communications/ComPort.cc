@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <unistd.h>
 #include <termios.h>
 #include <fcntl.h>
 #include <errno.h>
