@@ -30,7 +30,7 @@ prefix(prefix)
 	
 	db_locale = conf->getArgParam("--" + prefix + "-locale",it.getProp("locale"));
 	if( db_locale.empty() )
-	    db_locale = "koi8-r";
+	    db_locale = "utf8";
 	
 	
 // ********** HEARTBEAT *************
