@@ -37,6 +37,10 @@ static const int NoSafety = -1;
 				jar_state(false),
 				ondelay_state(false),
 				offdelay_state(false),
+				d_id(UniSetTypes::DefaultObjectId),
+				d_value(0),
+				d_off_value(0),
+				d_iotype(UniversalIO::UnknownIOType),
 				t_ai(UniSetTypes::DefaultObjectId)
 			{}
 
@@ -47,6 +51,8 @@ static const int NoSafety = -1;
 			bool check_on_delay( bool val );	/*!< реализация задержки на включение */
 			bool check_off_delay( bool val );	/*!< реализация задержки на отключение */
 			
+			bool check_depend( SMInterface* shm ); /*!< проверка разрешения(зависимости) от другого датчика */
+
 			IOController_i::SensorInfo si;
 			UniversalIO::IOTypes stype;			/*!< тип канала (DI,DO,AI,AO) */
 			IOController_i::CalibrateInfo cal; 	/*!< калибровочные параметры */
@@ -82,7 +88,14 @@ static const int NoSafety = -1;
 			bool ondelay_state;		/*!< значение для задержки включения */
 			bool offdelay_state;	/*!< значение для задержки отключения */
 			
-			
+			// Зависимость (d - depend)
+			UniSetTypes::ObjectId d_id;  /*!< идентификатор датчика, от которого зависит данный */
+			IOController::AIOStateList::iterator d_ait; /*! итератор на датчик от которого зависит данный */
+			IOController::DIOStateList::iterator d_dit; /*! итератор на датчик от которого зависит данный */
+			long d_value; /*!< разрешающее работу значение датчика от которого зависит данный */
+			long d_off_value; /*!< блокирующее значение */
+			UniversalIO::IOTypes d_iotype;
+
 			// Порог
 			UniSetTypes::ObjectId t_ai; /*!< если данный датчик дискретный,
 												и является пороговым, то в данном поле
