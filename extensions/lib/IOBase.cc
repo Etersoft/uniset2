@@ -92,6 +92,30 @@ bool IOBase::check_off_delay( bool val )
 	return offdelay_state;
 }
 // -----------------------------------------------------------------------------
+bool IOBase::check_depend( SMInterface* shm )
+{
+	if( d_id == DefaultObjectId )
+		return true;
+
+	if( d_iotype == UniversalIO::DigitalInput || d_iotype == UniversalIO::DigitalOutput  )
+	{
+		if( shm->localGetState(d_dit,d_id) == (bool)d_value )
+			return true;
+
+		return false;
+	}
+
+	if( d_iotype == UniversalIO::AnalogInput || d_iotype == UniversalIO::AnalogOutput )
+	{
+		if( shm->localGetValue(d_ait,d_id) == d_value )
+			return true;
+
+		return false;
+	}
+
+	return true;
+}
+// -----------------------------------------------------------------------------
 void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force )
 {
 	// проверка на обрыв
@@ -103,39 +127,45 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 		return;
 	}
 
-	if( !it->nofilter && it->df.size() > 1 )
-	{
-		if( it->f_median )
-			val = it->df.median(val);
-		else if( it->f_filter_iir )
-			val = it->df.filterIIR(val);
-		else if( it->f_ls )
-			val = it->df.leastsqr(val);
-		else
-			val = it->df.filterRC(val);
-	}
-
-	if( it->cdiagram )	// задана специальная калибровочная диаграмма
-	{
-		if( it->craw != val )
-		{	
-			it->craw = val;
-			val = it->cdiagram->getValue(val);
-			it->cprev = val;
-		}
-		else
-			val = it->cprev;	// просто передаём предыдущее значение
-	}
+	// проверка зависимости
+	if( !it->check_depend(shm) )
+		val = it->d_off_value;
 	else
 	{
-		IOController_i::CalibrateInfo* cal( &(it->cal) );
-		if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
-			val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
-	}
+		if( !it->nofilter && it->df.size() > 1 )
+		{
+			if( it->f_median )
+				val = it->df.median(val);
+			else if( it->f_filter_iir )
+				val = it->df.filterIIR(val);
+			else if( it->f_ls )
+				val = it->df.leastsqr(val);
+			else
+				val = it->df.filterRC(val);
+		}
 
-	if( !it->noprecision && it->cal.precision > 0 )
-		val *= lround(pow10(it->cal.precision));
+		if( it->cdiagram )	// задана специальная калибровочная диаграмма
+		{
+			if( it->craw != val )
+			{	
+				it->craw = val;
+				val = it->cdiagram->getValue(val);
+				it->cprev = val;
+			}
+			else
+				val = it->cprev;		// просто передаём предыдущее значение
+		}
+		else
+		{
+			IOController_i::CalibrateInfo* cal( &(it->cal) );
+			if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
+				val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
+		}
 
+		if( !it->noprecision && it->cal.precision > 0 )
+			val *= lround(pow10(it->cal.precision));
+
+	} // end of 'check_depend'
 
 	// если предыдущее значение "обрыв",
 	// то сбрасываем признак 
@@ -176,18 +206,24 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 		return;
 	}
 
-	// Читаем с использованием фильтра...
-	if( !it->nofilter )
+	// проверка зависимости
+	if( !it->check_depend(shm) )
+		val = it->d_off_value;
+	else
 	{
-		if( it->df.size() > 1 )
-			it->df.add(val);
+		// Читаем с использованием фильтра...
+		if( !it->nofilter )
+		{
+			if( it->df.size() > 1 )
+				it->df.add(val);
 
-		val = it->df.filterRC(val);
+			val = it->df.filterRC(val);
+		}
+
+		IOController_i::CalibrateInfo* cal( &(it->cal) );
+		if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
+			val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
 	}
-
-	IOController_i::CalibrateInfo* cal( &(it->cal) );
-	if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
-		val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
 
 	// если предыдущее значение "обрыв",
 	// то сбрасываем признак 
@@ -214,18 +250,24 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 // -----------------------------------------------------------------------------
 void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force )
 {
-//	cout  << "subdev: " << it->subdev << " chan: " << it->channel << " state=" << set << endl;
-	if( it->invert )
-		set ^= true;
-//	cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (inv)state=" << set << endl;
+	// проверка зависимости
+	if( !it->check_depend(shm) )
+		set = (bool)it->d_off_value;
+	else
+	{
+//		cout  << "subdev: " << it->subdev << " chan: " << it->channel << " state=" << set << endl;
+		if( it->invert )
+			set ^= true;
+//		cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (inv)state=" << set << endl;
 
-	// Проверяем именно в такой последовательности!
-	set = it->check_jar(set);		// фильтр дребезга
-//	cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (jar)state=" << set << endl;
-	set = it->check_on_delay(set);	// фильтр на срабатывание
-//	cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (on_delay)state=" << set << endl;
-	set = it->check_off_delay(set);	// фильтр на отпускание
-//	cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (off_delay)state=" << set << endl;
+		// Проверяем именно в такой последовательности!
+		set = it->check_jar(set);		// фильтр дребезга
+//		cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (jar)state=" << set << endl;
+		set = it->check_on_delay(set);	// фильтр на срабатывание
+//		cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (on_delay)state=" << set << endl;
+		set = it->check_off_delay(set);	// фильтр на отпускание
+//		cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (off_delay)state=" << set << endl;
+	}
 
 	{
 		uniset_spin_lock lock(it->val_lock);
@@ -250,6 +292,10 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 	uniset_spin_lock lock(it->val_lock);
 	long val = it->value;
 	
+	// проверка зависимости
+	if( !it->check_depend(shm) )
+		return it->d_off_value;
+
 	if( force )
 	{
 		if( it->stype == UniversalIO::DigitalInput || it->stype == UniversalIO::DigitalOutput )
@@ -296,25 +342,32 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 // -----------------------------------------------------------------------------
 bool IOBase::processingAsDO( IOBase* it, SMInterface* shm, bool force )
 {
-		uniset_spin_lock lock(it->val_lock);
-		bool set = it->value;
+	// проверка зависимости
+	if( !it->check_depend(shm) )
+		return (bool)it->d_off_value;
 
-		if( force )
-		{
-			if( it->stype == UniversalIO::DigitalInput || it->stype == UniversalIO::DigitalOutput )
-				set = shm->localGetState(it->dit,it->si.id);
-			else if( it->stype == UniversalIO::AnalogInput || it->stype == UniversalIO::AnalogOutput )
-				set = shm->localGetValue(it->ait,it->si.id) ? true : false;
-		}
+	uniset_spin_lock lock(it->val_lock);
+	bool set = it->value;
+
+	if( force )
+	{
+		if( it->stype == UniversalIO::DigitalInput || it->stype == UniversalIO::DigitalOutput )
+			set = shm->localGetState(it->dit,it->si.id);
+		else if( it->stype == UniversalIO::AnalogInput || it->stype == UniversalIO::AnalogOutput )
+			set = shm->localGetValue(it->ait,it->si.id) ? true : false;
+	}
 		
-		set = it->invert ? !set : set;
-		return set; 
+	set = it->invert ? !set : set;
+	return set; 
 }
 // -----------------------------------------------------------------------------
 float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
 {
-	uniset_spin_lock lock(it->val_lock);
+	// проверка зависимости
+	if( !it->check_depend(shm) )
+		return (float)it->d_off_value;
 
+	uniset_spin_lock lock(it->val_lock);
 	long val = it->value;
 	
 	if( force )
@@ -453,7 +506,29 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	b->f_filter_iir = false;
 		
 	shm->initAIterator(b->ait);
+	shm->initAIterator(b->d_ait);
 	shm->initDIterator(b->dit);
+	shm->initDIterator(b->d_dit);
+
+	string d_txt(it.getProp("depend"));
+	if( !it.getProp("depend").empty() )
+	{
+		b->d_id = conf->getSensorID(it.getProp("depend"));
+		if( b->d_id == DefaultObjectId )
+		{
+			if( dlog )
+				dlog[Debug::CRIT] << myname << "(IOBase::readItem): sensor='" 
+					<< it.getProp("name") << "' err: "
+					<< " Unknown SensorID for depend='"  << it.getProp("depend")
+					<< endl;
+			return false;
+		}
+
+		// по умолчанию срабатывание на "1"
+		b->d_value = it.getProp("depend_value").empty() ? 1 : it.getIntProp("depend_value");
+		b->d_off_value = it.getIntProp("depend_off_value");
+		b->d_iotype = conf->getIOType(b->d_id);
+	}
 
 	if( b->stype == UniversalIO::AnalogInput || b->stype == UniversalIO::AnalogOutput )
 	{
