@@ -5,7 +5,6 @@ START=uniset-start.sh
 
 ${START} -f ./uniset-smemory-plus --smemory-id SharedMemory  --confile test.xml \
 	 --unideb-add-levels info,crit,warn,level9,system,level3,level2,level1 \
-	 --add-io \
 	 --io-name IOControl \
 	 --io-polltime 100 \
 	 --io-s-filter-field io \
@@ -14,7 +13,15 @@ ${START} -f ./uniset-smemory-plus --smemory-id SharedMemory  --confile test.xml 
 	 --iodev2 /dev/null \
 	 --io-test-lamp RS_Test9_S \
 	 --io-heartbeat-id AI_AS \
-	 --io-sm-ready-test-sid RS_Test9_S 
+	 --io-sm-ready-test-sid RS_Test9_S \
+     --add-mbmaster \
+     --mbtcp-name MBMaster1 \
+     --mbtcp-filter-field rs \
+     --mbtcp-filter-value 1 \
+     --mbtcp-gateway-iaddr localhost \
+     --mbtcp-gateway-port 2048 \
+     --mbtcp-recv-timeout 200 \
+     --mbtcp-force-out 1 \
 #	 --add-rtu \
 #	 --rs-dev /dev/cbsideA1 \
 #	 --rs-id RTUExchange \

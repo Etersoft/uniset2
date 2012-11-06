@@ -100,7 +100,7 @@
 		<sensors name="Sensors">
 			<item db_ignore="1" default="1" id="1" iotype="DI" name="Input1_S" priority="Medium" textname="Команда 1"/>
 			<item id="2" iotype="DI" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input2_S" priority="Medium" rs="2" textname="Команда 2"/>
-			<item id="3" iotype="DI" mbtcp="1" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" mbtcp_preinit="1" name="Input3_S" priority="Medium" textname="Команда 3"/>
+			<item id="3" iotype="DI"  mbtcp="1" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" name="Input3_S" priority="Medium" textname="Команда 3"/>
 			<item id="4" iotype="DI" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input4_S" priority="Medium" rs="2" textname="Команда 4"/>
 			<item id="5" iotype="DI" name="Input5_S" priority="Medium" textname="Команда 5" udp="2"/>
 			<item id="6" iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2">
@@ -117,7 +117,7 @@
 					<consumer name="PLCProcessor" type="objects"/>
 				</consumers>
 			</item>
-			<item id="30044" iotype="DI" name="DI1_S" priority="Medium" rs="1" rs_mbaddr="0x01" rs_mbfunc="0x02" rs_mbreg="30044" rs_mbtype="rtu" textname="Test DI sensor"/>
+			<item id="30044" iotype="DI" depend="AlarmFuse2_AS" depend_value="3" name="DI1_S" priority="Medium" rs="1" rs_mbaddr="0x01" rs_mbfunc="0x02" rs_mbreg="30044" rs_mbtype="rtu" textname="Test DI sensor"/>
 			<item id="30045" iotype="DI" name="DI2_S" priority="Medium" rs="1" rs_mbaddr="0x01" rs_mbfunc="0x02" rs_mbreg="30045" rs_mbtype="rtu" textname="Test DI sensor"/>
 			<item id="13" iotype="DI" name="Threshold1_S" priority="Medium" textname="Порог"/>
 			<item id="14" iotype="DI" name="TestMode_S" priority="Medium" textname="test"/>
