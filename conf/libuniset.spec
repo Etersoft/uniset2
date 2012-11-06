@@ -2,8 +2,8 @@
 %define oname uniset
 
 Name: libuniset
-Version: 1.4
-Release: alt11
+Version: 1.5
+Release: alt1
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -211,6 +211,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Nov 06 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt1
+- add depends for IOBase
+
 * Tue Sep 04 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt11
 - minor fixes (IOControl::getState, isExist)
 
