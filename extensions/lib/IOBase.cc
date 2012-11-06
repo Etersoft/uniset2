@@ -253,21 +253,13 @@ void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force 
 	// проверка зависимости
 	if( !it->check_depend(shm) )
 		set = (bool)it->d_off_value;
-	else
-	{
-//		cout  << "subdev: " << it->subdev << " chan: " << it->channel << " state=" << set << endl;
-		if( it->invert )
-			set ^= true;
-//		cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (inv)state=" << set << endl;
+	else if( it->invert )
+		set ^= true;
 
-		// Проверяем именно в такой последовательности!
-		set = it->check_jar(set);		// фильтр дребезга
-//		cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (jar)state=" << set << endl;
-		set = it->check_on_delay(set);	// фильтр на срабатывание
-//		cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (on_delay)state=" << set << endl;
-		set = it->check_off_delay(set);	// фильтр на отпускание
-//		cout  << "subdev: " << it->subdev << " chan: " << it->channel << " (off_delay)state=" << set << endl;
-	}
+	// Проверяем именно в такой последовательности!
+	set = it->check_jar(set);       // фильтр дребезга
+	set = it->check_on_delay(set);  // фильтр на срабатывание
+	set = it->check_off_delay(set); // фильтр на отпускание
 
 	{
 		uniset_spin_lock lock(it->val_lock);
