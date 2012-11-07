@@ -41,4 +41,11 @@
 
 Следует иметь ввиду, что этот механизм не действует при сохранении значений, например при помощи uniset-admin,
 в отличие от механизма \ref  pgDep_secIOControl
+
+	Пример записи "зависимости" в configure.xml:
+\code	
+	<item textname="...." iotype="..." ... depend="OtherSensor_AS" depend_value="2" />
+\endcode	
+  В данном случае подразумевается, что разрещающим датчиком является OtherSensor_AS=2.
+
 */
