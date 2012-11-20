@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.5
-Release: alt1
+Release: alt2
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -211,6 +211,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Nov 21 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt2
+- new ConfirmMessage format (eterbug #8842)
+
 * Tue Nov 06 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt1
 - add depends for IOBase
 
