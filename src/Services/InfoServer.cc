@@ -334,7 +334,7 @@ void InfoServer::processingMessage( UniSetTypes::VoidMessage *msg )
 		{
 			UniSetTypes::ConfirmMessage cm(msg);
 	
-			unideb[Debug::INFO] << myname << " ConfirmMessage на сообщение code= "<< cm.code << endl;
+			unideb[Debug::INFO] << myname << " ConfirmMessage на сообщение sensor_id= "<< cm.sensor_id << endl;
 			try
 			{
 				// если это не пересланное сообщение 
@@ -356,7 +356,7 @@ void InfoServer::processingMessage( UniSetTypes::VoidMessage *msg )
 
 		
 			// посылаем всем зазкачикам уведомление
-			event(cm.code, cm, true);
+			event(cm.sensor_id, cm, true);
 			
 			try
 			{
