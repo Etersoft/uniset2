@@ -311,7 +311,6 @@ TimerMessage::TimerMessage(UniSetTypes::TimerId id, Priority prior, ObjectId con
 id(id)
 {
 	type = Message::Timer;
-	this->priority = prior;
 	this->consumer = cons;
 }
 
@@ -321,53 +320,28 @@ TimerMessage::TimerMessage(const VoidMessage *msg)
 	assert(this->type == Message::Timer);
 }
 //--------------------------------------------------------------------------------------------	
-
-ConfirmMessage::ConfirmMessage():
-code(UniSetTypes::DefaultMessageCode),
-orig_cause(DefaultMessageCode),
-orig_type(Message::Info),
-orig_node(DefaultObjectId),
-orig_id(UniSetTypes::DefaultMessageCode),
-broadcast(false),
-route(false)
-{
-}
-
-ConfirmMessage::ConfirmMessage(const InfoMessage& msg, Priority prior, ObjectId cons):
-code(msg.infocode),
-orig_cause(DefaultMessageCode),
-orig_tm(msg.tm),
-orig_type(msg.type),
-orig_node(msg.node),
-orig_id(msg.id),
-broadcast(msg.broadcast),
-route(false)
-{
-	type = Message::Confirm;
-	this->priority = prior;
-	this->consumer = cons;
-//	struct timeb tm;
-}
-
-ConfirmMessage::ConfirmMessage(const AlarmMessage& msg, Priority prior, ObjectId cons):
-code(msg.alarmcode),
-orig_cause(msg.causecode),
-orig_tm(msg.tm),
-orig_type(msg.type),
-orig_node(msg.node),
-orig_id(msg.id),
-broadcast(msg.broadcast),
-route(false)
-{
-	type = Message::Confirm;
-	this->priority = prior;
-	this->consumer = cons;
-}
-
-ConfirmMessage::ConfirmMessage(const VoidMessage *msg)
+ConfirmMessage::ConfirmMessage( const VoidMessage *msg )
 {
 	memcpy(this,msg,sizeof(*this));
 	assert(this->type == Message::Confirm);
+}
+//--------------------------------------------------------------------------------------------
+ConfirmMessage::ConfirmMessage(long in_sensor_id,
+                    double in_value,
+                    time_t in_time,
+                    time_t in_time_usec,
+                    time_t in_confirm,
+                    Priority in_priority ):
+   sensor_id(in_sensor_id),
+   value(in_value),
+   time(in_time),
+   time_usec(in_time_usec),
+   confirm(in_confirm),
+   broadcast(false),
+   route(false)
+{
+   type = Message::Confirm;
+   priority = in_priority;
 }
 
 //--------------------------------------------------------------------------------------------	

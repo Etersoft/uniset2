@@ -337,24 +337,27 @@ namespace UniSetTypes
 	{
 		public:
 
-			ConfirmMessage(const InfoMessage& msg, Priority prior = Message::High,
-							ObjectId cons=UniSetTypes::DefaultObjectId);
-
-			ConfirmMessage(const AlarmMessage& msg, Priority prior = Message::High,
-							ObjectId cons=UniSetTypes::DefaultObjectId);
-			ConfirmMessage(const VoidMessage *msg);
-
 			inline TransportMessage transport_msg() const
 			{
 				return transport(*this);
 			}
 			
-			MessageCode code; 		/*!< id подтвержденного события */
-			MessageCode orig_cause;	/*!< причина */
-			timeval orig_tm;		/*!< время сообщения */
-			int orig_type;			/*!< тип подтвержденного сообщения */
-			ObjectId orig_node;		/*!< узел */
-			ObjectId orig_id;		/*!< от кого оно было */
+			ConfirmMessage( const VoidMessage *msg );
+
+			ConfirmMessage(long in_sensor_id,
+					double in_value,
+					time_t in_time,
+					time_t in_time_usec,
+					time_t in_confirm,
+					Priority in_priority = Message::Medium);
+
+
+			long sensor_id;   /* ID датчика */
+			double value;     /* значение датчика */
+			time_t time;      /* время, когда датчик получил сигнал */
+			time_t time_usec; /* время в микросекундах */
+			time_t confirm;   /* время, когда произошло квитирование */
+
 			bool broadcast;
 
 			/*! 

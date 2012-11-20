@@ -270,16 +270,6 @@ struct MsgInfo
 	node(am.node)
 	{}
 
-	MsgInfo( ConfirmMessage& am ):
-	type(am.orig_type),
-	id(am.orig_id),
-	acode(am.code),
-	ccode(am.orig_cause),
-	ch(0),
-	tm(am.orig_tm),
-	node(am.orig_node)
-	{}
-
 	int type;
 	ObjectId id;		// от кого
 	MessageCode acode;	// код сообщения
@@ -311,6 +301,49 @@ struct MsgInfo
 		return tm.tv_usec < mi.tm.tv_usec;
 	}	
 	
+};
+
+// структура определяющая минимальное количество полей
+// по которым можно судить о схожести сообщений
+// используется локально и только в функции очистки очереди сообщений
+struct CInfo
+{
+	CInfo():
+     sensor_id(DefaultObjectId),
+     value(0),
+     time(0),
+     time_usec(0),
+     confirm(0)
+	{
+	}
+
+	CInfo( ConfirmMessage& cm ):
+		sensor_id(cm.sensor_id),
+		value(cm.value),
+		time(cm.time),
+		time_usec(cm.time_usec),
+		confirm(cm.confirm)
+	{}
+
+	long sensor_id;   /* ID датчика */
+	double value;     /* значение датчика */
+	time_t time;      /* время, когда датчик получил сигнал */
+	time_t time_usec; /* время в микросекундах */
+	time_t confirm;   /* время, когда произошло квитирование */
+
+	inline bool operator < ( const CInfo& mi ) const
+	{
+		if( sensor_id != mi.sensor_id )
+			return sensor_id < mi.sensor_id;
+
+		if( value != mi.value )
+			return value < mi.value;
+
+		if( time != time )
+			return time < mi.time;
+
+		return time_usec < mi.time_usec;
+	}
 };
 
 // ------------------------------------------------------------------------------------------
@@ -497,7 +530,7 @@ struct tmpConsumerInfo
 	map<int,VoidMessage> sysmap;
 	map<MsgInfo,VoidMessage> amap;
 	map<MsgInfo,VoidMessage> imap;
-	map<MsgInfo,VoidMessage> cmap;
+	map<CInfo,VoidMessage> cmap;
 	list<VoidMessage> lstOther;
 };
 
@@ -570,14 +603,15 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 				consumermap[im.consumer].imap[mi] = m;
 			}
 			break;
-				
+
+
 			case Message::Confirm:
 			{
 				ConfirmMessage cm(&m);
-				MsgInfo mi(cm);
+				CInfo ci(cm);
 				// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
 				// то достаточно просто сохранять последнее сообщение для одинаковых MsgInfo
-				consumermap[cm.consumer].cmap[mi] = m;
+				consumermap[cm.consumer].cmap[ci] = m;
 			}
 			break;
 
@@ -586,7 +620,7 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 			break;
 
 			default:
-				// сразу пизаем
+				// сразу помещаем в очередь
 				consumermap[m.consumer].lstOther.push_front(m);
 			break;
 
@@ -642,7 +676,7 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 			q.push(it4->second);
 		}
 
-		map<MsgInfo,VoidMessage>::iterator it5=it0->second.cmap.begin();
+		map<CInfo,VoidMessage>::iterator it5=it0->second.cmap.begin();
 		for( ; it5!=it0->second.cmap.end(); ++it5 )
 		{
 			q.push(it5->second);
