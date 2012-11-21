@@ -41,10 +41,10 @@ namespace UniSetTypes
 				SensorInfo,
 				SysCommand, // Сообщение содержит системную команду
 				Confirm,	// Сообщение содержит подтверждение
-				Info,	// Сообщения содержит информацию для оператора
+				Info,	// Сообщения содержит информацию для оператора (DEPRECATED)
 				Timer,	// Сообщения о срабатывании таймера
-				Alarm,	// Аварийное сообщение
-				DataBase,
+				Alarm,	// Аварийное сообщение (DEPRECATED)
+				DataBase, // (DEPRECATED)
 				TheLastFieldOfTypeOfMessage // Обязательно оставьте последним
 			};
 	
@@ -172,7 +172,7 @@ namespace UniSetTypes
 			long data[2];
 	};
 
-	/*! Информационное собщение оператору */
+	/*! Информационное собщение оператору (DEPRECATED) */
 	class InfoMessage : public Message
 	{
 		public:
@@ -219,7 +219,7 @@ namespace UniSetTypes
 			char message[size_of_info_message];	/*!< сообщение */
 	};
 
-	/*! Собщение об аварии */
+	/*! Собщение об аварии (DEPRECATED) */
 	class AlarmMessage : public Message
 	{
 		public:
