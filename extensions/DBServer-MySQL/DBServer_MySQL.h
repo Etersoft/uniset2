@@ -85,63 +85,51 @@
 	\section sec_DBS_Tables Таблицы MySQL
 	  К основным таблицам относятся следующие:
 \code
+DROP TABLE IF EXISTS `main_history`;
+CREATE TABLE `main_history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date` date NOT NULL,
+  `time` time NOT NULL,
+  `time_usec` int(10) unsigned NOT NULL,
+  `sensor_id` int(10) unsigned NOT NULL,
+  `value` double NOT NULL,
+  `node` int(10) unsigned NOT NULL,
+  `confirm` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `main_history_sensor_id` (`sensor_id`),
+  CONSTRAINT `sensor_id_refs_id_3d679168` FOREIGN KEY (`sensor_id`) REFERENCES `main_sensor` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS ObjectsMap;
-CREATE TABLE ObjectsMap (
-  name varchar(80) NOT NULL default '',
-  rep_name varchar(80) default NULL,
-  id int(4) NOT NULL default '0',
-  msg int(1) default 0,
-  PRIMARY KEY  (id),
-  KEY rep_name (rep_name),
-  KEY msg (msg)
-) TYPE=MyISAM;
-
-
-DROP TABLE IF EXISTS AnalogSensors;
-CREATE TABLE AnalogSensors (
-  num int(11) NOT NULL auto_increment,
-  node int(3) default NULL,
-  id int(4) default NULL,
-  date date NOT NULL default '0000-00-00',
-  time time NOT NULL default '00:00:00',
-  time_usec int(3) unsigned default '0',
-  value int(6) default NULL,
-  PRIMARY KEY  (num),
-  KEY date (date,time,time_usec),
-  KEY node (node,id)
-) TYPE=MyISAM;
-
-
---
--- Table structure for table `DigitalSensors`
---
-DROP TABLE IF EXISTS DigitalSensors;
-CREATE TABLE DigitalSensors (
-  num int(11) NOT NULL auto_increment,
-  node int(3) default NULL,
-  id int(4) default NULL,
-  date date NOT NULL default '0000-00-00',
-  time time NOT NULL default '00:00:00',
-  time_usec int(3) unsigned default '0',
-  state char(1) default NULL,
-  confirm time NOT NULL default '00:00:00',
-  PRIMARY KEY  (num),
-  KEY date (date,time,time_usec),
-  KEY node (node,id),
-  KEY confirm(confirm)
-) TYPE=MyISAM;
+DROP TABLE IF EXISTS `main_emergencylog`;
+CREATE TABLE `main_emergencylog` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date` date NOT NULL,
+  `time` time NOT NULL,
+  `time_usec` int(10) unsigned NOT NULL,
+  `type_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `main_emergencylog_type_id` (`type_id`),
+  CONSTRAINT `type_id_refs_id_a3133ca` FOREIGN KEY (`type_id`) REFERENCES `main_emergencytype` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS SensorsThreshold;
-CREATE TABLE SensorsThreshold (
-  sid int(11) NOT NULL default '0',
-  alarm int(8) NOT NULL default '0',
-  warning int(8) NOT NULL default '0'
-) TYPE=MyISAM;
+DROP TABLE IF EXISTS `main_emergencyrecords`;
+CREATE TABLE `main_emergencyrecords` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date` date NOT NULL,
+  `time` time NOT NULL,
+  `time_usec` int(10) unsigned NOT NULL,
+  `log_id` int(11) NOT NULL,
+  `sensor_id` int(10) unsigned NOT NULL,
+  `value` double NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `main_emergencyrecords_log_id` (`log_id`),
+  KEY `main_emergencyrecords_sensor_id` (`sensor_id`),
+  CONSTRAINT `log_id_refs_id_77a37ea9` FOREIGN KEY (`log_id`) REFERENCES `main_emergencylog` (`id`),
+  CONSTRAINT `sensor_id_refs_id_436bab5e` FOREIGN KEY (`sensor_id`) REFERENCES `main_sensor` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 \endcode
-
 */
 class DBServer_MySQL:
 	public DBServer
@@ -166,8 +154,6 @@ class DBServer_MySQL:
 		// Функции обработки пришедших сообщений
 		virtual void parse( UniSetTypes::SensorMessage* sm );
 		virtual void parse( UniSetTypes::DBMessage* dbmsg );
-		virtual void parse( UniSetTypes::InfoMessage* imsg );
-		virtual void parse( UniSetTypes::AlarmMessage* amsg );
 		virtual void parse( UniSetTypes::ConfirmMessage* cmsg );
 
 		bool writeToBase( const string& query );
