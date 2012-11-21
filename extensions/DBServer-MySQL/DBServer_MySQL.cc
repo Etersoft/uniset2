@@ -35,7 +35,8 @@
 using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
-
+const Debug::type DBLEVEL = Debug::LEVEL1;
+// --------------------------------------------------------------------------
 DBServer_MySQL::DBServer_MySQL(ObjectId id):
 	DBServer(id),
 	db(new DBInterface()),
@@ -215,26 +216,37 @@ void DBServer_MySQL::parse( UniSetTypes::AlarmMessage* am )
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::parse( UniSetTypes::ConfirmMessage* am )
+void DBServer_MySQL::parse( UniSetTypes::ConfirmMessage* cem )
 {
-	// Сохраняем ПОДТВЕРЖДЕНИЕ в базу
-	ostringstream query;
-	query << "UPDATE " << tblName(am->orig_type) << " SET ";
-	query << "confirm='" << ui.timeToString(am->tm.tv_sec,":") << "'";
-	query << " where ";
-	query << " id='" << am->orig_id << "'";
-	query << " AND type='" << am->orig_type << "'";
-	query << " AND node='" << am->orig_node << "'";
-	query << " AND code='" << am->code << "'";
-//	query << " AND cause='" << am->cause << "'";
-	query << " AND date='" << ui.dateToString(am->orig_tm.tv_sec,"/") << "'";
-	query << " AND time='" << ui.timeToString(am->orig_tm.tv_sec,":") << "'";
-	query << " AND time_usec='" << am->orig_tm.tv_usec << "'";
-
-	if( !writeToBase(query.str()) )
+	try
 	{
-		unideb[Debug::CRIT] << myname <<  "(insert): confirm msg error: "<< db->error() << endl;
-//		db->freeResult();
+		ostringstream data;
+
+		data << "UPDATE main_history SET confirm='" << cem->confirm << "'";
+		data << " WHERE sensor_id='" << cem->sensor_id << "'";
+		data << " AND date='" << ui.dateToString(cem->time, "-")<<" '";
+		data << " AND time='" << ui.timeToString(cem->time, ":") <<" '";
+		data << " AND time_usec='" << cem->time_usec <<" '";
+
+		if( unideb.debugging(DBLEVEL) )
+			unideb[DBLEVEL] << myname << "(update_confirm): " << data.str() << endl;
+
+		if( !writeToBase(data.str()) )
+		{
+			if( unideb.debugging(Debug::CRIT) )
+				unideb[Debug::CRIT] << myname << "(update_confirm):  db error: "<< db->error() << endl;
+			db->freeResult();
+		}
+	}
+	catch( Exception& ex )
+	{
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << myname << "(update_confirm): " << ex << endl;
+	}
+	catch( ... )
+	{
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << myname << "(update_confirm):  catch..." << endl;
 	}
 }
 //--------------------------------------------------------------------------------------------
