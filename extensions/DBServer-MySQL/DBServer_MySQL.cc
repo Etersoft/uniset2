@@ -162,71 +162,18 @@ void DBServer_MySQL::parse( UniSetTypes::DBMessage* dbm )
 
 }
 //--------------------------------------------------------------------------------------------
-
-void DBServer_MySQL::parse( UniSetTypes::InfoMessage* im )
-{
-	string message(im->message);
-	if( message.empty() && im->infocode != DefaultMessageCode  )
-		message = conf->mi->getMessage(im->infocode);
-
-	if( !message.empty() )
-		message = db->addslashes(message);
-
-	// Прежде чем формировать строку обязательно смотрите формат базы данных(порядок полей таблицы)!!!
-	ostringstream ostr;
-	ostr << "INSERT INTO " << tblName(im->type);
-	ostr << "(num,node,id,date,time,time_usec,code,text,haracter,type,confirm,causeid) VALUES(";
-	ostr << "NULL,'"<< im->node << "','" << im->id;
-	ostr << "','" << ui.dateToString(im->tm.tv_sec,"/") << "','" << ui.timeToString(im->tm.tv_sec,":");
-	ostr << "','" << im->tm.tv_usec;
-	ostr << "','" << im->infocode << "','"<< message << "','" << im->character;
-	ostr << "','" << im->type << "','0','0')";
-
-	if( !writeToBase(ostr.str()) )
-	{
-		unideb[Debug::CRIT] << myname <<  "(insert): info msg error: "<< db->error() << endl;
-//		db->freeResult();
-	}
-
-}
-//--------------------------------------------------------------------------------------------
-void DBServer_MySQL::parse( UniSetTypes::AlarmMessage* am )
-{
-	string message(am->message);
-	if( message.empty() && am->alarmcode != DefaultMessageCode  )
-		message = conf->mi->getMessage(am->alarmcode);
-
-	if( !message.empty() )
-		message = db->addslashes(message);
-
-	// Прежде чем формировать строку обязательно смотрите формат базы данных(порядок полей таблицы)!!!
-	ostringstream ostr;
-	ostr << "INSERT INTO " << tblName(am->type);
-	ostr << "(num,node,id,date,time,time_usec,code,text,haracter,type,confirm,causeid) VALUES(";
-	ostr << "NULL,'"<< am->node << "','" << am->id;
-	ostr << "','" << ui.dateToString(am->tm.tv_sec,"/") << "','"
-			<< ui.timeToString(am->tm.tv_sec,":")<< "','" << am->tm.tv_usec;
-	ostr << "','" << am->alarmcode<< "','" << message;
-	ostr << "','" << am->character << "','" << am->type << "',0,'" << am->causecode << "')";
-
-	if( !writeToBase(ostr.str()) )
-	{
-		unideb[Debug::CRIT] << myname <<  "(insert): alarm msg error: "<< db->error() << endl;
-//		db->freeResult();
-	}
-}
-//--------------------------------------------------------------------------------------------
 void DBServer_MySQL::parse( UniSetTypes::ConfirmMessage* cem )
 {
 	try
 	{
 		ostringstream data;
 
-		data << "UPDATE main_history SET confirm='" << cem->confirm << "'";
-		data << " WHERE sensor_id='" << cem->sensor_id << "'";
-		data << " AND date='" << ui.dateToString(cem->time, "-")<<" '";
-		data << " AND time='" << ui.timeToString(cem->time, ":") <<" '";
-		data << " AND time_usec='" << cem->time_usec <<" '";
+		data << "UPDATE " << tblName(cem->type)
+			<< " SET confirm='" << cem->confirm << "'"
+			<< " WHERE sensor_id='" << cem->sensor_id << "'"
+			<< " AND date='" << ui.dateToString(cem->time, "-")<<" '"
+			<< " AND time='" << ui.timeToString(cem->time, ":") <<" '"
+			<< " AND time_usec='" << cem->time_usec <<" '";
 
 		if( unideb.debugging(DBLEVEL) )
 			unideb[DBLEVEL] << myname << "(update_confirm): " << data.str() << endl;
@@ -335,43 +282,20 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 
 		// см. DBTABLE AnalogSensors, DigitalSensors
 		ostringstream data;
-		data << " VALUES( ";
-												// Поля таблицы
-		data << "NULL,'"<< si->node << "','";		// num, node
-		data << si->id << "','";					// id (sensorid)
-		data << ui.dateToString(si->sm_tv_sec,"/") << "','";	// date
-		data << ui.timeToString(si->sm_tv_sec,":") << "','";	// time
-		data << si->sm_tv_usec << "','";					// time_usec
+		data << "INSERT INTO " << tblName(si->type)
+			<< "(date, time, time_usec, sensor_id, value, node) VALUES( '"
+											// Поля таблицы
+			<< ui.dateToString(si->sm_tv_sec,"-") << "','"	//  date
+			<< ui.timeToString(si->sm_tv_sec,":") << "','"	//  time
+			<< si->sm_tv_usec << "',"				//  time_usec
+			<< si->id << ","					//  sensor_id
+			<< si->value << ","				//  value
+			<< si->node << ")";				//  node
 
-//		data << ui.dateToString(si->tm.tv_sec) << "','";	// date
-//		data << ui.timeToString(si->tm.tv_sec) << "','";	// time
-//		data << si->tm.tv_usec << "','";					// time_usec
+		if( unideb.debugging(DBLEVEL) )
+			unideb[DBLEVEL] << myname << "(insert_main_history): " << data.str() << endl;
 
-
-		string table;
-		switch( si->sensor_type )
-		{
-			case UniversalIO::DigitalInput:
-			case UniversalIO::DigitalOutput:
-				table = "DigitalSensors(num,node,id,date,time,time_usec,state)";
-				data << si->state;				// state
-				break;
-
-			case UniversalIO::AnalogInput:
-			case UniversalIO::AnalogOutput:
-				table = "AnalogSensors(num,node,id,date,time,time_usec,value)";
-				data << si->value;				// value
-				break;
-
-			default:
-				unideb[Debug::WARN] << myname << "(log sensor): Unknown iotype='"
-						<< si->sensor_type << "'.. ignore SensorMessage..." << endl;
-				return;
-		}
-
-		data << "')";
-
-		if( !writeToBase("INSERT INTO "+table+data.str()) )
+		if( !writeToBase(data.str()) )
 		{
 			if( unideb.debugging(Debug::CRIT) )
 				unideb[Debug::CRIT] << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
@@ -380,15 +304,12 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 	}
 	catch( Exception& ex )
 	{
-		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << myname << "(parse SensorMessage): " << ex << endl;
+		unideb[Debug::CRIT] << myname << "(insert_main_history): " << ex << endl;
 	}
-	catch( ...  )
+	catch( ... )
 	{
-		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << myname << "(parse SensorMessage): catch..." << endl;
+		unideb[Debug::CRIT] << myname << "(insert_main_history): catch ..." << endl;
 	}
-
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::init_dbserver()
@@ -425,9 +346,8 @@ void DBServer_MySQL::init_dbserver()
 	string user(conf->getProp(node,"dbuser"));
 	string password(conf->getProp(node,"dbpass"));
 
-	tblMap[UniSetTypes::Message::Info] = "Messages";
-	tblMap[UniSetTypes::Message::Alarm] = "Messages";
-	tblMap[UniSetTypes::Message::SensorInfo] = "AnalogSensors";
+	tblMap[UniSetTypes::Message::SensorInfo] = "main_history";
+	tblMap[UniSetTypes::Message::Confirm] = "main_history";
 
 	PingTime = conf->getIntProp(node,"pingTime");
 	ReconnectTime = conf->getIntProp(node,"reconnectTime");
