@@ -116,15 +116,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId _si
 			return;
 		}
 		</xsl:if>
-		<xsl:if test="normalize-space(@vartype)='io'">
-		if( _sid == <xsl:value-of select="@name"/> )
-		{
-			unideb[Debug::LEVEL2] &lt;&lt;  "(setState): <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = " &lt;&lt;  _val &lt;&lt;  endl;
-			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>	= _val;
-				<xsl:call-template name="setdata"/>
-			return;
-		}
-		</xsl:if>
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
@@ -135,7 +126,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 	{
 		<xsl:choose>
 		<xsl:when test="normalize-space(@vartype)='out'"><xsl:call-template name="setdata"/></xsl:when>
-		<xsl:when test="normalize-space(@vartype)='io'"><xsl:call-template name="setdata"/></xsl:when>
 		</xsl:choose>
 		prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 	}
@@ -158,10 +148,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( UniSetTypes::SensorM
 {
 	<xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@vartype)='in'">
-	if( _sm->id == <xsl:value-of select="@name"/> )
-			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = _sm->value;
-	</xsl:if>
-	<xsl:if test="normalize-space(@vartype)='io'">
 	if( _sm->id == <xsl:value-of select="@name"/> )
 			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = _sm->value;
 	</xsl:if>
@@ -241,10 +227,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 		{
 		<xsl:for-each select="//smap/item">
 		<xsl:if test="normalize-space(@vartype)='in'">
-			if( <xsl:value-of select="@name"/> != DefaultObjectId )
-				ui.askRemoteSensor(<xsl:value-of select="@name"/>,_cmd,node_<xsl:value-of select="@name"/>,getId());
-		</xsl:if> 
-		<xsl:if test="normalize-space(@vartype)='io'">
 			if( <xsl:value-of select="@name"/> != DefaultObjectId )
 				ui.askRemoteSensor(<xsl:value-of select="@name"/>,_cmd,node_<xsl:value-of select="@name"/>,getId());
 		</xsl:if> 

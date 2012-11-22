@@ -117,7 +117,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 	<xsl:for-each select="//sensors/item/consumers/consumer">
 		<xsl:choose>
 			<xsl:when test="normalize-space(@vartype)='in'"><xsl:call-template name="check_changes"><xsl:with-param name="onlymsg" select="1"/></xsl:call-template></xsl:when>
-			<xsl:when test="normalize-space(@vartype)='io'"><xsl:call-template name="check_changes"><xsl:with-param name="onlymsg" select="1"/></xsl:call-template></xsl:when>
 		</xsl:choose>			
 	</xsl:for-each>
 	}
@@ -161,14 +160,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId _si
 	<xsl:if test="normalize-space(../../@msg)!='1'">
 	<xsl:if test="normalize-space(@name)=$OID">
 	<xsl:if test="normalize-space(@vartype)='out'">
-	if( _sid == <xsl:value-of select="../../@name"/> )
-	{
-		unideb[Debug::LEVEL2] &lt;&lt;  "(setValue): <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = " &lt;&lt;  _val &lt;&lt;  endl;
-		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>	= _val;
-		return;
-	}
-	</xsl:if>
-	<xsl:if test="normalize-space(@vartype)='io'">
 	if( _sid == <xsl:value-of select="../../@name"/> )
 	{
 		unideb[Debug::LEVEL2] &lt;&lt;  "(setValue): <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = " &lt;&lt;  _val &lt;&lt;  endl;
@@ -268,7 +259,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 <xsl:if test="normalize-space(@name)=$OID">
 <xsl:choose>
 	<xsl:when test="normalize-space(@vartype)='out'"><xsl:call-template name="gensetdata"/></xsl:when>
-	<xsl:when test="normalize-space(@vartype)='io'"><xsl:call-template name="gensetdata"/></xsl:when>
 </xsl:choose>
 </xsl:if>
 </xsl:if>
@@ -280,7 +270,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 <xsl:if test="normalize-space(@name)=$OID">
 <xsl:choose>
 	<xsl:when test="normalize-space(@vartype)='out'"><xsl:call-template name="setdata_val"><xsl:with-param name="setval" select="0"/></xsl:call-template></xsl:when>
-	<xsl:when test="normalize-space(@vartype)='io'"><xsl:call-template name="setdata_val"><xsl:with-param name="setval" select="0"/></xsl:call-template></xsl:when>
 </xsl:choose>
 </xsl:if>
 </xsl:if>

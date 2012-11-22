@@ -120,14 +120,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId sid
 			return;
 		}
 		</xsl:if>
-		<xsl:if test="normalize-space(@vartype)='io'">
-		if( sid == <xsl:value-of select="@name"/> )
-		{
-			unideb[Debug::LEVEL2] &lt;&lt;  "(setValue): <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = " &lt;&lt;  val &lt;&lt;  endl;
-			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>	= val;
-			return;
-		}
-		</xsl:if>
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
@@ -136,7 +128,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool force )
 <xsl:for-each select="//smap/item">
 <xsl:choose>
 	<xsl:when test="normalize-space(@vartype)='out'"><xsl:call-template name="setdata"/></xsl:when>
-	<xsl:when test="normalize-space(@vartype)='io'"><xsl:call-template name="setdata"/></xsl:when>
 </xsl:choose>
 </xsl:for-each>
 
@@ -154,7 +145,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 	<xsl:for-each select="//smap/item">
 		<xsl:choose>
 			<xsl:when test="normalize-space(@vartype)='in'"><xsl:call-template name="check_changes"><xsl:with-param name="onlymsg" select="1"/></xsl:call-template></xsl:when>
-			<xsl:when test="normalize-space(@vartype)='io'"><xsl:call-template name="check_changes"><xsl:with-param name="onlymsg" select="1"/></xsl:call-template></xsl:when>
 		</xsl:choose>			
 	</xsl:for-each>
 }

@@ -27,8 +27,8 @@
 <xsl:choose>
 	<xsl:when test="normalize-space(@vartype)='in'">in_</xsl:when>
 	<xsl:when test="normalize-space(@vartype)='out'">out_</xsl:when>
-	<xsl:when test="normalize-space(@vartype)='io'">io_</xsl:when>
 	<xsl:when test="normalize-space(@vartype)='none'">nn_</xsl:when>
+	<xsl:when test="normalize-space(@vartype)='io'">NOTSUPPORTED_IO_VARTYPE_</xsl:when>
 </xsl:choose>
 </xsl:template>
 
@@ -56,12 +56,18 @@
 		<xsl:if test="normalize-space(@name)=$OID">
 		<xsl:choose>
 		<xsl:when test="$GENTYPE='H'">
+		<xsl:if test="normalize-space(@vartype)!='io'">
 		const UniSetTypes::ObjectId <xsl:value-of select="../../@name"/>; 		/*!&lt; <xsl:value-of select="../../@textname"/> */
 		UniSetTypes::ObjectId node_<xsl:value-of select="../../@name"/>;
 		<xsl:call-template name="settype"><xsl:with-param name="iotype" select="../../@iotype" /></xsl:call-template><xsl:text> </xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>; /*!&lt; текущее значение */
 		<xsl:call-template name="settype"><xsl:with-param name="iotype" select="../../@iotype" /></xsl:call-template><xsl:text> prev_</xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>; /*!&lt; предыдущее значение */
+		</xsl:if>
+		<xsl:if test="normalize-space(@vartype)='io'">#warning (uniset-codegen): vartype='io' NO LONGER SUPPORTED! (ignore variable: '<xsl:value-of select="../../@name"/>')
+		</xsl:if>
 		</xsl:when>
-		<xsl:when test="$GENTYPE='C'"><xsl:value-of select="../../@name"/>(<xsl:value-of select="../../@id"/>),
+		<xsl:when test="$GENTYPE='C'">
+		<xsl:if test="normalize-space(@vartype)!='io'">
+		        <xsl:value-of select="../../@name"/>(<xsl:value-of select="../../@id"/>),
 			<xsl:if test="not(normalize-space(../../@node)='')">
 				node_<xsl:value-of select="../../@name"/>(conf->getNodeID("<xsl:value-of select="../../@node"/>")),
 			</xsl:if>
@@ -74,9 +80,12 @@
 			<xsl:if test="not(normalize-space(../../@default)='')">
 				<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>(<xsl:value-of select="../../@default"/>),
 			</xsl:if>
+		</xsl:if>
 		</xsl:when>
 		<xsl:when test="$GENTYPE='CHECK'">
+		<xsl:if test="normalize-space(@vartype)!='io'">
 			<xsl:if test="normalize-space(../../@id)=''">throw SystemException("Not Found ID for <xsl:value-of select="../../@name"/>");</xsl:if>
+		</xsl:if>
 		</xsl:when>
 		</xsl:choose>
 		</xsl:if>
@@ -496,8 +505,10 @@ using namespace UniSetTypes;
 <xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK():
 // Инициализация идентификаторов (имена берутся из конф. файла)
 <xsl:for-each select="//smap/item">
+<xsl:if test="normalize-space(@vartype)!='io'">
 	<xsl:value-of select="@name"/>(DefaultObjectId),
 node_<xsl:value-of select="@name"/>(DefaultObjectId),
+</xsl:if>
 </xsl:for-each>
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="@name"/>(DefaultObjectId),
@@ -553,8 +564,10 @@ static const std::string init3_str(const std::string s1, const std::string s2, c
 <xsl:if test="normalize-space($BASECLASS)=''">UniSetObject(id),</xsl:if>
 // Инициализация идентификаторов (имена берутся из конф. файла)
 <xsl:for-each select="//smap/item">
+<xsl:if test="normalize-space(@vartype)!='io'">
 	<xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
 node_<xsl:value-of select="normalize-space(@name)"/>( conf->getNodeID(conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>")) ),
+</xsl:if>
 </xsl:for-each>
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
@@ -744,14 +757,12 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 		<xsl:for-each select="//smap/item">
 			<xsl:choose>
 				<xsl:when test="normalize-space(@vartype)='in'"><xsl:call-template name="getdata"/></xsl:when>
-				<xsl:when test="normalize-space(@vartype)='io'"><xsl:call-template name="getdata"/></xsl:when>
 			</xsl:choose>
 		</xsl:for-each>
 <!--
 	<xsl:for-each select="//smap/item">
 		<xsl:choose>
 				<xsl:when test="normalize-space(@vartype)='in'"><xsl:call-template name="getdata"><xsl:with-param name="output" select="1"/></xsl:call-template></xsl:when>
-				<xsl:when test="normalize-space(@vartype)='io'"><xsl:call-template name="getdata"><xsl:with-param name="output" select="1"/></xsl:call-template></xsl:when>
 		</xsl:choose>
 	</xsl:for-each>
 -->	
@@ -771,7 +782,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::checkSensors()
 	<xsl:for-each select="//smap/item">
 		<xsl:choose>
 			<xsl:when test="normalize-space(@vartype)='in'"><xsl:call-template name="check_changes"/></xsl:when>
-			<xsl:when test="normalize-space(@vartype)='io'"><xsl:call-template name="check_changes"/></xsl:when>
 		</xsl:choose>
 	</xsl:for-each>
 }
@@ -846,7 +856,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 	<xsl:for-each select="//smap/item">
 	<xsl:choose>
 		<xsl:when test="normalize-space(@vartype)='out'"><xsl:call-template name="setdata_value"><xsl:with-param name="setval" select="0"/></xsl:call-template></xsl:when>
-		<xsl:when test="normalize-space(@vartype)='io'"><xsl:call-template name="setdata_value"><xsl:with-param name="setval" select="0"/></xsl:call-template></xsl:when>
 	</xsl:choose>
 	</xsl:for-each>
 }
@@ -996,7 +1005,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 	<xsl:for-each select="//sensors/item/consumers/consumer">
 		<xsl:choose>
 			<xsl:when test="normalize-space(@vartype)='in'"><xsl:call-template name="getdata"/></xsl:when>
-			<xsl:when test="normalize-space(@vartype)='io'"><xsl:call-template name="getdata"/></xsl:when>
 		</xsl:choose>
 	</xsl:for-each>
 }
@@ -1015,7 +1023,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::checkSensors()
 	<xsl:for-each select="//sensors/item/consumers/consumer">
 		<xsl:choose>
 			<xsl:when test="normalize-space(@vartype)='in'"><xsl:call-template name="check_changes"/></xsl:when>
-			<xsl:when test="normalize-space(@vartype)='io'"><xsl:call-template name="check_changes"/></xsl:when>
 		</xsl:choose>
 	</xsl:for-each>
 }
