@@ -94,6 +94,7 @@ Calibration::TypeOfValue Calibration::Part::calcX( TypeOfValue y )
 // ----------------------------------------------------------------------------
 
 Calibration::Calibration():
+minRaw(0),maxRaw(0),minVal(0),maxVal(0),
 myname("")
 {
 }
@@ -101,13 +102,15 @@ myname("")
 // ----------------------------------------------------------------------------
 
 Calibration::Calibration( const string name, const string confile ):
+minRaw(0),maxRaw(0),minVal(0),maxVal(0),
 myname(name)
 {
 	build(name,confile,0);
 }
 
 // ----------------------------------------------------------------------------
-Calibration::Calibration( xmlNode* node )
+Calibration::Calibration( xmlNode* node ):
+minRaw(0),maxRaw(0),minVal(0),maxVal(0)
 {
 	UniXML_iterator it(node);
 	myname = it.getProp("name");
@@ -168,6 +171,16 @@ void Calibration::build( const string name, const string confile, xmlNode* root 
 //			cout << myname << "(Calibration::build):"
 //						<< "\tadd x=" << p.x << " y=" << p.y << endl;
 
+			if( p.y > maxRaw )
+				maxRaw = p.y;
+			else if( p.y < minRaw )
+				minRaw = p.y;
+
+			if( p.x > maxVal )
+				maxVal = p.x;
+			else if( p.x < minVal )
+				minVal = p.x;
+
 			if( prev )
 			{
 //				cout << myname << "(Calibration::build):"
@@ -223,7 +236,7 @@ long Calibration::getValue( long raw, bool crop_raw )
 	return it->calcY(raw);
 }
 // ----------------------------------------------------------------------------
-long Calibration::getRawValue( long cal )
+long Calibration::getRawValue( long cal, bool crop_cal )
 {
 	for( PartsList::iterator it=plist.begin(); it!=plist.end(); ++it )
 	{
