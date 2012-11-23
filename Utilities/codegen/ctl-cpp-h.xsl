@@ -62,7 +62,7 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		<xsl:if test="normalize-space(@vartype)!='io'">const UniSetTypes::ObjectId <xsl:value-of select="@name"/>; 		/*!&lt; <xsl:value-of select="@comment"/> */
 		UniSetTypes::ObjectId node_<xsl:value-of select="@name"/>;
 		</xsl:if>
-		<xsl:if test="normalize-space(@vartype)!='io'">#warning (uniset-codegen): vartype='io' NO LONGER SUPPORTED! (ignore variable: '<xsl:value-of select="@name"/>')
+		<xsl:if test="normalize-space(@vartype)='io'">#warning (uniset-codegen): vartype='io' NO LONGER SUPPORTED! (ignore variable: '<xsl:value-of select="@name"/>')
 		</xsl:if>
 		</xsl:for-each>
 
