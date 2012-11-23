@@ -44,12 +44,12 @@ class Calibration
 
 		/*!
 			Получение сырого значения по калиброванному
-			\param crop - обрезать значение по крайним точкам,
-							если результат < minRaw или > maxRaw
+			\param crop_cal - обрезать значение по крайним точкам,
+							если оно < minVal или > maxVal (т.е. выходит за диапазон)
 
-			Если crop_result=false, то может быть возвращено значение outOfRange.
+			Если crop_cal=false, то может быть возвращено значение outOfRange.
 		*/
-		long getRawValue( long cal, bool crop_result=false );
+		long getRawValue( long cal, bool crop_cal=false );
 
 	inline long getMinRaw(){ return minRaw; }
 	inline long getMaxRaw(){ return maxRaw; }

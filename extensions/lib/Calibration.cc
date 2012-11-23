@@ -238,12 +238,21 @@ long Calibration::getValue( long raw, bool crop_raw )
 // ----------------------------------------------------------------------------
 long Calibration::getRawValue( long cal, bool crop_cal )
 {
+	if( crop_cal )
+	{
+		if( cal < minVal )
+			cal = minVal;
+		else if( cal > maxVal )
+			cal = maxVal;
+	}
+
 	for( PartsList::iterator it=plist.begin(); it!=plist.end(); ++it )
 	{
 		TypeOfValue q(it->getX(cal));
 		if( q != outOfRange )
 			return tRound(q);
 	}
+
 
 	return outOfRange;
 }
