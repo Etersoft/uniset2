@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.5
-Release: alt3
+Release: alt4
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -211,6 +211,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Fri Nov 23 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt4
+- (uniset-codegen): fixed minor bug
+
 * Thu Nov 22 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt3
 - (Calibration): add getMinRaw(),getMaxRaw(),getMinVal(),getMaxVal()
 
