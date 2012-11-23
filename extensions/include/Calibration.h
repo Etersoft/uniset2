@@ -40,25 +40,33 @@ class Calibration
 		*/
 		long getValue( long raw, bool crop_raw=false );
 
+		/*! Возвращает минимальное значение 'x' встретившееся в диаграмме */
     	inline long getMinVal(){ return minVal; }
+		/*! Возвращает максимальное значение 'x' втретившееся в диаграмме */
     	inline long getMaxVal(){ return maxVal; }
 
+		/*! Возвращает крайнее левое значение 'x' встретившееся в диаграмме (ПОСЛЕ СОРТИРОВКИ ПО ВОЗРАСТАНИЮ 'x'!) */
     	inline long getLeftVal(){ return leftVal; }
+		/*! Возвращает крайнее правое значение 'x' встретившееся в диаграмме (ПОСЛЕ СОРТИРОВКИ ПО ВОЗРАСТАНИЮ 'x'!) */
     	inline long getRightVal(){ return rightVal; }
 
 		/*!
 			Получение сырого значения по калиброванному
 			\param range=true вернуть крайнее значение в диаграмме
-				если оно cal<leftVal или cal>rightVal (т.е. выходит за диапазон)
+				если cal<leftVal или cal>rightVal (т.е. выходит за диапазон)
 							
 			Если range=false, то может быть возвращено значение outOfRange.
 		*/
 		long getRawValue( long cal, bool range=false );
 
+		/*! Возвращает минимальное значение 'y' встретившееся в диаграмме */
     	inline long getMinRaw(){ return minRaw; }
+		/*! Возвращает максимальное значение 'y' встретившееся в диаграмме */
     	inline long getMaxRaw(){ return maxRaw; }
 
+		/*! Возвращает крайнее левое значение 'y' встретившееся в диаграмме (ПОСЛЕ СОРТИРОВКИ ПО ВОЗРАСТАНИЮ 'x'!) */
     	inline long getLeftRaw(){ return leftRaw; }
+		/*! Возвращает крайнее правое значение 'y' встретившееся в диаграмме (ПОСЛЕ СОРТИРОВКИ ПО ВОЗРАСТАНИЮ 'x'!) */
     	inline long getRightRaw(){ return rightRaw; }
 
 
