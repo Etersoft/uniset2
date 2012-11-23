@@ -94,7 +94,7 @@ Calibration::TypeOfValue Calibration::Part::calcX( TypeOfValue y )
 // ----------------------------------------------------------------------------
 
 Calibration::Calibration():
-minRaw(0),maxRaw(0),minVal(0),maxVal(0),
+minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftRaw(0),
 myname("")
 {
 }
@@ -102,7 +102,7 @@ myname("")
 // ----------------------------------------------------------------------------
 
 Calibration::Calibration( const string name, const string confile ):
-minRaw(0),maxRaw(0),minVal(0),maxVal(0),
+minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftRaw(0),
 myname(name)
 {
 	build(name,confile,0);
@@ -110,7 +110,7 @@ myname(name)
 
 // ----------------------------------------------------------------------------
 Calibration::Calibration( xmlNode* node ):
-minRaw(0),maxRaw(0),minVal(0),maxVal(0)
+minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftRaw(0)
 {
 	UniXML_iterator it(node);
 	myname = it.getProp("name");
@@ -171,15 +171,15 @@ void Calibration::build( const string name, const string confile, xmlNode* root 
 //			cout << myname << "(Calibration::build):"
 //						<< "\tadd x=" << p.x << " y=" << p.y << endl;
 
-			if( p.y > maxRaw )
-				maxRaw = p.y;
-			else if( p.y < minRaw )
-				minRaw = p.y;
+			if( p.x > maxRaw )
+				maxRaw = p.x;
+			else if( p.x < minRaw )
+				minRaw = p.x;
 
-			if( p.x > maxVal )
-				maxVal = p.x;
-			else if( p.x < minVal )
-				minVal = p.x;
+			if( p.y > maxVal )
+				maxVal = p.y;
+			else if( p.y < minVal )
+				minVal = p.y;
 
 			if( prev )
 			{
@@ -198,8 +198,20 @@ void Calibration::build( const string name, const string confile, xmlNode* root 
 		}
 		
 		plist.sort();
+		
+		PartsList::iterator beg = plist.begin();
+		PartsList::iterator end = plist.end();
+		
+		if( plist.size() > 0 )
+		{
+			leftRaw = beg->left_x();
+			leftVal = beg->left_y();
+			end--;
+			rightRaw = end->right_x();
+			rightVal = end->right_y();
+		}
 	}
-	catch(Exception& ex)
+	catch( Exception& ex )
 	{
 		cerr << myname << "(Calibration::build): Failed open " << confile << endl;
 		throw;
@@ -208,51 +220,44 @@ void Calibration::build( const string name, const string confile, xmlNode* root 
 // ----------------------------------------------------------------------------
 long Calibration::getValue( long raw, bool crop_raw )
 {
-	PartsList::iterator it=plist.begin();
-
-	// если x левее первого отрезка то берём первую точку...
-	if( raw <= it->left_x() )
+	if( crop_raw )
 	{
-		if( crop_raw )
-			return it->left_y();
+		// если x левее первого отрезка то берём первую точку...
+		if( raw < leftRaw )
+			return leftVal;
 		
-		return it->calcY(raw);
+		// если x правее последнего то берём крайнюю точку...
+		if( raw > rightRaw )
+			return rightVal;
 	}
 	
-	for( ; it!=plist.end(); ++it )
-	{
-		TypeOfValue q(it->getY(raw));
-		if( q != outOfRange )
-			return tRound(q);
-	}
-
-	// берём последний отрезок и вычисляем по нему...
-	it = plist.end();
-	it--;
-	
-	if( crop_raw && raw >= it->right_x() )
-		return it->right_y();
-
-	return it->calcY(raw);
-}
-// ----------------------------------------------------------------------------
-long Calibration::getRawValue( long cal, bool crop_cal )
-{
-	if( crop_cal )
-	{
-		if( cal < minVal )
-			cal = minVal;
-		else if( cal > maxVal )
-			cal = maxVal;
-	}
-
 	for( PartsList::iterator it=plist.begin(); it!=plist.end(); ++it )
 	{
-		TypeOfValue q(it->getX(cal));
+		TypeOfValue q = it->getY(raw);
 		if( q != outOfRange )
 			return tRound(q);
 	}
-	
+
+	return outOfRange;
+}
+// ----------------------------------------------------------------------------
+long Calibration::getRawValue( long cal, bool range )
+{
+	for( PartsList::iterator it=plist.begin(); it!=plist.end(); ++it )
+	{
+		TypeOfValue q = it->getX(cal);
+		if( q != outOfRange )
+			return tRound(q);
+	}
+
+	if( range )
+	{
+		if( cal < leftVal )
+			return leftRaw;
+		
+		if( cal > rightVal )
+			return rightRaw;
+	}
 	
 	return outOfRange;
 }

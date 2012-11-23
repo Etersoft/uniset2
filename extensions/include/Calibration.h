@@ -43,18 +43,24 @@ class Calibration
     	inline long getMinVal(){ return minVal; }
     	inline long getMaxVal(){ return maxVal; }
 
+    	inline long getLeftVal(){ return leftVal; }
+    	inline long getRightVal(){ return rightVal; }
+
 		/*!
 			Получение сырого значения по калиброванному
-			\param crop_cal - обрезать значение по крайним точкам,
-							если оно < minVal или > maxVal (т.е. выходит за диапазон)
+			\param range=true вернуть крайнее значение в диаграмме
+				если оно cal<leftVal или cal>rightVal (т.е. выходит за диапазон)
 							
-			Если crop_cal=false, то может быть возвращено значение outOfRange.
+			Если range=false, то может быть возвращено значение outOfRange.
 		*/
-		long getRawValue( long cal, bool crop_cal=false );
+		long getRawValue( long cal, bool range=false );
 
     	inline long getMinRaw(){ return minRaw; }
     	inline long getMaxRaw(){ return maxRaw; }
-	
+
+    	inline long getLeftRaw(){ return leftRaw; }
+    	inline long getRightRaw(){ return rightRaw; }
+
 
 		/*! построение характеристрики из конф. файла 
 			\param name - название характеристики в файле
@@ -140,7 +146,7 @@ class Calibration
 		// список надо отсортировать по x!
 		typedef std::list<Part> PartsList;
 		
-		long minRaw, maxRaw, minVal, maxVal;
+		long minRaw, maxRaw, minVal, maxVal, rightVal, leftVal, rightRaw, leftRaw;
 
 	private:
 		PartsList plist;
