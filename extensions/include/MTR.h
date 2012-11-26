@@ -243,7 +243,7 @@ namespace MTR
 			{
 				raw.v[0] = v1;
 				raw.v[1] = v2;
-				val = raw.u2.val * pow(10,raw.u2.exp);
+				val = raw.u2.val * pow( (long)10, (long)raw.u2.exp );
 			}
 			
 			T5( long v )
@@ -258,7 +258,7 @@ namespace MTR
 					// При получении данных от MTR слова необходимо перевернуть
 					raw.v[0] = data[1];
 					raw.v[1] = data[0];
-					val = raw.u2.val * pow(10,raw.u2.exp);
+					val = raw.u2.val * pow( (long)10, (long)raw.u2.exp );
 				}
 			}
 
@@ -296,7 +296,7 @@ namespace MTR
 			{
 				raw.v[0] = v1;
 				raw.v[1] = v2;
-				val = raw.u2.val * pow(10,raw.u2.exp);
+				val = raw.u2.val * pow( (long)10, (long)raw.u2.exp );
 			}
 
 			T6( long v )
@@ -311,7 +311,7 @@ namespace MTR
 					// При получении данных от MTR слова необходимо перевернуть
 					raw.v[0] = data[1];
 					raw.v[1] = data[0];
-					val = raw.u2.val * pow(10,raw.u2.exp);
+					val = raw.u2.val * pow( (long)10, (long)raw.u2.exp );
 				}
 			}
 
@@ -350,7 +350,7 @@ namespace MTR
 			{
 				raw.v[0] = v1;
 				raw.v[1] = v2;
-				val = raw.u2.val * pow(10,-4);
+				val = raw.u2.val * pow( (long)10, (long)-4 );
 			}
 			T7( const long v )
 			{
@@ -364,7 +364,7 @@ namespace MTR
 					// При получении данных от MTR слова необходимо перевернуть
 					raw.v[0] = data[1];
 					raw.v[1] = data[0];
-					val = raw.u2.val * pow(10,-4);
+					val = raw.u2.val * pow( (long)10, (long)-4 );
 				}
 			}
 
