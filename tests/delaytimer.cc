@@ -96,5 +96,43 @@ int main()
 	}
 	cerr << "DelayTimer: TEST10 OK! " << endl;
 
+	DelayTimer dtm3(200,100);
+	dtm3.check(true);
+	msleep(190);
+	dtm3.check(false);
+	dtm3.check(true);
+	msleep(50);
+	if( dtm3.check(true) )
+	{
+		cerr << "DelayTimer: TEST11 FAILED! " << endl;
+		return 1;
+	}
+	cerr << "DelayTimer: TEST11 OK! " << endl;
+
+	msleep(200);
+	if( !dtm3.check(true) )
+	{
+		cerr << "DelayTimer: TEST12 FAILED! " << endl;
+		return 1;
+	}
+	cerr << "DelayTimer: TEST12 OK! " << endl;
+
+	dtm3.check(false);
+	msleep(90);
+	dtm3.check(true);
+	msleep(50);
+	if( !dtm3.check(false) )
+	{
+		cerr << "DelayTimer: TEST13 FAILED! " << endl;
+		return 1;
+	}
+	cerr << "DelayTimer: TEST13 OK! " << endl;
+	msleep(150);
+	if( dtm3.check(false) )
+	{
+		cerr << "DelayTimer: TEST14 FAILED! " << endl;
+		return 1;
+	}
+	cerr << "DelayTimer: TEST14 OK! " << endl;
 	return 0;
 }

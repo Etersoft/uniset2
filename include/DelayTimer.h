@@ -22,16 +22,19 @@
 // --------------------------------------------------------------------------
 #include "PassiveTimer.h"
 // --------------------------------------------------------------------------
-/*! Таймер реализующий задержку на срабатывание и отпускание сигнала..
+/*! Таймер реализующий задержку на срабатывание и отпускание сигнала.
+	Для проверки вызывается функция check( state ), где state - это текущее состояние
+	сигнала, а функция check() возвращает сигнал с задержкой.
+	Чтобы состояние переключилось, оно должно продержаться не менее заданного времени.
 */
 class DelayTimer
 {
 	public:
-		DelayTimer():realState(false),state(false),
-				ondelay(0),offdelay(0),waiting(false){}
+		DelayTimer():prevState(false),state(false),
+				onDelay(0),offDelay(0),waiting_on(false),waiting_off(false){}
 
-		DelayTimer( timeout_t on_msec, timeout_t off_msec ):realState(false),state(false),
-				ondelay(on_msec),offdelay(off_msec),waiting(false)
+		DelayTimer( timeout_t on_msec, timeout_t off_msec ):prevState(false),state(false),
+				onDelay(on_msec),offDelay(off_msec),waiting_on(false),waiting_off(false)
 		{
 		}
 
@@ -40,8 +43,8 @@ class DelayTimer
 		// запустить часы (заново)
 		inline void set( timeout_t on_msec, timeout_t off_msec )
 		{
-			ondelay = on_msec;
-			offdelay = off_msec;
+			onDelay = on_msec;
+			offDelay = off_msec;
 		}
 
 		inline void reset()
@@ -51,24 +54,52 @@ class DelayTimer
 
 		inline bool check( bool st )
 		{
-			if( realState != st )
+			if( waiting_off )
 			{
-				if( st )
-					pt.setTiming(ondelay);
-				else
-					pt.setTiming(offdelay);
+				if( !st && pt.checkTime() )
+				{
+					waiting_off = false;
+					state = false;
+					return state;
+				}
+				else if( st != prevState )
+					pt.reset();
 
-				waiting = true;
-				realState = st;
+				prevState = st;
+				return state;
 			}
 
-			if( !waiting )
-				return state;
-
-			if( pt.checkTime() )
+			if( waiting_on )
 			{
-				state = realState;
-				waiting = false;
+				if( st && pt.checkTime() )
+				{
+					waiting_on = false;
+					state = true;
+					return state;
+				}
+				else if( st != prevState )
+					pt.reset();
+
+				prevState = st;
+				return state;
+			}
+
+			if( state != st )
+			{
+				prevState = st;
+				if( st )
+				{
+					pt.setTiming(onDelay);
+					waiting_on = true;
+				}
+				else
+				{
+					pt.setTiming(offDelay);
+					waiting_off = true;
+				}
+
+				if( pt.checkTime() )
+					return st;
 			}
 
 			return state;
@@ -76,11 +107,12 @@ class DelayTimer
 
 	protected:
 		PassiveTimer pt;
-		bool realState;
+		bool prevState;
 		bool state;
-		timeout_t ondelay;
-		timeout_t offdelay;
-		bool waiting;
+		timeout_t onDelay;
+		timeout_t offDelay;
+		bool waiting_on;
+		bool waiting_off;
 };
 // --------------------------------------------------------------------------
 #endif
