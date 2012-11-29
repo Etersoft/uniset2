@@ -32,6 +32,10 @@ int main()
 	}
 
 
+	PassiveTimer pt0(0);
+	cout << "pt0: check msec=0: " << ( pt0.checkTime() ? "OK" : "FAILED" ) << endl;
+
+
 	PassiveTimer pt4(350);
 
 	for( int i=0;i<12; i++ )
