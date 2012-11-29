@@ -9,7 +9,7 @@ using namespace std;
 int main()
 {
 	HourGlass hg;
-	
+
 	hg.run(1000);
 	hg.rotate(true);
 	msleep(200);
@@ -18,14 +18,14 @@ int main()
 		cerr << "HourGlass: TEST1 FAILED! " << endl;
 		return 1;
 	}
-	
+
 	msleep(1000);
 	if( !hg.check() )
 	{
 		cerr << "HourGlass: TEST1 FAILED! " << endl;
 		return 1;
 	}
-	
+
 	cout << "HourGlass: TEST1 OK!" << endl;
 
 	hg.rotate(false);
