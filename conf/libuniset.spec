@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.5
-Release: alt5
+Release: alt6
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -211,6 +211,10 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Thu Nov 29 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt6
+- add DelayTimer class
+- rename SandClock --> HourGlass
+
 * Fri Nov 23 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt5
 - (Calibration): add getLeftRaw(),getRightRaw(),getLeftVal(),getRightVal()
 - (Calibration): fixed bugs
