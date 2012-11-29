@@ -20,27 +20,57 @@
 // idea: lav@etersoft.ru
 // realisation: pv@etersoft.ru, lav@etersoft.ru
 // --------------------------------------------------------------------------
-#ifndef SandClock_H_
-#define SandClock_H_
+#ifndef HourGlass_H_
+#define HourGlass_H_
 // --------------------------------------------------------------------------
 #include "PassiveTimer.h"
 // --------------------------------------------------------------------------
-class SandClock
+/*! Песочные часы.  Класс реализующий логику песочных часов.
+	Удобен для создания задержек на срабатывание и на отпускание
+	(как фильтр от кратковременных изменений). Аналогия с песочными часами:
+	\par
+	Выставляете время(run).. устанавливаются в какое-то положение часы (rotate)...
+	песок сыплется... если весь пересыпался - срабатывает условие (check()==true).
+	Если во время работы условие изменилось (часы перевернули в обратную сторону), то
+	уже успевший пересыпаться песок, начинает пересыпаться в обратную сторону. Если опять
+	повернули часы... продолжает сыпаться опять (добвляясь к тому песку, что "не успел" высыпаться обратно).
+	и т.д. по кругу...
+
+	Класс является "пассивным", т.е. требует периодического вызова функции check, для проверки наступления условия срабатывания.
+
+	\par Пример использования.
+	Допустим у вас есть сигнал "перегрев"(in_overheating) и вам необходимо выставить какой-то
+	флаг о перегреве (isOverheating), если этот сигнал устойчиво держится в течение 10 секунд,
+	и при этом если сигнал снялся, то вам необходимо как минимум те же 10 секунд,
+	подождать прежде чем "снять" флаг. Для этого удобно использовать данный класс.
+\code
+	HourGlass hg;
+	hg.run(10000); // настриваем часы на 10 сек..
+
+	while( ....)
+	{
+	     hg.rotate(in_overheating); // управляем состоянием песочных часов (прямой или обратный ход).
+	     isOverheating = hg.check();
+	}
+
+\endcode
+*/
+class HourGlass
 {
 	public:
-		SandClock(): _state(false),_sand(0),_size(0){}
-		~SandClock(){}
-	
+		HourGlass(): _state(false),_sand(0),_size(0){}
+		~HourGlass(){}
+
 		// запустить часы (заново)
-		inline void run( int msec )
+		inline void run( timeout_t msec )
 		{
 			t.setTiming(msec);
 			_state 	= true;
 			_sand	= msec;
 			_size	= msec;
 		}
-		
-		inline void reset ()
+
+		inline void reset()
 		{
 			run(_size);
 		}
@@ -57,7 +87,7 @@ class SandClock
 		{
 			if( st == _state )
 				return st;
-				
+
 			_state = st;
 			if( !_state )
 			{
@@ -68,7 +98,7 @@ class SandClock
 					_sand = 0;
 
 //				std::cout << "перевернули: прошло " << cur
-//							<< " осталось " << sand 
+//							<< " осталось " << sand
 //							<< " засекаем " << cur << endl;
 
 				t.setTiming(cur);
@@ -80,9 +110,9 @@ class SandClock
 					_sand = _size;
 
 //				std::cout << "вернули: прошло " << t.getCurrent()
-//							<< " осталось " << sand 
+//							<< " осталось " << sand
 //							<< " засекам " << sand << endl;
-	
+
 				t.setTiming(_sand);
 			}
 			return st;
@@ -90,18 +120,18 @@ class SandClock
 
 		// получить прошедшее время
 		// для положения st
-		inline int current( bool st )
+		inline timeout_t current( bool st )
 		{
 			return t.getCurrent();
 		}
 
 		// получить заданное время
 		// для положения st
-		inline int interval( bool st )
+		inline timeout_t interval( bool st )
 		{
 			return t.getInterval();
 		}
-		
+
 		// проверить наступление
 		inline bool check()
 		{
@@ -114,12 +144,12 @@ class SandClock
 		}
 
 		inline bool state(){ return _state; }
-		
+
 	protected:
 		PassiveTimer t;
 		bool _state;
 		int _sand;
-		int _size;
+		timeout_t _size;
 };
 // --------------------------------------------------------------------------
 #endif
