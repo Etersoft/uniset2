@@ -40,13 +40,13 @@ class DelayTimer
 
 		~DelayTimer(){}
 
-		// запустить часы (заново)
 		inline void set( timeout_t on_msec, timeout_t off_msec )
 		{
 			onDelay = on_msec;
 			offDelay = off_msec;
 		}
 
+		// запустить часы (заново)
 		inline void reset()
 		{
 			pt.reset();
