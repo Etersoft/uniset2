@@ -165,15 +165,16 @@
 		</services>
 		<!-- ******************* Идентификаторы объектов ***************** -->
 		<objects name="UniObjects">
-			<item name="TestProc"/>
-			<item name="LProcessor"/>
-			<item name="IOControl"/>
-			<item name="RTUExchange"/>
-			<item name="MBSlave1"/>
-			<item name="MBMaster1"/>
-			<item name="UDPExchange"/>
-			<item name="UDPExchange2"/>
-			<item name="UNetExchange"/>
+			<item id="6000" name="TestProc"/>
+			<item id="6001" name="LProcessor"/>
+			<item id="6002" name="IOControl"/>
+			<item id="6003" name="RTUExchange"/>
+			<item id="6004" name="MBSlave1"/>
+			<item id="6005" name="MBMaster1"/>
+			<item id="6006" name="UDPExchange"/>
+			<item id="6007" name="UDPExchange2"/>
+			<item id="6008" name="UNetExchange"/>
+			<item id="6009" name="MBMaster2"/>
 		</objects>
 	</ObjectsMap>
 	<messages idfromfile="1" name="messages">
