@@ -1163,40 +1163,35 @@ IOControl* IOControl::init_iocontrol( int argc, const char* const* argv,
 // -----------------------------------------------------------------------------
 void IOControl::help_print( int argc, const char* const* argv )
 {
-	cout << "--io-confnode name - Использовать для настройки указанный xml-узел" << endl;
-	cout << "--io-name name		- ID процесса. По умолчанию IOController1." << endl;
-	cout << "--io-numcards		- Количество кард в/в. По умолчанию 1." << endl;
-	cout << "--iodev0 dev		- Использовать для card='0' указанный файл comedi-устройства." << endl;
-	cout << "--iodev1 dev		- Использовать для card='1' указанный файл comedi-устройства." << endl;
-	cout << "--iodev2 dev		- Использовать для card='2' указанный файл comedi-устройства." << endl;
-	cout << "--iodev3 dev		- Использовать для card='3' указанный файл comedi-устройства." << endl;
-	cout << "--iodevX dev		- Использовать для card='X' указанный файл comedi-устройства." << endl;
-	cout << "                     'X'  не должен быть больше --io-numcards" << endl;
+	cout << "--prefix-confnode name   - Использовать для настройки указанный xml-узел" << endl;
+	cout << "--prefix-name name       - ID процесса. По умолчанию IOController1." << endl;
+	cout << "--prefix-numcards        - Количество кард в/в. По умолчанию 1." << endl;
+	cout << "--prefix-devX dev        - Использовать для card='X' указанный файл comedi-устройства." << endl;
+	cout << "                           'X'  не должен быть больше --prefix-numcards" << endl;
+	cout << "--prefix-devX-subdevX-type name  - Настройка типа подустройства для UNIO." << endl ;
+	cout << "                                   Разрешены: TBI0_24,TBI24_0,TBI16_8" << endl;
 
-	cout << "--iodevX-subdevX-type name	- Настройка типа подустройства для UNIO." << endl ;
-	cout << "                             Разрешены: TBI0_24,TBI24_0,TBI16_8" << endl;
-
-	cout << "--io-default_cardnum		- Номер карты по умолчанию. По умолчанию -1." << endl;
+	cout << "--prefix-default_cardnum   - Номер карты по умолчанию. По умолчанию -1." << endl;
 	cout << "                             Если задать, то он будет использоватся для датчиков" << endl;
 	cout << "                             у которых не задано поле 'card'." << endl;
 
-	cout << "--io-test-lamp		- Для данного узла в качестве датчика кнопки 'ТестЛамп' использовать указанный датчик." << endl;
-	cout << "--io-conf-field fname	- Считывать из конф. файла все датчики с полем fname='1'" << endl;
-	cout << "--io-polltime msec	- Пауза между опросом карт. По умолчанию 200 мсек." << endl;
-	cout << "--io-filtersize val	- Размерность фильтра для аналоговых входов." << endl;
-	cout << "--io-filterT val		- Постоянная времени фильтра." << endl;
-	cout << "--io-s-filter-field	- Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
-	cout << "--io-s-filter-value	- Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
-	cout << "--io-blink-time msec	- Частота мигания, мсек. По умолчанию в configure.xml" << endl;
-	cout << "--io-blink2-time msec	- Вторая частота мигания (lmpBLINK2), мсек. По умолчанию в configure.xml" << endl;
-	cout << "--io-blink3-time msec	- Вторая частота мигания (lmpBLINK3), мсек. По умолчанию в configure.xml" << endl;
-	cout << "--io-heartbeat-id		- Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--io-heartbeat-max  	- Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--io-ready-timeout		- Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
-	cout << "--io-force				- Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
-	cout << "--io-force-out			- Обновлять выходы принудительно (не по заказу)" << endl;
-	cout << "--io-skip-init-output	- Не инициализировать 'выходы' при старте" << endl;
-	cout << "--io-sm-ready-test-sid - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
+	cout << "--prefix-test-lamp         - Для данного узла в качестве датчика кнопки 'ТестЛамп' использовать указанный датчик." << endl;
+	cout << "--prefix-conf-field fname  - Считывать из конф. файла все датчики с полем fname='1'" << endl;
+	cout << "--prefix-polltime msec     - Пауза между опросом карт. По умолчанию 200 мсек." << endl;
+	cout << "--prefix-filtersize val    - Размерность фильтра для аналоговых входов." << endl;
+	cout << "--prefix-filterT val       - Постоянная времени фильтра." << endl;
+	cout << "--prefix-s-filter-field    - Идентификатор в configure.xml по которому считывается список относящихся к это процессу датчиков" << endl;
+	cout << "--prefix-s-filter-value    - Значение идентификатора по которому считывается список относящихся к это процессу датчиков" << endl;
+	cout << "--prefix-blink-time msec   - Частота мигания, мсек. По умолчанию в configure.xml" << endl;
+	cout << "--prefix-blink2-time msec  - Вторая частота мигания (lmpBLINK2), мсек. По умолчанию в configure.xml" << endl;
+	cout << "--prefix-blink3-time msec  - Вторая частота мигания (lmpBLINK3), мсек. По умолчанию в configure.xml" << endl;
+	cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+	cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
+	cout << "--prefix-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
+	cout << "--prefix-force             - Сохранять значения в SM, независимо от, того менялось ли значение" << endl;
+	cout << "--prefix-force-out         - Обновлять выходы принудительно (не по заказу)" << endl;
+	cout << "--prefix-skip-init-output  - Не инициализировать 'выходы' при старте" << endl;
+	cout << "--prefix-sm-ready-test-sid - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
 }
 // -----------------------------------------------------------------------------
 void IOControl::processingMessage( UniSetTypes::VoidMessage* msg )
