@@ -4,7 +4,7 @@ ulimit -Sc 10000000
 START=uniset-start.sh
 
 ${START} -f ./uniset-smemory-plus --smemory-id SharedMemory  --confile test.xml \
-	 --unideb-add-levels info,crit,warn,level9,system,level3,level2,level1 \
+	 --dlog-add-levels any \
 	 --io-name IOControl \
 	 --io-polltime 100 \
 	 --io-s-filter-field io \
@@ -22,6 +22,15 @@ ${START} -f ./uniset-smemory-plus --smemory-id SharedMemory  --confile test.xml 
      --mbtcp-gateway-port 2048 \
      --mbtcp-recv-timeout 200 \
      --mbtcp-force-out 1 \
+     --add-mbmaster2 \
+     --mbtcp2-name MBMaster2 \
+     --mbtcp2-confnode MBMaster1 \
+     --mbtcp2-filter-field rs \
+     --mbtcp2-filter-value 1 \
+     --mbtcp2-gateway-iaddr localhost \
+     --mbtcp2-gateway-port 2049 \
+     --mbtcp2-recv-timeout 200 \
+     --mbtcp2-force-out 1 \
 #	 --add-rtu \
 #	 --rs-dev /dev/cbsideA1 \
 #	 --rs-id RTUExchange \
