@@ -26,9 +26,3 @@ ${START} -f ./uniset-smemory-plus --smemory-id SharedMemory  --confile test.xml 
 #	 --rs-dev /dev/cbsideA1 \
 #	 --rs-id RTUExchange \
 #	 --add-mbslave \
-	 
-
-#--skip-rtu1 --skip-rtu2 --skip-can --dlog-add-levels info,warn,crit 
-#--c-filter-value 1 --unideb-add-levels level9,warn,crit,info --dlog-add-levels info,warn,crit
-#--unideb-add-levels info,warn,crit,system,repository
-
