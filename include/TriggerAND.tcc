@@ -21,38 +21,38 @@
  *  \author Pavel Vainerman
 */
 // --------------------------------------------------------------------------
-#include "TriggerOR.h"
+#include "TriggerAND.h"
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
-TriggerOR<Caller,InputType>::TriggerOR(Caller* c, Action a):
+TriggerAND<Caller,InputType>::TriggerAND(Caller* c, Action a):
 cal(c),
 act(a)
 {
 }
 
 template<class Caller, typename InputType>
-TriggerOR<Caller,InputType>::~TriggerOR()
+TriggerAND<Caller,InputType>::~TriggerAND()
 {
 }
 
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
-bool TriggerOR<Caller,InputType>::commit(InputType num, bool state)
+bool TriggerAND<Caller,InputType>::commit(InputType num, bool state)
 {
 	typename InputMap::iterator it=inputs.find(num);
 	if( it!=inputs.end() )
 	{
 		inputs[num] = state;
-		check();	
+		check();
 		return true;
 	}
-	
+
 	return false;
 }
 
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
-void TriggerOR<Caller,InputType>::add(InputType num, bool state)
+void TriggerAND<Caller,InputType>::add(InputType num, bool state)
 {
 	inputs[num] = state;
 	check();
@@ -60,18 +60,18 @@ void TriggerOR<Caller,InputType>::add(InputType num, bool state)
 
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
-void TriggerOR<Caller,InputType>::remove(InputType num)
+void TriggerAND<Caller,InputType>::remove(InputType num)
 {
 	typename InputMap::iterator it=inputs.find(num);
 	if( it!=inputs.end() )
 		inputs.erase(it);
 
-	check();		
+	check();
 }
 
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
-bool TriggerOR<Caller,InputType>::getState(InputType num)
+bool TriggerAND<Caller,InputType>::getState(InputType num)
 {
 	typename InputMap::iterator it=inputs.find(num);
 	if( it!=inputs.end() )
@@ -81,16 +81,16 @@ bool TriggerOR<Caller,InputType>::getState(InputType num)
 }
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
-void TriggerOR<Caller,InputType>::check()
+void TriggerAND<Caller,InputType>::check()
 {
 	bool old = out;
 	for( typename InputMap::iterator it=inputs.begin(); it!=inputs.end(); ++it )
 	{
-		if( it->second )
+		if( !it->second )
 		{
-			// если хоть один вход "1" на выходе "1"
+			// если хоть один вход "0" на выходе "0"
 			// и прекращаем дальнейший поиск
-			out = true;
+			out = false;
 			if( old != out )
 			{
 //				try
@@ -102,9 +102,8 @@ void TriggerOR<Caller,InputType>::check()
 			return;
 		}
 	}
-	
-	out = false;
 
+	out = true;
 	if( old != out )
 	{
 //		try
@@ -116,13 +115,13 @@ void TriggerOR<Caller,InputType>::check()
 }
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
-void TriggerOR<Caller,InputType>::update()
+void TriggerAND<Caller,InputType>::update()
 {
 	(cal->*act)(out);
 }
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
-void TriggerOR<Caller,InputType>::reset()
+void TriggerAND<Caller,InputType>::reset()
 {
 	out = false;
 	(cal->*act)(out);
