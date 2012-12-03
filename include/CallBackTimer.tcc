@@ -21,8 +21,8 @@
  *  \author Pavel Vainerman
 */
 // -------------------------------------------------------------------------- 
-# ifndef CallBackTimer_TEMPLATE_H_
-# define CallBackTimer_TEMPLATE_H_
+# ifndef CallBackTimer_TCC_H_
+# define CallBackTimer_TCC_H_
 // -------------------------------------------------------------------------- 
 #include <unistd.h>
 #include <sstream>
@@ -180,4 +180,4 @@ int CallBackTimer<Caller>::getCurrent( int id )
 }
 // ------------------------------------------------------------------------------------------
 
-# endif //CallBackTimer_H_
+# endif //CallBackTimer_TCC_H_

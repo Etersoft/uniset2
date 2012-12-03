@@ -145,5 +145,5 @@ class CallBackTimer
 		};
 };
 
-#include "CallBackTimer_template.h"
+#include "CallBackTimer.tcc"
 # endif //CallBackTimer_H_

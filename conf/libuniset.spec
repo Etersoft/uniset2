@@ -15,7 +15,7 @@ Source: /var/ftp/pvt/Etersoft/Ourside/unstable/sources/tarball/%name-%version.ta
 
 # manually removed: glibc-devel-static
 # Automatically added by buildreq on Fri Nov 26 2010
-BuildRequires: glibc-devel-static libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel python-modules xsltproc
+BuildRequires: libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel python-modules xsltproc
 
 # Using old package name instead of libmysqlclient-devel it absent in branch 5.0 for yauza
 BuildRequires: libMySQL-devel
@@ -138,6 +138,7 @@ rm -f %buildroot%_libdir/*.la
 %dir %_includedir/%oname/
 %_includedir/%oname/*.h
 %_includedir/%oname/*.hh
+%_includedir/%oname/*.tcc
 %_includedir/%oname/IOs/
 %_includedir/%oname/modbus/
 %_includedir/%oname/mysql/
