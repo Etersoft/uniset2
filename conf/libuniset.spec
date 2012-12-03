@@ -3,7 +3,7 @@
 
 Name: libuniset
 Version: 1.5
-Release: alt7
+Release: alt8
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -172,6 +172,7 @@ rm -f %buildroot%_libdir/*.la
 %_bindir/%oname-rtu188-state
 %_bindir/%oname-rtuexchange
 %_bindir/%oname-smemory
+%_bindir/%oname-smemory-plus
 %_bindir/%oname-smviewer
 %_bindir/%oname-network
 %_bindir/%oname-unet*
@@ -212,6 +213,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Mon Dec 03 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt8
+- add uniset-smemory-plus
+
 * Fri Nov 30 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt7
 - returned file 'SandClock.h' back and declared it obsolete
 
