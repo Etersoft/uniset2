@@ -16,7 +16,9 @@ CCTARG=$(patsubst %.idl, ${CCDIR}/%SK.cc, ${IDLFILES})
 
 all: ${HHTARG} ${CCTARG}
 
+
 dynamic: all
+
 
 ${HHTARG} ${CCTARG}: ${IDLFILES}
 	for i in $^; do ${IDL} -v -bcxx ${IDLFLAGS} $$i; done
@@ -28,5 +30,6 @@ clean:
 	${RM} ${HHTARG} ${CCTARG}
 
 depend:
+
 
 install:
