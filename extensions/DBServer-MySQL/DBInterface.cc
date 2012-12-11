@@ -24,7 +24,6 @@
 #include <sstream>
 #include "DBInterface.h"
 using namespace std;
-
 // -----------------------------------------------------------------------------------------
 
 DBInterface::DBInterface():
@@ -192,7 +191,7 @@ bool DBInterface::dropDB(const string dbname)
 MYSQL_RES* DBInterface::listFields(const string table, const string wild )
 {
 	if( !mysql || !result )
-		return false;
+		return 0;
 
 	MYSQL_RES *res = mysql_list_fields(mysql, table.c_str(),wild.c_str());
 	unsigned int cols = mysql_num_fields(result); // numCols();
@@ -205,7 +204,7 @@ MYSQL_RES* DBInterface::listFields(const string table, const string wild )
 		cout << row[i] << " | ";
 	}
 
-	return  res; // mysql_list_fields(mysql, table,wild);
+	return res; // mysql_list_fields(mysql, table,wild);
 }
 // -----------------------------------------------------------------------------------------			
 bool DBInterface::moveToRow(int ind)

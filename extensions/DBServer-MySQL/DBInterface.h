@@ -29,7 +29,6 @@
 //#warning Для использования mysql_create нужен define USE_OLD_FUNCTIONS
 //#define USE_OLD_FUNCTIONS
 #include <mysql/mysql.h>
-using std::string;
 // ----------------------------------------------------------------------------
 class DBInterface
 {
@@ -38,20 +37,20 @@ class DBInterface
 			DBInterface();
 			~DBInterface();
 
-//			bool createDB(const string dbname);
-//			bool dropDB(const string dbname);
-			MYSQL_RES * listFields(const string table, const string wild );
+//			bool createDB(const std::string dbname);
+//			bool dropDB(const std::string dbname);
+			MYSQL_RES * listFields(const std::string table, const std::string wild );
 
 
-			bool connect( const string host, const string user, const string pswd,
-							const string dbname);
+			bool connect( const std::string host, const std::string user, const std::string pswd,
+							const std::string dbname);
 			bool close();
 			
-			bool query(const string q);
-			const string lastQuery();
-			bool insert(const string q);
+			bool query(const std::string q);
+			const std::string lastQuery();
+			bool insert(const std::string q);
 
-			string addslashes(const string& str);
+			std::string addslashes(const std::string& str);
 			
 			/*! 
 				проверка связи с БД.
@@ -73,7 +72,7 @@ class DBInterface
 			int insert_id();
 
 			const MYSQL_ROW getRow();
-			const string error();
+			const std::string error();
 			
 			MYSQL_ROW Row;
 
@@ -85,7 +84,7 @@ class DBInterface
 	
 		MYSQL_RES *result;
 		MYSQL *mysql;
-		string lastQ;
+		std::string lastQ;
 		bool queryok;	// успешность текущего запроса
 		bool connected;
 };
