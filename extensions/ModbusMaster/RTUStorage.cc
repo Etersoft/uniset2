@@ -179,7 +179,7 @@ float RTUStorage::getFloat( RTUJack jack, unsigned short int chan, UniversalIO::
 			case nJ1:
 				return unio_ai[chan];
 			case nJ2:
-				return unio_ai[24+chan];
+				return unio_ai[12+chan];
 			case nJ5:
 				return dio_ai[chan];
 			case nX1:
@@ -201,7 +201,7 @@ float RTUStorage::getFloat( RTUJack jack, unsigned short int chan, UniversalIO::
 			case nJ1:
 				return unio_ao[chan];
 			case nJ2:
-				return unio_ao[24+chan];
+				return unio_ao[12+chan];
 			case nJ5:
 				return dio_ao[chan];
 			case nX1:
