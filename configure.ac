@@ -38,6 +38,7 @@ PKG_CHECK_MODULES(XML, libxml-2.0)
 PKG_CHECK_MODULES(OMNI, omniORB4)
 PKG_CHECK_MODULES(SIGC, sigc++-2.0)
 PKG_CHECK_MODULES(COMCPP, libccgnu2)
+PKG_CHECK_MODULES(SQLITE3, sqlite3)
 
 # export
 LDFLAGS="${OMNI_LIBS} ${XML_LIBS}"
@@ -177,6 +178,8 @@ AC_CONFIG_FILES([Makefile
 				 extensions/include/Makefile
 				 extensions/DBServer-MySQL/Makefile
 				 extensions/DBServer-MySQL/libUniSetMySQL.pc
+				 extensions/DBServer-SQLite/Makefile
+				 extensions/DBServer-SQLite/libUniSetSQLite.pc
 				 extensions/IOControl/Makefile
 				 extensions/IOControl/libUniSetIOControl.pc
 				 extensions/ModbusMaster/Makefile
