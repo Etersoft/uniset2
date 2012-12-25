@@ -20,21 +20,22 @@ int main(int argc, char** argv)
 		stringstream q;
 		q << "SELECT * from main_history";
 		
-		if( !db.query(q.str()) )
+		SQLiteResult r = db.query(q.str());
+		if( !r )
 		{
 			cerr << "db connect error: " << db.error() << endl;
 			return 1;
 		}
 
-		SQLiteInterface::iterator it = db.begin();
-		for( ; it!=db.end(); it++ )
+		for( SQLiteResult::iterator it=r.begin(); it!=r.end(); it++ )
 		{
-			cout << "get result: row=" << it.row_num() << " coln=" << it.get_num_cols() << endl;
-			for( int i=0; i<it.get_num_cols(); i++ )
-				cout << it.get_text(i) << "(" << it.get_double(i) << ")  |  ";
+			cout << "ROW: ";
+			SQLiteResult::COL col(*it);
+			for( SQLiteResult::COL::iterator cit = it->begin(); cit!=it->end(); cit++ )
+				cout << as_string(cit) << "(" << as_double(cit) << ")  |  ";
 			cout << endl;
 		}
-		db.freeResult();
+
 		db.close();
 	}
 	catch(Exception& ex)
