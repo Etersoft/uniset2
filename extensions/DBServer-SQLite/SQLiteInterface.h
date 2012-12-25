@@ -25,9 +25,13 @@
 #define SQLiteInterface_H_
 // ---------------------------------------------------------------------------
 #include <string>
+#include <list>
+#include <vector>
 #include <iostream>
 #include <sqlite3.h>
 #include "PassiveTimer.h"
+// ----------------------------------------------------------------------------
+class SQLiteResult;
 // ----------------------------------------------------------------------------
 class SQLiteInterface
 {
@@ -45,7 +49,7 @@ class SQLiteInterface
 		inline void setOperationCheckPause( timeout_t msec ){ opCheckPause = msec; }
 		inline timeout_t getOperationCheckPause(){ return opCheckPause; }
 
-		bool query( const std::string q );
+		SQLiteResult query( const std::string q );
 		const std::string lastQuery();
 		bool insert( const std::string q );
 
@@ -55,61 +59,15 @@ class SQLiteInterface
 
 		const std::string error();
 
-		void freeResult();
-
-		class SQLiteIterator
-		{
-			public:
-				SQLiteIterator( sqlite3_stmt* s ):stmt(s),row(0){}
-				SQLiteIterator():stmt(0),row(-1){}
-				~SQLiteIterator(){};
-
-				SQLiteIterator operator ++(int);
-				// SQLiteIterator operator --();
-			inline bool operator==(const SQLiteIterator& other) const
-                {
-					if( row == -1 && other.stmt==0 && other.row == -1 )
-						return true;
-
-					return ( stmt == other.stmt && row == other.row );
-                }
-
-			inline bool operator!=(const SQLiteIterator& other) const
-                {
-					return !operator==(other);
-                }
-
-				inline int row_num(){ return row; }
-
-				std::string get_text( int col );
-				int get_int( int col );
-				double get_double( int col );
-
-				int get_num_cols();
-
-				void free_result();
-
-				bool is_end();
-
-			protected:
-				sqlite3_stmt* stmt;
-				int row;
-		};
-
-
-		typedef SQLiteIterator iterator;
-
-		iterator begin();
-		iterator end();
-
 	protected:
 
 		bool wait( sqlite3_stmt* stmt, int result );
+		static bool checkResult( int rc );
 
 	private:
 
 		sqlite3* db;
-		sqlite3_stmt* curStmt;
+		// sqlite3_stmt* curStmt;
 
 		std::string lastQ;
 		bool queryok;	// успешность текущего запроса
@@ -119,5 +77,35 @@ class SQLiteInterface
 		timeout_t opCheckPause;
 };
 // ----------------------------------------------------------------------------------
+class SQLiteResult
+{
+	public:
+		SQLiteResult(){}
+		SQLiteResult( sqlite3_stmt* s, bool finalize=true );
+		~SQLiteResult();
+
+		typedef std::vector<std::string> COL;
+		typedef std::list<COL> ROW;
+
+		typedef ROW::iterator iterator;
+
+		inline iterator begin(){ return res.begin(); }
+		inline iterator end(){ return res.end(); }
+
+		inline operator bool(){ return !res.empty(); }
+
+	protected:
+
+		ROW res;
+};
+// ----------------------------------------------------------------------------
+int num_cols( SQLiteResult::iterator& );
+int as_int( SQLiteResult::iterator&, int col );
+double as_double( SQLiteResult::iterator&, int col );
+std::string as_text( SQLiteResult::iterator&, int col );
+int as_int( SQLiteResult::COL::iterator& );
+double as_double( SQLiteResult::COL::iterator& );
+std::string as_string( SQLiteResult::COL::iterator& );
+// ----------------------------------------------------------------------------
 #endif
 // ----------------------------------------------------------------------------------

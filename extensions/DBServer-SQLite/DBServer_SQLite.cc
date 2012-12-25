@@ -108,6 +108,7 @@ void DBServer_SQLite::sysCommand( UniSetTypes::SystemMessage *sm )
 		case SystemMessage::Finish:
 		{
 			activate = false;
+//			db->freeResult();
 			db->close();
 		}
 		break;
@@ -115,6 +116,7 @@ void DBServer_SQLite::sysCommand( UniSetTypes::SystemMessage *sm )
 		case SystemMessage::FoldUp:
 		{
 			activate = false;
+//			db->freeResult();
 			db->close();
 		}
 		break;
@@ -179,6 +181,7 @@ void DBServer_SQLite::parse( UniSetTypes::ConfirmMessage* cem )
 		{
 			if( unideb.debugging(Debug::CRIT) )
 				unideb[Debug::CRIT] << myname << "(update_confirm):  db error: "<< db->error() << endl;
+//			db->freeResult();
 		}
 	}
 	catch( Exception& ex )
@@ -231,7 +234,10 @@ bool DBServer_SQLite::writeToBase( const string& query )
 	// см. SQLiteInterface::query.
 	string err(db->error());
 	if( err.empty() )
+	{
+//		db->freeResult();
 		return true;
+	}
 
 	return false;
 }
@@ -243,6 +249,7 @@ void DBServer_SQLite::flushBuffer()
 	// Сперва пробуем очистить всё что накопилось в очереди до этого...
 	while( !qbuf.empty() )
 	{
+#if 0
 		db->query( qbuf.front() );
 
 		// Дело в том что на INSERT И UPDATE запросы
@@ -250,13 +257,14 @@ void DBServer_SQLite::flushBuffer()
 		// отдельно проверять действительно ли произошла ошибка
 		// см. SQLiteInterface::query.
 		string err(db->error());
-
-		if( err.empty() && unideb.debugging(Debug::CRIT) )
+		if( err.empty() )
+			db->freeResult();
+		else if( unideb.debugging(Debug::CRIT) )
 		{
 			unideb[Debug::CRIT] << myname << "(writeToBase): error: " << err <<
 				" lost query: " << qbuf.front() << endl;
 		}
-
+#endif
 		qbuf.pop();
 	}
 }
@@ -291,6 +299,7 @@ void DBServer_SQLite::parse( UniSetTypes::SensorMessage *si )
 		{
 			if( unideb.debugging(Debug::CRIT) )
 				unideb[Debug::CRIT] << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
+//			db->freeResult();
 		}
 	}
 	catch( Exception& ex )
