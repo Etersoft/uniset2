@@ -22,6 +22,7 @@
 */
 // -------------------------------------------------------------------------- 
 #include <sstream>
+#include <cstdio>
 #include "UniSetTypes.h"
 #include "SQLiteInterface.h"
 // --------------------------------------------------------------------------
@@ -31,6 +32,7 @@ using namespace UniSetTypes;
 
 SQLiteInterface::SQLiteInterface():
 db(0),
+curStmt(0),
 lastQ(""),
 queryok(false),
 connected(false),
@@ -42,31 +44,23 @@ opCheckPause(50)
 SQLiteInterface::~SQLiteInterface()
 { 
 	close();
-	delete db;
+	if( db )
+		delete db;
 }
 
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::connect( const string dbfile )
 {
 	int rc = sqlite3_open(dbfile.c_str(), &db);
-	if( !rc )
-	{
-		cerr << sqlite3_errmsg(db) << endl;
-		sqlite3_close(db);
-		db = 0;
-		connected = false;
-		return false;
-	}
 
 	if( rc==SQLITE_BUSY || rc==SQLITE_LOCKED || rc==SQLITE_INTERRUPT || rc==SQLITE_IOERR )
 	{
-		cerr << sqlite3_errmsg(db) << endl;
+		cerr << "SQLiteInterface::connect): rc=" << rc << " error: " << sqlite3_errmsg(db) << endl;
 		sqlite3_close(db);
 		db = 0;
 		connected = false;
 		return false;
 	}
-
 	
 	connected = true;
 	return true;
@@ -74,8 +68,11 @@ bool SQLiteInterface::connect( const string dbfile )
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::close()
 {
-	if(db) 
+	if( db )
+	{
 		sqlite3_close(db);
+		db = 0;
+	}
 	
 	return true;
 }
@@ -129,7 +126,7 @@ bool SQLiteInterface::query( const string q )
 	}
 	
 	lastQ = q;
-
+	curStmt = pStmt;
 //	int cnum = sqlite3_column_count(pStmt);
 
 /*	
@@ -143,7 +140,7 @@ bool SQLiteInterface::query( const string q )
 	}
 */
 	
-	sqlite3_finalize(pStmt);
+	// sqlite3_finalize(pStmt);
 	queryok=true;
 	return true;
 }
@@ -177,6 +174,12 @@ const string SQLiteInterface::lastQuery()
 	return lastQ;
 }
 // -----------------------------------------------------------------------------------------
+void SQLiteInterface::freeResult()
+{
+	sqlite3_finalize(curStmt);
+	curStmt = 0;
+}
+// -----------------------------------------------------------------------------------------
 int SQLiteInterface::insert_id()
 {
 	if( !db )
@@ -188,5 +191,77 @@ int SQLiteInterface::insert_id()
 bool SQLiteInterface::isConnection()
 {
 	return connected;
+}
+// -----------------------------------------------------------------------------------------
+SQLiteInterface::iterator SQLiteInterface::begin()
+{
+	return SQLiteIterator(curStmt);
+}
+// -----------------------------------------------------------------------------------------
+SQLiteInterface::iterator SQLiteInterface::end()
+{
+	return SQLiteIterator();
+}
+// -----------------------------------------------------------------------------------------
+SQLiteInterface::SQLiteIterator SQLiteInterface::SQLiteIterator::operator ++(int c)
+{
+	if( row == -1 || c<0 )
+		return *this;
+
+	if( c==0 )
+		c = 1;
+
+	for( int i=0; i<c; i++ )
+	{
+		int rc = sqlite3_step(stmt);
+		// cerr << "**** ++:  rc=" << rc  << " err: " << sqlite3_errmsg( sqlite3_db_handle(stmt) ) << endl;
+		if( rc != SQLITE_ROW )
+		{
+			row = -1;
+			break;
+		}
+
+		row++;
+	}
+	
+	return *this;
+}
+// -----------------------------------------------------------------------------------------
+#if 0
+SQLiteInterface::SQLiteIterator SQLiteInterface::SQLiteIterator::operator --()
+{
+	
+}
+#endif
+// -----------------------------------------------------------------------------------------
+std::string SQLiteInterface::SQLiteIterator::get_text( int col )
+{
+	return string( (char*)sqlite3_column_text(stmt,col) );
+}
+// -----------------------------------------------------------------------------------------
+int SQLiteInterface::SQLiteIterator::get_int( int col )
+{
+	return sqlite3_column_int(stmt,col);
+}
+// -----------------------------------------------------------------------------------------
+double SQLiteInterface::SQLiteIterator::get_double( int col )
+{
+	return sqlite3_column_double(stmt,col);
+}
+// -----------------------------------------------------------------------------------------
+int SQLiteInterface::SQLiteIterator::get_num_cols()
+{
+	return sqlite3_data_count(stmt);
+}
+// -----------------------------------------------------------------------------------------
+bool SQLiteInterface::SQLiteIterator::is_end()
+{
+	return ( row == -1 );
+}
+// -----------------------------------------------------------------------------------------
+void SQLiteInterface::SQLiteIterator::free_result()
+{
+	sqlite3_finalize(stmt);
+	stmt = 0;
 }
 // -----------------------------------------------------------------------------------------
