@@ -104,6 +104,8 @@
 			bool prev_m_<xsl:value-of select="normalize-space(../../@name)"/>; 	/*!&lt; предыдущее состояние (сообщения) */
 			</xsl:when>
 			<xsl:when test="$GENTYPE='C'">mid_<xsl:value-of select="normalize-space(../../@name)"/>(<xsl:value-of select="../../@id"/>),
+				m_<xsl:value-of select="normalize-space(../../@name)"/>(false),
+				prev_m_<xsl:value-of select="normalize-space(../../@name)"/>(false),
 			</xsl:when>
 			<xsl:when test="$GENTYPE='CHECK'">
 				<xsl:if test="normalize-space(@no_check_id)!='1'">
@@ -513,6 +515,8 @@ node_<xsl:value-of select="@name"/>(DefaultObjectId),
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="@name"/>(DefaultObjectId),
 node_<xsl:value-of select="@name"/>(DefaultObjectId),
+m_<xsl:value-of select="@name"/>(false),
+prev_m_<xsl:value-of select="@name"/>(false),
 </xsl:for-each>
 // variables
 <xsl:for-each select="//variables/item">
@@ -572,6 +576,8 @@ node_<xsl:value-of select="normalize-space(@name)"/>( conf->getNodeID(conf->getP
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
 <xsl:for-each select="//msgmap/item"><xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
 node_<xsl:value-of select="normalize-space(@name)"/>(conf->getNodeID( conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>"))),
+m_<xsl:value-of select="normalize-space(@name)"/>(false),
+prev_m_<xsl:value-of select="normalize-space(@name)"/>(false),
 </xsl:for-each>
 // variables
 <xsl:for-each select="//variables/item">
