@@ -55,6 +55,53 @@ class SQLiteInterface
 
 		const std::string error();
 
+		void freeResult();
+
+		class SQLiteIterator
+		{
+			public:
+				SQLiteIterator( sqlite3_stmt* s ):stmt(s),row(0){}
+				SQLiteIterator():stmt(0),row(-1){}
+				~SQLiteIterator(){};
+
+				SQLiteIterator operator ++(int);
+				// SQLiteIterator operator --();
+			inline bool operator==(const SQLiteIterator& other) const
+                {
+					if( row == -1 && other.stmt==0 && other.row == -1 )
+						return true;
+
+					return ( stmt == other.stmt && row == other.row );
+                }
+
+			inline bool operator!=(const SQLiteIterator& other) const
+                {
+					return !operator==(other);
+                }
+
+				inline int row_num(){ return row; }
+
+				std::string get_text( int col );
+				int get_int( int col );
+				double get_double( int col );
+
+				int get_num_cols();
+
+				void free_result();
+
+				bool is_end();
+
+			protected:
+				sqlite3_stmt* stmt;
+				int row;
+		};
+
+
+		typedef SQLiteIterator iterator;
+
+		iterator begin();
+		iterator end();
+
 	protected:
 
 		bool wait( sqlite3_stmt* stmt, int result );
@@ -62,6 +109,7 @@ class SQLiteInterface
 	private:
 
 		sqlite3* db;
+		sqlite3_stmt* curStmt;
 
 		std::string lastQ;
 		bool queryok;	// успешность текущего запроса
