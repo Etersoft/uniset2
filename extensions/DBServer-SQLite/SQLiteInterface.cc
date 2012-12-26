@@ -49,6 +49,11 @@ SQLiteInterface::~SQLiteInterface()
 }
 
 // -----------------------------------------------------------------------------------------
+bool SQLiteInterface::ping()
+{
+	return db && ( sqlite3_db_status(db,0,NULL,NULL,0) == SQLITE_OK );
+}
+// -----------------------------------------------------------------------------------------
 bool SQLiteInterface::connect( const string dbfile, bool create )
 {
 	// т.к. sqlite3 по умолчанию, создаёт файл при открытии, то проверим "сами"

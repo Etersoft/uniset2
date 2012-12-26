@@ -27,7 +27,7 @@
 				<RouteList>
 				</RouteList>
 			</LocalInfoServer>
-			<LocalDBServer dbname="UNISET_PLC" dbpass="dbadmin" dbuser="dbadmin" name="DBServer" pingTime="60000" reconnectTime="30000"/>
+			<LocalDBServer dbfile="test.db" dbname="UNISET_PLC" dbpass="dbadmin" dbuser="dbadmin" name="DBServer" pingTime="60000" reconnectTime="30000"/>
 			<LocalPrintServer checkTime="5000" device="/dev/lp0"/>
 		</Services>
 	</UniSet>
