@@ -33,6 +33,7 @@ using namespace UniSetTypes;
 SQLiteInterface::SQLiteInterface():
 db(0),
 lastQ(""),
+lastE(""),
 queryok(false),
 connected(false),
 opTimeout(300),
@@ -48,13 +49,20 @@ SQLiteInterface::~SQLiteInterface()
 }
 
 // -----------------------------------------------------------------------------------------
-bool SQLiteInterface::connect( const string dbfile )
+bool SQLiteInterface::connect( const string dbfile, bool create )
 {
-	int rc = sqlite3_open(dbfile.c_str(), &db);
+	// т.к. sqlite3 по умолчанию, создаёт файл при открытии, то проверим "сами"
+//	if( !create && !UniSetTypes::file_exist(dbfile) )
+//		return false;
+
+	int flags = create ? 0 : SQLITE_OPEN_READWRITE;
+
+	int rc = sqlite3_open_v2(dbfile.c_str(), &db, flags, NULL);
 
 	if( rc != SQLITE_OK )
 	{
-		cerr << "SQLiteInterface::connect): rc=" << rc << " error: " << sqlite3_errmsg(db) << endl;
+		// cerr << "SQLiteInterface::connect): rc=" << rc << " error: " << sqlite3_errmsg(db) << endl;
+		lastE = "open '" + dbfile + "' error: " + string(sqlite3_errmsg(db));
 		sqlite3_close(db);
 		db = 0;
 		connected = false;
@@ -87,7 +95,7 @@ bool SQLiteInterface::insert( const string q )
 	// Компилируем SQL запрос
 	if( sqlite3_prepare(db, q.c_str(), -1, &pStmt, NULL) != SQLITE_OK )
 	{
-		queryok=false;
+		queryok = false;
 		return false;
 	}
 
@@ -96,7 +104,7 @@ bool SQLiteInterface::insert( const string q )
 	if( !checkResult(rc) && !wait(pStmt, SQLITE_DONE) )
 	{
 		sqlite3_finalize(pStmt);
-		queryok=false;
+		queryok = false;
 		return false;
 	}
 
@@ -127,7 +135,7 @@ SQLiteResult SQLiteInterface::query( const string q )
 	if( !checkResult(rc) && !wait(pStmt, SQLITE_ROW) )
 	{
 		sqlite3_finalize(pStmt);
-		queryok=false;
+		queryok = false;
 		return SQLiteResult();
 	}
 
@@ -152,12 +160,12 @@ bool SQLiteInterface::wait( sqlite3_stmt* stmt, int result )
 	return false;
 }
 // -----------------------------------------------------------------------------------------
-const string SQLiteInterface::error()
+string SQLiteInterface::error()
 {
-	if( !db )
-		return "";
+	if( db )
+		lastE = sqlite3_errmsg(db);
 
-	return sqlite3_errmsg(db);
+	return lastE;
 }
 // -----------------------------------------------------------------------------------------
 const string SQLiteInterface::lastQuery()
@@ -249,3 +257,4 @@ SQLiteResult::SQLiteResult( sqlite3_stmt* s, bool finalize )
 	if( finalize )
 		sqlite3_finalize(s);
 }
+// -----------------------------------------------------------------------------------------

@@ -226,18 +226,8 @@ bool DBServer_SQLite::writeToBase( const string& query )
 	flushBuffer();
 
 	// А теперь собственно запрос..
-	db->query(query);
-
-	// Дело в том что на INSERT И UPDATE запросы
-	// db->query() может возвращать false и надо самому
-	// отдельно проверять действительно ли произошла ошибка
-	// см. SQLiteInterface::query.
-	string err(db->error());
-	if( err.empty() )
-	{
-//		db->freeResult();
+	if( db->insert(query) )
 		return true;
-	}
 
 	return false;
 }
