@@ -40,8 +40,9 @@ class SQLiteInterface
 		SQLiteInterface();
 		~SQLiteInterface();
 
-		bool connect( const std::string dbfile );
+		bool connect( const std::string dbfile, bool create = false );
 		bool close();
+		bool isConnection();
 			
 		inline void setOperationTimeout( timeout_t msec ){ opTimeout = msec; }
 		inline timeout_t getOperationTimeout(){ return opTimeout; }
@@ -51,13 +52,11 @@ class SQLiteInterface
 
 		SQLiteResult query( const std::string q );
 		const std::string lastQuery();
+
 		bool insert( const std::string q );
-	
-		bool isConnection();
-		
 		int insert_id();
 
-		const std::string error();
+		std::string error();
 
 	protected:
 
@@ -70,6 +69,7 @@ class SQLiteInterface
 		// sqlite3_stmt* curStmt;
 		
 		std::string lastQ;
+		std::string lastE;
 		bool queryok;	// успешность текущего запроса
 		bool connected;
 		
@@ -94,15 +94,21 @@ class SQLiteResult
 
 		inline operator bool(){ return !res.empty(); }
 
+		inline int size(){ return res.size(); }
+		inline bool empty(){ return res.empty(); }
+
 	protected:
 
 		ROW res;
 };
 // ----------------------------------------------------------------------------
 int num_cols( SQLiteResult::iterator& );
+// ROW
 int as_int( SQLiteResult::iterator&, int col );
 double as_double( SQLiteResult::iterator&, int col );
 std::string as_text( SQLiteResult::iterator&, int col );
+// ----------------------------------------------------------------------------
+// COL
 int as_int( SQLiteResult::COL::iterator& );
 double as_double( SQLiteResult::COL::iterator& );
 std::string as_string( SQLiteResult::COL::iterator& );
