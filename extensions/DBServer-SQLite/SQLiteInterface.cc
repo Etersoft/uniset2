@@ -20,7 +20,7 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #include <sstream>
 #include <cstdio>
 #include "UniSetTypes.h"
@@ -38,22 +38,18 @@ queryok(false),
 connected(false),
 opTimeout(300),
 opCheckPause(50)
-{ 
+{
 }
 
 SQLiteInterface::~SQLiteInterface()
-{ 
+{
 	close();
-	delete db;
+	if( db )
+		delete db;
 }
 
 // -----------------------------------------------------------------------------------------
-bool SQLiteInterface::ping()
-{
-	return db && ( sqlite3_db_status(db,0,NULL,NULL,0) == SQLITE_OK );
-}
-// -----------------------------------------------------------------------------------------
-bool SQLiteInterface::connect( const string& dbfile, bool create )
+bool SQLiteInterface::connect( const string dbfile, bool create )
 {
 	// т.к. sqlite3 по умолчанию, создаёт файл при открытии, то проверим "сами"
 //	if( !create && !UniSetTypes::file_exist(dbfile) )
@@ -72,8 +68,7 @@ bool SQLiteInterface::connect( const string& dbfile, bool create )
 		connected = false;
 		return false;
 	}
-	
-	setOperationTimeout(opTimeout);
+
 	connected = true;
 	return true;
 }
@@ -85,18 +80,11 @@ bool SQLiteInterface::close()
 		sqlite3_close(db);
 		db = 0;
 	}
-	
+
 	return true;
 }
 // -----------------------------------------------------------------------------------------
-void SQLiteInterface::setOperationTimeout( timeout_t msec )
-{ 
-	opTimeout = msec; 
-	if( db )
-		sqlite3_busy_timeout(db,opTimeout);
-}
-// -----------------------------------------------------------------------------------------
-bool SQLiteInterface::insert( const string& q )
+bool SQLiteInterface::insert( const string q )
 {
 	if( !db )
 		return false;
@@ -112,9 +100,9 @@ bool SQLiteInterface::insert( const string& q )
 	}
 
 	int rc = sqlite3_step(pStmt);
-	
+
 	if( !checkResult(rc) && !wait(pStmt, SQLITE_DONE) )
-	{ 
+	{
 		sqlite3_finalize(pStmt);
 		queryok = false;
 		return false;
@@ -133,7 +121,7 @@ bool SQLiteInterface::checkResult( int rc )
 	return true;
 }
 // -----------------------------------------------------------------------------------------
-SQLiteResult SQLiteInterface::query( const string& q )
+SQLiteResult SQLiteInterface::query( const string q )
 {
 	if( !db )
 		return SQLiteResult();
@@ -150,7 +138,7 @@ SQLiteResult SQLiteInterface::query( const string& q )
 		queryok = false;
 		return SQLiteResult();
 	}
-	
+
 	lastQ = q;
 	queryok=true;
 	return SQLiteResult(pStmt,true);
@@ -237,8 +225,8 @@ std::string as_string( SQLiteResult::COL::iterator& it )
 // -----------------------------------------------------------------------------------------
 #if 0
 SQLiteResult::COL get_col( SQLiteResult::ROW::iterator& it )
-{ 
-	return (*it); 
+{
+	return (*it);
 }
 #endif
 // -----------------------------------------------------------------------------------------
