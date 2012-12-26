@@ -239,22 +239,11 @@ void DBServer_SQLite::flushBuffer()
 	// Сперва пробуем очистить всё что накопилось в очереди до этого...
 	while( !qbuf.empty() )
 	{
-#if 0
-		db->query( qbuf.front() );
-
-		// Дело в том что на INSERT И UPDATE запросы
-		// db->query() может возвращать false и надо самому
-		// отдельно проверять действительно ли произошла ошибка
-		// см. SQLiteInterface::query.
-		string err(db->error());
-		if( err.empty() )
-			db->freeResult();
-		else if( unideb.debugging(Debug::CRIT) )
+		if( !db->insert(qbuf.front()) && unideb.debugging(Debug::CRIT) )
 		{
-			unideb[Debug::CRIT] << myname << "(writeToBase): error: " << err <<
+			unideb[Debug::CRIT] << myname << "(writeToBase): error: " << db->error() <<
 				" lost query: " << qbuf.front() << endl;
 		}
-#endif
 		qbuf.pop();
 	}
 }
@@ -331,10 +320,7 @@ void DBServer_SQLite::init_dbserver()
 	UniXML::iterator it(node);
 
 	unideb[DBLogInfoLevel] << myname << "(init): init connection.." << endl;
-	string dbname(conf->getProp(node,"dbname"));
-	string dbnode(conf->getProp(node,"dbnode"));
-	string user(conf->getProp(node,"dbuser"));
-	string password(conf->getProp(node,"dbpass"));
+	string dbfile(conf->getProp(node,"dbfile"));
 
 	tblMap[UniSetTypes::Message::SensorInfo] = "main_history";
 	tblMap[UniSetTypes::Message::Confirm] = "main_history";
@@ -350,17 +336,12 @@ void DBServer_SQLite::init_dbserver()
 	else
 		lastRemove = false;
 
-	if( dbnode.empty() )
-		dbnode = "localhost";
-
 	if( unideb.debugging(DBLogInfoLevel) )
-		unideb[DBLogInfoLevel] << myname << "(init): connect dbnode=" << dbnode
-		<< "\tdbname=" << dbname
+		unideb[DBLogInfoLevel] << myname << "(init): connect dbfile=" << dbfile
 		<< " pingTime=" << PingTime
 		<< " ReconnectTime=" << ReconnectTime << endl;
 
-#if 0
-	if( !db->connect(dbnode, user, password, dbname) )
+	if( !db->connect(dbfile,false) )
 	{
 //		ostringstream err;
 		if( unideb.debugging(Debug::CRIT) )
@@ -382,8 +363,6 @@ void DBServer_SQLite::init_dbserver()
 		initDBTableMap(tblMap);
 		flushBuffer();
 	}
-#endif
-
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_SQLite::createTables( SQLiteInterface *db )
@@ -416,7 +395,6 @@ void DBServer_SQLite::timerInfo( UniSetTypes::TimerMessage* tm )
 	{
 		case DBServer_SQLite::PingTimer:
 		{
-#if 0
 			if( !db->ping() )
 			{
 				if( unideb.debugging(Debug::WARN) )
@@ -431,7 +409,6 @@ void DBServer_SQLite::timerInfo( UniSetTypes::TimerMessage* tm )
 				if( unideb.debugging(DBLogInfoLevel) )
 					unideb[DBLogInfoLevel] << myname << "(timerInfo): DB ping ok" << endl;
 			}
-#endif
 		}
 		break;
 
@@ -441,14 +418,12 @@ void DBServer_SQLite::timerInfo( UniSetTypes::TimerMessage* tm )
 				unideb[DBLogInfoLevel] << myname << "(timerInfo): reconnect timer" << endl;
 			if( db->isConnection() )
 			{
-#if 0
 				if( db->ping() )
 				{
 					connect_ok = true;
 					askTimer(DBServer_SQLite::ReconnectTimer,0);
 					askTimer(DBServer_SQLite::PingTimer,PingTime);
 				}
-#endif
 				connect_ok = false;
 				if( unideb.debugging(Debug::WARN) )
 					unideb[Debug::WARN] << myname << "(timerInfo): DB no connection.." << endl;

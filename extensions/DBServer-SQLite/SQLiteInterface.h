@@ -43,6 +43,7 @@ class SQLiteInterface
 		bool connect( const std::string dbfile, bool create = false );
 		bool close();
 		bool isConnection();
+		bool ping(); // проверка доступности БД
 
 		inline void setOperationTimeout( timeout_t msec ){ opTimeout = msec; }
 		inline timeout_t getOperationTimeout(){ return opTimeout; }
