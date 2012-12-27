@@ -78,11 +78,14 @@ DBServer_SQLite::~DBServer_SQLite()
 	{
 		db->close();
 		delete db;
+		db = 0;
 	}
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_SQLite::processingMessage( UniSetTypes::VoidMessage *msg )
 {
+	DBServer::processingMessage(msg);
+
 	switch(msg->type)
 	{
 		case Message::Timer:
@@ -93,13 +96,14 @@ void DBServer_SQLite::processingMessage( UniSetTypes::VoidMessage *msg )
 		}
 
 		default:
-			DBServer::processingMessage(msg);
 			break;
 	}
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_SQLite::sysCommand( UniSetTypes::SystemMessage *sm )
 {
+	DBServer::sysCommand(sm);
+
 	switch( sm->command )
 	{
 		case SystemMessage::StartUp:
@@ -108,7 +112,6 @@ void DBServer_SQLite::sysCommand( UniSetTypes::SystemMessage *sm )
 		case SystemMessage::Finish:
 		{
 			activate = false;
-//			db->freeResult();
 			db->close();
 		}
 		break;
@@ -116,7 +119,6 @@ void DBServer_SQLite::sysCommand( UniSetTypes::SystemMessage *sm )
 		case SystemMessage::FoldUp:
 		{
 			activate = false;
-//			db->freeResult();
 			db->close();
 		}
 		break;
@@ -125,7 +127,6 @@ void DBServer_SQLite::sysCommand( UniSetTypes::SystemMessage *sm )
 			break;
 	}
 }
-
 //--------------------------------------------------------------------------------------------
 void DBServer_SQLite::parse( UniSetTypes::DBMessage* dbm )
 {
@@ -155,8 +156,6 @@ void DBServer_SQLite::parse( UniSetTypes::DBMessage* dbm )
 	if( !writeToBase(query.str()) )
 	{
 		unideb[Debug::CRIT] << myname <<  "(update): error: "<< db->error() << endl;
-//		if( dbm->qtype == DBMessage::Query )
-//			db->freeResult();
 	}
 
 }
@@ -181,7 +180,6 @@ void DBServer_SQLite::parse( UniSetTypes::ConfirmMessage* cem )
 		{
 			if( unideb.debugging(Debug::CRIT) )
 				unideb[Debug::CRIT] << myname << "(update_confirm):  db error: "<< db->error() << endl;
-//			db->freeResult();
 		}
 	}
 	catch( Exception& ex )
@@ -278,7 +276,6 @@ void DBServer_SQLite::parse( UniSetTypes::SensorMessage *si )
 		{
 			if( unideb.debugging(Debug::CRIT) )
 				unideb[Debug::CRIT] << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
-//			db->freeResult();
 		}
 	}
 	catch( Exception& ex )
