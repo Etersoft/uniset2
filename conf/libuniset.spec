@@ -57,6 +57,26 @@ Obsoletes: %oname-mysql-devel
 %description mysql-devel
 Libraries needed to develop for uniset MySQL
 
+%package sqlite-dbserver
+Group: Development/Databases
+Summary: SQLite-dbserver implementatioin for UniSet
+Requires: %name = %version-%release
+Provides: %oname-sqlite-dbserver
+Obsoletes: %oname-sqlite-dbserver
+
+%description sqlite-dbserver
+SQLite dbserver for %name
+
+%package sqlite-devel
+Group: Development/Databases
+Summary: Libraries needed to develop for uniset SQLite
+Requires: %name = %version-%release
+Provides: %oname-sqlite-devel
+Obsoletes: %oname-sqlite-devel
+
+%description sqlite-devel
+Libraries needed to develop for uniset SQLite
+
 %package utils
 Summary: UniSet utilities
 Group: Development/Tools
@@ -142,6 +162,7 @@ rm -f %buildroot%_libdir/*.la
 %_includedir/%oname/IOs/
 %_includedir/%oname/modbus/
 %_includedir/%oname/mysql/
+%_includedir/%oname/sqlite/
 
 %_libdir/libUniSet.so
 %_datadir/idl/%oname/
@@ -153,6 +174,13 @@ rm -f %buildroot%_libdir/*.la
 
 %files mysql-devel
 %_pkgconfigdir/libUniSetMySQL.pc
+
+%files sqlite-dbserver
+%_bindir/%oname-sqlite-*dbserver
+%_libdir/*-sqlite.so*
+
+%files sqlite-devel
+%_pkgconfigdir/libUniSetSQLite.pc
 
 %if_enabled doc
 %files doc
