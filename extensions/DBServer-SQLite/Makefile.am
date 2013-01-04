@@ -1,6 +1,6 @@
-#if DISABLE_SQLITE
+if DISABLE_SQLITE
 
-#else
+else
 
 USQLITE_VER=@LIBVER@
 
@@ -27,5 +27,5 @@ devel_includedir = $(includedir)/@PACKAGE@/sqlite
 pkgconfigdir    = $(libdir)/pkgconfig
 pkgconfig_DATA  = libUniSetSQLite.pc
 
-#endif
+endif
                                 
