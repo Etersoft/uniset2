@@ -8,4 +8,4 @@ export CFLAGS
 CXXFLAGS="$CFLAGS"
 export CXXFLAGS
 
-./configure --enable-maintainer-mode --prefix=/usr
+./configure --enable-maintainer-mode --prefix=/usr $*
