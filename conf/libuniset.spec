@@ -1,4 +1,7 @@
 %def_enable doc
+%def_enable mysql
+%def_enable sqlite
+
 %define oname uniset
 
 Name: libuniset
@@ -17,8 +20,14 @@ Source: /var/ftp/pvt/Etersoft/Ourside/unstable/sources/tarball/%name-%version.ta
 # Automatically added by buildreq on Fri Nov 26 2010
 BuildRequires: libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel python-modules xsltproc
 
+%if_enabled mysql
 # Using old package name instead of libmysqlclient-devel it absent in branch 5.0 for yauza
 BuildRequires: libMySQL-devel
+%endif
+
+%if_enabled sqlite
+BuildRequires: libsqlite3-devel
+%endif
 
 %if_enabled doc
 BuildRequires: doxygen
@@ -37,6 +46,7 @@ Requires: %name = %version-%release
 %description devel
 Libraries needed to develop for UniSet.
 
+%if_enabled mysql
 %package mysql-dbserver
 Group: Development/Databases
 Summary: MySQL-dbserver implementatioin for UniSet
@@ -56,7 +66,9 @@ Obsoletes: %oname-mysql-devel
 
 %description mysql-devel
 Libraries needed to develop for uniset MySQL
+%endif
 
+%if_enabled sqlite
 %package sqlite-dbserver
 Group: Development/Databases
 Summary: SQLite-dbserver implementatioin for UniSet
@@ -76,6 +88,7 @@ Obsoletes: %oname-sqlite-devel
 
 %description sqlite-devel
 Libraries needed to develop for uniset SQLite
+%endif
 
 %package utils
 Summary: UniSet utilities
@@ -87,6 +100,8 @@ Obsoletes: %oname-utils
 %description utils
 UniSet utilities
 
+%if_enabled doc
+
 %package doc
 Group: Development/C++
 Summary: Documentations for developing with UniSet
@@ -95,6 +110,8 @@ BuildArch: noarch
 
 %description doc
 Documentations for developing with UniSet
+%endif
+
 
 %package extensions
 Group: Development/C++
@@ -123,12 +140,7 @@ Libraries needed to develop for uniset extensions
 
 %build
 %autoreconf
-%if_enabled doc
-%configure
-%else
-%configure --disable-docs --disable-static
-%endif
-
+%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite}
 %make
 
 %install
@@ -161,19 +173,27 @@ rm -f %buildroot%_libdir/*.la
 %_includedir/%oname/*.tcc
 %_includedir/%oname/IOs/
 %_includedir/%oname/modbus/
+%if_enabled mysql
 %_includedir/%oname/mysql/
+%endif
+%if_enabled sqlite
 %_includedir/%oname/sqlite/
+%endif
 
 %_libdir/libUniSet.so
 %_datadir/idl/%oname/
 %_pkgconfigdir/libUniSet.pc
 
+%if_enabled mysql
 %files mysql-dbserver
 %_bindir/%oname-mysql-*dbserver
 %_libdir/*-mysql.so*
 
 %files mysql-devel
 %_pkgconfigdir/libUniSetMySQL.pc
+%endif
+
+%if_enabled sqlite
 
 %files sqlite-dbserver
 %_bindir/%oname-sqlite-*dbserver
@@ -181,6 +201,7 @@ rm -f %buildroot%_libdir/*.la
 
 %files sqlite-devel
 %_pkgconfigdir/libUniSetSQLite.pc
+%endif
 
 %if_enabled doc
 %files doc

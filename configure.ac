@@ -38,7 +38,23 @@ PKG_CHECK_MODULES(XML, libxml-2.0)
 PKG_CHECK_MODULES(OMNI, omniORB4)
 PKG_CHECK_MODULES(SIGC, sigc++-2.0)
 PKG_CHECK_MODULES(COMCPP, libccgnu2)
-PKG_CHECK_MODULES(SQLITE3, sqlite3)
+
+
+#check sqlite support
+AC_MSG_CHECKING([sqlite support])
+buildsqlite=true
+AC_ARG_ENABLE(sqlite, AC_HELP_STRING([--disable-sqlite], [disable SQLite support]),
+[ if test $enableval = yes; then buildsqlite=true; else buildsqlite=false; fi],[ buildsqlite=true; ])
+
+if test ${buildsqlite} = true; then
+	AC_MSG_RESULT([enabled])
+	PKG_CHECK_MODULES(SQLITE3, sqlite3)
+else
+	AC_MSG_RESULT([disabled])
+fi
+
+AM_CONDITIONAL(DISABLE_SQLITE, test ${buildsqlite} = false)
+
 
 # export
 LDFLAGS="${OMNI_LIBS} ${XML_LIBS}"
