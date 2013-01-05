@@ -6,7 +6,7 @@
 
 Name: libuniset
 Version: 1.5
-Release: alt8
+Release: alt9
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -262,6 +262,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Sat Jan 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.5-alt9
+- add SQLite support
+
 * Mon Dec 03 2012 Pavel Vainerman <pv@altlinux.ru> 1.5-alt8
 - add uniset-smemory-plus
 
