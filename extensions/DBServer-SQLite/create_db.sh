@@ -5,6 +5,9 @@ dbname=test.db
 [ -n "$1" ] && dbname="$1"
 
 sqlite3 $dbname <<"_EOF_"
+
+PRAGMA foreign_keys=ON;
+
 DROP TABLE IF EXISTS main_history;
 CREATE TABLE main_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

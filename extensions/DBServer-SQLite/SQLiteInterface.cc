@@ -74,6 +74,7 @@ bool SQLiteInterface::connect( const string dbfile, bool create )
 		return false;
 	}
 	
+	setOperationTimeout(opTimeout);
 	connected = true;
 	return true;
 }
@@ -87,6 +88,13 @@ bool SQLiteInterface::close()
 	}
 	
 	return true;
+}
+// -----------------------------------------------------------------------------------------
+void SQLiteInterface::setOperationTimeout( timeout_t msec )
+{ 
+	opTimeout = msec; 
+	if( db )
+		sqlite3_busy_timeout(db,opTimeout);
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::insert( const string q )

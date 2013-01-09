@@ -33,11 +33,11 @@
 // ----------------------------------------------------------------------------
 class SQLiteResult;
 // ----------------------------------------------------------------------------
+// Памятка:
 // Включение режима для журнала - "вести в памяти" (чтобы поберечь CompactFlash)
 // PRAGMA journal_mode = MEMORY
 //
 // ----------------------------------------------------------------------------
-
 class SQLiteInterface
 {
 	public:
@@ -50,7 +50,7 @@ class SQLiteInterface
 		bool isConnection();
 		bool ping(); // проверка доступности БД
 			
-		inline void setOperationTimeout( timeout_t msec ){ opTimeout = msec; }
+		void setOperationTimeout( timeout_t msec );
 		inline timeout_t getOperationTimeout(){ return opTimeout; }
 
 		inline void setOperationCheckPause( timeout_t msec ){ opCheckPause = msec; }
