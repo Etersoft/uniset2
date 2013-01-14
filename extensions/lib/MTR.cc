@@ -435,27 +435,48 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-bool update_configuration( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr slaveaddr,
+MTR::MTRError update_configuration( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr slaveaddr,
 						    const std::string mtrconfile,  int verb )
 {
 	std::string m = MTR::getModelNumber(mb, slaveaddr);
 	if( m != "MTR315Transducer" )
 	{
 		cerr << "(mtr-setup): model number != 'MTR315Transducer' (read: " << m << ")" << endl;
-		return false;
+		return mtrBadDeviceType;
 	}
 
 	DataMap dmap = MTR::read_confile(mtrconfile);
 	if( dmap.empty() )
 	{
 		cerr << "(mtr-setup): error read confile=" << mtrconfile << endl;
-		return false;
+		return mtrDontReadConfile;
 	}
 
-	if( send_param(mb,dmap,slaveaddr,verb) )
-		return true;
+	return send_param(mb,dmap,slaveaddr,verb) ? mtrNoError : mtrSendParamFailed;
+}
+// ------------------------------------------------------------------------------------------
+std::ostream& operator<<(std::ostream& os, MTR::MTRError& e )
+{
+	switch(e)
+	{
+		case mtrNoError:
+			os << "mtrNoError";
+		break;
+		case mtrBadDeviceType:
+			os << "mtrBadDeviceType";
+		break;
+		case mtrDontReadConfile:
+			os << "mtrDontReadConfile";
+		break;
+		case mtrSendParamFailed:
+			os << "mtrSendParamFailed";
+		break;
+		default:
+			os << "Unknown error";
+		break;
+	}
 
-	return false;
+	return os;
 }
 // ------------------------------------------------------------------------------------------
 std::ostream& operator<<(std::ostream& os, MTR::T1& t )
