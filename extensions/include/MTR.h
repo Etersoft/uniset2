@@ -1,4 +1,5 @@
 // --------------------------------------------------------------------------
+//!  \version $Id: MTR.h,v 1.1 2008/12/14 21:57:50 vpashka Exp $
 // --------------------------------------------------------------------------
 #ifndef _MTR_H_
 #define _MTR_H_
@@ -38,7 +39,7 @@ namespace MTR
 	};
 	// -------------------------------------------------------------------------
 	std::string type2str( MTRType t );			/*!< преоразование строки в тип */
-	MTRType str2type( const std::string& s );	/*!< преобразование названия в строку */
+	MTRType str2type( const std::string s );	/*!< преобразование названия в строку */
 	int wsize( MTRType t ); 					/*!< длина данных в словах */
 	// -------------------------------------------------------------------------
 	// Информация
@@ -49,7 +50,6 @@ namespace MTR
 	std::string getSerialNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr );
 	// -------------------------------------------------------------------------
 	// Настройки связи (чтение - read03, запись - write06)
-	const ModbusRTU::ModbusData regUpdateConfiguration = 53;
 	const ModbusRTU::ModbusData regAddress		= 55;
 	const ModbusRTU::ModbusData regBaudRate		= 56;
 	const ModbusRTU::ModbusData regStopBit		= 57; /* 0 - Stop bit, 1 - Stop bits */
@@ -99,8 +99,8 @@ namespace MTR
 	};
 	std::ostream& operator<<(std::ostream& os, MTRError& e );
 	// Настройка из конф. файла
-	MTRError update_configuration( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, 
-				    const std::string& mtrconfile, int verbose=0 );
+	MTRError update_configuration( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr,
+				    const std::string mtrconfile, int verbose=0 );
 	// ---------------------------
 	// вспомогательные функции и типы данных
 	typedef std::list<ModbusRTU::ModbusData> DataList;
@@ -109,8 +109,8 @@ namespace MTR
 	static const ModbusRTU::ModbusData skip[] = {48, 49, 59};  // registers which should not write
 
 	bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr, int verb );
-	bool read_param( const std::string& str, std::string& str1, std::string& str2 );
-	DataMap read_confile( const std::string& f );
+	bool read_param( const std::string str, std::string& str1, std::string& str2 );
+	DataMap read_confile( const std::string f );
 	void update_communication_params( ModbusRTU::ModbusAddr reg, ModbusRTU::ModbusData data,
 				  ModbusRTUMaster* mb, ModbusRTU::ModbusAddr& addr, int verb );
 	// -------------------------------------------------------------------------
@@ -664,13 +664,12 @@ namespace MTR
 			T_Str16():sval(""){}
 			T_Str16( const ModbusRTU::ReadInputRetMessage& ret )
 			{
-				char c[17];
+				char c[16];
 				ModbusRTU::ModbusData data[8];
 				for( int i=0; i<8; i++ )
 					data[i] = ModbusRTU::SWAPSHORT(ret.data[i]);
 
-				memcpy(c,&data,16);
-				c[16] = '\0';
+				memcpy(c,&data,sizeof(c));
 				sval = std::string(c);
 			}
 
@@ -694,12 +693,11 @@ namespace MTR
 			T_Str8():sval(""){}
 			T_Str8( const ModbusRTU::ReadInputRetMessage& ret )
 			{
-				char c[9];
+				char c[8];
 				ModbusRTU::ModbusData data[4];
 				for( int i=0; i<4; i++ )
 					data[i] = ModbusRTU::SWAPSHORT(ret.data[i]);
-				memcpy(c,&data,8);
-                c[8] = '\0';
+				memcpy(c,&data,sizeof(c));
 				sval = std::string(c);
 			}
 
