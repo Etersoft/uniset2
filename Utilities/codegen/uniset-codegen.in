@@ -23,11 +23,15 @@ $PROG 	- generate source code for control process
 xmlfile - source xml-file
 
 Valid options are:
-  -h, --help   - display help
-  -m, --main   - filename for main.cc. Default: main.cc
-  -n, --name   - filename for *_SK files (base class implementation). Default: xmlfilename_SK
-  --ask        - Use 'ask' templates. See the documentation.
-  --alone      - Use 'alone' templates. See the documentation.
+  -h, --help        - display help
+  -m, --main        - filename for main.cc. Default: main.cc
+  -n, --name        - filename for *_SK files (base class implementation). Default: xmlfilename_SK
+  --ask             - Use 'ask' templates. See the documentation.
+  --alone           - Use 'alone' templates. See the documentation.
+  --no-main         - Don`t generate main.cc
+
+  --make-skel name  - generate process skeleton (name.src.xml, Name.cc, Name.hh, Makefile.am, main.cc)
+                      Additional arguments: --no-main, --no-makefile
 
 
 EOF
@@ -35,7 +39,7 @@ EOF
 }
 
 #parse command line options
-TEMP=`getopt -n $PROG -o h,n:,m:,a,l:,z -l help,name:,main:,no-main,topdir:,path:,alone,ask,no-ask,local:,local-include,add-cc-include,add-hh-include -- "$@"` || exit 1
+TEMP=`getopt -n $PROG -o h,n:,m:,a,l:,z -l help,name:,main:,no-main,topdir:,path:,alone,ask,no-ask,local:,local-include,add-cc-include,add-hh-include,make-skel:,no-makefile -- "$@"` || exit 1
 eval set -- "$TEMP"
 
 name=
@@ -50,10 +54,19 @@ localinc=0
 add_cc_inc=
 add_hh_inc=
 xsltpath=
+no_makefile=
+make_skel=
+make_name=
 
 xls_h="ctl-cpp-h.xsl"
 xls_c="ctl-cpp-cc.xsl"
 xls_m="ctl-cpp-main.xsl"
+
+skel_h="skel.h"
+skel_c="skel.cc"
+skel_m="skel-main.cc"
+skel_xml="skel.src.xml"
+skel_make="skel-Makefile.am"
 
 while :; do
     case "$1" in
@@ -116,6 +129,16 @@ while :; do
 		xsltpath="--path $1"
 		;;
 
+    --make-skel)
+	make_skel=1
+	shift
+	make_name="$1"
+	;;
+
+    --no-makefile)
+	no_makefile=1
+	;;
+
 	--) shift; break
 	;;
 	*) "unrecognized option: $1"
@@ -124,6 +147,21 @@ while :; do
     esac
     shift
 done
+
+
+if [ -n "$make_skel" ]; then
+
+	[ -z "$make_name" ] && print_usage -1
+
+	cp ${xsltdir}/$skel_h ${make_name}.h && subst "s|Skel|${make_name}|g" ${make_name}.h
+	cp ${xsltdir}/$skel_c ${make_name}.cc && subst "s|Skel|${make_name}|g" ${make_name}.cc
+	cp ${xsltdir}/$skel_xml ${make_name}.src.xml && subst "s|Skel|${make_name}|g" ${make_name}.src.xml
+	[ -z "$no_main" ] && cp ${xsltdir}/$skel_m ${make_name}-main.cc && subst "s|Skel|${make_name}|g" ${make_name}-main.cc
+	[ -z "$no_makefile" ] && cp ${xsltdir}/$skel_make Makefile.am && subst "s|Skel|${make_name}|g" Makefile.am
+
+	exit 0
+fi
+
 
 xmlfile="$1"
 
