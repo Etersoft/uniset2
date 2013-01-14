@@ -32,8 +32,6 @@ Valid options are:
 
   --make-skel name  - generate process skeleton (name.src.xml, Name.cc, Name.hh, Makefile.am, main.cc)
                       Additional arguments: --no-main, --no-makefile
-
-
 EOF
     [ -n "$1" ] && exit "$1" || exit
 }

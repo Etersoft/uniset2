@@ -7,4 +7,5 @@ Skel_SK.cc: Skel.src.xml
 clean-local:
 	rm -rf *_SK.cc *_SK.h
 
-all-local: Skel_SK.cc Skel_SK.h main.cc
+all-local: Skel_SK.cc Skel_SK.h
+	
