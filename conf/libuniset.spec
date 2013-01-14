@@ -6,7 +6,7 @@
 
 Name: libuniset
 Version: 1.5
-Release: alt9
+Release: alt10
 Summary: UniSet - library for building distributed industrial control systems
 License: GPL
 Group: Development/C++
@@ -162,6 +162,7 @@ rm -f %buildroot%_libdir/*.la
 %dir %_datadir/%oname/
 %dir %_datadir/%oname/xslt/
 %_datadir/%oname/xslt/*.xsl
+%_datadir/%oname/xslt/skel*
 
 %files
 %_libdir/libUniSet.so.*
@@ -262,6 +263,10 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Mon Jan 14 2013 Pavel Vainerman <pv@altlinux.ru> 1.5-alt10
+- add error code for MTR (eterbug #8659)
+- (uniset-codegen): add generate class Skeleton (--make-skel)
+
 * Sat Jan 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.5-alt9
 - add SQLite support
 

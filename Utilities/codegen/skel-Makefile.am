@@ -1,0 +1,11 @@
+bin_PROGRAMS = Skel
+Skel_SOURCES = Skel_SK.cc Skel.cc
+
+Skel_SK.cc: Skel.src.xml
+	@UNISET_CODEGEN@ --ask -n Skel --topdir $(top_builddir)/ --no-main Skel.src.xml
+
+clean-local:
+	rm -rf *_SK.cc *_SK.h
+
+all-local: Skel_SK.cc Skel_SK.h
+	
