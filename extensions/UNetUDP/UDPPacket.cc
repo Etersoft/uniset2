@@ -92,8 +92,8 @@ bool UDPMessage::setDData( size_t index, bool val )
 	if( index >= MaxDCount )
 		return false;
 
-	size_t nbyte = index / sizeof(unsigned char);
-	size_t nbit =  index % sizeof(unsigned char);
+	size_t nbyte = index / 8*sizeof(unsigned char);
+	size_t nbit =  index % 8*sizeof(unsigned char);
 
 	// выставляем бит
 	unsigned char d = d_dat[nbyte];
@@ -119,8 +119,8 @@ bool UDPMessage::dValue( size_t index )
 	if( index >= MaxDCount )
 		return UniSetTypes::DefaultObjectId;
 
-	size_t nbyte = index / sizeof(unsigned char);
-	size_t nbit =  index % sizeof(unsigned char);
+	size_t nbyte = index / 8*sizeof(unsigned char);
+	size_t nbit =  index % 8*sizeof(unsigned char);
 
 	return ( d_dat[nbyte] & (1<<nbit) );
 }
@@ -144,8 +144,8 @@ size_t UDPMessage::transport_msg( UDPPacket& p )
 	i += sz;
 	
 	// копируем булевые данные
-	size_t nbyte = dcount / sizeof(unsigned char);
-	size_t nbit =  dcount % sizeof(unsigned char);
+	size_t nbyte = dcount / 8*sizeof(unsigned char);
+	size_t nbit =  dcount % 8*sizeof(unsigned char);
 	sz = nbit > 0 ? nbyte + 1 : nbyte;
 	memcpy(&(p.data[i]),d_dat,sz);
 	i += sz;
@@ -184,8 +184,8 @@ size_t UDPMessage::getMessage( UDPMessage& m, UDPPacket& p )
 	i += sz;
 	
 	// копируем булевые данные
-	size_t nbyte = m.dcount / sizeof(unsigned char);
-	size_t nbit =  m.dcount % sizeof(unsigned char);
+	size_t nbyte = m.dcount / 8*sizeof(unsigned char);
+	size_t nbit =  m.dcount % 8*sizeof(unsigned char);
 	sz = nbit > 0 ? nbyte + 1 : nbyte;
 
 	if( sz > sizeof(m.d_dat) )
