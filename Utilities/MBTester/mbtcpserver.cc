@@ -21,15 +21,16 @@ static struct option longopts[] = {
 // --------------------------------------------------------------------------
 static void print_help()
 {
-	printf("-h|--help 		- this message\n");
-	printf("[-t|--timeout] msec               - Timeout. Default: 2000.\n");
-	printf("[-v|--verbose]                    - Print all messages to stdout\n");
-	printf("[-i|--iaddr] ip                   - Server listen ip. Default 127.0.0.1\n");
-	printf("[-a|--myaddr] addr                - Modbus address for master. Default: 0x01.\n");
-	printf("[-x|--ignore-addr]           	  - Ignore modbus RTU-address.\n");
-	printf("[-p|--port] port                  - Server port. Default: 502.\n");
-	printf("[-v|--verbose]                    - Print all messages to stdout\n");
-	printf("[-c|--const-reply] val            - Reply 'val' for all queries\n");
+	printf("Example: uniset-mbtcpserver-echo -i localhost -p 2049 -v \n");
+	printf("-h|--help 		        - this message\n");
+	printf("[-t|--timeout] msec     - Timeout. Default: 2000.\n");
+	printf("[-v|--verbose]          - Print all messages to stdout\n");
+	printf("[-i|--iaddr] ip         - Server listen ip. Default 127.0.0.1\n");
+	printf("[-a|--myaddr] addr      - Modbus address for master. Default: 0x01.\n");
+	printf("[-x|--ignore-addr]      - Ignore modbus RTU-address.\n");
+	printf("[-p|--port] port        - Server port. Default: 502.\n");
+	printf("[-v|--verbose]          - Print all messages to stdout\n");
+	printf("[-c|--const-reply] val  - Reply 'val' for all queries\n");
 }
 // --------------------------------------------------------------------------
 int main( int argc, char **argv )

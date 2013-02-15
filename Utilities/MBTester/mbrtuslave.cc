@@ -21,14 +21,14 @@ static struct option longopts[] = {
 // --------------------------------------------------------------------------
 static void print_help()
 {
-	printf("-h|--help 		- this message\n");
-	printf("[-t|--timeout] msec                 - Timeout. Default: 2000.\n");
-	printf("[-v|--verbose]                      - Print all messages to stdout\n");
-	printf("[-d|--device] dev                   - use device dev. Default: /dev/ttyS0\n");
-	printf("[-a|--myaddr] addr                  - Modbus address for master. Default: 0x01.\n");
-	printf("[-s|--speed] speed                  - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
-	printf("[-y|--use485F]                      - use RS485 Fastwel.\n");
-	printf("[-v|--verbose]                      - Print all messages to stdout\n");
+	printf("-h|--help 		      - this message\n");
+	printf("[-t|--timeout] msec   - Timeout. Default: 2000.\n");
+	printf("[-v|--verbose]        - Print all messages to stdout\n");
+	printf("[-d|--device] dev     - use device dev. Default: /dev/ttyS0\n");
+	printf("[-a|--myaddr] addr    - Modbus address for master. Default: 0x01.\n");
+	printf("[-s|--speed] speed    - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
+	printf("[-y|--use485F]        - use RS485 Fastwel.\n");
+	printf("[-v|--verbose]        - Print all messages to stdout\n");
 	printf("[-c|--const-reply] val1 [val2 val3] - Reply val for all queries\n");
 }
 // --------------------------------------------------------------------------
