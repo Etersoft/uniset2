@@ -106,6 +106,9 @@ void UNetSender::updateFromSM()
 // -----------------------------------------------------------------------------
 void UNetSender::updateSensor( UniSetTypes::ObjectId id, long value )
 {
+	if( !shm->isLocalwork() )
+		return;
+
 //	cerr << myname << ": UPDATE SENSOR id=" << id << " value=" << value << endl;
 	DMap::iterator it=dlist.begin();
 	for( ; it!=dlist.end(); ++it )
