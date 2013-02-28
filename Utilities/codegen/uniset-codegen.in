@@ -28,7 +28,7 @@ Valid options are:
   -n, --name        - filename for *_SK files (base class implementation). Default: xmlfilename_SK
   --ask             - Use 'ask' templates. See the documentation.
   --alone           - Use 'alone' templates. See the documentation.
-  --no-main         - Don`t generate main.cc
+  --no-main         - Don't generate main.cc
   
   --make-skel name  - generate process skeleton (name.src.xml, Name.cc, Name.hh, Makefile.am, main.cc)
                       Additional arguments: --no-main, --no-makefile
