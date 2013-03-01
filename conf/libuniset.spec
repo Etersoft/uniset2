@@ -7,14 +7,17 @@
 Name: libuniset
 Version: 1.5
 Release: alt10
+
 Summary: UniSet - library for building distributed industrial control systems
+
 License: GPL
 Group: Development/C++
-Url: http://git.etersoft.ru/projects/?p=asu/uniset.git;a=summary
+Url: http://wiki.etersoft.ru/UniSet
 
 Packager: Pavel Vainerman <pv@altlinux.ru>
 
-Source: /var/ftp/pvt/Etersoft/Ourside/unstable/sources/tarball/%name-%version.tar
+# Git: http://git.etersoft.ru/projects/asu/uniset.git
+Source: %name-%version.tar
 
 # manually removed: glibc-devel-static
 # Automatically added by buildreq on Fri Nov 26 2010
@@ -36,7 +39,21 @@ BuildRequires: doxygen
 %set_verify_elf_method textrel=strict,rpath=strict,unresolved=strict
 
 %description
-The UniSet library intended for building distributed industrial control systems
+UniSet is a library for distributed control systems.
+There are set of base components to construct this kind of systems:
+* base interfaces for your implementation of control algorithms.
+* algorithms for the discrete and analog input/output based on COMEDI interface.
+* IPC mechanism based on CORBA (omniORB).
+* logging system based on MySQL database.
+* Web interface to display logging and statistic information.
+* utilities for system's configuration based on XML.
+
+UniSet have been written in C++ and IDL languages but you can use another languages in your
+add-on components. The main principle of the UniSet library's design is a maximum integration
+with open source third-party libraries. UniSet provide the consistent interface for all
+add-on components and third-party libraries.
+
+More information in Russian:
 
 %package devel
 Group: Development/C
@@ -136,7 +153,7 @@ Obsoletes: %name-extentions-devel
 Libraries needed to develop for uniset extensions
 
 %prep
-%setup -q
+%setup
 
 %build
 %autoreconf
