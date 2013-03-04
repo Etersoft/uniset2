@@ -1,4 +1,4 @@
-SUBDIRS=. tests
+#SUBDIRS=. tests
 
 bin_SCRIPTS = @PACKAGE@-codegen
 
