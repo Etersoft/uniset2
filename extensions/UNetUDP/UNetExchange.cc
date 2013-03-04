@@ -690,8 +690,8 @@ void UNetExchange::help_print( int argc, const char* argv[] )
 	cout << "--unet-lost-timeout msec      - Время ожидания заполнения 'дырки' между пакетами. По умолчанию 5000 мсек." << endl;
 	cout << "--unet-recvpause msec         - Пауза между приёмами. По умолчанию 10" << endl;
 	cout << "--unet-sendpause msec         - Пауза между посылками. По умолчанию 100" << endl;
-	cout << "--unet-updatepause msec       - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
-	cout << "--unet-steptime msec		   - Шаг..." << endl;
+	cout << "--unet-updatepause msec       - Пауза между обновлением информации в SM (Корелирует с recvpause и sendpause). По умолчанию 100" << endl;
+	cout << "--unet-steptime msec		   - Пауза между обновлением информации о связи с узлами." << endl;
 	cout << "--unet-maxdifferense num      - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
 	cout << "--unet-maxprocessingcount num - время на ожидание старта SM" << endl;
 	cout << "--unet-nosender [0,1]         - Отключить посылку." << endl;
