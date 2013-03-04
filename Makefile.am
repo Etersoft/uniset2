@@ -3,7 +3,7 @@
 ############################################################################
 
 FIRSTSUBDIRS=IDL
-SUBDIRS=. src lib include Utilities extensions docs
+SUBDIRS=. src lib include Utilities extensions python docs
 
 include $(top_builddir)/conf/common.mk
 
