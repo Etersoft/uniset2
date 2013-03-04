@@ -147,6 +147,16 @@ fi
 AC_SUBST(UNISET_CODEGEN)
 echo "UNISET_CODEGEN: $UNISET_CODEGEN"
 
+UNISET_CFLAGS="-I \$(top_builddir)/include"
+AC_SUBST(UNISET_CFLAGS)
+UNISET_LIBS="\$(top_builddir)/lib/libUniSet.la"
+AC_SUBST(UNISET_LIBS)
+
+UNISET_EXT_CFLAGS="-I \$(top_builddir)/extensions/include"
+AC_SUBST(UNISET_EXT_CFLAGS)
+UNISET_EXT_LIBS="\$(top_builddir)/extensions/lib/libUniSetExtensions.la"
+AC_SUBST(UNISET_EXT_LIBS)
+
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC

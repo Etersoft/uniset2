@@ -35,6 +35,11 @@ BuildRequires: libsqlite3-devel
 
 %if_enabled python
 BuildRequires: python-devel swig
+BuildRequires(pre): rpm-build-python
+
+%global _target_python_libdir %_target_libdir_noarch
+%define python_sitelibdir_noarch %python_sitelibdir
+%define python_sitelibdir_arch %_libdir/python%__python_version/site-packages
 %endif
 
 %if_enabled doc
@@ -113,12 +118,12 @@ Libraries needed to develop for uniset SQLite
 %endif
 
 %if_enabled python
-%package python-modules-uniset
+%package python-modules-%oname
 Group: Development/Python
 Summary: python interface for libuniset
 Requires: %name = %version-%release
 
-%description python-modules-uniset
+%description python-modules-%oname
 Python interface for %name
 %endif
 
@@ -179,6 +184,12 @@ Libraries needed to develop for uniset extensions
 %makeinstall_std
 rm -f %buildroot%_libdir/*.la
 
+%if_enabled python
+mkdir -p %buildroot%python_sitelibdir_noarch/%oname
+#mv -f %buildroot%python_sitelibdir_noarch/*.py %buildroot%python_sitelibdir_noarch/%oname/
+mv -f %buildroot%python_sitelibdir_noarch/*.* %buildroot%python_sitelibdir_noarch/%oname/
+%endif
+
 %files utils
 %_bindir/%oname-admin
 %_bindir/%oname-infoserver
@@ -237,10 +248,10 @@ rm -f %buildroot%_libdir/*.la
 %endif
 
 %if_enabled python
-%files python-modules-uniset
-%dir %python_sitelibdir/%name
-%python_sitelibdir/*
-%python_sitelibdir/%name/*
+%files python-modules-%oname
+%dir %python_sitelibdir/%oname
+#%python_sitelibdir/*
+%python_sitelibdir/%oname/*
 
 %endif
 
@@ -303,6 +314,9 @@ rm -f %buildroot%_libdir/*.la
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Mon Mar 04 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.1
+- new build
+
 * Mon Jan 14 2013 Pavel Vainerman <pv@altlinux.ru> 1.5-alt10
 - add error code for MTR (eterbug #8659)
 - (uniset-codegen): add generate class Skeleton (--make-skel)
