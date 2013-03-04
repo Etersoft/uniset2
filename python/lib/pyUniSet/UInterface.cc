@@ -158,7 +158,7 @@ const char* UInterface::getTextName( long id )
 	return "";
 }
 //---------------------------------------------------------------------------
-const char* getConfFileName()
+const char* UInterface::getConfFileName()
 {
 	if( UniSetTypes::conf )
 		return UniSetTypes::conf->getConfFileName().c_str();
