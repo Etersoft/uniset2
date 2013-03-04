@@ -102,6 +102,26 @@ fi
 
 AM_CONDITIONAL(HAVE_EXTENTIONS, test ${ext} = true)
 
+
+#check python support
+AC_MSG_CHECKING([python support])
+buildpython=true
+AC_ARG_ENABLE(python, AC_HELP_STRING([--disable-python], [disable Python support]),
+[ if test $enableval = yes; then buildpython=true; else buildpython=false; fi],[ buildpython=true; ])
+
+if test ${buildpython} = true; then
+	AC_MSG_RESULT([enabled])
+	dnl Python
+	AM_PATH_PYTHON(,,)
+	PKG_CHECK_MODULES(PYTHON,python,,exit)
+	AC_CHECK_PROG(SWIG, swig, yes, exit)
+else
+	AC_MSG_RESULT([disabled])
+fi
+
+AM_CONDITIONAL(DISABLE_PYTHON, test ${buildpython} = false)
+
+
 # check Doxygen
 DOXYGEN=""
 doc=true
@@ -213,7 +233,10 @@ AC_CONFIG_FILES([Makefile
 				 extensions/SharedMemory/Makefile
 				 extensions/SharedMemory/libUniSetSharedMemory.pc
 				 extensions/SharedMemoryPlus/Makefile
-				 extensions/tests/Makefile])
+				 extensions/tests/Makefile
+				 python/lib/Makefile
+				 python/lib/pyUniSet/Makefile
+				 python/Makefile])
 				 
 AC_OUTPUT
 

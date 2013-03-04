@@ -1,12 +1,13 @@
 %def_enable doc
 %def_enable mysql
 %def_enable sqlite
+%def_enable python
 
 %define oname uniset
 
 Name: libuniset
-Version: 1.5
-Release: alt10
+Version: 1.6
+Release: alt0.1
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -30,6 +31,10 @@ BuildRequires: libMySQL-devel
 
 %if_enabled sqlite
 BuildRequires: libsqlite3-devel
+%endif
+
+%if_enabled python
+BuildRequires: python-devel swig
 %endif
 
 %if_enabled doc
@@ -105,6 +110,16 @@ Obsoletes: %oname-sqlite-devel
 
 %description sqlite-devel
 Libraries needed to develop for uniset SQLite
+%endif
+
+%if_enabled python
+%package python-modules-uniset
+Group: Development/Python
+Summary: python interface for libuniset
+Requires: %name = %version-%release
+
+%description python-modules-uniset
+Python interface for %name
 %endif
 
 %package utils
@@ -219,6 +234,14 @@ rm -f %buildroot%_libdir/*.la
 
 %files sqlite-devel
 %_pkgconfigdir/libUniSetSQLite.pc
+%endif
+
+%if_enabled python
+%files python-modules-uniset
+%dir %python_sitelibdir/%name
+%python_sitelibdir/*
+%python_sitelibdir/%name/*
+
 %endif
 
 %if_enabled doc
