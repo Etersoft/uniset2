@@ -182,11 +182,9 @@ Libraries needed to develop for uniset extensions
 rm -f %buildroot%_libdir/*.la
 
 %if_enabled python
-mkdir -p %buildroot%python_sitelibdir_noarch/%oname
-mv -f %buildroot%python_sitelibdir_noarch/*.* %buildroot%python_sitelibdir_noarch/%oname/
-
-# этот файл должен быть в корне site-packages
-mv -f %buildroot%python_sitelibdir_noarch/%oname/%oname.py %buildroot%python_sitelibdir_noarch/
+mkdir -p %buildroot%python_sitelibdir/%oname
+mv -f %buildroot%python_sitelibdir/*.* %buildroot%python_sitelibdir/%oname/
+mv -f %buildroot%python_sitelibdir/%oname/%oname.py %buildroot%python_sitelibdir/
 %endif
 
 %files utils
