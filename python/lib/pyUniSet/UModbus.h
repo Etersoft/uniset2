@@ -32,9 +32,10 @@ class UModbus
 
 	  inline void setTimeout( int msec ){ tout_msec = msec; }
 
-	  /* Если не указывать ip и порт, будут использованы, те
-	   * чтобы были заданы в connect(). Если заданы другие ip и port,
-	   * будет сделана переподключение..
+	  /*! Универсальная функция для чтения регистров. 
+	   * Если не указывать ip и порт, будут использованы, те
+	   * чтобы были заданы в UModbus::connect(). Если заданы другие ip и port,
+	   * будет сделано переподключение..
 	   */
 	  long mbread( int addr, int mbreg, int mbfunc,
 					const char* vtype, int nbit=-1,
@@ -44,6 +45,11 @@ class UModbus
 	  long getByte( int addr, int mbreg, int mbfunc=0x4 )throw(UException);
 	  bool getBit( int addr, int mbreg, int mbfunc=0x2 )throw(UException);
 
+	  /*! Функция записи регистров 0x06 или 0x10 задаётся параметром \a mbfunc.
+	   * Если не указывать ip и порт, будут использованы, те
+	   * чтобы были заданы в UModbus::connect(). Если заданы другие ip и port,
+	   * будет сделана переподключение..
+	  */
 	  void mbwrite( int addr, int mbreg, int val, int mbfunc, const char* ip=0, int port=-1 )throw(UException);
 
 	protected:
