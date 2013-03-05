@@ -12,3 +12,5 @@ sys.path.append( _py_uniset_dir )
 from pyUConnector import *
 from pyUExceptions import *
 from pyUModbus import *
+
+import UniXML
