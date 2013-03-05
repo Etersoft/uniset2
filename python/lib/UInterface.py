@@ -3,10 +3,6 @@
 
 import sys
 
-sys.path.append('./.libs/')
-sys.path.append('pyUniSet/.libs/')
-sys.path.append('pyUniSet/')
-
 from pyUExceptions import *
 from pyUConnector import *
 from pyUModbus import *
