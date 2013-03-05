@@ -10,7 +10,7 @@ sys.path.append('pyUniSet/')
 from pyUExceptions import *
 from pyUConnector import *
 from pyUModbus import *
-from TestSuiteGlobal import *
+from UGlobal import *
 
 class UInterface():
 

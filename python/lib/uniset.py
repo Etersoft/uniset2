@@ -8,3 +8,7 @@ _py_dir = os.path.dirname(os.path.abspath(os.path.normpath(__file__)))
 _py_uniset_dir = os.path.normpath('%s/uniset' % _py_dir)
 
 sys.path.append( _py_uniset_dir )
+
+from pyUConnector import *
+from pyUExceptions import *
+from pyUModbus import *
