@@ -22,7 +22,7 @@ Source: %name-%version.tar
 
 # manually removed: glibc-devel-static
 # Automatically added by buildreq on Fri Nov 26 2010
-BuildRequires: libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel python-modules xsltproc
+BuildRequires: libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel python-module xsltproc
 
 %if_enabled mysql
 # Using old package name instead of libmysqlclient-devel it absent in branch 5.0 for yauza
@@ -119,12 +119,12 @@ Libraries needed to develop for uniset SQLite
 %endif
 
 %if_enabled python
-%package -n python-modules-%oname
+%package -n python-module-%oname
 Group: Development/Python
 Summary: python interface for libuniset
 Requires: %name = %version-%release
 
-%description -n python-modules-%oname
+%description -n python-module-%oname
 Python interface for %name
 %endif
 
@@ -251,7 +251,7 @@ mv -f %buildroot%python_sitelibdir_noarch/%oname/%oname.py %buildroot%python_sit
 %endif
 
 %if_enabled python
-%files -n python-modules-%oname
+%files -n python-module-%oname
 %dir %python_sitelibdir/%oname
 %python_sitelibdir/*
 %python_sitelibdir/%oname/*
