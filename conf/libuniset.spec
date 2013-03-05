@@ -252,7 +252,7 @@ mv -f %buildroot%python_sitelibdir_noarch/%oname/%oname.py %buildroot%python_sit
 %if_enabled python
 %files python-modules-%oname
 %dir %python_sitelibdir/%oname
-#%python_sitelibdir/*
+%python_sitelibdir/*
 %python_sitelibdir/%oname/*
 
 %endif
@@ -316,6 +316,9 @@ mv -f %buildroot%python_sitelibdir_noarch/%oname/%oname.py %buildroot%python_sit
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.3
+- new build
+
 * Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.2
 - test build (with python)
 
