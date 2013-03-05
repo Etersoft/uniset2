@@ -31,7 +31,7 @@ ddir = $(docdir)/html
 d_DATA = html/*
 
 # examples
-exampledir = $(docdir)/examples
-example_DATA = examples/*
+# exampledir = $(docdir)/examples
+# example_DATA = examples/*
 
 endif
