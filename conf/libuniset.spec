@@ -118,12 +118,12 @@ Libraries needed to develop for uniset SQLite
 %endif
 
 %if_enabled python
-%package python-modules-%oname
+%package -n python-modules-%oname
 Group: Development/Python
 Summary: python interface for libuniset
 Requires: %name = %version-%release
 
-%description python-modules-%oname
+%description -n python-modules-%oname
 Python interface for %name
 %endif
 
@@ -250,7 +250,7 @@ mv -f %buildroot%python_sitelibdir_noarch/%oname/%oname.py %buildroot%python_sit
 %endif
 
 %if_enabled python
-%files python-modules-%oname
+%files -n python-modules-%oname
 %dir %python_sitelibdir/%oname
 %python_sitelibdir/*
 %python_sitelibdir/%oname/*
