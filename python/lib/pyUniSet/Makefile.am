@@ -2,7 +2,7 @@ if DISABLE_PYTHON
 else
 python_SCRIPTS = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
 
-python_LTLIBRARIES = _pyUConnector.la _pyUModbus.la _pyUExceptions.la _pyUniSet.la
+pyexec_LTLIBRARIES = _pyUConnector.la _pyUModbus.la _pyUExceptions.la _pyUniSet.la
 
 _pyUniSet_la_SOURCES 	= UInterface.cc UInterface_wrap.cxx
 _pyUniSet_la_CXXFLAGS	= $(UNISET_CFLAGS) $(PYTHON_CFLAGS)
