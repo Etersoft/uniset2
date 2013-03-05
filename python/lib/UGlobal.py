@@ -3,10 +3,19 @@
 
 from pyUConnector import *
 import time
-import sys
+
+# различные глобальные вспомогательные функции
+t_NONE=""
+t_FAILED="FAILED"
+t_PASSED="PASSED"
+t_IGNORE="IGNORE"
+t_BREAK="BREAK"
+t_PAUSE="PAUSE"
+t_WARNING = "WARNING"
+t_UNKNOWN="UNKNOWN"
 
 def is_id( str_id ):
-    if str_id.__class__.__name__ == "int" or str_id.__class__.__name__ == "long":
+    if str_id.__class__.__name__ == "int":
        return True
 
     if str_id.strip().isdigit():
@@ -19,11 +28,8 @@ def to_int(s):
     if s == None or s == "":
        return 0
 
-    if s.__class__.__name__ == "int" or s.__class__.__name__ == "long":
+    if s.__class__.__name__ == "int":
        return s
-
-    if s.__class__.__name__ == "float":
-       return int(s)
 
     if len(s)>2 and s[0] == '0' and s[1] == 'x':
        return int(s,16)
@@ -35,7 +41,7 @@ def to_int(s):
        return 0
 
     return int(s.strip())
-    
+
 def to_str(s_val):
 
     if s_val == None:
@@ -60,17 +66,17 @@ def get_sinfo(raw, sep='@'):
 def to_sid(str_id, ui):
     if str_id == None or str_id == "":
        return [DefaultID,DefaultID,""]
-    
+
     if is_id(str_id):
        return [int(str_id),DefaultID,ui.getShortName(int(str_id))]
-    
+
     s = get_sinfo(str_id)
     s_id = s[0]
     s_node = s[1]
-   
+
     if s_id == "":
        return [DefaultID,DefaultID,"?@?"]
-    
+
     s_name = ""
     if is_id(s_id):
        s_id = int(s_id)
@@ -78,10 +84,10 @@ def to_sid(str_id, ui):
     else:
        s_name = s_id
        s_id = ui.getSensorID(s_id)
-    
+
     if s_node == "":
        return [s_id,DefaultID,s_name]
-    
+
     n_name = ""
     if is_id(s_node):
        s_node = int(s_node)
@@ -89,15 +95,15 @@ def to_sid(str_id, ui):
     else:
        n_name = s_node
        s_node = ui.getNodeID(s_node)
-    
+
     return [s_id,s_node,str(s_name+"@"+n_name)]
 
-# Получение списка пар [id@node,int(val)] из строки "id1@node1=val1,id2=val2,.."
-def get_int_list(raw_str,sep='='):
-    
+# Получение списка пар [id,val,node] из строки "id1@node1=val1,id2=val2,.."
+def get_list(raw_str,ui,sep='='):
+
     if raw_str == None or raw_str == "":
        return []
-    
+
     slist = []
     l = raw_str.split(",")
     for s in l:
@@ -116,15 +122,15 @@ def list_to_str(lst,sep='='):
            res += ",%s=%s"%(v[0],v[1])
         else:
            res += "%s=%s"%(v[0],v[1])
-    
+
     return res
 
-# Получение списка пар [sX,kX] из строки "s1=k1,s2=k2,.."
+# Получение списка пар [s1,2] для реализации шаблонов
 def get_str_list(raw_str,sep='='):
-    
+
     if raw_str == None or raw_str == "":
        return []
-    
+
     slist = []
     l = raw_str.split(",")
     for s in l:
@@ -136,9 +142,9 @@ def get_str_list(raw_str,sep='='):
            slist.append([v[0],""])
     return slist
 
-# Получение списка пар [key,val] из строки "key1:val1,key2:val2,.."
+# Получение списка пар [key,val] из строки "key1=val1,key2=val2,.."
 def get_replace_list(raw_str):
-    
+
     if raw_str == None or raw_str == "":
        return []
     slist = []
@@ -153,7 +159,7 @@ def get_replace_list(raw_str):
            print "(get_replace_list:WARNING): (v:x) undefined value for " + str(s)
            key = to_str(v[0]).strip().strip("\n")
            slist.append([key,0])
-    
+
     return slist
 
 # Парсинг строки вида hostname:port
@@ -208,7 +214,7 @@ def get_mbquery_param( raw_str, def_mbfunc="0x04", ret_str=False ):
     if len(mbaddr) == 0 or len(mbreg) == 0 or len(mbfunc) == 0:
        if ret_str == True:
           return ["","","","",""]
-          
+
        #print "(get_mbquery_param:WARNING): BAD STRING FORMAT! strig='%s'. Must be 'mbreg@mbaddr:mbfunc:nbit:vtype'"%(raw_str)
        return [None,None,None,None,None]
 
@@ -224,29 +230,16 @@ def fcalibrate( raw, rawMin, rawMax, calMin, calMax ):
 
     return 1.0 * (raw - rawMin) * (calMax - calMin) / ( rawMax - rawMin ) + calMin;
 
-def getArgParam(param,defval=""):
-    for i in range(0, len(sys.argv)):
-        if sys.argv[i] == param:
-            if i+1 < len(sys.argv):
-                return sys.argv[i+1]
-            else:
-                break;
-            
-    return defval
-    
-def getArgInt(param,defval=0):
-    for i in range(0, len(sys.argv)):
-        if sys.argv[i] == param:
-            if i+1 < len(sys.argv):
-                return to_int(sys.argv[i+1])
-            else:
-                break;
-        
-    return defval
-    
-def checkArgParam(param,defval=""):
-    for i in range(0, len(sys.argv)):
-        if sys.argv[i] == param:
-            return True
-        
-    return defval
+class TestSuiteException(Exception):
+
+    def __init__(self,e="",test_time=-1):
+        self.err = e
+        self.ftime = test_time
+        if test_time == -1:
+           self.ftime = time.time()
+
+    def getError(self):
+        return self.err
+
+    def getFinishTime(self):
+        return self.ftime
