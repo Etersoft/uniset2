@@ -7,7 +7,7 @@
 
 Name: libuniset
 Version: 1.6
-Release: alt0.5
+Release: alt1
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -118,12 +118,12 @@ Libraries needed to develop for uniset SQLite
 %endif
 
 %if_enabled python
-%package python-modules-%oname
+%package -n python-modules-%oname
 Group: Development/Python
 Summary: python interface for libuniset
 Requires: %name = %version-%release
 
-%description python-modules-%oname
+%description -n python-modules-%oname
 Python interface for %name
 %endif
 
@@ -250,7 +250,7 @@ mv -f %buildroot%python_sitelibdir_noarch/%oname/%oname.py %buildroot%python_sit
 %endif
 
 %if_enabled python
-%files python-modules-%oname
+%files -n python-modules-%oname
 %dir %python_sitelibdir/%oname
 %python_sitelibdir/*
 %python_sitelibdir/%oname/*
@@ -316,6 +316,9 @@ mv -f %buildroot%python_sitelibdir_noarch/%oname/%oname.py %buildroot%python_sit
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt1
+- python: final build
+
 * Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.5
 - python: test build
 
