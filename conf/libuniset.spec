@@ -184,9 +184,12 @@ rm -f %buildroot%_libdir/*.la
 %if_enabled python
 mkdir -p %buildroot%python_sitelibdir/%oname
 mv -f %buildroot%python_sitelibdir/*.* %buildroot%python_sitelibdir/%oname/
-%ifarch i586
-mv -f %buildroot%python_sitelibdir/%oname/%oname.py %buildroot%python_sitelibdir/
+
+%ifarch x86_64
+mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %endif
+
+mv -f %buildroot%python_sitelibdir/%oname/%oname.py %buildroot%python_sitelibdir/
 %endif
 
 %files utils
