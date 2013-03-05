@@ -22,7 +22,7 @@ Source: %name-%version.tar
 
 # manually removed: glibc-devel-static
 # Automatically added by buildreq on Fri Nov 26 2010
-BuildRequires: libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel python-module xsltproc
+BuildRequires: libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel python-modules xsltproc
 
 %if_enabled mysql
 # Using old package name instead of libmysqlclient-devel it absent in branch 5.0 for yauza
