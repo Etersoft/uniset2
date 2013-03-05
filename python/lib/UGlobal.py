@@ -4,16 +4,6 @@
 from pyUConnector import *
 import time
 
-# различные глобальные вспомогательные функции
-t_NONE=""
-t_FAILED="FAILED"
-t_PASSED="PASSED"
-t_IGNORE="IGNORE"
-t_BREAK="BREAK"
-t_PAUSE="PAUSE"
-t_WARNING = "WARNING"
-t_UNKNOWN="UNKNOWN"
-
 def is_id( str_id ):
     if str_id.__class__.__name__ == "int":
        return True
@@ -229,17 +219,3 @@ def fcalibrate( raw, rawMin, rawMax, calMin, calMax ):
        return 0; # деление на 0!!!
 
     return 1.0 * (raw - rawMin) * (calMax - calMin) / ( rawMax - rawMin ) + calMin;
-
-class TestSuiteException(Exception):
-    
-    def __init__(self,e="",test_time=-1):
-        self.err = e
-        self.ftime = test_time
-        if test_time == -1:
-           self.ftime = time.time()
-    
-    def getError(self):
-        return self.err
-    
-    def getFinishTime(self):
-        return self.ftime

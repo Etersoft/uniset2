@@ -7,7 +7,7 @@
 
 Name: libuniset
 Version: 1.6
-Release: alt0.3
+Release: alt0.5
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -316,14 +316,20 @@ mv -f %buildroot%python_sitelibdir_noarch/%oname/%oname.py %buildroot%python_sit
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.5
+- python: test build
+
+* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.4
+- python: test build
+
 * Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.3
-- new build
+- python: test build
 
 * Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.2
-- test build (with python)
+- python: test build
 
 * Mon Mar 04 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.1
-- new build
+- add python interface
 
 * Mon Jan 14 2013 Pavel Vainerman <pv@altlinux.ru> 1.5-alt10
 - add error code for MTR (eterbug #8659)
