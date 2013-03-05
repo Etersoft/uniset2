@@ -114,7 +114,7 @@ if test ${buildpython} = true; then
 	dnl Python
 	AM_PATH_PYTHON(,,)
 	PKG_CHECK_MODULES(PYTHON,python,,exit)
-	AC_CHECK_PROG(SWIG, swig, yes, exit)
+#	AC_CHECK_PROG(SWIG, swig, yes, exit)
 else
 	AC_MSG_RESULT([disabled])
 fi
