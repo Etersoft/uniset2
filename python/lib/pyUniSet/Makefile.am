@@ -1,11 +1,13 @@
 if DISABLE_PYTHON
 else
-pyexec_LTLIBRARIES		= _pyUniSet.la _pyUConnector.la _pyUModbus.la _pyUExceptions.la
+pyexec_LTLIBRARIES = _pyUConnector.la _pyUModbus.la _pyUExceptions.la
+#_pyUniSet.la
 
-_pyUniSet_la_SOURCES 	= UInterface.cc UInterface_wrap.cxx
-_pyUniSet_la_CXXFLAGS	= $(UNISET_CFLAGS) $(PYTHON_CFLAGS)
-_pyUniSet_la_LDFLAGS 	= -module -avoid-version
-_pyUniSet_la_LIBADD 	= $(UNISET_LIBS) $(PYTHON_LIBS)
+# DEPRECATED (use UConnector)
+#_pyUniSet_la_SOURCES 	= UInterface.cc UInterface_wrap.cxx
+#_pyUniSet_la_CXXFLAGS	= $(UNISET_CFLAGS) $(PYTHON_CFLAGS)
+#_pyUniSet_la_LDFLAGS 	= -module -avoid-version
+#_pyUniSet_la_LIBADD 	= $(UNISET_LIBS) $(PYTHON_LIBS)
 
 UInterface_wrap.cxx: UInterface.i UInterface.h
 	swig -python -c++ -classic UInterface.i
@@ -34,7 +36,7 @@ _pyUExceptions_la_LIBADD 	= $(UNISET_LIBS) $(UNISET_EXT_LIBS) $(PYTHON_LIBS)
 UExceptions_wrap.cxx: UExceptions.i UExceptions.h
 	swig -python -c++ -classic UExceptions.i
 
-pyexec_SCRIPTS = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
+python_SCRIPTS = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
 
 clean-local:
 	rm -rf *.py* *_wrap.cxx
