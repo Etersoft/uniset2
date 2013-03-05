@@ -7,7 +7,7 @@
 
 Name: libuniset
 Version: 1.6
-Release: alt0.5
+Release: alt1
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -316,6 +316,9 @@ mv -f %buildroot%python_sitelibdir_noarch/%oname/%oname.py %buildroot%python_sit
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt1
+- python: final build
+
 * Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt0.5
 - python: test build
 
