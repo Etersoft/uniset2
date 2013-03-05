@@ -7,7 +7,7 @@
 
 Name: libuniset
 Version: 1.6
-Release: alt4
+Release: alt5
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -22,7 +22,7 @@ Source: %name-%version.tar
 
 # manually removed: glibc-devel-static
 # Automatically added by buildreq on Fri Nov 26 2010
-BuildRequires: libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel python-modules xsltproc
+BuildRequires: libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel xsltproc
 
 %if_enabled mysql
 # Using old package name instead of libmysqlclient-devel it absent in branch 5.0 for yauza
@@ -35,8 +35,9 @@ BuildRequires: libsqlite3-devel
 
 %if_enabled python
 BuildRequires: python-devel
+
 # swig
-BuildRequires(pre): rpm-build-python
+# add_findprov_lib_path %python_sitelibdir/%oname
 %endif
 
 %if_enabled doc
@@ -119,6 +120,8 @@ Libraries needed to develop for uniset SQLite
 Group: Development/Python
 Summary: python interface for libuniset
 Requires: %name = %version-%release
+
+%py_provides UGlobal UInterface UniXML uniset
 
 %description -n python-module-%oname
 Python interface for %name
@@ -316,6 +319,9 @@ mv -f %buildroot%python_sitelibdir/%oname/%oname.py %buildroot%python_sitelibdir
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt5
+- force add python provides
+
 * Tue Mar 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt4
 - restote UInterface for python
 

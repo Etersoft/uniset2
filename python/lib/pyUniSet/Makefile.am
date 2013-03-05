@@ -1,6 +1,8 @@
 if DISABLE_PYTHON
 else
-pyexec_LTLIBRARIES = _pyUConnector.la _pyUModbus.la _pyUExceptions.la _pyUniSet.la
+python_SCRIPTS = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
+
+python_LTLIBRARIES = _pyUConnector.la _pyUModbus.la _pyUExceptions.la _pyUniSet.la
 
 _pyUniSet_la_SOURCES 	= UInterface.cc UInterface_wrap.cxx
 _pyUniSet_la_CXXFLAGS	= $(UNISET_CFLAGS) $(PYTHON_CFLAGS)
@@ -33,8 +35,6 @@ _pyUExceptions_la_LIBADD 	= $(UNISET_LIBS) $(UNISET_EXT_LIBS) $(PYTHON_LIBS)
 
 UExceptions_wrap.cxx: UExceptions.i UExceptions.h
 	swig -python -c++ -classic UExceptions.i
-
-python_SCRIPTS = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
 
 clean-local:
 	rm -rf *.py* *_wrap.cxx
