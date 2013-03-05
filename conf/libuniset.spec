@@ -184,7 +184,7 @@ rm -f %buildroot%_libdir/*.la
 %if_enabled python
 mkdir -p %buildroot%python_sitelibdir/%oname
 mv -f %buildroot%python_sitelibdir/*.* %buildroot%python_sitelibdir/%oname/
-mv -f %buildroot%python_sitelibdir/%oname/%oname.py %buildroot%python_sitelibdir/
+#mv -f %buildroot%python_sitelibdir/%oname/%oname.py %buildroot%python_sitelibdir/
 %endif
 
 %files utils
