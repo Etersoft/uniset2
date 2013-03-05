@@ -34,7 +34,8 @@ BuildRequires: libsqlite3-devel
 %endif
 
 %if_enabled python
-BuildRequires: python-devel swig
+BuildRequires: python-devel 
+# swig
 BuildRequires(pre): rpm-build-python
 
 %global _target_python_libdir %_target_libdir_noarch
