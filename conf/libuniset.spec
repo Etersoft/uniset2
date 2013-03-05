@@ -37,10 +37,6 @@ BuildRequires: libsqlite3-devel
 BuildRequires: python-devel 
 # swig
 BuildRequires(pre): rpm-build-python
-
-%global _target_python_libdir %_target_libdir_noarch
-%define python_sitelibdir_noarch %python_sitelibdir
-%define python_sitelibdir_arch %_libdir/python%__python_version/site-packages
 %endif
 
 %if_enabled doc
@@ -119,12 +115,12 @@ Libraries needed to develop for uniset SQLite
 %endif
 
 %if_enabled python
-%package -n python-modules-%oname
+%package -n python-module-%oname
 Group: Development/Python
 Summary: python interface for libuniset
 Requires: %name = %version-%release
 
-%description -n python-modules-%oname
+%description -n python-module-%oname
 Python interface for %name
 %endif
 
@@ -186,11 +182,9 @@ Libraries needed to develop for uniset extensions
 rm -f %buildroot%_libdir/*.la
 
 %if_enabled python
-mkdir -p %buildroot%python_sitelibdir_noarch/%oname
-mv -f %buildroot%python_sitelibdir_noarch/*.* %buildroot%python_sitelibdir_noarch/%oname/
-
-# этот файл должен быть в корне site-packages
-mv -f %buildroot%python_sitelibdir_noarch/%oname/%oname.py %buildroot%python_sitelibdir_noarch/
+mkdir -p %buildroot%python_sitelibdir/%oname
+mv -f %buildroot%python_sitelibdir/*.* %buildroot%python_sitelibdir/%oname/
+#mv -f %buildroot%python_sitelibdir/%oname/%oname.py %buildroot%python_sitelibdir/
 %endif
 
 %files utils
@@ -251,7 +245,7 @@ mv -f %buildroot%python_sitelibdir_noarch/%oname/%oname.py %buildroot%python_sit
 %endif
 
 %if_enabled python
-%files -n python-modules-%oname
+%files -n python-module-%oname
 %dir %python_sitelibdir/%oname
 %python_sitelibdir/*
 %python_sitelibdir/%oname/*
