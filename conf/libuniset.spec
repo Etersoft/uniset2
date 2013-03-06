@@ -121,7 +121,7 @@ Group: Development/Python
 Summary: python interface for libuniset
 Requires: %name = %version-%release
 
-%py_provides UGlobal UInterface UniXML uniset
+# py_provides UGlobal UInterface UniXML uniset
 
 %description -n python-module-%oname
 Python interface for %name
