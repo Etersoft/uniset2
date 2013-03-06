@@ -35,6 +35,7 @@ BuildRequires: libsqlite3-devel
 
 %if_enabled python
 BuildRequires: python-devel
+BuildRequires(pre): rpm-build-python
 
 # swig
 # add_findprov_lib_path %python_sitelibdir/%oname
