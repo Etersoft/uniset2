@@ -688,10 +688,10 @@ end_private(false)
 	// Инициализация значений
 	<xsl:for-each select="//smap/item">
 		<xsl:if test="normalize-space(@default)=''">
-			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = 0;
+			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = conf->getArgPInt("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>-default",it.getProp("<xsl:value-of select="@name"/>_default"),0);
 		</xsl:if>
 		<xsl:if test="not(normalize-space(@default)='')">
-			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = <xsl:value-of select="@default"/>;
+			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = conf->getArgPInt("--<xsl:value-of select="../@arg_prefix"/><xsl:value-of select="@name"/>-default",it.getProp("<xsl:value-of select="@name"/>_default"),<xsl:value-of select="@default"/>);
 		</xsl:if>
 	</xsl:for-each>
 	
