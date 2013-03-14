@@ -36,7 +36,7 @@
 		<item name="test_bool" type="bool" private="1"/>
 		<item name="test_str" type="str" default="ddd"/>
   </variables>
-  <smap> 
+  <smap arg_prefix="test-"> 
 	<!-- name - название переменной в конф. файле -->
 	<item name="input1_s" vartype="in" iotype="DI" comment="comment for input1" smTestID="1"/>
 	<item name="input2_s" vartype="in" iotype="DI" comment="comment for input2" />
