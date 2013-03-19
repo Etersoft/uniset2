@@ -72,6 +72,9 @@ class MBTCPServer
 		ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query, 
 											ModbusRTU::DiagnosticRetMessage& reply );
 		
+		ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query, 
+														ModbusRTU::MEIMessageRetRDI& reply );
+
 		/*! обработка запросов на чтение ошибок */
 		ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query, 
 															ModbusRTU::JournalCommandRetMessage& reply );

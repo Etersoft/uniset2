@@ -88,6 +88,14 @@ class ModbusClient
 												ModbusRTU::ModbusData dat=0 )
 														throw(ModbusRTU::mbException);
 
+		/*! Modbus Encapsulated Interface 43(0x2B) 
+			Read Device Identification 14(0x0E)
+		*/
+		ModbusRTU::MEIMessageRetRDI read4314( ModbusRTU::ModbusAddr addr,
+												ModbusRTU::ModbusByte devID,
+												ModbusRTU::ModbusByte objID )
+														throw(ModbusRTU::mbException);
+
 		/*! Установить системное время (0x50)
 			hour	- часы [0..23]
 			min		- минуты [0..59]

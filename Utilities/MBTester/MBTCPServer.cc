@@ -5,6 +5,7 @@
 #include <sstream>
 #include <UniSetTypes.h>
 #include "MBTCPServer.h"
+#include "config.h"
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -42,6 +43,7 @@ MBTCPServer::MBTCPServer( ModbusAddr myaddr, const string inetaddr, int port, bo
 	sslot->connectWriteOutput( sigc::mem_fun(this, &MBTCPServer::writeOutputRegisters) );
 	sslot->connectWriteSingleOutput( sigc::mem_fun(this, &MBTCPServer::writeOutputSingleRegister) );
 	sslot->connectDiagnostics( sigc::mem_fun(this, &MBTCPServer::diagnostics) );
+	sslot->connectMEIRDI( sigc::mem_fun(this, &MBTCPServer::read4314) );
 	sslot->connectJournalCommand( sigc::mem_fun(this, &MBTCPServer::journalCommand) );
 	sslot->connectSetDateTime( sigc::mem_fun(this, &MBTCPServer::setDateTime) );
 	sslot->connectRemoteService( sigc::mem_fun(this, &MBTCPServer::remoteService) );
@@ -455,6 +457,39 @@ ModbusRTU::mbErrCode MBTCPServer::diagnostics( ModbusRTU::DiagnosticMessage& que
 		reply = query;
 		return ModbusRTU::erNoError;
 	}	
+
+	return ModbusRTU::erOperationFailed; 
+}
+// -------------------------------------------------------------------------
+ModbusRTU::mbErrCode MBTCPServer::read4314( ModbusRTU::MEIMessageRDI& query, 
+								ModbusRTU::MEIMessageRetRDI& reply )
+{
+	if( verbose )
+		cout << "(read4314): " << query << endl;
+
+	if( query.devID == rdiVendorName )
+	{
+		reply.mf = 0;
+		reply.conformity = 0;
+		reply.addData(rdiVendorName,"etersoft");
+		reply.addData(rdiProductCode, PACKAGE_NAME);
+		reply.addData(rdiMajorMinorRevision,PACKAGE_VERSION);
+		return erNoError;
+	}
+	else if( query.devID == rdiProductCode )
+	{
+		reply.mf = 0;
+		reply.conformity = 0;
+		reply.addData(rdiProductCode,PACKAGE_NAME);
+		return erNoError;
+	}
+	else if( query.devID == rdiMajorMinorRevision )
+	{
+		reply.mf = 0;
+		reply.conformity = 0;
+		reply.addData(rdiMajorMinorRevision,PACKAGE_VERSION);
+		return erNoError;
+	}
 
 	return ModbusRTU::erOperationFailed; 
 }

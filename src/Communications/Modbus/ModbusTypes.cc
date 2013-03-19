@@ -2358,7 +2358,7 @@ ModbusMessage MEIMessageRDI::transport_msg()
 	ind+=szCRC;
 
 	// длина сообщения...
-	mm.len = ind;
+	mm.len = szData();
 	return mm;
 }
 // -------------------------------------------------------------------------
@@ -2445,7 +2445,7 @@ RDIObjectInfo::RDIObjectInfo( ModbusByte id, ModbusByte* dat, ModbusByte len ):
 		val.push_back( (char)dat[i] );
 }
 // -------------------------------------------------------------------------
-void MEIMessageRetRDI::init( ModbusMessage& m )
+void MEIMessageRetRDI::pre_init( ModbusMessage& m )
 {
 	assert( m.func == fnMEI );
  
@@ -2465,10 +2465,30 @@ void MEIMessageRetRDI::init( ModbusMessage& m )
 	mf = m.data[3];
 	objID = m.data[4];
 	objNum = m.data[5];
+}
+// -------------------------------------------------------------------------
+void MEIMessageRetRDI::init( ModbusMessage& m )
+{
+	assert( m.func == fnMEI );
+ 
+	addr = m.addr;
+	func = m.func;
+	type = m.data[0];
+
+	if( type != 0x0E )
+		throw mbException(erInvalidFormat);
+
+	if( m.len < 6 )
+		throw mbException(erInvalidFormat);
+
+	devID = m.data[1];
+	conformity = m.data[2];
+	mf = m.data[3];
+	objID = m.data[4];
+	objNum = m.data[5];
 
 	bcnt = 0;
 	dlist.clear();
-
 	int i = 6;
 	if( objNum > 0 )
 	{
@@ -2479,7 +2499,7 @@ void MEIMessageRetRDI::init( ModbusMessage& m )
 		{
 			ModbusByte id = m.data[i];
  			int dlen = (int)(m.data[i+1]);
-			if( m.len < (i+1+dlen+szCRC) )
+			if( m.len < (i+1+dlen) )
 				throw mbException(erInvalidFormat);
 
 			RDIObjectInfo rdi(id, &(m.data[i+2]), dlen );
@@ -2492,6 +2512,19 @@ void MEIMessageRetRDI::init( ModbusMessage& m )
 
  	memcpy(&crc,&(m.data[i]),szCRC);
 }	
+// -------------------------------------------------------------------------
+MEIMessageRetRDI::MEIMessageRetRDI():
+	type(0x00),
+	devID(0),
+	conformity(0),
+	mf(0),
+	objID(0),
+	objNum(0),
+	bcnt(0)
+{
+	addr = 0;
+	func = fnUnknown;
+}
 // -------------------------------------------------------------------------
 MEIMessageRetRDI::MEIMessageRetRDI( ModbusAddr _addr, ModbusByte devID, ModbusByte conformity, ModbusByte mf, ModbusByte objID ):
 	type(0x0E),
@@ -2593,6 +2626,22 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, MEIMessageRetRDI& m )
 std::ostream& ModbusRTU::operator<<(std::ostream& os, MEIMessageRetRDI* m )
 {
 	return os << (*m);
+}
+// -------------------------------------------------------------------------
+std::ostream& ModbusRTU::operator<<(std::ostream& os,RDIObjectList& dlist )
+{
+	if( !dlist.empty() )
+	{
+		for( RDIObjectList::iterator it=dlist.begin(); it!=dlist.end(); it++ )
+			os << "     " << (int)(it->id) << " : " << it->val << endl;
+	}
+
+	return os;
+}
+
+std::ostream& ModbusRTU::operator<<(std::ostream& os, RDIObjectList* l )
+{
+	return os << (*l);
 }
 // -------------------------------------------------------------------------
 

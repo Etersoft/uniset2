@@ -14,8 +14,8 @@ static struct option longopts[] = {
 	{ "read02", required_argument, 0, 'b' },
 	{ "read03", required_argument, 0, 'r' },
 	{ "read04", required_argument, 0, 'x' },
-//	{ "read43-13", required_argument, 0, 'u' },
-	{ "read43-14", required_argument, 0, 'e' },
+//	{ "read4313", required_argument, 0, 'u' },
+	{ "read4314", required_argument, 0, 'e' },
 	{ "write05", required_argument, 0, 'f' }, 
 	{ "write06", required_argument, 0, 'z' }, 
 	{ "write0F", required_argument, 0, 'm' },
@@ -43,7 +43,7 @@ static void print_help()
 	printf("[--read03] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read04] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--diag08] slaveaddr subfunc [dat]  - diagnostics request\n");
-	printf("[--read43-14] slaveaddr devID objID - (0x2B/0x0E): read device identification (devID=[1...4], objID=[0..255])\n");
+	printf("[--read4314] slaveaddr devID objID - (0x2B/0x0E): read device identification (devID=[1...4], objID=[0..255])\n");
 //	printf("[--read43-13] slaveaddr ...     - (0x2B/0x0D):  CANopen General Reference Request and Response PDU \n");
 	printf("[-i|--iaddr] ip                 - Modbus server ip. Default: 127.0.0.1\n");
 	printf("[-a|--myaddr] addr              - Modbus address for master. Default: 0x01.\n");
@@ -388,55 +388,17 @@ int main( int argc, char **argv )
 				{
 					if( verb )
 					{
-						cout << "read43_14: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+						cout << "read4314: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
 							 << " devID=" << ModbusRTU::dat2str(devID) 
 							 << " objID=" << ModbusRTU::dat2str(objID) 
 							 << endl;
 					}
-					
-					ModbusRTU::MEIMessageRDI m(slaveaddr,devID,objID);
-					cout << "  request: " << m << endl;
 
-					ModbusRTU::ModbusMessage tm( m.transport_msg() );
-					
-					ModbusRTU::MEIMessageRDI m2(tm);
-					cout << " request2: " << m2 << endl;
-				
-					ModbusRTU::MEIMessageRetRDI r(m2.addr,m2.devID,0x01,0x0FF,m2.objID);
-
-					r.addData(1,"Object 1");
-					r.addData(2,"Object 2");
-					r.addData(3,"Object 3");
-
-					cout << " response: " << r << endl;
-
-					ModbusRTU::ModbusMessage tm2( r.transport_msg() );
-//					cout << tm2 << endl;
-/*
-					ModbusRTU::RDIObjectList dlist;
-					dlist.clear();
-					ModbusRTU::RDIObjectInfo rdi(1,"Obj1");
-					dlist.push_back(rdi);
-					for( ModbusRTU::RDIObjectList::iterator it=dlist.begin(); it!=dlist.end(); it++ )
-						cout << (int)it->id << " : " << it->val << endl;
-*/					
-					ModbusRTU::MEIMessageRetRDI r2(tm2);
-					cout << "response2: " << r2 << endl;
-
-/*
-					ModbusRTU::ReadInputRetMessage ret = mb.read04(slaveaddr,reg,count);
+					ModbusRTU::MEIMessageRetRDI ret = mb.read4314(slaveaddr,devID,objID);
 					if( verb )
 						cout << "(reply): " << ret << endl;
-					cout << "(reply): count=" << ModbusRTU::dat2str(ret.count) << endl;
-					for( int i=0; i<ret.count; i++ )
-					{
-						cout << i <<": (" << ModbusRTU::dat2str( reg + i ) << ") = " << (int)(ret.data[i]) 
-							<< " (" 
-							<< ModbusRTU::dat2str(ret.data[i]) 
-							<< ")" 
-							<< endl;
-					}
-*/
+					else	
+						cout << "(reply): objNum=" << (int)ret.objNum << endl << ret.dlist << endl;
 				}
 				break;
 

@@ -150,7 +150,15 @@ class ModbusServer
 		virtual ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query, 
 														ModbusRTU::DiagnosticRetMessage& reply )=0;
 
-		
+		/*! Обработка запроса 43(0x2B).
+			\param query - запрос
+			\param reply - ответ. Заполняется в обработчике.
+			\return Результат обработки
+		*/
+		virtual ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query, 
+														ModbusRTU::MEIMessageRetRDI& reply )=0;
+
+
 		/*! Обработка запроса по журналу (0x65)
 			\param query - запрос
 			\param reply - ответ. Заполняется в обработчике.

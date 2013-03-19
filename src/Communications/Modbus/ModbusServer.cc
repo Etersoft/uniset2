@@ -289,6 +289,37 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// --------------------------------
 		return res;
 	}
+	else if( buf.func == fnMEI )
+	{
+		MEIMessageRDI mRDI(buf);
+		MEIMessageRetRDI reply( buf.addr, mRDI.devID, 0, 0, mRDI.objID );
+
+		mbErrCode res = read4314( mRDI, reply );
+		// в случае ошибок ответа не посылаем
+		if( res != erNoError )
+		{
+			dlog[Debug::WARN] << "(0x2B/0x0E): reply: " << mbErr2Str(res) << endl;
+
+			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
+			// то посылаем
+			if( res < erInternalErrorCode )
+			{
+				ErrorRetMessage em( mRDI.addr, mRDI.func, res );
+				buf = em.transport_msg();
+				return send(buf);
+			}
+		
+			return res;
+		}
+
+		// отвечаем (используя тотже буфер, который будет очищен!!!)...
+		buf = reply.transport_msg();
+		// -----------------------------------
+		res = send(buf);
+		printProcessingTime();
+		// --------------------------------
+		return res;
+	}
 	else if( buf.func == fnForceSingleCoil )
 	{
 		ForceSingleCoilMessage mWrite(buf);
@@ -623,7 +654,11 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			case fnDiagnostics:
 				rbuf.len = DiagnosticMessage::szHead();
 			break;
-			
+
+			case fnMEI:
+				rbuf.len = MEIMessageRDI::szHead();
+			break;
+
 			case fnJournalCommand:
 				rbuf.len = JournalCommandMessage::szData();
 				if( crcNoCheckit )
@@ -1108,6 +1143,58 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				return erInvalidFormat;
 			}
 */
+			return erNoError;
+		}
+		else if( rbuf.func == fnMEI )
+		{
+			if( !crcNoCheckit )
+			{
+				int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szCRC);
+				if( rlen1 < szCRC )
+				{
+					if( dlog.debugging(Debug::WARN) )
+					{
+						rbuf.len = bcnt + rlen1 - szModbusHeader;
+						dlog[Debug::WARN] << "(0x2B/0x0E): buf: " << rbuf << endl;
+						dlog[Debug::WARN] << "(0x2B/0x0E)(" 
+							<< rbuf.func << "):(fnMEI) "
+							<< "Получили данных меньше чем ждали...(" 
+							<< rlen1 << " < " << szCRC << ")" << endl;
+					}
+					cleanupChannel();
+					return erInvalidFormat;
+				}
+			
+				bcnt += rlen1;
+				rbuf.len = bcnt - szModbusHeader;
+			}
+
+			MEIMessageRDI mRDI(rbuf);
+
+			if( dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << "(0x2B/0x0E): recv buf: " << rbuf << endl;
+
+			if( crcNoCheckit )
+				return erNoError;
+
+			// Проверяем контрольную сумму
+			// от начала(включая заголовок) 
+			// и до конца (исключив последний элемент содержащий CRC)
+			// int mlen = szModbusHeader + mWrite.szHead() + mWrite.bcnt;
+			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
+			if( tcrc != mRDI.crc )
+			{
+				if( dlog.debugging(Debug::WARN) )
+				{
+					ostringstream err;
+					err << "(0x2B/0x0E): bad crc. calc.crc=" << dat2str(tcrc)
+						<< " msg.crc=" << dat2str(mRDI.crc);
+					dlog[Debug::WARN] << err.str() << endl;
+				}
+				cleanupChannel();
+				return erBadCheckSum;
+			}
+
 			return erNoError;
 		}	
 		else if( rbuf.func == fnJournalCommand )
