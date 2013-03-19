@@ -147,7 +147,7 @@ fi
 AC_SUBST(UNISET_CODEGEN)
 echo "UNISET_CODEGEN: $UNISET_CODEGEN"
 
-UNISET_CFLAGS="-I \$(top_builddir)/include"
+UNISET_CFLAGS="-I \$(top_builddir) -I \$(top_builddir)/include"
 AC_SUBST(UNISET_CFLAGS)
 UNISET_LIBS="\$(top_builddir)/lib/libUniSet.la"
 AC_SUBST(UNISET_LIBS)

@@ -3,8 +3,9 @@
 //#include <string.h>
 //#include <errno.h>
 #include <sstream>
-#include <UniSetTypes.h>
+#include "UniSetTypes.h"
 #include "MBSlave.h"
+#include "config.h"
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -48,6 +49,7 @@ MBSlave::MBSlave( ModbusRTU::ModbusAddr addr, const std::string dev, const std::
 	rscomm->connectRemoteService( sigc::mem_fun(this, &MBSlave::remoteService) );
 	rscomm->connectFileTransfer( sigc::mem_fun(this, &MBSlave::fileTransfer) );
 	rscomm->connectDiagnostics( sigc::mem_fun(this, &MBSlave::diagnostics) );
+	rscomm->connectMEIRDI( sigc::mem_fun(this, &MBSlave::read4314) );
 
 
 	rscomm->setRecvTimeout(2000);
@@ -462,6 +464,39 @@ ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
 	{
 		reply = query;
 		return ModbusRTU::erNoError;
+	}
+
+	return ModbusRTU::erOperationFailed;
+}
+// -------------------------------------------------------------------------
+ModbusRTU::mbErrCode MBSlave::read4314( ModbusRTU::MEIMessageRDI& query,
+								ModbusRTU::MEIMessageRetRDI& reply )
+{
+	if( verbose )
+		cout << "(read4314): " << query << endl;
+
+	if( query.devID == rdiVendorName )
+	{
+		reply.mf = 0;
+		reply.conformity = 0;
+		reply.addData(rdiVendorName,"etersoft");
+		reply.addData(rdiProductCode, PACKAGE_NAME);
+		reply.addData(rdiMajorMinorRevision,PACKAGE_VERSION);
+		return erNoError;
+	}
+	else if( query.devID == rdiProductCode )
+	{
+		reply.mf = 0;
+		reply.conformity = 0;
+		reply.addData(rdiProductCode,PACKAGE_NAME);
+		return erNoError;
+	}
+	else if( query.devID == rdiMajorMinorRevision )
+	{
+		reply.mf = 0;
+		reply.conformity = 0;
+		reply.addData(rdiMajorMinorRevision,PACKAGE_VERSION);
+		return erNoError;
 	}
 
 	return ModbusRTU::erOperationFailed;

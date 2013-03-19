@@ -80,8 +80,11 @@ class MBTCPServer
 		ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query, 
 														ModbusRTU::MEIMessageRetRDI& reply );
 
+		ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
+														ModbusRTU::MEIMessageRetRDI& reply );
+
 		/*! обработка запросов на чтение ошибок */
-		ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query, 
+		ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query,
 															ModbusRTU::JournalCommandRetMessage& reply );
 
 		/*! обработка запроса на установку времени */

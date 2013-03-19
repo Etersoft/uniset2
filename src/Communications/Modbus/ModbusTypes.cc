@@ -972,7 +972,7 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
 	// копируем
 	memcpy(&(mm.data[ind]),dtmp,bcnt);
 
-	delete[] dtmp;
+	delete dtmp;
 
 	ind+=bcnt;
 
@@ -1183,7 +1183,7 @@ ModbusMessage ReadInputRetMessage::transport_msg()
 	// копируем
 	memcpy(&(mm.data[ind]),dtmp,bcnt);
 
-	delete[] dtmp;
+	delete dtmp;
 
 	ind+=bcnt;
 
@@ -1547,7 +1547,7 @@ ModbusMessage WriteOutputMessage::transport_msg()
 
 	// копируем данные
 	memcpy(&(mm.data[ind]),dtmp,bcnt);
-	delete[] dtmp;
+	delete dtmp;
 
 	ind+=bcnt;
 
@@ -2099,46 +2099,46 @@ int ModbusRTU::szRequestDiagnosticData( DiagnosticsSubFunction f )
 	if( f == subEcho )
 		return 1; 	// тут странно, вроде в стандарте количество динамическое
 					// но везде вроде в примерах.. "одно слово"..
-	
+
 	if( f == dgRestartComm )
 		return 1;
-		
+
 	if( f == dgDiagReg )
 		return 1;
-		
+
 	if( f == dgChangeASCII )
 		return 1;
-	
-	if( f == dgForceListen )
-		return 1;		
 
-	if( f == dgClearCounters) 
+	if( f == dgForceListen )
+		return 1;
+
+	if( f == dgClearCounters)
 		return 1;
 
 	if( f == dgBusMsgCount )
 		return 1;
-	
+
 	if( f == dgBusErrCount )
 		return 1;
-	
+
 	if( f == dgBusExceptCount )
 		return 1;
-	
+
 	if( f == dgMsgSlaveCount )
 		return 1;
-	
+
 	if( f == dgNoNoResponseCount )
 		return 1;
-	
+
 	if( f == dgSlaveNAKCount )
 		return 1;
-	
+
 	if( f == dgSlaveBusyCount )
 		return 1;
-	
+
 	if( f == dgBusCharOverrunCount )
 		return 1;
-	
+
 	if( f == dgClearOverrunCounter )
 		return 1;
 
@@ -2159,14 +2159,14 @@ DiagnosticMessage& DiagnosticMessage::operator=( ModbusMessage& m )
 void DiagnosticMessage::init( ModbusMessage& m )
 {
 	assert( m.func == fnDiagnostics );
- 
+
 	memset(this,0,sizeof(*this));
 	addr = m.addr;
 	func = m.func;
 
 	memcpy( &subf,&(m.data[0]),sizeof(subf) );
 	int last = sizeof(subf);
-	
+
 	subf = 	SWAPSHORT(subf);
 	count = szRequestDiagnosticData((DiagnosticsSubFunction)subf );
 	if( count > MAXDATALEN )
@@ -2177,13 +2177,13 @@ void DiagnosticMessage::init( ModbusMessage& m )
 
 	memcpy(&data,&(m.data[last]),sizeof(ModbusData)*count);
 	last +=sizeof(ModbusData)*count;
-	
+
 	// переворачиваем данные
 	for( int i=0; i<count; i++ )
 		data[i] = SWAPSHORT(data[i]);
 
- 	memcpy(&crc,&(m.data[last]),szCRC);
-}	
+	memcpy(&crc,&(m.data[last]),szCRC);
+}
 // -------------------------------------------------------------------------
 int DiagnosticMessage::getDataLen( ModbusMessage& m )
 {
@@ -2216,7 +2216,7 @@ bool DiagnosticMessage::addData( ModbusData d )
 {
 	if( isFull() )
 		return false;
-	
+
 	data[count++] = d;
 	return true;
 }
@@ -2235,7 +2235,7 @@ ModbusMessage DiagnosticMessage::transport_msg()
 
 	// копируем заголовок и данные
 	memcpy(&mm,this,szModbusHeader);
-	
+
 	int ind=0;
 	// copy bcnt
 	ModbusData d = SWAPSHORT(subf);
@@ -2250,7 +2250,7 @@ ModbusMessage DiagnosticMessage::transport_msg()
 	// копируем
 	memcpy(&(mm.data[ind]),dtmp,sizeof(ModbusData)*count);
 
-	delete[] dtmp;
+	delete dtmp;
 
 	ind+=sizeof(ModbusData)*count;
 
@@ -2258,11 +2258,11 @@ ModbusMessage DiagnosticMessage::transport_msg()
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(subf)+sizeof(ModbusData)*count );
 
 	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[ind]),&crc,szCRC);
+	memcpy(&(mm.data[ind]),&crc,szCRC);
 	ind+=szCRC;
 
 	// длина сообщения...
-	mm.len = szData(); 
+	mm.len = szData();
 	return mm;
 }
 // -------------------------------------------------------------------------
@@ -2297,9 +2297,9 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticMessage& m )
 
 	for( int i=0; i<m.count; i++ )
 		os << dat2str(m.data[i]) << "  ";
-	
+
 	os << "}";
-	
+
 	return os;
 }
 
@@ -2317,9 +2317,9 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticRetMessage& m )
 
 	for( int i=0; i<m.count; i++ )
 		os << dat2str(m.data[i]) << "  ";
-	
+
 	os << "}";
-	
+
 	return os;
 }
 
@@ -2354,7 +2354,7 @@ ModbusMessage MEIMessageRDI::transport_msg()
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
 
 	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[ind]),&crc,szCRC);
+	memcpy(&(mm.data[ind]),&crc,szCRC);
 	ind+=szCRC;
 
 	// длина сообщения...
@@ -2377,12 +2377,12 @@ MEIMessageRDI& MEIMessageRDI::operator=( ModbusMessage& m )
 void MEIMessageRDI::init( ModbusMessage& m )
 {
 	assert( m.func == fnMEI );
- 
+
 	memset(this,0,sizeof(*this));
-	
+
 	// copy not include CRC
 	memcpy(this,&m,szModbusHeader+m.len);
-	
+
 	// потом проверяем
 	if( !checkFormat() )
 	{
@@ -2404,13 +2404,13 @@ bool MEIMessageRDI::checkFormat()
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, MEIMessageRDI& m )
 {
-	os << "addr=" << addr2str(m.addr) 
-		<< " func=0x" << b2str(m.func) 
-		<< " type=0x" << b2str(m.type) 
-		<< " devID=0x" << b2str(m.devID) 
+	os << "addr=" << addr2str(m.addr)
+		<< " func=0x" << b2str(m.func)
+		<< " type=0x" << b2str(m.type)
+		<< " devID=0x" << b2str(m.devID)
 		<< " objID=0x" << b2str(m.objID);
 
-	return os;	
+	return os;
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, MEIMessageRDI* m )
 {
@@ -2448,7 +2448,7 @@ RDIObjectInfo::RDIObjectInfo( ModbusByte id, ModbusByte* dat, ModbusByte len ):
 void MEIMessageRetRDI::pre_init( ModbusMessage& m )
 {
 	assert( m.func == fnMEI );
- 
+
 	addr = m.addr;
 	func = m.func;
 
@@ -2470,7 +2470,7 @@ void MEIMessageRetRDI::pre_init( ModbusMessage& m )
 void MEIMessageRetRDI::init( ModbusMessage& m )
 {
 	assert( m.func == fnMEI );
- 
+
 	addr = m.addr;
 	func = m.func;
 	type = m.data[0];
@@ -2494,11 +2494,11 @@ void MEIMessageRetRDI::init( ModbusMessage& m )
 	{
 		if( m.len < 7 )
 			throw mbException(erInvalidFormat);
-		
+
 		while( i < m.len && dlist.size() < objNum )
 		{
 			ModbusByte id = m.data[i];
- 			int dlen = (int)(m.data[i+1]);
+			int dlen = (int)(m.data[i+1]);
 			if( m.len < (i+1+dlen) )
 				throw mbException(erInvalidFormat);
 
@@ -2510,8 +2510,8 @@ void MEIMessageRetRDI::init( ModbusMessage& m )
 		}
 	}
 
- 	memcpy(&crc,&(m.data[i]),szCRC);
-}	
+	memcpy(&crc,&(m.data[i]),szCRC);
+}
 // -------------------------------------------------------------------------
 MEIMessageRetRDI::MEIMessageRetRDI():
 	type(0x00),
@@ -2543,7 +2543,7 @@ bool MEIMessageRetRDI::addData( ModbusByte id, const std::string val )
 {
 	if( isFull() )
 		return false;
-	
+
 	RDIObjectInfo r(id,val);
 	dlist.push_back(r);
 	objNum = dlist.size();
@@ -2565,7 +2565,7 @@ ModbusMessage MEIMessageRetRDI::transport_msg()
 
 	// копируем заголовок и данные
 	memcpy(&mm,this,szModbusHeader);
-	
+
 	mm.data[0] = type;
 	mm.data[1] = devID;
 	mm.data[2] = conformity;
@@ -2581,13 +2581,13 @@ ModbusMessage MEIMessageRetRDI::transport_msg()
 		mm.data[ind++] = dlen;
 		memcpy(&(mm.data[ind]), it->val.data(), dlen );
 		ind += dlen;
-	}	
+	}
 
 	// пересчитываем CRC по перевёрнутым данным
 	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
 
 	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[ind]),&crc,szCRC);
+	memcpy(&(mm.data[ind]),&crc,szCRC);
 	ind+=szCRC;
 
 	// длина сообщения...
@@ -2604,11 +2604,11 @@ int MEIMessageRetRDI::szData()
 std::ostream& ModbusRTU::operator<<(std::ostream& os, MEIMessageRetRDI& m )
 {
 	// return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
-	os << "addr=" << addr2str(m.addr) 
-		<< " func=0x" << b2str(m.func) 
-		<< " type=0x" << b2str(m.type) 
-		<< " devID=0x" << b2str(m.devID) 
-		<< " conformity=0x" << b2str(m.conformity) 
+	os << "addr=" << addr2str(m.addr)
+		<< " func=0x" << b2str(m.func)
+		<< " type=0x" << b2str(m.type)
+		<< " devID=0x" << b2str(m.devID)
+		<< " conformity=0x" << b2str(m.conformity)
 		<< " mf=0x" << b2str(m.mf)
 		<< " objID=0x" << b2str(m.objID)
 		<< " objNum=" << (int)(m.objNum);
@@ -2617,7 +2617,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, MEIMessageRetRDI& m )
 	{
 		os << endl;
 		for( RDIObjectList::iterator it=m.dlist.begin(); it!=m.dlist.end(); it++ )
-			os << "     " << rdi2str(it->id) << " : " << it->val << endl;
+			os << "     " << (int)(it->id) << " : " << it->val << endl;
 	}
 
 	return os;
@@ -2633,7 +2633,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os,RDIObjectList& dlist )
 	if( !dlist.empty() )
 	{
 		for( RDIObjectList::iterator it=dlist.begin(); it!=dlist.end(); it++ )
-			os << "     " << rdi2str(it->id) << " : " << it->val << endl;
+			os << "     " << (int)(it->id) << " : " << it->val << endl;
 	}
 
 	return os;
@@ -2745,7 +2745,7 @@ ModbusMessage JournalCommandRetMessage::transport_msg()
 	// копируем
 	memcpy(&(mm.data[ind]),dtmp,bcnt);
 
-	delete[] dtmp;
+	delete dtmp;
 
 	ind += bcnt;
 
@@ -3491,33 +3491,5 @@ void ModbusTCP::MBAPHeader::swapdata()
 	tID = SWAPSHORT(tID);
 	pID = SWAPSHORT(pID);
 	len = SWAPSHORT(len);
-}
-// -----------------------------------------------------------------------
-std::string ModbusRTU::rdi2str( int id )
-{
-	if( id == rdiVendorName )
-		return "VendorName";
-
-	if( id == rdiProductCode )
-		return "ProductName";
-
-	if( id == rdiMajorMinorRevision )
-		return "MajorMinorRevision";
-
-	if( id == rdiVendorURL )
-		return "VendorURL";
-
-	if( id == rdiProductName )
-		return "ProductName";
-
-	if( id == rdiModelName )
-		return "ModelName";
-
-	if( id == rdiUserApplicationName )
-		return "UserApplicationName";
-
-	ostringstream s;
-	s << id;
-	return s.str();
 }
 // -----------------------------------------------------------------------

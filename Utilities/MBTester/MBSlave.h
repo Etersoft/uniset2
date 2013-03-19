@@ -94,6 +94,9 @@ class MBSlave
 		ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query, 
 														ModbusRTU::MEIMessageRetRDI& reply );
 
+		ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
+														ModbusRTU::MEIMessageRetRDI& reply );
+
 		/*! интерфейс ModbusRTUSlave для обмена по RS */
 		ModbusRTUSlaveSlot* rscomm;
 		ModbusRTU::ModbusAddr addr;			/*!< адрес данного узла */
