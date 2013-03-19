@@ -2617,7 +2617,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, MEIMessageRetRDI& m )
 	{
 		os << endl;
 		for( RDIObjectList::iterator it=m.dlist.begin(); it!=m.dlist.end(); it++ )
-			os << "     " << (int)(it->id) << " : " << it->val << endl;
+			os << "     " << rdi2str(it->id) << " : " << it->val << endl;
 	}
 
 	return os;
@@ -2633,7 +2633,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os,RDIObjectList& dlist )
 	if( !dlist.empty() )
 	{
 		for( RDIObjectList::iterator it=dlist.begin(); it!=dlist.end(); it++ )
-			os << "     " << (int)(it->id) << " : " << it->val << endl;
+			os << "     " << rdi2str(it->id) << " : " << it->val << endl;
 	}
 
 	return os;
@@ -3491,5 +3491,33 @@ void ModbusTCP::MBAPHeader::swapdata()
 	tID = SWAPSHORT(tID);
 	pID = SWAPSHORT(pID);
 	len = SWAPSHORT(len);
+}
+// -----------------------------------------------------------------------
+std::string ModbusRTU::rdi2str( int id )
+{
+	if( id == rdiVendorName )
+		return "VendorName";
+
+	if( id == rdiProductCode )
+		return "ProductName";
+
+	if( id == rdiMajorMinorRevision )
+		return "MajorMinorRevision";
+
+	if( id == rdiVendorURL )
+		return "VendorURL";
+
+	if( id == rdiProductName )
+		return "ProductName";
+
+	if( id == rdiModelName )
+		return "ModelName";
+
+	if( id == rdiUserApplicationName )
+		return "UserApplicationName";
+
+	ostringstream s;
+	s << id;
+	return s.str();
 }
 // -----------------------------------------------------------------------

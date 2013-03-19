@@ -467,31 +467,61 @@ ModbusRTU::mbErrCode MBTCPServer::read4314( ModbusRTU::MEIMessageRDI& query,
 	if( verbose )
 		cout << "(read4314): " << query << endl;
 
-	if( query.devID == rdiVendorName )
-	{
-		reply.mf = 0;
-		reply.conformity = 0;
-		reply.addData(rdiVendorName,"etersoft");
-		reply.addData(rdiProductCode, PACKAGE_NAME);
-		reply.addData(rdiMajorMinorRevision,PACKAGE_VERSION);
-		return erNoError;
-	}
-	else if( query.devID == rdiProductCode )
-	{
-		reply.mf = 0;
-		reply.conformity = 0;
-		reply.addData(rdiProductCode,PACKAGE_NAME);
-		return erNoError;
-	}
-	else if( query.devID == rdiMajorMinorRevision )
-	{
-		reply.mf = 0;
-		reply.conformity = 0;
-		reply.addData(rdiMajorMinorRevision,PACKAGE_VERSION);
-		return erNoError;
-	}
+	if( query.devID <= rdevMinNum || query.devID >= rdevMaxNum )
+		return erOperationFailed;
 
-	return ModbusRTU::erOperationFailed;
+	if( query.objID == rdiVendorName )
+	{
+		reply.mf = 0xFF;
+		reply.conformity = rdevBasicDevice;
+		reply.addData(query.objID,"etersoft");
+//		reply.addData(rdiProductCode, PACKAGE_NAME);
+//		reply.addData(rdiMajorMinorRevision,PACKAGE_VERSION);
+		return erNoError;
+	}
+	else if( query.objID == rdiProductCode )
+	{
+		reply.mf = 0xFF;
+		reply.conformity = rdevBasicDevice;
+		reply.addData(query.objID,PACKAGE_NAME);
+		return erNoError;
+	}
+	else if( query.objID == rdiMajorMinorRevision )
+	{
+		reply.mf = 0xFF;
+		reply.conformity = rdevBasicDevice;
+		reply.addData(query.objID,PACKAGE_VERSION);
+		return erNoError;
+	}
+	else if( query.objID == rdiVendorURL )
+	{
+		reply.mf = 0xFF;
+		reply.conformity = rdevRegularDevice;
+		reply.addData(query.objID,PACKAGE_URL);
+		return erNoError;
+	}
+	else if( query.objID == rdiProductName )
+	{
+		reply.mf = 0xFF;
+		reply.conformity = rdevRegularDevice;
+		reply.addData(query.objID,PACKAGE_NAME);
+		return erNoError;
+	}
+	else if( query.objID == rdiModelName )
+	{
+		reply.mf = 0xFF;
+		reply.conformity = rdevRegularDevice;
+		reply.addData(query.objID,"MBTCPSlaveEcho");
+		return erNoError;
+	}
+	else if( query.objID == rdiUserApplicationName )
+	{
+		reply.mf = 0xFF;
+		reply.conformity = rdevRegularDevice;
+		reply.addData(query.objID,"uniset-mbtcpslave-echo");
+		return erNoError;
+	}
+	return ModbusRTU::erBadDataAddress;
 }
 // -------------------------------------------------------------------------
 
