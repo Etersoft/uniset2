@@ -29,7 +29,6 @@ static void print_help()
 	printf("[-a|--myaddr] addr      - Modbus address for master. Default: 0x01.\n");
 	printf("[-x|--ignore-addr]      - Ignore modbus RTU-address.\n");
 	printf("[-p|--port] port        - Server port. Default: 502.\n");
-	printf("[-v|--verbose]          - Print all messages to stdout\n");
 	printf("[-c|--const-reply] val  - Reply 'val' for all queries\n");
 }
 // --------------------------------------------------------------------------

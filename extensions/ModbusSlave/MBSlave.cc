@@ -800,9 +800,12 @@ void MBSlave::initIterators()
 void MBSlave::help_print( int argc, const char* const* argv )
 {
 	cout << "Default: prefix='mbs'" << endl;
+	cout << "--prefix-reg-from-id 0,1   - Использовать в качестве регистра sensor ID" << endl;
+	cout << "--prefix-filter-field name - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
+	cout << "--prefix-filter-value val  - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
 	cout << "--prefix-heartbeat-id		- Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
 	cout << "--prefix-heartbeat-max  	- Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--prefix-ready-timeout	- Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;    
+	cout << "--prefix-ready-timeout	- Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
 	cout << "--prefix-initPause		- Задержка перед инициализацией (время на активизация процесса)" << endl;
 	cout << "--prefix-respond-id - respond sensor id" << endl;
 	cout << "--prefix-respond-invert [0|1] - invert respond logic" << endl;

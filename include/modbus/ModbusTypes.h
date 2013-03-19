@@ -4,6 +4,8 @@
 // -------------------------------------------------------------------------
 #include <ostream>
 #include <bitset>
+#include <string>
+#include <list>
 #include "ModbusRTUErrors.h"
 // -------------------------------------------------------------------------
 /* Основные предположения:	
@@ -42,6 +44,7 @@ namespace ModbusRTU
 		fnWriteOutputRegisters	= 0x10,	/*!< write register outputs or memories */
 		fnReadFileRecord		= 0x14,	/*!< read file record */
 		fnWriteFileRecord		= 0x15,	/*!< write file record */
+		fnMEI					= 0x2B, /*!< Modbus Encapsulated Interface */
 		fnSetDateTime			= 0x50, /*!< set date and time */
 		fnRemoteService			= 0x53,	/*!< call remote service */
 		fnJournalCommand		= 0x65,	/*!< read,write,delete alarm journal */
@@ -70,10 +73,25 @@ namespace ModbusRTU
 		dgClearOverrunCounter = 0x14	/*!< (20) Clear Overrun Counter and FlagN.A. */
 		 // 21 ...65535 RESERVED
 	};
-	
+
 	// определение размера данных в зависимости от типа сообщения
 	// возвращает -1 - если динамический размер сообщения или размер неизвестен
 	int szRequestDiagnosticData( DiagnosticsSubFunction f );
+
+	/*! Read Device Identification ObjectID (0x2B/0xE) */
+	enum RDIObjectID 
+	{
+		rdiVendorName = 0x0,
+		rdiProductCode = 0x1,
+		rdiMajorMinorRevision = 0x2,
+		rdiVendorURL = 0x3,
+		rdiProductName = 0x4,
+		rdiModelName = 0x5,
+		rdiUserApplicationName = 0x6
+		// 0x07 .. 0x7F - reserved
+		// 0x80 .. 0xFF - optionaly defined (product dependant)
+	};
+	// -----------------------------------------------------------------------
 
 	/*! различные базовые константы */
 	enum
@@ -1010,6 +1028,110 @@ namespace ModbusRTU
 
 	std::ostream& operator<<(std::ostream& os, DiagnosticRetMessage& m );
 	std::ostream& operator<<(std::ostream& os, DiagnosticRetMessage* m );
+	// -----------------------------------------------------------------------
+	/*! Modbus Encapsulated Interface (0x2B). Read Device Identification (0x0E) */
+	struct MEIMessageRDI:
+		public ModbusHeader
+	{
+		ModbusByte type; 	/*!< for RDI must be 0x0E */
+		ModbusByte devID; 	/*!< Read Device ID code */
+		ModbusByte objID; 	/*!< Object Id */
+
+		ModbusCRC crc;		/*!< контрольная сумма */
+
+		// ------- to slave -------
+		MEIMessageRDI( ModbusAddr addr, ModbusByte devID, ModbusByte objID );
+		/*! преобразование для посылки в сеть */
+		ModbusMessage transport_msg();
+
+		// ------- from master -------	
+		MEIMessageRDI( ModbusMessage& m );
+		MEIMessageRDI& operator=( ModbusMessage& m );
+		void init( ModbusMessage& m );
+
+		/*! размер данных(после заголовка) у данного типа сообщения */
+		static inline int szData(){ return sizeof(ModbusByte)*3 + szCRC; }
+
+		// вспомогательные функции
+		bool checkFormat();
+
+	}__attribute__((packed));
+	// -----------------------------------------------------------------------
+	std::ostream& operator<<(std::ostream& os, MEIMessageRDI& m );
+	std::ostream& operator<<(std::ostream& os, MEIMessageRDI* m );
+	// -----------------------------------------------------------------------
+
+	struct RDIObjectInfo
+	{
+		RDIObjectInfo():id(0),val(""){}
+		RDIObjectInfo( ModbusByte id, const std::string v ):id(id),val(v){}
+		RDIObjectInfo( ModbusByte id, ModbusByte* dat, ModbusByte len );
+
+		ModbusByte id;
+		std::string val;
+	};
+
+	typedef std::list<RDIObjectInfo> RDIObjectList;
+
+	/*! Ответ для 0x2B/0x0E */
+	struct MEIMessageRetRDI:
+		public ModbusHeader
+	{
+		ModbusByte type; 	/*!< 0x0E */
+		ModbusByte devID; 	/*!< Read Device ID code */
+		ModbusByte conformity; /*!< Conformity level (0x01 or 0x02 or 0x03 or 0x81 or 0x82 or 0x83) */
+		ModbusByte mf; 		/*!< More Follows (00/FF) */
+		ModbusByte objID; 	/*!< Object ID number */
+		ModbusByte objNum; 	/*!< Number of objects */
+
+		RDIObjectList dlist;
+		ModbusCRC crc;
+
+		// ------- from slave -------
+		MEIMessageRetRDI( ModbusMessage& m );
+		MEIMessageRetRDI& operator=( ModbusMessage& m );
+		void init( ModbusMessage& m );
+
+		/*! размер предварительного заголовка (после основного до фактических данных) */
+		static inline int szHead()
+		{
+			return sizeof(ModbusByte)*6;
+		}
+
+		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
+		static int getDataLen( ModbusMessage& m );
+		
+		// ------- to master -------
+		MEIMessageRetRDI( ModbusAddr _from, ModbusByte devID, ModbusByte conformity, ModbusByte mf, ModbusByte objID );
+
+		/*! добавление данных.
+		 * \return TRUE - если удалось
+		 * \return FALSE - если НЕ удалось
+		*/
+		bool addData( ModbusByte id, const std::string value );
+		bool addData( RDIObjectInfo& dat );
+
+		/*! очистка данных */
+		void clear();
+		
+		/*! проверка на переполнение */	
+		inline bool isFull()
+		{
+			return ( bcnt >= MAXLENPACKET );
+		}
+		
+		/*! размер данных(после заголовка) у данного типа сообщения */
+		int szData();
+		
+		/*! преобразование для посылки в сеть */
+		ModbusMessage transport_msg();
+
+		int bcnt; /*! размер данных в байтах, внутреннее служебное поле */
+	};
+
+	std::ostream& operator<<(std::ostream& os, MEIMessageRetRDI& m );
+	std::ostream& operator<<(std::ostream& os, MEIMessageRetRDI* m );
+	// -----------------------------------------------------------------------
 	// -----------------------------------------------------------------------
 
 	/*! Чтение информации об ошибке */	
