@@ -84,6 +84,15 @@ mbErrCode ModbusTCPServerSlot::diagnostics( DiagnosticMessage& query,
 	return slDiagnostics(query,reply);
 }
 // -------------------------------------------------------------------------
+ModbusRTU::mbErrCode ModbusTCPServerSlot::read4314( ModbusRTU::MEIMessageRDI& query,
+										ModbusRTU::MEIMessageRetRDI& reply )
+{
+	if( !slMEIRDI )
+		return erOperationFailed;
+
+	return slMEIRDI(query,reply);
+}
+// -------------------------------------------------------------------------
 mbErrCode ModbusTCPServerSlot::forceSingleCoil( ForceSingleCoilMessage& query, 
 											ForceSingleCoilRetMessage& reply )
 {

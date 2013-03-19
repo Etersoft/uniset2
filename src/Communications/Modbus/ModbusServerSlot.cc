@@ -55,6 +55,11 @@ void ModbusServerSlot::connectDiagnostics( DiagnosticsSlot sl )
 	slDiagnostics = sl;
 }
 // -------------------------------------------------------------------------
+void ModbusServerSlot::connectMEIRDI( MEIRDISlot sl )
+{
+	slMEIRDI = sl;
+}
+// -------------------------------------------------------------------------
 void ModbusServerSlot::connectForceSingleCoil( ForceSingleCoilSlot sl )
 {
 	slForceSingleCoil = sl;

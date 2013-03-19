@@ -47,7 +47,10 @@ class ModbusTCPServerSlot:
 		virtual ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
 														ModbusRTU::DiagnosticRetMessage& reply );
 
-		virtual ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query, 
+		virtual ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
+														ModbusRTU::MEIMessageRetRDI& reply );
+
+		virtual ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query,
 														ModbusRTU::JournalCommandRetMessage& reply );
 
 		virtual ModbusRTU::mbErrCode setDateTime( ModbusRTU::SetDateTimeMessage& query, 

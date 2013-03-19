@@ -90,6 +90,15 @@ mbErrCode ModbusRTUSlaveSlot::diagnostics( DiagnosticMessage& query,
 	return slDiagnostics(query,reply);
 }
 // -------------------------------------------------------------------------
+ModbusRTU::mbErrCode ModbusRTUSlaveSlot::read4314( ModbusRTU::MEIMessageRDI& query,
+										ModbusRTU::MEIMessageRetRDI& reply )
+{
+	if( !slMEIRDI )
+		return erOperationFailed;
+
+	return slMEIRDI(query,reply);
+}
+// -------------------------------------------------------------------------
 mbErrCode ModbusRTUSlaveSlot::forceSingleCoil( ForceSingleCoilMessage& query, 
 											ForceSingleCoilRetMessage& reply )
 {

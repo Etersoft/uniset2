@@ -163,6 +163,21 @@ DiagnosticRetMessage ModbusClient::diag08( ModbusAddr addr,
 	throw mbException(res);
 }
 // --------------------------------------------------------------------------------
+ModbusRTU::MEIMessageRetRDI ModbusClient::read4314( ModbusRTU::ModbusAddr addr,
+										ModbusRTU::ModbusByte devID,
+										ModbusRTU::ModbusByte objID )
+											throw(ModbusRTU::mbException)
+{
+	MEIMessageRDI msg(addr,devID,objID);
+	qbuf = msg.transport_msg();
+	mbErrCode res = query(msg.addr,qbuf,reply,replyTimeOut_ms);
+
+	if( res==erNoError )
+		return MEIMessageRetRDI(reply);
+
+	throw mbException(res);
+}
+// --------------------------------------------------------------------------------
 SetDateTimeRetMessage ModbusClient::setDateTime( ModbusAddr addr, ModbusByte hour, ModbusByte min, ModbusByte sec,
 								ModbusByte day, ModbusByte mon, ModbusByte year,
 								ModbusByte century )
@@ -462,6 +477,10 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 
 			case fnDiagnostics:
 				rbuf.len = DiagnosticRetMessage::szHead();
+			break;
+
+			case fnMEI:
+				rbuf.len = MEIMessageRetRDI::szHead();
 			break;
 
 			case fnSetDateTime:
@@ -883,6 +902,115 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
 				ostringstream err;
 				err << "(recv:fnDiagnostics): bad crc. calc.crc=" << dat2str(tcrc)
 					<< " msg.crc=" << dat2str(mDiag.crc);
+				if( dlog.debugging(Debug::WARN) )
+					dlog[Debug::WARN] << err.str() << endl;
+				return erBadCheckSum;
+			}
+
+			return erNoError;
+		}
+		else if( rbuf.func == fnMEI )
+		{
+			MEIMessageRetRDI mPreRDI;
+			mPreRDI.pre_init(rbuf);
+
+			if( mPreRDI.objNum > 0 )
+			{
+				int onum = 0;
+				while( rlen < sizeof(rbuf) && onum < mPreRDI.objNum )
+				{
+					// сперва получаем два байта, для определения длины последующих данных
+					int szDataLen = 2; // object id + len
+					int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
+					if( rlen1 < szDataLen )
+					{
+						rbuf.len = bcnt + rlen1 - szModbusHeader;
+						if( dlog.debugging(Debug::WARN) )
+						{
+							dlog[Debug::WARN] << "(0x2B/0x0E): buf: " << rbuf << endl;
+							dlog[Debug::WARN] << "(0x2B/0x0E)("
+								<< (int)rbuf.func << "):(fnMEI) "
+								<< "Получили данных меньше чем ждали...("
+								<< rlen1 << " < " << szDataLen << ")" << endl;
+						}
+
+						cleanupChannel();
+						return erInvalidFormat;
+					}
+
+					rlen += szDataLen;
+					bcnt += szDataLen;
+
+					// теперь получаем собственно данные
+					szDataLen = rbuf.data[rlen-1]; // последний (предыдущий) байт - это длина данных
+					rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
+					if( rlen1 < szDataLen )
+					{
+						rbuf.len = bcnt + rlen1 - szModbusHeader;
+						if( dlog.debugging(Debug::WARN) )
+						{
+							dlog[Debug::WARN] << "(0x2B/0x0E): buf: " << rbuf << endl;
+							dlog[Debug::WARN] << "(0x2B/0x0E)("
+								<< (int)rbuf.func << "):(fnMEI) "
+								<< "Получили данных меньше чем ждали...("
+								<< rlen1 << " < " << szDataLen << ")" << endl;
+						}
+
+						cleanupChannel();
+						return erInvalidFormat;
+					}
+
+					rlen += szDataLen;
+					bcnt += szDataLen;
+					onum++;
+				}
+			}
+
+			rbuf.len = bcnt - szModbusHeader;
+
+			if( crcNoCheckit )
+			{
+				if( dlog.debugging(Debug::INFO) )
+					dlog[Debug::INFO] << "(recv)(fnMEI): recv buf: " << rbuf << endl;
+				return erNoError;
+			}
+
+			// теперь получаем CRC
+			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szCRC);
+			if( rlen1 < szCRC )
+			{
+				rbuf.len = bcnt + rlen1 - szModbusHeader;
+				if( dlog.debugging(Debug::WARN) )
+				{
+					dlog[Debug::WARN] << "(0x2B/0x0E): buf: " << rbuf << endl;
+					dlog[Debug::WARN] << "(0x2B/0x0E)("
+						<< (int)rbuf.func << "):(fnMEI) "
+						<< "(CRC): Получили данных меньше чем ждали...("
+						<< rlen1 << " < " << szCRC << ")" << endl;
+				}
+
+				cleanupChannel();
+				return erInvalidFormat;
+			}
+
+			bcnt += rlen1;
+			rbuf.len = bcnt - szModbusHeader;
+
+			if( dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << "(recv)(fnMEI): recv buf: " << rbuf << endl;
+
+			MEIMessageRetRDI mRDI(rbuf);
+
+			// Проверяем контрольную сумму
+			// от начала(включая заголовок)
+			// и до конца (исключив последний элемент содержащий CRC)
+			// int mlen = szModbusHeader + mWrite.szHead()+ mWrite.bcnt;
+			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
+			if( tcrc != mRDI.crc )
+			{
+				ostringstream err;
+				err << "(recv:fnMEI): bad crc. calc.crc=" << dat2str(tcrc)
+					<< " msg.crc=" << dat2str(mRDI.crc);
 				if( dlog.debugging(Debug::WARN) )
 					dlog[Debug::WARN] << err.str() << endl;
 				return erBadCheckSum;

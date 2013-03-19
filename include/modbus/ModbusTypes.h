@@ -1049,6 +1049,11 @@ namespace ModbusRTU
 		MEIMessageRDI& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
 
+		/*! размер предварительного заголовка
+		 * (после основного до фактических данных)
+		*/
+		static inline int szHead(){ return sizeof(ModbusByte)*3; }
+
 		/*! размер данных(после заголовка) у данного типа сообщения */
 		static inline int szData(){ return sizeof(ModbusByte)*3 + szCRC; }
 
@@ -1088,9 +1093,13 @@ namespace ModbusRTU
 		ModbusCRC crc;
 
 		// ------- from slave -------
+		MEIMessageRetRDI();
 		MEIMessageRetRDI( ModbusMessage& m );
 		MEIMessageRetRDI& operator=( ModbusMessage& m );
 		void init( ModbusMessage& m );
+
+		// предварительная инициализации, только заголовочной части, без данных
+		void pre_init( ModbusMessage& m );
 
 		/*! размер предварительного заголовка (после основного до фактических данных) */
 		static inline int szHead()
@@ -1098,8 +1107,8 @@ namespace ModbusRTU
 			return sizeof(ModbusByte)*6;
 		}
 
-		/*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
-		static int getDataLen( ModbusMessage& m );
+//		/*! узнать длину данных следующих за предварительным заголовком ( в байтах ) */
+//		static int getDataLen( ModbusMessage& m );
 
 		// ------- to master -------
 		MEIMessageRetRDI( ModbusAddr _from, ModbusByte devID, ModbusByte conformity, ModbusByte mf, ModbusByte objID );
@@ -1131,6 +1140,8 @@ namespace ModbusRTU
 
 	std::ostream& operator<<(std::ostream& os, MEIMessageRetRDI& m );
 	std::ostream& operator<<(std::ostream& os, MEIMessageRetRDI* m );
+	std::ostream& operator<<(std::ostream& os, RDIObjectList& dl );
+	std::ostream& operator<<(std::ostream& os, RDIObjectList* dl );
 	// -----------------------------------------------------------------------
 	// -----------------------------------------------------------------------
 
