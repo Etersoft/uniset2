@@ -91,6 +91,19 @@ namespace ModbusRTU
 		// 0x07 .. 0x7F - reserved
 		// 0x80 .. 0xFF - optionaly defined (product dependant)
 	};
+
+	/*! Read Device Identification ObjectID (0x2B/0xE) */
+	enum RDIRequestDeviceID 
+	{
+		rdevMinNum = 0,
+		rdevBasicDevice = 0x1,   // request to get the basic device identification (stream access)
+		rdevRegularDevice = 0x2, // request to get the regular device identification (stream access)
+		rdevExtentedDevice = 0x3, // request to get the extended device identification (stream access)
+		rdevSpecificDevice = 0x4, // request to get the extended device identification (stream access)
+		rdevMaxNum = 0x5
+	};
+
+	std::string rdi2str( int id );
 	// -----------------------------------------------------------------------
 
 	/*! различные базовые константы */
