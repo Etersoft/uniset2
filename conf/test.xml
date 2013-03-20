@@ -63,6 +63,43 @@
 				<item directory="/tmp/" id="3" name="configure.xml.gz"/>
 				<item directory="ConfDir" id="4" name="SERIAL"/>
 			</filelist>
+			<MEI> 
+				<!-- ВНИМАНИЕ: должен заполняться в соответсвии со стандартом. ObjectID и DeviceID не случайны.. -->
+				<device id="0x01">
+					<object id="0" comm="VendorName">
+						<string value="etersoft"/>
+					</object>
+					<object id="1" comm="ProductCode">
+						<string value="uniset"/>
+					</object>
+					<object id="2" comm="MajorMinorRevision">
+						<string value="1.6"/>
+					</object>
+				</device>
+				<device id="0x02">
+					<object id="3" comm="VendorURL">
+						<string value="http://www.etersoft.ru"/>
+					</object>
+					<object id="4" comm="ProductName">
+						<string value="uniset"/>
+					</object>
+					<object id="5" comm="ModelName">
+						<string value="uniset:MBSlave"/>
+					</object>
+					<object id="6" comm="UserApplicationName">
+						<string value="MBSlave1"/>
+					</object>
+				</device>
+				<device id="0x03">
+					<object id="128" comm="private objects">
+						<string id="129" value="etersoft"/>
+						<string id="130" value="uniset"/>
+						<string id="131" value="1.6"/>
+						<string id="132" value="http://www.etersoft.ru"/>
+						<string id="133" value="MBSlave1"/>
+					</object>
+                </device>
+			</MEI>
 		</MBSlave1>
 		<RTUExchange name="RTUExchange" speed="38400">
 			<DeviceList>
@@ -152,7 +189,7 @@
 			</sensor>
 		</thresholds>
 		<controllers name="Controllers">
-			<item id="5000" name="SharedMemory"/>
+			<item id="5000" name="SharedMemory1"/>
 			<item id="5001" name="UniExchange"/>
 			<item id="5002" name="UniExchange2"/>
 		</controllers>
