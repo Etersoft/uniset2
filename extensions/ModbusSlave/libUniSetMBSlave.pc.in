@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: libUniSetMBSlave
 Description: Support library for UniSetModbusSlave
 Requires: libUniSetExtensions libUniSetSharedMemory
-Version: 1.1.1
+Version: @VERSION@
 Libs: -L${libdir} -lUniSetMBSlave
 Cflags: -I${includedir}/uniset

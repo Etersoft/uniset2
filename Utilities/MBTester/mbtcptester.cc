@@ -153,7 +153,6 @@ int main( int argc, char **argv )
 						objID = uni_atoi(argv[optind+1]);
 				}
 				break;
-
 				case 'f':
 					cmd = cmdWrite05;
 				case 'z':
