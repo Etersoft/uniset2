@@ -121,6 +121,7 @@ prefix(prefix)
 	mbslot->connectForceCoils( sigc::mem_fun(this, &MBSlave::forceMultipleCoils) );
 	mbslot->connectWriteOutput( sigc::mem_fun(this, &MBSlave::writeOutputRegisters) );
 	mbslot->connectWriteSingleOutput( sigc::mem_fun(this, &MBSlave::writeOutputSingleRegister) );
+	mbslot->connectMEIRDI( sigc::mem_fun(this, &MBSlave::read4314) );
 
 	if( findArgParam("--" + prefix + "-allow-setdatetime",conf->getArgc(),conf->getArgv())!=-1 )
 		mbslot->connectSetDateTime( sigc::mem_fun(this, &MBSlave::setDateTime) );
@@ -239,6 +240,105 @@ prefix(prefix)
 	}
 	else
 		dlog[Debug::INFO] << myname << "(init): <filelist> not found..." << endl;
+
+
+	// Формирование "карты" ответов на запрос 0x2B(43)/0x0E(14)
+	xmlNode* mnode = 0;
+	if( xml )
+		mnode = xml->extFindNode(cnode,1,1,"MEI");
+
+	if( mnode )
+	{
+		// Считывается структура для формирования ответов на запрос 0x2B(43)/0x0E(14)
+//		<MEI>
+// 			  <device id="">
+// 			     <objects id="">
+//                      <string id="" value=""/>
+//                      <string id="" value=""/>
+//                      <string id="" value=""/>
+//                        ...
+// 			     </objects>
+// 			  </device>
+// 			  <device devID="">
+// 				...
+// 			  </device>
+//      </MEI>
+		UniXML_iterator dit(mnode);
+		if( dit.goChildren() )
+		{
+			// Device ID list..
+			for( ;dit.getCurrent(); dit.goNext() )
+			{
+				if( dit.getProp("id").empty() )
+				{
+					dlog[Debug::WARN] << myname << "(init): read <MEI>. Unknown <device id=''>. Ignore.." << endl;
+					continue;
+				}
+
+				int devID = dit.getIntProp("id");
+
+				UniXML_iterator oit(dit);
+				if( oit.goChildren() )
+				{
+					if( dlog.debugging(Debug::INFO) )
+						dlog[Debug::INFO] << myname << "(init): MEI: read dev='" << devID << "'" << endl;
+					MEIObjIDMap meiomap;
+					// Object ID list..
+					for( ;oit.getCurrent(); oit.goNext() )
+					{
+						if( dit.getProp("id").empty() )
+						{
+							dlog[Debug::WARN] << myname
+								<< "(init): read <MEI>. Unknown <object id='' (for device id='"
+								<< devID << "'). Ignore.."
+								<< endl;
+
+							continue;
+						}
+
+						int objID = oit.getIntProp("id");
+						UniXML_iterator sit(oit);
+						if( sit.goChildren() )
+						{
+							if( dlog.debugging(Debug::INFO) )
+								dlog[Debug::INFO] << myname << "(init): MEI: read obj='" << objID << "'" << endl;
+
+							MEIValMap meivmap;
+							// request (string) list..
+							for( ;sit.getCurrent(); sit.goNext() )
+							{
+								int vid = objID;
+								if( sit.getProp("id").empty() )
+								{
+									if( dlog.debugging(Debug::WARN) )
+										dlog[Debug::INFO] << myname << "(init): MEI: dev='" << devID
+											<< "' obj='" << objID << "'"
+											<< ". Unknown id='' for value='" << sit.getProp("value") << "'"
+											<< ". Set objID='" << objID << "'"
+											<< endl;
+								}
+								else
+									vid = sit.getIntProp("id");
+
+								meivmap[vid] = sit.getProp("value");
+							}
+
+							if( !meivmap.empty() )
+								meiomap[objID] = meivmap;
+						}
+					}
+
+					if( !meiomap.empty() )
+						meidev[devID] = meiomap;
+				}
+			}
+		}
+
+		if( !meidev.empty() && dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << myname << "(init): <MEI> init ok." << endl;
+	}
+	else
+		dlog[Debug::INFO] << myname << "(init): <MEI> empty..." << endl;
 
 }
 // -----------------------------------------------------------------------------
@@ -1458,5 +1558,30 @@ ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
 	}
 
 	return ModbusRTU::erOperationFailed;
+}
+// -------------------------------------------------------------------------
+ModbusRTU::mbErrCode MBSlave::read4314( ModbusRTU::MEIMessageRDI& query,
+								ModbusRTU::MEIMessageRetRDI& reply )
+{
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << "(read4314): " << query << endl;
+
+//	if( query.devID <= rdevMinNum || query.devID >= rdevMaxNum )
+//		return erOperationFailed;
+
+	MEIDevIDMap::iterator dit = meidev.find(query.devID);
+	if( dit == meidev.end() )
+		return ModbusRTU::erBadDataAddress;
+
+	MEIObjIDMap::iterator oit = dit->second.find(query.objID);
+	if( oit == dit->second.end() )
+		return ModbusRTU::erBadDataAddress;
+
+	reply.mf = 0xFF;
+	reply.conformity = query.devID;
+	for( MEIValMap::iterator i=oit->second.begin(); i!=oit->second.end(); i++ )
+		reply.addData( i->first, i->second );
+
+	return erNoError;
 }
 // -------------------------------------------------------------------------

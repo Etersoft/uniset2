@@ -53,7 +53,6 @@ class MBSlave:
 
 			IOProperty():
 				mbreg(0),
-				amode(amRW),
 				vtype(VTypes::vtUnknown),
 				wnum(0)
 			{}
@@ -112,12 +111,12 @@ class MBSlave:
 		ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query, 
 															ModbusRTU::FileTransferRetMessage& reply );
 
-		ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query, 
+		ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
 														ModbusRTU::DiagnosticRetMessage& reply );
 
-		ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query, 
+		ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
 														ModbusRTU::MEIMessageRetRDI& reply );
-		
+
 		/*! Проверка корректности регистра перед сохранением.
 			Вызывается для каждого регистра не зависимо от используемой функции (06 или 10)
 		*/
@@ -185,6 +184,7 @@ class MBSlave:
 		bool respond_invert;
 
 		PassiveTimer ptTimeout;
+		ModbusRTU::mbErrCode prev;
 		long askCount;
 		typedef std::map<ModbusRTU::mbErrCode,unsigned int> ExchangeErrorMap;
 		ExchangeErrorMap errmap; 	/*!< статистика обмена */
