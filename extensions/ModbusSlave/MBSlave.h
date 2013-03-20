@@ -114,6 +114,9 @@ class MBSlave:
 		ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
 														ModbusRTU::DiagnosticRetMessage& reply );
 
+		ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
+														ModbusRTU::MEIMessageRetRDI& reply );
+		
 		/*! Проверка корректности регистра перед сохранением.
 			Вызывается для каждого регистра не зависимо от используемой функции (06 или 10)
 		*/
@@ -199,6 +202,15 @@ class MBSlave:
 		std::string prefix;
 		
 		ModbusRTU::ModbusData buf[ModbusRTU::MAXLENPACKET/2+1];  /*!< буфер для формирования ответов */
+
+		// данные для ответа на запрос 0x2B(43)/0x0E(14)
+		// 'MEI' - modbus encapsulated interface
+		// 'RDI' - read device identification
+		typedef std::map<int,std::string> MEIValMap;
+		typedef std::map<int,MEIValMap> MEIObjIDMap;
+		typedef std::map<int,MEIObjIDMap> MEIDevIDMap;
+
+		MEIDevIDMap meidev;
 };
 // -----------------------------------------------------------------------------
 #endif // _MBSlave_H_

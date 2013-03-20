@@ -397,8 +397,8 @@ int main( int argc, char **argv )
 					ModbusRTU::MEIMessageRetRDI ret = mb.read4314(slaveaddr,devID,objID);
 					if( verb )
 						cout << "(reply): " << ret << endl;
-					else
-						cout << "(reply): objNum=" << (int)ret.objNum << endl << ret.dlist << endl;
+					else	
+						cout << "(reply): devID='" << (int)ret.devID << "' objNum='" << (int)ret.objNum << "'" << endl << ret.dlist << endl;
 				}
 				break;
 
