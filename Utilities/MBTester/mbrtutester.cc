@@ -20,6 +20,7 @@ static struct option longopts[] = {
 	{ "write0F", required_argument, 0, 'm' },
 	{ "write10", required_argument, 0, 'w' },
  	{ "diag08", required_argument, 0, 'o' },
+	{ "read4314", required_argument, 0, 'e' },
 //	{ "readfile14", required_argument, 0, 'g' },
 //	{ "writefile15", required_argument, 0, 'p' },
 	{ "filetransfer66", required_argument, 0, 'u' },
@@ -47,6 +48,7 @@ static void print_help()
 	printf("[--read03] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read04] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--diag08] slaveaddr subfunc [dat] - diagnostics request\n");
+	printf("[--read4314] slaveaddr devID objID - (0x2B/0x0E): read device identification (devID=[1...4], objID=[0..255])\n");
 //	printf("[--readfile14] slaveaddr fileID  - read file from slaveaddr).\n");
 //	printf("[--writefile15] slaveaddr id filename  - write file to slaveaddr).\n");
 	printf("[--filetransfer66] slaveaddr fileID [filename] - get file from slaveaddr. Default save to 'fileID.transfer'\n");
@@ -75,6 +77,8 @@ enum Command
 	cmdRead02,
 	cmdRead03,
 	cmdRead04,
+	cmdRead43_13,
+	cmdRead43_14,
 	cmdWrite05,
 	cmdWrite06,
 	cmdWrite0F,
@@ -113,10 +117,12 @@ int main( int argc, char **argv )
 	string tofile("");
 	int use485 = 0;
 	int ncycles = -1;
+	ModbusRTU::ModbusByte devID = 0;
+	ModbusRTU::ModbusByte objID = 0;
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hva:w:z:m:r:x:c:b:d:s:t:qn:u:yl:t:o:",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "hva:w:z:m:r:x:c:b:d:s:t:qn:u:yl:t:o:e:",longopts,&optindex)) != -1 ) 
 		{
 			switch (opt) 
 			{
@@ -167,7 +173,26 @@ int main( int argc, char **argv )
 					if( checkArg(optind+1,argc,argv) )
 						dat = uni_atoi(argv[optind+1]);
 				break;
+				case 'e':
+                {
+					if( cmd == cmdNOP )
+						cmd = cmdRead43_14;
+					
+					slaveaddr = ModbusRTU::str2mbAddr( optarg );
+					
+					if( optind > argc )
+					{
+						cerr << "read command error: bad or no arguments..." << endl;
+						return 1;
+					}
 
+					if( checkArg(optind,argc,argv) )
+						devID = ModbusRTU::str2mbData(argv[optind]);
+					
+					if( checkArg(optind+1,argc,argv) )
+						objID = uni_atoi(argv[optind+1]);
+				}
+				break;
 				case 'f':
 					cmd = cmdWrite05;
 				case 'z':
@@ -456,6 +481,24 @@ int main( int argc, char **argv )
 							<< ")" 
 							<< endl;
 					}
+				}
+				break;
+
+				case cmdRead43_14:
+				{
+					if( verb )
+					{
+						cout << "read4314: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+							 << " devID=" << ModbusRTU::dat2str(devID) 
+							 << " objID=" << ModbusRTU::dat2str(objID) 
+							 << endl;
+					}
+
+					ModbusRTU::MEIMessageRetRDI ret = mb.read4314(slaveaddr,devID,objID);
+					if( verb )
+						cout << "(reply): " << ret << endl;
+					else	
+						cout << "(reply): devID='" << (int)ret.devID << "' objNum='" << (int)ret.objNum << "'" << endl << ret.dlist << endl;
 				}
 				break;
 
