@@ -30,9 +30,10 @@ codegen:
 Version 2.0
 ============
 - отказаться от функций getState,setState,saveState,saveValue и оставить только getValue/setValue.
-- (DBServer): сделать возможность задать для датчика в configure.xml dbignore"1". Видимо надо встроить это поле в SensorMessgage
+- (DBServer): сделать возможность задать для датчика в configure.xml dbignore="1". Видимо надо встроить это поле в SensorMessgage
 - удалить AlarmMessage,InfoMessage,InfoServer,TimerServer(подумать),ISRestorer,MessageInteface_xxx,SystemGuard
   т.к. активного распространения не полуичили (пока-что).
 - убрать неиспользуемые нынче классы include/IOs/DigitalCard..
 - удалить SandClock.h т.к. он deperecated (вместо него HourGlass.h)
 - перейти где нужно на rw-mutex-ы..
+- написать документацию по ModbusSlave
