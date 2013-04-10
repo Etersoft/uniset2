@@ -7,15 +7,11 @@
 #include "MBTCPServer.h"
 #include "uniset-config.h"
 // -------------------------------------------------------------------------
-#ifndef PACKAGE_URL
-#define PACKAGE_URL "http://git.etersoft.ru/projects/?p=asu/uniset.git;a=summary"
-#endif
-// -------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
-MBTCPServer::MBTCPServer( ModbusAddr myaddr, const string& inetaddr, int port, bool verb ):
+MBTCPServer::MBTCPServer( ModbusAddr myaddr, const string inetaddr, int port, bool verb ):
 	sslot(NULL),
 	addr(myaddr),
 //	prev(ModbusRTU::erNoError),
@@ -175,7 +171,7 @@ ModbusRTU::mbErrCode MBTCPServer::readInputStatus( ReadInputStatusMessage& query
 		for( int i=0; i<bcnt; i++ )
 			reply.addData(replyVal);
 	}
-	
+
 	return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------
@@ -191,7 +187,7 @@ mbErrCode MBTCPServer::readInputRegisters( ReadInputMessage& query,
 			reply.addData(replyVal);
 		else
 			reply.addData(query.start);
-		
+
 		return ModbusRTU::erNoError;
 	}
 
@@ -426,7 +422,7 @@ ModbusRTU::mbErrCode MBTCPServer::fileTransfer( ModbusRTU::FileTransferMessage& 
 
 }									
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBTCPServer::diagnostics( ModbusRTU::DiagnosticMessage& query, 
+ModbusRTU::mbErrCode MBTCPServer::diagnostics( ModbusRTU::DiagnosticMessage& query,
 											ModbusRTU::DiagnosticRetMessage& reply )
 {
 	if( query.subf == ModbusRTU::subEcho )
@@ -434,14 +430,14 @@ ModbusRTU::mbErrCode MBTCPServer::diagnostics( ModbusRTU::DiagnosticMessage& que
 		reply = query;
 		return ModbusRTU::erNoError;
 	}
-	
+
 	if( query.subf == ModbusRTU::dgBusErrCount )
 	{
 		reply = query;
 		reply.data[0] = 10;
 		return ModbusRTU::erNoError;
 	}
-	
+
 	if( query.subf == ModbusRTU::dgMsgSlaveCount || query.subf == ModbusRTU::dgBusMsgCount )
 	{
 		reply = query;
@@ -460,12 +456,12 @@ ModbusRTU::mbErrCode MBTCPServer::diagnostics( ModbusRTU::DiagnosticMessage& que
 	{
 		reply = query;
 		return ModbusRTU::erNoError;
-	}	
+	}
 
-	return ModbusRTU::erOperationFailed; 
+	return ModbusRTU::erOperationFailed;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBTCPServer::read4314( ModbusRTU::MEIMessageRDI& query, 
+ModbusRTU::mbErrCode MBTCPServer::read4314( ModbusRTU::MEIMessageRDI& query,
 								ModbusRTU::MEIMessageRetRDI& reply )
 {
 	if( verbose )
@@ -525,7 +521,7 @@ ModbusRTU::mbErrCode MBTCPServer::read4314( ModbusRTU::MEIMessageRDI& query,
 		reply.addData(query.objID,"uniset-mbtcpslave-echo");
 		return erNoError;
 	}
-	return ModbusRTU::erBadDataAddress; 
+	return ModbusRTU::erBadDataAddress;
 }
 // -------------------------------------------------------------------------
 
