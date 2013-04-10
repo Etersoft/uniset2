@@ -5,7 +5,7 @@
 #include <sstream>
 #include "UniSetTypes.h"
 #include "MBSlave.h"
-#include "config.h"
+#include "uniset-config.h"
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
