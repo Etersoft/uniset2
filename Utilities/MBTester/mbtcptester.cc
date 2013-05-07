@@ -43,7 +43,7 @@ static void print_help()
 	printf("[--read03] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--read04] slaveaddr reg count   - read from reg (from slaveaddr). Default: count=1\n");
 	printf("[--diag08] slaveaddr subfunc [dat]  - diagnostics request\n");
-	printf("[--read4314] slaveaddr devID objID - (0x2B/0x0E): read device identification (devID=[1...4], objID=[0..255])\n");
+	printf("[--read4314] slaveaddr devID objID - (0x2B/0x0E): read device identification (devID=[1...4], objID=[0..254])\n");
 //	printf("[--read43-13] slaveaddr ...     - (0x2B/0x0D):  CANopen General Reference Request and Response PDU \n");
 	printf("[-i|--iaddr] ip                 - Modbus server ip. Default: 127.0.0.1\n");
 	printf("[-a|--myaddr] addr              - Modbus address for master. Default: 0x01.\n");
