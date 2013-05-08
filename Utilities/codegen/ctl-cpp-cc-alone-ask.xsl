@@ -193,8 +193,14 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askValue( UniSetTypes::ObjectId _si
 {
 	ui.askRemoteSensor(_sid,_cmd,_node,getId());
 }
+
 // -----------------------------------------------------------------------------
 bool <xsl:value-of select="$CLASSNAME"/>_SK::getState( UniSetTypes::ObjectId _sid )
+{
+	return (bool)getValue(_sid);
+}
+// -----------------------------------------------------------------------------
+long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _sid )
 {
 	try
 	{
@@ -228,7 +234,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::getState( UniSetTypes::ObjectId _si
 		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getState): Обращение к неизвестному ДИСКРЕТНОМУ датчику sid="
 			&lt;&lt; _sid &lt;&lt; endl;
 
-		return false;
+		return 0;
 	}
 	catch(Exception&amp; ex)
 	{

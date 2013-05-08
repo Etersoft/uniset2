@@ -175,16 +175,21 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askValue( UniSetTypes::ObjectId sid
 	}
 }
 // -----------------------------------------------------------------------------
-bool <xsl:value-of select="$CLASSNAME"/>_SK::getState( UniSetTypes::ObjectId sid )
+bool <xsl:value-of select="$CLASSNAME"/>_SK::getState( UniSetTypes::ObjectId _sid )
+{
+	return (bool)getValue(_sid);
+}
+// -----------------------------------------------------------------------------
+long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _sid )
 {
 	<xsl:for-each select="//smap/item">
-	if( sid == <xsl:value-of select="@name"/> )
+	if( _sid == <xsl:value-of select="@name"/> )
 		return <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 	</xsl:for-each>
 
 	unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getState): Обращение к неизвестному ДИСКРЕТНОМУ датчику sid="
-		&lt;&lt; sid &lt;&lt; endl;
-	return false;
+		&lt;&lt; _sid &lt;&lt; endl;
+	return 0;
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( UniSetTypes::SensorMessage* sm )
