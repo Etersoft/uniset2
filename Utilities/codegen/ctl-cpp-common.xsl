@@ -178,7 +178,7 @@
 
 		bool alarm( UniSetTypes::ObjectId sid, bool state );
 		bool getState( UniSetTypes::ObjectId sid );
-		bool getValue( UniSetTypes::ObjectId sid );
+		long getValue( UniSetTypes::ObjectId sid );
 		void setValue( UniSetTypes::ObjectId sid, long value );
 		void setState( UniSetTypes::ObjectId sid, bool state );
 		void askState( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );
