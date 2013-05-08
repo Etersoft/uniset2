@@ -12,7 +12,7 @@ RTUExchange::RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
 						  const std::string prefix_ ):
 MBExchange(objId,shmId,ic,prefix_),
 mbrtu(0),
-defSpeed(ComPort::ComSpeed0),
+defSpeed(ComPort::ComSpeed38400),
 use485F(false),
 transmitCtl(false),
 rs_pre_clean(false)
@@ -130,7 +130,7 @@ ModbusClient* RTUExchange::initMB( bool reopen )
 
 		mbrtu->setSleepPause(sleepPause_usec);
 
-		dlog[Debug::INFO] << myname << "(init): dev=" << devname << " speed=" << ComPort::getSpeed(defSpeed) << endl;
+		dlog[Debug::INFO] << myname << "(init): dev=" << devname << " speed=" << ComPort::getSpeed( mbrtu->getSpeed() ) << endl;
 	}
 	catch( Exception& ex )
 	{
@@ -358,6 +358,8 @@ bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
 			return false;
 		}
 	}
+	else
+		d->second->speed = defSpeed;
 
 	return true;
 }
