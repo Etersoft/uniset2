@@ -7,6 +7,10 @@
 #include "MBTCPServer.h"
 #include "uniset-config.h"
 // -------------------------------------------------------------------------
+#ifndef PACKAGE_URL
+#define PACKAGE_URL "http://git.etersoft.ru/projects/?p=asu/uniset.git;a=summary"
+#endif
+// -------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 using namespace ModbusRTU;
