@@ -168,6 +168,11 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askValue( UniSetTypes::ObjectId _si
 // -----------------------------------------------------------------------------
 bool <xsl:value-of select="$CLASSNAME"/>_SK::getState( UniSetTypes::ObjectId _sid )
 {
+	return (bool)getValue(_sid);
+}
+// -----------------------------------------------------------------------------
+long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _sid )
+{
 	try
 	{
 <xsl:for-each select="//smap/item">
@@ -202,7 +207,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::getState( UniSetTypes::ObjectId _si
 		throw ex;
 	}
 	
-	return false;
+	return 0;
 }
 // -----------------------------------------------------------------------------
 

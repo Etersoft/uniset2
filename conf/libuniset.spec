@@ -7,7 +7,7 @@
 
 Name: libuniset
 Version: 1.6
-Release: alt7
+Release: alt8
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -319,6 +319,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed May 08 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt8
+- fixed minor bug in uniset-codegen (getValue) 
+
 * Wed Mar 20 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt7
 - modbus: add new function 0x2B/0x0E(43/14)"Read device identification"
 

@@ -101,9 +101,9 @@
                 </device>
 			</MEI>
 		</MBSlave1>
-		<RTUExchange name="RTUExchange" speed="38400">
+		<RTUExchange name="RTUExchange">
 			<DeviceList>
-				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" speed="9600" timeout="5000"/>
+				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" timeout="5000"/>
 			</DeviceList>
 		</RTUExchange>
 		<UDPExchange name="UDPExchange"/>
@@ -190,6 +190,7 @@
 		</thresholds>
 		<controllers name="Controllers">
 			<item id="5000" name="SharedMemory1"/>
+			<item id="5003" name="SharedMemory"/>
 			<item id="5001" name="UniExchange"/>
 			<item id="5002" name="UniExchange2"/>
 		</controllers>
