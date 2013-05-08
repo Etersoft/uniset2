@@ -121,8 +121,9 @@ ModbusClient* RTUExchange::initMB( bool reopen )
 
 		if( defSpeed != ComPort::ComSpeed0 )
 			mbrtu->setSpeed(defSpeed);
-	
-//		mb->setLog(dlog);
+
+        if( dlog.debugging(Debug::LEVEL9) )
+			mb->setLog(dlog);
 
 		if( recv_timeout > 0 )
 			mbrtu->setTimeout(recv_timeout);
