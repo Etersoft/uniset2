@@ -123,7 +123,7 @@ ModbusClient* RTUExchange::initMB( bool reopen )
 			mbrtu->setSpeed(defSpeed);
 
         if( dlog.debugging(Debug::LEVEL9) )
-			mb->setLog(dlog);
+			mbrtu->setLog(dlog);
 
 		if( recv_timeout > 0 )
 			mbrtu->setTimeout(recv_timeout);
