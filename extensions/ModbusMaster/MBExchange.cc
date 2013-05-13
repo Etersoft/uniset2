@@ -65,6 +65,9 @@ pollActivated(false)
 	tout = conf->getArgPInt("--" + prefix + "-all-timeout",it.getProp("all_timeout"), tout);
 	ptTimeout.setTiming(tout);
 
+	tout = conf->getArgPInt("--" + prefix + "-reopen-timeout",it.getProp("reopen_timeout"), 10000);
+	ptReopen.setTiming(tout);
+
 	noQueryOptimization = conf->getArgInt("--" + prefix + "-no-query-optimization",it.getProp("no_query_optimization"));
 
 	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id",it.getProp("reg_from_id"));
@@ -139,6 +142,7 @@ void MBExchange::help_print( int argc, const char* const* argv )
 	cout << "--prefix-polltime msec          - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
 	cout << "--prefix-recv-timeout msec      - Таймаут на приём одного сообщения" << endl;
 	cout << "--prefix-timeout msec           - Таймаут для определения отсутсвия соединения" << endl;
+	cout << "--prefix-reopen-timeout msec    - Таймаут для 'переоткрытия соединения' при отсутсвия соединения msec милисекунд. По умолчанию 10 сек." << endl;
 	cout << "--prefix-heartbeat-id  name     - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
 	cout << "--prefix-heartbeat-max val      - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
 	cout << "--prefix-ready-timeout msec     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
@@ -2652,6 +2656,8 @@ void MBExchange::poll()
 	if( !checkProcActive() )
 		return;
 
+	bool allNotRespond = true;
+
 	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
@@ -2696,6 +2702,9 @@ void MBExchange::poll()
 					d->resp_real = true;
 			}
 
+			if( d->resp_real )
+				allNotRespond = false;
+
 			if( it==d->regmap.end() )
 				break;
 
@@ -2738,6 +2747,19 @@ void MBExchange::poll()
 			for( PList::iterator i=r->slst.begin(); i!=r->slst.end(); ++i )
 				IOBase::processingThreshold( &(*i),shm,force);
 		}
+	}
+
+	if( trReopen.hi(allNotRespond) )
+		 ptReopen.reset();
+
+	if( allNotRespond && ptReopen.checkTime() )
+	{
+		uniset_mutex_lock l(pollMutex, 300);
+		if( dlog.debugging(Debug::WARN) )
+			dlog[Debug::WARN] << myname << ": REOPEN timeout..(" << ptReopen.getInterval() << ")" << endl;
+
+		mb = initMB(true);
+		ptReopen.reset();
 	}
 
 //	printMap(rmap);
