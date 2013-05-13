@@ -44,9 +44,6 @@ class RTUExchange:
 
 		UniSetTypes::uniset_mutex pollMutex;
 		bool rs_pre_clean;
-		bool allNotRespond;
-		Trigger trAllNotRespond;
-//		PassiveTimer ptAllNotRespond;
 };
 // -----------------------------------------------------------------------------
 #endif // _RS_EXCHANGE_H_

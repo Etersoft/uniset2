@@ -67,7 +67,6 @@ rs_pre_clean(false)
 	else
 		ic->addReadItem( sigc::mem_fun(this,&RTUExchange::readItem) );
 
-
 	initMB(false);
 
 	if( dlog.debugging(Debug::INFO) )
@@ -205,6 +204,7 @@ void RTUExchange::poll()
 	if( !checkProcActive() )
 		return;
 
+	bool allNotRespond = true;
 	ComPort::Speed s = mbrtu->getSpeed();
 	
 	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
@@ -291,6 +291,9 @@ void RTUExchange::poll()
 					return;
 			}
 		}
+
+		if( d->resp_real )
+			allNotRespond = false;
 	}
 
 	// update SharedMemory...
@@ -308,6 +311,19 @@ void RTUExchange::poll()
 		}
 	}
 	
+	if( trReopen.hi(allNotRespond) )
+		 ptReopen.reset();
+
+	if( allNotRespond && ptReopen.checkTime() )
+	{
+		uniset_mutex_lock l(pollMutex, 300);
+		if( dlog.debugging(Debug::WARN) )
+			dlog[Debug::WARN] << myname << ": REOPEN timeout..(" << ptReopen.getInterval() << ")" << endl;
+
+		mb = initMB(true);
+		ptReopen.reset();
+	}
+
 //	printMap(rmap);
 }
 // -----------------------------------------------------------------------------
