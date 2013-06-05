@@ -68,6 +68,9 @@ pollActivated(false)
 	tout = conf->getArgPInt("--" + prefix + "-reopen-timeout",it.getProp("reopen_timeout"), 10000);
 	ptReopen.setTiming(tout);
 
+	aftersend_pause = conf->getArgPInt("--" + prefix + "-aftersend-pause",it.getProp("aftersend_pause"),0);
+
+
 	noQueryOptimization = conf->getArgInt("--" + prefix + "-no-query-optimization",it.getProp("no_query_optimization"));
 
 	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id",it.getProp("reg_from_id"));

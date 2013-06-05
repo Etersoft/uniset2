@@ -103,6 +103,8 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
 			mbtcp->setTimeout(recv_timeout);
 
 		mbtcp->setSleepPause(sleepPause_usec);
+		
+		mbtcp->setAfterSendPause(aftersend_pause);
 
 		dlog[Debug::INFO] << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
 		
