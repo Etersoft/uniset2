@@ -128,6 +128,7 @@ ModbusClient* RTUExchange::initMB( bool reopen )
 			mbrtu->setTimeout(recv_timeout);
 
 		mbrtu->setSleepPause(sleepPause_usec);
+		mbrtu->setAfterSendPause(aftersend_pause);
 
 		dlog[Debug::INFO] << myname << "(init): dev=" << devname << " speed=" << ComPort::getSpeed( mbrtu->getSpeed() ) << endl;
 	}

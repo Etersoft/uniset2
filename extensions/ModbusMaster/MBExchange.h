@@ -314,6 +314,8 @@ class MBExchange:
 		bool pollActivated;
 		int recv_timeout;
 
+		int aftersend_pause;
+
 		PassiveTimer ptReopen; /*!< таймер для переоткрытия соединения */
 		Trigger trReopen;
 
