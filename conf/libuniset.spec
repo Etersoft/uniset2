@@ -7,7 +7,7 @@
 
 Name: libuniset
 Version: 1.6
-Release: alt9
+Release: alt10
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -319,6 +319,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Jun 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt10
+- add for ModbusMaster (RTU|TCP) --xxx--aftersend-pause
+
 * Tue May 14 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt9
 - add for Modbus (RTU|TCP) exchange  --xxx-reopen-timeout msec. (eterbug #9296)
 

@@ -330,6 +330,8 @@ class MBExchange:
 		typedef std::list<IOBase> ThresholdList;
 		ThresholdList thrlist;
 
+		int aftersend_pause;
+
 		PassiveTimer ptReopen; /*!< таймер для переоткрытия соединения */
 		Trigger trReopen;
 
