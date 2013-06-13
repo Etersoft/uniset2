@@ -13,7 +13,7 @@ using namespace std;
 namespace MTR
 {
 
-MTRType str2type( const std::string s )
+MTRType str2type( const std::string& s )
 {
 	if( s == "T1" )
 		return mtT1;
@@ -227,13 +227,13 @@ std::string getSerialNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr )
 	return "";
 }
 // -----------------------------------------------------------------------------
-DataMap read_confile( const std::string f )
+DataMap read_confile( const std::string& f )
 {
-	bool start = false;
 	DataMap dmap;
 	std::ifstream ifs(f.c_str(),std::ios::in);
 	if( ifs )
 	{
+		bool start = false;
 		while( !ifs.eof() )
 		{
 			std::string str;
@@ -295,7 +295,7 @@ DataMap read_confile( const std::string f )
 	return dmap;
 }
 // --------------------------------------------------------------------------
-bool read_param( const std::string str, std::string& str1, std::string& str2 )
+bool read_param( const std::string& str, std::string& str1, std::string& str2 )
 {
 	string::size_type pos = str.find('=');
 	if( pos==string::npos )
@@ -385,7 +385,7 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
 //		cout << "send reg=" << ModbusRTU::dat2str(it->first) 
 //							<< "(" << it->first << ")" << endl;
 		int reg = it->first;
-		bool ok = false;
+//		bool ok = false;
 
 		for( DataList::iterator it1=it->second.begin(); it1!=it->second.end(); ++it1, reg++ )
 		{
@@ -406,7 +406,7 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
 					if( verb )
 						cout << "(mtr-setup): write reply: " << ret << endl;
 					update_communication_params(reg, *it1, mb, addr, verb);
-					ok = true;
+//					ok = true;
 					break;
 				}
 				catch( ModbusRTU::mbException& ex )
@@ -415,7 +415,7 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
 					if( reg == 56 && it->first == ModbusRTU::erTimeOut )
 					{
 						update_communication_params(reg, *it1, mb, addr, verb);
-						ok = true;
+//						ok = true;
 						break;
 					}
 					else
@@ -436,7 +436,7 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
 }
 // ------------------------------------------------------------------------------------------
 MTR::MTRError update_configuration( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr slaveaddr,
-						    const std::string mtrconfile,  int verb )
+						    const std::string& mtrconfile,  int verb )
 {
 	std::string m = MTR::getModelNumber(mb, slaveaddr);
 	if( m != "MTR315Transducer" )

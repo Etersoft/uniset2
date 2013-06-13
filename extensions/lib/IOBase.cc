@@ -503,15 +503,15 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	shm->initDIterator(b->d_dit);
 
 	string d_txt(it.getProp("depend"));
-	if( !it.getProp("depend").empty() )
+	if( !d_txt.empty() )
 	{
-		b->d_id = conf->getSensorID(it.getProp("depend"));
+		b->d_id = conf->getSensorID(d_txt);
 		if( b->d_id == DefaultObjectId )
 		{
 			if( dlog )
 				dlog[Debug::CRIT] << myname << "(IOBase::readItem): sensor='" 
 					<< it.getProp("name") << "' err: "
-					<< " Unknown SensorID for depend='"  << it.getProp("depend")
+					<< " Unknown SensorID for depend='"  << d_txt
 					<< endl;
 			return false;
 		}

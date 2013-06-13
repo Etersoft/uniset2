@@ -19,7 +19,7 @@ bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 }
 */
 // ------------------------------------------------------------------------------------------
-UNetReceiver::UNetReceiver( const std::string s_host, const ost::tpport_t port, SMInterface* smi ):
+UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port, SMInterface* smi ):
 shm(smi),
 recvpause(10),
 updatepause(100),

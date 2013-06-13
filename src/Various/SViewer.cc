@@ -161,13 +161,11 @@ void SViewer::readSection(const string section, const string secRoot)
 void SViewer::getInfo( ObjectId id )
 {
 	CORBA::Object_var oref;
-	bool c(false);
 	try
 	{
 		try
 		{
 			oref = cache.resolve(id, conf->getLocalNode());
-			c = true;
 		}
 		catch( NameNotFound ){}
 

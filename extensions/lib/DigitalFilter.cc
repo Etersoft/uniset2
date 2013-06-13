@@ -250,7 +250,7 @@ int DigitalFilter::filterIIR( int newval )
 	}
 	else
 	{
-		double aver;
+		double aver=0;
 
 		add(newval);
 		for( FIFOBuffer::iterator i = buf.begin(); i != buf.end(); ++i )

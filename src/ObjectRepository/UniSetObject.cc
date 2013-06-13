@@ -339,7 +339,7 @@ struct CInfo
 		if( value != mi.value )
 			return value < mi.value;
 
-		if( time != time )
+		if( time != mi.time )
 			return time < mi.time;
 
 		return time_usec < mi.time_usec;

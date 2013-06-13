@@ -351,7 +351,7 @@ UNetExchange::~UNetExchange()
 	delete shm;
 }
 // -----------------------------------------------------------------------------
-bool UNetExchange::checkExistUNetHost( const std::string addr, ost::tpport_t port )
+bool UNetExchange::checkExistUNetHost( const std::string& addr, ost::tpport_t port )
 {
 	ost::IPV4Address a1(addr.c_str());
 	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
@@ -424,7 +424,7 @@ void UNetExchange::step()
 }
 
 // -----------------------------------------------------------------------------
-void UNetExchange::ReceiverInfo::step( SMInterface* shm, const std::string myname )
+void UNetExchange::ReceiverInfo::step( SMInterface* shm, const std::string& myname )
 {
 	try
 	{

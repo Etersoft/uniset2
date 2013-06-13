@@ -38,7 +38,7 @@ namespace MTR
 	};
 	// -------------------------------------------------------------------------
 	std::string type2str( MTRType t );			/*!< преоразование строки в тип */
-	MTRType str2type( const std::string s );	/*!< преобразование названия в строку */
+	MTRType str2type( const std::string& s );	/*!< преобразование названия в строку */
 	int wsize( MTRType t ); 					/*!< длина данных в словах */
 	// -------------------------------------------------------------------------
 	// Информация
@@ -99,7 +99,7 @@ namespace MTR
 	std::ostream& operator<<(std::ostream& os, MTRError& e );
 	// Настройка из конф. файла
 	MTRError update_configuration( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, 
-				    const std::string mtrconfile, int verbose=0 );
+				    const std::string& mtrconfile, int verbose=0 );
 	// ---------------------------
 	// вспомогательные функции и типы данных
 	typedef std::list<ModbusRTU::ModbusData> DataList;
@@ -108,8 +108,8 @@ namespace MTR
 	static const ModbusRTU::ModbusData skip[] = {48, 49, 59};  // registers which should not write
 
 	bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr, int verb );
-	bool read_param( const std::string str, std::string& str1, std::string& str2 );
-	DataMap read_confile( const std::string f );
+	bool read_param( const std::string& str, std::string& str1, std::string& str2 );
+	DataMap read_confile( const std::string& f );
 	void update_communication_params( ModbusRTU::ModbusAddr reg, ModbusRTU::ModbusData data,
 				  ModbusRTUMaster* mb, ModbusRTU::ModbusAddr& addr, int verb );
 	// -------------------------------------------------------------------------

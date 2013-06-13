@@ -949,7 +949,7 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
 	// копируем
 	memcpy(&(mm.data[ind]),dtmp,bcnt);
 
-	delete dtmp;
+	delete[] dtmp;
 
 	ind+=bcnt;
 
@@ -1151,7 +1151,7 @@ ModbusMessage ReadInputRetMessage::transport_msg()
 	// копируем
 	memcpy(&(mm.data[ind]),dtmp,bcnt);
 
-	delete dtmp;
+	delete[] dtmp;
 
 	ind+=bcnt;
 
@@ -1264,7 +1264,7 @@ ModbusMessage ForceCoilsMessage::transport_msg()
 
 	// копируем данные
 	memcpy(&(mm.data[ind]),dtmp,bcnt);
-	delete dtmp;
+	delete[] dtmp;
 
 	ind+=bcnt;
 
@@ -1509,7 +1509,7 @@ ModbusMessage WriteOutputMessage::transport_msg()
 
 	// копируем данные
 	memcpy(&(mm.data[ind]),dtmp,bcnt);
-	delete dtmp;
+	delete[] dtmp;
 
 	ind+=bcnt;
 
@@ -2156,7 +2156,7 @@ ModbusMessage JournalCommandRetMessage::transport_msg()
 	// копируем
 	memcpy(&(mm.data[ind]),dtmp,bcnt);
 
-	delete dtmp;
+	delete[] dtmp;
 
 	ind += bcnt;
 

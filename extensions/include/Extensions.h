@@ -16,7 +16,7 @@ namespace UniSetExtensions
 	/*! Получение времени для подтверждения "живости" */
 	int getHeartBeatTime();
 
-	xmlNode* findNode( xmlNode* node, const std::string snode, const std::string field );
+	xmlNode* findNode( xmlNode* node, const std::string& snode, const std::string& field );
 	
 	xmlNode* getCalibrationsSection();
 	
@@ -26,7 +26,7 @@ namespace UniSetExtensions
 	void escape_string( std::string& s );
 
 	/*! Загрузка калибровочной диаграммы */
-	Calibration* buildCalibrationDiagram( const std::string dname );
+	Calibration* buildCalibrationDiagram( const std::string& dname );
 
 	extern DebugStream dlog;
 }

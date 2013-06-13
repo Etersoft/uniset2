@@ -50,10 +50,10 @@ namespace ORepHelpers
 															throw(UniSetTypes::ORepFailed);
     
     //! Функция отделяющая имя секции от полного имени 
-    const std::string getSectionName(const std::string& fullName, const std::string brk="/");
+    const std::string getSectionName(const std::string& fullName, const std::string& brk="/");
     
     //! Функция выделения имени из полного имени 
-    const std::string getShortName(const std::string& fullName, const std::string brk="/");
+    const std::string getShortName(const std::string& fullName, const std::string& brk="/");
 	
 	
 	//! Проверка на наличие недопустимых символов

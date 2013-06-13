@@ -95,7 +95,7 @@ bool testTable2(void)
 	t0.addRow((char*)&i,val);
 	if(t.getCurBlock()!=0)
 	{
-		delete val;
+		delete[] val;
 		return false;
 	}
 	for(i=1;i<11;i++)
@@ -105,7 +105,7 @@ bool testTable2(void)
 	}
 	if(t.getCurBlock()!=0)
 	{
-		delete val;
+		delete[] val;
 		return false;
 	}
 	for(i=1;i<20;i++)
@@ -113,14 +113,14 @@ bool testTable2(void)
 		if(t.findKeyValue(&i,val)!=0) printf("%s, ",val);
 		if(val[0]==0)
 		{
-			delete val;
+			delete[] val;
 			return false;
 		}
 	}
 	printf("\n");
 	if(t.getCurBlock()!=0)
 	{
-		delete val;
+		delete[] val;
 		return false;
 	}
 	for(i=1;i<8;i++)
@@ -140,20 +140,20 @@ bool testTable2(void)
 			printf("%s, ",val);
 			if((i > 7)&&(i <11))
 			{
-				delete val;
+				delete[] val;
 				return false;
 			}
 		}
 		if((val[0] == 0)&&(i < 8))
 		{
-			delete val;
+			delete[] val;
 			return false;
 		}
 	}
 	printf("\nrewriting 3-10 elements with values=keys+40\n");
 	if(t.getCurBlock()!=0)
 	{
-		delete val;
+		delete[] val;
 		return false;
 	}
 	for(i=3;i<11;i++)
@@ -166,18 +166,18 @@ bool testTable2(void)
 		if(t.findKeyValue(&i,val)!=0) printf("%s, ",val);
 		if((UniSetTypes::uni_atoi(val) != i+40) && (i>2) && (i<11))
 		{
-			delete val;
+			delete[] val;
 			return false;
 		}
 		if((UniSetTypes::uni_atoi(val) != i+10) && (i<3))
 		{
-			delete val;
+			delete[] val;
 			return false;
 		}
 	}
 	if(t.getCurBlock()!=0)
 	{
-		delete val;
+		delete[] val;
 		return false;
 	}
 
@@ -192,7 +192,7 @@ bool testTable2(void)
 	}
 	if(t.getCurBlock()!=1)
 	{
-		delete val;
+		delete[] val;
 		return false;
 	}
 	printf("after reopen:\n");
@@ -203,10 +203,10 @@ bool testTable2(void)
 	}
 	if(t.getCurBlock()!=1)
 	{
-		delete val;
+		delete[] val;
 		return false;
 	}
-	delete val;
+	delete[] val;
 	return true;
 }
 
@@ -219,7 +219,7 @@ bool reOpen()
 	if(!j.open("big_file.test",bj_size,30,33000,seek))
 	{
 		printf("Reopen file error\n");
-		delete str;
+		delete[] str;
 		return false;
 	}
 	for(i=0;i<20;i++)
@@ -230,7 +230,7 @@ bool reOpen()
 			k++;
 		}
 	}
-	delete str;
+	delete[] str;
 	if(k != 10)
 		return false;
 	return true;
@@ -262,7 +262,7 @@ bool testJournal1(void)
 	}
 	if(k < 30)
 	{
-		delete str;
+		delete[] str;
 		return false;
 	}
 	k = 0;
@@ -276,12 +276,12 @@ bool testJournal1(void)
 		if(t.findKeyValue((char*)&i,val)!=0) printf("%s, ",val);
 		if((UniSetTypes::uni_atoi(val) != i+10) && (i<3))
 		{
-			delete val;
-			delete str;
+			delete[] val;
+			delete[] str;
 			return false;
 		}
 	}
-	delete val;
+	delete[] val;
 
 	printf("\nfirst 30 elements after deleting first 20:\n");
 	for(i=0;i<20;i++)
@@ -298,7 +298,7 @@ bool testJournal1(void)
 	}
 	if(k != 10)
 	{
-		delete str;
+		delete[] str;
 		return false;
 	}
 	k = 0;
@@ -319,15 +319,15 @@ bool testJournal1(void)
 	}
 	if(k != 10)
 	{
-		delete str;
+		delete[] str;
 		return false;
 	}
 
 	k = 0;
 
-	if(!reOpen()) return false;
+	if(!reOpen()){ delete[] str; return false; };
 
-	if(!reOpen()) return false;
+	if(!reOpen()){ delete[] str; return false; };
 
 	printf("size changed back to 32000 rows\n");
 	j.setSize(32000);
@@ -341,12 +341,12 @@ bool testJournal1(void)
 	}
 	if(k != 10)
 	{
-		delete str;
+		delete[] str;
 		return false;
 	}
 
 	k = 0;
-	delete str;
+	delete[] str;
 	return true;
 }
 
@@ -368,7 +368,7 @@ void testJournal2(void)
 		printf("i=%d, iterations = %d\n", i, j.getIter());
 	}
 	printf("\n");
-	delete str;
+	delete[] str;
 }
 
 

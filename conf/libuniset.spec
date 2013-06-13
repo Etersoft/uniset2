@@ -7,7 +7,7 @@
 
 Name: libuniset
 Version: 1.6
-Release: alt10
+Release: alt11
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -319,6 +319,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Thu Jun 13 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt11
+- fixed after cppcheck checking
+
 * Wed Jun 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt10
 - add for ModbusMaster (RTU|TCP) --xxx--aftersend-pause 
 

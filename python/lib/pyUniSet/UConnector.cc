@@ -92,7 +92,7 @@ long UConnector::getValue( long id, long node )throw(UException)
 	}
 	catch( UException& ex )
 	{
-		throw ex;
+		throw;
 	}
 	catch( UniSetTypes::Exception& ex )
 	{
@@ -146,7 +146,7 @@ void UConnector::setValue( long id, long val, long node )throw(UException)
 	}
 	catch( UException& ex )
 	{
-		throw ex;
+		throw;
 	}
 	catch( UniSetTypes::Exception& ex )
 	{

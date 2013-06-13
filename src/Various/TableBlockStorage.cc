@@ -198,7 +198,7 @@ bool TableBlockStorage::open(const char* name, int byte_sz, int key_sz, int inf_
 		fread(elemPointer(i),(full_size),1,file);
 		if(elemPointer(i)->count>max) max=elemPointer(i)->count;
 	}
-	delete t;
+	delete[] t;
 	return true;
 }
 

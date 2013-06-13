@@ -11,7 +11,7 @@ namespace UTypes
 	{
 		static const int max = 20;
 
-		Params():argc(0){}
+		Params():argc(0){ memset(argv,0,sizeof(argv)); }
 
 		bool add( char* s )
 		{

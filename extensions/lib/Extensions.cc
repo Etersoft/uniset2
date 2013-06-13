@@ -89,7 +89,7 @@ namespace UniSetExtensions
 	}
 	// -------------------------------------------------------------------------
 
-	xmlNode* findNode( xmlNode* node, const string snode, const string field )
+	xmlNode* findNode( xmlNode* node, const string& snode, const string& field )
 	{
 		if( !node )
 			return 0;
@@ -107,7 +107,7 @@ namespace UniSetExtensions
 		return 0;
 	}
 	// -------------------------------------------------------------------------
-	Calibration* buildCalibrationDiagram( const std::string dname )
+	Calibration* buildCalibrationDiagram( const std::string& dname )
 	{
 		xmlNode* root = getCalibrationsSection();
 		if( !root )

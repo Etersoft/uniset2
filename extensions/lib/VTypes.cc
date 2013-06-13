@@ -12,7 +12,7 @@ std::ostream& operator<<( std::ostream& os, const VType& vt )
 	return os << type2str(vt);
 }
 
-VType str2type( const std::string s )
+VType str2type( const std::string& s )
 {
 	if( s == "Byte" || s == "byte" )
 		return vtByte;
