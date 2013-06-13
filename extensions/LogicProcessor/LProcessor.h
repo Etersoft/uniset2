@@ -94,10 +94,10 @@
 class LProcessor
 {
 	public:
-		LProcessor( const std::string name="" );
+		LProcessor( const std::string& name="" );
 	    virtual ~LProcessor();
 
-		virtual void execute( const string lfile );
+		virtual void execute( const string& lfile );
 
 	protected:
 		

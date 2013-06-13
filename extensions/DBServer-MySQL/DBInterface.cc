@@ -45,7 +45,7 @@ DBInterface::~DBInterface()
 }
 
 // -----------------------------------------------------------------------------------------
-bool DBInterface::connect( const string host, const string user, const string pswd, const string dbname)
+bool DBInterface::connect( const string& host, const string& user, const string& pswd, const string& dbname)
 {
 	if (!mysql_real_connect(mysql,host.c_str(), user.c_str(),pswd.c_str(),dbname.c_str(),0,NULL,0))
 	{
@@ -65,7 +65,7 @@ bool DBInterface::close()
 	return true;
 }
 // -----------------------------------------------------------------------------------------
-bool DBInterface::insert(const string q)
+bool DBInterface::insert( const string& q )
 {
 	if( !mysql )
 		return false;
@@ -80,7 +80,7 @@ bool DBInterface::insert(const string q)
 	return true;
 }
 // -----------------------------------------------------------------------------------------
-bool DBInterface::query(const string q)
+bool DBInterface::query( const string& q )
 {
 	if( !mysql )
 		return false;
@@ -189,7 +189,7 @@ bool DBInterface::dropDB(const string dbname)
 }
 */
 // -----------------------------------------------------------------------------------------
-MYSQL_RES* DBInterface::listFields(const string table, const string wild )
+MYSQL_RES* DBInterface::listFields( const string& table, const string& wild )
 {
 	if( !mysql || !result )
 		return 0;
@@ -233,7 +233,7 @@ bool DBInterface::isConnection()
 	return ping(); //!mysql;
 }
 // -----------------------------------------------------------------------------------------
-string DBInterface::addslashes(const string& str)
+string DBInterface::addslashes( const string& str )
 {
 	ostringstream tmp;
 	for( unsigned int i=0; i<str.size(); i++ )

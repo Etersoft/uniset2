@@ -53,6 +53,7 @@ class MBSlave:
 
 			IOProperty():
 				mbreg(0),
+				amode(amRW),
 				vtype(VTypes::vtUnknown),
 				wnum(0)
 			{}

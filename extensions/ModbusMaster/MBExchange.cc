@@ -277,7 +277,7 @@ bool MBExchange::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 }
 
 // ------------------------------------------------------------------------------------------
-MBExchange::DeviceType MBExchange::getDeviceType( const std::string dtype )
+MBExchange::DeviceType MBExchange::getDeviceType( const std::string& dtype )
 {
 	if( dtype.empty() )
 		return dtUnknown;

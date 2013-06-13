@@ -38,7 +38,7 @@ class RTUStorage
 			nX5		// DI (8)
 		};
 
-		static RTUJack s2j( const std::string jack );
+		static RTUJack s2j( const std::string& jack );
 		static std::string j2s( RTUJack j );
 
 		long getInt( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );

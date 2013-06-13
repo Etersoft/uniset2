@@ -88,7 +88,7 @@ int main( int argc, char **argv )
 	ModbusRTU::ModbusAddr end = 255;
 	int tout = 20;
 	DebugStream dlog;
-	string tofile("");
+	//string tofile("");
 	int use485 = 0;
 	ComPort::StopBits sbits = ComPort::OneBit;
 	ComPort::Parity parity = ComPort::NoParity;

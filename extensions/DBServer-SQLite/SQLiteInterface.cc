@@ -44,8 +44,7 @@ opCheckPause(50)
 SQLiteInterface::~SQLiteInterface()
 {
 	close();
-	if( db )
-		delete db;
+	delete db;
 }
 
 // -----------------------------------------------------------------------------------------
@@ -54,7 +53,7 @@ bool SQLiteInterface::ping()
 	return db && ( sqlite3_db_status(db,0,NULL,NULL,0) == SQLITE_OK );
 }
 // -----------------------------------------------------------------------------------------
-bool SQLiteInterface::connect( const string dbfile, bool create )
+bool SQLiteInterface::connect( const string& dbfile, bool create )
 {
 	// т.к. sqlite3 по умолчанию, создаёт файл при открытии, то проверим "сами"
 //	if( !create && !UniSetTypes::file_exist(dbfile) )
@@ -97,7 +96,7 @@ void SQLiteInterface::setOperationTimeout( timeout_t msec )
 		sqlite3_busy_timeout(db,opTimeout);
 }
 // -----------------------------------------------------------------------------------------
-bool SQLiteInterface::insert( const string q )
+bool SQLiteInterface::insert( const string& q )
 {
 	if( !db )
 		return false;
@@ -134,7 +133,7 @@ bool SQLiteInterface::checkResult( int rc )
 	return true;
 }
 // -----------------------------------------------------------------------------------------
-SQLiteResult SQLiteInterface::query( const string q )
+SQLiteResult SQLiteInterface::query( const string& q )
 {
 	if( !db )
 		return SQLiteResult();

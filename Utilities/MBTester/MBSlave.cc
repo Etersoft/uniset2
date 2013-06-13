@@ -15,7 +15,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
-MBSlave::MBSlave( ModbusRTU::ModbusAddr addr, const std::string dev, const std::string speed, bool use485 ):
+MBSlave::MBSlave( ModbusRTU::ModbusAddr addr, const std::string& dev, const std::string& speed, bool use485 ):
 	rscomm(NULL),
 	addr(addr),
 //	prev(ModbusRTU::erNoError),
