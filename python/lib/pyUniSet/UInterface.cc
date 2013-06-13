@@ -64,7 +64,7 @@ long UInterface::getValue( long id )throw(UException)
 	}
 	catch( UException& ex )
 	{
-		throw ex;
+		throw;
 	}
 	catch( UniSetTypes::Exception& ex )
 	{
@@ -114,7 +114,7 @@ void UInterface::setValue( long id, long val )throw(UException)
 	}
 	catch( UException& ex )
 	{
-		throw ex;
+		throw;
 	}
 	catch( UniSetTypes::Exception& ex )
 	{

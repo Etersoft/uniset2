@@ -47,8 +47,8 @@ using namespace std;
 // -------------------------------------------------------------------------
 static const string UniSetDefaultPort = "2809";
 // -------------------------------------------------------------------------
-static ostream& print_help( ostream& os, int width, const string cmd, 
-							const string help, const string tab="" )
+static ostream& print_help( ostream& os, int width, const string& cmd,
+							const string& help, const string& tab="" )
 {
 	// чтобы не менчять параметры основного потока
 	// создаём свой stream...
@@ -256,7 +256,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 				catch(Exception& ex )
 				{
 					unideb[Debug::CRIT] << "(Configuration:init): INIT FAILED! from "  << fileConfName << endl;
-					throw ex;
+					throw;
 				}
 			}
 		}
@@ -1096,7 +1096,7 @@ UniversalIO::IOTypes Configuration::getIOType( const std::string name )
 	return UniversalIO::UnknownIOType;
 }
 // -------------------------------------------------------------------------
-void uniset_init( int argc, const char* const* argv, const std::string xmlfile )
+void uniset_init( int argc, const char* const* argv, const std::string& xmlfile )
 {
 	string confile = UniSetTypes::getArgParam( "--confile", argc, argv, xmlfile );
 	UniSetTypes::conf = new Configuration(argc, argv, confile);

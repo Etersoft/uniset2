@@ -202,7 +202,7 @@ namespace ORepHelpers
      *	\param fname - полное имя включающее в себя путь ("Root/Section1/name|Node:Alias")
      *	\param brk  - используемый символ разделитель      
     */
-    const string getShortName( const string& fname, const std::string brk )
+    const string getShortName( const string& fname, const std::string& brk )
     {
 /*    
 		string::size_type pos = fname.rfind(brk);
@@ -232,7 +232,7 @@ namespace ORepHelpers
      *	\param brk  - используемый символ разделитель      
      *  \note Функция возвращает путь без последнего символа разделителя ("Root/Section1/name" -> "Root/Section1")
     */
-    const string getSectionName( const string& fullName, const std::string brk )
+    const string getSectionName( const string& fullName, const std::string& brk )
     {
 		string::size_type pos = fullName.rfind(brk);
 		if( pos == string::npos )

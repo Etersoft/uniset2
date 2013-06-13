@@ -251,7 +251,7 @@ bool CycleStorage::create(const char* name, int byte_sz, int inf_sz, int inf_cou
 	fflush(file);
 
 	head=tail=-1;
-	delete jrn;
+	delete[] jrn;
 	return true;
 }
 

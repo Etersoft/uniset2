@@ -12,7 +12,7 @@ uniset_mutex m;
 class MyClass
 {
 	public:
-		MyClass( const std::string name ): nm(name)
+		MyClass( const std::string& name ): nm(name)
 		{
 			thr = new ThreadCreator<MyClass>(this, &MyClass::thread);
 		}

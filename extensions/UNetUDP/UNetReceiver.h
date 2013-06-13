@@ -50,7 +50,7 @@
 class UNetReceiver
 {
 	public:
-		UNetReceiver( const std::string host, const ost::tpport_t port, SMInterface* smi );
+		UNetReceiver( const std::string& host, const ost::tpport_t port, SMInterface* smi );
 		~UNetReceiver();
 
 		 void start();

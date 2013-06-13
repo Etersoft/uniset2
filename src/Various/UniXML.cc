@@ -179,7 +179,9 @@ xmlNode* UniXML::copyNode(xmlNode* node, int recursive)
 	\todo "Нужно тест написать на copyNode"
 */
 
-	copynode->properties = ::xmlCopyPropList(NULL,node->properties);
+	if( copynode )
+		copynode->properties = ::xmlCopyPropList(NULL,node->properties);
+
 	if( copynode != 0 && node->parent )
 	{
 		xmlNode* newnode = ::xmlNewChild(node->parent, NULL, (const xmlChar*)"", (const xmlChar*)"" );
@@ -411,7 +413,7 @@ int UniXML_iterator::getPIntProp( const string name, int def ) const
 	return i;
 }
 
-// -------------------------------------------------------------------------		
+// -------------------------------------------------------------------------
 void UniXML_iterator::setProp( const string name, const string text )
 {
 	UniXML::setProp(curNode, name, text);
@@ -420,7 +422,7 @@ void UniXML_iterator::setProp( const string name, const string text )
 // -------------------------------------------------------------------------	
 bool UniXML_iterator::findName( const std::string node, const std::string searchname )
 {	
-	while( find(node) )
+	while( this->find(node) )
 	{
 		if ( searchname == getProp("name") )
 			return true;

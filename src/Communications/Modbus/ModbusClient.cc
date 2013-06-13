@@ -209,7 +209,7 @@ void ModbusClient::fileTransfer( ModbusAddr addr, ModbusData numfile,
 	mbErrCode res = erNoError;
 
 	FILE* fdsave = fopen(save2filename,"w");
-	if( fdsave <= 0 )
+	if( fdsave == NULL )
 	{
 		if( dlog.debugging(Debug::WARN) )
 			dlog[Debug::WARN] << "(fileTransfer): fopen '" 

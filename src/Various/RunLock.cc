@@ -46,12 +46,13 @@ bool RunLock::isLocked(const string& name)
 	if( out ) 
 	{
 		char ptr[10];
-		fscanf( out, "%s", ptr );
+		fscanf( out, "%9s", ptr );
+
 		DIR *d = opendir( "/proc" );
 		dirent *dir;
 		while((dir = readdir(d)))
 		{
-			if(!strcmp( ptr, dir->d_name ))
+			if( !strcmp( ptr, dir->d_name ) )
 			{
 				// по хорошему здесь надо бы проверять 
 				// статус на зомби
@@ -71,14 +72,16 @@ bool RunLock::isLocked(const string& name)
 					}
 				}
 */				
-				unideb[Debug::INFO] << "(RunLock): programm " << name << " already run" << endl;
+				if( unideb.debugging(Debug::INFO) )
+					unideb[Debug::INFO] << "(RunLock): programm " << name << " already run" << endl;
+
 				fclose(out);
 				closedir(d);
 				return true;
 			}
 		}	
 
-		fclose(out);		
+		fclose(out);
 		closedir(d);
 	}
 	

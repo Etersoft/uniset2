@@ -7,8 +7,15 @@ using namespace std;
 
 PassiveTimer pt(1000);
 
+void func( const std::string& s1 )
+{
+
+}
+
 int main()
 {
+	func("test");
+
 	PassiveTimer pt1(5000);
 	cout << " pt1.getInterval()=" << pt1.getInterval() << " TEST: " << ((pt1.getInterval()==5000) ? "OK" : "FAILED") << endl;
 	

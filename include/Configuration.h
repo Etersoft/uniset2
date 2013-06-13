@@ -253,7 +253,7 @@ namespace UniSetTypes
 	
 	// Инициализация UniSetTypes::conf.
 	// ( учитываются параметры командной строки --confile и --id-from-config )
-	void uniset_init( int argc, const char* const* argv, const std::string xmlfile="configure.xml" );
+	void uniset_init( int argc, const char* const* argv, const std::string& xmlfile="configure.xml" );
 	
 	
 }	// end of UniSetTypes namespace

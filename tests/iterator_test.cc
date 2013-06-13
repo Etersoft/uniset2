@@ -8,7 +8,7 @@ using namespace std;
 #include "UniSetTypes.h"
 
 
-void check( const std::string name, const std::string true_res, const std::string your_res )
+void check( const std::string& name, const std::string& true_res, const std::string& your_res )
 {
 	cout<<name<<endl;
 	cout<<"Correct result: "<<true_res<<endl;
