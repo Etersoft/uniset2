@@ -235,7 +235,7 @@
 		
 		xmlNode* confnode;
 		/*! получить числовое свойство из конф. файла по привязанной confnode */
-		int getIntProp(const std::string name) { return UniSetTypes::conf->getIntProp(confnode, name); }
+		int getIntProp(const std::string& name) { return UniSetTypes::conf->getIntProp(confnode, name); }
 		/*! получить текстовое свойство из конф. файла по привязанной confnode */
 		inline const std::string getProp(const std::string name) { return UniSetTypes::conf->getProp(confnode, name); }
 
