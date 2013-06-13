@@ -11,7 +11,7 @@
 class MBSlave
 {
 	public:
-		MBSlave( ModbusRTU::ModbusAddr addr, const std::string dev, const std::string speed, bool use485=false );
+		MBSlave( ModbusRTU::ModbusAddr addr, const std::string& dev, const std::string& speed, bool use485=false );
 		~MBSlave();
 
 		inline void setVerbose( bool state )

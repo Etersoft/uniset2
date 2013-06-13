@@ -9,7 +9,7 @@ int main( int argc, const char **argv )
 {
 	try
 	{
-		string confile = uniset_init(argc, argv);
+		uniset_init(argc, argv);
 
 		string logfilename = conf->getArgParam("--logfile", "Skel.log");
 		string logname( conf->getLogDir() + logfilename );

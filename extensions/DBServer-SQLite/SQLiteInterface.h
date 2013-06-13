@@ -45,7 +45,7 @@ class SQLiteInterface
 		SQLiteInterface();
 		~SQLiteInterface();
 
-		bool connect( const std::string dbfile, bool create = false );
+		bool connect( const std::string& dbfile, bool create = false );
 		bool close();
 		bool isConnection();
 		bool ping(); // проверка доступности БД
@@ -56,10 +56,10 @@ class SQLiteInterface
 		inline void setOperationCheckPause( timeout_t msec ){ opCheckPause = msec; }
 		inline timeout_t getOperationCheckPause(){ return opCheckPause; }
 
-		SQLiteResult query( const std::string q );
+		SQLiteResult query( const std::string& q );
 		const std::string lastQuery();
 
-		bool insert( const std::string q );
+		bool insert( const std::string& q );
 		int insert_id();
 
 		std::string error();

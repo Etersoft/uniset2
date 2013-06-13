@@ -44,6 +44,7 @@ DBServer_SQLite::DBServer_SQLite( ObjectId id ):
 	ReconnectTime(180000),
 	connect_ok(false),
 	activate(true),
+	qbufSize(200),
 	lastRemove(false)
 {
 	if( getId() == DefaultObjectId )
@@ -61,6 +62,7 @@ DBServer_SQLite::DBServer_SQLite():
 	ReconnectTime(180000),
 	connect_ok(false),
 	activate(true),
+	qbufSize(200),
 	lastRemove(false)
 {
 //	init();

@@ -8,7 +8,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
-LProcessor::LProcessor( const std::string name ):
+LProcessor::LProcessor( const std::string& name ):
 logname(name)
 {
 	sleepTime = conf->getArgPInt("--sleepTime", 200);
@@ -23,7 +23,7 @@ LProcessor::~LProcessor()
 {
 }
 // -------------------------------------------------------------------------
-void LProcessor::execute( const string lfile )
+void LProcessor::execute( const string& lfile )
 {
 	build(lfile);
 

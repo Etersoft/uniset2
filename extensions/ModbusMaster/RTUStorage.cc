@@ -559,7 +559,7 @@ void RTUStorage::print()
 	cout << this;
 }
 // -----------------------------------------------------------------------------
-RTUStorage::RTUJack RTUStorage::s2j( const std::string jack )
+RTUStorage::RTUJack RTUStorage::s2j( const std::string& jack )
 {
 	if( jack == "J1" || jack == "j1" )
 		return nJ1;

@@ -39,16 +39,16 @@ class DBInterface
 
 //			bool createDB(const std::string dbname);
 //			bool dropDB(const std::string dbname);
-			MYSQL_RES * listFields(const std::string table, const std::string wild );
+			MYSQL_RES * listFields(const std::string& table, const std::string& wild );
 
 
-			bool connect( const std::string host, const std::string user, const std::string pswd,
-							const std::string dbname);
+			bool connect( const std::string& host, const std::string& user, const std::string& pswd,
+							const std::string& dbname);
 			bool close();
 
-			bool query(const std::string q);
+			bool query(const std::string& q);
 			const std::string lastQuery();
-			bool insert(const std::string q);
+			bool insert(const std::string& q);
 
 			std::string addslashes(const std::string& str);
 

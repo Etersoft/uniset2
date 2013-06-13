@@ -23,7 +23,7 @@ Schema::~Schema()
 	}
 }
 // -------------------------------------------------------------------------
-void Schema::link(Element::ElementID rootID, Element::ElementID childID, int numIn )
+void Schema::link( Element::ElementID rootID, Element::ElementID childID, int numIn )
 {
 	Element* e1 = 0;
 	Element* e2 = 0;
@@ -88,7 +88,7 @@ void Schema::unlink( Element::ElementID rootID, Element::ElementID childID )
 	}
 }
 // -------------------------------------------------------------------------
-void Schema::extlink(string name, Element::ElementID childID, int numIn )
+void Schema::extlink( const string& name, Element::ElementID childID, int numIn )
 {
 	ElementMap::iterator it = emap.find(childID);
 	if( it == emap.end() )
@@ -167,7 +167,7 @@ bool Schema::getOut( Element::ElementID ID )
 	throw LogicException(msg.str());
 }
 // -------------------------------------------------------------------------
-Element* Schema::find(Element::ElementID id)
+Element* Schema::find( Element::ElementID id )
 {
 	ElementMap::iterator it = emap.find(id);
 	if( it != emap.end() )
@@ -175,7 +175,7 @@ Element* Schema::find(Element::ElementID id)
 	return 0;
 }
 // -------------------------------------------------------------------------
-Element* Schema::findExtLink(const string name)
+Element* Schema::findExtLink( const string& name )
 {
 	// помечаем внешние связи
 	for( ExternalList::iterator it=extLinks.begin(); it!=extLinks.end(); ++it )

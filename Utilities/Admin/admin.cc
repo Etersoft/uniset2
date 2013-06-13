@@ -55,21 +55,21 @@ static struct option longopts[] = {
 string conffile("configure.xml");
 
 // --------------------------------------------------------------------------
-static bool commandToAll(const string section, ObjectRepository *rep, Command cmd);
-static void createSections(UniSetTypes::Configuration* c);
+static bool commandToAll( const string& section, ObjectRepository *rep, Command cmd );
+static void createSections( UniSetTypes::Configuration* c );
 // --------------------------------------------------------------------------
 int omap();
 int msgmap();
-int configure( const string args, UniversalInterface &ui );
-int logRotate( const string args, UniversalInterface &ui );
-int setValue( const string args, UniversalInterface &ui, Configuration* conf = UniSetTypes::conf );
-int getValue( const string args, UniversalInterface &ui, Configuration* conf = UniSetTypes::conf );
-int getRawValue( const string args, UniversalInterface &ui );
-int getState( const string args, UniversalInterface &ui );
-int getCalibrate( const string args, UniversalInterface &ui );
-int oinfo( const string args, UniversalInterface &ui );
+int configure( const string& args, UniversalInterface &ui );
+int logRotate( const string& args, UniversalInterface &ui );
+int setValue( const string& args, UniversalInterface &ui, Configuration* conf = UniSetTypes::conf );
+int getValue( const string& args, UniversalInterface &ui, Configuration* conf = UniSetTypes::conf );
+int getRawValue( const string& args, UniversalInterface &ui );
+int getState( const string& args, UniversalInterface &ui );
+int getCalibrate( const string& args, UniversalInterface &ui );
+int oinfo( const string& args, UniversalInterface &ui );
 // --------------------------------------------------------------------------
-static void print_help(int width, const string cmd, const string help, const string tab=" " )
+static void print_help(int width, const string& cmd, const string& help, const string& tab=" " )
 {
 	// чтобы не менять параметры основного потока
 	// создаём свой stream...
@@ -323,10 +323,10 @@ int main(int argc, char** argv)
 }
 
 // ==============================================================================================
-static bool commandToAll(const string section, ObjectRepository *rep, Command cmd)
+static bool commandToAll(const string& section, ObjectRepository *rep, Command cmd)
 {
 	cout <<"\n||=======********  " << section << "  ********=========||\n"<< endl;
-	
+
 	try
 	{
 		ListObjectName ls;
@@ -484,7 +484,7 @@ int msgmap()
 }
 
 // --------------------------------------------------------------------------------------
-int setValue( const string args, UniversalInterface &ui, Configuration* conf )
+int setValue( const string& args, UniversalInterface &ui, Configuration* conf )
 {
 	int err = 0;
 	
@@ -539,7 +539,7 @@ int setValue( const string args, UniversalInterface &ui, Configuration* conf )
 }
 
 // --------------------------------------------------------------------------------------
-int getValue( const string args, UniversalInterface &ui, Configuration* conf )
+int getValue( const string& args, UniversalInterface &ui, Configuration* conf )
 {
 	int err = 0;
 	
@@ -586,7 +586,7 @@ int getValue( const string args, UniversalInterface &ui, Configuration* conf )
 	return err;
 }
 // --------------------------------------------------------------------------------------
-int getCalibrate( const std::string args, UniversalInterface &ui )
+int getCalibrate( const std::string& args, UniversalInterface &ui )
 {
 	int err = 0;
   	typedef std::list<UniSetTypes::ParamSInfo> SList;
@@ -616,7 +616,7 @@ int getCalibrate( const std::string args, UniversalInterface &ui )
 }
 
 // --------------------------------------------------------------------------------------
-int getRawValue( const std::string args, UniversalInterface &ui )
+int getRawValue( const std::string& args, UniversalInterface &ui )
 {
 	int err = 0;
   	typedef std::list<UniSetTypes::ParamSInfo> SList;
@@ -643,7 +643,7 @@ int getRawValue( const std::string args, UniversalInterface &ui )
 }
 
 // --------------------------------------------------------------------------------------
-int logRotate( const string arg, UniversalInterface &ui )
+int logRotate( const string& arg, UniversalInterface &ui )
 {
 	// посылка всем
 	if( arg.empty() || (arg.c_str())[0]!='-' )
@@ -672,7 +672,7 @@ int logRotate( const string arg, UniversalInterface &ui )
 }
 
 // --------------------------------------------------------------------------------------
-int configure( const string arg, UniversalInterface &ui )
+int configure( const string& arg, UniversalInterface &ui )
 {
 	// посылка всем
 	if( arg.empty() || (arg.c_str())[0]!='-' )
@@ -700,7 +700,7 @@ int configure( const string arg, UniversalInterface &ui )
 }
 
 // --------------------------------------------------------------------------------------
-int oinfo( const string arg, UniversalInterface &ui )
+int oinfo( const string& arg, UniversalInterface &ui )
 {
 	UniSetTypes::ObjectId oid(uni_atoi(arg));
 	if( oid==0 )

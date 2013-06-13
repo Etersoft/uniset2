@@ -10,7 +10,7 @@
 class MBTCPServer
 {
 	public:
-		MBTCPServer( ModbusRTU::ModbusAddr myaddr, const std::string inetaddr, int port=502, bool verbose=false );
+		MBTCPServer( ModbusRTU::ModbusAddr myaddr, const std::string& inetaddr, int port=502, bool verbose=false );
 		~MBTCPServer();
 
 		inline void setVerbose( bool state )

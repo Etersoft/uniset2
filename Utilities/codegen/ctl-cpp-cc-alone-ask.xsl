@@ -239,7 +239,7 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 	catch(Exception&amp; ex)
 	{
 		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getState): " &lt;&lt; ex &lt;&lt; endl;
-		throw ex;
+		throw;
 	}
 }
 // -----------------------------------------------------------------------------
@@ -318,7 +318,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 	catch(Exception&amp; ex)
 	{
 		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
-		throw ex;
+		throw;
 	}
 </xsl:template>
 
@@ -368,7 +368,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 			catch(Exception&amp; ex)
 			{
 				unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
-				throw ex;
+				throw;
 			}
 </xsl:template>
 
@@ -398,7 +398,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 	catch(Exception&amp; ex)
 	{
 		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
-		throw ex;
+		throw;
 	}
 </xsl:template>
 
