@@ -45,7 +45,7 @@ DBInterface::~DBInterface()
 }
 
 // -----------------------------------------------------------------------------------------
-bool DBInterface::connect( const string host, const string user, const string pswd, const string dbname)
+bool DBInterface::connect( const string& host, const string& user, const string& pswd, const string& dbname)
 {
 	if (!mysql_real_connect(mysql,host.c_str(), user.c_str(),pswd.c_str(),dbname.c_str(),0,NULL,0))
 	{
@@ -64,7 +64,7 @@ bool DBInterface::close()
 	return true;
 }
 // -----------------------------------------------------------------------------------------			
-bool DBInterface::insert(const string q)
+bool DBInterface::insert( const string& q )
 {
 	if( !mysql )
 		return false;
@@ -79,7 +79,7 @@ bool DBInterface::insert(const string q)
 	return true;
 }
 // -----------------------------------------------------------------------------------------			
-bool DBInterface::query(const string q)
+bool DBInterface::query( const string& q )
 {
 	if( !mysql )
 		return false;
@@ -178,7 +178,7 @@ bool DBInterface::createDB(const string dbname)
 		return true;
 	return false;
 }
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 
 bool DBInterface::dropDB(const string dbname)
 {
@@ -187,8 +187,8 @@ bool DBInterface::dropDB(const string dbname)
 	return false;
 }
 */
-// -----------------------------------------------------------------------------------------			
-MYSQL_RES* DBInterface::listFields(const string table, const string wild )
+// -----------------------------------------------------------------------------------------
+MYSQL_RES* DBInterface::listFields( const string& table, const string& wild )
 {
 	if( !mysql || !result )
 		return 0;
@@ -206,7 +206,7 @@ MYSQL_RES* DBInterface::listFields(const string table, const string wild )
 
 	return res; // mysql_list_fields(mysql, table,wild);
 }
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 bool DBInterface::moveToRow(int ind)
 {
 	if(!mysql || !result) 
@@ -215,7 +215,7 @@ bool DBInterface::moveToRow(int ind)
 	mysql_data_seek(result, ind);
 	return true;
 }
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 bool DBInterface::ping()
 {
 	if( !mysql || !connected )
@@ -225,13 +225,13 @@ bool DBInterface::ping()
 	// если всё хорошо.... (поэтому мы инвертируем)
 	return !mysql_ping(mysql);
 }
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 bool DBInterface::isConnection()
 {
 	return ping(); //!mysql;
 }
-// -----------------------------------------------------------------------------------------			
-string DBInterface::addslashes(const string& str)
+// -----------------------------------------------------------------------------------------
+string DBInterface::addslashes( const string& str )
 {
 	ostringstream tmp;
 	for( unsigned int i=0; i<str.size(); i++ )

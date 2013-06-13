@@ -61,7 +61,7 @@ int main( int argc, char **argv )
 	ModbusRTU::ModbusAddr slaveaddr = 0x00;
 	int tout = 2000;
 	DebugStream dlog;
-	string tofile("");
+//	string tofile("");
 	int use485 = 0;
 	int ncycles = -1;
 	MTR::MTRType mtrtype = MTR::mtUnknown;
@@ -189,7 +189,7 @@ int main( int argc, char **argv )
             catch( ModbusRTU::mbException& ex )
 			{
 				if( ex.err != ModbusRTU::erTimeOut )
-            		throw ex;
+            		throw;
 
             	cout << "timeout..." << endl;
             }

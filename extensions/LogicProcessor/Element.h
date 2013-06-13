@@ -25,6 +25,7 @@ class Element
 		
 		enum InputType
 		{
+			unknown,
 			external,
 			internal
 		};
@@ -86,8 +87,8 @@ class Element
 
 		struct InputInfo
 		{
-			InputInfo():num(0),state(false){}
-			InputInfo(int n, bool s): num(n),state(s){}
+			InputInfo():num(0),state(false),type(unknown){}
+			InputInfo(int n, bool s): num(n),state(s),type(unknown){}
 			int num;
 			bool state;
 			InputType type;
@@ -117,7 +118,7 @@ class TOR:
 		virtual std::string getType(){ return "OR"; }
 	
 	protected:
-		TOR(){};
+		TOR():myout(false){}
 		bool myout;
 
 
@@ -136,7 +137,7 @@ class TAND:
 		virtual std::string getType(){ return "AND"; }
 	
 	protected:
-		TAND(){};
+		TAND(){}
 
 	private:
 };
@@ -161,7 +162,7 @@ class TNOT:
 		virtual void delInput( int num ){}
 	
 	protected:
-		TNOT(){};
+		TNOT():myout(false){}
 		bool myout;
 
 	private:

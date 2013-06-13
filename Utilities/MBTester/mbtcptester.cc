@@ -507,7 +507,7 @@ int main( int argc, char **argv )
             catch( ModbusRTU::mbException& ex )
             {
             	if( ex.err != ModbusRTU::erTimeOut )
-            		throw ex;
+            		throw;
 
             	cout << "timeout..." << endl;
             }

@@ -15,7 +15,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
-MBTCPServer::MBTCPServer( ModbusAddr myaddr, const string inetaddr, int port, bool verb ):
+MBTCPServer::MBTCPServer( ModbusAddr myaddr, const string& inetaddr, int port, bool verb ):
 	sslot(NULL),
 	addr(myaddr),
 //	prev(ModbusRTU::erNoError),

@@ -55,7 +55,7 @@ class MBExchange:
 			dtRTU188		/*!< RTU188 (Fastwell) */
 		};
 
-		static DeviceType getDeviceType( const std::string dtype );
+		static DeviceType getDeviceType( const std::string& dtype );
 		friend std::ostream& operator<<( std::ostream& os, const DeviceType& dt );
 
 		struct RTUDevice;
@@ -92,7 +92,7 @@ class MBExchange:
 			RegInfo():
 				mbval(0),mbreg(0),mbfunc(ModbusRTU::fnUnknown),
 				id(0),dev(0),
-//				rtuJack(RTUStorage::nUnknown),rtuChan(0),
+				rtuJack(RTUStorage::nUnknown),rtuChan(0),
 				mtrType(MTR::mtUnknown),
 				q_num(0),q_count(1),mb_initOK(true),sm_initOK(true)
 			{}

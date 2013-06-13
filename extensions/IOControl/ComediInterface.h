@@ -10,7 +10,7 @@
 class ComediInterface
 {
 	public:
-		ComediInterface( const std::string dev );
+		ComediInterface( const std::string& dev );
 		~ComediInterface();
 
 		int getAnalogChannel( int subdev, int channel, int range=0, int aref=AREF_GROUND ) 
@@ -45,7 +45,7 @@ class ComediInterface
 		};
 		
 		static std::string type2str( SubdevType t );
-		static SubdevType str2type( const std::string s );
+		static SubdevType str2type( const std::string& s );
 
 		void configureSubdev( int subdev, SubdevType type )	throw(UniSetTypes::Exception);
 

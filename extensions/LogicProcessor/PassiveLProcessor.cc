@@ -7,13 +7,35 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
 PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId objId, 
-										UniSetTypes::ObjectId shmID, SharedMemory* ic ):
+										UniSetTypes::ObjectId shmID, SharedMemory* ic, const std::string& prefix ):
 	UniSetObject_LT(objId),
 	shm(0)
 {
 	logname = myname;
 	shm = new SMInterface(shmID,&(UniSetObject_LT::ui),objId,ic);
 	build(lfile);
+
+	// ********** HEARTBEAT *************
+	string heart = conf->getArgParam("--" + prefix + "-heartbeat-id",""); // it.getProp("heartbeat_id"));
+	if( !heart.empty() )
+	{
+		sidHeartBeat = conf->getSensorID(heart);
+		if( sidHeartBeat == DefaultObjectId )
+		{
+			ostringstream err;
+			err << myname << ": ID not found ('HeartBeat') for " << heart;
+			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			throw SystemError(err.str());
+		}
+
+		int heartbeatTime = getHeartBeatTime();
+		if( heartbeatTime )
+			ptHeartBeat.setTiming(heartbeatTime);
+		else
+			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
+
+		maxHeartBeat = conf->getArgPInt("--" + prefix + "-heartbeat-max","10", 10);
+	}
 }
 
 PassiveLProcessor::~PassiveLProcessor()
@@ -96,6 +118,7 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 				return;
 			}
 
+			UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
 			askSensors(UniversalIO::UIONotify);
 			askTimer(tidStep,LProcessor::sleepTime);
 			break;
@@ -144,6 +167,25 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 		default:
 			break;
 	}
+}
+// -------------------------------------------------------------------------
+bool PassiveLProcessor::activateObject()
+{
+	// блокирование обработки Starsp 
+	// пока не пройдёт инициализация датчиков
+	// см. sysCommand()
+	{
+		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
+		UniSetObject_LT::activateObject();
+		initIterators();
+	}
+
+	return true;
+}
+// ------------------------------------------------------------------------------------------
+void PassiveLProcessor::initIterators()
+{
+	shm->initAIterator(aitHeartBeat);
 }
 // -------------------------------------------------------------------------
 void PassiveLProcessor::setOuts()

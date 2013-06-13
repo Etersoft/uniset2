@@ -24,7 +24,7 @@ class TDelay:
 		inline int getDelay(){ return delay; }
 	
 	protected:
-		TDelay(){};
+		TDelay():myout(false),delay(0){};
 
 		bool myout;
 		PassiveTimer pt;

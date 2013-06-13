@@ -6,7 +6,7 @@
 using namespace UniSetTypes;
 using namespace std;
 // -----------------------------------------------------------------------------
-ComediInterface::ComediInterface( const std::string dev ):
+ComediInterface::ComediInterface( const std::string& dev ):
 	card(0),
 	dname(dev)
 {
@@ -190,7 +190,7 @@ std::string ComediInterface::type2str( ComediInterface::SubdevType t )
 	return "";
 }
 // -----------------------------------------------------------------------------
-ComediInterface::SubdevType ComediInterface::str2type( const std::string s )
+ComediInterface::SubdevType ComediInterface::str2type( const std::string& s )
 {
 	if( s == "TBI24_0" )
 		return TBI24_0;

@@ -44,6 +44,7 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id):
 	ReconnectTime(180000),
 	connect_ok(false),
 	activate(true),
+	qbufSize(200),
 	lastRemove(false)
 {
 	if( getId() == DefaultObjectId )
@@ -61,6 +62,7 @@ DBServer_MySQL::DBServer_MySQL():
 	ReconnectTime(180000),
 	connect_ok(false),
 	activate(true),
+	qbufSize(200),
 	lastRemove(false)
 {
 //	init();

@@ -235,9 +235,9 @@
 		
 		xmlNode* confnode;
 		/*! получить числовое свойство из конф. файла по привязанной confnode */
-		int getIntProp(const std::string& name) { return UniSetTypes::conf->getIntProp(confnode, name); }
+		int getIntProp(const std::string&amp; name) { return UniSetTypes::conf->getIntProp(confnode, name); }
 		/*! получить текстовое свойство из конф. файла по привязанной confnode */
-		inline const std::string getProp(const std::string name) { return UniSetTypes::conf->getProp(confnode, name); }
+		inline const std::string getProp(const std::string&amp; name) { return UniSetTypes::conf->getProp(confnode, name); }
 
 		int smReadyTimeout; 	/*!&lt; время ожидания готовности SM */
 		bool activated;
@@ -553,7 +553,7 @@ end_private(false)
 }
 // -----------------------------------------------------------------------------
 // ( val, confval, default val )
-static const std::string init3_str(const std::string& s1, const std::string& s2, const std::string& s3 )
+static const std::string init3_str( const std::string&amp; s1, const std::string&amp; s2, const std::string&amp; s3 )
 {
 	if( !s1.empty() )
 		return s1;
@@ -872,7 +872,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 <xsl:template name="COMMON-CC-ALONE-FUNCS">
 // -----------------------------------------------------------------------------
 // ( val, confval, default val )
-static const std::string init3_str(const std::string& s1, const std::string& s2, const std::string& s3 )
+static const std::string init3_str( const std::string&amp; s1, const std::string&amp; s2, const std::string&amp; s3 )
 {
 	if( !s1.empty() )
 		return s1;

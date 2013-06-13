@@ -18,7 +18,7 @@ class PassiveLProcessor:
 	public:
 
 		PassiveLProcessor( std::string schema, UniSetTypes::ObjectId objId, 
-							UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
+							UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="lproc" );
 	    virtual ~PassiveLProcessor();
 
 		enum Timers
@@ -27,7 +27,7 @@ class PassiveLProcessor:
 		};
 
 	protected:
-		PassiveLProcessor(){};
+		PassiveLProcessor():shm(0),maxHeartBeat(0){};
 
 		virtual void step();
 		virtual void getInputs();
@@ -42,6 +42,8 @@ class PassiveLProcessor:
 
 		// действия при завершении работы
 		virtual void sigterm( int signo );
+		void initIterators();
+		virtual bool activateObject();
 
 		SMInterface* shm;
 
@@ -50,6 +52,7 @@ class PassiveLProcessor:
 		UniSetTypes::ObjectId sidHeartBeat;
 		int maxHeartBeat;
 		IOController::AIOStateList::iterator aitHeartBeat;
+		UniSetTypes::uniset_mutex mutex_start;
 };
 // ---------------------------------------------------------------------------
 #endif

@@ -52,9 +52,9 @@ class Schema
 		};
 
 
-		void link(Element::ElementID rootID, Element::ElementID childID, int numIn);
-		void unlink(Element::ElementID rootID, Element::ElementID childID );
-		void extlink(std::string name, Element::ElementID childID, int numIn );
+		void link( Element::ElementID rootID, Element::ElementID childID, int numIn );
+		void unlink( Element::ElementID rootID, Element::ElementID childID );
+		void extlink( const std::string& name, Element::ElementID childID, int numIn );
 
 		void setIn( Element::ElementID ID, int inNum, bool state );
 		bool getOut( Element::ElementID ID );
@@ -94,8 +94,8 @@ class Schema
 
 		// find
 		Element* find(Element::ElementID id);
-		Element* findExtLink(const std::string name);
-		Element* findOut(const std::string name);
+		Element* findExtLink(const std::string& name);
+		Element* findOut(const std::string& name);
 
 	protected:
 		ElementMap emap; // список элеметов
@@ -113,7 +113,7 @@ class SchemaXML:
 		SchemaXML();
 		virtual ~SchemaXML();
 	
-		void read(const std::string xmlfile);
+		void read( const std::string& xmlfile );
 	
 	protected:
 };

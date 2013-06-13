@@ -67,8 +67,6 @@ int main( int argc, const char **argv )
 		std::list< ThreadCreator<IOControl>* > lst_iothr;
 		for( int i=0; i<MaxAddNum; i++ )
 		{
-			ThreadCreator<IOControl>* io_thr = NULL;
-			
 			stringstream s;
 			s << "--add-io";
 			if( i>0 ) s << i;
@@ -87,6 +85,7 @@ int main( int argc, const char **argv )
 				IOControl* ic = IOControl::init_iocontrol(argc,argv,shm->getId(),shm,p.str());
 				if( ic == NULL )
 					return 1;
+
 				ThreadCreator<IOControl>* io_thr = new ThreadCreator<IOControl>(ic, &IOControl::execute);
 				if( io_thr == NULL )
 					return 1;

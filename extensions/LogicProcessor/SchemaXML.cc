@@ -16,7 +16,7 @@ SchemaXML::~SchemaXML()
 {
 }
 // -------------------------------------------------------------------------
-void SchemaXML::read( const string xmlfile )
+void SchemaXML::read( const string& xmlfile )
 {
 	UniXML xml;
 	
