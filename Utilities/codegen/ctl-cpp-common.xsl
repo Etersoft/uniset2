@@ -553,7 +553,7 @@ end_private(false)
 }
 // -----------------------------------------------------------------------------
 // ( val, confval, default val )
-static const std::string init3_str(const std::string s1, const std::string s2, const std::string s3 )
+static const std::string init3_str(const std::string& s1, const std::string& s2, const std::string& s3 )
 {
 	if( !s1.empty() )
 		return s1;
@@ -872,7 +872,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 <xsl:template name="COMMON-CC-ALONE-FUNCS">
 // -----------------------------------------------------------------------------
 // ( val, confval, default val )
-static const std::string init3_str(const std::string s1, const std::string s2, const std::string s3 )
+static const std::string init3_str(const std::string& s1, const std::string& s2, const std::string& s3 )
 {
 	if( !s1.empty() )
 		return s1;
