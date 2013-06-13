@@ -33,7 +33,7 @@ enum Command
 	cmdReceive
 };
 // --------------------------------------------------------------------------
-static bool split_addr( const string addr, string& host, ost::tpport_t& port )
+static bool split_addr( const string& addr, string& host, ost::tpport_t& port )
 {
 	string::size_type pos = addr.rfind(':');
 	if(  pos != string::npos )

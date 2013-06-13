@@ -89,7 +89,7 @@ class UNetExchange:
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* argv[] );
 
-		bool checkExistUNetHost( const std::string host, ost::tpport_t port );
+		bool checkExistUNetHost( const std::string& host, ost::tpport_t port );
 
 	protected:
 
@@ -142,6 +142,7 @@ class UNetExchange:
 		{
 			ReceiverInfo():r1(0),r2(0),
 				sidRespond(UniSetTypes::DefaultObjectId),
+				respondInvert(false),
 				sidLostPackets(UniSetTypes::DefaultObjectId)
 			{}
 
@@ -155,7 +156,7 @@ class UNetExchange:
 			UNetReceiver* r1;  	/*!< приём по первому каналу */
 			UNetReceiver* r2;	/*!< приём по второму каналу */
 
-			void step( SMInterface* shm, const std::string myname );
+			void step( SMInterface* shm, const std::string& myname );
 
 			inline void setRespondID( UniSetTypes::ObjectId id, bool invert=false )
 			{
