@@ -31,7 +31,7 @@ rs_pre_clean(false)
 	{
 		string p("--" + prefix + "-set-prop-prefix");
 		string v = conf->getArgParam(p,"");
-		if( !v.empty() )
+		if( !v.empty() && v[0] != '-' )
 			prop_prefix = v;
 		// если параметр всё-таки указан, считаем, что это попытка задать "пустой" префикс
 		else if( findArgParam(p,conf->getArgc(),conf->getArgv()) != -1 )
