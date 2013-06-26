@@ -29,9 +29,9 @@ pollThread(0)
 	// если "принудительно" задан префикс
 	// используем его.
 	{
-		string p("--" + prefix + "-set-prop-prefix"); 
+		string p("--" + prefix + "-set-prop-prefix");
 		string v = conf->getArgParam(p,"");
-		if( !v.empty() )
+		if( !v.empty() && v[0] != '-' )
 			prop_prefix = v;
 		// если параметр всё-таки указан, считаем, что это попытка задать "пустой" префикс
 		else if( findArgParam(p,conf->getArgc(),conf->getArgv()) != -1 )
@@ -169,7 +169,7 @@ void MBTCPMaster::help_print( int argc, const char* const* argv )
 	// ---------- init MBTCP ----------
 //	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
 	cout << " Настройки протокола TCP: " << endl;
-	cout << "--prefix-gateway hostname,IP           - IP опрашиваемого узла" << endl;
+	cout << "--prefix-gateway-iaddr hostname,IP     - IP опрашиваемого узла" << endl;
 	cout << "--prefix-gateway-port num              - port на опрашиваемом узле" << endl;
 	cout << "--prefix-persistent-connection 0,1     - Не закрывать соединение на каждом цикле опроса" << endl;
 }
