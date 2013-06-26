@@ -27,7 +27,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <cstring>
 #include <string>
 
 /*! Эти 2 значения используются в TableBlockStorage как флаги для поля count, чтобы не вводить лишнее поле
