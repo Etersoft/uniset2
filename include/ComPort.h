@@ -69,6 +69,8 @@ public:
 	ComPort( const std::string comDevice, bool nocreate=false );
 	virtual ~ComPort();
 	
+	inline std::string getDevice(){ return dev; }
+
 	void setSpeed( Speed s );
 	void setSpeed( std::string speed );
 	inline Speed getSpeed(){ return speed; }
