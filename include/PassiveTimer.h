@@ -65,8 +65,8 @@ class UniSetTimer
 		static const timeout_t WaitUpTime = TIMEOUT_INF;
 		
 		/*! Минимальное время срабатывания. Задается в мсек. */
-		static const timeout_t MinQuantityTime = 30;
-		static const timeout_t MIN_QUANTITY_TIME_MS = 30; /*< устарело, не использовать! */
+		static const timeout_t MinQuantityTime = 10;
+		static const timeout_t MIN_QUANTITY_TIME_MS = 10; /*< устарело, не использовать! */
 };
 //----------------------------------------------------------------------------------------
 /*! \class PassiveTimer
