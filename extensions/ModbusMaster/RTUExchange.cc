@@ -157,15 +157,12 @@ void RTUExchange::step()
 {
 	try
 	{
-		if( sidExchangeMode != DefaultObjectId && force_out )
+		if( sidExchangeMode != DefaultObjectId && force )
 			exchangeMode = shm->localGetValue(aitExchangeMode,sidExchangeMode);
 	}
 	catch(...){}
 
-	{
-		uniset_mutex_lock l(pollMutex,2000);
-		poll();
-	}
+	poll();
 
 	MBExchange::step();
 }
