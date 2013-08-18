@@ -178,7 +178,7 @@ Libraries needed to develop for uniset extensions
 
 %build
 %autoreconf
-%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite}
+%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable python}
 %make
 
 %install
