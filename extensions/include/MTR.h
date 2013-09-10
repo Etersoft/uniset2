@@ -664,12 +664,13 @@ namespace MTR
 			T_Str16():sval(""){}
 			T_Str16( const ModbusRTU::ReadInputRetMessage& ret )
 			{
-				char c[16];
+				char c[17];
 				ModbusRTU::ModbusData data[8];
 				for( int i=0; i<8; i++ )
 					data[i] = ModbusRTU::SWAPSHORT(ret.data[i]);
 
-				memcpy(c,&data,sizeof(c));
+				memcpy(c,&data,16);
+				c[16] = '\0';
 				sval = std::string(c);
 			}
 
@@ -693,11 +694,12 @@ namespace MTR
 			T_Str8():sval(""){}
 			T_Str8( const ModbusRTU::ReadInputRetMessage& ret )
 			{
-				char c[8];
+				char c[9];
 				ModbusRTU::ModbusData data[4];
 				for( int i=0; i<4; i++ )
 					data[i] = ModbusRTU::SWAPSHORT(ret.data[i]);
-				memcpy(c,&data,sizeof(c));
+				memcpy(c,&data,8);
+                c[8] = '\0';
 				sval = std::string(c);
 			}
 
