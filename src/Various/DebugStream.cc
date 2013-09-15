@@ -28,6 +28,7 @@
 #include <sstream>
 #include <iomanip>
 #include <time.h>
+#include <iomanip>
 
 using std::ostream;
 using std::streambuf;
@@ -239,7 +240,7 @@ std::ostream & DebugStream::debug(Debug::type t)
 	{
 		if( show_datetime )
 			print_datetime(t);
-		*this << "(" << t << "):  "; // "):\t";
+		*this << "(" << std::setfill(' ') << std::setw(6) << t << "):  "; // "):\t";
 		return *this;
 	}
 	
