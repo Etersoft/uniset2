@@ -50,6 +50,7 @@ namespace MTR
 	std::string getSerialNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr );
 	// -------------------------------------------------------------------------
 	// Настройки связи (чтение - read03, запись - write06)
+	const ModbusRTU::ModbusData regUpdateConfiguration = 53;
 	const ModbusRTU::ModbusData regAddress		= 55;
 	const ModbusRTU::ModbusData regBaudRate		= 56;
 	const ModbusRTU::ModbusData regStopBit		= 57; /* 0 - Stop bit, 1 - Stop bits */
