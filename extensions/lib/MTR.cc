@@ -412,7 +412,7 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
 				catch( ModbusRTU::mbException& ex )
 				{
 					/* if speed is changed we receive a timeout error */
-					if( reg == 56 && it->first == ModbusRTU::erTimeOut )
+					if( reg == 56 && ex.err == ModbusRTU::erTimeOut )
 					{
 						update_communication_params(reg, *it1, mb, addr, verb);
 //						ok = true;
@@ -431,7 +431,11 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
 //		if( !ok )
 //			return false;
 	}
-	
+    
+    ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(addr,53,1);
+    if( verb )
+      cout << "(mtr-setup): save parameters " << endl;
+    
 	return true;
 }
 // ------------------------------------------------------------------------------------------
