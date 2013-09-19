@@ -331,14 +331,14 @@ ComPort::Parity get_parity( ModbusRTU::ModbusData data )
 void update_communication_params( ModbusRTU::ModbusAddr reg, ModbusRTU::ModbusData data,
 				  ModbusRTUMaster* mb, ModbusRTU::ModbusAddr& addr, int verb )
 {
-	if( reg == 55 )
+	if( reg == regAddress )
 	{
 		addr = data;
 		if( verb )
 			cout << "(mtr-setup): slaveaddr is set to "
 				 << ModbusRTU::addr2str(addr) << endl;
 	}
-	else if( reg == 56 )
+	else if( reg == regBaudRate )
 	{
 		ComPort::Speed speed = get_speed(data);
 		if( speed != ComPort::ComSpeed0 )
@@ -349,7 +349,7 @@ void update_communication_params( ModbusRTU::ModbusAddr reg, ModbusRTU::ModbusDa
 					 << ComPort::getSpeed(speed) << endl;
 		}
 	}
-	else if( reg == 57 )
+	else if( reg == regStopBit )
 	{
 		if( data == 0 )
 			mb->setStopBits(ComPort::OneBit);
@@ -360,7 +360,7 @@ void update_communication_params( ModbusRTU::ModbusAddr reg, ModbusRTU::ModbusDa
 			cout << "(mtr-setup): number of stop bits is set to "
 				 << data + 1 << endl;
 	}
-	else if( reg == 58 )
+	else if( reg == regParity )
 	{
 		if (data != 0 && data != 1 && data != 2)
 			return;
@@ -412,7 +412,7 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
 				catch( ModbusRTU::mbException& ex )
 				{
 					/* if speed is changed we receive a timeout error */
-					if( reg == 56 && ex.err == ModbusRTU::erTimeOut )
+					if( reg == regBaudRate && ex.err == ModbusRTU::erTimeOut )
 					{
 						update_communication_params(reg, *it1, mb, addr, verb);
 //						ok = true;
@@ -432,7 +432,7 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
 //			return false;
 	}
 
-    ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(addr,53,1);
+    ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(addr,regUpdateConfiguration,1);
     if( verb )
       cout << "(mtr-setup): save parameters " << endl;
 
