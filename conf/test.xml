@@ -45,9 +45,9 @@
 			<item name="UniExchange2" node="Node2"/>
 			<item id="3001" node_id="Node2"/>
 		</UniExchange>
-		<MBMaster1 addr="0x31" iaddr="127.0.0.1" levels="info,warn,crit" name="MBMaster1" poll_time="200" port="30000" reply_timeout="60">
+		<MBMaster1 iaddr="127.0.0.1" levels="info,warn,crit" name="MBMaster1" poll_time="200" port="30000" reply_timeout="60">
 			<DeviceList>
-				<item addr="0x02" invert="0" respondSensor="RespondRTU_S" timeout="5000"/>
+				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" timeout="5000" modeSensor="MB1_Mode_AS"/>
 			</DeviceList>
 		</MBMaster1>
 		<MBSlave1 addr="0x31" aftersend-pause="0" dev="/dev/ttyS0" levels="info,warn,crit" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600">
@@ -103,7 +103,7 @@
 		</MBSlave1>
 		<RTUExchange name="RTUExchange">
 			<DeviceList>
-				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" timeout="5000"/>
+				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" modeSensor="MB1_Mode_AS" timeout="5000"/>
 			</DeviceList>
 		</RTUExchange>
 		<UDPExchange name="UDPExchange"/>
@@ -136,7 +136,7 @@
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">
 			<item db_ignore="1" default="1" id="1" iotype="DI" name="Input1_S" priority="Medium" textname="Команда 1"/>
-			<item id="2" iotype="DI" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input2_S" priority="Medium" rs="2" textname="Команда 2"/>
+			<item id="2" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="11" mbtype="rtu" name="Input2_S" priority="Medium" rs="4" textname="Команда 2"/>
 			<item id="3" iotype="DI"  mbtcp="1" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" name="Input3_S" priority="Medium" textname="Команда 3"/>
 			<item id="4" iotype="DI" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input4_S" priority="Medium" rs="2" textname="Команда 4"/>
 			<item id="5" iotype="DI" name="Input5_S" priority="Medium" textname="Команда 5" udp="2"/>
@@ -178,6 +178,12 @@
 			<item id="32" iotype="AI" mbtcp_mbaddr="1" mbtcp_mbfunc="0x04" mbtcp_mbreg="43" mbtcp_mbtype="rtu" mbtcp_vtype="I2" name="performance1" noprecision="1" precision="6" rs="mbmaster" textname="Производительность танка 1"/>
 			<item id="33" iotype="DI" name="Message1" priority="Medium" textname="Текст сообщения 1"/>
 			<item id="34" iotype="AI" name="MB1_Mode_AS" priority="Medium" textname="ModbusExchange Mode"/>
+
+			<item id="50" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="0" mbtype="rtu" name="Input50_S" priority="Medium" rs="5" textname="Команда 2"/>
+			<item id="51" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" ntit="1" mbtype="rtu" name="Input51_S" priority="Medium" rs="5" textname="Команда 2"/>
+			<item id="52" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="1" mbtype="rtu" name="Input52_S" priority="Medium" rs="5" textname="Команда 2"/>
+			<item id="53" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" nbit="2" mbtype="rtu" name="Input53_S" priority="Medium" rs="5" textname="Команда 2"/>
+
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">

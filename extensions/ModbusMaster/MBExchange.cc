@@ -302,6 +302,7 @@ void MBExchange::initIterators()
 	{
 		RTUDevice* d(it1->second);
 		shm->initDIterator(d->resp_dit);
+		shm->initAIterator(d->mode_ait);
 		for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
 			for( PList::iterator it2=it->second->slst.begin();it2!=it->second->slst.end(); ++it2 )
@@ -313,9 +314,20 @@ void MBExchange::initIterators()
 	}
 }
 // -----------------------------------------------------------------------------
-bool MBExchange::checkUpdateSM( bool wrFunc )
+bool MBExchange::checkUpdateSM( bool wrFunc, long mdev )
 {
-	if( wrFunc && exchangeMode == emReadOnly )
+	if( exchangeMode == emSkipExchange || mdev == emSkipExchange )
+	{
+		if( wrFunc )
+			return true; // данные для посылки, должны обновляться всегда (чтобы быть актуальными)
+
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << "(checkUpdateSM):"
+				<< " skip... mode='emSkipExchange' " << endl;
+		return false;
+	}
+
+	if( wrFunc && (exchangeMode == emReadOnly || mdev == emReadOnly) )
 	{
 		if( dlog.debugging(Debug::LEVEL3) )
 			dlog[Debug::LEVEL3] << "(checkUpdateSM):"
@@ -323,7 +335,7 @@ bool MBExchange::checkUpdateSM( bool wrFunc )
 		return false;
 	}
 
-	if( !wrFunc && exchangeMode == emWriteOnly )
+	if( !wrFunc && (exchangeMode == emWriteOnly || mdev == emWriteOnly) )
 	{
 		if( dlog.debugging(Debug::LEVEL3) )
 			dlog[Debug::LEVEL3] << "(checkUpdateSM):"
@@ -331,7 +343,7 @@ bool MBExchange::checkUpdateSM( bool wrFunc )
 		return false;
 	}
 
-	if( wrFunc && exchangeMode == emSkipSaveToSM )
+	if( wrFunc && (exchangeMode == emSkipSaveToSM || mdev == emSkipSaveToSM) )
 	{
 		if( dlog.debugging(Debug::LEVEL3) )
 			dlog[Debug::LEVEL3] << "(checkUpdateSM):"
@@ -764,6 +776,15 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 {
 	RegInfo* p(it->second);
 
+	if( dev->mode == emSkipExchange )
+	{
+		if( dlog.debugging(Debug::LEVEL3)  )
+			dlog[Debug::LEVEL3] << myname << "(pollRTU): SKIP EXCHANGE (mode=emSkipExchange) "
+				<< " mbaddr=" << ModbusRTU::addr2str(dev->mbaddr)
+				<< endl;
+		return true;
+	}
+
 	if( dlog.debugging(Debug::LEVEL3)  )
 	{
 		dlog[Debug::LEVEL3] << myname << "(pollRTU): poll "
@@ -964,6 +985,40 @@ void MBExchange::updateSM()
 	{
 		RTUDevice* d(it1->second);
 
+		if( d->mode_id != DefaultObjectId )
+		{
+			try
+			{
+				if( !shm->isLocalwork() )
+					d->mode = shm->localGetValue(d->mode_ait,d->mode_id);
+			}
+			catch(IOController_i::NameNotFound &ex)
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateSM):(NameNotFound) " << ex.err << endl;
+			}
+			catch(IOController_i::IOBadParam& ex )
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
+			}
+			catch(IONotifyController_i::BadRange )
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateSM): (BadRange)..." << endl;
+			}
+			catch( Exception& ex )
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateSM): " << ex << endl;
+			}
+			catch(CORBA::SystemException& ex)
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateSM): CORBA::SystemException: "
+					<< ex.NP_minorString() << endl;
+			}
+			catch(...)
+			{
+				dlog[Debug::LEVEL3] << myname << "(updateSM): check modeSensor..catch ..." << endl;
+			}
+		}
+
 		// обновление датчиков связи происходит в другом потоке
 		// чтобы не зависеть от TCP таймаутов
 		// см. updateRespondSensors()
@@ -1031,7 +1086,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 	if( !save && write_only )
 		return;
 
-	if( !checkUpdateSM(save) )
+	if( !checkUpdateSM(save,r->dev->mode) )
 		return;
 
 	// если требуется инициализация и она ещё не произведена,
@@ -1345,32 +1400,14 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 void MBExchange::updateMTR( RegMap::iterator& rit )
 {
 	RegInfo* r(rit->second);
+	if( !r || !r->dev )
+		return;
+
 	using namespace ModbusRTU;
 	bool save = isWriteFunction( r->mbfunc );
 
-	if( save && exchangeMode == emReadOnly )
-	{
-		if( dlog.debugging(Debug::LEVEL3) )
-			dlog[Debug::LEVEL3] << myname << "(updateMTR):"
-				<< " skip... mode=emReadOnly " << endl;
+	if( !checkUpdateSM(save,r->dev->mode) )
 		return;
-	}
-
-	if( !save && exchangeMode == emWriteOnly )
-	{
-		if( dlog.debugging(Debug::LEVEL3) )
-			dlog[Debug::LEVEL3] << myname << "(updateMTR):"
-				<< " skip... mode=emWriteOnly " << endl;
-		return;
-	}
-
-	if( save && exchangeMode == emSkipSaveToSM )
-	{
-		if( dlog.debugging(Debug::LEVEL3) )
-			dlog[Debug::LEVEL3] << myname << "(updateMTR):"
-				<< " skip... mode=emSkipSaveToSM " << endl;
-		return;
-	}
 
 	{
 		for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
@@ -1608,7 +1645,15 @@ void MBExchange::updateRTU188( RegMap::iterator& rit )
 		return;
 	}
 
-	if( save && exchangeMode == emReadOnly )
+	if( exchangeMode == emSkipExchange || r->dev->mode == emSkipExchange )
+	{
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188):"
+				<< " skip... mode=emSkipExchange " << endl;
+		return;
+	}
+
+	if( save && (exchangeMode == emReadOnly || r->dev->mode == emReadOnly) )
 	{
 		if( dlog.debugging(Debug::LEVEL3) )
 			dlog[Debug::LEVEL3] << myname << "(updateRTU188):"
@@ -1616,7 +1661,7 @@ void MBExchange::updateRTU188( RegMap::iterator& rit )
 		return;
 	}
 
-	if( !save && exchangeMode == emWriteOnly )
+	if( !save && ( exchangeMode == emWriteOnly || r->dev->mode == emWriteOnly) )
 	{
 		if( dlog.debugging(Debug::LEVEL3) )
 			dlog[Debug::LEVEL3] << myname << "(updateRTU188):"
@@ -1624,7 +1669,7 @@ void MBExchange::updateRTU188( RegMap::iterator& rit )
 		return;
 	}
 
-	if( save && exchangeMode == emSkipSaveToSM )
+	if( save && ( exchangeMode == emSkipSaveToSM || r->dev->mode == emSkipSaveToSM) )
 	{
 		if( dlog.debugging(Debug::LEVEL3) )
 			dlog[Debug::LEVEL3] << myname << "(updateRT188):"
@@ -2327,7 +2372,25 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 		d->second->resp_id = conf->getSensorID(s);
 		if( d->second->resp_id == DefaultObjectId )
 		{
-			dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for noRespondSensor=" << s << endl;
+			dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for respondSensor=" << s << endl;
+			return false;
+		}
+    }
+
+	string mod(it.getProp("modeSensor"));
+	if( !mod.empty() )
+	{
+		d->second->mode_id = conf->getSensorID(mod);
+		if( d->second->mode_id == DefaultObjectId )
+		{
+			dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for modeSensor=" << mod << endl;
+			return false;
+		}
+
+		UniversalIO::IOTypes m_iotype = conf->getIOType(d->second->mode_id);
+		if( m_iotype != UniversalIO::AnalogInput )
+		{
+			dlog[Debug::CRIT] << myname << "(initDeviceInfo): modeSensor='" << mod << "' must be 'AI'" << endl;
 			return false;
 		}
     }
@@ -2449,6 +2512,8 @@ void MBExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 				initOutput();
 			}
 
+
+			updateSM();
 			askTimer(tmExchange,polltime);
 			break;
 		}
@@ -2524,9 +2589,6 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 		throw SystemError(err.str());
 	}
 
-	if( force_out )
-		return;
-
 	try
 	{
 		if( sidExchangeMode != DefaultObjectId )
@@ -2544,6 +2606,24 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
+
+		try
+		{
+			if( d->mode_id != DefaultObjectId )
+				shm->askSensor(d->mode_id,cmd);
+		}
+		catch( UniSetTypes::Exception& ex )
+		{
+			dlog[Debug::WARN] << myname << "(askSensors): " << ex << std::endl;
+		}
+		catch(...)
+		{
+			dlog[Debug::WARN] << myname << "(askSensors): (mode_id=" << d->mode_id << ").. catch..." << std::endl;
+		}
+
+		if( force_out )
+			return;
+
 		for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
 			if( !isWriteFunction(it->second->mbfunc) )
@@ -2561,7 +2641,7 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 				}
 				catch(...)
 				{
-					dlog[Debug::WARN] << myname << "(askSensors): catch..." << std::endl;
+					dlog[Debug::WARN] << myname << "(askSensors): id=" << i->si.id << " catch..." << std::endl;
 				}
 			}
 		}
@@ -2570,20 +2650,24 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 // ------------------------------------------------------------------------------------------
 void MBExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
-	if( force_out )
-		return;
-
 	if( sm->id == sidExchangeMode )
 	{
 		exchangeMode = sm->value;
 		if( dlog.debugging(Debug::LEVEL3) )
 			dlog[Debug::LEVEL3] << myname << "(sensorInfo): exchange MODE=" << sm->value << std::endl;
-		return;
+		//return; // этот датчик может встречаться и в списке обмена.. поэтому делать return нельзя.
 	}
 
 	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
+
+		if( sm->id == d->mode_id )
+			d->mode = sm->value;
+
+		if( force_out )
+			continue;
+
 		for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
 			if( !isWriteFunction(it->second->mbfunc) )
@@ -2665,8 +2749,11 @@ void MBExchange::poll()
 	{
 		RTUDevice* d(it1->second);
 
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr)
+		if( d->mode_id != DefaultObjectId && d->mode == emSkipExchange )
+			continue;
+
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr)
 				<< " regs=" << d->regmap.size() << endl;
 
 		d->resp_real = false;
