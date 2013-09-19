@@ -39,10 +39,11 @@ class MBExchange:
 		/*! Режимы работы процесса обмена */
 		enum ExchangeMode
 		{
-			emNone, 		/*!< нормальная работа (по умолчанию) */
-			emWriteOnly, 	/*!< "только посылка данных" (работают только write-функции) */
-			emReadOnly,		/*!< "только чтение" (работают только read-функции) */
-			emSkipSaveToSM	/*!< не писать данные в SM (при этом работают и read и write функции */
+			emNone=0, 		/*!< нормальная работа (по умолчанию) */
+			emWriteOnly=1, 	/*!< "только посылка данных" (работают только write-функции) */
+			emReadOnly=2,		/*!< "только чтение" (работают только read-функции) */
+			emSkipSaveToSM=3,	/*!< не писать данные в SM (при этом работают и read и write функции */
+			emSkipExchange=4  /*!< отключить обмен */
 		};
 
 		friend std::ostream& operator<<( std::ostream& os, const ExchangeMode& em );
@@ -145,6 +146,8 @@ class MBExchange:
 			resp_real(false),
 			resp_init(false),
 			ask_every_reg(false),
+			mode_id(UniSetTypes::DefaultObjectId),
+			mode(emNone),
 			speed(ComPort::ComSpeed38400),
 			rtu(0)
 			{
@@ -166,6 +169,9 @@ class MBExchange:
 			bool resp_real;
 			bool resp_init;
 			bool ask_every_reg;
+			UniSetTypes::ObjectId mode_id;
+			IOController::AIOStateList::iterator mode_ait;
+			long mode; // режим работы с устройством (см. ExchangeMode)
 
 			// return TRUE if state changed
 			bool checkRespond();
@@ -240,8 +246,8 @@ class MBExchange:
 		void updateRTU188(RegMap::iterator& it);
 		void updateRSProperty( RSProperty* p, bool write_only=false );
 		virtual void updateRespondSensors();
-
-		bool checkUpdateSM( bool wrFunc );
+		
+		bool checkUpdateSM( bool wrFunc, long devMode );
 		bool checkPoll( bool wrFunc );
 
 		bool checkProcActive();

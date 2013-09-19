@@ -209,6 +209,9 @@ void RTUExchange::poll()
 	{
 		RTUDevice* d(it1->second);
 
+		if( d->mode_id != DefaultObjectId && d->mode == emSkipExchange )
+			continue;
+	
 		if( d->speed != s )
 		{
 			s = d->speed;
@@ -220,9 +223,9 @@ void RTUExchange::poll()
 			if( !d->rtu )
 				continue;
 
-			if( dlog.debugging(Debug::INFO) )
+			if( dlog.debugging(Debug::LEVEL3) )
 			{
-				dlog[Debug::INFO] << myname << "(pollRTU188): poll RTU188 "
+				dlog[Debug::LEVEL3] << myname << "(pollRTU188): poll RTU188 "
 					<< " mbaddr=" << ModbusRTU::addr2str(d->mbaddr)
 					<< endl;
 			}
@@ -250,8 +253,8 @@ void RTUExchange::poll()
 		}
 		else
 		{
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr)
+			if( dlog.debugging(Debug::LEVEL3) )
+				dlog[Debug::LEVEL3] << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr)
 				<< " regs=" << d->regmap.size() << endl;
 
 			d->resp_real = false;
