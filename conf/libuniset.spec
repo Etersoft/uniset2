@@ -321,6 +321,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %changelog
 * Thu Sep 19 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt12
 - (Modbus): Added ability to set the sensor mode (modeSensor) for each device
+- fixed bug in MTR types: T_Str16 and T_Str8 (tnx ilyap)
+- fixed bug in MTR::send_param
 
 * Thu Jun 13 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt11
 - fixed after cppcheck checking
