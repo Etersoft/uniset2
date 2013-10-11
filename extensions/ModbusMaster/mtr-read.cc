@@ -15,6 +15,8 @@ static struct option longopts[] = {
 	{ "help", no_argument, 0, 'h' },
 	{ "read03", required_argument, 0, 'r' },
 	{ "read04", required_argument, 0, 'x' },
+	{ "read-model", required_argument, 0, 'm' },
+	{ "read-serial", required_argument, 0, 'n' },
 	{ "device", required_argument, 0, 'd' },
 	{ "verbose", no_argument, 0, 'v' },
 	{ "speed", required_argument, 0, 's' },
@@ -29,6 +31,8 @@ static void print_help()
 	printf("-h|--help 		- this message\n");
 	printf("[--read03] slaveaddr reg mtrtype  - read from MTR (mtrtype: T1...T10,T16,T17,F1)\n");
 	printf("[--read04] slaveaddr reg mtrtype  - read from MTR (mtrtype: T1...T10,T16,T17,F1)\n");
+	printf("[-m|--read-model] slaveaddr     - read model name from MTR\n");
+	printf("[-n|--read-serial] slaveaddr    - read serial number from MTR\n");
 	printf("[-y|--use485F]                  - use RS485 Fastwel.\n");
 	printf("[-d|--device] dev               - use device dev. Default: /dev/ttyS0\n");
 	printf("[-s|--speed] speed              - 9600,14400,19200,38400,57600,115200. Default: 38400.\n");
@@ -41,7 +45,9 @@ enum Command
 {
 	cmdNOP,
 	cmdRead03,
-	cmdRead04
+	cmdRead04,
+	cmdModel,
+	cmdSerial
 };
 // --------------------------------------------------------------------------
 static char* checkArg( int ind, int argc, char* argv[] );
@@ -68,7 +74,7 @@ int main( int argc, char **argv )
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "hvyq:r:d:s:t:x:",longopts,&optindex)) != -1 )
+		while( (opt = getopt_long(argc, argv, "hvyq:r:d:s:t:x:m:n:",longopts,&optindex)) != -1 )
 		{
 			switch (opt)
 			{
@@ -104,6 +110,20 @@ int main( int argc, char **argv )
 						cerr << "command error: Unknown mtr type: '" << string(argv[optind+1]) << "'" << endl;
 						return 1;
 					}
+				}
+				break;
+
+				case 'm':
+				{
+					cmd = cmdModel;
+					slaveaddr = ModbusRTU::str2mbAddr( optarg );
+				}
+				break;
+
+				case 'n':
+				{
+					cmd = cmdSerial;
+					slaveaddr = ModbusRTU::str2mbAddr( optarg );
 				}
 				break;
 
@@ -177,6 +197,34 @@ int main( int argc, char **argv )
 					}
 
 					readMTR( &mb, slaveaddr, reg, mtrtype, cmd );
+				}
+				break;
+
+				case cmdModel:
+				{
+					if( verb )
+					{
+						cout << " read model name: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+							 << endl;
+					}
+
+					string s(MTR::getModelNumber(&mb, slaveaddr));
+					cout << (s.empty()? "Don`t read model name.":s) << endl;
+					return 0;
+				}
+				break;
+
+				case cmdSerial:
+				{
+					if( verb )
+					{
+						cout << " read serial number: slaveaddr=" << ModbusRTU::addr2str(slaveaddr)
+							 << endl;
+					}
+
+					string s(MTR::getSerialNumber(&mb, slaveaddr));
+					cout << (s.empty()? "Don`t read serial number.":s) << endl;
+					return 0;
 				}
 				break;
 
