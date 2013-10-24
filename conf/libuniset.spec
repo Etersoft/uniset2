@@ -7,7 +7,7 @@
 
 Name: libuniset
 Version: 1.6
-Release: alt12
+Release: alt13
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -319,6 +319,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Thu Oct 24 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt13
+- (python): add getArgParam, getArgInt and checkArg functions for UGlobal.py
+
 * Thu Sep 19 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt12
 - (Modbus): Added ability to set the sensor mode (modeSensor) for each device
 - fixed bug in MTR types: T_Str16 and T_Str8 (tnx ilyap)

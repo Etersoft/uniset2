@@ -3,6 +3,7 @@
 
 from pyUConnector import *
 import time
+import sys
 
 def is_id( str_id ):
     if str_id.__class__.__name__ == "int":
@@ -219,3 +220,30 @@ def fcalibrate( raw, rawMin, rawMax, calMin, calMax ):
        return 0; # деление на 0!!!
 
     return 1.0 * (raw - rawMin) * (calMax - calMin) / ( rawMax - rawMin ) + calMin;
+
+def getArgParam(param,defval=""):
+    for i in range(0, len(sys.argv)):
+        if sys.argv[i] == param:
+            if i+1 < len(sys.argv):
+                return sys.argv[i+1]
+            else:
+                break;
+            
+    return defval
+    
+def getArgInt(param,defval=0):
+    for i in range(0, len(sys.argv)):
+        if sys.argv[i] == param:
+            if i+1 < len(sys.argv):
+                return to_int(strsys.argv[i+1])
+            else:
+                break;
+        
+    return defval
+    
+def checkArgParam(param,defval=""):
+    for i in range(0, len(sys.argv)):
+        if sys.argv[i] == param:
+            return True
+        
+    return defval
