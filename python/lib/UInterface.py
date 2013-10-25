@@ -103,3 +103,21 @@ class UInterface():
            return ""
 
         raise UException("(setValue): Unknown interface %s"%self.utype)
+
+    def getShortName(self,s_node):
+        if self.itype == "uniset":
+           return self.i.getShortName(s_node)
+
+        if self.itype == "modbus":
+           return ""
+
+        raise UException("(getShortName): Unknown interface %s"%self.utype)
+
+    def getNodeID(self,s_node):
+        if self.itype == "uniset":
+           return self.i.getNodeID(s_node)
+
+        if self.itype == "modbus":
+           return None
+
+        raise UException("(getNodeID): Unknown interface %s"%self.utype)
