@@ -22,6 +22,9 @@ def to_int(s):
     if s.__class__.__name__ == "int":
        return s
 
+    if s.__class__.__name__ == "float":
+       return int(s)
+
     if len(s)>2 and s[0] == '0' and s[1] == 'x':
        return int(s,16)
 
