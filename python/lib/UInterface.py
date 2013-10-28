@@ -121,3 +121,12 @@ class UInterface():
            return None
 
         raise UException("(getNodeID): Unknown interface %s"%self.utype)
+
+    def getSensorID(self,s_name):
+        if self.itype == "uniset":
+           return self.i.getSensorID(s_name)
+
+        if self.itype == "modbus":
+           return None
+
+        raise UException("(getSensorID): Unknown interface %s"%self.utype)
