@@ -6,7 +6,7 @@ import time
 import sys
 
 def is_id( str_id ):
-    if str_id.__class__.__name__ == "int":
+    if str_id.__class__.__name__ == "int" or str_id.__class__.__name__ == "long":
        return True
 
     if str_id.strip().isdigit():
@@ -19,7 +19,7 @@ def to_int(s):
     if s == None or s == "":
        return 0
 
-    if s.__class__.__name__ == "int":
+    if s.__class__.__name__ == "int" or s.__class__.__name__ == "long":
        return s
 
     if len(s)>2 and s[0] == '0' and s[1] == 'x':
@@ -235,7 +235,7 @@ def getArgInt(param,defval=0):
     for i in range(0, len(sys.argv)):
         if sys.argv[i] == param:
             if i+1 < len(sys.argv):
-                return to_int(strsys.argv[i+1])
+                return to_int(sys.argv[i+1])
             else:
                 break;
 

@@ -7,7 +7,7 @@
 
 Name: libuniset
 Version: 1.6
-Release: alt13
+Release: alt15
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -319,6 +319,12 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Mon Oct 28 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt15
+- (python): fixed bug in UInterface
+
+* Sat Oct 26 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt14
+- (python): fixed bug in UInterface
+
 * Thu Oct 24 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt13
 - (python): add getArgParam, getArgInt and checkArg functions for UGlobal.py
 
