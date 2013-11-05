@@ -187,8 +187,8 @@
 		void setMsg( UniSetTypes::ObjectId code, bool state );
 
 
-		static DebugStream dlog;
-		static void init_dlog(DebugStream&amp; dlog);
+		DebugStream dlog;
+		void init_dlog(DebugStream&amp; dlog);
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PROTECTED">
@@ -258,15 +258,9 @@
 
 <xsl:template name="COMMON-CC-FILE">
 // ------------------------------------------------------------------------------------------
-DebugStream <xsl:value-of select="$CLASSNAME"/>_SK::dlog;
-static bool init_dlog_ok = false;
 void <xsl:value-of select="$CLASSNAME"/>_SK::init_dlog( DebugStream&amp; d )
 {
-	if( !init_dlog_ok )
-	{
-		<xsl:value-of select="$CLASSNAME"/>_SK::dlog = d;
-		init_dlog_ok = true;
-	}
+	<xsl:value-of select="$CLASSNAME"/>_SK::dlog = d;
 }
 // ------------------------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::VoidMessage* _msg )
