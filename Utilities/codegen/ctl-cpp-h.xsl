@@ -39,6 +39,7 @@
 #include <xsl:call-template name="preinclude"/>LT_Object.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>UniXML.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>Trigger.h<xsl:call-template name="postinclude"/>
+#include <xsl:call-template name="preinclude"/>DebugStream.h<xsl:call-template name="postinclude"/>
 // -----------------------------------------------------------------------------
 class <xsl:value-of select="$CLASSNAME"/>_SK:
 	<xsl:if test="normalize-space($BASECLASS)!=''">public <xsl:value-of select="normalize-space($BASECLASS)"/>,</xsl:if>

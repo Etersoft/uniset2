@@ -185,6 +185,10 @@
 		void askValue( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );
 		void updateValues();
 		void setMsg( UniSetTypes::ObjectId code, bool state );
+
+
+		static DebugStream dlog;
+		static void init_dlog(DebugStream&amp; dlog);
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PROTECTED">
@@ -253,6 +257,18 @@
 </xsl:template>
 
 <xsl:template name="COMMON-CC-FILE">
+// ------------------------------------------------------------------------------------------
+DebugStream <xsl:value-of select="$CLASSNAME"/>_SK::dlog;
+static bool init_dlog_ok = false;
+void <xsl:value-of select="$CLASSNAME"/>_SK::init_dlog( DebugStream&amp; d )
+{
+	if( !init_dlog_ok )
+	{
+		<xsl:value-of select="$CLASSNAME"/>_SK::dlog = d;
+		init_dlog_ok = true;
+	}
+}
+// ------------------------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::VoidMessage* _msg )
 {
 	try

@@ -148,8 +148,17 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( UniSetTypes::SensorM
 {
 	<xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@vartype)='in'">
+	<xsl:if test="normalize-space(@loglevel)=''">
 	if( _sm->id == <xsl:value-of select="@name"/> )
 			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = _sm->value;
+	</xsl:if>
+	<xsl:if test="normalize-space(@loglevel)!=''">
+	if( _sm->id == <xsl:value-of select="@name"/> )
+	{
+		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = _sm->value;
+		dlog.level( Debug::type(_sm->value) );
+	}
+	</xsl:if>
 	</xsl:if>
 	</xsl:for-each>
 	
