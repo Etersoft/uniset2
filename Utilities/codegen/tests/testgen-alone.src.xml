@@ -39,6 +39,11 @@
 					<consumer name="TestGenAlone" vartype="out" type="objects"/>
 				</consumers>
 			</item>
+			<item id="32" name="loglevel_s" iotype="AI" textname="loglevel" node="Test1Node">
+				<consumers>
+					<consumer name="TestGenAlone" vartype="in" loglevel="1" type="objects"/>
+				</consumers>
+			</item>
 		</sensors>
 		<messages>
 		</messages>
