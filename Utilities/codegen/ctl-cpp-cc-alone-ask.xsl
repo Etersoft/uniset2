@@ -18,6 +18,9 @@
 <xsl:variable name="TESTMODE">
 	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'testmode'"/></xsl:call-template>
 </xsl:variable>
+<xsl:variable name="ARGPREFIX">
+	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'arg-prefix'"/></xsl:call-template>
+</xsl:variable>
 
 <xsl:template match="/">
 <!-- BEGIN CC-FILE -->

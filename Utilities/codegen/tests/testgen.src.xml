@@ -15,8 +15,9 @@
   	<set name="class-name" val="TestGen"/>
   	<set name="msg-count" val="20"/>
 	<set name="sleep-msec" val="150"/>
+	<set name="arg-prefix" val="test-"/>
   </settings>
-  <variables arg_prefix="test-">
+  <variables>
       <!-- type = [int,str,bool,float]
          int:  max,min,no_range_exception=[0,1]
          str:
@@ -36,7 +37,7 @@
 		<item name="test_bool" type="bool" private="1"/>
 		<item name="test_str" type="str" default="ddd"/>
   </variables>
-  <smap arg_prefix="test-">
+  <smap>
 	<!-- name - название переменной в конф. файле -->
 	<item name="input1_s" vartype="in" iotype="DI" comment="comment for input1" smTestID="1"/>
 	<item name="input2_s" vartype="in" iotype="DI" comment="comment for input2" />

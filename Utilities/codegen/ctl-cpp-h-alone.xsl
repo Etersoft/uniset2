@@ -17,6 +17,9 @@
 <xsl:variable name="TESTMODE">
 	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'testmode'"/></xsl:call-template>
 </xsl:variable>
+<xsl:variable name="ARGPREFIX">
+	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'arg-prefix'"/></xsl:call-template>
+</xsl:variable>
 
 <!-- Генерирование заголовочного файла -->
 <xsl:template match="/">
@@ -48,7 +51,7 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 {
 	public:
 		<xsl:if test="not(normalize-space($OID))=''">
-				<xsl:value-of select="$CLASSNAME"/>_SK( UniSetTypes::ObjectId id = UniSetTypes::conf->getObjectID("<xsl:value-of select="$OID"/>"), xmlNode* node=UniSetTypes::conf->getNode("<xsl:value-of select="normalize-space($OID)"/>") );
+				<xsl:value-of select="$CLASSNAME"/>_SK( UniSetTypes::ObjectId id = UniSetTypes::conf->getObjectID("<xsl:value-of select="$OID"/>"), xmlNode* node=UniSetTypes::conf->getNode("<xsl:value-of select="normalize-space($OID)"/>"), const string&amp; argprefix="" );
 		</xsl:if>
 		<xsl:if test="normalize-space($OID)=''">
 				<xsl:value-of select="$CLASSNAME"/>_SK( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::conf->getNode("<xsl:value-of select="normalize-space($OID)"/>") );

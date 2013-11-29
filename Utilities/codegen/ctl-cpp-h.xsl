@@ -17,6 +17,9 @@
 <xsl:variable name="TESTMODE">
 	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'testmode'"/></xsl:call-template>
 </xsl:variable>
+<xsl:variable name="ARGPREFIX">
+	<xsl:call-template name="settings"><xsl:with-param name="varname" select="'arg-prefix'"/></xsl:call-template>
+</xsl:variable>
 
 <!-- Генерирование заголовочного файла -->
 <xsl:template match="/">
@@ -34,6 +37,7 @@
 #ifndef <xsl:value-of select="$CLASSNAME"/>_SK_H_
 #define <xsl:value-of select="$CLASSNAME"/>_SK_H_
 // -----------------------------------------------------------------------------
+#include &lt;string&gt;
 <xsl:if test="normalize-space($BASECLASS)!=''">#include <xsl:call-template name="preinclude"/><xsl:value-of select="normalize-space($BASECLASS)"/>.h<xsl:call-template name="postinclude"/></xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">#include <xsl:call-template name="preinclude"/>UniSetObject.h<xsl:call-template name="postinclude"/></xsl:if>
 #include <xsl:call-template name="preinclude"/>LT_Object.h<xsl:call-template name="postinclude"/>
@@ -48,10 +52,10 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 {
 	public:
 		<xsl:if test="not(normalize-space($OID))=''">
-				<xsl:value-of select="$CLASSNAME"/>_SK( UniSetTypes::ObjectId id = conf->getObjectID("<xsl:value-of select="$OID"/>"), xmlNode* node=UniSetTypes::conf->getNode("<xsl:value-of select="normalize-space($CNAME)"/>") );
+				<xsl:value-of select="$CLASSNAME"/>_SK( UniSetTypes::ObjectId id = conf->getObjectID("<xsl:value-of select="$OID"/>"), xmlNode* node=UniSetTypes::conf->getNode("<xsl:value-of select="normalize-space($CNAME)"/>"), const std::string&amp; argprefix="<xsl:value-of select="normalize-space($ARGPREFIX)"/>" );
 		</xsl:if>
 		<xsl:if test="normalize-space($OID)=''">
-				<xsl:value-of select="$CLASSNAME"/>_SK( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::conf->getNode("<xsl:value-of select="normalize-space($CNAME)"/>") );
+				<xsl:value-of select="$CLASSNAME"/>_SK( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::conf->getNode("<xsl:value-of select="normalize-space($CNAME)"/>"), const std::string&amp; argprefix="<xsl:value-of select="normalize-space($ARGPREFIX)"/>" );
 		</xsl:if>
 		<xsl:value-of select="$CLASSNAME"/>_SK();
 		virtual ~<xsl:value-of select="$CLASSNAME"/>_SK();
