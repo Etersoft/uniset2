@@ -89,8 +89,8 @@ def to_sid(str_id, ui):
 
     return [s_id,s_node,str(s_name+"@"+n_name)]
 
-# Получение списка пар [id,val,node] из строки "id1@node1=val1,id2=val2,.."
-def get_list(raw_str,ui,sep='='):
+# Получение списка пар [id@node,int(val)] из строки "id1@node1=val1,id2=val2,.."
+def get_int_list(raw_str,sep='='):
 
     if raw_str == None or raw_str == "":
        return []
@@ -116,7 +116,7 @@ def list_to_str(lst,sep='='):
 
     return res
 
-# Получение списка пар [s1,2] для реализации шаблонов
+# Получение списка пар [sX,kX] из строки "s1=k1,s2=k2,.."
 def get_str_list(raw_str,sep='='):
 
     if raw_str == None or raw_str == "":
@@ -133,7 +133,7 @@ def get_str_list(raw_str,sep='='):
            slist.append([v[0],""])
     return slist
 
-# Получение списка пар [key,val] из строки "key1=val1,key2=val2,.."
+# Получение списка пар [key,val] из строки "key1:val1,key2:val2,.."
 def get_replace_list(raw_str):
 
     if raw_str == None or raw_str == "":
