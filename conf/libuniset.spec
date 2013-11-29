@@ -7,7 +7,7 @@
 
 Name: libuniset
 Version: 1.6
-Release: alt16
+Release: alt17
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -319,6 +319,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Fri Nov 29 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt17
+- (uniset-codegen): move 'arg-prefix' from <variables> to <settings>
+
 * Tue Nov 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt16
 - (uniset-codegen): add 'loglevel' parameters for src.xml
 
