@@ -34,11 +34,15 @@ class UniXMLException(Exception):
 # -----------------------------
 class UniXML():
     
-    def __init__(self, xfile):
+    def __init__(self, xfile, isDoc=False):
         try:
             self.doc = None
-            self.fname = xfile
-            self.doc = libxml2.parseFile(xfile)
+            if isDoc:
+               self.fname = ''
+               self.doc = libxml2.parseDoc(xfile)
+            else:
+               self.fname = xfile
+               self.doc = libxml2.parseFile(xfile)
         except libxml2.parserError:
             raise UniXMLException("(UniXML): Can`t open file " + xfile)
         
@@ -147,11 +151,15 @@ class UniXML():
 
         return self.doc.saveFile(filename)
 
-    def reopen(self, filename):
+    def reopen(self, filename, isDoc=False):
         try:
             self.doc.freeDoc()
-            self.fname = filename
-            self.doc = libxml2.parseFile(filename)
+            if isDoc:
+                self.fname = ''
+                self.doc = libxml2.parseDoc(filename)
+            else:
+                self.fname = filename
+                self.doc = libxml2.parseFile(filename)
         except libxml2.parserError:
             sys.exit(-1)
 
