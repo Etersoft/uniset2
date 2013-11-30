@@ -94,7 +94,7 @@ def to_sid(str_id, ui):
 
 # Получение списка пар [id@node,int(val)] из строки "id1@node1=val1,id2=val2,.."
 def get_int_list(raw_str,sep='='):
-
+    
     if raw_str == None or raw_str == "":
        return []
 
