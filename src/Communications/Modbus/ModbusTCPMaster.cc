@@ -54,20 +54,22 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 	{
 		if( iaddr.empty() )
 		{
-				dlog[Debug::WARN] << "(query): unknown ip address for server..." << endl;
-				return erTimeOut; // erHardwareError
+			if( dlog.debugging(Debug::WARN) )
+				dlog[Debug::WARN] << iaddr << "(ModbusTCPMaster::query): unknown ip address for server..." << endl;
+			return erTimeOut; // erHardwareError
 		}
 
 		if( !isConnection() )
 		{
 				if( dlog.debugging(Debug::INFO) )
-						dlog[Debug::INFO] << "(ModbusTCPMaster): no connection.. reconnnect..." << endl;
+						dlog[Debug::INFO] << iaddr << "(ModbusTCPMaster::query): no connection.. reconnnect..." << endl;
 				reconnect();
 		}
 
 		if( !isConnection() )
 		{
-				dlog[Debug::WARN] << "(query): not connected to server..." << endl;
+			if( dlog.debugging(Debug::WARN) )
+				dlog[Debug::WARN] << iaddr << "(ModbusTCPMaster::query): not connected to server..." << endl;
 				return erTimeOut;
 		}
 
@@ -95,7 +97,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		// send TCP header
 		if( dlog.debugging(Debug::INFO) )
 		{
-			dlog[Debug::INFO] << "(ModbusTCPMaster::query): send tcp header(" << sizeof(mh) <<"): ";
+			dlog[Debug::INFO] << iaddr << "(ModbusTCPMaster::query): send tcp header(" << sizeof(mh) <<"): ";
 			mbPrintMessage( dlog, (ModbusByte*)(&mh), sizeof(mh));
 			dlog(Debug::INFO) << endl;
 		}
@@ -118,7 +120,8 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 			reconnect();
 			if( !isConnection() )
 			{
-				dlog[Debug::WARN] << "(ModbusTCPMaster::query): not connected to server..." << endl;
+				if( dlog.debugging(Debug::WARN) )
+					dlog[Debug::WARN] << "(ModbusTCPMaster::query): not connected to server..." << endl;
 				return erTimeOut;
 			}
 			cleanInputStream();
@@ -223,29 +226,35 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
-		dlog[Debug::WARN] << "(query): " << ex << endl;
+		if( dlog.debugging(Debug::WARN) )
+			dlog[Debug::WARN] << "(query): " << ex << endl;
 	}
 	catch( SystemError& err )
 	{
-		dlog[Debug::WARN] << "(query): " << err << endl;
+		if( dlog.debugging(Debug::WARN) )
+			dlog[Debug::WARN] << "(query): " << err << endl;
 	}
 	catch( Exception& ex )
 	{
-		dlog[Debug::WARN] << "(query): " << ex << endl;
+		if( dlog.debugging(Debug::WARN) )
+			dlog[Debug::WARN] << "(query): " << ex << endl;
 	}
 	catch( ost::SockException& e ) 
 	{
-		dlog[Debug::WARN] << "(query): tcp error: " << e.getString() << endl;
+		if( dlog.debugging(Debug::WARN) )
+			dlog[Debug::WARN] << "(query): tcp error: " << e.getString() << endl;
 		return erTimeOut;
 	}
 	catch( std::exception& e )
 	{
-		dlog[Debug::CRIT] << "(query): " << e.what() << std::endl;
+		if( dlog.debugging(Debug::WARN) )
+			dlog[Debug::CRIT] << "(query): " << e.what() << std::endl;
 		return erTimeOut;
 	}
 	catch(...)
 	{
-		dlog[Debug::WARN] << "(query): cath..." << endl;
+		if( dlog.debugging(Debug::WARN) )
+			dlog[Debug::WARN] << "(query): cath..." << endl;
 	}	
 
 	return erTimeOut; // erHardwareError
@@ -307,21 +316,27 @@ void ModbusTCPMaster::reconnect()
 	}
 	catch( std::exception& e )
 	{
-		ostringstream s;
-		s << "(ModbusTCPMaster): connection " << s.str() << " error: " << e.what();
-		dlog[Debug::CRIT] << s.str() << std::endl;
+		if( dlog.debugging(Debug::CRIT) )
+		{
+			ostringstream s;
+			s << "(ModbusTCPMaster): connection " << s.str() << " error: " << e.what();
+			dlog[Debug::CRIT] << s.str() << std::endl;
+		}
 	}
 	catch( ... )
 	{
-		ostringstream s;
-		s << "(ModbusTCPMaster): connection " << s.str() << " error: catch ...";
-		dlog[Debug::CRIT] << s.str() << std::endl;
+		if( dlog.debugging(Debug::CRIT) )
+		{
+			ostringstream s;
+			s << "(ModbusTCPMaster): connection " << s.str() << " error: catch ...";
+			dlog[Debug::CRIT] << s.str() << std::endl;
+		}
 	}
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::connect( const std::string addr, int port )
 {
-	ost::InetAddress ia(iaddr.c_str());
+	ost::InetAddress ia(addr.c_str());
 	connect(ia,port);
 }
 // -------------------------------------------------------------------------
@@ -347,7 +362,7 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
 		ost::Thread::setException(ost::Thread::throwException);
 		try
 		{		
-			tcp = new ost::TCPStream(iaddr.c_str());
+			tcp = new ost::TCPStream(iaddr.c_str(),ost::Socket::IPV4,536,true,500);
 			tcp->setTimeout(replyTimeOut_ms);
 		}
 		catch( std::exception& e )
@@ -374,7 +389,7 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
 void ModbusTCPMaster::disconnect()
 {
 	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "(ModbusTCPMaster): disconnect." << endl;
+		dlog[Debug::INFO] << iaddr << "(ModbusTCPMaster): disconnect." << endl;
 
 	if( !tcp )
 		return;

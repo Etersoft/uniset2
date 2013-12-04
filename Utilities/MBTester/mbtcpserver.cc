@@ -99,7 +99,7 @@ int main( int argc, char **argv )
 					<< " timeout=" << tout << " msec "
 					<< endl;					
 	
-			dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
+			dlog.addLevel( Debug::ANY );
 		}		
 		
 		MBTCPServer mbs(myaddr,iaddr,port,verb);
