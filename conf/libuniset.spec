@@ -6,8 +6,8 @@
 %define oname uniset
 
 Name: libuniset
-Version: 1.6
-Release: alt17
+Version: 1.7
+Release: alt1
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -319,6 +319,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Dec 04 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt1
+- (modbus): add ModbusMultiChannel
+
 * Fri Nov 29 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt17
 - (uniset-codegen): move 'arg-prefix' from <variables> to <settings>
 
