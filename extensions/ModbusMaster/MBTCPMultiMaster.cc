@@ -45,10 +45,10 @@ checkThread(0)
 	checktime = conf->getArgPInt("--" + prefix + "-checktime",it.getProp("checktime"), 5000);
 
 	UniXML_iterator it1(it);
-	if( !it1.find("SlaveList") )
+	if( !it1.find("GateList") )
 	{
 		ostringstream err;
-		err << myname << "(init): not found <SlaveList>";
+		err << myname << "(init): not found <GateList>";
 		dlog[Debug::CRIT] << err.str() << endl;
 		throw UniSetTypes::SystemError(err.str());
 	}
@@ -56,7 +56,7 @@ checkThread(0)
 	if( !it1.goChildren() )
 	{
 		ostringstream err;
-		err << myname << "(init): empty <SlaveList> ?!";
+		err << myname << "(init): empty <GateList> ?!";
 		dlog[Debug::CRIT] << err.str() << endl;
 		throw UniSetTypes::SystemError(err.str());
 	}
@@ -68,7 +68,7 @@ checkThread(0)
 		if( sinf.ip.empty() )
 		{
 			ostringstream err;
-			err << myname << "(init): ip='' in <SlaveList>";
+			err << myname << "(init): ip='' in <GateList>";
 			dlog[Debug::CRIT] << err.str() << endl;
 			throw UniSetTypes::SystemError(err.str());
 		}
@@ -77,7 +77,7 @@ checkThread(0)
 		if( sinf.port <=0 )
 		{
 			ostringstream err;
-			err << myname << "(init): ERROR: port=''" << sinf.port << " for ip='" << sinf.ip << "' in <SlaveList>";
+			err << myname << "(init): ERROR: port=''" << sinf.port << " for ip='" << sinf.ip << "' in <GateList>";
 			dlog[Debug::CRIT] << err.str() << endl;
 			throw UniSetTypes::SystemError(err.str());
 		}
@@ -88,7 +88,7 @@ checkThread(0)
 			if( sinf.respond_id == DefaultObjectId )
 			{
 				ostringstream err;
-				err << myname << "(init): ERROR: Unknown SensorID for '" << it1.getProp("respond") << "' in <SlaveList>";
+				err << myname << "(init): ERROR: Unknown SensorID for '" << it1.getProp("respond") << "' in <GateList>";
 				dlog[Debug::CRIT] << err.str() << endl;
 				throw UniSetTypes::SystemError(err.str());
 			}
@@ -108,6 +108,9 @@ checkThread(0)
 		n << sinf.ip << ":" << sinf.port;
 		sinf.myname = n.str();
 
+		if( dlog.debugging(Debug::LEVEL9) )
+			sinf.mbtcp->setLog(dlog);
+
 		mblist.push_back(sinf);
 
 		if( dlog.debugging(Debug::INFO) )
@@ -117,13 +120,13 @@ checkThread(0)
 	if( mblist.empty() )
 	{
 		ostringstream err;
-		err << myname << "(init): empty <SlaveList>!";
+		err << myname << "(init): empty <GateList>!";
 		dlog[Debug::CRIT] << err.str() << endl;
 		throw UniSetTypes::SystemError(err.str());
 	}
 
 	mblist.sort();
-	mbi = mblist.begin();
+	mbi = mblist.rbegin();
 
 	if( shm->isLocalwork() )
 	{
@@ -145,41 +148,63 @@ MBTCPMultiMaster::~MBTCPMultiMaster()
 {
 	delete pollThread;
 	delete checkThread;
-	for( MBSlaveList::iterator it=mblist.begin(); it!=mblist.end(); ++it )
+	for( MBGateList::iterator it=mblist.begin(); it!=mblist.end(); ++it )
 	{
 		delete it->mbtcp;
 		it->mbtcp = 0;
-		mbi = mblist.end();
+		mbi = mblist.rend();
 	}
 }
 // -----------------------------------------------------------------------------
 ModbusClient* MBTCPMultiMaster::initMB( bool reopen )
 {
-	if( mbi!=mblist.end() && mbi->respond )
+	// просто движемся по кругу (т.к. связь не проверяется)
+	// движемся в обратном порядке, т.к. сортировка по возрастанию приоритета
+	if( checktime <=0 )
 	{
-		cerr << "******** initMB(0): " << mbi->myname << endl;
+		mbi++;
+		if( mbi == mblist.rend() )
+			mbi = mblist.rbegin();
+
+		mbi->init();
 		mb = mbi->mbtcp;
 		return mbi->mbtcp;
 	}
 
-	if( mbi != mblist.end() )
-		mbi->mbtcp->disconnect();
+	{
+		uniset_mutex_lock l(tcpMutex,100);
+		// Если по текущему каналу связь есть, то возвращаем его
+		if( mbi!=mblist.rend() && mbi->respond )
+		{
+			if( mbi->mbtcp->isConnection() || ( !mbi->mbtcp->isConnection() && mbi->init()) )
+			{
+				mb = mbi->mbtcp;
+				return mbi->mbtcp;
+			}
+		}
+
+		if( mbi != mblist.rend() )
+			mbi->mbtcp->disconnect();
+	}
 
 	// проходим по списку (в обратном порядке, т.к. самый приоритетный в конце)
-	for( MBSlaveList::reverse_iterator it=mblist.rbegin(); it!=mblist.rend(); ++it )
+	for( MBGateList::reverse_iterator it=mblist.rbegin(); it!=mblist.rend(); ++it )
 	{
-		if( it->respond )
+		uniset_mutex_lock l(tcpMutex,100);
+		if( it->respond && it->init() )
 		{
+			mbi = it;
 			mb = mbi->mbtcp;
-			mbi = it.base();
-			cerr << "******** initMB(L): " << mbi->myname << endl;
 			return it->mbtcp;
 		}
 	}
 
-	cout << myname << "(initMB): return 0..." << endl;
-	mbi = mblist.end();
-	mb = 0;
+	{
+		uniset_mutex_lock l(tcpMutex,100);
+		mbi = mblist.rend();
+		mb = 0;
+	}
+
 	return 0;
 }
 // -----------------------------------------------------------------------------
@@ -192,24 +217,28 @@ bool MBTCPMultiMaster::MBSlaveInfo::init()
 {
 	try
 	{
-		ost::Thread::setException(ost::Thread::throwException);
-		ost::InetAddress ia(ip.c_str());
-		mbtcp->connect(ia,port);
+		// ost::Thread::setException(ost::Thread::throwException);
+
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << myname << "(init): connect..." << endl;
+
+		mbtcp->connect(ip,port);
 		// mbtcp->setForceDisconnect(force_disconnect);
 
 		if( recv_timeout > 0 )
 			mbtcp->setTimeout(recv_timeout);
 
-		mbtcp->setSleepPause(sleepPause_usec);
-		mbtcp->setAfterSendPause(aftersend_pause);
+//		if( !initOK )
+		{
+			mbtcp->setSleepPause(sleepPause_usec);
+			mbtcp->setAfterSendPause(aftersend_pause);
 
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << "(init): " << myname << endl;
+			if( mbtcp->isConnection() && dlog.debugging(Debug::INFO) )
+				dlog[Debug::INFO] << "(init): " << myname << " connect OK" << endl;
 
-		if( dlog.debugging(Debug::LEVEL9) )
-			mbtcp->setLog(dlog);
-
-		return true;
+			initOK = true;
+		}
+		return mbtcp->isConnection();
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
@@ -222,6 +251,7 @@ bool MBTCPMultiMaster::MBSlaveInfo::init()
 			dlog[Debug::WARN] << "(init): " << myname << " catch ..." << endl;
 	}
 
+	initOK = false;
 	return false;
 }
 // -----------------------------------------------------------------------------
@@ -231,7 +261,8 @@ void MBTCPMultiMaster::sysCommand( UniSetTypes::SystemMessage *sm )
 	if( sm->command == SystemMessage::StartUp )
 	{
 		pollThread->start();
-		checkThread->start();
+		if( checktime > 0 )
+			checkThread->start();
 	}
 }
 // -----------------------------------------------------------------------------
@@ -267,7 +298,7 @@ void MBTCPMultiMaster::check_thread()
 {
 	while( checkProcActive() )
 	{
-		for( MBSlaveList::iterator it=mblist.begin(); it!=mblist.end(); ++it )
+		for( MBGateList::iterator it=mblist.begin(); it!=mblist.end(); ++it )
 		{
 			try
 			{
@@ -290,7 +321,11 @@ void MBTCPMultiMaster::check_thread()
 				}
 				catch(...){}
 
-				it->respond = r;
+
+				{
+					uniset_mutex_lock l(tcpMutex,130);
+					it->respond = r;
+				}
 			}
 			catch(...){}
 
@@ -308,7 +343,7 @@ void MBTCPMultiMaster::check_thread()
 void MBTCPMultiMaster::initIterators()
 {
 	MBExchange::initIterators();
-	for( MBSlaveList::iterator it=mblist.begin(); it!=mblist.end(); ++it )
+	for( MBGateList::iterator it=mblist.begin(); it!=mblist.end(); ++it )
 		shm->initDIterator(it->respond_dit);
 }
 // -----------------------------------------------------------------------------
@@ -319,9 +354,7 @@ void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
 	// ---------- init MBTCP ----------
 //	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
 	cout << " Настройки протокола TCP: " << endl;
-	cout << "--prefix-gateway-iaddr hostname,IP     - IP опрашиваемого узла" << endl;
-	cout << "--prefix-gateway-port num              - port на опрашиваемом узле" << endl;
-	cout << "--prefix-persistent-connection 0,1     - Не закрывать соединение на каждом цикле опроса" << endl;
+	cout << "--prefix-checktime - период проверки связи по каналам (<GateList>)" << endl;
 }
 // -----------------------------------------------------------------------------
 MBTCPMultiMaster* MBTCPMultiMaster::init_mbmaster( int argc, const char* const* argv,

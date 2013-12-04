@@ -36,10 +36,10 @@
 	         <item addr="0x01" respondSensor="RTU1_Not_Respond_FS" timeout="2000" invert="1"/>
 		 <item addr="0x02" respondSensor="RTU2_Respond_FS" timeout="2000" invert="0"/>
 	     </DeviceList>
-		 <SlaveList>
+		 <GateList>
 			<item ip="" port="" respond_id="" priority=""/>
-			<item ip="" port="" respond_id="" priority=""/>
-		 <SlaveList>
+			<item ip="" port="" respond_id="" priority="" respond_invert="1"/>
+		 <GateList>
 	</MBMaster1>
       \endcode
       Секция <DeviceList> позволяет задать параметры обмена с конкретным RTU-устройством.
@@ -47,17 +47,18 @@
       - \b addr -  адрес устройства для которого, задаются параметры
       - \b timeout msec - таймаут, для определения отсутствия связи
       - \b invert - инвертировать логику. По умолчанию датчик выставляется в "1" при \b наличии связи.
-      - \b respondSensor - идентификатор датчика связи.
+      - \b respondSensor - идентификатор датчика связи (DI).
       - \b modeSensor - идентификатор датчика режима работы (см. MBExchange::ExchangeMode).
 	  - \b ask_every_reg - 1 - опрашивать ВСЕ регистры подряд, не обращая внимания на timeout. По умолчанию - "0" Т.е. опрос устройства (на текущем шаге цикла опроса), прерывается на первом же регистре, при опросе которого возникнет timeout.
 
-      Секция <SlaveList> позволяет задать несколько каналов связи со Slave-устройством. Это удобно для случая, когда Slave имеет
+      Секция <GateList> позволяет задать несколько каналов связи со Slave-устройством. Это удобно для случая, когда Slave имеет
 	более одного канала связи с ним (основной и резервный например).
 
       - \b ip -  ip-адрес
       - \b port - порт
       - \b respond - датчик связи по данному каналу (помимо обобщённого)
       - \b priority - приоритет канала (чем больше число, тем выше приоритет)
+      - \b respond_invert - инвертировать датчик связи (DI)
 
       \par Параметры запуска
 
@@ -85,7 +86,11 @@
        В связи с чем, функция указанная в качестве \b mbfunc игнорируется и подменяется на работающую с многими регистрами.
 
 
-      \b --xxx-poll-time или \b poll_time msec - пауза между опросами. По умолчанию 100 мсек.
+      \b --xxx-polltime или \b polltime msec - пауза между опросами. По умолчанию 100 мсек.
+	  \b --xxx-checktime или \b checktime msec - пауза между проверками связи по разным каналам. По умолчанию 5000 мсек.
+        Если задать <=0, то каналы будут просто переключаться по кругу (по timeout-у) в соответсвии с приоритетом (см. <GateList>).
+		Если >0, то происходит проверка связи (раз в checktime) по всем каналам (см. <GateList>) и в случае потери связи,
+		происходит переключение на следующий канал, по которому связь есть.
 
       \b --xxx-initPause или \b initPause msec - пауза перед началом работы, после активации. По умолчанию 50 мсек.
 
@@ -219,16 +224,13 @@ class MBTCPMultiMaster:
 	protected:
 		virtual void sysCommand( UniSetTypes::SystemMessage *sm );
 		virtual void initIterators();
+		virtual ModbusClient* initMB( bool reopen=false );
+		void poll_thread();
+		void check_thread();
 
 		UniSetTypes::uniset_mutex mbMutex;
 		int recv_timeout;
-
-		virtual ModbusClient* initMB( bool reopen=false );
-
-		void poll_thread();
-		void check_thread();
 		bool force_disconnect;
-
 		int checktime;
 
 	 private:
@@ -238,7 +240,7 @@ class MBTCPMultiMaster:
 		{
 			MBSlaveInfo():ip(""),port(0),mbtcp(0),priority(0),
 				respond(false),respond_id(UniSetTypes::DefaultObjectId),respond_invert(false),
-				recv_timeout(200),aftersend_pause(0),sleepPause_usec(100),myname(""){}
+				recv_timeout(200),aftersend_pause(0),sleepPause_usec(100),myname(""),initOK(false){}
 
 			std::string ip;
 			int port;
@@ -263,12 +265,14 @@ class MBTCPMultiMaster:
 			int sleepPause_usec;
 
 			std::string myname;
+
+			bool initOK;
 		};
 
-		typedef std::list<MBSlaveInfo> MBSlaveList;
+		typedef std::list<MBSlaveInfo> MBGateList;
 
-		MBSlaveList mblist;
-		MBSlaveList::iterator mbi;
+		MBGateList mblist;
+		MBGateList::reverse_iterator mbi;
 
 		// т.к. TCP может "зависнуть" на подключении к недоступному узлу
 		// делаем опрос в отдельном потоке
