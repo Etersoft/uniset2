@@ -43,6 +43,7 @@ checkThread(0)
 	UniXML_iterator it(cnode);
 
 	checktime = conf->getArgPInt("--" + prefix + "-checktime",it.getProp("checktime"), 5000);
+	force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection",it.getProp("persistent_connection")) ? false : true;
 
 	UniXML_iterator it1(it);
 	if( !it1.find("GateList") )
@@ -102,7 +103,7 @@ checkThread(0)
 		sinf.sleepPause_usec = it1.getPIntProp("sleepPause_usec",sleepPause_usec);
 		sinf.respond_invert = it1.getPIntProp("respond_invert",0);
 
-//		sinf.force_disconnect = it.getProp("persistent_connection") ? false : true;
+		sinf.force_disconnect = it.getPIntProp("persistent_connection",!force_disconnect) ? false : true;
 
 		ostringstream n;
 		n << sinf.ip << ":" << sinf.port;
@@ -139,6 +140,12 @@ checkThread(0)
 
 	pollThread = new ThreadCreator<MBTCPMultiMaster>(this, &MBTCPMultiMaster::poll_thread);
 	checkThread = new ThreadCreator<MBTCPMultiMaster>(this, &MBTCPMultiMaster::check_thread);
+
+
+	// Т.к. при "многоканальном" доступе к slave, смена канала должна происходит сразу после
+	// неудачной попытки запросов по одному из каналов, то ПЕРЕОПРЕДЕЛЯЕМ reopen, на timeout..
+	ptReopen.setTiming(ptTimeout.getInterval());
+
 
 	if( dlog.debugging(Debug::INFO) )
 		printMap(rmap);
@@ -223,7 +230,7 @@ bool MBTCPMultiMaster::MBSlaveInfo::init()
 			dlog[Debug::INFO] << myname << "(init): connect..." << endl;
 
 		mbtcp->connect(ip,port);
-		// mbtcp->setForceDisconnect(force_disconnect);
+		mbtcp->setForceDisconnect(force_disconnect);
 
 		if( recv_timeout > 0 )
 			mbtcp->setTimeout(recv_timeout);
@@ -351,10 +358,13 @@ void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
 {
 	cout << "Default: prefix='mbtcp'" << endl;
 	MBExchange::help_print(argc,argv);
-	// ---------- init MBTCP ----------
-//	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
-	cout << " Настройки протокола TCP: " << endl;
-	cout << "--prefix-checktime - период проверки связи по каналам (<GateList>)" << endl;
+	cout << endl;
+	cout << " Настройки протокола TCP(MultiMaster): " << endl;
+	cout << "--prefix-persistent-connection 0,1     - Не закрывать соединение на каждом цикле опроса" << endl;
+	cout << "--prefix-checktime                     - период проверки связи по каналам (<GateList>)" << endl;
+	cout << endl;
+	cout << " ВНИМАНИЕ! '--prefix-reopen-timeout' для MBTCPMultiMaster НЕ ДЕЙСТВУЕТ! " << endl;
+	cout << " Переключение на следующий канал зависит от '--prefix-timeout'" << endl;
 }
 // -----------------------------------------------------------------------------
 MBTCPMultiMaster* MBTCPMultiMaster::init_mbmaster( int argc, const char* const* argv,

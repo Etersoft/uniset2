@@ -166,8 +166,7 @@ void MBTCPMaster::help_print( int argc, const char* const* argv )
 {
 	cout << "Default: prefix='mbtcp'" << endl;
 	MBExchange::help_print(argc,argv);
-	// ---------- init MBTCP ----------
-//	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
+	cout << endl;
 	cout << " Настройки протокола TCP: " << endl;
 	cout << "--prefix-gateway-iaddr hostname,IP     - IP опрашиваемого узла" << endl;
 	cout << "--prefix-gateway-port num              - port на опрашиваемом узле" << endl;
