@@ -6,7 +6,7 @@ libMBMaster_la_LIBADD	= $(top_builddir)/lib/libUniSet.la \
 libMBMaster_la_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
 libMBMaster_la_SOURCES 	= MBExchange.cc RTUStorage.cc
 
-bin_PROGRAMS 		= @PACKAGE@-mbtcpmaster @PACKAGE@-rtuexchange @PACKAGE@-mtr-conv @PACKAGE@-rtu188-state @PACKAGE@-vtconv @PACKAGE@-mtr-setup @PACKAGE@-mtr-read
+bin_PROGRAMS 		= @PACKAGE@-mbtcpmaster @PACKAGE@-mbtcpmultimaster @PACKAGE@-rtuexchange @PACKAGE@-mtr-conv @PACKAGE@-rtu188-state @PACKAGE@-vtconv @PACKAGE@-mtr-setup @PACKAGE@-mtr-read
 lib_LTLIBRARIES 	= libUniSetMBTCPMaster.la libUniSetRTU.la
 
 # -------------------- Mobus TCP -------------------
@@ -20,7 +20,7 @@ libUniSetMBTCPMaster_la_LIBADD	 = libMBMaster.la $(top_builddir)/lib/libUniSet.l
 								$(top_builddir)/extensions/lib/libUniSetExtensions.la \
 								$(SIGC_LIBS)
 libUniSetMBTCPMaster_la_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
-libUniSetMBTCPMaster_la_SOURCES 	= MBTCPMaster.cc
+libUniSetMBTCPMaster_la_SOURCES 	= MBTCPMaster.cc MBTCPMultiMaster.cc
 
 @PACKAGE@_mbtcpmaster_SOURCES 	= main.cc
 @PACKAGE@_mbtcpmaster_LDADD 	= libUniSetMBTCPMaster.la libMBMaster.la $(top_builddir)/lib/libUniSet.la \
@@ -28,6 +28,13 @@ libUniSetMBTCPMaster_la_SOURCES 	= MBTCPMaster.cc
 									$(top_builddir)/extensions/lib/libUniSetExtensions.la \
 									$(SIGC_LIBS)
 @PACKAGE@_mbtcpmaster_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
+
+@PACKAGE@_mbtcpmultimaster_SOURCES 	= multi-main.cc
+@PACKAGE@_mbtcpmultimaster_LDADD 	= libUniSetMBTCPMaster.la libMBMaster.la $(top_builddir)/lib/libUniSet.la \
+									$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
+									$(top_builddir)/extensions/lib/libUniSetExtensions.la \
+									$(SIGC_LIBS)
+@PACKAGE@_mbtcpmultimaster_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
 
 # -------------------- Mobus RTU -------------------
 # не забывайте править версию в pc-файле
