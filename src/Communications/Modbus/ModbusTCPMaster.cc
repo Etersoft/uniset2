@@ -55,7 +55,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		if( iaddr.empty() )
 		{
 				dlog[Debug::WARN] << "(query): unknown ip address for server..." << endl;
-				return erHardwareError;
+				return erTimeOut; // erHardwareError
 		}
 
 		if( !isConnection() )
@@ -248,7 +248,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 		dlog[Debug::WARN] << "(query): cath..." << endl;
 	}	
 
-	return erHardwareError;
+	return erTimeOut; // erHardwareError
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::cleanInputStream()
@@ -260,6 +260,28 @@ void ModbusTCPMaster::cleanInputStream()
 		ret = getNextData(buf,sizeof(buf));
 	}
 	while( ret > 0);
+}
+// -------------------------------------------------------------------------
+bool ModbusTCPMaster::checkConnection( const std::string ip, int port, int timeout_msec )
+{
+	try
+	{
+		ostringstream s;
+		s << ip << ":" << port;
+
+		// Проверяем просто попыткой создать соединение..
+
+//		ost::Thread::setException(ost::Thread::throwException);
+		// 	TCPStream (const char *name, Family family=IPV4, unsigned mss=536, bool throwflag=false, timeout_t timer=0)
+		ost::TCPStream t(s.str().c_str(),ost::Socket::IPV4,536,true,timeout_msec);
+		t.disconnect();
+		return true;
+	}
+	catch(...)
+	{
+	}
+
+	return false;
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::reconnect()
@@ -330,15 +352,21 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
 		}
 		catch( std::exception& e )
 		{
-			ostringstream s;
-			s << "(ModbusTCPMaster): connection " << s.str() << " error: " << e.what();
-			dlog[Debug::CRIT] << s.str() << std::endl;
+			if( dlog.debugging(Debug::CRIT) )
+			{
+				ostringstream s;
+				s << "(ModbusTCPMaster): connection " << s.str() << " error: " << e.what();
+				dlog[Debug::CRIT] << s.str() << std::endl;
+			}
 		}
 		catch( ... )
 		{
-			ostringstream s;
-			s << "(ModbusTCPMaster): connection " << s.str() << " error: catch ...";
-			dlog[Debug::CRIT] << s.str() << std::endl;
+			if( dlog.debugging(Debug::CRIT) )
+			{
+				ostringstream s;
+				s << "(ModbusTCPMaster): connection " << s.str() << " error: catch ...";
+				dlog[Debug::CRIT] << s.str() << std::endl;
+			}
 		}
 //	}
 }

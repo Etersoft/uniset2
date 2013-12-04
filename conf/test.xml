@@ -50,6 +50,16 @@
 				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" timeout="5000" modeSensor="MB1_Mode_AS"/>
 			</DeviceList>
 		</MBMaster1>
+		<MBMultiMaster1 levels="info,warn,crit" name="MBMaster1" poll_time="200" reply_timeout="60">
+			<DeviceList>
+				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" timeout="5000" modeSensor="MB1_Mode_AS"/>
+			</DeviceList>
+			<SlaveList>
+				<item ip="127.0.0.1" port="2049" recv_timeout="200"/>
+				<item ip="127.0.0.1" port="2048" recv_timeout="200"/>
+			</SlaveList>
+		</MBMultiMaster1>
+
 		<MBSlave1 addr="0x31" aftersend-pause="0" dev="/dev/ttyS0" levels="info,warn,crit" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600">
 			<filelist>
 				<!-- Список файлов разрешённых для передачи по modbus
@@ -219,6 +229,7 @@
 			<item id="6007" name="UDPExchange2"/>
 			<item id="6008" name="UNetExchange"/>
 			<item id="6009" name="MBMaster2"/>
+			<item id="6010" name="MBMultiMaster1"/>
 		</objects>
 	</ObjectsMap>
 	<messages idfromfile="1" name="messages">
