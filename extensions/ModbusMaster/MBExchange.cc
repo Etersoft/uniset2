@@ -144,7 +144,7 @@ void MBExchange::help_print( int argc, const char* const* argv )
 	cout << "--prefix-confnode name          - Настроечная секция в конф. файле <name>. " << endl;
 	cout << "--prefix-polltime msec          - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
 	cout << "--prefix-recv-timeout msec      - Таймаут на приём одного сообщения" << endl;
-	cout << "--prefix-timeout msec           - Таймаут для определения отсутсвия соединения" << endl;
+	cout << "--prefix-timeout msec           - Таймаут для определения отсутствия соединения" << endl;
 	cout << "--prefix-reopen-timeout msec    - Таймаут для 'переоткрытия соединения' при отсутсвия соединения msec милисекунд. По умолчанию 10 сек." << endl;
 	cout << "--prefix-heartbeat-id  name     - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
 	cout << "--prefix-heartbeat-max val      - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;

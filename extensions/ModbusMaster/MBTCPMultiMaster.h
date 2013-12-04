@@ -9,19 +9,24 @@
 #include "modbus/ModbusTCPMaster.h"
 // -----------------------------------------------------------------------------
 /*!
-      \page page_ModbusTCP Реализация ModbusTCP master
+      \page page_ModbusTCPMulti Реализация ModbusTCP 'multi' master
       
-      - \ref sec_MBTCP_Comm
-      - \ref sec_MBTCP_Conf
-      - \ref sec_MBTCP_ConfList
-	  - \ref sec_MBTCP_ExchangeMode
+      - \ref sec_MBTCPM_Comm
+      - \ref sec_MBTCPM_Conf
+      - \ref sec_MBTCPM_ConfList
+	  - \ref sec_MBTCPM_ExchangeMode
       
-      \section sec_MBTCP_Comm Общее описание ModbusTCP master
+      \section sec_MBTCPM_Comm Общее описание ModbusTCPMultiMaster
       Класс реализует процесс обмена (опрос/запись) с RTU-устройствами,
       через TCP-шлюз. Список регистров с которыми работает процесс задаётся в конфигурационном файле
-      в секции \b <sensors>. см. \ref sec_MBTCP_Conf
-      
-      \section  sec_MBTCP_Conf Конфигурирование ModbusTCP master
+      в секции \b <sensors>. см. \ref sec_MBTCPM_Conf
+		
+	  При этом для шлюза можно задавать несколько ip-адресов (см. <GateList>), если связь пропадает по
+	одному каналу (ip), то происходит переключение на другой канал (через timeout мсек), если пропадает
+	с этим каналом, то переключается на следующий и так по кругу (в порядке уменьшения приоритета, задаваемого
+	для каждого канала (cм. <GateList> \a priority).
+
+      \section  sec_MBTCPM_Conf Конфигурирование ModbusTCPMultiMaster
 
       Конфигурирование процесса осуществляется либо параметрами командной строки либо
       через настроечную секцию. 
@@ -114,7 +119,7 @@
       
       \b --xxx-activate-timeout msec . По умолчанию 2000. - время ожидания готовности SharedMemory к работе.
       
-      \section  sec_MBTCP_ConfList Конфигурирование списка регистров для ModbusTCP master
+      \section  sec_MBTCPM_ConfList Конфигурирование списка регистров для ModbusTCP master
       Конфигурационные параметры задаются в секции <sensors> конфигурационного файла.
       Список обрабатываемых регистров задаётся при помощи двух параметров командной строки
       
@@ -180,7 +185,7 @@
    \warning Регистр должен быть уникальным. И может повторятся только если указан параметр \a nbit или \a nbyte.
 
 
-	\section sec_MBTCP_ExchangeMode Управление режимом работы MBTCPMultiMaster
+	\section sec_MBTCPM_ExchangeMode Управление режимом работы MBTCPMultiMaster
 		В MBTCPMultiMaster заложена возможность управлять режимом работы процесса. Поддерживаются
 	следующие режимы:
 	- \b emNone - нормальная работа (по умолчанию)
@@ -197,8 +202,8 @@
 */
 // -----------------------------------------------------------------------------
 /*!
-	\par Реализация Modbus TCP Master для обмена с многими ModbusRTU устройствами
-	через один modbus tcp шлюз.
+	\par Реализация Modbus TCP Multi Master для обмена с многими ModbusRTU устройствами
+	через один modbus tcp шлюз, доступный по нескольким ip-адресам.
 
 	\par Чтобы не зависеть от таймаутов TCP соединений, которые могут неопределённо зависать
 	на создании соединения с недоступным хостом. Обмен вынесен в отдельный поток.
@@ -240,7 +245,9 @@ class MBTCPMultiMaster:
 		{
 			MBSlaveInfo():ip(""),port(0),mbtcp(0),priority(0),
 				respond(false),respond_id(UniSetTypes::DefaultObjectId),respond_invert(false),
-				recv_timeout(200),aftersend_pause(0),sleepPause_usec(100),myname(""),initOK(false){}
+				recv_timeout(200),aftersend_pause(0),sleepPause_usec(100),
+				force_disconnect(true),
+				myname(""),initOK(false){}
 
 			std::string ip;
 			int port;
@@ -263,6 +270,7 @@ class MBTCPMultiMaster:
 			int recv_timeout;
 			int aftersend_pause;
 			int sleepPause_usec;
+			bool force_disconnect;
 			
 			std::string myname;
 
