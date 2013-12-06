@@ -7,7 +7,7 @@
 
 Name: libuniset
 Version: 1.7
-Release: alt1
+Release: alt2
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -319,6 +319,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Fri Dec 06 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt2
+- (unetexchange): add 'prefix'
+
 * Wed Dec 04 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt1
 - (modbus): add ModbusMultiChannel
 
