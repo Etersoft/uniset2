@@ -7,7 +7,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic ):
+UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic, const std::string& prefix ):
 UniSetObject_LT(objId),
 shm(0),
 initPause(0),
@@ -17,7 +17,7 @@ sender(0),
 sender2(0)
 {
 	if( objId == DefaultObjectId )
-		throw UniSetTypes::SystemError("(UNetExchange): objId=-1?!! Use --unet-name" );
+		throw UniSetTypes::SystemError("(UNetExchange): objId=-1?!! Use --" + prefix +"-unet-name" );
 
 	cnode = conf->getNode(myname);
 	if( cnode == NULL )
@@ -28,27 +28,27 @@ sender2(0)
 	UniXML_iterator it(cnode);
 
 	// определяем фильтр
-	s_field = conf->getArgParam("--unet-filter-field");
-	s_fvalue = conf->getArgParam("--unet-filter-value");
+	s_field = conf->getArgParam("--" + prefix + "-filter-field");
+	s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
 	dlog[Debug::INFO] << myname << "(init): read filter-field='" << s_field
 						<< "' filter-value='" << s_fvalue << "'" << endl;
 	
-	const string n_field(conf->getArgParam("--unet-nodes-filter-field"));
-	const string n_fvalue(conf->getArgParam("--unet-nodes-filter-value"));
+	const string n_field(conf->getArgParam("--" + prefix + "-nodes-filter-field"));
+	const string n_fvalue(conf->getArgParam("--" + prefix + "-nodes-filter-value"));
 	dlog[Debug::INFO] << myname << "(init): read nodes-filter-field='" << n_field
 						<< "' nodes-filter-value='" << n_fvalue << "'" << endl;
 
-	int recvTimeout = conf->getArgPInt("--unet-recv-timeout",it.getProp("recvTimeout"), 5000);
-	int prepareTime = conf->getArgPInt("--unet-preapre-time",it.getProp("prepareTime"), 2000);
-	int lostTimeout = conf->getArgPInt("--unet-lost-timeout",it.getProp("lostTimeout"), recvTimeout);
-	int recvpause = conf->getArgPInt("--unet-recvpause",it.getProp("recvpause"), 10);
-	int sendpause = conf->getArgPInt("--unet-sendpause",it.getProp("sendpause"), 100);
-	int updatepause = conf->getArgPInt("--unet-updatepause",it.getProp("updatepause"), 100);
-	steptime = conf->getArgPInt("--unet-steptime",it.getProp("steptime"), 1000);
-	int maxDiff = conf->getArgPInt("--unet-maxdifferense",it.getProp("maxDifferense"), 1000);
-	int maxProcessingCount = conf->getArgPInt("--unet-maxprocessingcount",it.getProp("maxProcessingCount"), 100);
+	int recvTimeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recvTimeout"), 5000);
+	int prepareTime = conf->getArgPInt("--" + prefix + "-preapre-time",it.getProp("prepareTime"), 2000);
+	int lostTimeout = conf->getArgPInt("--" + prefix + "-lost-timeout",it.getProp("lostTimeout"), recvTimeout);
+	int recvpause = conf->getArgPInt("--" + prefix + "-recvpause",it.getProp("recvpause"), 10);
+	int sendpause = conf->getArgPInt("--" + prefix + "-sendpause",it.getProp("sendpause"), 100);
+	int updatepause = conf->getArgPInt("--" + prefix + "-updatepause",it.getProp("updatepause"), 100);
+	steptime = conf->getArgPInt("--" + prefix + "-steptime",it.getProp("steptime"), 1000);
+	int maxDiff = conf->getArgPInt("--" + prefix + "-maxdifferense",it.getProp("maxDifferense"), 1000);
+	int maxProcessingCount = conf->getArgPInt("--" + prefix + "-maxprocessingcount",it.getProp("maxProcessingCount"), 100);
 
-	no_sender = conf->getArgInt("--unet-nosender",it.getProp("nosender"));
+	no_sender = conf->getArgInt("--" + prefix + "-nosender",it.getProp("nosender"));
 
 	xmlNode* nodes = conf->getXMLNodesSection();
 	if( !nodes )
@@ -298,7 +298,7 @@ sender2(0)
 	
 	// -------------------------------
 	// ********** HEARTBEAT *************
-	string heart = conf->getArgParam("--unet-heartbeat-id",it.getProp("heartbeat_id"));
+	string heart = conf->getArgParam("--" + prefix + "-heartbeat-id",it.getProp("heartbeat_id"));
 	if( !heart.empty() )
 	{
 		sidHeartBeat = conf->getSensorID(heart);
@@ -316,7 +316,7 @@ sender2(0)
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = conf->getArgPInt("--unet-heartbeat-max", it.getProp("heartbeat_max"), 10);
+		maxHeartBeat = conf->getArgPInt("--" + prefix + "-heartbeat-max", it.getProp("heartbeat_max"), 10);
 		test_id = sidHeartBeat;
 	}
 	else
@@ -333,7 +333,7 @@ sender2(0)
 
 	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
 
-	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
+	activateTimeout	= conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
 }
 // -----------------------------------------------------------------------------
 UNetExchange::~UNetExchange()
@@ -684,26 +684,28 @@ void UNetExchange::initIterators()
 // -----------------------------------------------------------------------------
 void UNetExchange::help_print( int argc, const char* argv[] )
 {
-	cout << "--unet-name NameID            - Идентификтора процесса." << endl;
-	cout << "--unet-recv-timeout msec      - Время для фиксации события 'отсутсвие связи'" << endl;
-	cout << "--unet-prepare-time msec      - Время необходимое на подготовку (восстановление связи) при переключении на другой канал" << endl;
-	cout << "--unet-lost-timeout msec      - Время ожидания заполнения 'дырки' между пакетами. По умолчанию 5000 мсек." << endl;
-	cout << "--unet-recvpause msec         - Пауза между приёмами. По умолчанию 10" << endl;
-	cout << "--unet-sendpause msec         - Пауза между посылками. По умолчанию 100" << endl;
-	cout << "--unet-updatepause msec       - Пауза между обновлением информации в SM (Корелирует с recvpause и sendpause). По умолчанию 100" << endl;
-	cout << "--unet-steptime msec		   - Пауза между обновлением информации о связи с узлами." << endl;
-	cout << "--unet-maxdifferense num      - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
-	cout << "--unet-maxprocessingcount num - время на ожидание старта SM" << endl;
-	cout << "--unet-nosender [0,1]         - Отключить посылку." << endl;
-	cout << "--unet-sm-ready-timeout msec  - Время ожидание я готовности SM к работе. По умолчанию 15000" << endl;
-	cout << "--unet-filter-field name      - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
-	cout << "--unet-filter-value name      - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
-	
+	cout << "Default prefix='unet'" << endl;
+	cout << "--prefix-name NameID            - Идентификтора процесса." << endl;
+	cout << "--prefix-recv-timeout msec      - Время для фиксации события 'отсутсвие связи'" << endl;
+	cout << "--prefix-prepare-time msec      - Время необходимое на подготовку (восстановление связи) при переключении на другой канал" << endl;
+	cout << "--prefix-lost-timeout msec      - Время ожидания заполнения 'дырки' между пакетами. По умолчанию 5000 мсек." << endl;
+	cout << "--prefix-recvpause msec         - Пауза между приёмами. По умолчанию 10" << endl;
+	cout << "--prefix-sendpause msec         - Пауза между посылками. По умолчанию 100" << endl;
+	cout << "--prefix-updatepause msec       - Пауза между обновлением информации в SM (Корелирует с recvpause и sendpause). По умолчанию 100" << endl;
+	cout << "--prefix-steptime msec		   - Пауза между обновлением информации о связи с узлами." << endl;
+	cout << "--prefix-maxdifferense num      - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
+	cout << "--prefix-maxprocessingcount num - время на ожидание старта SM" << endl;
+	cout << "--prefix-nosender [0,1]         - Отключить посылку." << endl;
+	cout << "--prefix-sm-ready-timeout msec  - Время ожидание я готовности SM к работе. По умолчанию 15000" << endl;
+	cout << "--prefix-filter-field name      - Название фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
+	cout << "--prefix-filter-value name      - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
 }
 // -----------------------------------------------------------------------------
-UNetExchange* UNetExchange::init_unetexchange( int argc, const char* argv[], UniSetTypes::ObjectId icID, SharedMemory* ic )
+UNetExchange* UNetExchange::init_unetexchange( int argc, const char* argv[], UniSetTypes::ObjectId icID, 
+												SharedMemory* ic, const std::string& prefix )
 {
-	string name = conf->getArgParam("--unet-name","UNetExchange1");
+	string p("--" + prefix + "-name");
+	string name = conf->getArgParam(p,"UNetExchange1");
 	if( name.empty() )
 	{
 		cerr << "(unetexchange): Не задан name'" << endl;
@@ -713,14 +715,13 @@ UNetExchange* UNetExchange::init_unetexchange( int argc, const char* argv[], Uni
 	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		cerr << "(unetexchange): идентификатор '" << name
-			<< "' не найден в конф. файле!"
-			<< " в секции " << conf->getObjectsSection() << endl;
+		cerr << "(unetexchange): Not found ObjectID for '" << name
+			<< " in section '" << conf->getObjectsSection() << "'" << endl;
 		return 0;
 	}
 
 	dlog[Debug::INFO] << "(unetexchange): name = " << name << "(" << ID << ")" << endl;
-	return new UNetExchange(ID,icID,ic);
+	return new UNetExchange(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::receiverEvent( UNetReceiver* r, UNetReceiver::Event ev )
