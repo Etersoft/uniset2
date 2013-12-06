@@ -79,12 +79,12 @@ class UNetExchange:
 	public UniSetObject_LT
 {
 	public:
-		UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
+		UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="unet" );
 		virtual ~UNetExchange();
 
 		/*! глобальная функция для инициализации объекта */
 		static UNetExchange* init_unetexchange( int argc, const char* argv[],
-											UniSetTypes::ObjectId shmID, SharedMemory* ic=0 );
+											UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="unet" );
 
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* argv[] );
