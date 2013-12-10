@@ -283,7 +283,14 @@ void RRDStorage::sysCommand( UniSetTypes::SystemMessage* sm )
 // -----------------------------------------------------------------------------
 void RRDStorage::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
+	for( RRDList::iterator it=rrdlist.begin(); it!=rrdlist.end(); ++it )
+	{
+		DSMap::iterator s = it->dsmap.find(sm->id);
+		if( s!=it->dsmap.end() )
+			s->second.value = sm->value;
 
+		// продолжаем искать по другим rrd, т.к. датчик может входить в несколько..
+	}
 }
 // -----------------------------------------------------------------------------
 void RRDStorage::timerInfo( UniSetTypes::TimerMessage* tm )
