@@ -83,7 +83,7 @@
 	или \b bufferLastRemove="1", то терятся будут сообщения добавляемые в конец.
 
 	\section sec_DBS_Tables Таблицы SQLite
-	  К основным таблицам относятся следующие:
+	  К основным таблицам относятся следующие (описание в формате MySQL!):
 \code
 DROP TABLE IF EXISTS `main_history`;
 CREATE TABLE `main_history` (

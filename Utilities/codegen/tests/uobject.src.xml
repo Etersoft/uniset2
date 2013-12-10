@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="koi8-r"?>
+<!--
+	name 		- название класса
+	msgcount	- сколько сообщений обрабатывается за один раз
+	sleep_msec	- пауза между итерациями в работе процесса
+
+	type
+	====
+		in 	- входные регистры (только для чтения)
+		out	- выходные регистры (запись)
+		io  - запись и чтение
+-->
+<Test>
+  <settings>
+  	<set name="class-name" val="UObject"/>
+  	<set name="msg-count" val="20"/>
+	<set name="sleep-msec" val="150"/>
+	<set name="arg-prefix" val=""/>
+  </settings>
+  <variables>
+      <!-- type = [int,str,bool,float]
+         int:  max,min,no_range_exception=[0,1]
+         str:
+         float: max,min,no_range_exception=[0,1]
+         bool:
+
+		 min - минимальное значение (может быть не задано)
+		 max - максимальное значение (может быть не задано)
+		 default - значение по умолчанию (может быть не задано)
+		 no_range_exception=1 - при выходе за границы min или max только писать unideb[WARN].
+      -->
+  </variables>
+  <smap> 
+  </smap>
+  <msgmap>
+  </msgmap>
+</Test>

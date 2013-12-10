@@ -121,6 +121,11 @@
 		<UNetExchange name="UNetExchange"/>
 		<HeartBeatTime time_msec="5000"/>
 		<TestGen input1_s="Input1_S" input2_s="DumpSensor1_S" name="TestGen" output1_c="DO_C"/>
+		<RRDStorage1 name="RRDStorage1">
+			<rrd filename="rrdtest.rrd" filter_field="rrd" filter_value="1" step="5" ds_field="rrd1_ds">
+				<item rra="RRA:AVERAGE:0.5:1:4320"/>
+			</rrd>
+		</RRDStorage1>
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<!--
@@ -193,7 +198,7 @@
 			<item id="51" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" ntit="1" mbtype="rtu" name="Input51_S" priority="Medium" rs="5" textname="Команда 2"/>
 			<item id="52" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="1" mbtype="rtu" name="Input52_S" priority="Medium" rs="5" textname="Команда 2"/>
 			<item id="53" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" nbit="2" mbtype="rtu" name="Input53_S" priority="Medium" rs="5" textname="Команда 2"/>
-
+			<item id="54" iotype="AI" name="AI54_S" textname="AI sensor 54" rrd="1" rrd1_ds="GAUGE:120:U:U"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">
@@ -230,6 +235,7 @@
 			<item id="6008" name="UNetExchange"/>
 			<item id="6009" name="MBMaster2"/>
 			<item id="6010" name="MBMultiMaster1"/>
+			<item id="6011" name="RRDStorage1"/>
 		</objects>
 	</ObjectsMap>
 	<messages idfromfile="1" name="messages">

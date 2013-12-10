@@ -83,6 +83,25 @@ fi
 
 AM_CONDITIONAL(DISABLE_MYSQL, test ${buildmysql} = false)
 
+
+#check rrd support
+AC_MSG_CHECKING([rrd support])
+buildrrd=true
+AC_ARG_ENABLE(rrd, AC_HELP_STRING([--disable-rrd], [disable RRD support]),
+[ if test $enableval = yes; then buildrrd=true; else buildrrd=false; fi],[ buildrrd=true; ])
+
+if test ${buildrrd} = true; then
+	AC_MSG_RESULT([enabled])
+	PKG_CHECK_MODULES(RRD,librrd)
+	AC_SUBST(RRD_LIBS)
+	AC_SUBST(RRD_CFLAGS)
+else
+	AC_MSG_RESULT([disabled])
+fi
+
+AM_CONDITIONAL(DISABLE_RRD, test ${buildrrd} = false)
+
+
 #check build extensions
 ext=true
 AC_MSG_CHECKING([Extensions])
@@ -243,6 +262,8 @@ AC_CONFIG_FILES([Makefile
 				 extensions/SharedMemory/Makefile
 				 extensions/SharedMemory/libUniSetSharedMemory.pc
 				 extensions/SharedMemoryPlus/Makefile
+				 extensions/RRDStorage/Makefile
+				 extensions/RRDStorage/libUniSetRRDStorage.pc
 				 extensions/tests/Makefile
 				 python/lib/Makefile
 				 python/lib/pyUniSet/Makefile
