@@ -19,7 +19,7 @@ $(GENERATED): ../@PACKAGE@-codegen testgen.src.xml ../*.xsl
 $(GENERATED2): ../@PACKAGE@-codegen testgen-alone.src.xml ../*.xsl
 	../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen --local-include --alone -n TestGenAlone testgen-alone.src.xml
 
-$(GENUOBJ): ../@PACKAGE@-codegen testgen.src.xml ../*.xsl
+$(GENUOBJ): ../@PACKAGE@-codegen uobject.src.xml ../*.xsl
 	../@PACKAGE@-codegen -l $(top_builddir)/Utilities/codegen -n UObject --no-main uobject.src.xml
 
 clean-local:

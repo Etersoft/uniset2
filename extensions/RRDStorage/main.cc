@@ -58,8 +58,6 @@ int main( int argc, const char** argv )
 			return 1;
 		}
 
-		db->init_dlog(dlog);
-
 		ObjectsActivator act;
 		act.addObject(static_cast<class UniSetObject*>(db));
 

@@ -1,11 +1,11 @@
-bin_PROGRAMS = UObject
-UObject_SOURCES = UObject_SK.cc UObject.cc
+#SUBDIRS=tests
 
-UObject_SK.cc: UObject.src.xml
-	@UNISET_CODEGEN@ --ask -n UObject --topdir $(top_builddir)/ --no-main UObject.src.xml
+bin_SCRIPTS = @PACKAGE@-codegen
 
-clean-local:
-	rm -rf *_SK.cc *_SK.h
+xsldir 		= $(datadir)/uniset/xslt
+xsl_DATA 	= *.xsl skel*
 
-all-local: UObject_SK.cc UObject_SK.h
-	
+all-local:
+	chmod 'a+x' @PACKAGE@-codegen
+
+                   
