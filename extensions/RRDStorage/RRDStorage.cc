@@ -5,7 +5,6 @@ extern "C" {
 #include <cmath>
 #include <sstream>
 #include "Exceptions.h"
-#include "extensions/Extensions.h"
 #include "RRDStorage.h"
 // -----------------------------------------------------------------------------
 using namespace std;
@@ -13,11 +12,12 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 RRDStorage::RRDStorage( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, SharedMemory* ic,
-			const string prefix ):
+			const string prefix, DebugStream& log ):
 UObject_SK(objId,cnode),
 shm( new SMInterface(shmId,&ui,objId,ic) ),
 prefix(prefix)
 {
+	dlog = log;
 	UniXML::iterator it(cnode);
 
 	UniXML::iterator it1(cnode);
@@ -55,12 +55,15 @@ void RRDStorage::initRRD( xmlNode* cnode, int tmID )
 
 	int rrdstep = it.getPIntProp("step",5);
 	int lastup =  it.getPIntProp("lastup",0);
+	bool overwrite = it.getPIntProp("overwrite",0);
 
-	RRDStorage::dlog[Debug::INFO] << myname << "(init): add rrd: file='" << fname
+	if( RRDStorage::dlog.debugging(Debug::INFO) )
+		RRDStorage::dlog[Debug::INFO] << myname << "(init): add rrd: file='" << fname
 			<< " " << ff << "='" << fv
 			<< "' create='" << cf << "'"
 			<< " step=" << rrdstep
 			<< endl;
+
 
 	std::list<std::string> rralist;
 	UniXML::iterator it_rra(cnode);
@@ -174,13 +177,22 @@ void RRDStorage::initRRD( xmlNode* cnode, int tmID )
 // 			cout << "*** argv[" << k << "]='" << argv[k] << "'" << endl;
 
 		// Собственно создаём RRD
-		rrd_clear_error();
-		if( rrd_create_r(fname.c_str(),rrdstep,lastup,argc,(const char**)argv) < 0 )
+		if( !overwrite && file_exist(fname) )
 		{
-			ostringstream err;
-			err << myname << "(init): Can`t create RRD ('" << fname << "'): err: " << string(rrd_get_error());
-			RRDStorage::dlog[Debug::CRIT] << err.str() << endl;
-			throw SystemError(err.str());
+			if( RRDStorage::dlog.debugging(Debug::INFO) )
+				RRDStorage::dlog[Debug::INFO] << myname << "(init): ignore create file='" << fname
+				<< "'. File exist... overwrite=0." << endl;
+		}
+		else
+		{
+			rrd_clear_error();
+			if( rrd_create_r(fname.c_str(),rrdstep,lastup,argc,(const char**)argv) < 0 )
+			{
+				ostringstream err;
+				err << myname << "(init): Can`t create RRD ('" << fname << "'): err: " << string(rrd_get_error());
+				RRDStorage::dlog[Debug::CRIT] << err.str() << endl;
+				throw SystemError(err.str());
+			}
 		}
 
 		// Чистим выделенную память
@@ -205,10 +217,11 @@ void RRDStorage::initRRD( xmlNode* cnode, int tmID )
 //--------------------------------------------------------------------------------
 void RRDStorage::help_print( int argc, const char* const* argv )
 {
-	cout << "--rrdstorage-name    - ID for rrdstorage. Default: RRDStorage1. " << endl;
-	cout << "--rrdstorage-locale name   - DB locale. Default: koi8-r. " << endl;
-	cout << "--rrdstorage-heartbeat-id name   - ID for heartbeat sensor." << endl;
-	cout << "--rrdstorage-heartbeat-max val   - max value for heartbeat sensor." << endl;
+	cout << " Default prefix='rrd'" << endl;
+	cout << "--prefix-name        - ID for rrdstorage. Default: RRDStorage1. " << endl;
+	cout << "--prefix-confnode    - configuration section name. Default: <NAME name='NAME'...> " << endl;
+	cout << "--prefix-heartbeat-id name   - ID for heartbeat sensor." << endl;
+	cout << "--prefix-heartbeat-max val   - max value for heartbeat sensor." << endl;
 }
 // -----------------------------------------------------------------------------
 RRDStorage* RRDStorage::init_rrdstorage( int argc, const char* const* argv,
