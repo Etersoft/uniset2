@@ -2,12 +2,13 @@
 %def_enable mysql
 %def_enable sqlite
 %def_enable python
+%def_enable rrd
 
 %define oname uniset
 
 Name: libuniset
 Version: 1.7
-Release: alt2
+Release: alt3
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -31,6 +32,10 @@ BuildRequires: libMySQL-devel
 
 %if_enabled sqlite
 BuildRequires: libsqlite3-devel
+%endif
+
+%if_enabled rrd
+BuildRequires: librrd-devel
 %endif
 
 %if_enabled python
@@ -178,7 +183,7 @@ Libraries needed to develop for uniset extensions
 
 %build
 %autoreconf
-%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable python}
+%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable python} %{subst_enable rrd}
 %make
 
 %install
@@ -294,6 +299,12 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_libdir/libUniSetUNetUDP*.so.*
 #%_libdir/libUniSetSMDBServer*.so.*
 
+%if_enabled rrd
+%_bindir/%oname-rrd*
+%_libdir/libUniSetRRD*.so.*
+%endif
+
+
 %files extensions-devel
 %_includedir/%oname/extensions/
 %_libdir/*Extensions.so
@@ -314,11 +325,18 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_pkgconfigdir/libUniSetNetwork*.pc
 %_pkgconfigdir/libUniSetUNet*.pc
 
+%if_enabled rrd
+%_pkgconfigdir/libUniSetRRD*.pc
+%endif
+
 #%_pkgconfigdir/libUniSetSMDBServer.pc
 #%_pkgconfigdir/libUniSet*.pc
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Dec 10 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt3
+- add RRDServer
+
 * Fri Dec 06 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt2
 - (unetexchange): add 'prefix'
 
