@@ -58,9 +58,9 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 	bool overwrite = it.getPIntProp("overwrite",0);
 
 	if( RRDServer::dlog.debugging(Debug::INFO) )
-		RRDServer::dlog[Debug::INFO] << myname << "(init): add rrd: file='" << fname 
-			<< " " << ff << "='" << fv 
-			<< "' create='" << cf << "'" 
+		RRDServer::dlog[Debug::INFO] << myname << "(init): add rrd: file='" << fname
+			<< " " << ff << "='" << fv
+			<< "' create='" << cf << "'"
 			<< " step=" << rrdstep
 			<< endl;
 
@@ -180,12 +180,12 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 		if( !overwrite && file_exist(fname) )
 		{
 			if( RRDServer::dlog.debugging(Debug::INFO) )
-				RRDServer::dlog[Debug::INFO] << myname << "(init): ignore create file='" << fname 
+				RRDServer::dlog[Debug::INFO] << myname << "(init): ignore create file='" << fname
 				<< "'. File exist... overwrite=0." << endl;
 		}
 		else
 		{
-	 		rrd_clear_error();
+			rrd_clear_error();
 			if( rrd_create_r(fname.c_str(),rrdstep,lastup,argc,(const char**)argv) < 0 )
 			{
 				ostringstream err;
@@ -205,11 +205,11 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 		rrdlist.push_back(rrd);
 	}
 /*	catch( Exception& ex )
-	{	
+	{
 		RRDServer::dlog[Debug::CRIT] << myname << "(init) " << ex << std::endl;
 	}
 	catch( ...  )
-	{	
+	{
 		RRDServer::dlog[Debug::CRIT] << myname << "(init): catch ..." << std::endl;
 	}
 */
@@ -219,13 +219,13 @@ void RRDServer::help_print( int argc, const char* const* argv )
 {
 	cout << " Default prefix='rrd'" << endl;
 	cout << "--prefix-name        - ID for rrdstorage. Default: RRDServer1. " << endl;
-	cout << "--prefix-confnode    - configuration section name. Default: <NAME name='NAME'...> " << endl;	
+	cout << "--prefix-confnode    - configuration section name. Default: <NAME name='NAME'...> " << endl;
 	cout << "--prefix-heartbeat-id name   - ID for heartbeat sensor." << endl;
 	cout << "--prefix-heartbeat-max val   - max value for heartbeat sensor." << endl;
 }
 // -----------------------------------------------------------------------------
-RRDServer* RRDServer::init_rrdstorage( int argc, const char* const* argv, 
-											UniSetTypes::ObjectId icID, SharedMemory* ic, 
+RRDServer* RRDServer::init_rrdstorage( int argc, const char* const* argv,
+											UniSetTypes::ObjectId icID, SharedMemory* ic,
 											const std::string prefix )
 {
 	string name = conf->getArgParam("--" + prefix + "-name","RRDServer");
@@ -238,7 +238,7 @@ RRDServer* RRDServer::init_rrdstorage( int argc, const char* const* argv,
 	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		UniSetExtensions::dlog[Debug::CRIT] << "(RRDServer): Not found ID for '" << name 
+		UniSetExtensions::dlog[Debug::CRIT] << "(RRDServer): Not found ID for '" << name
 			<< " in '" << conf->getObjectsSection() << "' section" << endl;
 		return 0;
 	}
@@ -266,7 +266,7 @@ void RRDServer::askSensors( UniversalIO::UIOCommand cmd )
 			try
 			{
 				shm->askSensor(s->first,cmd);
-			}	
+			}
 			catch( std::exception& ex )
 			{
 				RRDServer::dlog[Debug::CRIT] << myname << "(askSensors): " << ex.what() << endl;
@@ -285,7 +285,7 @@ void RRDServer::sysCommand( UniSetTypes::SystemMessage* sm )
 			try
 			{
 				askTimer(it->tid,it->sec*1000);
-			}	
+			}
 			catch( std::exception& ex )
 			{
 				RRDServer::dlog[Debug::CRIT] << myname << "(askTimer): " << ex.what() << endl;
@@ -321,7 +321,7 @@ void RRDServer::timerInfo( UniSetTypes::TimerMessage* tm )
 			if( RRDServer::dlog.debugging(Debug::INFO) )
 				RRDServer::dlog[Debug::INFO] << myname << "(update): '" << it->filename << "' " << v.str() << endl;
 
- 			rrd_clear_error();
+			rrd_clear_error();
 			const char* argv = v.str().c_str();
 			if( rrd_update_r(it->filename.c_str(),NULL,1,&argv) < 0 )
 			{
@@ -335,4 +335,3 @@ void RRDServer::timerInfo( UniSetTypes::TimerMessage* tm )
 	}
 }
 // -----------------------------------------------------------------------------
-
