@@ -1,3 +1,7 @@
+if DISABLE_RRD
+
+else
+
 bin_PROGRAMS 			= @PACKAGE@-rrdserver
 
 RRD_VER=@LIBVER@
@@ -31,3 +35,5 @@ pkgconfig_DATA 	= libUniSetRRDServer.pc
 
 all-local:
 	ln -sf ../RRDServer/$(devel_include_HEADERS) ../include
+
+endif
