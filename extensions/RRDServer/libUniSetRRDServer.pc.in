@@ -3,9 +3,9 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libUniSetRRDStorage
-Description: Support library for UniSetRRDStorage
+Name: libUniSetRRDServer
+Description: Support library for UniSetRRDServer
 Requires: libUniSetExtensions librrd
 Version: @VERSION@
-Libs: -L${libdir} -lUniSetRRDStorage
+Libs: -L${libdir} -lUniSetRRDServer
 Cflags: -I${includedir}/uniset

@@ -262,8 +262,8 @@ AC_CONFIG_FILES([Makefile
 				 extensions/SharedMemory/Makefile
 				 extensions/SharedMemory/libUniSetSharedMemory.pc
 				 extensions/SharedMemoryPlus/Makefile
-				 extensions/RRDStorage/Makefile
-				 extensions/RRDStorage/libUniSetRRDStorage.pc
+				 extensions/RRDServer/Makefile
+				 extensions/RRDServer/libUniSetRRDServer.pc
 				 extensions/tests/Makefile
 				 python/lib/Makefile
 				 python/lib/pyUniSet/Makefile

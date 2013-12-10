@@ -1,5 +1,5 @@
 #include <sstream>
-#include "RRDStorage.h"
+#include "RRDServer.h"
 #include "Configuration.h"
 #include "Debug.h"
 #include "ObjectsActivator.h"
@@ -17,7 +17,7 @@ int main( int argc, const char** argv )
 		cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
 		cout << "--rrdstorage-logfile filename    - logfilename. Default: rrdstorage.log" << endl;
 		cout << endl;
-		RRDStorage::help_print(argc, argv);
+		RRDServer::help_print(argc, argv);
 		return 0;
 	}
 
@@ -51,7 +51,7 @@ int main( int argc, const char** argv )
 			return 1;
 		}
 
-		RRDStorage* db = RRDStorage::init_rrdstorage(argc,argv,shmID);
+		RRDServer* db = RRDServer::init_rrdstorage(argc,argv,shmID);
 		if( !db )
 		{
 			dlog[Debug::CRIT] << "(rrdstorage): init не прошёл..." << endl;
@@ -65,9 +65,9 @@ int main( int argc, const char** argv )
 		act.broadcast( sm.transport_msg() );
 
 		unideb(Debug::ANY) << "\n\n\n";
-		unideb[Debug::ANY] << "(main): -------------- RRDStorage START -------------------------\n\n";
+		unideb[Debug::ANY] << "(main): -------------- RRDServer START -------------------------\n\n";
 		dlog(Debug::ANY) << "\n\n\n";
-		dlog[Debug::ANY] << "(main): -------------- RRDStorage START -------------------------\n\n";
+		dlog[Debug::ANY] << "(main): -------------- RRDServer START -------------------------\n\n";
 		act.run(false);
 		return 0;
 	}
