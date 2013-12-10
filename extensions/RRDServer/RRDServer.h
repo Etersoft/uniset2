@@ -1,5 +1,5 @@
-#ifndef _RRDStorage_H_
-#define _RRDStorage_H_
+#ifndef _RRDServer_H_
+#define _RRDServer_H_
 // -----------------------------------------------------------------------------
 #include "UObject_SK.h"
 #include "SMInterface.h"
@@ -7,13 +7,22 @@
 #include "extensions/Extensions.h"
 // -----------------------------------------------------------------------------
 /*!
+	\page page_RRDServer Реализация RRD хранилища
+
+      - \ref sec_RRD_Comm
+      - \ref sec_RRD_Conf
+
+    \section sec_RRD_Comm Общее описание RRDServer
+
 	"RoundRobinDatabase" - реализация циклического хранилища.
 	Процесс реализует циклическое хранение данных (от датчиков) и позволяет
 	конфигурировать любое количество rrd-баз и входящих в них "источников".
 
+	\section sec_RRD_Conf Настройка RRDServer
+
 	Пример секции конфигурации:
 \code
-		<RRDStorage1 name="RRDStorage1">
+		<RRDServer1 name="RRDServer1">
 			<rrd filename="rrdtest.rrd" filter_field="rrd" filter_value="1" step="5" ds_field="rrd1_ds" overwrite="0">
 				<item rra="RRA:AVERAGE:0.5:1:4320"/>
 				<item rra="RRA:MAX:0.5:1:4320"/>
@@ -22,16 +31,16 @@
 				<item rra="RRA:AVERAGE:0.5:1:4320"/>
 				<item rra="RRA:MAX:0.5:1:4320"/>
 			</rrd>
-		</RRDStorage1>
+		</RRDServer1>
 \endcode
 	Где:
-	\b filename - имя создаваемого rrd-файла
-	\b filter_field - поле у датчика, определяющее, что его нужно сохранять в БД
-	\b filter_value - значение filter_field, определяющее, что датчик нужно сохранять в БД
-	\b ds_field - поле определяющее, параметр задающий формат хранения. Если \a ds_field не задано,
+	- \b filename - имя создаваемого rrd-файла
+	- \b filter_field - поле у датчика, определяющее, что его нужно сохранять в БД
+	- \b filter_value - значение \b filter_field, определяющее, что датчик нужно сохранять в БД
+	- \b ds_field - поле определяющее, параметр задающий формат хранения. Если \a ds_field не задано,
 	то будет браться filter_field+filter_value+'_ds'.
-	\b step - период обновления данных (в секундах)
-	\b overwrite - [0,1]. Пересоздавать ли БД, если файл уже существует.
+	- \b step - период обновления данных (в секундах)
+	- \b overwrite - [0,1]. Пересоздавать ли БД, если файл уже существует.
 
 	При этом в секции <sensors> у датчиков прописываются параметры относящиеся к источнику:
 \code
@@ -45,16 +54,16 @@
 	</sensors>
 \endcode
 */
-class RRDStorage:
+class RRDServer:
 	public UObject_SK
 {
 	public:
-		RRDStorage( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
+		RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
 					const std::string prefix="rrd", DebugStream& log=UniSetExtensions::dlog );
-		virtual ~RRDStorage();
+		virtual ~RRDServer();
 
 		/*! глобальная функция для инициализации объекта */
-		static RRDStorage* init_rrdstorage( int argc, const char* const* argv,
+		static RRDServer* init_rrdstorage( int argc, const char* const* argv,
 						    UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
 							const std::string prefix="rrd" );
 
@@ -62,7 +71,7 @@ class RRDStorage:
 		static void help_print( int argc, const char* const* argv );
 
 	protected:
-		RRDStorage();
+		RRDServer();
 
 		virtual void askSensors( UniversalIO::UIOCommand cmd );
 		virtual void sensorInfo( UniSetTypes::SensorMessage* sm );
@@ -105,5 +114,5 @@ class RRDStorage:
 		std::string prefix;
 };
 // -----------------------------------------------------------------------------
-#endif // _RRDStorage_H_
+#endif // _RRDServer_H_
 // -----------------------------------------------------------------------------

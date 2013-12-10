@@ -1,24 +1,24 @@
-bin_PROGRAMS 			= @PACKAGE@-rrdstorage
+bin_PROGRAMS 			= @PACKAGE@-rrdserver
 
 RRD_VER=@LIBVER@
 
-lib_LTLIBRARIES 			= libUniSetRRDStorage.la
-libUniSetRRDStorage_la_LDFLAGS  = -version-info $(RRD_VER)
-libUniSetRRDStorage_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
+lib_LTLIBRARIES 			= libUniSetRRDServer.la
+libUniSetRRDServer_la_LDFLAGS  = -version-info $(RRD_VER)
+libUniSetRRDServer_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
 									$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
 									$(top_builddir)/extensions/lib/libUniSetExtensions.la \
 									$(SIGC_LIBS) $(RRD_LIBS)
-libUniSetRRDStorage_la_CXXFLAGS	= -I$(top_builddir)/extensions/include \
+libUniSetRRDServer_la_CXXFLAGS	= -I$(top_builddir)/extensions/include \
 									-I$(top_builddir)/extensions/SharedMemory \
 									$(SIGC_CFLAGS) $(RRD_CFLAGS)
-libUniSetRRDStorage_la_SOURCES 	= RRDStorage.cc
+libUniSetRRDServer_la_SOURCES 	= RRDServer.cc
 
-@PACKAGE@_rrdstorage_SOURCES 	= main.cc
-@PACKAGE@_rrdstorage_LDADD 	= libUniSetRRDStorage.la $(top_builddir)/lib/libUniSet.la \
+@PACKAGE@_rrdserver_SOURCES 	= main.cc
+@PACKAGE@_rrdserver_LDADD 	= libUniSetRRDServer.la $(top_builddir)/lib/libUniSet.la \
 									$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
 									$(top_builddir)/extensions/lib/libUniSetExtensions.la \
 									$(SIGC_LIBS) $(RRD_LIBS)
-@PACKAGE@_rrdstorage_CXXFLAGS	= -I$(top_builddir)/extensions/include \
+@PACKAGE@_rrdserver_CXXFLAGS	= -I$(top_builddir)/extensions/include \
 									-I$(top_builddir)/extensions/SharedMemory \
 									$(SIGC_CFLAGS) $(RRD_CFLAGS)
 
@@ -27,7 +27,7 @@ devel_include_HEADERS = *.h
 devel_includedir = $(pkgincludedir)/extensions
 
 pkgconfigdir 	= $(libdir)/pkgconfig
-pkgconfig_DATA 	= libUniSetRRDStorage.pc
+pkgconfig_DATA 	= libUniSetRRDServer.pc
 
 all-local:
-	ln -sf ../RRDStorage/$(devel_include_HEADERS) ../include
+	ln -sf ../RRDServer/$(devel_include_HEADERS) ../include
