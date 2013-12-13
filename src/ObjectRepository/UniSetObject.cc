@@ -874,7 +874,7 @@ void UniSetObject::work()
 	if( unideb.debugging(Debug::INFO) )
 		unideb[Debug::INFO] << myname << ": thread processing messages run..." << endl;
 	if( thr )
-		msgpid = thr->getId();
+		msgpid = thr->getTID();
 	while( isActive() )
 	{
 		callback();

@@ -347,7 +347,7 @@ SimpleInfo* SystemGuard::getInfo()
 	SimpleInfo_var si = ObjectsManager::getInfo();
 	info << si->info;
 	if( thr )
-		info << "\texTID= " << thr->getId();
+		info << "\texTID= " << thr->getTID();
 	else
 		info << "\texpid= " << expid;
 

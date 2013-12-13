@@ -26,6 +26,7 @@
 #define ThreadCreator_h_
 //----------------------------------------------------------------------------------------
 #include <cc++/thread.h>
+#include <sys/resource.h>
 //----------------------------------------------------------------------------------------
 /*! \class ThreadCreator
  *	Шаблон для создания потоков с указанием функции вызова. 
@@ -93,11 +94,24 @@ class ThreadCreator:
 		ThreadCreator( ThreadMaster* m, Action a );
 		~ThreadCreator();
 
+		inline pid_t getTID(){ return pid; }
+
+		/*! \return 0 - sucess */
+		int setPriority( int prior );
+
+		/*! \return < 0 - fail */
+		int getPriority();
+
 		void stop();
 
-		inline void setPriority( int ptior )
+	inline void setName( const std::string& name )
 		{
-			#warning ThreadCreator::setPriority NOT REALIZED YET
+			ost::PosixThread::setName( name.c_str() );
+		}
+
+	inline void setName( const char* name )
+		{
+			ost::PosixThread::setName( name );
 		}
 
 	inline void setCancel( ost::Thread::Cancel mode )
@@ -133,6 +147,8 @@ class ThreadCreator:
 
 	private:
 		ThreadCreator();
+
+		pid_t pid;
 	
 		ThreadMaster* m;
 		Action act;
@@ -147,6 +163,7 @@ class ThreadCreator:
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::ThreadCreator( ThreadMaster* m, Action a ):
+	pid(-1),
 	m(m),
 	act(a),
 	finm(0),
@@ -159,6 +176,7 @@ ThreadCreator<ThreadMaster>::ThreadCreator( ThreadMaster* m, Action a ):
 template <class ThreadMaster>
 void ThreadCreator<ThreadMaster>::run()
 {
+	pid = getpid();
 	if(m)
 		(m->*act)();
 //	PosixThread::stop()
@@ -172,6 +190,7 @@ void ThreadCreator<ThreadMaster>::stop()
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::ThreadCreator():
+	pid(-1),
 	m(0),
 	act(0),
 	finm(0),
@@ -184,6 +203,18 @@ ThreadCreator<ThreadMaster>::ThreadCreator():
 template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::~ThreadCreator()
 {
+}
+//----------------------------------------------------------------------------------------
+template <class ThreadMaster>
+int ThreadCreator<ThreadMaster>::setPriority( int prior )
+{
+	return setpriority(PRIO_PROCESS, pid, prior );
+}
+//----------------------------------------------------------------------------------------
+template <class ThreadMaster>
+int ThreadCreator<ThreadMaster>::getPriority()
+{
+	return getpriority(PRIO_PROCESS, pid);
 }
 //----------------------------------------------------------------------------------------
 #endif // ThreadCreator_h_
