@@ -58,6 +58,11 @@ clock_ticks(sysconf(_SC_CLK_TCK))
 }
 
 //------------------------------------------------------------------------------
+PassiveTimer::~PassiveTimer()
+{
+
+}
+//------------------------------------------------------------------------------
 bool PassiveTimer::checkTime()
 {
 //	printf("times=%d, act=%d\n",times(0),timeAct);
@@ -117,4 +122,3 @@ clock_t PassiveTimer::times()
 	struct tms tm;
 	return ::times(&tm);
 }
-

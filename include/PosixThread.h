@@ -37,7 +37,7 @@ public:
 		virtual ~PosixThread();
 
 		void start( void *args );	/*!< запуск */
-		void stop();		
+		void stop();
 
 		void thrkill( int signo );		/*!< послать сигнал signo */	
 
@@ -50,8 +50,6 @@ public:
 		void setPriority( int priority );
 
 		static void* funcp( void * test );
-
-
 
 protected:
 
@@ -77,5 +75,6 @@ private:
 	
 		static int countThreads;
 };
-
+//----------------------------------------------------------------------------------------
 #endif // PosixThread_h_
+//----------------------------------------------------------------------------------------

@@ -25,7 +25,7 @@
 #ifndef ThreadCreator_h_
 #define ThreadCreator_h_
 //----------------------------------------------------------------------------------------
-#include "PosixThread.h"
+#include <cc++/thread.h>
 //----------------------------------------------------------------------------------------
 /*! \class ThreadCreator
  *	Шаблон для создания потоков с указанием функции вызова. 
@@ -83,36 +83,53 @@
 //----------------------------------------------------------------------------------------
 template<class ThreadMaster>
 class ThreadCreator:
-	protected PosixThread
+	public ost::PosixThread
 {
 	public:
-	
+
 		/*! прототип функции вызова */
-		typedef void(ThreadMaster::* Action)(void);	
-
-		pthread_t start();
-		pthread_t getTID(){ return PosixThread::getTID(); }
-
-		inline void stop()
-		{
-			PosixThread::stop();
-		}
-		
-		inline void kill( int signo )		/*!< послать сигнал signo */	
-		{
-			PosixThread::thrkill(signo);
-		}
-
-		inline void setPriority( int priority )
-		{
-			PosixThread::setPriority(priority);
-		}
+		typedef void(ThreadMaster::* Action)(void);
 
 		ThreadCreator( ThreadMaster* m, Action a );
 		~ThreadCreator();
 
+		void stop();
+
+		inline void setPriority( int ptior )
+		{
+			#warning ThreadCreator::setPriority NOT REALIZED YET
+		}
+
+	inline void setCancel( ost::Thread::Cancel mode )
+		{
+			ost::PosixThread::setCancel(mode);
+		}
+
+		inline void setFinalAction( ThreadMaster* m, Action a )
+		{
+			finm = m;
+			finact = a;
+		}
+
+		inline void setInitialAction( ThreadMaster* m, Action a )
+		{
+			initm = m;
+			initact = a;
+		}
+
 	protected:
-		virtual void work(); /*!< Функция выполняемая в потоке */
+		virtual void run();
+		virtual void final()
+		{
+			if( finm )
+				(finm->*finact)();
+		}
+
+		virtual void initial()
+		{
+			if( initm )
+				(initm->*initact)();
+		}
 
 	private:
 		ThreadCreator();
@@ -120,18 +137,27 @@ class ThreadCreator:
 		ThreadMaster* m;
 		Action act;
 
+		ThreadMaster* finm;
+		Action finact;
+
+		ThreadMaster* initm;
+		Action initact;
 };
 
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::ThreadCreator( ThreadMaster* m, Action a ):
 	m(m),
-	act(a)
+	act(a),
+	finm(0),
+	finact(0),
+	initm(0),
+	initact(0)
 {
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
-void ThreadCreator<ThreadMaster>::work()
+void ThreadCreator<ThreadMaster>::run()
 {
 	if(m)
 		(m->*act)();
@@ -139,17 +165,19 @@ void ThreadCreator<ThreadMaster>::work()
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
-pthread_t ThreadCreator<ThreadMaster>::start()
+void ThreadCreator<ThreadMaster>::stop()
 {
-	PosixThread::start( static_cast<PosixThread*>(this) );
-	return getTID();
+	terminate();
 }
-
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::ThreadCreator():
 	m(0),
-	act(0)
+	act(0),
+	finm(0),
+	finact(0),
+	initm(0),
+	initact(0)
 {
 }
 //----------------------------------------------------------------------------------------

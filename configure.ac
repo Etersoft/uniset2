@@ -212,7 +212,6 @@ AC_CONFIG_FILES([Makefile
 				 src/ObjectRepository/Makefile
 				 src/Processes/Makefile
 				 src/Services/Makefile
-				 src/Threads/Makefile
 				 src/Timers/Makefile
 				 src/Various/Makefile
 				 src/Makefile

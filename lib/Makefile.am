@@ -20,7 +20,6 @@ libUniSet_la_LIBADD		= \
  $(top_builddir)/src/ObjectRepository/libObjectsRepository.la \
  $(top_builddir)/src/Processes/libProcesses.la \
  $(top_builddir)/src/Services/libServices.la \
- $(top_builddir)/src/Threads/libThreads.la \
  $(top_builddir)/src/Timers/libTimers.la \
  $(top_builddir)/src/Various/libVarious.la
 

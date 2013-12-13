@@ -262,7 +262,7 @@ void ObjectsActivator::work()
 	try
 	{
 		if(orbthr)
-			thpid = orbthr->getTID();
+			thpid = orbthr->getId();
 		else
 			thpid = getpid();
 

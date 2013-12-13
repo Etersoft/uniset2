@@ -4,7 +4,7 @@
 
 SUBDIRS=JrnTests
 
-noinst_PROGRAMS 		= passivetimer hourglass delaytimer unixml ui umutex conftest iterator_test sscanf_hex calibration
+noinst_PROGRAMS 		= passivetimer hourglass delaytimer unixml ui umutex conftest iterator_test sscanf_hex calibration threadtst
 
 passivetimer_SOURCES 	= passivetimer.cc
 passivetimer_LDADD 		= $(top_builddir)/lib/libUniSet.la
@@ -31,8 +31,8 @@ ui_LDADD 	= $(top_builddir)/lib/libUniSet.la
 ui_CPPFLAGS	= -I$(top_builddir)/include
 
 umutex_SOURCES 	= umutex.cc
-umutex_LDADD 	= $(top_builddir)/lib/libUniSet.la
-umutex_CPPFLAGS	= -I$(top_builddir)/include
+umutex_LDADD 	= $(top_builddir)/lib/libUniSet.la $(COMCPP_LIBS)
+umutex_CPPFLAGS	= -I$(top_builddir)/include $(COMCPP_CFLAGS)
 
 conftest_SOURCES 	= conftest.cc
 conftest_LDADD 	= $(top_builddir)/lib/libUniSet.la
@@ -43,6 +43,10 @@ sscanf_hex_SOURCES 	= sscanf_hex.cc
 calibration_SOURCES = calibration.cc
 calibration_LDADD 	= $(top_builddir)/lib/libUniSet.la ${SIGC_LIBS}
 calibration_CPPFLAGS	= -I$(top_builddir)/include ${SIGC_CFLAGS}
+
+threadtst_SOURCES = threadtst.cc
+threadtst_LDADD 	= $(top_builddir)/lib/libUniSet.la ${SIGC_LIBS} $(COMCPP_LIBS)
+threadtst_CPPFLAGS	= -I$(top_builddir)/include ${SIGC_CFLAGS} $(COMCPP_CFLAGS)
 
 
 include $(top_builddir)/conf/setting.mk

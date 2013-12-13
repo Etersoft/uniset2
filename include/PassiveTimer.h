@@ -84,6 +84,7 @@ class PassiveTimer:
 public:
 	PassiveTimer();
 	PassiveTimer( timeout_t timeMS ); 			/*!< установить таймер */
+	~PassiveTimer();
 	
 
 	virtual bool checkTime();				/*!< проверка наступления заданного времени */
