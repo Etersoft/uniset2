@@ -2,7 +2,7 @@ if DISABLE_RRD
 
 else
 
-bin_PROGRAMS 			= @PACKAGE@-rrdserver
+bin_PROGRAMS = @PACKAGE@-rrdserver
 
 RRD_VER=@LIBVER@
 
