@@ -327,6 +327,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %if_enabled rrd
 %_pkgconfigdir/libUniSetRRD*.pc
+%_libdir/libUniSetRRD*.so
 %endif
 
 #%_pkgconfigdir/libUniSetSMDBServer.pc
