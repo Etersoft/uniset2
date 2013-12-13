@@ -557,7 +557,7 @@ void IOControl::ioread( IOInfo* it )
 				}
 				else // управление лампочками
 				{
-					uniset_spin_lock lock(it->val_lock);
+					uniset_rwmutex_wrlock lock(it->val_lock);
 					long prev_val = it->value;
 					if( force_out )
 						it->value = shm->localGetValue(it->ait,it->si.id);
@@ -1425,7 +1425,7 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 				long prev_val = 0;
 				long cur_val = 0;
 				{
-					uniset_spin_lock lock(it->val_lock);
+					uniset_rwmutex_wrlock lock(it->val_lock);
 					prev_val = it->value;
 					it->value = sm->value;
 					cur_val = sm->value;
@@ -1520,7 +1520,7 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 					dlog[Debug::LEVEL1] << myname << "(sensorInfo): DO: sm->id=" << sm->id
 							<< " val=" << sm->value << endl;
 				}
-				uniset_spin_lock lock(it->val_lock);
+				uniset_rwmutex_wrlock lock(it->val_lock);
 				it->value = sm->state ? 1:0;
 			}
 			break;

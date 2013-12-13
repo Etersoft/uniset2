@@ -193,7 +193,7 @@ class ModbusClient
 		
 		bool crcNoCheckit;
 
-		UniSetTypes::uniset_mutex sendMutex;
+		UniSetTypes::uniset_rwmutex sendMutex;
 		DebugStream dlog;
 
 		void printProcessingTime();

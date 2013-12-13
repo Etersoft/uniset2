@@ -80,22 +80,29 @@ class OPush: public unary_function<UniSetObject*, bool>
 
 // ------------------------------------------------------------------------------------------
 ObjectsManager::ObjectsManager():
-UniSetObject(UniSetTypes::DefaultObjectId)
+UniSetObject(UniSetTypes::DefaultObjectId),
+sig(0),
+olistMutex("olistMutex"),
+mlistMutex("mlistMutex")
 {
 }
 // ------------------------------------------------------------------------------------------
-ObjectsManager::ObjectsManager( ObjectId id):
+ObjectsManager::ObjectsManager( ObjectId id ):
 UniSetObject(id),
 sig(0)
 {
+	olistMutex.setName(myname + "_olistMutex");
+	mlistMutex.setName(myname + "_mlistMutex");
 }
 
 // ------------------------------------------------------------------------------------------
 
-ObjectsManager::ObjectsManager(const string name, const string section): 
+ObjectsManager::ObjectsManager(const string& name, const string& section):
 UniSetObject(name, section),
 sig(0)
 {
+	olistMutex.setName(myname + "_olistMutex");
+	mlistMutex.setName(myname + "_mlistMutex");
 }
 
 // ------------------------------------------------------------------------------------------
@@ -141,7 +148,7 @@ void ObjectsManager::initPOA( ObjectsManager* rmngr )
 bool ObjectsManager::addObject( UniSetObject *obj )
 {
 	{	//lock
-		uniset_mutex_lock lock(olistMutex, 1000);
+		uniset_rwmutex_wrlock lock(olistMutex);
 		ObjectsList::iterator li=find(olist.begin(),olist.end(), obj);
 		if( li==olist.end() )
 		{
@@ -157,7 +164,7 @@ bool ObjectsManager::addObject( UniSetObject *obj )
 bool ObjectsManager::removeObject(UniSetObject* obj)
 {
 	{	//lock
-		uniset_mutex_lock lock(olistMutex, 1000);
+		uniset_rwmutex_wrlock lock(olistMutex);
 		ObjectsList::iterator li=find(olist.begin(),olist.end(), obj);
 		if( li!=olist.end() )
 		{
@@ -193,7 +200,7 @@ bool ObjectsManager::removeObject(UniSetObject* obj)
 	} // unlock	
 	
 	return true;
-}                      
+}
 
 // ------------------------------------------------------------------------------------------
 /*! 
@@ -201,10 +208,11 @@ bool ObjectsManager::removeObject(UniSetObject* obj)
 */
 void ObjectsManager::managers(OManagerCommand cmd)
 {
-	unideb[Debug::INFO] << myname <<"(managers): mlist.size=" 
+	if( unideb.debugging(Debug::INFO) )
+		unideb[Debug::INFO] << myname <<"(managers): mlist.size="
 						<< mlist.size() << " cmd=" << cmd  << endl;
 	{	//lock
-		uniset_mutex_lock lock(mlistMutex, 1000);
+		uniset_rwmutex_rlock lock(mlistMutex);
 		for( ObjectsManagerList::iterator li=mlist.begin();li!=mlist.end();++li )
 		{
 			try
@@ -233,23 +241,31 @@ void ObjectsManager::managers(OManagerCommand cmd)
 			}
 			catch( Exception& ex )
 			{
-				unideb[Debug::CRIT] << myname << "(managers): " << ex << endl;
-				unideb[Debug::CRIT] << myname << "(managers): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
+				if( unideb.debugging(Debug::CRIT) )
+				{
+					unideb[Debug::CRIT] << myname << "(managers): " << ex << endl;
+					unideb[Debug::CRIT] << myname << "(managers): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
+				}
 			}
 			catch(CORBA::SystemException& ex)
 		    {
-				unideb[Debug::CRIT] << myname << "(managers): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+				if( unideb.debugging(Debug::CRIT) )
+					unideb[Debug::CRIT] << myname << "(managers): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
 		    }
 			catch( CORBA::Exception& ex )
 			{
-			    unideb[Debug::CRIT] << myname << "(managers): Caught CORBA::Exception. " << ex._name() << endl;
+				if( unideb.debugging(Debug::CRIT) )
+				unideb[Debug::CRIT] << myname << "(managers): Caught CORBA::Exception. " << ex._name() << endl;
 			}
 			catch( omniORB::fatalException& fe ) 
 			{
-				unideb[Debug::CRIT] << myname << "(managers): Caught omniORB::fatalException:" << endl;
-			    unideb[Debug::CRIT] << myname << "(managers): file: " << fe.file()
-					<< " line: " << fe.line()
-			    	<< " mesg: " << fe.errmsg() << endl;
+				if( unideb.debugging(Debug::CRIT) )
+				{
+					unideb[Debug::CRIT] << myname << "(managers): Caught omniORB::fatalException:" << endl;
+				unideb[Debug::CRIT] << myname << "(managers): file: " << fe.file()
+						<< " line: " << fe.line()
+					<< " mesg: " << fe.errmsg() << endl;
+				}
 			}			
 		}
 	} // unlock 
@@ -260,10 +276,11 @@ void ObjectsManager::managers(OManagerCommand cmd)
 */
 void ObjectsManager::objects(OManagerCommand cmd)
 {
-	unideb[Debug::INFO] << myname <<"(objects): olist.size=" 
+	if( unideb.debugging(Debug::INFO) )
+		unideb[Debug::INFO] << myname <<"(objects): olist.size="
 						<< olist.size() << " cmd=" << cmd  << endl;
 	{	//lock
-		uniset_mutex_lock lock(olistMutex, 1000);
+		uniset_rwmutex_rlock lock(olistMutex);
 
 		for (ObjectsList::iterator li=olist.begin();li!=olist.end();++li)
 		{
@@ -293,25 +310,33 @@ void ObjectsManager::objects(OManagerCommand cmd)
 			}
 			catch( Exception& ex )
 			{
-				unideb[Debug::CRIT] << myname << "(objects): " << ex << endl;
-				unideb[Debug::CRIT] << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
+				if( unideb.debugging(Debug::CRIT) )
+				{
+					unideb[Debug::CRIT] << myname << "(objects): " << ex << endl;
+					unideb[Debug::CRIT] << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
+				}
 			}
 			catch(CORBA::SystemException& ex)
 		    {
-				unideb[Debug::CRIT] << myname << "(objects): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+				if( unideb.debugging(Debug::CRIT) )
+					unideb[Debug::CRIT] << myname << "(objects): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
 		    }
 			catch( CORBA::Exception& ex )
 			{
-			    unideb[Debug::CRIT] << myname << "(objects): Caught CORBA::Exception. " 
-			    << ex._name()
-			    << " (" << (*li)->getName() << ")" << endl;
+				if( unideb.debugging(Debug::CRIT) )
+				unideb[Debug::CRIT] << myname << "(objects): Caught CORBA::Exception. "
+					<< ex._name()
+					<< " (" << (*li)->getName() << ")" << endl;
 			}
 			catch( omniORB::fatalException& fe ) 
 			{
-				unideb[Debug::CRIT] << myname << "(objects): Caught omniORB::fatalException:" << endl;
-			    unideb[Debug::CRIT] << myname << "(objects): file: " << fe.file()
-					<< " line: " << fe.line()
-			    	<< " mesg: " << fe.errmsg() << endl;
+				if( unideb.debugging(Debug::CRIT) )
+				{
+					unideb[Debug::CRIT] << myname << "(objects): Caught omniORB::fatalException:" << endl;
+				unideb[Debug::CRIT] << myname << "(objects): file: " << fe.file()
+						<< " line: " << fe.line()
+					<< " mesg: " << fe.errmsg() << endl;
+				}
 			}			
 		}
 	} // unlock
@@ -362,13 +387,13 @@ void ObjectsManager::broadcast(const TransportMessage& msg)
 	
 	// Всем объектам...
 	{	//lock
-		uniset_mutex_lock lock(olistMutex, 2000);
+		uniset_rwmutex_rlock lock(olistMutex);
 		for_each(olist.begin(),olist.end(),OPush(msg)); // STL метод
 	} // unlock
 
 	// Всем менеджерам....
 	{	//lock
-		uniset_mutex_lock lock(mlistMutex, 2000);
+		uniset_rwmutex_rlock lock(mlistMutex);
 		for_each(mlist.begin(),mlist.end(),MPush(msg)); // STL метод
 	} // unlock
 }
@@ -377,7 +402,7 @@ void ObjectsManager::broadcast(const TransportMessage& msg)
 bool ObjectsManager::addManager( ObjectsManager *child )
 {
 	{	//lock
-		uniset_mutex_lock lock(mlistMutex, 1000);
+		uniset_rwmutex_wrlock lock(mlistMutex);
 
 		// Проверка на совпадение
 		ObjectsManagerList::iterator it= find(mlist.begin(),mlist.end(),child);
@@ -387,7 +412,7 @@ bool ObjectsManager::addManager( ObjectsManager *child )
 			if( unideb.debugging(Debug::INFO) )
 				unideb[Debug::INFO] << myname << ": добавляем менеджер "<< child->getName()<< endl;
 		}
-		else
+		else if( unideb.debugging(Debug::WARN) )
 			unideb[Debug::WARN] << myname << ": попытка повторного добавления объекта "<< child->getName() << endl;
 	} // unlock	
 	
@@ -398,7 +423,7 @@ bool ObjectsManager::addManager( ObjectsManager *child )
 bool ObjectsManager::removeManager( ObjectsManager* child )
 {
 	{	//lock
-		uniset_mutex_lock lock(mlistMutex, 1000);
+		uniset_rwmutex_wrlock lock(mlistMutex);
 		mlist.remove(child);
 	} // unlock	
 	
@@ -411,7 +436,7 @@ const ObjectsManager* ObjectsManager::itemM(const ObjectId id)
 {
 	
 	{	//lock
-		uniset_mutex_lock lock(mlistMutex, 1000);
+		uniset_rwmutex_rlock lock(mlistMutex);
 		for( ObjectsManagerList::iterator li=mlist.begin(); li!=mlist.end();++li )
 		{
 			if ( (*li)->getId()==id )
@@ -427,7 +452,7 @@ const ObjectsManager* ObjectsManager::itemM(const ObjectId id)
 const UniSetObject* ObjectsManager::itemO(const ObjectId id)
 {
 	{	//lock
-		uniset_mutex_lock lock(olistMutex, 1000);
+		uniset_rwmutex_rlock lock(olistMutex);
 		for (ObjectsList::iterator li=olist.begin(); li!=olist.end();++li)
 		{
 			if ( (*li)->getId()==id )

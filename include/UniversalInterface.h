@@ -324,7 +324,7 @@ class UniversalInterface
 				bool clean(); 		/*!< функция очистки кэш-а от старых ссылок */
 				inline void clear() /*!< удаление всей информации */
 				{
-					UniSetTypes::uniset_mutex_lock l(cmutex,200);
+					UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
 					mcache.clear();	
 				}; 
 								
@@ -355,7 +355,7 @@ class UniversalInterface
 				
 				typedef std::map<int, Info> CacheMap;
 				CacheMap mcache;
-				UniSetTypes::uniset_mutex cmutex;
+				UniSetTypes::uniset_rwmutex cmutex;
 				unsigned int MaxSize;	/*!< максимальный размер кэша */
 				unsigned int CleanTime;	/*!< период устаревания ссылок [мин] */
 

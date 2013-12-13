@@ -36,6 +36,8 @@ pollActivated(false)
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(MBExchange): objId=-1?!! Use --" + prefix + "-name" );
 
+	mutex_start.setName(myname + "_mutex_start");
+
 //	xmlNode* cnode = conf->getNode(myname);
 	string conf_name = conf->getArgParam("--" + prefix + "-confnode",myname);
 
@@ -225,13 +227,13 @@ void MBExchange::step()
 // -----------------------------------------------------------------------------
 bool MBExchange::checkProcActive()
 {
-	uniset_mutex_lock l(actMutex, 300);
+	uniset_rwmutex_rlock l(actMutex);
 	return activated;
 }
 // -----------------------------------------------------------------------------
 void MBExchange::setProcActive( bool st )
 {
-	uniset_mutex_lock l(actMutex, 400);
+	uniset_rwmutex_wrlock l(actMutex);
 	activated = st;
 }
 // -----------------------------------------------------------------------------
@@ -2413,7 +2415,7 @@ bool MBExchange::activateObject()
 	// см. sysCommand()
 	{
 		setProcActive(false);
-		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
+		UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
 		UniSetObject_LT::activateObject();
 		if( !shm->isLocalwork() )
 			rtuQueryOptimization(rmap);
@@ -2507,7 +2509,7 @@ void MBExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 				dlog[Debug::CRIT] << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 
 			{
-				UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
+				UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
 				askSensors(UniversalIO::UIONotify);
 				initOutput();
 			}

@@ -121,7 +121,7 @@
 		<UNetExchange name="UNetExchange"/>
 		<HeartBeatTime time_msec="5000"/>
 		<TestGen input1_s="Input1_S" input2_s="DumpSensor1_S" name="TestGen" output1_c="DO_C"/>
-		<RRDStorage1 name="RRDStorage1">
+		<RRDServer1 name="RRDServer1">
 			<rrd filename="rrdtest.rrd" filter_field="rrd" filter_value="1" step="5" ds_field="rrd1_ds" overwrite="0">
 				<item rra="RRA:AVERAGE:0.5:1:4320"/>
 				<item rra="RRA:MAX:0.5:1:4320"/>
@@ -130,7 +130,7 @@
 				<item rra="RRA:AVERAGE:0.5:1:4320"/>
 				<item rra="RRA:MAX:0.5:1:4320"/>
 			</rrd>
-		</RRDStorage1>
+		</RRDServer1>
 	</settings>
 	<ObjectsMap idfromfile="0">
 		<!--
@@ -243,7 +243,7 @@
 			<item id="6008" name="UNetExchange"/>
 			<item id="6009" name="MBMaster2"/>
 			<item id="6010" name="MBMultiMaster1"/>
-			<item id="6011" name="RRDStorage1"/>
+			<item id="6011" name="RRDServer1"/>
 		</objects>
 	</ObjectsMap>
 	<messages idfromfile="1" name="messages">

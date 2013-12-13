@@ -23,7 +23,7 @@ void SharedMemory::help_print( int argc, const char* const* argv )
 	cout << "--wdt-device           - Использовать в качестве WDT указанный файл." << endl;
 	cout << "--heartbeat-node       - Загружать heartbeat датчики для указанного узла." << endl;
 	cout << "--heartbeat-check-time - период проверки 'счётчиков'. По умолчанию 1000 мсек" << endl;
-	cout << "--lock-value-pause     - пауза между проверкой spin-блокировки на значение" << endl;
+	cout << "--lock-rvalue-pause-msec - пауза между проверкой rw-блокировки на разрешение чтения" << endl;
 	cout << "--e-filter             - фильтр для считывания <eventlist>" << endl;
 	cout << "--e-startup-pause      - пауза перед посылкой уведомления о старте SM. (По умолчанию: 1500 мсек)." << endl;
 	cout << "--activate-timeout     - время ожидания активизации (По умолчанию: 15000 мсек)." << endl;
@@ -44,6 +44,9 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 	iotypePulsar(UniversalIO::DigitalInput),
 	msecPulsar(0)
 {
+	mutex_start.setName(myname + "_mutex_start");
+	mutex_act.setName(myname + "_mutex_act");
+
 	string cname(confname);
 	if( cname.empty() )
 		cname = ORepHelpers::getShortName(conf->oind->getMapName(id));
@@ -70,7 +73,7 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 	string t_field = conf->getArgParam("--t-filter-field");
 	string t_fvalue = conf->getArgParam("--t-filter-value");
 	
-	int lock_msec = conf->getArgPInt("--lock-value-pause",0);
+	int lock_msec = conf->getArgPInt("--lock-rvalue-pause-msec",5);
 	if( lock_msec < 0 )
 		lock_msec = 0;
 	setCheckLockValuePause(lock_msec);
@@ -269,7 +272,7 @@ void SharedMemory::sysCommand( SystemMessage *sm )
 		
 			// подождать пока пройдёт инициализация
 			// см. activateObject()
-			UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
+			UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
 			askTimer(tmHeartBeatCheck,heartbeatCheckTime);
 			askTimer(tmEvent,evntPause,1);
 
@@ -328,11 +331,11 @@ bool SharedMemory::activateObject()
 	// см. sysCommand()
 	{
 		{
-			uniset_mutex_lock l(act_mutex,100);
+			uniset_rwmutex_wrlock l(mutex_act);
 			activated = false;
 		}
 
-		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
+		UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
 		res = IONotifyController_LT::activateObject();
 
 		// инициализируем указатели		
@@ -356,7 +359,7 @@ bool SharedMemory::activateObject()
 		}
 
 		{
-			uniset_mutex_lock l(act_mutex,100);
+			uniset_rwmutex_wrlock l(mutex_act);
 			activated = true;
 		}
 	}
@@ -864,7 +867,7 @@ std::ostream& operator<<( std::ostream& os, const SharedMemory::HistoryInfo& h )
 // ------------------------------------------------------------------------------------------
 bool SharedMemory::isActivated()
 {
-	uniset_mutex_lock l(act_mutex,300);
+	uniset_rwmutex_rlock l(mutex_act);
 	return activated;
 }
 // ------------------------------------------------------------------------------------------

@@ -23,12 +23,12 @@ class ModbusRTUSlave:
 	public ModbusServer
 {
 	public:
-		ModbusRTUSlave( const std::string dev, bool use485=false, bool tr_ctl=false  );
+		ModbusRTUSlave( const std::string& dev, bool use485=false, bool tr_ctl=false  );
 		ModbusRTUSlave( ComPort* com );
 		virtual ~ModbusRTUSlave();
 		
 		void setSpeed( ComPort::Speed s );
-		void setSpeed( const std::string s );
+		void setSpeed( const std::string& s );
 		ComPort::Speed getSpeed();
 
 		virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout );

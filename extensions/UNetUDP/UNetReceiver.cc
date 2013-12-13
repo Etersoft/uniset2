@@ -91,6 +91,7 @@ UNetReceiver::~UNetReceiver()
 // -----------------------------------------------------------------------------
 void UNetReceiver::setReceiveTimeout( timeout_t msec )
 {
+	uniset_rwmutex_wrlock l(tmMutex);
 	recvTimeout = msec;
 	ptRecvTimeout.setTiming(msec);
 }
@@ -142,7 +143,7 @@ void UNetReceiver::setLostPacketsID( UniSetTypes::ObjectId id )
 // -----------------------------------------------------------------------------
 void UNetReceiver::setLockUpdate( bool st )
 {
-	uniset_mutex_lock l(lockMutex,200);
+	uniset_rwmutex_wrlock l(lockMutex);
 	lockUpdate = st;
 	if( !st )
 	  ptPrepare.reset();
@@ -150,7 +151,7 @@ void UNetReceiver::setLockUpdate( bool st )
 // -----------------------------------------------------------------------------
 void UNetReceiver::resetTimeout()
 {
-	uniset_mutex_lock l(tmMutex,200);
+	uniset_rwmutex_wrlock l(tmMutex);
 	ptRecvTimeout.reset();
 	trTimeout.change(false);
 }
@@ -223,7 +224,7 @@ void UNetReceiver::real_update()
 	while( k>0 )
 	{
 		{ // lock qpack
-			uniset_mutex_lock l(packMutex);
+			uniset_rwmutex_wrlock l(packMutex);
 			if( qpack.empty() )
 				return;
 
@@ -293,7 +294,7 @@ void UNetReceiver::real_update()
 
 				// обновление данных в SM (блокировано)
 				{
-					uniset_mutex_lock l(lockMutex,100);
+					uniset_rwmutex_rlock l(lockMutex);
 					if( lockUpdate )
 						continue;
 				}
@@ -336,7 +337,7 @@ void UNetReceiver::real_update()
 
 				// обновление данных в SM (блокировано)
 				{
-					uniset_mutex_lock l(lockMutex,100);
+					uniset_rwmutex_rlock l(lockMutex);
 					if( lockUpdate )
 						continue;
 				}
@@ -375,8 +376,14 @@ void UNetReceiver::stop()
 // -----------------------------------------------------------------------------
 void UNetReceiver::receive()
 {
-	dlog[Debug::INFO] << myname << ": ******************* receive start" << endl;
-	ptRecvTimeout.setTiming(recvTimeout);
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << myname << ": ******************* receive start" << endl;
+
+	{
+		uniset_rwmutex_wrlock l(tmMutex);
+		ptRecvTimeout.setTiming(recvTimeout);
+	}
+
 	bool tout = false;
 	while( activated )
 	{
@@ -384,27 +391,30 @@ void UNetReceiver::receive()
 		{
 			if( recv() )
 			{
-				uniset_mutex_lock l(tmMutex,100);
+				uniset_rwmutex_wrlock l(tmMutex);
 				ptRecvTimeout.reset();
 			}
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
-			dlog[Debug::WARN] << myname << "(receive): " << ex << std::endl;
+			if( dlog.debugging(Debug::WARN) )
+				dlog[Debug::WARN] << myname << "(receive): " << ex << std::endl;
 		}
 		catch( std::exception& e )
 		{
-			dlog[Debug::WARN] << myname << "(receive): " << e.what()<< std::endl;
+			if( dlog.debugging(Debug::WARN) )
+				dlog[Debug::WARN] << myname << "(receive): " << e.what()<< std::endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::WARN] << myname << "(receive): catch ..." << std::endl;
+			if( dlog.debugging(Debug::WARN) )
+				dlog[Debug::WARN] << myname << "(receive): catch ..." << std::endl;
 		}
 
 		// делаем через промежуточную переменную
 		// чтобы поскорее освободить mutex
 		{
-			uniset_mutex_lock l(tmMutex,100);
+			uniset_rwmutex_rlock l(tmMutex);
 			tout = ptRecvTimeout.checkTime();
 		}
 
@@ -420,7 +430,8 @@ void UNetReceiver::receive()
 		msleep(recvpause);
 	}
 
-	dlog[Debug::INFO] << myname << ": ************* receive FINISH **********" << endl;
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << myname << ": ************* receive FINISH **********" << endl;
 }
 // -----------------------------------------------------------------------------
 bool UNetReceiver::recv()
@@ -471,7 +482,7 @@ bool UNetReceiver::recv()
 #endif
 
 	{	// lock qpack
-		uniset_mutex_lock l(packMutex,2000);
+		uniset_rwmutex_wrlock l(packMutex);
 		if( !waitClean )
 		{
 			qpack.push(pack);

@@ -281,7 +281,7 @@ class MBExchange:
 		SMInterface* shm;
 		
 		bool initPause;
-		UniSetTypes::uniset_mutex mutex_start;
+		UniSetTypes::uniset_rwmutex mutex_start;
 
 		bool force;		/*!< флаг означающий, что надо сохранять в SM, даже если значение не менялось */
 		bool force_out;	/*!< флаг означающий, принудительного чтения выходов */
@@ -299,7 +299,7 @@ class MBExchange:
 		IOController::AIOStateList::iterator aitExchangeMode;
 		long exchangeMode; /*!< режим работы см. ExchangeMode */
 
-		UniSetTypes::uniset_mutex actMutex;
+		UniSetTypes::uniset_rwmutex actMutex;
 		bool activated;
 		int activateTimeout;
 		bool noQueryOptimization;

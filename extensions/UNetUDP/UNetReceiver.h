@@ -115,7 +115,7 @@ class UNetReceiver
 		ost::tpport_t port;
 		std::string myname;
 
-		UniSetTypes::uniset_mutex pollMutex;
+		UniSetTypes::uniset_rwmutex pollMutex;
 		PassiveTimer ptRecvTimeout;
 		PassiveTimer ptPrepare;
 		timeout_t recvTimeout;
@@ -147,7 +147,7 @@ class UNetReceiver
 		PacketQueue qpack;	/*!< очередь принятых пакетов (отсортированных по возрастанию номера пакета) */
 		UniSetUDP::UDPMessage pack;		/*!< просто буфер для получения очередного сообщения */
 		UniSetUDP::UDPPacket r_buf;
-		UniSetTypes::uniset_mutex packMutex; /*!< mutex для работы с очередью */
+		UniSetTypes::uniset_rwmutex packMutex; /*!< mutex для работы с очередью */
 		unsigned long pnum;	/*!< текущий номер обработанного сообщения, для проверки непрерывности последовательности пакетов */
 
 		/*! максимальная разница межд номерами пакетов, при которой считается, что счётчик пакетов
@@ -162,11 +162,11 @@ class UNetReceiver
 		int maxProcessingCount; /*!< максимальное число обрабатываемых за один раз сообщений */
 
 		bool lockUpdate; /*!< флаг блокировки сохранения принятых данных в SM */
-		UniSetTypes::uniset_mutex lockMutex;
+		UniSetTypes::uniset_rwmutex lockMutex;
 
 		EventSlot slEvent;
 		Trigger trTimeout;
-		UniSetTypes::uniset_mutex tmMutex;
+		UniSetTypes::uniset_rwmutex tmMutex;
 
 		struct ItemInfo
 		{

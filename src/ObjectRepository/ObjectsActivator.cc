@@ -270,22 +270,28 @@ void ObjectsActivator::work()
 	}
 	catch(CORBA::SystemException& ex)
     {
-		unideb[Debug::CRIT] << myname << "(work): поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << myname << "(work): поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
     }
     catch(CORBA::Exception& ex)
     {
-		unideb[Debug::CRIT] << myname << "(work): поймали CORBA::Exception." << endl;
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << myname << "(work): поймали CORBA::Exception." << endl;
     }
     catch(omniORB::fatalException& fe)
     {
-		unideb[Debug::CRIT] << myname << "(work): : поймали omniORB::fatalException:" << endl;
-        unideb[Debug::CRIT] << myname << "(work):   file: " << fe.file() << endl;
-		unideb[Debug::CRIT] << myname << "(work):   line: " << fe.line() << endl;
-        unideb[Debug::CRIT] << myname << "(work):   mesg: " << fe.errmsg() << endl;
+		if( unideb.debugging(Debug::CRIT) )
+		{
+			unideb[Debug::CRIT] << myname << "(work): : поймали omniORB::fatalException:" << endl;
+		unideb[Debug::CRIT] << myname << "(work):   file: " << fe.file() << endl;
+			unideb[Debug::CRIT] << myname << "(work):   line: " << fe.line() << endl;
+		unideb[Debug::CRIT] << myname << "(work):   mesg: " << fe.errmsg() << endl;
+		}
     }
 	catch(...)
 	{
-		unideb[Debug::CRIT] << myname << "(work): catch ..." << endl;
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << myname << "(work): catch ..." << endl;
 	}
 	
 	if( unideb.debugging(Debug::SYSTEM) )	

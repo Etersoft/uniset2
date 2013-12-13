@@ -53,6 +53,8 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id):
 		msg << "(DBServer_MySQL): init failed! Unknown ID!" << endl;
 		throw Exception(msg.str());
 	}
+
+	mqbuf.setName(myname  + "_qbufMutex");
 }
 
 DBServer_MySQL::DBServer_MySQL():
@@ -72,6 +74,8 @@ DBServer_MySQL::DBServer_MySQL():
 		msg << "(DBServer_MySQL): init failed! Unknown ID!" << endl;
 		throw Exception(msg.str());
 	}
+
+	mqbuf.setName(myname  + "_qbufMutex");
 }
 //--------------------------------------------------------------------------------------------
 DBServer_MySQL::~DBServer_MySQL()
@@ -206,7 +210,7 @@ bool DBServer_MySQL::writeToBase( const string& query )
 //	cout << "DBServer_MySQL: " << query << endl;
 	if( !db || !connect_ok )
 	{
-		uniset_mutex_lock l(mqbuf,200);
+		uniset_rwmutex_wrlock l(mqbuf);
 		qbuf.push(query);
 		if( qbuf.size() > qbufSize )
 		{
@@ -247,7 +251,7 @@ bool DBServer_MySQL::writeToBase( const string& query )
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::flushBuffer()
 {
-	uniset_mutex_lock l(mqbuf,400);
+	uniset_rwmutex_wrlock l(mqbuf);
 
 	// Сперва пробуем очистить всё что накопилось в очереди до этого...
 	while( !qbuf.empty() )

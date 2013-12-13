@@ -14,7 +14,8 @@ ModbusClient::ModbusClient():
 	replyTimeOut_ms(2000),
 	aftersend_msec(0),
 	sleepPause_usec(100),
-	crcNoCheckit(false)
+	crcNoCheckit(false),
+	sendMutex("ModbusClient_sendMutex")
 {
 	tmProcessing.setTiming(replyTimeOut_ms);
 }

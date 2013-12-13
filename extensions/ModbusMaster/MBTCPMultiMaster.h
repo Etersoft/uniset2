@@ -233,7 +233,7 @@ class MBTCPMultiMaster:
 		void poll_thread();
 		void check_thread();
 
-		UniSetTypes::uniset_mutex mbMutex;
+		UniSetTypes::uniset_rwmutex mbMutex;
 		int recv_timeout;
 		bool force_disconnect;
 		int checktime;
@@ -285,7 +285,7 @@ class MBTCPMultiMaster:
 		// т.к. TCP может "зависнуть" на подключении к недоступному узлу
 		// делаем опрос в отдельном потоке
 		ThreadCreator<MBTCPMultiMaster>* pollThread; /*!< поток опроса */
-		UniSetTypes::uniset_mutex tcpMutex;
+		UniSetTypes::uniset_rwmutex tcpMutex;
 
 		ThreadCreator<MBTCPMultiMaster>* checkThread; /*!< поток проверки связи по другим каналам */
 };
