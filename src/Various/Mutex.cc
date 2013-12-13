@@ -31,62 +31,57 @@
 using namespace std;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
-static mutex_atomic_t mutex_atomic_read( mutex_atomic_t* m ){ return (*m); }
-static mutex_atomic_t mutex_atomic_set( mutex_atomic_t* m, int val ){ return (*m) = val; }
-//static void mutex_atomic_inc( mutex_atomic_t* m ){ (*m)++; }
-//static void mutex_atomic_dec( mutex_atomic_t* m ){ (*m)--; }
-// -----------------------------------------------------------------------------
 uniset_mutex::uniset_mutex():
 	cnd(0),
-	nm("")
+	nm(""),
+	locked(0)
 {
-	mutex_atomic_set(&locked,0);
 	cnd = new omni_condition(&mtx);
 }
-
+// -----------------------------------------------------------------------------
 uniset_mutex::uniset_mutex( string name ):
-	nm(name)
+	cnd(0),
+	nm(name),
+	locked(0)
 {
-	mutex_atomic_set(&locked,0);
 	cnd = new omni_condition(&mtx);
 }
-
+// -----------------------------------------------------------------------------
 uniset_mutex::~uniset_mutex()
 {
-	unlock();
-	mutex_atomic_set(&locked,0);
 	delete cnd;
 }
-
+// -----------------------------------------------------------------------------
 void uniset_mutex::lock()
 {
 	sem.wait();
-	mutex_atomic_set(&locked,1);
+	locked = 1;
 }
-
+// -----------------------------------------------------------------------------
 void uniset_mutex::unlock()
 {
-	mutex_atomic_set(&locked,0);
+	locked = 0;
 	sem.post();
 	cnd->signal();
 }
-
+// -----------------------------------------------------------------------------
 bool uniset_mutex::isRelease()
 {
-	return !(bool)mutex_atomic_read(&locked);
+	return !locked;
 }
 // -----------------------------------------------------------------------------
 const uniset_mutex &uniset_mutex::operator=(const uniset_mutex& r)
 {
-	if( this != &r )
-		locked = r.locked;
+//	if( this != &r )
+//		locked = r.locked;
 
 	return *this;
 }
-
+// -----------------------------------------------------------------------------
 uniset_mutex::uniset_mutex( const uniset_mutex& r ):
 	cnd(0),
-	nm(r.nm)
+	nm(r.nm),
+	locked(r.locked)
 {
 	cnd = new omni_condition(&mtx);
 }
@@ -98,7 +93,7 @@ uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, int timeMS ):
 	if( timeMS <= 0 || mutex->isRelease() )
 	{
 		mutex->lock();
-		mutex_atomic_set(&mlock,1);
+		mlock = 1;
 		return;
 	}
 
@@ -114,27 +109,26 @@ uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, int timeMS ):
 				<< timeMS << " msec для " << mutex->name() << endl;
 		}
 
-		mutex_atomic_set(&mlock,0);
+		mlock = 0;
 		mutex->mtx.unlock();
 		return;	//	ресурс не захватываем
 	}
 
-	mutex_atomic_set(&mlock,1);
+	mlock = 1;
 	mutex->lock();
 	mutex->mtx.unlock();
 }
-
 // -----------------------------------------------------------------------------
 bool uniset_mutex_lock::lock_ok()
 { 
-	return (bool)mutex_atomic_read(&mlock);
+	return mlock;
 }
 
 uniset_mutex_lock::~uniset_mutex_lock()
 {	
-	if( mutex_atomic_read(&mlock) )
+	if( mlock )
 	{
-		mutex_atomic_set(&mlock,0);
+		mlock = 0;
 		mutex->unlock();
 	}
 }
@@ -144,14 +138,13 @@ uniset_mutex_lock& uniset_mutex_lock::operator=(const uniset_mutex_lock &r)
 	return *this;
 }
 // -----------------------------------------------------------------------------
-uniset_spin_mutex::uniset_spin_mutex()
+uniset_spin_mutex::uniset_spin_mutex():
+wr_wait(0)
 {
-	unlock();	
 }
 
 uniset_spin_mutex::~uniset_spin_mutex()
 {
-	unlock();
 }
 
 const uniset_spin_mutex &uniset_spin_mutex::operator=( const uniset_spin_mutex& r )
@@ -164,26 +157,48 @@ const uniset_spin_mutex &uniset_spin_mutex::operator=( const uniset_spin_mutex& 
 
 uniset_spin_mutex::uniset_spin_mutex( const uniset_spin_mutex& r )
 {
-	unlock();
+	//unlock();
 }
 
 void uniset_spin_mutex::lock( int check_pause_msec )
 {
-	while( mutex_atomic_read(&m) != 0 )
+	wr_wait += 1;
+	while( !m.tryWriteLock() )
 	{
 		if( check_pause_msec > 0 )
 			msleep(check_pause_msec);
 	}
-	mutex_atomic_set(&m,1);
+	wr_wait -= 1;
+}
+void uniset_spin_mutex::wrlock( int check_pause_msec )
+{
+	wr_wait += 1;
+	while( !m.tryWriteLock() )
+	{
+		if( check_pause_msec > 0 )
+			msleep(check_pause_msec);
+	}
+	wr_wait -= 1;
+}
+void uniset_spin_mutex::rlock( int check_pause_msec )
+{
+	while( wr_wait > 0 )
+		msleep(check_pause_msec);
+
+	while( !m.tryReadLock() )
+	{
+		if( check_pause_msec > 0 )
+			msleep(check_pause_msec);
+	}
 }
 
 void uniset_spin_mutex::unlock()
 {
-	mutex_atomic_set(&m,0);
+	m.unlock();
 }
 // -------------------------------------------------------------------------------------------
 uniset_spin_lock::uniset_spin_lock( uniset_spin_mutex& _m, int check_pause_msec ):
-m(_m)
+	m(_m)
 {
 	m.lock(check_pause_msec);
 }
@@ -193,19 +208,56 @@ uniset_spin_lock::~uniset_spin_lock()
 	m.unlock();
 }
 
-uniset_spin_lock::uniset_spin_lock( const uniset_spin_lock& r ):
-m(r.m)
+uniset_spin_wrlock::uniset_spin_wrlock( uniset_spin_mutex& _m, int check_pause_msec ):
+	uniset_spin_lock(_m)
+{
+	m.wrlock(check_pause_msec);
+}
+
+uniset_spin_wrlock::~uniset_spin_wrlock()
+{
+	// unlocked in uniset_spin_lock destructor
+}
+
+uniset_spin_wrlock::uniset_spin_wrlock( const uniset_spin_wrlock& r ):
+uniset_spin_lock(r.m)
 {
 
 }
 
-uniset_spin_lock& uniset_spin_lock::operator=(const uniset_spin_lock& r)
+uniset_spin_wrlock& uniset_spin_wrlock::operator=(const uniset_spin_wrlock& r)
 {
 	if( this != &r )
 		m = r.m;
 
 	return *this;
 }
+// -------------------------------------------------------------------------------------------
+uniset_spin_rlock::uniset_spin_rlock( uniset_spin_mutex& _m, int check_pause_msec ):
+uniset_spin_lock(_m)
+{
+	m.rlock(check_pause_msec);
+}
+
+uniset_spin_rlock::~uniset_spin_rlock()
+{
+	// unlocked in uniset_spin_lock destructor
+}
+
+uniset_spin_rlock::uniset_spin_rlock( const uniset_spin_rlock& r ):
+uniset_spin_lock(r.m)
+{
+
+}
+
+uniset_spin_rlock& uniset_spin_rlock::operator=(const uniset_spin_rlock& r)
+{
+	if( this != &r )
+		m = r.m;
+
+	return *this;
+}
+
 // -----------------------------------------------------------------------------
 #undef MUTEX_LOCK_SLEEP_MS
 // -----------------------------------------------------------------------------
