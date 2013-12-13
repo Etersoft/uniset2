@@ -11,10 +11,12 @@ using namespace std;
 using namespace ModbusRTU;
 using namespace UniSetTypes;
 // -------------------------------------------------------------------------
-ModbusRTUSlave::ModbusRTUSlave( const string dev, bool use485, bool tr_ctl ):
+ModbusRTUSlave::ModbusRTUSlave( const string& dev, bool use485, bool tr_ctl ):
 	port(NULL),
 	myport(true)
 {
+	recvMutex.setName("(ModbusRTUSlave): dev='" + dev + "' recvMutex:");
+
 	if( use485 )
 	{
 		ComPort485F* cp;
@@ -63,6 +65,13 @@ ModbusRTUSlave::~ModbusRTUSlave()
 mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout )
 {
 	uniset_mutex_lock lck(recvMutex,timeout);
+	if( !lck.lock_ok() )
+	{
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << "(ModbusRTUSlave::receive): Don`t lock " << recvMutex << endl;
+		return erTimeOut;
+	}
+
 	ModbusMessage buf;
 	mbErrCode res = erBadReplyNodeAddress;
 	do
@@ -114,7 +123,7 @@ void ModbusRTUSlave::setSpeed( ComPort::Speed s )
 		port->setSpeed(s);
 }
 // --------------------------------------------------------------------------------
-void ModbusRTUSlave::setSpeed( const std::string s )
+void ModbusRTUSlave::setSpeed( const std::string& s )
 {
 	if( port != NULL )
 		port->setSpeed(s);

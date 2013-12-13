@@ -89,6 +89,7 @@ class SMInterface
 		CORBA::Object_var oref;
 		UniSetTypes::ObjectId shmID;
 		UniSetTypes::ObjectId myid;
+		UniSetTypes::uniset_rwmutex shmMutex;
 };
 
 //--------------------------------------------------------------------------

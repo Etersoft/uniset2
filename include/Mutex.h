@@ -51,6 +51,7 @@ namespace UniSetTypes
 		    void unlock();
 			
 			inline std::string name(){ return nm; }
+			inline void setName( const std::string& name ){ nm = name; }
 			
 		protected:
 		
@@ -65,6 +66,8 @@ namespace UniSetTypes
 			mutex_atomic_t locked;
  	};
 
+	std::ostream& operator<<(std::ostream& os, uniset_mutex& m );
+	// -------------------------------------------------------------------------
 	/*! \class uniset_mutex_lock
 	 * \author Pavel Vainerman
 	 *
@@ -90,11 +93,12 @@ namespace UniSetTypes
 
 	// -------------------------------------------------------------------------
 	// Mutex c приоритетом WRlock над RLock...
-	class uniset_spin_mutex
+	class uniset_rwmutex
 	{
 		public:
-			uniset_spin_mutex();
-			~uniset_spin_mutex();
+			uniset_rwmutex( const std::string& name );
+			uniset_rwmutex();
+			~uniset_rwmutex();
 
 			void lock( int check_pause_msec=1 );
 			void unlock();
@@ -102,54 +106,43 @@ namespace UniSetTypes
 			void wrlock( int check_pause_msec=1 );
 			void rlock( int check_pause_msec=1 );
 
-		   	uniset_spin_mutex (const uniset_spin_mutex& r);
-	   		const uniset_spin_mutex &operator=(const uniset_spin_mutex& r);
+			uniset_rwmutex (const uniset_rwmutex& r);
+			const uniset_rwmutex &operator=(const uniset_rwmutex& r);
+
+			inline std::string name(){ return nm; }
+			inline void setName( const std::string& name ){ nm = name; }
 
 		private:
-			friend class uniset_spin_lock;
+			std::string nm;
+			friend class uniset_rwmutex_lock;
 			ost::ThreadLock m;
 			ost::AtomicCounter wr_wait;
 	};
+	std::ostream& operator<<(std::ostream& os, uniset_rwmutex& m );
 	// -------------------------------------------------------------------------
-	class uniset_spin_lock
+	class uniset_rwmutex_wrlock
 	{
 		public:
-			uniset_spin_lock( uniset_spin_mutex& m, int check_pause_msec );
-			~uniset_spin_lock();
-
-		protected:
-			uniset_spin_lock( uniset_spin_mutex& _m ): m(_m){}
-			uniset_spin_mutex& m;
+			uniset_rwmutex_wrlock( uniset_rwmutex& m, int check_pause_msec=1 );
+			~uniset_rwmutex_wrlock();
 
 		private:
-		    uniset_spin_lock(const uniset_spin_lock&);
-		    uniset_spin_lock& operator=(const uniset_spin_lock&);
+		    uniset_rwmutex_wrlock(const uniset_rwmutex_wrlock&);
+		    uniset_rwmutex_wrlock& operator=(const uniset_rwmutex_wrlock&);
+			uniset_rwmutex& m;
 	};
 
-	class uniset_spin_wrlock:
-		protected uniset_spin_lock
+	class uniset_rwmutex_rlock
 	{
 		public:
-			uniset_spin_wrlock( uniset_spin_mutex& m, int check_pause_msec=1 );
-			~uniset_spin_wrlock();
+			uniset_rwmutex_rlock( uniset_rwmutex& m, int check_pause_msec=5 );
+			~uniset_rwmutex_rlock();
 
 		private:
-		    uniset_spin_wrlock(const uniset_spin_wrlock&);
-		    uniset_spin_wrlock& operator=(const uniset_spin_wrlock&);
+		    uniset_rwmutex_rlock(const uniset_rwmutex_rlock&);
+		    uniset_rwmutex_rlock& operator=(const uniset_rwmutex_rlock&);
+			uniset_rwmutex& m;
 	};
-
-	class uniset_spin_rlock:
-		protected uniset_spin_lock
-	{
-		public:
-			uniset_spin_rlock( uniset_spin_mutex& m, int check_pause_msec=5 );
-			~uniset_spin_rlock();
-
-		private:
-		    uniset_spin_rlock(const uniset_spin_rlock&);
-		    uniset_spin_rlock& operator=(const uniset_spin_rlock&);
-	};
-
 	// -------------------------------------------------------------------------
 } // end of UniSetTypes namespace
 

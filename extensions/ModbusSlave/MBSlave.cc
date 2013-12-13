@@ -32,6 +32,8 @@ prefix(prefix)
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(MBSlave): objId=-1?!! Use --mbs-name" );
 
+	mutex_start.setName(myname + "_mutex_start");
+
 //	xmlNode* cnode = conf->getNode(myname);
 	cnode = conf->getNode(myname);
 	if( cnode == NULL )
@@ -608,7 +610,7 @@ void MBSlave::sysCommand(UniSetTypes::SystemMessage *sm)
 				dlog[Debug::CRIT] << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 			else 
 			{
-				UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
+				UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
 				askSensors(UniversalIO::UIONotify);
 				thr->start();
 			}
@@ -709,13 +711,13 @@ void MBSlave::sensorInfo( UniSetTypes::SensorMessage* sm )
 			if( p->stype == UniversalIO::DigitalOutput ||
 				p->stype == UniversalIO::DigitalInput )
 			{
-				uniset_spin_lock lock(p->val_lock);
+				uniset_rwmutex_wrlock lock(p->val_lock);
 				p->value = sm->state ? 1 : 0;
 			}
 			else if( p->stype == UniversalIO::AnalogOutput ||
 					p->stype == UniversalIO::AnalogInput )
 			{
-				uniset_spin_lock lock(p->val_lock);
+				uniset_rwmutex_wrlock lock(p->val_lock);
 				p->value = sm->value;
 			}
 
@@ -754,7 +756,7 @@ bool MBSlave::activateObject()
 	// см. sysCommand()
 	{
 		activated = false;
-		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
+		UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
 		UniSetObject_LT::activateObject();
 		initIterators();
 		activated = true;

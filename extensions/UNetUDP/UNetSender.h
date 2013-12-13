@@ -88,8 +88,8 @@ class UNetSender
 		std::string myname;
 		int sendpause;
 		bool activated;
-
-		UniSetTypes::uniset_mutex pack_mutex;
+		
+		UniSetTypes::uniset_rwmutex pack_mutex;
 		UniSetUDP::UDPMessage mypack;
 		DMap dlist;
 		int maxItem;

@@ -532,7 +532,7 @@ void UNetExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 				dlog[Debug::CRIT] << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 
 			{
-				UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
+				UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
 				if( shm->isLocalwork() )
 					askSensors(UniversalIO::UIONotify);
 			}
@@ -625,7 +625,7 @@ bool UNetExchange::activateObject()
 	// см. sysCommand()
 	{
 		activated = false;
-		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
+		UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
 		UniSetObject_LT::activateObject();
 		initIterators();
 		activated = true;

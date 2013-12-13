@@ -59,7 +59,7 @@ class ObjectsManager:
 {
 	public:
 		ObjectsManager( UniSetTypes::ObjectId id);
-		ObjectsManager( const std::string name, const std::string section );
+		ObjectsManager( const std::string& name, const std::string& section );
 		virtual ~ObjectsManager();
 
 
@@ -153,9 +153,8 @@ class ObjectsManager:
 		ObjectsManagerList mlist;
 		ObjectsList olist;
 
-		UniSetTypes::uniset_mutex olistMutex;
-		UniSetTypes::uniset_mutex mlistMutex;
-
+		UniSetTypes::uniset_rwmutex olistMutex;
+		UniSetTypes::uniset_rwmutex mlistMutex;
 };
 
 #endif

@@ -106,7 +106,7 @@ static const int NoSafety = -1;
 			
 			IOController::AIOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;
-			UniSetTypes::uniset_spin_mutex val_lock; 	/*!< блокировка на время "работы" со значением */
+			UniSetTypes::uniset_rwmutex val_lock; 	/*!< блокировка на время "работы" со значением */
 			
 			friend std::ostream& operator<<(std::ostream& os, IOBase& inf );
 

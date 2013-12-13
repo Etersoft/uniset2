@@ -226,9 +226,9 @@ void IONotifyController::askState( const IOController_i::SensorInfo& si,
 	}
 
 	{	//lock
-		uniset_mutex_lock lock(askDMutex, 200);
+		uniset_rwmutex_wrlock lock(askDMutex);
 		// а раз есть заносим(исключаем) заказчика 
-		ask( askDIOList, si, ci, cmd);		
+		ask( askDIOList, si, ci, cmd);
 	} // unlock			
 
 	// посылка первый раз состояния 
@@ -242,7 +242,7 @@ void IONotifyController::askState( const IOController_i::SensorInfo& si,
 		smsg.priority	= (Message::Priority)li->second.priority;
 		smsg.supplier 	= getId();
 		{
-			uniset_spin_lock lock(li->second.val_lock,getCheckLockValuePause());
+			uniset_rwmutex_rlock lock(li->second.val_lock,getCheckLockValuePause());
 			smsg.state 		= li->second.state;
 			smsg.value 		= li->second.state ? 1:0;
 			smsg.undefined	= li->second.undefined;
@@ -305,7 +305,7 @@ void IONotifyController::askValue(const IOController_i::SensorInfo& si,
 	}
 
 	{	// lock
- 		uniset_mutex_lock lock(askAMutex, 200);
+		uniset_rwmutex_wrlock lock(askAMutex);
 		// а раз есть заносим(исключаем) заказчика 
 		ask( askAIOList, si, ci, cmd);		
 	}	// unlock
@@ -324,7 +324,7 @@ void IONotifyController::askValue(const IOController_i::SensorInfo& si,
 		smsg.sm_tv_usec	= li->second.tv_usec;
 		smsg.ci			= li->second.ci;
 		{
-			uniset_spin_lock lock(li->second.val_lock,getCheckLockValuePause());			
+			uniset_rwmutex_rlock lock(li->second.val_lock,getCheckLockValuePause());
 			smsg.value 		= li->second.value;
 			smsg.state		= li->second.value ? true:false;
 			smsg.undefined	= li->second.undefined;
@@ -475,7 +475,7 @@ void IONotifyController::localSaveState( IOController::DIOStateList::iterator& i
 	// фильтрами или блокировками..
 	SensorMessage sm(si.id, state);
 	{	// lock
-		uniset_spin_lock lock(it->second.val_lock,getCheckLockValuePause());
+		uniset_rwmutex_rlock lock(it->second.val_lock,getCheckLockValuePause());
 		if( prevState == it->second.state )
 			return;
 
@@ -494,7 +494,7 @@ void IONotifyController::localSaveState( IOController::DIOStateList::iterator& i
 
 	try
 	{	
-		uniset_mutex_lock l(sig_mutex,500);
+		uniset_rwmutex_rlock l(sig_mutex);
 		changeSignal.emit(&sm);
 	}
 	catch(...){}
@@ -509,7 +509,8 @@ void IONotifyController::localSaveState( IOController::DIOStateList::iterator& i
 	AskMap::iterator it1 = askDIOList.find( key(si.id,si.node) );
 	if( it1!=askDIOList.end() )
 	{	// lock
-		uniset_mutex_lock lock(askDMutex, 1000);
+		//uniset_mutex_lock lock(askDMutex, 1000);
+		uniset_rwmutex_rlock lock(askDMutex);
 		send(it1->second, sm);
 	}	// unlock
 }
@@ -538,7 +539,7 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 	// фильтрами или блокировками..
 	SensorMessage sm(si.id,li->second.value);
 	{ // lock
-		uniset_spin_lock lock(li->second.val_lock,getCheckLockValuePause());
+		uniset_rwmutex_rlock lock(li->second.val_lock,getCheckLockValuePause());
 		
 		if( prevValue == li->second.value )
 			return;
@@ -559,7 +560,8 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 
 	try
 	{	
-		uniset_mutex_lock l(sig_mutex,500);
+		//uniset_mutex_rlock l(sig_mutex,500);
+		uniset_rwmutex_rlock l(sig_mutex);
 		changeSignal.emit(&sm);
 	}
 	catch(...){}
@@ -574,7 +576,7 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 	AskMap::iterator it = askAIOList.find( key(si.id,si.node) );
 	if( it!=askAIOList.end() )
 	{	// lock
-		uniset_mutex_lock lock(askAMutex, 1000);
+		uniset_rwmutex_rlock lock(askAMutex);
 		send(it->second, sm);
 	}
 
@@ -759,7 +761,7 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 	CORBA::Long val = localGetValue(li,si);
 
 	{	// lock
-		uniset_mutex_lock lock(trshMutex, 300);
+		uniset_rwmutex_wrlock lock(trshMutex);
 
 		// поиск датчика в списке 
 		UniSetTypes::KeyType skey( key(si.id,si.node) );
@@ -949,7 +951,7 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 										bool send_msg )
 {
 	{	// lock
-		uniset_mutex_lock lock(trshMutex, 300);
+		uniset_rwmutex_rlock lock(trshMutex);
 
 		// поиск списка порогов
 		UniSetTypes::KeyType skey( key(si.id,si.node) );
@@ -973,7 +975,7 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 		sm.priority 	= (Message::Priority)li->second.priority;
 		sm.ci			= li->second.ci;
 		{
-			uniset_spin_lock lock(li->second.val_lock,getCheckLockValuePause());
+			uniset_rwmutex_rlock lock(li->second.val_lock,getCheckLockValuePause());
 			sm.value 		= li->second.value;
 			sm.state 		= li->second.value!=0 ? true:false;
 			sm.undefined	= li->second.undefined;
@@ -1096,7 +1098,7 @@ void IONotifyController::askOutput(const IOController_i::SensorInfo& si,
 	{
 		case UniversalIO::DigitalOutput:
 		{	//lock
-			uniset_mutex_lock lock(askDOMutex, 200);
+			uniset_rwmutex_wrlock lock(askDOMutex);
 			// а раз есть заносим(исключаем) заказчика 
 			ask( askDOList, si, ci, cmd );
 		} // unlock			
@@ -1104,7 +1106,7 @@ void IONotifyController::askOutput(const IOController_i::SensorInfo& si,
 		
 		case UniversalIO::AnalogOutput:
 		{	//lock
-			uniset_mutex_lock lock(askAOMutex, 200);
+			uniset_rwmutex_wrlock lock(askAOMutex);
 			// а раз есть заносим(исключаем) заказчика 
 			ask( askAOList, si, ci, cmd );
 		} // unlock			
@@ -1189,7 +1191,7 @@ void IONotifyController::localSetState( IOController::DIOStateList::iterator& it
 	// Рассылаем уведомления только если значение изменилось...
 	SensorMessage sm(si.id, state);
 	{	// lock
-		uniset_spin_lock lock(it->second.val_lock,getCheckLockValuePause());
+		uniset_rwmutex_rlock lock(it->second.val_lock,getCheckLockValuePause());
 		if( prevState == it->second.state )
 			return;
 		sm.id 			= si.id;		
@@ -1206,7 +1208,7 @@ void IONotifyController::localSetState( IOController::DIOStateList::iterator& it
 
 	try
 	{	
-		uniset_mutex_lock l(sig_mutex,500);
+		uniset_rwmutex_rlock l(sig_mutex);
 		changeSignal.emit(&sm);
 	}
 	catch(...){}
@@ -1222,7 +1224,7 @@ void IONotifyController::localSetState( IOController::DIOStateList::iterator& it
 	AskMap::iterator ait = askDOList.find( UniSetTypes::key(si.id,si.node) );
 	if( ait!=askDOList.end() )
 	{	// lock
-		uniset_mutex_lock lock(askDMutex, 200);
+		uniset_rwmutex_rlock lock(askDMutex);
 		send(ait->second, sm);
 	}	// unlock
 }				
@@ -1245,7 +1247,7 @@ void IONotifyController::localSetValue( IOController::AIOStateList::iterator& li
 	// Рассылаем уведомления только если значение изменилось...
 	SensorMessage sm;
 	{	// lock 
-		uniset_spin_lock lock(li->second.val_lock,getCheckLockValuePause());
+		uniset_rwmutex_rlock lock(li->second.val_lock,getCheckLockValuePause());
 		if( prevValue == li->second.value )
 			return;
 
@@ -1264,7 +1266,7 @@ void IONotifyController::localSetValue( IOController::AIOStateList::iterator& li
 
 	try
 	{	
-		uniset_mutex_lock l(sig_mutex,500);
+		uniset_rwmutex_rlock l(sig_mutex);
 		changeSignal.emit(&sm);
 	}
 	catch(...){}
@@ -1279,7 +1281,7 @@ void IONotifyController::localSetValue( IOController::AIOStateList::iterator& li
 	AskMap::iterator dit = askAOList.find( UniSetTypes::key(si.id,si.node) );
 	if( dit!=askAOList.end() )
 	{	// lock
-		uniset_mutex_lock lock(askAMutex, 200);
+		uniset_rwmutex_rlock lock(askAMutex);
 		send(dit->second, sm);
 	}
 
@@ -1296,7 +1298,7 @@ void IONotifyController::localSetValue( IOController::AIOStateList::iterator& li
 IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold( UniSetTypes::KeyType key, UniSetTypes::ThresholdId tid  )
 {
 	{	// lock
-		uniset_mutex_lock lock(trshMutex, 300);
+		uniset_rwmutex_rlock lock(trshMutex);
 		// поиск списка порогов
 //		UniSetTypes::KeyType skey( key(si.id,si.node) );
 		AskThresholdMap::iterator lst = askTMap.find(key);
@@ -1416,7 +1418,7 @@ void IONotifyController::onChangeUndefined( DependsList::iterator it, bool undef
 	AskMap::iterator it1 = askDIOList.find( key(it->si.id,it->si.node) );
 	if( it1!=askDIOList.end() )
 	{	// lock
-		uniset_mutex_lock lock(askDMutex, 1000);	
+		uniset_rwmutex_rlock lock(askDMutex);
 		send(it1->second, sm);
 	}	// unlock
 }

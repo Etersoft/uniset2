@@ -164,7 +164,7 @@ class IOController:
 			bool block_state;
 			bool db_ignore;		/*!< не писать изменения в БД */
 
-			UniSetTypes::uniset_spin_mutex val_lock; /*!< флаг блокирующий работу со значением */
+			UniSetTypes::uniset_rwmutex val_lock; /*!< флаг блокирующий работу со значением */
 		};
 
 		struct UniAnalogIOInfo:
@@ -188,7 +188,7 @@ class IOController:
 			long block_value;
             bool db_ignore;		/*!< не писать изменения в БД */
 			
-			UniSetTypes::uniset_spin_mutex val_lock; /*!< флаг блокирующий работу со значением */
+			UniSetTypes::uniset_rwmutex val_lock; /*!< флаг блокирующий работу со значением */
 		};
 
 
@@ -377,8 +377,8 @@ class IOController:
 		DIOStateList dioList;	/*!< список с текущим состоянием дискретных входов/выходов */
 		AIOStateList aioList;	/*!< список с текущим состоянием аналоговых входов/выходов */
 		
-		UniSetTypes::uniset_mutex dioMutex;	/*!< замок для блокирования совместного доступа к dioList */
-		UniSetTypes::uniset_mutex aioMutex; /*!< замок для блокирования совместного доступа к aioList */
+		UniSetTypes::uniset_rwmutex dioMutex;	/*!< замок для блокирования совместного доступа к dioList */
+		UniSetTypes::uniset_rwmutex aioMutex; /*!< замок для блокирования совместного доступа к aioList */
 		
 		bool isPingDBServer;	// флаг связи с DBServer-ом 
 
@@ -389,7 +389,8 @@ class IOController:
 		DependsSlot bslot; /*!< block depends slot */
 		int checkLockValuePause;
 
-		UniSetTypes::uniset_mutex loggingMutex; /*!< logging info mutex */
+		UniSetTypes::uniset_rwmutex loggingMutex; /*!< logging info mutex */
 };
-
+// --------------------------------------------------------------------------
 #endif
+// --------------------------------------------------------------------------

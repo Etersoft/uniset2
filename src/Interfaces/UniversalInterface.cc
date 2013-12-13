@@ -2377,7 +2377,7 @@ IOController_i::ShortIOInfo UniversalInterface::getChangedTime( UniSetTypes::Obj
 ObjectPtr UniversalInterface::CacheOfResolve::resolve( ObjectId id, ObjectId node )
 	throw(NameNotFound)
 {
-	UniSetTypes::uniset_mutex_lock l(cmutex,200);
+	UniSetTypes::uniset_rwmutex_rlock l(cmutex);
 
 //#warning Временно отключён кэш
 //	throw UniSetTypes::NameNotFound();
@@ -2400,16 +2400,7 @@ ObjectPtr UniversalInterface::CacheOfResolve::resolve( ObjectId id, ObjectId nod
 // ------------------------------------------------------------------------------------------------------------
 void UniversalInterface::CacheOfResolve::cache( ObjectId id, ObjectId node, ObjectVar ptr )
 {
-	UniSetTypes::uniset_mutex_lock l(cmutex,220);
-//#warning Временно отключён кэш
-//	return;
-
-//	if( mcache.size() > MaxSize )
-//	{
-//		if( !clean() )
-//			 unideb[Debug::CRIT] << "UI(resolve cache): не удалось уменьшить размер кэш-а!!!!"<< endl;
-//	}
-
+	UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
 	UniSetTypes::KeyType k(key(id,node));
 
 	CacheMap::iterator it = mcache.find(k);
@@ -2424,13 +2415,12 @@ void UniversalInterface::CacheOfResolve::cache( ObjectId id, ObjectId node, Obje
 // ------------------------------------------------------------------------------------------------------------
 bool UniversalInterface::CacheOfResolve::clean()
 {
-	UniSetTypes::uniset_mutex_lock l(cmutex,180);
-//    return true;
-    
-    if( unideb.debugging(Debug::INFO) )
-	unideb[Debug::INFO] << "UI: clean cache...."<< endl;
+	UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
 
-      time_t tm = time(NULL)-CleanTime*60;
+    if( unideb.debugging(Debug::INFO) )
+		unideb[Debug::INFO] << "UI: clean cache...."<< endl;
+
+     time_t tm = time(NULL)-CleanTime*60;
 //	remove_if(mcache.begin(), mcache.end(),OldRef_eq(tm));
 	for( CacheMap::iterator it=mcache.begin(); it!=mcache.end();)
 	{
@@ -2449,7 +2439,7 @@ bool UniversalInterface::CacheOfResolve::clean()
 
 void UniversalInterface::CacheOfResolve::erase( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
 {
-	UniSetTypes::uniset_mutex_lock l(cmutex,220);
+	UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
 //#warning Временно отключён кэш
 //	return;
 

@@ -65,7 +65,7 @@ class UniSetObject:
 	public POA_UniSetObject_i
 {
 	public:
-		UniSetObject(const std::string name, const std::string section); 
+		UniSetObject(const std::string& name, const std::string& section);
 		UniSetObject(UniSetTypes::ObjectId id);
 		UniSetObject();
 		virtual ~UniSetObject();
@@ -84,7 +84,7 @@ class UniSetObject:
 		/*! получить ссылку (на себя) */
 		inline UniSetTypes::ObjectPtr getRef()
 		{
-			UniSetTypes::uniset_mutex_lock lock(refmutex, 300);
+			UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
 			return (UniSetTypes::ObjectPtr)CORBA::Object::_duplicate(oref);
 		}
 
@@ -179,13 +179,6 @@ class UniSetObject:
 			*/
 			virtual void cleanMsgQueue( MessagesQueue& q );
 
-
-			void setRecvMutexTimeout( unsigned long msec );
-			inline unsigned long getRecvMutexTimeout(){ return recvMutexTimeout; }
-			
-			void setPushMutexTimeout( unsigned long msec );
-			unsigned long getPushMutexTimeout(){ return pushMutexTimeout; }
-
 			bool isActive();
 			void setActive( bool set );
 
@@ -222,7 +215,7 @@ class UniSetObject:
 			pid_t msgpid; // pid потока обработки сообщений
 			bool reg;
 			bool active;
-			UniSetTypes::uniset_mutex act_mutex;
+			UniSetTypes::uniset_rwmutex mutex_act;
 			bool threadcreate;
 			UniSetTimer* tmr;
 			UniSetTypes::ObjectId myid;
@@ -233,17 +226,15 @@ class UniSetObject:
 			MessagesQueue queueMsg;
 
 		 	/*! замок для блокирования совместного доступа к очереди */
-			UniSetTypes::uniset_mutex qmutex;
+			UniSetTypes::uniset_rwmutex qmutex;
 
 		 	/*! замок для блокирования совместного доступа к очереди */
-			UniSetTypes::uniset_mutex refmutex;
+			UniSetTypes::uniset_rwmutex refmutex;
 
 			/*! размер очереди сообщений (при превышении происходит очистка) */
 			unsigned int SizeOfMessageQueue;
 			/*! сколько сообщений удалять при очисте*/
 			unsigned int MaxCountRemoveOfMessage;
-			unsigned long recvMutexTimeout; /*!< таймаут на ожидание освобождения mutex-а при receiveMessage */
-			unsigned long pushMutexTimeout; /*!< таймаут на ожидание освобождения mutex-а при pushMessage */
 			
 			// статистическая информация 
 			unsigned long stMaxQueueMessages;	/*<! Максимальное число сообщений хранившихся в очереди */

@@ -187,7 +187,7 @@ class DBServer_SQLite:
 		bool lastRemove;
 
 		void flushBuffer();
-		UniSetTypes::uniset_mutex mqbuf;
+		UniSetTypes::uniset_rwmutex mqbuf;
 
 	private:
 		DBTableMap tblMap;

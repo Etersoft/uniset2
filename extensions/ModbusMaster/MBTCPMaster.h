@@ -207,7 +207,7 @@ class MBTCPMaster:
 	protected:
 		virtual void sysCommand( UniSetTypes::SystemMessage *sm );
 
-		UniSetTypes::uniset_mutex mbMutex;
+		UniSetTypes::uniset_rwmutex mbMutex;
 		std::string iaddr;
 //		ost::InetAddress* ia;
 		int port;
@@ -227,7 +227,7 @@ class MBTCPMaster:
 		// т.к. TCP может "зависнуть" на подключении к недоступному узлу
 		// делаем опрос в отдельном потоке
 		ThreadCreator<MBTCPMaster>* pollThread; /*!< поток опроса */
-		UniSetTypes::uniset_mutex tcpMutex;
+		UniSetTypes::uniset_rwmutex tcpMutex;
 };
 // -----------------------------------------------------------------------------
 #endif // _MBTCPMaster_H_

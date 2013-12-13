@@ -45,7 +45,7 @@ IOController::IOController(const string name, const string section):
 	dioMutex(name+"_dioMutex"),
 	aioMutex(name+"_aioMutex"),
 	isPingDBServer(true),
-	checkLockValuePause(0)
+	checkLockValuePause(5)
 {
 }
 
@@ -54,7 +54,7 @@ IOController::IOController(ObjectId id):
 	dioMutex(string(conf->oind->getMapName(id))+"_dioMutex"),
 	aioMutex(string(conf->oind->getMapName(id))+"_aioMutex"),
 	isPingDBServer(true),
-	checkLockValuePause(0)
+	checkLockValuePause(5)
 {
 }
 
@@ -151,7 +151,7 @@ bool IOController::localGetState( IOController::DIOStateList::iterator& li,
 			if( li->second.undefined )
 				throw IOController_i::Undefined();
 
-			uniset_spin_lock lock(li->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(li->second.val_lock,checkLockValuePause);
 			return li->second.state;
 		}
 
@@ -176,7 +176,7 @@ long IOController::localGetValue( IOController::AIOStateList::iterator& li,
 			if( li->second.undefined )
 				throw IOController_i::Undefined();
 
-			uniset_spin_lock lock(li->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(li->second.val_lock,checkLockValuePause);
 			return li->second.value;
 		}
 	
@@ -233,7 +233,7 @@ void IOController::localSetUndefinedState( AIOStateList::iterator& li,
 	}
 
 	{	// lock
-		uniset_spin_lock lock(li->second.val_lock,checkLockValuePause);
+		uniset_rwmutex_wrlock lock(li->second.val_lock);
 		li->second.undefined = undefined;
 		updateDepends( li->second.dlst, undefined, li->second.dlst_lock );
 	}	// unlock
@@ -270,7 +270,7 @@ void IOController::localSaveState( IOController::DIOStateList::iterator& li,
 	}
 
 //	{	// lock
-//		uniset_spin_lock lock(li->second.val_lock,checkLockValuePause);
+//		uniset_rwmutex_lock wrlock(li->second.val_lock,checkLockValuePause);
 		bool changed = false;
 		bool blk_set = false;
 		bool blocked = ( li->second.blocked || li->second.undefined );
@@ -278,7 +278,7 @@ void IOController::localSaveState( IOController::DIOStateList::iterator& li,
 		if( checkDFilters(&li->second,state,sup_id) || blocked )
 		{
 			{	// lock
-				uniset_spin_lock lock(li->second.val_lock,checkLockValuePause);
+				uniset_rwmutex_wrlock lock(li->second.val_lock);
 				if( !blocked )
 					li->second.real_state = li->second.state;
 
@@ -378,7 +378,7 @@ void IOController::localSaveValue( IOController::AIOStateList::iterator& li,
 	}
 
 	{	// lock
-		uniset_spin_lock lock(li->second.val_lock,checkLockValuePause);
+		uniset_rwmutex_wrlock lock(li->second.val_lock);
 
 		// фильтрам может потребоваться измениять исходное значение (например для усреднения)
 		// поэтому передаём (и затем сохраняем) напрямую(ссылку) value (а не const value)
@@ -500,7 +500,7 @@ void IOController::localSetState( IOController::DIOStateList::iterator& li,
 		bool blk_set = false;
 
 		{	// lock
-			uniset_spin_lock lock(li->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_wrlock lock(li->second.val_lock);
 			blocked = ( li->second.blocked || li->second.undefined );
 
 			if ( !blocked )
@@ -566,7 +566,7 @@ void IOController::localSetValue( IOController::AIOStateList::iterator& li,
 	if( li!=aioList.end() && li->second.type == UniversalIO::AnalogOutput )
 	{
 		{	// lock
-			uniset_spin_lock lock(li->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_wrlock lock(li->second.val_lock);
 
 			if( li->second.blocked )
 				li->second.real_value = value;
@@ -616,7 +616,7 @@ void IOController::dsRegistration( const UniDigitalIOInfo& dinf, bool force )
 
 	UniSetTypes::KeyType k = key(dinf.si.id, dinf.si.node);
 	{	// lock
-		uniset_mutex_lock lock(dioMutex, 500);
+		uniset_rwmutex_wrlock lock(dioMutex);
 		if( !force )
 		{
 			DIOStateList::iterator li = dioList.find(k);
@@ -694,7 +694,7 @@ void IOController::asRegistration( const UniAnalogIOInfo& ainf, bool force )
 
 	UniSetTypes::KeyType k = key(ainf.si.id, ainf.si.node);
 	{	// lock
-		uniset_mutex_lock lock(aioMutex, 500);
+		uniset_rwmutex_wrlock lock(aioMutex);
 		if( !force )
 		{
 			AIOStateList::iterator li = aioList.find(k);
@@ -767,6 +767,7 @@ void IOController::sUnRegistration( const IOController_i::SensorInfo& si )
 
 void IOController::logging( UniSetTypes::SensorMessage& sm )
 {
+	uniset_rwmutex_wrlock l(loggingMutex);
 	try
 	{
 //		struct timezone tz;
@@ -778,18 +779,16 @@ void IOController::logging( UniSetTypes::SensorMessage& sm )
  		
 		sm.consumer = dbID;
 		TransportMessage tm(sm.transport_msg());
-		{
-			uniset_mutex_lock l(loggingMutex,300);
-			ui.send(sm.consumer, tm);
-			isPingDBServer = true;
-		}
+		ui.send(sm.consumer, tm);
+		isPingDBServer = true;
 	}
 	catch(...)
 	{
-		if(isPingDBServer)
+		if( isPingDBServer )
 		{
-			unideb[Debug::CRIT] << myname << "(logging): DBServer unavailable" << endl;
 			isPingDBServer = false;
+			if( unideb.debugging(Debug::CRIT) )
+				unideb[Debug::CRIT] << myname << "(logging): DBServer unavailable" << endl;
 		}
 	}
 }
@@ -805,7 +804,7 @@ void IOController::dumpToDB()
 //		uniset_mutex_lock lock(dioMutex, 100);
 		for( DIOStateList::iterator li = dioList.begin(); li!=dioList.end(); ++li ) 
 		{
-			uniset_spin_lock lock(li->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(li->second.val_lock,checkLockValuePause);
 			SensorMessage sm;
 			sm.id 			= li->second.si.id;
 			sm.node 		= li->second.si.node;
@@ -826,7 +825,7 @@ void IOController::dumpToDB()
 //		uniset_mutex_lock lock(aioMutex, 100);
 		for( AIOStateList::iterator li = aioList.begin(); li!=aioList.end(); ++li ) 
 		{
-			uniset_spin_lock lock(li->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(li->second.val_lock,checkLockValuePause);
 			SensorMessage sm;
 			sm.id 			= li->second.si.id;
 			sm.node 		= li->second.si.node;
@@ -856,7 +855,7 @@ IOController_i::ASensorInfoSeq* IOController::getAnalogSensorsMap()
 		int i=0;
 		for( AIOStateList::iterator it=aioList.begin(); it!=aioList.end(); ++it)
 		{	
-			uniset_spin_lock lock(it->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
 			(*res)[i] = it->second;
 			i++;
 		}
@@ -877,7 +876,7 @@ IOController_i::DSensorInfoSeq* IOController::getDigitalSensorsMap()
 		int i=0;
 		for( DIOStateList::iterator it= dioList.begin(); it!=dioList.end(); ++it)
 		{	
-			uniset_spin_lock lock(it->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
 			(*res)[i].si		= it->second.si;
 			(*res)[i].type		= it->second.type;
 			(*res)[i].state		= it->second.state;
@@ -934,7 +933,7 @@ IOController_i::DigitalIOInfo IOController::getDInfo(const IOController_i::Senso
 	DIOStateList::iterator it = dioList.find( key(si.id, si.node) );
 	if( it!=dioList.end() )
 	{
-		uniset_spin_lock lock(it->second.val_lock,checkLockValuePause);
+		uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
 		return it->second;
 	}
 
@@ -954,7 +953,7 @@ IOController_i::AnalogIOInfo IOController::getAInfo(const IOController_i::Sensor
 	AIOStateList::iterator it = aioList.find( key(si.id, si.node) );
 	if( it!=aioList.end() )
 	{
-		uniset_spin_lock lock(it->second.val_lock,checkLockValuePause);
+		uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
 		return it->second;
 	}
 
@@ -1333,7 +1332,7 @@ IOController_i::ASensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
 			DIOStateList::iterator it = dioList.find( UniSetTypes::key(lst[i],conf->getLocalNode()) );
 			if( it!=dioList.end() )
 			{
-				uniset_spin_lock lock(it->second.val_lock,checkLockValuePause);
+				uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
 				(*res)[i].si		= it->second.si;
 				(*res)[i].type		= it->second.type;
 				(*res)[i].real_value= it->second.real_state ? 1 : 0;
@@ -1353,7 +1352,7 @@ IOController_i::ASensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
 			AIOStateList::iterator it = aioList.find( UniSetTypes::key(lst[i],conf->getLocalNode()) );
 			if( it!=aioList.end() )
 			{
-				uniset_spin_lock lock(it->second.val_lock,checkLockValuePause);
+				uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
 				(*res)[i] = it->second;
 				continue;
 			}
@@ -1414,7 +1413,7 @@ IOController_i::ShortIOInfo IOController::getChangedTime( const IOController_i::
 	if( dit!=dioList.end() )
 	{
 		IOController_i::ShortIOInfo i;
-		uniset_spin_lock lock(dit->second.val_lock,checkLockValuePause);
+		uniset_rwmutex_rlock lock(dit->second.val_lock,checkLockValuePause);
 		i.value = dit->second.state ? 1 : 0;
 		i.tv_sec = dit->second.tv_sec;
 		i.tv_usec = dit->second.tv_usec;
@@ -1425,7 +1424,7 @@ IOController_i::ShortIOInfo IOController::getChangedTime( const IOController_i::
 	if( ait!=aioList.end() )
 	{
 		IOController_i::ShortIOInfo i;
-		uniset_spin_lock lock(ait->second.val_lock,checkLockValuePause);
+		uniset_rwmutex_rlock lock(ait->second.val_lock,checkLockValuePause);
 		i.value = ait->second.value;
 		i.tv_sec = ait->second.tv_sec;
 		i.tv_usec = ait->second.tv_usec;
@@ -1452,7 +1451,7 @@ IOController_i::ShortMapSeq* IOController::getSensors()
 	{	
 		IOController_i::ShortMap m;
 		{
-			uniset_spin_lock lock(it->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
 			m.id 	= it->second.si.id;
 			m.value = it->second.value;
 			m.type = it->second.type;
@@ -1463,7 +1462,7 @@ IOController_i::ShortMapSeq* IOController::getSensors()
 	{	
 		IOController_i::ShortMap m;
 		{
-			uniset_spin_lock lock(it->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
 			m.id 	= it->second.si.id;
 			m.value = it->second.state ? 1 : 0;
 			m.type = it->second.type;

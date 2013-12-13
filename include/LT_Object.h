@@ -182,7 +182,7 @@ class LT_Object
 	private:
 		TimersList tlst; 
 		/*! замок для блокирования совместного доступа к cписку таймеров */
-		UniSetTypes::uniset_mutex lstMutex; 
+		UniSetTypes::uniset_rwmutex lstMutex;
 		timeout_t sleepTime; /*!< текущее время ожидания */
 		PassiveTimer tmLast;
 };

@@ -26,7 +26,7 @@ class TCPCheck
 		void check_thread();
 		inline void setResult( bool res )
 		{
-			UniSetTypes::uniset_mutex_lock l(m,50);
+			UniSetTypes::uniset_rwmutex_wrlock l(m);
 			result = res;
 		}
 
@@ -34,7 +34,7 @@ class TCPCheck
 		{
 			bool res = false;
 			{
-				UniSetTypes::uniset_mutex_lock l(m,50);
+				UniSetTypes::uniset_rwmutex_rlock l(m);
 				res = result;
 			}
 			return res;
@@ -43,7 +43,7 @@ class TCPCheck
 		bool result;
 		std::string iaddr;
 		int tout_msec;
-		UniSetTypes::uniset_mutex m;
+		UniSetTypes::uniset_rwmutex m;
 };
 // -----------------------------------------------------------------------------
 #endif // _TCPCheck_H_

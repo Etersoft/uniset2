@@ -101,7 +101,7 @@ stCountOfQueueFull(0)
 }
 
 
-UniSetObject::UniSetObject(const string name, const string section):
+UniSetObject::UniSetObject(const string& name, const string& section):
 ui(UniSetTypes::DefaultObjectId),
 mymngr(NULL),
 msgpid(0),
@@ -137,11 +137,18 @@ UniSetObject::~UniSetObject()
 	disactivate();
 	delete tmr;
 	if(thr)
+	{
+		thr->stop();
 		delete thr;
+	}
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::init_object()
 {
+	qmutex.setName(myname + "_qmutex");
+	refmutex.setName(myname + "_refmutex");
+	mutex_act.setName(myname + "_mutex_act");
+
 	SizeOfMessageQueue = conf->getArgPInt("--uniset-object-size-message-queue",conf->getField("SizeOfMessageQueue"), 1000);
 
 	MaxCountRemoveOfMessage = conf->getArgInt("--uniset-object-maxcount-remove-message",conf->getField("MaxCountRemoveOfMessage"));
@@ -149,16 +156,11 @@ void UniSetObject::init_object()
 		MaxCountRemoveOfMessage = SizeOfMessageQueue / 4;
 	if( MaxCountRemoveOfMessage <= 0 )
 		MaxCountRemoveOfMessage = 10;
-	recvMutexTimeout = conf->getArgPInt("--uniset-object-receive-mutex-timeout",conf->getField("RecvMutexTimeout"), 10000);
-
-	pushMutexTimeout = conf->getArgPInt("--uniset-object-push-mutex-timeout",conf->getField("PushMutexTimeout"), 9000);
-
+	
 	if( unideb.debugging(Debug::INFO) )
 	{
 		unideb[Debug::INFO] << myname << "(init): SizeOfMessageQueue=" << SizeOfMessageQueue
 			<< " MaxCountRemoveOfMessage=" << MaxCountRemoveOfMessage
-			<< " recvMutexTimeout=" << recvMutexTimeout
-			<< " pushMutexTimeout=" << pushMutexTimeout
 			<< endl;
 	}
 }
@@ -198,7 +200,7 @@ void UniSetObject::setID( UniSetTypes::ObjectId id )
 bool UniSetObject::receiveMessage( VoidMessage& vm )
 {
 	{	// lock
-		uniset_mutex_lock mlk(qmutex, recvMutexTimeout);
+		uniset_rwmutex_wrlock mlk(qmutex);
 			
 		if( !queueMsg.empty() )
 		{
@@ -374,10 +376,13 @@ void UniSetObject::registered()
 		throw ORepFailed(err.c_str());
 	}
 
-	if( !oref )
 	{
-		unideb[Debug::CRIT] << myname << "(registered): oref is NULL!..." << endl;
-		return;
+		UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
+		if( !oref )
+		{
+			unideb[Debug::CRIT] << myname << "(registered): oref is NULL!..." << endl;
+			return;
+		}
 	}
 
 	try
@@ -437,11 +442,14 @@ void UniSetObject::unregister()
 		return;
 	}
 
-	if( !oref )
 	{
-		unideb[Debug::WARN] << myname << "(unregister): oref NULL!" << endl;
-		reg = false;
-		return;
+		UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
+		if( !oref )
+		{
+			unideb[Debug::WARN] << myname << "(unregister): oref NULL!" << endl;
+			reg = false;
+			return;
+		}
 	}
 
 
@@ -474,16 +482,6 @@ void UniSetObject::termWaiting()
 		tmr->terminate();
 }
 // ------------------------------------------------------------------------------------------
-void UniSetObject::setRecvMutexTimeout( unsigned long msec )
-{
-	recvMutexTimeout = msec;
-}
-// ------------------------------------------------------------------------------------------
-void UniSetObject::setPushMutexTimeout( unsigned long msec )
-{
-	pushMutexTimeout = msec;
-}
-// ------------------------------------------------------------------------------------------
 void UniSetObject::setThreadPriority( int p )
 {
 	if( thr )
@@ -493,7 +491,7 @@ void UniSetObject::setThreadPriority( int p )
 void UniSetObject::push(const TransportMessage& tm)
 {
 	{ // lock
-		uniset_mutex_lock mlk(qmutex,pushMutexTimeout);
+		uniset_rwmutex_wrlock mlk(qmutex);
 		// контроль переполнения
 		if( !queueMsg.empty() && queueMsg.size()>SizeOfMessageQueue )
 		{
@@ -718,7 +716,7 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 unsigned int UniSetObject::countMessages()
 {
 	{ // lock
-		uniset_mutex_lock mlk(qmutex, 200);
+		uniset_rwmutex_rlock mlk(qmutex);
 		return queueMsg.size();
 	}
 }
@@ -740,7 +738,7 @@ bool UniSetObject::disactivate()
 
 	// Очищаем очередь
 	{ // lock
-		uniset_mutex_lock mlk(qmutex, 400);
+		uniset_rwmutex_wrlock mlk(qmutex);
 		while( !queueMsg.empty() )
 			queueMsg.pop(); 
 	}
@@ -765,27 +763,33 @@ bool UniSetObject::disactivate()
 				unideb[Debug::INFO] << "ok..." << endl;
 			return true;
 		}
-		unideb[Debug::WARN] << "manager already destroyed.." << endl;
+		if( unideb.debugging(Debug::WARN) )
+			unideb[Debug::WARN] << "manager already destroyed.." << endl;
 	}
 	catch(CORBA::TRANSIENT)
 	{
-		unideb[Debug::WARN] << "isExist: нет связи..."<< endl;
+		if( unideb.debugging(Debug::WARN) )
+			unideb[Debug::WARN] << "isExist: нет связи..."<< endl;
 	}
 	catch( CORBA::SystemException& ex )
     {
-		unideb[Debug::WARN] << "UniSetObject: "<<"поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
+		if( unideb.debugging(Debug::WARN) )
+			unideb[Debug::WARN] << "UniSetObject: "<<"поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
     }
     catch(CORBA::Exception& ex)
     {
-		unideb[Debug::WARN] << "UniSetObject: "<<"поймали CORBA::Exception." << endl;
+		if( unideb.debugging(Debug::WARN) )
+			unideb[Debug::WARN] << "UniSetObject: "<<"поймали CORBA::Exception." << endl;
     }
 	catch(Exception& ex)
     {
-		unideb[Debug::WARN] << "UniSetObject: "<< ex << endl;
+		if( unideb.debugging(Debug::WARN) )
+			unideb[Debug::WARN] << "UniSetObject: "<< ex << endl;
     }
     catch(...)
     {
-		unideb[Debug::WARN] << "UniSetObject: "<<" catch ..." << endl;
+		if( unideb.debugging(Debug::WARN) )
+			unideb[Debug::WARN] << "UniSetObject: "<<" catch ..." << endl;
     }
 
 	return false;
@@ -841,7 +845,10 @@ bool UniSetObject::activate()
 	
 
 	
-	oref = poa->servant_to_reference(static_cast<PortableServer::ServantBase*>(this) );
+	{
+		UniSetTypes::uniset_rwmutex_wrlock lock(refmutex);
+		oref = poa->servant_to_reference(static_cast<PortableServer::ServantBase*>(this) );
+	}
 
 	registered();
 	// Запускаем поток обработки сообщений
@@ -951,13 +958,13 @@ bool UniSetObject::PriorVMsgCompare::operator()(const UniSetTypes::VoidMessage& 
 // ------------------------------------------------------------------------------------------
 void UniSetObject::setActive( bool set )
 {
-	uniset_mutex_lock l(act_mutex,300);
+	uniset_rwmutex_wrlock l(mutex_act);
 	active = set;
 }
 // ------------------------------------------------------------------------------------------
 bool UniSetObject::isActive()
 {
-	uniset_mutex_lock l(act_mutex,200);
+	uniset_rwmutex_rlock l(mutex_act);
 	return active;
 }
 // ------------------------------------------------------------------------------------------

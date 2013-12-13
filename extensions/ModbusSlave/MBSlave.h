@@ -130,7 +130,7 @@ class MBSlave:
 		ModbusServerSlot* mbslot;
 		ModbusRTU::ModbusAddr addr;			/*!< адрес данного узла */
 
-		UniSetTypes::uniset_mutex mbMutex;
+		UniSetTypes::uniset_rwmutex mbMutex;
 
 		xmlNode* cnode;
 		std::string s_field;
@@ -168,7 +168,7 @@ class MBSlave:
 	private:
 		MBSlave();
 		bool initPause;
-		UniSetTypes::uniset_mutex mutex_start;
+		UniSetTypes::uniset_rwmutex mutex_start;
 		ThreadCreator<MBSlave>* thr;
 
 		PassiveTimer ptHeartBeat;

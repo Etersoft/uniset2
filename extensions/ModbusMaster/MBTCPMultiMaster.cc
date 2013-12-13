@@ -17,6 +17,8 @@ force_disconnect(true),
 pollThread(0),
 checkThread(0)
 {
+	tcpMutex.setName(myname+"_tcpMutex");
+
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(MBTCPMultiMaster): objId=-1?!! Use --" + prefix + "-name" );
 
@@ -179,7 +181,7 @@ ModbusClient* MBTCPMultiMaster::initMB( bool reopen )
 	}
 
 	{
-		uniset_mutex_lock l(tcpMutex,100);
+		uniset_rwmutex_wrlock l(tcpMutex);
 		// Если по текущему каналу связь есть, то возвращаем его
 		if( mbi!=mblist.rend() && mbi->respond )
 		{
@@ -197,7 +199,7 @@ ModbusClient* MBTCPMultiMaster::initMB( bool reopen )
 	// проходим по списку (в обратном порядке, т.к. самый приоритетный в конце)
 	for( MBGateList::reverse_iterator it=mblist.rbegin(); it!=mblist.rend(); ++it )
 	{
-		uniset_mutex_lock l(tcpMutex,100);
+		uniset_rwmutex_wrlock l(tcpMutex);
 		if( it->respond && it->init() )
 		{
 			mbi = it;
@@ -207,7 +209,7 @@ ModbusClient* MBTCPMultiMaster::initMB( bool reopen )
 	}
 
 	{
-		uniset_mutex_lock l(tcpMutex,100);
+		uniset_rwmutex_wrlock l(tcpMutex);
 		mbi = mblist.rend();
 		mb = 0;
 	}
@@ -329,8 +331,8 @@ void MBTCPMultiMaster::check_thread()
 				catch(...){}
 
 
-				{
-					uniset_mutex_lock l(tcpMutex,130);
+				{	
+					uniset_rwmutex_wrlock l(tcpMutex);
 					it->respond = r;
 				}
 			}

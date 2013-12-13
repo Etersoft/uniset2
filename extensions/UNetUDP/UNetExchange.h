@@ -125,7 +125,7 @@ class UNetExchange:
 	private:
 		UNetExchange();
 		bool initPause;
-		UniSetTypes::uniset_mutex mutex_start;
+		UniSetTypes::uniset_rwmutex mutex_start;
 
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;

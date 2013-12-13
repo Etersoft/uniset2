@@ -121,7 +121,7 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 	// проверка на обрыв
 	if( it->check_channel_break(val) )
 	{
-		uniset_spin_lock lock(it->val_lock);
+		uniset_rwmutex_wrlock lock(it->val_lock);
 		it->value = ChannelBreakValue;
 		shm->localSetUndefinedState(it->ait,true,it->si.id);
 		return;
@@ -170,7 +170,7 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 	// если предыдущее значение "обрыв",
 	// то сбрасываем признак 
 	{
-		uniset_spin_lock lock(it->val_lock);
+		uniset_rwmutex_wrlock lock(it->val_lock);
 		if( it->value == ChannelBreakValue )
 			shm->localSetUndefinedState(it->ait,false,it->si.id);
 
@@ -200,7 +200,7 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 	// проверка на обрыв
 	if( it->check_channel_break(val) )
 	{
-		uniset_spin_lock lock(it->val_lock);
+		uniset_rwmutex_wrlock lock(it->val_lock);
 		it->value = ChannelBreakValue;
 		shm->localSetUndefinedState(it->ait,true,it->si.id);
 		return;
@@ -228,7 +228,7 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 	// если предыдущее значение "обрыв",
 	// то сбрасываем признак 
 	{
-		uniset_spin_lock lock(it->val_lock);
+		uniset_rwmutex_wrlock lock(it->val_lock);
 		if( it->value == ChannelBreakValue )
 			shm->localSetUndefinedState(it->ait,false,it->si.id);
 
@@ -262,7 +262,7 @@ void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force 
 	set = it->check_off_delay(set); // фильтр на отпускание
 
 	{
-		uniset_spin_lock lock(it->val_lock);
+		uniset_rwmutex_wrlock lock(it->val_lock);
 		if( force || (bool)it->value!=set )
 		{
 			if( it->stype == UniversalIO::DigitalInput )
@@ -281,7 +281,7 @@ void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force 
 // -----------------------------------------------------------------------------
 long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 {
-	uniset_spin_lock lock(it->val_lock);
+	uniset_rwmutex_rlock lock(it->val_lock);
 	long val = it->value;
 	
 	// проверка зависимости
@@ -338,7 +338,7 @@ bool IOBase::processingAsDO( IOBase* it, SMInterface* shm, bool force )
 	if( !it->check_depend(shm) )
 		return (bool)it->d_off_value;
 
-	uniset_spin_lock lock(it->val_lock);
+	uniset_rwmutex_rlock lock(it->val_lock);
 	bool set = it->value;
 
 	if( force )
@@ -359,7 +359,7 @@ float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
 	if( !it->check_depend(shm) )
 		return (float)it->d_off_value;
 
-	uniset_spin_lock lock(it->val_lock);
+	uniset_rwmutex_rlock lock(it->val_lock);
 	long val = it->value;
 	
 	if( force )

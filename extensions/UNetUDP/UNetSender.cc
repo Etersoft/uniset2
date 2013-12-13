@@ -128,12 +128,12 @@ void UNetSender::updateItem( DMap::iterator& it, long value )
 
 	if( it->iotype == UniversalIO::DigitalInput || it->iotype == UniversalIO::DigitalOutput )
 	{
-		UniSetTypes::uniset_mutex_lock l(pack_mutex,100);
+		UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
 		mypack.setDData(it->pack_ind,value);
 	}
 	else if( it->iotype == UniversalIO::AnalogInput || it->iotype == UniversalIO::AnalogOutput )
 	{
-		UniSetTypes::uniset_mutex_lock l(pack_mutex,100);
+		UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
 		mypack.setAData(it->pack_ind,value);
 	}
 }
@@ -190,7 +190,7 @@ void UNetSender::send()
 // -----------------------------------------------------------------------------
 void UNetSender::real_send()
 {
-	UniSetTypes::uniset_mutex_lock l(pack_mutex,300);
+	UniSetTypes::uniset_rwmutex_rlock l(pack_mutex);
 	mypack.num = packetnum++;
 
 	if( packetnum > UniSetUDP::MaxPacketNum )
@@ -198,7 +198,6 @@ void UNetSender::real_send()
 
 	if( !udp->isPending(ost::Socket::pendingOutput) )
 		return;
-
 
 	mypack.transport_msg(s_msg);
 	size_t ret = udp->send( (char*)s_msg.data, s_msg.len );

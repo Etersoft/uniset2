@@ -257,7 +257,7 @@ IOController_i::ShortMapSeq* UniExchange::getSensors()
 	{
 		IOController_i::ShortMap m;
 		{
-			uniset_spin_lock lock(it->val_lock,30);
+			uniset_rwmutex_rlock lock(it->val_lock);
 			m.id 	= it->id;
 			m.value = it->val;
 			m.type = it->type;
@@ -274,7 +274,7 @@ void UniExchange::updateLocalData()
 	{
 		try
 		{
-			uniset_spin_lock lock(it->val_lock,30);
+			uniset_rwmutex_wrlock lock(it->val_lock);
 			if( it->type == UniversalIO::DigitalInput ||
 				it->type == UniversalIO::DigitalOutput )
 			{

@@ -9,7 +9,7 @@ using namespace std;
 using namespace UniSetTypes;
 
 uniset_mutex m;
-uniset_spin_mutex m_spin;
+uniset_rwmutex m_spin;
 
 class MyClass
 {
@@ -89,7 +89,7 @@ class MyClassSpin
                 if( !readLock )
 				{
 //					cerr << nm << ": before RWlock.." << endl;
-					uniset_spin_lock l(m_spin,5);
+					uniset_rwmutex_wrlock l(m_spin,5);
 					count++;
 					msleep(30);
 //					cerr << nm << ": after RWlock.." << endl;
@@ -97,7 +97,7 @@ class MyClassSpin
 				else
                 {
 //                    cerr << nm << "(readLock): before lock.." << endl;
-                    uniset_spin_rlock l(m_spin);
+                    uniset_rwmutex_rlock l(m_spin);
                     count++;
                     msleep(20);
 //                    cerr << nm << "(readLock): after lock.." << endl;
@@ -160,8 +160,8 @@ int main( int argc, const char **argv )
     cerr << "test write lock: " << (check_wr_lock(m) ? "FAIL" : "OK [0]") << endl;
     cerr << "test read lock: " << (check_r_lock(m) ? "FAIL" : "OK [0]") << endl;
 
-    cerr << endl << "***** uniset_spin_mutex ***" << endl;
-    uniset_spin_mutex m1;
+    cerr << endl << "***** uniset_rwmutex ***" << endl;
+    uniset_rwmutex m1;
     cout << "read lock.." << endl;
     m1.rlock();
 

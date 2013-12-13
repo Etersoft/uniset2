@@ -78,7 +78,7 @@ class UniExchange:
 			long val;
 			long id;
 			UniversalIO::IOTypes type;
-			UniSetTypes::uniset_spin_mutex val_lock;
+			UniSetTypes::uniset_rwmutex val_lock;
 		};
 		
 		typedef std::vector<SInfo> SList;

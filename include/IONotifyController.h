@@ -278,7 +278,7 @@ class IONotifyController:
 
 		void onChangeUndefined( DependsList::iterator it, bool undefined );
 
-		UniSetTypes::uniset_mutex sig_mutex;
+		UniSetTypes::uniset_rwmutex sig_mutex;
 		ChangeSignal changeSignal;
 
 	private:
@@ -307,17 +307,18 @@ class IONotifyController:
 		AskMap askAOList; /*!< список потребителей по аналоговым выходам */
 	
 		/*! замок для блокирования совместного доступа к cписку потребителей дискретных датчиков */
-		UniSetTypes::uniset_mutex askDMutex; 
+		UniSetTypes::uniset_rwmutex askDMutex;
 		/*! замок для блокирования совместного доступа к cписку потребителей аналоговых датчиков */
-		UniSetTypes::uniset_mutex askAMutex;
+		UniSetTypes::uniset_rwmutex askAMutex;
 		/*! замок для блокирования совместного доступа к cписку потребителей пороговых датчиков */			
-		UniSetTypes::uniset_mutex trshMutex;
+		UniSetTypes::uniset_rwmutex trshMutex;
 		/*! замок для блокирования совместного доступа к cписку потребителей аналоговых выходов */
-		UniSetTypes::uniset_mutex askAOMutex;
+		UniSetTypes::uniset_rwmutex askAOMutex;
 		/*! замок для блокирования совместного доступа к cписку потребителей дискретных выходов */
-		UniSetTypes::uniset_mutex askDOMutex;
+		UniSetTypes::uniset_rwmutex askDOMutex;
 		
 		int maxAttemtps; /*! timeout for consumer */
 };
-
+// --------------------------------------------------------------------------
 #endif
+// --------------------------------------------------------------------------

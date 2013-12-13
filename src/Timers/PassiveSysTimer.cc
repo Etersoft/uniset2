@@ -28,7 +28,6 @@
 #include <pthread.h>
 #include <time.h>
 
-#include "PosixThread.h"
 #include "PassiveTimer.h"
 
 // ------------------------------------------------------------------------------------------

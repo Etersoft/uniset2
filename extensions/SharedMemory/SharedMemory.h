@@ -350,7 +350,7 @@ class SharedMemory:
 		void buildEventList( xmlNode* cnode );
 		void readEventList( std::string oname );
 		
-		UniSetTypes::uniset_mutex mutex_start;
+		UniSetTypes::uniset_rwmutex mutex_start;
 		
 		struct HeartBeatInfo
 		{
@@ -422,8 +422,8 @@ class SharedMemory:
 		IOController_i::SensorInfo siPulsar;
 		UniversalIO::IOTypes iotypePulsar;
 		int msecPulsar;
-
-		UniSetTypes::uniset_mutex act_mutex;
+		
+		UniSetTypes::uniset_rwmutex mutex_act;
 
 	private:
 		HistorySlot m_historySignal;

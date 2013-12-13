@@ -146,9 +146,6 @@ namespace UniSetTypes
 	/*! Запрещенные для использования в именах объектов символы */
 	const char BadSymbols[]={'.','/'};
 
-	class uniset_mutex;
-	class uniset_mutex_lock;
-
 	/// Преобразование строки в число (воспринимает префикс 0, как 8-ное, префикс 0x, как 16-ное, минус для отриц. чисел)
 	inline int uni_atoi( const char* str )
 	{
