@@ -252,26 +252,6 @@ struct MsgInfo
 //		gettimeofday(&tm,&tz);
 	}
 
-	MsgInfo( AlarmMessage& am ):
-	type(am.type),
-	id(am.id),
-	acode(am.alarmcode),
-	ccode(am.causecode),
-	ch(am.character),
-	tm(am.tm),
-	node(am.node)
-	{}
-
-	MsgInfo( InfoMessage& am ):
-	type(am.type),
-	id(am.id),
-	acode(am.infocode),
-	ccode(0),
-	ch(am.character),
-	tm(am.tm),
-	node(am.node)
-	{}
-
 	int type;
 	ObjectId id;		// от кого
 	MessageCode acode;	// код сообщения
@@ -526,8 +506,6 @@ struct tmpConsumerInfo
 	map<UniSetTypes::KeyType,VoidMessage> smap;
 	map<int,VoidMessage> tmap;
 	map<int,VoidMessage> sysmap;
-	map<MsgInfo,VoidMessage> amap;
-	map<MsgInfo,VoidMessage> imap;
 	map<CInfo,VoidMessage> cmap;
 	list<VoidMessage> lstOther;
 };
@@ -582,27 +560,6 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 			}
 			break;
 
-			case Message::Alarm:
-			{
-				AlarmMessage am(&m);
-				MsgInfo mi(am);
-				// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
-				// то достаточно просто сохранять последнее сообщение для одинаковых MsgInfo
-				consumermap[am.consumer].amap[mi] = m;
-			}
-			break;
-
-			case Message::Info:
-			{
-				InfoMessage im(&m);
-				MsgInfo mi(im);
-				// т.к. из очереди сообщений сперва вынимаются самые старые, потом свежее и т.п.
-				// то достаточно просто сохранять последнее сообщение для одинаковых MsgInfo
-				consumermap[im.consumer].imap[mi] = m;
-			}
-			break;
-
-
 			case Message::Confirm:
 			{
 				ConfirmMessage cm(&m);
@@ -637,8 +594,6 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean SensorMessage: " << it0->second.smap.size() << endl;
 			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean TimerMessage: " << it0->second.tmap.size() << endl;
 			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean SystemMessage: " << it0->second.sysmap.size() << endl;
-			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean AlarmMessage: " << it0->second.amap.size() << endl;
-			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean InfoMessage: " << it0->second.imap.size() << endl;
 			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean ConfirmMessage: " << it0->second.cmap.size() << endl;
 			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean other: " << it0->second.lstOther.size() << endl;
 		}
@@ -660,18 +615,6 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 		for( ; it2!=it0->second.sysmap.end(); ++it2 )
 		{
 			q.push(it2->second);
-		}
-
-		map<MsgInfo,VoidMessage>::iterator it3=it0->second.amap.begin();
-		for( ; it3!=it0->second.amap.end(); ++it3 )
-		{
-			q.push(it3->second);
-		}
-
-		map<MsgInfo,VoidMessage>::iterator it4=it0->second.imap.begin();
-		for( ; it4!=it0->second.imap.end(); ++it4 )
-		{
-			q.push(it4->second);
 		}
 
 		map<CInfo,VoidMessage>::iterator it5=it0->second.cmap.begin();

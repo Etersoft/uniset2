@@ -77,28 +77,19 @@ int main(int argc, char **argv)
 	</UniSet>
 
 	<Services section="Services">
-		<LocalTimerService name="TimerService1" MaxCountTimers="100" AskLifeTimeSEC="60"/>
-		<LocalInfoServer name="InfoServer1" dbrepeat="1">
-			<RouteList>
-					<!--  <consumer name="" node=""/> -->
-			</RouteList>
-		</LocalInfoServer>
-	
 		<LocalDBServer name="DBServer1" dbnode="" dbname="Theatre" dbuser="dbadmin" dbpass="dbadmin">
 			<Tables></Tables>
 		</LocalDBServer>
-		
 	</Services>
 
 	<!-- список узлов в сиситеме -->
 	<ListOfNodes>
 	<!-- 
 		Параметры:
-			infserver - id инфо-сервера на данном узле(если указать "", значит нет)
 			dbnode - id db-сервера на данном узле DB(если указать "", значит нет)
 	-->
 
-		<Node name="LocalhostNode" infserver="InfoServer1" dbserver="DBServer1"/>
+		<Node name="LocalhostNode" dbserver="DBServer1"/>
 	</ListOfNodes>
 
 </UniSetTestConfiguration>

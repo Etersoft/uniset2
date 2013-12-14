@@ -37,14 +37,11 @@ namespace UniSetTypes
 		public:
 			enum TypeOfMessage
 			 {
-				Unused,	// Сообщение не содержит информации
+				Unused,		// Сообщение не содержит информации
 				SensorInfo,
 				SysCommand, // Сообщение содержит системную команду
 				Confirm,	// Сообщение содержит подтверждение
-				Info,	// Сообщения содержит информацию для оператора (DEPRECATED)
-				Timer,	// Сообщения о срабатывании таймера
-				Alarm,	// Аварийное сообщение (DEPRECATED)
-				DataBase, // (DEPRECATED)
+				Timer,		// Сообщения о срабатывании таймера
 				TheLastFieldOfTypeOfMessage // Обязательно оставьте последним
 			};
 	
@@ -172,150 +169,6 @@ namespace UniSetTypes
 			long data[2];
 	};
 
-	/*! Информационное собщение оператору (DEPRECATED) */
-	class InfoMessage : public Message
-	{
-		public:
-			enum Character{
-								Normal,
-								Warning
-							};
-			InfoMessage();
-			InfoMessage(ObjectId id, const std::string str, ObjectId node = conf->getLocalNode(),
-						Character ch = InfoMessage::Normal, 
-						Priority priority = Message::Medium, ObjectId consumer=UniSetTypes::DefaultObjectId);
-
-			InfoMessage(ObjectId id, MessageCode icode, ObjectId node = conf->getLocalNode(), 
-						Character ch = InfoMessage::Normal, 
-						Priority priority = Message::Medium, ObjectId consumer=UniSetTypes::DefaultObjectId);
-
-			InfoMessage(const VoidMessage *msg);
-
-			inline TransportMessage transport_msg() const
-			{
-				return transport(*this);
-			}
-
-			ObjectId id;					/*!< от кого */
-			MessageCode infocode;			/*!< код сообщения */
-			Character character;			/*!< характер */
-			bool broadcast;					/*!< флаг рассылки на другие узлы */
-	
-			/*! 
-				признак, что сообщение является пересланным. 
-				(т.е. в БД второй раз сохранять не надо, пересылать
-				 второй раз тоже не надо). 
-			*/
-			bool route;
-
-			// т.к. размер транспортных сообщений ограничен, то 
-			// мы можем высчитать максимальную длину текстового сообщения
-			// считаем размер текстового сообщения по формуле
-			// размерТраснпортного - РазмерБазового-суммаВсехВспомПолейДляДанногоСообщения-1
-			// всё это конечно не очень хорошо, но пока так.
-//			static const int size_of_info_message = sizeof(UniSetTypes::RawDataOfTransportMessage)-sizeof(Message)-sizeof(ObjectId)-sizeof(MessageCode)-sizeof(Character)-2*sizeof(bool)-1;
-			// пока делаем размер постоянным
-			static const unsigned int size_of_info_message = 55;
-			char message[size_of_info_message];	/*!< сообщение */
-	};
-
-	/*! Собщение об аварии (DEPRECATED) */
-	class AlarmMessage : public Message
-	{
-		public:
-			enum Character{
-								Normal,
-								Attention,
-								Warning,
-								Alarm
-							};
-
-			AlarmMessage();
-			AlarmMessage(ObjectId id, const std::string str, ObjectId node = conf->getLocalNode(),
-						Character ch = AlarmMessage::Alarm, 
-						Priority prior = Message::Medium, ObjectId cons=UniSetTypes::DefaultObjectId);
-
-			AlarmMessage(ObjectId id, const std::string str, MessageCode ccode,
-							ObjectId node = conf->getLocalNode(), 				
-							Character ch = AlarmMessage::Alarm, 
-							Priority prior = Message::Medium, ObjectId cons=UniSetTypes::DefaultObjectId);
-
-			AlarmMessage(ObjectId id,  MessageCode acode, MessageCode ccode, 
-							ObjectId node=conf->getLocalNode(), 
-							Character ch=AlarmMessage::Alarm, 
-							Priority prior=Message::Medium, 
-							ObjectId cons=UniSetTypes::DefaultObjectId);
-
-			AlarmMessage(const VoidMessage *msg);
-
-			inline TransportMessage transport_msg() const
-			{
-				return transport(*this);
-			}
-			
-			ObjectId id;					/*!< от кого */
-			MessageCode alarmcode;			/*!< код сообщения */
-			MessageCode causecode;			/*!< код причины */
-			Character character;			/*!< характер */
-			bool broadcast;					/*!< флаг рассылки на другие узлы */
-
-			/*! 
-				признак, что сообщение является пересланным. 
-				(т.е. в БД второй раз сохранять не надо, пересылать
-				 второй раз тоже не надо). 
-			*/
-			bool route;
-
-
-			// т.к. размер транспортных сообщений ограничен, то 
-			// мы можем высчитать максимальную длину текстового сообщения
-			// считаем размер текстового сообщения по формуле
-			// размерТраснпортного - РазмерБазового-суммаВсехВспомПолейДляДанногоСообщения-1
-			// всё это конечно не очень хорошо, но пока так.
-			// sizeof(UniSetTypes::RawDataOfTransportMessage)-sizeof(Message)-sizeof(ObjectId)-2*sizeof(MessageCode)-sizeof(Character)-2*sizeof(bool)-1
-
-			// пока делаем размер постоянным
-			static const unsigned int size_of_alarm_message = 55;
-			char message[size_of_alarm_message];	/*!< сообщение */			
-	};
-
-	/*! Собщение DBServer-у */
-	class DBMessage : public Message
-	{
-		public:
-			enum TypeOfQuery
-			{
-				Query,
-				Update,
-				Insert
-			};
-			
-			DBMessage();
-
-			DBMessage(TypeOfQuery qtype, const std::string query, TypeOfMessage tblid,
-						Priority prior=Message::Low, 
-						ObjectId cons=UniSetTypes::DefaultObjectId);
-			DBMessage(const VoidMessage *msg);
-
-			inline TransportMessage transport_msg() const
-			{
-				return transport(*this);
-			}
-			DBMessage::TypeOfQuery qtype;	// тип данных в запросе
-			TypeOfMessage tblid;			// идентификатор таблицы
-
-
-			// т.к. размер трансопртынх сообщений ограничен, то 
-			// мы можем высчитать максимальнйю длину текстового запроса
-			// считаем размер текстового сообщения по формуле
-			// размерТраснпортного - РазмерБазового-суммаВсехВспомПолейДляДанногоСообщения-1
-			// всё это конечно не очень хорошо, но пока так.
-			// sizeof(UniSetTypes::RawDataOfTransportMessage)-sizeof(Message)-sizeof(DBMessage::TypeOfQuery)-sizeof(TypeOfMessage)-1
-
-			static const unsigned int size_of_query = 55;
-			char data[size_of_query];	
-	};
-	
 	/*! Собщение о срабатывании таймера */
 	class TimerMessage : public Message
 	{

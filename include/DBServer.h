@@ -42,7 +42,7 @@
 		Сервис является системным, поэтому его идентификатор можно получить при помощи 
 	UniSetTypes::Configuration::getDBServer() объекта UniSetTypes::conf.
 
-	Реализацию см. \ref page_DBServer_MySQL
+	Реализацию см. \ref page_DBServer_MySQL и \ref page_DBServer_SQLite
 */
 
 /*! Прототип реализации сервиса ведения БД */
@@ -61,9 +61,6 @@ class DBServer:
 
 		// Функции обработки пришедших сообщений
 		virtual void parse( UniSetTypes::SensorMessage* sm ){};
-		virtual void parse( UniSetTypes::DBMessage* dbmsg ){};
-		virtual void parse( UniSetTypes::InfoMessage* imsg ){};
-		virtual void parse( UniSetTypes::AlarmMessage* amsg ){};
 		virtual void parse( UniSetTypes::ConfirmMessage* cmsg ){};
 
 		virtual bool activateObject();

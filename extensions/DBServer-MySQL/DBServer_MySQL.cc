@@ -134,40 +134,6 @@ void DBServer_MySQL::sysCommand( UniSetTypes::SystemMessage *sm )
 }
 
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::parse( UniSetTypes::DBMessage* dbm )
-{
-	if( dbm->tblid == UniSetTypes::Message::Unused )
-	{
-		unideb[Debug::CRIT] << myname <<  "(dbmessage): не задан tblId...\n";
-		return;
-	}
-
-	ostringstream query;
-	switch( dbm->qtype )
-	{
-		case DBMessage::Query:
-			query << dbm->data;
-			break;
-
-		case DBMessage::Update:
-			query << "UPDATE " << tblName(dbm->tblid) << " SET " << dbm->data;
-			break;
-
-		case DBMessage::Insert:
-			query << "INSERT INTO " << tblName(dbm->tblid) << " VALUES (" << dbm->data << ")";
-			break;
-
-	}
-
-	if( !writeToBase(query.str()) )
-	{
-		unideb[Debug::CRIT] << myname <<  "(update): error: "<< db->error() << endl;
-//		if( dbm->qtype == DBMessage::Query )
-//			db->freeResult();
-	}
-
-}
-//--------------------------------------------------------------------------------------------
 void DBServer_MySQL::parse( UniSetTypes::ConfirmMessage* cem )
 {
 	try

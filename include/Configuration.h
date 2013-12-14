@@ -32,7 +32,6 @@
 #include "UniSetTypes.h"
 #include "ObjectIndex.h"
 #include "IORFile.h"
-#include "MessageInterface.h"
 #include "Debug.h"
 
 class SystemGuard;
@@ -88,9 +87,7 @@ namespace UniSetTypes
 		std::string getRootDir(); /*!< Получение каталога, в котором находится выполняющаяся программа */
 		inline int getArgc(){ return _argc; }
 		inline const char* const* getArgv() const { return _argv; }
-		inline ObjectId getTimerService() const { return localTimerService; } /*!< получение идентификатора TimerServic-а */
 		inline ObjectId getDBServer() const { return localDBServer; }		/*!< получение идентификатора DBServer-а */
-		inline ObjectId getInfoServer() const { return localInfoServer; }	/*!< получение идентификатора InfoServer-а */
 		inline ObjectId getLocalNode() const { return localNode; }		/*!< получение идентификатора локального узла */
 		inline std::string getLocalNodeName() const { return localNodeName; }		/*!< получение название локального узла */
 		inline const std::string getNSName() const { return NSName; }		
@@ -159,9 +156,6 @@ namespace UniSetTypes
 			return lnodes.end();
 		}
 		
-		/*! интерфейс к карте сообщений	*/
-		MessageInterface* mi;
-		
 		/*! интерфейс к карте объектов */
 		ObjectIndex* oind;
 		
@@ -223,9 +217,7 @@ namespace UniSetTypes
 		static xmlNode* xmlServicesSec;
 		static xmlNode* xmlNodesSec;
 
-		ObjectId localTimerService;
 		ObjectId localDBServer;
-		ObjectId localInfoServer;
 		ObjectId localNode;
 		
 		std::string localNodeName;

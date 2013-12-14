@@ -31,11 +31,6 @@ class SMInterface
 		void askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd,
 						UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
-		inline bool alarm( UniSetTypes::AlarmMessage& msg,  UniSetTypes::ObjectId messenger )
-		{
-			return ui->alarm(msg,messenger);
-		}
-		
 		IOController_i::DSensorInfoSeq* getDigitalSensorsMap();
 		IOController_i::ASensorInfoSeq* getAnalogSensorsMap();
 		IONotifyController_i::ThresholdsListSeq* getThresholdsList();

@@ -37,7 +37,6 @@ static struct option longopts[] = {
 	{ "create", no_argument, 0, 'b' },
 	{ "exist", no_argument, 0, 'e' },
 	{ "omap", no_argument, 0, 'o' },
-	{ "msgmap", no_argument, 0, 'm' },
 	{ "start", no_argument, 0, 's' },
 	{ "finish", no_argument, 0, 'f' },
 	{ "foldUp", no_argument, 0, 'u' },
@@ -59,7 +58,6 @@ static bool commandToAll( const string& section, ObjectRepository *rep, Command 
 static void createSections( UniSetTypes::Configuration* c );
 // --------------------------------------------------------------------------
 int omap();
-int msgmap();
 int configure( const string& args, UniversalInterface &ui );
 int logRotate( const string& args, UniversalInterface &ui );
 int setValue( const string& args, UniversalInterface &ui, Configuration* conf = UniSetTypes::conf );
@@ -95,7 +93,6 @@ static void usage()
 	print_help(24, "-b|--create ","Создание репозитория\n");
 	print_help(24, "-e|--exist ","Вызов функции exist() показывающей какие объекты зарегистрированы и доступны.\n");
 	print_help(24, "-o|--omap ","Вывод на экран списка объектов с идентификаторами.\n");
-	print_help(24, "-m|--msgmap ","Вывод на экран списка сообщений с идентификаторами.\n");
 	print_help(24, "-s|--start ","Посылка SystemMessage::StartUp всем объектам (процессам)\n");
 	print_help(24, "-u|--foldUp ","Посылка SystemMessage::FoldUp всем объектам (процессам)\n");
 	print_help(24, "-f|--finish ","Посылка SystemMessage::Finish всем объектам (процессам)\n");
@@ -128,7 +125,7 @@ int main(int argc, char** argv)
 		int optindex = 0;
 		char opt = 0;
 
-		while( (opt = getopt_long(argc, argv, "hc:beomsfur:l:i:x:g:w:y:p:",longopts,&optindex)) != -1 )
+		while( (opt = getopt_long(argc, argv, "hc:beosfur:l:i:x:g:w:y:p:",longopts,&optindex)) != -1 )
 		{
 			switch (opt) //разбираем параметры
 			{
@@ -153,13 +150,6 @@ int main(int argc, char** argv)
 					createSections(conf);
 				}
 				return 0;
-
-				case 'm':	//--msgmap
-				{
-					uniset_init(argc,argv,conffile);
-					return msgmap();
-				}
-				break;
 
 				case 'x':	//--setValue
 				{
@@ -461,25 +451,6 @@ int omap()
 		unideb[Debug::CRIT] << " configuration init  FAILED!!! \n";
 		return 1;
 	}
-	return 0;
-}
-
-// --------------------------------------------------------------------------------------
-int msgmap()
-{
-	try
-	{
-		cout.setf(ios::left, ios::adjustfield);
-		cout << "========================== MessagesMap  =================================\n";	
-		conf->mi->printMessagesMap(cout);
-		cout << "==========================================================================\n";	
-	}
-	catch(Exception& ex)
-	{
-		unideb[Debug::CRIT] << " configuration init  FAILED!!! " << ex << endl;;
-		return 1;
-	}
-	
 	return 0;
 }
 

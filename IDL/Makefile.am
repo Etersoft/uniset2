@@ -2,5 +2,5 @@
 # This file is part of the UniSet library                                  #
 ############################################################################
 
-SUBDIRS = UniSetTypes Processes Services
+SUBDIRS = UniSetTypes Processes
 include $(top_builddir)/conf/common.mk

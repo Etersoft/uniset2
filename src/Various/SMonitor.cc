@@ -41,8 +41,6 @@ void SMonitor::processingMessage( UniSetTypes::VoidMessage *msg)
 	{
 		switch(msg->type)
 		{
-			case Message::Alarm:
-			case Message::Info:
 			case Message::SensorInfo:
 			{
 //				cout << myname << "(sensorMessage): type="<< msg->type << " prior=" << msg->priority;

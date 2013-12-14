@@ -153,7 +153,6 @@ class DBServer_SQLite:
 
 		// Функции обработки пришедших сообщений
 		virtual void parse( UniSetTypes::SensorMessage* sm );
-		virtual void parse( UniSetTypes::DBMessage* dbmsg );
 		virtual void parse( UniSetTypes::ConfirmMessage* cmsg );
 
 		bool writeToBase( const string& query );
