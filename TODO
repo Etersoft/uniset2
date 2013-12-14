@@ -33,5 +33,5 @@ iocontrol:
 Version 2.0
 ============
 - отказаться от функций getState,setState,saveState,saveValue и оставить только getValue/setValue.
-- (DBServer): сделать возможность задать для датчика в configure.xml dbignore="1". Видимо надо встроить это поле в SensorMessgage
 - написать документацию по ModbusSlave
+
