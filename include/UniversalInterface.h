@@ -272,19 +272,6 @@ class UniversalInterface
 		void send( UniSetTypes::ObjectId name, UniSetTypes::TransportMessage& msg, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
 		void send( UniSetTypes::ObjectId name, UniSetTypes::TransportMessage& msg);
 
-		bool info( std::string msg, UniSetTypes::ObjectId messenger,  
-					UniSetTypes::ObjectId fromNode = UniSetTypes::conf->getLocalNode(),
-					UniSetTypes::InfoMessage::Character ch=UniSetTypes::InfoMessage::Normal,
-					UniSetTypes::ObjectId from=UniSetTypes::DefaultObjectId );
-
-		bool alarm( std::string msg, UniSetTypes::ObjectId messenger, 
-					UniSetTypes::ObjectId fromNode = UniSetTypes::conf->getLocalNode(),
-					UniSetTypes::AlarmMessage::Character ch=UniSetTypes::AlarmMessage::Alarm, 
-					UniSetTypes::ObjectId from=UniSetTypes::DefaultObjectId );
-
-		bool info( UniSetTypes::InfoMessage& msg,  UniSetTypes::ObjectId messenger);
-		bool alarm( UniSetTypes::AlarmMessage& msg,  UniSetTypes::ObjectId messenger);
-		
 		bool waitReady( UniSetTypes::ObjectId id, int msec, int pause=5000,
 						UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() ); 	// used exist
 

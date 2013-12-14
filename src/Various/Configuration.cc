@@ -37,11 +37,6 @@
 #include "ObjectIndex_Array.h"
 #include "ObjectIndex_XML.h"
 #include "ObjectIndex_idXML.h"
-#include "DefaultMessageInterface.h"
-#include "MessageInterface_XML.h"
-#include "MessageInterface_idXML.h"
-#include "SystemGuard.h"
-
 // -------------------------------------------------------------------------
 using namespace std;
 // -------------------------------------------------------------------------
@@ -83,13 +78,10 @@ namespace UniSetTypes
 	Configuration *conf = 0;
 
 Configuration::Configuration():
-	mi(NULL),
 	oind(NULL),
 	NSName("NameService"),
 	repeatCount(2),repeatTimeout(100), 	
-	localTimerService(UniSetTypes::DefaultObjectId),
 	localDBServer(UniSetTypes::DefaultObjectId),
-	localInfoServer(UniSetTypes::DefaultObjectId),
 	localNode(UniSetTypes::DefaultObjectId),
 	localNodeName(""),
 	fileConfName(""),
@@ -106,35 +98,16 @@ Configuration::~Configuration()
 		delete oind;
 		oind=0;
 	}
-
-	if( mi != NULL )
-	{
-		delete mi;	
-		mi=0;
-	}
-/*
-	// ??. ObjectsActivator.cc	
-	unideb[Debug::SYSTEM] << "(Configuration): orb destroy..." << endl;
-	try
-	{
-		orb->destroy();
-	}
-	catch(...){}
-	unideb[Debug::SYSTEM] << "(Configuration): orb destroy ok."<< endl;
-*/	
 }
 // ---------------------------------------------------------------------------------
 
 Configuration::Configuration( int argc, const char* const* argv, const string xmlfile ):
-	mi(NULL),
 	oind(NULL),
 	_argc(argc),
 	_argv(argv),
 	NSName("NameService"),
 	repeatCount(2),repeatTimeout(100),
-	localTimerService(UniSetTypes::DefaultObjectId),
 	localDBServer(UniSetTypes::DefaultObjectId),
-	localInfoServer(UniSetTypes::DefaultObjectId),
 	localNode(UniSetTypes::DefaultObjectId),
 	localNodeName(""),
 	fileConfName(xmlfile)
@@ -147,15 +120,12 @@ Configuration::Configuration( int argc, const char* const* argv, const string xm
 // ---------------------------------------------------------------------------------
 Configuration::Configuration( int argc, const char* const* argv, ObjectIndex* _oind,
 								const string fileConf ):
-	mi(NULL),
 	oind(NULL),
 	_argc(argc),
 	_argv(argv),
 	NSName("NameService"),
 	repeatCount(2),repeatTimeout(100), 
-	localTimerService(UniSetTypes::DefaultObjectId),
 	localDBServer(UniSetTypes::DefaultObjectId),
-	localInfoServer(UniSetTypes::DefaultObjectId),
 	localNode(UniSetTypes::DefaultObjectId),
 	localNodeName(""),
 	fileConfName(fileConf)
@@ -169,15 +139,12 @@ Configuration::Configuration( int argc, const char* const* argv, ObjectIndex* _o
 // ---------------------------------------------------------------------------------
 Configuration::Configuration( int argc, const char* const* argv, const string fileConf,
 				UniSetTypes::ObjectInfo* omap ):
-	mi(NULL),
 	oind(NULL),
 	_argc(argc),
 	_argv(argv),
 	NSName("NameService"),
 	repeatCount(2),repeatTimeout(100), 
-	localTimerService(UniSetTypes::DefaultObjectId),
 	localDBServer(UniSetTypes::DefaultObjectId),
-	localInfoServer(UniSetTypes::DefaultObjectId),
 	localNode(UniSetTypes::DefaultObjectId),
 	localNodeName(""),
 	fileConfName(fileConf)
@@ -261,20 +228,6 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 			}
 		}
 	
-		// Init MessageInterface
-		{
-			UniXML_iterator it = unixml.findNode(unixml.getFirstNode(),"messages");
-			if( it == NULL )
-				mi = new DefaultMessageInterface();
-			else
-			{
-				if( it.getIntProp("idfromfile") == 0 )
-					mi = new MessageInterface_XML(unixml); // (fileConfName);
-				else
-					mi = new MessageInterface_idXML(unixml); // (fileConfName);
-			}
-		}
-		
 		// Настраиваем отладочные логи
 		initDebug(unideb, "UniSetDebug");
 
@@ -499,35 +452,6 @@ void Configuration::initParameters()
 				setLocalNode(nodename);
 			}
 		}
-		else if( name == "LocalTimerService" )
-		{
-			name = it.getProp("name");
-		
-			// TimerService
-			string secTime( getServicesSection()+"/"+name);
-			localTimerService = oind->getIdByName(secTime);
-			if( localTimerService == DefaultObjectId )
-			{
-				ostringstream msg;
-				msg << "Configuration: TimerService  '" << secTime << "' ?? ?????? ????????????? ÷ ObjectsMap!!!";
-				unideb[Debug::CRIT] << msg.str() << endl;
-				throw Exception(msg.str());
-			}
-		}
-		else if( name == "LocalInfoServer" )
-		{
-			name = it.getProp("name");
-			// InfoServer
-			string secInfo( getServicesSection()+"/"+name);
-			localInfoServer = oind->getIdByName(secInfo);
-			if( localInfoServer == DefaultObjectId )
-			{
-				ostringstream msg;
-				msg << "Configuration: InfoServer '" << secInfo << "' ?? ?????? ????????????? ÷ ObjectsMap!!!";
-				unideb[Debug::CRIT] << msg.str() << endl;
-				throw Exception(msg.str());
-			}
-		}
 		else if( name == "LocalDBServer" )
 		{
 			name = it.getProp("name");
@@ -732,21 +656,7 @@ void Configuration::createNodesList()
 		else
 			ninf.port = tp.c_str();
 
-		string tmp(getProp(it,"infserver"));
-		if( tmp.empty() )
-			ninf.infserver = UniSetTypes::DefaultObjectId;
-		else
-		{
-			string iname(getServicesSection()+"/"+tmp);
-			ninf.infserver = oind->getIdByName(iname);
-			if( ninf.infserver == DefaultObjectId )
-			{
-				unideb[Debug::CRIT] << "Configuration(createNodesList): Not found ID for infoserver name='" << iname << "'" << endl;
-				throw Exception("Configuration(createNodesList: Not found ID for infoserver name='"+iname+"'");
-			}
-		}
-
-		tmp = it.getProp("dbserver");
+		string tmp(it.getProp("dbserver"));
 		
 		if( tmp.empty() )
 			ninf.dbserver = UniSetTypes::DefaultObjectId;
@@ -762,10 +672,7 @@ void Configuration::createNodesList()
 		}
 
 		if( ninf.id == getLocalNode() )
-		{
 			localDBServer = ninf.dbserver;
-			localInfoServer = ninf.infserver;
-		}
 
 		ninf.connected = false;
 		

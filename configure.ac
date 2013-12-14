@@ -204,10 +204,8 @@ AC_CONFIG_FILES([Makefile
 				 IDL/Makefile
 				 IDL/UniSetTypes/Makefile
 				 IDL/Processes/Makefile
-				 IDL/Services/Makefile
 				 src/Communications/Makefile
 				 src/Communications/Modbus/Makefile
-				 src/IOs/Makefile
 				 src/Interfaces/Makefile
 				 src/ObjectRepository/Makefile
 				 src/Processes/Makefile

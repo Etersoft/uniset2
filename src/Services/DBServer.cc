@@ -83,27 +83,6 @@ void DBServer::processingMessage( UniSetTypes::VoidMessage *msg )
 			break;
 		}
 			
-		case Message::DataBase:
-		{	
-			DBMessage dbm(msg);
-			parse(&dbm);
-			break;
-		}
-
-		case Message::Info:
-		{
-			InfoMessage im(msg);
-			parse(&im);
-			break;
-		}
-
-		case Message::Alarm:
-		{
-			AlarmMessage am(msg);
-			parse(&am);
-			break;
-		}
-
 		case Message::Confirm:
 		{
 			ConfirmMessage cm(msg);
