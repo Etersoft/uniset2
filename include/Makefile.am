@@ -2,7 +2,7 @@
 # This file is part of the UniSet library                                  #
 ############################################################################
 
-SUBDIRS=IOs modbus
+SUBDIRS=modbus
 include $(top_builddir)/conf/common.mk
 
 
