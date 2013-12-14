@@ -50,7 +50,6 @@ interface IOController_i : ObjectsManager_i
 	   	string err;
 	};
 
-
 	/*! Значение не определено
 		(например: обрыв датчика)
 	*/
@@ -66,17 +65,9 @@ interface IOController_i : ObjectsManager_i
 		UniSetTypes::ObjectId node;	/*!< узел на котором он находится */
 	};
 
-	boolean getState(in SensorInfo si) raises(NameNotFound,Undefined);
 	long getValue(in SensorInfo si) raises(NameNotFound,Undefined);
-	void setState(in SensorInfo si, in boolean state,
-					in UniSetTypes::ObjectId sup_id) raises(NameNotFound);
 	void setValue(in SensorInfo si, in long value,
 					in UniSetTypes::ObjectId sup_id) raises(NameNotFound);
-
-	void saveState(in SensorInfo si, in boolean state, in UniversalIO::IOTypes type,
-						in UniSetTypes::ObjectId sup_id) raises(IOBadParam,NameNotFound);
-	void saveValue(in SensorInfo si, in long value, in UniversalIO::IOTypes type, 
-						in UniSetTypes::ObjectId sup_id) raises(IOBadParam,NameNotFound);
 
 	// установка неопределённого состояния
 	// (пока работает только для аналоговых датчиков)
@@ -84,15 +75,9 @@ interface IOController_i : ObjectsManager_i
 							raises(NameNotFound);
 
 	// fast version (не вырабатывает исключения)
-	oneway void fastSaveState(in SensorInfo si, in boolean state, in UniversalIO::IOTypes type,
-						in UniSetTypes::ObjectId sup_id);
-	oneway void fastSaveValue(in SensorInfo si, in long value, in UniversalIO::IOTypes type, 
-						in UniSetTypes::ObjectId sup_id);
-
-	oneway void fastSetState(in SensorInfo si, in boolean state, in UniSetTypes::ObjectId sup_id);
 	oneway void fastSetValue(in SensorInfo si, in long value, in UniSetTypes::ObjectId sup_id);
 
-	UniversalIO::IOTypes getIOType(in SensorInfo si) raises(NameNotFound);
+	UniversalIO::IOType getIOType(in SensorInfo si) raises(NameNotFound);
 
 	// --- Интерфейс для конфигурирования ---
 
@@ -113,59 +98,33 @@ interface IOController_i : ObjectsManager_i
 	CalibrateInfo getCalibrateInfo( in SensorInfo si ) raises(NameNotFound);
 
 	// --- Интерфес получения информации о всех датчиках ---
-
-	/*! Информация о дискретном датчике */
-	struct DigitalIOInfo
-	{
-		boolean state;				/*!< состояние */
-		boolean undefined; 			/*!< признак неопределённости значения */
-		boolean blocked; 			/*!< данное значение блокировано другим */		
-		boolean real_state;			/*!< запомненное состояние, до блокировки */
-		UniversalIO::IOTypes type;	/*!< тип */	
-		long priority;	 			/*!< приоритет уведомления */	
-		IOController_i::SensorInfo si;
-		boolean default_val; 		/*!< значение по умолчанию */
-		long tv_sec;	/*!< время последнего изменения датчика, секунды (gettimeofday) */
-		long tv_usec;	/*!< время последнего изменения датчика, мксек (gettimeofday) */
-	};
-
 	/*! Информация об аналоговом датчике */
-	struct AnalogIOInfo
+	struct SensorIOInfo
 	{
 		long value;					/*!< значение */
 		boolean undefined; 			/*!< признак неопределённости значения */
 		boolean blocked; 			/*!< данное значение блокировано другим */
 		long real_value;			/*!< запомненное состояние, до блокировки */
-		UniversalIO::IOTypes type;	/*!< тип */	
+		UniversalIO::IOType type;	/*!< тип */
 		long priority;	 			/*!< приоритет уведомления */	
 		IOController_i::SensorInfo si;
 		long default_val; 			/*!< значение по умолчанию */
 		CalibrateInfo ci; 			/*!< калибровочные параметры */
 		long tv_sec;				/*!< время последнего изменения датчика, секунды (gettimeofday) */
 		long tv_usec;				/*!< время последнего изменения датчика, мксек (gettimeofday) */
+		boolean dbignore;			/*!< не сохранять изменения в БД */
 	};
 
-	typedef sequence<AnalogIOInfo> ASensorInfoSeq;
-	typedef sequence<DigitalIOInfo> DSensorInfoSeq;
+	typedef sequence<SensorIOInfo> SensorInfoSeq;
 
-	ASensorInfoSeq getAnalogSensorsMap();
-	DSensorInfoSeq getDigitalSensorsMap();	
-	
-	DigitalIOInfo getDInfo(in SensorInfo si) raises(NameNotFound);
-	AnalogIOInfo getAInfo(in SensorInfo si) raises(NameNotFound);
+	SensorInfoSeq getSensorsMap();
+	SensorIOInfo getSInfo(in SensorInfo si) raises(NameNotFound);
 
 
 	// -- Функции работы со списком датчиков --
-	
-	// Для простоты функции сделаны универсальными и не различающими
-	// дискретные или аналоговые датчики или выходы
 
-
-	/*! Получение состояния дискретных или аналоговых датчиков. 
-		При этом используется структура аналоговых (как наиболее полная).
-		Для определения типа используйте поле 'type'.
-	*/
-	ASensorInfoSeq getSensorSeq( in UniSetTypes::IDSeq lst );
+	/*! Получение состояния датчиков. */
+	SensorInfoSeq getSensorSeq( in UniSetTypes::IDSeq lst );
 
 	/*! Информация о "выходе" */
 	struct OutInfo
@@ -198,7 +157,7 @@ interface IOController_i : ObjectsManager_i
 	/*! Информация о дискретном датчике */
 	struct ShortMap
 	{
-		UniversalIO::IOTypes type;
+		UniversalIO::IOType type;
 		long value;
 		long id;
 	};
@@ -225,17 +184,6 @@ interface IONotifyController_i : IOController_i
 	{	
 	};
 
-
-	/*! Заказ уведомления об изменении дискретного датчика
-	 * \sa UniversalIO::UniversalIOController::askState()
-	*/
-	void askState(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
-
-	/*! Заказ уведомления об изменении аналогового датчика
-	 * \sa UniversalIO::UniversalIOController::askValue()
-	*/					
-	void askValue(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
-
 	/*! Универсальная функция заказа уведомления об изменнии датчика.
 	 *	Позволяет заказывать как дискретные так и аналоговые датчики
 	 * \sa UniversalIO::UniversalIOController::askSensor()
@@ -255,14 +203,6 @@ interface IONotifyController_i : IOController_i
 	void askThreshold(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniSetTypes::ThresholdId tid,
 						in long lowLimit, in long hiLimit, in long sensibility,
 						in UniversalIO::UIOCommand cmd ) raises(NameNotFound, IOBadParam, BadRange);
-
-
-	/*! Универсальная функция заказа уведомления об изменнии выхода.
-	 *	Позволяет заказывать как дискретные так и аналоговые выходы
-	 * \sa UniversalIO::UniversalIOController::askOutput()
-	*/					
-	void askOutput(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
-
 
 	/*! 
 		Заказ сразу списка объектов. 
@@ -300,7 +240,7 @@ interface IONotifyController_i : IOController_i
 	struct ThresholdList
 	{
 		IOController_i::SensorInfo si;
-		UniversalIO::IOTypes type;
+		UniversalIO::IOType type;
 		long value;
 		ThresholdInfoSeq tlist;
 	};

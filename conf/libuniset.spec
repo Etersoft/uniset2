@@ -7,8 +7,8 @@
 %define oname uniset
 
 Name: libuniset
-Version: 1.7
-Release: alt3
+Version: 2.0
+Release: alt0.1
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -335,6 +335,19 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+
+2.0
+----
+- rename "IOTypes" --> "IOType"
+- rename DigitalInput --> DI
+- rename DigitalOutput --> DO
+- rename AnalogInput --> AI
+- rename AnalogOutput --> AO
+- remove deprecated services: InfoServer,TimeService,SystemGuard
+- remove deprecated intefaces: MessageInterface
+- remove deprecated messages: AlarmMessage, InfoMessage, DBMessage
+
+
 * Tue Dec 10 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt3
 - add RRDServer
 

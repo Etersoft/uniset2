@@ -32,7 +32,6 @@
 	{
 		typedef string<100> BaseObjectName; 
 		typedef long ObjectId;			/*!< идентификатор объекта */
-		typedef long MessageCode;		/*!< код сообщения */
 		typedef long ThresholdId;		/*!< идентификатор порога */
 		typedef long TimerId;			/*!< идентификатор таймера */
 		typedef string<30> ObjectType;	/*!< тип объекта */
@@ -59,7 +58,6 @@
 		{
 			ObjectId id;
 			boolean connected;
-			ObjectId infserver;
 			ObjectId dbserver;
 			string host;
 			string port;
@@ -95,13 +93,13 @@
 		/*!
 		 * Типы входов/выходов
 		*/
-		enum IOTypes
+		enum IOType
 		{
 			UnknownIOType,
-			DigitalInput,
-			DigitalOutput,
-			AnalogInput,
-			AnalogOutput
+			DI, // DigitalInput
+			DO, // DigitalOutput
+			AI,	// AnalogInput
+			AO	// AnalogOutput
 		};
 		
 		 /*! Разрешенные команды для всех контроллеров ввода/вывода */

@@ -297,21 +297,21 @@ using namespace UniSetTypes;
 	}
 	// --------------------------------------------------------------------------------------
 	
-	UniversalIO::IOTypes UniSetTypes::getIOType( const std::string stype )
+	UniversalIO::IOType UniSetTypes::getIOType( const std::string stype )
 	{
 		if ( stype == "DI" || stype == "di" )
-			return UniversalIO::DigitalInput;
+			return UniversalIO::DI;
 		if( stype == "AI" || stype == "ai" )
-			return UniversalIO::AnalogInput;
+			return UniversalIO::AI;
 		if ( stype == "DO" || stype == "do" )
-			return UniversalIO::DigitalOutput;
+			return UniversalIO::DO;
 		if ( stype == "AO" || stype == "ao" )
-			return UniversalIO::AnalogOutput;
+			return UniversalIO::AO;
 
 		return 	UniversalIO::UnknownIOType;
 	}
 	// ------------------------------------------------------------------------------------------
-	std::ostream& UniSetTypes::operator<<( std::ostream& os, const UniversalIO::IOTypes t )
+	std::ostream& UniSetTypes::operator<<( std::ostream& os, const UniversalIO::IOType t )
 	{
 		if( t == UniversalIO::AnalogInput )
 			return os << "AI";
