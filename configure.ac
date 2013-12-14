@@ -218,7 +218,6 @@ AC_CONFIG_FILES([Makefile
 				 src/Makefile
 				 include/Makefile
 				 include/modbus/Makefile
-				 include/IOs/Makefile
 				 tests/Makefile
 				 tests/JrnTests/Makefile
 				 tests/UniXmlTest/Makefile
