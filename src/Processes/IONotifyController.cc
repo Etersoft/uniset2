@@ -242,7 +242,7 @@ void IONotifyController::askState( const IOController_i::SensorInfo& si,
 		smsg.priority	= (Message::Priority)li->second.priority;
 		smsg.supplier 	= getId();
 		{
-			uniset_rwmutex_rlock lock(li->second.val_lock,getCheckLockValuePause());
+			uniset_rwmutex_rlock lock(li->second.val_lock);
 			smsg.state 		= li->second.state;
 			smsg.value 		= li->second.state ? 1:0;
 			smsg.undefined	= li->second.undefined;
@@ -324,7 +324,7 @@ void IONotifyController::askValue(const IOController_i::SensorInfo& si,
 		smsg.sm_tv_usec	= li->second.tv_usec;
 		smsg.ci			= li->second.ci;
 		{
-			uniset_rwmutex_rlock lock(li->second.val_lock,getCheckLockValuePause());
+			uniset_rwmutex_rlock lock(li->second.val_lock);
 			smsg.value 		= li->second.value;
 			smsg.state		= li->second.value ? true:false;
 			smsg.undefined	= li->second.undefined;
@@ -475,7 +475,7 @@ void IONotifyController::localSaveState( IOController::DIOStateList::iterator& i
 	// фильтрами или блокировками..
 	SensorMessage sm(si.id, state);
 	{	// lock
-		uniset_rwmutex_rlock lock(it->second.val_lock,getCheckLockValuePause());
+		uniset_rwmutex_rlock lock(it->second.val_lock);
 		if( prevState == it->second.state )
 			return;
 
@@ -539,7 +539,7 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 	// фильтрами или блокировками..
 	SensorMessage sm(si.id,li->second.value);
 	{ // lock
-		uniset_rwmutex_rlock lock(li->second.val_lock,getCheckLockValuePause());
+		uniset_rwmutex_rlock lock(li->second.val_lock);
 		
 		if( prevValue == li->second.value )
 			return;
@@ -975,7 +975,7 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 		sm.priority 	= (Message::Priority)li->second.priority;
 		sm.ci			= li->second.ci;
 		{
-			uniset_rwmutex_rlock lock(li->second.val_lock,getCheckLockValuePause());
+			uniset_rwmutex_rlock lock(li->second.val_lock);
 			sm.value 		= li->second.value;
 			sm.state 		= li->second.value!=0 ? true:false;
 			sm.undefined	= li->second.undefined;
@@ -1191,7 +1191,7 @@ void IONotifyController::localSetState( IOController::DIOStateList::iterator& it
 	// Рассылаем уведомления только если значение изменилось...
 	SensorMessage sm(si.id, state);
 	{	// lock
-		uniset_rwmutex_rlock lock(it->second.val_lock,getCheckLockValuePause());
+		uniset_rwmutex_rlock lock(it->second.val_lock);
 		if( prevState == it->second.state )
 			return;
 		sm.id 			= si.id;		
@@ -1247,7 +1247,7 @@ void IONotifyController::localSetValue( IOController::AIOStateList::iterator& li
 	// Рассылаем уведомления только если значение изменилось...
 	SensorMessage sm;
 	{	// lock 
-		uniset_rwmutex_rlock lock(li->second.val_lock,getCheckLockValuePause());
+		uniset_rwmutex_rlock lock(li->second.val_lock);
 		if( prevValue == li->second.value )
 			return;
 

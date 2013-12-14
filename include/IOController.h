@@ -368,9 +368,6 @@ class IOController:
 		void updateDepends( IOController::DependsList& lst, bool undefined, bool& lock );
 		void updateBlockDepends( IOController::DependsList& lst, bool blk_state, bool& lock );
 
-		void setCheckLockValuePause( int msec );
-		inline int getCheckLockValuePause(){ return checkLockValuePause; }
-	
 	private:		
 		friend class AskDumper;
 	
@@ -387,7 +384,6 @@ class IOController:
 
 		DependsSlot dslot; /*!< undefined depends slot */
 		DependsSlot bslot; /*!< block depends slot */
-		int checkLockValuePause;
 
 		UniSetTypes::uniset_rwmutex loggingMutex; /*!< logging info mutex */
 };

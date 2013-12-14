@@ -89,7 +89,7 @@ class MyClassSpin
                 if( !readLock )
 				{
 //					cerr << nm << ": before RWlock.." << endl;
-					uniset_rwmutex_wrlock l(m_spin,5);
+					uniset_rwmutex_wrlock l(m_spin);
 					count++;
 					msleep(30);
 //					cerr << nm << ": after RWlock.." << endl;
@@ -246,7 +246,7 @@ int main( int argc, const char **argv )
     }
 #endif
 
-#if 0
+#if 1
 	typedef std::vector<MyClassSpin*> TSpinVec;
 	TSpinVec tsvec(max);
 	for( int i=0; i<max; i++ )

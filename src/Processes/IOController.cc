@@ -44,8 +44,7 @@ IOController::IOController(const string name, const string section):
 	ObjectsManager(name, section),
 	dioMutex(name+"_dioMutex"),
 	aioMutex(name+"_aioMutex"),
-	isPingDBServer(true),
-	checkLockValuePause(5)
+	isPingDBServer(true)
 {
 }
 
@@ -53,8 +52,7 @@ IOController::IOController(ObjectId id):
 	ObjectsManager(id),
 	dioMutex(string(conf->oind->getMapName(id))+"_dioMutex"),
 	aioMutex(string(conf->oind->getMapName(id))+"_aioMutex"),
-	isPingDBServer(true),
-	checkLockValuePause(5)
+	isPingDBServer(true)
 {
 }
 
@@ -151,7 +149,7 @@ bool IOController::localGetState( IOController::DIOStateList::iterator& li,
 			if( li->second.undefined )
 				throw IOController_i::Undefined();
 
-			uniset_rwmutex_rlock lock(li->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(li->second.val_lock);
 			return li->second.state;
 		}
 
@@ -176,7 +174,7 @@ long IOController::localGetValue( IOController::AIOStateList::iterator& li,
 			if( li->second.undefined )
 				throw IOController_i::Undefined();
 
-			uniset_rwmutex_rlock lock(li->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(li->second.val_lock);
 			return li->second.value;
 		}
 	
@@ -804,7 +802,7 @@ void IOController::dumpToDB()
 //		uniset_mutex_lock lock(dioMutex, 100);
 		for( DIOStateList::iterator li = dioList.begin(); li!=dioList.end(); ++li ) 
 		{
-			uniset_rwmutex_rlock lock(li->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(li->second.val_lock);
 			SensorMessage sm;
 			sm.id 			= li->second.si.id;
 			sm.node 		= li->second.si.node;
@@ -825,7 +823,7 @@ void IOController::dumpToDB()
 //		uniset_mutex_lock lock(aioMutex, 100);
 		for( AIOStateList::iterator li = aioList.begin(); li!=aioList.end(); ++li ) 
 		{
-			uniset_rwmutex_rlock lock(li->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(li->second.val_lock);
 			SensorMessage sm;
 			sm.id 			= li->second.si.id;
 			sm.node 		= li->second.si.node;
@@ -855,7 +853,7 @@ IOController_i::ASensorInfoSeq* IOController::getAnalogSensorsMap()
 		int i=0;
 		for( AIOStateList::iterator it=aioList.begin(); it!=aioList.end(); ++it)
 		{	
-			uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(it->second.val_lock);
 			(*res)[i] = it->second;
 			i++;
 		}
@@ -876,7 +874,7 @@ IOController_i::DSensorInfoSeq* IOController::getDigitalSensorsMap()
 		int i=0;
 		for( DIOStateList::iterator it= dioList.begin(); it!=dioList.end(); ++it)
 		{	
-			uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(it->second.val_lock);
 			(*res)[i].si		= it->second.si;
 			(*res)[i].type		= it->second.type;
 			(*res)[i].state		= it->second.state;
@@ -933,7 +931,7 @@ IOController_i::DigitalIOInfo IOController::getDInfo(const IOController_i::Senso
 	DIOStateList::iterator it = dioList.find( key(si.id, si.node) );
 	if( it!=dioList.end() )
 	{
-		uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
+		uniset_rwmutex_rlock lock(it->second.val_lock);
 		return it->second;
 	}
 
@@ -953,7 +951,7 @@ IOController_i::AnalogIOInfo IOController::getAInfo(const IOController_i::Sensor
 	AIOStateList::iterator it = aioList.find( key(si.id, si.node) );
 	if( it!=aioList.end() )
 	{
-		uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
+		uniset_rwmutex_rlock lock(it->second.val_lock);
 		return it->second;
 	}
 
@@ -1314,11 +1312,6 @@ void IOController::setBlockDependsSlot( DependsSlot sl )
 	bslot = sl;
 }
 // -----------------------------------------------------------------------------
-void IOController::setCheckLockValuePause( int msec )
-{
-	checkLockValuePause = msec;
-}
-// -----------------------------------------------------------------------------
 IOController_i::ASensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
 {
 	int size = lst.length();
@@ -1332,7 +1325,7 @@ IOController_i::ASensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
 			DIOStateList::iterator it = dioList.find( UniSetTypes::key(lst[i],conf->getLocalNode()) );
 			if( it!=dioList.end() )
 			{
-				uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
+				uniset_rwmutex_rlock lock(it->second.val_lock);
 				(*res)[i].si		= it->second.si;
 				(*res)[i].type		= it->second.type;
 				(*res)[i].real_value= it->second.real_state ? 1 : 0;
@@ -1352,7 +1345,7 @@ IOController_i::ASensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
 			AIOStateList::iterator it = aioList.find( UniSetTypes::key(lst[i],conf->getLocalNode()) );
 			if( it!=aioList.end() )
 			{
-				uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
+				uniset_rwmutex_rlock lock(it->second.val_lock);
 				(*res)[i] = it->second;
 				continue;
 			}
@@ -1413,7 +1406,7 @@ IOController_i::ShortIOInfo IOController::getChangedTime( const IOController_i::
 	if( dit!=dioList.end() )
 	{
 		IOController_i::ShortIOInfo i;
-		uniset_rwmutex_rlock lock(dit->second.val_lock,checkLockValuePause);
+		uniset_rwmutex_rlock lock(dit->second.val_lock);
 		i.value = dit->second.state ? 1 : 0;
 		i.tv_sec = dit->second.tv_sec;
 		i.tv_usec = dit->second.tv_usec;
@@ -1424,7 +1417,7 @@ IOController_i::ShortIOInfo IOController::getChangedTime( const IOController_i::
 	if( ait!=aioList.end() )
 	{
 		IOController_i::ShortIOInfo i;
-		uniset_rwmutex_rlock lock(ait->second.val_lock,checkLockValuePause);
+		uniset_rwmutex_rlock lock(ait->second.val_lock);
 		i.value = ait->second.value;
 		i.tv_sec = ait->second.tv_sec;
 		i.tv_usec = ait->second.tv_usec;
@@ -1451,7 +1444,7 @@ IOController_i::ShortMapSeq* IOController::getSensors()
 	{	
 		IOController_i::ShortMap m;
 		{
-			uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(it->second.val_lock);
 			m.id 	= it->second.si.id;
 			m.value = it->second.value;
 			m.type = it->second.type;
@@ -1462,7 +1455,7 @@ IOController_i::ShortMapSeq* IOController::getSensors()
 	{	
 		IOController_i::ShortMap m;
 		{
-			uniset_rwmutex_rlock lock(it->second.val_lock,checkLockValuePause);
+			uniset_rwmutex_rlock lock(it->second.val_lock);
 			m.id 	= it->second.si.id;
 			m.value = it->second.state ? 1 : 0;
 			m.type = it->second.type;

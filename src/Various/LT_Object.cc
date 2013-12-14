@@ -49,7 +49,7 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 	try
 	{
 		{	// lock
-			uniset_rwmutex_rlock lock(lstMutex, 5000);
+			uniset_rwmutex_rlock lock(lstMutex);
 			
 			if( tlst.empty() )
 			{

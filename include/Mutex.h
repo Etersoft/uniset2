@@ -100,11 +100,14 @@ namespace UniSetTypes
 			uniset_rwmutex();
 			~uniset_rwmutex();
 
-			void lock( int check_pause_msec=1 );
+			void lock();
 			void unlock();
 
-			void wrlock( int check_pause_msec=1 );
-			void rlock( int check_pause_msec=1 );
+			void wrlock();
+			void rlock();
+
+			bool tryrlock();
+			bool trywrlock();
 
 			uniset_rwmutex (const uniset_rwmutex& r);
 			const uniset_rwmutex &operator=(const uniset_rwmutex& r);
@@ -123,7 +126,7 @@ namespace UniSetTypes
 	class uniset_rwmutex_wrlock
 	{
 		public:
-			uniset_rwmutex_wrlock( uniset_rwmutex& m, int check_pause_msec=1 );
+			uniset_rwmutex_wrlock( uniset_rwmutex& m );
 			~uniset_rwmutex_wrlock();
 
 		private:
@@ -135,7 +138,7 @@ namespace UniSetTypes
 	class uniset_rwmutex_rlock
 	{
 		public:
-			uniset_rwmutex_rlock( uniset_rwmutex& m, int check_pause_msec=5 );
+			uniset_rwmutex_rlock( uniset_rwmutex& m );
 			~uniset_rwmutex_rlock();
 
 		private:
