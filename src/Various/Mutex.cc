@@ -183,39 +183,26 @@ uniset_rwmutex::uniset_rwmutex( const uniset_rwmutex& r )
 	//unlock();
 }
 
-void uniset_rwmutex::lock( int check_pause_msec )
+void uniset_rwmutex::lock()
 {
 	wr_wait += 1;
-	while( !m.tryWriteLock() )
-	{
-		if( check_pause_msec > 0 )
-			msleep(check_pause_msec);
-	}
+	m.writeLock();
 	wr_wait -= 1;
 	MUTEX_DEBUG(cerr << nm << " Locked.." << endl;)
 }
-void uniset_rwmutex::wrlock( int check_pause_msec )
+void uniset_rwmutex::wrlock()
 {
 	wr_wait += 1;
-	while( !m.tryWriteLock() )
-	{
-		if( check_pause_msec > 0 )
-			msleep(check_pause_msec);
-	}
+	m.writeLock();
 	wr_wait -= 1;
 	MUTEX_DEBUG(cerr << nm << " WRLocked.." << endl;)
 }
-void uniset_rwmutex::rlock( int check_pause_msec )
+void uniset_rwmutex::rlock()
 {
 	while( wr_wait > 0 )
-		msleep(check_pause_msec);
+		msleep(2);
 
-	while( !m.tryReadLock() )
-	{
-		if( check_pause_msec > 0 )
-			msleep(check_pause_msec);
-	}
-
+	m.readLock();
 	MUTEX_DEBUG(cerr << nm << " RLocked.." << endl;)
 }
 
@@ -224,11 +211,21 @@ void uniset_rwmutex::unlock()
 	m.unlock();
 	MUTEX_DEBUG(cerr << nm << " Unlocked.." << endl;)
 }
+
+bool uniset_rwmutex::tryrlock()
+{
+	return m.tryReadLock();
+}
+
+bool uniset_rwmutex::trywrlock()
+{
+	return m.tryWriteLock();
+}
 // -------------------------------------------------------------------------------------------
-uniset_rwmutex_wrlock::uniset_rwmutex_wrlock( uniset_rwmutex& _m, int check_pause_msec ):
+uniset_rwmutex_wrlock::uniset_rwmutex_wrlock( uniset_rwmutex& _m ):
 m(_m)
 {
-	m.wrlock(check_pause_msec);
+	m.wrlock();
 }
 
 uniset_rwmutex_wrlock::~uniset_rwmutex_wrlock()
@@ -250,10 +247,10 @@ uniset_rwmutex_wrlock& uniset_rwmutex_wrlock::operator=(const uniset_rwmutex_wrl
 	return *this;
 }
 // -------------------------------------------------------------------------------------------
-uniset_rwmutex_rlock::uniset_rwmutex_rlock( uniset_rwmutex& _m, int check_pause_msec ):
+uniset_rwmutex_rlock::uniset_rwmutex_rlock( uniset_rwmutex& _m ):
 m(_m)
 {
-	m.rlock(check_pause_msec);
+	m.rlock();
 }
 
 uniset_rwmutex_rlock::~uniset_rwmutex_rlock()

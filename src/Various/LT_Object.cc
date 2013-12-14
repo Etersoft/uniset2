@@ -33,6 +33,7 @@ using namespace UniSetTypes;
 
 // -----------------------------------------------------------------------------
 LT_Object::LT_Object():
+lstMutex("LT_Object::lstMutex"),
 sleepTime(UniSetTimer::WaitUpTime)
 {
 	tmLast.setTiming(UniSetTimer::WaitUpTime);
@@ -48,7 +49,7 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 	try
 	{
 		{	// lock
-			uniset_mutex_lock lock(lstMutex, 5000);
+			uniset_rwmutex_rlock lock(lstMutex);
 			
 			if( tlst.empty() )
 			{
@@ -70,7 +71,7 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 		}
 		
 		{	// lock
-			uniset_mutex_lock lock(lstMutex, 5000);
+			uniset_rwmutex_wrlock lock(lstMutex);
 			sleepTime = UniSetTimer::WaitUpTime;
 			for( TimersList::iterator li=tlst.begin();li!=tlst.end();++li)
 			{
@@ -130,10 +131,7 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
 		}
 			
 		{	// lock
-			if( unideb.debugging(Debug::INFO) && !lstMutex.isRelease() )
-				unideb[Debug::INFO] << "(LT_askTimer): придется подождать освобождения lstMutex-а" << endl;
-
-			uniset_mutex_lock lock(lstMutex, 2000);
+			uniset_rwmutex_wrlock lock(lstMutex);
 			// поищем а может уж такой есть
 			if( !tlst.empty() )
 			{
@@ -166,20 +164,13 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
 		if( unideb.debugging(Debug::INFO) )
 			unideb[Debug::INFO] << "(LT_askTimer): поступил отказ по таймеру id="<< timerid << endl;	
 		{	// lock
-			if( unideb.debugging(Debug::INFO) && !lstMutex.isRelease() )
-				unideb[Debug::INFO] << "(LT_askTimer): придется подождать освобождения lstMutex-а\n";
- 			
- 			uniset_mutex_lock lock(lstMutex, 2000);
+			uniset_rwmutex_wrlock lock(lstMutex);
 			tlst.remove_if(Timer_eq(timerid));	// STL - способ
 		}	// unlock
 	}
 	
-
 	{	// lock
-		if( unideb.debugging(Debug::INFO) && !lstMutex.isRelease() )
-			unideb[Debug::INFO] << "(LT_askTimer): придется подождать освобождения lstMutex-а\n";
-
-		uniset_mutex_lock lock(lstMutex, 2000);
+		uniset_rwmutex_rlock lock(lstMutex);
 
 		if( tlst.empty() )
 			sleepTime = UniSetTimer::WaitUpTime;

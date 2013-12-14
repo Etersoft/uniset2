@@ -73,11 +73,6 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 	string t_field = conf->getArgParam("--t-filter-field");
 	string t_fvalue = conf->getArgParam("--t-filter-value");
 	
-	int lock_msec = conf->getArgPInt("--lock-rvalue-pause-msec",5);
-	if( lock_msec < 0 )
-		lock_msec = 0;
-	setCheckLockValuePause(lock_msec);
-	
 	heartbeat_node = conf->getArgParam("--heartbeat-node");
 	if( heartbeat_node.empty() )
 		dlog[Debug::WARN] << myname << "(init): --heartbeat-node NULL ===> heartbeat NOT USED..." << endl;
