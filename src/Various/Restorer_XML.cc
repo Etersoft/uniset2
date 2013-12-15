@@ -90,7 +90,8 @@ bool Restorer_XML::getConsumerInfo( UniXML_iterator& it,
 	cid = conf->oind->getIdByName(cname);
 	if( cid == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::CRIT] << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->" 
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->"
 							<< cname << endl;
 		return false;
 	}
@@ -109,7 +110,8 @@ bool Restorer_XML::getConsumerInfo( UniXML_iterator& it,
 
 	if( cnode == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::CRIT] << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->" 
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->"
 							<< cnodename << endl;
 		return false;
 	}
@@ -137,7 +139,8 @@ bool Restorer_XML::old_getConsumerInfo( UniXML_iterator& it,
 	cid = conf->oind->getIdByName(cname);
 	if( cid == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::CRIT] << "(Restorer_XML:old_getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->" 
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << "(Restorer_XML:old_getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->"
 							<< cname << endl;
 		return false;
 	}
@@ -156,7 +159,8 @@ bool Restorer_XML::old_getConsumerInfo( UniXML_iterator& it,
 
 	if( cnode == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::CRIT] << "(Restorer_XML:old_getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->" 
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << "(Restorer_XML:old_getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->"
 							<< cnodename << endl;
 		return false;
 	}

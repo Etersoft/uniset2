@@ -16,8 +16,6 @@ static void short_usage()
 		 << " --s-filter-value value - значение для поля фильтрования списка датчиков \n"
 		 << " --c-filter-field name - поле для фильтрования списка заказчиков по каждому датчику\n"
 		 << " --c-filter-value value - значение для поля фильтрования списка заказчиков по каждому датчику\n"
-		 << " --d-filter-field name - поле для фильтрования списка зависимостей по каждому датчику\n"
-		 << " --d-filter-value value - значение для поля фильтрования списка зависимостей по каждому датчику\n"
 		 << " --dbDumping [0,1] - создавать ли dump-файл \n";
 }
 // --------------------------------------------------------------------------
@@ -68,13 +66,11 @@ int main(int argc, char** argv)
 		string s_fvalue = conf->getArgParam("--s-filter-value");
 		string c_field = conf->getArgParam("--c-filter-field");
 		string c_fvalue = conf->getArgParam("--c-filter-value");
-		string d_field = conf->getArgParam("--d-filter-field");
-		string d_fvalue = conf->getArgParam("--d-filter-value");
 
 		// надо ли писать изменения в БД
 		bool dbDumping = conf->getArgInt("--dbDumping");
 
-		NullController nc(ID,askfile,s_field,s_fvalue,c_field,c_fvalue,d_field,d_fvalue,dbDumping);
+		NullController nc(ID,askfile,s_field,s_fvalue,c_field,c_fvalue,dbDumping);
 		ObjectsActivator act;
 		act.addObject(static_cast<class UniSetObject*>(&nc));
 		act.run(false);

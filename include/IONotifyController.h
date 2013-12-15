@@ -129,13 +129,15 @@ class IONotifyController:
 													const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 
 
+		virtual void localSetValue( IOController::IOStateList::iterator& it,
+									const IOController_i::SensorInfo& si,
+									CORBA::Long value, UniSetTypes::ObjectId sup_id );
 		//  -----------------------------------------------
 		typedef sigc::signal<void,UniSetTypes::SensorMessage*> ChangeSignal;
 		ChangeSignal signal_change_state(){ return changeSignal; }
 
 		//  -------------------- !!!!!!!!! ---------------------------------
 		virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList();
-
 
 		/*! Информация о заказчике */
 		struct ConsumerInfoExt:
@@ -212,12 +214,9 @@ class IONotifyController:
 			ThresholdExtList list;
 		};
 		
-		/*! массив пар датчик->список порогов */
+		/*! массив пар [датчик,список порогов] */
 		typedef std::map<UniSetTypes::KeyType,ThresholdsListInfo> AskThresholdMap;
 
-		virtual void localSetValue( IOController::IOStateList::iterator& it,
-									const IOController_i::SensorInfo& si,
-									CORBA::Long value, UniSetTypes::ObjectId sup_id );
 	protected:
 	    IONotifyController();
 		virtual bool activateObject();
@@ -227,7 +226,6 @@ class IONotifyController:
 
 		//! посылка информации об изменении состояния датчика
 		virtual void send(ConsumerList& lst, UniSetTypes::SensorMessage& sm);
-
 
 		//! проверка срабатывания пороговых датчиков
 		virtual void checkThreshold( IOStateList::iterator& li,
@@ -253,12 +251,9 @@ class IONotifyController:
 		/*! чтение dump-файла */
 		virtual void readDump();
 
-		/*! построение списка зависимостей по каждому io */
-		virtual void buildDependsList();
-
 		NCRestorer* restorer;
 
-		void onChangeUndefined( DependsList::iterator it, bool undefined );
+//		void onChangeUndefined( DependsList::iterator it, bool undefined );
 
 		UniSetTypes::uniset_rwmutex sig_mutex;
 		ChangeSignal changeSignal;

@@ -7,13 +7,11 @@ using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------------
 
-NullController::NullController( ObjectId id, const string askdump, 
-								const std::string s_filterField,
-								const std::string s_filterValue, 
-								const std::string c_filterField,
-								const std::string c_filterValue, 
-								const std::string d_filterField,
-								const std::string d_filterValue, 
+NullController::NullController( ObjectId id, const string& askdump,
+								const std::string& s_filterField,
+								const std::string& s_filterValue,
+								const std::string& c_filterField,
+								const std::string& c_filterValue,
 								bool _dumpingToDB ):
 IONotifyController(id),
 dumpingToDB(_dumpingToDB)
@@ -23,7 +21,6 @@ dumpingToDB(_dumpingToDB)
 	NCRestorer_XML* askd = new NCRestorer_XML(askdump);
 	askd->setItemFilter(s_filterField, s_filterValue);
 	askd->setConsumerFilter(c_filterField, c_filterValue);
-	askd->setDependsFilter(d_filterField, d_filterValue);
 	
 	restorer = askd;
 

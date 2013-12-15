@@ -1,41 +1,81 @@
 #include "Exceptions.h"
-#include "TestGen.h"
+#include "TestProc.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
-TestGen::TestGen( UniSetTypes::ObjectId id, xmlNode* confnode ):
-	TestGen_SK( id, confnode )
+TestProc::TestProc( UniSetTypes::ObjectId id, xmlNode* confnode ):
+	TestProc_SK( id, confnode ),
+	state(false)
 {
 }
 // -----------------------------------------------------------------------------
-TestGen::~TestGen()
+TestProc::~TestProc()
 {
 }
 // -----------------------------------------------------------------------------
-TestGen::TestGen()
+TestProc::TestProc():
+	state(false)
 {
 	cerr << ": init failed!!!!!!!!!!!!!!!"<< endl;
 	throw Exception();
 }
 // -----------------------------------------------------------------------------
-void TestGen::step()
-{
-	cout << "input2 state=" << in_input2_s << endl;
-}
-// -----------------------------------------------------------------------------
-void TestGen::sensorInfo( SensorMessage *sm )
-{
-	if( sm->id == input1_s )
-		out_output1_c = in_input1_s; // sm->state
-}
-// -----------------------------------------------------------------------------
-void TestGen::timerInfo( TimerMessage *tm )
+void TestProc::step()
 {
 }
 // -----------------------------------------------------------------------------
-void TestGen::sigterm( int signo )
+void TestProc::sysCommand( UniSetTypes::SystemMessage* sm )
 {
-	TestGen_SK::sigterm(signo);
+	TestProc_SK::sysCommand(sm);
+    if( sm->command == SystemMessage::StartUp || sm->command == SystemMessage::WatchDog )
+        askTimer(tmCheckDepend,checkDependTime);
+}
+// -----------------------------------------------------------------------------
+void TestProc::sensorInfo( SensorMessage *sm )
+{
+	dlog[Debug::INFO] << myname << "(sensorInfo): id=" << sm->id << " val=" << sm->value << endl;
+
+	if( sm->id == on_s )
+	{
+		if( sm->value )
+		{
+			dlog[Debug::LEVEL1] << myname << "(sensorInfo): START WORKING.." << endl;
+			askTimer(tmChange,changeTime);
+		}
+	    else
+	    {
+			askTimer(tmChange,0);
+			dlog[Debug::LEVEL1] << myname << "(sensorInfo): STOP WORKING.." << endl;
+		}
+	}
+}
+// -----------------------------------------------------------------------------
+void TestProc::timerInfo( TimerMessage *tm )
+{
+	if( tm->id == tmChange )
+	{
+		state^=true;
+		out_lamp_c = ( state ? lmpBLINK : lmpOFF );
+		dlog[Debug::LEVEL1] << myname << "(timerInfo): state=" << state << " lmp=" << out_lamp_c << endl;
+        askTimer(tmCheckWorking,checkTime); // reset timer
+	}
+	else if( tm->id == tmCheckWorking )
+       dlog[Debug::LEVEL1] << myname << "(timerInfo): WORKING FAIL!" << endl;
+	else if( tm->id == tmCheckDepend )
+	{
+       dlog[Debug::LEVEL1] << myname << "(timerInfo): Check depend..." << endl;
+
+	   long test_val = 100;
+
+       // set depend 0...
+       setValue(depend_c,0);
+       setValue(set_d_check_s,test_val);
+       dlog[Debug::LEVEL1] << myname << "(timerInfo): check depend OFF: " << ( getValue(d_check_s) == 0 ? "OK" : "FAIL" ) << endl;
+
+		// set depend 1
+       setValue(depend_c,1);
+       dlog[Debug::LEVEL1] << myname << "(timerInfo): check depend ON: " << ( getValue(d_check_s) == test_val ? "OK" : "FAIL" ) << endl;
+    }
 }
 // -----------------------------------------------------------------------------

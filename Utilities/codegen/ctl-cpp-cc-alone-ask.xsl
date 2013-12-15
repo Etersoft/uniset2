@@ -218,7 +218,7 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 	</xsl:if>
 	</xsl:for-each>
 		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getValue): Обращение к неизвестному ДИСКРЕТНОМУ датчику sid="
+			unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getValue): Обращение к неизвестному датчику sid="
 				&lt;&lt; _sid &lt;&lt; endl;
 
 		return 0;

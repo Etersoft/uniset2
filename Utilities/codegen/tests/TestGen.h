@@ -1,27 +1,34 @@
 // -----------------------------------------------------------------------------
-#ifndef TestGen_H_
-#define TestGen_H_
+#ifndef TestProc_H_
+#define TestProc_H_
 // -----------------------------------------------------------------------------
-#include "TestGen_SK.h"
+#include "TestProc_SK.h"
 // -----------------------------------------------------------------------------
-class TestGen:
-	public TestGen_SK
+class TestProc:
+	public TestProc_SK
 {
 	public:
-		TestGen( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::conf->getNode("TestGen") );
-		virtual ~TestGen();
-
+		TestProc( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::conf->getNode("TestProc") );
+		virtual ~TestProc();
 
 	protected:
-		TestGen();
-		
+		TestProc();
+
+		enum Timers
+		{
+			tmChange,
+			tmCheckWorking,
+			tmCheckDepend
+		};
+
 		virtual void step();
-		void sensorInfo( UniSetTypes::SensorMessage *sm );
-		void timerInfo( UniSetTypes::TimerMessage *tm );
-		virtual void sigterm( int signo );
-		
+		virtual void sensorInfo( UniSetTypes::SensorMessage *sm );
+		virtual void timerInfo( UniSetTypes::TimerMessage *tm );
+        virtual void sysCommand( UniSetTypes::SystemMessage* sm );
+
 	private:
+		bool state;
 };
 // -----------------------------------------------------------------------------
-#endif // TestGen_H_
+#endif // TestProc_H_
 // -----------------------------------------------------------------------------

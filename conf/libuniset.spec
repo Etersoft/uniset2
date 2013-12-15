@@ -350,6 +350,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - remove deprecated function setState,getState,askState
   use simple function: setValue,getValue,askSensor
 - possible use of the property 'iotype' in uniset-codegen
+- refactoring <depends> mechanism
 
 * Tue Dec 10 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt3
 - add RRDServer

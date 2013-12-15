@@ -64,8 +64,7 @@ class NCRestorer
 			SInfo &operator=(IOController_i::SensorIOInfo& inf);
 		};
 
-		virtual void read(IONotifyController* ic, const std::string fn="" )=0;
-		virtual void buildDependsList( IONotifyController* ic, const std::string fn="" )=0;
+		virtual void read(IONotifyController* ic, const std::string& fn="" )=0;
 		virtual void dump(IONotifyController* ic, SInfo& inf, const IONotifyController::ConsumerList& lst)=0;
 		virtual void dumpThreshold(IONotifyController* ic, SInfo& inf, const IONotifyController::ThresholdExtList& lst)=0;
 
@@ -95,6 +94,8 @@ class NCRestorer
 		{
 			return ic->myioBegin();
 		}
+
+		static void init_depends_signals( IONotifyController* ic );
 };
 // ------------------------------------------------------------------------------------------
 /*!
@@ -110,25 +111,20 @@ class NCRestorer_XML:
 		/*!
 			\param fname - файл. (формата uniset-project)
 		*/	
-		NCRestorer_XML(const std::string fname);
+		NCRestorer_XML(const std::string& fname);
 
 		/*!
 			\param fname - файл. (формата uniset-project)
 			\param sensor_filterField - читать из списка только те узлы, у которых filterField="filterValue"
 			\param sensor_filterValue - значение для фильтрования списка
 		*/	
-		NCRestorer_XML( const std::string fname, const std::string sensor_filterField, const std::string sensor_filterValue="" );
+		NCRestorer_XML( const std::string& fname, const std::string& sensor_filterField, const std::string& sensor_filterValue="" );
 
 	    virtual ~NCRestorer_XML();
 		NCRestorer_XML();
 
-		/*! Установить фильтр на чтение списка 'зависимостей')
-			\note Функцию необходимо вызывать до вызова buildDependsList(...)
-		 */
-		void setDependsFilter( const std::string filterField, const std::string filterValue="" );
-
 		/*! Установить фильтр на чтение списка 'порогов' */
-		void setThresholdsFilter( const std::string filterField, const std::string filterValue="" );
+		void setThresholdsFilter( const std::string& filterField, const std::string& filterValue="" );
 
 		bool setFileName( const std::string& file, bool create );
 		inline std::string getFileName(){ return fname; }
@@ -144,64 +140,43 @@ class NCRestorer_XML:
 		*/
 		void setReadThresholdItem( ReaderSlot sl );
 
-		/*! установить функцию для callback-вызова при чтении списка зависимостей. 
-
-			bool xxxMyClass::myfunc(UniXML& xml, 
-									UniXML_iterator& it, xmlNode* sec)
-			uxml	- интерфейс для работы с xml-файлом
-			it 	- интератор(указатель) на текущий считываемый xml-узел (<sensor>)
-			sec	- указатель на корневой узел секции (<depend>)
-		*/
-		void setReadDependItem( ReaderSlot sl );
-
-
 		typedef sigc::slot<bool,UniXML&,UniXML_iterator&,xmlNode*,SInfo&> NCReaderSlot;
 
 		void setNCReadItem( NCReaderSlot sl );
 
-		virtual void read(IONotifyController* ic, const std::string filename="" );
+		virtual void read(IONotifyController* ic, const std::string& filename="" );
 		virtual void read(IONotifyController* ic, UniXML& xml );
 
 		virtual void dump(IONotifyController* ic, SInfo& inf, const IONotifyController::ConsumerList& lst);
 		virtual void dumpThreshold(IONotifyController* ic, SInfo& inf, const IONotifyController::ThresholdExtList& lst);
 
-		virtual void buildDependsList( IONotifyController* ic, const std::string fn="" );
-		virtual void buildDependsList( IONotifyController* ic, UniXML& xml );
-		
 	protected:
 		
 		bool check_thresholds_item( UniXML_iterator& it );
-		bool check_depend_item( UniXML_iterator& it );
 		void read_consumers(UniXML& xml, xmlNode* node, NCRestorer_XML::SInfo& inf, IONotifyController* ic );
 		void read_list(UniXML& xml, xmlNode* node, IONotifyController* ic);
 		void read_thresholds(UniXML& xml, xmlNode* node, IONotifyController* ic);
-		void build_depends( UniXML& xml, xmlNode* node, IONotifyController* ic );
-		void init( std::string fname );
+		void init( const std::string& fname );
 
 		bool getBaseInfo( UniXML& xml, xmlNode* it, IOController_i::SensorInfo& si );
 		bool getSensorInfo(UniXML& xml, xmlNode* snode, SInfo& si );
 		bool getConsumerList(UniXML& xml,xmlNode* node, IONotifyController::ConsumerList& lst);
 		bool getThresholdInfo(UniXML& xml,xmlNode* tnode, IONotifyController::ThresholdInfoExt& ti);
-		bool getDependsInfo( UniXML& xml, xmlNode* node, IOController::DependsInfo& di );
 
 		static void set_dumptime( UniXML& xml, xmlNode* node );
-		static xmlNode* bind_node(UniXML& xml, xmlNode* root, const std::string& nodename, const std::string nm="");
-		static xmlNode* rebind_node(UniXML& xml, xmlNode* root, const std::string& nodename, const std::string nm="");		
-
+		static xmlNode* bind_node(UniXML& xml, xmlNode* root, const std::string& nodename, const std::string& nm="");
+		static xmlNode* rebind_node(UniXML& xml, xmlNode* root, const std::string& nodename, const std::string& nm="");
 
 		std::string s_filterField;
 		std::string s_filterValue;
 		std::string c_filterField;
 		std::string c_filterValue;
-		std::string d_filterField;
-		std::string d_filterValue;
 		std::string t_filterField;
 		std::string t_filterValue;
 
 		std::string fname;
 		UniXML uxml;
 		ReaderSlot rtslot;
-		ReaderSlot depslot;
 		NCReaderSlot ncrslot;
 
 	private:
