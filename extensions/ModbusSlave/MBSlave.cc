@@ -411,7 +411,7 @@ void MBSlave::execute_rtu()
 			{
 				try
 				{
-					shm->localSaveValue(aitHeartBeat,sidHeartBeat,maxHeartBeat,getId());
+					shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
 					ptHeartBeat.reset();
 				}
 				catch(Exception& ex)
@@ -429,7 +429,7 @@ void MBSlave::execute_rtu()
 
 				try
 				{
-					shm->localSaveState(ditRespond,respond_id,state,getId());
+					shm->localSetValue(itRespond,respond_id,state,getId());
 				}
 				catch(Exception& ex)
 				{
@@ -442,7 +442,7 @@ void MBSlave::execute_rtu()
 			{
 				try
 				{
-					shm->localSaveValue(aitAskCount,askcount_id,askCount,getId());
+					shm->localSetValue(itAskCount,askcount_id,askCount,getId());
 				}
 				catch(Exception& ex)
 				{
@@ -492,7 +492,7 @@ void MBSlave::execute_tcp()
 			{
 				try
 				{
-					shm->localSaveValue(aitHeartBeat,sidHeartBeat,maxHeartBeat,getId());
+					shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
 					ptHeartBeat.reset();
 				}
 				catch(Exception& ex)
@@ -509,7 +509,7 @@ void MBSlave::execute_tcp()
 					state ^= true;
 				try
 				{
-					shm->localSaveState(ditRespond,respond_id,state,getId());
+					shm->localSetValue(itRespond,respond_id,state,getId());
 				}
 				catch(Exception& ex)
 				{
@@ -522,7 +522,7 @@ void MBSlave::execute_tcp()
 			{
 				try
 				{
-					shm->localSaveValue(aitAskCount,askcount_id,askCount,getId());
+					shm->localSetValue(itAskCount,askcount_id,askCount,getId());
 				}
 				catch(Exception& ex)
 				{
@@ -712,7 +712,7 @@ void MBSlave::sensorInfo( UniSetTypes::SensorMessage* sm )
 				p->stype == UniversalIO::DI )
 			{
 				uniset_rwmutex_wrlock lock(p->val_lock);
-				p->value = sm->state ? 1 : 0;
+				p->value = sm->value ? 1 : 0;
 			}
 			else if( p->stype == UniversalIO::AO ||
 					p->stype == UniversalIO::AI )
@@ -893,14 +893,11 @@ void MBSlave::initIterators()
 {
 	IOMap::iterator it=iomap.begin();
 	for( ; it!=iomap.end(); it++ )
-	{
-		shm->initDIterator(it->second.dit);
-		shm->initAIterator(it->second.ait);
-	}
+		shm->initIterator(it->second.ioit);
 
-	shm->initAIterator(aitHeartBeat);
-	shm->initAIterator(aitAskCount);
-	shm->initDIterator(ditRespond);
+	shm->initIterator(itHeartBeat);
+	shm->initIterator(itAskCount);
+	shm->initIterator(itRespond);
 }
 // -----------------------------------------------------------------------------
 void MBSlave::help_print( int argc, const char* const* argv )

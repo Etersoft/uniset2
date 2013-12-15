@@ -15,45 +15,22 @@ class SMInterface
 						UniSetTypes::ObjectId myid, IONotifyController* ic=0 );
 		~SMInterface();
 
-		void setState ( UniSetTypes::ObjectId, bool state );
 		void setValue ( UniSetTypes::ObjectId, long value );
-		bool saveState ( IOController_i::SensorInfo& si, bool state, UniversalIO::IOType type, UniSetTypes::ObjectId supplier );
-		bool saveValue ( IOController_i::SensorInfo& si, long value, UniversalIO::IOType type, UniSetTypes::ObjectId supplier );
-
-		bool saveLocalState ( UniSetTypes::ObjectId id, bool state, UniversalIO::IOType type=UniversalIO::DI );
-		bool saveLocalValue ( UniSetTypes::ObjectId id, long value, UniversalIO::IOType type=UniversalIO::AI );
-		
 		void setUndefinedState( IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId supplier );
 
 		long getValue ( UniSetTypes::ObjectId id );
-		bool getState ( UniSetTypes::ObjectId id );
 		
 		void askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd,
 						UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
-		IOController_i::DSensorInfoSeq* getDigitalSensorsMap();
-		IOController_i::ASensorInfoSeq* getAnalogSensorsMap();
+		IOController_i::SensorInfoSeq* getSensorsMap();
 		IONotifyController_i::ThresholdsListSeq* getThresholdsList();
 
-		void localSaveValue( IOController::IOStateList::iterator& it,
+		void localSetValue( IOController::IOStateList::iterator& it,
 								UniSetTypes::ObjectId sid, 
 								CORBA::Long newvalue, UniSetTypes::ObjectId sup_id );
 
-		void localSaveState( IOController::DIOStateList::iterator& it, 
-								UniSetTypes::ObjectId sid, 
-								CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id );
-
-		void localSetState( IOController::DIOStateList::iterator& it, 
-							UniSetTypes::ObjectId sid, 
-							CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id );
-
-		void localSetValue( IOController::IOStateList::iterator& it,
-							UniSetTypes::ObjectId sid, 
-							CORBA::Long value, UniSetTypes::ObjectId sup_id );
-
-		bool localGetState( IOController::DIOStateList::iterator& it, 
-							UniSetTypes::ObjectId sid );
-		long localGetValue( IOController::IOStateList::iterator& it,
+	  	long localGetValue( IOController::IOStateList::iterator& it, 
 							UniSetTypes::ObjectId sid );
 
 		/*! функция выставления признака неопределённого состояния для аналоговых датчиков 
@@ -64,10 +41,8 @@ class SMInterface
 									bool undefined, UniSetTypes::ObjectId sid );
 	
 		// специальные функции
-		IOController::DIOStateList::iterator dioEnd();
 		IOController::IOStateList::iterator ioEnd();
-		void initAIterator( IOController::IOStateList::iterator& it );
-		void initDIterator( IOController::DIOStateList::iterator& it );
+		void initIterator( IOController::IOStateList::iterator& it );
 			
 		bool exist();
 		bool waitSMready( int msec, int pause=5000 );

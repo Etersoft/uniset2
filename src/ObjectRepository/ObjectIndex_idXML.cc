@@ -30,11 +30,9 @@ ObjectIndex_idXML::~ObjectIndex_idXML()
 // -----------------------------------------------------------------------------------------
 ObjectId ObjectIndex_idXML::getIdByName( const string& name )
 {
-	for( MapObjects::iterator it=omap.begin(); it!=omap.end(); ++it )
-	{
-		if( it->second.repName == name )
-			return it->second.id;
-	}
+	MapObjectKey::iterator it = mok.find(name);
+	if( it != mok.end() )
+		return it->second;
 
 	return DefaultObjectId;
 }
@@ -159,7 +157,8 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string sec )
 		
 		inf.data = (void*)(xmlNode*)(it);
 
-		omap[inf.id] = inf;
+		omap.insert(MapObjects::value_type(inf.id,inf));	// omap[inf.id] = inf;
+		mok.insert(MapObjectKey::value_type(name,inf.id)); // mok[name] = inf.id;
 	}
 }
 // ------------------------------------------------------------------------------------------
@@ -216,7 +215,10 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string sec )
 		
 		inf.data = (void*)(xmlNode*)(it);
 
-		omap[inf.id] = inf;
+//		omap[inf.id] = inf;
+//		mok[nodename] = inf.id;
+		omap.insert(MapObjects::value_type(inf.id,inf));	// omap[inf.id] = inf;
+		mok.insert(MapObjectKey::value_type(nodename,inf.id)); // mok[name] = inf.id;
 	}
 }
 // ------------------------------------------------------------------------------------------

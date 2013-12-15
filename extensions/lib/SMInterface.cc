@@ -99,26 +99,6 @@ SMInterface::~SMInterface()
 
 }
 // --------------------------------------------------------------------------
-void SMInterface::setState ( UniSetTypes::ObjectId id, bool state )
-{
-	IOController_i::SensorInfo si;
-	si.id = id;
-	si.node = conf->getLocalNode();
-
-	if( ic )
-	{
-		BEG_FUNC1(SMInterface::setState)
-		ic->fastSetState(si,state,myid);
-		return;
-		END_FUNC(SMInterface::setState)
-	}
-	
-	BEG_FUNC1(SMInterface::setState)
-	ui->fastSetState(si,state,myid);
-	return;
-	END_FUNC(SMInterface::setState)
-}
-// --------------------------------------------------------------------------
 void SMInterface::setValue ( UniSetTypes::ObjectId id, long value )
 {
 	IOController_i::SensorInfo si;
@@ -139,40 +119,6 @@ void SMInterface::setValue ( UniSetTypes::ObjectId id, long value )
 	END_FUNC(SMInterface::setValue)
 }
 // --------------------------------------------------------------------------
-bool SMInterface::saveState ( IOController_i::SensorInfo& si, bool state, 
-								UniversalIO::IOType type, UniSetTypes::ObjectId sup_id )
-{
-	if( ic )
-	{
-		BEG_FUNC1(SMInterface::saveState)
-		ic->fastSaveState(si,state,type,sup_id);
-		return true;
-		END_FUNC(SMInterface::saveState)
-	}
-
-	BEG_FUNC1(SMInterface::saveState)
-	ui->fastSaveState(si,state,type,sup_id);
-	return true;
-	END_FUNC(SMInterface::saveState)
-}
-// --------------------------------------------------------------------------
-bool SMInterface::saveValue ( IOController_i::SensorInfo& si, long value, 
-								UniversalIO::IOType type, UniSetTypes::ObjectId sup_id )
-{
-	if( ic )
-	{
-		BEG_FUNC1(SMInterface::saveValue)
-		ic->fastSaveValue(si,value,type,sup_id);
-		return true;
-		END_FUNC(SMInterface::saveValue)
-	}
-
-	BEG_FUNC1(SMInterface::saveValue)
-	ui->fastSaveValue(si,value,type,sup_id);
-	return true;
-	END_FUNC(SMInterface::saveValue)
-}
-// --------------------------------------------------------------------------
 long SMInterface::getValue ( UniSetTypes::ObjectId id )
 {
 	IOController_i::SensorInfo si;
@@ -189,42 +135,6 @@ long SMInterface::getValue ( UniSetTypes::ObjectId id )
 	BEG_FUNC1(SMInterface::getValue)
 	return ui->getValue(si.id,si.node);
 	END_FUNC(SMInterface::getValue)
-}
-// --------------------------------------------------------------------------
-bool SMInterface::getState ( UniSetTypes::ObjectId id )
-{
-	IOController_i::SensorInfo si;
-	si.id = id;
-	si.node = conf->getLocalNode();
-
-	if( ic )
-	{
-		BEG_FUNC1(SMInterface::getState)
-		return ic->getState(si);
-		END_FUNC(SMInterface::getState)
-	}
-	
-	BEG_FUNC1(SMInterface::getState)
-	return ui->getState(si.id,si.node);
-	END_FUNC(SMInterface::getState)
-}
-// --------------------------------------------------------------------------
-bool SMInterface::saveLocalState( UniSetTypes::ObjectId id, bool state, 
-								UniversalIO::IOType type )
-{
-	IOController_i::SensorInfo si;
-	si.id = id;
-	si.node = conf->getLocalNode();
-	return saveState(si,state,type,myid);
-}
-// --------------------------------------------------------------------------
-bool SMInterface::saveLocalValue ( UniSetTypes::ObjectId id, long value, 
-								UniversalIO::IOType type )
-{
-	IOController_i::SensorInfo si;
-	si.id = id;
-	si.node = conf->getLocalNode();
-	return saveValue(si,value,type,myid);
 }
 // --------------------------------------------------------------------------
 void SMInterface::askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId backid )
@@ -250,32 +160,18 @@ void SMInterface::askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand c
 	END_FUNC(SMInterface::askSensor)
 }
 // --------------------------------------------------------------------------
-IOController_i::DSensorInfoSeq* SMInterface::getDigitalSensorsMap()
+IOController_i::SensorInfoSeq* SMInterface::getSensorsMap()
 {
 	if( ic )
 	{
-		BEG_FUNC1(SMInterface::getDigitalSensorsMap)
-		return ic->getDigitalSensorsMap();
-		END_FUNC(SMInterface::getDigitalSensorsMap)
+		BEG_FUNC1(SMInterface::getSensorsMap)
+		return ic->getSensorsMap();
+		END_FUNC(SMInterface::getSensorsMap)
 	}
 
-	BEG_FUNC(SMInterface::getDigitalSensorsMap)
-	return shm->getDigitalSensorsMap();
-	END_FUNC(SMInterface::getDigitalSensorsMap)
-}
-// --------------------------------------------------------------------------
-IOController_i::ASensorInfoSeq* SMInterface::getAnalogSensorsMap()
-{
-	if( ic )
-	{
-		BEG_FUNC1(SMInterface::getAnalogSensorsMap)
-		return ic->getAnalogSensorsMap();
-		END_FUNC(SMInterface::getAnalogSensorsMap)
-	}
-
-	BEG_FUNC(SMInterface::getAnalogSensorsMap)
-	return shm->getAnalogSensorsMap();
-	END_FUNC(SMInterface::getAnalogSensorsMap)
+	BEG_FUNC(SMInterface::getSensorsMap)
+	return shm->getSensorsMap();
+	END_FUNC(SMInterface::getSensorsMap)
 }
 // --------------------------------------------------------------------------
 IONotifyController_i::ThresholdsListSeq* SMInterface::getThresholdsList()
@@ -319,64 +215,13 @@ bool SMInterface::exist()
 	return ui->isExist(shmID);
 }
 // --------------------------------------------------------------------------
-IOController::DIOStateList::iterator SMInterface::dioEnd()
-{
-	CHECK_IC_PTR(dioEnd)
-	return ic->dioEnd();
-}
-// --------------------------------------------------------------------------
 IOController::IOStateList::iterator SMInterface::ioEnd()
 {
 	CHECK_IC_PTR(ioEnd)
 	return ic->ioEnd();
 }
 // --------------------------------------------------------------------------
-void SMInterface::localSaveValue( IOController::IOController::IOStateList::iterator& it,
-									UniSetTypes::ObjectId sid, 
-									CORBA::Long nval, UniSetTypes::ObjectId sup_id )
-{
-	if( !ic )
-	{
-		saveLocalValue( sid, nval );
-		return;
-	}
-	
-	IOController_i::SensorInfo si;
-	si.id = sid;
-	si.node = conf->getLocalNode();
-	ic->localSaveValue(it,si,nval,sup_id);
-}										
-// --------------------------------------------------------------------------
-void SMInterface::localSaveState( IOController::DIOStateList::iterator& it, 
-									UniSetTypes::ObjectId sid, 
-									CORBA::Boolean nstate, UniSetTypes::ObjectId sup_id )
-{
-	if( !ic )
-	{
-		saveLocalState( sid, nstate );
-		return;
-	}
-	
-	IOController_i::SensorInfo si;
-	si.id = sid;
-	si.node = conf->getLocalNode();
-	ic->localSaveState(it,si,nstate,sup_id);
-}
-// --------------------------------------------------------------------------
-void SMInterface::localSetState( IOController::DIOStateList::iterator& it, 
-									UniSetTypes::ObjectId sid, 
-									CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id )
-{
-	if( !ic )
-		return setState( sid, newstate );
-//	CHECK_IC_PTR(localSetState)
-	IOController_i::SensorInfo si;
-	si.id = sid;
-	si.node = conf->getLocalNode();
-	ic->localSetState(it,si,newstate,sup_id);
-}
-// --------------------------------------------------------------------------
-void SMInterface::localSetValue( IOController::IOStateList::iterator& it,
+void SMInterface::localSetValue( IOController::IOStateList::iterator& it, 
 									UniSetTypes::ObjectId sid, 
 								CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
@@ -388,18 +233,6 @@ void SMInterface::localSetValue( IOController::IOStateList::iterator& it,
 	si.id = sid;
 	si.node = conf->getLocalNode();
 	ic->localSetValue(it,si,value,sup_id);
-}
-// --------------------------------------------------------------------------
-bool SMInterface::localGetState( IOController::DIOStateList::iterator& it, UniSetTypes::ObjectId sid )
-{
-//	CHECK_IC_PTR(localGetState)
-	if( !ic )
-		return getState(sid);
-
-	IOController_i::SensorInfo si;
-	si.id = sid;
-	si.node = conf->getLocalNode();
-	return ic->localGetState(it,si);
 }
 // --------------------------------------------------------------------------
 long SMInterface::localGetValue( IOController::IOStateList::iterator& it, UniSetTypes::ObjectId sid )
@@ -434,20 +267,10 @@ void SMInterface::localSetUndefinedState( IOController::IOStateList::iterator& i
 	ic->localSetUndefinedState(it,undefined,si);
 }												
 // --------------------------------------------------------------------------
-void SMInterface::initAIterator( IOController::IOStateList::iterator& it )
+void SMInterface::initIterator( IOController::IOStateList::iterator& it )
 {
 	if( ic )
 		it = ic->ioEnd();
-//	else	
-//		cerr << "(SMInterface::initAIterator): ic=NULL" << endl;
-}
-// --------------------------------------------------------------------------
-void SMInterface::initDIterator( IOController::DIOStateList::iterator& it )
-{
-	if( ic )
-		it = ic->dioEnd();
-//	else
-//		cerr << "(SMInterface::initDIterator): ic=NULL" << endl;
 }
 // --------------------------------------------------------------------------
 bool SMInterface::waitSMready( int ready_timeout, int pmsec )
@@ -479,7 +302,7 @@ bool SMInterface::waitSMworking( UniSetTypes::ObjectId sid, int msec, int pmsec 
 	{
 		try
 		{
-			getState(sid);
+			getValue(sid);
 			sm_ready = true;
 			break;
 		}

@@ -120,7 +120,7 @@ void LProcessor::getInputs()
 	{
 //		try
 //		{
-			it->state = ui.getState(it->sid);
+			it->state = (bool)ui.getValue(it->sid);
 //		}
 	}
 }
@@ -143,20 +143,7 @@ void LProcessor::setOuts()
 	{
 		try
 		{
-			switch(it->iotype)
-			{
-				case UniversalIO::DI:
-					ui.saveState(it->sid,it->lnk->from->getOut(),it->iotype);
-				break;
-
-				case UniversalIO::DO:
-					ui.setState(it->sid,it->lnk->from->getOut());
-				break;
-				
-				default:
-					dlog[Debug::CRIT] << "(LProcessor::setOuts): неподдерживаемый тип iotype=" << it->iotype << endl;
-					break;
-			}
+			ui.setValue(it->sid,it->lnk->from->getOut(),DefaultObjectId);
 		}
 		catch( Exception& ex )
 		{

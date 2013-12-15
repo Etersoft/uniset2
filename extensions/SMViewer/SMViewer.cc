@@ -19,15 +19,10 @@ SMViewer::~SMViewer()
 // --------------------------------------------------------------------------
 void SMViewer::run()
 {
-	IOController_i::DSensorInfoSeq_var dmap = shm->getDigitalSensorsMap();
-	IOController_i::ASensorInfoSeq_var amap = shm->getAnalogSensorsMap();
+	IOController_i::SensorInfoSeq_var amap = shm->getSensorsMap();
 	IONotifyController_i::ThresholdsListSeq_var tlst = shm->getThresholdsList();
 	try
-	{ updateDSensors(dmap,getSharedMemoryID());
-	}catch(...){};
-
-	try
-	{ updateASensors(amap,getSharedMemoryID());
+	{ updateSensors(amap,getSharedMemoryID());
 	}catch(...){}
 
 	try

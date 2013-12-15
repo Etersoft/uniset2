@@ -161,7 +161,7 @@ class MBExchange:
 			DeviceType dtype;	/*!< тип устройства */
 
 			UniSetTypes::ObjectId resp_id;
-			IOController::DIOStateList::iterator resp_dit;
+			IOController::IOStateList::iterator resp_it;
 			PassiveTimer resp_ptTimeout;
 			Trigger resp_trTimeout;
 			bool resp_state;
@@ -170,7 +170,7 @@ class MBExchange:
 			bool resp_init;
 			bool ask_every_reg;
 			UniSetTypes::ObjectId mode_id;
-			IOController::IOStateList::iterator mode_ait;
+			IOController::IOStateList::iterator mode_it;
 			long mode; // режим работы с устройством (см. ExchangeMode)
 
 			// return TRUE if state changed
@@ -292,11 +292,11 @@ class MBExchange:
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;
 		int maxHeartBeat;
-		IOController::IOStateList::iterator aitHeartBeat;
+		IOController::IOStateList::iterator itHeartBeat;
 		UniSetTypes::ObjectId test_id;
 
 		UniSetTypes::ObjectId sidExchangeMode; /*!< иденидентификатор для датчика режима работы */
-		IOController::IOStateList::iterator aitExchangeMode;
+		IOController::IOStateList::iterator itExchangeMode;
 		long exchangeMode; /*!< режим работы см. ExchangeMode */
 
 		UniSetTypes::uniset_rwmutex actMutex;

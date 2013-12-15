@@ -90,8 +90,7 @@ static const int NoSafety = -1;
 			
 			// Зависимость (d - depend)
 			UniSetTypes::ObjectId d_id;  /*!< идентификатор датчика, от которого зависит данный */
-			IOController::IOStateList::iterator d_ait; /*! итератор на датчик от которого зависит данный */
-			IOController::DIOStateList::iterator d_dit; /*! итератор на датчик от которого зависит данный */
+			IOController::IOStateList::iterator d_ioit; /*! итератор на датчик от которого зависит данный */
 			long d_value; /*!< разрешающее работу значение датчика от которого зависит данный */
 			long d_off_value; /*!< блокирующее значение */
 			UniversalIO::IOType d_iotype;
@@ -104,8 +103,7 @@ static const int NoSafety = -1;
 			IONotifyController_i::ThresholdInfo ti;
 	
 			
-			IOController::IOStateList::iterator ait;
-			IOController::DIOStateList::iterator dit;
+			IOController::IOStateList::iterator ioit;
 			UniSetTypes::uniset_rwmutex val_lock; 	/*!< блокировка на время "работы" со значением */
 			
 			friend std::ostream& operator<<(std::ostream& os, IOBase& inf );

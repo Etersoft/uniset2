@@ -215,10 +215,9 @@ class IONotifyController:
 		/*! массив пар датчик->список порогов */
 		typedef std::map<UniSetTypes::KeyType,ThresholdsListInfo> AskThresholdMap;
 
-		virtual void localSetValue( IOController::IOStateList::iterator& it,
-										const IOController_i::SensorInfo& si,
-										CORBA::Long value, UniSetTypes::ObjectId sup_id );
-
+		virtual void localSetValue( IOController::IOStateList::iterator& it, 
+									const IOController_i::SensorInfo& si,
+									CORBA::Long value, UniSetTypes::ObjectId sup_id );
 	protected:
 	    IONotifyController();
 		virtual bool activateObject();

@@ -354,12 +354,12 @@ class IOControl:
 		UniSetTypes::ObjectId testLamp_S;
 		Trigger trTestLamp;
 		bool isTestLamp;
-		IOController::DIOStateList::iterator ditTestLamp;
+		IOController::IOStateList::iterator itTestLamp;
 
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;
 		int maxHeartBeat;
-		IOController::IOStateList::iterator aitHeartBeat;
+		IOController::IOStateList::iterator itHeartBeat;
 
 		bool force;			/*!< флаг, означающий, что надо сохранять в SM, даже если значение не менялось */
 		bool force_out;		/*!< флаг, включающий принудительное чтения выходов */
@@ -376,7 +376,7 @@ class IOControl:
 
 
 		UniSetTypes::ObjectId testMode_as;
-		IOController::IOStateList::iterator aitTestMode;
+		IOController::IOStateList::iterator itTestMode;
 		long testmode;
 		long prev_testmode;
 

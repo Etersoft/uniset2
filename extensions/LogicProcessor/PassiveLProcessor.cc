@@ -59,7 +59,7 @@ void PassiveLProcessor::step()
 	{
 		try
 		{
-			shm->localSaveValue(aitHeartBeat,sidHeartBeat,maxHeartBeat,getId());
+			shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
 			ptHeartBeat.reset();
 		}
 		catch(Exception& ex)
@@ -95,7 +95,7 @@ void PassiveLProcessor::sensorInfo( UniSetTypes::SensorMessage*sm )
 	for( EXTList::iterator it=extInputs.begin(); it!=extInputs.end(); ++it )
 	{
 		if( it->sid == sm->id )
-			it->state = sm->state;
+			it->state = (bool)sm->value;
 	}
 }
 // -------------------------------------------------------------------------
@@ -185,7 +185,7 @@ bool PassiveLProcessor::activateObject()
 // ------------------------------------------------------------------------------------------
 void PassiveLProcessor::initIterators()
 {
-	shm->initAIterator(aitHeartBeat);
+	shm->initIterator(itHeartBeat);
 }
 // -------------------------------------------------------------------------
 void PassiveLProcessor::setOuts()
@@ -195,20 +195,7 @@ void PassiveLProcessor::setOuts()
 	{
 		try
 		{
-			switch(it->iotype)
-			{
-				case UniversalIO::DI:
-					shm->saveLocalState(it->sid,it->lnk->from->getOut(),it->iotype);
-				break;
-
-				case UniversalIO::DO:
-					shm->setState(it->sid,it->lnk->from->getOut());
-				break;
-				
-				default:
-					dlog[Debug::CRIT] << myname << "(setOuts): неподдерживаемый тип iotype=" << it->iotype << endl;
-					break;
-			}
+			shm->setValue( it->sid,it->lnk->from->getOut() );
 		}
 		catch( Exception& ex )
 		{
@@ -227,20 +214,7 @@ void PassiveLProcessor::sigterm( int signo )
 	{
 		try
 		{
-			switch(it->iotype)
-			{
-				case UniversalIO::DI:
-					shm->saveLocalState(it->sid,false,it->iotype);
-				break;
-
-				case UniversalIO::DO:
-					shm->setState(it->sid,false);
-				break;
-				
-				default:
-					dlog[Debug::CRIT] << myname << "(sigterm): неподдерживаемый тип iotype=" << it->iotype << endl;
-					break;
-			}
+			shm->setValue(it->sid,0);
 		}
 		catch( Exception& ex )
 		{

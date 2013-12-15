@@ -130,7 +130,7 @@ class UNetExchange:
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;
 		int maxHeartBeat;
-		IOController::IOStateList::iterator aitHeartBeat;
+		IOController::IOStateList::iterator itHeartBeat;
 		UniSetTypes::ObjectId test_id;
 
 		int steptime;	/*!< периодичность вызова step, [мсек] */
@@ -166,8 +166,8 @@ class UNetExchange:
 			inline void setLostPacketsID( UniSetTypes::ObjectId id ){ sidLostPackets = id; }
 			inline void initIterators( SMInterface* shm )
 			{
-				shm->initAIterator(aitLostPackets);
-				shm->initDIterator(ditRespond);
+				shm->initIterator(itLostPackets);
+				shm->initIterator(itRespond);
 			}
 
 			// Сводная информация по двум каналам
@@ -175,10 +175,10 @@ class UNetExchange:
 			// хотя бы по одному каналу
 			// ( реализацию см. ReceiverInfo::step() )
 			UniSetTypes::ObjectId sidRespond;
-			IOController::DIOStateList::iterator ditRespond;
+			IOController::IOStateList::iterator itRespond;
 			bool respondInvert;
 			UniSetTypes::ObjectId sidLostPackets;
-			IOController::IOStateList::iterator aitLostPackets;
+			IOController::IOStateList::iterator itLostPackets;
 		};
 
 		typedef std::list<ReceiverInfo> ReceiverList;

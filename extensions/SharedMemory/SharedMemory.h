@@ -283,8 +283,7 @@ class SharedMemory:
 			UniSetTypes::ObjectId id;
 			HBuffer buf;
 
-			IOStateList::iterator ait;
-			DIOStateList::iterator dit;
+			IOStateList::iterator ioit;
 
 			void add( long val, size_t size )
 			{
@@ -364,8 +363,7 @@ class SharedMemory:
 			
 			UniSetTypes::ObjectId a_sid; // аналоговый счётчик
 			UniSetTypes::ObjectId d_sid; // дискретный датчик состояния процесса
-			IOStateList::iterator ait;
-			DIOStateList::iterator dit;
+			IOStateList::iterator ioit;
 
 			int reboot_msec; /*!< Время в течение которого, процесс обязан подтвердить своё существование,
 								иначе будет произведена перезагрузка контроллера по WDT (в случае если он включён).
@@ -418,9 +416,8 @@ class SharedMemory:
 		bool isActivated();
 
 
-		DIOStateList::iterator ditPulsar;
+		IOStateList::iterator itPulsar;
 		IOController_i::SensorInfo siPulsar;
-		UniversalIO::IOType iotypePulsar;
 		int msecPulsar;
 		
 		UniSetTypes::uniset_rwmutex mutex_act;

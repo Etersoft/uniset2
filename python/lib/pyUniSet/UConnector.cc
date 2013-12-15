@@ -74,9 +74,6 @@ long UConnector::getValue( long id, long node )throw(UException)
 		{
 			case UniversalIO::DI:
 			case UniversalIO::DO:
-			  return (ui->getState(id,node) ? 1 : 0);
-			break;
-			
 			case UniversalIO::AI:
 			case UniversalIO::AO:
 				return ui->getValue(id,node);
@@ -121,17 +118,8 @@ void UConnector::setValue( long id, long val, long node )throw(UException)
 		switch(t)
 		{
 			case UniversalIO::DI:
-				ui->saveState(id,val,t,node);
-			break;
-			
 			case UniversalIO::DO:
-				ui->setState(id,val,node);
-			break;
-			
 			case UniversalIO::AI:
-				ui->saveValue(id,val,t,node);
-			break;
-				
 			case UniversalIO::AO:
 				ui->setValue(id,val,node);
 			break;

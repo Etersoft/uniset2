@@ -213,7 +213,7 @@ void MBExchange::step()
 	{
 		try
 		{
-			shm->localSaveValue(aitHeartBeat,sidHeartBeat,maxHeartBeat,getId());
+			shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
 			ptHeartBeat.reset();
 		}
 		catch(Exception& ex)
@@ -298,20 +298,17 @@ MBExchange::DeviceType MBExchange::getDeviceType( const std::string& dtype )
 // ------------------------------------------------------------------------------------------
 void MBExchange::initIterators()
 {
-	shm->initAIterator(aitHeartBeat);
-	shm->initAIterator(aitExchangeMode);
+	shm->initIterator(itHeartBeat);
+	shm->initIterator(itExchangeMode);
 	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
 	{
 		RTUDevice* d(it1->second);
-		shm->initDIterator(d->resp_dit);
-		shm->initAIterator(d->mode_ait);
+		shm->initIterator(d->resp_it);
+		shm->initIterator(d->mode_it);
 		for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
 		{
 			for( PList::iterator it2=it->second->slst.begin();it2!=it->second->slst.end(); ++it2 )
-			{
-				shm->initDIterator(it2->dit);
-				shm->initAIterator(it2->ait);
-			}
+				shm->initIterator(it2->ioit);
 		}
 	}
 }
@@ -992,7 +989,7 @@ void MBExchange::updateSM()
 			try
 			{
 				if( !shm->isLocalwork() )
-					d->mode = shm->localGetValue(d->mode_ait,d->mode_id);
+					d->mode = shm->localGetValue(d->mode_it,d->mode_id);
 			}
 			catch(IOController_i::NameNotFound &ex)
 			{
@@ -2921,7 +2918,7 @@ void MBExchange::updateRespondSensors()
 			try
 			{
 				bool set = d->resp_invert ? !d->resp_state : d->resp_state;
-				shm->localSaveState(d->resp_dit,d->resp_id,set,getId());
+				shm->localSetValue(d->resp_it,d->resp_id,( set ? 1:0 ),getId());
 			}
 			catch( Exception& ex )
 			{

@@ -32,6 +32,9 @@ class ObjectIndex_idXML:
 	private:
 		typedef std::map<UniSetTypes::ObjectId, UniSetTypes::ObjectInfo> MapObjects;
 		MapObjects omap;
+
+		typedef std::map<std::string, UniSetTypes::ObjectId> MapObjectKey;
+		MapObjectKey mok; // для обратного писка
 };
 // -----------------------------------------------------------------------------------------
 #endif

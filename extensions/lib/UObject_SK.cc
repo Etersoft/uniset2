@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */
 // --------------------------------------------------------------------------
-// generate timestamp: 2013-12-10+04:00
+// generate timestamp: 2013-12-15+04:00
 // -----------------------------------------------------------------------------
 #include "Configuration.h"
 #include "Exceptions.h"
@@ -300,11 +300,6 @@ void UObject_SK::sysCommand( SystemMessage* _sm )
 	}
 }
 // -----------------------------------------------------------------------------
-void UObject_SK::setState( UniSetTypes::ObjectId _sid, bool _state )
-{
-	setValue(_sid, _state ? 1 : 0 );
-}
-// -----------------------------------------------------------------------------
 
 void UObject_SK::sigterm( int signo )
 {
@@ -399,7 +394,7 @@ void UObject_SK::callback()
 		// "сердцебиение"
 		if( idHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
 		{
-			ui.saveValue(idHeartBeat,maxHeartBeat,UniversalIO::AI);
+			ui.setValue(idHeartBeat,maxHeartBeat,UniversalIO::AI);
 			ptHeartBeat.reset();
 		}
 
@@ -445,19 +440,9 @@ void UObject_SK::preSensorInfo( UniSetTypes::SensorMessage* _sm )
 	sensorInfo(_sm);
 }
 // -----------------------------------------------------------------------------
-void UObject_SK::askState( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
+void UObject_SK::askSensor( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
 {
 	ui.askRemoteSensor(_sid,_cmd,_node,getId());
-}
-// -----------------------------------------------------------------------------
-void UObject_SK::askValue( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
-{
-	ui.askRemoteSensor(_sid,_cmd,_node,getId());
-}
-// -----------------------------------------------------------------------------
-bool UObject_SK::getState( UniSetTypes::ObjectId _sid )
-{
-	return (bool)getValue(_sid);
 }
 // -----------------------------------------------------------------------------
 long UObject_SK::getValue( UniSetTypes::ObjectId _sid )
@@ -465,12 +450,14 @@ long UObject_SK::getValue( UniSetTypes::ObjectId _sid )
 	try
 	{
 
-		unideb[Debug::CRIT] << myname << "(getState): Обращение к неизвестному ДИСКРЕТНОМУ датчику sid="
-			<< _sid << endl;
+        if( unideb.debugging(Debug::CRIT) )
+            unideb[Debug::CRIT] << myname << "(getValue): Обращение к неизвестному ДИСКРЕТНОМУ датчику sid="
+                << _sid << endl;
 	}
 	catch(Exception& ex)
 	{
-		unideb[Debug::CRIT] << myname << "(getState): " << ex << endl;
+        if( unideb.debugging(Debug::CRIT) )
+            unideb[Debug::CRIT] << myname << "(getValue): " << ex << endl;
 		throw;
 	}
 

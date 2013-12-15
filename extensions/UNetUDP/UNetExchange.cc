@@ -410,7 +410,7 @@ void UNetExchange::step()
 	{
 		try
 		{
-			shm->localSaveValue(aitHeartBeat,sidHeartBeat,maxHeartBeat,getId());
+			shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
 			ptHeartBeat.reset();
 		}
 		catch(Exception& ex)
@@ -433,8 +433,8 @@ void UNetExchange::ReceiverInfo::step( SMInterface* shm, const std::string& myna
 			bool resp = ( (r1 && r1->isRecvOK()) || (r2 && r2->isRecvOK()) );
 			if( respondInvert )
 				resp = !resp;
-
-			shm->localSaveState(ditRespond,sidRespond,resp,shm->ID());
+			
+			shm->localSetValue(itRespond,sidRespond,resp,shm->ID());
 		}
 	}
 	catch( Exception& ex )
@@ -452,7 +452,7 @@ void UNetExchange::ReceiverInfo::step( SMInterface* shm, const std::string& myna
 			if( r2 )
 				l += r2->getLostPacketsNum();
 
-			shm->localSaveValue(aitLostPackets,sidLostPackets,l,shm->ID());
+			shm->localSetValue(itLostPackets,sidLostPackets,l,shm->ID());
 		}
 	}
 	catch( Exception& ex )
@@ -672,7 +672,7 @@ void UNetExchange::sigterm( int signo )
 // ------------------------------------------------------------------------------------------
 void UNetExchange::initIterators()
 {
-	shm->initAIterator(aitHeartBeat);
+	shm->initIterator(itHeartBeat);
 	if( sender )
 		sender->initIterators();
 	if( sender2 )

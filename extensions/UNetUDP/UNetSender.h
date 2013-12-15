@@ -33,8 +33,7 @@ class UNetSender
 
 			UniversalIO::IOType iotype;
 			UniSetTypes::ObjectId id;
-			IOController::IOStateList::iterator ait;
-			IOController::DIOStateList::iterator dit;
+			IOController::IOStateList::iterator ioit;
 			int pack_ind;
 
 			friend std::ostream& operator<<( std::ostream& os, UItem& p );

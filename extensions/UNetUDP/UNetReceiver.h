@@ -125,10 +125,10 @@ class UNetReceiver
 		unsigned long lostPackets; /*!< счётчик потерянных пакетов */
 
 		UniSetTypes::ObjectId sidRespond;
-		IOController::DIOStateList::iterator ditRespond;
+		IOController::IOStateList::iterator itRespond;
 		bool respondInvert;
 		UniSetTypes::ObjectId sidLostPackets;
-		IOController::IOStateList::iterator aitLostPackets;
+		IOController::IOStateList::iterator itLostPackets;
 
 		bool activated;
 
@@ -171,13 +171,11 @@ class UNetReceiver
 		struct ItemInfo
 		{
 			long id;
-			IOController::IOStateList::iterator ait;
-			IOController::DIOStateList::iterator dit;
+			IOController::IOStateList::iterator ioit;
 			UniversalIO::IOType iotype;
 
 			ItemInfo():
-				id(UniSetTypes::DefaultObjectId),
-				iotype(UniversalIO::UnknownIOType){}
+				id(UniSetTypes::DefaultObjectId),iotype(UniversalIO::UnknownIOType){}
 		};
 
 		typedef std::vector<ItemInfo> ItemVec;

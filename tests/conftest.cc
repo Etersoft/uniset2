@@ -22,6 +22,8 @@ int main(int argc, const char **argv)
 		string confile = UniSetTypes::getArgParam( "--confile", argc, argv, "test.xml" );
 		conf = new Configuration(argc, argv, confile);
 
+        cout << "getLocalNode()=" << conf->getLocalNode() << endl;
+
 		string t(conf->oind->getTextName(1));
 		cout << "**** check getTextName: " << ( t.empty() ?  "FAILED" : "OK" ) << endl;
 
@@ -31,6 +33,15 @@ int main(int argc, const char **argv)
 
 		string mn(conf->oind->getMapName(1));
 		cout << "**** check getMapName: " << ( mn.empty() ?  "FAILED" : "OK" ) << endl;
+
+
+		cout << "getSensorID(Input1_S): " << conf->getSensorID("Input1_S") << endl;
+
+		std::string iname = conf->oind->getNameById(1);
+		cout << "getNameById(1): " << iname << endl;
+
+		ObjectId i_id = conf->oind->getIdByName(mn);
+		cout << "getIdByName(" << iname << "): " << (i_id == DefaultObjectId ? "FAIL" : "OK" ) << endl;
 
 		UniversalIO::IOType t1=conf->getIOType(1);
 		cout << "**** getIOType for " << mn << endl;
