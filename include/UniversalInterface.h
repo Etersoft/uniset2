@@ -87,8 +87,6 @@ class UniversalInterface
 		//! Заказ по списку
 		UniSetTypes::IDSeq_var askSensorsSeq( UniSetTypes::IDList& lst, UniversalIO::UIOCommand cmd,
 												UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
-
-		
 		// ------------------------------------------------------
 		//! Получение состояния датчика
 		long getValue ( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )throw(IO_THROW_EXCEPTIONS);
@@ -98,12 +96,10 @@ class UniversalInterface
 		void setValue ( UniSetTypes::ObjectId id, long value, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
 		void setValue ( UniSetTypes::ObjectId id, long value);
 		void setValue ( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
-
 		void fastSetValue( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
 
 		// установка неопределённого состояния
 		void setUndefinedState( IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId supplier );
-
 
 		CORBA::Long getRawValue( const IOController_i::SensorInfo& si );
 

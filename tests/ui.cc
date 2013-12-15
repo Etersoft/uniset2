@@ -50,11 +50,10 @@ int main( int argc, const char **argv )
 			<< " value=" << inf.value
 			<< " last changed: " << string(t_str) << endl;
 
-
 		cout << "check getValue: " << ui.getValue(id1) << endl;
-		cout << "check setValue: id='" << id1 << "' val=2" << endl;
-		ui.setValue(id1,2,DefaultObjectId);
-		cout << "OK" << endl;
+		cout << "check setValue: id='" << id1 << "' val=2 ...";
+		ui.setValue(id1,2);
+		cout << ( ui.getValue(id1) == 2 ? "OK" : "FAIL" ) << endl;
 	}
 	catch( Exception& ex )
 	{

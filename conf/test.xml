@@ -33,6 +33,11 @@
 	</UniSet>
 	<dlog name="dlog"/>
 	<settings>
+		<TestProc name="TestProc"
+			on_s="Input1_S"
+			lamp_c="Lamp58_C"
+		/>
+
 		<IOControl name="IOControl"/>
 		<testnode id="1000" id2="-100" name="testnode"/>
 		<SharedMemory name="SharedMemory" shmID="SharedMemory">
@@ -207,6 +212,7 @@
 			<item id="55" iotype="AI" name="AI55_S" textname="AI sensor 55" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
 			<item id="56" iotype="AI" name="AI56_S" textname="AI sensor 56" rrd="2" rrd2_ds="COUNTER:20:U:U"/>
 			<item id="57" iotype="AI" name="AI57_S" textname="AI sensor 57" rrd="2" rrd2_ds="DERIVE:20:U:U"/>
+			<item id="58" iotype="AO" name="Lamp58_C" textname="Lamp 58" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">
@@ -244,6 +250,7 @@
 			<item id="6009" name="MBMaster2"/>
 			<item id="6010" name="MBMultiMaster1"/>
 			<item id="6011" name="RRDServer1"/>
+			<item id="6012" name="TestProc"/>
 		</objects>
 	</ObjectsMap>
 	<messages idfromfile="1" name="messages">

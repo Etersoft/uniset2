@@ -260,6 +260,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/RRDServer/Makefile
 				 extensions/RRDServer/libUniSetRRDServer.pc
 				 extensions/tests/Makefile
+				 extensions/tests/SMemoryTest/Makefile
 				 python/lib/Makefile
 				 python/lib/pyUniSet/Makefile
 				 python/Makefile])

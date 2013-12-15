@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	name 		- название класса
+	msgcount	- сколько сообщений обрабатывается за один раз
+	sleep_msec	- пауза между итерациями в работе процесса
+
+	type
+	====
+		in 	- входные регистры (только для чтения)
+		out	- выходные регистры (запись)
+-->
+<TestProc>
+  <settings>
+	<set name="class-name" val="TestProc"/>
+	<set name="msg-count" val="30"/>
+	<set name="sleep-msec" val="150"/>
+  </settings>
+  <variables>
+      <item name="changeTime" type="int" default="2000" min="0" comment="change state time" const="1" public="1" />
+  </variables>
+  <smap>
+	<!-- name - название переменной в конф. файле -->
+	<item name="on_s" vartype="in" comment="Тестовый вход" smTestID="1"/>
+	<item name="lamp_c" vartype="out" comment="Лампочка (тестовый выход)"/>
+  </smap>
+
+  <msgmap>
+  </msgmap>
+</TestProc>
