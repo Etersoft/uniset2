@@ -54,7 +54,7 @@ static const int NoSafety = -1;
 			bool check_depend( SMInterface* shm ); /*!< проверка разрешения(зависимости) от другого датчика */
 
 			IOController_i::SensorInfo si;
-			UniversalIO::IOTypes stype;			/*!< тип канала (DI,DO,AI,AO) */
+			UniversalIO::IOType stype;			/*!< тип канала (DI,DO,AI,AO) */
 			IOController_i::CalibrateInfo cal; 	/*!< калибровочные параметры */
 			Calibration* cdiagram;				/*!< специальная калибровочная диаграмма */
 
@@ -90,11 +90,11 @@ static const int NoSafety = -1;
 			
 			// Зависимость (d - depend)
 			UniSetTypes::ObjectId d_id;  /*!< идентификатор датчика, от которого зависит данный */
-			IOController::AIOStateList::iterator d_ait; /*! итератор на датчик от которого зависит данный */
+			IOController::IOStateList::iterator d_ait; /*! итератор на датчик от которого зависит данный */
 			IOController::DIOStateList::iterator d_dit; /*! итератор на датчик от которого зависит данный */
 			long d_value; /*!< разрешающее работу значение датчика от которого зависит данный */
 			long d_off_value; /*!< блокирующее значение */
-			UniversalIO::IOTypes d_iotype;
+			UniversalIO::IOType d_iotype;
 
 			// Порог
 			UniSetTypes::ObjectId t_ai; /*!< если данный датчик дискретный,
@@ -104,7 +104,7 @@ static const int NoSafety = -1;
 			IONotifyController_i::ThresholdInfo ti;
 	
 			
-			IOController::AIOStateList::iterator ait;
+			IOController::IOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;
 			UniSetTypes::uniset_rwmutex val_lock; 	/*!< блокировка на время "работы" со значением */
 			

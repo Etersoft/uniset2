@@ -359,7 +359,7 @@ class IOControl:
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;
 		int maxHeartBeat;
-		IOController::AIOStateList::iterator aitHeartBeat;
+		IOController::IOStateList::iterator aitHeartBeat;
 
 		bool force;			/*!< флаг, означающий, что надо сохранять в SM, даже если значение не менялось */
 		bool force_out;		/*!< флаг, включающий принудительное чтения выходов */
@@ -376,7 +376,7 @@ class IOControl:
 
 
 		UniSetTypes::ObjectId testMode_as;
-		IOController::AIOStateList::iterator aitTestMode;
+		IOController::IOStateList::iterator aitTestMode;
 		long testmode;
 		long prev_testmode;
 

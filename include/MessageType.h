@@ -104,7 +104,6 @@ namespace UniSetTypes
 		public:
 
 			ObjectId id;
-			bool state;
 			long value;
 			bool undefined;
 
@@ -112,7 +111,7 @@ namespace UniSetTypes
 			long sm_tv_sec;
 			long sm_tv_usec;
 
-			UniversalIO::IOTypes sensor_type;
+			UniversalIO::IOType sensor_type;
 			IOController_i::CalibrateInfo ci;
 			
 			// для пороговых датчиков
@@ -120,13 +119,9 @@ namespace UniSetTypes
 			UniSetTypes::ThresholdId tid;
 
 			SensorMessage();
-			SensorMessage(ObjectId id, bool state, Priority priority = Message::Medium, 
-							UniversalIO::IOTypes st = UniversalIO::DigitalInput,
-							ObjectId consumer=UniSetTypes::DefaultObjectId);
-
-			SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci,
+			SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci=IOController_i::CalibrateInfo(),
 							Priority priority = Message::Medium, 
-							UniversalIO::IOTypes st = UniversalIO::AnalogInput,
+							UniversalIO::IOType st = UniversalIO::AI,
 							ObjectId consumer=UniSetTypes::DefaultObjectId);
 
 			SensorMessage(const VoidMessage *msg);

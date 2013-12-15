@@ -43,9 +43,9 @@ class NCRestorer
 	    virtual ~NCRestorer();
 
 		struct SInfo:
-			public IOController::UniAnalogIOInfo
+			public IOController::USensorIOInfo
 		{
-			SInfo( IOController_i::SensorInfo& si, UniversalIO::IOTypes& t,
+			SInfo( IOController_i::SensorInfo& si, UniversalIO::IOType& t,
 					UniSetTypes::Message::Message::Priority& p, long& def )
 			{
 				this->si = si;
@@ -56,15 +56,12 @@ class NCRestorer
 
 			SInfo()
 			{
-				this->type = UniversalIO::DigitalInput;
+				this->type = UniversalIO::DI;
 				this->priority = UniSetTypes::Message::Medium;
 				this->default_val = 0;
 			}
 
-			SInfo &operator=(IOController_i::DigitalIOInfo& inf);
-			SInfo &operator=(IOController_i::AnalogIOInfo& inf);
-			
-			operator IOController::UniDigitalIOInfo();
+			SInfo &operator=(IOController_i::SensorIOInfo& inf);
 		};
 
 		virtual void read(IONotifyController* ic, const std::string fn="" )=0;
@@ -79,46 +76,25 @@ class NCRestorer
 
 		// добавление списка порогов и заказчиков
 		static void addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyController::ThresholdExtList& lst, bool force=false );
-		
-		/*! регистрация дискретного датчика*/
-		static inline void dsRegistration( IONotifyController* ic, IOController::UniDigitalIOInfo& inf, bool force=false )
+
+		static inline void ioRegistration( IONotifyController* ic, IOController::USensorIOInfo& inf, bool force=false )
 		{
-			ic->dsRegistration(inf,force);
+			ic->ioRegistration(inf,force);
 		}
 
-		/*! регистрация аналогового датчика*/
-		static inline void asRegistration( IONotifyController* ic, IOController::UniAnalogIOInfo& inf, bool force=false )
+		static inline IOController::IOStateList::iterator ioFind( IONotifyController* ic, UniSetTypes::KeyType k )
 		{
-			ic->asRegistration(inf,force);
+			return ic->myiofind(k);
 		}
 
-		static inline IOController::AIOStateList::iterator aioFind(IONotifyController* ic, UniSetTypes::KeyType k)
+		static inline IOController::IOStateList::iterator ioEnd( IONotifyController* ic )
 		{
-			return ic->myafind(k);
+			return ic->myioEnd();
 		}
-
-		static inline IOController::DIOStateList::iterator dioFind(IONotifyController* ic, UniSetTypes::KeyType k)
+		static inline IOController::IOStateList::iterator ioBegin( IONotifyController* ic )
 		{
-			return ic->mydfind(k);
+			return ic->myioBegin();
 		}
-
-		static inline IOController::DIOStateList::iterator dioEnd( IONotifyController* ic )
-		{
-			return ic->mydioEnd();
-		}
-		static inline IOController::AIOStateList::iterator aioEnd( IONotifyController* ic )
-		{
-			return ic->myaioEnd();
-		}
-		static inline IOController::DIOStateList::iterator dioBegin( IONotifyController* ic )
-		{
-			return ic->mydioBegin();
-		}
-		static inline IOController::AIOStateList::iterator aioBegin( IONotifyController* ic )
-		{
-			return ic->myaioBegin();
-		}
-		
 };
 // ------------------------------------------------------------------------------------------
 /*!

@@ -683,7 +683,7 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 	{
 		IOProperty* p(&it->second);
 		
-//		if( p->stype != UniversalIO::DigitalOutput && p->stype != UniversalIO::AnalogOutput )
+//		if( p->stype != UniversalIO::DO && p->stype != UniversalIO::AO )
 //			continue;
 
 //		if( p->safety == NoSafetyState )
@@ -708,14 +708,14 @@ void MBSlave::sensorInfo( UniSetTypes::SensorMessage* sm )
 		if( it->second.si.id == sm->id )
 		{
 			IOProperty* p(&it->second);
-			if( p->stype == UniversalIO::DigitalOutput ||
-				p->stype == UniversalIO::DigitalInput )
+			if( p->stype == UniversalIO::DO ||
+				p->stype == UniversalIO::DI )
 			{
 				uniset_rwmutex_wrlock lock(p->val_lock);
 				p->value = sm->state ? 1 : 0;
 			}
-			else if( p->stype == UniversalIO::AnalogOutput ||
-					p->stype == UniversalIO::AnalogInput )
+			else if( p->stype == UniversalIO::AO ||
+					p->stype == UniversalIO::AI )
 			{
 				uniset_rwmutex_wrlock lock(p->val_lock);
 				p->value = sm->value;
@@ -963,7 +963,7 @@ std::ostream& operator<<( std::ostream& os, MBSlave::IOProperty& p )
 		<< " safety=" << p.safety
 		<< " invert=" << p.invert;
 
-	if( p.stype == UniversalIO::AnalogInput || p.stype == UniversalIO::AnalogOutput )
+	if( p.stype == UniversalIO::AI || p.stype == UniversalIO::AO )
 	{
 		os 	<< p.cal
 			<< " cdiagram=" << ( p.cdiagram ? "yes" : "no" );
@@ -1090,8 +1090,8 @@ ModbusRTU::mbErrCode MBSlave::real_write_it( IOMap::iterator& it, ModbusRTU::Mod
 
 		if( p->vtype == VTypes::vtUnknown )
 		{
-			if( p->stype == UniversalIO::DigitalInput ||
-				p->stype == UniversalIO::DigitalOutput )
+			if( p->stype == UniversalIO::DI ||
+				p->stype == UniversalIO::DO )
 			{
 				IOBase::processingAsDI( p, mbval, shm, force );
 			}
@@ -1147,14 +1147,14 @@ ModbusRTU::mbErrCode MBSlave::real_write_it( IOMap::iterator& it, ModbusRTU::Mod
 */
 
 /*
-		if( p->stype == UniversalIO::DigitalInput ||
-			p->stype == UniversalIO::DigitalOutput )
+		if( p->stype == UniversalIO::DI ||
+			p->stype == UniversalIO::DO )
 		{
 			bool set = val ? true : false;
 			IOBase::processingAsDI(p,set,shm,force);
 		}
-		else if( p->stype == UniversalIO::AnalogInput ||
-				 p->stype == UniversalIO::AnalogOutput )
+		else if( p->stype == UniversalIO::AI ||
+				 p->stype == UniversalIO::AO )
 		{
 			IOBase::processingAsAI( p, val, shm, force );
 		}
@@ -1274,13 +1274,13 @@ ModbusRTU::mbErrCode MBSlave::real_read_it( IOMap::iterator& it, ModbusRTU::Modb
 		if( p->amode == MBSlave::amWO )
 			return ModbusRTU::erBadDataAddress;
 		
-		if( p->stype == UniversalIO::DigitalInput || 
-			p->stype == UniversalIO::DigitalOutput )
+		if( p->stype == UniversalIO::DI ||
+			p->stype == UniversalIO::DO )
 		{
 			val = IOBase::processingAsDO(p,shm,force) ? 1 : 0;
 		}
-		else if( p->stype == UniversalIO::AnalogInput ||
-				p->stype == UniversalIO::AnalogOutput )
+		else if( p->stype == UniversalIO::AI ||
+				p->stype == UniversalIO::AO )
 		{
 			if( p->vtype == VTypes::vtUnknown )
 			{

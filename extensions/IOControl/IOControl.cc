@@ -470,13 +470,13 @@ void IOControl::ioread( IOInfo* it )
 			return;
 
 		if( testmode == tmOnlyInputs &&
-			it->stype != UniversalIO::AnalogInput &&
-			it->stype != UniversalIO::DigitalInput )
+			it->stype != UniversalIO::AI &&
+			it->stype != UniversalIO::DI )
 			return;
 
 		if( testmode == tmOnlyOutputs &&
-			it->stype != UniversalIO::AnalogOutput &&
-			it->stype != UniversalIO::DigitalOutput )
+			it->stype != UniversalIO::AO &&
+			it->stype != UniversalIO::DO )
 			return;
 	 }
 
@@ -505,7 +505,7 @@ void IOControl::ioread( IOInfo* it )
 
 		try
 		{
-			if( it->stype == UniversalIO::AnalogInput )
+			if( it->stype == UniversalIO::AI )
 			{
 				int val = card->getAnalogChannel(it->subdev,it->channel, it->range, it->aref);
 
@@ -521,7 +521,7 @@ void IOControl::ioread( IOInfo* it )
 
 				IOBase::processingAsAI( ib, val, shm, force );
 			}
-			else if( it->stype == UniversalIO::DigitalInput )
+			else if( it->stype == UniversalIO::DI )
 			{
 				bool set = card->getDigitalChannel(it->subdev,it->channel);
 /*
@@ -548,7 +548,7 @@ void IOControl::ioread( IOInfo* it )
 				if( it->si.id == testLamp_S )
 					isTestLamp = set;
 			}
-			else if( it->stype == UniversalIO::AnalogOutput )
+			else if( it->stype == UniversalIO::AO )
 			{
 				if( !it->lamp )
 				{
@@ -640,7 +640,7 @@ void IOControl::ioread( IOInfo* it )
 					}
 				}
 			}
-			else if( it->stype == UniversalIO::DigitalOutput )
+			else if( it->stype == UniversalIO::DO )
 			{
 				bool set = IOBase::processingAsDO(ib,shm,force_out);
 				if( !it->lamp || (it->lamp && !isTestLamp) )
@@ -768,7 +768,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	inf.aref = 0;
 	inf.range = 0;
 
-	if( inf.stype == UniversalIO::AnalogInput || inf.stype == UniversalIO::AnalogOutput )
+	if( inf.stype == UniversalIO::AI || inf.stype == UniversalIO::AO )
 	{
 		inf.range = it.getIntProp("range");
 		if( inf.range < 0 || inf.range > 3 )
@@ -851,12 +851,12 @@ void IOControl::sigterm( int signo )
 			if( it->subdev==DefaultSubdev || it->safety == NoSafety )
 				continue;
 
-			if( it->stype == UniversalIO::DigitalOutput || it->lamp )
+			if( it->stype == UniversalIO::DO || it->lamp )
 			{
 				bool set = it->invert ? !((bool)it->safety) : (bool)it->safety;
 				card->setDigitalChannel(it->subdev,it->channel,set);
 			}
-			else if( it->stype == UniversalIO::AnalogOutput )				
+			else if( it->stype == UniversalIO::AO )
 			{
 				card->setAnalogChannel(it->subdev,it->channel,it->safety,it->range,it->aref);
 			}
@@ -892,9 +892,9 @@ void IOControl::initOutputs()
 		{
 			if( it->lamp )
 				card->setDigitalChannel(it->subdev,it->channel,(bool)it->defval);
-			else if( it->stype == UniversalIO::DigitalOutput )
+			else if( it->stype == UniversalIO::DO )
 				card->setDigitalChannel(it->subdev,it->channel,(bool)it->defval);
-			else if( it->stype == UniversalIO::AnalogOutput )
+			else if( it->stype == UniversalIO::AO )
 				card->setAnalogChannel(it->subdev,it->channel,it->defval,it->range,it->aref);
 		}
 		catch( Exception& ex )
@@ -925,16 +925,16 @@ void IOControl::initIOCard()
 			// или "лампочки" (т.к. они фиктивные аналоговые датчики)
 			if( it->lamp )
 				card->configureChannel(it->subdev,it->channel,ComediInterface::DO);
-			else if( it->stype == UniversalIO::DigitalInput )
+			else if( it->stype == UniversalIO::DI )
 				card->configureChannel(it->subdev,it->channel,ComediInterface::DI);
-			else if( it->stype == UniversalIO::DigitalOutput )
+			else if( it->stype == UniversalIO::DO )
 				card->configureChannel(it->subdev,it->channel,ComediInterface::DO);
-			else if( it->stype == UniversalIO::AnalogInput )
+			else if( it->stype == UniversalIO::AI )
 			{
 				card->configureChannel(it->subdev,it->channel,ComediInterface::AI);
 				it->df.init( card->getAnalogChannel(it->subdev, it->channel, it->range, it->aref) );
 			}
-			else if( it->stype == UniversalIO::AnalogOutput )
+			else if( it->stype == UniversalIO::AO )
 				card->configureChannel(it->subdev,it->channel,ComediInterface::AO);
 
 		}
@@ -1041,12 +1041,12 @@ void IOControl::check_testmode()
 					if( it->subdev==DefaultSubdev || it->safety == NoSafety )
 						continue;
 
-					if( it->stype == UniversalIO::DigitalOutput || it->lamp )
+					if( it->stype == UniversalIO::DO || it->lamp )
 					{
 						bool set = it->invert ? !((bool)it->safety) : (bool)it->safety;
 						card->setDigitalChannel(it->subdev,it->channel,set);
 					}
-					else if( it->stype == UniversalIO::AnalogOutput )				
+					else if( it->stype == UniversalIO::AO )
 					{
 						card->setAnalogChannel(it->subdev,it->channel,it->safety,it->range,it->aref);
 					}
@@ -1095,7 +1095,7 @@ void IOControl::check_testlamp()
 			if( !it->lamp || it->no_testlamp )
 				continue;
 		
-			if(  it->stype == UniversalIO::AnalogOutput )
+			if(  it->stype == UniversalIO::AO )
 			{
 				if( isTestLamp )
 				{
@@ -1116,7 +1116,7 @@ void IOControl::check_testlamp()
 					delBlink(&(*it),lstBlink3);
 				}
 			}
-			else if( it->stype == UniversalIO::DigitalOutput )
+			else if( it->stype == UniversalIO::DO )
 			{
 				if( isTestLamp )
 					addBlink(&(*it),lstBlink);
@@ -1371,8 +1371,8 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 		if( card == NULL || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
 			continue;
 
-		if( it->stype == UniversalIO::AnalogOutput ||
-			it->stype == UniversalIO::DigitalOutput )
+		if( it->stype == UniversalIO::AO ||
+			it->stype == UniversalIO::DO )
 		{
 			try
 			{
@@ -1420,7 +1420,7 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 					<< endl;
 			}
 		
-			if( it->stype == UniversalIO::AnalogOutput )
+			if( it->stype == UniversalIO::AO )
 			{
 				long prev_val = 0;
 				long cur_val = 0;
@@ -1513,7 +1513,7 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 					}
 				}
 			}
-			else if( it->stype == UniversalIO::DigitalOutput )
+			else if( it->stype == UniversalIO::DO )
 			{
 				if( unideb.debugging(Debug::LEVEL1) )
 				{

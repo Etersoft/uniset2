@@ -74,10 +74,10 @@ class UniExchange:
 			{}
 
 			IOController::DIOStateList::iterator dit;
-			IOController::AIOStateList::iterator ait;
+			IOController::IOStateList::iterator ait;
 			long val;
 			long id;
-			UniversalIO::IOTypes type;
+			UniversalIO::IOType type;
 			UniSetTypes::uniset_rwmutex val_lock;
 		};
 		

@@ -57,14 +57,11 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 			// Регистрируем (если не найден)
 			switch(inf.type)
 			{
-				case UniversalIO::DigitalInput:
-				case UniversalIO::DigitalOutput:
-					ic->dsRegistration(inf);
-				break;
-	
-				case UniversalIO::AnalogInput:
-				case UniversalIO::AnalogOutput:
-					ic->asRegistration(inf);
+				case UniversalIO::DI:
+				case UniversalIO::DO:
+				case UniversalIO::AI:
+				case UniversalIO::AO:
+					ic->ioRegistration(inf);
 				break;
 	
 				default:
@@ -79,20 +76,11 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 	
 	switch(inf.type)
 	{
-		case UniversalIO::DigitalInput:
-			ic->askDIOList[k]=lst;
-		break;
-
-		case UniversalIO::AnalogInput:
-			ic->askAIOList[k]=lst;
-		break;
-		
-		case UniversalIO::DigitalOutput:
-			ic->askDOList[k]=lst;
-		break;
-
-		case UniversalIO::AnalogOutput:
-			ic->askAOList[k]=lst;
+		case UniversalIO::DI:
+		case UniversalIO::AI:
+		case UniversalIO::DO:
+		case UniversalIO::AO:
+			ic->askIOList[k]=lst;
 		break;
 
 		default:
@@ -117,14 +105,11 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
 			// Регистрируем (если не найден)
 			switch(inf.type)
 			{
-				case UniversalIO::DigitalInput:
-				case UniversalIO::DigitalOutput:
-					ic->dsRegistration(inf);
-				break;
-	
-				case UniversalIO::AnalogInput:
-				case UniversalIO::AnalogOutput:
-					ic->asRegistration(inf);
+				case UniversalIO::DI:
+				case UniversalIO::DO:
+				case UniversalIO::AI:
+				case UniversalIO::AO:
+					ic->ioRegistration(inf);
 				break;
 				
 				default:
@@ -135,26 +120,26 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
 
 	// default init iterators
 	for( IONotifyController::ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it )
-		it->itSID = ic->mydioEnd();
+		it->itSID = ic->myioEnd();
 
 	UniSetTypes::KeyType k( key(inf.si.id,inf.si.node) );
 	ic->askTMap[k].si	= inf.si;
 	ic->askTMap[k].type	= inf.type;
 	ic->askTMap[k].list	= lst;
-	ic->askTMap[k].ait 	= ic->myaioEnd();
+	ic->askTMap[k].ait 	= ic->myioEnd();
 
 	try
 	{
 		switch( inf.type )
 		{
-			case UniversalIO::DigitalInput:
-			case UniversalIO::DigitalOutput:
-			case UniversalIO::AnalogOutput:
+			case UniversalIO::DI:
+			case UniversalIO::DO:
 			break;
 
-			case UniversalIO::AnalogInput:
+			case UniversalIO::AO:
+			case UniversalIO::AI:
 			{
-				IOController::AIOStateList::iterator it(ic->myaioEnd());
+				IOController::IOStateList::iterator it(ic->myioEnd());
 				ic->checkThreshold(it,inf.si,false);
 			}
 			break;
@@ -178,25 +163,7 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
 	}
 }								
 // ------------------------------------------------------------------------------------------
-NCRestorer::SInfo& NCRestorer::SInfo::operator=(IOController_i::DigitalIOInfo& inf)
-{
-	this->si = inf.si;
-	this->type = inf.type;
-	this->priority = inf.priority;
-	this->default_val = inf.default_val;
-	this->real_value = inf.real_state ? 1 : 0;
-	this->ci.minRaw = 0;
-	this->ci.maxRaw = 0;
-	this->ci.minCal = 0;
-	this->ci.maxCal = 0;
-	this->ci.sensibility = 0;
-	this->db_ignore = false;
-	this->undefined = false;
-	this->any = 0;
-	return *this;
-}
-// ------------------------------------------------------------------------------------------
-NCRestorer::SInfo& NCRestorer::SInfo::operator=(IOController_i::AnalogIOInfo& inf)
+NCRestorer::SInfo& NCRestorer::SInfo::operator=(IOController_i::SensorIOInfo& inf)
 {
 	this->si 		= inf.si;
 	this->type 		= inf.type;
@@ -208,20 +175,5 @@ NCRestorer::SInfo& NCRestorer::SInfo::operator=(IOController_i::AnalogIOInfo& in
 	this->db_ignore = false;
 	this->any = 0;
 	return *this;
-}
-// ------------------------------------------------------------------------------------------
-NCRestorer::SInfo::operator IOController::UniDigitalIOInfo()
-{
-	IOController::UniDigitalIOInfo ret;
-
-	ret.state		= this->value ? true : false;
-	ret.si			= this->si;
-	ret.type 		= this->type;
-	ret.priority 	= this->priority;
-	ret.default_val = this->default_val ? true : false;
-	ret.any 		= this->any;
-	ret.undefined 	= this->undefined;
-	ret.db_ignore 	= this->db_ignore;
-	return ret;
 }
 // ------------------------------------------------------------------------------------------

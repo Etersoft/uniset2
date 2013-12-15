@@ -97,7 +97,7 @@ bool IOBase::check_depend( SMInterface* shm )
 	if( d_id == DefaultObjectId )
 		return true;
 
-	if( d_iotype == UniversalIO::DigitalInput || d_iotype == UniversalIO::DigitalOutput  )
+	if( d_iotype == UniversalIO::DI || d_iotype == UniversalIO::DO  )
 	{
 		if( shm->localGetState(d_dit,d_id) == (bool)d_value )
 			return true;
@@ -105,7 +105,7 @@ bool IOBase::check_depend( SMInterface* shm )
 		return false;
 	}
 
-	if( d_iotype == UniversalIO::AnalogInput || d_iotype == UniversalIO::AnalogOutput )
+	if( d_iotype == UniversalIO::AI || d_iotype == UniversalIO::AO )
 	{
 		if( shm->localGetValue(d_ait,d_id) == d_value )
 			return true;
@@ -176,13 +176,13 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 
 		if( force || it->value != val )
 		{
-			if( it->stype == UniversalIO::AnalogInput )
+			if( it->stype == UniversalIO::AI )
 				shm->localSaveValue( it->ait,it->si.id,val,shm->ID() );
-			else if( it->stype == UniversalIO::AnalogOutput )
+			else if( it->stype == UniversalIO::AO )
 				shm->localSetValue( it->ait,it->si.id,val,shm->ID() );
-			else if( it->stype == UniversalIO::DigitalOutput )
+			else if( it->stype == UniversalIO::DO )
 				shm->localSetState( it->dit,it->si.id,(bool)val,shm->ID() );
-			else if( it->stype == UniversalIO::DigitalInput )
+			else if( it->stype == UniversalIO::DI )
 				shm->localSaveState( it->dit,it->si.id,(bool)val,shm->ID() );
 
 			it->value = val;
@@ -234,13 +234,13 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 
 		if( force || it->value != val )
 		{
-			if( it->stype == UniversalIO::AnalogInput )
+			if( it->stype == UniversalIO::AI )
 				shm->localSaveValue( it->ait,it->si.id,val,shm->ID() );
-			else if( it->stype == UniversalIO::AnalogOutput )
+			else if( it->stype == UniversalIO::AO )
 				shm->localSetValue( it->ait,it->si.id,val,shm->ID() );
-			else if( it->stype == UniversalIO::DigitalOutput )
+			else if( it->stype == UniversalIO::DO )
 				shm->localSetState( it->dit,it->si.id,(bool)val,shm->ID() );
-			else if( it->stype == UniversalIO::DigitalInput )
+			else if( it->stype == UniversalIO::DI )
 				shm->localSaveState( it->dit,it->si.id,(bool)val,shm->ID() );
 
 			it->value = val;
@@ -265,13 +265,13 @@ void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force 
 		uniset_rwmutex_wrlock lock(it->val_lock);
 		if( force || (bool)it->value!=set )
 		{
-			if( it->stype == UniversalIO::DigitalInput )
+			if( it->stype == UniversalIO::DI )
 				shm->localSaveState(it->dit,it->si.id,set,shm->ID());
-			else if( it->stype == UniversalIO::DigitalOutput )
+			else if( it->stype == UniversalIO::DO )
 				shm->localSetState(it->dit,it->si.id,set,shm->ID());
-			else if( it->stype == UniversalIO::AnalogInput )
+			else if( it->stype == UniversalIO::AI )
 				shm->localSaveValue( it->ait,it->si.id,(set ? 1:0),shm->ID() );
-			else if( it->stype == UniversalIO::AnalogOutput )
+			else if( it->stype == UniversalIO::AO )
 				shm->localSetValue( it->ait,it->si.id,(set ? 1:0),shm->ID() );
 			
 			it->value = set ? 1 : 0;
@@ -290,16 +290,16 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 
 	if( force )
 	{
-		if( it->stype == UniversalIO::DigitalInput || it->stype == UniversalIO::DigitalOutput )
+		if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )
 			val = shm->localGetState(it->dit,it->si.id) ? 1 : 0;
-		else if( it->stype == UniversalIO::AnalogInput || it->stype == UniversalIO::AnalogOutput )
+		else if( it->stype == UniversalIO::AI || it->stype == UniversalIO::AO )
 			val = shm->localGetValue(it->ait,it->si.id);
 
 		it->value = val;
 	}
 
-	if( it->stype == UniversalIO::AnalogOutput ||
-		it->stype == UniversalIO::AnalogInput )
+	if( it->stype == UniversalIO::AO ||
+		it->stype == UniversalIO::AI )
 	{
 		if( it->cdiagram )	// задана специальная калибровочная диаграмма
 		{
@@ -343,9 +343,9 @@ bool IOBase::processingAsDO( IOBase* it, SMInterface* shm, bool force )
 
 	if( force )
 	{
-		if( it->stype == UniversalIO::DigitalInput || it->stype == UniversalIO::DigitalOutput )
+		if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )
 			set = shm->localGetState(it->dit,it->si.id);
-		else if( it->stype == UniversalIO::AnalogInput || it->stype == UniversalIO::AnalogOutput )
+		else if( it->stype == UniversalIO::AI || it->stype == UniversalIO::AO )
 			set = shm->localGetValue(it->ait,it->si.id) ? true : false;
 	}
 		
@@ -368,8 +368,8 @@ float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
 		it->value = val;
 	}
 
-	if( it->stype == UniversalIO::AnalogOutput ||
-		it->stype == UniversalIO::AnalogInput )
+	if( it->stype == UniversalIO::AO ||
+		it->stype == UniversalIO::AI )
 	{
 		if( it->cdiagram )	// задана специальная калибровочная диаграмма
 		{
@@ -522,7 +522,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		b->d_iotype = conf->getIOType(b->d_id);
 	}
 
-	if( b->stype == UniversalIO::AnalogInput || b->stype == UniversalIO::AnalogOutput )
+	if( b->stype == UniversalIO::AI || b->stype == UniversalIO::AO )
 	{
 		b->cal.minRaw = it.getIntProp("rmin");
 		b->cal.maxRaw = it.getIntProp("rmax");
@@ -572,7 +572,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		if( !it.getProp("iir_coeff_new").empty() )
 			f_iir_coeff_new = atof(it.getProp("iir_coeff_new").c_str());
 
-		if( b->stype == UniversalIO::AnalogInput )
+		if( b->stype == UniversalIO::AI )
 			b->df.setSettings( f_size, f_T, f_lsparam, f_iir,
 			                   f_iir_coeff_prev, f_iir_coeff_new );
 
@@ -582,7 +582,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		if( !caldiagram.empty() )
 			b->cdiagram = UniSetExtensions::buildCalibrationDiagram(caldiagram);
 	}
-	else if( b->stype == UniversalIO::DigitalInput || b->stype == UniversalIO::DigitalOutput )
+	else if( b->stype == UniversalIO::DI || b->stype == UniversalIO::DO )
 	{
 		string tai(it.getProp("threshold_aid"));
 		if( !tai.empty() )

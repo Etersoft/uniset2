@@ -313,16 +313,16 @@ using namespace UniSetTypes;
 	// ------------------------------------------------------------------------------------------
 	std::ostream& UniSetTypes::operator<<( std::ostream& os, const UniversalIO::IOType t )
 	{
-		if( t == UniversalIO::AnalogInput )
+		if( t == UniversalIO::AI )
 			return os << "AI";
 
-		if( t == UniversalIO::DigitalInput )
+		if( t == UniversalIO::DI )
 			return os << "DI";
 
-		if( t == UniversalIO::AnalogOutput )
+		if( t == UniversalIO::AO )
 			return os << "AO";
 
-		if( t == UniversalIO::DigitalOutput )
+		if( t == UniversalIO::DO )
 			return os << "DO";
 
 		return os << "UnknownIOType";
@@ -351,3 +351,4 @@ using namespace UniSetTypes;
 
 		return true;
 	}
+	// ------------------------------------------------------------------------------------------

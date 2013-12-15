@@ -197,11 +197,11 @@ void PassiveLProcessor::setOuts()
 		{
 			switch(it->iotype)
 			{
-				case UniversalIO::DigitalInput:
+				case UniversalIO::DI:
 					shm->saveLocalState(it->sid,it->lnk->from->getOut(),it->iotype);
 				break;
 
-				case UniversalIO::DigitalOutput:
+				case UniversalIO::DO:
 					shm->setState(it->sid,it->lnk->from->getOut());
 				break;
 				
@@ -229,11 +229,11 @@ void PassiveLProcessor::sigterm( int signo )
 		{
 			switch(it->iotype)
 			{
-				case UniversalIO::DigitalInput:
+				case UniversalIO::DI:
 					shm->saveLocalState(it->sid,false,it->iotype);
 				break;
 
-				case UniversalIO::DigitalOutput:
+				case UniversalIO::DO:
 					shm->setState(it->sid,false);
 				break;
 				

@@ -298,14 +298,14 @@ void UNetReceiver::real_update()
 					if( lockUpdate )
 						continue;
 				}
-
-				if( ii.iotype == UniversalIO::DigitalInput )
+				
+				if( ii.iotype == UniversalIO::DI )
 					shm->localSaveState(ii.dit,id,val,shm->ID());
-				else if( ii.iotype == UniversalIO::AnalogInput )
+				else if( ii.iotype == UniversalIO::AI )
 					shm->localSaveValue(ii.ait,id,val,shm->ID());
-				else if( ii.iotype == UniversalIO::AnalogOutput )
+				else if( ii.iotype == UniversalIO::AO )
 					shm->localSetValue(ii.ait,id,val,shm->ID());
-				else if( ii.iotype == UniversalIO::DigitalOutput )
+				else if( ii.iotype == UniversalIO::DO )
 					shm->localSetState(ii.dit,id,val,shm->ID());
 				else
 					dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << id << endl;
@@ -342,13 +342,13 @@ void UNetReceiver::real_update()
 						continue;
 				}
 
-				if( ii.iotype == UniversalIO::DigitalInput )
+				if( ii.iotype == UniversalIO::DI )
 					shm->localSaveState(ii.dit,d.id,d.val,shm->ID());
-				else if( ii.iotype == UniversalIO::AnalogInput )
+				else if( ii.iotype == UniversalIO::AI )
 					shm->localSaveValue(ii.ait,d.id,d.val,shm->ID());
-				else if( ii.iotype == UniversalIO::AnalogOutput )
+				else if( ii.iotype == UniversalIO::AO )
 					shm->localSetValue(ii.ait,d.id,d.val,shm->ID());
-				else if( ii.iotype == UniversalIO::DigitalOutput )
+				else if( ii.iotype == UniversalIO::DO )
 					shm->localSetState(ii.dit,d.id,d.val,shm->ID());
 				else
 					dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << d.id << endl;

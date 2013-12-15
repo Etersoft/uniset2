@@ -38,7 +38,7 @@ class SMDBServer:
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;
 		int maxHeartBeat;
-		IOController::AIOStateList::iterator aitHeartBeat;
+		IOController::IOStateList::iterator aitHeartBeat;
 		UniSetTypes::ObjectId test_id;
 
 		std::string db_locale;

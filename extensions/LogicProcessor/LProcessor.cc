@@ -145,11 +145,11 @@ void LProcessor::setOuts()
 		{
 			switch(it->iotype)
 			{
-				case UniversalIO::DigitalInput:
+				case UniversalIO::DI:
 					ui.saveState(it->sid,it->lnk->from->getOut(),it->iotype);
 				break;
 
-				case UniversalIO::DigitalOutput:
+				case UniversalIO::DO:
 					ui.setState(it->sid,it->lnk->from->getOut());
 				break;
 				

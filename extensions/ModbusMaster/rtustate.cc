@@ -105,10 +105,10 @@ int main( int argc, char **argv )
 		cout << rtu << endl;
 
 		for( int i=0; i<24; i++ )
-			cout << "UNIO1 AI" << i << ": " << rtu.getFloat( RTUStorage::nJ1, i, UniversalIO::AnalogInput ) << endl;
+			cout << "UNIO1 AI" << i << ": " << rtu.getFloat( RTUStorage::nJ1, i, UniversalIO::AI ) << endl;
 		for( int i=0; i<24; i++ )
-			cout << "UNIO1 DI" << i << ": " << rtu.getState( RTUStorage::nJ1, i, UniversalIO::DigitalInput ) << endl;
-
+			cout << "UNIO1 DI" << i << ": " << rtu.getState( RTUStorage::nJ1, i, UniversalIO::DI ) << endl;
+			
 		return 0;
 	}
 	catch( ModbusRTU::mbException& ex )

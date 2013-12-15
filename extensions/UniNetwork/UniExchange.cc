@@ -224,13 +224,13 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMI
 		
 		try
 		{
-			if( m->type == UniversalIO::DigitalInput )
+			if( m->type == UniversalIO::DI )
 				shm->localSaveState( s->dit, m->id, (m->value ? true : false ), shm->ID() );
-			else if( m->type == UniversalIO::DigitalOutput )
+			else if( m->type == UniversalIO::DO )
 				shm->localSetState( s->dit, m->id, (m->value ? true : false ), shm->ID() );
-			else if( map[i].type == UniversalIO::AnalogInput )
+			else if( map[i].type == UniversalIO::AI )
 				shm->localSaveValue( s->ait, m->id, m->value, shm->ID() );
-			else if( map[i].type == UniversalIO::AnalogOutput )
+			else if( map[i].type == UniversalIO::AO )
 				shm->localSetValue( s->ait, m->id, m->value, shm->ID() );
 		}
 		catch( Exception& ex )
@@ -275,13 +275,13 @@ void UniExchange::updateLocalData()
 		try
 		{
 			uniset_rwmutex_wrlock lock(it->val_lock);
-			if( it->type == UniversalIO::DigitalInput ||
-				it->type == UniversalIO::DigitalOutput )
+			if( it->type == UniversalIO::DI ||
+				it->type == UniversalIO::DO )
 			{
 				it->val = shm->localGetState( it->dit, it->id );
 			}
-			else if( it->type == UniversalIO::AnalogInput ||
-					it->type == UniversalIO::AnalogOutput )
+			else if( it->type == UniversalIO::AI ||
+					it->type == UniversalIO::AO )
 			{
 				it->val = shm->localGetValue( it->ait, it->id );
 			}

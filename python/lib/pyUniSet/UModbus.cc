@@ -226,8 +226,8 @@ long UModbus::data2value( VTypes::VType vtype, ModbusRTU::ModbusData* data )
 
 		if( p->rnum <= 1 )
 			{
-				if( p->stype == UniversalIO::DigitalInput ||
-					p->stype == UniversalIO::DigitalOutput )
+				if( p->stype == UniversalIO::DI ||
+					p->stype == UniversalIO::DO )
 				{
 					IOBase::processingAsDI( p, data[0], shm, force );
 				}

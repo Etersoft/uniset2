@@ -38,19 +38,19 @@ long UInterface::getValue( long id )throw(UException)
 {
 	if( !UniSetTypes::conf || !ui )
 	  throw USysError();
-
-	UniversalIO::IOTypes t = UniSetTypes::conf->getIOType(id);
+	
+	UniversalIO::IOType t = UniSetTypes::conf->getIOType(id);
 	try
 	{
 		switch(t)
 		{
-			case UniversalIO::DigitalInput:
-			case UniversalIO::DigitalOutput:
+			case UniversalIO::DI:
+			case UniversalIO::DO:
 			  return (ui->getState(id) ? 1 : 0);
 			break;
-
-			case UniversalIO::AnalogInput:
-			case UniversalIO::AnalogOutput:
+			
+			case UniversalIO::AI:
+			case UniversalIO::AO:
 				return ui->getValue(id);
 			break;
 
@@ -82,25 +82,25 @@ void UInterface::setValue( long id, long val )throw(UException)
 {
 	if( !UniSetTypes::conf || !ui )
 	  throw USysError();
-
-	UniversalIO::IOTypes t = UniSetTypes::conf->getIOType(id);
+	
+	UniversalIO::IOType t = UniSetTypes::conf->getIOType(id);
 	try
 	{
 		switch(t)
 		{
-			case UniversalIO::DigitalInput:
+			case UniversalIO::DI:
 				ui->saveState(id,val,t);
 			break;
-
-			case UniversalIO::DigitalOutput:
+			
+			case UniversalIO::DO:
 				ui->setState(id,val);
 			break;
-
-			case UniversalIO::AnalogInput:
+			
+			case UniversalIO::AI:
 				ui->saveValue(id,val,t);
 			break;
-
-			case UniversalIO::AnalogOutput:
+				
+			case UniversalIO::AO:
 				ui->setValue(id,val);
 			break;
 

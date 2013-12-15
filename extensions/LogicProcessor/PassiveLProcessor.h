@@ -51,7 +51,7 @@ class PassiveLProcessor:
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;
 		int maxHeartBeat;
-		IOController::AIOStateList::iterator aitHeartBeat;
+		IOController::IOStateList::iterator aitHeartBeat;
 		UniSetTypes::uniset_mutex mutex_start;
 };
 // ---------------------------------------------------------------------------

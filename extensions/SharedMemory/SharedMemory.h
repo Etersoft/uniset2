@@ -283,7 +283,7 @@ class SharedMemory:
 			UniSetTypes::ObjectId id;
 			HBuffer buf;
 
-			AIOStateList::iterator ait;
+			IOStateList::iterator ait;
 			DIOStateList::iterator dit;
 
 			void add( long val, size_t size )
@@ -364,7 +364,7 @@ class SharedMemory:
 			
 			UniSetTypes::ObjectId a_sid; // аналоговый счётчик
 			UniSetTypes::ObjectId d_sid; // дискретный датчик состояния процесса
-			AIOStateList::iterator ait;
+			IOStateList::iterator ait;
 			DIOStateList::iterator dit;
 
 			int reboot_msec; /*!< Время в течение которого, процесс обязан подтвердить своё существование,
@@ -420,7 +420,7 @@ class SharedMemory:
 
 		DIOStateList::iterator ditPulsar;
 		IOController_i::SensorInfo siPulsar;
-		UniversalIO::IOTypes iotypePulsar;
+		UniversalIO::IOType iotypePulsar;
 		int msecPulsar;
 		
 		UniSetTypes::uniset_rwmutex mutex_act;

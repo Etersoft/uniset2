@@ -466,7 +466,7 @@ int setValue( const string& args, UniversalInterface &ui, Configuration* conf )
 	{	
 		try
 		{
-			UniversalIO::IOTypes t = conf->getIOType(it->si.id);
+			UniversalIO::IOType t = conf->getIOType(it->si.id);
 			cout << "  value: " << it->val << endl;
 			cout << "   name: (" << it->si.id << ") " << it->fname << endl;
 			cout << "   iotype: " << t << endl;
@@ -477,19 +477,10 @@ int setValue( const string& args, UniversalInterface &ui, Configuration* conf )
 			
 			switch(t)
 			{
-				case UniversalIO::DigitalInput:
-					ui.saveState(it->si.id,(it->val?true:false),t,it->si.node);
-				break;
-				
-				case UniversalIO::DigitalOutput:
-					ui.setState(it->si.id,(it->val?true:false),it->si.node);
-				break;
-				
-				case UniversalIO::AnalogInput:
-					ui.saveValue(it->si.id,it->val,t,it->si.node);
-				break;
-				
-				case UniversalIO::AnalogOutput:
+				case UniversalIO::DI:
+				case UniversalIO::DO:
+				case UniversalIO::AI:
+				case UniversalIO::AO:
 					ui.setValue(it->si.id,it->val,it->si.node);
 				break;
 				
@@ -521,7 +512,7 @@ int getValue( const string& args, UniversalInterface &ui, Configuration* conf )
 	{	
 		try
 		{
-			UniversalIO::IOTypes t = conf->getIOType(it->si.id);
+			UniversalIO::IOType t = conf->getIOType(it->si.id);
 			cout << "   name: (" << it->si.id << ") " << it->fname << endl;
 			cout << "   iotype: " << t << endl;
 			cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
@@ -531,13 +522,10 @@ int getValue( const string& args, UniversalInterface &ui, Configuration* conf )
 			
 			switch(t)
 			{
-				case UniversalIO::DigitalOutput:
-				case UniversalIO::DigitalInput:
-					cout << "  state: " << ui.getState(it->si.id,it->si.node) << endl;
-				break;
-				
-				case UniversalIO::AnalogOutput:
-				case UniversalIO::AnalogInput:
+				case UniversalIO::DO:
+				case UniversalIO::DI:
+				case UniversalIO::AO:
+				case UniversalIO::AI:
 					cout << "  value: " << ui.getValue(it->si.id,it->si.node) << endl;
 				break;
 				

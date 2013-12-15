@@ -970,7 +970,7 @@ xmlNode* Configuration::getXMLObjectNode( UniSetTypes::ObjectId id )
 	return 0;
 }
 // -------------------------------------------------------------------------
-UniversalIO::IOTypes Configuration::getIOType( UniSetTypes::ObjectId id )
+UniversalIO::IOType Configuration::getIOType( UniSetTypes::ObjectId id )
 {
 	const ObjectInfo* i = oind->getObjectInfo(id);
 	if( i && (xmlNode*)(i->data) )
@@ -982,7 +982,7 @@ UniversalIO::IOTypes Configuration::getIOType( UniSetTypes::ObjectId id )
 	return UniversalIO::UnknownIOType;
 }
 // -------------------------------------------------------------------------
-UniversalIO::IOTypes Configuration::getIOType( const std::string name )
+UniversalIO::IOType Configuration::getIOType( const std::string name )
 {
 	// Если указано "короткое" имя
 	// то просто сперва ищём ID, а потом по нему

@@ -399,7 +399,7 @@ void UObject_SK::callback()
 		// "сердцебиение"
 		if( idHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
 		{
-			ui.saveValue(idHeartBeat,maxHeartBeat,UniversalIO::AnalogInput);
+			ui.saveValue(idHeartBeat,maxHeartBeat,UniversalIO::AI);
 			ptHeartBeat.reset();
 		}
 

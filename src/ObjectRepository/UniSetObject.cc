@@ -241,9 +241,6 @@ struct MsgInfo
 	MsgInfo():
 	type(Message::Unused),
 	id(DefaultObjectId),
-	acode(DefaultMessageCode),
-	ccode(DefaultMessageCode),
-	ch(0),
 	node(DefaultObjectId)
 	{
 //		struct timezone tz;
@@ -254,9 +251,6 @@ struct MsgInfo
 
 	int type;
 	ObjectId id;		// от кого
-	MessageCode acode;	// код сообщения
-	MessageCode ccode;	// код причины
-	int ch;				// характер
 	struct timeval tm;	// время
 	ObjectId node;		// откуда
 
@@ -270,12 +264,6 @@ struct MsgInfo
 
 		if( node != mi.node )
 			return node < mi.node; 
-
-		if( acode != mi.acode )
-			return acode < mi.acode;
-
-		if( ch != mi.ch )
-			return ch < mi.ch;
 
 		if( tm.tv_sec != mi.tm.tv_sec )
 			return tm.tv_sec < mi.tm.tv_sec;

@@ -63,7 +63,7 @@ void STLStorage::saveState(const IOController_i::DigitalIOInfo& di,bool st)
 
 }
 // --------------------------------------------------------------------------
-void STLStorage::saveValue(const IOController_i::AnalogIOInfo& ai, long val)
+void STLStorage::saveValue(const IOController_i::SensorIOInfo& ai, long val)
 {
 
 }

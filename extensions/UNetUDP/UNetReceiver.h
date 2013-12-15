@@ -128,7 +128,7 @@ class UNetReceiver
 		IOController::DIOStateList::iterator ditRespond;
 		bool respondInvert;
 		UniSetTypes::ObjectId sidLostPackets;
-		IOController::AIOStateList::iterator aitLostPackets;
+		IOController::IOStateList::iterator aitLostPackets;
 
 		bool activated;
 
@@ -171,9 +171,9 @@ class UNetReceiver
 		struct ItemInfo
 		{
 			long id;
-			IOController::AIOStateList::iterator ait;
+			IOController::IOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;
-			UniversalIO::IOTypes iotype;
+			UniversalIO::IOType iotype;
 
 			ItemInfo():
 				id(UniSetTypes::DefaultObjectId),
