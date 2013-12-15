@@ -30,11 +30,11 @@ ObjectIndex_idXML::~ObjectIndex_idXML()
 // -----------------------------------------------------------------------------------------
 ObjectId ObjectIndex_idXML::getIdByName( const string& name )
 {
-    MapObjectKey::iterator it = mok.find(name);
-    if( it != mok.end() )
-        return it->second;
+	MapObjectKey::iterator it = mok.find(name);
+	if( it != mok.end() )
+		return it->second;
 
-    return DefaultObjectId;
+	return DefaultObjectId;
 }
 // -----------------------------------------------------------------------------------------
 string ObjectIndex_idXML::getMapName( const ObjectId id )
@@ -86,7 +86,7 @@ void ObjectIndex_idXML::build(UniXML& xml)
 	read_nodes(xml,"nodes");
 }
 // ------------------------------------------------------------------------------------------
-void ObjectIndex_idXML::read_section( UniXML& xml, const std::string& sec )
+void ObjectIndex_idXML::read_section( UniXML& xml, const std::string sec )
 {
 	string secRoot = xml.getProp( xml.findNode(xml.getFirstNode(),"RootSection"), "name");
 	if( secRoot.empty() )
@@ -148,22 +148,21 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string& sec )
 	    strcpy( inf.repName, name.c_str() );
 
 		// textname
-		string textname(it.getProp("textname"));
+		string textname(xml.getProp(it,"textname"));
 		if( textname.empty() )
-			textname = it.getProp("name");
+			textname = xml.getProp(it,"name");
 
 		inf.textName = new char[textname.size()+1];
 		strcpy( inf.textName, textname.c_str() );
 		
 		inf.data = (void*)(xmlNode*)(it);
 
-//		omap[inf.id] = inf;
-        omap.insert(MapObjects::value_type(inf.id,inf));    // omap[inf.id] = inf;
-        mok.insert(MapObjectKey::value_type(name,inf.id)); // mok[name] = inf.id;
+		omap.insert(MapObjects::value_type(inf.id,inf));	// omap[inf.id] = inf;
+		mok.insert(MapObjectKey::value_type(name,inf.id)); // mok[name] = inf.id;
 	}
 }
 // ------------------------------------------------------------------------------------------
-void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string& sec )
+void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string sec )
 {
 	xmlNode* root( xml.findNode(xml.getFirstNode(),sec) );
 	if( !root )
@@ -216,10 +215,10 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string& sec )
 		
 		inf.data = (void*)(xmlNode*)(it);
 
-		// omap[inf.id] = inf;
-        omap.insert(MapObjects::value_type(inf.id,inf));    // omap[inf.id] = inf;
-        mok.insert( MapObjectKey::value_type(nodename,inf.id) ); // mok[name] = inf.id;
-
+//		omap[inf.id] = inf;
+//		mok[nodename] = inf.id;
+		omap.insert(MapObjects::value_type(inf.id,inf));	// omap[inf.id] = inf;
+		mok.insert(MapObjectKey::value_type(nodename,inf.id)); // mok[name] = inf.id;
 	}
 }
 // ------------------------------------------------------------------------------------------
@@ -234,9 +233,12 @@ const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id )
 // ------------------------------------------------------------------------------------------
 const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const std::string name )
 {
-	MapObjectKey::iterator it = mok.find(name);
-    if( it != mok.end() )
-        return getObjectInfo(it->second);
+	const char* n = name.c_str();
+	for( MapObjects::iterator it=omap.begin(); it!=omap.end(); it++ )
+	{
+		  if( !strcmp(it->second.repName,n) )
+			  return &(it->second);
+	}
 
 	return NULL;
 }

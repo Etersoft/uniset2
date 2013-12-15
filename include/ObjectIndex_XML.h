@@ -60,7 +60,7 @@ class ObjectIndex_XML:
 		unsigned int read_nodes( UniXML& xml, const std::string sec, unsigned int ind );
 	
 	private:
-		typedef std::map<std::string, ObjectId> MapObjectKey;                                     
+		typedef std::map<std::string, ObjectId> MapObjectKey;
 		MapObjectKey mok; // для обратного писка
 		std::vector<ObjectInfo> omap; // для прямого поиска
 		

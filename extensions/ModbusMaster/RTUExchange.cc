@@ -158,7 +158,7 @@ void RTUExchange::step()
 	try
 	{
 		if( sidExchangeMode != DefaultObjectId && force )
-			exchangeMode = shm->localGetValue(aitExchangeMode,sidExchangeMode);
+			exchangeMode = shm->localGetValue(itExchangeMode,sidExchangeMode);
 	}
 	catch(...){}
 

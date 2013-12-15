@@ -285,7 +285,7 @@ void MBTCPMultiMaster::poll_thread()
 		try
 		{
 			if( sidExchangeMode != DefaultObjectId && force )
-				exchangeMode = shm->localGetValue(aitExchangeMode,sidExchangeMode);
+				exchangeMode = shm->localGetValue(itExchangeMode,sidExchangeMode);
 		}
 		catch(...){}
 		try
@@ -318,7 +318,7 @@ void MBTCPMultiMaster::check_thread()
 					if( it->respond_id != DefaultObjectId && (force_out || r != it->respond) )
 					{
 						bool set = it->respond_invert ? !it->respond : it->respond;
-						shm->localSaveState(it->respond_dit,it->respond_id,set,getId());
+						shm->localSetValue(it->respond_it,it->respond_id,(set ? 1:0),getId());
 					}
 				}
 				catch( Exception& ex )
@@ -351,7 +351,7 @@ void MBTCPMultiMaster::initIterators()
 {
 	MBExchange::initIterators();
 	for( MBGateList::iterator it=mblist.begin(); it!=mblist.end(); ++it )
-		shm->initDIterator(it->respond_dit);
+		shm->initIterator(it->respond_it);
 }
 // -----------------------------------------------------------------------------
 void MBTCPMultiMaster::help_print( int argc, const char* const* argv )

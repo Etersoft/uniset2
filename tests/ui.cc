@@ -12,7 +12,6 @@ int main( int argc, const char **argv )
 		uniset_init(argc,argv,"test.xml");
 		UniversalInterface ui;
 
-
 		cout << "** check getSensorID function **" << endl;
 		ObjectId id1 = conf->getSensorID("Input1_S");
 		if( id1 != 1 )
@@ -50,6 +49,12 @@ int main( int argc, const char **argv )
 		cout << "id=" << id
 			<< " value=" << inf.value
 			<< " last changed: " << string(t_str) << endl;
+
+
+		cout << "check getValue: " << ui.getValue(id1) << endl;
+		cout << "check setValue: id='" << id1 << "' val=2" << endl;
+		ui.setValue(id1,2,DefaultObjectId);
+		cout << "OK" << endl;
 	}
 	catch( Exception& ex )
 	{

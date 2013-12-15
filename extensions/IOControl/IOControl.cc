@@ -274,12 +274,11 @@ void IOControl::execute()
 	else
 	{
 		iomap.resize(maxItem);
+
 		// init iterators
 		for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
-		{
-			shm->initAIterator(it->ait);
-			shm->initDIterator(it->dit);
-		}
+			shm->initIterator(it->ioit);
+
 		readconf_ok = true; // т.к. waitSM() уже был...
 	}
 	
@@ -295,9 +294,9 @@ void IOControl::execute()
 	if( !skip_iout )
 		initOutputs();
 
-	shm->initAIterator(aitHeartBeat);
-	shm->initDIterator(ditTestLamp);
-	shm->initAIterator(aitTestMode);
+	shm->initIterator(itHeartBeat);
+	shm->initIterator(itTestLamp);
+	shm->initIterator(itTestMode);
 
 	PassiveTimer ptAct(activateTimeout);
 	while( !activated && !ptAct.checkTime() )
@@ -373,7 +372,7 @@ void IOControl::execute()
 
 			if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
 			{
-				shm->localSaveValue(aitHeartBeat,sidHeartBeat,maxHeartBeat,myid);
+				shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,myid);
 				ptHeartBeat.reset();
 			}
 		}
@@ -560,7 +559,7 @@ void IOControl::ioread( IOInfo* it )
 					uniset_rwmutex_wrlock lock(it->val_lock);
 					long prev_val = it->value;
 					if( force_out )
-						it->value = shm->localGetValue(it->ait,it->si.id);
+						it->value = shm->localGetValue(it->ioit,it->si.id);
 
 					switch( it->value )
 					{
@@ -1008,7 +1007,7 @@ void IOControl::check_testmode()
 	try
 	{
 		if( force_out )
-			testmode = shm->localGetValue( aitTestMode, testMode_as );
+			testmode = shm->localGetValue( itTestMode, testMode_as );
 
 		if( prev_testmode == testmode )
 			return;
@@ -1078,7 +1077,7 @@ void IOControl::check_testlamp()
 	try
 	{
 		if( force_out )
-			isTestLamp = shm->localGetState( ditTestLamp, testLamp_S );
+			isTestLamp = shm->localGetValue( itTestLamp, testLamp_S );
 				
 		if( !trTestLamp.change(isTestLamp) )
 			return; // если состояние не менялось, то продолжаем работу...
@@ -1399,8 +1398,9 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 
 	if( sm->id == testLamp_S )
 	{
-		dlog[Debug::INFO] << myname << "(sensorInfo): test_lamp=" << sm->state << endl;
-		isTestLamp = sm->state;
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << myname << "(sensorInfo): test_lamp=" << sm->value << endl;
+		isTestLamp = (bool)sm->value;
 	}
 	else if( sm->id == testMode_as )
 	{
@@ -1415,7 +1415,6 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 			if( unideb.debugging(Debug::INFO) )
 			{
 				dlog[Debug::INFO] << myname << "(sensorInfo): sid=" << sm->id
-					<< " state=" << sm->state
 					<< " value=" << sm->value
 					<< endl;
 			}
@@ -1521,7 +1520,7 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 							<< " val=" << sm->value << endl;
 				}
 				uniset_rwmutex_wrlock lock(it->val_lock);
-				it->value = sm->state ? 1:0;
+				it->value = sm->value ? 1:0;
 			}
 			break;
 		}

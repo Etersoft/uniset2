@@ -30,7 +30,6 @@ void SharedMemory::help_print( int argc, const char* const* argv )
 	cout << "--sm-no-history        - отключить ведение истории (аварийного следа)" << endl;
 	cout << "--pulsar-id            - датчик 'мигания'" << endl;
     cout << "--pulsar-msec          - период 'мигания'. По умолчанию: 5000." << endl;
-    cout << "--pulsar-iotype        - [DI|DO]тип датчика для 'мигания'. По умолчанию DI." << endl;
 }
 // -----------------------------------------------------------------------------
 SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname ):
@@ -41,7 +40,6 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 	activated(false),
 	workready(false),
 	dblogging(false),
-	iotypePulsar(UniversalIO::DI),
 	msecPulsar(0)
 {
 	mutex_start.setName(myname + "_mutex_start");
@@ -120,22 +118,7 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 			throw SystemError(err.str());
 		}
 		siPulsar.node = conf->getLocalNode();
-
 		msecPulsar = conf->getArgPInt("--pulsar-msec",it.getProp("pulsar_msec"), 5000);
-		
-		string t = conf->getArgParam("--pulsar-iotype",it.getProp("pulsar_iotype"));
-		if( !t.empty() )
-		{
-			iotypePulsar = UniSetTypes::getIOType(t);
-			if( iotypePulsar == UniversalIO::UnknownIOType ||
-				iotypePulsar == UniversalIO::AI || iotypePulsar == UniversalIO::AO )
-			{
-				ostringstream err;
-				err << myname << ": Invalid iotype '" << t << "' for pulsar. Must be 'DI' or 'DO'";
-				dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
-				throw SystemError(err.str());
-			}
-		}
 	}
 }
 
@@ -237,12 +220,9 @@ void SharedMemory::timerInfo( TimerMessage *tm )
 	{
 		if( siPulsar.id != DefaultObjectId )
 		{
-			bool st = localGetState(ditPulsar,siPulsar);
+			bool st = (bool)localGetValue(itPulsar,siPulsar);
 			st ^= true;
-			if( iotypePulsar == UniversalIO::DI )
-				localSaveState(ditPulsar,siPulsar,st,getId());
-			else if( iotypePulsar == UniversalIO::DO )
-				localSetState(ditPulsar,siPulsar,st,getId());
+			localSetValue(itPulsar,siPulsar, (st ? 1:0), getId() );
 		}
 	}
 }
@@ -329,28 +309,22 @@ bool SharedMemory::activateObject()
 			uniset_rwmutex_wrlock l(mutex_act);
 			activated = false;
 		}
-
+		
 		UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
 		res = IONotifyController_LT::activateObject();
 
 		// инициализируем указатели		
 		for( HeartBeatList::iterator it=hlist.begin(); it!=hlist.end(); ++it )
 		{
-			it->ait = myioEnd();
-			it->dit = mydioEnd();
+			it->ioit = myioEnd();
 		}
 		
-		ditPulsar = mydioEnd();
+		itPulsar = myioEnd();
 
-//		cerr << "history count=" << hist.size() << endl;
 		for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
 		{
-//			cerr << "history for id=" << it->id << " count=" << it->hlst.size() << endl;
 			for( HistoryList::iterator hit=it->hlst.begin(); hit!=it->hlst.end(); ++hit )
-			{
-				hit->ait = myioEnd();
-				hit->dit = mydioEnd();
-			}
+				hit->ioit = myioEnd();
 		}
 
 		{
@@ -395,17 +369,14 @@ void SharedMemory::checkHeartBeat()
 		try
 		{
 			si.id = it->a_sid;
-			long val = localGetValue(it->ait,si);
+			long val = localGetValue(it->ioit,si);
 			val --;
 			if( val < -1 )
 				val = -1;
-			localSaveValue(it->ait,si,val,getId());
+			localSetValue(it->ioit,si,val,getId());
 
 			si.id = it->d_sid;
-			if( val >= 0 )
-				localSaveState(it->dit,si,true,getId());
-			else
-				localSaveState(it->dit,si,false,getId());
+			localSetValue(it->ioit,si,( val >= 0 ? true:false),getId());
 
 			// проверяем нужна ли "перезагрузка" по данному датчику
 			if( wdt && it->ptReboot.getInterval() )
@@ -750,10 +721,8 @@ void SharedMemory::saveHistory()
 	{
 		for( HistoryList::iterator hit=it->hlst.begin(); hit!=it->hlst.end(); ++hit )
 		{
-			if( hit->ait != myioEnd() )
-				hit->add( localGetValue( hit->ait, hit->ait->second.si ), it->size );
-			else if( hit->dit != mydioEnd() )
-				hit->add( localGetState( hit->dit, hit->dit->second.si ), it->size );
+			if( hit->ioit != myioEnd() )
+				hit->add( localGetValue( hit->ioit, hit->ioit->second.si ), it->size );
 			else
 			{
 				IOController_i::SensorInfo si;
@@ -762,14 +731,7 @@ void SharedMemory::saveHistory()
 				try
 				{
 					
-					hit->add( localGetValue( hit->ait, si ), it->size );
-					continue;
-				}
-				catch(...){}
-
-				try
-				{
-					hit->add( localGetState( hit->dit, si ), it->size );
+					hit->add( localGetValue( hit->ioit, si ), it->size );
 					continue;
 				}
 				catch(...){}
@@ -787,7 +749,6 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 	{
 		dlog[Debug::INFO] << myname << "(updateHistory): " 
 			<< " sid=" << sm->id 
-			<< " state=" << sm->state 
 			<< " value=" << sm->value
 			<< endl;
 	}
@@ -799,12 +760,16 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 		if( sm->sensor_type == UniversalIO::DI ||
 			sm->sensor_type == UniversalIO::DO )
 		{
-			bool st = it->fuse_invert ? !sm->state : sm->state;
+			bool st = (bool)sm->value;
+
+			if( it->fuse_invert )
+				st^=true;
+
 			if( st )
 			{
 				if( dlog.debugging(Debug::INFO) )
 					dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
-
+		
 				it->fuse_sec = sm->sm_tv_sec;
 				it->fuse_usec = sm->sm_tv_usec;
 				m_historySignal.emit( &(*it) );
@@ -812,13 +777,16 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 		}
 		else if( sm->sensor_type == UniversalIO::AI ||
 				 sm->sensor_type == UniversalIO::AO )
->>>>>>> Первый этап переделок в связи с переходом на getValue/setValue
 		{
 			if( sm->sensor_type == UniversalIO::DigitalInput ||
 				sm->sensor_type == UniversalIO::DigitalOutput )
 			{
-				bool st = it->fuse_invert ? !sm->state : sm->state;
-				if( st )
+				bool st = (bool)sm->value;
+
+				if( it->fuse_invert )
+					st^=true;
+
+				if( !st )
 				{
 					if( dlog.debugging(Debug::INFO) )
 						dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;

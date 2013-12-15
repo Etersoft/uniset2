@@ -174,13 +174,13 @@ class MBSlave:
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;
 		int maxHeartBeat;
-		IOController::IOStateList::iterator aitHeartBeat;
+		IOController::IOStateList::iterator itHeartBeat;
 		UniSetTypes::ObjectId test_id;
 
-		IOController::IOStateList::iterator aitAskCount;
+		IOController::IOStateList::iterator itAskCount;
 		UniSetTypes::ObjectId askcount_id;
 
-		IOController::DIOStateList::iterator ditRespond;
+		IOController::IOStateList::iterator itRespond;
 		UniSetTypes::ObjectId respond_id;
 		bool respond_invert;
 

@@ -6,14 +6,36 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
-PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId objId,
-										UniSetTypes::ObjectId shmID, SharedMemory* ic ):
+PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId objId, 
+										UniSetTypes::ObjectId shmID, SharedMemory* ic, const std::string& prefix ):
 	UniSetObject_LT(objId),
 	shm(0)
 {
 	logname = myname;
 	shm = new SMInterface(shmID,&(UniSetObject_LT::ui),objId,ic);
 	build(lfile);
+
+	// ********** HEARTBEAT *************
+	string heart = conf->getArgParam("--" + prefix + "-heartbeat-id",""); // it.getProp("heartbeat_id"));
+	if( !heart.empty() )
+	{
+		sidHeartBeat = conf->getSensorID(heart);
+		if( sidHeartBeat == DefaultObjectId )
+		{
+			ostringstream err;
+			err << myname << ": ID not found ('HeartBeat') for " << heart;
+			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			throw SystemError(err.str());
+		}
+
+		int heartbeatTime = getHeartBeatTime();
+		if( heartbeatTime )
+			ptHeartBeat.setTiming(heartbeatTime);
+		else
+			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
+
+		maxHeartBeat = conf->getArgPInt("--" + prefix + "-heartbeat-max","10", 10);
+	}
 }
 
 PassiveLProcessor::~PassiveLProcessor()
@@ -32,12 +54,12 @@ void PassiveLProcessor::step()
 		dlog[Debug::CRIT] << myname
 			<< "(step): (hb) " << ex << std::endl;
 	}
-
+	
 	if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
 	{
 		try
 		{
-			shm->localSaveValue(aitHeartBeat,sidHeartBeat,maxHeartBeat,getId());
+			shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
 			ptHeartBeat.reset();
 		}
 		catch(Exception& ex)
@@ -73,7 +95,7 @@ void PassiveLProcessor::sensorInfo( UniSetTypes::SensorMessage*sm )
 	for( EXTList::iterator it=extInputs.begin(); it!=extInputs.end(); ++it )
 	{
 		if( it->sid == sm->id )
-			it->state = sm->state;
+			it->state = (bool)sm->value;
 	}
 }
 // -------------------------------------------------------------------------
@@ -96,6 +118,7 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 				return;
 			}
 
+			UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
 			askSensors(UniversalIO::UIONotify);
 			askTimer(tidStep,LProcessor::sleepTime);
 			break;
@@ -105,11 +128,11 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 		case SystemMessage::Finish:
 			askSensors(UniversalIO::UIODontNotify);
 			break;
-
+		
 		case SystemMessage::WatchDog:
 		{
 			// ОПТИМИЗАЦИЯ (защита от двойного перезаказа при старте)
-			// Если идёт локальная работа
+			// Если идёт локальная работа 
 			// (т.е. RTUExchange  запущен в одном процессе с SharedMemory2)
 			// то обрабатывать WatchDog не надо, т.к. мы и так ждём готовности SM
 			// при заказе датчиков, а если SM вылетит, то вместе с этим процессом(RTUExchange)
@@ -146,6 +169,25 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 	}
 }
 // -------------------------------------------------------------------------
+bool PassiveLProcessor::activateObject()
+{
+	// блокирование обработки Starsp
+	// пока не пройдёт инициализация датчиков
+	// см. sysCommand()
+	{
+		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
+		UniSetObject_LT::activateObject();
+		initIterators();
+	}
+
+	return true;
+}
+// ------------------------------------------------------------------------------------------
+void PassiveLProcessor::initIterators()
+{
+	shm->initIterator(itHeartBeat);
+}
+// -------------------------------------------------------------------------
 void PassiveLProcessor::setOuts()
 {
 	// выcтавляем выходы
@@ -153,20 +195,7 @@ void PassiveLProcessor::setOuts()
 	{
 		try
 		{
-			switch(it->iotype)
-			{
-				case UniversalIO::DI:
-					shm->saveLocalState(it->sid,it->lnk->from->getOut(),it->iotype);
-				break;
-
-				case UniversalIO::DO:
-					shm->setState(it->sid,it->lnk->from->getOut());
-				break;
-
-				default:
-					dlog[Debug::CRIT] << myname << "(setOuts): неподдерживаемый тип iotype=" << it->iotype << endl;
-					break;
-			}
+			shm->setValue( it->sid,it->lnk->from->getOut() );
 		}
 		catch( Exception& ex )
 		{
@@ -185,20 +214,7 @@ void PassiveLProcessor::sigterm( int signo )
 	{
 		try
 		{
-			switch(it->iotype)
-			{
-				case UniversalIO::DI:
-					shm->saveLocalState(it->sid,false,it->iotype);
-				break;
-
-				case UniversalIO::DO:
-					shm->setState(it->sid,false);
-				break;
-
-				default:
-					dlog[Debug::CRIT] << myname << "(sigterm): неподдерживаемый тип iotype=" << it->iotype << endl;
-					break;
-			}
+			shm->setValue(it->sid,0);
 		}
 		catch( Exception& ex )
 		{
@@ -240,7 +256,7 @@ void PassiveLProcessor::processingMessage( UniSetTypes::VoidMessage* msg )
 
 			default:
 				break;
-		}
+		}	
 	}
 	catch(Exception& ex)
 	{

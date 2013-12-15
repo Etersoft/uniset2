@@ -97,21 +97,8 @@ bool IOBase::check_depend( SMInterface* shm )
 	if( d_id == DefaultObjectId )
 		return true;
 
-	if( d_iotype == UniversalIO::DI || d_iotype == UniversalIO::DO  )
-	{
-		if( shm->localGetState(d_dit,d_id) == (bool)d_value )
-			return true;
-
+	if( shm->localGetValue(d_ioit,d_id) != d_value )
 		return false;
-	}
-
-	if( d_iotype == UniversalIO::AI || d_iotype == UniversalIO::AO )
-	{
-		if( shm->localGetValue(d_ait,d_id) == d_value )
-			return true;
-
-		return false;
-	}
 
 	return true;
 }
@@ -123,7 +110,7 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 	{
 		uniset_rwmutex_wrlock lock(it->val_lock);
 		it->value = ChannelBreakValue;
-		shm->localSetUndefinedState(it->ait,true,it->si.id);
+		shm->localSetUndefinedState(it->ioit,true,it->si.id);
 		return;
 	}
 
@@ -172,19 +159,11 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
 	{
 		uniset_rwmutex_wrlock lock(it->val_lock);
 		if( it->value == ChannelBreakValue )
-			shm->localSetUndefinedState(it->ait,false,it->si.id);
+			shm->localSetUndefinedState(it->ioit,false,it->si.id);
 
 		if( force || it->value != val )
 		{
-			if( it->stype == UniversalIO::AI )
-				shm->localSaveValue( it->ait,it->si.id,val,shm->ID() );
-			else if( it->stype == UniversalIO::AO )
-				shm->localSetValue( it->ait,it->si.id,val,shm->ID() );
-			else if( it->stype == UniversalIO::DO )
-				shm->localSetState( it->dit,it->si.id,(bool)val,shm->ID() );
-			else if( it->stype == UniversalIO::DI )
-				shm->localSaveState( it->dit,it->si.id,(bool)val,shm->ID() );
-
+			shm->localSetValue( it->ioit,it->si.id,val,shm->ID() );
 			it->value = val;
 		}
 	}
@@ -202,7 +181,7 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 	{
 		uniset_rwmutex_wrlock lock(it->val_lock);
 		it->value = ChannelBreakValue;
-		shm->localSetUndefinedState(it->ait,true,it->si.id);
+		shm->localSetUndefinedState(it->ioit,true,it->si.id);
 		return;
 	}
 
@@ -230,19 +209,11 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 	{
 		uniset_rwmutex_wrlock lock(it->val_lock);
 		if( it->value == ChannelBreakValue )
-			shm->localSetUndefinedState(it->ait,false,it->si.id);
+			shm->localSetUndefinedState(it->ioit,false,it->si.id);
 
 		if( force || it->value != val )
 		{
-			if( it->stype == UniversalIO::AI )
-				shm->localSaveValue( it->ait,it->si.id,val,shm->ID() );
-			else if( it->stype == UniversalIO::AO )
-				shm->localSetValue( it->ait,it->si.id,val,shm->ID() );
-			else if( it->stype == UniversalIO::DO )
-				shm->localSetState( it->dit,it->si.id,(bool)val,shm->ID() );
-			else if( it->stype == UniversalIO::DI )
-				shm->localSaveState( it->dit,it->si.id,(bool)val,shm->ID() );
-
+			shm->localSetValue( it->ioit,it->si.id,val,shm->ID() );
 			it->value = val;
 		}
 	}
@@ -265,15 +236,7 @@ void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force 
 		uniset_rwmutex_wrlock lock(it->val_lock);
 		if( force || (bool)it->value!=set )
 		{
-			if( it->stype == UniversalIO::DI )
-				shm->localSaveState(it->dit,it->si.id,set,shm->ID());
-			else if( it->stype == UniversalIO::DO )
-				shm->localSetState(it->dit,it->si.id,set,shm->ID());
-			else if( it->stype == UniversalIO::AI )
-				shm->localSaveValue( it->ait,it->si.id,(set ? 1:0),shm->ID() );
-			else if( it->stype == UniversalIO::AO )
-				shm->localSetValue( it->ait,it->si.id,(set ? 1:0),shm->ID() );
-			
+			shm->localSetValue( it->ioit,it->si.id,(set ? 1:0),shm->ID() );
 			it->value = set ? 1 : 0;
 		}
 	}
@@ -290,11 +253,7 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 
 	if( force )
 	{
-		if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )
-			val = shm->localGetState(it->dit,it->si.id) ? 1 : 0;
-		else if( it->stype == UniversalIO::AI || it->stype == UniversalIO::AO )
-			val = shm->localGetValue(it->ait,it->si.id);
-
+		val = shm->localGetValue(it->ioit,it->si.id);
 		it->value = val;
 	}
 
@@ -342,12 +301,7 @@ bool IOBase::processingAsDO( IOBase* it, SMInterface* shm, bool force )
 	bool set = it->value;
 
 	if( force )
-	{
-		if( it->stype == UniversalIO::DI || it->stype == UniversalIO::DO )
-			set = shm->localGetState(it->dit,it->si.id);
-		else if( it->stype == UniversalIO::AI || it->stype == UniversalIO::AO )
-			set = shm->localGetValue(it->ait,it->si.id) ? true : false;
-	}
+		set = shm->localGetValue(it->ioit,it->si.id) ? true : false;
 		
 	set = it->invert ? !set : set;
 	return set; 
@@ -364,7 +318,7 @@ float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
 	
 	if( force )
 	{
-		val = shm->localGetValue(it->ait,it->si.id);
+		val = shm->localGetValue(it->ioit,it->si.id);
 		it->value = val;
 	}
 
@@ -406,7 +360,7 @@ void IOBase::processingThreshold( IOBase* it, SMInterface* shm, bool force )
 	if( it->t_ai == DefaultObjectId )
 		return;
 	
-	long val = shm->localGetValue(it->ait,it->t_ai);
+	long val = shm->localGetValue(it->ioit,it->t_ai);
 	bool set = it->value ? true : false;
 
 //	cout  << "val=" << val << " set=" << set << endl;
@@ -497,10 +451,8 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	b->f_ls = false;
 	b->f_filter_iir = false;
 		
-	shm->initAIterator(b->ait);
-	shm->initAIterator(b->d_ait);
-	shm->initDIterator(b->dit);
-	shm->initDIterator(b->d_dit);
+	shm->initIterator(b->ioit);
+	shm->initIterator(b->d_ioit);
 
 	string d_txt(it.getProp("depend"));
 	if( !d_txt.empty() )

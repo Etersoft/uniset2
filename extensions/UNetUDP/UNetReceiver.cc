@@ -132,28 +132,28 @@ void UNetReceiver::setRespondID( UniSetTypes::ObjectId id, bool invert )
 {
 	sidRespond = id;
 	respondInvert = invert;
-	shm->initDIterator(ditRespond);
+	shm->initIterator(itRespond);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setLostPacketsID( UniSetTypes::ObjectId id )
 {
 	sidLostPackets = id;
-	shm->initAIterator(aitLostPackets);
+	shm->initIterator(itLostPackets);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setLockUpdate( bool st )
-{
+{ 
 	uniset_rwmutex_wrlock l(lockMutex);
-	lockUpdate = st;
+	lockUpdate = st; 
 	if( !st )
 	  ptPrepare.reset();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::resetTimeout()
-{
+{ 
 	uniset_rwmutex_wrlock l(tmMutex);
-	ptRecvTimeout.reset();
-	trTimeout.change(false);
+	ptRecvTimeout.reset(); 
+	trTimeout.change(false); 
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::start()
@@ -189,7 +189,7 @@ void UNetReceiver::update()
 			try
 			{
 				bool r = respondInvert ? !isRecvOK() : isRecvOK();
-				shm->localSaveState(ditRespond,sidRespond,r,shm->ID());
+				shm->localSetValue(itRespond,sidRespond,( r ? 1:0 ),shm->ID());
 			}
 			catch(Exception& ex)
 			{
@@ -201,7 +201,7 @@ void UNetReceiver::update()
 		{
 			try
 			{
-				shm->localSaveValue(aitLostPackets,sidLostPackets,getLostPacketsNum(),shm->ID());
+				shm->localSetValue(itLostPackets,sidLostPackets,getLostPacketsNum(),shm->ID());
 			}
 			catch(Exception& ex)
 			{
@@ -288,8 +288,7 @@ void UNetReceiver::real_update()
 				{
 					dlog[Debug::WARN] << myname << "(update): reinit cache for sid=" << id << endl;
 					ii.id = id;
-					shm->initAIterator(ii.ait);
-					shm->initDIterator(ii.dit);
+					shm->initIterator(ii.ioit);
 				}
 
 				// обновление данных в SM (блокировано)
@@ -298,17 +297,8 @@ void UNetReceiver::real_update()
 					if( lockUpdate )
 						continue;
 				}
-
-				if( ii.iotype == UniversalIO::DI )
-					shm->localSaveState(ii.dit,id,val,shm->ID());
-				else if( ii.iotype == UniversalIO::AI )
-					shm->localSaveValue(ii.ait,id,val,shm->ID());
-				else if( ii.iotype == UniversalIO::AO )
-					shm->localSetValue(ii.ait,id,val,shm->ID());
-				else if( ii.iotype == UniversalIO::DO )
-					shm->localSetState(ii.dit,id,val,shm->ID());
-				else
-					dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << id << endl;
+				
+				shm->localSetValue(ii.ioit,id,val,shm->ID());
 			}
 			catch( UniSetTypes::Exception& ex)
 			{
@@ -331,8 +321,7 @@ void UNetReceiver::real_update()
 				{
 					dlog[Debug::WARN] << myname << "(update): reinit cache for sid=" << d.id << endl;
 					ii.id = d.id;
-					shm->initAIterator(ii.ait);
-					shm->initDIterator(ii.dit);
+					shm->initIterator(ii.ioit);
 				}
 
 				// обновление данных в SM (блокировано)
@@ -342,16 +331,7 @@ void UNetReceiver::real_update()
 						continue;
 				}
 
-				if( ii.iotype == UniversalIO::DI )
-					shm->localSaveState(ii.dit,d.id,d.val,shm->ID());
-				else if( ii.iotype == UniversalIO::AI )
-					shm->localSaveValue(ii.ait,d.id,d.val,shm->ID());
-				else if( ii.iotype == UniversalIO::AO )
-					shm->localSetValue(ii.ait,d.id,d.val,shm->ID());
-				else if( ii.iotype == UniversalIO::DO )
-					shm->localSetState(ii.dit,d.id,d.val,shm->ID());
-				else
-					dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << d.id << endl;
+				shm->localSetValue(ii.ioit,d.id,d.val,shm->ID());
 			}
 			catch( UniSetTypes::Exception& ex)
 			{
@@ -409,7 +389,7 @@ void UNetReceiver::receive()
 		{
 			if( dlog.debugging(Debug::WARN) )
 				dlog[Debug::WARN] << myname << "(receive): catch ..." << std::endl;
-		}
+		}	
 
 		// делаем через промежуточную переменную
 		// чтобы поскорее освободить mutex
@@ -519,15 +499,10 @@ bool UNetReceiver::recv()
 void UNetReceiver::initIterators()
 {
 	for( ItemVec::iterator it=d_icache.begin(); it!=d_icache.end(); ++it )
-	{
-		shm->initAIterator(it->ait);
-		shm->initDIterator(it->dit);
-	}
+		shm->initIterator(it->ioit);
+
 	for( ItemVec::iterator it=a_icache.begin(); it!=a_icache.end(); ++it )
-	{
-		shm->initAIterator(it->ait);
-		shm->initDIterator(it->dit);
-	}
+		shm->initIterator(it->ioit);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
@@ -547,8 +522,7 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
 		  {
 				d.id = pack.d_id[i];
 				d.iotype = conf->getIOType(d.id);
-				shm->initAIterator(d.ait);
-				shm->initDIterator(d.dit);
+				shm->initIterator(d.ioit);
 		  }
 	 }
 }
@@ -569,8 +543,7 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
 		  {
 				d.id = pack.a_dat[i].id;
 				d.iotype = conf->getIOType(d.id);
-				shm->initAIterator(d.ait);
-				shm->initDIterator(d.dit);
+				shm->initIterator(d.ioit);
 		  }
 	 }
 }

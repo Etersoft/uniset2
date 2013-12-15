@@ -73,8 +73,7 @@ class UniExchange:
 				type(UniversalIO::UnknownIOType)
 			{}
 
-			IOController::DIOStateList::iterator dit;
-			IOController::IOStateList::iterator ait;
+			IOController::IOStateList::iterator ioit;
 			long val;
 			long id;
 			UniversalIO::IOType type;
@@ -92,7 +91,7 @@ class UniExchange:
 			UniSetTypes::ObjectId id;
 			UniSetTypes::ObjectId node;
 			UniSetTypes::ObjectId sidConnection; /*!< датчик связи */
-			IOController::DIOStateList::iterator conn_dit;
+			IOController::IOStateList::iterator conn_it;
 			SList smap;
 			
 			void update(IOController_i::ShortMapSeq_var& map, SMInterface* shm );

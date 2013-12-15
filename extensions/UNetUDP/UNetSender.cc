@@ -88,18 +88,7 @@ void UNetSender::updateFromSM()
 	DMap::iterator it=dlist.begin();
 	for( ; it!=dlist.end(); ++it )
 	{
-		long value = 0;
-
-		if( it->iotype == UniversalIO::DI || it->iotype == UniversalIO::DO )
-			value = shm->localGetState(it->dit,it->id) ? 1 : 0;
-		else if( it->iotype == UniversalIO::AI || it->iotype == UniversalIO::AO )
-			value = shm->localGetValue(it->ait,it->id);
-		else
-		{
-			dlog[Debug::CRIT] << myname << "(update): Unknown iotype for sid=" << it->id << endl;
-			continue;
-		}
-
+		long value = shm->localGetValue(it->ioit,it->id);
 		updateItem(it,value);
 	}
 }
@@ -334,10 +323,7 @@ void UNetSender::initIterators()
 {
 	DMap::iterator it=dlist.begin();
 	for( ; it!=dlist.end(); it++ )
-	{
-		shm->initDIterator(it->dit);
-		shm->initAIterator(it->ait);
-	}
+		shm->initIterator(it->ioit);
 }
 // -----------------------------------------------------------------------------
 void UNetSender::askSensors( UniversalIO::UIOCommand cmd )

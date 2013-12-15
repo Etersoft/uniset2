@@ -173,11 +173,12 @@ void UniExchange::execute()
 			{
 				try
 				{
-					shm->localSaveState(it->conn_dit,it->sidConnection,ok,getId());
+					shm->localSetValue(it->conn_it,it->sidConnection,ok,getId());
 				}
 				catch(...)
 				{
-					dlog[Debug::CRIT]<< myname << "(execute): sensor not avalible "
+					if( dlog.debugging(Debug::CRIT) )
+						dlog[Debug::CRIT]<< myname << "(execute): sensor not avalible "
 							<< conf->oind->getNameById( it->sidConnection) 
 							<< endl; 
 				}
@@ -214,8 +215,7 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMI
 		IOController_i::ShortMap* m = &(map[i]);
 		if( reinit )
 		{
-			shm->initDIterator(s->dit);
-			shm->initAIterator(s->ait);
+			shm->initIterator(s->ioit);
 			s->type 	= m->type;
 			s->id 		= m->id;
 		}
@@ -224,14 +224,13 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMI
 		
 		try
 		{
-			if( m->type == UniversalIO::DI )
-				shm->localSaveState( s->dit, m->id, (m->value ? true : false ), shm->ID() );
-			else if( m->type == UniversalIO::DO )
-				shm->localSetState( s->dit, m->id, (m->value ? true : false ), shm->ID() );
-			else if( map[i].type == UniversalIO::AI )
-				shm->localSaveValue( s->ait, m->id, m->value, shm->ID() );
-			else if( map[i].type == UniversalIO::AO )
-				shm->localSetValue( s->ait, m->id, m->value, shm->ID() );
+/*
+			if( s->type == UniversalIO::DO || s->type == UniversalIO::DI )
+				shm->localSetValue( s->ioit, m->id, (m->value ? 1:0), shm->ID() );
+			else
+				shm->localSetValue( s->ioit, m->id, m->value, shm->ID() );
+*/
+			shm->localSetValue( s->ioit, m->id, m->value, shm->ID() );
 		}
 		catch( Exception& ex )
 		{
@@ -275,24 +274,15 @@ void UniExchange::updateLocalData()
 		try
 		{
 			uniset_rwmutex_wrlock lock(it->val_lock);
-			if( it->type == UniversalIO::DI ||
-				it->type == UniversalIO::DO )
-			{
-				it->val = shm->localGetState( it->dit, it->id );
-			}
-			else if( it->type == UniversalIO::AI ||
-					it->type == UniversalIO::AO )
-			{
-				it->val = shm->localGetValue( it->ait, it->id );
-			}
+			it->val = shm->localGetValue( it->ioit, it->id );
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::INFO]  << "(update): " << ex << endl;
+			dlog[Debug::WARN]  << "(update): " << ex << endl;
 		}
 		catch( ... )
 		{
-			dlog[Debug::INFO]  << "(update): catch ..." << endl;
+			dlog[Debug::WARN]  << "(update): catch ..." << endl;
 		}
 	}
 	
@@ -302,10 +292,7 @@ void UniExchange::updateLocalData()
 void UniExchange::initIterators()
 {
 	for( SList::iterator it=mymap.begin(); it!=mymap.end(); ++it )
-	{
-		shm->initDIterator(it->dit);
-		shm->initAIterator(it->ait);
-	}
+		shm->initIterator(it->ioit);
 }
 // --------------------------------------------------------------------------
 void UniExchange::askSensors( UniversalIO::UIOCommand cmd )

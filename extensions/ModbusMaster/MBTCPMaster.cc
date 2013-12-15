@@ -146,7 +146,7 @@ void MBTCPMaster::poll_thread()
 		try
 		{
 			if( sidExchangeMode != DefaultObjectId && force )
-				exchangeMode = shm->localGetValue(aitExchangeMode,sidExchangeMode);
+				exchangeMode = shm->localGetValue(itExchangeMode,sidExchangeMode);
 		}
 		catch(...){}
 		try

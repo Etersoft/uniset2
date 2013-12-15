@@ -347,6 +347,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - remove deprecated intefaces: MessageInterface
 - remove deprecated messages: AlarmMessage, InfoMessage, DBMessage
 - remove 'state' from SensorMessage
+- remove deprecated function setState,getState,askState
+  use simple function: setValue,getValue,askSensor
+- possible use of the property 'iotype' in uniset-codegen
 
 * Tue Dec 10 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt3
 - add RRDServer
