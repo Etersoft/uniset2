@@ -40,7 +40,6 @@ static const int NoSafety = -1;
 				d_id(UniSetTypes::DefaultObjectId),
 				d_value(0),
 				d_off_value(0),
-				d_iotype(UniversalIO::UnknownIOType),
 				t_ai(UniSetTypes::DefaultObjectId)
 			{}
 
@@ -90,10 +89,9 @@ static const int NoSafety = -1;
 			
 			// Зависимость (d - depend)
 			UniSetTypes::ObjectId d_id;  /*!< идентификатор датчика, от которого зависит данный */
-			IOController::IOStateList::iterator d_ioit; /*! итератор на датчик от которого зависит данный */
+			IOController::IOStateList::iterator d_it; /*! итератор на датчик от которого зависит данный */
 			long d_value; /*!< разрешающее работу значение датчика от которого зависит данный */
 			long d_off_value; /*!< блокирующее значение */
-			UniversalIO::IOType d_iotype;
 
 			// Порог
 			UniSetTypes::ObjectId t_ai; /*!< если данный датчик дискретный,

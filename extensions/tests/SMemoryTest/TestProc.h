@@ -16,13 +16,16 @@ class TestProc:
 
 		enum Timers
 		{
-			tmChange
+			tmChange,
+			tmCheckWorking,
+			tmCheckDepend
 		};
 
 		virtual void step();
-		void sensorInfo( UniSetTypes::SensorMessage *sm );
-		void timerInfo( UniSetTypes::TimerMessage *tm );
-
+		virtual void sensorInfo( UniSetTypes::SensorMessage *sm );
+		virtual void timerInfo( UniSetTypes::TimerMessage *tm );
+        virtual void sysCommand( UniSetTypes::SystemMessage* sm );
+		
 	private:
 		bool state;
 };

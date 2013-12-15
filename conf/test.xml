@@ -36,6 +36,9 @@
 		<TestProc name="TestProc"
 			on_s="Input1_S"
 			lamp_c="Lamp58_C"
+			depend_c="Input4_S"
+			d_check_s="Input6_S"
+			set_d_check_s="Input6_S"
 		/>
 
 		<IOControl name="IOControl"/>
@@ -165,11 +168,7 @@
 			<item id="3" iotype="DI"  mbtcp="1" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" name="Input3_S" priority="Medium" textname="Команда 3"/>
 			<item id="4" iotype="DI" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input4_S" priority="Medium" rs="2" textname="Команда 4"/>
 			<item id="5" iotype="DI" name="Input5_S" priority="Medium" textname="Команда 5" udp="2"/>
-			<item id="6" iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2">
-				<depends>
-					<depend name="Input4_S"/>
-				</depends>
-			</item>
+			<item id="6" iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2" depend="Input4_S"/>
 			<item id="7" iotype="DO" name="DO_C" priority="Medium" textname="Digital output"/>
 			<item id="8" iotype="DO" name="DO1_C" priority="Medium" textname="Digital output"/>
 			<item default="1000" id="9" iotype="AO" name="AO_AS" precision="2" priority="Medium" rs="2" rs_channel="1" rs_jack="j1" rs_mbaddr="0x01" rs_mbfunc="0x06" rs_mbreg="0x02" rs_mbtype="rtu188" textname="Analog output"/>

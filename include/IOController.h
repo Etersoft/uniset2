@@ -98,26 +98,26 @@ class IOController:
 
 	public:
 
-		struct DependsInfo;
-		typedef std::list<DependsInfo> DependsList;
+		typedef sigc::signal<void,const IOController_i::SensorInfo&, long, IOController*> ChangeSignal;
 
-		/*! слот для подключения функции вызываемой при изменении состояния датчика 
-			\param it 	- интератор из DependsList
-			\param bool	- текущее состояние undefined (TRUE|FALSE)
-		*/
-		typedef sigc::slot<void,DependsList::iterator,bool> DependsSlot;
-		
-		/*! \warning В данной реализации call-back функция только одна!
-			Потом можно будет перейти на список (типа AFilter и DFilter)
-		*/
-		void setDependsSlot( DependsSlot sl );
-		void setBlockDependsSlot( DependsSlot sl );
+		// signal по изменению определённого датчика
+		ChangeSignal signal_change_value( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
+		ChangeSignal signal_change_value( const IOController_i::SensorInfo& si );
+
+		// предварительное объявление, чтобы в структуре объявить итератор..
+		struct USensorIOInfo;
+		typedef std::map<UniSetTypes::KeyType, USensorIOInfo> IOStateList;
 
 		struct USensorIOInfo:
 			public IOController_i::SensorIOInfo
 		{
-			USensorIOInfo():any(0),dlst_lock(false),block_value(0),db_ignore(false)
-				{ undefined = false; blocked=false; }
+			USensorIOInfo():any(0),db_ignore(false),d_value(0),d_off_value(0)
+			{
+				undefined = false;
+				d_si.id = UniSetTypes::DefaultObjectId;
+				d_si.node = UniSetTypes::DefaultObjectId;
+			}
+
 			virtual ~USensorIOInfo(){}
 
 			USensorIOInfo(IOController_i::SensorIOInfo& r);
@@ -127,35 +127,29 @@ class IOController:
 			USensorIOInfo& operator=(IOController_i::SensorIOInfo& r);
 			const USensorIOInfo& operator=(const IOController_i::SensorIOInfo& r);
 			USensorIOInfo& operator=(IOController_i::SensorIOInfo* r);
-		
-			void* any; 			/*!< расширение для возможности хранения своей информации */
-			DependsList dlst; 	/*!< список io зависящих от данного (для выставления поля undefined) */
-			bool dlst_lock; 	/*!< флаг блокирующий работу со списком */
-			long block_value;
-            bool db_ignore;		/*!< не писать изменения в БД */
-			
+
+			// Дополнительные (вспомогательные поля)
 			UniSetTypes::uniset_rwmutex val_lock; /*!< флаг блокирующий работу со значением */
+		
+			IOStateList::iterator it;
+
+			void* any; 			/*!< расширение для возможности хранения своей информации */
+            bool db_ignore;		/*!< не писать изменения в БД */
+
+			// сигнал для реализации механизма зависимостией..
+			ChangeSignal changeSignal;
+
+			IOController_i::SensorInfo d_si;  /*!< идентификатор датчика, от которого зависит данный */
+			long d_value; /*!< разрешающее работу значение датчика от которого зависит данный */
+			long d_off_value; /*!< блокирующее значение */
+
+			void checkDepend( const IOController_i::SensorInfo& si , long newval, IOController* );
 		};
 
-
-		// Функции работы со списками датчиков (без изменения 'const')
-		typedef std::map<UniSetTypes::KeyType, USensorIOInfo> IOStateList;
-	
 		inline IOStateList::iterator ioBegin(){ return ioList.begin(); }
 		inline IOStateList::iterator ioEnd(){ return ioList.end(); }
 		inline IOStateList::iterator find(UniSetTypes::KeyType k){ return ioList.find(k); }
 		inline int ioCount(){ return ioList.size(); }
-
-		struct DependsInfo
-		{
-			DependsInfo( bool init=false );
-			DependsInfo( IOController_i::SensorInfo& si, IOStateList::iterator& it );
-			
-			IOController_i::SensorInfo si;
-			IOStateList::iterator it;
-			bool block_invert;	/*!< инвертирование логики для блокирования */
-			bool init;
-		};
 
 		// доступ к элементам через итератор
 		virtual void localSetValue( IOStateList::iterator& it, const IOController_i::SensorInfo& si,
@@ -254,13 +248,8 @@ class IOController:
 		inline bool iofiltersEmpty(){ return iofilters.empty(); }
 		inline int iodiltersSize(){ return iofilters.size(); }
 
-		// ---------------------------
-		// note: функция вызывается рекурсивно!!!
-		void updateDepends( IOController::DependsList& lst, bool undefined, bool& lock );
-		void updateBlockDepends( IOController::DependsList& lst, bool blk_state, bool& lock );
-
 	private:		
-		friend class AskDumper;
+		friend class NCRestorer;
 	
 		IOStateList ioList;	/*!< список с текущим состоянием аналоговых входов/выходов */
 		UniSetTypes::uniset_rwmutex ioMutex; /*!< замок для блокирования совместного доступа к ioList */
@@ -268,9 +257,6 @@ class IOController:
 		bool isPingDBServer;	// флаг связи с DBServer-ом 
 
 		IOFilterSlotList iofilters; /*!< список фильтров для аналоговых значений */
-
-		DependsSlot dslot; /*!< undefined depends slot */
-		DependsSlot bslot; /*!< block depends slot */
 
 		UniSetTypes::uniset_rwmutex loggingMutex; /*!< logging info mutex */
 };

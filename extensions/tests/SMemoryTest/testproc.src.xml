@@ -17,11 +17,18 @@
   </settings>
   <variables>
       <item name="changeTime" type="int" default="2000" min="0" comment="change state time" const="1" public="1" />
+      <item name="checkTime" type="int" default="3000" min="0" comment="check Working time" const="1" public="1" />
+      <item name="checkDependTime" type="int" default="5000" min="0" comment="check depend time" const="1" public="1" />
   </variables>
   <smap>
 	<!-- name - название переменной в конф. файле -->
 	<item name="on_s" vartype="in" comment="Тестовый вход" smTestID="1"/>
 	<item name="lamp_c" vartype="out" comment="Лампочка (тестовый выход)"/>
+
+	<!-- проверка работы механизма зависимостей -->
+	<item name="depend_c" vartype="out" comment="Датчик от которого зависит состояние другого"/>
+	<item name="d_check_s" vartype="in" comment="состояние зависимого датчика"/>
+	<item name="set_d_check_s" vartype="out" comment="для выставления датчика"/>
   </smap>
 
   <msgmap>

@@ -97,7 +97,7 @@ bool IOBase::check_depend( SMInterface* shm )
 	if( d_id == DefaultObjectId )
 		return true;
 
-	if( shm->localGetValue(d_ioit,d_id) != d_value )
+	if( shm->localGetValue(d_it,d_id) != d_value )
 		return false;
 
 	return true;
@@ -452,7 +452,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	b->f_filter_iir = false;
 		
 	shm->initIterator(b->ioit);
-	shm->initIterator(b->d_ioit);
+	shm->initIterator(b->d_it);
 
 	string d_txt(it.getProp("depend"));
 	if( !d_txt.empty() )
@@ -471,7 +471,6 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		// по умолчанию срабатывание на "1"
 		b->d_value = it.getProp("depend_value").empty() ? 1 : it.getIntProp("depend_value");
 		b->d_off_value = it.getIntProp("depend_off_value");
-		b->d_iotype = conf->getIOType(b->d_id);
 	}
 
 	if( b->stype == UniversalIO::AI || b->stype == UniversalIO::AO )

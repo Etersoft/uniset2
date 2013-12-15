@@ -20,7 +20,7 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 
 #include "Debug.h"
 #include "Configuration.h"
@@ -44,7 +44,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 {
 	UniSetTypes::KeyType k( key(inf.si.id,inf.si.node) );
 
-	// Проверка зарегистрирован-ли данный датчик	
+	// Проверка зарегистрирован-ли данный датчик
 	// если такого дискретного датчика нет, то здесь сработает исключение...
 	if( !force )
 	{
@@ -63,17 +63,17 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 				case UniversalIO::AO:
 					ic->ioRegistration(inf);
 				break;
-	
+
 				default:
 					unideb[Debug::CRIT] << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА! -> "
 									<< conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
 					return;
 				break;
-	
+
 			}
 		}
 	}
-	
+
 	switch(inf.type)
 	{
 		case UniversalIO::DI:
@@ -92,7 +92,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 // ------------------------------------------------------------------------------------------
 void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyController::ThresholdExtList& lst, bool force )
 {
-	// Проверка зарегистрирован-ли данный датчик	
+	// Проверка зарегистрирован-ли данный датчик
 	// если такого дискретного датчика нет сдесь сработает исключение...
 	if( !force )
 	{
@@ -111,7 +111,7 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
 				case UniversalIO::AO:
 					ic->ioRegistration(inf);
 				break;
-				
+
 				default:
 					break;
 			}
@@ -143,25 +143,25 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
 				ic->checkThreshold(it,inf.si,false);
 			}
 			break;
-			
+
 			default:
 				break;
 		}
 	}
 	catch(Exception& ex)
 	{
-	   	unideb[Debug::WARN] << ic->getName() << "(NCRestorer::addthresholdlist): " << ex
+		unideb[Debug::WARN] << ic->getName() << "(NCRestorer::addthresholdlist): " << ex
 				<< " для " << conf->oind->getNameById(inf.si.id, inf.si.node) << endl;
 		throw;
 	}
 	catch( CORBA::SystemException& ex )
 	{
-	  	unideb[Debug::WARN] << ic->getName() << "(NCRestorer::addthresholdlist): " 
+		unideb[Debug::WARN] << ic->getName() << "(NCRestorer::addthresholdlist): "
 				<< conf->oind->getNameById(inf.si.id,inf.si.node) << " недоступен!!(CORBA::SystemException): "
 				<< ex.NP_minorString() << endl;
 		throw;
 	}
-}								
+}
 // ------------------------------------------------------------------------------------------
 NCRestorer::SInfo& NCRestorer::SInfo::operator=(IOController_i::SensorIOInfo& inf)
 {
@@ -177,3 +177,24 @@ NCRestorer::SInfo& NCRestorer::SInfo::operator=(IOController_i::SensorIOInfo& in
 	return *this;
 }
 // ------------------------------------------------------------------------------------------
+void NCRestorer::init_depends_signals( IONotifyController* ic )
+{
+	for( IOController::IOStateList::iterator it=ic->ioList.begin(); it!=ic->ioList.end(); ++it )
+	{
+		// обновляем итераторы...
+		it->second.it = it;
+
+		if( it->second.d_si.id == DefaultObjectId )
+			continue;
+
+		if( unideb.debugging(Debug::INFO) )
+			unideb[Debug::INFO] << ic->getName() << "(NCRestorer::init_depends_signals): "
+				<< " init depend: '" << conf->oind->getMapName(it->second.si.id) << "'"
+				<< " dep_name='" << conf->oind->getMapName(it->second.d_si.id) << "'"
+				<< endl;
+
+		IOController::ChangeSignal s = ic->signal_change_value(it->second.d_si);
+		s.connect( sigc::mem_fun( &it->second, &IOController::USensorIOInfo::checkDepend) );
+	}
+}
+// -----------------------------------------------------------------------------
