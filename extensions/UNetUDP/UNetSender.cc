@@ -90,9 +90,9 @@ void UNetSender::updateFromSM()
 	{
 		long value = 0;
 
-		if( it->iotype == UniversalIO::DigitalInput || it->iotype == UniversalIO::DigitalOutput )
+		if( it->iotype == UniversalIO::DI || it->iotype == UniversalIO::DO )
 			value = shm->localGetState(it->dit,it->id) ? 1 : 0;
-		else if( it->iotype == UniversalIO::AnalogInput || it->iotype == UniversalIO::AnalogOutput )
+		else if( it->iotype == UniversalIO::AI || it->iotype == UniversalIO::AO )
 			value = shm->localGetValue(it->ait,it->id);
 		else
 		{
@@ -126,12 +126,12 @@ void UNetSender::updateItem( DMap::iterator& it, long value )
 	if( it == dlist.end() )
 		return;
 
-	if( it->iotype == UniversalIO::DigitalInput || it->iotype == UniversalIO::DigitalOutput )
+	if( it->iotype == UniversalIO::DI || it->iotype == UniversalIO::DO )
 	{
 		UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
 		mypack.setDData(it->pack_ind,value);
 	}
-	else if( it->iotype == UniversalIO::AnalogInput || it->iotype == UniversalIO::AnalogOutput )
+	else if( it->iotype == UniversalIO::AI || it->iotype == UniversalIO::AO )
 	{
 		UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
 		mypack.setAData(it->pack_ind,value);
@@ -286,7 +286,7 @@ bool UNetSender::initItem( UniXML_iterator& it )
 
 	p.id = sid;
 
-	if( p.iotype == UniversalIO::DigitalInput || p.iotype == UniversalIO::DigitalOutput )
+	if( p.iotype == UniversalIO::DI || p.iotype == UniversalIO::DO )
 	{
 		p.pack_ind = mypack.addDData(sid,0);
 		if ( p.pack_ind >= UniSetUDP::MaxDCount )
@@ -299,7 +299,7 @@ bool UNetSender::initItem( UniXML_iterator& it )
 			return false;
 		}
 	}
-	else if( p.iotype == UniversalIO::AnalogInput || p.iotype == UniversalIO::AnalogOutput )
+	else if( p.iotype == UniversalIO::AI || p.iotype == UniversalIO::AO )
 	{
 		p.pack_ind = mypack.addAData(sid,0);
 		if ( p.pack_ind >= UniSetUDP::MaxACount )

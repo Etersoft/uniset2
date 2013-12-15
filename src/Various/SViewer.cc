@@ -182,16 +182,11 @@ void SViewer::getInfo( ObjectId id )
 			return;
 		}
 
-		IOController_i::DSensorInfoSeq_var dmap = ioc->getDigitalSensorsMap();
-		IOController_i::ASensorInfoSeq_var amap = ioc->getAnalogSensorsMap();
+		IOController_i::SensorInfoSeq_var amap = ioc->getSensorsMap();
 		IONotifyController_i::ThresholdsListSeq_var tlst = ioc->getThresholdsList();
 	
 		try
-		{ updateDSensors(dmap, id);
-		}catch(...){};
-
-		try
-		{ updateASensors(amap, id);
+		{ updateSensors(amap, id);
 		}catch(...){}
 
 		try
@@ -213,59 +208,16 @@ void SViewer::getInfo( ObjectId id )
 }
 
 // ---------------------------------------------------------------------------
-void SViewer::updateDSensors(IOController_i::DSensorInfoSeq_var& dmap, UniSetTypes::ObjectId oid )
+void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetTypes::ObjectId oid )
 {
 	string owner = ORepHelpers::getShortName(conf->oind->getMapName(oid));
 	cout << "\n======================================================\n" << owner;
-	cout << "\t Дискретные датчики";
-	cout << "\n------------------------------------------------------"<< endl;
-
-	int size = dmap->length();
-	for(int i=0; i<size; i++)
-	{
-		if( dmap[i].type == UniversalIO::DigitalInput )
-		{
-//			UniSetTypes::KeyType k = key(dmap[i].si.id, dmap[i].si.node);
-			string name(conf->oind->getNameById(dmap[i].si.id, dmap[i].si.node));
-			if( isShort )
-				name = ORepHelpers::getShortName(name);
-			
-			string txtname( conf->oind->getTextName(dmap[i].si.id) );
-			printInfo(dmap[i].si.id, name, dmap[i].state, owner, txtname,"DI");
-		}
-	}
-	cout << "------------------------------------------------------\n";
-	
-	cout << "\n======================================================\n" << owner;
-	cout << "\t Дискретные выходы";
-	cout << "\n------------------------------------------------------"<< endl;
-	for(int i=0; i<size; i++)
-	{
-		if( dmap[i].type == UniversalIO::DigitalOutput )
-		{
-//			UniSetTypes::KeyType k = key(dmap[i].si.id, dmap[i].si.node);
-			string name(conf->oind->getNameById(dmap[i].si.id, dmap[i].si.node));
-			if( isShort )
-				name = ORepHelpers::getShortName(name);
-			
-			string txtname( conf->oind->getTextName(dmap[i].si.id) );
-			printInfo(dmap[i].si.id, name, dmap[i].state, owner, txtname, "DO");
-		}
-	}
-	cout << "------------------------------------------------------\n";
-
-}
-// ---------------------------------------------------------------------------
-void SViewer::updateASensors(IOController_i::ASensorInfoSeq_var& amap, UniSetTypes::ObjectId oid)
-{
-	string owner = ORepHelpers::getShortName(conf->oind->getMapName(oid));
-	cout << "\n======================================================\n" << owner;
-	cout << "\t Аналоговые датчики";
+	cout << "\t Датчики";
 	cout << "\n------------------------------------------------------"<< endl;
 	int size = amap->length();
 	for(int i=0; i<size; i++)
 	{
-		if( amap[i].type == UniversalIO::AnalogInput )
+		if( amap[i].type == UniversalIO::AI || amap[i].type == UniversalIO::DI )
 		{
 //			UniSetTypes::KeyType k = key(amap[i].si.id, amap[i].si.node);
 			string name(conf->oind->getNameById(amap[i].si.id, amap[i].si.node));
@@ -278,11 +230,11 @@ void SViewer::updateASensors(IOController_i::ASensorInfoSeq_var& amap, UniSetTyp
 	cout << "------------------------------------------------------\n";	
 
 	cout << "\n======================================================\n" << owner;
-	cout << "\t Аналоговые выходы";
+	cout << "\t Выходы";
 	cout << "\n------------------------------------------------------"<< endl;
 	for(int i=0; i<size; i++)
 	{
-		if( amap[i].type == UniversalIO::AnalogOutput )
+		if( amap[i].type == UniversalIO::AO || amap[i].type == UniversalIO::DO )
 		{
 //			UniSetTypes::KeyType k = key(amap[i].si.id, amap[i].si.node);
 			string name(conf->oind->getNameById(amap[i].si.id, amap[i].si.node));
@@ -309,11 +261,11 @@ void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tls
 		cout << "(" << setw(5) << tlst[i].si.id << ") | ";
 		switch( tlst[i].type  )
 		{
-			case UniversalIO::AnalogInput:
+			case UniversalIO::AI:
 				cout << "AI";
 			break;
 
-			case UniversalIO::AnalogOutput:
+			case UniversalIO::AO:
 				cout << "AO";
 			break;
 			

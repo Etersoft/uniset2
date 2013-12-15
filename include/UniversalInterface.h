@@ -78,7 +78,7 @@ class UniversalInterface
 		// Группа должна принадлежать одному процессу!
 		
 		//! Получение состояния для списка указанных датчиков
-		IOController_i::ASensorInfoSeq_var getSensorSeq( UniSetTypes::IDList& lst );
+		IOController_i::SensorInfoSeq_var getSensorSeq( UniSetTypes::IDList& lst );
 
 		// Изменения состояния списка входов/выходов
 		// Возвращает список не найденных идентификаторов
@@ -90,40 +90,15 @@ class UniversalInterface
 
 		
 		// ------------------------------------------------------
-
-
-		//! Получение состояния дискретного датчика
-		bool getState ( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
-		bool getState ( UniSetTypes::ObjectId id );
-
-		//! Получение состояния аналогового датчика
+		//! Получение состояния датчика
 		long getValue ( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )throw(IO_THROW_EXCEPTIONS);
 		long getValue ( UniSetTypes::ObjectId id );
 		
-		//! Вывод для дискретного датчика
-		void setState ( UniSetTypes::ObjectId id, bool state, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
-		void setState ( UniSetTypes::ObjectId id, bool state );
-		void setState ( IOController_i::SensorInfo& si, bool state, UniSetTypes::ObjectId supplier );
-
-		//! Вывод для аналогового датчика
+		//! Выставление состояния датчика
 		void setValue ( UniSetTypes::ObjectId id, long value, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
 		void setValue ( UniSetTypes::ObjectId id, long value);
 		void setValue ( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
 
-		//! Запись состояния дискретного датчика на удаленный контроллер
-		bool saveState ( UniSetTypes::ObjectId id, bool state, UniversalIO::IOTypes type, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
-		bool saveState ( UniSetTypes::ObjectId id, bool state, UniversalIO::IOTypes type );
-		bool saveState ( IOController_i::SensorInfo& si, bool state, UniversalIO::IOTypes type, UniSetTypes::ObjectId supplier );
-		
-		//! Запись состояния аналогового датчика на удаленный контроллер
-		bool saveValue ( UniSetTypes::ObjectId id, long value, UniversalIO::IOTypes type, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
-		bool saveValue ( UniSetTypes::ObjectId id, long value, UniversalIO::IOTypes type );
-		bool saveValue ( IOController_i::SensorInfo& si, long value, UniversalIO::IOTypes type, UniSetTypes::ObjectId supplier );
-		
-		// функции не вырабатывающие исключений...
-		void fastSaveValue( IOController_i::SensorInfo& si, long value, UniversalIO::IOTypes type, UniSetTypes::ObjectId supplier );
-		void fastSaveState( IOController_i::SensorInfo& si, bool state, UniversalIO::IOTypes type, UniSetTypes::ObjectId supplier );
-		void fastSetState( IOController_i::SensorInfo& si, bool state, UniSetTypes::ObjectId supplier );
 		void fastSetValue( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
 
 		// установка неопределённого состояния
@@ -141,18 +116,6 @@ class UniversalInterface
 
 
 		//! Заказ информации об изменении дискретного датчика
-		void askRemoteState( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node,
-							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId )throw(IO_THROW_EXCEPTIONS);		
-
-		void askState( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, 
-						UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
-
-		//! Заказ информации об изменении аналогового датчика						
-		void askRemoteValue ( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node,
-						UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId ) throw(IO_THROW_EXCEPTIONS);
-		void askValue ( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd,
-								UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
-
 		void askThreshold ( UniSetTypes::ObjectId sensorId, UniSetTypes::ThresholdId tid,
 							UniversalIO::UIOCommand cmd,
 							CORBA::Long lowLimit=0, CORBA::Long hiLimit=0, CORBA::Long sensibility=0, 
@@ -170,33 +133,14 @@ class UniversalInterface
 		void askRemoteSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node,
 							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId )throw(IO_THROW_EXCEPTIONS);		
 
+		UniversalIO::IOType getIOType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
+		UniversalIO::IOType getIOType(UniSetTypes::ObjectId id);
 
-		void askOutput( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, 
-						UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
-
-		void askRemoteOutput( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node,
-							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId )throw(IO_THROW_EXCEPTIONS);
-
-		//! Заказ таймера
-		void askTimer( UniSetTypes::TimerId timerid, CORBA::Long timeMS, CORBA::Short ticks=-1,
-						UniSetTypes::Message::Priority piority=UniSetTypes::Message::High,
-						UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId) throw(IO_THROW_EXCEPTIONS);
-
-		//! Заказ сообщения
-		void askMessage( UniSetTypes::MessageCode mid, UniversalIO::UIOCommand cmd, bool ack = true,
-							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId ) throw(IO_THROW_EXCEPTIONS);
-		void askMessageRange( UniSetTypes::MessageCode from, UniSetTypes::MessageCode to,
-								UniversalIO::UIOCommand cmd, bool ack = true,
-								UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId ) throw(IO_THROW_EXCEPTIONS);
-		
-
-		UniversalIO::IOTypes getIOType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
-		UniversalIO::IOTypes getIOType(UniSetTypes::ObjectId id);
 		UniSetTypes::ObjectType getType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
 		UniSetTypes::ObjectType getType(UniSetTypes::ObjectId id);
 
 		// read from xml (only for xml!)
-		UniversalIO::IOTypes getConfIOType( UniSetTypes::ObjectId id );
+		UniversalIO::IOType getConfIOType( UniSetTypes::ObjectId id );
 
 		IOController_i::ShortIOInfo getChangedTime( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
 		IOController_i::ShortMapSeq* getSensors( UniSetTypes::ObjectId id, 

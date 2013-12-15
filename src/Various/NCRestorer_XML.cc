@@ -132,28 +132,14 @@ void NCRestorer_XML::read_list( UniXML& xml, xmlNode* node, IONotifyController* 
 
 		switch(inf.type)
 		{
-			case UniversalIO::DigitalOutput:
-			case UniversalIO::DigitalInput:
-			{
-				try
-				{	
-					IOController::UniDigitalIOInfo dinf(inf);
-					dinf.real_state = dinf.state;
-					dsRegistration(ic,dinf,true);
-				}
-				catch(Exception& ex)
-				{
-					unideb[Debug::WARN] << "(read_list): " << ex << endl;
-				}
-			}
-			break;
-
-			case UniversalIO::AnalogOutput:
-			case UniversalIO::AnalogInput:
+			case UniversalIO::DO:
+			case UniversalIO::DI:
+			case UniversalIO::AO:
+			case UniversalIO::AI:
 			{
 				try
 				{
-					asRegistration(ic, inf, true);
+					ioRegistration(ic, inf, true);
 				}
 				catch(Exception& ex)
 				{
@@ -294,7 +280,7 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
 	}
 
 	// калибровка
-	if( inf.type == UniversalIO::AnalogInput || inf.type == UniversalIO::AnalogOutput )
+	if( inf.type == UniversalIO::AI || inf.type == UniversalIO::AO )
 	{
 		inf.ci.minRaw = xml.getIntProp(it,"rmin");
 		inf.ci.maxRaw = xml.getIntProp(it,"rmax");
@@ -456,9 +442,9 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 		}
 		else
 		{
-			UniversalIO::IOTypes iotype = conf->getIOType(ti.sid);
+			UniversalIO::IOType iotype = conf->getIOType(ti.sid);
 			// Пока что IONotifyController поддерживает работу только с 'DI'.
-			if( iotype != UniversalIO::DigitalInput )
+			if( iotype != UniversalIO::DI )
 			{
 				 unideb[Debug::CRIT] << "(NCRestorer_XML:getThresholdInfo): "
 					<< " Bad iotype(" << iotype << ") for " << sid_name << ". iotype must be 'DI'!" << endl;
@@ -580,9 +566,8 @@ void NCRestorer_XML::build_depends( UniXML& xml, xmlNode* node, IONotifyControll
 			continue;
 		
 		UniSetTypes::KeyType k = UniSetTypes::key(mydepinfo.si.id,mydepinfo.si.node);
-		mydepinfo.dit = dioFind(ic,k);
-		mydepinfo.ait = aioFind(ic,k);
-		if( mydepinfo.dit==dioEnd(ic) && mydepinfo.ait==aioEnd(ic) )
+		mydepinfo.it = ioFind(ic,k);
+		if( mydepinfo.it==ioEnd(ic) )
 		{
 			unideb[Debug::CRIT] << "(NCRestorer_XML:build_depends): Датчик " 
 				<< xml.getProp(node,"name")
@@ -602,9 +587,8 @@ void NCRestorer_XML::build_depends( UniXML& xml, xmlNode* node, IONotifyControll
 				if( getDependsInfo(xml,dit,blk) )
 				{	
 					k = UniSetTypes::key(blk.si.id,blk.si.node);
-					blk.dit = dioFind(ic,k);
-					blk.ait = aioFind(ic,k);
-					if( blk.dit==dioEnd(ic) && blk.ait==aioEnd(ic) )
+					blk.it = ioFind(ic,k);
+					if( blk.it==ioEnd(ic) )
 					{
 						unideb[Debug::CRIT] << ic->getName() << "(NCRestorer_XML:build_depends): " 
 							<< " Не найдена зависимость на " << xml.getProp(dit,"name")
@@ -616,33 +600,22 @@ void NCRestorer_XML::build_depends( UniXML& xml, xmlNode* node, IONotifyControll
 					long block_val = dit.getIntProp("block_value");
 
 					long defval 	= 0;
-					if( blk.dit != dioEnd(ic) )
-						defval = blk.dit->second.default_val;
-					else if( blk.ait != aioEnd(ic) )
-						defval = blk.ait->second.default_val;
+					if( blk.it != ioEnd(ic) )
+						defval = blk.it->second.default_val;
 
 					// Проверка начальных условий для высталения блокировки
 					bool blk_set = defval ? false : true;
 					if( mydepinfo.block_invert )
 						blk_set ^= true;
 
-					if( mydepinfo.dit!=dioEnd(ic) )
+					if( mydepinfo.it!=ioEnd(ic) )
 					{
-						mydepinfo.dit->second.blocked = blk_set;
-						mydepinfo.dit->second.block_state = (bool)block_val;
-						mydepinfo.dit->second.state = defval;
-						mydepinfo.dit->second.real_state = defval;
-						if( blk_set )
-							mydepinfo.dit->second.state = (bool)block_val;
-					}
-					else if( mydepinfo.ait!=aioEnd(ic) )
-					{
-						mydepinfo.ait->second.blocked = blk_set;
-						mydepinfo.ait->second.block_value = block_val;
+						mydepinfo.it->second.blocked = blk_set;
+						mydepinfo.it->second.block_value = block_val;
 						if( blk_set )
 						{
-							mydepinfo.ait->second.real_value = mydepinfo.ait->second.value;
-							mydepinfo.ait->second.value = block_val;
+							mydepinfo.it->second.real_value = mydepinfo.it->second.value;
+							mydepinfo.it->second.value = block_val;
 						}
 					}
 
@@ -650,21 +623,9 @@ void NCRestorer_XML::build_depends( UniXML& xml, xmlNode* node, IONotifyControll
 					// (без проверки на дублирование
 					// т.к. не может быть два одинаковых ID 
 					// в конф. файле...
-					if( blk.dit != dioEnd(ic) )
+					if( blk.it != ioEnd(ic) )
 					{
-						blk.dit->second.dlst.push_back(mydepinfo);
-						if( unideb.debugging(Debug::INFO) )	
-						{
-							unideb[Debug::INFO] << ic->getName() << "(NCRestorer_XML:build_depends):" 
-								<< " add " << xml.getProp(it,"name") 
-								<< " to list of depends for " << xml.getProp(dit,"name")
-								<< " blk_set=" << blk_set
-								<< endl;
-						}
-					}
-					else if( blk.ait != aioEnd(ic) )
-					{
-						blk.ait->second.dlst.push_back(mydepinfo);
+						blk.it->second.dlst.push_back(mydepinfo);
 						if( unideb.debugging(Debug::INFO) )	
 						{
 							unideb[Debug::INFO] << ic->getName() << "(NCRestorer_XML:build_depends):" 

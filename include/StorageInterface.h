@@ -45,7 +45,7 @@ class StorageInterface
 		virtual long getValue(const IOController_i::SensorInfo& si)=0;
 
 		virtual void saveState(const IOController_i::DigitalIOInfo& di,bool st)=0;
-		virtual void saveValue(const IOController_i::AnalogIOInfo& ai, long val)=0;
+		virtual void saveValue(const IOController_i::SensorIOInfo& ai, long val)=0;
 
 	protected:
 
@@ -70,7 +70,7 @@ class STLStorage:
 		virtual long getValue(const IOController_i::SensorInfo& si);
 
 		virtual void saveState(const IOController_i::DigitalIOInfo& di,bool st);
-		virtual void saveValue(const IOController_i::AnalogIOInfo& ai, long val);
+		virtual void saveValue(const IOController_i::SensorIOInfo& ai, long val);
 
 	protected:
 	private:

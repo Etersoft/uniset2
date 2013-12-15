@@ -170,7 +170,7 @@ class MBExchange:
 			bool resp_init;
 			bool ask_every_reg;
 			UniSetTypes::ObjectId mode_id;
-			IOController::AIOStateList::iterator mode_ait;
+			IOController::IOStateList::iterator mode_ait;
 			long mode; // режим работы с устройством (см. ExchangeMode)
 
 			// return TRUE if state changed
@@ -292,11 +292,11 @@ class MBExchange:
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;
 		int maxHeartBeat;
-		IOController::AIOStateList::iterator aitHeartBeat;
+		IOController::IOStateList::iterator aitHeartBeat;
 		UniSetTypes::ObjectId test_id;
 
 		UniSetTypes::ObjectId sidExchangeMode; /*!< иденидентификатор для датчика режима работы */
-		IOController::AIOStateList::iterator aitExchangeMode;
+		IOController::IOStateList::iterator aitExchangeMode;
 		long exchangeMode; /*!< режим работы см. ExchangeMode */
 
 		UniSetTypes::uniset_rwmutex actMutex;

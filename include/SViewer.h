@@ -48,9 +48,8 @@ class SViewer
 		void readSection(const std::string sec, const std::string secRoot);
 		void getInfo(UniSetTypes::ObjectId id);
 
-		virtual void updateDSensors(IOController_i::DSensorInfoSeq_var& dmap, UniSetTypes::ObjectId oid);
-		virtual void updateASensors(IOController_i::ASensorInfoSeq_var& amap, UniSetTypes::ObjectId oid);
-		virtual void updateThresholds(IONotifyController_i::ThresholdsListSeq_var& tlst, UniSetTypes::ObjectId oid);
+		virtual void updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetTypes::ObjectId oid );
+		virtual void updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, UniSetTypes::ObjectId oid );
 
 		const std::string csec;
 		void printInfo(UniSetTypes::ObjectId id, const std::string& sname, long value, const std::string& owner, 

@@ -31,9 +31,9 @@ class UNetSender
 				id(UniSetTypes::DefaultObjectId),
 				pack_ind(-1){}
 
-			UniversalIO::IOTypes iotype;
+			UniversalIO::IOType iotype;
 			UniSetTypes::ObjectId id;
-			IOController::AIOStateList::iterator ait;
+			IOController::IOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;
 			int pack_ind;
 

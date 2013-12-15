@@ -38,22 +38,22 @@ long UInterface::getValue( long id )throw(UException)
 {
 	if( !UniSetTypes::conf || !ui )
 	  throw USysError();
-	
-	UniversalIO::IOTypes t = UniSetTypes::conf->getIOType(id);
+
+	UniversalIO::IOType t = UniSetTypes::conf->getIOType(id);
 	try
 	{
 		switch(t)
 		{
-			case UniversalIO::DigitalInput:
-			case UniversalIO::DigitalOutput:
+			case UniversalIO::DI:
+			case UniversalIO::DO:
 			  return (ui->getState(id) ? 1 : 0);
 			break;
-			
-			case UniversalIO::AnalogInput:
-			case UniversalIO::AnalogOutput:
+
+			case UniversalIO::AI:
+			case UniversalIO::AO:
 				return ui->getValue(id);
 			break;
-				
+
 			default:
 			{
 			  ostringstream e;
@@ -74,7 +74,7 @@ long UInterface::getValue( long id )throw(UException)
 	{
 		throw UException("(getValue): catch...");
 	}
-	
+
 	throw UException("(getValue): unknown error");
 }
 //---------------------------------------------------------------------------
@@ -82,28 +82,28 @@ void UInterface::setValue( long id, long val )throw(UException)
 {
 	if( !UniSetTypes::conf || !ui )
 	  throw USysError();
-	
-	UniversalIO::IOTypes t = UniSetTypes::conf->getIOType(id);
+
+	UniversalIO::IOType t = UniSetTypes::conf->getIOType(id);
 	try
 	{
 		switch(t)
 		{
-			case UniversalIO::DigitalInput:
+			case UniversalIO::DI:
 				ui->saveState(id,val,t);
 			break;
-			
-			case UniversalIO::DigitalOutput:
+
+			case UniversalIO::DO:
 				ui->setState(id,val);
 			break;
-			
-			case UniversalIO::AnalogInput:
+
+			case UniversalIO::AI:
 				ui->saveValue(id,val,t);
 			break;
-				
-			case UniversalIO::AnalogOutput:
+
+			case UniversalIO::AO:
 				ui->setValue(id,val);
 			break;
-				
+
 			default:
 			{
 			  ostringstream e;
@@ -130,7 +130,7 @@ long UInterface::getSensorID( const char* name )
 {
 	if( UniSetTypes::conf )
 	  return UniSetTypes::conf->getSensorID(name);
-	
+
 	return -1;
 }
 //---------------------------------------------------------------------------
@@ -138,7 +138,7 @@ const char* UInterface::getName( long id )
 {
 	if( UniSetTypes::conf )
 		return UniSetTypes::conf->oind->getMapName(id).c_str();
-		
+
 	return "";
 }
 //---------------------------------------------------------------------------
@@ -146,7 +146,7 @@ const char* UInterface::getShortName( long id )
 {
 	if( UniSetTypes::conf )
 		return ORepHelpers::getShortName(UniSetTypes::conf->oind->getMapName(id)).c_str();
-		
+
 	return "";
 }
 //---------------------------------------------------------------------------
@@ -154,7 +154,7 @@ const char* UInterface::getTextName( long id )
 {
 	if( UniSetTypes::conf )
 		return UniSetTypes::conf->oind->getTextName(id).c_str();
-		
+
 	return "";
 }
 //---------------------------------------------------------------------------
@@ -162,7 +162,7 @@ const char* UInterface::getConfFileName()
 {
 	if( UniSetTypes::conf )
 		return UniSetTypes::conf->getConfFileName().c_str();
-		
+
 	return "";
 
 }

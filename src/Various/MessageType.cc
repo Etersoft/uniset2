@@ -71,10 +71,9 @@ VoidMessage::VoidMessage()
 //--------------------------------------------------------------------------------------------
 SensorMessage::SensorMessage():
 id(DefaultObjectId),
-state(false),
 value(0),
 undefined(false),
-sensor_type(UniversalIO::DigitalInput),
+sensor_type(UniversalIO::DI),
 threshold(false),
 tid(UniSetTypes::DefaultThresholdId)
 {
@@ -90,37 +89,10 @@ tid(UniSetTypes::DefaultThresholdId)
 	ci.precision = 0;
 }
 
-SensorMessage::SensorMessage(ObjectId id, bool state, Priority priority, 
-							UniversalIO::IOTypes st, ObjectId consumer):
-id(id),
-state(state),
-value(0),
-undefined(false),
-sensor_type(st),
-threshold(false),
-tid(UniSetTypes::DefaultThresholdId)
-{
-	value = state ? 1:0;
-
-	type			= Message::SensorInfo;
-	this->priority	= priority;
-	this->consumer 	= consumer;
-	sm_tv_sec 		= tm.tv_sec;
-	sm_tv_usec 		= tm.tv_usec;
-
-	ci.minRaw = 0;
-	ci.maxRaw = 0;
-	ci.minCal = 0;
-	ci.maxCal = 0;
-	ci.sensibility = 0;
-	ci.precision = 0;
-}
-
 SensorMessage::SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci,
 							Priority priority, 
-							UniversalIO::IOTypes st, ObjectId consumer):
+							UniversalIO::IOType st, ObjectId consumer):
 id(id),
-state(false),
 value(value),
 undefined(false),
 sensor_type(st),
@@ -128,7 +100,6 @@ ci(ci),
 threshold(false),
 tid(UniSetTypes::DefaultThresholdId)
 {
-	state = value != 0;
 	type			= Message::SensorInfo;
 	this->priority 	= priority;
 	this->consumer 	= consumer;	

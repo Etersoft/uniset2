@@ -22,9 +22,9 @@ int main( int argc, const char **argv )
 		}
 
 		cout << "** check getConfIOType function **" << endl;
-		UniversalIO::IOTypes t = ui.getConfIOType(id1);
+		UniversalIO::IOType t = ui.getConfIOType(id1);
 		cout << "sensor ID=" << id1 << " iotype=" << t << endl;
-		if( t != UniversalIO::DigitalInput )
+		if( t != UniversalIO::DI )
 		{
 			cout << "** FAILED! check getSensorID function **" << endl;
 			return 1;

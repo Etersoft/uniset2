@@ -20,7 +20,7 @@ void help_print()
 struct ExtInfo:
 	public UniSetTypes::ParamSInfo
 {
-	UniversalIO::IOTypes iotype;
+	UniversalIO::IOType iotype;
 };
 // -----------------------------------------------------------------------------
 int main( int argc, char **argv )
@@ -57,8 +57,8 @@ int main( int argc, char **argv )
 		std::list<ExtInfo> l;
 		for( std::list<UniSetTypes::ParamSInfo>::iterator it = lst.begin(); it!=lst.end(); ++it )
 		{
-			UniversalIO::IOTypes t = conf->getIOType( it->si.id );
-			if( t != UniversalIO::AnalogInput && t != UniversalIO::AnalogOutput )
+			UniversalIO::IOType t = conf->getIOType( it->si.id );
+			if( t != UniversalIO::AI && t != UniversalIO::AO )
 			{
 				cerr << endl << "Неверный типа датчика '" << t << "' для id='" << it->fname << "'. Тип должен быть AI или AO." << endl << endl;
 				return 1;
@@ -122,9 +122,6 @@ int main( int argc, char **argv )
 				{
 				      try
 				      {
-						if( it->iotype == UniversalIO::AnalogInput )
-						ui.saveValue(it->si, j, UniversalIO::AnalogInput, DefaultObjectId);
-						else
 							ui.setValue(it->si, j, DefaultObjectId);
 				      }
 				      catch( Exception& ex )
@@ -150,9 +147,6 @@ int main( int argc, char **argv )
 				{
 				      try
 				      {
-						if( it->iotype == UniversalIO::AnalogInput )
-						ui.saveValue(it->si, i, UniversalIO::AnalogInput, DefaultObjectId);
-						else
 							ui.setValue(it->si, i, DefaultObjectId);
 				      }
 				      catch( Exception& ex )

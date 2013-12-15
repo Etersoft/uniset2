@@ -57,7 +57,6 @@ interface IOController_i : ObjectsManager_i
 	{	
 	};
 
-
 	/*! Информация о датчике */
 	struct SensorInfo
 	{
@@ -118,8 +117,7 @@ interface IOController_i : ObjectsManager_i
 	typedef sequence<SensorIOInfo> SensorInfoSeq;
 
 	SensorInfoSeq getSensorsMap();
-	SensorIOInfo getSInfo(in SensorInfo si) raises(NameNotFound);
-
+	SensorIOInfo getSensorIOInfo( in SensorInfo si ) raises(NameNotFound);
 
 	// -- Функции работы со списком датчиков --
 

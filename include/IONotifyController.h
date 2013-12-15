@@ -119,15 +119,11 @@ class IONotifyController:
 		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("IONotifyController"); }
 
 		virtual void askSensor(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
-		virtual void askState(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
-		virtual void askValue(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 		
 		virtual void askThreshold(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, 
 									UniSetTypes::ThresholdId tid,
 									CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Long sensibility,
 									UniversalIO::UIOCommand cmd );
-
-		virtual void askOutput(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 
 		virtual UniSetTypes::IDSeq* askSensorsSeq(const UniSetTypes::IDSeq& lst, 
 													const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
@@ -183,7 +179,7 @@ class IONotifyController:
 			/*! итератор в списке датчиков 
 				(для оптимально-быстрого доступа)
 			*/
-			IOController::DIOStateList::iterator itSID;
+			IOController::IOStateList::iterator itSID;
 			
 			/*! инверсная логика */
 			bool inverse; 
@@ -207,31 +203,19 @@ class IONotifyController:
 		{
 			ThresholdsListInfo(){}
 			ThresholdsListInfo(	IOController_i::SensorInfo& si, ThresholdExtList& list, 
-								UniversalIO::IOTypes t=UniversalIO::AnalogInput ):
+								UniversalIO::IOType t=UniversalIO::AI ):
 				si(si),type(t),list(list){}
 		
 			IOController_i::SensorInfo si;
-			AIOStateList::iterator ait;
-			UniversalIO::IOTypes type;
+			IOStateList::iterator ait;
+			UniversalIO::IOType type;
 			ThresholdExtList list;
 		};
 		
 		/*! массив пар датчик->список порогов */
 		typedef std::map<UniSetTypes::KeyType,ThresholdsListInfo> AskThresholdMap;
 
-		virtual void localSaveValue( IOController::AIOStateList::iterator& it, 
-										const IOController_i::SensorInfo& si,
-										CORBA::Long newvalue, UniSetTypes::ObjectId sup_id );
-
-		virtual void localSaveState( IOController::DIOStateList::iterator& it, 
-										const IOController_i::SensorInfo& si,
-										CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id );
-
-	  	virtual void localSetState( IOController::DIOStateList::iterator& it, 
-										const IOController_i::SensorInfo& si,
-										CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id );
-
-		virtual void localSetValue( IOController::AIOStateList::iterator& it, 
+		virtual void localSetValue( IOController::IOStateList::iterator& it,
 										const IOController_i::SensorInfo& si,
 										CORBA::Long value, UniSetTypes::ObjectId sup_id );
 
@@ -240,15 +224,14 @@ class IONotifyController:
 		virtual bool activateObject();
 
 		// ФИЛЬТРЫ
-		bool myAFilter(const UniAnalogIOInfo& ai, CORBA::Long newvalue, UniSetTypes::ObjectId sup_id);
-		bool myDFilter(const UniDigitalIOInfo& ai, CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id);
+		bool myIOFilter(const USensorIOInfo& ai, CORBA::Long newvalue, UniSetTypes::ObjectId sup_id);
 
 		//! посылка информации об изменении состояния датчика
 		virtual void send(ConsumerList& lst, UniSetTypes::SensorMessage& sm);
 
 
 		//! проверка срабатывания пороговых датчиков
-		virtual void checkThreshold( AIOStateList::iterator& li, 
+		virtual void checkThreshold( IOStateList::iterator& li,
 									const IOController_i::SensorInfo& si, bool send=true );
 
 		//! поиск информации о пороговом датчике
@@ -298,24 +281,13 @@ class IONotifyController:
 		bool removeThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci);
 
 
-		AskMap askDIOList; /*!< список потребителей по дискретным датчикам */
-		AskMap askAIOList; /*!< список потребителей по аналоговым датчикам */
+		AskMap askIOList; /*!< список потребителей по аналоговым датчикам */
 		AskThresholdMap askTMap; /*!< список порогов по аналоговым датчикам */
 		
-		// Выходы
-		AskMap askDOList; /*!< список потребителей по дискретным выходам */
-		AskMap askAOList; /*!< список потребителей по аналоговым выходам */
-	
-		/*! замок для блокирования совместного доступа к cписку потребителей дискретных датчиков */
-		UniSetTypes::uniset_rwmutex askDMutex;
-		/*! замок для блокирования совместного доступа к cписку потребителей аналоговых датчиков */
-		UniSetTypes::uniset_rwmutex askAMutex;
+		/*! замок для блокирования совместного доступа к cписку потребителей датчиков */
+		UniSetTypes::uniset_rwmutex askIOMutex;
 		/*! замок для блокирования совместного доступа к cписку потребителей пороговых датчиков */			
 		UniSetTypes::uniset_rwmutex trshMutex;
-		/*! замок для блокирования совместного доступа к cписку потребителей аналоговых выходов */
-		UniSetTypes::uniset_rwmutex askAOMutex;
-		/*! замок для блокирования совместного доступа к cписку потребителей дискретных выходов */
-		UniSetTypes::uniset_rwmutex askDOMutex;
 		
 		int maxAttemtps; /*! timeout for consumer */
 };

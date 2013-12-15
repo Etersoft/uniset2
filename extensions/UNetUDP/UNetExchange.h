@@ -130,7 +130,7 @@ class UNetExchange:
 		PassiveTimer ptHeartBeat;
 		UniSetTypes::ObjectId sidHeartBeat;
 		int maxHeartBeat;
-		IOController::AIOStateList::iterator aitHeartBeat;
+		IOController::IOStateList::iterator aitHeartBeat;
 		UniSetTypes::ObjectId test_id;
 
 		int steptime;	/*!< периодичность вызова step, [мсек] */
@@ -178,7 +178,7 @@ class UNetExchange:
 			IOController::DIOStateList::iterator ditRespond;
 			bool respondInvert;
 			UniSetTypes::ObjectId sidLostPackets;
-			IOController::AIOStateList::iterator aitLostPackets;
+			IOController::IOStateList::iterator aitLostPackets;
 		};
 
 		typedef std::list<ReceiverInfo> ReceiverList;

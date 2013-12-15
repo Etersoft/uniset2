@@ -669,8 +669,8 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 
 			if( p->rnum <= 1 )
 			{
-				if( p->stype == UniversalIO::DigitalInput ||
-					p->stype == UniversalIO::DigitalOutput )
+				if( p->stype == UniversalIO::DI ||
+					p->stype == UniversalIO::DO )
 				{
 					IOBase::processingAsDI( p, data[0], shm, force );
 				}
@@ -687,8 +687,8 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 		}
 		else if( p->vType == VTypes::vtSigned )
 		{
-			if( p->stype == UniversalIO::DigitalInput ||
-				p->stype == UniversalIO::DigitalOutput )
+			if( p->stype == UniversalIO::DI ||
+				p->stype == UniversalIO::DO )
 			{
 				IOBase::processingAsDI( p, data[0], shm, force );
 			}
@@ -699,8 +699,8 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 		}
 		else if( p->vType == VTypes::vtUnsigned )
 		{
-			if( p->stype == UniversalIO::DigitalInput ||
-				p->stype == UniversalIO::DigitalOutput )
+			if( p->stype == UniversalIO::DI ||
+				p->stype == UniversalIO::DO )
 			{
 				IOBase::processingAsDI( p, data[0], shm, force );
 			}
@@ -1140,8 +1140,8 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					{
 						  if(  r->mb_initOK )
 						  {
-								if( p->stype == UniversalIO::DigitalInput ||
-									p->stype == UniversalIO::DigitalOutput )
+								if( p->stype == UniversalIO::DI ||
+									p->stype == UniversalIO::DO )
 								{
 									r->mbval = IOBase::processingAsDO( p, shm, force_out );
 								}
@@ -1153,8 +1153,8 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					}
 					else
 					{
-						if( p->stype == UniversalIO::DigitalInput ||
-							p->stype == UniversalIO::DigitalOutput )
+						if( p->stype == UniversalIO::DI ||
+							p->stype == UniversalIO::DO )
 						{
 							IOBase::processingAsDI( p, r->mbval, shm, force );
 						}
@@ -1175,8 +1175,8 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 				{
 					if( r->mb_initOK )
 					{
-						  if( p->stype == UniversalIO::DigitalInput ||
-							  p->stype == UniversalIO::DigitalOutput )
+						  if( p->stype == UniversalIO::DI ||
+							  p->stype == UniversalIO::DO )
 						  {
 							  r->mbval = (signed short)IOBase::processingAsDO( p, shm, force_out );
 						  }
@@ -1188,8 +1188,8 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 				}
 				else
 				{
-					if( p->stype == UniversalIO::DigitalInput ||
-						p->stype == UniversalIO::DigitalOutput )
+					if( p->stype == UniversalIO::DI ||
+						p->stype == UniversalIO::DO )
 					{
 						IOBase::processingAsDI( p, r->mbval, shm, force );
 					}
@@ -1206,8 +1206,8 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 				{
 					  if( r->mb_initOK )
 					  {
-						  if( p->stype == UniversalIO::DigitalInput ||
-							  p->stype == UniversalIO::DigitalOutput )
+						  if( p->stype == UniversalIO::DI ||
+							  p->stype == UniversalIO::DO )
 						  {
 							  r->mbval = (unsigned short)IOBase::processingAsDO( p, shm, force_out );
 						  }
@@ -1219,8 +1219,8 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 				}
 				else
 				{
-					if( p->stype == UniversalIO::DigitalInput ||
-						p->stype == UniversalIO::DigitalOutput )
+					if( p->stype == UniversalIO::DI ||
+						p->stype == UniversalIO::DO )
 					{
 						IOBase::processingAsDI( p, r->mbval, shm, force );
 					}
@@ -1683,12 +1683,12 @@ void MBExchange::updateRTU188( RegMap::iterator& rit )
 	{
 		try
 		{
-			if( it->stype == UniversalIO::DigitalInput )
+			if( it->stype == UniversalIO::DI )
 			{
 				bool set = r->dev->rtu->getState(r->rtuJack,r->rtuChan,it->stype);
 				IOBase::processingAsDI( &(*it), set, shm, force );
 			}
-			else if( it->stype == UniversalIO::AnalogInput )
+			else if( it->stype == UniversalIO::AI )
 			{
 				long val = r->dev->rtu->getInt(r->rtuJack,r->rtuChan,it->stype);
 				IOBase::processingAsAI( &(*it), val, shm, force );
@@ -1870,8 +1870,8 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 	}
 
 	if( p.nbit > 0 &&
-		( p.stype == UniversalIO::AnalogInput ||
-			p.stype == UniversalIO::AnalogOutput ) )
+		( p.stype == UniversalIO::AI ||
+			p.stype == UniversalIO::AO ) )
 	{
 		dlog[Debug::WARN] << "(initRSProperty): (ignore) uncorrect param`s nbit>1 (" << p.nbit << ")"
 			<< " but iotype=" << p.stype << " for " << it.getProp("name") << endl;
@@ -1935,7 +1935,7 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
 		if( !initRTU188item(it,r) )
 			return false;
 
-		UniversalIO::IOTypes t = UniSetTypes::getIOType(it.getProp("iotype"));
+		UniversalIO::IOType t = UniSetTypes::getIOType(it.getProp("iotype"));
 		r->mbreg = RTUStorage::getRegister(r->rtuJack,r->rtuChan,t);
 		r->mbfunc = RTUStorage::getFunction(r->rtuJack,r->rtuChan,t);
 
@@ -2324,7 +2324,7 @@ std::ostream& operator<<( std::ostream& os, const MBExchange::RSProperty& p )
 		<< " safety=" << p.safety
 		<< " invert=" << p.invert;
 
-	if( p.stype == UniversalIO::AnalogInput || p.stype == UniversalIO::AnalogOutput )
+	if( p.stype == UniversalIO::AI || p.stype == UniversalIO::AO )
 	{
 		os 	<< p.cal
 			<< " cdiagram=" << ( p.cdiagram ? "yes" : "no" );
@@ -2389,8 +2389,8 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 			return false;
 		}
 
-		UniversalIO::IOTypes m_iotype = conf->getIOType(d->second->mode_id);
-		if( m_iotype != UniversalIO::AnalogInput )
+		UniversalIO::IOType m_iotype = conf->getIOType(d->second->mode_id);
+		if( m_iotype != UniversalIO::AI )
 		{
 			dlog[Debug::CRIT] << myname << "(initDeviceInfo): modeSensor='" << mod << "' must be 'AI'" << endl;
 			return false;

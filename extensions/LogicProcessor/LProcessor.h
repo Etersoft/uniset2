@@ -112,7 +112,7 @@ class LProcessor
 		struct EXTInfo
 		{
 			UniSetTypes::ObjectId sid;
-			UniversalIO::IOTypes iotype;
+			UniversalIO::IOType iotype;
 			bool state;
 			const Schema::EXTLink* lnk;
 		};
@@ -120,7 +120,7 @@ class LProcessor
 		struct EXTOutInfo
 		{
 			UniSetTypes::ObjectId sid;
-			UniversalIO::IOTypes iotype;
+			UniversalIO::IOType iotype;
 			const Schema::EXTOut* lnk;
 		};
 

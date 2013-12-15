@@ -140,7 +140,7 @@ void SMInterface::setValue ( UniSetTypes::ObjectId id, long value )
 }
 // --------------------------------------------------------------------------
 bool SMInterface::saveState ( IOController_i::SensorInfo& si, bool state, 
-								UniversalIO::IOTypes type, UniSetTypes::ObjectId sup_id )
+								UniversalIO::IOType type, UniSetTypes::ObjectId sup_id )
 {
 	if( ic )
 	{
@@ -157,7 +157,7 @@ bool SMInterface::saveState ( IOController_i::SensorInfo& si, bool state,
 }
 // --------------------------------------------------------------------------
 bool SMInterface::saveValue ( IOController_i::SensorInfo& si, long value, 
-								UniversalIO::IOTypes type, UniSetTypes::ObjectId sup_id )
+								UniversalIO::IOType type, UniSetTypes::ObjectId sup_id )
 {
 	if( ic )
 	{
@@ -210,7 +210,7 @@ bool SMInterface::getState ( UniSetTypes::ObjectId id )
 }
 // --------------------------------------------------------------------------
 bool SMInterface::saveLocalState( UniSetTypes::ObjectId id, bool state, 
-								UniversalIO::IOTypes type )
+								UniversalIO::IOType type )
 {
 	IOController_i::SensorInfo si;
 	si.id = id;
@@ -219,7 +219,7 @@ bool SMInterface::saveLocalState( UniSetTypes::ObjectId id, bool state,
 }
 // --------------------------------------------------------------------------
 bool SMInterface::saveLocalValue ( UniSetTypes::ObjectId id, long value, 
-								UniversalIO::IOTypes type )
+								UniversalIO::IOType type )
 {
 	IOController_i::SensorInfo si;
 	si.id = id;
@@ -325,13 +325,13 @@ IOController::DIOStateList::iterator SMInterface::dioEnd()
 	return ic->dioEnd();
 }
 // --------------------------------------------------------------------------
-IOController::AIOStateList::iterator SMInterface::aioEnd()
+IOController::IOStateList::iterator SMInterface::ioEnd()
 {
-	CHECK_IC_PTR(aioEnd)
-	return ic->aioEnd();
+	CHECK_IC_PTR(ioEnd)
+	return ic->ioEnd();
 }
 // --------------------------------------------------------------------------
-void SMInterface::localSaveValue( IOController::IOController::AIOStateList::iterator& it, 
+void SMInterface::localSaveValue( IOController::IOController::IOStateList::iterator& it,
 									UniSetTypes::ObjectId sid, 
 									CORBA::Long nval, UniSetTypes::ObjectId sup_id )
 {
@@ -376,7 +376,7 @@ void SMInterface::localSetState( IOController::DIOStateList::iterator& it,
 	ic->localSetState(it,si,newstate,sup_id);
 }
 // --------------------------------------------------------------------------
-void SMInterface::localSetValue( IOController::AIOStateList::iterator& it, 
+void SMInterface::localSetValue( IOController::IOStateList::iterator& it,
 									UniSetTypes::ObjectId sid, 
 								CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
@@ -402,7 +402,7 @@ bool SMInterface::localGetState( IOController::DIOStateList::iterator& it, UniSe
 	return ic->localGetState(it,si);
 }
 // --------------------------------------------------------------------------
-long SMInterface::localGetValue( IOController::AIOStateList::iterator& it, UniSetTypes::ObjectId sid )
+long SMInterface::localGetValue( IOController::IOStateList::iterator& it, UniSetTypes::ObjectId sid )
 {
 	if( !ic )
 		return getValue( sid );
@@ -414,7 +414,7 @@ long SMInterface::localGetValue( IOController::AIOStateList::iterator& it, UniSe
 	return ic->localGetValue(it,si);
 }
 // --------------------------------------------------------------------------
-void SMInterface::localSetUndefinedState( IOController::AIOStateList::iterator& it, 
+void SMInterface::localSetUndefinedState( IOController::IOStateList::iterator& it,
 											bool undefined,
 											UniSetTypes::ObjectId sid )
 {
@@ -434,10 +434,10 @@ void SMInterface::localSetUndefinedState( IOController::AIOStateList::iterator& 
 	ic->localSetUndefinedState(it,undefined,si);
 }												
 // --------------------------------------------------------------------------
-void SMInterface::initAIterator( IOController::AIOStateList::iterator& it )
+void SMInterface::initAIterator( IOController::IOStateList::iterator& it )
 {
 	if( ic )
-		it = ic->aioEnd();
+		it = ic->ioEnd();
 //	else	
 //		cerr << "(SMInterface::initAIterator): ic=NULL" << endl;
 }

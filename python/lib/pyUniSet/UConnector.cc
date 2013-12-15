@@ -1,8 +1,8 @@
 #include "UConnector.h"
 #include "ORepHelpers.h"
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 using namespace std;
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 UConnector::UConnector( UTypes::Params* p, const char* xfile )throw(UException):
 conf(0),
 ui(0),
@@ -42,7 +42,7 @@ xmlfile(xfile)
 		throw UException();
 	}
 }
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 UConnector::~UConnector()
 {
 	delete ui;
@@ -54,34 +54,34 @@ const char* UConnector::getConfFileName()
 //	return xmlfile;
 	if( conf )
 		return conf->getConfFileName().c_str();
-		
+
 	return "";
 
 }
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 long UConnector::getValue( long id, long node )throw(UException)
 {
 	if( !conf || !ui )
 	  throw USysError();
-	
+
 	if( node == UTypes::DefaultID )
 	  node = conf->getLocalNode();
-	
-	UniversalIO::IOTypes t = conf->getIOType(id);
+
+	UniversalIO::IOType t = conf->getIOType(id);
 	try
 	{
 		switch(t)
 		{
-			case UniversalIO::DigitalInput:
-			case UniversalIO::DigitalOutput:
+			case UniversalIO::DI:
+			case UniversalIO::DO:
 			  return (ui->getState(id,node) ? 1 : 0);
 			break;
-			
-			case UniversalIO::AnalogInput:
-			case UniversalIO::AnalogOutput:
+
+			case UniversalIO::AI:
+			case UniversalIO::AO:
 				return ui->getValue(id,node);
 			break;
-				
+
 			default:
 			{
 			  ostringstream e;
@@ -102,7 +102,7 @@ long UConnector::getValue( long id, long node )throw(UException)
 	{
 		throw UException("(getValue): catch...");
 	}
-	
+
 	throw UException("(getValue): unknown error");
 }
 //---------------------------------------------------------------------------
@@ -110,32 +110,32 @@ void UConnector::setValue( long id, long val, long node )throw(UException)
 {
 	if( !conf || !ui )
 	  throw USysError();
-	
-	
+
+
 	if( node == UTypes::DefaultID )
 	  node = conf->getLocalNode();
-	
-	UniversalIO::IOTypes t = conf->getIOType(id);
+
+	UniversalIO::IOType t = conf->getIOType(id);
 	try
 	{
 		switch(t)
 		{
-			case UniversalIO::DigitalInput:
+			case UniversalIO::DI:
 				ui->saveState(id,val,t,node);
 			break;
-			
-			case UniversalIO::DigitalOutput:
+
+			case UniversalIO::DO:
 				ui->setState(id,val,node);
 			break;
-			
-			case UniversalIO::AnalogInput:
+
+			case UniversalIO::AI:
 				ui->saveValue(id,val,t,node);
 			break;
-				
-			case UniversalIO::AnalogOutput:
+
+			case UniversalIO::AO:
 				ui->setValue(id,val,node);
 			break;
-				
+
 			default:
 			{
 			  ostringstream e;
@@ -162,7 +162,7 @@ long UConnector::getSensorID( const char* name )
 {
 	if( conf )
 	  return conf->getSensorID(name);
-	
+
 	return UTypes::DefaultID;
 }
 //---------------------------------------------------------------------------
@@ -170,7 +170,7 @@ long UConnector::getNodeID( const char* name )
 {
 	if( conf )
 	  return conf->getNodeID(name);
-	
+
 	return UTypes::DefaultID;
 }
 //---------------------------------------------------------------------------
@@ -178,7 +178,7 @@ const char* UConnector::getName( long id )
 {
 	if( conf )
 		return conf->oind->getMapName(id).c_str();
-		
+
 	return "";
 }
 //---------------------------------------------------------------------------
@@ -186,7 +186,7 @@ const char* UConnector::getShortName( long id )
 {
 	if( conf )
 		return ORepHelpers::getShortName(conf->oind->getMapName(id)).c_str();
-		
+
 	return "";
 }
 //---------------------------------------------------------------------------
@@ -194,7 +194,7 @@ const char* UConnector::getTextName( long id )
 {
 	if( conf )
 		return conf->oind->getTextName(id).c_str();
-		
+
 	return "";
 }
 //---------------------------------------------------------------------------

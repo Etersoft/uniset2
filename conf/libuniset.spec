@@ -346,7 +346,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - remove deprecated services: InfoServer,TimeService,SystemGuard
 - remove deprecated intefaces: MessageInterface
 - remove deprecated messages: AlarmMessage, InfoMessage, DBMessage
-
+- remove 'state' from SensorMessage
 
 * Tue Dec 10 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt3
 - add RRDServer

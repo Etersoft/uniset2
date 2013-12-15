@@ -130,12 +130,7 @@ void SMonitor::sensorInfo( SensorMessage *si )
 	cout << "(" << setw(6) << si->id << "): " << setw(8) << UniversalInterface::timeToString(si->sm_tv_sec,":") 
 		 << "(" << setw(6) << si->sm_tv_usec << "): ";
 	cout << setw(45) << conf->oind->getMapName(si->id);
-	if( si->sensor_type == UniversalIO::DigitalInput || si->sensor_type == UniversalIO::DigitalOutput )
-		cout << "\tstate=" << si->state << endl;
-	else if( si->sensor_type == UniversalIO::AnalogInput || si->sensor_type == UniversalIO::AnalogOutput )
-		cout << "\tvalue=" << si->value << "\tfvalue=" << ( (float)si->value / pow(10.0,si->ci.precision) ) << endl;
-	
-
+	cout << "\tvalue=" << si->value << "\tfvalue=" << ( (float)si->value / pow(10.0,si->ci.precision) ) << endl;
 
 	if( !script.empty() )
 	{
@@ -147,13 +142,7 @@ void SMonitor::sensorInfo( SensorMessage *si )
 		else
 			cmd << conf->getBinDir() << script;	
 
-		cmd << " " << si->id << " ";
-		if( si->sensor_type == UniversalIO::DigitalInput || si->sensor_type == UniversalIO::DigitalOutput )
-			cmd << si->state;
-		else if( si->sensor_type == UniversalIO::AnalogInput || si->sensor_type == UniversalIO::AnalogOutput )
-			cmd << si->value;
-
-		cmd << " " << si->sm_tv_sec << " " << si->sm_tv_usec;
+		cmd << " " << si->id << " " << si->value << " " << si->sm_tv_sec << " " << si->sm_tv_usec;
 
 		(void)system(cmd.str().c_str());
 //		if( WIFSIGNALED(ret) && (WTERMSIG(ret) == SIGINT || WTERMSIG(ret) == SIGQUIT))

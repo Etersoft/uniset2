@@ -14,7 +14,7 @@ int main(int argc, const char **argv)
 		cout << "--confile	- Configuration file. Default: test.xml" << endl;
 		return 0;
 	}
-	
+
 	cout << "**** uni_atoi('')=" << uni_atoi("") << endl;
 
 	try
@@ -32,38 +32,37 @@ int main(int argc, const char **argv)
 		string mn(conf->oind->getMapName(1));
 		cout << "**** check getMapName: " << ( mn.empty() ?  "FAILED" : "OK" ) << endl;
 
-		UniversalIO::IOTypes t1=conf->getIOType(1);
+		UniversalIO::IOType t1=conf->getIOType(1);
 		cout << "**** getIOType for " << mn << endl;
 		cout << "**** check getIOType(id): (" << t1 << ") " << ( t1 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;		
-		UniversalIO::IOTypes t2=conf->getIOType(mn);
+		UniversalIO::IOType t2=conf->getIOType(mn);
 		cout << "**** check getIOType(name): (" << t2 << ") " << ( t2 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;		
-		UniversalIO::IOTypes t3=conf->getIOType("Input1_S");
-		cout << "**** check getIOType(name): for short name 'Input1_S': (" << t3 << ") " << ( t3 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;		
-
+		UniversalIO::IOType t3=conf->getIOType("Input1_S");
+		cout << "**** check getIOType(name): for short name 'Input1_S': (" << t3 << ") " << ( t3 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;
 
 		int i1 = uni_atoi("-100");
 		cout << "**** check uni_atoi: '-100' " << ( ( i1 != -100 ) ? "FAILED" : "OK" ) << endl;
 
 		int i2 = uni_atoi("20");
 		cout << "**** check uni_atoi: '20' " << ( ( i2 != 20 ) ? "FAILED" : "OK" ) << endl;
-		
+
 		xmlNode* cnode = conf->getNode("testnode");
-        if( cnode == NULL )                                                                                                                                                         
-        {                                                                                                                                                                           
-            cerr << "<testnode name='testnode'> not found" << endl;                                                                                                                                 
-            return 1;                                                                                                                                                               
+        if( cnode == NULL )
+        {
+            cerr << "<testnode name='testnode'> not found" << endl;
+            return 1;
         }
-        
+
         cout << "**** check conf->getNode function [OK] " << endl;
-        
-        UniXML_iterator it(cnode); 
+
+        UniXML_iterator it(cnode);
 
         int prop2 = conf->getArgInt("--prop-id2",it.getProp("id2"));
 		cerr << "**** check conf->getArgInt(arg1,...): " << ( (prop2 == 0) ? "[FAILED]" : "OK" ) << endl;
 
         int prop3 = conf->getArgInt("--prop-dummy",it.getProp("id2"));
 		cerr << "**** check conf->getArgInt(...,arg2): " << ( (prop3 != -100) ? "[FAILED]" : "OK" ) << endl;
-        
+
         int prop1 = conf->getArgPInt("--prop-id2",it.getProp("id2"),0);
 		cerr << "**** check conf->getArgPInt(...): " << ( (prop1 == 0) ? "[FAILED]" : "OK" ) << endl;
 
@@ -72,10 +71,10 @@ int main(int argc, const char **argv)
 
         int prop5 = conf->getArgPInt("--prop-dummy",it.getProp("dummy"),0);
 		cerr << "**** check conf->getArgPInt(...,...,defval): " << ( (prop5 != 0) ? "[FAILED]" : "OK" ) << endl;
-		
 
 
-		
+
+
 		return 0;
 	}
 	catch(SystemError& err)

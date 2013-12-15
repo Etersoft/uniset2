@@ -41,7 +41,7 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 	activated(false),
 	workready(false),
 	dblogging(false),
-	iotypePulsar(UniversalIO::DigitalInput),
+	iotypePulsar(UniversalIO::DI),
 	msecPulsar(0)
 {
 	mutex_start.setName(myname + "_mutex_start");
@@ -128,7 +128,7 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 		{
 			iotypePulsar = UniSetTypes::getIOType(t);
 			if( iotypePulsar == UniversalIO::UnknownIOType ||
-				iotypePulsar == UniversalIO::AnalogInput || iotypePulsar == UniversalIO::AnalogOutput )
+				iotypePulsar == UniversalIO::AI || iotypePulsar == UniversalIO::AO )
 			{
 				ostringstream err;
 				err << myname << ": Invalid iotype '" << t << "' for pulsar. Must be 'DI' or 'DO'";
@@ -239,9 +239,9 @@ void SharedMemory::timerInfo( TimerMessage *tm )
 		{
 			bool st = localGetState(ditPulsar,siPulsar);
 			st ^= true;
-			if( iotypePulsar == UniversalIO::DigitalInput )
+			if( iotypePulsar == UniversalIO::DI )
 				localSaveState(ditPulsar,siPulsar,st,getId());
-			else if( iotypePulsar == UniversalIO::DigitalOutput )
+			else if( iotypePulsar == UniversalIO::DO )
 				localSetState(ditPulsar,siPulsar,st,getId());
 		}
 	}
@@ -336,7 +336,7 @@ bool SharedMemory::activateObject()
 		// инициализируем указатели		
 		for( HeartBeatList::iterator it=hlist.begin(); it!=hlist.end(); ++it )
 		{
-			it->ait = myaioEnd();
+			it->ait = myioEnd();
 			it->dit = mydioEnd();
 		}
 		
@@ -348,7 +348,7 @@ bool SharedMemory::activateObject()
 //			cerr << "history for id=" << it->id << " count=" << it->hlst.size() << endl;
 			for( HistoryList::iterator hit=it->hlst.begin(); hit!=it->hlst.end(); ++hit )
 			{
-				hit->ait = myaioEnd();
+				hit->ait = myioEnd();
 				hit->dit = mydioEnd();
 			}
 		}
@@ -750,7 +750,7 @@ void SharedMemory::saveHistory()
 	{
 		for( HistoryList::iterator hit=it->hlst.begin(); hit!=it->hlst.end(); ++hit )
 		{
-			if( hit->ait != myaioEnd() )
+			if( hit->ait != myioEnd() )
 				hit->add( localGetValue( hit->ait, hit->ait->second.si ), it->size );
 			else if( hit->dit != mydioEnd() )
 				hit->add( localGetState( hit->dit, hit->dit->second.si ), it->size );
@@ -794,7 +794,25 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 
 	for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
 	{
-		if( sm->id == it->fuse_id )
+		History::iterator it( (*it1) );
+
+		if( sm->sensor_type == UniversalIO::DI ||
+			sm->sensor_type == UniversalIO::DO )
+		{
+			bool st = it->fuse_invert ? !sm->state : sm->state;
+			if( st )
+			{
+				if( dlog.debugging(Debug::INFO) )
+					dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+
+				it->fuse_sec = sm->sm_tv_sec;
+				it->fuse_usec = sm->sm_tv_usec;
+				m_historySignal.emit( &(*it) );
+			}
+		}
+		else if( sm->sensor_type == UniversalIO::AI ||
+				 sm->sensor_type == UniversalIO::AO )
+>>>>>>> Первый этап переделок в связи с переходом на getValue/setValue
 		{
 			if( sm->sensor_type == UniversalIO::DigitalInput ||
 				sm->sensor_type == UniversalIO::DigitalOutput )

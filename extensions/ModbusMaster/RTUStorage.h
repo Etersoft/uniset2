@@ -41,13 +41,13 @@ class RTUStorage
 		static RTUJack s2j( const std::string& jack );
 		static std::string j2s( RTUJack j );
 
-		long getInt( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
-		float getFloat( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
-		bool getState( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
+		long getInt( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
+		float getFloat( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
+		bool getState( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
 
-		static ModbusRTU::ModbusData getRegister( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
+		static ModbusRTU::ModbusData getRegister( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
 
-		static ModbusRTU::SlaveFunctionCode getFunction( RTUJack jack, unsigned short channel, UniversalIO::IOTypes t );
+		static ModbusRTU::SlaveFunctionCode getFunction( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
 
 		// ДОДЕЛАТЬ: setState, setValue
 		void print();

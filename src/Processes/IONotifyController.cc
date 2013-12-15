@@ -40,8 +40,7 @@ using namespace std;
 // ------------------------------------------------------------------------------------------
 IONotifyController::IONotifyController():
 restorer(NULL),
-askDMutex("askDMutex"),
-askAMutex("askAMutex"),
+askIOMutex("askIOMutex"),
 trshMutex("trshMutex"),
 maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 {
@@ -51,28 +50,24 @@ maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 IONotifyController::IONotifyController(const string name, const string section, NCRestorer* d ): 
 	IOController(name, section),
 	restorer(d),
-	askDMutex(name+"askDMutex"),
-	askAMutex(name+"askAMutex"),
+	askIOMutex(name+"askIOMutex"),
 	trshMutex(name+"trshMutex"),
 	maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 {
 	// добавляем фильтры
-	addAFilter( sigc::mem_fun(this,&IONotifyController::myAFilter) );
-	addDFilter( sigc::mem_fun(this,&IONotifyController::myDFilter) );
+	addIOFilter( sigc::mem_fun(this,&IONotifyController::myIOFilter) );
 	setDependsSlot( sigc::mem_fun(this,&IONotifyController::onChangeUndefined) );
 }
 
 IONotifyController::IONotifyController( ObjectId id, NCRestorer* d ):
 	IOController(id),
 	restorer(d),
-	askDMutex(string(conf->oind->getMapName(id))+"_askDMutex"),
-	askAMutex(string(conf->oind->getMapName(id))+"_askAMutex"),
+	askIOMutex(string(conf->oind->getMapName(id))+"_askIOMutex"),
 	trshMutex(string(conf->oind->getMapName(id))+"_trshMutex"),
 	maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 {
 	// добавляем фильтры
-	addAFilter( sigc::mem_fun(this,&IONotifyController::myAFilter) );
-	addDFilter( sigc::mem_fun(this,&IONotifyController::myDFilter) );
+	addIOFilter( sigc::mem_fun(this,&IONotifyController::myIOFilter) );
 	setDependsSlot( sigc::mem_fun(this,&IONotifyController::onChangeUndefined) );
 }
 
@@ -146,168 +141,31 @@ bool IONotifyController::removeConsumer(ConsumerList& lst, const ConsumerInfo& c
 	
 	return false;
 }
-
 // ------------------------------------------------------------------------------------------
 /*! 
  *	\param si 		- информация о датчике
  *	\param ci	 	- информация о заказчике
  *	\param cmd 		- команда см. UniversalIO::UIOCommand
 */
-void IONotifyController::askSensor(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, 
-				UniversalIO::UIOCommand cmd)
-{
-	IOTypes type = IOController::getIOType(si);
-	switch(type)
-	{
-		case UniversalIO::DigitalInput:
-			askState(si,ci,cmd);
-		break;;
-
-		case UniversalIO::AnalogInput:
-			askValue(si,ci,cmd);
-		break;
-		
-		case UniversalIO::AnalogOutput:
-		case UniversalIO::DigitalOutput:
-			askOutput(si,ci,cmd);
-		break;
-		
-		default:
-		{
-			ostringstream err;
-			err << myname << "(askSensor): Неизвестен тип для " << conf->oind->getNameById(si.id);
-			if( unideb.debugging(Debug::INFO) )
-				unideb[Debug::INFO] << err.str() << endl;
-			throw IOController_i::NameNotFound(err.str().c_str());
-		}
-		break;
-	}
-}
-				
-// ------------------------------------------------------------------------------------------
-/*! 
- *	\param si 		- информация о датчике
- *	\param ci	 	- информация о заказчике
- *	\param cmd 		- команда см. UniversalIO::UIOCommand
-*/
-void IONotifyController::askState( const IOController_i::SensorInfo& si, 
+void IONotifyController::askSensor(const IOController_i::SensorInfo& si,
 									const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd )
 {
-	// провреки на несуществующий датчик проводить не надо т.к. заказчик принципиально
-	// не может обратится к этому контроллеру по ссылке на другой датчик
-	// (ведь ссылка на датчик это ссылка на контроллер который за него отвечает)
-	// контроль заказа типа датчика(дискретного) здесь производится
-	if( unideb.debugging(Debug::INFO) )
-	{
-		unideb[Debug::INFO] << "(askState): поступил " << ( cmd == UIODontNotify ? "отказ" :"заказ" ) 
-			<< " от "
-			<< conf->oind->getNameById(ci.id, ci.node) << " на дискретный датчик "
-			<< conf->oind->getNameById(si.id,si.node) << endl;
-	}
-	
-	// если такого дискретного датчика нет, здесь сработает исключение...
-	DIOStateList::iterator li = mydioEnd();
-	localGetState(li,si);
-	// lock ???
-	if( li==mydioEnd() )
-	{
-		ostringstream err;
-		err << myname << "(askState): датчик имя: " << conf->oind->getNameById(si.id) << " не найден";
-		throw IOController_i::NameNotFound(err.str().c_str());
-	}
-
-	if( li->second.type != UniversalIO::DigitalInput )
-	{
-		ostringstream err;
-		err << myname << "(askState): ВХОДНОЙ ДИСКРЕТНЫЙ ДАТЧИК с именем " << conf->oind->getNameById(si.id) << " не найден";
-		if( unideb.debugging(Debug::INFO) )	
-			unideb[Debug::INFO] << err.str() << endl;
-		throw IOController_i::NameNotFound(err.str().c_str());
-	}
-
-	{	//lock
-		uniset_rwmutex_wrlock lock(askDMutex);
-		// а раз есть заносим(исключаем) заказчика 
-		ask( askDIOList, si, ci, cmd);
-	} // unlock			
-
-	// посылка первый раз состояния 
-	if( cmd==UniversalIO::UIONotify || (cmd==UIONotifyFirstNotNull && li->second.state) )
-	{
-		SensorMessage  smsg;
-		smsg.id 		= si.id;
-		smsg.node 		= si.node;
-		smsg.consumer 	= ci.id;
-		smsg.sensor_type= li->second.type;	
-		smsg.priority	= (Message::Priority)li->second.priority;
-		smsg.supplier 	= getId();
-		{
-			uniset_rwmutex_rlock lock(li->second.val_lock);
-			smsg.state 		= li->second.state;
-			smsg.value 		= li->second.state ? 1:0;
-			smsg.undefined	= li->second.undefined;
-			smsg.sm_tv_sec	= li->second.tv_sec;
-			smsg.sm_tv_usec	= li->second.tv_usec;
-		}
-
-		TransportMessage tm(smsg.transport_msg());
-	    try
-	    {
-			ui.send(ci.id, tm, ci.node);
-		}
-		catch(Exception& ex)
-		{
-		   	unideb[Debug::WARN] << myname << "(askState): " 
-		   		<< conf->oind->getNameById(si.id, si.node) << " "<< ex << endl;
-		}
-	    catch( CORBA::SystemException& ex )
-	    {
-    		unideb[Debug::WARN] << conf->oind->getNameById(ci.id, ci.node) << " недоступен!!(CORBA::SystemException): "
-				<< ex.NP_minorString() << endl;
-	    }
-		catch(...){}
-	}
-}
-
-// ------------------------------------------------------------------------------------------
-/*! 
- *	\param si 		- информация о датчике
- *	\param ci	 	- информация о заказчике
- *	\param cmd 		- команда см. UniversalIO::UIOCommand
-*/
-void IONotifyController::askValue(const IOController_i::SensorInfo& si, 
-									const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd )
-{
-	// провреки на несуществующий датчик проводить не надо т.к. заказчик ппинципиально
-	// не может обратится к этому контроллеру по ссылке на другой датчик
-	// (ведь ссылка на датчик это ссылка на контроллер который за него отвечает)
-	// контроль заказа именно АНАЛОГОВО датчика производится
-
 	if( unideb.debugging(Debug::INFO) )	
 	{
-		unideb[Debug::INFO] << "(askValue): поступил " << ( cmd == UIODontNotify ? "отказ" :"заказ" ) << " от "
+		unideb[Debug::INFO] << "(askSensor): поступил " << ( cmd == UIODontNotify ? "отказ" :"заказ" ) << " от "
 			<< conf->oind->getNameById(ci.id, ci.node)
 			<< " на аналоговый датчик "
 			<< conf->oind->getNameById(si.id,si.node) << endl;
 	}
 	
 	// если такого аналогового датчика нет, здесь сработает исключение...
-	AIOStateList::iterator li = myaioEnd();
+	IOStateList::iterator li = myioEnd();
 	localGetValue(li,si);
-	if( li->second.type != UniversalIO::AnalogInput )
-	{
-		ostringstream err;
-		err << myname << "(askState): ВХОДНОЙ АНАЛОГОВЫЙ ДАТЧИК с именем " << conf->oind->getNameById(si.id) 
-			<< " не найден";
-		if( unideb.debugging(Debug::INFO) )	
-			unideb[Debug::INFO] << err.str() << endl;
-		throw IOController_i::NameNotFound(err.str().c_str());
-	}
 
 	{	// lock
-		uniset_rwmutex_wrlock lock(askAMutex);
+		uniset_rwmutex_wrlock lock(askIOMutex);
 		// а раз есть заносим(исключаем) заказчика 
-		ask( askAIOList, si, ci, cmd);		
+		ask( askIOList, si, ci, cmd);
 	}	// unlock
 
 	// посылка первый раз состояния 
@@ -326,20 +184,19 @@ void IONotifyController::askValue(const IOController_i::SensorInfo& si,
 		{
 			uniset_rwmutex_rlock lock(li->second.val_lock);
 			smsg.value 		= li->second.value;
-			smsg.state		= li->second.value ? true:false;
 			smsg.undefined	= li->second.undefined;
 			smsg.sm_tv_sec	= li->second.tv_sec;
 			smsg.sm_tv_usec	= li->second.tv_usec;
 		}
 			
-		TransportMessage tm(smsg.transport_msg());			
+		TransportMessage tm(smsg.transport_msg());
 	    try
 	    {
 			ui.send(ci.id, tm, ci.node);
 		}
 		catch(Exception& ex)
 		{
-		   	unideb[Debug::WARN] << myname << "(askValue): " <<  conf->oind->getNameById(si.id, si.node) << " catch "<< ex << endl;
+			unideb[Debug::WARN] << myname << "(askSensor): " <<  conf->oind->getNameById(si.id, si.node) << " catch "<< ex << endl;
 		}
 	    catch( CORBA::SystemException& ex )
 	    {
@@ -439,13 +296,7 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
 	}
 }
 // ------------------------------------------------------------------------------------------
-bool IONotifyController::myDFilter(const UniDigitalIOInfo& di, 
-									CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id)
-{
-	return ( di.state == newstate ) ? false : true;
-}
-// ------------------------------------------------------------------------------------------
-bool IONotifyController::myAFilter(const UniAnalogIOInfo& ai, 
+bool IONotifyController::myIOFilter(const USensorIOInfo& ai,
 									CORBA::Long newvalue, UniSetTypes::ObjectId sup_id)
 {
 	if( ai.value == newvalue )
@@ -460,71 +311,16 @@ bool IONotifyController::myAFilter(const UniAnalogIOInfo& ai,
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-void IONotifyController::localSaveState( IOController::DIOStateList::iterator& it,
-											const IOController_i::SensorInfo& si, 
-											CORBA::Boolean state,
-											UniSetTypes::ObjectId sup_id )
-{
-	// Если датчик не найден здесь сработает исключение NameNotFound
-	bool prevState = IOController::localGetState( it, si );
-
-	IOController::localSaveState( it, si, state, sup_id );
-
-	// сравниваем именно с li->second.state
-	// т.к. фактическое сохранённое значение может быть изменено
-	// фильтрами или блокировками..
-	SensorMessage sm(si.id, state);
-	{	// lock
-		uniset_rwmutex_rlock lock(it->second.val_lock);
-		if( prevState == it->second.state )
-			return;
-
-		// Уведомления рассылаем только в случае смены состояния...
-		sm.id 			= si.id;
-		sm.node 		= si.node;
-		sm.state 		= it->second.state;
-		sm.value 		= it->second.state ? 1:0;
-		sm.undefined	= it->second.undefined;
-		sm.priority		= (Message::Priority)it->second.priority;
-		sm.supplier		= sup_id;
-		sm.sensor_type 	= it->second.type;	
-		sm.sm_tv_sec	= it->second.tv_sec;
-		sm.sm_tv_usec	= it->second.tv_usec;
-	}	// unlock
-
-	try
-	{	
-		uniset_rwmutex_rlock l(sig_mutex);
-		changeSignal.emit(&sm);
-	}
-	catch(...){}
-
-	try
-	{	
-		if( !it->second.db_ignore )
-			loggingInfo(sm);
-	}
-	catch(...){}
-
-	AskMap::iterator it1 = askDIOList.find( key(si.id,si.node) );
-	if( it1!=askDIOList.end() )
-	{	// lock
-		//uniset_mutex_lock lock(askDMutex, 1000);
-		uniset_rwmutex_rlock lock(askDMutex);
-		send(it1->second, sm);
-	}	// unlock
-}
-// ------------------------------------------------------------------------------------------
-void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& li,
+void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
 										const IOController_i::SensorInfo& si, 
 										CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
 	// Если датчик не найден сдесь сработает исключение
 	long prevValue = IOController::localGetValue( li, si );
-	if( li == myaioEnd() ) // ???
+	if( li == myioEnd() ) // ???
 	{
 		ostringstream err;
-		err << myname << "(localSaveValue): аналоговый вход(выход) с именем " 
+		err << myname << "(localSetValue): аналоговый вход(выход) с именем "
 						<< conf->oind->getNameById(si.id) << " не найден";
 
 		if( unideb.debugging(Debug::INFO) )	
@@ -532,7 +328,7 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
-	IOController::localSaveValue(li,si, value,sup_id);
+	IOController::localSetValue(li,si, value,sup_id);
 
 	// сравниваем именно с li->second.value
 	// т.к. фактическое сохранённое значение может быть изменено
@@ -547,7 +343,6 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 		// Рассылаем уведомления только в слуае изменения значения
 		sm.id 			= si.id;
 		sm.node 		= si.node;
-		sm.state 		= li->second.value!=0 ? true:false;
 		sm.value 		= li->second.value;
 		sm.undefined	= li->second.undefined;
 		sm.priority		= (Message::Priority)li->second.priority;
@@ -573,10 +368,10 @@ void IONotifyController::localSaveValue( IOController::AIOStateList::iterator& l
 	}
 	catch(...){}
 
-	AskMap::iterator it = askAIOList.find( key(si.id,si.node) );
-	if( it!=askAIOList.end() )
+	AskMap::iterator it = askIOList.find( key(si.id,si.node) );
+	if( it!=askIOList.end() )
 	{	// lock
-		uniset_rwmutex_rlock lock(askAMutex);
+		uniset_rwmutex_rlock lock(askIOMutex);
 		send(it->second, sm);
 	}
 
@@ -677,29 +472,8 @@ void IONotifyController::dumpOrdersList(const IOController_i::SensorInfo& si,
 	try
 	{
 		NCRestorer::SInfo inf;
-		UniversalIO::IOTypes t(getIOType(si));
-		switch( t )
-		{
-			case UniversalIO::DigitalInput:
-			case UniversalIO::DigitalOutput:
-			{
-				IOController_i::DigitalIOInfo dinf(getDInfo(si));
-				inf=dinf;
-			}
-			break;
-		
-			case UniversalIO::AnalogOutput:
-			case UniversalIO::AnalogInput:
-			{
-				IOController_i::AnalogIOInfo ainf(getAInfo(si));
-				inf=ainf;
-			}
-			break;
-			
-			default:
-				return;
-		}
-
+		IOController_i::SensorIOInfo ainf( getSensorIOInfo(si) );
+		inf=ainf;
 		restorer->dump(this,inf,lst);
 	}
 	catch(Exception& ex)
@@ -717,28 +491,8 @@ void IONotifyController::dumpThresholdList(const IOController_i::SensorInfo& si,
 	try
 	{
 		NCRestorer::SInfo inf;
-		UniversalIO::IOTypes t(getIOType(si));
-		switch( t )
-		{
-			case UniversalIO::DigitalInput:
-			case UniversalIO::DigitalOutput:
-			{
-				IOController_i::DigitalIOInfo dinf(getDInfo(si));
-				inf=dinf;
-			}
-			break;
-		
-			case UniversalIO::AnalogOutput:
-			case UniversalIO::AnalogInput:
-			{
-				IOController_i::AnalogIOInfo ainf(getAInfo(si));
-				inf=ainf;
-			}
-			break;
-			
-			default:
-				return;
-		}
+		IOController_i::SensorIOInfo ainf(getSensorIOInfo(si));
+		inf=ainf;
 		restorer->dumpThreshold(this,inf,lst);
 	}
 	catch(Exception& ex)
@@ -757,7 +511,7 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 		throw IONotifyController_i::BadRange();
 
 	// если такого дискретного датчика нет сдесь сработает исключение...
-	AIOStateList::iterator li = myaioEnd();
+	IOStateList::iterator li = myioEnd();
 	CORBA::Long val = localGetValue(li,si);
 
 	{	// lock
@@ -767,7 +521,7 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 		UniSetTypes::KeyType skey( key(si.id,si.node) );
 		AskThresholdMap::iterator it = askTMap.find(skey);
 		ThresholdInfoExt ti(tid,lowLimit, hiLimit,sb);
-		ti.itSID = mydioEnd();
+		ti.itSID = myioEnd();
 
 	  	switch( cmd )
 		{
@@ -781,7 +535,7 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 					tli.si 		= si;
 					tli.list 	= lst;
 					tli.type 	= li->second.type;
-					tli.ait		= myaioEnd();
+					tli.ait		= myioEnd();
 					addThreshold(lst,ti,ci);
 					askTMap.insert(AskThresholdMap::value_type(skey,tli));
 					try
@@ -826,7 +580,6 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 					sm.id 			= si.id;
 					sm.node 		= si.node;
 					sm.value 		= val;
-					sm.state 		= val!=0 ? true:false;
 					sm.undefined	= li->second.undefined;
 					sm.sensor_type 	= li->second.type;
 					sm.priority 	= (Message::Priority)li->second.priority;
@@ -946,7 +699,7 @@ bool IONotifyController::removeThreshold(ThresholdExtList& lst, ThresholdInfoExt
 	return false;
 }
 // --------------------------------------------------------------------------------------------------------------
-void IONotifyController::checkThreshold( AIOStateList::iterator& li, 
+void IONotifyController::checkThreshold( IOStateList::iterator& li,
 										const IOController_i::SensorInfo& si, 
 										bool send_msg )
 {
@@ -962,10 +715,10 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 		if( lst->second.list.empty() )
 			return;
 
-		if( li == myaioEnd() )
-			li = myafind(key(si.id, si.node));
+		if( li == myioEnd() )
+			li = myiofind(key(si.id, si.node));
 
-		if( li==myaioEnd() )
+		if( li==myioEnd() )
 			return; // ???
 
 		SensorMessage sm;
@@ -977,7 +730,6 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 		{
 			uniset_rwmutex_rlock lock(li->second.val_lock);
 			sm.value 		= li->second.value;
-			sm.state 		= li->second.value!=0 ? true:false;
 			sm.undefined	= li->second.undefined;
 			sm.sm_tv_sec 	= li->second.tv_sec;
 			sm.sm_tv_usec 	= li->second.tv_usec;
@@ -1018,7 +770,7 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 						if( it->inverse )
 							state^=1;
 						
-						localSaveState(it->itSID,SensorInfo(it->sid),state,getId());
+						localSetValue(it->itSID,SensorInfo(it->sid),(state ? 1:0),getId());
 					}
 					catch( UniSetTypes::Exception& ex )
 					{
@@ -1028,7 +780,7 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 				}
 
 				if( send_msg )
-					send(it->clst, sm);				
+					send(it->clst, sm);
 			}
 			// Проверка верхнего предела
 			// значение должно быть больше hiLimit+чуствительность
@@ -1056,7 +808,7 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 						if( it->inverse ) 
 							state^=1;
 
-						localSaveState(it->itSID,SensorInfo(it->sid),state,getId());
+						localSetValue(it->itSID,SensorInfo(it->sid),(state?1:0),getId());
 					}
 					catch( UniSetTypes::Exception& ex )
 					{
@@ -1075,161 +827,8 @@ void IONotifyController::checkThreshold( AIOStateList::iterator& li,
 
 }
 // --------------------------------------------------------------------------------------------------------------
-void IONotifyController::askOutput(const IOController_i::SensorInfo& si, 
-									const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd)
-{
-	// провреки на несуществующий выход проводить не надо т.к. заказчик принципиально
-	// не может обратится к этому контроллеру по ссылке на другой датчик
-	// (ведь ссылка на датчик это ссылка на контроллер который за него отвечает)
-	// контроль заказа типа выхода здесь производится
-
-	string name = conf->oind->getNameById(ci.id, ci.node);
-	if( unideb.debugging(Debug::INFO) )	
-	{
-		unideb[Debug::INFO] << "(askOutput): поступил " << ( cmd == UIODontNotify ? "отказ" :"заказ" ) 
-			<< " от ("<< ci.id << ") " 
-				<< name << " на выход "
-				<< conf->oind->getNameById(si.id,si.node) << endl;
-	}
-	
-	// если такого выхода нет, то здесь сработает исключение...
-	IOTypes type = IOController::getIOType(si);
-	switch(type)
-	{
-		case UniversalIO::DigitalOutput:
-		{	//lock
-			uniset_rwmutex_wrlock lock(askDOMutex);
-			// а раз есть заносим(исключаем) заказчика 
-			ask( askDOList, si, ci, cmd );
-		} // unlock			
-		break;
-		
-		case UniversalIO::AnalogOutput:
-		{	//lock
-			uniset_rwmutex_wrlock lock(askAOMutex);
-			// а раз есть заносим(исключаем) заказчика 
-			ask( askAOList, si, ci, cmd );
-		} // unlock			
-		break;
-		
-		default:
-		{
-			ostringstream err;
-			err << myname << "(askOutput): 'выход' с именем " << conf->oind->getNameById(si.id) << " не найден";			
-			if( unideb.debugging(Debug::INFO) )	
-				unideb[Debug::INFO] << err.str() << endl;
-			throw IOController_i::NameNotFound(err.str().c_str());
-		}
-		break;
-	}
-
-	// посылка первый раз состояния 
-	if( cmd==UniversalIO::UIONotify )
-	{
-	    try
-	    {
-			SensorMessage  smsg;
-			smsg.id = si.id;
-			smsg.node = si.node;
-
-			try
-			{
-				if( type == UniversalIO::AnalogOutput )
-				{
-					smsg.value = IOController::getValue(si);
-					smsg.state = smsg.value!=0 ? true:false;
-				}
-				else
-				{
-					smsg.state = IOController::getState(si);
-					smsg.value = smsg.state ? 1:0;
-				}
-				
-				smsg.undefined	= false;
-			}
-			catch( IOController_i::Undefined )
-			{
-				smsg.undefined	= true;
-			}
-
-			smsg.consumer 		= ci.id;
-			smsg.sensor_type 	= type;
-			smsg.supplier 		= getId();
-			
-			TransportMessage tm(smsg.transport_msg());
-			ui.send(ci.id, tm, ci.node);
-		}
-		catch(Exception& ex)
-		{
-		   	unideb[Debug::WARN] << myname << "(askOutput): " << name << " "<< ex << endl;
-		}
-	    catch( CORBA::SystemException& ex )
-	    {
-	    	unideb[Debug::WARN] << myname << "(askOutput): " << name 
-				<< " недоступен!!(CORBA::SystemException)" 
-				<< ex.NP_minorString() << endl;
-	    }
-		catch(...){}
-	}
-}
-// --------------------------------------------------------------------------------------------------------------
-void IONotifyController::localSetState( IOController::DIOStateList::iterator& it,
-										const IOController_i::SensorInfo& si, 
-										CORBA::Boolean state, UniSetTypes::ObjectId sup_id )
-{
-	// Если датчик не найден сдесь сработает исключение NameNotFound
-	bool prevState = IOController::localGetState( it, si );
-	if( unideb.debugging(Debug::INFO) )	
-	{
-		unideb[Debug::INFO] << myname << "(IONotifyController::setState): state=" << state 
-			<< " для выхода " << conf->oind->getNameById(si.id,si.node) << endl;
-	}
-	
-	// сохраняем состояние 
-	IOController::localSetState(it,si,state,sup_id);
-
-	// Рассылаем уведомления только если значение изменилось...
-	SensorMessage sm(si.id, state);
-	{	// lock
-		uniset_rwmutex_rlock lock(it->second.val_lock);
-		if( prevState == it->second.state )
-			return;
-		sm.id 			= si.id;		
-		sm.node 		= si.node;
-		sm.state 		= it->second.state;
-		sm.value 		= sm.state ? 1:0;
-		sm.undefined	= it->second.undefined;
-		sm.priority 	= (Message::Priority)it->second.priority;
-		sm.sm_tv_sec 	= it->second.tv_sec;
-		sm.sm_tv_usec 	= it->second.tv_usec;
-		sm.sensor_type 	= it->second.type;
-		sm.supplier 	= sup_id;
-	}	// unlock
-
-	try
-	{	
-		uniset_rwmutex_rlock l(sig_mutex);
-		changeSignal.emit(&sm);
-	}
-	catch(...){}
-	
-	try
-	{	
-	    if( !it->second.db_ignore )
-			loggingInfo(sm);
-	}
-	catch(...){}
-
-
-	AskMap::iterator ait = askDOList.find( UniSetTypes::key(si.id,si.node) );
-	if( ait!=askDOList.end() )
-	{	// lock
-		uniset_rwmutex_rlock lock(askDMutex);
-		send(ait->second, sm);
-	}	// unlock
-}				
-// --------------------------------------------------------------------------------------------------------------
-void IONotifyController::localSetValue( IOController::AIOStateList::iterator& li,
+#if 0
+void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
 										const IOController_i::SensorInfo& si, 
 										CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
@@ -1281,7 +880,7 @@ void IONotifyController::localSetValue( IOController::AIOStateList::iterator& li
 	AskMap::iterator dit = askAOList.find( UniSetTypes::key(si.id,si.node) );
 	if( dit!=askAOList.end() )
 	{	// lock
-		uniset_rwmutex_rlock lock(askAMutex);
+		uniset_rwmutex_rlock lock(askIOMutex);
 		send(dit->second, sm);
 	}
 
@@ -1292,7 +891,7 @@ void IONotifyController::localSetValue( IOController::AIOStateList::iterator& li
 //	}
 //	catch(...){}
 }			
-
+#endif
 // --------------------------------------------------------------------------------------------------------------
 
 IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold( UniSetTypes::KeyType key, UniSetTypes::ThresholdId tid  )
@@ -1386,39 +985,28 @@ void IONotifyController::onChangeUndefined( DependsList::iterator it, bool undef
 	sm.node = it->si.node;
 	sm.undefined = undefined;
 
-	if( it->dit != mydioEnd() )
+	if( it->it != myioEnd() )
 	{
-		sm.state 		= it->dit->second.state;
-		sm.value 		= sm.state ? 1:0;
-		sm.sm_tv_sec 	= it->dit->second.tv_sec;
-		sm.sm_tv_usec 	= it->dit->second.tv_usec;
-		sm.priority 	= (Message::Priority)it->dit->second.priority;
-		sm.sensor_type 	= it->dit->second.type;
-		sm.supplier 	= DefaultObjectId;
-	}
-	else if( it->ait != myaioEnd() )
-	{
-		sm.value 		= it->ait->second.value;
-		sm.state 		= sm.value!=0 ? true:false;
-		sm.sm_tv_sec 	= it->ait->second.tv_sec;
-		sm.sm_tv_usec 	= it->ait->second.tv_usec;
-		sm.priority 	= (Message::Priority)it->ait->second.priority;
-		sm.sensor_type 	= it->ait->second.type;
-		sm.ci			= it->ait->second.ci;
+		sm.value 		= it->it->second.value;
+		sm.sm_tv_sec 	= it->it->second.tv_sec;
+		sm.sm_tv_usec 	= it->it->second.tv_usec;
+		sm.priority 	= (Message::Priority)it->it->second.priority;
+		sm.sensor_type 	= it->it->second.type;
+		sm.ci			= it->it->second.ci;
 		sm.supplier 	= DefaultObjectId;
 	}
 
 	try
 	{	
-		if( !it->ait->second.db_ignore )
+		if( !it->it->second.db_ignore )
 			loggingInfo(sm);
 	}
 	catch(...){}
 
-	AskMap::iterator it1 = askDIOList.find( key(it->si.id,it->si.node) );
-	if( it1!=askDIOList.end() )
+	AskMap::iterator it1 = askIOList.find( key(it->si.id,it->si.node) );
+	if( it1!=askIOList.end() )
 	{	// lock
-		uniset_rwmutex_rlock lock(askDMutex);
+		uniset_rwmutex_rlock lock(askIOMutex);
 		send(it1->second, sm);
 	}	// unlock
 }

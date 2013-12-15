@@ -57,8 +57,8 @@ namespace UniSetTypes
 	/*! Функция делает ObjectType из const char * (переводит const-строку в обычную, что плохо, но мы обещаем не писать в неё :) )  */
 	inline static UniSetTypes::ObjectType getObjectType(const char * name) { const void *t = name;  return (UniSetTypes::ObjectType)t; }
 
-	UniversalIO::IOTypes getIOType( const std::string s );
-	std::ostream& operator<<( std::ostream& os, const UniversalIO::IOTypes t );
+	UniversalIO::IOType getIOType( const std::string s );
+	std::ostream& operator<<( std::ostream& os, const UniversalIO::IOType t );
 
 	std::ostream& operator<<( std::ostream& os, const IOController_i::CalibrateInfo c );
 
@@ -102,27 +102,9 @@ namespace UniSetTypes
 	};
 
 	const ObjectId DefaultObjectId = -1;	/*!< Идентификатор объекта по умолчанию */
-
-//	typedef long MessageCode;					
-	const MessageCode DefaultMessageCode = 0;	/*!< код пустого сообщения */
-
 	const ThresholdId DefaultThresholdId = -1;  	/*!< идентификатор порогов по умолчанию */
 	const ThresholdId DefaultTimerId = -1;  	/*!< идентификатор таймера по умолчанию */
 	
-	
-	/*! Информация о сообщении */
-	struct MessageInfo
-	{
-	   UniSetTypes::MessageCode code;	/*!< идентификатор */
-	   std::string text;				/*!< текст */
-	   std::string idname;				/*!< текстовое название идентификатора */
-
-		inline bool operator < ( const MessageInfo& m ) const
-		{
-			return (code < m.code);
-		}
-	};
-
 	/*! Информация об имени объекта */
 	struct ObjectInfo
 	{
@@ -245,7 +227,6 @@ namespace UniSetTypes
 	long setoutregion(long raw, long rawMin, long rawMax);
 
 
-
 	bool file_exist( const std::string filename );
 	
 	IDList explode( const std::string str, char sep=',' );
@@ -268,6 +249,7 @@ namespace UniSetTypes
 	// Проверка xml-узла на соответсвие <...f_prop="f_val">,
 	// если не задано f_val, то проверяется, что просто f_prop!=""
 	bool check_filter( UniXML_iterator& it, const std::string f_prop, const std::string f_val="" );
+
 // -----------------------------------------------------------------------------
 }
 

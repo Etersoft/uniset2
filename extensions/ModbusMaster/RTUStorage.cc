@@ -165,14 +165,14 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
 	}
 }
 // -----------------------------------------------------------------------------
-long RTUStorage::getInt( RTUJack jack, unsigned short int chan, UniversalIO::IOTypes t )
+long RTUStorage::getInt( RTUJack jack, unsigned short int chan, UniversalIO::IOType t )
 {
 	return lroundf( getFloat(jack,chan,t) );
 }
 // -----------------------------------------------------------------------------
-float RTUStorage::getFloat( RTUJack jack, unsigned short int chan, UniversalIO::IOTypes t )
+float RTUStorage::getFloat( RTUJack jack, unsigned short int chan, UniversalIO::IOType t )
 {
-	if( t == UniversalIO::AnalogInput )
+	if( t == UniversalIO::AI )
 	{
 		switch( jack )
 		{
@@ -194,7 +194,7 @@ float RTUStorage::getFloat( RTUJack jack, unsigned short int chan, UniversalIO::
 		return 0;
 	}
 
-	if( t == UniversalIO::AnalogOutput )
+	if( t == UniversalIO::AO )
 	{
 		switch( jack )
 		{
@@ -219,9 +219,9 @@ float RTUStorage::getFloat( RTUJack jack, unsigned short int chan, UniversalIO::
 	return 0;
 }
 // -----------------------------------------------------------------------------
-bool RTUStorage::getState( RTUJack jack, unsigned short int chan, UniversalIO::IOTypes t )
+bool RTUStorage::getState( RTUJack jack, unsigned short int chan, UniversalIO::IOType t )
 {
-	if( t == UniversalIO::DigitalInput )
+	if( t == UniversalIO::DI )
 	{
 		switch( jack )
 		{
@@ -243,7 +243,7 @@ bool RTUStorage::getState( RTUJack jack, unsigned short int chan, UniversalIO::I
 		return false;
 	}
 
-	if( t == UniversalIO::DigitalOutput )
+	if( t == UniversalIO::DO )
 	{
 		switch( jack )
 		{
@@ -264,9 +264,9 @@ bool RTUStorage::getState( RTUJack jack, unsigned short int chan, UniversalIO::I
 	return false;
 }
 // -----------------------------------------------------------------------------
-ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, unsigned short chan, UniversalIO::IOTypes t )
+ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, unsigned short chan, UniversalIO::IOType t )
 {
-	if( t == UniversalIO::AnalogInput )
+	if( t == UniversalIO::AI )
 	{
 		switch( jack )
 		{
@@ -288,7 +288,7 @@ ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, unsigned short chan
 		return -1;
 	}
 
-	if( t == UniversalIO::AnalogOutput )
+	if( t == UniversalIO::AO )
 	{
 		switch( jack )
 		{
@@ -310,7 +310,7 @@ ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, unsigned short chan
 		return -1;
 	}
 
-	if( t == UniversalIO::DigitalInput )
+	if( t == UniversalIO::DI )
 	{
 		switch( jack )
 		{
@@ -332,7 +332,7 @@ ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, unsigned short chan
 		return -1;
 	}
 
-	if( t == UniversalIO::DigitalOutput )
+	if( t == UniversalIO::DO )
 	{
 		switch( jack )
 		{
@@ -353,9 +353,9 @@ ModbusRTU::ModbusData RTUStorage::getRegister( RTUJack jack, unsigned short chan
 	return -1;
 }
 // -----------------------------------------------------------------------------
-ModbusRTU::SlaveFunctionCode RTUStorage::getFunction( RTUJack jack, unsigned short chan, UniversalIO::IOTypes t )
+ModbusRTU::SlaveFunctionCode RTUStorage::getFunction( RTUJack jack, unsigned short chan, UniversalIO::IOType t )
 {
-	if( t == UniversalIO::AnalogInput )
+	if( t == UniversalIO::AI )
 	{
 		switch( jack )
 		{
@@ -373,7 +373,7 @@ ModbusRTU::SlaveFunctionCode RTUStorage::getFunction( RTUJack jack, unsigned sho
 		return ModbusRTU::fnUnknown;
 	}
 
-	if( t == UniversalIO::AnalogOutput )
+	if( t == UniversalIO::AO )
 	{
 		switch( jack )
 		{
@@ -393,7 +393,7 @@ ModbusRTU::SlaveFunctionCode RTUStorage::getFunction( RTUJack jack, unsigned sho
 		return ModbusRTU::fnUnknown;
 	}
 
-	if( t == UniversalIO::DigitalInput )
+	if( t == UniversalIO::DI )
 	{
 		switch( jack )
 		{
@@ -411,7 +411,7 @@ ModbusRTU::SlaveFunctionCode RTUStorage::getFunction( RTUJack jack, unsigned sho
 		return ModbusRTU::fnUnknown;
 	}
 
-	if( t == UniversalIO::DigitalOutput )
+	if( t == UniversalIO::DO )
 	{
 		switch( jack )
 		{
