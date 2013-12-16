@@ -194,15 +194,22 @@ void IONotifyController::askSensor(const IOController_i::SensorInfo& si,
 		}
 		catch(Exception& ex)
 		{
-			unideb[Debug::WARN] << myname << "(askSensor): " <<  conf->oind->getNameById(si.id, si.node) << " catch "<< ex << endl;
+			if( unideb.debugging(Debug::WARN) )
+				unideb[Debug::WARN] << myname << "(askSensor): " <<  conf->oind->getNameById(si.id, si.node) << " catch "<< ex << endl;
 		}
 	    catch( CORBA::SystemException& ex )
 	    {
-	    	unideb[Debug::WARN] << conf->oind->getNameById(ci.id, ci.node) 
-	    		<< " недоступен!!(CORBA::SystemException): "
-				<< ex.NP_minorString() << endl;
-	    }	
-		catch(...){}
+			if( unideb.debugging(Debug::WARN) )
+			unideb[Debug::WARN] << conf->oind->getNameById(ci.id, ci.node)
+				<< " недоступен!!(CORBA::SystemException): "
+					<< ex.NP_minorString() << endl;
+	    }
+		catch(...)
+		{
+			if( unideb.debugging(Debug::WARN) )
+			unideb[Debug::WARN] << conf->oind->getNameById(ci.id, ci.node)
+				<< " catch..." << endl;
+		}
 	}
 }
 
@@ -233,11 +240,13 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
 				}
 				catch(Exception& ex)
 				{
-					unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+					if( unideb.debugging(Debug::WARN) )
+						unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
 				}
 				catch(...)
 				{
-			    	unideb[Debug::WARN] << myname << " не смогли сделать dump" << endl;
+					if( unideb.debugging(Debug::WARN) )
+					unideb[Debug::WARN] << myname << " не смогли сделать dump (catch...)" << endl;
 				}
 		    }
 			else
@@ -250,11 +259,13 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
 					}
 					catch(Exception& ex)
 					{
-						unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+						if( unideb.debugging(Debug::WARN) )
+							unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
 					}
 					catch(...)
 					{	
-			    		unideb[Debug::WARN] << myname << " не смогли сделать dump" << endl;
+						if( unideb.debugging(Debug::WARN) )
+						unideb[Debug::WARN] << myname << " не смогли сделать dump (catch...)" << endl;
 					}
 				}
 		    }
@@ -277,11 +288,13 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
 						}
 						catch(Exception& ex)
 						{
-							unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+							if( unideb.debugging(Debug::WARN) )
+								unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
 						}
 						catch(...)
 						{		
-				    		unideb[Debug::WARN] << myname << " не смогли сделать dump" << endl;
+							if( unideb.debugging(Debug::WARN) )
+							unideb[Debug::WARN] << myname << " не смогли сделать dump (catch...)" << endl;
 						}
 					}
 				}
@@ -827,7 +840,8 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 					}
 					catch( UniSetTypes::Exception& ex )
 					{
-						unideb[Debug::CRIT] << myname << "(checkThreshold): "
+						if( unideb.debugging(Debug::CRIT) )
+							unideb[Debug::CRIT] << myname << "(checkThreshold): "
 								<< ex << endl;
 					}
 				}

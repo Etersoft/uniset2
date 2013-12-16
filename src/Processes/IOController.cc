@@ -487,7 +487,6 @@ CORBA::Long IOController::getRawValue(const IOController_i::SensorInfo& si)
 		if( it->second.type == UniversalIO::AI )
 			return UniSetTypes::lcalibrate(it->second.value,ci.minRaw,ci.maxRaw,ci.minCal,ci.maxCal,true);
 
-		// п╨п╟п╩п╦п╠я─я┐п╣п╪ п╡ п╬п╠я─п╟я┌п╫я┐я▌ я│я┌п╬я─п╬п╫я┐ (п╫п╟ п╡я▀я┘п╬п╢)
 		if( it->second.type == UniversalIO::AO )
 			return UniSetTypes::lcalibrate(it->second.value,ci.minCal,ci.maxCal,ci.minRaw,ci.maxRaw,true);
 	}
