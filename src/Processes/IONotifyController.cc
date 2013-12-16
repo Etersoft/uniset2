@@ -851,73 +851,6 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 
 }
 // --------------------------------------------------------------------------------------------------------------
-#if 0
-void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
-										const IOController_i::SensorInfo& si, 
-										CORBA::Long value, UniSetTypes::ObjectId sup_id )
-{
-	// Если датчик не найден сдесь сработает исключение NameNotFound
-	long prevValue = IOController::localGetValue( li,si );
-	if( unideb.debugging(Debug::INFO) )	
-	{
-		unideb[Debug::INFO] << myname << "(IONotifyController::setValue): value=" << value 
-							<< " для выхода " << conf->oind->getNameById(si.id,si.node) << endl;
-	}
-
-	// сохраняем новое состояние 
-	IOController::localSetValue( li, si, value, sup_id );
-
-	// Рассылаем уведомления только если значение изменилось...
-	SensorMessage sm;
-	{	// lock 
-		uniset_rwmutex_rlock lock(li->second.val_lock);
-		if( prevValue == li->second.value )
-			return;
-
-		sm.id 			= si.id;		
-		sm.node 		= si.node;
-		sm.value 		= li->second.value;
-		sm.state 		= sm.value!=0 ? true:false;
-		sm.undefined	= li->second.undefined;
-		sm.sm_tv_sec 	= li->second.tv_sec;
-		sm.sm_tv_usec 	= li->second.tv_usec;
-		sm.priority 	= (Message::Priority)li->second.priority;
-		sm.sensor_type 	= li->second.type;
-		sm.ci			= li->second.ci;
-		sm.supplier 	= sup_id;
-	}	// unlock 
-
-	try
-	{	
-		uniset_rwmutex_rlock l(sig_mutex);
-		changeSignal.emit(&sm);
-	}
-	catch(...){}
-
-	try
-	{	
-		if( !li->second.db_ignore )
-			loggingInfo(sm);
-	}
-	catch(...){}
-
-	AskMap::iterator dit = askAOList.find( UniSetTypes::key(si.id,si.node) );
-	if( dit!=askAOList.end() )
-	{	// lock
-		uniset_rwmutex_rlock lock(askIOMutex);
-		send(dit->second, sm);
-	}
-
-//	// проверка порогов
-//	try
-//	{	
-//		checkThreshold(li,si, value);
-//	}
-//	catch(...){}
-}			
-#endif
-// --------------------------------------------------------------------------------------------------------------
-
 IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold( UniSetTypes::KeyType key, UniSetTypes::ThresholdId tid  )
 {
 	{	// lock
@@ -1030,7 +963,7 @@ IDSeq* IONotifyController::askSensorsSeq( const UniSetTypes::IDSeq& lst,
 											const UniSetTypes::ConsumerInfo& ci,
 											UniversalIO::UIOCommand cmd)
 {
-	UniSetTypes::IDList badlist; // писок не найденных идентификаторов
+	UniSetTypes::IDList badlist; // cписок не найденных идентификаторов
 	
 	IOController_i::SensorInfo si;
 
