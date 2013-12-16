@@ -137,12 +137,14 @@ class IOController:
             bool db_ignore;		/*!< не писать изменения в БД */
 
 			// сигнал для реализации механизма зависимостией..
+			// (все зависимые датчики подключаются к нему (см. NCRestorer::init_depends_signals)
 			ChangeSignal changeSignal;
 
 			IOController_i::SensorInfo d_si;  /*!< идентификатор датчика, от которого зависит данный */
 			long d_value; /*!< разрешающее работу значение датчика от которого зависит данный */
 			long d_off_value; /*!< блокирующее значение */
 
+			// функция обработки информации об изменении состояния датчика, от которого зависит данный
 			void checkDepend( const IOController_i::SensorInfo& si , long newval, IOController* );
 		};
 

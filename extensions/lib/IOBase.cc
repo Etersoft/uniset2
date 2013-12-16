@@ -92,6 +92,26 @@ bool IOBase::check_off_delay( bool val )
 	return offdelay_state;
 }
 // -----------------------------------------------------------------------------
+bool IOBase::check_front( bool val )
+{
+	if( !front || front_type == ftUnknown )
+		return val;
+
+	if( front_type == ft01 )
+	{
+		if( val && !front_prev_state )
+			front_state ^= true;
+	}
+	else if( front_type == ft10 )
+	{
+		if( !val && front_prev_state )
+			front_state ^= true;
+	}
+
+	front_prev_state = val;
+	return front_state;
+}
+// -----------------------------------------------------------------------------
 void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force )
 {
 	// проверка на обрыв
@@ -209,6 +229,7 @@ void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force 
 	set = it->check_jar(set);       // фильтр дребезга
 	set = it->check_on_delay(set);  // фильтр на срабатывание
 	set = it->check_off_delay(set); // фильтр на отпускание
+	set = it->check_front(set);     // работа по фронту (проверять после jar_xxx!)
 
 	{
 		uniset_rwmutex_wrlock lock(it->val_lock);
@@ -375,6 +396,8 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		return false;
 	}
 
+	b->val_lock.setName(sname + "_lock");
+
 	b->si.id 	= sid;
 	b->si.node 	= conf->getLocalNode();
 
@@ -395,6 +418,30 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	msec = it.getPIntProp("offdelay", UniSetTimer::WaitUpTime);
 	b->ptOffDelay.setTiming(msec);
 	
+
+	b->front = false;
+	std::string front_t( it.getProp("iofront") );
+	if( !front_t.empty() )
+	{
+		if( front_t == "01" )
+		{
+			b->front = true;
+			b->front_type = ft01;
+		}
+		else if( front_t == "10" )
+		{
+			b->front = true;
+			b->front_type = ft10;
+		}
+		else
+		{
+			if( dlog )
+				dlog[Debug::CRIT] << myname << "(IOBase::readItem): Unknown iofront='" << front_t << "'"
+				<< " for '" << sname << "'.  Must be [ 01, 10 ]." << endl;
+			return false;
+		}
+	}
+
 	b->safety = it.getPIntProp("safety", NoSafety);
 
 	b->stype = UniSetTypes::getIOType(it.getProp("iotype"));

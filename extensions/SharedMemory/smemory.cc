@@ -3,13 +3,14 @@
 #include "ObjectsActivator.h"
 #include "SharedMemory.h"
 #include "Extensions.h"
+#include "TestProc.h"
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // --------------------------------------------------------------------------
 int main(int argc, const char **argv)
-{   
+{
 	if( argc>1 && ( strcmp(argv[1],"--help")==0 || strcmp(argv[1],"-h")==0 ) )
 	{
 		cout << "--confile	- Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
@@ -32,27 +33,27 @@ int main(int argc, const char **argv)
 		if( !shm )
 			return 1;
 
+		TestProc tp(conf->getObjectID("TestProc1"));
+		tp.init_dlog(dlog);
+
 		ObjectsActivator act;
 
 		act.addObject(static_cast<class UniSetObject*>(shm));
-		SystemMessage sm(SystemMessage::StartUp); 
+		act.addObject(static_cast<class UniSetObject*>(&tp));
+
+		SystemMessage sm(SystemMessage::StartUp);
 		act.broadcast( sm.transport_msg() );
 		act.run(false);
 
-//		pause();	// пауза, чтобы дочерние потоки успели завершить работу
 		return 0;
 	}
 	catch( SystemError& err )
 	{
-		dlog[Debug::CRIT] << "(smemory): " << err << endl;
+		unideb[Debug::CRIT] << "(smemory): " << err << endl;
 	}
 	catch( Exception& ex )
 	{
-		dlog[Debug::CRIT] << "(smemory): " << ex << endl;
-	}
-	catch( std::exception& e )
-	{
-		dlog[Debug::CRIT] << "(smemory): " << e.what() << endl;
+		unideb[Debug::CRIT] << "(smemory): " << ex << endl;
 	}
 	catch( std::exception& e )
 	{
@@ -60,8 +61,8 @@ int main(int argc, const char **argv)
 	}
 	catch(...)
 	{
-		dlog[Debug::CRIT] << "(smemory): catch(...)" << endl;
+		unideb[Debug::CRIT] << "(smemory): catch(...)" << endl;
 	}
-	
+
 	return 1;
 }

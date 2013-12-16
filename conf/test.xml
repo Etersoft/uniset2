@@ -33,7 +33,7 @@
 	</UniSet>
 	<dlog name="dlog"/>
 	<settings>
-		<TestProc name="TestProc"
+		<TestProc name="TestProc1"
 			on_s="Input1_S"
 			lamp_c="Lamp58_C"
 			depend_c="Input4_S"
@@ -172,6 +172,8 @@
 			<item id="5" iotype="DI" name="Input5_S" priority="Medium" textname="Команда 5" udp="2" depend="Input4_S"/>
 			<item id="6" iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2"/>
 			<item id="11" iotype="AI" name="AI11_AS" priority="Medium" textname="AI 11" depend="Input4_S" depend_off_value="-50"/>
+			<item id="12" iotype="DI" name="Input12_S" priority="Medium" textname="Команда 12" iofront="01"/>
+			<item id="60" iotype="DI" name="Input60_S" priority="Medium" textname="Команда 61" iofront="10"/>
 			<item id="7" iotype="DO" name="DO_C" priority="Medium" textname="Digital output"/>
 			<item id="8" iotype="DO" name="DO1_C" priority="Medium" textname="Digital output"/>
 			<item default="1000" id="9" iotype="AO" name="AO_AS" precision="2" priority="Medium" rs="2" rs_channel="1" rs_jack="j1" rs_mbaddr="0x01" rs_mbfunc="0x06" rs_mbreg="0x02" rs_mbtype="rtu188" textname="Analog output"/>
@@ -252,7 +254,7 @@
 			<item id="6009" name="MBMaster2"/>
 			<item id="6010" name="MBMultiMaster1"/>
 			<item id="6011" name="RRDServer1"/>
-			<item id="6012" name="TestProc"/>
+			<item id="6012" name="TestProc1"/>
 		</objects>
 	</ObjectsMap>
 	<messages idfromfile="1" name="messages">
