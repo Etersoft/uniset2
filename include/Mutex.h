@@ -106,6 +106,7 @@ namespace UniSetTypes
 			void wrlock();
 			void rlock();
 
+			bool trylock();
 			bool tryrlock();
 			bool trywrlock();
 
@@ -120,6 +121,7 @@ namespace UniSetTypes
 			friend class uniset_rwmutex_lock;
 			ost::ThreadLock m;
 			ost::AtomicCounter wr_wait;
+			static int num;
 	};
 	std::ostream& operator<<(std::ostream& os, uniset_rwmutex& m );
 	// -------------------------------------------------------------------------

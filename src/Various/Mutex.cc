@@ -155,7 +155,10 @@ wr_wait(0)
 
 }
 
+int uniset_rwmutex::num  = 0;
+
 uniset_rwmutex::uniset_rwmutex():
+nm(""),
 wr_wait(0)
 {
 }
@@ -169,22 +172,28 @@ std::ostream& UniSetTypes::operator<<(std::ostream& os, uniset_rwmutex& m )
 	return os << m.name();
 }
 
-
 const uniset_rwmutex &uniset_rwmutex::operator=( const uniset_rwmutex& r )
 {
 	if( this != &r )
+	{
+		lock();
+		ostringstream s;
+		s << r.nm << "." << (++num);
+		nm = s.str();
 		unlock();
+	}
 
 	return *this;
 }
 
-uniset_rwmutex::uniset_rwmutex( const uniset_rwmutex& r )
+uniset_rwmutex::uniset_rwmutex( const uniset_rwmutex& r ):
+nm(r.nm)
 {
-	//unlock();
 }
 
 void uniset_rwmutex::lock()
 {
+	MUTEX_DEBUG(cerr << nm << " prepare Locked.." << endl;)
 	wr_wait += 1;
 	m.writeLock();
 	wr_wait -= 1;
@@ -192,6 +201,7 @@ void uniset_rwmutex::lock()
 }
 void uniset_rwmutex::wrlock()
 {
+	MUTEX_DEBUG(cerr << nm << " prepare WRLocked.." << endl;)
 	wr_wait += 1;
 	m.writeLock();
 	wr_wait -= 1;
@@ -199,6 +209,8 @@ void uniset_rwmutex::wrlock()
 }
 void uniset_rwmutex::rlock()
 {
+	MUTEX_DEBUG(cerr << nm << " prepare RLocked.." << endl;)
+
 	while( wr_wait > 0 )
 		msleep(2);
 
@@ -218,6 +230,11 @@ bool uniset_rwmutex::tryrlock()
 }
 
 bool uniset_rwmutex::trywrlock()
+{
+	return m.tryWriteLock();
+}
+
+bool uniset_rwmutex::trylock()
 {
 	return m.tryWriteLock();
 }
