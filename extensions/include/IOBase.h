@@ -37,7 +37,11 @@ static const int NoSafety = -1;
 				jar_state(false),
 				ondelay_state(false),
 				offdelay_state(false),
-				t_ai(UniSetTypes::DefaultObjectId)
+				t_ai(UniSetTypes::DefaultObjectId),
+				front(false),
+				front_type(ftUnknown),
+				front_prev_state(false),
+				front_state(false)
 			{}
 
 
@@ -46,6 +50,7 @@ static const int NoSafety = -1;
 			bool check_jar( bool val );			/*!< реализация фильтра против дребезга */
 			bool check_on_delay( bool val );	/*!< реализация задержки на включение */
 			bool check_off_delay( bool val );	/*!< реализация задержки на отключение */
+			bool check_front( bool val );		/*!< реализация срабатывания по фронту сигнала */
 
 			IOController_i::SensorInfo si;
 			UniversalIO::IOType stype;			/*!< тип канала (DI,DO,AI,AO) */
@@ -88,7 +93,19 @@ static const int NoSafety = -1;
 												хранится идентификатор аналогового датчика
 												с которым он связан */
 			IONotifyController_i::ThresholdInfo ti;
-	
+
+			// Работа по фронтам сигнала
+			enum FrontType
+			{
+				ftUnknown,
+				ft01,	// срабатывание на переход "0-->1"
+				ft10  // срабатывание на переход "1-->0"
+			};
+
+			bool front; // флаг работы по фронту
+			FrontType front_type;
+			bool front_prev_state;
+			bool front_state;
 			
 			IOController::IOStateList::iterator ioit;
 			UniSetTypes::uniset_rwmutex val_lock; 	/*!< блокировка на время "работы" со значением */

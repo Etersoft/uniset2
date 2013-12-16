@@ -33,7 +33,7 @@ int main(int argc, const char **argv)
 		if( !shm )
 			return 1;
 
-		TestProc tp(conf->getObjectID("TestProc"));
+		TestProc tp(conf->getObjectID("TestProc1"));
 		tp.init_dlog(dlog);
 
 		ObjectsActivator act;
