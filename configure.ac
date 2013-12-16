@@ -216,7 +216,6 @@ AC_CONFIG_FILES([Makefile
 				 include/Makefile
 				 include/modbus/Makefile
 				 tests/Makefile
-				 tests/JrnTests/Makefile
 				 tests/UniXmlTest/Makefile
 				 docs/Makefile
 				 docs/UniSetDox.cfg

@@ -2,8 +2,6 @@
 # This file is part of the UniSet library                                  #
 ############################################################################
 
-SUBDIRS=JrnTests
-
 noinst_PROGRAMS 		= passivetimer hourglass delaytimer unixml ui umutex conftest iterator_test sscanf_hex calibration threadtst
 
 passivetimer_SOURCES 	= passivetimer.cc

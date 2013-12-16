@@ -352,6 +352,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - possible use of the property 'iotype' in uniset-codegen
 - refactoring <depends> mechanism
 - add iofront=[01,10] to IOBase
+- remove deprecated interfaces (Storages,CycleStorage,TableStorage,TextIndex,..)
 
 * Tue Dec 10 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt3
 - add RRDServer
