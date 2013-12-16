@@ -41,6 +41,8 @@
 			set_d1_check_s="Input5_S"
 			d2_check_s="AI11_AS"
 			set_d2_check_s="AI11_AS"
+			undef_c="AI54_S"
+			check_undef_s="AI54_S"
 		/>
 
 		<IOControl name="IOControl"/>

@@ -154,10 +154,35 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
 		li->second.undefined = undefined;
 	}	// unlock
 
+	// сперва локальные события...
 	try
 	{
 		if( changed )
-			li->second.changeSignal.emit(li->second.si, li->second.value, this);
+			li->second.sigUndefChange.emit(li, this);
+	}
+	catch(...){}
+
+	// потом глобольное, но конкретно для 'undefchange'
+	try
+	{
+		if( changed )
+			sigAnyUndefChange.emit(li, this);
+	}
+	catch(...){}
+
+	// теперь просто событие по изменению состояния
+	try
+	{
+		if( changed )
+			li->second.sigChange.emit(li, this);
+	}
+	catch(...){}
+
+	// глобальное по всем..
+	try
+	{
+		if( changed )
+			sigAnyChange.emit(li, this);
 	}
 	catch(...){}
 }
@@ -222,9 +247,6 @@ void IOController::localSetValue( IOController::IOStateList::iterator& li,
 
 			long prev = li->second.value;
 
-			if( !blocked )
-				li->second.real_value = li->second.value;
-		
 			if( blocked )
 			{
 				li->second.real_value = value;
@@ -252,7 +274,14 @@ void IOController::localSetValue( IOController::IOStateList::iterator& li,
 	try
 	{
 		if( changed )
-			li->second.changeSignal.emit(li->second.si, li->second.value, this);
+			li->second.sigChange.emit(li, this);
+	}
+	catch(...){}
+
+	try
+	{
+		if( changed )
+			sigAnyChange.emit(li, this);
 	}
 	catch(...){}
 }
@@ -728,16 +757,51 @@ IOController::ChangeSignal IOController::signal_change_value( UniSetTypes::Objec
 	}
 
 	uniset_rwmutex_rlock lock(it->second.val_lock);
-	return it->second.changeSignal;
+	return it->second.sigChange;
 }
 // -----------------------------------------------------------------------------
-void IOController::USensorIOInfo::checkDepend( const IOController_i::SensorInfo& dep_si , long newvalue, IOController* ic )
+IOController::ChangeSignal IOController::signal_change_value()
+{
+	return sigAnyChange;
+}
+// -----------------------------------------------------------------------------
+IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_state( const IOController_i::SensorInfo& si )
+{
+	return signal_change_undefined_state( si.id, si.node );
+}
+// -----------------------------------------------------------------------------
+IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_state( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+{
+	IOStateList::iterator it = ioList.find( key(id,node) );
+	if( it==ioList.end() )
+	{
+		ostringstream err;
+		err << myname << "(signal_change_undefine): вход(выход) с именем "
+			<< conf->oind->getNameById(id) << " не найден";
+
+		if( unideb.debugging(Debug::INFO) )
+			unideb[Debug::INFO] << err.str() << endl;
+
+		throw IOController_i::NameNotFound(err.str().c_str());
+	}
+
+	uniset_rwmutex_rlock lock(it->second.val_lock);
+	return it->second.sigUndefChange;
+}
+// -----------------------------------------------------------------------------
+IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_state()
+{
+	return sigAnyUndefChange;
+}
+// -----------------------------------------------------------------------------
+void IOController::USensorIOInfo::checkDepend( IOStateList::iterator& d_it, IOController* ic )
 {
 	bool changed = false;
 	{
 		uniset_rwmutex_wrlock lock(val_lock);
 		bool prev = blocked;
-		blocked = ( newvalue == d_value ) ? false : true;
+		uniset_rwmutex_rlock dlock(d_it->second.val_lock);
+		blocked = ( d_it->second.value == d_value ) ? false : true;
 		changed = ( prev != blocked );
 	}
 

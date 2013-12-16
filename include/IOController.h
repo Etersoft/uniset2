@@ -98,15 +98,32 @@ class IOController:
 
 	public:
 
-		typedef sigc::signal<void,const IOController_i::SensorInfo&, long, IOController*> ChangeSignal;
+		// предварительное объявление, чтобы в структуре объявить итератор..
+		struct USensorIOInfo;
+		typedef std::map<UniSetTypes::KeyType, USensorIOInfo> IOStateList;
+
+
+		// ================== Достпуные сигналы =================
+		/*!
+		// \warning  В сигнале напрямую передаётся итератор (т.е. по сути указатель на внутреннюю структуру!)
+		// Это не очень хорошо, с точки зрения "архитектуры", но оптимальнее по быстродействию!
+		// необходимо в обработчике не забывать использовать uniset_rwmutex_wrlock(val_lock) или uniset_rwmutex_rlock(val_lock)
+		*/
+		typedef sigc::signal<void, IOStateList::iterator&, IOController*> ChangeSignal;
+		typedef sigc::signal<void, IOStateList::iterator&, IOController*> ChangeUndefinedStateSignal;
 
 		// signal по изменению определённого датчика
 		ChangeSignal signal_change_value( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
 		ChangeSignal signal_change_value( const IOController_i::SensorInfo& si );
+		// signal по изменению любого датчика
+		ChangeSignal signal_change_value();
 
-		// предварительное объявление, чтобы в структуре объявить итератор..
-		struct USensorIOInfo;
-		typedef std::map<UniSetTypes::KeyType, USensorIOInfo> IOStateList;
+		// сигналы по изменению флага "неопределённое состояние" (обрыв датчика например)
+		ChangeUndefinedStateSignal signal_change_undefined_state( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
+		ChangeUndefinedStateSignal signal_change_undefined_state( const IOController_i::SensorInfo& si );
+		ChangeUndefinedStateSignal signal_change_undefined_state();
+		// -----------------------------------------------------------------------------------------
+
 
 		struct USensorIOInfo:
 			public IOController_i::SensorIOInfo
@@ -138,14 +155,15 @@ class IOController:
 
 			// сигнал для реализации механизма зависимостией..
 			// (все зависимые датчики подключаются к нему (см. NCRestorer::init_depends_signals)
-			ChangeSignal changeSignal;
+			ChangeSignal sigChange;
+			ChangeUndefinedStateSignal sigUndefChange;
 
 			IOController_i::SensorInfo d_si;  /*!< идентификатор датчика, от которого зависит данный */
 			long d_value; /*!< разрешающее работу значение датчика от которого зависит данный */
 			long d_off_value; /*!< блокирующее значение */
 
 			// функция обработки информации об изменении состояния датчика, от которого зависит данный
-			void checkDepend( const IOController_i::SensorInfo& si , long newval, IOController* );
+			void checkDepend( IOStateList::iterator& it, IOController* );
 		};
 
 		inline IOStateList::iterator ioBegin(){ return ioList.begin(); }
@@ -252,6 +270,8 @@ class IOController:
 
 	private:		
 		friend class NCRestorer;
+		ChangeSignal sigAnyChange;
+		ChangeSignal sigAnyUndefChange;
 	
 		IOStateList ioList;	/*!< список с текущим состоянием аналоговых входов/выходов */
 		UniSetTypes::uniset_rwmutex ioMutex; /*!< замок для блокирования совместного доступа к ioList */

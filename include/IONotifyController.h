@@ -153,10 +153,6 @@ class IONotifyController:
 		virtual void localSetValue( IOController::IOStateList::iterator& it,
 									const IOController_i::SensorInfo& si,
 									CORBA::Long value, UniSetTypes::ObjectId sup_id );
-		//  -----------------------------------------------
-		typedef sigc::signal<void,UniSetTypes::SensorMessage*> ChangeSignal;
-		ChangeSignal signal_change_state(){ return changeSignal; }
-
 		//  -------------------- !!!!!!!!! ---------------------------------
 		virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList();
 
@@ -274,10 +270,10 @@ class IONotifyController:
 
 		NCRestorer* restorer;
 
-//		void onChangeUndefined( DependsList::iterator it, bool undefined );
+		void onChangeUndefinedState( IOStateList::iterator& it, IOController* ic );
 
-		UniSetTypes::uniset_rwmutex sig_mutex;
-		ChangeSignal changeSignal;
+//		UniSetTypes::uniset_rwmutex sig_mutex;
+//		ChangeSignal changeSignal;
 
 	private:
 		friend class NCRestorer;
