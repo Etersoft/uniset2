@@ -171,10 +171,14 @@ NCRestorer::SInfo& NCRestorer::SInfo::operator=(IOController_i::SensorIOInfo& in
 	this->default_val = inf.default_val;
 	this->real_value = inf.real_value;
 	this->ci 		= inf.ci;
-	this->undefined = false;
-	this->db_ignore = false;
+	this->undefined = inf.undefined;
+	this->blocked = inf.blocked;
+	this->dbignore = inf.dbignore;
 	this->any = 0;
 	return *this;
+//	CalibrateInfo ci;
+//	long tv_sec;
+//	long v_usec;
 }
 // ------------------------------------------------------------------------------------------
 void NCRestorer::init_depends_signals( IONotifyController* ic )
@@ -190,11 +194,11 @@ void NCRestorer::init_depends_signals( IONotifyController* ic )
 		if( unideb.debugging(Debug::INFO) )
 			unideb[Debug::INFO] << ic->getName() << "(NCRestorer::init_depends_signals): "
 				<< " init depend: '" << conf->oind->getMapName(it->second.si.id) << "'"
-				<< " dep_name='" << conf->oind->getMapName(it->second.d_si.id) << "'"
+				<< " dep_name=(" << it->second.d_si.id << ")'" << conf->oind->getMapName(it->second.d_si.id) << "'"
 				<< endl;
 
 		IOController::ChangeSignal s = ic->signal_change_value(it->second.d_si);
-		s.connect( sigc::mem_fun( &it->second, &IOController::USensorIOInfo::checkDepend) );
+		s.connect( sigc::mem_fun( &it->second, &IOController::USensorInfo::checkDepend) );
 	}
 }
 // -----------------------------------------------------------------------------

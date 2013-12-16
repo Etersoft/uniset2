@@ -43,7 +43,7 @@ class NCRestorer
 	    virtual ~NCRestorer();
 
 		struct SInfo:
-			public IOController::USensorIOInfo
+			public IOController::USensorInfo
 		{
 			SInfo( IOController_i::SensorInfo& si, UniversalIO::IOType& t,
 					UniSetTypes::Message::Message::Priority& p, long& def )
@@ -76,7 +76,7 @@ class NCRestorer
 		// добавление списка порогов и заказчиков
 		static void addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyController::ThresholdExtList& lst, bool force=false );
 
-		static inline void ioRegistration( IONotifyController* ic, IOController::USensorIOInfo& inf, bool force=false )
+		static inline void ioRegistration( IONotifyController* ic, IOController::USensorInfo& inf, bool force=false )
 		{
 			ic->ioRegistration(inf,force);
 		}
