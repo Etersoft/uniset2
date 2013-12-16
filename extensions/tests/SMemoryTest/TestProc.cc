@@ -1,3 +1,4 @@
+#include <iomanip>
 #include "Exceptions.h"
 #include "TestProc.h"
 // -----------------------------------------------------------------------------
@@ -34,7 +35,10 @@ void TestProc::sysCommand( UniSetTypes::SystemMessage* sm )
 // -----------------------------------------------------------------------------
 void TestProc::sensorInfo( SensorMessage *sm )
 {
-	dlog[Debug::INFO] << myname << "(sensorInfo): id=" << sm->id << " val=" << sm->value << endl;
+	dlog[Debug::LEVEL1] << myname << "(sensorInfo): id=" << sm->id << " val=" << sm->value
+			<< "  " << UniversalInterface::timeToString(sm->sm_tv_sec,":")
+			<< "(" << setw(6) << sm->sm_tv_usec << "): "
+			<< endl;
 
 	if( sm->id == on_s )
 	{
@@ -70,12 +74,15 @@ void TestProc::timerInfo( TimerMessage *tm )
 
        // set depend 0...
        setValue(depend_c,0);
-       setValue(set_d_check_s,test_val);
-       dlog[Debug::LEVEL1] << myname << "(timerInfo): check depend OFF: " << ( getValue(d_check_s) == 0 ? "OK" : "FAIL" ) << endl;
+       setValue(set_d1_check_s,test_val);
+       setValue(set_d2_check_s,test_val);
+       dlog[Debug::LEVEL1] << myname << "(timerInfo): check depend OFF: d1: " << ( getValue(d1_check_s) == 0 ? "OK" : "FAIL" ) << endl;
+       dlog[Debug::LEVEL1] << myname << "(timerInfo): check depend OFF: d2: " << ( getValue(d2_check_s) == -50 ? "OK" : "FAIL" ) << endl;
 
 		// set depend 1
        setValue(depend_c,1);
-       dlog[Debug::LEVEL1] << myname << "(timerInfo): check depend ON: " << ( getValue(d_check_s) == test_val ? "OK" : "FAIL" ) << endl;
+       dlog[Debug::LEVEL1] << myname << "(timerInfo): check depend ON: d1: " << ( getValue(d1_check_s) == test_val ? "OK" : "FAIL" ) << endl;
+       dlog[Debug::LEVEL1] << myname << "(timerInfo): check depend ON: d2: " << ( getValue(d2_check_s) == test_val ? "OK" : "FAIL" ) << endl;
     }
 }
 // -----------------------------------------------------------------------------
