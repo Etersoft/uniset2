@@ -55,7 +55,11 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 
 	// ----------------------
 	buildHistoryList(cnode);
-	signal_change_state().connect(sigc::mem_fun(*this, &SharedMemory::updateHistory));
+
+	signal_change_value().connect(sigc::mem_fun(*this, &SharedMemory::updateHistory));
+	for( History::iterator i=hist.begin(); i!=hist.end(); ++i )
+		histmap[i->fuse_id].push_back(i);
+
 	// ----------------------
 	restorer = NULL;
 	NCRestorer_XML* rxml = new NCRestorer_XML(datafile);
@@ -734,27 +738,41 @@ void SharedMemory::saveHistory()
 	}
 }
 // -----------------------------------------------------------------------------
-void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
+void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
 {
 	if( hist.empty() )
 		return;
 
+	HistoryFuseMap::iterator i = histmap.find(s_it->second.si.id);
+	if( i == histmap.end() )
+		return;
+
+	long value = 0;
+	long sm_tv_sec = 0;
+	long sm_tv_usec = 0;
+	{
+		uniset_rwmutex_rlock lock(s_it->second.val_lock);
+		value = s_it->second.value;
+		sm_tv_sec = s_it->second.tv_sec;
+		sm_tv_usec = s_it->second.tv_usec;
+	}
+
 	if( dlog.debugging(Debug::INFO) )
 	{
 		dlog[Debug::INFO] << myname << "(updateHistory): " 
-			<< " sid=" << sm->id 
-			<< " value=" << sm->value
+			<< " sid=" << s_it->second.si.id
+			<< " value=" << value
 			<< endl;
 	}
 
-	for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
+	for( HistoryItList::iterator it1=i->second.begin(); it1!=i->second.end(); ++it1 )
 	{
 		History::iterator it( (*it1) );
 
-		if( sm->sensor_type == UniversalIO::DI ||
-			sm->sensor_type == UniversalIO::DO )
+		if( s_it->second.type == UniversalIO::DI ||
+			s_it->second.type == UniversalIO::DO )
 		{
-			bool st = (bool)sm->value;
+			bool st = (bool)value;
 
 			if( it->fuse_invert )
 				st^=true;
@@ -764,18 +782,18 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 				if( dlog.debugging(Debug::INFO) )
 					dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 		
-				it->fuse_sec = sm->sm_tv_sec;
-				it->fuse_usec = sm->sm_tv_usec;
+				it->fuse_sec = sm_tv_sec;
+				it->fuse_usec = sm_tv_usec;
 				m_historySignal.emit( &(*it) );
 			}
 		}
-		else if( sm->sensor_type == UniversalIO::AI ||
-				 sm->sensor_type == UniversalIO::AO )
+		else if( s_it->second.type == UniversalIO::AI ||
+				 s_it->second.type == UniversalIO::AO )
 		{
 			if( sm->sensor_type == UniversalIO::DigitalInput ||
 				sm->sensor_type == UniversalIO::DigitalOutput )
 			{
-				bool st = (bool)sm->value;
+				bool st = (bool)value;
 
 				if( it->fuse_invert )
 					st^=true;
@@ -784,15 +802,16 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 				{
 					if( dlog.debugging(Debug::INFO) )
 						dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
-			
-					it->fuse_tm = sm->tm;
+
+					it->fuse_sec = sm_tv_sec;
+					it->fuse_usec = sm_tv_usec;
 					m_historySignal.emit( &(*it) );
 				}
 			}
 			else if( sm->sensor_type == UniversalIO::AnalogInput ||
 					 sm->sensor_type == UniversalIO::AnalogOutput )
 			{
-				if( !it->fuse_use_val )
+				if( value == it->fuse_val )
 				{
 					bool st = it->fuse_invert ? !sm->state : sm->state;
 					if( !st )
@@ -800,20 +819,9 @@ void SharedMemory::updateHistory( UniSetTypes::SensorMessage* sm )
 						if( dlog.debugging(Debug::INFO) )
 							dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
-						it->fuse_tm = sm->tm;			
-						m_historySignal.emit( &(*it) );
-					}
-				}
-				else
-				{
-					if( sm->value == it->fuse_val )
-					{
-						if( dlog.debugging(Debug::INFO) )
-							dlog[Debug::INFO] << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
-			
-						it->fuse_tm = sm->tm;
-						m_historySignal.emit( &(*it) );
-					}
+					it->fuse_sec = sm_tv_sec;
+					it->fuse_usec = sm_tv_usec;
+					m_historySignal.emit( &(*it) );
 				}
 			}
 		}

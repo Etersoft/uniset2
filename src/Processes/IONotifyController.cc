@@ -65,6 +65,8 @@ IONotifyController::IONotifyController( ObjectId id, NCRestorer* d ):
 	trshMutex(string(conf->oind->getMapName(id))+"_trshMutex"),
 	maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 {
+	signal_change_undefined_state().connect(sigc::mem_fun(*this, &IONotifyController::onChangeUndefinedState));
+
 	// добавляем фильтры
 	addIOFilter( sigc::mem_fun(this,&IONotifyController::myIOFilter) );
 }
@@ -363,13 +365,6 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
         sm.sm_tv_usec   = li->second.tv_usec;
         sm.ci           = li->second.ci;
     } // unlock
-
-    try
-    {
-        uniset_rwmutex_rlock l(sig_mutex);
-        changeSignal.emit(&sm);
-    }
-    catch(...){}
 
     try
     {
@@ -993,41 +988,43 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 	return res;
 }
 // -----------------------------------------------------------------------------
-#if 0
-void IONotifyController::onChangeUndefined( DependsList::iterator it, bool undefined )
+void IONotifyController::onChangeUndefinedState( IOStateList::iterator& lit, IOController* ic )
 {
+	USensorIOInfo& it(lit->second);
+
 	SensorMessage sm;
 
-	sm.id 	= it->si.id;		
-	sm.node = it->si.node;
-	sm.undefined = undefined;
+	// эти поля можно копировать без lock, т.к. они не меняются
+	sm.id 	= it.si.id;
+	sm.node = it.si.node;
+	sm.undefined = it.undefined;
+	sm.priority 	= (Message::Priority)it.priority;
+	sm.sensor_type 	= it.type;
+	sm.supplier 	= DefaultObjectId;
 
-	if( it->it != myioEnd() )
-	{
-		sm.value 		= it->it->second.value;
-		sm.sm_tv_sec 	= it->it->second.tv_sec;
-		sm.sm_tv_usec 	= it->it->second.tv_usec;
-		sm.priority 	= (Message::Priority)it->it->second.priority;
-		sm.sensor_type 	= it->it->second.type;
-		sm.ci			= it->it->second.ci;
-		sm.supplier 	= DefaultObjectId;
-	}
+	{ // lock
+		uniset_rwmutex_rlock lock(it.val_lock);
+		sm.value 		= it.value;
+		sm.sm_tv_sec 	= it.tv_sec;
+		sm.sm_tv_usec 	= it.tv_usec;
+		sm.ci			= it.ci;
+	} // unlock
 
 	try
 	{	
-		if( !it->it->second.db_ignore )
+		if( !it.db_ignore )
 			loggingInfo(sm);
 	}
 	catch(...){}
 
-	AskMap::iterator it1 = askIOList.find( key(it->si.id,it->si.node) );
+	AskMap::iterator it1 = askIOList.find( key(it.si.id,it.si.node) );
 	if( it1!=askIOList.end() )
 	{	// lock
 		uniset_rwmutex_rlock lock(askIOMutex);
 		send(it1->second, sm);
 	}	// unlock
 }
-#endif
+
 // -----------------------------------------------------------------------------
 IDSeq* IONotifyController::askSensorsSeq( const UniSetTypes::IDSeq& lst, 
 											const UniSetTypes::ConsumerInfo& ci,

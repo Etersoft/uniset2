@@ -30,7 +30,10 @@ void TestProc::sysCommand( UniSetTypes::SystemMessage* sm )
 {
 	TestProc_SK::sysCommand(sm);
     if( sm->command == SystemMessage::StartUp || sm->command == SystemMessage::WatchDog )
+    {
         askTimer(tmCheckDepend,checkDependTime);
+        askTimer(tmCheckUndefState,checkUndefTime);
+    }
 }
 // -----------------------------------------------------------------------------
 void TestProc::sensorInfo( SensorMessage *sm )
@@ -52,6 +55,10 @@ void TestProc::sensorInfo( SensorMessage *sm )
 			askTimer(tmChange,0);
 			dlog[Debug::LEVEL1] << myname << "(sensorInfo): STOP WORKING.." << endl;
 		}
+	}
+	else if( sm->id == check_undef_s )
+	{
+		dlog[Debug::LEVEL1] << myname << "(sensorInfo): CHECK UNDEFINED STATE ==> " << (sm->undefined==undef ? "OK" : "FAIL") << endl;
 	}
 }
 // -----------------------------------------------------------------------------
@@ -84,5 +91,15 @@ void TestProc::timerInfo( TimerMessage *tm )
        dlog[Debug::LEVEL1] << myname << "(timerInfo): check depend ON: d1: " << ( getValue(d1_check_s) == test_val ? "OK" : "FAIL" ) << endl;
        dlog[Debug::LEVEL1] << myname << "(timerInfo): check depend ON: d2: " << ( getValue(d2_check_s) == test_val ? "OK" : "FAIL" ) << endl;
     }
+    else if( tm->id == tmCheckUndefState )
+    {
+       dlog[Debug::LEVEL1] << myname << "(timerInfo): Check undef state..." << endl;
+	   undef ^= true;
+
+	   si.id = undef_c;
+	   si.node = conf->getLocalNode();
+	   dlog[Debug::LEVEL1] << myname << "(timerInfo): set undefined=" << undef << endl;
+	   ui.setUndefinedState( si, undef, getId() );
+	}
 }
 // -----------------------------------------------------------------------------

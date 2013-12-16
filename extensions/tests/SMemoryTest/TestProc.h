@@ -18,7 +18,8 @@ class TestProc:
 		{
 			tmChange,
 			tmCheckWorking,
-			tmCheckDepend
+			tmCheckDepend,
+			tmCheckUndefState
 		};
 
 		virtual void step();
@@ -28,6 +29,7 @@ class TestProc:
 		
 	private:
 		bool state;
+		bool undef;
 };
 // -----------------------------------------------------------------------------
 #endif // TestProc_H_

@@ -408,7 +408,7 @@ class SharedMemory:
 
 		History hist;
 
-		virtual void updateHistory( UniSetTypes::SensorMessage* sm );
+		virtual void updateHistory( IOStateList::iterator& it, IOController* );
 		virtual void saveHistory();
 
 		void buildHistoryList( xmlNode* cnode );
