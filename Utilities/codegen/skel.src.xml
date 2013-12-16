@@ -27,8 +27,10 @@
 
 	<!-- проверка работы механизма зависимостей -->
 	<item name="depend_c" vartype="out" comment="Датчик от которого зависит состояние другого"/>
-	<item name="d_check_s" vartype="in" comment="состояние зависимого датчика"/>
-	<item name="set_d_check_s" vartype="out" comment="для выставления датчика"/>
+	<item name="d1_check_s" vartype="in" comment="состояние зависимого датчика"/>
+	<item name="d2_check_s" vartype="in" comment="состояние зависимого датчика"/>
+	<item name="set_d1_check_s" vartype="out" comment="для выставления датчика"/>
+	<item name="set_d2_check_s" vartype="out" comment="для выставления датчика"/>
   </smap>
 
   <msgmap>
