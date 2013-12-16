@@ -140,6 +140,28 @@ int main( int argc, const char **argv )
 	try
 	{
 
+		{
+			uniset_rwmutex m1("mutex1");
+			uniset_rwmutex m2("mutex2");
+			uniset_rwmutex m3_lcopy("mutex3");
+
+			cout << "m1: " << m1.name() << endl;
+			cout << "m2: " << m2.name() << endl;
+			cout << "m3: " << m3_lcopy.name() << endl;
+
+			m2 = m1;
+			cout << "copy m1... m2: " << m2.name() << endl;
+
+			m1.wrlock();
+			m3_lcopy = m1;
+			cout << "copy m1... m3: " << m2.name() << endl;
+			cout << "m3.lock: ..." << endl;
+			m3_lcopy.wrlock();
+			cout << "m3.lock: wrlock OK" << endl;
+		}
+
+		return 0;
+
 #if 0
     ost::ThreadLock m;
 //    cout << "test unlock.." << endl;
