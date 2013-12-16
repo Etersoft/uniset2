@@ -24,7 +24,6 @@
 // --------------------------------------------------------------------------
 #include <dirent.h>
 #include "RunLock.h"
-#include "Exceptions.h"
 #include "Configuration.h"
 // --------------------------------------------------------------------------
 using namespace UniSetTypes;

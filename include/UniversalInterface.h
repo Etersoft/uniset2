@@ -49,11 +49,7 @@ namespace UniversalIO
 }
 
 // -----------------------------------------------------------------------------------------
-//#define REPEAT_TIMEOUT	100 // [мс] пауза между попытками вызвать удаленную функцию объекта
-//#define REPEAT_COUNT	5 	// количество попыток, после которого вырабатывается TimeOut
-
 #define IO_THROW_EXCEPTIONS UniSetTypes::TimeOut,UniSetTypes::IOBadParam,UniSetTypes::ORepFailed
-
 // -----------------------------------------------------------------------------------------
 /*!
  * \class UniversalInterface
@@ -94,7 +90,7 @@ class UniversalInterface
 		
 		//! Выставление состояния датчика
 		void setValue ( UniSetTypes::ObjectId id, long value, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
-		void setValue ( UniSetTypes::ObjectId id, long value);
+		void setValue ( UniSetTypes::ObjectId id, long value );
 		void setValue ( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
 		void fastSetValue( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
 
@@ -112,7 +108,7 @@ class UniversalInterface
 
 
 		//! Заказ информации об изменении дискретного датчика
-		void askThreshold ( UniSetTypes::ObjectId sensorId, UniSetTypes::ThresholdId tid,
+		void askThreshold( UniSetTypes::ObjectId sensorId, UniSetTypes::ThresholdId tid,
 							UniversalIO::UIOCommand cmd,
 							CORBA::Long lowLimit=0, CORBA::Long hiLimit=0, CORBA::Long sensibility=0, 
 							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
@@ -216,16 +212,14 @@ class UniversalInterface
 						UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() ); 	// used exist
 
 		bool waitWorking( UniSetTypes::ObjectId id, int msec, int pause=3000,
-							UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() ); 	// used getState
+							UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() ); 	// used getValue
 
 		inline void setCacheMaxSize( unsigned int newsize)
 		{
 			rcache.setMaxSize(newsize);
 		}
 
-		/*!
-			\todo Убедится в уникальности возвращаемого результата	hash(...)	
-		*/
+		/*! Кэш ссылок на объекты */
 		class CacheOfResolve
 		{
 			public:
@@ -237,7 +231,7 @@ class UniversalInterface
 					void cache(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node, UniSetTypes::ObjectVar ptr);
 					void erase(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node);
 					
-					inline void setMaxSize( unsigned int ms)
+					inline void setMaxSize( unsigned int ms )
 					{
 						MaxSize = ms;
 					};
@@ -246,6 +240,7 @@ class UniversalInterface
 
 			protected:
 					CacheOfResolve(){};
+
 			private:
 			
 				bool clean(); 		/*!< функция очистки кэш-а от старых ссылок */
@@ -260,7 +255,7 @@ class UniversalInterface
 				*/
 				struct Info
 				{
-					Info( UniSetTypes::ObjectVar ptr, time_t tm=0):
+					Info( UniSetTypes::ObjectVar ptr, time_t tm=0 ):
 							ptr(ptr)
 					{
 						if(!tm)
@@ -306,6 +301,7 @@ class UniversalInterface
 		void initBackId( UniSetTypes::ObjectId backid );
 	protected:
 		std::string set_err(const std::string& pre, UniSetTypes::ObjectId id, UniSetTypes::ObjectId node); 
+
 	private:
 		void init();
 
