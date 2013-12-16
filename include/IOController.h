@@ -99,8 +99,8 @@ class IOController:
 	public:
 
 		// предварительное объявление, чтобы в структуре объявить итератор..
-		struct USensorIOInfo;
-		typedef std::map<UniSetTypes::KeyType, USensorIOInfo> IOStateList;
+		struct USensorInfo;
+		typedef std::map<UniSetTypes::KeyType, USensorInfo> IOStateList;
 
 
 		// ================== Достпуные сигналы =================
@@ -125,25 +125,29 @@ class IOController:
 		// -----------------------------------------------------------------------------------------
 
 
-		struct USensorIOInfo:
+		struct USensorInfo:
 			public IOController_i::SensorIOInfo
 		{
-			USensorIOInfo():any(0),db_ignore(false),d_value(0),d_off_value(0)
+			USensorInfo():any(0),d_value(0),d_off_value(0)
 			{
-				undefined = false;
 				d_si.id = UniSetTypes::DefaultObjectId;
 				d_si.node = UniSetTypes::DefaultObjectId;
+				value = default_val;
+				real_value = default_val;
+				dbignore = false;
+				undefined = false;
+				blocked = false;
 			}
 
-			virtual ~USensorIOInfo(){}
+			virtual ~USensorInfo(){}
 
-			USensorIOInfo(IOController_i::SensorIOInfo& r);
-			USensorIOInfo(IOController_i::SensorIOInfo* r);
-			USensorIOInfo(const IOController_i::SensorIOInfo& r);
+			USensorInfo(IOController_i::SensorIOInfo& r);
+			USensorInfo(IOController_i::SensorIOInfo* r);
+			USensorInfo(const IOController_i::SensorIOInfo& r);
 
-			USensorIOInfo& operator=(IOController_i::SensorIOInfo& r);
-			const USensorIOInfo& operator=(const IOController_i::SensorIOInfo& r);
-			USensorIOInfo& operator=(IOController_i::SensorIOInfo* r);
+			USensorInfo& operator=(IOController_i::SensorIOInfo& r);
+			const USensorInfo& operator=(const IOController_i::SensorIOInfo& r);
+			USensorInfo& operator=(IOController_i::SensorIOInfo* r);
 
 			// Дополнительные (вспомогательные поля)
 			UniSetTypes::uniset_rwmutex val_lock; /*!< флаг блокирующий работу со значением */
@@ -151,7 +155,6 @@ class IOController:
 			IOStateList::iterator it;
 
 			void* any; 			/*!< расширение для возможности хранения своей информации */
-            bool db_ignore;		/*!< не писать изменения в БД */
 
 			// сигнал для реализации механизма зависимостией..
 			// (все зависимые датчики подключаются к нему (см. NCRestorer::init_depends_signals)
@@ -198,7 +201,7 @@ class IOController:
 			/*! регистрация датчика
 				force=true - не проверять на дублирование (оптимизация)
 			*/
-			void ioRegistration( const USensorIOInfo&, bool force=false );
+			void ioRegistration( const USensorInfo&, bool force=false );
 
 			/*! разрегистрация датчика */
 			void ioUnRegistration( const IOController_i::SensorInfo& si );
@@ -248,7 +251,7 @@ class IOController:
 		// --------------------------
 		// ФИЛЬТРОВАНИЕ
 		// 
-		typedef sigc::slot<bool,const USensorIOInfo&, CORBA::Long, UniSetTypes::ObjectId> IOFilterSlot;
+		typedef sigc::slot<bool,const USensorInfo&, CORBA::Long, UniSetTypes::ObjectId> IOFilterSlot;
 		typedef std::list<IOFilterSlot> IOFilterSlotList;
 
 		/*
@@ -263,7 +266,7 @@ class IOController:
 		void eraseIOFilter(IOFilterSlotList::iterator& it);
 
 		// функии проверки текущего значения
-		bool checkIOFilters( const USensorIOInfo& ai, CORBA::Long& newvalue, UniSetTypes::ObjectId sup_id );
+		bool checkIOFilters( const USensorInfo& ai, CORBA::Long& newvalue, UniSetTypes::ObjectId sup_id );
 
 		inline bool iofiltersEmpty(){ return iofilters.empty(); }
 		inline int iodiltersSize(){ return iofilters.size(); }

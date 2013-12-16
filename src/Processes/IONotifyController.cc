@@ -309,7 +309,7 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
 	}
 }
 // ------------------------------------------------------------------------------------------
-bool IONotifyController::myIOFilter(const USensorIOInfo& ai,
+bool IONotifyController::myIOFilter(const USensorInfo& ai,
 									CORBA::Long newvalue, UniSetTypes::ObjectId sup_id)
 {
 	if( ai.value == newvalue )
@@ -368,7 +368,7 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
 
     try
     {
-        if( !li->second.db_ignore )
+        if( !li->second.dbignore )
             loggingInfo(sm);
     }
     catch(...){}
@@ -923,7 +923,7 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 // -----------------------------------------------------------------------------
 void IONotifyController::onChangeUndefinedState( IOStateList::iterator& lit, IOController* ic )
 {
-	USensorIOInfo& it(lit->second);
+	USensorInfo& it(lit->second);
 
 	SensorMessage sm;
 
@@ -945,7 +945,7 @@ void IONotifyController::onChangeUndefinedState( IOStateList::iterator& lit, IOC
 
 	try
 	{	
-		if( !it.db_ignore )
+		if( !it.dbignore )
 			loggingInfo(sm);
 	}
 	catch(...){}

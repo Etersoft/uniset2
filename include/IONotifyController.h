@@ -239,7 +239,7 @@ class IONotifyController:
 		virtual bool activateObject();
 
 		// ФИЛЬТРЫ
-		bool myIOFilter(const USensorIOInfo& ai, CORBA::Long newvalue, UniSetTypes::ObjectId sup_id);
+		bool myIOFilter(const USensorInfo& ai, CORBA::Long newvalue, UniSetTypes::ObjectId sup_id);
 
 		//! посылка информации об изменении состояния датчика
 		virtual void send(ConsumerList& lst, UniSetTypes::SensorMessage& sm);

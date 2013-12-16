@@ -101,21 +101,21 @@ CORBA::Long IOController::getValue( const IOController_i::SensorInfo& si )
 long IOController::localGetValue( IOController::IOStateList::iterator& li,
 									const IOController_i::SensorInfo& si )
 {
-		if( li == ioList.end() )
-			li = ioList.find( key(si.id,si.node) );
+	if( li == ioList.end() )
+		li = ioList.find( key(si.id,si.node) );
 
-		if( li!=ioList.end() )
-		{
-			if( li->second.undefined )
-				throw IOController_i::Undefined();
+	if( li!=ioList.end() )
+	{
+		if( li->second.undefined )
+			throw IOController_i::Undefined();
 
-			uniset_rwmutex_rlock lock(li->second.val_lock);
-			return li->second.value;
-		}
-	
+		uniset_rwmutex_rlock lock(li->second.val_lock);
+		return li->second.value;
+	}
+
 	// -------------
 	ostringstream err;
-	err << myname << "(localGetValue): Not found analog sensor (" << si.id << ":" << si.node << ") "
+	err << myname << "(localGetValue): Not found sensor (" << si.id << ":" << si.node << ") "
 		<< conf->oind->getNameById(si.id);
 
 	if( unideb.debugging(Debug::INFO) )
@@ -212,7 +212,6 @@ void IOController::localSetValue( IOController::IOStateList::iterator& li,
 		sup_id = getId();
 
 	// сохранение текущего состояния
-//	IOStateList::iterator li( ioList.end() );
 	if( li == ioList.end() )
 		li = ioList.find(key(si.id, si.node));
 	
@@ -300,7 +299,7 @@ IOType IOController::getIOType( const IOController_i::SensorInfo& si )
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ---------------------------------------------------------------------------
-void IOController::ioRegistration( const USensorIOInfo& ainf, bool force )
+void IOController::ioRegistration( const USensorInfo& ainf, bool force )
 {
 	// проверка задан ли контроллеру идентификатор
 	if( getId() == DefaultObjectId )
@@ -435,8 +434,8 @@ void IOController::dumpToDB()
 			sm.sm_tv_sec 	= li->second.tv_sec;
 			sm.sm_tv_usec 	= li->second.tv_usec;
 			sm.ci			= li->second.ci;
-			if ( !li->second.db_ignore )
-				logging(sm); //	alogging( li->second.si,li->second.value,li->second.type );
+			if ( !li->second.dbignore )
+				logging(sm);
 		}
 	}	// unlock 
 }
@@ -448,17 +447,14 @@ IOController_i::SensorInfoSeq* IOController::getSensorsMap()
 	IOController_i::SensorInfoSeq* res = new IOController_i::SensorInfoSeq();
 	res->length( ioList.size());
 
-//	{ // lock
-//		uniset_mutex_lock lock(ioMutex, 500);
-		int i=0;
-		for( IOStateList::iterator it=ioList.begin(); it!=ioList.end(); ++it)
-		{	
-			uniset_rwmutex_rlock lock(it->second.val_lock);
-			(*res)[i] = it->second;
-			i++;
-		}
-//	}
-	
+	int i=0;
+	for( IOStateList::iterator it=ioList.begin(); it!=ioList.end(); ++it)
+	{
+		uniset_rwmutex_rlock lock(it->second.val_lock);
+		(*res)[i] = it->second;
+		i++;
+	}
+
 	return res;
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -552,34 +548,34 @@ IOController_i::CalibrateInfo IOController::getCalibrateInfo(const IOController_
 			<< conf->oind->getNameById(si.id,si.node);
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
-	return it->second.ci;	
+	return it->second.ci;
 }
 // --------------------------------------------------------------------------------------------------------------
-IOController::USensorIOInfo::USensorIOInfo(IOController_i::SensorIOInfo& ai):
+IOController::USensorInfo::USensorInfo(IOController_i::SensorIOInfo& ai):
 	IOController_i::SensorIOInfo(ai),
 	any(0)
 {}
 
-IOController::USensorIOInfo::USensorIOInfo(const IOController_i::SensorIOInfo& ai):
+IOController::USensorInfo::USensorInfo(const IOController_i::SensorIOInfo& ai):
 	IOController_i::SensorIOInfo(ai),
 	any(0)
 {}
 
-IOController::USensorIOInfo::USensorIOInfo(IOController_i::SensorIOInfo* ai):
+IOController::USensorInfo::USensorInfo(IOController_i::SensorIOInfo* ai):
 	IOController_i::SensorIOInfo(*ai),
 	any(0)
 {}
 
-IOController::USensorIOInfo&
-			IOController::USensorIOInfo::operator=(IOController_i::SensorIOInfo& r)
+IOController::USensorInfo&
+			IOController::USensorInfo::operator=(IOController_i::SensorIOInfo& r)
 {
 	(*this) = r;
 //	any=0;
 	return *this;
 }
 
-IOController::USensorIOInfo&
-				IOController::USensorIOInfo::operator=(IOController_i::SensorIOInfo* r)
+IOController::USensorInfo&
+				IOController::USensorInfo::operator=(IOController_i::SensorIOInfo* r)
 {
 	(*this) = (*r);
 //	any=0;
@@ -587,8 +583,8 @@ IOController::USensorIOInfo&
 	return *this;
 }
 
-const IOController::USensorIOInfo&
-				IOController::USensorIOInfo::operator=(const IOController_i::SensorIOInfo& r)
+const IOController::USensorInfo&
+				IOController::USensorInfo::operator=(const IOController_i::SensorIOInfo& r)
 {
 	(*this) = r;
 //	any=0;
@@ -596,7 +592,7 @@ const IOController::USensorIOInfo&
 }
 
 // ----------------------------------------------------------------------------------------
-bool IOController::checkIOFilters( const USensorIOInfo& ai, CORBA::Long& newvalue,
+bool IOController::checkIOFilters( const USensorInfo& ai, CORBA::Long& newvalue,
 									UniSetTypes::ObjectId sup_id )
 {
 	for( IOFilterSlotList::iterator it=iofilters.begin(); it!=iofilters.end(); ++it )
@@ -794,7 +790,7 @@ IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_s
 	return sigAnyUndefChange;
 }
 // -----------------------------------------------------------------------------
-void IOController::USensorIOInfo::checkDepend( IOStateList::iterator& d_it, IOController* ic )
+void IOController::USensorInfo::checkDepend( IOStateList::iterator& d_it, IOController* ic )
 {
 	bool changed = false;
 	{

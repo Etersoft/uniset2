@@ -35,7 +35,6 @@ int main( int argc, const char **argv )
 			cerr << "unknown sensor ID. Use --sid " << endl;
 			return 1;
 		}
-	
 
 		cout << "** check getChangedTime for ID=" << id << ":" << endl;
 
