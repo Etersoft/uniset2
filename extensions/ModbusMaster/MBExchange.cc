@@ -72,7 +72,6 @@ pollActivated(false)
 
 	aftersend_pause = conf->getArgPInt("--" + prefix + "-aftersend-pause",it.getProp("aftersend_pause"),0);
 
-
 	noQueryOptimization = conf->getArgInt("--" + prefix + "-no-query-optimization",it.getProp("no_query_optimization"));
 
 	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id",it.getProp("reg_from_id"));
@@ -218,8 +217,9 @@ void MBExchange::step()
 		}
 		catch(Exception& ex)
 		{
-			dlog[Debug::CRIT] << myname
-				<< "(step): (hb) " << ex << std::endl;
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname
+					<< "(step): (hb) " << ex << std::endl;
 		}
 	}
 }
@@ -239,7 +239,8 @@ void MBExchange::setProcActive( bool st )
 // -----------------------------------------------------------------------------
 void MBExchange::sigterm( int signo )
 {
-	dlog[Debug::WARN] << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
+	if( dlog.debugging(Debug::WARN) )
+		dlog[Debug::WARN] << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
 	setProcActive(false);
 	UniSetObject_LT::sigterm(signo);
 }
@@ -258,7 +259,8 @@ void MBExchange::readConfiguration()
 	UniXML_iterator it(root);
 	if( !it.goChildren() )
 	{
-		dlog[Debug::CRIT] << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
 		return;
 	}
 
@@ -492,21 +494,23 @@ void MBExchange::rtuQueryOptimization( RTUDeviceMap& m )
 			// check correct function...
 			if( beg->second->q_count>1 && beg->second->mbfunc==ModbusRTU::fnWriteOutputSingleRegister )
 			{
-				dlog[Debug::WARN] << myname << "(rtuQueryOptimization): "
-					<< " optimization change func=" << ModbusRTU::fnWriteOutputSingleRegister
-					<< " <--> func=" << ModbusRTU::fnWriteOutputRegisters
-					<< " for mbaddr=" << ModbusRTU::addr2str(d->mbaddr)
-					<< " mbreg=" << ModbusRTU::dat2str(beg->second->mbreg);
+				if( dlog.debugging(Debug::WARN) )
+					dlog[Debug::WARN] << myname << "(rtuQueryOptimization): "
+						<< " optimization change func=" << ModbusRTU::fnWriteOutputSingleRegister
+						<< " <--> func=" << ModbusRTU::fnWriteOutputRegisters
+						<< " for mbaddr=" << ModbusRTU::addr2str(d->mbaddr)
+						<< " mbreg=" << ModbusRTU::dat2str(beg->second->mbreg);
 
 				beg->second->mbfunc = ModbusRTU::fnWriteOutputRegisters;
 			}
 			else if( beg->second->q_count>1 && beg->second->mbfunc==ModbusRTU::fnForceSingleCoil )
 			{
-				dlog[Debug::WARN] << myname << "(rtuQueryOptimization): "
-					<< " optimization change func=" << ModbusRTU::fnForceSingleCoil
-					<< " <--> func=" << ModbusRTU::fnForceMultipleCoils
-					<< " for mbaddr=" << ModbusRTU::addr2str(d->mbaddr)
-					<< " mbreg=" << ModbusRTU::dat2str(beg->second->mbreg);
+				if( dlog.debugging(Debug::WARN) )
+					dlog[Debug::WARN] << myname << "(rtuQueryOptimization): "
+						<< " optimization change func=" << ModbusRTU::fnForceSingleCoil
+						<< " <--> func=" << ModbusRTU::fnForceMultipleCoils
+						<< " for mbaddr=" << ModbusRTU::addr2str(d->mbaddr)
+						<< " mbreg=" << ModbusRTU::dat2str(beg->second->mbreg);
 
 				beg->second->mbfunc = ModbusRTU::fnForceMultipleCoils;
 			}
@@ -677,7 +681,8 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 				return true;
 			}
 
-			dlog[Debug::CRIT] << myname << "(initSMValue): IGNORE item: rnum=" << p->rnum
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(initSMValue): IGNORE item: rnum=" << p->rnum
 					<< " > 1 ?!! for id=" << p->si.id << endl;
 
 			return false;
@@ -710,7 +715,8 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 		{
 			if( p->nbyte <= 0 || p->nbyte > VTypes::Byte::bsize )
 			{
-				dlog[Debug::CRIT] << myname << "(initSMValue): IGNORE item: sid=" << ModbusRTU::dat2str(p->si.id)
+				if( dlog.debugging(Debug::CRIT) )
+					dlog[Debug::CRIT] << myname << "(initSMValue): IGNORE item: sid=" << ModbusRTU::dat2str(p->si.id)
 						<< " vtype=" << p->vType << " but nbyte=" << p->nbyte << endl;
 				return false;
 			}
@@ -744,28 +750,34 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 	}
 	catch(IOController_i::NameNotFound &ex)
 	{
-		dlog[Debug::LEVEL3] << myname << "(initSMValue):(NameNotFound) " << ex.err << endl;
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(initSMValue):(NameNotFound) " << ex.err << endl;
 	}
 	catch(IOController_i::IOBadParam& ex )
 	{
-		dlog[Debug::LEVEL3] << myname << "(initSMValue):(IOBadParam) " << ex.err << endl;
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(initSMValue):(IOBadParam) " << ex.err << endl;
 	}
 	catch(IONotifyController_i::BadRange )
 	{
-		dlog[Debug::LEVEL3] << myname << "(initSMValue): (BadRange)..." << endl;
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(initSMValue): (BadRange)..." << endl;
 	}
 	catch( Exception& ex )
 	{
-		dlog[Debug::LEVEL3] << myname << "(initSMValue): " << ex << endl;
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(initSMValue): " << ex << endl;
 	}
 	catch(CORBA::SystemException& ex)
 	{
-		dlog[Debug::LEVEL3] << myname << "(initSMValue): CORBA::SystemException: "
-			<< ex.NP_minorString() << endl;
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(initSMValue): CORBA::SystemException: "
+				<< ex.NP_minorString() << endl;
 	}
 	catch(...)
 	{
-		dlog[Debug::LEVEL3] << myname << "(initSMValue): catch ..." << endl;
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(initSMValue): catch ..." << endl;
 	}
 
 	return false;
@@ -869,8 +881,9 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		{
 			if( p->q_count != 1 )
 			{
-				dlog[Debug::CRIT] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
-					<< " IGNORE WRITE SINGLE REGISTER (0x06) q_count=" << p->q_count << " ..." << endl;
+				if( dlog.debugging(Debug::CRIT) )
+					dlog[Debug::CRIT] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
+						<< " IGNORE WRITE SINGLE REGISTER (0x06) q_count=" << p->q_count << " ..." << endl;
 				return false;
 			}
 
@@ -928,8 +941,9 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		{
 			if( p->q_count != 1 )
 			{
-				dlog[Debug::CRIT] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
-					<< " IGNORE FORCE SINGLE COIL (0x05) q_count=" << p->q_count << " ..." << endl;
+				if( dlog.debugging(Debug::CRIT) )
+					dlog[Debug::CRIT] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
+						<< " IGNORE FORCE SINGLE COIL (0x05) q_count=" << p->q_count << " ..." << endl;
 				return false;
 			}
 			if( !p->sm_initOK )
@@ -993,28 +1007,34 @@ void MBExchange::updateSM()
 			}
 			catch(IOController_i::NameNotFound &ex)
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateSM):(NameNotFound) " << ex.err << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateSM):(NameNotFound) " << ex.err << endl;
 			}
 			catch(IOController_i::IOBadParam& ex )
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
 			}
 			catch(IONotifyController_i::BadRange )
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateSM): (BadRange)..." << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateSM): (BadRange)..." << endl;
 			}
 			catch( Exception& ex )
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateSM): " << ex << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateSM): " << ex << endl;
 			}
 			catch(CORBA::SystemException& ex)
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateSM): CORBA::SystemException: "
-					<< ex.NP_minorString() << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateSM): CORBA::SystemException: "
+						<< ex.NP_minorString() << endl;
 			}
 			catch(...)
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateSM): check modeSensor..catch ..." << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateSM): check modeSensor..catch ..." << endl;
 			}
 		}
 
@@ -1036,28 +1056,34 @@ void MBExchange::updateSM()
 			}
 			catch(IOController_i::NameNotFound &ex)
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateSM):(NameNotFound) " << ex.err << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateSM):(NameNotFound) " << ex.err << endl;
 			}
 			catch(IOController_i::IOBadParam& ex )
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateSM):(IOBadParam) " << ex.err << endl;
 			}
 			catch(IONotifyController_i::BadRange )
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateSM): (BadRange)..." << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateSM): (BadRange)..." << endl;
 			}
 			catch( Exception& ex )
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateSM): " << ex << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateSM): " << ex << endl;
 			}
 			catch(CORBA::SystemException& ex)
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateSM): CORBA::SystemException: "
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateSM): CORBA::SystemException: "
 					<< ex.NP_minorString() << endl;
 			}
 			catch(...)
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateSM): catch ..." << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateSM): catch ..." << endl;
 			}
 
 			if( it==d->regmap.end() )
@@ -1162,7 +1188,8 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					return;
 				}
 
-				dlog[Debug::CRIT] << myname << "(updateRSProperty): IGNORE item: rnum=" << p->rnum
+				if( dlog.debugging(Debug::CRIT) )
+					dlog[Debug::CRIT] << myname << "(updateRSProperty): IGNORE item: rnum=" << p->rnum
 						<< " > 1 ?!! for id=" << p->si.id << endl;
 				return;
 			}
@@ -1232,7 +1259,8 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 			{
 				if( p->nbyte <= 0 || p->nbyte > VTypes::Byte::bsize )
 				{
-					dlog[Debug::CRIT] << myname << "(updateRSProperty): IGNORE item: reg=" << ModbusRTU::dat2str(r->mbreg)
+					if( dlog.debugging(Debug::CRIT) )
+						dlog[Debug::CRIT] << myname << "(updateRSProperty): IGNORE item: reg=" << ModbusRTU::dat2str(r->mbreg)
 							<< " vtype=" << p->vType << " but nbyte=" << p->nbyte << endl;
 					return;
 				}
@@ -1367,28 +1395,34 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 		}
 		catch(IOController_i::NameNotFound &ex)
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRSProperty):(NameNotFound) " << ex.err << endl;
+			if( dlog.debugging(Debug::LEVEL3) )
+				dlog[Debug::LEVEL3] << myname << "(updateRSProperty):(NameNotFound) " << ex.err << endl;
 		}
 		catch(IOController_i::IOBadParam& ex )
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRSProperty):(IOBadParam) " << ex.err << endl;
+			if( dlog.debugging(Debug::LEVEL3) )
+				dlog[Debug::LEVEL3] << myname << "(updateRSProperty):(IOBadParam) " << ex.err << endl;
 		}
 		catch(IONotifyController_i::BadRange )
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRSProperty): (BadRange)..." << endl;
+			if( dlog.debugging(Debug::LEVEL3) )
+				dlog[Debug::LEVEL3] << myname << "(updateRSProperty): (BadRange)..." << endl;
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRSProperty): " << ex << endl;
+			if( dlog.debugging(Debug::LEVEL3) )
+				dlog[Debug::LEVEL3] << myname << "(updateRSProperty): " << ex << endl;
 		}
 		catch(CORBA::SystemException& ex)
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRSProperty): CORBA::SystemException: "
+			if( dlog.debugging(Debug::LEVEL3) )
+				dlog[Debug::LEVEL3] << myname << "(updateRSProperty): CORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRSProperty): catch ..." << endl;
+			if( dlog.debugging(Debug::LEVEL3) )
+				dlog[Debug::LEVEL3] << myname << "(updateRSProperty): catch ..." << endl;
 		}
 
 	// Если SM стала (или была) недоступна
@@ -1465,7 +1499,10 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
 				if( r->mtrType == MTR::mtT4 )
 				{
 					if( save )
-						dlog[Debug::WARN] << myname << "(updateMTR): write (T4) reg(" << dat2str(r->mbreg) << ") to MTR NOT YET!!!" << endl;
+					{
+						if( dlog.debugging(Debug::WARN) )
+							dlog[Debug::WARN] << myname << "(updateMTR): write (T4) reg(" << dat2str(r->mbreg) << ") to MTR NOT YET!!!" << endl;
+					}
 					else
 					{
 						MTR::T4 t(r->mbval);
@@ -1599,28 +1636,34 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
 			}
 			catch(IOController_i::NameNotFound &ex)
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateMTR):(NameNotFound) " << ex.err << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateMTR):(NameNotFound) " << ex.err << endl;
 			}
 			catch(IOController_i::IOBadParam& ex )
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateMTR):(IOBadParam) " << ex.err << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateMTR):(IOBadParam) " << ex.err << endl;
 			}
 			catch(IONotifyController_i::BadRange )
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateMTR): (BadRange)..." << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateMTR): (BadRange)..." << endl;
 			}
 			catch( Exception& ex )
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateMTR): " << ex << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateMTR): " << ex << endl;
 			}
 			catch(CORBA::SystemException& ex)
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateMTR): CORBA::SystemException: "
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateMTR): CORBA::SystemException: "
 					<< ex.NP_minorString() << endl;
 			}
 			catch(...)
 			{
-				dlog[Debug::LEVEL3] << myname << "(updateMTR): catch ..." << endl;
+				if( dlog.debugging(Debug::LEVEL3) )
+					dlog[Debug::LEVEL3] << myname << "(updateMTR): catch ..." << endl;
 			}
 		}
 	}
@@ -1640,7 +1683,8 @@ void MBExchange::updateRTU188( RegMap::iterator& rit )
 	// не реализованы
 	if( isWriteFunction(r->mbfunc) )
 	{
-		cerr << myname << "(updateRTU188): write reg(" << dat2str(r->mbreg) << ") to RTU188 NOT YET!!!" << endl;
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(updateRTU188): write reg(" << dat2str(r->mbreg) << ") to RTU188 NOT YET!!!" << endl;
 		return;
 	}
 
@@ -1693,28 +1737,34 @@ void MBExchange::updateRTU188( RegMap::iterator& rit )
 		}
 		catch(IOController_i::NameNotFound &ex)
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRTU188):(NameNotFound) " << ex.err << endl;
+			if( dlog.debugging(Debug::LEVEL3) )
+				dlog[Debug::LEVEL3] << myname << "(updateRTU188):(NameNotFound) " << ex.err << endl;
 		}
 		catch(IOController_i::IOBadParam& ex )
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRTU188):(IOBadParam) " << ex.err << endl;
+			if( dlog.debugging(Debug::LEVEL3) )
+				dlog[Debug::LEVEL3] << myname << "(updateRTU188):(IOBadParam) " << ex.err << endl;
 		}
 		catch(IONotifyController_i::BadRange )
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRTU188): (BadRange)..." << endl;
+			if( dlog.debugging(Debug::LEVEL3) )
+				dlog[Debug::LEVEL3] << myname << "(updateRTU188): (BadRange)..." << endl;
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRTU188): " << ex << endl;
+			if( dlog.debugging(Debug::LEVEL3) )
+				dlog[Debug::LEVEL3] << myname << "(updateRTU188): " << ex << endl;
 		}
 		catch(CORBA::SystemException& ex)
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRTU188): CORBA::SystemException: "
+			if( dlog.debugging(Debug::LEVEL3) )
+				dlog[Debug::LEVEL3] << myname << "(updateRTU188): CORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::LEVEL3] << myname << "(updateRTU188): catch ..." << endl;
+			if( dlog.debugging(Debug::LEVEL3) )
+				dlog[Debug::LEVEL3] << myname << "(updateRTU188): catch ..." << endl;
 		}
 	}
 }
@@ -1728,15 +1778,17 @@ MBExchange::RTUDevice* MBExchange::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAd
 		DeviceType dtype = getDeviceType(xmlit.getProp(prop_prefix + "mbtype"));
 		if( it->second->dtype != dtype )
 		{
-			dlog[Debug::CRIT] << myname << "(addDev): OTHER mbtype=" << dtype << " for " << xmlit.getProp("name")
-				<< ". Already used devtype=" <<  it->second->dtype
-				<< " for mbaddr=" << ModbusRTU::addr2str(it->second->mbaddr)
-				<< endl;
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(addDev): OTHER mbtype=" << dtype << " for " << xmlit.getProp("name")
+					<< ". Already used devtype=" <<  it->second->dtype
+					<< " for mbaddr=" << ModbusRTU::addr2str(it->second->mbaddr)
+					<< endl;
 			return 0;
 		}
 
-		dlog[Debug::INFO] << myname << "(addDev): device for addr=" << ModbusRTU::addr2str(a)
-			<< " already added. Ignore device params for " << xmlit.getProp("name") << " ..." << endl;
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << myname << "(addDev): device for addr=" << ModbusRTU::addr2str(a)
+				<< " already added. Ignore device params for " << xmlit.getProp("name") << " ..." << endl;
 		return it->second;
 	}
 
@@ -1769,8 +1821,9 @@ MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, RegID id, ModbusRTU::Modbus
 
 		if( it->second->dev->dtype != dev->dtype )
 		{
-			dlog[Debug::CRIT] << myname << "(addReg): OTHER mbtype=" << dev->dtype << " for " << xmlit.getProp("name")
-				<< ". Already used devtype=" <<  it->second->dev->dtype << " for " << it->second->dev << endl;
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(addReg): OTHER mbtype=" << dev->dtype << " for " << xmlit.getProp("name")
+					<< ". Already used devtype=" <<  it->second->dev->dtype << " for " << it->second->dev << endl;
 			return 0;
 		}
 
@@ -1847,7 +1900,7 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 		p.stype = UniSetTypes::getIOType(stype);
 		if( p.stype == UniversalIO::UnknownIOType )
 		{
-			if( dlog )
+			if( dlog.debugging(Debug::CRIT) )
 				dlog[Debug::CRIT] << myname << "(IOBase::readItem): неизвестный iotype=: "
 					<< stype << " for " << it.getProp("name") << endl;
 			return false;
@@ -1860,8 +1913,9 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 		p.nbit = UniSetTypes::uni_atoi(sbit.c_str());
 		if( p.nbit < 0 || p.nbit >= ModbusRTU::BitsPerData )
 		{
-			dlog[Debug::CRIT] << myname << "(initRSProperty): BAD nbit=" << p.nbit
-				<< ". (0 >= nbit < " << ModbusRTU::BitsPerData <<")." << endl;
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(initRSProperty): BAD nbit=" << p.nbit
+					<< ". (0 >= nbit < " << ModbusRTU::BitsPerData <<")." << endl;
 			return false;
 		}
 	}
@@ -1870,8 +1924,9 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 		( p.stype == UniversalIO::AI ||
 			p.stype == UniversalIO::AO ) )
 	{
-		dlog[Debug::WARN] << "(initRSProperty): (ignore) uncorrect param`s nbit>1 (" << p.nbit << ")"
-			<< " but iotype=" << p.stype << " for " << it.getProp("name") << endl;
+		if( dlog.debugging(Debug::WARN) )
+			dlog[Debug::WARN] << "(initRSProperty): (ignore) uncorrect param`s nbit>1 (" << p.nbit << ")"
+				<< " but iotype=" << p.stype << " for " << it.getProp("name") << endl;
 	}
 
 	string sbyte(it.getProp(prop_prefix + "nbyte"));
@@ -1880,7 +1935,8 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 		p.nbyte = UniSetTypes::uni_atoi(sbyte.c_str());
 		if( p.nbyte < 0 || p.nbyte > VTypes::Byte::bsize )
 		{
-			dlog[Debug::CRIT] << myname << "(initRSProperty): BAD nbyte=" << p.nbyte
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(initRSProperty): BAD nbyte=" << p.nbyte
 				<< ". (0 >= nbyte < " << VTypes::Byte::bsize << ")." << endl;
 			return false;
 		}
@@ -1897,7 +1953,8 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 		VTypes::VType v(VTypes::str2type(vt));
 		if( v == VTypes::vtUnknown )
 		{
-			dlog[Debug::CRIT] << myname << "(initRSProperty): Unknown tcp_vtype='" << vt << "' for "
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(initRSProperty): Unknown tcp_vtype='" << vt << "' for "
 					<< it.getProp("name")
 					<< endl;
 
@@ -1943,7 +2000,8 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
 	}
 	else
 	{
-		dlog[Debug::CRIT] << myname << "(initRegInfo): Unknown mbtype='" << dev->dtype
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << myname << "(initRegInfo): Unknown mbtype='" << dev->dtype
 				<< "' for " << it.getProp("name") << endl;
 		return false;
 	}
@@ -1960,7 +2018,8 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
 		string sr = it.getProp(prop_prefix + "mbreg");
 		if( sr.empty() )
 		{
-			dlog[Debug::CRIT] << myname << "(initItem): Unknown 'mbreg' for " << it.getProp("name") << endl;
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(initItem): Unknown 'mbreg' for " << it.getProp("name") << endl;
 			return false;
 		}
 		r->mbreg = ModbusRTU::str2mbData(sr);
@@ -1973,7 +2032,8 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
 		r->mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f.c_str());
 		if( r->mbfunc == ModbusRTU::fnUnknown )
 		{
-			dlog[Debug::CRIT] << myname << "(initRegInfo): Unknown mbfunc ='" << f
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(initRegInfo): Unknown mbfunc ='" << f
 					<< "' for " << it.getProp("name") << endl;
 			return false;
 		}
@@ -1988,16 +2048,18 @@ bool MBExchange::initRTUDevice( RTUDevice* d, UniXML_iterator& it )
 
 	if( d->dtype == dtUnknown )
 	{
-		dlog[Debug::CRIT] << myname << "(initRTUDevice): Unknown tcp_mbtype=" << it.getProp(prop_prefix + "mbtype")
-			<< ". Use: rtu "
-			<< " for " << it.getProp("name") << endl;
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << myname << "(initRTUDevice): Unknown tcp_mbtype=" << it.getProp(prop_prefix + "mbtype")
+				<< ". Use: rtu "
+				<< " for " << it.getProp("name") << endl;
 		return false;
 	}
 
 	string addr = it.getProp(prop_prefix + "mbaddr");
 	if( addr.empty() )
 	{
-		dlog[Debug::CRIT] << myname << "(initRTUDevice): Unknown mbaddr for " << it.getProp("name") << endl;
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << myname << "(initRTUDevice): Unknown mbaddr for " << it.getProp("name") << endl;
 		return false;
 	}
 
@@ -2018,10 +2080,11 @@ bool MBExchange::initItem( UniXML_iterator& it )
 	if( !initRSProperty(p,it) )
 		return false;
 
-	string addr = it.getProp(prop_prefix + "mbaddr");
+	string addr(it.getProp(prop_prefix + "mbaddr"));
 	if( addr.empty() )
 	{
-		dlog[Debug::CRIT] << myname << "(initItem): Unknown mbaddr(" << prop_prefix << "mbaddr)='" << addr << "' for " << it.getProp("name") << endl;
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << myname << "(initItem): Unknown mbaddr(" << prop_prefix << "mbaddr)='" << addr << "' for " << it.getProp("name") << endl;
 		return false;
 	}
 
@@ -2030,7 +2093,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 	RTUDevice* dev = addDev(rmap,mbaddr,it);
 	if( !dev )
 	{
-		dlog[Debug::CRIT] << myname << "(initItem): " << it.getProp("name") << " CAN`T ADD for polling!" << endl;
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << myname << "(initItem): " << it.getProp("name") << " CAN`T ADD for polling!" << endl;
 		return false;
 	}
 
@@ -2042,7 +2106,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 		RegInfo r_tmp;
 		if( !initRTU188item(it, &r_tmp) )
 		{
-			dlog[Debug::CRIT] << myname << "(initItem): init RTU188 failed for " << it.getProp("name") << endl;
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(initItem): init RTU188 failed for " << it.getProp("name") << endl;
 			return false;
 		}
 
@@ -2058,7 +2123,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 			string reg = it.getProp(prop_prefix + "mbreg");
 			if( reg.empty() )
 			{
-				dlog[Debug::CRIT] << myname << "(initItem): unknown mbreg(" << prop_prefix << ") for " << it.getProp("name") << endl;
+				if( dlog.debugging(Debug::CRIT) )
+					dlog[Debug::CRIT] << myname << "(initItem): unknown mbreg(" << prop_prefix << ") for " << it.getProp("name") << endl;
 				return false;
 			}
 			mbreg = ModbusRTU::str2mbData(reg);
@@ -2078,7 +2144,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 		p.rnum = MTR::wsize(ri->mtrType);
 		if( p.rnum <= 0 )
 		{
-			dlog[Debug::CRIT] << myname << "(initItem): unknown word size for " << it.getProp("name") << endl;
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(initItem): unknown word size for " << it.getProp("name") << endl;
 			return false;
 		}
 	}
@@ -2102,9 +2169,10 @@ bool MBExchange::initItem( UniXML_iterator& it )
 	{
 		if( p.nbit<0 &&  ri->slst.size() > 1 )
 		{
-			dlog[Debug::CRIT] << myname << "(initItem): FAILED! Sharing SAVE (not bit saving) to "
-				<< " tcp_mbreg=" << ModbusRTU::dat2str(ri->mbreg)
-				<< " for " << it.getProp("name") << endl;
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(initItem): FAILED! Sharing SAVE (not bit saving) to "
+					<< " tcp_mbreg=" << ModbusRTU::dat2str(ri->mbreg)
+					<< " for " << it.getProp("name") << endl;
 
 			abort(); 	// ABORT PROGRAM!!!!
 			return false;
@@ -2115,6 +2183,7 @@ bool MBExchange::initItem( UniXML_iterator& it )
 			PList::iterator it2 = ri->slst.begin();
 			if( it2->nbit < 0 )
 			{
+				if( dlog.debugging(Debug::CRIT) )
 					dlog[Debug::CRIT] << myname << "(initItem): FAILED! Sharing SAVE (mbreg="
 						<< ModbusRTU::dat2str(ri->mbreg) << "  already used)!"
 						<< " IGNORE --> " << it.getProp("name") << endl;
@@ -2164,10 +2233,11 @@ bool MBExchange::initItem( UniXML_iterator& it )
 				if( ri->mbfunc != ModbusRTU::fnWriteOutputRegisters &&
 					ri->mbfunc != ModbusRTU::fnForceMultipleCoils )
 				{
-					dlog[Debug::CRIT] << myname << "(initItem): Bad write function ='" << ModbusRTU::fnWriteOutputSingleRegister
-						<< "' for vtype='" << p1->vType << "'"
-						<< " tcp_mbreg=" << ModbusRTU::dat2str(ri->mbreg)
-						<< " for " << it.getProp("name") << endl;
+					if( dlog.debugging(Debug::CRIT) )
+						dlog[Debug::CRIT] << myname << "(initItem): Bad write function ='" << ModbusRTU::fnWriteOutputSingleRegister
+							<< "' for vtype='" << p1->vType << "'"
+							<< " tcp_mbreg=" << ModbusRTU::dat2str(ri->mbreg)
+							<< " for " << it.getProp("name") << endl;
 
 					abort(); 	// ABORT PROGRAM!!!!
 					return false;
@@ -2197,7 +2267,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 			ii.mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(s_mbfunc);
 			if( ii.mbfunc == ModbusRTU::fnUnknown )
 			{
-				dlog[Debug::CRIT] << myname << "(initItem): Unknown tcp_init_mbfunc ='" << s_mbfunc
+				if( dlog.debugging(Debug::CRIT) )
+					dlog[Debug::CRIT] << myname << "(initItem): Unknown tcp_init_mbfunc ='" << s_mbfunc
 						<< "' for " << it.getProp("name") << endl;
 				return false;
 			}
@@ -2241,7 +2312,8 @@ bool MBExchange::initMTRitem( UniXML_iterator& it, RegInfo* p )
 	p->mtrType = MTR::str2type(it.getProp(prop_prefix + "mtrtype"));
 	if( p->mtrType == MTR::mtUnknown )
 	{
-		dlog[Debug::CRIT] << myname << "(readMTRItem): Unknown mtrtype '"
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << myname << "(readMTRItem): Unknown mtrtype '"
 					<< it.getProp(prop_prefix + "mtrtype")
 					<< "' for " << it.getProp("name") << endl;
 
@@ -2258,21 +2330,24 @@ bool MBExchange::initRTU188item( UniXML_iterator& it, RegInfo* p )
 
 	if( jack.empty() )
 	{
-		dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown " << prop_prefix << "jack='' "
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown " << prop_prefix << "jack='' "
 					<< " for " << it.getProp("name") << endl;
 		return false;
 	}
 	p->rtuJack = RTUStorage::s2j(jack);
 	if( p->rtuJack == RTUStorage::nUnknown )
 	{
-		dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown " << prop_prefix << "jack=" << jack
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown " << prop_prefix << "jack=" << jack
 					<< " for " << it.getProp("name") << endl;
 		return false;
 	}
 
 	if( chan.empty() )
 	{
-		dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown channel='' "
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown channel='' "
 					<< " for " << it.getProp("name") << endl;
 		return false;
 	}
@@ -2348,10 +2423,10 @@ void MBExchange::initDeviceList()
 				initDeviceInfo(rmap,a,it1);
 			}
 		}
-		else
+		else if( dlog.debugging(Debug::WARN) )
 			dlog[Debug::WARN] << myname << "(init): <DeviceList> empty section..." << endl;
 	}
-	else
+	else if( dlog.debugging(Debug::WARN) )
 		dlog[Debug::WARN] << myname << "(init): <DeviceList> not found..." << endl;
 }
 // -----------------------------------------------------------------------------
@@ -2360,13 +2435,15 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 	RTUDeviceMap::iterator d = m.find(a);
 	if( d == m.end() )
 	{
-		dlog[Debug::WARN] << myname << "(initDeviceInfo): not found device for addr=" << ModbusRTU::addr2str(a) << endl;
+		if( dlog.debugging(Debug::WARN) )
+			dlog[Debug::WARN] << myname << "(initDeviceInfo): not found device for addr=" << ModbusRTU::addr2str(a) << endl;
 		return false;
 	}
 
 	d->second->ask_every_reg = it.getIntProp("ask_every_reg");
 
-	dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a)
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a)
 			<< " ask_every_reg=" << d->second->ask_every_reg << endl;
 
 	string s(it.getProp("respondSensor"));
@@ -2375,7 +2452,8 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 		d->second->resp_id = conf->getSensorID(s);
 		if( d->second->resp_id == DefaultObjectId )
 		{
-			dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for respondSensor=" << s << endl;
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for respondSensor=" << s << endl;
 			return false;
 		}
     }
@@ -2386,26 +2464,25 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 		d->second->mode_id = conf->getSensorID(mod);
 		if( d->second->mode_id == DefaultObjectId )
 		{
-			dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for modeSensor=" << mod << endl;
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for modeSensor=" << mod << endl;
 			return false;
 		}
 
 		UniversalIO::IOType m_iotype = conf->getIOType(d->second->mode_id);
 		if( m_iotype != UniversalIO::AI )
 		{
-			dlog[Debug::CRIT] << myname << "(initDeviceInfo): modeSensor='" << mod << "' must be 'AI'" << endl;
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(initDeviceInfo): modeSensor='" << mod << "' must be 'AI'" << endl;
 			return false;
 		}
     }
 
-	dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
 	int tout = it.getPIntProp("timeout",5000);
 	d->second->resp_ptTimeout.setTiming(tout);
 	d->second->resp_invert = it.getIntProp("invert");
-//	d->second->no_clean_input = it.getIntProp("no_clean_input");
-
-//	dlog[Debug::INFO] << myname << "(initDeviceInfo): add " << (*d->second) << endl;
-
 	return true;
 }
 // -----------------------------------------------------------------------------
@@ -2460,16 +2537,19 @@ void MBExchange::processingMessage(UniSetTypes::VoidMessage *msg)
 	}
 	catch( SystemError& ex )
 	{
-		dlog[Debug::CRIT] << myname << "(SystemError): " << ex << std::endl;
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << myname << "(SystemError): " << ex << std::endl;
 //		throw SystemError(ex);
 	}
 	catch( Exception& ex )
 	{
-		dlog[Debug::CRIT] << myname << "(processingMessage): " << ex << std::endl;
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << myname << "(processingMessage): " << ex << std::endl;
 	}
 	catch(...)
 	{
-		dlog[Debug::CRIT] << myname << "(processingMessage): catch ...\n";
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << myname << "(processingMessage): catch ...\n";
 	}
 }
 // -----------------------------------------------------------------------------
@@ -2481,7 +2561,8 @@ void MBExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 		{
 			if( rmap.empty() )
 			{
-				dlog[Debug::CRIT] << myname << "(sysCommand): ************* ITEM MAP EMPTY! terminated... *************" << endl;
+				if( dlog.debugging(Debug::CRIT) )
+					dlog[Debug::CRIT] << myname << "(sysCommand): ************* ITEM MAP EMPTY! terminated... *************" << endl;
 				raise(SIGTERM);
 				return;
 			}
@@ -2506,7 +2587,7 @@ void MBExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 					break;
 			}
 
-			if( !activated )
+			if( !activated && dlog.debugging(Debug::CRIT) )
 				dlog[Debug::CRIT] << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 
 			{
@@ -2599,11 +2680,13 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 	}
 	catch( UniSetTypes::Exception& ex )
 	{
-		dlog[Debug::WARN] << myname << "(askSensors): " << ex << std::endl;
+		if( dlog.debugging(Debug::WARN) )
+			dlog[Debug::WARN] << myname << "(askSensors): " << ex << std::endl;
 	}
 	catch(...)
 	{
-		dlog[Debug::WARN] << myname << "(askSensors): 'sidExchangeMode' catch..." << std::endl;
+		if( dlog.debugging(Debug::WARN) )
+			dlog[Debug::WARN] << myname << "(askSensors): 'sidExchangeMode' catch..." << std::endl;
 	}
 
 	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
@@ -2617,11 +2700,13 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 		}
 		catch( UniSetTypes::Exception& ex )
 		{
-			dlog[Debug::WARN] << myname << "(askSensors): " << ex << std::endl;
+			if( dlog.debugging(Debug::WARN) )
+				dlog[Debug::WARN] << myname << "(askSensors): " << ex << std::endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::WARN] << myname << "(askSensors): (mode_id=" << d->mode_id << ").. catch..." << std::endl;
+			if( dlog.debugging(Debug::WARN) )
+				dlog[Debug::WARN] << myname << "(askSensors): (mode_id=" << d->mode_id << ").. catch..." << std::endl;
 		}
 
 		if( force_out )
@@ -2640,11 +2725,13 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 				}
 				catch( UniSetTypes::Exception& ex )
 				{
-					dlog[Debug::WARN] << myname << "(askSensors): " << ex << std::endl;
+					if( dlog.debugging(Debug::WARN) )
+						dlog[Debug::WARN] << myname << "(askSensors): " << ex << std::endl;
 				}
 				catch(...)
 				{
-					dlog[Debug::WARN] << myname << "(askSensors): id=" << i->si.id << " catch..." << std::endl;
+					if( dlog.debugging(Debug::WARN) )
+						dlog[Debug::WARN] << myname << "(askSensors): id=" << i->si.id << " catch..." << std::endl;
 				}
 			}
 		}
@@ -2922,7 +3009,8 @@ void MBExchange::updateRespondSensors()
 			}
 			catch( Exception& ex )
 			{
-				dlog[Debug::CRIT] << myname << "(step): (respond) " << ex << std::endl;
+				if( dlog.debugging(Debug::CRIT) )
+					dlog[Debug::CRIT] << myname << "(step): (respond) " << ex << std::endl;
 			}
 		}
 	}
@@ -2948,11 +3036,13 @@ void MBExchange::execute()
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::CRIT] << myname << "(execute): " << ex << std::endl;
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(execute): " << ex << std::endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::CRIT] << myname << "(execute): catch ..." << endl;
+			if( dlog.debugging(Debug::CRIT) )
+				dlog[Debug::CRIT] << myname << "(execute): catch ..." << endl;
 		}
 
 		msleep(polltime);

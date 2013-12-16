@@ -106,14 +106,16 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
 
 		mbtcp->setAfterSendPause(aftersend_pause);
 
-		dlog[Debug::INFO] << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
 
 		if( dlog.debugging(Debug::LEVEL9) )
 			mbtcp->setLog(dlog);
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
-		dlog[Debug::WARN] << "(init): " << ex << endl;
+		if( dlog.debugging(Debug::WARN) )
+			dlog[Debug::WARN] << "(init): " << ex << endl;
 	}
 	catch(...)
 	{
@@ -180,20 +182,23 @@ MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv,
 	string name = conf->getArgParam("--" + prefix + "-name","MBTCPMaster1");
 	if( name.empty() )
 	{
-		dlog[Debug::CRIT] << "(MBTCPMaster): Не задан name'" << endl;
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << "(MBTCPMaster): Не задан name'" << endl;
 		return 0;
 	}
 
 	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		dlog[Debug::CRIT] << "(MBTCPMaster): идентификатор '" << name
-			<< "' не найден в конф. файле!"
-			<< " в секции " << conf->getObjectsSection() << endl;
+		if( dlog.debugging(Debug::CRIT) )
+			dlog[Debug::CRIT] << "(MBTCPMaster): идентификатор '" << name
+				<< "' не найден в конф. файле!"
+				<< " в секции " << conf->getObjectsSection() << endl;
 		return 0;
 	}
 
-	dlog[Debug::INFO] << "(MBTCPMaster): name = " << name << "(" << ID << ")" << endl;
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << "(MBTCPMaster): name = " << name << "(" << ID << ")" << endl;
 	return new MBTCPMaster(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
