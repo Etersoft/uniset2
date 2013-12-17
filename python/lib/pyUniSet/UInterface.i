@@ -6,10 +6,10 @@
 
 %module pyUniSet
 %{
-#include "UInterface.h"
+#include "pyUInterface.h"
 %}
 
 /* Для генерации классов и констант в Питоне */
-%include "UInterface.h"
+%include "pyUInterface.h"
 %include "UTypes.h"
 %include "UExceptions.h"

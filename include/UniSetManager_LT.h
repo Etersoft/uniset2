@@ -21,24 +21,24 @@
  * \author Pavel Vainerman
  */
 //---------------------------------------------------------------------------
-#ifndef ObjectsManager_LT_H_
-#define ObjectsManager_LT_H_
+#ifndef UniSetManager_LT_H_
+#define UniSetManager_LT_H_
 //--------------------------------------------------------------------------
 #include "UniSetTypes.h"
-#include "ObjectsManager.h"
+#include "UniSetManager.h"
 #include "LT_Object.h"
 
 //---------------------------------------------------------------------------
 /*!
 	Реализация базового класса с использованием локальных таймеров
-*/ 
-class ObjectsManager_LT:
-	public ObjectsManager
+*/
+class UniSetManager_LT:
+	public UniSetManager
 {
 	public:
-		ObjectsManager_LT( UniSetTypes::ObjectId id );
-		ObjectsManager_LT();
-		virtual ~ObjectsManager_LT();
+		UniSetManager_LT( UniSetTypes::ObjectId id );
+		UniSetManager_LT();
+		virtual ~UniSetManager_LT();
 
 	protected:
 

@@ -1,5 +1,5 @@
 #include <sstream>
-#include <ObjectsActivator.h>
+#include <UniSetActivator.h>
 #include "Skel.h"
 // -----------------------------------------------------------------------------
 using namespace UniSetTypes;
@@ -17,7 +17,7 @@ int main( int argc, const char **argv )
 		ulog.logFile( logname.c_str() );
 //		conf->initDebug(dlog,"dlog");
 
-		ObjectsActivator act;
+		UniSetActivator act;
 		xmlNode* cnode = conf->getNode("Skel");
 		if( cnode == NULL )
 		{

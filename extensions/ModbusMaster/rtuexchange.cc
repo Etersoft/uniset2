@@ -1,6 +1,6 @@
 #include <sys/wait.h>
 #include <sstream>
-#include "ObjectsActivator.h"
+#include "UniSetActivator.h"
 #include "Extensions.h"
 #include "RTUExchange.h"
 // -----------------------------------------------------------------------------
@@ -57,7 +57,7 @@ int main( int argc, char** argv )
 			return 1;
 		}
 
-		ObjectsActivator act;
+		UniSetActivator act;
 		act.addObject(static_cast<class UniSetObject*>(rs));
 
 		SystemMessage sm(SystemMessage::StartUp);

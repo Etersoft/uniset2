@@ -19,7 +19,7 @@ class SMViewer:
 
 	private:
 		SMInterface* shm;
-		UniversalInterface ui;
+		UInterface ui;
 };
 // --------------------------------------------------------------------------
 #endif

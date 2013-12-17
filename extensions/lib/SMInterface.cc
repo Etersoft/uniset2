@@ -82,7 +82,7 @@ using namespace UniSetTypes;
 		} \
 
 // --------------------------------------------------------------------------
-SMInterface::SMInterface( UniSetTypes::ObjectId _shmID, UniversalInterface* _ui, 
+SMInterface::SMInterface( UniSetTypes::ObjectId _shmID, UInterface* _ui,
 							UniSetTypes::ObjectId _myid, IONotifyController* ic ):
 	ic(ic),
 	ui(_ui),

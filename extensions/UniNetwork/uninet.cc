@@ -1,7 +1,7 @@
 #include <sys/wait.h>
 #include <string>
 #include "Debug.h"
-#include "ObjectsActivator.h"
+#include "UniSetActivator.h"
 #include "UniExchange.h"
 #include "Extensions.h"
 // --------------------------------------------------------------------------
@@ -46,7 +46,7 @@ int main(int argc, const char **argv)
 		if( !shm )
 			return 1;
 
-		ObjectsActivator act;
+		UniSetActivator act;
 
 		act.addObject(static_cast<class UniSetObject*>(shm));
 		SystemMessage sm(SystemMessage::StartUp); 

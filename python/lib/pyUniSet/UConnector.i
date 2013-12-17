@@ -11,5 +11,4 @@
 
 /* Для генерации классов и констант в Питоне */
 %include "UTypes.h"
-//%include "UExceptions.h"
 %include "UConnector.h"

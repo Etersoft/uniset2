@@ -20,7 +20,7 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #include <cstdlib>
 #include <sstream>
 #include <list>
@@ -30,8 +30,8 @@
 
 #include "Exceptions.h"
 #include "ORepHelpers.h"
-#include "UniversalInterface.h"
-#include "ObjectsManager.h"
+#include "UInterface.h"
+#include "UniSetManager.h"
 #include "Debug.h"
 
 // ------------------------------------------------------------------------------------------
@@ -39,11 +39,11 @@ using namespace UniSetTypes;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 // объект-функция для посылки сообщения менеджеру
-class MPush: public unary_function<ObjectsManager*, bool>
+class MPush: public unary_function<UniSetManager*, bool>
 {
-	public: 
+	public:
 		MPush(const UniSetTypes::TransportMessage& msg):msg(msg){}
-		bool operator()(ObjectsManager* m) const
+		bool operator()(UniSetManager* m) const
 		{
 			try
 			{
@@ -54,7 +54,7 @@ class MPush: public unary_function<ObjectsManager*, bool>
 			catch(...){}
 			return false;
 		}
-	
+
 	private:
 		const UniSetTypes::TransportMessage& msg;
 };
@@ -62,7 +62,7 @@ class MPush: public unary_function<ObjectsManager*, bool>
 // объект-функция для посылки сообщения объекту
 class OPush: public unary_function<UniSetObject*, bool>
 {
-	public: 
+	public:
 		OPush(const UniSetTypes::TransportMessage& msg):msg(msg){}
 		bool operator()(UniSetObject* o) const
 		{
@@ -79,7 +79,7 @@ class OPush: public unary_function<UniSetObject*, bool>
 };
 
 // ------------------------------------------------------------------------------------------
-ObjectsManager::ObjectsManager():
+UniSetManager::UniSetManager():
 UniSetObject(UniSetTypes::DefaultObjectId),
 sig(0),
 olistMutex("olistMutex"),
@@ -87,7 +87,7 @@ mlistMutex("mlistMutex")
 {
 }
 // ------------------------------------------------------------------------------------------
-ObjectsManager::ObjectsManager( ObjectId id ):
+UniSetManager::UniSetManager( ObjectId id ):
 UniSetObject(id),
 sig(0)
 {
@@ -97,7 +97,7 @@ sig(0)
 
 // ------------------------------------------------------------------------------------------
 
-ObjectsManager::ObjectsManager(const string& name, const string& section):
+UniSetManager::UniSetManager(const string& name, const string& section):
 UniSetObject(name, section),
 sig(0)
 {
@@ -106,23 +106,23 @@ sig(0)
 }
 
 // ------------------------------------------------------------------------------------------
-ObjectsManager::~ObjectsManager()
+UniSetManager::~UniSetManager()
 {
 	try
 	{
-		objects(deactiv);	
+		objects(deactiv);
 	}
 	catch(...){}
 	try
 	{
-		managers(deactiv);	
+		managers(deactiv);
 	}
 	catch(...){}
 	olist.clear();
 	mlist.clear();
 }
 // ------------------------------------------------------------------------------------------
-void ObjectsManager::initPOA( ObjectsManager* rmngr )
+void UniSetManager::initPOA( UniSetManager* rmngr )
 {
 	if( CORBA::is_nil(pman) )
 		this->pman = rmngr->getPOAManager();
@@ -130,7 +130,7 @@ void ObjectsManager::initPOA( ObjectsManager* rmngr )
 	string mname(getName());
 	mname+="_poamngr";
 	PortableServer::POA_var root_poa = rmngr->getPOA();
-	poa = root_poa->create_POA(mname.c_str(), pman, policyList); 
+	poa = root_poa->create_POA(mname.c_str(), pman, policyList);
 */
 	PortableServer::POA_var rpoa = rmngr->getPOA();
 	if( rpoa != poa )
@@ -141,11 +141,11 @@ void ObjectsManager::initPOA( ObjectsManager* rmngr )
 
 	// Инициализация самого менеджера и его подобъектов
 	UniSetObject::init(rmngr);
-	objects(initial);	
-	managers(initial);	
+	objects(initial);
+	managers(initial);
 }
 // ------------------------------------------------------------------------------------------
-bool ObjectsManager::addObject( UniSetObject *obj )
+bool UniSetManager::addObject( UniSetObject *obj )
 {
 	{	//lock
 		uniset_rwmutex_wrlock lock(olistMutex);
@@ -154,14 +154,14 @@ bool ObjectsManager::addObject( UniSetObject *obj )
 		{
 			if( ulog.is_info() )
 				ulog.info() << myname << "(activator): добавляем объект "<< obj->getName()<< endl;
-		 	olist.push_back(obj);
+			olist.push_back(obj);
 		}
-	} // unlock	
+	} // unlock
 	return true;
 }
 
 // ------------------------------------------------------------------------------------------
-bool ObjectsManager::removeObject(UniSetObject* obj)
+bool UniSetManager::removeObject(UniSetObject* obj)
 {
 	{	//lock
 		uniset_rwmutex_wrlock lock(olistMutex);
@@ -181,39 +181,39 @@ bool ObjectsManager::removeObject(UniSetObject* obj)
 			catch(CORBA::SystemException& ex)
 		    {
 				ulog.warn() << myname << "(removeObject): поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
-	    	}
-	    	catch(CORBA::Exception& ex)
+		}
+		catch(CORBA::Exception& ex)
 		    {
 				ulog.warn() << myname << "(removeObject): CORBA::Exception" << endl;
-    		}
-			catch( omniORB::fatalException& fe ) 
+		}
+			catch( omniORB::fatalException& fe )
 			{
 				ulog.crit() << myname << "(managers): Caught omniORB::fatalException:" << endl;
 			    ulog.crit() << myname << "(managers): file: " << fe.file()
 					<< " line: " << fe.line()
-			    	<< " mesg: " << fe.errmsg() << endl;
-			}			
+				<< " mesg: " << fe.errmsg() << endl;
+			}
 
 			catch(...){}
 			olist.erase(li);
 		}
-	} // unlock	
-	
+	} // unlock
+
 	return true;
 }
 
 // ------------------------------------------------------------------------------------------
-/*! 
+/*!
  *	Функция работы со списком менеджеров
 */
-void ObjectsManager::managers(OManagerCommand cmd)
+void UniSetManager::managers(OManagerCommand cmd)
 {
 	if( ulog.is_info() )
 		ulog.info() << myname <<"(managers): mlist.size="
 						<< mlist.size() << " cmd=" << cmd  << endl;
 	{	//lock
 		uniset_rwmutex_rlock lock(mlistMutex);
-		for( ObjectsManagerList::iterator li=mlist.begin();li!=mlist.end();++li )
+		for( UniSetManagerList::iterator li=mlist.begin();li!=mlist.end();++li )
 		{
 			try
 			{
@@ -257,7 +257,7 @@ void ObjectsManager::managers(OManagerCommand cmd)
 				if( ulog.is_crit() )
 				ulog.crit() << myname << "(managers): Caught CORBA::Exception. " << ex._name() << endl;
 			}
-			catch( omniORB::fatalException& fe ) 
+			catch( omniORB::fatalException& fe )
 			{
 				if( ulog.is_crit() )
 				{
@@ -266,15 +266,15 @@ void ObjectsManager::managers(OManagerCommand cmd)
 						<< " line: " << fe.line()
 					<< " mesg: " << fe.errmsg() << endl;
 				}
-			}			
+			}
 		}
-	} // unlock 
+	} // unlock
 }
 // ------------------------------------------------------------------------------------------
-/*! 
+/*!
  *	Функция работы со списком объектов.
 */
-void ObjectsManager::objects(OManagerCommand cmd)
+void UniSetManager::objects(OManagerCommand cmd)
 {
 	if( ulog.is_info() )
 		ulog.info() << myname <<"(objects): olist.size="
@@ -303,7 +303,7 @@ void ObjectsManager::objects(OManagerCommand cmd)
 					case term:
 						(*li)->sigterm(sig);
 						break;
-					
+
 					default:
 						break;
 				}
@@ -324,11 +324,11 @@ void ObjectsManager::objects(OManagerCommand cmd)
 			catch( CORBA::Exception& ex )
 			{
 				if( ulog.is_crit() )
-				ulog.crit() << myname << "(objects): Caught CORBA::Exception. "
-			    		<< ex._name()
-			    		<< " (" << (*li)->getName() << ")" << endl;
+					ulog.crit() << myname << "(objects): Caught CORBA::Exception. "
+						<< ex._name()
+						<< " (" << (*li)->getName() << ")" << endl;
 			}
-			catch( omniORB::fatalException& fe ) 
+			catch( omniORB::fatalException& fe )
 			{
 				if( ulog.is_crit() )
 				{
@@ -337,16 +337,16 @@ void ObjectsManager::objects(OManagerCommand cmd)
 						<< " line: " << fe.line()
 					<< " mesg: " << fe.errmsg() << endl;
 				}
-			}			
+			}
 		}
 	} // unlock
 }
 // ------------------------------------------------------------------------------------------
-/*! 
+/*!
  *	Регистрирация объекта и всех его подобъектов в репозитории.
  *	\note Только после этого он (и они) становятся доступны другим процессам
 */
-bool ObjectsManager::activateObject()
+bool UniSetManager::activateObject()
 {
 	if( ulog.is_info() )
 		ulog.info() << myname << "(activateObjects):  активизирую объекты"<< endl;
@@ -356,11 +356,11 @@ bool ObjectsManager::activateObject()
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-/*! 
+/*!
  *	Удаление объекта и всех его подобъектов из репозитория.
  *	\note Объект становится недоступен другим процессам
 */
-bool ObjectsManager::disactivateObject()
+bool UniSetManager::disactivateObject()
 {
 	if( ulog.is_info() )
 		ulog.info() << myname << "(disactivateObjects):  деактивизирую объекты"<< endl;
@@ -370,9 +370,9 @@ bool ObjectsManager::disactivateObject()
 	return true;
 }
 // ------------------------------------------------------------------------------------------
-void ObjectsManager::sigterm( int signo )
+void UniSetManager::sigterm( int signo )
 {
-//	ulog.info() << "ObjectsActivator: default processing signo="<< signo << endl;
+//	ulog.info() << "UniSetActivator: default processing signo="<< signo << endl;
 	sig=signo;
 	objects(term);
 	managers(term);
@@ -380,11 +380,11 @@ void ObjectsManager::sigterm( int signo )
 }
 // ------------------------------------------------------------------------------------------
 
-void ObjectsManager::broadcast(const TransportMessage& msg)
+void UniSetManager::broadcast(const TransportMessage& msg)
 {
 	// себя не забыть...
 //	push(msg);
-	
+
 	// Всем объектам...
 	{	//lock
 		uniset_rwmutex_rlock lock(olistMutex);
@@ -399,87 +399,87 @@ void ObjectsManager::broadcast(const TransportMessage& msg)
 }
 
 // ------------------------------------------------------------------------------------------
-bool ObjectsManager::addManager( ObjectsManager *child )
+bool UniSetManager::addManager( UniSetManager *child )
 {
 	{	//lock
 		uniset_rwmutex_wrlock lock(mlistMutex);
 
 		// Проверка на совпадение
-		ObjectsManagerList::iterator it= find(mlist.begin(),mlist.end(),child);
+		UniSetManagerList::iterator it= find(mlist.begin(),mlist.end(),child);
 		if(it == mlist.end() )
 		{
-		 	mlist.push_back( child );
+			mlist.push_back( child );
 			if( ulog.is_info() )
 				ulog.info() << myname << ": добавляем менеджер "<< child->getName()<< endl;
 		}
 		else if( ulog.is_warn() )
 			ulog.warn() << myname << ": попытка повторного добавления объекта "<< child->getName() << endl;
-	} // unlock	
-	
+	} // unlock
+
 	return true;
 }
 
 // ------------------------------------------------------------------------------------------
-bool ObjectsManager::removeManager( ObjectsManager* child )
+bool UniSetManager::removeManager( UniSetManager* child )
 {
 	{	//lock
 		uniset_rwmutex_wrlock lock(mlistMutex);
 		mlist.remove(child);
-	} // unlock	
-	
+	} // unlock
+
 	return true;
 }
 
 // ------------------------------------------------------------------------------------------
 
-const ObjectsManager* ObjectsManager::itemM(const ObjectId id)
+const UniSetManager* UniSetManager::itemM(const ObjectId id)
 {
-	
+
 	{	//lock
 		uniset_rwmutex_rlock lock(mlistMutex);
-		for( ObjectsManagerList::iterator li=mlist.begin(); li!=mlist.end();++li )
+		for( UniSetManagerList::iterator li=mlist.begin(); li!=mlist.end();++li )
 		{
 			if ( (*li)->getId()==id )
-				return (*li);	
+				return (*li);
 		}
-	} // unlock	
+	} // unlock
 
 	return 0;
 }
 
 // ------------------------------------------------------------------------------------------
 
-const UniSetObject* ObjectsManager::itemO(const ObjectId id)
+const UniSetObject* UniSetManager::itemO(const ObjectId id)
 {
 	{	//lock
 		uniset_rwmutex_rlock lock(olistMutex);
 		for (ObjectsList::iterator li=olist.begin(); li!=olist.end();++li)
 		{
 			if ( (*li)->getId()==id )
-				return (*li);	
+				return (*li);
 		}
-	} // unlock	
+	} // unlock
 
 	return 0;
 }
 
 // ------------------------------------------------------------------------------------------
 
-int ObjectsManager::objectsCount()
+int UniSetManager::objectsCount()
 {
 	int res( olist.size()+mlist.size() );
-	
-	for( ObjectsManagerList::const_iterator it= beginMList();
+
+	for( UniSetManagerList::const_iterator it= beginMList();
 			it!= endMList(); ++it )
 	{
 		res+= (*it)->objectsCount();
-	}	
-	
+	}
+
 	return res;
 }
 
 // ------------------------------------------------------------------------------------------
-int ObjectsManager::getObjectsInfo( ObjectsManager* mngr, SimpleInfoSeq* seq, 
+int UniSetManager::getObjectsInfo( UniSetManager* mngr, SimpleInfoSeq* seq,
 									int begin, const long uplimit )
 {
 	int ind = begin;
@@ -487,7 +487,7 @@ int ObjectsManager::getObjectsInfo( ObjectsManager* mngr, SimpleInfoSeq* seq,
 	// получаем у самого менджера
 	SimpleInfo_var msi=mngr->getInfo();
 	(*seq)[ind] = msi;
-	
+
 	ind++;
 	if( ind > uplimit )
 		return ind;
@@ -499,7 +499,7 @@ int ObjectsManager::getObjectsInfo( ObjectsManager* mngr, SimpleInfoSeq* seq,
 		{
 			SimpleInfo_var si=(*it)->getInfo();
 			(*seq)[ind] = si;
-			ind++;				
+			ind++;
 			if( ind>uplimit )
 				break;
 		}
@@ -511,14 +511,14 @@ int ObjectsManager::getObjectsInfo( ObjectsManager* mngr, SimpleInfoSeq* seq,
 		{
 			ulog.warn() << myname << "(getObjectsInfo): не смог получить у объекта "
 					<< conf->oind->getNameById( (*it)->getId() ) << " информацию" << endl;
-		}	
+		}
 	}
 
 	if( ind > uplimit )
 		return ind;
 
 	// а далее у его менеджеров (рекурсивно)
-	for( ObjectsManagerList::const_iterator it=mngr->beginMList();
+	for( UniSetManagerList::const_iterator it=mngr->beginMList();
 		 it!=mngr->endMList(); ++it )
 	{
 		ind = getObjectsInfo((*it),seq,ind,uplimit);
@@ -530,19 +530,19 @@ int ObjectsManager::getObjectsInfo( ObjectsManager* mngr, SimpleInfoSeq* seq,
 }
 // ------------------------------------------------------------------------------------------
 
-SimpleInfoSeq* ObjectsManager::getObjectsInfo( CORBA::Long maxlength )
+SimpleInfoSeq* UniSetManager::getObjectsInfo( CORBA::Long maxlength )
 {
 	SimpleInfoSeq* res = new SimpleInfoSeq();	// ЗА ОСВОБОЖДЕНИЕ ПАМЯТИ ОТВЕЧАЕТ КЛИЕНТ!!!!!!
 												// поэтому ему лучше пользоваться при получении _var-классом
 	int length = objectsCount()+1;
 	if( length >= maxlength )
 		length = maxlength;
-	
+
 	res->length(length);
 
 	// используем рекурсивную функцию
 	int ind = 0;
-	const int limit = length; 
+	const int limit = length;
 	ind = getObjectsInfo( this, res, ind, limit );
 	return res;
 }

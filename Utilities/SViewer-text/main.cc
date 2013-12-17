@@ -23,7 +23,7 @@ int main(int argc, const char **argv)
 
 		uniset_init(argc,argv,"configure.xml");
 /*
-		UniversalInterface ui;
+		UInterface ui;
 		IDList lst;
 		lst.add(1);
 		lst.add(2);

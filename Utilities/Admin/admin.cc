@@ -12,7 +12,7 @@
 #include "Exceptions.h"
 #include "UniSetObject.h"
 #include "UniSetTypes.h"
-#include "ObjectsManager.h"
+#include "UniSetManager.h"
 #include "MessageType.h"
 #include "Configuration.h"
 #include "ObjectIndex_XML.h"
@@ -58,14 +58,14 @@ static bool commandToAll( const string& section, ObjectRepository *rep, Command 
 static void createSections( UniSetTypes::Configuration* c );
 // --------------------------------------------------------------------------
 int omap();
-int configure( const string& args, UniversalInterface &ui );
-int logRotate( const string& args, UniversalInterface &ui );
-int setValue( const string& args, UniversalInterface &ui, Configuration* conf = UniSetTypes::conf );
-int getValue( const string& args, UniversalInterface &ui, Configuration* conf = UniSetTypes::conf );
-int getRawValue( const string& args, UniversalInterface &ui );
-int getState( const string& args, UniversalInterface &ui );
-int getCalibrate( const string& args, UniversalInterface &ui );
-int oinfo( const string& args, UniversalInterface &ui );
+int configure( const string& args, UInterface &ui );
+int logRotate( const string& args, UInterface &ui );
+int setValue( const string& args, UInterface &ui, Configuration* conf = UniSetTypes::conf );
+int getValue( const string& args, UInterface &ui, Configuration* conf = UniSetTypes::conf );
+int getRawValue( const string& args, UInterface &ui );
+int getState( const string& args, UInterface &ui );
+int getCalibrate( const string& args, UInterface &ui );
+int oinfo( const string& args, UInterface &ui );
 // --------------------------------------------------------------------------
 static void print_help(int width, const string& cmd, const string& help, const string& tab=" " )
 {
@@ -154,7 +154,7 @@ int main(int argc, char** argv)
 				case 'x':	//--setValue
 				{
 					uniset_init(argc,argv,conffile);
-					UniversalInterface ui(conf);
+					UInterface ui(conf);
 					return setValue(optarg,ui);
 				}
 				break;
@@ -163,7 +163,7 @@ int main(int argc, char** argv)
 				{
 //					cout<<"(main):received option --getValue='"<<optarg<<"'"<<endl;
 					uniset_init(argc,argv,conffile);
-					UniversalInterface ui(conf);
+					UInterface ui(conf);
 					return getValue(optarg,ui);
 				}
 				break;
@@ -172,7 +172,7 @@ int main(int argc, char** argv)
 				{
 	//				cout<<"(main):received option --getRawValue='"<<optarg<<"'"<<endl;
 					uniset_init(argc,argv,conffile);
-					UniversalInterface ui(conf);
+					UInterface ui(conf);
 					return getRawValue(optarg,ui);
 				}
 				break;
@@ -181,7 +181,7 @@ int main(int argc, char** argv)
 				{
 //					cout<<"(main):received option --oinfo='"<<optarg<<"'"<<endl;
 					uniset_init(argc,argv,conffile);
-					UniversalInterface ui(conf);
+					UInterface ui(conf);
 					return oinfo(optarg,ui);
 				}
 				break;
@@ -190,7 +190,7 @@ int main(int argc, char** argv)
 				{
 //					cout<<"(main):received option --exist"<<endl;
 					uniset_init(argc,argv,conffile);
-					UniversalInterface ui(conf);
+					UInterface ui(conf);
 				
 					Command cmd=Exist;
 					ObjectRepository* rep = new ObjectRepository(conf);
@@ -206,8 +206,8 @@ int main(int argc, char** argv)
 				{
 //					cout<<"(main):received option --start"<<endl;
 					uniset_init(argc,argv,conffile);
-					UniversalInterface ui(conf);
-
+					UInterface ui(conf);
+					
 					Command cmd=StartUp;
 					ObjectRepository* rep = new ObjectRepository(conf);
 					commandToAll(conf->getServicesSection(), rep, (Command)cmd);
@@ -220,7 +220,7 @@ int main(int argc, char** argv)
 				case 'r':	//--configure
 				{
 					uniset_init(argc,argv,conffile);
-					UniversalInterface ui(conf);
+					UInterface ui(conf);
 					return configure(optarg,ui);
 				}
 				break;
@@ -229,9 +229,9 @@ int main(int argc, char** argv)
 				{
 //					cout<<"(main):received option --finish"<<endl;
 					uniset_init(argc,argv,conffile);
-					UniversalInterface ui(conf);
-
-					Command cmd=Finish;
+					UInterface ui(conf);
+					
+					Command cmd=Finish;	
 					ObjectRepository* rep = new ObjectRepository(conf);
 					commandToAll(conf->getServicesSection(), rep, (Command)cmd);
 					commandToAll(conf->getControllersSection(), rep, (Command)cmd);
@@ -244,7 +244,7 @@ int main(int argc, char** argv)
 				case 'l':	//--logrotate
 				{
 					uniset_init(argc,argv,conffile);
-					UniversalInterface ui(conf);
+					UInterface ui(conf);
 					return logRotate(optarg, ui);
 				}
 				break;
@@ -253,7 +253,7 @@ int main(int argc, char** argv)
 				{
 //					cout<<"(main):received option --getCalibrate='"<<optarg<<"'"<<endl;
 					uniset_init(argc,argv,conffile);
-					UniversalInterface ui(conf);
+					UInterface ui(conf);
 					return getCalibrate(optarg, ui);
 				}
 				break;
@@ -262,7 +262,7 @@ int main(int argc, char** argv)
 				{
 //					cout<<"(main):received option --foldUp"<<endl;
 					uniset_init(argc,argv,conffile);
-					UniversalInterface ui(conf);
+					UInterface ui(conf);
 				
 					Command cmd=FoldUp;
 					ObjectRepository* rep = new ObjectRepository(conf);
@@ -327,7 +327,7 @@ static bool commandToAll(const string& section, ObjectRepository *rep, Command c
 			return false;
 		}
 
-		ObjectsManager_i_var proc;		
+		UniSetManager_i_var proc;
 		UniSetObject_i_var obj;
 		string fullName;
 		ListObjectName::const_iterator li;
@@ -455,7 +455,7 @@ int omap()
 }
 
 // --------------------------------------------------------------------------------------
-int setValue( const string& args, UniversalInterface &ui, Configuration* conf )
+int setValue( const string& args, UInterface &ui, Configuration* conf )
 {
 	int err = 0;
 	
@@ -501,7 +501,7 @@ int setValue( const string& args, UniversalInterface &ui, Configuration* conf )
 }
 
 // --------------------------------------------------------------------------------------
-int getValue( const string& args, UniversalInterface &ui, Configuration* conf )
+int getValue( const string& args, UInterface &ui, Configuration* conf )
 {
 	int err = 0;
 	
@@ -545,7 +545,7 @@ int getValue( const string& args, UniversalInterface &ui, Configuration* conf )
 	return err;
 }
 // --------------------------------------------------------------------------------------
-int getCalibrate( const std::string& args, UniversalInterface &ui )
+int getCalibrate( const std::string& args, UInterface &ui )
 {
 	int err = 0;
   	typedef std::list<UniSetTypes::ParamSInfo> SList;
@@ -575,7 +575,7 @@ int getCalibrate( const std::string& args, UniversalInterface &ui )
 }
 
 // --------------------------------------------------------------------------------------
-int getRawValue( const std::string& args, UniversalInterface &ui )
+int getRawValue( const std::string& args, UInterface &ui )
 {
 	int err = 0;
   	typedef std::list<UniSetTypes::ParamSInfo> SList;
@@ -602,7 +602,7 @@ int getRawValue( const std::string& args, UniversalInterface &ui )
 }
 
 // --------------------------------------------------------------------------------------
-int logRotate( const string& arg, UniversalInterface &ui )
+int logRotate( const string& arg, UInterface &ui )
 {
 	// посылка всем
 	if( arg.empty() || (arg.c_str())[0]!='-' )
@@ -631,7 +631,7 @@ int logRotate( const string& arg, UniversalInterface &ui )
 }
 
 // --------------------------------------------------------------------------------------
-int configure( const string& arg, UniversalInterface &ui )
+int configure( const string& arg, UInterface &ui )
 {
 	// посылка всем
 	if( arg.empty() || (arg.c_str())[0]!='-' )
@@ -659,7 +659,7 @@ int configure( const string& arg, UniversalInterface &ui )
 }
 
 // --------------------------------------------------------------------------------------
-int oinfo( const string& arg, UniversalInterface &ui )
+int oinfo( const string& arg, UInterface &ui )
 {
 	UniSetTypes::ObjectId oid(uni_atoi(arg));
 	if( oid==0 )

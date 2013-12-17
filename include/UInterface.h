@@ -22,8 +22,8 @@
  * \author Pavel Vainerman
  */
 // --------------------------------------------------------------------------
-#ifndef UniversalInterface_H_
-#define UniversalInterface_H_
+#ifndef UInterface_H_
+#define UInterface_H_
 // ---------------------------------------------------------------------------
 #include <string>
 #include <sstream>
@@ -40,7 +40,7 @@
 
 // -----------------------------------------------------------------------------------------
 /*! \namespace UniversalIO
- * Пространство имен содержащее классы, функции и т.п. для работы с вводом/выводом 
+ * Пространство имен содержащее классы, функции и т.п. для работы с вводом/выводом
 */
 namespace UniversalIO
 {
@@ -52,27 +52,27 @@ namespace UniversalIO
 #define IO_THROW_EXCEPTIONS UniSetTypes::TimeOut,UniSetTypes::IOBadParam,UniSetTypes::ORepFailed
 // -----------------------------------------------------------------------------------------
 /*!
- * \class UniversalInterface
+ * \class UInterface
  * ... а здесь идет кратенькое описание... (коротенько минут на 40!...)
  * Для увеличения производительности в функции встроен cache обращений...
  *
  * См. также \ref UniversalIOControllerPage
-*/ 
-class UniversalInterface
+*/
+class UInterface
 {
 	public:
-	
-		UniversalInterface( UniSetTypes::ObjectId backid, CORBA::ORB_var orb=NULL, UniSetTypes::ObjectIndex* oind=NULL );
-		UniversalInterface( UniSetTypes::Configuration* uconf=UniSetTypes::conf );
-		~UniversalInterface();
-		
+
+		UInterface( UniSetTypes::ObjectId backid, CORBA::ORB_var orb=NULL, UniSetTypes::ObjectIndex* oind=NULL );
+		UInterface( UniSetTypes::Configuration* uconf=UniSetTypes::conf );
+		~UInterface();
+
 		inline UniSetTypes::ObjectIndex* getObjectIndex() { return oind; }
 		inline UniSetTypes::Configuration* getConf() { return uconf; }
 
 		// -------- Функции работы с группой датчиков -----------
 
 		// Группа должна принадлежать одному процессу!
-		
+
 		//! Получение состояния для списка указанных датчиков
 		IOController_i::SensorInfoSeq_var getSensorSeq( UniSetTypes::IDList& lst );
 
@@ -87,7 +87,7 @@ class UniversalInterface
 		//! Получение состояния датчика
 		long getValue ( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )throw(IO_THROW_EXCEPTIONS);
 		long getValue ( UniSetTypes::ObjectId id );
-		
+
 		//! Выставление состояния датчика
 		void setValue ( UniSetTypes::ObjectId id, long value, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
 		void setValue ( UniSetTypes::ObjectId id, long value );
@@ -100,7 +100,7 @@ class UniversalInterface
 		CORBA::Long getRawValue( const IOController_i::SensorInfo& si );
 
 		//! калибровка
-		void calibrate(const IOController_i::SensorInfo& si, 
+		void calibrate(const IOController_i::SensorInfo& si,
 					   const IOController_i::CalibrateInfo& ci,
 					   UniSetTypes::ObjectId adminId = UniSetTypes::DefaultObjectId );
 
@@ -110,12 +110,12 @@ class UniversalInterface
 		//! Заказ информации об изменении дискретного датчика
 		void askThreshold( UniSetTypes::ObjectId sensorId, UniSetTypes::ThresholdId tid,
 							UniversalIO::UIOCommand cmd,
-							CORBA::Long lowLimit=0, CORBA::Long hiLimit=0, CORBA::Long sensibility=0, 
+							CORBA::Long lowLimit=0, CORBA::Long hiLimit=0, CORBA::Long sensibility=0,
 							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
 		void askRemoteThreshold( UniSetTypes::ObjectId sensorId, UniSetTypes::ObjectId node,
 								 UniSetTypes::ThresholdId thresholdId, UniversalIO::UIOCommand cmd,
-								 CORBA::Long lowLimit=0, CORBA::Long hiLimit=0, CORBA::Long sensibility=0, 
+								 CORBA::Long lowLimit=0, CORBA::Long hiLimit=0, CORBA::Long sensibility=0,
 								 UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
 		//! Универсальный заказ информации об изменении датчика
@@ -123,7 +123,7 @@ class UniversalInterface
 							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
 		void askRemoteSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node,
-							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId )throw(IO_THROW_EXCEPTIONS);		
+							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId )throw(IO_THROW_EXCEPTIONS);
 
 		UniversalIO::IOType getIOType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
 		UniversalIO::IOType getIOType(UniSetTypes::ObjectId id);
@@ -135,7 +135,7 @@ class UniversalInterface
 		UniversalIO::IOType getConfIOType( UniSetTypes::ObjectId id );
 
 		IOController_i::ShortIOInfo getChangedTime( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
-		IOController_i::ShortMapSeq* getSensors( UniSetTypes::ObjectId id, 
+		IOController_i::ShortMapSeq* getSensors( UniSetTypes::ObjectId id,
 													UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode() );
 
 //		/*! регистрация объекта в репозитории */
@@ -161,7 +161,7 @@ class UniversalInterface
 		UniSetTypes::ObjectPtr resolve( UniSetTypes::ObjectId id, UniSetTypes::ObjectId nodeName, int timeoutMS=UniversalIO::defaultTimeOut)
 			throw(UniSetTypes::ResolveNameError, UniSetTypes::TimeOut);
 
-		
+
 		bool isExist( UniSetTypes::ObjectId id );
 		bool isExist( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
 
@@ -226,11 +226,11 @@ class UniversalInterface
 					CacheOfResolve(unsigned int maxsize, int cleantime):
 						MaxSize(maxsize), CleanTime(cleantime){};
 					~CacheOfResolve(){};
-			
+
 					UniSetTypes::ObjectPtr resolve( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )throw(UniSetTypes::NameNotFound);
 					void cache(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node, UniSetTypes::ObjectVar ptr);
 					void erase(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node);
-					
+
 					inline void setMaxSize( unsigned int ms )
 					{
 						MaxSize = ms;
@@ -242,14 +242,14 @@ class UniversalInterface
 					CacheOfResolve(){};
 
 			private:
-			
+
 				bool clean(); 		/*!< функция очистки кэш-а от старых ссылок */
 				inline void clear() /*!< удаление всей информации */
 				{
 					UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
-					mcache.clear();	
-				}; 
-								
+					mcache.clear();
+				};
+
 				/*!
 					\todo можно добавить поле CleanTime для каждой ссылки отдельно...
 				*/
@@ -261,12 +261,12 @@ class UniversalInterface
 						if(!tm)
 							 timestamp = time(NULL);
 					}
-					
+
 					Info():
 						ptr(NULL), timestamp(0){};
 
 					UniSetTypes::ObjectVar ptr;
-					time_t timestamp; // время последнего обращения 
+					time_t timestamp; // время последнего обращения
 
 					bool operator<( const CacheOfResolve::Info& rhs ) const
 					{
@@ -274,7 +274,7 @@ class UniversalInterface
 					}
 
 				};
-				
+
 				typedef std::map<int, Info> CacheMap;
 				CacheMap mcache;
 				UniSetTypes::uniset_rwmutex cmutex;
@@ -287,7 +287,7 @@ class UniversalInterface
 				typedef std::pair<int, Info> CacheItem;
 				// функция-объект для поиска устаревших(по времени) ссылок
 				struct OldRef_eq: public unary_function<CacheItem, bool>
-				{		
+				{
 					OldRef_eq(time_t tm):tm(tm){}
 					bool operator()( const CacheItem& inf ) const
 					{
@@ -295,12 +295,12 @@ class UniversalInterface
 					}
 					time_t tm;
 				};
-*/				
+*/
 		};
 
 		void initBackId( UniSetTypes::ObjectId backid );
 	protected:
-		std::string set_err(const std::string& pre, UniSetTypes::ObjectId id, UniSetTypes::ObjectId node); 
+		std::string set_err(const std::string& pre, UniSetTypes::ObjectId id, UniSetTypes::ObjectId node);
 
 	private:
 		void init();

@@ -1,7 +1,7 @@
 #include <iostream>
 #include "Configuration.h"
 #include "Extensions.h"
-#include "ObjectsActivator.h"
+#include "UniSetActivator.h"
 #include "PassiveLProcessor.h"
 
 // -----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ int main(int argc, const char **argv)
 
 		PassiveLProcessor plc(schema,ID,shmID);
 
-		ObjectsActivator act;
+		UniSetActivator act;
 		act.addObject(static_cast<class UniSetObject*>(&plc));
 
 		SystemMessage sm(SystemMessage::StartUp); 

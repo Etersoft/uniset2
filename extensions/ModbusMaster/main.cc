@@ -3,7 +3,7 @@
 #include "MBTCPMaster.h"
 #include "Configuration.h"
 #include "Debug.h"
-#include "ObjectsActivator.h"
+#include "UniSetActivator.h"
 #include "Extensions.h"
 // -----------------------------------------------------------------------------
 using namespace std;
@@ -59,7 +59,7 @@ int main( int argc, const char** argv )
 			return 1;
 		}
 
-		ObjectsActivator act;
+		UniSetActivator act;
 		act.addObject(static_cast<class UniSetObject*>(mb));
 
 		SystemMessage sm(SystemMessage::StartUp);

@@ -1,11 +1,11 @@
-#ifndef UInterface_H_
-#define UInterface_H_
+#ifndef pyUInterface_H_
+#define pyUInterface_H_
 // --------------------------------------------------------------------------
 #include <string>
 #include "UTypes.h"
 #include "UExceptions.h"
 // --------------------------------------------------------------------------
-namespace UInterface
+namespace pyUInterface
 {
 	void uniset_init_params( UTypes::Params* p, const char* xmlfile )throw(UException);
 	void uniset_init( int argc, char** argv, const char* xmlfile )throw(UException);

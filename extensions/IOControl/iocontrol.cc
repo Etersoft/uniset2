@@ -1,6 +1,6 @@
 #include <string>
 #include "Debug.h"
-#include "ObjectsActivator.h"
+#include "UniSetActivator.h"
 #include "Configuration.h"
 #include "IOControl.h"
 #include "Extensions.h"
@@ -52,7 +52,7 @@ int main(int argc, const char **argv)
 			return 1;
 		}
 
-		ObjectsActivator act;
+		UniSetActivator act;
 		act.addObject(static_cast<class UniSetObject*>(ic));
 
 		SystemMessage sm(SystemMessage::StartUp); 

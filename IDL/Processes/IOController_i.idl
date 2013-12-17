@@ -27,7 +27,7 @@
 #define BaseIOController_i_IDL_
 // --------------------------------------------------------------------------
 #include "../UniSetTypes/UniSetTypes_i.idl"
-#include "../UniSetTypes/ObjectsManager_i.idl"
+#include "../UniSetTypes/UniSetManager_i.idl"
 // --------------------------------------------------------------------------------------------------------------
 
 /*! 
@@ -35,7 +35,7 @@
  * \brief Базовый интерфейс для создания координаторов ввода/вывода  
  *
 */ 
-interface IOController_i : ObjectsManager_i	
+interface IOController_i : UniSetManager_i
 {
 	// исключения
 	

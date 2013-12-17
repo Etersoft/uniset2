@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "ObjectsActivator.h"
+#include "UniSetActivator.h"
 #include "Configuration.h"
 #include "SMonitor.h"
 // -----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ int main( int argc, const char **argv )
 			return 0;
 		}
 
-		ObjectsActivator act;
+		UniSetActivator act;
 		SMonitor tp(ID);
 		act.addObject(&tp);
 

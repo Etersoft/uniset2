@@ -45,7 +45,7 @@ class ProxyManager:
 		void attachObject( PassiveObject* po, UniSetTypes::ObjectId id );
 		void detachObject( UniSetTypes::ObjectId id );
 	
-		UniversalInterface* uin;
+		UInterface* uin;
 
 	protected:
 		ProxyManager();	

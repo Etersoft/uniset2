@@ -1,5 +1,5 @@
 #include <time.h>
-#include "UniversalInterface.h"
+#include "UInterface.h"
 #include "UniSetTypes.h"
 
 using namespace std;
@@ -10,7 +10,7 @@ int main( int argc, const char **argv )
 	try
 	{
 		uniset_init(argc,argv,"test.xml");
-		UniversalInterface ui;
+		UInterface ui;
 
 		cout << "** check getSensorID function **" << endl;
 		ObjectId id1 = conf->getSensorID("Input1_S");

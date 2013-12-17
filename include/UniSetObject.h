@@ -37,15 +37,15 @@
 #include "MessageType.h"
 #include "PassiveTimer.h"
 #include "Exceptions.h"
-#include "UniversalInterface.h"
+#include "UInterface.h"
 #include "UniSetObject_i.hh"
 #include "ThreadCreator.h"
 
 //---------------------------------------------------------------------------
 //#include <omnithread.h>
 //---------------------------------------------------------------------------
-class ObjectsActivator;
-class ObjectsManager;
+class UniSetActivator;
+class UniSetManager;
 
 //---------------------------------------------------------------------------
 class UniSetObject;
@@ -101,7 +101,7 @@ class UniSetObject:
 			/*! прервать ожидание сообщений */
 			void termWaiting();
 
-			UniversalInterface ui; /*!< универсальный интерфейс для работы с другими процессами */			
+			UInterface ui; /*!< универсальный интерфейс для работы с другими процессами */
 			std::string myname;
 			std::string section;
 
@@ -183,14 +183,14 @@ class UniSetObject:
 			void setActive( bool set );
 
 			UniSetTypes::VoidMessage msg;	
-			ObjectsManager* mymngr; 
+			UniSetManager* mymngr;
 
 			void setThreadPriority( int p );
 
 	private:
 
-			friend class ObjectsManager;
-			friend class ObjectsActivator;
+			friend class UniSetManager;
+			friend class UniSetActivator;
 			friend class ThreadCreator<UniSetObject>;
 			inline pid_t getMsgPID()
 			{
@@ -200,7 +200,7 @@ class UniSetObject:
 			/*! функция потока */
 			void work();	
 			//! Инициализация параметров объекта
-			bool init(ObjectsManager* om);
+			bool init(UniSetManager* om);
 			//! Прямая деактивизация объекта	 
 			bool disactivate();
 			//! Непосредственная активизация объекта

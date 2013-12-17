@@ -31,9 +31,9 @@
 #include "Exceptions.h"
 #include "ORepHelpers.h"
 #include "ObjectRepository.h"
-#include "UniversalInterface.h"
+#include "UInterface.h"
 #include "UniSetObject.h"
-#include "ObjectsManager.h"
+#include "UniSetManager.h"
 #include "Debug.h"
 
 // ------------------------------------------------------------------------------------------
@@ -170,7 +170,7 @@ void UniSetObject::init_object()
  *	\param om - указазтель на менджер управляющий объектом
  *	\return Возращает \a true если инициализация прошда успешно, и \a false если нет
 */
-bool UniSetObject::init( ObjectsManager* om )
+bool UniSetObject::init( UniSetManager* om )
 {
 	if( ulog.is_info() )
 	  ulog.info() << myname << ": init..." << endl;
@@ -758,8 +758,8 @@ bool UniSetObject::activate()
 		{
 			ulog.crit() << myname << "(activate): Не задан ID!!! activate failure..." << endl;
 			// вызываем на случай если она переопределена в дочерних классах
-			// Например в ObjectsManager, если здесь не вызвать, то не будут инициализированы подчинённые объекты.
-			// (см. ObjectsManager::activateObject)
+			// Например в UniSetManager, если здесь не вызвать, то не будут инициализированы подчинённые объекты.
+			// (см. UniSetManager::activateObject)
 			activateObject();
 			return false;
 		}

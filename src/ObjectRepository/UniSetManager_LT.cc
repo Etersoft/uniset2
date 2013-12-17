@@ -20,9 +20,9 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #include "Exceptions.h"
-#include "ObjectsManager_LT.h"
+#include "UniSetManager_LT.h"
 #include "Debug.h"
 #include "PassiveTimer.h"
 
@@ -30,30 +30,30 @@
 using namespace std;
 using namespace UniSetTypes;
 // ------------------------------------------------------------------------------------------
-ObjectsManager_LT::ObjectsManager_LT( UniSetTypes::ObjectId id ):
-ObjectsManager(id),
+UniSetManager_LT::UniSetManager_LT( UniSetTypes::ObjectId id ):
+UniSetManager(id),
 sleepTime(UniSetTimer::WaitUpTime)
 {
 }
 // ------------------------------------------------------------------------------------------
-ObjectsManager_LT::ObjectsManager_LT():
-sleepTime(UniSetTimer::WaitUpTime) 
+UniSetManager_LT::UniSetManager_LT():
+sleepTime(UniSetTimer::WaitUpTime)
 {
 }
 
 // ------------------------------------------------------------------------------------------
-ObjectsManager_LT::~ObjectsManager_LT() 
+UniSetManager_LT::~UniSetManager_LT()
 {
 }
 // ------------------------------------------------------------------------------------------
-void ObjectsManager_LT::callback()
+void UniSetManager_LT::callback()
 {
-	// При реализации с использованием waitMessage() каждый раз при вызове askTimer() необходимо 
-	// проверять возвращаемое значение на UniSetTimers::WaitUpTime и вызывать termWaiting(), 
-	// чтобы избежать ситуации, когда процесс до заказа таймера 'спал'(в функции waitMessage()) и после 
+	// При реализации с использованием waitMessage() каждый раз при вызове askTimer() необходимо
+	// проверять возвращаемое значение на UniSetTimers::WaitUpTime и вызывать termWaiting(),
+	// чтобы избежать ситуации, когда процесс до заказа таймера 'спал'(в функции waitMessage()) и после
 	// заказа продолжит спать(т.е. обработчик вызван не будет)...
 	try
-	{	
+	{
 		if( waitMessage(msg, sleepTime) )
 			processingMessage(&msg);
 
@@ -65,7 +65,7 @@ void ObjectsManager_LT::callback()
 	}
 }
 // ------------------------------------------------------------------------------------------
-void ObjectsManager_LT::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, short ticks, UniSetTypes::Message::Priority p )
+void UniSetManager_LT::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, short ticks, UniSetTypes::Message::Priority p )
 {
 	// проверяйте возвращаемое значение
 	if( lt.askTimer(timerid, timeMS, ticks, p) != UniSetTimer::WaitUpTime )

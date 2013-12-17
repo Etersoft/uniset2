@@ -11,7 +11,7 @@ xmlfile(xfile)
 	try
 	{
 	    conf = new UniSetTypes::Configuration(p->argc,p->argv,xmlfile);
-		ui = new UniversalInterface(conf);
+		ui = new UInterface(conf);
 	}
 	catch( UniSetTypes::Exception& ex )
 	{
@@ -31,7 +31,7 @@ xmlfile(xfile)
 	try
 	{
 	    conf = new UniSetTypes::Configuration(argc,argv,xmlfile);
-		ui = new UniversalInterface(conf);
+		ui = new UInterface(conf);
 	}
 	catch( UniSetTypes::Exception& ex )
 	{

@@ -330,7 +330,7 @@ class IOControl:
 		std::string s_fvalue;
 
 		SMInterface* shm;         
-		UniversalInterface ui;
+		UInterface ui;
 		UniSetTypes::ObjectId myid;
 		std::string prefix;
 

@@ -1,27 +1,27 @@
 #include <ostream>
-#include <Exceptions.h>
-#include <ORepHelpers.h>
-#include <UniversalInterface.h>
-#include <Configuration.h>
-#include <UniSetTypes.h>
+#include "Exceptions.h"
+#include "ORepHelpers.h"
 #include "UInterface.h"
+#include "Configuration.h"
+#include "UniSetTypes.h"
+#include "pyUInterface.h"
 //---------------------------------------------------------------------------
 using namespace std;
 //---------------------------------------------------------------------------
-static UniversalInterface* ui=0;
+static UInterface* ui=0;
 //---------------------------------------------------------------------------
-void UInterface::uniset_init_params( UTypes::Params* p, const char* xmlfile )throw(UException)
+void pyUInterface::uniset_init_params( UTypes::Params* p, const char* xmlfile )throw(UException)
 {
-	UInterface::uniset_init(p->argc,p->argv,xmlfile);
+	pyUInterface::uniset_init(p->argc,p->argv,xmlfile);
 }
 //---------------------------------------------------------------------------
 
-void UInterface::uniset_init( int argc, char* argv[], const char* xmlfile )throw(UException)
+void pyUInterface::uniset_init( int argc, char* argv[], const char* xmlfile )throw(UException)
 {
 	try
 	{
 		UniSetTypes::uniset_init(argc,argv,xmlfile);
-		ui = new UniversalInterface();
+		ui = new UInterface();
 		return;
 	}
 	catch( UniSetTypes::Exception& ex )
@@ -34,11 +34,11 @@ void UInterface::uniset_init( int argc, char* argv[], const char* xmlfile )throw
 	}
 }
 //---------------------------------------------------------------------------
-long UInterface::getValue( long id )throw(UException)
+long pyUInterface::getValue( long id )throw(UException)
 {
 	if( !UniSetTypes::conf || !ui )
 	  throw USysError();
-	
+
 	UniversalIO::IOType t = UniSetTypes::conf->getIOType(id);
 	try
 	{
@@ -75,11 +75,11 @@ long UInterface::getValue( long id )throw(UException)
 	throw UException("(getValue): unknown error");
 }
 //---------------------------------------------------------------------------
-void UInterface::setValue( long id, long val )throw(UException)
+void pyUInterface::setValue( long id, long val )throw(UException)
 {
 	if( !UniSetTypes::conf || !ui )
 	  throw USysError();
-	
+
 	UniversalIO::IOType t = UniSetTypes::conf->getIOType(id);
 	try
 	{
@@ -114,7 +114,7 @@ void UInterface::setValue( long id, long val )throw(UException)
 	}
 }
 //---------------------------------------------------------------------------
-long UInterface::getSensorID( const char* name )
+long pyUInterface::getSensorID( const char* name )
 {
 	if( UniSetTypes::conf )
 	  return UniSetTypes::conf->getSensorID(name);
@@ -122,7 +122,7 @@ long UInterface::getSensorID( const char* name )
 	return -1;
 }
 //---------------------------------------------------------------------------
-const char* UInterface::getName( long id )
+const char* pyUInterface::getName( long id )
 {
 	if( UniSetTypes::conf )
 		return UniSetTypes::conf->oind->getMapName(id).c_str();
@@ -130,7 +130,7 @@ const char* UInterface::getName( long id )
 	return "";
 }
 //---------------------------------------------------------------------------
-const char* UInterface::getShortName( long id )
+const char* pyUInterface::getShortName( long id )
 {
 	if( UniSetTypes::conf )
 		return ORepHelpers::getShortName(UniSetTypes::conf->oind->getMapName(id)).c_str();
@@ -138,7 +138,7 @@ const char* UInterface::getShortName( long id )
 	return "";
 }
 //---------------------------------------------------------------------------
-const char* UInterface::getTextName( long id )
+const char* pyUInterface::getTextName( long id )
 {
 	if( UniSetTypes::conf )
 		return UniSetTypes::conf->oind->getTextName(id).c_str();
@@ -146,7 +146,7 @@ const char* UInterface::getTextName( long id )
 	return "";
 }
 //---------------------------------------------------------------------------
-const char* UInterface::getConfFileName()
+const char* pyUInterface::getConfFileName()
 {
 	if( UniSetTypes::conf )
 		return UniSetTypes::conf->getConfFileName().c_str();
