@@ -1,6 +1,6 @@
 #include "Configuration.h"
 #include "DBServer_SQLite.h"
-#include "ObjectsActivator.h"
+#include "UniSetActivator.h"
 #include "Debug.h"
 // --------------------------------------------------------------------------
 using namespace UniSetTypes;
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 		}
 
 		DBServer_SQLite dbs(ID);
-		ObjectsActivator act;
+		UniSetActivator act;
 		act.addObject(static_cast<class UniSetObject*>(&dbs));
 		act.run(false);
 	}

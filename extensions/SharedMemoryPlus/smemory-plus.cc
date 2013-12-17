@@ -4,7 +4,7 @@
 #include <error.h>
 #include <errno.h>
 #include <Debug.h>
-#include <ObjectsActivator.h>
+#include <UniSetActivator.h>
 #include <ThreadCreator.h>
 #include "Extensions.h"
 #include "RTUExchange.h"
@@ -55,13 +55,13 @@ int main( int argc, const char **argv )
 		ulog.logFile( logname );
 		conf->initDebug(UniSetExtensions::dlog,"dlog");
 
-		ObjectsActivator act;
+		UniSetActivator act;
 		// ------------ SharedMemory ----------------
 		SharedMemory* shm = SharedMemory::init_smemory(argc,argv);
 		if( shm == NULL )
 			return 1;
 
-		act.addManager(static_cast<class ObjectsManager*>(shm));
+		act.addManager(static_cast<class UniSetManager*>(shm));
 
 		// ------------ IOControl ----------------
 		std::list< ThreadCreator<IOControl>* > lst_iothr;

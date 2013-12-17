@@ -111,4 +111,56 @@ def Params_inst():
   return _pyUModbus.Params_inst()
 Params_inst = _pyUModbus.Params_inst
 
+class UException(Exception):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, UException, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, UException, name)
+    __repr__ = _swig_repr
+    def __init__(self, *args):
+        this = _pyUModbus.new_UException(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    __swig_destroy__ = _pyUModbus.delete_UException
+    __del__ = lambda self : None;
+    def getError(self): return _pyUModbus.UException_getError(self)
+    __swig_setmethods__["err"] = _pyUModbus.UException_err_set
+    __swig_getmethods__["err"] = _pyUModbus.UException_err_get
+UException_swigregister = _pyUModbus.UException_swigregister
+UException_swigregister(UException)
+
+class UTimeOut(UException):
+    __swig_setmethods__ = {}
+    for _s in [UException]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, UTimeOut, name, value)
+    __swig_getmethods__ = {}
+    for _s in [UException]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, UTimeOut, name)
+    __repr__ = _swig_repr
+    def __init__(self, *args):
+        this = _pyUModbus.new_UTimeOut(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    __swig_destroy__ = _pyUModbus.delete_UTimeOut
+    __del__ = lambda self : None;
+UTimeOut_swigregister = _pyUModbus.UTimeOut_swigregister
+UTimeOut_swigregister(UTimeOut)
+
+class USysError(UException):
+    __swig_setmethods__ = {}
+    for _s in [UException]: __swig_setmethods__.update(getattr(_s,'__swig_setmethods__',{}))
+    __setattr__ = lambda self, name, value: _swig_setattr(self, USysError, name, value)
+    __swig_getmethods__ = {}
+    for _s in [UException]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
+    __getattr__ = lambda self, name: _swig_getattr(self, USysError, name)
+    __repr__ = _swig_repr
+    def __init__(self, *args):
+        this = _pyUModbus.new_USysError(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    __swig_destroy__ = _pyUModbus.delete_USysError
+    __del__ = lambda self : None;
+USysError_swigregister = _pyUModbus.USysError_swigregister
+USysError_swigregister(USysError)
+
 # This file is compatible with both classic and new-style classes.

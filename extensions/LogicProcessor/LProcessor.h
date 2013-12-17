@@ -87,7 +87,7 @@
 // --------------------------------------------------------------------------
 #include <map>
 #include "UniSetTypes.h"
-#include "UniversalInterface.h"
+#include "UInterface.h"
 #include "Element.h"
 #include "Schema.h"
 // --------------------------------------------------------------------------
@@ -131,7 +131,7 @@ class LProcessor
 		OUTList extOuts;
 		SchemaXML sch;
 
-		UniversalInterface ui;
+		UInterface ui;
 		int sleepTime;
 		int smReadyTimeout; 	/*!< время ожидания готовности SM */
 

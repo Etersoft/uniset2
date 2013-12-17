@@ -21,49 +21,49 @@
  * \brief Активатор объектов
  * \author Pavel Vainerman
  */
-// -------------------------------------------------------------------------- 
-#ifndef ObjectsActivator_H_
-#define ObjectsActivator_H_
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
+#ifndef UniSetActivator_H_
+#define UniSetActivator_H_
+// --------------------------------------------------------------------------
 #include <omniORB4/CORBA.h>
 #include "UniSetTypes.h"
 #include "UniSetObject.h"
-#include "ObjectsManager.h"
+#include "UniSetManager.h"
 #include "ThreadCreator.h"
 //#include "OmniThreadCreator.h"
 //----------------------------------------------------------------------------------------
-/*! \class ObjectsActivator
- *	Создает POA менеджер и регистрирует в нем объекты. 
- *	Для обработки CORBA-запросов создается поток или передаются ресурсы 
+/*! \class UniSetActivator
+ *	Создает POA менеджер и регистрирует в нем объекты.
+ *	Для обработки CORBA-запросов создается поток или передаются ресурсы
  *		главного потока см. void activate(bool thread)
- *	
- *	Активатор в свою очередь сам является менеджером(и объектом) и обладает всеми его свойствами	
+ *
+ *	Активатор в свою очередь сам является менеджером(и объектом) и обладает всеми его свойствами
  *
  * \todo  Разобраться со всякими oaDestroy, stop, oakill и сделать одну надежную завершающую функцию.
-*/ 
-class ObjectsActivator: 
-	public ObjectsManager
+*/
+class UniSetActivator:
+	public UniSetManager
 {
 	public:
-	
-		ObjectsActivator();
-		ObjectsActivator( UniSetTypes::ObjectId id );
-		virtual ~ObjectsActivator();
+
+		UniSetActivator();
+		UniSetActivator( UniSetTypes::ObjectId id );
+		virtual ~UniSetActivator();
 
 		virtual void run(bool thread);
 		virtual void stop();
 		virtual void oaDestroy(int signo=0);
 		void waitDestroy();
-		
+
 		inline void oakill(int signo){ raise(signo);}
 
-		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("ObjectsActivator"); }
+		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("UniSetActivator"); }
 
-		
+
 	protected:
 
 
-		/*! Команды доступные при заказе сигналов 
+		/*! Команды доступные при заказе сигналов
 		 * см. askSignal()
 		*/
 		enum AskSigCommand	{
@@ -74,12 +74,12 @@ class ObjectsActivator:
 		/*! заказ на обработку сигнала signo
 		 * Для обработки предназначена функция signal().
 		 * \warning Сообщение о приходе сигналов SITERM, SIGINT, SIGABRT приходит
-		 * вне зависимости от заказа. От этих сообщений нельзя отказаться... 
+		 * вне зависимости от заказа. От этих сообщений нельзя отказаться...
 		 * \warning Заказ других сигналов пока не работает..
 		 * \warning функция временно недоступна (private). Ведуться работы...
 		 * \todo сделать возможность заказа других сигналов
 		*/
-//		void askSignal(int signo, AskSigCommand cmd=Ask);	
+//		void askSignal(int signo, AskSigCommand cmd=Ask);
 
 		virtual void work();
 
@@ -88,12 +88,12 @@ class ObjectsActivator:
 			return orb;
 		}
 
-		virtual void processingMessage( UniSetTypes::VoidMessage *msg );	
+		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
 		virtual void sysCommand( UniSetTypes::SystemMessage *sm );
 
 	private:
 
-//		static void processingSignal(int signo);			
+//		static void processingSignal(int signo);
 		static void terminated(int signo);
 		static void finishterm(int signo);
 		static void normalexit();
@@ -102,12 +102,12 @@ class ObjectsActivator:
 		void term( int signo );
 		void init();
 
-		friend class ThreadCreator<ObjectsActivator>;
-		ThreadCreator<ObjectsActivator> *orbthr;
-		
+		friend class ThreadCreator<UniSetActivator>;
+		ThreadCreator<UniSetActivator> *orbthr;
+
 		CORBA::ORB_var orb;
-		
-		bool omDestroy;			
+
+		bool omDestroy;
 		bool sig;
 		pid_t thpid; // pid orb потока
 
@@ -115,7 +115,7 @@ class ObjectsActivator:
 		{
 			pid_t msgpid;	// pid порожденого потока обработки сообщений
 		};
-		
+
 		struct OInfo:
 			public Info
 		{
@@ -125,22 +125,22 @@ class ObjectsActivator:
 		struct MInfo:
 			public Info
 		{
-			ObjectsManager* mnr;
+			UniSetManager* mnr;
 		};
 
 		std::list<OInfo> lstOInfo;
 		std::list<MInfo> lstMInfo;
-		void getinfo();		
+		void getinfo();
 };
 
 /*
 template<class TClass>
-int	ObjectsActivator::attach(TClass* p, void(TClass:: *f)(void*) )
+int	UniSetActivator::attach(TClass* p, void(TClass:: *f)(void*) )
 {
 	if( next >= MAX_CHILD_THREAD )
 		return -1;
 
-	callpull[next] = new OmniThreadCreator<TClass>( p, f);					 
+	callpull[next] = new OmniThreadCreator<TClass>( p, f);
 	next++;
 	return 0;
 }

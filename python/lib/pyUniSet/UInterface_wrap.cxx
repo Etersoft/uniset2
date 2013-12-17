@@ -3055,7 +3055,7 @@ namespace swig {
 }
 
 
-#include "UInterface.h"
+#include "pyUInterface.h"
 
 
 SWIGINTERN swig_type_info*
@@ -3366,7 +3366,7 @@ SWIGINTERN PyObject *_wrap_uniset_init_params(PyObject *SWIGUNUSEDPARM(self), Py
   }
   arg2 = reinterpret_cast< char * >(buf2);
   try {
-    UInterface::uniset_init_params(arg1,(char const *)arg2);
+    pyUInterface::uniset_init_params(arg1,(char const *)arg2);
   }
   catch(UException &_e) {
     SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
@@ -3414,7 +3414,7 @@ SWIGINTERN PyObject *_wrap_uniset_init(PyObject *SWIGUNUSEDPARM(self), PyObject 
   }
   arg3 = reinterpret_cast< char * >(buf3);
   try {
-    UInterface::uniset_init(arg1,arg2,(char const *)arg3);
+    pyUInterface::uniset_init(arg1,arg2,(char const *)arg3);
   }
   catch(UException &_e) {
     SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
@@ -3444,7 +3444,7 @@ SWIGINTERN PyObject *_wrap_getValue(PyObject *SWIGUNUSEDPARM(self), PyObject *ar
   }
   arg1 = static_cast< long >(val1);
   try {
-    result = (long)UInterface::getValue(arg1);
+    result = (long)pyUInterface::getValue(arg1);
   }
   catch(UException &_e) {
     SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
@@ -3480,7 +3480,7 @@ SWIGINTERN PyObject *_wrap_setValue(PyObject *SWIGUNUSEDPARM(self), PyObject *ar
   }
   arg2 = static_cast< long >(val2);
   try {
-    UInterface::setValue(arg1,arg2);
+    pyUInterface::setValue(arg1,arg2);
   }
   catch(UException &_e) {
     SWIG_Python_Raise(SWIG_NewPointerObj((new UException(static_cast< const UException& >(_e))),SWIGTYPE_p_UException,SWIG_POINTER_OWN), "UException", SWIGTYPE_p_UException); SWIG_fail;
@@ -3508,7 +3508,7 @@ SWIGINTERN PyObject *_wrap_getSensorID(PyObject *SWIGUNUSEDPARM(self), PyObject 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "getSensorID" "', argument " "1"" of type '" "char const *""'");
   }
   arg1 = reinterpret_cast< char * >(buf1);
-  result = (long)UInterface::getSensorID((char const *)arg1);
+  result = (long)pyUInterface::getSensorID((char const *)arg1);
   resultobj = SWIG_From_long(static_cast< long >(result));
   if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
   return resultobj;
@@ -3532,7 +3532,7 @@ SWIGINTERN PyObject *_wrap_getShortName(PyObject *SWIGUNUSEDPARM(self), PyObject
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "getShortName" "', argument " "1"" of type '" "long""'");
   }
   arg1 = static_cast< long >(val1);
-  result = (char *)UInterface::getShortName(arg1);
+  result = (char *)pyUInterface::getShortName(arg1);
   resultobj = SWIG_FromCharPtr((const char *)result);
   return resultobj;
 fail:
@@ -3554,7 +3554,7 @@ SWIGINTERN PyObject *_wrap_getName(PyObject *SWIGUNUSEDPARM(self), PyObject *arg
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "getName" "', argument " "1"" of type '" "long""'");
   }
   arg1 = static_cast< long >(val1);
-  result = (char *)UInterface::getName(arg1);
+  result = (char *)pyUInterface::getName(arg1);
   resultobj = SWIG_FromCharPtr((const char *)result);
   return resultobj;
 fail:
@@ -3576,7 +3576,7 @@ SWIGINTERN PyObject *_wrap_getTextName(PyObject *SWIGUNUSEDPARM(self), PyObject 
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "getTextName" "', argument " "1"" of type '" "long""'");
   }
   arg1 = static_cast< long >(val1);
-  result = (char *)UInterface::getTextName(arg1);
+  result = (char *)pyUInterface::getTextName(arg1);
   resultobj = SWIG_FromCharPtr((const char *)result);
   return resultobj;
 fail:
@@ -3589,7 +3589,7 @@ SWIGINTERN PyObject *_wrap_getConfFileName(PyObject *SWIGUNUSEDPARM(self), PyObj
   char *result = 0 ;
 
   if (!PyArg_ParseTuple(args,(char *)":getConfFileName")) SWIG_fail;
-  result = (char *)UInterface::getConfFileName();
+  result = (char *)pyUInterface::getConfFileName();
   resultobj = SWIG_FromCharPtr((const char *)result);
   return resultobj;
 fail:

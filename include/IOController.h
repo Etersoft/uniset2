@@ -30,13 +30,13 @@
 #include <sigc++/sigc++.h>
 #include "IOController_i.hh"
 #include "UniSetTypes.h"
-#include "ObjectsManager.h"
+#include "UniSetManager.h"
 #include "Configuration.h"
 #include "Mutex.h"
 //---------------------------------------------------------------------------
 /*! Реализация интерфейса IOController-а */ 
 class IOController: 
-		public ObjectsManager,
+		public UniSetManager,
 		public POA_IOController_i
 {
 	public:

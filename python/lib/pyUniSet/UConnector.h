@@ -2,8 +2,8 @@
 #define UConnector_H_
 // --------------------------------------------------------------------------
 #include <string>
-#include <Configuration.h>
-#include <UniversalInterface.h>
+#include "Configuration.h"
+#include "UInterface.h"
 #include "UTypes.h"
 #include "UExceptions.h"
 // -------------------------------------------------------------------------- 
@@ -30,7 +30,7 @@ class UConnector
 	  
 	private:
 	  UniSetTypes::Configuration* conf;
-	  UniversalInterface* ui;
+	  UInterface* ui;
 	  const char* xmlfile;
 };
 //---------------------------------------------------------------------------

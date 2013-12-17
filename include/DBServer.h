@@ -37,7 +37,7 @@
 	 \subsection subDBS_idea Сценарий работы
 	 	На узле, где ведётся БД запускается один экземпляр сервиса. Клиенты могут получить доступ, несколькими способами:
 		- через NameService
-		- при помощи UniversalInterface::send()
+		- при помощи UInterface::send()
 
 		Сервис является системным, поэтому его идентификатор можно получить при помощи 
 	UniSetTypes::Configuration::getDBServer() объекта UniSetTypes::conf.

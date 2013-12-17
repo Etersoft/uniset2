@@ -24,7 +24,7 @@
 //#include <stream.h>
 #include <sstream>
 #include <cmath>
-#include "UniversalInterface.h"
+#include "UInterface.h"
 #include "IOController.h"
 #include "Debug.h"
 // ------------------------------------------------------------------------------------------
@@ -41,14 +41,14 @@ IOController::IOController():
 // ------------------------------------------------------------------------------------------
 
 IOController::IOController(const string name, const string section):
-	ObjectsManager(name, section),
+	UniSetManager(name, section),
 	ioMutex(name+"_ioMutex"),
 	isPingDBServer(true)
 {
 }
 
 IOController::IOController(ObjectId id):
-	ObjectsManager(id),
+	UniSetManager(id),
 	ioMutex(string(conf->oind->getMapName(id))+"_ioMutex"),
 	isPingDBServer(true)
 {
@@ -62,7 +62,7 @@ IOController::~IOController()
 // ------------------------------------------------------------------------------------------
 bool IOController::activateObject()
 {
-	bool res = ObjectsManager::activateObject();
+	bool res = UniSetManager::activateObject();
 	sensorsRegistration();
 	return res;
 }
@@ -70,7 +70,7 @@ bool IOController::activateObject()
 bool IOController::disactivateObject()
 {
 	sensorsUnregistration();
-	return ObjectsManager::disactivateObject();
+	return UniSetManager::disactivateObject();
 }
 // ------------------------------------------------------------------------------------------
 void IOController::sensorsUnregistration()

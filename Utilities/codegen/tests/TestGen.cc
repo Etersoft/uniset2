@@ -39,7 +39,7 @@ void TestProc::sysCommand( UniSetTypes::SystemMessage* sm )
 void TestProc::sensorInfo( SensorMessage *sm )
 {
 	dlog[Debug::LEVEL1] << myname << "(sensorInfo): id=" << sm->id << " val=" << sm->value
-			<< "  " << UniversalInterface::timeToString(sm->sm_tv_sec,":")
+			<< "  " << UInterface::timeToString(sm->sm_tv_sec,":")
 			<< "(" << setw(6) << sm->sm_tv_usec << "): "
 			<< endl;
 

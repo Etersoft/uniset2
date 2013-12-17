@@ -5,12 +5,12 @@
 #include "UniSetTypes.h"
 #include "Mutex.h"
 #include "IONotifyController.h"
-#include "UniversalInterface.h"
+#include "UInterface.h"
 class SMInterface
 {
 	public:
 
-		SMInterface( UniSetTypes::ObjectId _shmID, UniversalInterface* ui, 
+		SMInterface( UniSetTypes::ObjectId _shmID, UInterface* ui,
 						UniSetTypes::ObjectId myid, IONotifyController* ic=0 );
 		~SMInterface();
 
@@ -54,7 +54,7 @@ class SMInterface
 		
 	protected:
 		IONotifyController* ic;
-		UniversalInterface* ui;
+		UInterface* ui;
 		CORBA::Object_var oref;
 		UniSetTypes::ObjectId shmID;
 		UniSetTypes::ObjectId myid;

@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "UniversalInterface.h"
+#include "UInterface.h"
 #include "IONotifyController.h"
 #include "Debug.h"
 #include "NCRestorer.h"

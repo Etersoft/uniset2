@@ -20,7 +20,7 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 
 #include <sys/wait.h>
 #include <sys/types.h>
@@ -29,8 +29,8 @@
 
 #include "Exceptions.h"
 #include "ORepHelpers.h"
-#include "UniversalInterface.h"
-#include "ObjectsActivator.h"
+#include "UInterface.h"
+#include "UniSetActivator.h"
 #include "Debug.h"
 #include "Configuration.h"
 
@@ -39,14 +39,14 @@ using namespace UniSetTypes;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 /*
- 	Завершение работы организовано следующим образом.
+	Завершение работы организовано следующим образом.
 	Имеется глобальный указатель gActivator (т.к. активатор в системе должен быть только один).
 	Он заказывает на себя все сигналы связанные с завершением работы.
-	
-	В качестве обработчика сигналов регистрируется ObjectsActivator::terminated( int signo ).
-	В этом обработчике происходит вызов ObjectsActivator::oaDestroy(int signo) для фактического
+
+	В качестве обработчика сигналов регистрируется UniSetActivator::terminated( int signo ).
+	В этом обработчике происходит вызов UniSetActivator::oaDestroy(int signo) для фактического
 	завершения работы и заказывается сигнал SIG_ALRM на время TERMINATE_TIMEOUT,
-	c обработчиком ObjectsActivator::finishterm в котором происходит
+	c обработчиком UniSetActivator::finishterm в котором происходит
 	"надежное" прибивание текущего процесса (raise(SIGKILL)). Это сделано на тот случай, если
 	в oaDestroy произойдет зависание.
 */
@@ -62,10 +62,10 @@ static UniSetTypes::uniset_mutex signalMutex("Activator::signalMutex");
 //static omni_condition pcondx(&pmutex);
 
 // ------------------------------------------------------------------------------------------
-static ObjectsActivator* gActivator=0;
+static UniSetActivator* gActivator=0;
 //static omni_mutex termutex;
 //static omni_condition termcond(&termutex);
-//static ThreadCreator<ObjectsActivator>* termthread=0;
+//static ThreadCreator<UniSetActivator>* termthread=0;
 static int SIGNO;
 static int MYPID;
 static const int TERMINATE_TIMEOUT = 2; //  время отведенное на завершение процесса [сек]
@@ -74,27 +74,27 @@ volatile sig_atomic_t doneterm = 0;
 
 // PassiveTimer termtmr;
 // ------------------------------------------------------------------------------------------
-ObjectsActivator::ObjectsActivator( ObjectId id ):
-ObjectsManager(id),
+UniSetActivator::UniSetActivator( ObjectId id ):
+UniSetManager(id),
 orbthr(0),
 omDestroy(false),
 sig(false)
 {
-	ObjectsActivator::init();
+	UniSetActivator::init();
 }
 // ------------------------------------------------------------------------------------------
-ObjectsActivator::ObjectsActivator():
-ObjectsManager(UniSetTypes::DefaultObjectId),
+UniSetActivator::UniSetActivator():
+UniSetManager(UniSetTypes::DefaultObjectId),
 orbthr(0),
 omDestroy(false),
 sig(false)
 {
 //	thread(false);	//	отключаем поток (раз не задан id)
-	ObjectsActivator::init();
+	UniSetActivator::init();
 }
 
 // ------------------------------------------------------------------------------------------
-void ObjectsActivator::init()
+void UniSetActivator::init()
 {
 	orb = conf->getORB();
 	CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
@@ -107,13 +107,13 @@ void ObjectsActivator::init()
 		ulog.crit() << myname << "(init): init poa failed!!!" << endl;
 
 	gActivator=this;
-	atexit( ObjectsActivator::normalexit );
-	set_terminate( ObjectsActivator::normalterminate ); // ловушка для неизвестных исключений
+	atexit( UniSetActivator::normalexit );
+	set_terminate( UniSetActivator::normalterminate ); // ловушка для неизвестных исключений
 }
 
 // ------------------------------------------------------------------------------------------
 
-ObjectsActivator::~ObjectsActivator()
+UniSetActivator::~UniSetActivator()
 {
 	if(!procterm )
 	{
@@ -123,8 +123,8 @@ ObjectsActivator::~ObjectsActivator()
 
 		procterm = 1;
 		doneterm = 1;
-		set_signals(false);	
-		gActivator=0;	
+		set_signals(false);
+		gActivator=0;
 	}
 
 	if( orbthr )
@@ -132,7 +132,7 @@ ObjectsActivator::~ObjectsActivator()
 }
 // ------------------------------------------------------------------------------------------
 
-void ObjectsActivator::oaDestroy(int signo)
+void UniSetActivator::oaDestroy(int signo)
 {
 //		waittermMutex.lock();
 		if( !omDestroy )
@@ -145,7 +145,7 @@ void ObjectsActivator::oaDestroy(int signo)
 			ulog.system() << myname << "(oaDestroy): terminate ok. " << endl;
 
 			try
-			{	
+			{
 				stop();
 			}
 			catch(...){}
@@ -175,7 +175,7 @@ void ObjectsActivator::oaDestroy(int signo)
 }
 
 // ------------------------------------------------------------------------------------------
-/*! 
+/*!
  *	Если thread=true то функция создает отдельный поток для обработки приходящих сообщений.
  * 	И передает все ресурсы этого потока orb. А также регистрирует процесс в репозитории.
  *	\note Только после этого объект становится доступен другим процессам
@@ -183,17 +183,17 @@ void ObjectsActivator::oaDestroy(int signo)
  *	Иначе все ресурсы основного потока передаются для обработки приходящих сообщений (и она не выходит)
  *
 */
-void ObjectsActivator::run(bool thread)
+void UniSetActivator::run(bool thread)
 {
 	if( ulog.is_system() )
 		ulog.system() << myname << "(run): создаю менеджер "<< endl;
 
-	ObjectsManager::initPOA(this);
+	UniSetManager::initPOA(this);
 
 	if( getId() == UniSetTypes::DefaultObjectId )
 		offThread(); // отключение потока обработки сообщений, раз не задан ObjectId
-	
-	ObjectsManager::activate(); // а там вызывается активация всех подчиненных объектов и менеджеров
+
+	UniSetManager::activate(); // а там вызывается активация всех подчиненных объектов и менеджеров
 
 	getinfo();		// заполнение информации об объектах
 	active=true;
@@ -202,17 +202,17 @@ void ObjectsActivator::run(bool thread)
 	pman->activate();
 	msleep(50);
 
-	set_signals(true);	
+	set_signals(true);
 	if( thread )
 	{
 		if( ulog.is_info() )
 			ulog.info() << myname << "(run): запускаемся с созданием отдельного потока...  "<< endl;
-		orbthr = new ThreadCreator<ObjectsActivator>(this, &ObjectsActivator::work);
+		orbthr = new ThreadCreator<UniSetActivator>(this, &UniSetActivator::work);
 		if( !orbthr->start() )
 		{
 			ulog.crit() << myname << "(run):  НЕ СМОГЛИ СОЗДАТЬ ORB-поток"<<endl;
-			throw SystemError("(ObjectsActivator::run): CREATE ORB THREAD FAILED");
-		}	
+			throw SystemError("(UniSetActivator::run): CREATE ORB THREAD FAILED");
+		}
 	}
 	else
 	{
@@ -222,17 +222,17 @@ void ObjectsActivator::run(bool thread)
 	}
 }
 // ------------------------------------------------------------------------------------------
-/*! 
+/*!
  *	Функция останавливает работу orb и завершает поток. А так же удаляет ссылку из репозитория.
  *	\note Объект становится недоступен другим процессам
 */
-void ObjectsActivator::stop()
+void UniSetActivator::stop()
 {
 //	uniset_mutex_lock l(disactivateMutex, 500);
 	if( active )
 	{
-		active=false;				
-		
+		active=false;
+
 		if( ulog.is_system() )
 			ulog.system() << myname << "(stop): disactivate...  "<< endl;
 
@@ -263,7 +263,7 @@ void ObjectsActivator::stop()
 
 // ------------------------------------------------------------------------------------------
 
-void ObjectsActivator::work()
+void UniSetActivator::work()
 {
 	if( ulog.is_system() )
 		ulog.system() << myname << "(work): запускаем orb на обработку запросов..."<< endl;
@@ -291,9 +291,9 @@ void ObjectsActivator::work()
 		if( ulog.is_crit() )
 		{
 			ulog.crit() << myname << "(work): : поймали omniORB::fatalException:" << endl;
-		ulog.crit() << myname << "(work):   file: " << fe.file() << endl;
+			ulog.crit() << myname << "(work):   file: " << fe.file() << endl;
 			ulog.crit() << myname << "(work):   line: " << fe.line() << endl;
-		ulog.crit() << myname << "(work):   mesg: " << fe.errmsg() << endl;
+			ulog.crit() << myname << "(work):   mesg: " << fe.errmsg() << endl;
 		}
     }
 	catch(...)
@@ -301,7 +301,7 @@ void ObjectsActivator::work()
 		if( ulog.is_crit() )
 			ulog.crit() << myname << "(work): catch ..." << endl;
 	}
-	
+
 	if( ulog.is_system() )
 		ulog.system() << myname << "(work): orb стоп!!!"<< endl;
 
@@ -313,12 +313,12 @@ void ObjectsActivator::work()
 	}
 	catch(...){}
 	ulog.system() << myname << "(oaDestroy): orb destroy ok."<< endl;
-*/	
+*/
 }
 // ------------------------------------------------------------------------------------------
-void ObjectsActivator::getinfo()
+void UniSetActivator::getinfo()
 {
-	for( ObjectsManagerList::const_iterator it= beginMList();
+	for( UniSetManagerList::const_iterator it= beginMList();
 			it!= endMList(); ++it )
 	{
 		MInfo mi;
@@ -337,7 +337,7 @@ void ObjectsActivator::getinfo()
 	}
 }
 // ------------------------------------------------------------------------------------------
-void ObjectsActivator::processingMessage( UniSetTypes::VoidMessage *msg )
+void UniSetActivator::processingMessage( UniSetTypes::VoidMessage *msg )
 {
 	try
 	{
@@ -352,7 +352,7 @@ void ObjectsActivator::processingMessage( UniSetTypes::VoidMessage *msg )
 
 			default:
 				break;
-		}	
+		}
 	}
 	catch(Exception& ex)
 	{
@@ -362,7 +362,7 @@ void ObjectsActivator::processingMessage( UniSetTypes::VoidMessage *msg )
 
 }
 // -------------------------------------------------------------------------
-void ObjectsActivator::sysCommand( UniSetTypes::SystemMessage *sm )
+void UniSetActivator::sysCommand( UniSetTypes::SystemMessage *sm )
 {
 	switch(sm->command)
 	{
@@ -384,22 +384,22 @@ void ObjectsActivator::sysCommand( UniSetTypes::SystemMessage *sm )
 // -------------------------------------------------------------------------
 
 /*
-void ObjectsActivator::sig_child(int signo)
+void UniSetActivator::sig_child(int signo)
 {
 	ulog.system() << gActivator->getName() << "(sig_child): дочерний процесс закончил работу...(sig=" << signo << ")" << endl;
 	while( waitpid(-1, 0, WNOHANG) > 0);
 }
 */
 // ------------------------------------------------------------------------------------------
-void ObjectsActivator::set_signals(bool ask)
+void UniSetActivator::set_signals(bool ask)
 {
-	
+
 	struct sigaction act, oact;
 	sigemptyset(&act.sa_mask);
 	sigemptyset(&oact.sa_mask);
 
 	// добавляем сигналы, которые будут игнорироваться
-	// при обработке сигнала 
+	// при обработке сигнала
 	sigaddset(&act.sa_mask, SIGINT);
 	sigaddset(&act.sa_mask, SIGTERM);
 	sigaddset(&act.sa_mask, SIGABRT );
@@ -415,7 +415,7 @@ void ObjectsActivator::set_signals(bool ask)
 		act.sa_handler = terminated;
 	else
 		act.sa_handler = SIG_DFL;
-		
+
 	sigaction(SIGINT, &act, &oact);
 	sigaction(SIGTERM, &act, &oact);
 	sigaction(SIGABRT, &act, &oact);
@@ -425,7 +425,7 @@ void ObjectsActivator::set_signals(bool ask)
 }
 
 // ------------------------------------------------------------------------------------------
-void ObjectsActivator::finishterm( int signo )
+void UniSetActivator::finishterm( int signo )
 {
 	if( !doneterm )
 	{
@@ -435,14 +435,14 @@ void ObjectsActivator::finishterm( int signo )
 
 		if( gActivator )
 			gActivator->set_signals(false);
-		
+
 		sigset(SIGALRM, SIG_DFL);
 		doneterm = 1;
 		raise(SIGKILL);
 	}
 }
 // ------------------------------------------------------------------------------------------
-void ObjectsActivator::terminated( int signo )
+void UniSetActivator::terminated( int signo )
 {
 	if( !signo || doneterm || !gActivator || procterm )
 		return;
@@ -453,7 +453,7 @@ void ObjectsActivator::terminated( int signo )
 		uniset_mutex_lock l(signalMutex, TERMINATE_TIMEOUT*1000);
 		if( !procterm )
 		{
-			procterm = 1;			
+			procterm = 1;
 			SIGNO = signo;
 			MYPID = getpid();
 			if( ulog.is_system() && gActivator )
@@ -463,9 +463,9 @@ void ObjectsActivator::terminated( int signo )
 						<< TERMINATE_TIMEOUT << " сек " << endl << flush;
 			}
 			sighold(SIGALRM);
-			sigset(SIGALRM, ObjectsActivator::finishterm);
+			sigset(SIGALRM, UniSetActivator::finishterm);
 			alarm(TERMINATE_TIMEOUT);
-			sigrelse(SIGALRM);				
+			sigrelse(SIGALRM);
 			if( gActivator )
 				gActivator->oaDestroy(SIGNO); // gActivator->term(SIGNO);
 
@@ -473,7 +473,7 @@ void ObjectsActivator::terminated( int signo )
 			if( ulog.is_system() )
 				ulog.system() << gActivator->getName() << "(terminated): завершаемся..."<< endl<< flush;
 			if( gActivator )
-				ObjectsActivator::set_signals(false);
+				UniSetActivator::set_signals(false);
 
 			sigset(SIGALRM, SIG_DFL);
 			raise(SIGNO);
@@ -482,27 +482,27 @@ void ObjectsActivator::terminated( int signo )
 }
 // ------------------------------------------------------------------------------------------
 
-void ObjectsActivator::normalexit()
+void UniSetActivator::normalexit()
 {
 	if( gActivator && ulog.is_system() )
 		ulog.system() << gActivator->getName() << "(default exit): good bye."<< endl << flush;
 }
 
-void ObjectsActivator::normalterminate()
+void UniSetActivator::normalterminate()
 {
 	if( gActivator )
 		ulog.crit() << gActivator->getName() << "(default exception terminate): Никто не выловил исключение!!! Good bye."<< endl<< flush;
 //	abort();
 }
 // ------------------------------------------------------------------------------------------
-void ObjectsActivator::term( int signo )
+void UniSetActivator::term( int signo )
 {
 	if( ulog.is_system() )
 		ulog.system() << myname << "(term): TERM" << endl;
 
 	if( doneterm )
 		return;
-			
+
 	if( signo )
 		sig = true;
 
@@ -511,7 +511,7 @@ void ObjectsActivator::term( int signo )
 		if( ulog.is_system() )
 			ulog.system() << myname << "(term): вызываем sigterm()" << endl;
 		sigterm(signo);
-	
+
 		if( ulog.is_system() )
 			ulog.system() << myname << "(term): sigterm() ok." << endl;
 	}
@@ -525,16 +525,16 @@ void ObjectsActivator::term( int signo )
 		ulog.system() << myname << "(term): END TERM" << endl;
 }
 // ------------------------------------------------------------------------------------------
-void ObjectsActivator::waitDestroy()
+void UniSetActivator::waitDestroy()
 {
 	for(;;)
 	{
 		if( doneterm || !gActivator )
 			break;
-			
+
 		msleep(50);
 	}
-	
+
 	gActivator = 0;
 }
 // ------------------------------------------------------------------------------------------

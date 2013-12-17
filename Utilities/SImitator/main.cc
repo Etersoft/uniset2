@@ -1,6 +1,6 @@
 #include <iostream>
 #include "Exceptions.h"
-#include "UniversalInterface.h"
+#include "UInterface.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -37,7 +37,7 @@ int main( int argc, char **argv )
 		// -------------------------------------
 
 		uniset_init(argc, argv, "configure.xml" );
-		UniversalInterface ui;
+		UInterface ui;
 		
 		string sid(conf->getArgParam("--sid"));
 		if( sid.empty() )

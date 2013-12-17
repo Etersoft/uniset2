@@ -1,6 +1,6 @@
 #include <string>
 #include "Debug.h"
-#include "ObjectsActivator.h"
+#include "UniSetActivator.h"
 #include "SharedMemory.h"
 #include "Extensions.h"
 #include "TestProc.h"
@@ -36,7 +36,7 @@ int main(int argc, const char **argv)
 		TestProc tp(conf->getObjectID("TestProc1"));
 		tp.init_dlog(dlog);
 
-		ObjectsActivator act;
+		UniSetActivator act;
 
 		act.addObject(static_cast<class UniSetObject*>(shm));
 		act.addObject(static_cast<class UniSetObject*>(&tp));

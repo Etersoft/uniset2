@@ -355,6 +355,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - remove deprecated interfaces (Storages,CycleStorage,TableStorage,TextIndex,..)
 - rename unideb --> ulog
 - DebugStream refactoring (add new function)
+- UniversalInterface --> UInterface
+- ObjectsManager --> UniSetManager
+- ObjectsActitvator --> UniSetActivator
+
 
 * Tue Dec 10 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt3
 - add RRDServer

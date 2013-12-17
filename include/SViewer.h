@@ -28,7 +28,7 @@
 #include <string>
 #include "IOController_i.hh"
 #include "ObjectRepository.h"
-#include "UniversalInterface.h"
+#include "UInterface.h"
 #include "PassiveTimer.h"
 //--------------------------------------------------------------------------------
 class SViewer 
@@ -57,8 +57,8 @@ class SViewer
 
 	private:
 		ObjectRepository rep;
-		UniversalInterface::CacheOfResolve cache;
-		UniversalInterface ui;
+		UInterface::CacheOfResolve cache;
+		UInterface ui;
 		bool isShort;
 
 };

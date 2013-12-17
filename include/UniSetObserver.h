@@ -18,40 +18,47 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \brief Базовый класс для реализации шаблона "наблюдатель" 
  * \author Pavel Vainerman
- */
+*/
+// -------------------------------------------------------------------------- 
+#ifndef ProxyManager_H_
+#define ProxyManager_H_
 //---------------------------------------------------------------------------
-#ifndef UniSetObserver_H_
-#define UniSetObserver_H_
-//---------------------------------------------------------------------------
-#include <list>
+#include <map>
 #include "UniSetObject.h"
-#include "MessageType.h"
-// --------------------------------------------------------------------------
-class UniSetSubject
-{
+
+//----------------------------------------------------------------------------
+class PassiveObject;
+//----------------------------------------------------------------------------
+
+/*! \class ProxyManager
+ *	Менеджер пассивных объектов, который выступает вместо них во всех внешних связях....
+*/ 
+class ProxyManager: 
+	public UniSetObject
+{   
+
 	public:
-		UniSetSubject(UniSetTypes::ObjectId id);
-		~UniSetSubject();
-		
-		virtual void attach( UniSetObject* o );
-		virtual void detach( UniSetObject* o );
-		
-		virtual void attach( UniSetObject* o, int MessageType );
-		virtual void detach( UniSetObject* o, int MessageType );
+		ProxyManager( UniSetTypes::ObjectId id );
+		~ProxyManager();
+
+		void attachObject( PassiveObject* po, UniSetTypes::ObjectId id );
+		void detachObject( UniSetTypes::ObjectId id );
+	
+		UInterface* uin;
 
 	protected:
-		UniSetSubject();
-		virtual void notify(int notify, int data, 
-						UniSetTypes::Message::Priority priority=UniSetTypes::Message::Low);
-		virtual void notify( UniSetTypes::TransportMessage& msg );
+		ProxyManager();	
+		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
+		virtual void allMessage( UniSetTypes::VoidMessage* msg );
+
+		virtual bool activateObject();
+		virtual bool disactivateObject();
 
 	private:
-		typedef	std::list<UniSetObject*> ObserverList;
-		ObserverList lst;
-		UniSetTypes::ObjectId id;
-	
+		typedef std::map<UniSetTypes::ObjectId, PassiveObject*> PObjectMap;
+		PObjectMap omap;
 };
-//---------------------------------------------------------------------------
-#endif
+//----------------------------------------------------------------------------------------
+#endif // ProxyManager
+//----------------------------------------------------------------------------------------
