@@ -53,7 +53,9 @@ namespace UniversalIO
 // -----------------------------------------------------------------------------------------
 /*!
  * \class UInterface
- * ... а здесь идет кратенькое описание... (коротенько минут на 40!...)
+ * Универсальный интерфейс для взаимодействия между объектами (процессами).
+ * По сути является "фасадом" к реализации механизма взамиодействия
+  * в libuniset (основанном на CORBA) Хотя до конца скрыть CORBA-у пока не удалось.
  * Для увеличения производительности в функции встроен cache обращений...
  *
  * См. также \ref UniversalIOControllerPage
@@ -66,38 +68,50 @@ class UInterface
 		UInterface( UniSetTypes::Configuration* uconf=UniSetTypes::conf );
 		~UInterface();
 
-		inline UniSetTypes::ObjectIndex* getObjectIndex() { return oind; }
-		inline UniSetTypes::Configuration* getConf() { return uconf; }
+		// ---------------------------------------------------------------
+		// Работа с датчиками
 
-		// -------- Функции работы с группой датчиков -----------
+		//! Получение состояния датчика
+		long getValue ( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )throw(IO_THROW_EXCEPTIONS);
+		long getValue ( UniSetTypes::ObjectId id );
+		long getRawValue( const IOController_i::SensorInfo& si );
 
-		// Группа должна принадлежать одному процессу!
+		//! Выставление состояния датчика
+		void setValue ( UniSetTypes::ObjectId id, long value, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
+		void setValue ( UniSetTypes::ObjectId id, long value );
 
+		// С использованием SensorInfo
+		void setValue ( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
+		void fastSetValue( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
+
+		// Работа с группой датчиков
 		//! Получение состояния для списка указанных датчиков
 		IOController_i::SensorInfoSeq_var getSensorSeq( UniSetTypes::IDList& lst );
 
-		// Изменения состояния списка входов/выходов
-		// Возвращает список не найденных идентификаторов
+		/*! Изменения состояния списка входов/выходов
+			\return Возвращает список не найденных идентификаторов */
 		UniSetTypes::IDSeq_var setOutputSeq( const IOController_i::OutSeq& lst, UniSetTypes::ObjectId sup_id );
+
+		// ---------------------------------------------------------------
+		// Заказ датчиков
+
+		//! Универсальный заказ информации об изменении датчика
+		void askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd,
+							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
+
+		void askRemoteSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node,
+							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId )throw(IO_THROW_EXCEPTIONS);
 
 		//! Заказ по списку
 		UniSetTypes::IDSeq_var askSensorsSeq( UniSetTypes::IDList& lst, UniversalIO::UIOCommand cmd,
 												UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 		// ------------------------------------------------------
-		//! Получение состояния датчика
-		long getValue ( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )throw(IO_THROW_EXCEPTIONS);
-		long getValue ( UniSetTypes::ObjectId id );
-
-		//! Выставление состояния датчика
-		void setValue ( UniSetTypes::ObjectId id, long value, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
-		void setValue ( UniSetTypes::ObjectId id, long value );
-		void setValue ( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
-		void fastSetValue( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
 
 		// установка неопределённого состояния
 		void setUndefinedState( IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId supplier );
 
-		CORBA::Long getRawValue( const IOController_i::SensorInfo& si );
+		// ---------------------------------------------------------------
+		// Калибровка... пороги...
 
 		//! калибровка
 		void calibrate(const IOController_i::SensorInfo& si,
@@ -118,25 +132,30 @@ class UInterface
 								 CORBA::Long lowLimit=0, CORBA::Long hiLimit=0, CORBA::Long sensibility=0,
 								 UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
-		//! Универсальный заказ информации об изменении датчика
-		void askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd,
-							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
-		void askRemoteSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node,
-							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId )throw(IO_THROW_EXCEPTIONS);
+		// ---------------------------------------------------------------
+		// Вспомогательные функции
 
 		UniversalIO::IOType getIOType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
 		UniversalIO::IOType getIOType(UniSetTypes::ObjectId id);
 
+		// read from xml (only for xml!) т.е. без удалённого запроса
+		UniversalIO::IOType getConfIOType( UniSetTypes::ObjectId id );
+
+		// Получение типа объекта..
 		UniSetTypes::ObjectType getType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
 		UniSetTypes::ObjectType getType(UniSetTypes::ObjectId id);
 
-		// read from xml (only for xml!)
-		UniversalIO::IOType getConfIOType( UniSetTypes::ObjectId id );
 
+		//! Время последнего изменения датчика
 		IOController_i::ShortIOInfo getChangedTime( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
+
+		//! Получить список датчиков
 		IOController_i::ShortMapSeq* getSensors( UniSetTypes::ObjectId id,
 													UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode() );
+
+		// ---------------------------------------------------------------
+		// Работа с репозиторием
 
 //		/*! регистрация объекта в репозитории */
 		void registered(UniSetTypes::ObjectId id, const UniSetTypes::ObjectPtr oRef, bool force=false)throw(UniSetTypes::ORepFailed);
@@ -162,8 +181,18 @@ class UInterface
 			throw(UniSetTypes::ResolveNameError, UniSetTypes::TimeOut);
 
 
+		// Проверка доступности объекта или датчика
 		bool isExist( UniSetTypes::ObjectId id );
 		bool isExist( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
+
+		bool waitReady( UniSetTypes::ObjectId id, int msec, int pause=5000,
+						UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() ); 	// used exist
+
+		bool waitWorking( UniSetTypes::ObjectId id, int msec, int pause=3000,
+							UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() ); 	// used getValue
+
+		// ---------------------------------------------------------------
+		// Работа с ID, Name
 
 		/*! получение идентификатора объекта по имени */
 		inline UniSetTypes::ObjectId getIdByName(const char* name)
@@ -201,18 +230,27 @@ class UInterface
 		    return oind->getTextName(id);
 		}
 
+
+		// ---------------------------------------------------------------
+		// Получение указателей на вспомогательные классы.
+		inline UniSetTypes::ObjectIndex* getObjectIndex() { return oind; }
+		inline UniSetTypes::Configuration* getConf() { return uconf; }
+
+		// ---------------------------------------------------------------
+		// Работа со временем
 		static std::string timeToString(time_t tm=time(0), const std::string brk=":"); /*!< Преобразование времени в строку HH:MM:SS */
 		static std::string dateToString(time_t tm=time(0), const std::string brk="/"); /*!< Преобразование даты в строку DD/MM/YYYY */
+
+
+		// ---------------------------------------------------------------
+		// Посылка сообщений
 
 		/*! посылка сообщения msg объекту name на узел node */
 		void send( UniSetTypes::ObjectId name, UniSetTypes::TransportMessage& msg, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
 		void send( UniSetTypes::ObjectId name, UniSetTypes::TransportMessage& msg);
 
-		bool waitReady( UniSetTypes::ObjectId id, int msec, int pause=5000,
-						UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() ); 	// used exist
-
-		bool waitWorking( UniSetTypes::ObjectId id, int msec, int pause=3000,
-							UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() ); 	// used getValue
+		// ---------------------------------------------------------------
+		// Вспомогательный класс для кэширования ссылок на удалённые объекты
 
 		inline void setCacheMaxSize( unsigned int newsize)
 		{

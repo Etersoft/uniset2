@@ -1338,7 +1338,7 @@ void UInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTypes::Obj
 
 }
 // --------------------------------------------------------------------------------------------
-CORBA::Long UInterface::getRawValue( const IOController_i::SensorInfo& si )
+long UInterface::getRawValue( const IOController_i::SensorInfo& si )
 {
 	if ( si.id == DefaultObjectId )
 		throw ORepFailed("UI(getRawValue): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
