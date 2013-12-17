@@ -25,7 +25,7 @@ int main(int argc, const char **argv)
 		conf->initDebug(dlog,"dlog");
 		string logfilename = conf->getArgParam("--logfile", "smemory.log");
 		string logname( conf->getLogDir() + logfilename );
-		unideb.logFile( logname );
+		ulog.logFile( logname );
 		dlog.logFile( logname );
 
 		SharedMemory* shm = SharedMemory::init_smemory(argc, argv);
@@ -44,19 +44,19 @@ int main(int argc, const char **argv)
 	}
 	catch( SystemError& err )
 	{
-		unideb[Debug::CRIT] << "(smemory): " << err << endl;
+		ulog.crit() << "(smemory): " << err << endl;
 	}
 	catch( Exception& ex )
 	{
-		unideb[Debug::CRIT] << "(smemory): " << ex << endl;
+		ulog.crit() << "(smemory): " << ex << endl;
 	}
 	catch( std::exception& e )
 	{
-		unideb[Debug::CRIT] << "(smemory): " << e.what() << endl;
+		ulog.crit() << "(smemory): " << e.what() << endl;
 	}
 	catch(...)
 	{
-		unideb[Debug::CRIT] << "(smemory): catch(...)" << endl;
+		ulog.crit() << "(smemory): catch(...)" << endl;
 	}
 	
 	return 1;

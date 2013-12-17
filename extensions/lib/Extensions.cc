@@ -24,7 +24,7 @@ namespace UniSetExtensions
         {
             ostringstream err;
             err << ": Unknown ID for '" << sname << "'" << endl;
-            dlog[Debug::CRIT] << err.str() << endl;
+            dlog.crit() << err.str() << endl;
             throw SystemError(err.str());
         }
 	
@@ -53,11 +53,11 @@ namespace UniSetExtensions
 		if( heartBeatTime <= 0 )
 		{
 			heartBeatTime = 0;
-			dlog[Debug::WARN] << "(getHeartBeatTime): механизм 'HEARTBEAT' ОТКЛЮЧЁН!" << endl;
+			dlog.warn() << "(getHeartBeatTime): механизм 'HEARTBEAT' ОТКЛЮЧЁН!" << endl;
 		}
 
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << "(getHeartBeatTime): heartbeat time = " << heartBeatTime << endl;
+		if( dlog.is_info() )
+			dlog.info() << "(getHeartBeatTime): heartbeat time = " << heartBeatTime << endl;
 
 		return heartBeatTime;
 	}
@@ -114,7 +114,7 @@ namespace UniSetExtensions
 		{
 			ostringstream err;
 			err << "(buildCalibrationDiagram): НЕ НАЙДЕН корневой узел для калибровочных диаграмм";
-			dlog[Debug::CRIT] << err.str() << endl;
+			dlog.crit() << err.str() << endl;
 			throw SystemError( err.str());
 		}
 
@@ -123,7 +123,7 @@ namespace UniSetExtensions
 		{
 			ostringstream err;
 			err << "(buildCalibrationDiagram): НЕ НАЙДЕНА калибровочная диаграмма '" << dname << "'";
-			dlog[Debug::CRIT] << err.str() << endl;
+			dlog.crit() << err.str() << endl;
 			throw SystemError( err.str());
 		}
 	

@@ -137,7 +137,7 @@ void ObjectsManager::initPOA( ObjectsManager* rmngr )
 		poa = rmngr->getPOA();
 
 	if( CORBA::is_nil(poa) )
-		unideb[Debug::CRIT] << myname << "(initPOA): failed init poa " << endl;
+		ulog.crit() << myname << "(initPOA): failed init poa " << endl;
 
 	// Инициализация самого менеджера и его подобъектов
 	UniSetObject::init(rmngr);
@@ -152,8 +152,8 @@ bool ObjectsManager::addObject( UniSetObject *obj )
 		ObjectsList::iterator li=find(olist.begin(),olist.end(), obj);
 		if( li==olist.end() )
 		{
-			if( unideb.debugging(Debug::INFO) )
-				unideb[Debug::INFO] << myname << "(activator): добавляем объект "<< obj->getName()<< endl;
+			if( ulog.is_info() )
+				ulog.info() << myname << "(activator): добавляем объект "<< obj->getName()<< endl;
 		 	olist.push_back(obj);
 		}
 	} // unlock	
@@ -168,28 +168,28 @@ bool ObjectsManager::removeObject(UniSetObject* obj)
 		ObjectsList::iterator li=find(olist.begin(),olist.end(), obj);
 		if( li!=olist.end() )
 		{
-			if( unideb.debugging(Debug::INFO) )
-				unideb[Debug::INFO] << myname << "(activator): удаляем объект "<< obj->getName()<< endl;				
+			if( ulog.is_info() )
+				ulog.info() << myname << "(activator): удаляем объект "<< obj->getName()<< endl;
 			try
 			{
 				obj->disactivate();
 			}
 			catch(Exception& ex)
 			{
-				unideb[Debug::WARN] << myname << "(removeObject): " << ex << endl;
+				ulog.warn() << myname << "(removeObject): " << ex << endl;
 			}
 			catch(CORBA::SystemException& ex)
 		    {
-				unideb[Debug::WARN] << myname << "(removeObject): поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
+				ulog.warn() << myname << "(removeObject): поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
 	    	}
 	    	catch(CORBA::Exception& ex)
 		    {
-				unideb[Debug::WARN] << myname << "(removeObject): CORBA::Exception" << endl;
+				ulog.warn() << myname << "(removeObject): CORBA::Exception" << endl;
     		}
 			catch( omniORB::fatalException& fe ) 
 			{
-				unideb[Debug::CRIT] << myname << "(managers): Caught omniORB::fatalException:" << endl;
-			    unideb[Debug::CRIT] << myname << "(managers): file: " << fe.file()
+				ulog.crit() << myname << "(managers): Caught omniORB::fatalException:" << endl;
+			    ulog.crit() << myname << "(managers): file: " << fe.file()
 					<< " line: " << fe.line()
 			    	<< " mesg: " << fe.errmsg() << endl;
 			}			
@@ -208,8 +208,8 @@ bool ObjectsManager::removeObject(UniSetObject* obj)
 */
 void ObjectsManager::managers(OManagerCommand cmd)
 {
-	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname <<"(managers): mlist.size="
+	if( ulog.is_info() )
+		ulog.info() << myname <<"(managers): mlist.size="
 						<< mlist.size() << " cmd=" << cmd  << endl;
 	{	//lock
 		uniset_rwmutex_rlock lock(mlistMutex);
@@ -241,28 +241,28 @@ void ObjectsManager::managers(OManagerCommand cmd)
 			}
 			catch( Exception& ex )
 			{
-				if( unideb.debugging(Debug::CRIT) )
+				if( ulog.is_crit() )
 				{
-					unideb[Debug::CRIT] << myname << "(managers): " << ex << endl;
-					unideb[Debug::CRIT] << myname << "(managers): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
+					ulog.crit() << myname << "(managers): " << ex << endl;
+					ulog.crit() << myname << "(managers): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
 				}
 			}
 			catch(CORBA::SystemException& ex)
 		    {
-				if( unideb.debugging(Debug::CRIT) )
-					unideb[Debug::CRIT] << myname << "(managers): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+				if( ulog.is_crit() )
+					ulog.crit() << myname << "(managers): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
 		    }
 			catch( CORBA::Exception& ex )
 			{
-				if( unideb.debugging(Debug::CRIT) )
-				unideb[Debug::CRIT] << myname << "(managers): Caught CORBA::Exception. " << ex._name() << endl;
+				if( ulog.is_crit() )
+				ulog.crit() << myname << "(managers): Caught CORBA::Exception. " << ex._name() << endl;
 			}
 			catch( omniORB::fatalException& fe ) 
 			{
-				if( unideb.debugging(Debug::CRIT) )
+				if( ulog.is_crit() )
 				{
-					unideb[Debug::CRIT] << myname << "(managers): Caught omniORB::fatalException:" << endl;
-				unideb[Debug::CRIT] << myname << "(managers): file: " << fe.file()
+					ulog.crit() << myname << "(managers): Caught omniORB::fatalException:" << endl;
+					ulog.crit() << myname << "(managers): file: " << fe.file()
 						<< " line: " << fe.line()
 					<< " mesg: " << fe.errmsg() << endl;
 				}
@@ -276,8 +276,8 @@ void ObjectsManager::managers(OManagerCommand cmd)
 */
 void ObjectsManager::objects(OManagerCommand cmd)
 {
-	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname <<"(objects): olist.size="
+	if( ulog.is_info() )
+		ulog.info() << myname <<"(objects): olist.size="
 						<< olist.size() << " cmd=" << cmd  << endl;
 	{	//lock
 		uniset_rwmutex_rlock lock(olistMutex);
@@ -310,30 +310,30 @@ void ObjectsManager::objects(OManagerCommand cmd)
 			}
 			catch( Exception& ex )
 			{
-				if( unideb.debugging(Debug::CRIT) )
+				if( ulog.is_crit() )
 				{
-					unideb[Debug::CRIT] << myname << "(objects): " << ex << endl;
-					unideb[Debug::CRIT] << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
+					ulog.crit() << myname << "(objects): " << ex << endl;
+					ulog.crit() << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
 				}
 			}
 			catch(CORBA::SystemException& ex)
 		    {
-				if( unideb.debugging(Debug::CRIT) )
-					unideb[Debug::CRIT] << myname << "(objects): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+				if( ulog.is_crit() )
+					ulog.crit() << myname << "(objects): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
 		    }
 			catch( CORBA::Exception& ex )
 			{
-				if( unideb.debugging(Debug::CRIT) )
-				unideb[Debug::CRIT] << myname << "(objects): Caught CORBA::Exception. "
-					<< ex._name()
-					<< " (" << (*li)->getName() << ")" << endl;
+				if( ulog.is_crit() )
+				ulog.crit() << myname << "(objects): Caught CORBA::Exception. "
+			    		<< ex._name()
+			    		<< " (" << (*li)->getName() << ")" << endl;
 			}
 			catch( omniORB::fatalException& fe ) 
 			{
-				if( unideb.debugging(Debug::CRIT) )
+				if( ulog.is_crit() )
 				{
-					unideb[Debug::CRIT] << myname << "(objects): Caught omniORB::fatalException:" << endl;
-				unideb[Debug::CRIT] << myname << "(objects): file: " << fe.file()
+					ulog.crit() << myname << "(objects): Caught omniORB::fatalException:" << endl;
+				ulog.crit() << myname << "(objects): file: " << fe.file()
 						<< " line: " << fe.line()
 					<< " mesg: " << fe.errmsg() << endl;
 				}
@@ -348,8 +348,8 @@ void ObjectsManager::objects(OManagerCommand cmd)
 */
 bool ObjectsManager::activateObject()
 {
-	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname << "(activateObjects):  активизирую объекты"<< endl;
+	if( ulog.is_info() )
+		ulog.info() << myname << "(activateObjects):  активизирую объекты"<< endl;
 	UniSetObject::activateObject();
 	managers(activ);
 	objects(activ);
@@ -362,8 +362,8 @@ bool ObjectsManager::activateObject()
 */
 bool ObjectsManager::disactivateObject()
 {
-	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname << "(disactivateObjects):  деактивизирую объекты"<< endl;
+	if( ulog.is_info() )
+		ulog.info() << myname << "(disactivateObjects):  деактивизирую объекты"<< endl;
 	// именно в такой последовательности!
 	objects(deactiv);
 	managers(deactiv);
@@ -372,7 +372,7 @@ bool ObjectsManager::disactivateObject()
 // ------------------------------------------------------------------------------------------
 void ObjectsManager::sigterm( int signo )
 {
-//	unideb[Debug::INFO] << "ObjectsActivator: default processing signo="<< signo << endl;
+//	ulog.info() << "ObjectsActivator: default processing signo="<< signo << endl;
 	sig=signo;
 	objects(term);
 	managers(term);
@@ -409,11 +409,11 @@ bool ObjectsManager::addManager( ObjectsManager *child )
 		if(it == mlist.end() )
 		{
 		 	mlist.push_back( child );
-			if( unideb.debugging(Debug::INFO) )
-				unideb[Debug::INFO] << myname << ": добавляем менеджер "<< child->getName()<< endl;
+			if( ulog.is_info() )
+				ulog.info() << myname << ": добавляем менеджер "<< child->getName()<< endl;
 		}
-		else if( unideb.debugging(Debug::WARN) )
-			unideb[Debug::WARN] << myname << ": попытка повторного добавления объекта "<< child->getName() << endl;
+		else if( ulog.is_warn() )
+			ulog.warn() << myname << ": попытка повторного добавления объекта "<< child->getName() << endl;
 	} // unlock	
 	
 	return true;
@@ -505,11 +505,11 @@ int ObjectsManager::getObjectsInfo( ObjectsManager* mngr, SimpleInfoSeq* seq,
 		}
 		catch(CORBA::Exception& ex)
 		{
-			unideb[Debug::WARN] << myname << "(getObjectsInfo): CORBA::Exception" << endl;
+			ulog.warn() << myname << "(getObjectsInfo): CORBA::Exception" << endl;
 	    }
 		catch(...)
 		{
-			unideb[Debug::WARN] << myname << "(getObjectsInfo): не смог получить у объекта "
+			ulog.warn() << myname << "(getObjectsInfo): не смог получить у объекта "
 					<< conf->oind->getNameById( (*it)->getId() ) << " информацию" << endl;
 		}	
 	}

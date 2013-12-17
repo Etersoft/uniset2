@@ -448,7 +448,7 @@ int omap()
 	}
 	catch(Exception& ex)
 	{
-		unideb[Debug::CRIT] << " configuration init  FAILED!!! \n";
+		ulog.crit() << " configuration init  FAILED!!! \n";
 		return 1;
 	}
 	return 0;

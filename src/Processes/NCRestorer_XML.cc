@@ -82,22 +82,22 @@ void NCRestorer_XML::init( const std::string& fname )
 	}
 	catch(UniSetTypes::NameNotFound& ex)
 	{
-		unideb[Debug::WARN] << "(NCRestorer_XML): файл " << fname << " не найден, создаём новый...\n";
+		ulog.warn() << "(NCRestorer_XML): файл " << fname << " не найден, создаём новый...\n";
 	}
 }
 // ------------------------------------------------------------------------------------------
 void NCRestorer_XML::dump(IONotifyController* ic, SInfo& inf,
 					const IONotifyController::ConsumerList& lst)
 {
-	if( unideb.debugging(Debug::WARN) )
-		unideb[Debug::WARN] << "NCRestorer_XML::dump NOT SUPPORT!!!!" << endl;
+	if( ulog.is_warn() )
+		ulog.warn() << "NCRestorer_XML::dump NOT SUPPORT!!!!" << endl;
 }
 // ------------------------------------------------------------------------------------------
 void NCRestorer_XML::dumpThreshold(IONotifyController* ic, SInfo& inf,
 					const IONotifyController::ThresholdExtList& lst)
 {
-	if( unideb.debugging(Debug::WARN) )
-		unideb[Debug::WARN] << "NCRestorer_XML::dumpThreshold NOT SUPPORT!!!!" << endl;
+	if( ulog.is_warn() )
+		ulog.warn() << "NCRestorer_XML::dumpThreshold NOT SUPPORT!!!!" << endl;
 }
 // ------------------------------------------------------------------------------------------
 void NCRestorer_XML::read_list( UniXML& xml, xmlNode* node, IONotifyController* ic )
@@ -115,7 +115,7 @@ void NCRestorer_XML::read_list( UniXML& xml, xmlNode* node, IONotifyController* 
 
 		if( !getSensorInfo(xml,it,inf) )
 		{
-			unideb[Debug::WARN] << ic->getName() << "(read_list): не смог получить информацию по датчику " << endl;
+			ulog.warn() << ic->getName() << "(read_list): не смог получить информацию по датчику " << endl;
 			continue;
 		}
 
@@ -139,7 +139,7 @@ void NCRestorer_XML::read_list( UniXML& xml, xmlNode* node, IONotifyController* 
 				}
 				catch(Exception& ex)
 				{
-					unideb[Debug::WARN] << "(read_list): " << ex << endl;
+					ulog.warn() << "(read_list): " << ex << endl;
 				}
 			}
 			break;
@@ -211,8 +211,8 @@ bool NCRestorer_XML::getBaseInfo( UniXML& xml, xmlNode* it, IOController_i::Sens
 	string sname( xml.getProp(it,"name"));
 	if( sname.empty() )
 	{
-		if( unideb.debugging(Debug::WARN) )
-			unideb[Debug::WARN] << "(getBaseInfo): не указано имя датчика... пропускаем..." << endl;
+		if( ulog.is_warn() )
+			ulog.warn() << "(getBaseInfo): не указано имя датчика... пропускаем..." << endl;
 		return false;
 	}
 
@@ -227,8 +227,8 @@ bool NCRestorer_XML::getBaseInfo( UniXML& xml, xmlNode* it, IOController_i::Sens
 
 	if( sid == UniSetTypes::DefaultObjectId )
 	{
-		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << "(getBaseInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР датчика --> " << sname << endl;
+		if( ulog.is_crit() )
+			ulog.crit() << "(getBaseInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР датчика --> " << sname << endl;
 		return false;
 	}
 
@@ -239,8 +239,8 @@ bool NCRestorer_XML::getBaseInfo( UniXML& xml, xmlNode* it, IOController_i::Sens
 
 	if( snode == UniSetTypes::DefaultObjectId )
 	{
-		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << "(getBaseInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла --> " << snodename << endl;
+		if( ulog.is_crit() )
+			ulog.crit() << "(getBaseInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла --> " << snodename << endl;
 		return false;
 	}
 
@@ -267,9 +267,9 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
 	else
 	{
 		inf.priority = Message::Medium;
-		if( unideb.debugging(Debug::INFO) )
+		if( ulog.is_info() )
 		{
-			unideb[Debug::INFO] << "(NCRestorer_XML:getSensorInfo): не указан приоритет для "
+			ulog.info() << "(NCRestorer_XML:getSensorInfo): не указан приоритет для "
 				<< xml.getProp(it,"name") << endl;
 		}
 	}
@@ -277,7 +277,7 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
 	inf.type = UniSetTypes::getIOType(xml.getProp(it,"iotype"));
 	if( inf.type == UniversalIO::UnknownIOType )
 	{
-		unideb[Debug::CRIT] << "(NCRestorer_XML:getSensorInfo): unknown iotype=" << xml.getProp(it,"iotype")
+		ulog.crit() << "(NCRestorer_XML:getSensorInfo): unknown iotype=" << xml.getProp(it,"iotype")
 			<< " for  " << xml.getProp(it,"name") << endl;
 		return false;
 	}
@@ -314,8 +314,8 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
 		inf.d_si.id = conf->getSensorID(d_txt);
 		if( inf.d_si.id == UniSetTypes::DefaultObjectId )
 		{
-			if( unideb.debugging(Debug::CRIT) )
-				unideb[Debug::CRIT] << "(NCRestorer_XML:getSensorInfo): sensor='"
+			if( ulog.is_crit() )
+				ulog.crit() << "(NCRestorer_XML:getSensorInfo): sensor='"
 					<< xml.getProp(it,"name") << "' err: "
 					<< " Unknown SensorID for depend='"  << d_txt
 					<< endl;
@@ -346,14 +346,14 @@ void NCRestorer_XML::read_thresholds(UniXML& xml, xmlNode* node, IONotifyControl
 		NCRestorer_XML::SInfo inf;
 		if( !getSensorInfo(xml,it.getCurrent(),inf) )
 		{
-			unideb[Debug::WARN] << ic->getName()
+			ulog.warn() << ic->getName()
 				<< "(read_thresholds): не смог получить информацию по датчику" << endl;
 			continue;
 		}
 
-		if( unideb.debugging(Debug::INFO) )
+		if( ulog.is_info() )
 		{
-			unideb[Debug::INFO] << ic->getName() << "(read_thresholds): "
+			ulog.info() << ic->getName() << "(read_thresholds): "
 				<< it.getProp("name") << endl;
 			// conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
 		}
@@ -368,16 +368,16 @@ void NCRestorer_XML::read_thresholds(UniXML& xml, xmlNode* node, IONotifyControl
 			IONotifyController::ThresholdInfoExt ti(0,0,0,0);
 			if( !getThresholdInfo(xml,tit,ti) )
 			{
-				unideb[Debug::WARN] << ic->getName()
+				ulog.warn() << ic->getName()
 							<< "(read_thresholds): не смог получить информацию о пороге"
 							<< " для датчика "
 							<< conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
 				continue;
 			}
 
-			if( unideb.debugging(Debug::INFO) )
+			if( ulog.is_info() )
 			{
-				unideb[Debug::INFO] << "(read_thresholds): \tthreshold low="
+				ulog.info() << "(read_thresholds): \tthreshold low="
 							<< ti.lowlimit << " \thi=" << ti.hilimit
 							<< " \t sb=" << ti.sensibility
 							<< " \t sid=" << ti.sid
@@ -393,7 +393,7 @@ void NCRestorer_XML::read_thresholds(UniXML& xml, xmlNode* node, IONotifyControl
 				{
 					if( !getConsumerList(xml,ask_it,ti.clst) )
 					{
-						unideb[Debug::WARN] << ic->getName()
+						ulog.warn() << ic->getName()
 								<< "(read_thresholds): не смог получить список заказчиков"
 								<< " для порога " << ti.id
 								<< " датчика " << conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
@@ -462,7 +462,7 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 		ti.sid = conf->getSensorID(sid_name);
 		if( ti.sid == UniSetTypes::DefaultObjectId )
 		{
-			unideb[Debug::CRIT] << "(NCRestorer_XML:getThresholdInfo): "
+			ulog.crit() << "(NCRestorer_XML:getThresholdInfo): "
 					<< " Not found ID for " << sid_name << endl;
 		}
 		else
@@ -471,7 +471,7 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 			// Пока что IONotifyController поддерживает работу только с 'DI'.
 			if( iotype != UniversalIO::DI )
 			{
-				 unideb[Debug::CRIT] << "(NCRestorer_XML:getThresholdInfo): "
+				 ulog.crit() << "(NCRestorer_XML:getThresholdInfo): "
 					<< " Bad iotype(" << iotype << ") for " << sid_name << ". iotype must be 'DI'!" << endl;
 				return false;
 			}

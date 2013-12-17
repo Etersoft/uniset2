@@ -65,7 +65,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 				break;
 
 				default:
-					unideb[Debug::CRIT] << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА! -> "
+					ulog.crit() << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА! -> "
 									<< conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
 					return;
 				break;
@@ -84,7 +84,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 		break;
 
 		default:
-			unideb[Debug::CRIT] << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА!-> "
+			ulog.crit() << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА!-> "
 								<< conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
 		break;
 	}
@@ -150,13 +150,13 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
 	}
 	catch(Exception& ex)
 	{
-		unideb[Debug::WARN] << ic->getName() << "(NCRestorer::addthresholdlist): " << ex
+		ulog.warn() << ic->getName() << "(NCRestorer::addthresholdlist): " << ex
 				<< " для " << conf->oind->getNameById(inf.si.id, inf.si.node) << endl;
 		throw;
 	}
 	catch( CORBA::SystemException& ex )
 	{
-		unideb[Debug::WARN] << ic->getName() << "(NCRestorer::addthresholdlist): "
+		ulog.warn() << ic->getName() << "(NCRestorer::addthresholdlist): "
 				<< conf->oind->getNameById(inf.si.id,inf.si.node) << " недоступен!!(CORBA::SystemException): "
 				<< ex.NP_minorString() << endl;
 		throw;
@@ -191,8 +191,8 @@ void NCRestorer::init_depends_signals( IONotifyController* ic )
 		if( it->second.d_si.id == DefaultObjectId )
 			continue;
 
-		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << ic->getName() << "(NCRestorer::init_depends_signals): "
+		if( ulog.is_info() )
+			ulog.info() << ic->getName() << "(NCRestorer::init_depends_signals): "
 				<< " init depend: '" << conf->oind->getMapName(it->second.si.id) << "'"
 				<< " dep_name=(" << it->second.d_si.id << ")'" << conf->oind->getMapName(it->second.d_si.id) << "'"
 				<< endl;

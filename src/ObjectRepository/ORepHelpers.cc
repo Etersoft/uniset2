@@ -45,8 +45,8 @@ namespace ORepHelpers
 	CosNaming::NamingContext_ptr getContext(const string& cname, int argc, const char* const* argv, const string& nsName )throw(ORepFailed)
     {
 		CORBA::ORB_var orb = CORBA::ORB_init( argc, (char**)argv );
-		if( unideb.debugging(Debug::REPOSITORY) )
-			unideb[Debug::REPOSITORY] << "OREPHELP: orb init ok"<< endl;
+		if( ulog.is_repository() )
+			ulog.repository() << "OREPHELP: orb init ok"<< endl;
 		return getContext(orb, cname, nsName);
 	}
 // --------------------------------------------------------------------------
@@ -54,25 +54,26 @@ namespace ORepHelpers
 	{
         CosNaming::NamingContext_var rootC;
 
-		if( unideb.debugging(Debug::REPOSITORY) )
-			unideb[Debug::REPOSITORY] << "OREPHELPER(getContext): get rootcontext...(servname = "<< servname << ")" <<endl;
-
+		if( ulog.is_repository() )
+			ulog.repository() << "OREPHELPER(getContext): get rootcontext...(servname = "<< servname << ")" <<endl;
+		
 		rootC = getRootNamingContext(orb, servname);
 
-		if( unideb.debugging(Debug::REPOSITORY) )
-			unideb[Debug::REPOSITORY] << "OREPHELPER(getContext): get rootContect ok " << endl;
+		if( ulog.is_repository() )
+			ulog.repository() << "OREPHELPER(getContext): get rootContect ok " << endl;
 
         if( CORBA::is_nil(rootC) )
 		{
-			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "OREPHELPER: не смог получить ссылку на NameServices"<< endl;
+			if( ulog.is_warn() )
+				ulog.warn() << "OREPHELPER: не смог получить ссылку на NameServices"<< endl;
 			throw ORepFailed("OREPHELPER(getContext): не смог получить ссылку на NameServices");
         }
 
 		if ( cname.empty() )
 			return rootC._retn();
 
-		if( unideb.debugging(Debug::REPOSITORY) )
-			unideb[Debug::REPOSITORY] << "OREPHELPER(getContext): get ref context " << cname << endl;
+		if( ulog.is_repository() )
+			ulog.repository() << "OREPHELPER(getContext): get ref context " << cname << endl;
 
 		CosNaming::Name_var ctxName = omniURI::stringToName(cname.c_str());
         CosNaming::NamingContext_var ctx;
@@ -90,14 +91,16 @@ namespace ORepHelpers
         {
 			ostringstream err;
 	    	err << "OREPHELPER(getContext): не смог получить ссылку на контекст " << cname;
-		    unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << err.str() << endl;			
+			if( ulog.is_warn() )
+			ulog.warn() << err.str() << endl;
 		    throw ORepFailed(err.str());
         }
 		catch(const CosNaming::NamingContext::NotFound &nf)
         {
 			ostringstream err;
 			err << "OREPHELPER(getContext): не найден контекст " << cname;
-	  		unideb[Debug::WARN] << err.str() << endl;
+			if( ulog.warn() )
+				ulog.warn() << err.str() << endl;
 			throw ORepFailed(err.str());
         }
 		catch(const CosNaming::NamingContext::CannotProceed &np)
@@ -105,34 +108,40 @@ namespace ORepHelpers
 			ostringstream err;
 			err << "OREPHELPER(getContext): catch CannotProced " << cname;
 			err << " bad part=" << omniURI::nameToString(np.rest_of_name);
-	  		unideb[Debug::WARN] << err.str() << endl;
+			if( ulog.is_warn() )
+				ulog.warn() << err.str() << endl;
 			throw ORepFailed(err.str());
         }
 	    catch(CORBA::SystemException& ex)
 	    {
 			ostringstream err;
 			err << "OREPHELPER(getContext): поймали CORBA::SystemException: " << ex.NP_minorString();
-			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] <<  err.str() << endl;
+			if( ulog.is_warn() )
+				ulog.warn() <<  err.str() << endl;
 			throw ORepFailed(err.str());
 	    }	
 	    catch(CORBA::Exception&)
     	{
-			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "OREPHELPER(getContext): поймали CORBA::Exception." << endl;
+			if( ulog.is_warn() )
+				ulog.warn() << "OREPHELPER(getContext): поймали CORBA::Exception." << endl;
 			throw ORepFailed();
 	    }
     	catch(omniORB::fatalException& fe)
 	    {
 			ostringstream err;
 			err << "OREPHELPER(getContext): поймали omniORB::fatalException:";
-			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] <<  err << endl;
-        	unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "  file: " << fe.file() << endl;
-			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "  line: " << fe.line() << endl;
-    	    unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "  mesg: " << fe.errmsg() << endl;
+			if( ulog.is_warn() )
+			{
+				ulog.warn() <<  err << endl;
+			ulog.warn() << "  file: " << fe.file() << endl;
+				ulog.warn() << "  line: " << fe.line() << endl;
+		ulog.warn() << "  mesg: " << fe.errmsg() << endl;
+			}
 			throw ORepFailed(err.str());
 	    }
 
-		if( unideb.debugging(Debug::REPOSITORY) )
-			unideb[Debug::REPOSITORY] << "getContext: получили "<< cname << endl;
+		if( ulog.is_repository() )
+			ulog.repository() << "getContext: получили "<< cname << endl;
 
 		// Если _var
 // 	 	return CosNaming::NamingContext::_duplicate(ctx);
@@ -151,8 +160,8 @@ namespace ORepHelpers
 	{
 //		cout << "ORepHelpers(getRootNamingContext): nsName->" << nsName << endl;
 		CORBA::Object_var initServ = orb->resolve_initial_references(nsName.c_str());
-		if( unideb.debugging(Debug::REPOSITORY) )
-			unideb[Debug::REPOSITORY] << "OREPHELP: get rootcontext...(nsName = "<< nsName << ")" <<endl;
+		if( ulog.is_repository() )
+			ulog.repository() << "OREPHELP: get rootcontext...(nsName = "<< nsName << ")" <<endl;
 
 		rootContext = CosNaming::NamingContext::_narrow(initServ);
 		if (CORBA::is_nil(rootContext))
@@ -161,14 +170,15 @@ namespace ORepHelpers
 			throw ORepFailed(err.c_str());
 		}
 		
-		if( unideb.debugging(Debug::REPOSITORY) )
-			unideb[Debug::REPOSITORY] << "OREPHELP: init NameService ok"<< endl;
+		if( ulog.is_repository() )
+			ulog.repository() << "OREPHELP: init NameService ok"<< endl;
 	}
 	catch(CORBA::ORB::InvalidName& ex)
 	{
 		ostringstream err;
 		err << "ORepHelpers(getRootNamingContext): InvalidName=" << nsName;
-		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << err.str() << endl;
+		if( ulog.is_warn() )
+			ulog.warn() << err.str() << endl;
 		throw ORepFailed(err.str());
 	}
 	catch (CORBA::COMM_FAILURE& ex)
@@ -188,8 +198,8 @@ namespace ORepHelpers
 		throw ORepFailed(err);
 	}
 
-	if( unideb.debugging(Debug::REPOSITORY) )
-		unideb[Debug::REPOSITORY] << "OREPHELP: get root context ok"<< endl;
+	if( ulog.is_repository() )
+		ulog.repository() << "OREPHELP: get root context ok"<< endl;
 
 //	// Если создан как _ptr
 //	return rootContext;

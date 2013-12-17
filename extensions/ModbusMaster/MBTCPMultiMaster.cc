@@ -40,7 +40,8 @@ checkThread(0)
 			prop_prefix = "";
 	}
 
-	dlog[Debug::INFO] << myname << "(init): prop_prefix=" << prop_prefix << endl;
+	if( dlog.is_info() )
+		dlog.info() << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
 	UniXML_iterator it(cnode);
 
@@ -52,7 +53,8 @@ checkThread(0)
 	{
 		ostringstream err;
 		err << myname << "(init): not found <GateList>";
-		dlog[Debug::CRIT] << err.str() << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << err.str() << endl;
 		throw UniSetTypes::SystemError(err.str());
 	}
 
@@ -60,7 +62,8 @@ checkThread(0)
 	{
 		ostringstream err;
 		err << myname << "(init): empty <GateList> ?!";
-		dlog[Debug::CRIT] << err.str() << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << err.str() << endl;
 		throw UniSetTypes::SystemError(err.str());
 	}
 
@@ -72,7 +75,8 @@ checkThread(0)
 		{
 			ostringstream err;
 			err << myname << "(init): ip='' in <GateList>";
-			dlog[Debug::CRIT] << err.str() << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << err.str() << endl;
 			throw UniSetTypes::SystemError(err.str());
 		}
 
@@ -81,7 +85,8 @@ checkThread(0)
 		{
 			ostringstream err;
 			err << myname << "(init): ERROR: port=''" << sinf.port << " for ip='" << sinf.ip << "' in <GateList>";
-			dlog[Debug::CRIT] << err.str() << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << err.str() << endl;
 			throw UniSetTypes::SystemError(err.str());
 		}
 
@@ -92,7 +97,8 @@ checkThread(0)
 			{
 				ostringstream err;
 				err << myname << "(init): ERROR: Unknown SensorID for '" << it1.getProp("respond") << "' in <GateList>";
-				dlog[Debug::CRIT] << err.str() << endl;
+				if( dlog.is_crit() )
+					dlog.crit() << err.str() << endl;
 				throw UniSetTypes::SystemError(err.str());
 			}
 		}
@@ -116,15 +122,16 @@ checkThread(0)
 
 		mblist.push_back(sinf);
 
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << myname << "(init): add slave channel " << sinf.myname << endl;
+		if( dlog.is_info() )
+			dlog.info() << myname << "(init): add slave channel " << sinf.myname << endl;
 	}
 
 	if( mblist.empty() )
 	{
 		ostringstream err;
 		err << myname << "(init): empty <GateList>!";
-		dlog[Debug::CRIT] << err.str() << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << err.str() << endl;
 		throw UniSetTypes::SystemError(err.str());
 	}
 
@@ -148,8 +155,7 @@ checkThread(0)
 	// неудачной попытки запросов по одному из каналов, то ПЕРЕОПРЕДЕЛЯЕМ reopen, на timeout..
 	ptReopen.setTiming(ptTimeout.getInterval());
 
-
-	if( dlog.debugging(Debug::INFO) )
+	if( dlog.is_info() )
 		printMap(rmap);
 }
 // -----------------------------------------------------------------------------
@@ -228,8 +234,8 @@ bool MBTCPMultiMaster::MBSlaveInfo::init()
 	{
 		// ost::Thread::setException(ost::Thread::throwException);
 
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << myname << "(init): connect..." << endl;
+		if( dlog.is_info() )
+			dlog.info() << myname << "(init): connect..." << endl;
 
 		mbtcp->connect(ip,port);
 		mbtcp->setForceDisconnect(force_disconnect);
@@ -242,22 +248,22 @@ bool MBTCPMultiMaster::MBSlaveInfo::init()
 			mbtcp->setSleepPause(sleepPause_usec);
 			mbtcp->setAfterSendPause(aftersend_pause);
 
-			if( mbtcp->isConnection() && dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(init): " << myname << " connect OK" << endl;
-
+			if( mbtcp->isConnection() && dlog.is_info() )
+				dlog.info() << "(init): " << myname << " connect OK" << endl;
+		
 			initOK = true;
 		}
 		return mbtcp->isConnection();
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << "(init): " << ex << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << "(init): " << ex << endl;
 	}
 	catch(...)
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << "(init): " << myname << " catch ..." << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << "(init): " << myname << " catch ..." << endl;
 	}
 
 	initOK = false;
@@ -312,8 +318,8 @@ void MBTCPMultiMaster::check_thread()
 			try
 			{
 				bool r = it->check();
-				if( dlog.debugging(Debug::INFO) )
-					dlog[Debug::INFO] << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
+				if( dlog.is_info() )
+					dlog.info() << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
 
 				try
 				{
@@ -326,7 +332,7 @@ void MBTCPMultiMaster::check_thread()
 				catch( Exception& ex )
 				{
 					if( dlog.debugging(Debug::CRIT) )
-						dlog[Debug::CRIT] << myname << "(check): (respond) " << ex << std::endl;
+						dlog.crit() << myname << "(check): (respond) " << ex << std::endl;
 				}
 				catch(...){}
 
@@ -376,20 +382,20 @@ MBTCPMultiMaster* MBTCPMultiMaster::init_mbmaster( int argc, const char* const* 
 	string name = conf->getArgParam("--" + prefix + "-name","MBTCPMultiMaster1");
 	if( name.empty() )
 	{
-		dlog[Debug::CRIT] << "(MBTCPMultiMaster): Не задан name'" << endl;
+		dlog.crit() << "(MBTCPMultiMaster): Не задан name'" << endl;
 		return 0;
 	}
 
 	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		dlog[Debug::CRIT] << "(MBTCPMultiMaster): идентификатор '" << name
+		dlog.crit() << "(MBTCPMultiMaster): идентификатор '" << name
 			<< "' не найден в конф. файле!"
 			<< " в секции " << conf->getObjectsSection() << endl;
 		return 0;
 	}
 
-	dlog[Debug::INFO] << "(MBTCPMultiMaster): name = " << name << "(" << ID << ")" << endl;
+	dlog.info() << "(MBTCPMultiMaster): name = " << name << "(" << ID << ")" << endl;
 	return new MBTCPMultiMaster(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------

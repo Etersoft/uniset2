@@ -28,7 +28,7 @@ int main(int argc, const char **argv)
 		string logfilename = conf->getArgParam("--io-logfile","iocontrol.log");
 		string logname( conf->getLogDir() + logfilename );
 		dlog.logFile( logname );
-		unideb.logFile( logname );
+		ulog.logFile( logname );
 
 		ObjectId shmID = DefaultObjectId;
 		string sID = conf->getArgParam("--smemory-id");
@@ -48,7 +48,7 @@ int main(int argc, const char **argv)
 		IOControl* ic = IOControl::init_iocontrol(argc,argv,shmID);
 		if( !ic )
 		{
-			dlog[Debug::CRIT] << "(iocontrol): init не прошёл..." << endl;
+			dlog.crit() << "(iocontrol): init не прошёл..." << endl;
 			return 1;
 		}
 
@@ -58,10 +58,10 @@ int main(int argc, const char **argv)
 		SystemMessage sm(SystemMessage::StartUp); 
 		act.broadcast( sm.transport_msg() );
 
-		unideb(Debug::ANY) << "\n\n\n";
-		unideb[Debug::ANY] << "(main): -------------- IOControl START -------------------------\n\n";
-		dlog(Debug::ANY) << "\n\n\n";
-		dlog[Debug::ANY] << "(main): -------------- IOControl START -------------------------\n\n";
+		ulog << "\n\n\n";
+		ulog << "(main): -------------- IOControl START -------------------------\n\n";
+		dlog << "\n\n\n";
+		dlog << "(main): -------------- IOControl START -------------------------\n\n";
 		act.run(true);
 		msleep(500);
 		ic->execute();
@@ -69,15 +69,15 @@ int main(int argc, const char **argv)
 	}
 	catch(SystemError& err)
 	{
-		dlog[Debug::CRIT] << "(iocontrol): " << err << endl;
+		dlog.crit() << "(iocontrol): " << err << endl;
 	}
 	catch(Exception& ex)
 	{
-		dlog[Debug::CRIT] << "(iocontrol): " << ex << endl;
+		dlog.crit() << "(iocontrol): " << ex << endl;
 	}
 	catch(...)
 	{
-		dlog[Debug::CRIT] << "(iocontrol): catch(...)" << endl;
+		dlog.crit() << "(iocontrol): catch(...)" << endl;
 	}
 
 	return 1;

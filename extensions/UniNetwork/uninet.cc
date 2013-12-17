@@ -26,7 +26,7 @@ int main(int argc, const char **argv)
 		conf->initDebug(dlog,"dlog");
 		string logfilename = conf->getArgParam("--logfile", "smemory.log");
 		string logname( conf->getLogDir() + logfilename );
-		unideb.logFile( logname );
+		ulog.logFile( logname );
 		dlog.logFile( logname );
 
 		ObjectId shmID = DefaultObjectId;
@@ -58,15 +58,15 @@ int main(int argc, const char **argv)
 	}
 	catch(SystemError& err)
 	{
-		unideb[Debug::CRIT] << "(uninetwork): " << err << endl;
+		ulog.crit() << "(uninetwork): " << err << endl;
 	}
 	catch(Exception& ex)
 	{
-		unideb[Debug::CRIT] << "(uninetwork): " << ex << endl;
+		ulog.crit() << "(uninetwork): " << ex << endl;
 	}
 	catch(...)
 	{
-		unideb[Debug::CRIT] << "(uninetwork): catch(...)" << endl;
+		ulog.crit() << "(uninetwork): catch(...)" << endl;
 	}
 	
 	while( waitpid(-1, 0, 0) > 0 );

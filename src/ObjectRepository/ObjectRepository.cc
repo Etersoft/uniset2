@@ -98,8 +98,8 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 {
 	ostringstream err;
 
-	if( unideb.debugging(Debug::type(Debug::INFO|Debug::REPOSITORY)) )
-		unideb[Debug::type(Debug::INFO|Debug::REPOSITORY)] << "ObjectRepository(registration): регистрируем " << name << endl;
+	if( ulog.is_info() )
+		ulog.info() << "ObjectRepository(registration): регистрируем " << name << endl;
 
 	// Проверка корректности имени
 	char bad = ORepHelpers::checkBadSymbols(name);
@@ -127,8 +127,8 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 		}
 		catch(const CosNaming::NamingContext::AlreadyBound &nf)
 		{
-			if( unideb.debugging(Debug::type(Debug::WARN|Debug::REPOSITORY)) )
-				unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "(registration): "<< name <<" уже зарегестрирован в "<< section << "!!!" << endl;
+			if( ulog.is_warn() )
+				ulog.warn() << "(registration): "<< name <<" уже зарегестрирован в "<< section << "!!!" << endl;
 
 			if( !force )
 				throw ObjectNameAlready();
@@ -136,40 +136,11 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 			// разрегистриуем, перед повтроной попыткой
 			ctx->unbind(oName);
 			continue;
-/*
-			// делаем проверку жив ли объект
-			bool life(false);
-			try
-			{
-				unideb[Debug::type(Debug::INFO|Debug::REPOSITORY)] << "(registration): " << name << " уже есть... проверяем живой ли? "<< endl;
-				CORBA::Object_var ref = ctx->resolve(oName);	
-				UniSetObject_i_var uobj = UniSetObject_i::_narrow(ref);
-				uobj->getId(); // пытаемся вызвать функцию (любую), если не сможет сработает исключение
-				life = true;
-				unideb[Debug::type(Debug::INFO|Debug::REPOSITORY)] << "(registration): " << name << " живой! "<< endl;
-			}
-			catch(...)
-			{ 
-				life=false;
-			}
-	
-			if( !life )
-			{
-				unideb(Debug::type(Debug::WARN|Debug::REPOSITORY)) << "(registration): " << name << " ЕСТЬ в репозитории, но недоступен. Заменяем на новую ссылку "<< endl;
-				ctx->rebind(oName, oRef);
-			}
-			else
-			{
-				unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "(registration): "<< name <<" уже зарегестрирован в "<< section<< "!!!!!!!!!!!" << endl;
-				throw ObjectNameAlready();
-			}
-			return;
-*/
 		}
 	    catch(ORepFailed)
 	    {
 	  		string er("ObjectRepository(registrartion): (getContext) не смог зарегистрировать "+name);
-				throw ORepFailed(er.c_str());
+			throw ORepFailed(er.c_str());
 	    }
 		catch(CosNaming::NamingContext::NotFound)
 	    {
@@ -181,19 +152,20 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 	    }
 		catch(const CosNaming::NamingContext::CannotProceed &cp)
 		{
-				err << "ObjectRepository(registrartion): catch CannotProced " << name << " bad part=";
+			err << "ObjectRepository(registrartion): catch CannotProced " << name << " bad part=";
 			err << omniURI::nameToString(cp.rest_of_name);
 		}
 	    catch(CORBA::SystemException& ex)
 	    {
-			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ObjectRepository(registrartion): поймали CORBA::SystemException: "
+			if( ulog.is_warn() )
+				ulog.warn() << "ObjectRepository(registrartion): поймали CORBA::SystemException: "
 					<< ex.NP_minorString() << endl;
 	
 			err << "ObjectRepository(registrartion): поймали CORBA::SystemException: " << ex.NP_minorString();
 	    }
 	//	catch(...)
 	//	{
-	//		unideb[Debug::WARN] << "поймали что-то неизвестное..."<< endl;
+	//		ulog.warn() << "поймали что-то неизвестное..."<< endl;
 	//	}
 	}
 	
@@ -231,23 +203,23 @@ void ObjectRepository::registration( const std::string& fullName, const UniSetTy
 void ObjectRepository::unregistration(const string& name, const string& section)
 	throw(ORepFailed, NameNotFound)
 {
-//	unideb[Debug::INFO] << "OREP: unregistration "<< name << " из "<< section << endl;
+//	ulog.info() << "OREP: unregistration "<< name << " из "<< section << endl;
 	ostringstream err;
     CosNaming::Name_var oName = omniURI::stringToName(name.c_str());
 	
-//	unideb[Debug::INFO] << "OREP: string to name ok"<< endl;
+//	ulog.info() << "OREP: string to name ok"<< endl;
 	CosNaming::NamingContext_var ctx;
 	CORBA::ORB_var orb = uconf->getORB();	
 	ctx = ORepHelpers::getContext(orb, section, nsName);    
 
-//	unideb[Debug::INFO] << "OREP: get context " << section <<" ok"<< endl;
+//	ulog.info() << "OREP: get context " << section <<" ok"<< endl;
 
     try
     {
 	    // Удаляем запись об объекте
 		ctx->unbind(oName);
 		
-//		unideb[Debug::INFO] << "OREP: ok" << endl;
+//		ulog.info() << "OREP: ok" << endl;
 		return;
     }	
 	catch(const CosNaming::NamingContext::NotFound &nf)
@@ -372,7 +344,7 @@ bool ObjectRepository::listSections(const string& in_section, ListObjectName *ls
 bool ObjectRepository::list(const string& section, ListObjectName *ls, unsigned int how_many, ObjectType type)
 {
   // Возвращает false если вынут не весь список...
-//  	unideb[Debug::INFO] << "получаем список из "<< section << endl;
+//  	ulog.info() << "получаем список из "<< section << endl;
 	CosNaming::NamingContext_var ctx;
 	try
 	{
@@ -381,14 +353,14 @@ bool ObjectRepository::list(const string& section, ListObjectName *ls, unsigned 
 	}
 	catch(ORepFailed)
 	{
-		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ORepository(list): не смог получить ссылку на "<< section << endl;
+		ulog.warn() << "ORepository(list): не смог получить ссылку на "<< section << endl;
 		throw;
 //		return false;
 	}
 	
 	if( CORBA::is_nil(ctx) )
 	{
-		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ORepository(list): не смог получить ссылку на "<< section << endl;
+		ulog.warn() << "ORepository(list): не смог получить ссылку на "<< section << endl;
 		throw ORepFailed();
 	}
 	
@@ -463,10 +435,10 @@ bool ObjectRepository::isExist( ObjectPtr oref )
     catch(CORBA::Exception&){}
     catch(omniORB::fatalException& fe)
     {
-		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ObjectRepository(isExist): "<< "поймали omniORB::fatalException:" << endl;
-        unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "  file: " << fe.file() << endl;
-		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "  line: " << fe.line() << endl;
-        unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "  mesg: " << fe.errmsg() << endl;
+		ulog.warn() << "ObjectRepository(isExist): "<< "поймали omniORB::fatalException:" << endl;
+        ulog.warn() << "  file: " << fe.file() << endl;
+		ulog.warn() << "  line: " << fe.line() << endl;
+        ulog.warn() << "  mesg: " << fe.errmsg() << endl;
     }
 	catch(...){}
 

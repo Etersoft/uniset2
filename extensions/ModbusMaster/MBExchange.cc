@@ -52,8 +52,9 @@ pollActivated(false)
 	// определяем фильтр
 	s_field = conf->getArgParam("--" + prefix + "-filter-field");
 	s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
-	dlog[Debug::INFO] << myname << "(init): read fileter-field='" << s_field
-						<< "' filter-value='" << s_fvalue << "'" << endl;
+	if( dlog.is_info() )
+		dlog.info() << myname << "(init): read fileter-field='" << s_field
+					<< "' filter-value='" << s_fvalue << "'" << endl;
 
 	stat_time = conf->getArgPInt("--" + prefix + "-statistic-sec",it.getProp("statistic_sec"),0);
 	if( stat_time > 0 )
@@ -75,7 +76,7 @@ pollActivated(false)
 	noQueryOptimization = conf->getArgInt("--" + prefix + "-no-query-optimization",it.getProp("no_query_optimization"));
 
 	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id",it.getProp("reg_from_id"));
-	dlog[Debug::INFO] << myname << "(init): mbregFromID=" << mbregFromID << endl;
+	dlog.info() << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
 	polltime = conf->getArgPInt("--" + prefix + "-polltime",it.getProp("polltime"), 100);
 
@@ -96,7 +97,8 @@ pollActivated(false)
 		{
 			ostringstream err;
 			err << myname << ": ID not found ('HeartBeat') for " << heart;
-			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
@@ -116,12 +118,13 @@ pollActivated(false)
 		{
 			ostringstream err;
 			err << myname << "(init): test_id unknown. 'TestMode_S' not found...";
-			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 	}
 
-	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
+	dlog.info() << myname << "(init): test_id=" << test_id << endl;
 
 	string emode = conf->getArgParam("--" + prefix + "-exchange-mode-id",it.getProp("exchangeModeID"));
 	if( !emode.empty() )
@@ -131,7 +134,8 @@ pollActivated(false)
 		{
 			ostringstream err;
 			err << myname << ": ID not found ('ExchangeMode') for " << emode;
-			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 	}
@@ -196,7 +200,8 @@ void MBExchange::waitSMReady()
 	{
 		ostringstream err;
 		err << myname << "(waitSMReady): failed waiting SharedMemory " << ready_timeout << " msec";
-		dlog[Debug::CRIT] << err.str() << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << err.str() << endl;
 		throw SystemError(err.str());
 	}
 }
@@ -217,9 +222,8 @@ void MBExchange::step()
 		}
 		catch(Exception& ex)
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname
-					<< "(step): (hb) " << ex << std::endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(step): (hb) " << ex << std::endl;
 		}
 	}
 }
@@ -239,8 +243,8 @@ void MBExchange::setProcActive( bool st )
 // -----------------------------------------------------------------------------
 void MBExchange::sigterm( int signo )
 {
-	if( dlog.debugging(Debug::WARN) )
-		dlog[Debug::WARN] << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
+	if( dlog.is_warn() )
+		dlog.warn() << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
 	setProcActive(false);
 	UniSetObject_LT::sigterm(signo);
 }
@@ -259,8 +263,8 @@ void MBExchange::readConfiguration()
 	UniXML_iterator it(root);
 	if( !it.goChildren() )
 	{
-		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
 		return;
 	}
 
@@ -457,7 +461,7 @@ void MBExchange::rtuQueryOptimization( RTUDeviceMap& m )
 	if( noQueryOptimization )
 		return;
 
-	dlog[Debug::INFO] << myname << "(rtuQueryOptimization): optimization..." << endl;
+	dlog.info() << myname << "(rtuQueryOptimization): optimization..." << endl;
 
 	for( MBExchange::RTUDeviceMap::iterator it1=m.begin(); it1!=m.end(); ++it1 )
 	{
@@ -494,8 +498,8 @@ void MBExchange::rtuQueryOptimization( RTUDeviceMap& m )
 			// check correct function...
 			if( beg->second->q_count>1 && beg->second->mbfunc==ModbusRTU::fnWriteOutputSingleRegister )
 			{
-				if( dlog.debugging(Debug::WARN) )
-					dlog[Debug::WARN] << myname << "(rtuQueryOptimization): "
+				if( dlog.is_warn() )
+					dlog.warn() << myname << "(rtuQueryOptimization): "
 						<< " optimization change func=" << ModbusRTU::fnWriteOutputSingleRegister
 						<< " <--> func=" << ModbusRTU::fnWriteOutputRegisters
 						<< " for mbaddr=" << ModbusRTU::addr2str(d->mbaddr)
@@ -505,8 +509,8 @@ void MBExchange::rtuQueryOptimization( RTUDeviceMap& m )
 			}
 			else if( beg->second->q_count>1 && beg->second->mbfunc==ModbusRTU::fnForceSingleCoil )
 			{
-				if( dlog.debugging(Debug::WARN) )
-					dlog[Debug::WARN] << myname << "(rtuQueryOptimization): "
+				if( dlog.is_warn() )
+					dlog.warn() << myname << "(rtuQueryOptimization): "
 						<< " optimization change func=" << ModbusRTU::fnForceSingleCoil
 						<< " <--> func=" << ModbusRTU::fnForceMultipleCoils
 						<< " for mbaddr=" << ModbusRTU::addr2str(d->mbaddr)
@@ -681,8 +685,8 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 				return true;
 			}
 
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(initSMValue): IGNORE item: rnum=" << p->rnum
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(initSMValue): IGNORE item: rnum=" << p->rnum
 					<< " > 1 ?!! for id=" << p->si.id << endl;
 
 			return false;
@@ -715,8 +719,8 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 		{
 			if( p->nbyte <= 0 || p->nbyte > VTypes::Byte::bsize )
 			{
-				if( dlog.debugging(Debug::CRIT) )
-					dlog[Debug::CRIT] << myname << "(initSMValue): IGNORE item: sid=" << ModbusRTU::dat2str(p->si.id)
+				if( dlog.is_crit() )
+					dlog.crit() << myname << "(initSMValue): IGNORE item: sid=" << ModbusRTU::dat2str(p->si.id)
 						<< " vtype=" << p->vType << " but nbyte=" << p->nbyte << endl;
 				return false;
 			}
@@ -823,8 +827,8 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 
 	if( p->q_count == 0 )
 	{
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << myname << "(pollRTU): q_count=0 for mbreg=" << ModbusRTU::dat2str(p->mbreg)
+		if( dlog.is_info() )
+			dlog.info() << myname << "(pollRTU): q_count=0 for mbreg=" << ModbusRTU::dat2str(p->mbreg)
 					<< " IGNORE register..." << endl;
 		return false;
 	}
@@ -881,8 +885,8 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		{
 			if( p->q_count != 1 )
 			{
-				if( dlog.debugging(Debug::CRIT) )
-					dlog[Debug::CRIT] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
+				if( dlog.is_crit() )
+					dlog.crit() << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
 						<< " IGNORE WRITE SINGLE REGISTER (0x06) q_count=" << p->q_count << " ..." << endl;
 				return false;
 			}
@@ -941,8 +945,8 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 		{
 			if( p->q_count != 1 )
 			{
-				if( dlog.debugging(Debug::CRIT) )
-					dlog[Debug::CRIT] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
+				if( dlog.is_crit() )
+					dlog.crit() << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
 						<< " IGNORE FORCE SINGLE COIL (0x05) q_count=" << p->q_count << " ..." << endl;
 				return false;
 			}
@@ -981,8 +985,8 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 
 		default:
 		{
-			if( dlog.debugging(Debug::WARN) )
-				dlog[Debug::WARN] << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
+			if( dlog.is_warn() )
+				dlog.warn() << myname << "(pollRTU): mbreg=" << ModbusRTU::dat2str(p->mbreg)
 					<< " IGNORE mfunc=" << (int)p->mbfunc << " ..." << endl;
 			return false;
 		}
@@ -1188,8 +1192,8 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					return;
 				}
 
-				if( dlog.debugging(Debug::CRIT) )
-					dlog[Debug::CRIT] << myname << "(updateRSProperty): IGNORE item: rnum=" << p->rnum
+				if( dlog.is_crit() )
+					dlog.crit() << myname << "(updateRSProperty): IGNORE item: rnum=" << p->rnum
 						<< " > 1 ?!! for id=" << p->si.id << endl;
 				return;
 			}
@@ -1259,8 +1263,8 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 			{
 				if( p->nbyte <= 0 || p->nbyte > VTypes::Byte::bsize )
 				{
-					if( dlog.debugging(Debug::CRIT) )
-						dlog[Debug::CRIT] << myname << "(updateRSProperty): IGNORE item: reg=" << ModbusRTU::dat2str(r->mbreg)
+					if( dlog.is_crit() )
+						dlog.crit() << myname << "(updateRSProperty): IGNORE item: reg=" << ModbusRTU::dat2str(r->mbreg)
 							<< " vtype=" << p->vType << " but nbyte=" << p->nbyte << endl;
 					return;
 				}
@@ -1500,8 +1504,8 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
 				{
 					if( save )
 					{
-						if( dlog.debugging(Debug::WARN) )
-							dlog[Debug::WARN] << myname << "(updateMTR): write (T4) reg(" << dat2str(r->mbreg) << ") to MTR NOT YET!!!" << endl;
+						if( dlog.is_warn() )
+							dlog.warn() << myname << "(updateMTR): write (T4) reg(" << dat2str(r->mbreg) << ") to MTR NOT YET!!!" << endl;
 					}
 					else
 					{
@@ -1778,16 +1782,16 @@ MBExchange::RTUDevice* MBExchange::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAd
 		DeviceType dtype = getDeviceType(xmlit.getProp(prop_prefix + "mbtype"));
 		if( it->second->dtype != dtype )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(addDev): OTHER mbtype=" << dtype << " for " << xmlit.getProp("name")
-					<< ". Already used devtype=" <<  it->second->dtype
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(addDev): OTHER mbtype=" << dtype << " for " << xmlit.getProp("name")
+					<< ". Already used devtype=" <<  it->second->dtype 
 					<< " for mbaddr=" << ModbusRTU::addr2str(it->second->mbaddr)
 					<< endl;
 			return 0;
 		}
 
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << myname << "(addDev): device for addr=" << ModbusRTU::addr2str(a)
+		if( dlog.is_info() )
+			dlog.info() << myname << "(addDev): device for addr=" << ModbusRTU::addr2str(a)
 				<< " already added. Ignore device params for " << xmlit.getProp("name") << " ..." << endl;
 		return it->second;
 	}
@@ -1814,22 +1818,22 @@ MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, RegID id, ModbusRTU::Modbus
 	{
 		if( !it->second->dev )
 		{
-			dlog[Debug::CRIT] << myname << "(addReg): for " << xmlit.getProp("name")
+			dlog.crit() << myname << "(addReg): for " << xmlit.getProp("name")
 				<< " dev=0!!!! " << endl;
 			return 0;
 		}
 
 		if( it->second->dev->dtype != dev->dtype )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(addReg): OTHER mbtype=" << dev->dtype << " for " << xmlit.getProp("name")
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(addReg): OTHER mbtype=" << dev->dtype << " for " << xmlit.getProp("name")
 					<< ". Already used devtype=" <<  it->second->dev->dtype << " for " << it->second->dev << endl;
 			return 0;
 		}
-
-		if( dlog.debugging(Debug::INFO) )
+	
+		if( dlog.is_info() )
 		{
-			dlog[Debug::INFO] << myname << "(addReg): reg=" << ModbusRTU::dat2str(r)
+			dlog.info() << myname << "(addReg): reg=" << ModbusRTU::dat2str(r)
 			    << "(id=" << id << ")"
 				<< " already added for " << (*it->second)
 				<< " Ignore register params for " << xmlit.getProp("name") << " ..." << endl;
@@ -1900,8 +1904,8 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 		p.stype = UniSetTypes::getIOType(stype);
 		if( p.stype == UniversalIO::UnknownIOType )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(IOBase::readItem): неизвестный iotype=: "
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(IOBase::readItem): неизвестный iotype=: "
 					<< stype << " for " << it.getProp("name") << endl;
 			return false;
 		}
@@ -1913,8 +1917,8 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 		p.nbit = UniSetTypes::uni_atoi(sbit.c_str());
 		if( p.nbit < 0 || p.nbit >= ModbusRTU::BitsPerData )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(initRSProperty): BAD nbit=" << p.nbit
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(initRSProperty): BAD nbit=" << p.nbit
 					<< ". (0 >= nbit < " << ModbusRTU::BitsPerData <<")." << endl;
 			return false;
 		}
@@ -1924,8 +1928,8 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 		( p.stype == UniversalIO::AI ||
 			p.stype == UniversalIO::AO ) )
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << "(initRSProperty): (ignore) uncorrect param`s nbit>1 (" << p.nbit << ")"
+		if( dlog.is_warn() )
+			dlog.warn() << "(initRSProperty): (ignore) uncorrect param`s nbit>1 (" << p.nbit << ")"
 				<< " but iotype=" << p.stype << " for " << it.getProp("name") << endl;
 	}
 
@@ -1935,8 +1939,8 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 		p.nbyte = UniSetTypes::uni_atoi(sbyte.c_str());
 		if( p.nbyte < 0 || p.nbyte > VTypes::Byte::bsize )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(initRSProperty): BAD nbyte=" << p.nbyte
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(initRSProperty): BAD nbyte=" << p.nbyte
 				<< ". (0 >= nbyte < " << VTypes::Byte::bsize << ")." << endl;
 			return false;
 		}
@@ -1953,9 +1957,9 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 		VTypes::VType v(VTypes::str2type(vt));
 		if( v == VTypes::vtUnknown )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(initRSProperty): Unknown tcp_vtype='" << vt << "' for "
-					<< it.getProp("name")
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(initRSProperty): Unknown tcp_vtype='" << vt << "' for "
+					<< it.getProp("name") 
 					<< endl;
 
 			return false;
@@ -1975,7 +1979,7 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
 
 	if( dev->dtype == MBExchange::dtRTU )
 	{
-//		dlog[Debug::INFO] << myname << "(initRegInfo): init RTU.."
+//		dlog.info() << myname << "(initRegInfo): init RTU.."
 	}
 	else if( dev->dtype == MBExchange::dtMTR )
 	{
@@ -2000,8 +2004,8 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
 	}
 	else
 	{
-		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << myname << "(initRegInfo): Unknown mbtype='" << dev->dtype
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(initRegInfo): Unknown mbtype='" << dev->dtype
 				<< "' for " << it.getProp("name") << endl;
 		return false;
 	}
@@ -2018,8 +2022,8 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
 		string sr = it.getProp(prop_prefix + "mbreg");
 		if( sr.empty() )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(initItem): Unknown 'mbreg' for " << it.getProp("name") << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(initItem): Unknown 'mbreg' for " << it.getProp("name") << endl;
 			return false;
 		}
 		r->mbreg = ModbusRTU::str2mbData(sr);
@@ -2032,8 +2036,8 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
 		r->mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f.c_str());
 		if( r->mbfunc == ModbusRTU::fnUnknown )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(initRegInfo): Unknown mbfunc ='" << f
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(initRegInfo): Unknown mbfunc ='" << f
 					<< "' for " << it.getProp("name") << endl;
 			return false;
 		}
@@ -2048,9 +2052,9 @@ bool MBExchange::initRTUDevice( RTUDevice* d, UniXML_iterator& it )
 
 	if( d->dtype == dtUnknown )
 	{
-		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << myname << "(initRTUDevice): Unknown tcp_mbtype=" << it.getProp(prop_prefix + "mbtype")
-				<< ". Use: rtu "
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(initRTUDevice): Unknown tcp_mbtype=" << it.getProp(prop_prefix + "mbtype")
+				<< ". Use: rtu " 
 				<< " for " << it.getProp("name") << endl;
 		return false;
 	}
@@ -2058,8 +2062,8 @@ bool MBExchange::initRTUDevice( RTUDevice* d, UniXML_iterator& it )
 	string addr = it.getProp(prop_prefix + "mbaddr");
 	if( addr.empty() )
 	{
-		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << myname << "(initRTUDevice): Unknown mbaddr for " << it.getProp("name") << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(initRTUDevice): Unknown mbaddr for " << it.getProp("name") << endl;
 		return false;
 	}
 
@@ -2083,8 +2087,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 	string addr(it.getProp(prop_prefix + "mbaddr"));
 	if( addr.empty() )
 	{
-		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << myname << "(initItem): Unknown mbaddr(" << prop_prefix << "mbaddr)='" << addr << "' for " << it.getProp("name") << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(initItem): Unknown mbaddr(" << prop_prefix << "mbaddr)='" << addr << "' for " << it.getProp("name") << endl;
 		return false;
 	}
 
@@ -2093,8 +2097,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 	RTUDevice* dev = addDev(rmap,mbaddr,it);
 	if( !dev )
 	{
-		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << myname << "(initItem): " << it.getProp("name") << " CAN`T ADD for polling!" << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(initItem): " << it.getProp("name") << " CAN`T ADD for polling!" << endl;
 		return false;
 	}
 
@@ -2106,8 +2110,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 		RegInfo r_tmp;
 		if( !initRTU188item(it, &r_tmp) )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(initItem): init RTU188 failed for " << it.getProp("name") << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(initItem): init RTU188 failed for " << it.getProp("name") << endl;
 			return false;
 		}
 
@@ -2122,9 +2126,9 @@ bool MBExchange::initItem( UniXML_iterator& it )
 		{
 			string reg = it.getProp(prop_prefix + "mbreg");
 			if( reg.empty() )
-			{
-				if( dlog.debugging(Debug::CRIT) )
-					dlog[Debug::CRIT] << myname << "(initItem): unknown mbreg(" << prop_prefix << ") for " << it.getProp("name") << endl;
+			{	
+				if( dlog.is_crit() )
+					dlog.crit() << myname << "(initItem): unknown mbreg(" << prop_prefix << ") for " << it.getProp("name") << endl;
 				return false;
 			}
 			mbreg = ModbusRTU::str2mbData(reg);
@@ -2144,8 +2148,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 		p.rnum = MTR::wsize(ri->mtrType);
 		if( p.rnum <= 0 )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(initItem): unknown word size for " << it.getProp("name") << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(initItem): unknown word size for " << it.getProp("name") << endl;
 			return false;
 		}
 	}
@@ -2169,8 +2173,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 	{
 		if( p.nbit<0 &&  ri->slst.size() > 1 )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(initItem): FAILED! Sharing SAVE (not bit saving) to "
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(initItem): FAILED! Sharing SAVE (not bit saving) to "
 					<< " tcp_mbreg=" << ModbusRTU::dat2str(ri->mbreg)
 					<< " for " << it.getProp("name") << endl;
 
@@ -2183,8 +2187,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 			PList::iterator it2 = ri->slst.begin();
 			if( it2->nbit < 0 )
 			{
-				if( dlog.debugging(Debug::CRIT) )
-					dlog[Debug::CRIT] << myname << "(initItem): FAILED! Sharing SAVE (mbreg="
+				if( dlog.is_crit() )
+					dlog.crit() << myname << "(initItem): FAILED! Sharing SAVE (mbreg="
 						<< ModbusRTU::dat2str(ri->mbreg) << "  already used)!"
 						<< " IGNORE --> " << it.getProp("name") << endl;
 					abort(); 	// ABORT PROGRAM!!!!
@@ -2233,8 +2237,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 				if( ri->mbfunc != ModbusRTU::fnWriteOutputRegisters &&
 					ri->mbfunc != ModbusRTU::fnForceMultipleCoils )
 				{
-					if( dlog.debugging(Debug::CRIT) )
-						dlog[Debug::CRIT] << myname << "(initItem): Bad write function ='" << ModbusRTU::fnWriteOutputSingleRegister
+					if( dlog.is_crit() )
+						dlog.crit() << myname << "(initItem): Bad write function ='" << ModbusRTU::fnWriteOutputSingleRegister
 							<< "' for vtype='" << p1->vType << "'"
 							<< " tcp_mbreg=" << ModbusRTU::dat2str(ri->mbreg)
 							<< " for " << it.getProp("name") << endl;
@@ -2267,8 +2271,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 			ii.mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(s_mbfunc);
 			if( ii.mbfunc == ModbusRTU::fnUnknown )
 			{
-				if( dlog.debugging(Debug::CRIT) )
-					dlog[Debug::CRIT] << myname << "(initItem): Unknown tcp_init_mbfunc ='" << s_mbfunc
+				if( dlog.is_crit() )
+					dlog.crit() << myname << "(initItem): Unknown tcp_init_mbfunc ='" << s_mbfunc
 						<< "' for " << it.getProp("name") << endl;
 				return false;
 			}
@@ -2312,8 +2316,8 @@ bool MBExchange::initMTRitem( UniXML_iterator& it, RegInfo* p )
 	p->mtrType = MTR::str2type(it.getProp(prop_prefix + "mtrtype"));
 	if( p->mtrType == MTR::mtUnknown )
 	{
-		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << myname << "(readMTRItem): Unknown mtrtype '"
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(readMTRItem): Unknown mtrtype '"
 					<< it.getProp(prop_prefix + "mtrtype")
 					<< "' for " << it.getProp("name") << endl;
 
@@ -2330,24 +2334,24 @@ bool MBExchange::initRTU188item( UniXML_iterator& it, RegInfo* p )
 
 	if( jack.empty() )
 	{
-		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown " << prop_prefix << "jack='' "
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(readRTU188Item): Unknown " << prop_prefix << "jack='' "
 					<< " for " << it.getProp("name") << endl;
 		return false;
 	}
 	p->rtuJack = RTUStorage::s2j(jack);
 	if( p->rtuJack == RTUStorage::nUnknown )
 	{
-		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown " << prop_prefix << "jack=" << jack
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(readRTU188Item): Unknown " << prop_prefix << "jack=" << jack
 					<< " for " << it.getProp("name") << endl;
 		return false;
 	}
 
 	if( chan.empty() )
 	{
-		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << myname << "(readRTU188Item): Unknown channel='' "
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(readRTU188Item): Unknown channel='' "
 					<< " for " << it.getProp("name") << endl;
 		return false;
 	}
@@ -2423,11 +2427,11 @@ void MBExchange::initDeviceList()
 				initDeviceInfo(rmap,a,it1);
 			}
 		}
-		else if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << myname << "(init): <DeviceList> empty section..." << endl;
+		else if( dlog.is_warn() )
+			dlog.warn() << myname << "(init): <DeviceList> empty section..." << endl;
 	}
-	else if( dlog.debugging(Debug::WARN) )
-		dlog[Debug::WARN] << myname << "(init): <DeviceList> not found..." << endl;
+	else if( dlog.is_warn() )
+		dlog.warn() << myname << "(init): <DeviceList> not found..." << endl;
 }
 // -----------------------------------------------------------------------------
 bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it )
@@ -2435,15 +2439,15 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 	RTUDeviceMap::iterator d = m.find(a);
 	if( d == m.end() )
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << myname << "(initDeviceInfo): not found device for addr=" << ModbusRTU::addr2str(a) << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(initDeviceInfo): not found device for addr=" << ModbusRTU::addr2str(a) << endl;
 		return false;
 	}
 
 	d->second->ask_every_reg = it.getIntProp("ask_every_reg");
 
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a)
+	if( dlog.is_info() )
+		dlog.info() << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a)
 			<< " ask_every_reg=" << d->second->ask_every_reg << endl;
 
 	string s(it.getProp("respondSensor"));
@@ -2452,8 +2456,8 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 		d->second->resp_id = conf->getSensorID(s);
 		if( d->second->resp_id == DefaultObjectId )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for respondSensor=" << s << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(initDeviceInfo): not found ID for respondSensor=" << s << endl;
 			return false;
 		}
     }
@@ -2464,22 +2468,23 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
 		d->second->mode_id = conf->getSensorID(mod);
 		if( d->second->mode_id == DefaultObjectId )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(initDeviceInfo): not found ID for modeSensor=" << mod << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(initDeviceInfo): not found ID for modeSensor=" << mod << endl;
 			return false;
 		}
 
 		UniversalIO::IOType m_iotype = conf->getIOType(d->second->mode_id);
 		if( m_iotype != UniversalIO::AI )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(initDeviceInfo): modeSensor='" << mod << "' must be 'AI'" << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(initDeviceInfo): modeSensor='" << mod << "' must be 'AI'" << endl;
 			return false;
 		}
     }
+ 
+	if( dlog.is_info() )
+		dlog.info() << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
 
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
 	int tout = it.getPIntProp("timeout",5000);
 	d->second->resp_ptTimeout.setTiming(tout);
 	d->second->resp_invert = it.getIntProp("invert");
@@ -2537,19 +2542,19 @@ void MBExchange::processingMessage(UniSetTypes::VoidMessage *msg)
 	}
 	catch( SystemError& ex )
 	{
-		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << myname << "(SystemError): " << ex << std::endl;
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(SystemError): " << ex << std::endl;
 //		throw SystemError(ex);
 	}
 	catch( Exception& ex )
 	{
-		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << myname << "(processingMessage): " << ex << std::endl;
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(processingMessage): " << ex << std::endl;
 	}
 	catch(...)
 	{
-		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << myname << "(processingMessage): catch ...\n";
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(processingMessage): catch ...\n";
 	}
 }
 // -----------------------------------------------------------------------------
@@ -2561,14 +2566,14 @@ void MBExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 		{
 			if( rmap.empty() )
 			{
-				if( dlog.debugging(Debug::CRIT) )
-					dlog[Debug::CRIT] << myname << "(sysCommand): ************* ITEM MAP EMPTY! terminated... *************" << endl;
+				if( dlog.is_crit() )
+					dlog.crit() << myname << "(sysCommand): ************* ITEM MAP EMPTY! terminated... *************" << endl;
 				raise(SIGTERM);
 				return;
 			}
 
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << myname << "(sysCommand): device map size= " << rmap.size() << endl;
+			if( dlog.is_info() )
+				dlog.info() << myname << "(sysCommand): device map size= " << rmap.size() << endl;
 
 			if( !shm->isLocalwork() )
 				initDeviceList();
@@ -2588,8 +2593,8 @@ void MBExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 			}
 
 			if( !activated && dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
-
+				dlog.crit() << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
+			
 			{
 				UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
 				askSensors(UniversalIO::UIONotify);
@@ -2633,12 +2638,12 @@ void MBExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 		case SystemMessage::LogRotate:
 		{
 			// переоткрываем логи
-			unideb << myname << "(sysCommand): logRotate" << std::endl;
-			string fname = unideb.getLogFile();
+			ulog << myname << "(sysCommand): logRotate" << std::endl;
+			string fname(ulog.getLogFile());
 			if( !fname.empty() )
 			{
-				unideb.logFile(fname);
-				unideb << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << std::endl;
+				ulog.logFile(fname);
+				ulog << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << std::endl;
 			}
 			dlog << myname << "(sysCommand): logRotate" << std::endl;
 			fname = dlog.getLogFile();
@@ -2667,8 +2672,8 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 		err << myname
 			<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение "
 			<< activateTimeout << " мсек";
-
-		dlog[Debug::CRIT] << err.str() << endl;
+	
+		dlog.crit() << err.str() << endl;
 		kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
 		throw SystemError(err.str());
 	}
@@ -2680,13 +2685,13 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 	}
 	catch( UniSetTypes::Exception& ex )
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << myname << "(askSensors): " << ex << std::endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(askSensors): " << ex << std::endl;
 	}
 	catch(...)
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << myname << "(askSensors): 'sidExchangeMode' catch..." << std::endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(askSensors): 'sidExchangeMode' catch..." << std::endl;
 	}
 
 	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
@@ -2700,13 +2705,13 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 		}
 		catch( UniSetTypes::Exception& ex )
 		{
-			if( dlog.debugging(Debug::WARN) )
-				dlog[Debug::WARN] << myname << "(askSensors): " << ex << std::endl;
+			if( dlog.is_warn() )
+				dlog.warn() << myname << "(askSensors): " << ex << std::endl;
 		}
 		catch(...)
 		{
-			if( dlog.debugging(Debug::WARN) )
-				dlog[Debug::WARN] << myname << "(askSensors): (mode_id=" << d->mode_id << ").. catch..." << std::endl;
+			if( dlog.is_warn() )
+				dlog.warn() << myname << "(askSensors): (mode_id=" << d->mode_id << ").. catch..." << std::endl;
 		}
 
 		if( force_out )
@@ -2725,13 +2730,13 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 				}
 				catch( UniSetTypes::Exception& ex )
 				{
-					if( dlog.debugging(Debug::WARN) )
-						dlog[Debug::WARN] << myname << "(askSensors): " << ex << std::endl;
+					if( dlog.is_warn() )
+						dlog.warn() << myname << "(askSensors): " << ex << std::endl;
 				}
 				catch(...)
 				{
-					if( dlog.debugging(Debug::WARN) )
-						dlog[Debug::WARN] << myname << "(askSensors): id=" << i->si.id << " catch..." << std::endl;
+					if( dlog.is_warn() )
+						dlog.warn() << myname << "(askSensors): id=" << i->si.id << " catch..." << std::endl;
 				}
 			}
 		}
@@ -2767,9 +2772,9 @@ void MBExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 			{
 				if( sm->id == i->si.id && sm->node == i->si.node )
 				{
-					if( dlog.debugging(Debug::INFO) )
+					if( dlog.is_info() )
 					{
-						dlog[Debug::INFO] << myname<< "(sensorInfo): si.id=" << sm->id
+						dlog.info() << myname<< "(sensorInfo): si.id=" << sm->id
 							<< " reg=" << ModbusRTU::dat2str(i->reg->mbreg)
 							<< " val=" << sm->value
 							<< " mb_initOK=" << i->reg->mb_initOK << endl;
@@ -2935,8 +2940,8 @@ void MBExchange::poll()
 	if( allNotRespond && ptReopen.checkTime() )
 	{
 		uniset_mutex_lock l(pollMutex, 300);
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << myname << ": REOPEN timeout..(" << ptReopen.getInterval() << ")" << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << ": REOPEN timeout..(" << ptReopen.getInterval() << ")" << endl;
 
 		mb = initMB(true);
 		ptReopen.reset();
@@ -3009,8 +3014,8 @@ void MBExchange::updateRespondSensors()
 			}
 			catch( Exception& ex )
 			{
-				if( dlog.debugging(Debug::CRIT) )
-					dlog[Debug::CRIT] << myname << "(step): (respond) " << ex << std::endl;
+				if( dlog.is_crit() )
+					dlog.crit() << myname << "(step): (respond) " << ex << std::endl;
 			}
 		}
 	}
@@ -3036,13 +3041,13 @@ void MBExchange::execute()
 		}
 		catch( Exception& ex )
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(execute): " << ex << std::endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(execute): " << ex << std::endl;
 		}
 		catch(...)
 		{
-			if( dlog.debugging(Debug::CRIT) )
-				dlog[Debug::CRIT] << myname << "(execute): catch ..." << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(execute): catch ..." << endl;
 		}
 
 		msleep(polltime);

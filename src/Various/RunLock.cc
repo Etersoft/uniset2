@@ -71,8 +71,8 @@ bool RunLock::isLocked(const string& name)
 					}
 				}
 */				
-				if( unideb.debugging(Debug::INFO) )
-					unideb[Debug::INFO] << "(RunLock): programm " << name << " already run" << endl;
+				if( ulog.is_info() )
+					ulog.info() << "(RunLock): programm " << name << " already run" << endl;
 
 				fclose(out);
 				closedir(d);

@@ -64,7 +64,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	maxCardNum = conf->getArgInt("--"+prefix+"-max-cardnum","10");
 	cards.resize(maxCardNum+1);
 
-	dlog[Debug::INFO] << myname << "(init): numcards=" << numcards << endl;
+	dlog.info() << myname << "(init): numcards=" << numcards << endl;
 
 	UniXML_iterator it(cnode);
 
@@ -89,8 +89,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		{
 			if( cards[i] == NULL )
 			{
-				dlog[Debug::LEVEL3] << myname << "(init): Card N" << i
-									<< " DISABLED! dev='"
+				if( dlog.is_level3() ) dlog.level3() << myname << "(init): Card N" << i
+									<< " DISABLED! dev='" 
 									<< iodev << "'" << endl;
 			}
 		}
@@ -98,7 +98,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		{
 			noCards = false;
 			cards[i] = new ComediInterface(iodev);
-			dlog[Debug::LEVEL3] << myname << "(init): ADD card" << i  << " dev=" << iodev << endl;
+			if( dlog.is_level3() ) dlog.level3() << myname << "(init): ADD card" << i  << " dev=" << iodev << endl;
 		}
 
 		if( cards[i] != NULL )
@@ -121,8 +121,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 
 					if( !stype.empty() )
 					{
-						dlog[Debug::INFO] << myname
-										<< "(init): card" << i
+						dlog.info() << myname
+										<< "(init): card" << i 
 										<< " subdev" << s << " set type " << stype << endl;
 
 						cards[i]->configureSubdev(s-1,st);
@@ -132,8 +132,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		}
 	}
 
-	dlog[Debug::INFO] << myname << "(init): result numcards=" << cards.size() << endl;
-
+	dlog.info() << myname << "(init): result numcards=" << cards.size() << endl;
+	
 	polltime = conf->getArgInt("--"+prefix+"-polltime",it.getProp("polltime"));
 	if( !polltime )
 		polltime = 100;
@@ -153,11 +153,11 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		{
 			ostringstream err;
 			err << myname << ": Unkown ID for " << testlamp;
-			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			dlog.crit() << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 	
-		dlog[Debug::INFO] << myname << "(init): testLamp_S='" << testlamp << "'" << endl;
+		dlog.info() << myname << "(init): testLamp_S='" << testlamp << "'" << endl;
 	}
 
 	string tmode = conf->getArgParam("--"+prefix+"-test-mode",it.getProp("testmode_as"));
@@ -168,11 +168,11 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		{
 			ostringstream err;
 			err << myname << ": Unknown ID for " << tmode;
-			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			dlog.crit() << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
-		dlog[Debug::INFO] << myname << "(init): testMode_as='" << testmode << "'" << endl;
+		dlog.info() << myname << "(init): testMode_as='" << testmode << "'" << endl;
 	}
 
 	shm = new SMInterface(icID,&ui,myid,ic);
@@ -181,7 +181,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	s_field = conf->getArgParam("--"+prefix+"-s-filter-field");
 	s_fvalue = conf->getArgParam("--"+prefix+"-s-filter-value");
 
-	dlog[Debug::INFO] << myname << "(init): read s_field='" << s_field
+	dlog.info() << myname << "(init): read s_field='" << s_field
 						<< "' s_fvalue='" << s_fvalue << "'" << endl;
 
 	int blink_msec = conf->getArgPInt("--"+prefix+"-blink-time",it.getProp("blink-time"), 300);
@@ -205,12 +205,12 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	if( sidTestSMReady == DefaultObjectId )
 	{
 		sidTestSMReady = conf->getSensorID("TestMode_S");
-		dlog[Debug::WARN] << myname
+		dlog.warn() << myname
 				<< "(init): Unknown ID for sm-ready-test-sid (--" << prefix << "-sm-ready-test-sid)."
 				<< " Use 'TestMode_S'" << endl;
 	}
 	else
-		dlog[Debug::INFO] << myname << "(init): test-sid: " << sm_ready_sid << endl;
+		dlog.info() << myname << "(init): test-sid: " << sm_ready_sid << endl;
 
 
 	// -----------------------
@@ -222,7 +222,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		{
 			ostringstream err;
 			err << myname << ": Not found ID for 'HeartBeat' " << heart;
-			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			dlog.crit() << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
@@ -283,7 +283,7 @@ void IOControl::execute()
 	}
 	
 	maxHalf = maxItem / 2;
-	dlog[Debug::INFO] << myname << "(init): iomap size = " << iomap.size() << endl;
+	dlog.info() << myname << "(init): iomap size = " << iomap.size() << endl;
 
 	cerr << myname << "(iomap size): " << iomap.size() << endl;
 
@@ -311,7 +311,7 @@ void IOControl::execute()
 	}
 			
 	if( !activated )
-		dlog[Debug::CRIT] << myname << "(execute): ************* don`t activate?! ************" << endl;
+		dlog.crit() << myname << "(execute): ************* don`t activate?! ************" << endl;
 
 	try
 	{
@@ -378,16 +378,16 @@ void IOControl::execute()
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::LEVEL3] << myname << "(execute): " << ex << endl;
+			if( dlog.is_level3() ) dlog.level3() << myname << "(execute): " << ex << endl;
 		}
 		catch(CORBA::SystemException& ex)
 		{
-			dlog[Debug::LEVEL3] << myname << "(execute): CORBA::SystemException: "
+			if( dlog.is_level3() ) dlog.level3() << myname << "(execute): CORBA::SystemException: "
 				<< ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::LEVEL3] << myname << "(execute): catch ..." << endl;
+			if( dlog.is_level3() ) dlog.level3() << myname << "(execute): catch ..." << endl;
 		}
 		
 		if( term )
@@ -508,9 +508,9 @@ void IOControl::ioread( IOInfo* it )
 			{
 				int val = card->getAnalogChannel(it->subdev,it->channel, it->range, it->aref);
 
-				if( unideb.debugging(Debug::LEVEL3) )
+				if( dlog.is_level3() )
 				{
-					dlog[Debug::LEVEL3] << myname << "(iopoll): read AI "
+					dlog.level3() << myname << "(iopoll): read AI "
 						<< " sid=" << it->si.id 
 						<< " subdev=" << it->subdev 
 						<< " chan=" << it->channel
@@ -524,11 +524,11 @@ void IOControl::ioread( IOInfo* it )
 			{
 				bool set = card->getDigitalChannel(it->subdev,it->channel);
 /*
-				if( unideb.debugging(Debug::LEVEL3) )
+				if( ulog.ebugging(Debug::LEVEL3) )
 				{
-					dlog[Debug::LEVEL3] << myname << "(iopoll): read DI "
-						<< " sid=" << it->si.id
-						<< " subdev=" << it->subdev
+					if( dlog.is_level3() ) dlog.level3() << myname << "(iopoll): read DI "
+						<< " sid=" << it->si.id 
+						<< " subdev=" << it->subdev 
 						<< " chan=" << it->channel
 						<< " state=" << set
 						<< endl;
@@ -648,28 +648,33 @@ void IOControl::ioread( IOInfo* it )
 		}
 		catch(IOController_i::NameNotFound &ex)
 		{
-			dlog[Debug::LEVEL3] << myname << "(iopoll):(NameNotFound) " << ex.err << endl;
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(iopoll):(NameNotFound) " << ex.err << endl;
 		}
 		catch(IOController_i::IOBadParam& ex )
 		{
-			dlog[Debug::LEVEL3] << myname << "(iopoll):(IOBadParam) " << ex.err << endl;
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(iopoll):(IOBadParam) " << ex.err << endl;
 		}
 		catch(IONotifyController_i::BadRange )
 		{
-			dlog[Debug::LEVEL3] << myname << "(iopoll): (BadRange)..." << endl;
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(iopoll): (BadRange)..." << endl;
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::LEVEL3] << myname << "(iopoll): " << ex << endl;
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(iopoll): " << ex << endl;
 		}
 		catch(CORBA::SystemException& ex)
 		{
-			dlog[Debug::LEVEL3] << myname << "(iopoll): СORBA::SystemException: "
-				<< ex.NP_minorString() << endl;
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(iopoll): СORBA::SystemException: "
+					<< ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::LEVEL3] << myname << "(iopoll): catch ..." << endl;
+			if( dlog.is_level3() ) dlog.level3() << myname << "(iopoll): catch ..." << endl;
 		}
 	
 }
@@ -720,10 +725,11 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 
 	if( c.empty() || inf.ncard < 0 || inf.ncard >= (int)cards.size() )
 	{
-		dlog[Debug::LEVEL3] << myname
-							<< "(initIOItem): Unknown or bad card number ("
-							<< inf.ncard << ") for " << it.getProp("name")
-							<< " set default=" << defCardNum << endl;
+		if( dlog.is_level3() )
+			dlog.level3() << myname
+				<< "(initIOItem): Unknown or bad card number ("
+				<< inf.ncard << ") for " << it.getProp("name")
+				<< " set default=" << defCardNum << endl;
 		inf.ncard = defCardNum;
 	}
 
@@ -752,12 +758,13 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	inf.channel = it.getIntProp("channel");
 	if( inf.channel < 0 || inf.channel > 32 )
 	{
-		dlog[Debug::WARN] << myname << "(readItem): Unknown channel: " << inf.channel
-							<< " for " << it.getProp("name") << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(readItem): Unknown channel: " << inf.channel
+					<< " for " << it.getProp("name") << endl;
 		return false;
 	}
 
-	if( !IOBase::initItem(&inf,it,shm,&unideb,myname,filtersize,filterT) )
+	if( !IOBase::initItem(&inf,it,shm,&dlog,myname,filtersize,filterT) )
 		return false;
 
 	inf.lamp = it.getIntProp("lamp");
@@ -772,24 +779,26 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 		inf.range = it.getIntProp("range");
 		if( inf.range < 0 || inf.range > 3 )
 		{
-			dlog[Debug::CRIT] << myname << "(readItem): Unknown 'range': " << inf.range
-							<< " for " << it.getProp("name")
-							<< " Must be range=[0..3]" << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(readItem): Unknown 'range': " << inf.range
+					<< " for " << it.getProp("name")
+					<< " Must be range=[0..3]" << endl;
 			return false;
 		}
 
 		inf.aref = it.getIntProp("aref");
 		if( inf.aref < 0 || inf.aref > 3 )
 		{
-			dlog[Debug::CRIT] << myname << "(readItem): Unknown 'aref': " << inf.aref
-							<< " for " << it.getProp("name")
-							<< ". Must be aref=[0..3]" << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(readItem): Unknown 'aref': " << inf.aref
+					<< " for " << it.getProp("name")
+					<< ". Must be aref=[0..3]" << endl;
 			return false;
 		}
 	}
 
-	if( unideb.debugging(Debug::LEVEL3) )
-		dlog[Debug::LEVEL3] << myname << "(readItem): add: " << inf.stype << " " << inf << endl;
+	if( dlog.is_level3() )
+		dlog.level3() << myname << "(readItem): add: " << inf.stype << " " << inf << endl;
 
 	// если вектор уже заполнен
 	// то увеличиваем его на 10 элементов (с запасом)
@@ -803,9 +812,10 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	{
 		IOPriority p(prior,maxItem);
 		pmap.push_back(p);
-		dlog[Debug::LEVEL3] << myname << "(readItem): add to priority list: " <<
-						it.getProp("name") 
-						<< " priority=" << prior << endl;
+		if( dlog.is_level3() )
+			dlog.level3() << myname << "(readItem): add to priority list: "
+				<< it.getProp("name")
+				<< " priority=" << prior << endl;
 	}
 	
 	iomap[maxItem++] = inf;
@@ -862,7 +872,8 @@ void IOControl::sigterm( int signo )
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::LEVEL3] << myname << "(sigterm): " << ex << endl;
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(sigterm): " << ex << endl;
 		}
 		catch(...){}
 	}
@@ -898,7 +909,8 @@ void IOControl::initOutputs()
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::LEVEL3] << myname << "(initOutput): " << ex << endl;
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(initOutput): " << ex << endl;
 		}
 	}
 }
@@ -939,8 +951,8 @@ void IOControl::initIOCard()
 		}
 		catch( Exception& ex)
 		{
-			dlog[Debug::CRIT] << myname << "(initIOCard): sid=" << it->si.id
-										<< " " << ex << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(initIOCard): sid=" << it->si.id << " " << ex << endl;
 		}
 	}
 }	
@@ -968,7 +980,8 @@ void IOControl::blink( BlinkList& lst, bool& bstate )
 		}
 		catch( Exception& ex )
 		{
-			cerr << myname << "(blink): " << ex << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(blink): " << ex << endl;
 		}
 	}
 	
@@ -1052,7 +1065,7 @@ void IOControl::check_testmode()
 				}
 				catch( Exception& ex )
 				{
-					dlog[Debug::LEVEL3] << myname << "(sigterm): " << ex << endl;
+					if( dlog.is_level3() ) dlog.level3() << myname << "(sigterm): " << ex << endl;
 				}
 				catch(...){}
 			}
@@ -1061,7 +1074,8 @@ void IOControl::check_testmode()
 	}
 	catch( Exception& ex)
 	{
-		dlog[Debug::CRIT] << myname << "(check_testmode): " << ex << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(check_testmode): " << ex << endl;
 	}
 	catch(...)
 	{
@@ -1126,7 +1140,8 @@ void IOControl::check_testlamp()
 	}
 	catch( Exception& ex)
 	{
-		dlog[Debug::CRIT] << myname << "(check_testlamp): " << ex << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(check_testlamp): " << ex << endl;
 	}
 	catch(...)
 	{
@@ -1156,7 +1171,8 @@ IOControl* IOControl::init_iocontrol( int argc, const char* const* argv,
 
 	int numcards = conf->getArgPInt("--"+prefix+"-numcards",1);
 
-	dlog[Debug::INFO] << "(iocontrol): name = " << name << "(" << ID << ")" << endl;
+	if( dlog.is_info() )
+		dlog.info() << "(iocontrol): name = " << name << "(" << ID << ")" << endl;
 	return new IOControl(ID,icID,ic,numcards,prefix);
 }
 // -----------------------------------------------------------------------------
@@ -1226,7 +1242,8 @@ void IOControl::processingMessage( UniSetTypes::VoidMessage* msg )
 	}
 	catch(Exception& ex)
 	{
-		cout  << myname << "(processingMessage): " << ex << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(processingMessage): " << ex << endl;
 	}
 }
 // -----------------------------------------------------------------------------
@@ -1239,14 +1256,15 @@ void IOControl::sysCommand( SystemMessage* sm )
 			PassiveTimer ptAct(activateTimeout);
 			while( !activated && !ptAct.checkTime() )
 			{	
-				cout << myname << "(sysCommand): wait activate..." << endl;
+				if( dlog.is_info() )
+					dlog.info() << myname << "(sysCommand): wait activate..." << endl;
 				msleep(300);
 				if( activated )
 					break;
 			}
 			
-			if( !activated )
-				dlog[Debug::CRIT] << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
+			if( !activated && dlog.is_crit() )
+				dlog.crit() << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 		
 			askSensors(UniversalIO::UIONotify);
 			break;
@@ -1286,20 +1304,20 @@ void IOControl::sysCommand( SystemMessage* sm )
 		case SystemMessage::LogRotate:
 		{
 			// переоткрываем логи
-			unideb << myname << "(sysCommand): logRotate" << endl;
-			string fname = unideb.getLogFile();
+			ulog << myname << "(sysCommand): logRotate" << endl;
+			string fname( ulog.getLogFile() );
 			if( !fname.empty() )
 			{
-				unideb.logFile(fname);
-				unideb << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << endl;
+				ulog.logFile(fname);
+				ulog << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << endl;
 			}
 
-			unideb << myname << "(sysCommand): logRotate" << endl;
-			fname = unideb.getLogFile();
+			dlog << myname << "(sysCommand): logRotate" << endl;
+			fname = dlog.getLogFile();
 			if( !fname.empty() )
 			{
-				unideb.logFile(fname);
-				unideb << myname << "(sysCommand): ***************** GGDEB LOG ROTATE *****************" << endl;
+				dlog.logFile(fname);
+				dlog << myname << "(sysCommand): ***************** GGDEB LOG ROTATE *****************" << endl;
 			}
 		}
 		break;
@@ -1323,7 +1341,7 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 			<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение " 
 			<< activateTimeout << " мсек";
 
-		dlog[Debug::CRIT] << err.str() << endl;
+		dlog.crit() << err.str() << endl;
 		kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
 		throw SystemError(err.str());
 	}
@@ -1331,14 +1349,15 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 	PassiveTimer ptAct(activateTimeout);
 	while( !readconf_ok && !ptAct.checkTime() )
 	{	
-		cout << myname << "(askSensors): wait read configuration..." << endl;
+		if( dlog.is_info() )
+			dlog.info() << myname << "(askSensors): wait read configuration..." << endl;
 		msleep(50);
 		if( readconf_ok )
 			break;
 	}
 			
-	if( !readconf_ok )
-		dlog[Debug::CRIT] << myname << "(askSensors): ************* don`t read configuration?! ************" << endl;
+	if( !readconf_ok && dlog.is_crit() )
+		dlog.crit() << myname << "(askSensors): ************* don`t read configuration?! ************" << endl;
 
 	try
 	{
@@ -1347,7 +1366,8 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 	}
 	catch( Exception& ex)
 	{
-		dlog[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(askSensors): " << ex << endl;
 	}
 
 	try
@@ -1357,7 +1377,8 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 	}
 	catch( Exception& ex)
 	{
-		dlog[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(askSensors): " << ex << endl;
 	}	
 
 	for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
@@ -1379,7 +1400,8 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 			}
 			catch( Exception& ex)
 			{
-				dlog[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
+				if( dlog.is_crit() )
+					dlog.crit() << myname << "(askSensors): " << ex << endl;
 			}
 		}
 	}
@@ -1387,9 +1409,9 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 // -----------------------------------------------------------------------------
 void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
-	if( unideb.debugging(Debug::LEVEL1) )
+	if( dlog.is_level1() )
 	{
-		dlog[Debug::LEVEL1] << myname << "(sensorInfo): sm->id=" << sm->id
+		dlog.level1() << myname << "(sensorInfo): sm->id=" << sm->id
 						<< " val=" << sm->value << endl;
 	}
 	
@@ -1398,8 +1420,8 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 
 	if( sm->id == testLamp_S )
 	{
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << myname << "(sensorInfo): test_lamp=" << sm->value << endl;
+		if( dlog.is_info() )
+			dlog.info() << myname << "(sensorInfo): test_lamp=" << sm->value << endl;
 		isTestLamp = (bool)sm->value;
 	}
 	else if( sm->id == testMode_as )
@@ -1412,9 +1434,9 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 	{
 		if( it->si.id == sm->id )
 		{
-			if( unideb.debugging(Debug::INFO) )
+			if( dlog.is_info() )
 			{
-				dlog[Debug::INFO] << myname << "(sensorInfo): sid=" << sm->id
+				dlog.info() << myname << "(sensorInfo): sid=" << sm->id
 					<< " value=" << sm->value
 					<< endl;
 			}
@@ -1514,9 +1536,9 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
 			}
 			else if( it->stype == UniversalIO::DO )
 			{
-				if( unideb.debugging(Debug::LEVEL1) )
+				if( dlog.is_level1() )
 				{
-					dlog[Debug::LEVEL1] << myname << "(sensorInfo): DO: sm->id=" << sm->id
+					dlog.level1() << myname << "(sensorInfo): DO: sm->id=" << sm->id
 							<< " val=" << sm->value << endl;
 				}
 				uniset_rwmutex_wrlock lock(it->val_lock);
@@ -1541,7 +1563,7 @@ void IOControl::waitSM()
 		err << myname << "(execute): did not wait for the ready 'SharedMemory'. Timeout "
 					<< smReadyTimeout << " msec";
 
-		dlog[Debug::CRIT] << err.str() << endl;
+		dlog.crit() << err.str() << endl;
 		throw SystemError(err.str());
 	}
 }
@@ -1551,14 +1573,16 @@ void IOControl::buildCardsList()
 	xmlNode* nnode = conf->getXMLNodesSection();
 	if( !nnode )
 	{
-		dlog[Debug::WARN] << myname << "(buildCardsList): <nodes> not found?!" << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(buildCardsList): <nodes> not found?!" << endl;
 		return;
 	}
 
 	UniXML* xml = conf->getConfXML();
 	if( !xml )
 	{
-		dlog[Debug::WARN] << myname << "(buildCardsList): xml=NULL?!" << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(buildCardsList): xml=NULL?!" << endl;
 		return;
 	}
 
@@ -1576,7 +1600,8 @@ void IOControl::buildCardsList()
 
 	if( !mynode )
 	{
-		dlog[Debug::WARN] << myname << "(buildCardsList): node='" << conf->getLocalNodeName() << "' not found.." << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(buildCardsList): node='" << conf->getLocalNodeName() << "' not found.." << endl;
 		return;
 	}
 		
@@ -1586,14 +1611,16 @@ void IOControl::buildCardsList()
 
 	if( !cnode )
 	{
-		dlog[Debug::WARN] << myname << "(buildCardsList): Not found <iocards> for node=" << conf->getLocalNodeName() << "(" << conf->getLocalNode() << ")" << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(buildCardsList): Not found <iocards> for node=" << conf->getLocalNodeName() << "(" << conf->getLocalNode() << ")" << endl;
 		return;
 	}
 
 	UniXML_iterator it(cnode);
 	if( !it.goChildren() )
 	{
-		dlog[Debug::WARN] << myname << "(buildCardsList): <iocards> empty.." << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(buildCardsList): <iocards> empty.." << endl;
 		return;
 	}
 
@@ -1611,21 +1638,24 @@ void IOControl::buildCardsList()
 
 		if( cardnum <=0 )
 		{
-			dlog[Debug::LEVEL3] << myname << "(init): Unknown card number?!  card=" << it.getIntProp("card") << "(" << cname << ")" << endl;
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(init): Unknown card number?!  card=" << it.getIntProp("card") << "(" << cname << ")" << endl;
 			continue;
 
 		}
 
 		if( cardnum > maxCardNum )
 		{
-			dlog[Debug::LEVEL3] << myname << "(init): BAD card number card='" << it.getIntProp("card") << "'(" << cname << "). Must be < " << maxCardNum << endl;
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(init): BAD card number card='" << it.getIntProp("card") << "'(" << cname << "). Must be < " << maxCardNum << endl;
 			continue;
 		}
 
 		if( it.getIntProp("ignore") )
 		{
 			cards[cardnum] = NULL;
-			dlog[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
 								<< " DISABLED! ignore=1" << endl;
 			continue;
 		}
@@ -1636,7 +1666,8 @@ void IOControl::buildCardsList()
 		if( findArgParam( s.str(), conf->getArgc(), conf->getArgv()) != -1 )
 		{
 			cards[cardnum] = NULL;
-			dlog[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
 								<< " DISABLED! (" << s.str() << ")" << endl;
 			continue;
 		}
@@ -1646,13 +1677,15 @@ void IOControl::buildCardsList()
 		if( iodev.empty() || iodev == "/dev/null" )
 		{
 			cards[cardnum] = NULL;
-			dlog[Debug::LEVEL3] << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
-								<< " DISABLED! iodev='"
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(init): card=" << it.getProp("card") << "(" << cname << ")"
+								<< " DISABLED! iodev='" 
 								<< iodev << "'" << endl;
 			continue;
 		}
 
-		dlog[Debug::LEVEL3] << myname << "(init): ADD card=" << it.getProp("card") << "(" << cname << ")"  << " dev=" << iodev << endl;
+		if( dlog.is_level3() )
+			dlog.level3() << myname << "(init): ADD card=" << it.getProp("card") << "(" << cname << ")"  << " dev=" << iodev << endl;
 
 		try
 		{
@@ -1661,7 +1694,8 @@ void IOControl::buildCardsList()
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::CRIT] << myname << "(buildCardsList): " << ex << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(buildCardsList): " << ex << endl;
 			throw;
 		}
 
@@ -1689,7 +1723,8 @@ void IOControl::buildCardsList()
 				string subdev_name( it.getProp(s.str()) );
 				if( subdev_name.empty() )
 				{
-					dlog[Debug::INFO] << myname << "(buidCardList): empty subdev. ignore... (" << s.str() << ")" << endl;
+					if( dlog.is_info() )
+						dlog.info() << myname << "(buidCardList): empty subdev. ignore... (" << s.str() << ")" << endl;
 					continue;
 				}
 
@@ -1705,13 +1740,15 @@ void IOControl::buildCardsList()
 				if( st == ComediInterface::GRAYHILL )
 				{
 					// для Grayhill конфигурирование не требуется
-					dlog[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card")
+					if( dlog.is_info() )
+						dlog.info() << myname << "(buildCardsList): card=" << it.getProp("card")
 						<< "(" << cname << ")"
 						<< " init subdev" << i << " 'GRAYHILL'" << endl;
 					continue;
 				}
 
-				dlog[Debug::INFO] << myname << "(buildCardsList): card=" << it.getProp("card")
+				if( dlog.is_info() )
+					dlog.info() << myname << "(buildCardsList): card=" << it.getProp("card")
 						<< "(" << cname << ")"
 						<< " init subdev" << i << " " << it.getProp(s.str()) << endl;
 				cards[cardnum]->configureSubdev(i-1,st);

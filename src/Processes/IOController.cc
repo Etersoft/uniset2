@@ -85,7 +85,7 @@ void IOController::sensorsUnregistration()
 		}
 		catch(Exception& ex)
 		{
-			unideb[Debug::CRIT] << myname << "(sensorsUnregistration): "<< ex << endl;
+			ulog.crit() << myname << "(sensorsUnregistration): "<< ex << endl;
 		}
 		catch(...){}
 	}
@@ -118,9 +118,9 @@ long IOController::localGetValue( IOController::IOStateList::iterator& li,
 	err << myname << "(localGetValue): Not found sensor (" << si.id << ":" << si.node << ") "
 		<< conf->oind->getNameById(si.id);
 
-	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << err.str() << endl;
-
+	if( ulog.is_info() )
+		ulog.info() << err.str() << endl;
+	
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ------------------------------------------------------------------------------------------
@@ -236,9 +236,9 @@ void IOController::localSetValue( IOController::IOStateList::iterator& li,
 		
 		if( checkIOFilters(&li->second,value,sup_id) || blocked )
 		{
-			if( unideb.debugging(Debug::INFO) )	
+			if( ulog.is_info() )
 			{
-				unideb[Debug::INFO] << myname << ": save sensor value (" << si.id << ":" << si.node << ")"
+				ulog.info() << myname << ": save sensor value (" << si.id << ":" << si.node << ")"
 					<< " name: " << conf->oind->getNameById(si.id)
 					<< " node: " << conf->oind->getMapName(si.node)
 					<< " value="<< value << endl;
@@ -295,7 +295,7 @@ IOType IOController::getIOType( const IOController_i::SensorInfo& si )
 	
 	ostringstream err;
 	err << myname << "(getIOType): датчик имя: " << conf->oind->getNameById(si.id) << " не найден";			
-//	unideb[Debug::INFO] << err.str() << endl;
+//	ulog.info() << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ---------------------------------------------------------------------------
@@ -306,8 +306,8 @@ void IOController::ioRegistration( const USensorInfo& ainf, bool force )
 	{
 		ostringstream err;
 		err << "(IOCOntroller::ioRegistration): КОНТРОЛЛЕРУ НЕ ЗАДАН ObjectId. Регистрация невозможна.";
-        if( unideb.debugging(Debug::WARN) )
-            unideb[Debug::WARN] << err.str() << endl;
+        if( ulog.is_warn() )
+            ulog.warn() << err.str() << endl;
 		throw ResolveNameError(err.str().c_str());
 	}
 
@@ -348,10 +348,10 @@ void IOController::ioRegistration( const USensorInfo& ainf, bool force )
 		{
 			try
 			{
-				if( unideb.debugging(Debug::INFO) )	
+				if( ulog.is_info() )
 				{
-					unideb[Debug::INFO] << myname 
-						<< "(ioRegistration): регистрирую "
+					ulog.info() << myname
+						<< "(ioRegistration): регистрирую " 
 						<< conf->oind->getNameById(ainf.si.id, ainf.si.node) << endl;
 				}
 				ui.registered( ainf.si.id, ainf.si.node, getRef(), true );
@@ -359,9 +359,9 @@ void IOController::ioRegistration( const USensorInfo& ainf, bool force )
 			}
 			catch(ObjectNameAlready& ex )
 			{
-				if( unideb.debugging(Debug::WARN) )
+				if( ulog.is_warn() )
 				{
-					unideb[Debug::WARN] << myname 
+					ulog.warn() << myname
 					<< "(asRegistration): ЗАМЕНЯЮ СУЩЕСТВУЮЩИЙ ОБЪЕКТ (ObjectNameAlready)" << endl;
 				}
 				ui.unregister(ainf.si.id,ainf.si.node);
@@ -370,13 +370,13 @@ void IOController::ioRegistration( const USensorInfo& ainf, bool force )
 	}
 	catch( Exception& ex )
 	{
-		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << myname << "(ioRegistration): " << ex << endl;
+		if( ulog.is_crit() )
+			ulog.crit() << myname << "(ioRegistration): " << ex << endl;
 	}
 	catch(...)
 	{
-		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << myname << "(ioRegistration): catch ..."<< endl;
+		if( ulog.is_crit() )
+			ulog.crit() << myname << "(ioRegistration): catch ..."<< endl;
 	}
 }
 // ---------------------------------------------------------------------------
@@ -407,8 +407,8 @@ void IOController::logging( UniSetTypes::SensorMessage& sm )
 		if( isPingDBServer )
 		{
 			isPingDBServer = false;
-			if( unideb.debugging(Debug::CRIT) )
-				unideb[Debug::CRIT] << myname << "(logging): DBServer unavailable" << endl;
+			if( ulog.is_crit() )
+				ulog.crit() << myname << "(logging): DBServer unavailable" << endl;
 		}
 	}
 }
@@ -487,9 +487,9 @@ IOController_i::SensorIOInfo IOController::getSensorIOInfo( const IOController_i
 	err << myname << "(getSensorIOInfo): Unknown sensor (" << si.id << ":" << si.node << ")"
 		<< conf->oind->getNameById(si.id,si.node);		
 
-	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << err.str() << endl;
-
+	if( ulog.is_info() )
+		ulog.info() << err.str() << endl;
+	
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -532,8 +532,8 @@ void IOController::calibrate(const IOController_i::SensorInfo& si,
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
 
-	if( unideb.debugging(Debug::INFO) )	
-		unideb[Debug::INFO] << myname <<"(calibrate): from " << conf->oind->getNameById(adminId) << endl;
+	if( ulog.is_info() )
+		ulog.info() << myname <<"(calibrate): from " << conf->oind->getNameById(adminId) << endl;
 	
 	it->second.ci = ci;
 }									
@@ -704,8 +704,8 @@ IOController_i::ShortIOInfo IOController::getChangedTime( const IOController_i::
 	ostringstream err;
 	err << myname << "(getChangedTime): вход(выход) с именем "
 		<< conf->oind->getNameById(si.id) << " не найден";
-	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << err.str() << endl;
+	if( ulog.is_info() )
+		ulog.info() << err.str() << endl;
 	throw IOController_i::NameNotFound(err.str().c_str());
 }
 // -----------------------------------------------------------------------------
@@ -746,8 +746,8 @@ IOController::ChangeSignal IOController::signal_change_value( UniSetTypes::Objec
 		err << myname << "(signal_change_value): вход(выход) с именем "
 			<< conf->oind->getNameById(id) << " не найден";
 
-		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << err.str() << endl;
+		if( ulog.is_info() )
+			ulog.info() << err.str() << endl;
 
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}
@@ -775,8 +775,8 @@ IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_s
 		err << myname << "(signal_change_undefine): вход(выход) с именем "
 			<< conf->oind->getNameById(id) << " не найден";
 
-		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << err.str() << endl;
+		if( ulog.is_info() )
+			ulog.info() << err.str() << endl;
 
 		throw IOController_i::NameNotFound(err.str().c_str());
 	}

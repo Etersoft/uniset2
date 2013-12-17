@@ -108,6 +108,6 @@ void operator|=(Debug::type & d1, Debug::type d2)
 #include "DebugStream.h"
 
 std::ostream & operator<<(std::ostream & o, Debug::type t);
-//extern DebugStream unideb;
+//extern DebugStream ulog;
 
 #endif

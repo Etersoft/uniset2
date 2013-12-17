@@ -24,7 +24,8 @@ PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId o
 		{
 			ostringstream err;
 			err << myname << ": ID not found ('HeartBeat') for " << heart;
-			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
@@ -51,8 +52,8 @@ void PassiveLProcessor::step()
 	}
 	catch(Exception& ex )
 	{
-		dlog[Debug::CRIT] << myname
-			<< "(step): (hb) " << ex << std::endl;
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(step): (hb) " << ex << std::endl;
 	}
 	
 	if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
@@ -64,8 +65,8 @@ void PassiveLProcessor::step()
 		}
 		catch(Exception& ex)
 		{
-			dlog[Debug::CRIT] << myname
-				<< "(step): (hb) " << ex << std::endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(step): (hb) " << ex << std::endl;
 		}
 	}
 
@@ -85,7 +86,8 @@ void PassiveLProcessor::askSensors( UniversalIO::UIOCommand cmd )
 	}
 	catch( Exception& ex )
 	{
-		dlog[Debug::CRIT] << myname << "(askSensors): " << ex << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << myname << "(askSensors): " << ex << endl;
 		throw SystemError(myname +"(askSensors): do not ask sensors" );
 	}
 }
@@ -113,7 +115,8 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 		{
 			if( !shm->waitSMready(smReadyTimeout) )
 			{
-				dlog[Debug::CRIT] << myname << "(ERR): SM not ready. Terminated... " << endl;
+				if( dlog.is_crit() )
+					dlog.crit() << myname << "(ERR): SM not ready. Terminated... " << endl;
 				raise(SIGTERM);
 				return;
 			}
@@ -146,12 +149,12 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 		case SystemMessage::LogRotate:
 		{
 			// переоткрываем логи
-			unideb << myname << "(sysCommand): logRotate" << std::endl;
-			string fname = unideb.getLogFile();
+			ulog << myname << "(sysCommand): logRotate" << std::endl;
+			string fname (ulog.getLogFile() );
 			if( !fname.empty() )
 			{
-				unideb.logFile(fname);
-				unideb << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << std::endl;
+				ulog.logFile(fname);
+				ulog << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << std::endl;
 			}
 
 			dlog << myname << "(sysCommand): logRotate" << std::endl;
@@ -199,11 +202,11 @@ void PassiveLProcessor::setOuts()
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::CRIT] << myname << "(setOuts): " << ex << endl;
+			dlog.crit() << myname << "(setOuts): " << ex << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::CRIT] << myname << "(setOuts): catch...\n";
+			dlog.crit() << myname << "(setOuts): catch...\n";
 		}
 	}
 }
@@ -218,11 +221,11 @@ void PassiveLProcessor::sigterm( int signo )
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::CRIT] << myname << "(sigterm): " << ex << endl;
+			dlog.crit() << myname << "(sigterm): " << ex << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::CRIT] << myname << "(sigterm): catch...\n";
+			dlog.crit() << myname << "(sigterm): catch...\n";
 		}
 	}
 }
@@ -260,7 +263,7 @@ void PassiveLProcessor::processingMessage( UniSetTypes::VoidMessage* msg )
 	}
 	catch(Exception& ex)
 	{
-		dlog[Debug::CRIT]  << myname << "(processingMessage): " << ex << endl;
+		dlog.crit()  << myname << "(processingMessage): " << ex << endl;
 	}
 }
 // -----------------------------------------------------------------------------

@@ -39,7 +39,7 @@ int main(int argc, const char **argv)
 		std::ostringstream logname;
 		string dir(conf->getLogDir());
 		logname << dir << logfilename;
-		unideb.logFile( logname.str() );
+		ulog.logFile( logname.str() );
 		dlog.logFile( logname.str() );
 
 		conf->initDebug(dlog,"dlog");
@@ -60,7 +60,7 @@ int main(int argc, const char **argv)
 		MBSlave* s = MBSlave::init_mbslave(argc,argv,shmID);
 		if( !s )
 		{
-			dlog[Debug::CRIT] << "(mbslave): init не прошёл..." << endl;
+			dlog.crit() << "(mbslave): init не прошёл..." << endl;
 			return 1;
 		}
 
@@ -69,10 +69,10 @@ int main(int argc, const char **argv)
 		SystemMessage sm(SystemMessage::StartUp); 
 		act.broadcast( sm.transport_msg() );
 
-		unideb(Debug::ANY) << "\n\n\n";
-		unideb[Debug::ANY] << "(main): -------------- MBSlave START -------------------------\n\n";
-		dlog(Debug::ANY) << "\n\n\n";
-		dlog[Debug::ANY] << "(main): -------------- MBSlave START -------------------------\n\n";
+		ulog << "\n\n\n";
+		ulog << "(main): -------------- MBSlave START -------------------------\n\n";
+		dlog << "\n\n\n";
+		dlog << "(main): -------------- MBSlave START -------------------------\n\n";
 
 		act.run(false);
 		while( waitpid(-1, 0, 0) > 0 );
@@ -80,19 +80,19 @@ int main(int argc, const char **argv)
 	}
 	catch( SystemError& err )
 	{
-		dlog[Debug::CRIT] << "(mbslave): " << err << endl;
+		dlog.crit() << "(mbslave): " << err << endl;
 	}
 	catch( Exception& ex )
 	{
-		dlog[Debug::CRIT] << "(mbslave): " << ex << endl;
+		dlog.crit() << "(mbslave): " << ex << endl;
 	}
 	catch( std::exception& e )
 	{
-		dlog[Debug::CRIT] << "(mbslave): " << e.what() << endl;
+		dlog.crit() << "(mbslave): " << e.what() << endl;
 	}
 	catch(...)
 	{
-		dlog[Debug::CRIT] << "(mbslave): catch(...)" << endl;
+		dlog.crit() << "(mbslave): catch(...)" << endl;
 	}
 
 	while( waitpid(-1, 0, 0) > 0 );

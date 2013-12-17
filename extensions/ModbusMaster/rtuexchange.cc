@@ -34,7 +34,7 @@ int main( int argc, char** argv )
 		std::ostringstream logname;
 		string dir(conf->getLogDir());
 		logname << dir << logfilename;
-		unideb.logFile( logname.str() );
+		ulog.logFile( logname.str() );
 		dlog.logFile( logname.str() );
 
 		ObjectId shmID = DefaultObjectId;
@@ -53,7 +53,7 @@ int main( int argc, char** argv )
 		RTUExchange* rs = RTUExchange::init_rtuexchange(argc,argv,shmID,0,"rs");
 		if( !rs )
 		{
-			dlog[Debug::CRIT] << "(rtuexchange): init не прошёл..." << endl;
+			dlog.crit() << "(rtuexchange): init не прошёл..." << endl;
 			return 1;
 		}
 
@@ -63,10 +63,10 @@ int main( int argc, char** argv )
 		SystemMessage sm(SystemMessage::StartUp);
 		act.broadcast( sm.transport_msg() );
 
-		unideb(Debug::ANY) << "\n\n\n";
-		unideb[Debug::ANY] << "(main): -------------- RTU Exchange START -------------------------\n\n";
-		dlog(Debug::ANY) << "\n\n\n";
-		dlog[Debug::ANY] << "(main): -------------- RTU Exchange START -------------------------\n\n";
+		ulog << "\n\n\n";
+		ulog << "(main): -------------- RTU Exchange START -------------------------\n\n";
+		dlog << "\n\n\n";
+		dlog << "(main): -------------- RTU Exchange START -------------------------\n\n";
 
 		act.run(false);
 
@@ -75,11 +75,11 @@ int main( int argc, char** argv )
 	}
 	catch( Exception& ex )
 	{
-		dlog[Debug::CRIT] << "(rtuexchange): " << ex << std::endl;
+		dlog.crit() << "(rtuexchange): " << ex << std::endl;
 	}
 	catch(...)
 	{
-		dlog[Debug::CRIT] << "(rtuexchange): catch ..." << std::endl;
+		dlog.crit() << "(rtuexchange): catch ..." << std::endl;
 	}
 
 	while( waitpid(-1, 0, 0) > 0 );

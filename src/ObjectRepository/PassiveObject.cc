@@ -117,13 +117,13 @@ void PassiveObject::processingMessage( UniSetTypes::VoidMessage* msg )
 			}
 
 			default:
-				//unideb[Debug::WARN] << myname << ": неизвестное сообщение  " << msg->type << endl;
+				//ulog.warn() << myname << ": неизвестное сообщение  " << msg->type << endl;
 				break;
 		}	
 	}
 	catch(Exception& ex)
 	{
-		// unideb[Debug::WARN]
+		// ulog.warn()
 //		cerr << myname << "(processingMessage): " << ex << endl;
 	}
 }

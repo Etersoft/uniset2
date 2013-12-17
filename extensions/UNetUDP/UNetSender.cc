@@ -31,11 +31,11 @@ s_thr(0)
 	// определяем фильтр
 //	s_field = conf->getArgParam("--udp-filter-field");
 //	s_fvalue = conf->getArgParam("--udp-filter-value");
-	dlog[Debug::INFO] << myname << "(init): read filter-field='" << s_field
+	dlog.info() << myname << "(init): read filter-field='" << s_field
 						<< "' filter-value='" << s_fvalue << "'" << endl;
 
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "(UNetSender): UDP set to " << s_host << ":" << port << endl;
+	if( dlog.is_info() )
+		dlog.info() << "(UNetSender): UDP set to " << s_host << ":" << port << endl;
 
 	ost::Thread::setException(ost::Thread::throwException);
 	try
@@ -47,14 +47,14 @@ s_thr(0)
 	{
 		ostringstream s;
 		s << myname << ": " << e.what();
-		dlog[Debug::CRIT] << s.str() << std::endl;
+		dlog.crit() << s.str() << std::endl;
 		throw SystemError(s.str());
 	}
 	catch( ... )
 	{
 		ostringstream s;
 		s << myname << ": catch...";
-		dlog[Debug::CRIT] << s.str() << std::endl;
+		dlog.crit() << s.str() << std::endl;
 		throw SystemError(s.str());
 	}
 
@@ -65,7 +65,7 @@ s_thr(0)
 	{
 		readConfiguration();
 		dlist.resize(maxItem);
-		dlog[Debug::INFO] << myname << "(init): dlist size = " << dlist.size() << endl;
+		dlog.info() << myname << "(init): dlist size = " << dlist.size() << endl;
 	}
 	else
 		ic->addReadItem( sigc::mem_fun(this,&UNetSender::readItem) );
@@ -130,7 +130,7 @@ void UNetSender::updateItem( DMap::iterator& it, long value )
 void UNetSender::send()
 {
 	dlist.resize(maxItem);
-	dlog[Debug::INFO] << myname << "(send): dlist size = " << dlist.size() << endl;
+	dlog.info() << myname << "(send): dlist size = " << dlist.size() << endl;
 /*
 	ost::IPV4Broadcast h = s_host.c_str();
 	try
@@ -141,7 +141,7 @@ void UNetSender::send()
 	{
 		ostringstream s;
 		s << e.getString() << ": " << e.getSystemErrorString();
-		dlog[Debug::CRIT] << myname << "(poll): " << s.str() << endl;
+		dlog.crit() << myname << "(poll): " << s.str() << endl;
 		throw SystemError(s.str());
 	}
 */
@@ -156,25 +156,25 @@ void UNetSender::send()
 		}
 		catch( ost::SockException& e )
 		{
-			dlog[Debug::WARN]  << myname << "(send): " << e.getString() << endl;
+			dlog.warn()  << myname << "(send): " << e.getString() << endl;
 		}
 		catch( UniSetTypes::Exception& ex)
 		{
-			dlog[Debug::WARN] << myname << "(send): " << ex << std::endl;
+			dlog.warn() << myname << "(send): " << ex << std::endl;
 		}
 		catch( std::exception& e )
 		{
-			dlog[Debug::WARN] << myname << "(send): " << e.what() << std::endl;
+			dlog.warn() << myname << "(send): " << e.what() << std::endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::WARN] << myname << "(send): catch ..." << std::endl;
-		}
+			dlog.warn() << myname << "(send): catch ..." << std::endl;
+		}	
 
 		msleep(sendpause);
 	}
 
-	dlog[Debug::INFO] << "************* execute FINISH **********" << endl;
+	dlog.info() << "************* execute FINISH **********" << endl;
 }
 // -----------------------------------------------------------------------------
 void UNetSender::real_send()
@@ -191,7 +191,7 @@ void UNetSender::real_send()
 	mypack.transport_msg(s_msg);
 	size_t ret = udp->send( (char*)s_msg.data, s_msg.len );
 	if( ret < s_msg.len )
-		dlog[Debug::CRIT] << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
+		dlog.crit() << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
 }
 // -----------------------------------------------------------------------------
 void UNetSender::stop()
@@ -259,7 +259,7 @@ bool UNetSender::initItem( UniXML_iterator& it )
 	if( sid == DefaultObjectId )
 	{
 		if( dlog )
-			dlog[Debug::CRIT] << myname << "(readItem): ID not found for "
+			dlog.crit() << myname << "(readItem): ID not found for "
 							<< sname << endl;
 		return false;
 	}
@@ -269,7 +269,7 @@ bool UNetSender::initItem( UniXML_iterator& it )
 
 	if( p.iotype == UniversalIO::UnknownIOType )
 	{
-		dlog[Debug::CRIT] << myname << "(readItem): Unknown iotype for sid=" << sid << endl;
+		dlog.crit() << myname << "(readItem): Unknown iotype for sid=" << sid << endl;
 		return false;
 	}
 
@@ -280,8 +280,8 @@ bool UNetSender::initItem( UniXML_iterator& it )
 		p.pack_ind = mypack.addDData(sid,0);
 		if ( p.pack_ind >= UniSetUDP::MaxDCount )
 		{
-			dlog[Debug::CRIT] << myname
-					<< "(readItem): OVERFLOW! MAX UDP DIGITAL DATA LIMIT! max="
+			dlog.crit() << myname
+					<< "(readItem): OVERFLOW! MAX UDP DIGITAL DATA LIMIT! max=" 
 					<< UniSetUDP::MaxDCount << endl;
 
 			raise(SIGTERM);
@@ -293,8 +293,8 @@ bool UNetSender::initItem( UniXML_iterator& it )
 		p.pack_ind = mypack.addAData(sid,0);
 		if ( p.pack_ind >= UniSetUDP::MaxACount )
 		{
-			dlog[Debug::CRIT] << myname
-					<< "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max="
+			dlog.crit() << myname
+					<< "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max=" 
 					<< UniSetUDP::MaxACount << endl;
 			raise(SIGTERM);
 			return false;
@@ -307,8 +307,8 @@ bool UNetSender::initItem( UniXML_iterator& it )
 	dlist[maxItem] = p;
 	maxItem++;
 
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << myname << "(initItem): add " << p << endl;
+	if( dlog.is_info() )
+		dlog.info() << myname << "(initItem): add " << p << endl;
 
 	return true;
 }

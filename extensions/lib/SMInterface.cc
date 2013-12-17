@@ -51,24 +51,24 @@ using namespace UniSetTypes;
 	} \
 	catch( IOController_i::NameNotFound &ex ) \
 	{ \
-		unideb[Debug::WARN] << "(" << __STRING(fname) << "): " << ex.err << endl; \
+		ulog.warn() << "(" << __STRING(fname) << "): " << ex.err << endl; \
 	} \
 	catch( IOController_i::IOBadParam &ex ) \
 	{ \
-		unideb[Debug::WARN] << "(" << __STRING(fname) << "): " << ex.err << endl; \
+		ulog.warn() << "(" << __STRING(fname) << "): " << ex.err << endl; \
 	} \
 	catch( Exception& ex ) \
 	{ \
-		unideb[Debug::WARN] << "(" << __STRING(fname) << "): " << ex << endl; \
+		ulog.warn() << "(" << __STRING(fname) << "): " << ex << endl; \
 	} \
 	catch(CORBA::SystemException& ex) \
 	{ \
-		unideb[Debug::WARN] << "(" << __STRING(fname) << "): CORBA::SystemException: " \
+		ulog.warn() << "(" << __STRING(fname) << "): CORBA::SystemException: " \
 			<< ex.NP_minorString() << endl; \
 	} \
 	catch(...) \
 	{ \
-		unideb[Debug::WARN] << "(" << __STRING(fname) << "): catch ..." << endl; \
+		ulog.warn() << "(" << __STRING(fname) << "): catch ..." << endl; \
 	}	\
  \
 	oref = CORBA::Object::_nil(); \
@@ -77,7 +77,7 @@ using namespace UniSetTypes;
 #define CHECK_IC_PTR(fname) \
 		if( !ic )  \
 		{ \
-			unideb[Debug::WARN] << "(" << __STRING(fname) << "): function NOT DEFINED..." << endl; \
+			ulog.warn() << "(" << __STRING(fname) << "): function NOT DEFINED..." << endl; \
 			throw UniSetTypes::TimeOut(); \
 		} \
 

@@ -62,7 +62,7 @@ void IONotifyController_LT::callback()
 	}
 	catch(Exception& ex)
 	{
-		unideb[Debug::CRIT] << myname << "(callback): " << ex << endl;
+		ulog.crit() << myname << "(callback): " << ex << endl;
 	}
 }
 // ------------------------------------------------------------------------------------------

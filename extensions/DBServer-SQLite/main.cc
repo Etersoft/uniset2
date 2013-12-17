@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 		{
 			if( ID != UniSetTypes::DefaultObjectId )
 			{
-				unideb[Debug::WARN] << "(DBServer::main): переопределяем ID заданнй в "
+				ulog.warn() << "(DBServer::main): переопределяем ID заданнй в "
 						<< conf->getConfFileName() << endl;
 			}
 

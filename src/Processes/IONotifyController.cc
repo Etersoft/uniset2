@@ -134,7 +134,7 @@ bool IONotifyController::removeConsumer(ConsumerList& lst, const ConsumerInfo& c
 		if( li->id == cons.id && li->node == cons.node  )		
 		{
 			lst.erase(li);
-//			unideb[Debug::INFO] << name.c_name() <<": удаляем "<< name << " из списка потребителей" << endl;
+//			ulog.info() << name.c_name() <<": удаляем "<< name << " из списка потребителей" << endl;
 			return true;
 		}
 	}
@@ -150,9 +150,9 @@ bool IONotifyController::removeConsumer(ConsumerList& lst, const ConsumerInfo& c
 void IONotifyController::askSensor(const IOController_i::SensorInfo& si,
 									const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd )
 {
-	if( unideb.debugging(Debug::INFO) )	
+	if( ulog.is_info() )
 	{
-		unideb[Debug::INFO] << "(askSensor): поступил " << ( cmd == UIODontNotify ? "отказ" :"заказ" ) << " от "
+		ulog.info() << "(askSensor): поступил " << ( cmd == UIODontNotify ? "отказ" :"заказ" ) << " от "
 			<< conf->oind->getNameById(ci.id, ci.node)
 			<< " на аналоговый датчик "
 			<< conf->oind->getNameById(si.id,si.node) << endl;
@@ -196,21 +196,21 @@ void IONotifyController::askSensor(const IOController_i::SensorInfo& si,
 		}
 		catch(Exception& ex)
 		{
-			if( unideb.debugging(Debug::WARN) )
-				unideb[Debug::WARN] << myname << "(askSensor): " <<  conf->oind->getNameById(si.id, si.node) << " catch "<< ex << endl;
+			if( ulog.is_warn() )
+				ulog.warn() << myname << "(askSensor): " <<  conf->oind->getNameById(si.id, si.node) << " catch "<< ex << endl;
 		}
 	    catch( CORBA::SystemException& ex )
 	    {
-			if( unideb.debugging(Debug::WARN) )
-			unideb[Debug::WARN] << conf->oind->getNameById(ci.id, ci.node)
-				<< " недоступен!!(CORBA::SystemException): "
+			if( ulog.is_warn() )
+			ulog.warn() << conf->oind->getNameById(ci.id, ci.node)
+	    			<< " недоступен!!(CORBA::SystemException): "
 					<< ex.NP_minorString() << endl;
 	    }
 		catch(...)
 		{
-			if( unideb.debugging(Debug::WARN) )
-			unideb[Debug::WARN] << conf->oind->getNameById(ci.id, ci.node)
-				<< " catch..." << endl;
+			if( ulog.is_warn() )
+			ulog.warn() << conf->oind->getNameById(ci.id, ci.node)
+	    			<< " catch..." << endl;
 		}
 	}
 }
@@ -242,13 +242,13 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
 				}
 				catch(Exception& ex)
 				{
-					if( unideb.debugging(Debug::WARN) )
-						unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+					if( ulog.is_warn() )
+						ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
 				}
 				catch(...)
 				{
-					if( unideb.debugging(Debug::WARN) )
-					unideb[Debug::WARN] << myname << " не смогли сделать dump (catch...)" << endl;
+					if( ulog.is_warn() )
+					ulog.warn() << myname << " не смогли сделать dump (catch...)" << endl;
 				}
 		    }
 			else
@@ -261,13 +261,13 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
 					}
 					catch(Exception& ex)
 					{
-						if( unideb.debugging(Debug::WARN) )
-							unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+						if( ulog.is_warn() )
+							ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
 					}
 					catch(...)
 					{	
-						if( unideb.debugging(Debug::WARN) )
-						unideb[Debug::WARN] << myname << " не смогли сделать dump (catch...)" << endl;
+						if( ulog.is_warn() )
+						ulog.warn() << myname << " не смогли сделать dump (catch...)" << endl;
 					}
 				}
 		    }
@@ -290,13 +290,13 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
 						}
 						catch(Exception& ex)
 						{
-							if( unideb.debugging(Debug::WARN) )
-								unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+							if( ulog.is_warn() )
+								ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
 						}
 						catch(...)
 						{		
-							if( unideb.debugging(Debug::WARN) )
-							unideb[Debug::WARN] << myname << " не смогли сделать dump (catch...)" << endl;
+							if( ulog.is_warn() )
+							ulog.warn() << myname << " не смогли сделать dump (catch...)" << endl;
 						}
 					}
 				}
@@ -336,8 +336,9 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
         err << myname << "(localSetValue):  вход(выход) с именем "
         << conf->oind->getNameById(si.id) << " не найден";
 
-        if( unideb.debugging(Debug::INFO) )
-            unideb[Debug::INFO] << err.str() << endl;
+        if( ulog.is_info() )
+            ulog.info() << err.str() << endl;
+
         throw IOController_i::NameNotFound(err.str().c_str());
     }
 
@@ -415,22 +416,22 @@ void IONotifyController::send(ConsumerList& lst, UniSetTypes::SensorMessage& sm)
 			}
 			catch(Exception& ex)
 			{
-				if( unideb.debugging(Debug::WARN) )
-					unideb[Debug::WARN] << myname << "(IONotifyController::send): " << ex
+				if( ulog.is_warn() )
+					ulog.warn() << myname << "(IONotifyController::send): " << ex
 						<< " for " << conf->oind->getNameById(li->id, li->node) << endl;
 			}
 		    catch( CORBA::SystemException& ex )
 		    {
-                if( unideb.debugging(Debug::WARN) )
-                    unideb[Debug::WARN] << myname << "(IONotifyController::send): "
+                if( ulog.is_warn() )
+                    ulog.warn() << myname << "(IONotifyController::send): "
                         << conf->oind->getNameById(li->id, li->node) << " (CORBA::SystemException): "
                         << ex.NP_minorString() << endl;
 	    	}
 			catch(...)
 			{
-                if( unideb.debugging(Debug::CRIT) )
-                    unideb[Debug::CRIT] << myname << "(IONotifyController::send): "
-                        << conf->oind->getNameById(li->id, li->node)
+                if( ulog.is_crit() )
+                    ulog.crit() << myname << "(IONotifyController::send): "
+                        << conf->oind->getNameById(li->id, li->node) 
                         << " catch..." << endl;
 			}
 			
@@ -466,8 +467,8 @@ void IONotifyController::readDump()
 	}
 	catch(Exception& ex)
 	{ 
-        if( unideb.debugging(Debug::WARN) )
-            unideb[Debug::WARN] << myname << "(IONotifyController::readDump): " << ex << endl;
+        if( ulog.is_warn() )
+            ulog.warn() << myname << "(IONotifyController::readDump): " << ex << endl;
 	}
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -486,8 +487,8 @@ void IONotifyController::dumpOrdersList(const IOController_i::SensorInfo& si,
 	}
 	catch(Exception& ex)
 	{ 
-        if( unideb.debugging(Debug::WARN) )
-            unideb[Debug::WARN] << myname << "(IONotifyController::dumpOrderList): " << ex << endl;
+        if( ulog.is_warn() )
+            ulog.warn() << myname << "(IONotifyController::dumpOrderList): " << ex << endl;
 	}
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -506,8 +507,8 @@ void IONotifyController::dumpThresholdList(const IOController_i::SensorInfo& si,
 	}
 	catch(Exception& ex)
 	{ 
-        if( unideb.debugging(Debug::WARN) )
-            unideb[Debug::WARN] << myname << "(IONotifyController::dumpThresholdList): " << ex << endl;
+        if( ulog.is_warn() )
+            ulog.warn() << myname << "(IONotifyController::dumpThresholdList): " << ex << endl;
 	}
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -554,13 +555,13 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 					}
 					catch(Exception& ex)
 					{
-                        if( unideb.debugging(Debug::WARN) )
-                            unideb[Debug::WARN] << myname << " не смогли сделать dump: " << ex << endl;
+                        if( ulog.is_warn() )
+                            ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
 					}
 					catch(...)
 					{	
-                        if( unideb.debugging(Debug::WARN) )
-                            unideb[Debug::WARN] << myname << " не смогли сделать dump" << endl;
+                        if( ulog.is_warn() )
+                            ulog.warn() << myname << " не смогли сделать dump" << endl;
 					}
 			    }
 				else
@@ -573,13 +574,13 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 						}
 						catch(Exception& ex)
 						{
-                            if( unideb.debugging(Debug::WARN) )
-                                unideb[Debug::WARN] << myname << "(askThreshold): dump: " << ex << endl;
+                            if( ulog.is_warn() )
+                                ulog.warn() << myname << "(askThreshold): dump: " << ex << endl;
 						}
 						catch(...)
 						{	
-                            if( unideb.debugging(Debug::WARN) )
-                                unideb[Debug::WARN] << myname << "(askThreshold): dump catch..." << endl;
+                            if( ulog.is_warn() )
+                                ulog.warn() << myname << "(askThreshold): dump catch..." << endl;
 						}
 					}
 				}
@@ -624,19 +625,19 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 				}
 				catch(Exception& ex)
 				{
-                    if( unideb.debugging(Debug::WARN) )
-                        unideb[Debug::WARN] << myname << "(askThreshod): " << ex << endl;
+                    if( ulog.is_warn() )
+                        ulog.warn() << myname << "(askThreshod): " << ex << endl;
 				}
 			    catch( CORBA::SystemException& ex )
 			    {
-                    if( unideb.debugging(Debug::WARN) )
-                        unideb[Debug::WARN] << myname << "(askThreshod): CORBA::SystemException: "
+                    if( ulog.is_warn() )
+                        ulog.warn() << myname << "(askThreshod): CORBA::SystemException: "
                             << ex.NP_minorString() << endl;
 			    }	
 			    catch(...)
-                {
-                    if( unideb.debugging(Debug::WARN) )
-                        unideb[Debug::WARN] << myname << "(askThreshold): dump catch..." << endl;
+                {   
+                    if( ulog.is_warn() )
+                        ulog.warn() << myname << "(askThreshold): dump catch..." << endl;
                 }
             }
 			break;
@@ -653,13 +654,13 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 						}
 						catch(Exception& ex)
 						{
-                            if( unideb.debugging(Debug::WARN) )
-                                unideb[Debug::WARN] << myname << "(askThreshold): dump: " << ex << endl;
+                            if( ulog.is_warn() )
+                                ulog.warn() << myname << "(askThreshold): dump: " << ex << endl;
 						}
 						catch(...)
 						{	
-                            if( unideb.debugging(Debug::WARN) )
-                                unideb[Debug::WARN] << myname << "(askThreshold): dump catch..." << endl;
+                            if( ulog.is_warn() )
+                                ulog.warn() << myname << "(askThreshold): dump catch..." << endl;
 						}
 					}
 				}
@@ -796,8 +797,8 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 					}
 					catch( UniSetTypes::Exception& ex )
 					{
-                        if( unideb.debugging(Debug::CRIT) )
-                            unideb[Debug::CRIT] << myname << "(checkThreshold): "
+                        if( ulog.is_crit() )
+                            ulog.crit() << myname << "(checkThreshold): "
 									<< ex << endl;
 					}
 				}
@@ -835,8 +836,8 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 					}
 					catch( UniSetTypes::Exception& ex )
 					{
-						if( unideb.debugging(Debug::CRIT) )
-							unideb[Debug::CRIT] << myname << "(checkThreshold): "
+						if( ulog.is_crit() )
+							ulog.crit() << myname << "(checkThreshold): "
 								<< ex << endl;
 					}
 				}
@@ -875,7 +876,7 @@ IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold
 // --------------------------------------------------------------------------------------------------------------
 IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 {
-//	unideb[Debug::INFO] << myname << "(getThresholdsList): ...\n";
+//	ulog.info() << myname << "(getThresholdsList): ...\n";
 
 	IONotifyController_i::ThresholdsListSeq* res = new IONotifyController_i::ThresholdsListSeq();
 
@@ -894,8 +895,8 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 			}
 			catch(Exception& ex)
 			{
-                if( unideb.debugging(Debug::WARN) )
-                    unideb[Debug::WARN] << myname << "(getThresholdsList): для датчика "
+                if( ulog.is_warn() )
+                    ulog.warn() << myname << "(getThresholdsList): для датчика "
                         << conf->oind->getNameById(it->second.si.id, it->second.si.node)
                         << " " << ex << endl;
 				continue;

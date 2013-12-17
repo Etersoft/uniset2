@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */
 // --------------------------------------------------------------------------
-// generate timestamp: 2013-12-15+04:00
+// generate timestamp: 2013-12-17+04:00
 // -----------------------------------------------------------------------------
 #include "Configuration.h"
 #include "Exceptions.h"
@@ -43,7 +43,7 @@ askPause(2000),
 
 end_private(false)
 {
-	unideb[Debug::CRIT] << "UObject: init failed!!!!!!!!!!!!!!!" << endl;
+	ulog.crit() << "UObject: init failed!!!!!!!!!!!!!!!" << endl;
 	throw Exception( string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
@@ -170,23 +170,27 @@ bool UObject_SK::alarm( UniSetTypes::ObjectId _code, bool _state )
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::CRIT]  << getName()
-							<< "(alarm): попытка послать сообщение с DefaultObjectId" 
-							<< endl;
+        if( ulog.is_crit() )
+            ulog.crit()  << getName()
+				<< "(alarm): попытка послать сообщение с DefaultObjectId"
+				<< endl;
 		return false;	
 	}
 
-	unideb[Debug::LEVEL1]  << getName()  << "(alarm): ";
-	if( _state )
-		unideb(Debug::LEVEL1) << "SEND ";
-	else
-		unideb(Debug::LEVEL1) << "RESET ";
+    if( ulog.is_level1() )
+    {
+        ulog.level1()  << getName()  << "(alarm): ";
+        if( _state )
+            ulog.level1(false) << "SEND ";
+        else
+            ulog.level1(false) << "RESET ";
 	
-	unideb(Debug::LEVEL1) << endl;
+        ulog.level1(false) << endl;
+    }
 	
-	
+    if( ulog.is_level1() )
+        ulog.level1() << " not found MessgeOID?!!" << endl;
 
-	unideb[Debug::LEVEL1] << " not found MessgeOID?!!" << endl;
 	return false;
 }
 // -----------------------------------------------------------------------------
@@ -256,10 +260,11 @@ void UObject_SK::sysCommand( SystemMessage* _sm )
 	switch( _sm->command )
 	{
 		case SystemMessage::WatchDog:
-			unideb << myname << "(sysCommand): WatchDog" << endl;
+			ulog << myname << "(sysCommand): WatchDog" << endl;
 			if( !active || !ptStartUpTimeout.checkTime() )
 			{
-				unideb[Debug::WARN] << myname << "(sysCommand): игнорируем WatchDog, потому-что только-что стартанули" << endl;
+                if( ulog.is_warn() )
+                    ulog.warn() << myname << "(sysCommand): игнорируем WatchDog, потому-что только-что стартанули" << endl;
 				break;
 			}
 		case SystemMessage::StartUp:
@@ -285,12 +290,12 @@ void UObject_SK::sysCommand( SystemMessage* _sm )
 		case SystemMessage::LogRotate:
 		{
 			// переоткрываем логи
-			unideb << myname << "(sysCommand): logRotate" << endl;
-			string fname = unideb.getLogFile();
+			ulog << myname << "(sysCommand): logRotate" << endl;
+			string fname( ulog.getLogFile() );
 			if( !fname.empty() )
 			{
-				unideb.logFile(fname.c_str());
-				unideb << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << endl;
+				ulog.logFile(fname.c_str());
+				ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << endl;
 			}
 		}
 		break;
@@ -335,10 +340,10 @@ void UObject_SK::waitSM( int wait_msec, ObjectId _testID )
 
 	if( _testID == DefaultObjectId )
 		return;
-
-	if( unideb.debugging(Debug::INFO) )
+		
+	if( ulog.is_info() )
 	{
-		unideb[Debug::INFO] << myname << "(waitSM): waiting SM ready "
+		ulog.info() << myname << "(waitSM): waiting SM ready "
 			<< wait_msec << " msec"
 			<< " testID=" << _testID << endl;
 	}
@@ -350,7 +355,8 @@ void UObject_SK::waitSM( int wait_msec, ObjectId _testID )
 			<< "(waitSM): Не дождались готовности(exist) SharedMemory к работе в течение " 
 			<< wait_msec << " мсек";
 
-		unideb[Debug::CRIT] << err.str() << endl;
+        if( ulog.is_crit() )
+            ulog.crit() << err.str() << endl;
 		terminate();
 		abort();
 		// kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
@@ -404,16 +410,19 @@ void UObject_SK::callback()
 	}
 	catch( Exception& ex )
 	{
-		unideb[Debug::CRIT] << myname << "(execute): " << ex << endl;
+        if( ulog.is_crit() )
+            ulog.crit() << myname << "(execute): " << ex << endl;
 	}
 	catch(CORBA::SystemException& ex)
 	{
-		unideb[Debug::CRIT] << myname << "(execute): СORBA::SystemException: "
-			<< ex.NP_minorString() << endl;
+        if( ulog.is_crit() )
+            ulog.crit() << myname << "(execute): СORBA::SystemException: "
+                << ex.NP_minorString() << endl;
 	}
 	catch(...)
 	{
-		unideb[Debug::CRIT] << myname << "(execute): catch ..." << endl;
+        if( ulog.is_crit() )
+            ulog.crit() << myname << "(execute): catch ..." << endl;
 	}
 
 	if( !active )
@@ -450,14 +459,14 @@ long UObject_SK::getValue( UniSetTypes::ObjectId _sid )
 	try
 	{
 
-        if( unideb.debugging(Debug::CRIT) )
-            unideb[Debug::CRIT] << myname << "(getValue): Обращение к неизвестному ДИСКРЕТНОМУ датчику sid="
+        if( ulog.is_crit() )
+            ulog.crit() << myname << "(getValue): Обращение к неизвестному датчику sid="
                 << _sid << endl;
 	}
 	catch(Exception& ex)
 	{
-        if( unideb.debugging(Debug::CRIT) )
-            unideb[Debug::CRIT] << myname << "(getValue): " << ex << endl;
+        if( ulog.is_crit() )
+            ulog.crit() << myname << "(getValue): " << ex << endl;
 		throw;
 	}
 
@@ -476,8 +485,8 @@ void UObject_SK::preAskSensors( UniversalIO::UIOCommand _cmd )
 			break;
 	}
 			
-	if( !activated )
-		unideb[Debug::CRIT] << myname
+	if( !activated && ulog.is_crit() )
+		ulog.crit() << myname
 			<< "(preAskSensors): ************* don`t activated?! ************" << endl;
 
 	for( ;; )
@@ -489,15 +498,18 @@ void UObject_SK::preAskSensors( UniversalIO::UIOCommand _cmd )
 		}
 		catch(SystemError& err)
 		{
-			unideb[Debug::CRIT] << myname << "(preAskSensors): " << err << endl;
+            if( ulog.is_crit() )
+                ulog.crit() << myname << "(preAskSensors): " << err << endl;
 		}
 		catch(Exception& ex)
 		{
-			unideb[Debug::CRIT] << myname << "(preAskSensors): " << ex << endl;
+            if( ulog.is_crit() )
+                ulog.crit() << myname << "(preAskSensors): " << ex << endl;
 		}
 		catch(...)
 		{
-			unideb[Debug::CRIT] << myname << "(preAskSensors): catch(...)" << endl;
+            if( ulog.is_crit() )
+                ulog.crit() << myname << "(preAskSensors): catch(...)" << endl;
 		}
 		msleep(askPause);
 	}

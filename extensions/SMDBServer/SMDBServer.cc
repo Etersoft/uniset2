@@ -42,7 +42,7 @@ prefix(prefix)
 		{
 			ostringstream err;
 			err << myname << ": ID not found ('HeartBeat') for " << heart;
-			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			dlog.crit() << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
@@ -62,12 +62,12 @@ prefix(prefix)
 		{
 			ostringstream err;
 			err << myname << "(init): test_id unknown. 'TestMode_S' not found...";
-			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
+			dlog.crit() << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 	}
 
-	dlog[Debug::INFO] << myname << "(init): test_id=" << test_id << endl;
+	dlog.info() << myname << "(init): test_id=" << test_id << endl;
 
 
 }
@@ -90,7 +90,7 @@ void SMDBServer::waitSMReady()
 	{
 		ostringstream err;
 		err << myname << "(waitSMReady): Wait SharedMemory failed. [ " << ready_timeout << " msec ]";
-		dlog[Debug::CRIT] << err.str() << endl;
+		dlog.crit() << err.str() << endl;
 		throw SystemError(err.str());
 	}
 }
@@ -108,7 +108,7 @@ void SMDBServer::step()
 		}
 		catch(Exception& ex)
 		{
-			dlog[Debug::CRIT] << myname << "(step): (hb) " << ex << std::endl;
+			dlog.crit() << myname << "(step): (hb) " << ex << std::endl;
 		}
 	}
 }
@@ -132,14 +132,14 @@ void SMDBServer::initDB( DBInterface *db )
 		xmlNode* snode = conf->getXMLSensorsSection();
 		if(!snode)
 		{
-			dlog[Debug::CRIT] << myname << ": section <sensors> not found.." << endl;
+			dlog.crit() << myname << ": section <sensors> not found.." << endl;
 			return;
 		}
 
 			UniXML_iterator it(snode);
 			if( !it.goChildren() )
 			{
-				dlog[Debug::CRIT] << myname << ": section <sensors> empty?!.." << endl;
+				dlog.crit() << myname << ": section <sensors> empty?!.." << endl;
 				return;
 				
 			}
@@ -156,18 +156,18 @@ void SMDBServer::initDB( DBInterface *db )
 
 				if( !writeToBase("INSERT IGNORE INTO ObjectsMap(name,rep_name,id,msg)"+data.str()) )
 				{
-					dlog[Debug::CRIT] << myname <<  "(insert) ObjectsMap msg error: "<< db->error() << std::endl;
+					dlog.crit() << myname <<  "(insert) ObjectsMap msg error: "<< db->error() << std::endl;
 					db->freeResult();
 				}
 			}
 	}
 	catch( Exception& ex )
 	{	
-		dlog[Debug::CRIT] << myname << "(filling ObjectsMap): " << ex << std::endl;
+		dlog.crit() << myname << "(filling ObjectsMap): " << ex << std::endl;
 	}
 	catch( ...  )
 	{	
-		dlog[Debug::CRIT] << myname << "(filling ObjectsMap): catch ..." << std::endl;
+		dlog.crit() << myname << "(filling ObjectsMap): catch ..." << std::endl;
 	}
 }
 //--------------------------------------------------------------------------------
@@ -198,7 +198,7 @@ SMDBServer* SMDBServer::init_smdbserver( int argc, const char* const* argv,
 		return 0;
 	}
 
-	dlog[Debug::INFO] << "(SMDBServer): name = " << name << "(" << ID << ")" << endl;
+	dlog.info() << "(SMDBServer): name = " << name << "(" << ID << ")" << endl;
 	return new SMDBServer(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------

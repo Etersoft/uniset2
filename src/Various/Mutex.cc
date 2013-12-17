@@ -112,10 +112,9 @@ uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, int timeMS ):
 	mutex->mtx.lock();
 	if( !mutex->cnd->timedwait(sec, msec) )
 	{
-		if( !mutex->name().empty() && unideb.debugging( Debug::type(Debug::LEVEL9|Debug::WARN)) )
+		if( !mutex->name().empty() && ulog.is_level9() )
 		{
-			unideb[Debug::type(Debug::LEVEL9|Debug::WARN)] 
-				<< "(mutex_lock): вышло заданное время ожидания " 
+			ulog.level9() << "(mutex_lock): вышло заданное время ожидания "
 				<< timeMS << " msec для " << mutex->name() << endl;
 		}
 

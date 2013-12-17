@@ -64,10 +64,11 @@ bool ObjectRepositoryFactory::createSection( const char* name, const char* in_se
 		throw ( InvalidObjectName(err.str().c_str()) );
 	}
 
-	unideb[Debug::REPOSITORY] << "CreateSection: name = "<< name << "  in section = " << in_section << endl;
+	ulog.repository() << "CreateSection: name = "<< name << "  in section = " << in_section << endl;
 	if( sizeof(in_section)==0 )
 	{
-		unideb[Debug::REPOSITORY] << "CreateSection: in_section=0"<< endl;
+		if( ulog.repository() )
+			ulog.repository() << "CreateSection: in_section=0"<< endl;
 		return createRootSection(name);
 	}
 	
@@ -92,13 +93,16 @@ bool ObjectRepositoryFactory::createSectionF(const string& fullName)throw(ORepFa
 	string name(ObjectIndex::getBaseName(fullName));
     string sec(ORepHelpers::getSectionName(fullName));
 
-	unideb[Debug::REPOSITORY] << name << endl;
-	unideb[Debug::REPOSITORY] << sec << endl;
+	ulog.repository() << name << endl;
+	ulog.repository() << sec << endl;
 
 	if ( sec.empty() )
 	{
-		unideb[Debug::REPOSITORY] << "SectionName is empty!!!"<< endl;
-		unideb[Debug::REPOSITORY] << "Добавляем в "<< uconf->getRootSection() << endl;
+		if( ulog.repository() )
+		{
+			ulog.repository() << "SectionName is empty!!!"<< endl;
+			ulog.repository() << "Добавляем в "<< uconf->getRootSection() << endl;
+		}
 		return createSection(name, uconf->getRootSection());
 	}
 	else
@@ -125,49 +129,59 @@ bool ObjectRepositoryFactory::createContext(const char *cname, CosNaming::Naming
 	CosNaming::Name_var nc = omniURI::stringToName(cname);
 	try
 	{
-		unideb[Debug::REPOSITORY] << "ORepFactory(createContext): создаю новый контекст "<< cname << endl;
+		if( ulog.repository() )
+			ulog.repository() << "ORepFactory(createContext): создаю новый контекст "<< cname << endl;
 		ctx->bind_new_context(nc);
-		unideb[Debug::REPOSITORY] << "ORepFactory(createContext): создал. " << endl;
+		if( ulog.repository() )
+			ulog.repository() << "ORepFactory(createContext): создал. " << endl;
 		return true;
 	}
 	catch(const CosNaming::NamingContext::AlreadyBound &ab)
 	{
 //		ctx->resolve(nc);
-		unideb[Debug::REPOSITORY] <<"ORepFactory(createContext): context "<< cname << " уже есть"<< endl;		
+		if( ulog.repository() )
+			ulog.repository() <<"ORepFactory(createContext): context "<< cname << " уже есть"<< endl;
 		return true;
 	}
 	catch(CosNaming::NamingContext::NotFound)
     {
-		unideb[Debug::REPOSITORY] <<"ORepFactory(createContext): NotFound "<< cname << endl;		
+		if( ulog.repository() )
+			ulog.repository() <<"ORepFactory(createContext): NotFound "<< cname << endl;
 		throw NameNotFound();
     }
     catch(const CosNaming::NamingContext::InvalidName &nf)
     {
-		//	unideb[Debug::WARN] << "invalid name"<< endl;
-		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ORepFactory(createContext): (InvalidName)  " << cname;
+		if( ulog.is_warn() )
+			ulog.warn() << "ORepFactory(createContext): (InvalidName)  " << cname;
     }
 	catch(const CosNaming::NamingContext::CannotProceed &cp)
 	{
-		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ORepFactory(createContext): catch CannotProced " 
+		if( ulog.is_crit() )
+			ulog.warn() << "ORepFactory(createContext): catch CannotProced "
 				<< cname << " bad part="
 				<< omniURI::nameToString(cp.rest_of_name);
 		throw NameNotFound();
 	}
 	catch( CORBA::SystemException& ex)
 	{
-		unideb[Debug::type(Debug::CRIT|Debug::REPOSITORY)] << "ORepFactory(createContext): CORBA::SystemException: "
-			<< ex.NP_minorString() << endl;
+		if( ulog.is_crit() )
+			ulog.crit() << "ORepFactory(createContext): CORBA::SystemException: "
+					<< ex.NP_minorString() << endl;
 	}
 	catch(CORBA::Exception&)
     {
-		unideb[Debug::type(Debug::CRIT|Debug::REPOSITORY)] << "поймали CORBA::Exception." << endl;
+		if( ulog.is_crit() )
+			ulog.crit() << "поймали CORBA::Exception." << endl;
     }
     catch(omniORB::fatalException& fe)
     {
-		unideb[Debug::type(Debug::CRIT|Debug::REPOSITORY)] << "поймали omniORB::fatalException:" << endl;
-        unideb[Debug::type(Debug::CRIT|Debug::REPOSITORY)] << "  file: " << fe.file() << endl;
-		unideb[Debug::type(Debug::CRIT|Debug::REPOSITORY)] << "  line: " << fe.line() << endl;
-        unideb[Debug::type(Debug::CRIT|Debug::REPOSITORY)] << "  mesg: " << fe.errmsg() << endl;
+		if( ulog.is_crit() )
+		{
+			ulog.crit() << "поймали omniORB::fatalException:" << endl;
+		ulog.crit() << "  file: " << fe.file() << endl;
+			ulog.crit() << "  line: " << fe.line() << endl;
+		ulog.crit() << "  mesg: " << fe.errmsg() << endl;
+		}
     }
 
 	return false;
@@ -253,19 +267,19 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
 			
 			if( recursive )
 			{
-				unideb[Debug::REPOSITORY] << "ORepFactory: удаляем рекурсивно..." << endl;
+				ulog.repository() << "ORepFactory: удаляем рекурсивно..." << endl;
 				string rctx = fullName+"/"+omniURI::nameToString(bl[i].binding_name);
-				unideb[Debug::REPOSITORY] << rctx << endl;
+				ulog.repository() << rctx << endl;
 				if ( !removeSection(rctx))
 				{
-					unideb[Debug::REPOSITORY] << "рекурсивно удалить не удалось" << endl;
+					ulog.repository() << "рекурсивно удалить не удалось" << endl;
 					rem = false;
 				}
 			}
 			else
 			{
-				unideb[Debug::REPOSITORY] << "ORepFactory: " << omniURI::nameToString(bl[i].binding_name) << " - контекст!!! ";
-				unideb[Debug::REPOSITORY] << "ORepFactory: пока не удаляем" << endl;
+				ulog.repository() << "ORepFactory: " << omniURI::nameToString(bl[i].binding_name) << " - контекст!!! ";
+				ulog.repository() << "ORepFactory: пока не удаляем" << endl;
 				rem = false;
 			}
 		}
@@ -291,12 +305,12 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
 		}
 		catch(const CosNaming::NamingContext::NotEmpty &ne)
 		{
-			unideb[Debug::REPOSITORY] << "ORepFactory: контекст" << fullName << " не пустой " << endl;
+			ulog.repository() << "ORepFactory: контекст" << fullName << " не пустой " << endl;
 			rem = false;				
 		}
 		catch( ORepFailed )
 		{
-			unideb[Debug::REPOSITORY] << "ORepFactory: не удаось получить ссылку на контекст " << in_sec << endl;
+			ulog.repository() << "ORepFactory: не удаось получить ссылку на контекст " << in_sec << endl;
 			rem=false;
 		}
 	}
@@ -322,8 +336,8 @@ bool ObjectRepositoryFactory::renameSection( const string& newFName, const strin
 
 	try
 	{	
-//		unideb[Debug::REPOSITORY] << "ORepFactory: в контексте "<< in_sec << endl; 
-//		unideb[Debug::REPOSITORY] << "ORepFactory: переименовываем " << oldFName << " в " << newFName << endl;				
+//		ulog.repository() << "ORepFactory: в контексте "<< in_sec << endl;
+//		ulog.repository() << "ORepFactory: переименовываем " << oldFName << " в " << newFName << endl;
 		int argc(uconf->getArgc());
 		const char * const* argv(uconf->getArgv());
 		CosNaming::NamingContext_var in_ctx = ORepHelpers::getContext(in_sec, argc, argv, nsName);    

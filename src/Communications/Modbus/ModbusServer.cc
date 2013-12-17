@@ -75,7 +75,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// в случае ошибок ответа не посылаем
 		if( res != erNoError )
 		{
-			dlog[Debug::WARN] << "(0x01): err reply: " << mbErr2Str(res) << endl;
+			dlog.warn() << "(0x01): err reply: " << mbErr2Str(res) << endl;
 
 			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 			// то посылаем
@@ -107,7 +107,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// в случае ошибок ответа не посылаем
 		if( res != erNoError )
 		{
-			dlog[Debug::WARN] << "(0x02): err reply: " << mbErr2Str(res) << endl;
+			dlog.warn() << "(0x02): err reply: " << mbErr2Str(res) << endl;
 
 			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 			// то посылаем
@@ -139,7 +139,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// в случае ошибок ответа не посылаем
 		if( res != erNoError )
 		{
-			dlog[Debug::WARN] << "(0x03): err reply: " << mbErr2Str(res) << endl;
+			dlog.warn() << "(0x03): err reply: " << mbErr2Str(res) << endl;
 
 			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 			// то посылаем
@@ -171,7 +171,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// в случае ошибок ответа не посылаем
 		if( res != erNoError )
 		{
-			dlog[Debug::WARN] << "(0x04): err reply: " << mbErr2Str(res) << endl;
+			dlog.warn() << "(0x04): err reply: " << mbErr2Str(res) << endl;
 
 			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 			// то посылаем
@@ -204,7 +204,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// в случае ошибок ответа не посылаем
 		if( res != erNoError )
 		{
-			dlog[Debug::WARN] << "(0x0F): err reply: " << mbErr2Str(res) << endl;
+			dlog.warn() << "(0x0F): err reply: " << mbErr2Str(res) << endl;
 
 			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 			// то посылаем
@@ -237,7 +237,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// в случае ошибок ответа не посылаем
 		if( res != erNoError )
 		{
-			dlog[Debug::WARN] << "(0x10): err reply: " << mbErr2Str(res) << endl;
+			dlog.warn() << "(0x10): err reply: " << mbErr2Str(res) << endl;
 
 			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 			// то посылаем
@@ -268,7 +268,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// в случае ошибок ответа не посылаем
 		if( res != erNoError )
 		{
-			dlog[Debug::WARN] << "(0x08): reply: " << mbErr2Str(res) << endl;
+			dlog.warn() << "(0x08): reply: " << mbErr2Str(res) << endl;
 
 			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 			// то посылаем
@@ -299,7 +299,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// в случае ошибок ответа не посылаем
 		if( res != erNoError )
 		{
-			dlog[Debug::WARN] << "(0x2B/0x0E): reply: " << mbErr2Str(res) << endl;
+			dlog.warn() << "(0x2B/0x0E): reply: " << mbErr2Str(res) << endl;
 
 			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 			// то посылаем
@@ -331,7 +331,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// в случае ошибок ответа не посылаем
 		if( res != erNoError )
 		{
-			dlog[Debug::WARN] << "(0x05): reply: " << mbErr2Str(res) << endl;
+			dlog.warn() << "(0x05): reply: " << mbErr2Str(res) << endl;
 
 			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 			// то посылаем
@@ -364,7 +364,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// в случае ошибок ответа не посылаем
 		if( res != erNoError )
 		{
-			dlog[Debug::WARN] << "(0x06): reply: " << mbErr2Str(res) << endl;
+			dlog.warn() << "(0x06): reply: " << mbErr2Str(res) << endl;
 
 			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 			// то посылаем
@@ -396,7 +396,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// в случае ошибок ответа не посылаем
 		if( res != erNoError )
 		{
-			dlog[Debug::WARN] << "(0x65): reply: " << mbErr2Str(res) << endl;
+			dlog.warn() << "(0x65): reply: " << mbErr2Str(res) << endl;
 
 			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 			// то посылаем
@@ -427,7 +427,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// в случае ошибок ответа не посылаем
 		if( res != erNoError )
 		{
-			dlog[Debug::WARN] << "(0x50): reply: " << mbErr2Str(res) << endl;
+			dlog.warn() << "(0x50): reply: " << mbErr2Str(res) << endl;
 
 			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 			// то посылаем
@@ -458,7 +458,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// в случае ошибок ответа не посылаем
 		if( res != erNoError )
 		{
-			dlog[Debug::WARN] << "(0x53): error reply: " << mbErr2Str(res) << endl;
+			dlog.warn() << "(0x53): error reply: " << mbErr2Str(res) << endl;
 
 			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 			// то посылаем
@@ -489,7 +489,7 @@ mbErrCode ModbusServer::processing( ModbusMessage& buf )
 		// в случае ошибок ответа не посылаем
 		if( res != erNoError )
 		{
-			dlog[Debug::WARN] << "(0x66): error reply: " << mbErr2Str(res) << endl;
+			dlog.warn() << "(0x66): error reply: " << mbErr2Str(res) << endl;
 
 			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
 			// то посылаем
@@ -557,12 +557,12 @@ mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, t
 		// Проверка кому адресован пакет...
 		if( rbuf.addr!=addr && rbuf.addr!=BroadcastAddr )
 		{
-			if( dlog.debugging(Debug::WARN) )
+			if( dlog.is_warn() )
 			{
 				ostringstream err;
 				err << "(recv): BadNodeAddress. my= " << addr2str(addr)
 					<< " msg.addr=" << addr2str(rbuf.addr);
-				dlog[Debug::WARN] << err.str() << endl;
+				dlog.warn() << err.str() << endl;
 			}
 
 			cleanupChannel();
@@ -577,7 +577,7 @@ mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, t
 	}
 	catch( Exception& ex ) // SystemError
 	{
-		dlog[Debug::CRIT] << "(recv): " << ex << endl;
+		dlog.crit() << "(recv): " << ex << endl;
 		cleanupChannel();
 		return erHardwareError;
 	}
@@ -597,8 +597,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		size_t k = getNextData((unsigned char*)(&rbuf.func),sizeof(ModbusByte));
 		if( k < sizeof(ModbusByte) )
 		{
-			dlog[Debug::WARN] << "(recv): " << (ModbusHeader*)(&rbuf) << endl;
-			dlog[Debug::WARN] << "(recv): заголовок меньше положенного..." << endl;
+			dlog.warn() << "(recv): " << (ModbusHeader*)(&rbuf) << endl;
+			dlog.warn() << "(recv): заголовок меньше положенного..." << endl;
 			cleanupChannel();
 			return erInvalidFormat;
 		}
@@ -606,8 +606,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		bcnt += k;
 		rbuf.len = 0;
 		
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << "(recv): header: " << rbuf << endl;
+		if( dlog.is_info() )
+			dlog.info() << "(recv): header: " << rbuf << endl;
 
 		// Определяем тип сообщения
 		switch( rbuf.func )
@@ -694,12 +694,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		int rlen = getNextData((unsigned char*)(rbuf.data),rbuf.len);
 		if( rlen < rbuf.len )
 		{
-			if( dlog.debugging(Debug::WARN) )
+			if( dlog.is_warn() )
 			{
 //				rbuf.len = bcnt + rlen - szModbusHeader;
-				dlog[Debug::WARN] << "(recv): buf: " << rbuf << endl;
-				dlog[Debug::WARN] << "(recv)(" << rbuf.func
-						<< "): Получили данных меньше чем ждали...(recv="
+				dlog.warn() << "(recv): buf: " << rbuf << endl;
+				dlog.warn() << "(recv)(" << rbuf.func
+						<< "): Получили данных меньше чем ждали...(recv=" 
 						<< rlen << " < wait=" << (int)rbuf.len << ")" << endl;
 			}
 			cleanupChannel();
@@ -712,8 +712,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		if( rbuf.func == fnReadCoilStatus )
 		{
 			ReadCoilMessage mRead(rbuf);
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(0x01): recv buf: " << rbuf << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(0x01): recv buf: " << rbuf << endl;
 
 			// Проверяем контрольную сумму
 			// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
@@ -723,12 +723,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRead.crc )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
 					ostringstream err;
 					err << "(0x01): bad crc. calc.crc=" << dat2str(tcrc)
 						<< " msg.crc=" << dat2str(mRead.crc);
-					dlog[Debug::WARN] << err.str() << endl;
+					dlog.warn() << err.str() << endl;
 				}
 				cleanupChannel();
 				return erBadCheckSum;
@@ -739,8 +739,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		else if( rbuf.func == fnReadInputStatus )
 		{
 			ReadInputStatusMessage mRead(rbuf);
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(r0x02): recv buf: " << rbuf << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(r0x02): recv buf: " << rbuf << endl;
 
 			// Проверяем контрольную сумму
 			// от начала(включая заголовок) и до конца (исключив последний элемент содержащий CRC)
@@ -750,12 +750,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRead.crc )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
 					ostringstream err;
 					err << "(0x02): bad crc. calc.crc=" << dat2str(tcrc)
 						<< " msg.crc=" << dat2str(mRead.crc);
-					dlog[Debug::WARN] << err.str() << endl;
+					dlog.warn() << err.str() << endl;
 				}
 				cleanupChannel();
 				return erBadCheckSum;
@@ -766,8 +766,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		else if( rbuf.func == fnReadOutputRegisters )
 		{
 			ReadOutputMessage mRead(rbuf);
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(0x03): recv buf: " << rbuf << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(0x03): recv buf: " << rbuf << endl;
 
 			if( crcNoCheckit )
 				return erNoError;
@@ -777,12 +777,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRead.crc )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
 					ostringstream err;
 					err << "(0x03): bad crc. calc.crc=" << dat2str(tcrc)
 						<< " msg.crc=" << dat2str(mRead.crc);
-					dlog[Debug::WARN] << err.str() << endl;
+					dlog.warn() << err.str() << endl;
 				}
 				cleanupChannel();
 				return erBadCheckSum;
@@ -793,8 +793,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		else if( rbuf.func == fnReadInputRegisters )
 		{
 			ReadInputMessage mRead(rbuf);
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(0x04): recv buf: " << rbuf << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(0x04): recv buf: " << rbuf << endl;
 
 			if( crcNoCheckit )
 				return erNoError;
@@ -804,12 +804,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRead.crc )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
 					ostringstream err;
 					err << "(0x04): bad crc. calc.crc=" << dat2str(tcrc)
 						<< " msg.crc=" << dat2str(mRead.crc);
-					dlog[Debug::WARN] << err.str() << endl;
+					dlog.warn() << err.str() << endl;
 				}
 				cleanupChannel();
 				return erBadCheckSum;
@@ -829,11 +829,11 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
 					rbuf.len = bcnt + rlen1 - szModbusHeader;
-					dlog[Debug::WARN] << "(0x0F): buf: " << rbuf << endl;
-					dlog[Debug::WARN] << "(0x0F)("
+					dlog.warn() << "(0x0F): buf: " << rbuf << endl;
+					dlog.warn() << "(0x0F)("
 						<< rbuf.func << "):(fnForceMultipleCoils) "
 						<< "Получили данных меньше чем ждали...("
 						<< rlen1 << " < " << szDataLen << ")" << endl;
@@ -847,8 +847,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			ForceCoilsMessage mWrite(rbuf);
 
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(0x0F): recv buf: " << rbuf << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(0x0F): recv buf: " << rbuf << endl;
 
 			if( !crcNoCheckit )
 			{
@@ -862,7 +862,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 					ostringstream err;
 					err << "(0x0F): bad crc. calc.crc=" << dat2str(tcrc)
 						<< " msg.crc=" << dat2str(mWrite.crc);
-					dlog[Debug::WARN] << err.str() << endl;
+					dlog.warn() << err.str() << endl;
 					cleanupChannel();
 					return erBadCheckSum;
 				}
@@ -870,9 +870,9 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			if( !mWrite.checkFormat() )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
-					dlog[Debug::WARN] << "(0x0F): (" << rbuf.func
+					dlog.warn() << "(0x0F): (" << rbuf.func
 						<< ")(fnForceMultipleCoils): "
 						<< ": некорректный формат сообщения..." << endl;
 				}
@@ -895,11 +895,11 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
 					rbuf.len = bcnt + rlen1 - szModbusHeader;
-					dlog[Debug::WARN] << "(0x10): buf: " << rbuf << endl;
-					dlog[Debug::WARN] << "(0x10)("
+					dlog.warn() << "(0x10): buf: " << rbuf << endl;
+					dlog.warn() << "(0x10)("
 						<< rbuf.func << "):(fnWriteOutputRegisters) "
 						<< "Получили данных меньше чем ждали...("
 						<< rlen1 << " < " << szDataLen << ")" << endl;
@@ -913,8 +913,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			WriteOutputMessage mWrite(rbuf);
 
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(0x10): recv buf: " << rbuf << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(0x10): recv buf: " << rbuf << endl;
 
 			if( !crcNoCheckit )
 			{
@@ -925,12 +925,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 				if( tcrc != mWrite.crc )
 				{
-					if( dlog.debugging(Debug::WARN) )
+					if( dlog.is_warn() )
 					{
 						ostringstream err;
 						err << "(0x10): bad crc. calc.crc=" << dat2str(tcrc)
 							<< " msg.crc=" << dat2str(mWrite.crc);
-						dlog[Debug::WARN] << err.str() << endl;
+						dlog.warn() << err.str() << endl;
 					}
 					cleanupChannel();
 					return erBadCheckSum;
@@ -939,7 +939,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			
 			if( !mWrite.checkFormat() )
 			{
-				dlog[Debug::WARN] << "(0x10): (" << rbuf.func 
+				dlog.warn() << "(0x10): (" << rbuf.func
 					<< ")(fnWriteOutputRegisters): "
 					<< ": некорректный формат сообщения..." << endl; 
 				cleanupChannel();
@@ -961,11 +961,11 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
 					rbuf.len = bcnt + rlen1 - szModbusHeader;
-					dlog[Debug::WARN] << "(0x05): buf: " << rbuf << endl;
-					dlog[Debug::WARN] << "(0x05)("
+					dlog.warn() << "(0x05): buf: " << rbuf << endl;
+					dlog.warn() << "(0x05)("
 						<< rbuf.func << "):(fnForceSingleCoil) "
 						<< "Получили данных меньше чем ждали...("
 						<< rlen1 << " < " << szDataLen << ")" << endl;
@@ -979,8 +979,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			ForceSingleCoilMessage mWrite(rbuf);
 
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(0x05): recv buf: " << rbuf << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(0x05): recv buf: " << rbuf << endl;
 
 			if( !crcNoCheckit )
 			{
@@ -991,12 +991,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 				if( tcrc != mWrite.crc )
 				{
-					if( dlog.debugging(Debug::WARN) )
+					if( dlog.is_warn() )
 					{
 						ostringstream err;
 						err << "(0x05): bad crc. calc.crc=" << dat2str(tcrc)
 							<< " msg.crc=" << dat2str(mWrite.crc);
-						dlog[Debug::WARN] << err.str() << endl;
+						dlog.warn() << err.str() << endl;
 					}
 					cleanupChannel();
 					return erBadCheckSum;
@@ -1005,7 +1005,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			
 			if( !mWrite.checkFormat() )
 			{
-				dlog[Debug::WARN] << "(0x05): (" << rbuf.func 
+				dlog.warn() << "(0x05): (" << rbuf.func
 					<< ")(fnForceSingleCoil): "
 					<< ": некорректный формат сообщения..." << endl; 
 				cleanupChannel();
@@ -1027,11 +1027,11 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
 					rbuf.len = bcnt + rlen1 - szModbusHeader;
-					dlog[Debug::WARN] << "(0x06): buf: " << rbuf << endl;
-					dlog[Debug::WARN] << "(0x06)("
+					dlog.warn() << "(0x06): buf: " << rbuf << endl;
+					dlog.warn() << "(0x06)("
 						<< rbuf.func << "):(fnWriteOutputSingleRegisters) "
 						<< "Получили данных меньше чем ждали...("
 						<< rlen1 << " < " << szDataLen << ")" << endl;
@@ -1045,8 +1045,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			WriteSingleOutputMessage mWrite(rbuf);
 
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(0x06): recv buf: " << rbuf << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(0x06): recv buf: " << rbuf << endl;
 
 			if( !crcNoCheckit )
 			{
@@ -1057,12 +1057,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 				if( tcrc != mWrite.crc )
 				{
-					if( dlog.debugging(Debug::WARN) )
+					if( dlog.is_warn() )
 					{
 						ostringstream err;
 						err << "(0x06): bad crc. calc.crc=" << dat2str(tcrc)
 							<< " msg.crc=" << dat2str(mWrite.crc);
-						dlog[Debug::WARN] << err.str() << endl;
+						dlog.warn() << err.str() << endl;
 					}
 					cleanupChannel();
 					return erBadCheckSum;
@@ -1071,7 +1071,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			if( !mWrite.checkFormat() )
 			{
-				dlog[Debug::WARN] << "(0x06): (" << rbuf.func 
+				dlog.warn() << "(0x06): (" << rbuf.func
 					<< ")(fnWriteOutputSingleRegisters): "
 					<< ": некорректный формат сообщения..." << endl; 
 				cleanupChannel();
@@ -1093,11 +1093,11 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
 					rbuf.len = bcnt + rlen1 - szModbusHeader;
-					dlog[Debug::WARN] << "(0x08): buf: " << rbuf << endl;
-					dlog[Debug::WARN] << "(0x08)("
+					dlog.warn() << "(0x08): buf: " << rbuf << endl;
+					dlog.warn() << "(0x08)("
 						<< rbuf.func << "):(fnDiagnostics) "
 						<< "Получили данных меньше чем ждали...("
 						<< rlen1 << " < " << szDataLen << ")" << endl;
@@ -1111,8 +1111,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			DiagnosticMessage mDiag(rbuf);
 
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(0x08): recv buf: " << rbuf << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(0x08): recv buf: " << rbuf << endl;
 
 			if( !crcNoCheckit )
 			{
@@ -1123,12 +1123,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 				if( tcrc != mDiag.crc )
 				{
-					if( dlog.debugging(Debug::WARN) )
+					if( dlog.is_warn() )
 					{
 						ostringstream err;
 						err << "(0x08): bad crc. calc.crc=" << dat2str(tcrc)
 							<< " msg.crc=" << dat2str(mDiag.crc);
-						dlog[Debug::WARN] << err.str() << endl;
+						dlog.warn() << err.str() << endl;
 					}
 					cleanupChannel();
 					return erBadCheckSum;
@@ -1137,7 +1137,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 /*
 			if( !mDiag.checkFormat() )
 			{
-				dlog[Debug::WARN] << "(0x08): (" << rbuf.func
+				dlog.warn() << "(0x08): (" << rbuf.func
 					<< ")(fnDiagnostics): "
 					<< ": некорректный формат сообщения..." << endl;
 				cleanupChannel();
@@ -1153,11 +1153,11 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szCRC);
 				if( rlen1 < szCRC )
 				{
-					if( dlog.debugging(Debug::WARN) )
+					if( dlog.is_warn() )
 					{
 						rbuf.len = bcnt + rlen1 - szModbusHeader;
-						dlog[Debug::WARN] << "(0x2B/0x0E): buf: " << rbuf << endl;
-						dlog[Debug::WARN] << "(0x2B/0x0E)("
+						dlog.warn() << "(0x2B/0x0E): buf: " << rbuf << endl;
+						dlog.warn() << "(0x2B/0x0E)("
 							<< rbuf.func << "):(fnMEI) "
 							<< "Получили данных меньше чем ждали...("
 							<< rlen1 << " < " << szCRC << ")" << endl;
@@ -1172,8 +1172,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			MEIMessageRDI mRDI(rbuf);
 
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(0x2B/0x0E): recv buf: " << rbuf << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(0x2B/0x0E): recv buf: " << rbuf << endl;
 
 			if( crcNoCheckit )
 				return erNoError;
@@ -1185,12 +1185,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRDI.crc )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
 					ostringstream err;
 					err << "(0x2B/0x0E): bad crc. calc.crc=" << dat2str(tcrc)
 						<< " msg.crc=" << dat2str(mRDI.crc);
-					dlog[Debug::WARN] << err.str() << endl;
+					dlog.warn() << err.str() << endl;
 				}
 				cleanupChannel();
 				return erBadCheckSum;
@@ -1201,8 +1201,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		else if( rbuf.func == fnJournalCommand )
 		{
 			JournalCommandMessage mRead(rbuf);
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(0x65): recv buf: " << rbuf << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(0x65): recv buf: " << rbuf << endl;
 
 			if( crcNoCheckit )
 				return erNoError;
@@ -1213,12 +1213,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRead.crc )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
 					ostringstream err;
 					err << "(0x65): bad crc. calc.crc=" << dat2str(tcrc)
 						<< " msg.crc=" << dat2str(mRead.crc);
-					dlog[Debug::WARN] << err.str() << endl;
+					dlog.warn() << err.str() << endl;
 				}
 				cleanupChannel();
 				return erBadCheckSum;
@@ -1229,8 +1229,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		else if( rbuf.func == fnSetDateTime )
 		{
 			SetDateTimeMessage mSet(rbuf);
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(0x50): recv buf: " << rbuf << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(0x50): recv buf: " << rbuf << endl;
 
 			if( !crcNoCheckit )
 			{
@@ -1240,12 +1240,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 				ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 				if( tcrc != mSet.crc )
 				{
-					if( dlog.debugging(Debug::WARN) )
+					if( dlog.is_warn() )
 					{
 						ostringstream err;
 						err << "(0x50): bad crc. calc.crc=" << dat2str(tcrc)
 							<< " msg.crc=" << dat2str(mSet.crc);
-						dlog[Debug::WARN] << err.str() << endl;
+						dlog.warn() << err.str() << endl;
 					}
 					cleanupChannel();
 					return erBadCheckSum;
@@ -1254,7 +1254,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			
 			if( !mSet.checkFormat() )
 			{
-				dlog[Debug::WARN] << "(0x50): некорректные значения..." << endl;
+				dlog.warn() << "(0x50): некорректные значения..." << endl;
 				cleanupChannel();
 				return erBadDataValue; // return erInvalidFormat;
 			}
@@ -1274,11 +1274,11 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			int rlen1 = getNextData((unsigned char*)(&(rbuf.data[rlen])),szDataLen);
 			if( rlen1 < szDataLen )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
 					rbuf.len = bcnt + rlen1 - szModbusHeader;
-					dlog[Debug::WARN] << "(0x53): buf: " << rbuf << endl;
-					dlog[Debug::WARN] << "(0x53)("
+					dlog.warn() << "(0x53): buf: " << rbuf << endl;
+					dlog.warn() << "(0x53)("
 						<< rbuf.func << "):(fnWriteOutputRegisters) "
 						<< "Получили данных меньше чем ждали...("
 						<< rlen1 << " < " << szDataLen << ")" << endl;
@@ -1292,8 +1292,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 
 			RemoteServiceMessage mRServ(rbuf);
 
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(0x53): recv buf: " << rbuf << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(0x53): recv buf: " << rbuf << endl;
 
 			if( crcNoCheckit )
 				return erNoError;
@@ -1305,12 +1305,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mRServ.crc )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
 					ostringstream err;
 					err << "(0x53): bad crc. calc.crc=" << dat2str(tcrc)
 						<< " msg.crc=" << dat2str(mRServ.crc);
-					dlog[Debug::WARN] << err.str() << endl;
+					dlog.warn() << err.str() << endl;
 				}
 				cleanupChannel();
 				return erBadCheckSum;
@@ -1321,8 +1321,8 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 		else if( rbuf.func == fnFileTransfer )
 		{
 			FileTransferMessage mFT(rbuf);
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(0x66): recv buf: " << rbuf << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(0x66): recv buf: " << rbuf << endl;
 
 			if( crcNoCheckit )
 				return erNoError;
@@ -1334,12 +1334,12 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 			ModbusData tcrc = checkCRC((ModbusByte*)(&rbuf),bcnt-szCRC);
 			if( tcrc != mFT.crc )
 			{
-				if( dlog.debugging(Debug::WARN) )
+				if( dlog.is_warn() )
 				{
 					ostringstream err;
 					err << "(0x66): bad crc. calc.crc=" << dat2str(tcrc)
 						<< " msg.crc=" << dat2str(mFT.crc);
-					dlog[Debug::WARN] << err.str() << endl;
+					dlog.warn() << err.str() << endl;
 				}
 				cleanupChannel();
 				return erBadCheckSum;
@@ -1356,7 +1356,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 	catch( ModbusRTU::mbException& ex ) // SystemError
 	{
 		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << "(recv): mbException: " << ex << endl;
+			dlog.crit() << "(recv): mbException: " << ex << endl;
 		cleanupChannel();
 		return ex.err;
 	}
@@ -1367,7 +1367,7 @@ mbErrCode ModbusServer::recv_pdu( ModbusMessage& rbuf, timeout_t timeout )
 	catch( UniSetTypes::Exception& ex ) // SystemError
 	{
 		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << "(recv): " << ex << endl;
+			dlog.crit() << "(recv): " << ex << endl;
 		cleanupChannel();
 		return erHardwareError;
 	}
@@ -1392,8 +1392,8 @@ void ModbusServer::initLog( UniSetTypes::Configuration* conf,
 // -------------------------------------------------------------------------
 void ModbusServer::printProcessingTime()
 {
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "(processingTime): " << tmProcessing.getCurrent() << " [msec] (lim: " << tmProcessing.getInterval() << ")" << endl;
+	if( dlog.is_info() )
+		dlog.info() << "(processingTime): " << tmProcessing.getCurrent() << " [msec] (lim: " << tmProcessing.getInterval() << ")" << endl;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string fname, 
@@ -1401,13 +1401,13 @@ ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string fname,
 														ModbusRTU::FileTransferRetMessage& reply,
 														DebugStream* dlog )
 {
-	if( dlog && dlog->debugging(Debug::INFO) )
+	if( dlog && dlog->is_info() )
 		(*dlog)[Debug::INFO] << "(replyFileTransfer): " << query << endl;
 	
 	int fd = open(fname.c_str(), O_RDONLY | O_NONBLOCK );
 	if( fd <= 0 )
 	{
-		if( dlog && dlog->debugging(Debug::WARN) )
+		if( dlog && dlog->is_warn() )
 			(*dlog)[Debug::WARN] << "(replyFileTransfer): open '" << fname << "' with error: " << strerror(errno) << endl;
 		return ModbusRTU::erOperationFailed;
 	}
@@ -1420,7 +1420,7 @@ ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string fname,
 	int ret = ::read(fd,&buf,sizeof(buf));
 	if( ret < 0 )
 	{
-		if( dlog && dlog->debugging(Debug::WARN) )
+		if( dlog && dlog->is_warn() )
 			(*dlog)[Debug::WARN] << "(replyFileTransfer): read from '" << fname << "' with error: " << strerror(errno) << endl;
 		close(fd);
 		return ModbusRTU::erOperationFailed;
@@ -1429,7 +1429,7 @@ ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string fname,
 	struct stat fs;
 	if( fstat(fd,&fs) < 0 )
 	{
-		if( dlog && dlog->debugging(Debug::WARN) )
+		if( dlog && dlog->is_warn() )
 			(*dlog)[Debug::WARN] << "(replyFileTransfer): fstat for '" << fname << "' with error: " << strerror(errno) << endl;
 		close(fd);
 		return ModbusRTU::erOperationFailed;
@@ -1442,7 +1442,7 @@ ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string fname,
 	
 	if( !reply.set(query.numfile,numpacks,query.numpacket,buf,ret) )
 	{
-		if( dlog && dlog->debugging(Debug::WARN) )
+		if( dlog && dlog->is_warn() )
 			(*dlog)[Debug::WARN] << "(replyFileTransfer): set date failed..." << endl;
 		return ModbusRTU::erOperationFailed;
 	}
@@ -1454,7 +1454,7 @@ ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessa
 												ModbusRTU::SetDateTimeRetMessage& reply,
 												DebugStream* dlog )
 {
-	if( dlog && dlog->debugging(Debug::INFO) )
+	if( dlog && dlog->is_info() )
 		(*dlog)[Debug::INFO] << "(replySetDateTime): " << query << endl;
 
 	struct timeval set;
@@ -1480,10 +1480,10 @@ ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessa
 			ModbusRTU::SetDateTimeRetMessage::cpy(reply,query);
 			return ModbusRTU::erNoError;
 		}
-		else if( dlog && dlog->debugging(Debug::WARN) )
+		else if( dlog && dlog->is_warn() )
 			(*dlog)[Debug::WARN] << "(replySetDateTime): settimeofday err: " << strerror(errno) << endl;
 	}
-	else if( dlog && dlog->debugging(Debug::WARN) )
+	else if( dlog && dlog->is_warn() )
 		(*dlog)[Debug::WARN] << "(replySetDateTime): gettimeofday err: " << strerror(errno) << endl;
 	
 	return ModbusRTU::erOperationFailed;
@@ -1501,13 +1501,13 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 
 	if( msg.len > MAXLENPACKET + szModbusHeader )
 	{
-		dlog[Debug::WARN] << "(send): длина пакета больше разрешённой..." << endl;
+		dlog.warn() << "(send): длина пакета больше разрешённой..." << endl;
 		return erPacketTooLong;
 	}
 
 	if( tmProcessing.checkTime() )
 	{
-		dlog[Debug::WARN] << "(send): reply timeout(" << tmProcessing.getInterval() << ")...!!!" << endl;
+		dlog.warn() << "(send): reply timeout(" << tmProcessing.getInterval() << ")...!!!" << endl;
 		return erTimeOut;
 	}
 
@@ -1519,8 +1519,8 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 	}
 
 //	printf("send to %02x type=%d size=%d\n",m.dest,(m.type&TypeMask),slen);
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "(send): data(" << len << " bytes): " << msg << endl;
+	if( dlog.is_info() )
+		dlog.info() << "(send): data(" << len << " bytes): " << msg << endl;
 
 	try
 	{
@@ -1528,7 +1528,7 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 	}
 	catch( Exception& ex ) // SystemError
 	{
-		dlog[Debug::CRIT] << "(send): " << ex << endl;
+		dlog.crit() << "(send): " << ex << endl;
 		return erHardwareError;
 	}
 
