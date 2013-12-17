@@ -119,12 +119,12 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string sec, 
 {
 	if( (unsigned)ind >= omap.size() )
 	{
-		if( unideb.debugging(Debug::INFO) )
+		if( ulog.is_info() )
 		{
 			ostringstream msg;
 			msg << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size();
 //			throw OutOfRange(msg.str());
-			unideb[Debug::WARN] << msg.str() << "... Делаем resize + 100\n";
+			ulog.warn() << msg.str() << "... Делаем resize + 100\n";
 		}
 		
 		omap.resize(omap.size()+100);
@@ -135,7 +135,7 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string sec, 
 	{
 		ostringstream msg;
 		msg << "(ObjectIndex_XML::build):: не нашли параметр RootSection в конф. файле ";
-		unideb[Debug::CRIT] << msg.str() << endl;
+		ulog.crit() << msg.str() << endl;
 		throw SystemError(msg.str());
 	}
 
@@ -199,12 +199,13 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string sec, 
 
 		if( (unsigned)ind >= omap.size() )
 		{
-			if( unideb.debugging(Debug::INFO) )
+			if( ulog.is_info() )
 			{
 				ostringstream msg;
 				msg << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size();
 //				throw OutOfRange(msg.str());
-				unideb[Debug::INFO] << msg.str() << "... Делаем resize + 100\n";
+				if( ulog.is_info() )
+					ulog.info() << msg.str() << "... Делаем resize + 100\n";
 			}
 			omap.resize(omap.size()+100);
 		}
@@ -220,7 +221,7 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string sec, un
 		ostringstream msg;
 		msg << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size();
 //		throw OutOfRange(msg.str());
-		unideb[Debug::WARN] << msg.str() << "... Делаем resize + 100\n";
+		ulog.warn() << msg.str() << "... Делаем resize + 100\n";
 		omap.resize(omap.size()+100);
 	}
 
@@ -276,7 +277,7 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string sec, un
 			ostringstream msg;
 			msg << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size();
 //			throw OutOfRange(msg.str());
-			unideb[Debug::WARN] << msg.str() << "... Делаем resize + 100\n";
+			ulog.warn() << msg.str() << "... Делаем resize + 100\n";
 			omap.resize(omap.size()+100);
 		}
 	}

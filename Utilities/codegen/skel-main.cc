@@ -14,14 +14,14 @@ int main( int argc, const char **argv )
 		string logfilename = conf->getArgParam("--logfile", "Skel.log");
 		string logname( conf->getLogDir() + logfilename );
 //		dlog.logFile( logname.c_str() );
-		unideb.logFile( logname.c_str() );
+		ulog.logFile( logname.c_str() );
 //		conf->initDebug(dlog,"dlog");
 
 		ObjectsActivator act;
 		xmlNode* cnode = conf->getNode("Skel");
 		if( cnode == NULL )
 		{
-			dlog[Debug::CRIT] << "(Skel): not found <Skel> in conffile" << endl;
+			dlog.crit() << "(Skel): not found <Skel> in conffile" << endl;
 			return 1;
 		}
 		
@@ -31,8 +31,8 @@ int main( int argc, const char **argv )
 		SystemMessage sm(SystemMessage::StartUp); 
 		act.broadcast( sm.transport_msg() );
 
-		unideb(Debug::ANY) << "\n\n\n";
-		unideb[Debug::ANY] << "(Skel::main): -------------- Skel START -------------------------\n\n";
+		ulog.ebug::ANY) << "\n\n\n";
+		ulog.ebug::ANY] << "(Skel::main): -------------- Skel START -------------------------\n\n";
 		dlog(Debug::ANY) << "\n\n\n";
 		dlog[Debug::ANY] << "(Skel::main): -------------- Skel START -------------------------\n\n";
 		act.run(false);

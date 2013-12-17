@@ -14,7 +14,6 @@ ModbusTCPMaster::ModbusTCPMaster():
 tcp(0),
 nTransaction(0),
 iaddr(""),
-port(0),
 force_disconnect(true)
 {
 	setCRCNoCheckit(true);
@@ -51,26 +50,26 @@ mbErrCode ModbusTCPMaster::sendData( unsigned char* buf, int len )
 mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg, 
 				 			ModbusMessage& reply, timeout_t timeout )
 {
-  	try
+	try
 	{
 		if( iaddr.empty() )
 		{
-			if( dlog.debugging(Debug::WARN) )
-				dlog[Debug::WARN] << iaddr << "(ModbusTCPMaster::query): unknown ip address for server..." << endl;
+			if( dlog.is_warn() )
+				dlog.warn() << iaddr << "(ModbusTCPMaster::query): unknown ip address for server..." << endl;
 			return erTimeOut; // erHardwareError
 		}
 
 		if( !isConnection() )
 		{
-				if( dlog.debugging(Debug::INFO) )
-						dlog[Debug::INFO] << iaddr << "(ModbusTCPMaster::query): no connection.. reconnnect..." << endl;
+				if( dlog.is_info() )
+					dlog.info() << iaddr << "(ModbusTCPMaster::query): no connection.. reconnnect..." << endl;
 				reconnect();
 		}
 
 		if( !isConnection() )
 		{
-			if( dlog.debugging(Debug::WARN) )
-				dlog[Debug::WARN] << iaddr << "(ModbusTCPMaster::query): not connected to server..." << endl;
+			if( dlog.is_warn() )
+				dlog.warn() << iaddr << "(ModbusTCPMaster::query): not connected to server..." << endl;
 				return erTimeOut;
 		}
 
@@ -96,9 +95,9 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
 		mh.swapdata();
 		// send TCP header
-		if( dlog.debugging(Debug::INFO) )
+		if( dlog.is_info() )
 		{
-			dlog[Debug::INFO] << iaddr << "(ModbusTCPMaster::query): send tcp header(" << sizeof(mh) <<"): ";
+			dlog.info() << iaddr << "(ModbusTCPMaster::query): send tcp header(" << sizeof(mh) <<"): ";
 			mbPrintMessage( dlog, (ModbusByte*)(&mh), sizeof(mh));
 			dlog(Debug::INFO) << endl;
 		}
@@ -115,20 +114,20 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 			if( tcp->isPending(ost::Socket::pendingOutput,timeout) )
 				break;
 
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(ModbusTCPMaster::query): no write pending.. reconnnect.." << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(ModbusTCPMaster::query): no write pending.. reconnnect.." << endl;
 
 			reconnect();
 			if( !isConnection() )
 			{
-				if( dlog.debugging(Debug::WARN) )
-					dlog[Debug::WARN] << "(ModbusTCPMaster::query): not connected to server..." << endl;
+				if( dlog.is_warn() )
+					dlog.warn() << "(ModbusTCPMaster::query): not connected to server..." << endl;
 				return erTimeOut;
 			}
 			cleanInputStream();
 		
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(ModbusTCPMaster::query): no write pending.. reconnnect OK" << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(ModbusTCPMaster::query): no write pending.. reconnnect OK" << endl;
     	}
 
 		mh.swapdata();
@@ -161,24 +160,23 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 */
 			ModbusTCP::MBAPHeader rmh;
 			int ret = getNextData((unsigned char*)(&rmh),sizeof(rmh));
-			if( dlog.debugging(Debug::INFO) )
+			if( dlog.is_info() )
 			{
-				dlog[Debug::INFO] << "(ModbusTCPMaster::query): recv tcp header(" << ret << "): ";
+				dlog.info() << "(ModbusTCPMaster::query): recv tcp header(" << ret << "): ";
 				mbPrintMessage( dlog, (ModbusByte*)(&rmh), sizeof(rmh));
-				dlog(Debug::INFO) << endl;
+				dlog.info(false) << endl;
 			}
 
 			if( ret < (int)sizeof(rmh) )
 			{
 				ost::tpport_t port;
-				if( dlog.debugging(Debug::INFO) )
-					dlog[Debug::INFO] << "(ModbusTCPMaster::query): ret=" << (int)ret
+				if( dlog.is_info() )
+					dlog.info() << "(ModbusTCPMaster::query): ret=" << (int)ret
 							<< " < rmh=" << (int)sizeof(rmh)
-							<< " errnum: " << tcp->getErrorNumber()
+							<< " err: " << tcp->getErrorNumber()
 							<< " perr: " << tcp->getPeer(&port)
-							<< " err: " << string(tcp->getErrorString())
 							<< endl;
-							
+
 				disconnect();
 				return erTimeOut; // return erHardwareError;
 			}
@@ -203,8 +201,8 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 			
 			if( force_disconnect )
 			{
-				if( dlog.debugging(Debug::INFO) )
-					dlog[Debug::INFO] << "(query): force disconnect.." << endl;
+				if( dlog.is_info() )
+					dlog.info() << "(query): force disconnect.." << endl;
 			
 				disconnect();
 			}
@@ -212,13 +210,13 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 			return res;
 		}
 
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << "(query): input pending timeout " << endl;
+		if( dlog.is_info() )
+			dlog.info() << "(query): input pending timeout " << endl;
 
 		if( force_disconnect )
 		{
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(query): force disconnect.." << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(query): force disconnect.." << endl;
 			
 //			cleanInputStream();
 			disconnect();
@@ -228,35 +226,35 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << "(query): " << ex << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << "(query): " << ex << endl;
 	}
 	catch( SystemError& err )
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << "(query): " << err << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << "(query): " << err << endl;
 	}
 	catch( Exception& ex )
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << "(query): " << ex << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << "(query): " << ex << endl;
 	}
 	catch( ost::SockException& e ) 
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << "(query): tcp error: " << e.getString() << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << "(query): tcp error: " << e.getString() << endl;
 		return erTimeOut;
 	}
 	catch( std::exception& e )
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::CRIT] << "(query): " << e.what() << std::endl;
+		if( dlog.is_warn() )
+			dlog.crit() << "(query): " << e.what() << std::endl;
 		return erTimeOut;
 	}
 	catch(...)
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << "(query): cath..." << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << "(query): cath..." << endl;
 	}	
 
 	return erTimeOut; // erHardwareError
@@ -273,17 +271,18 @@ void ModbusTCPMaster::cleanInputStream()
 	while( ret > 0);
 }
 // -------------------------------------------------------------------------
-bool ModbusTCPMaster::checkConnection( const std::string ip, int _port, int timeout_msec )
+bool ModbusTCPMaster::checkConnection( const std::string ip, int port, int timeout_msec )
 {
 	try
 	{
 		ostringstream s;
-		s << ip << ":" << _port;
+		s << ip << ":" << port;
 
 		// Проверяем просто попыткой создать соединение..
 
-		UTCPStream t;
-		t.create(ip,_port,true,timeout_msec);
+//		ost::Thread::setException(ost::Thread::throwException);
+		// 	TCPStream (const char *name, Family family=IPV4, unsigned mss=536, bool throwflag=false, timeout_t timer=0)
+		ost::TCPStream t(s.str().c_str(),ost::Socket::IPV4,536,true,timeout_msec);
 		t.disconnect();
 		return true;
 	}
@@ -296,8 +295,8 @@ bool ModbusTCPMaster::checkConnection( const std::string ip, int _port, int time
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::reconnect()
 {
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "(ModbusTCPMaster): reconnect " << iaddr << endl;
+	if( dlog.is_info() )
+		dlog.info() << "(ModbusTCPMaster): reconnect " << iaddr << endl;
 
 	if( tcp )
 	{
@@ -311,8 +310,8 @@ void ModbusTCPMaster::reconnect()
 
 	try
 	{
-		tcp = new UTCPStream();
-		tcp->create(iaddr,port,true,500);
+		// 	TCPStream (const char *name, Family family=IPV4, unsigned mss=536, bool throwflag=false, timeout_t timer=0)
+		tcp = new ost::TCPStream(iaddr.c_str(),ost::Socket::IPV4,536,true,500);
 		tcp->setTimeout(replyTimeOut_ms);
 	}
 	catch( std::exception& e )
@@ -321,7 +320,7 @@ void ModbusTCPMaster::reconnect()
 		{
 			ostringstream s;
 			s << "(ModbusTCPMaster): connection " << s.str() << " error: " << e.what();
-			dlog[Debug::CRIT] << s.str() << std::endl;
+			dlog.crit() << s.str() << std::endl;
 		}
 	}
 	catch( ... )
@@ -330,7 +329,7 @@ void ModbusTCPMaster::reconnect()
 		{
 			ostringstream s;
 			s << "(ModbusTCPMaster): connection " << s.str() << " error: catch ...";
-			dlog[Debug::CRIT] << s.str() << std::endl;
+			dlog.crit() << s.str() << std::endl;
 		}
 	}
 }
@@ -341,7 +340,7 @@ void ModbusTCPMaster::connect( const std::string addr, int port )
 	connect(ia,port);
 }
 // -------------------------------------------------------------------------
-void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
+void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
 {
 	if( tcp )
 	{
@@ -353,19 +352,17 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
 //	if( !tcp )
 //	{
 		ostringstream s;
-		s << addr;
+		s << addr << ":" << port;
 		
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << "(ModbusTCPMaster): connect to " << addr << ":" << _port << endl;
-		
+		if( dlog.is_info() )
+			dlog.info() << "(ModbusTCPMaster): connect to " << s.str() << endl;
+
 		iaddr = s.str();
-		port = _port;
-		
+
 		ost::Thread::setException(ost::Thread::throwException);
 		try
-		{		
-			tcp = new UTCPStream();
-			tcp->create(iaddr,port,true,500);
+		{
+			tcp = new ost::TCPStream(iaddr.c_str(),ost::Socket::IPV4,536,true,500);
 			tcp->setTimeout(replyTimeOut_ms);
 		}
 		catch( std::exception& e )
@@ -374,7 +371,7 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
 			{
 				ostringstream s;
 				s << "(ModbusTCPMaster): connection " << s.str() << " error: " << e.what();
-				dlog[Debug::CRIT] << s.str() << std::endl;
+				dlog.crit() << s.str() << std::endl;
 			}
 		}
 		catch( ... )
@@ -383,7 +380,7 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
 			{
 				ostringstream s;
 				s << "(ModbusTCPMaster): connection " << s.str() << " error: catch ...";
-				dlog[Debug::CRIT] << s.str() << std::endl;
+				dlog.crit() << s.str() << std::endl;
 			}
 		}
 //	}
@@ -391,8 +388,8 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::disconnect()
 {
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << iaddr << "(ModbusTCPMaster): disconnect." << endl;
+	if( dlog.is_info() )
+		dlog.info() << iaddr << "(ModbusTCPMaster): disconnect." << endl;
 
 	if( !tcp )
 		return;

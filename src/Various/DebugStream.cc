@@ -1,5 +1,5 @@
-// Created by Lars Gullik Bjønnes
-// Copyright 1999 Lars Gullik Bjønnes (larsbj@lyx.org)
+// Created by Lars Gullik Bjï¿½nnes
+// Copyright 1999 Lars Gullik Bjï¿½nnes (larsbj@lyx.org)
 // Released into the public domain.
 
 // Primarily developed for use in the LyX Project http://www.lyx.org/
@@ -17,7 +17,7 @@
 //#include "DebugStream.h"
 #include "Debug.h"
 
-// Since the current C++ lib in egcs does not have a standard implementation
+//ï¿½Since the current C++ lib in egcs does not have a standard implementation
 // of basic_streambuf and basic_filebuf we don't have to include this
 // header.
 //#define MODERN_STL_STREAMS
@@ -239,7 +239,7 @@ std::ostream & DebugStream::debug(Debug::type t)
 	if(dt & t)
 	{
 		if( show_datetime )
-			print_datetime(t);
+			printDateTime(t);
 		*this << "(" << std::setfill(' ') << std::setw(6) << t << "):  "; // "):\t";
 		return *this;
 	}
@@ -255,7 +255,7 @@ std::ostream& DebugStream::operator()(Debug::type t)
 	return nullstream;
 }
 //--------------------------------------------------------------------------
-std::ostream& DebugStream::print_date(Debug::type t, char brk)
+std::ostream& DebugStream::printDate(Debug::type t, char brk)
 {
 	if(dt && t)
 	{
@@ -269,7 +269,7 @@ std::ostream& DebugStream::print_date(Debug::type t, char brk)
 	return nullstream;
 }
 //--------------------------------------------------------------------------
-std::ostream& DebugStream::print_time(Debug::type t, char brk)
+std::ostream& DebugStream::printTime(Debug::type t, char brk)
 {
 	if(dt && t)
 	{
@@ -283,7 +283,7 @@ std::ostream& DebugStream::print_time(Debug::type t, char brk)
 	return nullstream;
 }
 //--------------------------------------------------------------------------
-std::ostream& DebugStream::print_datetime(Debug::type t)
+std::ostream& DebugStream::printDateTime(Debug::type t)
 {
 	if(dt & t)
 	{

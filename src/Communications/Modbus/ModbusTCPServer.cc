@@ -183,9 +183,9 @@ mbErrCode ModbusTCPServer::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPH
 
 	mhead.swapdata();
 
-	if( dlog.debugging(Debug::INFO) )
+	if( dlog.is_info() )
 	{
-		dlog[Debug::INFO] << "(ModbusTCPServer::tcp_processing): recv tcp header(" << len << "): ";
+		dlog.info() << "(ModbusTCPServer::tcp_processing): recv tcp header(" << len << "): ";
 		mbPrintMessage( dlog, (ModbusByte*)(&mhead), sizeof(mhead));
 		dlog(Debug::INFO) << endl;
 	}
@@ -198,8 +198,8 @@ mbErrCode ModbusTCPServer::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPH
 
 	if( len<mhead.len )
 	{
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << "(ModbusTCPServer::tcp_processing): len(" << (int)len 
+		if( dlog.is_info() )
+			dlog.info() << "(ModbusTCPServer::tcp_processing): len(" << (int)len
 					<< ") < mhead.len(" << (int)mhead.len << ")" << endl;
 		
 		return erInvalidFormat;
@@ -219,9 +219,9 @@ mbErrCode ModbusTCPServer::pre_send_request( ModbusMessage& request )
 		curQueryHeader.len -= szCRC;
 
 	curQueryHeader.swapdata();
-	if( dlog.debugging(Debug::INFO) )
+	if( dlog.is_info() )
 	{
-		dlog[Debug::INFO] << "(ModbusTCPServer::pre_send_request): send tcp header: ";
+		dlog.info() << "(ModbusTCPServer::pre_send_request): send tcp header: ";
 		mbPrintMessage( dlog, (ModbusByte*)(&curQueryHeader), sizeof(curQueryHeader));
 		dlog(Debug::INFO) << endl;
 	}
@@ -245,8 +245,8 @@ void ModbusTCPServer::cleanInputStream()
 // -------------------------------------------------------------------------
 void ModbusTCPServer::terminate()
 {
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "(ModbusTCPServer): terminate..." << endl;
+	if( dlog.is_info() )
+		dlog.info() << "(ModbusTCPServer): terminate..." << endl;
 	
 	if( tcp && tcp.isConnected() )
 		tcp.disconnect();

@@ -237,7 +237,7 @@ long UModbus::data2value( VTypes::VType vtype, ModbusRTU::ModbusData* data )
 				return true;
 			}
 
-			dlog[Debug::CRIT] << myname << "(initSMValue): IGNORE item: rnum=" << p->rnum
+			dlog.crit() << myname << "(initSMValue): IGNORE item: rnum=" << p->rnum
 					<< " > 1 ?!! for id=" << p->si.id << endl;
 
 			return false;

@@ -105,7 +105,7 @@ class UniXML_iterator:
 
 		operator xmlNode*()
 		{
-			//unideb << "current\n";
+			//ulog.< "current\n";
 			return curNode;
 		}
 

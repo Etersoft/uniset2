@@ -38,7 +38,7 @@ pollThread(0)
 			prop_prefix = "";
 	}
 
-	dlog[Debug::INFO] << myname << "(init): prop_prefix=" << prop_prefix << endl;
+	dlog.info() << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
 	UniXML_iterator it(cnode);
 
@@ -55,7 +55,7 @@ pollThread(0)
 
 
 	force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection",it.getProp("persistent_connection")) ? false : true;
-	dlog[Debug::INFO] << myname << "(init): persisten-connection=" << (!force_disconnect) << endl;
+	dlog.info() << myname << "(init): persisten-connection=" << (!force_disconnect) << endl;
 
 	if( shm->isLocalwork() )
 	{
@@ -68,7 +68,7 @@ pollThread(0)
 
 	pollThread = new ThreadCreator<MBTCPMaster>(this, &MBTCPMaster::poll_thread);
 
-	if( dlog.debugging(Debug::INFO) )
+	if( dlog.is_info() )
 		printMap(rmap);
 }
 // -----------------------------------------------------------------------------
@@ -106,16 +106,16 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
 
 		mbtcp->setAfterSendPause(aftersend_pause);
 
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
+		if( dlog.is_info() )
+			dlog.info() << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
 
 		if( dlog.debugging(Debug::LEVEL9) )
 			mbtcp->setLog(dlog);
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << "(init): " << ex << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << "(init): " << ex << endl;
 	}
 	catch(...)
 	{
@@ -183,7 +183,7 @@ MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv,
 	if( name.empty() )
 	{
 		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << "(MBTCPMaster): Не задан name'" << endl;
+			dlog.crit() << "(MBTCPMaster): Не задан name'" << endl;
 		return 0;
 	}
 
@@ -191,14 +191,14 @@ MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv,
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
 		if( dlog.debugging(Debug::CRIT) )
-			dlog[Debug::CRIT] << "(MBTCPMaster): идентификатор '" << name
+			dlog.crit() << "(MBTCPMaster): идентификатор '" << name
 				<< "' не найден в конф. файле!"
 				<< " в секции " << conf->getObjectsSection() << endl;
 		return 0;
 	}
 
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "(MBTCPMaster): name = " << name << "(" << ID << ")" << endl;
+	if( dlog.is_info() )
+		dlog.info() << "(MBTCPMaster): name = " << name << "(" << ID << ")" << endl;
 	return new MBTCPMaster(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------

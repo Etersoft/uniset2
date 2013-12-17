@@ -2,7 +2,7 @@
 # This file is part of the UniSet library                                  #
 ############################################################################
 
-noinst_PROGRAMS 		= passivetimer hourglass delaytimer unixml ui umutex conftest iterator_test sscanf_hex calibration threadtst
+noinst_PROGRAMS 		= passivetimer hourglass delaytimer unixml ui umutex conftest iterator_test sscanf_hex calibration threadtst dlog
 
 passivetimer_SOURCES 	= passivetimer.cc
 passivetimer_LDADD 		= $(top_builddir)/lib/libUniSet.la
@@ -45,6 +45,10 @@ calibration_CPPFLAGS	= -I$(top_builddir)/include ${SIGC_CFLAGS}
 threadtst_SOURCES = threadtst.cc
 threadtst_LDADD 	= $(top_builddir)/lib/libUniSet.la ${SIGC_LIBS} $(COMCPP_LIBS)
 threadtst_CPPFLAGS	= -I$(top_builddir)/include ${SIGC_CFLAGS} $(COMCPP_CFLAGS)
+
+dlog_SOURCES = dlog.cc
+dlog_LDADD 	= $(top_builddir)/lib/libUniSet.la ${SIGC_LIBS} $(COMCPP_LIBS)
+dlog_CPPFLAGS = -I$(top_builddir)/include ${SIGC_CFLAGS} $(COMCPP_CFLAGS)
 
 
 include $(top_builddir)/conf/setting.mk

@@ -110,8 +110,8 @@ void Schema::extlink( const string& name, Element::ElementID childID, int numIn 
 // -------------------------------------------------------------------------
 Element* Schema::manage( Element* el )
 {
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "Schema: manage new element id=" << el->getId()
+	if( dlog.is_info() )
+		dlog.info() << "Schema: manage new element id=" << el->getId()
 			 << " type=" << el->getType()
 			 << " inputs=" << el->inCount() << endl;
 

@@ -240,7 +240,7 @@ namespace UniSetTypes
 	extern Configuration* conf;
 	
 	/*! Глобальный объект для вывода логов */
-	extern DebugStream unideb;
+	extern DebugStream ulog;
 	
 	
 	// Инициализация UniSetTypes::conf.

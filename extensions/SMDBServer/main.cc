@@ -35,7 +35,7 @@ int main( int argc, const char** argv )
 		std::ostringstream logname;
 		string dir(conf->getLogDir());
 		logname << dir << logfilename;
-		unideb.logFile( logname.str() );
+		ulog.logFile( logname.str() );
 		dlog.logFile( logname.str() );
 
 		ObjectId shmID = DefaultObjectId;
@@ -54,7 +54,7 @@ int main( int argc, const char** argv )
 		SMDBServer* db = SMDBServer::init_smdbserver(argc,argv,shmID);
 		if( !db )
 		{
-			dlog[Debug::CRIT] << "(smdbserver): init не прошёл..." << endl;
+			dlog.crit() << "(smdbserver): init не прошёл..." << endl;
 			return 1;
 		}
 
@@ -64,8 +64,8 @@ int main( int argc, const char** argv )
 		SystemMessage sm(SystemMessage::StartUp); 
 		act.broadcast( sm.transport_msg() );
 
-		unideb(Debug::ANY) << "\n\n\n";
-		unideb[Debug::ANY] << "(main): -------------- SMDBServer START -------------------------\n\n";
+		ulog.ebug::ANY) << "\n\n\n";
+		ulog.ebug::ANY] << "(main): -------------- SMDBServer START -------------------------\n\n";
 		dlog(Debug::ANY) << "\n\n\n";
 		dlog[Debug::ANY] << "(main): -------------- SMDBServer START -------------------------\n\n";
 		act.run(false);
@@ -73,11 +73,11 @@ int main( int argc, const char** argv )
 	}
 	catch( Exception& ex )
 	{
-		dlog[Debug::CRIT] << "(smdbserver): " << ex << std::endl;
+		dlog.crit() << "(smdbserver): " << ex << std::endl;
 	}
 	catch(...)
 	{
-		dlog[Debug::CRIT] << "(smdbserver): catch ..." << std::endl;
+		dlog.crit() << "(smdbserver): catch ..." << std::endl;
 	}
 
 	return 1;

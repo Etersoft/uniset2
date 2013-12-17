@@ -30,13 +30,13 @@ int main( int argc, const char** argv )
 		string logfilename(conf->getArgParam("--mbtcp-logfile"));
 		if( logfilename.empty() )
 			logfilename = "mbtcpmultimaster.log";
-	
+
 		conf->initDebug(dlog,"dlog");
-	
+
 		std::ostringstream logname;
 		string dir(conf->getLogDir());
 		logname << dir << logfilename;
-		unideb.logFile( logname.str() );
+		ulog.logFile( logname.str() );
 		dlog.logFile( logname.str() );
 
 		ObjectId shmID = DefaultObjectId;
@@ -55,33 +55,35 @@ int main( int argc, const char** argv )
 		MBTCPMultiMaster* mb = MBTCPMultiMaster::init_mbmaster(argc,argv,shmID);
 		if( !mb )
 		{
-			dlog[Debug::CRIT] << "(mbmaster): init MBTCPMaster failed." << endl;
+			dlog.crit() << "(mbmaster): init MBTCPMaster failed." << endl;
 			return 1;
 		}
 
 		ObjectsActivator act;
 		act.addObject(static_cast<class UniSetObject*>(mb));
 
-		SystemMessage sm(SystemMessage::StartUp); 
+		SystemMessage sm(SystemMessage::StartUp);
 		act.broadcast( sm.transport_msg() );
 
-		unideb(Debug::ANY) << "\n\n\n";
-		unideb[Debug::ANY] << "(main): -------------- MBTCPMulti Exchange START -------------------------\n\n";
-		dlog(Debug::ANY) << "\n\n\n";
-		dlog[Debug::ANY] << "(main): -------------- MBTCPMulti Exchange START -------------------------\n\n";
+		ulog << "\n\n\n";
+		ulog << "(main): -------------- MBTCPMulti Exchange START -------------------------\n\n";
+		dlog << "\n\n\n";
+		dlog << "(main): -------------- MBTCPMulti Exchange START -------------------------\n\n";
+
 		act.run(false);
-		while( waitpid(-1, 0, 0) > 0 ); 
+		while( waitpid(-1, 0, 0) > 0 );
+
 		return 0;
 	}
 	catch( Exception& ex )
 	{
-		dlog[Debug::CRIT] << "(mbtcpmultimaster): " << ex << std::endl;
+		dlog.crit() << "(mbtcpmultimaster): " << ex << std::endl;
 	}
 	catch(...)
 	{
-		dlog[Debug::CRIT] << "(mbtcpmultimaster): catch ..." << std::endl;
+		dlog.crit() << "(mbtcpmultimaster): catch ..." << std::endl;
 	}
 
-	while( waitpid(-1, 0, 0) > 0 ); 
+	while( waitpid(-1, 0, 0) > 0 );
 	return 1;
 }

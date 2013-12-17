@@ -32,7 +32,7 @@ int main( int argc, const char** argv )
 		std::ostringstream logname;
 		string dir(conf->getLogDir());
 		logname << dir << logfilename;
-		unideb.logFile( logname.str() );
+		ulog.logFile( logname.str() );
 		UniSetExtensions::dlog.logFile( logname.str() );
 		conf->initDebug(UniSetExtensions::dlog,"dlog");
 
@@ -52,7 +52,7 @@ int main( int argc, const char** argv )
 		UNetExchange* unet = UNetExchange::init_unetexchange(argc,argv,shmID);
 		if( !unet )
 		{
-			dlog[Debug::CRIT] << "(unetexchange): init failed.." << endl;
+			dlog.crit() << "(unetexchange): init failed.." << endl;
 			return 1;
 		}
 
@@ -62,21 +62,21 @@ int main( int argc, const char** argv )
 		SystemMessage sm(SystemMessage::StartUp);
 		act.broadcast( sm.transport_msg() );
 
-		unideb(Debug::ANY) << "\n\n\n";
-		unideb[Debug::ANY] << "(main): -------------- UDPRecevier START -------------------------\n\n";
-		dlog(Debug::ANY) << "\n\n\n";
-		dlog[Debug::ANY] << "(main): -------------- UDPReceiver START -------------------------\n\n";
+		ulog << "\n\n\n";
+		ulog << "(main): -------------- UDPRecevier START -------------------------\n\n";
+		dlog << "\n\n\n";
+		dlog << "(main): -------------- UDPReceiver START -------------------------\n\n";
 
 		act.run(false);
 		while( waitpid(-1, 0, 0) > 0 );
 	}
 	catch( Exception& ex )
 	{
-		dlog[Debug::CRIT] << "(unetexchange): " << ex << std::endl;
+		dlog.crit() << "(unetexchange): " << ex << std::endl;
 	}
 	catch(...)
 	{
-		dlog[Debug::CRIT] << "(unetexchange): catch ..." << std::endl;
+		dlog.crit() << "(unetexchange): catch ..." << std::endl;
 	}
 
 	while( waitpid(-1, 0, 0) > 0 );

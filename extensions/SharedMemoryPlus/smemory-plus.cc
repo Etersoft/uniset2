@@ -52,7 +52,7 @@ int main( int argc, const char **argv )
 		string logfilename = conf->getArgParam("--logfile", "smemory-plus.log");
 		string logname( conf->getLogDir() + logfilename );
 		UniSetExtensions::dlog.logFile( logname );
-		unideb.logFile( logname );
+		ulog.logFile( logname );
 		conf->initDebug(UniSetExtensions::dlog,"dlog");
 
 		ObjectsActivator act;
@@ -62,7 +62,7 @@ int main( int argc, const char **argv )
 			return 1;
 
 		act.addManager(static_cast<class ObjectsManager*>(shm));
-		
+
 		// ------------ IOControl ----------------
 		std::list< ThreadCreator<IOControl>* > lst_iothr;
 		for( int i=0; i<MaxAddNum; i++ )
@@ -70,17 +70,17 @@ int main( int argc, const char **argv )
 			stringstream s;
 			s << "--add-io";
 			if( i>0 ) s << i;
-				
+
 			bool add_io = findArgParam(s.str(),argc,argv) != -1;
-			
+
 			if( add_io )
 			{
 				stringstream p;
 				p << "io";
 				if( i > 0 ) p << i;
 
-				if( dlog.debugging(Debug::INFO) )
-					dlog[Debug::INFO] << "(smemory-plus): add IOControl(" << p.str() << ")" << endl;
+				if( dlog.is_info() )
+					dlog.info() << "(smemory-plus): add IOControl(" << p.str() << ")" << endl;
 
 				IOControl* ic = IOControl::init_iocontrol(argc,argv,shm->getId(),shm,p.str());
 				if( ic == NULL )
@@ -100,7 +100,7 @@ int main( int argc, const char **argv )
 			stringstream s;
 			s << "--add-rtu";
 			if( i>0 ) s << i;
-				
+
 			bool add_rtu = findArgParam(s.str(),argc,argv) != -1;
 			if( add_rtu )
 			{
@@ -108,13 +108,13 @@ int main( int argc, const char **argv )
 				p << "rtu";
 				if( i > 0 ) p << i;
 
-				if( dlog.debugging(Debug::INFO) )
-					dlog[Debug::INFO] << "(smemory-plus): add RTUExchange(" << p.str() << ")" << endl;
+				if( dlog.is_info() )
+					dlog.info() << "(smemory-plus): add RTUExchange(" << p.str() << ")" << endl;
 			
 				RTUExchange* rtu = RTUExchange::init_rtuexchange(argc,argv,shm->getId(),shm,p.str());
 				if( rtu == NULL )
 					return 1;
-					
+
 				act.addObject(static_cast<class UniSetObject*>(rtu));
 			}
 		}
@@ -124,16 +124,16 @@ int main( int argc, const char **argv )
 			stringstream s;
 			s << "--add-mbslave";
 			if( i>0 ) s << i;
-				
+
 			bool add_mbslave = findArgParam(s.str(),argc,argv) != -1;
 			if( add_mbslave )
 			{
 				stringstream p;
 				p << "mbs";
 				if( i > 0 ) p << i;
-   
-				if( dlog.debugging(Debug::INFO) )
-					dlog[Debug::INFO] << "(smemory-plus): add MBSlave(" << p.str() << ")" << endl;
+
+				if( dlog.is_info() )
+					dlog.info() << "(smemory-plus): add MBSlave(" << p.str() << ")" << endl;
 
 				MBSlave* mbs = MBSlave::init_mbslave(argc,argv,shm->getId(),shm,p.str());
 				if( mbs == NULL )
@@ -149,7 +149,7 @@ int main( int argc, const char **argv )
 			stringstream s;
 			s << "--add-mbmaster";
 			if( i>0 ) s << i;
-	
+
 			bool add_mbmaster = findArgParam(s.str(),argc,argv) != -1;
 
 			if( add_mbmaster )
@@ -158,8 +158,8 @@ int main( int argc, const char **argv )
 				p << "mbtcp";
 				if( i > 0 ) p << i;
 
-				if( dlog.debugging(Debug::INFO) )
-					dlog[Debug::INFO] << "(smemory-plus): add MBTCPMaster(" << p.str() << ")" << endl;
+				if( dlog.is_info() )
+					dlog.info() << "(smemory-plus): add MBTCPMaster(" << p.str() << ")" << endl;
 
 				MBTCPMaster* mbm1 = MBTCPMaster::init_mbmaster(argc,argv,shm->getId(),shm,p.str());
 				if( mbm1 == NULL )
@@ -176,13 +176,13 @@ int main( int argc, const char **argv )
 			if( unet == NULL )
 				return 1;
 
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(smemory-plus): add UNetExchnage.." << endl;
+			if( dlog.is_info() )
+				dlog.info() << "(smemory-plus): add UNetExchnage.." << endl;
 
 			act.addObject(static_cast<class UniSetObject*>(unet));
 		}
 		// ---------------------------------------
-   		// попытка решить вопрос с "зомби" процессами
+		// попытка решить вопрос с "зомби" процессами
         signal( SIGCHLD, on_sigchild );
 		// ---------------------------------------
 		SystemMessage sm(SystemMessage::StartUp);
@@ -193,20 +193,20 @@ int main( int argc, const char **argv )
 
 		act.run(false);
 		on_sigchild(SIGTERM);
-		
+
 		return 0;
 	}
 	catch(Exception& ex)
 	{
-		unideb[Debug::CRIT] << "(smemory-plus): " << ex << endl;
+		ulog.crit() << "(smemory-plus): " << ex << endl;
 	}
     catch( CORBA::SystemException& ex )
     {
-    	unideb[Debug::CRIT] << "(smemory-plus): " << ex.NP_minorString() << endl;
+	ulog.crit() << "(smemory-plus): " << ex.NP_minorString() << endl;
     }
 	catch(...)
 	{
-		unideb[Debug::CRIT] << "(smemory-plus): catch(...)" << endl;
+		ulog.crit() << "(smemory-plus): catch(...)" << endl;
 	}
 
 	on_sigchild(SIGTERM);
@@ -216,7 +216,7 @@ int main( int argc, const char **argv )
 void help_print( int argc, const char* argv[])
 {
 	const int mnum = MaxAddNum - 1;
-	
+
 	cout << "--add-io[2..." << mnum << "]         - Start IOControl" << endl;
 	cout << "--add-rtu[2..." << mnum << "]        - Start RTUExchange (rtu master)" << endl;
 	cout << "--add-mbslave[2..." << mnum << "]    - Start ModbusSlave (RTU or TCP)" << endl;

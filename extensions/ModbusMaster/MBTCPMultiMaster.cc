@@ -10,13 +10,15 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, 
+MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
 							SharedMemory* ic, const std::string prefix ):
 MBExchange(objId,shmId,ic,prefix),
 force_disconnect(true),
 pollThread(0),
 checkThread(0)
 {
+	tcpMutex.setName(myname+"_tcpMutex");
+
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(MBTCPMultiMaster): objId=-1?!! Use --" + prefix + "-name" );
 
@@ -38,7 +40,8 @@ checkThread(0)
 			prop_prefix = "";
 	}
 
-	dlog[Debug::INFO] << myname << "(init): prop_prefix=" << prop_prefix << endl;
+	if( dlog.is_info() )
+		dlog.info() << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
 	UniXML_iterator it(cnode);
 
@@ -50,7 +53,8 @@ checkThread(0)
 	{
 		ostringstream err;
 		err << myname << "(init): not found <GateList>";
-		dlog[Debug::CRIT] << err.str() << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << err.str() << endl;
 		throw UniSetTypes::SystemError(err.str());
 	}
 
@@ -58,7 +62,8 @@ checkThread(0)
 	{
 		ostringstream err;
 		err << myname << "(init): empty <GateList> ?!";
-		dlog[Debug::CRIT] << err.str() << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << err.str() << endl;
 		throw UniSetTypes::SystemError(err.str());
 	}
 
@@ -70,7 +75,8 @@ checkThread(0)
 		{
 			ostringstream err;
 			err << myname << "(init): ip='' in <GateList>";
-			dlog[Debug::CRIT] << err.str() << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << err.str() << endl;
 			throw UniSetTypes::SystemError(err.str());
 		}
 
@@ -79,7 +85,8 @@ checkThread(0)
 		{
 			ostringstream err;
 			err << myname << "(init): ERROR: port=''" << sinf.port << " for ip='" << sinf.ip << "' in <GateList>";
-			dlog[Debug::CRIT] << err.str() << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << err.str() << endl;
 			throw UniSetTypes::SystemError(err.str());
 		}
 
@@ -90,7 +97,8 @@ checkThread(0)
 			{
 				ostringstream err;
 				err << myname << "(init): ERROR: Unknown SensorID for '" << it1.getProp("respond") << "' in <GateList>";
-				dlog[Debug::CRIT] << err.str() << endl;
+				if( dlog.is_crit() )
+					dlog.crit() << err.str() << endl;
 				throw UniSetTypes::SystemError(err.str());
 			}
 		}
@@ -114,18 +122,19 @@ checkThread(0)
 
 		mblist.push_back(sinf);
 
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << myname << "(init): add slave channel " << sinf.myname << endl;
+		if( dlog.is_info() )
+			dlog.info() << myname << "(init): add slave channel " << sinf.myname << endl;
 	}
 
 	if( mblist.empty() )
 	{
 		ostringstream err;
 		err << myname << "(init): empty <GateList>!";
-		dlog[Debug::CRIT] << err.str() << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << err.str() << endl;
 		throw UniSetTypes::SystemError(err.str());
 	}
-	
+
 	mblist.sort();
 	mbi = mblist.rbegin();
 
@@ -146,8 +155,7 @@ checkThread(0)
 	// неудачной попытки запросов по одному из каналов, то ПЕРЕОПРЕДЕЛЯЕМ reopen, на timeout..
 	ptReopen.setTiming(ptTimeout.getInterval());
 
-
-	if( dlog.debugging(Debug::INFO) )
+	if( dlog.is_info() )
 		printMap(rmap);
 }
 // -----------------------------------------------------------------------------
@@ -170,7 +178,7 @@ ModbusClient* MBTCPMultiMaster::initMB( bool reopen )
 	if( checktime <=0 )
 	{
 		mbi++;
-		if( mbi == mblist.rend() )	
+		if( mbi == mblist.rend() )
 			mbi = mblist.rbegin();
 
 		mbi->init();
@@ -179,7 +187,7 @@ ModbusClient* MBTCPMultiMaster::initMB( bool reopen )
 	}
 
 	{
-		uniset_mutex_lock l(tcpMutex,100);
+		uniset_rwmutex_wrlock l(tcpMutex);
 		// Если по текущему каналу связь есть, то возвращаем его
 		if( mbi!=mblist.rend() && mbi->respond )
 		{
@@ -197,7 +205,7 @@ ModbusClient* MBTCPMultiMaster::initMB( bool reopen )
 	// проходим по списку (в обратном порядке, т.к. самый приоритетный в конце)
 	for( MBGateList::reverse_iterator it=mblist.rbegin(); it!=mblist.rend(); ++it )
 	{
-		uniset_mutex_lock l(tcpMutex,100);
+		uniset_rwmutex_wrlock l(tcpMutex);
 		if( it->respond && it->init() )
 		{
 			mbi = it;
@@ -207,7 +215,7 @@ ModbusClient* MBTCPMultiMaster::initMB( bool reopen )
 	}
 
 	{
-		uniset_mutex_lock l(tcpMutex,100);
+		uniset_rwmutex_wrlock l(tcpMutex);
 		mbi = mblist.rend();
 		mb = 0;
 	}
@@ -217,7 +225,7 @@ ModbusClient* MBTCPMultiMaster::initMB( bool reopen )
 // -----------------------------------------------------------------------------
 bool MBTCPMultiMaster::MBSlaveInfo::check()
 {
- 	return mbtcp->checkConnection(ip,port);
+	return mbtcp->checkConnection(ip,port);
 }
 // -----------------------------------------------------------------------------
 bool MBTCPMultiMaster::MBSlaveInfo::init()
@@ -226,8 +234,8 @@ bool MBTCPMultiMaster::MBSlaveInfo::init()
 	{
 		// ost::Thread::setException(ost::Thread::throwException);
 
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << myname << "(init): connect..." << endl;
+		if( dlog.is_info() )
+			dlog.info() << myname << "(init): connect..." << endl;
 
 		mbtcp->connect(ip,port);
 		mbtcp->setForceDisconnect(force_disconnect);
@@ -240,22 +248,22 @@ bool MBTCPMultiMaster::MBSlaveInfo::init()
 			mbtcp->setSleepPause(sleepPause_usec);
 			mbtcp->setAfterSendPause(aftersend_pause);
 
-			if( mbtcp->isConnection() && dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << "(init): " << myname << " connect OK" << endl;
-		
+			if( mbtcp->isConnection() && dlog.is_info() )
+				dlog.info() << "(init): " << myname << " connect OK" << endl;
+
 			initOK = true;
 		}
 		return mbtcp->isConnection();
 	}
 	catch( ModbusRTU::mbException& ex )
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << "(init): " << ex << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << "(init): " << ex << endl;
 	}
 	catch(...)
 	{
-		if( dlog.debugging(Debug::WARN) )
-			dlog[Debug::WARN] << "(init): " << myname << " catch ..." << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << "(init): " << myname << " catch ..." << endl;
 	}
 
 	initOK = false;
@@ -310,8 +318,8 @@ void MBTCPMultiMaster::check_thread()
 			try
 			{
 				bool r = it->check();
-				if( dlog.debugging(Debug::INFO) )
-					dlog[Debug::INFO] << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
+				if( dlog.is_info() )
+					dlog.info() << myname << "(check): " << it->myname << " " << ( r ? "OK" : "FAIL" ) << endl;
 
 				try
 				{
@@ -324,13 +332,13 @@ void MBTCPMultiMaster::check_thread()
 				catch( Exception& ex )
 				{
 					if( dlog.debugging(Debug::CRIT) )
-						dlog[Debug::CRIT] << myname << "(check): (respond) " << ex << std::endl;
+						dlog.crit() << myname << "(check): (respond) " << ex << std::endl;
 				}
 				catch(...){}
 
 
 				{	
-					uniset_mutex_lock l(tcpMutex,130);
+					uniset_rwmutex_wrlock l(tcpMutex);
 					it->respond = r;
 				}
 			}
@@ -367,27 +375,27 @@ void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
 	cout << " Переключение на следующий канал зависит от '--prefix-timeout'" << endl;
 }
 // -----------------------------------------------------------------------------
-MBTCPMultiMaster* MBTCPMultiMaster::init_mbmaster( int argc, const char* const* argv, 
-											UniSetTypes::ObjectId icID, SharedMemory* ic, 
+MBTCPMultiMaster* MBTCPMultiMaster::init_mbmaster( int argc, const char* const* argv,
+											UniSetTypes::ObjectId icID, SharedMemory* ic,
 											const std::string prefix )
 {
 	string name = conf->getArgParam("--" + prefix + "-name","MBTCPMultiMaster1");
 	if( name.empty() )
 	{
-		dlog[Debug::CRIT] << "(MBTCPMultiMaster): Не задан name'" << endl;
+		dlog.crit() << "(MBTCPMultiMaster): Не задан name'" << endl;
 		return 0;
 	}
 
 	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		dlog[Debug::CRIT] << "(MBTCPMultiMaster): идентификатор '" << name 
+		dlog.crit() << "(MBTCPMultiMaster): идентификатор '" << name
 			<< "' не найден в конф. файле!"
 			<< " в секции " << conf->getObjectsSection() << endl;
 		return 0;
 	}
 
-	dlog[Debug::INFO] << "(MBTCPMultiMaster): name = " << name << "(" << ID << ")" << endl;
+	dlog.info() << "(MBTCPMultiMaster): name = " << name << "(" << ID << ")" << endl;
 	return new MBTCPMultiMaster(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------

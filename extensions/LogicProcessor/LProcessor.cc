@@ -35,15 +35,15 @@ void LProcessor::execute( const string& lfile )
 		}
 		catch( LogicException& ex )
 		{
-			dlog[Debug::CRIT] << logname << "(execute): " << ex << endl;
+			dlog.crit() << logname << "(execute): " << ex << endl;
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::CRIT] << logname << "(execute): " << ex << endl;
+			dlog.crit() << logname << "(execute): " << ex << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::CRIT] << logname << "(execute): catch...\n";
+			dlog.crit() << logname << "(execute): catch...\n";
 		}
 		msleep(sleepTime);
 	}
@@ -67,7 +67,7 @@ void LProcessor::build( const string& lfile )
 		UniSetTypes::ObjectId sid = conf->getSensorID(it->name);
 		if( sid == DefaultObjectId )
 		{
-			dlog[Debug::CRIT] << "НЕ НАЙДЕН ИДЕНТИФИКАТОР ДАТЧИКА: " << it->name << endl;
+			dlog.crit() << "НЕ НАЙДЕН ИДЕНТИФИКАТОР ДАТЧИКА: " << it->name << endl;
 			continue;	
 		}
 		
@@ -78,9 +78,9 @@ void LProcessor::build( const string& lfile )
 		ei.iotype = conf->getIOType(sid);
 		if( ei.iotype == UniversalIO::UnknownIOType )
 		{
-			dlog[Debug::CRIT] << "Unkown iotype for sid=" << sid << "(" << it->name << ")" << endl;
-			continue;	
-		}	
+			dlog.crit() << "Unkown iotype for sid=" << sid << "(" << it->name << ")" << endl;
+			continue;
+		}
 		extInputs.push_front(ei);
 	}
 	
@@ -89,7 +89,7 @@ void LProcessor::build( const string& lfile )
 		UniSetTypes::ObjectId sid = conf->getSensorID(it->name);
 		if( sid == DefaultObjectId )
 		{
-			dlog[Debug::CRIT] << "НЕ НАЙДЕН ИДЕНТИФИКАТОР ВЫХОДА: " << it->name << endl;
+			dlog.crit() << "НЕ НАЙДЕН ИДЕНТИФИКАТОР ВЫХОДА: " << it->name << endl;
 			continue;
 		}
 
@@ -99,9 +99,9 @@ void LProcessor::build( const string& lfile )
 		ei.iotype = conf->getIOType(sid);
 		if( ei.iotype == UniversalIO::UnknownIOType )
 		{
-			dlog[Debug::CRIT] << "Unkown iotype for sid=" << sid << "(" << it->name << ")" << endl;
-			continue;	
-		}	
+			dlog.crit() << "Unkown iotype for sid=" << sid << "(" << it->name << ")" << endl;
+			continue;
+		}
 
 		extOuts.push_front(ei);
 	}
@@ -147,11 +147,11 @@ void LProcessor::setOuts()
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::CRIT] << "(LProcessor::setOuts): " << ex << endl;
+			dlog.crit() << "(LProcessor::setOuts): " << ex << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::CRIT] << "(LProcessor::setOuts): catch...\n";
+			dlog.crit() << "(LProcessor::setOuts): catch...\n";
 		}
 	}
 }

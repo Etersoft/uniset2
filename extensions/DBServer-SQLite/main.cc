@@ -31,14 +31,14 @@ int main(int argc, char** argv)
 		{
 			if( ID != UniSetTypes::DefaultObjectId )
 			{
-				unideb[Debug::WARN] << "(DBServer::main): переопределяем ID заданнй в " 
+				ulog.warn() << "(DBServer::main): переопределяем ID заданнй в "
 						<< conf->getConfFileName() << endl;
 			}
 
 			ID = conf->oind->getIdByName(conf->getServicesSection()+"/"+name);
 			if( ID == UniSetTypes::DefaultObjectId )
 			{
-				cerr << "(DBServer::main): идентификатор '" << name 
+				cerr << "(DBServer::main): идентификатор '" << name
 					<< "' не найден в конф. файле!"
 					<< " в секции " << conf->getServicesSection() << endl;
 				return 1;
@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 		}
 		else if( ID == UniSetTypes::DefaultObjectId )
 		{
-			cerr << "(DBServer::main): Не удалось определить ИДЕНТИФИКАТОР сервера" << endl; 
+			cerr << "(DBServer::main): Не удалось определить ИДЕНТИФИКАТОР сервера" << endl;
 			short_usage();
 			return 1;
 		}

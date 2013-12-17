@@ -35,7 +35,7 @@ int main( int argc, const char** argv )
 		std::ostringstream logname;
 		string dir(conf->getLogDir());
 		logname << dir << logfilename;
-		unideb.logFile( logname.str() );
+		ulog.logFile( logname.str() );
 		dlog.logFile( logname.str() );
 
 		ObjectId shmID = DefaultObjectId;
@@ -54,7 +54,7 @@ int main( int argc, const char** argv )
 		RRDServer* db = RRDServer::init_rrdstorage(argc,argv,shmID);
 		if( !db )
 		{
-			dlog[Debug::CRIT] << "(rrdstorage): init не прошёл..." << endl;
+			dlog.crit() << "(rrdstorage): init не прошёл..." << endl;
 			return 1;
 		}
 
@@ -64,20 +64,20 @@ int main( int argc, const char** argv )
 		SystemMessage sm(SystemMessage::StartUp);
 		act.broadcast( sm.transport_msg() );
 
-		unideb(Debug::ANY) << "\n\n\n";
-		unideb[Debug::ANY] << "(main): -------------- RRDServer START -------------------------\n\n";
-		dlog(Debug::ANY) << "\n\n\n";
-		dlog[Debug::ANY] << "(main): -------------- RRDServer START -------------------------\n\n";
+		ulog << "\n\n\n";
+		ulog << "(main): -------------- RRDServer START -------------------------\n\n";
+		dlog << "\n\n\n";
+		dlog << "(main): -------------- RRDServer START -------------------------\n\n";
 		act.run(false);
 		return 0;
 	}
 	catch( UniSetTypes::Exception& ex )
 	{
-		dlog[Debug::CRIT] << "(rrdstorage): " << ex << std::endl;
+		dlog.crit() << "(rrdstorage): " << ex << std::endl;
 	}
 	catch(...)
 	{
-		dlog[Debug::CRIT] << "(rrdstorage): catch ..." << std::endl;
+		dlog.crit() << "(rrdstorage): catch ..." << std::endl;
 	}
 
 	return 1;

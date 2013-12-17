@@ -90,7 +90,7 @@
 			</xsl:when>
 			<xsl:when test="$GENTYPE='CHECK'">
 				<xsl:if test="normalize-space(@no_check_id)!='1'">
-				<xsl:if test="normalize-space(../../@id)=''">unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": Not found (Message)OID for mid_<xsl:value-of select="normalize-space(../../@name)"/>" &lt;&lt; endl;
+				<xsl:if test="normalize-space(../../@id)=''">if( ulog.is_warn() ) ulog.warn() &lt;&lt; myname &lt;&lt; ": Not found (Message)OID for mid_<xsl:value-of select="normalize-space(../../@name)"/>" &lt;&lt; endl;
 				</xsl:if>
 				</xsl:if>
 			</xsl:when>
@@ -101,8 +101,8 @@
 			<xsl:when test="$GENTYPE='A'">
 			if( _code == mid_<xsl:value-of select="../../@name"/> )
 			{				
-                if( unideb.debugging(Debug::LEVEL8) )
-                    unideb(Debug::LEVEL8) &lt;&lt; "<xsl:value-of select="../../@name"/>" &lt;&lt; endl;
+                if( ulog.is_level8() )
+                    ulog.level8() &lt;&lt; "<xsl:value-of select="../../@name"/>" &lt;&lt; endl;
 				m_<xsl:value-of select="../../@name"/> = _state;
 				try
 				{
@@ -126,8 +126,8 @@
 					}
 					catch( UniSetTypes::Exception&amp; ex )
 					{
-                        if( unideb.debugging(Debug::LEVEL1) )
-                            unideb[Debug::LEVEL1] &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
+                        if( ulog.is_level1() )
+                            ulog.level1() &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
 					}
 				}
 			</xsl:when>
@@ -283,10 +283,11 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* _sm )
 	switch( _sm->command )
 	{
 		case SystemMessage::WatchDog:
-			unideb &lt;&lt; myname &lt;&lt; "(sysCommand): WatchDog" &lt;&lt; endl;
+			ulog &lt;&lt; myname &lt;&lt; "(sysCommand): WatchDog" &lt;&lt; endl;
 			if( !active || !ptStartUpTimeout.checkTime() )
 			{
-				unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; "(sysCommand): игнорируем WatchDog, потому-что только-что стартанули" &lt;&lt; endl;
+                if( ulog.is_warn() )
+                    ulog.warn() &lt;&lt; myname &lt;&lt; "(sysCommand): игнорируем WatchDog, потому-что только-что стартанули" &lt;&lt; endl;
 				break;
 			}
 		case SystemMessage::StartUp:
@@ -312,12 +313,12 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* _sm )
 		case SystemMessage::LogRotate:
 		{
 			// переоткрываем логи
-			unideb &lt;&lt; myname &lt;&lt; "(sysCommand): logRotate" &lt;&lt; endl;
-			string fname = unideb.getLogFile();
+			ulog &lt;&lt; myname &lt;&lt; "(sysCommand): logRotate" &lt;&lt; endl;
+			string fname( ulog.getLogFile() );
 			if( !fname.empty() )
 			{
-				unideb.logFile(fname.c_str());
-				unideb &lt;&lt; myname &lt;&lt; "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" &lt;&lt; endl;
+				ulog.logFile(fname.c_str());
+				ulog &lt;&lt; myname &lt;&lt; "(sysCommand): ***************** ulog LOG ROTATE *****************" &lt;&lt; endl;
 			}
 		}
 		break;
@@ -374,9 +375,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 	if( _testID == DefaultObjectId )
 		return;
 		
-	if( unideb.debugging(Debug::INFO) )
+	if( ulog.is_info() )
 	{
-		unideb[Debug::INFO] &lt;&lt; myname &lt;&lt; "(waitSM): waiting SM ready " 
+		ulog.info() &lt;&lt; myname &lt;&lt; "(waitSM): waiting SM ready "
 			&lt;&lt; wait_msec &lt;&lt; " msec"
 			&lt;&lt; " testID=" &lt;&lt; _testID &lt;&lt; endl;
 	}
@@ -388,7 +389,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; "(waitSM): Не дождались готовности(exist) SharedMemory к работе в течение " 
 			&lt;&lt; wait_msec &lt;&lt; " мсек";
 
-		unideb[Debug::CRIT] &lt;&lt; err.str() &lt;&lt; endl;
+        if( ulog.is_crit() )
+            ulog.crit() &lt;&lt; err.str() &lt;&lt; endl;
 		terminate();
 		abort();
 		// kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
@@ -405,7 +407,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 				&lt;&lt; "(waitSM): Не дождались готовности(work) SharedMemory к работе в течение " 
 				&lt;&lt; wait_msec &lt;&lt; " мсек";
 	
-			unideb[Debug::CRIT] &lt;&lt; err.str() &lt;&lt; endl;
+            if( ulog.is_crit() )
+                ulog.crit() &lt;&lt; err.str() &lt;&lt; endl;
 			terminate();
 			abort();
 			// kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
@@ -531,7 +534,7 @@ askPause(2000),
 </xsl:for-each>
 end_private(false)
 {
-	unideb[Debug::CRIT] &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
+	ulog.crit() &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
 	throw Exception( string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
@@ -704,14 +707,16 @@ end_private(false)
 	<xsl:if test="normalize-space(@min)!=''">
 	if( <xsl:value-of select="@name"/> &lt; <xsl:value-of select="@min"/> )
 	{
-		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": RANGE WARNING: <xsl:value-of select="@name"/>=" &lt;&lt; <xsl:value-of select="@name"/> &lt;&lt; " &lt; <xsl:value-of select="@min"/>" &lt;&lt; endl;
+        if( ulog.is_warn() )
+            ulog.warn() &lt;&lt; myname &lt;&lt; ": RANGE WARNING: <xsl:value-of select="@name"/>=" &lt;&lt; <xsl:value-of select="@name"/> &lt;&lt; " &lt; <xsl:value-of select="@min"/>" &lt;&lt; endl;
 		<xsl:if test="normalize-space(@no_range_exception)=''">throw UniSetTypes::SystemError(myname+"(init): <xsl:value-of select="@name"/> &lt; <xsl:value-of select="@min"/>");</xsl:if>
 	}
 	</xsl:if>
 	<xsl:if test="normalize-space(@max)!=''">
 	if( <xsl:value-of select="@name"/> &gt; <xsl:value-of select="@max"/> )
 	{
-		unideb[Debug::WARN] &lt;&lt; myname &lt;&lt; ": RANGE WARNING: <xsl:value-of select="@name"/>=" &lt;&lt; <xsl:value-of select="@name"/> &lt;&lt; " &gt; <xsl:value-of select="@max"/>" &lt;&lt; endl;
+        if( ulog.is_warn() )
+            ulog.warn() &lt;&lt; myname &lt;&lt; ": RANGE WARNING: <xsl:value-of select="@name"/>=" &lt;&lt; <xsl:value-of select="@name"/> &lt;&lt; " &gt; <xsl:value-of select="@max"/>" &lt;&lt; endl;
 		<xsl:if test="normalize-space(@no_range_exception)=''">throw UniSetTypes::SystemError(myname+"(init): <xsl:value-of select="@name"/> &gt; <xsl:value-of select="@max"/>");</xsl:if>
 	}
 	</xsl:if>
@@ -769,24 +774,29 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::CRIT]  &lt;&lt; getName()
-							&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId" 
-							&lt;&lt; endl;
+        if( ulog.is_crit() )
+            ulog.crit()  &lt;&lt; getName()
+				&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId"
+				&lt;&lt; endl;
 		return false;	
 	}
 
-	unideb[Debug::LEVEL1]  &lt;&lt; getName()  &lt;&lt; "(alarm): ";
-	if( _state )
-		unideb(Debug::LEVEL1) &lt;&lt; "SEND ";
-	else
-		unideb(Debug::LEVEL1) &lt;&lt; "RESET ";
+    if( ulog.is_level1() )
+    {
+        ulog.level1()  &lt;&lt; getName()  &lt;&lt; "(alarm): ";
+        if( _state )
+            ulog.level1(false) &lt;&lt; "SEND ";
+        else
+            ulog.level1(false) &lt;&lt; "RESET ";
 	
-	unideb(Debug::LEVEL1) &lt;&lt; endl;
+        ulog.level1(false) &lt;&lt; endl;
+    }
 	
 	<xsl:for-each select="//msgmap/item">
 	if( _code == <xsl:value-of select="@name"/> )
-	{				
-		unideb[Debug::LEVEL1] &lt;&lt; "<xsl:value-of select="@name"/>" &lt;&lt; endl;
+	{
+        if( ulog.is_level1() )
+            ulog.level1() &lt;&lt; "<xsl:value-of select="@name"/>" &lt;&lt; endl;
 		try
 		{
 			m_<xsl:value-of select="@name"/> = _state;
@@ -801,7 +811,8 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 	}
 	</xsl:for-each>
 	
-	unideb[Debug::LEVEL1] &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
+    if( ulog.is_level1() )
+        ulog.level1() &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
 	return false;
 }
 // -----------------------------------------------------------------------------
@@ -820,7 +831,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 		}
 		catch( UniSetTypes::Exception&amp; ex )
 		{
-			unideb[Debug::LEVEL1] &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
+            if( ulog.is_level1() )
+                ulog.level1() &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
 		}
 	}
 </xsl:for-each>
@@ -878,7 +890,7 @@ confnode(0),
 activated(false),
 askPause(2000)
 {
-	unideb[Debug::CRIT] &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
+	ulog.crit() &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
 	throw Exception( string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
@@ -1039,17 +1051,21 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::CRIT]  &lt;&lt; getName()
-							&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId" 
-							&lt;&lt; endl;
+        if( ulog.is_crit() )
+            ulog.crit()  &lt;&lt; getName()
+				&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId"
+				&lt;&lt; endl;
 		return false;	
 	}
 
-	unideb[Debug::LEVEL1]  &lt;&lt; getName()  &lt;&lt; "(alarm): ";
-	if( _state )
-		unideb(Debug::LEVEL1) &lt;&lt; "SEND (" &lt;&lt; _code &lt;&lt; ")";
-	else
-		unideb(Debug::LEVEL1) &lt;&lt; "RESET (" &lt;&lt; _code &lt;&lt; ")";
+    if( ulog.is_level1() )
+    {
+        ulog.level1()  &lt;&lt; getName()  &lt;&lt; "(alarm): ";
+        if( _state )
+            ulog.level1(false) &lt;&lt; "SEND (" &lt;&lt; _code &lt;&lt; ")";
+        else
+            ulog.level1(false) &lt;&lt; "RESET (" &lt;&lt; _code &lt;&lt; ")";
+    }
 
 
 <xsl:for-each select="//sensors/item">
@@ -1058,7 +1074,8 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 	</xsl:call-template>
 </xsl:for-each>
 	
-	unideb(Debug::LEVEL8) &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
+    if( ulog.is_level8() )
+        ulog.level8() &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
 	return false;
 }
 // -----------------------------------------------------------------------------

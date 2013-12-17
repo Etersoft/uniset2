@@ -24,12 +24,42 @@ namespace UniSetExtensions
         {
             ostringstream err;
             err << ": Unknown ID for '" << sname << "'" << endl;
-            dlog[Debug::CRIT] << err.str() << endl;
+            dlog.crit() << err.str() << endl;
             throw SystemError(err.str());
         }
 	
 		// cout << "(uniset): shm=" << name << " id=" << shmID << endl;
 		return shmID;
+	}
+	// -------------------------------------------------------------------------
+	static int heartBeatTime = -1; // начальная инициализация
+	int getHeartBeatTime()
+	{
+		if( heartBeatTime != -1 )
+			return heartBeatTime;
+
+		xmlNode* cnode = conf->getNode("HeartBeatTime");
+		if( cnode == NULL )
+		{
+			ostringstream err;
+			err << "Not found conf-node for HeartBeatTime";
+			cerr << err.str() << endl;
+			throw SystemError(err.str());
+		}
+	
+		UniXML_iterator it(cnode);
+		
+		heartBeatTime = it.getIntProp("time_msec");
+		if( heartBeatTime <= 0 )
+		{
+			heartBeatTime = 0;
+			dlog.warn() << "(getHeartBeatTime): механизм 'HEARTBEAT' ОТКЛЮЧЁН!" << endl;
+		}
+
+		if( dlog.is_info() )
+			dlog.info() << "(getHeartBeatTime): heartbeat time = " << heartBeatTime << endl;
+
+		return heartBeatTime;
 	}
 	// -------------------------------------------------------------------------
 	void escape_string( string& s )
@@ -84,7 +114,7 @@ namespace UniSetExtensions
 		{
 			ostringstream err;
 			err << "(buildCalibrationDiagram): НЕ НАЙДЕН корневой узел для калибровочных диаграмм";
-			dlog[Debug::CRIT] << err.str() << endl;
+			dlog.crit() << err.str() << endl;
 			throw SystemError( err.str());
 		}
 
@@ -93,7 +123,7 @@ namespace UniSetExtensions
 		{
 			ostringstream err;
 			err << "(buildCalibrationDiagram): НЕ НАЙДЕНА калибровочная диаграмма '" << dname << "'";
-			dlog[Debug::CRIT] << err.str() << endl;
+			dlog.crit() << err.str() << endl;
 			throw SystemError( err.str());
 		}
 	

@@ -93,7 +93,7 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string sec )
 	{
 		ostringstream msg;
 		msg << "(ObjectIndex_idXML::build):: не нашли параметр RootSection в конф. файле ";
-		unideb[Debug::CRIT] << msg.str() << endl;
+		ulog.crit() << msg.str() << endl;
 		throw SystemError(msg.str());
 	}
 

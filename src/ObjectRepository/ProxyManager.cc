@@ -48,7 +48,7 @@ void ProxyManager::attachObject( PassiveObject* po, UniSetTypes::ObjectId id )
 {
 	if( id == DefaultObjectId )
 	{
-		unideb[Debug::WARN] << myname << "(attachObject): попытка добавить объект с id="
+		ulog.warn() << myname << "(attachObject): попытка добавить объект с id="
 			<< DefaultObjectId << " PassiveObject=" << po->getName() << endl;
 		
 		return;
@@ -81,9 +81,9 @@ bool ProxyManager::activateObject()
 			{		
 				try
 				{
-					if( unideb.debugging(Debug::INFO) )	
+					if( ulog.is_info() )
 					{
-						unideb[Debug::INFO] << myname << "(registered): попытка " 
+						ulog.info() << myname << "(registered): попытка "
 									<< i+1 << " регистриую (id=" << it->first << ") "
 									<< " (pname=" << it->second->getName() << ") "
 									<< conf->oind->getNameById(it->first) << endl;
@@ -93,21 +93,24 @@ bool ProxyManager::activateObject()
 				}
 				catch( UniSetTypes::ObjectNameAlready& ex )
 				{
-					unideb[Debug::CRIT] << myname << "(registered): СПЕРВА РАЗРЕГИСТРИРУЮ (ObjectNameAlready)" << endl;				
+					if( ulog.is_crit() )
+						ulog.crit() << myname << "(registered): СПЕРВА РАЗРЕГИСТРИРУЮ (ObjectNameAlready)" << endl;
 					try
 					{
 						ui.unregister(it->first);
 					}
 					catch(Exception & ex)
 					{
-						unideb[Debug::CRIT] << myname << "(unregistered): " << ex << endl;				
+						if( ulog.is_crit() )
+							ulog.crit() << myname << "(unregistered): " << ex << endl;
 					}
 				}
 			}
 		}
-		catch(Exception& ex )
+		catch( Exception& ex )
 		{
-			unideb[Debug::CRIT] << myname << "(activate): " << ex << endl;
+			if( ulog.is_crit() )
+				ulog.crit() << myname << "(activate): " << ex << endl;
 		}
 	}
 
@@ -124,7 +127,8 @@ bool ProxyManager::disactivateObject()
 		}
 		catch(Exception& ex )
 		{
-			unideb[Debug::CRIT] << myname << "(activate): " << ex << endl;
+			if( ulog.is_crit() )
+				ulog.crit() << myname << "(activate): " << ex << endl;
 		}
 	}
 	
@@ -146,9 +150,9 @@ void ProxyManager::processingMessage( UniSetTypes::VoidMessage *msg )
 				PObjectMap::iterator it = omap.find(msg->consumer);
 				if( it!=omap.end() )
 					it->second->processingMessage(msg);
-				else
+				else if( ulog.is_crit() )
 				{
-					unideb[Debug::CRIT] << myname << "(processingMessage): не найден объект "
+					ulog.crit() << myname << "(processingMessage): не найден объект "
 						<< " consumer= " << msg->consumer << endl;
 				}
 			}
@@ -157,7 +161,8 @@ void ProxyManager::processingMessage( UniSetTypes::VoidMessage *msg )
 	}
 	catch( Exception& ex )
 	{	
-		unideb[Debug::CRIT] << myname << "(processingMessage): " << ex << endl;
+		if( ulog.is_crit() )
+			ulog.crit() << myname << "(processingMessage): " << ex << endl;
 	}
 }
 // -------------------------------------------------------------------------
@@ -171,7 +176,8 @@ void ProxyManager::allMessage( UniSetTypes::VoidMessage* msg )
 		}
 		catch( Exception& ex )
 		{	
-			unideb[Debug::CRIT] << myname << "(allMessage): " << ex << endl;
+			if( ulog.is_crit() )
+				ulog.crit() << myname << "(allMessage): " << ex << endl;
 		}
 	}
 }

@@ -23,13 +23,13 @@ int main(int argc, const char **argv)
 		std::ostringstream logname;
 		string dir(conf->getLogDir());
 		logname << dir << logfilename;
-		unideb.logFile( logname.str() );
+		ulog.logFile( logname.str() );
 		dlog.logFile( logname.str() );
 
 		string schema = conf->getArgParam("--schema");
 		if( schema.empty() )
 		{
-			dlog[Debug::CRIT] << "schema-file not defined. Use --schema" << endl;
+			dlog.crit() << "schema-file not defined. Use --schema" << endl;
 			return 1;
 		}
 

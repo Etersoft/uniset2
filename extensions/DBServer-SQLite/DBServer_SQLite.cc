@@ -21,24 +21,23 @@
  *  \brief файл реализации DB-сервера
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #include <sys/time.h>
 #include <sstream>
 #include <iomanip>
-#include <cmath>
 
 #include "ORepHelpers.h"
 #include "DBServer_SQLite.h"
 #include "Configuration.h"
 #include "Debug.h"
 #include "UniXML.h"
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
 const Debug::type DBLEVEL = Debug::LEVEL1;
 // --------------------------------------------------------------------------
-DBServer_SQLite::DBServer_SQLite( ObjectId id ): 
+DBServer_SQLite::DBServer_SQLite( ObjectId id ):
 	DBServer(id),
 	db(new SQLiteInterface()),
 	PingTime(300000),
@@ -56,7 +55,7 @@ DBServer_SQLite::DBServer_SQLite( ObjectId id ):
 	}
 }
 
-DBServer_SQLite::DBServer_SQLite(): 
+DBServer_SQLite::DBServer_SQLite():
 	DBServer(conf->getDBServer()),
 	db(new SQLiteInterface()),
 	PingTime(300000),
@@ -97,7 +96,7 @@ void DBServer_SQLite::processingMessage( UniSetTypes::VoidMessage *msg )
 			timerInfo(&tm);
 			break;
 		}
-	
+
 		default:
 			break;
 	}
@@ -131,76 +130,44 @@ void DBServer_SQLite::sysCommand( UniSetTypes::SystemMessage *sm )
 	}
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_SQLite::parse( UniSetTypes::DBMessage* dbm )
-{
-	if( dbm->tblid == UniSetTypes::Message::Unused )
-	{
-		unideb[Debug::CRIT] << myname <<  "(dbmessage): не задан tblId...\n";
-		return;
-	}
-		
-	ostringstream query;
-	switch( dbm->qtype )
-	{
-		case DBMessage::Query:
-			query << dbm->data;
-			break;
-
-		case DBMessage::Update:
-			query << "UPDATE " << tblName(dbm->tblid) << " SET " << dbm->data;
-			break;
-
-		case DBMessage::Insert:
-			query << "INSERT INTO " << tblName(dbm->tblid) << " VALUES (" << dbm->data << ")";
-			break;
-
-	}
-
-	if( !writeToBase(query.str()) )
-	{
-		unideb[Debug::CRIT] << myname <<  "(update): error: "<< db->error() << endl;
-	}
-
-}
-//--------------------------------------------------------------------------------------------
 void DBServer_SQLite::parse( UniSetTypes::ConfirmMessage* cem )
 {
 	try
 	{
 		ostringstream data;
 
-		data << "UPDATE " << tblName(cem->type) 
+		data << "UPDATE " << tblName(cem->type)
 			<< " SET confirm='" << cem->confirm << "'"
 			<< " WHERE sensor_id='" << cem->sensor_id << "'"
 			<< " AND date='" << ui.dateToString(cem->time, "-")<<" '"
 			<< " AND time='" << ui.timeToString(cem->time, ":") <<" '"
 			<< " AND time_usec='" << cem->time_usec <<" '";
 
-		if( unideb.debugging(DBLEVEL) )
-			unideb[DBLEVEL] << myname << "(update_confirm): " << data.str() << endl;
+		if( ulog.debugging(DBLEVEL) )
+			ulog[DBLEVEL] << myname << "(update_confirm): " << data.str() << endl;
 
 		if( !writeToBase(data.str()) )
 		{
-			if( unideb.debugging(Debug::CRIT) )
-				unideb[Debug::CRIT] << myname << "(update_confirm):  db error: "<< db->error() << endl;
+			if( ulog.is_crit() )
+				ulog.crit() << myname << "(update_confirm):  db error: "<< db->error() << endl;
 		}
 	}
 	catch( Exception& ex )
 	{
-		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << myname << "(update_confirm): " << ex << endl;
+		if( ulog.is_crit() )
+			ulog.crit() << myname << "(update_confirm): " << ex << endl;
 	}
 	catch( ... )
 	{
-		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << myname << "(update_confirm):  catch..." << endl;
+		if( ulog.is_crit() )
+			ulog.crit() << myname << "(update_confirm):  catch..." << endl;
 	}
 }
 //--------------------------------------------------------------------------------------------
 bool DBServer_SQLite::writeToBase( const string& query )
 {
-	if( unideb.debugging(DBLogInfoLevel) )
-		unideb[DBLogInfoLevel] << myname << "(writeToBase): " << query << endl;
+	if( ulog.debugging(DBLogInfoLevel) )
+		ulog[DBLogInfoLevel] << myname << "(writeToBase): " << query << endl;
 //	cout << "DBServer_SQLite: " << query << endl;
 	if( !db || !connect_ok )
 	{
@@ -216,8 +183,8 @@ bool DBServer_SQLite::writeToBase( const string& query )
 
 			qbuf.pop();
 
-			if( unideb.debugging(Debug::CRIT) )
-				unideb[Debug::CRIT] << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
+			if( ulog.is_crit() )
+				ulog.crit() << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
 						<< ") overflow! lost query: " << qlost << endl;
 		}
 		return false;
@@ -238,11 +205,11 @@ void DBServer_SQLite::flushBuffer()
 	uniset_rwmutex_wrlock l(mqbuf);
 
 	// Сперва пробуем очистить всё что накопилось в очереди до этого...
-	while( !qbuf.empty() ) 
+	while( !qbuf.empty() )
 	{
-		if( !db->insert(qbuf.front()) && unideb.debugging(Debug::CRIT) )
+		if( !db->insert(qbuf.front()) && ulog.is_crit() )
 		{
-			unideb[Debug::CRIT] << myname << "(writeToBase): error: " << db->error() <<
+			ulog.crit() << myname << "(writeToBase): error: " << db->error() <<
 				" lost query: " << qbuf.front() << endl;
 		}
 		qbuf.pop();
@@ -259,9 +226,7 @@ void DBServer_SQLite::parse( UniSetTypes::SensorMessage *si )
 			struct timezone tz;
 			gettimeofday(&si->tm,&tz);
 		}
-		
-		float val = (float)si->value / (float)pow10(si->ci.precision);
-		
+
 		// см. DBTABLE AnalogSensors, DigitalSensors
 		ostringstream data;
 		data << "INSERT INTO " << tblName(si->type)
@@ -269,39 +234,39 @@ void DBServer_SQLite::parse( UniSetTypes::SensorMessage *si )
 											// Поля таблицы
 			<< ui.dateToString(si->sm_tv_sec,"-") << "','"	//  date
 			<< ui.timeToString(si->sm_tv_sec,":") << "','"	//  time
-			<< si->sm_tv_usec << "','"				//  time_usec
-			<< si->id << "','"					//  sensor_id
-			<< si->value << "','"				//  value
-			<< si->node << "')";				//  node
+			<< si->sm_tv_usec << "',"				//  time_usec
+			<< si->id << ","					//  sensor_id
+			<< si->value << ","				//  value
+			<< si->node << ")";				//  node
 
-		if( unideb.debugging(DBLEVEL) )
-			unideb[DBLEVEL] << myname << "(insert_main_history): " << data.str() << endl;
+		if( ulog.debugging(DBLEVEL) )
+			ulog[DBLEVEL] << myname << "(insert_main_history): " << data.str() << endl;
 
 		if( !writeToBase(data.str()) )
 		{
-			if( unideb.debugging(Debug::CRIT) )
-				unideb[Debug::CRIT] << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
+			if( ulog.is_crit() )
+				ulog.crit() << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
 		}
 	}
 	catch( Exception& ex )
 	{
-		unideb[Debug::CRIT] << myname << "(insert_main_history): " << ex << endl;
+		ulog.crit() << myname << "(insert_main_history): " << ex << endl;
 	}
 	catch( ... )
 	{
-		unideb[Debug::CRIT] << myname << "(insert_main_history): catch ..." << endl;
+		ulog.crit() << myname << "(insert_main_history): catch ..." << endl;
 	}
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_SQLite::init_dbserver()
 {
 	DBServer::init_dbserver();
-	if( unideb.debugging(DBLogInfoLevel) )
-		unideb[DBLogInfoLevel] << myname << "(init): ..." << endl;
+	if( ulog.debugging(DBLogInfoLevel) )
+		ulog[DBLogInfoLevel] << myname << "(init): ..." << endl;
 
 	if( connect_ok )
 	{
-		initDBTableMap(tblMap);	
+		initDBTableMap(tblMap);
 		initDB(db);
 		return;
 	}
@@ -310,7 +275,7 @@ void DBServer_SQLite::init_dbserver()
 	{
 		ostringstream msg;
 		msg << myname << "(init): DBServer OFF for this node.."
-			<< " In " << conf->getConfFileName() 
+			<< " In " << conf->getConfFileName()
 			<< " for this node dbserver=''";
 		throw NameNotFound(msg.str());
 	}
@@ -321,12 +286,12 @@ void DBServer_SQLite::init_dbserver()
 
 	UniXML::iterator it(node);
 
-	unideb[DBLogInfoLevel] << myname << "(init): init connection.." << endl;
+	ulog[DBLogInfoLevel] << myname << "(init): init connection.." << endl;
 	string dbfile(conf->getProp(node,"dbfile"));
 
 	tblMap[UniSetTypes::Message::SensorInfo] = "main_history";
 	tblMap[UniSetTypes::Message::Confirm] = "main_history";
-	
+
 	PingTime = conf->getIntProp(node,"pingTime");
 	ReconnectTime = conf->getIntProp(node,"reconnectTime");
 	qbufSize = conf->getArgPInt("--dbserver-buffer-size",it.getProp("bufferSize"),200);
@@ -337,17 +302,17 @@ void DBServer_SQLite::init_dbserver()
 		lastRemove = true;
 	else
 		lastRemove = false;
-	
-	if( unideb.debugging(DBLogInfoLevel) )
-		unideb[DBLogInfoLevel] << myname << "(init): connect dbfile=" << dbfile
-		<< " pingTime=" << PingTime 
+
+	if( ulog.debugging(DBLogInfoLevel) )
+		ulog[DBLogInfoLevel] << myname << "(init): connect dbfile=" << dbfile
+		<< " pingTime=" << PingTime
 		<< " ReconnectTime=" << ReconnectTime << endl;
 
 	if( !db->connect(dbfile,false) )
 	{
 //		ostringstream err;
-		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << myname
+		if( ulog.is_crit() )
+			ulog.crit() << myname
 			<< "(init): DB connection error: "
 			<< db->error() << endl;
 //		throw Exception( string(myname+"(init): не смогли создать соединение с БД "+db->error()) );
@@ -355,14 +320,14 @@ void DBServer_SQLite::init_dbserver()
 	}
 	else
 	{
-		if( unideb.debugging(DBLogInfoLevel) )
-			unideb[DBLogInfoLevel] << myname << "(init): connect [OK]" << endl;
+		if( ulog.debugging(DBLogInfoLevel) )
+			ulog[DBLogInfoLevel] << myname << "(init): connect [OK]" << endl;
 		connect_ok = true;
 		askTimer(DBServer_SQLite::ReconnectTimer,0);
 		askTimer(DBServer_SQLite::PingTimer,PingTime);
 //		createTables(db);
 		initDB(db);
-		initDBTableMap(tblMap);	
+		initDBTableMap(tblMap);
 		flushBuffer();
 	}
 }
@@ -372,8 +337,8 @@ void DBServer_SQLite::createTables( SQLiteInterface *db )
 	UniXML_iterator it( conf->getNode("Tables") );
 	if(!it)
 	{
-		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << myname << ": section <Tables> not found.."<< endl;
+		if( ulog.is_crit() )
+			ulog.crit() << myname << ": section <Tables> not found.."<< endl;
 		throw Exception();
 	}
 
@@ -381,14 +346,14 @@ void DBServer_SQLite::createTables( SQLiteInterface *db )
 	{
 		if( it.getName() != "comment" )
 		{
-			if( unideb.debugging(DBLogInfoLevel) )
-				unideb[DBLogInfoLevel] << myname  << "(createTables): create " << it.getName() << endl;
+			if( ulog.debugging(DBLogInfoLevel) )
+				ulog[DBLogInfoLevel] << myname  << "(createTables): create " << it.getName() << endl;
 			ostringstream query;
 			query << "CREATE TABLE " << conf->getProp(it,"name") << "(" << conf->getProp(it,"create") << ")";
-			if( !db->query(query.str()) && unideb.debugging(Debug::CRIT) )
-				unideb[Debug::CRIT] << myname << "(createTables): error: \t\t" << db->error() << endl;
+			if( !db->query(query.str()) && ulog.is_crit() )
+				ulog.crit() << myname << "(createTables): error: \t\t" << db->error() << endl;
 		}
-	}	
+	}
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_SQLite::timerInfo( UniSetTypes::TimerMessage* tm )
@@ -399,8 +364,8 @@ void DBServer_SQLite::timerInfo( UniSetTypes::TimerMessage* tm )
 		{
 			if( !db->ping() )
 			{
-				if( unideb.debugging(Debug::WARN) )
-					unideb[Debug::WARN] << myname << "(timerInfo): DB lost connection.." << endl;
+				if( ulog.is_warn() )
+					ulog.warn() << myname << "(timerInfo): DB lost connection.." << endl;
 				connect_ok = false;
 				askTimer(DBServer_SQLite::PingTimer,0);
 				askTimer(DBServer_SQLite::ReconnectTimer,ReconnectTime);
@@ -408,16 +373,16 @@ void DBServer_SQLite::timerInfo( UniSetTypes::TimerMessage* tm )
 			else
 			{
 				connect_ok = true;
-				if( unideb.debugging(DBLogInfoLevel) )
-					unideb[DBLogInfoLevel] << myname << "(timerInfo): DB ping ok" << endl;
+				if( ulog.debugging(DBLogInfoLevel) )
+					ulog[DBLogInfoLevel] << myname << "(timerInfo): DB ping ok" << endl;
 			}
 		}
 		break;
-	
+
 		case DBServer_SQLite::ReconnectTimer:
 		{
-			if( unideb.debugging(DBLogInfoLevel) )
-				unideb[DBLogInfoLevel] << myname << "(timerInfo): reconnect timer" << endl;
+			if( ulog.debugging(DBLogInfoLevel) )
+				ulog[DBLogInfoLevel] << myname << "(timerInfo): reconnect timer" << endl;
 			if( db->isConnection() )
 			{
 				if( db->ping() )
@@ -427,8 +392,8 @@ void DBServer_SQLite::timerInfo( UniSetTypes::TimerMessage* tm )
 					askTimer(DBServer_SQLite::PingTimer,PingTime);
 				}
 				connect_ok = false;
-				if( unideb.debugging(Debug::WARN) )
-					unideb[Debug::WARN] << myname << "(timerInfo): DB no connection.." << endl;
+				if( ulog.is_warn() )
+					ulog.warn() << myname << "(timerInfo): DB no connection.." << endl;
 			}
 			else
 				init_dbserver();
@@ -436,8 +401,8 @@ void DBServer_SQLite::timerInfo( UniSetTypes::TimerMessage* tm )
 		break;
 
 		default:
-			if( unideb.debugging(Debug::WARN) )
-				unideb[Debug::WARN] << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
+			if( ulog.is_warn() )
+				ulog.warn() << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
 		break;
 	}
 }

@@ -58,7 +58,7 @@ struct Debug {
 
     If you want to have debug output from time critical code you should
     use this construct:
-    if (debug.debugging(Debug::INFO)) {
+    if (debug..is_info()) {
 	 debug << "...debug output...\n";
     }
 
@@ -117,12 +117,8 @@ public:
 	inline std::string getLogFile(){ return fname; }
 	
 	/// Returns true if t is part of the current debug level.
-	bool debugging(Debug::type t = Debug::ANY) const
-	{
-		if (dt & t) return true;
-		return false;
-	}
-
+	inline bool debugging(Debug::type t = Debug::ANY) const
+	{  return (dt & t); }
 
 	/** Returns the no-op stream if t is not part of the
 	    current debug level otherwise the real debug stream
@@ -146,26 +142,52 @@ public:
 		Вывод продолжения логов (без даты и времени)
 	*/
 	inline std::ostream& to_end(Debug::type t)
-	{
-		return this->operator()(t);
-	}
+	{ return this->operator()(t); }
 
 	/**	
-		Вывод продолжения логов (без даты и времени)
+		Вывод продолжения логов (без даты и времени) "log()"
 	*/
 	std::ostream& operator()(Debug::type t);
 
-
 	inline void showDateTime(bool s)
-	{
-		show_datetime = s;
-	}
+	{ show_datetime = s; }
 
+// короткие функции (для удобства)
+// log.level1()  - вывод с датой и временем  "date time [LEVEL] ...",
+//	если вывод даты и времени не выключен при помощи showDateTime(false)
+// if( log.is_level1() ) - проверка включён ли лог.."
 
-	std::ostream& print_date(Debug::type t, char brk='/');
-	std::ostream& print_time(Debug::type t, char brk=':');
-	std::ostream& print_datetime(Debug::type t);
-	
+#define DMANIP(FNAME,LEVEL) \
+	inline std::ostream& FNAME( bool showdatetime=true ) \
+	{\
+		if( showdatetime )\
+			return operator[](Debug::LEVEL); \
+		return  operator()(Debug::LEVEL); \
+	} \
+\
+	inline bool is_##FNAME() \
+	{ return debugging(Debug::LEVEL); }
+
+	DMANIP(level1,LEVEL1)
+	DMANIP(level2,LEVEL2)
+	DMANIP(level3,LEVEL3)
+	DMANIP(level4,LEVEL4)
+	DMANIP(level5,LEVEL5)
+	DMANIP(level6,LEVEL6)
+	DMANIP(level7,LEVEL7)
+	DMANIP(level8,LEVEL8)
+	DMANIP(level9,LEVEL9)
+	DMANIP(info,INFO)
+	DMANIP(warn,WARN)
+	DMANIP(crit,CRIT)
+	DMANIP(repository,REPOSITORY)
+	DMANIP(system,SYSTEM)
+	DMANIP(exception,EXCEPTION)
+#undef DMANIP
+
+	std::ostream& printDate(Debug::type t, char brk='/');
+	std::ostream& printTime(Debug::type t, char brk=':');
+	std::ostream& printDateTime(Debug::type t);
 	
 	std::ostream& pos(int x, int y);
 

@@ -390,8 +390,8 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	
 	if( sid == DefaultObjectId )
 	{
-		if( dlog )
-			dlog[Debug::CRIT] << myname << "(readItem): (-1) Не удалось получить ID для датчика: "
+		if( dlog && dlog->is_crit() )
+			dlog->crit() << myname << "(readItem): (-1) Не удалось получить ID для датчика: "
 						<< sname << endl;
 		return false;
 	}
@@ -435,9 +435,9 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		}
 		else
 		{
-			if( dlog )
-				dlog[Debug::CRIT] << myname << "(IOBase::readItem): Unknown iofront='" << front_t << "'"
-				<< " for '" << sname << "'.  Must be [ 01, 10 ]." << endl;
+			if( dlog && dlog->is_crit() )
+				dlog->crit() << myname << "(IOBase::readItem): Unknown iofront='" << front_t << "'"
+					<< " for '" << sname << "'.  Must be [ 01, 10 ]." << endl;
 			return false;
 		}
 	}
@@ -447,8 +447,8 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	b->stype = UniSetTypes::getIOType(it.getProp("iotype"));
 	if( b->stype == UniversalIO::UnknownIOType )
 	{
-		if( dlog )
-			dlog[Debug::CRIT] << myname << "(IOBase::readItem): неизвестный iotype=: " 
+		if( dlog && dlog->is_crit() )
+			dlog->crit() << myname << "(IOBase::readItem): неизвестный iotype=: "
 				<< it.getProp("iotype") << " для " << sname << endl;
 		return false;
 	}
@@ -534,8 +534,8 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 			b->t_ai = conf->getSensorID(tai);
 			if( b->t_ai == DefaultObjectId )
 			{
-				if( dlog )
-					dlog[Debug::CRIT] << myname << "(IOBase::readItem): unknown ID for threshold_ai "
+				if( dlog && dlog->is_crit() )
+					dlog->crit() << myname << "(IOBase::readItem): unknown ID for threshold_ai "
 						<< tai << endl;
 				return false;
 			}
@@ -548,7 +548,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	}
 //	else
 //	{
-//		dlog[Debug::CRIT] << myname << "(IOBase::readItem): неизвестный iotype=: " << stype << " для " << sname << endl;
+//		dlog.crit() << myname << "(IOBase::readItem): неизвестный iotype=: " << stype << " для " << sname << endl;
 //		return false;
 //	}
 

@@ -123,7 +123,7 @@ stCountOfQueueFull(0)
 	myid = ui.getIdByName(myname);
 	if( myid == DefaultObjectId )
 	{
-		unideb[Debug::WARN] << "name: my ID not found!" << endl;
+		ulog.warn() << "name: my ID not found!" << endl;
 		throw Exception(name+": my ID not found!");
 	}
 
@@ -157,9 +157,9 @@ void UniSetObject::init_object()
 	if( MaxCountRemoveOfMessage <= 0 )
 		MaxCountRemoveOfMessage = 10;
 	
-	if( unideb.debugging(Debug::INFO) )
+	if( ulog.is_info() )
 	{
-		unideb[Debug::INFO] << myname << "(init): SizeOfMessageQueue=" << SizeOfMessageQueue
+		ulog.info() << myname << "(init): SizeOfMessageQueue=" << SizeOfMessageQueue
 			<< " MaxCountRemoveOfMessage=" << MaxCountRemoveOfMessage
 			<< endl;
 	}
@@ -172,11 +172,11 @@ void UniSetObject::init_object()
 */
 bool UniSetObject::init( ObjectsManager* om )
 {
-	if( unideb.debugging(Debug::INFO) )
-	  unideb[Debug::INFO] << myname << ": init..." << endl;
+	if( ulog.is_info() )
+	  ulog.info() << myname << ": init..." << endl;
 	this->mymngr = om;
-	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname << ": init ok..." << endl;
+	if( ulog.is_info() )
+		ulog.info() << myname << ": init ok..." << endl;
 	return true;
 }
 // ------------------------------------------------------------------------------------------
@@ -207,8 +207,8 @@ bool UniSetObject::receiveMessage( VoidMessage& vm )
 			// контроль переполнения
 			if( queueMsg.size() > SizeOfMessageQueue ) 
 			{
-				if( unideb.debugging(Debug::CRIT) )
-				  unideb[Debug::CRIT] << myname <<"(receiveMessages): messages queue overflow!" << endl << flush;
+				if( ulog.is_crit() )
+				  ulog.crit() << myname <<"(receiveMessages): messages queue overflow!" << endl << flush;
 				cleanMsgQueue(queueMsg);
 				// обновляем статистику по переполнениям
 				stCountOfQueueFull++;
@@ -217,8 +217,8 @@ bool UniSetObject::receiveMessage( VoidMessage& vm )
 
 			if( !queueMsg.empty() )
 			{
-//			      if( unideb.debugging(Debug::CRIT) )
-//				unideb[Debug::CRIT] << myname <<"(receiveMessages): get new msg.." << endl << flush;
+//			      if( ulog.is_crit() )
+//				ulog.crit() << myname <<"(receiveMessages): get new msg.." << endl << flush;
 
 				vm = queueMsg.top(); // получили сообщение
 //				Проверка на последовательное вынимание			
@@ -327,19 +327,19 @@ bool UniSetObject::waitMessage(VoidMessage& vm, timeout_t timeMS)
 // ------------------------------------------------------------------------------------------
 void UniSetObject::registered()
 {
-	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname << ": registration..." << endl;
+	if( ulog.is_info() )
+		ulog.info() << myname << ": registration..." << endl;
 
 	if( myid == UniSetTypes::DefaultObjectId )
 	{
-		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << myname << "(registered): myid=DefaultObjectId \n";
+		if( ulog.is_info() )
+			ulog.info() << myname << "(registered): myid=DefaultObjectId \n";
 		return;
 	}
 
 	if( !mymngr )
 	{
-		unideb[Debug::WARN] << myname << "(registered): unknown my manager" << endl;
+		ulog.warn() << myname << "(registered): unknown my manager" << endl;
 		string err(myname+": unknown my manager");
 		throw ORepFailed(err.c_str());
 	}
@@ -348,7 +348,7 @@ void UniSetObject::registered()
 		UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
 		if( !oref )
 		{
-			unideb[Debug::CRIT] << myname << "(registered): oref is NULL!..." << endl;
+			ulog.crit() << myname << "(registered): oref is NULL!..." << endl;
 			return;
 		}
 	}
@@ -375,10 +375,10 @@ void UniSetObject::registered()
 	объект станет недоступен другим, а знать об этом не будет!!!
 	
 */
-				unideb[Debug::CRIT] << myname << "(registered): replace object (ObjectNameAlready)" << endl;
+				ulog.crit() << myname << "(registered): replace object (ObjectNameAlready)" << endl;
 				reg = true;
 				unregister();
-//				unideb[Debug::CRIT] << myname << "(registered): не смог зарегестрироваться в репозитории объектов (ObjectNameAlready)" << endl;
+//				ulog.crit() << myname << "(registered): не смог зарегестрироваться в репозитории объектов (ObjectNameAlready)" << endl;
 //				throw al;
 			}
 		}
@@ -390,7 +390,7 @@ void UniSetObject::registered()
 	}
 	catch(Exception& ex)
 	{
-		unideb[Debug::WARN] << myname << "(registered):  " << ex << endl;
+		ulog.warn() << myname << "(registered):  " << ex << endl;
 		string err(myname+": don`t registration in object reposotory");
 		throw ORepFailed(err.c_str());
 	}
@@ -404,8 +404,8 @@ void UniSetObject::unregister()
 
 	if( myid == UniSetTypes::DefaultObjectId )
 	{
-		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << myname << "(unregister): myid=DefaultObjectId \n";
+		if( ulog.is_info() )
+			ulog.info() << myname << "(unregister): myid=DefaultObjectId \n";
 		reg = false;
 		return;
 	}
@@ -414,7 +414,7 @@ void UniSetObject::unregister()
 		UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
 		if( !oref )
 		{
-			unideb[Debug::WARN] << myname << "(unregister): oref NULL!" << endl;
+			ulog.warn() << myname << "(unregister): oref NULL!" << endl;
 			reg = false;
 			return;
 		}
@@ -423,17 +423,17 @@ void UniSetObject::unregister()
 
 	try
 	{
-		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << myname << ": unregister "<< endl;
+		if( ulog.is_info() )
+			ulog.info() << myname << ": unregister "<< endl;
 
 		ui.unregister(myid);
 
-		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << myname << ": unregister ok. "<< endl;
+		if( ulog.is_info() )
+			ulog.info() << myname << ": unregister ok. "<< endl;
 	}
 	catch(...)
 	{
-		unideb[Debug::WARN] << myname << ": don`t registration in object repository" << endl;
+		ulog.warn() << myname << ": don`t registration in object repository" << endl;
 	}
 	
 	reg = false;
@@ -463,8 +463,8 @@ void UniSetObject::push(const TransportMessage& tm)
 		// контроль переполнения
 		if( !queueMsg.empty() && queueMsg.size()>SizeOfMessageQueue )
 		{
-			if( unideb.debugging(Debug::CRIT) )
-			  unideb[Debug::CRIT] << myname <<"(push): message queue overflow!" << endl << flush;
+			if( ulog.is_crit() )
+			  ulog.crit() << myname <<"(push): message queue overflow!" << endl << flush;
 			cleanMsgQueue(queueMsg);
 
 			// обновляем статистику
@@ -472,8 +472,8 @@ void UniSetObject::push(const TransportMessage& tm)
 			stMaxQueueMessages=0;	
 		}
 
-//		if( unideb.debugging(Debug::CRIT) )
-//		  unideb[Debug::CRIT] << myname <<"(push): push new msg.." << endl << flush;
+//		if( ulog.is_crit() )
+//		  ulog.crit() << myname <<"(push): push new msg.." << endl << flush;
 
 		VoidMessage v(tm);
 		queueMsg.push(v);
@@ -500,10 +500,10 @@ struct tmpConsumerInfo
 
 void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 {
-	if( unideb.debugging(Debug::CRIT) )
+	if( ulog.is_crit() )
 	{
-		unideb[Debug::CRIT] << myname << "(cleanMsgQueue): msg queue cleaning..." << endl << flush;
-		unideb[Debug::CRIT] << myname << "(cleanMsgQueue): current size of queue: " << q.size() << endl << flush;
+		ulog.crit() << myname << "(cleanMsgQueue): msg queue cleaning..." << endl << flush;
+		ulog.crit() << myname << "(cleanMsgQueue): current size of queue: " << q.size() << endl << flush;
 	}
 
 	// проходим по всем известным нам типам(базовым)
@@ -570,20 +570,20 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 		}
 	}
 
-	if( unideb.debugging(Debug::CRIT) )
-		unideb[Debug::CRIT] << myname << "(cleanMsgQueue): ******** cleanup RESULT ********" << endl;
+	if( ulog.is_crit() )
+		ulog.crit() << myname << "(cleanMsgQueue): ******** cleanup RESULT ********" << endl;
 
 	for( map<UniSetTypes::ObjectId,tmpConsumerInfo>::iterator it0 = consumermap.begin();
 			it0!=consumermap.end(); ++it0 )
 	{
-		if( unideb.debugging(Debug::CRIT) )
+		if( ulog.is_crit() )
 		{
-			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): CONSUMER=" << it0->first << endl;
-			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean SensorMessage: " << it0->second.smap.size() << endl;
-			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean TimerMessage: " << it0->second.tmap.size() << endl;
-			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean SystemMessage: " << it0->second.sysmap.size() << endl;
-			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean ConfirmMessage: " << it0->second.cmap.size() << endl;
-			unideb[Debug::CRIT] << myname << "(cleanMsgQueue): after clean other: " << it0->second.lstOther.size() << endl;
+			ulog.crit() << myname << "(cleanMsgQueue): CONSUMER=" << it0->first << endl;
+			ulog.crit() << myname << "(cleanMsgQueue): after clean SensorMessage: " << it0->second.smap.size() << endl;
+			ulog.crit() << myname << "(cleanMsgQueue): after clean TimerMessage: " << it0->second.tmap.size() << endl;
+			ulog.crit() << myname << "(cleanMsgQueue): after clean SystemMessage: " << it0->second.sysmap.size() << endl;
+			ulog.crit() << myname << "(cleanMsgQueue): after clean ConfirmMessage: " << it0->second.cmap.size() << endl;
+			ulog.crit() << myname << "(cleanMsgQueue): after clean other: " << it0->second.lstOther.size() << endl;
 		}
 		
 		// теперь ОСТАВШИЕСЯ запихиваем обратно в очередь...
@@ -616,9 +616,9 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 			q.push(*it6);
 	}
 
-	if( unideb.debugging(Debug::CRIT) )
+	if( ulog.is_crit() )
 	{
-	    unideb[Debug::CRIT] << myname
+	    ulog.crit() << myname
 		<< "(cleanMsgQueue): ******* result size of queue: "
 		<< q.size()
 		<< " < " << getMaxSizeOfMessageQueue() << endl;
@@ -626,10 +626,10 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 
 	if( q.size() >= getMaxSizeOfMessageQueue() )
 	{
-		if( unideb.debugging(Debug::CRIT) )
+		if( ulog.is_crit() )
 		{
-		  unideb[Debug::CRIT] << myname << "(cleanMsgQueue): clean failed. size > " << q.size() << endl;
-		  unideb[Debug::CRIT] << myname << "(cleanMsgQueue): remove " << getMaxCountRemoveOfMessage() << " old messages " << endl;
+		  ulog.crit() << myname << "(cleanMsgQueue): clean failed. size > " << q.size() << endl;
+		  ulog.crit() << myname << "(cleanMsgQueue): remove " << getMaxCountRemoveOfMessage() << " old messages " << endl;
 		}
 		for( unsigned int i=0; i<getMaxCountRemoveOfMessage(); i++ )
 		{
@@ -639,8 +639,8 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 			    break;
 		}
 
-		if( unideb.debugging(Debug::CRIT) )
-		  unideb[Debug::CRIT] << myname << "(cleanMsgQueue): result size=" << q.size() << endl;
+		if( ulog.is_crit() )
+		  ulog.crit() << myname << "(cleanMsgQueue): result size=" << q.size() << endl;
 	}
 }
 // ------------------------------------------------------------------------------------------
@@ -676,8 +676,8 @@ bool UniSetObject::disactivate()
 
 	try
 	{
-		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << "disactivateObject..." << endl;
+		if( ulog.is_info() )
+			ulog.info() << "disactivateObject..." << endl;
 
 		PortableServer::POA_var poamngr = mymngr->getPOA();
 		if( !PortableServer::POA_Helper::is_nil(poamngr) )
@@ -690,37 +690,37 @@ bool UniSetObject::disactivate()
 			unregister();
 			PortableServer::ObjectId_var oid = poamngr->servant_to_id(static_cast<PortableServer::ServantBase*>(this));
 			poamngr->deactivate_object(oid);
-			if( unideb.debugging(Debug::INFO) )
-				unideb[Debug::INFO] << "ok..." << endl;
+			if( ulog.is_info() )
+				ulog.info() << "ok..." << endl;
 			return true;
 		}
-		if( unideb.debugging(Debug::WARN) )
-			unideb[Debug::WARN] << "manager already destroyed.." << endl;
+		if( ulog.is_warn() )
+			ulog.warn() << "manager already destroyed.." << endl;
 	}
 	catch(CORBA::TRANSIENT)
 	{
-		if( unideb.debugging(Debug::WARN) )
-			unideb[Debug::WARN] << "isExist: нет связи..."<< endl;
+		if( ulog.is_warn() )
+			ulog.warn() << "isExist: нет связи..."<< endl;
 	}
 	catch( CORBA::SystemException& ex )
     {
-		if( unideb.debugging(Debug::WARN) )
-			unideb[Debug::WARN] << "UniSetObject: "<<"поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
+		if( ulog.is_warn() )
+			ulog.warn() << "UniSetObject: "<<"поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
     }
     catch(CORBA::Exception& ex)
     {
-		if( unideb.debugging(Debug::WARN) )
-			unideb[Debug::WARN] << "UniSetObject: "<<"поймали CORBA::Exception." << endl;
+		if( ulog.is_warn() )
+			ulog.warn() << "UniSetObject: "<<"поймали CORBA::Exception." << endl;
     }
 	catch(Exception& ex)
     {
-		if( unideb.debugging(Debug::WARN) )
-			unideb[Debug::WARN] << "UniSetObject: "<< ex << endl;
+		if( ulog.is_warn() )
+			ulog.warn() << "UniSetObject: "<< ex << endl;
     }
     catch(...)
     {
-		if( unideb.debugging(Debug::WARN) )
-			unideb[Debug::WARN] << "UniSetObject: "<<" catch ..." << endl;
+		if( ulog.is_warn() )
+			ulog.warn() << "UniSetObject: "<<" catch ..." << endl;
     }
 
 	return false;
@@ -729,12 +729,12 @@ bool UniSetObject::disactivate()
 // ------------------------------------------------------------------------------------------
 bool UniSetObject::activate()
 {
-	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname << ": activate..." << endl;
+	if( ulog.is_info() )
+		ulog.info() << myname << ": activate..." << endl;
 
 	if( mymngr == NULL )
 	{
-		unideb[Debug::CRIT] << myname << "(activate): mymngr=NULL!!! activate failure..." << endl;
+		ulog.crit() << myname << "(activate): mymngr=NULL!!! activate failure..." << endl;
 		return false;
 	}
 
@@ -756,7 +756,7 @@ bool UniSetObject::activate()
 		// то myname = noname. ВСЕГДА! 
 		if( myid == UniSetTypes::DefaultObjectId )
 		{
-			unideb[Debug::CRIT] << myname << "(activate): Не задан ID!!! activate failure..." << endl;
+			ulog.crit() << myname << "(activate): Не задан ID!!! activate failure..." << endl;
 			// вызываем на случай если она переопределена в дочерних классах
 			// Например в ObjectsManager, если здесь не вызвать, то не будут инициализированы подчинённые объекты.
 			// (см. ObjectsManager::activateObject)
@@ -792,9 +792,9 @@ bool UniSetObject::activate()
 	}
 	else 
 	{
-		if( unideb.debugging(Debug::INFO) )
+		if( ulog.is_info() )
 		{
-			unideb[Debug::INFO] << myname << ": ?? не задан ObjectId...(" 
+			ulog.info() << myname << ": ?? не задан ObjectId...("
 					<< "myid=" << myid << " threadcreate=" << threadcreate 
 					<< ")" << endl;
 		}
@@ -802,22 +802,22 @@ bool UniSetObject::activate()
 	}
 
 	activateObject();
-	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname << ": activate ok." << endl;
+	if( ulog.is_info() )
+		ulog.info() << myname << ": activate ok." << endl;
 	return true;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::work()
 {
-	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname << ": thread processing messages run..." << endl;
+	if( ulog.is_info() )
+		ulog.info() << myname << ": thread processing messages run..." << endl;
 	if( thr )
 		msgpid = thr->getTID();
 	while( isActive() )
 	{
 		callback();
 	}
-	unideb[Debug::WARN] << myname << ": thread processing messages stop..." << endl;	
+	ulog.warn() << myname << ": thread processing messages stop..." << endl;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::callback()
@@ -832,8 +832,8 @@ void UniSetObject::callback()
 // ------------------------------------------------------------------------------------------
 void UniSetObject::processingMessage( UniSetTypes::VoidMessage *msg )
 {
-	if( unideb.debugging(Debug::INFO) )
-		unideb[Debug::INFO] << myname << ": default processing messages..." << endl;	
+	if( ulog.is_info() )
+		ulog.info() << myname << ": default processing messages..." << endl;
 }
 // ------------------------------------------------------------------------------------------
 UniSetTypes::SimpleInfo* UniSetObject::getInfo()

@@ -25,7 +25,7 @@ int main(int argc, const char **argv)
 		std::ostringstream logname;
 		string dir(conf->getLogDir());
 		logname << dir << logfilename;
-		unideb.logFile( logname.str() );
+		ulog.logFile( logname.str() );
 		dlog.logFile( logname.str() );
 
 		string schema = conf->getArgParam("--schema");
@@ -76,10 +76,10 @@ int main(int argc, const char **argv)
 		SystemMessage sm(SystemMessage::StartUp); 
 		act.broadcast( sm.transport_msg() );
 
-		unideb(Debug::ANY) << "\n\n\n";
-		unideb[Debug::ANY] << "(main): -------------- IOControl START -------------------------\n\n";
-		dlog(Debug::ANY) << "\n\n\n";
-		dlog[Debug::ANY] << "(main): -------------- IOControl START -------------------------\n\n";
+		ulog << "\n\n\n";
+		ulog << "(main): -------------- IOControl START -------------------------\n\n";
+		dlog << "\n\n\n";
+		dlog << "(main): -------------- IOControl START -------------------------\n\n";
 		act.run(false);
 		return 0;
 	}

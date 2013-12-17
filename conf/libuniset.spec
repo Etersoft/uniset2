@@ -353,6 +353,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - refactoring <depends> mechanism
 - add iofront=[01,10] to IOBase
 - remove deprecated interfaces (Storages,CycleStorage,TableStorage,TextIndex,..)
+- rename unideb --> ulog
+- DebugStream refactoring (add new function)
 
 * Tue Dec 10 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt3
 - add RRDServer

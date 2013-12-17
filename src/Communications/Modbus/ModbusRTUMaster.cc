@@ -127,7 +127,7 @@ mbErrCode ModbusRTUMaster::sendData( unsigned char* buf, int len )
 	}
 	catch( Exception& ex ) // SystemError
 	{
-		dlog[Debug::CRIT] << "(send): " << ex << endl;
+		dlog.crit() << "(send): " << ex << endl;
 		return erHardwareError;
 	}
 

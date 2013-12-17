@@ -25,7 +25,8 @@ prefix(prefix)
 	{
 		ostringstream err;
 		err << myname << "(init): empty rrd list...";
-		RRDServer::dlog[Debug::CRIT] << err.str() << endl;
+		if( RRDServer::dlog.is_crit() )
+			RRDServer::dlog.crit() << err.str() << endl;
 		throw NameNotFound(err.str());
 	}
 
@@ -57,8 +58,8 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 	int lastup =  it.getPIntProp("lastup",0);
 	bool overwrite = it.getPIntProp("overwrite",0);
 
-	if( RRDServer::dlog.debugging(Debug::INFO) )
-		RRDServer::dlog[Debug::INFO] << myname << "(init): add rrd: file='" << fname
+	if( RRDServer::dlog.is_info() )
+		RRDServer::dlog.info() << myname << "(init): add rrd: file='" << fname
 			<< " " << ff << "='" << fv
 			<< "' create='" << cf << "'"
 			<< " step=" << rrdstep
@@ -71,7 +72,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 	{
 		ostringstream err;
 		err << myname << "(init): rrd='" << fname << "' Unknown RRA list";
-		RRDServer::dlog[Debug::CRIT] << err.str();
+		RRDServer::dlog.crit() << err.str();
 		throw SystemError(err.str());
 	}
 
@@ -82,7 +83,8 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 		{
 			ostringstream err;
 			err << myname << "(init): rrd='" << fname << "' Unkown RRA item.. <item rra='...'";
-			RRDServer::dlog[Debug::CRIT] << err.str();
+			if( RRDServer::dlog.is_crit() )
+				RRDServer::dlog.crit() << err.str();
 			throw SystemError(err.str());
 		}
 
@@ -93,7 +95,8 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 	{
 		ostringstream err;
 		err << myname << "(init): Not found RRA items...";
-		RRDServer::dlog[Debug::CRIT] << err.str() << endl;
+		if( RRDServer::dlog.is_crit() )
+			RRDServer::dlog.crit() << err.str() << endl;
 		throw SystemError(err.str());
 	}
 
@@ -105,7 +108,8 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 		{
 			ostringstream err;
 			err << myname << "(init): Not found section <sensors>";
-			RRDServer::dlog[Debug::CRIT] << err.str();
+			if( RRDServer::dlog.is_crit() )
+				RRDServer::dlog.crit() << err.str();
 			throw SystemError(err.str());
 		}
 
@@ -114,7 +118,8 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 		{
 			ostringstream err;
 			err << myname << "(init): section <sensors> empty?!";
-			RRDServer::dlog[Debug::CRIT] << err.str();
+			if( RRDServer::dlog.is_crit() )
+				RRDServer::dlog.crit() << err.str();
 			throw SystemError(err.str());
 		}
 
@@ -133,7 +138,8 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 			{
 				ostringstream err;
 				err << myname << "(init): Unknown create parameters ('" << cf << "')";
-				RRDServer::dlog[Debug::CRIT] << err.str();
+				if( RRDServer::dlog.is_crit() )
+					RRDServer::dlog.crit() << err.str();
 				throw SystemError(err.str());
 			}
 
@@ -147,7 +153,8 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 			{
 				ostringstream err;
 				err << myname << "(init): Unknown SensorID for '" << dsname << "'";
-				RRDServer::dlog[Debug::CRIT] << err.str();
+				if( RRDServer::dlog.is_crit() )
+					RRDServer::dlog.crit() << err.str();
 				throw SystemError(err.str());
 			}
 
@@ -159,7 +166,8 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 		{
 			ostringstream err;
 			err << myname << "(init): Not found RRD items...";
-			RRDServer::dlog[Debug::CRIT] << err.str() << endl;
+			if( RRDServer::dlog.is_crit() )
+				RRDServer::dlog.crit() << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
@@ -179,8 +187,8 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 		// Собственно создаём RRD
 		if( !overwrite && file_exist(fname) )
 		{
-			if( RRDServer::dlog.debugging(Debug::INFO) )
-				RRDServer::dlog[Debug::INFO] << myname << "(init): ignore create file='" << fname
+			if( RRDServer::dlog.is_info() )
+				RRDServer::dlog.info() << myname << "(init): ignore create file='" << fname
 				<< "'. File exist... overwrite=0." << endl;
 		}
 		else
@@ -190,7 +198,8 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 			{
 				ostringstream err;
 				err << myname << "(init): Can`t create RRD ('" << fname << "'): err: " << string(rrd_get_error());
-				RRDServer::dlog[Debug::CRIT] << err.str() << endl;
+				if( RRDServer::dlog.is_crit() )
+					RRDServer::dlog.crit() << err.str() << endl;
 				throw SystemError(err.str());
 			}
 		}
@@ -206,11 +215,11 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 	}
 /*	catch( Exception& ex )
 	{
-		RRDServer::dlog[Debug::CRIT] << myname << "(init) " << ex << std::endl;
+		RRDServer::dlog.crit() << myname << "(init) " << ex << std::endl;
 	}
 	catch( ...  )
 	{
-		RRDServer::dlog[Debug::CRIT] << myname << "(init): catch ..." << std::endl;
+		RRDServer::dlog.crit() << myname << "(init): catch ..." << std::endl;
 	}
 */
 }
@@ -231,14 +240,14 @@ RRDServer* RRDServer::init_rrdstorage( int argc, const char* const* argv,
 	string name = conf->getArgParam("--" + prefix + "-name","RRDServer");
 	if( name.empty() )
 	{
-		UniSetExtensions::dlog[Debug::CRIT] << "(RRDServer): Unknown name. Usage: --" <<  prefix << "-name" << endl;
+		UniSetExtensions::dlog.crit() << "(RRDServer): Unknown name. Usage: --" <<  prefix << "-name" << endl;
 		return 0;
 	}
 
 	ObjectId ID = conf->getObjectID(name);
 	if( ID == UniSetTypes::DefaultObjectId )
 	{
-		UniSetExtensions::dlog[Debug::CRIT] << "(RRDServer): Not found ID for '" << name
+		UniSetExtensions::dlog.crit() << "(RRDServer): Not found ID for '" << name
 			<< " in '" << conf->getObjectsSection() << "' section" << endl;
 		return 0;
 	}
@@ -247,11 +256,12 @@ RRDServer* RRDServer::init_rrdstorage( int argc, const char* const* argv,
 	xmlNode* cnode = conf->getNode(confname);
 	if( !cnode )
 	{
-		UniSetExtensions::dlog[Debug::CRIT] << "(RRDServer): " << name << "(init): Not found <" + confname + ">" << endl;
+		UniSetExtensions::dlog.crit() << "(RRDServer): " << name << "(init): Not found <" + confname + ">" << endl;
 		return 0;
 	}
 
-	UniSetExtensions::dlog[Debug::INFO] << "(RRDServer): name = " << name << "(" << ID << ")" << endl;
+	if( UniSetExtensions::dlog.is_info() )
+		UniSetExtensions::dlog.info() << "(RRDServer): name = " << name << "(" << ID << ")" << endl;
 	return new RRDServer(ID,cnode,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
@@ -269,7 +279,8 @@ void RRDServer::askSensors( UniversalIO::UIOCommand cmd )
 			}
 			catch( std::exception& ex )
 			{
-				RRDServer::dlog[Debug::CRIT] << myname << "(askSensors): " << ex.what() << endl;
+				if( RRDServer::dlog.is_crit() )
+					RRDServer::dlog.crit() << myname << "(askSensors): " << ex.what() << endl;
 			}
 		}
 	}
@@ -288,7 +299,8 @@ void RRDServer::sysCommand( UniSetTypes::SystemMessage* sm )
 			}
 			catch( std::exception& ex )
 			{
-				RRDServer::dlog[Debug::CRIT] << myname << "(askTimer): " << ex.what() << endl;
+				if( RRDServer::dlog.is_crit() )
+					RRDServer::dlog.crit() << myname << "(askTimer): " << ex.what() << endl;
 			}
 		}
 	}
@@ -318,8 +330,8 @@ void RRDServer::timerInfo( UniSetTypes::TimerMessage* tm )
 			for( DSMap::iterator s=it->dsmap.begin(); s!=it->dsmap.end(); ++s )
 				v << ":" << s->second.value;
 
-			if( RRDServer::dlog.debugging(Debug::INFO) )
-				RRDServer::dlog[Debug::INFO] << myname << "(update): '" << it->filename << "' " << v.str() << endl;
+			if( RRDServer::dlog.is_info() )
+				RRDServer::dlog.info() << myname << "(update): '" << it->filename << "' " << v.str() << endl;
 
 			rrd_clear_error();
 			const char* argv = v.str().c_str();
@@ -327,7 +339,8 @@ void RRDServer::timerInfo( UniSetTypes::TimerMessage* tm )
 			{
 				ostringstream err;
 				err << myname << "(update): Can`t update RRD ('" << it->filename << "'): err: " << string(rrd_get_error());
-				RRDServer::dlog[Debug::CRIT] << err.str() << endl;
+				if( RRDServer::dlog.is_crit() )
+					RRDServer::dlog.crit() << err.str() << endl;
 			}
 
 			break;

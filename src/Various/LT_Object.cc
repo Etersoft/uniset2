@@ -112,7 +112,7 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 	}
 	catch(Exception& ex)
 	{
-		unideb[Debug::CRIT] << "(checkTimers): " << ex << endl;
+		ulog.crit() << "(checkTimers): " << ex << endl;
 	}
 	
 	return sleepTime;
@@ -125,7 +125,7 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
 	{
 		if( timeMS < UniSetTimer::MinQuantityTime )
 		{
-			unideb[Debug::CRIT] << "(LT_askTimer): [мс] попытка заказть таймер со временем срабатыания "
+			ulog.crit() << "(LT_askTimer): [мс] попытка заказть таймер со временем срабатыания "
 						<< " меньше разрешённого " << UniSetTimer::MinQuantityTime << endl;
 			timeMS = UniSetTimer::MinQuantityTime;
 		}
@@ -141,9 +141,9 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
 					{
 						li->curTick = ticks;
 						li->tmr.setTiming(timeMS);
-						if( unideb.debugging(Debug::INFO) )
+						if( ulog.is_info() )
 						{
-							unideb[Debug::INFO] << "(LT_askTimer): заказ на таймер(id="
+							ulog.info() << "(LT_askTimer): заказ на таймер(id="
 								<< timerid << ") " << timeMS << " [мс] уже есть..." << endl;
 						}
 						return sleepTime;
@@ -156,13 +156,13 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
 			newti.reset();
 		}	// unlock
 	
-		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << "(LT_askTimer): поступил заказ на таймер(id="<< timerid << ") " << timeMS << " [мс]\n";
+		if( ulog.is_info() )
+			ulog.info() << "(LT_askTimer): поступил заказ на таймер(id="<< timerid << ") " << timeMS << " [мс]\n";
 	}
 	else // отказ (при timeMS == 0)
 	{
-		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << "(LT_askTimer): поступил отказ по таймеру id="<< timerid << endl;	
+		if( ulog.is_info() )
+			ulog.info() << "(LT_askTimer): поступил отказ по таймеру id="<< timerid << endl;
 		{	// lock
 			uniset_rwmutex_wrlock lock(lstMutex);
 			tlst.remove_if(Timer_eq(timerid));	// STL - способ

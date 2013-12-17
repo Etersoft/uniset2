@@ -104,7 +104,7 @@ void ObjectsActivator::init()
 	poa = root_poa->create_POA("my poa", pman, pl);
 
 	if( CORBA::is_nil(poa) )
-		unideb[Debug::CRIT] << myname << "(init): init poa failed!!!" << endl;
+		ulog.crit() << myname << "(init): init poa failed!!!" << endl;
 
 	gActivator=this;
 	atexit( ObjectsActivator::normalexit );
@@ -117,7 +117,7 @@ ObjectsActivator::~ObjectsActivator()
 {
 	if(!procterm )
 	{
-		unideb[Debug::SYSTEM] << myname << "(destructor): ..."<< endl << flush;
+		ulog.system() << myname << "(destructor): ..."<< endl << flush;
 		if( !omDestroy )
 			oaDestroy();
 
@@ -138,11 +138,11 @@ void ObjectsActivator::oaDestroy(int signo)
 		if( !omDestroy )
 		{
 			omDestroy = true;
-			unideb[Debug::SYSTEM] << myname << "(oaDestroy): begin..."<< endl;			
+			ulog.system() << myname << "(oaDestroy): begin..."<< endl;
 
-			unideb[Debug::SYSTEM] << myname << "(oaDestroy): terminate... " << endl;		
+			ulog.system() << myname << "(oaDestroy): terminate... " << endl;
 			term(signo);
-			unideb[Debug::SYSTEM] << myname << "(oaDestroy): terminate ok. " << endl;		
+			ulog.system() << myname << "(oaDestroy): terminate ok. " << endl;
 
 			try
 			{	
@@ -150,17 +150,19 @@ void ObjectsActivator::oaDestroy(int signo)
 			}
 			catch(...){}
 
-			unideb[Debug::SYSTEM] << myname << "(oaDestroy): pman deactivate... " << endl;		
+			ulog.system() << myname << "(oaDestroy): pman deactivate... " << endl;
 			pman->deactivate(false,true);
-			unideb[Debug::SYSTEM] << myname << "(oaDestroy): pman deactivate ok. " << endl;		
+			ulog.system() << myname << "(oaDestroy): pman deactivate ok. " << endl;
 
-			unideb[Debug::SYSTEM] << myname << "(oaDestroy): orb destroy... " << endl;		
+			ulog.system() << myname << "(oaDestroy): orb destroy... " << endl;
 			try
 			{
 				orb->destroy();
 			}
 			catch(...){}
-			unideb[Debug::SYSTEM] << myname << "(oaDestroy): orb destroy ok."<< endl;
+
+			if( ulog.is_system() )
+				ulog.system() << myname << "(oaDestroy): orb destroy ok."<< endl;
 
 			if( orbthr )
 			{
@@ -183,7 +185,8 @@ void ObjectsActivator::oaDestroy(int signo)
 */
 void ObjectsActivator::run(bool thread)
 {
-	unideb[Debug::SYSTEM] << myname << "(run): создаю менеджер "<< endl;
+	if( ulog.is_system() )
+		ulog.system() << myname << "(run): создаю менеджер "<< endl;
 
 	ObjectsManager::initPOA(this);
 
@@ -195,26 +198,26 @@ void ObjectsActivator::run(bool thread)
 	getinfo();		// заполнение информации об объектах
 	active=true;
 
-	unideb[Debug::SYSTEM] << myname << "(run): активизируем менеджер"<<endl;	
+	ulog.system() << myname << "(run): активизируем менеджер"<<endl;
 	pman->activate();
 	msleep(50);
 
 	set_signals(true);	
 	if( thread )
 	{
-		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << myname << "(run): запускаемся с созданием отдельного потока...  "<< endl;
+		if( ulog.is_info() )
+			ulog.info() << myname << "(run): запускаемся с созданием отдельного потока...  "<< endl;
 		orbthr = new ThreadCreator<ObjectsActivator>(this, &ObjectsActivator::work);
 		if( !orbthr->start() )
 		{
-			unideb[Debug::CRIT] << myname << "(run):  НЕ СМОГЛИ СОЗДАТЬ ORB-поток"<<endl;	
+			ulog.crit() << myname << "(run):  НЕ СМОГЛИ СОЗДАТЬ ORB-поток"<<endl;
 			throw SystemError("(ObjectsActivator::run): CREATE ORB THREAD FAILED");
 		}	
 	}
 	else
 	{
-		if( unideb.debugging(Debug::INFO) )
-			unideb[Debug::INFO] << myname << "(run): запускаемся без создания отдельного потока...  "<< endl;
+		if( ulog.is_info() )
+			ulog.info() << myname << "(run): запускаемся без создания отдельного потока...  "<< endl;
 		work();
 	}
 }
@@ -230,26 +233,31 @@ void ObjectsActivator::stop()
 	{
 		active=false;				
 		
-		if( unideb.debugging(Debug::SYSTEM) )	
-			unideb[Debug::SYSTEM] << myname << "(stop): disactivate...  "<< endl;
+		if( ulog.is_system() )
+			ulog.system() << myname << "(stop): disactivate...  "<< endl;
+
 		disactivate();
-		if( unideb.debugging(Debug::SYSTEM) )
+
+		if( ulog.is_system() )
 		{
-			unideb[Debug::SYSTEM] << myname << "(stop): disactivate ok.  "<<endl;
-			unideb[Debug::SYSTEM] << myname << "(stop): discard request..."<< endl;
+			ulog.system() << myname << "(stop): disactivate ok.  "<<endl;
+			ulog.system() << myname << "(stop): discard request..."<< endl;
 		}
+
 		pman->discard_requests(true);
-		if( unideb.debugging(Debug::SYSTEM) )	
-			unideb[Debug::SYSTEM] << myname << "(stop): discard request ok."<< endl;		
+
+		if( ulog.is_system() )
+			ulog.system() << myname << "(stop): discard request ok."<< endl;
 /*
 		try
 		{
-			unideb[Debug::SYSTEM] << myname << "(stop):: shutdown orb...  "<<endl;
+			ulog.system() << myname << "(stop):: shutdown orb...  "<<endl;
 			orb->shutdown(false);
 		}
 		catch(...){}
-		unideb[Debug::SYSTEM] << myname << "(stop): shutdown ok."<< endl;
 */
+		if( ulog.is_system() )
+			ulog.system() << myname << "(stop): shutdown ok."<< endl;
 	}
 }
 
@@ -257,8 +265,8 @@ void ObjectsActivator::stop()
 
 void ObjectsActivator::work()
 {
-	if( unideb.debugging(Debug::SYSTEM) )	
-		unideb[Debug::SYSTEM] << myname << "(work): запускаем orb на обработку запросов..."<< endl;
+	if( ulog.is_system() )
+		ulog.system() << myname << "(work): запускаем orb на обработку запросов..."<< endl;
 	try
 	{
 		if(orbthr)
@@ -270,41 +278,41 @@ void ObjectsActivator::work()
 	}
 	catch(CORBA::SystemException& ex)
     {
-		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << myname << "(work): поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
+		if( ulog.is_crit() )
+			ulog.crit() << myname << "(work): поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
     }
     catch(CORBA::Exception& ex)
     {
-		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << myname << "(work): поймали CORBA::Exception." << endl;
+		if( ulog.is_crit() )
+			ulog.crit() << myname << "(work): поймали CORBA::Exception." << endl;
     }
     catch(omniORB::fatalException& fe)
     {
-		if( unideb.debugging(Debug::CRIT) )
+		if( ulog.is_crit() )
 		{
-			unideb[Debug::CRIT] << myname << "(work): : поймали omniORB::fatalException:" << endl;
-		unideb[Debug::CRIT] << myname << "(work):   file: " << fe.file() << endl;
-			unideb[Debug::CRIT] << myname << "(work):   line: " << fe.line() << endl;
-		unideb[Debug::CRIT] << myname << "(work):   mesg: " << fe.errmsg() << endl;
+			ulog.crit() << myname << "(work): : поймали omniORB::fatalException:" << endl;
+		ulog.crit() << myname << "(work):   file: " << fe.file() << endl;
+			ulog.crit() << myname << "(work):   line: " << fe.line() << endl;
+		ulog.crit() << myname << "(work):   mesg: " << fe.errmsg() << endl;
 		}
     }
 	catch(...)
 	{
-		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << myname << "(work): catch ..." << endl;
+		if( ulog.is_crit() )
+			ulog.crit() << myname << "(work): catch ..." << endl;
 	}
 	
-	if( unideb.debugging(Debug::SYSTEM) )	
-		unideb[Debug::SYSTEM] << myname << "(work): orb стоп!!!"<< endl;
+	if( ulog.is_system() )
+		ulog.system() << myname << "(work): orb стоп!!!"<< endl;
 
 /*
-	unideb[Debug::SYSTEM] << myname << "(oaDestroy): orb destroy... " << endl;		
+	ulog.system() << myname << "(oaDestroy): orb destroy... " << endl;
 	try
 	{
 		orb->destroy();
 	}
 	catch(...){}
-	unideb[Debug::SYSTEM] << myname << "(oaDestroy): orb destroy ok."<< endl;
+	ulog.system() << myname << "(oaDestroy): orb destroy ok."<< endl;
 */	
 }
 // ------------------------------------------------------------------------------------------
@@ -348,7 +356,8 @@ void ObjectsActivator::processingMessage( UniSetTypes::VoidMessage *msg )
 	}
 	catch(Exception& ex)
 	{
-		unideb[Debug::CRIT]  << myname << "(processingMessage): " << ex << endl;
+		if( ulog.is_crit() )
+			ulog.crit() << myname << "(processingMessage): " << ex << endl;
 	}
 
 }
@@ -359,13 +368,14 @@ void ObjectsActivator::sysCommand( UniSetTypes::SystemMessage *sm )
 	{
 		case SystemMessage::LogRotate:
 		{
-			unideb[Debug::SYSTEM] << myname << "(sysCommand): logRotate" << endl;
+			if( ulog.is_system() )
+				ulog.system() << myname << "(sysCommand): logRotate" << endl;
 			// переоткрываем логи
-			string fname = unideb.getLogFile();
+			string fname = ulog.getLogFile();
 			if( !fname.empty() )
 			{
-				unideb.logFile(fname.c_str());
-				unideb << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << endl;
+				ulog.logFile(fname.c_str());
+				ulog << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << endl;
 			}
 		}
 		break;
@@ -376,7 +386,7 @@ void ObjectsActivator::sysCommand( UniSetTypes::SystemMessage *sm )
 /*
 void ObjectsActivator::sig_child(int signo)
 {
-	unideb[Debug::SYSTEM] << gActivator->getName() << "(sig_child): дочерний процесс закончил работу...(sig=" << signo << ")" << endl;
+	ulog.system() << gActivator->getName() << "(sig_child): дочерний процесс закончил работу...(sig=" << signo << ")" << endl;
 	while( waitpid(-1, 0, WNOHANG) > 0);
 }
 */
@@ -419,8 +429,8 @@ void ObjectsActivator::finishterm( int signo )
 {
 	if( !doneterm )
 	{
-		if( unideb.debugging(Debug::SYSTEM) && gActivator )
-			unideb[Debug::SYSTEM] << gActivator->getName() 
+		if( ulog.is_system() && gActivator )
+			ulog.system() << gActivator->getName()
 				<< "(finishterm): прерываем процесс завершения...!" << endl<< flush;
 
 		if( gActivator )
@@ -446,10 +456,10 @@ void ObjectsActivator::terminated( int signo )
 			procterm = 1;			
 			SIGNO = signo;
 			MYPID = getpid();
-			if( unideb.debugging(Debug::SYSTEM) && gActivator )
+			if( ulog.is_system() && gActivator )
 			{
-				unideb[Debug::SYSTEM] << gActivator->getName() << "(terminated): catch SIGNO="<< signo << "("<< strsignal(signo) <<")"<< endl << flush;
-					unideb[Debug::SYSTEM] << gActivator->getName() << "(terminated): устанавливаем timer завершения на "
+				ulog.system() << gActivator->getName() << "(terminated): catch SIGNO="<< signo << "("<< strsignal(signo) <<")"<< endl << flush;
+					ulog.system() << gActivator->getName() << "(terminated): устанавливаем timer завершения на "
 						<< TERMINATE_TIMEOUT << " сек " << endl << flush;
 			}
 			sighold(SIGALRM);
@@ -460,8 +470,8 @@ void ObjectsActivator::terminated( int signo )
 				gActivator->oaDestroy(SIGNO); // gActivator->term(SIGNO);
 
 			doneterm = 1;
-			if( unideb.debugging(Debug::SYSTEM) )				
-				unideb[Debug::SYSTEM] << gActivator->getName() << "(terminated): завершаемся..."<< endl<< flush;
+			if( ulog.is_system() )
+				ulog.system() << gActivator->getName() << "(terminated): завершаемся..."<< endl<< flush;
 			if( gActivator )
 				ObjectsActivator::set_signals(false);
 
@@ -474,21 +484,21 @@ void ObjectsActivator::terminated( int signo )
 
 void ObjectsActivator::normalexit()
 {
-	if( gActivator && unideb.debugging(Debug::SYSTEM) )
-		unideb[Debug::SYSTEM] << gActivator->getName() << "(default exit): good bye."<< endl << flush;
+	if( gActivator && ulog.is_system() )
+		ulog.system() << gActivator->getName() << "(default exit): good bye."<< endl << flush;
 }
 
 void ObjectsActivator::normalterminate()
 {
 	if( gActivator )
-		unideb[Debug::CRIT] << gActivator->getName() << "(default exception terminate): Никто не выловил исключение!!! Good bye."<< endl<< flush;
+		ulog.crit() << gActivator->getName() << "(default exception terminate): Никто не выловил исключение!!! Good bye."<< endl<< flush;
 //	abort();
 }
 // ------------------------------------------------------------------------------------------
 void ObjectsActivator::term( int signo )
 {
-	if( unideb.debugging(Debug::SYSTEM) )	
-		unideb[Debug::SYSTEM] << myname << "(term): TERM" << endl;
+	if( ulog.is_system() )
+		ulog.system() << myname << "(term): TERM" << endl;
 
 	if( doneterm )
 		return;
@@ -498,21 +508,21 @@ void ObjectsActivator::term( int signo )
 
 	try
 	{
-		if( unideb.debugging(Debug::SYSTEM) )
-			unideb[Debug::SYSTEM] << myname << "(term): вызываем sigterm()" << endl;
+		if( ulog.is_system() )
+			ulog.system() << myname << "(term): вызываем sigterm()" << endl;
 		sigterm(signo);
 	
-		if( unideb.debugging(Debug::SYSTEM) )
-			unideb[Debug::SYSTEM] << myname << "(term): sigterm() ok." << endl;
+		if( ulog.is_system() )
+			ulog.system() << myname << "(term): sigterm() ok." << endl;
 	}
 	catch(Exception& ex)
 	{
-		unideb[Debug::CRIT] << myname << "(term): " << ex << endl;
+		ulog.crit() << myname << "(term): " << ex << endl;
 	}
 	catch(...){}
 
-	if( unideb.debugging(Debug::SYSTEM) )
-		unideb[Debug::SYSTEM] << myname << "(term): END TERM" << endl;
+	if( ulog.is_system() )
+		ulog.system() << myname << "(term): END TERM" << endl;
 }
 // ------------------------------------------------------------------------------------------
 void ObjectsActivator::waitDestroy()
