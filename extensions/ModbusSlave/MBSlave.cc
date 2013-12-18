@@ -12,7 +12,7 @@ using namespace UniSetExtensions;
 using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
 MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, 
-					SharedMemory* ic, string prefix ):
+                    SharedMemory* ic, string prefix ):
 UniSetObject_LT(objId),
 mbslot(0),
 shm(0),
@@ -29,1595 +29,1594 @@ force(false),
 mbregFromID(false),
 prefix(prefix)
 {
-	if( objId == DefaultObjectId )
-		throw UniSetTypes::SystemError("(MBSlave): objId=-1?!! Use --mbs-name" );
+    if( objId == DefaultObjectId )
+        throw UniSetTypes::SystemError("(MBSlave): objId=-1?!! Use --mbs-name" );
 
-	mutex_start.setName(myname + "_mutex_start");
+    mutex_start.setName(myname + "_mutex_start");
 
-//	xmlNode* cnode = conf->getNode(myname);
-	cnode = conf->getNode(myname);
-	if( cnode == NULL )
-		throw UniSetTypes::SystemError("(MBSlave): Not found conf-node for " + myname );
+//    xmlNode* cnode = conf->getNode(myname);
+    cnode = conf->getNode(myname);
+    if( cnode == NULL )
+        throw UniSetTypes::SystemError("(MBSlave): Not found conf-node for " + myname );
 
-	shm = new SMInterface(shmId,&ui,objId,ic);
+    shm = new SMInterface(shmId,&ui,objId,ic);
 
-	UniXML_iterator it(cnode);
+    UniXML_iterator it(cnode);
 
-	// определяем фильтр
-	s_field = conf->getArgParam("--" + prefix + "-filter-field");
-	s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
-	dlog.info() << myname << "(init): read s_field='" << s_field
-						<< "' s_fvalue='" << s_fvalue << "'" << endl;
+    // определяем фильтр
+    s_field = conf->getArgParam("--" + prefix + "-filter-field");
+    s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
+    dlog.info() << myname << "(init): read s_field='" << s_field
+                        << "' s_fvalue='" << s_fvalue << "'" << endl;
 
-	force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
+    force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
 
-	// int recv_timeout = conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")));
+    // int recv_timeout = conf->getArgParam("--" + prefix + "-recv-timeout",it.getProp("recv_timeout")));
 
-	string saddr = conf->getArgParam("--" + prefix + "-my-addr",it.getProp("addr"));
+    string saddr = conf->getArgParam("--" + prefix + "-my-addr",it.getProp("addr"));
 
-	if( saddr.empty() )
-		addr = 0x01;
-	else
-		addr = ModbusRTU::str2mbAddr(saddr);
+    if( saddr.empty() )
+        addr = 0x01;
+    else
+        addr = ModbusRTU::str2mbAddr(saddr);
 
-	mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id",it.getProp("reg_from_id"));
-	dlog.info() << myname << "(init): mbregFromID=" << mbregFromID << endl;
+    mbregFromID = conf->getArgInt("--" + prefix + "-reg-from-id",it.getProp("reg_from_id"));
+    dlog.info() << myname << "(init): mbregFromID=" << mbregFromID << endl;
 
-	respond_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-respond-id",it.getProp("respond_id")));
-	respond_invert = conf->getArgInt("--" + prefix + "-respond-invert",it.getProp("respond_invert"));
+    respond_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-respond-id",it.getProp("respond_id")));
+    respond_invert = conf->getArgInt("--" + prefix + "-respond-invert",it.getProp("respond_invert"));
 
-	string stype = conf->getArgParam("--" + prefix + "-type",it.getProp("type"));
-	
-	if( stype == "RTU" )
-	{
-		// ---------- init RS ----------
-		string dev	= conf->getArgParam("--" + prefix + "-dev",it.getProp("device"));
-		if( dev.empty() )
-			throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown device...");
+    string stype = conf->getArgParam("--" + prefix + "-type",it.getProp("type"));
 
-		string speed 	= conf->getArgParam("--" + prefix + "-speed",it.getProp("speed"));
-		if( speed.empty() )
-			speed = "38400";
+    if( stype == "RTU" )
+    {
+        // ---------- init RS ----------
+        string dev    = conf->getArgParam("--" + prefix + "-dev",it.getProp("device"));
+        if( dev.empty() )
+            throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown device...");
 
-		bool use485F = conf->getArgInt("--rs-use485F",it.getProp("use485F"));
-		bool transmitCtl = conf->getArgInt("--rs-transmit-ctl",it.getProp("transmitCtl"));
+        string speed     = conf->getArgParam("--" + prefix + "-speed",it.getProp("speed"));
+        if( speed.empty() )
+            speed = "38400";
 
-		ModbusRTUSlaveSlot* rs = new ModbusRTUSlaveSlot(dev,use485F,transmitCtl);
-		rs->setSpeed(speed);
-		rs->setRecvTimeout(2000);
-//		rs->setAfterSendPause(afterSend);
-//		rs->setReplyTimeout(replyTimeout);
-		rs->setLog(dlog);
+        bool use485F = conf->getArgInt("--rs-use485F",it.getProp("use485F"));
+        bool transmitCtl = conf->getArgInt("--rs-transmit-ctl",it.getProp("transmitCtl"));
 
-		mbslot = rs;
-		thr = new ThreadCreator<MBSlave>(this,&MBSlave::execute_rtu);
+        ModbusRTUSlaveSlot* rs = new ModbusRTUSlaveSlot(dev,use485F,transmitCtl);
+        rs->setSpeed(speed);
+        rs->setRecvTimeout(2000);
+//        rs->setAfterSendPause(afterSend);
+//        rs->setReplyTimeout(replyTimeout);
+        rs->setLog(dlog);
 
-		dlog.info() << myname << "(init): type=RTU myaddr=" << ModbusRTU::addr2str(addr)
-			<< " dev=" << dev << " speed=" << speed << endl;
-	}
-	else if( stype == "TCP" )
-	{
-		string iaddr = conf->getArgParam("--" + prefix + "-inet-addr",it.getProp("iaddr"));
-		if( iaddr.empty() )
-			throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown TCP server address. Use: --prefix-inet-addr [ XXX.XXX.XXX.XXX| hostname ]");
-		
-		int port = conf->getArgPInt("--" + prefix + "-inet-port",it.getProp("iport"), 502);
+        mbslot = rs;
+        thr = new ThreadCreator<MBSlave>(this,&MBSlave::execute_rtu);
 
-		if( dlog.is_info() )
-			dlog.info() << myname << "(init): type=TCP myaddr=" << ModbusRTU::addr2str(addr)
-				<< " inet=" << iaddr << " port=" << port << endl;
-	
-		ost::InetAddress ia(iaddr.c_str());
-		mbslot	= new ModbusTCPServerSlot(ia,port);
-		thr = new ThreadCreator<MBSlave>(this,&MBSlave::execute_tcp);
+        dlog.info() << myname << "(init): type=RTU myaddr=" << ModbusRTU::addr2str(addr)
+            << " dev=" << dev << " speed=" << speed << endl;
+    }
+    else if( stype == "TCP" )
+    {
+        string iaddr = conf->getArgParam("--" + prefix + "-inet-addr",it.getProp("iaddr"));
+        if( iaddr.empty() )
+            throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown TCP server address. Use: --prefix-inet-addr [ XXX.XXX.XXX.XXX| hostname ]");
 
-		if( dlog.is_info() )
-			dlog.info() << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
-	}
-	else
-		throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown slave type. Use: --mbs-type [RTU|TCP]");
+        int port = conf->getArgPInt("--" + prefix + "-inet-port",it.getProp("iport"), 502);
 
-//	mbslot->connectReadCoil( sigc::mem_fun(this, &MBSlave::readCoilStatus) );
-	mbslot->connectReadInputStatus( sigc::mem_fun(this, &MBSlave::readInputStatus) );
-	mbslot->connectReadOutput( sigc::mem_fun(this, &MBSlave::readOutputRegisters) );
-	mbslot->connectReadInput( sigc::mem_fun(this, &MBSlave::readInputRegisters) );
-	mbslot->connectForceSingleCoil( sigc::mem_fun(this, &MBSlave::forceSingleCoil) );
-	mbslot->connectForceCoils( sigc::mem_fun(this, &MBSlave::forceMultipleCoils) );
-	mbslot->connectWriteOutput( sigc::mem_fun(this, &MBSlave::writeOutputRegisters) );
-	mbslot->connectWriteSingleOutput( sigc::mem_fun(this, &MBSlave::writeOutputSingleRegister) );
-	mbslot->connectMEIRDI( sigc::mem_fun(this, &MBSlave::read4314) );
+        if( dlog.is_info() )
+            dlog.info() << myname << "(init): type=TCP myaddr=" << ModbusRTU::addr2str(addr)
+                << " inet=" << iaddr << " port=" << port << endl;
 
-	if( findArgParam("--" + prefix + "-allow-setdatetime",conf->getArgc(),conf->getArgv())!=-1 )
-		mbslot->connectSetDateTime( sigc::mem_fun(this, &MBSlave::setDateTime) );
+        ost::InetAddress ia(iaddr.c_str());
+        mbslot    = new ModbusTCPServerSlot(ia,port);
+        thr = new ThreadCreator<MBSlave>(this,&MBSlave::execute_tcp);
 
-	mbslot->connectDiagnostics( sigc::mem_fun(this, &MBSlave::diagnostics) );
-	mbslot->connectFileTransfer( sigc::mem_fun(this, &MBSlave::fileTransfer) );	
+        if( dlog.is_info() )
+            dlog.info() << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
+    }
+    else
+        throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown slave type. Use: --mbs-type [RTU|TCP]");
 
-//	mbslot->connectJournalCommand( sigc::mem_fun(this, &MBSlave::journalCommand) );
-//	mbslot->connectRemoteService( sigc::mem_fun(this, &MBSlave::remoteService) );
-	// -------------------------------
+//    mbslot->connectReadCoil( sigc::mem_fun(this, &MBSlave::readCoilStatus) );
+    mbslot->connectReadInputStatus( sigc::mem_fun(this, &MBSlave::readInputStatus) );
+    mbslot->connectReadOutput( sigc::mem_fun(this, &MBSlave::readOutputRegisters) );
+    mbslot->connectReadInput( sigc::mem_fun(this, &MBSlave::readInputRegisters) );
+    mbslot->connectForceSingleCoil( sigc::mem_fun(this, &MBSlave::forceSingleCoil) );
+    mbslot->connectForceCoils( sigc::mem_fun(this, &MBSlave::forceMultipleCoils) );
+    mbslot->connectWriteOutput( sigc::mem_fun(this, &MBSlave::writeOutputRegisters) );
+    mbslot->connectWriteSingleOutput( sigc::mem_fun(this, &MBSlave::writeOutputSingleRegister) );
+    mbslot->connectMEIRDI( sigc::mem_fun(this, &MBSlave::read4314) );
 
-	initPause = conf->getArgPInt("--" + prefix + "-initPause",it.getProp("initPause"), 3000);
+    if( findArgParam("--" + prefix + "-allow-setdatetime",conf->getArgc(),conf->getArgv())!=-1 )
+        mbslot->connectSetDateTime( sigc::mem_fun(this, &MBSlave::setDateTime) );
 
-	if( shm->isLocalwork() )
-	{
-		readConfiguration();
-		if( dlog.is_info() )
-			dlog.info() << myname << "(init): iomap size = " << iomap.size() << endl;
-	}
-	else
-	{
-		ic->addReadItem( sigc::mem_fun(this,&MBSlave::readItem) );
-		// при работе с SM через указатель принудительно включаем force
-		force = true;
-	}
+    mbslot->connectDiagnostics( sigc::mem_fun(this, &MBSlave::diagnostics) );
+    mbslot->connectFileTransfer( sigc::mem_fun(this, &MBSlave::fileTransfer) );
 
-	// ********** HEARTBEAT *************
-	string heart = conf->getArgParam("--" + prefix + "-heartbeat-id",it.getProp("heartbeat_id"));
-	if( !heart.empty() )
-	{
-		sidHeartBeat = conf->getSensorID(heart);
-		if( sidHeartBeat == DefaultObjectId )
-		{
-			ostringstream err;
-			err << myname << ": не найден идентификатор для датчика 'HeartBeat' " << heart;
-			dlog.crit() << myname << "(init): " << err.str() << endl;
-			throw SystemError(err.str());
-		}
+//    mbslot->connectJournalCommand( sigc::mem_fun(this, &MBSlave::journalCommand) );
+//    mbslot->connectRemoteService( sigc::mem_fun(this, &MBSlave::remoteService) );
+    // -------------------------------
 
-		int heartbeatTime = getHeartBeatTime();
-		if( heartbeatTime )
-			ptHeartBeat.setTiming(heartbeatTime);
-		else
-			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
+    initPause = conf->getArgPInt("--" + prefix + "-initPause",it.getProp("initPause"), 3000);
 
-		maxHeartBeat = conf->getArgPInt("--" + prefix + "-heartbeat-max",it.getProp("heartbeat_max"), 10);
-		test_id = sidHeartBeat;
-	}
-	else
-	{
-		test_id = conf->getSensorID("TestMode_S");
-		if( test_id == DefaultObjectId )
-		{
-			ostringstream err;
-			err << myname << ": test_id unknown. 'TestMode_S' not found...";
-			if( dlog.is_crit() )
-				dlog.crit() << myname << "(init): " << err.str() << endl;
-			throw SystemError(err.str());
-		}
-	}
+    if( shm->isLocalwork() )
+    {
+        readConfiguration();
+        if( dlog.is_info() )
+            dlog.info() << myname << "(init): iomap size = " << iomap.size() << endl;
+    }
+    else
+    {
+        ic->addReadItem( sigc::mem_fun(this,&MBSlave::readItem) );
+        // при работе с SM через указатель принудительно включаем force
+        force = true;
+    }
 
-	askcount_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-askcount-id",it.getProp("askcount_id")));
-	if( dlog.is_info() )
-	{
-		dlog.info() << myname << ": init askcount_id=" << askcount_id << endl;
-		dlog.info() << myname << ": init test_id=" << test_id << endl;
-	}
+    // ********** HEARTBEAT *************
+    string heart = conf->getArgParam("--" + prefix + "-heartbeat-id",it.getProp("heartbeat_id"));
+    if( !heart.empty() )
+    {
+        sidHeartBeat = conf->getSensorID(heart);
+        if( sidHeartBeat == DefaultObjectId )
+        {
+            ostringstream err;
+            err << myname << ": не найден идентификатор для датчика 'HeartBeat' " << heart;
+            dlog.crit() << myname << "(init): " << err.str() << endl;
+            throw SystemError(err.str());
+        }
 
-	wait_msec = getHeartBeatTime() - 100;
-	if( wait_msec < 500 )
-		wait_msec = 500;
+        int heartbeatTime = getHeartBeatTime();
+        if( heartbeatTime )
+            ptHeartBeat.setTiming(heartbeatTime);
+        else
+            ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-	activateTimeout	= conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
+        maxHeartBeat = conf->getArgPInt("--" + prefix + "-heartbeat-max",it.getProp("heartbeat_max"), 10);
+        test_id = sidHeartBeat;
+    }
+    else
+    {
+        test_id = conf->getSensorID("TestMode_S");
+        if( test_id == DefaultObjectId )
+        {
+            ostringstream err;
+            err << myname << ": test_id unknown. 'TestMode_S' not found...";
+            if( dlog.is_crit() )
+                dlog.crit() << myname << "(init): " << err.str() << endl;
+            throw SystemError(err.str());
+        }
+    }
 
-	timeout_t msec = conf->getArgPInt("--" + prefix + "-timeout",it.getProp("timeout"), 3000);
-	ptTimeout.setTiming(msec);
+    askcount_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-askcount-id",it.getProp("askcount_id")));
+    if( dlog.is_info() )
+    {
+        dlog.info() << myname << ": init askcount_id=" << askcount_id << endl;
+        dlog.info() << myname << ": init test_id=" << test_id << endl;
+    }
 
-	if( dlog.is_info() )
-		dlog.info() << myname << "(init): rs-timeout=" << msec << " msec" << endl;
+    wait_msec = getHeartBeatTime() - 100;
+    if( wait_msec < 500 )
+        wait_msec = 500;
 
-	// build file list...
-	xmlNode* fnode = 0;
-	UniXML* xml = conf->getConfXML();
-	if( xml )
-		fnode = xml->extFindNode(cnode,1,1,"filelist");
+    activateTimeout    = conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
 
-	if( fnode )
-	{
-		UniXML_iterator fit(fnode);
-		if( fit.goChildren() )
-		{
-			for( ;fit.getCurrent(); fit.goNext() )
-			{
-				std::string nm = fit.getProp("name");
-				if( nm.empty() )
-				{
-					if( dlog.is_warn() )
-						dlog.warn() << myname << "(build file list): ignore empty name... " << endl;
-					continue;
-				}
-				int id = fit.getIntProp("id");
-				if( id == 0 )
-				{
-					if( dlog.is_warn() )
-						dlog.warn() << myname << "(build file list): FAILED ID for " << nm << "... ignore..." << endl;
-					continue;
-				}
-			
-				std::string dir(fit.getProp("directory"));
-				if( !dir.empty() )
-				{
-					if( dir == "ConfDir" )
-						nm = conf->getConfDir() + nm;
-					else if( dir == "DataDir" )
-						nm = conf->getDataDir() + nm;
-					else
-						nm = dir + nm;
-				}
+    timeout_t msec = conf->getArgPInt("--" + prefix + "-timeout",it.getProp("timeout"), 3000);
+    ptTimeout.setTiming(msec);
 
-				if( dlog.is_info() )
-					dlog.info() << myname << "(init):       add to filelist: "
-						<< "id=" << id
-						<< " file=" << nm 
-						<< endl;
+    if( dlog.is_info() )
+        dlog.info() << myname << "(init): rs-timeout=" << msec << " msec" << endl;
 
-				flist[id] = nm;
-			}
-		}
-		else if( dlog.is_info() )
-			dlog.info() << myname << "(init): <filelist> empty..." << endl;
-	}
-	else if( dlog.is_info() )
-		dlog.info() << myname << "(init): <filelist> not found..." << endl;
+    // build file list...
+    xmlNode* fnode = 0;
+    UniXML* xml = conf->getConfXML();
+    if( xml )
+        fnode = xml->extFindNode(cnode,1,1,"filelist");
+
+    if( fnode )
+    {
+        UniXML_iterator fit(fnode);
+        if( fit.goChildren() )
+        {
+            for( ;fit.getCurrent(); fit.goNext() )
+            {
+                std::string nm = fit.getProp("name");
+                if( nm.empty() )
+                {
+                    if( dlog.is_warn() )
+                        dlog.warn() << myname << "(build file list): ignore empty name... " << endl;
+                    continue;
+                }
+                int id = fit.getIntProp("id");
+                if( id == 0 )
+                {
+                    if( dlog.is_warn() )
+                        dlog.warn() << myname << "(build file list): FAILED ID for " << nm << "... ignore..." << endl;
+                    continue;
+                }
+
+                std::string dir(fit.getProp("directory"));
+                if( !dir.empty() )
+                {
+                    if( dir == "ConfDir" )
+                        nm = conf->getConfDir() + nm;
+                    else if( dir == "DataDir" )
+                        nm = conf->getDataDir() + nm;
+                    else
+                        nm = dir + nm;
+                }
+
+                if( dlog.is_info() )
+                    dlog.info() << myname << "(init):       add to filelist: "
+                        << "id=" << id
+                        << " file=" << nm
+                        << endl;
+
+                flist[id] = nm;
+            }
+        }
+        else if( dlog.is_info() )
+            dlog.info() << myname << "(init): <filelist> empty..." << endl;
+    }
+    else if( dlog.is_info() )
+        dlog.info() << myname << "(init): <filelist> not found..." << endl;
 
 
-	// Формирование "карты" ответов на запрос 0x2B(43)/0x0E(14)
-	xmlNode* mnode = 0;
-	if( xml )
-		mnode = xml->extFindNode(cnode,1,1,"MEI");
+    // Формирование "карты" ответов на запрос 0x2B(43)/0x0E(14)
+    xmlNode* mnode = 0;
+    if( xml )
+        mnode = xml->extFindNode(cnode,1,1,"MEI");
 
-	if( mnode )
-	{
-		// Считывается структура для формирования ответов на запрос 0x2B(43)/0x0E(14)
-//		<MEI>
-// 			  <device id="">
-// 			     <objects id="">
+    if( mnode )
+    {
+        // Считывается структура для формирования ответов на запрос 0x2B(43)/0x0E(14)
+//        <MEI>
+//               <device id="">
+//                  <objects id="">
 //                      <string id="" value=""/>
 //                      <string id="" value=""/>
 //                      <string id="" value=""/>
 //                        ...
-// 			     </objects>
-// 			  </device>
-// 			  <device devID="">
-// 				...
-// 			  </device>
+//                  </objects>
+//               </device>
+//               <device devID="">
+//                 ...
+//               </device>
 //      </MEI>
-		UniXML_iterator dit(mnode);
-		if( dit.goChildren() )
-		{
-			// Device ID list..
-			for( ;dit.getCurrent(); dit.goNext() )
-			{
-				if( dit.getProp("id").empty() )
-				{
-					if( dlog.is_warn() )
-						dlog.warn() << myname << "(init): read <MEI>. Unknown <device id=''>. Ignore.." << endl;
-					continue;
-				}
+        UniXML_iterator dit(mnode);
+        if( dit.goChildren() )
+        {
+            // Device ID list..
+            for( ;dit.getCurrent(); dit.goNext() )
+            {
+                if( dit.getProp("id").empty() )
+                {
+                    if( dlog.is_warn() )
+                        dlog.warn() << myname << "(init): read <MEI>. Unknown <device id=''>. Ignore.." << endl;
+                    continue;
+                }
 
-				int devID = dit.getIntProp("id");
+                int devID = dit.getIntProp("id");
 
-				UniXML_iterator oit(dit);
-				if( oit.goChildren() )
-				{
-					if( dlog.is_info() )
-						dlog.info() << myname << "(init): MEI: read dev='" << devID << "'" << endl;
-					MEIObjIDMap meiomap;
-					// Object ID list..
-					for( ;oit.getCurrent(); oit.goNext() )
-					{
-						if( dit.getProp("id").empty() )
-						{
-							if( dlog.is_warn() )
-								dlog.warn() << myname
-									<< "(init): read <MEI>. Unknown <object id='' (for device id='"
-									<< devID << "'). Ignore.."
-									<< endl;
+                UniXML_iterator oit(dit);
+                if( oit.goChildren() )
+                {
+                    if( dlog.is_info() )
+                        dlog.info() << myname << "(init): MEI: read dev='" << devID << "'" << endl;
+                    MEIObjIDMap meiomap;
+                    // Object ID list..
+                    for( ;oit.getCurrent(); oit.goNext() )
+                    {
+                        if( dit.getProp("id").empty() )
+                        {
+                            if( dlog.is_warn() )
+                                dlog.warn() << myname
+                                    << "(init): read <MEI>. Unknown <object id='' (for device id='"
+                                    << devID << "'). Ignore.."
+                                    << endl;
 
-							continue;
-						}
+                            continue;
+                        }
 
-						int objID = oit.getIntProp("id");
-						UniXML_iterator sit(oit);
-						if( sit.goChildren() )
-						{
-							if( dlog.is_info() )
-								dlog.info() << myname << "(init): MEI: read obj='" << objID << "'" << endl;
+                        int objID = oit.getIntProp("id");
+                        UniXML_iterator sit(oit);
+                        if( sit.goChildren() )
+                        {
+                            if( dlog.is_info() )
+                                dlog.info() << myname << "(init): MEI: read obj='" << objID << "'" << endl;
 
-							MEIValMap meivmap;
-							// request (string) list..
-							for( ;sit.getCurrent(); sit.goNext() )
-							{
-								int vid = objID;
-								if( sit.getProp("id").empty() )
-								{
-									if( dlog.is_warn() )
-										dlog.info() << myname << "(init): MEI: dev='" << devID
-											<< "' obj='" << objID << "'"
-											<< ". Unknown id='' for value='" << sit.getProp("value") << "'"
-											<< ". Set objID='" << objID << "'"
-											<< endl;
-								}
-								else
-									vid = sit.getIntProp("id");
+                            MEIValMap meivmap;
+                            // request (string) list..
+                            for( ;sit.getCurrent(); sit.goNext() )
+                            {
+                                int vid = objID;
+                                if( sit.getProp("id").empty() )
+                                {
+                                    if( dlog.is_warn() )
+                                        dlog.info() << myname << "(init): MEI: dev='" << devID
+                                            << "' obj='" << objID << "'"
+                                            << ". Unknown id='' for value='" << sit.getProp("value") << "'"
+                                            << ". Set objID='" << objID << "'"
+                                            << endl;
+                                }
+                                else
+                                    vid = sit.getIntProp("id");
 
-								meivmap[vid] = sit.getProp("value");
-							}
+                                meivmap[vid] = sit.getProp("value");
+                            }
 
-							if( !meivmap.empty() )
-								meiomap[objID] = meivmap;
-						}
-					}
+                            if( !meivmap.empty() )
+                                meiomap[objID] = meivmap;
+                        }
+                    }
 
-					if( !meiomap.empty() )
-						meidev[devID] = meiomap;
-				}
-			}
-		}
+                    if( !meiomap.empty() )
+                        meidev[devID] = meiomap;
+                }
+            }
+        }
 
-		if( !meidev.empty() && dlog.is_info() )
-			dlog.info() << myname << "(init): <MEI> init ok." << endl;
-	}
-	else if( dlog.is_info() )
-		dlog.info() << myname << "(init): <MEI> empty..." << endl;
+        if( !meidev.empty() && dlog.is_info() )
+            dlog.info() << myname << "(init): <MEI> init ok." << endl;
+    }
+    else if( dlog.is_info() )
+        dlog.info() << myname << "(init): <MEI> empty..." << endl;
 
 }
 // -----------------------------------------------------------------------------
 MBSlave::~MBSlave()
 {
-	delete mbslot;
-	delete shm;
-	delete thr;
+    delete mbslot;
+    delete shm;
+    delete thr;
 }
 // -----------------------------------------------------------------------------
 void MBSlave::waitSMReady()
 {
-	// waiting for SM is ready...
-	int ready_timeout = conf->getArgInt("--" + prefix + "-sm-ready-timeout","15000");
-	if( ready_timeout == 0 )
-		ready_timeout = 15000;
-	else if( ready_timeout < 0 )
-		ready_timeout = UniSetTimer::WaitUpTime;
+    // waiting for SM is ready...
+    int ready_timeout = conf->getArgInt("--" + prefix + "-sm-ready-timeout","15000");
+    if( ready_timeout == 0 )
+        ready_timeout = 15000;
+    else if( ready_timeout < 0 )
+        ready_timeout = UniSetTimer::WaitUpTime;
 
-	if( !shm->waitSMready(ready_timeout,50) )
-	{
-		ostringstream err;
-		err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
-		if( dlog.is_crit() )
-			dlog.crit() << err.str() << endl;
-		throw SystemError(err.str());
-	}
+    if( !shm->waitSMready(ready_timeout,50) )
+    {
+        ostringstream err;
+        err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
+        if( dlog.is_crit() )
+            dlog.crit() << err.str() << endl;
+        throw SystemError(err.str());
+    }
 }
 // -----------------------------------------------------------------------------
 void MBSlave::execute_rtu()
 {
-	ModbusRTUSlaveSlot* rscomm = dynamic_cast<ModbusRTUSlaveSlot*>(mbslot);
-	
-	while(1)
-	{
-		try
-		{
-			ModbusRTU::mbErrCode res = rscomm->receive( addr, wait_msec );
+    ModbusRTUSlaveSlot* rscomm = dynamic_cast<ModbusRTUSlaveSlot*>(mbslot);
 
-			if( res!=ModbusRTU::erTimeOut )
-				ptTimeout.reset();
-	
-			// собираем статистику обмена
-			if( prev!=ModbusRTU::erTimeOut )
-			{
-				//  с проверкой на переполнение
-				askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
-				if( res!=ModbusRTU::erNoError )
-					errmap[res]++;
-	
-				prev = res;
-			}
-			
-			if( res!=ModbusRTU::erNoError && res!=ModbusRTU::erTimeOut && dlog.is_warn() )
-				dlog.warn() << myname << "(execute_rtu): " << ModbusRTU::mbErr2Str(res) << endl;
+    while(1)
+    {
+        try
+        {
+            ModbusRTU::mbErrCode res = rscomm->receive( addr, wait_msec );
 
-			if( !activated )
-				continue;
+            if( res!=ModbusRTU::erTimeOut )
+                ptTimeout.reset();
 
-			if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
-			{
-				try
-				{
-					shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
-					ptHeartBeat.reset();
-				}
-				catch(Exception& ex)
-				{
-					if( dlog.is_crit() )
-						dlog.crit() << myname
-							<< "(execute_rtu): (hb) " << ex << std::endl;
-				}
-			}
+            // собираем статистику обмена
+            if( prev!=ModbusRTU::erTimeOut )
+            {
+                //  с проверкой на переполнение
+                askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
+                if( res!=ModbusRTU::erNoError )
+                    errmap[res]++;
 
-			if( respond_id != DefaultObjectId )
-			{
-				bool state = ptTimeout.checkTime() ? false : true;
-				if( respond_invert )
-					state ^= true;
+                prev = res;
+            }
 
-				try
-				{
-					shm->localSetValue(itRespond,respond_id,state,getId());
-				}
-				catch(Exception& ex)
-				{
-					if( dlog.is_crit() )
-						dlog.crit() << myname << "(execute_rtu): (respond) " << ex << std::endl;
-				}
-			}
+            if( res!=ModbusRTU::erNoError && res!=ModbusRTU::erTimeOut && dlog.is_warn() )
+                dlog.warn() << myname << "(execute_rtu): " << ModbusRTU::mbErr2Str(res) << endl;
 
-			if( askcount_id!=DefaultObjectId )
-			{
-				try
-				{
-					shm->localSetValue(itAskCount,askcount_id,askCount,getId());
-				}
-				catch(Exception& ex)
-				{
-					if( dlog.is_crit() )
-						dlog.crit() << myname << "(execute_rtu): (askCount) " << ex << std::endl;
-				}
-			}
-		
-			for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
-				IOBase::processingThreshold(&it->second,shm,force);
-		}
-		catch(...){}
-	}
+            if( !activated )
+                continue;
+
+            if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
+            {
+                try
+                {
+                    shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
+                    ptHeartBeat.reset();
+                }
+                catch(Exception& ex)
+                {
+                    if( dlog.is_crit() )
+                        dlog.crit() << myname
+                            << "(execute_rtu): (hb) " << ex << std::endl;
+                }
+            }
+
+            if( respond_id != DefaultObjectId )
+            {
+                bool state = ptTimeout.checkTime() ? false : true;
+                if( respond_invert )
+                    state ^= true;
+
+                try
+                {
+                    shm->localSetValue(itRespond,respond_id,state,getId());
+                }
+                catch(Exception& ex)
+                {
+                    if( dlog.is_crit() )
+                        dlog.crit() << myname << "(execute_rtu): (respond) " << ex << std::endl;
+                }
+            }
+
+            if( askcount_id!=DefaultObjectId )
+            {
+                try
+                {
+                    shm->localSetValue(itAskCount,askcount_id,askCount,getId());
+                }
+                catch(Exception& ex)
+                {
+                    if( dlog.is_crit() )
+                        dlog.crit() << myname << "(execute_rtu): (askCount) " << ex << std::endl;
+                }
+            }
+
+            for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+                IOBase::processingThreshold(&it->second,shm,force);
+        }
+        catch(...){}
+    }
 }
 // -------------------------------------------------------------------------
 void MBSlave::execute_tcp()
 {
-	ModbusTCPServerSlot* sslot = dynamic_cast<ModbusTCPServerSlot*>(mbslot);
+    ModbusTCPServerSlot* sslot = dynamic_cast<ModbusTCPServerSlot*>(mbslot);
 
-	while(1)
-	{
-		try
-		{
-			ModbusRTU::mbErrCode res = sslot->receive( addr, wait_msec );
+    while(1)
+    {
+        try
+        {
+            ModbusRTU::mbErrCode res = sslot->receive( addr, wait_msec );
 
-			if( res!=ModbusRTU::erTimeOut )
-				ptTimeout.reset();
-	
-			// собираем статистику обмена
-			if( prev!=ModbusRTU::erTimeOut )
-			{
-				//  с проверкой на переполнение
-				askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
-				if( res!=ModbusRTU::erNoError )
-					errmap[res]++;
-	
-				prev = res;
-			}
-			
-			if( res!=ModbusRTU::erNoError && res!=ModbusRTU::erTimeOut && dlog.is_warn() )
-				dlog.warn() << myname << "(execute_tcp): " << ModbusRTU::mbErr2Str(res) << endl;
+            if( res!=ModbusRTU::erTimeOut )
+                ptTimeout.reset();
 
-			if( !activated )
-				continue;
+            // собираем статистику обмена
+            if( prev!=ModbusRTU::erTimeOut )
+            {
+                //  с проверкой на переполнение
+                askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
+                if( res!=ModbusRTU::erNoError )
+                    errmap[res]++;
 
-			if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
-			{
-				try
-				{
-					shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
-					ptHeartBeat.reset();
-				}
-				catch(Exception& ex)
-				{
-					if( dlog.is_crit() )
-						dlog.crit() << myname << "(execute_tcp): (hb) " << ex << std::endl;
-				}
-			}
+                prev = res;
+            }
 
-			if( respond_id != DefaultObjectId )
-			{
-				bool state = ptTimeout.checkTime() ? false : true;
-				if( respond_invert )
-					state ^= true;
-				try
-				{
-					shm->localSetValue(itRespond,respond_id,state,getId());
-				}
-				catch(Exception& ex)
-				{
-					if( dlog.is_crit() )
-						dlog.crit() << myname
-							<< "(execute_rtu): (respond) " << ex << std::endl;
-				}
-			}
+            if( res!=ModbusRTU::erNoError && res!=ModbusRTU::erTimeOut && dlog.is_warn() )
+                dlog.warn() << myname << "(execute_tcp): " << ModbusRTU::mbErr2Str(res) << endl;
 
-			if( askcount_id!=DefaultObjectId )
-			{
-				try
-				{
-					shm->localSetValue(itAskCount,askcount_id,askCount,getId());
-				}
-				catch(Exception& ex)
-				{
-					if( dlog.is_crit() )
-						dlog.crit() << myname
-							<< "(execute_rtu): (askCount) " << ex << std::endl;
-				}
-			}
+            if( !activated )
+                continue;
 
-			for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
-				IOBase::processingThreshold(&it->second,shm,force);
-		}
-		catch(...){}
-	}
+            if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
+            {
+                try
+                {
+                    shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
+                    ptHeartBeat.reset();
+                }
+                catch(Exception& ex)
+                {
+                    if( dlog.is_crit() )
+                        dlog.crit() << myname << "(execute_tcp): (hb) " << ex << std::endl;
+                }
+            }
+
+            if( respond_id != DefaultObjectId )
+            {
+                bool state = ptTimeout.checkTime() ? false : true;
+                if( respond_invert )
+                    state ^= true;
+                try
+                {
+                    shm->localSetValue(itRespond,respond_id,state,getId());
+                }
+                catch(Exception& ex)
+                {
+                    if( dlog.is_crit() )
+                        dlog.crit() << myname
+                            << "(execute_rtu): (respond) " << ex << std::endl;
+                }
+            }
+
+            if( askcount_id!=DefaultObjectId )
+            {
+                try
+                {
+                    shm->localSetValue(itAskCount,askcount_id,askCount,getId());
+                }
+                catch(Exception& ex)
+                {
+                    if( dlog.is_crit() )
+                        dlog.crit() << myname
+                            << "(execute_rtu): (askCount) " << ex << std::endl;
+                }
+            }
+
+            for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+                IOBase::processingThreshold(&it->second,shm,force);
+        }
+        catch(...){}
+    }
 }
 // -------------------------------------------------------------------------
 
 void MBSlave::processingMessage(UniSetTypes::VoidMessage *msg)
 {
-	try
-	{
-		switch(msg->type)
-		{
-			case UniSetTypes::Message::SysCommand:
-			{
-				UniSetTypes::SystemMessage sm( msg );
-				sysCommand( &sm );
-			}
-			break;
+    try
+    {
+        switch(msg->type)
+        {
+            case UniSetTypes::Message::SysCommand:
+            {
+                UniSetTypes::SystemMessage sm( msg );
+                sysCommand( &sm );
+            }
+            break;
 
-			case Message::SensorInfo:
-			{
-				SensorMessage sm( msg );
-				sensorInfo(&sm);
-			}
-			break;
+            case Message::SensorInfo:
+            {
+                SensorMessage sm( msg );
+                sensorInfo(&sm);
+            }
+            break;
 
-			default:
-				break;
-		}
-	}
-	catch( SystemError& ex )
-	{
-		if( dlog.is_crit() )
-			dlog.crit() << myname << "(SystemError): " << ex << std::endl;
-//		throw SystemError(ex);
-		raise(SIGTERM);
-	}
-	catch( Exception& ex )
-	{
-		if( dlog.is_crit() )
-			dlog.crit() << myname << "(processingMessage): " << ex << std::endl;
-	}
-	catch(...)
-	{
-		if( dlog.is_crit() )
-			dlog.crit() << myname << "(processingMessage): catch ...\n";
-	}
+            default:
+                break;
+        }
+    }
+    catch( SystemError& ex )
+    {
+        if( dlog.is_crit() )
+            dlog.crit() << myname << "(SystemError): " << ex << std::endl;
+//        throw SystemError(ex);
+        raise(SIGTERM);
+    }
+    catch( Exception& ex )
+    {
+        if( dlog.is_crit() )
+            dlog.crit() << myname << "(processingMessage): " << ex << std::endl;
+    }
+    catch(...)
+    {
+        if( dlog.is_crit() )
+            dlog.crit() << myname << "(processingMessage): catch ...\n";
+    }
 }
 // -----------------------------------------------------------------------------
 void MBSlave::sysCommand(UniSetTypes::SystemMessage *sm)
 {
-	switch( sm->command )
-	{
-		case SystemMessage::StartUp:
-		{
-			if( iomap.empty() )
-			{
-				if( dlog.is_crit() )
-					dlog.crit() << myname << "(sysCommand): iomap EMPTY! terminated..." << endl;
-				raise(SIGTERM);
-				return; 
-			}
-		
-			waitSMReady();
+    switch( sm->command )
+    {
+        case SystemMessage::StartUp:
+        {
+            if( iomap.empty() )
+            {
+                if( dlog.is_crit() )
+                    dlog.crit() << myname << "(sysCommand): iomap EMPTY! terminated..." << endl;
+                raise(SIGTERM);
+                return;
+            }
 
-			// подождать пока пройдёт инициализация датчиков
-			// см. activateObject()
-			msleep(initPause);
-			PassiveTimer ptAct(activateTimeout);
-			while( !activated && !ptAct.checkTime() )
-			{	
-				cout << myname << "(sysCommand): wait activate..." << endl;
-				msleep(300);
-				if( activated )
-					break;
-			}
-			
-			if( !activated && dlog.is_crit() )
-				dlog.crit() << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
-			else 
-			{
-				UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
-				askSensors(UniversalIO::UIONotify);
-				thr->start();
-			}
-			break;
-		}
+            waitSMReady();
 
-		case SystemMessage::FoldUp:
-		case SystemMessage::Finish:
-			askSensors(UniversalIO::UIODontNotify);
-			break;
-		
-		case SystemMessage::WatchDog:
-		{
-			// ОПТИМИЗАЦИЯ (защита от двойного перезаказа при старте)
-			// Если идёт локальная работа 
-			// (т.е. MBSlave  запущен в одном процессе с SharedMemory2)
-			// то обрабатывать WatchDog не надо, т.к. мы и так ждём готовности SM
-			// при заказе датчиков, а если SM вылетит, то вместе с этим процессом(MBSlave)
-			if( shm->isLocalwork() )
-				break;
+            // подождать пока пройдёт инициализация датчиков
+            // см. activateObject()
+            msleep(initPause);
+            PassiveTimer ptAct(activateTimeout);
+            while( !activated && !ptAct.checkTime() )
+            {
+                cout << myname << "(sysCommand): wait activate..." << endl;
+                msleep(300);
+                if( activated )
+                    break;
+            }
 
-		}
-		break;
+            if( !activated && dlog.is_crit() )
+                dlog.crit() << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
+            else
+            {
+                UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
+                askSensors(UniversalIO::UIONotify);
+                thr->start();
+            }
+            break;
+        }
 
-		case SystemMessage::LogRotate:
-		{
-			// переоткрываем логи
-			ulog << myname << "(sysCommand): logRotate" << std::endl;
-			string fname(ulog.getLogFile());
-			if( !fname.empty() )
-			{
-				ulog.logFile(fname);
-				ulog << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << std::endl;
-			}
+        case SystemMessage::FoldUp:
+        case SystemMessage::Finish:
+            askSensors(UniversalIO::UIODontNotify);
+            break;
 
-			dlog << myname << "(sysCommand): logRotate" << std::endl;
-			fname = dlog.getLogFile();
-			if( !fname.empty() )
-			{
-				dlog.logFile(fname);
-				dlog << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
-			}
-		}
-		break;
+        case SystemMessage::WatchDog:
+        {
+            // ОПТИМИЗАЦИЯ (защита от двойного перезаказа при старте)
+            // Если идёт локальная работа
+            // (т.е. MBSlave  запущен в одном процессе с SharedMemory2)
+            // то обрабатывать WatchDog не надо, т.к. мы и так ждём готовности SM
+            // при заказе датчиков, а если SM вылетит, то вместе с этим процессом(MBSlave)
+            if( shm->isLocalwork() )
+                break;
 
-		default:
-			break;
-	}
+        }
+        break;
+
+        case SystemMessage::LogRotate:
+        {
+            // переоткрываем логи
+            ulog << myname << "(sysCommand): logRotate" << std::endl;
+            string fname(ulog.getLogFile());
+            if( !fname.empty() )
+            {
+                ulog.logFile(fname);
+                ulog << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << std::endl;
+            }
+
+            dlog << myname << "(sysCommand): logRotate" << std::endl;
+            fname = dlog.getLogFile();
+            if( !fname.empty() )
+            {
+                dlog.logFile(fname);
+                dlog << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
+            }
+        }
+        break;
+
+        default:
+            break;
+    }
 }
 // ------------------------------------------------------------------------------------------
 void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 {
-	if( !shm->waitSMworking(test_id,activateTimeout,50) )
-	{
-		ostringstream err;
-		err << myname 
-			<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение " 
-			<< activateTimeout << " мсек";
-	
-		dlog.crit() << err.str() << endl;
-		kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
-		throw SystemError(err.str());
-	}
+    if( !shm->waitSMworking(test_id,activateTimeout,50) )
+    {
+        ostringstream err;
+        err << myname
+            << "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение "
+            << activateTimeout << " мсек";
 
-	if( force )
-		return;
+        dlog.crit() << err.str() << endl;
+        kill(SIGTERM,getpid());    // прерываем (перезапускаем) процесс...
+        throw SystemError(err.str());
+    }
 
-	IOMap::iterator it=iomap.begin();
-	for( ; it!=iomap.end(); ++it )
-	{
-		IOProperty* p(&it->second);
-		try
-		{
-			shm->askSensor(p->si.id,cmd);
-		}
-		catch( UniSetTypes::Exception& ex )
-		{
-			if( dlog.is_warn() )
-				dlog.warn() << myname << "(askSensors): " << ex << std::endl;
-		}
-		catch(...){}
-	}
+    if( force )
+        return;
+
+    IOMap::iterator it=iomap.begin();
+    for( ; it!=iomap.end(); ++it )
+    {
+        IOProperty* p(&it->second);
+        try
+        {
+            shm->askSensor(p->si.id,cmd);
+        }
+        catch( UniSetTypes::Exception& ex )
+        {
+            if( dlog.is_warn() )
+                dlog.warn() << myname << "(askSensors): " << ex << std::endl;
+        }
+        catch(...){}
+    }
 }
 // ------------------------------------------------------------------------------------------
 void MBSlave::sensorInfo( UniSetTypes::SensorMessage* sm )
 {
-	IOMap::iterator it=iomap.begin();
-	for( ; it!=iomap.end(); ++it )
-	{
-		if( it->second.si.id == sm->id )
-		{
-			IOProperty* p(&it->second);
-			if( p->stype == UniversalIO::DO ||
-				p->stype == UniversalIO::DI )
-			{
-				uniset_rwmutex_wrlock lock(p->val_lock);
-				p->value = sm->value ? 1 : 0;
-			}
-			else if( p->stype == UniversalIO::AO ||
-					p->stype == UniversalIO::AI )
-			{
-				uniset_rwmutex_wrlock lock(p->val_lock);
-				p->value = sm->value;
-			}
+    IOMap::iterator it=iomap.begin();
+    for( ; it!=iomap.end(); ++it )
+    {
+        if( it->second.si.id == sm->id )
+        {
+            IOProperty* p(&it->second);
+            if( p->stype == UniversalIO::DO ||
+                p->stype == UniversalIO::DI )
+            {
+                uniset_rwmutex_wrlock lock(p->val_lock);
+                p->value = sm->value ? 1 : 0;
+            }
+            else if( p->stype == UniversalIO::AO ||
+                    p->stype == UniversalIO::AI )
+            {
+                uniset_rwmutex_wrlock lock(p->val_lock);
+                p->value = sm->value;
+            }
 
-			int sz = VTypes::wsize(p->vtype);
-			if( sz < 1 )
-				return;
+            int sz = VTypes::wsize(p->vtype);
+            if( sz < 1 )
+                return;
 
-			// если размер больше одного слова
-			// то надо обновить значение "везде"
-			// они если "всё верно инициализировано" идут подряд
-			int i=0;
-			for( ;i<sz && it!=iomap.end(); i++,it++ )
-			{
-				p  = &it->second;
-				if( p->si.id == sm->id )
-					p->value = sm->value;
-			}
+            // если размер больше одного слова
+            // то надо обновить значение "везде"
+            // они если "всё верно инициализировано" идут подряд
+            int i=0;
+            for( ;i<sz && it!=iomap.end(); i++,it++ )
+            {
+                p  = &it->second;
+                if( p->si.id == sm->id )
+                    p->value = sm->value;
+            }
 
-			if( dlog.is_crit() )
-			{
-				// вообще этого не может случиться
-				// потому-что корректность проверяется при загрузке
-				if( i != sz && dlog.is_crit() )
-					dlog.crit() << myname << "(sensorInfo): update failed for sid=" << sm->id
-						<< " (i=" << i << " sz=" << sz << ")" << endl;
-			}
-			return;
-		}
-	}
+            if( dlog.is_crit() )
+            {
+                // вообще этого не может случиться
+                // потому-что корректность проверяется при загрузке
+                if( i != sz && dlog.is_crit() )
+                    dlog.crit() << myname << "(sensorInfo): update failed for sid=" << sm->id
+                        << " (i=" << i << " sz=" << sz << ")" << endl;
+            }
+            return;
+        }
+    }
 }
 // ------------------------------------------------------------------------------------------
 bool MBSlave::activateObject()
 {
-	// блокирование обработки Starsp 
-	// пока не пройдёт инициализация датчиков
-	// см. sysCommand()
-	{
-		activated = false;
-		UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
-		UniSetObject_LT::activateObject();
-		initIterators();
-		activated = true;
-	}
+    // блокирование обработки Starsp
+    // пока не пройдёт инициализация датчиков
+    // см. sysCommand()
+    {
+        activated = false;
+        UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
+        UniSetObject_LT::activateObject();
+        initIterators();
+        activated = true;
+    }
 
-	return true;
+    return true;
 }
 // ------------------------------------------------------------------------------------------
 void MBSlave::sigterm( int signo )
 {
-	cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
-	activated = false;
-	try
-	{
-		if( mbslot )
-			mbslot->sigterm(signo);
-	}
-	catch(...){}
-	
-	UniSetObject_LT::sigterm(signo);
+    cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
+    activated = false;
+    try
+    {
+        if( mbslot )
+            mbslot->sigterm(signo);
+    }
+    catch(...){}
+
+    UniSetObject_LT::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
 void MBSlave::readConfiguration()
 {
-//	readconf_ok = false;
-	xmlNode* root = conf->getXMLSensorsSection();
-	if(!root)
-	{
-		ostringstream err;
-		err << myname << "(readConfiguration): не нашли корневого раздела <sensors>";
-		throw SystemError(err.str());
-	}
+//    readconf_ok = false;
+    xmlNode* root = conf->getXMLSensorsSection();
+    if(!root)
+    {
+        ostringstream err;
+        err << myname << "(readConfiguration): не нашли корневого раздела <sensors>";
+        throw SystemError(err.str());
+    }
 
-	UniXML_iterator it(root);
-	if( !it.goChildren() )
-	{
-		if( dlog.is_crit() )
-			dlog.crit() << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
-		return;
-	}
+    UniXML_iterator it(root);
+    if( !it.goChildren() )
+    {
+        if( dlog.is_crit() )
+            dlog.crit() << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
+        return;
+    }
 
-	for( ;it.getCurrent(); it.goNext() )
-	{
-		if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
-			initItem(it);
-	}
-	
-//	readconf_ok = true;
+    for( ;it.getCurrent(); it.goNext() )
+    {
+        if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
+            initItem(it);
+    }
+
+//    readconf_ok = true;
 }
 // ------------------------------------------------------------------------------------------
 bool MBSlave::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 {
-	if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
-		initItem(it);
-	return true;
+    if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
+        initItem(it);
+    return true;
 }
 
 // ------------------------------------------------------------------------------------------
 bool MBSlave::initItem( UniXML_iterator& it )
 {
-	IOProperty p;
+    IOProperty p;
 
-	if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,&dlog,myname) )
-		return false;
+    if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,&dlog,myname) )
+        return false;
 
-	if( mbregFromID )
-		p.mbreg = p.si.id;
-	else
-	{
-		string r = it.getProp("mbreg");
-		if( r.empty() )
-		{
-			if( dlog.is_crit() )
-				dlog.crit() << myname << "(initItem): Unknown 'mbreg' for " << it.getProp("name") << endl;
-			return false;
-		}
-		
-		p.mbreg = ModbusRTU::str2mbData(r);
-	}
-	
-	string stype( it.getProp("mb_iotype") );
-	if( stype.empty() )
-		stype = it.getProp("iotype");
+    if( mbregFromID )
+        p.mbreg = p.si.id;
+    else
+    {
+        string r = it.getProp("mbreg");
+        if( r.empty() )
+        {
+            if( dlog.is_crit() )
+                dlog.crit() << myname << "(initItem): Unknown 'mbreg' for " << it.getProp("name") << endl;
+            return false;
+        }
 
-	p.stype = UniSetTypes::getIOType(stype);
-	if( p.stype == UniversalIO::UnknownIOType )
-	{
-		if( dlog.is_crit() )
-			dlog.crit() << myname << "(initItem): Unknown 'iotype' or 'mb_iotype' for " << it.getProp("name") << endl;
-		return false;
-	}
+        p.mbreg = ModbusRTU::str2mbData(r);
+    }
 
-	p.amode = MBSlave::amRW;
-	string am(it.getProp("mb_accessmode"));
-	if( am == "ro" )
-		p.amode = MBSlave::amRO;
-	else if( am == "rw" )
-		p.amode = MBSlave::amRW;
+    string stype( it.getProp("mb_iotype") );
+    if( stype.empty() )
+        stype = it.getProp("iotype");
 
-	string vt(it.getProp("mb_vtype"));
-	if( vt.empty() )
-	{
-		p.vtype = VTypes::vtUnknown;
-		p.wnum = 0;
-		iomap[p.mbreg] = p;
-		if( dlog.is_info() )
-			dlog.info() << myname << "(initItem): add " << p << endl;
+    p.stype = UniSetTypes::getIOType(stype);
+    if( p.stype == UniversalIO::UnknownIOType )
+    {
+        if( dlog.is_crit() )
+            dlog.crit() << myname << "(initItem): Unknown 'iotype' or 'mb_iotype' for " << it.getProp("name") << endl;
+        return false;
+    }
 
-	}
-	else
-	{
-		VTypes::VType v(VTypes::str2type(vt));
-		if( v == VTypes::vtUnknown )
-		{
-			if( dlog.is_crit() )
-				dlog.crit() << myname << "(initItem): Unknown rtuVType=" << vt << " for "
-					<< it.getProp("name") 
-					<< endl;
+    p.amode = MBSlave::amRW;
+    string am(it.getProp("mb_accessmode"));
+    if( am == "ro" )
+        p.amode = MBSlave::amRO;
+    else if( am == "rw" )
+        p.amode = MBSlave::amRW;
 
-			return false;
-		}
-		p.vtype = v;
-		p.wnum = 0;
-		for( int i=0; i<VTypes::wsize(p.vtype); i++ )
-		{
-			p.mbreg += i;
-			p.wnum+= i;
-			iomap[p.mbreg] = p;
-			if( dlog.is_info() )
-				dlog.info() << myname << "(initItem): add " << p << endl;
-		}
-	}
-	
-	return true;
+    string vt(it.getProp("mb_vtype"));
+    if( vt.empty() )
+    {
+        p.vtype = VTypes::vtUnknown;
+        p.wnum = 0;
+        iomap[p.mbreg] = p;
+        if( dlog.is_info() )
+            dlog.info() << myname << "(initItem): add " << p << endl;
+
+    }
+    else
+    {
+        VTypes::VType v(VTypes::str2type(vt));
+        if( v == VTypes::vtUnknown )
+        {
+            if( dlog.is_crit() )
+                dlog.crit() << myname << "(initItem): Unknown rtuVType=" << vt << " for "
+                    << it.getProp("name")
+                    << endl;
+
+            return false;
+        }
+        p.vtype = v;
+        p.wnum = 0;
+        for( int i=0; i<VTypes::wsize(p.vtype); i++ )
+        {
+            p.mbreg += i;
+            p.wnum+= i;
+            iomap[p.mbreg] = p;
+            if( dlog.is_info() )
+                dlog.info() << myname << "(initItem): add " << p << endl;
+        }
+    }
+
+    return true;
 }
 // ------------------------------------------------------------------------------------------
 void MBSlave::initIterators()
 {
-	IOMap::iterator it=iomap.begin();
-	for( ; it!=iomap.end(); it++ )
-		shm->initIterator(it->second.ioit);
+    IOMap::iterator it=iomap.begin();
+    for( ; it!=iomap.end(); it++ )
+        shm->initIterator(it->second.ioit);
 
-	shm->initIterator(itHeartBeat);
-	shm->initIterator(itAskCount);
-	shm->initIterator(itRespond);
+    shm->initIterator(itHeartBeat);
+    shm->initIterator(itAskCount);
+    shm->initIterator(itRespond);
 }
 // -----------------------------------------------------------------------------
 void MBSlave::help_print( int argc, const char* const* argv )
 {
-	cout << "Default: prefix='mbs'" << endl;
-	cout << "--prefix-reg-from-id 0,1   - Использовать в качестве регистра sensor ID" << endl;
-	cout << "--prefix-filter-field name - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
-	cout << "--prefix-filter-value val  - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
-	cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
-	cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
-	cout << "--prefix-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
-	cout << "--prefix-initPause         - Задержка перед инициализацией (время на активизация процесса)" << endl;
-	cout << "--prefix-force 1           - Читать данные из SM каждый раз, а не по изменению." << endl;
-	cout << "--prefix-respond-id - respond sensor id" << endl;
-	cout << "--prefix-respond-invert [0|1] - invert respond logic" << endl;
-	cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
-	cout << "--prefix-timeout msec - timeout for check link" << endl;
-	cout << "--prefix-allow-setdatetime - On set date and time (0x50) modbus function" << endl;
-	cout << "--prefix-my-addr      - адрес текущего узла" << endl;
-	cout << "--prefix-type [RTU|TCP] - modbus server type." << endl;
+    cout << "Default: prefix='mbs'" << endl;
+    cout << "--prefix-reg-from-id 0,1   - Использовать в качестве регистра sensor ID" << endl;
+    cout << "--prefix-filter-field name - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
+    cout << "--prefix-filter-value val  - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
+    cout << "--prefix-heartbeat-id      - Данный процесс связан с указанным аналоговым heartbeat-дачиком." << endl;
+    cout << "--prefix-heartbeat-max     - Максимальное значение heartbeat-счётчика для данного процесса. По умолчанию 10." << endl;
+    cout << "--prefix-ready-timeout     - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')" << endl;
+    cout << "--prefix-initPause         - Задержка перед инициализацией (время на активизация процесса)" << endl;
+    cout << "--prefix-force 1           - Читать данные из SM каждый раз, а не по изменению." << endl;
+    cout << "--prefix-respond-id - respond sensor id" << endl;
+    cout << "--prefix-respond-invert [0|1] - invert respond logic" << endl;
+    cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
+    cout << "--prefix-timeout msec - timeout for check link" << endl;
+    cout << "--prefix-allow-setdatetime - On set date and time (0x50) modbus function" << endl;
+    cout << "--prefix-my-addr      - адрес текущего узла" << endl;
+    cout << "--prefix-type [RTU|TCP] - modbus server type." << endl;
 
-	cout << " Настройки протокола RTU: " << endl;
-	cout << "--prefix-dev devname  - файл устройства" << endl;
-	cout << "--prefix-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
+    cout << " Настройки протокола RTU: " << endl;
+    cout << "--prefix-dev devname  - файл устройства" << endl;
+    cout << "--prefix-speed        - Скорость обмена (9600,19920,38400,57600,115200)." << endl;
 
-	cout << " Настройки протокола TCP: " << endl;
-	cout << "--prefix-inet-addr [xxx.xxx.xxx.xxx | hostname ]  - this modbus server address" << endl;
-	cout << "--prefix-inet-port num - this modbus server port. Default: 502" << endl;
+    cout << " Настройки протокола TCP: " << endl;
+    cout << "--prefix-inet-addr [xxx.xxx.xxx.xxx | hostname ]  - this modbus server address" << endl;
+    cout << "--prefix-inet-port num - this modbus server port. Default: 502" << endl;
 }
 // -----------------------------------------------------------------------------
 MBSlave* MBSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID, SharedMemory* ic,
-								string prefix )
+                                string prefix )
 {
-	string name = conf->getArgParam("--" + prefix + "-name","MBSlave1");
-	if( name.empty() )
-	{
-		cerr << "(mbslave): Не задан name'" << endl;
-		return 0;
-	}
+    string name = conf->getArgParam("--" + prefix + "-name","MBSlave1");
+    if( name.empty() )
+    {
+        cerr << "(mbslave): Не задан name'" << endl;
+        return 0;
+    }
 
-	ObjectId ID = conf->getObjectID(name);
-	if( ID == UniSetTypes::DefaultObjectId )
-	{
-		cerr << "(mbslave): идентификатор '" << name 
-			<< "' не найден в конф. файле!"
-			<< " в секции " << conf->getObjectsSection() << endl;
-		return 0;
-	}
+    ObjectId ID = conf->getObjectID(name);
+    if( ID == UniSetTypes::DefaultObjectId )
+    {
+        cerr << "(mbslave): идентификатор '" << name
+            << "' не найден в конф. файле!"
+            << " в секции " << conf->getObjectsSection() << endl;
+        return 0;
+    }
 
-	if( dlog.is_info() )
-		dlog.info() << "(mbslave): name = " << name << "(" << ID << ")" << endl;
-	return new MBSlave(ID,icID,ic,prefix);
+    if( dlog.is_info() )
+        dlog.info() << "(mbslave): name = " << name << "(" << ID << ")" << endl;
+    return new MBSlave(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, MBSlave::IOProperty& p )
 {
-	os 	<< " reg=" << ModbusRTU::dat2str(p.mbreg)
-		<< " sid=" << p.si.id
-		<< " stype=" << p.stype
-		<< " wnum=" << p.wnum
-		<< " safety=" << p.safety
-		<< " invert=" << p.invert;
+    os     << " reg=" << ModbusRTU::dat2str(p.mbreg)
+        << " sid=" << p.si.id
+        << " stype=" << p.stype
+        << " wnum=" << p.wnum
+        << " safety=" << p.safety
+        << " invert=" << p.invert;
 
-	if( p.stype == UniversalIO::AI || p.stype == UniversalIO::AO )
-	{
-		os 	<< p.cal
-			<< " cdiagram=" << ( p.cdiagram ? "yes" : "no" );
-	}		
-	
-	return os;
+    if( p.stype == UniversalIO::AI || p.stype == UniversalIO::AO )
+    {
+        os     << p.cal
+            << " cdiagram=" << ( p.cdiagram ? "yes" : "no" );
+    }
+
+    return os;
 }
 // -----------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage& query, 
-													ModbusRTU::ReadOutputRetMessage& reply )
+                                                    ModbusRTU::ReadOutputRetMessage& reply )
 {
-	if( dlog.is_info() )
-		dlog.info() << myname << "(readOutputRegisters): " << query << endl;
+    if( dlog.is_info() )
+        dlog.info() << myname << "(readOutputRegisters): " << query << endl;
 
-	if( query.count <= 1 )
-	{
-		ModbusRTU::ModbusData d = 0;
-		ModbusRTU::mbErrCode ret = real_read(query.start,d);
-		if( ret == ModbusRTU::erNoError )
-			reply.addData(d);
-		else
-			reply.addData(0);
-		return ret;
-	}
+    if( query.count <= 1 )
+    {
+        ModbusRTU::ModbusData d = 0;
+        ModbusRTU::mbErrCode ret = real_read(query.start,d);
+        if( ret == ModbusRTU::erNoError )
+            reply.addData(d);
+        else
+            reply.addData(0);
+        return ret;
+    }
 
-	// Фомирование ответа:
-	ModbusRTU::mbErrCode ret = much_real_read(query.start,buf,query.count);
-	if( ret == ModbusRTU::erNoError )
-	{
-		for( int i=0; i<query.count; i++ )
-			reply.addData( buf[i] );
-	}
-	
-	return ret;
+    // Фомирование ответа:
+    ModbusRTU::mbErrCode ret = much_real_read(query.start,buf,query.count);
+    if( ret == ModbusRTU::erNoError )
+    {
+        for( int i=0; i<query.count; i++ )
+            reply.addData( buf[i] );
+    }
+
+    return ret;
 }
 
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
-											ModbusRTU::WriteOutputRetMessage& reply )
+                                            ModbusRTU::WriteOutputRetMessage& reply )
 {
-	if( dlog.is_info() )
-		dlog.info() << myname << "(writeOutputRegisters): " << query << endl;
+    if( dlog.is_info() )
+        dlog.info() << myname << "(writeOutputRegisters): " << query << endl;
 
-	// Формирование ответа:
-	ModbusRTU::mbErrCode ret = much_real_write(query.start,query.data,query.quant);
-	if( ret == ModbusRTU::erNoError )
-        	reply.set(query.start,query.quant); 
-	return ret;
+    // Формирование ответа:
+    ModbusRTU::mbErrCode ret = much_real_write(query.start,query.data,query.quant);
+    if( ret == ModbusRTU::erNoError )
+            reply.set(query.start,query.quant);
+    return ret;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
-											ModbusRTU::WriteSingleOutputRetMessage& reply )
+                                            ModbusRTU::WriteSingleOutputRetMessage& reply )
 {
-	if( dlog.is_info() )
-		dlog.info() << myname << "(writeOutputSingleRegisters): " << query << endl;
+    if( dlog.is_info() )
+        dlog.info() << myname << "(writeOutputSingleRegisters): " << query << endl;
 
-	ModbusRTU::mbErrCode ret = real_write(query.start,query.data);
-	if( ret == ModbusRTU::erNoError )
-		reply.set(query.start,query.data);
+    ModbusRTU::mbErrCode ret = real_write(query.start,query.data);
+    if( ret == ModbusRTU::erNoError )
+        reply.set(query.start,query.data);
 
-	return ret;
+    return ret;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::much_real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, 
-						int count )
-{	if( dlog.is_info() )
-	{
-		dlog.info() << myname << "(much_real_write): read mbID="
-			<< ModbusRTU::dat2str(reg) << " count=" << count << endl;
-	}
+                        int count )
+{    if( dlog.is_info() )
+    {
+        dlog.info() << myname << "(much_real_write): read mbID="
+            << ModbusRTU::dat2str(reg) << " count=" << count << endl;
+    }
 
-	int i=0;
-	IOMap::iterator it = iomap.end();
-	for( ; i<count; i++ )
-	{
-		it = iomap.find(reg+i);
-		if( it != iomap.end() )
-		{
-			reg += i;
-			break;
-		}
-	}
+    int i=0;
+    IOMap::iterator it = iomap.end();
+    for( ; i<count; i++ )
+    {
+        it = iomap.find(reg+i);
+        if( it != iomap.end() )
+        {
+            reg += i;
+            break;
+        }
+    }
 
-	if( it == iomap.end() )
-		return ModbusRTU::erBadDataAddress;
+    if( it == iomap.end() )
+        return ModbusRTU::erBadDataAddress;
 
-	for( ; (it!=iomap.end()) && (i<count); i++,reg++ )
-	{
-		if( it->first == reg )
-		{
-			real_write_it(it,dat[i]);
-			it++;
-		}
-	}
-	
-	return ModbusRTU::erNoError;
+    for( ; (it!=iomap.end()) && (i<count); i++,reg++ )
+    {
+        if( it->first == reg )
+        {
+            real_write_it(it,dat[i]);
+            it++;
+        }
+    }
+
+    return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData mbval )
 {
-	if( dlog.is_info() )
-	{
-		dlog.info() << myname << "(write): save mbID="
-			<< ModbusRTU::dat2str(reg) 
-			<< " data=" << ModbusRTU::dat2str(mbval)
-			<< "(" << (int)mbval << ")" << endl;
-	}
+    if( dlog.is_info() )
+    {
+        dlog.info() << myname << "(write): save mbID="
+            << ModbusRTU::dat2str(reg)
+            << " data=" << ModbusRTU::dat2str(mbval)
+            << "(" << (int)mbval << ")" << endl;
+    }
 
-	IOMap::iterator it = iomap.find(reg);
-	return real_write_it(it,mbval);
+    IOMap::iterator it = iomap.find(reg);
+    return real_write_it(it,mbval);
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::real_write_it( IOMap::iterator& it, ModbusRTU::ModbusData& mbval )
 {
-	if( it == iomap.end() )
-		return ModbusRTU::erBadDataAddress;
+    if( it == iomap.end() )
+        return ModbusRTU::erBadDataAddress;
 
-	try
-	{
-		IOProperty* p(&it->second);
+    try
+    {
+        IOProperty* p(&it->second);
 
-		if( p->amode == MBSlave::amRO )
-			return ModbusRTU::erBadDataAddress;
+        if( p->amode == MBSlave::amRO )
+            return ModbusRTU::erBadDataAddress;
 
-		if( p->vtype == VTypes::vtUnknown )
-		{
-			if( p->stype == UniversalIO::DI ||
-				p->stype == UniversalIO::DO )
-			{
-				IOBase::processingAsDI( p, mbval, shm, force );
-			}
-			else
-			{
-				long val = (signed short)(mbval);
-				IOBase::processingAsAI( p, val, shm, force );
-			}
-			return erNoError;
-		}
-		else if( p->vtype == VTypes::vtUnsigned )
-		{
-			long val = (unsigned short)(mbval);
-			IOBase::processingAsAI( p, val, shm, force );
-		}
-		else if( p->vtype == VTypes::vtSigned )
-		{
-			long val = (signed short)(mbval);
-			IOBase::processingAsAI( p, val, shm, force );
-		}
-/*		
-		else if( p->vtype == VTypes::vtByte )
-		{
-			VTypes::Byte b(r->mbval);
-			IOBase::processingAsAI( p, b.raw.b[p->nbyte-1], shm, force );
-			return;
-		}
-		else if( p->vtype == VTypes::vtF2 )
-		{
-			RegMap::iterator i(p->reg->rit);
-			ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F2::wsize()];
-				for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
-					data[k] = i->second->mbval;
-				
-				VTypes::F2 f(data,VTypes::F2::wsize());
-				delete[] data;
-			
-				IOBase::processingFasAI( p, (float)f, shm, force );
-			}
-			else if( p->vtype == VTypes::vtF4 )
-			{
-				RegMap::iterator i(p->reg->rit);
+        if( p->vtype == VTypes::vtUnknown )
+        {
+            if( p->stype == UniversalIO::DI ||
+                p->stype == UniversalIO::DO )
+            {
+                IOBase::processingAsDI( p, mbval, shm, force );
+            }
+            else
+            {
+                long val = (signed short)(mbval);
+                IOBase::processingAsAI( p, val, shm, force );
+            }
+            return erNoError;
+        }
+        else if( p->vtype == VTypes::vtUnsigned )
+        {
+            long val = (unsigned short)(mbval);
+            IOBase::processingAsAI( p, val, shm, force );
+        }
+        else if( p->vtype == VTypes::vtSigned )
+        {
+            long val = (signed short)(mbval);
+            IOBase::processingAsAI( p, val, shm, force );
+        }
+/*
+        else if( p->vtype == VTypes::vtByte )
+        {
+            VTypes::Byte b(r->mbval);
+            IOBase::processingAsAI( p, b.raw.b[p->nbyte-1], shm, force );
+            return;
+        }
+        else if( p->vtype == VTypes::vtF2 )
+        {
+            RegMap::iterator i(p->reg->rit);
+            ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F2::wsize()];
+                for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
+                    data[k] = i->second->mbval;
 
-				ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F4::wsize()];
-				for( int k=0; k<VTypes::F4::wsize(); k++, i++ )
-					data[k] = i->second->mbval;
-				
-				VTypes::F4 f(data,VTypes::F4::wsize());
-				delete[] data;
-				
-				IOBase::processingFasAI( p, (float)f, shm, force );
-			}
+                VTypes::F2 f(data,VTypes::F2::wsize());
+                delete[] data;
+
+                IOBase::processingFasAI( p, (float)f, shm, force );
+            }
+            else if( p->vtype == VTypes::vtF4 )
+            {
+                RegMap::iterator i(p->reg->rit);
+
+                ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F4::wsize()];
+                for( int k=0; k<VTypes::F4::wsize(); k++, i++ )
+                    data[k] = i->second->mbval;
+
+                VTypes::F4 f(data,VTypes::F4::wsize());
+                delete[] data;
+
+                IOBase::processingFasAI( p, (float)f, shm, force );
+            }
 */
 
 /*
-		if( p->stype == UniversalIO::DI ||
-			p->stype == UniversalIO::DO )
-		{
-			bool set = val ? true : false;
-			IOBase::processingAsDI(p,set,shm,force);
-		}
-		else if( p->stype == UniversalIO::AI ||
-				 p->stype == UniversalIO::AO )
-		{
-			IOBase::processingAsAI( p, val, shm, force );
-		}
+        if( p->stype == UniversalIO::DI ||
+            p->stype == UniversalIO::DO )
+        {
+            bool set = val ? true : false;
+            IOBase::processingAsDI(p,set,shm,force);
+        }
+        else if( p->stype == UniversalIO::AI ||
+                 p->stype == UniversalIO::AO )
+        {
+            IOBase::processingAsAI( p, val, shm, force );
+        }
 */
-		pingOK = true;
-		return ModbusRTU::erNoError;
-	}
-	catch( UniSetTypes::NameNotFound& ex )
-	{
-		if( dlog.is_warn() )
-			dlog.warn() << myname << "(write): " << ex << endl;
-		return ModbusRTU::erBadDataAddress;
-	}
-	catch( UniSetTypes::OutOfRange& ex )
-	{
-		if( dlog.is_warn() )
-			dlog.warn() << myname << "(write): " << ex << endl;
-		return ModbusRTU::erBadDataValue;
-	}
-	catch( Exception& ex )
-	{
-		if( pingOK && dlog.is_crit() )
-			dlog.crit() << myname << "(write): " << ex << endl;
-	}
-	catch( CORBA::SystemException& ex )
-	{
-		if( pingOK && dlog.is_crit() )
-			dlog.crit() << myname << "(write): СORBA::SystemException: "
-				<< ex.NP_minorString() << endl;
-	}
-	catch(...)
-	{
-		if( pingOK && dlog.is_crit() )
-			dlog.crit() << myname << "(write) catch ..." << endl;
-	}
-	
-	pingOK = false;
-	return ModbusRTU::erTimeOut;
+        pingOK = true;
+        return ModbusRTU::erNoError;
+    }
+    catch( UniSetTypes::NameNotFound& ex )
+    {
+        if( dlog.is_warn() )
+            dlog.warn() << myname << "(write): " << ex << endl;
+        return ModbusRTU::erBadDataAddress;
+    }
+    catch( UniSetTypes::OutOfRange& ex )
+    {
+        if( dlog.is_warn() )
+            dlog.warn() << myname << "(write): " << ex << endl;
+        return ModbusRTU::erBadDataValue;
+    }
+    catch( Exception& ex )
+    {
+        if( pingOK && dlog.is_crit() )
+            dlog.crit() << myname << "(write): " << ex << endl;
+    }
+    catch( CORBA::SystemException& ex )
+    {
+        if( pingOK && dlog.is_crit() )
+            dlog.crit() << myname << "(write): СORBA::SystemException: "
+                << ex.NP_minorString() << endl;
+    }
+    catch(...)
+    {
+        if( pingOK && dlog.is_crit() )
+            dlog.crit() << myname << "(write) catch ..." << endl;
+    }
+
+    pingOK = false;
+    return ModbusRTU::erTimeOut;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::much_real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, 
-						int count )
+                        int count )
 {
-	if( dlog.is_info() )
-	{
-		dlog.info() << myname << "(much_real_read): read mbID="
-			<< ModbusRTU::dat2str(reg) << " count=" << count << endl;
-	}
-	
-	IOMap::iterator it = iomap.end();
-	int i=0;
-	for( ; i<count; i++ )
-	{
-		it = iomap.find(reg+i);
-		if( it != iomap.end() )
-		{
-			reg += i;
-			break;
-		}
+    if( dlog.is_info() )
+    {
+        dlog.info() << myname << "(much_real_read): read mbID="
+            << ModbusRTU::dat2str(reg) << " count=" << count << endl;
+    }
 
-		dat[i] = 0;
-	}
+    IOMap::iterator it = iomap.end();
+    int i=0;
+    for( ; i<count; i++ )
+    {
+        it = iomap.find(reg+i);
+        if( it != iomap.end() )
+        {
+            reg += i;
+            break;
+        }
 
-	if( it == iomap.end() )
-		return ModbusRTU::erBadDataAddress;
-	
-	ModbusRTU::ModbusData val=0;
-	for( ; (it!=iomap.end()) && (i<count); i++,reg++ )
-	{
-		val=0;
-		// если регистры идут не подряд, то просто вернём ноль
-		if( it->first == reg )
-		{
-			real_read_it(it,val);
-			it++;
-		}
-		dat[i] = val;
-	}
+        dat[i] = 0;
+    }
 
-	// добиваем нулями "ответ"
-	// чтобы он был такой длинны, которую запрашивали
-	if( i<count )
-	{
-		for( ; i<count; i++ )
-			dat[i] = 0;
-	}	
+    if( it == iomap.end() )
+        return ModbusRTU::erBadDataAddress;
 
-	return ModbusRTU::erNoError;
+    ModbusRTU::ModbusData val=0;
+    for( ; (it!=iomap.end()) && (i<count); i++,reg++ )
+    {
+        val=0;
+        // если регистры идут не подряд, то просто вернём ноль
+        if( it->first == reg )
+        {
+            real_read_it(it,val);
+            it++;
+        }
+        dat[i] = val;
+    }
+
+    // добиваем нулями "ответ"
+    // чтобы он был такой длинны, которую запрашивали
+    if( i<count )
+    {
+        for( ; i<count; i++ )
+            dat[i] = 0;
+    }
+
+    return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val )
 {
-	if( dlog.is_info() )
-	{
-		dlog.info() << myname << "(real_read): read mbID="
-			<< ModbusRTU::dat2str(reg) << endl;
-	}
+    if( dlog.is_info() )
+    {
+        dlog.info() << myname << "(real_read): read mbID="
+            << ModbusRTU::dat2str(reg) << endl;
+    }
 
-	IOMap::iterator it = iomap.find(reg);
-	return real_read_it(it,val);
+    IOMap::iterator it = iomap.find(reg);
+    return real_read_it(it,val);
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::real_read_it( IOMap::iterator& it, ModbusRTU::ModbusData& val )
 {
-	if( it == iomap.end() )
-		return ModbusRTU::erBadDataAddress;
+    if( it == iomap.end() )
+        return ModbusRTU::erBadDataAddress;
 
-	try
-	{
-		if( dlog.is_info() )
-		{
-			dlog.info() << myname << "(real_read_it): read mbID="
-				<< ModbusRTU::dat2str(it->first) << endl;
-		}
-				
-		IOProperty* p(&it->second);
-		val = 0;
+    try
+    {
+        if( dlog.is_info() )
+        {
+            dlog.info() << myname << "(real_read_it): read mbID="
+                << ModbusRTU::dat2str(it->first) << endl;
+        }
 
-		if( p->amode == MBSlave::amWO )
-			return ModbusRTU::erBadDataAddress;
-		
-		if( p->stype == UniversalIO::DI ||
-			p->stype == UniversalIO::DO )
-		{
-			val = IOBase::processingAsDO(p,shm,force) ? 1 : 0;
-		}
-		else if( p->stype == UniversalIO::AI ||
-				p->stype == UniversalIO::AO )
-		{
-			if( p->vtype == VTypes::vtUnknown )
-			{
-				val = IOBase::processingAsAO(p,shm,force);
-			}		
-			if( p->vtype == VTypes::vtF2 )
-			{
-				float f = IOBase::processingFasAO(p,shm,force);
-				VTypes::F2 f2(f);
-				// оптимизируем и проверку не делаем
-				// считая, что при "загрузке" всё было правильно
-				// инициализировано
-				// if( p->wnum >=0 && p->wnum < f4.wsize()
-				val = f2.raw.v[p->wnum];
-			}
-			else if( p->vtype == VTypes::vtF4 )
-			{
-				float f = IOBase::processingFasAO(p,shm,force);
-				VTypes::F4 f4(f);
-				// оптимизируем и проверку не делаем
-				// считая, что при "загрузке" всё было правильно
-				// инициализировано
-				// if( p->wnum >=0 && p->wnum < f4.wsize()
-				val = f4.raw.v[p->wnum];
-			}
-			else if( p->vtype == VTypes::vtI2 )
-			{
-				long v = IOBase::processingAsAO(p,shm,force);
-				VTypes::I2 i2(v);
-				// оптимизируем и проверку не делаем
-				// считая, что при "загрузке" всё было правильно
-				// инициализировано
-				// if( p->wnum >=0 && p->wnum < i2.wsize()
-				val = i2.raw.v[p->wnum];
-			}
-			else if( p->vtype == VTypes::vtU2 )
-			{
-				unsigned long v = IOBase::processingAsAO(p,shm,force);
-				VTypes::U2 u2(v);
-				// оптимизируем и проверку не делаем
-				// считая, что при "загрузке" всё было правильно
-				// инициализировано
-				// if( p->wnum >=0 && p->wnum < u2.wsize()
-				val = u2.raw.v[p->wnum];
-			}
-			else
-				val = IOBase::processingAsAO(p,shm,force);
-		}
-		else
-			return ModbusRTU::erBadDataAddress;
+        IOProperty* p(&it->second);
+        val = 0;
 
-		pingOK = true;
-		return ModbusRTU::erNoError;
-	}
-	catch( UniSetTypes::NameNotFound& ex )
-	{
-		if( dlog.is_warn() )
-			dlog.warn() << myname << "(real_read_it): " << ex << endl;
-		return ModbusRTU::erBadDataAddress;
-	}
-	catch( UniSetTypes::OutOfRange& ex )
-	{
-		if( dlog.is_warn() )
-			dlog.warn() << myname << "(real_read_it): " << ex << endl;
-		return ModbusRTU::erBadDataValue;
-	}
-	catch( Exception& ex )
-	{
-		if( pingOK && dlog.is_crit() )
-			dlog.crit() << myname << "(real_read_it): " << ex << endl;
-	}
-	catch( CORBA::SystemException& ex )
-	{
-		if( pingOK && dlog.is_crit() )
-			dlog.crit() << myname << "(real_read_it): CORBA::SystemException: "
-				<< ex.NP_minorString() << endl;
-	}
-	catch(...)
-	{
-		if( pingOK && dlog.is_crit() )
-			dlog.crit() << myname << "(real_read_it) catch ..." << endl;
-	}
-	
-	pingOK = false;
-	return ModbusRTU::erTimeOut;
+        if( p->amode == MBSlave::amWO )
+            return ModbusRTU::erBadDataAddress;
+
+        if( p->stype == UniversalIO::DI ||
+            p->stype == UniversalIO::DO )
+        {
+            val = IOBase::processingAsDO(p,shm,force) ? 1 : 0;
+        }
+        else if( p->stype == UniversalIO::AI ||
+                p->stype == UniversalIO::AO )
+        {
+            if( p->vtype == VTypes::vtUnknown )
+            {
+                val = IOBase::processingAsAO(p,shm,force);
+            }
+            if( p->vtype == VTypes::vtF2 )
+            {
+                float f = IOBase::processingFasAO(p,shm,force);
+                VTypes::F2 f2(f);
+                // оптимизируем и проверку не делаем
+                // считая, что при "загрузке" всё было правильно
+                // инициализировано
+                // if( p->wnum >=0 && p->wnum < f4.wsize()
+                val = f2.raw.v[p->wnum];
+            }
+            else if( p->vtype == VTypes::vtF4 )
+            {
+                float f = IOBase::processingFasAO(p,shm,force);
+                VTypes::F4 f4(f);
+                // оптимизируем и проверку не делаем
+                // считая, что при "загрузке" всё было правильно
+                // инициализировано
+                // if( p->wnum >=0 && p->wnum < f4.wsize()
+                val = f4.raw.v[p->wnum];
+            }
+            else if( p->vtype == VTypes::vtI2 )
+            {
+                long v = IOBase::processingAsAO(p,shm,force);
+                VTypes::I2 i2(v);
+                // оптимизируем и проверку не делаем
+                // считая, что при "загрузке" всё было правильно
+                // инициализировано
+                // if( p->wnum >=0 && p->wnum < i2.wsize()
+                val = i2.raw.v[p->wnum];
+            }
+            else if( p->vtype == VTypes::vtU2 )
+            {
+                unsigned long v = IOBase::processingAsAO(p,shm,force);
+                VTypes::U2 u2(v);
+                // оптимизируем и проверку не делаем
+                // считая, что при "загрузке" всё было правильно
+                // инициализировано
+                // if( p->wnum >=0 && p->wnum < u2.wsize()
+                val = u2.raw.v[p->wnum];
+            }
+            else
+                val = IOBase::processingAsAO(p,shm,force);
+        }
+        else
+            return ModbusRTU::erBadDataAddress;
+
+        pingOK = true;
+        return ModbusRTU::erNoError;
+    }
+    catch( UniSetTypes::NameNotFound& ex )
+    {
+        if( dlog.is_warn() )
+            dlog.warn() << myname << "(real_read_it): " << ex << endl;
+        return ModbusRTU::erBadDataAddress;
+    }
+    catch( UniSetTypes::OutOfRange& ex )
+    {
+        if( dlog.is_warn() )
+            dlog.warn() << myname << "(real_read_it): " << ex << endl;
+        return ModbusRTU::erBadDataValue;
+    }
+    catch( Exception& ex )
+    {
+        if( pingOK && dlog.is_crit() )
+            dlog.crit() << myname << "(real_read_it): " << ex << endl;
+    }
+    catch( CORBA::SystemException& ex )
+    {
+        if( pingOK && dlog.is_crit() )
+            dlog.crit() << myname << "(real_read_it): CORBA::SystemException: "
+                << ex.NP_minorString() << endl;
+    }
+    catch(...)
+    {
+        if( pingOK && dlog.is_crit() )
+            dlog.crit() << myname << "(real_read_it) catch ..." << endl;
+    }
+
+    pingOK = false;
+    return ModbusRTU::erTimeOut;
 }
 // -------------------------------------------------------------------------
 
 mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMessage& reply )
 {
-	if( dlog.is_info() )
-		dlog.info() << myname << "(readInputRegisters): " << query << endl;
+    if( dlog.is_info() )
+        dlog.info() << myname << "(readInputRegisters): " << query << endl;
 
-	if( query.count <= 1 )
-	{
-		ModbusRTU::ModbusData d = 0;
-		ModbusRTU::mbErrCode ret = real_read(query.start,d);
-		if( ret == ModbusRTU::erNoError )
-			reply.addData(d);
-		else
-			reply.addData(0);
-		
-		return ret;
-	}
+    if( query.count <= 1 )
+    {
+        ModbusRTU::ModbusData d = 0;
+        ModbusRTU::mbErrCode ret = real_read(query.start,d);
+        if( ret == ModbusRTU::erNoError )
+            reply.addData(d);
+        else
+            reply.addData(0);
 
-	// Фомирование ответа:
-	ModbusRTU::mbErrCode ret = much_real_read(query.start,buf,query.count);
-	if( ret == ModbusRTU::erNoError )
-	{
-		for( int i=0; i<query.count; i++ )
-			reply.addData( buf[i] );
-	}
-	
-	return ret;
+        return ret;
+    }
+
+    // Фомирование ответа:
+    ModbusRTU::mbErrCode ret = much_real_read(query.start,buf,query.count);
+    if( ret == ModbusRTU::erNoError )
+    {
+        for( int i=0; i<query.count; i++ )
+            reply.addData( buf[i] );
+    }
+
+    return ret;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::setDateTime( ModbusRTU::SetDateTimeMessage& query, 
-									ModbusRTU::SetDateTimeRetMessage& reply )
+                                    ModbusRTU::SetDateTimeRetMessage& reply )
 {
-	return ModbusServer::replySetDateTime(query,reply,&dlog);
+    return ModbusServer::replySetDateTime(query,reply,&dlog);
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::remoteService( ModbusRTU::RemoteServiceMessage& query, 
-									ModbusRTU::RemoteServiceRetMessage& reply )
+                                    ModbusRTU::RemoteServiceRetMessage& reply )
 {
-//	cerr << "(remoteService): " << query << endl;
-	return ModbusRTU::erOperationFailed;
-}									
+//    cerr << "(remoteService): " << query << endl;
+    return ModbusRTU::erOperationFailed;
+}
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& query, 
-									ModbusRTU::FileTransferRetMessage& reply )
+                                    ModbusRTU::FileTransferRetMessage& reply )
 {
-	if( dlog.is_info() )
-		dlog.info() << myname << "(fileTransfer): " << query << endl;
+    if( dlog.is_info() )
+        dlog.info() << myname << "(fileTransfer): " << query << endl;
 
-	FileList::iterator it = flist.find(query.numfile);
-	if( it == flist.end() )
-		return ModbusRTU::erBadDataValue;
+    FileList::iterator it = flist.find(query.numfile);
+    if( it == flist.end() )
+        return ModbusRTU::erBadDataValue;
 
-	std::string fname(it->second);
-	return ModbusServer::replyFileTransfer( fname,query,reply,&dlog );
-}									
+    std::string fname(it->second);
+    return ModbusServer::replyFileTransfer( fname,query,reply,&dlog );
+}
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query, 
-												ReadCoilRetMessage& reply )
+                                                ReadCoilRetMessage& reply )
 {
-//	cout << "(readInputStatus): " << query << endl;
-	return ModbusRTU::erOperationFailed;
+//    cout << "(readInputStatus): " << query << endl;
+    return ModbusRTU::erOperationFailed;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query, 
-												ReadInputStatusRetMessage& reply )
+                                                ReadInputStatusRetMessage& reply )
 {
-	if( dlog.is_info() )
-		dlog.info() << myname << "(readInputStatus): " << query << endl;
+    if( dlog.is_info() )
+        dlog.info() << myname << "(readInputStatus): " << query << endl;
 
-	try
-	{
-		if( query.count <= 1 )
-		{
-			ModbusRTU::ModbusData d = 0;
-			ModbusRTU::mbErrCode ret = real_read(query.start,d);
-			reply.addData(0);
-			if( ret == ModbusRTU::erNoError )
-				reply.setBit(0,0,d);
-			else
-				reply.setBit(0,0,0);
-			
-			pingOK = true;
-			return ret;
-		}
+    try
+    {
+        if( query.count <= 1 )
+        {
+            ModbusRTU::ModbusData d = 0;
+            ModbusRTU::mbErrCode ret = real_read(query.start,d);
+            reply.addData(0);
+            if( ret == ModbusRTU::erNoError )
+                reply.setBit(0,0,d);
+            else
+                reply.setBit(0,0,0);
 
-		// Фомирование ответа:
-		much_real_read(query.start,buf,query.count);
-		int bnum = 0;
-		int i=0;
-		while( i<query.count )
-		{
-			reply.addData(0);
-			for( int nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
-				reply.setBit(bnum,nbit,buf[i]);
-			bnum++;
-		}
+            pingOK = true;
+            return ret;
+        }
 
-		pingOK = true;
-		return ModbusRTU::erNoError;
-	}
-	catch( UniSetTypes::NameNotFound& ex )
-	{
-		if( dlog.is_warn() )
-			dlog.warn() << myname << "(readInputStatus): " << ex << endl;
+        // Фомирование ответа:
+        much_real_read(query.start,buf,query.count);
+        int bnum = 0;
+        int i=0;
+        while( i<query.count )
+        {
+            reply.addData(0);
+            for( int nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
+                reply.setBit(bnum,nbit,buf[i]);
+            bnum++;
+        }
 
-		return ModbusRTU::erBadDataAddress;
-	}
-	catch( Exception& ex )
-	{
-		if( pingOK && dlog.is_crit() )
-			dlog.crit() << myname << "(readInputStatus): " << ex << endl;
-	}
-	catch( CORBA::SystemException& ex )
-	{
-		if( pingOK && dlog.is_crit() )
-			dlog.crit() << myname << "(readInputStatus): СORBA::SystemException: "
-				<< ex.NP_minorString() << endl;
-	}
-	catch(...)
-	{
-		if( pingOK && dlog.is_crit() )
-			dlog.crit() << myname << "(readInputStatus): catch ..." << endl;
-	}
-	
-	pingOK = false;
-	return ModbusRTU::erTimeOut;
+        pingOK = true;
+        return ModbusRTU::erNoError;
+    }
+    catch( UniSetTypes::NameNotFound& ex )
+    {
+         if( dlog.is_warn() )
+            dlog.warn() << myname << "(readInputStatus): " << ex << endl;
+        return ModbusRTU::erBadDataAddress;
+    }
+    catch( Exception& ex )
+    {
+        if( pingOK && dlog.is_crit() )
+            dlog.crit() << myname << "(readInputStatus): " << ex << endl;
+    }
+    catch( CORBA::SystemException& ex )
+    {
+        if( pingOK && dlog.is_crit() )
+            dlog.crit() << myname << "(readInputStatus): СORBA::SystemException: "
+                << ex.NP_minorString() << endl;
+    }
+    catch(...)
+    {
+        if( pingOK && dlog.is_crit() )
+            dlog.crit() << myname << "(readInputStatus): catch ..." << endl;
+    }
+
+    pingOK = false;
+    return ModbusRTU::erTimeOut;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
-													ModbusRTU::ForceCoilsRetMessage& reply )
+                                                    ModbusRTU::ForceCoilsRetMessage& reply )
 {
-	if( dlog.is_info() )
-		dlog.info() << myname << "(forceMultipleCoils): " << query << endl;
+    if( dlog.is_info() )
+        dlog.info() << myname << "(forceMultipleCoils): " << query << endl;
 
-	ModbusRTU::mbErrCode ret = ModbusRTU::erNoError;
-	int nbit = 0;
-	for( int i = 0; i<query.bcnt; i++ )
-	{
-		ModbusRTU::DataBits b(query.data[i]);
-		for( int k=0; k<ModbusRTU::BitsPerByte && nbit<query.quant; k++, nbit++ )
-		{
-			// ModbusRTU::mbErrCode ret =
-			real_write(query.start+nbit, (b[k] ? 1 : 0) );
-			//if( ret == ModbusRTU::erNoError )
-		}
-	}
+    ModbusRTU::mbErrCode ret = ModbusRTU::erNoError;
+    int nbit = 0;
+    for( int i = 0; i<query.bcnt; i++ )
+    {
+        ModbusRTU::DataBits b(query.data[i]);
+        for( int k=0; k<ModbusRTU::BitsPerByte && nbit<query.quant; k++, nbit++ )
+        {
+            // ModbusRTU::mbErrCode ret =
+            real_write(query.start+nbit, (b[k] ? 1 : 0) );
+            //if( ret == ModbusRTU::erNoError )
+        }
+    }
 
-	//if( ret == ModbusRTU::erNoError )
-	if( nbit == query.quant )
-		reply.set(query.start,query.quant);
+    //if( ret == ModbusRTU::erNoError )
+    if( nbit == query.quant )
+        reply.set(query.start,query.quant);
 
-	return ret;
+    return ret;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
-											ModbusRTU::ForceSingleCoilRetMessage& reply )
+                                            ModbusRTU::ForceSingleCoilRetMessage& reply )
 {
-	if( dlog.is_info() )
-		dlog.info() << myname << "(forceSingleCoil): " << query << endl;
+    if( dlog.is_info() )
+        dlog.info() << myname << "(forceSingleCoil): " << query << endl;
 
-	ModbusRTU::mbErrCode ret = real_write(query.start, (query.cmd() ? 1 : 0) );
-	if( ret == ModbusRTU::erNoError )
-		reply.set(query.start,query.data);
+    ModbusRTU::mbErrCode ret = real_write(query.start, (query.cmd() ? 1 : 0) );
+    if( ret == ModbusRTU::erNoError )
+        reply.set(query.start,query.data);
 
-	return ret;
+    return ret;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::diagnostics( ModbusRTU::DiagnosticMessage& query,
-											ModbusRTU::DiagnosticRetMessage& reply )
+                                            ModbusRTU::DiagnosticRetMessage& reply )
 {
-	if( query.subf == ModbusRTU::subEcho )
-	{
-		reply = query;
-		return ModbusRTU::erNoError;
-	}
+    if( query.subf == ModbusRTU::subEcho )
+    {
+        reply = query;
+        return ModbusRTU::erNoError;
+    }
 
-	if( query.subf == ModbusRTU::dgBusErrCount )
-	{
-		reply = query;
-		reply.data[0] = errmap[ModbusRTU::erBadCheckSum];
-		return ModbusRTU::erNoError;
-	}
+    if( query.subf == ModbusRTU::dgBusErrCount )
+    {
+        reply = query;
+        reply.data[0] = errmap[ModbusRTU::erBadCheckSum];
+        return ModbusRTU::erNoError;
+    }
 
-	if( query.subf == ModbusRTU::dgMsgSlaveCount || query.subf == ModbusRTU::dgBusMsgCount )
-	{
-		reply = query;
-		reply.data[0] = askCount;
-		return ModbusRTU::erNoError;
-	}
+    if( query.subf == ModbusRTU::dgMsgSlaveCount || query.subf == ModbusRTU::dgBusMsgCount )
+    {
+        reply = query;
+        reply.data[0] = askCount;
+        return ModbusRTU::erNoError;
+    }
 
-	if( query.subf == ModbusRTU::dgSlaveNAKCount )
-	{
-		reply = query;
-		reply.data[0] = errmap[erOperationFailed];
-		return ModbusRTU::erNoError;
-	}
+    if( query.subf == ModbusRTU::dgSlaveNAKCount )
+    {
+        reply = query;
+        reply.data[0] = errmap[erOperationFailed];
+        return ModbusRTU::erNoError;
+    }
 
-	if( query.subf == ModbusRTU::dgClearCounters )
-	{
-		askCount = 0;
-		errmap[erOperationFailed] = 0;
-		errmap[ModbusRTU::erBadCheckSum] = 0;
-		// другие счётчики пока не сбрасываем..
-		reply = query;
-		return ModbusRTU::erNoError;
-	}
+    if( query.subf == ModbusRTU::dgClearCounters )
+    {
+        askCount = 0;
+        errmap[erOperationFailed] = 0;
+        errmap[ModbusRTU::erBadCheckSum] = 0;
+        // другие счётчики пока не сбрасываем..
+        reply = query;
+        return ModbusRTU::erNoError;
+    }
 
-	return ModbusRTU::erOperationFailed;
+    return ModbusRTU::erOperationFailed;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::read4314( ModbusRTU::MEIMessageRDI& query,
-								ModbusRTU::MEIMessageRetRDI& reply )
+                                ModbusRTU::MEIMessageRetRDI& reply )
 {
-	if( dlog.is_info() )
-		dlog.info() << "(read4314): " << query << endl;
+    if( dlog.is_info() )
+        dlog.info() << "(read4314): " << query << endl;
 
-//	if( query.devID <= rdevMinNum || query.devID >= rdevMaxNum )
-//		return erOperationFailed;
+//    if( query.devID <= rdevMinNum || query.devID >= rdevMaxNum )
+//        return erOperationFailed;
 
-	MEIDevIDMap::iterator dit = meidev.find(query.devID);
-	if( dit == meidev.end() )
-		return ModbusRTU::erBadDataAddress;
+    MEIDevIDMap::iterator dit = meidev.find(query.devID);
+    if( dit == meidev.end() )
+        return ModbusRTU::erBadDataAddress;
 
-	MEIObjIDMap::iterator oit = dit->second.find(query.objID);
-	if( oit == dit->second.end() )
-		return ModbusRTU::erBadDataAddress;
+    MEIObjIDMap::iterator oit = dit->second.find(query.objID);
+    if( oit == dit->second.end() )
+        return ModbusRTU::erBadDataAddress;
 
-	reply.mf = 0xFF;
-	reply.conformity = query.devID;
-	for( MEIValMap::iterator i=oit->second.begin(); i!=oit->second.end(); i++ )
-		reply.addData( i->first, i->second );
+    reply.mf = 0xFF;
+    reply.conformity = query.devID;
+    for( MEIValMap::iterator i=oit->second.begin(); i!=oit->second.end(); i++ )
+        reply.addData( i->first, i->second );
 
-	return erNoError;
+    return erNoError;
 }
 // -------------------------------------------------------------------------

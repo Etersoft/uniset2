@@ -35,82 +35,82 @@
 //namespase ORepository
 //{
 
-	/*! \class ObjectRepository  
-	 * \par
-	 * ... а здесь идет кратенькое описание... (коротенько минут на 40!...)
-	 *
-	 *	\note Репозиторий работает только, с локальным репозиторием 
-	 * \todo получение списка начиная с элемента номер N.
-	*/ 
+    /*! \class ObjectRepository
+     * \par
+     * ... а здесь идет кратенькое описание... (коротенько минут на 40!...)
+     *
+     *    \note Репозиторий работает только, с локальным репозиторием
+     * \todo получение списка начиная с элемента номер N.
+    */
     class ObjectRepository
     {
-    	public:
-						
-			ObjectRepository(UniSetTypes::Configuration* conf); 
-			~ObjectRepository();
-			
-		/**
-   		 @defgroup ORepGroup Группа функций регистрации в репозитории объектов
-	     @{ 	*/
-			//! Функция регистрации объекта по имени с указанием секции 
-			void registration(const std::string& name, const UniSetTypes::ObjectPtr oRef, const std::string& section, bool force=false)
-					throw(UniSetTypes::ORepFailed, UniSetTypes::ObjectNameAlready, UniSetTypes::InvalidObjectName, UniSetTypes::NameNotFound);
-	
-			//! Функция регистрации объекта по полному имени.
-			void registration(const std::string& fullName, const UniSetTypes::ObjectPtr oRef, bool force=false)
-					throw(UniSetTypes::ORepFailed, UniSetTypes::ObjectNameAlready,UniSetTypes::InvalidObjectName, UniSetTypes::NameNotFound);
+        public:
 
-			//! Удаление записи об объекте name в секции section
-			void unregistration(const std::string& name, const std::string& section)throw(UniSetTypes::ORepFailed, UniSetTypes::NameNotFound);
-			//! Удаление записи об объекте по полному имени
-			void unregistration(const std::string& fullName)throw(UniSetTypes::ORepFailed, UniSetTypes::NameNotFound);
-		// @} 
-		// end of ORepGroup
+            ObjectRepository(UniSetTypes::Configuration* conf);
+            ~ObjectRepository();
 
-		/*! Получение ссылки по заданному полному имени (разыменовывание) */
-		UniSetTypes::ObjectPtr resolve(const std::string& name, const std::string NSName="NameService")throw(UniSetTypes::ORepFailed, UniSetTypes::NameNotFound);
+        /**
+            @defgroup ORepGroup Группа функций регистрации в репозитории объектов
+         @{     */
+            //! Функция регистрации объекта по имени с указанием секции
+            void registration(const std::string& name, const UniSetTypes::ObjectPtr oRef, const std::string& section, bool force=false)
+                    throw(UniSetTypes::ORepFailed, UniSetTypes::ObjectNameAlready, UniSetTypes::InvalidObjectName, UniSetTypes::NameNotFound);
 
-		// Функции не со строковыми именами, а с идентификаторами
-//		void setListId( ListObjectId *lst );
+            //! Функция регистрации объекта по полному имени.
+            void registration(const std::string& fullName, const UniSetTypes::ObjectPtr oRef, bool force=false)
+                    throw(UniSetTypes::ORepFailed, UniSetTypes::ObjectNameAlready,UniSetTypes::InvalidObjectName, UniSetTypes::NameNotFound);
 
-		/*!  Проверка существования и доступности объекта */
-		bool isExist( UniSetTypes::ObjectPtr oref );
-		/*!  Проверка существования и доступности объекта */
-		bool isExist( const std::string& fullName );
+            //! Удаление записи об объекте name в секции section
+            void unregistration(const std::string& name, const std::string& section)throw(UniSetTypes::ORepFailed, UniSetTypes::NameNotFound);
+            //! Удаление записи об объекте по полному имени
+            void unregistration(const std::string& fullName)throw(UniSetTypes::ORepFailed, UniSetTypes::NameNotFound);
+        // @}
+        // end of ORepGroup
+
+        /*! Получение ссылки по заданному полному имени (разыменовывание) */
+        UniSetTypes::ObjectPtr resolve(const std::string& name, const std::string NSName="NameService")throw(UniSetTypes::ORepFailed, UniSetTypes::NameNotFound);
+
+        // Функции не со строковыми именами, а с идентификаторами
+//        void setListId( ListObjectId *lst );
+
+        /*!  Проверка существования и доступности объекта */
+        bool isExist( UniSetTypes::ObjectPtr oref );
+        /*!  Проверка существования и доступности объекта */
+        bool isExist( const std::string& fullName );
 
 
-		/**
-		 @defgroup ORepServiceGroup Группа сервисных функций Репозитория объектов
-		 @{
-		*/
-		
-		 /*! Тип объекта  */
-		 enum ObjectType{
-		 					ObjectRef,  /*!< ссылка на объект  */
-							Section		/*!< подсекция 	*/
-						};
+        /**
+         @defgroup ORepServiceGroup Группа сервисных функций Репозитория объектов
+         @{
+        */
 
-		//! Получение списка how_many объектов из секции section.
-		bool list(const std::string& section, UniSetTypes::ListObjectName *ls, unsigned int how_many=300)throw(UniSetTypes::ORepFailed);
-		
-		//! Получние списка how_many подсекций из секции in_section.
-		bool listSections(const std::string& in_section, UniSetTypes::ListObjectName *ls, unsigned int how_many=300)throw(UniSetTypes::ORepFailed);
-//		bool list_at(unsigned int start_pos, const char* section, ListObjectName *ls, unsigned int how_many=300)throw(ORepFailed);		
-		
-	// @}
-	// end of ORepServiceGroup 
+         /*! Тип объекта  */
+         enum ObjectType{
+                             ObjectRef,  /*!< ссылка на объект  */
+                            Section        /*!< подсекция     */
+                        };
 
-	protected:
+        //! Получение списка how_many объектов из секции section.
+        bool list(const std::string& section, UniSetTypes::ListObjectName *ls, unsigned int how_many=300)throw(UniSetTypes::ORepFailed);
 
-		ObjectRepository();
-		std::string nsName;
-		UniSetTypes::Configuration* uconf;
-		
-		bool list(const std::string& section, UniSetTypes::ListObjectName *ls, unsigned int how_many, ObjectType type);
+        //! Получние списка how_many подсекций из секции in_section.
+        bool listSections(const std::string& in_section, UniSetTypes::ListObjectName *ls, unsigned int how_many=300)throw(UniSetTypes::ORepFailed);
+//        bool list_at(unsigned int start_pos, const char* section, ListObjectName *ls, unsigned int how_many=300)throw(ORepFailed);
 
-	private:
-		bool init();
-		CosNaming::NamingContext_var localctx;
+    // @}
+    // end of ORepServiceGroup
+
+    protected:
+
+        ObjectRepository();
+        std::string nsName;
+        UniSetTypes::Configuration* uconf;
+
+        bool list(const std::string& section, UniSetTypes::ListObjectName *ls, unsigned int how_many, ObjectType type);
+
+    private:
+        bool init();
+        CosNaming::NamingContext_var localctx;
     };
 
 //};

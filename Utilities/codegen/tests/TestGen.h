@@ -1,46 +1,27 @@
 // -----------------------------------------------------------------------------
-#ifndef TestProc_H_
-#define TestProc_H_
+#ifndef TestGen_H_
+#define TestGen_H_
 // -----------------------------------------------------------------------------
-#include <vector>
-#include "Debug.h"
-#include "TestProc_SK.h"
+#include "TestGen_SK.h"
 // -----------------------------------------------------------------------------
-class TestProc:
-	public TestProc_SK
+class TestGen:
+    public TestGen_SK
 {
-	public:
-		TestProc( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::conf->getNode("TestProc") );
-		virtual ~TestProc();
+    public:
+        TestGen( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::conf->getNode("TestGen") );
+        virtual ~TestGen();
 
-	protected:
-		TestProc();
 
-		enum Timers
-		{
-			tmChange,
-			tmCheckWorking,
-			tmCheck,
-			tmLogControl
-		};
+    protected:
+        TestGen();
 
-		virtual void step();
-		virtual void sensorInfo( UniSetTypes::SensorMessage *sm );
-		virtual void timerInfo( UniSetTypes::TimerMessage *tm );
-        virtual void sysCommand( UniSetTypes::SystemMessage* sm );
-		
-        void test_depend();
-        void test_undefined_state();
-        void test_thresholds();
-        void test_loglevel();
+        virtual void step();
+        void sensorInfo( UniSetTypes::SensorMessage *sm );
+        void timerInfo( UniSetTypes::TimerMessage *tm );
+        virtual void sigterm( int signo );
 
-	private:
-		bool state;
-		bool undef;
-
-		std::vector<Debug::type> loglevels;
-		std::vector<Debug::type>::iterator lit;
+    private:
 };
 // -----------------------------------------------------------------------------
-#endif // TestProc_H_
+#endif // TestGen_H_
 // -----------------------------------------------------------------------------

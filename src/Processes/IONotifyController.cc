@@ -44,32 +44,32 @@ askIOMutex("askIOMutex"),
 trshMutex("trshMutex"),
 maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 {
-	
+
 }
 
 IONotifyController::IONotifyController(const string name, const string section, NCRestorer* d ): 
-	IOController(name, section),
-	restorer(d),
-	askIOMutex(name+"askIOMutex"),
-	trshMutex(name+"trshMutex"),
-	maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
+    IOController(name, section),
+    restorer(d),
+    askIOMutex(name+"askIOMutex"),
+    trshMutex(name+"trshMutex"),
+    maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 {
-	// добавляем фильтры
-	addIOFilter( sigc::mem_fun(this,&IONotifyController::myIOFilter) );
+    // добавляем фильтры
+    addIOFilter( sigc::mem_fun(this,&IONotifyController::myIOFilter) );
 }
 
 IONotifyController::IONotifyController( ObjectId id, NCRestorer* d ):
-	IOController(id),
-	restorer(d),
-	askIOMutex(string(conf->oind->getMapName(id))+"_askIOMutex"),
-	trshMutex(string(conf->oind->getMapName(id))+"_trshMutex"),
-	maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
+    IOController(id),
+    restorer(d),
+    askIOMutex(string(conf->oind->getMapName(id))+"_askIOMutex"),
+    trshMutex(string(conf->oind->getMapName(id))+"_trshMutex"),
+    maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 {
-	signal_change_undefined_state().connect(sigc::mem_fun(*this, &IONotifyController::onChangeUndefinedState));
-	signal_init().connect(sigc::mem_fun(*this, &IONotifyController::initItem));
+    signal_change_undefined_state().connect(sigc::mem_fun(*this, &IONotifyController::onChangeUndefinedState));
+    signal_init().connect(sigc::mem_fun(*this, &IONotifyController::initItem));
 
-	// добавляем фильтры
-	addIOFilter( sigc::mem_fun(this,&IONotifyController::myIOFilter) );
+    // добавляем фильтры
+    addIOFilter( sigc::mem_fun(this,&IONotifyController::myIOFilter) );
 }
 
 IONotifyController::~IONotifyController()
@@ -83,240 +83,240 @@ IONotifyController::~IONotifyController()
 /*
 struct FindCons_eq: public unary_function<UniSetTypes::ConsumerInfo, bool>
 {
-	FindCons_eq(const UniSetTypes::ConsumerInfo& ci):ci(ci){}
-	inline bool operator()(const UniSetTypes::ConsumerInfo& c) const
-	{
-		return !( ci.id==c.id && ci.node==c.node );
-	}
-	UniSetTypes::ConsumerInfo ci;
+    FindCons_eq(const UniSetTypes::ConsumerInfo& ci):ci(ci){}
+    inline bool operator()(const UniSetTypes::ConsumerInfo& c) const
+    {
+        return !( ci.id==c.id && ci.node==c.node );
+    }
+    UniSetTypes::ConsumerInfo ci;
 }
 */
 
 // ------------------------------------------------------------------------------------------
 /*!
- *	\param lst - указатель на список в который необходимо внести потребителя
- *	\param name - имя вносимого потребителя
- *	\note Добавление произойдет только если такого потребителя не существует в списке
+ *    \param lst - указатель на список в который необходимо внести потребителя
+ *    \param name - имя вносимого потребителя
+ *    \note Добавление произойдет только если такого потребителя не существует в списке
 */
 bool IONotifyController::addConsumer(ConsumerList& lst, const ConsumerInfo& ci )
 {
-//	ConsumerList::const_iterator it= find_if(lst.begin(), lst.end(), FindCons_eq(ci));
-//	if(it != lst.end() )
-//		return;
-	for( ConsumerList::const_iterator it=lst.begin(); it!=lst.end(); ++it) 
-	{
-		if( it->id==ci.id && it->node==ci.node )
-			return false;
-	}
+//    ConsumerList::const_iterator it= find_if(lst.begin(), lst.end(), FindCons_eq(ci));
+//    if(it != lst.end() )
+//        return;
+    for( ConsumerList::const_iterator it=lst.begin(); it!=lst.end(); ++it)
+    {
+        if( it->id==ci.id && it->node==ci.node )
+            return false;
+    }
 
-	ConsumerInfoExt cinf(ci,0,maxAttemtps);
-	// получаем ссылку
-	try
-	{
-		UniSetTypes::ObjectVar op = ui.resolve(ci.id,ci.node);
-		cinf.ref = UniSetObject_i::_narrow(op);
-	}
-	catch(...){}
-	
-	lst.push_front(cinf);
-	return true;
+    ConsumerInfoExt cinf(ci,0,maxAttemtps);
+    // получаем ссылку
+    try
+    {
+        UniSetTypes::ObjectVar op = ui.resolve(ci.id,ci.node);
+        cinf.ref = UniSetObject_i::_narrow(op);
+    }
+    catch(...){}
+
+    lst.push_front(cinf);
+    return true;
 }
 // ------------------------------------------------------------------------------------------
 /*!
- *	\param lst - указатель на список из которго происходит удаление потребителя
- *	\param name - имя удаляемого потребителя
+ *    \param lst - указатель на список из которго происходит удаление потребителя
+ *    \param name - имя удаляемого потребителя
 */
 bool IONotifyController::removeConsumer(ConsumerList& lst, const ConsumerInfo& cons )
 {
-	for( ConsumerList::iterator li=lst.begin();li!=lst.end();++li)
-	{
-//		ConsumerInfo tmp(*li);
-//		if( cons == tmp )
-		if( li->id == cons.id && li->node == cons.node  )		
-		{
-			lst.erase(li);
-//			ulog.info() << name.c_name() <<": удаляем "<< name << " из списка потребителей" << endl;
-			return true;
-		}
-	}
-	
-	return false;
+    for( ConsumerList::iterator li=lst.begin();li!=lst.end();++li)
+    {
+//        ConsumerInfo tmp(*li);
+//        if( cons == tmp )
+        if( li->id == cons.id && li->node == cons.node  )
+        {
+            lst.erase(li);
+//            ulog.info() << name.c_name() <<": удаляем "<< name << " из списка потребителей" << endl;
+            return true;
+        }
+    }
+
+    return false;
 }
 // ------------------------------------------------------------------------------------------
 /*! 
- *	\param si 		- информация о датчике
- *	\param ci	 	- информация о заказчике
- *	\param cmd 		- команда см. UniversalIO::UIOCommand
+ *    \param si         - информация о датчике
+ *    \param ci         - информация о заказчике
+ *    \param cmd         - команда см. UniversalIO::UIOCommand
 */
 void IONotifyController::askSensor(const IOController_i::SensorInfo& si,
-									const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd )
+                                    const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd )
 {
-	if( ulog.is_info() )
-	{
-		ulog.info() << "(askSensor): поступил " << ( cmd == UIODontNotify ? "отказ" :"заказ" ) << " от "
-			<< conf->oind->getNameById(ci.id, ci.node)
-			<< " на аналоговый датчик "
-			<< conf->oind->getNameById(si.id,si.node) << endl;
-	}
-	
-	// если такого аналогового датчика нет, здесь сработает исключение...
-	IOStateList::iterator li = myioEnd();
-	localGetValue(li,si);
+    if( ulog.is_info() )
+    {
+        ulog.info() << "(askSensor): поступил " << ( cmd == UIODontNotify ? "отказ" :"заказ" ) << " от "
+            << conf->oind->getNameById(ci.id, ci.node)
+            << " на аналоговый датчик "
+            << conf->oind->getNameById(si.id,si.node) << endl;
+    }
 
-	{	// lock
-		uniset_rwmutex_wrlock lock(askIOMutex);
-		// а раз есть заносим(исключаем) заказчика 
-		ask( askIOList, si, ci, cmd);
-	}	// unlock
+    // если такого аналогового датчика нет, здесь сработает исключение...
+    IOStateList::iterator li = myioEnd();
+    localGetValue(li,si);
 
-	// посылка первый раз состояния 
-	if( cmd==UniversalIO::UIONotify || (cmd==UIONotifyFirstNotNull && li->second.value) )
-	{
-		SensorMessage  smsg;
-		smsg.id 		= si.id;
-		smsg.node 		= si.node;
-		smsg.consumer 	= ci.id;
-		smsg.supplier 	= getId();
-		smsg.sensor_type= li->second.type;	
-		smsg.priority	= (Message::Priority)li->second.priority;
-		smsg.sm_tv_sec	= li->second.tv_sec;
-		smsg.sm_tv_usec	= li->second.tv_usec;
-		smsg.ci			= li->second.ci;
-		{
-			uniset_rwmutex_rlock lock(li->second.val_lock);
-			smsg.value 		= li->second.value;
-			smsg.undefined	= li->second.undefined;
-			smsg.sm_tv_sec	= li->second.tv_sec;
-			smsg.sm_tv_usec	= li->second.tv_usec;
-		}
-			
-		TransportMessage tm(smsg.transport_msg());
-	    try
-	    {
-			ui.send(ci.id, tm, ci.node);
-		}
-		catch(Exception& ex)
-		{
-			if( ulog.is_warn() )
-				ulog.warn() << myname << "(askSensor): " <<  conf->oind->getNameById(si.id, si.node) << " catch "<< ex << endl;
-		}
-	    catch( CORBA::SystemException& ex )
-	    {
-			if( ulog.is_warn() )
-			ulog.warn() << conf->oind->getNameById(ci.id, ci.node)
-				<< " недоступен!!(CORBA::SystemException): "
-					<< ex.NP_minorString() << endl;
-	    }
-		catch(...)
-		{
-			if( ulog.is_warn() )
-			ulog.warn() << conf->oind->getNameById(ci.id, ci.node)
-				<< " catch..." << endl;
-		}
-	}
+    {    // lock
+        uniset_rwmutex_wrlock lock(askIOMutex);
+        // а раз есть заносим(исключаем) заказчика
+        ask( askIOList, si, ci, cmd);
+    }    // unlock
+
+    // посылка первый раз состояния
+    if( cmd==UniversalIO::UIONotify || (cmd==UIONotifyFirstNotNull && li->second.value) )
+    {
+        SensorMessage  smsg;
+        smsg.id         = si.id;
+        smsg.node         = si.node;
+        smsg.consumer     = ci.id;
+        smsg.supplier     = getId();
+        smsg.sensor_type= li->second.type;
+        smsg.priority    = (Message::Priority)li->second.priority;
+        smsg.sm_tv_sec    = li->second.tv_sec;
+        smsg.sm_tv_usec    = li->second.tv_usec;
+        smsg.ci            = li->second.ci;
+        {
+            uniset_rwmutex_rlock lock(li->second.val_lock);
+            smsg.value         = li->second.value;
+            smsg.undefined    = li->second.undefined;
+            smsg.sm_tv_sec    = li->second.tv_sec;
+            smsg.sm_tv_usec    = li->second.tv_usec;
+        }
+
+        TransportMessage tm(smsg.transport_msg());
+        try
+        {
+            ui.send(ci.id, tm, ci.node);
+        }
+        catch(Exception& ex)
+        {
+            if( ulog.is_warn() )
+                   ulog.warn() << myname << "(askSensor): " <<  conf->oind->getNameById(si.id, si.node) << " catch "<< ex << endl;
+        }
+        catch( CORBA::SystemException& ex )
+        {
+            if( ulog.is_warn() )
+                ulog.warn() << conf->oind->getNameById(ci.id, ci.node)
+                    << " недоступен!!(CORBA::SystemException): "
+                    << ex.NP_minorString() << endl;
+        }
+        catch(...)
+        {
+            if( ulog.is_warn() )
+                ulog.warn() << conf->oind->getNameById(ci.id, ci.node)
+                    << " catch..." << endl;
+        }
+    }
 }
 
 // ------------------------------------------------------------------------------------------
 void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& si, 
-								const UniSetTypes::ConsumerInfo& cons, UniversalIO::UIOCommand cmd)
+                                const UniSetTypes::ConsumerInfo& cons, UniversalIO::UIOCommand cmd)
 {
-	// поиск датчика в списке 
-	UniSetTypes::KeyType k( key(si.id,si.node) );
-	AskMap::iterator askIterator = askLst.find(k);
+    // поиск датчика в списке
+    UniSetTypes::KeyType k( key(si.id,si.node) );
+    AskMap::iterator askIterator = askLst.find(k);
 
-  	switch (cmd)
-	{
-		case UniversalIO::UIONotify: // заказ
-		case UniversalIO::UIONotifyChange:
-		case UniversalIO::UIONotifyFirstNotNull:
-		{
-   			if( askIterator==askLst.end() ) 
-			{
-				ConsumerList lst; // создаем новый список
-				addConsumer(lst,cons);	  
-				// более оптимальный способ(при условии вставки первый раз) //	askLst[key]=lst;
-				askLst.insert(AskMap::value_type(k,lst));
-				
-				try
-				{
-					dumpOrdersList(si,lst);
-				}
-				catch(Exception& ex)
-				{
-					if( ulog.is_warn() )
-						ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
-				}
-				catch(...)
-				{
-					if( ulog.is_warn() )
-					ulog.warn() << myname << " не смогли сделать dump (catch...)" << endl;
-				}
-		    }
-			else
-			{
-				if( addConsumer(askIterator->second,cons) )
-				{
-					try
-					{
-						dumpOrdersList(si,askIterator->second);
-					}
-					catch(Exception& ex)
-					{
-						if( ulog.is_warn() )
-							ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
-					}
-					catch(...)
-					{	
-						if( ulog.is_warn() )
-						ulog.warn() << myname << " не смогли сделать dump (catch...)" << endl;
-					}
-				}
-		    }
-			break;
-		}
-		case UniversalIO::UIODontNotify: 	// отказ
-		{
-			if( askIterator!=askLst.end() )	// существует
-			{
-//				ConsumerList lst(askIterator->second);
-				if( removeConsumer(askIterator->second, cons) )
-				{
-					if( askIterator->second.empty() )
-						askLst.erase(askIterator);	
-					else
-					{
-						try
-						{
-							dumpOrdersList(si,askIterator->second);
-						}
-						catch(Exception& ex)
-						{
-							if( ulog.is_warn() )
-								ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
-						}
-						catch(...)
-						{		
-							if( ulog.is_warn() )
-							ulog.warn() << myname << " не смогли сделать dump (catch...)" << endl;
-						}
-					}
-				}
-			}
-			break;
-		}
-	
-		default:
-			break;
-	}
+      switch (cmd)
+    {
+        case UniversalIO::UIONotify: // заказ
+        case UniversalIO::UIONotifyChange:
+        case UniversalIO::UIONotifyFirstNotNull:
+        {
+               if( askIterator==askLst.end() )
+            {
+                ConsumerList lst; // создаем новый список
+                addConsumer(lst,cons);
+                // более оптимальный способ(при условии вставки первый раз) //    askLst[key]=lst;
+                askLst.insert(AskMap::value_type(k,lst));
+
+                try
+                {
+                    dumpOrdersList(si,lst);
+                }
+                catch(Exception& ex)
+                {
+                    if( ulog.is_warn() )
+                        ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
+                }
+                catch(...)
+                {
+                    if( ulog.is_warn() )
+                        ulog.warn() << myname << " не смогли сделать dump (catch...)" << endl;
+                }
+            }
+            else
+            {
+                if( addConsumer(askIterator->second,cons) )
+                {
+                    try
+                    {
+                        dumpOrdersList(si,askIterator->second);
+                    }
+                    catch(Exception& ex)
+                    {
+                        if( ulog.is_warn() )
+                            ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
+                    }
+                    catch(...)
+                    {
+                        if( ulog.is_warn() )
+                            ulog.warn() << myname << " не смогли сделать dump (catch...)" << endl;
+                    }
+                }
+            }
+            break;
+        }
+        case UniversalIO::UIODontNotify:     // отказ
+        {
+            if( askIterator!=askLst.end() )    // существует
+            {
+//                ConsumerList lst(askIterator->second);
+                if( removeConsumer(askIterator->second, cons) )
+                {
+                    if( askIterator->second.empty() )
+                        askLst.erase(askIterator);
+                    else
+                    {
+                        try
+                        {
+                            dumpOrdersList(si,askIterator->second);
+                        }
+                        catch(Exception& ex)
+                        {
+                            if( ulog.is_warn() )
+                                ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
+                        }
+                        catch(...)
+                        {
+                            if( ulog.is_warn() )
+                                ulog.warn() << myname << " не смогли сделать dump (catch...)" << endl;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+
+        default:
+            break;
+    }
 }
 // ------------------------------------------------------------------------------------------
 bool IONotifyController::myIOFilter( const USensorInfo& ai,
-									CORBA::Long newvalue, UniSetTypes::ObjectId sup_id )
+                                    CORBA::Long newvalue, UniSetTypes::ObjectId sup_id )
 {
-	if( ai.value == newvalue )
-		return false;
+    if( ai.value == newvalue )
+        return false;
 
-	return true;
+    return true;
 }
 // ------------------------------------------------------------------------------------------
 void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
@@ -333,7 +333,6 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
 
         if( ulog.is_info() )
             ulog.info() << err.str() << endl;
-
         throw IOController_i::NameNotFound(err.str().c_str());
     }
 
@@ -382,669 +381,668 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
         checkThreshold(li,si,true);
     }
     catch(...){}
->>>>>>> (2.0): Поменял механизм "зависимостей". Реализовал на освное сигналов(sigc), сменил формат. Теперь задаётся свойством depend='', depend_value='', depend_off_value=''
 }
 // ------------------------------------------------------------------------------------------
 /*!
-	\note В случае зависания в функции push, будут остановлены рассылки другим объектам.
-	Возможно нужно ввести своего агента на удалённой стороне, который будет заниматься
-	только приёмом сообщений и локальной рассылкой. Lav
+    \note В случае зависания в функции push, будут остановлены рассылки другим объектам.
+    Возможно нужно ввести своего агента на удалённой стороне, который будет заниматься
+    только приёмом сообщений и локальной рассылкой. Lav
 */
 void IONotifyController::send(ConsumerList& lst, UniSetTypes::SensorMessage& sm)
 {
-	for( ConsumerList::iterator li=lst.begin();li!=lst.end();++li )
-	{
-		for(int i=0; i<2; i++ )	// на каждый объект по две поптыки
-		{
-			try
-			{
-				if( CORBA::is_nil(li->ref) )
-				{
-					CORBA::Object_var op = ui.resolve(li->id, li->node);
-					li->ref = UniSetObject_i::_narrow(op);
-				}
+    for( ConsumerList::iterator li=lst.begin();li!=lst.end();++li )
+    {
+        for(int i=0; i<2; i++ )    // на каждый объект по две поптыки
+        {
+            try
+            {
+                if( CORBA::is_nil(li->ref) )
+                {
+                    CORBA::Object_var op = ui.resolve(li->id, li->node);
+                    li->ref = UniSetObject_i::_narrow(op);
+                }
 
-				sm.consumer = li->id;
-				li->ref->push( sm.transport_msg() );
-				li->attempt = maxAttemtps; // reinit attempts
-				break;
-			}
-			catch(Exception& ex)
-			{
-				if( ulog.is_warn() )
-					ulog.warn() << myname << "(IONotifyController::send): " << ex
-						<< " for " << conf->oind->getNameById(li->id, li->node) << endl;
-			}
-		    catch( CORBA::SystemException& ex )
-		    {
+                sm.consumer = li->id;
+                li->ref->push( sm.transport_msg() );
+                li->attempt = maxAttemtps; // reinit attempts
+                break;
+            }
+            catch(Exception& ex)
+            {
+                if( ulog.is_warn() )
+                       ulog.warn() << myname << "(IONotifyController::send): " << ex
+                        << " for " << conf->oind->getNameById(li->id, li->node) << endl;
+            }
+            catch( CORBA::SystemException& ex )
+            {
                 if( ulog.is_warn() )
                     ulog.warn() << myname << "(IONotifyController::send): "
                         << conf->oind->getNameById(li->id, li->node) << " (CORBA::SystemException): "
                         << ex.NP_minorString() << endl;
-	    	}
-			catch(...)
-			{
+            }
+            catch(...)
+            {
                 if( ulog.is_crit() )
                     ulog.crit() << myname << "(IONotifyController::send): "
-                        << conf->oind->getNameById(li->id, li->node)
+                        << conf->oind->getNameById(li->id, li->node) 
                         << " catch..." << endl;
-			}
-			
-			if( maxAttemtps>0 &&  (--li->attempt <= 0) )
-			{
-				li = lst.erase(li);
-				break;
-			}
+            }
 
-			li->ref = UniSetObject_i::_nil();
-		}
-	}
+            if( maxAttemtps>0 &&  (--li->attempt <= 0) )
+            {
+                li = lst.erase(li);
+                break;
+            }
+
+            li->ref = UniSetObject_i::_nil();
+        }
+    }
 }
 // --------------------------------------------------------------------------------------------------------------
 void IONotifyController::loggingInfo(UniSetTypes::SensorMessage& sm)
 {
-	IOController::logging(sm);
+    IOController::logging(sm);
 }
 // --------------------------------------------------------------------------------------------------------------
 bool IONotifyController::activateObject()
 {
-	// сперва вычитаем датчиков и заказчиков..
-	readDump();
-	// а потом уже собственно активация..
-	IOController::activateObject();
+    // сперва вычитаем датчиков и заказчиков..
+    readDump();
+    // а потом уже собственно активация..
+    IOController::activateObject();
 
-	return true;
+    return true;
 }
 // --------------------------------------------------------------------------------------------------------------
 void IONotifyController::readDump()
 {
-	try
-	{
-		if( restorer != NULL )
-			restorer->read(this);
-	}
-	catch(Exception& ex)
-	{ 
+    try
+    {
+        if( restorer != NULL )
+            restorer->read(this);
+    }
+    catch(Exception& ex)
+    {
         if( ulog.is_warn() )
             ulog.warn() << myname << "(IONotifyController::readDump): " << ex << endl;
-	}
+    }
 }
 // --------------------------------------------------------------------------------------------------------------
 void IONotifyController::initItem( IOStateList::iterator& li, IOController* ic )
 {
-	USensorInfo& s(li->second);
+    USensorInfo& s(li->second);
 
-	if( s.type == UniversalIO::AI || s.type == UniversalIO::AO )
-		checkThreshold( li, s.si, false );
+    if( s.type == UniversalIO::AI || s.type == UniversalIO::AO )
+        checkThreshold( li, s.si, false );
 }
 // ------------------------------------------------------------------------------------------
 void IONotifyController::dumpOrdersList(const IOController_i::SensorInfo& si, 
-											const IONotifyController::ConsumerList& lst)
+                                            const IONotifyController::ConsumerList& lst)
 {
-	if( restorer == NULL )
-		return;
+    if( restorer == NULL )
+        return;
 
-	try
-	{
-		NCRestorer::SInfo inf;
-		IOController_i::SensorIOInfo ainf( getSensorIOInfo(si) );
-		inf=ainf;
-		restorer->dump(this,inf,lst);
-	}
-	catch(Exception& ex)
-	{ 
+    try
+    {
+        NCRestorer::SInfo inf;
+        IOController_i::SensorIOInfo ainf( getSensorIOInfo(si) );
+        inf=ainf;
+        restorer->dump(this,inf,lst);
+    }
+    catch(Exception& ex)
+    {
         if( ulog.is_warn() )
             ulog.warn() << myname << "(IONotifyController::dumpOrderList): " << ex << endl;
-	}
+    }
 }
 // --------------------------------------------------------------------------------------------------------------
 
 void IONotifyController::dumpThresholdList(const IOController_i::SensorInfo& si, const IONotifyController::ThresholdExtList& lst)
 {
-	if( restorer == NULL )
-		return;
+    if( restorer == NULL )
+        return;
 
-	try
-	{
-		NCRestorer::SInfo inf;
-		IOController_i::SensorIOInfo ainf(getSensorIOInfo(si));
-		inf=ainf;
-		restorer->dumpThreshold(this,inf,lst);
-	}
-	catch(Exception& ex)
-	{ 
+    try
+    {
+        NCRestorer::SInfo inf;
+        IOController_i::SensorIOInfo ainf(getSensorIOInfo(si));
+        inf=ainf;
+        restorer->dumpThreshold(this,inf,lst);
+    }
+    catch(Exception& ex)
+    {
         if( ulog.is_warn() )
             ulog.warn() << myname << "(IONotifyController::dumpThresholdList): " << ex << endl;
-	}
+    }
 }
 // --------------------------------------------------------------------------------------------------------------
 
 void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, 
-									UniSetTypes::ThresholdId tid,
-									CORBA::Long lowLimit, CORBA::Long hiLimit,  CORBA::Boolean invert,
-									UniversalIO::UIOCommand cmd )
+                                    UniSetTypes::ThresholdId tid,
+                                    CORBA::Long lowLimit, CORBA::Long hiLimit,  CORBA::Boolean invert,
+                                    UniversalIO::UIOCommand cmd )
 {
-	if( lowLimit > hiLimit )
-		throw IONotifyController_i::BadRange();
+    if( lowLimit > hiLimit )
+        throw IONotifyController_i::BadRange();
 
-	// если такого дискретного датчика нет сдесь сработает исключение...
-	IOStateList::iterator li = myioEnd();
-	CORBA::Long val = localGetValue(li,si);
+    // если такого дискретного датчика нет сдесь сработает исключение...
+    IOStateList::iterator li = myioEnd();
+    CORBA::Long val = localGetValue(li,si);
 
-	{	// lock
-		uniset_rwmutex_wrlock lock(trshMutex);
+    {    // lock
+        uniset_rwmutex_wrlock lock(trshMutex);
 
-		// поиск датчика в списке 
-		UniSetTypes::KeyType skey( key(si.id,si.node) );
-		AskThresholdMap::iterator it = askTMap.find(skey);
-		ThresholdInfoExt ti(tid,lowLimit,hiLimit,invert);
-		ti.sit = myioEnd();
+        // поиск датчика в списке
+        UniSetTypes::KeyType skey( key(si.id,si.node) );
+        AskThresholdMap::iterator it = askTMap.find(skey);
+        ThresholdInfoExt ti(tid,lowLimit,hiLimit,invert);
+        ti.sit = myioEnd();
 
-	  	switch( cmd )
-		{
-			case UniversalIO::UIONotify: // заказ
-			case UniversalIO::UIONotifyChange:
-			{
-   				if( it==askTMap.end() ) 
-				{
-					ThresholdExtList lst;	// создаем новый список
-					ThresholdsListInfo tli;
-					tli.si 		= si;
-					tli.list 	= lst;
-					tli.type 	= li->second.type;
-					tli.ait		= myioEnd();
-					addThreshold(lst,ti,ci);
-					askTMap.insert(AskThresholdMap::value_type(skey,tli));
-					try
-					{
-						dumpThresholdList(si,lst);
-					}
-					catch(Exception& ex)
-					{
+          switch( cmd )
+        {
+            case UniversalIO::UIONotify: // заказ
+            case UniversalIO::UIONotifyChange:
+            {
+                   if( it==askTMap.end() )
+                {
+                    ThresholdExtList lst;    // создаем новый список
+                    ThresholdsListInfo tli;
+                    tli.si         = si;
+                    tli.list     = lst;
+                    tli.type     = li->second.type;
+                    tli.ait        = myioEnd();
+                    addThreshold(lst,ti,ci);
+                    askTMap.insert(AskThresholdMap::value_type(skey,tli));
+                    try
+                    {
+                        dumpThresholdList(si,lst);
+                    }
+                    catch(Exception& ex)
+                    {
                         if( ulog.is_warn() )
                             ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
-					}
-					catch(...)
-					{	
+                    }
+                    catch(...)
+                    {
                         if( ulog.is_warn() )
                             ulog.warn() << myname << " не смогли сделать dump" << endl;
-					}
-			    }
-				else
-				{
-					if( addThreshold(it->second.list,ti,ci) )
-					{
-						try
-						{
-							dumpThresholdList(si,it->second.list);
-						}
-						catch(Exception& ex)
-						{
+                    }
+                }
+                else
+                {
+                    if( addThreshold(it->second.list,ti,ci) )
+                    {
+                        try
+                        {
+                            dumpThresholdList(si,it->second.list);
+                        }
+                        catch(Exception& ex)
+                        {
                             if( ulog.is_warn() )
                                 ulog.warn() << myname << "(askThreshold): dump: " << ex << endl;
-						}
-						catch(...)
-						{	
+                        }
+                        catch(...)
+                        {
                             if( ulog.is_warn() )
                                 ulog.warn() << myname << "(askThreshold): dump catch..." << endl;
-						}
-					}
-				}
+                        }
+                    }
+                }
 
-				if( cmd == UniversalIO::UIONotifyChange )
-					break;
-				
-				// посылка первый раз состояния 
-			    try
-			    {
-					SensorMessage sm;
-					sm.id 			= si.id;
-					sm.node 		= si.node;
-					sm.value 		= val;
-					sm.undefined	= li->second.undefined;
-					sm.sensor_type 	= li->second.type;
-					sm.priority 	= (Message::Priority)li->second.priority;
-					sm.consumer 	= ci.id;
-					sm.tid 			= tid;
-					sm.sm_tv_sec	= ti.tv_sec;
-					sm.sm_tv_usec	= ti.tv_usec;
-					sm.ci			= li->second.ci;
-	
-					// Проверка нижнего предела
-					if( val <= lowLimit )
-					{
-						sm.threshold = false;
-					CORBA::Object_var op = ui.resolve(ci.id, ci.node);
-						UniSetObject_i_var ref = UniSetObject_i::_narrow(op);
-						if(!CORBA::is_nil(ref))
-							ref->push(sm.transport_msg());
-					}
-					// Проверка верхнего предела
-					else if( val >= hiLimit )
-					{
-						sm.threshold = true;
-						CORBA::Object_var op = ui.resolve(ci.id, ci.node);
-						UniSetObject_i_var ref = UniSetObject_i::_narrow(op);
-						if(!CORBA::is_nil(ref))
-							ref->push(sm.transport_msg());
-					}
-				}
-				catch(Exception& ex)
-				{
+                if( cmd == UniversalIO::UIONotifyChange )
+                    break;
+
+                // посылка первый раз состояния
+                try
+                {
+                    SensorMessage sm;
+                    sm.id             = si.id;
+                    sm.node         = si.node;
+                    sm.value         = val;
+                    sm.undefined    = li->second.undefined;
+                    sm.sensor_type     = li->second.type;
+                    sm.priority     = (Message::Priority)li->second.priority;
+                    sm.consumer     = ci.id;
+                    sm.tid             = tid;
+                    sm.sm_tv_sec    = ti.tv_sec;
+                    sm.sm_tv_usec    = ti.tv_usec;
+                    sm.ci            = li->second.ci;
+
+                    // Проверка нижнего предела
+                    if( val <= lowLimit )
+                    {
+                        sm.threshold = false;
+                    CORBA::Object_var op = ui.resolve(ci.id, ci.node);
+                        UniSetObject_i_var ref = UniSetObject_i::_narrow(op);
+                        if(!CORBA::is_nil(ref))
+                            ref->push(sm.transport_msg());
+                    }
+                    // Проверка верхнего предела
+                    else if( val >= hiLimit )
+                    {
+                        sm.threshold = true;
+                        CORBA::Object_var op = ui.resolve(ci.id, ci.node);
+                        UniSetObject_i_var ref = UniSetObject_i::_narrow(op);
+                        if(!CORBA::is_nil(ref))
+                            ref->push(sm.transport_msg());
+                    }
+                }
+                catch(Exception& ex)
+                {
                     if( ulog.is_warn() )
                         ulog.warn() << myname << "(askThreshod): " << ex << endl;
-				}
-			    catch( CORBA::SystemException& ex )
-			    {
+                }
+                catch( CORBA::SystemException& ex )
+                {
                     if( ulog.is_warn() )
                         ulog.warn() << myname << "(askThreshod): CORBA::SystemException: "
                             << ex.NP_minorString() << endl;
-			    }	
-			    catch(...)
-                {
+                }
+                catch(...)
+                {   
                     if( ulog.is_warn() )
                         ulog.warn() << myname << "(askThreshold): dump catch..." << endl;
                 }
             }
-			break;
+            break;
 
-			case UniversalIO::UIODontNotify: 	// отказ
-			{
-				if( it!=askTMap.end() )
-				{
-					if(	removeThreshold(it->second.list,ti,ci) )
-					{
-						try
-						{
-							dumpThresholdList(si,it->second.list);
-						}
-						catch(Exception& ex)
-						{
+            case UniversalIO::UIODontNotify:     // отказ
+            {
+                if( it!=askTMap.end() )
+                {
+                    if(    removeThreshold(it->second.list,ti,ci) )
+                    {
+                        try
+                        {
+                            dumpThresholdList(si,it->second.list);
+                        }
+                        catch(Exception& ex)
+                        {
                             if( ulog.is_warn() )
                                 ulog.warn() << myname << "(askThreshold): dump: " << ex << endl;
-						}
-						catch(...)
-						{	
+                        }
+                        catch(...)
+                        {
                             if( ulog.is_warn() )
                                 ulog.warn() << myname << "(askThreshold): dump catch..." << endl;
-						}
-					}
-				}
-			}
-			break;
+                        }
+                    }
+                }
+            }
+            break;
 
-			default:
-				break;
-		}
-	}	// unlock
+            default:
+                break;
+        }
+    }    // unlock
 
-}									
+}
 // --------------------------------------------------------------------------------------------------------------
 bool IONotifyController::addThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci)
 {
-	for( ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it) 
-	{
-		if( ti==(*it) )
-		{
-			if( addConsumer(it->clst, ci) )
-			{
-				ti.clst = it->clst;
-				return true;
-			}
-			return false;
-		}
-	}
+    for( ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it)
+    {
+        if( ti==(*it) )
+        {
+            if( addConsumer(it->clst, ci) )
+            {
+                ti.clst = it->clst;
+                return true;
+            }
+            return false;
+        }
+    }
 
-	addConsumer(ti.clst, ci);
+    addConsumer(ti.clst, ci);
 
-	// запоминаем начальное время
-	struct timeval tm;
-	struct timezone tz;
-	tm.tv_sec = 0; tm.tv_usec = 0;
-	gettimeofday(&tm,&tz);
-	ti.tv_sec	= tm.tv_sec;
-	ti.tv_usec 	= tm.tv_usec;
+    // запоминаем начальное время
+    struct timeval tm;
+    struct timezone tz;
+    tm.tv_sec = 0; tm.tv_usec = 0;
+    gettimeofday(&tm,&tz);
+    ti.tv_sec    = tm.tv_sec;
+    ti.tv_usec     = tm.tv_usec;
 
-	lst.push_front(ti);
-	return true;
+    lst.push_front(ti);
+    return true;
 }
 // --------------------------------------------------------------------------------------------------------------
 bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci )
 {
-	for( ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it) 
-	{
-		if( ti == (*it) )
-		{
-			if( removeConsumer(it->clst, ci) )
-			{
-				if( it->clst.empty() )
-					lst.erase(it);
-				return true;
-			}
-		}
-	}
+    for( ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it)
+    {
+        if( ti == (*it) )
+        {
+            if( removeConsumer(it->clst, ci) )
+            {
+                if( it->clst.empty() )
+                    lst.erase(it);
+                return true;
+            }
+        }
+    }
 
-	return false;
+    return false;
 }
 // --------------------------------------------------------------------------------------------------------------
 void IONotifyController::checkThreshold( IOStateList::iterator& li,
-										const IOController_i::SensorInfo& si, 
-										bool send_msg )
+                                        const IOController_i::SensorInfo& si,
+                                        bool send_msg )
 {
-	{	// lock
-		uniset_rwmutex_rlock lock(trshMutex);
+    {    // lock
+        uniset_rwmutex_rlock lock(trshMutex);
 
-		// поиск списка порогов
-		UniSetTypes::KeyType skey( key(si.id,si.node) );
-		AskThresholdMap::iterator lst = askTMap.find(skey);
-		if( lst==askTMap.end() )
-			return;
+        // поиск списка порогов
+        UniSetTypes::KeyType skey( key(si.id,si.node) );
+        AskThresholdMap::iterator lst = askTMap.find(skey);
+        if( lst==askTMap.end() )
+            return;
 
-		if( lst->second.list.empty() )
-			return;
+        if( lst->second.list.empty() )
+            return;
 
-		if( li == myioEnd() )
-			li = myiofind(key(si.id, si.node));
+        if( li == myioEnd() )
+            li = myiofind(key(si.id, si.node));
 
-		if( li==myioEnd() )
-			return; // ???
+        if( li==myioEnd() )
+            return; // ???
 
-		SensorMessage sm;
-		sm.id 			= si.id;
-		sm.node 		= si.node;
-		sm.sensor_type	= li->second.type;
-		sm.priority 	= (Message::Priority)li->second.priority;
-		sm.ci			= li->second.ci;
-		{
-			uniset_rwmutex_rlock lock(li->second.val_lock);
-			sm.value 		= li->second.value;
-			sm.undefined	= li->second.undefined;
-			sm.sm_tv_sec 	= li->second.tv_sec;
-			sm.sm_tv_usec 	= li->second.tv_usec;
-		}
+        SensorMessage sm;
+        sm.id             = si.id;
+        sm.node         = si.node;
+        sm.sensor_type    = li->second.type;
+        sm.priority     = (Message::Priority)li->second.priority;
+        sm.ci            = li->second.ci;
+        {
+            uniset_rwmutex_rlock lock(li->second.val_lock);
+            sm.value         = li->second.value;
+            sm.undefined    = li->second.undefined;
+            sm.sm_tv_sec     = li->second.tv_sec;
+            sm.sm_tv_usec     = li->second.tv_usec;
+        }
 
-		// текущее время
-		struct timeval tm;
-		struct timezone tz;
-		tm.tv_sec = 0; tm.tv_usec = 0;
-		gettimeofday(&tm,&tz);
+        // текущее время
+        struct timeval tm;
+        struct timezone tz;
+        tm.tv_sec = 0; tm.tv_usec = 0;
+        gettimeofday(&tm,&tz);
 
-		for( ThresholdExtList::iterator it=lst->second.list.begin(); it!=lst->second.list.end(); ++it) 
-		{
-			// Используем здесь sm.value чтобы не делать ещё раз lock на li->second.value
+        for( ThresholdExtList::iterator it=lst->second.list.begin(); it!=lst->second.list.end(); ++it)
+        {
+            // Используем здесь sm.value чтобы не делать ещё раз lock на li->second.value
 
-			IONotifyController_i::ThresholdState state = it->state;
+            IONotifyController_i::ThresholdState state = it->state;
 
-			if( !it->invert )
-			{
-				// Если логика не инвертированная, то срабатывание это - выход за зону >= hilimit
-				if( sm.value <= it->lowlimit  )
-					state = IONotifyController_i::NormalThreshold;
-				else if( sm.value >= it->hilimit )
-					state = IONotifyController_i::HiThreshold;
-			}
-			else
-			{
-				// Если логика инвертированная, то срабатывание это - выход за зону <= lowlimit
-				if( sm.value >= it->hilimit  )
-					state = IONotifyController_i::NormalThreshold;
-				else if( sm.value <= it->lowlimit )
-					state = IONotifyController_i::LowThreshold;
-			}
+            if( !it->invert )
+            {
+                // Если логика не инвертированная, то срабатывание это - выход за зону >= hilimit
+                if( sm.value <= it->lowlimit  )
+                    state = IONotifyController_i::NormalThreshold;
+                else if( sm.value >= it->hilimit )
+                    state = IONotifyController_i::HiThreshold;
+            }
+            else
+            {
+                // Если логика инвертированная, то срабатывание это - выход за зону <= lowlimit
+                if( sm.value >= it->hilimit  )
+                    state = IONotifyController_i::NormalThreshold;
+                else if( sm.value <= it->lowlimit )
+                    state = IONotifyController_i::LowThreshold;
+            }
 
-			// если ничего не менялось..
-			if( it->state == state )
-				continue;
+            // если ничего не менялось..
+            if( it->state == state )
+                continue;
 
-			it->state = state;
+            it->state = state;
 
-			sm.tid = it->id;
+            sm.tid = it->id;
 
-			// если состояние не normal, значит порог сработал,
-			// не важно какой.. нижний или верхний (зависит от inverse)
-			sm.threshold = ( state != IONotifyController_i::NormalThreshold ) ? true : false;
+            // если состояние не normal, значит порог сработал,
+            // не важно какой.. нижний или верхний (зависит от inverse)
+            sm.threshold = ( state != IONotifyController_i::NormalThreshold ) ? true : false;
 
-			// запоминаем время изменения состояния
-			it->tv_sec 		= tm.tv_sec;
-			it->tv_usec 	= tm.tv_usec;
-			sm.sm_tv_sec 	= tm.tv_sec;
-			sm.sm_tv_usec 	= tm.tv_usec;
+            // запоминаем время изменения состояния
+            it->tv_sec         = tm.tv_sec;
+            it->tv_usec     = tm.tv_usec;
+            sm.sm_tv_sec     = tm.tv_sec;
+            sm.sm_tv_usec     = tm.tv_usec;
 
-			// если порог связан с ддатчиком, то надо его выставить
-			if( it->sid != UniSetTypes::DefaultObjectId )
-			{
-				try
-				{
-					localSetValue(it->sit,SensorInfo(it->sid),(sm.threshold ? 1:0),getId());
-				}
-				catch( UniSetTypes::Exception& ex )
-				{
-					if( ulog.is_crit() )
-						ulog.crit() << myname << "(checkThreshold): " << ex << endl;
-				}
-			}
+            // если порог связан с ддатчиком, то надо его выставить
+            if( it->sid != UniSetTypes::DefaultObjectId )
+            {
+                try
+                {
+                    localSetValue(it->sit,SensorInfo(it->sid),(sm.threshold ? 1:0),getId());
+                }
+                catch( UniSetTypes::Exception& ex )
+                {
+                    if( ulog.is_crit() )
+                        ulog.crit() << myname << "(checkThreshold): " << ex << endl;
+                }
+            }
 
-			// отдельно посылаем сообщения заказчикам порогов, по данному "порогу"
-			if( send_msg )
-				send(it->clst, sm);
-		}
-	}	// unlock
+            // отдельно посылаем сообщения заказчикам порогов, по данному "порогу"
+            if( send_msg )
+                send(it->clst, sm);
+        }
+    }    // unlock
 }
 // --------------------------------------------------------------------------------------------------------------
 IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold( UniSetTypes::KeyType key, UniSetTypes::ThresholdId tid  )
 {
-	{	// lock
-		uniset_rwmutex_rlock lock(trshMutex);
-		// поиск списка порогов
-//		UniSetTypes::KeyType skey( key(si.id,si.node) );
-		AskThresholdMap::iterator lst = askTMap.find(key);
+    {    // lock
+        uniset_rwmutex_rlock lock(trshMutex);
+        // поиск списка порогов
+//        UniSetTypes::KeyType skey( key(si.id,si.node) );
+        AskThresholdMap::iterator lst = askTMap.find(key);
 
-		if( lst!=askTMap.end() )
-		{
-			for( ThresholdExtList::iterator it=lst->second.list.begin(); it!=lst->second.list.end(); ++it) 
-			{
-				if( it->id == tid )
-					return it;
-			}
-		}
-	}
-	
-	ThresholdExtList::iterator it;
-  	return it;
+        if( lst!=askTMap.end() )
+        {
+            for( ThresholdExtList::iterator it=lst->second.list.begin(); it!=lst->second.list.end(); ++it)
+            {
+                if( it->id == tid )
+                    return it;
+            }
+        }
+    }
+
+    ThresholdExtList::iterator it;
+      return it;
 }
 // --------------------------------------------------------------------------------------------------------------
 IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( const IOController_i::SensorInfo& si,
-											 UniSetTypes::ThresholdId tid )
+                                             UniSetTypes::ThresholdId tid )
 {
-	uniset_rwmutex_rlock lock(trshMutex);
+    uniset_rwmutex_rlock lock(trshMutex);
 
-	AskThresholdMap::iterator it = askTMap.find( key(si) );
-	if( it == askTMap.end() )
-	{
-		ostringstream err;
-		err << myname << "(getThresholds): Not found sensor (" << si.id << ":" << si.node << ") "
-			<< conf->oind->getNameById(si.id);
+    AskThresholdMap::iterator it = askTMap.find( key(si) );
+    if( it == askTMap.end() )
+    {
+        ostringstream err;
+        err << myname << "(getThresholds): Not found sensor (" << si.id << ":" << si.node << ") "
+            << conf->oind->getNameById(si.id);
 
-		if( ulog.is_info() )
-			ulog.info() << err.str() << endl;
+        if( ulog.is_info() )
+            ulog.info() << err.str() << endl;
 
-		throw IOController_i::NameNotFound(err.str().c_str());
-	}
+        throw IOController_i::NameNotFound(err.str().c_str());
+    }
 
-	for( ThresholdExtList::const_iterator it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
-	{
-		if( it2->id == tid )
-			return IONotifyController_i::ThresholdInfo( *it2 );
-	}
+    for( ThresholdExtList::const_iterator it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
+    {
+        if( it2->id == tid )
+            return IONotifyController_i::ThresholdInfo( *it2 );
+    }
 
-	ostringstream err;
-	err << myname << "(getThresholds): Not found for sensor (" << si.id << ":" << si.node << ") "
-		<< conf->oind->getNameById(si.id) << " ThresholdID='" << tid << "'";
+    ostringstream err;
+    err << myname << "(getThresholds): Not found for sensor (" << si.id << ":" << si.node << ") "
+        << conf->oind->getNameById(si.id) << " ThresholdID='" << tid << "'";
 
-	if( ulog.is_info() )
-		ulog.info() << err.str() << endl;
+    if( ulog.is_info() )
+        ulog.info() << err.str() << endl;
 
-	throw IOController_i::NameNotFound(err.str().c_str());
+    throw IOController_i::NameNotFound(err.str().c_str());
 }
 // --------------------------------------------------------------------------------------------------------------
 IONotifyController_i::ThresholdList* IONotifyController::getThresholds( const IOController_i::SensorInfo& si )
 {
-	uniset_rwmutex_rlock lock(trshMutex);
+    uniset_rwmutex_rlock lock(trshMutex);
 
-	AskThresholdMap::iterator it = askTMap.find( key(si) );
-	if( it == askTMap.end() )
-	{
-		ostringstream err;
-		err << myname << "(getThresholds): Not found sensor (" << si.id << ":" << si.node << ") "
-			<< conf->oind->getNameById(si.id);
+    AskThresholdMap::iterator it = askTMap.find( key(si) );
+    if( it == askTMap.end() )
+    {
+        ostringstream err;
+        err << myname << "(getThresholds): Not found sensor (" << si.id << ":" << si.node << ") "
+            << conf->oind->getNameById(si.id);
 
-		if( ulog.is_info() )
-			ulog.info() << err.str() << endl;
+        if( ulog.is_info() )
+            ulog.info() << err.str() << endl;
 
-		throw IOController_i::NameNotFound(err.str().c_str());
-	}
+        throw IOController_i::NameNotFound(err.str().c_str());
+    }
 
-	IONotifyController_i::ThresholdList* res = new IONotifyController_i::ThresholdList();
+    IONotifyController_i::ThresholdList* res = new IONotifyController_i::ThresholdList();
 
-	try
-	{
-		res->si 	= it->second.si;
-		res->value	= IOController::localGetValue(it->second.ait,it->second.si);
-		res->type 	= it->second.type;
-	}
-	catch( Exception& ex )
-	{
-		if( ulog.is_warn() )
-			ulog.warn() << myname << "(getThresholdsList): для датчика "
-				<< conf->oind->getNameById(it->second.si.id, it->second.si.node)
-				<< " " << ex << endl;
-	}
+    try
+    {
+        res->si     = it->second.si;
+        res->value    = IOController::localGetValue(it->second.ait,it->second.si);
+        res->type     = it->second.type;
+    }
+    catch( Exception& ex )
+    {
+        if( ulog.is_warn() )
+            ulog.warn() << myname << "(getThresholdsList): для датчика "
+                << conf->oind->getNameById(it->second.si.id, it->second.si.node)
+                << " " << ex << endl;
+    }
 
-	res->tlist.length( it->second.list.size() );
+    res->tlist.length( it->second.list.size() );
 
-	int k=0;
-	for( ThresholdExtList::const_iterator it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
-	{
-		res->tlist[k].id 		= it2->id;
-		res->tlist[k].hilimit 	= it2->hilimit;
-		res->tlist[k].lowlimit 	= it2->lowlimit;
-		res->tlist[k].state 	= it2->state;
-		res->tlist[k].tv_sec 	= it2->tv_sec;
-		res->tlist[k].tv_usec 	= it2->tv_usec;
-		k++;
-	}
+    int k=0;
+    for( ThresholdExtList::const_iterator it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
+    {
+        res->tlist[k].id         = it2->id;
+        res->tlist[k].hilimit     = it2->hilimit;
+        res->tlist[k].lowlimit     = it2->lowlimit;
+        res->tlist[k].state     = it2->state;
+        res->tlist[k].tv_sec     = it2->tv_sec;
+        res->tlist[k].tv_usec     = it2->tv_usec;
+        k++;
+    }
 
-	return res;
+    return res;
 }
 // --------------------------------------------------------------------------------------------------------------
 IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 {
-//	ulog.info() << myname << "(getThresholdsList): ...\n";
+//    ulog.info() << myname << "(getThresholdsList): ...\n";
 
-	IONotifyController_i::ThresholdsListSeq* res = new IONotifyController_i::ThresholdsListSeq();
+    IONotifyController_i::ThresholdsListSeq* res = new IONotifyController_i::ThresholdsListSeq();
 
-	res->length( askTMap.size() );
+    res->length( askTMap.size() );
 
-	if( !askTMap.empty() )
-	{
-		int i=0;
-		for( AskThresholdMap::iterator it=askTMap.begin(); it!=askTMap.end(); ++it )
-		{
-			try
-			{
-				(*res)[i].si 	= it->second.si;
-				(*res)[i].value	= IOController::localGetValue(it->second.ait,it->second.si);
-				(*res)[i].type 	= it->second.type;
-			}
-			catch(Exception& ex)
-			{
+    if( !askTMap.empty() )
+    {
+        int i=0;
+        for( AskThresholdMap::iterator it=askTMap.begin(); it!=askTMap.end(); ++it )
+        {
+            try
+            {
+                (*res)[i].si     = it->second.si;
+                (*res)[i].value    = IOController::localGetValue(it->second.ait,it->second.si);
+                (*res)[i].type     = it->second.type;
+            }
+            catch(Exception& ex)
+            {
                 if( ulog.is_warn() )
                     ulog.warn() << myname << "(getThresholdsList): для датчика "
                         << conf->oind->getNameById(it->second.si.id, it->second.si.node)
                         << " " << ex << endl;
-				continue;
-			}
-			
-			(*res)[i].tlist.length( it->second.list.size() );
+                continue;
+            }
 
-			int k=0;
-			for( ThresholdExtList::const_iterator it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
-			{
-				(*res)[i].tlist[k].id 			= it2->id;
-				(*res)[i].tlist[k].hilimit 		= it2->hilimit;
-				(*res)[i].tlist[k].lowlimit 	= it2->lowlimit;
-				(*res)[i].tlist[k].state 		= it2->state;
-				(*res)[i].tlist[k].tv_sec 		= it2->tv_sec;
-				(*res)[i].tlist[k].tv_usec 		= it2->tv_usec;
-				k++;
-			}
-			i++;
-		}
-	}
-	return res;
+            (*res)[i].tlist.length( it->second.list.size() );
+
+            int k=0;
+            for( ThresholdExtList::const_iterator it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
+            {
+                (*res)[i].tlist[k].id             = it2->id;
+                (*res)[i].tlist[k].hilimit         = it2->hilimit;
+                (*res)[i].tlist[k].lowlimit     = it2->lowlimit;
+                (*res)[i].tlist[k].state         = it2->state;
+                (*res)[i].tlist[k].tv_sec         = it2->tv_sec;
+                (*res)[i].tlist[k].tv_usec         = it2->tv_usec;
+                k++;
+            }
+            i++;
+        }
+    }
+    return res;
 }
 // -----------------------------------------------------------------------------
 void IONotifyController::onChangeUndefinedState( IOStateList::iterator& lit, IOController* ic )
 {
-	USensorInfo& it(lit->second);
+    USensorInfo& it(lit->second);
 
-	SensorMessage sm;
+    SensorMessage sm;
 
-	// эти поля можно копировать без lock, т.к. они не меняются
-	sm.id 	= it.si.id;
-	sm.node = it.si.node;
-	sm.undefined = it.undefined;
-	sm.priority 	= (Message::Priority)it.priority;
-	sm.sensor_type 	= it.type;
-	sm.supplier 	= DefaultObjectId;
+    // эти поля можно копировать без lock, т.к. они не меняются
+    sm.id     = it.si.id;
+    sm.node = it.si.node;
+    sm.undefined = it.undefined;
+    sm.priority     = (Message::Priority)it.priority;
+    sm.sensor_type     = it.type;
+    sm.supplier     = DefaultObjectId;
 
-	{ // lock
-		uniset_rwmutex_rlock lock(it.val_lock);
-		sm.value 		= it.value;
-		sm.sm_tv_sec 	= it.tv_sec;
-		sm.sm_tv_usec 	= it.tv_usec;
-		sm.ci			= it.ci;
-	} // unlock
+    { // lock
+        uniset_rwmutex_rlock lock(it.val_lock);
+        sm.value         = it.value;
+        sm.sm_tv_sec     = it.tv_sec;
+        sm.sm_tv_usec     = it.tv_usec;
+        sm.ci            = it.ci;
+    } // unlock
 
-	try
-	{	
-		if( !it.dbignore )
-			loggingInfo(sm);
-	}
-	catch(...){}
+    try
+    {
+        if( !it.dbignore )
+            loggingInfo(sm);
+    }
+    catch(...){}
 
-	AskMap::iterator it1 = askIOList.find( key(it.si.id,it.si.node) );
-	if( it1!=askIOList.end() )
-	{	// lock
-		uniset_rwmutex_rlock lock(askIOMutex);
-		send(it1->second, sm);
-	}	// unlock
+    AskMap::iterator it1 = askIOList.find( key(it.si.id,it.si.node) );
+    if( it1!=askIOList.end() )
+    {    // lock
+        uniset_rwmutex_rlock lock(askIOMutex);
+        send(it1->second, sm);
+    }    // unlock
 }
 
 // -----------------------------------------------------------------------------
 IDSeq* IONotifyController::askSensorsSeq( const UniSetTypes::IDSeq& lst, 
-											const UniSetTypes::ConsumerInfo& ci,
-											UniversalIO::UIOCommand cmd)
+                                            const UniSetTypes::ConsumerInfo& ci,
+                                            UniversalIO::UIOCommand cmd)
 {
-	UniSetTypes::IDList badlist; // cписок не найденных идентификаторов
-	
-	IOController_i::SensorInfo si;
+    UniSetTypes::IDList badlist; // cписок не найденных идентификаторов
 
-	int size = lst.length();
-	for(int i=0; i<size; i++)
-	{
-		si.id 	= lst[i];
-		si.node = conf->getLocalNode();
-		try
-		{
-			askSensor(si,ci,cmd);
-		}
-		catch(...)
-		{
-			badlist.add( lst[i] );
-		}
-	}
+    IOController_i::SensorInfo si;
 
-	return badlist.getIDSeq();
+    int size = lst.length();
+    for(int i=0; i<size; i++)
+    {
+        si.id     = lst[i];
+        si.node = conf->getLocalNode();
+        try
+        {
+            askSensor(si,ci,cmd);
+        }
+        catch(...)
+        {
+            badlist.add( lst[i] );
+        }
+    }
+
+    return badlist.getIDSeq();
 }
 // -----------------------------------------------------------------------------

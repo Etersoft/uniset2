@@ -4,24 +4,24 @@
 #include <string>
 // --------------------------------------------------------------------------
 /*! Базовый класс для одиночных процессов.
-	Обеспечивает корректное завершение процесса,
-	даже по сигналам...
+    Обеспечивает корректное завершение процесса,
+    даже по сигналам...
 */
 class SingleProcess
 {
-	public:
-		SingleProcess();
-		virtual ~SingleProcess();
-	
-	protected:
-		virtual void term( int signo ){}
+    public:
+        SingleProcess();
+        virtual ~SingleProcess();
 
-		static void set_signals( bool ask );
+    protected:
+        virtual void term( int signo ){}
 
-	private:
+        static void set_signals( bool ask );
 
-		static void terminated( int signo );
-		static void finishterm( int signo );
+    private:
+
+        static void terminated( int signo );
+        static void finishterm( int signo );
 
 };
 // --------------------------------------------------------------------------

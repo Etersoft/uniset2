@@ -11,91 +11,91 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 int main(int argc, const char **argv)
 {
-	try
-	{
-		string confile=UniSetTypes::getArgParam("--confile",argc,argv,"configure.xml");
-		conf = new Configuration( argc, argv, confile );
+    try
+    {
+        string confile=UniSetTypes::getArgParam("--confile",argc,argv,"configure.xml");
+        conf = new Configuration( argc, argv, confile );
 
-		string logfilename(conf->getArgParam("--logicproc-logfile"));
-		if( logfilename.empty() )
-			logfilename = "logicproc.log";
-	
-		conf->initDebug(dlog,"dlog");
-	
-		std::ostringstream logname;
-		string dir(conf->getLogDir());
-		logname << dir << logfilename;
-		ulog.logFile( logname.str() );
-		dlog.logFile( logname.str() );
+        string logfilename(conf->getArgParam("--logicproc-logfile"));
+        if( logfilename.empty() )
+            logfilename = "logicproc.log";
 
-		string schema = conf->getArgParam("--schema");
-		if( schema.empty() )
-		{
-			cerr << "schema-file not defined. Use --schema" << endl;
-			return 1;
-		}
+        conf->initDebug(dlog,"dlog");
 
-		ObjectId shmID = DefaultObjectId;
-		string sID = conf->getArgParam("--smemory-id");
-		if( !sID.empty() )
-			shmID = conf->getControllerID(sID);
-		else
-			shmID = getSharedMemoryID();
+        std::ostringstream logname;
+        string dir(conf->getLogDir());
+        logname << dir << logfilename;
+        ulog.logFile( logname.str() );
+        dlog.logFile( logname.str() );
 
-		if( shmID == DefaultObjectId )
-		{
-			cerr << sID << "? SharedMemoryID not found in " << conf->getControllersSection() << " section" << endl;
-			return 1;
-		}
+        string schema = conf->getArgParam("--schema");
+        if( schema.empty() )
+        {
+            cerr << "schema-file not defined. Use --schema" << endl;
+            return 1;
+        }
 
-		cout << "init smemory: " << sID << " ID: " << shmID << endl; 
-		
-		string name = conf->getArgParam("--name","LProcessor");
-		if( name.empty() )
-		{
-			cerr << "(plogicproc): Не задан name'" << endl;
-			return 1;
-		}
+        ObjectId shmID = DefaultObjectId;
+        string sID = conf->getArgParam("--smemory-id");
+        if( !sID.empty() )
+            shmID = conf->getControllerID(sID);
+        else
+            shmID = getSharedMemoryID();
 
-		ObjectId ID = conf->getObjectID(name);
-		if( ID == UniSetTypes::DefaultObjectId )
-		{
-			cerr << "(plogicproc): идентификатор '" << name 
-				<< "' не найден в конф. файле!"
-				<< " в секции " << conf->getObjectsSection() << endl;
-			return 1;
-		}
+        if( shmID == DefaultObjectId )
+        {
+            cerr << sID << "? SharedMemoryID not found in " << conf->getControllersSection() << " section" << endl;
+            return 1;
+        }
 
-		cout << "init name: " << name << " ID: " << ID << endl; 
+        cout << "init smemory: " << sID << " ID: " << shmID << endl;
 
-		PassiveLProcessor plc(schema,ID,shmID);
+        string name = conf->getArgParam("--name","LProcessor");
+        if( name.empty() )
+        {
+            cerr << "(plogicproc): Не задан name'" << endl;
+            return 1;
+        }
 
-		UniSetActivator act;
-		act.addObject(static_cast<class UniSetObject*>(&plc));
+        ObjectId ID = conf->getObjectID(name);
+        if( ID == UniSetTypes::DefaultObjectId )
+        {
+            cerr << "(plogicproc): идентификатор '" << name
+                << "' не найден в конф. файле!"
+                << " в секции " << conf->getObjectsSection() << endl;
+            return 1;
+        }
 
-		SystemMessage sm(SystemMessage::StartUp); 
-		act.broadcast( sm.transport_msg() );
+        cout << "init name: " << name << " ID: " << ID << endl;
 
-		ulog << "\n\n\n";
-		ulog << "(main): -------------- IOControl START -------------------------\n\n";
-		dlog << "\n\n\n";
-		dlog << "(main): -------------- IOControl START -------------------------\n\n";
-		act.run(false);
-		return 0;
-	}
-	catch( LogicException& ex )
-	{
-		cerr << ex << endl;
-	}
-	catch( Exception& ex )
-	{
-		cerr << ex << endl;
-	}
-	catch( ... )
-	{
-		cerr << " catch ... " << endl;
-	}
-	
-	return 1;
+        PassiveLProcessor plc(schema,ID,shmID);
+
+        UniSetActivator act;
+        act.addObject(static_cast<class UniSetObject*>(&plc));
+
+        SystemMessage sm(SystemMessage::StartUp);
+        act.broadcast( sm.transport_msg() );
+
+        ulog << "\n\n\n";
+        ulog << "(main): -------------- IOControl START -------------------------\n\n";
+        dlog << "\n\n\n";
+        dlog << "(main): -------------- IOControl START -------------------------\n\n";
+        act.run(false);
+        return 0;
+    }
+    catch( LogicException& ex )
+    {
+        cerr << ex << endl;
+    }
+    catch( Exception& ex )
+    {
+        cerr << ex << endl;
+    }
+    catch( ... )
+    {
+        cerr << " catch ... " << endl;
+    }
+
+    return 1;
 }
 // -----------------------------------------------------------------------------

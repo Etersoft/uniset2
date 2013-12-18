@@ -40,16 +40,16 @@ class NCRestorer;
     \page page_IONotifyController Хранение информации о состоянии с уведомлениями об изменении (IONotifyController)
     
     Класс IONotifyController расширяет набор задач класса IOController.
-	Для ознакомления с базовыми функциями см. \ref page_IOController
+    Для ознакомления с базовыми функциями см. \ref page_IOController
 
-	Задачи решаемые IONotifyController-ом (\b IONC):
-	- \ref sec_NC_AskSensors
-	- \ref sec_NC_Consumers
-	- \ref sec_NC_Thresholds
-	- \ref sec_NC_Depends
+    Задачи решаемые IONotifyController-ом (\b IONC):
+    - \ref sec_NC_AskSensors
+    - \ref sec_NC_Consumers
+    - \ref sec_NC_Thresholds
+    - \ref sec_NC_Depends
 
-	\section sec_NC_AskSensors Механизм заказа датчиков
-	Главной задачей класса IONotifyController является уведомление
+    \section sec_NC_AskSensors Механизм заказа датчиков
+    Главной задачей класса IONotifyController является уведомление
 объектов (заказчиков) об изменении состояния датчика (входа или выхода).
 
 Механизм функционирует по следующей логике: 
@@ -63,7 +63,7 @@ class NCRestorer;
 и оставлены для совместимости со старыми интерфейсами.
 ... продолжение следует...
 
-	\section sec_NC_Consumers  Заказчики
+    \section sec_NC_Consumers  Заказчики
 В качестве "заказчиков" могут выступать любые UniSet-объекты (UniSetObject),
 обладающие "обратным адресом" (идентификатором), по которому присылается
 уведомление об изменении состояния. Свой обратный адрес, объекты указывают 
@@ -88,27 +88,27 @@ class NCRestorer;
 \endcode
 "Статический" способ заказа гарантирует, что при перезапуске
 \b IONC список заказчиков будет восстановлен по конфигурационному файлу.
-	
-	\section sec_NC_Thresholds Пороговые датчики
-	
-	\section sec_NC_Depends Механизм зависимостей между датчиками
-	Механизм зависимостей позволяет задать зависимость одного датчика, от другого.
+
+    \section sec_NC_Thresholds Пороговые датчики
+
+    \section sec_NC_Depends Механизм зависимостей между датчиками
+    Механизм зависимостей позволяет задать зависимость одного датчика, от другого.
 Например пока "разрешающий" датчик не равен "1", у зависимого держится значение "0".
-	Зависимость настраивается в конфигурационном файле, непосредственно у "зависимого датчика".
-	<br>Доступные настройки:
+    Зависимость настраивается в конфигурационном файле, непосредственно у "зависимого датчика".
+    <br>Доступные настройки:
   - \b depend            - задаёт имя датчика \b ОТ \b КОТОРОГО зависит данный
   - \b depend_value      - задаёт "разрешающее работу" значение (если поле не задано, считается depend_value="1").
   - \b depend_off_value  - задаёт значение которое будет выставлено для данного датчика, в случае его "блокировки". По умолчанию 0.
 
 \code
-	...
-	<sensors ..>
-		...
-		<item id="11" iotype="AI" name="AI11_AS" textname="AI 11" depend="Input4_S" depend_off_value="-50"/>
-		...
-	</sensors>
+    ...
+    <sensors ..>
+        ...
+        <item id="11" iotype="AI" name="AI11_AS" textname="AI 11" depend="Input4_S" depend_off_value="-50"/>
+        ...
+    </sensors>
 \endcode
-	В данном примере можно увидеть, что датчик AI11_AS зависит от датчика Input4_S и пока Input4_S=0,
+    В данном примере можно увидеть, что датчик AI11_AS зависит от датчика Input4_S и пока Input4_S=0,
 в AI11_AS будет записано значение -50. Как только Input4_S=1 в AI11_AS - появиться его истинное значение.
 
 \note Следует иметь ввиду, что для \b ЗАВИСИМОГО датчика функция setValue(..) действует как обычно и
@@ -119,199 +119,199 @@ class NCRestorer;
  * \todo Сделать логирование выходов 
  
  \section AskSensors Заказ датчиков
-	
-	....
-	ConsumerMaxAttempts - максимальное число неудачных 
+
+    ....
+    ConsumerMaxAttempts - максимальное число неудачных
 попыток послать сообщение "заказчику". Настраивается в 
 конфигурационном файле. По умолчанию = 5.
 */ 
 class IONotifyController: 
-	public IOController,
-	public POA_IONotifyController_i
+    public IOController,
+    public POA_IONotifyController_i
 {
-	public:
-	
-		IONotifyController(const std::string name, const std::string section, NCRestorer* dumper=0);
-		IONotifyController(UniSetTypes::ObjectId id, NCRestorer* dumper=0);
+    public:
 
-	    virtual ~IONotifyController();
+        IONotifyController(const std::string name, const std::string section, NCRestorer* dumper=0);
+        IONotifyController(UniSetTypes::ObjectId id, NCRestorer* dumper=0);
 
-		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("IONotifyController"); }
+        virtual ~IONotifyController();
 
-		virtual void askSensor(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
+        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("IONotifyController"); }
 
-		virtual void askThreshold(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci,
-									UniSetTypes::ThresholdId tid,
-									CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Boolean invert,
-									UniversalIO::UIOCommand cmd );
+        virtual void askSensor(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 
-		virtual IONotifyController_i::ThresholdInfo getThresholdInfo( const IOController_i::SensorInfo& si, UniSetTypes::ThresholdId tid );
-		virtual IONotifyController_i::ThresholdList* getThresholds(const IOController_i::SensorInfo& si );
-		virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList();
+        virtual void askThreshold(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci,
+                                    UniSetTypes::ThresholdId tid,
+                                    CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Boolean invert,
+                                    UniversalIO::UIOCommand cmd );
 
-		virtual UniSetTypes::IDSeq* askSensorsSeq(const UniSetTypes::IDSeq& lst,
-													const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
+        virtual IONotifyController_i::ThresholdInfo getThresholdInfo( const IOController_i::SensorInfo& si, UniSetTypes::ThresholdId tid );
+        virtual IONotifyController_i::ThresholdList* getThresholds(const IOController_i::SensorInfo& si );
+        virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList();
 
-		// --------------------------------------------
+        virtual UniSetTypes::IDSeq* askSensorsSeq(const UniSetTypes::IDSeq& lst,
+                                                    const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 
-		// функция для работы напрямую черех iterator (оптимизация)
-		virtual void localSetValue( IOController::IOStateList::iterator& it,
-									const IOController_i::SensorInfo& si,
-									CORBA::Long value, UniSetTypes::ObjectId sup_id );
+        // --------------------------------------------
 
-		// --------------------------------------------
+        // функция для работы напрямую черех iterator (оптимизация)
+        virtual void localSetValue( IOController::IOStateList::iterator& it,
+                                    const IOController_i::SensorInfo& si,
+                                    CORBA::Long value, UniSetTypes::ObjectId sup_id );
 
-		/*! Информация о заказчике */
-		struct ConsumerInfoExt:
-			public	UniSetTypes::ConsumerInfo
-		{
-			ConsumerInfoExt( const UniSetTypes::ConsumerInfo& ci,
-							UniSetObject_i_ptr ref=0, int maxAttemtps = 10 ):
-				UniSetTypes::ConsumerInfo(ci),
-				ref(ref),attempt(maxAttemtps){}
+        // --------------------------------------------
 
-			UniSetObject_i_var ref;
-			int attempt;
-		};
+        /*! Информация о заказчике */
+        struct ConsumerInfoExt:
+            public    UniSetTypes::ConsumerInfo
+        {
+            ConsumerInfoExt( const UniSetTypes::ConsumerInfo& ci,
+                            UniSetObject_i_ptr ref=0, int maxAttemtps = 10 ):
+                UniSetTypes::ConsumerInfo(ci),
+                ref(ref),attempt(maxAttemtps){}
 
-		typedef std::list<ConsumerInfoExt> ConsumerList;
+            UniSetObject_i_var ref;
+            int attempt;
+        };
 
-		/*! Информация о пороговом значении */
-		struct ThresholdInfoExt:
-			public IONotifyController_i::ThresholdInfo
-		{
-			ThresholdInfoExt( UniSetTypes::ThresholdId tid, CORBA::Long low, CORBA::Long hi, bool inv,
-								UniSetTypes::ObjectId _sid=UniSetTypes::DefaultObjectId ):
-			sid(_sid),
-			invert(inv)
-			{
-				id			= tid;
-				hilimit		= hi;
-				lowlimit	= low;
-				state 		= IONotifyController_i::NormalThreshold;
-			}
+        typedef std::list<ConsumerInfoExt> ConsumerList;
 
-			ConsumerList clst;
+        /*! Информация о пороговом значении */
+        struct ThresholdInfoExt:
+            public IONotifyController_i::ThresholdInfo
+        {
+            ThresholdInfoExt( UniSetTypes::ThresholdId tid, CORBA::Long low, CORBA::Long hi, bool inv,
+                                UniSetTypes::ObjectId _sid=UniSetTypes::DefaultObjectId ):
+            sid(_sid),
+            invert(inv)
+            {
+                id            = tid;
+                hilimit        = hi;
+                lowlimit    = low;
+                state         = IONotifyController_i::NormalThreshold;
+            }
 
-			/*! идентификатор дискретного датчика связанного с данным порогом */
-			UniSetTypes::ObjectId sid;
-			
-			/*! итератор в списке датчиков (для оптимально-быстрого доступа) */
-			IOController::IOStateList::iterator sit;
-			
-			/*! инверсная логика */
-			bool invert;
-	
-			inline bool operator== ( const ThresholdInfo& r ) const
-			{
-				return ((id == r.id) && 
-						(hilimit == r.hilimit) && 
-						(lowlimit == r.lowlimit) &&
-						(invert == r.invert) );
-			}
+            ConsumerList clst;
 
-			operator IONotifyController_i::ThresholdInfo()
-			{
-				IONotifyController_i::ThresholdInfo r;
-				r.id = id;
-				r.hilimit = hilimit;
-				r.lowlimit = lowlimit;
-				r.invert = invert;
-				r.tv_sec = tv_sec;
-				r.tv_usec = tv_usec;
-				r.state = state;
-				return r;
-			}
-		};
-		
-		typedef std::list<ThresholdInfoExt> ThresholdExtList;
+            /*! идентификатор дискретного датчика связанного с данным порогом */
+            UniSetTypes::ObjectId sid;
 
-		/*! массив пар датчик->список потребителей */
-		typedef std::map<UniSetTypes::KeyType,ConsumerList> AskMap;
-		
-		struct ThresholdsListInfo
-		{
-			ThresholdsListInfo(){}
-			ThresholdsListInfo(	IOController_i::SensorInfo& si, ThresholdExtList& list, 
-								UniversalIO::IOType t=UniversalIO::AI ):
-				si(si),type(t),list(list){}
-		
-			IOController_i::SensorInfo si;
-			IOStateList::iterator ait;
-			UniversalIO::IOType type;
-			ThresholdExtList list;
-		};
-		
-		/*! массив пар [датчик,список порогов] */
-		typedef std::map<UniSetTypes::KeyType,ThresholdsListInfo> AskThresholdMap;
+            /*! итератор в списке датчиков (для оптимально-быстрого доступа) */
+            IOController::IOStateList::iterator sit;
 
-	protected:
-	    IONotifyController();
-		virtual bool activateObject();
-		virtual void initItem( IOStateList::iterator& it, IOController* ic );
+            /*! инверсная логика */
+            bool invert;
 
-		// ФИЛЬТРЫ
-		bool myIOFilter(const USensorInfo& ai, CORBA::Long newvalue, UniSetTypes::ObjectId sup_id);
+            inline bool operator== ( const ThresholdInfo& r ) const
+            {
+                return ((id == r.id) &&
+                        (hilimit == r.hilimit) &&
+                        (lowlimit == r.lowlimit) &&
+                        (invert == r.invert) );
+            }
 
-		//! посылка информации об изменении состояния датчика
-		virtual void send(ConsumerList& lst, UniSetTypes::SensorMessage& sm);
+            operator IONotifyController_i::ThresholdInfo()
+            {
+                IONotifyController_i::ThresholdInfo r;
+                r.id = id;
+                r.hilimit = hilimit;
+                r.lowlimit = lowlimit;
+                r.invert = invert;
+                r.tv_sec = tv_sec;
+                r.tv_usec = tv_usec;
+                r.state = state;
+                return r;
+            }
+        };
 
-		//! проверка срабатывания пороговых датчиков
-		virtual void checkThreshold( IOStateList::iterator& li,
-									const IOController_i::SensorInfo& si, bool send=true );
+        typedef std::list<ThresholdInfoExt> ThresholdExtList;
 
-		//! поиск информации о пороговом датчике
-		ThresholdExtList::iterator findThreshold( UniSetTypes::KeyType k, UniSetTypes::ThresholdId tid );
-		
-		//! сохранение информации об изменении состояния датчика в базу
-		virtual void loggingInfo(UniSetTypes::SensorMessage& sm);
+        /*! массив пар датчик->список потребителей */
+        typedef std::map<UniSetTypes::KeyType,ConsumerList> AskMap;
 
-		/*! сохранение списка заказчиков 
-			По умолчанию делает dump, если объявлен dumper.
-		*/
-		virtual void dumpOrdersList(const IOController_i::SensorInfo& si, const IONotifyController::ConsumerList& lst);
+        struct ThresholdsListInfo
+        {
+            ThresholdsListInfo(){}
+            ThresholdsListInfo(    IOController_i::SensorInfo& si, ThresholdExtList& list,
+                                UniversalIO::IOType t=UniversalIO::AI ):
+                si(si),type(t),list(list){}
 
-		/*! сохранение списка заказчиков пороговых датчиков
-			По умолчанию делает dump, если объявлен dumper.
-		*/
-		virtual void dumpThresholdList(const IOController_i::SensorInfo& si, const IONotifyController::ThresholdExtList& lst);
+            IOController_i::SensorInfo si;
+            IOStateList::iterator ait;
+            UniversalIO::IOType type;
+            ThresholdExtList list;
+        };
 
-		/*! чтение dump-файла */
-		virtual void readDump();
+        /*! массив пар [датчик,список порогов] */
+        typedef std::map<UniSetTypes::KeyType,ThresholdsListInfo> AskThresholdMap;
 
-		NCRestorer* restorer;
+    protected:
+        IONotifyController();
+        virtual bool activateObject();
+        virtual void initItem( IOStateList::iterator& it, IOController* ic );
 
-		void onChangeUndefinedState( IOStateList::iterator& it, IOController* ic );
+        // ФИЛЬТРЫ
+        bool myIOFilter(const USensorInfo& ai, CORBA::Long newvalue, UniSetTypes::ObjectId sup_id);
 
-//		UniSetTypes::uniset_rwmutex sig_mutex;
-//		ChangeSignal changeSignal;
+        //! посылка информации об изменении состояния датчика
+        virtual void send(ConsumerList& lst, UniSetTypes::SensorMessage& sm);
 
-	private:
-		friend class NCRestorer;
+        //! проверка срабатывания пороговых датчиков
+        virtual void checkThreshold( IOStateList::iterator& li,
+                                    const IOController_i::SensorInfo& si, bool send=true );
 
-		//----------------------
-		bool addConsumer(ConsumerList& lst, const UniSetTypes::ConsumerInfo& cons ); 	//!< добавить потребителя сообщения
-		bool removeConsumer(ConsumerList& lst, const UniSetTypes::ConsumerInfo& cons );	//!< удалить потребителя сообщения
-		
-		//! обработка заказа 
-		void ask(AskMap& askLst, const IOController_i::SensorInfo& si, 
-					const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);		
+        //! поиск информации о пороговом датчике
+        ThresholdExtList::iterator findThreshold( UniSetTypes::KeyType k, UniSetTypes::ThresholdId tid );
 
- 		/*! добавить новый порог для датчика */
-		bool addThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& cons);
-		/*! удалить порог для датчика */
-		bool removeThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci);
+        //! сохранение информации об изменении состояния датчика в базу
+        virtual void loggingInfo(UniSetTypes::SensorMessage& sm);
+
+        /*! сохранение списка заказчиков
+            По умолчанию делает dump, если объявлен dumper.
+        */
+        virtual void dumpOrdersList(const IOController_i::SensorInfo& si, const IONotifyController::ConsumerList& lst);
+
+        /*! сохранение списка заказчиков пороговых датчиков
+            По умолчанию делает dump, если объявлен dumper.
+        */
+        virtual void dumpThresholdList(const IOController_i::SensorInfo& si, const IONotifyController::ThresholdExtList& lst);
+
+        /*! чтение dump-файла */
+        virtual void readDump();
+
+        NCRestorer* restorer;
+
+        void onChangeUndefinedState( IOStateList::iterator& it, IOController* ic );
+
+//        UniSetTypes::uniset_rwmutex sig_mutex;
+//        ChangeSignal changeSignal;
+
+    private:
+        friend class NCRestorer;
+
+        //----------------------
+        bool addConsumer(ConsumerList& lst, const UniSetTypes::ConsumerInfo& cons );     //!< добавить потребителя сообщения
+        bool removeConsumer(ConsumerList& lst, const UniSetTypes::ConsumerInfo& cons );    //!< удалить потребителя сообщения
+
+        //! обработка заказа
+        void ask(AskMap& askLst, const IOController_i::SensorInfo& si,
+                    const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
+
+         /*! добавить новый порог для датчика */
+        bool addThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& cons);
+        /*! удалить порог для датчика */
+        bool removeThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci);
 
 
-		AskMap askIOList; /*!< список потребителей по аналоговым датчикам */
-		AskThresholdMap askTMap; /*!< список порогов по аналоговым датчикам */
-		
-		/*! замок для блокирования совместного доступа к cписку потребителей датчиков */
-		UniSetTypes::uniset_rwmutex askIOMutex;
-		/*! замок для блокирования совместного доступа к cписку потребителей пороговых датчиков */			
-		UniSetTypes::uniset_rwmutex trshMutex;
-		
-		int maxAttemtps; /*! timeout for consumer */
+        AskMap askIOList; /*!< список потребителей по аналоговым датчикам */
+        AskThresholdMap askTMap; /*!< список порогов по аналоговым датчикам */
+
+        /*! замок для блокирования совместного доступа к cписку потребителей датчиков */
+        UniSetTypes::uniset_rwmutex askIOMutex;
+        /*! замок для блокирования совместного доступа к cписку потребителей пороговых датчиков */
+        UniSetTypes::uniset_rwmutex trshMutex;
+
+        int maxAttemtps; /*! timeout for consumer */
 };
 // --------------------------------------------------------------------------
 #endif

@@ -34,39 +34,39 @@ namespace UniSetTypes
 {
 //--------------------------------------------------------------------------------------------
 Message::Message():
-	type(Unused), priority(Medium),
-	node(UniSetTypes::conf->getLocalNode()),
-	supplier(DefaultObjectId),
-	consumer(DefaultObjectId)
+    type(Unused), priority(Medium),
+    node(UniSetTypes::conf->getLocalNode()),
+    supplier(DefaultObjectId),
+    consumer(DefaultObjectId)
 {
-	struct timezone tz;
-	tm.tv_sec = 0;
-	tm.tv_usec = 0;
-	gettimeofday(&tm,&tz);
+    struct timezone tz;
+    tm.tv_sec = 0;
+    tm.tv_usec = 0;
+    gettimeofday(&tm,&tz);
 }
 
 /*
 template<class In>
 TransportMessage Message::transport(const In &msg)
 {
-	TransportMessage tmsg;
-	assert(sizeof(UniSetTypes::RawDataOfTransportMessage)>=sizeof(msg));
-	memcpy(&tmsg.data,&msg,sizeof(msg));
-	return tmsg;
+    TransportMessage tmsg;
+    assert(sizeof(UniSetTypes::RawDataOfTransportMessage)>=sizeof(msg));
+    memcpy(&tmsg.data,&msg,sizeof(msg));
+    return tmsg;
 }
 */
 //--------------------------------------------------------------------------------------------
 
 VoidMessage::VoidMessage( const TransportMessage& tm ):
-    Message(1) // вызываем dummy-конструктор
+    Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 {
-	assert(sizeof(VoidMessage)>=sizeof(UniSetTypes::RawDataOfTransportMessage));
-	memcpy(this,&tm.data,sizeof(tm.data));
+    assert(sizeof(VoidMessage)>=sizeof(UniSetTypes::RawDataOfTransportMessage));
+    memcpy(this,&tm.data,sizeof(tm.data));
 }
 
 VoidMessage::VoidMessage()
 {
-	assert(sizeof(VoidMessage)>=sizeof(UniSetTypes::RawDataOfTransportMessage));
+    assert(sizeof(VoidMessage)>=sizeof(UniSetTypes::RawDataOfTransportMessage));
 }
 
 //--------------------------------------------------------------------------------------------
@@ -78,20 +78,20 @@ sensor_type(UniversalIO::DI),
 threshold(false),
 tid(UniSetTypes::DefaultThresholdId)
 {
-	type		= Message::SensorInfo;
-	sm_tv_sec 	= tm.tv_sec;
-	sm_tv_usec 	= tm.tv_usec;
+    type        = Message::SensorInfo;
+    sm_tv_sec     = tm.tv_sec;
+    sm_tv_usec     = tm.tv_usec;
 
-	ci.minRaw = 0;
-	ci.maxRaw = 0;
-	ci.minCal = 0;
-	ci.maxCal = 0;
-	ci.precision = 0;
+    ci.minRaw = 0;
+    ci.maxRaw = 0;
+    ci.minCal = 0;
+    ci.maxCal = 0;
+    ci.precision = 0;
 }
 
 SensorMessage::SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci,
-							Priority priority, 
-							UniversalIO::IOType st, ObjectId consumer):
+                            Priority priority,
+                            UniversalIO::IOType st, ObjectId consumer):
 id(id),
 value(value),
 undefined(false),
@@ -100,62 +100,66 @@ ci(ci),
 threshold(false),
 tid(UniSetTypes::DefaultThresholdId)
 {
-	type			= Message::SensorInfo;
-	this->priority 	= priority;
-	this->consumer 	= consumer;	
-	sm_tv_sec 		= tm.tv_sec;
-	sm_tv_usec 		= tm.tv_usec;
+    type            = Message::SensorInfo;
+    this->priority     = priority;
+    this->consumer     = consumer;
+    sm_tv_sec         = tm.tv_sec;
+    sm_tv_usec         = tm.tv_usec;
 }
 
-SensorMessage::SensorMessage(const VoidMessage *msg)
+SensorMessage::SensorMessage(const VoidMessage *msg):
+    Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 {
-	memcpy(this,msg,sizeof(*this));
-	assert(this->type == Message::SensorInfo);
+    memcpy(this,msg,sizeof(*this));
+    assert(this->type == Message::SensorInfo);
 }
 //--------------------------------------------------------------------------------------------
 SystemMessage::SystemMessage():
-	command(SystemMessage::ReConfiguration)
+    command(SystemMessage::ReConfiguration)
 {
-	type = Message::SysCommand;
+    type = Message::SysCommand;
 }
 
 SystemMessage::SystemMessage(Command command, Priority priority, ObjectId consumer):
-	command(command)
+    command(command)
 {
-	type = Message::SysCommand;
-	this->priority = priority;
-	this->consumer = consumer;
+    type = Message::SysCommand;
+    this->priority = priority;
+    this->consumer = consumer;
 }
 
-SystemMessage::SystemMessage(const VoidMessage *msg)
+SystemMessage::SystemMessage(const VoidMessage *msg):
+    Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 {
-	memcpy(this,msg,sizeof(*this));
-	assert(this->type == Message::SysCommand);
+    memcpy(this,msg,sizeof(*this));
+    assert(this->type == Message::SysCommand);
 }
 //--------------------------------------------------------------------------------------------
 TimerMessage::TimerMessage():
-id(UniSetTypes::DefaultTimerId)
+    id(UniSetTypes::DefaultTimerId)
 {
-	type = Message::Timer;
+    type = Message::Timer;
 }
 
 TimerMessage::TimerMessage(UniSetTypes::TimerId id, Priority prior, ObjectId cons):
 id(id)
 {
-	type = Message::Timer;
-	this->consumer = cons;
+    type = Message::Timer;
+    this->consumer = cons;
 }
 
-TimerMessage::TimerMessage(const VoidMessage *msg)
+TimerMessage::TimerMessage(const VoidMessage *msg):
+    Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 {
-	memcpy(this,msg,sizeof(*this));
-	assert(this->type == Message::Timer);
+    memcpy(this,msg,sizeof(*this));
+    assert(this->type == Message::Timer);
 }
-//--------------------------------------------------------------------------------------------	
-ConfirmMessage::ConfirmMessage( const VoidMessage *msg )
+//--------------------------------------------------------------------------------------------
+ConfirmMessage::ConfirmMessage( const VoidMessage *msg ):
+    Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 {
-	memcpy(this,msg,sizeof(*this));
-	assert(this->type == Message::Confirm);
+    memcpy(this,msg,sizeof(*this));
+    assert(this->type == Message::Confirm);
 }
 //--------------------------------------------------------------------------------------------
 ConfirmMessage::ConfirmMessage(long in_sensor_id,
@@ -176,7 +180,7 @@ ConfirmMessage::ConfirmMessage(long in_sensor_id,
    priority = in_priority;
 }
 
-//--------------------------------------------------------------------------------------------	
+//--------------------------------------------------------------------------------------------
 } // end of namespace UniSetTypes
-//--------------------------------------------------------------------------------------------	
+//--------------------------------------------------------------------------------------------
 

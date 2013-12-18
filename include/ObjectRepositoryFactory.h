@@ -33,50 +33,50 @@
 // -----------------------------------------------------------------------------------------
 //namespase ORepositoryFacotry
 //{
-	
-	/*!\class ObjectRepositoryFactory */ 
+
+    /*!\class ObjectRepositoryFactory */
     class ObjectRepositoryFactory: private ObjectRepository
     {
-    	public:
-//		  	ObjectRepositoryFactory();
-//			ObjectRepositoryFactory(int* argc=argc_ptr, char* **argv=argv_ptr); // параметры инициализации ORB
-			ObjectRepositoryFactory( UniSetTypes::Configuration* conf );
-			~ObjectRepositoryFactory();
-			
-			//! Создание секции		
-			bool createSection(const char* name, const char* in_section )throw(UniSetTypes::ORepFailed,UniSetTypes::InvalidObjectName);
-			/*! \overload */
-			bool createSection(const std::string& name, const std::string& in_section)throw(UniSetTypes::ORepFailed,UniSetTypes::InvalidObjectName);
-			/*! Создание секции по полному имени */
-			bool createSectionF(const std::string& fullName)throw(UniSetTypes::ORepFailed,UniSetTypes::InvalidObjectName);
+        public:
+//              ObjectRepositoryFactory();
+//            ObjectRepositoryFactory(int* argc=argc_ptr, char* **argv=argv_ptr); // параметры инициализации ORB
+            ObjectRepositoryFactory( UniSetTypes::Configuration* conf );
+            ~ObjectRepositoryFactory();
 
-			//! Функция создания секции в корневом 'каталоге'
-			bool createRootSection(const char* name);
-			/*! \overload */
-			bool createRootSection(const std::string& name);
+            //! Создание секции
+            bool createSection(const char* name, const char* in_section )throw(UniSetTypes::ORepFailed,UniSetTypes::InvalidObjectName);
+            /*! \overload */
+            bool createSection(const std::string& name, const std::string& in_section)throw(UniSetTypes::ORepFailed,UniSetTypes::InvalidObjectName);
+            /*! Создание секции по полному имени */
+            bool createSectionF(const std::string& fullName)throw(UniSetTypes::ORepFailed,UniSetTypes::InvalidObjectName);
+
+            //! Функция создания секции в корневом 'каталоге'
+            bool createRootSection(const char* name);
+            /*! \overload */
+            bool createRootSection(const std::string& name);
 
 
-			//! Функция удаления секции 
-			bool removeSection(const std::string& fullName, bool recursive=false);
+            //! Функция удаления секции
+            bool removeSection(const std::string& fullName, bool recursive=false);
 
-			//! Функция переименования секции 
-			bool renameSection(const std::string& newName, const std::string& fullName);
-		/**
-		    @addtogroup ORepServiceGroup 
-	    	    @{
-		*/
-			
-			/*! Функция выводящая на экран список всех объектов расположенных в данной секции */
-			void printSection(const std::string& fullName);
-//			void printSection(CosNaming::NamingContext_ptr ctx);
-		// @}
-		// end of add to ORepServiceGroup 
+            //! Функция переименования секции
+            bool renameSection(const std::string& newName, const std::string& fullName);
+        /**
+            @addtogroup ORepServiceGroup
+                @{
+        */
 
-		protected:
+            /*! Функция выводящая на экран список всех объектов расположенных в данной секции */
+            void printSection(const std::string& fullName);
+//            void printSection(CosNaming::NamingContext_ptr ctx);
+        // @}
+        // end of add to ORepServiceGroup
 
-		private:
-			/*! Создание нового контекста(секции) */
-			bool createContext(const char *cname, CosNaming::NamingContext_ptr ctx);
+        protected:
+
+        private:
+            /*! Создание нового контекста(секции) */
+            bool createContext(const char *cname, CosNaming::NamingContext_ptr ctx);
     };
 //};
 

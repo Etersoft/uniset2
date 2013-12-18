@@ -33,116 +33,116 @@
 //#include "OmniThreadCreator.h"
 //----------------------------------------------------------------------------------------
 /*! \class UniSetActivator
- *	Создает POA менеджер и регистрирует в нем объекты.
- *	Для обработки CORBA-запросов создается поток или передаются ресурсы
- *		главного потока см. void activate(bool thread)
+ *    Создает POA менеджер и регистрирует в нем объекты.
+ *    Для обработки CORBA-запросов создается поток или передаются ресурсы
+ *        главного потока см. void activate(bool thread)
  *
- *	Активатор в свою очередь сам является менеджером(и объектом) и обладает всеми его свойствами
+ *    Активатор в свою очередь сам является менеджером(и объектом) и обладает всеми его свойствами
  *
  * \todo  Разобраться со всякими oaDestroy, stop, oakill и сделать одну надежную завершающую функцию.
 */
 class UniSetActivator:
-	public UniSetManager
+    public UniSetManager
 {
-	public:
+    public:
 
-		UniSetActivator();
-		UniSetActivator( UniSetTypes::ObjectId id );
-		virtual ~UniSetActivator();
+        UniSetActivator();
+        UniSetActivator( UniSetTypes::ObjectId id );
+        virtual ~UniSetActivator();
 
-		virtual void run(bool thread);
-		virtual void stop();
-		virtual void oaDestroy(int signo=0);
-		void waitDestroy();
+        virtual void run(bool thread);
+        virtual void stop();
+        virtual void oaDestroy(int signo=0);
+        void waitDestroy();
 
-		inline void oakill(int signo){ raise(signo);}
+        inline void oakill(int signo){ raise(signo);}
 
-		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("UniSetActivator"); }
-
-
-	protected:
+        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("UniSetActivator"); }
 
 
-		/*! Команды доступные при заказе сигналов
-		 * см. askSignal()
-		*/
-		enum AskSigCommand	{
-								Ask, 	/*!< заказать получение сигнала */
-								Denial /*!< отказаться от получения сигнала */
-							};
+    protected:
 
-		/*! заказ на обработку сигнала signo
-		 * Для обработки предназначена функция signal().
-		 * \warning Сообщение о приходе сигналов SITERM, SIGINT, SIGABRT приходит
-		 * вне зависимости от заказа. От этих сообщений нельзя отказаться...
-		 * \warning Заказ других сигналов пока не работает..
-		 * \warning функция временно недоступна (private). Ведуться работы...
-		 * \todo сделать возможность заказа других сигналов
-		*/
-//		void askSignal(int signo, AskSigCommand cmd=Ask);
 
-		virtual void work();
+        /*! Команды доступные при заказе сигналов
+         * см. askSignal()
+        */
+        enum AskSigCommand    {
+                                Ask,     /*!< заказать получение сигнала */
+                                Denial /*!< отказаться от получения сигнала */
+                            };
 
-		inline CORBA::ORB_ptr getORB()
-		{
-			return orb;
-		}
+        /*! заказ на обработку сигнала signo
+         * Для обработки предназначена функция signal().
+         * \warning Сообщение о приходе сигналов SITERM, SIGINT, SIGABRT приходит
+         * вне зависимости от заказа. От этих сообщений нельзя отказаться...
+         * \warning Заказ других сигналов пока не работает..
+         * \warning функция временно недоступна (private). Ведуться работы...
+         * \todo сделать возможность заказа других сигналов
+        */
+//        void askSignal(int signo, AskSigCommand cmd=Ask);
 
-		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
-		virtual void sysCommand( UniSetTypes::SystemMessage *sm );
+        virtual void work();
 
-	private:
+        inline CORBA::ORB_ptr getORB()
+        {
+            return orb;
+        }
 
-//		static void processingSignal(int signo);
-		static void terminated(int signo);
-		static void finishterm(int signo);
-		static void normalexit();
-		static void normalterminate();
-		static void set_signals(bool ask);
-		void term( int signo );
-		void init();
+        virtual void processingMessage( UniSetTypes::VoidMessage *msg );
+        virtual void sysCommand( UniSetTypes::SystemMessage *sm );
 
-		friend class ThreadCreator<UniSetActivator>;
-		ThreadCreator<UniSetActivator> *orbthr;
+    private:
 
-		CORBA::ORB_var orb;
+//        static void processingSignal(int signo);
+        static void terminated(int signo);
+        static void finishterm(int signo);
+        static void normalexit();
+        static void normalterminate();
+        static void set_signals(bool ask);
+        void term( int signo );
+        void init();
 
-		bool omDestroy;
-		bool sig;
-		pid_t thpid; // pid orb потока
+        friend class ThreadCreator<UniSetActivator>;
+        ThreadCreator<UniSetActivator> *orbthr;
 
-		struct Info
-		{
-			pid_t msgpid;	// pid порожденого потока обработки сообщений
-		};
+        CORBA::ORB_var orb;
 
-		struct OInfo:
-			public Info
-		{
-			UniSetObject* obj;
-		};
+        bool omDestroy;
+        bool sig;
+        pid_t thpid; // pid orb потока
 
-		struct MInfo:
-			public Info
-		{
-			UniSetManager* mnr;
-		};
+        struct Info
+        {
+            pid_t msgpid;    // pid порожденого потока обработки сообщений
+        };
 
-		std::list<OInfo> lstOInfo;
-		std::list<MInfo> lstMInfo;
-		void getinfo();
+        struct OInfo:
+            public Info
+        {
+            UniSetObject* obj;
+        };
+
+        struct MInfo:
+            public Info
+        {
+            UniSetManager* mnr;
+        };
+
+        std::list<OInfo> lstOInfo;
+        std::list<MInfo> lstMInfo;
+        void getinfo();
 };
 
 /*
 template<class TClass>
-int	UniSetActivator::attach(TClass* p, void(TClass:: *f)(void*) )
+int    UniSetActivator::attach(TClass* p, void(TClass:: *f)(void*) )
 {
-	if( next >= MAX_CHILD_THREAD )
-		return -1;
+    if( next >= MAX_CHILD_THREAD )
+        return -1;
 
-	callpull[next] = new OmniThreadCreator<TClass>( p, f);
-	next++;
-	return 0;
+    callpull[next] = new OmniThreadCreator<TClass>( p, f);
+    next++;
+    return 0;
 }
 */
 #endif

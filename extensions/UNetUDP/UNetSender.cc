@@ -9,7 +9,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 UNetSender::UNetSender( const std::string s_host, const ost::tpport_t port, SMInterface* smi,
-						const std::string s_f, const std::string s_val, SharedMemory* ic ):
+                        const std::string s_f, const std::string s_val, SharedMemory* ic ):
 s_field(s_f),
 s_fvalue(s_val),
 shm(smi),
@@ -22,314 +22,314 @@ packetnum(1),
 s_thr(0)
 {
 
-	{
-		ostringstream s;
-		s << "S(" << setw(15) << s_host << ":" << setw(4) << port << ")";
-		myname = s.str();
-	}
+    {
+        ostringstream s;
+        s << "S(" << setw(15) << s_host << ":" << setw(4) << port << ")";
+        myname = s.str();
+    }
 
-	// определяем фильтр
-//	s_field = conf->getArgParam("--udp-filter-field");
-//	s_fvalue = conf->getArgParam("--udp-filter-value");
-	dlog.info() << myname << "(init): read filter-field='" << s_field
-						<< "' filter-value='" << s_fvalue << "'" << endl;
+    // определяем фильтр
+//    s_field = conf->getArgParam("--udp-filter-field");
+//    s_fvalue = conf->getArgParam("--udp-filter-value");
+    dlog.info() << myname << "(init): read filter-field='" << s_field
+                        << "' filter-value='" << s_fvalue << "'" << endl;
 
-	if( dlog.is_info() )
-		dlog.info() << "(UNetSender): UDP set to " << s_host << ":" << port << endl;
+    if( dlog.is_info() )
+        dlog.info() << "(UNetSender): UDP set to " << s_host << ":" << port << endl;
 
-	ost::Thread::setException(ost::Thread::throwException);
-	try
-	{
-		addr = s_host.c_str();
-		udp = new ost::UDPBroadcast(addr,port);
-	}
-	catch( std::exception& e )
-	{
-		ostringstream s;
-		s << myname << ": " << e.what();
-		dlog.crit() << s.str() << std::endl;
-		throw SystemError(s.str());
-	}
-	catch( ... )
-	{
-		ostringstream s;
-		s << myname << ": catch...";
-		dlog.crit() << s.str() << std::endl;
-		throw SystemError(s.str());
-	}
+    ost::Thread::setException(ost::Thread::throwException);
+    try
+    {
+        addr = s_host.c_str();
+        udp = new ost::UDPBroadcast(addr,port);
+    }
+    catch( std::exception& e )
+    {
+        ostringstream s;
+        s << myname << ": " << e.what();
+        dlog.crit() << s.str() << std::endl;
+        throw SystemError(s.str());
+    }
+    catch( ... )
+    {
+        ostringstream s;
+        s << myname << ": catch...";
+        dlog.crit() << s.str() << std::endl;
+        throw SystemError(s.str());
+    }
 
-	s_thr = new ThreadCreator<UNetSender>(this, &UNetSender::send);
+    s_thr = new ThreadCreator<UNetSender>(this, &UNetSender::send);
 
-	// -------------------------------
-	if( shm->isLocalwork() )
-	{
-		readConfiguration();
-		dlist.resize(maxItem);
-		dlog.info() << myname << "(init): dlist size = " << dlist.size() << endl;
-	}
-	else
-		ic->addReadItem( sigc::mem_fun(this,&UNetSender::readItem) );
+    // -------------------------------
+    if( shm->isLocalwork() )
+    {
+        readConfiguration();
+        dlist.resize(maxItem);
+        dlog.info() << myname << "(init): dlist size = " << dlist.size() << endl;
+    }
+    else
+        ic->addReadItem( sigc::mem_fun(this,&UNetSender::readItem) );
 
 
-	// выставляем поля, которые не меняются
-	mypack.nodeID = conf->getLocalNode();
-	mypack.procID = shm->ID();
+    // выставляем поля, которые не меняются
+    mypack.nodeID = conf->getLocalNode();
+    mypack.procID = shm->ID();
 }
 // -----------------------------------------------------------------------------
 UNetSender::~UNetSender()
 {
-	delete s_thr;
-	delete udp;
-	delete shm;
+      delete s_thr;
+    delete udp;
+    delete shm;
 }
 // -----------------------------------------------------------------------------
 void UNetSender::updateFromSM()
 {
-	DMap::iterator it=dlist.begin();
-	for( ; it!=dlist.end(); ++it )
-	{
-		long value = shm->localGetValue(it->ioit,it->id);
-		updateItem(it,value);
-	}
+    DMap::iterator it=dlist.begin();
+    for( ; it!=dlist.end(); ++it )
+    {
+        long value = shm->localGetValue(it->ioit,it->id);
+        updateItem(it,value);
+    }
 }
 // -----------------------------------------------------------------------------
 void UNetSender::updateSensor( UniSetTypes::ObjectId id, long value )
 {
-	if( !shm->isLocalwork() )
-		return;
+    if( !shm->isLocalwork() )
+        return;
 
-//	cerr << myname << ": UPDATE SENSOR id=" << id << " value=" << value << endl;
-	DMap::iterator it=dlist.begin();
-	for( ; it!=dlist.end(); ++it )
-	{
-		if( it->id == id )
-		{
-			updateItem( it, value );
-			break;
-		}
-	}
+//    cerr << myname << ": UPDATE SENSOR id=" << id << " value=" << value << endl;
+    DMap::iterator it=dlist.begin();
+    for( ; it!=dlist.end(); ++it )
+    {
+        if( it->id == id )
+        {
+            updateItem( it, value );
+            break;
+        }
+    }
 }
 // -----------------------------------------------------------------------------
 void UNetSender::updateItem( DMap::iterator& it, long value )
 {
-	if( it == dlist.end() )
-		return;
+    if( it == dlist.end() )
+        return;
 
-	if( it->iotype == UniversalIO::DI || it->iotype == UniversalIO::DO )
-	{
-		UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
-		mypack.setDData(it->pack_ind,value);
-	}
-	else if( it->iotype == UniversalIO::AI || it->iotype == UniversalIO::AO )
-	{
-		UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
-		mypack.setAData(it->pack_ind,value);
-	}
+    if( it->iotype == UniversalIO::DI || it->iotype == UniversalIO::DO )
+    {
+        UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
+        mypack.setDData(it->pack_ind,value);
+    }
+    else if( it->iotype == UniversalIO::AI || it->iotype == UniversalIO::AO )
+    {
+        UniSetTypes::uniset_rwmutex_wrlock l(pack_mutex);
+        mypack.setAData(it->pack_ind,value);
+    }
 }
 // -----------------------------------------------------------------------------
 void UNetSender::send()
 {
-	dlist.resize(maxItem);
-	dlog.info() << myname << "(send): dlist size = " << dlist.size() << endl;
+    dlist.resize(maxItem);
+    dlog.info() << myname << "(send): dlist size = " << dlist.size() << endl;
 /*
-	ost::IPV4Broadcast h = s_host.c_str();
-	try
-	{
-		udp->setPeer(h,port);
-	}
-	catch( ost::SockException& e )
-	{
-		ostringstream s;
-		s << e.getString() << ": " << e.getSystemErrorString();
-		dlog.crit() << myname << "(poll): " << s.str() << endl;
-		throw SystemError(s.str());
-	}
+    ost::IPV4Broadcast h = s_host.c_str();
+    try
+    {
+        udp->setPeer(h,port);
+    }
+    catch( ost::SockException& e )
+    {
+        ostringstream s;
+        s << e.getString() << ": " << e.getSystemErrorString();
+        dlog.crit() << myname << "(poll): " << s.str() << endl;
+        throw SystemError(s.str());
+    }
 */
-	while( activated )
-	{
-		try
-		{
-			if( !shm->isLocalwork() )
-				updateFromSM();
+    while( activated )
+    {
+        try
+        {
+            if( !shm->isLocalwork() )
+                updateFromSM();
 
-			real_send();
-		}
-		catch( ost::SockException& e )
-		{
-			dlog.warn()  << myname << "(send): " << e.getString() << endl;
-		}
-		catch( UniSetTypes::Exception& ex)
-		{
-			dlog.warn() << myname << "(send): " << ex << std::endl;
-		}
-		catch( std::exception& e )
-		{
-			dlog.warn() << myname << "(send): " << e.what() << std::endl;
-		}
-		catch(...)
-		{
-			dlog.warn() << myname << "(send): catch ..." << std::endl;
-		}
+            real_send();
+        }
+        catch( ost::SockException& e )
+        {
+            dlog.warn()  << myname << "(send): " << e.getString() << endl;
+        }
+        catch( UniSetTypes::Exception& ex)
+        {
+            dlog.warn() << myname << "(send): " << ex << std::endl;
+        }
+        catch( std::exception& e )
+        {
+            dlog.warn() << myname << "(send): " << e.what() << std::endl;
+        }
+        catch(...)
+        {
+            dlog.warn() << myname << "(send): catch ..." << std::endl;
+        }
 
-		msleep(sendpause);
-	}
+        msleep(sendpause);
+    }
 
-	dlog.info() << "************* execute FINISH **********" << endl;
+    dlog.info() << "************* execute FINISH **********" << endl;
 }
 // -----------------------------------------------------------------------------
 void UNetSender::real_send()
 {
-	UniSetTypes::uniset_rwmutex_rlock l(pack_mutex);
-	mypack.num = packetnum++;
+    UniSetTypes::uniset_rwmutex_rlock l(pack_mutex);
+    mypack.num = packetnum++;
 
-	if( packetnum > UniSetUDP::MaxPacketNum )
-		packetnum = 1;
+    if( packetnum > UniSetUDP::MaxPacketNum )
+        packetnum = 1;
 
-	if( !udp->isPending(ost::Socket::pendingOutput) )
-		return;
+    if( !udp->isPending(ost::Socket::pendingOutput) )
+        return;
 
-	mypack.transport_msg(s_msg);
-	size_t ret = udp->send( (char*)s_msg.data, s_msg.len );
-	if( ret < s_msg.len )
-		dlog.crit() << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
+    mypack.transport_msg(s_msg);
+    size_t ret = udp->send( (char*)s_msg.data, s_msg.len );
+    if( ret < s_msg.len )
+        dlog.crit() << myname << "(real_send): FAILED ret=" << ret << " < sizeof=" << s_msg.len << endl;
 }
 // -----------------------------------------------------------------------------
 void UNetSender::stop()
 {
-	activated = false;
-//	s_thr->stop();
+    activated = false;
+//    s_thr->stop();
 }
 // -----------------------------------------------------------------------------
 void UNetSender::start()
 {
-	if( !activated )
-	{
-		activated = true;
-		s_thr->start();
-	}
+    if( !activated )
+    {
+        activated = true;
+        s_thr->start();
+    }
 }
 // -----------------------------------------------------------------------------
 void UNetSender::readConfiguration()
 {
-	xmlNode* root = conf->getXMLSensorsSection();
-	if(!root)
-	{
-		ostringstream err;
-		err << myname << "(readConfiguration): not found <sensors>";
-		throw SystemError(err.str());
-	}
+    xmlNode* root = conf->getXMLSensorsSection();
+    if(!root)
+    {
+        ostringstream err;
+        err << myname << "(readConfiguration): not found <sensors>";
+        throw SystemError(err.str());
+    }
 
-	UniXML_iterator it(root);
-	if( !it.goChildren() )
-	{
-		std::cerr << myname << "(readConfiguration): empty <sensors>?!!" << endl;
-		return;
-	}
+    UniXML_iterator it(root);
+    if( !it.goChildren() )
+    {
+        std::cerr << myname << "(readConfiguration): empty <sensors>?!!" << endl;
+        return;
+    }
 
-	for( ;it.getCurrent(); it.goNext() )
-	{
-		if( check_filter(it,s_field,s_fvalue) )
-			initItem(it);
-	}
+    for( ;it.getCurrent(); it.goNext() )
+    {
+        if( check_filter(it,s_field,s_fvalue) )
+            initItem(it);
+    }
 }
 // ------------------------------------------------------------------------------------------
 bool UNetSender::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 {
-	if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
-		initItem(it);
-	return true;
+    if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
+        initItem(it);
+    return true;
 }
 // ------------------------------------------------------------------------------------------
 bool UNetSender::initItem( UniXML_iterator& it )
 {
-	string sname( it.getProp("name") );
+    string sname( it.getProp("name") );
 
-	string tid(it.getProp("id"));
+    string tid(it.getProp("id"));
 
-	ObjectId sid;
-	if( !tid.empty() )
-	{
-		sid = UniSetTypes::uni_atoi(tid);
-		if( sid <= 0 )
-			sid = DefaultObjectId;
-	}
-	else
-		sid = conf->getSensorID(sname);
+    ObjectId sid;
+    if( !tid.empty() )
+    {
+        sid = UniSetTypes::uni_atoi(tid);
+        if( sid <= 0 )
+            sid = DefaultObjectId;
+    }
+    else
+        sid = conf->getSensorID(sname);
 
-	if( sid == DefaultObjectId )
-	{
-		if( dlog )
-			dlog.crit() << myname << "(readItem): ID not found for "
-							<< sname << endl;
-		return false;
-	}
+    if( sid == DefaultObjectId )
+    {
+        if( dlog )
+            dlog.crit() << myname << "(readItem): ID not found for "
+                            << sname << endl;
+        return false;
+    }
 
-	UItem p;
-	p.iotype = UniSetTypes::getIOType(it.getProp("iotype"));
+    UItem p;
+    p.iotype = UniSetTypes::getIOType(it.getProp("iotype"));
 
-	if( p.iotype == UniversalIO::UnknownIOType )
-	{
-		dlog.crit() << myname << "(readItem): Unknown iotype for sid=" << sid << endl;
-		return false;
-	}
+    if( p.iotype == UniversalIO::UnknownIOType )
+    {
+        dlog.crit() << myname << "(readItem): Unknown iotype for sid=" << sid << endl;
+        return false;
+    }
 
-	p.id = sid;
+    p.id = sid;
 
-	if( p.iotype == UniversalIO::DI || p.iotype == UniversalIO::DO )
-	{
-		p.pack_ind = mypack.addDData(sid,0);
-		if ( p.pack_ind >= UniSetUDP::MaxDCount )
-		{
-			dlog.crit() << myname
-					<< "(readItem): OVERFLOW! MAX UDP DIGITAL DATA LIMIT! max="
-					<< UniSetUDP::MaxDCount << endl;
+    if( p.iotype == UniversalIO::DI || p.iotype == UniversalIO::DO )
+    {
+        p.pack_ind = mypack.addDData(sid,0);
+        if ( p.pack_ind >= UniSetUDP::MaxDCount )
+        {
+            dlog.crit() << myname
+                    << "(readItem): OVERFLOW! MAX UDP DIGITAL DATA LIMIT! max="
+                    << UniSetUDP::MaxDCount << endl;
 
-			raise(SIGTERM);
-			return false;
-		}
-	}
-	else if( p.iotype == UniversalIO::AI || p.iotype == UniversalIO::AO )
-	{
-		p.pack_ind = mypack.addAData(sid,0);
-		if ( p.pack_ind >= UniSetUDP::MaxACount )
-		{
-			dlog.crit() << myname
-					<< "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max="
-					<< UniSetUDP::MaxACount << endl;
-			raise(SIGTERM);
-			return false;
-		}
-	}
+            raise(SIGTERM);
+            return false;
+        }
+    }
+    else if( p.iotype == UniversalIO::AI || p.iotype == UniversalIO::AO )
+    {
+        p.pack_ind = mypack.addAData(sid,0);
+        if ( p.pack_ind >= UniSetUDP::MaxACount )
+        {
+            dlog.crit() << myname
+                    << "(readItem): OVERFLOW! MAX UDP ANALOG DATA LIMIT! max="
+                    << UniSetUDP::MaxACount << endl;
+            raise(SIGTERM);
+            return false;
+        }
+    }
 
-	if( maxItem >= dlist.size() )
-		dlist.resize(maxItem+10);
+    if( maxItem >= dlist.size() )
+        dlist.resize(maxItem+10);
 
-	dlist[maxItem] = p;
-	maxItem++;
+    dlist[maxItem] = p;
+    maxItem++;
 
-	if( dlog.is_info() )
-		dlog.info() << myname << "(initItem): add " << p << endl;
+    if( dlog.is_info() )
+        dlog.info() << myname << "(initItem): add " << p << endl;
 
-	return true;
+    return true;
 }
 
 // ------------------------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, UNetSender::UItem& p )
 {
-	return os << " sid=" << p.id;
+    return os << " sid=" << p.id;
 }
 // -----------------------------------------------------------------------------
 void UNetSender::initIterators()
 {
-	DMap::iterator it=dlist.begin();
-	for( ; it!=dlist.end(); it++ )
-		shm->initIterator(it->ioit);
+    DMap::iterator it=dlist.begin();
+    for( ; it!=dlist.end(); it++ )
+        shm->initIterator(it->ioit);
 }
 // -----------------------------------------------------------------------------
 void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
 {
-	DMap::iterator it=dlist.begin();
-	for( ; it!=dlist.end(); it++ )
-		shm->askSensor(it->id,cmd);
+    DMap::iterator it=dlist.begin();
+    for( ; it!=dlist.end(); it++ )
+        shm->askSensor(it->id,cmd);
 }
 // -----------------------------------------------------------------------------

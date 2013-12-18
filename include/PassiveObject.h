@@ -39,31 +39,31 @@
 */ 
 class PassiveObject
 {
-	public:
-		PassiveObject();
-		PassiveObject( UniSetTypes::ObjectId id );
-		PassiveObject( UniSetTypes::ObjectId id, ProxyManager* mngr );
-		virtual ~PassiveObject();
+    public:
+        PassiveObject();
+        PassiveObject( UniSetTypes::ObjectId id );
+        PassiveObject( UniSetTypes::ObjectId id, ProxyManager* mngr );
+        virtual ~PassiveObject();
 
-		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
+        virtual void processingMessage( UniSetTypes::VoidMessage* msg );
 
-		void setID( UniSetTypes::ObjectId id );
-		void init(ProxyManager* mngr);
-		
-		inline UniSetTypes::ObjectId getId(){ return id; }
-		inline std::string getName(){ return myname; }
+        void setID( UniSetTypes::ObjectId id );
+        void init(ProxyManager* mngr);
 
-	protected:
-		virtual void sysCommand( UniSetTypes::SystemMessage *sm );
-		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
-		virtual void timerInfo( UniSetTypes::TimerMessage *tm ){}
-		virtual void sensorInfo( UniSetTypes::SensorMessage *sm ){}
-	
-		std::string myname;
+        inline UniSetTypes::ObjectId getId(){ return id; }
+        inline std::string getName(){ return myname; }
 
-		ProxyManager* mngr;
-	private:
-		UniSetTypes::ObjectId id;
+    protected:
+        virtual void sysCommand( UniSetTypes::SystemMessage *sm );
+        virtual void askSensors( UniversalIO::UIOCommand cmd ){}
+        virtual void timerInfo( UniSetTypes::TimerMessage *tm ){}
+        virtual void sensorInfo( UniSetTypes::SensorMessage *sm ){}
+
+        std::string myname;
+
+        ProxyManager* mngr;
+    private:
+        UniSetTypes::ObjectId id;
 };
 
 // -------------------------------------------------------------------------

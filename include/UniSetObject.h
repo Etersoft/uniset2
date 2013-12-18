@@ -49,196 +49,196 @@ class UniSetManager;
 
 //---------------------------------------------------------------------------
 class UniSetObject;
-typedef std::list<UniSetObject *> ObjectsList; 	/*!< Список подчиненных объектов */
+typedef std::list<UniSetObject *> ObjectsList;     /*!< Список подчиненных объектов */
 //---------------------------------------------------------------------------
 /*! \class UniSetObject
- *	Класс задает такие свойства объекта как: получение сообщений, помещение сообщения в очередь и т.п.
- *	Для ожидания сообщений используется функция waitMessage(), основанная на таймере.
- *	Ожидание прерывается либо по истечении указанного времени, либо по приходу сообщения, при помощи функциии
- *	termWaiting() вызываемой из push(). 
- * 	\note Если не будет задан ObjectId(-1), то поток обработки запущен не будет.
- *	Также создание потока можно принудительно отключить при помощи функции void thread(). Ее необходимо вызвать до активации объекта
- *	(например в конструкторе). При этом ответственность за вызов receiveMessage() и processingMessage() возлагается 
- *	на разработчика.
+ *    Класс задает такие свойства объекта как: получение сообщений, помещение сообщения в очередь и т.п.
+ *    Для ожидания сообщений используется функция waitMessage(), основанная на таймере.
+ *    Ожидание прерывается либо по истечении указанного времени, либо по приходу сообщения, при помощи функциии
+ *    termWaiting() вызываемой из push().
+ *     \note Если не будет задан ObjectId(-1), то поток обработки запущен не будет.
+ *    Также создание потока можно принудительно отключить при помощи функции void thread(). Ее необходимо вызвать до активации объекта
+ *    (например в конструкторе). При этом ответственность за вызов receiveMessage() и processingMessage() возлагается
+ *    на разработчика.
 */ 
 class UniSetObject:
-	public POA_UniSetObject_i
+    public POA_UniSetObject_i
 {
-	public:
-		UniSetObject(const std::string& name, const std::string& section);
-		UniSetObject(UniSetTypes::ObjectId id);
-		UniSetObject();
-		virtual ~UniSetObject();
+    public:
+        UniSetObject(const std::string& name, const std::string& section);
+        UniSetObject(UniSetTypes::ObjectId id);
+        UniSetObject();
+        virtual ~UniSetObject();
 
-		// Функции объявленные в IDL
-		virtual CORBA::Boolean exist();
-		virtual char* getName(){return (char*)myname.c_str();}
-		virtual UniSetTypes::ObjectId getId(){ return myid; }
-		virtual UniSetTypes::ObjectType getType() { return UniSetTypes::getObjectType("UniSetObject"); }
-		virtual UniSetTypes::SimpleInfo* getInfo();
-		friend std::ostream& operator<<(std::ostream& os, UniSetObject& obj );
+        // Функции объявленные в IDL
+        virtual CORBA::Boolean exist();
+        virtual char* getName(){return (char*)myname.c_str();}
+        virtual UniSetTypes::ObjectId getId(){ return myid; }
+        virtual UniSetTypes::ObjectType getType() { return UniSetTypes::getObjectType("UniSetObject"); }
+        virtual UniSetTypes::SimpleInfo* getInfo();
+        friend std::ostream& operator<<(std::ostream& os, UniSetObject& obj );
 
-		//! поместить сообщение в очередь
-		virtual void push(const UniSetTypes::TransportMessage& msg);
+        //! поместить сообщение в очередь
+        virtual void push(const UniSetTypes::TransportMessage& msg);
 
-		/*! получить ссылку (на себя) */
-		inline UniSetTypes::ObjectPtr getRef()
-		{
-			UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
-			return (UniSetTypes::ObjectPtr)CORBA::Object::_duplicate(oref);
-		}
+        /*! получить ссылку (на себя) */
+        inline UniSetTypes::ObjectPtr getRef()
+        {
+            UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
+            return (UniSetTypes::ObjectPtr)CORBA::Object::_duplicate(oref);
+        }
 
-	protected:
-			/*! обработка приходящих сообщений */
-			virtual void processingMessage(UniSetTypes::VoidMessage *msg);
+    protected:
+            /*! обработка приходящих сообщений */
+            virtual void processingMessage(UniSetTypes::VoidMessage *msg);
 
-			/*! Получить сообщение */
-			bool receiveMessage(UniSetTypes::VoidMessage& vm);
-	
-			/*! текущее количесво сообщений в очереди */
-			unsigned int countMessages();
-			 	
-			/*! прервать ожидание сообщений */
-			void termWaiting();
+            /*! Получить сообщение */
+            bool receiveMessage(UniSetTypes::VoidMessage& vm);
 
-			UInterface ui; /*!< универсальный интерфейс для работы с другими процессами */
-			std::string myname;
-			std::string section;
+            /*! текущее количесво сообщений в очереди */
+            unsigned int countMessages();
 
-			//! Дизактивизация объекта (переопределяется для необходимых действий перед деактивацией)	 
-			virtual bool disactivateObject(){return true;}
-			//! Активизация объекта (переопределяется для необходимых действий после активизации)	 
-			virtual bool activateObject(){return true;}
+            /*! прервать ожидание сообщений */
+            void termWaiting();
 
-			/*! запрет(разрешение) создания потока для обработки сообщений */
-			inline void thread(bool create){ threadcreate = create; }
-			/*! отключение потока обработки сообщений */
-			inline void offThread(){ threadcreate = false; }
-			/*! включение потока обработки сообщений */
-			inline void onThread(){ threadcreate = true; }
+            UInterface ui; /*!< универсальный интерфейс для работы с другими процессами */
+            std::string myname;
+            std::string section;
 
-			/*! функция вызываемая из потока */
-			virtual void callback();
+            //! Дизактивизация объекта (переопределяется для необходимых действий перед деактивацией)
+            virtual bool disactivateObject(){return true;}
+            //! Активизация объекта (переопределяется для необходимых действий после активизации)
+            virtual bool activateObject(){return true;}
 
-			/*! Функция вызываемая при приходе сигнала завершения или прерывания процесса. Переопределив ее можно
-			 *	выполнять специфичные для процесса действия по обработке сигнала.
-			 *	Например переход в безопасное состояние.
-			 *  \warning В обработчике сигналов \b ЗАПРЕЩЕНО вызывать функции подобные exit(..), abort()!!!! 
-			*/
-			virtual void sigterm( int signo ){};
+            /*! запрет(разрешение) создания потока для обработки сообщений */
+            inline void thread(bool create){ threadcreate = create; }
+            /*! отключение потока обработки сообщений */
+            inline void offThread(){ threadcreate = false; }
+            /*! включение потока обработки сообщений */
+            inline void onThread(){ threadcreate = true; }
 
-			inline void terminate(){ disactivate(); }
+            /*! функция вызываемая из потока */
+            virtual void callback();
 
-			/*! Ожидать сообщения timeMS */
-			virtual bool waitMessage(UniSetTypes::VoidMessage& msg, timeout_t timeMS=UniSetTimer::WaitUpTime);
+            /*! Функция вызываемая при приходе сигнала завершения или прерывания процесса. Переопределив ее можно
+             *    выполнять специфичные для процесса действия по обработке сигнала.
+             *    Например переход в безопасное состояние.
+             *  \warning В обработчике сигналов \b ЗАПРЕЩЕНО вызывать функции подобные exit(..), abort()!!!!
+            */
+            virtual void sigterm( int signo ){};
 
-			void setID(UniSetTypes::ObjectId id);
+            inline void terminate(){ disactivate(); }
 
+            /*! Ожидать сообщения timeMS */
+            virtual bool waitMessage(UniSetTypes::VoidMessage& msg, timeout_t timeMS=UniSetTimer::WaitUpTime);
 
-			void setMaxSizeOfMessageQueue( unsigned int s )
-			{
-				if( s>=0 )
-					SizeOfMessageQueue = s;
-			}
-
-			inline unsigned int getMaxSizeOfMessageQueue()
-			{ return SizeOfMessageQueue; }
-			
-			void setMaxCountRemoveOfMessage( unsigned int m )
-			{
-				if( m >=0 )
-					MaxCountRemoveOfMessage = m;
-			}
-
-			inline unsigned int getMaxCountRemoveOfMessage()
-			{ return MaxCountRemoveOfMessage; }
+            void setID(UniSetTypes::ObjectId id);
 
 
-			// функция определения приоритетного сообщения для обработки
-			struct PriorVMsgCompare: 
-				public std::binary_function<UniSetTypes::VoidMessage, UniSetTypes::VoidMessage, bool>
-			{
-				bool operator()(const UniSetTypes::VoidMessage& lhs, 
-								const UniSetTypes::VoidMessage& rhs) const;
-			};
-			typedef std::priority_queue<UniSetTypes::VoidMessage,std::vector<UniSetTypes::VoidMessage>,PriorVMsgCompare> MessagesQueue;
+            void setMaxSizeOfMessageQueue( unsigned int s )
+            {
+                if( s>=0 )
+                    SizeOfMessageQueue = s;
+            }
+
+            inline unsigned int getMaxSizeOfMessageQueue()
+            { return SizeOfMessageQueue; }
+
+            void setMaxCountRemoveOfMessage( unsigned int m )
+            {
+                if( m >=0 )
+                    MaxCountRemoveOfMessage = m;
+            }
+
+            inline unsigned int getMaxCountRemoveOfMessage()
+            { return MaxCountRemoveOfMessage; }
 
 
-			/*! Вызывается при переполнеии очереди сообщений (в двух местах push и receive)
-				для очитски очереди.
-				\warning По умолчанию удаляет из очереди все повторяющиеся 
-				 - SensorMessage
-				 - TimerMessage
-				 - SystemMessage
-			 Если не помогло удаляет из очереди UniSetObject::MaxCountRemoveOfMessage
-			\note Для специфичной обработки может быть переопределена
-			\warning Т.к. при фильтровании SensorMessage не смотрится значение, то
-			при удалении сообщений об изменении аналоговых датчиков очистка может привести
-			к некорректной работе фильрующих алгоритмов работающих с "выборкой" последних N значений.
-			(потому-что останется одно последнее)
-			*/
-			virtual void cleanMsgQueue( MessagesQueue& q );
+            // функция определения приоритетного сообщения для обработки
+            struct PriorVMsgCompare:
+                public std::binary_function<UniSetTypes::VoidMessage, UniSetTypes::VoidMessage, bool>
+            {
+                bool operator()(const UniSetTypes::VoidMessage& lhs,
+                                const UniSetTypes::VoidMessage& rhs) const;
+            };
+            typedef std::priority_queue<UniSetTypes::VoidMessage,std::vector<UniSetTypes::VoidMessage>,PriorVMsgCompare> MessagesQueue;
 
-			bool isActive();
-			void setActive( bool set );
 
-			UniSetTypes::VoidMessage msg;	
-			UniSetManager* mymngr;
+            /*! Вызывается при переполнеии очереди сообщений (в двух местах push и receive)
+                для очитски очереди.
+                \warning По умолчанию удаляет из очереди все повторяющиеся
+                 - SensorMessage
+                 - TimerMessage
+                 - SystemMessage
+             Если не помогло удаляет из очереди UniSetObject::MaxCountRemoveOfMessage
+            \note Для специфичной обработки может быть переопределена
+            \warning Т.к. при фильтровании SensorMessage не смотрится значение, то
+            при удалении сообщений об изменении аналоговых датчиков очистка может привести
+            к некорректной работе фильрующих алгоритмов работающих с "выборкой" последних N значений.
+            (потому-что останется одно последнее)
+            */
+            virtual void cleanMsgQueue( MessagesQueue& q );
 
-			void setThreadPriority( int p );
-			
-	private:
+            bool isActive();
+            void setActive( bool set );
 
-			friend class UniSetManager;
-			friend class UniSetActivator;
-			friend class ThreadCreator<UniSetObject>;
-			inline pid_t getMsgPID()
-			{
-				return msgpid;
-			}
+            UniSetTypes::VoidMessage msg;
+            UniSetManager* mymngr;
 
-			/*! функция потока */
-			void work();	
-			//! Инициализация параметров объекта
-			bool init(UniSetManager* om);
-			//! Прямая деактивизация объекта	 
-			bool disactivate();
-			//! Непосредственная активизация объекта
-			bool activate();
-			/* регистрация в репозитории объектов */
-			void registered();
-			/* удаление ссылки из репозитория объектов 	*/
-			void unregister();
+            void setThreadPriority( int p );
 
-			void init_object();
+    private:
 
-			pid_t msgpid; // pid потока обработки сообщений
-			bool reg;
-			bool active;
-			UniSetTypes::uniset_rwmutex mutex_act;
-			bool threadcreate;
-			UniSetTimer* tmr;
-			UniSetTypes::ObjectId myid;
-			CORBA::Object_var oref;
-			ThreadCreator<UniSetObject>* thr;
+            friend class UniSetManager;
+            friend class UniSetActivator;
+            friend class ThreadCreator<UniSetObject>;
+            inline pid_t getMsgPID()
+            {
+                return msgpid;
+            }
 
-			/*! очередь сообщений для объекта */
-			MessagesQueue queueMsg;
+            /*! функция потока */
+            void work();
+            //! Инициализация параметров объекта
+            bool init(UniSetManager* om);
+            //! Прямая деактивизация объекта
+            bool disactivate();
+            //! Непосредственная активизация объекта
+            bool activate();
+            /* регистрация в репозитории объектов */
+            void registered();
+            /* удаление ссылки из репозитория объектов     */
+            void unregister();
 
-		 	/*! замок для блокирования совместного доступа к очереди */
-			UniSetTypes::uniset_rwmutex qmutex;
+            void init_object();
 
-		 	/*! замок для блокирования совместного доступа к очереди */
-			UniSetTypes::uniset_rwmutex refmutex;
+            pid_t msgpid; // pid потока обработки сообщений
+            bool reg;
+            bool active;
+            UniSetTypes::uniset_rwmutex mutex_act;
+            bool threadcreate;
+            UniSetTimer* tmr;
+            UniSetTypes::ObjectId myid;
+            CORBA::Object_var oref;
+            ThreadCreator<UniSetObject>* thr;
 
-			/*! размер очереди сообщений (при превышении происходит очистка) */
-			unsigned int SizeOfMessageQueue;
-			/*! сколько сообщений удалять при очисте*/
-			unsigned int MaxCountRemoveOfMessage;
-			
-			// статистическая информация 
-			unsigned long stMaxQueueMessages;	/*<! Максимальное число сообщений хранившихся в очереди */
-			unsigned long stCountOfQueueFull; 	/*! количество переполнений очереди сообщений */
+            /*! очередь сообщений для объекта */
+            MessagesQueue queueMsg;
+
+             /*! замок для блокирования совместного доступа к очереди */
+            UniSetTypes::uniset_rwmutex qmutex;
+
+             /*! замок для блокирования совместного доступа к очереди */
+            UniSetTypes::uniset_rwmutex refmutex;
+
+            /*! размер очереди сообщений (при превышении происходит очистка) */
+            unsigned int SizeOfMessageQueue;
+            /*! сколько сообщений удалять при очисте*/
+            unsigned int MaxCountRemoveOfMessage;
+
+            // статистическая информация
+            unsigned long stMaxQueueMessages;    /*<! Максимальное число сообщений хранившихся в очереди */
+            unsigned long stCountOfQueueFull;     /*! количество переполнений очереди сообщений */
 };
 //---------------------------------------------------------------------------
 #endif

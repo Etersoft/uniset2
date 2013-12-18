@@ -8,19 +8,19 @@ conf(0),
 ui(0),
 xmlfile(xfile)
 {
-	try
-	{
-	    conf = new UniSetTypes::Configuration(p->argc,p->argv,xmlfile);
-		ui = new UInterface(conf);
-	}
-	catch( UniSetTypes::Exception& ex )
-	{
-		throw UException(ex.what());
-	}
-	catch( ... )
-	{
-		throw UException();
-	}
+    try
+    {
+        conf = new UniSetTypes::Configuration(p->argc,p->argv,xmlfile);
+        ui = new UInterface(conf);
+    }
+    catch( UniSetTypes::Exception& ex )
+    {
+        throw UException(ex.what());
+    }
+    catch( ... )
+    {
+        throw UException();
+    }
 }
 //---------------------------------------------------------------------------
 UConnector::UConnector( int argc, char** argv, const char* xfile )throw(UException):
@@ -28,161 +28,161 @@ conf(0),
 ui(0),
 xmlfile(xfile)
 {
-	try
-	{
-	    conf = new UniSetTypes::Configuration(argc,argv,xmlfile);
-		ui = new UInterface(conf);
-	}
-	catch( UniSetTypes::Exception& ex )
-	{
-		throw UException(ex.what());
-	}
-	catch( ... )
-	{
-		throw UException();
-	}
+    try
+    {
+        conf = new UniSetTypes::Configuration(argc,argv,xmlfile);
+        ui = new UInterface(conf);
+    }
+    catch( UniSetTypes::Exception& ex )
+    {
+        throw UException(ex.what());
+    }
+    catch( ... )
+    {
+        throw UException();
+    }
 }
 // --------------------------------------------------------------------------
 UConnector::~UConnector()
 {
-	delete ui;
-	delete conf;
+    delete ui;
+    delete conf;
 }
 // --------------------------------------------------------------------------
 const char* UConnector::getConfFileName()
 {
-//	return xmlfile;
-	if( conf )
-		return conf->getConfFileName().c_str();
+//    return xmlfile;
+    if( conf )
+        return conf->getConfFileName().c_str();
 
-	return "";
+    return "";
 
 }
 // --------------------------------------------------------------------------
 long UConnector::getValue( long id, long node )throw(UException)
 {
-	if( !conf || !ui )
-	  throw USysError();
+    if( !conf || !ui )
+      throw USysError();
 
-	if( node == UTypes::DefaultID )
-	  node = conf->getLocalNode();
-	
-	UniversalIO::IOType t = conf->getIOType(id);
-	try
-	{
-		switch(t)
-		{
-			case UniversalIO::DI:
-			case UniversalIO::DO:
-			case UniversalIO::AI:
-			case UniversalIO::AO:
-				return ui->getValue(id,node);
-			break;
+    if( node == UTypes::DefaultID )
+      node = conf->getLocalNode();
 
-			default:
-			{
-			  ostringstream e;
-			  e << "(getValue): Unknown iotype for id=" << id;
-			  throw UException(e.str());
-			}
-		}
-	}
-	catch( UException& ex )
-	{
-		throw;
-	}
-	catch( UniSetTypes::Exception& ex )
-	{
-		throw UException(ex.what());
-	}
-	catch( ... )
-	{
-		throw UException("(getValue): catch...");
-	}
+    UniversalIO::IOType t = conf->getIOType(id);
+    try
+    {
+        switch(t)
+        {
+            case UniversalIO::DI:
+            case UniversalIO::DO:
+            case UniversalIO::AI:
+            case UniversalIO::AO:
+                return ui->getValue(id,node);
+            break;
 
-	throw UException("(getValue): unknown error");
+            default:
+            {
+              ostringstream e;
+              e << "(getValue): Unknown iotype for id=" << id;
+              throw UException(e.str());
+            }
+        }
+    }
+    catch( UException& ex )
+    {
+        throw;
+    }
+    catch( UniSetTypes::Exception& ex )
+    {
+        throw UException(ex.what());
+    }
+    catch( ... )
+    {
+        throw UException("(getValue): catch...");
+    }
+
+    throw UException("(getValue): unknown error");
 }
 //---------------------------------------------------------------------------
 void UConnector::setValue( long id, long val, long node )throw(UException)
 {
-	if( !conf || !ui )
-	  throw USysError();
+    if( !conf || !ui )
+      throw USysError();
 
 
-	if( node == UTypes::DefaultID )
-	  node = conf->getLocalNode();
-	
-	UniversalIO::IOType t = conf->getIOType(id);
-	try
-	{
-		switch(t)
-		{
-			case UniversalIO::DI:
-			case UniversalIO::DO:
-			case UniversalIO::AI:
-			case UniversalIO::AO:
-				ui->setValue(id,val,node);
-			break;
+    if( node == UTypes::DefaultID )
+      node = conf->getLocalNode();
 
-			default:
-			{
-			  ostringstream e;
-			  e << "(setValue): Unknown iotype for id=" << id;
-			  throw UException(e.str());
-			}
-		}
-	}
-	catch( UException& ex )
-	{
-		throw;
-	}
-	catch( UniSetTypes::Exception& ex )
-	{
-		throw UException(ex.what());
-	}
-	catch( ... )
-	{
-		throw UException("(setValue): catch...");
-	}
+    UniversalIO::IOType t = conf->getIOType(id);
+    try
+    {
+        switch(t)
+        {
+            case UniversalIO::DI:
+            case UniversalIO::DO:
+            case UniversalIO::AI:
+            case UniversalIO::AO:
+                ui->setValue(id,val,node);
+            break;
+
+            default:
+            {
+              ostringstream e;
+              e << "(setValue): Unknown iotype for id=" << id;
+              throw UException(e.str());
+            }
+        }
+    }
+    catch( UException& ex )
+    {
+        throw;
+    }
+    catch( UniSetTypes::Exception& ex )
+    {
+        throw UException(ex.what());
+    }
+    catch( ... )
+    {
+        throw UException("(setValue): catch...");
+    }
 }
 //---------------------------------------------------------------------------
 long UConnector::getSensorID( const char* name )
 {
-	if( conf )
-	  return conf->getSensorID(name);
+    if( conf )
+      return conf->getSensorID(name);
 
-	return UTypes::DefaultID;
+    return UTypes::DefaultID;
 }
 //---------------------------------------------------------------------------
 long UConnector::getNodeID( const char* name )
 {
-	if( conf )
-	  return conf->getNodeID(name);
+    if( conf )
+      return conf->getNodeID(name);
 
-	return UTypes::DefaultID;
+    return UTypes::DefaultID;
 }
 //---------------------------------------------------------------------------
 const char* UConnector::getName( long id )
 {
-	if( conf )
-		return conf->oind->getMapName(id).c_str();
+    if( conf )
+        return conf->oind->getMapName(id).c_str();
 
-	return "";
+    return "";
 }
 //---------------------------------------------------------------------------
 const char* UConnector::getShortName( long id )
 {
-	if( conf )
-		return ORepHelpers::getShortName(conf->oind->getMapName(id)).c_str();
+    if( conf )
+        return ORepHelpers::getShortName(conf->oind->getMapName(id)).c_str();
 
-	return "";
+    return "";
 }
 //---------------------------------------------------------------------------
 const char* UConnector::getTextName( long id )
 {
-	if( conf )
-		return conf->oind->getTextName(id).c_str();
+    if( conf )
+        return conf->oind->getTextName(id).c_str();
 
-	return "";
+    return "";
 }
 //---------------------------------------------------------------------------

@@ -7,10 +7,10 @@ using namespace std;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
 TNOT::TNOT( ElementID id, bool out_default ):
-	Element(id),
-	myout(out_default)
+    Element(id),
+    myout(out_default)
 {
-	ins.push_front(InputInfo(1,!out_default));
+    ins.push_front(InputInfo(1,!out_default));
 }
 // -------------------------------------------------------------------------
 TNOT::~TNOT()
@@ -19,13 +19,13 @@ TNOT::~TNOT()
 // -------------------------------------------------------------------------
 void TNOT::setIn( int num, bool state )
 {
-	bool prev = myout;
-	myout = !state;
-	
-	if( dlog.is_info() )
-		dlog.info() << this << ": myout " << myout << endl;
+    bool prev = myout;
+    myout = !state;
 
-	if( prev != myout )
-		Element::setChildOut();
+    if( dlog.is_info() )
+        dlog.info() << this << ": myout " << myout << endl;
+
+    if( prev != myout )
+        Element::setChildOut();
 }
 // -------------------------------------------------------------------------

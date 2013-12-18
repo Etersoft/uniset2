@@ -1,33 +1,33 @@
 #ifndef UTypes_H_
 #define UTypes_H_
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #include <UniSetTypes.h>
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 namespace UTypes
 {
-	const long DefaultID = UniSetTypes::DefaultObjectId;
-	
-	struct Params
-	{
-		static const int max = 20;
+    const long DefaultID = UniSetTypes::DefaultObjectId;
 
-		Params():argc(0){ memset(argv,0,sizeof(argv)); }
+    struct Params
+    {
+        static const int max = 20;
 
-		bool add( char* s )
-		{
-			if( argc < Params::max )
-			{
-				argv[argc++] = s;
-				return true;
-			}
-			return false;
-		}
+        Params():argc(0){ memset(argv,0,sizeof(argv)); }
 
-		int argc;
-		char* argv[max];
-		
-		static Params inst(){ return Params(); }
-	};
+        bool add( char* s )
+        {
+            if( argc < Params::max )
+            {
+                argv[argc++] = s;
+                return true;
+            }
+            return false;
+        }
+
+        int argc;
+        char* argv[max];
+
+        static Params inst(){ return Params(); }
+    };
 }
 //---------------------------------------------------------------------------
 #endif

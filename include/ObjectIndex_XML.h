@@ -33,16 +33,16 @@ namespace UniSetTypes
 {
 
 /*!
-	\todo Проверить функции этого класса на повторную входимость
-	\bug При обращении к objectsMap[0].textName срабатывает исключение(видимо какое-то из std). 
-		Требуется дополнительное изучение.
+    \todo Проверить функции этого класса на повторную входимость
+    \bug При обращении к objectsMap[0].textName срабатывает исключение(видимо какое-то из std).
+        Требуется дополнительное изучение.
 */
 class ObjectIndex_XML:
-	public ObjectIndex
+    public ObjectIndex
 {
-	public:
+    public:
         ObjectIndex_XML(const std::string& xmlfile, int minSize=1000 );
-		ObjectIndex_XML(UniXML& xml, int minSize=1000 );
+        ObjectIndex_XML(UniXML& xml, int minSize=1000 );
         virtual ~ObjectIndex_XML();
 
         virtual const UniSetTypes::ObjectInfo* getObjectInfo(const ObjectId);
@@ -52,20 +52,20 @@ class ObjectIndex_XML:
         virtual std::string getTextName(const ObjectId id);
 
         virtual std::ostream& printMap(std::ostream& os);
-		friend std::ostream& operator<<(std::ostream& os, ObjectIndex_XML& oi );
-	
-	protected:
+        friend std::ostream& operator<<(std::ostream& os, ObjectIndex_XML& oi );
+
+    protected:
         virtual void build(UniXML& xml);
         unsigned int read_section( UniXML& xml, const std::string& sec, unsigned int ind );
         unsigned int read_nodes( UniXML& xml, const std::string& sec, unsigned int ind );
-	
-	private:
-		typedef std::map<std::string, ObjectId> MapObjectKey;
-		MapObjectKey mok; // для обратного писка
-		std::vector<ObjectInfo> omap; // для прямого поиска
-		
+
+    private:
+        typedef std::map<std::string, ObjectId> MapObjectKey;
+        MapObjectKey mok; // для обратного писка
+        std::vector<ObjectInfo> omap; // для прямого поиска
+
 };
 // -----------------------------------------------------------------------------------------
-}	// end of namespace
+}    // end of namespace
 // -----------------------------------------------------------------------------------------
 #endif

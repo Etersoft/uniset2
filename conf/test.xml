@@ -148,7 +148,7 @@
 			</rrd>
 		</RRDServer1>
 	</settings>
-	<ObjectsMap idfromfile="0">
+	<ObjectsMap idfromfile="1">
 		<!--
 	Краткие пояснения к полям секции 'sensors'
 	==========================================
@@ -273,7 +273,6 @@
 	</messages>
 	<!-- <xi:include href="testID.xml"/> -->
 	<!-- <xi:include href="testIDnon-exist.xml"/> -->
-
 	<Calibrations name="Calibrations">
 		<diagram name="testcal">
 			<point x="-200" y="-60"/>

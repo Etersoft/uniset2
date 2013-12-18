@@ -18,7 +18,7 @@ static const int TERMINATE_TIMEOUT = 2; //  время отведенное на
 // --------------------------------------------------------------------------------
 SingleProcess::SingleProcess()
 {
-	gMain = this;
+    gMain = this;
 }
 
 // --------------------------------------------------------------------------------
@@ -28,69 +28,69 @@ SingleProcess::~SingleProcess()
 // --------------------------------------------------------------------------------
 void SingleProcess::finishterm( int signo )
 {
-	if( !doneterm )
-	{
-		cerr << "(SingleProcess:finishterm): прерываем процесс завершения...!" << endl << flush;
-		sigset(SIGALRM, SIG_DFL);
-		gMain->set_signals(false);	
-		doneterm = 1;
-		raise(SIGKILL);
-	}
+    if( !doneterm )
+    {
+        cerr << "(SingleProcess:finishterm): прерываем процесс завершения...!" << endl << flush;
+        sigset(SIGALRM, SIG_DFL);
+        gMain->set_signals(false);
+        doneterm = 1;
+        raise(SIGKILL);
+    }
 }
 // ------------------------------------------------------------------------------------------
 void SingleProcess::terminated( int signo )
 {
-	if( !signo || doneterm || !gMain || procterm )
-		return;
+    if( !signo || doneterm || !gMain || procterm )
+        return;
 
-	{	// lock
+    {    // lock
 
-		// на случай прихода нескольких сигналов
-		uniset_mutex_lock l(signalMutex, 1000);
-		
-		if( !procterm )
-		{
-			procterm = 1;			
-			sighold(SIGALRM);
-			sigset(SIGALRM,SingleProcess::finishterm);
-			alarm(TERMINATE_TIMEOUT);
-			sigrelse(SIGALRM);				
-			gMain->term(signo);
-			gMain->set_signals(false);	
-			doneterm = 1;
-			raise(signo);
-		}
-	}
+        // на случай прихода нескольких сигналов
+        uniset_mutex_lock l(signalMutex, 1000);
+
+        if( !procterm )
+        {
+            procterm = 1;
+            sighold(SIGALRM);
+            sigset(SIGALRM,SingleProcess::finishterm);
+            alarm(TERMINATE_TIMEOUT);
+            sigrelse(SIGALRM);
+            gMain->term(signo);
+            gMain->set_signals(false);
+            doneterm = 1;
+            raise(signo);
+        }
+    }
 }
 // --------------------------------------------------------------------------------
 void SingleProcess::set_signals( bool ask )
 {
-	struct sigaction act, oact;
-	sigemptyset(&act.sa_mask);
+    struct sigaction act, oact;
+    sigemptyset(&act.sa_mask);
 
-	// добавляем сигналы, которые будут игнорироваться
-	// при обработке сигнала 
-	sigaddset(&act.sa_mask, SIGINT);
-	sigaddset(&act.sa_mask, SIGTERM);
-	sigaddset(&act.sa_mask, SIGABRT );
-	sigaddset(&act.sa_mask, SIGQUIT);
-//	sigaddset(&act.sa_mask, SIGSEGV);
+    // добавляем сигналы, которые будут игнорироваться
+    // при обработке сигнала
+    sigaddset(&act.sa_mask, SIGINT);
+    sigaddset(&act.sa_mask, SIGTERM);
+    sigaddset(&act.sa_mask, SIGABRT );
+    sigaddset(&act.sa_mask, SIGQUIT);
+//    sigaddset(&act.sa_mask, SIGSEGV);
 
 
-//	sigaddset(&act.sa_mask, SIGALRM);
-//	act.sa_flags = 0;
-//	act.sa_flags |= SA_RESTART;
-//	act.sa_flags |= SA_RESETHAND;
-	if(ask)
-		act.sa_handler = terminated;
-	else
-		act.sa_handler = SIG_DFL;
-		
-	sigaction(SIGINT, &act, &oact);
-	sigaction(SIGTERM, &act, &oact);
-	sigaction(SIGABRT, &act, &oact);
-	sigaction(SIGQUIT, &act, &oact);
+//    sigaddset(&act.sa_mask, SIGALRM);
+//    act.sa_flags = 0;
+//    act.sa_flags |= SA_RESTART;
+//    act.sa_flags |= SA_RESETHAND;
+    if(ask)
+        act.sa_handler = terminated;
+    else
+        act.sa_handler = SIG_DFL;
 
-//	sigaction(SIGSEGV, &act, &oact);
+    sigaction(SIGINT, &act, &oact);
+    sigaction(SIGTERM, &act, &oact);
+    sigaction(SIGABRT, &act, &oact);
+    sigaction(SIGQUIT, &act, &oact);
+
+//    sigaction(SIGSEGV, &act, &oact);
 }
 // --------------------------------------------------------------------------------

@@ -18,44 +18,47 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \brief Реализация RepositoryAgent
  * \author Pavel Vainerman
 */
-// --------------------------------------------------------------------------
-#ifndef RepositoryAgent_H_
-#define RepositoryAgent_H_
+// -------------------------------------------------------------------------- 
+#ifndef ProxyManager_H_
+#define ProxyManager_H_
 //---------------------------------------------------------------------------
-#include "RepositoryAgent_i.hh"
-#include "BaseProcess_i.hh"
-#include "BaseProcess.h"
-#include "UniSetTypes.h"
-#include "ObjectIndex.h"
-//----------------------------------------------------------------------------------------
-/*! \class RepositoryAgent
-*/
-class RepositoryAgent:
-		public POA_RepositoryAgent_i,
-		public BaseProcess
-{
-	public:
+#include <map>
+#include "UniSetObject.h"
 
-		RepositoryAgent( ObjectId id, const UniSetTypes::ObjectInfo *pObjectsMap );
-		~RepositoryAgent();
+//----------------------------------------------------------------------------
+class PassiveObject;
+//----------------------------------------------------------------------------
 
+/*! \class ProxyManager
+ *    Менеджер пассивных объектов, который выступает вместо них во всех внешних связях....
+*/ 
+class ProxyManager: 
+    public UniSetObject
+{   
 
-//	  virtual void registration(const char* name, ::CORBA::Object_ptr ref);
-//	  virtual void unregistration(const char* name, ::CORBA::Object_ptr ref);
+    public:
+        ProxyManager( UniSetTypes::ObjectId id );
+        ~ProxyManager();
 
-	  virtual CORBA::Object_ptr resolve(const char* name);
-	  virtual CORBA::Object_ptr resolveid( UniSetTypes::ObjectId id);
+        void attachObject( PassiveObject* po, UniSetTypes::ObjectId id );
+        void detachObject( UniSetTypes::ObjectId id );
 
-	  virtual void execute();
+        UInterface* uin;
 
-	protected:
-			RepositoryAgent();
-			ObjectIndex oind;
+    protected:
+        ProxyManager();
+        virtual void processingMessage( UniSetTypes::VoidMessage* msg );
+        virtual void allMessage( UniSetTypes::VoidMessage* msg );
 
-	private:
+        virtual bool activateObject();
+        virtual bool disactivateObject();
+
+    private:
+        typedef std::map<UniSetTypes::ObjectId, PassiveObject*> PObjectMap;
+        PObjectMap omap;
 };
-
-#endif
+//----------------------------------------------------------------------------------------
+#endif // ProxyManager
+//----------------------------------------------------------------------------------------

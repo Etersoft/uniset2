@@ -611,6 +611,7 @@ end_private(false)
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 		throw Exception( myname + ": Not found ID for (<xsl:value-of select="@name"/>) " + conf->getProp(cnode,"<xsl:value-of select="@name"/>") );
+
 	</xsl:if>
 
 	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )

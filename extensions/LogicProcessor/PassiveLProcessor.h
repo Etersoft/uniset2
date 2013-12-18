@@ -12,47 +12,47 @@
 // --------------------------------------------------------------------------
 /*! Реализация LogicProccessor основанная на заказе датчиков */
 class PassiveLProcessor:
-	public UniSetObject_LT,
-	protected LProcessor
+    public UniSetObject_LT,
+    protected LProcessor
 {
-	public:
+    public:
 
-		PassiveLProcessor( std::string schema, UniSetTypes::ObjectId objId, 
-							UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="lproc" );
-	    virtual ~PassiveLProcessor();
+        PassiveLProcessor( std::string schema, UniSetTypes::ObjectId objId,
+                            UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="lproc" );
+        virtual ~PassiveLProcessor();
 
-		enum Timers
-		{
-			tidStep
-		};
+        enum Timers
+        {
+            tidStep
+        };
 
-	protected:
-		PassiveLProcessor():shm(0),maxHeartBeat(0){};
+    protected:
+        PassiveLProcessor():shm(0),maxHeartBeat(0){};
 
-		virtual void step();
-		virtual void getInputs();
-		virtual void setOuts();
+        virtual void step();
+        virtual void getInputs();
+        virtual void setOuts();
 
-		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
-		void sysCommand( UniSetTypes::SystemMessage *msg );
-		void sensorInfo( UniSetTypes::SensorMessage*sm );
-		void timerInfo( UniSetTypes::TimerMessage *tm );
-		void askSensors( UniversalIO::UIOCommand cmd );	
-//		void initOutput();
+        virtual void processingMessage( UniSetTypes::VoidMessage *msg );
+        void sysCommand( UniSetTypes::SystemMessage *msg );
+        void sensorInfo( UniSetTypes::SensorMessage*sm );
+        void timerInfo( UniSetTypes::TimerMessage *tm );
+        void askSensors( UniversalIO::UIOCommand cmd );
+//        void initOutput();
 
-		// действия при завершении работы
-		virtual void sigterm( int signo );
-		void initIterators();
-		virtual bool activateObject();
+        // действия при завершении работы
+        virtual void sigterm( int signo );
+        void initIterators();
+        virtual bool activateObject();
 
-		SMInterface* shm;
+        SMInterface* shm;
 
-	private:
-		PassiveTimer ptHeartBeat;
-		UniSetTypes::ObjectId sidHeartBeat;
-		int maxHeartBeat;
-		IOController::IOStateList::iterator itHeartBeat;
-		UniSetTypes::uniset_mutex mutex_start;
+    private:
+        PassiveTimer ptHeartBeat;
+        UniSetTypes::ObjectId sidHeartBeat;
+        int maxHeartBeat;
+        IOController::IOStateList::iterator itHeartBeat;
+        UniSetTypes::uniset_mutex mutex_start;
 };
 // ---------------------------------------------------------------------------
 #endif

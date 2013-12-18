@@ -45,7 +45,7 @@
 namespace UniversalIO
 {
     /*! Время ожидания ответа */
-    const unsigned int defaultTimeOut=3;	// [сек]
+    const unsigned int defaultTimeOut=3;    // [сек]
 }
 
 // -----------------------------------------------------------------------------------------
@@ -62,289 +62,289 @@ namespace UniversalIO
 */
 class UInterface
 {
-	public:
+    public:
 
-		UInterface( UniSetTypes::ObjectId backid, CORBA::ORB_var orb=NULL, UniSetTypes::ObjectIndex* oind=NULL );
-		UInterface( UniSetTypes::Configuration* uconf=UniSetTypes::conf );
-		~UInterface();
+        UInterface( UniSetTypes::ObjectId backid, CORBA::ORB_var orb=NULL, UniSetTypes::ObjectIndex* oind=NULL );
+        UInterface( UniSetTypes::Configuration* uconf=UniSetTypes::conf );
+        ~UInterface();
 
-		// ---------------------------------------------------------------
-		// Работа с датчиками
+        // ---------------------------------------------------------------
+        // Работа с датчиками
 
-		//! Получение состояния датчика
-		long getValue ( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )throw(IO_THROW_EXCEPTIONS);
-		long getValue ( UniSetTypes::ObjectId id );
-		long getRawValue( const IOController_i::SensorInfo& si );
+        //! Получение состояния датчика
+        long getValue ( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )throw(IO_THROW_EXCEPTIONS);
+        long getValue ( UniSetTypes::ObjectId id );
+        long getRawValue( const IOController_i::SensorInfo& si );
 
-		//! Выставление состояния датчика
-		void setValue ( UniSetTypes::ObjectId id, long value, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
-		void setValue ( UniSetTypes::ObjectId id, long value );
-		void setValue ( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
+        //! Выставление состояния датчика
+        void setValue ( UniSetTypes::ObjectId id, long value, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
+        void setValue ( UniSetTypes::ObjectId id, long value );
+        void setValue ( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
 
-		// fast - это удалённый вызов "без подтверждения", он быстрее, но менее надёжен
-		// т.к. вызывающий никогда не узнает об ошибке, если она была (датчик такой не найдён и т.п.)
-		void fastSetValue( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
+        // fast - это удалённый вызов "без подтверждения", он быстрее, но менее надёжен
+        // т.к. вызывающий никогда не узнает об ошибке, если она была (датчик такой не найдён и т.п.)
+        void fastSetValue( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
 
-		//! Получение состояния для списка указанных датчиков
-		IOController_i::SensorInfoSeq_var getSensorSeq( UniSetTypes::IDList& lst );
+        //! Получение состояния для списка указанных датчиков
+        IOController_i::SensorInfoSeq_var getSensorSeq( UniSetTypes::IDList& lst );
 
-		/*! Изменения состояния списка входов/выходов
-			\return Возвращает список не найденных идентификаторов */
-		UniSetTypes::IDSeq_var setOutputSeq( const IOController_i::OutSeq& lst, UniSetTypes::ObjectId sup_id );
+        /*! Изменения состояния списка входов/выходов
+            \return Возвращает список не найденных идентификаторов */
+        UniSetTypes::IDSeq_var setOutputSeq( const IOController_i::OutSeq& lst, UniSetTypes::ObjectId sup_id );
 
-		// ---------------------------------------------------------------
-		// Заказ датчиков
+        // ---------------------------------------------------------------
+        // Заказ датчиков
 
-		//! Универсальный заказ информации об изменении датчика
-		void askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd,
-							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
+        //! Универсальный заказ информации об изменении датчика
+        void askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd,
+                            UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
-		void askRemoteSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node,
-							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId )throw(IO_THROW_EXCEPTIONS);
+        void askRemoteSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId node,
+                            UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId )throw(IO_THROW_EXCEPTIONS);
 
-		//! Заказ по списку
-		UniSetTypes::IDSeq_var askSensorsSeq( UniSetTypes::IDList& lst, UniversalIO::UIOCommand cmd,
-												UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
-		// ------------------------------------------------------
+        //! Заказ по списку
+        UniSetTypes::IDSeq_var askSensorsSeq( UniSetTypes::IDList& lst, UniversalIO::UIOCommand cmd,
+                                                UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
+        // ------------------------------------------------------
 
-		// установка неопределённого состояния
-		void setUndefinedState( IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId supplier );
+        // установка неопределённого состояния
+        void setUndefinedState( IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId supplier );
 
-		// ---------------------------------------------------------------
-		// Калибровка... пороги...
+        // ---------------------------------------------------------------
+        // Калибровка... пороги...
 
-		//! калибровка
-		void calibrate(const IOController_i::SensorInfo& si,
-					   const IOController_i::CalibrateInfo& ci,
-					   UniSetTypes::ObjectId adminId = UniSetTypes::DefaultObjectId );
+        //! калибровка
+        void calibrate(const IOController_i::SensorInfo& si,
+                       const IOController_i::CalibrateInfo& ci,
+                       UniSetTypes::ObjectId adminId = UniSetTypes::DefaultObjectId );
 
-		IOController_i::CalibrateInfo getCalibrateInfo( const IOController_i::SensorInfo& si );
+        IOController_i::CalibrateInfo getCalibrateInfo( const IOController_i::SensorInfo& si );
 
-		//! Заказ информации об изменении порога
-		void askThreshold( UniSetTypes::ObjectId sensorId, UniSetTypes::ThresholdId tid,
-							UniversalIO::UIOCommand cmd,
-							long lowLimit, long hiLimit, bool invert = false,
-							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
+        //! Заказ информации об изменении порога
+        void askThreshold( UniSetTypes::ObjectId sensorId, UniSetTypes::ThresholdId tid,
+                            UniversalIO::UIOCommand cmd,
+                            long lowLimit, long hiLimit, bool invert = false,
+                            UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
-		void askRemoteThreshold( UniSetTypes::ObjectId sensorId, UniSetTypes::ObjectId node,
-								 UniSetTypes::ThresholdId thresholdId, UniversalIO::UIOCommand cmd,
-								 long lowLimit, long hiLimit, bool invert = false,
-								 UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
+        void askRemoteThreshold( UniSetTypes::ObjectId sensorId, UniSetTypes::ObjectId node,
+                                 UniSetTypes::ThresholdId thresholdId, UniversalIO::UIOCommand cmd,
+                                 long lowLimit, long hiLimit, bool invert = false,
+                                 UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
-		IONotifyController_i::ThresholdInfo getThresholdInfo( const IOController_i::SensorInfo& si, UniSetTypes::ThresholdId tid );
-		IONotifyController_i::ThresholdInfo getThresholdInfo( UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid );
+        IONotifyController_i::ThresholdInfo getThresholdInfo( const IOController_i::SensorInfo& si, UniSetTypes::ThresholdId tid );
+        IONotifyController_i::ThresholdInfo getThresholdInfo( UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid );
 
-		// ---------------------------------------------------------------
-		// Вспомогательные функции
+        // ---------------------------------------------------------------
+        // Вспомогательные функции
 
-		UniversalIO::IOType getIOType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
-		UniversalIO::IOType getIOType(UniSetTypes::ObjectId id);
+        UniversalIO::IOType getIOType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
+        UniversalIO::IOType getIOType(UniSetTypes::ObjectId id);
 
-		// read from xml (only for xml!) т.е. без удалённого запроса
-		UniversalIO::IOType getConfIOType( UniSetTypes::ObjectId id );
+        // read from xml (only for xml!) т.е. без удалённого запроса
+        UniversalIO::IOType getConfIOType( UniSetTypes::ObjectId id );
 
-		// Получение типа объекта..
-		UniSetTypes::ObjectType getType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
-		UniSetTypes::ObjectType getType(UniSetTypes::ObjectId id);
-
-
-		//! Время последнего изменения датчика
-		IOController_i::ShortIOInfo getChangedTime( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
-
-		//! Получить список датчиков
-		IOController_i::ShortMapSeq* getSensors( UniSetTypes::ObjectId id,
-													UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode() );
-
-		// ---------------------------------------------------------------
-		// Работа с репозиторием
-
-//		/*! регистрация объекта в репозитории */
-		void registered(UniSetTypes::ObjectId id, const UniSetTypes::ObjectPtr oRef, bool force=false)throw(UniSetTypes::ORepFailed);
-		void registered(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node, const UniSetTypes::ObjectPtr oRef, bool force=false)throw(UniSetTypes::ORepFailed);
-
-//		/*! разрегистрация объекта */
-		void unregister(UniSetTypes::ObjectId id)throw(UniSetTypes::ORepFailed);
-		void unregister(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node)throw(UniSetTypes::ORepFailed);
-
-		/*! получение ссылки на объект */
-		inline UniSetTypes::ObjectPtr resolve(const char* name)
-		{
-		    return rep.resolve(name);
-		}
-
-		inline UniSetTypes::ObjectPtr resolve( UniSetTypes::ObjectId id )
-		{
-			std::string nm = oind->getNameById(id);
-			return rep.resolve(nm);
-		}
-
-		UniSetTypes::ObjectPtr resolve( UniSetTypes::ObjectId id, UniSetTypes::ObjectId nodeName, int timeoutMS=UniversalIO::defaultTimeOut)
-			throw(UniSetTypes::ResolveNameError, UniSetTypes::TimeOut);
+        // Получение типа объекта..
+        UniSetTypes::ObjectType getType(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
+        UniSetTypes::ObjectType getType(UniSetTypes::ObjectId id);
 
 
-		// Проверка доступности объекта или датчика
-		bool isExist( UniSetTypes::ObjectId id );
-		bool isExist( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
+        //! Время последнего изменения датчика
+        IOController_i::ShortIOInfo getChangedTime( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
 
-		bool waitReady( UniSetTypes::ObjectId id, int msec, int pause=5000,
-						UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() ); 	// used exist
+        //! Получить список датчиков
+        IOController_i::ShortMapSeq* getSensors( UniSetTypes::ObjectId id,
+                                                    UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode() );
 
-		bool waitWorking( UniSetTypes::ObjectId id, int msec, int pause=3000,
-							UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() ); 	// used getValue
+        // ---------------------------------------------------------------
+        // Работа с репозиторием
 
-		// ---------------------------------------------------------------
-		// Работа с ID, Name
+//        /*! регистрация объекта в репозитории */
+        void registered(UniSetTypes::ObjectId id, const UniSetTypes::ObjectPtr oRef, bool force=false)throw(UniSetTypes::ORepFailed);
+        void registered(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node, const UniSetTypes::ObjectPtr oRef, bool force=false)throw(UniSetTypes::ORepFailed);
 
-		/*! получение идентификатора объекта по имени */
-		inline UniSetTypes::ObjectId getIdByName(const char* name)
-		{
-		    return oind->getIdByName(name);
-		}
-		inline UniSetTypes::ObjectId getIdByName(const string name)
-		{
-		    return getIdByName(name.c_str());
-		}
+//        /*! разрегистрация объекта */
+        void unregister(UniSetTypes::ObjectId id)throw(UniSetTypes::ORepFailed);
+        void unregister(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node)throw(UniSetTypes::ORepFailed);
 
-		/*! получение имени по идентификатору объекта */
-		inline std::string getNameById( UniSetTypes::ObjectId id )
-		{
-			return oind->getNameById(id);
-		}
+        /*! получение ссылки на объект */
+        inline UniSetTypes::ObjectPtr resolve(const char* name)
+        {
+            return rep.resolve(name);
+        }
 
-		inline std::string getNameById( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
-		{
-			return oind->getNameById(id, node);
-		}
+        inline UniSetTypes::ObjectPtr resolve( UniSetTypes::ObjectId id )
+        {
+            std::string nm = oind->getNameById(id);
+            return rep.resolve(nm);
+        }
 
-		inline UniSetTypes::ObjectId getNodeId(const std::string& fullname)
-		{
-			return oind->getNodeId(fullname);
-		}
-
-		inline std::string getName(const std::string& fullname)
-		{
-			return oind->getName(fullname);
-		}
-
-		inline std::string getTextName( UniSetTypes::ObjectId id )
-		{
-		    return oind->getTextName(id);
-		}
+        UniSetTypes::ObjectPtr resolve( UniSetTypes::ObjectId id, UniSetTypes::ObjectId nodeName, int timeoutMS=UniversalIO::defaultTimeOut)
+            throw(UniSetTypes::ResolveNameError, UniSetTypes::TimeOut);
 
 
-		// ---------------------------------------------------------------
-		// Получение указателей на вспомогательные классы.
-		inline UniSetTypes::ObjectIndex* getObjectIndex() { return oind; }
-		inline UniSetTypes::Configuration* getConf() { return uconf; }
+        // Проверка доступности объекта или датчика
+        bool isExist( UniSetTypes::ObjectId id );
+        bool isExist( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
 
-		// ---------------------------------------------------------------
-		// Посылка сообщений
+        bool waitReady( UniSetTypes::ObjectId id, int msec, int pause=5000,
+                        UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );     // used exist
 
-		/*! посылка сообщения msg объекту name на узел node */
-		void send( UniSetTypes::ObjectId name, UniSetTypes::TransportMessage& msg, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
-		void send( UniSetTypes::ObjectId name, UniSetTypes::TransportMessage& msg);
+        bool waitWorking( UniSetTypes::ObjectId id, int msec, int pause=3000,
+                            UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );     // used getValue
 
-		// ---------------------------------------------------------------
-		// Вспомогательный класс для кэширования ссылок на удалённые объекты
+        // ---------------------------------------------------------------
+        // Работа с ID, Name
 
-		inline void setCacheMaxSize( unsigned int newsize)
-		{
-			rcache.setMaxSize(newsize);
-		}
+        /*! получение идентификатора объекта по имени */
+        inline UniSetTypes::ObjectId getIdByName(const char* name)
+        {
+            return oind->getIdByName(name);
+        }
+        inline UniSetTypes::ObjectId getIdByName(const string name)
+        {
+            return getIdByName(name.c_str());
+        }
 
-		/*! Кэш ссылок на объекты */
-		class CacheOfResolve
-		{
-			public:
-					CacheOfResolve(unsigned int maxsize, int cleantime):
-						MaxSize(maxsize), CleanTime(cleantime){};
-					~CacheOfResolve(){};
+        /*! получение имени по идентификатору объекта */
+        inline std::string getNameById( UniSetTypes::ObjectId id )
+        {
+            return oind->getNameById(id);
+        }
 
-					UniSetTypes::ObjectPtr resolve( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )throw(UniSetTypes::NameNotFound);
-					void cache(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node, UniSetTypes::ObjectVar ptr);
-					void erase(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node);
+        inline std::string getNameById( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+        {
+            return oind->getNameById(id, node);
+        }
 
-					inline void setMaxSize( unsigned int ms )
-					{
-						MaxSize = ms;
-					};
+        inline UniSetTypes::ObjectId getNodeId(const std::string& fullname)
+        {
+            return oind->getNodeId(fullname);
+        }
 
-//					void setCleanTime();
+        inline std::string getName(const std::string& fullname)
+        {
+            return oind->getName(fullname);
+        }
 
-			protected:
-					CacheOfResolve(){};
+        inline std::string getTextName( UniSetTypes::ObjectId id )
+        {
+            return oind->getTextName(id);
+        }
 
-			private:
 
-				bool clean(); 		/*!< функция очистки кэш-а от старых ссылок */
-				inline void clear() /*!< удаление всей информации */
-				{
-					UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
-					mcache.clear();
-				};
+        // ---------------------------------------------------------------
+        // Получение указателей на вспомогательные классы.
+        inline UniSetTypes::ObjectIndex* getObjectIndex() { return oind; }
+        inline UniSetTypes::Configuration* getConf() { return uconf; }
 
-				/*!
-					\todo можно добавить поле CleanTime для каждой ссылки отдельно...
-				*/
-				struct Info
-				{
-					Info( UniSetTypes::ObjectVar ptr, time_t tm=0 ):
-							ptr(ptr)
-					{
-						if(!tm)
-							 timestamp = time(NULL);
-					}
+        // ---------------------------------------------------------------
+        // Посылка сообщений
 
-					Info():
-						ptr(NULL), timestamp(0){};
+        /*! посылка сообщения msg объекту name на узел node */
+        void send( UniSetTypes::ObjectId name, UniSetTypes::TransportMessage& msg, UniSetTypes::ObjectId node) throw(IO_THROW_EXCEPTIONS);
+        void send( UniSetTypes::ObjectId name, UniSetTypes::TransportMessage& msg);
 
-					UniSetTypes::ObjectVar ptr;
-					time_t timestamp; // время последнего обращения
+        // ---------------------------------------------------------------
+        // Вспомогательный класс для кэширования ссылок на удалённые объекты
 
-					bool operator<( const CacheOfResolve::Info& rhs ) const
-					{
-						return this->timestamp < rhs.timestamp;
-					}
+        inline void setCacheMaxSize( unsigned int newsize)
+        {
+            rcache.setMaxSize(newsize);
+        }
 
-				};
+        /*! Кэш ссылок на объекты */
+        class CacheOfResolve
+        {
+            public:
+                    CacheOfResolve(unsigned int maxsize, int cleantime):
+                        MaxSize(maxsize), CleanTime(cleantime){};
+                    ~CacheOfResolve(){};
 
-				typedef std::map<int, Info> CacheMap;
-				CacheMap mcache;
-				UniSetTypes::uniset_rwmutex cmutex;
-				unsigned int MaxSize;	/*!< максимальный размер кэша */
-				unsigned int CleanTime;	/*!< период устаревания ссылок [мин] */
+                    UniSetTypes::ObjectPtr resolve( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )throw(UniSetTypes::NameNotFound);
+                    void cache(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node, UniSetTypes::ObjectVar ptr);
+                    void erase(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node);
+
+                    inline void setMaxSize( unsigned int ms )
+                    {
+                        MaxSize = ms;
+                    };
+
+//                    void setCleanTime();
+
+            protected:
+                    CacheOfResolve(){};
+
+            private:
+
+                bool clean();         /*!< функция очистки кэш-а от старых ссылок */
+                inline void clear() /*!< удаление всей информации */
+                {
+                    UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
+                    mcache.clear();
+                };
+
+                /*!
+                    \todo можно добавить поле CleanTime для каждой ссылки отдельно...
+                */
+                struct Info
+                {
+                    Info( UniSetTypes::ObjectVar ptr, time_t tm=0 ):
+                            ptr(ptr)
+                    {
+                        if(!tm)
+                             timestamp = time(NULL);
+                    }
+
+                    Info():
+                        ptr(NULL), timestamp(0){};
+
+                    UniSetTypes::ObjectVar ptr;
+                    time_t timestamp; // время последнего обращения
+
+                    bool operator<( const CacheOfResolve::Info& rhs ) const
+                    {
+                        return this->timestamp < rhs.timestamp;
+                    }
+
+                };
+
+                typedef std::map<int, Info> CacheMap;
+                CacheMap mcache;
+                UniSetTypes::uniset_rwmutex cmutex;
+                unsigned int MaxSize;    /*!< максимальный размер кэша */
+                unsigned int CleanTime;    /*!< период устаревания ссылок [мин] */
 
 /*
-				// В последствии написать функцию для использования
-				// remove_if
-				typedef std::pair<int, Info> CacheItem;
-				// функция-объект для поиска устаревших(по времени) ссылок
-				struct OldRef_eq: public unary_function<CacheItem, bool>
-				{
-					OldRef_eq(time_t tm):tm(tm){}
-					bool operator()( const CacheItem& inf ) const
-					{
-						return inf.timestamp < tm;
-					}
-					time_t tm;
-				};
+                // В последствии написать функцию для использования
+                // remove_if
+                typedef std::pair<int, Info> CacheItem;
+                // функция-объект для поиска устаревших(по времени) ссылок
+                struct OldRef_eq: public unary_function<CacheItem, bool>
+                {
+                    OldRef_eq(time_t tm):tm(tm){}
+                    bool operator()( const CacheItem& inf ) const
+                    {
+                        return inf.timestamp < tm;
+                    }
+                    time_t tm;
+                };
 */
-		};
+        };
 
-		void initBackId( UniSetTypes::ObjectId backid );
-	protected:
-		std::string set_err(const std::string& pre, UniSetTypes::ObjectId id, UniSetTypes::ObjectId node);
+        void initBackId( UniSetTypes::ObjectId backid );
+    protected:
+        std::string set_err(const std::string& pre, UniSetTypes::ObjectId id, UniSetTypes::ObjectId node);
 
-	private:
-		void init();
+    private:
+        void init();
 
-		ObjectRepository rep;
-		UniSetTypes::ObjectId myid;
-		CosNaming::NamingContext_var localctx;
-		CORBA::ORB_var orb;
-		CacheOfResolve rcache;
-		UniSetTypes::ObjectIndex* oind;
-		UniSetTypes::Configuration* uconf;
+        ObjectRepository rep;
+        UniSetTypes::ObjectId myid;
+        CosNaming::NamingContext_var localctx;
+        CORBA::ORB_var orb;
+        CacheOfResolve rcache;
+        UniSetTypes::ObjectIndex* oind;
+        UniSetTypes::Configuration* uconf;
 };
 // --------------------------------------------------------------------------
 #endif

@@ -11,74 +11,74 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 int main( int argc, const char** argv )
 {
-	if( argc>1 && (!strcmp(argv[1],"--help") || !strcmp(argv[1],"-h")) )
-	{
-		cout << "--smemory-id objectName  - SharedMemory objectID. Default: autodetect" << endl;
-		cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
-		cout << "--smdbserver-logfile filename    - logfilename. Default: smdbserver.log" << endl;
-		cout << endl;
-		SMDBServer::help_print(argc, argv);
-		return 0;
-	}
+    if( argc>1 && (!strcmp(argv[1],"--help") || !strcmp(argv[1],"-h")) )
+    {
+        cout << "--smemory-id objectName  - SharedMemory objectID. Default: autodetect" << endl;
+        cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
+        cout << "--smdbserver-logfile filename    - logfilename. Default: smdbserver.log" << endl;
+        cout << endl;
+        SMDBServer::help_print(argc, argv);
+        return 0;
+    }
 
-	try
-	{
-		string confile=UniSetTypes::getArgParam("--confile",argc, argv, "configure.xml");
-		conf = new Configuration( argc, argv, confile );
+    try
+    {
+        string confile=UniSetTypes::getArgParam("--confile",argc, argv, "configure.xml");
+        conf = new Configuration( argc, argv, confile );
 
-		string logfilename(conf->getArgParam("--smdbserver-logfile"));
-		if( logfilename.empty() )
-			logfilename = "smdbserver.log";
-	
-		conf->initDebug(dlog,"dlog");
-	
-		std::ostringstream logname;
-		string dir(conf->getLogDir());
-		logname << dir << logfilename;
-		ulog.logFile( logname.str() );
-		dlog.logFile( logname.str() );
+        string logfilename(conf->getArgParam("--smdbserver-logfile"));
+        if( logfilename.empty() )
+            logfilename = "smdbserver.log";
 
-		ObjectId shmID = DefaultObjectId;
-		string sID = conf->getArgParam("--smemory-id");
-		if( !sID.empty() )
-			shmID = conf->getControllerID(sID);
-		else
-			shmID = getSharedMemoryID();
+        conf->initDebug(dlog,"dlog");
 
-		if( shmID == DefaultObjectId )
-		{
-			cerr << sID << "? SharedMemoryID not found in " << conf->getControllersSection() << " section" << endl;
-			return 1;
-		}
+        std::ostringstream logname;
+        string dir(conf->getLogDir());
+        logname << dir << logfilename;
+        ulog.logFile( logname.str() );
+        dlog.logFile( logname.str() );
 
-		SMDBServer* db = SMDBServer::init_smdbserver(argc,argv,shmID);
-		if( !db )
-		{
-			dlog.crit() << "(smdbserver): init не прошёл..." << endl;
-			return 1;
-		}
+        ObjectId shmID = DefaultObjectId;
+        string sID = conf->getArgParam("--smemory-id");
+        if( !sID.empty() )
+            shmID = conf->getControllerID(sID);
+        else
+            shmID = getSharedMemoryID();
 
-		UniSetActivator act;
-		act.addObject(static_cast<class UniSetObject*>(db));
+        if( shmID == DefaultObjectId )
+        {
+            cerr << sID << "? SharedMemoryID not found in " << conf->getControllersSection() << " section" << endl;
+            return 1;
+        }
 
-		SystemMessage sm(SystemMessage::StartUp); 
-		act.broadcast( sm.transport_msg() );
+        SMDBServer* db = SMDBServer::init_smdbserver(argc,argv,shmID);
+        if( !db )
+        {
+            dlog.crit() << "(smdbserver): init не прошёл..." << endl;
+            return 1;
+        }
 
-		ulog.ebug::ANY) << "\n\n\n";
-		ulog.ebug::ANY] << "(main): -------------- SMDBServer START -------------------------\n\n";
-		dlog(Debug::ANY) << "\n\n\n";
-		dlog[Debug::ANY] << "(main): -------------- SMDBServer START -------------------------\n\n";
-		act.run(false);
-		return 0;
-	}
-	catch( Exception& ex )
-	{
-		dlog.crit() << "(smdbserver): " << ex << std::endl;
-	}
-	catch(...)
-	{
-		dlog.crit() << "(smdbserver): catch ..." << std::endl;
-	}
+        UniSetActivator act;
+        act.addObject(static_cast<class UniSetObject*>(db));
 
-	return 1;
+        SystemMessage sm(SystemMessage::StartUp);
+        act.broadcast( sm.transport_msg() );
+
+        ulog.ebug::ANY) << "\n\n\n";
+        ulog.ebug::ANY] << "(main): -------------- SMDBServer START -------------------------\n\n";
+        dlog(Debug::ANY) << "\n\n\n";
+        dlog[Debug::ANY] << "(main): -------------- SMDBServer START -------------------------\n\n";
+        act.run(false);
+        return 0;
+    }
+    catch( Exception& ex )
+    {
+        dlog.crit() << "(smdbserver): " << ex << std::endl;
+    }
+    catch(...)
+    {
+        dlog.crit() << "(smdbserver): catch ..." << std::endl;
+    }
+
+    return 1;
 }

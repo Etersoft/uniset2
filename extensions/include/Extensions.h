@@ -10,22 +10,25 @@
 // -------------------------------------------------------------------------
 namespace UniSetExtensions
 {
-	/*! Получение идентификатора объекта(процесса) разделяемой памяти */
-	UniSetTypes::ObjectId getSharedMemoryID();
+    /*! Получение идентификатора объекта(процесса) разделяемой памяти */
+    UniSetTypes::ObjectId getSharedMemoryID();
 
-	xmlNode* findNode( xmlNode* node, const std::string& snode, const std::string& field );
-	
-	xmlNode* getCalibrationsSection();
-	
-	/*! замена служебных символов в строке 
-	 * '\\' -> '\n'
-	*/
-	void escape_string( std::string& s );
+    /*! Получение времени для подтверждения "живости" */
+    int getHeartBeatTime();
 
-	/*! Загрузка калибровочной диаграммы */
-	Calibration* buildCalibrationDiagram( const std::string& dname );
+    xmlNode* findNode( xmlNode* node, const std::string& snode, const std::string& field );
 
-	extern DebugStream dlog;
+    xmlNode* getCalibrationsSection();
+
+    /*! замена служебных символов в строке
+     * '\\' -> '\n'
+    */
+    void escape_string( std::string& s );
+
+    /*! Загрузка калибровочной диаграммы */
+    Calibration* buildCalibrationDiagram( const std::string& dname );
+
+    extern DebugStream dlog;
 }
 // -------------------------------------------------------------------------
 #endif // Extensions_H_
