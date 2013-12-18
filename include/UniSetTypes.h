@@ -42,11 +42,31 @@
 /*! Задержка в миллисекундах */
 inline void msleep( unsigned int m ) { usleep(m*1000); }
 
-/*! Определения базовых типов библиотеки UniSet */
+/*! Определения базовых типов библиотеки UniSet (вспомогательные типы данных, константы, полезные функции) */
 namespace UniSetTypes
 {
 	class Configuration;
 	extern Configuration* conf;
+
+	// ---------------------------------------------------------------
+	// Вспомогательные типы данных и константы
+
+	const ObjectId DefaultObjectId = -1;	/*!< Идентификатор объекта по умолчанию */
+	const ThresholdId DefaultThresholdId = -1;  	/*!< идентификатор порогов по умолчанию */
+	const ThresholdId DefaultTimerId = -1;  	/*!< идентификатор таймера по умолчанию */
+
+	typedef long KeyType;	/*!< уникальный ключ объекта */
+
+	/*! генератор уникального положительного ключа
+	 *	Уникальность гарантируется только для пары значений
+	 *  id и node.
+	 * \warning Уникальность генерируемого ключа еще не проверялась,
+		 но нареканий по использованию тоже не было :)
+	*/
+	inline static KeyType key( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+	{
+		return KeyType((id*node)+(id+2*node));
+	}
 
 	typedef std::list<std::string> ListObjectName;	/*!< Список объектов типа ObjectName */
 
@@ -59,9 +79,6 @@ namespace UniSetTypes
 
 	UniversalIO::IOType getIOType( const std::string s );
 	std::ostream& operator<<( std::ostream& os, const UniversalIO::IOType t );
-
-	std::ostream& operator<<( std::ostream& os, const IOController_i::CalibrateInfo c );
-
 
 	/*! Команды для управления лампочками */
 	enum LampCommand
@@ -101,10 +118,6 @@ namespace UniSetTypes
 			std::list<ObjectId> lst;
 	};
 
-	const ObjectId DefaultObjectId = -1;	/*!< Идентификатор объекта по умолчанию */
-	const ThresholdId DefaultThresholdId = -1;  	/*!< идентификатор порогов по умолчанию */
-	const ThresholdId DefaultTimerId = -1;  	/*!< идентификатор таймера по умолчанию */
-	
 	/*! Информация об имени объекта */
 	struct ObjectInfo
 	{
@@ -128,7 +141,10 @@ namespace UniSetTypes
 	/*! Запрещенные для использования в именах объектов символы */
 	const char BadSymbols[]={'.','/'};
 
-	/// Преобразование строки в число (воспринимает префикс 0, как 8-ное, префикс 0x, как 16-ное, минус для отриц. чисел)
+	// ---------------------------------------------------------------
+	// Различные преобразования
+
+	//! Преобразование строки в число (воспринимает префикс 0, как 8-ное, префикс 0x, как 16-ное, минус для отриц. чисел)
 	inline int uni_atoi( const char* str )
 	{
 		int n = 0; // if str is NULL or sscanf failed, we return 0
@@ -142,19 +158,30 @@ namespace UniSetTypes
 		return uni_atoi(str.c_str());
 	}
 
+	std::string timeToString(time_t tm=time(0), const std::string brk=":"); /*!< Преобразование времени в строку HH:MM:SS */
+	std::string dateToString(time_t tm=time(0), const std::string brk="/"); /*!< Преобразование даты в строку DD/MM/YYYY */
 
-	typedef long KeyType;	/*!< уникальный ключ объекта */
+	/*! Разбивка строки по указанному символу */
+	IDList explode( const std::string str, char sep=',' );
+	std::list<std::string> explode_str( const std::string str, char sep=',' );
 	
-	/*! генератор уникального положительного ключа
-	 *	Уникальность гарантируется только для пары значений
-	 *  id и node.
-	 * \warning Уникальность генерируемого ключа еще не проверялась, 
-		 но нареканий по использованию тоже не было :)
-	*/ 
-	inline static KeyType key( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+	struct ParamSInfo
 	{
-		return KeyType((id*node)+(id+2*node));
-	}
+		IOController_i::SensorInfo si;
+		long val;
+		std::string fname; // fullname id@node or id
+	};
+
+	/*! Функция разбора строки вида: id1@node1=val1,id2@node2=val2,...
+	   Если '=' не указано, возвращается val=0
+	  Если @node не указано, возвращается node=DefaultObjectId */
+	std::list<ParamSInfo> getSInfoList( std::string s, Configuration* conf=UniSetTypes::conf);
+
+	/*! проверка является текст в строке - числом..*/
+	bool is_digit( const std::string s );
+
+	// ---------------------------------------------------------------
+	// Работа с командной строкой
 
 	/*! Получение параметра командной строки 
 		\param name - название параметра
@@ -194,22 +221,10 @@ namespace UniSetTypes
 		return -1;
 	}
 
-	/*! алгоритм копирования элементов последовательности удовлетворяющих условию */
-	template<typename InputIterator,
-			 typename OutputIterator,
-			 typename Predicate>
-	OutputIterator copy_if(InputIterator begin,
-							InputIterator end,
-							OutputIterator destBegin,
-							Predicate p)
-	{
-		while( begin!=end)
-		{
-			if( p(*begin) ) &destBegin++=*begin;
-			++begin;
-		}
-		return destBegin;
-	}
+	// ---------------------------------------------------------------
+	// Калибровка
+
+	std::ostream& operator<<( std::ostream& os, const IOController_i::CalibrateInfo c );
 
 	// Функции калибровки значений
 	// raw 		- преобразуемое значение
@@ -226,34 +241,36 @@ namespace UniSetTypes
 	// установка значения вне диапазона
 	long setoutregion(long raw, long rawMin, long rawMax);
 
+	// ---------------------------------------------------------------
+	// Всякие helper-ы
 
 	bool file_exist( const std::string filename );
-	
-	IDList explode( const std::string str, char sep=',' );
-	std::list<std::string> explode_str( const std::string str, char sep=',' );
-	
-	
-	struct ParamSInfo
-	{
-		IOController_i::SensorInfo si;
-		long val;
-		std::string fname; // fullname id@node or id
-	};
-	
-	// Функция разбора строки вида: id1@node1=val1,id2@node2=val2,...
-	// Если '=' не указано, возвращается val=0
-	// Если @node не указано, возвращается node=DefaultObjectId
-	std::list<ParamSInfo> getSInfoList( std::string s, Configuration* conf=UniSetTypes::conf);
-	bool is_digit( const std::string s );
 
-	// Проверка xml-узла на соответсвие <...f_prop="f_val">,
+	// Проверка xml-узла на соответствие <...f_prop="f_val">,
 	// если не задано f_val, то проверяется, что просто f_prop!=""
 	bool check_filter( UniXML_iterator& it, const std::string f_prop, const std::string f_val="" );
 
+	/*! алгоритм копирования элементов последовательности удовлетворяющих условию */
+	template<typename InputIterator,
+			 typename OutputIterator,
+			 typename Predicate>
+	OutputIterator copy_if(InputIterator begin,
+							InputIterator end,
+							OutputIterator destBegin,
+							Predicate p)
+	{
+		while( begin!=end)
+		{
+			if( p(*begin) ) &destBegin++=*begin;
+			++begin;
+		}
+		return destBegin;
+	}
 // -----------------------------------------------------------------------------
 }
 
-#define atoi atoi##_Do_not_use_atoi_function_directly_Use_getIntProp90,_getArgInt_or_uni_atoi
+// Варварский запрет на использование atoi вместо uni_atoi..
+// #define atoi atoi##_Do_not_use_atoi_function_directly_Use_getIntProp90,_getArgInt_or_uni_atoi
 
 // -----------------------------------------------------------------------------------------
 #endif

@@ -5,6 +5,7 @@
 #include "SMonitor.h"
 #include "Configuration.h"
 #include "ORepHelpers.h"
+#include "UniSetTypes.h"
 // ------------------------------------------------------------------------------------------
 using namespace UniversalIO;
 using namespace UniSetTypes;
@@ -127,7 +128,7 @@ void SMonitor::sysCommand( SystemMessage *sm )
 // ------------------------------------------------------------------------------------------
 void SMonitor::sensorInfo( SensorMessage *si )
 {
-	cout << "(" << setw(6) << si->id << "): " << setw(8) << UInterface::timeToString(si->sm_tv_sec,":")
+	cout << "(" << setw(6) << si->id << "): " << setw(8) << timeToString(si->sm_tv_sec,":")
 		 << "(" << setw(6) << si->sm_tv_usec << "): ";
 	cout << setw(45) << conf->oind->getMapName(si->id);
 	cout << "\tvalue=" << si->value << "\tfvalue=" << ( (float)si->value / pow(10.0,si->ci.precision) ) << endl;
