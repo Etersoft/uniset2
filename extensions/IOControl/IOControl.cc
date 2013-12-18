@@ -50,11 +50,6 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	testmode(tmNone),
 	prev_testmode(tmNone)
 {
-//	{
-//		string myfullname = conf->oind->getNameById(id);
-//		myname = ORepHelpers::getShortName(myfullname.c_str());
-//	}
-
 	string cname = conf->getArgParam("--"+prefix+"-confnode",myname);
 	cnode = conf->getNode(cname);
 	if( cnode == NULL )
@@ -121,8 +116,9 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 
 					if( !stype.empty() )
 					{
-						dlog.info() << myname
-										<< "(init): card" << i 
+						if( dlog.is_info() )
+							dlog.info() << myname
+										<< "(init): card" << i
 										<< " subdev" << s << " set type " << stype << endl;
 
 						cards[i]->configureSubdev(s-1,st);
@@ -132,7 +128,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		}
 	}
 
-	dlog.info() << myname << "(init): result numcards=" << cards.size() << endl;
+	if( dlog.is_info() )
+		dlog.info() << myname << "(init): result numcards=" << cards.size() << endl;
 	
 	polltime = conf->getArgInt("--"+prefix+"-polltime",it.getProp("polltime"));
 	if( !polltime )
@@ -153,11 +150,13 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		{
 			ostringstream err;
 			err << myname << ": Unkown ID for " << testlamp;
-			dlog.crit() << myname << "(init): " << err.str() << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 	
-		dlog.info() << myname << "(init): testLamp_S='" << testlamp << "'" << endl;
+		if( dlog.is_info() )
+			dlog.info() << myname << "(init): testLamp_S='" << testlamp << "'" << endl;
 	}
 
 	string tmode = conf->getArgParam("--"+prefix+"-test-mode",it.getProp("testmode_as"));
@@ -168,11 +167,13 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		{
 			ostringstream err;
 			err << myname << ": Unknown ID for " << tmode;
-			dlog.crit() << myname << "(init): " << err.str() << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
-		dlog.info() << myname << "(init): testMode_as='" << testmode << "'" << endl;
+		if( dlog.is_info() )
+			dlog.info() << myname << "(init): testMode_as='" << testmode << "'" << endl;
 	}
 
 	shm = new SMInterface(icID,&ui,myid,ic);
@@ -181,7 +182,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	s_field = conf->getArgParam("--"+prefix+"-s-filter-field");
 	s_fvalue = conf->getArgParam("--"+prefix+"-s-filter-value");
 
-	dlog.info() << myname << "(init): read s_field='" << s_field
+	if( dlog.is_info() )
+		dlog.info() << myname << "(init): read s_field='" << s_field
 						<< "' s_fvalue='" << s_fvalue << "'" << endl;
 
 	int blink_msec = conf->getArgPInt("--"+prefix+"-blink-time",it.getProp("blink-time"), 300);
@@ -205,11 +207,12 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 	if( sidTestSMReady == DefaultObjectId )
 	{
 		sidTestSMReady = conf->getSensorID("TestMode_S");
-		dlog.warn() << myname
+		if( dlog.is_warn() )
+			dlog.warn() << myname
 				<< "(init): Unknown ID for sm-ready-test-sid (--" << prefix << "-sm-ready-test-sid)."
 				<< " Use 'TestMode_S'" << endl;
 	}
-	else
+	else if( dlog.is_info() )
 		dlog.info() << myname << "(init): test-sid: " << sm_ready_sid << endl;
 
 
@@ -222,7 +225,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 		{
 			ostringstream err;
 			err << myname << ": Not found ID for 'HeartBeat' " << heart;
-			dlog.crit() << myname << "(init): " << err.str() << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 
@@ -283,7 +287,8 @@ void IOControl::execute()
 	}
 	
 	maxHalf = maxItem / 2;
-	dlog.info() << myname << "(init): iomap size = " << iomap.size() << endl;
+	if( dlog.is_info() )
+		dlog.info() << myname << "(init): iomap size = " << iomap.size() << endl;
 
 	cerr << myname << "(iomap size): " << iomap.size() << endl;
 
@@ -310,7 +315,7 @@ void IOControl::execute()
 		}
 	}
 			
-	if( !activated )
+	if( !activated && dlog.is_crit() )
 		dlog.crit() << myname << "(execute): ************* don`t activate?! ************" << endl;
 
 	try
@@ -378,16 +383,19 @@ void IOControl::execute()
 		}
 		catch( Exception& ex )
 		{
-			if( dlog.is_level3() ) dlog.level3() << myname << "(execute): " << ex << endl;
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(execute): " << ex << endl;
 		}
 		catch(CORBA::SystemException& ex)
 		{
-			if( dlog.is_level3() ) dlog.level3() << myname << "(execute): CORBA::SystemException: "
-				<< ex.NP_minorString() << endl;
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(execute): CORBA::SystemException: "
+					<< ex.NP_minorString() << endl;
 		}
 		catch(...)
 		{
-			if( dlog.is_level3() ) dlog.level3() << myname << "(execute): catch ..." << endl;
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(execute): catch ..." << endl;
 		}
 		
 		if( term )
@@ -481,22 +489,13 @@ void IOControl::ioread( IOInfo* it )
 
 	 ComediInterface* card = cards.getCard(it->ncard);
 
-/*
-		cout  << conf->oind->getMapName(it->si.id)
-				<< " card=" << card << " ncard=" << it->ncard
-				<< " dev="  << card->devname()
-				<< " subdev: " << it->subdev << " chan: " << it->channel << endl;
-*/
-
 		if( card == NULL || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
 			return;
 
-//		cout  << conf->oind->getMapName(it->si.id) 
-//				<< " subdev: " << it->subdev << " chan: " << it->channel << endl;
-
 		if( it->si.id == DefaultObjectId )
 		{
-			cerr << myname << "(iopoll): sid=DefaultObjectId?!" << endl;
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(iopoll): sid=DefaultObjectId?!" << endl;
 			return;
 		}
 
@@ -524,9 +523,9 @@ void IOControl::ioread( IOInfo* it )
 			{
 				bool set = card->getDigitalChannel(it->subdev,it->channel);
 /*
-				if( ulog.ebugging(Debug::LEVEL3) )
+				if( dlog.is_level3() )
 				{
-					if( dlog.is_level3() ) dlog.level3() << myname << "(iopoll): read DI "
+					dlog.level3() << myname << "(iopoll): read DI "
 						<< " sid=" << it->si.id 
 						<< " subdev=" << it->subdev 
 						<< " chan=" << it->channel
@@ -534,14 +533,8 @@ void IOControl::ioread( IOInfo* it )
 						<< endl;
 				}
 */
-//				cout << " jar=" << ib->ptJar.getInterval()
-//					 << " ondelay=" << ib->ptOnDelay.getInterval()
-//					 << endl; 
-
 				IOBase::processingAsDI( ib, set, shm, force );
 				
-//				cout << "val=" << ib->value << endl;
-								
 				// немного оптимизации
 				// сразу выставляем.сбрасываем флаг тестирования
 				if( it->si.id == testLamp_S )
@@ -674,7 +667,8 @@ void IOControl::ioread( IOInfo* it )
 		}
 		catch(...)
 		{
-			if( dlog.is_level3() ) dlog.level3() << myname << "(iopoll): catch ..." << endl;
+			if( dlog.is_level3() )
+				dlog.level3() << myname << "(iopoll): catch ..." << endl;
 		}
 	
 }
@@ -694,7 +688,8 @@ void IOControl::readConfiguration()
 	UniXML_iterator it(root);
 	if( !it.goChildren() )
 	{
-		std::cerr << myname << "(readConfiguration): section <sensors> empty?!!\n";
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(readConfiguration): section <sensors> empty?!!\n";
 		return;
 	}
 
@@ -962,7 +957,6 @@ void IOControl::blink( BlinkList& lst, bool& bstate )
 	if( lst.empty() )
 		return;
 
-	
 	for( BlinkList::iterator it=lst.begin(); it!=lst.end(); ++it )
 	{
 		IOInfo* io(*it);
@@ -1065,7 +1059,8 @@ void IOControl::check_testmode()
 				}
 				catch( Exception& ex )
 				{
-					if( dlog.is_level3() ) dlog.level3() << myname << "(sigterm): " << ex << endl;
+					if( dlog.is_level3() )
+						dlog.level3() << myname << "(sigterm): " << ex << endl;
 				}
 				catch(...){}
 			}
@@ -1341,7 +1336,8 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
 			<< "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение " 
 			<< activateTimeout << " мсек";
 
-		dlog.crit() << err.str() << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << err.str() << endl;
 		kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
 		throw SystemError(err.str());
 	}
