@@ -1219,15 +1219,15 @@ string UInterface::set_err(const string& pre, UniSetTypes::ObjectId id, UniSetTy
 // --------------------------------------------------------------------------------------------
 void UInterface::askThreshold( UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid,
 										UniversalIO::UIOCommand cmd,
-										CORBA::Long low, CORBA::Long hi,
+										long low, long hi, bool invert,
 										UniSetTypes::ObjectId backid)
 {
-	askRemoteThreshold(sid, uconf->getLocalNode(), tid, cmd, low,hi, backid);
+	askRemoteThreshold(sid, uconf->getLocalNode(), tid, cmd, low, hi, invert, backid);
 }
 // --------------------------------------------------------------------------------------------
 void UInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTypes::ObjectId node,
 										 UniSetTypes::ThresholdId tid, UniversalIO::UIOCommand cmd,
-										 CORBA::Long lowLimit, CORBA::Long hiLimit,
+										 long lowLimit, long hiLimit, bool invert,
 										 UniSetTypes::ObjectId backid )
 {
 	if( backid==UniSetTypes::DefaultObjectId )
@@ -1264,7 +1264,7 @@ void UInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTypes::Obj
 				ci->id = backid;
 				ci->node = uconf->getLocalNode();
 
-				inc->askThreshold(si,ci,tid,lowLimit,hiLimit,cmd);
+				inc->askThreshold(si,ci,tid,lowLimit,hiLimit,invert,cmd);
 				return;
 			}
 			catch(CORBA::TRANSIENT){}
@@ -1313,6 +1313,87 @@ void UInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTypes::Obj
 	rcache.erase(sid, node);
 	throw UniSetTypes::TimeOut(set_err("UI(askThreshold): Timeout",sid,node));
 
+}
+// --------------------------------------------------------------------------------------------
+IONotifyController_i::ThresholdInfo
+	UInterface::getThresholdInfo( UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid )
+{
+	IOController_i::SensorInfo si;
+	si.id = sid;
+	si.node = conf->getLocalNode();
+	return getThresholdInfo(si,tid);
+}
+// --------------------------------------------------------------------------------------------------------------
+IONotifyController_i::ThresholdInfo
+	UInterface::getThresholdInfo( const IOController_i::SensorInfo& si, UniSetTypes::ThresholdId tid )
+{
+	if ( si.id == DefaultObjectId )
+		throw ORepFailed("UI(getThresholdInfo): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+
+	try
+	{
+		CORBA::Object_var oref;
+		try
+		{
+			oref = rcache.resolve(si.id, si.node);
+		}
+		catch( NameNotFound ){}
+
+		for( unsigned int i=0; i<uconf->getRepeatCount(); i++)
+		{
+			try
+			{
+				if( CORBA::is_nil(oref) )
+					oref = resolve( si.id, si.node );
+
+				IONotifyController_i_var iom = IONotifyController_i::_narrow(oref);
+				return iom->getThresholdInfo(si,tid);
+			}
+			catch(CORBA::TRANSIENT){}
+			catch(CORBA::OBJECT_NOT_EXIST){}
+			catch(CORBA::SystemException& ex){}
+			msleep(uconf->getRepeatTimeout());
+			oref = CORBA::Object::_nil();
+		}
+	}
+	catch(UniSetTypes::TimeOut){}
+	catch(IOController_i::NameNotFound &ex)
+	{
+		rcache.erase(si.id, si.node);
+		throw UniSetTypes::NameNotFound("UI(getThresholdInfo): "+string(ex.err));
+	}
+	catch(IOController_i::IOBadParam& ex)
+	{
+		rcache.erase(si.id, si.node);
+		throw UniSetTypes::IOBadParam("UI(getThresholdInfo): "+string(ex.err));
+	}
+	catch(ORepFailed)
+	{
+		rcache.erase(si.id, si.node);
+		// не смогли получить ссылку на объект
+		throw UniSetTypes::IOBadParam(set_err("UI(getThresholdInfo): resolve failed ",si.id,si.node));
+	}
+	catch(CORBA::NO_IMPLEMENT)
+	{
+		rcache.erase(si.id, si.node);
+		throw UniSetTypes::IOBadParam(set_err("UI(getThresholdInfo): method no implement",si.id,si.node));
+	}
+	catch(CORBA::OBJECT_NOT_EXIST)
+	{
+		rcache.erase(si.id, si.node);
+		throw UniSetTypes::IOBadParam(set_err("UI(getThresholdInfo): object not exist",si.id,si.node));
+	}
+	catch(CORBA::COMM_FAILURE& ex)
+	{
+		// ошибка системы коммуникации
+	}
+	catch(CORBA::SystemException& ex)
+	{
+		// ошибка системы коммуникации
+		// ulog.warn() << "UI(getValue): CORBA::SystemException" << endl;
+	}
+	rcache.erase(si.id, si.node);
+	throw UniSetTypes::TimeOut(set_err("UI(getThresholdInfo): Timeout",si.id,si.node));
 }
 // --------------------------------------------------------------------------------------------
 long UInterface::getRawValue( const IOController_i::SensorInfo& si )

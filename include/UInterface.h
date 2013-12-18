@@ -120,17 +120,19 @@ class UInterface
 
 		IOController_i::CalibrateInfo getCalibrateInfo( const IOController_i::SensorInfo& si );
 
-
-		//! Заказ информации об изменении дискретного датчика
+		//! Заказ информации об изменении порога
 		void askThreshold( UniSetTypes::ObjectId sensorId, UniSetTypes::ThresholdId tid,
 							UniversalIO::UIOCommand cmd,
-							CORBA::Long lowLimit=0, CORBA::Long hiLimit=0,
+							long lowLimit, long hiLimit, bool invert = false,
 							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
 		void askRemoteThreshold( UniSetTypes::ObjectId sensorId, UniSetTypes::ObjectId node,
 								 UniSetTypes::ThresholdId thresholdId, UniversalIO::UIOCommand cmd,
-								 CORBA::Long lowLimit=0, CORBA::Long hiLimit=0,
+								 long lowLimit, long hiLimit, bool invert = false,
 								 UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
+
+		IONotifyController_i::ThresholdInfo getThresholdInfo( const IOController_i::SensorInfo& si, UniSetTypes::ThresholdId tid );
+		IONotifyController_i::ThresholdInfo getThresholdInfo( UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid );
 
 		// ---------------------------------------------------------------
 		// Вспомогательные функции
