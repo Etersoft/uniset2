@@ -33,6 +33,7 @@
 #include "UniSetActivator.h"
 #include "Debug.h"
 #include "Configuration.h"
+#include "Mutex.h"
 
 // ------------------------------------------------------------------------------------------
 using namespace UniSetTypes;
@@ -52,7 +53,7 @@ using namespace std;
 */
 // ------------------------------------------------------------------------------------------
 /*! замок для блокирования совместного доступа к функции обрабтки сигналов */
-static UniSetTypes::uniset_mutex signalMutex("Activator::signalMutex");
+static UniSetTypes::uniset_rwmutex signalMutex("Activator::signalMutex");
 // static UniSetTypes::uniset_mutex waittermMutex("Activator::waittermMutex");
 
 /*! замок для блокирования совместного к списку получателей сигналов */
@@ -249,6 +250,7 @@ void UniSetActivator::stop()
 		if( ulog.is_system() )
 			ulog.system() << myname << "(stop): discard request ok."<< endl;
 
+/*
 		try
 		{
 			if( ulog.is_system() )
@@ -259,7 +261,8 @@ void UniSetActivator::stop()
 
 		if( ulog.is_system() )
 			ulog.system() << myname << "(stop): shutdown ok."<< endl;
-	}
+*/
+    }
 }
 
 // ------------------------------------------------------------------------------------------
@@ -451,7 +454,7 @@ void UniSetActivator::terminated( int signo )
 	{	// lock
 
 		// на случай прихода нескольких сигналов
-		uniset_mutex_lock l(signalMutex, TERMINATE_TIMEOUT*1000);
+        uniset_rwmutex_wrlock l(signalMutex); //, TERMINATE_TIMEOUT*1000);
 		if( !procterm )
 		{
 			procterm = 1;
