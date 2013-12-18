@@ -39,7 +39,6 @@
 	<!-- проверка работы threshold-ов -->
 	<item name="t_set_c" vartype="out" comment="аналоговый датчик (для выставления порога)"/>
 	<item name="t_check_s" vartype="in" comment="датчик для проверки срабатывания"/>
-
   </smap>
 
   <msgmap>

@@ -372,7 +372,7 @@ void NCRestorer_XML::read_thresholds(UniXML& xml, xmlNode* node, IONotifyControl
 				ulog.info() << "(read_thresholds): \tthreshold low="
 							<< ti.lowlimit << " \thi=" << ti.hilimit
 							<< " \t sid=" << ti.sid
-							<< " \t inverse=" << ti.inverse
+							<< " \t invert=" << ti.invert
 							<< endl << flush;
 			}
 
@@ -473,7 +473,7 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 	ti.id 			= uit.getIntProp("id");
 	ti.lowlimit 	= uit.getIntProp("lowlimit");
 	ti.hilimit 		= uit.getIntProp("hilimit");
-	ti.inverse 		= uit.getIntProp("inverse");
+	ti.invert 		= uit.getIntProp("invert");
 	ti.state 		= IONotifyController_i::NormalThreshold;
 	return true;
 }

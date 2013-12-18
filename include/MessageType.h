@@ -115,7 +115,7 @@ namespace UniSetTypes
 			IOController_i::CalibrateInfo ci;
 			
 			// для пороговых датчиков
-			bool threshold;
+			bool threshold;  /*!< TRUE - сработал порог, FALSE - порог отключился */
 			UniSetTypes::ThresholdId tid;
 
 			SensorMessage();

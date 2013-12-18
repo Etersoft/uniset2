@@ -1559,7 +1559,8 @@ void IOControl::waitSM()
 		err << myname << "(execute): did not wait for the ready 'SharedMemory'. Timeout "
 					<< smReadyTimeout << " msec";
 
-		dlog.crit() << err.str() << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << err.str() << endl;
 		throw SystemError(err.str());
 	}
 }

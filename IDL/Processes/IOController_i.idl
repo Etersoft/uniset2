@@ -185,18 +185,6 @@ interface IONotifyController_i : IOController_i
 	*/					
 	void askSensor(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
 
-	/*! Заказ порогового датчика
-	 * \sa UniversalIO::UniversalIOController::askThreshold()
-	 * \param tid - идентификатор порога
-	 * \param lowLimit - нижний порог срабатыания
-	 * \param hiLimit - верхний порог срабатывания
-	 * 
-	 *	Датчик срабатывает при условии, что значение <= lowLimit или >= hiLimit
-	*/					
-	void askThreshold(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniSetTypes::ThresholdId tid,
-						in long lowLimit, in long hiLimit,
-						in UniversalIO::UIOCommand cmd ) raises(NameNotFound, IOBadParam, BadRange);
-
 	/*! 
 		Заказ сразу списка объектов. 
 		\return Возвращает список объектов заказ по котором не прошёл.
@@ -205,6 +193,7 @@ interface IONotifyController_i : IOController_i
 	UniSetTypes::IDSeq askSensorsSeq( in UniSetTypes::IDSeq lst, 
 										in UniSetTypes::ConsumerInfo ci,
 										in UniversalIO::UIOCommand cmd );
+
 
 
 	/*! Состояние порогового датчика */
@@ -223,11 +212,29 @@ interface IONotifyController_i : IOController_i
 		ThresholdState state;	
 		long tv_sec;			/*!< время последнего изменения датчика, секунды (gettimeofday) */
 		long tv_usec;			/*!< время последнего изменения датчика, мксек (gettimeofday) */
-		boolean inverse;		/*!< инверсная логика */
+		boolean invert;			/*!< инвертированная логика */
 	};
 
 	typedef sequence<ThresholdInfo> ThresholdInfoSeq;
-	
+
+	/*! Заказ порогового датчика
+	 * \sa UniversalIO::UniversalIOController::askThreshold()
+	 * \param tid - идентификатор порога
+	 * \param lowLimit - нижний порог срабатыания
+	 * \param hiLimit - верхний порог срабатывания
+	 * \param invert - инвертировать логику срабатывания
+	 * Если invert=false, порог срабатывает при условии >= hilimit и отпускается при <= lowlimit
+	 * Если invert=true, порог срабатывает при условии <= lowlimit и отпускается при <= hilimit
+	*/
+	void askThreshold(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniSetTypes::ThresholdId tid,
+						in long lowLimit, in long hiLimit, in boolean invert,
+						in UniversalIO::UIOCommand cmd ) raises(NameNotFound, IOBadParam, BadRange);
+
+
+	/*! Получение информации о пороге
+	 *  Т.к. пороги могут иметь одинаковый tid для разных аналоговых датчиков, то передаётся и SensorInfo
+	*/
+	ThresholdInfo getThresholdInfo( in SensorInfo si, in UniSetTypes::ThresholdId tid ) raises(NameNotFound);
 	
 	struct ThresholdList
 	{
@@ -236,10 +243,14 @@ interface IONotifyController_i : IOController_i
 		long value;
 		ThresholdInfoSeq tlist;
 	};
-	
-	typedef sequence<ThresholdList> ThresholdsListSeq;
-	ThresholdsListSeq getThresholdsList();
 
+	typedef sequence<ThresholdList> ThresholdsListSeq;
+
+	/*! получить список порогов для датчка "si" */
+	ThresholdList getThresholds( in SensorInfo si ) raises(NameNotFound);
+
+	/*! получить список ВСЕХ датчиков по которым созданы пороги */
+	ThresholdsListSeq getThresholdsList();
 };
 // --------------------------------------------------------------------------
 #endif

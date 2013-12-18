@@ -139,20 +139,27 @@ class IONotifyController:
 		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("IONotifyController"); }
 
 		virtual void askSensor(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
-		
-		virtual void askThreshold(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, 
-									UniSetTypes::ThresholdId tid,
-									CORBA::Long lowLimit, CORBA::Long hiLimit, UniversalIO::UIOCommand cmd );
 
-		virtual UniSetTypes::IDSeq* askSensorsSeq(const UniSetTypes::IDSeq& lst, 
+		virtual void askThreshold(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci,
+									UniSetTypes::ThresholdId tid,
+									CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Boolean invert,
+									UniversalIO::UIOCommand cmd );
+
+		virtual IONotifyController_i::ThresholdInfo getThresholdInfo( const IOController_i::SensorInfo& si, UniSetTypes::ThresholdId tid );
+		virtual IONotifyController_i::ThresholdList* getThresholds(const IOController_i::SensorInfo& si );
+		virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList();
+
+		virtual UniSetTypes::IDSeq* askSensorsSeq(const UniSetTypes::IDSeq& lst,
 													const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 
+		// --------------------------------------------
 
+		// функция для работы напрямую черех iterator (оптимизация)
 		virtual void localSetValue( IOController::IOStateList::iterator& it,
 									const IOController_i::SensorInfo& si,
 									CORBA::Long value, UniSetTypes::ObjectId sup_id );
-		//  -------------------- !!!!!!!!! ---------------------------------
-		virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList();
+
+		// --------------------------------------------
 
 		/*! Информация о заказчике */
 		struct ConsumerInfoExt:
@@ -173,11 +180,10 @@ class IONotifyController:
 		struct ThresholdInfoExt:
 			public IONotifyController_i::ThresholdInfo
 		{
-			ThresholdInfoExt( UniSetTypes::ThresholdId tid, CORBA::Long low, CORBA::Long hi,
-								UniSetTypes::ObjectId _sid=UniSetTypes::DefaultObjectId,
-								bool inv = false ):
+			ThresholdInfoExt( UniSetTypes::ThresholdId tid, CORBA::Long low, CORBA::Long hi, bool inv,
+								UniSetTypes::ObjectId _sid=UniSetTypes::DefaultObjectId ):
 			sid(_sid),
-			inverse(inv)
+			invert(inv)
 			{
 				id			= tid;
 				hilimit		= hi;
@@ -194,13 +200,27 @@ class IONotifyController:
 			IOController::IOStateList::iterator sit;
 			
 			/*! инверсная логика */
-			bool inverse; 
+			bool invert;
 	
 			inline bool operator== ( const ThresholdInfo& r ) const
 			{
 				return ((id == r.id) && 
 						(hilimit == r.hilimit) && 
-						(lowlimit == r.lowlimit) );
+						(lowlimit == r.lowlimit) &&
+						(invert == r.invert) );
+			}
+
+			operator IONotifyController_i::ThresholdInfo()
+			{
+				IONotifyController_i::ThresholdInfo r;
+				r.id = id;
+				r.hilimit = hilimit;
+				r.lowlimit = lowlimit;
+				r.invert = invert;
+				r.tv_sec = tv_sec;
+				r.tv_usec = tv_usec;
+				r.state = state;
+				return r;
 			}
 		};
 		

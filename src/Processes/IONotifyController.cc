@@ -521,7 +521,8 @@ void IONotifyController::dumpThresholdList(const IOController_i::SensorInfo& si,
 
 void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, 
 									UniSetTypes::ThresholdId tid,
-									CORBA::Long lowLimit, CORBA::Long hiLimit, UniversalIO::UIOCommand cmd )
+									CORBA::Long lowLimit, CORBA::Long hiLimit,  CORBA::Boolean invert,
+									UniversalIO::UIOCommand cmd )
 {
 	if( lowLimit > hiLimit )
 		throw IONotifyController_i::BadRange();
@@ -536,7 +537,7 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 		// поиск датчика в списке 
 		UniSetTypes::KeyType skey( key(si.id,si.node) );
 		AskThresholdMap::iterator it = askTMap.find(skey);
-		ThresholdInfoExt ti(tid,lowLimit,hiLimit);
+		ThresholdInfoExt ti(tid,lowLimit,hiLimit,invert);
 		ti.sit = myioEnd();
 
 	  	switch( cmd )
@@ -708,7 +709,7 @@ bool IONotifyController::addThreshold(ThresholdExtList& lst, ThresholdInfoExt& t
 	return true;
 }
 // --------------------------------------------------------------------------------------------------------------
-bool IONotifyController::removeThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci)
+bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci )
 {
 	for( ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it) 
 	{
@@ -772,87 +773,60 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 		{
 			// Используем здесь sm.value чтобы не делать ещё раз lock на li->second.value
 
-			// Проверка нижнего предела
-			// значение должно быть меньше lowLimit-чуствительность
-			if( sm.value <= it->lowlimit )
+			IONotifyController_i::ThresholdState state = it->state;
+
+			if( !it->invert )
 			{
-				if( it->state == IONotifyController_i::LowThreshold )
-					continue;
-
-				it->state = IONotifyController_i::LowThreshold;
-				sm.threshold = false;
-				sm.tid = it->id;
-
-				// запоминаем время изменения состояния
-				it->tv_sec 		= tm.tv_sec;
-				it->tv_usec 	= tm.tv_usec;
-				sm.sm_tv_sec 	= tm.tv_sec;
-				sm.sm_tv_usec 	= tm.tv_usec;
-
-				// порог связан с дискретным датчиком
-				if( it->sid != UniSetTypes::DefaultObjectId )
-				{
-					try
-					{
-						bool state(sm.threshold);
-						// проверка на инвертированную логику
-						if( it->inverse )
-							state^=1;
-						
-						localSetValue(it->sit,SensorInfo(it->sid),(state ? 1:0),getId());
-					}
-					catch( UniSetTypes::Exception& ex )
-					{
-                        if( ulog.is_crit() )
-                            ulog.crit() << myname << "(checkThreshold): "
-									<< ex << endl;
-					}
-				}
-
-				if( send_msg )
-					send(it->clst, sm);
-			}
-			// Проверка верхнего предела
-			// значение должно быть больше hiLimit+чуствительность
-			else if( sm.value >= it->hilimit )
-			{ 
-				if( it->state == IONotifyController_i::HiThreshold )
-					continue;
-
-				it->state = IONotifyController_i::HiThreshold;
-				sm.threshold = true;
-				sm.tid = it->id;
-				// запоминаем время изменения состояния
-				it->tv_sec 		= tm.tv_sec;
-				it->tv_usec 	= tm.tv_usec;
-				sm.sm_tv_sec 	= tm.tv_sec;
-				sm.sm_tv_usec 	= tm.tv_usec;
-		
-				// порог связан с дискретным датчиком
-				if( it->sid != UniSetTypes::DefaultObjectId )
-				{								
-					try
-					{
-						bool state(sm.threshold);
-						// проверка на инвертированную логику
-						if( it->inverse ) 
-							state^=1;
-
-						localSetValue(it->sit,SensorInfo(it->sid),(state?1:0),getId());
-					}
-					catch( UniSetTypes::Exception& ex )
-					{
-						if( ulog.is_crit() )
-							ulog.crit() << myname << "(checkThreshold): "
-								<< ex << endl;
-					}
-				}
-		
-				if( send_msg )
-					send(it->clst, sm);
+				// Если логика не инвертированная, то срабатывание это - выход за зону >= hilimit
+				if( sm.value <= it->lowlimit  )
+					state = IONotifyController_i::NormalThreshold;
+				else if( sm.value >= it->hilimit )
+					state = IONotifyController_i::HiThreshold;
 			}
 			else
-				it->state = IONotifyController_i::NormalThreshold;
+			{
+				// Если логика инвертированная, то срабатывание это - выход за зону <= lowlimit
+				if( sm.value >= it->hilimit  )
+					state = IONotifyController_i::NormalThreshold;
+				else if( sm.value <= it->lowlimit )
+					state = IONotifyController_i::LowThreshold;
+			}
+
+			// если ничего не менялось..
+			if( it->state == state )
+				continue;
+
+			it->state = state;
+
+			sm.tid = it->id;
+
+			// если состояние не normal, значит порог сработал,
+			// не важно какой.. нижний или верхний (зависит от inverse)
+			sm.threshold = ( state != IONotifyController_i::NormalThreshold ) ? true : false;
+
+			// запоминаем время изменения состояния
+			it->tv_sec 		= tm.tv_sec;
+			it->tv_usec 	= tm.tv_usec;
+			sm.sm_tv_sec 	= tm.tv_sec;
+			sm.sm_tv_usec 	= tm.tv_usec;
+
+			// если порог связан с ддатчиком, то надо его выставить
+			if( it->sid != UniSetTypes::DefaultObjectId )
+			{
+				try
+				{
+					localSetValue(it->sit,SensorInfo(it->sid),(sm.threshold ? 1:0),getId());
+				}
+				catch( UniSetTypes::Exception& ex )
+				{
+					if( ulog.is_crit() )
+						ulog.crit() << myname << "(checkThreshold): " << ex << endl;
+				}
+			}
+
+			// отдельно посылаем сообщения заказчикам порогов, по данному "порогу"
+			if( send_msg )
+				send(it->clst, sm);
 		}
 	}	// unlock
 }
@@ -877,6 +851,90 @@ IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold
 	
 	ThresholdExtList::iterator it;
   	return it;
+}
+// --------------------------------------------------------------------------------------------------------------
+IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( const IOController_i::SensorInfo& si,
+											 UniSetTypes::ThresholdId tid )
+{
+	uniset_rwmutex_rlock lock(trshMutex);
+
+	AskThresholdMap::iterator it = askTMap.find( key(si) );
+	if( it == askTMap.end() )
+	{
+		ostringstream err;
+		err << myname << "(getThresholds): Not found sensor (" << si.id << ":" << si.node << ") "
+			<< conf->oind->getNameById(si.id);
+
+		if( ulog.is_info() )
+			ulog.info() << err.str() << endl;
+
+		throw IOController_i::NameNotFound(err.str().c_str());
+	}
+
+	for( ThresholdExtList::const_iterator it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
+	{
+		if( it2->id == tid )
+			return IONotifyController_i::ThresholdInfo( *it2 );
+	}
+
+	ostringstream err;
+	err << myname << "(getThresholds): Not found for sensor (" << si.id << ":" << si.node << ") "
+		<< conf->oind->getNameById(si.id) << " ThresholdID='" << tid << "'";
+
+	if( ulog.is_info() )
+		ulog.info() << err.str() << endl;
+
+	throw IOController_i::NameNotFound(err.str().c_str());
+}
+// --------------------------------------------------------------------------------------------------------------
+IONotifyController_i::ThresholdList* IONotifyController::getThresholds( const IOController_i::SensorInfo& si )
+{
+	uniset_rwmutex_rlock lock(trshMutex);
+
+	AskThresholdMap::iterator it = askTMap.find( key(si) );
+	if( it == askTMap.end() )
+	{
+		ostringstream err;
+		err << myname << "(getThresholds): Not found sensor (" << si.id << ":" << si.node << ") "
+			<< conf->oind->getNameById(si.id);
+
+		if( ulog.is_info() )
+			ulog.info() << err.str() << endl;
+
+		throw IOController_i::NameNotFound(err.str().c_str());
+	}
+
+	IONotifyController_i::ThresholdList* res = new IONotifyController_i::ThresholdList();
+
+	try
+	{
+		res->si 	= it->second.si;
+		res->value	= IOController::localGetValue(it->second.ait,it->second.si);
+		res->type 	= it->second.type;
+	}
+	catch( Exception& ex )
+	{
+		if( ulog.is_warn() )
+			ulog.warn() << myname << "(getThresholdsList): для датчика "
+				<< conf->oind->getNameById(it->second.si.id, it->second.si.node)
+				<< " " << ex << endl;
+	}
+
+	res->tlist.length( it->second.list.size() );
+
+	int k=0;
+	for( ThresholdExtList::const_iterator it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
+	{
+		res->tlist[k].id 		= it2->id;
+		res->tlist[k].hilimit 	= it2->hilimit;
+		res->tlist[k].lowlimit 	= it2->lowlimit;
+		res->tlist[k].state 	= it2->state;
+		res->tlist[k].tv_sec 	= it2->tv_sec;
+		res->tlist[k].tv_usec 	= it2->tv_usec;
+		k++;
+	}
+
+	return res;
 }
 // --------------------------------------------------------------------------------------------------------------
 IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()

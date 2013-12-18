@@ -126,5 +126,24 @@ void TestProc::test_thresholds()
 
     setValue(t_set_c,378);
     dlog.level1() << myname << ": check threshold ON value: " << ( getValue(t_check_s) == 1 ? "OK" : "FAIL" ) << endl;
+
+	dlog.level1() << myname << ": ask threshold and check.. " << endl;
+
+	try
+	{
+		setValue(t_set_c, 0);
+		UniSetTypes::ThresholdId tid = 100;
+		ui.askThreshold( t_set_c, tid, UniversalIO::UIONotify, 10, 20 );
+
+		IONotifyController_i::ThresholdInfo ti = ui.getThresholdInfo(t_set_c,tid);
+		dlog.level1() << myname << ": ask OFF threshold: " << ( ti.state == IONotifyController_i::NormalThreshold  ? "OK" : "FAIL" ) << endl;
+		setValue(t_set_c, 25);
+		ti = ui.getThresholdInfo(t_set_c,tid);
+		dlog.level1() << myname << ": ask ON threshold: " << ( ti.state == IONotifyController_i::HiThreshold  ? "OK" : "FAIL" ) << endl;
+	}
+	catch( Exception& ex )
+	{
+		dlog.level2() << myname << ": CHE 'ask and get threshold' FAILED: " << ex << endl;
+	}
 }
 // -----------------------------------------------------------------------------

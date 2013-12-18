@@ -312,7 +312,6 @@ class IOControl:
 		CardList cards;			/*!< список карт - массив созданных ComediInterface */
 		bool noCards;
 
-
 		typedef std::vector<IOInfo> IOMap;
 		IOMap iomap;			/*!< список входов/выходов */
 		
