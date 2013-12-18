@@ -57,7 +57,8 @@ TransportMessage Message::transport(const In &msg)
 */
 //--------------------------------------------------------------------------------------------
 
-VoidMessage::VoidMessage( const TransportMessage& tm )
+VoidMessage::VoidMessage( const TransportMessage& tm ):
+    Message(1) // вызываем dummy-конструктор
 {
 	assert(sizeof(VoidMessage)>=sizeof(UniSetTypes::RawDataOfTransportMessage));
 	memcpy(this,&tm.data,sizeof(tm.data));

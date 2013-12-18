@@ -63,6 +63,10 @@ namespace UniSetTypes
 
 			Message();
 
+            // для оптимизации, делаем конструктор который не будет инициализировать свойства класса
+            // это необходимо для VoidMessage, который конструируется при помощи memcpy
+            Message( int dummy_init ){}
+
 			template<class In> 
 			static TransportMessage transport(const In& msg)
 			{
