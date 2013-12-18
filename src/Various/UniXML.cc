@@ -46,7 +46,7 @@ using namespace std;
 // Временная переменная для подсчёта рекурсии
 int UniXML::recur=0;
 
-UniXML::UniXML(const string filename):
+UniXML::UniXML(const string& filename):
 	doc(0),
 	filename(filename)
 {
@@ -80,7 +80,7 @@ void UniXML::newDoc(const string& root_node, string xml_ver)
 	cur = getFirstNode();
 }
 
-void UniXML::open(const string _filename)
+void UniXML::open(const string& _filename)
 {
 //	if(doc)
 //		close();
@@ -112,45 +112,47 @@ void UniXML::close()
 }
 
 /* FIXME: compatibility, remove later */
-string UniXML::getPropUtf8(const xmlNode* node, const string name)
+string UniXML::getPropUtf8(const xmlNode* node, const string& name)
 {
 	return getProp(node, name);
 }
 
-string UniXML::getProp(const xmlNode* node, const string name)
+string UniXML::getProp(const xmlNode* node, const string& name)
 {
 	const char * text = (const char*)::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
-	if( !text )
+    if( text == NULL )
 		return "";
-	
-	return string(text);
+
+    string t(text);
+    xmlFree( (void*)text );
+    return t;
 }
 
-int UniXML::getIntProp(const xmlNode* node, const string name )
+int UniXML::getIntProp(const xmlNode* node, const string& name )
 {
 	return UniSetTypes::uni_atoi(getProp(node, name));
 }
 
-int UniXML::getPIntProp(const xmlNode* node, const string name, int def )
+int UniXML::getPIntProp(const xmlNode* node, const string& name, int def )
 {
 	string param = getProp(node,name);
 	if( param.empty() )
 		return def;
-	
+
 	return UniSetTypes::uni_atoi(param);
 }
 
-void UniXML::setProp(xmlNode* node, string name, string text)
+void UniXML::setProp(xmlNode* node, const string& name, const string& text )
 {
 	::xmlSetProp(node, (const xmlChar*)name.c_str(), (const xmlChar*)text.c_str());
 }
 
-xmlNode* UniXML::createChild(xmlNode* node, string title, string text)
+xmlNode* UniXML::createChild(xmlNode* node, const string& title, const string& text)
 {
 	return ::xmlNewChild(node, NULL, (const xmlChar*)title.c_str(), (const xmlChar*)text.c_str());
 }
 
-xmlNode* UniXML::createNext(xmlNode* node, const string title, const string text)
+xmlNode* UniXML::createNext(xmlNode* node, const string& title, const string& text)
 {
 	if( node->parent )
 		return createChild(node->parent, title,text);
@@ -195,7 +197,7 @@ xmlNode* UniXML::copyNode(xmlNode* node, int recursive)
 }
 
 
-bool UniXML::save(const string filename, int level)
+bool UniXML::save(const string& filename, int level)
 {
 	string fn(filename);
 	if (fn.empty())
@@ -229,7 +231,7 @@ xmlNode* UniXML::nextNode(xmlNode* n)
 	return n;
 }
 
-xmlNode* UniXML::findNode(xmlNode* node, const string searchnode, const string name ) const
+xmlNode* UniXML::findNode(xmlNode* node, const string& searchnode, const string& name ) const
 {
 	while (node != NULL)
 	{
@@ -251,7 +253,7 @@ xmlNode* UniXML::findNode(xmlNode* node, const string searchnode, const string n
 	return NULL;
 }
 
-xmlNode* UniXML::findNodeUtf8(xmlNode* node, const string searchnode, const string name ) const
+xmlNode* UniXML::findNodeUtf8(xmlNode* node, const string& searchnode, const string& name ) const
 {
 	return findNode(node, searchnode, name);
 }
@@ -263,7 +265,7 @@ xmlNode* UniXML::findNodeUtf8(xmlNode* node, const string searchnode, const stri
 
 //width means number of nodes of the same level as node in 1-st parameter (width number includes first node)
 //depth means number of times we can go to the children, if 0 we can't go only to elements of the same level
-xmlNode* UniXML::extFindNode(xmlNode* node, int depth, int width, const string searchnode, const string name, bool top )
+xmlNode* UniXML::extFindNode(xmlNode* node, int depth, int width, const string& searchnode, const string& name, bool top )
 {
 	int i=0;
 	while (node != NULL)
@@ -289,7 +291,7 @@ xmlNode* UniXML::extFindNode(xmlNode* node, int depth, int width, const string s
 	return NULL;
 }
 
-xmlNode* UniXML::extFindNodeUtf8(xmlNode* node, int depth, int width, const string searchnode, const string name, bool top )
+xmlNode* UniXML::extFindNodeUtf8(xmlNode* node, int depth, int width, const string& searchnode, const string& name, bool top )
 {
 	return extFindNode(node, depth, width, searchnode, name, top );
 }
@@ -380,7 +382,7 @@ bool UniXML_iterator::goChildren()
 }
 
 // -------------------------------------------------------------------------		
-string UniXML_iterator::getProp( const string name ) const
+string UniXML_iterator::getProp( const string& name ) const
 {
 	return UniXML::getProp(curNode, name);
 }
@@ -394,18 +396,18 @@ const string UniXML_iterator::getContent() const
 }
 
 // -------------------------------------------------------------------------
-string UniXML_iterator::getPropUtf8( const string name ) const
+string UniXML_iterator::getPropUtf8( const string& name ) const
 {
 	return UniXML::getProp(curNode, name);
 }
 
 // -------------------------------------------------------------------------
-int UniXML_iterator::getIntProp( const string name ) const
+int UniXML_iterator::getIntProp( const string& name ) const
 {
 	return UniSetTypes::uni_atoi(UniXML::getProp(curNode, name));
 }
 
-int UniXML_iterator::getPIntProp( const string name, int def ) const
+int UniXML_iterator::getPIntProp( const string& name, int def ) const
 {
 	int i = getIntProp(name);
 	if (i <= 0)
@@ -414,13 +416,13 @@ int UniXML_iterator::getPIntProp( const string name, int def ) const
 }
 
 // -------------------------------------------------------------------------
-void UniXML_iterator::setProp( const string name, const string text )
+void UniXML_iterator::setProp( const string& name, const string& text )
 {
 	UniXML::setProp(curNode, name, text);
 }
 
 // -------------------------------------------------------------------------	
-bool UniXML_iterator::findName( const std::string node, const std::string searchname )
+bool UniXML_iterator::findName( const std::string& node, const std::string& searchname )
 {	
 	while( this->find(node) )
 	{
@@ -433,12 +435,12 @@ bool UniXML_iterator::findName( const std::string node, const std::string search
 }
 
 // -------------------------------------------------------------------------	
-bool UniXML_iterator::find( const std::string searchnode )
+bool UniXML_iterator::find( const std::string& searchnode )
 {	
 	// Функция ищет "в ширину и в глубь"
 
 	xmlNode* rnode = curNode;
-	
+
 	while (curNode != NULL)
 	{	
 		while( curNode->children )
@@ -450,14 +452,14 @@ bool UniXML_iterator::find( const std::string searchnode )
 		}
 
 		while( !curNode->next && curNode->parent )
-		{	
+		{
 			// выше исходного узла "подыматься" нельзя
 			if( curNode == rnode )
-				break;			
+				break;
 
 			curNode = curNode->parent;
 		}
-		
+
 		curNode = curNode->next;
 	
 		if ( curNode && searchnode == (const char*)curNode->name )
