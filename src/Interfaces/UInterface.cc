@@ -926,29 +926,6 @@ ObjectPtr UInterface::resolve( ObjectId rid , ObjectId node, int timeoutSec )
 }
 
 // -------------------------------------------------------------------------------------------
-
-string UInterface::timeToString(time_t tm, const std::string brk )
-{
-    struct tm *tms = localtime(&tm);
-	ostringstream time;
-	time << std::setw(2) << std::setfill('0') << tms->tm_hour << brk;
-	time << std::setw(2) << std::setfill('0') << tms->tm_min << brk;
-	time << std::setw(2) << std::setfill('0') << tms->tm_sec;
-	return time.str();
-}
-
-string UInterface::dateToString(time_t tm, const std::string brk )
-{
-    struct tm *tms = localtime(&tm);
-	ostringstream date;
-	date << std::setw(4) << std::setfill('0') << tms->tm_year+1900 << brk;
-	date << std::setw(2) << std::setfill('0') << tms->tm_mon+1 << brk;
-	date << std::setw(2) << std::setfill('0') << tms->tm_mday;
-	return date.str();
-}
-
-//--------------------------------------------------------------------------------------------
-
 void UInterface::send( ObjectId name, TransportMessage& msg, ObjectId node)
 	throw(IO_THROW_EXCEPTIONS)
 {

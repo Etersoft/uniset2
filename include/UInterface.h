@@ -79,12 +79,12 @@ class UInterface
 		//! Выставление состояния датчика
 		void setValue ( UniSetTypes::ObjectId id, long value, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
 		void setValue ( UniSetTypes::ObjectId id, long value );
-
-		// С использованием SensorInfo
 		void setValue ( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
+
+		// fast - это удалённый вызов "без подтверждения", он быстрее, но менее надёжен
+		// т.к. вызывающий никогда не узнает об ошибке, если она была (датчик такой не найдён и т.п.)
 		void fastSetValue( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
 
-		// Работа с группой датчиков
 		//! Получение состояния для списка указанных датчиков
 		IOController_i::SensorInfoSeq_var getSensorSeq( UniSetTypes::IDList& lst );
 
@@ -131,7 +131,6 @@ class UInterface
 								 UniSetTypes::ThresholdId thresholdId, UniversalIO::UIOCommand cmd,
 								 CORBA::Long lowLimit=0, CORBA::Long hiLimit=0, CORBA::Long sensibility=0,
 								 UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
-
 
 		// ---------------------------------------------------------------
 		// Вспомогательные функции
@@ -235,12 +234,6 @@ class UInterface
 		// Получение указателей на вспомогательные классы.
 		inline UniSetTypes::ObjectIndex* getObjectIndex() { return oind; }
 		inline UniSetTypes::Configuration* getConf() { return uconf; }
-
-		// ---------------------------------------------------------------
-		// Работа со временем
-		static std::string timeToString(time_t tm=time(0), const std::string brk=":"); /*!< Преобразование времени в строку HH:MM:SS */
-		static std::string dateToString(time_t tm=time(0), const std::string brk="/"); /*!< Преобразование даты в строку DD/MM/YYYY */
-
 
 		// ---------------------------------------------------------------
 		// Посылка сообщений

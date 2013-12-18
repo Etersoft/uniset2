@@ -139,8 +139,8 @@ void DBServer_SQLite::parse( UniSetTypes::ConfirmMessage* cem )
 		data << "UPDATE " << tblName(cem->type)
 			<< " SET confirm='" << cem->confirm << "'"
 			<< " WHERE sensor_id='" << cem->sensor_id << "'"
-			<< " AND date='" << ui.dateToString(cem->time, "-")<<" '"
-			<< " AND time='" << ui.timeToString(cem->time, ":") <<" '"
+			<< " AND date='" << dateToString(cem->time, "-")<<" '"
+			<< " AND time='" << timeToString(cem->time, ":") <<" '"
 			<< " AND time_usec='" << cem->time_usec <<" '";
 
 		if( ulog.debugging(DBLEVEL) )
@@ -232,8 +232,8 @@ void DBServer_SQLite::parse( UniSetTypes::SensorMessage *si )
 		data << "INSERT INTO " << tblName(si->type)
 			<< "(date, time, time_usec, sensor_id, value, node) VALUES( '"
 											// Поля таблицы
-			<< ui.dateToString(si->sm_tv_sec,"-") << "','"	//  date
-			<< ui.timeToString(si->sm_tv_sec,":") << "','"	//  time
+			<< dateToString(si->sm_tv_sec,"-") << "','"	//  date
+			<< timeToString(si->sm_tv_sec,":") << "','"	//  time
 			<< si->sm_tv_usec << "',"				//  time_usec
 			<< si->id << ","					//  sensor_id
 			<< si->value << ","				//  value
