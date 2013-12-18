@@ -293,7 +293,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 			param << this << name;
 			name = param.str();
 			param << "=corbaname::" << it->host << ":" << it->port;
-            new_argv[i+1] = param.str().c_str(); // strdup(param.str().c_str());
+            new_argv[i+1] = strdup(param.str().c_str());
 
 			if( ulog.is_info() )
 				ulog.info() << "(Configuration): внесли параметр " << param.str() << endl;
