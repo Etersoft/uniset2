@@ -40,14 +40,14 @@ class ObjectIndex
 
 		// info
 		virtual const ObjectInfo* getObjectInfo( const ObjectId )=0;
-		virtual const ObjectInfo* getObjectInfo( const std::string name )=0;
+        virtual const ObjectInfo* getObjectInfo( const std::string& name )=0;
 
 		// создание полного имени в репозитории по паре имя:узел
-		static std::string mkRepName( const std::string repname, const std::string nodename );
+        static std::string mkRepName( const std::string& repname, const std::string& nodename );
 		// создание имени узла по реальному и виртуальному
-		static std::string mkFullNodeName( const std::string realnode, const std::string virtnode );
+        static std::string mkFullNodeName( const std::string& realnode, const std::string& virtnode );
 		// получить имя для регистрации в репозитории (т.е. без секции)
-		static std::string getBaseName( const std::string fname );
+        static std::string getBaseName( const std::string& fname );
 
 		// object id
 		virtual ObjectId getIdByName(const std::string& name)=0;

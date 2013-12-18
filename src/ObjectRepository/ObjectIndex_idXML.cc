@@ -8,7 +8,7 @@
 using namespace UniSetTypes;
 using namespace std;
 // -----------------------------------------------------------------------------------------
-ObjectIndex_idXML::ObjectIndex_idXML( const string xmlfile )
+ObjectIndex_idXML::ObjectIndex_idXML( const string& xmlfile )
 {
 	UniXML xml;
 //	try
@@ -86,7 +86,7 @@ void ObjectIndex_idXML::build(UniXML& xml)
 	read_nodes(xml,"nodes");
 }
 // ------------------------------------------------------------------------------------------
-void ObjectIndex_idXML::read_section( UniXML& xml, const std::string sec )
+void ObjectIndex_idXML::read_section( UniXML& xml, const std::string& sec )
 {
 	string secRoot = xml.getProp( xml.findNode(xml.getFirstNode(),"RootSection"), "name");
 	if( secRoot.empty() )
@@ -162,7 +162,7 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string sec )
 	}
 }
 // ------------------------------------------------------------------------------------------
-void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string sec )
+void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string& sec )
 {
 	xmlNode* root( xml.findNode(xml.getFirstNode(),sec) );
 	if( !root )
@@ -231,7 +231,7 @@ const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id )
 	return NULL;
 }
 // ------------------------------------------------------------------------------------------
-const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const std::string name )
+const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const std::string& name )
 {
 	const char* n = name.c_str();
 	for( MapObjects::iterator it=omap.begin(); it!=omap.end(); it++ )

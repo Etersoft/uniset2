@@ -11,12 +11,12 @@ class ObjectIndex_idXML:
 	public UniSetTypes::ObjectIndex
 {
 	public:
-		ObjectIndex_idXML( const std::string xmlfile );
+        ObjectIndex_idXML( const std::string& xmlfile );
 		ObjectIndex_idXML(UniXML& xml);
 		virtual ~ObjectIndex_idXML();
 
 		virtual const UniSetTypes::ObjectInfo* getObjectInfo( const UniSetTypes::ObjectId );
-		virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string name );
+        virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string& name );
 		virtual UniSetTypes::ObjectId getIdByName( const std::string& name );
 		virtual std::string getMapName( const UniSetTypes::ObjectId id );
 		virtual std::string getTextName( const UniSetTypes::ObjectId id );
@@ -26,8 +26,8 @@ class ObjectIndex_idXML:
 	
 	protected:
 		virtual void build( UniXML& xml );
-		void read_section( UniXML& xml, const std::string sec );
-		void read_nodes( UniXML& xml, const std::string sec );
+        void read_section( UniXML& xml, const std::string& sec );
+        void read_nodes( UniXML& xml, const std::string& sec );
 	
 	private:
 		typedef std::map<UniSetTypes::ObjectId, UniSetTypes::ObjectInfo> MapObjects;

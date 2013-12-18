@@ -56,19 +56,19 @@ string ObjectIndex::getNameById( const ObjectId id, const ObjectId node )
 	return mkRepName(t,getMapName(node));
 }
 // -----------------------------------------------------------------------------------------
-string ObjectIndex::mkRepName( const std::string repname, const std::string nodename )
+string ObjectIndex::mkRepName( const std::string& repname, const std::string& nodename )
 {
 	return repname + sepName + nodename; 
 }
 // -----------------------------------------------------------------------------------------
-string ObjectIndex::mkFullNodeName( const std::string realnode, const std::string virtnode )
+string ObjectIndex::mkFullNodeName( const std::string& realnode, const std::string& virtnode )
 {
 	// realnode справа, что поиск и вырезание происходили быстрее
 	// эта функция часто используется...
 	return virtnode + sepNode + realnode; 
 }
 // -----------------------------------------------------------------------------------------
-std::string ObjectIndex::getBaseName( const std::string fname )
+std::string ObjectIndex::getBaseName( const std::string& fname )
 {
 	string::size_type pos = fname.rfind('/');
 	if( pos != string::npos )

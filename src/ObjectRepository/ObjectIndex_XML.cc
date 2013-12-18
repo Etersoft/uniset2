@@ -28,7 +28,7 @@
 using namespace UniSetTypes;
 using namespace std;
 // -----------------------------------------------------------------------------------------
-ObjectIndex_XML::ObjectIndex_XML( const string xmlfile, int minSize ):
+ObjectIndex_XML::ObjectIndex_XML( const string& xmlfile, int minSize ):
 	omap(minSize)
 {
 	UniXML xml;
@@ -115,7 +115,7 @@ void ObjectIndex_XML::build(UniXML& xml)
 //	omap[ind].id = ind;
 }
 // ------------------------------------------------------------------------------------------
-unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string sec, unsigned int ind )
+unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string& sec, unsigned int ind )
 {
 	if( (unsigned)ind >= omap.size() )
 	{
@@ -214,7 +214,7 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string sec, 
 	return ind;
 }
 // ------------------------------------------------------------------------------------------
-unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string sec, unsigned int ind )
+unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string& sec, unsigned int ind )
 {
 	if( ind >= omap.size() )
 	{
@@ -293,7 +293,7 @@ const ObjectInfo* ObjectIndex_XML::getObjectInfo( const ObjectId id )
 	return NULL;
 }
 // ------------------------------------------------------------------------------------------
-const ObjectInfo* ObjectIndex_XML::getObjectInfo( const std::string name )
+const ObjectInfo* ObjectIndex_XML::getObjectInfo( const std::string& name )
 {
 	MapObjectKey::iterator it = mok.find(name);
 	if( it != mok.end() )
