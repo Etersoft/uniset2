@@ -13,9 +13,9 @@ if __name__ == "__main__":
 
     try:
         mb = UModbus()
-
+        
         print "UIType: %s" % mb.getUIType()
-
+        
         mb.connect("localhost",2048)
         try:
             print "Test READ functions..."
@@ -24,7 +24,7 @@ if __name__ == "__main__":
                 val = mb.mbread(0x01,22,f,"unsigned",-1)
 #               val = mb.mbread(0x01,22)
                 print "val=%d"%val
-
+            
             print "getWord: %d" % mb.getWord(0x01,22)
             print "getByte: %d" % mb.getByte(0x01,22)
             print "getBit: %d" % mb.getBit(0x01,22,3)

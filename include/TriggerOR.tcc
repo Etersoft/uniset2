@@ -43,10 +43,10 @@ bool TriggerOR<Caller,InputType>::commit(InputType num, bool state)
 	if( it!=inputs.end() )
 	{
 		inputs[num] = state;
-		check();
+		check();	
 		return true;
 	}
-
+	
 	return false;
 }
 
@@ -66,7 +66,7 @@ void TriggerOR<Caller,InputType>::remove(InputType num)
 	if( it!=inputs.end() )
 		inputs.erase(it);
 
-	check();
+	check();		
 }
 
 //---------------------------------------------------------------------------
@@ -102,7 +102,7 @@ void TriggerOR<Caller,InputType>::check()
 			return;
 		}
 	}
-
+	
 	out = false;
 
 	if( old != out )

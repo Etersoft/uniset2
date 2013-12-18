@@ -8,3 +8,4 @@ xsl_DATA 	= *.xsl skel*
 all-local:
 	chmod 'a+x' @PACKAGE@-codegen
 
+                   

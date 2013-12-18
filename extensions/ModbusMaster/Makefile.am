@@ -85,3 +85,4 @@ pkgconfig_DATA 	= libUniSetMBTCPMaster.pc libUniSetRTU.pc
 
 all-local:
 	ln -sf ../ModbusMaster/$(devel_include_HEADERS) ../include
+

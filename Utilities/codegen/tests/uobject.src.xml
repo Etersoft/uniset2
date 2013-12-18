@@ -12,8 +12,8 @@
 -->
 <Test>
   <settings>
-	<set name="class-name" val="UObject"/>
-	<set name="msg-count" val="20"/>
+  	<set name="class-name" val="UObject"/>
+  	<set name="msg-count" val="20"/>
 	<set name="sleep-msec" val="150"/>
 	<set name="arg-prefix" val=""/>
   </settings>
@@ -30,7 +30,7 @@
 		 no_range_exception=1 - при выходе за границы min или max только писать unideb[WARN].
       -->
   </variables>
-  <smap>
+  <smap> 
   </smap>
   <msgmap>
   </msgmap>

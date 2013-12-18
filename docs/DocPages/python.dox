@@ -1,19 +1,19 @@
 /*!
  \page PythonPage Интерфейс на python
-
-	В проект входит два простых интерфейса для python:
+	
+	В проект входит два простых интерфейса для python: 
 
   - \ref pgPython_secUniSet
   - \ref pgPython_secModbus
 
 	\section pgPython_secUniSet Простой python-интерфейс для работы с uniset
-
+	
 	В данном интерфейсе реализован только самые просты функции \b getValue и \b setValue.
-
+	
 	\sa UConnector
-
+	
 	Пример использования:
-\code
+\code	
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -22,21 +22,21 @@ import sys
 from uniset import *
 
 if __name__ == "__main__":
-
+	
 	lst = Params_inst()
 
 	for i in range(0, len(sys.argv)):
 		if i >= Params.max:
 			break;
-
+	
 		lst.add( sys.argv[i] )
 
 	p = []
 	print "lst: class: " + str(p.__class__.__name__)
 
-	try:
+	try:	
 		uc1 = UConnector( lst, "test.xml" )
-
+		
 #		print "(0)UIType: %s" % uc1.getUIType()
 
 		print "(1)getShortName: id=%d name=%s" % (1, uc1.getShortName(1))
@@ -65,7 +65,7 @@ if __name__ == "__main__":
 \endcode
 
 	\section pgPython_secModbus Простой python-интерфейс для работы с modbus
-
+	
 	В данном интерфейсе реализованы функции Modbus master на основе использования libuniset.
 	Он имеет ряд простых функций getWord(), getByte(), getBit(), а так же универсальная функция
 	UModbus::mbread() позволяющая более тонко определять параметры запроса.
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     Для записи одного регистра (!) реализована UModbus::mbwrite()
 
 	\sa UModbus
-
+	
 	Пример использования:
 \code
 #!/usr/bin/env python
@@ -87,9 +87,9 @@ if __name__ == "__main__":
 
     try:
         mb = UModbus()
-
+        
         print "UIType: %s" % mb.getUIType()
-
+        
         mb.connect("localhost",2048)
         try:
             print "Test READ functions..."
@@ -98,7 +98,7 @@ if __name__ == "__main__":
                 val = mb.mbread(0x01,22,f,"unsigned",-1)
 #               val = mb.mbread(0x01,22)
                 print "val=%d"%val
-
+            
             print "getWord: %d" % mb.getWord(0x01,22)
             print "getByte: %d" % mb.getByte(0x01,22)
             print "getBit: %d" % mb.getBit(0x01,22,3)

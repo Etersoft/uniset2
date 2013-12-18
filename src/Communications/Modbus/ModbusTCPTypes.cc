@@ -93,23 +93,23 @@ static unsigned short crc_16_tab[] = {
 // -------------------------------------------------------------------------
 static int get_crc_ccitt( unsigned short crc, unsigned char* buf, int size )
 {
-	while( size-- )
-	{
+    while( size-- )
+    {
 #ifdef USE_CRC_TAB
-		crc = (crc << 8) ^ crc_ccitt_tab[ (crc >> 8) ^ *(buf++) ];
+        crc = (crc << 8) ^ crc_ccitt_tab[ (crc >> 8) ^ *(buf++) ];
 #else
-		register int i;
-		crc ^= (unsigned short)(*(buf++)) << 8;
-		for (i = 0; i < 8; i++) 
-		{
-			if (crc & 0x8000)
-				crc = (crc << 1) ^ 0x1021;
-			else
-				crc <<= 1;
-		}
+        register int i;
+        crc ^= (unsigned short)(*(buf++)) << 8;
+        for (i = 0; i < 8; i++) 
+        {
+            if (crc & 0x8000)
+                crc = (crc << 1) ^ 0x1021;
+            else
+                crc <<= 1;
+        }
 #endif
-	}
-	return crc;
+    }
+    return crc;
 }
 #endif
 // -------------------------------------------------------------------------
@@ -118,2773 +118,2773 @@ static int get_crc_ccitt( unsigned short crc, unsigned char* buf, int size )
 static int get_crc_16( unsigned short crc, unsigned char* buf, int size )
 {
 
-	while( size-- )
-	{
-#ifdef USE_CRC_TAB	
-		crc = (crc >> 8) ^ crc_16_tab[ (crc ^ *(buf++)) & 0xff ];
+    while( size-- )
+    {
+#ifdef USE_CRC_TAB    
+        crc = (crc >> 8) ^ crc_16_tab[ (crc ^ *(buf++)) & 0xff ];
 #else
-		register int i, ch;
-		ch = *(buf++);
-		for (i = 0; i < 8; i++) 
-		{
-			if ((crc ^ ch) & 1)
-				crc = (crc >> 1) ^ 0xa001;
-			else
-			    crc >>= 1;
+        register int i, ch;
+        ch = *(buf++);
+        for (i = 0; i < 8; i++) 
+        {
+            if ((crc ^ ch) & 1)
+                crc = (crc >> 1) ^ 0xa001;
+            else
+                crc >>= 1;
 
-			ch >>= 1;
-		}
+            ch >>= 1;
+        }
 #endif
-		// crc = crc & 0xffff;
-	} 
-	return crc;
+        // crc = crc & 0xffff;
+    } 
+    return crc;
 }
 // -------------------------------------------------------------------------
 
 /*! \todo Необходимо разобраться с разными версиями и функциями расчёта CRC
-	и по возможности вынести их в отдельный модуль или класс
+    и по возможности вынести их в отдельный модуль или класс
 */
 ModbusCRC ModbusRTU::checkCRC( ModbusByte* buf, int len )
 {
-	unsigned short crc = 0xffff;
-	crc = get_crc_16(crc,(unsigned char*)(buf), len);
+    unsigned short crc = 0xffff;
+    crc = get_crc_16(crc,(unsigned char*)(buf), len);
 
-//	crc = SWAPSHORT(crc);
-	return crc;
+//    crc = SWAPSHORT(crc);
+    return crc;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, int len )
 {
-	// Чтобы не менять настройки 'os'
-	// сперва создаём свой поток вывода...
-	ostringstream s;
+    // Чтобы не менять настройки 'os'
+    // сперва создаём свой поток вывода...
+    ostringstream s;
 
-	// << setiosflags(ios::showbase) // для вывода в формате 0xNN
-	s << hex << showbase << setfill('0'); // << showbase;
-	for( int i=0; i<len; i++ )
-		s << setw(2) << (short)(m[i]) << " ";
-//		s << "<" << setw(2) << (int)(m[i]) << ">";
-	
-	return os << s.str();
+    // << setiosflags(ios::showbase) // для вывода в формате 0xNN
+    s << hex << showbase << setfill('0'); // << showbase;
+    for( int i=0; i<len; i++ )
+        s << setw(2) << (short)(m[i]) << " ";
+//        s << "<" << setw(2) << (int)(m[i]) << ">";
+    
+    return os << s.str();
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ModbusHeader& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)&m,sizeof(m));
+    return mbPrintMessage(os,(ModbusByte*)&m,sizeof(m));
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ModbusHeader* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 
 ModbusMessage::ModbusMessage():
 len(0)
 {
-	addr = 0;
-	func = 0;
-	memset(data,0,sizeof(data));
+    addr = 0;
+    func = 0;
+    memset(data,0,sizeof(data));
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ModbusMessage& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)(&m),szModbusHeader+m.len);
+    return mbPrintMessage(os,(ModbusByte*)(&m),szModbusHeader+m.len);
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os,ModbusMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 ErrorRetMessage::ErrorRetMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -------------------------------------------------------------------------
 ErrorRetMessage& ErrorRetMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void ErrorRetMessage::init( ModbusMessage& m )
 {
-	memset(this,0,sizeof(*this));
-	memcpy(this,&m,szModbusHeader);
-	ecode 	= m.data[0];
-	memcpy( &crc, &(m.data[1]),szCRC);
+    memset(this,0,sizeof(*this));
+    memcpy(this,&m,szModbusHeader);
+    ecode     = m.data[0];
+    memcpy( &crc, &(m.data[1]),szCRC);
 }
 // -------------------------------------------------------------------------
 ErrorRetMessage::ErrorRetMessage( ModbusAddr _from, 
-									ModbusByte _func, ModbusByte _ecode )
+                                    ModbusByte _func, ModbusByte _ecode )
 {
-	addr = _from;
-	func = _func|MBErrMask;  // выставляем старший бит
-	ecode = _ecode;
+    addr = _from;
+    func = _func|MBErrMask;  // выставляем старший бит
+    ecode = _ecode;
 }
 // -------------------------------------------------------------------------
 ModbusMessage ErrorRetMessage::transport_msg()
 {
-	ModbusMessage mm;
+    ModbusMessage mm;
 
-	// копируем заголовок
-	memcpy(&mm,this,szModbusHeader);
+    // копируем заголовок
+    memcpy(&mm,this,szModbusHeader);
 
-	memcpy(&mm.data,&ecode,sizeof(ecode));
+    memcpy(&mm.data,&ecode,sizeof(ecode));
 
-	int ind = sizeof(ecode);
+    int ind = sizeof(ecode);
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[ind]),&crc,szCRC);
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[ind]),&crc,szCRC);
 
-	ind += szCRC;
+    ind += szCRC;
 
-	// длина сообщения...
-	mm.len = ind; // szData();
-	return mm;
+    // длина сообщения...
+    mm.len = ind; // szData();
+    return mm;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ErrorRetMessage& m )
 {
-//	return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
-	return os << "addr=" << addr2str(m.addr) 
-				<< " func=" << (int)m.func 
-				<< " errcode=" << dat2str(m.ecode);
+//    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
+    return os << "addr=" << addr2str(m.addr) 
+                << " func=" << (int)m.func 
+                << " errcode=" << dat2str(m.ecode);
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ErrorRetMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
 ReadCoilMessage::ReadCoilMessage( ModbusAddr a, ModbusData s, ModbusData c ):
-	start(s),
-	count(c)
+    start(s),
+    count(c)
 {
-	addr = a;
-	func = fnReadCoilStatus;
+    addr = a;
+    func = fnReadCoilStatus;
 }
 // -------------------------------------------------------------------------
 ModbusMessage ReadCoilMessage::transport_msg()
 {
-	assert(sizeof(ModbusMessage)>=sizeof(ReadCoilMessage));
+    assert(sizeof(ModbusMessage)>=sizeof(ReadCoilMessage));
 
-	ModbusMessage mm;
+    ModbusMessage mm;
 
-	// копируем заголовок
-	memcpy(&mm,this,szModbusHeader);
+    // копируем заголовок
+    memcpy(&mm,this,szModbusHeader);
 
-	// копируем данные (переворачиваем байты)
-	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
+    // копируем данные (переворачиваем байты)
+    ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
 
-	int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
+    int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 
-	// копируем
-	memcpy(mm.data,&d,last);
+    // копируем
+    memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[last]),&crc,szCRC);
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[last]),&crc,szCRC);
 
-	mm.len = szData();
-	return mm;
+    mm.len = szData();
+    return mm;
 }
 // -------------------------------------------------------------------------
 ReadCoilMessage::ReadCoilMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 
 // -------------------------------------------------------------------------
 ReadCoilMessage& ReadCoilMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void ReadCoilMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnReadCoilStatus );
-	memset(this,0,sizeof(*this));
-	memcpy(this,&m,sizeof(*this)); // m.len
-	
-	// переворачиваем слова
-	start = SWAPSHORT(start);
-	count = SWAPSHORT(count);
+    assert( m.func == fnReadCoilStatus );
+    memset(this,0,sizeof(*this));
+    memcpy(this,&m,sizeof(*this)); // m.len
+    
+    // переворачиваем слова
+    start = SWAPSHORT(start);
+    count = SWAPSHORT(count);
 }
 
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadCoilMessage& m )
 {
-//	return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
-	return os << "addr=" << addr2str(m.addr) 
-				<< " start=" << dat2str(m.start) 
-				<< " count=" << dat2str(m.count);
+//    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
+    return os << "addr=" << addr2str(m.addr) 
+                << " start=" << dat2str(m.start) 
+                << " count=" << dat2str(m.count);
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadCoilMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 DataBits::DataBits( std::string s ):
 b(s)
 {
-	
+    
 }
 // -------------------------------------------------------------------------
 DataBits::DataBits( ModbusByte ubyte )
 {
-	(*this) = ubyte;
+    (*this) = ubyte;
 }
 // -------------------------------------------------------------------------
 DataBits::DataBits()
 {
-	b.reset();
+    b.reset();
 }
 // -------------------------------------------------------------------------
 DataBits::operator ModbusByte()
 {
-	return mbyte();
+    return mbyte();
 }
 // -------------------------------------------------------------------------
 ModbusByte DataBits::mbyte()
 {
-	ModbusByte ubyte = 0;
-	for( int i=0; i<b.size(); i++ )
-	{
-		if( b[i] )
-			ubyte |= 1<<i;
-	}
+    ModbusByte ubyte = 0;
+    for( int i=0; i<b.size(); i++ )
+    {
+        if( b[i] )
+            ubyte |= 1<<i;
+    }
 
-	return ubyte;
+    return ubyte;
 }
 // -------------------------------------------------------------------------
 const DataBits& DataBits::operator=( const ModbusByte& r )
 {
-	for( int i=0; i<b.size(); i++ )
-		b[i] = r&(1<<i);
-	
-	return (*this);
+    for( int i=0; i<b.size(); i++ )
+        b[i] = r&(1<<i);
+    
+    return (*this);
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DataBits& d )
 {
-	os << "[";
-	for( int i=d.b.size()-1; i>=0; i-- )
-		os << d.b[i];
-	os << "]";
+    os << "[";
+    for( int i=d.b.size()-1; i>=0; i-- )
+        os << d.b[i];
+    os << "]";
 
-	return os;
+    return os;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DataBits* d )
 {
-	return os << (*d);
+    return os << (*d);
 }
 // -------------------------------------------------------------------------
 DataBits16::DataBits16( std::string s ):
 b(s)
 {
-	
+    
 }
 // -------------------------------------------------------------------------
 DataBits16::DataBits16( ModbusData d )
 {
-	(*this) = d;
+    (*this) = d;
 }
 // -------------------------------------------------------------------------
 DataBits16::DataBits16()
 {
-	b.reset();
+    b.reset();
 }
 // -------------------------------------------------------------------------
 DataBits16::operator ModbusData()
 {
-	return mdata();
+    return mdata();
 }
 // -------------------------------------------------------------------------
 ModbusData DataBits16::mdata()
 {
-	ModbusData udata = 0;
-	for( int i=0; i<b.size(); i++ )
-	{
-		if( b[i] )
-			udata |= 1<<i;
-	}
+    ModbusData udata = 0;
+    for( int i=0; i<b.size(); i++ )
+    {
+        if( b[i] )
+            udata |= 1<<i;
+    }
 
-	return udata;
+    return udata;
 }
 // -------------------------------------------------------------------------
 const DataBits16& DataBits16::operator=( const ModbusData& r )
 {
-	for( int i=0; i<b.size(); i++ )
-		b[i] = r&(1<<i);
-	
-	return (*this);
+    for( int i=0; i<b.size(); i++ )
+        b[i] = r&(1<<i);
+    
+    return (*this);
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DataBits16& d )
 {
-	os << "[";
-	for( int i=d.b.size()-1; i>=0; i-- )
-		os << d.b[i];
-	os << "]";
+    os << "[";
+    for( int i=d.b.size()-1; i>=0; i-- )
+        os << d.b[i];
+    os << "]";
 
-	return os;
+    return os;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DataBits16* d )
 {
-	return os << (*d);
+    return os << (*d);
 }
 // -------------------------------------------------------------------------
 ReadCoilRetMessage::ReadCoilRetMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -------------------------------------------------------------------------
 ReadCoilRetMessage& ReadCoilRetMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void ReadCoilRetMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnReadCoilStatus );
+    assert( m.func == fnReadCoilStatus );
  
-	memset(this,0,sizeof(*this));
-	addr = m.addr;
-	func = m.func;
-	
-	bcnt = m.data[0];
-	if( bcnt > MAXLENPACKET )
-		throw mbException(erPacketTooLong);
+    memset(this,0,sizeof(*this));
+    addr = m.addr;
+    func = m.func;
+    
+    bcnt = m.data[0];
+    if( bcnt > MAXLENPACKET )
+        throw mbException(erPacketTooLong);
 
-	memcpy(&data,&(m.data[1]),bcnt);
- 	memcpy(&crc,&(m.data[bcnt+1]),szCRC);		
-}	
+    memcpy(&data,&(m.data[1]),bcnt);
+     memcpy(&crc,&(m.data[bcnt+1]),szCRC);        
+}    
 // -------------------------------------------------------------------------
 int ReadCoilRetMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
-		return 0;
+    if( m.len < 0 )
+        return 0;
 
-	return m.data[0];
+    return m.data[0];
 }
 // -------------------------------------------------------------------------
 ReadCoilRetMessage::ReadCoilRetMessage( ModbusAddr _addr ):
-	bcnt(0)
+    bcnt(0)
 {
-	addr = _addr;
-	func = fnReadCoilStatus;
-	memset(data,0,sizeof(data));
+    addr = _addr;
+    func = fnReadCoilStatus;
+    memset(data,0,sizeof(data));
 }
 // -------------------------------------------------------------------------
 bool ReadCoilRetMessage::setBit( unsigned char dnum, unsigned char bnum, bool state )
 {
-	if( dnum<bcnt && bnum<BitsPerByte )
-	{
-		DataBits d(data[dnum]);
-		d.b[bnum] = state;
-		data[dnum] = d;
-		return true;
-	}
-	
-	return false;
+    if( dnum<bcnt && bnum<BitsPerByte )
+    {
+        DataBits d(data[dnum]);
+        d.b[bnum] = state;
+        data[dnum] = d;
+        return true;
+    }
+    
+    return false;
 }
 // -------------------------------------------------------------------------
 bool ReadCoilRetMessage::addData( DataBits d )
 {
-	if( isFull() )
-		return false;
-	
-	data[bcnt++] = d.mbyte();
-	return true;
+    if( isFull() )
+        return false;
+    
+    data[bcnt++] = d.mbyte();
+    return true;
 }
 // -------------------------------------------------------------------------
 bool ReadCoilRetMessage::getData( unsigned char dnum, DataBits& d )
 {
-	if( dnum < bcnt )
-	{
-		d = data[dnum];
-		return true;
-	}
-	
-	return false;
+    if( dnum < bcnt )
+    {
+        d = data[dnum];
+        return true;
+    }
+    
+    return false;
 }
 // -------------------------------------------------------------------------
 void ReadCoilRetMessage::clear()
 {
-	memset(data,0,sizeof(data));
-	bcnt	= 0;
+    memset(data,0,sizeof(data));
+    bcnt    = 0;
 }
 // -------------------------------------------------------------------------
 ModbusMessage ReadCoilRetMessage::transport_msg()
 {
-	ModbusMessage mm;
-//	assert(sizeof(ModbusMessage)>=sizeof(ReadCoilRetMessage));
-	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
+    ModbusMessage mm;
+//    assert(sizeof(ModbusMessage)>=sizeof(ReadCoilRetMessage));
+    assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
-	memcpy(&mm,this,szModbusHeader);
+    // копируем заголовок и данные
+    memcpy(&mm,this,szModbusHeader);
 
-	memcpy(&mm.data,&bcnt,sizeof(bcnt));	
-	int ind = sizeof(bcnt);
+    memcpy(&mm.data,&bcnt,sizeof(bcnt));    
+    int ind = sizeof(bcnt);
 
-	// копируем данные
-	memcpy(&(mm.data[ind]),data,bcnt);
-	ind+=bcnt;
+    // копируем данные
+    memcpy(&(mm.data[ind]),data,bcnt);
+    ind+=bcnt;
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(bcnt)+bcnt );
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(bcnt)+bcnt );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[ind]),&crc,szCRC);
-	ind+=szCRC;
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[ind]),&crc,szCRC);
+    ind+=szCRC;
 
-	// длина сообщения...
-	mm.len = ind; 
-	return mm;
+    // длина сообщения...
+    mm.len = ind; 
+    return mm;
 }
 // -------------------------------------------------------------------------
 int ReadCoilRetMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
-	return sizeof(bcnt)+bcnt+szCRC;
+    // фактическое число данных + контрольная сумма
+    return sizeof(bcnt)+bcnt+szCRC;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadCoilRetMessage& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
+    return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadCoilRetMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 // -------------------------------------------------------------------------
 ReadInputStatusMessage::ReadInputStatusMessage( ModbusAddr a, ModbusData s, ModbusData c ):
-	start(s),
-	count(c)
+    start(s),
+    count(c)
 {
-	addr = a;
-	func = fnReadInputStatus;
+    addr = a;
+    func = fnReadInputStatus;
 }
 // -------------------------------------------------------------------------
 ModbusMessage ReadInputStatusMessage::transport_msg()
 {
-	assert(sizeof(ModbusMessage)>=sizeof(ReadInputStatusMessage));
+    assert(sizeof(ModbusMessage)>=sizeof(ReadInputStatusMessage));
 
-	ModbusMessage mm;
+    ModbusMessage mm;
 
-	// копируем заголовок
-	memcpy(&mm,this,szModbusHeader);
+    // копируем заголовок
+    memcpy(&mm,this,szModbusHeader);
 
-	// копируем данные (переворачиваем байты)
-	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
+    // копируем данные (переворачиваем байты)
+    ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
 
-	int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
+    int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
 
-	// копируем
-	memcpy(mm.data,&d,last);
+    // копируем
+    memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[last]),&crc,szCRC);
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[last]),&crc,szCRC);
 
-	mm.len = szData();
-	return mm;
+    mm.len = szData();
+    return mm;
 }
 // -------------------------------------------------------------------------
 ReadInputStatusMessage::ReadInputStatusMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 
 // -------------------------------------------------------------------------
 ReadInputStatusMessage& ReadInputStatusMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void ReadInputStatusMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnReadInputStatus );
-	memset(this,0,sizeof(*this));
-	memcpy(this,&m,sizeof(*this)); // m.len
-	
-	// переворачиваем слова
-	start = SWAPSHORT(start);
-	count = SWAPSHORT(count);
+    assert( m.func == fnReadInputStatus );
+    memset(this,0,sizeof(*this));
+    memcpy(this,&m,sizeof(*this)); // m.len
+    
+    // переворачиваем слова
+    start = SWAPSHORT(start);
+    count = SWAPSHORT(count);
 }
 
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputStatusMessage& m )
 {
-//	return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
-	return os << "addr=" << addr2str(m.addr) 
-				<< " start=" << dat2str(m.start) 
-				<< " count=" << dat2str(m.count);
+//    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
+    return os << "addr=" << addr2str(m.addr) 
+                << " start=" << dat2str(m.start) 
+                << " count=" << dat2str(m.count);
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputStatusMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 ReadInputStatusRetMessage::ReadInputStatusRetMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -------------------------------------------------------------------------
 ReadInputStatusRetMessage& ReadInputStatusRetMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void ReadInputStatusRetMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnReadInputStatus );
+    assert( m.func == fnReadInputStatus );
  
-	memset(this,0,sizeof(*this));
-	addr = m.addr;
-	func = m.func;
-	
-	bcnt = m.data[0];
-	if( bcnt > MAXLENPACKET )
-		throw mbException(erPacketTooLong);
+    memset(this,0,sizeof(*this));
+    addr = m.addr;
+    func = m.func;
+    
+    bcnt = m.data[0];
+    if( bcnt > MAXLENPACKET )
+        throw mbException(erPacketTooLong);
 
-	memcpy(&data,&(m.data[1]),bcnt);
- 	memcpy(&crc,&(m.data[bcnt+1]),szCRC);		
-}	
+    memcpy(&data,&(m.data[1]),bcnt);
+     memcpy(&crc,&(m.data[bcnt+1]),szCRC);        
+}    
 // -------------------------------------------------------------------------
 int ReadInputStatusRetMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
-		return 0;
+    if( m.len < 0 )
+        return 0;
 
-	return m.data[0];
+    return m.data[0];
 }
 // -------------------------------------------------------------------------
 ReadInputStatusRetMessage::ReadInputStatusRetMessage( ModbusAddr _addr ):
-	bcnt(0)
+    bcnt(0)
 {
-	addr = _addr;
-	func = fnReadInputStatus;
-	memset(data,0,sizeof(data));
+    addr = _addr;
+    func = fnReadInputStatus;
+    memset(data,0,sizeof(data));
 }
 // -------------------------------------------------------------------------
 bool ReadInputStatusRetMessage::setBit( unsigned char dnum, unsigned char bnum, bool state )
 {
-	if( dnum<bcnt && bnum<BitsPerByte )
-	{
-		DataBits d(data[dnum]);
-		d.b[bnum] = state;
-		data[dnum] = d;
-		return true;
-	}
-	
-	return false;
+    if( dnum<bcnt && bnum<BitsPerByte )
+    {
+        DataBits d(data[dnum]);
+        d.b[bnum] = state;
+        data[dnum] = d;
+        return true;
+    }
+    
+    return false;
 }
 // -------------------------------------------------------------------------
 bool ReadInputStatusRetMessage::addData( DataBits d )
 {
-	if( isFull() )
-		return false;
-	
-	data[bcnt++] = d.mbyte();
-	return true;
+    if( isFull() )
+        return false;
+    
+    data[bcnt++] = d.mbyte();
+    return true;
 }
 // -------------------------------------------------------------------------
 bool ReadInputStatusRetMessage::getData( unsigned char dnum, DataBits& d )
 {
-	if( dnum < bcnt )
-	{
-		d = data[dnum];
-		return true;
-	}
-	
-	return false;
+    if( dnum < bcnt )
+    {
+        d = data[dnum];
+        return true;
+    }
+    
+    return false;
 }
 // -------------------------------------------------------------------------
 void ReadInputStatusRetMessage::clear()
 {
-	memset(data,0,sizeof(data));
-	bcnt	= 0;
+    memset(data,0,sizeof(data));
+    bcnt    = 0;
 }
 // -------------------------------------------------------------------------
 ModbusMessage ReadInputStatusRetMessage::transport_msg()
 {
-	ModbusMessage mm;
-//	assert(sizeof(ModbusMessage)>=sizeof(ReadCoilRetMessage));
-	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
+    ModbusMessage mm;
+//    assert(sizeof(ModbusMessage)>=sizeof(ReadCoilRetMessage));
+    assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
-	memcpy(&mm,this,szModbusHeader);
+    // копируем заголовок и данные
+    memcpy(&mm,this,szModbusHeader);
 
-	memcpy(&mm.data,&bcnt,sizeof(bcnt));	
-	int ind = sizeof(bcnt);
+    memcpy(&mm.data,&bcnt,sizeof(bcnt));    
+    int ind = sizeof(bcnt);
 
-	// копируем данные
-	memcpy(&(mm.data[ind]),data,bcnt);
-	ind+=bcnt;
+    // копируем данные
+    memcpy(&(mm.data[ind]),data,bcnt);
+    ind+=bcnt;
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(bcnt)+bcnt );
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(bcnt)+bcnt );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[ind]),&crc,szCRC);
-	ind+=szCRC;
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[ind]),&crc,szCRC);
+    ind+=szCRC;
 
-	// длина сообщения...
-	mm.len = ind; 
-	return mm;
+    // длина сообщения...
+    mm.len = ind; 
+    return mm;
 }
 // -------------------------------------------------------------------------
 int ReadInputStatusRetMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
-	return sizeof(bcnt)+bcnt+szCRC;
+    // фактическое число данных + контрольная сумма
+    return sizeof(bcnt)+bcnt+szCRC;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputStatusRetMessage& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
+    return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputStatusRetMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
 ReadOutputMessage::ReadOutputMessage( ModbusAddr a, ModbusData s, ModbusData c ):
-	start(s),
-	count(c)
+    start(s),
+    count(c)
 {
-	addr = a;
-	func = fnReadOutputRegisters;
+    addr = a;
+    func = fnReadOutputRegisters;
 }
 // -------------------------------------------------------------------------
 ModbusMessage ReadOutputMessage::transport_msg()
 {
-	assert(sizeof(ModbusMessage)>=sizeof(ReadOutputMessage));
+    assert(sizeof(ModbusMessage)>=sizeof(ReadOutputMessage));
 
-	ModbusMessage mm;
+    ModbusMessage mm;
 
-	// копируем заголовок
-	memcpy(&mm,this,szModbusHeader);
+    // копируем заголовок
+    memcpy(&mm,this,szModbusHeader);
 
-	// копируем данные (переворачиваем байты)
-	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
+    // копируем данные (переворачиваем байты)
+    ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
 
-	int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
+    int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
 
-	// копируем
-	memcpy(mm.data,&d,last);
+    // копируем
+    memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[last]),&crc,szCRC);
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[last]),&crc,szCRC);
 
-	// длина сообщения...
-	mm.len = szData();
+    // длина сообщения...
+    mm.len = szData();
 
-	return mm;
+    return mm;
 }
 // -------------------------------------------------------------------------
 ReadOutputMessage::ReadOutputMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 
 // -------------------------------------------------------------------------
 ReadOutputMessage& ReadOutputMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void ReadOutputMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnReadOutputRegisters );
-	memset(this,0,sizeof(*this));
-	memcpy(this,&m,sizeof(*this)); // m.len
-	
-	// переворачиваем слова
-	start = SWAPSHORT(start);
-	count = SWAPSHORT(count);
+    assert( m.func == fnReadOutputRegisters );
+    memset(this,0,sizeof(*this));
+    memcpy(this,&m,sizeof(*this)); // m.len
+    
+    // переворачиваем слова
+    start = SWAPSHORT(start);
+    count = SWAPSHORT(count);
 }
 
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadOutputMessage& m )
 {
-//	return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
-	return os << "addr=" << addr2str(m.addr) 
-				<< " start=" << dat2str(m.start) 
-				<< " count=" << dat2str(m.count);
+//    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
+    return os << "addr=" << addr2str(m.addr) 
+                << " start=" << dat2str(m.start) 
+                << " count=" << dat2str(m.count);
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadOutputMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 ReadOutputRetMessage::ReadOutputRetMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -------------------------------------------------------------------------
 ReadOutputRetMessage& ReadOutputRetMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void ReadOutputRetMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnReadOutputRegisters );
+    assert( m.func == fnReadOutputRegisters );
  
-	memset(this,0,sizeof(*this));
-	addr = m.addr;
-	func = m.func;
-	
-	// bcnt = m.data[0];
-	int cnt = m.data[0] / sizeof(ModbusData);
-	if( cnt > MAXLENPACKET/sizeof(ModbusData) )
-	{
-//		cerr << "(ReadOutputRetMessage): BAD bcnt=" 
-//			<< (int)bcnt << " count=" << cnt << endl;
-		throw mbException(erPacketTooLong);
-	}
+    memset(this,0,sizeof(*this));
+    addr = m.addr;
+    func = m.func;
+    
+    // bcnt = m.data[0];
+    int cnt = m.data[0] / sizeof(ModbusData);
+    if( cnt > MAXLENPACKET/sizeof(ModbusData) )
+    {
+//        cerr << "(ReadOutputRetMessage): BAD bcnt=" 
+//            << (int)bcnt << " count=" << cnt << endl;
+        throw mbException(erPacketTooLong);
+    }
 
-	count 	= cnt;
-	bcnt 	= m.data[0];
-	memcpy(&data,&(m.data[1]),bcnt);
-	
-	// переворачиваем данные
-	for( int i=0; i<cnt; i++ )
-		data[i] = SWAPSHORT(data[i]);
+    count     = cnt;
+    bcnt     = m.data[0];
+    memcpy(&data,&(m.data[1]),bcnt);
+    
+    // переворачиваем данные
+    for( int i=0; i<cnt; i++ )
+        data[i] = SWAPSHORT(data[i]);
 
- 	memcpy(&crc,&(m.data[bcnt+1]),szCRC);		
-}	
+     memcpy(&crc,&(m.data[bcnt+1]),szCRC);        
+}    
 // -------------------------------------------------------------------------
 int ReadOutputRetMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
-		return 0;
+    if( m.len < 0 )
+        return 0;
 
-	return m.data[0];
+    return m.data[0];
 /*
-	ReadOutputMessage rm(m);
-	return (int)(rm.bcnt);
-*/	
+    ReadOutputMessage rm(m);
+    return (int)(rm.bcnt);
+*/    
 }
 // -------------------------------------------------------------------------
 ReadOutputRetMessage::ReadOutputRetMessage( ModbusAddr _addr ):
-	bcnt(0),
-	count(0)
+    bcnt(0),
+    count(0)
 {
-	addr = _addr;
-	func = fnReadOutputRegisters;
-	memset(data,0,sizeof(data));
+    addr = _addr;
+    func = fnReadOutputRegisters;
+    memset(data,0,sizeof(data));
 }
 // -------------------------------------------------------------------------
 bool ReadOutputRetMessage::addData( ModbusData d )
 {
-	if( isFull() )
-		return false;
-	
-	data[count++] = d;
-	bcnt = count*sizeof(ModbusData);
-	return true;
+    if( isFull() )
+        return false;
+    
+    data[count++] = d;
+    bcnt = count*sizeof(ModbusData);
+    return true;
 }
 // -------------------------------------------------------------------------
 void ReadOutputRetMessage::clear()
 {
-	memset(data,0,sizeof(data));
-	count	= 0;
-	bcnt	= 0;
+    memset(data,0,sizeof(data));
+    count    = 0;
+    bcnt    = 0;
 }
 // -------------------------------------------------------------------------
 ModbusMessage ReadOutputRetMessage::transport_msg()
 {
-	ModbusMessage mm;
-//	assert(sizeof(ModbusMessage)>=sizeof(ReadOutputRetMessage));
-	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
+    ModbusMessage mm;
+//    assert(sizeof(ModbusMessage)>=sizeof(ReadOutputRetMessage));
+    assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
-	memcpy(&mm,this,szModbusHeader);
-	
-	int ind=0;
-	bcnt	= count*sizeof(ModbusData);
-		
-	// copy bcnt
-	memcpy(&mm.data,&bcnt,sizeof(bcnt));
-	ind+=sizeof(bcnt);
+    // копируем заголовок и данные
+    memcpy(&mm,this,szModbusHeader);
+    
+    int ind=0;
+    bcnt    = count*sizeof(ModbusData);
+        
+    // copy bcnt
+    memcpy(&mm.data,&bcnt,sizeof(bcnt));
+    ind+=sizeof(bcnt);
 
-	// копируем данные
-//	int dlen = count*sizeof(ModbusData);
-//	прямое копирование
-//	memcpy(&(mm.data[sizeof(bcnt)]),data,dlen);
+    // копируем данные
+//    int dlen = count*sizeof(ModbusData);
+//    прямое копирование
+//    memcpy(&(mm.data[sizeof(bcnt)]),data,dlen);
 
-	// Создаём временно массив, переворачиваем байты
-	ModbusData* dtmp = new ModbusData[count];
-	for( int i=0; i<count; i++ )
-		dtmp[i] = SWAPSHORT(data[i]);
+    // Создаём временно массив, переворачиваем байты
+    ModbusData* dtmp = new ModbusData[count];
+    for( int i=0; i<count; i++ )
+        dtmp[i] = SWAPSHORT(data[i]);
 
-	// копируем
-	memcpy(&(mm.data[ind]),dtmp,bcnt);
+    // копируем
+    memcpy(&(mm.data[ind]),dtmp,bcnt);
 
-	delete[] dtmp;
+    delete[] dtmp;
 
-	ind+=bcnt;
+    ind+=bcnt;
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(bcnt)+bcnt );
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(bcnt)+bcnt );
 
-//	crc = SWAPSHORT(crc);
-	
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[ind]),&crc,szCRC);
-	ind+=szCRC;
+//    crc = SWAPSHORT(crc);
+    
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[ind]),&crc,szCRC);
+    ind+=szCRC;
 
-	// длина сообщения...
-	mm.len = ind; 
+    // длина сообщения...
+    mm.len = ind; 
 
-	return mm;
+    return mm;
 }
 // -------------------------------------------------------------------------
 int ReadOutputRetMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
-	return sizeof(bcnt)+count*sizeof(ModbusData)+szCRC;
+    // фактическое число данных + контрольная сумма
+    return sizeof(bcnt)+count*sizeof(ModbusData)+szCRC;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadOutputRetMessage& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
+    return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadOutputRetMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
 ReadInputMessage::ReadInputMessage( ModbusAddr a, ModbusData s, ModbusData c ):
-	start(s),
-	count(c)
+    start(s),
+    count(c)
 {
-	addr = a;
-	func = fnReadInputRegisters;
+    addr = a;
+    func = fnReadInputRegisters;
 }
 // -------------------------------------------------------------------------
 ModbusMessage ReadInputMessage::transport_msg()
 {
-	assert(sizeof(ModbusMessage)>=sizeof(ReadInputMessage));
+    assert(sizeof(ModbusMessage)>=sizeof(ReadInputMessage));
 
-	ModbusMessage mm;
+    ModbusMessage mm;
 
-	// копируем заголовок
-	memcpy(&mm,this,szModbusHeader);
+    // копируем заголовок
+    memcpy(&mm,this,szModbusHeader);
 
-	// копируем данные (переворачиваем байты)
-	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
+    // копируем данные (переворачиваем байты)
+    ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(count) };
 
-	int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
+    int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
 
-	// копируем
-	memcpy(mm.data,&d,last);
+    // копируем
+    memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[last]),&crc,szCRC);
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[last]),&crc,szCRC);
 
-	// длина сообщения...
-	mm.len = szData();
-	return mm;
+    // длина сообщения...
+    mm.len = szData();
+    return mm;
 }
 // -------------------------------------------------------------------------
 ReadInputMessage::ReadInputMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 
 // -------------------------------------------------------------------------
 ReadInputMessage& ReadInputMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void ReadInputMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnReadInputRegisters );
-	memset(this,0,sizeof(*this));
-	memcpy(this,&m,sizeof(*this)); // m.len
-	
-	// переворачиваем слова
-	start = SWAPSHORT(start);
-	count = SWAPSHORT(count);
+    assert( m.func == fnReadInputRegisters );
+    memset(this,0,sizeof(*this));
+    memcpy(this,&m,sizeof(*this)); // m.len
+    
+    // переворачиваем слова
+    start = SWAPSHORT(start);
+    count = SWAPSHORT(count);
 }
 
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputMessage& m )
 {
-//	return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
-	return os << "addr=" << addr2str(m.addr) 
-				<< " start=" << dat2str(m.start) 
-				<< " count=" << dat2str(m.count);
+//    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
+    return os << "addr=" << addr2str(m.addr) 
+                << " start=" << dat2str(m.start) 
+                << " count=" << dat2str(m.count);
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 ReadInputRetMessage::ReadInputRetMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -------------------------------------------------------------------------
 ReadInputRetMessage& ReadInputRetMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void ReadInputRetMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnReadInputRegisters );
+    assert( m.func == fnReadInputRegisters );
  
-	memset(this,0,sizeof(*this));
-	addr = m.addr;
-	func = m.func;
-	
-	// bcnt = m.data[0];
-	int cnt = m.data[0] / sizeof(ModbusData);
-	if( cnt > MAXLENPACKET/sizeof(ModbusData) )
-		throw mbException(erPacketTooLong);
+    memset(this,0,sizeof(*this));
+    addr = m.addr;
+    func = m.func;
+    
+    // bcnt = m.data[0];
+    int cnt = m.data[0] / sizeof(ModbusData);
+    if( cnt > MAXLENPACKET/sizeof(ModbusData) )
+        throw mbException(erPacketTooLong);
 
-	count 	= cnt;
-	bcnt 	= m.data[0];
-	memcpy(&data,&(m.data[1]),bcnt);
-	
-	// переворачиваем данные
-	for( int i=0; i<cnt; i++ )
-		data[i] = SWAPSHORT(data[i]);
+    count     = cnt;
+    bcnt     = m.data[0];
+    memcpy(&data,&(m.data[1]),bcnt);
+    
+    // переворачиваем данные
+    for( int i=0; i<cnt; i++ )
+        data[i] = SWAPSHORT(data[i]);
 
- 	memcpy(&crc,&(m.data[bcnt+1]),szCRC);		
-}	
+     memcpy(&crc,&(m.data[bcnt+1]),szCRC);        
+}    
 // -------------------------------------------------------------------------
 int ReadInputRetMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
-		return 0;
+    if( m.len < 0 )
+        return 0;
 
-	return m.data[0];
+    return m.data[0];
 }
 // -------------------------------------------------------------------------
 ReadInputRetMessage::ReadInputRetMessage( ModbusAddr _addr ):
-	bcnt(0),
-	count(0)
+    bcnt(0),
+    count(0)
 {
-	addr = _addr;
-	func = fnReadInputRegisters;
-	memset(data,0,sizeof(data));
+    addr = _addr;
+    func = fnReadInputRegisters;
+    memset(data,0,sizeof(data));
 }
 // -------------------------------------------------------------------------
 bool ReadInputRetMessage::addData( ModbusData d )
 {
-	if( isFull() )
-		return false;
-	
-	data[count++] = d;
-	bcnt = count*sizeof(ModbusData);
-	return true;
+    if( isFull() )
+        return false;
+    
+    data[count++] = d;
+    bcnt = count*sizeof(ModbusData);
+    return true;
 }
 // -------------------------------------------------------------------------
 void ReadInputRetMessage::clear()
 {
-	memset(data,0,sizeof(data));
-	count	= 0;
-	bcnt	= 0;
+    memset(data,0,sizeof(data));
+    count    = 0;
+    bcnt    = 0;
 }
 // -------------------------------------------------------------------------
 ModbusMessage ReadInputRetMessage::transport_msg()
 {
-	ModbusMessage mm;
-	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
+    ModbusMessage mm;
+    assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
-	memcpy(&mm,this,szModbusHeader);
-	
-	int ind=0;
-	bcnt	= count*sizeof(ModbusData);
-		
-	// copy bcnt
-	memcpy(&mm.data,&bcnt,sizeof(bcnt));
-	ind+=sizeof(bcnt);
+    // копируем заголовок и данные
+    memcpy(&mm,this,szModbusHeader);
+    
+    int ind=0;
+    bcnt    = count*sizeof(ModbusData);
+        
+    // copy bcnt
+    memcpy(&mm.data,&bcnt,sizeof(bcnt));
+    ind+=sizeof(bcnt);
 
-	// Создаём временно массив, переворачиваем байты
-	ModbusData* dtmp = new ModbusData[count];
-	for( int i=0; i<count; i++ )
-		dtmp[i] = SWAPSHORT(data[i]);
+    // Создаём временно массив, переворачиваем байты
+    ModbusData* dtmp = new ModbusData[count];
+    for( int i=0; i<count; i++ )
+        dtmp[i] = SWAPSHORT(data[i]);
 
-	// копируем
-	memcpy(&(mm.data[ind]),dtmp,bcnt);
+    // копируем
+    memcpy(&(mm.data[ind]),dtmp,bcnt);
 
-	delete[] dtmp;
+    delete[] dtmp;
 
-	ind+=bcnt;
+    ind+=bcnt;
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(bcnt)+bcnt );
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(bcnt)+bcnt );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[ind]),&crc,szCRC);
-	ind+=szCRC;
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[ind]),&crc,szCRC);
+    ind+=szCRC;
 
-	// длина сообщения...
-	mm.len = ind; 
-	return mm;
+    // длина сообщения...
+    mm.len = ind; 
+    return mm;
 }
 // -------------------------------------------------------------------------
 int ReadInputRetMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
-	return sizeof(bcnt)+count*sizeof(ModbusData)+szCRC;
+    // фактическое число данных + контрольная сумма
+    return sizeof(bcnt)+count*sizeof(ModbusData)+szCRC;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputRetMessage& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
+    return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputRetMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 // -------------------------------------------------------------------------
 ForceCoilsMessage::ForceCoilsMessage( ModbusAddr a, ModbusData s ):
-	start(s),
-	quant(0),
-	bcnt(0)
+    start(s),
+    quant(0),
+    bcnt(0)
 {
-	addr = a;
-	func = fnForceMultipleCoils;
+    addr = a;
+    func = fnForceMultipleCoils;
 }
 // -------------------------------------------------------------------------
 bool ForceCoilsMessage::addData( DataBits16 d )
 {
-	if( isFull() )
-		return false;
-	
-	data[quant++] = d.mdata();
-	bcnt = quant*sizeof(ModbusData);
-	return true;
+    if( isFull() )
+        return false;
+    
+    data[quant++] = d.mdata();
+    bcnt = quant*sizeof(ModbusData);
+    return true;
 }
 // -------------------------------------------------------------------------
 bool ForceCoilsMessage::setBit( unsigned char dnum, unsigned char bnum, bool state )
 {
-	if( dnum<bcnt && bnum<BitsPerData )
-	{
-		DataBits16 d(data[dnum]);
-		d.b[bnum] = state;
-		data[dnum] = d;
-		return true;
-	}
-	
-	return false;
+    if( dnum<bcnt && bnum<BitsPerData )
+    {
+        DataBits16 d(data[dnum]);
+        d.b[bnum] = state;
+        data[dnum] = d;
+        return true;
+    }
+    
+    return false;
 }
 // -------------------------------------------------------------------------
 bool ForceCoilsMessage::getData( unsigned char dnum, DataBits16& d )
 {
-	if( dnum < bcnt )
-	{
-		d = data[dnum];
-		return true;
-	}
-	
-	return false;
+    if( dnum < bcnt )
+    {
+        d = data[dnum];
+        return true;
+    }
+    
+    return false;
 }
 // -------------------------------------------------------------------------
 void ForceCoilsMessage::clear()
 {
-	memset(data,0,sizeof(data));
-	start	= 0;
-	quant	= 0;
-	bcnt	= 0;
+    memset(data,0,sizeof(data));
+    start    = 0;
+    quant    = 0;
+    bcnt    = 0;
 }
 // -------------------------------------------------------------------------
 ModbusMessage ForceCoilsMessage::transport_msg()
 {
-	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
-	ModbusMessage mm;
+    assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
+    ModbusMessage mm;
 
-	// копируем заголовок
-	memcpy(&mm,this,szModbusHeader);
-	
-	int ind = 0;
+    // копируем заголовок
+    memcpy(&mm,this,szModbusHeader);
+    
+    int ind = 0;
 
-	// данные (переворачиваем байты)
-	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
-	ind += sizeof(d);
+    // данные (переворачиваем байты)
+    ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
+    ind += sizeof(d);
 
-	// копируем
-	memcpy(mm.data,&d,ind);
+    // копируем
+    memcpy(mm.data,&d,ind);
 
-	// copy bcnt	
-	bcnt	= quant*sizeof(ModbusData);
-	memcpy(&(mm.data[ind]),&bcnt,sizeof(bcnt));
-	ind+=sizeof(bcnt);
+    // copy bcnt    
+    bcnt    = quant*sizeof(ModbusData);
+    memcpy(&(mm.data[ind]),&bcnt,sizeof(bcnt));
+    ind+=sizeof(bcnt);
 
-	// Создаём временно массив, переворачиваем байты
-	ModbusData* dtmp = new ModbusData[quant];
-	for( int i=0; i<quant; i++ )
-		dtmp[i] = SWAPSHORT(data[i]);
+    // Создаём временно массив, переворачиваем байты
+    ModbusData* dtmp = new ModbusData[quant];
+    for( int i=0; i<quant; i++ )
+        dtmp[i] = SWAPSHORT(data[i]);
 
-	// копируем данные
-	memcpy(&(mm.data[ind]),dtmp,bcnt);
-	delete[] dtmp;
+    // копируем данные
+    memcpy(&(mm.data[ind]),dtmp,bcnt);
+    delete[] dtmp;
 
-	ind+=bcnt;
+    ind+=bcnt;
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[ind]),&crc,szCRC);
-	ind+=szCRC;
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[ind]),&crc,szCRC);
+    ind+=szCRC;
 
-	// длина сообщения...
-	mm.len = ind; 
-	return mm;
+    // длина сообщения...
+    mm.len = ind; 
+    return mm;
 }
 // -------------------------------------------------------------------------
 
 ForceCoilsMessage::ForceCoilsMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 
 ForceCoilsMessage& ForceCoilsMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void ForceCoilsMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnForceMultipleCoils );
+    assert( m.func == fnForceMultipleCoils );
  
-	memset(this,0,sizeof(*this));
-	
-	// copy not include CRC
-	memcpy(this,&m,szModbusHeader+m.len); 
-	
-	// Сперва переворачиваем обратно слова
-	start = SWAPSHORT(start);
-	quant = SWAPSHORT(quant);
+    memset(this,0,sizeof(*this));
+    
+    // copy not include CRC
+    memcpy(this,&m,szModbusHeader+m.len); 
+    
+    // Сперва переворачиваем обратно слова
+    start = SWAPSHORT(start);
+    quant = SWAPSHORT(quant);
 
-	// потом проверяем
-	if( !checkFormat() )
-	{
+    // потом проверяем
+    if( !checkFormat() )
+    {
 #ifdef DEBUG
-		cerr << "(ForceCoilsMessage): BAD format!" << endl;
-		cerr << "bcnt=" << (int)bcnt 
-			<< " quant=" << (int)quant
-			<< endl;
+        cerr << "(ForceCoilsMessage): BAD format!" << endl;
+        cerr << "bcnt=" << (int)bcnt 
+            << " quant=" << (int)quant
+            << endl;
 #endif
-		// Если данные не корректны
-		// чистим сообщение (в безопасные значения)
-//		start=0;
-//		quant=0; // это нельзя обнулять (иначе данные станут корректны!!!)
-		bcnt=0;
-		memset(data,0,sizeof(data));
-	}
+        // Если данные не корректны
+        // чистим сообщение (в безопасные значения)
+//        start=0;
+//        quant=0; // это нельзя обнулять (иначе данные станут корректны!!!)
+        bcnt=0;
+        memset(data,0,sizeof(data));
+    }
 
-	// последний элемент это CRC
-	memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
+    // последний элемент это CRC
+    memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 
-	for( int i=0; i<quant; i++ )
-		data[i] = SWAPSHORT(data[i]);
+    for( int i=0; i<quant; i++ )
+        data[i] = SWAPSHORT(data[i]);
 }
 // -------------------------------------------------------------------------
 bool ForceCoilsMessage::checkFormat()
 {
-	return ( (bcnt==(quant*sizeof(ModbusData))) && (func==fnForceMultipleCoils) );
+    return ( (bcnt==(quant*sizeof(ModbusData))) && (func==fnForceMultipleCoils) );
 }
 // -------------------------------------------------------------------------
 int ForceCoilsMessage::szData()
 {
-	return szHead()+bcnt+szCRC;
+    return szHead()+bcnt+szCRC;
 }
 // -------------------------------------------------------------------------
 int ForceCoilsMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
-		return 0;
+    if( m.len < 0 )
+        return 0;
 
-	ForceCoilsMessage wm(m);
-	return (int)(wm.bcnt);
+    ForceCoilsMessage wm(m);
+    return (int)(wm.bcnt);
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsMessage& m )
 {
-	os << "addr=" << addr2str(m.addr) 
-		<< " start=" << dat2str(m.start) 
-		<< " quant=" << dat2str(m.quant) 
-		<< " bcnt=" << b2str(m.bcnt)
-		<< " data[" << (int)m.quant <<"]={ ";
-		
-	for( int i=0; i<m.quant; i++ )
-	{
-		DataBits16 d(m.data[i]);
-		os << "" << d << "  ";
-	}
-	
-	os << "}";
-	return os;	
+    os << "addr=" << addr2str(m.addr) 
+        << " start=" << dat2str(m.start) 
+        << " quant=" << dat2str(m.quant) 
+        << " bcnt=" << b2str(m.bcnt)
+        << " data[" << (int)m.quant <<"]={ ";
+        
+    for( int i=0; i<m.quant; i++ )
+    {
+        DataBits16 d(m.data[i]);
+        os << "" << d << "  ";
+    }
+    
+    os << "}";
+    return os;    
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 ForceCoilsRetMessage::ForceCoilsRetMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -------------------------------------------------------------------------
 ForceCoilsRetMessage& ForceCoilsRetMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void ForceCoilsRetMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnForceMultipleCoils );
+    assert( m.func == fnForceMultipleCoils );
  
-	memset(this,0,sizeof(*this));
-	
-	// copy not include CRC
-	memcpy(this,&m,szModbusHeader+m.len); 
+    memset(this,0,sizeof(*this));
+    
+    // copy not include CRC
+    memcpy(this,&m,szModbusHeader+m.len); 
 
 /*! \todo (WriteOutputRetMessage): необходимо встроить проверку на корректность данных */
-	
-	// Сперва переворачиваем обратно слова
-	start = SWAPSHORT(start);
-	quant = SWAPSHORT(quant);
-	
-	int ind = sizeof(quant)+sizeof(start);
-	
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&crc,&(m.data[ind]),szCRC);
+    
+    // Сперва переворачиваем обратно слова
+    start = SWAPSHORT(start);
+    quant = SWAPSHORT(quant);
+    
+    int ind = sizeof(quant)+sizeof(start);
+    
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&crc,&(m.data[ind]),szCRC);
 }
 // -------------------------------------------------------------------------
 ForceCoilsRetMessage::ForceCoilsRetMessage( ModbusAddr _from, 
-											ModbusData s, ModbusData q )
+                                            ModbusData s, ModbusData q )
 {
-	addr 	= _from;
-	func 	= fnForceMultipleCoils;
-	start 	= s;
-	quant 	= q;
+    addr     = _from;
+    func     = fnForceMultipleCoils;
+    start     = s;
+    quant     = q;
 }
 // -------------------------------------------------------------------------
 void ForceCoilsRetMessage::set( ModbusData s, ModbusData q )
 {
-	start 	= s;
-	quant	= q;
+    start     = s;
+    quant    = q;
 }
 // -------------------------------------------------------------------------
 ModbusMessage ForceCoilsRetMessage::transport_msg()
 {
-	assert(sizeof(ModbusMessage)>=sizeof(ForceCoilsRetMessage));
+    assert(sizeof(ModbusMessage)>=sizeof(ForceCoilsRetMessage));
 
-	ModbusMessage mm;
+    ModbusMessage mm;
 
-	// копируем заголовок
-	memcpy(&mm,this,szModbusHeader);
+    // копируем заголовок
+    memcpy(&mm,this,szModbusHeader);
 
-	// данные (переворачиваем байты)
-	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
-	int last(sizeof(d));
-	// копируем
-	memcpy(mm.data,&d,last);
+    // данные (переворачиваем байты)
+    ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
+    int last(sizeof(d));
+    // копируем
+    memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+last );
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[last]),&crc,szCRC);
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+last );
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[last]),&crc,szCRC);
 
-	// длина сообщения...
-	mm.len = szData();
+    // длина сообщения...
+    mm.len = szData();
 
-	return mm;
+    return mm;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsRetMessage& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
+    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsRetMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 // -------------------------------------------------------------------------
 WriteOutputMessage::WriteOutputMessage( ModbusAddr a, ModbusData s ):
-	start(s),
-	quant(0),
-	bcnt(0)
+    start(s),
+    quant(0),
+    bcnt(0)
 {
-	addr = a;
-	func = fnWriteOutputRegisters;
+    addr = a;
+    func = fnWriteOutputRegisters;
 }
 // -------------------------------------------------------------------------
 bool WriteOutputMessage::addData( ModbusData d )
 {
-	if( isFull() )
-		return false;
-	
-	data[quant++] = d;
-	bcnt = quant*sizeof(ModbusData);
-	return true;
+    if( isFull() )
+        return false;
+    
+    data[quant++] = d;
+    bcnt = quant*sizeof(ModbusData);
+    return true;
 }
 // -------------------------------------------------------------------------
 void WriteOutputMessage::clear()
 {
-	memset(data,0,sizeof(data));
-	start	= 0;
-	quant	= 0;
-	bcnt	= 0;
+    memset(data,0,sizeof(data));
+    start    = 0;
+    quant    = 0;
+    bcnt    = 0;
 }
 // -------------------------------------------------------------------------
 ModbusMessage WriteOutputMessage::transport_msg()
 {
-	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
-	ModbusMessage mm;
+    assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
+    ModbusMessage mm;
 
-	// копируем заголовок
-	memcpy(&mm,this,szModbusHeader);
-	
-	int ind = 0;
+    // копируем заголовок
+    memcpy(&mm,this,szModbusHeader);
+    
+    int ind = 0;
 
-	// данные (переворачиваем байты)
-	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
-	ind += sizeof(d);
+    // данные (переворачиваем байты)
+    ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
+    ind += sizeof(d);
 
-	// копируем
-	memcpy(mm.data,&d,ind);
+    // копируем
+    memcpy(mm.data,&d,ind);
 
-	// copy bcnt	
-	bcnt	= quant*sizeof(ModbusData);
-	memcpy(&(mm.data[ind]),&bcnt,sizeof(bcnt));
-	ind+=sizeof(bcnt);
+    // copy bcnt    
+    bcnt    = quant*sizeof(ModbusData);
+    memcpy(&(mm.data[ind]),&bcnt,sizeof(bcnt));
+    ind+=sizeof(bcnt);
 
-	// Создаём временно массив, переворачиваем байты
-	ModbusData* dtmp = new ModbusData[quant];
-	for( int i=0; i<quant; i++ )
-		dtmp[i] = SWAPSHORT(data[i]);
+    // Создаём временно массив, переворачиваем байты
+    ModbusData* dtmp = new ModbusData[quant];
+    for( int i=0; i<quant; i++ )
+        dtmp[i] = SWAPSHORT(data[i]);
 
-	// копируем данные
-	memcpy(&(mm.data[ind]),dtmp,bcnt);
-	delete[] dtmp;
+    // копируем данные
+    memcpy(&(mm.data[ind]),dtmp,bcnt);
+    delete[] dtmp;
 
-	ind+=bcnt;
+    ind+=bcnt;
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[ind]),&crc,szCRC);
-	ind+=szCRC;
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[ind]),&crc,szCRC);
+    ind+=szCRC;
 
-	// длина сообщения...
-	mm.len = ind; 
-	return mm;
+    // длина сообщения...
+    mm.len = ind; 
+    return mm;
 }
 // -------------------------------------------------------------------------
 
 WriteOutputMessage::WriteOutputMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 
 WriteOutputMessage& WriteOutputMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void WriteOutputMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnWriteOutputRegisters );
+    assert( m.func == fnWriteOutputRegisters );
  
-	memset(this,0,sizeof(*this));
-	
-	// copy not include CRC
-	memcpy(this,&m,szModbusHeader+m.len); 
-	
-	// Сперва переворачиваем обратно слова
-	start = SWAPSHORT(start);
-	quant = SWAPSHORT(quant);
+    memset(this,0,sizeof(*this));
+    
+    // copy not include CRC
+    memcpy(this,&m,szModbusHeader+m.len); 
+    
+    // Сперва переворачиваем обратно слова
+    start = SWAPSHORT(start);
+    quant = SWAPSHORT(quant);
 
-	// потом проверяем
-	if( !checkFormat() )
-	{
+    // потом проверяем
+    if( !checkFormat() )
+    {
 #ifdef DEBUG
-		cerr << "(WriteOutputMessage): BAD format!" << endl;
-		cerr << "bcnt=" << (int)bcnt 
-			<< " quant=" << (int)quant
-			<< endl;
+        cerr << "(WriteOutputMessage): BAD format!" << endl;
+        cerr << "bcnt=" << (int)bcnt 
+            << " quant=" << (int)quant
+            << endl;
 #endif
-		// Если данные не корректны
-		// чистим сообщение (в безопасные значения)
-//		start=0;
-//		quant=0; // это нельзя обнулять (иначе данные станут корректны!!!)
-		bcnt=0;
-		memset(data,0,sizeof(data));
-	}
+        // Если данные не корректны
+        // чистим сообщение (в безопасные значения)
+//        start=0;
+//        quant=0; // это нельзя обнулять (иначе данные станут корректны!!!)
+        bcnt=0;
+        memset(data,0,sizeof(data));
+    }
 
-	// последний элемент это CRC
-	memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
+    // последний элемент это CRC
+    memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 
-	int count( bcnt/sizeof(ModbusData) );
-	for( int i=0; i<count; i++ )
-		data[i] = SWAPSHORT(data[i]);
+    int count( bcnt/sizeof(ModbusData) );
+    for( int i=0; i<count; i++ )
+        data[i] = SWAPSHORT(data[i]);
 }
 // -------------------------------------------------------------------------
 bool WriteOutputMessage::checkFormat()
 {
-	// return ( quant*sizeof(ModbusData) == bcnt ) && ( func == fnWriteOutputRegisters );
-	return ( (bcnt==(quant*sizeof(ModbusData))) && (func==fnWriteOutputRegisters) );
+    // return ( quant*sizeof(ModbusData) == bcnt ) && ( func == fnWriteOutputRegisters );
+    return ( (bcnt==(quant*sizeof(ModbusData))) && (func==fnWriteOutputRegisters) );
 }
 // -------------------------------------------------------------------------
 int WriteOutputMessage::szData()
 {
-	return szHead()+bcnt+szCRC;
+    return szHead()+bcnt+szCRC;
 }
 // -------------------------------------------------------------------------
 int WriteOutputMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
-		return 0;
+    if( m.len < 0 )
+        return 0;
 
-	// копируем только часть заголовка возвращаем count
-	// считается, что в ModbusMessage необходимая часть уже получена...
-//	memcpy(&m,&wm,szModbusHeader+szHead());
+    // копируем только часть заголовка возвращаем count
+    // считается, что в ModbusMessage необходимая часть уже получена...
+//    memcpy(&m,&wm,szModbusHeader+szHead());
 
-	WriteOutputMessage wm(m); // может просто смотреть m.data[0] ?!
+    WriteOutputMessage wm(m); // может просто смотреть m.data[0] ?!
 
 //#warning Может ли быть адрес нулевым или отрицательным?!
-//	assert( wm.start > 0 ); // ???
+//    assert( wm.start > 0 ); // ???
 
-	return (int)(wm.bcnt);
+    return (int)(wm.bcnt);
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteOutputMessage& m )
 {
 //  вывод потока байт (с неперевёрнутыми словами)
-//	mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() - szCRC );
-//	return mbPrintMessage(os,(ModbusByte*)(&m.crc), szCRC );
+//    mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() - szCRC );
+//    return mbPrintMessage(os,(ModbusByte*)(&m.crc), szCRC );
 
-//	интелектуальный вывод :)
-	os << "addr=" << addr2str(m.addr) 
-		<< " start=" << dat2str(m.start) 
-		<< " quant=" << dat2str(m.quant) 
-		<< " bcnt=" << dat2str(m.bcnt)
-		<< " data[" << (int)m.quant <<"]={ ";
-		
-	for( int i=0; i<m.quant; i++ )
-		os << "" << dat2str(m.data[i]) << "  ";
-	
-	os << "}";
-	return os;	
+//    интелектуальный вывод :)
+    os << "addr=" << addr2str(m.addr) 
+        << " start=" << dat2str(m.start) 
+        << " quant=" << dat2str(m.quant) 
+        << " bcnt=" << dat2str(m.bcnt)
+        << " data[" << (int)m.quant <<"]={ ";
+        
+    for( int i=0; i<m.quant; i++ )
+        os << "" << dat2str(m.data[i]) << "  ";
+    
+    os << "}";
+    return os;    
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteOutputMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 WriteOutputRetMessage::WriteOutputRetMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -------------------------------------------------------------------------
 WriteOutputRetMessage& WriteOutputRetMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void WriteOutputRetMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnWriteOutputRegisters );
+    assert( m.func == fnWriteOutputRegisters );
  
-	memset(this,0,sizeof(*this));
-	
-	// copy not include CRC
-	memcpy(this,&m,szModbusHeader+m.len); 
+    memset(this,0,sizeof(*this));
+    
+    // copy not include CRC
+    memcpy(this,&m,szModbusHeader+m.len); 
 
 /*! \todo (WriteOutputRetMessage): необходимо встроить проверку на корректность данных */
-	
-	// Сперва переворачиваем обратно слова
-	start = SWAPSHORT(start);
-	quant = SWAPSHORT(quant);
-	
-	int ind = sizeof(quant)+sizeof(start);
-	
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&crc,&(m.data[ind]),szCRC);
+    
+    // Сперва переворачиваем обратно слова
+    start = SWAPSHORT(start);
+    quant = SWAPSHORT(quant);
+    
+    int ind = sizeof(quant)+sizeof(start);
+    
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&crc,&(m.data[ind]),szCRC);
 }
 // -------------------------------------------------------------------------
 WriteOutputRetMessage::WriteOutputRetMessage( ModbusAddr _from, 
-											ModbusData s, ModbusData q )
+                                            ModbusData s, ModbusData q )
 {
-	addr 	= _from;
-	func 	= fnWriteOutputRegisters;
-	start 	= s;
-	quant 	= q;
+    addr     = _from;
+    func     = fnWriteOutputRegisters;
+    start     = s;
+    quant     = q;
 }
 // -------------------------------------------------------------------------
 void WriteOutputRetMessage::set( ModbusData s, ModbusData q )
 {
-	start 	= s;
-	quant	= q;
+    start     = s;
+    quant    = q;
 }
 // -------------------------------------------------------------------------
 ModbusMessage WriteOutputRetMessage::transport_msg()
 {
-	assert(sizeof(ModbusMessage)>=sizeof(WriteOutputRetMessage));
+    assert(sizeof(ModbusMessage)>=sizeof(WriteOutputRetMessage));
 
-	ModbusMessage mm;
+    ModbusMessage mm;
 
-	// копируем заголовок
-	memcpy(&mm,this,szModbusHeader);
+    // копируем заголовок
+    memcpy(&mm,this,szModbusHeader);
 
-	// данные (переворачиваем байты)
-	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
-	int last(sizeof(d));
-	// копируем
-	memcpy(mm.data,&d,last);
+    // данные (переворачиваем байты)
+    ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(quant) };
+    int last(sizeof(d));
+    // копируем
+    memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+last );
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[last]),&crc,szCRC);
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+last );
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[last]),&crc,szCRC);
 
-	// длина сообщения...
-	mm.len = szData();
+    // длина сообщения...
+    mm.len = szData();
 
-	return mm;
+    return mm;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteOutputRetMessage& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
+    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteOutputRetMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 ForceSingleCoilMessage::ForceSingleCoilMessage( ModbusAddr a, ModbusData r , bool cmd ):
-	start(r)
+    start(r)
 {
-	addr = a;
-	func = fnForceSingleCoil;
-	data = cmd ? 0xFF00 : 0x0000;
+    addr = a;
+    func = fnForceSingleCoil;
+    data = cmd ? 0xFF00 : 0x0000;
 }
 // --------------------------------------------------------------------------------
 ModbusMessage ForceSingleCoilMessage::transport_msg()
 {
-	assert(sizeof(ModbusMessage)>=sizeof(ForceSingleCoilMessage));
+    assert(sizeof(ModbusMessage)>=sizeof(ForceSingleCoilMessage));
 
-	ModbusMessage mm;
-	memcpy(&mm,this,szModbusHeader);
-	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
-	int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
-	memcpy(mm.data,&d,last);
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+last );
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[last]),&crc,szCRC);
-	mm.len = szData();
-	return mm;
+    ModbusMessage mm;
+    memcpy(&mm,this,szModbusHeader);
+    ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
+    int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
+    memcpy(mm.data,&d,last);
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+last );
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[last]),&crc,szCRC);
+    mm.len = szData();
+    return mm;
 }
 // --------------------------------------------------------------------------------
 
 ForceSingleCoilMessage::ForceSingleCoilMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -------------------------------------------------------------------------
 ForceSingleCoilMessage& ForceSingleCoilMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void ForceSingleCoilMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnForceSingleCoil );
-	memset(this,0,sizeof(*this));
+    assert( m.func == fnForceSingleCoil );
+    memset(this,0,sizeof(*this));
 
-	// копируем данные вместе с CRC	
-	memcpy(this,&m,szModbusHeader+m.len+szCRC); 
-	
-	// Сперва переворачиваем обратно слова
-	start 	= SWAPSHORT(start);
-	data 	= SWAPSHORT(data);
+    // копируем данные вместе с CRC    
+    memcpy(this,&m,szModbusHeader+m.len+szCRC); 
+    
+    // Сперва переворачиваем обратно слова
+    start     = SWAPSHORT(start);
+    data     = SWAPSHORT(data);
 
-	// потом проверяем
-	if( !checkFormat() )
-	{
-#ifdef DEBUG	
-		cerr << "(ForceSingleCoil): BAD format!" << endl;
+    // потом проверяем
+    if( !checkFormat() )
+    {
+#ifdef DEBUG    
+        cerr << "(ForceSingleCoil): BAD format!" << endl;
 #endif
-		// Если собщение некорректно
-		// чистим сообщение (в безопасные значения)
-		data = 0;
-	}
+        // Если собщение некорректно
+        // чистим сообщение (в безопасные значения)
+        data = 0;
+    }
 }
 
 // -------------------------------------------------------------------------
 bool ForceSingleCoilMessage::checkFormat()
 {
-	return (func==fnForceSingleCoil);
+    return (func==fnForceSingleCoil);
 }
 // -------------------------------------------------------------------------
 int ForceSingleCoilMessage::szData()
 {
-	return szHead()+sizeof(ModbusData)+szCRC;
+    return szHead()+sizeof(ModbusData)+szCRC;
 }
 // -------------------------------------------------------------------------
 int ForceSingleCoilMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
-		return 0;
+    if( m.len < 0 )
+        return 0;
 
-	return sizeof(ModbusData); // data;
+    return sizeof(ModbusData); // data;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceSingleCoilMessage& m )
 {
-	return os << "addr=" << addr2str(m.addr) 
-		<< " start=" << dat2str(m.start) 
-		<< " data=" << dat2str(m.data) << "  ";
+    return os << "addr=" << addr2str(m.addr) 
+        << " start=" << dat2str(m.start) 
+        << " data=" << dat2str(m.data) << "  ";
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceSingleCoilMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 
 // -------------------------------------------------------------------------
 ForceSingleCoilRetMessage::ForceSingleCoilRetMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -------------------------------------------------------------------------
 ForceSingleCoilRetMessage& ForceSingleCoilRetMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void ForceSingleCoilRetMessage::init( ModbusMessage& m )
 {
-	memset(this,0,sizeof(*this));
-	
-	// copy not include CRC
-	memcpy(this,&m,szModbusHeader+m.len); 
+    memset(this,0,sizeof(*this));
+    
+    // copy not include CRC
+    memcpy(this,&m,szModbusHeader+m.len); 
 
 /*! \todo (ForceSingleCoilRetMessage): необходимо встроить проверку на корректность данных */
-	
-	// переворачиваем обратно слова
-	start 	= SWAPSHORT(start);
-	data 	= SWAPSHORT(data);
+    
+    // переворачиваем обратно слова
+    start     = SWAPSHORT(start);
+    data     = SWAPSHORT(data);
 }
 // -------------------------------------------------------------------------
 ForceSingleCoilRetMessage::ForceSingleCoilRetMessage( ModbusAddr _from )
 {
-	addr 	= _from;
-	func 	= fnForceSingleCoil;
+    addr     = _from;
+    func     = fnForceSingleCoil;
 }
 
 // -------------------------------------------------------------------------
 void ForceSingleCoilRetMessage::set( ModbusData s, bool cmd )
 {
-	start 	= s;
-	data 	= cmd ? 0xFF00 : 0x0000;
+    start     = s;
+    data     = cmd ? 0xFF00 : 0x0000;
 }
 
 // -------------------------------------------------------------------------
 ModbusMessage ForceSingleCoilRetMessage::transport_msg()
 {
-	assert(sizeof(ModbusMessage)>=sizeof(ForceSingleCoilRetMessage));
+    assert(sizeof(ModbusMessage)>=sizeof(ForceSingleCoilRetMessage));
 
-	ModbusMessage mm;
+    ModbusMessage mm;
 
-	// копируем заголовок
-	memcpy(&mm,this,szModbusHeader);
+    // копируем заголовок
+    memcpy(&mm,this,szModbusHeader);
 
-	// копируем данные (переворачиваем байты)
-	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
+    // копируем данные (переворачиваем байты)
+    ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
 
-	int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
+    int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
 
-	// копируем
-	memcpy(mm.data,&d,last);
+    // копируем
+    memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[last]),&crc,szCRC);
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[last]),&crc,szCRC);
 
-	// длина сообщения...
-	mm.len = szData();
+    // длина сообщения...
+    mm.len = szData();
 
-	return mm;
+    return mm;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceSingleCoilRetMessage& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
+    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceSingleCoilRetMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 
 WriteSingleOutputMessage::WriteSingleOutputMessage( ModbusAddr a, ModbusData r , ModbusData d ):
-	start(r),
-	data(d)
+    start(r),
+    data(d)
 {
-	addr = a;
-	func = fnWriteOutputSingleRegister;
+    addr = a;
+    func = fnWriteOutputSingleRegister;
 }
 // --------------------------------------------------------------------------------
 ModbusMessage WriteSingleOutputMessage::transport_msg()
 {
-	assert(sizeof(ModbusMessage)>=sizeof(WriteSingleOutputMessage));
+    assert(sizeof(ModbusMessage)>=sizeof(WriteSingleOutputMessage));
 
-	ModbusMessage mm;
-	memcpy(&mm,this,szModbusHeader);
-	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
-	int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
-	memcpy(mm.data,&d,last);
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+last );
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[last]),&crc,szCRC);
-	mm.len = szData();
-	return mm;
+    ModbusMessage mm;
+    memcpy(&mm,this,szModbusHeader);
+    ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
+    int last = sizeof(d); // индекс в массиве данных ( байтовый массив!!! )
+    memcpy(mm.data,&d,last);
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+last );
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[last]),&crc,szCRC);
+    mm.len = szData();
+    return mm;
 }
 // --------------------------------------------------------------------------------
 
 WriteSingleOutputMessage::WriteSingleOutputMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -------------------------------------------------------------------------
 WriteSingleOutputMessage& WriteSingleOutputMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void WriteSingleOutputMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnWriteOutputSingleRegister );
-	memset(this,0,sizeof(*this));
+    assert( m.func == fnWriteOutputSingleRegister );
+    memset(this,0,sizeof(*this));
 
-	// копируем данные вместе с CRC	
-	memcpy(this,&m,szModbusHeader+m.len+szCRC); 
-	
-	// Сперва переворачиваем обратно слова
-	start 	= SWAPSHORT(start);
-	data 	= SWAPSHORT(data);
+    // копируем данные вместе с CRC    
+    memcpy(this,&m,szModbusHeader+m.len+szCRC); 
+    
+    // Сперва переворачиваем обратно слова
+    start     = SWAPSHORT(start);
+    data     = SWAPSHORT(data);
 
-	// потом проверяем
-	if( !checkFormat() )
-	{
-#ifdef DEBUG	
-		cerr << "(WriteSingleOutputMessage): BAD format!" << endl;
+    // потом проверяем
+    if( !checkFormat() )
+    {
+#ifdef DEBUG    
+        cerr << "(WriteSingleOutputMessage): BAD format!" << endl;
 #endif
-		// Если собщение некорректно
-		// чистим сообщение (в безопасные значения)
-		data = 0;
-	}
+        // Если собщение некорректно
+        // чистим сообщение (в безопасные значения)
+        data = 0;
+    }
 }
 
 // -------------------------------------------------------------------------
 bool WriteSingleOutputMessage::checkFormat()
 {
-	// return ( quant*sizeof(ModbusData) == bcnt ) && ( func == fnWriteOutputRegisters );
-	return ( (func==fnWriteOutputSingleRegister) );
+    // return ( quant*sizeof(ModbusData) == bcnt ) && ( func == fnWriteOutputRegisters );
+    return ( (func==fnWriteOutputSingleRegister) );
 }
 // -------------------------------------------------------------------------
 int WriteSingleOutputMessage::szData()
 {
-	return szHead()+sizeof(ModbusData)+szCRC;
+    return szHead()+sizeof(ModbusData)+szCRC;
 }
 // -------------------------------------------------------------------------
 int WriteSingleOutputMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
-		return 0;
+    if( m.len < 0 )
+        return 0;
 
-	return sizeof(ModbusData); // data;
+    return sizeof(ModbusData); // data;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteSingleOutputMessage& m )
 {
 //  вывод потока байт (с неперевёрнутыми словами)
-//	mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() - szCRC );
-//	return mbPrintMessage(os,(ModbusByte*)(&m.crc), szCRC );
+//    mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() - szCRC );
+//    return mbPrintMessage(os,(ModbusByte*)(&m.crc), szCRC );
 
-//	интелектуальный вывод :)
-	return os << "addr=" << addr2str(m.addr) 
-		<< " start=" << dat2str(m.start) 
-		<< " data=" << dat2str(m.data) << "  ";
+//    интелектуальный вывод :)
+    return os << "addr=" << addr2str(m.addr) 
+        << " start=" << dat2str(m.start) 
+        << " data=" << dat2str(m.data) << "  ";
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteSingleOutputMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 
 // -------------------------------------------------------------------------
 WriteSingleOutputRetMessage::WriteSingleOutputRetMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -------------------------------------------------------------------------
 WriteSingleOutputRetMessage& WriteSingleOutputRetMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void WriteSingleOutputRetMessage::init( ModbusMessage& m )
 {
-	memset(this,0,sizeof(*this));
-	
-	// copy not include CRC
-	memcpy(this,&m,szModbusHeader+m.len); 
+    memset(this,0,sizeof(*this));
+    
+    // copy not include CRC
+    memcpy(this,&m,szModbusHeader+m.len); 
 
 /*! \todo (WriteSingleOutputRetMessage): необходимо встроить проверку на корректность данных */
-	
-	// переворачиваем обратно слова
-	start 	= SWAPSHORT(start);
-	data 	= SWAPSHORT(data);
+    
+    // переворачиваем обратно слова
+    start     = SWAPSHORT(start);
+    data     = SWAPSHORT(data);
 }
 // -------------------------------------------------------------------------
 WriteSingleOutputRetMessage::WriteSingleOutputRetMessage( ModbusAddr _from, ModbusData s )
 {
-	addr 	= _from;
-	func 	= fnWriteOutputSingleRegister;
-	start 	= s;
+    addr     = _from;
+    func     = fnWriteOutputSingleRegister;
+    start     = s;
 }
 
 // -------------------------------------------------------------------------
 void WriteSingleOutputRetMessage::set( ModbusData s, ModbusData d )
 {
-	start 	= s;
-	data	= d;
+    start     = s;
+    data    = d;
 }
 
 // -------------------------------------------------------------------------
 ModbusMessage WriteSingleOutputRetMessage::transport_msg()
 {
-	assert(sizeof(ModbusMessage)>=sizeof(WriteSingleOutputRetMessage));
+    assert(sizeof(ModbusMessage)>=sizeof(WriteSingleOutputRetMessage));
 
-	ModbusMessage mm;
+    ModbusMessage mm;
 
-	// копируем заголовок
-	memcpy(&mm,this,szModbusHeader);
+    // копируем заголовок
+    memcpy(&mm,this,szModbusHeader);
 
-	// копируем данные (переворачиваем байты)
-	ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
+    // копируем данные (переворачиваем байты)
+    ModbusData d[2] = { SWAPSHORT(start), SWAPSHORT(data) };
 
-	int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
+    int last(sizeof(d)); // индекс в массиве данных ( байтовый массив!!! )
 
-	// копируем
-	memcpy(mm.data,&d,last);
+    // копируем
+    memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[last]),&crc,szCRC);
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[last]),&crc,szCRC);
 
-	// длина сообщения...
-	mm.len = szData();
+    // длина сообщения...
+    mm.len = szData();
 
-	return mm;
+    return mm;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteSingleOutputRetMessage& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
+    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteSingleOutputRetMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 
 // -------------------------------------------------------------------------
 JournalCommandMessage::JournalCommandMessage( ModbusMessage& m )
 {
-	assert( m.func == fnJournalCommand );
-	memset(this,0,sizeof(*this));
-	memcpy(this,&m,sizeof(*this)); // m.len
+    assert( m.func == fnJournalCommand );
+    memset(this,0,sizeof(*this));
+    memcpy(this,&m,sizeof(*this)); // m.len
 
-	// переворачиваем слова
-	cmd = SWAPSHORT(cmd);
-	num = SWAPSHORT(num);
+    // переворачиваем слова
+    cmd = SWAPSHORT(cmd);
+    num = SWAPSHORT(num);
 }
 // -------------------------------------------------------------------------
 JournalCommandMessage& JournalCommandMessage::operator=( ModbusMessage& m )
 {
-	assert( m.func == fnJournalCommand );
-	memset(this,0,sizeof(*this));
-	memcpy(this,&m,sizeof(*this)); // m.len
+    assert( m.func == fnJournalCommand );
+    memset(this,0,sizeof(*this));
+    memcpy(this,&m,sizeof(*this)); // m.len
 
-	// переворачиваем слова
-	cmd = SWAPSHORT(cmd);
-	num = SWAPSHORT(num);
+    // переворачиваем слова
+    cmd = SWAPSHORT(cmd);
+    num = SWAPSHORT(num);
 
-	return *this;
+    return *this;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, JournalCommandMessage& m )
 {
-	return os << "num=" << (int)m.num << " cmd=" << (int)m.cmd;
+    return os << "num=" << (int)m.num << " cmd=" << (int)m.cmd;
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, JournalCommandMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 
 JournalCommandRetMessage::JournalCommandRetMessage( ModbusAddr _addr ):
-	bcnt(0),
-	count(0)
+    bcnt(0),
+    count(0)
 {
-	addr = _addr;
-	func = fnJournalCommand;
-	memset(data,0,sizeof(data));
+    addr = _addr;
+    func = fnJournalCommand;
+    memset(data,0,sizeof(data));
 }
 // -------------------------------------------------------------------------
 bool JournalCommandRetMessage::setData( ModbusByte* buf, int len )
 {
-	if( isFull() )
-		return false;
-	
-	if( sizeof(ModbusByte)*len > sizeof(data) )
-		return false;
+    if( isFull() )
+        return false;
+    
+    if( sizeof(ModbusByte)*len > sizeof(data) )
+        return false;
 
-	// стираем старые данные
-	memset(data,0,sizeof(data));
-	// копируем
-	memcpy( data,buf,len );
+    // стираем старые данные
+    memset(data,0,sizeof(data));
+    // копируем
+    memcpy( data,buf,len );
 
-	count 	= len / sizeof(ModbusData);
+    count     = len / sizeof(ModbusData);
 
-	// выравниваем до границы слова..
-	if( len%sizeof(ModbusData) )
-		 count++;
+    // выравниваем до границы слова..
+    if( len%sizeof(ModbusData) )
+         count++;
 
-	bcnt	= count*sizeof(ModbusData);
-	return true;
+    bcnt    = count*sizeof(ModbusData);
+    return true;
 }
 // -------------------------------------------------------------------------
 void JournalCommandRetMessage::clear()
 {
-	memset(data,0,sizeof(data));
-	count	= 0;
-	bcnt	= 0;
+    memset(data,0,sizeof(data));
+    count    = 0;
+    bcnt    = 0;
 }
 // -------------------------------------------------------------------------
 ModbusMessage JournalCommandRetMessage::transport_msg()
 {
-	ModbusMessage mm;
-//	assert(sizeof(ModbusMessage)>=sizeof(ReadOutputRetMessage));
-	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
+    ModbusMessage mm;
+//    assert(sizeof(ModbusMessage)>=sizeof(ReadOutputRetMessage));
+    assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
-	memcpy(&mm,this,szModbusHeader);
-	
-	int ind = 0;
-	bcnt	= count*sizeof(ModbusData);
-		
-	// copy bcnt
-	memcpy(&mm.data,&bcnt,sizeof(bcnt));
-	ind += sizeof(bcnt);
+    // копируем заголовок и данные
+    memcpy(&mm,this,szModbusHeader);
+    
+    int ind = 0;
+    bcnt    = count*sizeof(ModbusData);
+        
+    // copy bcnt
+    memcpy(&mm.data,&bcnt,sizeof(bcnt));
+    ind += sizeof(bcnt);
 
-	// --------------------
-	// копируем данные
-	// --------------------
-	// копирование с переворотом данных (для ModbusData)
-	ModbusData* dtmp = new ModbusData[count];
-	for( int i=0; i<count; i++ )
-		dtmp[i] = SWAPSHORT(data[i]);
+    // --------------------
+    // копируем данные
+    // --------------------
+    // копирование с переворотом данных (для ModbusData)
+    ModbusData* dtmp = new ModbusData[count];
+    for( int i=0; i<count; i++ )
+        dtmp[i] = SWAPSHORT(data[i]);
 
-	// копируем
-	memcpy(&(mm.data[ind]),dtmp,bcnt);
+    // копируем
+    memcpy(&(mm.data[ind]),dtmp,bcnt);
 
-	delete[] dtmp;
+    delete[] dtmp;
 
-	ind += bcnt;
+    ind += bcnt;
 
-	// пересчитываем CRC по данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
+    // пересчитываем CRC по данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[ind]),&crc,szCRC);
-	ind += szCRC;
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[ind]),&crc,szCRC);
+    ind += szCRC;
 
-	// длина сообщения...
-	mm.len = ind; 
-	return mm;
+    // длина сообщения...
+    mm.len = ind; 
+    return mm;
 }
 // -------------------------------------------------------------------------
 int JournalCommandRetMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
-	return sizeof(bcnt)+count*sizeof(ModbusData)+szCRC;
+    // фактическое число данных + контрольная сумма
+    return sizeof(bcnt)+count*sizeof(ModbusData)+szCRC;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, JournalCommandRetMessage& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
+    return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, JournalCommandRetMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 JournalCommandRetOK::JournalCommandRetOK( ModbusAddr _from ):
-	JournalCommandRetMessage(_from)
+    JournalCommandRetMessage(_from)
 {
 }
 // -------------------------------------------------------------------------
 void JournalCommandRetOK::set( ModbusData cmd, ModbusData ecode )
 {
-	set(*this, cmd, ecode);
+    set(*this, cmd, ecode);
 }
 // -------------------------------------------------------------------------
 void JournalCommandRetOK::set( JournalCommandRetMessage& m, 
-								ModbusData cmd, ModbusData ecode )
+                                ModbusData cmd, ModbusData ecode )
 {
-	m.data[0] = cmd;
-	m.data[1] = ecode;
-	m.count	= 2;
+    m.data[0] = cmd;
+    m.data[1] = ecode;
+    m.count    = 2;
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, JournalCommandRetOK& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
+    return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, JournalCommandRetOK* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 float ModbusRTU::dat2f( const ModbusData dat1, const ModbusData dat2 )
 {
-	ModbusData d[2]={dat1,dat2};
-	float f=0;
-	
-	assert(sizeof(f)>=sizeof(d));
-	memcpy(&f,d,sizeof(d));
-	return f;
+    ModbusData d[2]={dat1,dat2};
+    float f=0;
+    
+    assert(sizeof(f)>=sizeof(d));
+    memcpy(&f,d,sizeof(d));
+    return f;
 }
 // -------------------------------------------------------------------------
 ModbusAddr ModbusRTU::str2mbAddr( const std::string val )
 {
-	if( val.empty() )
-		return 0;
+    if( val.empty() )
+        return 0;
 
-	return (ModbusAddr)UniSetTypes::uni_atoi(val);
+    return (ModbusAddr)UniSetTypes::uni_atoi(val);
 }
 // -------------------------------------------------------------------------
 ModbusData ModbusRTU::str2mbData( const std::string val )
 {
-	if( val.empty() )
-		return 0;
+    if( val.empty() )
+        return 0;
 
-	return (ModbusData)UniSetTypes::uni_atoi(val);
+    return (ModbusData)UniSetTypes::uni_atoi(val);
 }
 // -------------------------------------------------------------------------
 std::string ModbusRTU::dat2str( const ModbusData dat )
 {
-	ostringstream s;
-	s << hex << setfill('0') << showbase << dat;
-	return s.str();
+    ostringstream s;
+    s << hex << setfill('0') << showbase << dat;
+    return s.str();
 }
 // -------------------------------------------------------------------------
 std::string ModbusRTU::addr2str( const ModbusAddr addr )
 {
-	ostringstream s;
-	s << "0x" << hex << setfill('0') << setw(2) << (unsigned short)addr;
-	return s.str();
+    ostringstream s;
+    s << "0x" << hex << setfill('0') << setw(2) << (unsigned short)addr;
+    return s.str();
 
-//	ostringstream s;
-//	s << hex << setfill('0') << showbase << (int)addr;
-//	return s.str();
+//    ostringstream s;
+//    s << hex << setfill('0') << showbase << (int)addr;
+//    return s.str();
 }
 // -------------------------------------------------------------------------
 std::string ModbusRTU::b2str( const ModbusByte b )
 {
-	ostringstream s;
-	s << hex << setfill('0') << setw(2) << (unsigned short)b;
-	return s.str();
+    ostringstream s;
+    s << hex << setfill('0') << setw(2) << (unsigned short)b;
+    return s.str();
 }
 // -------------------------------------------------------------------------
 
 std::string ModbusRTU::mbErr2Str( ModbusRTU::mbErrCode e )
 {
-	switch( e )
-	{
-		case erNoError:
-			return "";
+    switch( e )
+    {
+        case erNoError:
+            return "";
 
-		case erInvalidFormat:
-			return "неправильный формат";
-		
-		case erBadCheckSum:
-			return "У пакета не сошлась контрольная сумма";
-			
-		case erBadReplyNodeAddress:
-			return "Ответ на запрос адресован не мне или от станции,которую не спрашивали";
-			
-		case erTimeOut:
-			return "Тайм-аут при приеме";
-			
-		case erUnExpectedPacketType:
-			return "Неожидаемый тип пакета";
-				
-		case erPacketTooLong:
-			return "пакет длинее буфера приема";
-			
-		case erHardwareError:
-			return "ошибка оборудования";
-	
-		case erBadDataAddress:
-			return "регистр не существует или запрещён к опросу";
+        case erInvalidFormat:
+            return "неправильный формат";
+        
+        case erBadCheckSum:
+            return "У пакета не сошлась контрольная сумма";
+            
+        case erBadReplyNodeAddress:
+            return "Ответ на запрос адресован не мне или от станции,которую не спрашивали";
+            
+        case erTimeOut:
+            return "Тайм-аут при приеме";
+            
+        case erUnExpectedPacketType:
+            return "Неожидаемый тип пакета";
+                
+        case erPacketTooLong:
+            return "пакет длинее буфера приема";
+            
+        case erHardwareError:
+            return "ошибка оборудования";
+    
+        case erBadDataAddress:
+            return "регистр не существует или запрещён к опросу";
 
-		case erBadDataValue:
-			return "значение не входит в разрешённый диапазон";
+        case erBadDataValue:
+            return "значение не входит в разрешённый диапазон";
 
-		case erAnknowledge:
-			return "запрос принят в исполнению, но ещё не выполнен";
+        case erAnknowledge:
+            return "запрос принят в исполнению, но ещё не выполнен";
 
-		case erSlaveBusy:
-			return "контроллер занят длительной операцией (повторить запрос позже)";
-		
-		case erOperationFailed:
-			return "сбой при выполнении операции (например: доступ запрещён)";
-			
-		case erMemoryParityError:
-			return "ошибка паритета при чтении памяти";
+        case erSlaveBusy:
+            return "контроллер занят длительной операцией (повторить запрос позже)";
+        
+        case erOperationFailed:
+            return "сбой при выполнении операции (например: доступ запрещён)";
+            
+        case erMemoryParityError:
+            return "ошибка паритета при чтении памяти";
 
-		default:
-			return "Неизвестный код ошибки";
-	}
+        default:
+            return "Неизвестный код ошибки";
+    }
 }
 // -------------------------------------------------------------------------
 SetDateTimeMessage::SetDateTimeMessage( ModbusMessage& m )
 {
-	assert( m.func == fnSetDateTime );
-	memset(this,0,sizeof(*this));
-	memcpy(this,&m,sizeof(*this)); // m.len
+    assert( m.func == fnSetDateTime );
+    memset(this,0,sizeof(*this));
+    memcpy(this,&m,sizeof(*this)); // m.len
 }
 // -------------------------------------------------------------------------
 SetDateTimeMessage& SetDateTimeMessage::operator=( ModbusMessage& m )
 {
-	assert( m.func == fnSetDateTime );
-	memset(this,0,sizeof(*this));
-	memcpy(this,&m,sizeof(*this)); // m.len
-	return *this;
+    assert( m.func == fnSetDateTime );
+    memset(this,0,sizeof(*this));
+    memcpy(this,&m,sizeof(*this)); // m.len
+    return *this;
 }
 // -------------------------------------------------------------------------
 SetDateTimeMessage::SetDateTimeMessage()
 {
-	func = fnSetDateTime;
-	memset(this,0,sizeof(*this));
+    func = fnSetDateTime;
+    memset(this,0,sizeof(*this));
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage& m )
 {
-	ostringstream s;
-	s << setfill('0') 
-		<< setw(2) << (int)m.day << "-" 
-		<< setw(2) << (int)m.mon << "-" 
-		<< setw(2) << (int)m.century 
-		<< setw(2) << (int)m.year << " "
-		<< setw(2) << (int)m.hour << ":" 
-		<< setw(2) << (int)m.min << ":" 
-		<< setw(2) << (int)m.sec;
-	
-	return os << s.str();
+    ostringstream s;
+    s << setfill('0') 
+        << setw(2) << (int)m.day << "-" 
+        << setw(2) << (int)m.mon << "-" 
+        << setw(2) << (int)m.century 
+        << setw(2) << (int)m.year << " "
+        << setw(2) << (int)m.hour << ":" 
+        << setw(2) << (int)m.min << ":" 
+        << setw(2) << (int)m.sec;
+    
+    return os << s.str();
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 bool SetDateTimeMessage::checkFormat()
 {
 /*
-	// Lav: проверка >=0 бессмысленна, потому что в типе данных Modbusbyte не могут храниться отрицательные числа 
-	return 	( hour>=0 && hour<=23 ) &&
-			( min>=0 && min<=59 ) &&
-			( sec>=0 && sec<=59 ) &&
-			( day>=1 && day<=31 ) &&
-			( mon>=1 && mon<=12 ) &&
-			( year>=0 && year<=99 ) &&
-			( century>=19 && century<=20 );
-*/			
-	return 	( hour<=23 ) &&
-			( min<=59 ) &&
-			( sec<=59 ) &&
-			( day>=1 && day<=31 ) &&
-			( mon>=1 && mon<=12 ) &&
-			( year<=99 ) &&
-			( century>=19 && century<=20 );
+    // Lav: проверка >=0 бессмысленна, потому что в типе данных Modbusbyte не могут храниться отрицательные числа 
+    return     ( hour>=0 && hour<=23 ) &&
+            ( min>=0 && min<=59 ) &&
+            ( sec>=0 && sec<=59 ) &&
+            ( day>=1 && day<=31 ) &&
+            ( mon>=1 && mon<=12 ) &&
+            ( year>=0 && year<=99 ) &&
+            ( century>=19 && century<=20 );
+*/            
+    return     ( hour<=23 ) &&
+            ( min<=59 ) &&
+            ( sec<=59 ) &&
+            ( day>=1 && day<=31 ) &&
+            ( mon>=1 && mon<=12 ) &&
+            ( year<=99 ) &&
+            ( century>=19 && century<=20 );
 }
 // -------------------------------------------------------------------------
 SetDateTimeMessage::SetDateTimeMessage( ModbusAddr a )
 {
-	addr = a;
-	func = fnSetDateTime;
+    addr = a;
+    func = fnSetDateTime;
 }
 // -------------------------------------------------------------------------
 ModbusMessage SetDateTimeMessage::transport_msg()
 {
-	ModbusMessage mm;
-	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
+    ModbusMessage mm;
+    assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
-	memcpy(&mm,this,szModbusHeader);
-/*	
-	mm.data[0] = hour;
-	mm.data[1] = min;
-	mm.data[2] = sec;
-	mm.data[3] = day;
-	mm.data[4] = mon;
-	mm.data[5] = year;
-	mm.data[6] = century;
+    // копируем заголовок и данные
+    memcpy(&mm,this,szModbusHeader);
+/*    
+    mm.data[0] = hour;
+    mm.data[1] = min;
+    mm.data[2] = sec;
+    mm.data[3] = day;
+    mm.data[4] = mon;
+    mm.data[5] = year;
+    mm.data[6] = century;
 */
-	int bcnt = 7;
-	memcpy( mm.data, &hour, bcnt );
+    int bcnt = 7;
+    memcpy( mm.data, &hour, bcnt );
 
-	// пересчитываем CRC
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + bcnt );
+    // пересчитываем CRC
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + bcnt );
 
- 	memcpy(&(mm.data[bcnt]),&crc,szCRC);
-	// длина сообщения...
-	mm.len = szData(); // bcnt + szCRC
-	return mm;
+     memcpy(&(mm.data[bcnt]),&crc,szCRC);
+    // длина сообщения...
+    mm.len = szData(); // bcnt + szCRC
+    return mm;
 }
 // -------------------------------------------------------------------------
 SetDateTimeRetMessage::SetDateTimeRetMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -------------------------------------------------------------------------
 SetDateTimeRetMessage& SetDateTimeRetMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void SetDateTimeRetMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnSetDateTime );
-	memset(this,0,sizeof(*this));
-	memcpy(this,&m,sizeof(*this)); // m.len
+    assert( m.func == fnSetDateTime );
+    memset(this,0,sizeof(*this));
+    memcpy(this,&m,sizeof(*this)); // m.len
 }
 // -------------------------------------------------------------------------
 SetDateTimeRetMessage::SetDateTimeRetMessage( ModbusAddr _from )
 {
-	addr = _from;
-	func = fnSetDateTime;
+    addr = _from;
+    func = fnSetDateTime;
 
-	time_t tm = time(0);
+    time_t tm = time(0);
     struct tm *tms = localtime(&tm);
-	hour 	= tms->tm_hour;
-	min 	= tms->tm_min;
-	sec 	= tms->tm_sec;
-	day 	= tms->tm_mday;
-	mon		= tms->tm_mon+1;
-	year	= tms->tm_year;
-	century = ( tms->tm_year+1900 >= 2000 ) ? 20 : 19;
+    hour     = tms->tm_hour;
+    min     = tms->tm_min;
+    sec     = tms->tm_sec;
+    day     = tms->tm_mday;
+    mon        = tms->tm_mon+1;
+    year    = tms->tm_year;
+    century = ( tms->tm_year+1900 >= 2000 ) ? 20 : 19;
 }
 // -------------------------------------------------------------------------
 SetDateTimeRetMessage::SetDateTimeRetMessage( const SetDateTimeMessage& query )
 {
-	memcpy(this,&query,sizeof(*this));
+    memcpy(this,&query,sizeof(*this));
 }
 // -------------------------------------------------------------------------
 void SetDateTimeRetMessage::cpy( SetDateTimeRetMessage& reply, 
-									SetDateTimeMessage& query )
+                                    SetDateTimeMessage& query )
 {
-	reply = query;
+    reply = query;
 }
 // -----------------------------------------------------------------------
 ModbusMessage SetDateTimeRetMessage::transport_msg()
 {
-	ModbusMessage mm;
-	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
+    ModbusMessage mm;
+    assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
-	memcpy(&mm,this,szModbusHeader);
+    // копируем заголовок и данные
+    memcpy(&mm,this,szModbusHeader);
 
-/*	
-	mm.data[0] = hour;
-	mm.data[1] = min;
-	mm.data[2] = sec;
-	mm.data[3] = day;
-	mm.data[4] = mon;
-	mm.data[5] = year;
-	mm.data[6] = century;
+/*    
+    mm.data[0] = hour;
+    mm.data[1] = min;
+    mm.data[2] = sec;
+    mm.data[3] = day;
+    mm.data[4] = mon;
+    mm.data[5] = year;
+    mm.data[6] = century;
 */
-	int bcnt = 7;
-	memcpy( mm.data, &hour, bcnt );
+    int bcnt = 7;
+    memcpy( mm.data, &hour, bcnt );
 
-	// пересчитываем CRC
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + bcnt );
+    // пересчитываем CRC
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader + bcnt );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[bcnt]),&crc,szCRC);
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[bcnt]),&crc,szCRC);
 
-	// длина сообщения...
-	mm.len = szData(); // bcnt + szCRC
+    // длина сообщения...
+    mm.len = szData(); // bcnt + szCRC
 
-	return mm;
+    return mm;
 }
 // -------------------------------------------------------------------------
 RemoteServiceMessage::RemoteServiceMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -------------------------------------------------------------------------
 RemoteServiceMessage& RemoteServiceMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 void RemoteServiceMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnRemoteService );
-	memset(this,0,sizeof(*this));
+    assert( m.func == fnRemoteService );
+    memset(this,0,sizeof(*this));
 
-	// copy not include CRC
-	memcpy(this,&m,szModbusHeader+m.len);
-	
-	// последний элемент это CRC
-	memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
+    // copy not include CRC
+    memcpy(this,&m,szModbusHeader+m.len);
+    
+    // последний элемент это CRC
+    memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 }
 // -------------------------------------------------------------------------
 int RemoteServiceMessage::szData()
 {
-	return szHead()+bcnt+szCRC;
+    return szHead()+bcnt+szCRC;
 }
 // -------------------------------------------------------------------------
 int RemoteServiceMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
-		return 0;
+    if( m.len < 0 )
+        return 0;
 
-//	RemoteServiceMessage wm(m);
-//	return (int)(wm.bcnt);
+//    RemoteServiceMessage wm(m);
+//    return (int)(wm.bcnt);
 
-	return (int)(m.data[0]);
+    return (int)(m.data[0]);
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, RemoteServiceMessage& m )
 {
-	return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
+    return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, RemoteServiceMessage* m )
 {
-	return os << (*m);
+    return os << (*m);
 }
 // -------------------------------------------------------------------------
 RemoteServiceRetMessage::RemoteServiceRetMessage( ModbusAddr _from ):
-	bcnt(0),
-	count(0)
+    bcnt(0),
+    count(0)
 {
-	addr = _from;
-	func = fnRemoteService;
-	memset(data,0,sizeof(data));
+    addr = _from;
+    func = fnRemoteService;
+    memset(data,0,sizeof(data));
 }
 // -------------------------------------------------------------------------
 bool RemoteServiceRetMessage::setData( ModbusByte* buf, int len )
 {
-	if( isFull() )
-		return false;
-	
-	if( len*sizeof(ModbusByte) > sizeof(data) )
-		return false;
+    if( isFull() )
+        return false;
+    
+    if( len*sizeof(ModbusByte) > sizeof(data) )
+        return false;
 
-	// стираем старые данные
-	memset(data,0,sizeof(data));
+    // стираем старые данные
+    memset(data,0,sizeof(data));
 
-	// копируем
-	memcpy(data,buf,len);
+    // копируем
+    memcpy(data,buf,len);
 
-	bcnt	= len;
-	return true;
+    bcnt    = len;
+    return true;
 }
 // -------------------------------------------------------------------------
 void RemoteServiceRetMessage::clear()
 {
-	memset(data,0,sizeof(data));
-	count	= 0;
-	bcnt	= 0;
+    memset(data,0,sizeof(data));
+    count    = 0;
+    bcnt    = 0;
 }
 // -------------------------------------------------------------------------
 int RemoteServiceRetMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
-	return sizeof(bcnt)+count*sizeof(ModbusByte)+szCRC;
+    // фактическое число данных + контрольная сумма
+    return sizeof(bcnt)+count*sizeof(ModbusByte)+szCRC;
 }
 // -------------------------------------------------------------------------
 ModbusMessage RemoteServiceRetMessage::transport_msg()
 {
-	ModbusMessage mm;
-	assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
+    ModbusMessage mm;
+    assert( sizeof(ModbusMessage) >= (unsigned int)szModbusHeader+szData() );
 
-	// копируем заголовок и данные
-	memcpy(&mm,this,szModbusHeader);
-	
-	int ind = 0;
-	bcnt	= count*sizeof(ModbusByte);
+    // копируем заголовок и данные
+    memcpy(&mm,this,szModbusHeader);
+    
+    int ind = 0;
+    bcnt    = count*sizeof(ModbusByte);
 
-	// copy bcnt
-	mm.data[0] = bcnt;
-	ind += sizeof(bcnt);
+    // copy bcnt
+    mm.data[0] = bcnt;
+    ind += sizeof(bcnt);
 
-	// --------------------
-	// копируем данные
-	// --------------------
-	memcpy(&(mm.data[1]),data,bcnt);
-	ind += bcnt;
+    // --------------------
+    // копируем данные
+    // --------------------
+    memcpy(&(mm.data[1]),data,bcnt);
+    ind += bcnt;
 
-	// пересчитываем CRC по данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
+    // пересчитываем CRC по данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[ind]),&crc,szCRC);
-	ind += szCRC;
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[ind]),&crc,szCRC);
+    ind += szCRC;
 
-	// длина сообщения...
-	mm.len = ind; 
-	return mm;
+    // длина сообщения...
+    mm.len = ind; 
+    return mm;
 }
 // -------------------------------------------------------------------------
 ReadFileRecordMessage::ReadFileRecordMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -------------------------------------------------------------------------
 ReadFileRecordMessage& ReadFileRecordMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -------------------------------------------------------------------------
 bool ReadFileRecordMessage::checkFormat()
 {
-	return ( bcnt >= 0x07 && bcnt <= 0xF5 );
+    return ( bcnt >= 0x07 && bcnt <= 0xF5 );
 }
 // -------------------------------------------------------------------------
 void ReadFileRecordMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnReadFileRecord );
+    assert( m.func == fnReadFileRecord );
  
-	memset(this,0,sizeof(*this));
-	
-	// copy not include CRC
-	memcpy(this,&m,szModbusHeader+m.len); 
-	
-	// потом проверяем
-	if( !checkFormat() )
-	{
+    memset(this,0,sizeof(*this));
+    
+    // copy not include CRC
+    memcpy(this,&m,szModbusHeader+m.len); 
+    
+    // потом проверяем
+    if( !checkFormat() )
+    {
 #ifdef DEBUG
-		cerr << "(ReadFileRecordMessage): BAD format!" << endl;
-		cerr << "bcnt=" << (int)bcnt << endl;
+        cerr << "(ReadFileRecordMessage): BAD format!" << endl;
+        cerr << "bcnt=" << (int)bcnt << endl;
 #endif
-		bcnt=0;
-		memset(data,0,sizeof(data));
-	}
+        bcnt=0;
+        memset(data,0,sizeof(data));
+    }
 
-	// последний элемент это CRC
-	memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
+    // последний элемент это CRC
+    memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 
-	count = bcnt/sizeof(SubRequest);
-	for( int i=0; i<count; i++ )
-	{
-		data[i].numfile = SWAPSHORT(data[i].numfile);
-		data[i].numrec = SWAPSHORT(data[i].numrec);
-		data[i].reglen = SWAPSHORT(data[i].reglen);
-	}
+    count = bcnt/sizeof(SubRequest);
+    for( int i=0; i<count; i++ )
+    {
+        data[i].numfile = SWAPSHORT(data[i].numfile);
+        data[i].numrec = SWAPSHORT(data[i].numrec);
+        data[i].reglen = SWAPSHORT(data[i].reglen);
+    }
 }
 // -------------------------------------------------------------------------
 int ReadFileRecordMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
-	return sizeof(bcnt)+count*sizeof(SubRequest)+szCRC;
+    // фактическое число данных + контрольная сумма
+    return sizeof(bcnt)+count*sizeof(SubRequest)+szCRC;
 }
 // -------------------------------------------------------------------------
 int ReadFileRecordMessage::getDataLen( ModbusMessage& m )
 {
-	if( m.len < 0 )
-		return 0;
+    if( m.len < 0 )
+        return 0;
 
-	return (int)(m.data[0]);
-	
-//	ReadFileRecordMessage rfm(m); // может просто смотреть m.data[0] ?!
-//	return (int)(rfm.bcnt);
+    return (int)(m.data[0]);
+    
+//    ReadFileRecordMessage rfm(m); // может просто смотреть m.data[0] ?!
+//    return (int)(rfm.bcnt);
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadFileRecordMessage& m )
 {
-	return os << (&m);
+    return os << (&m);
 }
 
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadFileRecordMessage* m )
 {
-	return mbPrintMessage(os,(ModbusByte*)m, szModbusHeader + m->szData() );
+    return mbPrintMessage(os,(ModbusByte*)m, szModbusHeader + m->szData() );
 }
 // -------------------------------------------------------------------------
 FileTransferMessage::FileTransferMessage( ModbusAddr a, ModbusData nf, ModbusData np ):
-	numfile(nf),
-	numpacket(np)
+    numfile(nf),
+    numpacket(np)
 {
-	addr = a;
-	func = fnFileTransfer;
+    addr = a;
+    func = fnFileTransfer;
 }
 // -------------------------------------------------------------------------
 ModbusMessage FileTransferMessage::transport_msg()
 {
-	ModbusMessage mm;
+    ModbusMessage mm;
 
-	// копируем заголовок
-	memcpy(&mm,this,szModbusHeader);
+    // копируем заголовок
+    memcpy(&mm,this,szModbusHeader);
 
-	// копируем данные (переворачиваем байты)
-	ModbusData d[2] = { SWAPSHORT(numfile), SWAPSHORT(numpacket) };
-	int last = sizeof(d);
-	memcpy(mm.data,&d,last);
+    // копируем данные (переворачиваем байты)
+    ModbusData d[2] = { SWAPSHORT(numfile), SWAPSHORT(numpacket) };
+    int last = sizeof(d);
+    memcpy(mm.data,&d,last);
 
-	// пересчитываем CRC по перевёрнутым данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
+    // пересчитываем CRC по перевёрнутым данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(d) );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[last]),&crc,szCRC);
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[last]),&crc,szCRC);
 
-	// длина сообщения...
-	mm.len = szData();
-	return mm;
+    // длина сообщения...
+    mm.len = szData();
+    return mm;
 }
 // -------------------------------------------------------------------------
 FileTransferMessage::FileTransferMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -----------------------------------------------------------------------
 FileTransferMessage& FileTransferMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -----------------------------------------------------------------------
 void FileTransferMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnFileTransfer );
+    assert( m.func == fnFileTransfer );
  
-	memset(this,0,sizeof(*this));
-	
-	// copy not include CRC
-	memcpy(this,&m,szModbusHeader+m.len); 
-	
-	// последний элемент это CRC
-	memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
+    memset(this,0,sizeof(*this));
+    
+    // copy not include CRC
+    memcpy(this,&m,szModbusHeader+m.len); 
+    
+    // последний элемент это CRC
+    memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 
-	numfile	= SWAPSHORT(numfile);
-	numpacket = SWAPSHORT(numpacket);
+    numfile    = SWAPSHORT(numfile);
+    numpacket = SWAPSHORT(numpacket);
 }
 // -----------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, FileTransferMessage& m )
 {
-	return os << (&m);
+    return os << (&m);
 }
 // -----------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, FileTransferMessage* m )
 {
-//	return mbPrintMessage(os,(ModbusByte*)m, szModbusHeader + m->szHead() );
-	return os << " numfile=" << m->numfile
-				<< " numpacket=" << m->numpacket;
+//    return mbPrintMessage(os,(ModbusByte*)m, szModbusHeader + m->szHead() );
+    return os << " numfile=" << m->numfile
+                << " numpacket=" << m->numpacket;
 }
 // -----------------------------------------------------------------------
 FileTransferRetMessage::FileTransferRetMessage( ModbusMessage& m )
 {
-	init(m);
+    init(m);
 }
 // -----------------------------------------------------------------------
 FileTransferRetMessage& FileTransferRetMessage::operator=( ModbusMessage& m )
 {
-	init(m);
-	return *this;
+    init(m);
+    return *this;
 }
 // -----------------------------------------------------------------------
 void FileTransferRetMessage::init( ModbusMessage& m )
 {
-	assert( m.func == fnFileTransfer );
- 	memset(this,0,sizeof(*this));
-	
-	// copy header
-	memcpy(this,&m,szModbusHeader);
-	
-	bcnt = m.data[0];
-	memcpy(&numfile,&(m.data[1]),sizeof(ModbusData));
-	memcpy(&numpacks,&(m.data[1+sizeof(ModbusData)]),sizeof(ModbusData));
-	memcpy(&packet,&(m.data[1+2*sizeof(ModbusData)]),sizeof(ModbusData));
-	numfile 	= SWAPSHORT(numfile);
-	numpacks 	= SWAPSHORT(numpacks);
-	packet 		= SWAPSHORT(packet);
-	dlen 		= m.data[7];
-	memcpy(data,&(m.data[8]),dlen);
+    assert( m.func == fnFileTransfer );
+     memset(this,0,sizeof(*this));
+    
+    // copy header
+    memcpy(this,&m,szModbusHeader);
+    
+    bcnt = m.data[0];
+    memcpy(&numfile,&(m.data[1]),sizeof(ModbusData));
+    memcpy(&numpacks,&(m.data[1+sizeof(ModbusData)]),sizeof(ModbusData));
+    memcpy(&packet,&(m.data[1+2*sizeof(ModbusData)]),sizeof(ModbusData));
+    numfile     = SWAPSHORT(numfile);
+    numpacks     = SWAPSHORT(numpacks);
+    packet         = SWAPSHORT(packet);
+    dlen         = m.data[7];
+    memcpy(data,&(m.data[8]),dlen);
 
-	memcpy(&crc,&(m.data[8+dlen]),szCRC);
+    memcpy(&crc,&(m.data[8+dlen]),szCRC);
 }
 // -----------------------------------------------------------------------
 FileTransferRetMessage::FileTransferRetMessage( ModbusAddr _from ):
-	numfile(0),
-	numpacks(0),
-	packet(0),
-	dlen(0)
+    numfile(0),
+    numpacks(0),
+    packet(0),
+    dlen(0)
 {
-	addr = _from;
-	func = fnFileTransfer;
-	memset(data,0,sizeof(data));
+    addr = _from;
+    func = fnFileTransfer;
+    memset(data,0,sizeof(data));
 }
 // -----------------------------------------------------------------------
 bool FileTransferRetMessage::set( ModbusData nfile, ModbusData fpacks, 
-									ModbusData pack, ModbusByte* buf, ModbusByte len )
+                                    ModbusData pack, ModbusByte* buf, ModbusByte len )
 {
-	if( len > sizeof(data) )
-		return false;
+    if( len > sizeof(data) )
+        return false;
 
-	clear();
-	memcpy(data,buf,len);
+    clear();
+    memcpy(data,buf,len);
 
-	dlen 		= len;
-	numfile 	= nfile;
-	numpacks 	= fpacks;
-	packet 		= pack;
-	return true;
+    dlen         = len;
+    numfile     = nfile;
+    numpacks     = fpacks;
+    packet         = pack;
+    return true;
 }
 // -----------------------------------------------------------------------
 void FileTransferRetMessage::clear()
 {
-	memset(data,0,sizeof(data));
-	dlen 		= 0;
-	numfile 	= 0;
-	numpacks 	= 0;
-	packet 		= 0;
+    memset(data,0,sizeof(data));
+    dlen         = 0;
+    numfile     = 0;
+    numpacks     = 0;
+    packet         = 0;
 }
 // -----------------------------------------------------------------------
 int FileTransferRetMessage::getDataLen( ModbusMessage& m )
 {
-	return m.data[0];
+    return m.data[0];
 }
 // -----------------------------------------------------------------------
 int FileTransferRetMessage::szData()
 {
-	// фактическое число данных + контрольная сумма
-	return sizeof(ModbusByte)*2+sizeof(ModbusData)*3+dlen+szCRC;
+    // фактическое число данных + контрольная сумма
+    return sizeof(ModbusByte)*2+sizeof(ModbusData)*3+dlen+szCRC;
 }
 // -----------------------------------------------------------------------
 ModbusMessage FileTransferRetMessage::transport_msg()
 {
-	ModbusMessage mm;
-	assert( sizeof(ModbusMessage) >= (unsigned int)(szModbusHeader+szData()) );
+    ModbusMessage mm;
+    assert( sizeof(ModbusMessage) >= (unsigned int)(szModbusHeader+szData()) );
 
-	// копируем заголовок и данные
-	memcpy(&mm,this,szModbusHeader);
-	
-	int ind = 0;
-	bcnt = szData() - szCRC - 1; // -1 - это сам байт содержащий количество байт (bcnt)...
+    // копируем заголовок и данные
+    memcpy(&mm,this,szModbusHeader);
+    
+    int ind = 0;
+    bcnt = szData() - szCRC - 1; // -1 - это сам байт содержащий количество байт (bcnt)...
 
-	// copy bcnt
-	mm.data[ind++] = bcnt;
+    // copy bcnt
+    mm.data[ind++] = bcnt;
 
-	// копируем предварительный заголовок
-	ModbusData dhead[] = { numfile, numpacks, packet };
-	for( unsigned int i=0; i<sizeof(dhead)/sizeof(ModbusData); i++ )
-		dhead[i] = SWAPSHORT(dhead[i]);
+    // копируем предварительный заголовок
+    ModbusData dhead[] = { numfile, numpacks, packet };
+    for( unsigned int i=0; i<sizeof(dhead)/sizeof(ModbusData); i++ )
+        dhead[i] = SWAPSHORT(dhead[i]);
 
-	memcpy(&(mm.data[ind]),dhead,sizeof(dhead));
-	ind += sizeof(dhead);
+    memcpy(&(mm.data[ind]),dhead,sizeof(dhead));
+    ind += sizeof(dhead);
 
-	mm.data[ind++] = dlen;
+    mm.data[ind++] = dlen;
 
-	// --------------------
-	// копируем данные
-	// --------------------
-	memcpy(&(mm.data[ind]),data,dlen);
-	ind += dlen;
+    // --------------------
+    // копируем данные
+    // --------------------
+    memcpy(&(mm.data[ind]),data,dlen);
+    ind += dlen;
 
-	// пересчитываем CRC по данным
-	ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
+    // пересчитываем CRC по данным
+    ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
 
-	// копируем CRC (последний элемент). Без переворачивания...
- 	memcpy(&(mm.data[ind]),&crc,szCRC);
-	ind += szCRC;
+    // копируем CRC (последний элемент). Без переворачивания...
+     memcpy(&(mm.data[ind]),&crc,szCRC);
+    ind += szCRC;
 
-	// длина сообщения...
-	mm.len = ind;
-	return mm;
+    // длина сообщения...
+    mm.len = ind;
+    return mm;
 }
 // -----------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, FileTransferRetMessage& m )
 {
-	return os << (&m);
+    return os << (&m);
 }
 // -----------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, FileTransferRetMessage* m )
 {
-	return mbPrintMessage(os,(ModbusByte*)m, szModbusHeader + m->szData() );
+    return mbPrintMessage(os,(ModbusByte*)m, szModbusHeader + m->szData() );
 }
 // -----------------------------------------------------------------------

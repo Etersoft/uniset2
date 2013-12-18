@@ -48,7 +48,7 @@
 			log_c="LogLevel_S"
 			log_s="LogLevel_S"
 		/>
-
+	
 		<IOControl name="IOControl"/>
 		<testnode id="1000" id2="-100" name="testnode"/>
 		<SharedMemory name="SharedMemory" shmID="SharedMemory">
@@ -89,7 +89,7 @@
 				<item directory="/tmp/" id="3" name="configure.xml.gz"/>
 				<item directory="ConfDir" id="4" name="SERIAL"/>
 			</filelist>
-			<MEI>
+			<MEI> 
 				<!-- ВНИМАНИЕ: должен заполняться в соответсвии со стандартом. ObjectID и DeviceID не случайны.. -->
 				<device id="0x01">
 					<object id="0" comm="VendorName">
@@ -148,7 +148,7 @@
 			</rrd>
 		</RRDServer1>
 	</settings>
-	<ObjectsMap idfromfile="0">
+	<ObjectsMap idfromfile="1">
 		<!--
 	Краткие пояснения к полям секции 'sensors'
 	==========================================
@@ -273,7 +273,6 @@
 	</messages>
 	<!-- <xi:include href="testID.xml"/> -->
 	<!-- <xi:include href="testIDnon-exist.xml"/> -->
-
 	<Calibrations name="Calibrations">
 		<diagram name="testcal">
 			<point x="-200" y="-60"/>

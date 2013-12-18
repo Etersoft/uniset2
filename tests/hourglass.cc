@@ -8,61 +8,61 @@ using namespace std;
 
 int main()
 {
-	HourGlass hg;
+    HourGlass hg;
+    
+    hg.run(1000);
+    hg.rotate(true);
+    msleep(200);
+    if( hg.check() )
+    {
+        cerr << "HourGlass: TEST1 FAILED! " << endl;
+        return 1;
+    }
+    
+    msleep(1000);
+    if( !hg.check() )
+    {
+        cerr << "HourGlass: TEST1 FAILED! " << endl;
+        return 1;
+    }
+    
+    cout << "HourGlass: TEST1 OK!" << endl;
 
-	hg.run(1000);
-	hg.rotate(true);
-	msleep(200);
-	if( hg.check() )
-	{
-		cerr << "HourGlass: TEST1 FAILED! " << endl;
-		return 1;
-	}
+    hg.rotate(false);
+    msleep(1000);
+    if( hg.check() )
+    {
+        cerr << "HourGlass: TEST2 FAILED! " << endl;
+        return 1;
+    }
+    cout << "HourGlass: TEST2 OK!" << endl;
 
-	msleep(1000);
-	if( !hg.check() )
-	{
-		cerr << "HourGlass: TEST1 FAILED! " << endl;
-		return 1;
-	}
+    hg.rotate(true);
+    msleep(500);
+    if( hg.check() )
+    {
+        cerr << "HourGlass: TEST3 FAILED! " << endl;
+        return 1;
+    }
+    cout << "HourGlass: TEST3 OK!" << endl;
 
-	cout << "HourGlass: TEST1 OK!" << endl;
+    hg.rotate(false);
+    msleep(200);
+    hg.rotate(true);
+    msleep(200);
+    if( hg.check() )
+    {
+        cerr << "HourGlass: TEST4 FAILED! " << endl;
+        return 1;
+    }
 
-	hg.rotate(false);
-	msleep(1000);
-	if( hg.check() )
-	{
-		cerr << "HourGlass: TEST2 FAILED! " << endl;
-		return 1;
-	}
-	cout << "HourGlass: TEST2 OK!" << endl;
+    msleep(820);
+    if( !hg.check() )
+    {
+        cerr << "HourGlass: TEST5 FAILED! " << endl;
+        return 1;
+    }
 
-	hg.rotate(true);
-	msleep(500);
-	if( hg.check() )
-	{
-		cerr << "HourGlass: TEST3 FAILED! " << endl;
-		return 1;
-	}
-	cout << "HourGlass: TEST3 OK!" << endl;
-
-	hg.rotate(false);
-	msleep(200);
-	hg.rotate(true);
-	msleep(200);
-	if( hg.check() )
-	{
-		cerr << "HourGlass: TEST4 FAILED! " << endl;
-		return 1;
-	}
-
-	msleep(820);
-	if( !hg.check() )
-	{
-		cerr << "HourGlass: TEST5 FAILED! " << endl;
-		return 1;
-	}
-
-	cout << "HourGlass: TEST4 OK!" << endl;
-	return 0;
+    cout << "HourGlass: TEST4 OK!" << endl;
+    return 0;
 }

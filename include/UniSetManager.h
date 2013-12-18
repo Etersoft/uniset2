@@ -21,10 +21,10 @@
  * \brief Реализация интерфейса менеджера объектов.
  * \author Pavel Vainerman
  */
-// --------------------------------------------------------------------------
+// -------------------------------------------------------------------------- 
 #ifndef UniSetManager_H_
 #define UniSetManager_H_
-// --------------------------------------------------------------------------
+// -------------------------------------------------------------------------- 
 #include <omniORB4/CORBA.h>
 #include "UniSetTypes.h"
 #include "UniSetObject.h"
@@ -33,125 +33,125 @@
 class UniSetActivator;
 
 class UniSetManager;
-typedef std::list<UniSetManager*> UniSetManagerList;
+typedef std::list<UniSetManager*> UniSetManagerList;        
 //---------------------------------------------------------------------------
 /*! \class UniSetManager
- *	\par
- *	Содержит в себе функции управления объектами. Их регистрации и т.п.
- *	Создается менеджер объектов, после чего вызывается initObjects()
- *	для инициализации объектов которыми управляет
- *	данный менеджер...
- *	Менеджер в свою очередь сам является объектом и обладает всеми его свойствами
+ *    \par
+ *    Содержит в себе функции управления объектами. Их регистрации и т.п.
+ *    Создается менеджер объектов, после чего вызывается initObjects() 
+ *    для инициализации объектов которыми управляет 
+ *    данный менеджер...
+ *    Менеджер в свою очередь сам является объектом и обладает всеми его свойствами    
+ *    
+ *     Для пересылки сообщения всем подчиненным объектам используется 
+ *        функция UniSetManager::broadcast(const TransportMessage& msg)
+ *    \par
+ *     У базового менеджера имеются базовые три функции см. UniSetManager_i. 
+ *    \note Только при вызове функции UniSetManager::broadcast() происходит 
+ *        формирование сообщения всем подчиненным объектам... Если команда проиходит
+ *    при помощи push, то пересылки всем починённым объектам не происходит...
  *
- * 	Для пересылки сообщения всем подчиненным объектам используется
- *		функция UniSetManager::broadcast(const TransportMessage& msg)
- *	\par
- * 	У базового менеджера имеются базовые три функции см. UniSetManager_i.
- *	\note Только при вызове функции UniSetManager::broadcast() происходит
- *		формирование сообщения всем подчиненным объектам... Если команда проиходит
- *	при помощи push, то пересылки всем починённым объектам не происходит...
  *
- *
-*/
-class UniSetManager:
-	public UniSetObject,
-	public POA_UniSetManager_i
+*/ 
+class UniSetManager: 
+    public UniSetObject,
+    public POA_UniSetManager_i
 {
-	public:
-		UniSetManager( UniSetTypes::ObjectId id);
-		UniSetManager( const std::string& name, const std::string& section );
-		virtual ~UniSetManager();
+    public:
+        UniSetManager( UniSetTypes::ObjectId id);
+        UniSetManager( const std::string& name, const std::string& section );
+        virtual ~UniSetManager();
 
-		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("UniSetManager"); }
+        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("UniSetManager"); }
 
-		// ------  функции объявленные в интерфейсе(IDL) ------
-		virtual void broadcast(const UniSetTypes::TransportMessage& msg);
-		virtual UniSetTypes::SimpleInfoSeq* getObjectsInfo( CORBA::Long MaxLength=300 );
+        // ------  функции объявленные в интерфейсе(IDL) ------
+        virtual void broadcast(const UniSetTypes::TransportMessage& msg);
+        virtual UniSetTypes::SimpleInfoSeq* getObjectsInfo( CORBA::Long MaxLength=300 );
 
-		// --------------------------
-		void initPOA(UniSetManager* rmngr);
+        // --------------------------
+        void initPOA(UniSetManager* rmngr);
 
-		virtual bool addObject(UniSetObject *obj);
-		virtual bool removeObject(UniSetObject *obj);
+        virtual bool addObject(UniSetObject *obj);
+        virtual bool removeObject(UniSetObject *obj);
 
-		virtual bool addManager( UniSetManager *mngr );
-		virtual bool removeManager( UniSetManager *mngr );
+        virtual bool addManager( UniSetManager *mngr );
+        virtual bool removeManager( UniSetManager *mngr );
 
-
-		/*! Получение доступа к подчиненному менеджеру по идентификатору
-		 * \return объект ненайден будет возвращен 0.
-		*/
-		const UniSetManager* itemM(const UniSetTypes::ObjectId id);
-
-
-		/*! Получение доступа к подчиненному объекту по идентификатору
-		 * \return объект ненайден будет возвращен 0.
-		*/
-		const UniSetObject* itemO( const UniSetTypes::ObjectId id );
+        
+        /*! Получение доступа к подчиненному менеджеру по идентификатору
+         * \return объект ненайден будет возвращен 0.
+        */ 
+        const UniSetManager* itemM(const UniSetTypes::ObjectId id);
 
 
-		// Функции для аботы со списками подчиненных объектов
-		inline UniSetManagerList::const_iterator beginMList()
-		{
-			return mlist.begin();
-		}
+        /*! Получение доступа к подчиненному объекту по идентификатору
+         * \return объект ненайден будет возвращен 0.
+        */ 
+        const UniSetObject* itemO( const UniSetTypes::ObjectId id );
 
-		inline UniSetManagerList::const_iterator endMList()
-		{
-			return mlist.end();
-		}
+        
+        // Функции для аботы со списками подчиненных объектов
+        inline UniSetManagerList::const_iterator beginMList()
+        {
+            return mlist.begin();
+        }
 
-		inline ObjectsList::const_iterator beginOList()
-		{
-			return olist.begin();
-		}
+        inline UniSetManagerList::const_iterator endMList()
+        {
+            return mlist.end();
+        }
 
-		inline ObjectsList::const_iterator endOList()
-		{
-			return olist.end();
-		}
+        inline ObjectsList::const_iterator beginOList()
+        {
+            return olist.begin();
+        }
 
-		int objectsCount();	// количество подчиненных объектов
+        inline ObjectsList::const_iterator endOList()
+        {
+            return olist.end();
+        }
 
-		PortableServer::POA_ptr getPOA(){ return PortableServer::POA::_duplicate(poa); }
-		PortableServer::POAManager_ptr getPOAManager(){ return  PortableServer::POAManager::_duplicate(pman); }
+        int objectsCount();    // количество подчиненных объектов
 
-	protected:
+        PortableServer::POA_ptr getPOA(){ return PortableServer::POA::_duplicate(poa); }
+        PortableServer::POAManager_ptr getPOAManager(){ return  PortableServer::POAManager::_duplicate(pman); }
 
-		UniSetManager();
+    protected:
 
-		enum OManagerCommand{deactiv, activ, initial, term};
+        UniSetManager();
 
-		// работа со списком объектов
-		void objects(OManagerCommand cmd);
-		// работа со списком менеджеров
-		void managers(OManagerCommand cmd);
+        enum OManagerCommand{deactiv, activ, initial, term};
 
-		virtual void sigterm( int signo );
+        // работа со списком объектов
+        void objects(OManagerCommand cmd);
+        // работа со списком менеджеров
+        void managers(OManagerCommand cmd);
 
-		//! \note Переопределяя не забывайте вызвать базовую
-		virtual bool activateObject();
-		//! \note Переопределяя не забывайте вызвать базовую
-		virtual bool disactivateObject();
+        virtual void sigterm( int signo );
 
-		typedef UniSetManagerList::iterator MListIterator;
+        //! \note Переопределяя не забывайте вызвать базовую 
+        virtual bool activateObject();
+        //! \note Переопределяя не забывайте вызвать базовую 
+        virtual bool disactivateObject();
 
-		int getObjectsInfo( UniSetManager* mngr, UniSetTypes::SimpleInfoSeq* seq,
-							int begin, const long uplimit );
+        typedef UniSetManagerList::iterator MListIterator;        
 
-		PortableServer::POA_var poa;
-		PortableServer::POAManager_var pman;
+        int getObjectsInfo( UniSetManager* mngr, UniSetTypes::SimpleInfoSeq* seq, 
+                            int begin, const long uplimit );
 
-	private:
+        PortableServer::POA_var poa;    
+        PortableServer::POAManager_var pman;
 
-		friend class UniSetActivator;
+    private:
+    
+        friend class UniSetActivator;
+    
+        int sig;
+        UniSetManagerList mlist;
+        ObjectsList olist;
 
-		int sig;
-		UniSetManagerList mlist;
-		ObjectsList olist;
-
-		UniSetTypes::uniset_rwmutex olistMutex;
-		UniSetTypes::uniset_rwmutex mlistMutex;
+        UniSetTypes::uniset_rwmutex olistMutex;
+        UniSetTypes::uniset_rwmutex mlistMutex;
 };
 
 #endif

@@ -5,7 +5,7 @@ else
 UMYSQL_VER=@LIBVER@
 
 lib_LTLIBRARIES 			= libUniSet-mysql.la
-libUniSet_mysql_la_LDFLAGS  = -version-info $(UMYSQL_VER)
+libUniSet_mysql_la_LDFLAGS  = -version-info $(UMYSQL_VER) 
 libUniSet_mysql_la_SOURCES	= DBInterface.cc DBServer_MySQL.cc
 libUniSet_mysql_la_LIBADD	= $(top_builddir)/lib/libUniSet.la -lmysqlclient
 

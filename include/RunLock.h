@@ -28,25 +28,25 @@
 #include <string>
 // ---------------------------------------------------------------------------
 /*! Защита от поторного запуска программы(процесса).
-	При вызове lock(lockFile) в файл lockFile записывается pid текущего процесса.
-	При вызове isLocked() проверяется состояние процесса по его pid (записанному в файл).
-	unlock() - удаляет файл.
+    При вызове lock(lockFile) в файл lockFile записывается pid текущего процесса.
+    При вызове isLocked() проверяется состояние процесса по его pid (записанному в файл).
+    unlock() - удаляет файл.
 
 \warning Код не переносимый, т.к. рассчитан на наличие каталога /proc,
-по которому проверяется статус процесса (по pid).
+по которому проверяется статус процесса (по pid). 
 */
 class RunLock
 {
-	public:
-		RunLock();
-		~RunLock();
-		
-		static bool isLocked(const std::string& lockFile); //, char* **argv );
-		static bool lock(const std::string& lockFile);
-		static bool unlock(const std::string& lockFile);
-		
-	protected:
-	
+    public:
+        RunLock();
+        ~RunLock();
+        
+        static bool isLocked(const std::string& lockFile); //, char* **argv );
+        static bool lock(const std::string& lockFile);
+        static bool unlock(const std::string& lockFile);
+        
+    protected:
+    
 };
 // ----------------------------------------------------------------------------
 #endif

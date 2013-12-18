@@ -19,7 +19,7 @@
  */
 // -----------------------------------------------------------------------------------------
 /*! 
-	\todo Добавить проверку на предельный номер id 
+    \todo Добавить проверку на предельный номер id 
 */
 // -----------------------------------------------------------------------------------------
 #include <sstream>
@@ -39,55 +39,55 @@ IORFile::IORFile()
 // -----------------------------------------------------------------------------------------
 string IORFile::getIOR( const ObjectId id, const ObjectId node )
 {
-	string fname( genFName(id,node) );
-	ifstream ior_file(fname.c_str());
-	string sior;
-	ior_file >> sior;
+    string fname( genFName(id,node) );
+    ifstream ior_file(fname.c_str());
+    string sior;
+    ior_file >> sior;
 
-	return sior;
+    return sior;
 }
 // -----------------------------------------------------------------------------------------
 void IORFile::setIOR( const ObjectId id, const ObjectId node, const string sior )
 {
-	string fname( genFName(id,node) );
-	ofstream ior_file(fname.c_str(), ios::out | ios::trunc);
-	
-	if( !ior_file )
-	{
-		ulog.crit() << "(IORFile): не смог открыть файл "+fname << endl;
-		throw TimeOut("(IORFile): не смог создать ior-файл "+fname);
-	}
-	
-	ior_file << sior << endl;
-	ior_file.close();
+    string fname( genFName(id,node) );
+    ofstream ior_file(fname.c_str(), ios::out | ios::trunc);
+    
+    if( !ior_file )
+    {
+        ulog.crit() << "(IORFile): не смог открыть файл "+fname << endl;
+        throw TimeOut("(IORFile): не смог создать ior-файл "+fname);
+    }
+    
+    ior_file << sior << endl;
+    ior_file.close();
 }
 // -----------------------------------------------------------------------------------------
 void IORFile::unlinkIOR( const ObjectId id, const ObjectId node )
 {
-	string fname( genFName(id,node) );
-//	ostringstream cmd;
-//	cmd << "unlink " << fname;
-//	system(cmd.str().c_str());
-	unlink(fname.c_str());
+    string fname( genFName(id,node) );
+//    ostringstream cmd;
+//    cmd << "unlink " << fname;
+//    system(cmd.str().c_str());
+    unlink(fname.c_str());
 }
 // -----------------------------------------------------------------------------------------
 string IORFile::genFName( const ObjectId id, const ObjectId node )
 {
 /*
-	string oname(conf->oind->getMapName(id));
-	string nodename(conf->oind->getMapName(node));
-	oname = ORepHelpers::getShortName(oname);
-	nodename = conf->oind->getFullNodeName(nodename);
+    string oname(conf->oind->getMapName(id));
+    string nodename(conf->oind->getMapName(node));
+    oname = ORepHelpers::getShortName(oname);
+    nodename = conf->oind->getFullNodeName(nodename);
 
-	ostringstream fname;
-	
-	if( oname.empty() )
-		fname << conf->getLockDir() << id << "." << node;
-	else
-		fname << conf->getLockDir() << oname << "." << nodename;
+    ostringstream fname;
+    
+    if( oname.empty() )
+        fname << conf->getLockDir() << id << "." << node;
+    else
+        fname << conf->getLockDir() << oname << "." << nodename;
 */
-	ostringstream fname;
-	fname << conf->getLockDir() << id << "." << node;
-	return fname.str();
+    ostringstream fname;
+    fname << conf->getLockDir() << id << "." << node;
+    return fname.str();
 }
 // -----------------------------------------------------------------------------------------

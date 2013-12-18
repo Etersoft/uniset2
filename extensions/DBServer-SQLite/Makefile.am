@@ -5,7 +5,7 @@ else
 USQLITE_VER=@LIBVER@
 
 lib_LTLIBRARIES = libUniSet-sqlite.la
-libUniSet_sqlite_la_LDFLAGS = -version-info $(USQLITE_VER)
+libUniSet_sqlite_la_LDFLAGS = -version-info $(USQLITE_VER) 
 libUniSet_sqlite_la_SOURCES = SQLiteInterface.cc DBServer_SQLite.cc
 libUniSet_sqlite_la_LIBADD = $(top_builddir)/lib/libUniSet.la $(SQLITE3_LIBS)
 libUniSet_sqlite_la_CXXFLAGS = $(SQLITE3_CFLAGS)
@@ -28,3 +28,4 @@ pkgconfigdir    = $(libdir)/pkgconfig
 pkgconfig_DATA  = libUniSetSQLite.pc
 
 endif
+                                

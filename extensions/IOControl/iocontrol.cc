@@ -11,74 +11,74 @@ using namespace UniSetExtensions;
 // --------------------------------------------------------------------------
 int main(int argc, const char **argv)
 {   
-	if( argc>1 && strcmp(argv[1],"--help")==0 )
-	{
-		cout << "--io-confile	- Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
-		cout << "--io-logfile fname	- выводить логи в файл fname. По умолчанию iocontrol.log" << endl;
-		IOControl::help_print(argc,argv);
-		return 0;
-	}
+    if( argc>1 && strcmp(argv[1],"--help")==0 )
+    {
+        cout << "--io-confile    - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
+        cout << "--io-logfile fname    - выводить логи в файл fname. По умолчанию iocontrol.log" << endl;
+        IOControl::help_print(argc,argv);
+        return 0;
+    }
 
-	try
-	{
-		string confile = UniSetTypes::getArgParam( "--confile", argc, argv, "configure.xml" );
-		conf = new Configuration(argc, argv, confile);
+    try
+    {
+        string confile = UniSetTypes::getArgParam( "--confile", argc, argv, "configure.xml" );
+        conf = new Configuration(argc, argv, confile);
 
-		conf->initDebug(dlog,"dlog");
-		string logfilename = conf->getArgParam("--io-logfile","iocontrol.log");
-		string logname( conf->getLogDir() + logfilename );
-		dlog.logFile( logname );
-		ulog.logFile( logname );
+        conf->initDebug(dlog,"dlog");
+        string logfilename = conf->getArgParam("--io-logfile","iocontrol.log");
+        string logname( conf->getLogDir() + logfilename );
+        dlog.logFile( logname );
+        ulog.logFile( logname );
 
-		ObjectId shmID = DefaultObjectId;
-		string sID = conf->getArgParam("--smemory-id");
-		if( !sID.empty() )
-			shmID = conf->getControllerID(sID);
-		else
-			shmID = getSharedMemoryID();
+        ObjectId shmID = DefaultObjectId;
+        string sID = conf->getArgParam("--smemory-id");
+        if( !sID.empty() )
+            shmID = conf->getControllerID(sID);
+        else
+            shmID = getSharedMemoryID();
 
-		if( shmID == DefaultObjectId )
-		{
-			cerr << sID << "? SharedMemoryID not found in " 
-					<< conf->getControllersSection() << " section" << endl;
-			return 1;
-		}
+        if( shmID == DefaultObjectId )
+        {
+            cerr << sID << "? SharedMemoryID not found in " 
+                    << conf->getControllersSection() << " section" << endl;
+            return 1;
+        }
 
-		
-		IOControl* ic = IOControl::init_iocontrol(argc,argv,shmID);
-		if( !ic )
-		{
-			dlog.crit() << "(iocontrol): init не прошёл..." << endl;
-			return 1;
-		}
+        
+        IOControl* ic = IOControl::init_iocontrol(argc,argv,shmID);
+        if( !ic )
+        {
+            dlog.crit() << "(iocontrol): init не прошёл..." << endl;
+            return 1;
+        }
 
-		UniSetActivator act;
-		act.addObject(static_cast<class UniSetObject*>(ic));
+        UniSetActivator act;
+        act.addObject(static_cast<class UniSetObject*>(ic));
 
-		SystemMessage sm(SystemMessage::StartUp); 
-		act.broadcast( sm.transport_msg() );
+        SystemMessage sm(SystemMessage::StartUp); 
+        act.broadcast( sm.transport_msg() );
 
-		ulog << "\n\n\n";
-		ulog << "(main): -------------- IOControl START -------------------------\n\n";
-		dlog << "\n\n\n";
-		dlog << "(main): -------------- IOControl START -------------------------\n\n";
-		act.run(true);
-		msleep(500);
-		ic->execute();
-		return 0;
-	}
-	catch(SystemError& err)
-	{
-		dlog.crit() << "(iocontrol): " << err << endl;
-	}
-	catch(Exception& ex)
-	{
-		dlog.crit() << "(iocontrol): " << ex << endl;
-	}
-	catch(...)
-	{
-		dlog.crit() << "(iocontrol): catch(...)" << endl;
-	}
+        ulog << "\n\n\n";
+        ulog << "(main): -------------- IOControl START -------------------------\n\n";
+        dlog << "\n\n\n";
+        dlog << "(main): -------------- IOControl START -------------------------\n\n";
+        act.run(true);
+        msleep(500);
+        ic->execute();
+        return 0;
+    }
+    catch(SystemError& err)
+    {
+        dlog.crit() << "(iocontrol): " << err << endl;
+    }
+    catch(Exception& ex)
+    {
+        dlog.crit() << "(iocontrol): " << ex << endl;
+    }
+    catch(...)
+    {
+        dlog.crit() << "(iocontrol): catch(...)" << endl;
+    }
 
-	return 1;
+    return 1;
 }

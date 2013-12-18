@@ -10,16 +10,16 @@ sys.path.append('../../lib/pyUniSet/')
 from pyUniSet import *
 
 if __name__ == "__main__":
-
+	
 	lst = Params_inst()
 
 	for i in range(0, len(sys.argv)):
 		if i >= Params.max:
 			break;
-
+	
 		lst.add( sys.argv[i] )
 
-	try:
+	try:	
 		uniset_init_params( lst, str("test.xml") )
 
 
@@ -43,3 +43,4 @@ if __name__ == "__main__":
 
 	except UException, e:
 		print "(testUI): catch exception: " + str(e.getError())
+	

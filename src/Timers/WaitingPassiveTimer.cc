@@ -33,28 +33,28 @@ int WaitingPassiveTimer::countTimers=0;
 
 void WaitingPassiveTimer::checkCount()
 {
-	if ( countTimers >= MAX_COUNT_THRPASSIVE_TIMERS )
-	{
-		char err[200];
-		sprintf(err,"LimitThrPassiveTimers: превышено максимальное количество таймеров %d", MAX_COUNT_THRPASSIVE_TIMERS);
-		throw LimitWaitingPTimers(err); 
-	}
-	
-	countTimers++;	
+    if ( countTimers >= MAX_COUNT_THRPASSIVE_TIMERS )
+    {
+        char err[200];
+        sprintf(err,"LimitThrPassiveTimers: превышено максимальное количество таймеров %d", MAX_COUNT_THRPASSIVE_TIMERS);
+        throw LimitWaitingPTimers(err); 
+    }
+    
+    countTimers++;    
 }
 
 WaitingPassiveTimer::WaitingPassiveTimer()throw(LimitWaitingPTimers):
-	terminated(true),
-//	pCall(NULL),
-	pValue(NULL)
+    terminated(true),
+//    pCall(NULL),
+    pValue(NULL)
 {
-	checkCount();
+    checkCount();
 
 }
 // ------------------------------------------------------------------------------------------
 /*
 WaitingPassiveTimer::WaitingPassiveTimer( void(*fp)(void) ):
-	pCall(fp)
+    pCall(fp)
 {
 }
 */
@@ -63,68 +63,68 @@ WaitingPassiveTimer::WaitingPassiveTimer( void(*fp)(void) ):
  * \param  *value - указатель на объект подлежащий изменению
 */
 WaitingPassiveTimer::WaitingPassiveTimer(bool *value )throw(LimitWaitingPTimers):
-	pValue(value),
-	terminated(true)
-//	pCall(NULL)
+    pValue(value),
+    terminated(true)
+//    pCall(NULL)
 {
-	checkCount();
+    checkCount();
 }
 
 // ------------------------------------------------------------------------------------------
 WaitingPassiveTimer::~WaitingPassiveTimer()
 {
-//	cout << "Timer: destructor.."<< endl;
-//	pCall = NULL;
-	pValue = NULL;
-	terminate();
-	countTimers--;
+//    cout << "Timer: destructor.."<< endl;
+//    pCall = NULL;
+    pValue = NULL;
+    terminate();
+    countTimers--;
 }
 // ------------------------------------------------------------------------------------------
 void WaitingPassiveTimer::work()
 {
-	timeout_t sleepMKS = MIN_QUANTITY_TIME_MS*1000;
-	terminated = false;
-	while( !terminated )
-	{
-		usleep(sleepMKS); 
-		if ( checkTime() )
-			break;
-	}
-	
-	terminated = true;
-	if(pValue != NULL)
-		*pValue ^= true;
-/*	
-	if(pCall!=NULL)
-	{
-		pCall();
-	}
+    timeout_t sleepMKS = MIN_QUANTITY_TIME_MS*1000;
+    terminated = false;
+    while( !terminated )
+    {
+        usleep(sleepMKS); 
+        if ( checkTime() )
+            break;
+    }
+    
+    terminated = true;
+    if(pValue != NULL)
+        *pValue ^= true;
+/*    
+    if(pCall!=NULL)
+    {
+        pCall();
+    }
 
-*/	
+*/    
 /*
-	check = false;
-	pause();
-	check = true;
-*/	
-	stop();
-//	cout << "Timer: завершил поток..."<< endl;
+    check = false;
+    pause();
+    check = true;
+*/    
+    stop();
+//    cout << "Timer: завершил поток..."<< endl;
 }
 // ------------------------------------------------------------------------------------------
 void WaitingPassiveTimer::terminate()
 {
-	timeAct = 0;
-	terminated = true;
-	usleep(1000);
+    timeAct = 0;
+    terminated = true;
+    usleep(1000);
 }
 // ------------------------------------------------------------------------------------------
 void WaitingPassiveTimer::wait(timeout_t timeMS)
 {
-	if ( !terminated )
-		terminate();
+    if ( !terminated )
+        terminate();
 
-	setTiming(timeMS);
-	start((PosixThread*)this);
-	pthread_join(getTID(), NULL);
+    setTiming(timeMS);
+    start((PosixThread*)this);
+    pthread_join(getTID(), NULL);
 }
 
 // ------------------------------------------------------------------------------------------

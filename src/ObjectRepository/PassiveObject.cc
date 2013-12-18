@@ -31,29 +31,29 @@
 using namespace UniSetTypes;
 // ------------------------------------------------------------------------------------------
 PassiveObject::PassiveObject():
-	mngr(0),
-	id(UniSetTypes::DefaultObjectId)
+    mngr(0),
+    id(UniSetTypes::DefaultObjectId)
 {
 
 }
 
 PassiveObject::PassiveObject( UniSetTypes::ObjectId id ):
-	mngr(0),
-	id(id)
+    mngr(0),
+    id(id)
 {
-	string myfullname = conf->oind->getNameById(id);
-	myname = ORepHelpers::getShortName(myfullname.c_str()); 
+    string myfullname = conf->oind->getNameById(id);
+    myname = ORepHelpers::getShortName(myfullname.c_str()); 
 }
 
 PassiveObject::PassiveObject( ObjectId id, ProxyManager* mngr ):
-	mngr(mngr),
-	id(id)
+    mngr(mngr),
+    id(id)
 {
-	string myfullname = conf->oind->getNameById(id);
-	myname = ORepHelpers::getShortName(myfullname.c_str());
+    string myfullname = conf->oind->getNameById(id);
+    myname = ORepHelpers::getShortName(myfullname.c_str());
 
-	if( mngr )
-		mngr->attachObject(this,id);
+    if( mngr )
+        mngr->attachObject(this,id);
 }
 
 // ------------------------------------------------------------------------------------------
@@ -65,88 +65,88 @@ PassiveObject::~PassiveObject()
 // ------------------------------------------------------------------------------------------
 void PassiveObject::setID( UniSetTypes::ObjectId id_ )
 {
-	id = id_;
+    id = id_;
 }
 // ------------------------------------------------------------------------------------------
 void PassiveObject::init( ProxyManager* _mngr )
 {
-	if(mngr)
-		mngr->detachObject(id);
+    if(mngr)
+        mngr->detachObject(id);
 
-	mngr->attachObject(this,id);
+    mngr->attachObject(this,id);
 
 #if 0
-	if( _mngr == mngr || !_mngr )
-		return;
+    if( _mngr == mngr || !_mngr )
+        return;
 
-	// если уже инициализирован другим mngr (см. конструктор)
-	if( mngr )
-		mngr->detachObject(id);
+    // если уже инициализирован другим mngr (см. конструктор)
+    if( mngr )
+        mngr->detachObject(id);
 
-	mngr = _mngr;
-	mngr->attachObject(this,id);
-#endif	
+    mngr = _mngr;
+    mngr->attachObject(this,id);
+#endif    
 }
 
 // ------------------------------------------------------------------------------------------
 void PassiveObject::processingMessage( UniSetTypes::VoidMessage* msg )
 {
-	try
-	{
-		switch( msg->type )
-		{
-			case Message::SensorInfo:
-			{
-				SensorMessage sm( msg );
-				sensorInfo( &sm );
-				break;
-			}
+    try
+    {
+        switch( msg->type )
+        {
+            case Message::SensorInfo:
+            {
+                SensorMessage sm( msg );
+                sensorInfo( &sm );
+                break;
+            }
 
-			case Message::SysCommand:
-			{
-				SystemMessage sm( msg );
-				sysCommand( &sm );
-				break;
-			}
+            case Message::SysCommand:
+            {
+                SystemMessage sm( msg );
+                sysCommand( &sm );
+                break;
+            }
 
-			case Message::Timer:
-			{
-				TimerMessage tm(msg);
-				timerInfo(&tm);
-				break;
-			}
+            case Message::Timer:
+            {
+                TimerMessage tm(msg);
+                timerInfo(&tm);
+                break;
+            }
 
-			default:
-				//ulog.warn() << myname << ": неизвестное сообщение  " << msg->type << endl;
-				break;
-		}	
-	}
-	catch(Exception& ex)
-	{
-		// ulog.warn()
-//		cerr << myname << "(processingMessage): " << ex << endl;
-	}
+            default:
+                //ulog.warn() << myname << ": неизвестное сообщение  " << msg->type << endl;
+                break;
+        }    
+    }
+    catch(Exception& ex)
+    {
+        // ulog.warn()
+//        cerr << myname << "(processingMessage): " << ex << endl;
+    }
 }
 // -------------------------------------------------------------------------
 void PassiveObject::sysCommand( SystemMessage *sm )
 {
-	switch( sm->command )
-	{
-		case SystemMessage::StartUp:
-			askSensors(UniversalIO::UIONotify);
-			break;
-		
-		case SystemMessage::FoldUp:								
-		case SystemMessage::Finish:
-			askSensors(UniversalIO::UIODontNotify);
-			break;
-		
-		case SystemMessage::WatchDog:
-		case SystemMessage::LogRotate:
-			break;
+    switch( sm->command )
+    {
+        case SystemMessage::StartUp:
+            askSensors(UniversalIO::UIONotify);
+            break;
+        
+        case SystemMessage::FoldUp:                                
+        case SystemMessage::Finish:
+            askSensors(UniversalIO::UIODontNotify);
+            break;
+        
+        case SystemMessage::WatchDog:
+        case SystemMessage::LogRotate:
+            break;
 
-		default:
-			break;
-	}
+        default:
+            break;
+    }
 }
 // -------------------------------------------------------------------------

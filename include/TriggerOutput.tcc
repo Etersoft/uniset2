@@ -42,7 +42,7 @@ TriggerOutput<Caller,OutIdType,ValueType>::~TriggerOutput()
 template <class Caller, typename OutIdType, typename ValueType>
 void TriggerOutput<Caller,OutIdType,ValueType>::add(OutIdType num, ValueType val)
 {
-	outs[num] = val;
+	outs[num] = val; 
 	set(num,val);
 	try
 	{

@@ -56,7 +56,7 @@ int main( int argc,char* argv[] )
 		string logfilename = conf->getArgParam("--logfile","<xsl:value-of select="$CLASSNAME"/>.log");
 
 		string logname( conf->getLogDir() + logfilename );
-		ulog.logFile( logname.c_str() );
+		ulog.logFile( logname.c_str() );	
 
 		// определяем ID объекта
 		ObjectId ID(DefaultObjectId);

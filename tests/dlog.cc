@@ -7,19 +7,19 @@ using namespace UniSetTypes;
 
 int main( int argc, const char **argv )
 {
-	DebugStream tlog;
+    DebugStream tlog;
+    
+    tlog.addLevel(Debug::ANY);
+    
+    tlog[Debug::INFO] << ": [info] ..." << endl;
+    tlog(Debug::INFO) << ": (info) ..." << endl;
+    cout << endl;
+    tlog.d_level1() << ": (level1) ..." << endl;
+    tlog.level1() << ": [level1] ..." << endl;
+    tlog.info() << ": [info] ..." << endl;
 
-	tlog.addLevel(Debug::ANY);
+    if( tlog.is_level1() )
+        tlog.d_level1() << ": is level1..." << endl;
 
-	tlog[Debug::INFO] << ": [info] ..." << endl;
-	tlog(Debug::INFO) << ": (info) ..." << endl;
-	cout << endl;
-	tlog.d_level1() << ": (level1) ..." << endl;
-	tlog.level1() << ": [level1] ..." << endl;
-	tlog.info() << ": [info] ..." << endl;
-
-	if( tlog.is_level1() )
-		tlog.d_level1() << ": is level1..." << endl;
-
-	return 0;
+    return 0;
 }

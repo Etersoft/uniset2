@@ -226,7 +226,7 @@
 		int activateTimeout;	/*!&lt; время ожидания готовности UniSetObject к работе */
 		PassiveTimer ptStartUpTimeout;	/*!&lt; время на блокировку обработки WatchDog, если недавно был StartUp */
 		int askPause; /*!&lt; пауза между неудачными попытками заказать датчики */
-
+		
 		IOController_i::SensorInfo si;
 </xsl:template>
 
@@ -377,7 +377,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 		
 	if( ulog.is_info() )
 	{
-		ulog.info() &lt;&lt; myname &lt;&lt; "(waitSM): waiting SM ready "
+		ulog.info() &lt;&lt; myname &lt;&lt; "(waitSM): waiting SM ready " 
 			&lt;&lt; wait_msec &lt;&lt; " msec"
 			&lt;&lt; " testID=" &lt;&lt; _testID &lt;&lt; endl;
 	}
@@ -545,7 +545,7 @@ static const std::string init3_str( const std::string&amp; s1, const std::string
 		return s1;
 	if( !s2.empty() )
 		return s2;
-
+	
 	return s3;
 }
 // -----------------------------------------------------------------------------
@@ -611,8 +611,9 @@ end_private(false)
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
 	if( <xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 		throw Exception( myname + ": Not found ID for (<xsl:value-of select="@name"/>) " + conf->getProp(cnode,"<xsl:value-of select="@name"/>") );
+	
 	</xsl:if>
-
+	
 	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 	{
 		<xsl:if test="normalize-space(@no_check_id)!='1'">
@@ -630,7 +631,7 @@ end_private(false)
 		if( !conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>").empty() )
 			throw Exception( myname + ": Not found Message::NodeID for (node='node_<xsl:value-of select="normalize-space(@name)"/>') " + conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>") );
 	}
-
+	
 	if( node_<xsl:value-of select="normalize-space(@name)"/> == UniSetTypes::DefaultObjectId )
 	{
 		if( !conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>").empty() )
@@ -776,7 +777,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 	{
         if( ulog.is_crit() )
             ulog.crit()  &lt;&lt; getName()
-				&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId"
+				&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId" 
 				&lt;&lt; endl;
 		return false;	
 	}
@@ -794,8 +795,8 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 	
 	<xsl:for-each select="//msgmap/item">
 	if( _code == <xsl:value-of select="@name"/> )
-	{
-        if( ulog.is_level1() )
+	{		
+        if( ulog.is_level1() )		
             ulog.level1() &lt;&lt; "<xsl:value-of select="@name"/>" &lt;&lt; endl;
 		try
 		{
@@ -1053,7 +1054,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 	{
         if( ulog.is_crit() )
             ulog.crit()  &lt;&lt; getName()
-				&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId"
+				&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId" 
 				&lt;&lt; endl;
 		return false;	
 	}
@@ -1082,14 +1083,14 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 </xsl:template>
 
 <xsl:template name="check_changes">
-<xsl:param name="onlymsg"></xsl:param>
+<xsl:param name="onlymsg"></xsl:param>  
         <xsl:if test="normalize-space($onlymsg)=''">
         if( prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> != <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> )
         </xsl:if>
         {
         <xsl:if test="normalize-space($onlymsg)=''">
         </xsl:if>
-          // приходится искуственно использовать третий параметр,
+          // приходится искуственно использовать третий параметр, 
           // что-бы компилятор выбрал
           // правильный(для аналоговых) конструктор у SensorMessage
             IOController_i::CalibrateInfo _ci;

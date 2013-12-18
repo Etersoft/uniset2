@@ -10,15 +10,15 @@
 
 class WDTInterface
 {
-	public:
-		WDTInterface(const std::string dev);
-		~WDTInterface();
+    public:
+        WDTInterface(const std::string dev);
+        ~WDTInterface();
 
-		bool	ping();
-		bool	stop();
-	
-	protected:
-		const std::string dev;
+        bool    ping();
+        bool    stop();
+    
+    protected:
+        const std::string dev;
 };
 //--------------------------------------------------------------------------
 #endif 

@@ -394,13 +394,13 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - fixed after cppcheck checking
 
 * Wed Jun 05 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt10
-- add for ModbusMaster (RTU|TCP) --xxx--aftersend-pause
+- add for ModbusMaster (RTU|TCP) --xxx--aftersend-pause 
 
 * Tue May 14 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt9
 - add for Modbus (RTU|TCP) exchange  --xxx-reopen-timeout msec. (eterbug #9296)
 
 * Wed May 08 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt8
-- fixed minor bug in uniset-codegen (getValue)
+- fixed minor bug in uniset-codegen (getValue) 
 
 * Wed Mar 20 2013 Pavel Vainerman <pv@altlinux.ru> 1.6-alt7
 - modbus: add new function 0x2B/0x0E(43/14)"Read device identification"
@@ -530,7 +530,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - minor fixes in uniset-codegen (add "preAskSensors")
 
 * Fri Mar 02 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt12
-- fixed bug in DigitalFilter
+- fixed bug in DigitalFilter 
 - fixed bug in RTU188 exchange
 
 * Tue Feb 28 2012 Pavel Vainerman <pv@altlinux.ru> 1.3-alt11
@@ -610,7 +610,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - ModbusMaster extensions code refactoring
 
 * Tue Oct 25 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt49
-- added support 'const' and [private|protecte|public]
+- added support 'const' and [private|protecte|public] 
 for <variables> in uniset-codegen
 
 * Sat Oct 22 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt48
@@ -689,10 +689,10 @@ for <variables> in uniset-codegen
 - (uniset-unet2): fixed bug (SEGFAULT with a large number of items)
 
 * Wed Apr 20 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt22
-- (uniset-unet2-tester): fixed minor bugs
+- (uniset-unet2-tester): fixed minor bugs 
 
 * Wed Apr 20 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt21
-- (uniset-unet2-tester): add new parameter
+- (uniset-unet2-tester): add new parameter 
    -l | --check-lost   - Check the lost packets.
 
 * Wed Apr 20 2011 Pavel Vainerman <pv@altlinux.ru> 1.0-alt20

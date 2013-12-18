@@ -56,7 +56,7 @@ then
 	[ "$DBG" == "call" ] && start_line="valgrind --tool=callgrind --trace-children=yes --log-file=valgrind.log $COMLINE"
 	[ "$DBG" == "cache" ] && start_line="valgrind --tool=cachegrind --trace-children=yes --log-file=valgrind.log $COMLINE"
 	[ "$DBG" == "hel" ] && start_line="valgrind --tool=helgrind --trace-children=yes --log-file=valgrind.log $COMLINE"
-
+	
 	PROG=`basename $1`
 	if [ "$DBG" == "gdb" ]; then
 		if [ -a "./.libs/lt-$PROG" ]; then
@@ -67,8 +67,8 @@ then
 			fi
 		fi
 
-		shift
-		start_line="gdb --args $PROG $* --uniset-port $OMNIPORT"
+  		shift
+  		start_line="gdb --args $PROG $* --uniset-port $OMNIPORT"
 	fi
 
 	echo Running "$start_line"

@@ -11,8 +11,8 @@
 -->
 <TestProc>
   <settings>
-	<set name="class-name" val="TestProc"/>
-	<set name="msg-count" val="30"/>
+  	<set name="class-name" val="TestProc"/>
+  	<set name="msg-count" val="30"/>
 	<set name="sleep-msec" val="150"/>
   </settings>
   <variables>
@@ -21,8 +21,8 @@
       <item name="checkTime" type="int" default="3000" min="0" comment="check Working time" const="1" public="1" />
       <item name="checkLogTime" type="int" default="2500" min="0" comment="Проверка управления логами" const="1" public="1" />
   </variables>
-  <smap>
-	<!-- name - название переменной в конф. файле -->
+  <smap> 
+  	<!-- name - название переменной в конф. файле -->
 	<item name="on_s" vartype="in" comment="Тестовый вход" smTestID="1"/>
 	<item name="lamp_c" vartype="out" comment="Лампочка (тестовый выход)"/>
 
@@ -32,7 +32,7 @@
 	<item name="d2_check_s" vartype="in" comment="состояние зависимого датчика"/>
 	<item name="set_d1_check_s" vartype="out" comment="для выставления датчика"/>
 	<item name="set_d2_check_s" vartype="out" comment="для выставления датчика"/>
-
+	
 	<!-- проверка работы undefined state -->
 	<item name="undef_c" vartype="out" comment="аналоговый датчик (для проверки undef-состояния)"/>
 	<item name="check_undef_s" vartype="in" comment="датчик для выставления undef-состояния"/>
@@ -46,7 +46,7 @@
 	<item name="log_s" vartype="in" comment="датчик для управления логами" loglevel="1"/>
 
   </smap>
-
+  
   <msgmap>
   </msgmap>
 </TestProc>

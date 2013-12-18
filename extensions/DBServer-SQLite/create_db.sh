@@ -58,7 +58,7 @@ CREATE TABLE `main_emergencyrecords` (
 
 _EOF_
 
-#
+# 
 # KEY `main_emergencyrecords_log_id` (`log_id`),
 # KEY `main_emergencyrecords_sensor_id` (`sensor_id`),
 

@@ -35,7 +35,7 @@ def to_int(s):
        return 0
 
     return int(s.strip())
-
+    
 def to_str(s_val):
 
     if s_val == None:
@@ -60,17 +60,17 @@ def get_sinfo(raw, sep='@'):
 def to_sid(str_id, ui):
     if str_id == None or str_id == "":
        return [DefaultID,DefaultID,""]
-
+    
     if is_id(str_id):
        return [int(str_id),DefaultID,ui.getShortName(int(str_id))]
-
+    
     s = get_sinfo(str_id)
     s_id = s[0]
     s_node = s[1]
-
+   
     if s_id == "":
        return [DefaultID,DefaultID,"?@?"]
-
+    
     s_name = ""
     if is_id(s_id):
        s_id = int(s_id)
@@ -78,10 +78,10 @@ def to_sid(str_id, ui):
     else:
        s_name = s_id
        s_id = ui.getSensorID(s_id)
-
+    
     if s_node == "":
        return [s_id,DefaultID,s_name]
-
+    
     n_name = ""
     if is_id(s_node):
        s_node = int(s_node)
@@ -89,7 +89,7 @@ def to_sid(str_id, ui):
     else:
        n_name = s_node
        s_node = ui.getNodeID(s_node)
-
+    
     return [s_id,s_node,str(s_name+"@"+n_name)]
 
 # Получение списка пар [id@node,int(val)] из строки "id1@node1=val1,id2=val2,.."
@@ -97,7 +97,7 @@ def get_int_list(raw_str,sep='='):
     
     if raw_str == None or raw_str == "":
        return []
-
+    
     slist = []
     l = raw_str.split(",")
     for s in l:
@@ -116,15 +116,15 @@ def list_to_str(lst,sep='='):
            res += ",%s=%s"%(v[0],v[1])
         else:
            res += "%s=%s"%(v[0],v[1])
-
+    
     return res
 
 # Получение списка пар [sX,kX] из строки "s1=k1,s2=k2,.."
 def get_str_list(raw_str,sep='='):
-
+    
     if raw_str == None or raw_str == "":
        return []
-
+    
     slist = []
     l = raw_str.split(",")
     for s in l:
@@ -138,7 +138,7 @@ def get_str_list(raw_str,sep='='):
 
 # Получение списка пар [key,val] из строки "key1:val1,key2:val2,.."
 def get_replace_list(raw_str):
-
+    
     if raw_str == None or raw_str == "":
        return []
     slist = []
@@ -153,7 +153,7 @@ def get_replace_list(raw_str):
            print "(get_replace_list:WARNING): (v:x) undefined value for " + str(s)
            key = to_str(v[0]).strip().strip("\n")
            slist.append([key,0])
-
+    
     return slist
 
 # Парсинг строки вида hostname:port
@@ -208,7 +208,7 @@ def get_mbquery_param( raw_str, def_mbfunc="0x04", ret_str=False ):
     if len(mbaddr) == 0 or len(mbreg) == 0 or len(mbfunc) == 0:
        if ret_str == True:
           return ["","","","",""]
-
+          
        #print "(get_mbquery_param:WARNING): BAD STRING FORMAT! strig='%s'. Must be 'mbreg@mbaddr:mbfunc:nbit:vtype'"%(raw_str)
        return [None,None,None,None,None]
 
@@ -231,9 +231,9 @@ def getArgParam(param,defval=""):
                 return sys.argv[i+1]
             else:
                 break;
-
+            
     return defval
-
+    
 def getArgInt(param,defval=0):
     for i in range(0, len(sys.argv)):
         if sys.argv[i] == param:
@@ -241,12 +241,12 @@ def getArgInt(param,defval=0):
                 return to_int(sys.argv[i+1])
             else:
                 break;
-
+        
     return defval
-
+    
 def checkArgParam(param,defval=""):
     for i in range(0, len(sys.argv)):
         if sys.argv[i] == param:
             return True
-
+        
     return defval

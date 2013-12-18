@@ -137,7 +137,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askSensor( UniSetTypes::ObjectId _s
 {
 	if( _cmd == UniversalIO::UIONotify )
 	{
-		// приходится искуственно использовать третий параметр,
+		// приходится искуственно использовать третий параметр, 
 		// что-бы компилятор выбрал
 		// правильный(для аналоговых) конструктор у SensorMessage
 		IOController_i::CalibrateIo _ci;
@@ -303,7 +303,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 //			cout &lt;&lt; myname &lt;&lt; ": (AO) change value <xsl:value-of select="../../@name"/> set " 
 //					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
 		</xsl:if>
-			// приходится искуственно использовать третий параметр,
+			// приходится искуственно использовать третий параметр, 
 			// что-бы компилятор выбрал
 			// правильный(для аналоговых) конструктор у SensorMessage
 			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);

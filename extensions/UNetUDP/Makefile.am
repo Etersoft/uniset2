@@ -1,6 +1,6 @@
 bin_PROGRAMS = @PACKAGE@-unetexchange @PACKAGE@-unet-udp-tester
 
-# не забывайте править версию в pc-файле
+# не забывайте править версию в pc-файле 
 UNETUDP_VER=@LIBVER@
 
 lib_LTLIBRARIES 			= libUniSetUNetUDP.la

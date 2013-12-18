@@ -15,7 +15,7 @@ class UInterface():
        self.utype = ""
        self.i = None
        self.ignore_nodes = False
-
+       
     def set_ignore_nodes(self, state):
         self.ignore_nodes = state
 
@@ -25,7 +25,7 @@ class UInterface():
     def create_uniset_interface(self, xmlfile, params):
         self.i = UConnector(params,xmlfile)
         self.itype = "uniset"
-
+        
     def create_modbus_interface(self):
         self.i = UModbus()
         self.itype = "modbus"
@@ -49,7 +49,7 @@ class UInterface():
               s = to_sid(s_id,self.i)
               if self.ignore_nodes == True:
                  s[1] = DefaultID
-
+              
               return self.i.getValue(s[0],s[1])
 
            if self.itype == "modbus":
@@ -82,7 +82,7 @@ class UInterface():
               mbaddr,mbreg,mbfunc,nbit,vtype = get_mbquery_param(s_id,"0x06")
               if mbaddr == None or mbreg == None or mbfunc == None:
                  raise UException( "(modbus:setValue): parse id='%s' failed. Must be 'mbreg@mbaddr:mbfunc'"%s_id )
-
+              
               #print "MODBUS SET VALUE: s_id=%s"%s_id
               if self.i.isWriteFunction(mbfunc) == False:
                  raise UException( "(modbus:setValue): for id='%s' mbfunc=%d is NOT WriteFunction."%(s_id,mbfunc) )

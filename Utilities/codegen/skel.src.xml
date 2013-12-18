@@ -11,15 +11,15 @@
 -->
 <Skel>
   <settings>
-	<set name="class-name" val="Skel"/>
-	<set name="msg-count" val="20"/>
+  	<set name="class-name" val="Skel"/>
+  	<set name="msg-count" val="20"/>
 	<set name="sleep-msec" val="150"/>
   </settings>
-  <smap>
+  <smap> 
 	<!-- name - название переменной в конф. файле -->
   </smap>
 
   <msgmap>
-	<!-- name - название переменной в конф. файле -->
+  	<!-- name - название переменной в конф. файле -->
   </msgmap>
 </Skel>

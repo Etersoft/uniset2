@@ -58,7 +58,7 @@ int main( int argc, const char** argv )
 		string logfilename = conf->getArgParam("--logfile","<xsl:value-of select="$CLASSNAME"/>.log");
 
 		string logname( conf->getLogDir() + logfilename );
-		ulog.logFile( logname.c_str() );
+		ulog.logFile( logname.c_str() );	
 
 		<xsl:if test="not(normalize-space(//@OID))=''">
 				<xsl:value-of select="$CLASSNAME"/> obj;

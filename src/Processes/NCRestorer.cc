@@ -20,7 +20,7 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// --------------------------------------------------------------------------
+// -------------------------------------------------------------------------- 
 
 #include "Debug.h"
 #include "Configuration.h"
@@ -42,170 +42,170 @@ NCRestorer::~NCRestorer()
 // ------------------------------------------------------------------------------------------
 void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController::ConsumerList& lst, bool force )
 {
-	UniSetTypes::KeyType k( key(inf.si.id,inf.si.node) );
+    UniSetTypes::KeyType k( key(inf.si.id,inf.si.node) );
 
-	// Проверка зарегистрирован-ли данный датчик
-	// если такого дискретного датчика нет, то здесь сработает исключение...
-	if( !force )
-	{
-		try
-		{
-			ic->getIOType(inf.si);
-		}
-		catch(...)
-		{
-			// Регистрируем (если не найден)
-			switch(inf.type)
-			{
-				case UniversalIO::DI:
-				case UniversalIO::DO:
-				case UniversalIO::AI:
-				case UniversalIO::AO:
-					ic->ioRegistration(inf);
-				break;
+    // Проверка зарегистрирован-ли данный датчик    
+    // если такого дискретного датчика нет, то здесь сработает исключение...
+    if( !force )
+    {
+        try
+        {
+            ic->getIOType(inf.si);
+        }
+        catch(...)
+        {
+            // Регистрируем (если не найден)
+            switch(inf.type)
+            {
+                case UniversalIO::DI:
+                case UniversalIO::DO:
+                case UniversalIO::AI:
+                case UniversalIO::AO:
+                    ic->ioRegistration(inf);
+                break;
+    
+                default:
+                    if( ulog.is_crit() )
+                        ulog.crit() << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА! -> "
+                                    << conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
+                    return;
+                break;
+    
+            }
+        }
+    }
+    
+    switch(inf.type)
+    {
+        case UniversalIO::DI:
+        case UniversalIO::AI:
+        case UniversalIO::DO:
+        case UniversalIO::AO:
+            ic->askIOList[k]=lst;
+        break;
 
-				default:
-					if( ulog.is_crit() )
-						ulog.crit() << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА! -> "
-									<< conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
-					return;
-				break;
-
-			}
-		}
-	}
-
-	switch(inf.type)
-	{
-		case UniversalIO::DI:
-		case UniversalIO::AI:
-		case UniversalIO::DO:
-		case UniversalIO::AO:
-			ic->askIOList[k]=lst;
-		break;
-
-		default:
-			if( ulog.is_crit() )
-				ulog.crit() << ic->getName() << "(NCRestorer::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА!-> "
-							<< conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
-		break;
-	}
+        default:
+            if( ulog.is_crit() )
+                ulog.crit() << ic->getName() << "(NCRestorer::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА!-> "
+                            << conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
+        break;
+    }
 }
 // ------------------------------------------------------------------------------------------
 void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyController::ThresholdExtList& lst, bool force )
 {
-	// Проверка зарегистрирован-ли данный датчик
-	// если такого дискретного датчика нет сдесь сработает исключение...
-	if( !force )
-	{
-		try
-		{
-			ic->getIOType(inf.si);
-		}
-		catch(...)
-		{
-			// Регистрируем (если не найден)
-			switch(inf.type)
-			{
-				case UniversalIO::DI:
-				case UniversalIO::DO:
-				case UniversalIO::AI:
-				case UniversalIO::AO:
-					ic->ioRegistration(inf);
-				break;
+    // Проверка зарегистрирован-ли данный датчик    
+    // если такого дискретного датчика нет сдесь сработает исключение...
+    if( !force )
+    {
+        try
+        {
+            ic->getIOType(inf.si);
+        }
+        catch(...)
+        {
+            // Регистрируем (если не найден)
+            switch(inf.type)
+            {
+                case UniversalIO::DI:
+                case UniversalIO::DO:
+                case UniversalIO::AI:
+                case UniversalIO::AO:
+                    ic->ioRegistration(inf);
+                break;
+                
+                default:
+                    break;
+            }
+        }
+    }
 
-				default:
-					break;
-			}
-		}
-	}
+    // default init iterators
+    for( IONotifyController::ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it )
+        it->sit = ic->myioEnd();
 
-	// default init iterators
-	for( IONotifyController::ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it )
-		it->sit = ic->myioEnd();
+    UniSetTypes::KeyType k( key(inf.si.id,inf.si.node) );
+    ic->askTMap[k].si    = inf.si;
+    ic->askTMap[k].type    = inf.type;
+    ic->askTMap[k].list    = lst;
+    ic->askTMap[k].ait     = ic->myioEnd();
 
-	UniSetTypes::KeyType k( key(inf.si.id,inf.si.node) );
-	ic->askTMap[k].si	= inf.si;
-	ic->askTMap[k].type	= inf.type;
-	ic->askTMap[k].list	= lst;
-	ic->askTMap[k].ait 	= ic->myioEnd();
-
-	// Начальная инициализация делается в IOController (IONotifyContoller) в момент "активации". см. IOController::activateInit()
+    // Начальная инициализация делается в IOController (IONotifyContoller) в момент "активации". см. IOController::activateInit()
 #if 0
-	try
-	{
-		switch( inf.type )
-		{
-			case UniversalIO::DI:
-			case UniversalIO::DO:
-			break;
+    try
+    {
+        switch( inf.type )
+        {
+            case UniversalIO::DI:
+            case UniversalIO::DO:
+            break;
 
-			case UniversalIO::AO:
-			case UniversalIO::AI:
-			{
-				IOController::IOStateList::iterator it(ic->myioEnd());
-				ic->checkThreshold(it,inf.si,false);
-			}
-			break;
-
-			default:
-				break;
-		}
-	}
-	catch( Exception& ex )
-	{
-		if( ulog.is_warn() )
-			ulog.warn() << ic->getName() << "(NCRestorer::addthresholdlist): " << ex
-				<< " для " << conf->oind->getNameById(inf.si.id, inf.si.node) << endl;
-		throw;
-	}
-	catch( CORBA::SystemException& ex )
-	{
-		if( ulog.is_warn() )
-			ulog.warn() << ic->getName() << "(NCRestorer::addthresholdlist): "
-				<< conf->oind->getNameById(inf.si.id,inf.si.node) << " недоступен!!(CORBA::SystemException): "
-				<< ex.NP_minorString() << endl;
-		throw;
-	}
+            case UniversalIO::AO:
+            case UniversalIO::AI:
+            {
+                IOController::IOStateList::iterator it(ic->myioEnd());
+                ic->checkThreshold(it,inf.si,false);
+            }
+            break;
+            
+            default:
+                break;
+        }
+    }
+    catch( Exception& ex )
+    {
+        if( ulog.is_warn() )
+               ulog.warn() << ic->getName() << "(NCRestorer::addthresholdlist): " << ex
+                << " для " << conf->oind->getNameById(inf.si.id, inf.si.node) << endl;
+        throw;
+    }
+    catch( CORBA::SystemException& ex )
+    {
+        if( ulog.is_warn() )
+              ulog.warn() << ic->getName() << "(NCRestorer::addthresholdlist): " 
+                << conf->oind->getNameById(inf.si.id,inf.si.node) << " недоступен!!(CORBA::SystemException): "
+                << ex.NP_minorString() << endl;
+        throw;
+    }
 #endif
 }
 // ------------------------------------------------------------------------------------------
 NCRestorer::SInfo& NCRestorer::SInfo::operator=( IOController_i::SensorIOInfo& inf )
 {
-	this->si 		= inf.si;
-	this->type 		= inf.type;
-	this->priority 	= inf.priority;
-	this->default_val = inf.default_val;
-	this->real_value = inf.real_value;
-	this->ci 		= inf.ci;
-	this->undefined = inf.undefined;
-	this->blocked = inf.blocked;
-	this->dbignore = inf.dbignore;
-	this->any = 0;
-	return *this;
-//	CalibrateInfo ci;
-//	long tv_sec;
-//	long v_usec;
+    this->si         = inf.si;
+    this->type         = inf.type;
+    this->priority     = inf.priority;
+    this->default_val = inf.default_val;
+    this->real_value = inf.real_value;
+    this->ci         = inf.ci;
+    this->undefined = inf.undefined;
+    this->blocked = inf.blocked;
+    this->dbignore = inf.dbignore;
+    this->any = 0;
+    return *this;
+//    CalibrateInfo ci;
+//    long tv_sec;
+//    long v_usec;
 }
 // ------------------------------------------------------------------------------------------
 void NCRestorer::init_depends_signals( IONotifyController* ic )
 {
-	for( IOController::IOStateList::iterator it=ic->ioList.begin(); it!=ic->ioList.end(); ++it )
-	{
-		// обновляем итераторы...
-		it->second.it = it;
+    for( IOController::IOStateList::iterator it=ic->ioList.begin(); it!=ic->ioList.end(); ++it )
+    {
+        // обновляем итераторы...
+        it->second.it = it;
 
-		if( it->second.d_si.id == DefaultObjectId )
-			continue;
+        if( it->second.d_si.id == DefaultObjectId )
+            continue;
 
-		if( ulog.is_info() )
-			ulog.info() << ic->getName() << "(NCRestorer::init_depends_signals): "
-				<< " init depend: '" << conf->oind->getMapName(it->second.si.id) << "'"
-				<< " dep_name=(" << it->second.d_si.id << ")'" << conf->oind->getMapName(it->second.d_si.id) << "'"
-				<< endl;
-
-		IOController::ChangeSignal s = ic->signal_change_value(it->second.d_si);
-		s.connect( sigc::mem_fun( &it->second, &IOController::USensorInfo::checkDepend) );
-}
+        if( ulog.is_info() )
+            ulog.info() << ic->getName() << "(NCRestorer::init_depends_signals): "
+                << " init depend: '" << conf->oind->getMapName(it->second.si.id) << "'"
+                << " dep_name=(" << it->second.d_si.id << ")'" << conf->oind->getMapName(it->second.d_si.id) << "'"
+                << endl;
+    
+        IOController::ChangeSignal s = ic->signal_change_value(it->second.d_si);
+        s.connect( sigc::mem_fun( &it->second, &IOController::USensorInfo::checkDepend) );
+}    
 }
 // -----------------------------------------------------------------------------

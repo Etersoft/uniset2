@@ -147,7 +147,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 	}
 
 	if( !activated &amp;&amp; ulog.is_crit() )
-		ulog.crit() &lt;&lt; myname
+		ulog.crit() &lt;&lt; myname 
 			&lt;&lt; "(preAskSensors): ************* don`t activated?! ************" &lt;&lt; endl;
 
 	for( ;; )

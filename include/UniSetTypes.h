@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \author Pavel Vainerman
- *	\brief базовые типы и вспомогательные функции библиотеки UniSet
+ *    \brief базовые типы и вспомогательные функции библиотеки UniSet 
 */
 // -------------------------------------------------------------------------- 
 #ifndef UniSetTypes_H_
@@ -45,234 +45,234 @@ inline void msleep( unsigned int m ) { usleep(m*1000); }
 /*! Определения базовых типов библиотеки UniSet (вспомогательные типы данных, константы, полезные функции) */
 namespace UniSetTypes
 {
-	class Configuration;
-	extern Configuration* conf;
+    class Configuration;
+    extern Configuration* conf;
 
-	// ---------------------------------------------------------------
-	// Вспомогательные типы данных и константы
+    // ---------------------------------------------------------------
+    // Вспомогательные типы данных и константы
 
-	const ObjectId DefaultObjectId = -1;	/*!< Идентификатор объекта по умолчанию */
-	const ThresholdId DefaultThresholdId = -1;  	/*!< идентификатор порогов по умолчанию */
-	const ThresholdId DefaultTimerId = -1;  	/*!< идентификатор таймера по умолчанию */
+    const ObjectId DefaultObjectId = -1;    /*!< Идентификатор объекта по умолчанию */
+    const ThresholdId DefaultThresholdId = -1;      /*!< идентификатор порогов по умолчанию */
+    const ThresholdId DefaultTimerId = -1;      /*!< идентификатор таймера по умолчанию */
 
-	typedef long KeyType;	/*!< уникальный ключ объекта */
+    typedef long KeyType;    /*!< уникальный ключ объекта */
+    
+    /*! генератор уникального положительного ключа
+     *    Уникальность гарантируется только для пары значений
+     *  id и node.
+     * \warning что тут у нас с переполнением..
+     * \warning Уникальность генерируемого ключа еще не проверялась, 
+         но нареканий по использованию тоже не было :)
+    *  \todo Желательно продумать что-нибудь с использованием хэш.
+    */ 
+    inline static KeyType key( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node )
+    {
+        return KeyType((id*node)+(id+2*node));
+    }
 
-	/*! генератор уникального положительного ключа
-	 *	Уникальность гарантируется только для пары значений
-	 *  id и node.
-	 * \warning что тут у нас с переполнением..
-	 * \warning Уникальность генерируемого ключа еще не проверялась,
-		 но нареканий по использованию тоже не было :)
-	*  \todo Желательно продумать что-нибудь с использованием хэш.
-	*/
-	inline static KeyType key( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node )
-	{
-		return KeyType((id*node)+(id+2*node));
-	}
+    inline static KeyType key( const IOController_i::SensorInfo& si )
+    {
+        return key(si.id,si.node);
+    }
 
-	inline static KeyType key( const IOController_i::SensorInfo& si )
-	{
-		return key(si.id,si.node);
-	}
+    typedef std::list<std::string> ListObjectName;    /*!< Список объектов типа ObjectName */
 
-	typedef std::list<std::string> ListObjectName;	/*!< Список объектов типа ObjectName */
+    typedef ObjectId SysId;
+    typedef    CORBA::Object_ptr ObjectPtr;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
+    typedef    CORBA::Object_var ObjectVar;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
 
-	typedef ObjectId SysId;
-	typedef	CORBA::Object_ptr ObjectPtr;	/*!< Ссылка на объект регистрируемый в ObjectRepository */
-	typedef	CORBA::Object_var ObjectVar;	/*!< Ссылка на объект регистрируемый в ObjectRepository */
+    /*! Функция делает ObjectType из const char * (переводит const-строку в обычную, что плохо, но мы обещаем не писать в неё :) )  */
+    inline static UniSetTypes::ObjectType getObjectType(const char * name) { const void *t = name;  return (UniSetTypes::ObjectType)t; }
 
-	/*! Функция делает ObjectType из const char * (переводит const-строку в обычную, что плохо, но мы обещаем не писать в неё :) )  */
-	inline static UniSetTypes::ObjectType getObjectType(const char * name) { const void *t = name;  return (UniSetTypes::ObjectType)t; }
+    UniversalIO::IOType getIOType( const std::string s );
+    std::ostream& operator<<( std::ostream& os, const UniversalIO::IOType t );
 
-	UniversalIO::IOType getIOType( const std::string s );
-	std::ostream& operator<<( std::ostream& os, const UniversalIO::IOType t );
+    /*! Команды для управления лампочками */
+    enum LampCommand
+    {
+        lmpOFF        = 0,    /*!< выключить */
+        lmpON        = 1,    /*!< включить */
+        lmpBLINK    = 2,    /*!< мигать */
+        lmpBLINK2    = 3,    /*!< мигать */
+        lmpBLINK3    = 4        /*!< мигать */
+    };
 
-	/*! Команды для управления лампочками */
-	enum LampCommand
-	{
-		lmpOFF		= 0,	/*!< выключить */
-		lmpON		= 1,	/*!< включить */
-		lmpBLINK	= 2,	/*!< мигать */
-		lmpBLINK2	= 3,	/*!< мигать */
-		lmpBLINK3	= 4		/*!< мигать */
-	};
+    static const long ChannelBreakValue = std::numeric_limits<long>::max();
 
-	static const long ChannelBreakValue = std::numeric_limits<long>::max();
+    class IDList
+    {
+        public: 
+            IDList();
+            ~IDList();
 
-	class IDList
-	{
-		public: 
-			IDList();
-			~IDList();
+            void add( ObjectId id );
+            void del( ObjectId id );
+    
+            inline int size(){ return lst.size(); }
+            inline bool empty(){ return lst.empty(); }
+        
+            std::list<ObjectId> getList();
 
-			void add( ObjectId id );
-			void del( ObjectId id );
-	
-			inline int size(){ return lst.size(); }
-			inline bool empty(){ return lst.empty(); }
-		
-			std::list<ObjectId> getList();
+            // за освобождение выделеной памяти
+            // отвечает вызывающий!
+            IDSeq* getIDSeq();
+        
+            // 
+            ObjectId getFirst();
+            ObjectId node;    // узел, на котором находятся датчики
+        
+        private:
+            std::list<ObjectId> lst;
+    };
 
-			// за освобождение выделеной памяти
-			// отвечает вызывающий!
-			IDSeq* getIDSeq();
-		
-			// 
-			ObjectId getFirst();
-			ObjectId node;	// узел, на котором находятся датчики
-		
-		private:
-			std::list<ObjectId> lst;
-	};
+    /*! Информация об имени объекта */
+    struct ObjectInfo
+    {
+        ObjectInfo():
+            id(DefaultObjectId),
+            repName(0),textName(0),data(0){}
 
-	/*! Информация об имени объекта */
-	struct ObjectInfo
-	{
-		ObjectInfo():
-			id(DefaultObjectId),
-			repName(0),textName(0),data(0){}
+        ObjectId id;        /*!< идентификатор */
+        char* repName;        /*!< текстовое имя для регистрации в репозитории */
+        char* textName;        /*!< текстовое имя */
+        void* data;
+    
+        inline bool operator < ( const ObjectInfo& o ) const
+        {
+            return (id < o.id);
+        }
+    };
+    
+    typedef std::list<NodeInfo> ListOfNode;
 
-	    ObjectId id;		/*!< идентификатор */
-	    char* repName;		/*!< текстовое имя для регистрации в репозитории */
-	    char* textName;		/*!< текстовое имя */
-	    void* data;
-	
-		inline bool operator < ( const ObjectInfo& o ) const
-		{
-			return (id < o.id);
-		}
-	};
-	
-	typedef std::list<NodeInfo> ListOfNode;
+    /*! Запрещенные для использования в именах объектов символы */
+    const char BadSymbols[]={'.','/'};
 
-	/*! Запрещенные для использования в именах объектов символы */
-	const char BadSymbols[]={'.','/'};
+    // ---------------------------------------------------------------
+    // Различные преобразования
 
-	// ---------------------------------------------------------------
-	// Различные преобразования
+    //! Преобразование строки в число (воспринимает префикс 0, как 8-ное, префикс 0x, как 16-ное, минус для отриц. чисел)
+    inline int uni_atoi( const char* str )
+    {
+        int n = 0; // if str is NULL or sscanf failed, we return 0
 
-	//! Преобразование строки в число (воспринимает префикс 0, как 8-ное, префикс 0x, как 16-ное, минус для отриц. чисел)
-	inline int uni_atoi( const char* str )
-	{
-		int n = 0; // if str is NULL or sscanf failed, we return 0
+        if ( str != NULL )
+            std::sscanf(str, "%i", &n);
+        return n;
+    }
+    inline int uni_atoi( const std::string str )
+    {
+        return uni_atoi(str.c_str());
+    }
 
-		if ( str != NULL )
-			std::sscanf(str, "%i", &n);
-		return n;
-	}
-	inline int uni_atoi( const std::string str )
-	{
-		return uni_atoi(str.c_str());
-	}
+    std::string timeToString(time_t tm=time(0), const std::string brk=":"); /*!< Преобразование времени в строку HH:MM:SS */
+    std::string dateToString(time_t tm=time(0), const std::string brk="/"); /*!< Преобразование даты в строку DD/MM/YYYY */
 
-	std::string timeToString(time_t tm=time(0), const std::string brk=":"); /*!< Преобразование времени в строку HH:MM:SS */
-	std::string dateToString(time_t tm=time(0), const std::string brk="/"); /*!< Преобразование даты в строку DD/MM/YYYY */
+    /*! Разбивка строки по указанному символу */
+    IDList explode( const std::string str, char sep=',' );
+    std::list<std::string> explode_str( const std::string str, char sep=',' );
+    
+    struct ParamSInfo
+    {
+        IOController_i::SensorInfo si;
+        long val;
+        std::string fname; // fullname id@node or id
+    };
+    
+    /*! Функция разбора строки вида: id1@node1=val1,id2@node2=val2,...
+       Если '=' не указано, возвращается val=0
+      Если @node не указано, возвращается node=DefaultObjectId */
+    std::list<ParamSInfo> getSInfoList( std::string s, Configuration* conf=UniSetTypes::conf);
 
-	/*! Разбивка строки по указанному символу */
-	IDList explode( const std::string str, char sep=',' );
-	std::list<std::string> explode_str( const std::string str, char sep=',' );
-	
-	struct ParamSInfo
-	{
-		IOController_i::SensorInfo si;
-		long val;
-		std::string fname; // fullname id@node or id
-	};
+    /*! проверка является текст в строке - числом..*/
+    bool is_digit( const std::string s );
 
-	/*! Функция разбора строки вида: id1@node1=val1,id2@node2=val2,...
-	   Если '=' не указано, возвращается val=0
-	  Если @node не указано, возвращается node=DefaultObjectId */
-	std::list<ParamSInfo> getSInfoList( std::string s, Configuration* conf=UniSetTypes::conf);
+    // ---------------------------------------------------------------
+    // Работа с командной строкой
 
-	/*! проверка является текст в строке - числом..*/
-	bool is_digit( const std::string s );
+    /*! Получение параметра командной строки 
+        \param name - название параметра
+        \param defval - значение, которое будет возвращено, если параметр не найден
+    */
+    inline std::string getArgParam( const std::string name, 
+                                        int _argc, const char* const* _argv,
+                                            const std::string defval="" )
+    {
+        for( int i=1; i < (_argc - 1) ; i++ )
+        {
+            if( name == _argv[i] )
+                return _argv[i+1];
+        }
+        return defval;
+    }
 
-	// ---------------------------------------------------------------
-	// Работа с командной строкой
+    inline int getArgInt( const std::string name, 
+                            int _argc, const char* const* _argv,
+                            const std::string defval="" )
+    {
+        return uni_atoi(getArgParam(name, _argc, _argv, defval));
+    }
 
-	/*! Получение параметра командной строки 
-		\param name - название параметра
-		\param defval - значение, которое будет возвращено, если параметр не найден
-	*/
-	inline std::string getArgParam( const std::string name, 
-										int _argc, const char* const* _argv,
-											const std::string defval="" )
-	{
-		for( int i=1; i < (_argc - 1) ; i++ )
-		{
-			if( name == _argv[i] )
-				return _argv[i+1];
-		}
-		return defval;
-	}
+    /*! Проверка наличия параметра в командной строке
+        \param name - название параметра
+        \return Возвращает -1, если параметр не найден. 
+            Или позицию параметра, если найден.
+    */
+    inline int findArgParam( const std::string name, int _argc, const char* const* _argv )
+    {
+        for( int i=1; i<_argc; i++ )
+        {
+            if( name == _argv[i] )
+                return i;
+        }
+        return -1;
+    }
 
-	inline int getArgInt( const std::string name, 
-							int _argc, const char* const* _argv,
-							const std::string defval="" )
-	{
-		return uni_atoi(getArgParam(name, _argc, _argv, defval));
-	}
+    // ---------------------------------------------------------------
+    // Калибровка
 
-	/*! Проверка наличия параметра в командной строке
-		\param name - название параметра
-		\return Возвращает -1, если параметр не найден. 
-			Или позицию параметра, если найден.
-	*/
-	inline int findArgParam( const std::string name, int _argc, const char* const* _argv )
-	{
-		for( int i=1; i<_argc; i++ )
-		{
-			if( name == _argv[i] )
-				return i;
-		}
-		return -1;
-	}
+    std::ostream& operator<<( std::ostream& os, const IOController_i::CalibrateInfo c );
 
-	// ---------------------------------------------------------------
-	// Калибровка
+    // Функции калибровки значений
+    // raw         - преобразуемое значение
+    // rawMin     - минимальная граница исходного диапазона
+    // rawMax     - максимальная граница исходного диапазона
+    // calMin     - минимальная граница калиброванного диапазона
+    // calMin     - минимальная граница калиброванного диапазона
+    // limit    - обрезать итоговое значение по границам 
+    float fcalibrate(float raw, float rawMin, float rawMax, float calMin, float calMax, bool limit=true );
+    long lcalibrate(long raw, long rawMin, long rawMax, long calMin, long calMax, bool limit=true );
 
-	std::ostream& operator<<( std::ostream& os, const IOController_i::CalibrateInfo c );
+    // установка значения в нужный диапазон
+    long setinregion(long raw, long rawMin, long rawMax);
+    // установка значения вне диапазона
+    long setoutregion(long raw, long rawMin, long rawMax);
 
-	// Функции калибровки значений
-	// raw 		- преобразуемое значение
-	// rawMin 	- минимальная граница исходного диапазона
-	// rawMax 	- максимальная граница исходного диапазона
-	// calMin 	- минимальная граница калиброванного диапазона
-	// calMin 	- минимальная граница калиброванного диапазона
-	// limit	- обрезать итоговое значение по границам 
-	float fcalibrate(float raw, float rawMin, float rawMax, float calMin, float calMax, bool limit=true );
-	long lcalibrate(long raw, long rawMin, long rawMax, long calMin, long calMax, bool limit=true );
+    // ---------------------------------------------------------------
+    // Всякие helper-ы
 
-	// установка значения в нужный диапазон
-	long setinregion(long raw, long rawMin, long rawMax);
-	// установка значения вне диапазона
-	long setoutregion(long raw, long rawMin, long rawMax);
+    bool file_exist( const std::string filename );
 
-	// ---------------------------------------------------------------
-	// Всякие helper-ы
+    // Проверка xml-узла на соответствие <...f_prop="f_val">,
+    // если не задано f_val, то проверяется, что просто f_prop!=""
+    bool check_filter( UniXML_iterator& it, const std::string f_prop, const std::string f_val="" );
 
-	bool file_exist( const std::string filename );
-
-	// Проверка xml-узла на соответствие <...f_prop="f_val">,
-	// если не задано f_val, то проверяется, что просто f_prop!=""
-	bool check_filter( UniXML_iterator& it, const std::string f_prop, const std::string f_val="" );
-
-	/*! алгоритм копирования элементов последовательности удовлетворяющих условию */
-	template<typename InputIterator,
-			 typename OutputIterator,
-			 typename Predicate>
-	OutputIterator copy_if(InputIterator begin,
-							InputIterator end,
-							OutputIterator destBegin,
-							Predicate p)
-	{
-		while( begin!=end)
-		{
-			if( p(*begin) ) &destBegin++=*begin;
-			++begin;
-		}
-		return destBegin;
-	}
+    /*! алгоритм копирования элементов последовательности удовлетворяющих условию */
+    template<typename InputIterator,
+             typename OutputIterator,
+             typename Predicate>
+    OutputIterator copy_if(InputIterator begin,
+                            InputIterator end,
+                            OutputIterator destBegin,
+                            Predicate p)
+    {
+        while( begin!=end)
+        {
+            if( p(*begin) ) &destBegin++=*begin;
+            ++begin;
+        }
+        return destBegin;
+    }
 // -----------------------------------------------------------------------------
 }
 

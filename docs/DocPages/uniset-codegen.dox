@@ -61,8 +61,8 @@
 -->
 <Test>
   <settings>
-	<set name="class-name" val="TestGen"/>
-	<set name="msg-count" val="20"/>
+  	<set name="class-name" val="TestGen"/>
+  	<set name="msg-count" val="20"/>
 	<set name="sleep-msec" val="150"/>
   </settings>
   <variables arg_prefix="test-">
@@ -77,7 +77,7 @@
 		 default - значение по умолчанию (может быть не задано)
 		 no_range_exception=1 - при выходе за границы min или max только писать unideb[WARN].
       -->
-		<item name="startTimeout" type="int" min="0" comment="test int variable"/>
+	  	<item name="startTimeout" type="int" min="0" comment="test int variable"/>
 		<item name="stopTimeout" type="int" max="100" default="110" no_range_exception="1"/>
 		<item name="test_float" type="float" max="100.0" default="50.0" public="1" const="1" />
 		<item name="test_bool" type="bool" />
@@ -241,8 +241,8 @@
 ...
 	<TestGenAlone name="TestGenAlone">
 			<set name="ID" val="TestGenAlone"/>
-			<set name="class-name" val="TestGenAlone"/>
-			<set name="msg-count" val="20"/>
+		  	<set name="class-name" val="TestGenAlone"/>
+		  	<set name="msg-count" val="20"/>
 			<set name="sleep-msec" val="150"/>
 	</TestGenAlone>
 ...
@@ -287,7 +287,7 @@
 MyClass_SK.cc: myclass.src.xml
 	@UNISET_CODEGEN@ -n MyClass --no-main myclass.src.xml
 
-\endcode
+\endcode                                                                                                          
 В этом примере
  - \b myclass.src.xml - это файл с описанием переменных
  - \b --no-main - отключает генерирование "запускающего" файла (функция main)

@@ -13,7 +13,6 @@
 --mbtcp-recv-timeout 5000 \
 --mbtcp-force-disconnect 1 \
 --mbtcp-polltime 3000 \
-#--mbtcp-set-prop-prefix tcp_
 --mbtcp-force-out 1 \
 $*
 

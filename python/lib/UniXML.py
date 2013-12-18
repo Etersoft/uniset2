@@ -6,7 +6,7 @@ import libxml2
 import xml.dom.minidom as md
 import re
 import os
-# -----------------------------
+# ----------------------------- 
 class EmptyNode():
      def __init__(self):
          self.proplist = dict()
@@ -25,10 +25,10 @@ class EmptyNode():
 
 # -----------------------------
 class UniXMLException(Exception):
-
+    
     def __init__(self,e=""):
         self.err = e
-
+    
     def getError(self):
         return self.err
 # -----------------------------
@@ -45,7 +45,7 @@ class UniXML():
                self.doc = libxml2.parseFile(xfile)
         except libxml2.parserError:
             raise UniXMLException("(UniXML): Can`t open file " + xfile)
-
+        
         libxml2.registerErrorHandler(self.callback, "-->")
 
     def __del__(self):
@@ -55,7 +55,7 @@ class UniXML():
         if libxml2.debugMemory(1) != 0:
             print "Memory leak %d bytes" % (libxml2.debugMemory(1))
             libxml2.dumpMemory()
-
+        
     def callback(ctx, str):
         print "%s %s" % (ctx, str)
 
@@ -81,7 +81,7 @@ class UniXML():
                 return [node, node.name, node.prop(propstr)]
             node = node.next
         return [None, None, None]
-
+    
     def findNode_byProp(self, node, propstr, valuestr):
         while node != None:
             if node.prop(propstr) == valuestr:
@@ -165,7 +165,7 @@ class UniXML():
 
     def pretty_save(self, filename):
         context = self.doc.serialize(encoding="utf-8")
-        mdoc = md.parseString(context)
+        mdoc = md.parseString(context) 
         s = mdoc.toprettyxml(encoding="utf-8").split("\n")
         out = open(filename,"w")
         p = re.compile(r'\ [^\s]{1,}=""')

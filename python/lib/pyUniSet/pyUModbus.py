@@ -61,7 +61,7 @@ class UModbus:
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, UModbus, name)
     __repr__ = _swig_repr
-    def __init__(self):
+    def __init__(self): 
         this = _pyUModbus.new_UModbus()
         try: self.this.append(this)
         except: self.this = this
@@ -90,7 +90,7 @@ class Params:
     __getattr__ = lambda self, name: _swig_getattr(self, Params, name)
     __repr__ = _swig_repr
     max = _pyUModbus.Params_max
-    def __init__(self):
+    def __init__(self): 
         this = _pyUModbus.new_Params()
         try: self.this.append(this)
         except: self.this = this
@@ -117,7 +117,7 @@ class UException(Exception):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, UException, name)
     __repr__ = _swig_repr
-    def __init__(self, *args):
+    def __init__(self, *args): 
         this = _pyUModbus.new_UException(*args)
         try: self.this.append(this)
         except: self.this = this
@@ -137,7 +137,7 @@ class UTimeOut(UException):
     for _s in [UException]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
     __getattr__ = lambda self, name: _swig_getattr(self, UTimeOut, name)
     __repr__ = _swig_repr
-    def __init__(self, *args):
+    def __init__(self, *args): 
         this = _pyUModbus.new_UTimeOut(*args)
         try: self.this.append(this)
         except: self.this = this
@@ -154,7 +154,7 @@ class USysError(UException):
     for _s in [UException]: __swig_getmethods__.update(getattr(_s,'__swig_getmethods__',{}))
     __getattr__ = lambda self, name: _swig_getattr(self, USysError, name)
     __repr__ = _swig_repr
-    def __init__(self, *args):
+    def __init__(self, *args): 
         this = _pyUModbus.new_USysError(*args)
         try: self.this.append(this)
         except: self.this = this
@@ -164,3 +164,5 @@ USysError_swigregister = _pyUModbus.USysError_swigregister
 USysError_swigregister(USysError)
 
 # This file is compatible with both classic and new-style classes.
+
+

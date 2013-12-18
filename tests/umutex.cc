@@ -13,88 +13,88 @@ uniset_rwmutex m_spin;
 
 class MyClass
 {
-	public:
-		MyClass( const std::string& name ): nm(name),count(0)
-		{
-			thr = new ThreadCreator<MyClass>(this, &MyClass::thread);
-		}
-		
-		~MyClass()
-		{
-			delete thr;
-		}
-				
-		void execute()
-		{
-			thr->start();
-		}
+    public:
+        MyClass( const std::string& name ): nm(name),count(0)
+        {
+            thr = new ThreadCreator<MyClass>(this, &MyClass::thread);
+        }
+        
+        ~MyClass()
+        {
+            delete thr;
+        }
+                
+        void execute()
+        {
+            thr->start();
+        }
 
-		inline std::string name(){ return nm; }
-		inline int lock_count(){ return count; }
+        inline std::string name(){ return nm; }
+        inline int lock_count(){ return count; }
+        
+        
+        // BAD CODE... only for test..
+        inline ThreadCreator<MyClass>* get(){ return thr; }
+            
+    protected:
+        std::string nm;
 
-
-		// BAD CODE... only for test..
-		inline ThreadCreator<MyClass>* get(){ return thr; }
-			
-	protected:
-		std::string nm;
-
-		void thread()
-		{
-			while(1)
-			{
-				{
-					uniset_mutex_lock l(m);
-					count++;
-					msleep(30);
-				}
-				msleep(10);
-			}
-		}
-				
-		private:
-			ThreadCreator<MyClass>* thr;
-			int count;
-	};
+        void thread()
+        {
+            while(1)
+            {
+                {
+                    uniset_mutex_lock l(m);
+                    count++;
+                    msleep(30);
+                }
+                msleep(10);
+            }
+        }
+                
+        private:
+            ThreadCreator<MyClass>* thr;
+            int count;
+    };
 
 class MyClassSpin
 {
-	public:
-		MyClassSpin( const std::string& name, bool rl=false ): nm(name),readLock(rl),count(0)
-		{
-			thr = new ThreadCreator<MyClassSpin>(this, &MyClassSpin::thread);
-		}
+    public:
+        MyClassSpin( const std::string& name, bool rl=false ): nm(name),readLock(rl),count(0)
+        {
+            thr = new ThreadCreator<MyClassSpin>(this, &MyClassSpin::thread);
+        }
+        
+        ~MyClassSpin()
+        {
+            delete thr;
+        }
+                
+        void execute()
+        {
+            thr->start();
+        }
 
-		~MyClassSpin()
-		{
-			delete thr;
-		}
-
-		void execute()
-		{
-			thr->start();
-		}
-
-		inline std::string name(){ return nm; }
-		inline int lock_count(){ return count; }
-
-	protected:
-		std::string nm;
+        inline std::string name(){ return nm; }
+        inline int lock_count(){ return count; }
+            
+    protected:
+        std::string nm;
         bool readLock;
 
-		void thread()
-		{
-			while(1)
-			{
+        void thread()
+        {
+            while(1)
+            {
                 if( !readLock )
-				{
-//					cerr << nm << ": before RWlock.." << endl;
-					uniset_rwmutex_wrlock l(m_spin);
-					count++;
-					msleep(30);
-//					cerr << nm << ": after RWlock.." << endl;
-				}
-				else
+                {
+//                    cerr << nm << ": before RWlock.." << endl;
+                    uniset_rwmutex_wrlock l(m_spin);
+                    count++;
+                    msleep(30);
+//                    cerr << nm << ": after RWlock.." << endl;
+                }
+                else
                 {
 //                    cerr << nm << "(readLock): before lock.." << endl;
                     uniset_rwmutex_rlock l(m_spin);
@@ -102,65 +102,65 @@ class MyClassSpin
                     msleep(20);
 //                    cerr << nm << "(readLock): after lock.." << endl;
                 }
-
+                
                 msleep(20);
-			}
-		}
-
-		private:
-			ThreadCreator<MyClassSpin>* thr;
-			int count;
-	};
-		
-
+            }
+        }
+                
+        private:
+            ThreadCreator<MyClassSpin>* thr;
+            int count;
+    };
+        
+        
 bool check_wr_lock( ost::ThreadLock& m )
 {
-	if( m.tryWriteLock() )
-	{
-		m.unlock();
-		return true;
-	}
-
-	return false;
+    if( m.tryWriteLock() )
+    {
+        m.unlock();
+        return true;
+    }
+    
+    return false;
 }
 
 bool check_r_lock( ost::ThreadLock& m )
 {
-	if( m.tryReadLock() )
-	{
-		m.unlock();
-		return true;
-	}
-
-	return false;
+    if( m.tryReadLock() )
+    {
+        m.unlock();
+        return true;
+    }
+    
+    return false;
 }
 
 int main( int argc, const char **argv )
 {
-	try
-	{
+    try
+    {
 
-		{
-			uniset_rwmutex m1("mutex1");
-			uniset_rwmutex m2("mutex2");
-			uniset_rwmutex m3_lcopy("mutex3");
-
-			cout << "m1: " << m1.name() << endl;
-			cout << "m2: " << m2.name() << endl;
-			cout << "m3: " << m3_lcopy.name() << endl;
-
-			m2 = m1;
-			cout << "copy m1... m2: " << m2.name() << endl;
-
-			m1.wrlock();
-			m3_lcopy = m1;
-			cout << "copy m1... m3: " << m2.name() << endl;
-			cout << "m3.lock: ..." << endl;
-			m3_lcopy.wrlock();
-			cout << "m3.lock: wrlock OK" << endl;
-		}
-
-		return 0;
+        {
+            uniset_rwmutex m1("mutex1");
+            uniset_rwmutex m2("mutex2");
+            uniset_rwmutex m3_lcopy("mutex3");
+            
+            cout << "m1: " << m1.name() << endl;            
+            cout << "m2: " << m2.name() << endl;            
+            cout << "m3: " << m3_lcopy.name() << endl;            
+            
+            m2 = m1;
+            cout << "copy m1... m2: " << m2.name() << endl;            
+            
+            m1.wrlock();
+            m3_lcopy = m1;
+            cout << "copy m1... m3: " << m2.name() << endl;            
+            cout << "m3.lock: ..." << endl;
+            m3_lcopy.wrlock();
+            cout << "m3.lock: wrlock OK" << endl;
+        }
+        
+        return 0;
 
 #if 0
     ost::ThreadLock m;
@@ -220,7 +220,7 @@ int main( int argc, const char **argv )
         cerr << "test lock: " << ( !um.isRelease() ? "OK" : "FAIL") << endl;
     }
     cerr << "test unlock: " << (um.isRelease() ? "OK" : "FAIL") << endl;
-
+    
     {
         uniset_mutex_lock l(um);
         cerr << "test second lock: " << (!um.isRelease() ? "OK" : "FAIL") << endl;
@@ -228,50 +228,50 @@ int main( int argc, const char **argv )
         uniset_mutex_lock l2(um,500);
         cerr << "test wait lock: " << ( !l2.lock_ok() ? "OK" : "FAIL") << endl;
     }
-
+    
     uniset_mutex_lock l3(um,500);
     cerr << "test wait lock: " << ( l3.lock_ok() ? "OK" : "FAIL") << endl;
-
+    
     return 0;
 #endif
+    
+    
+    int max = 10;
+    
+    if( argc > 1 )
+        max = UniSetTypes::uni_atoi(argv[1]);
 
+#if 1    
+    typedef std::vector<MyClass*> TVec;
+     TVec tvec(max);
 
-	int max = 10;
-	
-	if( argc > 1 )
-		max = UniSetTypes::uni_atoi(argv[1]);
-
-#if 1
-	typedef std::vector<MyClass*> TVec;
-	TVec tvec(max);
-
-	for( int i=0; i<max; i++ )
-	{
-		ostringstream s;
-		s << "t" << i;
-     	MyClass* t = new MyClass(s.str());
+    for( int i=0; i<max; i++ )
+    {
+        ostringstream s;
+        s << "t" << i;
+         MyClass* t = new MyClass(s.str());
         tvec[i] = t;
-     	t->execute();
-     	msleep(50);
-	}	
+         t->execute();
+         msleep(50);
+    }    
 
     cout << "TEST LOCK wait 10 sec.. (" << tvec.size() << " threads)" << endl;
     msleep(10000);
-
+    
     cout << "TEST LOCK RESULT: " << endl;
-
-	for( TVec::iterator it=tvec.begin(); it!=tvec.end(); it++ )
+    
+    for( TVec::iterator it=tvec.begin(); it!=tvec.end(); it++ )
     {
-	int c = (*it)->lock_count();
-	(*it)->get()->stop();
-	cout << (*it)->name() << ": locked counter: " << c << " " << ( c!=0 ? "OK":"FAIL" ) << endl;
+        int c = (*it)->lock_count();
+        (*it)->get()->stop();
+        cout << (*it)->name() << ": locked counter: " << c << " " << ( c!=0 ? "OK":"FAIL" ) << endl;
     }
 #endif
 
 #if 1
-	typedef std::vector<MyClassSpin*> TSpinVec;
-	TSpinVec tsvec(max);
-	for( int i=0; i<max; i++ )
+    typedef std::vector<MyClassSpin*> TSpinVec;
+     TSpinVec tsvec(max);
+    for( int i=0; i<max; i++ )
     {
         ostringstream s;
         s << "t" << i;
@@ -279,17 +279,17 @@ int main( int argc, const char **argv )
         tsvec[i] = t;
         t->execute();
         msleep(50);
-    }
-
+    }   
+    
     cout << "TEST WRLOCK wait 10 sec.. (" << tsvec.size() << " threads)" << endl;
     msleep(10000);
-
+    
     cout << "TEST WRLOCK RESULT: " << endl;
-
+    
     for( TSpinVec::iterator it=tsvec.begin(); it!=tsvec.end(); it++ )
     {
-	int c = (*it)->lock_count();
-	cout << (*it)->name() << ": locked counter: " << c << " " << ( c!=0 ? "OK":"FAIL" ) << endl;
+        int c = (*it)->lock_count();
+        cout << (*it)->name() << ": locked counter: " << c << " " << ( c!=0 ? "OK":"FAIL" ) << endl;
     }
 #endif
 
@@ -301,21 +301,21 @@ int main( int argc, const char **argv )
         MyClassSpin* t = new MyClassSpin(s.str(),true);
         t->execute();
         msleep(50);
-    }
+    }   
 
-	while(1)
-	{
-		{
+    while(1)
+    {
+        {
             cerr << "(writeLock): ************* lock WAIT..." << endl;
             uniset_spin_wrlock l(m_spin);
             cerr << "(writeLock): ************* lock OK.." << endl;
-	    }
+        }
 
         msleep(15);
     }
 
-#endif
-//	pause();
+#endif    
+//    pause();
 
     }
     catch(omniORB::fatalException& fe)
@@ -324,7 +324,7 @@ int main( int argc, const char **argv )
         cerr << "  file: " << fe.file() << endl;
         cerr << "  line: " << fe.line() << endl;
         cerr << "  mesg: " << fe.errmsg() << endl;
-    }
+    }    
     catch( std::exception& e )
     {
         cerr << "catch: " << e.what() << endl;
@@ -333,6 +333,6 @@ int main( int argc, const char **argv )
     {
         cerr << "catch(...)" << endl;
     }
-
-	return 0;
+    
+    return 0;
 }

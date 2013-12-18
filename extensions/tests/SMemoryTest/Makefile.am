@@ -1,4 +1,4 @@
-noinst_PROGRAMS = smemory-test
+noinst_PROGRAMS = smemory-test         
 smemory_test_LDADD = $(top_builddir)/lib/libUniSet.la \
 	$(top_builddir)/extensions/lib/libUniSetExtensions.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \

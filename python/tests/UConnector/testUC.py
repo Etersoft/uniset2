@@ -12,21 +12,21 @@ from pyUConnector import *
 from pyUExceptions import *
 
 if __name__ == "__main__":
-
+	
 	lst = Params_inst()
 
 	for i in range(0, len(sys.argv)):
 		if i >= Params.max:
 			break;
-
+	
 		lst.add( sys.argv[i] )
 
 	p = []
 	print "lst: class: " + str(p.__class__.__name__)
 
-	try:
+	try:	
 		uc1 = UConnector( lst, "test.xml" )
-
+		
 #		print "(0)UIType: %s" % uc1.getUIType()
 
 		print "(1)getShortName: id=%d name=%s" % (1, uc1.getShortName(1))

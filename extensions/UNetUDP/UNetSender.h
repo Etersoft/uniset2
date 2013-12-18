@@ -18,84 +18,84 @@
  */
 class UNetSender
 {
-	public:
-		UNetSender( const std::string host, const ost::tpport_t port, SMInterface* smi,
-					const std::string s_field="", const std::string s_fvalue="", SharedMemory* ic=0 );
+    public:
+        UNetSender( const std::string host, const ost::tpport_t port, SMInterface* smi,
+                    const std::string s_field="", const std::string s_fvalue="", SharedMemory* ic=0 );
 
-		~UNetSender();
+        ~UNetSender();
+    
+        struct UItem
+        {
+            UItem():
+                iotype(UniversalIO::UnknownIOType),
+                id(UniSetTypes::DefaultObjectId),
+                pack_ind(-1){}
 
-		struct UItem
-		{
-			UItem():
-				iotype(UniversalIO::UnknownIOType),
-				id(UniSetTypes::DefaultObjectId),
-				pack_ind(-1){}
+            UniversalIO::IOType iotype;
+            UniSetTypes::ObjectId id;
+            IOController::IOStateList::iterator ioit;
+            int pack_ind;
 
-			UniversalIO::IOType iotype;
-			UniSetTypes::ObjectId id;
-			IOController::IOStateList::iterator ioit;
-			int pack_ind;
+            friend std::ostream& operator<<( std::ostream& os, UItem& p );
+        };
+        
+        typedef std::vector<UItem> DMap;
 
-			friend std::ostream& operator<<( std::ostream& os, UItem& p );
-		};
+        void start();
+        void stop();
 
-		typedef std::vector<UItem> DMap;
+        void send();
+        void real_send();
+        
+        /*! (принудительно) обновить все данные (из SM) */
+        void updateFromSM();
 
-		void start();
-		void stop();
+        /*! Обновить значение по ID датчика */
+        void updateSensor( UniSetTypes::ObjectId id, long value );
 
-		void send();
-		void real_send();
+        /*! Обновить значение по итератору */
+        void updateItem( DMap::iterator& it, long value );
 
-		/*! (принудительно) обновить все данные (из SM) */
-		void updateFromSM();
+        inline void setSendPause( int msec ){ sendpause = msec; }
+        
+        /*! заказать датчики */
+        void askSensors( UniversalIO::UIOCommand cmd );
 
-		/*! Обновить значение по ID датчика */
-		void updateSensor( UniSetTypes::ObjectId id, long value );
+        /*! инициализация  итераторов */
+        void initIterators();
+        
+    protected:
 
-		/*! Обновить значение по итератору */
-		void updateItem( DMap::iterator& it, long value );
+        std::string s_field;
+        std::string s_fvalue;
 
-		inline void setSendPause( int msec ){ sendpause = msec; }
+        SMInterface* shm;
 
-		/*! заказать датчики */
-		void askSensors( UniversalIO::UIOCommand cmd );
+        bool initItem( UniXML_iterator& it );
+        bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
 
-		/*! инициализация  итераторов */
-		void initIterators();
+        void readConfiguration();
 
-	protected:
+    private:
+        UNetSender();
 
-		std::string s_field;
-		std::string s_fvalue;
+        ost::UDPBroadcast* udp;
+        ost::IPV4Address addr;
+        ost::tpport_t port;
+        std::string s_host;
 
-		SMInterface* shm;
+        std::string myname;
+        int sendpause;
+        bool activated;
+        
+        UniSetTypes::uniset_rwmutex pack_mutex;
+        UniSetUDP::UDPMessage mypack;
+        DMap dlist;
+        int maxItem;
+        unsigned long packetnum;
+        UniSetUDP::UDPPacket s_msg;
 
-		bool initItem( UniXML_iterator& it );
-		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
-
-		void readConfiguration();
-
-	private:
-		UNetSender();
-
-		ost::UDPBroadcast* udp;
-		ost::IPV4Address addr;
-		ost::tpport_t port;
-		std::string s_host;
-
-		std::string myname;
-		int sendpause;
-		bool activated;
-		
-		UniSetTypes::uniset_rwmutex pack_mutex;
-		UniSetUDP::UDPMessage mypack;
-		DMap dlist;
-		int maxItem;
-		unsigned long packetnum;
-		UniSetUDP::UDPPacket s_msg;
-
-		ThreadCreator<UNetSender>* s_thr;	// send thread
+        ThreadCreator<UNetSender>* s_thr;    // send thread
 };
 // -----------------------------------------------------------------------------
 #endif // UNetSender_H_

@@ -160,7 +160,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askSensor( UniSetTypes::ObjectId si
 {
 	if( cmd == UniversalIO::UIONotify )
 	{
-		// приходится искуственно использовать третий параметр,
+		// приходится искуственно использовать третий параметр, 
 		// что-бы компилятор выбрал
 		// правильный(для аналоговых) конструктор у SensorMessage
 		IOController_i::CalibrateInfo _ci;

@@ -8,9 +8,9 @@
 	\section pgDep_secIOControl Зависимость на уровне IOController (SharedMemmory)
 
 	Механизм зависимостей реализован в классе IOController.
-
+	
 	Пример записи "зависимости" в configure.xml:
-\code
+\code	
 	<item textname="...." iotype="..." .../>
 		<consumers>
 		<consumers>
@@ -19,7 +19,7 @@
 			<depend name="Sensor2" filter2="val1" />
 		</depends>
 	</item>
-\endcode
+\endcode	
 	При считывании конф. файла можно задавать фильтры.
 	
 	
@@ -43,9 +43,9 @@
 в отличие от механизма \ref  pgDep_secIOControl
 
 	Пример записи "зависимости" в configure.xml:
-\code
+\code	
 	<item textname="...." iotype="..." ... depend="OtherSensor_AS" depend_value="2" />
-\endcode
+\endcode	
   В данном случае подразумевается, что разрещающим датчиком является OtherSensor_AS=2.
 
 */

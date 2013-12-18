@@ -31,72 +31,72 @@ namespace UniSetTypes
 {
 class ObjectIndex
 {
-	public:
-		ObjectIndex(){};
-		virtual ~ObjectIndex(){};
+    public:
+        ObjectIndex(){};
+        virtual ~ObjectIndex(){};
 
-		static const std::string sepName;
-		static const std::string sepNode;
+        static const std::string sepName;
+        static const std::string sepNode;
 
-		// info
-		virtual const ObjectInfo* getObjectInfo( const ObjectId )=0;
+        // info
+        virtual const ObjectInfo* getObjectInfo( const ObjectId )=0;
         virtual const ObjectInfo* getObjectInfo( const std::string& name )=0;
 
-		// создание полного имени в репозитории по паре имя:узел
+        // создание полного имени в репозитории по паре имя:узел
         static std::string mkRepName( const std::string& repname, const std::string& nodename );
-		// создание имени узла по реальному и виртуальному
+        // создание имени узла по реальному и виртуальному
         static std::string mkFullNodeName( const std::string& realnode, const std::string& virtnode );
-		// получить имя для регистрации в репозитории (т.е. без секции)
+        // получить имя для регистрации в репозитории (т.е. без секции)
         static std::string getBaseName( const std::string& fname );
 
-		// object id
-		virtual ObjectId getIdByName(const std::string& name)=0;
-		virtual std::string getNameById( const ObjectId id );
-		virtual std::string getNameById( const ObjectId id, const ObjectId node );
+        // object id
+        virtual ObjectId getIdByName(const std::string& name)=0;
+        virtual std::string getNameById( const ObjectId id );
+        virtual std::string getNameById( const ObjectId id, const ObjectId node );
 
-		// node
-		virtual std::string getFullNodeName(const std::string& fullname);
-		virtual std::string getVirtualNodeName(const std::string& fullNodeName);
-		virtual std::string getRealNodeName(const std::string& fullNodeName);
-		virtual std::string getRealNodeName( const ObjectId id );
-		
-		virtual std::string getName( const std::string& fullname );
+        // node
+        virtual std::string getFullNodeName(const std::string& fullname);
+        virtual std::string getVirtualNodeName(const std::string& fullNodeName);
+        virtual std::string getRealNodeName(const std::string& fullNodeName);
+        virtual std::string getRealNodeName( const ObjectId id );
+        
+        virtual std::string getName( const std::string& fullname );
 
-		// src name
-		virtual std::string getMapName(const ObjectId id)=0;
-		virtual std::string getTextName(const ObjectId id)=0;
+        // src name
+        virtual std::string getMapName(const ObjectId id)=0;
+        virtual std::string getTextName(const ObjectId id)=0;
 
-		// 
-		virtual std::ostream& printMap(std::ostream& os)=0;
+        // 
+        virtual std::ostream& printMap(std::ostream& os)=0;
 
-		// ext
-		inline ObjectId getIdByFullName(const std::string& fname)
-		{
-			return getIdByName(getName(fname));
-		}
-		
-		inline ObjectId getNodeId( const std::string& fullname )
-		{
-			return getIdByName( getFullNodeName(fullname) );
-		}
+        // ext
+        inline ObjectId getIdByFullName(const std::string& fname)
+        {
+            return getIdByName(getName(fname));
+        }
+        
+        inline ObjectId getNodeId( const std::string& fullname )
+        {
+            return getIdByName( getFullNodeName(fullname) );
+        }
 
-		inline std::string getFullNodeName( const ObjectId nodeid )
-		{
-			return getMapName(nodeid);	
-		}
+        inline std::string getFullNodeName( const ObjectId nodeid )
+        {
+            return getMapName(nodeid);    
+        }
 
-		void initLocalNode( ObjectId nodeid );
-	
-	
-	protected:
-		std::string nmLocalNode;	// для оптимизации
+        void initLocalNode( ObjectId nodeid );
+    
+    
+    protected:
+        std::string nmLocalNode;    // для оптимизации
 
-	private:
-	
+    private:
+    
 };
-	
+    
 
 // -----------------------------------------------------------------------------------------
-}	// end of namespace
+}    // end of namespace
 // -----------------------------------------------------------------------------------------
 #endif

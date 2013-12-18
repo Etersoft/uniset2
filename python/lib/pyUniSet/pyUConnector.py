@@ -62,7 +62,7 @@ class Params:
     __getattr__ = lambda self, name: _swig_getattr(self, Params, name)
     __repr__ = _swig_repr
     max = _pyUConnector.Params_max
-    def __init__(self):
+    def __init__(self): 
         this = _pyUConnector.new_Params()
         try: self.this.append(this)
         except: self.this = this
@@ -89,7 +89,7 @@ class UConnector:
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, UConnector, name)
     __repr__ = _swig_repr
-    def __init__(self, *args):
+    def __init__(self, *args): 
         this = _pyUConnector.new_UConnector(*args)
         try: self.this.append(this)
         except: self.this = this
@@ -108,3 +108,5 @@ UConnector_swigregister = _pyUConnector.UConnector_swigregister
 UConnector_swigregister(UConnector)
 
 # This file is compatible with both classic and new-style classes.
+
+

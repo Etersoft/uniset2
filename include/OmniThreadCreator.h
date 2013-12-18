@@ -29,113 +29,113 @@
 //----------------------------------------------------------------------------
 /*! \class OmniThreadCreator
  * \par
- *	Шаблон для создания потоков с указанием функции вызова. 
+ *    Шаблон для создания потоков с указанием функции вызова. 
  * Пример использования:
- *	
-	\code
-		class MyClass
-		{
-			public:
-				MyClass();
-				~MyClass();
-				
-				execute();
-			
-			protected:
-				void thread();
-				
-			private:
-				OmniThreadCreator<MyClass>* thr;
-		};
-		
-		MyClass::MyClass()
-		{
-			thr = new OmniThreadCreator<MyClass>(this, &MyClass::thread);
-		}
-		MyClass::~MyClass()
-		{
-			delete thr;
-		}
+ *    
+    \code
+        class MyClass
+        {
+            public:
+                MyClass();
+                ~MyClass();
+                
+                execute();
+            
+            protected:
+                void thread();
+                
+            private:
+                OmniThreadCreator<MyClass>* thr;
+        };
+        
+        MyClass::MyClass()
+        {
+            thr = new OmniThreadCreator<MyClass>(this, &MyClass::thread);
+        }
+        MyClass::~MyClass()
+        {
+            delete thr;
+        }
 
-		void MyClass::thread()
-		{
-			while(active)
-			{
-				//что-то делать
-			}
-		}
+        void MyClass::thread()
+        {
+            while(active)
+            {
+                //что-то делать
+            }
+        }
 
-		void MyClass::execute()
-		{
-			// создаем поток
-			thr->start();
+        void MyClass::execute()
+        {
+            // создаем поток
+            thr->start();
 
-			// делаем что-то еще
-		}
+            // делаем что-то еще
+        }
 
-		main()
-		{
-			MyClass* mc = new MyClass();
-			mc->execute();
-			
-			// или так
-			OmniThreadCreator<MyClass>*  th = new OmniThreadCreator<TestClass>(&mc, &MyClass::thread);	
-			th->start();
-			// делаем что-то еще
-		}
-	\endcode
+        main()
+        {
+            MyClass* mc = new MyClass();
+            mc->execute();
+            
+            // или так
+            OmniThreadCreator<MyClass>*  th = new OmniThreadCreator<TestClass>(&mc, &MyClass::thread);    
+            th->start();
+            // делаем что-то еще
+        }
+    \endcode
  *
 */ 
 //----------------------------------------------------------------------------------------
 template<class ThreadMaster>
 class OmniThreadCreator:
-	public omni_thread
+    public omni_thread
 {
-	public:
-	
-		/*! прототип функции вызова */
-		typedef void(ThreadMaster::* Action)(void*);	
+    public:
+    
+        /*! прототип функции вызова */
+        typedef void(ThreadMaster::* Action)(void*);    
 
-		OmniThreadCreator( ThreadMaster* m, Action a, bool undetached=false );
-		~OmniThreadCreator(){};
+        OmniThreadCreator( ThreadMaster* m, Action a, bool undetached=false );
+        ~OmniThreadCreator(){};
 
-	protected:
-		void* run_undetached(void *x)
-		{
-			if(m)
-				(m->*act)(x);
-				
-			return (void*)0;
-		}
-		
-		virtual void run(void* arg)
-		{
-			if(m)
-				(m->*act)(arg);
-		}
+    protected:
+        void* run_undetached(void *x)
+        {
+            if(m)
+                (m->*act)(x);
+                
+            return (void*)0;
+        }
+        
+        virtual void run(void* arg)
+        {
+            if(m)
+                (m->*act)(arg);
+        }
 
-	private:
-		OmniThreadCreator();
-		ThreadMaster* m;
-		Action act;
+    private:
+        OmniThreadCreator();
+        ThreadMaster* m;
+        Action act;
 };
 
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 OmniThreadCreator<ThreadMaster>::OmniThreadCreator( ThreadMaster* m, Action a, bool undetach  ):
-	omni_thread(),
-	m(m),
-	act(a)
+    omni_thread(),
+    m(m),
+    act(a)
 {
-	if(undetach)
-	 	start_undetached();
+    if(undetach)
+         start_undetached();
 }
 //----------------------------------------------------------------------------------------
 
 template <class ThreadMaster>
 OmniThreadCreator<ThreadMaster>::OmniThreadCreator():
-	m(0),
-	act(0)
+    m(0),
+    act(0)
 {
 }
 //----------------------------------------------------------------------------------------
