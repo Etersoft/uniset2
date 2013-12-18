@@ -19,6 +19,7 @@
       <item name="changeTime" type="int" default="2000" min="0" comment="change state time" const="1" public="1" />
       <item name="checkWorkingTime" type="int" default="3000" min="0" comment="check working time" const="1" public="1" />
       <item name="checkTime" type="int" default="3000" min="0" comment="check Working time" const="1" public="1" />
+      <item name="checkLogTime" type="int" default="2500" min="0" comment="Проверка управления логами" const="1" public="1" />
   </variables>
   <smap>
 	<!-- name - название переменной в конф. файле -->
@@ -39,6 +40,11 @@
 	<!-- проверка работы threshold-ов -->
 	<item name="t_set_c" vartype="out" comment="аналоговый датчик (для выставления порога)"/>
 	<item name="t_check_s" vartype="in" comment="датчик для проверки срабатывания"/>
+
+	<!-- Проверка управления логами -->
+	<item name="log_c" vartype="out" comment="аналоговый датчик для выставления уровня логов"/>
+	<item name="log_s" vartype="in" comment="датчик для управления логами" loglevel="1"/>
+
   </smap>
 
   <msgmap>

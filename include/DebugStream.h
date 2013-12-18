@@ -183,6 +183,7 @@ public:
 	DMANIP(repository,REPOSITORY)
 	DMANIP(system,SYSTEM)
 	DMANIP(exception,EXCEPTION)
+	DMANIP(any,ANY)
 #undef DMANIP
 
 	std::ostream& printDate(Debug::type t, char brk='/');

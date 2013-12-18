@@ -2,6 +2,8 @@
 #ifndef TestProc_H_
 #define TestProc_H_
 // -----------------------------------------------------------------------------
+#include <vector>
+#include "Debug.h"
 #include "TestProc_SK.h"
 // -----------------------------------------------------------------------------
 class TestProc:
@@ -18,7 +20,8 @@ class TestProc:
 		{
 			tmChange,
 			tmCheckWorking,
-			tmCheck
+			tmCheck,
+			tmLogControl
 		};
 
 		virtual void step();
@@ -29,10 +32,14 @@ class TestProc:
         void test_depend();
         void test_undefined_state();
         void test_thresholds();
+        void test_loglevel();
 
 	private:
 		bool state;
 		bool undef;
+
+		std::vector<Debug::type> loglevels;
+		std::vector<Debug::type>::iterator lit;
 };
 // -----------------------------------------------------------------------------
 #endif // TestProc_H_

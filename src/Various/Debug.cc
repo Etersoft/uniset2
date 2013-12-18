@@ -43,7 +43,7 @@ static error_item errorTags[] = {
 	{ Debug::LEVEL7,    "level7",    ("UniSet debug level7")},
 	{ Debug::LEVEL8,    "level8",    ("UniSet debug level8")},
 	{ Debug::LEVEL9,    "level9",    ("UniSet debug level9")},	
-	{ Debug::REPOSITORY,"repository",("UniSet repository messages")},		
+	{ Debug::REPOSITORY,"repository",("UniSet repository messages")},
     { Debug::ANY,       "any",       ("All debugging messages")},
 	{ Debug::EXCEPTION, "exception", ("Exception debug messages")},
 	
