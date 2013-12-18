@@ -66,6 +66,7 @@ IONotifyController::IONotifyController( ObjectId id, NCRestorer* d ):
 	maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 {
 	signal_change_undefined_state().connect(sigc::mem_fun(*this, &IONotifyController::onChangeUndefinedState));
+	signal_init().connect(sigc::mem_fun(*this, &IONotifyController::initItem));
 
 	// добавляем фильтры
 	addIOFilter( sigc::mem_fun(this,&IONotifyController::myIOFilter) );
@@ -309,18 +310,12 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
 	}
 }
 // ------------------------------------------------------------------------------------------
-bool IONotifyController::myIOFilter(const USensorInfo& ai,
-									CORBA::Long newvalue, UniSetTypes::ObjectId sup_id)
+bool IONotifyController::myIOFilter( const USensorInfo& ai,
+									CORBA::Long newvalue, UniSetTypes::ObjectId sup_id )
 {
 	if( ai.value == newvalue )
 		return false;
-	
-	if( ai.ci.sensibility <= 0 )
-		return true;
 
-	if( abs(ai.value - newvalue) < ai.ci.sensibility )
-		return false;
-	
 	return true;
 }
 // ------------------------------------------------------------------------------------------
@@ -453,8 +448,11 @@ void IONotifyController::loggingInfo(UniSetTypes::SensorMessage& sm)
 // --------------------------------------------------------------------------------------------------------------
 bool IONotifyController::activateObject()
 {
-	IOController::activateObject();
+	// сперва вычитаем датчиков и заказчиков..
 	readDump();
+	// а потом уже собственно активация..
+	IOController::activateObject();
+
 	return true;
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -472,6 +470,14 @@ void IONotifyController::readDump()
 	}
 }
 // --------------------------------------------------------------------------------------------------------------
+void IONotifyController::initItem( IOStateList::iterator& li, IOController* ic )
+{
+	USensorInfo& s(li->second);
+
+	if( s.type == UniversalIO::AI || s.type == UniversalIO::AO )
+		checkThreshold( li, s.si, false );
+}
+// ------------------------------------------------------------------------------------------
 void IONotifyController::dumpOrdersList(const IOController_i::SensorInfo& si, 
 											const IONotifyController::ConsumerList& lst)
 {
@@ -515,8 +521,7 @@ void IONotifyController::dumpThresholdList(const IOController_i::SensorInfo& si,
 
 void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, 
 									UniSetTypes::ThresholdId tid,
-									CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Long sb,
-									UniversalIO::UIOCommand cmd )
+									CORBA::Long lowLimit, CORBA::Long hiLimit, UniversalIO::UIOCommand cmd )
 {
 	if( lowLimit > hiLimit )
 		throw IONotifyController_i::BadRange();
@@ -531,8 +536,8 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 		// поиск датчика в списке 
 		UniSetTypes::KeyType skey( key(si.id,si.node) );
 		AskThresholdMap::iterator it = askTMap.find(skey);
-		ThresholdInfoExt ti(tid,lowLimit, hiLimit,sb);
-		ti.itSID = myioEnd();
+		ThresholdInfoExt ti(tid,lowLimit,hiLimit);
+		ti.sit = myioEnd();
 
 	  	switch( cmd )
 		{
@@ -604,17 +609,17 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
 					sm.sm_tv_usec	= ti.tv_usec;
 					sm.ci			= li->second.ci;
 	
-						// Проверка нижнего предела
-					if( val <= (lowLimit-sb) )
+					// Проверка нижнего предела
+					if( val <= lowLimit )
 					{
 						sm.threshold = false;
-						CORBA::Object_var op = ui.resolve(ci.id, ci.node);
+					CORBA::Object_var op = ui.resolve(ci.id, ci.node);
 						UniSetObject_i_var ref = UniSetObject_i::_narrow(op);
 						if(!CORBA::is_nil(ref))
 							ref->push(sm.transport_msg());
 					}
 					// Проверка верхнего предела
-					else if( val >= (hiLimit+sb) )
+					else if( val >= hiLimit )
 					{
 						sm.threshold = true;
 						CORBA::Object_var op = ui.resolve(ci.id, ci.node);
@@ -691,7 +696,6 @@ bool IONotifyController::addThreshold(ThresholdExtList& lst, ThresholdInfoExt& t
 
 	addConsumer(ti.clst, ci);
 
-
 	// запоминаем начальное время
 	struct timeval tm;
 	struct timezone tz;
@@ -766,9 +770,11 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 
 		for( ThresholdExtList::iterator it=lst->second.list.begin(); it!=lst->second.list.end(); ++it) 
 		{
+			// Используем здесь sm.value чтобы не делать ещё раз lock на li->second.value
+
 			// Проверка нижнего предела
 			// значение должно быть меньше lowLimit-чуствительность
-			if( li->second.value <= (it->lowlimit-it->sensibility) )
+			if( sm.value <= it->lowlimit )
 			{
 				if( it->state == IONotifyController_i::LowThreshold )
 					continue;
@@ -793,7 +799,7 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 						if( it->inverse )
 							state^=1;
 						
-						localSetValue(it->itSID,SensorInfo(it->sid),(state ? 1:0),getId());
+						localSetValue(it->sit,SensorInfo(it->sid),(state ? 1:0),getId());
 					}
 					catch( UniSetTypes::Exception& ex )
 					{
@@ -808,7 +814,7 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 			}
 			// Проверка верхнего предела
 			// значение должно быть больше hiLimit+чуствительность
-			else if( li->second.value >= (it->hilimit+it->sensibility) )
+			else if( sm.value >= it->hilimit )
 			{ 
 				if( it->state == IONotifyController_i::HiThreshold )
 					continue;
@@ -832,7 +838,7 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 						if( it->inverse ) 
 							state^=1;
 
-						localSetValue(it->itSID,SensorInfo(it->sid),(state?1:0),getId());
+						localSetValue(it->sit,SensorInfo(it->sid),(state?1:0),getId());
 					}
 					catch( UniSetTypes::Exception& ex )
 					{
@@ -849,7 +855,6 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 				it->state = IONotifyController_i::NormalThreshold;
 		}
 	}	// unlock
-
 }
 // --------------------------------------------------------------------------------------------------------------
 IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold( UniSetTypes::KeyType key, UniSetTypes::ThresholdId tid  )
@@ -910,7 +915,6 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 				(*res)[i].tlist[k].id 			= it2->id;
 				(*res)[i].tlist[k].hilimit 		= it2->hilimit;
 				(*res)[i].tlist[k].lowlimit 	= it2->lowlimit;
-				(*res)[i].tlist[k].sensibility 	= it2->sensibility;
 				(*res)[i].tlist[k].state 		= it2->state;
 				(*res)[i].tlist[k].tv_sec 		= it2->tv_sec;
 				(*res)[i].tlist[k].tv_usec 		= it2->tv_usec;

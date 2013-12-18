@@ -63,7 +63,6 @@ class NCRestorer;
 и оставлены для совместимости со старыми интерфейсами.
 ... продолжение следует...
 
-
 	\section sec_NC_Consumers  Заказчики
 В качестве "заказчиков" могут выступать любые UniSet-объекты (UniSetObject),
 обладающие "обратным адресом" (идентификатором), по которому присылается
@@ -143,8 +142,7 @@ class IONotifyController:
 		
 		virtual void askThreshold(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, 
 									UniSetTypes::ThresholdId tid,
-									CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Long sensibility,
-									UniversalIO::UIOCommand cmd );
+									CORBA::Long lowLimit, CORBA::Long hiLimit, UniversalIO::UIOCommand cmd );
 
 		virtual UniSetTypes::IDSeq* askSensorsSeq(const UniSetTypes::IDSeq& lst, 
 													const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
@@ -175,7 +173,7 @@ class IONotifyController:
 		struct ThresholdInfoExt:
 			public IONotifyController_i::ThresholdInfo
 		{
-			ThresholdInfoExt( UniSetTypes::ThresholdId tid, CORBA::Long low, CORBA::Long hi, CORBA::Long sb,
+			ThresholdInfoExt( UniSetTypes::ThresholdId tid, CORBA::Long low, CORBA::Long hi,
 								UniSetTypes::ObjectId _sid=UniSetTypes::DefaultObjectId,
 								bool inv = false ):
 			sid(_sid),
@@ -184,21 +182,16 @@ class IONotifyController:
 				id			= tid;
 				hilimit		= hi;
 				lowlimit	= low;
-				sensibility = sb;
 				state 		= IONotifyController_i::NormalThreshold;
 			}
 
 			ConsumerList clst;
 
-			/*! идентификатор дискретного датчика
-				связанного с данным порогом
-			*/
+			/*! идентификатор дискретного датчика связанного с данным порогом */
 			UniSetTypes::ObjectId sid;
 			
-			/*! итератор в списке датчиков 
-				(для оптимально-быстрого доступа)
-			*/
-			IOController::IOStateList::iterator itSID;
+			/*! итератор в списке датчиков (для оптимально-быстрого доступа) */
+			IOController::IOStateList::iterator sit;
 			
 			/*! инверсная логика */
 			bool inverse; 
@@ -207,12 +200,10 @@ class IONotifyController:
 			{
 				return ((id == r.id) && 
 						(hilimit == r.hilimit) && 
-						(lowlimit == r.lowlimit) && 
-						(sensibility == r.sensibility) );
+						(lowlimit == r.lowlimit) );
 			}
 		};
 		
-
 		typedef std::list<ThresholdInfoExt> ThresholdExtList;
 
 		/*! массив пар датчик->список потребителей */
@@ -237,6 +228,7 @@ class IONotifyController:
 	protected:
 	    IONotifyController();
 		virtual bool activateObject();
+		virtual void initItem( IOStateList::iterator& it, IOController* ic );
 
 		// ФИЛЬТРЫ
 		bool myIOFilter(const USensorInfo& ai, CORBA::Long newvalue, UniSetTypes::ObjectId sup_id);
@@ -251,7 +243,6 @@ class IONotifyController:
 		//! поиск информации о пороговом датчике
 		ThresholdExtList::iterator findThreshold( UniSetTypes::KeyType k, UniSetTypes::ThresholdId tid );
 		
-
 		//! сохранение информации об изменении состояния датчика в базу
 		virtual void loggingInfo(UniSetTypes::SensorMessage& sm);
 

@@ -124,12 +124,12 @@ class UInterface
 		//! Заказ информации об изменении дискретного датчика
 		void askThreshold( UniSetTypes::ObjectId sensorId, UniSetTypes::ThresholdId tid,
 							UniversalIO::UIOCommand cmd,
-							CORBA::Long lowLimit=0, CORBA::Long hiLimit=0, CORBA::Long sensibility=0,
+							CORBA::Long lowLimit=0, CORBA::Long hiLimit=0,
 							UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
 		void askRemoteThreshold( UniSetTypes::ObjectId sensorId, UniSetTypes::ObjectId node,
 								 UniSetTypes::ThresholdId thresholdId, UniversalIO::UIOCommand cmd,
-								 CORBA::Long lowLimit=0, CORBA::Long hiLimit=0, CORBA::Long sensibility=0,
+								 CORBA::Long lowLimit=0, CORBA::Long hiLimit=0,
 								 UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
 		// ---------------------------------------------------------------

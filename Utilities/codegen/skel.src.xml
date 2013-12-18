@@ -17,9 +17,8 @@
   </settings>
   <variables>
       <item name="changeTime" type="int" default="2000" min="0" comment="change state time" const="1" public="1" />
+      <item name="checkWorkingTime" type="int" default="3000" min="0" comment="check working time" const="1" public="1" />
       <item name="checkTime" type="int" default="3000" min="0" comment="check Working time" const="1" public="1" />
-      <item name="checkDependTime" type="int" default="5000" min="0" comment="check depend time" const="1" public="1" />
-      <item name="checkUndefTime" type="int" default="3000" min="0" comment="check undef time" const="1" public="1" />
   </variables>
   <smap>
 	<!-- name - название переменной в конф. файле -->
@@ -36,6 +35,11 @@
 	<!-- проверка работы undefined state -->
 	<item name="undef_c" vartype="out" comment="аналоговый датчик (для проверки undef-состояния)"/>
 	<item name="check_undef_s" vartype="in" comment="датчик для выставления undef-состояния"/>
+
+	<!-- проверка работы threshold-ов -->
+	<item name="t_set_c" vartype="out" comment="аналоговый датчик (для выставления порога)"/>
+	<item name="t_check_s" vartype="in" comment="датчик для проверки срабатывания"/>
+
   </smap>
 
   <msgmap>

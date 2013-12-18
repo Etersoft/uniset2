@@ -115,7 +115,8 @@ void NCRestorer_XML::read_list( UniXML& xml, xmlNode* node, IONotifyController* 
 
 		if( !getSensorInfo(xml,it,inf) )
 		{
-			ulog.warn() << ic->getName() << "(read_list): не смог получить информацию по датчику " << endl;
+			if( ulog.is_warn() )
+				ulog.warn() << ic->getName() << "(read_list): не смог получить информацию по датчику " << endl;
 			continue;
 		}
 
@@ -265,14 +266,7 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
 	else if( prior == "Super" )
 		inf.priority = Message::Super;
 	else
-	{
 		inf.priority = Message::Medium;
-		if( ulog.is_info() )
-		{
-			ulog.info() << "(NCRestorer_XML:getSensorInfo): не указан приоритет для "
-				<< xml.getProp(it,"name") << endl;
-		}
-	}
 
 	inf.type = UniSetTypes::getIOType(xml.getProp(it,"iotype"));
 	if( inf.type == UniversalIO::UnknownIOType )
@@ -289,7 +283,6 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
 		inf.ci.maxRaw = xml.getIntProp(it,"rmax");
 		inf.ci.minCal = xml.getIntProp(it,"cmin");
 		inf.ci.maxCal = xml.getIntProp(it,"cmax");
-		inf.ci.sensibility = xml.getIntProp(it,"sensibility");
 		inf.ci.precision = xml.getIntProp(it,"precision");
 	}
 	else
@@ -298,13 +291,12 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
 		inf.ci.maxRaw = 0;
 		inf.ci.minCal = 0;
 		inf.ci.maxCal = 0;
-		inf.ci.sensibility = 0;
 		inf.ci.precision = 0;
 	}
 
 	inf.default_val = xml.getIntProp(it,"default");
 	inf.dbignore = xml.getIntProp(it,"dbignore");
-	inf.value 		= inf.default_val;
+	inf.value = inf.default_val;
 	inf.undefined = false;
 	inf.real_value = inf.value;
 
@@ -379,7 +371,6 @@ void NCRestorer_XML::read_thresholds(UniXML& xml, xmlNode* node, IONotifyControl
 			{
 				ulog.info() << "(read_thresholds): \tthreshold low="
 							<< ti.lowlimit << " \thi=" << ti.hilimit
-							<< " \t sb=" << ti.sensibility
 							<< " \t sid=" << ti.sid
 							<< " \t inverse=" << ti.inverse
 							<< endl << flush;
@@ -482,7 +473,6 @@ bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node,
 	ti.id 			= uit.getIntProp("id");
 	ti.lowlimit 	= uit.getIntProp("lowlimit");
 	ti.hilimit 		= uit.getIntProp("hilimit");
-	ti.sensibility 	= uit.getIntProp("sensibility");
 	ti.inverse 		= uit.getIntProp("inverse");
 	ti.state 		= IONotifyController_i::NormalThreshold;
 	return true;

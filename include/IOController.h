@@ -102,7 +102,6 @@ class IOController:
 		struct USensorInfo;
 		typedef std::map<UniSetTypes::KeyType, USensorInfo> IOStateList;
 
-
 		// ================== Достпуные сигналы =================
 		/*!
 		// \warning  В сигнале напрямую передаётся итератор (т.е. по сути указатель на внутреннюю структуру!)
@@ -151,10 +150,10 @@ class IOController:
 
 			// Дополнительные (вспомогательные поля)
 			UniSetTypes::uniset_rwmutex val_lock; /*!< флаг блокирующий работу со значением */
-		
+
 			IOStateList::iterator it;
 
-			void* any; 			/*!< расширение для возможности хранения своей информации */
+			void* any; /*!< расширение для возможности хранения своей информации */
 
 			// сигнал для реализации механизма зависимостией..
 			// (все зависимые датчики подключаются к нему (см. NCRestorer::init_depends_signals)
@@ -193,11 +192,18 @@ class IOController:
 			virtual bool disactivateObject();
 			virtual bool activateObject();
 
+			/*! Начальная инициализация (выставление значений) */
+			virtual void activateInit();
+
 			/*! регистрация датчиков, за информацию о которых отвечает данный IOController */
 		    virtual void sensorsRegistration(){};
 			/*! удаление из репозитория датчиков за информацию о которых отвечает данный IOController */
 			virtual void sensorsUnregistration();
 	
+			typedef sigc::signal<void, IOStateList::iterator&, IOController*> InitSignal;
+			// signal по изменению определённого датчика
+			inline InitSignal signal_init(){ return sigInit; }
+
 			/*! регистрация датчика
 				force=true - не проверять на дублирование (оптимизация)
 			*/
@@ -230,7 +236,6 @@ class IOController:
 					ai.ci.maxRaw = 0;
 					ai.ci.minCal = 0;
 					ai.ci.maxCal = 0;
-					ai.ci.sensibility = 0;
 					ai.ci.precision = 0;
 				}
 				return ai;	
@@ -275,6 +280,7 @@ class IOController:
 		friend class NCRestorer;
 		ChangeSignal sigAnyChange;
 		ChangeSignal sigAnyUndefChange;
+		InitSignal sigInit;
 	
 		IOStateList ioList;	/*!< список с текущим состоянием аналоговых входов/выходов */
 		UniSetTypes::uniset_rwmutex ioMutex; /*!< замок для блокирования совместного доступа к ioList */

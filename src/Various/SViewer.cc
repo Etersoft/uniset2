@@ -286,7 +286,7 @@ void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tls
 			IONotifyController_i::ThresholdInfo* ti = &tlst[i].tlist[k];
 			cout << "\t(" << setw(3) << ti->id << ")  |  " << ti->state << "  |  hi: " << setw(5) << ti->hilimit;
 			cout << " | low: " << setw(5) << ti->lowlimit;
-			cout << " | sb: " << setw(5) << ti->sensibility << endl;
+			cout << endl;
 		}
 	}	
 }

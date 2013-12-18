@@ -18,14 +18,17 @@ class TestProc:
 		{
 			tmChange,
 			tmCheckWorking,
-			tmCheckDepend,
-			tmCheckUndefState
+			tmCheck
 		};
 
 		virtual void step();
 		virtual void sensorInfo( UniSetTypes::SensorMessage *sm );
 		virtual void timerInfo( UniSetTypes::TimerMessage *tm );
         virtual void sysCommand( UniSetTypes::SystemMessage* sm );
+		
+        void test_depend();
+        void test_undefined_state();
+        void test_thresholds();
 
 	private:
 		bool state;

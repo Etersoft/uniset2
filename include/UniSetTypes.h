@@ -60,12 +60,19 @@ namespace UniSetTypes
 	/*! генератор уникального положительного ключа
 	 *	Уникальность гарантируется только для пары значений
 	 *  id и node.
+	 * \warning что тут у нас с переполнением..
 	 * \warning Уникальность генерируемого ключа еще не проверялась,
 		 но нареканий по использованию тоже не было :)
+	*  \todo Желательно продумать что-нибудь с использованием хэш.
 	*/
-	inline static KeyType key( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+	inline static KeyType key( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node )
 	{
 		return KeyType((id*node)+(id+2*node));
+	}
+
+	inline static KeyType key( const IOController_i::SensorInfo& si )
+	{
+		return key(si.id,si.node);
 	}
 
 	typedef std::list<std::string> ListObjectName;	/*!< Список объектов типа ObjectName */

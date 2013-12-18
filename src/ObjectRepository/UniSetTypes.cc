@@ -333,8 +333,7 @@ using namespace UniSetTypes;
 	{
 		return os << " rmin=" << c.minRaw << " rmax=" << c.maxRaw
 					<< " cmin=" << c.minCal << " cmax=" << c.maxCal
-					<< " precision=" << c.precision
-					<< " sensibility=" << c.sensibility;
+					<< " precision=" << c.precision;
 	}
 	// ------------------------------------------------------------------------------------------
 	bool UniSetTypes::check_filter( UniXML_iterator& it, const std::string f_prop, const std::string f_val )

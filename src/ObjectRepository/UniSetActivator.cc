@@ -248,14 +248,15 @@ void UniSetActivator::stop()
 
 		if( ulog.is_system() )
 			ulog.system() << myname << "(stop): discard request ok."<< endl;
-/*
+
 		try
 		{
-			ulog.system() << myname << "(stop):: shutdown orb...  "<<endl;
+			if( ulog.is_system() )
+				ulog.system() << myname << "(stop):: shutdown orb...  "<<endl;
 			orb->shutdown(false);
 		}
 		catch(...){}
-*/
+
 		if( ulog.is_system() )
 			ulog.system() << myname << "(stop): shutdown ok."<< endl;
 	}

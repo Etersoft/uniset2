@@ -85,7 +85,6 @@ tid(UniSetTypes::DefaultThresholdId)
 	ci.maxRaw = 0;
 	ci.minCal = 0;
 	ci.maxCal = 0;
-	ci.sensibility = 0;
 	ci.precision = 0;
 }
 
