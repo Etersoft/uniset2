@@ -45,6 +45,8 @@
 			check_undef_s="AI54_S"
 			t_set_c="AI_AS"
 			t_check_s="Threshold1_S"
+			log_c="LogLevel_S"
+			log_s="LogLevel_S"
 		/>
 
 		<IOControl name="IOControl"/>
@@ -221,6 +223,7 @@
 			<item id="56" iotype="AI" name="AI56_S" textname="AI sensor 56" rrd="2" rrd2_ds="COUNTER:20:U:U"/>
 			<item id="57" iotype="AI" name="AI57_S" textname="AI sensor 57" rrd="2" rrd2_ds="DERIVE:20:U:U"/>
 			<item id="58" iotype="AO" name="Lamp58_C" textname="Lamp 58" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
+			<item id="62" iotype="AI" name="LogLevel_S" textname="LogLevel control"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">
