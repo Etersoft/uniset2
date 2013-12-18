@@ -1219,15 +1219,15 @@ string UInterface::set_err(const string& pre, UniSetTypes::ObjectId id, UniSetTy
 // --------------------------------------------------------------------------------------------
 void UInterface::askThreshold( UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid,
 										UniversalIO::UIOCommand cmd,
-										CORBA::Long low, CORBA::Long hi, CORBA::Long sb,
+										CORBA::Long low, CORBA::Long hi,
 										UniSetTypes::ObjectId backid)
 {
-	askRemoteThreshold(sid, uconf->getLocalNode(), tid, cmd, low,hi,sb, backid);
+	askRemoteThreshold(sid, uconf->getLocalNode(), tid, cmd, low,hi, backid);
 }
 // --------------------------------------------------------------------------------------------
 void UInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTypes::ObjectId node,
 										 UniSetTypes::ThresholdId tid, UniversalIO::UIOCommand cmd,
-										 CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Long sensibility,
+										 CORBA::Long lowLimit, CORBA::Long hiLimit,
 										 UniSetTypes::ObjectId backid )
 {
 	if( backid==UniSetTypes::DefaultObjectId )
@@ -1264,7 +1264,7 @@ void UInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTypes::Obj
 				ci->id = backid;
 				ci->node = uconf->getLocalNode();
 
-				inc->askThreshold(si,ci,tid,lowLimit,hiLimit,sensibility,cmd);
+				inc->askThreshold(si,ci,tid,lowLimit,hiLimit,cmd);
 				return;
 			}
 			catch(CORBA::TRANSIENT){}

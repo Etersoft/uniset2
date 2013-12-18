@@ -355,16 +355,16 @@ void IOBase::processingThreshold( IOBase* it, SMInterface* shm, bool force )
 	// значение должно быть меньше lowLimit-чуствительность
 	if (it->ti.inverse)
 	{
-		if( val <= (it->ti.lowlimit-it->ti.sensibility) )
+		if( val <= it->ti.lowlimit )
 			set = true;
-		else if( val >= (it->ti.hilimit+it->ti.sensibility) )
+		else if( val >= it->ti.hilimit )
 			set = false;
 	}
 	else
 	{
-		if( val <= (it->ti.lowlimit-it->ti.sensibility) )
+		if( val <= it->ti.lowlimit )
 			set = false;
-		else if( val >= (it->ti.hilimit+it->ti.sensibility) )
+		else if( val >= it->ti.hilimit )
 			set = true;
 	}
 
@@ -457,7 +457,6 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	b->cal.maxRaw = 0;
 	b->cal.minCal = 0;
 	b->cal.maxCal = 0;
-	b->cal.sensibility = 0;
 	b->cal.precision = 0;
 	b->cdiagram = 0;
 	b->f_median = false;
@@ -472,7 +471,6 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		b->cal.maxRaw = it.getIntProp("rmax");
 		b->cal.minCal = it.getIntProp("cmin");
 		b->cal.maxCal = it.getIntProp("cmax");
-		b->cal.sensibility = it.getIntProp("sensibility");
 		b->cal.precision = it.getIntProp("precision");
 
 		int f_size 	= def_filtersize;
@@ -542,7 +540,6 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		
 			b->ti.lowlimit 	= it.getIntProp("lowlimit");
 			b->ti.hilimit 		= it.getIntProp("hilimit");
-			b->ti.sensibility 	= it.getIntProp("sensibility");
 			b->ti.inverse 		= it.getIntProp("inverse");
 		}
 	}

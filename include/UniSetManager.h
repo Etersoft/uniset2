@@ -62,7 +62,6 @@ class UniSetManager:
 		UniSetManager( const std::string& name, const std::string& section );
 		virtual ~UniSetManager();
 
-
 		virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("UniSetManager"); }
 
 		// ------  функции объявленные в интерфейсе(IDL) ------
@@ -114,7 +113,6 @@ class UniSetManager:
 
 		int objectsCount();	// количество подчиненных объектов
 
-
 		PortableServer::POA_ptr getPOA(){ return PortableServer::POA::_duplicate(poa); }
 		PortableServer::POAManager_ptr getPOAManager(){ return  PortableServer::POAManager::_duplicate(pman); }
 
@@ -135,7 +133,6 @@ class UniSetManager:
 		virtual bool activateObject();
 		//! \note Переопределяя не забывайте вызвать базовую
 		virtual bool disactivateObject();
-
 
 		typedef UniSetManagerList::iterator MListIterator;
 

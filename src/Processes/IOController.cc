@@ -64,6 +64,10 @@ bool IOController::activateObject()
 {
 	bool res = UniSetManager::activateObject();
 	sensorsRegistration();
+
+	// Начальная инициализация
+	activateInit();
+
 	return res;
 }
 // ------------------------------------------------------------------------------------------
@@ -85,11 +89,39 @@ void IOController::sensorsUnregistration()
 		}
 		catch(Exception& ex)
 		{
-			ulog.crit() << myname << "(sensorsUnregistration): "<< ex << endl;
+			if( ulog.is_crit() )
+				ulog.crit() << myname << "(sensorsUnregistration): "<< ex << endl;
 		}
 		catch(...){}
 	}
+}
+// ------------------------------------------------------------------------------------------
+void IOController::activateInit()
+{
+	// Разрегистрируем аналоговые датчики
+	for( IOStateList::iterator li = ioList.begin(); li != ioList.end(); ++li )
+	{
+		try
+		{
+			USensorInfo& s(li->second);
 
+			// Проверка зависимостей
+			if( s.d_si.id != DefaultObjectId )
+			{
+				IOStateList::iterator d_it = myiofind( UniSetTypes::key(s.d_si) );
+				if( d_it != ioEnd() )
+					s.checkDepend(d_it, this);
+			}
+
+			sigInit.emit(li,this);
+		}
+		catch( Exception& ex )
+		{
+			if( ulog.is_crit() )
+				ulog.crit() << myname << "(activateInit): "<< ex << endl;
+		}
+		catch(...){}
+	}
 }
 // ------------------------------------------------------------------------------------------
 CORBA::Long IOController::getValue( const IOController_i::SensorInfo& si )

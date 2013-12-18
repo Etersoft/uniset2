@@ -358,7 +358,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - UniversalInterface --> UInterface
 - ObjectsManager --> UniSetManager
 - ObjectsActitvator --> UniSetActivator
-
+- remove deprecated property: "sensebility"
 
 * Tue Dec 10 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt3
 - add RRDServer

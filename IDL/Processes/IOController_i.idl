@@ -19,8 +19,6 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \author Pavel Vainerman
- *  \date   $Date: 2008/11/29 21:24:24 $
- *  \version $Id: IOController_i.idl,v 1.16 2008/11/29 21:24:24 vpashka Exp $
 */
 // --------------------------------------------------------------------------
 #ifndef BaseIOController_i_IDL_
@@ -89,7 +87,6 @@ interface IOController_i : UniSetManager_i
 		long maxRaw; 		/*!< максимальное "сырое" значение */
 		long minCal; 		/*!< минимальное калиброванное значение */
 		long maxCal; 		/*!< максимальное калиброванное значение */
-		long sensibility; 	/*!< чуствительность (для первичного фильтрования) */
 		short precision;	/*!< точность */
 	};
 
@@ -193,13 +190,11 @@ interface IONotifyController_i : IOController_i
 	 * \param tid - идентификатор порога
 	 * \param lowLimit - нижний порог срабатыания
 	 * \param hiLimit - верхний порог срабатывания
-	 * \param sensibility - чуствительность
 	 * 
-	 *	Датчик срабатывает при условии, что значение меньше (lowLimit-sensibility) или
-	 *  больше (hiLimit+sensibility)
+	 *	Датчик срабатывает при условии, что значение <= lowLimit или >= hiLimit
 	*/					
 	void askThreshold(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniSetTypes::ThresholdId tid,
-						in long lowLimit, in long hiLimit, in long sensibility,
+						in long lowLimit, in long hiLimit,
 						in UniversalIO::UIOCommand cmd ) raises(NameNotFound, IOBadParam, BadRange);
 
 	/*! 
@@ -225,7 +220,6 @@ interface IONotifyController_i : IOController_i
 		UniSetTypes::ThresholdId id;
 		long hilimit;			/*!< верхняя граница срабатывания */
 		long lowlimit;			/*!< нижняя гранийа срабатывания */
-		long sensibility;		/*!< точность определения границ (?) */
 		ThresholdState state;	
 		long tv_sec;			/*!< время последнего изменения датчика, секунды (gettimeofday) */
 		long tv_usec;			/*!< время последнего изменения датчика, мксек (gettimeofday) */

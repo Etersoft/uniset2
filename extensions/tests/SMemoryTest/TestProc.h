@@ -18,8 +18,7 @@ class TestProc:
 		{
 			tmChange,
 			tmCheckWorking,
-			tmCheckDepend,
-			tmCheckUndefState
+			tmCheck
 		};
 
 		virtual void step();
@@ -27,6 +26,10 @@ class TestProc:
 		virtual void timerInfo( UniSetTypes::TimerMessage *tm );
         virtual void sysCommand( UniSetTypes::SystemMessage* sm );
 		
+        void test_depend();
+        void test_undefined_state();
+        void test_thresholds();
+
 	private:
 		bool state;
 		bool undef;

@@ -72,9 +72,9 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 	string t_fvalue = conf->getArgParam("--t-filter-value");
 	
 	heartbeat_node = conf->getArgParam("--heartbeat-node");
-	if( heartbeat_node.empty() )
+	if( heartbeat_node.empty() && dlog.is_warn() )
 		dlog.warn() << myname << "(init): --heartbeat-node NULL ===> heartbeat NOT USED..." << endl;
-	else
+	else if( dlog.is_info() )
 		dlog.info() << myname << "(init): heartbeat-node: " << heartbeat_node << endl;
 
 	heartbeatCheckTime = conf->getArgInt("--heartbeat-check-time","1000");
@@ -89,7 +89,7 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 	string wdt_dev = conf->getArgParam("--wdt-device");
 	if( !wdt_dev.empty() )
 		wdt = new WDTInterface(wdt_dev);
-	else
+	else if( dlog.is_warn() )
 		dlog.warn() << myname << "(init): watchdog timer NOT USED (--wdt-device NULL)" << endl;
 
 
@@ -112,7 +112,8 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 		{
 			ostringstream err;
 			err << myname << ": ID not found ('pulsar') for " << p;
-			dlog.crit() << myname << "(init): " << err.str() << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(init): " << err.str() << endl;
 			throw SystemError(err.str());
 		}
 		siPulsar.node = conf->getLocalNode();
@@ -169,26 +170,33 @@ void SharedMemory::processingMessage( UniSetTypes::VoidMessage *msg )
 	}
 	catch( Exception& ex )
 	{
-		dlog.crit()  << myname << "(processingMessage): " << ex << endl;
+		if( dlog.is_crit() )
+			dlog.crit()  << myname << "(processingMessage): " << ex << endl;
 	}
 	catch(CORBA::SystemException& ex)
     {
-		dlog.warn() << myname << "(processingMessage): CORBA::SystemException: " << ex.NP_minorString() << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(processingMessage): CORBA::SystemException: " << ex.NP_minorString() << endl;
   	}
 	catch(CORBA::Exception& ex)
     {
-		dlog.warn() << myname << "(processingMessage): CORBA::Exception: " << ex._name() << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(processingMessage): CORBA::Exception: " << ex._name() << endl;
 	}
 	catch( omniORB::fatalException& fe ) 
 	{
-		dlog.crit() << myname << "(processingMessage): Caught omniORB::fatalException:" << endl;
-	    dlog.crit() << myname << "(processingMessage): file: " << fe.file()
-			<< " line: " << fe.line()
-	    	<< " mesg: " << fe.errmsg() << endl;
+		if( dlog.is_crit() )
+		{
+			dlog.crit() << myname << "(processingMessage): Caught omniORB::fatalException:" << endl;
+		    dlog.crit() << myname << "(processingMessage): file: " << fe.file()
+				<< " line: " << fe.line()
+			<< " mesg: " << fe.errmsg() << endl;
+		}
 	}
 	catch(...)
 	{
-		dlog.crit()  << myname << "(processingMessage): catch..." << endl;
+		if( dlog.is_crit() )
+			dlog.crit()  << myname << "(processingMessage): catch..." << endl;
 	}
 }
 
@@ -240,7 +248,7 @@ void SharedMemory::sysCommand( SystemMessage *sm )
 				msleep(100);
 			}
 			
-			if( !isActivated() )
+			if( !isActivated() && dlog.is_crit() )
 				dlog.crit() << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 		
 			// подождать пока пройдёт инициализация
@@ -395,11 +403,13 @@ void SharedMemory::checkHeartBeat()
 		}
 		catch(Exception& ex)
 	    {
-			dlog.crit() << myname << "(checkHeartBeat): " << ex << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(checkHeartBeat): " << ex << endl;
 		}
 		catch(...)
 		{
-			dlog.crit() << myname << "(checkHeartBeat): ..." << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << myname << "(checkHeartBeat): ..." << endl;
 		}
 	}
 	
@@ -439,7 +449,8 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 			<< ") указан неверно ("
 			<< it.getProp("iotype") << ") должен быть 'AI'";
 	
-		dlog.crit() << msg.str() << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << msg.str() << endl;
 		kill(getpid(),SIGTERM);
 //		throw NameNotFound(msg.str());
 	};
@@ -453,7 +464,8 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 		{
 			ostringstream msg;
 			msg << "(SharedMemory::readItem): дискретный датчик (heartbeat_ds_name) связанный с " << it.getProp("name");
-			dlog.warn() << msg.str() << endl;
+			if( dlog.is_warn() )
+				dlog.warn() << msg.str() << endl;
 		}
 	}
 	else
@@ -466,7 +478,8 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 			
 			// Если уж задали имя для датчика, то он должен существовать..
 			// поэтому завершаем процесс, если не нашли..
-			dlog.crit() << msg.str() << endl;
+			if( dlog.is_crit() )
+				dlog.crit() << msg.str() << endl;
 			kill(getpid(),SIGTERM);
 //			throw NameNotFound(msg.str());
 		}
@@ -481,7 +494,8 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 		msg << "(SharedMemory::readItem): НЕ УКАЗАН id для " 
 			<< it.getProp("name") << " секция " << sec;
 
-		dlog.crit() << msg.str() << endl;
+		if( dlog.is_crit() )
+			dlog.crit() << msg.str() << endl;
 		kill(getpid(),SIGTERM);
 //		throw NameNotFound(msg.str());
 	};
@@ -499,7 +513,8 @@ SharedMemory* SharedMemory::init_smemory( int argc, const char* const* argv )
 	if( dfile[0]!='.' && dfile[0]!='/' )
 		dfile = conf->getConfDir() + dfile;
 	
-	dlog.info() << "(smemory): datfile = " << dfile << endl;
+	if( dlog.is_info() )
+		dlog.info() << "(smemory): datfile = " << dfile << endl;
 	
 	UniSetTypes::ObjectId ID = conf->getControllerID(conf->getArgParam("--smemory-id","SharedMemory"));
 	if( ID == UniSetTypes::DefaultObjectId )
@@ -527,14 +542,16 @@ void SharedMemory::readEventList( std::string oname )
 	xmlNode* enode = conf->getNode(oname);
 	if( enode == NULL )
 	{
-		dlog.warn() << myname << "(readEventList): " << oname << " не найден..." << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(readEventList): " << oname << " не найден..." << endl;
 		return;
 	}
 
 	UniXML_iterator it(enode);
 	if( !it.goChildren() )
 	{
-		dlog.warn() << myname << "(readEventList): <eventlist> пустой..." << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(readEventList): <eventlist> пустой..." << endl;
 		return;
 	}
 
@@ -550,7 +567,7 @@ void SharedMemory::readEventList( std::string oname )
 				dlog.info() << myname << "(readEventList): add " << it.getProp("name") << endl;
 			elst.push_back(oid);
 		}
-		else
+		else if( dlog.is_crit() )
 			dlog.crit() << myname << "(readEventList): Не найден ID для "
 				<< it.getProp("name") << endl;
 	}
@@ -574,7 +591,7 @@ void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
 			catch(...){};
 		}
 		
-		if(!ok)
+		if(!ok && dlog.is_crit() )
 			dlog.crit() << myname << "(sendEvent): Объект " << (*it) << " НЕДОСТУПЕН" << endl;
 	}	
 }
@@ -598,14 +615,16 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 	UniXML* xml = conf->getConfXML();
 	if( !xml )
 	{
-		dlog.warn() << myname << "(buildHistoryList): xml=NULL?!" << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(buildHistoryList): xml=NULL?!" << endl;
 		return;
 	}
 
 	xmlNode* n = xml->extFindNode(cnode,1,1,"History","");
 	if( !n )
 	{
-		dlog.warn() << myname << "(buildHistoryList): <History> not found. ignore..." << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(buildHistoryList): <History> not found. ignore..." << endl;
 		hist.clear();
 		return;
 	}
@@ -615,7 +634,8 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 	bool no_history = conf->getArgInt("--sm-no-history",it.getProp("no_history"));
 	if( no_history )
 	{
-		dlog.warn() << myname << "(buildHistoryList): no_history='1'.. history skipped..." << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(buildHistoryList): no_history='1'.. history skipped..." << endl;
 		hist.clear();
 		return;
 	}
@@ -626,7 +646,8 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 	
 	if( !it.goChildren() )
 	{
-		dlog.warn() << myname << "(buildHistoryList): <History> empty. ignore..." << endl;
+		if( dlog.is_warn() )
+			dlog.warn() << myname << "(buildHistoryList): <History> empty. ignore..." << endl;
 		return;
 	}
 
@@ -645,10 +666,11 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 		hi.fuse_id = conf->getSensorID(it.getProp("fuse_id"));
 		if( hi.fuse_id == DefaultObjectId )
 		{
-			dlog.warn() << myname << "(buildHistory): not found sensor ID for "
-				<< it.getProp("fuse_id")
-				<< " history item id=" << it.getProp("id") 
-				<< " ..ignore.." << endl;
+			if( dlog.is_warn() )
+				dlog.warn() << myname << "(buildHistory): not found sensor ID for "
+					<< it.getProp("fuse_id")
+					<< " history item id=" << it.getProp("id")
+					<< " ..ignore.." << endl;
 			continue;
 		}
 
@@ -661,7 +683,8 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 			hi.fuse_val	= it.getIntProp("fuse_value");
 		}
 
-		dlog.info() << myname << "(buildHistory): add fuse_id=" << hi.fuse_id
+		if( dlog.is_info() )
+			dlog.info() << myname << "(buildHistory): add fuse_id=" << hi.fuse_id
 				<< " fuse_val=" << hi.fuse_val
 				<< " fuse_use_val=" << hi.fuse_use_val
 				<< " fuse_invert=" << hi.fuse_invert
@@ -695,7 +718,8 @@ void SharedMemory::checkHistoryFilter( UniXML_iterator& xit )
 		ai.id = conf->getSensorID(xit.getProp("name"));
 		if( ai.id == DefaultObjectId )
 		{
-			dlog.warn() << myname << "(checkHistoryFilter): not found sensor ID for " << xit.getProp("name") << endl;
+			if( dlog.is_warn() )
+				dlog.warn() << myname << "(checkHistoryFilter): not found sensor ID for " << xit.getProp("name") << endl;
 			continue;
 		}
 		

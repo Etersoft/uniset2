@@ -43,6 +43,8 @@
 			set_d2_check_s="AI11_AS"
 			undef_c="AI54_S"
 			check_undef_s="AI54_S"
+			t_set_c="AI_AS"
+			t_check_s="Threshold1_S"
 		/>
 
 		<IOControl name="IOControl"/>
