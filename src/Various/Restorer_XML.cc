@@ -42,6 +42,7 @@ c_filterValue("")
 // -----------------------------------------------------------------------------
 Restorer_XML::~Restorer_XML()
 {
+
 }
 // -----------------------------------------------------------------------------
 void Restorer_XML::setItemFilter( const string field, const string val )

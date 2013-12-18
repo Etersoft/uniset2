@@ -175,7 +175,7 @@ class NCRestorer_XML:
 		std::string t_filterValue;
 
 		std::string fname;
-		UniXML uxml;
+        UniXML* uxml;
 		ReaderSlot rtslot;
 		NCReaderSlot ncrslot;
 

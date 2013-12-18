@@ -53,21 +53,27 @@ c_filterField(""),
 c_filterValue(""),
 t_filterField(""),
 t_filterValue(""),
-fname(fname)
+fname(fname),
+uxml(0)
 {
 	init(fname);
 	setItemFilter(f_field,f_value);
 }
 
 NCRestorer_XML::NCRestorer_XML():
-fname("")
+fname(""),
+uxml(0)
 {
 }
 
 // ------------------------------------------------------------------------------------------
 NCRestorer_XML::~NCRestorer_XML()
 {
-	uxml.close();
+    if( uxml)
+    {
+        uxml->close();
+        delete uxml;
+    }
 }
 // ------------------------------------------------------------------------------------------
 void NCRestorer_XML::init( const std::string& fname )
@@ -78,7 +84,10 @@ void NCRestorer_XML::init( const std::string& fname )
 	*/
 	try
 	{
-		uxml.open(fname);
+        if( fname == conf->getConfFileName() )
+            uxml = conf->getConfXML();
+        else
+            uxml = new UniXML(fname);
 	}
 	catch(UniSetTypes::NameNotFound& ex)
 	{
@@ -175,11 +184,13 @@ void NCRestorer_XML::read( IONotifyController* ic, const string& fn )
 		// оптимизация (не загружаем второй раз xml-файл)
 		if( fname == conf->getConfFileName() && confxml )
 			read( ic, *confxml );
-		else
+        else if( uxml && uxml->isOpen() && uxml->filename == fn )
+            read(ic,*uxml);
+        else
 		{
-			uxml.close();
-			uxml.open(fname);
-			read(ic,uxml);
+            uxml->close();
+            uxml->open(fname);
+            read(ic,*uxml);
 		}
 	}
 }
