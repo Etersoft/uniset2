@@ -11,14 +11,14 @@
 // -----------------------------------------------------------------------------
 /*!
         \page pageUniExchange Обмен между узлами на основе TCP/IP (UniNet).
-
+    
     \par Обмен построен на основе функций IOControl-ера получения списка дискретных
     и аналоговых датчиков. Работает через удалённые CORBA-вызовы.
-
+    
     \par Процесс считывает из конфигурационного файла список узлов которые необходимо
     опрашивать (точнее список IOControl-еров), запускается поток обмена, в котором
     эти узлы ПОСЛЕДОВАТЕЛЬНО опрашиваются..
-
+    
     \par Пример записи в конфигурационном файле для опроса пяти узлов...
     \code
         <UniExchange name="UniExchange">
@@ -36,15 +36,15 @@ class UniExchange:
     public IOController
 {
     public:
-        UniExchange( UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID,
-                        SharedMemory* ic=0, const std::string prefix="unet" );
+        UniExchange( UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID, 
+                        SharedMemory* ic=0, const std::string& prefix="unet" );
         virtual ~UniExchange();
 
         void execute();
 
         static UniExchange* init_exchange( int argc, const char* const* argv,
                                     UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
-                                    const std::string prefix="unet" );
+                                    const std::string& prefix="unet" );
 
         /*! глобальная функция для вывода help-а */
         static void help_print( int argc, const char** argv );
@@ -64,7 +64,7 @@ class UniExchange:
         std::string s_field;
         std::string s_fvalue;
         SMInterface* shm;
-
+        
         struct SInfo
         {
             SInfo():
@@ -79,13 +79,13 @@ class UniExchange:
             UniversalIO::IOType type;
             UniSetTypes::uniset_rwmutex val_lock;
         };
-
+        
         typedef std::vector<SInfo> SList;
-
+        
         struct NetNodeInfo
         {
             NetNodeInfo();
-
+        
             CORBA::Object_var oref;
             IOController_i_var shm;
             UniSetTypes::ObjectId id;
@@ -93,10 +93,10 @@ class UniExchange:
             UniSetTypes::ObjectId sidConnection; /*!< датчик связи */
             IOController::IOStateList::iterator conn_it;
             SList smap;
-
+            
             void update(IOController_i::ShortMapSeq_var& map, SMInterface* shm );
         };
-
+        
         typedef std::list<NetNodeInfo> NetNodeList;
         NetNodeList nlst;
 
@@ -105,15 +105,15 @@ class UniExchange:
         bool initItem( UniXML_iterator& it );
         void updateLocalData();
         void initIterators();
-
+        
         int polltime;
         PassiveTimer ptUpdate;
         bool init_ok;
-
+        
         SList mymap;
         size_t maxIndex;
         int smReadyTimeout;
-
+        
     private:
 };
 // -----------------------------------------------------------------------------

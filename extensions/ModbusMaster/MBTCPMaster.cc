@@ -10,8 +10,8 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
-                            SharedMemory* ic, const std::string prefix ):
+MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, 
+                            SharedMemory* ic, const std::string& prefix ):
 MBExchange(objId,shmId,ic,prefix),
 force_disconnect(true),
 mbtcp(0),
@@ -84,7 +84,7 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
     {
         if( !reopen )
             return mbtcp;
-
+        
         delete mbtcp;
         mb = 0;
         mbtcp = 0;
@@ -94,7 +94,7 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
     {
         ost::Thread::setException(ost::Thread::throwException);
         mbtcp = new ModbusTCPMaster();
-
+    
         ost::InetAddress ia(iaddr.c_str());
         mbtcp->connect(ia,port);
         mbtcp->setForceDisconnect(force_disconnect);
@@ -103,12 +103,12 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
             mbtcp->setTimeout(recv_timeout);
 
         mbtcp->setSleepPause(sleepPause_usec);
-
+        
         mbtcp->setAfterSendPause(aftersend_pause);
 
          if( dlog.is_info() )
             dlog.info() << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
-
+        
         if( dlog.debugging(Debug::LEVEL9) )
             mbtcp->setLog(dlog);
     }
@@ -175,9 +175,9 @@ void MBTCPMaster::help_print( int argc, const char* const* argv )
     cout << "--prefix-persistent-connection 0,1     - Не закрывать соединение на каждом цикле опроса" << endl;
 }
 // -----------------------------------------------------------------------------
-MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv,
-                                            UniSetTypes::ObjectId icID, SharedMemory* ic,
-                                            const std::string prefix )
+MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv, 
+                                            UniSetTypes::ObjectId icID, SharedMemory* ic, 
+                                            const std::string& prefix )
 {
     string name = conf->getArgParam("--" + prefix + "-name","MBTCPMaster1");
     if( name.empty() )
@@ -191,7 +191,7 @@ MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv,
     if( ID == UniSetTypes::DefaultObjectId )
     {
         if( dlog.debugging(Debug::CRIT) )
-            dlog.crit() << "(MBTCPMaster): идентификатор '" << name
+            dlog.crit() << "(MBTCPMaster): идентификатор '" << name 
                 << "' не найден в конф. файле!"
                 << " в секции " << conf->getObjectsSection() << endl;
         return 0;

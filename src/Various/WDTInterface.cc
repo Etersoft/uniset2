@@ -12,7 +12,7 @@
 // --------------------------------------------------------------------------
 using namespace std;
 // --------------------------------------------------------------------------
-WDTInterface::WDTInterface( const std::string _dev ):
+WDTInterface::WDTInterface( const std::string& _dev ):
     dev(_dev)
 {
 }

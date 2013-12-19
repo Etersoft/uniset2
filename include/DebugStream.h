@@ -112,10 +112,10 @@ public:
     }
 
     /// Sets the debugstreams' logfile to f.
-    void logFile(const std::string f);
-
+    void logFile( const std::string& f );
+    
     inline std::string getLogFile(){ return fname; }
-
+    
     /// Returns true if t is part of the current debug level.
     inline bool debugging(Debug::type t = Debug::ANY) const
     {  return (dt & t); }
@@ -138,13 +138,13 @@ public:
         return debug(t);
     }
 
-    /**
+    /**    
         Вывод продолжения логов (без даты и времени)
     */
     inline std::ostream& to_end(Debug::type t)
     { return this->operator()(t); }
 
-    /**
+    /**    
         Вывод продолжения логов (без даты и времени) "log()"
     */
     std::ostream& operator()(Debug::type t);
@@ -189,11 +189,11 @@ public:
     std::ostream& printDate(Debug::type t, char brk='/');
     std::ostream& printTime(Debug::type t, char brk=':');
     std::ostream& printDateTime(Debug::type t);
-
+    
     std::ostream& pos(int x, int y);
 
     const DebugStream &operator=(const DebugStream& r);
-
+    
 private:
     /// The current debug level
     Debug::type dt;
@@ -205,7 +205,7 @@ private:
     debugstream_internal * internal;
     bool show_datetime;
     std::string fname;
-
+    
 };
 
 #endif

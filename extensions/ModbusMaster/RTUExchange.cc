@@ -9,7 +9,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 RTUExchange::RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic,
-                          const std::string prefix_ ):
+                          const std::string& prefix_ ):
 MBExchange(objId,shmId,ic,prefix_),
 mbrtu(0),
 defSpeed(ComPort::ComSpeed38400),
@@ -329,7 +329,7 @@ void RTUExchange::poll()
 }
 // -----------------------------------------------------------------------------
 RTUExchange* RTUExchange::init_rtuexchange( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
-                                            SharedMemory* ic, const std::string prefix )
+                                            SharedMemory* ic, const std::string& prefix )
 {
     string name = conf->getArgParam("--" + prefix + "-name","RTUExchange1");
     if( name.empty() )

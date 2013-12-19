@@ -16,12 +16,12 @@ class ModbusTCPMaster:
         ModbusTCPMaster();
         virtual ~ModbusTCPMaster();
 
-        void connect( const std::string addr, int port );
+        void connect( const std::string& addr, int port );
         void connect( ost::InetAddress addr, int port );
         void disconnect();
         bool isConnection();
 
-        static bool checkConnection( const std::string ip, int port, int timeout_msec=100 );
+        static bool checkConnection( const std::string& ip, int port, int timeout_msec=100 );
 
         inline void setForceDisconnect( bool s )
         {

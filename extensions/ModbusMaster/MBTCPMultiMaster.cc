@@ -10,8 +10,8 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId,
-                            SharedMemory* ic, const std::string prefix ):
+MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, 
+                            SharedMemory* ic, const std::string& prefix ):
 MBExchange(objId,shmId,ic,prefix),
 force_disconnect(true),
 pollThread(0),
@@ -134,7 +134,7 @@ checkThread(0)
             dlog.crit() << err.str() << endl;
         throw UniSetTypes::SystemError(err.str());
     }
-
+    
     mblist.sort();
     mbi = mblist.rbegin();
 
@@ -178,7 +178,7 @@ ModbusClient* MBTCPMultiMaster::initMB( bool reopen )
     if( checktime <=0 )
     {
         mbi++;
-        if( mbi == mblist.rend() )
+        if( mbi == mblist.rend() )    
             mbi = mblist.rbegin();
 
         mbi->init();
@@ -250,7 +250,7 @@ bool MBTCPMultiMaster::MBSlaveInfo::init()
 
             if( mbtcp->isConnection() && dlog.is_info() )
                 dlog.info() << "(init): " << myname << " connect OK" << endl;
-
+        
             initOK = true;
         }
         return mbtcp->isConnection();
@@ -337,7 +337,7 @@ void MBTCPMultiMaster::check_thread()
                 catch(...){}
 
 
-                {
+                {    
                     uniset_rwmutex_wrlock l(tcpMutex);
                     it->respond = r;
                 }
@@ -375,9 +375,9 @@ void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
     cout << " Переключение на следующий канал зависит от '--prefix-timeout'" << endl;
 }
 // -----------------------------------------------------------------------------
-MBTCPMultiMaster* MBTCPMultiMaster::init_mbmaster( int argc, const char* const* argv,
-                                            UniSetTypes::ObjectId icID, SharedMemory* ic,
-                                            const std::string prefix )
+MBTCPMultiMaster* MBTCPMultiMaster::init_mbmaster( int argc, const char* const* argv, 
+                                            UniSetTypes::ObjectId icID, SharedMemory* ic, 
+                                            const std::string& prefix )
 {
     string name = conf->getArgParam("--" + prefix + "-name","MBTCPMultiMaster1");
     if( name.empty() )
@@ -389,7 +389,7 @@ MBTCPMultiMaster* MBTCPMultiMaster::init_mbmaster( int argc, const char* const* 
     ObjectId ID = conf->getObjectID(name);
     if( ID == UniSetTypes::DefaultObjectId )
     {
-        dlog.crit() << "(MBTCPMultiMaster): идентификатор '" << name
+        dlog.crit() << "(MBTCPMultiMaster): идентификатор '" << name 
             << "' не найден в конф. файле!"
             << " в секции " << conf->getObjectsSection() << endl;
         return 0;

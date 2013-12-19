@@ -12,7 +12,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 RRDServer::RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, SharedMemory* ic,
-            const string prefix, DebugStream& log ):
+            const string& prefix, DebugStream& log ):
 UObject_SK(objId,cnode),
 shm( new SMInterface(shmId,&ui,objId,ic) ),
 prefix(prefix)
@@ -59,9 +59,9 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
     bool overwrite = it.getPIntProp("overwrite",0);
 
     if( RRDServer::dlog.is_info() )
-        RRDServer::dlog.info() << myname << "(init): add rrd: file='" << fname
-            << " " << ff << "='" << fv
-            << "' create='" << cf << "'"
+        RRDServer::dlog.info() << myname << "(init): add rrd: file='" << fname 
+            << " " << ff << "='" << fv 
+            << "' create='" << cf << "'" 
             << " step=" << rrdstep
             << endl;
 
@@ -188,7 +188,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
         if( !overwrite && file_exist(fname) )
         {
             if( RRDServer::dlog.is_info() )
-                RRDServer::dlog.info() << myname << "(init): ignore create file='" << fname
+                RRDServer::dlog.info() << myname << "(init): ignore create file='" << fname 
                 << "'. File exist... overwrite=0." << endl;
         }
         else
@@ -214,11 +214,11 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
         rrdlist.push_back(rrd);
     }
 /*    catch( Exception& ex )
-    {
+    {    
         RRDServer::dlog.crit() << myname << "(init) " << ex << std::endl;
     }
     catch( ...  )
-    {
+    {    
         RRDServer::dlog.crit() << myname << "(init): catch ..." << std::endl;
     }
 */
@@ -228,14 +228,14 @@ void RRDServer::help_print( int argc, const char* const* argv )
 {
     cout << " Default prefix='rrd'" << endl;
     cout << "--prefix-name        - ID for rrdstorage. Default: RRDServer1. " << endl;
-    cout << "--prefix-confnode    - configuration section name. Default: <NAME name='NAME'...> " << endl;
+    cout << "--prefix-confnode    - configuration section name. Default: <NAME name='NAME'...> " << endl;    
     cout << "--prefix-heartbeat-id name   - ID for heartbeat sensor." << endl;
     cout << "--prefix-heartbeat-max val   - max value for heartbeat sensor." << endl;
 }
 // -----------------------------------------------------------------------------
-RRDServer* RRDServer::init_rrdstorage( int argc, const char* const* argv,
-                                            UniSetTypes::ObjectId icID, SharedMemory* ic,
-                                            const std::string prefix )
+RRDServer* RRDServer::init_rrdstorage( int argc, const char* const* argv, 
+                                            UniSetTypes::ObjectId icID, SharedMemory* ic, 
+                                            const std::string& prefix )
 {
     string name = conf->getArgParam("--" + prefix + "-name","RRDServer");
     if( name.empty() )
@@ -247,7 +247,7 @@ RRDServer* RRDServer::init_rrdstorage( int argc, const char* const* argv,
     ObjectId ID = conf->getObjectID(name);
     if( ID == UniSetTypes::DefaultObjectId )
     {
-        UniSetExtensions::dlog.crit() << "(RRDServer): Not found ID for '" << name
+        UniSetExtensions::dlog.crit() << "(RRDServer): Not found ID for '" << name 
             << " in '" << conf->getObjectsSection() << "' section" << endl;
         return 0;
     }
@@ -276,7 +276,7 @@ void RRDServer::askSensors( UniversalIO::UIOCommand cmd )
             try
             {
                 shm->askSensor(s->first,cmd);
-            }
+            }    
             catch( std::exception& ex )
             {
                 if( RRDServer::dlog.is_crit() )
@@ -296,7 +296,7 @@ void RRDServer::sysCommand( UniSetTypes::SystemMessage* sm )
             try
             {
                 askTimer(it->tid,it->sec*1000);
-            }
+            }    
             catch( std::exception& ex )
             {
                 if( RRDServer::dlog.is_crit() )

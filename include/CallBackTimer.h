@@ -43,7 +43,7 @@ namespace UniSetTypes
             LimitTimers():Exception("LimitTimers"){ printException(); }
 
             /*! Конструктор позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-            LimitTimers(const std::string err):Exception(err){ printException(); }
+            LimitTimers(const std::string& err):Exception(err){ printException(); }
     };
 };
 //@}

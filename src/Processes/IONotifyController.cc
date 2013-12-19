@@ -47,7 +47,7 @@ maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 
 }
 
-IONotifyController::IONotifyController(const string name, const string section, NCRestorer* d ): 
+IONotifyController::IONotifyController(const string& name, const string& section, NCRestorer* d ):
     IOController(name, section),
     restorer(d),
     askIOMutex(name+"askIOMutex"),

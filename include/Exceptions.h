@@ -87,7 +87,7 @@ class OutOfRange: public Exception
 {
 public:
     OutOfRange():Exception("OutOfRange"){}
-    OutOfRange(const std::string err):Exception(err){}
+    OutOfRange(const std::string& err):Exception(err){}
 };
 
 
@@ -107,7 +107,7 @@ public:
     LimitWaitingPTimers():Exception("LimitWaitingPassiveTimers"){}
 
     /*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-    LimitWaitingPTimers(const std::string err):Exception(err){}
+    LimitWaitingPTimers(const std::string& err):Exception(err){}
 };
 
 
@@ -121,7 +121,7 @@ public:
     ORepFailed():Exception("ORepFailed"){}
 
     /*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-    ORepFailed(const std::string err):Exception(err){}
+    ORepFailed(const std::string& err):Exception(err){}
 };
 
 
@@ -134,7 +134,7 @@ public:
     SystemError():Exception("SystemError"){}
 
     /*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-    SystemError(const std::string err):Exception(err){}
+    SystemError(const std::string& err):Exception(err){}
 };
 
 class CRCError: public Exception
@@ -153,7 +153,7 @@ public:
     CommFailed():Exception("CommFailed"){}
 
     /*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-    CommFailed(const std::string err):Exception(err){}
+    CommFailed(const std::string& err):Exception(err){}
 };
 
 
@@ -167,7 +167,7 @@ class TimeOut: public CommFailed
         TimeOut():CommFailed("TimeOut") {}
 
     /*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-    TimeOut(const std::string err):CommFailed(err){}
+    TimeOut(const std::string& err):CommFailed(err){}
 
 };
 
@@ -178,7 +178,7 @@ class ResolveNameError: public ORepFailed
 {
     public:
         ResolveNameError():ORepFailed("ResolveNameError"){}
-        ResolveNameError(const std::string err):ORepFailed(err){}
+        ResolveNameError(const std::string& err):ORepFailed(err){}
 };
 
 
@@ -186,7 +186,7 @@ class NSResolveError: public ORepFailed
 {
     public:
         NSResolveError():ORepFailed("NSResolveError"){}
-        NSResolveError(const std::string err):ORepFailed(err){}
+        NSResolveError(const std::string& err):ORepFailed(err){}
 };
 
 
@@ -200,7 +200,7 @@ public:
     ObjectNameAlready():ResolveNameError("ObjectNameAlready"){}
 
     /*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-    ObjectNameAlready(const std::string err):ResolveNameError(err){}
+    ObjectNameAlready(const std::string& err):ResolveNameError(err){}
 };
 
 /*!
@@ -213,7 +213,7 @@ class IOBadParam: public Exception
     IOBadParam():Exception("IOBadParam"){}
 
     /*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-    IOBadParam(const std::string err):Exception(err){}
+    IOBadParam(const std::string& err):Exception(err){}
 };
 
 /*!
@@ -224,7 +224,7 @@ class InvalidObjectName: public ResolveNameError
 {
     public:
         InvalidObjectName():ResolveNameError("InvalidObjectName"){}
-        InvalidObjectName(const std::string err):ResolveNameError(err){}
+        InvalidObjectName(const std::string& err):ResolveNameError(err){}
 };
 
 /*! Исключение, вырабатываемое в случае если не удалось установить обработчик сигнала */
@@ -232,14 +232,14 @@ class NotSetSignal: public Exception
 {
     public:
         NotSetSignal():Exception("NotSetSignal"){}
-        NotSetSignal(const std::string err):Exception(err){}
+        NotSetSignal(const std::string& err):Exception(err){}
 };
 
 class NameNotFound: public ResolveNameError
 {
 public:
     NameNotFound():ResolveNameError("NameNotFound"){}
-    NameNotFound(const std::string err):ResolveNameError(err){}
+    NameNotFound(const std::string& err):ResolveNameError(err){}
 };
 
 //@}

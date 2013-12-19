@@ -42,7 +42,7 @@ using namespace std;
 // -------------------------------------------------------------------------
 static const string UniSetDefaultPort = "2809";
 // -------------------------------------------------------------------------
-static ostream& print_help( ostream& os, int width, const string& cmd,
+static ostream& print_help( ostream& os, int width, const string& cmd, 
                             const string& help, const string& tab="" )
 {
     // чтобы не менчять параметры основного потока
@@ -66,7 +66,7 @@ ostream& UniSetTypes::Configuration::help(ostream& os)
     print_help(os,25,"--uniport num","использовать заданный порт (переопеределяет 'defaultport' заданный в конф. файле в разделе <nodes>)\n");
     print_help(os,25,"--localIOR {1,0}","использовать локальные файлы для получения IOR (т.е. не использовать omniNames). Переопределяет параметр в конфигурационном файле.\n");
     print_help(os,25,"--transientIOR {1,0}","использовать генерируемые IOR(не постоянные). Переопределяет параметр в конфигурационном файле. Default=1\n");
-
+    
     return os << "\nПример использования:\t myUniSetProgram "
               << "--ulog.dd-levels level1,info,system,warn --ulog.og-in-file myprogrpam.log\n\n";
 }
@@ -80,7 +80,7 @@ namespace UniSetTypes
 Configuration::Configuration():
     oind(NULL),
     NSName("NameService"),
-    repeatCount(2),repeatTimeout(100),
+    repeatCount(2),repeatTimeout(100),     
     localDBServer(UniSetTypes::DefaultObjectId),
     localNode(UniSetTypes::DefaultObjectId),
     localNodeName(""),
@@ -101,7 +101,7 @@ Configuration::~Configuration()
 }
 // ---------------------------------------------------------------------------------
 
-Configuration::Configuration( int argc, const char* const* argv, const string xmlfile ):
+Configuration::Configuration( int argc, const char* const* argv, const string& xmlfile ):
     oind(NULL),
     _argc(argc),
     _argv(argv),
@@ -119,12 +119,12 @@ Configuration::Configuration( int argc, const char* const* argv, const string xm
 }
 // ---------------------------------------------------------------------------------
 Configuration::Configuration( int argc, const char* const* argv, ObjectIndex* _oind,
-                                const string fileConf ):
+                                const string& fileConf ):
     oind(NULL),
     _argc(argc),
     _argv(argv),
     NSName("NameService"),
-    repeatCount(2),repeatTimeout(100),
+    repeatCount(2),repeatTimeout(100), 
     localDBServer(UniSetTypes::DefaultObjectId),
     localNode(UniSetTypes::DefaultObjectId),
     localNodeName(""),
@@ -137,13 +137,13 @@ Configuration::Configuration( int argc, const char* const* argv, ObjectIndex* _o
     initConfiguration(argc,argv);
 }
 // ---------------------------------------------------------------------------------
-Configuration::Configuration( int argc, const char* const* argv, const string fileConf,
+Configuration::Configuration( int argc, const char* const* argv, const string& fileConf,
                 UniSetTypes::ObjectInfo* omap ):
     oind(NULL),
     _argc(argc),
     _argv(argv),
     NSName("NameService"),
-    repeatCount(2),repeatTimeout(100),
+    repeatCount(2),repeatTimeout(100), 
     localDBServer(UniSetTypes::DefaultObjectId),
     localNode(UniSetTypes::DefaultObjectId),
     localNodeName(""),
@@ -194,13 +194,13 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
             ulog << "(Configuration): FAILED open configuration from " <<  fileConfName << endl;
             throw;
         }
-
+    
         // default value
         heartbeat_msec = 5000;
 
 //    cerr << "*************** initConfiguration: xmlOpen: " << pt.getCurrent() << " msec " << endl;
 //    pt.reset();
-
+    
         // Init ObjectIndex interface
         {
             if( oind == NULL )
@@ -228,7 +228,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
                 }
             }
         }
-
+    
         // Настраиваем отладочные логи
         initDebug(ulog,"UniSetDebug");
 
@@ -302,11 +302,11 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
              ostringstream uri;
             uri << "corbaname::" << it->host << ":" << it->port;
             if( !omni::omniInitialReferences::setFromArgs(name.c_str(), uri.str().c_str()) )
-                cerr << "**********************!!!! FAILED ADD name=" << name << " uri=" << uri.str() << endl;
+                cerr << "**********************!!!! FAILED ADD name=" << name << " uri=" << uri.str() << endl; 
 
             assert( i < _argc );
         }
-
+        
         // т..к _argc уже изменился, то и _argv надо обновить
         // чтобы вызов getArgParam не привел к SIGSEGV
         _argv = new_argv;
@@ -323,7 +323,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         {
             new_argv[i] = "-ORBInitRef";
             new_argv[i+1]     = ""; // сперва инициализиуем пустой строкой (т.к. будет вызываться getArgParam)
-
+            
             string defPort( getPort( getProp(nsnode,"port") ) ); // здесь вызывается getArgParam! проходящий по _argv
 
             ostringstream param;
@@ -338,19 +338,19 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
                 ostringstream uri;
                 uri << "corbaname::" << getProp(nsnode,"host") << ":" << defPort;
                 if( !omni::omniInitialReferences::setFromArgs(ns_name.str().c_str(), uri.str().c_str()) )
-                    cerr << "**********************!!!! FAILED ADD name=" <<ns_name << " uri=" << uri.str() << endl;
+                    cerr << "**********************!!!! FAILED ADD name=" <<ns_name << " uri=" << uri.str() << endl; 
             }
         }
-
+        
         _argv = new_argv;
-        // ------------- CORBA INIT -------------
+        // ------------- CORBA INIT -------------        
         // orb init
         orb = CORBA::ORB_init(_argc,(char**)_argv);
         // create policy
         CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
         PortableServer::POA_var root_poa = PortableServer::POA::_narrow(obj);
         CORBA::PolicyList pl;
-
+        
         if( transientIOR == false )
         {
             pl.length(3);
@@ -366,10 +366,10 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
             pl[1] = root_poa->create_servant_retention_policy(PortableServer::RETAIN);
             pl[2] = root_poa->create_request_processing_policy(PortableServer::USE_ACTIVE_OBJECT_MAP_ONLY);
 //            pl[3] = root_poa->create_thread_policy(PortableServer::SINGLE_THREAD_MODEL);
-        }
-
+        }    
+    
         policyList = pl;
-        // ---------------------------------------
+        // ---------------------------------------        
 
     }
     catch( Exception& ex )
@@ -387,17 +387,17 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 }
 
 // -------------------------------------------------------------------------
-string Configuration::getArgParam( const string name, const string defval )
+string Configuration::getArgParam( const string& name, const string& defval )
 {
     return UniSetTypes::getArgParam(name, _argc, _argv, defval);
 }
 
-int Configuration::getArgInt( const string name, const string defval )
+int Configuration::getArgInt( const string& name, const string& defval )
 {
     return UniSetTypes::uni_atoi(getArgParam( name, defval ));
 }
 
-int Configuration::getArgPInt( const string name, int defval )
+int Configuration::getArgPInt( const string& name, int defval )
 {
     string param = getArgParam(name,"");
     if( param.empty() )
@@ -406,7 +406,7 @@ int Configuration::getArgPInt( const string name, int defval )
     return UniSetTypes::uni_atoi(param);
 }
 
-int Configuration::getArgPInt( const string name, const string strdefval, int defval )
+int Configuration::getArgPInt( const string& name, const string& strdefval, int defval )
 {
     string param = getArgParam(name,strdefval);
     if( param.empty() && strdefval.empty() )
@@ -434,11 +434,11 @@ void Configuration::initParameters()
             ulog.crit()<< "Configuration: INIT PARAM`s FAILED!!!!"<< endl;
         throw Exception("Configuration: INIT PARAM`s FAILED!!!!");
     }
-
+    
     for( ; it.getCurrent(); it.goNext() )
     {
         string name( it.getName() );
-
+        
         if( name == "LocalNode" )
         {
             if( localNode == UniSetTypes::DefaultObjectId )
@@ -523,12 +523,14 @@ void Configuration::initParameters()
     }
 }
 // -------------------------------------------------------------------------
-void Configuration::setLocalNode( string nodename )
+void Configuration::setLocalNode( const string& nodename )
 {
     string virtnode = oind->getVirtualNodeName(nodename);
+	string nn(nodename);
     if( virtnode.empty() )
-        nodename = oind->mkFullNodeName(nodename,nodename);
-    localNode = oind->getIdByName(nodename);
+        nn = oind->mkFullNodeName(nodename,nodename);
+
+	localNode = oind->getIdByName(nn);
 
     if( localNode == DefaultObjectId )
     {
@@ -538,8 +540,8 @@ void Configuration::setLocalNode( string nodename )
             ulog.crit()<< err.str() << endl;
         throw Exception(err.str());
     }
-
-    localNodeName = oind->getRealNodeName(nodename);
+    
+    localNodeName = oind->getRealNodeName(nn);
     oind->initLocalNode(localNode);
 }
 // -------------------------------------------------------------------------
@@ -548,33 +550,33 @@ xmlNode* Configuration::getNode(const string& path)
     return unixml.findNode(unixml.getFirstNode(), path);
 }
 // -------------------------------------------------------------------------
-string Configuration::getProp(xmlNode* node, const string name)
+string Configuration::getProp(xmlNode* node, const string& name)
 {
     return UniXML::getProp(node, name);
 }
-int Configuration::getIntProp(xmlNode* node, const string name)
+int Configuration::getIntProp(xmlNode* node, const string& name)
 {
     return UniXML::getIntProp(node, name);
 }
-int Configuration::getPIntProp(xmlNode* node, const string name, int def)
+int Configuration::getPIntProp(xmlNode* node, const string& name, int def)
 {
     return UniXML::getPIntProp(node, name, def);
 }
 
 // -------------------------------------------------------------------------
-string Configuration::getField(const string path)
+string Configuration::getField(const string& path)
 {
     return getProp(getNode(path),"name");
 }
 
 // -------------------------------------------------------------------------
-int Configuration::getIntField(const std::string path)
+int Configuration::getIntField(const std::string& path)
 {
     return unixml.getIntProp(getNode(path), "name");
 }
 
 // -------------------------------------------------------------------------
-int Configuration::getPIntField(const std::string path, int def)
+int Configuration::getPIntField(const std::string& path, int def)
 {
     int i = getIntField(path);;
     if (i <= 0)
@@ -583,7 +585,7 @@ int Configuration::getPIntField(const std::string path, int def)
 }
 
 // -------------------------------------------------------------------------
-xmlNode* Configuration::findNode(xmlNode* node, const std::string snode, const std::string sname)
+xmlNode* Configuration::findNode(xmlNode* node, const std::string& snode, const std::string& sname)
 {
     if( !unixml.isOpen() )
         return 0;
@@ -647,7 +649,7 @@ void Configuration::createNodesList()
                 ulog.crit()<< "Configuration(createNodesList): Not found ID for node '" << nodename << "'" << endl;
             throw Exception("Configuration(createNodesList): Not found ID for node '"+nodename+"'");
         }
-
+        
         ninf.host = getProp(it,"ip").c_str();
         string tp(getProp(it,"port"));
         if( tp.empty() )
@@ -656,7 +658,7 @@ void Configuration::createNodesList()
             ninf.port = tp.c_str();
 
         string tmp(it.getProp("dbserver"));
-
+        
         if( tmp.empty() )
             ninf.dbserver = UniSetTypes::DefaultObjectId;
         else
@@ -675,13 +677,13 @@ void Configuration::createNodesList()
             localDBServer = ninf.dbserver;
 
         ninf.connected = false;
-
+        
         initNode(ninf, it);
 
         if( ulog.is_info() )
             ulog.info() << "Configuration(createNodesList): add to list of nodes: node=" << nodename << " id=" << ninf.id << endl;
         lnodes.push_back(ninf);
-    }
+    }    
 
     if( ulog.is_info() )
         ulog.info() << "Configuration(createNodesList): size of node list " << lnodes.size() << endl;
@@ -746,12 +748,12 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
             if( !debug_file.empty() )
                 deb.logFile(debug_file);
     }
-
+    
     // теперь смотрим командную строку
     string log_in("--"+debname+"-log-in-file");
     string add_level("--"+debname+"-add-levels");
     string del_level("--"+debname+"-del-levels");
-
+        
     // смотрим командную строку
     for (int i=1; i < (_argc - 1); i++)
     {
@@ -792,7 +794,7 @@ void Configuration::initRepSections()
     secServices        = secRoot + "/" + getRepSectionName("services",xmlServicesSec);
 }
 
-string Configuration::getRepSectionName( const string sec, xmlNode* secnode )
+string Configuration::getRepSectionName( const string& sec, xmlNode* secnode )
 {
     xmlNode* node = unixml.findNode(unixml.getFirstNode(),sec);
     if( node == NULL )
@@ -803,7 +805,7 @@ string Configuration::getRepSectionName( const string sec, xmlNode* secnode )
             ulog.crit()<< msg.str() << endl;
         throw SystemError(msg.str());
     }
-
+    
     secnode = node;
 
     string ret(unixml.getProp(node,"section"));
@@ -813,7 +815,7 @@ string Configuration::getRepSectionName( const string sec, xmlNode* secnode )
     return ret;
 }
 // -------------------------------------------------------------------------
-void Configuration::setConfFileName( const string fn )
+void Configuration::setConfFileName( const string& fn )
 {
     if( !fn.empty() )
     {
@@ -846,7 +848,7 @@ void Configuration::setConfFileName( const string fn )
     }
 }
 // -------------------------------------------------------------------------
-string Configuration::getPort(const string port)
+string Configuration::getPort( const string& port )
 {
     // Порт задан в параметрах программы
     string defport(getArgParam("--uniset-port"));
@@ -868,15 +870,15 @@ string Configuration::getPort(const string port)
     return UniSetDefaultPort;
 }
 // -------------------------------------------------------------------------
-ObjectId Configuration::getSensorID( const std::string name )
+ObjectId Configuration::getSensorID( const std::string& name )
 {
     if( name.empty() )
         return DefaultObjectId;
-
+        
     return oind->getIdByName(getSensorsSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
-ObjectId Configuration::getControllerID( const std::string name )
+ObjectId Configuration::getControllerID( const std::string& name )
 {
     if( name.empty() )
         return DefaultObjectId;
@@ -884,7 +886,7 @@ ObjectId Configuration::getControllerID( const std::string name )
     return oind->getIdByName(getControllersSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
-ObjectId Configuration::getObjectID( const std::string name )
+ObjectId Configuration::getObjectID( const std::string& name )
 {
     if( name.empty() )
         return DefaultObjectId;
@@ -892,7 +894,7 @@ ObjectId Configuration::getObjectID( const std::string name )
     return oind->getIdByName(getObjectsSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
-ObjectId Configuration::getServiceID( const std::string name )
+ObjectId Configuration::getServiceID( const std::string& name )
 {
     if( name.empty() )
         return DefaultObjectId;
@@ -900,15 +902,14 @@ ObjectId Configuration::getServiceID( const std::string name )
     return oind->getIdByName(getServicesSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
-UniSetTypes::ObjectId Configuration::getNodeID( const std::string name, std::string alias )
+UniSetTypes::ObjectId Configuration::getNodeID( const std::string& name, const std::string& alias )
 {
     if( name.empty() )
         return DefaultObjectId;
 
-    if( alias.empty() )
-        alias = name;
-//    return oind->getNodeId( oind->mkFullNodeName(name,alias) );
-    return oind->getIdByName( oind->mkFullNodeName(name,alias) );
+	string a( (alias.empty() ? name : alias ) );
+
+    return oind->getIdByName( oind->mkFullNodeName(name,a) );
 }
 
 // -------------------------------------------------------------------------
@@ -922,7 +923,7 @@ xmlNode* Configuration::getXMLSensorsSection()
 {
     if( xmlSensorsSec )
         return xmlSensorsSec;
-
+    
     xmlSensorsSec = unixml.findNode(unixml.getFirstNode(),"sensors");
     return xmlSensorsSec;
 }
@@ -931,7 +932,7 @@ xmlNode* Configuration::getXMLObjectsSection()
 {
     if( xmlObjectsSec )
         return xmlObjectsSec;
-
+    
     xmlObjectsSec = unixml.findNode(unixml.getFirstNode(),"objects");
     return xmlObjectsSec;
 }
@@ -940,7 +941,7 @@ xmlNode* Configuration::getXMLControllersSection()
 {
     if( xmlControllersSec )
         return xmlControllersSec;
-
+    
     xmlControllersSec = unixml.findNode(unixml.getFirstNode(),"controllers");
     return xmlControllersSec;
 
@@ -950,7 +951,7 @@ xmlNode* Configuration::getXMLServicesSection()
 {
     if( xmlServicesSec )
         return xmlServicesSec;
-
+    
     xmlServicesSec = unixml.findNode(unixml.getFirstNode(),"services");
     return xmlServicesSec;
 }
@@ -959,7 +960,7 @@ xmlNode* Configuration::getXMLNodesSection()
 {
     if( xmlNodesSec )
         return xmlNodesSec;
-
+    
     xmlNodesSec = unixml.findNode(unixml.getFirstNode(),"nodes");
     return xmlNodesSec;
 }
@@ -985,10 +986,10 @@ UniversalIO::IOType Configuration::getIOType( UniSetTypes::ObjectId id )
     return UniversalIO::UnknownIOType;
 }
 // -------------------------------------------------------------------------
-UniversalIO::IOType Configuration::getIOType( const std::string name )
+UniversalIO::IOType Configuration::getIOType( const std::string& name )
 {
     // Если указано "короткое" имя
-    // то просто сперва ищём ID, а потом по нему
+    // то просто сперва ищём ID, а потом по нему 
     // iotype
     ObjectId id = getSensorID(name);
     if( id != DefaultObjectId )

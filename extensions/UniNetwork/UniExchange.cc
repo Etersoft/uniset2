@@ -18,7 +18,7 @@ UniExchange::NetNodeInfo::NetNodeInfo():
 }
 // --------------------------------------------------------------------------
 UniExchange::UniExchange( UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID, 
-                            SharedMemory* ic, const std::string prefix ):
+                            SharedMemory* ic, const std::string& prefix ):
 IOController(id),
 shm(0),
 polltime(200),
@@ -64,7 +64,7 @@ smReadyTimeout(15000)
         for( ; it.getCurrent(); it.goNext() )
         {
             UniSetTypes::ObjectId id;
-
+        
             string n(it.getProp("id"));
             if( !n.empty() )
                 id = it.getIntProp("id");
@@ -73,7 +73,7 @@ smReadyTimeout(15000)
                 id = conf->getControllerID( it.getProp("name") );
                 n = it.getProp("name");
             }
-
+                
             if( id == DefaultObjectId )
                 throw SystemError("(UniExchange): Uknown ID for " + n );
 
@@ -90,7 +90,7 @@ smReadyTimeout(15000)
 
             if( id == DefaultObjectId )
                 throw SystemError("(UniExchange): Uknown ID for node=" + n1 );
-
+            
             NetNodeInfo ni;
             ni.oref = CORBA::Object::_nil();
             ni.id   = id;
@@ -101,7 +101,7 @@ smReadyTimeout(15000)
             nlst.push_back(ni);
         }
     }
-
+    
     if( shm->isLocalwork() )
     {
         readConfiguration();
@@ -168,7 +168,7 @@ void UniExchange::execute()
             {
                 dlog.info()  << myname << "(execute): catch ..." << endl;
             }
-
+    
             if( it->sidConnection != DefaultObjectId )
             {
                 try
@@ -179,8 +179,8 @@ void UniExchange::execute()
                 {
                     if( dlog.is_crit() )
                         dlog.crit()<< myname << "(execute): sensor not avalible "
-                            << conf->oind->getNameById( it->sidConnection)
-                            << endl;
+                            << conf->oind->getNameById( it->sidConnection) 
+                            << endl; 
                 }
             }
 
@@ -193,7 +193,7 @@ void UniExchange::execute()
             updateLocalData();
             ptUpdate.reset();
         }
-
+    
         msleep(polltime);
     }
 }
@@ -207,7 +207,7 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMI
         // init new map...
         smap.resize(map->length());
     }
-
+    
     int size = map->length();
     for( int i=0; i<size; i++ )
     {
@@ -221,7 +221,7 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMI
         }
 
         s->val = m->value;
-
+        
         try
         {
 /*
@@ -285,7 +285,7 @@ void UniExchange::updateLocalData()
             dlog.warn()  << "(update): catch ..." << endl;
         }
     }
-
+    
     init_ok = true;
 }
 // --------------------------------------------------------------------------
@@ -346,12 +346,12 @@ void UniExchange::sysCommand( SystemMessage* sm )
             askSensors(UniversalIO::UIONotify);
             break;
         }
-
+        
         case SystemMessage::FoldUp:
         case SystemMessage::Finish:
             askSensors(UniversalIO::UIODontNotify);
             break;
-
+        
         case SystemMessage::WatchDog:
             askSensors(UniversalIO::UIONotify);
             break;
@@ -372,12 +372,12 @@ void UniExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
 // -----------------------------------------------------------------------------
 void UniExchange::timerInfo( UniSetTypes::TimerMessage* tm )
 {
-
+    
 }
 // -----------------------------------------------------------------------------
 UniExchange* UniExchange::init_exchange( int argc, const char* const* argv, 
-                                        UniSetTypes::ObjectId icID, SharedMemory* ic,
-                                            const std::string prefix )
+                                        UniSetTypes::ObjectId icID, SharedMemory* ic, 
+                                            const std::string& prefix )
 {
     string p("--" + prefix + "-name");
     string nm(UniSetTypes::getArgParam(p,argc,argv,"UniExchange"));
@@ -415,7 +415,7 @@ void UniExchange::readConfiguration()
         if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
             initItem(it);
     }
-
+    
 //    readconf_ok = true;
 }
 // ------------------------------------------------------------------------------------------
@@ -440,11 +440,11 @@ bool UniExchange::initItem( UniXML_iterator& it )
         if( i.id <=0 )
             i.id = DefaultObjectId;
     }
-
+    
     if( i.id == DefaultObjectId )
     {
         if( dlog )
-            dlog.crit() << myname << "(initItem): Unknown ID for "
+            dlog.crit() << myname << "(initItem): Unknown ID for " 
                 << it.getProp("name") << endl;
         return false;
     }
@@ -453,7 +453,7 @@ bool UniExchange::initItem( UniXML_iterator& it )
     if( i.type == UniversalIO::UnknownIOType )
     {
         if( dlog )
-            dlog.crit() << myname << "(initItem): Unknown iotype= "
+            dlog.crit() << myname << "(initItem): Unknown iotype= " 
                 << it.getProp("iotype") << " for " << it.getProp("name") << endl;
         return false;
     }

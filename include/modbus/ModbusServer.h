@@ -17,11 +17,11 @@ class ModbusServer
         ModbusServer();
         virtual ~ModbusServer();
 
-        void initLog( UniSetTypes::Configuration* conf, const std::string name, const std::string logfile="" );
+        void initLog( UniSetTypes::Configuration* conf, const std::string& name, const std::string& logfile="" );
         void setLog( DebugStream& dlog );
 
 
-        /*! обработать очередное сообщение
+        /*! обработать очередное сообщение 
             \param addr         - адрес для которого принимать сообщения
             \param msecTimeout     - время ожидания прихода очередного сообщения в мсек.
             \return Возвращает код ошибки из ModbusRTU::mbErrCode
@@ -29,7 +29,7 @@ class ModbusServer
         virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout )=0;
 
 
-        /*! Установка паузы после посылки
+        /*! Установка паузы после посылки 
             \return старое значение
         */
         timeout_t setAfterSendPause( timeout_t msec );
@@ -57,18 +57,18 @@ class ModbusServer
         /*! Вспомогательная функция реализующая обработку запроса на установку времени.
             Основана на использовании gettimeofday и settimeofday.
         */
-        static ModbusRTU::mbErrCode replySetDateTime( ModbusRTU::SetDateTimeMessage& query,
+        static ModbusRTU::mbErrCode replySetDateTime( ModbusRTU::SetDateTimeMessage& query, 
                                                         ModbusRTU::SetDateTimeRetMessage& reply,
                                                         DebugStream* dlog=0 );
 
 
-        /*! Вспомогательная функция реализующая обработку передачи файла
+        /*! Вспомогательная функция реализующая обработку передачи файла 
             \param fname - запрашиваемый файл.
             \param query - запрос
             \param reply - ответ
         */
-        static ModbusRTU::mbErrCode replyFileTransfer( const std::string fname,
-                                                            ModbusRTU::FileTransferMessage& query,
+        static ModbusRTU::mbErrCode replyFileTransfer( const std::string& fname,
+                                                            ModbusRTU::FileTransferMessage& query, 
                                                             ModbusRTU::FileTransferRetMessage& reply,
                                                             DebugStream* dlog=0 );
 
@@ -82,22 +82,22 @@ class ModbusServer
             \param reply - ответ. Заполняется в обработчике.
             \return Результат обработки
         */
-        virtual ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query,
+        virtual ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query, 
                                                             ModbusRTU::ReadCoilRetMessage& reply )=0;
         /*! Обработка запроса на чтение данных (0x02).
             \param query - запрос
             \param reply - ответ. Заполняется в обработчике.
             \return Результат обработки
         */
-        virtual ModbusRTU::mbErrCode readInputStatus( ModbusRTU::ReadInputStatusMessage& query,
+        virtual ModbusRTU::mbErrCode readInputStatus( ModbusRTU::ReadInputStatusMessage& query, 
                                                             ModbusRTU::ReadInputStatusRetMessage& reply )=0;
-
+    
         /*! Обработка запроса на чтение данных (0x03).
             \param query - запрос
             \param reply - ответ. Заполняется в обработчике.
             \return Результат обработки
         */
-        virtual ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query,
+        virtual ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query, 
                                                             ModbusRTU::ReadOutputRetMessage& reply )=0;
 
         /*! Обработка запроса на чтение данных (0x04).
@@ -105,7 +105,7 @@ class ModbusServer
             \param reply - ответ. Заполняется в обработчике.
             \return Результат обработки
         */
-        virtual ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query,
+        virtual ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query, 
                                                             ModbusRTU::ReadInputRetMessage& reply )=0;
 
         /*! Обработка запроса на запись данных (0x05).
@@ -113,7 +113,7 @@ class ModbusServer
             \param reply - ответ. Заполняется в обработчике.
             \return Результат обработки
         */
-        virtual ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
+        virtual ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query, 
                                                         ModbusRTU::ForceSingleCoilRetMessage& reply )=0;
 
 
@@ -122,7 +122,7 @@ class ModbusServer
             \param reply - ответ. Заполняется в обработчике.
             \return Результат обработки
         */
-        virtual ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
+        virtual ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query, 
                                                         ModbusRTU::WriteSingleOutputRetMessage& reply )=0;
 
         /*! Обработка запроса на запись данных (0x0F).
@@ -130,7 +130,7 @@ class ModbusServer
             \param reply - ответ. Заполняется в обработчике.
             \return Результат обработки
         */
-        virtual ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
+        virtual ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query, 
                                                         ModbusRTU::ForceCoilsRetMessage& reply )=0;
 
         /*! Обработка запроса на запись данных (0x10).
@@ -138,16 +138,16 @@ class ModbusServer
             \param reply - ответ. Заполняется в обработчике.
             \return Результат обработки
         */
-        virtual ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
+        virtual ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query, 
                                                         ModbusRTU::WriteOutputRetMessage& reply )=0;
 
-
+        
         /*! Обработка запроса на запись данных (0x08).
             \param query - запрос
             \param reply - ответ. Заполняется в обработчике.
             \return Результат обработки
         */
-        virtual ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
+        virtual ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query, 
                                                         ModbusRTU::DiagnosticRetMessage& reply )=0;
 
         /*! Обработка запроса 43(0x2B).
@@ -155,7 +155,7 @@ class ModbusServer
             \param reply - ответ. Заполняется в обработчике.
             \return Результат обработки
         */
-        virtual ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
+        virtual ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query, 
                                                         ModbusRTU::MEIMessageRetRDI& reply )=0;
 
 
@@ -164,7 +164,7 @@ class ModbusServer
             \param reply - ответ. Заполняется в обработчике.
             \return Результат обработки
         */
-        virtual ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query,
+        virtual ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query, 
                                                             ModbusRTU::JournalCommandRetMessage& reply )=0;
 
 
@@ -173,7 +173,7 @@ class ModbusServer
             \param reply - ответ. Заполняется в обработчике.
             \return Результат обработки
         */
-        virtual ModbusRTU::mbErrCode setDateTime( ModbusRTU::SetDateTimeMessage& query,
+        virtual ModbusRTU::mbErrCode setDateTime( ModbusRTU::SetDateTimeMessage& query, 
                                                             ModbusRTU::SetDateTimeRetMessage& reply )=0;
 
 
@@ -182,7 +182,7 @@ class ModbusServer
             \param reply - ответ. Заполняется в обработчике.
             \return Результат обработки
         */
-        virtual ModbusRTU::mbErrCode remoteService( ModbusRTU::RemoteServiceMessage& query,
+        virtual ModbusRTU::mbErrCode remoteService( ModbusRTU::RemoteServiceMessage& query, 
                                                             ModbusRTU::RemoteServiceRetMessage& reply )=0;
 
 
@@ -191,19 +191,19 @@ class ModbusServer
             \param reply - ответ. Заполняется в обработчике.
             \return Результат обработки
         */
-        virtual ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query,
+        virtual ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query, 
                                                             ModbusRTU::FileTransferRetMessage& reply )=0;
 
-        /*! get next data block from channel ot recv buffer
+        /*! get next data block from channel ot recv buffer 
             \param begin - get from position
             \param buf  - buffer for data
             \param len     - size of buf
-            \return real data lenght ( must be <= len )
+            \return real data lenght ( must be <= len ) 
         */
         virtual int getNextData( unsigned char* buf, int len )=0;
-
+        
         virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len )=0;
-
+        
 
         /*! set timeout for receive data */
         virtual void setChannelTimeout( timeout_t msec )=0;

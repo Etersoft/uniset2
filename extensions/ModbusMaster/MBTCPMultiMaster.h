@@ -215,13 +215,13 @@ class MBTCPMultiMaster:
 {
     public:
         MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
-                        const std::string prefix="mbtcp" );
+                        const std::string& prefix="mbtcp" );
         virtual ~MBTCPMultiMaster();
 
         /*! глобальная функция для инициализации объекта */
         static MBTCPMultiMaster* init_mbmaster( int argc, const char* const* argv,
                                             UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
-                                            const std::string prefix="mbtcp" );
+                                            const std::string& prefix="mbtcp" );
 
         /*! глобальная функция для вывода help-а */
         static void help_print( int argc, const char* const* argv );

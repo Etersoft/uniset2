@@ -101,7 +101,7 @@ myname("")
 
 // ----------------------------------------------------------------------------
 
-Calibration::Calibration( const string name, const string confile ):
+Calibration::Calibration( const string& name, const string& confile ):
 minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftRaw(0),
 myname(name)
 {
@@ -121,7 +121,7 @@ Calibration::~Calibration()
 {
 }
 // ----------------------------------------------------------------------------
-void Calibration::build( const string name, const string confile, xmlNode* root )
+void Calibration::build( const string& name, const string& confile, xmlNode* root )
 {
     UniXML xml;
     try

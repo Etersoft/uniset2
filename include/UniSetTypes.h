@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \author Pavel Vainerman
- *    \brief базовые типы и вспомогательные функции библиотеки UniSet
+ *    \brief базовые типы и вспомогательные функции библиотеки UniSet 
 */
 // -------------------------------------------------------------------------- 
 #ifndef UniSetTypes_H_
@@ -56,15 +56,15 @@ namespace UniSetTypes
     const ThresholdId DefaultTimerId = -1;      /*!< идентификатор таймера по умолчанию */
 
     typedef long KeyType;    /*!< уникальный ключ объекта */
-
+    
     /*! генератор уникального положительного ключа
      *    Уникальность гарантируется только для пары значений
      *  id и node.
      * \warning что тут у нас с переполнением..
-     * \warning Уникальность генерируемого ключа еще не проверялась,
+     * \warning Уникальность генерируемого ключа еще не проверялась, 
          но нареканий по использованию тоже не было :)
     *  \todo Желательно продумать что-нибудь с использованием хэш.
-    */
+    */ 
     inline static KeyType key( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node )
     {
         return KeyType((id*node)+(id+2*node));
@@ -84,7 +84,7 @@ namespace UniSetTypes
     /*! Функция делает ObjectType из const char * (переводит const-строку в обычную, что плохо, но мы обещаем не писать в неё :) )  */
     inline static UniSetTypes::ObjectType getObjectType(const char * name) { const void *t = name;  return (UniSetTypes::ObjectType)t; }
 
-    UniversalIO::IOType getIOType( const std::string s );
+    UniversalIO::IOType getIOType( const std::string& s );
     std::ostream& operator<<( std::ostream& os, const UniversalIO::IOType t );
 
     /*! Команды для управления лампочками */
@@ -101,26 +101,26 @@ namespace UniSetTypes
 
     class IDList
     {
-        public:
+        public: 
             IDList();
             ~IDList();
 
             void add( ObjectId id );
             void del( ObjectId id );
-
+    
             inline int size(){ return lst.size(); }
             inline bool empty(){ return lst.empty(); }
-
+        
             std::list<ObjectId> getList();
 
             // за освобождение выделеной памяти
             // отвечает вызывающий!
             IDSeq* getIDSeq();
-
-            //
+        
+            // 
             ObjectId getFirst();
             ObjectId node;    // узел, на котором находятся датчики
-
+        
         private:
             std::list<ObjectId> lst;
     };
@@ -136,13 +136,13 @@ namespace UniSetTypes
         char* repName;        /*!< текстовое имя для регистрации в репозитории */
         char* textName;        /*!< текстовое имя */
         void* data;
-
+    
         inline bool operator < ( const ObjectInfo& o ) const
         {
             return (id < o.id);
         }
     };
-
+    
     typedef std::list<NodeInfo> ListOfNode;
 
     /*! Запрещенные для использования в именах объектов символы */
@@ -160,43 +160,43 @@ namespace UniSetTypes
             std::sscanf(str, "%i", &n);
         return n;
     }
-    inline int uni_atoi( const std::string str )
+    inline int uni_atoi( const std::string& str )
     {
         return uni_atoi(str.c_str());
     }
 
-    std::string timeToString(time_t tm=time(0), const std::string brk=":"); /*!< Преобразование времени в строку HH:MM:SS */
-    std::string dateToString(time_t tm=time(0), const std::string brk="/"); /*!< Преобразование даты в строку DD/MM/YYYY */
+    std::string timeToString(time_t tm=time(0), const std::string& brk=":"); /*!< Преобразование времени в строку HH:MM:SS */
+    std::string dateToString(time_t tm=time(0), const std::string& brk="/"); /*!< Преобразование даты в строку DD/MM/YYYY */
 
     /*! Разбивка строки по указанному символу */
-    IDList explode( const std::string str, char sep=',' );
-    std::list<std::string> explode_str( const std::string str, char sep=',' );
-
+    IDList explode( const std::string& str, char sep=',' );
+    std::list<std::string> explode_str( const std::string& str, char sep=',' );
+    
     struct ParamSInfo
     {
         IOController_i::SensorInfo si;
         long val;
         std::string fname; // fullname id@node or id
     };
-
+    
     /*! Функция разбора строки вида: id1@node1=val1,id2@node2=val2,...
        Если '=' не указано, возвращается val=0
       Если @node не указано, возвращается node=DefaultObjectId */
-    std::list<ParamSInfo> getSInfoList( std::string s, Configuration* conf=UniSetTypes::conf);
+    std::list<ParamSInfo> getSInfoList( const std::string& s, Configuration* conf=UniSetTypes::conf );
 
     /*! проверка является текст в строке - числом..*/
-    bool is_digit( const std::string s );
+    bool is_digit( const std::string& s );
 
     // ---------------------------------------------------------------
     // Работа с командной строкой
 
-    /*! Получение параметра командной строки
+    /*! Получение параметра командной строки 
         \param name - название параметра
         \param defval - значение, которое будет возвращено, если параметр не найден
     */
-    inline std::string getArgParam( const std::string name,
+    inline std::string getArgParam( const std::string& name,
                                         int _argc, const char* const* _argv,
-                                            const std::string defval="" )
+                                            const std::string& defval="" )
     {
         for( int i=1; i < (_argc - 1) ; i++ )
         {
@@ -206,7 +206,7 @@ namespace UniSetTypes
         return defval;
     }
 
-    inline int getArgInt( const std::string name,
+    inline int getArgInt( const std::string& name,
                             int _argc, const char* const* _argv,
                             const std::string defval="" )
     {
@@ -215,10 +215,10 @@ namespace UniSetTypes
 
     /*! Проверка наличия параметра в командной строке
         \param name - название параметра
-        \return Возвращает -1, если параметр не найден.
+        \return Возвращает -1, если параметр не найден. 
             Или позицию параметра, если найден.
     */
-    inline int findArgParam( const std::string name, int _argc, const char* const* _argv )
+    inline int findArgParam( const std::string& name, int _argc, const char* const* _argv )
     {
         for( int i=1; i<_argc; i++ )
         {
@@ -239,7 +239,7 @@ namespace UniSetTypes
     // rawMax     - максимальная граница исходного диапазона
     // calMin     - минимальная граница калиброванного диапазона
     // calMin     - минимальная граница калиброванного диапазона
-    // limit    - обрезать итоговое значение по границам
+    // limit    - обрезать итоговое значение по границам 
     float fcalibrate(float raw, float rawMin, float rawMax, float calMin, float calMax, bool limit=true );
     long lcalibrate(long raw, long rawMin, long rawMax, long calMin, long calMax, bool limit=true );
 
@@ -251,11 +251,11 @@ namespace UniSetTypes
     // ---------------------------------------------------------------
     // Всякие helper-ы
 
-    bool file_exist( const std::string filename );
+    bool file_exist( const std::string& filename );
 
     // Проверка xml-узла на соответствие <...f_prop="f_val">,
     // если не задано f_val, то проверяется, что просто f_prop!=""
-    bool check_filter( UniXML_iterator& it, const std::string f_prop, const std::string f_val="" );
+    bool check_filter( UniXML_iterator& it, const std::string& f_prop, const std::string& f_val="" );
 
     /*! алгоритм копирования элементов последовательности удовлетворяющих условию */
     template<typename InputIterator,

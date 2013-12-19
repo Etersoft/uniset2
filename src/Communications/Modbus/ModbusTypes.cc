@@ -2539,7 +2539,7 @@ MEIMessageRetRDI::MEIMessageRetRDI( ModbusAddr _addr, ModbusByte devID, ModbusBy
     func = fnMEI;
 }
 // -------------------------------------------------------------------------
-bool MEIMessageRetRDI::addData( ModbusByte id, const std::string val )
+bool MEIMessageRetRDI::addData( ModbusByte id, const std::string& val )
 {
     if( isFull() )
         return false;
@@ -2813,7 +2813,7 @@ float ModbusRTU::dat2f( const ModbusData dat1, const ModbusData dat2 )
     return f;
 }
 // -------------------------------------------------------------------------
-ModbusAddr ModbusRTU::str2mbAddr( const std::string val )
+ModbusAddr ModbusRTU::str2mbAddr( const std::string& val )
 {
     if( val.empty() )
         return 0;
@@ -2821,7 +2821,7 @@ ModbusAddr ModbusRTU::str2mbAddr( const std::string val )
     return (ModbusAddr)UniSetTypes::uni_atoi(val);
 }
 // -------------------------------------------------------------------------
-ModbusData ModbusRTU::str2mbData( const std::string val )
+ModbusData ModbusRTU::str2mbData( const std::string& val )
 {
     if( val.empty() )
         return 0;

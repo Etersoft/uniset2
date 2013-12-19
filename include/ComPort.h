@@ -66,37 +66,37 @@ public:
         TwoBits=3
     };
 
-    ComPort( const std::string comDevice, bool nocreate=false );
+    ComPort( const std::string& comDevice, bool nocreate=false );
     virtual ~ComPort();
-
+    
     inline std::string getDevice(){ return dev; }
-
+    
     void setSpeed( Speed s );
-    void setSpeed( std::string speed );
+    void setSpeed( const std::string& speed );
     inline Speed getSpeed(){ return speed; }
-
-    static Speed getSpeed( const std::string s );
+    
+    static Speed getSpeed( const std::string& s );
     static std::string getSpeed( Speed s );
-
+    
     void setParity(Parity);
     void setCharacterSize(CharacterSize);
     void setStopBits(StopBits sBit);
-
+    
     virtual void setTimeout(int timeout);
     void setWaiting(bool waiting);
     inline int getTimeout(){ return uTimeout*1000; } // msec
-
+    
     virtual unsigned char receiveByte();
     virtual void sendByte(unsigned char x);
 
     virtual int receiveBlock(unsigned char*msg,int len);
     virtual int sendBlock(unsigned char*msg,int len);
-
+    
     void setBlocking(bool blocking);
-
+    
     virtual void cleanupChannel();
     virtual void reopen();
-
+    
 protected:
     void openPort();
 
@@ -109,9 +109,9 @@ protected:
     bool waiting;
     Speed speed;
     std::string dev;
-
+    
     virtual unsigned char m_receiveByte( bool wait );
-
+    
 private:
     struct termios oldTermios;
 };

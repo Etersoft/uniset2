@@ -25,7 +25,7 @@ class Calibration
 {
     public:
         Calibration();
-        Calibration( const std::string name, const std::string confile="calibration.xml" );
+        Calibration( const std::string& name, const std::string& confile="calibration.xml" );
         Calibration( xmlNode* node );
         ~Calibration();
 
@@ -75,7 +75,7 @@ class Calibration
             \param confile - файл содержащий данные
             \param node    - если node!=0, то используется этот узел...
         */
-        void build( const std::string name, const std::string confile, xmlNode* node=0  );
+        void build( const std::string& name, const std::string& confile, xmlNode* node=0  );
 
 
         /*! Тип для хранения текущего значения */

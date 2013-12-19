@@ -221,7 +221,7 @@ const DebugStream& DebugStream::operator=( const DebugStream& r )
 }
 //--------------------------------------------------------------------------
 /// Sets the debugstreams' logfile to f.
-void DebugStream::logFile(const std::string f)
+void DebugStream::logFile( const std::string& f )
 {
     fname = f;
     if (internal) {

@@ -31,7 +31,7 @@ using namespace std;
 using namespace UniSetTypes;
 
 // -----------------------------------------------------------------------------
-    float UniSetTypes::fcalibrate( float raw, float rawMin, float rawMax,
+    float UniSetTypes::fcalibrate( float raw, float rawMin, float rawMax, 
                 float calMin, float calMax, bool limit )
     {
         if( rawMax == rawMin ) return 0; // деление на 0!!!
@@ -52,7 +52,7 @@ using namespace UniSetTypes;
             if( ret < calMax )
                 return calMax;
         }
-
+        
         return ret;
     }
     // -------------------------------------------------------------------------
@@ -61,7 +61,7 @@ using namespace UniSetTypes;
     {
         if( rawMax == rawMin ) return 0; // деление на 0!!!
 
-        long ret = lroundf( (float)(raw - rawMin) * (float)(calMax - calMin) /
+        long ret = lroundf( (float)(raw - rawMin) * (float)(calMax - calMin) / 
                         (float)( rawMax - rawMin ) + calMin );
 
         if( !limit )
@@ -85,7 +85,7 @@ using namespace UniSetTypes;
             if( ret < calMax )
                 return calMax;
         }
-
+        
         return ret;
     }
 
@@ -106,9 +106,9 @@ using namespace UniSetTypes;
     UniSetTypes::IDList::IDList():
         node(UniSetTypes::conf->getLocalNode())
     {
-
+    
     }
-
+    
     UniSetTypes::IDList::~IDList()
     {
     }
@@ -120,11 +120,11 @@ using namespace UniSetTypes;
             if( (*it) == id )
                 return;
         }
-
+        
         lst.push_back(id);
     }
-
-
+    
+    
     void UniSetTypes::IDList::del( ObjectId id )
     {
         for( list<ObjectId>::iterator it=lst.begin(); it!=lst.end(); ++it )
@@ -146,7 +146,7 @@ using namespace UniSetTypes;
     {
         if( lst.empty() )
             return UniSetTypes::DefaultObjectId;
-
+            
         return (*lst.begin());
     }
 
@@ -159,18 +159,18 @@ using namespace UniSetTypes;
         int i=0;
         for( list<ObjectId>::iterator it=lst.begin(); it!=lst.end(); ++it,i++ )
             (*seq)[i] = (*it);
-
+        
         return seq;
     }
     // -------------------------------------------------------------------------
-    bool UniSetTypes::file_exist( const std::string filename )
+    bool UniSetTypes::file_exist( const std::string& filename )
     {
          std::ifstream file;
         #ifdef HAVE_IOS_NOCREATE
          file.open( filename.c_str(), std::ios::in | std::ios::nocreate );
-        #else
+        #else    
          file.open( filename.c_str(), std::ios::in );
-        #endif
+        #endif     
          bool result = false;
          if( file )
              result = true;
@@ -179,7 +179,7 @@ using namespace UniSetTypes;
          return result;
     }
     // -------------------------------------------------------------------------
-    UniSetTypes::IDList UniSetTypes::explode( const string str, char sep )
+    UniSetTypes::IDList UniSetTypes::explode( const string& str, char sep )
     {
         UniSetTypes::IDList l;
 
@@ -196,11 +196,11 @@ using namespace UniSetTypes;
             }
         }
         while( pos!=string::npos );
-
+    
         return l;
     }
     // -------------------------------------------------------------------------
-    std::list<std::string> UniSetTypes::explode_str( const string str, char sep )
+    std::list<std::string> UniSetTypes::explode_str( const string& str, char sep )
     {
         std::list<std::string> l;
 
@@ -217,31 +217,31 @@ using namespace UniSetTypes;
             }
         }
         while( pos!=string::npos );
-
+    
         return l;
-    }
+    }    
     // ------------------------------------------------------------------------------------------
-    bool UniSetTypes::is_digit( const std::string s )
+    bool UniSetTypes::is_digit( const std::string& s )
     {
         for( std::string::const_iterator it=s.begin(); it!=s.end(); it++ )
         {
             if( !isdigit(*it) )
                 return false;
         }
-
+    
         return true;
       //return (std::count_if(s.begin(),s.end(),std::isdigit) == s.size()) ? true : false;
     }
     // --------------------------------------------------------------------------------------
-    std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( string str, Configuration* conf )
+    std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str, Configuration* conf )
     {
         std::list<UniSetTypes::ParamSInfo> res;
-
+        
         std::list<std::string> l = UniSetTypes::explode_str(str,',');
         for( std::list<std::string>::iterator it=l.begin(); it!=l.end(); it++ )
         {
             UniSetTypes::ParamSInfo item;
-
+            
             std::list<std::string> p = UniSetTypes::explode_str((*it),'=');
             std::string s = "";
             if( p.size() == 1 )
@@ -258,8 +258,8 @@ using namespace UniSetTypes;
             {
                 cerr << "WARNING: parse error for '" << (*it) << "'. IGNORE..." << endl;
                 continue;
-            }
-
+            }              
+              
               item.fname = s;
             std::list<std::string> t = UniSetTypes::explode_str(s,'@');
             if( t.size() == 1 )
@@ -279,7 +279,7 @@ using namespace UniSetTypes;
                     item.si.id = uni_atoi(s_id);
                 else
                     item.si.id = conf->getSensorID(s_id);
-
+              
                 if( is_digit(s_node.c_str()) )
                     item.si.node = uni_atoi(s_node);
                 else
@@ -293,12 +293,12 @@ using namespace UniSetTypes;
 
             res.push_back(item);
         }
-
+     
         return res;
     }
     // --------------------------------------------------------------------------------------
-
-    UniversalIO::IOType UniSetTypes::getIOType( const std::string stype )
+    
+    UniversalIO::IOType UniSetTypes::getIOType( const std::string& stype )
     {
         if ( stype == "DI" || stype == "di" )
             return UniversalIO::DI;
@@ -336,7 +336,7 @@ using namespace UniSetTypes;
                     << " precision=" << c.precision;
     }
     // ------------------------------------------------------------------------------------------
-    bool UniSetTypes::check_filter( UniXML_iterator& it, const std::string f_prop, const std::string f_val )
+    bool UniSetTypes::check_filter( UniXML_iterator& it, const std::string& f_prop, const std::string& f_val )
     {
         if( f_prop.empty() )
             return true;
@@ -352,23 +352,23 @@ using namespace UniSetTypes;
         return true;
     }
     // ------------------------------------------------------------------------------------------
-    string UniSetTypes::timeToString(time_t tm, const std::string brk )
+    string UniSetTypes::timeToString(time_t tm, const std::string& brk )
     {
         struct tm *tms = localtime(&tm);
         ostringstream time;
         time << std::setw(2) << std::setfill('0') << tms->tm_hour << brk;
         time << std::setw(2) << std::setfill('0') << tms->tm_min << brk;
-        time << std::setw(2) << std::setfill('0') << tms->tm_sec;
+        time << std::setw(2) << std::setfill('0') << tms->tm_sec;    
         return time.str();
     }
 
-    string UniSetTypes::dateToString(time_t tm, const std::string brk )
+    string UniSetTypes::dateToString(time_t tm, const std::string& brk )
     {
         struct tm *tms = localtime(&tm);
         ostringstream date;
         date << std::setw(4) << std::setfill('0') << tms->tm_year+1900 << brk;
         date << std::setw(2) << std::setfill('0') << tms->tm_mon+1 << brk;
-        date << std::setw(2) << std::setfill('0') << tms->tm_mday;
+        date << std::setw(2) << std::setfill('0') << tms->tm_mday;    
         return date.str();
     }
 
