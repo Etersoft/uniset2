@@ -12,7 +12,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 RRDServer::RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, SharedMemory* ic,
-            const string prefix, DebugStream& log ):
+            const string& prefix, DebugStream& log ):
 UObject_SK(objId,cnode),
 shm( new SMInterface(shmId,&ui,objId,ic) ),
 prefix(prefix)
@@ -235,7 +235,7 @@ void RRDServer::help_print( int argc, const char* const* argv )
 // -----------------------------------------------------------------------------
 RRDServer* RRDServer::init_rrdstorage( int argc, const char* const* argv, 
                                             UniSetTypes::ObjectId icID, SharedMemory* ic, 
-                                            const std::string prefix )
+                                            const std::string& prefix )
 {
     string name = conf->getArgParam("--" + prefix + "-name","RRDServer");
     if( name.empty() )

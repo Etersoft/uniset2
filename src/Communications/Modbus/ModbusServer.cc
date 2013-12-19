@@ -1382,7 +1382,7 @@ void ModbusServer::setLog( DebugStream& l )
 // -------------------------------------------------------------------------
 
 void ModbusServer::initLog( UniSetTypes::Configuration* conf,
-                            const std::string lname, const string logfile )
+                            const std::string& lname, const string& logfile )
 {                        
     conf->initDebug(dlog,lname);
 
@@ -1396,7 +1396,7 @@ void ModbusServer::printProcessingTime()
         dlog.info() << "(processingTime): " << tmProcessing.getCurrent() << " [msec] (lim: " << tmProcessing.getInterval() << ")" << endl;
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string fname, 
+ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string &fname,
                                                         ModbusRTU::FileTransferMessage& query, 
                                                         ModbusRTU::FileTransferRetMessage& reply,
                                                         DebugStream* dlog )

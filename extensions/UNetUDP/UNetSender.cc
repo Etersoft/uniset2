@@ -8,8 +8,8 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-UNetSender::UNetSender( const std::string s_host, const ost::tpport_t port, SMInterface* smi,
-                        const std::string s_f, const std::string s_val, SharedMemory* ic ):
+UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, SMInterface* smi,
+                        const std::string& s_f, const std::string& s_val, SharedMemory* ic ):
 s_field(s_f),
 s_fvalue(s_val),
 shm(smi),

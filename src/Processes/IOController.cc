@@ -40,7 +40,7 @@ IOController::IOController():
 
 // ------------------------------------------------------------------------------------------
 
-IOController::IOController(const string name, const string section):
+IOController::IOController(const string& name, const string& section):
     UniSetManager(name, section),
     ioMutex(name+"_ioMutex"),
     isPingDBServer(true)

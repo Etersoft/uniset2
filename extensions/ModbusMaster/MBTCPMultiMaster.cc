@@ -11,7 +11,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, 
-                            SharedMemory* ic, const std::string prefix ):
+                            SharedMemory* ic, const std::string& prefix ):
 MBExchange(objId,shmId,ic,prefix),
 force_disconnect(true),
 pollThread(0),
@@ -377,7 +377,7 @@ void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
 // -----------------------------------------------------------------------------
 MBTCPMultiMaster* MBTCPMultiMaster::init_mbmaster( int argc, const char* const* argv, 
                                             UniSetTypes::ObjectId icID, SharedMemory* ic, 
-                                            const std::string prefix )
+                                            const std::string& prefix )
 {
     string name = conf->getArgParam("--" + prefix + "-name","MBTCPMultiMaster1");
     if( name.empty() )

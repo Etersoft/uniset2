@@ -112,7 +112,7 @@ public:
     }
 
     /// Sets the debugstreams' logfile to f.
-    void logFile(const std::string f);
+    void logFile( const std::string& f );
     
     inline std::string getLogFile(){ return fname; }
     

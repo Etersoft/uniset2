@@ -84,7 +84,7 @@ namespace UniSetTypes
     /*! Функция делает ObjectType из const char * (переводит const-строку в обычную, что плохо, но мы обещаем не писать в неё :) )  */
     inline static UniSetTypes::ObjectType getObjectType(const char * name) { const void *t = name;  return (UniSetTypes::ObjectType)t; }
 
-    UniversalIO::IOType getIOType( const std::string s );
+    UniversalIO::IOType getIOType( const std::string& s );
     std::ostream& operator<<( std::ostream& os, const UniversalIO::IOType t );
 
     /*! Команды для управления лампочками */
@@ -160,17 +160,17 @@ namespace UniSetTypes
             std::sscanf(str, "%i", &n);
         return n;
     }
-    inline int uni_atoi( const std::string str )
+    inline int uni_atoi( const std::string& str )
     {
         return uni_atoi(str.c_str());
     }
 
-    std::string timeToString(time_t tm=time(0), const std::string brk=":"); /*!< Преобразование времени в строку HH:MM:SS */
-    std::string dateToString(time_t tm=time(0), const std::string brk="/"); /*!< Преобразование даты в строку DD/MM/YYYY */
+    std::string timeToString(time_t tm=time(0), const std::string& brk=":"); /*!< Преобразование времени в строку HH:MM:SS */
+    std::string dateToString(time_t tm=time(0), const std::string& brk="/"); /*!< Преобразование даты в строку DD/MM/YYYY */
 
     /*! Разбивка строки по указанному символу */
-    IDList explode( const std::string str, char sep=',' );
-    std::list<std::string> explode_str( const std::string str, char sep=',' );
+    IDList explode( const std::string& str, char sep=',' );
+    std::list<std::string> explode_str( const std::string& str, char sep=',' );
     
     struct ParamSInfo
     {
@@ -182,10 +182,10 @@ namespace UniSetTypes
     /*! Функция разбора строки вида: id1@node1=val1,id2@node2=val2,...
        Если '=' не указано, возвращается val=0
       Если @node не указано, возвращается node=DefaultObjectId */
-    std::list<ParamSInfo> getSInfoList( std::string s, Configuration* conf=UniSetTypes::conf);
+    std::list<ParamSInfo> getSInfoList( const std::string& s, Configuration* conf=UniSetTypes::conf );
 
     /*! проверка является текст в строке - числом..*/
-    bool is_digit( const std::string s );
+    bool is_digit( const std::string& s );
 
     // ---------------------------------------------------------------
     // Работа с командной строкой
@@ -194,9 +194,9 @@ namespace UniSetTypes
         \param name - название параметра
         \param defval - значение, которое будет возвращено, если параметр не найден
     */
-    inline std::string getArgParam( const std::string name, 
+    inline std::string getArgParam( const std::string& name,
                                         int _argc, const char* const* _argv,
-                                            const std::string defval="" )
+                                            const std::string& defval="" )
     {
         for( int i=1; i < (_argc - 1) ; i++ )
         {
@@ -206,7 +206,7 @@ namespace UniSetTypes
         return defval;
     }
 
-    inline int getArgInt( const std::string name, 
+    inline int getArgInt( const std::string& name,
                             int _argc, const char* const* _argv,
                             const std::string defval="" )
     {
@@ -218,7 +218,7 @@ namespace UniSetTypes
         \return Возвращает -1, если параметр не найден. 
             Или позицию параметра, если найден.
     */
-    inline int findArgParam( const std::string name, int _argc, const char* const* _argv )
+    inline int findArgParam( const std::string& name, int _argc, const char* const* _argv )
     {
         for( int i=1; i<_argc; i++ )
         {
@@ -251,11 +251,11 @@ namespace UniSetTypes
     // ---------------------------------------------------------------
     // Всякие helper-ы
 
-    bool file_exist( const std::string filename );
+    bool file_exist( const std::string& filename );
 
     // Проверка xml-узла на соответствие <...f_prop="f_val">,
     // если не задано f_val, то проверяется, что просто f_prop!=""
-    bool check_filter( UniXML_iterator& it, const std::string f_prop, const std::string f_val="" );
+    bool check_filter( UniXML_iterator& it, const std::string& f_prop, const std::string& f_val="" );
 
     /*! алгоритм копирования элементов последовательности удовлетворяющих условию */
     template<typename InputIterator,

@@ -17,7 +17,7 @@ class ModbusServer
         ModbusServer();
         virtual ~ModbusServer();
 
-        void initLog( UniSetTypes::Configuration* conf, const std::string name, const std::string logfile="" );
+        void initLog( UniSetTypes::Configuration* conf, const std::string& name, const std::string& logfile="" );
         void setLog( DebugStream& dlog );
 
 
@@ -67,7 +67,7 @@ class ModbusServer
             \param query - запрос
             \param reply - ответ
         */
-        static ModbusRTU::mbErrCode replyFileTransfer( const std::string fname, 
+        static ModbusRTU::mbErrCode replyFileTransfer( const std::string& fname,
                                                             ModbusRTU::FileTransferMessage& query, 
                                                             ModbusRTU::FileTransferRetMessage& reply,
                                                             DebugStream* dlog=0 );

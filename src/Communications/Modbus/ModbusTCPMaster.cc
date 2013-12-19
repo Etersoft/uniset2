@@ -271,7 +271,7 @@ void ModbusTCPMaster::cleanInputStream()
     while( ret > 0);
 }
 // -------------------------------------------------------------------------
-bool ModbusTCPMaster::checkConnection( const std::string ip, int port, int timeout_msec )
+bool ModbusTCPMaster::checkConnection( const std::string& ip, int port, int timeout_msec )
 {
     try
     {
@@ -334,7 +334,7 @@ void ModbusTCPMaster::reconnect()
     }
 }
 // -------------------------------------------------------------------------
-void ModbusTCPMaster::connect( const std::string addr, int port )
+void ModbusTCPMaster::connect( const std::string& addr, int port )
 {
     ost::InetAddress ia(addr.c_str());
     connect(ia,port);

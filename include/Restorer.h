@@ -83,12 +83,12 @@ class Restorer_XML
         /*! Установить фильтр на чтение списка датчиков
             \note Функцию необходимо вызывать до вызова read(...)
          */
-        void setItemFilter( const std::string filterField, const std::string filterValue="" );
+        void setItemFilter( const std::string& filterField, const std::string& filterValue="" );
 
         /*! Установить фильтр на чтение списка заказчиков (по каждому датчику)
             \note Функцию необходимо вызывать до вызова read(...)
          */
-        void setConsumerFilter( const std::string filterField, const std::string filterValue="" );
+        void setConsumerFilter( const std::string& filterField, const std::string& filterValue="" );
 
 
         /*! универсальная функция получения информации о заказчике (id и node) 
@@ -108,7 +108,7 @@ class Restorer_XML
 
 
         /*! Функция поиска по текущему уровню (без рекурсии для дочерних узлов) */
-        static xmlNode* find_node( UniXML& xml, xmlNode* root, const std::string& nodename, const std::string nm="" );
+        static xmlNode* find_node( UniXML& xml, xmlNode* root, const std::string& nodename, const std::string& nm="" );
 
     protected:
 

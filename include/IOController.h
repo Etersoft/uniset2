@@ -41,7 +41,7 @@ class IOController:
 {
     public:
     
-        IOController(const std::string name, const std::string section);
+        IOController(const std::string& name, const std::string& section);
         IOController(UniSetTypes::ObjectId id);
         ~IOController();
 

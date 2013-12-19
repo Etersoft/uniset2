@@ -193,13 +193,13 @@ class MBTCPMaster:
 {
     public:
         MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
-                        const std::string prefix="mbtcp" );
+                        const std::string& prefix="mbtcp" );
         virtual ~MBTCPMaster();
     
         /*! глобальная функция для инициализации объекта */
         static MBTCPMaster* init_mbmaster( int argc, const char* const* argv, 
                                             UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
-                                            const std::string prefix="mbtcp" );
+                                            const std::string& prefix="mbtcp" );
 
         /*! глобальная функция для вывода help-а */
         static void help_print( int argc, const char* const* argv );

@@ -66,16 +66,16 @@ public:
         TwoBits=3
     };
 
-    ComPort( const std::string comDevice, bool nocreate=false );
+    ComPort( const std::string& comDevice, bool nocreate=false );
     virtual ~ComPort();
     
     inline std::string getDevice(){ return dev; }
     
     void setSpeed( Speed s );
-    void setSpeed( std::string speed );
+    void setSpeed( const std::string& speed );
     inline Speed getSpeed(){ return speed; }
     
-    static Speed getSpeed( const std::string s );
+    static Speed getSpeed( const std::string& s );
     static std::string getSpeed( Speed s );
     
     void setParity(Parity);

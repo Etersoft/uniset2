@@ -35,7 +35,7 @@ class SViewer
 {   
     public:
 
-        SViewer(const std::string ControllersSection, bool isShort=true);
+        SViewer(const std::string& ControllersSection, bool isShort=true);
         virtual ~SViewer();
 
         void view();
@@ -45,7 +45,7 @@ class SViewer
         friend class SViewer_glade;
         void on_SViewer_destroy();
 
-        void readSection(const std::string sec, const std::string secRoot);
+        void readSection(const std::string& sec, const std::string& secRoot);
         void getInfo(UniSetTypes::ObjectId id);
 
         virtual void updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetTypes::ObjectId oid );

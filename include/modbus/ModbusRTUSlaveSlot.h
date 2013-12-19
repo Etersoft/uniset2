@@ -18,7 +18,7 @@ class ModbusRTUSlaveSlot:
 {
     public:
         ModbusRTUSlaveSlot( ComPort* com );
-        ModbusRTUSlaveSlot( const std::string dev, bool use485=false, bool tr_ctl=false );
+        ModbusRTUSlaveSlot( const std::string& dev, bool use485=false, bool tr_ctl=false );
         virtual ~ModbusRTUSlaveSlot();
 
         virtual void sigterm( int signo );

@@ -11,7 +11,7 @@ using namespace ModbusRTU;
 using namespace UniSetTypes;
 
 // -------------------------------------------------------------------------
-ModbusRTUMaster::ModbusRTUMaster( const string dev, bool use485, bool tr_ctl ):
+ModbusRTUMaster::ModbusRTUMaster( const string& dev, bool use485, bool tr_ctl ):
     port(NULL),
     myport(true)
 {
@@ -67,7 +67,7 @@ void ModbusRTUMaster::setSpeed( ComPort::Speed s )
         port->setSpeed(s);
 }
 // --------------------------------------------------------------------------------
-void ModbusRTUMaster::setSpeed( const std::string s )
+void ModbusRTUMaster::setSpeed( const std::string& s )
 {
     if( port != NULL )
         port->setSpeed(s);

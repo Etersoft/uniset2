@@ -101,7 +101,7 @@ Configuration::~Configuration()
 }
 // ---------------------------------------------------------------------------------
 
-Configuration::Configuration( int argc, const char* const* argv, const string xmlfile ):
+Configuration::Configuration( int argc, const char* const* argv, const string& xmlfile ):
     oind(NULL),
     _argc(argc),
     _argv(argv),
@@ -119,7 +119,7 @@ Configuration::Configuration( int argc, const char* const* argv, const string xm
 }
 // ---------------------------------------------------------------------------------
 Configuration::Configuration( int argc, const char* const* argv, ObjectIndex* _oind,
-                                const string fileConf ):
+                                const string& fileConf ):
     oind(NULL),
     _argc(argc),
     _argv(argv),
@@ -137,7 +137,7 @@ Configuration::Configuration( int argc, const char* const* argv, ObjectIndex* _o
     initConfiguration(argc,argv);
 }
 // ---------------------------------------------------------------------------------
-Configuration::Configuration( int argc, const char* const* argv, const string fileConf,
+Configuration::Configuration( int argc, const char* const* argv, const string& fileConf,
                 UniSetTypes::ObjectInfo* omap ):
     oind(NULL),
     _argc(argc),
@@ -387,17 +387,17 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 }
 
 // -------------------------------------------------------------------------
-string Configuration::getArgParam( const string name, const string defval )
+string Configuration::getArgParam( const string& name, const string& defval )
 {
     return UniSetTypes::getArgParam(name, _argc, _argv, defval);
 }
 
-int Configuration::getArgInt( const string name, const string defval )
+int Configuration::getArgInt( const string& name, const string& defval )
 {
     return UniSetTypes::uni_atoi(getArgParam( name, defval ));
 }
 
-int Configuration::getArgPInt( const string name, int defval )
+int Configuration::getArgPInt( const string& name, int defval )
 {
     string param = getArgParam(name,"");
     if( param.empty() )
@@ -406,7 +406,7 @@ int Configuration::getArgPInt( const string name, int defval )
     return UniSetTypes::uni_atoi(param);
 }
 
-int Configuration::getArgPInt( const string name, const string strdefval, int defval )
+int Configuration::getArgPInt( const string& name, const string& strdefval, int defval )
 {
     string param = getArgParam(name,strdefval);
     if( param.empty() && strdefval.empty() )
@@ -523,12 +523,14 @@ void Configuration::initParameters()
     }
 }
 // -------------------------------------------------------------------------
-void Configuration::setLocalNode( string nodename )
+void Configuration::setLocalNode( const string& nodename )
 {
     string virtnode = oind->getVirtualNodeName(nodename);
+	string nn(nodename);
     if( virtnode.empty() )
-        nodename = oind->mkFullNodeName(nodename,nodename);
-    localNode = oind->getIdByName(nodename);
+        nn = oind->mkFullNodeName(nodename,nodename);
+
+	localNode = oind->getIdByName(nn);
 
     if( localNode == DefaultObjectId )
     {
@@ -539,7 +541,7 @@ void Configuration::setLocalNode( string nodename )
         throw Exception(err.str());
     }
     
-    localNodeName = oind->getRealNodeName(nodename);
+    localNodeName = oind->getRealNodeName(nn);
     oind->initLocalNode(localNode);
 }
 // -------------------------------------------------------------------------
@@ -548,33 +550,33 @@ xmlNode* Configuration::getNode(const string& path)
     return unixml.findNode(unixml.getFirstNode(), path);
 }
 // -------------------------------------------------------------------------
-string Configuration::getProp(xmlNode* node, const string name)
+string Configuration::getProp(xmlNode* node, const string& name)
 {
     return UniXML::getProp(node, name);
 }
-int Configuration::getIntProp(xmlNode* node, const string name)
+int Configuration::getIntProp(xmlNode* node, const string& name)
 {
     return UniXML::getIntProp(node, name);
 }
-int Configuration::getPIntProp(xmlNode* node, const string name, int def)
+int Configuration::getPIntProp(xmlNode* node, const string& name, int def)
 {
     return UniXML::getPIntProp(node, name, def);
 }
 
 // -------------------------------------------------------------------------
-string Configuration::getField(const string path)
+string Configuration::getField(const string& path)
 {
     return getProp(getNode(path),"name");
 }
 
 // -------------------------------------------------------------------------
-int Configuration::getIntField(const std::string path)
+int Configuration::getIntField(const std::string& path)
 {
     return unixml.getIntProp(getNode(path), "name");
 }
 
 // -------------------------------------------------------------------------
-int Configuration::getPIntField(const std::string path, int def)
+int Configuration::getPIntField(const std::string& path, int def)
 {
     int i = getIntField(path);;
     if (i <= 0)
@@ -583,7 +585,7 @@ int Configuration::getPIntField(const std::string path, int def)
 }
 
 // -------------------------------------------------------------------------
-xmlNode* Configuration::findNode(xmlNode* node, const std::string snode, const std::string sname)
+xmlNode* Configuration::findNode(xmlNode* node, const std::string& snode, const std::string& sname)
 {
     if( !unixml.isOpen() )
         return 0;
@@ -792,7 +794,7 @@ void Configuration::initRepSections()
     secServices        = secRoot + "/" + getRepSectionName("services",xmlServicesSec);
 }
 
-string Configuration::getRepSectionName( const string sec, xmlNode* secnode )
+string Configuration::getRepSectionName( const string& sec, xmlNode* secnode )
 {
     xmlNode* node = unixml.findNode(unixml.getFirstNode(),sec);
     if( node == NULL )
@@ -813,7 +815,7 @@ string Configuration::getRepSectionName( const string sec, xmlNode* secnode )
     return ret;
 }
 // -------------------------------------------------------------------------
-void Configuration::setConfFileName( const string fn )
+void Configuration::setConfFileName( const string& fn )
 {
     if( !fn.empty() )
     {
@@ -846,7 +848,7 @@ void Configuration::setConfFileName( const string fn )
     }
 }
 // -------------------------------------------------------------------------
-string Configuration::getPort(const string port)
+string Configuration::getPort( const string& port )
 {
     // Порт задан в параметрах программы
     string defport(getArgParam("--uniset-port"));
@@ -868,7 +870,7 @@ string Configuration::getPort(const string port)
     return UniSetDefaultPort;
 }
 // -------------------------------------------------------------------------
-ObjectId Configuration::getSensorID( const std::string name )
+ObjectId Configuration::getSensorID( const std::string& name )
 {
     if( name.empty() )
         return DefaultObjectId;
@@ -876,7 +878,7 @@ ObjectId Configuration::getSensorID( const std::string name )
     return oind->getIdByName(getSensorsSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
-ObjectId Configuration::getControllerID( const std::string name )
+ObjectId Configuration::getControllerID( const std::string& name )
 {
     if( name.empty() )
         return DefaultObjectId;
@@ -884,7 +886,7 @@ ObjectId Configuration::getControllerID( const std::string name )
     return oind->getIdByName(getControllersSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
-ObjectId Configuration::getObjectID( const std::string name )
+ObjectId Configuration::getObjectID( const std::string& name )
 {
     if( name.empty() )
         return DefaultObjectId;
@@ -892,7 +894,7 @@ ObjectId Configuration::getObjectID( const std::string name )
     return oind->getIdByName(getObjectsSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
-ObjectId Configuration::getServiceID( const std::string name )
+ObjectId Configuration::getServiceID( const std::string& name )
 {
     if( name.empty() )
         return DefaultObjectId;
@@ -900,15 +902,14 @@ ObjectId Configuration::getServiceID( const std::string name )
     return oind->getIdByName(getServicesSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
-UniSetTypes::ObjectId Configuration::getNodeID( const std::string name, std::string alias )
+UniSetTypes::ObjectId Configuration::getNodeID( const std::string& name, const std::string& alias )
 {
     if( name.empty() )
         return DefaultObjectId;
 
-    if( alias.empty() )
-        alias = name;
-//    return oind->getNodeId( oind->mkFullNodeName(name,alias) );
-    return oind->getIdByName( oind->mkFullNodeName(name,alias) );
+	string a( (alias.empty() ? name : alias ) );
+
+    return oind->getIdByName( oind->mkFullNodeName(name,a) );
 }
 
 // -------------------------------------------------------------------------
@@ -985,7 +986,7 @@ UniversalIO::IOType Configuration::getIOType( UniSetTypes::ObjectId id )
     return UniversalIO::UnknownIOType;
 }
 // -------------------------------------------------------------------------
-UniversalIO::IOType Configuration::getIOType( const std::string name )
+UniversalIO::IOType Configuration::getIOType( const std::string& name )
 {
     // Если указано "короткое" имя
     // то просто сперва ищём ID, а потом по нему 

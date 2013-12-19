@@ -35,7 +35,7 @@ ComPort::~ComPort()
     }
 }
 // --------------------------------------------------------------------------------
-ComPort::ComPort( const string comDevice, bool nocreate ):
+ComPort::ComPort( const string& comDevice, bool nocreate ):
     curSym(0), bufLength(0),fd(-1),uTimeout(10000),
     waiting(true),dev(comDevice)
 {
@@ -346,7 +346,7 @@ void ComPort::cleanupChannel()
     waiting = old_waiting;
 }
 // --------------------------------------------------------------------------------
-void ComPort::setSpeed( std::string s )
+void ComPort::setSpeed( const std::string& s )
 {
     Speed sp=getSpeed(s);
     if( sp != ComPort::ComSpeed0 )
@@ -426,7 +426,7 @@ std::string ComPort::getSpeed( Speed s )
     if( var == __STRING(speed) ) \
         return ComPort::ComSpeed##speed; 
         
-ComPort::Speed ComPort::getSpeed( const string s )
+ComPort::Speed ComPort::getSpeed( const string& s )
 {
     // см. ComPort.h    
 

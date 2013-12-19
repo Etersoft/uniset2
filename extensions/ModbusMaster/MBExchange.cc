@@ -12,7 +12,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, 
-                            SharedMemory* ic, const std::string prefix ):
+                            SharedMemory* ic, const std::string& prefix ):
 UniSetObject_LT(objId),
 allInitOK(false),
 shm(0),

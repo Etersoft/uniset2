@@ -11,7 +11,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, 
-                            SharedMemory* ic, const std::string prefix ):
+                            SharedMemory* ic, const std::string& prefix ):
 MBExchange(objId,shmId,ic,prefix),
 force_disconnect(true),
 mbtcp(0),
@@ -177,7 +177,7 @@ void MBTCPMaster::help_print( int argc, const char* const* argv )
 // -----------------------------------------------------------------------------
 MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv, 
                                             UniSetTypes::ObjectId icID, SharedMemory* ic, 
-                                            const std::string prefix )
+                                            const std::string& prefix )
 {
     string name = conf->getArgParam("--" + prefix + "-name","MBTCPMaster1");
     if( name.empty() )

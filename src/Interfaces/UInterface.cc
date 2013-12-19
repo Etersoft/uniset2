@@ -1202,7 +1202,7 @@ bool UInterface::isExist( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
     return false;
 }
 // --------------------------------------------------------------------------------------------
-string UInterface::set_err(const string& pre, UniSetTypes::ObjectId id, UniSetTypes::ObjectId node)
+string UInterface::set_err(const std::string& pre, UniSetTypes::ObjectId id, UniSetTypes::ObjectId node)
 {
     if( id==UniSetTypes::DefaultObjectId )
         return string(pre+" DefaultObjectId");

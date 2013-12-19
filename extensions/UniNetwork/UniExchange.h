@@ -37,14 +37,14 @@ class UniExchange:
 {
     public:
         UniExchange( UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID, 
-                        SharedMemory* ic=0, const std::string prefix="unet" );
+                        SharedMemory* ic=0, const std::string& prefix="unet" );
         virtual ~UniExchange();
 
         void execute();
 
         static UniExchange* init_exchange( int argc, const char* const* argv,
                                     UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
-                                    const std::string prefix="unet" );
+                                    const std::string& prefix="unet" );
 
         /*! глобальная функция для вывода help-а */
         static void help_print( int argc, const char** argv );

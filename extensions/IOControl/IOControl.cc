@@ -23,7 +23,7 @@ std::ostream& operator<<( std::ostream& os, IOControl::IOInfo& inf )
 // -----------------------------------------------------------------------------
 
 IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
-                        SharedMemory* ic, int numcards, const std::string prefix_ ):
+                        SharedMemory* ic, int numcards, const std::string& prefix_ ):
     UniSetObject(id),
     polltime(150),
     cards(11),
@@ -1147,7 +1147,7 @@ void IOControl::check_testlamp()
 // -----------------------------------------------------------------------------
 IOControl* IOControl::init_iocontrol( int argc, const char* const* argv,
                                         UniSetTypes::ObjectId icID, SharedMemory* ic,
-                                        const std::string prefix )
+                                        const std::string& prefix )
 {
     string name = conf->getArgParam("--"+prefix+"-name","IOControl1");
     if( name.empty() )

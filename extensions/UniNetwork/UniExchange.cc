@@ -18,7 +18,7 @@ UniExchange::NetNodeInfo::NetNodeInfo():
 }
 // --------------------------------------------------------------------------
 UniExchange::UniExchange( UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID, 
-                            SharedMemory* ic, const std::string prefix ):
+                            SharedMemory* ic, const std::string& prefix ):
 IOController(id),
 shm(0),
 polltime(200),
@@ -377,7 +377,7 @@ void UniExchange::timerInfo( UniSetTypes::TimerMessage* tm )
 // -----------------------------------------------------------------------------
 UniExchange* UniExchange::init_exchange( int argc, const char* const* argv, 
                                         UniSetTypes::ObjectId icID, SharedMemory* ic, 
-                                            const std::string prefix )
+                                            const std::string& prefix )
 {
     string p("--" + prefix + "-name");
     string nm(UniSetTypes::getArgParam(p,argc,argv,"UniExchange"));

@@ -129,8 +129,8 @@ namespace ModbusRTU
     /*! вывод сообщения */
     std::ostream& mbPrintMessage( std::ostream& os, ModbusByte* b, int len );
     // -------------------------------------------------------------------------
-    ModbusAddr str2mbAddr( const std::string val );
-    ModbusData str2mbData( const std::string val );
+    ModbusAddr str2mbAddr( const std::string& val );
+    ModbusData str2mbData( const std::string& val );
     std::string dat2str( const ModbusData dat );
     std::string addr2str( const ModbusAddr addr );
     std::string b2str( const ModbusByte b );
@@ -1082,7 +1082,7 @@ namespace ModbusRTU
     struct RDIObjectInfo
     {
         RDIObjectInfo():id(0),val(""){}
-        RDIObjectInfo( ModbusByte id, const std::string v ):id(id),val(v){}
+        RDIObjectInfo( ModbusByte id, const std::string& v ):id(id),val(v){}
         RDIObjectInfo( ModbusByte id, ModbusByte* dat, ModbusByte len );
 
         ModbusByte id;
@@ -1130,7 +1130,7 @@ namespace ModbusRTU
          * \return TRUE - если удалось
          * \return FALSE - если НЕ удалось
         */
-        bool addData( ModbusByte id, const std::string value );
+        bool addData( ModbusByte id, const std::string& value );
         bool addData( RDIObjectInfo& dat );
 
         /*! очистка данных */

@@ -131,7 +131,7 @@ class IONotifyController:
 {
     public:
     
-        IONotifyController(const std::string name, const std::string section, NCRestorer* dumper=0);
+        IONotifyController(const std::string& name, const std::string& section, NCRestorer* dumper=0);
         IONotifyController(UniSetTypes::ObjectId id, NCRestorer* dumper=0);
 
         virtual ~IONotifyController();

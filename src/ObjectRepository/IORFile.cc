@@ -47,7 +47,7 @@ string IORFile::getIOR( const ObjectId id, const ObjectId node )
     return sior;
 }
 // -----------------------------------------------------------------------------------------
-void IORFile::setIOR( const ObjectId id, const ObjectId node, const string sior )
+void IORFile::setIOR( const ObjectId id, const ObjectId node, const string& sior )
 {
     string fname( genFName(id,node) );
     ofstream ior_file(fname.c_str(), ios::out | ios::trunc);

@@ -59,13 +59,13 @@ class RRDServer:
 {
     public:
         RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
-                    const std::string prefix="rrd", DebugStream& log=UniSetExtensions::dlog );
+                    const std::string& prefix="rrd", DebugStream& log=UniSetExtensions::dlog );
         virtual ~RRDServer();
     
         /*! глобальная функция для инициализации объекта */
         static RRDServer* init_rrdstorage( int argc, const char* const* argv, 
                             UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
-                            const std::string prefix="rrd" );
+                            const std::string& prefix="rrd" );
 
         /*! глобальная функция для вывода help-а */
         static void help_print( int argc, const char* const* argv );

@@ -35,7 +35,7 @@ using namespace UniSetTypes;
 using namespace UniversalIO;
 using namespace std;
 // --------------------------------------------------------------------------
-SViewer::SViewer(const string csec, bool sn):
+SViewer::SViewer(const string& csec, bool sn):
     csec(csec),
     rep(UniSetTypes::conf),
     cache(500, 15),
@@ -79,7 +79,7 @@ void SViewer::view()
 
 // ---------------------------------------------------------------------------
 
-void SViewer::readSection(const string section, const string secRoot)
+void SViewer::readSection( const string& section, const string& secRoot )
 {
     ListObjectName lst;
     string curSection;    

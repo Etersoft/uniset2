@@ -195,13 +195,13 @@ class IOControl:
     public UniSetObject
 {
     public:
-        IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID, SharedMemory* ic=0, int numcards=2, const std::string prefix="io" );
+        IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID, SharedMemory* ic=0, int numcards=2, const std::string& prefix="io" );
         virtual ~IOControl();
 
         /*! глобальная функция для инициализации объекта */
         static IOControl* init_iocontrol( int argc, const char* const* argv,
                                             UniSetTypes::ObjectId icID, SharedMemory* ic=0,
-                                            const std::string prefix="io" );
+                                            const std::string& prefix="io" );
         /*! глобальная функция для вывода help-а */
         static void help_print( int argc, const char* const* argv );
 
@@ -303,7 +303,7 @@ class IOControl:
 
         void waitSM();
 
-        bool checkCards( const std::string func="" );
+        bool checkCards( const std::string& func="" );
 
 //        std::string myname;
         xmlNode* cnode;            /*!< xml-узел в настроечном файле */

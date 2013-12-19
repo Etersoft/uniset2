@@ -20,13 +20,13 @@ class ModbusRTUMaster:
     public:
 
         ModbusRTUMaster( ComPort* com );
-        ModbusRTUMaster( const std::string dev, bool use485=false, bool tr_ctl=false );
+        ModbusRTUMaster( const std::string& dev, bool use485=false, bool tr_ctl=false );
         virtual ~ModbusRTUMaster();
 
         virtual void cleanupChannel(){ if( port ) port->cleanupChannel(); }
         
         void setSpeed( ComPort::Speed s );
-        void setSpeed( const std::string s );
+        void setSpeed( const std::string& s );
         ComPort::Speed getSpeed();
 
         void setParity( ComPort::Parity parity );

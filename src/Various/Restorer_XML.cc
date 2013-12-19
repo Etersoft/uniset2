@@ -45,13 +45,13 @@ Restorer_XML::~Restorer_XML()
 
 }
 // -----------------------------------------------------------------------------
-void Restorer_XML::setItemFilter( const string field, const string val )
+void Restorer_XML::setItemFilter( const string& field, const string& val )
 {
     i_filterField = field;
     i_filterValue = val;
 }
 // -----------------------------------------------------------------------------
-void Restorer_XML::setConsumerFilter( const string field, const string val )
+void Restorer_XML::setConsumerFilter( const string& field, const string& val )
 {
     c_filterField = field;
     c_filterValue = val;
@@ -185,7 +185,7 @@ bool Restorer_XML::check_consumer_item( UniXML_iterator& it )
 }
 // -----------------------------------------------------------------------------
 xmlNode* Restorer_XML::find_node( UniXML& xml, xmlNode* root, 
-                                    const string& nodename, const string nm )
+                                    const string& nodename, const string& nm )
 {
     UniXML_iterator it(root);
     if( it.goChildren() )
