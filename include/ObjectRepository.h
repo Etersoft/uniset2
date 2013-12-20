@@ -68,7 +68,7 @@
         // end of ORepGroup
 
         /*! Получение ссылки по заданному полному имени (разыменовывание) */
-        UniSetTypes::ObjectPtr resolve(const std::string& name, const std::string NSName="NameService")throw(UniSetTypes::ORepFailed, UniSetTypes::NameNotFound);
+        UniSetTypes::ObjectPtr resolve(const std::string& name, const std::string& NSName="NameService")throw(UniSetTypes::ORepFailed, UniSetTypes::NameNotFound);
 
         // Функции не со строковыми именами, а с идентификаторами
 //        void setListId( ListObjectId *lst );

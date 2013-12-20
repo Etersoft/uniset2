@@ -66,7 +66,6 @@ class UniSetTimer
         
         /*! Минимальное время срабатывания. Задается в мсек. */
         static const timeout_t MinQuantityTime = 10;
-        static const timeout_t MIN_QUANTITY_TIME_MS = 10; /*< устарело, не использовать! */
 };
 //----------------------------------------------------------------------------------------
 /*! \class PassiveTimer
