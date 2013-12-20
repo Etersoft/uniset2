@@ -256,7 +256,7 @@ void ObjectRepository::unregistration(const string& fullName)
 }
 // --------------------------------------------------------------------------
 
-ObjectPtr ObjectRepository::resolve( const string& name, const string NSName )
+ObjectPtr ObjectRepository::resolve( const string& name, const string& NSName )
     throw(ORepFailed,  NameNotFound)
 {
     ostringstream err;
