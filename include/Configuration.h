@@ -34,14 +34,15 @@
 #include "IORFile.h"
 #include "Debug.h"
 
-class SystemGuard;
 /*
     В функции main нужно вызвать конструктор класса Configuration
-    fileConf - название файла конфигурации, который будет открываться
-    из в каталоге conf того каталога, откуда была запущена программа.
-    getTopDir позволяет получить каталог, откуда запущена программа
-*/
+    fileConf - название файла конфигурации, который будет открываться.
+    Если в каталоге conf того каталога, откуда была запущена программа.
+    getTopDir позволяет получить каталог, откуда запущена программа.
 
+    Современный способ инициализации:
+    UniSetTypes::uniset_init(argc,argv);
+*/
 namespace UniSetTypes
 {
     /*!
@@ -54,10 +55,10 @@ namespace UniSetTypes
     public:
             virtual ~Configuration();
 
-            /*!    конфигурирование xml-файлом ( предпочтительный способ )    */
+            /*! конфигурирование xml-файлом ( предпочтительный способ )    */
             Configuration( int argc, const char* const* argv, const std::string& xmlfile="" );
 
-            /*!    конфигурирование xml-файлом    */
+            /*! конфигурирование xml-файлом    */
             Configuration( int argc, const char* const* argv, ObjectIndex* oind, const std::string& xmlfile="" );
 
             /*! устаревший вариант, для поддержки старых проектов */
@@ -184,8 +185,6 @@ namespace UniSetTypes
         
         std::string getPort( const std::string& port="" );
             
-        friend class ::SystemGuard;
-//        friend bool SystemGuard::pingNode();
         std::string rootDir;
         UniXML unixml;
 

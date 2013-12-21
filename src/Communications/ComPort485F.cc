@@ -21,7 +21,7 @@ using namespace std;
 // --------------------------------------------------------------------------------
 /* This is for RTS control (through GPIO) */
 #define GPIO_BA 0xF000
-static void gpio_low_out_en(char gpio_num)
+static void gpio_low_out_en( char gpio_num )
 {
     unsigned long val;
 
@@ -31,7 +31,7 @@ static void gpio_low_out_en(char gpio_num)
     outl(val, GPIO_BA + 4);
 }
 // --------------------------------------------------------------------------------
-static void gpio_low_set_value(char gpio_num, char value)
+static void gpio_low_set_value( char gpio_num, char value )
 {
     unsigned long val;
 
@@ -59,7 +59,7 @@ static void setRTS(int fd, int state)
     ioctl(fd, TIOCMSET, &status);
 }
 // --------------------------------------------------------------------------------
-ComPort485F::ComPort485F( string dev, int gpio_num, bool tmit_ctrl ):
+ComPort485F::ComPort485F( const string& dev, int gpio_num, bool tmit_ctrl ):
     ComPort(dev,false),
     gpio_num(gpio_num),
     tmit_ctrl_on(tmit_ctrl)
@@ -73,7 +73,7 @@ ComPort485F::ComPort485F( string dev, int gpio_num, bool tmit_ctrl ):
     }
 }
 // --------------------------------------------------------------------------------
-void ComPort485F::setTimeout(int timeout)
+void ComPort485F::setTimeout( int timeout )
 {
     tout_msec = timeout / 1000;
     ComPort::setTimeout(timeout);

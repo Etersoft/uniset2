@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \brief Интерфейс к объекту сохраняющему список заказчиков и сообщений для InfoServer-а
+ * \brief Интерфейс к объекту сохраняющему список заказчиков в файл и умеющему его потом прочитать
  * \author Pavel Vainerman
  */
 // --------------------------------------------------------------------------
@@ -34,8 +34,7 @@
     Это абстрактный интерфейс.
     Содержит общие для всех xxx_XML интерфейсов функции.
     Расчитан на работу с файлом формата файла проекта.
-    Все функции для поддержки старого формата имеют префикс old_xxx
-*/ 
+*/
 class Restorer_XML
 {
     public:
@@ -97,15 +96,6 @@ class Restorer_XML
         */
         bool getConsumerInfo( UniXML_iterator& it,
                                 UniSetTypes::ObjectId& cid, UniSetTypes::ObjectId& cnode );
-
-        /*! универсальная функция получения информации о заказчике (id и node)
-            по старому формату файла (<consumer name="/Root/Section/Name" node="xxxx" />)
-            \return true - если идентификаторы определены
-        */
-        bool old_getConsumerInfo( UniXML_iterator& it,
-                                UniSetTypes::ObjectId& cid, UniSetTypes::ObjectId& cnode );
-
-
 
         /*! Функция поиска по текущему уровню (без рекурсии для дочерних узлов) */
         static xmlNode* find_node( UniXML& xml, xmlNode* root, const std::string& nodename, const std::string& nm="" );

@@ -52,19 +52,22 @@
     ...
     MyClass rec;
     // Создание
-    TriggerOR<MyClass, int> tr_or(&rec, &MyClass::out);
+    TriggerOR<MyClass, int> tr(&rec, &MyClass::out);
 
     // Добавление 'входов'
-    tr_or.add(1,true);
-    tr_or.add(2,false);
-    tr_or.add(3,false);
-    tr_or.add(4,false);
+    tr.add(1,true);
+    tr.add(2,false);
+    tr.add(3,false);
+    tr.add(4,false);
     ...
-    // Использование
-    // подаёт на вход N1 "0"
+
+    // Использование:
+    // подаём на вход N1 "0"
     // после чего, при изменении состояния 'выхода' будет вызвана функция MyClass::out, в которой производится
     // фактическая обработка 'изменения состояния'
-    tr_or.commit(1,false);
+
+    tr.commit(1,false);
+
     \endcode
 */
 template<class Caller, typename InputType>
