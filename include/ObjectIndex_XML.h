@@ -1,5 +1,5 @@
 /* File: This file is part of the UniSet project
- * Copyright (C) 2002 Vitaly Lipatov
+ * Copyright (C) 2002 Vitaly Lipatov, Pavel Vainerman
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \author Vitaly Lipatov
+ * \author Pavel Vainerman
  */
 // -------------------------------------------------------------------------- 
 #ifndef ObjectIndex_XML_H_
@@ -32,11 +32,7 @@
 namespace UniSetTypes
 {
 
-/*!
-    \todo Проверить функции этого класса на повторную входимость
-    \bug При обращении к objectsMap[0].textName срабатывает исключение(видимо какое-то из std). 
-        Требуется дополнительное изучение.
-*/
+/*! \todo Проверить функции этого класса на повторную входимость */
 class ObjectIndex_XML:
     public ObjectIndex
 {

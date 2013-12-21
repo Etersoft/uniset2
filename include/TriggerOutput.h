@@ -59,19 +59,26 @@
 
     ...
     MyClass rec;
-    // Создание
+    // Создание:
     TriggerOutput<MyClass,int,int> tr_out(&rec, &MyClass::out);
+
     // формируем OUT триггер с двумя 'выходами'
-    TriggerOutput<MyClass,int,int> tr_out(&rec, &MyClass::out);
     tr_out.add(1,0);
     tr_out.add(2,0);
 
     ...
-    // Использование
+    // Использование:
     // подаём сперва на первый 'выход' значение, второй должен стать в "0",
     // потом на другой...
+
     tr_out.set(1,4);
+
+    cout << ( tr_out.getState(2) !=0 ? "FAIL" : "OK" ) << endl;
+
     tr_out.set(2,3);
+
+    cout << ( tr_out.getState(1) !=0 ? "FAIL" : "OK" ) << endl;
+
     \endcode
 */
 template<class Caller, typename OutIdType, typename ValueType>

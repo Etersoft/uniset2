@@ -52,19 +52,22 @@
     ...
     MyClass rec;
     // Создание
-    TriggerAND<MyClass, int> tr_and(&rec, &MyClass::out);
+    TriggerAND<MyClass, int> tr(&rec, &MyClass::out);
     
-    // Добавление 'входов'
-    tr_and.add(1,false);
-    tr_and.add(2,true);
-    tr_and.add(3,true);
-    tr_and.add(4,true);
+    // Добавление 'входов' (формирование списка входов)
+    tr.add(1,false);
+    tr.add(2,true);
+    tr.add(3,true);
+    tr.add(4,true);
     ...
-    // Использование
-    // подаёт на вход N1 "1"
+
+    // Использование:
+    // подаём на вход N1 единицу
     // после чего, при изменении состояния 'выхода' будет вызвана функция MyClass::out, в которой производится 
     // фактическая обработка 'изменения состояния'
-    tr_and.commit(1,true);
+
+    tr.commit(1,true);
+
     \endcode
 
 */

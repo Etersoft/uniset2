@@ -70,14 +70,10 @@
         /*! Получение ссылки по заданному полному имени (разыменовывание) */
         UniSetTypes::ObjectPtr resolve(const std::string& name, const std::string& NSName="NameService")throw(UniSetTypes::ORepFailed, UniSetTypes::NameNotFound);
 
-        // Функции не со строковыми именами, а с идентификаторами
-//        void setListId( ListObjectId *lst );
-
         /*!  Проверка существования и доступности объекта */
         bool isExist( UniSetTypes::ObjectPtr oref );
         /*!  Проверка существования и доступности объекта */
         bool isExist( const std::string& fullName );
-
 
         /**
          @defgroup ORepServiceGroup Группа сервисных функций Репозитория объектов
@@ -85,17 +81,17 @@
         */
         
          /*! Тип объекта  */
-         enum ObjectType{
-                             ObjectRef,  /*!< ссылка на объект  */
-                            Section        /*!< подсекция     */
-                        };
+         enum ObjectType
+         {
+             ObjectRef,  /*!< ссылка на объект  */
+             Section     /*!< подсекция     */
+         };
 
         //! Получение списка how_many объектов из секции section.
         bool list(const std::string& section, UniSetTypes::ListObjectName *ls, unsigned int how_many=300)throw(UniSetTypes::ORepFailed);
         
         //! Получние списка how_many подсекций из секции in_section.
         bool listSections(const std::string& in_section, UniSetTypes::ListObjectName *ls, unsigned int how_many=300)throw(UniSetTypes::ORepFailed);
-//        bool list_at(unsigned int start_pos, const char* section, ListObjectName *ls, unsigned int how_many=300)throw(ORepFailed);        
         
     // @}
     // end of ORepServiceGroup 

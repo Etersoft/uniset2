@@ -125,55 +125,6 @@ bool Restorer_XML::getConsumerInfo( UniXML_iterator& it,
     return true;
 }
 // -----------------------------------------------------------------------------
-bool Restorer_XML::old_getConsumerInfo( UniXML_iterator& it, 
-                                            ObjectId& cid, ObjectId& cnode )
-{
-    string cname(it.getProp("name"));
-    if( cname.empty() )
-    {
-        if( ulog.is_warn() )
-            ulog.warn() << "(Restorer_XML:old_getConsumerInfo): не указано имя заказчика... пропускаем..." << endl;
-        
-        return false;
-    }
-        
-    cid = conf->oind->getIdByName(cname);
-    if( cid == UniSetTypes::DefaultObjectId )
-    {
-        if( ulog.is_crit() )
-            ulog.crit() << "(Restorer_XML:old_getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->" 
-                            << cname << endl;
-        return false;
-    }
-        
-    string cnodename(it.getProp("node"));
-    if( !cnodename.empty() )
-    {
-        string virtnode = conf->oind->getVirtualNodeName(cnodename);
-        if( virtnode.empty() )
-            cnodename = conf->oind->mkFullNodeName(cnodename,cnodename);
-
-        cnode = conf->oind->getIdByName(cnodename);
-    }
-    else
-        cnode = conf->getLocalNode();
-
-    if( cnode == UniSetTypes::DefaultObjectId )
-    {
-        if( ulog.is_crit() )
-            ulog.crit() << "(Restorer_XML:old_getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->" 
-                            << cnodename << endl;
-        return false;
-    }
-
-    if( ulog.is_info() )
-    {
-        ulog.info() << "(Restorer_XML:old_getConsumerInfo): " 
-                            << cname << ":" << cnodename << endl;
-    }
-    return true;
-}                                
-// -----------------------------------------------------------------------------
 bool Restorer_XML::check_list_item( UniXML_iterator& it )
 {
     return UniSetTypes::check_filter(it,i_filterField,i_filterValue);

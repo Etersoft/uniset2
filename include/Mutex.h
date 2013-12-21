@@ -110,8 +110,8 @@ namespace UniSetTypes
             bool tryrlock();
             bool trywrlock();
 
-               uniset_rwmutex (const uniset_rwmutex& r);
-               const uniset_rwmutex &operator=(const uniset_rwmutex& r);
+            uniset_rwmutex (const uniset_rwmutex& r);
+            const uniset_rwmutex &operator=(const uniset_rwmutex& r);
 
             inline std::string name(){ return nm; }
             inline void setName( const std::string& name ){ nm = name; }
