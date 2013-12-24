@@ -3,4 +3,3 @@
 ############################################################################
 
 SUBDIRS = UniSetTypes Processes
-include $(top_builddir)/conf/common.mk

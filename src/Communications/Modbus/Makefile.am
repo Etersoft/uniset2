@@ -9,5 +9,3 @@ libModbus_la_SOURCES	= ModbusTypes.cc ModbusHelpers.cc \
 	
 libModbus_la_CXXFLAGS	= -I$(top_builddir)/include/Communications/modbus $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
 libModbus_la_LIBADD		= $(SIGC_LIBS) $(COMCPP_LIBS)
-
-include $(top_builddir)/conf/setting.mk

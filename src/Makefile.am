@@ -4,5 +4,3 @@
 
 SUBDIRS=ObjectRepository Processes Interfaces Timers Services Various Communications
 
-include $(top_builddir)/conf/common.mk
-

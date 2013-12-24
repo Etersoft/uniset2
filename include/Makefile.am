@@ -3,8 +3,6 @@
 ############################################################################
 
 SUBDIRS=modbus
-include $(top_builddir)/conf/common.mk
-
 
 # install
 devel_include_HEADERS = *.h *.hh *.tcc

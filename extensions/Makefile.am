@@ -18,7 +18,4 @@ else
 SUBDIRS =
 endif
 
-include $(top_builddir)/conf/common.mk
-
-
 

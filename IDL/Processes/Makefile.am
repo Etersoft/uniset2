@@ -9,7 +9,7 @@ HHDIR=$(top_builddir)/include
 # Исходные файлы IDL
 IDLFILES=IOController_i.idl
 
-include $(top_builddir)/conf/idl.mk
+include $(top_builddir)/IDL/idl.mk
 
 idl_include_HEADERS = *.idl
 idl_includedir = $(datadir)/idl/@PACKAGE@/Processes

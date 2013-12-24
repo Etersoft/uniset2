@@ -6,7 +6,5 @@ libObjectsRepository_la_SOURCES = UniSetTypes_iSK.cc UniSetObject_iSK.cc UniSetT
 	ProxyManager.cc PassiveObject.cc UniSetObject_LT.cc UniSetManager_LT.cc IORFile.cc
 #	ServiceActivator.cc
 
-include $(top_builddir)/conf/setting.mk
-
 #clean-local:
 #	rm -rf *iSK.cc

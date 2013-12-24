@@ -18,8 +18,6 @@ noinst_PROGRAMS = sqlite-test
 sqlite_test_LDADD = libUniSet-sqlite.la $(top_builddir)/lib/libUniSet.la
 sqlite_test_SOURCES = test.cc
 
-include $(top_builddir)/conf/setting.mk
-
 # install
 devel_include_HEADERS = *.h
 devel_includedir = $(includedir)/@PACKAGE@/sqlite
