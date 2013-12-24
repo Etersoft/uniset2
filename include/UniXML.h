@@ -103,7 +103,7 @@ class UniXML_iterator:
 
         const std::string getContent() const;
 
-        operator xmlNode*()
+        operator xmlNode*() const
         {
             //ulog.< "current\n";
             return curNode;
