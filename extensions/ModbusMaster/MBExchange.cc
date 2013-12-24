@@ -147,7 +147,7 @@ void MBExchange::help_print( int argc, const char* const* argv )
 {
     cout << "--prefix-name name              - ObjectId (имя) процесса. По умолчанию: MBExchange1" << endl;
     cout << "--prefix-confnode name          - Настроечная секция в конф. файле <name>. " << endl;
-    cout << "--prefix-polltime msec          - Пауза между опросаом карт. По умолчанию 200 мсек." << endl;
+    cout << "--prefix-polltime msec          - Пауза между опросами. По умолчанию 200 мсек." << endl;
     cout << "--prefix-recv-timeout msec      - Таймаут на приём одного сообщения" << endl;
     cout << "--prefix-timeout msec           - Таймаут для определения отсутствия соединения" << endl;
     cout << "--prefix-reopen-timeout msec    - Таймаут для 'переоткрытия соединения' при отсутсвия соединения msec милисекунд. По умолчанию 10 сек." << endl;

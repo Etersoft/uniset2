@@ -259,7 +259,7 @@ class MBTCPMultiMaster:
             IOController::IOStateList::iterator respond_it;
             bool respond_invert;
 
-              inline bool operator < ( const MBSlaveInfo& mbs ) const
+            inline bool operator < ( const MBSlaveInfo& mbs ) const
             {
                 return priority < mbs.priority;
             }
