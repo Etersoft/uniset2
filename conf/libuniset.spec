@@ -202,7 +202,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %files utils
 %_bindir/%oname-admin
-%_bindir/%oname-infoserver
 %_bindir/%oname-mb*
 %_bindir/%oname-nullController
 %_bindir/%oname-sviewer-text
@@ -225,7 +224,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_includedir/%oname/*.h
 %_includedir/%oname/*.hh
 %_includedir/%oname/*.tcc
-%_includedir/%oname/IOs/
 %_includedir/%oname/modbus/
 %if_enabled mysql
 %_includedir/%oname/mysql/
@@ -335,9 +333,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
-
-2.0
-----
+* Tue Dec 24 2013 Pavel Vainerman <pv@altlinux.ru> 2.0-alt0.1
 - rename "IOTypes" --> "IOType"
 - rename DigitalInput --> DI
 - rename DigitalOutput --> DO
