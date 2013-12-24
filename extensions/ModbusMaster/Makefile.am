@@ -38,7 +38,7 @@ libUniSetMBTCPMaster_la_SOURCES 	= MBTCPMaster.cc MBTCPMultiMaster.cc
 
 # -------------------- Mobus RTU -------------------
 # не забывайте править версию в pc-файле
-URTU_VER=2:1:0
+URTU_VER=2:2:0
 
 libUniSetRTU_la_LDFLAGS  = -version-info $(URTU_VER)
 libUniSetRTU_la_LIBADD		= libMBMaster.la $(top_builddir)/lib/libUniSet.la \
