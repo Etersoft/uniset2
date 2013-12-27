@@ -40,7 +40,7 @@ int main( int argc, const char **argv )
 {
     if( argc>1 && ( strcmp(argv[1],"--help")==0 || strcmp(argv[1],"-h")==0 ) )
     {
-        help_print( argc, argv);
+        help_print( argc, argv );
         return 0;
     }
 
@@ -213,15 +213,15 @@ int main( int argc, const char **argv )
     return 1;
 }
 // --------------------------------------------------------------------------
-void help_print( int argc, const char* argv[])
+void help_print( int argc, const char* argv[] )
 {
     const int mnum = MaxAddNum - 1;
     
-    cout << "--add-io[2..." << mnum << "]         - Start IOControl" << endl;
-    cout << "--add-rtu[2..." << mnum << "]        - Start RTUExchange (rtu master)" << endl;
-    cout << "--add-mbslave[2..." << mnum << "]    - Start ModbusSlave (RTU or TCP)" << endl;
-    cout << "--add-mbmaster[2..." << mnum << "]   - Start MBTCPMaster" << endl;
-    cout << "--add-unet                           - Start UNetExchange (UNetUDP)" << endl;
+    cout << "--add-io[1..." << mnum << "]         - Start IOControl" << endl;
+    cout << "--add-rtu[1..." << mnum << "]        - Start RTUExchange (rtu master)" << endl;
+    cout << "--add-mbslave[1..." << mnum << "]    - Start ModbusSlave (RTU or TCP)" << endl;
+    cout << "--add-mbmaster[1..." << mnum << "]   - Start MBTCPMaster" << endl;
+    cout << "--add-unet              - Start UNetExchange (UNetUDP)" << endl;
 
     cout << endl << "###### SM options ######" << endl;
     SharedMemory::help_print(argc,argv);

@@ -340,8 +340,8 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadCoilMessage& m )
 {
 //    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
     return os << "addr=" << addr2str(m.addr) 
-                << " start=" << dat2str(m.start) 
-                << " count=" << dat2str(m.count);
+                << " start=" << dat2str(m.start) << "(" << (int)(m.start) << ")"
+                << " count=" << dat2str(m.count) << "(" << (int)(m.count) << ")";
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadCoilMessage* m )
 {
@@ -652,9 +652,8 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputStatusMessage& m 
 {
 //    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
     return os << "addr=" << addr2str(m.addr) 
-                << " start=" << dat2str(m.start) 
-                << " count=" << dat2str(m.count)
-                << "(" << (int)m.count << ")";
+                << " start=" << dat2str(m.start) << "(" << (int)m.start << ")"
+                << " count=" << dat2str(m.count) << "(" << (int)m.count << ")";
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputStatusMessage* m )
 {
@@ -856,9 +855,8 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadOutputMessage& m )
 {
 //    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
     return os << "addr=" << addr2str(m.addr) 
-                << " start=" << dat2str(m.start) 
-                << " count=" << dat2str(m.count)
-                << "(" << (int)m.count << ")";
+                << " start=" << dat2str(m.start) << "(" << (int)(m.start) << ")"
+                << " count=" << dat2str(m.count) << "(" << (int)m.count << ")";
 
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadOutputMessage* m )
@@ -1076,7 +1074,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputMessage& m )
 {
 //    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
     return os << "addr=" << addr2str(m.addr) 
-                << " start=" << dat2str(m.start) 
+                << " start=" << dat2str(m.start) << "(" << (int)(m.start) << ")"
                 << " count=" << dat2str(m.count)
                 << "(" << (int)m.count << ")";
 }
@@ -1389,8 +1387,8 @@ int ForceCoilsMessage::getDataLen( ModbusMessage& m )
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsMessage& m )
 {
     os << "addr=" << addr2str(m.addr) 
-        << " start=" << dat2str(m.start) 
-        << " quant=" << dat2str(m.quant) 
+        << " start=" << dat2str(m.start) << "(" << (int)(m.start) << ")"
+        << " quant=" << dat2str(m.quant) << "(" << (int)(m.quant) << ")"
         << " bcnt=" << b2str(m.bcnt)
         << " data[" << (int)m.quant <<"]={ ";
         
@@ -1649,8 +1647,8 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteOutputMessage& m )
 
 //    интелектуальный вывод :)
     os << "addr=" << addr2str(m.addr) 
-        << " start=" << dat2str(m.start) 
-        << " quant=" << dat2str(m.quant) 
+        << " start=" << dat2str(m.start) << "(" << (int)(m.start) << ")"
+        << " quant=" << dat2str(m.quant) << "(" << (int)(m.quant) << ")"
         << " bcnt=" << dat2str(m.bcnt)
         << " data[" << (int)m.quant <<"]={ ";
         
@@ -1830,8 +1828,9 @@ int ForceSingleCoilMessage::getDataLen( ModbusMessage& m )
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceSingleCoilMessage& m )
 {
     return os << "addr=" << addr2str(m.addr) 
-        << " start=" << dat2str(m.start) 
-        << " data=" << dat2str(m.data) << "  ";
+        << " start=" << dat2str(m.start) << "(" << (int)(m.start) << ")"
+        << " data=" << dat2str(m.data) << "(" << (int)(m.data) << ")"
+        << "  ";
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceSingleCoilMessage* m )
 {
@@ -2006,8 +2005,9 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteSingleOutputMessage& 
 
 //    интелектуальный вывод :)
     return os << "addr=" << addr2str(m.addr) 
-        << " start=" << dat2str(m.start) 
-        << " data=" << dat2str(m.data) << "  ";
+        << " start=" << dat2str(m.start) << "(" << (int)(m.start) << ")"
+        << " data=" << dat2str(m.data) << "(" << (int)(m.data) << ")"
+        << "  ";
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteSingleOutputMessage* m )
 {
