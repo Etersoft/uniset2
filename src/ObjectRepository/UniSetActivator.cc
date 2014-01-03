@@ -209,7 +209,8 @@ void UniSetActivator::run(bool thread)
         if( ulog.is_info() )
             ulog.info() << myname << "(run): запускаемся с созданием отдельного потока...  "<< endl;
         orbthr = new ThreadCreator<UniSetActivator>(this, &UniSetActivator::work);
-        if( !orbthr->start() )
+        int ret = orbthr->start();
+        if( ret !=0 )
         {
             ulog.crit() << myname << "(run):  НЕ СМОГЛИ СОЗДАТЬ ORB-поток"<<endl;
             throw SystemError("(UniSetActivator::run): CREATE ORB THREAD FAILED");
