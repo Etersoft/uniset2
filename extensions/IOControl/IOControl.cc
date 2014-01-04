@@ -1304,7 +1304,7 @@ void IOControl::sysCommand( SystemMessage* sm )
             if( !fname.empty() )
             {
                 ulog.logFile(fname);
-                ulog << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << endl;
+                ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << endl;
             }
 
             dlog << myname << "(sysCommand): logRotate" << endl;

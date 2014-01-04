@@ -3,9 +3,11 @@
 
 import sys
 
-#sys.path.append('../lib/')
+sys.path.append('../../')
+sys.path.append('../../lib/pyUniSet/')
+sys.path.append('../../lib/pyUniSet/.libs')
 
-from uniset import *
+from lib import *
 
 if __name__ == "__main__":
 	

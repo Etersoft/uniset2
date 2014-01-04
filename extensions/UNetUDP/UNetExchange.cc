@@ -596,7 +596,7 @@ void UNetExchange::sysCommand( UniSetTypes::SystemMessage *sm )
             if( !fname.empty() )
             {
                 ulog.logFile(fname);
-                ulog << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << std::endl;
+                ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << std::endl;
             }
 
             dlog << myname << "(sysCommand): logRotate" << std::endl;

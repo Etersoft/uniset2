@@ -68,7 +68,7 @@ ostream& UniSetTypes::Configuration::help(ostream& os)
     print_help(os,25,"--transientIOR {1,0}","использовать генерируемые IOR(не постоянные). Переопределяет параметр в конфигурационном файле. Default=1\n");
     
     return os << "\nПример использования:\t myUniSetProgram "
-              << "--ulog.dd-levels level1,info,system,warn --ulog.og-in-file myprogrpam.log\n\n";
+              << "--ulog-add-levels level1,info,system,warn --ulog-log-in-file myprogrpam.log\n\n";
 }
 // -------------------------------------------------------------------------
 
