@@ -3055,7 +3055,7 @@ namespace swig {
 }
 
 
-#include "pyUInterface.h"
+#include "PyUInterface.h"
 
 
 SWIGINTERN swig_type_info*

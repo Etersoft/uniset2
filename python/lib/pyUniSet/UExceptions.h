@@ -24,7 +24,7 @@ struct UTimeOut:
 struct USysError:
     public UException
 {
-    USysError():UException("UTimeOut"){}
+    USysError():UException("USysError"){}
     USysError( const std::string& e ):UException(e){}
     ~USysError(){}
 };

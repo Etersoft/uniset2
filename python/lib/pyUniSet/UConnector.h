@@ -14,7 +14,7 @@ class UConnector
       UConnector( UTypes::Params* p, const char* xmlfile )throw(UException);
       ~UConnector();
 
-        inline const char* getUIType(){ return "uniset"; }
+      inline const char* getUIType(){ return "uniset"; }
 
       const char* getConfFileName();
       long getValue( long id, long node )throw(UException);
