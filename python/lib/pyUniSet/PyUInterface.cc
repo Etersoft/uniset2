@@ -4,7 +4,7 @@
 #include "UInterface.h"
 #include "Configuration.h"
 #include "UniSetTypes.h"
-#include "pyUInterface.h"
+#include "PyUInterface.h"
 //---------------------------------------------------------------------------
 using namespace std;
 //---------------------------------------------------------------------------
