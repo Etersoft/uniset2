@@ -380,7 +380,7 @@ void UniSetActivator::sysCommand( UniSetTypes::SystemMessage *sm )
             if( !fname.empty() )
             {
                 ulog.logFile(fname.c_str());
-                ulog << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << endl;
+                ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << endl;
             }
         }
         break;
