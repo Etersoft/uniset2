@@ -67,25 +67,9 @@ long UConnector::getValue( long id, long node )throw(UException)
     if( node == UTypes::DefaultID )
       node = conf->getLocalNode();
 
-    UniversalIO::IOType t = conf->getIOType(id);
     try
     {
-        switch(t)
-        {
-            case UniversalIO::DI:
-            case UniversalIO::DO:
-            case UniversalIO::AI:
-            case UniversalIO::AO:
-                return ui->getValue(id,node);
-            break;
-
-            default:
-            {
-              ostringstream e;
-              e << "(getValue): Unknown iotype for id=" << id;
-              throw UException(e.str());
-            }
-        }
+         return ui->getValue(id,node);
     }
     catch( UException& ex )
     {
@@ -112,25 +96,9 @@ void UConnector::setValue( long id, long val, long node )throw(UException)
     if( node == UTypes::DefaultID )
       node = conf->getLocalNode();
 
-    UniversalIO::IOType t = conf->getIOType(id);
     try
     {
-        switch(t)
-        {
-            case UniversalIO::DI:
-            case UniversalIO::DO:
-            case UniversalIO::AI:
-            case UniversalIO::AO:
-                ui->setValue(id,val,node);
-            break;
-
-            default:
-            {
-              ostringstream e;
-              e << "(setValue): Unknown iotype for id=" << id;
-              throw UException(e.str());
-            }
-        }
+        ui->setValue(id,val,node);
     }
     catch( UException& ex )
     {

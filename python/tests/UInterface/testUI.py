@@ -37,7 +37,8 @@ if __name__ == "__main__":
 			print "getValue exception: " + str(e.getError())
 
 		try:
-			print "setValue: %d=%d" % (14,setValue(14,22))
+			print "setValue: %d=%d" % (14,22)
+			setValue(14,22)
 		except UException, e:
 			print "setValue exception: " + str(e.getError())
 
