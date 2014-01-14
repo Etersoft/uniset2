@@ -9,7 +9,6 @@ SUBDIRS = lib include SharedMemory IOControl LogicProcessor \
 
 #SMDBServer
 #SharedMemoryPlus
-#UDPExchange
 
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSetExtensions.pc
