@@ -35,7 +35,7 @@
         typedef string<30> ObjectType;    /*!< тип объекта */
 
 
-        const unsigned short SizeOfTransportMessage=100;
+        const unsigned short SizeOfTransportMessage=85;
 
         typedef octet ByteOfMessage;        /*!< тип для одного байта сообщения */
         typedef ByteOfMessage RawDataOfTransportMessage[SizeOfTransportMessage];    /*!< данные в сообщении */
