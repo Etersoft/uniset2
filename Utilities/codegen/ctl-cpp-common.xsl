@@ -692,11 +692,13 @@ end_private(false)
 	else if( smReadyTimeout &lt; 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 
-	std::string tmp_smtestID("");
+	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),""));
 	<xsl:for-each select="//smap/item">
-	<xsl:if test="normalize-space(@smTestID)!=''">tmp_smtestID = "<xsl:value-of select="@name"/>";</xsl:if>
+	<xsl:if test="normalize-space(@smTestID)!=''">
+	if( smTestID == DefaultObjectId )
+		smTestID = <xsl:value-of select="@name"/>;
+	</xsl:if>
 	</xsl:for-each>
-	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),tmp_smtestID));
 
 	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
 
@@ -975,6 +977,7 @@ askPause(conf->getPIntProp(cnode,"askPause",2000))
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 
 	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),""));
+
 	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
 
 	int msec = conf->getArgPInt("--startup-timeout", 10000);
