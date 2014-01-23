@@ -90,24 +90,27 @@ class UniSetObject:
 
     protected:
             /*! обработка приходящих сообщений */
-            virtual void processingMessage(UniSetTypes::VoidMessage *msg);
+            virtual void processingMessage( UniSetTypes::VoidMessage *msg );
+            virtual void sysCommand( const UniSetTypes::SystemMessage* sm ){}
+            virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ){}
+            virtual void timerInfo( const UniSetTypes::TimerMessage* tm ){}
 
             /*! Получить сообщение */
-            bool receiveMessage(UniSetTypes::VoidMessage& vm);
-    
+            bool receiveMessage( UniSetTypes::VoidMessage& vm );
+
             /*! текущее количесво сообщений в очереди */
             unsigned int countMessages();
-                 
+
             /*! прервать ожидание сообщений */
             void termWaiting();
 
-            UInterface ui; /*!< универсальный интерфейс для работы с другими процессами */            
+            UInterface ui; /*!< универсальный интерфейс для работы с другими процессами */
             std::string myname;
             std::string section;
 
-            //! Дизактивизация объекта (переопределяется для необходимых действий перед деактивацией)     
+            //! Дизактивизация объекта (переопределяется для необходимых действий перед деактивацией)
             virtual bool disactivateObject(){return true;}
-            //! Активизация объекта (переопределяется для необходимых действий после активизации)     
+            //! Активизация объекта (переопределяется для необходимых действий после активизации)
             virtual bool activateObject(){return true;}
 
             /*! запрет(разрешение) создания потока для обработки сообщений */

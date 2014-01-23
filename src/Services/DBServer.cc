@@ -76,29 +76,13 @@ void DBServer::processingMessage( UniSetTypes::VoidMessage *msg )
 {
     switch(msg->type)
     {
-        case Message::SysCommand:
-        {
-            SystemMessage sm(msg);
-            sysCommand(&sm);
-            break;
-        }
-            
         case Message::Confirm:
-        {
-            ConfirmMessage cm(msg);
-            parse(&cm);
-            break;
-        }
-    
-        case Message::SensorInfo:
-        {
-            SensorMessage sm(msg);
-            parse(&sm);
-            break;
-        }
-    
+            confirmInfo( reinterpret_cast<ConfirmMessage*>(msg) );
+        break;
+
         default:
-            break;     
+			UniSetObject_LT::processingMessage(msg);
+            break;
     }
 
 }

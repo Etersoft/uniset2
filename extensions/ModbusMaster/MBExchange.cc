@@ -2386,53 +2386,7 @@ bool MBExchange::activateObject()
     return true;
 }
 // ------------------------------------------------------------------------------------------
-void MBExchange::processingMessage(UniSetTypes::VoidMessage *msg)
-{
-    try
-    {
-        switch(msg->type)
-        {
-            case UniSetTypes::Message::SysCommand:
-            {
-                UniSetTypes::SystemMessage sm( msg );
-                sysCommand( &sm );
-            }
-            break;
-
-            case Message::Timer:
-            {
-                TimerMessage tm(msg);
-                timerInfo(&tm);
-            }
-            break;
-        
-            case Message::SensorInfo:
-            {
-                SensorMessage sm( msg );
-                sensorInfo(&sm);
-            }
-            break;
-
-            default:
-                break;
-        }
-    }
-    catch( SystemError& ex )
-    {
-        dcrit << myname << "(SystemError): " << ex << std::endl;
-//        throw SystemError(ex);
-    }
-    catch( Exception& ex )
-    {
-        dcrit << myname << "(processingMessage): " << ex << std::endl;
-    }
-    catch(...)
-    {
-        dcrit << myname << "(processingMessage): catch ...\n";
-    }
-}
-// -----------------------------------------------------------------------------
-void MBExchange::sysCommand( UniSetTypes::SystemMessage *sm )
+void MBExchange::sysCommand( const UniSetTypes::SystemMessage *sm )
 {
     switch( sm->command )
     {
@@ -2608,7 +2562,7 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
     }
 }
 // ------------------------------------------------------------------------------------------
-void MBExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
+void MBExchange::sensorInfo( const UniSetTypes::SensorMessage* sm )
 {
     if( sm->id == sidExchangeMode )
     {
@@ -2653,7 +2607,7 @@ void MBExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
     }
 }
 // ------------------------------------------------------------------------------------------
-void MBExchange::timerInfo( TimerMessage *tm )
+void MBExchange::timerInfo( const TimerMessage *tm )
 {
     if( tm->id == tmExchange )
     {

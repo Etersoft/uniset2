@@ -15,7 +15,7 @@
 
 
       \section sec_SM_Common Задачи решаемые объектом SharedMemory
-      
+
     Класс SharedMemory расширяет набор задач класса IONotifyController.
     Для ознакомления с базовыми функциями см. \ref page_IONotifyController
 
@@ -323,9 +323,9 @@ class SharedMemory:
             long fuse_sec;
             long fuse_usec;
         };
-        
+
         friend std::ostream& operator<<( std::ostream& os, const HistoryInfo& h );
-        
+
         typedef std::list<HistoryInfo> History;
 
         // т.к. могуть быть одинаковые "детонаторы" для разных "историй" то, 
@@ -338,15 +338,13 @@ class SharedMemory:
         HistorySlot signal_history(); /*!< сигнал о срабатывании условий "сборса" дампа истории */
 
         inline int getHistoryStep(){ return histSaveTime; } /*!< период между точками "дампа", мсек */
-        
+
     protected:
         typedef std::list<Restorer_XML::ReaderSlot> ReadSlotList;
         ReadSlotList lstRSlot;
 
-        virtual void processingMessage( UniSetTypes::VoidMessage *msg );
-        virtual void sysCommand( UniSetTypes::SystemMessage *sm );
-        virtual void sensorInfo( UniSetTypes::SensorMessage *sm );
-        virtual void timerInfo( UniSetTypes::TimerMessage *tm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *sm );
+        virtual void timerInfo( const UniSetTypes::TimerMessage *tm );
         virtual void askSensors( UniversalIO::UIOCommand cmd );
         virtual void sendEvent( UniSetTypes::SystemMessage& sm );
 

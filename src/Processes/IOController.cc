@@ -186,31 +186,43 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
     try
     {    
         if( changed )
+        {
+            uniset_rwmutex_wrlock l(li->second.undefMutex);
             li->second.sigUndefChange.emit(li, this);
+        }
     }
     catch(...){}
 
     // потом глобольное, но конкретно для 'undefchange'
     try
-    {    
+    {
         if( changed )
+        {
+            uniset_mutex_lock l(siganyundefMutex);
             sigAnyUndefChange.emit(li, this);
+        }
     }
     catch(...){}
 
     // теперь просто событие по изменению состояния
     try
-    {    
+    {
         if( changed )
+        {
+            uniset_rwmutex_wrlock(li->second.changeMutex);
             li->second.sigChange.emit(li, this);
+        }
     }
     catch(...){}
 
     // глобальное по всем..
     try
-    {    
+    {
         if( changed )
+        {
+            uniset_mutex_lock l(siganyMutex);
             sigAnyChange.emit(li, this);
+        }
     }
     catch(...){}
 }
@@ -295,16 +307,22 @@ void IOController::localSetValue( IOController::IOStateList::iterator& li,
     }    // unlock
 
     try
-    {    
+    {
         if( changed )
+        {
+            uniset_rwmutex_wrlock l(li->second.changeMutex);
             li->second.sigChange.emit(li, this);
+        }
     }
     catch(...){}
 
     try
-    {    
+    {
         if( changed )
+        {
+            uniset_mutex_lock l(siganyMutex);
             sigAnyChange.emit(li, this);
+        }
     }
     catch(...){}
 }

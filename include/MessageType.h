@@ -44,7 +44,7 @@ namespace UniSetTypes
                 Timer,        // Сообщения о срабатывании таймера
                 TheLastFieldOfTypeOfMessage // Обязательно оставьте последним
             };
-    
+
             int type;    // Содержание сообщения (тип)
 
             enum Priority

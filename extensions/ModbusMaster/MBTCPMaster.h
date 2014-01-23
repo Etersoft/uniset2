@@ -205,7 +205,7 @@ class MBTCPMaster:
         static void help_print( int argc, const char* const* argv );
 
     protected:
-        virtual void sysCommand( UniSetTypes::SystemMessage *sm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *sm );
 
         UniSetTypes::uniset_rwmutex mbMutex;
         std::string iaddr;

@@ -54,10 +54,10 @@ class PassiveObject
         inline std::string getName(){ return myname; }
 
     protected:
-        virtual void sysCommand( UniSetTypes::SystemMessage *sm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *sm );
         virtual void askSensors( UniversalIO::UIOCommand cmd ){}
-        virtual void timerInfo( UniSetTypes::TimerMessage *tm ){}
-        virtual void sensorInfo( UniSetTypes::SensorMessage *sm ){}
+        virtual void timerInfo( const UniSetTypes::TimerMessage *tm ){}
+        virtual void sensorInfo( const UniSetTypes::SensorMessage *sm ){}
     
         std::string myname;
 

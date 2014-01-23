@@ -184,10 +184,10 @@
 <xsl:template name="COMMON-HEAD-PROTECTED">
 		virtual void callback();
 		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
-		virtual void sysCommand( UniSetTypes::SystemMessage* sm );
+		virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
 		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
-		virtual void sensorInfo( UniSetTypes::SensorMessage* sm ){}
-		virtual void timerInfo( UniSetTypes::TimerMessage* tm ){}
+		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ){}
+		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ){}
 		virtual void sigterm( int signo );
 		virtual bool activateObject();
 		virtual void testMode( bool state );
@@ -198,8 +198,8 @@
 		bool checkTestMode();
 </xsl:if>
 		void preAskSensors( UniversalIO::UIOCommand cmd );
-		void preSensorInfo( UniSetTypes::SensorMessage* sm );
-		void preTimerInfo( UniSetTypes::TimerMessage* tm );
+		void preSensorInfo( const UniSetTypes::SensorMessage* sm );
+		void preTimerInfo( const UniSetTypes::TimerMessage* tm );
 		void waitSM( int wait_msec, UniSetTypes::ObjectId testID = UniSetTypes::DefaultObjectId );
 
 		void resetMsg();
@@ -260,25 +260,16 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::Voi
 		switch( _msg->type )
 		{
 			case Message::SensorInfo:
-			{
-				SensorMessage _sm( _msg );
-				preSensorInfo( &amp;_sm );
-				break;
-			}
+				preSensorInfo( reinterpret_cast&lt;SensorMessage*&gt;(_msg) );
+			break;
 
 			case Message::Timer:
-			{
-				TimerMessage _tm(_msg);
-				preTimerInfo(&amp;_tm);
-				break;
-			}
+				preTimerInfo( reinterpret_cast&lt;TimerMessage*&gt;(_msg) );
+			break;
 
 			case Message::SysCommand:
-			{
-				SystemMessage _sm( _msg );
-				sysCommand( &amp;_sm );
-				break;
-			}
+				sysCommand( reinterpret_cast&lt;SystemMessage*&gt;(_msg) );
+			break;
 
 			default:
 				break;
@@ -290,7 +281,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::Voi
 	}
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* _sm )
+void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( const SystemMessage* _sm )
 {
 	switch( _sm->command )
 	{
@@ -368,7 +359,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::activateObject()
 	return true;
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::preTimerInfo( UniSetTypes::TimerMessage* _tm )
+void <xsl:value-of select="$CLASSNAME"/>_SK::preTimerInfo( const UniSetTypes::TimerMessage* _tm )
 {
 	timerInfo(_tm);
 }

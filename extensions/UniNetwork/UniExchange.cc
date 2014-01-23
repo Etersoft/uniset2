@@ -297,44 +297,7 @@ void UniExchange::askSensors( UniversalIO::UIOCommand cmd )
 
 }
 // -----------------------------------------------------------------------------
-void UniExchange::processingMessage( UniSetTypes::VoidMessage* msg )
-{
-    try
-    {
-        switch( msg->type )
-        {
-            case Message::SensorInfo:
-            {
-                SensorMessage sm( msg );
-                sensorInfo( &sm );
-                break;
-            }
-
-            case Message::Timer:
-            {
-                TimerMessage tm(msg);
-                timerInfo(&tm);
-                break;
-            }
-
-            case Message::SysCommand:
-            {
-                SystemMessage sm( msg );
-                sysCommand( &sm );
-                break;
-            }
-
-            default:
-                break;
-        }
-    }
-    catch(Exception& ex)
-    {
-        cout  << myname << "(processingMessage): " << ex << endl;
-    }
-}
-// -----------------------------------------------------------------------------
-void UniExchange::sysCommand( SystemMessage* sm )
+void UniExchange::sysCommand( const SystemMessage* sm )
 {
     switch( sm->command )
     {
@@ -343,12 +306,12 @@ void UniExchange::sysCommand( SystemMessage* sm )
             askSensors(UniversalIO::UIONotify);
             break;
         }
-        
+
         case SystemMessage::FoldUp:
         case SystemMessage::Finish:
             askSensors(UniversalIO::UIODontNotify);
             break;
-        
+
         case SystemMessage::WatchDog:
             askSensors(UniversalIO::UIONotify);
             break;
@@ -360,16 +323,6 @@ void UniExchange::sysCommand( SystemMessage* sm )
 // -----------------------------------------------------------------------------
 void UniExchange::sigterm( int signo )
 {
-}
-// -----------------------------------------------------------------------------
-void UniExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
-{
-
-}
-// -----------------------------------------------------------------------------
-void UniExchange::timerInfo( UniSetTypes::TimerMessage* tm )
-{
-    
 }
 // -----------------------------------------------------------------------------
 UniExchange* UniExchange::init_exchange( int argc, const char* const* argv, 

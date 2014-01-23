@@ -391,7 +391,7 @@ void UNetExchange::waitSMReady()
     }
 }
 // -----------------------------------------------------------------------------
-void UNetExchange::timerInfo( TimerMessage *tm )
+void UNetExchange::timerInfo( const TimerMessage *tm )
 {
     if( !activated )
         return;
@@ -460,53 +460,7 @@ void UNetExchange::ReceiverInfo::step( SMInterface* shm, const std::string& myna
     }
 }
 // -----------------------------------------------------------------------------
-void UNetExchange::processingMessage( UniSetTypes::VoidMessage *msg )
-{
-    try
-    {
-        switch(msg->type)
-        {
-            case UniSetTypes::Message::SysCommand:
-            {
-                UniSetTypes::SystemMessage sm( msg );
-                sysCommand( &sm );
-            }
-            break;
-
-            case Message::SensorInfo:
-            {
-                SensorMessage sm( msg );
-                sensorInfo(&sm);
-            }
-            break;
-
-            case Message::Timer:
-            {
-                TimerMessage tm(msg);
-                timerInfo(&tm);
-            }
-            break;
-
-            default:
-                break;
-        }
-    }
-    catch( SystemError& ex )
-    {
-        dcrit << myname << "(SystemError): " << ex << std::endl;
-        raise(SIGTERM);
-    }
-    catch( Exception& ex )
-    {
-        dcrit << myname << "(processingMessage): " << ex << std::endl;
-    }
-    catch(...)
-    {
-        dcrit << myname << "(processingMessage): catch ..." << std::endl;
-    }
-}
-// -----------------------------------------------------------------------------
-void UNetExchange::sysCommand( UniSetTypes::SystemMessage *sm )
+void UNetExchange::sysCommand( const UniSetTypes::SystemMessage *sm )
 {
     switch( sm->command )
     {
@@ -608,7 +562,7 @@ void UNetExchange::askSensors( UniversalIO::UIOCommand cmd )
         sender2->askSensors(cmd);
 }
 // ------------------------------------------------------------------------------------------
-void UNetExchange::sensorInfo( UniSetTypes::SensorMessage* sm )
+void UNetExchange::sensorInfo( const UniSetTypes::SensorMessage* sm )
 {
     if( sender )
         sender->updateSensor( sm->id , sm->value );

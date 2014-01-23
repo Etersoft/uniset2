@@ -1154,44 +1154,7 @@ void IOControl::help_print( int argc, const char* const* argv )
     cout << "--prefix-sm-ready-test-sid - Использовать указанный датчик, для проверки готовности SharedMemory" << endl;
 }
 // -----------------------------------------------------------------------------
-void IOControl::processingMessage( UniSetTypes::VoidMessage* msg )
-{
-    try
-    {
-        switch( msg->type )
-        {
-            case Message::SensorInfo:
-            {
-                SensorMessage sm( msg );
-                sensorInfo( &sm );
-                break;
-            }
-
-            case Message::Timer:
-            {
-                TimerMessage tm(msg);
-                timerInfo(&tm);
-                break;
-            }
-
-            case Message::SysCommand:
-            {
-                SystemMessage sm( msg );
-                sysCommand( &sm );
-                break;
-            }
-
-            default:
-                break;
-        }    
-    }
-    catch(Exception& ex)
-    {
-        dcrit << myname << "(processingMessage): " << ex << endl;
-    }
-}
-// -----------------------------------------------------------------------------
-void IOControl::sysCommand( SystemMessage* sm )
+void IOControl::sysCommand( const SystemMessage* sm )
 {
     switch( sm->command )
     {
@@ -1346,7 +1309,7 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
     }
 }
 // -----------------------------------------------------------------------------
-void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
+void IOControl::sensorInfo( const UniSetTypes::SensorMessage* sm )
 {
     dlog1 << myname << "(sensorInfo): sm->id=" << sm->id
                         << " val=" << sm->value << endl;
@@ -1451,7 +1414,7 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
                                 // (так комфортнее выглядит для оператора)
                                 if( it->ignore || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
                                     break;
-                                
+
                                 ComediInterface* card = cards.getCard(it->ncard);
 
                                 if( card != NULL )
@@ -1478,7 +1441,7 @@ void IOControl::sensorInfo( UniSetTypes::SensorMessage* sm )
     }
 }
 // -----------------------------------------------------------------------------
-void IOControl::timerInfo( UniSetTypes::TimerMessage* tm )
+void IOControl::timerInfo( const UniSetTypes::TimerMessage* tm )
 {
 
 }

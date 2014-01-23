@@ -323,31 +323,7 @@ void UniSetActivator::getinfo()
     }
 }
 // ------------------------------------------------------------------------------------------
-void UniSetActivator::processingMessage( UniSetTypes::VoidMessage *msg )
-{
-    try
-    {
-        switch( msg->type )
-        {
-            case Message::SysCommand:
-            {
-                SystemMessage sm( msg );
-                sysCommand(&sm);
-            }
-            break;
-
-            default:
-                break;
-        }    
-    }
-    catch(Exception& ex)
-    {
-        ucrit << myname << "(processingMessage): " << ex << endl;
-    }
-
-}
-// -------------------------------------------------------------------------
-void UniSetActivator::sysCommand( UniSetTypes::SystemMessage *sm )
+void UniSetActivator::sysCommand( const UniSetTypes::SystemMessage *sm )
 {
     switch(sm->command)
     {

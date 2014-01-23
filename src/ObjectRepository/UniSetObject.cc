@@ -781,9 +781,55 @@ void UniSetObject::callback()
 // ------------------------------------------------------------------------------------------
 void UniSetObject::processingMessage( UniSetTypes::VoidMessage *msg )
 {
-    uinfo << myname << ": default processing messages..." << endl;
+    try
+    {
+        switch( msg->type )
+        {
+            case Message::SensorInfo:
+                sensorInfo( reinterpret_cast<SensorMessage*>(msg) );
+            break;
+
+            case Message::Timer:
+                timerInfo( reinterpret_cast<TimerMessage*>(msg) );
+            break;
+
+            case Message::SysCommand:
+                sysCommand( reinterpret_cast<SystemMessage*>(msg) );
+            break;
+
+            default:
+                break;
+        }
+    }
+    catch( Exception& ex )
+    {
+        ucrit  << myname << "(processingMessage): " << ex << endl;
+    }
+    catch(CORBA::SystemException& ex)
+    {
+        ucrit << myname << "(processingMessage): CORBA::SystemException: " << ex.NP_minorString() << endl;
+      }
+    catch(CORBA::Exception& ex)
+    {
+        uwarn << myname << "(processingMessage): CORBA::Exception: " << ex._name() << endl;
+    }
+    catch( omniORB::fatalException& fe )
+    {
+        if( ulog.is_crit() )
+        {
+            ulog.crit() << myname << "(processingMessage): Caught omniORB::fatalException:" << endl;
+            ulog.crit() << myname << "(processingMessage): file: " << fe.file()
+                << " line: " << fe.line()
+                << " mesg: " << fe.errmsg() << endl;
+        }
+    }
+    catch(...)
+    {
+        ucrit << myname << "(processingMessage): catch..." << endl;
+    }
 }
 // ------------------------------------------------------------------------------------------
+
 UniSetTypes::SimpleInfo* UniSetObject::getInfo()
 {
     ostringstream info;
