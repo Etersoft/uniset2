@@ -281,11 +281,10 @@ class IOControl:
         void blink();
 
         // действия при завершении работы
-        virtual void processingMessage( UniSetTypes::VoidMessage* msg );
-        virtual void sysCommand( UniSetTypes::SystemMessage* sm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
         virtual void askSensors( UniversalIO::UIOCommand cmd );
-        virtual void sensorInfo( UniSetTypes::SensorMessage* sm );
-        virtual void timerInfo( UniSetTypes::TimerMessage* tm );
+        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm );
+        virtual void timerInfo( const UniSetTypes::TimerMessage* tm );
         virtual void sigterm( int signo );
         virtual bool activateObject();
 

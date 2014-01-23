@@ -529,48 +529,7 @@ void MBSlave::execute_tcp()
     }
 }
 // -------------------------------------------------------------------------
-
-void MBSlave::processingMessage(UniSetTypes::VoidMessage *msg)
-{
-    try
-    {
-        switch(msg->type)
-        {
-            case UniSetTypes::Message::SysCommand:
-            {
-                UniSetTypes::SystemMessage sm( msg );
-                sysCommand( &sm );
-            }
-            break;
-
-            case Message::SensorInfo:
-            {
-                SensorMessage sm( msg );
-                sensorInfo(&sm);
-            }
-            break;
-
-            default:
-                break;
-        }
-    }
-    catch( SystemError& ex )
-    {
-        dcrit << myname << "(SystemError): " << ex << std::endl;
-//        throw SystemError(ex);
-        raise(SIGTERM);
-    }
-    catch( Exception& ex )
-    {
-        dcrit << myname << "(processingMessage): " << ex << std::endl;
-    }
-    catch(...)
-    {
-        dcrit << myname << "(processingMessage): catch ...\n";
-    }
-}
-// -----------------------------------------------------------------------------
-void MBSlave::sysCommand(UniSetTypes::SystemMessage *sm)
+void MBSlave::sysCommand( const UniSetTypes::SystemMessage *sm )
 {
     switch( sm->command )
     {
@@ -598,7 +557,9 @@ void MBSlave::sysCommand(UniSetTypes::SystemMessage *sm)
             }
 
             if( !activated )
+			{
                 dcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
+			}
             else 
             {
                 UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
@@ -685,7 +646,7 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
     }
 }
 // ------------------------------------------------------------------------------------------
-void MBSlave::sensorInfo( UniSetTypes::SensorMessage* sm )
+void MBSlave::sensorInfo( const UniSetTypes::SensorMessage* sm )
 {
     IOMap::iterator it=iomap.begin();
     for( ; it!=iomap.end(); ++it )

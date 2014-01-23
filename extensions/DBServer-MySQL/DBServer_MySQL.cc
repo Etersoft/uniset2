@@ -88,24 +88,7 @@ DBServer_MySQL::~DBServer_MySQL()
     }
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::processingMessage( UniSetTypes::VoidMessage *msg )
-{
-    switch(msg->type)
-    {
-        case Message::Timer:
-        {
-            TimerMessage tm(msg);
-            timerInfo(&tm);
-            break;
-        }
-
-        default:
-            DBServer::processingMessage(msg);
-            break;
-    }
-}
-//--------------------------------------------------------------------------------------------
-void DBServer_MySQL::sysCommand( UniSetTypes::SystemMessage *sm )
+void DBServer_MySQL::sysCommand( const UniSetTypes::SystemMessage *sm )
 {
     switch( sm->command )
     {
@@ -134,7 +117,7 @@ void DBServer_MySQL::sysCommand( UniSetTypes::SystemMessage *sm )
 }
 
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::parse( UniSetTypes::ConfirmMessage* cem )
+void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 {
     try
     {
@@ -235,7 +218,7 @@ void DBServer_MySQL::flushBuffer()
     }
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
+void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 {
     try
     {
@@ -243,7 +226,7 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
         if( !si->tm.tv_sec )
         {
             struct timezone tz;
-            gettimeofday(&si->tm,&tz);
+            gettimeofday( const_cast<struct timeval*>(&si->tm),&tz);
         }
 
         // см. DBTABLE AnalogSensors, DigitalSensors
@@ -380,7 +363,7 @@ void DBServer_MySQL::createTables( DBInterface *db )
     }
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
+void DBServer_MySQL::timerInfo( const UniSetTypes::TimerMessage* tm )
 {
     switch( tm->id )
     {

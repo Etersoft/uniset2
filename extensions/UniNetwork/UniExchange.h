@@ -53,11 +53,8 @@ class UniExchange:
 
     protected:
 
-        virtual void processingMessage( UniSetTypes::VoidMessage* msg );
-        virtual void sysCommand( UniSetTypes::SystemMessage* sm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
         virtual void askSensors( UniversalIO::UIOCommand cmd );
-        virtual void sensorInfo( UniSetTypes::SensorMessage* sm );
-        virtual void timerInfo( UniSetTypes::TimerMessage* tm );
         virtual void sigterm( int signo );
 
         xmlNode* cnode;

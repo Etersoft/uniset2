@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2014-01-23+04:00
+// generate timestamp: 2014-01-24+04:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -38,7 +38,7 @@ class UObject_SK:
 		void setMsg( UniSetTypes::ObjectId code, bool state );
 
 		DebugStream mylog;
-		void init_mylog( DebugStream& d );
+		void init_dlog( DebugStream& d );
 
         // "синтаксический сахар"..для логов
         #define myinfo if( mylog.debugging(Debug::INFO) ) mylog
@@ -78,10 +78,10 @@ class UObject_SK:
 
 		virtual void callback();
 		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
-		virtual void sysCommand( UniSetTypes::SystemMessage* sm );
+		virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
 		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
-		virtual void sensorInfo( UniSetTypes::SensorMessage* sm ){}
-		virtual void timerInfo( UniSetTypes::TimerMessage* tm ){}
+		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ){}
+		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ){}
 		virtual void sigterm( int signo );
 		virtual bool activateObject();
 		virtual void testMode( bool state );
@@ -90,8 +90,8 @@ class UObject_SK:
 		void updateOutputs( bool force );
 
 		void preAskSensors( UniversalIO::UIOCommand cmd );
-		void preSensorInfo( UniSetTypes::SensorMessage* sm );
-		void preTimerInfo( UniSetTypes::TimerMessage* tm );
+		void preSensorInfo( const UniSetTypes::SensorMessage* sm );
+		void preTimerInfo( const UniSetTypes::TimerMessage* tm );
 		void waitSM( int wait_msec, UniSetTypes::ObjectId testID = UniSetTypes::DefaultObjectId );
 
 		void resetMsg();

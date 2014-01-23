@@ -23,11 +23,11 @@ void Skel::step()
 {
 }
 // -----------------------------------------------------------------------------
-void Skel::sensorInfo( SensorMessage *sm )
+void Skel::sensorInfo( const SensorMessage *sm )
 {
 }
 // -----------------------------------------------------------------------------
-void Skel::timerInfo( TimerMessage *tm )
+void Skel::timerInfo( const TimerMessage *tm )
 {
 }
 // -----------------------------------------------------------------------------

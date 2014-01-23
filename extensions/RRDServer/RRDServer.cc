@@ -273,7 +273,7 @@ void RRDServer::askSensors( UniversalIO::UIOCommand cmd )
     }
 }
 // -----------------------------------------------------------------------------
-void RRDServer::sysCommand( UniSetTypes::SystemMessage* sm )
+void RRDServer::sysCommand( const UniSetTypes::SystemMessage* sm )
 {
     UObject_SK::sysCommand(sm);
     if( sm->command == SystemMessage::StartUp || sm->command == SystemMessage::WatchDog )
@@ -292,7 +292,7 @@ void RRDServer::sysCommand( UniSetTypes::SystemMessage* sm )
     }
 }
 // -----------------------------------------------------------------------------
-void RRDServer::sensorInfo( UniSetTypes::SensorMessage* sm )
+void RRDServer::sensorInfo( const UniSetTypes::SensorMessage* sm )
 {
     for( RRDList::iterator it=rrdlist.begin(); it!=rrdlist.end(); ++it )
     {
@@ -304,7 +304,7 @@ void RRDServer::sensorInfo( UniSetTypes::SensorMessage* sm )
     }
 }
 // -----------------------------------------------------------------------------
-void RRDServer::timerInfo( UniSetTypes::TimerMessage* tm )
+void RRDServer::timerInfo( const UniSetTypes::TimerMessage* tm )
 {
     for( RRDList::iterator it=rrdlist.begin(); it!=rrdlist.end(); ++it )
     {

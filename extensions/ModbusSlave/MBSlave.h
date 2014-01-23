@@ -138,9 +138,8 @@ class MBSlave:
 
         SMInterface* shm;
 
-        virtual void processingMessage( UniSetTypes::VoidMessage *msg );
-        void sysCommand( UniSetTypes::SystemMessage *msg );
-        void sensorInfo( UniSetTypes::SensorMessage* sm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *msg );
+        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm );
         void askSensors( UniversalIO::UIOCommand cmd );
         void waitSMReady();
         void execute_rtu();

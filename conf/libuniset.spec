@@ -8,7 +8,7 @@
 
 Name: libuniset
 Version: 2.0
-Release: alt0.1
+Release: alt0.2
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -333,6 +333,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Fri Jan 24 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt0.2
+- oprimization processing message (warning: use reinterpret_cast<> )
+
 * Tue Dec 24 2013 Pavel Vainerman <pv@altlinux.ru> 2.0-alt0.1
 - rename "IOTypes" --> "IOType"
 - rename DigitalInput --> DI
@@ -350,13 +353,12 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - add iofront=[01,10] to IOBase
 - remove deprecated interfaces (Storages,CycleStorage,TableStorage,TextIndex,..)
 - rename unideb --> ulog
-- DebugStream refactoring (add new function)
+- DebugStream refactoring (add new function, add syntax sugar for ulog, dlog /dcrit,dwarn,dlog1,ulog1,ucrit,.../)
 - UniversalInterface --> UInterface
 - ObjectsManager --> UniSetManager
 - ObjectsActitvator --> UniSetActivator
 - remove deprecated property: "sensebility"
 - rename property "inverse" --> "threshold_invert"
-- add syntax sugar for ulog, dlog (dcrit,dwarn,dlog1,ulog1,ucrit,...)
 
 * Tue Dec 10 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt3
 - add RRDServer

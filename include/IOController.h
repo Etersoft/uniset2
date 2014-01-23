@@ -150,14 +150,17 @@ class IOController:
 
             // Дополнительные (вспомогательные поля)
             UniSetTypes::uniset_rwmutex val_lock; /*!< флаг блокирующий работу со значением */
-        
+
             IOStateList::iterator it;
 
             void* any; /*!< расширение для возможности хранения своей информации */
-    
+
             // сигнал для реализации механизма зависимостией.. 
             // (все зависимые датчики подключаются к нему (см. NCRestorer::init_depends_signals)
+            UniSetTypes::uniset_rwmutex changeMutex;
             ChangeSignal sigChange;
+
+            UniSetTypes::uniset_rwmutex undefMutex;
             ChangeUndefinedStateSignal sigUndefChange;
 
             IOController_i::SensorInfo d_si;  /*!< идентификатор датчика, от которого зависит данный */
@@ -276,15 +279,19 @@ class IOController:
         inline bool iofiltersEmpty(){ return iofilters.empty(); }
         inline int iodiltersSize(){ return iofilters.size(); }
 
-    private:        
+    private:
         friend class NCRestorer;
+
+		UniSetTypes::uniset_mutex siganyMutex;
         ChangeSignal sigAnyChange;
+
+		UniSetTypes::uniset_mutex siganyundefMutex;
         ChangeSignal sigAnyUndefChange;
         InitSignal sigInit;
-    
+
         IOStateList ioList;    /*!< список с текущим состоянием аналоговых входов/выходов */
         UniSetTypes::uniset_rwmutex ioMutex; /*!< замок для блокирования совместного доступа к ioList */
-        
+
         bool isPingDBServer;    // флаг связи с DBServer-ом 
 
         IOFilterSlotList iofilters; /*!< список фильтров для аналоговых значений */

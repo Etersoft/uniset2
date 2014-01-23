@@ -89,32 +89,23 @@ void PassiveObject::init( ProxyManager* _mngr )
 }
 
 // ------------------------------------------------------------------------------------------
-void PassiveObject::processingMessage( UniSetTypes::VoidMessage* msg )
+void PassiveObject::processingMessage( UniSetTypes::VoidMessage *msg )
 {
     try
     {
         switch( msg->type )
         {
             case Message::SensorInfo:
-            {
-                SensorMessage sm( msg );
-                sensorInfo( &sm );
-                break;
-            }
-
-            case Message::SysCommand:
-            {
-                SystemMessage sm( msg );
-                sysCommand( &sm );
-                break;
-            }
+                sensorInfo( reinterpret_cast<SensorMessage*>(msg) );
+            break;
 
             case Message::Timer:
-            {
-                TimerMessage tm(msg);
-                timerInfo(&tm);
-                break;
-            }
+                timerInfo( reinterpret_cast<TimerMessage*>(msg) );
+            break;
+
+            case Message::SysCommand:
+                sysCommand( reinterpret_cast<SystemMessage*>(msg) );
+            break;
 
             default:
                 break;
@@ -122,11 +113,33 @@ void PassiveObject::processingMessage( UniSetTypes::VoidMessage* msg )
     }
     catch( Exception& ex )
     {
-	uwarn << myname << "(processingMessage): " << ex << endl;
+        ucrit  << myname << "(processingMessage): " << ex << endl;
+    }
+    catch(CORBA::SystemException& ex)
+    {
+        ucrit << myname << "(processingMessage): CORBA::SystemException: " << ex.NP_minorString() << endl;
+      }
+    catch(CORBA::Exception& ex)
+    {
+        uwarn << myname << "(processingMessage): CORBA::Exception: " << ex._name() << endl;
+    }
+    catch( omniORB::fatalException& fe )
+    {
+        if( ulog.is_crit() )
+        {
+            ulog.crit() << myname << "(processingMessage): Caught omniORB::fatalException:" << endl;
+            ulog.crit() << myname << "(processingMessage): file: " << fe.file()
+                << " line: " << fe.line()
+                << " mesg: " << fe.errmsg() << endl;
+        }
+    }
+    catch(...)
+    {
+        ucrit << myname << "(processingMessage): catch..." << endl;
     }
 }
 // -------------------------------------------------------------------------
-void PassiveObject::sysCommand( SystemMessage *sm )
+void PassiveObject::sysCommand( const SystemMessage *sm )
 {
     switch( sm->command )
     {

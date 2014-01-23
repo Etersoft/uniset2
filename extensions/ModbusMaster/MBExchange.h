@@ -200,10 +200,9 @@ class MBExchange:
 
     protected:
         virtual void step();
-        virtual void processingMessage( UniSetTypes::VoidMessage *msg );
-        virtual void sysCommand( UniSetTypes::SystemMessage *msg );
-        virtual void sensorInfo( UniSetTypes::SensorMessage*sm );
-        virtual void timerInfo( UniSetTypes::TimerMessage *tm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *msg );
+        virtual void sensorInfo( const UniSetTypes::SensorMessage*sm );
+        virtual void timerInfo( const UniSetTypes::TimerMessage *tm );
         virtual void askSensors( UniversalIO::UIOCommand cmd );
         virtual void initOutput();
         virtual void sigterm( int signo );

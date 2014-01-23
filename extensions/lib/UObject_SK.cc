@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2014-01-23+04:00
+// generate timestamp: 2014-01-24+04:00
 // -----------------------------------------------------------------------------
 #include "Configuration.h"
 #include "Exceptions.h"
@@ -202,7 +202,7 @@ void UObject_SK::testMode( bool _state )
 // --------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------------------------
-void UObject_SK::init_mylog( DebugStream& d )
+void UObject_SK::init_dlog( DebugStream& d )
 {
 	UObject_SK::mylog = d;
 }
@@ -214,25 +214,16 @@ void UObject_SK::processingMessage( UniSetTypes::VoidMessage* _msg )
 		switch( _msg->type )
 		{
 			case Message::SensorInfo:
-			{
-				SensorMessage _sm( _msg );
-				preSensorInfo( &_sm );
-				break;
-			}
+				preSensorInfo( reinterpret_cast<SensorMessage*>(_msg) );
+			break;
 
 			case Message::Timer:
-			{
-				TimerMessage _tm(_msg);
-				preTimerInfo(&_tm);
-				break;
-			}
+				preTimerInfo( reinterpret_cast<TimerMessage*>(_msg) );
+			break;
 
 			case Message::SysCommand:
-			{
-				SystemMessage _sm( _msg );
-				sysCommand( &_sm );
-				break;
-			}
+				sysCommand( reinterpret_cast<SystemMessage*>(_msg) );
+			break;
 
 			default:
 				break;
@@ -244,7 +235,7 @@ void UObject_SK::processingMessage( UniSetTypes::VoidMessage* _msg )
 	}
 }
 // -----------------------------------------------------------------------------
-void UObject_SK::sysCommand( SystemMessage* _sm )
+void UObject_SK::sysCommand( const SystemMessage* _sm )
 {
 	switch( _sm->command )
 	{
@@ -314,7 +305,7 @@ bool UObject_SK::activateObject()
 	return true;
 }
 // -----------------------------------------------------------------------------
-void UObject_SK::preTimerInfo( UniSetTypes::TimerMessage* _tm )
+void UObject_SK::preTimerInfo( const UniSetTypes::TimerMessage* _tm )
 {
 	timerInfo(_tm);
 }
@@ -423,7 +414,7 @@ void UObject_SK::updateOutputs( bool _force )
 
 }
 // -----------------------------------------------------------------------------
-void UObject_SK::preSensorInfo( UniSetTypes::SensorMessage* _sm )
+void UObject_SK::preSensorInfo( const UniSetTypes::SensorMessage* _sm )
 {
 
 

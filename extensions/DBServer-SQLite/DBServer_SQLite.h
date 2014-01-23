@@ -147,13 +147,10 @@ class DBServer_SQLite:
         virtual void initDB( SQLiteInterface *db ){};
         virtual void initDBTableMap(DBTableMap& tblMap){};
 
-        virtual void processingMessage( UniSetTypes::VoidMessage *msg );
-        virtual void timerInfo( UniSetTypes::TimerMessage* tm );
-        virtual void sysCommand( UniSetTypes::SystemMessage* sm );
-
-        // Функции обработки пришедших сообщений
-        virtual void parse( UniSetTypes::SensorMessage* sm );
-        virtual void parse( UniSetTypes::ConfirmMessage* cmsg );
+        virtual void timerInfo( const UniSetTypes::TimerMessage* tm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
+        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm );
+        virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg );
 
         bool writeToBase( const string& query );
         virtual void init_dbserver();

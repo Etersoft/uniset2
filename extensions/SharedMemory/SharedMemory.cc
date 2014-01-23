@@ -134,75 +134,7 @@ SharedMemory::~SharedMemory()
 }
 
 // --------------------------------------------------------------------------------
-void SharedMemory::processingMessage( UniSetTypes::VoidMessage *msg )
-{
-    try
-    {
-        switch( msg->type )
-        {
-            case Message::SensorInfo:
-            {
-                SensorMessage sm( msg );
-                sensorInfo( &sm );
-                break;
-            }
-
-            case Message::SysCommand:
-            {
-                SystemMessage sm( msg );
-                sysCommand( &sm );
-                break;
-            }
-
-            case Message::Timer:
-            {
-                TimerMessage tm(msg);
-                timerInfo(&tm);
-                break;
-            }
-
-
-            default:
-                break;
-        }    
-    }
-    catch( Exception& ex )
-    {
-        dcrit  << myname << "(processingMessage): " << ex << endl;
-    }
-    catch(CORBA::SystemException& ex)
-    {
-        dcrit << myname << "(processingMessage): CORBA::SystemException: " << ex.NP_minorString() << endl;
-      }
-    catch(CORBA::Exception& ex)
-    {
-        dwarn << myname << "(processingMessage): CORBA::Exception: " << ex._name() << endl;
-    }
-    catch( omniORB::fatalException& fe ) 
-    {
-        if( dlog.is_crit() )
-        {
-            dlog.crit() << myname << "(processingMessage): Caught omniORB::fatalException:" << endl;
-            dlog.crit() << myname << "(processingMessage): file: " << fe.file()
-                << " line: " << fe.line()
-                << " mesg: " << fe.errmsg() << endl;
-        }
-    }
-    catch(...)
-    {
-        dcrit << myname << "(processingMessage): catch..." << endl;
-    }
-}
-
-// ------------------------------------------------------------------------------------------
-
-void SharedMemory::sensorInfo( SensorMessage *sm )
-{
-}
-
-// ------------------------------------------------------------------------------------------
-
-void SharedMemory::timerInfo( TimerMessage *tm )
+void SharedMemory::timerInfo( const TimerMessage *tm )
 {
     if( tm->id == tmHeartBeatCheck )
         checkHeartBeat();
@@ -228,8 +160,7 @@ void SharedMemory::timerInfo( TimerMessage *tm )
 }
 
 // ------------------------------------------------------------------------------------------
-
-void SharedMemory::sysCommand( SystemMessage *sm )
+void SharedMemory::sysCommand( const SystemMessage *sm )
 {
     switch( sm->command )
     {
@@ -237,7 +168,7 @@ void SharedMemory::sysCommand( SystemMessage *sm )
         {
             PassiveTimer ptAct(activateTimeout);
             while( !isActivated() && !ptAct.checkTime() )
-            {    
+            {
                 cout << myname << "(sysCommand): wait activate..." << endl;
                 msleep(100);
             }
@@ -258,11 +189,11 @@ void SharedMemory::sysCommand( SystemMessage *sm )
                 askTimer(tmPulsar,msecPulsar);
         }
         break;
-        
+
         case SystemMessage::FoldUp:
         case SystemMessage::Finish:
             break;
-        
+
         case SystemMessage::WatchDog:
             break;
 

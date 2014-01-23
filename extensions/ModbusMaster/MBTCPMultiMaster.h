@@ -227,7 +227,7 @@ class MBTCPMultiMaster:
         static void help_print( int argc, const char* const* argv );
 
     protected:
-        virtual void sysCommand( UniSetTypes::SystemMessage *sm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *sm );
         virtual void initIterators();
         virtual ModbusClient* initMB( bool reopen=false );
         void poll_thread();

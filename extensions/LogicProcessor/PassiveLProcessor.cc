@@ -88,7 +88,7 @@ void PassiveLProcessor::askSensors( UniversalIO::UIOCommand cmd )
     }
 }
 // -------------------------------------------------------------------------
-void PassiveLProcessor::sensorInfo( UniSetTypes::SensorMessage*sm )
+void PassiveLProcessor::sensorInfo( const UniSetTypes::SensorMessage*sm )
 {
     for( EXTList::iterator it=extInputs.begin(); it!=extInputs.end(); ++it )
     {
@@ -97,13 +97,13 @@ void PassiveLProcessor::sensorInfo( UniSetTypes::SensorMessage*sm )
     }
 }
 // -------------------------------------------------------------------------
-void PassiveLProcessor::timerInfo( UniSetTypes::TimerMessage *tm )
+void PassiveLProcessor::timerInfo( const UniSetTypes::TimerMessage *tm )
 {
     if( tm->id == tidStep )
         step();
 }
 // -------------------------------------------------------------------------
-void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
+void PassiveLProcessor::sysCommand( const UniSetTypes::SystemMessage *sm )
 {
     switch( sm->command )
     {
@@ -225,40 +225,3 @@ void PassiveLProcessor::sigterm( int signo )
     }
 }
 // -------------------------------------------------------------------------
-void PassiveLProcessor::processingMessage( UniSetTypes::VoidMessage* msg )
-{
-    try
-    {
-        switch( msg->type )
-        {
-            case Message::SensorInfo:
-            {
-                SensorMessage sm( msg );
-                sensorInfo( &sm );
-                break;
-            }
-
-            case Message::Timer:
-            {
-                TimerMessage tm(msg);
-                timerInfo(&tm);
-                break;
-            }
-
-            case Message::SysCommand:
-            {
-                SystemMessage sm( msg );
-                sysCommand( &sm );
-                break;
-            }
-
-            default:
-                break;
-        }
-    }
-    catch(Exception& ex)
-    {
-        dcrit  << myname << "(processingMessage): " << ex << endl;
-    }
-}
-// -----------------------------------------------------------------------------

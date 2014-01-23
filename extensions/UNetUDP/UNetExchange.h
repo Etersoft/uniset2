@@ -100,10 +100,9 @@ class UNetExchange:
         SMInterface* shm;
         void step();
 
-        virtual void processingMessage( UniSetTypes::VoidMessage *msg );
-        void sysCommand( UniSetTypes::SystemMessage *msg );
-        void sensorInfo( UniSetTypes::SensorMessage*sm );
-        void timerInfo( UniSetTypes::TimerMessage *tm );
+        void sysCommand( const UniSetTypes::SystemMessage *msg );
+        void sensorInfo( const UniSetTypes::SensorMessage*sm );
+        void timerInfo( const UniSetTypes::TimerMessage *tm );
         void askSensors( UniversalIO::UIOCommand cmd );
         void waitSMReady();
         void receiverEvent( UNetReceiver* r, UNetReceiver::Event ev );

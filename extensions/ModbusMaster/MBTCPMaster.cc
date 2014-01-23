@@ -53,6 +53,7 @@ pollThread(0)
     if( port <= 0 )
         throw UniSetTypes::SystemError(myname+"(MBMaster): Unknown inet port...(Use: " + tmp +")" );
 
+    dinfo << myname << "(init): gateway " << iaddr << ":" << port << endl;
 
     force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection",it.getProp("persistent_connection")) ? false : true;
     dinfo << myname << "(init): persisten-connection=" << (!force_disconnect) << endl;
@@ -127,7 +128,7 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
     return mbtcp;
 }
 // -----------------------------------------------------------------------------
-void MBTCPMaster::sysCommand( UniSetTypes::SystemMessage *sm )
+void MBTCPMaster::sysCommand( const UniSetTypes::SystemMessage *sm )
 {
     MBExchange::sysCommand(sm);
     if( sm->command == SystemMessage::StartUp )

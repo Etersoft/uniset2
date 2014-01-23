@@ -271,7 +271,7 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
                 if( removeConsumer(askIterator->second, cons) )
                 {
                     if( askIterator->second.empty() )
-                        askLst.erase(askIterator);    
+                        askLst.erase(askIterator);
                     else
                     {
                         try
@@ -414,6 +414,7 @@ void IONotifyController::send(ConsumerList& lst, UniSetTypes::SensorMessage& sm)
             if( maxAttemtps>0 &&  (--li->attempt <= 0) )
             {
                 li = lst.erase(li);
+                if( li == lst.end() ) --li;
                 break;
             }
 

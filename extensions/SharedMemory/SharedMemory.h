@@ -15,7 +15,7 @@
 
 
       \section sec_SM_Common Задачи решаемые объектом SharedMemory
-      
+
     Класс SharedMemory расширяет набор задач класса IONotifyController.
     Для ознакомления с базовыми функциями см. \ref page_IONotifyController
 
@@ -343,10 +343,8 @@ class SharedMemory:
         typedef std::list<Restorer_XML::ReaderSlot> ReadSlotList;
         ReadSlotList lstRSlot;
 
-        virtual void processingMessage( UniSetTypes::VoidMessage *msg );
-        virtual void sysCommand( UniSetTypes::SystemMessage *sm );
-        virtual void sensorInfo( UniSetTypes::SensorMessage *sm );
-        virtual void timerInfo( UniSetTypes::TimerMessage *tm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *sm );
+        virtual void timerInfo( const UniSetTypes::TimerMessage *tm );
         virtual void askSensors( UniversalIO::UIOCommand cmd );
         virtual void sendEvent( UniSetTypes::SystemMessage& sm );
 

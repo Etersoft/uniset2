@@ -84,25 +84,7 @@ DBServer_SQLite::~DBServer_SQLite()
     }
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_SQLite::processingMessage( UniSetTypes::VoidMessage *msg )
-{
-    DBServer::processingMessage(msg);
-
-    switch(msg->type)
-    {
-        case Message::Timer:
-        {
-            TimerMessage tm(msg);
-            timerInfo(&tm);
-            break;
-        }
-
-        default:
-            break;
-    }
-}
-//--------------------------------------------------------------------------------------------
-void DBServer_SQLite::sysCommand( UniSetTypes::SystemMessage *sm )
+void DBServer_SQLite::sysCommand( const UniSetTypes::SystemMessage *sm )
 {
     DBServer::sysCommand(sm);
 
@@ -130,7 +112,7 @@ void DBServer_SQLite::sysCommand( UniSetTypes::SystemMessage *sm )
     }
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_SQLite::parse( UniSetTypes::ConfirmMessage* cem )
+void DBServer_SQLite::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 {
     try
     {
@@ -212,7 +194,7 @@ void DBServer_SQLite::flushBuffer()
     }
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_SQLite::parse( UniSetTypes::SensorMessage *si )
+void DBServer_SQLite::sensorInfo( const UniSetTypes::SensorMessage *si )
 {
     try
     {
@@ -220,7 +202,7 @@ void DBServer_SQLite::parse( UniSetTypes::SensorMessage *si )
         if( !si->tm.tv_sec )
         {
             struct timezone tz;
-            gettimeofday(&si->tm,&tz);
+            gettimeofday(const_cast<struct timeval*>(&si->tm),&tz);
         }
 
         // см. DBTABLE AnalogSensors, DigitalSensors
@@ -349,7 +331,7 @@ void DBServer_SQLite::createTables( SQLiteInterface *db )
     }
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_SQLite::timerInfo( UniSetTypes::TimerMessage* tm )
+void DBServer_SQLite::timerInfo( const UniSetTypes::TimerMessage* tm )
 {
     switch( tm->id )
     {

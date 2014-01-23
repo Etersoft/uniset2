@@ -59,7 +59,6 @@ class UniSetActivator:
 
         virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("UniSetActivator"); }
 
-
     protected:
 
 
@@ -88,8 +87,7 @@ class UniSetActivator:
             return orb;
         }
 
-        virtual void processingMessage( UniSetTypes::VoidMessage *msg );
-        virtual void sysCommand( UniSetTypes::SystemMessage *sm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *sm );
 
     private:
 

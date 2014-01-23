@@ -74,9 +74,9 @@ class RRDServer:
         RRDServer();
 
         virtual void askSensors( UniversalIO::UIOCommand cmd );
-        virtual void sensorInfo( UniSetTypes::SensorMessage* sm );
-        virtual void timerInfo( UniSetTypes::TimerMessage* tm );
-        virtual void sysCommand( UniSetTypes::SystemMessage* sm );
+        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm );
+        virtual void timerInfo( const UniSetTypes::TimerMessage* tm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
 
         virtual void initRRD( xmlNode* cnode, int tmID );
         void step();

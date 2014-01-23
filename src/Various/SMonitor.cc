@@ -35,56 +35,12 @@ SMonitor::~SMonitor()
 {
 }
 // ------------------------------------------------------------------------------------------
-
-void SMonitor::processingMessage( UniSetTypes::VoidMessage *msg)
-{
-    try
-    {
-        switch(msg->type)
-        {
-            case Message::SensorInfo:
-            {
-//                cout << myname << "(sensorMessage): type="<< msg->type << " prior=" << msg->priority;
-//                cout << " sec=" << msg->tm.tv_sec << " usec=" << msg->tm.tv_usec << endl;
-                SensorMessage sm(msg);
-                sensorInfo(&sm);
-                break;
-            }
-
-            case Message::SysCommand:
-            {
-                SystemMessage sm(msg);
-                sysCommand(&sm);
-                break;
-            }
-
-            case Message::Timer:
-            {
-                TimerMessage tm(msg);
-                timerInfo(&tm);
-                break;
-            }
-
-            default:
-                cout << myname << ": неизвестное сообщение  "<<  msg->type << endl;
-            break;
-
-        }
-    }
-    catch(Exception& ex)
-    {
-        cerr << myname << ":(processing): " << ex << endl;
-    }
-    catch(...){}
-}
-
-// ------------------------------------------------------------------------------------------
 void SMonitor::sigterm( int signo )
 {
     cout << myname << "SMonitor: sigterm "<< endl;
 }
 // ------------------------------------------------------------------------------------------
-void SMonitor::sysCommand( SystemMessage *sm )
+void SMonitor::sysCommand( const SystemMessage *sm )
 {
     switch(sm->command)
     {
@@ -126,7 +82,7 @@ void SMonitor::sysCommand( SystemMessage *sm )
     }
 }
 // ------------------------------------------------------------------------------------------
-void SMonitor::sensorInfo( SensorMessage *si )
+void SMonitor::sensorInfo( const SensorMessage* si )
 {
     cout << "(" << setw(6) << si->id << "): " << setw(8) << timeToString(si->sm_tv_sec,":")
          << "(" << setw(6) << si->sm_tv_usec << "): ";
@@ -153,7 +109,7 @@ void SMonitor::sensorInfo( SensorMessage *si )
     }
 }
 // ------------------------------------------------------------------------------------------
-void SMonitor::timerInfo( UniSetTypes::TimerMessage *tm )
+void SMonitor::timerInfo( const UniSetTypes::TimerMessage *tm )
 {
 
 }

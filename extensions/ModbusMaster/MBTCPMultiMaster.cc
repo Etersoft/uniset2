@@ -259,7 +259,7 @@ bool MBTCPMultiMaster::MBSlaveInfo::init()
     return false;
 }
 // -----------------------------------------------------------------------------
-void MBTCPMultiMaster::sysCommand( UniSetTypes::SystemMessage *sm )
+void MBTCPMultiMaster::sysCommand( const UniSetTypes::SystemMessage *sm )
 {
     MBExchange::sysCommand(sm);
     if( sm->command == SystemMessage::StartUp )

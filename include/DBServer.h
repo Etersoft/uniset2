@@ -57,11 +57,7 @@ class DBServer:
     protected:
 
         virtual void processingMessage( UniSetTypes::VoidMessage* msg );
-        virtual void sysCommand( UniSetTypes::SystemMessage* sm ){};
-
-        // Функции обработки пришедших сообщений
-        virtual void parse( UniSetTypes::SensorMessage* sm ){};
-        virtual void parse( UniSetTypes::ConfirmMessage* cmsg ){};
+        virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ){}
 
         virtual bool activateObject();
         virtual void init_dbserver(){};
