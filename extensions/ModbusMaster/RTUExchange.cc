@@ -38,7 +38,7 @@ rs_pre_clean(false)
             prop_prefix = "";
     }
 
-    dlog.info() << myname << "(init): prop_prefix=" << prop_prefix << endl;
+    dinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
     UniXML_iterator it(cnode);
 
@@ -126,27 +126,27 @@ ModbusClient* RTUExchange::initMB( bool reopen )
 
         if( recv_timeout > 0 )
             mbrtu->setTimeout(recv_timeout);
-        
+
         mbrtu->setSleepPause(sleepPause_usec);
         mbrtu->setAfterSendPause(aftersend_pause);
 
-        dlog.info() << myname << "(init): dev=" << devname << " speed=" << ComPort::getSpeed( mbrtu->getSpeed() ) << endl;
+        dinfo << myname << "(init): dev=" << devname << " speed=" << ComPort::getSpeed( mbrtu->getSpeed() ) << endl;
     }
     catch( Exception& ex )
     {
         if( mbrtu )
             delete mbrtu;
         mbrtu = 0;
-        
-        dlog.warn() << myname << "(init): " << ex << endl;
+
+        dwarn << myname << "(init): " << ex << endl;
     }
     catch(...)
     {
         if( mbrtu )
             delete mbrtu;
         mbrtu = 0;
-        
-        dlog.info() << myname << "(init): catch...." << endl;
+
+        dinfo << myname << "(init): catch...." << endl;
     }
 
     mb = mbrtu;
@@ -217,18 +217,15 @@ void RTUExchange::poll()
             s = d->speed;
             mbrtu->setSpeed(d->speed);
         }
-        
+
         if( d->dtype == MBExchange::dtRTU188 )
         {
             if( !d->rtu )
                 continue;
 
-            if( dlog.debugging(Debug::LEVEL3) )
-            {
-                dlog[Debug::LEVEL3] << myname << "(pollRTU188): poll RTU188 "
+            dlog3 << myname << "(pollRTU188): poll RTU188 "
                     << " mbaddr=" << ModbusRTU::addr2str(d->mbaddr)
                     << endl;
-            }
 
             try
             {
@@ -242,19 +239,15 @@ void RTUExchange::poll()
             { 
                 if( d->resp_real )
                 {
-                    if( dlog.debugging(Debug::LEVEL3) )
-                    {
-                          dlog.crit() << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
+                    dlog3 << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
                             << " -> " << ex << endl;
-                    }                    
                     d->resp_real = false;
                 }
             }
         }
         else 
         {
-            if( dlog.debugging(Debug::LEVEL3) )
-                dlog[Debug::LEVEL3] << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr) 
+            dlog3 << myname << "(poll): ask addr=" << ModbusRTU::addr2str(d->mbaddr)
                 << " regs=" << d->regmap.size() << endl;
 
             d->resp_real = false;
@@ -274,13 +267,11 @@ void RTUExchange::poll()
                 { 
 //                    if( d->resp_real )
 //                    {
-                        if( dlog.debugging(Debug::LEVEL3) )
-                        {
-                             dlog[Debug::LEVEL3] << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
+                        dlog3 << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
                                 << " reg=" << ModbusRTU::dat2str(it->second->mbreg)
                                 << " for sensors: "; print_plist(dlog(Debug::LEVEL3), it->second->slst);
                                 dlog(Debug::LEVEL3) << " err: " << ex << endl;
-                        }
+
                 //        d->resp_real = false;
 //                    }
                 }
@@ -318,8 +309,7 @@ void RTUExchange::poll()
     if( allNotRespond && ptReopen.checkTime() )
     {
         uniset_mutex_lock l(pollMutex, 300);
-        if( dlog.is_warn() )
-            dlog.warn() << myname << ": REOPEN timeout..(" << ptReopen.getInterval() << ")" << endl;
+        dwarn << myname << ": REOPEN timeout..(" << ptReopen.getInterval() << ")" << endl;
 
         mb = initMB(true);
         ptReopen.reset();
@@ -347,7 +337,7 @@ RTUExchange* RTUExchange::init_rtuexchange( int argc, const char* const* argv, U
         return 0;
     }
 
-    dlog.info() << "(rtuexchange): name = " << name << "(" << ID << ")" << endl;
+    dinfo << "(rtuexchange): name = " << name << "(" << ID << ")" << endl;
     return new RTUExchange(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
@@ -359,7 +349,7 @@ bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
     RTUDeviceMap::iterator d = m.find(a);
     if( d == m.end() )
     {
-        dlog.warn() << myname << "(initDeviceInfo): not found device for addr=" << ModbusRTU::addr2str(a) << endl;
+        dwarn << myname << "(initDeviceInfo): not found device for addr=" << ModbusRTU::addr2str(a) << endl;
         return false;
     }
     
@@ -370,7 +360,7 @@ bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
         if( d->second->speed == ComPort::ComSpeed0 )
         {
             d->second->speed = defSpeed;
-            dlog.crit() << myname << "(initDeviceInfo): Unknown speed=" << s <<
+            dcrit << myname << "(initDeviceInfo): Unknown speed=" << s <<
                 " for addr=" << ModbusRTU::addr2str(a) << endl;
             return false;
         }

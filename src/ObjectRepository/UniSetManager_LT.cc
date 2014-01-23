@@ -59,9 +59,9 @@ void UniSetManager_LT::callback()
 
         sleepTime=lt.checkTimers(this);
     }
-    catch(Exception& ex)
+    catch( Exception& ex )
     {
-        ulog.crit() << myname << "(callback): " << ex << endl;
+        ucrit << myname << "(callback): " << ex << endl;
     }
 }
 // ------------------------------------------------------------------------------------------

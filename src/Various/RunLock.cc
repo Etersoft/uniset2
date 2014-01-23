@@ -71,8 +71,7 @@ bool RunLock::isLocked(const string& name)
                     }
                 }
 */                
-                if( ulog.is_info() )
-                    ulog.info() << "(RunLock): programm " << name << " already run" << endl;
+                uinfo << "(RunLock): programm " << name << " already run" << endl;
 
                 fclose(out);
                 closedir(d);

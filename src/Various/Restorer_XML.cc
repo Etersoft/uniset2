@@ -59,15 +59,14 @@ void Restorer_XML::setConsumerFilter( const string& field, const string& val )
 // -----------------------------------------------------------------------------
 bool Restorer_XML::getConsumerInfo( UniXML_iterator& it, 
                                         ObjectId& cid, ObjectId& cnode )
-{                                        
+{
     if( !check_consumer_item(it) )
         return false;
 
     string cname( it.getProp("name"));
     if( cname.empty() )
     {
-        if( ulog.is_warn() )
-            ulog.warn() << "(Restorer_XML:getConsumerInfo): не указано имя заказчика..." << endl;
+        uwarn << "(Restorer_XML:getConsumerInfo): не указано имя заказчика..." << endl;
         return false;
     }
 
@@ -80,23 +79,19 @@ bool Restorer_XML::getConsumerInfo( UniXML_iterator& it,
         cname = conf->getServicesSection()+"/"+cname;
     else
     {
-        if( ulog.is_warn() )
-        {
-            ulog.warn() << "(Restorer_XML:getConsumerInfo): неизвестный тип объекта " 
+        uwarn << "(Restorer_XML:getConsumerInfo): неизвестный тип объекта "
                             << otype << endl;
-        }
         return false;
     }
-        
+
     cid = conf->oind->getIdByName(cname);
     if( cid == UniSetTypes::DefaultObjectId )
     {
-        if( ulog.is_crit() )
-            ulog.crit() << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->" 
+        ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->"
                             << cname << endl;
         return false;
     }
-        
+
     string cnodename(it.getProp("node"));
     if( !cnodename.empty() )
     {
@@ -111,17 +106,12 @@ bool Restorer_XML::getConsumerInfo( UniXML_iterator& it,
 
     if( cnode == UniSetTypes::DefaultObjectId )
     {
-        if( ulog.is_crit() )
-            ulog.crit() << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->" 
+        ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->"
                             << cnodename << endl;
         return false;
     }
 
-    if( ulog.is_info() )
-    {
-        ulog.info() << "(Restorer_XML:getConsumerInfo): " 
-                << cname << ":" << cnodename << endl;
-    }
+    uinfo << "(Restorer_XML:getConsumerInfo): " << cname << ":" << cnodename << endl;
     return true;
 }
 // -----------------------------------------------------------------------------
@@ -147,7 +137,7 @@ xmlNode* Restorer_XML::find_node( UniXML& xml, xmlNode* root,
             {
                 if( nm.empty() )
                     return it;
-                
+
                 if( xml.getProp(it, "name") == nm )
                     return it;
             }

@@ -48,7 +48,7 @@ int main(int argc, const char **argv)
         IOControl* ic = IOControl::init_iocontrol(argc,argv,shmID);
         if( !ic )
         {
-            dlog.crit() << "(iocontrol): init не прошёл..." << endl;
+            dcrit << "(iocontrol): init не прошёл..." << endl;
             return 1;
         }
 
@@ -69,15 +69,15 @@ int main(int argc, const char **argv)
     }
     catch(SystemError& err)
     {
-        dlog.crit() << "(iocontrol): " << err << endl;
+        dcrit << "(iocontrol): " << err << endl;
     }
     catch(Exception& ex)
     {
-        dlog.crit() << "(iocontrol): " << ex << endl;
+        dcrit << "(iocontrol): " << ex << endl;
     }
     catch(...)
     {
-        dlog.crit() << "(iocontrol): catch(...)" << endl;
+        dcrit << "(iocontrol): catch(...)" << endl;
     }
 
     return 1;

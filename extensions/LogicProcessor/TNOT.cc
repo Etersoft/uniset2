@@ -21,10 +21,7 @@ void TNOT::setIn( int num, bool state )
 {
     bool prev = myout;
     myout = !state;
-    
-    if( dlog.is_info() )
-        dlog.info() << this << ": myout " << myout << endl;    
-    
+
     if( prev != myout )
         Element::setChildOut();
 }

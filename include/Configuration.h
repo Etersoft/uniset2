@@ -73,7 +73,7 @@ namespace UniSetTypes
         int getPIntField(const std::string& path, int def);
 
         xmlNode* findNode(xmlNode* node, const std::string& searchnode, const std::string& name="" );
-        
+
         // Получить узел
         xmlNode* getNode(const std::string& path);
         // Получить указанное свойство пути
@@ -92,7 +92,7 @@ namespace UniSetTypes
         inline ObjectId getLocalNode() const { return localNode; }        /*!< получение идентификатора локального узла */
         inline std::string getLocalNodeName() const { return localNodeName; }        /*!< получение название локального узла */
         inline const std::string getNSName() const { return NSName; }        
-    
+
         // repository
         inline std::string getRootSection() const { return secRoot; }
         inline std::string getSensorsSection() const { return secSensors; }
@@ -108,7 +108,7 @@ namespace UniSetTypes
         xmlNode* getXMLObjectNode( UniSetTypes::ObjectId );
         UniversalIO::IOType getIOType( UniSetTypes::ObjectId );
         UniversalIO::IOType getIOType( const std::string& name );
-    
+
         // net
         inline unsigned int getCountOfNet() const { return countOfNet; }
         inline unsigned int getRepeatTimeout() const { return repeatTimeout; }
@@ -136,7 +136,7 @@ namespace UniSetTypes
 
         inline bool isLocalIOR(){ return localIOR; }
         inline bool isTransientIOR(){ return transientIOR; }
-        
+
         /*! получить значение указанного параметра, или значение по умолчанию */
         std::string getArgParam(const std::string& name, const std::string& defval="");
         /*! получить числовое значение параметра, если не число, то 0. Если параметра нет, используется значение defval */
@@ -240,13 +240,28 @@ namespace UniSetTypes
     
     /*! Глобальный объект для вывода логов */
     extern DebugStream ulog;
-    
-    
+
     // Инициализация UniSetTypes::conf.
     // ( учитываются параметры командной строки --confile и --id-from-config )
     void uniset_init( int argc, const char* const* argv, const std::string& xmlfile="configure.xml" );
     
     
 }    // end of UniSetTypes namespace
-
+// --------------------------------------------------------------------------
+// "синтаксический сахар"..для логов
+#define uinfo if( UniSetTypes::ulog.debugging(Debug::INFO) ) UniSetTypes::ulog
+#define uwarn if( UniSetTypes::ulog.debugging(Debug::WARN) ) UniSetTypes::ulog
+#define ucrit if( UniSetTypes::ulog.debugging(Debug::CRIT) ) UniSetTypes::ulog
+#define ulog1 if( UniSetTypes::ulog.debugging(Debug::LEVEL1) ) UniSetTypes::ulog
+#define ulog2 if( UniSetTypes::ulog.debugging(Debug::LEVEL2) ) UniSetTypes::ulog
+#define ulog3 if( UniSetTypes::ulog.debugging(Debug::LEVEL3) ) UniSetTypes::ulog
+#define ulog4 if( UniSetTypes::ulog.debugging(Debug::LEVEL4) ) UniSetTypes::ulog
+#define ulog5 if( UniSetTypes::ulog.debugging(Debug::LEVEL5) ) UniSetTypes::ulog
+#define ulog6 if( UniSetTypes::ulog.debugging(Debug::LEVEL6) ) UniSetTypes::ulog
+#define ulog7 if( UniSetTypes::ulog.debugging(Debug::LEVEL7) ) UniSetTypes::ulog
+#define ulog8 if( UniSetTypes::ulog.debugging(Debug::LEVEL8) ) UniSetTypes::ulog
+#define ulog9 if( UniSetTypes::ulog.debugging(Debug::LEVEL9) ) UniSetTypes::ulog
+#define ulogsys if( UniSetTypes::ulog.debugging(Debug::SYSTEM) ) UniSetTypes::ulog
+#define ulogrep if( UniSetTypes::ulog.debugging(Debug::REPOSITORY) ) UniSetTypes::ulog
+// --------------------------------------------------------------------------
 #endif // Configuration_H_

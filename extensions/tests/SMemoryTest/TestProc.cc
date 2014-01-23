@@ -53,7 +53,7 @@ void TestProc::sysCommand( UniSetTypes::SystemMessage* sm )
 void TestProc::sensorInfo( SensorMessage *sm )
 {
 /*
-    dlog.level2() << myname << "(sensorInfo): id=" << sm->id << " val=" << sm->value 
+    mylog2 << myname << "(sensorInfo): id=" << sm->id << " val=" << sm->value
             << "  " << timeToString(sm->sm_tv_sec,":")
             << "(" << setw(6) << sm->sm_tv_usec << "): "
             << endl;
@@ -83,7 +83,7 @@ void TestProc::timerInfo( TimerMessage *tm )
     {
         state^=true;
         out_lamp_c = ( state ? lmpBLINK : lmpOFF );
-        dlog.level2() << myname << ": state=" << state << " lmp=" << out_lamp_c << endl;
+        mylog2 << myname << ": state=" << state << " lmp=" << out_lamp_c << endl;
         askTimer(tmCheckWorking,checkTime); // reset timer
     }
     else if( tm->id == tmCheckWorking )
@@ -102,7 +102,7 @@ void TestProc::timerInfo( TimerMessage *tm )
         cerr << "======= TEST LOG PRINT ======" << endl;
         cerr << "LOGLEVEL: [" << (int)(*lit) << "] " << (*lit) << endl;
         for( std::vector<Debug::type>::iterator it=loglevels.begin(); it!=loglevels.end(); ++it )
-            dlog[*it] << myname << ": test log print..." << endl;
+            mylog[*it] << myname << ": test log print..." << endl;
 
         cerr << "======= END LOG PRINT ======" << endl;
     }
@@ -166,7 +166,7 @@ void TestProc::test_thresholds()
     }
     catch( Exception& ex )
     {
-        dlog.level2() << myname << ": CHECK 'ask and get threshold' FAILED: " << ex << endl;
+        mylog2 << myname << ": CHECK 'ask and get threshold' FAILED: " << ex << endl;
     }
 }
 // -----------------------------------------------------------------------------

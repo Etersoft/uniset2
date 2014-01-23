@@ -54,7 +54,7 @@ int main( int argc, const char** argv )
         RRDServer* db = RRDServer::init_rrdstorage(argc,argv,shmID);
         if( !db )
         {
-            dlog.crit() << "(rrdstorage): init не прошёл..." << endl;
+            dcrit << "(rrdstorage): init не прошёл..." << endl;
             return 1;
         }
 
@@ -73,11 +73,11 @@ int main( int argc, const char** argv )
     }
     catch( UniSetTypes::Exception& ex )
     {
-        dlog.crit() << "(rrdstorage): " << ex << std::endl;
+        dcrit << "(rrdstorage): " << ex << std::endl;
     }
     catch(...)
     {
-        dlog.crit() << "(rrdstorage): catch ..." << std::endl;
+        dcrit << "(rrdstorage): catch ..." << std::endl;
     }
 
     return 1;

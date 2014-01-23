@@ -152,20 +152,17 @@ void DBServer_MySQL::parse( UniSetTypes::ConfirmMessage* cem )
 
         if( !writeToBase(data.str()) )
         {
-            if( ulog.is_crit() )
-                ulog.crit() << myname << "(update_confirm):  db error: "<< db->error() << endl;
+            ucrit << myname << "(update_confirm):  db error: "<< db->error() << endl;
             db->freeResult();
         }
     }
     catch( Exception& ex )
     {
-        if( ulog.is_crit() )
-            ulog.crit() << myname << "(update_confirm): " << ex << endl;
+        ucrit << myname << "(update_confirm): " << ex << endl;
     }
     catch( ... )
     {
-        if( ulog.is_crit() )
-            ulog.crit() << myname << "(update_confirm):  catch..." << endl;
+        ucrit << myname << "(update_confirm):  catch..." << endl;
     }
 }
 //--------------------------------------------------------------------------------------------
@@ -188,8 +185,7 @@ bool DBServer_MySQL::writeToBase( const string& query )
 
             qbuf.pop();
 
-            if( ulog.is_crit() )
-                ulog.crit() << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
+            ucrit << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
                         << ") overflow! lost query: " << qlost << endl;
         }
         return false;
@@ -231,11 +227,9 @@ void DBServer_MySQL::flushBuffer()
         string err(db->error());
         if( err.empty() )
             db->freeResult();
-        else if( ulog.is_crit() )
-        {
-            ulog.crit() << myname << "(writeToBase): error: " << err <<
+        else
+            ucrit << myname << "(writeToBase): error: " << err <<
                 " lost query: " << qbuf.front() << endl;
-        }
 
         qbuf.pop();
     }
@@ -269,20 +263,17 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 
         if( !writeToBase(data.str()) )
         {
-            if( ulog.is_crit() )
-                ulog.crit() << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
+            ucrit << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
             db->freeResult();
         }
     }
     catch( Exception& ex )
     {
-        if( ulog.is_crit() )
-            ulog.crit() << myname << "(insert_main_history): " << ex << endl;
+        ucrit << myname << "(insert_main_history): " << ex << endl;
     }
     catch( ... )
     {
-        if( ulog.is_crit() )
-            ulog.crit() << myname << "(insert_main_history): catch ..." << endl;
+        ucrit << myname << "(insert_main_history): catch ..." << endl;
     }
 }
 //--------------------------------------------------------------------------------------------
@@ -346,8 +337,7 @@ void DBServer_MySQL::init_dbserver()
     if( !db->connect(dbnode, user, password, dbname) )
     {
 //        ostringstream err;
-        if( ulog.is_crit() )
-            ulog.crit() << myname
+        ucrit << myname
             << "(init): DB connection error: "
             << db->error() << endl;
 //        throw Exception( string(myname+"(init): не смогли создать соединение с БД "+db->error()) );
@@ -372,8 +362,7 @@ void DBServer_MySQL::createTables( DBInterface *db )
     UniXML_iterator it( conf->getNode("Tables") );
     if(!it)
     {
-        if( ulog.is_crit() )
-            ulog.crit() << myname << ": section <Tables> not found.."<< endl;
+        ucrit << myname << ": section <Tables> not found.."<< endl;
         throw Exception();
     }
 
@@ -385,8 +374,8 @@ void DBServer_MySQL::createTables( DBInterface *db )
                 ulog[DBLogInfoLevel] << myname  << "(createTables): create " << it.getName() << endl;
             ostringstream query;
             query << "CREATE TABLE " << conf->getProp(it,"name") << "(" << conf->getProp(it,"create") << ")";
-            if( !db->query(query.str()) && ulog.is_crit() )
-                ulog.crit() << myname << "(createTables): error: \t\t" << db->error() << endl;
+            if( !db->query(query.str()) )
+                ucrit << myname << "(createTables): error: \t\t" << db->error() << endl;
         }
     }    
 }
@@ -399,8 +388,7 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
         {
             if( !db->ping() )
             {
-                if( ulog.is_warn() )
-                    ulog.warn() << myname << "(timerInfo): DB lost connection.." << endl;
+                uwarn << myname << "(timerInfo): DB lost connection.." << endl;
                 connect_ok = false;
                 askTimer(DBServer_MySQL::PingTimer,0);
                 askTimer(DBServer_MySQL::ReconnectTimer,ReconnectTime);
@@ -427,8 +415,7 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
                     askTimer(DBServer_MySQL::PingTimer,PingTime);
                 }
                 connect_ok = false;
-                if( ulog.is_warn() )
-                    ulog.warn() << myname << "(timerInfo): DB no connection.." << endl;
+                uwarn << myname << "(timerInfo): DB no connection.." << endl;
             }
             else
                 init_dbserver();
@@ -436,8 +423,7 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
         break;
 
         default:
-            if( ulog.is_warn() )
-                ulog.warn() << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
+            uwarn << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
         break;
     }
 }

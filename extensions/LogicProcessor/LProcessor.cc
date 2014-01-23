@@ -35,15 +35,15 @@ void LProcessor::execute( const string& lfile )
         }
         catch( LogicException& ex )
         {
-            dlog.crit() << logname << "(execute): " << ex << endl;
+            dcrit << logname << "(execute): " << ex << endl;
         }
         catch( Exception& ex )
         {
-            dlog.crit() << logname << "(execute): " << ex << endl;
+            dcrit << logname << "(execute): " << ex << endl;
         }
         catch(...)
         {
-            dlog.crit() << logname << "(execute): catch...\n";
+            dcrit << logname << "(execute): catch...\n";
         }
         msleep(sleepTime);
     }
@@ -67,10 +67,10 @@ void LProcessor::build( const string& lfile )
         UniSetTypes::ObjectId sid = conf->getSensorID(it->name);
         if( sid == DefaultObjectId )
         {
-            dlog.crit() << "НЕ НАЙДЕН ИДЕНТИФИКАТОР ДАТЧИКА: " << it->name << endl;
-            continue;    
+            dcrit << "НЕ НАЙДЕН ИДЕНТИФИКАТОР ДАТЧИКА: " << it->name << endl;
+            continue;
         }
-        
+
         EXTInfo ei;
         ei.sid = sid;
         ei.state = false;
@@ -78,7 +78,7 @@ void LProcessor::build( const string& lfile )
         ei.iotype = conf->getIOType(sid);
         if( ei.iotype == UniversalIO::UnknownIOType )
         {
-            dlog.crit() << "Unkown iotype for sid=" << sid << "(" << it->name << ")" << endl;
+            dcrit << "Unkown iotype for sid=" << sid << "(" << it->name << ")" << endl;
             continue;    
         }    
         extInputs.push_front(ei);
@@ -89,7 +89,7 @@ void LProcessor::build( const string& lfile )
         UniSetTypes::ObjectId sid = conf->getSensorID(it->name);
         if( sid == DefaultObjectId )
         {
-            dlog.crit() << "НЕ НАЙДЕН ИДЕНТИФИКАТОР ВЫХОДА: " << it->name << endl;
+            dcrit << "НЕ НАЙДЕН ИДЕНТИФИКАТОР ВЫХОДА: " << it->name << endl;
             continue;
         }
 
@@ -99,9 +99,9 @@ void LProcessor::build( const string& lfile )
         ei.iotype = conf->getIOType(sid);
         if( ei.iotype == UniversalIO::UnknownIOType )
         {
-            dlog.crit() << "Unkown iotype for sid=" << sid << "(" << it->name << ")" << endl;
-            continue;    
-        }    
+            dcrit << "Unkown iotype for sid=" << sid << "(" << it->name << ")" << endl;
+            continue;
+        }
 
         extOuts.push_front(ei);
     }
@@ -147,11 +147,11 @@ void LProcessor::setOuts()
         }
         catch( Exception& ex )
         {
-            dlog.crit() << "(LProcessor::setOuts): " << ex << endl;
+            dcrit << "(LProcessor::setOuts): " << ex << endl;
         }
         catch(...)
         {
-            dlog.crit() << "(LProcessor::setOuts): catch...\n";
+            dcrit << "(LProcessor::setOuts): catch...\n";
         }
     }
 }

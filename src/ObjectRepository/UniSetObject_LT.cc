@@ -61,7 +61,7 @@ void UniSetObject_LT::callback()
     }
     catch(Exception& ex)
     {
-        ulog.crit() << myname << "(callback): " << ex << endl;
+        ucrit << myname << "(callback): " << ex << endl;
     }
 }
 // ------------------------------------------------------------------------------------------

@@ -90,7 +90,7 @@
 			</xsl:when>
 			<xsl:when test="$GENTYPE='CHECK'">
 				<xsl:if test="normalize-space(@no_check_id)!='1'">
-				<xsl:if test="normalize-space(../../@id)=''">if( ulog.is_warn() ) ulog.warn() &lt;&lt; myname &lt;&lt; ": Not found (Message)OID for mid_<xsl:value-of select="normalize-space(../../@name)"/>" &lt;&lt; endl;
+				<xsl:if test="normalize-space(../../@id)=''">uwarn &lt;&lt; myname &lt;&lt; ": Not found (Message)OID for mid_<xsl:value-of select="normalize-space(../../@name)"/>" &lt;&lt; endl;
 				</xsl:if>
 				</xsl:if>
 			</xsl:when>
@@ -101,8 +101,7 @@
 			<xsl:when test="$GENTYPE='A'">
 			if( _code == mid_<xsl:value-of select="../../@name"/> )
 			{				
-                if( ulog.is_level8() )
-                    ulog.level8() &lt;&lt; "<xsl:value-of select="../../@name"/>" &lt;&lt; endl;
+                ulog8 &lt;&lt; "<xsl:value-of select="../../@name"/>" &lt;&lt; endl;
 				m_<xsl:value-of select="../../@name"/> = _state;
 				try
 				{
@@ -126,8 +125,7 @@
 					}
 					catch( UniSetTypes::Exception&amp; ex )
 					{
-                        if( ulog.is_level1() )
-                            ulog.level1() &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
+                        ulog1 &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
 					}
 				}
 			</xsl:when>
@@ -165,8 +163,22 @@
 		void updateValues();
 		void setMsg( UniSetTypes::ObjectId code, bool state );
 
-		DebugStream dlog;
-		void init_dlog(DebugStream&amp; dlog);
+		DebugStream mylog;
+		void init_dlog( DebugStream&amp; d );
+
+        // "синтаксический сахар"..для логов
+        #define myinfo if( mylog.debugging(Debug::INFO) ) mylog
+        #define mywarn if( mylog.debugging(Debug::WARN) ) mylog
+        #define mycrit if( mylog.debugging(Debug::CRIT) ) mylog
+        #define mylog1 if( mylog.debugging(Debug::LEVEL1) ) mylog
+        #define mylog2 if( mylog.debugging(Debug::LEVEL2) ) mylog
+        #define mylog3 if( mylog.debugging(Debug::LEVEL3) ) mylog
+        #define mylog4 if( mylog.debugging(Debug::LEVEL4) ) mylog
+        #define mylog5 if( mylog.debugging(Debug::LEVEL5) ) mylog
+        #define mylog6 if( mylog.debugging(Debug::LEVEL6) ) mylog
+        #define mylog7 if( mylog.debugging(Debug::LEVEL7) ) mylog
+        #define mylog8 if( mylog.debugging(Debug::LEVEL8) ) mylog
+        #define mylog9 if( mylog.debugging(Debug::LEVEL9) ) mylog
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PROTECTED">
@@ -238,7 +250,7 @@
 // ------------------------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::init_dlog( DebugStream&amp; d )
 {
-	<xsl:value-of select="$CLASSNAME"/>_SK::dlog = d;
+	<xsl:value-of select="$CLASSNAME"/>_SK::mylog = d;
 }
 // ------------------------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::VoidMessage* _msg )
@@ -272,9 +284,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::Voi
 				break;
 		}	
 	}
-	catch(Exception&amp; ex)
+	catch( Exception&amp; ex )
 	{
-		cout  &lt;&lt; myname &lt;&lt; "(processingMessage): " &lt;&lt; ex &lt;&lt; endl;
+		ucrit  &lt;&lt; myname &lt;&lt; "(processingMessage): " &lt;&lt; ex &lt;&lt; endl;
 	}
 }
 // -----------------------------------------------------------------------------
@@ -286,8 +298,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* _sm )
 			ulog &lt;&lt; myname &lt;&lt; "(sysCommand): WatchDog" &lt;&lt; endl;
 			if( !active || !ptStartUpTimeout.checkTime() )
 			{
-                if( ulog.is_warn() )
-                    ulog.warn() &lt;&lt; myname &lt;&lt; "(sysCommand): игнорируем WatchDog, потому-что только-что стартанули" &lt;&lt; endl;
+                uwarn &lt;&lt; myname &lt;&lt; "(sysCommand): игнорируем WatchDog, потому-что только-что стартанули" &lt;&lt; endl;
 				break;
 			}
 		case SystemMessage::StartUp:
@@ -313,12 +324,12 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( SystemMessage* _sm )
 		case SystemMessage::LogRotate:
 		{
 			// переоткрываем логи
-			ulog &lt;&lt; myname &lt;&lt; "(sysCommand): logRotate" &lt;&lt; endl;
-			string fname( ulog.getLogFile() );
+			mylog &lt;&lt; myname &lt;&lt; "(sysCommand): logRotate" &lt;&lt; endl;
+			string fname( mylog.getLogFile() );
 			if( !fname.empty() )
 			{
-				ulog.logFile(fname.c_str());
-				ulog &lt;&lt; myname &lt;&lt; "(sysCommand): ***************** ulog LOG ROTATE *****************" &lt;&lt; endl;
+				mylog.logFile(fname.c_str());
+				mylog &lt;&lt; myname &lt;&lt; "(sysCommand): ***************** mylog LOG ROTATE *****************" &lt;&lt; endl;
 			}
 		}
 		break;
@@ -375,12 +386,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 	if( _testID == DefaultObjectId )
 		return;
 		
-	if( ulog.is_info() )
-	{
-		ulog.info() &lt;&lt; myname &lt;&lt; "(waitSM): waiting SM ready " 
+	uinfo &lt;&lt; myname &lt;&lt; "(waitSM): waiting SM ready "
 			&lt;&lt; wait_msec &lt;&lt; " msec"
 			&lt;&lt; " testID=" &lt;&lt; _testID &lt;&lt; endl;
-	}
 		
 	if( !ui.waitReady(_testID,wait_msec) )
 	{
@@ -389,8 +397,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; "(waitSM): Не дождались готовности(exist) SharedMemory к работе в течение " 
 			&lt;&lt; wait_msec &lt;&lt; " мсек";
 
-        if( ulog.is_crit() )
-            ulog.crit() &lt;&lt; err.str() &lt;&lt; endl;
+        ucrit &lt;&lt; err.str() &lt;&lt; endl;
 		terminate();
 		abort();
 		// kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
@@ -407,8 +414,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 				&lt;&lt; "(waitSM): Не дождались готовности(work) SharedMemory к работе в течение " 
 				&lt;&lt; wait_msec &lt;&lt; " мсек";
 	
-            if( ulog.is_crit() )
-                ulog.crit() &lt;&lt; err.str() &lt;&lt; endl;
+            ucrit &lt;&lt; err.str() &lt;&lt; endl;
 			terminate();
 			abort();
 			// kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
@@ -534,7 +540,7 @@ askPause(2000),
 </xsl:for-each>
 end_private(false)
 {
-	ulog.crit() &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
+	ucrit &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
 	throw Exception( string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
@@ -710,16 +716,14 @@ end_private(false)
 	<xsl:if test="normalize-space(@min)!=''">
 	if( <xsl:value-of select="@name"/> &lt; <xsl:value-of select="@min"/> )
 	{
-        if( ulog.is_warn() )
-            ulog.warn() &lt;&lt; myname &lt;&lt; ": RANGE WARNING: <xsl:value-of select="@name"/>=" &lt;&lt; <xsl:value-of select="@name"/> &lt;&lt; " &lt; <xsl:value-of select="@min"/>" &lt;&lt; endl;
+        uwarn &lt;&lt; myname &lt;&lt; ": RANGE WARNING: <xsl:value-of select="@name"/>=" &lt;&lt; <xsl:value-of select="@name"/> &lt;&lt; " &lt; <xsl:value-of select="@min"/>" &lt;&lt; endl;
 		<xsl:if test="normalize-space(@no_range_exception)=''">throw UniSetTypes::SystemError(myname+"(init): <xsl:value-of select="@name"/> &lt; <xsl:value-of select="@min"/>");</xsl:if>
 	}
 	</xsl:if>
 	<xsl:if test="normalize-space(@max)!=''">
 	if( <xsl:value-of select="@name"/> &gt; <xsl:value-of select="@max"/> )
 	{
-        if( ulog.is_warn() )
-            ulog.warn() &lt;&lt; myname &lt;&lt; ": RANGE WARNING: <xsl:value-of select="@name"/>=" &lt;&lt; <xsl:value-of select="@name"/> &lt;&lt; " &gt; <xsl:value-of select="@max"/>" &lt;&lt; endl;
+        uwarn &lt;&lt; myname &lt;&lt; ": RANGE WARNING: <xsl:value-of select="@name"/>=" &lt;&lt; <xsl:value-of select="@name"/> &lt;&lt; " &gt; <xsl:value-of select="@max"/>" &lt;&lt; endl;
 		<xsl:if test="normalize-space(@no_range_exception)=''">throw UniSetTypes::SystemError(myname+"(init): <xsl:value-of select="@name"/> &gt; <xsl:value-of select="@max"/>");</xsl:if>
 	}
 	</xsl:if>
@@ -777,29 +781,18 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-        if( ulog.is_crit() )
-            ulog.crit()  &lt;&lt; getName()
+        ucrit  &lt;&lt; getName()
 				&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId" 
 				&lt;&lt; endl;
 		return false;	
 	}
 
-    if( ulog.is_level1() )
-    {
-        ulog.level1()  &lt;&lt; getName()  &lt;&lt; "(alarm): ";
-        if( _state )
-            ulog.level1(false) &lt;&lt; "SEND ";
-        else
-            ulog.level1(false) &lt;&lt; "RESET ";
-	
-        ulog.level1(false) &lt;&lt; endl;
-    }
+    ulog1 &lt;&lt; getName()  &lt;&lt; "(alarm): " &lt;&lt; ( _state ? "SEND " : "RESET " ) &lt;&lt; endl;
 	
 	<xsl:for-each select="//msgmap/item">
 	if( _code == <xsl:value-of select="@name"/> )
 	{		
-        if( ulog.is_level1() )		
-            ulog.level1() &lt;&lt; "<xsl:value-of select="@name"/>" &lt;&lt; endl;
+        ulog1 &lt;&lt; "<xsl:value-of select="@name"/>" &lt;&lt; endl;
 		try
 		{
 			m_<xsl:value-of select="@name"/> = _state;
@@ -814,8 +807,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 	}
 	</xsl:for-each>
 	
-    if( ulog.is_level1() )
-        ulog.level1() &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
+    ulog1 &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
 	return false;
 }
 // -----------------------------------------------------------------------------
@@ -834,8 +826,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 		}
 		catch( UniSetTypes::Exception&amp; ex )
 		{
-            if( ulog.is_level1() )
-                ulog.level1() &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
+            ulog1 &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
 		}
 	}
 </xsl:for-each>
@@ -893,7 +884,7 @@ confnode(0),
 activated(false),
 askPause(2000)
 {
-	ulog.crit() &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
+	ucrit &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
 	throw Exception( string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
@@ -1055,22 +1046,13 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-        if( ulog.is_crit() )
-            ulog.crit()  &lt;&lt; getName()
+        ucrit  &lt;&lt; getName()
 				&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId" 
 				&lt;&lt; endl;
 		return false;	
 	}
 
-    if( ulog.is_level1() )
-    {
-        ulog.level1()  &lt;&lt; getName()  &lt;&lt; "(alarm): ";
-        if( _state )
-            ulog.level1(false) &lt;&lt; "SEND (" &lt;&lt; _code &lt;&lt; ")";
-        else
-            ulog.level1(false) &lt;&lt; "RESET (" &lt;&lt; _code &lt;&lt; ")";
-    }
-
+    ulog1 &lt;&lt; getName()  &lt;&lt; "(alarm): (" &lt;&lt; _code  &lt;&lt; ")"  &lt;&lt; ( _state ? "SEND" : "RESET" ) &lt;&lt; endl;
 
 <xsl:for-each select="//sensors/item">
 	<xsl:call-template name="setmsg">
@@ -1078,8 +1060,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 	</xsl:call-template>
 </xsl:for-each>
 	
-    if( ulog.is_level8() )
-        ulog.level8() &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
+    ulog8 &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
 	return false;
 }
 // -----------------------------------------------------------------------------

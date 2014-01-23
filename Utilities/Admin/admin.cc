@@ -446,9 +446,9 @@ int omap()
         conf->oind->printMap(cout);
         cout << "==========================================================================\n";    
     }
-    catch(Exception& ex)
+    catch( Exception& ex )
     {
-        ulog.crit() << " configuration init  FAILED!!! \n";
+        ucrit << " configuration init failed: " << ex << endl;
         return 1;
     }
     return 0;

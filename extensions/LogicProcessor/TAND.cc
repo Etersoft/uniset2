@@ -43,13 +43,12 @@ void TAND::setIn( int num, bool state )
             break;
         }
     }
-    
+
     if( !brk )
         myout = true;
 
-    if( dlog.is_info() )
-            dlog.info() << this << ": myout " << myout << endl;    
-    
+    dinfo << this << ": myout " << myout << endl;
+
     if( prev != myout )
         Element::setChildOut();
 }

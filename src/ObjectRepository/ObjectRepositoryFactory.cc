@@ -64,14 +64,13 @@ bool ObjectRepositoryFactory::createSection( const char* name, const char* in_se
         throw ( InvalidObjectName(err.str().c_str()) );
     }
 
-    ulog.repository() << "CreateSection: name = "<< name << "  in section = " << in_section << endl;
+    ulogrep << "CreateSection: name = "<< name << "  in section = " << in_section << endl;
     if( sizeof(in_section)==0 )
     {
-        if( ulog.repository() )
-            ulog.repository() << "CreateSection: in_section=0"<< endl;
+        ulogrep << "CreateSection: in_section=0"<< endl;
         return createRootSection(name);
     }
-    
+
     int argc(uconf->getArgc());
     const char * const* argv(uconf->getArgv());
     CosNaming::NamingContext_var ctx = ORepHelpers::getContext(in_section, argc, argv, uconf->getNSName() );
@@ -93,16 +92,13 @@ bool ObjectRepositoryFactory::createSectionF(const string& fullName)throw(ORepFa
     string name(ObjectIndex::getBaseName(fullName));
     string sec(ORepHelpers::getSectionName(fullName));
 
-    ulog.repository() << name << endl;
-    ulog.repository() << sec << endl;
+    ulogrep << name << endl;
+    ulogrep << sec << endl;
 
     if ( sec.empty() )
     {
-        if( ulog.repository() )
-        {
-            ulog.repository() << "SectionName is empty!!!"<< endl;
-            ulog.repository() << "Добавляем в "<< uconf->getRootSection() << endl;
-        }
+        ulogrep << "SectionName is empty!!!"<< endl;
+        ulogrep << "Добавляем в "<< uconf->getRootSection() << endl;
         return createSection(name, uconf->getRootSection());
     }
     else
@@ -129,59 +125,48 @@ bool ObjectRepositoryFactory::createContext(const char *cname, CosNaming::Naming
     CosNaming::Name_var nc = omniURI::stringToName(cname);
     try
     {
-        if( ulog.repository() )
-            ulog.repository() << "ORepFactory(createContext): создаю новый контекст "<< cname << endl;
+        ulogrep << "ORepFactory(createContext): создаю новый контекст "<< cname << endl;
         ctx->bind_new_context(nc);
-        if( ulog.repository() )
-            ulog.repository() << "ORepFactory(createContext): создал. " << endl;
+        ulogrep << "ORepFactory(createContext): создал. " << endl;
         return true;
     }
     catch(const CosNaming::NamingContext::AlreadyBound &ab)
     {
 //        ctx->resolve(nc);
-        if( ulog.repository() )
-            ulog.repository() <<"ORepFactory(createContext): context "<< cname << " уже есть"<< endl;        
+        ulogrep << "ORepFactory(createContext): context "<< cname << " уже есть"<< endl;
         return true;
     }
     catch(CosNaming::NamingContext::NotFound)
     {
-        if( ulog.repository() )
-            ulog.repository() <<"ORepFactory(createContext): NotFound "<< cname << endl;        
+        ulogrep << "ORepFactory(createContext): NotFound "<< cname << endl;
         throw NameNotFound();
     }
     catch(const CosNaming::NamingContext::InvalidName &nf)
     {
-        if( ulog.is_warn() )
-            ulog.warn() << "ORepFactory(createContext): (InvalidName)  " << cname;
+        uwarn << "ORepFactory(createContext): (InvalidName)  " << cname;
     }
     catch(const CosNaming::NamingContext::CannotProceed &cp)
     {
-        if( ulog.is_crit() )
-            ulog.warn() << "ORepFactory(createContext): catch CannotProced " 
+        uwarn << "ORepFactory(createContext): catch CannotProced "
                 << cname << " bad part="
                 << omniURI::nameToString(cp.rest_of_name);
         throw NameNotFound();
     }
     catch( CORBA::SystemException& ex)
     {
-        if( ulog.is_crit() )
-            ulog.crit() << "ORepFactory(createContext): CORBA::SystemException: "
-                    << ex.NP_minorString() << endl;
+        ucrit << "ORepFactory(createContext): CORBA::SystemException: "
+              << ex.NP_minorString() << endl;
     }
     catch(CORBA::Exception&)
     {
-        if( ulog.is_crit() )
-            ulog.crit() << "поймали CORBA::Exception." << endl;
+        ucrit << "поймали CORBA::Exception." << endl;
     }
     catch(omniORB::fatalException& fe)
     {
-        if( ulog.is_crit() )
-        {
-            ulog.crit() << "поймали omniORB::fatalException:" << endl;
-            ulog.crit() << "  file: " << fe.file() << endl;
-            ulog.crit() << "  line: " << fe.line() << endl;
-            ulog.crit() << "  mesg: " << fe.errmsg() << endl;
-        }
+       ucrit << "поймали omniORB::fatalException:" << endl;
+       ucrit << "  file: " << fe.file() << endl;
+       ucrit << "  line: " << fe.line() << endl;
+       ucrit << "  mesg: " << fe.errmsg() << endl;
     }
 
     return false;
@@ -264,22 +249,22 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
         }
         else if( bl[i].binding_type == CosNaming::ncontext)
         {
-            
+
             if( recursive )
             {
-                ulog.repository() << "ORepFactory: удаляем рекурсивно..." << endl;
+                ulogrep << "ORepFactory: удаляем рекурсивно..." << endl;
                 string rctx = fullName+"/"+omniURI::nameToString(bl[i].binding_name);
-                ulog.repository() << rctx << endl;
+                ulogrep << rctx << endl;
                 if ( !removeSection(rctx))
                 {
-                    ulog.repository() << "рекурсивно удалить не удалось" << endl;
+                    ulogrep << "рекурсивно удалить не удалось" << endl;
                     rem = false;
                 }
             }
             else
             {
-                ulog.repository() << "ORepFactory: " << omniURI::nameToString(bl[i].binding_name) << " - контекст!!! ";
-                ulog.repository() << "ORepFactory: пока не удаляем" << endl;
+                ulogrep << "ORepFactory: " << omniURI::nameToString(bl[i].binding_name) << " - контекст!!! ";
+                ulogrep << "ORepFactory: пока не удаляем" << endl;
                 rem = false;
             }
         }
@@ -305,17 +290,17 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
         }
         catch(const CosNaming::NamingContext::NotEmpty &ne)
         {
-            ulog.repository() << "ORepFactory: контекст" << fullName << " не пустой " << endl;
-            rem = false;                
+            ulogrep << "ORepFactory: контекст" << fullName << " не пустой " << endl;
+            rem = false;
         }
         catch( ORepFailed )
         {
-            ulog.repository() << "ORepFactory: не удаось получить ссылку на контекст " << in_sec << endl;
+            ulogrep << "ORepFactory: не удаось получить ссылку на контекст " << in_sec << endl;
             rem=false;
         }
     }
 
-    
+
     bi->destroy(); // ??
     return rem;
 }
@@ -335,9 +320,7 @@ bool ObjectRepositoryFactory::renameSection( const string& newFName, const strin
     string in_sec(ORepHelpers::getSectionName(newFName));
 
     try
-    {    
-//        ulog.repository() << "ORepFactory: в контексте "<< in_sec << endl; 
-//        ulog.repository() << "ORepFactory: переименовываем " << oldFName << " в " << newFName << endl;                
+    {
         int argc(uconf->getArgc());
         const char * const* argv(uconf->getArgv());
         CosNaming::NamingContext_var in_ctx = ORepHelpers::getContext(in_sec, argc, argv, nsName);    

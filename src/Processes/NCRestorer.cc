@@ -65,8 +65,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
                 break;
     
                 default:
-                    if( ulog.is_crit() )
-                        ulog.crit() << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА! -> "
+                    ucrit << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА! -> "
                                     << conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
                     return;
                 break;
@@ -85,8 +84,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
         break;
 
         default:
-            if( ulog.is_crit() )
-                ulog.crit() << ic->getName() << "(NCRestorer::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА!-> "
+            ucrit << ic->getName() << "(NCRestorer::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА!-> "
                             << conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
         break;
     }
@@ -113,7 +111,7 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
                 case UniversalIO::AO:
                     ic->ioRegistration(inf);
                 break;
-                
+
                 default:
                     break;
             }
@@ -147,22 +145,20 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
                 ic->checkThreshold(it,inf.si,false);
             }
             break;
-            
+
             default:
                 break;
         }
     }
     catch( Exception& ex )
     {
-        if( ulog.is_warn() )
-               ulog.warn() << ic->getName() << "(NCRestorer::addthresholdlist): " << ex
+        uwarn << ic->getName() << "(NCRestorer::addthresholdlist): " << ex
                 << " для " << conf->oind->getNameById(inf.si.id, inf.si.node) << endl;
         throw;
     }
     catch( CORBA::SystemException& ex )
     {
-        if( ulog.is_warn() )
-              ulog.warn() << ic->getName() << "(NCRestorer::addthresholdlist): " 
+        uwarn << ic->getName() << "(NCRestorer::addthresholdlist): "
                 << conf->oind->getNameById(inf.si.id,inf.si.node) << " недоступен!!(CORBA::SystemException): "
                 << ex.NP_minorString() << endl;
         throw;
@@ -198,14 +194,13 @@ void NCRestorer::init_depends_signals( IONotifyController* ic )
         if( it->second.d_si.id == DefaultObjectId )
             continue;
 
-        if( ulog.is_info() )
-            ulog.info() << ic->getName() << "(NCRestorer::init_depends_signals): "
+        uinfo << ic->getName() << "(NCRestorer::init_depends_signals): "
                 << " init depend: '" << conf->oind->getMapName(it->second.si.id) << "'"
                 << " dep_name=(" << it->second.d_si.id << ")'" << conf->oind->getMapName(it->second.d_si.id) << "'"
                 << endl;
-    
+
         IOController::ChangeSignal s = ic->signal_change_value(it->second.d_si);
         s.connect( sigc::mem_fun( &it->second, &IOController::USensorInfo::checkDepend) );
-}    
+	}
 }
 // -----------------------------------------------------------------------------

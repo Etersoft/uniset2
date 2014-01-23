@@ -30,12 +30,12 @@ sender2(0)
     // определяем фильтр
     s_field = conf->getArgParam("--" + prefix + "-filter-field");
     s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
-    dlog.info() << myname << "(init): read filter-field='" << s_field
+    dinfo << myname << "(init): read filter-field='" << s_field
                         << "' filter-value='" << s_fvalue << "'" << endl;
-    
+
     const string n_field(conf->getArgParam("--" + prefix + "-nodes-filter-field"));
     const string n_fvalue(conf->getArgParam("--" + prefix + "-nodes-filter-value"));
-    dlog.info() << myname << "(init): read nodes-filter-field='" << n_field
+    dinfo << myname << "(init): read nodes-filter-field='" << n_field
                         << "' nodes-filter-value='" << n_fvalue << "'" << endl;
 
     int recvTimeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recvTimeout"), 5000);
@@ -66,10 +66,10 @@ sender2(0)
     {
         if( n_it.getIntProp("unet_ignore") )
         {
-            dlog.info() << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
+            dinfo << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
             continue;
         }
-        
+
         // проверяем фильтры для подсетей
         if( !UniSetTypes::check_filter(n_it,n_field,n_fvalue) )
             continue;
@@ -87,18 +87,17 @@ sender2(0)
             h2 = default_ip2;
         if( !n_it.getProp("unet_broadcast_ip2").empty() )
             h2 = n_it.getProp("unet_broadcast_ip2");
-        
+
         if( h.empty() )
         {
             ostringstream err;
             err << myname << "(init): Unknown broadcast IP for " << n_it.getProp("name");
-            if( dlog.is_crit() )
-                dlog.crit() << err.str() << endl;
+            dcrit << err.str() << endl;
             throw UniSetTypes::SystemError(err.str());
         }
 
-        if( h2.empty() && dlog.is_info() )
-            dlog.info() << myname << "(init): ip2 not used..." << endl;
+        if( h2.empty() )
+            dinfo << myname << "(init): ip2 not used..." << endl;
 
         // Если указано поле unet_port - используем его
         // Иначе port = идентификатору узла
@@ -115,14 +114,12 @@ sender2(0)
         {
             if( no_sender )
             {
-                if( dlog.is_info() )
-                    dlog.info() << myname << "(init): sender OFF for this node...(" 
+                dinfo << myname << "(init): sender OFF for this node...("
                         << n_it.getProp("name") << ")" << endl;
                 continue;
             }
-            
-            if( dlog.is_info() )
-                dlog.info() << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
+
+            dinfo << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
             sender = new UNetSender(h,p,shm,s_field,s_fvalue,ic);
             sender->setSendPause(sendpause);
 
@@ -131,8 +128,7 @@ sender2(0)
                 // создаём "писателя" для второго канала если задан
                 if( !h2.empty() )
                 {
-                    if( dlog.is_info() )
-                        dlog.info() << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
+                    dinfo << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
                     sender2 = new UNetSender(h2,p2,shm,s_field,s_fvalue,ic);
                     sender2->setSendPause(sendpause);
                 }
@@ -142,19 +138,17 @@ sender2(0)
                 // т.е. это "резервный канал", то игнорируем ошибку его создания
                 // при запуске "интерфейс" может быть и не доступен...
                 sender2 = 0;
-                dlog.crit() << myname << "(ignore): DON`T CREATE 'UNetSender' for " << h2 << ":" << p2 << endl;
+                dcrit << myname << "(ignore): DON`T CREATE 'UNetSender' for " << h2 << ":" << p2 << endl;
             }
 
             continue;
         }
 
-        if( dlog.is_info() )
-            dlog.info() << myname << "(init): add UNetReceiver for " << h << ":" << p << endl;
+        dinfo << myname << "(init): add UNetReceiver for " << h << ":" << p << endl;
 
         if( checkExistUNetHost(h,p) )
         {
-            if( dlog.is_info() )
-                dlog.info() << myname << "(init): " << h << ":" << p << " already added! Ignore.." << endl;
+            dinfo << myname << "(init): " << h << ":" << p << " already added! Ignore.." << endl;
             continue;
         }
 
@@ -169,8 +163,7 @@ sender2(0)
             {
                 ostringstream err;
                 err << myname << ": Unknown RespondID.. Not found id for '" << s_resp_id << "'" << endl;
-                if( dlog.is_crit() )
-                    dlog.crit() << myname << "(init): " << err.str() << endl;
+                dcrit << myname << "(init): " << err.str() << endl;
                 throw SystemError(err.str());
             }
         }
@@ -184,12 +177,11 @@ sender2(0)
             {
                 ostringstream err;
                 err << myname << ": Unknown RespondID(2).. Not found id for '" << s_resp2_id << "'" << endl;
-                if( dlog.is_crit() )
-                    dlog.crit() << myname << "(init): " << err.str() << endl;
+                dcrit << myname << "(init): " << err.str() << endl;
                 throw SystemError(err.str());
             }
-        }        
-        
+        }
+
         string s_lp_id(n_it.getProp("unet_lostpackets1_id"));
         UniSetTypes::ObjectId lp_id = UniSetTypes::DefaultObjectId;
         if( !s_lp_id.empty() )
@@ -199,12 +191,11 @@ sender2(0)
             {
                 ostringstream err;
                 err << myname << ": Unknown LostPacketsID.. Not found id for '" << s_lp_id << "'" << endl;
-                if( dlog.is_crit() )
-                    dlog.crit() << myname << "(init): " << err.str() << endl;
+                dcrit << myname << "(init): " << err.str() << endl;
                 throw SystemError(err.str());
             }
         }
-        
+
         string s_lp2_id(n_it.getProp("unet_lostpackets2_id"));
         UniSetTypes::ObjectId lp2_id = UniSetTypes::DefaultObjectId;
         if( !s_lp2_id.empty() )
@@ -214,8 +205,7 @@ sender2(0)
             {
                 ostringstream err;
                 err << myname << ": Unknown LostPacketsID(2).. Not found id for '" << s_lp2_id << "'" << endl;
-                if( dlog.is_crit() )
-                    dlog.crit() << myname << "(init): " << err.str() << endl;
+                dcrit << myname << "(init): " << err.str() << endl;
                 throw SystemError(err.str());
             }
         }
@@ -229,8 +219,7 @@ sender2(0)
             {
                 ostringstream err;
                 err << myname << ": Unknown LostPacketsID(comm).. Not found id for '" << s_lp_comm_id << "'" << endl;
-                if( dlog.is_crit() )
-                    dlog.crit() << myname << "(init): " << err.str() << endl;
+                dcrit << myname << "(init): " << err.str() << endl;
                 throw SystemError(err.str());
             }
         }
@@ -244,14 +233,12 @@ sender2(0)
             {
                 ostringstream err;
                 err << myname << ": Unknown RespondID(comm).. Not found id for '" << s_resp_comm_id << "'" << endl;
-                if( dlog.is_crit() )
-                    dlog.crit() << myname << "(init): " << err.str() << endl;
+                dcrit << myname << "(init): " << err.str() << endl;
                 throw SystemError(err.str());
             }
         }    
 
-        if( dlog.is_info() )
-            dlog.info() << myname << "(init): (node='" << n << "') add receiver " 
+        dinfo << myname << "(init): (node='" << n << "') add receiver "
                         << h2 << ":" << p2 << endl;
         UNetReceiver* r = new UNetReceiver(h,p,shm);
 
@@ -275,10 +262,9 @@ sender2(0)
         {
             if( !h2.empty() ) // создаём читателя впо второму каналу
             {
-                if( dlog.is_info() )
-                    dlog.info() << myname << "(init): (node='" << n << "') add reserv receiver " 
+                dinfo << myname << "(init): (node='" << n << "') add reserv receiver "
                         << h2 << ":" << p2 << endl;
-                
+
                 r2 = new UNetReceiver(h2,p2,shm);
 
                 // т.к. это резервный канал (по началу блокируем его)
@@ -300,8 +286,7 @@ sender2(0)
             // т.е. это "резервный канал", то игнорируем ошибку его создания
             // при запуске "интерфейс" может быть и не доступен...
             r2 = 0;
-            if( dlog.is_crit() )
-                dlog.crit() << myname << "(ignore): DON`T CREATE 'UNetReceiver' for " << h2 << ":" << p2 << endl;
+            dcrit << myname << "(ignore): DON`T CREATE 'UNetReceiver' for " << h2 << ":" << p2 << endl;
         }
 
         ReceiverInfo ri(r,r2);
@@ -309,7 +294,7 @@ sender2(0)
         ri.setLostPacketsID(lp_comm_id);
         recvlist.push_back(ri);
     }
-    
+
     // -------------------------------
     // ********** HEARTBEAT *************
     string heart = conf->getArgParam("--" + prefix + "-heartbeat-id",it.getProp("heartbeat_id"));
@@ -320,8 +305,7 @@ sender2(0)
         {
             ostringstream err;
             err << myname << ": не найден идентификатор для датчика 'HeartBeat' " << heart;
-            if( dlog.is_crit() )
-                dlog.crit() << myname << "(init): " << err.str() << endl;
+            dcrit << myname << "(init): " << err.str() << endl;
             throw SystemError(err.str());
         }
 
@@ -341,14 +325,12 @@ sender2(0)
         {
             ostringstream err;
             err << myname << "(init): test_id unknown. 'TestMode_S' not found...";
-            if( dlog.is_crit() )
-                dlog.crit() << myname << "(init): " << err.str() << endl;
+            dcrit << myname << "(init): " << err.str() << endl;
             throw SystemError(err.str());
         }
     }
 
-    if( dlog.is_info() )
-        dlog.info() << myname << "(init): test_id=" << test_id << endl;
+    dinfo << myname << "(init): test_id=" << test_id << endl;
 
     activateTimeout    = conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
 }
@@ -404,8 +386,7 @@ void UNetExchange::waitSMReady()
     {
         ostringstream err;
         err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
-        if( dlog.is_crit() )
-            dlog.crit() << err.str() << endl;
+        dcrit << err.str() << endl;
         throw SystemError(err.str());
     }
 }
@@ -433,8 +414,7 @@ void UNetExchange::step()
         }
         catch(Exception& ex)
         {
-            if( dlog.is_crit() )
-                dlog.crit() << myname << "(step): (hb) " << ex << std::endl;
+            dcrit << myname << "(step): (hb) " << ex << std::endl;
         }
     }
 
@@ -452,14 +432,13 @@ void UNetExchange::ReceiverInfo::step( SMInterface* shm, const std::string& myna
             bool resp = ( (r1 && r1->isRecvOK()) || (r2 && r2->isRecvOK()) );
             if( respondInvert )
                 resp = !resp;
-            
+
             shm->localSetValue(itRespond,sidRespond,resp,shm->ID());
         }
     }
     catch( Exception& ex )
     {
-        if( dlog.is_crit() )
-            dlog.crit() << myname << "(ReceiverInfo::step): (respond): " << ex << std::endl;
+        dcrit << myname << "(ReceiverInfo::step): (respond): " << ex << std::endl;
     }
 
     try
@@ -477,9 +456,8 @@ void UNetExchange::ReceiverInfo::step( SMInterface* shm, const std::string& myna
     }
     catch( Exception& ex )
     {
-        if( dlog.is_crit() )
-            dlog.crit() << myname << "(ReceiverInfo::step): (lostpackets): " << ex << std::endl;
-    }    
+        dcrit << myname << "(ReceiverInfo::step): (lostpackets): " << ex << std::endl;
+    }
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::processingMessage( UniSetTypes::VoidMessage *msg )
@@ -515,20 +493,16 @@ void UNetExchange::processingMessage( UniSetTypes::VoidMessage *msg )
     }
     catch( SystemError& ex )
     {
-        if( dlog.is_crit() )
-            dlog.crit() << myname << "(SystemError): " << ex << std::endl;
-//        throw SystemError(ex);
+        dcrit << myname << "(SystemError): " << ex << std::endl;
         raise(SIGTERM);
     }
     catch( Exception& ex )
     {
-        if( dlog.is_crit() )
-            dlog.crit() << myname << "(processingMessage): " << ex << std::endl;
+        dcrit << myname << "(processingMessage): " << ex << std::endl;
     }
     catch(...)
     {
-        if( dlog.is_crit() )
-            dlog.crit() << myname << "(processingMessage): catch ..." << std::endl;
+        dcrit << myname << "(processingMessage): catch ..." << std::endl;
     }
 }
 // -----------------------------------------------------------------------------
@@ -551,16 +525,16 @@ void UNetExchange::sysCommand( UniSetTypes::SystemMessage *sm )
                 if( activated )
                     break;
             }
-            
-            if( !activated && dlog.is_crit() )
-                dlog.crit() << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
-            
+
+            if( !activated )
+                dcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
+
             {
                 UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
                 if( shm->isLocalwork() )
                     askSensors(UniversalIO::UIONotify);
             }
-            
+
             askTimer(tmStep,steptime);
             startReceivers();
             if( sender )
@@ -622,9 +596,8 @@ void UNetExchange::askSensors( UniversalIO::UIOCommand cmd )
         err << myname 
             << "(askSensors): Не дождались готовности(work) SharedMemory к работе в течение " 
             << activateTimeout << " мсек";
-    
-        if( dlog.is_crit() )
-            dlog.crit() << err.str() << endl;
+
+        dcrit << err.str() << endl;
         kill(SIGTERM,getpid());    // прерываем (перезапускаем) процесс...
         throw SystemError(err.str());
     }
@@ -661,8 +634,7 @@ bool UNetExchange::activateObject()
 // ------------------------------------------------------------------------------------------
 void UNetExchange::sigterm( int signo )
 {
-    if( dlog.is_info() )
-        dlog.info() << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
+    dinfo << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
     activated = false;
     for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
     {
@@ -746,8 +718,7 @@ UNetExchange* UNetExchange::init_unetexchange( int argc, const char* argv[], Uni
         return 0;
     }
 
-    if( dlog.is_info() )
-        dlog.info() << "(unetexchange): name = " << name << "(" << ID << ")" << endl;
+    dinfo << "(unetexchange): name = " << name << "(" << ID << ")" << endl;
     return new UNetExchange(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
@@ -771,21 +742,19 @@ void UNetExchange::receiverEvent( UNetReceiver* r, UNetReceiver::Event ev )
             it->r1->setLockUpdate(true);
             it->r2->setLockUpdate(false);
 
-            if( dlog.is_info() )
-                dlog.info() << myname << "(event): " << r->getName() 
+            dinfo << myname << "(event): " << r->getName()
                     << ": timeout for channel1.. select channel 2" << endl;
             return;
         }
-        
+
         if( it->r2 == r )
         {
             // пропала связь по второму каналу...
             // переключаемся на первый
             it->r1->setLockUpdate(false);
             it->r2->setLockUpdate(true);
-            
-            if( dlog.is_info() )
-                dlog.info() << myname << "(event): " << r->getName() 
+
+            dinfo << myname << "(event): " << r->getName()
                         << ": timeout for channel2.. select channel 1" << endl;
             return;
         }

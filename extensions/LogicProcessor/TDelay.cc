@@ -30,22 +30,20 @@ void TDelay::setIn( int num, bool state )
     {
         pt.setTiming(0); // reset timer
         myout = false;
-        if( dlog.is_info() )
-            dlog.info() << this << ": set " << myout << endl;    
+        dinfo << this << ": set " << myout << endl;
         if( prev != myout )
             Element::setChildOut();
         return;
     }
 
 //    if( state )
-    
+
     // выставляем без задержки
     if( delay <= 0 )
     {
         pt.setTiming(0); // reset timer
         myout = true;
-        if( dlog.is_info() )
-            dlog.info() << this << ": set " << myout << endl;    
+        dinfo << this << ": set " << myout << endl;
         if( prev != myout )
             Element::setChildOut();
         return;
@@ -54,8 +52,7 @@ void TDelay::setIn( int num, bool state )
     // засекаем, если ещё не установлен таймер
     if( !myout && !prev  ) // т.е. !myout && prev != myout
     {
-        if( dlog.is_info() )
-            dlog.info() << this << ": set timer " << delay << " [msec]" << endl;    
+        dinfo << this << ": set timer " << delay << " [msec]" << endl;
         pt.setTiming(delay);
     }
 }
@@ -66,8 +63,7 @@ void TDelay::tick()
     {
         myout = true;
         pt.setTiming(0); // reset timer
-        if( dlog.is_info() )
-            dlog.info() << getType() << "(" << myid << "): TIMER!!!! myout=" << myout << endl;    
+        dinfo << getType() << "(" << myid << "): TIMER!!!! myout=" << myout << endl;
         Element::setChildOut();
     }
 }

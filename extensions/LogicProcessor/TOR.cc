@@ -51,17 +51,16 @@ void TOR::setIn( int num, bool state )
     {
         if( it->state )
         {
-            myout = true;            
+            myout = true;
             brk = true;
             break;
         }
     }
-    
+
     if( !brk )
         myout = false;
 
-    if( dlog.is_info() )
-        dlog.info() << this << ": myout " << myout << endl;    
+    dinfo << this << ": myout " << myout << endl;
     if( prev != myout )
         Element::setChildOut();
 }

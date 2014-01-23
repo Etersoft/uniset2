@@ -54,7 +54,7 @@ void IORFile::setIOR( const ObjectId id, const ObjectId node, const string& sior
     
     if( !ior_file )
     {
-        ulog.crit() << "(IORFile): не смог открыть файл "+fname << endl;
+        ucrit << "(IORFile): не смог открыть файл "+fname << endl;
         throw TimeOut("(IORFile): не смог создать ior-файл "+fname);
     }
     

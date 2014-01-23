@@ -60,7 +60,6 @@ UniXML::UniXML():
 
 UniXML::~UniXML()
 {
-    //ulog.< "UniXML destr" << endl;
     close();
 }
 

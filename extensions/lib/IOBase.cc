@@ -537,7 +537,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
                         << tai << endl;
                 return false;
             }
-        
+
             b->ti.lowlimit = it.getIntProp("lowlimit");
             b->ti.hilimit = it.getIntProp("hilimit");
             b->ti.invert = it.getIntProp("threshold_invert");

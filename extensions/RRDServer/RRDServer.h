@@ -61,7 +61,7 @@ class RRDServer:
         RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
                     const std::string& prefix="rrd", DebugStream& log=UniSetExtensions::dlog );
         virtual ~RRDServer();
-    
+
         /*! глобальная функция для инициализации объекта */
         static RRDServer* init_rrdstorage( int argc, const char* const* argv, 
                             UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
@@ -100,14 +100,14 @@ class RRDServer:
             long tid;
             long sec;
             DSMap dsmap;
-            
+
             RRDInfo( const std::string& fname, long tmID, long sec, const DSMap& ds ):
                 filename(fname),tid(tmID),sec(sec),dsmap(ds){}
         };
 
         typedef std::list<RRDInfo> RRDList;
 
-        RRDList rrdlist;    
+        RRDList rrdlist;
 
     private:
 

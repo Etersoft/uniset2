@@ -148,19 +148,16 @@ void DBServer_SQLite::parse( UniSetTypes::ConfirmMessage* cem )
 
         if( !writeToBase(data.str()) )
         {
-            if( ulog.is_crit() )
-                ulog.crit() << myname << "(update_confirm):  db error: "<< db->error() << endl;
+            ucrit << myname << "(update_confirm):  db error: "<< db->error() << endl;
         }
     }
     catch( Exception& ex )
     {
-        if( ulog.is_crit() )
-            ulog.crit() << myname << "(update_confirm): " << ex << endl;
+        ucrit << myname << "(update_confirm): " << ex << endl;
     }
     catch( ... )
     {
-        if( ulog.is_crit() )
-            ulog.crit() << myname << "(update_confirm):  catch..." << endl;
+        ucrit << myname << "(update_confirm):  catch..." << endl;
     }
 }
 //--------------------------------------------------------------------------------------------
@@ -183,8 +180,7 @@ bool DBServer_SQLite::writeToBase( const string& query )
 
             qbuf.pop();
 
-            if( ulog.is_crit() )
-                ulog.crit() << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
+            ucrit << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
                         << ") overflow! lost query: " << qlost << endl;
         }
         return false;
@@ -207,9 +203,9 @@ void DBServer_SQLite::flushBuffer()
     // Сперва пробуем очистить всё что накопилось в очереди до этого...
     while( !qbuf.empty() ) 
     {
-        if( !db->insert(qbuf.front()) && ulog.is_crit() )
+        if( !db->insert(qbuf.front()) )
         {
-            ulog.crit() << myname << "(writeToBase): error: " << db->error() <<
+            ucrit << myname << "(writeToBase): error: " << db->error() <<
                 " lost query: " << qbuf.front() << endl;
         }
         qbuf.pop();
@@ -244,17 +240,16 @@ void DBServer_SQLite::parse( UniSetTypes::SensorMessage *si )
 
         if( !writeToBase(data.str()) )
         {
-            if( ulog.is_crit() )
-                ulog.crit() << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
+            ucrit << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
         }
     }
     catch( Exception& ex )
     {
-        ulog.crit() << myname << "(insert_main_history): " << ex << endl;
+        ucrit << myname << "(insert_main_history): " << ex << endl;
     }
     catch( ... )
     {
-        ulog.crit() << myname << "(insert_main_history): catch ..." << endl;
+        ucrit << myname << "(insert_main_history): catch ..." << endl;
     }
 }
 //--------------------------------------------------------------------------------------------
@@ -311,8 +306,7 @@ void DBServer_SQLite::init_dbserver()
     if( !db->connect(dbfile,false) )
     {
 //        ostringstream err;
-        if( ulog.is_crit() )
-            ulog.crit() << myname
+        ucrit << myname
             << "(init): DB connection error: "
             << db->error() << endl;
 //        throw Exception( string(myname+"(init): не смогли создать соединение с БД "+db->error()) );
@@ -337,8 +331,7 @@ void DBServer_SQLite::createTables( SQLiteInterface *db )
     UniXML_iterator it( conf->getNode("Tables") );
     if(!it)
     {
-        if( ulog.is_crit() )
-            ulog.crit() << myname << ": section <Tables> not found.."<< endl;
+        ucrit << myname << ": section <Tables> not found.."<< endl;
         throw Exception();
     }
 
@@ -350,8 +343,8 @@ void DBServer_SQLite::createTables( SQLiteInterface *db )
                 ulog[DBLogInfoLevel] << myname  << "(createTables): create " << it.getName() << endl;
             ostringstream query;
             query << "CREATE TABLE " << conf->getProp(it,"name") << "(" << conf->getProp(it,"create") << ")";
-            if( !db->query(query.str()) && ulog.is_crit() )
-                ulog.crit() << myname << "(createTables): error: \t\t" << db->error() << endl;
+            if( !db->query(query.str()) )
+                ucrit << myname << "(createTables): error: \t\t" << db->error() << endl;
         }
     }    
 }
@@ -364,8 +357,7 @@ void DBServer_SQLite::timerInfo( UniSetTypes::TimerMessage* tm )
         {
             if( !db->ping() )
             {
-                if( ulog.is_warn() )
-                    ulog.warn() << myname << "(timerInfo): DB lost connection.." << endl;
+                uwarn << myname << "(timerInfo): DB lost connection.." << endl;
                 connect_ok = false;
                 askTimer(DBServer_SQLite::PingTimer,0);
                 askTimer(DBServer_SQLite::ReconnectTimer,ReconnectTime);
@@ -378,7 +370,7 @@ void DBServer_SQLite::timerInfo( UniSetTypes::TimerMessage* tm )
             }
         }
         break;
-    
+
         case DBServer_SQLite::ReconnectTimer:
         {
             if( ulog.debugging(DBLogInfoLevel) )
@@ -392,8 +384,7 @@ void DBServer_SQLite::timerInfo( UniSetTypes::TimerMessage* tm )
                     askTimer(DBServer_SQLite::PingTimer,PingTime);
                 }
                 connect_ok = false;
-                if( ulog.is_warn() )
-                    ulog.warn() << myname << "(timerInfo): DB no connection.." << endl;
+                uwarn << myname << "(timerInfo): DB no connection.." << endl;
             }
             else
                 init_dbserver();
@@ -401,8 +392,7 @@ void DBServer_SQLite::timerInfo( UniSetTypes::TimerMessage* tm )
         break;
 
         default:
-            if( ulog.is_warn() )
-                ulog.warn() << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
+            uwarn << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
         break;
     }
 }

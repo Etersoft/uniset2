@@ -29,7 +29,7 @@ int main(int argc, const char **argv)
         string schema = conf->getArgParam("--schema");
         if( schema.empty() )
         {
-            dlog.crit() << "schema-file not defined. Use --schema" << endl;
+            dcrit << "schema-file not defined. Use --schema" << endl;
             return 1;
         }
 

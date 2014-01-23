@@ -42,7 +42,7 @@ prefix(prefix)
         {
             ostringstream err;
             err << myname << ": ID not found ('HeartBeat') for " << heart;
-            dlog.crit() << myname << "(init): " << err.str() << endl;
+            dcrit << myname << "(init): " << err.str() << endl;
             throw SystemError(err.str());
         }
 
@@ -62,14 +62,12 @@ prefix(prefix)
         {
             ostringstream err;
             err << myname << "(init): test_id unknown. 'TestMode_S' not found...";
-            dlog.crit() << myname << "(init): " << err.str() << endl;
+            dcrit << myname << "(init): " << err.str() << endl;
             throw SystemError(err.str());
         }
     }
 
-    dlog.info() << myname << "(init): test_id=" << test_id << endl;
-
-
+    dinfo << myname << "(init): test_id=" << test_id << endl;
 }
 // -----------------------------------------------------------------------------
 SMDBServer::~SMDBServer()
@@ -90,7 +88,7 @@ void SMDBServer::waitSMReady()
     {
         ostringstream err;
         err << myname << "(waitSMReady): Wait SharedMemory failed. [ " << ready_timeout << " msec ]";
-        dlog.crit() << err.str() << endl;
+        dcrit << err.str() << endl;
         throw SystemError(err.str());
     }
 }
@@ -108,7 +106,7 @@ void SMDBServer::step()
         }
         catch(Exception& ex)
         {
-            dlog.crit() << myname << "(step): (hb) " << ex << std::endl;
+            dcrit << myname << "(step): (hb) " << ex << std::endl;
         }
     }
 }
@@ -132,16 +130,15 @@ void SMDBServer::initDB( DBInterface *db )
         xmlNode* snode = conf->getXMLSensorsSection();
         if(!snode)
         {
-            dlog.crit() << myname << ": section <sensors> not found.." << endl;
+            dcrit << myname << ": section <sensors> not found.." << endl;
             return;
         }
 
             UniXML_iterator it(snode);
             if( !it.goChildren() )
             {
-                dlog.crit() << myname << ": section <sensors> empty?!.." << endl;
+                dcrit << myname << ": section <sensors> empty?!.." << endl;
                 return;
-                
             }
 
             for(;it.getCurrent(); it.goNext() )
@@ -156,18 +153,18 @@ void SMDBServer::initDB( DBInterface *db )
 
                 if( !writeToBase("INSERT IGNORE INTO ObjectsMap(name,rep_name,id,msg)"+data.str()) )
                 {
-                    dlog.crit() << myname <<  "(insert) ObjectsMap msg error: "<< db->error() << std::endl;
+                    dcrit << myname <<  "(insert) ObjectsMap msg error: "<< db->error() << std::endl;
                     db->freeResult();
                 }
             }
     }
     catch( Exception& ex )
     {    
-        dlog.crit() << myname << "(filling ObjectsMap): " << ex << std::endl;
+        dcrit << myname << "(filling ObjectsMap): " << ex << std::endl;
     }
     catch( ...  )
     {    
-        dlog.crit() << myname << "(filling ObjectsMap): catch ..." << std::endl;
+        dcrit << myname << "(filling ObjectsMap): catch ..." << std::endl;
     }
 }
 //--------------------------------------------------------------------------------
@@ -198,7 +195,7 @@ SMDBServer* SMDBServer::init_smdbserver( int argc, const char* const* argv,
         return 0;
     }
 
-    dlog.info() << "(SMDBServer): name = " << name << "(" << ID << ")" << endl;
+    dinfo << "(SMDBServer): name = " << name << "(" << ID << ")" << endl;
     return new SMDBServer(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------

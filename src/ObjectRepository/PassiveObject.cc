@@ -21,13 +21,13 @@
  *  \author Pavel Vainerman
 */
 // -------------------------------------------------------------------------- 
-
+#include <iomanip>
 #include "ProxyManager.h"
 #include "PassiveObject.h"
 #include "ORepHelpers.h"
 #include "Configuration.h"
-
 // ------------------------------------------------------------------------------------------
+using namespace std;
 using namespace UniSetTypes;
 // ------------------------------------------------------------------------------------------
 PassiveObject::PassiveObject():
@@ -117,14 +117,12 @@ void PassiveObject::processingMessage( UniSetTypes::VoidMessage* msg )
             }
 
             default:
-                //ulog.warn() << myname << ": неизвестное сообщение  " << msg->type << endl;
                 break;
-        }    
+        }
     }
-    catch(Exception& ex)
+    catch( Exception& ex )
     {
-        // ulog.warn()
-//        cerr << myname << "(processingMessage): " << ex << endl;
+	uwarn << myname << "(processingMessage): " << ex << endl;
     }
 }
 // -------------------------------------------------------------------------
@@ -135,8 +133,8 @@ void PassiveObject::sysCommand( SystemMessage *sm )
         case SystemMessage::StartUp:
             askSensors(UniversalIO::UIONotify);
             break;
-        
-        case SystemMessage::FoldUp:                                
+
+        case SystemMessage::FoldUp:
         case SystemMessage::Finish:
             askSensors(UniversalIO::UIODontNotify);
             break;

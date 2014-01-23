@@ -88,19 +88,16 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 	}
 	catch( Exception&amp; ex )
 	{
-        if( ulog.is_crit() )
-            ulog.crit() &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
+        ucrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 	}
 	catch(CORBA::SystemException&amp; ex)
 	{
-        if( ulog.is_crit() )
-            ulog.crit() &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
+        ucrit &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
                 &lt;&lt; ex.NP_minorString() &lt;&lt; endl;
 	}
 	catch(...)
 	{
-        if( ulog.is_crit() )
-            ulog.crit() &lt;&lt; myname &lt;&lt; "(execute): catch ..." &lt;&lt; endl;
+        ucrit &lt;&lt; myname &lt;&lt; "(execute): catch ..." &lt;&lt; endl;
 	}
 
 	if( !active )
@@ -116,8 +113,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId _si
 		<xsl:if test="normalize-space(@vartype)='out'">
 		if( _sid == <xsl:value-of select="@name"/> )
 		{
-            if( ulog.is_level2() )
-                ulog.level2() &lt;&lt;  "(setState): <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = " &lt;&lt;  _val &lt;&lt;  endl;
+            ulog2 &lt;&lt;  "(setState): <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = " &lt;&lt;  _val &lt;&lt;  endl;
 			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>	= _val;
 				<xsl:call-template name="setdata"/>
 			return;
@@ -163,7 +159,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( UniSetTypes::SensorM
 	if( _sm->id == <xsl:value-of select="@name"/> )
 	{
 		<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = _sm->value;
-		dlog.level( Debug::type(_sm->value) );
+		mylog.level( Debug::type(_sm->value) );
 	}
 	</xsl:if>
 	</xsl:if>
@@ -188,14 +184,12 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 			return <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 		}
 </xsl:for-each>
-        if( ulog.is_crit() )
-            ulog.crit() &lt;&lt; myname &lt;&lt; "(getValue): Обращение к неизвестному датчику sid="
+        ucrit &lt;&lt; myname &lt;&lt; "(getValue): Обращение к неизвестному датчику sid="
                 &lt;&lt; _sid &lt;&lt; endl;
 	}
 	catch(Exception&amp; ex)
 	{
-        if( ulog.is_crit() )
-            ulog.crit() &lt;&lt; myname &lt;&lt; "(getValue): " &lt;&lt; ex &lt;&lt; endl;
+        ucrit &lt;&lt; myname &lt;&lt; "(getValue): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
 	
@@ -214,8 +208,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 			break;
 	}
 			
-	if( !activated &amp;&amp; ulog.is_crit() )
-		ulog.crit() &lt;&lt; myname 
+	if( !activated )
+		ucrit &lt;&lt; myname
 			&lt;&lt; "(preAskSensors): ************* don`t activated?! ************" &lt;&lt; endl;
 
 	for( ;; )
@@ -232,18 +226,15 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 		}
 		catch(SystemError&amp; err)
 		{
-            if( ulog.is_crit() )
-                ulog.crit() &lt;&lt; myname &lt;&lt; "(preAskSensors): " &lt;&lt; err &lt;&lt; endl;
+            ucrit &lt;&lt; myname &lt;&lt; "(preAskSensors): " &lt;&lt; err &lt;&lt; endl;
 		}
 		catch(Exception&amp; ex)
 		{
-            if( ulog.is_crit() )
-                ulog.crit() &lt;&lt; myname &lt;&lt; "(preAskSensors): " &lt;&lt; ex &lt;&lt; endl;
+            ucrit &lt;&lt; myname &lt;&lt; "(preAskSensors): " &lt;&lt; ex &lt;&lt; endl;
 		}
 		catch(...)
 		{
-            if( ulog.is_crit() )
-                ulog.crit() &lt;&lt; myname &lt;&lt; "(preAskSensors): catch(...)" &lt;&lt; endl;
+            ucrit &lt;&lt; myname &lt;&lt; "(preAskSensors): catch(...)" &lt;&lt; endl;
 		}
 		msleep(askPause);
 	}
@@ -275,8 +266,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 		}
 		catch( UniSetTypes::Exception&amp; ex )
 		{
-            if( ulog.is_crit() )
-                ulog.crit() &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
+            ucrit &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
 			throw;
 		}
 	}
@@ -293,8 +283,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 				}
 				catch( UniSetTypes::Exception&amp; ex )
 				{
-                    if( ulog.is_crit() )
-                        ulog.crit() &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
+                    ucrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 					throw;
 				}
 			}
@@ -312,8 +301,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 		}
 		catch( UniSetTypes::Exception&amp; ex )
 		{
-            if( ulog.is_crit() )
-                ulog.crit() &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
+            ucrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 			throw;
 		}
 	}

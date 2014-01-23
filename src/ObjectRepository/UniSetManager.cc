@@ -137,12 +137,12 @@ void UniSetManager::initPOA( UniSetManager* rmngr )
         poa = rmngr->getPOA();
 
     if( CORBA::is_nil(poa) )
-        ulog.crit() << myname << "(initPOA): failed init poa " << endl;
+        ucrit << myname << "(initPOA): failed init poa " << endl;
 
     // Инициализация самого менеджера и его подобъектов
     UniSetObject::init(rmngr);
-    objects(initial);    
-    managers(initial);    
+    objects(initial);
+    managers(initial);
 }
 // ------------------------------------------------------------------------------------------
 bool UniSetManager::addObject( UniSetObject *obj )
@@ -152,9 +152,8 @@ bool UniSetManager::addObject( UniSetObject *obj )
         ObjectsList::iterator li=find(olist.begin(),olist.end(), obj);
         if( li==olist.end() )
         {
-            if( ulog.is_info() )
-                ulog.info() << myname << "(activator): добавляем объект "<< obj->getName()<< endl;
-             olist.push_back(obj);
+            uinfo << myname << "(activator): добавляем объект "<< obj->getName()<< endl;
+            olist.push_back(obj);
         }
     } // unlock    
     return true;
@@ -168,37 +167,36 @@ bool UniSetManager::removeObject(UniSetObject* obj)
         ObjectsList::iterator li=find(olist.begin(),olist.end(), obj);
         if( li!=olist.end() )
         {
-            if( ulog.is_info() )
-                ulog.info() << myname << "(activator): удаляем объект "<< obj->getName()<< endl;                
+            uinfo << myname << "(activator): удаляем объект "<< obj->getName()<< endl;
             try
             {
                 obj->disactivate();
             }
             catch(Exception& ex)
             {
-                ulog.warn() << myname << "(removeObject): " << ex << endl;
+                uwarn << myname << "(removeObject): " << ex << endl;
             }
             catch(CORBA::SystemException& ex)
             {
-                ulog.warn() << myname << "(removeObject): поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
+                uwarn << myname << "(removeObject): поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
             }
             catch(CORBA::Exception& ex)
             {
-                ulog.warn() << myname << "(removeObject): CORBA::Exception" << endl;
+                uwarn << myname << "(removeObject): CORBA::Exception" << endl;
             }
             catch( omniORB::fatalException& fe ) 
             {
-                ulog.crit() << myname << "(managers): Caught omniORB::fatalException:" << endl;
-                ulog.crit() << myname << "(managers): file: " << fe.file()
+                ucrit << myname << "(managers): Caught omniORB::fatalException:" << endl;
+                ucrit << myname << "(managers): file: " << fe.file()
                     << " line: " << fe.line()
                     << " mesg: " << fe.errmsg() << endl;
-            }            
+            }
 
             catch(...){}
             olist.erase(li);
         }
-    } // unlock    
-    
+    } // unlock
+
     return true;
 }
 
@@ -208,8 +206,7 @@ bool UniSetManager::removeObject(UniSetObject* obj)
 */
 void UniSetManager::managers(OManagerCommand cmd)
 {
-    if( ulog.is_info() )
-        ulog.info() << myname <<"(managers): mlist.size=" 
+    uinfo << myname <<"(managers): mlist.size="
                         << mlist.size() << " cmd=" << cmd  << endl;
     {    //lock
         uniset_rwmutex_rlock lock(mlistMutex);
@@ -241,32 +238,24 @@ void UniSetManager::managers(OManagerCommand cmd)
             }
             catch( Exception& ex )
             {
-                if( ulog.is_crit() )
-                {
-                    ulog.crit() << myname << "(managers): " << ex << endl;
-                    ulog.crit() << myname << "(managers): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
-                }
+                 ucrit << myname << "(managers): " << ex << endl
+                       << " Не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
             }
-            catch(CORBA::SystemException& ex)
+            catch( CORBA::SystemException& ex )
             {
-                if( ulog.is_crit() )
-                    ulog.crit() << myname << "(managers): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+                ucrit << myname << "(managers): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
             }
             catch( CORBA::Exception& ex )
             {
-                if( ulog.is_crit() )
-                    ulog.crit() << myname << "(managers): Caught CORBA::Exception. " << ex._name() << endl;
+                ucrit << myname << "(managers): Caught CORBA::Exception. " << ex._name() << endl;
             }
-            catch( omniORB::fatalException& fe ) 
+            catch( omniORB::fatalException& fe )
             {
-                if( ulog.is_crit() )
-                {
-                    ulog.crit() << myname << "(managers): Caught omniORB::fatalException:" << endl;
-                    ulog.crit() << myname << "(managers): file: " << fe.file()
-                        << " line: " << fe.line()
-                        << " mesg: " << fe.errmsg() << endl;
-                }
-            }            
+                ucrit << myname << "(managers): Caught omniORB::fatalException:" << endl;
+                ucrit << myname << "(managers): file: " << fe.file()
+                      << " line: " << fe.line()
+                      << " mesg: " << fe.errmsg() << endl;
+            }
         }
     } // unlock 
 }
@@ -276,8 +265,7 @@ void UniSetManager::managers(OManagerCommand cmd)
 */
 void UniSetManager::objects(OManagerCommand cmd)
 {
-    if( ulog.is_info() )
-        ulog.info() << myname <<"(objects): olist.size=" 
+    uinfo << myname <<"(objects): olist.size="
                         << olist.size() << " cmd=" << cmd  << endl;
     {    //lock
         uniset_rwmutex_rlock lock(olistMutex);
@@ -303,41 +291,33 @@ void UniSetManager::objects(OManagerCommand cmd)
                     case term:
                         (*li)->sigterm(sig);
                         break;
-                    
+
                     default:
                         break;
                 }
             }
             catch( Exception& ex )
             {
-                if( ulog.is_crit() )
-                {
-                    ulog.crit() << myname << "(objects): " << ex << endl;
-                    ulog.crit() << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
-                }
+                ucrit << myname << "(objects): " << ex << endl;
+                ucrit << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
             }
             catch(CORBA::SystemException& ex)
             {
-                if( ulog.is_crit() )
-                    ulog.crit() << myname << "(objects): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+                ucrit << myname << "(objects): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
             }
             catch( CORBA::Exception& ex )
             {
-                if( ulog.is_crit() )
-                    ulog.crit() << myname << "(objects): Caught CORBA::Exception. " 
-                        << ex._name()
-                        << " (" << (*li)->getName() << ")" << endl;
+                ucrit << myname << "(objects): Caught CORBA::Exception. "
+                      << ex._name()
+                      << " (" << (*li)->getName() << ")" << endl;
             }
             catch( omniORB::fatalException& fe ) 
             {
-                if( ulog.is_crit() )
-                {
-                    ulog.crit() << myname << "(objects): Caught omniORB::fatalException:" << endl;
-                    ulog.crit() << myname << "(objects): file: " << fe.file()
-                        << " line: " << fe.line()
-                        << " mesg: " << fe.errmsg() << endl;
-                }
-            }            
+               ucrit << myname << "(objects): Caught omniORB::fatalException:" << endl;
+               ucrit << myname << "(objects): file: " << fe.file()
+                     << " line: " << fe.line()
+                     << " mesg: " << fe.errmsg() << endl;
+            }
         }
     } // unlock
 }
@@ -348,8 +328,7 @@ void UniSetManager::objects(OManagerCommand cmd)
 */
 bool UniSetManager::activateObject()
 {
-    if( ulog.is_info() )
-        ulog.info() << myname << "(activateObjects):  активизирую объекты"<< endl;
+    uinfo << myname << "(activateObjects):  активизирую объекты"<< endl;
     UniSetObject::activateObject();
     managers(activ);
     objects(activ);
@@ -362,8 +341,7 @@ bool UniSetManager::activateObject()
 */
 bool UniSetManager::disactivateObject()
 {
-    if( ulog.is_info() )
-        ulog.info() << myname << "(disactivateObjects):  деактивизирую объекты"<< endl;
+    uinfo << myname << "(disactivateObjects):  деактивизирую объекты"<< endl;
     // именно в такой последовательности!
     objects(deactiv);
     managers(deactiv);
@@ -372,7 +350,6 @@ bool UniSetManager::disactivateObject()
 // ------------------------------------------------------------------------------------------
 void UniSetManager::sigterm( int signo )
 {
-//    ulog.info() << "UniSetActivator: default processing signo="<< signo << endl;
     sig=signo;
     objects(term);
     managers(term);
@@ -409,13 +386,12 @@ bool UniSetManager::addManager( UniSetManager *child )
         if(it == mlist.end() )
         {
              mlist.push_back( child );
-            if( ulog.is_info() )
-                ulog.info() << myname << ": добавляем менеджер "<< child->getName()<< endl;
+             uinfo << myname << ": добавляем менеджер "<< child->getName()<< endl;
         }
-        else if( ulog.is_warn() )
-            ulog.warn() << myname << ": попытка повторного добавления объекта "<< child->getName() << endl;
-    } // unlock    
-    
+        else
+            uwarn << myname << ": попытка повторного добавления объекта "<< child->getName() << endl;
+    } // unlock
+
     return true;
 }
 
@@ -499,19 +475,19 @@ int UniSetManager::getObjectsInfo( UniSetManager* mngr, SimpleInfoSeq* seq,
         {
             SimpleInfo_var si=(*it)->getInfo();
             (*seq)[ind] = si;
-            ind++;                
+            ind++;
             if( ind>uplimit )
                 break;
         }
         catch(CORBA::Exception& ex)
         {
-            ulog.warn() << myname << "(getObjectsInfo): CORBA::Exception" << endl;
+            uwarn << myname << "(getObjectsInfo): CORBA::Exception" << endl;
         }
         catch(...)
         {
-            ulog.warn() << myname << "(getObjectsInfo): не смог получить у объекта "
+            uwarn << myname << "(getObjectsInfo): не смог получить у объекта "
                     << conf->oind->getNameById( (*it)->getId() ) << " информацию" << endl;
-        }    
+        }
     }
 
     if( ind > uplimit )
