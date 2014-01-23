@@ -29,15 +29,15 @@ TOR::~TOR()
 void TOR::setIn( int num, bool state )
 {
 //    cout << getType() << "(" << myid << "):  input " << num << " set " << state << endl;
-
+    
     for( InputList::iterator it=ins.begin(); it!=ins.end(); ++it )
     {
         if( it->num == num )
         {
             if( it->state == state )
                 return; // вход не менялся можно вообще прервать проверку
-
-            it->state = state;
+            
+            it->state = state;    
             break;
         }
     }
@@ -60,8 +60,7 @@ void TOR::setIn( int num, bool state )
     if( !brk )
         myout = false;
 
-    if( dlog.is_info() )
-        dlog.info() << this << ": myout " << myout << endl;
+    dinfo << this << ": myout " << myout << endl;
     if( prev != myout )
         Element::setChildOut();
 }

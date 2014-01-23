@@ -50,7 +50,7 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
     {
         {    // lock
             uniset_rwmutex_rlock lock(lstMutex);
-
+            
             if( tlst.empty() )
             {
                 sleepTime = UniSetTimer::WaitUpTime;
@@ -69,18 +69,18 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
                 return sleepTime;
             }
         }
-
+        
         {    // lock
             uniset_rwmutex_wrlock lock(lstMutex);
             sleepTime = UniSetTimer::WaitUpTime;
             for( TimersList::iterator li=tlst.begin();li!=tlst.end();++li)
             {
                 if( li->tmr.checkTime() )
-                {
+                {    
                     // помещаем себе в очередь сообщение
                     TransportMessage tm = TimerMessage(li->id, li->priority, obj->getId()).transport_msg();
                     obj->push(tm);
-
+    
                     // Проверка на количество заданных тактов
                     if( !li->curTick )
                     {
@@ -102,19 +102,19 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
                 // ищем минимальное оставшееся время
                 if( li->curTimeMS < sleepTime || sleepTime == UniSetTimer::WaitUpTime )
                     sleepTime = li->curTimeMS;
-            }
+            }    
 
             if( sleepTime < UniSetTimer::MinQuantityTime )
                 sleepTime=UniSetTimer::MinQuantityTime;
-        } // unlock
+        } // unlock        
 
         tmLast.reset();
     }
     catch(Exception& ex)
     {
-        ulog.crit() << "(checkTimers): " << ex << endl;
+        ucrit << "(checkTimers): " << ex << endl;
     }
-
+    
     return sleepTime;
 }
 // ------------------------------------------------------------------------------------------
@@ -125,7 +125,7 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
     {
         if( timeMS < UniSetTimer::MinQuantityTime )
         {
-            ulog.crit() << "(LT_askTimer): [мс] попытка заказть таймер со временем срабатыания "
+            ucrit << "(LT_askTimer): [мс] попытка заказть таймер со временем срабатыания "
                         << " меньше разрешённого " << UniSetTimer::MinQuantityTime << endl;
             timeMS = UniSetTimer::MinQuantityTime;
         }
@@ -141,11 +141,8 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
                     {
                         li->curTick = ticks;
                         li->tmr.setTiming(timeMS);
-                        if( ulog.is_info() )
-                        {
-                            ulog.info() << "(LT_askTimer): заказ на таймер(id="
+                        uinfo << "(LT_askTimer): заказ на таймер(id="
                                 << timerid << ") " << timeMS << " [мс] уже есть..." << endl;
-                        }
                         return sleepTime;
                     }
                 }
@@ -156,19 +153,17 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
             newti.reset();
         }    // unlock
 
-        if( ulog.is_info() )
-            ulog.info() << "(LT_askTimer): поступил заказ на таймер(id="<< timerid << ") " << timeMS << " [мс]\n";
+        uinfo << "(LT_askTimer): поступил заказ на таймер(id="<< timerid << ") " << timeMS << " [мс]\n";
     }
     else // отказ (при timeMS == 0)
     {
-        if( ulog.is_info() )
-            ulog.info() << "(LT_askTimer): поступил отказ по таймеру id="<< timerid << endl;
+        uinfo << "(LT_askTimer): поступил отказ по таймеру id="<< timerid << endl;
         {    // lock
              uniset_rwmutex_wrlock lock(lstMutex);
             tlst.remove_if(Timer_eq(timerid));    // STL - способ
         }    // unlock
     }
-
+    
     {    // lock
         uniset_rwmutex_rlock lock(lstMutex);
 

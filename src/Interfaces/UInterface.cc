@@ -20,7 +20,7 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// --------------------------------------------------------------------------
+// -------------------------------------------------------------------------- 
 #include <omniORB4/CORBA.h>
 #include <omniORB4/omniURI.h>
 #include <string>
@@ -63,7 +63,7 @@ UInterface::UInterface( ObjectId backid, CORBA::ORB_var orb, ObjectIndex* _oind 
         oind = uconf->oind;
 
     init();
-}
+}    
 
 UInterface::~UInterface()
 {
@@ -115,7 +115,7 @@ void UInterface::initBackId( UniSetTypes::ObjectId backid )
  * \exception IOBadParam - генерируется если указано неправильное имя датчика или секции
  * \exception IOTimeOut - генерируется если в течение времени timeout небыл получен ответ
 */
-long UInterface::getValue( ObjectId name, ObjectId node )
+long UInterface::getValue( ObjectId name, ObjectId node ) 
     throw(IO_THROW_EXCEPTIONS)
 {
     if ( name == DefaultObjectId )
@@ -163,46 +163,46 @@ long UInterface::getValue( ObjectId name, ObjectId node )
     }
     catch(ORepFailed)
     {
-        rcache.erase(name, node);
+        rcache.erase(name, node);        
         // не смогли получить ссылку на объект
         throw UniSetTypes::IOBadParam(set_err("UI(getValue): ORepFailed",name,node));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
-        rcache.erase(name, node);
-        throw UniSetTypes::IOBadParam(set_err("UI(getValue): method no implement",name,node));
-    }
+        rcache.erase(name, node);        
+        throw UniSetTypes::IOBadParam(set_err("UI(getValue): method no implement",name,node));        
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
-        rcache.erase(name, node);
+        rcache.erase(name, node);        
         throw UniSetTypes::IOBadParam(set_err("UI(getValue): object not exist",name,node));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-    }
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(getValue): CORBA::SystemException" << endl;
-    }
-    rcache.erase(name, node);
+        // uwarn << "UI(getValue): CORBA::SystemException" << endl;
+    }    
+    rcache.erase(name, node);        
     throw UniSetTypes::TimeOut(set_err("UI(getValue): TimeOut",name,node));
 }
 
-long UInterface::getValue( ObjectId name )
+long UInterface::getValue( ObjectId name ) 
 {
     return getValue(name, uconf->getLocalNode());
 }
 
 
 // ------------------------------------------------------------------------------------------------------------
-void UInterface::setUndefinedState( IOController_i::SensorInfo& si, bool undefined,
+void UInterface::setUndefinedState( IOController_i::SensorInfo& si, bool undefined, 
                                             UniSetTypes::ObjectId sup_id )
 {
     if( si.id == DefaultObjectId )
     {
-        ulog.warn() << "UI(setUndefinedState): ID=UniSetTypes::DefaultObjectId" << endl;
+        uwarn << "UI(setUndefinedState): ID=UniSetTypes::DefaultObjectId" << endl;
         return;
     }
 
@@ -217,7 +217,7 @@ void UInterface::setUndefinedState( IOController_i::SensorInfo& si, bool undefin
             oref = rcache.resolve(si.id, si.node);
         }
         catch( NameNotFound ){}
-
+        
         for (unsigned int i=0; i<uconf->getRepeatCount(); i++)
         {
             try
@@ -240,7 +240,7 @@ void UInterface::setUndefinedState( IOController_i::SensorInfo& si, bool undefin
     catch(IOController_i::NameNotFound &ex)
     {
         rcache.erase(si.id, si.node);
-        ulog.warn() << set_err("UI(setUndefinedState):"+string(ex.err),si.id,si.node) << endl;
+        uwarn << set_err("UI(setUndefinedState):"+string(ex.err),si.id,si.node) << endl;
     }
     catch(IOController_i::IOBadParam& ex)
     {
@@ -251,24 +251,24 @@ void UInterface::setUndefinedState( IOController_i::SensorInfo& si, bool undefin
     {
         rcache.erase(si.id, si.node);
         // не смогли получить ссылку на объект
-        ulog.warn() << set_err("UI(setUndefinedState): resolve failed",si.id,si.node) << endl;
-    }
+        uwarn << set_err("UI(setUndefinedState): resolve failed",si.id,si.node) << endl;
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
         rcache.erase(si.id, si.node);
-        ulog.warn() << set_err("UI(setUndefinedState): method no implement",si.id,si.node) << endl;
+        uwarn << set_err("UI(setUndefinedState): method no implement",si.id,si.node) << endl;
     }
     catch(CORBA::OBJECT_NOT_EXIST)
     {
         rcache.erase(si.id, si.node);
-        ulog.warn() << set_err("UI(setUndefinedState): object not exist",si.id,si.node) << endl;
-    }
+        uwarn << set_err("UI(setUndefinedState): object not exist",si.id,si.node) << endl;
+    }    
     catch(CORBA::COMM_FAILURE){}
     catch(CORBA::SystemException& ex){}
     catch(...){}
 
     rcache.erase(si.id, si.node);
-    ulog.warn() << set_err("UI(setUndefinedState): Timeout",si.id,si.node) << endl;
+    uwarn << set_err("UI(setUndefinedState): Timeout",si.id,si.node) << endl;
 }
 // ------------------------------------------------------------------------------------------------------------
 /*!
@@ -277,7 +277,7 @@ void UInterface::setUndefinedState( IOController_i::SensorInfo& si, bool undefin
  * \return текущее значение датчика
  * \exception IOBadParam - генерируется если указано неправильное имя вывода или секции
 */
-void UInterface::setValue(ObjectId name, long value, ObjectId node)
+void UInterface::setValue(ObjectId name, long value, ObjectId node) 
     throw(IO_THROW_EXCEPTIONS)
 {
     if ( name == DefaultObjectId )
@@ -291,14 +291,14 @@ void UInterface::setValue(ObjectId name, long value, ObjectId node)
             oref = rcache.resolve(name, node);
         }
         catch( NameNotFound ){}
-
+        
         for (unsigned int i=0; i<uconf->getRepeatCount(); i++)
         {
             try
             {
                 if( CORBA::is_nil(oref) )
                     oref = resolve( name, node );
-
+            
                 IOController_i_var iom = IOController_i::_narrow(oref);
                 IOController_i::SensorInfo_var si;
                 si->id = name;
@@ -329,31 +329,31 @@ void UInterface::setValue(ObjectId name, long value, ObjectId node)
         rcache.erase(name, node);
         // не смогли получить ссылку на объект
         throw UniSetTypes::IOBadParam(set_err("UI(setValue): resolve failed ",name,node));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
         rcache.erase(name, node);
         throw UniSetTypes::IOBadParam(set_err("UI(setValue): method no implement",name,node));
-    }
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
         rcache.erase(name, node);
         throw UniSetTypes::IOBadParam(set_err("UI(setValue): object not exist",name,node));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-    }
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(setValue): CORBA::SystemException" << endl;
-    }
+        // uwarn << "UI(setValue): CORBA::SystemException" << endl;
+    }    
     rcache.erase(name, node);
     throw UniSetTypes::TimeOut(set_err("UI(setValue): Timeout",name,node));
 }
 
-void UInterface::setValue(ObjectId name, long value)
+void UInterface::setValue(ObjectId name, long value) 
 {
     setValue(name, value, uconf->getLocalNode());
 }
@@ -372,7 +372,7 @@ void UInterface::setValue( IOController_i::SensorInfo& si, long value, UniSetTyp
         myid = old;
         throw;
     }
-
+    
     myid = old;
 }
 
@@ -382,7 +382,7 @@ void UInterface::fastSetValue( IOController_i::SensorInfo& si, long value, UniSe
 {
     if ( si.id == DefaultObjectId )
     {
-        ulog.warn() << "UI(fastSetValue): ID=UniSetTypes::DefaultObjectId" << endl;
+        uwarn << "UI(fastSetValue): ID=UniSetTypes::DefaultObjectId" << endl;
         return;
     }
 
@@ -397,14 +397,14 @@ void UInterface::fastSetValue( IOController_i::SensorInfo& si, long value, UniSe
             oref = rcache.resolve(si.id, si.node);
         }
         catch( NameNotFound ){}
-
+        
         for (unsigned int i=0; i<uconf->getRepeatCount(); i++)
         {
             try
             {
                 if( CORBA::is_nil(oref) )
                     oref = resolve( si.id,si.node );
-
+            
                 IOController_i_var iom = IOController_i::_narrow(oref);
                 iom->fastSetValue(si, value,sup_id);
                 return;
@@ -412,15 +412,15 @@ void UInterface::fastSetValue( IOController_i::SensorInfo& si, long value, UniSe
             catch(CORBA::TRANSIENT){}
             catch(CORBA::OBJECT_NOT_EXIST){}
             catch(CORBA::SystemException& ex){}
-            msleep(uconf->getRepeatTimeout());
-            oref = CORBA::Object::_nil();
+            msleep(uconf->getRepeatTimeout());            
+            oref = CORBA::Object::_nil();            
         }
     }
     catch(UniSetTypes::TimeOut){}
     catch(IOController_i::NameNotFound &ex)
     {
         rcache.erase(si.id,si.node);
-        ulog.warn() << set_err("UI(fastSetValue): NameNotFound для объекта",si.id,si.node) << endl;
+        uwarn << set_err("UI(fastSetValue): NameNotFound для объекта",si.id,si.node) << endl;
     }
     catch(IOController_i::IOBadParam& ex)
     {
@@ -429,33 +429,33 @@ void UInterface::fastSetValue( IOController_i::SensorInfo& si, long value, UniSe
     }
     catch(ORepFailed)
     {
-        rcache.erase(si.id,si.node);
+        rcache.erase(si.id,si.node);    
         // не смогли получить ссылку на объект
-        ulog.warn() << set_err("UI(fastSetValue): resolve failed ",si.id,si.node) << endl;
-    }
+        uwarn << set_err("UI(fastSetValue): resolve failed ",si.id,si.node) << endl;
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
         rcache.erase(si.id,si.node);
-        ulog.warn() << set_err("UI(fastSetValue): method no implement",si.id,si.node) << endl;
-    }
+        uwarn << set_err("UI(fastSetValue): method no implement",si.id,si.node) << endl;
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
         rcache.erase(si.id,si.node);
-        ulog.warn() << set_err("UI(fastSetValue): object not exist",si.id,si.node) << endl;
-    }
+        uwarn << set_err("UI(fastSetValue): object not exist",si.id,si.node) << endl;
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-    }
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(setValue): CORBA::SystemException" << endl;
-    }
+        // uwarn << "UI(setValue): CORBA::SystemException" << endl;
+    }    
     catch(...){}
 
     rcache.erase(si.id,si.node);
-    ulog.warn() << set_err("UI(fastSetValue): Timeout",si.id,si.node) << endl;
+    uwarn << set_err("UI(fastSetValue): Timeout",si.id,si.node) << endl;
 }
 
 
@@ -471,7 +471,7 @@ void UInterface::askRemoteSensor( ObjectId name, UniversalIO::UIOCommand cmd, Ob
 {
     if( backid==UniSetTypes::DefaultObjectId )
         backid = myid;
-
+        
     if( backid==UniSetTypes::DefaultObjectId )
         throw UniSetTypes::IOBadParam("UI(askRemoteSensor): unknown back ID");
 
@@ -486,14 +486,14 @@ void UInterface::askRemoteSensor( ObjectId name, UniversalIO::UIOCommand cmd, Ob
             oref = rcache.resolve(name, node);
         }
         catch( NameNotFound ){}
-
+        
         for (unsigned int i=0; i<uconf->getRepeatCount(); i++)
         {
             try
             {
-                if( CORBA::is_nil(oref) )
+                if( CORBA::is_nil(oref) )                
                     oref = resolve( name, node );
-
+    
                 IONotifyController_i_var inc = IONotifyController_i::_narrow(oref);
                 IOController_i::SensorInfo_var si;
                 si->id = name;
@@ -508,8 +508,8 @@ void UInterface::askRemoteSensor( ObjectId name, UniversalIO::UIOCommand cmd, Ob
             catch(CORBA::TRANSIENT){}
             catch(CORBA::OBJECT_NOT_EXIST){}
             catch(CORBA::SystemException& ex){}
-            msleep(uconf->getRepeatTimeout());
-            oref = CORBA::Object::_nil();
+            msleep(uconf->getRepeatTimeout());            
+            oref = CORBA::Object::_nil();            
         }
     }
     catch(UniSetTypes::TimeOut){}
@@ -525,30 +525,30 @@ void UInterface::askRemoteSensor( ObjectId name, UniversalIO::UIOCommand cmd, Ob
     }
     catch(ORepFailed)
     {
-        rcache.erase(name, node);
+        rcache.erase(name, node);        
         // не смогли получить ссылку на объект
         throw UniSetTypes::IOBadParam(set_err("UI(askSensor): resolve failed ",name,node));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
-        rcache.erase(name, node);
-        throw UniSetTypes::IOBadParam(set_err("UI(askSensor): method no implement",name,node));
-    }
+        rcache.erase(name, node);        
+        throw UniSetTypes::IOBadParam(set_err("UI(askSensor): method no implement",name,node));        
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
-        rcache.erase(name, node);
+        rcache.erase(name, node);        
         throw UniSetTypes::IOBadParam(set_err("UI(askSensor): object not exist",name,node));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(askSensor): ошибка системы коммуникации" << endl;
-    }
+        // uwarn << "UI(askSensor): ошибка системы коммуникации" << endl;
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(askSensor): CORBA::SystemException" << endl;
-    }
+        // uwarn << "UI(askSensor): CORBA::SystemException" << endl;
+    }    
 
     rcache.erase(name, node);
     throw UniSetTypes::TimeOut(set_err("UI(askSensor): Timeout",name,node));
@@ -565,7 +565,7 @@ void UInterface::askSensor( ObjectId name, UniversalIO::UIOCommand cmd, UniSetTy
  * \param node - идентификатор узла
 */
 IOType UInterface::getIOType(ObjectId name, ObjectId node)
-    throw(IO_THROW_EXCEPTIONS)
+    throw(IO_THROW_EXCEPTIONS)    
 {
     if ( name == DefaultObjectId )
         throw ORepFailed("UI(getIOType): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
@@ -583,7 +583,7 @@ IOType UInterface::getIOType(ObjectId name, ObjectId node)
         {
             try
             {
-                if( CORBA::is_nil(oref) )
+                if( CORBA::is_nil(oref) )                
                     oref = resolve(name, node);
 
                 IOController_i_var inc = IOController_i::_narrow(oref);
@@ -595,13 +595,13 @@ IOType UInterface::getIOType(ObjectId name, ObjectId node)
             catch(CORBA::TRANSIENT){}
             catch(CORBA::OBJECT_NOT_EXIST){}
             catch(CORBA::SystemException& ex){}
-            msleep(uconf->getRepeatTimeout());
-            oref = CORBA::Object::_nil();
+            msleep(uconf->getRepeatTimeout());            
+            oref = CORBA::Object::_nil();            
         }
     }
     catch(IOController_i::NameNotFound& ex)
     {
-        rcache.erase(name, node);
+        rcache.erase(name, node);    
         throw UniSetTypes::NameNotFound("UI(getIOType): "+string(ex.err));
     }
     catch(IOController_i::IOBadParam& ex)
@@ -611,32 +611,32 @@ IOType UInterface::getIOType(ObjectId name, ObjectId node)
     }
     catch(ORepFailed)
     {
-        rcache.erase(name, node);
+        rcache.erase(name, node);        
         // не смогли получить ссылку на объект
         throw UniSetTypes::IOBadParam(set_err("UI(getIOType): resolve failed ",name,node));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
-        rcache.erase(name, node);
-        throw UniSetTypes::IOBadParam(set_err("UI(getIOType): method no implement",name,node));
-    }
+        rcache.erase(name, node);        
+        throw UniSetTypes::IOBadParam(set_err("UI(getIOType): method no implement",name,node));        
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
-        rcache.erase(name, node);
+        rcache.erase(name, node);        
         throw UniSetTypes::IOBadParam(set_err("UI(getIOType): object not exist",name,node));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(getIOType): ошибка системы коммуникации" << endl;
-    }
+        // uwarn << "UI(getIOType): ошибка системы коммуникации" << endl;
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(getIOType): CORBA::SystemException" << endl;
-    }
+        // uwarn << "UI(getIOType): CORBA::SystemException" << endl;
+    }    
 
-    rcache.erase(name, node);
+    rcache.erase(name, node);    
     throw UniSetTypes::TimeOut(set_err("UI(getIOType): Timeout",name, node));
 }
 
@@ -663,12 +663,12 @@ ObjectType UInterface::getType(ObjectId name, ObjectId node)
             oref = rcache.resolve(name, node);
         }
         catch( NameNotFound ){}
-
+        
         for (unsigned int i=0; i<uconf->getRepeatCount(); i++)
         {
             try
             {
-                if( CORBA::is_nil(oref) )
+                if( CORBA::is_nil(oref) )                
                     oref = resolve( name, node );
 
                 UniSetObject_i_var uo = UniSetObject_i::_narrow(oref);
@@ -677,13 +677,13 @@ ObjectType UInterface::getType(ObjectId name, ObjectId node)
             catch(CORBA::TRANSIENT){}
             catch(CORBA::OBJECT_NOT_EXIST){}
             catch(CORBA::SystemException& ex){}
-            msleep(uconf->getRepeatTimeout());
-            oref = CORBA::Object::_nil();
+            msleep(uconf->getRepeatTimeout());            
+            oref = CORBA::Object::_nil();            
         }
     }
     catch(IOController_i::NameNotFound& ex)
     {
-        rcache.erase(name, node);
+        rcache.erase(name, node);    
         throw UniSetTypes::NameNotFound("UI(getType): "+string(ex.err));
     }
     catch(IOController_i::IOBadParam& ex)
@@ -693,33 +693,33 @@ ObjectType UInterface::getType(ObjectId name, ObjectId node)
     }
     catch(ORepFailed)
     {
-        rcache.erase(name, node);
+        rcache.erase(name, node);        
         // не смогли получить ссылку на объект
         throw UniSetTypes::IOBadParam(set_err("UI(getType): resolve failed ",name,node));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
-        rcache.erase(name, node);
-        throw UniSetTypes::IOBadParam(set_err("UI(getType): method no implement",name,node));
-    }
+        rcache.erase(name, node);        
+        throw UniSetTypes::IOBadParam(set_err("UI(getType): method no implement",name,node));        
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
-        rcache.erase(name, node);
+        rcache.erase(name, node);        
         throw UniSetTypes::IOBadParam(set_err("UI(getType): object not exist",name,node));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(getType): ошибка системы коммуникации" << endl;
-    }
+        // uwarn << "UI(getType): ошибка системы коммуникации" << endl;
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(getType): CORBA::SystemException" << endl;
-    }
+        // uwarn << "UI(getType): CORBA::SystemException" << endl;
+    }    
     catch(UniSetTypes::TimeOut){}
-
-    rcache.erase(name, node);
+    
+    rcache.erase(name, node);    
     throw UniSetTypes::TimeOut(set_err("UI(getType): Timeout",name, node));
 }
 
@@ -736,7 +736,7 @@ void UInterface::registered(UniSetTypes::ObjectId id, const UniSetTypes::ObjectP
 }
 
 // ------------------------------------------------------------------------------------------------------------
-void UInterface::registered( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node,
+void UInterface::registered( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node, 
             const UniSetTypes::ObjectPtr oRef, bool force ) throw(ORepFailed)
 {
     // если влючён режим использования локальных файлов
@@ -805,25 +805,15 @@ ObjectPtr UInterface::resolve( ObjectId rid , ObjectId node, int timeoutSec )
             if( !sior.empty() )
             {
                 CORBA::Object_var nso = orb->string_to_object(sior.c_str());
-                rcache.cache(rid, node, nso); // заносим в кэш
+                rcache.cache(rid, node, nso); // заносим в кэш 
                 return nso._retn();
             }
             else
             {
                 // если NameService недоступен то,
                 // сразу выдаём ошибку
-//                if( CORBA::is_nil(localctx) )
-//                {
-                    if( ulog.is_warn() )
-                    {
-                        ulog.warn() << "not found IOR-file for " << uconf->oind->getNameById(rid,node) << endl;
-                    }
-                    throw UniSetTypes::ResolveNameError();
-//                }
-                // иначе пытаемся получить ссылку через NameService (omniNames)
-//                ulog.warn() << "не найден IOR-файл для " << uconf->oind->getNameById(rid,node)
-//                                    << " пытаемся получить доступ через NameService \n";
-
+                uwarn << "not found IOR-file for " << uconf->oind->getNameById(rid,node) << endl;
+                throw UniSetTypes::ResolveNameError();
             }
         }
 
@@ -838,12 +828,10 @@ ObjectPtr UInterface::resolve( ObjectId rid , ObjectId node, int timeoutSec )
             {
                 try
                 {
-//                    // ulog.info() << "пытаемся связаться с "<< node << endl;
                     if( CORBA::is_nil(orb) )
                         orb = uconf->getORB();
 
                     ctx = ORepHelpers::getRootNamingContext( orb, nodeName.c_str() );
-//                    // ulog.info() << "ok. "<< endl;
                     break;
                 }
 //                catch(CORBA::COMM_FAILURE& ex )
@@ -855,12 +843,12 @@ ObjectPtr UInterface::resolve( ObjectId rid , ObjectId node, int timeoutSec )
                     ostringstream s;
                     s << bname << curNet;
                     nodeName=s.str();
-                }
+                }    
             }
-
+            
             if( CORBA::is_nil(ctx) )
             {
-                // ulog.warn() << "NameService недоступен на узле "<< node << endl;
+                // uwarn << "NameService недоступен на узле "<< node << endl;
                 throw NSResolveError();
             }
         }
@@ -879,28 +867,28 @@ ObjectPtr UInterface::resolve( ObjectId rid , ObjectId node, int timeoutSec )
                 else
                     localctx = ORepHelpers::getRootNamingContext( orb, nodeName );
             }
-
+            
             ctx = localctx;
         }
-
+        
         CosNaming::Name_var oname = omniURI::stringToName( oind->getNameById(rid,node).c_str() );
         for (unsigned int i=0; i<uconf->getRepeatCount(); i++)
         {
-            try
+            try        
             {
                 CORBA::Object_var nso = ctx->resolve(oname);
                 if( CORBA::is_nil(nso) )
                     throw UniSetTypes::ResolveNameError();
 
                 // Для var
-                rcache.cache(rid, node, nso); // заносим в кэш
+                rcache.cache(rid, node, nso); // заносим в кэш 
                 return nso._retn();
             }
             catch(CORBA::TRANSIENT){}
 
             msleep(uconf->getRepeatTimeout());
         }
-
+        
         throw UniSetTypes::TimeOut();
     }
     catch(const CosNaming::NamingContext::NotFound &nf){}
@@ -910,23 +898,23 @@ ObjectPtr UInterface::resolve( ObjectId rid , ObjectId node, int timeoutSec )
     catch(CORBA::OBJECT_NOT_EXIST)
     {
         throw UniSetTypes::ResolveNameError("ObjectNOTExist");
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         throw UniSetTypes::ResolveNameError("CORBA::CommFailure");
-    }
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(resolve): CORBA::SystemException" << endl;
+        // uwarn << "UI(resolve): CORBA::SystemException" << endl;
         throw UniSetTypes::TimeOut();
-    }
+    }    
 
     throw UniSetTypes::ResolveNameError();
 }
 
 // -------------------------------------------------------------------------------------------
-void UInterface::send( ObjectId name, TransportMessage& msg, ObjectId node)
+void UInterface::send( ObjectId name, TransportMessage& msg, ObjectId node) 
     throw(IO_THROW_EXCEPTIONS)
 {
     if ( name == DefaultObjectId )
@@ -963,27 +951,27 @@ void UInterface::send( ObjectId name, TransportMessage& msg, ObjectId node)
     {
         rcache.erase(name, node);
         throw UniSetTypes::IOBadParam(set_err("UI(send): resolve failed ",name,node));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
         rcache.erase(name, node);
         throw UniSetTypes::IOBadParam(set_err("UI(send): method no implement",name,node));
-    }
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
         rcache.erase(name, node);
         throw UniSetTypes::IOBadParam(set_err("UI(send): object not exist",name,node));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(send): ошибка системы коммуникации" << endl;
-    }
+        // uwarn << "UI(send): ошибка системы коммуникации" << endl;
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(send): CORBA::SystemException" << endl;
-    }
+        // uwarn << "UI(send): CORBA::SystemException" << endl;
+    }    
 
     rcache.erase(name, node);
     throw UniSetTypes::TimeOut(set_err("UI(send): Timeout",name, node));
@@ -1034,7 +1022,7 @@ IOController_i::ShortIOInfo UInterface::getChangedTime( UniSetTypes::ObjectId id
     catch(IOController_i::NameNotFound &ex)
     {
         rcache.erase(si.id, si.node);
-        ulog.warn() << "UI(getChangedTime): " << ex.err << endl;
+        uwarn << "UI(getChangedTime): " << ex.err << endl;
     }
     catch(IOController_i::IOBadParam& ex )
     {
@@ -1044,27 +1032,27 @@ IOController_i::ShortIOInfo UInterface::getChangedTime( UniSetTypes::ObjectId id
     catch(ORepFailed)
     {
         rcache.erase(si.id, si.node);
-        ulog.warn() << set_err("UI(getChangedTime): resolve failed ",si.id,si.node) << endl;
-    }
+        uwarn << set_err("UI(getChangedTime): resolve failed ",si.id,si.node) << endl;
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
-        rcache.erase(si.id, si.node);
-        ulog.warn() << set_err("UI(getChangedTime): method no implement",si.id,si.node) << endl;
-    }
+        rcache.erase(si.id, si.node);        
+        uwarn << set_err("UI(getChangedTime): method no implement",si.id,si.node) << endl;
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
         rcache.erase(si.id, si.node);
-        ulog.warn() << set_err("UI(getChangedTime): object not exist",si.id,si.node) << endl;
-    }
+        uwarn << set_err("UI(getChangedTime): object not exist",si.id,si.node) << endl;
+    }    
     catch(CORBA::COMM_FAILURE)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(saveState): CORBA::COMM_FAILURE " << endl;
-    }
+        // uwarn << "UI(saveState): CORBA::COMM_FAILURE " << endl;
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(saveState): CORBA::SystemException" << endl;
+        // uwarn << "UI(saveState): CORBA::SystemException" << endl;
     }
     catch(...){}
 
@@ -1116,8 +1104,7 @@ bool UInterface::CacheOfResolve::clean()
 {
     UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
 
-    if( ulog.is_info() )
-        ulog.info() << "UI: clean cache...."<< endl;
+    uinfo << "UI: clean cache...."<< endl;
 
      time_t tm = time(NULL)-CleanTime*60;
 //    remove_if(mcache.begin(), mcache.end(),OldRef_eq(tm));
@@ -1131,7 +1118,7 @@ bool UInterface::CacheOfResolve::clean()
 
     if( mcache.size() < MaxSize )
         return true;
-
+        
     return false;
 }
 // ------------------------------------------------------------------------------------------------------------
@@ -1163,16 +1150,16 @@ bool UInterface::isExist( UniSetTypes::ObjectId id )
                 CORBA::Object_var oref = orb->string_to_object(sior.c_str());
                 return rep.isExist( oref );
             }
-
+            
             return false;
         }
-
+    
         string nm = oind->getNameById(id);
         return rep.isExist(nm);
     }
     catch(UniSetTypes::Exception& ex)
     {
-//        ulog.warn() << "UI(isExist): " << ex << endl;
+//        uwarn << "UI(isExist): " << ex << endl;
     }
     catch(...){}
     return false;
@@ -1208,13 +1195,13 @@ string UInterface::set_err(const std::string& pre, UniSetTypes::ObjectId id, Uni
         return string(pre+" DefaultObjectId");
 
     string nm(oind->getNameById(id,node));
-
+    
     if( nm.empty() )
         nm = "UnknownName";
 
     ostringstream s;
-    s << pre << " (" << id << ")" << nm;
-    return s.str();
+    s << pre << " (" << id << ")" << nm; 
+    return s.str();    
 }
 // --------------------------------------------------------------------------------------------
 void UInterface::askThreshold( UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid,
@@ -1223,7 +1210,7 @@ void UInterface::askThreshold( UniSetTypes::ObjectId sid, UniSetTypes::Threshold
                                         UniSetTypes::ObjectId backid)
 {
     askRemoteThreshold(sid, uconf->getLocalNode(), tid, cmd, low, hi, invert, backid);
-}
+}                            
 // --------------------------------------------------------------------------------------------
 void UInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTypes::ObjectId node,
                                          UniSetTypes::ThresholdId tid, UniversalIO::UIOCommand cmd,
@@ -1232,7 +1219,7 @@ void UInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTypes::Obj
 {
     if( backid==UniSetTypes::DefaultObjectId )
         backid = myid;
-
+        
     if( backid==UniSetTypes::DefaultObjectId )
         throw UniSetTypes::IOBadParam("UI(askRemoteThreshold): unknown back ID");
 
@@ -1247,14 +1234,14 @@ void UInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTypes::Obj
             oref = rcache.resolve(sid, node);
         }
         catch( NameNotFound ){}
-
+        
         for (unsigned int i=0; i<uconf->getRepeatCount(); i++)
         {
             try
             {
                 if( CORBA::is_nil(oref) )
                     oref = resolve( sid, node );
-
+            
                 IONotifyController_i_var inc = IONotifyController_i::_narrow(oref);
                 IOController_i::SensorInfo_var si;
                 si->id = sid;
@@ -1287,35 +1274,35 @@ void UInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTypes::Obj
     }
     catch(ORepFailed)
     {
-        rcache.erase(sid, node);
+        rcache.erase(sid, node);        
         throw UniSetTypes::IOBadParam(set_err("UI(askThreshold): resolve failed ",sid,node));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
-        rcache.erase(sid, node);
-        throw UniSetTypes::IOBadParam(set_err("UI(askThreshold): method no implement",sid,node));
-    }
+        rcache.erase(sid, node);        
+        throw UniSetTypes::IOBadParam(set_err("UI(askThreshold): method no implement",sid,node));        
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
-        rcache.erase(sid, node);
+        rcache.erase(sid, node);        
         throw UniSetTypes::IOBadParam(set_err("UI(askThreshold): object not exist",sid,node));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(askThreshold): ошибка системы коммуникации" << endl;
-    }
+        // uwarn << "UI(askThreshold): ошибка системы коммуникации" << endl;
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(askThreshold): CORBA::SystemException" << endl;
-    }
-    rcache.erase(sid, node);
+        // uwarn << "UI(askThreshold): CORBA::SystemException" << endl;
+    }    
+    rcache.erase(sid, node);    
     throw UniSetTypes::TimeOut(set_err("UI(askThreshold): Timeout",sid,node));
 
 }
 // --------------------------------------------------------------------------------------------
-IONotifyController_i::ThresholdInfo
+IONotifyController_i::ThresholdInfo 
     UInterface::getThresholdInfo( UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid )
 {
     IOController_i::SensorInfo si;
@@ -1324,7 +1311,7 @@ IONotifyController_i::ThresholdInfo
     return getThresholdInfo(si,tid);
 }
 // --------------------------------------------------------------------------------------------------------------
-IONotifyController_i::ThresholdInfo
+IONotifyController_i::ThresholdInfo 
     UInterface::getThresholdInfo( const IOController_i::SensorInfo& si, UniSetTypes::ThresholdId tid )
 {
     if ( si.id == DefaultObjectId )
@@ -1369,30 +1356,30 @@ IONotifyController_i::ThresholdInfo
     }
     catch(ORepFailed)
     {
-        rcache.erase(si.id, si.node);
+        rcache.erase(si.id, si.node);        
         // не смогли получить ссылку на объект
         throw UniSetTypes::IOBadParam(set_err("UI(getThresholdInfo): resolve failed ",si.id,si.node));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
-        rcache.erase(si.id, si.node);
-        throw UniSetTypes::IOBadParam(set_err("UI(getThresholdInfo): method no implement",si.id,si.node));
-    }
+        rcache.erase(si.id, si.node);        
+        throw UniSetTypes::IOBadParam(set_err("UI(getThresholdInfo): method no implement",si.id,si.node));        
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
-        rcache.erase(si.id, si.node);
+        rcache.erase(si.id, si.node);        
         throw UniSetTypes::IOBadParam(set_err("UI(getThresholdInfo): object not exist",si.id,si.node));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-    }
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(getValue): CORBA::SystemException" << endl;
-    }
-    rcache.erase(si.id, si.node);
+        // uwarn << "UI(getValue): CORBA::SystemException" << endl;
+    }    
+    rcache.erase(si.id, si.node);        
     throw UniSetTypes::TimeOut(set_err("UI(getThresholdInfo): Timeout",si.id,si.node));
 }
 // --------------------------------------------------------------------------------------------
@@ -1440,40 +1427,40 @@ long UInterface::getRawValue( const IOController_i::SensorInfo& si )
     }
     catch(ORepFailed)
     {
-        rcache.erase(si.id, si.node);
+        rcache.erase(si.id, si.node);        
         // не смогли получить ссылку на объект
         throw UniSetTypes::IOBadParam(set_err("UI(getRawValue): resolve failed ",si.id,si.node));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
-        rcache.erase(si.id, si.node);
-        throw UniSetTypes::IOBadParam(set_err("UI(getRawValue): method no implement",si.id,si.node));
-    }
+        rcache.erase(si.id, si.node);        
+        throw UniSetTypes::IOBadParam(set_err("UI(getRawValue): method no implement",si.id,si.node));        
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
-        rcache.erase(si.id, si.node);
+        rcache.erase(si.id, si.node);        
         throw UniSetTypes::IOBadParam(set_err("UI(getRawValue): object not exist",si.id,si.node));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-    }
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(getValue): CORBA::SystemException" << endl;
-    }
-    rcache.erase(si.id, si.node);
+        // uwarn << "UI(getValue): CORBA::SystemException" << endl;
+    }    
+    rcache.erase(si.id, si.node);        
     throw UniSetTypes::TimeOut(set_err("UI(getRawValue): Timeout",si.id,si.node));
 }
 // --------------------------------------------------------------------------------------------
-void UInterface::calibrate(const IOController_i::SensorInfo& si,
+void UInterface::calibrate(const IOController_i::SensorInfo& si, 
                                    const IOController_i::CalibrateInfo& ci,
                                    UniSetTypes::ObjectId admId )
 {
     if( admId==UniSetTypes::DefaultObjectId )
         admId = myid;
-
+        
 //    if( admId==UniSetTypes::DefaultObjectId )
 //        throw UniSetTypes::IOBadParam("UI(askTreshold): неизвестен ID администратора");
 
@@ -1520,32 +1507,32 @@ void UInterface::calibrate(const IOController_i::SensorInfo& si,
     }
     catch(ORepFailed)
     {
-        rcache.erase(si.id, si.node);
+        rcache.erase(si.id, si.node);        
         // не смогли получить ссылку на объект
         throw UniSetTypes::IOBadParam(set_err("UI(calibrate): resolve failed ",si.id,si.node));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
-        rcache.erase(si.id, si.node);
-        throw UniSetTypes::IOBadParam(set_err("UI(calibrate): method no implement",si.id,si.node));
-    }
+        rcache.erase(si.id, si.node);        
+        throw UniSetTypes::IOBadParam(set_err("UI(calibrate): method no implement",si.id,si.node));        
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
-        rcache.erase(si.id, si.node);
+        rcache.erase(si.id, si.node);        
         throw UniSetTypes::IOBadParam(set_err("UI(calibrate): object not exist",si.id,si.node));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-    }
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(getValue): CORBA::SystemException" << endl;
-    }
-    rcache.erase(si.id, si.node);
+        // uwarn << "UI(getValue): CORBA::SystemException" << endl;
+    }    
+    rcache.erase(si.id, si.node);        
     throw UniSetTypes::TimeOut(set_err("UI(calibrate): Timeout",si.id,si.node));
-}
+}               
 // --------------------------------------------------------------------------------------------
 IOController_i::CalibrateInfo UInterface::getCalibrateInfo( const IOController_i::SensorInfo& si )
 {
@@ -1591,30 +1578,30 @@ IOController_i::CalibrateInfo UInterface::getCalibrateInfo( const IOController_i
     }
     catch(ORepFailed)
     {
-        rcache.erase(si.id, si.node);
+        rcache.erase(si.id, si.node);        
         // не смогли получить ссылку на объект
         throw UniSetTypes::IOBadParam(set_err("UI(getCalibrateInfo): resolve failed ",si.id,si.node));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
-        rcache.erase(si.id, si.node);
-        throw UniSetTypes::IOBadParam(set_err("UI(getCalibrateInfo): method no implement",si.id,si.node));
-    }
+        rcache.erase(si.id, si.node);        
+        throw UniSetTypes::IOBadParam(set_err("UI(getCalibrateInfo): method no implement",si.id,si.node));        
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
-        rcache.erase(si.id, si.node);
+        rcache.erase(si.id, si.node);        
         throw UniSetTypes::IOBadParam(set_err("UI(getCalibrateInfo): object not exist",si.id,si.node));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-    }
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(getValue): CORBA::SystemException" << endl;
-    }
-    rcache.erase(si.id, si.node);
+        // uwarn << "UI(getValue): CORBA::SystemException" << endl;
+    }    
+    rcache.erase(si.id, si.node);        
     throw UniSetTypes::TimeOut(set_err("UI(getCalibrateInfo): Timeout",si.id,si.node));
 }
 // --------------------------------------------------------------------------------------------
@@ -1645,7 +1632,7 @@ IOController_i::SensorInfoSeq_var UInterface::getSensorSeq( UniSetTypes::IDList&
                     oref = resolve(sid,conf->getLocalNode());
 
                 IOController_i_var iom = IOController_i::_narrow(oref);
-
+                
                 UniSetTypes::IDSeq_var seq = lst.getIDSeq();
                 return iom->getSensorSeq(seq);
             }
@@ -1672,26 +1659,26 @@ IOController_i::SensorInfoSeq_var UInterface::getSensorSeq( UniSetTypes::IDList&
         rcache.erase(sid,conf->getLocalNode());
         // не смогли получить ссылку на объект
         throw UniSetTypes::IOBadParam(set_err("UI(getSensorSeq): resolve failed ",sid,conf->getLocalNode()));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
         rcache.erase(sid,conf->getLocalNode());
-        throw UniSetTypes::IOBadParam(set_err("UI(getSensorSeq): method no implement",sid,conf->getLocalNode()));
-    }
+        throw UniSetTypes::IOBadParam(set_err("UI(getSensorSeq): method no implement",sid,conf->getLocalNode()));        
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
         rcache.erase(sid,conf->getLocalNode());
         throw UniSetTypes::IOBadParam(set_err("UI(getSensorSeq): object not exist",sid,conf->getLocalNode()));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-    }
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(getValue): CORBA::SystemException" << endl;
-    }
+        // uwarn << "UI(getValue): CORBA::SystemException" << endl;
+    }    
     rcache.erase(sid,conf->getLocalNode());
     throw UniSetTypes::TimeOut(set_err("UI(getSensorSeq): Timeout",sid,conf->getLocalNode()));
 
@@ -1748,31 +1735,31 @@ IDSeq_var UInterface::setOutputSeq( const IOController_i::OutSeq& lst, UniSetTyp
         rcache.erase(lst[0].si.id,lst[0].si.node);
         // не смогли получить ссылку на объект
         throw UniSetTypes::IOBadParam(set_err("UI(setOutputSeq): resolve failed ",lst[0].si.id,lst[0].si.node));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
         rcache.erase(lst[0].si.id,lst[0].si.node);
-        throw UniSetTypes::IOBadParam(set_err("UI(setOutputSeq): method no implement",lst[0].si.id,lst[0].si.node));
-    }
+        throw UniSetTypes::IOBadParam(set_err("UI(setOutputSeq): method no implement",lst[0].si.id,lst[0].si.node));        
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
         rcache.erase(lst[0].si.id,lst[0].si.node);
         throw UniSetTypes::IOBadParam(set_err("UI(setOutputSeq): object not exist",lst[0].si.id,lst[0].si.node));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-    }
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(getValue): CORBA::SystemException" << endl;
-    }
+        // uwarn << "UI(getValue): CORBA::SystemException" << endl;
+    }    
     rcache.erase(lst[0].si.id,lst[0].si.node);
     throw UniSetTypes::TimeOut(set_err("UI(setOutputSeq): Timeout",lst[0].si.id,lst[0].si.node));
 }
 // --------------------------------------------------------------------------------------------
-UniSetTypes::IDSeq_var UInterface::askSensorsSeq( UniSetTypes::IDList& lst,
+UniSetTypes::IDSeq_var UInterface::askSensorsSeq( UniSetTypes::IDList& lst, 
                                                         UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId backid )
 {
     if( lst.size() == 0 )
@@ -1780,7 +1767,7 @@ UniSetTypes::IDSeq_var UInterface::askSensorsSeq( UniSetTypes::IDList& lst,
 
     if( backid==UniSetTypes::DefaultObjectId )
         backid = myid;
-
+        
     if( backid==UniSetTypes::DefaultObjectId )
         throw UniSetTypes::IOBadParam("UI(askSensorSeq): unknown back ID");
 
@@ -1837,26 +1824,26 @@ UniSetTypes::IDSeq_var UInterface::askSensorsSeq( UniSetTypes::IDList& lst,
         rcache.erase(sid,conf->getLocalNode());
         // не смогли получить ссылку на объект
         throw UniSetTypes::IOBadParam(set_err("UI(askSensorSeq): resolve failed ",sid,conf->getLocalNode()));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
         rcache.erase(sid,conf->getLocalNode());
-        throw UniSetTypes::IOBadParam(set_err("UI(askSensorSeq): method no implement",sid,conf->getLocalNode()));
-    }
+        throw UniSetTypes::IOBadParam(set_err("UI(askSensorSeq): method no implement",sid,conf->getLocalNode()));        
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
         rcache.erase(sid,conf->getLocalNode());
         throw UniSetTypes::IOBadParam(set_err("UI(askSensorSeq): object not exist",sid,conf->getLocalNode()));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-    }
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(getValue): CORBA::SystemException" << endl;
-    }
+        // uwarn << "UI(getValue): CORBA::SystemException" << endl;
+    }    
     rcache.erase(sid,conf->getLocalNode());
     throw UniSetTypes::TimeOut(set_err("UI(askSensorSeq): Timeout",sid,conf->getLocalNode()));
 }
@@ -1905,26 +1892,26 @@ IOController_i::ShortMapSeq* UInterface::getSensors( UniSetTypes::ObjectId id, U
         rcache.erase(id,node);
         // не смогли получить ссылку на объект
         throw UniSetTypes::IOBadParam(set_err("UI(getSensors): resolve failed ",id,node));
-    }
+    }    
     catch(CORBA::NO_IMPLEMENT)
     {
         rcache.erase(id,node);
-        throw UniSetTypes::IOBadParam(set_err("UI(getSensors): method no implement",id,node));
-    }
+        throw UniSetTypes::IOBadParam(set_err("UI(getSensors): method no implement",id,node));        
+    }    
     catch(CORBA::OBJECT_NOT_EXIST)
     {
         rcache.erase(id,node);
         throw UniSetTypes::IOBadParam(set_err("UI(getSensors): object not exist",id,node));
-    }
+    }    
     catch(CORBA::COMM_FAILURE& ex)
     {
         // ошибка системы коммуникации
-    }
+    }    
     catch(CORBA::SystemException& ex)
     {
         // ошибка системы коммуникации
-        // ulog.warn() << "UI(getValue): CORBA::SystemException" << endl;
-    }
+        // uwarn << "UI(getValue): CORBA::SystemException" << endl;
+    }    
     rcache.erase(id,node);
     throw UniSetTypes::TimeOut(set_err("UI(getSensors): Timeout",id,node));
 }
@@ -1942,10 +1929,10 @@ bool UInterface::waitReady( UniSetTypes::ObjectId id, int msec, int pmsec, Objec
                 break;
         }
         catch(...){}
-
+    
         msleep(pmsec);
     }
-
+    
     return ready;
 }
 // -----------------------------------------------------------------------------
@@ -1974,11 +1961,11 @@ UniversalIO::IOType UInterface::getConfIOType( UniSetTypes::ObjectId id )
 {
     if( !conf )
         return UniversalIO::UnknownIOType;
-
+        
     xmlNode* x = conf->getXMLObjectNode(id);
     if( !x )
         return UniversalIO::UnknownIOType;
-
+    
     UniXML_iterator it(x);
     return UniSetTypes::getIOType( it.getProp("iotype") );
 }

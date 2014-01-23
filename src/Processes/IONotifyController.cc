@@ -44,7 +44,7 @@ askIOMutex("askIOMutex"),
 trshMutex("trshMutex"),
 maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
 {
-
+    
 }
 
 IONotifyController::IONotifyController(const string& name, const string& section, NCRestorer* d ):
@@ -103,7 +103,7 @@ bool IONotifyController::addConsumer(ConsumerList& lst, const ConsumerInfo& ci )
 //    ConsumerList::const_iterator it= find_if(lst.begin(), lst.end(), FindCons_eq(ci));
 //    if(it != lst.end() )
 //        return;
-    for( ConsumerList::const_iterator it=lst.begin(); it!=lst.end(); ++it)
+    for( ConsumerList::const_iterator it=lst.begin(); it!=lst.end(); ++it) 
     {
         if( it->id==ci.id && it->node==ci.node )
             return false;
@@ -117,7 +117,7 @@ bool IONotifyController::addConsumer(ConsumerList& lst, const ConsumerInfo& ci )
         cinf.ref = UniSetObject_i::_narrow(op);
     }
     catch(...){}
-
+    
     lst.push_front(cinf);
     return true;
 }
@@ -132,14 +132,13 @@ bool IONotifyController::removeConsumer(ConsumerList& lst, const ConsumerInfo& c
     {
 //        ConsumerInfo tmp(*li);
 //        if( cons == tmp )
-        if( li->id == cons.id && li->node == cons.node  )
+        if( li->id == cons.id && li->node == cons.node  )        
         {
             lst.erase(li);
-//            ulog.info() << name.c_name() <<": удаляем "<< name << " из списка потребителей" << endl;
             return true;
         }
     }
-
+    
     return false;
 }
 // ------------------------------------------------------------------------------------------
@@ -148,16 +147,13 @@ bool IONotifyController::removeConsumer(ConsumerList& lst, const ConsumerInfo& c
  *    \param ci         - информация о заказчике
  *    \param cmd         - команда см. UniversalIO::UIOCommand
 */
-void IONotifyController::askSensor(const IOController_i::SensorInfo& si,
+void IONotifyController::askSensor(const IOController_i::SensorInfo& si, 
                                     const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd )
 {
-    if( ulog.is_info() )
-    {
-        ulog.info() << "(askSensor): поступил " << ( cmd == UIODontNotify ? "отказ" :"заказ" ) << " от "
+    uinfo << "(askSensor): поступил " << ( cmd == UIODontNotify ? "отказ" :"заказ" ) << " от "
             << conf->oind->getNameById(ci.id, ci.node)
             << " на аналоговый датчик "
             << conf->oind->getNameById(si.id,si.node) << endl;
-    }
 
     // если такого аналогового датчика нет, здесь сработает исключение...
     IOStateList::iterator li = myioEnd();
@@ -165,11 +161,11 @@ void IONotifyController::askSensor(const IOController_i::SensorInfo& si,
 
     {    // lock
         uniset_rwmutex_wrlock lock(askIOMutex);
-        // а раз есть заносим(исключаем) заказчика
+        // а раз есть заносим(исключаем) заказчика 
         ask( askIOList, si, ci, cmd);
     }    // unlock
 
-    // посылка первый раз состояния
+    // посылка первый раз состояния 
     if( cmd==UniversalIO::UIONotify || (cmd==UIONotifyFirstNotNull && li->second.value) )
     {
         SensorMessage  smsg;
@@ -177,7 +173,7 @@ void IONotifyController::askSensor(const IOController_i::SensorInfo& si,
         smsg.node         = si.node;
         smsg.consumer     = ci.id;
         smsg.supplier     = getId();
-        smsg.sensor_type= li->second.type;
+        smsg.sensor_type= li->second.type;    
         smsg.priority    = (Message::Priority)li->second.priority;
         smsg.sm_tv_sec    = li->second.tv_sec;
         smsg.sm_tv_usec    = li->second.tv_usec;
@@ -189,7 +185,7 @@ void IONotifyController::askSensor(const IOController_i::SensorInfo& si,
             smsg.sm_tv_sec    = li->second.tv_sec;
             smsg.sm_tv_usec    = li->second.tv_usec;
         }
-
+            
         TransportMessage tm(smsg.transport_msg());
         try
         {
@@ -197,21 +193,18 @@ void IONotifyController::askSensor(const IOController_i::SensorInfo& si,
         }
         catch(Exception& ex)
         {
-            if( ulog.is_warn() )
-                   ulog.warn() << myname << "(askSensor): " <<  conf->oind->getNameById(si.id, si.node) << " catch "<< ex << endl;
+            uwarn << myname << "(askSensor): " <<  conf->oind->getNameById(si.id, si.node) << " catch "<< ex << endl;
         }
         catch( CORBA::SystemException& ex )
         {
-            if( ulog.is_warn() )
-                ulog.warn() << conf->oind->getNameById(ci.id, ci.node)
-                    << " недоступен!!(CORBA::SystemException): "
-                    << ex.NP_minorString() << endl;
-        }
+            uwarn << myname << "(askSensor): " << conf->oind->getNameById(ci.id, ci.node)
+                  << " недоступен!!(CORBA::SystemException): "
+                  << ex.NP_minorString() << endl;
+        }    
         catch(...)
         {
-            if( ulog.is_warn() )
-                ulog.warn() << conf->oind->getNameById(ci.id, ci.node)
-                    << " catch..." << endl;
+            uwarn << myname << "(askSensor): " << conf->oind->getNameById(ci.id, ci.node)
+                  << " catch..." << endl;
         }
     }
 }
@@ -220,7 +213,7 @@ void IONotifyController::askSensor(const IOController_i::SensorInfo& si,
 void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& si, 
                                 const UniSetTypes::ConsumerInfo& cons, UniversalIO::UIOCommand cmd)
 {
-    // поиск датчика в списке
+    // поиск датчика в списке 
     UniSetTypes::KeyType k( key(si.id,si.node) );
     AskMap::iterator askIterator = askLst.find(k);
 
@@ -230,26 +223,24 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
         case UniversalIO::UIONotifyChange:
         case UniversalIO::UIONotifyFirstNotNull:
         {
-               if( askIterator==askLst.end() )
+               if( askIterator==askLst.end() ) 
             {
                 ConsumerList lst; // создаем новый список
-                addConsumer(lst,cons);
+                addConsumer(lst,cons);      
                 // более оптимальный способ(при условии вставки первый раз) //    askLst[key]=lst;
                 askLst.insert(AskMap::value_type(k,lst));
-
+                
                 try
                 {
                     dumpOrdersList(si,lst);
                 }
                 catch(Exception& ex)
                 {
-                    if( ulog.is_warn() )
-                        ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
+                    uwarn << myname << " не смогли сделать dump: " << ex << endl;
                 }
                 catch(...)
                 {
-                    if( ulog.is_warn() )
-                        ulog.warn() << myname << " не смогли сделать dump (catch...)" << endl;
+                    uwarn << myname << " не смогли сделать dump (catch...)" << endl;
                 }
             }
             else
@@ -262,13 +253,11 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
                     }
                     catch(Exception& ex)
                     {
-                        if( ulog.is_warn() )
-                            ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
+                        uwarn << myname << " не смогли сделать dump: " << ex << endl;
                     }
                     catch(...)
                     {
-                        if( ulog.is_warn() )
-                            ulog.warn() << myname << " не смогли сделать dump (catch...)" << endl;
+                        uwarn << myname << " не смогли сделать dump (catch...)" << endl;
                     }
                 }
             }
@@ -282,7 +271,7 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
                 if( removeConsumer(askIterator->second, cons) )
                 {
                     if( askIterator->second.empty() )
-                        askLst.erase(askIterator);
+                        askLst.erase(askIterator);    
                     else
                     {
                         try
@@ -291,13 +280,11 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
                         }
                         catch(Exception& ex)
                         {
-                            if( ulog.is_warn() )
-                                ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
+                            uwarn << myname << " не смогли сделать dump: " << ex << endl;
                         }
                         catch(...)
                         {
-                            if( ulog.is_warn() )
-                                ulog.warn() << myname << " не смогли сделать dump (catch...)" << endl;
+                            uwarn << myname << " не смогли сделать dump (catch...)" << endl;
                         }
                     }
                 }
@@ -310,17 +297,17 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
     }
 }
 // ------------------------------------------------------------------------------------------
-bool IONotifyController::myIOFilter( const USensorInfo& ai,
+bool IONotifyController::myIOFilter( const USensorInfo& ai, 
                                     CORBA::Long newvalue, UniSetTypes::ObjectId sup_id )
 {
     if( ai.value == newvalue )
         return false;
-
+    
     return true;
 }
 // ------------------------------------------------------------------------------------------
 void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
-                                         const IOController_i::SensorInfo& si,
+                                         const IOController_i::SensorInfo& si, 
                                          CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
     // Если датчик не найден сдесь сработает исключение
@@ -328,11 +315,10 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
     if( li == myioEnd() ) // ???
     {
         ostringstream err;
-        err << myname << "(localSetValue):  вход(выход) с именем "
+        err << myname << "(localSetValue):  вход(выход) с именем " 
         << conf->oind->getNameById(si.id) << " не найден";
 
-        if( ulog.is_info() )
-            ulog.info() << err.str() << endl;
+        uinfo << err.str() << endl;
         throw IOController_i::NameNotFound(err.str().c_str());
     }
 
@@ -347,7 +333,7 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
 
         if( prevValue == li->second.value )
             return;
-
+        
         // Рассылаем уведомления только в слуае изменения значения
         sm.id           = si.id;
         sm.node         = si.node;
@@ -362,12 +348,12 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
     } // unlock
 
     try
-    {
+    {   
         if( !li->second.dbignore )
             loggingInfo(sm);
     }
     catch(...){}
-
+    
     AskMap::iterator it = askIOList.find( key(si.id,si.node) );
     if( it!=askIOList.end() )
     {   // lock
@@ -409,21 +395,18 @@ void IONotifyController::send(ConsumerList& lst, UniSetTypes::SensorMessage& sm)
             }
             catch(Exception& ex)
             {
-                if( ulog.is_warn() )
-                       ulog.warn() << myname << "(IONotifyController::send): " << ex
+                uwarn << myname << "(IONotifyController::send): " << ex
                         << " for " << conf->oind->getNameById(li->id, li->node) << endl;
             }
             catch( CORBA::SystemException& ex )
             {
-                if( ulog.is_warn() )
-                    ulog.warn() << myname << "(IONotifyController::send): "
+                uwarn << myname << "(IONotifyController::send): "
                         << conf->oind->getNameById(li->id, li->node) << " (CORBA::SystemException): "
                         << ex.NP_minorString() << endl;
             }
             catch(...)
             {
-                if( ulog.is_crit() )
-                    ulog.crit() << myname << "(IONotifyController::send): "
+                ucrit << myname << "(IONotifyController::send): "
                         << conf->oind->getNameById(li->id, li->node) 
                         << " catch..." << endl;
             }
@@ -462,9 +445,8 @@ void IONotifyController::readDump()
             restorer->read(this);
     }
     catch(Exception& ex)
-    {
-        if( ulog.is_warn() )
-            ulog.warn() << myname << "(IONotifyController::readDump): " << ex << endl;
+    { 
+        uwarn << myname << "(IONotifyController::readDump): " << ex << endl;
     }
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -490,9 +472,8 @@ void IONotifyController::dumpOrdersList(const IOController_i::SensorInfo& si,
         restorer->dump(this,inf,lst);
     }
     catch(Exception& ex)
-    {
-        if( ulog.is_warn() )
-            ulog.warn() << myname << "(IONotifyController::dumpOrderList): " << ex << endl;
+    { 
+        uwarn << myname << "(IONotifyController::dumpOrderList): " << ex << endl;
     }
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -510,16 +491,15 @@ void IONotifyController::dumpThresholdList(const IOController_i::SensorInfo& si,
         restorer->dumpThreshold(this,inf,lst);
     }
     catch(Exception& ex)
-    {
-        if( ulog.is_warn() )
-            ulog.warn() << myname << "(IONotifyController::dumpThresholdList): " << ex << endl;
+    { 
+        uwarn << myname << "(IONotifyController::dumpThresholdList): " << ex << endl;
     }
 }
 // --------------------------------------------------------------------------------------------------------------
 
 void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, 
                                     UniSetTypes::ThresholdId tid,
-                                    CORBA::Long lowLimit, CORBA::Long hiLimit,  CORBA::Boolean invert,
+                                    CORBA::Long lowLimit, CORBA::Long hiLimit,  CORBA::Boolean invert, 
                                     UniversalIO::UIOCommand cmd )
 {
     if( lowLimit > hiLimit )
@@ -532,7 +512,7 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
     {    // lock
         uniset_rwmutex_wrlock lock(trshMutex);
 
-        // поиск датчика в списке
+        // поиск датчика в списке 
         UniSetTypes::KeyType skey( key(si.id,si.node) );
         AskThresholdMap::iterator it = askTMap.find(skey);
         ThresholdInfoExt ti(tid,lowLimit,hiLimit,invert);
@@ -543,7 +523,7 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
             case UniversalIO::UIONotify: // заказ
             case UniversalIO::UIONotifyChange:
             {
-                   if( it==askTMap.end() )
+                   if( it==askTMap.end() ) 
                 {
                     ThresholdExtList lst;    // создаем новый список
                     ThresholdsListInfo tli;
@@ -559,13 +539,11 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
                     }
                     catch(Exception& ex)
                     {
-                        if( ulog.is_warn() )
-                            ulog.warn() << myname << " не смогли сделать dump: " << ex << endl;
+                        uwarn << myname << " не смогли сделать dump: " << ex << endl;
                     }
                     catch(...)
                     {
-                        if( ulog.is_warn() )
-                            ulog.warn() << myname << " не смогли сделать dump" << endl;
+                        uwarn << myname << " не смогли сделать dump" << endl;
                     }
                 }
                 else
@@ -578,13 +556,11 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
                         }
                         catch(Exception& ex)
                         {
-                            if( ulog.is_warn() )
-                                ulog.warn() << myname << "(askThreshold): dump: " << ex << endl;
+                            uwarn << myname << "(askThreshold): dump: " << ex << endl;
                         }
                         catch(...)
                         {
-                            if( ulog.is_warn() )
-                                ulog.warn() << myname << "(askThreshold): dump catch..." << endl;
+                            uwarn << myname << "(askThreshold): dump catch..." << endl;
                         }
                     }
                 }
@@ -592,7 +568,7 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
                 if( cmd == UniversalIO::UIONotifyChange )
                     break;
 
-                // посылка первый раз состояния
+                // посылка первый раз состояния 
                 try
                 {
                     SensorMessage sm;
@@ -612,7 +588,7 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
                     if( val <= lowLimit )
                     {
                         sm.threshold = false;
-                    CORBA::Object_var op = ui.resolve(ci.id, ci.node);
+                        CORBA::Object_var op = ui.resolve(ci.id, ci.node);
                         UniSetObject_i_var ref = UniSetObject_i::_narrow(op);
                         if(!CORBA::is_nil(ref))
                             ref->push(sm.transport_msg());
@@ -629,19 +605,16 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
                 }
                 catch(Exception& ex)
                 {
-                    if( ulog.is_warn() )
-                        ulog.warn() << myname << "(askThreshod): " << ex << endl;
+                    uwarn << myname << "(askThreshod): " << ex << endl;
                 }
                 catch( CORBA::SystemException& ex )
                 {
-                    if( ulog.is_warn() )
-                        ulog.warn() << myname << "(askThreshod): CORBA::SystemException: "
+                    uwarn << myname << "(askThreshod): CORBA::SystemException: "
                             << ex.NP_minorString() << endl;
-                }
+                }    
                 catch(...)
-                {   
-                    if( ulog.is_warn() )
-                        ulog.warn() << myname << "(askThreshold): dump catch..." << endl;
+                {
+                    uwarn << myname << "(askThreshold): dump catch..." << endl;
                 }
             }
             break;
@@ -658,13 +631,11 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
                         }
                         catch(Exception& ex)
                         {
-                            if( ulog.is_warn() )
-                                ulog.warn() << myname << "(askThreshold): dump: " << ex << endl;
+                            uwarn << myname << "(askThreshold): dump: " << ex << endl;
                         }
                         catch(...)
                         {
-                            if( ulog.is_warn() )
-                                ulog.warn() << myname << "(askThreshold): dump catch..." << endl;
+                            uwarn << myname << "(askThreshold): dump catch..." << endl;
                         }
                     }
                 }
@@ -676,11 +647,11 @@ void IONotifyController::askThreshold(const IOController_i::SensorInfo& si, cons
         }
     }    // unlock
 
-}
+}                                    
 // --------------------------------------------------------------------------------------------------------------
 bool IONotifyController::addThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci)
 {
-    for( ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it)
+    for( ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it) 
     {
         if( ti==(*it) )
         {
@@ -709,7 +680,7 @@ bool IONotifyController::addThreshold(ThresholdExtList& lst, ThresholdInfoExt& t
 // --------------------------------------------------------------------------------------------------------------
 bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci )
 {
-    for( ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it)
+    for( ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it) 
     {
         if( ti == (*it) )
         {
@@ -725,8 +696,8 @@ bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoEx
     return false;
 }
 // --------------------------------------------------------------------------------------------------------------
-void IONotifyController::checkThreshold( IOStateList::iterator& li,
-                                        const IOController_i::SensorInfo& si,
+void IONotifyController::checkThreshold( IOStateList::iterator& li, 
+                                        const IOController_i::SensorInfo& si, 
                                         bool send_msg )
 {
     {    // lock
@@ -767,7 +738,7 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
         tm.tv_sec = 0; tm.tv_usec = 0;
         gettimeofday(&tm,&tz);
 
-        for( ThresholdExtList::iterator it=lst->second.list.begin(); it!=lst->second.list.end(); ++it)
+        for( ThresholdExtList::iterator it=lst->second.list.begin(); it!=lst->second.list.end(); ++it) 
         {
             // Используем здесь sm.value чтобы не делать ещё раз lock на li->second.value
 
@@ -789,11 +760,11 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
                 else if( sm.value <= it->lowlimit )
                     state = IONotifyController_i::LowThreshold;
             }
-
+        
             // если ничего не менялось..
             if( it->state == state )
                 continue;
-
+            
             it->state = state;
 
             sm.tid = it->id;
@@ -801,7 +772,7 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
             // если состояние не normal, значит порог сработал,
             // не важно какой.. нижний или верхний (зависит от inverse)
             sm.threshold = ( state != IONotifyController_i::NormalThreshold ) ? true : false;
-
+            
             // запоминаем время изменения состояния
             it->tv_sec         = tm.tv_sec;
             it->tv_usec     = tm.tv_usec;
@@ -817,8 +788,7 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
                 }
                 catch( UniSetTypes::Exception& ex )
                 {
-                    if( ulog.is_crit() )
-                        ulog.crit() << myname << "(checkThreshold): " << ex << endl;
+                    ucrit << myname << "(checkThreshold): " << ex << endl;
                 }
             }
 
@@ -839,14 +809,14 @@ IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold
 
         if( lst!=askTMap.end() )
         {
-            for( ThresholdExtList::iterator it=lst->second.list.begin(); it!=lst->second.list.end(); ++it)
+            for( ThresholdExtList::iterator it=lst->second.list.begin(); it!=lst->second.list.end(); ++it) 
             {
                 if( it->id == tid )
                     return it;
             }
         }
     }
-
+    
     ThresholdExtList::iterator it;
       return it;
 }
@@ -860,12 +830,10 @@ IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( const 
     if( it == askTMap.end() )
     {
         ostringstream err;
-        err << myname << "(getThresholds): Not found sensor (" << si.id << ":" << si.node << ") "
+        err << myname << "(getThresholds): Not found sensor (" << si.id << ":" << si.node << ") " 
             << conf->oind->getNameById(si.id);
 
-        if( ulog.is_info() )
-            ulog.info() << err.str() << endl;
-
+        uinfo << err.str() << endl;
         throw IOController_i::NameNotFound(err.str().c_str());
     }
 
@@ -876,12 +844,10 @@ IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( const 
     }
 
     ostringstream err;
-    err << myname << "(getThresholds): Not found for sensor (" << si.id << ":" << si.node << ") "
+    err << myname << "(getThresholds): Not found for sensor (" << si.id << ":" << si.node << ") " 
         << conf->oind->getNameById(si.id) << " ThresholdID='" << tid << "'";
 
-    if( ulog.is_info() )
-        ulog.info() << err.str() << endl;
-
+    uinfo << err.str() << endl;
     throw IOController_i::NameNotFound(err.str().c_str());
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -893,12 +859,10 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( const IO
     if( it == askTMap.end() )
     {
         ostringstream err;
-        err << myname << "(getThresholds): Not found sensor (" << si.id << ":" << si.node << ") "
+        err << myname << "(getThresholds): Not found sensor (" << si.id << ":" << si.node << ") " 
             << conf->oind->getNameById(si.id);
 
-        if( ulog.is_info() )
-            ulog.info() << err.str() << endl;
-
+        uinfo << err.str() << endl;
         throw IOController_i::NameNotFound(err.str().c_str());
     }
 
@@ -912,8 +876,7 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( const IO
     }
     catch( Exception& ex )
     {
-        if( ulog.is_warn() )
-            ulog.warn() << myname << "(getThresholdsList): для датчика "
+        uwarn << myname << "(getThresholdsList): для датчика "
                 << conf->oind->getNameById(it->second.si.id, it->second.si.node)
                 << " " << ex << endl;
     }
@@ -937,8 +900,6 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( const IO
 // --------------------------------------------------------------------------------------------------------------
 IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 {
-//    ulog.info() << myname << "(getThresholdsList): ...\n";
-
     IONotifyController_i::ThresholdsListSeq* res = new IONotifyController_i::ThresholdsListSeq();
 
     res->length( askTMap.size() );
@@ -956,8 +917,7 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
             }
             catch(Exception& ex)
             {
-                if( ulog.is_warn() )
-                    ulog.warn() << myname << "(getThresholdsList): для датчика "
+                uwarn << myname << "(getThresholdsList): для датчика "
                         << conf->oind->getNameById(it->second.si.id, it->second.si.node)
                         << " " << ex << endl;
                 continue;
@@ -989,7 +949,7 @@ void IONotifyController::onChangeUndefinedState( IOStateList::iterator& lit, IOC
     SensorMessage sm;
 
     // эти поля можно копировать без lock, т.к. они не меняются
-    sm.id     = it.si.id;
+    sm.id     = it.si.id;    
     sm.node = it.si.node;
     sm.undefined = it.undefined;
     sm.priority     = (Message::Priority)it.priority;
@@ -1005,7 +965,7 @@ void IONotifyController::onChangeUndefinedState( IOStateList::iterator& lit, IOC
     } // unlock
 
     try
-    {
+    {    
         if( !it.dbignore )
             loggingInfo(sm);
     }
@@ -1014,7 +974,7 @@ void IONotifyController::onChangeUndefinedState( IOStateList::iterator& lit, IOC
     AskMap::iterator it1 = askIOList.find( key(it.si.id,it.si.node) );
     if( it1!=askIOList.end() )
     {    // lock
-        uniset_rwmutex_rlock lock(askIOMutex);
+        uniset_rwmutex_rlock lock(askIOMutex);    
         send(it1->second, sm);
     }    // unlock
 }
@@ -1025,7 +985,7 @@ IDSeq* IONotifyController::askSensorsSeq( const UniSetTypes::IDSeq& lst,
                                             UniversalIO::UIOCommand cmd)
 {
     UniSetTypes::IDList badlist; // cписок не найденных идентификаторов
-
+    
     IOController_i::SensorInfo si;
 
     int size = lst.length();

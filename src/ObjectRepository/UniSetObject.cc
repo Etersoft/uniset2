@@ -40,7 +40,7 @@
 using namespace std;
 using namespace UniSetTypes;
 
-#define CREATE_TIMER    new ThrPassiveTimer();
+#define CREATE_TIMER    new ThrPassiveTimer();     
 // new PassiveSysTimer();
 
 // ------------------------------------------------------------------------------------------
@@ -123,7 +123,7 @@ stCountOfQueueFull(0)
     myid = ui.getIdByName(myname);
     if( myid == DefaultObjectId )
     {
-        ulog.warn() << "name: my ID not found!" << endl;
+        uwarn << "name: my ID not found!" << endl;
         throw Exception(name+": my ID not found!");
     }
 
@@ -150,19 +150,15 @@ void UniSetObject::init_object()
     mutex_act.setName(myname + "_mutex_act");
 
     SizeOfMessageQueue = conf->getArgPInt("--uniset-object-size-message-queue",conf->getField("SizeOfMessageQueue"), 1000);
-
     MaxCountRemoveOfMessage = conf->getArgInt("--uniset-object-maxcount-remove-message",conf->getField("MaxCountRemoveOfMessage"));
     if( MaxCountRemoveOfMessage <= 0 )
         MaxCountRemoveOfMessage = SizeOfMessageQueue / 4;
     if( MaxCountRemoveOfMessage <= 0 )
         MaxCountRemoveOfMessage = 10;
 
-    if( ulog.is_info() )
-    {
-        ulog.info() << myname << "(init): SizeOfMessageQueue=" << SizeOfMessageQueue
-            << " MaxCountRemoveOfMessage=" << MaxCountRemoveOfMessage
-            << endl;
-    }
+    uinfo << myname << "(init): SizeOfMessageQueue=" << SizeOfMessageQueue
+          << " MaxCountRemoveOfMessage=" << MaxCountRemoveOfMessage
+          << endl;
 }
 // ------------------------------------------------------------------------------------------
 
@@ -172,11 +168,9 @@ void UniSetObject::init_object()
 */
 bool UniSetObject::init( UniSetManager* om )
 {
-    if( ulog.is_info() )
-      ulog.info() << myname << ": init..." << endl;
+    uinfo << myname << ": init..." << endl;
     this->mymngr = om;
-    if( ulog.is_info() )
-        ulog.info() << myname << ": init ok..." << endl;
+    uinfo << myname << ": init ok..." << endl;
     return true;
 }
 // ------------------------------------------------------------------------------------------
@@ -186,7 +180,7 @@ void UniSetObject::setID( UniSetTypes::ObjectId id )
         throw ObjectNameAlready("ObjectId already set(setID)");
 
     string myfullname = ui.getNameById(id);
-    myname = ORepHelpers::getShortName(myfullname.c_str());
+    myname = ORepHelpers::getShortName(myfullname.c_str()); 
     section = ORepHelpers::getSectionName(myfullname.c_str());
     myid = id;
     ui.initBackId(myid);
@@ -205,24 +199,18 @@ bool UniSetObject::receiveMessage( VoidMessage& vm )
         if( !queueMsg.empty() )
         {
             // контроль переполнения
-            if( queueMsg.size() > SizeOfMessageQueue )
+            if( queueMsg.size() > SizeOfMessageQueue ) 
             {
-                if( ulog.is_crit() )
-                  ulog.crit() << myname <<"(receiveMessages): messages queue overflow!" << endl << flush;
+                ucrit << myname <<"(receiveMessages): messages queue overflow!" << endl << flush;
                 cleanMsgQueue(queueMsg);
                 // обновляем статистику по переполнениям
                 stCountOfQueueFull++;
-                stMaxQueueMessages=0;
+                stMaxQueueMessages=0;    
             }
 
             if( !queueMsg.empty() )
             {
-//                  if( ulog.is_crit() )
-//                ulog.crit() << myname <<"(receiveMessages): get new msg.." << endl << flush;
-
                 vm = queueMsg.top(); // получили сообщение
-//                Проверка на последовательное вынимание
-//                cout << myname << ": receive message....tm=" << vm.time << " msec=" << vm.time_msec << "\tprior="<< vm.priority << endl;
                 queueMsg.pop(); // удалили сообщение из очереди
                 return true;
             }
@@ -257,20 +245,20 @@ struct MsgInfo
        inline bool operator < ( const MsgInfo& mi ) const
     {
         if( type != mi.type )
-            return type < mi.type;
+            return type < mi.type; 
 
         if( id != mi.id )
             return id < mi.id;
 
         if( node != mi.node )
-            return node < mi.node;
+            return node < mi.node; 
 
         if( tm.tv_sec != mi.tm.tv_sec )
             return tm.tv_sec < mi.tm.tv_sec;
 
         return tm.tv_usec < mi.tm.tv_usec;
-    }
-
+    }    
+    
 };
 
 // структура определяющая минимальное количество полей
@@ -286,7 +274,7 @@ struct CInfo
      confirm(0)
     {
     }
-
+    
     CInfo( ConfirmMessage& cm ):
         sensor_id(cm.sensor_id),
         value(cm.value),
@@ -327,19 +315,17 @@ bool UniSetObject::waitMessage(VoidMessage& vm, timeout_t timeMS)
 // ------------------------------------------------------------------------------------------
 void UniSetObject::registered()
 {
-    if( ulog.is_info() )
-        ulog.info() << myname << ": registration..." << endl;
+    uinfo << myname << ": registration..." << endl;
 
     if( myid == UniSetTypes::DefaultObjectId )
     {
-        if( ulog.is_info() )
-            ulog.info() << myname << "(registered): myid=DefaultObjectId \n";
+        uinfo << myname << "(registered): myid=DefaultObjectId \n";
         return;
     }
 
     if( !mymngr )
     {
-        ulog.warn() << myname << "(registered): unknown my manager" << endl;
+        uwarn << myname << "(registered): unknown my manager" << endl;
         string err(myname+": unknown my manager");
         throw ORepFailed(err.c_str());
     }
@@ -348,7 +334,7 @@ void UniSetObject::registered()
         UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
         if( !oref )
         {
-            ulog.crit() << myname << "(registered): oref is NULL!..." << endl;
+            ucrit << myname << "(registered): oref is NULL!..." << endl;
             return;
         }
     }
@@ -365,21 +351,19 @@ void UniSetObject::registered()
             catch( ObjectNameAlready& al )
             {
 /*! 
-    \warning По умолчанию объекты должны быть уникальны! Поэтому если идёт попытка повторной регистрации.
-    Мы чистим существующую ссылку и заменяем её на новую.
+    \warning По умолчанию объекты должны быть уникальны! Поэтому если идёт попытка повторной регистрации. 
+    Мы чистим существующую ссылку и заменяем её на новую.    
     Это сделано для более надежной работы, иначе может получится, что если объект перед завершением
     не очистил за собой ссылку(не разрегистрировался), то больше он никогда не сможет вновь зарегистрироваться.
     Т.к. \b надёжной функции проверки "жив" ли объект пока нет...
     (так бы можно было проверить и если "не жив", то смело заменять ссылку на новую). Но существует обратная сторона:
-    если заменяемый объект "жив" и завершит свою работу, то он может почистить за собой ссылку и это тогда наш(новый)
+    если заменяемый объект "жив" и завершит свою работу, то он может почистить за собой ссылку и это тогда наш(новый) 
     объект станет недоступен другим, а знать об этом не будет!!!
-
+    
 */
-                ulog.crit() << myname << "(registered): replace object (ObjectNameAlready)" << endl;
+                ucrit << myname << "(registered): replace object (ObjectNameAlready)" << endl;
                 reg = true;
                 unregister();
-//                ulog.crit() << myname << "(registered): не смог зарегестрироваться в репозитории объектов (ObjectNameAlready)" << endl;
-//                throw al;
             }
         }
     }
@@ -390,7 +374,7 @@ void UniSetObject::registered()
     }
     catch(Exception& ex)
     {
-        ulog.warn() << myname << "(registered):  " << ex << endl;
+        uwarn << myname << "(registered):  " << ex << endl;
         string err(myname+": don`t registration in object reposotory");
         throw ORepFailed(err.c_str());
     }
@@ -404,8 +388,7 @@ void UniSetObject::unregister()
 
     if( myid == UniSetTypes::DefaultObjectId )
     {
-        if( ulog.is_info() )
-            ulog.info() << myname << "(unregister): myid=DefaultObjectId \n";
+        uinfo << myname << "(unregister): myid=DefaultObjectId \n";
         reg = false;
         return;
     }
@@ -414,7 +397,7 @@ void UniSetObject::unregister()
         UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
         if( !oref )
         {
-            ulog.warn() << myname << "(unregister): oref NULL!" << endl;
+            uwarn << myname << "(unregister): oref NULL!" << endl;
             reg = false;
             return;
         }
@@ -423,17 +406,13 @@ void UniSetObject::unregister()
 
     try
     {
-        if( ulog.is_info() )
-            ulog.info() << myname << ": unregister "<< endl;
-
+        uinfo << myname << ": unregister "<< endl;
         ui.unregister(myid);
-
-        if( ulog.is_info() )
-            ulog.info() << myname << ": unregister ok. "<< endl;
+        uinfo << myname << ": unregister ok. "<< endl;
     }
     catch(...)
     {
-        ulog.warn() << myname << ": don`t registration in object repository" << endl;
+        uwarn << myname << ": don`t registration in object repository" << endl;
     }
 
     reg = false;
@@ -463,17 +442,13 @@ void UniSetObject::push(const TransportMessage& tm)
         // контроль переполнения
         if( !queueMsg.empty() && queueMsg.size()>SizeOfMessageQueue )
         {
-            if( ulog.is_crit() )
-              ulog.crit() << myname <<"(push): message queue overflow!" << endl << flush;
+            ucrit << myname <<"(push): message queue overflow!" << endl << flush;
             cleanMsgQueue(queueMsg);
 
             // обновляем статистику
             stCountOfQueueFull++;
             stMaxQueueMessages=0;
         }
-
-//        if( ulog.is_crit() )
-//          ulog.crit() << myname <<"(push): push new msg.." << endl << flush;
 
         VoidMessage v(tm);
         queueMsg.push(v);
@@ -490,7 +465,7 @@ void UniSetObject::push(const TransportMessage& tm)
 struct tmpConsumerInfo
 {
     tmpConsumerInfo(){}
-
+    
     map<UniSetTypes::KeyType,VoidMessage> smap;
     map<int,VoidMessage> tmap;
     map<int,VoidMessage> sysmap;
@@ -500,11 +475,8 @@ struct tmpConsumerInfo
 
 void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 {
-    if( ulog.is_crit() )
-    {
-         ulog.crit() << myname << "(cleanMsgQueue): msg queue cleaning..." << endl << flush;
-        ulog.crit() << myname << "(cleanMsgQueue): current size of queue: " << q.size() << endl << flush;
-    }
+    ucrit << myname << "(cleanMsgQueue): msg queue cleaning..." << endl << flush;
+    ucrit << myname << "(cleanMsgQueue): current size of queue: " << q.size() << endl << flush;
 
     // проходим по всем известным нам типам(базовым)
     // ищем все совпадающие сообщения и оставляем только последние...
@@ -519,7 +491,7 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
     {
         m = q.top();
         q.pop();
-
+            
         switch( m.type )
         {
             case Message::SensorInfo:
@@ -568,23 +540,19 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
             break;
 
         }
-    }
+    }    
 
-    if( ulog.is_crit() )
-        ulog.crit() << myname << "(cleanMsgQueue): ******** cleanup RESULT ********" << endl;
+    ucrit << myname << "(cleanMsgQueue): ******** cleanup RESULT ********" << endl;
 
-    for( map<UniSetTypes::ObjectId,tmpConsumerInfo>::iterator it0 = consumermap.begin();
+    for( map<UniSetTypes::ObjectId,tmpConsumerInfo>::iterator it0 = consumermap.begin(); 
             it0!=consumermap.end(); ++it0 )
     {
-        if( ulog.is_crit() )
-        {
-            ulog.crit() << myname << "(cleanMsgQueue): CONSUMER=" << it0->first << endl;
-              ulog.crit() << myname << "(cleanMsgQueue): after clean SensorMessage: " << it0->second.smap.size() << endl;
-              ulog.crit() << myname << "(cleanMsgQueue): after clean TimerMessage: " << it0->second.tmap.size() << endl;
-              ulog.crit() << myname << "(cleanMsgQueue): after clean SystemMessage: " << it0->second.sysmap.size() << endl;
-              ulog.crit() << myname << "(cleanMsgQueue): after clean ConfirmMessage: " << it0->second.cmap.size() << endl;
-              ulog.crit() << myname << "(cleanMsgQueue): after clean other: " << it0->second.lstOther.size() << endl;
-        }
+            ucrit << myname << "(cleanMsgQueue): CONSUMER=" << it0->first << endl;
+            ucrit << myname << "(cleanMsgQueue): after clean SensorMessage: " << it0->second.smap.size() << endl;
+            ucrit << myname << "(cleanMsgQueue): after clean TimerMessage: " << it0->second.tmap.size() << endl;
+            ucrit << myname << "(cleanMsgQueue): after clean SystemMessage: " << it0->second.sysmap.size() << endl;
+            ucrit << myname << "(cleanMsgQueue): after clean ConfirmMessage: " << it0->second.cmap.size() << endl;
+            ucrit << myname << "(cleanMsgQueue): after clean other: " << it0->second.lstOther.size() << endl;
 
         // теперь ОСТАВШИЕСЯ запихиваем обратно в очередь...
         map<UniSetTypes::KeyType,VoidMessage>::iterator it=it0->second.smap.begin();
@@ -616,31 +584,25 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
             q.push(*it6);
     }
 
-    if( ulog.is_crit() )
-    {
-        ulog.crit() << myname
-        << "(cleanMsgQueue): ******* result size of queue: "
+    ucrit << myname
+        << "(cleanMsgQueue): ******* result size of queue: " 
         << q.size()
         << " < " << getMaxSizeOfMessageQueue() << endl;
-    }
 
     if( q.size() >= getMaxSizeOfMessageQueue() )
     {
-        if( ulog.is_crit() )
-        {
-          ulog.crit() << myname << "(cleanMsgQueue): clean failed. size > " << q.size() << endl;
-          ulog.crit() << myname << "(cleanMsgQueue): remove " << getMaxCountRemoveOfMessage() << " old messages " << endl;
-        }
+        ucrit << myname << "(cleanMsgQueue): clean failed. size > " << q.size() << endl;
+        ucrit << myname << "(cleanMsgQueue): remove " << getMaxCountRemoveOfMessage() << " old messages " << endl;
+
         for( unsigned int i=0; i<getMaxCountRemoveOfMessage(); i++ )
         {
-            q.top();
-            q.pop();
+            q.top(); 
+            q.pop(); 
             if( q.empty() )
                 break;
         }
 
-        if( ulog.is_crit() )
-          ulog.crit() << myname << "(cleanMsgQueue): result size=" << q.size() << endl;
+        ucrit << myname << "(cleanMsgQueue): result size=" << q.size() << endl;
     }
 }
 // ------------------------------------------------------------------------------------------
@@ -671,13 +633,12 @@ bool UniSetObject::disactivate()
     { // lock
         uniset_rwmutex_wrlock mlk(qmutex);
         while( !queueMsg.empty() )
-            queueMsg.pop();
+            queueMsg.pop(); 
     }
 
     try
     {
-        if( ulog.is_info() )
-            ulog.info() << "disactivateObject..." << endl;
+        uinfo << "disactivateObject..." << endl;
 
         PortableServer::POA_var poamngr = mymngr->getPOA();
         if( !PortableServer::POA_Helper::is_nil(poamngr) )
@@ -690,37 +651,30 @@ bool UniSetObject::disactivate()
             unregister();
             PortableServer::ObjectId_var oid = poamngr->servant_to_id(static_cast<PortableServer::ServantBase*>(this));
             poamngr->deactivate_object(oid);
-            if( ulog.is_info() )
-                ulog.info() << "ok..." << endl;
+            uinfo << "ok..." << endl;
             return true;
         }
-        if( ulog.is_warn() )
-            ulog.warn() << "manager already destroyed.." << endl;
+        uwarn << "manager already destroyed.." << endl;
     }
     catch(CORBA::TRANSIENT)
     {
-        if( ulog.is_warn() )
-            ulog.warn() << "isExist: нет связи..."<< endl;
+        uwarn << "isExist: нет связи..."<< endl;
     }
     catch( CORBA::SystemException& ex )
     {
-        if( ulog.is_warn() )
-            ulog.warn() << "UniSetObject: "<<"поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
+        uwarn << "UniSetObject: "<<"поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
     }
     catch(CORBA::Exception& ex)
     {
-        if( ulog.is_warn() )
-            ulog.warn() << "UniSetObject: "<<"поймали CORBA::Exception." << endl;
+        uwarn << "UniSetObject: "<<"поймали CORBA::Exception." << endl;
     }
     catch(Exception& ex)
     {
-        if( ulog.is_warn() )
-            ulog.warn() << "UniSetObject: "<< ex << endl;
+        uwarn << "UniSetObject: "<< ex << endl;
     }
     catch(...)
     {
-        if( ulog.is_warn() )
-            ulog.warn() << "UniSetObject: "<<" catch ..." << endl;
+        uwarn << "UniSetObject: "<<" catch ..." << endl;
     }
 
     return false;
@@ -729,12 +683,11 @@ bool UniSetObject::disactivate()
 // ------------------------------------------------------------------------------------------
 bool UniSetObject::activate()
 {
-    if( ulog.is_info() )
-        ulog.info() << myname << ": activate..." << endl;
+    uinfo << myname << ": activate..." << endl;
 
     if( mymngr == NULL )
     {
-        ulog.crit() << myname << "(activate): mymngr=NULL!!! activate failure..." << endl;
+        ucrit << myname << "(activate): mymngr=NULL!!! activate failure..." << endl;
         return false;
     }
 
@@ -752,11 +705,11 @@ bool UniSetObject::activate()
     }
     else
     {
-        // А если myid==UniSetTypes::DefaultObjectId
-        // то myname = noname. ВСЕГДА!
+        // А если myid==UniSetTypes::DefaultObjectId 
+        // то myname = noname. ВСЕГДА! 
         if( myid == UniSetTypes::DefaultObjectId )
         {
-            ulog.crit() << myname << "(activate): Не задан ID!!! activate failure..." << endl;
+            ucrit << myname << "(activate): Не задан ID!!! activate failure..." << endl;
             // вызываем на случай если она переопределена в дочерних классах
             // Например в UniSetManager, если здесь не вызвать, то не будут инициализированы подчинённые объекты.
             // (см. UniSetManager::activateObject)
@@ -773,9 +726,9 @@ bool UniSetObject::activate()
         // Activate object...
         poa->activate_object_with_id(oid, this);
     }
+    
 
-
-
+    
     {
         UniSetTypes::uniset_rwmutex_wrlock lock(refmutex);
         oref = poa->servant_to_reference(static_cast<PortableServer::ServantBase*>(this) );
@@ -790,34 +743,30 @@ bool UniSetObject::activate()
         thr = new ThreadCreator<UniSetObject>(this, &UniSetObject::work);
         thr->start();
     }
-    else
+    else 
     {
-        if( ulog.is_info() )
-        {
-            ulog.info() << myname << ": ?? не задан ObjectId...("
-                    << "myid=" << myid << " threadcreate=" << threadcreate
-                    << ")" << endl;
-        }
+        uinfo << myname << ": ?? не задан ObjectId...("
+              << "myid=" << myid << " threadcreate=" << threadcreate
+              << ")" << endl;
         thread(false);
     }
 
     activateObject();
-    if( ulog.is_info() )
-        ulog.info() << myname << ": activate ok." << endl;
+    uinfo << myname << ": activate ok." << endl;
     return true;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::work()
 {
-    if( ulog.is_info() )
-        ulog.info() << myname << ": thread processing messages run..." << endl;
+    uinfo << myname << ": thread processing messages run..." << endl;
     if( thr )
         msgpid = thr->getTID();
     while( isActive() )
     {
         callback();
     }
-    ulog.warn() << myname << ": thread processing messages stop..." << endl;
+
+    uinfo << myname << ": thread processing messages stop..." << endl;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::callback()
@@ -832,8 +781,7 @@ void UniSetObject::callback()
 // ------------------------------------------------------------------------------------------
 void UniSetObject::processingMessage( UniSetTypes::VoidMessage *msg )
 {
-    if( ulog.is_info() )
-        ulog.info() << myname << ": default processing messages..." << endl;
+    uinfo << myname << ": default processing messages..." << endl;
 }
 // ------------------------------------------------------------------------------------------
 UniSetTypes::SimpleInfo* UniSetObject::getInfo()
@@ -844,26 +792,26 @@ UniSetTypes::SimpleInfo* UniSetObject::getInfo()
     info << "tid=" << setw(10);
     if( threadcreate )
     {
-        if(thr)
+        if(thr)    
         {
             msgpid = thr->getId();    // заодно(на всякий) обновим и внутреннюю информацию
-            info << msgpid;
+            info << msgpid;  
         }
         else
             info << "не запущен";
     }
     else
-        info << "откл.";
-
+        info << "откл.";  
+    
     info << "\tcount=" << countMessages();
     info << "\tmaxMsg=" << stMaxQueueMessages;
     info << "\tqFull("<< SizeOfMessageQueue << ")=" << stCountOfQueueFull;
 //    info << "\n";
-
+    
     SimpleInfo* res = new SimpleInfo();
     res->info     =  info.str().c_str(); // CORBA::string_dup(info.str().c_str());
     res->id     =  myid;
-
+    
     return res; // ._retn();
 }
 // ------------------------------------------------------------------------------------------
@@ -883,7 +831,7 @@ bool UniSetObject::PriorVMsgCompare::operator()(const UniSetTypes::VoidMessage& 
             return lhs.tm.tv_usec >= rhs.tm.tv_usec;
         return lhs.tm.tv_sec >= rhs.tm.tv_sec;
     }
-
+    
     return lhs.priority < rhs.priority;
 }
 // ------------------------------------------------------------------------------------------

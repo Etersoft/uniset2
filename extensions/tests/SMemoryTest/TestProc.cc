@@ -53,7 +53,7 @@ void TestProc::sysCommand( UniSetTypes::SystemMessage* sm )
 void TestProc::sensorInfo( SensorMessage *sm )
 {
 /*
-    dlog.level2() << myname << "(sensorInfo): id=" << sm->id << " val=" << sm->value
+    mylog2 << myname << "(sensorInfo): id=" << sm->id << " val=" << sm->value
             << "  " << timeToString(sm->sm_tv_sec,":")
             << "(" << setw(6) << sm->sm_tv_usec << "): "
             << endl;
@@ -83,7 +83,7 @@ void TestProc::timerInfo( TimerMessage *tm )
     {
         state^=true;
         out_lamp_c = ( state ? lmpBLINK : lmpOFF );
-        dlog.level2() << myname << ": state=" << state << " lmp=" << out_lamp_c << endl;
+        mylog2 << myname << ": state=" << state << " lmp=" << out_lamp_c << endl;
         askTimer(tmCheckWorking,checkTime); // reset timer
     }
     else if( tm->id == tmCheckWorking )
@@ -102,7 +102,7 @@ void TestProc::timerInfo( TimerMessage *tm )
         cerr << "======= TEST LOG PRINT ======" << endl;
         cerr << "LOGLEVEL: [" << (int)(*lit) << "] " << (*lit) << endl;
         for( std::vector<Debug::type>::iterator it=loglevels.begin(); it!=loglevels.end(); ++it )
-            dlog[*it] << myname << ": test log print..." << endl;
+            mylog[*it] << myname << ": test log print..." << endl;
 
         cerr << "======= END LOG PRINT ======" << endl;
     }
@@ -111,16 +111,16 @@ void TestProc::timerInfo( TimerMessage *tm )
 void TestProc::test_depend()
 {
     cerr << myname << ": Check depend..." << endl;
-
+    
     long test_val = 100;
-
+    
     // set depend 0...
     setValue(depend_c,0);
     setValue(set_d1_check_s,test_val);
     setValue(set_d2_check_s,test_val);
     cerr << myname << ": check depend OFF: d1: " << ( getValue(d1_check_s) == 0 ? "OK" : "FAIL" ) << endl;
     cerr << myname << ": check depend OFF: d2: " << ( getValue(d2_check_s) == -50 ? "OK" : "FAIL" ) << endl;
-
+    
     // set depend 1
     setValue(depend_c,1);
     cerr << myname << ": check depend ON: d1: " << ( getValue(d1_check_s) == test_val ? "OK" : "FAIL" ) << endl;
@@ -132,10 +132,10 @@ void TestProc::test_undefined_state()
     // ---------------- Проверка выставления неопределённого состояния ---------------------
     cerr << myname << ": Check undef state..." << endl;
     undef ^= true;
-
+ 
     si.id = undef_c;
     si.node = conf->getLocalNode();
-    cerr << myname << ": set undefined=" << undef << endl;
+    cerr << myname << ": set undefined=" << undef << endl;      
     ui.setUndefinedState( si, undef, getId() );
 }
 // -----------------------------------------------------------------------------
@@ -149,7 +149,7 @@ void TestProc::test_thresholds()
 
     setValue(t_set_c,378);
     cerr << myname << ": check threshold ON value: " << ( getValue(t_check_s) == 1 ? "OK" : "FAIL" ) << endl;
-
+    
     cerr << myname << ": ask threshold and check.. " << endl;
 
     try
@@ -166,7 +166,7 @@ void TestProc::test_thresholds()
     }
     catch( Exception& ex )
     {
-        dlog.level2() << myname << ": CHECK 'ask and get threshold' FAILED: " << ex << endl;
+        mylog2 << myname << ": CHECK 'ask and get threshold' FAILED: " << ex << endl;
     }
 }
 // -----------------------------------------------------------------------------

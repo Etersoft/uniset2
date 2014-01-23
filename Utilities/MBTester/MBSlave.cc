@@ -381,7 +381,7 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
     int fd = open(fname.c_str(), O_RDONLY | O_NONBLOCK );
     if( fd <= 0 )
     {
-        dlog.warn() << "(fileTransfer): open '" << fname << "' with error: " << strerror(errno) << endl;
+        dwarn << "(fileTransfer): open '" << fname << "' with error: " << strerror(errno) << endl;
         return ModbusRTU::erOperationFailed;
     }
 
@@ -393,7 +393,7 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
     int ret = ::read(fd,&buf,sizeof(buf));
     if( ret < 0 )
     {
-        dlog.warn() << "(fileTransfer): read from '" << fname << "' with error: " << strerror(errno) << endl;
+        dwarn << "(fileTransfer): read from '" << fname << "' with error: " << strerror(errno) << endl;
         close(fd);
         return ModbusRTU::erOperationFailed;
     }
@@ -407,7 +407,7 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
     struct stat fs;
     if( fstat(fd,&fs) < 0 )
     {
-        dlog.warn() << "(fileTransfer): fstat for '" << fname << "' with error: " << strerror(errno) << endl;
+        dwarn << "(fileTransfer): fstat for '" << fname << "' with error: " << strerror(errno) << endl;
         close(fd);
         return ModbusRTU::erOperationFailed;
     }
@@ -422,7 +422,7 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
 
     if( !reply.set(query.numfile,numpacks,query.numpacket,buf,ret) )
     {
-        dlog.warn() << "(fileTransfer): set date failed..." << endl;
+        dwarn << "(fileTransfer): set date failed..." << endl;
         return ModbusRTU::erOperationFailed;
     }
 

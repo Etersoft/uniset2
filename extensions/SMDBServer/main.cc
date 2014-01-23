@@ -54,7 +54,7 @@ int main( int argc, const char** argv )
         SMDBServer* db = SMDBServer::init_smdbserver(argc,argv,shmID);
         if( !db )
         {
-            dlog.crit() << "(smdbserver): init не прошёл..." << endl;
+            dcrit << "(smdbserver): init не прошёл..." << endl;
             return 1;
         }
 
@@ -73,11 +73,11 @@ int main( int argc, const char** argv )
     }
     catch( Exception& ex )
     {
-        dlog.crit() << "(smdbserver): " << ex << std::endl;
+        dcrit << "(smdbserver): " << ex << std::endl;
     }
     catch(...)
     {
-        dlog.crit() << "(smdbserver): catch ..." << std::endl;
+        dcrit << "(smdbserver): catch ..." << std::endl;
     }
 
     return 1;

@@ -356,6 +356,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - ObjectsActitvator --> UniSetActivator
 - remove deprecated property: "sensebility"
 - rename property "inverse" --> "threshold_invert"
+- add syntax sugar for ulog, dlog (dcrit,dwarn,dlog1,ulog1,ucrit,...)
 
 * Tue Dec 10 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt3
 - add RRDServer

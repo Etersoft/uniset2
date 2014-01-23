@@ -50,7 +50,7 @@ a_cache_init_ok(false)
         s << "R(" << setw(15) << s_host << ":" << setw(4) << port << ")";
         myname = s.str();
     }
-
+    
     ost::Thread::setException(ost::Thread::throwException);
     try
     {
@@ -64,14 +64,14 @@ a_cache_init_ok(false)
     {
         ostringstream s;
         s << myname << ": " << e.what();
-        dlog.crit() << s.str() << std::endl;
+        dcrit << s.str() << std::endl;
         throw SystemError(s.str());
     }
     catch( ... )
     {
         ostringstream s;
         s << myname << ": catch...";
-        dlog.crit() << s.str() << std::endl;
+        dcrit << s.str() << std::endl;
         throw SystemError(s.str());
     }
 
@@ -144,7 +144,7 @@ void UNetReceiver::setLostPacketsID( UniSetTypes::ObjectId id )
 void UNetReceiver::setLockUpdate( bool st )
 { 
     uniset_rwmutex_wrlock l(lockMutex);
-    lockUpdate = st;
+    lockUpdate = st; 
     if( !st )
       ptPrepare.reset();
 }
@@ -152,8 +152,8 @@ void UNetReceiver::setLockUpdate( bool st )
 void UNetReceiver::resetTimeout()
 { 
     uniset_rwmutex_wrlock l(tmMutex);
-    ptRecvTimeout.reset();
-    trTimeout.change(false);
+    ptRecvTimeout.reset(); 
+    trTimeout.change(false); 
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::start()
@@ -177,11 +177,11 @@ void UNetReceiver::update()
         }
         catch( UniSetTypes::Exception& ex)
         {
-            dlog.crit() << myname << "(update): " << ex << std::endl;
+            dcrit << myname << "(update): " << ex << std::endl;
         }
         catch(...)
         {
-            dlog.crit() << myname << "(update): catch ..." << std::endl;
+            dcrit << myname << "(update): catch ..." << std::endl;
         }
 
         if( sidRespond!=DefaultObjectId )
@@ -193,7 +193,7 @@ void UNetReceiver::update()
             }
             catch(Exception& ex)
             {
-                dlog.crit() << myname << "(step): (respond) " << ex << std::endl;
+                dcrit << myname << "(step): (respond) " << ex << std::endl;
             }
         }
 
@@ -205,10 +205,10 @@ void UNetReceiver::update()
             }
             catch(Exception& ex)
             {
-                dlog.crit() << myname << "(step): (lostPackets) " << ex << std::endl;
+                dcrit << myname << "(step): (lostPackets) " << ex << std::endl;
             }
         }
-
+        
         msleep(updatepause);
     }
 }
@@ -286,7 +286,7 @@ void UNetReceiver::real_update()
                 ItemInfo& ii(d_icache[i]);
                 if( ii.id != id )
                 {
-                    dlog.warn() << myname << "(update): reinit cache for sid=" << id << endl;
+                    dwarn << myname << "(update): reinit cache for sid=" << id << endl;
                     ii.id = id;
                     shm->initIterator(ii.ioit);
                 }
@@ -302,11 +302,11 @@ void UNetReceiver::real_update()
             }
             catch( UniSetTypes::Exception& ex)
             {
-                dlog.crit() << myname << "(update): " << ex << std::endl;
+                dcrit << myname << "(update): " << ex << std::endl;
             }
             catch(...)
             {
-                dlog.crit() << myname << "(update): catch ..." << std::endl;
+                dcrit << myname << "(update): catch ..." << std::endl;
             }
         }
 
@@ -319,7 +319,7 @@ void UNetReceiver::real_update()
                 ItemInfo& ii(a_icache[i]);
                 if( ii.id != d.id )
                 {
-                    dlog.warn() << myname << "(update): reinit cache for sid=" << d.id << endl;
+                    dwarn << myname << "(update): reinit cache for sid=" << d.id << endl;
                     ii.id = d.id;
                     shm->initIterator(ii.ioit);
                 }
@@ -335,11 +335,11 @@ void UNetReceiver::real_update()
             }
             catch( UniSetTypes::Exception& ex)
             {
-                dlog.crit() << myname << "(update): " << ex << std::endl;
+                dcrit << myname << "(update): " << ex << std::endl;
             }
             catch(...)
             {
-                dlog.crit() << myname << "(update): catch ..." << std::endl;
+                dcrit << myname << "(update): catch ..." << std::endl;
             }
         }
     }
@@ -356,8 +356,7 @@ void UNetReceiver::stop()
 // -----------------------------------------------------------------------------
 void UNetReceiver::receive()
 {
-    if( dlog.is_info() )
-        dlog.info() << myname << ": ******************* receive start" << endl;
+    dinfo << myname << ": ******************* receive start" << endl;
 
     {
         uniset_rwmutex_wrlock l(tmMutex);
@@ -377,18 +376,15 @@ void UNetReceiver::receive()
         }
         catch( UniSetTypes::Exception& ex)
         {
-            if( dlog.is_warn() )
-                dlog.warn() << myname << "(receive): " << ex << std::endl;
+            dwarn << myname << "(receive): " << ex << std::endl;
         }
         catch( std::exception& e )
         {
-            if( dlog.is_warn() )
-                dlog.warn() << myname << "(receive): " << e.what()<< std::endl;
+            dwarn << myname << "(receive): " << e.what()<< std::endl;
         }
         catch(...)
         {
-            if( dlog.is_warn() )
-                dlog.warn() << myname << "(receive): catch ..." << std::endl;
+            dwarn << myname << "(receive): catch ..." << std::endl;
         }
 
         // делаем через промежуточную переменную
@@ -397,7 +393,7 @@ void UNetReceiver::receive()
             uniset_rwmutex_rlock l(tmMutex);
             tout = ptRecvTimeout.checkTime();
         }
-
+        
         // только если "режим подготовки закончился, то можем генерировать "события"
         if( ptPrepare.checkTime() && trTimeout.change(tout) )
         {
@@ -410,8 +406,7 @@ void UNetReceiver::receive()
         msleep(recvpause);
     }
 
-    if( dlog.is_info() )
-        dlog.info() << myname << ": ************* receive FINISH **********" << endl;
+    dinfo << myname << ": ************* receive FINISH **********" << endl;
 }
 // -----------------------------------------------------------------------------
 bool UNetReceiver::recv()
@@ -424,7 +419,7 @@ bool UNetReceiver::recv()
     size_t sz = UniSetUDP::UDPMessage::getMessage(pack,r_buf);
     if( sz == 0 )
     {
-        dlog.crit() << myname << "(receive): FAILED RECEIVE DATA ret=" << ret << endl;
+        dcrit << myname << "(receive): FAILED RECEIVE DATA ret=" << ret << endl;
         return false;
     }
 
@@ -439,7 +434,7 @@ bool UNetReceiver::recv()
         // Обычно "кольцевой". Т.е. если не успели обработать и "вынуть" из буфера информацию.. он будет переписан новыми данными
         if( waitClean )
         {
-            dlog.crit() << myname << "(receive): reset qtmp.." << endl;
+            dcrit << myname << "(receive): reset qtmp.." << endl;
             while( !qtmp.empty() )
                 qtmp.pop();
         }
@@ -510,7 +505,7 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
      if( !force && pack.dcount == d_icache.size() )
           return;
 
-     dlog.info() << myname << ": init icache.." << endl;
+     dinfo << myname << ": init icache.." << endl;
      d_cache_init_ok = true;
 
      d_icache.resize(pack.dcount);
@@ -532,7 +527,7 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
      if( !force && pack.acount == a_icache.size() )
           return;
 
-     dlog.info() << myname << ": init icache.." << endl;
+     dinfo << myname << ": init icache.." << endl;
      a_cache_init_ok = true;
 
      a_icache.resize(pack.acount);

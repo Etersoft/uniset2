@@ -52,7 +52,7 @@ int main( int argc, const char** argv )
         UNetExchange* unet = UNetExchange::init_unetexchange(argc,argv,shmID);
         if( !unet )
         {
-            dlog.crit() << "(unetexchange): init failed.." << endl;
+            dcrit << "(unetexchange): init failed.." << endl;
             return 1;
         }
 
@@ -72,11 +72,11 @@ int main( int argc, const char** argv )
     }
     catch( Exception& ex )
     {
-        dlog.crit() << "(unetexchange): " << ex << std::endl;
+        dcrit << "(unetexchange): " << ex << std::endl;
     }
     catch(...)
     {
-        dlog.crit() << "(unetexchange): catch ..." << std::endl;
+        dcrit << "(unetexchange): catch ..." << std::endl;
     }
 
     while( waitpid(-1, 0, 0) > 0 );

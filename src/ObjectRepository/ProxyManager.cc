@@ -48,7 +48,7 @@ void ProxyManager::attachObject( PassiveObject* po, UniSetTypes::ObjectId id )
 {
     if( id == DefaultObjectId )
     {
-        ulog.warn() << myname << "(attachObject): попытка добавить объект с id="
+        uwarn << myname << "(attachObject): попытка добавить объект с id="
             << DefaultObjectId << " PassiveObject=" << po->getName() << endl;
 
         return;
@@ -78,39 +78,34 @@ bool ProxyManager::activateObject()
         try
         {
             for( int i=0; i<2; i++ )
-            {
+            {        
                 try
                 {
-                    if( ulog.is_info() )
-                    {
-                        ulog.info() << myname << "(registered): попытка "
-                                    << i+1 << " регистриую (id=" << it->first << ") "
-                                    << " (pname=" << it->second->getName() << ") "
-                                    << conf->oind->getNameById(it->first) << endl;
-                    }
+                    uinfo << myname << "(registered): попытка "
+                          << i+1 << " регистриую (id=" << it->first << ") "
+                          << " (pname=" << it->second->getName() << ") "
+                          << conf->oind->getNameById(it->first) << endl;
+
                     ui.registered(it->first, getRef(),true);
                     break;
                 }
                 catch( UniSetTypes::ObjectNameAlready& ex )
                 {
-                    if( ulog.is_crit() )
-                        ulog.crit() << myname << "(registered): СПЕРВА РАЗРЕГИСТРИРУЮ (ObjectNameAlready)" << endl;
+                    ucrit << myname << "(registered): СПЕРВА РАЗРЕГИСТРИРУЮ (ObjectNameAlready)" << endl;
                     try
                     {
                         ui.unregister(it->first);
                     }
                     catch(Exception & ex)
                     {
-                        if( ulog.is_crit() )
-                            ulog.crit() << myname << "(unregistered): " << ex << endl;
+                        ucrit << myname << "(unregistered): " << ex << endl;
                     }
                 }
             }
         }
         catch( Exception& ex )
         {
-            if( ulog.is_crit() )
-                ulog.crit() << myname << "(activate): " << ex << endl;
+            ucrit << myname << "(activate): " << ex << endl;
         }
     }
 
@@ -127,8 +122,7 @@ bool ProxyManager::disactivateObject()
         }
         catch(Exception& ex )
         {
-            if( ulog.is_crit() )
-                ulog.crit() << myname << "(activate): " << ex << endl;
+            ucrit << myname << "(activate): " << ex << endl;
         }
     }
 
@@ -150,19 +144,16 @@ void ProxyManager::processingMessage( UniSetTypes::VoidMessage *msg )
                 PObjectMap::iterator it = omap.find(msg->consumer);
                 if( it!=omap.end() )
                     it->second->processingMessage(msg);
-                else if( ulog.is_crit() )
-                {
-                    ulog.crit() << myname << "(processingMessage): не найден объект "
+                else
+                    ucrit << myname << "(processingMessage): не найден объект "
                         << " consumer= " << msg->consumer << endl;
-                }
             }
             break;
         }
     }
     catch( Exception& ex )
     {
-        if( ulog.is_crit() )
-            ulog.crit() << myname << "(processingMessage): " << ex << endl;
+        ucrit << myname << "(processingMessage): " << ex << endl;
     }
 }
 // -------------------------------------------------------------------------
@@ -176,8 +167,7 @@ void ProxyManager::allMessage( UniSetTypes::VoidMessage* msg )
         }
         catch( Exception& ex )
         {
-            if( ulog.is_crit() )
-                ulog.crit() << myname << "(allMessage): " << ex << endl;
+            ucrit << myname << "(allMessage): " << ex << endl;
         }
     }
 }

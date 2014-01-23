@@ -71,10 +71,12 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
     string t_fvalue = conf->getArgParam("--t-filter-value");
 
     heartbeat_node = conf->getArgParam("--heartbeat-node");
-    if( heartbeat_node.empty() && dlog.is_warn() )
-        dlog.warn() << myname << "(init): --heartbeat-node NULL ===> heartbeat NOT USED..." << endl;
-    else if( dlog.is_info() )
-        dlog.info() << myname << "(init): heartbeat-node: " << heartbeat_node << endl;
+    if( heartbeat_node.empty() )
+	{
+        dwarn << myname << "(init): --heartbeat-node NULL ===> heartbeat NOT USED..." << endl;
+	}
+    else
+        dinfo << myname << "(init): heartbeat-node: " << heartbeat_node << endl;
 
     heartbeatCheckTime = conf->getArgInt("--heartbeat-check-time","1000");
 
@@ -84,13 +86,12 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 
     restorer = rxml;
     rxml->setReadItem( sigc::mem_fun(this,&SharedMemory::readItem) );
-
+    
     string wdt_dev = conf->getArgParam("--wdt-device");
     if( !wdt_dev.empty() )
         wdt = new WDTInterface(wdt_dev);
-    else if( dlog.is_warn() )
-        dlog.warn() << myname << "(init): watchdog timer NOT USED (--wdt-device NULL)" << endl;
-
+    else
+        dwarn << myname << "(init): watchdog timer NOT USED (--wdt-device NULL)" << endl;
 
     dblogging = conf->getArgInt("--db-logging");
 
@@ -111,8 +112,7 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
         {
             ostringstream err;
             err << myname << ": ID not found ('pulsar') for " << p;
-            if( dlog.is_crit() )
-                dlog.crit() << myname << "(init): " << err.str() << endl;
+            dcrit << myname << "(init): " << err.str() << endl;
             throw SystemError(err.str());
         }
         siPulsar.node = conf->getLocalNode();
@@ -129,7 +129,7 @@ SharedMemory::~SharedMemory()
         delete restorer;
         restorer = NULL;
     }
-
+    
     delete wdt;
 }
 
@@ -163,26 +163,22 @@ void SharedMemory::processingMessage( UniSetTypes::VoidMessage *msg )
 
 
             default:
-                //dlog.warn() << myname << ": неизвестное сообщение  " << msg->type << endl;
                 break;
-        }
+        }    
     }
     catch( Exception& ex )
     {
-        if( dlog.is_crit() )
-            dlog.crit()  << myname << "(processingMessage): " << ex << endl;
+        dcrit  << myname << "(processingMessage): " << ex << endl;
     }
     catch(CORBA::SystemException& ex)
     {
-        if( dlog.is_warn() )
-            dlog.warn() << myname << "(processingMessage): CORBA::SystemException: " << ex.NP_minorString() << endl;
+        dcrit << myname << "(processingMessage): CORBA::SystemException: " << ex.NP_minorString() << endl;
       }
     catch(CORBA::Exception& ex)
     {
-        if( dlog.is_warn() )
-            dlog.warn() << myname << "(processingMessage): CORBA::Exception: " << ex._name() << endl;
+        dwarn << myname << "(processingMessage): CORBA::Exception: " << ex._name() << endl;
     }
-    catch( omniORB::fatalException& fe )
+    catch( omniORB::fatalException& fe ) 
     {
         if( dlog.is_crit() )
         {
@@ -194,8 +190,7 @@ void SharedMemory::processingMessage( UniSetTypes::VoidMessage *msg )
     }
     catch(...)
     {
-        if( dlog.is_crit() )
-            dlog.crit()  << myname << "(processingMessage): catch..." << endl;
+        dcrit << myname << "(processingMessage): catch..." << endl;
     }
 }
 
@@ -242,13 +237,13 @@ void SharedMemory::sysCommand( SystemMessage *sm )
         {
             PassiveTimer ptAct(activateTimeout);
             while( !isActivated() && !ptAct.checkTime() )
-            {
+            {    
                 cout << myname << "(sysCommand): wait activate..." << endl;
                 msleep(100);
             }
 
-            if( !isActivated() && dlog.is_crit() )
-                dlog.crit() << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
+            if( !isActivated()  )
+                dcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 
             // подождать пока пройдёт инициализация
             // см. activateObject()
@@ -263,11 +258,11 @@ void SharedMemory::sysCommand( SystemMessage *sm )
                 askTimer(tmPulsar,msecPulsar);
         }
         break;
-
+        
         case SystemMessage::FoldUp:
         case SystemMessage::Finish:
             break;
-
+        
         case SystemMessage::WatchDog:
             break;
 
@@ -297,7 +292,7 @@ void SharedMemory::askSensors( UniversalIO::UIOCommand cmd )
                 dlog.crit() << myname << "(askSensors): " << ex << endl;
             }
     }
-*/
+*/    
 }
 
 // ------------------------------------------------------------------------------------------
@@ -305,8 +300,8 @@ bool SharedMemory::activateObject()
 {
     PassiveTimer pt(UniSetTimer::WaitUpTime);
     bool res = true;
-
-    // блокирование обработки Startup
+    
+    // блокирование обработки Startup 
     // пока не пройдёт инициализация датчиков
     // см. sysCommand()
     {
@@ -314,16 +309,16 @@ bool SharedMemory::activateObject()
             uniset_rwmutex_wrlock l(mutex_act);
             activated = false;
         }
-
+        
         UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
         res = IONotifyController_LT::activateObject();
 
-        // инициализируем указатели
+        // инициализируем указатели        
         for( HeartBeatList::iterator it=hlist.begin(); it!=hlist.end(); ++it )
         {
             it->ioit = myioEnd();
         }
-
+        
         itPulsar = myioEnd();
 
         for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
@@ -343,7 +338,7 @@ bool SharedMemory::activateObject()
 }
 // ------------------------------------------------------------------------------------------
 CORBA::Boolean SharedMemory::exist()
-{
+{    
 //    return activated;
     return workready;
 }
@@ -402,16 +397,14 @@ void SharedMemory::checkHeartBeat()
         }
         catch(Exception& ex)
         {
-            if( dlog.is_crit() )
-                dlog.crit() << myname << "(checkHeartBeat): " << ex << endl;
+            dcrit << myname << "(checkHeartBeat): " << ex << endl;
         }
         catch(...)
         {
-            if( dlog.is_crit() )
-                dlog.crit() << myname << "(checkHeartBeat): ..." << endl;
+            dcrit << myname << "(checkHeartBeat): ..." << endl;
         }
     }
-
+    
     if( wdt && wdtpingOK && workready )
         wdt->ping();
 }
@@ -421,7 +414,7 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
     for( ReadSlotList::iterator r=lstRSlot.begin(); r!=lstRSlot.end(); ++r )
     {
         try
-        {
+        {    
             (*r)(xml,it,sec);
         }
         catch(...){}
@@ -447,9 +440,8 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
         msg << "(SharedMemory::readItem): тип для 'heartbeat' датчика (" << it.getProp("name")
             << ") указан неверно ("
             << it.getProp("iotype") << ") должен быть 'AI'";
-
-        if( dlog.is_crit() )
-            dlog.crit() << msg.str() << endl;
+    
+        dcrit << msg.str() << endl;
         kill(getpid(),SIGTERM);
 //        throw NameNotFound(msg.str());
     };
@@ -463,8 +455,7 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
         {
             ostringstream msg;
             msg << "(SharedMemory::readItem): дискретный датчик (heartbeat_ds_name) связанный с " << it.getProp("name");
-            if( dlog.is_warn() )
-                dlog.warn() << msg.str() << endl;
+            dwarn << msg.str() << endl;
         }
     }
     else
@@ -477,8 +468,7 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 
             // Если уж задали имя для датчика, то он должен существовать..
             // поэтому завершаем процесс, если не нашли..
-            if( dlog.is_crit() )
-                dlog.crit() << msg.str() << endl;
+            dcrit << msg.str() << endl;
             kill(getpid(),SIGTERM);
 //            throw NameNotFound(msg.str());
         }
@@ -490,16 +480,15 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
     if( hi.a_sid <= 0 )
     {
         ostringstream msg;
-        msg << "(SharedMemory::readItem): НЕ УКАЗАН id для "
+        msg << "(SharedMemory::readItem): НЕ УКАЗАН id для " 
             << it.getProp("name") << " секция " << sec;
 
-        if( dlog.is_crit() )
-            dlog.crit() << msg.str() << endl;
+        dcrit << msg.str() << endl;
         kill(getpid(),SIGTERM);
 //        throw NameNotFound(msg.str());
     };
 
-    // без проверки на дублирование т.к.
+    // без проверки на дублирование т.к. 
     // id - гарантирует уникальность в нашем configure.xml
     hlist.push_back(hi);
     return true;
@@ -512,20 +501,18 @@ SharedMemory* SharedMemory::init_smemory( int argc, const char* const* argv )
     if( dfile[0]!='.' && dfile[0]!='/' )
         dfile = conf->getConfDir() + dfile;
 
-    if( dlog.is_info() )
-        dlog.info() << "(smemory): datfile = " << dfile << endl;
-
+    dinfo << "(smemory): datfile = " << dfile << endl;
     UniSetTypes::ObjectId ID = conf->getControllerID(conf->getArgParam("--smemory-id","SharedMemory"));
     if( ID == UniSetTypes::DefaultObjectId )
     {
-        cerr << "(smemory): НЕ ЗАДАН идентификатор '"
+        cerr << "(smemory): НЕ ЗАДАН идентификатор '" 
             << " или не найден в " << conf->getControllersSection()
                         << endl;
         return 0;
     }
-
+    
     string cname = conf->getArgParam("--smemory--confnode", ORepHelpers::getShortName(conf->oind->getMapName(ID)) );
-
+    
     return new SharedMemory(ID,dfile,cname);
 }
 // -----------------------------------------------------------------------------
@@ -541,16 +528,14 @@ void SharedMemory::readEventList( std::string oname )
     xmlNode* enode = conf->getNode(oname);
     if( enode == NULL )
     {
-        if( dlog.is_warn() )
-            dlog.warn() << myname << "(readEventList): " << oname << " не найден..." << endl;
+        dwarn << myname << "(readEventList): " << oname << " не найден..." << endl;
         return;
     }
 
     UniXML_iterator it(enode);
     if( !it.goChildren() )
     {
-        if( dlog.is_warn() )
-            dlog.warn() << myname << "(readEventList): <eventlist> пустой..." << endl;
+        dwarn << myname << "(readEventList): <eventlist> пустой..." << endl;
         return;
     }
 
@@ -562,12 +547,11 @@ void SharedMemory::readEventList( std::string oname )
         ObjectId oid = it.getIntProp("id");
         if( oid != 0 )
         {
-            if( dlog.is_info() )
-                dlog.info() << myname << "(readEventList): add " << it.getProp("name") << endl;
+            dinfo << myname << "(readEventList): add " << it.getProp("name") << endl;
             elst.push_back(oid);
         }
-        else if( dlog.is_crit() )
-            dlog.crit() << myname << "(readEventList): Не найден ID для "
+        else
+            dcrit << myname << "(readEventList): Не найден ID для "
                 << it.getProp("name") << endl;
     }
 }
@@ -590,9 +574,9 @@ void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
             catch(...){};
         }
 
-        if(!ok && dlog.is_crit() )
-            dlog.crit() << myname << "(sendEvent): Объект " << (*it) << " НЕДОСТУПЕН" << endl;
-    }
+        if(!ok)
+            dcrit << myname << "(sendEvent): Объект " << (*it) << " НЕДОСТУПЕН" << endl;
+    }    
 }
 // -----------------------------------------------------------------------------
 void SharedMemory::addReadItem( Restorer_XML::ReaderSlot sl )
@@ -608,22 +592,19 @@ void SharedMemory::loggingInfo( SensorMessage& sm )
 // -----------------------------------------------------------------------------
 void SharedMemory::buildHistoryList( xmlNode* cnode )
 {
-    if( dlog.is_info() )
-        dlog.info() << myname << "(buildHistoryList): ..."  << endl;
+    dinfo << myname << "(buildHistoryList): ..."  << endl;
 
     UniXML* xml = conf->getConfXML();
     if( !xml )
     {
-        if( dlog.is_warn() )
-            dlog.warn() << myname << "(buildHistoryList): xml=NULL?!" << endl;
+        dwarn << myname << "(buildHistoryList): xml=NULL?!" << endl;
         return;
     }
-
+    
     xmlNode* n = xml->extFindNode(cnode,1,1,"History","");
     if( !n )
     {
-        if( dlog.is_warn() )
-            dlog.warn() << myname << "(buildHistoryList): <History> not found. ignore..." << endl;
+        dwarn << myname << "(buildHistoryList): <History> not found. ignore..." << endl;
         hist.clear();
         return;
     }
@@ -633,20 +614,18 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
     bool no_history = conf->getArgInt("--sm-no-history",it.getProp("no_history"));
     if( no_history )
     {
-        if( dlog.is_warn() )
-            dlog.warn() << myname << "(buildHistoryList): no_history='1'.. history skipped..." << endl;
+        dwarn << myname << "(buildHistoryList): no_history='1'.. history skipped..." << endl;
         hist.clear();
         return;
     }
-
+    
     histSaveTime = it.getIntProp("savetime");
     if( histSaveTime <= 0 )
         histSaveTime = 0;
-
+    
     if( !it.goChildren() )
     {
-        if( dlog.is_warn() )
-            dlog.warn() << myname << "(buildHistoryList): <History> empty. ignore..." << endl;
+        dwarn << myname << "(buildHistoryList): <History> empty. ignore..." << endl;
         return;
     }
 
@@ -665,10 +644,9 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
         hi.fuse_id = conf->getSensorID(it.getProp("fuse_id"));
         if( hi.fuse_id == DefaultObjectId )
         {
-            if( dlog.is_warn() )
-                dlog.warn() << myname << "(buildHistory): not found sensor ID for "
+            dwarn << myname << "(buildHistory): not found sensor ID for "
                     << it.getProp("fuse_id")
-                    << " history item id=" << it.getProp("id")
+                    << " history item id=" << it.getProp("id") 
                     << " ..ignore.." << endl;
             continue;
         }
@@ -682,8 +660,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
             hi.fuse_val    = it.getIntProp("fuse_value");
         }
 
-        if( dlog.is_info() )
-            dlog.info() << myname << "(buildHistory): add fuse_id=" << hi.fuse_id
+        dinfo << myname << "(buildHistory): add fuse_id=" << hi.fuse_id
                 << " fuse_val=" << hi.fuse_val
                 << " fuse_use_val=" << hi.fuse_use_val
                 << " fuse_invert=" << hi.fuse_invert
@@ -694,8 +671,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
         hist.push_back(hi);
     }
 
-    if( dlog.is_info() )
-        dlog.info() << myname << "(buildHistoryList): history logs count=" << hist.size() << endl;
+    dinfo << myname << "(buildHistoryList): history logs count=" << hist.size() << endl;
 }
 // -----------------------------------------------------------------------------
 void SharedMemory::checkHistoryFilter( UniXML_iterator& xit )
@@ -717,8 +693,7 @@ void SharedMemory::checkHistoryFilter( UniXML_iterator& xit )
         ai.id = conf->getSensorID(xit.getProp("name"));
         if( ai.id == DefaultObjectId )
         {
-            if( dlog.is_warn() )
-                dlog.warn() << myname << "(checkHistoryFilter): not found sensor ID for " << xit.getProp("name") << endl;
+            dwarn << myname << "(checkHistoryFilter): not found sensor ID for " << xit.getProp("name") << endl;
             continue;
         }
 
@@ -751,7 +726,7 @@ void SharedMemory::saveHistory()
                 si.node    = conf->getLocalNode();
                 try
                 {
-
+                    
                     hit->add( localGetValue( hit->ioit, si ), it->size );
                     continue;
                 }
@@ -780,13 +755,10 @@ void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
         sm_tv_usec = s_it->second.tv_usec;
     }
 
-    if( dlog.is_info() )
-    {
-        dlog.info() << myname << "(updateHistory): "
-            << " sid=" << s_it->second.si.id
+    dinfo << myname << "(updateHistory): "
+            << " sid=" << s_it->second.si.id 
             << " value=" << value
             << endl;
-    }
 
     for( HistoryItList::iterator it1=i->second.begin(); it1!=i->second.end(); ++it1 )
     {
@@ -795,15 +767,14 @@ void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
         if( s_it->second.type == UniversalIO::DI ||
             s_it->second.type == UniversalIO::DO )
         {
-            bool st = (bool)value;
+            bool st = (bool)value;    
 
             if( it->fuse_invert )
                 st^=true;
 
             if( st )
             {
-                if( dlog.is_info() )
-                    dlog.info() << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+                dinfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
                 it->fuse_sec = sm_tv_sec;
                 it->fuse_usec = sm_tv_usec;
@@ -822,8 +793,7 @@ void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
 
                 if( !st )
                 {
-                    if( dlog.is_info() )
-                        dlog.info() << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+                    dinfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
                     it->fuse_sec = sm_tv_sec;
                     it->fuse_usec = sm_tv_usec;
@@ -834,8 +804,7 @@ void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
             {
                 if( value == it->fuse_val )
                 {
-                    if( dlog.is_info() )
-                        dlog.info() << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
+                    dinfo << myname << "(updateHistory): HISTORY EVENT for " << (*it) << endl;
 
                     it->fuse_sec = sm_tv_sec;
                     it->fuse_usec = sm_tv_usec;
@@ -848,13 +817,13 @@ void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, const SharedMemory::HistoryInfo& h )
 {
-    os << "History id=" << h.id
+    os << "History id=" << h.id 
         << " fuse_id=" << h.fuse_id
         << " fuse_invert=" << h.fuse_invert
         << " fuse_val=" << h.fuse_val
         << " size=" << h.size
         << " filter=" << h.filter << endl;
-
+    
     for( SharedMemory::HistoryList::const_iterator it=h.hlst.begin(); it!=h.hlst.end(); ++it )
     {
         os << "    id=" << it->id << "[";
@@ -862,7 +831,7 @@ std::ostream& operator<<( std::ostream& os, const SharedMemory::HistoryInfo& h )
             os << " " << (*i);
         os << " ]" << endl;
     }
-
+    
     return os;
 }
 // ------------------------------------------------------------------------------------------

@@ -55,7 +55,7 @@ ObjectId ObjectIndex_XML::getIdByName( const string& name )
     MapObjectKey::iterator it = mok.find(name);
     if( it != mok.end() )
         return it->second;
-
+        
     return DefaultObjectId;
 }
 // -----------------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ string ObjectIndex_XML::getMapName( const ObjectId id )
 
     return "";
 }
-// -----------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------        
 string ObjectIndex_XML::getTextName( const ObjectId id )
 {
     if( (unsigned)id<omap.size() && (unsigned)id>=0 && (unsigned)id<omap.size() )
@@ -88,9 +88,9 @@ std::ostream& ObjectIndex_XML::printMap( std::ostream& os )
         if( it->repName == NULL )
             continue;
 
-        os  << setw(5) << it->id << "  "
-//            << setw(45) << ORepHelpers::getShortName(it->repName,'/')
-            << setw(45) << it->repName
+        os  << setw(5) << it->id << "  " 
+//            << setw(45) << ORepHelpers::getShortName(it->repName,'/') 
+            << setw(45) << it->repName 
             << "  " << it->textName << endl;
     }
 
@@ -107,8 +107,8 @@ void ObjectIndex_XML::build(UniXML& xml)
     ind = read_section(xml,"controllers",ind);
     ind = read_section(xml,"services",ind);
     ind = read_nodes(xml,"nodes",ind);
-
-    //
+    
+    // 
     omap.resize(ind);
 //    omap[ind].repName=NULL;
 //    omap[ind].textName=NULL;
@@ -119,13 +119,8 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string& sec,
 {
     if( (unsigned)ind >= omap.size() )
     {
-        if( ulog.is_info() )
-        {
-            ostringstream msg;
-            msg << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size();
-//            throw OutOfRange(msg.str());
-            ulog.warn() << msg.str() << "... Делаем resize + 100\n";
-        }
+        uwarn << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size()
+              << "... Делаем resize + 100" << endl;
 
         omap.resize(omap.size()+100);
     }
@@ -135,7 +130,7 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string& sec,
     {
         ostringstream msg;
         msg << "(ObjectIndex_XML::build):: не нашли параметр RootSection в конф. файле ";
-        ulog.crit() << msg.str() << endl;
+        ucrit << msg.str() << endl;
         throw SystemError(msg.str());
     }
 
@@ -144,6 +139,7 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string& sec,
     {
         ostringstream msg;
         msg << "(ObjectIndex_XML::build): не нашли корневого раздела " << sec;
+        ucrit << msg.str() << endl;
         throw NameNotFound(msg.str());
     }
 
@@ -153,6 +149,7 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string& sec,
     {
         ostringstream msg;
         msg << "(ObjectIndex_XML::build): не удалось перейти к списку элементов " << sec;
+        ucrit << msg.str() << endl;
         throw NameNotFound(msg.str());
     }
 
@@ -164,6 +161,7 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string& sec,
     {
         ostringstream msg;
         msg << "(ObjectIndex_XML::build): у секции " << sec << " не указано свойство 'name' ";
+        ucrit << msg.str() << endl;
         throw NameNotFound(msg.str());
     }
 
@@ -199,14 +197,9 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string& sec,
 
         if( (unsigned)ind >= omap.size() )
         {
-            if( ulog.is_info() )
-            {
-                ostringstream msg;
-                msg << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size();
-//                throw OutOfRange(msg.str());
-                if( ulog.is_info() )
-                    ulog.info() << msg.str() << "... Делаем resize + 100\n";
-            }
+            uinfo << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size()
+                  << "... Делаем resize + 100" << endl;
+
             omap.resize(omap.size()+100);
         }
     }
@@ -220,8 +213,7 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string& sec, u
     {
         ostringstream msg;
         msg << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size();
-//        throw OutOfRange(msg.str());
-        ulog.warn() << msg.str() << "... Делаем resize + 100\n";
+        uinfo << msg.str() << "... Делаем resize + 100\n";
         omap.resize(omap.size()+100);
     }
 
@@ -251,7 +243,7 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string& sec, u
         string alias(xml.getProp(it,"alias"));
         if( alias.empty() )
             alias = name;
-
+    
         string nodename = mkFullNodeName(name,alias);
         delete[] omap[ind].repName;
         omap[ind].repName = new char[nodename.size()+1];
@@ -267,7 +259,7 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string& sec, u
         strcpy( omap[ind].textName, textname.c_str() );
 
         omap[ind].data = (void*)(xmlNode*)(it);
-        //
+        // 
         mok[omap[ind].repName] = ind;
 
 //        cout << "read: " << "(" << ind << ") " << omap[ind].repName << "\t" << omap[ind].textName << endl;
@@ -276,8 +268,7 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string& sec, u
         {
             ostringstream msg;
             msg << "(ObjectIndex_XML::build): не хватило размера массива maxSize=" << omap.size();
-//            throw OutOfRange(msg.str());
-            ulog.warn() << msg.str() << "... Делаем resize + 100\n";
+            uwarn << msg.str() << "... Делаем resize + 100" << endl;
             omap.resize(omap.size()+100);
         }
     }

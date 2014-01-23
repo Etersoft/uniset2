@@ -53,7 +53,7 @@ int main( int argc, char** argv )
         RTUExchange* rs = RTUExchange::init_rtuexchange(argc,argv,shmID,0,"rs");
         if( !rs )
         {
-            dlog.crit() << "(rtuexchange): init не прошёл..." << endl;
+            dcrit << "(rtuexchange): init не прошёл..." << endl;
             return 1;
         }
 
@@ -75,11 +75,11 @@ int main( int argc, char** argv )
     }
     catch( Exception& ex )
     {
-        dlog.crit() << "(rtuexchange): " << ex << std::endl;
+        dcrit << "(rtuexchange): " << ex << std::endl;
     }
     catch(...)
     {
-        dlog.crit() << "(rtuexchange): catch ..." << std::endl;
+        dcrit << "(rtuexchange): catch ..." << std::endl;
     }
 
     while( waitpid(-1, 0, 0) > 0 );

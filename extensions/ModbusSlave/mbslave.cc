@@ -60,7 +60,7 @@ int main(int argc, const char **argv)
         MBSlave* s = MBSlave::init_mbslave(argc,argv,shmID);
         if( !s )
         {
-            dlog.crit() << "(mbslave): init не прошёл..." << endl;
+            dcrit << "(mbslave): init не прошёл..." << endl;
             return 1;
         }
 
@@ -80,19 +80,19 @@ int main(int argc, const char **argv)
     }
     catch( SystemError& err )
     {
-        dlog.crit() << "(mbslave): " << err << endl;
+        dcrit << "(mbslave): " << err << endl;
     }
     catch( Exception& ex )
     {
-        dlog.crit() << "(mbslave): " << ex << endl;
+        dcrit << "(mbslave): " << ex << endl;
     }
     catch( std::exception& e )
     {
-        dlog.crit() << "(mbslave): " << e.what() << endl;
+        dcrit << "(mbslave): " << e.what() << endl;
     }
     catch(...)
     {
-        dlog.crit() << "(mbslave): catch(...)" << endl;
+        dcrit << "(mbslave): catch(...)" << endl;
     }
 
     while( waitpid(-1, 0, 0) > 0 );

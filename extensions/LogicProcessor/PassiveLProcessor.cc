@@ -24,8 +24,7 @@ PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId o
         {
             ostringstream err;
             err << myname << ": ID not found ('HeartBeat') for " << heart;
-            if( dlog.is_crit() )
-                dlog.crit() << myname << "(init): " << err.str() << endl;
+            dcrit << myname << "(init): " << err.str() << endl;
             throw SystemError(err.str());
         }
 
@@ -52,8 +51,7 @@ void PassiveLProcessor::step()
     }
     catch(Exception& ex )
     {
-        if( dlog.is_crit() )
-            dlog.crit() << myname << "(step): (hb) " << ex << std::endl;
+        dcrit << myname << "(step): (hb) " << ex << std::endl;
     }
 
     if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
@@ -65,8 +63,7 @@ void PassiveLProcessor::step()
         }
         catch(Exception& ex)
         {
-            if( dlog.is_crit() )
-                dlog.crit() << myname << "(step): (hb) " << ex << std::endl;
+            dcrit << myname << "(step): (hb) " << ex << std::endl;
         }
     }
 
@@ -86,8 +83,7 @@ void PassiveLProcessor::askSensors( UniversalIO::UIOCommand cmd )
     }
     catch( Exception& ex )
     {
-        if( dlog.is_crit() )
-            dlog.crit() << myname << "(askSensors): " << ex << endl;
+        dcrit << myname << "(askSensors): " << ex << endl;
         throw SystemError(myname +"(askSensors): do not ask sensors" );
     }
 }
@@ -115,8 +111,7 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
         {
             if( !shm->waitSMready(smReadyTimeout) )
             {
-                if( dlog.is_crit() )
-                    dlog.crit() << myname << "(ERR): SM not ready. Terminated... " << endl;
+                dcrit << myname << "(ERR): SM not ready. Terminated... " << endl;
                 raise(SIGTERM);
                 return;
             }
@@ -202,11 +197,11 @@ void PassiveLProcessor::setOuts()
         }
         catch( Exception& ex )
         {
-            dlog.crit() << myname << "(setOuts): " << ex << endl;
+            dcrit << myname << "(setOuts): " << ex << endl;
         }
         catch(...)
         {
-            dlog.crit() << myname << "(setOuts): catch...\n";
+            dcrit << myname << "(setOuts): catch...\n";
         }
     }
 }
@@ -221,11 +216,11 @@ void PassiveLProcessor::sigterm( int signo )
         }
         catch( Exception& ex )
         {
-            dlog.crit() << myname << "(sigterm): " << ex << endl;
+            dcrit << myname << "(sigterm): " << ex << endl;
         }
         catch(...)
         {
-            dlog.crit() << myname << "(sigterm): catch...\n";
+            dcrit << myname << "(sigterm): catch...\n";
         }
     }
 }
@@ -263,7 +258,7 @@ void PassiveLProcessor::processingMessage( UniSetTypes::VoidMessage* msg )
     }
     catch(Exception& ex)
     {
-        dlog.crit()  << myname << "(processingMessage): " << ex << endl;
+        dcrit  << myname << "(processingMessage): " << ex << endl;
     }
 }
 // -----------------------------------------------------------------------------

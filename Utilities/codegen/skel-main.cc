@@ -31,10 +31,10 @@ int main( int argc, const char **argv )
         SystemMessage sm(SystemMessage::StartUp);
         act.broadcast( sm.transport_msg() );
 
-        ulog.ebug::ANY) << "\n\n\n";
-        ulog.ebug::ANY] << "(Skel::main): -------------- Skel START -------------------------\n\n";
-        dlog(Debug::ANY) << "\n\n\n";
-        dlog[Debug::ANY] << "(Skel::main): -------------- Skel START -------------------------\n\n";
+        ulog << "\n\n\n";
+        ulog << "(Skel::main): -------------- Skel START -------------------------\n\n";
+        dlog << "\n\n\n";
+        dlog << "(Skel::main): -------------- Skel START -------------------------\n\n";
         act.run(false);
     }
     catch(SystemError& err)

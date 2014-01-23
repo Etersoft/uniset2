@@ -36,18 +36,18 @@ smReadyTimeout(15000)
 
     s_field = conf->getArgParam("--" + prefix + "-filter-field");
     s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
-    dlog.info() << myname << "(init): read fileter-field='" << s_field
+    dinfo << myname << "(init): read fileter-field='" << s_field
                         << "' filter-value='" << s_fvalue << "'" << endl;
 
     polltime = conf->getArgInt("--" + prefix + "-polltime",it.getProp("polltime"));
     if( polltime <= 0 )
         polltime = 200;
-    dlog.info() << myname << "(init): polltime=" << polltime << endl;
+    dinfo << myname << "(init): polltime=" << polltime << endl;
 
     int updatetime = conf->getArgInt("--" + prefix + "-updatetime",it.getProp("updatetime"));
     if( updatetime <= 0 )
         updatetime = 200;
-    dlog.info() << myname << "(init): updatetime=" << polltime << endl;
+    dinfo << myname << "(init): updatetime=" << polltime << endl;
 
     ptUpdate.setTiming(updatetime);
 
@@ -57,7 +57,7 @@ smReadyTimeout(15000)
     else if( smReadyTimeout < 0 )
         smReadyTimeout = UniSetTimer::WaitUpTime;
 
-    dlog.info() << myname << "(init): smReadyTimeout=" << smReadyTimeout << endl;
+    dinfo << myname << "(init): smReadyTimeout=" << smReadyTimeout << endl;
 
     if( it.goChildren() )
     {
@@ -97,7 +97,7 @@ smReadyTimeout(15000)
             ni.node = node;
             ni.sidConnection = conf->getSensorID(it.getProp("sid_connection"));
 
-            dlog.info() << myname << ": add point " << n << ":" << n1 << endl;
+            dinfo << myname << ": add point " << n << ":" << n1 << endl;
             nlst.push_back(ni);
         }
     }
@@ -150,23 +150,21 @@ void UniExchange::execute()
             bool ok = false;
             try
             {
-                if( dlog.is_info() )
-                    dlog.info() << myname << ": connect to id=" << it->id << " node=" << it->node << endl;
+                dinfo << myname << ": connect to id=" << it->id << " node=" << it->node << endl;
 
                 IOController_i::ShortMapSeq_var sseq = ui.getSensors( it->id, it->node );
                 ok = true;
 
-                if( dlog.is_info() )
-                    dlog.info() << myname << " update sensors from id=" << it->id << " node=" << it->node << endl;
+                dinfo << myname << " update sensors from id=" << it->id << " node=" << it->node << endl;
                 it->update(sseq,shm);
             }
             catch( Exception& ex )
             {
-                dlog.info()  << myname << "(execute): " << ex << endl;
+                dwarn << myname << "(execute): " << ex << endl;
             }
             catch( ... )
             {
-                dlog.info()  << myname << "(execute): catch ..." << endl;
+                dwarn << myname << "(execute): catch ..." << endl;
             }
     
             if( it->sidConnection != DefaultObjectId )
@@ -177,15 +175,14 @@ void UniExchange::execute()
                 }
                 catch(...)
                 {
-                    if( dlog.is_crit() )
-                        dlog.crit()<< myname << "(execute): sensor not avalible "
+                    dcrit << myname << "(execute): sensor not avalible "
                             << conf->oind->getNameById( it->sidConnection) 
                             << endl; 
                 }
             }
 
-            if( !ok && dlog.is_info() )
-                dlog.info() << myname << ": ****** cannot connect with node=" << it->node << endl;
+            if( !ok )
+                dinfo << myname << ": ****** cannot connect with node=" << it->node << endl;
         }
 
         if( ptUpdate.checkTime() )
@@ -234,11 +231,11 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMI
         }
         catch( Exception& ex )
         {
-            dlog.info()  << "(update): " << ex << endl;
+            dwarn  << "(update): " << ex << endl;
         }
         catch( ... )
         {
-            dlog.info()  << "(update): catch ..." << endl;
+            dwarn  << "(update): catch ..." << endl;
         }
     }
 }
@@ -278,11 +275,11 @@ void UniExchange::updateLocalData()
         }
         catch( Exception& ex )
         {
-            dlog.warn()  << "(update): " << ex << endl;
+            dwarn  << "(update): " << ex << endl;
         }
         catch( ... )
         {
-            dlog.warn()  << "(update): catch ..." << endl;
+            dwarn  << "(update): catch ..." << endl;
         }
     }
     
@@ -443,8 +440,7 @@ bool UniExchange::initItem( UniXML_iterator& it )
     
     if( i.id == DefaultObjectId )
     {
-        if( dlog )
-            dlog.crit() << myname << "(initItem): Unknown ID for " 
+        dcrit << myname << "(initItem): Unknown ID for "
                 << it.getProp("name") << endl;
         return false;
     }
@@ -452,8 +448,7 @@ bool UniExchange::initItem( UniXML_iterator& it )
     i.type = UniSetTypes::getIOType(it.getProp("iotype"));
     if( i.type == UniversalIO::UnknownIOType )
     {
-        if( dlog )
-            dlog.crit() << myname << "(initItem): Unknown iotype= " 
+        dcrit << myname << "(initItem): Unknown iotype= "
                 << it.getProp("iotype") << " for " << it.getProp("name") << endl;
         return false;
     }

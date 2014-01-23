@@ -35,18 +35,17 @@ using namespace std;
 
 namespace ORepHelpers
 {
-
+    
 
 // --------------------------------------------------------------------------
     /*!
-     *    \param cname - полное имя контекста ссылку на который, возвратит функция.
-     *    \param argc, argv  - параметры инициализации ORB
+     *    \param cname - полное имя контекста ссылку на который, возвратит функция. 
+     *    \param argc, argv  - параметры инициализации ORB      
     */
     CosNaming::NamingContext_ptr getContext(const string& cname, int argc, const char* const* argv, const string& nsName )throw(ORepFailed)
     {
         CORBA::ORB_var orb = CORBA::ORB_init( argc, (char**)argv );
-        if( ulog.is_repository() )
-            ulog.repository() << "OREPHELP: orb init ok"<< endl;
+        ulogrep << "OREPHELP: orb init ok"<< endl;
         return getContext(orb, cname, nsName);
     }
 // --------------------------------------------------------------------------
@@ -54,26 +53,22 @@ namespace ORepHelpers
     {
         CosNaming::NamingContext_var rootC;
 
-        if( ulog.is_repository() )
-            ulog.repository() << "OREPHELPER(getContext): get rootcontext...(servname = "<< servname << ")" <<endl;
+        ulogrep << "OREPHELPER(getContext): get rootcontext...(servname = "<< servname << ")" <<endl;
 
         rootC = getRootNamingContext(orb, servname);
 
-        if( ulog.is_repository() )
-            ulog.repository() << "OREPHELPER(getContext): get rootContect ok " << endl;
+        ulogrep << "OREPHELPER(getContext): get rootContect ok " << endl;
 
         if( CORBA::is_nil(rootC) )
         {
-            if( ulog.is_warn() )
-                ulog.warn() << "OREPHELPER: не смог получить ссылку на NameServices"<< endl;
+            uwarn << "OREPHELPER: не смог получить ссылку на NameServices"<< endl;
             throw ORepFailed("OREPHELPER(getContext): не смог получить ссылку на NameServices");
         }
 
         if ( cname.empty() )
             return rootC._retn();
 
-        if( ulog.is_repository() )
-            ulog.repository() << "OREPHELPER(getContext): get ref context " << cname << endl;
+        ulogrep << "OREPHELPER(getContext): get ref context " << cname << endl;
 
         CosNaming::Name_var ctxName = omniURI::stringToName(cname.c_str());
         CosNaming::NamingContext_var ctx;
@@ -91,16 +86,14 @@ namespace ORepHelpers
         {
             ostringstream err;
             err << "OREPHELPER(getContext): не смог получить ссылку на контекст " << cname;
-            if( ulog.is_warn() )
-                ulog.warn() << err.str() << endl;
+            uwarn << err.str() << endl;
             throw ORepFailed(err.str());
         }
         catch(const CosNaming::NamingContext::NotFound &nf)
         {
             ostringstream err;
             err << "OREPHELPER(getContext): не найден контекст " << cname;
-            if( ulog.warn() )
-                  ulog.warn() << err.str() << endl;
+            uwarn << err.str() << endl;
             throw ORepFailed(err.str());
         }
         catch(const CosNaming::NamingContext::CannotProceed &np)
@@ -108,40 +101,33 @@ namespace ORepHelpers
             ostringstream err;
             err << "OREPHELPER(getContext): catch CannotProced " << cname;
             err << " bad part=" << omniURI::nameToString(np.rest_of_name);
-            if( ulog.is_warn() )
-                  ulog.warn() << err.str() << endl;
+            uwarn << err.str() << endl;
             throw ORepFailed(err.str());
         }
         catch(CORBA::SystemException& ex)
         {
             ostringstream err;
             err << "OREPHELPER(getContext): поймали CORBA::SystemException: " << ex.NP_minorString();
-            if( ulog.is_warn() )
-                ulog.warn() <<  err.str() << endl;
+            uwarn <<  err.str() << endl;
             throw ORepFailed(err.str());
         }
         catch(CORBA::Exception&)
         {
-            if( ulog.is_warn() )
-                ulog.warn() << "OREPHELPER(getContext): поймали CORBA::Exception." << endl;
+            uwarn << "OREPHELPER(getContext): поймали CORBA::Exception." << endl;
             throw ORepFailed();
         }
         catch(omniORB::fatalException& fe)
         {
             ostringstream err;
             err << "OREPHELPER(getContext): поймали omniORB::fatalException:";
-            if( ulog.is_warn() )
-            {
-                ulog.warn() <<  err << endl;
-                ulog.warn() << "  file: " << fe.file() << endl;
-                ulog.warn() << "  line: " << fe.line() << endl;
-                ulog.warn() << "  mesg: " << fe.errmsg() << endl;
-            }
+            uwarn <<  err << endl;
+            uwarn << "  file: " << fe.file() << endl;
+            uwarn << "  line: " << fe.line() << endl;
+            uwarn << "  mesg: " << fe.errmsg() << endl;
             throw ORepFailed(err.str());
         }
 
-        if( ulog.is_repository() )
-            ulog.repository() << "getContext: получили "<< cname << endl;
+        ulogrep << "getContext: получили "<< cname << endl;
 
         // Если _var
 //          return CosNaming::NamingContext::_duplicate(ctx);
@@ -160,8 +146,7 @@ namespace ORepHelpers
     {
 //        cout << "ORepHelpers(getRootNamingContext): nsName->" << nsName << endl;
         CORBA::Object_var initServ = orb->resolve_initial_references(nsName.c_str());
-        if( ulog.is_repository() )
-            ulog.repository() << "OREPHELP: get rootcontext...(nsName = "<< nsName << ")" <<endl;
+        ulogrep << "OREPHELP: get rootcontext...(nsName = "<< nsName << ")" <<endl;
 
         rootContext = CosNaming::NamingContext::_narrow(initServ);
         if (CORBA::is_nil(rootContext))
@@ -170,15 +155,13 @@ namespace ORepHelpers
             throw ORepFailed(err.c_str());
         }
 
-        if( ulog.is_repository() )
-            ulog.repository() << "OREPHELP: init NameService ok"<< endl;
+        ulogrep << "OREPHELP: init NameService ok"<< endl;
     }
     catch(CORBA::ORB::InvalidName& ex)
     {
         ostringstream err;
         err << "ORepHelpers(getRootNamingContext): InvalidName=" << nsName;
-        if( ulog.is_warn() )
-            ulog.warn() << err.str() << endl;
+        uwarn << err.str() << endl;
         throw ORepFailed(err.str());
     }
     catch (CORBA::COMM_FAILURE& ex)
@@ -198,8 +181,7 @@ namespace ORepHelpers
         throw ORepFailed(err);
     }
 
-    if( ulog.is_repository() )
-        ulog.repository() << "OREPHELP: get root context ok"<< endl;
+    ulogrep << "OREPHELP: get root context ok"<< endl;
 
 //    // Если создан как _ptr
 //    return rootContext;
@@ -210,7 +192,7 @@ namespace ORepHelpers
     // ---------------------------------------------------------------------------------------------------------------
     /*!
      *    \param fname - полное имя включающее в себя путь ("Root/Section1/name|Node:Alias")
-     *    \param brk  - используемый символ разделитель
+     *    \param brk  - используемый символ разделитель      
     */
     const string getShortName( const string& fname, const std::string& brk )
     {
@@ -226,10 +208,10 @@ namespace ORepHelpers
 
         if( pos2 == string::npos && pos1 == string::npos )
             return fname;
-
+    
         if( pos1 == string::npos )
             return fname.substr( 0, pos2 );
-
+    
         if( pos2 == string::npos )
             return fname.substr( pos1+1, fname.length() );
 
@@ -239,7 +221,7 @@ namespace ORepHelpers
     // ---------------------------------------------------------------------------------------------------------------
     /*!
      *    \param fullName - полное имя включающее в себя путь
-     *    \param brk  - используемый символ разделитель
+     *    \param brk  - используемый символ разделитель      
      *  \note Функция возвращает путь без последнего символа разделителя ("Root/Section1/name" -> "Root/Section1")
     */
     const string getSectionName( const string& fullName, const std::string& brk )
@@ -249,7 +231,7 @@ namespace ORepHelpers
             return "";
 
         return fullName.substr(0, pos);
-    }
+    }    
 
     // ---------------------------------------------------------------------------------------------------------------
     /*
@@ -259,7 +241,7 @@ namespace ORepHelpers
     char checkBadSymbols(const string& str)
     {
         using namespace UniSetTypes;
-
+        
         for ( unsigned int i=0;i<str.length();i++)
         {
             for(unsigned int k=0; k<sizeof(BadSymbols); k++)
@@ -269,7 +251,7 @@ namespace ORepHelpers
             }
         }
         return 0;
-    }
+    }    
 
     // ---------------------------------------------------------------------------------------------------------------
     string BadSymbolsToStr()

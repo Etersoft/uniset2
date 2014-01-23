@@ -42,7 +42,7 @@ uniset_mutex::uniset_mutex():
 }
 // -----------------------------------------------------------------------------
 uniset_mutex::uniset_mutex( string name ):
-    cnd(0),
+    cnd(0),    
     nm(name),
     locked(0)
 {
@@ -112,9 +112,9 @@ uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, int timeMS ):
     mutex->mtx.lock();
     if( !mutex->cnd->timedwait(sec, msec) )
     {
-        if( !mutex->name().empty() && ulog.is_level9() )
+        if( !mutex->name().empty() )
         {
-            ulog.level9() << "(mutex_lock): вышло заданное время ожидания "
+            ulog9 << "(mutex_lock): вышло заданное время ожидания "
                 << timeMS << " msec для " << mutex->name() << endl;
         }
 
@@ -134,7 +134,7 @@ bool uniset_mutex_lock::lock_ok()
 }
 
 uniset_mutex_lock::~uniset_mutex_lock()
-{
+{    
     if( mlock )
     {
         mlock = 0;
@@ -181,7 +181,7 @@ const uniset_rwmutex &uniset_rwmutex::operator=( const uniset_rwmutex& r )
         nm = s.str();
         unlock();
     }
-
+    
     return *this;
 }
 
@@ -209,7 +209,7 @@ void uniset_rwmutex::wrlock()
 void uniset_rwmutex::rlock()
 {
     MUTEX_DEBUG(cerr << nm << " prepare RLocked.." << endl;)
-
+    
     while( wr_wait > 0 )
         msleep(2);
 

@@ -55,7 +55,7 @@ int main( int argc, const char** argv )
         MBTCPMaster* mb = MBTCPMaster::init_mbmaster(argc,argv,shmID);
         if( !mb )
         {
-            dlog.crit() << "(mbmaster): init MBTCPMaster failed." << endl;
+            dcrit << "(mbmaster): init MBTCPMaster failed." << endl;
             return 1;
         }
 
@@ -75,11 +75,11 @@ int main( int argc, const char** argv )
     }
     catch( Exception& ex )
     {
-        dlog.crit() << "(mbtcpmaster): " << ex << std::endl;
+        dcrit << "(mbtcpmaster): " << ex << std::endl;
     }
     catch(...)
     {
-        dlog.crit() << "(mbtcpmaster): catch ..." << std::endl;
+        dcrit << "(mbtcpmaster): catch ..." << std::endl;
     }
 
     while( waitpid(-1, 0, 0) > 0 );

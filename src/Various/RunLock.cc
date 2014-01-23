@@ -42,18 +42,18 @@ RunLock::~RunLock()
 bool RunLock::isLocked(const string& name)
 {
     FILE *out = fopen( string(name + ".lock" ).c_str(), "r" );
-    if( out )
+    if( out ) 
     {
         char ptr[10];
         fscanf( out, "%9s", ptr );
-
+        
         DIR *d = opendir( "/proc" );
         dirent *dir;
         while((dir = readdir(d)))
         {
             if( !strcmp( ptr, dir->d_name ) )
             {
-                // по хорошему здесь надо бы проверять
+                // по хорошему здесь надо бы проверять 
                 // статус на зомби
 /*
                 string path(dir->d_name);
@@ -70,20 +70,19 @@ bool RunLock::isLocked(const string& name)
                         break;
                     }
                 }
-*/
-                if( ulog.is_info() )
-                    ulog.info() << "(RunLock): programm " << name << " already run" << endl;
+*/                
+                uinfo << "(RunLock): programm " << name << " already run" << endl;
 
                 fclose(out);
                 closedir(d);
                 return true;
             }
-        }
+        }    
 
         fclose(out);
         closedir(d);
     }
-
+    
     return false;
 }
 // --------------------------------------------------------------------------
@@ -91,7 +90,7 @@ bool RunLock::lock( const string& name )
 {
     if( !isLocked(name) )
     {
-        FILE *out = fopen( string(name + ".lock" ).c_str(), "w+" );
+        FILE *out = fopen( string(name + ".lock" ).c_str(), "w+" );    
         if(out)
         {
             fprintf( out, "%d\n", getpid() );
@@ -99,14 +98,14 @@ bool RunLock::lock( const string& name )
             return true;
         }
     }
-
+    
     return false;
 }
 // --------------------------------------------------------------------------
 bool RunLock::unlock(const string& name)
 {
     string fname(name + ".lock");
-    FILE *out = fopen( fname.c_str(), "r" );
+    FILE *out = fopen( fname.c_str(), "r" );    
     if( out )
     {
         fclose(out);

@@ -159,8 +159,7 @@ Configuration::Configuration( int argc, const char* const* argv, const string& f
 void Configuration::initConfiguration( int argc, const char* const* argv )
 {
 //    PassiveTimer pt(UniSetTimer::WaitUpTime);
-    if( ulog.is_system() )
-        ulog.system() << "*** configure from file: " << fileConfName << endl;
+    ulogsys << "*** configure from file: " << fileConfName << endl;
 
     char curdir[FILENAME_MAX];
     getcwd(curdir,FILENAME_MAX);
@@ -184,8 +183,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         {
             if( !unixml.isOpen() )
             {
-                if( ulog.is_info() )
-                    ulog.info() << "(Configuration): open from file " <<  fileConfName << endl;
+                uinfo << "(Configuration): open from file " <<  fileConfName << endl;
                 unixml.open(fileConfName);
             }
         }
@@ -194,7 +192,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
             ulog << "(Configuration): FAILED open configuration from " <<  fileConfName << endl;
             throw;
         }
-    
+
         // default value
         heartbeat_msec = 5000;
 
@@ -208,8 +206,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
                 UniXML_iterator it = unixml.findNode(unixml.getFirstNode(),"ObjectsMap");
                 if( it == NULL )
                 {
-                    if( ulog.is_crit() )
-                        ulog.crit()<< "(Configuration:init): not found <ObjectsMap> node in "  << fileConfName << endl;
+                    ucrit << "(Configuration:init): not found <ObjectsMap> node in "  << fileConfName << endl;
                     throw SystemError("(Configuration:init): not found <ObjectsMap> node in " + fileConfName );
                 }
 
@@ -222,8 +219,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
                 }
                 catch(Exception& ex )
                 {
-                    if( ulog.is_crit() )
-                        ulog.crit()<< "(Configuration:init): INIT FAILED! from "  << fileConfName << endl;
+                    ucrit << "(Configuration:init): INIT FAILED! from "  << fileConfName << endl;
                     throw;
                 }
             }
@@ -231,9 +227,6 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
     
         // Настраиваем отладочные логи
         initDebug(ulog,"UniSetDebug");
-
-//        cerr << "*************** initConfiguration: oind: " << pt.getCurrent() << " msec " << endl;
-//        pt.reset();
 
         // default init...
         transientIOR     = false;
@@ -295,8 +288,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
             param << "=corbaname::" << it->host << ":" << it->port;
             new_argv[i+1] = strdup(param.str().c_str());
 
-            if( ulog.is_info() )
-                ulog.info() << "(Configuration): внесли параметр " << param.str() << endl;
+            uinfo << "(Configuration): внесли параметр " << param.str() << endl;
             i+=2;
 
              ostringstream uri;
@@ -306,7 +298,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
             assert( i < _argc );
         }
-        
+
         // т..к _argc уже изменился, то и _argv надо обновить
         // чтобы вызов getArgParam не привел к SIGSEGV
         _argv = new_argv;
@@ -315,7 +307,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         xmlNode* nsnode = getNode("NameService");
         if( !nsnode )
         {
-            ulog.warn() << "(Configuration): не нашли раздела 'NameService' \n";
+            uwarn << "(Configuration): не нашли раздела 'NameService' \n";
             new_argv[i]     = "";
             new_argv[i+1]     = "";
         }
@@ -323,14 +315,13 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         {
             new_argv[i] = "-ORBInitRef";
             new_argv[i+1]     = ""; // сперва инициализиуем пустой строкой (т.к. будет вызываться getArgParam)
-            
+
             string defPort( getPort( getProp(nsnode,"port") ) ); // здесь вызывается getArgParam! проходящий по _argv
 
             ostringstream param;
             param << this << "NameService=corbaname::" << getProp(nsnode,"host") << ":" << defPort;
             new_argv[i+1] = strdup(param.str().c_str());
-            if( ulog.is_info() )
-                ulog.info() << "(Configuration): внесли параметр " << param.str() << endl;
+            uinfo << "(Configuration): внесли параметр " << param.str() << endl;
 
             {
                 ostringstream ns_name;
@@ -341,7 +332,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
                     cerr << "**********************!!!! FAILED ADD name=" <<ns_name << " uri=" << uri.str() << endl; 
             }
         }
-        
+
         _argv = new_argv;
         // ------------- CORBA INIT -------------        
         // orb init
@@ -350,7 +341,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
         PortableServer::POA_var root_poa = PortableServer::POA::_narrow(obj);
         CORBA::PolicyList pl;
-        
+
         if( transientIOR == false )
         {
             pl.length(3);
@@ -374,12 +365,12 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
     }
     catch( Exception& ex )
     {
-        ulog.crit()<< "Configuration:" << ex << endl;
+        ucrit << "Configuration:" << ex << endl;
         throw;
     }
     catch(...)
     {
-        ulog.crit()<< "Configuration: INIT FAILED!!!!"<< endl;
+        ucrit << "Configuration: INIT FAILED!!!!"<< endl;
         throw Exception("Configuration: INIT FAILED!!!!");
     }
 
@@ -422,23 +413,21 @@ void Configuration::initParameters()
     xmlNode* root = unixml.findNode( unixml.getFirstNode(),"UniSet" );
     if( !root )
     {
-        if( ulog.is_crit() )
-            ulog.crit()<< "Configuration: INIT PARAM`s FAILED! <UniSet>...</UniSet> not found"<< endl;
+        ucrit << "Configuration: INIT PARAM`s FAILED! <UniSet>...</UniSet> not found"<< endl;
         throw Exception("Configuration: INIT PARAM`s FAILED! <UniSet>...</UniSet> not found!");
     }
 
     UniXML_iterator it(root);
     if( !it.goChildren() )
     {
-        if( ulog.is_crit() )
-            ulog.crit()<< "Configuration: INIT PARAM`s FAILED!!!!"<< endl;
+        ucrit << "Configuration: INIT PARAM`s FAILED!!!!"<< endl;
         throw Exception("Configuration: INIT PARAM`s FAILED!!!!");
     }
-    
+
     for( ; it.getCurrent(); it.goNext() )
     {
         string name( it.getName() );
-        
+
         if( name == "LocalNode" )
         {
             if( localNode == UniSetTypes::DefaultObjectId )
@@ -457,8 +446,7 @@ void Configuration::initParameters()
             {
                 ostringstream msg;
                 msg << "Configuration: DBServer '" << secDB << "' not found ServiceID in <services>!";
-                if( ulog.is_crit() )
-                    ulog.crit()<< msg.str() << endl;
+                ucrit << msg.str() << endl;
                 throw Exception(msg.str());
             }
         }
@@ -536,8 +524,7 @@ void Configuration::setLocalNode( const string& nodename )
     {
         stringstream err;
         err << "(Configuration::setLocalNode): Not found node '" << nodename << "'";
-        if( ulog.is_crit() )
-            ulog.crit()<< err.str() << endl;
+        ucrit << err.str() << endl;
         throw Exception(err.str());
     }
     
@@ -604,8 +591,7 @@ void Configuration::createNodesList()
     xmlNode* omapnode = unixml.findNode(unixml.getFirstNode(), "ObjectsMap");
     if( !omapnode )
     {
-        if( ulog.is_crit() )
-            ulog.crit()<< "(Configuration): <ObjectsMap> not found!!!" << endl;
+        ucrit << "(Configuration): <ObjectsMap> not found!!!" << endl;
         throw Exception("(Configuration): <ObjectsMap> not found!");
     }
 
@@ -613,8 +599,7 @@ void Configuration::createNodesList()
     xmlNode* node = unixml.findNode(omapnode, "nodes");
     if(!node)
     {
-        if( ulog.is_crit() )
-            ulog.crit()<< "(Configuration): <nodes> section not found!"<< endl;
+        ucrit << "(Configuration): <nodes> section not found!"<< endl;
         throw Exception("(Configiuration): <nodes> section not found");
     }
 
@@ -630,8 +615,7 @@ void Configuration::createNodesList()
         string sname(getProp(it,"name"));
         if(sname.empty())
         {
-            if( ulog.is_crit() )
-                ulog.crit()<< "Configuration(createNodesList): unknown name='' in <nodes> "<< endl;
+            ucrit << "Configuration(createNodesList): unknown name='' in <nodes> "<< endl;
             throw Exception("Configuration(createNodesList: unknown name='' in <nodes>");
         }
 
@@ -641,15 +625,13 @@ void Configuration::createNodesList()
             nodename = oind->mkFullNodeName(nodename,nodename);
 
         NodeInfo ninf;
-//        ulog.info() << "Configuration(createNodesList): вносим узел " << nodename << endl;
         ninf.id = oind->getIdByName(nodename);
         if( ninf.id == DefaultObjectId )
         {
-            if( ulog.is_crit() )
-                ulog.crit()<< "Configuration(createNodesList): Not found ID for node '" << nodename << "'" << endl;
+            ucrit << "Configuration(createNodesList): Not found ID for node '" << nodename << "'" << endl;
             throw Exception("Configuration(createNodesList): Not found ID for node '"+nodename+"'");
         }
-        
+
         ninf.host = getProp(it,"ip").c_str();
         string tp(getProp(it,"port"));
         if( tp.empty() )
@@ -658,7 +640,7 @@ void Configuration::createNodesList()
             ninf.port = tp.c_str();
 
         string tmp(it.getProp("dbserver"));
-        
+
         if( tmp.empty() )
             ninf.dbserver = UniSetTypes::DefaultObjectId;
         else
@@ -667,8 +649,7 @@ void Configuration::createNodesList()
             ninf.dbserver = oind->getIdByName(dname);
             if( ninf.dbserver == DefaultObjectId )
             {
-                if( ulog.is_crit() )
-                    ulog.crit()<< "Configuration(createNodesList): Not found ID for DBServer name='" << dname << "'" << endl;
+                ucrit << "Configuration(createNodesList): Not found ID for DBServer name='" << dname << "'" << endl;
                 throw Exception("Configuration(createNodesList: Not found ID for DBServer name='"+dname+"'");
             }
         }
@@ -677,16 +658,13 @@ void Configuration::createNodesList()
             localDBServer = ninf.dbserver;
 
         ninf.connected = false;
-        
+
         initNode(ninf, it);
-
-        if( ulog.is_info() )
-            ulog.info() << "Configuration(createNodesList): add to list of nodes: node=" << nodename << " id=" << ninf.id << endl;
+        uinfo << "Configuration(createNodesList): add to list of nodes: node=" << nodename << " id=" << ninf.id << endl;
         lnodes.push_back(ninf);
-    }    
+    }
 
-    if( ulog.is_info() )
-        ulog.info() << "Configuration(createNodesList): size of node list " << lnodes.size() << endl;
+    uinfo << "Configuration(createNodesList): size of node list " << lnodes.size() << endl;
 }
 // -------------------------------------------------------------------------
 void Configuration::initNode( UniSetTypes::NodeInfo& ninfo, UniXML_iterator& it )
@@ -748,12 +726,12 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
             if( !debug_file.empty() )
                 deb.logFile(debug_file);
     }
-    
+
     // теперь смотрим командную строку
     string log_in("--"+debname+"-log-in-file");
     string add_level("--"+debname+"-add-levels");
     string del_level("--"+debname+"-del-levels");
-        
+
     // смотрим командную строку
     for (int i=1; i < (_argc - 1); i++)
     {
@@ -782,8 +760,7 @@ void Configuration::initRepSections()
     {
         ostringstream msg;
         msg << "Configuration(initRepSections): Not found section <RootSection> in " << fileConfName;
-        if( ulog.is_crit() )
-            ulog.crit()<< msg.str() << endl;
+        ucrit << msg.str() << endl;
         throw SystemError(msg.str());
     }
 
@@ -801,8 +778,7 @@ string Configuration::getRepSectionName( const string& sec, xmlNode* secnode )
     {
         ostringstream msg;
         msg << "Configuration(initRepSections): Not found section '" << sec << "' in " << fileConfName;
-        if( ulog.is_crit() )
-            ulog.crit()<< msg.str() << endl;
+        ucrit << msg.str() << endl;
         throw SystemError(msg.str());
     }
     
@@ -842,8 +818,7 @@ void Configuration::setConfFileName( const string& fn )
         msg << "\n\n***** CRIT: Unknown configure file." << endl
             << " Use --confile filename " << endl
             << " OR define enviropment variable UNISET_CONFILE" << endl;
-        if( ulog.is_crit() )
-            ulog.crit()<< msg.str();
+        ucrit << msg.str();
         throw SystemError(msg.str());
     }
 }
@@ -874,7 +849,7 @@ ObjectId Configuration::getSensorID( const std::string& name )
 {
     if( name.empty() )
         return DefaultObjectId;
-        
+
     return oind->getIdByName(getSensorsSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
@@ -960,7 +935,7 @@ xmlNode* Configuration::getXMLNodesSection()
 {
     if( xmlNodesSec )
         return xmlNodesSec;
-    
+
     xmlNodesSec = unixml.findNode(unixml.getFirstNode(),"nodes");
     return xmlNodesSec;
 }
