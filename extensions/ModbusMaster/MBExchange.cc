@@ -31,15 +31,12 @@ prop_prefix(""),
 mb(0),
 pollActivated(false)
 {
-//    cout << "$ $" << endl;
-
     if( objId == DefaultObjectId )
         throw UniSetTypes::SystemError("(MBExchange): objId=-1?!! Use --" + prefix + "-name" );
 
     mutex_start.setName(myname + "_mutex_start");
 
-//    xmlNode* cnode = conf->getNode(myname);
-    string conf_name = conf->getArgParam("--" + prefix + "-confnode",myname);
+    string conf_name(conf->getArgParam("--" + prefix + "-confnode",myname));
 
     cnode = conf->getNode(conf_name);
     if( cnode == NULL )
@@ -85,7 +82,6 @@ pollActivated(false)
 
     force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
     force_out = conf->getArgInt("--" + prefix + "-force-out",it.getProp("force_out"));
-
 
     // ********** HEARTBEAT *************
     string heart = conf->getArgParam("--" + prefix + "-heartbeat-id",it.getProp("heartbeat_id"));

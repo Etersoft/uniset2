@@ -63,12 +63,12 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
     restorer = NULL;
     NCRestorer_XML* rxml = new NCRestorer_XML(datafile);
 
-    string s_field = conf->getArgParam("--s-filter-field");
-    string s_fvalue = conf->getArgParam("--s-filter-value");
-    string c_field = conf->getArgParam("--c-filter-field");
-    string c_fvalue = conf->getArgParam("--c-filter-value");
-    string t_field = conf->getArgParam("--t-filter-field");
-    string t_fvalue = conf->getArgParam("--t-filter-value");
+    string s_field(conf->getArgParam("--s-filter-field"));
+    string s_fvalue(conf->getArgParam("--s-filter-value"));
+    string c_field(conf->getArgParam("--c-filter-field"));
+    string c_fvalue(conf->getArgParam("--c-filter-value"));
+    string t_field(conf->getArgParam("--t-filter-field"));
+    string t_fvalue(conf->getArgParam("--t-filter-value"));
 
     heartbeat_node = conf->getArgParam("--heartbeat-node");
     if( heartbeat_node.empty() )
