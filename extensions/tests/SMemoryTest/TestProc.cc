@@ -36,7 +36,7 @@ void TestProc::step()
 {
 }
 // -----------------------------------------------------------------------------
-void TestProc::sysCommand( UniSetTypes::SystemMessage* sm )
+void TestProc::sysCommand( const UniSetTypes::SystemMessage* sm )
 {
     TestProc_SK::sysCommand(sm);
     if( sm->command == SystemMessage::StartUp || sm->command == SystemMessage::WatchDog )
@@ -50,7 +50,7 @@ void TestProc::sysCommand( UniSetTypes::SystemMessage* sm )
     }
 }
 // -----------------------------------------------------------------------------
-void TestProc::sensorInfo( SensorMessage *sm )
+void TestProc::sensorInfo( const SensorMessage *sm )
 {
 /*
     mylog2 << myname << "(sensorInfo): id=" << sm->id << " val=" << sm->value
@@ -77,7 +77,7 @@ void TestProc::sensorInfo( SensorMessage *sm )
     }
 }
 // -----------------------------------------------------------------------------
-void TestProc::timerInfo( TimerMessage *tm )
+void TestProc::timerInfo( const TimerMessage *tm )
 {
     if( tm->id == tmChange )
     {

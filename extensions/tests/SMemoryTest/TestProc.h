@@ -25,9 +25,9 @@ class TestProc:
         };
 
         virtual void step();
-        virtual void sensorInfo( UniSetTypes::SensorMessage *sm );
-        virtual void timerInfo( UniSetTypes::TimerMessage *tm );
-        virtual void sysCommand( UniSetTypes::SystemMessage* sm );
+        virtual void sensorInfo( const UniSetTypes::SensorMessage *sm );
+        virtual void timerInfo( const UniSetTypes::TimerMessage *tm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
 
         void test_depend();
         void test_undefined_state();
