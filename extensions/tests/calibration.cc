@@ -19,6 +19,12 @@ int main( int argc, const char** argv )
     
         cout << "diagram: " << cal << endl;
         cout << "-1500 --> " << cal->getValue(-1500) << endl;
+        cout << "-933 --> " << cal->getValue(-933) << endl;
+        cout << "-844 --> " << cal->getValue(-844) << endl;
+        cout << "-540 --> " << cal->getValue(-540) << endl;
+        cout << "-320 --> " << cal->getValue(-320) << endl;
+        cout << "-200 --> " << cal->getValue(-200) << endl;
+        cout << "-100 --> " << cal->getValue(-100) << endl;
         cout << "-200 --> " << cal->getValue(-200) << endl;
         cout << "-100 --> " << cal->getValue(-100) << endl;
         cout << " -75 --> " << cal->getValue(-75) << endl;
@@ -30,6 +36,10 @@ int main( int argc, const char** argv )
         cout << "  75 --> " << cal->getValue(75) << endl;
         cout << " 100 --> " << cal->getValue(100) << endl;
         cout << " 200 --> " << cal->getValue(200) << endl;
+        cout << " 310 --> " << cal->getValue(310) << endl;
+        cout << " 415 --> " << cal->getValue(415) << endl;
+        cout << " 556 --> " << cal->getValue(556) << endl;
+        cout << " 873 --> " << cal->getValue(873) << endl;
         cout << " 1500 --> " << cal->getValue(1500) << endl;
 
         cout << endl << " RAW VALUE.." << endl;

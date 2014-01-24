@@ -1,5 +1,6 @@
 #include <sstream>
 #include <iostream>
+#include <limits>
 #include <algorithm>
 #include "UniXML.h"
 #include "Exceptions.h"
@@ -8,6 +9,13 @@
 using namespace std;
 using namespace UniSetTypes;
 // ----------------------------------------------------------------------------
+const Calibration::TypeOfValue Calibration::outOfRange = std::numeric_limits<Calibration::TypeOfValue>::max();
+// ----------------------------------------------------------------------------
+Calibration::Part::Part():
+k(0)
+{
+
+}
 
 Calibration::Part::Part( const Point& pleft, const Point& pright ):
     p_left(pleft),
@@ -96,6 +104,7 @@ Calibration::TypeOfValue Calibration::Part::calcX( const TypeOfValue& y ) const
 
 Calibration::Calibration():
 minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftRaw(0),
+pvec(50),
 myname("")
 {
 }
@@ -104,6 +113,7 @@ myname("")
 
 Calibration::Calibration( const string& name, const string& confile ):
 minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftRaw(0),
+pvec(50),
 myname(name)
 {
     build(name,confile,0);
@@ -111,7 +121,7 @@ myname(name)
 
 // ----------------------------------------------------------------------------
 Calibration::Calibration( xmlNode* node ):
-minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftRaw(0)
+minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftRaw(0),pvec(100)
 {
     UniXML_iterator it(node);
     myname = it.getProp("name");
@@ -143,7 +153,7 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
         }
 
         UniXML_iterator it(root);
-        
+
         if( !it.goChildren() )
         {
             ostringstream err;
@@ -154,23 +164,21 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
             cerr << err.str() << endl; 
             throw Exception(err.str());
         }
-        
+
         bool prev = false;
         Point prev_point(0,0);
+        unsigned int i=0;
         for(;it;it.goNext())
         {
             Point p(prev_point);
             p.x = atof(it.getProp("x").c_str());
             p.y = atof(it.getProp("y").c_str());
-            
+
             if( p.x==0 || p.y==0 )
             {
                 cerr << myname << "(Calibration::build): (warn) x=" 
                         << p.x << " y=" << p.y << endl;
             }
-
-//            cout << myname << "(Calibration::build):"
-//                        << "\tadd x=" << p.x << " y=" << p.y << endl;
 
             if( p.x > maxRaw )
                 maxRaw = p.x;
@@ -184,26 +192,25 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
 
             if( prev )
             {
-//                cout << myname << "(Calibration::build):"
-//                        << "\tadd x=" << p.x << " y=" << p.y
-//                        << " prev.x=" << prev_point.x
-//                        << " prev.y=" << prev_point.y
-//                        << endl;
                 Part pt(prev_point,p);
-                plist.push_back(pt);
+                pvec[i++] = pt;
+                if( i >= pvec.size() )
+                   pvec.resize(pvec.size()+20);
             }
             else
                 prev = true;
 
             prev_point = p;
         }
-        
-        plist.sort();
-        
-        PartsList::iterator beg = plist.begin();
-        PartsList::iterator end = plist.end();
-        
-        if( plist.size() > 0 )
+
+        pvec.resize(i); // приводим размер к фактическому..
+
+        std::sort(pvec.begin(),pvec.end());
+
+        PartsVec::iterator beg = pvec.begin();
+        PartsVec::iterator end = pvec.end();
+
+        if( pvec.size() > 0 )
         {
             leftRaw = beg->left_x();
             leftVal = beg->left_y();
@@ -219,6 +226,27 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
     }
 }
 // ----------------------------------------------------------------------------
+// рекурсивная функция поиска методом "половинного деления"
+static Calibration::PartsVec::iterator find_range( long raw, Calibration::PartsVec::iterator beg,
+                                                              Calibration::PartsVec::iterator end )
+{
+    if( beg->checkX(raw) )
+        return beg;
+
+    if( end->checkX(raw) )
+        return end;
+
+    Calibration::PartsVec::iterator it = beg + std::distance(beg,end)/2;
+
+    if( raw < it->left_x() )
+        return find_range(raw,beg,it);
+
+    if( raw > it->right_x() )
+        return find_range(raw,it,end);
+
+    return it;
+}
+// ----------------------------------------------------------------------------
 long Calibration::getValue( long raw, bool crop_raw )
 {
     // если x левее первого отрезка то берём первую точку...
@@ -229,19 +257,21 @@ long Calibration::getValue( long raw, bool crop_raw )
     if( raw > rightRaw )
         return (crop_raw ? rightVal : outOfRange);
 
-    for( PartsList::iterator it=plist.begin(); it!=plist.end(); ++it )
-    {
-        TypeOfValue q = it->getY(raw);
-        if( q != outOfRange )
-            return tRound(q);
-    }
+    PartsVec::iterator fit = find_range(raw, pvec.begin(), pvec.end());
+
+    if( fit == pvec.end() )
+        return outOfRange;
+
+    TypeOfValue q = fit->getY(raw);
+    if( q != outOfRange )
+       return tRound(q);
 
     return outOfRange;
 }
 // ----------------------------------------------------------------------------
 long Calibration::getRawValue( long cal, bool range )
 {
-    for( PartsList::iterator it=plist.begin(); it!=plist.end(); ++it )
+    for( PartsVec::iterator it=pvec.begin(); it!=pvec.end(); ++it )
     {
         TypeOfValue q = it->getX(cal);
         if( q != outOfRange )
@@ -256,14 +286,14 @@ long Calibration::getRawValue( long cal, bool range )
         if( cal > rightVal )
             return rightRaw;
     }
-    
+
     return outOfRange;
 }
 // ----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, Calibration& c )
 {
     os << "*******************" << endl;
-    for( Calibration::PartsList::iterator it=c.plist.begin(); it!=c.plist.end(); ++it )
+    for( Calibration::PartsVec::iterator it=c.pvec.begin(); it!=c.pvec.end(); ++it )
     {
         os << "[" << it->leftPoint().x << " : " << it->rightPoint().x << " ] --> [" 
             << it->leftPoint().y  << " : " << it->rightPoint().y << " ]"
@@ -276,14 +306,14 @@ std::ostream& operator<<( std::ostream& os, Calibration& c )
 std::ostream& operator<<( std::ostream& os, Calibration* c )
 {
     os << "*******************" << endl;
-    for( Calibration::PartsList::iterator it=c->plist.begin(); it!=c->plist.end(); ++it )
+    for( Calibration::PartsVec::iterator it=c->pvec.begin(); it!=c->pvec.end(); ++it )
     {
         os << "[" << it->leftPoint().x << " : " << it->rightPoint().x << " ] --> [" 
             << it->leftPoint().y  << " : " << it->rightPoint().y << " ]"
             << endl;
     }
     os << "*******************" << endl;
-    
+
     return os;
 }
 // ----------------------------------------------------------------------------

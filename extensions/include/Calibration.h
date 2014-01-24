@@ -3,7 +3,7 @@
 // -----------------------------------------------------------------------------
 #include <cmath>
 #include <string>
-#include <list>
+#include <vector>
 #include <ostream>
 // -----------------------------------------------------------------------------
 /*!
@@ -55,8 +55,11 @@ class Calibration
         Calibration( xmlNode* node );
         ~Calibration();
 
+        /*! Тип для хранения значения */
+        typedef float TypeOfValue;
+
         /*! выход за границы диапазона */
-        static const int outOfRange=-1;
+        static const TypeOfValue outOfRange;
 
         /*!
             Получение калиброванного значения
@@ -103,10 +106,6 @@ class Calibration
         */
         void build( const std::string& name, const std::string& confile, xmlNode* node=0  );
 
-
-        /*! Тип для хранения текущего значения */
-        typedef float TypeOfValue;
-
         /*! преобразование типа для хранения 
             в тип для аналоговых датчиков
          */
@@ -121,6 +120,8 @@ class Calibration
         /*!    точка характеристики */
         struct Point
         {
+            Point():x(outOfRange),y(outOfRange){}
+
             Point( TypeOfValue _x, TypeOfValue _y ):
                 x(_x),y(_y){}
 
@@ -137,6 +138,7 @@ class Calibration
         class Part
         {
             public:
+                Part();
                 Part( const Point& pleft, const Point& pright );
                 ~Part(){};
 
@@ -175,15 +177,15 @@ class Calibration
                 TypeOfValue k;     /*!< коэффициент наклона */
         };
 
-    protected:
-
         // список надо отсортировать по x!
-        typedef std::list<Part> PartsList;
+        typedef std::vector<Part> PartsVec;
+
+    protected:
 
         long minRaw, maxRaw, minVal, maxVal, rightVal, leftVal, rightRaw, leftRaw;
 
     private:
-        PartsList plist;
+        PartsVec pvec;
         std::string myname;
 };
 // -----------------------------------------------------------------------------
