@@ -1,5 +1,6 @@
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 #include "UniXML.h"
 #include "Exceptions.h"
 #include "Calibration.h"
@@ -8,7 +9,7 @@ using namespace std;
 using namespace UniSetTypes;
 // ----------------------------------------------------------------------------
 
-Calibration::Part::Part( Point& pleft, Point& pright ):
+Calibration::Part::Part( const Point& pleft, const Point& pright ):
     p_left(pleft),
     p_right(pright),
     k(0)
@@ -28,19 +29,19 @@ Calibration::Part::Part( Point& pleft, Point& pright ):
         k = ( p_right.y - p_left.y ) / ( p_right.x - p_left.x );
 }
 // ----------------------------------------------------------------------------
-bool Calibration::Part::check( Point& p )
+bool Calibration::Part::check( const Point& p ) const
 {
     return ( checkX(p.x) && checkY(p.y) );
 }
 
-bool Calibration::Part::checkX( TypeOfValue x )
+bool Calibration::Part::checkX( const TypeOfValue& x ) const
 {
     if( x < p_left.x || x > p_right.x )
         return false;
     return true;
 }
 
-bool Calibration::Part::checkY( TypeOfValue y )
+bool Calibration::Part::checkY( const TypeOfValue& y ) const
 {
     if( y < p_left.y || y > p_right.y )
         return false;
@@ -49,7 +50,7 @@ bool Calibration::Part::checkY( TypeOfValue y )
 }
 
 // ----------------------------------------------------------------------------
-Calibration::TypeOfValue Calibration::Part::getY( TypeOfValue x )
+Calibration::TypeOfValue Calibration::Part::getY( const TypeOfValue& x ) const
 {
     if( !checkX(x) )
         return Calibration::outOfRange;
@@ -63,7 +64,7 @@ Calibration::TypeOfValue Calibration::Part::getY( TypeOfValue x )
     return calcY(x);
 }
 // ----------------------------------------------------------------------------
-Calibration::TypeOfValue Calibration::Part::getX( TypeOfValue y )
+Calibration::TypeOfValue Calibration::Part::getX( const TypeOfValue& y ) const
 {
     if( !checkY(y) )
         return Calibration::outOfRange;
@@ -77,13 +78,13 @@ Calibration::TypeOfValue Calibration::Part::getX( TypeOfValue y )
     return calcX(y);
 }
 // ----------------------------------------------------------------------------
-Calibration::TypeOfValue Calibration::Part::calcY( TypeOfValue x )
+Calibration::TypeOfValue Calibration::Part::calcY( const TypeOfValue& x ) const
 {
     // y = y0 + kx
     return k*(x-p_left.x)+p_left.y;
 }
 // ----------------------------------------------------------------------------
-Calibration::TypeOfValue Calibration::Part::calcX( TypeOfValue y )
+Calibration::TypeOfValue Calibration::Part::calcX( const TypeOfValue& y ) const
 {
     // x = (y - y0) / k
     if( k == 0 )
@@ -220,16 +221,13 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
 // ----------------------------------------------------------------------------
 long Calibration::getValue( long raw, bool crop_raw )
 {
-    if( crop_raw )
-    {
-        // если x левее первого отрезка то берём первую точку...
-        if( raw < leftRaw )
-            return leftVal;
+    // если x левее первого отрезка то берём первую точку...
+    if( raw < leftRaw )
+        return (crop_raw ? leftVal : outOfRange);
 
-        // если x правее последнего то берём крайнюю точку...
-        if( raw > rightRaw )
-            return rightVal;
-    }
+    // если x правее последнего то берём крайнюю точку...
+    if( raw > rightRaw )
+        return (crop_raw ? rightVal : outOfRange);
 
     for( PartsList::iterator it=plist.begin(); it!=plist.end(); ++it )
     {
