@@ -522,7 +522,13 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 
         std::string caldiagram( it.getProp("caldiagram") );
         if( !caldiagram.empty() )
+        {
             b->cdiagram = UniSetExtensions::buildCalibrationDiagram(caldiagram);
+            if( !it.getProp("cal_cachesize").empty() )
+                b->cdiagram->setCacheSize(it.getIntProp("cal_cachesize"));
+            if( !it.getProp("cal_cacheresort").empty() )
+                b->cdiagram->setCacheResortCycle(it.getIntProp("cal_cacheresort"));
+        }
     }
     else if( b->stype == UniversalIO::DI || b->stype == UniversalIO::DO )
     {

@@ -46,6 +46,15 @@ y - калиброванное значение
 
 Диаграмма позволяет задать множество точек. На отрезках между точками используется линейная аппроксимация.
 
+Т.е. часто большую часть времени (во многих задачах) аналоговое значение, меняется в небольших пределах,
+то добавлен кэш ( rawValue --> calValue ) по умолчанию на 5 значений. Размер кэша можно задать
+(поменять или отключить) при помощи Calibration::setCacheSize().
+\note Слишком большим задавать кэш не рекомендуется, т.к. тогда поиск по кэшу будет сопоставим с поиском по диаграмме.
+
+  Помимо этого, с учётом того, что каждое попадание в кэш обновляет счётчик обращений к значению, необходимо
+пересортировывать весь кэш (чтобы наиболее часто используемые были в начале). Чтобы не делать эту операцию каждый
+раз, сделан счётчик циклов. Т.е. через какое количество обращений к кэшу, производить принудительную пересортировку.
+Значение по умолчанию - 5(размер кэша). Задать можно при помощи Calibration::setCacheResortCycle()
 */
 class Calibration
 {
@@ -59,7 +68,7 @@ class Calibration
         typedef float TypeOfValue;
 
         /*! выход за границы диапазона */
-        static const TypeOfValue outOfRange;
+        static const long outOfRange;
 
         /*!
             Получение калиброванного значения
@@ -98,7 +107,6 @@ class Calibration
         /*! Возвращает крайнее правое значение 'y' встретившееся в диаграмме (ПОСЛЕ СОРТИРОВКИ ПО ВОЗРАСТАНИЮ 'x'!) */
         inline long getRightRaw(){ return rightRaw; }
 
-
         /*! построение характеристрики из конф. файла 
             \param name - название характеристики в файле
             \param confile - файл содержащий данные
@@ -114,9 +122,17 @@ class Calibration
             return lround(val);
         }
 
+        void setCacheSize( unsigned int sz );
+        inline unsigned int getCacheSize(){ return cache.size(); }
+
+        void setCacheResortCycle( unsigned int n );
+        inline unsigned int getCacheResotrCycle(){ return numCacheResort; }
+        // ---------------------------------------------------------------
+
         friend std::ostream& operator<<(std::ostream& os, Calibration& c );
         friend std::ostream& operator<<(std::ostream& os, Calibration* c );
 
+        // ---------------------------------------------------------------
         /*!    точка характеристики */
         struct Point
         {
@@ -184,9 +200,42 @@ class Calibration
 
         long minRaw, maxRaw, minVal, maxVal, rightVal, leftVal, rightRaw, leftRaw;
 
+        void insertToCache( const long raw, const long val );
+
     private:
         PartsVec pvec;
         std::string myname;
+
+        // Cache
+        unsigned int szCache;
+        struct CacheInfo
+        {
+             CacheInfo():val(0),raw(outOfRange),cnt(0){}
+             CacheInfo( const long r, const long v ):val(v),raw(r),cnt(0){}
+
+             long val;
+             long raw;
+             unsigned long cnt; // счётчик обращений
+
+             // сортируем в порядке убывания(!) обращений
+             // т.е. наиболее часто используемые (впереди)
+             inline bool operator<( const CacheInfo& r ) const
+             {
+                 if( r.raw == outOfRange )
+                    return true;
+
+                 // неинициализированные записи, сдвигаем в конец.
+                 if( raw == outOfRange )
+                    return false;
+
+                 return cnt > r.cnt;
+             }
+        };
+
+        typedef std::vector<CacheInfo> ValueCache;
+        ValueCache cache;
+        unsigned long numCacheResort; // количество обращений, при которых происходит перестроение (сортировка) кэша..
+        unsigned long numCallToCache; // текущий счётчик обращений к кэшу
 };
 // -----------------------------------------------------------------------------
 #endif // Calibration_H_
