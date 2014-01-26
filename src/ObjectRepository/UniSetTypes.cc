@@ -223,12 +223,12 @@ using namespace UniSetTypes;
     // ------------------------------------------------------------------------------------------
     bool UniSetTypes::is_digit( const std::string& s )
     {
-        for( std::string::const_iterator it=s.begin(); it!=s.end(); it++ )
+        for( std::string::const_iterator it=s.begin(); it!=s.end(); ++it )
         {
             if( !isdigit(*it) )
                 return false;
         }
-    
+
         return true;
       //return (std::count_if(s.begin(),s.end(),std::isdigit) == s.size()) ? true : false;
     }

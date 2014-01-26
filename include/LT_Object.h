@@ -137,13 +137,13 @@ class LT_Object
             {
                 tmr.setTiming(timeMS);
             };
-            
+
             inline void reset()
             {
                 curTimeMS = tmr.getInterval();
                 tmr.reset();
             }
-            
+
             UniSetTypes::TimerId id;    /*!<  идентификатор таймера */
             timeout_t curTimeMS;                /*!<  остаток времени */
             UniSetTypes::Message::Priority priority; /*!<  приоритет посылаемого сообщения */
@@ -153,7 +153,7 @@ class LT_Object
              * \note Если задано количество -1 то сообщения будут поылатся постоянно
             */
             clock_t curTick; 
-            
+
             // таймер с меньшим временем ожидания имеет больший приоритет
             bool operator < ( const TimerInfo& ti ) const
             { 
@@ -176,7 +176,7 @@ class LT_Object
             protected:
                 UniSetTypes::TimerId tid;
         };
-        
+
         typedef std::list<TimerInfo> TimersList;
 
     private:

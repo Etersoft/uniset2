@@ -68,7 +68,7 @@ namespace UniSetTypes
             Message( int dummy_init ){}
 
             template<class In> 
-            static TransportMessage transport(const In& msg)
+            static const TransportMessage transport(const In& msg)
             {
                 TransportMessage tmsg;
                 assert(sizeof(UniSetTypes::RawDataOfTransportMessage)>=sizeof(msg));
@@ -76,7 +76,7 @@ namespace UniSetTypes
                 return tmsg;
             }
     };
-    
+
 
     class VoidMessage : public Message
     {

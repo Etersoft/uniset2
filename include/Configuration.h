@@ -86,7 +86,7 @@ namespace UniSetTypes
         static std::ostream& help(std::ostream& os);
 
         std::string getRootDir(); /*!< Получение каталога, в котором находится выполняющаяся программа */
-        inline int getArgc(){ return _argc; }
+        inline int getArgc()const { return _argc; }
         inline const char* const* getArgv() const { return _argv; }
         inline ObjectId getDBServer() const { return localDBServer; }        /*!< получение идентификатора DBServer-а */
         inline ObjectId getLocalNode() const { return localNode; }        /*!< получение идентификатора локального узла */
@@ -134,8 +134,8 @@ namespace UniSetTypes
         inline const std::string getDocDir() const { return docDir; }
 
 
-        inline bool isLocalIOR(){ return localIOR; }
-        inline bool isTransientIOR(){ return transientIOR; }
+        inline bool isLocalIOR() const { return localIOR; }
+        inline bool isTransientIOR() const { return transientIOR; }
 
         /*! получить значение указанного параметра, или значение по умолчанию */
         std::string getArgParam(const std::string& name, const std::string& defval="");
@@ -156,24 +156,24 @@ namespace UniSetTypes
         {
             return lnodes.end();
         }
-        
+
         /*! интерфейс к карте объектов */
         ObjectIndex* oind;
-        
+
         /*! интерфейс к работе с локальнымми ior-файлами */
         IORFile iorfile;
 
         /*! указатель на конфигурационный xml */
-        inline UniXML* getConfXML(){ return &unixml; }
+        inline const UniXML* getConfXML() const { return &unixml; }
 
-        CORBA::ORB_ptr getORB() { return CORBA::ORB::_duplicate(orb); }
+        CORBA::ORB_ptr getORB()const { return CORBA::ORB::_duplicate(orb); }
         CORBA::PolicyList getPolicy() const { return policyList; }
 
     protected:
         Configuration();
 
         virtual void initConfiguration(int argc, const char* const* argv);
-        
+
         void createNodesList();
         virtual void initNode( UniSetTypes::NodeInfo& ninfo, UniXML_iterator& it);
 

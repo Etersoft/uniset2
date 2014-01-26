@@ -46,48 +46,48 @@ class UniXML_iterator:
         {}
         UniXML_iterator() {}
 
-        std::string getProp( const std::string& name ) const;
-        std::string getPropUtf8( const std::string& name ) const;
-        int getIntProp( const std::string& name ) const;
+        std::string getProp( const std::string& name );
+        std::string getPropUtf8( const std::string& name );
+        int getIntProp( const std::string& name );
         /// if value if not positive ( <= 0 ), returns def
-        int getPIntProp(const std::string& name, int def) const;
+        int getPIntProp( const std::string& name, int def );
         void setProp( const std::string& name, const std::string& text );
-        
+
         bool findName( const std::string& node, const std::string& searchname ); 
         bool find( const std::string& searchnode);
-    
+
         /*! Перейти к следующему узлу. Возвращает false, если некуда перейти */
         bool goNext();
 
         /*! Перейти насквозь к следующему узлу. Возвращает false, если некуда перейти */
         bool goThrowNext();
-        
+
         /*! Перейти к предыдущему узлу */
         bool goPrev();
-        
+
         bool canPrev();
         bool canNext();
-        
+
         // Перейти к следующему узлу
         UniXML_iterator operator ++(int);
         UniXML_iterator operator ++();
-        
+
         // Перейти к предыдущему узлу
         UniXML_iterator operator --(int);
         UniXML_iterator operator --();
-        
+
         /*! Перейти на один уровень выше 
             \note Если перейти не удалось, итератор остаётся указывать на прежний узел
         */
         bool goParent();
-        
+
         /*! Перейти на один уровень ниже 
             \note Если перейти не удалось, итератор остаётся указывать на прежний узел
         */
         bool goChildren();
-        
+
         // Получить текущий узел
-        xmlNode* getCurrent() const
+        xmlNode* getCurrent()
         {
             return curNode;
         }
@@ -126,13 +126,19 @@ class UniXML_iterator:
 class UniXML
 {
 public:
-    
+
     typedef UniXML_iterator iterator;
 
     inline xmlNode* getFirstNode()
     {
         return xmlDocGetRootElement(doc);
     }
+
+    inline xmlNode* getFirstNode() const
+    {
+        return xmlDocGetRootElement(doc);
+    }
+
 
     /*! возвращает итератор на самый первый узел документа */
     inline iterator begin()
@@ -194,11 +200,11 @@ public:
 
     // После проверки исправить рекурсивный алгоритм на обычный,
     // используя ->parent
-    xmlNode* findNode(xmlNode* node, const std::string& searchnode, const std::string& name = "") const;
-    xmlNode* findNodeUtf8(xmlNode* node, const std::string& searchnode, const std::string& name = "") const;
+    xmlNode* findNode( xmlNode* node, const std::string& searchnode, const std::string& name = "") const;
+    xmlNode* findNodeUtf8( xmlNode* node, const std::string& searchnode, const std::string& name = "") const;
 
-    xmlNode* extFindNode(xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top=true );
-    xmlNode* extFindNodeUtf8(xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top=true );
+    xmlNode* extFindNode( xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top=true ) const;
+    xmlNode* extFindNodeUtf8( xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top=true ) const;
 
 
 protected:

@@ -63,17 +63,17 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
                 case UniversalIO::AO:
                     ic->ioRegistration(inf);
                 break;
-    
+
                 default:
                     ucrit << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА! -> "
                                     << conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
                     return;
                 break;
-    
+
             }
         }
     }
-    
+
     switch(inf.type)
     {
         case UniversalIO::DI:
@@ -127,43 +127,6 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
     ic->askTMap[k].type    = inf.type;
     ic->askTMap[k].list    = lst;
     ic->askTMap[k].ait     = ic->myioEnd();
-
-    // Начальная инициализация делается в IOController (IONotifyContoller) в момент "активации". см. IOController::activateInit()
-#if 0
-    try
-    {
-        switch( inf.type )
-        {
-            case UniversalIO::DI:
-            case UniversalIO::DO:
-            break;
-
-            case UniversalIO::AO:
-            case UniversalIO::AI:
-            {
-                IOController::IOStateList::iterator it(ic->myioEnd());
-                ic->checkThreshold(it,inf.si,false);
-            }
-            break;
-
-            default:
-                break;
-        }
-    }
-    catch( Exception& ex )
-    {
-        uwarn << ic->getName() << "(NCRestorer::addthresholdlist): " << ex
-                << " для " << conf->oind->getNameById(inf.si.id, inf.si.node) << endl;
-        throw;
-    }
-    catch( CORBA::SystemException& ex )
-    {
-        uwarn << ic->getName() << "(NCRestorer::addthresholdlist): "
-                << conf->oind->getNameById(inf.si.id,inf.si.node) << " недоступен!!(CORBA::SystemException): "
-                << ex.NP_minorString() << endl;
-        throw;
-    }
-#endif
 }
 // ------------------------------------------------------------------------------------------
 NCRestorer::SInfo& NCRestorer::SInfo::operator=( IOController_i::SensorIOInfo& inf )

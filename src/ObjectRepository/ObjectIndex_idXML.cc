@@ -182,12 +182,10 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string& sec )
         throw NameNotFound(msg.str());
     }
 
-    string secname = xml.getProp(root,"section");
-
     for( ;it.getCurrent(); it.goNext() )
     {
         ObjectInfo inf;
-        
+
         inf.id = it.getIntProp("id");
         if( inf.id <= 0 )
         {
@@ -195,12 +193,12 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string& sec )
             msg << "(ObjectIndex_idXML::build): НЕ УКАЗАН id для " << it.getProp("name") << endl;
             throw NameNotFound(msg.str());
         }
-        
+
         string name(it.getProp("name"));
         string alias(it.getProp("alias"));
         if( alias.empty() )
             alias = name;
-    
+
         string nodename = mkFullNodeName(name,alias);
         inf.repName = new char[nodename.size()+1];
         strcpy( inf.repName, nodename.c_str() );
@@ -212,11 +210,9 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string& sec )
 
         inf.textName = new char[textname.size()+1];
         strcpy( inf.textName, textname.c_str() );
-        
+
         inf.data = (void*)(xmlNode*)(it);
 
-//        omap[inf.id] = inf;
-//        mok[nodename] = inf.id;
         omap.insert(MapObjects::value_type(inf.id,inf));    // omap[inf.id] = inf;
         mok.insert(MapObjectKey::value_type(nodename,inf.id)); // mok[name] = inf.id;
     }
@@ -234,7 +230,7 @@ const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id )
 const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const std::string& name )
 {
     const char* n = name.c_str();
-    for( MapObjects::iterator it=omap.begin(); it!=omap.end(); it++ )
+    for( MapObjects::iterator it=omap.begin(); it!=omap.end(); ++it )
     {
           if( !strcmp(it->second.repName,n) )
               return &(it->second);

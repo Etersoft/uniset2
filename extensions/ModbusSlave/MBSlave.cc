@@ -200,7 +200,7 @@ prefix(prefix)
 
     // build file list...
     xmlNode* fnode = 0;
-    UniXML* xml = conf->getConfXML();
+    const UniXML* xml = conf->getConfXML();
     if( xml )
         fnode = xml->extFindNode(cnode,1,1,"filelist");
 
@@ -750,7 +750,7 @@ void MBSlave::readConfiguration()
 //    readconf_ok = true;
 }
 // ------------------------------------------------------------------------------------------
-bool MBSlave::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
+bool MBSlave::readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 {
     if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
         initItem(it);
@@ -833,7 +833,7 @@ bool MBSlave::initItem( UniXML_iterator& it )
 void MBSlave::initIterators()
 {
     IOMap::iterator it=iomap.begin();
-    for( ; it!=iomap.end(); it++ )
+    for( ; it!=iomap.end(); ++it )
         shm->initIterator(it->second.ioit);
 
     shm->initIterator(itHeartBeat);
@@ -989,10 +989,10 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( ModbusRTU::ModbusData reg, Modbus
         if( it->first == reg )
         {
             real_write_it(it,dat[i]);
-            it++;
+            ++it;
         }
     }
-    
+
     return ModbusRTU::erNoError;
 }
 // -------------------------------------------------------------------------
@@ -1146,7 +1146,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( ModbusRTU::ModbusData reg, ModbusR
 
     if( it == iomap.end() )
         return ModbusRTU::erBadDataAddress;
-    
+
     ModbusRTU::ModbusData val=0;
     for( ; (it!=iomap.end()) && (i<count); i++,reg++ )
     {
@@ -1155,7 +1155,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( ModbusRTU::ModbusData reg, ModbusR
         if( it->first == reg )
         {
             real_read_it(it,val);
-            it++;
+            ++it;
         }
         dat[i] = val;
     }
@@ -1166,7 +1166,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( ModbusRTU::ModbusData reg, ModbusR
     {
         for( ; i<count; i++ )
             dat[i] = 0;
-    }    
+    }
 
     return ModbusRTU::erNoError;
 }
@@ -1506,12 +1506,12 @@ ModbusRTU::mbErrCode MBSlave::read4314( ModbusRTU::MEIMessageRDI& query,
     MEIObjIDMap::iterator oit = dit->second.find(query.objID);
     if( oit == dit->second.end() )
         return ModbusRTU::erBadDataAddress;
-    
+
     reply.mf = 0xFF;
     reply.conformity = query.devID;
-    for( MEIValMap::iterator i=oit->second.begin(); i!=oit->second.end(); i++ )
+    for( MEIValMap::iterator i=oit->second.begin(); i!=oit->second.end(); ++i )
         reply.addData( i->first, i->second );
-    
+
     return erNoError;
 }
 // -------------------------------------------------------------------------

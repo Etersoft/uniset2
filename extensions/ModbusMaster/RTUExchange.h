@@ -42,7 +42,6 @@ class RTUExchange:
     private:
         RTUExchange();
 
-        UniSetTypes::uniset_mutex pollMutex;
         bool rs_pre_clean;
 };
 // -----------------------------------------------------------------------------

@@ -35,16 +35,8 @@ using namespace omni;
 using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
-/*
-ObjectRepository::ObjectRepository(int* argc, char* **argv, const char* NSName):
-    argc(*argc), 
-    argv(*argv),
-    nsName(NSName)
-{
-}
-*/
 
-ObjectRepository::ObjectRepository( Configuration* _conf ):
+ObjectRepository::ObjectRepository( const Configuration* _conf ):
     nsName(_conf->getNSName()),
     uconf(_conf)
 {
@@ -62,7 +54,7 @@ nsName("NameService")
     init();
 }
 
-bool ObjectRepository::init()
+bool ObjectRepository::init() const
 {
     try
     {
@@ -81,7 +73,7 @@ bool ObjectRepository::init()
         localctx=0;
         return false;
     }
-    
+
     return true;
 }
 // --------------------------------------------------------------------------
@@ -93,7 +85,7 @@ bool ObjectRepository::init()
  * \exception ORepFailed - генерируется если произошла ошибка при регистрации
  * \sa registration(const string fullName, const CORBA::Object_ptr oRef) 
 */
-void ObjectRepository::registration(const string& name, const ObjectPtr oRef, const string& section, bool force)
+void ObjectRepository::registration(const string& name, const ObjectPtr oRef, const string& section, bool force) const
         throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
 {
     ostringstream err;
@@ -174,7 +166,7 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
  *  \exception ORepFailed - генерируется если произошла ошибка при регистрации
  *  \sa registration(const string name, const ObjectPtr oRef, const string section)
 */
-void ObjectRepository::registration( const std::string& fullName, const UniSetTypes::ObjectPtr oRef, bool force )
+void ObjectRepository::registration( const std::string& fullName, const UniSetTypes::ObjectPtr oRef, bool force ) const
     throw(ORepFailed,ObjectNameAlready,InvalidObjectName, NameNotFound)
 {
 //    string n(ORepHelpers::getShortName(fullName));
@@ -192,14 +184,14 @@ void ObjectRepository::registration( const std::string& fullName, const UniSetTy
  *    проверки на, то не является ли имя ссылкой на объект или контекст
  *    т.к. для удаления ссылки на контекст нужен алгоритм посложнее...
 */
-void ObjectRepository::unregistration(const string& name, const string& section)
+void ObjectRepository::unregistration(const string& name, const string& section) const
     throw(ORepFailed, NameNotFound)
 {
     ostringstream err;
     CosNaming::Name_var oName = omniURI::stringToName(name.c_str());
     CosNaming::NamingContext_var ctx;
-    CORBA::ORB_var orb = uconf->getORB();    
-    ctx = ORepHelpers::getContext(orb, section, nsName);    
+    CORBA::ORB_var orb = uconf->getORB();
+    ctx = ORepHelpers::getContext(orb, section, nsName);
 
     try
     {
@@ -231,7 +223,7 @@ void ObjectRepository::unregistration(const string& name, const string& section)
  *  \exception ORepFailed - генерируется если произошла ошибка при удалении
  *     \sa unregistration(const string name, const string section)
 */
-void ObjectRepository::unregistration(const string& fullName)
+void ObjectRepository::unregistration(const string& fullName) const
     throw(ORepFailed, NameNotFound)
 {
 //    string n(ORepHelpers::getShortName(fullName));
@@ -241,7 +233,7 @@ void ObjectRepository::unregistration(const string& fullName)
 }
 // --------------------------------------------------------------------------
 
-ObjectPtr ObjectRepository::resolve( const string& name, const string& NSName )
+ObjectPtr ObjectRepository::resolve( const string& name, const string& NSName ) const
     throw(ORepFailed,  NameNotFound)
 {
     ostringstream err;
@@ -254,7 +246,7 @@ ObjectPtr ObjectRepository::resolve( const string& name, const string& NSName )
         CosNaming::Name_var nc = omniURI::stringToName(name.c_str());
         oRef=localctx->resolve(nc);
         if ( !CORBA::is_nil(oRef) )
-            return oRef._retn();                    
+            return oRef._retn();
 
         err << "ObjectRepository(resolve): не смог получить ссылку на объект " << name.c_str();
     }
@@ -281,9 +273,9 @@ ObjectPtr ObjectRepository::resolve( const string& name, const string& NSName )
         err << "ObjectRepository(resolve): catch ... для " << name;
     }
 
-    if(err.str().empty())
-        err << "ObjectRepository(resolve): ??? для " << name;            
-    
+    if( err.str().empty() )
+        err << "ObjectRepository(resolve): unknown error for '" << name << "'";
+
     throw ORepFailed(err.str().c_str());
 }
 
@@ -392,11 +384,11 @@ bool ObjectRepository::list(const string& section, ListObjectName *ls, unsigned 
 }
 
 // --------------------------------------------------------------------------
-bool ObjectRepository::isExist( const string& fullName )
+bool ObjectRepository::isExist( const string& fullName ) const
 {
     try
     {
-        CORBA::Object_var oRef = resolve(fullName, nsName);    
+        CORBA::Object_var oRef = resolve(fullName, nsName);
         return isExist(oRef);
     }
     catch(...){}
@@ -406,7 +398,7 @@ bool ObjectRepository::isExist( const string& fullName )
 
 // --------------------------------------------------------------------------
 
-bool ObjectRepository::isExist( ObjectPtr oref )
+bool ObjectRepository::isExist( const ObjectPtr oref ) const
 {
     try
     {

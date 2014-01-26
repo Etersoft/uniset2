@@ -232,7 +232,7 @@ void UNetSender::readConfiguration()
     }
 }
 // ------------------------------------------------------------------------------------------
-bool UNetSender::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
+bool UNetSender::readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 {
     if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
         initItem(it);
@@ -319,14 +319,14 @@ std::ostream& operator<<( std::ostream& os, UNetSender::UItem& p )
 void UNetSender::initIterators()
 {
     DMap::iterator it=dlist.begin();
-    for( ; it!=dlist.end(); it++ )
+    for( ; it!=dlist.end(); ++it )
         shm->initIterator(it->ioit);
 }
 // -----------------------------------------------------------------------------
 void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
 {
     DMap::iterator it=dlist.begin();
-    for( ; it!=dlist.end(); it++ )
+    for( ; it!=dlist.end(); ++it )
         shm->askSensor(it->id,cmd);
 }
 // -----------------------------------------------------------------------------

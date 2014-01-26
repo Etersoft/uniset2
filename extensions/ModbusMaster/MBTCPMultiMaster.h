@@ -234,7 +234,6 @@ class MBTCPMultiMaster:
         void check_thread();
 
         UniSetTypes::uniset_rwmutex mbMutex;
-        int recv_timeout;
         bool force_disconnect;
         int checktime;
 

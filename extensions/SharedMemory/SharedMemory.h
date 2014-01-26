@@ -353,13 +353,13 @@ class SharedMemory:
         bool activateObject();
 //        virtual void logging(UniSetTypes::SensorMessage& sm){}
 //        virtual void dumpToDB(){}
-        bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
-    
+        bool readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec );
+
         void buildEventList( xmlNode* cnode );
-        void readEventList( std::string oname );
-        
+        void readEventList( const std::string& oname );
+
         UniSetTypes::uniset_rwmutex mutex_start;
-        
+
         struct HeartBeatInfo
         {
             HeartBeatInfo():
@@ -369,7 +369,7 @@ class SharedMemory:
                 timer_running(false),
                 ptReboot(UniSetTimer::WaitUpTime)
             {}
-            
+
             UniSetTypes::ObjectId a_sid; // аналоговый счётчик
             UniSetTypes::ObjectId d_sid; // дискретный датчик состояния процесса
             IOStateList::iterator ioit;
@@ -390,11 +390,11 @@ class SharedMemory:
             tmHistory,
             tmPulsar
         };
-        
+
         int heartbeatCheckTime;
         std::string heartbeat_node;
         int histSaveTime;
-        
+
         void checkHeartBeat();
 
         typedef std::list<HeartBeatInfo> HeartBeatList;
@@ -429,7 +429,7 @@ class SharedMemory:
         IOStateList::iterator itPulsar;
         IOController_i::SensorInfo siPulsar;
         int msecPulsar;
-        
+
         UniSetTypes::uniset_rwmutex mutex_act;
 
     private:

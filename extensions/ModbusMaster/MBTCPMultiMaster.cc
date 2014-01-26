@@ -169,7 +169,7 @@ ModbusClient* MBTCPMultiMaster::initMB( bool reopen )
     // движемся в обратном порядке, т.к. сортировка по возрастанию приоритета
     if( checktime <=0 )
     {
-        mbi++;
+        ++mbi;
         if( mbi == mblist.rend() )    
             mbi = mblist.rbegin();
 

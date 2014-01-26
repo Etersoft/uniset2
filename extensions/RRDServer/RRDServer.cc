@@ -30,7 +30,7 @@ prefix(prefix)
     }
 
     int tmID=1;
-    for( ;it1.getCurrent(); it1++,tmID++ )
+    for( ;it1.getCurrent(); ++it1,++tmID )
         initRRD(it1,tmID);
 }
 // -----------------------------------------------------------------------------
@@ -318,8 +318,9 @@ void RRDServer::timerInfo( const UniSetTypes::TimerMessage* tm )
 
             myinfo << myname << "(update): '" << it->filename << "' " << v.str() << endl;
 
-             rrd_clear_error();
+            rrd_clear_error();
             const char* argv = v.str().c_str();
+
             if( rrd_update_r(it->filename.c_str(),NULL,1,&argv) < 0 )
             {
                 ostringstream err;

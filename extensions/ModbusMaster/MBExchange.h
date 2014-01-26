@@ -229,23 +229,23 @@ class MBExchange:
         bool preInitRead( InitList::iterator& p );
         bool initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty* p );
         bool allInitOK;
-      
+
         RTUDeviceMap rmap;
         InitList initRegList;    /*!< список регистров для инициализации */
         UniSetTypes::uniset_mutex pollMutex;
 
         virtual ModbusClient* initMB( bool reopen=false )= 0;
-        
+
         virtual void poll();
         bool pollRTU( RTUDevice* dev, RegMap::iterator& it );
-        
+
         void updateSM();
         void updateRTU(RegMap::iterator& it);
         void updateMTR(RegMap::iterator& it);
         void updateRTU188(RegMap::iterator& it);
         void updateRSProperty( RSProperty* p, bool write_only=false );
         virtual void updateRespondSensors();
-        
+
         bool checkUpdateSM( bool wrFunc, long devMode );
         bool checkPoll( bool wrFunc );
         
@@ -254,7 +254,7 @@ class MBExchange:
         void waitSMReady();
 
         void readConfiguration();
-        bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
+        bool readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec );
         bool initItem( UniXML_iterator& it );
         void initDeviceList();
         void initOffsetList();
