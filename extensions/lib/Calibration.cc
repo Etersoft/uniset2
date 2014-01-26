@@ -9,7 +9,7 @@
 using namespace std;
 using namespace UniSetTypes;
 // ----------------------------------------------------------------------------
-const Calibration::TypeOfValue Calibration::outOfRange = std::numeric_limits<Calibration::TypeOfValue>::max();
+const long Calibration::outOfRange = std::numeric_limits<Calibration::TypeOfValue>::max();
 // ----------------------------------------------------------------------------
 Calibration::Part::Part():
 k(0)
@@ -105,7 +105,11 @@ Calibration::TypeOfValue Calibration::Part::calcX( const TypeOfValue& y ) const
 Calibration::Calibration():
 minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftRaw(0),
 pvec(50),
-myname("")
+myname(""),
+szCache(5),
+cache(5),
+numCacheResort(5),
+numCallToCache(5)
 {
 }
 
@@ -114,14 +118,22 @@ myname("")
 Calibration::Calibration( const string& name, const string& confile ):
 minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftRaw(0),
 pvec(50),
-myname(name)
+myname(name),
+szCache(5),
+cache(5),
+numCacheResort(5),
+numCallToCache(5)
 {
     build(name,confile,0);
 }
 
 // ----------------------------------------------------------------------------
 Calibration::Calibration( xmlNode* node ):
-minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftRaw(0),pvec(100)
+minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftRaw(0),pvec(100),
+szCache(5),
+cache(5),
+numCacheResort(5),
+numCallToCache(5)
 {
     UniXML_iterator it(node);
     myname = it.getProp("name");
@@ -214,7 +226,7 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
         {
             leftRaw = beg->left_x();
             leftVal = beg->left_y();
-            end--;
+            --end;
             rightRaw = end->right_x();
             rightVal = end->right_y();
         }
@@ -257,16 +269,67 @@ long Calibration::getValue( long raw, bool crop_raw )
     if( raw > rightRaw )
         return (crop_raw ? rightVal : outOfRange);
 
+    if( szCache ) // > 0
+    {
+         for( ValueCache::iterator c=cache.begin(); c!=cache.end(); ++c )
+         {
+              if( c->raw == raw )
+              {
+                  --numCallToCache;
+                  c->cnt++;
+                  if( numCallToCache )
+                      return c->val;
+
+                  long val = c->val; // после сортировки итератор станет недействительным, поэтому запоминаем..
+                  sort(cache.begin(),cache.end());
+                  numCallToCache = numCacheResort;
+                  return val;
+              }
+         }
+    }
+
     PartsVec::iterator fit = find_range(raw, pvec.begin(), pvec.end());
 
     if( fit == pvec.end() )
+    {
+        if( szCache )
+            insertToCache(raw,outOfRange);
         return outOfRange;
+    }
 
     TypeOfValue q = fit->getY(raw);
     if( q != outOfRange )
+    {
+       if( szCache )
+           insertToCache(raw, tRound(q) );
        return tRound(q);
+    }
+
+    if( szCache )
+        insertToCache(raw,outOfRange);
 
     return outOfRange;
+}
+// ----------------------------------------------------------------------------
+void Calibration::setCacheResortCycle( unsigned int n )
+{
+    numCacheResort = n;
+    numCallToCache = n;
+}
+// ----------------------------------------------------------------------------
+void Calibration::setCacheSize( unsigned int sz )
+{
+    sort(cache.begin(),cache.end()); // в порядке уменьшения обращений (см. CacheInfo::operator< )
+    cache.resize(sz);
+    szCache = sz;
+}
+// ----------------------------------------------------------------------------
+void Calibration::insertToCache( const long raw, const long val )
+{
+    sort(cache.begin(),cache.end()); // пересортируем в порядке уменьшения обращений (см. CacheInfo::operator< )
+    cache.pop_back(); // удаляем последний элемент (как самый неиспользуемый)
+    cache.push_back( CacheInfo(raw,val) ); // добавляем в конец..
+    sort(cache.begin(),cache.end()); // пересортируем с учётом вставки
 }
 // ----------------------------------------------------------------------------
 long Calibration::getRawValue( long cal, bool range )
