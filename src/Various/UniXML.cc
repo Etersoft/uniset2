@@ -267,7 +267,7 @@ xmlNode* UniXML::findNodeUtf8( xmlNode* node, const string& searchnode, const st
 //depth means number of times we can go to the children, if 0 we can't go only to elements of the same level
 xmlNode* UniXML::extFindNode( xmlNode* node, int depth, int width, const string& searchnode, const string& name, bool top ) const
 {
-    int i=0;
+    unsigned int i=0;
     xmlNode* fnode = node;
     while( fnode != NULL )
     {

@@ -86,7 +86,7 @@ std::ostream& operator<<(std::ostream& os, ObjectIndex_Array& oi )
 
 std::ostream& ObjectIndex_Array::printMap( std::ostream& os )
 {
-    for( int i=0;;i++)
+    for( unsigned int i=0;;i++)
     {
         if( !objectInfo[i].repName )
             break;

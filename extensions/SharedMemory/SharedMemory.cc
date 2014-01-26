@@ -493,7 +493,7 @@ void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
     for( EventList::iterator it=elst.begin(); it!=elst.end(); ++it )
     {
         bool ok = false;
-        for( int i=0; i<2; i++ )
+        for( unsigned int i=0; i<2; i++ )
         {
             try
             {

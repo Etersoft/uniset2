@@ -206,7 +206,7 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMI
     }
     
     int size = map->length();
-    for( int i=0; i<size; i++ )
+    for( unsigned int i=0; i<size; i++ )
     {
         SInfo* s = &(smap[i]);
         IOController_i::ShortMap* m = &(map[i]);

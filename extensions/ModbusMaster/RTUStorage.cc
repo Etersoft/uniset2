@@ -44,7 +44,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
         if( pollADC )
         {
             ModbusRTU::ReadInputRetMessage ret = mb->read04( addr,1016, 16 );
-            for( int i=0,k=0; i<16; i+=2,k++ )
+            for( unsigned int i=0,k=0; i<16; i+=2,k++ )
                 adc[k] = ModbusRTU::dat2f(ret.data[i],ret.data[i+1]);
         }
         // -----------------------------------
@@ -53,11 +53,11 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
         {
             ModbusRTU::ReadInputStatusRetMessage ret = mb->read02( addr,0,16 );
             ModbusRTU::DataBits bits;
-            for( int b=0; b<2; b++ )
+            for( unsigned int b=0; b<2; b++ )
             {
                 if( ret.getData(b,bits) )
                 {
-                    for( int i=0; i<8; i++ )
+                    for( unsigned int i=0; i<8; i++ )
                         di[i+8*b] = bits[i];
                 }
             }
@@ -69,11 +69,11 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
             {
                 ModbusRTU::ReadCoilRetMessage ret = mb->read01( addr,0,16 );
                 ModbusRTU::DataBits bits;
-                for( int b=0; b<2; b++ )
+                for( unsigned int b=0; b<2; b++ )
                 {
                     if( ret.getData(b,bits) )
                     {
-                        for( int i=0; i<8; i++ )
+                        for( unsigned int i=0; i<8; i++ )
                             dio_do[i+8*b] = bits[i];
                     }
                 }
@@ -83,11 +83,11 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
             {
                 ModbusRTU::ReadInputStatusRetMessage ret = mb->read02( addr,16,16 );
                 ModbusRTU::DataBits bits;
-                for( int b=0; b<2; b++ )
+                for( unsigned int b=0; b<2; b++ )
                 {
                     if( ret.getData(b,bits) )
                     {
-                        for( int i=0; i<8; i++ )
+                        for( unsigned int i=0; i<8; i++ )
                             dio_di[i+8*b] = bits[i];
                     }
                 }
@@ -97,7 +97,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
             {
                 ModbusRTU::ReadInputRetMessage ret = mb->read04( addr, 1000, 16 );
                 int k = 0;
-                for( int i=0; i<16; i+=2,k++ )
+                for( unsigned int i=0; i<16; i+=2,k++ )
                     dio_ai[k] = ModbusRTU::dat2f(ret.data[i],ret.data[i+1]);
             }
             // -----------------------------------
@@ -105,7 +105,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
             {
                 ModbusRTU::ReadOutputRetMessage ret = mb->read03( addr, 1000, 16 );
                 int k = 0;
-                for( int i=0; i<16; i+=2,k++ )
+                for( unsigned int i=0; i<16; i+=2,k++ )
                     dio_ao[k] = ModbusRTU::dat2f(ret.data[i],ret.data[i+1]);
             }
             // -----------------------------------
@@ -117,11 +117,11 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
             {
                 ModbusRTU::ReadCoilRetMessage ret = mb->read01( addr,16,48 );
                 ModbusRTU::DataBits bits;
-                for( int b=0; b<8; b++ )
+                for( unsigned int b=0; b<8; b++ )
                 {
                     if( ret.getData(b,bits) )
                     {
-                        for( int i=0; i<8; i++ )
+                        for( unsigned int i=0; i<8; i++ )
                             unio_do[i+8*b] = bits[i];
                     }
                 }
@@ -131,11 +131,11 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
             {
                 ModbusRTU::ReadInputStatusRetMessage ret = mb->read02( addr,32,48 );
                 ModbusRTU::DataBits bits;
-                for( int b=0; b<8; b++ )
+                for( unsigned int b=0; b<8; b++ )
                 {
                     if( ret.getData(b,bits) )
                     {
-                        for( int i=0; i<8; i++ )
+                        for( unsigned int i=0; i<8; i++ )
                             unio_di[i+8*b] = bits[i];
                     }
                 }
@@ -145,7 +145,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
             {
                 ModbusRTU::ReadInputRetMessage ret = mb->read04( addr, 1032, 48 );
                 int k = 0;
-                for( int i=0; i<48; i+=2,k++ )
+                for( unsigned int i=0; i<48; i+=2,k++ )
                     unio_ai[k] = ModbusRTU::dat2f(ret.data[i],ret.data[i+1]);
             }
             // -----------------------------------
@@ -153,7 +153,7 @@ void RTUStorage::poll( ModbusRTUMaster* mb )
             {
                 ModbusRTU::ReadOutputRetMessage ret = mb->read03( addr, 1016, 48 );
                 int k = 0;
-                for( int i=0; i<48; i+=2,k++ )
+                for( unsigned int i=0; i<48; i+=2,k++ )
                     unio_ao[k] = ModbusRTU::dat2f(ret.data[i],ret.data[i+1]);
             }
         }
@@ -435,114 +435,114 @@ std::ostream& operator<<(std::ostream& os, RTUStorage& m )
 {
     os << "-------------------" << endl
          << " АЦП (8 каналов): " << endl;
-    for( int i=0; i<8; i++ ) // номера каналов
+    for( unsigned int i=0; i<8; i++ ) // номера каналов
         os << setw(12) << i << "|";
     os << endl;
-    for( int i=0; i<8; i++ )
+    for( unsigned int i=0; i<8; i++ )
         os << setw(12) << m.adc[i] << "|";
     os << endl;
     os << "-------------------" << endl
          << " DI (16 каналов): " << endl;
-    for( int i=0; i<16; i++ ) // номера каналов
+    for( unsigned int i=0; i<16; i++ ) // номера каналов
         os << setw(2) << i << "|";
     os << endl;
-    for( int i=0; i<16; i++ )
+    for( unsigned int i=0; i<16; i++ )
         os << setw(2) << m.di[i] << "|";
     os << endl;
 
     os << "-------------------" << endl
          << " DIO DO(16 каналов): " << endl;
-    for( int i=0; i<16; i++ ) // номера каналов
+    for( unsigned int i=0; i<16; i++ ) // номера каналов
         os << setw(2) << i << " | ";
     os << endl;
-    for( int i=0; i<16; i++ )
+    for( unsigned int i=0; i<16; i++ )
         os << setw(2) << m.dio_do[i] << " | ";
     os << endl;
 
     os << "-------------------" << endl
          << " DIO DI(16 каналов): " << endl;
-    for( int i=0; i<16; i++ ) // номера каналов
+    for( unsigned int i=0; i<16; i++ ) // номера каналов
         os << setw(2) << i << " | ";
     os << endl;
-    for( int i=0; i<16; i++ )
+    for( unsigned int i=0; i<16; i++ )
         os << setw(2) << m.dio_di[i] << " | ";
     os << endl;
 
     os << "-------------------" << endl
          << " DIO AI (16 каналов): " << endl;
-    for( int i=0; i<16; i++ ) // номера каналов
+    for( unsigned int i=0; i<16; i++ ) // номера каналов
         os << setw(2) << i << " | ";
     os << endl;
-    for( int i=0; i<16; i++ )
+    for( unsigned int i=0; i<16; i++ )
         os << setw(2) << m.dio_ai[i] << " | ";
     os << endl;
 
     os << "-------------------" << endl
          << " DIO AO (16 каналов): " << endl;
-    for( int i=0; i<16; i++ ) // номера каналов
+    for( unsigned int i=0; i<16; i++ ) // номера каналов
         os << setw(2) << i << " | ";
     os << endl;
-    for( int i=0; i<16; i++ )
+    for( unsigned int i=0; i<16; i++ )
         os << setw(2) << m.dio_ao[i] << " | ";
     os << endl;
 
     os << "-------------------" << endl
          << " UNIO48 DI: " << endl;
-    for( int i=0; i<24; i++ ) // номера каналов
+    for( unsigned int i=0; i<24; i++ ) // номера каналов
         os << setw(2) << i << " | ";
     os << endl;
-    for( int i=0; i<24; i++ )
+    for( unsigned int i=0; i<24; i++ )
         os << setw(2) << m.unio_di[i] << " | ";
     os << endl;
-    for( int i=24; i<48; i++ ) // номера каналов
+    for( unsigned int i=24; i<48; i++ ) // номера каналов
         os << setw(2) << i << " | ";
     os << endl;
-    for( int i=24; i<48; i++ )
+    for( unsigned int i=24; i<48; i++ )
         os << setw(2) << m.unio_di[i] << " | ";
     os << endl;
 
     os << "-------------------" << endl
          << " UNIO48 DO: " << endl;
-    for( int i=0; i<24; i++ ) // номера каналов
+    for( unsigned int i=0; i<24; i++ ) // номера каналов
         os << setw(2) << i << " | ";
     os << endl;
-    for( int i=0; i<24; i++ )
+    for( unsigned int i=0; i<24; i++ )
         os << setw(2) << m.unio_do[i] << " | ";
     os << endl;
-    for( int i=24; i<48; i++ ) // номера каналов
+    for( unsigned int i=24; i<48; i++ ) // номера каналов
         os << setw(2) << i << " | ";
     os << endl;
-    for( int i=24; i<48; i++ )
+    for( unsigned int i=24; i<48; i++ )
         os << setw(2) << m.unio_do[i] << " | ";
     os << endl;
 
     os << "-------------------" << endl
          << " UNIO48 AI: " << endl;
-    for( int i=0; i<12; i++ ) // номера каналов
+    for( unsigned int i=0; i<12; i++ ) // номера каналов
         os << setw(6) << i << " | ";
     os << endl;
-    for( int i=0; i<12; i++ )
+    for( unsigned int i=0; i<12; i++ )
         os << setw(6) << m.unio_ai[i] << " | ";
     os << endl;
-    for( int i=12; i<24; i++ ) // номера каналов
+    for( unsigned int i=12; i<24; i++ ) // номера каналов
         os << setw(6) << i << " | ";
     os << endl;
-    for( int i=12; i<24; i++ )
+    for( unsigned int i=12; i<24; i++ )
         os << setw(6) << m.unio_ai[i] << " | ";
     os << endl;
 
     os << "-------------------" << endl
          << " UNIO48 AO: " << endl;
-    for( int i=0; i<12; i++ ) // номера каналов
+    for( unsigned int i=0; i<12; i++ ) // номера каналов
         os << setw(6) << i << " | ";
     os << endl;
-    for( int i=0; i<12; i++ )
+    for( unsigned int i=0; i<12; i++ )
         os << setw(6) << m.unio_ao[i] << " | ";
     os << endl;
-    for( int i=12; i<24; i++ ) // номера каналов
+    for( unsigned int i=12; i<24; i++ ) // номера каналов
         os << setw(6) << i << " | ";
     os << endl;
-    for( int i=12; i<24; i++ )
+    for( unsigned int i=12; i<24; i++ )
         os << setw(6) << m.unio_ao[i] << " | ";
     os << endl;
 

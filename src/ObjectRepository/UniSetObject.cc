@@ -341,7 +341,7 @@ void UniSetObject::registered()
 
     try
     {
-        for( int i=0; i<2; i++ )
+        for( unsigned int i=0; i<2; i++ )
         {
             try
             {

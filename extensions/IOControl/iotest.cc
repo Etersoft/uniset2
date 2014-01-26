@@ -215,7 +215,7 @@ int main(int argc, char* argv[])
         {
             if( autoconf )
             {
-                for( int k=0; chan[k]!=-1; k++ )
+                for( unsigned int k=0; chan[k]!=-1; k++ )
                 {
                     if( comedi_dio_config(card, subdev, chan[k],INSN_CONFIG_DIO_INPUT) < 0)
                     {
@@ -225,7 +225,7 @@ int main(int argc, char* argv[])
                 }
             }
 
-            for( int k=0; chan[k]!=-1; k++ )
+            for( unsigned int k=0; chan[k]!=-1; k++ )
             {
                 if( comedi_dio_read(card, subdev, chan[k],&data) < 0)
                 {
@@ -242,7 +242,7 @@ int main(int argc, char* argv[])
         {
             if( autoconf )
             {
-                for( int k=0; chan[k]!=-1; k++ )
+                for( unsigned int k=0; chan[k]!=-1; k++ )
                 {
                     if( comedi_dio_config(card, subdev, chan[k],INSN_CONFIG_DIO_OUTPUT) < 0 )
                     {
@@ -254,7 +254,7 @@ int main(int argc, char* argv[])
             // реализация мигания
             while(1)
             {
-                for( int k=0; chan[k]!=-1; k++ )
+                for( unsigned int k=0; chan[k]!=-1; k++ )
                 {
                     if( verb )
                         printf( "write: ch=%d val=%d\n",chan[k],val);
@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
 
         case cmdARead:
         {
-            for( int k=0; chan[k]!=-1; k++ )
+            for( unsigned int k=0; chan[k]!=-1; k++ )
             {
                 if( autoconf )
                     insn_config(card, subdev,chan[k],100,range,aref);
@@ -296,7 +296,7 @@ int main(int argc, char* argv[])
 
         case cmdAWrite:
         {
-            for( int k=0; chan[k]!=-1; k++ )
+            for( unsigned int k=0; chan[k]!=-1; k++ )
             {
                 if( autoconf )
                     insn_config(card,subdev,chan[k],101,range,aref);
@@ -313,7 +313,7 @@ int main(int argc, char* argv[])
 
         case cmdConfig:
         {
-            for( int k=0; chan[k]!=-1; k++ )
+            for( unsigned int k=0; chan[k]!=-1; k++ )
             {
                 if( val != INSN_CONFIG_DIO_INPUT
                     && val != INSN_CONFIG_DIO_OUTPUT

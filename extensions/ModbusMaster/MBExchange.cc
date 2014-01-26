@@ -585,10 +585,10 @@ bool MBExchange::preInitRead( InitList::iterator& p )
             ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr,p->mbreg,q_count);
             ModbusRTU::ModbusData* dat = new ModbusRTU::ModbusData[q_count];
             int m=0;
-            for( int i=0; i<ret.bcnt; i++ )
+            for( unsigned int i=0; i<ret.bcnt; i++ )
             {
                 ModbusRTU::DataBits b(ret.data[i]);
-                for( int k=0;k<ModbusRTU::BitsPerByte && m<q_count; k++,m++ )
+                for( unsigned int k=0;k<ModbusRTU::BitsPerByte && m<q_count; k++,m++ )
                     dat[m] = b[k];
             }
 
@@ -602,10 +602,10 @@ bool MBExchange::preInitRead( InitList::iterator& p )
             ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr,p->mbreg,q_count);
             ModbusRTU::ModbusData* dat = new ModbusRTU::ModbusData[q_count];
             int m = 0;
-            for( int i=0; i<ret.bcnt; i++ )
+            for( unsigned int i=0; i<ret.bcnt; i++ )
             {
                 ModbusRTU::DataBits b(ret.data[i]);
-                for( int k=0;k<ModbusRTU::BitsPerByte && m<q_count; k++,m++ )
+                for( unsigned int k=0;k<ModbusRTU::BitsPerByte && m<q_count; k++,m++ )
                     dat[m] = b[k];
             }
 
@@ -803,7 +803,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
         case ModbusRTU::fnReadInputRegisters:
         {
             ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr,p->mbreg,p->q_count);
-            for( int i=0; i<p->q_count; i++,it++ )
+            for( unsigned int i=0; i<p->q_count; i++,it++ )
                 it->second->mbval = ret.data[i];
             it--;
         }
@@ -812,7 +812,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
         case ModbusRTU::fnReadOutputRegisters:
         {
             ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr, p->mbreg,p->q_count);
-            for( int i=0; i<p->q_count; i++,it++ )
+            for( unsigned int i=0; i<p->q_count; i++,it++ )
                 it->second->mbval = ret.data[i];
             it--;
         }
@@ -822,10 +822,10 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
         {
             ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr,p->mbreg,p->q_count);
             int m=0;
-            for( int i=0; i<ret.bcnt; i++ )
+            for( unsigned int i=0; i<ret.bcnt; i++ )
             {
                 ModbusRTU::DataBits b(ret.data[i]);
-                for( int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
+                for( unsigned int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
                     it->second->mbval = b[k];
             }
             it--;
@@ -836,10 +836,10 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
         {
             ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr,p->mbreg,p->q_count);
             int m = 0;
-            for( int i=0; i<ret.bcnt; i++ )
+            for( unsigned int i=0; i<ret.bcnt; i++ )
             {
                 ModbusRTU::DataBits b(ret.data[i]);
-                for( int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
+                for( unsigned int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
                     it->second->mbval = b[k] ? 1 : 0;
             }
             it--;
@@ -887,7 +887,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
             }
 
             ModbusRTU::WriteOutputMessage msg(dev->mbaddr,p->mbreg);
-            for( int i=0; i<p->q_count; i++,it++ )
+            for( unsigned int i=0; i<p->q_count; i++,it++ )
                 msg.addData(it->second->mbval);
 
             it--;
@@ -924,7 +924,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
             }
 
             ModbusRTU::ForceCoilsMessage msg(dev->mbaddr,p->mbreg);
-            for( int i=0; i<p->q_count; i++,it++ )
+            for( unsigned int i=0; i<p->q_count; i++,it++ )
                 msg.addBit( (it->second->mbval ? true : false) );
 
             it--;
@@ -1230,7 +1230,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
                     {
                         float f = IOBase::processingFasAO( p, shm, force_out );
                         VTypes::F2 f2(f);
-                        for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
+                        for( unsigned int k=0; k<VTypes::F2::wsize(); k++, i++ )
                             i->second->mbval = f2.raw.v[k];
 
                         r->sm_initOK = true;
@@ -1239,7 +1239,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
                 else
                 {
                     ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F2::wsize()];
-                    for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
+                    for( unsigned int k=0; k<VTypes::F2::wsize(); k++, i++ )
                         data[k] = i->second->mbval;
                 
                     VTypes::F2 f(data,VTypes::F2::wsize());
@@ -1257,14 +1257,14 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
                     {
                         float f = IOBase::processingFasAO( p, shm, force_out );
                         VTypes::F4 f4(f);
-                        for( int k=0; k<VTypes::F4::wsize(); k++, i++ )
+                        for( unsigned int k=0; k<VTypes::F4::wsize(); k++, i++ )
                             i->second->mbval = f4.raw.v[k];
                     }
                 }
                 else
                 {
                     ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F4::wsize()];
-                    for( int k=0; k<VTypes::F4::wsize(); k++, i++ )
+                    for( unsigned int k=0; k<VTypes::F4::wsize(); k++, i++ )
                         data[k] = i->second->mbval;
                 
                     VTypes::F4 f(data,VTypes::F4::wsize());
@@ -1282,7 +1282,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
                     {
                         long v = IOBase::processingAsAO( p, shm, force_out );
                         VTypes::I2 i2(v);
-                        for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
+                        for( unsigned int k=0; k<VTypes::I2::wsize(); k++, i++ )
                             i->second->mbval = i2.raw.v[k];
 
                         r->sm_initOK = true;
@@ -1291,7 +1291,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
                 else
                 {
                     ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::I2::wsize()];
-                    for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
+                    for( unsigned int k=0; k<VTypes::I2::wsize(); k++, i++ )
                         data[k] = i->second->mbval;
                 
                     VTypes::I2 i2(data,VTypes::I2::wsize());
@@ -1309,7 +1309,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
                     {
                         long v = IOBase::processingAsAO( p, shm, force_out );
                         VTypes::U2 u2(v);
-                        for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
+                        for( unsigned int k=0; k<VTypes::U2::wsize(); k++, i++ )
                             i->second->mbval = u2.raw.v[k];
 
                         r->sm_initOK = true;
@@ -1318,7 +1318,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
                 else
                 {
                     ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::U2::wsize()];
-                    for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
+                    for( unsigned int k=0; k<VTypes::U2::wsize(); k++, i++ )
                         data[k] = i->second->mbval;
 
                     VTypes::U2 u2(data,VTypes::U2::wsize());
@@ -1411,13 +1411,13 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
                     if( save )
                     {
                         MTR::T3 t(IOBase::processingAsAO( &(*it), shm, force_out ));
-                        for( int k=0; k<MTR::T3::wsize(); k++, i++ )
+                        for( unsigned int k=0; k<MTR::T3::wsize(); k++, i++ )
                             i->second->mbval = t.raw.v[k];
                     }
                     else
                     {
                         ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T3::wsize()];
-                        for( int k=0; k<MTR::T3::wsize(); k++, i++ )
+                        for( unsigned int k=0; k<MTR::T3::wsize(); k++, i++ )
                             data[k] = i->second->mbval;
 
                         MTR::T3 t(data,MTR::T3::wsize());
@@ -1447,13 +1447,13 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
                     if( save )
                     {
                         MTR::T5 t(IOBase::processingAsAO( &(*it), shm, force_out ));
-                        for( int k=0; k<MTR::T5::wsize(); k++, i++ )
+                        for( unsigned int k=0; k<MTR::T5::wsize(); k++, i++ )
                             i->second->mbval = t.raw.v[k];
                     }
                     else
                     {
                         ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T5::wsize()];
-                        for( int k=0; k<MTR::T5::wsize(); k++, i++ )
+                        for( unsigned int k=0; k<MTR::T5::wsize(); k++, i++ )
                             data[k] = i->second->mbval;
         
                         MTR::T5 t(data,MTR::T5::wsize());
@@ -1470,13 +1470,13 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
                     if( save )
                     {
                         MTR::T6 t(IOBase::processingAsAO( &(*it), shm, force_out ));
-                        for( int k=0; k<MTR::T6::wsize(); k++, i++ )
+                        for( unsigned int k=0; k<MTR::T6::wsize(); k++, i++ )
                             i->second->mbval = t.raw.v[k];
                     }
                     else
                     {
                         ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T6::wsize()];
-                        for( int k=0; k<MTR::T6::wsize(); k++, i++ )
+                        for( unsigned int k=0; k<MTR::T6::wsize(); k++, i++ )
                             data[k] = i->second->mbval;
         
                         MTR::T6 t(data,MTR::T6::wsize());
@@ -1493,13 +1493,13 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
                     if( save )
                     {
                         MTR::T7 t(IOBase::processingAsAO( &(*it), shm, force_out ));
-                        for( int k=0; k<MTR::T7::wsize(); k++, i++ )
+                        for( unsigned int k=0; k<MTR::T7::wsize(); k++, i++ )
                             i->second->mbval = t.raw.v[k];
                     }
                     else
                     {
                         ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::T7::wsize()];
-                        for( int k=0; k<MTR::T7::wsize(); k++, i++ )
+                        for( unsigned int k=0; k<MTR::T7::wsize(); k++, i++ )
                             data[k] = i->second->mbval;
         
                         MTR::T7 t(data,MTR::T7::wsize());
@@ -1547,13 +1547,13 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
                     {
                         float f = IOBase::processingFasAO( &(*it), shm, force_out );
                         MTR::F1 f1(f);
-                        for( int k=0; k<MTR::F1::wsize(); k++, i++ )
+                        for( unsigned int k=0; k<MTR::F1::wsize(); k++, i++ )
                             i->second->mbval = f1.raw.v[k];
                     }
                     else
                     {
                         ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[MTR::F1::wsize()];
-                        for( int k=0; k<MTR::F1::wsize(); k++, i++ )
+                        for( unsigned int k=0; k<MTR::F1::wsize(); k++, i++ )
                             data[k] = i->second->mbval;
 
                         MTR::F1 t(data,MTR::F1::wsize());
@@ -2108,7 +2108,7 @@ bool MBExchange::initItem( UniXML_iterator& it )
     {
         ri->q_count = p1->rnum;
         ri->q_num = 1;
-        for( int i=1; i<p1->rnum; i++ )
+        for( unsigned int i=1; i<p1->rnum; i++ )
         {
             RegID id1 = genRegID(mbreg+i,ri->mbfunc);
             RegInfo* r = addReg(dev->regmap,id1,mbreg+i,it,dev,ri);

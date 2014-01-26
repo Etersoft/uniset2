@@ -87,7 +87,7 @@ ComPort::Speed ModbusHelpers::autodetectSpeed( ModbusRTUMaster* m, ModbusAddr sl
 {
     ComPort::Speed cur = m->getSpeed();
     ComPort::Speed s = ComPort::ComSpeed0;
-    for( int i=0; checkSpeed[i]!=ComPort::ComSpeed0; i++ )
+    for( unsigned int i=0; checkSpeed[i]!=ComPort::ComSpeed0; i++ )
     {
         try
         {

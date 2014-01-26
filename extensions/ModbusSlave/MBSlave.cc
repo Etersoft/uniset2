@@ -390,7 +390,7 @@ void MBSlave::execute_rtu()
                 //  с проверкой на переполнение
                 askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
                 if( res!=ModbusRTU::erNoError )
-                    errmap[res]++;
+                    ++errmap[res];
     
                 prev = res;
             }
@@ -469,7 +469,7 @@ void MBSlave::execute_tcp()
                 //  с проверкой на переполнение
                 askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
                 if( res!=ModbusRTU::erNoError )
-                    errmap[res]++;
+                    ++errmap[res];
     
                 prev = res;
             }
@@ -818,7 +818,7 @@ bool MBSlave::initItem( UniXML_iterator& it )
         }
         p.vtype = v;
         p.wnum = 0;
-        for( int i=0; i<VTypes::wsize(p.vtype); i++ )
+        for( unsigned int i=0; i<VTypes::wsize(p.vtype); i++ )
         {
             p.mbreg += i;
             p.wnum+= i;
@@ -930,7 +930,7 @@ ModbusRTU::mbErrCode MBSlave::readOutputRegisters( ModbusRTU::ReadOutputMessage&
     ModbusRTU::mbErrCode ret = much_real_read(query.start,buf,query.count);
     if( ret == ModbusRTU::erNoError )
     {
-        for( int i=0; i<query.count; i++ )
+        for( unsigned int i=0; i<query.count; i++ )
             reply.addData( buf[i] );
     }
     
@@ -1054,7 +1054,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_it( IOMap::iterator& it, ModbusRTU::Mod
         {
             RegMap::iterator i(p->reg->rit);
             ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F2::wsize()];
-                for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
+                for( unsigned int k=0; k<VTypes::F2::wsize(); k++, i++ )
                     data[k] = i->second->mbval;
                 
                 VTypes::F2 f(data,VTypes::F2::wsize());
@@ -1067,7 +1067,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_it( IOMap::iterator& it, ModbusRTU::Mod
                 RegMap::iterator i(p->reg->rit);
 
                 ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F4::wsize()];
-                for( int k=0; k<VTypes::F4::wsize(); k++, i++ )
+                for( unsigned int k=0; k<VTypes::F4::wsize(); k++, i++ )
                     data[k] = i->second->mbval;
                 
                 VTypes::F4 f(data,VTypes::F4::wsize());
@@ -1309,7 +1309,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMess
     ModbusRTU::mbErrCode ret = much_real_read(query.start,buf,query.count);
     if( ret == ModbusRTU::erNoError )
     {
-        for( int i=0; i<query.count; i++ )
+        for( unsigned int i=0; i<query.count; i++ )
             reply.addData( buf[i] );
     }
     
@@ -1373,11 +1373,11 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
         // Фомирование ответа:
         much_real_read(query.start,buf,query.count);
         int bnum = 0;
-        int i=0;
+        unsigned int i=0;
         while( i<query.count )
         {
             reply.addData(0);
-            for( int nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
+            for( unsigned int nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
                 reply.setBit(bnum,nbit,buf[i]);
             bnum++;
         }
@@ -1418,10 +1418,10 @@ ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& 
 
     ModbusRTU::mbErrCode ret = ModbusRTU::erNoError;
     int nbit = 0;
-    for( int i = 0; i<query.bcnt; i++ )
+    for( unsigned int i = 0; i<query.bcnt; i++ )
     {
         ModbusRTU::DataBits b(query.data[i]);
-        for( int k=0; k<ModbusRTU::BitsPerByte && nbit<query.quant; k++, nbit++ )
+        for( unsigned int k=0; k<ModbusRTU::BitsPerByte && nbit<query.quant; k++, nbit++ )
         {
             // ModbusRTU::mbErrCode ret =     
             real_write(query.start+nbit, (b[k] ? 1 : 0) );

@@ -123,6 +123,7 @@ namespace UniSetTypes
             ost::AtomicCounter wr_wait;
             static int num;
     };
+
     std::ostream& operator<<(std::ostream& os, uniset_rwmutex& m );
     // -------------------------------------------------------------------------
     class uniset_rwmutex_wrlock

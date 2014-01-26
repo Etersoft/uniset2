@@ -384,7 +384,7 @@ void IOController::ioRegistration( const USensorInfo& ainf, bool force )
 
     try
     {
-        for( int i=0; i<2; i++ )
+        for( unsigned int i=0; i<2; i++ )
         {
             try
             {
@@ -478,7 +478,7 @@ IOController_i::SensorInfoSeq* IOController::getSensorsMap()
     IOController_i::SensorInfoSeq* res = new IOController_i::SensorInfoSeq();    
     res->length( ioList.size());
 
-    int i=0;
+    unsigned int i=0;
     for( IOStateList::iterator it=ioList.begin(); it!=ioList.end(); ++it)
     {    
         uniset_rwmutex_rlock lock(it->second.val_lock);
@@ -673,7 +673,7 @@ IOController_i::SensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
     IOController_i::SensorInfoSeq* res = new IOController_i::SensorInfoSeq();
     res->length(size);
 
-    for( int i=0; i<size; i++ )
+    for( unsigned int i=0; i<size; i++ )
     {
         IOStateList::iterator it = ioList.find( UniSetTypes::key(lst[i],conf->getLocalNode()) );
         if( it!=ioList.end() )
