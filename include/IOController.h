@@ -77,7 +77,7 @@ class IOController:
         virtual void calibrate(const IOController_i::SensorInfo& si, 
                                     const IOController_i::CalibrateInfo& ci,
                                     UniSetTypes::ObjectId adminId );
-        
+
         IOController_i::CalibrateInfo getCalibrateInfo(const IOController_i::SensorInfo& si);
 
         inline IOController_i::SensorInfo SensorInfo(UniSetTypes::ObjectId id, 
@@ -202,7 +202,7 @@ class IOController:
             virtual void sensorsRegistration(){};
             /*! удаление из репозитория датчиков за информацию о которых отвечает данный IOController */
             virtual void sensorsUnregistration();
-    
+
             typedef sigc::signal<void, IOStateList::iterator&, IOController*> InitSignal;
             // signal по изменению определённого датчика
             inline InitSignal signal_init(){ return sigInit; }
@@ -214,9 +214,9 @@ class IOController:
 
             /*! разрегистрация датчика */
             void ioUnRegistration( const IOController_i::SensorInfo& si );
-            
+
             UniSetTypes::Message::Priority getMessagePriority(UniSetTypes::KeyType k, UniversalIO::IOType type);
-            
+
             // ------------------------------
             inline IOController_i::SensorIOInfo
                 SensorIOInfo(long v, UniversalIO::IOType t, const IOController_i::SensorInfo& si, 

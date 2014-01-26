@@ -265,7 +265,7 @@ void MBExchange::readConfiguration()
 //    readconf_ok = true;
 }
 // ------------------------------------------------------------------------------------------
-bool MBExchange::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
+bool MBExchange::readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 {
     if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
         initItem(it);
@@ -277,7 +277,7 @@ MBExchange::DeviceType MBExchange::getDeviceType( const std::string& dtype )
 {
     if( dtype.empty() )
         return dtUnknown;
-    
+
     if( dtype == "mtr" || dtype == "MTR" )
         return dtMTR;
     
@@ -457,15 +457,15 @@ void MBExchange::rtuQueryOptimization( RTUDeviceMap& m )
             RegID id = it->second->id; // или собственно it->first
             beg->second->q_num = 1;
             beg->second->q_count = 1;
-            it++;
+            ++it;
             for( ;it!=d->regmap.end(); ++it )
             {
                 if( (it->second->id - id) > 1 )
                 {
-                    it--;  // раз это регистр уже следующий, то надо вернуть на шаг обратно..
+                    --it;  // раз это регистр уже следующий, то надо вернуть на шаг обратно..
                     break;
                 }
-                
+
                 beg->second->q_count++;
 
                 if( beg->second->q_count >= ModbusRTU::MAXDATALEN  )
@@ -1766,10 +1766,10 @@ MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, RegID id, ModbusRTU::Modbus
     }
 
     ri->id = id;
-    
+
     mp.insert(RegMap::value_type(id,ri));
     ri->rit = mp.find(id);
-    
+
     return ri;
 }
 // ------------------------------------------------------------------------------------------
@@ -1780,10 +1780,10 @@ MBExchange::RSProperty* MBExchange::addProp( PList& plist, RSProperty& p )
         if( it->si.id == p.si.id && it->si.node == p.si.node )
             return &(*it);
     }
-    
+
     plist.push_back(p);
     PList::iterator it = plist.end();
-    it--;
+    --it;
     return &(*it);
 }
 // ------------------------------------------------------------------------------------------
@@ -2292,7 +2292,7 @@ std::ostream& operator<<( std::ostream& os, const MBExchange::RSProperty& p )
 void MBExchange::initDeviceList()
 {
     xmlNode* respNode = 0;
-    UniXML* xml = conf->getConfXML();
+    const UniXML* xml = conf->getConfXML();
     if( xml )
         respNode = xml->extFindNode(cnode,1,1,"DeviceList");
 

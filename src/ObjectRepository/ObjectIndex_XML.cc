@@ -55,21 +55,21 @@ ObjectId ObjectIndex_XML::getIdByName( const string& name )
     MapObjectKey::iterator it = mok.find(name);
     if( it != mok.end() )
         return it->second;
-        
+
     return DefaultObjectId;
 }
 // -----------------------------------------------------------------------------------------
 string ObjectIndex_XML::getMapName( const ObjectId id )
 {
-    if( (unsigned)id<omap.size() && (unsigned)id>=0 && (unsigned)id<omap.size())
+    if( (unsigned)id<omap.size() && (unsigned)id>=0 )
         return omap[id].repName;
 
     return "";
 }
-// -----------------------------------------------------------------------------------------        
+// -----------------------------------------------------------------------------------------
 string ObjectIndex_XML::getTextName( const ObjectId id )
 {
-    if( (unsigned)id<omap.size() && (unsigned)id>=0 && (unsigned)id<omap.size() )
+    if( (unsigned)id<omap.size() && (unsigned)id>=0 )
         return omap[id].textName;
 
     return "";
@@ -234,7 +234,7 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string& sec, u
         throw NameNotFound(msg.str());
     }
 
-    string secname = xml.getProp(root,"section");
+//    string secname = xml.getProp(root,"section");
 
     for( ;it.getCurrent(); it.goNext() )
     {
@@ -243,7 +243,7 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string& sec, u
         string alias(xml.getProp(it,"alias"));
         if( alias.empty() )
             alias = name;
-    
+
         string nodename = mkFullNodeName(name,alias);
         delete[] omap[ind].repName;
         omap[ind].repName = new char[nodename.size()+1];
@@ -278,7 +278,7 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string& sec, u
 // ------------------------------------------------------------------------------------------
 const ObjectInfo* ObjectIndex_XML::getObjectInfo( const ObjectId id )
 {
-    if( (unsigned)id<omap.size() && (unsigned)id>=0 && (unsigned)id<omap.size() )
+    if( (unsigned)id<omap.size() && (unsigned)id>=0 )
         return &omap[id];
 
     return NULL;

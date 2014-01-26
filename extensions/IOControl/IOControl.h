@@ -299,7 +299,7 @@ class IOControl:
         // чтение файла конфигурации
         void readConfiguration();
         bool initIOItem( UniXML_iterator& it );
-        bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
+        bool readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec );
         void buildCardsList();
 
         void waitSM();

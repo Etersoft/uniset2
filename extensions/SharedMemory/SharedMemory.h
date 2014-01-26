@@ -353,10 +353,10 @@ class SharedMemory:
         bool activateObject();
 //        virtual void logging(UniSetTypes::SensorMessage& sm){}
 //        virtual void dumpToDB(){}
-        bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
+        bool readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec );
 
         void buildEventList( xmlNode* cnode );
-        void readEventList( std::string oname );
+        void readEventList( const std::string& oname );
 
         UniSetTypes::uniset_rwmutex mutex_start;
 

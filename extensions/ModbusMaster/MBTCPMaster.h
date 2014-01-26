@@ -211,7 +211,7 @@ class MBTCPMaster:
         std::string iaddr;
 //        ost::InetAddress* ia;
         int port;
-        int recv_timeout;
+//        int recv_timeout;
 
 //        virtual void step();
         virtual ModbusClient* initMB( bool reopen=false );

@@ -74,6 +74,8 @@ class UniSetObject:
         virtual CORBA::Boolean exist();
         virtual char* getName(){return (char*)myname.c_str();}
         virtual UniSetTypes::ObjectId getId(){ return myid; }
+        const UniSetTypes::ObjectId getId() const { return myid; }
+
         virtual UniSetTypes::ObjectType getType() { return UniSetTypes::getObjectType("UniSetObject"); }
         virtual UniSetTypes::SimpleInfo* getInfo();
         friend std::ostream& operator<<(std::ostream& os, UniSetObject& obj );
@@ -82,7 +84,7 @@ class UniSetObject:
         virtual void push(const UniSetTypes::TransportMessage& msg);
 
         /*! получить ссылку (на себя) */
-        inline UniSetTypes::ObjectPtr getRef()
+        inline UniSetTypes::ObjectPtr getRef() const
         {
             UniSetTypes::uniset_rwmutex_rlock lock(refmutex);
             return (UniSetTypes::ObjectPtr)CORBA::Object::_duplicate(oref);
@@ -232,7 +234,7 @@ class UniSetObject:
             UniSetTypes::uniset_rwmutex qmutex;
 
              /*! замок для блокирования совместного доступа к очереди */
-            UniSetTypes::uniset_rwmutex refmutex;
+            mutable UniSetTypes::uniset_rwmutex refmutex;
 
             /*! размер очереди сообщений (при превышении происходит очистка) */
             unsigned int SizeOfMessageQueue;

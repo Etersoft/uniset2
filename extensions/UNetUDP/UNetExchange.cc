@@ -630,7 +630,7 @@ void UNetExchange::initIterators()
     if( sender2 )
         sender2->initIterators();
 
-    for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); it++ )
+    for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
         it->initIterators(shm);
 }
 // -----------------------------------------------------------------------------

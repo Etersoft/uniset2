@@ -182,8 +182,6 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string& sec )
         throw NameNotFound(msg.str());
     }
 
-    string secname = xml.getProp(root,"section");
-
     for( ;it.getCurrent(); it.goNext() )
     {
         ObjectInfo inf;
@@ -215,8 +213,6 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string& sec )
 
         inf.data = (void*)(xmlNode*)(it);
 
-//        omap[inf.id] = inf;
-//        mok[nodename] = inf.id;
         omap.insert(MapObjects::value_type(inf.id,inf));    // omap[inf.id] = inf;
         mok.insert(MapObjectKey::value_type(nodename,inf.id)); // mok[name] = inf.id;
     }
@@ -234,7 +230,7 @@ const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id )
 const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const std::string& name )
 {
     const char* n = name.c_str();
-    for( MapObjects::iterator it=omap.begin(); it!=omap.end(); it++ )
+    for( MapObjects::iterator it=omap.begin(); it!=omap.end(); ++it )
     {
           if( !strcmp(it->second.repName,n) )
               return &(it->second);

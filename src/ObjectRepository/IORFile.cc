@@ -37,7 +37,7 @@ IORFile::IORFile()
 }
 
 // -----------------------------------------------------------------------------------------
-string IORFile::getIOR( const ObjectId id, const ObjectId node )
+string IORFile::getIOR( const ObjectId id, const ObjectId node ) const
 {
     string fname( genFName(id,node) );
     ifstream ior_file(fname.c_str());
@@ -47,7 +47,7 @@ string IORFile::getIOR( const ObjectId id, const ObjectId node )
     return sior;
 }
 // -----------------------------------------------------------------------------------------
-void IORFile::setIOR( const ObjectId id, const ObjectId node, const string& sior )
+void IORFile::setIOR( const ObjectId id, const ObjectId node, const string& sior ) const
 {
     string fname( genFName(id,node) );
     ofstream ior_file(fname.c_str(), ios::out | ios::trunc);
@@ -62,30 +62,14 @@ void IORFile::setIOR( const ObjectId id, const ObjectId node, const string& sior
     ior_file.close();
 }
 // -----------------------------------------------------------------------------------------
-void IORFile::unlinkIOR( const ObjectId id, const ObjectId node )
+void IORFile::unlinkIOR( const ObjectId id, const ObjectId node ) const
 {
     string fname( genFName(id,node) );
-//    ostringstream cmd;
-//    cmd << "unlink " << fname;
-//    system(cmd.str().c_str());
     unlink(fname.c_str());
 }
 // -----------------------------------------------------------------------------------------
-string IORFile::genFName( const ObjectId id, const ObjectId node )
+string IORFile::genFName( const ObjectId id, const ObjectId node ) const
 {
-/*
-    string oname(conf->oind->getMapName(id));
-    string nodename(conf->oind->getMapName(node));
-    oname = ORepHelpers::getShortName(oname);
-    nodename = conf->oind->getFullNodeName(nodename);
-
-    ostringstream fname;
-
-    if( oname.empty() )
-        fname << conf->getLockDir() << id << "." << node;
-    else
-        fname << conf->getLockDir() << oname << "." << nodename;
-*/
     ostringstream fname;
     fname << conf->getLockDir() << id << "." << node;
     return fname.str();

@@ -40,7 +40,7 @@ using namespace UniversalIO;
 using namespace UniSetTypes;
 using namespace std;
 // -----------------------------------------------------------------------------
-UInterface::UInterface( UniSetTypes::Configuration* _uconf ):
+UInterface::UInterface( const UniSetTypes::Configuration* _uconf ):
     rep(_uconf),
     myid(UniSetTypes::DefaultObjectId),
     orb(CORBA::ORB::_nil()),
@@ -51,7 +51,7 @@ UInterface::UInterface( UniSetTypes::Configuration* _uconf ):
     init();
 }
 // -----------------------------------------------------------------------------
-UInterface::UInterface( ObjectId backid, CORBA::ORB_var orb, ObjectIndex* _oind ):
+UInterface::UInterface( const ObjectId backid, CORBA::ORB_var orb, ObjectIndex* _oind ):
     rep(UniSetTypes::conf),
     myid(backid),
     orb(orb),
@@ -104,7 +104,7 @@ void UInterface::init()
     }
 }
 // ------------------------------------------------------------------------------------------------------------
-void UInterface::initBackId( UniSetTypes::ObjectId backid )
+void UInterface::initBackId( const UniSetTypes::ObjectId backid )
 {
     myid = backid;
 }
@@ -115,7 +115,7 @@ void UInterface::initBackId( UniSetTypes::ObjectId backid )
  * \exception IOBadParam - генерируется если указано неправильное имя датчика или секции
  * \exception IOTimeOut - генерируется если в течение времени timeout небыл получен ответ
 */
-long UInterface::getValue( ObjectId name, ObjectId node ) 
+long UInterface::getValue( const ObjectId name, const ObjectId node ) const
     throw(IO_THROW_EXCEPTIONS)
 {
     if ( name == DefaultObjectId )
@@ -166,7 +166,7 @@ long UInterface::getValue( ObjectId name, ObjectId node )
         rcache.erase(name, node);        
         // не смогли получить ссылку на объект
         throw UniSetTypes::IOBadParam(set_err("UI(getValue): ORepFailed",name,node));
-    }    
+    }
     catch(CORBA::NO_IMPLEMENT)
     {
         rcache.erase(name, node);        
@@ -186,19 +186,18 @@ long UInterface::getValue( ObjectId name, ObjectId node )
         // ошибка системы коммуникации
         // uwarn << "UI(getValue): CORBA::SystemException" << endl;
     }    
-    rcache.erase(name, node);        
+    rcache.erase(name, node);
     throw UniSetTypes::TimeOut(set_err("UI(getValue): TimeOut",name,node));
 }
 
-long UInterface::getValue( ObjectId name ) 
+long UInterface::getValue( const ObjectId name ) const
 {
     return getValue(name, uconf->getLocalNode());
 }
 
 
 // ------------------------------------------------------------------------------------------------------------
-void UInterface::setUndefinedState( IOController_i::SensorInfo& si, bool undefined, 
-                                            UniSetTypes::ObjectId sup_id )
+void UInterface::setUndefinedState( IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId sup_id )
 {
     if( si.id == DefaultObjectId )
     {
@@ -277,7 +276,7 @@ void UInterface::setUndefinedState( IOController_i::SensorInfo& si, bool undefin
  * \return текущее значение датчика
  * \exception IOBadParam - генерируется если указано неправильное имя вывода или секции
 */
-void UInterface::setValue(ObjectId name, long value, ObjectId node) 
+void UInterface::setValue( const ObjectId name, long value, const ObjectId node ) const
     throw(IO_THROW_EXCEPTIONS)
 {
     if ( name == DefaultObjectId )
@@ -353,13 +352,13 @@ void UInterface::setValue(ObjectId name, long value, ObjectId node)
     throw UniSetTypes::TimeOut(set_err("UI(setValue): Timeout",name,node));
 }
 
-void UInterface::setValue(ObjectId name, long value) 
+void UInterface::setValue( const ObjectId name, long value ) const
 {
     setValue(name, value, uconf->getLocalNode());
 }
 
 
-void UInterface::setValue( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier )
+void UInterface::setValue( IOController_i::SensorInfo& si, long value, const UniSetTypes::ObjectId supplier )
 {
     ObjectId old = myid;
     try
@@ -466,8 +465,8 @@ void UInterface::fastSetValue( IOController_i::SensorInfo& si, long value, UniSe
  * \param cmd - команда см. \ref UniversalIO::UIOCommand
  * \param backid - обратный адрес (идентификатор заказчика)
 */
-void UInterface::askRemoteSensor( ObjectId name, UniversalIO::UIOCommand cmd, ObjectId node,
-                                    UniSetTypes::ObjectId backid ) throw(IO_THROW_EXCEPTIONS)
+void UInterface::askRemoteSensor( const ObjectId name, UniversalIO::UIOCommand cmd, const ObjectId node,
+                                    UniSetTypes::ObjectId backid ) const throw(IO_THROW_EXCEPTIONS)
 {
     if( backid==UniSetTypes::DefaultObjectId )
         backid = myid;
@@ -554,7 +553,7 @@ void UInterface::askRemoteSensor( ObjectId name, UniversalIO::UIOCommand cmd, Ob
     throw UniSetTypes::TimeOut(set_err("UI(askSensor): Timeout",name,node));
 }
 
-void UInterface::askSensor( ObjectId name, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId backid )
+void UInterface::askSensor( const ObjectId name, UniversalIO::UIOCommand cmd, const UniSetTypes::ObjectId backid ) const
 {
     askRemoteSensor(name, cmd, uconf->getLocalNode(), backid);
 }
@@ -564,8 +563,8 @@ void UInterface::askSensor( ObjectId name, UniversalIO::UIOCommand cmd, UniSetTy
  * \param name - идентификатор объекта
  * \param node - идентификатор узла
 */
-IOType UInterface::getIOType(ObjectId name, ObjectId node)
-    throw(IO_THROW_EXCEPTIONS)    
+IOType UInterface::getIOType( const ObjectId name, const ObjectId node ) const
+    throw(IO_THROW_EXCEPTIONS)
 {
     if ( name == DefaultObjectId )
         throw ORepFailed("UI(getIOType): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
@@ -640,7 +639,7 @@ IOType UInterface::getIOType(ObjectId name, ObjectId node)
     throw UniSetTypes::TimeOut(set_err("UI(getIOType): Timeout",name, node));
 }
 
-IOType UInterface::getIOType(ObjectId name)
+IOType UInterface::getIOType( const ObjectId name ) const
 {
     return getIOType(name, uconf->getLocalNode() );
 }
@@ -649,7 +648,7 @@ IOType UInterface::getIOType(ObjectId name)
  * \param name - идентификатор объекта
  * \param node - идентификатор узла
 */
-ObjectType UInterface::getType(ObjectId name, ObjectId node)
+ObjectType UInterface::getType(const ObjectId name, const ObjectId node) const
     throw(IO_THROW_EXCEPTIONS)
 {
     if ( name == DefaultObjectId )
@@ -723,21 +722,21 @@ ObjectType UInterface::getType(ObjectId name, ObjectId node)
     throw UniSetTypes::TimeOut(set_err("UI(getType): Timeout",name, node));
 }
 
-ObjectType UInterface::getType(ObjectId name)
+ObjectType UInterface::getType( const ObjectId name ) const
 {
     return getType(name, uconf->getLocalNode());
 }
 
 // ------------------------------------------------------------------------------------------------------------
-void UInterface::registered(UniSetTypes::ObjectId id, const UniSetTypes::ObjectPtr oRef, bool force)
+void UInterface::registered( const ObjectId id, const ObjectPtr oRef, bool force ) const
                                                                                     throw(UniSetTypes::ORepFailed)
 {
     registered(id,uconf->getLocalNode(), oRef,force);
 }
 
 // ------------------------------------------------------------------------------------------------------------
-void UInterface::registered( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node, 
-            const UniSetTypes::ObjectPtr oRef, bool force ) throw(ORepFailed)
+void UInterface::registered( const ObjectId id, const ObjectId node,
+            const UniSetTypes::ObjectPtr oRef, bool force ) const throw(ORepFailed)
 {
     // если влючён режим использования локальных файлов
     // то пишем IOR в файл
@@ -761,7 +760,7 @@ void UInterface::registered( UniSetTypes::ObjectId id, UniSetTypes::ObjectId nod
 }
 
 // ------------------------------------------------------------------------------------------------------------
-void UInterface::unregister(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node)throw(ORepFailed)
+void UInterface::unregister( const ObjectId id, const ObjectId node )throw(ORepFailed)
 {
     if( uconf->isLocalIOR() )
     {
@@ -780,13 +779,13 @@ void UInterface::unregister(UniSetTypes::ObjectId id, UniSetTypes::ObjectId node
 }
 
 // ------------------------------------------------------------------------------------------------------------
-void UInterface::unregister(UniSetTypes::ObjectId id)throw(UniSetTypes::ORepFailed)
+void UInterface::unregister( const ObjectId id )throw(UniSetTypes::ORepFailed)
 {
     unregister(id,uconf->getLocalNode());
 }
 
 // ------------------------------------------------------------------------------------------------------------
-ObjectPtr UInterface::resolve( ObjectId rid , ObjectId node, int timeoutSec )
+ObjectPtr UInterface::resolve( const ObjectId rid , const ObjectId node, int timeoutSec ) const
     throw(ResolveNameError, UniSetTypes::TimeOut )
 {
     if ( rid == DefaultObjectId )
@@ -843,9 +842,9 @@ ObjectPtr UInterface::resolve( ObjectId rid , ObjectId node, int timeoutSec )
                     ostringstream s;
                     s << bname << curNet;
                     nodeName=s.str();
-                }    
+                }
             }
-            
+
             if( CORBA::is_nil(ctx) )
             {
                 // uwarn << "NameService недоступен на узле "<< node << endl;
@@ -862,15 +861,15 @@ ObjectPtr UInterface::resolve( ObjectId rid , ObjectId node, int timeoutSec )
                 if( CORBA::is_nil(orb) )
                 {
                     CORBA::ORB_var _orb = uconf->getORB();
-                    localctx = ORepHelpers::getRootNamingContext( _orb, nodeName);
+                    localctx = ORepHelpers::getRootNamingContext( _orb, nodeName );
                 }
                 else
                     localctx = ORepHelpers::getRootNamingContext( orb, nodeName );
             }
-            
+
             ctx = localctx;
         }
-        
+
         CosNaming::Name_var oname = omniURI::stringToName( oind->getNameById(rid,node).c_str() );
         for (unsigned int i=0; i<uconf->getRepeatCount(); i++)
         {
@@ -888,7 +887,7 @@ ObjectPtr UInterface::resolve( ObjectId rid , ObjectId node, int timeoutSec )
 
             msleep(uconf->getRepeatTimeout());
         }
-        
+
         throw UniSetTypes::TimeOut();
     }
     catch(const CosNaming::NamingContext::NotFound &nf){}
@@ -914,7 +913,7 @@ ObjectPtr UInterface::resolve( ObjectId rid , ObjectId node, int timeoutSec )
 }
 
 // -------------------------------------------------------------------------------------------
-void UInterface::send( ObjectId name, TransportMessage& msg, ObjectId node) 
+void UInterface::send( const ObjectId name, const TransportMessage& msg, const ObjectId node )
     throw(IO_THROW_EXCEPTIONS)
 {
     if ( name == DefaultObjectId )
@@ -977,13 +976,13 @@ void UInterface::send( ObjectId name, TransportMessage& msg, ObjectId node)
     throw UniSetTypes::TimeOut(set_err("UI(send): Timeout",name, node));
 }
 
-void UInterface::send( ObjectId name, TransportMessage& msg )
+void UInterface::send( const ObjectId name, const TransportMessage& msg )
 {
     send(name, msg, uconf->getLocalNode());
 }
 
 // ------------------------------------------------------------------------------------------------------------
-IOController_i::ShortIOInfo UInterface::getChangedTime( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+IOController_i::ShortIOInfo UInterface::getChangedTime( const ObjectId id, const ObjectId node ) const
 {
     if( id == DefaultObjectId )
         throw ORepFailed("UI(getChangedTime): Unknown id=UniSetTypes::DefaultObjectId");
@@ -1061,7 +1060,7 @@ IOController_i::ShortIOInfo UInterface::getChangedTime( UniSetTypes::ObjectId id
 }
 // ------------------------------------------------------------------------------------------------------------
 
-ObjectPtr UInterface::CacheOfResolve::resolve( ObjectId id, ObjectId node )
+ObjectPtr UInterface::CacheOfResolve::resolve( const ObjectId id, const ObjectId node ) const
     throw(NameNotFound)
 {
     UniSetTypes::uniset_rwmutex_rlock l(cmutex);
@@ -1085,7 +1084,7 @@ ObjectPtr UInterface::CacheOfResolve::resolve( ObjectId id, ObjectId node )
     throw UniSetTypes::NameNotFound();
 }
 // ------------------------------------------------------------------------------------------------------------
-void UInterface::CacheOfResolve::cache( ObjectId id, ObjectId node, ObjectVar ptr )
+void UInterface::CacheOfResolve::cache( const ObjectId id, const ObjectId node, ObjectVar ptr ) const
 {
     UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
     UniSetTypes::KeyType k(key(id,node));
@@ -1118,12 +1117,12 @@ bool UInterface::CacheOfResolve::clean()
 
     if( mcache.size() < MaxSize )
         return true;
-        
+
     return false;
 }
 // ------------------------------------------------------------------------------------------------------------
 
-void UInterface::CacheOfResolve::erase( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+void UInterface::CacheOfResolve::erase( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const
 {
     UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
 //#warning Временно отключён кэш
@@ -1135,7 +1134,7 @@ void UInterface::CacheOfResolve::erase( UniSetTypes::ObjectId id, UniSetTypes::O
 }
 
 // ------------------------------------------------------------------------------------------------------------
-bool UInterface::isExist( UniSetTypes::ObjectId id )
+bool UInterface::isExist( const UniSetTypes::ObjectId id ) const
 {
     try
     {
@@ -1165,7 +1164,7 @@ bool UInterface::isExist( UniSetTypes::ObjectId id )
     return false;
 }
 // ------------------------------------------------------------------------------------------------------------
-bool UInterface::isExist( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+bool UInterface::isExist( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const
 {
     if( node==uconf->getLocalNode() )
         return isExist(id);
@@ -1189,7 +1188,7 @@ bool UInterface::isExist( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
     return false;
 }
 // --------------------------------------------------------------------------------------------
-string UInterface::set_err(const std::string& pre, UniSetTypes::ObjectId id, UniSetTypes::ObjectId node)
+string UInterface::set_err( const std::string& pre, const ObjectId id, const ObjectId node ) const
 {
     if( id==UniSetTypes::DefaultObjectId )
         return string(pre+" DefaultObjectId");
@@ -1204,22 +1203,22 @@ string UInterface::set_err(const std::string& pre, UniSetTypes::ObjectId id, Uni
     return s.str();    
 }
 // --------------------------------------------------------------------------------------------
-void UInterface::askThreshold( UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid,
+void UInterface::askThreshold( const ObjectId sid, const ThresholdId tid,
                                         UniversalIO::UIOCommand cmd,
                                         long low, long hi, bool invert,
-                                        UniSetTypes::ObjectId backid)
+                                        const ObjectId backid ) const
 {
     askRemoteThreshold(sid, uconf->getLocalNode(), tid, cmd, low, hi, invert, backid);
-}                            
+}
 // --------------------------------------------------------------------------------------------
-void UInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTypes::ObjectId node,
-                                         UniSetTypes::ThresholdId tid, UniversalIO::UIOCommand cmd,
+void UInterface::askRemoteThreshold( const ObjectId sid, const ObjectId node,
+                                         ThresholdId tid, UniversalIO::UIOCommand cmd,
                                          long lowLimit, long hiLimit, bool invert,
-                                         UniSetTypes::ObjectId backid )
+                                         ObjectId backid ) const
 {
     if( backid==UniSetTypes::DefaultObjectId )
         backid = myid;
-        
+
     if( backid==UniSetTypes::DefaultObjectId )
         throw UniSetTypes::IOBadParam("UI(askRemoteThreshold): unknown back ID");
 
@@ -1303,7 +1302,7 @@ void UInterface::askRemoteThreshold( UniSetTypes::ObjectId sid, UniSetTypes::Obj
 }
 // --------------------------------------------------------------------------------------------
 IONotifyController_i::ThresholdInfo 
-    UInterface::getThresholdInfo( UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid )
+    UInterface::getThresholdInfo( const ObjectId sid, const ThresholdId tid ) const
 {
     IOController_i::SensorInfo si;
     si.id = sid;
@@ -1312,7 +1311,7 @@ IONotifyController_i::ThresholdInfo
 }
 // --------------------------------------------------------------------------------------------------------------
 IONotifyController_i::ThresholdInfo 
-    UInterface::getThresholdInfo( const IOController_i::SensorInfo& si, UniSetTypes::ThresholdId tid )
+    UInterface::getThresholdInfo( const IOController_i::SensorInfo& si, const UniSetTypes::ThresholdId tid ) const
 {
     if ( si.id == DefaultObjectId )
         throw ORepFailed("UI(getThresholdInfo): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
@@ -1760,7 +1759,7 @@ IDSeq_var UInterface::setOutputSeq( const IOController_i::OutSeq& lst, UniSetTyp
 }
 // --------------------------------------------------------------------------------------------
 UniSetTypes::IDSeq_var UInterface::askSensorsSeq( UniSetTypes::IDList& lst, 
-                                                        UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId backid )
+                                                  UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId backid )
 {
     if( lst.size() == 0 )
         return UniSetTypes::IDSeq_var();
@@ -1848,7 +1847,7 @@ UniSetTypes::IDSeq_var UInterface::askSensorsSeq( UniSetTypes::IDList& lst,
     throw UniSetTypes::TimeOut(set_err("UI(askSensorSeq): Timeout",sid,conf->getLocalNode()));
 }
 // -----------------------------------------------------------------------------
-IOController_i::ShortMapSeq* UInterface::getSensors( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
+IOController_i::ShortMapSeq* UInterface::getSensors( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node )
 {
     try
     {
@@ -1916,7 +1915,7 @@ IOController_i::ShortMapSeq* UInterface::getSensors( UniSetTypes::ObjectId id, U
     throw UniSetTypes::TimeOut(set_err("UI(getSensors): Timeout",id,node));
 }
 // -----------------------------------------------------------------------------
-bool UInterface::waitReady( UniSetTypes::ObjectId id, int msec, int pmsec, ObjectId node )
+bool UInterface::waitReady( const ObjectId id, int msec, int pmsec, const ObjectId node )
 {
     PassiveTimer ptReady(msec);
     bool ready = false;
@@ -1936,7 +1935,7 @@ bool UInterface::waitReady( UniSetTypes::ObjectId id, int msec, int pmsec, Objec
     return ready;
 }
 // -----------------------------------------------------------------------------
-bool UInterface::waitWorking( UniSetTypes::ObjectId id, int msec, int pmsec, ObjectId node )
+bool UInterface::waitWorking( const ObjectId id, int msec, int pmsec, const ObjectId node )
 {
     PassiveTimer ptReady(msec);
     bool ready = false;
@@ -1957,7 +1956,7 @@ bool UInterface::waitWorking( UniSetTypes::ObjectId id, int msec, int pmsec, Obj
 
 }
 // -----------------------------------------------------------------------------
-UniversalIO::IOType UInterface::getConfIOType( UniSetTypes::ObjectId id )
+UniversalIO::IOType UInterface::getConfIOType( const UniSetTypes::ObjectId id ) const
 {
     if( !conf )
         return UniversalIO::UnknownIOType;

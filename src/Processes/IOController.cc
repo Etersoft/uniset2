@@ -334,7 +334,7 @@ IOType IOController::getIOType( const IOController_i::SensorInfo& si )
     IOStateList::iterator ali = ioList.find(k);
     if( ali!=ioList.end() )
         return ali->second.type;
-    
+
     ostringstream err;
     err << myname << "(getIOType): датчик имя: " << conf->oind->getNameById(si.id) << " не найден";            
     throw IOController_i::NameNotFound(err.str().c_str());

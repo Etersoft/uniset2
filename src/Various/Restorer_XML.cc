@@ -125,7 +125,7 @@ bool Restorer_XML::check_consumer_item( UniXML_iterator& it )
     return UniSetTypes::check_filter(it,c_filterField,c_filterValue);
 }
 // -----------------------------------------------------------------------------
-xmlNode* Restorer_XML::find_node( UniXML& xml, xmlNode* root, 
+xmlNode* Restorer_XML::find_node( const UniXML& xml, xmlNode* root,
                                     const string& nodename, const string& nm )
 {
     UniXML_iterator it(root);

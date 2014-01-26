@@ -86,7 +86,7 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 
     restorer = rxml;
     rxml->setReadItem( sigc::mem_fun(this,&SharedMemory::readItem) );
-    
+
     string wdt_dev = conf->getArgParam("--wdt-device");
     if( !wdt_dev.empty() )
         wdt = new WDTInterface(wdt_dev);
@@ -340,7 +340,7 @@ void SharedMemory::checkHeartBeat()
         wdt->ping();
 }
 // ------------------------------------------------------------------------------------------
-bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
+bool SharedMemory::readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 {
     for( ReadSlotList::iterator r=lstRSlot.begin(); r!=lstRSlot.end(); ++r )
     {
@@ -353,7 +353,6 @@ bool SharedMemory::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 
     // check history filters
     checkHistoryFilter(it);
-
 
     if( heartbeat_node.empty() || it.getProp("heartbeat").empty())
         return true;
@@ -454,7 +453,7 @@ void SharedMemory::buildEventList( xmlNode* cnode )
     readEventList("services");
 }
 // -----------------------------------------------------------------------------
-void SharedMemory::readEventList( std::string oname )
+void SharedMemory::readEventList( const std::string& oname )
 {
     xmlNode* enode = conf->getNode(oname);
     if( enode == NULL )
@@ -491,7 +490,7 @@ void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
 {
     TransportMessage tm(sm.transport_msg());
 
-    for( EventList::iterator it=elst.begin(); it!=elst.end(); it++ )
+    for( EventList::iterator it=elst.begin(); it!=elst.end(); ++it )
     {
         bool ok = false;
         for( int i=0; i<2; i++ )
@@ -525,14 +524,14 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 {
     dinfo << myname << "(buildHistoryList): ..."  << endl;
 
-    UniXML* xml = conf->getConfXML();
+    const UniXML* xml = conf->getConfXML();
     if( !xml )
     {
         dwarn << myname << "(buildHistoryList): xml=NULL?!" << endl;
         return;
     }
-    
-    xmlNode* n = xml->extFindNode(cnode,1,1,"History","");
+
+    xmlNode* n = const_cast<UniXML*>(xml)->extFindNode(cnode,1,1,"History","");
     if( !n )
     {
         dwarn << myname << "(buildHistoryList): <History> not found. ignore..." << endl;
@@ -540,7 +539,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
         return;
     }
 
-    UniXML_iterator it(n);
+    UniXML::iterator it(n);
 
     bool no_history = conf->getArgInt("--sm-no-history",it.getProp("no_history"));
     if( no_history )
@@ -549,11 +548,11 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
         hist.clear();
         return;
     }
-    
+
     histSaveTime = it.getIntProp("savetime");
     if( histSaveTime <= 0 )
         histSaveTime = 0;
-    
+
     if( !it.goChildren() )
     {
         dwarn << myname << "(buildHistoryList): <History> empty. ignore..." << endl;

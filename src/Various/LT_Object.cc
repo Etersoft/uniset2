@@ -69,14 +69,14 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
                 return sleepTime;
             }
         }
-        
+
         {    // lock
             uniset_rwmutex_wrlock lock(lstMutex);
             sleepTime = UniSetTimer::WaitUpTime;
             for( TimersList::iterator li=tlst.begin();li!=tlst.end();++li)
             {
                 if( li->tmr.checkTime() )
-                {    
+                {
                     // помещаем себе в очередь сообщение
                     TransportMessage tm = TimerMessage(li->id, li->priority, obj->getId()).transport_msg();
                     obj->push(tm);

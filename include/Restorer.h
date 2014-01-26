@@ -48,7 +48,7 @@ class Restorer_XML
             \param sec    - итератор (указатель) на корневой узел секции (SubscriberList)
             \return TRUE - если чтение параметров прошло успешно, FALSE - если нет
         */
-        typedef sigc::slot<bool,UniXML&,UniXML_iterator&,xmlNode*> ReaderSlot;
+        typedef sigc::slot<bool,const UniXML&,UniXML_iterator&,xmlNode*> ReaderSlot;
 
         /*! установить функцию для callback-вызова при чтении списка сообщений
             For example:
@@ -98,7 +98,7 @@ class Restorer_XML
                                 UniSetTypes::ObjectId& cid, UniSetTypes::ObjectId& cnode );
 
         /*! Функция поиска по текущему уровню (без рекурсии для дочерних узлов) */
-        static xmlNode* find_node( UniXML& xml, xmlNode* root, const std::string& nodename, const std::string& nm="" );
+        static xmlNode* find_node( const UniXML& xml, xmlNode* root, const std::string& nodename, const std::string& nm="" );
 
     protected:
 

@@ -42,14 +42,14 @@ namespace ORepHelpers
      *    \param cname - полное имя контекста ссылку на который, возвратит функция. 
      *    \param argc, argv  - параметры инициализации ORB      
     */
-    CosNaming::NamingContext_ptr getContext(const string& cname, int argc, const char* const* argv, const string& nsName )throw(ORepFailed)
+    CosNaming::NamingContext_ptr getContext(const string& cname, int argc, const char* const* argv, const string& nsName ) throw(ORepFailed)
     {
         CORBA::ORB_var orb = CORBA::ORB_init( argc, (char**)argv );
         ulogrep << "OREPHELP: orb init ok"<< endl;
         return getContext(orb, cname, nsName);
     }
 // --------------------------------------------------------------------------
-    CosNaming::NamingContext_ptr getContext(CORBA::ORB_ptr orb, const string& cname,  const string& servname)throw(ORepFailed)
+    CosNaming::NamingContext_ptr getContext(const CORBA::ORB_ptr orb, const string& cname,  const string& servname) throw(ORepFailed)
     {
         CosNaming::NamingContext_var rootC;
 
@@ -139,7 +139,7 @@ namespace ORepHelpers
 
     // ---------------------------------------------------------------------------------------------------------------
     /*!    \param orb - ссылка на ORB */
-    CosNaming::NamingContext_ptr getRootNamingContext(CORBA::ORB_ptr orb, const string& nsName, int timeoutSec)
+    CosNaming::NamingContext_ptr getRootNamingContext(const CORBA::ORB_ptr orb, const string& nsName, int timeoutSec)
     {
         CosNaming::NamingContext_var rootContext;
     try
@@ -196,7 +196,7 @@ namespace ORepHelpers
     */
     const string getShortName( const string& fname, const std::string& brk )
     {
-/*    
+/*
         string::size_type pos = fname.rfind(brk);
         if( pos == string::npos )
             return fname;
@@ -208,14 +208,14 @@ namespace ORepHelpers
 
         if( pos2 == string::npos && pos1 == string::npos )
             return fname;
-    
+
         if( pos1 == string::npos )
             return fname.substr( 0, pos2 );
-    
+
         if( pos2 == string::npos )
             return fname.substr( pos1+1, fname.length() );
 
-            return fname.substr( pos1+1, pos2-pos1-1 );
+        return fname.substr( pos1+1, pos2-pos1-1 );
     }
 
     // ---------------------------------------------------------------------------------------------------------------

@@ -376,6 +376,8 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
 */
 void IONotifyController::send(ConsumerList& lst, UniSetTypes::SensorMessage& sm)
 {
+    TransportMessage tmsg;
+
     for( ConsumerList::iterator li=lst.begin();li!=lst.end();++li )
     {
         for(int i=0; i<2; i++ )    // на каждый объект по две поптыки
@@ -389,7 +391,15 @@ void IONotifyController::send(ConsumerList& lst, UniSetTypes::SensorMessage& sm)
                 }
 
                 sm.consumer = li->id;
-                li->ref->push( sm.transport_msg() );
+
+                // Для оптимизации, чтобы избежать лишее копирование и создание TransportMessage
+                // не используем sm.transport_msg()
+                // а формируем TransportMessage самостоятельно..
+
+                assert(sizeof(UniSetTypes::RawDataOfTransportMessage)>=sizeof(sm));
+                memcpy(&tmsg.data,&sm,sizeof(sm));
+                li->ref->push( tmsg );
+
                 li->attempt = maxAttemtps; // reinit attempts
                 break;
             }

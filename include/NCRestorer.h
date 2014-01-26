@@ -67,9 +67,9 @@ class NCRestorer
             SInfo &operator=(IOController_i::SensorIOInfo& inf);
         };
 
-        virtual void read(IONotifyController* ic, const std::string& fn="" )=0;
-        virtual void dump(IONotifyController* ic, SInfo& inf, const IONotifyController::ConsumerList& lst)=0;
-        virtual void dumpThreshold(IONotifyController* ic, SInfo& inf, const IONotifyController::ThresholdExtList& lst)=0;
+        virtual void read( IONotifyController* ic, const std::string& fn="" )=0;
+        virtual void dump(const IONotifyController* ic, SInfo& inf, const IONotifyController::ConsumerList& lst)=0;
+        virtual void dumpThreshold(const IONotifyController* ic, SInfo& inf, const IONotifyController::ThresholdExtList& lst)=0;
 
     protected:
 
@@ -144,32 +144,32 @@ class NCRestorer_XML:
         */
         void setReadThresholdItem( ReaderSlot sl );
 
-        typedef sigc::slot<bool,UniXML&,UniXML_iterator&,xmlNode*,SInfo&> NCReaderSlot;
+        typedef sigc::slot<bool,const UniXML&,UniXML_iterator&,xmlNode*,SInfo&> NCReaderSlot;
 
         void setNCReadItem( NCReaderSlot sl );
 
-        virtual void read(IONotifyController* ic, const std::string& filename="" );
-        virtual void read(IONotifyController* ic, UniXML& xml );
+        virtual void read( IONotifyController* ic, const std::string& filename="" );
+        virtual void read( IONotifyController* ic, const UniXML& xml );
 
-        virtual void dump(IONotifyController* ic, SInfo& inf, const IONotifyController::ConsumerList& lst);
-        virtual void dumpThreshold(IONotifyController* ic, SInfo& inf, const IONotifyController::ThresholdExtList& lst);
+        virtual void dump(const IONotifyController* ic, SInfo& inf, const IONotifyController::ConsumerList& lst);
+        virtual void dumpThreshold(const IONotifyController* ic, SInfo& inf, const IONotifyController::ThresholdExtList& lst);
 
     protected:
 
         bool check_thresholds_item( UniXML_iterator& it );
-        void read_consumers(UniXML& xml, xmlNode* node, NCRestorer_XML::SInfo& inf, IONotifyController* ic );
-        void read_list(UniXML& xml, xmlNode* node, IONotifyController* ic);
-        void read_thresholds(UniXML& xml, xmlNode* node, IONotifyController* ic);
+        void read_consumers(const UniXML& xml, xmlNode* node, NCRestorer_XML::SInfo& inf, IONotifyController* ic );
+        void read_list(const UniXML& xml, xmlNode* node, IONotifyController* ic);
+        void read_thresholds(const UniXML& xml, xmlNode* node, IONotifyController* ic);
         void init( const std::string& fname );
 
-        bool getBaseInfo( UniXML& xml, xmlNode* it, IOController_i::SensorInfo& si );
-        bool getSensorInfo(UniXML& xml, xmlNode* snode, SInfo& si );
-        bool getConsumerList(UniXML& xml,xmlNode* node, IONotifyController::ConsumerList& lst);
-        bool getThresholdInfo(UniXML& xml,xmlNode* tnode, IONotifyController::ThresholdInfoExt& ti);
+        bool getBaseInfo( const UniXML& xml, xmlNode* it, IOController_i::SensorInfo& si );
+        bool getSensorInfo(const UniXML& xml, xmlNode* snode, SInfo& si );
+        bool getConsumerList(const UniXML& xml,xmlNode* node, IONotifyController::ConsumerList& lst);
+        bool getThresholdInfo(const UniXML& xml,xmlNode* tnode, IONotifyController::ThresholdInfoExt& ti);
 
-        static void set_dumptime( UniXML& xml, xmlNode* node );
-        static xmlNode* bind_node(UniXML& xml, xmlNode* root, const std::string& nodename, const std::string& nm="");
-        static xmlNode* rebind_node(UniXML& xml, xmlNode* root, const std::string& nodename, const std::string& nm="");
+        static void set_dumptime( const UniXML& xml, xmlNode* node );
+        static xmlNode* bind_node(const UniXML& xml, xmlNode* root, const std::string& nodename, const std::string& nm="");
+        static xmlNode* rebind_node(const UniXML& xml, xmlNode* root, const std::string& nodename, const std::string& nm="");
 
         std::string s_filterField;
         std::string s_filterValue;

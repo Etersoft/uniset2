@@ -85,7 +85,7 @@ void NCRestorer_XML::init( const std::string& fname )
     try
     {
         if( fname == conf->getConfFileName() )
-            uxml = conf->getConfXML();
+            uxml = const_cast<UniXML*>(conf->getConfXML());
         else
             uxml = new UniXML(fname);
     }
@@ -95,19 +95,19 @@ void NCRestorer_XML::init( const std::string& fname )
     }
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer_XML::dump(IONotifyController* ic, SInfo& inf, 
+void NCRestorer_XML::dump(const IONotifyController* ic, SInfo& inf,
                     const IONotifyController::ConsumerList& lst)
 {
     uwarn << "NCRestorer_XML::dump NOT SUPPORT!!!!" << endl;
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer_XML::dumpThreshold(IONotifyController* ic, SInfo& inf, 
+void NCRestorer_XML::dumpThreshold(const IONotifyController* ic, SInfo& inf,
                     const IONotifyController::ThresholdExtList& lst)
 {
     uwarn << "NCRestorer_XML::dumpThreshold NOT SUPPORT!!!!" << endl;
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer_XML::read_list( UniXML& xml, xmlNode* node, IONotifyController* ic )
+void NCRestorer_XML::read_list( const UniXML& xml, xmlNode* node, IONotifyController* ic )
 {
     UniXML_iterator it(node);
     if( !it.goChildren() )
@@ -162,7 +162,7 @@ void NCRestorer_XML::read_list( UniXML& xml, xmlNode* node, IONotifyController* 
 // ------------------------------------------------------------------------------------------
 void NCRestorer_XML::read( IONotifyController* ic, const string& fn )
 {
-    UniXML* confxml = conf->getConfXML();
+    const UniXML* confxml = conf->getConfXML();
 
     if( !fn.empty() )
     {
@@ -192,14 +192,14 @@ void NCRestorer_XML::read( IONotifyController* ic, const string& fn )
     }
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer_XML::read( IONotifyController* ic, UniXML& xml )
+void NCRestorer_XML::read( IONotifyController* ic, const UniXML& xml )
 {
     xmlNode* node;
-    
+
     if( (&xml) == conf->getConfXML() )
         node = conf->getXMLSensorsSection();
     else
-        node = xml.findNode(xml.getFirstNode(),"sensors");
+        node = xml.findNode( xml.getFirstNode(),"sensors");
 
     if( node )
     {
@@ -215,7 +215,7 @@ void NCRestorer_XML::read( IONotifyController* ic, UniXML& xml )
 
 }
 // ------------------------------------------------------------------------------------------
-bool NCRestorer_XML::getBaseInfo( UniXML& xml, xmlNode* it, IOController_i::SensorInfo& si )
+bool NCRestorer_XML::getBaseInfo( const UniXML& xml, xmlNode* it, IOController_i::SensorInfo& si )
 {
     string sname( xml.getProp(it,"name"));
     if( sname.empty() )
@@ -255,7 +255,7 @@ bool NCRestorer_XML::getBaseInfo( UniXML& xml, xmlNode* it, IOController_i::Sens
     return true;    
 }
 // ------------------------------------------------------------------------------------------
-bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
+bool NCRestorer_XML::getSensorInfo( const UniXML& xml, xmlNode* it, SInfo& inf )
 {
     if( !getBaseInfo(xml,it,inf.si) )
         return false;
@@ -328,7 +328,7 @@ bool NCRestorer_XML::getSensorInfo( UniXML& xml, xmlNode* it, SInfo& inf )
     return true;
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer_XML::read_thresholds(UniXML& xml, xmlNode* node, IONotifyController* ic )
+void NCRestorer_XML::read_thresholds(const UniXML& xml, xmlNode* node, IONotifyController* ic )
 {
     UniXML_iterator it(node);
     if( !it.goChildren() )
@@ -398,7 +398,7 @@ void NCRestorer_XML::read_thresholds(UniXML& xml, xmlNode* node, IONotifyControl
 }
 // ------------------------------------------------------------------------------------------
 
-void NCRestorer_XML::read_consumers( UniXML& xml, xmlNode* it, 
+void NCRestorer_XML::read_consumers( const UniXML& xml, xmlNode* it,
                                         NCRestorer_XML::SInfo& inf, IONotifyController* ic )
 {
     // в новых ask-файлах список выделен <consumers>...</consumers>,
@@ -416,7 +416,7 @@ void NCRestorer_XML::read_consumers( UniXML& xml, xmlNode* it,
 }
 // ------------------------------------------------------------------------------------------
 
-bool NCRestorer_XML::getConsumerList( UniXML& xml,xmlNode* node, 
+bool NCRestorer_XML::getConsumerList( const UniXML& xml,xmlNode* node,
                                         IONotifyController::ConsumerList& lst )
 {
     UniXML_iterator it(node);
@@ -438,7 +438,7 @@ bool NCRestorer_XML::getConsumerList( UniXML& xml,xmlNode* node,
 
 }
 // ------------------------------------------------------------------------------------------
-bool NCRestorer_XML::getThresholdInfo( UniXML& xml,xmlNode* node, 
+bool NCRestorer_XML::getThresholdInfo( const UniXML& xml,xmlNode* node,
                                         IONotifyController::ThresholdInfoExt& ti )
 {
     UniXML_iterator uit(node);

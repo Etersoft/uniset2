@@ -46,11 +46,11 @@ class UniXML_iterator:
         {}
         UniXML_iterator() {}
 
-        std::string getProp( const std::string& name ) const;
-        std::string getPropUtf8( const std::string& name ) const;
-        int getIntProp( const std::string& name ) const;
+        std::string getProp( const std::string& name );
+        std::string getPropUtf8( const std::string& name );
+        int getIntProp( const std::string& name );
         /// if value if not positive ( <= 0 ), returns def
-        int getPIntProp(const std::string& name, int def) const;
+        int getPIntProp( const std::string& name, int def );
         void setProp( const std::string& name, const std::string& text );
 
         bool findName( const std::string& node, const std::string& searchname );
@@ -87,7 +87,7 @@ class UniXML_iterator:
         bool goChildren();
 
         // Получить текущий узел
-        xmlNode* getCurrent() const
+        xmlNode* getCurrent()
         {
             return curNode;
         }
@@ -133,6 +133,12 @@ public:
     {
         return xmlDocGetRootElement(doc);
     }
+
+    inline xmlNode* getFirstNode() const
+    {
+        return xmlDocGetRootElement(doc);
+    }
+
 
     /*! возвращает итератор на самый первый узел документа */
     inline iterator begin()
@@ -194,11 +200,11 @@ public:
 
     // После проверки исправить рекурсивный алгоритм на обычный,
     // используя ->parent
-    xmlNode* findNode(xmlNode* node, const std::string& searchnode, const std::string& name = "") const;
-    xmlNode* findNodeUtf8(xmlNode* node, const std::string& searchnode, const std::string& name = "") const;
+    xmlNode* findNode( xmlNode* node, const std::string& searchnode, const std::string& name = "") const;
+    xmlNode* findNodeUtf8( xmlNode* node, const std::string& searchnode, const std::string& name = "") const;
 
-    xmlNode* extFindNode(xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top=true );
-    xmlNode* extFindNodeUtf8(xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top=true );
+    xmlNode* extFindNode( xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top=true ) const;
+    xmlNode* extFindNodeUtf8( xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top=true ) const;
 
 
 protected:

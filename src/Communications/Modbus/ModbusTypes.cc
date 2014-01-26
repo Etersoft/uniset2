@@ -2616,7 +2616,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, MEIMessageRetRDI& m )
     if( !m.dlist.empty() )
     {
         os << endl;
-        for( RDIObjectList::iterator it=m.dlist.begin(); it!=m.dlist.end(); it++ )
+        for( RDIObjectList::iterator it=m.dlist.begin(); it!=m.dlist.end(); ++it )
             os << "     " << rdi2str(it->id) << " : " << it->val << endl;
     }
 
@@ -2632,7 +2632,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os,RDIObjectList& dlist )
 {
     if( !dlist.empty() )
     {
-        for( RDIObjectList::iterator it=dlist.begin(); it!=dlist.end(); it++ )
+        for( RDIObjectList::iterator it=dlist.begin(); it!=dlist.end(); ++it )
             os << "     " << rdi2str(it->id) << " : " << it->val << endl;
     }
 
