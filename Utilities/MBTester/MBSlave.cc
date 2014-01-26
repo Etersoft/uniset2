@@ -88,7 +88,7 @@ void MBSlave::execute()
             //  с проверкой на переполнение
             askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
             if( res!=ModbusRTU::erNoError )
-                errmap[res]++;
+                ++errmap[res];
         
             prev = res;
         }
@@ -116,11 +116,11 @@ ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
     d.b[6] = 1;
 
     // Фомирование ответа:
-    int bcnt = query.count / ModbusRTU::BitsPerByte;
+    unsigned int bcnt = query.count / ModbusRTU::BitsPerByte;
     if( (query.count % ModbusRTU::BitsPerByte) > 0 )
         bcnt++;
         
-    for( int i=0; i<bcnt; i++ )
+    for( unsigned int i=0; i<bcnt; i++ )
     {
         if( replyVal!=-1 )
             reply.addData(replyVal);
@@ -149,18 +149,18 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
         while( i<query.count )
         {
             reply.addData(0);
-            for( int nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
+            for( unsigned int nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
                 reply.setBit(bnum,nbit,d.b[nbit]);
             bnum++;
         }
     }
     else
     {
-        int bcnt = query.count / ModbusRTU::BitsPerByte;
+        unsigned int bcnt = query.count / ModbusRTU::BitsPerByte;
         if( (query.count % ModbusRTU::BitsPerByte) > 0 )
             bcnt++;
 
-        for( int i=0; i<bcnt; i++ )
+        for( unsigned int i=0; i<bcnt; i++ )
         {
             if( i == 1 )
                 reply.addData(replyVal2);

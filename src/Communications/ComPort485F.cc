@@ -116,7 +116,7 @@ unsigned char ComPort485F::m_receiveByte( bool wait )
         }
         else
         {
-            for( int i=0; i<3; i++ )
+            for( unsigned int i=0; i<3; i++ )
             {
                 rc = ::read(fd,tbuf,sizeof(tbuf));
                 if( rc > 0 )
@@ -220,7 +220,7 @@ void ComPort485F::sendByte( unsigned char x )
 // --------------------------------------------------------------------------------
 void ComPort485F::save2queue( unsigned char*msg, int len, int bnum )
 {
-    for( int i=0; i<len && i<bnum; i++ )
+    for( unsigned int i=0; i<len && i<bnum; i++ )
     {
         wq.push(msg[i]);
 //        fprintf(stderr,"save 2 squeue: %x\n",msg[i]);

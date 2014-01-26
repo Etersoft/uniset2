@@ -65,7 +65,7 @@ int main( int argc, const char **argv )
         
         // ------------ IOControl ----------------
         std::list< ThreadCreator<IOControl>* > lst_iothr;
-        for( int i=0; i<MaxAddNum; i++ )
+        for( unsigned int i=0; i<MaxAddNum; i++ )
         {
             stringstream s;
             s << "--add-io";
@@ -95,7 +95,7 @@ int main( int argc, const char **argv )
             }
         }
         // ------------- RTU Exchange --------------
-        for( int i=0; i<MaxAddNum; i++ )
+        for( unsigned int i=0; i<MaxAddNum; i++ )
         {
             stringstream s;
             s << "--add-rtu";
@@ -119,7 +119,7 @@ int main( int argc, const char **argv )
             }
         }
         // ------------- MBSlave --------------
-        for( int i=0; i<MaxAddNum; i++ )
+        for( unsigned int i=0; i<MaxAddNum; i++ )
         {
             stringstream s;
             s << "--add-mbslave";
@@ -144,7 +144,7 @@ int main( int argc, const char **argv )
         }
 
         // ------------- MBTCPMaster --------------
-        for( int i=0; i<MaxAddNum; i++ )
+        for( unsigned int i=0; i<MaxAddNum; i++ )
         {
             stringstream s;
             s << "--add-mbmaster";

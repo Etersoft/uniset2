@@ -104,7 +104,7 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
     
     CosNaming::Name_var oName = omniURI::stringToName(name.c_str());
     CosNaming::NamingContext_var ctx;
-    for( int i=0; i<2; i++ )
+    for( unsigned int i=0; i<2; i++ )
     {
         try
         {

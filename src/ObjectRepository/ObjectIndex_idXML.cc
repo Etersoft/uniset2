@@ -33,7 +33,7 @@ ObjectId ObjectIndex_idXML::getIdByName( const string& name )
     MapObjectKey::iterator it = mok.find(name);
     if( it != mok.end() )
         return it->second;
-        
+
     return DefaultObjectId;
 }
 // -----------------------------------------------------------------------------------------
@@ -143,7 +143,7 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string& sec )
 
         // name
         string name( secname+it.getProp("name") );
-        
+
         inf.repName = new char[name.size()+1];
         strcpy( inf.repName, name.c_str() );
 
@@ -154,7 +154,7 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string& sec )
 
         inf.textName = new char[textname.size()+1];
         strcpy( inf.textName, textname.c_str() );
-        
+
         inf.data = (void*)(xmlNode*)(it);
 
         omap.insert(MapObjects::value_type(inf.id,inf));    // omap[inf.id] = inf;

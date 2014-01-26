@@ -51,7 +51,7 @@ void DigitalFilter::setSettings( unsigned int bufsize, double T, double lsq,
     {
         // удаляем лишние (первые) элементы
         int sub = buf.size() - maxsize;
-        for( int i=0; i<sub; i++ )
+        for( unsigned int i=0; i<sub; i++ )
             buf.erase( buf.begin() );
     }
 

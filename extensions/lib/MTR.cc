@@ -398,7 +398,7 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
                 << "=" << ModbusRTU::dat2str( (*it1) )  << endl;
 //            ok=true;
 //            continue;
-            for( int i=0; i<attempts; i++ )
+            for( unsigned int i=0; i<attempts; i++ )
             {
                 try
                 {

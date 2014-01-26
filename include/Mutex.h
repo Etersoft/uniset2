@@ -65,7 +65,7 @@ namespace UniSetTypes
             omni_mutex mtx;
             mutex_atomic_t locked;
      };
-    
+
     std::ostream& operator<<(std::ostream& os, uniset_mutex& m );
     // -------------------------------------------------------------------------
     /*! \class uniset_mutex_lock
@@ -81,7 +81,7 @@ namespace UniSetTypes
         public:
             uniset_mutex_lock( uniset_mutex& m, int timeoutMS=0 );
             ~uniset_mutex_lock();
-            
+
             bool lock_ok();
 
         private:
@@ -123,6 +123,7 @@ namespace UniSetTypes
             ost::AtomicCounter wr_wait;
             static int num;
     };
+
     std::ostream& operator<<(std::ostream& os, uniset_rwmutex& m );
     // -------------------------------------------------------------------------
     class uniset_rwmutex_wrlock

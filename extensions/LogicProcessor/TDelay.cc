@@ -13,7 +13,7 @@ TDelay::TDelay( Element::ElementID id, int delayMS, int inCount):
     if( inCount!=0 )
     {
         // создаём заданное количество входов
-        for( int i=1;i<=inCount;i++ )
+        for( unsigned int i=1;i<=inCount;i++ )
             ins.push_front(InputInfo(i,false)); // addInput(i,st);
     }
 }

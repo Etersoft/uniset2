@@ -98,7 +98,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 
         if( cards[i] != NULL )
         {
-            for( int s=1; s<=4; s++ )
+            for( unsigned int s=1; s<=4; s++ )
             {
                 stringstream t1;
                 t1 << s1.str() << "-subdev" << s << "-type";
@@ -1594,7 +1594,7 @@ void IOControl::buildCardsList()
                 k = 2;
             
             // инициализация subdev-ов
-            for( int i=1; i<=k; i++ )
+            for( unsigned int i=1; i<=k; i++ )
             {
                 ostringstream s;
                 s << "subdev" << i;

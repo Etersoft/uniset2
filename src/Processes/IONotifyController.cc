@@ -894,7 +894,7 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( const IO
 
     res->tlist.length( it->second.list.size() );
 
-    int k=0;
+    unsigned int k=0;
     for( ThresholdExtList::const_iterator it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
     {
         res->tlist[k].id         = it2->id;
@@ -917,7 +917,7 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 
     if( !askTMap.empty() )
     {
-        int i=0;
+        unsigned int i=0;
         for( AskThresholdMap::iterator it=askTMap.begin(); it!=askTMap.end(); ++it )
         {
             try
@@ -936,7 +936,7 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
 
             (*res)[i].tlist.length( it->second.list.size() );
 
-            int k=0;
+            unsigned int k=0;
             for( ThresholdExtList::const_iterator it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
             {
                 (*res)[i].tlist[k].id             = it2->id;

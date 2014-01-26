@@ -102,7 +102,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
             dlog(Debug::INFO) << endl;
         }
 
-        for( int i=0; i<2; i++ )
+        for( unsigned int i=0; i<2; i++ )
         {
             (*tcp) << mh;
 
@@ -154,7 +154,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
             memset(rbuf,0,sizeof(rbuf));
             int ret = getNextData(rbuf,sizeof(rbuf));
             cerr << "ret=" << ret << " recv: ";
-            for( int i=0; i<sizeof(rbuf); i++ )
+            for( unsigned int i=0; i<sizeof(rbuf); i++ )
                 cerr << hex << " 0x" <<  (int)rbuf[i];
             cerr << endl;
 */

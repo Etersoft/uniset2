@@ -13,7 +13,7 @@ TOR::TOR(ElementID id, int num, bool st):
     if( num!=0 )
     {
         // создаём заданное количество входов
-        for( int i=1;i<=num;i++ )
+        for( unsigned int i=1;i<=num;i++ )
         {
             ins.push_front(InputInfo(i,st)); // addInput(i,st);
             if( st == true )

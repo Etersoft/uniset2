@@ -161,7 +161,7 @@ std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, int le
 
     // << setiosflags(ios::showbase) // для вывода в формате 0xNN
     s << hex << showbase << setfill('0'); // << showbase;
-    for( int i=0; i<len; i++ )
+    for( unsigned int i=0; i<len; i++ )
         s << setw(2) << (short)(m[i]) << " ";
 //        s << "<" << setw(2) << (int)(m[i]) << ">";
     
@@ -356,7 +356,7 @@ DataBits::operator ModbusByte()
 ModbusByte DataBits::mbyte()
 {
     ModbusByte ubyte = 0;
-    for( int i=0; i<b.size(); i++ )
+    for( unsigned int i=0; i<b.size(); i++ )
     {
         if( b[i] )
             ubyte |= 1<<i;
@@ -367,7 +367,7 @@ ModbusByte DataBits::mbyte()
 // -------------------------------------------------------------------------
 const DataBits& DataBits::operator=( const ModbusByte& r )
 {
-    for( int i=0; i<b.size(); i++ )
+    for( unsigned int i=0; i<b.size(); i++ )
         b[i] = r&(1<<i);
     
     return (*this);
@@ -376,7 +376,7 @@ const DataBits& DataBits::operator=( const ModbusByte& r )
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DataBits& d )
 {
     os << "[";
-    for( int i=d.b.size()-1; i>=0; i-- )
+    for( unsigned int i=d.b.size()-1; i>=0; i-- )
         os << d.b[i];
     os << "]";
 
@@ -412,7 +412,7 @@ DataBits16::operator ModbusData()
 ModbusData DataBits16::mdata()
 {
     ModbusData udata = 0;
-    for( int i=0; i<b.size(); i++ )
+    for( unsigned int i=0; i<b.size(); i++ )
     {
         if( b[i] )
             udata |= 1<<i;
@@ -423,7 +423,7 @@ ModbusData DataBits16::mdata()
 // -------------------------------------------------------------------------
 const DataBits16& DataBits16::operator=( const ModbusData& r )
 {
-    for( int i=0; i<b.size(); i++ )
+    for( unsigned int i=0; i<b.size(); i++ )
         b[i] = r&(1<<i);
     
     return (*this);
@@ -432,7 +432,7 @@ const DataBits16& DataBits16::operator=( const ModbusData& r )
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DataBits16& d )
 {
     os << "[";
-    for( int i=d.b.size()-1; i>=0; i-- )
+    for( unsigned int i=d.b.size()-1; i>=0; i-- )
         os << d.b[i];
     os << "]";
 
@@ -876,7 +876,7 @@ void ReadOutputRetMessage::init( ModbusMessage& m )
     memcpy(&data,&(m.data[1]),bcnt);
     
     // переворачиваем данные
-    for( int i=0; i<cnt; i++ )
+    for( unsigned int i=0; i<cnt; i++ )
         data[i] = SWAPSHORT(data[i]);
 
      memcpy(&crc,&(m.data[bcnt+1]),szCRC);        
@@ -943,7 +943,7 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
 
     // Создаём временно массив, переворачиваем байты
     ModbusData* dtmp = new ModbusData[count];
-    for( int i=0; i<count; i++ )
+    for( unsigned int i=0; i<count; i++ )
         dtmp[i] = SWAPSHORT(data[i]);
 
     // копируем
@@ -1088,7 +1088,7 @@ void ReadInputRetMessage::init( ModbusMessage& m )
     memcpy(&data,&(m.data[1]),bcnt);
     
     // переворачиваем данные
-    for( int i=0; i<cnt; i++ )
+    for( unsigned int i=0; i<cnt; i++ )
         data[i] = SWAPSHORT(data[i]);
 
      memcpy(&crc,&(m.data[bcnt+1]),szCRC);        
@@ -1145,7 +1145,7 @@ ModbusMessage ReadInputRetMessage::transport_msg()
 
     // Создаём временно массив, переворачиваем байты
     ModbusData* dtmp = new ModbusData[count];
-    for( int i=0; i<count; i++ )
+    for( unsigned int i=0; i<count; i++ )
         dtmp[i] = SWAPSHORT(data[i]);
 
     // копируем
@@ -1259,7 +1259,7 @@ ModbusMessage ForceCoilsMessage::transport_msg()
 
     // Создаём временно массив, переворачиваем байты
     ModbusData* dtmp = new ModbusData[quant];
-    for( int i=0; i<quant; i++ )
+    for( unsigned int i=0; i<quant; i++ )
         dtmp[i] = SWAPSHORT(data[i]);
 
     // копируем данные
@@ -1325,7 +1325,7 @@ void ForceCoilsMessage::init( ModbusMessage& m )
     // последний элемент это CRC
     memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 
-    for( int i=0; i<quant; i++ )
+    for( unsigned int i=0; i<quant; i++ )
         data[i] = SWAPSHORT(data[i]);
 }
 // -------------------------------------------------------------------------
@@ -1356,7 +1356,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsMessage& m )
         << " bcnt=" << b2str(m.bcnt)
         << " data[" << (int)m.quant <<"]={ ";
         
-    for( int i=0; i<m.quant; i++ )
+    for( unsigned int i=0; i<m.quant; i++ )
     {
         DataBits16 d(m.data[i]);
         os << "" << d << "  ";
@@ -1504,7 +1504,7 @@ ModbusMessage WriteOutputMessage::transport_msg()
 
     // Создаём временно массив, переворачиваем байты
     ModbusData* dtmp = new ModbusData[quant];
-    for( int i=0; i<quant; i++ )
+    for( unsigned int i=0; i<quant; i++ )
         dtmp[i] = SWAPSHORT(data[i]);
 
     // копируем данные
@@ -1571,7 +1571,7 @@ void WriteOutputMessage::init( ModbusMessage& m )
     memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 
     int count( bcnt/sizeof(ModbusData) );
-    for( int i=0; i<count; i++ )
+    for( unsigned int i=0; i<count; i++ )
         data[i] = SWAPSHORT(data[i]);
 }
 // -------------------------------------------------------------------------
@@ -1616,7 +1616,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteOutputMessage& m )
         << " bcnt=" << dat2str(m.bcnt)
         << " data[" << (int)m.quant <<"]={ ";
         
-    for( int i=0; i<m.quant; i++ )
+    for( unsigned int i=0; i<m.quant; i++ )
         os << "" << dat2str(m.data[i]) << "  ";
     
     os << "}";
@@ -2150,7 +2150,7 @@ ModbusMessage JournalCommandRetMessage::transport_msg()
     // --------------------
     // копирование с переворотом данных (для ModbusData)
     ModbusData* dtmp = new ModbusData[count];
-    for( int i=0; i<count; i++ )
+    for( unsigned int i=0; i<count; i++ )
         dtmp[i] = SWAPSHORT(data[i]);
 
     // копируем
@@ -2652,7 +2652,7 @@ void ReadFileRecordMessage::init( ModbusMessage& m )
     memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 
     count = bcnt/sizeof(SubRequest);
-    for( int i=0; i<count; i++ )
+    for( unsigned int i=0; i<count; i++ )
     {
         data[i].numfile = SWAPSHORT(data[i].numfile);
         data[i].numrec = SWAPSHORT(data[i].numrec);
