@@ -43,7 +43,7 @@ namespace UniSetTypes
     {
         public:
             uniset_mutex();
-            uniset_mutex( std::string name );
+            uniset_mutex( const std::string& name );
             ~uniset_mutex();
 
             bool isRelease();
@@ -57,8 +57,8 @@ namespace UniSetTypes
 
         private:
             friend class uniset_mutex_lock;
-               uniset_mutex (const uniset_mutex& r);
-               const uniset_mutex &operator=(const uniset_mutex& r);
+            uniset_mutex (const uniset_mutex& r);
+            const uniset_mutex &operator=(const uniset_mutex& r);
             omni_condition* cnd;
             std::string nm;
             omni_semaphore sem;
@@ -85,7 +85,7 @@ namespace UniSetTypes
             bool lock_ok();
 
         private:
-               uniset_mutex* mutex;
+            uniset_mutex* mutex;
             mutex_atomic_t mlock;
             uniset_mutex_lock(const uniset_mutex_lock&);
             uniset_mutex_lock& operator=(const uniset_mutex_lock&);
@@ -110,7 +110,7 @@ namespace UniSetTypes
             bool tryrlock();
             bool trywrlock();
 
-            uniset_rwmutex (const uniset_rwmutex& r);
+            uniset_rwmutex( const uniset_rwmutex& r );
             const uniset_rwmutex &operator=(const uniset_rwmutex& r);
 
             inline std::string name(){ return nm; }
@@ -121,7 +121,7 @@ namespace UniSetTypes
             friend class uniset_rwmutex_lock;
             ost::ThreadLock m;
             ost::AtomicCounter wr_wait;
-            static int num;
+            static ost::AtomicCounter num;
     };
 
     std::ostream& operator<<(std::ostream& os, uniset_rwmutex& m );

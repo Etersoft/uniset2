@@ -127,7 +127,7 @@ class ThrPassiveTimer:
         public PassiveTimer
 { 
     public:
-    
+
         ThrPassiveTimer();
         ~ThrPassiveTimer();
 
@@ -136,7 +136,7 @@ class ThrPassiveTimer:
     protected:
           bool isTerminated();
           void setTerminated( bool set );
-          
+
     private:
         bool terminated;
         omni_mutex* tmutex;

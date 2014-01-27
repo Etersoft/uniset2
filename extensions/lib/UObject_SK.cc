@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2014-01-24+04:00
+// generate timestamp: 2014-01-27+04:00
 // -----------------------------------------------------------------------------
 #include "Configuration.h"
 #include "Exceptions.h"
@@ -38,7 +38,7 @@ idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(0),
 smReadyTimeout(0),
-activated(false),
+activated(0),
 askPause(2000),
 
 end_private(false)
@@ -73,7 +73,7 @@ idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(cnode),
 smReadyTimeout(0),
-activated(false),
+activated(0),
 askPause(conf->getPIntProp(cnode,"askPause",2000)),
 
 end_private(false)
@@ -297,9 +297,9 @@ bool UObject_SK::activateObject()
 	// пока не пройдёт инициализация датчиков
 	// см. sysCommand()
 	{
-		activated = false;
+		activated = 0;
 		UniSetObject::activateObject();
-		activated = true;
+		activated = 1;
 	}
 
 	return true;
@@ -360,7 +360,7 @@ void UObject_SK::callback()
 		}
 
 		// обработка сообщений (таймеров и т.п.)
-		for( int i=0; i<20; i++ )
+		for( unsigned int i=0; i<20; i++ )
 		{
 			if( !receiveMessage(msg) )
 				break;

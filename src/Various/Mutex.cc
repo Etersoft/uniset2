@@ -41,8 +41,8 @@ uniset_mutex::uniset_mutex():
     cnd = new omni_condition(&mtx);
 }
 // -----------------------------------------------------------------------------
-uniset_mutex::uniset_mutex( string name ):
-    cnd(0),    
+uniset_mutex::uniset_mutex( const string& name ):
+    cnd(0),
     nm(name),
     locked(0)
 {
@@ -63,7 +63,6 @@ void uniset_mutex::lock()
 {
     sem.wait();
     locked = 1;
-
     MUTEX_DEBUG(cerr << nm << " Locked.." << endl;)
 }
 // -----------------------------------------------------------------------------
@@ -154,7 +153,7 @@ wr_wait(0)
 
 }
 
-int uniset_rwmutex::num  = 0;
+ost::AtomicCounter uniset_rwmutex::num  = 0;
 
 uniset_rwmutex::uniset_rwmutex():
 nm(""),
@@ -181,7 +180,7 @@ const uniset_rwmutex &uniset_rwmutex::operator=( const uniset_rwmutex& r )
         nm = s.str();
         unlock();
     }
-    
+
     return *this;
 }
 
@@ -193,25 +192,25 @@ nm(r.nm)
 void uniset_rwmutex::lock()
 {
     MUTEX_DEBUG(cerr << nm << " prepare Locked.." << endl;)
-    wr_wait += 1;
+    wr_wait +=1;
     m.writeLock();
-    wr_wait -= 1;
+    wr_wait -=1;
     MUTEX_DEBUG(cerr << nm << " Locked.." << endl;)
 }
 void uniset_rwmutex::wrlock()
 {
     MUTEX_DEBUG(cerr << nm << " prepare WRLocked.." << endl;)
-    wr_wait += 1;
+    wr_wait +=1;
     m.writeLock();
-    wr_wait -= 1;
+    wr_wait -=1;
     MUTEX_DEBUG(cerr << nm << " WRLocked.." << endl;)
 }
 void uniset_rwmutex::rlock()
 {
     MUTEX_DEBUG(cerr << nm << " prepare RLocked.." << endl;)
-    
-    while( wr_wait > 0 )
-        msleep(2);
+
+    while( wr_wait )
+       msleep(2);
 
     m.readLock();
     MUTEX_DEBUG(cerr << nm << " RLocked.." << endl;)

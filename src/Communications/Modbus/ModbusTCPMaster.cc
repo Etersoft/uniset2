@@ -84,7 +84,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 
         if( nTransaction >= numeric_limits<ModbusRTU::ModbusData>::max() )
             nTransaction = 0;
-        
+
         ModbusTCP::MBAPHeader mh;
         mh.tID = ++nTransaction;
         mh.pID = 0;

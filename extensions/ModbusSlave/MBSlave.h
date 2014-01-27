@@ -188,8 +188,8 @@ class MBSlave:
         long askCount;
         typedef std::map<ModbusRTU::mbErrCode,unsigned int> ExchangeErrorMap;
         ExchangeErrorMap errmap;     /*!< статистика обмена */
-        
-        bool activated;
+
+        UniSetTypes::mutex_atomic_t activated;
         int activateTimeout;
         bool pingOK;
         timeout_t wait_msec;
@@ -200,7 +200,7 @@ class MBSlave:
         typedef std::map<int,std::string> FileList;
         FileList flist;
         std::string prefix;
-        
+
         ModbusRTU::ModbusData buf[ModbusRTU::MAXLENPACKET/2+1];  /*!< буфер для формирования ответов */
 
         // данные для ответа на запрос 0x2B(43)/0x0E(14)

@@ -248,7 +248,7 @@ class MBExchange:
 
         bool checkUpdateSM( bool wrFunc, long devMode );
         bool checkPoll( bool wrFunc );
-        
+
         bool checkProcActive();
         void setProcActive( bool st );
         void waitSMReady();
@@ -298,20 +298,19 @@ class MBExchange:
         IOController::IOStateList::iterator itExchangeMode;
         long exchangeMode; /*!< режим работы см. ExchangeMode */
 
-        UniSetTypes::uniset_rwmutex actMutex;
-        bool activated;
+        UniSetTypes::mutex_atomic_t activated;
         int activateTimeout;
         bool noQueryOptimization;
         bool no_extimer;
-        
+
         std::string prefix;
-        
+
         timeout_t stat_time;         /*!< время сбора статистики обмена */
         int poll_count;
         PassiveTimer ptStatistic;   /*!< таймер для сбора статистики обмена */
 
         std::string prop_prefix;  /*!< префикс для считывания параметров обмена */
-        
+
         ModbusClient* mb;
 
         // определение timeout для соединения

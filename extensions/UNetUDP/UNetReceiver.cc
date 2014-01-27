@@ -31,7 +31,7 @@ lostPackets(0),
 sidRespond(UniSetTypes::DefaultObjectId),
 respondInvert(false),
 sidLostPackets(UniSetTypes::DefaultObjectId),
-activated(false),
+activated(0),
 r_thr(0),
 u_thr(0),
 pnum(0),
@@ -160,7 +160,7 @@ void UNetReceiver::start()
 {
     if( !activated )
     {
-        activated = true;
+        activated = 1;
         u_thr->start();
         r_thr->start();
     }
@@ -348,10 +348,7 @@ void UNetReceiver::real_update()
 // -----------------------------------------------------------------------------
 void UNetReceiver::stop()
 {
-    activated = false;
-//    msleep(10);
-//    u_thr->stop();
-//    r_thr->stop();
+    activated = 0;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::receive()

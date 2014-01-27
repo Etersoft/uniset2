@@ -2,11 +2,11 @@ noinst_PROGRAMS = smemory-test
 smemory_test_LDADD = $(top_builddir)/lib/libUniSet.la \
 	$(top_builddir)/extensions/lib/libUniSetExtensions.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
-	$(SIGC_LIBS)
+	$(SIGC_LIBS) $(COMCPP_LIBS)
 smemory_test_CPPFLAGS = -I$(top_builddir)/include \
 	-I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/SharedMemory \
-	$(SIGC_CFLAGS)
+	$(SIGC_CFLAGS)  $(COMCPP_CFLAGS)
 smemory_test_SOURCES = TestProc_SK.cc TestProc.cc smemory-test.cc
 
 TestProc_SK.cc: testproc.src.xml

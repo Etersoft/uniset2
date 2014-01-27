@@ -368,9 +368,9 @@ class IOControl:
         int smReadyTimeout;     /*!< время ожидания готовности SM к работе, мсек */
         int defCardNum;        /*!< номер карты по умолчанию */
         int maxCardNum;        /*! максимально разрешённый номер для карты */
-        
+
         UniSetTypes::uniset_mutex iopollMutex;
-        bool activated;
+        UniSetTypes::mutex_atomic_t activated;
         bool readconf_ok;
         int activateTimeout;
         UniSetTypes::ObjectId sidTestSMReady;

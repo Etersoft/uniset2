@@ -77,7 +77,7 @@ ComPort::Speed ModbusRTUMaster::getSpeed()
 {
     if( port == NULL )
         return ComPort::ComSpeed0;
-    
+
     return port->getSpeed();
 }
 // -------------------------------------------------------------------------
@@ -103,7 +103,7 @@ int ModbusRTUMaster::getTimeout()
 {
     if( port == NULL )
         return 0;
-    
+
     return port->getTimeout();
 }
 // -------------------------------------------------------------------------

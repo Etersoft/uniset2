@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2014-01-24+04:00
+// generate timestamp: 2014-01-27+04:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -119,7 +119,7 @@ class UObject_SK:
 		inline const std::string getProp(const std::string& name) { return UniSetTypes::conf->getProp(confnode, name); }
 
 		int smReadyTimeout; 	/*!< время ожидания готовности SM */
-		bool activated;
+		UniSetTypes::mutex_atomic_t activated;
 		int activateTimeout;	/*!< время ожидания готовности UniSetObject к работе */
 		PassiveTimer ptStartUpTimeout;	/*!< время на блокировку обработки WatchDog, если недавно был StartUp */
 		int askPause; /*!< пауза между неудачными попытками заказать датчики */

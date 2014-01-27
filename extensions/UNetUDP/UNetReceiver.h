@@ -130,8 +130,8 @@ class UNetReceiver
         UniSetTypes::ObjectId sidLostPackets;
         IOController::IOStateList::iterator itLostPackets;
 
-        bool activated;
-        
+        UniSetTypes::mutex_atomic_t activated;
+
         ThreadCreator<UNetReceiver>* r_thr;        // receive thread
         ThreadCreator<UNetReceiver>* u_thr;        // update thread
 
