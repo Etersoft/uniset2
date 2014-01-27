@@ -179,6 +179,7 @@ const uniset_rwmutex &uniset_rwmutex::operator=( const uniset_rwmutex& r )
         s << r.nm << "." << (++num);
         nm = s.str();
         unlock();
+        MUTEX_DEBUG(cerr << "...copy mutex..." << nm << endl;)
     }
 
     return *this;

@@ -97,7 +97,7 @@ void NCRestorer_XML::init( const std::string& fname )
 }
 // ------------------------------------------------------------------------------------------
 void NCRestorer_XML::dump(const IONotifyController* ic, SInfo& inf,
-                    const IONotifyController::ConsumerList& lst)
+                    const IONotifyController::ConsumerListInfo& lst)
 {
     uwarn << "NCRestorer_XML::dump NOT SUPPORT!!!!" << endl;
 }
@@ -409,7 +409,7 @@ void NCRestorer_XML::read_consumers( const UniXML& xml, xmlNode* it,
         UniXML_iterator cit(cnode);
         if( cit.goChildren() )
         {
-            IONotifyController::ConsumerList lst;
+            IONotifyController::ConsumerListInfo lst;
             if( getConsumerList(xml,cit,lst) )
                 addlist(ic,inf,lst,true);
         }
@@ -417,8 +417,8 @@ void NCRestorer_XML::read_consumers( const UniXML& xml, xmlNode* it,
 }
 // ------------------------------------------------------------------------------------------
 
-bool NCRestorer_XML::getConsumerList( const UniXML& xml,xmlNode* node,
-                                        IONotifyController::ConsumerList& lst )
+bool NCRestorer_XML::getConsumerList( const UniXML& xml, xmlNode* node,
+                                        IONotifyController::ConsumerListInfo& lst )
 {
     UniXML_iterator it(node);
     for(;it;it.goNext())
@@ -431,7 +431,7 @@ bool NCRestorer_XML::getConsumerList( const UniXML& xml,xmlNode* node,
             continue;
 
         IONotifyController::ConsumerInfoExt cinf(ci);
-        lst.push_back(cinf);
+        lst.clst.push_back(cinf);
         cslot(xml,it,node);
     }
 

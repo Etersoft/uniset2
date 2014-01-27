@@ -256,16 +256,16 @@ void IOController::localSetValue( IOController::IOStateList::iterator& li,
         li = ioList.find(key(si.id, si.node));
     
     if( li==ioList.end() )
-    {    
+    {
         ostringstream err;
         err << myname << "(localSaveValue): Unknown sensor (" << si.id << ":" << si.node << ")"
             << "name: " << conf->oind->getNameById(si.id)
             << "node: " << conf->oind->getMapName(si.node); 
         throw IOController_i::NameNotFound(err.str().c_str());
     }
-    
+
     bool changed = false;
-    
+
     {    // lock
         uniset_rwmutex_wrlock lock(li->second.val_lock);
 
