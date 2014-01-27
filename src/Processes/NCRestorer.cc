@@ -40,7 +40,7 @@ NCRestorer::~NCRestorer()
 {
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController::ConsumerList& lst, bool force )
+void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController::ConsumerListInfo& lst, bool force )
 {
     UniSetTypes::KeyType k( key(inf.si.id,inf.si.node) );
 

@@ -33,13 +33,22 @@ int main(int argc, const char **argv)
         if( !shm )
             return 1;
 
-        TestProc tp(conf->getObjectID("TestProc1"));
-        tp.init_dlog(dlog);
-
         UniSetActivator act;
 
         act.addObject(static_cast<class UniSetObject*>(shm));
-        act.addObject(static_cast<class UniSetObject*>(&tp));
+
+        int num = conf->getArgPInt("--numproc",20);
+
+		for( int i=1; i<=num; i++ )
+		{
+            ostringstream s;
+            s << "TestProc" << i;
+
+            cout << "..create " << s.str() << endl;
+            TestProc* tp = new TestProc(conf->getObjectID(s.str()));
+            tp->init_dlog(dlog);
+            act.addObject(static_cast<class UniSetObject*>(tp));
+        }
 
         SystemMessage sm(SystemMessage::StartUp); 
         act.broadcast( sm.transport_msg() );

@@ -68,13 +68,13 @@ class NCRestorer
         };
 
         virtual void read( IONotifyController* ic, const std::string& fn="" )=0;
-        virtual void dump(const IONotifyController* ic, SInfo& inf, const IONotifyController::ConsumerList& lst)=0;
+        virtual void dump(const IONotifyController* ic, SInfo& inf, const IONotifyController::ConsumerListInfo& lst)=0;
         virtual void dumpThreshold(const IONotifyController* ic, SInfo& inf, const IONotifyController::ThresholdExtList& lst)=0;
 
     protected:
 
         // добавление списка заказчиков
-        static void addlist( IONotifyController* ic, SInfo& inf, IONotifyController::ConsumerList& lst, bool force=false );
+        static void addlist( IONotifyController* ic, SInfo& inf, IONotifyController::ConsumerListInfo& lst, bool force=false );
 
         // добавление списка порогов и заказчиков
         static void addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyController::ThresholdExtList& lst, bool force=false );
@@ -151,7 +151,7 @@ class NCRestorer_XML:
         virtual void read( IONotifyController* ic, const std::string& filename="" );
         virtual void read( IONotifyController* ic, const UniXML& xml );
 
-        virtual void dump(const IONotifyController* ic, SInfo& inf, const IONotifyController::ConsumerList& lst);
+        virtual void dump(const IONotifyController* ic, SInfo& inf, const IONotifyController::ConsumerListInfo& lst);
         virtual void dumpThreshold(const IONotifyController* ic, SInfo& inf, const IONotifyController::ThresholdExtList& lst);
 
     protected:
@@ -164,7 +164,7 @@ class NCRestorer_XML:
 
         bool getBaseInfo( const UniXML& xml, xmlNode* it, IOController_i::SensorInfo& si );
         bool getSensorInfo(const UniXML& xml, xmlNode* snode, SInfo& si );
-        bool getConsumerList(const UniXML& xml,xmlNode* node, IONotifyController::ConsumerList& lst);
+        bool getConsumerList(const UniXML& xml,xmlNode* node, IONotifyController::ConsumerListInfo& lst);
         bool getThresholdInfo(const UniXML& xml,xmlNode* tnode, IONotifyController::ThresholdInfoExt& ti);
 
         static void set_dumptime( const UniXML& xml, xmlNode* node );
