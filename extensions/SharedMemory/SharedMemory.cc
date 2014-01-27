@@ -555,7 +555,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
     for( ; it.getCurrent(); it.goNext() )
     {
         HistoryInfo hi;
-        hi.id         = it.getIntProp("id");
+        hi.id       = it.getIntProp("id");
         hi.size     = it.getIntProp("size");
         if( hi.size <= 0 )
             continue;
@@ -589,7 +589,6 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
                 << " fuse_invert=" << hi.fuse_invert
                 << endl;
 
-
         // WARNING: no check duplicates...
         hist.push_back(hi);
     }
@@ -609,6 +608,7 @@ void SharedMemory::checkHistoryFilter( UniXML_iterator& xit )
         if( !xit.getProp("id").empty() )
         {
             ai.id = xit.getIntProp("id");
+            ai.init( it->size, xit.getIntProp("default") );
             it->hlst.push_back(ai);
             continue;
         }
@@ -620,6 +620,7 @@ void SharedMemory::checkHistoryFilter( UniXML_iterator& xit )
             continue;
         }
 
+        ai.init( it->size, xit.getIntProp("default") );
         it->hlst.push_back(ai);
     }
 }

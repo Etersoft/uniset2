@@ -22,6 +22,7 @@
 */
 // -------------------------------------------------------------------------- 
 #include <sstream>
+#include <algorithm>
 #include "Exceptions.h"
 #include "UniSetObject.h"
 #include "LT_Object.h"
@@ -50,7 +51,7 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
     {
         {    // lock
             uniset_rwmutex_rlock lock(lstMutex);
-            
+
             if( tlst.empty() )
             {
                 sleepTime = UniSetTimer::WaitUpTime;
@@ -73,14 +74,14 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
         {    // lock
             uniset_rwmutex_wrlock lock(lstMutex);
             sleepTime = UniSetTimer::WaitUpTime;
-            for( TimersList::iterator li=tlst.begin();li!=tlst.end();++li)
+            for( TimersList::iterator li=tlst.begin(); li!=tlst.end(); ++li )
             {
                 if( li->tmr.checkTime() )
                 {
                     // помещаем себе в очередь сообщение
                     TransportMessage tm = TimerMessage(li->id, li->priority, obj->getId()).transport_msg();
                     obj->push(tm);
-    
+
                     // Проверка на количество заданных тактов
                     if( !li->curTick )
                     {
@@ -104,19 +105,19 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
                 // ищем минимальное оставшееся время
                 if( li->curTimeMS < sleepTime || sleepTime == UniSetTimer::WaitUpTime )
                     sleepTime = li->curTimeMS;
-            }    
+            }
 
             if( sleepTime < UniSetTimer::MinQuantityTime )
                 sleepTime=UniSetTimer::MinQuantityTime;
-        } // unlock        
+        } // unlock
 
         tmLast.reset();
     }
-    catch(Exception& ex)
+    catch( Exception& ex )
     {
         ucrit << "(checkTimers): " << ex << endl;
     }
-    
+
     return sleepTime;
 }
 // ------------------------------------------------------------------------------------------
@@ -161,11 +162,11 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
     {
         uinfo << "(LT_askTimer): поступил отказ по таймеру id="<< timerid << endl;
         {    // lock
-             uniset_rwmutex_wrlock lock(lstMutex);
-            tlst.remove_if(Timer_eq(timerid));    // STL - способ
+            uniset_rwmutex_wrlock lock(lstMutex);
+            tlst.erase( std::remove_if(tlst.begin(),tlst.end(),Timer_eq(timerid)) );
         }    // unlock
     }
-    
+
     {    // lock
         uniset_rwmutex_rlock lock(lstMutex);
 

@@ -40,7 +40,7 @@ class IOController:
         public POA_IOController_i
 {
     public:
-    
+
         IOController(const std::string& name, const std::string& section);
         IOController(UniSetTypes::ObjectId id);
         ~IOController();
@@ -91,7 +91,7 @@ class IOController:
 
         UniSetTypes::Message::Priority getPriority(const IOController_i::SensorInfo& si, 
                                                     UniversalIO::IOType type);
-                                                    
+
         virtual IOController_i::ShortIOInfo getChangedTime(const IOController_i::SensorInfo& si);
 
         virtual IOController_i::ShortMapSeq* getSensors();

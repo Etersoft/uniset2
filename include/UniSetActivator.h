@@ -25,11 +25,13 @@
 #ifndef UniSetActivator_H_
 #define UniSetActivator_H_
 // --------------------------------------------------------------------------
+#include <deque>
 #include <omniORB4/CORBA.h>
 #include "UniSetTypes.h"
 #include "UniSetObject.h"
 #include "UniSetManager.h"
 #include "ThreadCreator.h"
+
 //#include "OmniThreadCreator.h"
 //----------------------------------------------------------------------------------------
 /*! \class UniSetActivator
@@ -60,7 +62,6 @@ class UniSetActivator:
         virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("UniSetActivator"); }
 
     protected:
-
 
         /*! Команды доступные при заказе сигналов
          * см. askSignal()
@@ -126,8 +127,8 @@ class UniSetActivator:
             UniSetManager* mnr;
         };
 
-        std::list<OInfo> lstOInfo;
-        std::list<MInfo> lstMInfo;
+        std::deque<OInfo> lstOInfo;
+        std::deque<MInfo> lstMInfo;
         void getinfo();
 };
 

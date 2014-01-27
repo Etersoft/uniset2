@@ -153,7 +153,7 @@ sender2(0)
         }
 
         bool resp_invert = n_it.getIntProp("unet_respond_invert");
-        
+
         string s_resp_id(n_it.getProp("unet_respond1_id"));
         UniSetTypes::ObjectId resp_id = UniSetTypes::DefaultObjectId;
         if( !s_resp_id.empty() )
@@ -236,7 +236,7 @@ sender2(0)
                 dcrit << myname << "(init): " << err.str() << endl;
                 throw SystemError(err.str());
             }
-        }    
+        }
 
         dinfo << myname << "(init): (node='" << n << "') add receiver "
                         << h2 << ":" << p2 << endl;

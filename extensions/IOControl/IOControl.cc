@@ -258,7 +258,7 @@ void IOControl::execute()
     waitSM(); // необходимо дождаться, чтобы нормально инициализировать итераторы
 
     PassiveTimer pt(UniSetTimer::WaitUpTime);
-    
+
     if( shm->isLocalwork() )
     {
         maxItem = 0;
@@ -276,11 +276,11 @@ void IOControl::execute()
 
         readconf_ok = true; // т.к. waitSM() уже был...
     }
-    
+
     maxHalf = maxItem / 2;
     dinfo << myname << "(init): iomap size = " << iomap.size() << endl;
 
-    cerr << myname << "(iomap size): " << iomap.size() << endl;
+    //cerr << myname << "(iomap size): " << iomap.size() << endl;
 
     // чтение параметров по входам-выходам
     initIOCard();
@@ -387,10 +387,10 @@ void IOControl::execute()
 
         if( term )
             break;
-    
+
         msleep( polltime );
     }
-    
+
     term = false;
 }
 // --------------------------------------------------------------------------------
@@ -398,7 +398,7 @@ void IOControl::iopoll()
 {
     if( testmode == tmOffPoll )
         return;
-  
+
     // Опрос приоритетной очереди
     for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
     {
@@ -419,7 +419,7 @@ void IOControl::iopoll()
         IOBase::processingThreshold((IOBase*)&(*it),shm,force);
 
         ioread( (IOInfo*)&(*it) );
-        
+
         // на середине 
         // опять опросим приоритетные
         if( !prior && i>maxHalf )
@@ -432,11 +432,11 @@ void IOControl::iopoll()
                     IOBase::processingThreshold((IOBase*)&(iomap[it->index]),shm,force);
                 }
             }
-            
+
             prior = true;
         }
     }
-    
+
     // Опрос приоритетной очереди
     for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
     {
@@ -543,7 +543,7 @@ void IOControl::ioread( IOInfo* it )
                                 card->setDigitalChannel(it->subdev,it->channel,0);
                         }
                         break;
-    
+
                         case lmpON:
                         {
                             if( force_out && (prev_val == lmpBLINK 
@@ -760,7 +760,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
     // после инициализации делается resize
     // под реальное количество
     if( maxItem >= iomap.size() )
-        iomap.resize(maxItem+10);
+        iomap.resize(maxItem+90);
 
     int prior = it.getIntProp("iopriority");
     if( prior > 0 )
@@ -771,7 +771,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
                 << it.getProp("name") 
                 << " priority=" << prior << endl;
     }
-    
+
     iomap[maxItem++] = inf;
     return true;
 }
@@ -972,9 +972,9 @@ void IOControl::check_testmode()
 
         if( prev_testmode == testmode )
             return;
-        
+
         prev_testmode = testmode;
-        
+
         // если режим "выключено всё"
         // то гасим все выходы
         if( testmode == tmOffPoll )
@@ -1039,10 +1039,10 @@ void IOControl::check_testlamp()
     {
         if( force_out )
             isTestLamp = shm->localGetValue( itTestLamp, testLamp_S );
-                
+
         if( !trTestLamp.change(isTestLamp) )
             return; // если состояние не менялось, то продолжаем работу...
-        
+
         if( isTestLamp )
             blink_state = true; // первый такт всегда зажигаем...
 
@@ -1054,7 +1054,7 @@ void IOControl::check_testlamp()
         {
             if( !it->lamp || it->no_testlamp )
                 continue;
-        
+
             if(  it->stype == UniversalIO::AO )
             {
                 if( isTestLamp )

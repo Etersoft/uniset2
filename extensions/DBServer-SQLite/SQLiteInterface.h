@@ -25,7 +25,7 @@
 #define SQLiteInterface_H_
 // ---------------------------------------------------------------------------
 #include <string>
-#include <list>
+#include <deque>
 #include <vector>
 #include <iostream>
 #include <sqlite3.h>
@@ -136,7 +136,7 @@ class SQLiteResult
         ~SQLiteResult();
 
         typedef std::vector<std::string> COL;
-        typedef std::list<COL> ROW;
+        typedef std::deque<COL> ROW;
 
         typedef ROW::iterator iterator;
 

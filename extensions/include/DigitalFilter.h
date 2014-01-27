@@ -4,7 +4,7 @@
 #ifndef DigitalFilter_H_
 #define DigitalFilter_H_
 //--------------------------------------------------------------------------
-#include <list>
+#include <deque>
 #include <vector>
 #include <ostream>
 #include "PassiveTimer.h"
@@ -74,7 +74,7 @@ class DigitalFilter
         double S;        // Среднеквадратичное отклонение
         PassiveTimer tmr;
 
-        typedef std::list<int> FIFOBuffer;
+        typedef std::deque<int> FIFOBuffer;
         FIFOBuffer buf;
         unsigned int maxsize;
 

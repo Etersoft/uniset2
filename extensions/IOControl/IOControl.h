@@ -3,7 +3,7 @@
 #define IOControl_H_
 // -----------------------------------------------------------------------------
 #include <vector>
-#include <list>
+#include <deque>
 #include <string>
 #include "UniXML.h"
 #include "PassiveTimer.h"
@@ -316,7 +316,7 @@ class IOControl:
         typedef std::vector<IOInfo> IOMap;
         IOMap iomap;            /*!< список входов/выходов */
 
-        typedef std::list<IOPriority> PIOMap;
+        typedef std::deque<IOPriority> PIOMap;
         PIOMap pmap;    /*!< список приоритетных входов/выходов */
 
         unsigned int maxItem;    /*!< количество элементов (используется на момент инициализации) */

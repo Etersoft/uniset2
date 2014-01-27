@@ -4,6 +4,7 @@
 #include <ostream>
 #include <string>
 #include <queue>
+#include <deque>
 #include <cc++/socket.h>
 #include "UniSetObject_LT.h"
 #include "Trigger.h"
@@ -115,7 +116,6 @@ class UNetExchange:
         void initIterators();
         void startReceivers();
 
-
         enum Timer
         {
             tmStep
@@ -180,7 +180,7 @@ class UNetExchange:
             IOController::IOStateList::iterator itLostPackets;
         };
 
-        typedef std::list<ReceiverInfo> ReceiverList;
+        typedef std::deque<ReceiverInfo> ReceiverList;
         ReceiverList recvlist;
 
         bool no_sender;  /*!< флаг отключения посылки сообщений (создания потока для посылки)*/

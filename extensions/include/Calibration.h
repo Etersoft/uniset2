@@ -4,6 +4,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <deque>
 #include <ostream>
 // -----------------------------------------------------------------------------
 /*!
@@ -232,7 +233,7 @@ class Calibration
              }
         };
 
-        typedef std::vector<CacheInfo> ValueCache;
+        typedef std::deque<CacheInfo> ValueCache;
         ValueCache cache;
         unsigned long numCacheResort; // количество обращений, при которых происходит перестроение (сортировка) кэша..
         unsigned long numCallToCache; // текущий счётчик обращений к кэшу
