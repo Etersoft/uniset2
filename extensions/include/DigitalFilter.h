@@ -4,7 +4,7 @@
 #ifndef DigitalFilter_H_
 #define DigitalFilter_H_
 //--------------------------------------------------------------------------
-#include <list>
+#include <deque>
 #include <vector>
 #include <ostream>
 #include "PassiveTimer.h"
@@ -16,7 +16,7 @@ class DigitalFilter
                         int iir_thr=10000, double iir_coeff_prev=0.5,
                         double iir_coeff_new=0.5 );
         ~DigitalFilter ();
-        
+
         // T <=0 - отключить вторую ступень фильтра
         void setSettings( unsigned int bufsize, double T, double lsq,
                           int iir_thr, double iir_coeff_prev, double iir_coeff_new );
@@ -26,13 +26,13 @@ class DigitalFilter
         // возвращается фильтрованное с учётом 
         // предыдущих значений...
         int filter1( int newValue );
-        
+
         // RC-фильтр
         int filterRC( int newVal );
-        
+
         // медианный фильтр
         int median( int newval );
-        
+
         // адаптивный фильтр по схеме наименьших квадратов
         int leastsqr( int newval );
 
@@ -50,9 +50,9 @@ class DigitalFilter
         void add( int newValue );
 
         void init( int val );
-        
+
         // void init( list<int>& data );
-    
+
         inline int size(){ return buf.size(); }
 
         inline double middle(){ return M; }
@@ -60,7 +60,7 @@ class DigitalFilter
 
         friend std::ostream& operator<<(std::ostream& os, const DigitalFilter& d);
         friend std::ostream& operator<<(std::ostream& os, const DigitalFilter* d);
-        
+
     private:
 
         // Первая ступень фильтра
@@ -73,11 +73,11 @@ class DigitalFilter
         double M;        // Среднее арифметическое
         double S;        // Среднеквадратичное отклонение
         PassiveTimer tmr;
-        
-        typedef std::list<int> FIFOBuffer;
-        FIFOBuffer buf;        
+
+        typedef std::deque<int> FIFOBuffer;
+        FIFOBuffer buf;
         unsigned int maxsize;
-        
+
         typedef std::vector<int> MedianVector;
         MedianVector mvec;
 

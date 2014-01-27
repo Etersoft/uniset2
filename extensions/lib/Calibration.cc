@@ -107,10 +107,10 @@ minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftR
 pvec(50),
 myname(""),
 szCache(5),
-cache(5),
-numCacheResort(5),
+numCacheResort(20),
 numCallToCache(5)
 {
+    cache.assign(szCache,CacheInfo());
 }
 
 // ----------------------------------------------------------------------------
@@ -120,10 +120,10 @@ minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftR
 pvec(50),
 myname(name),
 szCache(5),
-cache(5),
-numCacheResort(5),
+numCacheResort(20),
 numCallToCache(5)
 {
+    cache.assign(szCache,CacheInfo());
     build(name,confile,0);
 }
 
@@ -131,10 +131,10 @@ numCallToCache(5)
 Calibration::Calibration( xmlNode* node ):
 minRaw(0),maxRaw(0),minVal(0),maxVal(0),rightVal(0),leftVal(0),rightRaw(0),leftRaw(0),pvec(100),
 szCache(5),
-cache(5),
-numCacheResort(5),
+numCacheResort(20),
 numCallToCache(5)
 {
+    cache.assign(szCache,CacheInfo());
     UniXML_iterator it(node);
     myname = it.getProp("name");
     build("","",node);
@@ -188,7 +188,7 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
 
             if( p.x==0 || p.y==0 )
             {
-                cerr << myname << "(Calibration::build): (warn) x=" 
+                cerr << myname << "(Calibration::build): (warn) x="
                         << p.x << " y=" << p.y << endl;
             }
 
@@ -326,10 +326,9 @@ void Calibration::setCacheSize( unsigned int sz )
 // ----------------------------------------------------------------------------
 void Calibration::insertToCache( const long raw, const long val )
 {
-    sort(cache.begin(),cache.end()); // пересортируем в порядке уменьшения обращений (см. CacheInfo::operator< )
     cache.pop_back(); // удаляем последний элемент (как самый неиспользуемый)
     cache.push_back( CacheInfo(raw,val) ); // добавляем в конец..
-    sort(cache.begin(),cache.end()); // пересортируем с учётом вставки
+    sort(cache.begin(),cache.end()); // пересортируем в порядке уменьшения обращений (см. CacheInfo::operator< )
 }
 // ----------------------------------------------------------------------------
 long Calibration::getRawValue( long cal, bool range )

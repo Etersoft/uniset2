@@ -4,6 +4,7 @@
 #include <ostream>
 #include <string>
 #include <queue>
+#include <deque>
 #include <cc++/socket.h>
 #include "UniSetObject_LT.h"
 #include "Trigger.h"
@@ -16,7 +17,7 @@
 // -----------------------------------------------------------------------------
 /*!
     \page pageUNetExchangeUDP Сетевой обмен на основе UDP (UNetUDP)
-        
+
         - \ref pgUNetUDP_Common
         - \ref pgUNetUDP_Conf
         - \ref pgUNetUDP_Reserv
@@ -81,7 +82,7 @@ class UNetExchange:
     public:
         UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="unet" );
         virtual ~UNetExchange();
-    
+
         /*! глобальная функция для инициализации объекта */
         static UNetExchange* init_unetexchange( int argc, const char* argv[],
                                             UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="unet" );
@@ -114,7 +115,6 @@ class UNetExchange:
 
         void initIterators();
         void startReceivers();
-        
 
         enum Timer
         {
@@ -151,7 +151,7 @@ class UNetExchange:
                 respondInvert(false),
                 sidLostPackets(UniSetTypes::DefaultObjectId)
             {}
-            
+
             UNetReceiver* r1;      /*!< приём по первому каналу */
             UNetReceiver* r2;    /*!< приём по второму каналу */
 
@@ -179,8 +179,8 @@ class UNetExchange:
             UniSetTypes::ObjectId sidLostPackets;
             IOController::IOStateList::iterator itLostPackets;
         };
-        
-        typedef std::list<ReceiverInfo> ReceiverList;
+
+        typedef std::deque<ReceiverInfo> ReceiverList;
         ReceiverList recvlist;
 
         bool no_sender;  /*!< флаг отключения посылки сообщений (создания потока для посылки)*/

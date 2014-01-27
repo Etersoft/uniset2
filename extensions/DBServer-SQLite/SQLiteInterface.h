@@ -25,7 +25,7 @@
 #define SQLiteInterface_H_
 // ---------------------------------------------------------------------------
 #include <string>
-#include <list>
+#include <deque>
 #include <vector>
 #include <iostream>
 #include <sqlite3.h>
@@ -45,10 +45,10 @@ class SQLiteResult;
             cerr << "db connect error: " << db.error() << endl;
             return 1;
         }
-        
+
         stringstream q;
         q << "SELECT * from main_history";
-        
+
         SQLiteResult r = db.query(q.str());
         if( !r )
         {
@@ -86,7 +86,7 @@ class SQLiteResult;
 class SQLiteInterface
 {
     public:
-    
+
         SQLiteInterface();
         ~SQLiteInterface();
 
@@ -94,7 +94,7 @@ class SQLiteInterface
         bool close();
         bool isConnection();
         bool ping(); // проверка доступности БД
-            
+
         void setOperationTimeout( timeout_t msec );
         inline timeout_t getOperationTimeout(){ return opTimeout; }
 
@@ -115,15 +115,15 @@ class SQLiteInterface
         static bool checkResult( int rc );
 
     private:
-    
+
         sqlite3* db;
         // sqlite3_stmt* curStmt;
-        
+
         std::string lastQ;
         std::string lastE;
         bool queryok;    // успешность текущего запроса
         bool connected;
-        
+
         timeout_t opTimeout;
         timeout_t opCheckPause;
 };
@@ -136,10 +136,10 @@ class SQLiteResult
         ~SQLiteResult();
 
         typedef std::vector<std::string> COL;
-        typedef std::list<COL> ROW;
+        typedef std::deque<COL> ROW;
 
         typedef ROW::iterator iterator;
-    
+
         inline iterator begin(){ return res.begin(); }
         inline iterator end(){ return res.end(); }
 

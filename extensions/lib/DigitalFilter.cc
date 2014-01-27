@@ -27,6 +27,9 @@ DigitalFilter::DigitalFilter( unsigned int bufsize, double T, double lsq,
     coeff_prev(iir_coeff_prev),
     coeff_new(iir_coeff_new)
 {
+    buf.resize(maxsize);
+    mvec.reserve(maxsize);
+    init(val);
 }
 //--------------------------------------------------------------------------
 DigitalFilter::~DigitalFilter()
@@ -41,7 +44,7 @@ void DigitalFilter::setSettings( unsigned int bufsize, double T, double lsq,
     maxsize = bufsize;
     if( maxsize < 1 )
         maxsize = 1;
-    
+
     coeff_prev = iir_coeff_prev;
     coeff_new = iir_coeff_new;
     if( iir_thr > 0 )
@@ -52,13 +55,14 @@ void DigitalFilter::setSettings( unsigned int bufsize, double T, double lsq,
         // удаляем лишние (первые) элементы
         int sub = buf.size() - maxsize;
         for( unsigned int i=0; i<sub; i++ )
-            buf.erase( buf.begin() );
+            buf.pop_front();
     }
+    buf.resize(maxsize);
 
     if( w.size() != maxsize || lsq != lsparam )
         w.assign(maxsize, 1.0/maxsize);
-    lsparam = lsq;
 
+    lsparam = lsq;
     mvec.resize(maxsize);
 }
 //--------------------------------------------------------------------------
@@ -86,7 +90,7 @@ double DigitalFilter::firstLevel()
     // считаем среднеквадратичное отклонение
     S=0;
     double r=0;
-    for( FIFOBuffer::iterator i=buf.begin(); i!=buf.end(); ++i )    
+    for( FIFOBuffer::iterator i=buf.begin(); i!=buf.end(); ++i )
     {
         r = M-(*i);
         S = S + r*r;
@@ -156,9 +160,13 @@ void DigitalFilter::add( int newval )
 {
     // помещаем очередное значение в буфер
     // удаляя при этом старое (FIFO)
+
+    // т.к. мы изначально создаём буфер нужного размера и заполням (см. init)
+    // то каждый раз проверять размер не нужно
+    //    if( buf.size() > maxsize )
+    //        buf.pop_front();
+    buf.pop_front();
     buf.push_back(newval);
-    if( buf.size() > maxsize )
-        buf.erase( buf.begin() );
 }
 //--------------------------------------------------------------------------
 int DigitalFilter::current1()
@@ -174,7 +182,7 @@ int DigitalFilter::currentRC()
 std::ostream& operator<<(std::ostream& os, const DigitalFilter& d )
 {
     os << "(" << d.buf.size() << ")[";
-    for( DigitalFilter::FIFOBuffer::const_iterator i=d.buf.begin(); i!=d.buf.end(); ++i )    
+    for( DigitalFilter::FIFOBuffer::const_iterator i=d.buf.begin(); i!=d.buf.end(); ++i )
     {
         os << " " << setw(5) << (*i);
     }

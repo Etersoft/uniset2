@@ -6,6 +6,9 @@
 #include "Extensions.h"
 #include "Calibration.h"
 
+#include <vector>
+#include <deque>
+
 using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
@@ -24,6 +27,12 @@ int main( int argc, const char** argv )
         cout << "-540 --> " << cal->getValue(-540) << endl;
         cout << "-320 --> " << cal->getValue(-320) << endl;
         cout << "-200 --> " << cal->getValue(-200) << endl;
+        // проверка кэша....
+        cout << "-200 --> " << cal->getValue(-200) << endl;
+        cout << "-200 --> " << cal->getValue(-200) << endl;
+        cout << "-200 --> " << cal->getValue(-200) << endl;
+        cout << "-200 --> " << cal->getValue(-200) << endl;
+        // --------------
         cout << "-100 --> " << cal->getValue(-100) << endl;
         cout << "-200 --> " << cal->getValue(-200) << endl;
         cout << "-100 --> " << cal->getValue(-100) << endl;

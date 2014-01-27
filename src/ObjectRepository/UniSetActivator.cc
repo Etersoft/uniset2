@@ -70,8 +70,8 @@ static UniSetActivator* gActivator=0;
 static int SIGNO;
 static int MYPID;
 static const int TERMINATE_TIMEOUT = 2; //  время отведенное на завершение процесса [сек]
-volatile sig_atomic_t procterm = 0;
-volatile sig_atomic_t doneterm = 0;
+ost::AtomicCounter procterm = 0;
+ost::AtomicCounter doneterm = 0;
 
 // PassiveTimer termtmr;
 // ------------------------------------------------------------------------------------------
@@ -353,7 +353,7 @@ void UniSetActivator::sig_child(int signo)
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::set_signals(bool ask)
 {
-    
+
     struct sigaction act, oact;
     sigemptyset(&act.sa_mask);
     sigemptyset(&oact.sa_mask);
@@ -482,14 +482,9 @@ void UniSetActivator::term( int signo )
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::waitDestroy()
 {
-    for(;;)
-    {
-        if( doneterm || !gActivator )
-            break;
-            
+    while( !doneterm && gActivator )
         msleep(50);
-    }
-    
+
     gActivator = 0;
 }
 // ------------------------------------------------------------------------------------------

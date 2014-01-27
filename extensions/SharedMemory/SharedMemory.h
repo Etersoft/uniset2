@@ -280,6 +280,12 @@ class SharedMemory:
         {
             HistoryItem():id(UniSetTypes::DefaultObjectId){}
 
+            inline void init( unsigned int size, long val )
+            {
+                if( size > 0 )
+                   buf.assign(size,val);
+            }
+
             UniSetTypes::ObjectId id;
             HBuffer buf;
 
@@ -287,9 +293,11 @@ class SharedMemory:
 
             void add( long val, size_t size )
             {
+                // т.е. буфер у нас уже заданного размера
+                // то просто удаляем очередную точку в начале
+                // и добавляем в конце
+                buf.pop_front();
                 buf.push_back(val);
-                if( buf.size() >= size )
-                    buf.pop_front();
             }
         };
 
@@ -312,10 +320,10 @@ class SharedMemory:
                 }
 
             long id;                        // ID
-            HistoryList hlst;                // history list
+            HistoryList hlst;               // history list
             int size;
-            std::string filter;                // filter field
-            UniSetTypes::ObjectId fuse_id;     // fuse sesnsor
+            std::string filter;             // filter field
+            UniSetTypes::ObjectId fuse_id;  // fuse sesnsor
             bool fuse_invert;
             bool fuse_use_val;
             long fuse_val;

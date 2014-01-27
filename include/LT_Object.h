@@ -24,7 +24,7 @@
 #ifndef Object_LT_H_
 #define Object_LT_H_
 //--------------------------------------------------------------------------
-#include <list>
+#include <deque>
 #include "UniSetTypes.h"
 #include "MessageType.h"
 #include "PassiveTimer.h"
@@ -57,7 +57,6 @@ class UniSetObject;
             int sleepTime;
             UniSetObject_LT lt;
             void callback();
-        
         }
 
         void callback()
@@ -68,10 +67,10 @@ class UniSetObject;
             // заказа продолжит спать(т.е. обработчик вызван не будет)...
 
             try
-            {    
+            {
                 if( waitMessage(msg, sleepTime) )
                     processingMessage(&msg);
-    
+
                 sleepTime=lt.checkTimers(this);
             }
             catch(Exception& ex)
@@ -165,7 +164,7 @@ class LT_Object
 
         class Timer_eq: public std::unary_function<TimerInfo, bool>
         {
-            public:            
+            public:
                 Timer_eq(UniSetTypes::TimerId t):tid(t){}
 
             inline bool operator()(const TimerInfo& ti) const
@@ -177,7 +176,7 @@ class LT_Object
                 UniSetTypes::TimerId tid;
         };
 
-        typedef std::list<TimerInfo> TimersList;
+        typedef std::deque<TimerInfo> TimersList;
 
     private:
         TimersList tlst; 

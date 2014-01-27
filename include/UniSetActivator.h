@@ -25,11 +25,13 @@
 #ifndef UniSetActivator_H_
 #define UniSetActivator_H_
 // -------------------------------------------------------------------------- 
+#include <deque>
 #include <omniORB4/CORBA.h>
 #include "UniSetTypes.h"
 #include "UniSetObject.h"
 #include "UniSetManager.h"
 #include "ThreadCreator.h"
+
 //#include "OmniThreadCreator.h"
 //----------------------------------------------------------------------------------------
 /*! \class UniSetActivator
@@ -61,7 +63,6 @@ class UniSetActivator:
         
     protected:
 
-
         /*! Команды доступные при заказе сигналов 
          * см. askSignal()
         */
@@ -91,7 +92,7 @@ class UniSetActivator:
 
     private:
 
-//        static void processingSignal(int signo);            
+//        static void processingSignal(int signo);
         static void terminated(int signo);
         static void finishterm(int signo);
         static void normalexit();
@@ -102,10 +103,10 @@ class UniSetActivator:
 
         friend class ThreadCreator<UniSetActivator>;
         ThreadCreator<UniSetActivator> *orbthr;
-        
+
         CORBA::ORB_var orb;
-        
-        bool omDestroy;            
+
+        bool omDestroy;
         bool sig;
         pid_t thpid; // pid orb потока
 
@@ -126,9 +127,9 @@ class UniSetActivator:
             UniSetManager* mnr;
         };
 
-        std::list<OInfo> lstOInfo;
-        std::list<MInfo> lstMInfo;
-        void getinfo();        
+        std::deque<OInfo> lstOInfo;
+        std::deque<MInfo> lstMInfo;
+        void getinfo();
 };
 
 /*
@@ -138,7 +139,7 @@ int    UniSetActivator::attach(TClass* p, void(TClass:: *f)(void*) )
     if( next >= MAX_CHILD_THREAD )
         return -1;
 
-    callpull[next] = new OmniThreadCreator<TClass>( p, f);                     
+    callpull[next] = new OmniThreadCreator<TClass>( p, f);
     next++;
     return 0;
 }

@@ -1606,7 +1606,7 @@ IOController_i::CalibrateInfo UInterface::getCalibrateInfo( const IOController_i
 // --------------------------------------------------------------------------------------------
 IOController_i::SensorInfoSeq_var UInterface::getSensorSeq( UniSetTypes::IDList& lst )
 {
-    if( lst.size() == 0 )
+    if( lst.empty() )
         return IOController_i::SensorInfoSeq_var();
 
     ObjectId sid = lst.getFirst();
@@ -1761,7 +1761,7 @@ IDSeq_var UInterface::setOutputSeq( const IOController_i::OutSeq& lst, UniSetTyp
 UniSetTypes::IDSeq_var UInterface::askSensorsSeq( UniSetTypes::IDList& lst, 
                                                   UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId backid )
 {
-    if( lst.size() == 0 )
+    if( lst.empty() )
         return UniSetTypes::IDSeq_var();
 
     if( backid==UniSetTypes::DefaultObjectId )

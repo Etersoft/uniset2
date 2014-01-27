@@ -259,7 +259,7 @@ using namespace UniSetTypes;
                 continue;
             }              
               
-              item.fname = s;
+            item.fname = s;
             std::list<std::string> t = UniSetTypes::explode_str(s,'@');
             if( t.size() == 1 )
             {

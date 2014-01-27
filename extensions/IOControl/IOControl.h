@@ -3,7 +3,7 @@
 #define IOControl_H_
 // -----------------------------------------------------------------------------
 #include <vector>
-#include <list>
+#include <deque>
 #include <string>
 #include "UniXML.h"
 #include "PassiveTimer.h"
@@ -66,19 +66,19 @@
     <br>\b --io-ready-timeout    - Время ожидания готовности SM к работе, мсек. (-1 - ждать 'вечно')     
     <br>\b --io-force            - Сохранять значения в SM, независимо от, того менялось ли значение 
     <br>\b --io-force-out        - Обновлять выходы принудительно (не по заказу) 
-     
+
     <br>\b --io-skip-init-output    - Не инициализировать 'выходы' при старте 
     <br>\b --io-sm-ready-test-sid - Использовать указанный датчик, для проверки готовности SharedMemory  
 
     \par Возможные настройки по каждому входу/выходу
-    
+
     <br>\b nofilter        - не использовать фильтр
     <br>\b ioignore        - игнорировать данный датчик (позволяет временно отключить вход/выход)
     <br>\b ioinvert        - инвертированная логика (для DI,DO)
     <br>\b default         - значение по умолчанию (при запуске)
     <br>\b noprecision     - игнорировать поле precision (т.е. процесс в/в не будет его использовать, 
                       но будет его присылать в SensorMessage)
-                      
+
     <br>\b breaklim        - пороговое значение для определения обырва датчика (используется для AI).
                       Если значение ниже этого порога, то выставляется признак обрыва датчика.
     <br>\b jardelay        - защита от дребезга. Задержка на дребезг, мсек.
@@ -129,7 +129,7 @@
               <br>UniSetTypes::lmpBLINK    - мигание с частотой 1
               <br>UniSetTypes::lmpBLINK2   - мигание с частотой 2
               <br>UniSetTypes::lmpBLINK3   - мигание с частотой 3
-              
+
     <br>\b no_iotestlamp  - игнорировать данную лампочку при тесте ламп.
     <br>\b range          - диапазон измерения аналогового входа (см. libcomedi)
     <br>\b aref           - тип подключения (см. libcomedi)
@@ -249,7 +249,7 @@ class IOControl:
             bool no_testlamp; /*!< флаг исключения из 'проверки ламп' */
             bool enable_testmode; /*!< флаг для режима тестирования tmConfigEnable */
             bool disable_testmode; /*!< флаг для режима тестирования tmConfigDisable */
-            
+
             friend std::ostream& operator<<(std::ostream& os, IOInfo& inf );
         };
 
@@ -257,11 +257,11 @@ class IOControl:
         {
             IOPriority(int p, int i):
                 priority(p),index(i){}
-                
+
             int priority;
             int index;
         };
-        
+
         enum TestModeID
         {
             tmNone        = 0,         /*!< тестовый режим отключён */
@@ -315,8 +315,8 @@ class IOControl:
 
         typedef std::vector<IOInfo> IOMap;
         IOMap iomap;            /*!< список входов/выходов */
-        
-        typedef std::list<IOPriority> PIOMap;
+
+        typedef std::deque<IOPriority> PIOMap;
         PIOMap pmap;    /*!< список приоритетных входов/выходов */
 
         unsigned int maxItem;    /*!< количество элементов (используется на момент инициализации) */
@@ -327,7 +327,7 @@ class IOControl:
         std::string s_field;
         std::string s_fvalue;
 
-        SMInterface* shm;         
+        SMInterface* shm;
         UInterface ui;
         UniSetTypes::ObjectId myid;
         std::string prefix;
@@ -342,7 +342,7 @@ class IOControl:
         BlinkList lstBlink;
         PassiveTimer ptBlink;
         bool blink_state;
-        
+
         // мигание с двойной частотой
         BlinkList lstBlink2;
         PassiveTimer ptBlink2;
@@ -352,7 +352,7 @@ class IOControl:
         BlinkList lstBlink3;
         PassiveTimer ptBlink3;
         bool blink3_state;
-        
+
         UniSetTypes::ObjectId testLamp_S;
         Trigger trTestLamp;
         bool isTestLamp;
