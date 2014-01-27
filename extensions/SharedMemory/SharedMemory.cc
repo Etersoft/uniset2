@@ -36,13 +36,12 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
     heartbeatCheckTime(5000),
     histSaveTime(0),
     wdt(0),
-    activated(false),
-    workready(false),
+    activated(0),
+    workready(0),
     dblogging(false),
     msecPulsar(0)
 {
     mutex_start.setName(myname + "_mutex_start");
-    mutex_act.setName(myname + "_mutex_act");
 
     string cname(confname);
     if( cname.empty() )
@@ -140,7 +139,7 @@ void SharedMemory::timerInfo( const TimerMessage *tm )
         checkHeartBeat();
     else if( tm->id == tmEvent )
     {
-        workready = true;
+        workready = 1;
         // рассылаем уведомление, о том, чтобы стартанули
         SystemMessage sm1(SystemMessage::WatchDog);
         sendEvent(sm1);
@@ -223,7 +222,7 @@ void SharedMemory::askSensors( UniversalIO::UIOCommand cmd )
                 dlog.crit() << myname << "(askSensors): " << ex << endl;
             }
     }
-*/    
+*/
 }
 
 // ------------------------------------------------------------------------------------------
@@ -231,25 +230,22 @@ bool SharedMemory::activateObject()
 {
     PassiveTimer pt(UniSetTimer::WaitUpTime);
     bool res = true;
-    
+
     // блокирование обработки Startup 
     // пока не пройдёт инициализация датчиков
     // см. sysCommand()
     {
-        {
-            uniset_rwmutex_wrlock l(mutex_act);
-            activated = false;
-        }
-        
+        activated = 0;
+
         UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
         res = IONotifyController_LT::activateObject();
 
-        // инициализируем указатели        
+        // инициализируем указатели
         for( HeartBeatList::iterator it=hlist.begin(); it!=hlist.end(); ++it )
         {
             it->ioit = myioEnd();
         }
-        
+
         itPulsar = myioEnd();
 
         for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
@@ -258,10 +254,7 @@ bool SharedMemory::activateObject()
                 hit->ioit = myioEnd();
         }
 
-        {
-            uniset_rwmutex_wrlock l(mutex_act);
-            activated = true;
-        }
+        activated = 1;
     }
 
     cerr << "************************** activate: " << pt.getCurrent() << " msec " << endl;
@@ -335,7 +328,7 @@ void SharedMemory::checkHeartBeat()
             dcrit << myname << "(checkHeartBeat): ..." << endl;
         }
     }
-    
+
     if( wdt && wdtpingOK && workready )
         wdt->ping();
 }
@@ -656,7 +649,7 @@ void SharedMemory::saveHistory()
                 si.node    = conf->getLocalNode();
                 try
                 {
-                    
+
                     hit->add( localGetValue( hit->ioit, si ), it->size );
                     continue;
                 }
@@ -753,7 +746,7 @@ std::ostream& operator<<( std::ostream& os, const SharedMemory::HistoryInfo& h )
         << " fuse_val=" << h.fuse_val
         << " size=" << h.size
         << " filter=" << h.filter << endl;
-    
+
     for( SharedMemory::HistoryList::const_iterator it=h.hlst.begin(); it!=h.hlst.end(); ++it )
     {
         os << "    id=" << it->id << "[";
@@ -761,13 +754,12 @@ std::ostream& operator<<( std::ostream& os, const SharedMemory::HistoryInfo& h )
             os << " " << (*i);
         os << " ]" << endl;
     }
-    
+
     return os;
 }
 // ------------------------------------------------------------------------------------------
 bool SharedMemory::isActivated()
 {
-    uniset_rwmutex_rlock l(mutex_act);
     return activated;
 }
 // ------------------------------------------------------------------------------------------
