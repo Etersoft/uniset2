@@ -14,9 +14,9 @@ class WDTInterface
         WDTInterface(const std::string& dev);
         ~WDTInterface();
 
-        bool    ping();
-        bool    stop();
-
+        bool ping();
+        bool stop();
+    
     protected:
         const std::string dev;
 };

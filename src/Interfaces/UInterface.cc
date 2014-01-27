@@ -63,7 +63,7 @@ UInterface::UInterface( const ObjectId backid, CORBA::ORB_var orb, ObjectIndex* 
         oind = uconf->oind;
 
     init();
-}    
+}
 
 UInterface::~UInterface()
 {
@@ -717,7 +717,7 @@ ObjectType UInterface::getType(const ObjectId name, const ObjectId node) const
         // uwarn << "UI(getType): CORBA::SystemException" << endl;
     }    
     catch(UniSetTypes::TimeOut){}
-    
+
     rcache.erase(name, node);    
     throw UniSetTypes::TimeOut(set_err("UI(getType): Timeout",name, node));
 }

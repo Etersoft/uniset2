@@ -220,7 +220,7 @@ class UniSetObject:
             pid_t msgpid; // pid потока обработки сообщений
             bool reg;
             UniSetTypes::mutex_atomic_t active;
-            // UniSetTypes::uniset_rwmutex mutex_act;
+
             bool threadcreate;
             UniSetTimer* tmr;
             UniSetTypes::ObjectId myid;

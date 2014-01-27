@@ -291,7 +291,7 @@ class IONotifyController:
 
         //----------------------
         bool addConsumer(ConsumerList& lst, const UniSetTypes::ConsumerInfo& cons );     //!< добавить потребителя сообщения
-        bool removeConsumer(ConsumerList& lst, const UniSetTypes::ConsumerInfo& cons );    //!< удалить потребителя сообщения
+        bool removeConsumer(ConsumerList& lst, const UniSetTypes::ConsumerInfo& cons );  //!< удалить потребителя сообщения
         
         //! обработка заказа 
         void ask(AskMap& askLst, const IOController_i::SensorInfo& si, 
