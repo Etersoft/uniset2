@@ -3,7 +3,7 @@
 #define SharedMemory_H_
 // -----------------------------------------------------------------------------
 #include <string>
-#include <list>
+#include <deque>
 #include "IONotifyController_LT.h"
 #include "Mutex.h"
 #include "PassiveTimer.h"
@@ -212,7 +212,7 @@
        fuse_value   - значение срабатывания (для аналогового "детонатора")
        fuse_invert  - ивертировать (для дискретных "детонаторов").
                       Т.е. срабатвание на значение "0".
-       
+
        size         - количество точек в хранимой истории
        filter       - поле используемое в качестве фильтра, определяющего датчики
                       входящие в данную группу (историю).
@@ -236,7 +236,7 @@
        изменение состояния "детонаторов". Если срабатывает заданое условие для
        "сброса" дампа, инициируется сигнал, в который передаётся идентификатор истории
        и текущая накопленная история.
-       
+
        \section sec_SM_Pulsar "Мигание" специальным датчиком
        В SM реализован механизм позволяющий задать специальный дискретный датчик ("пульсар"),
        который будет с заданным периодом менять своё состояние. Идентификатор датчика
@@ -245,7 +245,7 @@
        или в командной строке \b --pulsar-msec. В качестве дискретного датчика можно
        задать любой датчик типа DO или DI. Параметр определяющий тип заданного датчика
        \b pulsar_iotype или в командной строке \b --pulsar-iotype.
-       
+
        \section sec_SM_DBLog Управление сохранением изменений датчиков в БД
        Для оптимизации, по умолчанию в SM отключено сохранение каждого изменения датчиков в БД
        (реализованное в базовом классе IONotifyController).
@@ -271,11 +271,11 @@ class SharedMemory:
         virtual CORBA::Boolean exist();
 
         void addReadItem( Restorer_XML::ReaderSlot sl );
-        
+
 
         // ------------  HISTORY  --------------------
-        typedef std::list<long> HBuffer;
-        
+        typedef std::deque<long> HBuffer;
+
         struct HistoryItem
         {
             HistoryItem():id(UniSetTypes::DefaultObjectId){}
@@ -289,7 +289,7 @@ class SharedMemory:
             {
                 buf.push_back(val);
                 if( buf.size() >= size )
-                    buf.erase(buf.begin());
+                    buf.pop_front();
             }
         };
 
@@ -310,7 +310,7 @@ class SharedMemory:
                       fuse_sec = tv.tv_sec;
                       fuse_usec = tv.tv_usec;
                 }
-            
+
             long id;                        // ID
             HistoryList hlst;                // history list
             int size;
@@ -400,8 +400,8 @@ class SharedMemory:
         typedef std::list<HeartBeatInfo> HeartBeatList;
         HeartBeatList hlist; // список датчиков "сердцебиения"
         WDTInterface* wdt;
-        bool activated;
-        bool workready;
+        UniSetTypes::mutex_atomic_t activated;
+        UniSetTypes::mutex_atomic_t workready;
 
         typedef std::list<UniSetTypes::ObjectId> EventList;
         EventList elst;
@@ -425,12 +425,9 @@ class SharedMemory:
         void checkHistoryFilter( UniXML_iterator& it );
         bool isActivated();
 
-
         IOStateList::iterator itPulsar;
         IOController_i::SensorInfo siPulsar;
         int msecPulsar;
-
-        UniSetTypes::uniset_rwmutex mutex_act;
 
     private:
         HistorySlot m_historySignal;
