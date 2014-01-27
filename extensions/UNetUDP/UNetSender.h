@@ -23,7 +23,7 @@ class UNetSender
                     const std::string& s_field="", const std::string& s_fvalue="", SharedMemory* ic=0 );
 
         ~UNetSender();
-
+    
         struct UItem
         {
             UItem():
@@ -38,7 +38,7 @@ class UNetSender
 
             friend std::ostream& operator<<( std::ostream& os, UItem& p );
         };
-
+        
         typedef std::vector<UItem> DMap;
 
         void start();
@@ -46,7 +46,7 @@ class UNetSender
 
         void send();
         void real_send();
-
+        
         /*! (принудительно) обновить все данные (из SM) */
         void updateFromSM();
 
@@ -57,7 +57,7 @@ class UNetSender
         void updateItem( DMap::iterator& it, long value );
 
         inline void setSendPause( int msec ){ sendpause = msec; }
-
+        
         /*! заказать датчики */
         void askSensors( UniversalIO::UIOCommand cmd );
 
@@ -86,7 +86,7 @@ class UNetSender
 
         std::string myname;
         int sendpause;
-        bool activated;
+        UniSetTypes::mutex_atomic_t activated;
 
         UniSetTypes::uniset_rwmutex pack_mutex;
         UniSetUDP::UDPMessage mypack;

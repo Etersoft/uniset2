@@ -25,7 +25,7 @@ class MBSlave:
     public:
         MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0, std::string prefix="mbs" );
         virtual ~MBSlave();
-
+    
         /*! глобальная функция для инициализации объекта */
         static MBSlave* init_mbslave( int argc, const char* const* argv,
                                             UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
@@ -66,58 +66,58 @@ class MBSlave:
     protected:
 
         /*! обработка 0x01 */
-        ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query,
+        ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query, 
                                                     ModbusRTU::ReadCoilRetMessage& reply );
-        /*! обработка 0x02 */
-        ModbusRTU::mbErrCode readInputStatus( ModbusRTU::ReadInputStatusMessage& query,
+        /*! обработка 0x02 */        
+        ModbusRTU::mbErrCode readInputStatus( ModbusRTU::ReadInputStatusMessage& query, 
                                                     ModbusRTU::ReadInputStatusRetMessage& reply );
 
         /*! обработка 0x03 */
-        ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query,
+        ModbusRTU::mbErrCode readOutputRegisters( ModbusRTU::ReadOutputMessage& query, 
                                                     ModbusRTU::ReadOutputRetMessage& reply );
 
         /*! обработка 0x04 */
-        ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query,
+        ModbusRTU::mbErrCode readInputRegisters( ModbusRTU::ReadInputMessage& query, 
                                                     ModbusRTU::ReadInputRetMessage& reply );
 
         /*! обработка 0x05 */
-        ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
+        ModbusRTU::mbErrCode forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query, 
                                                         ModbusRTU::ForceSingleCoilRetMessage& reply );
 
         /*! обработка 0x0F */
-        ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
+        ModbusRTU::mbErrCode forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query, 
                                                     ModbusRTU::ForceCoilsRetMessage& reply );
 
 
         /*! обработка 0x10 */
-        ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
+        ModbusRTU::mbErrCode writeOutputRegisters( ModbusRTU::WriteOutputMessage& query, 
                                                         ModbusRTU::WriteOutputRetMessage& reply );
 
         /*! обработка 0x06 */
-        ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
+        ModbusRTU::mbErrCode writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query, 
                                                         ModbusRTU::WriteSingleOutputRetMessage& reply );
 
         /*! обработка запросов на чтение ошибок */
-//        ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query,
+//        ModbusRTU::mbErrCode journalCommand( ModbusRTU::JournalCommandMessage& query, 
 //                                                            ModbusRTU::JournalCommandRetMessage& reply );
 
         /*! обработка запроса на установку времени */
-        ModbusRTU::mbErrCode setDateTime( ModbusRTU::SetDateTimeMessage& query,
+        ModbusRTU::mbErrCode setDateTime( ModbusRTU::SetDateTimeMessage& query, 
                                                             ModbusRTU::SetDateTimeRetMessage& reply );
 
         /*! обработка запроса удалённого сервиса */
-        ModbusRTU::mbErrCode remoteService( ModbusRTU::RemoteServiceMessage& query,
+        ModbusRTU::mbErrCode remoteService( ModbusRTU::RemoteServiceMessage& query, 
                                                             ModbusRTU::RemoteServiceRetMessage& reply );
 
-        ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query,
+        ModbusRTU::mbErrCode fileTransfer( ModbusRTU::FileTransferMessage& query, 
                                                             ModbusRTU::FileTransferRetMessage& reply );
 
-        ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query,
+        ModbusRTU::mbErrCode diagnostics( ModbusRTU::DiagnosticMessage& query, 
                                                         ModbusRTU::DiagnosticRetMessage& reply );
 
-        ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query,
+        ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query, 
                                                         ModbusRTU::MEIMessageRetRDI& reply );
-
+        
         /*! Проверка корректности регистра перед сохранением.
             Вызывается для каждого регистра не зависимо от используемой функции (06 или 10)
         */
@@ -161,7 +161,7 @@ class MBSlave:
         ModbusRTU::mbErrCode real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val );
         ModbusRTU::mbErrCode much_real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count );
         ModbusRTU::mbErrCode much_real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count );
-
+        
         ModbusRTU::mbErrCode real_read_it( IOMap::iterator& it, ModbusRTU::ModbusData& val );
         ModbusRTU::mbErrCode real_write_it( IOMap::iterator& it, ModbusRTU::ModbusData& val );
     private:
@@ -189,7 +189,7 @@ class MBSlave:
         typedef std::map<ModbusRTU::mbErrCode,unsigned int> ExchangeErrorMap;
         ExchangeErrorMap errmap;     /*!< статистика обмена */
 
-        bool activated;
+        UniSetTypes::mutex_atomic_t activated;
         int activateTimeout;
         bool pingOK;
         timeout_t wait_msec;

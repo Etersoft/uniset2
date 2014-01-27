@@ -84,7 +84,7 @@ class UNetReceiver
          inline ost::IPV4Address getAddress(){ return addr; }
          inline ost::tpport_t getPort(){ return port; }
 
-         /*! Коды событий */
+         /*! Коды событий */ 
          enum Event
          {
              evOK,        /*!< связь есть */
@@ -130,7 +130,7 @@ class UNetReceiver
         UniSetTypes::ObjectId sidLostPackets;
         IOController::IOStateList::iterator itLostPackets;
 
-        bool activated;
+        UniSetTypes::mutex_atomic_t activated;
 
         ThreadCreator<UNetReceiver>* r_thr;        // receive thread
         ThreadCreator<UNetReceiver>* u_thr;        // update thread
@@ -158,12 +158,12 @@ class UNetReceiver
         PacketQueue qtmp;    /*!< очередь на время обработки(очистки) основной очереди */
         bool waitClean;        /*!< флаг означающий, что ждём очистики очереди до конца */
         unsigned long rnum;    /*!< текущий номер принятого сообщения, для проверки "переполнения" или "сбоя" счётчика */
-
+        
         int maxProcessingCount; /*!< максимальное число обрабатываемых за один раз сообщений */
-
+        
         bool lockUpdate; /*!< флаг блокировки сохранения принятых данных в SM */
         UniSetTypes::uniset_rwmutex lockMutex;
-
+        
         EventSlot slEvent;
         Trigger trTimeout;
         UniSetTypes::uniset_rwmutex tmMutex;

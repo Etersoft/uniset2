@@ -22,7 +22,7 @@ force_out(false),
 mbregFromID(false),
 sidExchangeMode(DefaultObjectId),
 exchangeMode(emNone),
-activated(false),
+activated(0),
 noQueryOptimization(false),
 no_extimer(false),
 prefix(prefix),
@@ -221,14 +221,12 @@ void MBExchange::step()
 // -----------------------------------------------------------------------------
 bool MBExchange::checkProcActive()
 {
-    uniset_rwmutex_rlock l(actMutex);
     return activated;
 }
 // -----------------------------------------------------------------------------
 void MBExchange::setProcActive( bool st )
 {
-    uniset_rwmutex_wrlock l(actMutex);
-    activated = st;
+    activated = (st ? 1 : 0);
 }
 // -----------------------------------------------------------------------------
 void MBExchange::sigterm( int signo )
@@ -2406,15 +2404,15 @@ void MBExchange::sysCommand( const UniSetTypes::SystemMessage *sm )
             // см. activateObject()
             msleep(initPause);
             PassiveTimer ptAct(activateTimeout);
-            while( !activated && !ptAct.checkTime() )
-            {    
+            while( !checkProcActive() && !ptAct.checkTime() )
+            {
                 cout << myname << "(sysCommand): wait activate..." << endl;
                 msleep(300);
-                if( activated )
+                if( checkProcActive() )
                     break;
             }
 
-            if( !activated )
+            if( !checkProcActive() )
                 dcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
             {
                 UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
@@ -2432,7 +2430,7 @@ void MBExchange::sysCommand( const UniSetTypes::SystemMessage *sm )
         case SystemMessage::Finish:
             askSensors(UniversalIO::UIODontNotify);
             break;
-        
+
         case SystemMessage::WatchDog:
         {
             // ОПТИМИЗАЦИЯ (защита от двойного перезаказа при старте)
@@ -2695,7 +2693,7 @@ void MBExchange::poll()
 
             if( d->resp_real )
                 allNotRespond = false;
-            
+
             if( it==d->regmap.end() )
                 break;
 
@@ -2724,7 +2722,7 @@ void MBExchange::poll()
 
     // update SharedMemory...
     updateSM();
-    
+
     // check thresholds
     for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
     {

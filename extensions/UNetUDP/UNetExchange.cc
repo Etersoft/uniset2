@@ -11,7 +11,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 UniSetObject_LT(objId),
 shm(0),
 initPause(0),
-activated(false),
+activated(0),
 no_sender(false),
 sender(0),
 sender2(0)
@@ -473,7 +473,7 @@ void UNetExchange::sysCommand( const UniSetTypes::SystemMessage *sm )
             msleep(initPause);
             PassiveTimer ptAct(activateTimeout);
             while( !activated && !ptAct.checkTime() )
-            {    
+            {
                 cout << myname << "(sysCommand): wait activate..." << endl;
                 msleep(300);
                 if( activated )
@@ -576,11 +576,11 @@ bool UNetExchange::activateObject()
     // пока не пройдёт инициализация датчиков
     // см. sysCommand()
     {
-        activated = false;
+        activated = 0;
         UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
         UniSetObject_LT::activateObject();
         initIterators();
-        activated = true;
+        activated = 1;
     }
 
     return true;
@@ -589,7 +589,7 @@ bool UNetExchange::activateObject()
 void UNetExchange::sigterm( int signo )
 {
     dinfo << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
-    activated = false;
+    activated = 0;
     for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
     {
         try

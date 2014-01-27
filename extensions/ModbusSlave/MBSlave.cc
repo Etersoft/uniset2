@@ -22,7 +22,7 @@ askcount_id(DefaultObjectId),
 respond_id(DefaultObjectId),
 respond_invert(false),
 askCount(0),
-activated(false),
+activated(0),
 activateTimeout(500),
 pingOK(true),
 force(false),
@@ -549,7 +549,7 @@ void MBSlave::sysCommand( const UniSetTypes::SystemMessage *sm )
             msleep(initPause);
             PassiveTimer ptAct(activateTimeout);
             while( !activated && !ptAct.checkTime() )
-            {    
+            {
                 cout << myname << "(sysCommand): wait activate..." << endl;
                 msleep(300);
                 if( activated )
@@ -557,9 +557,9 @@ void MBSlave::sysCommand( const UniSetTypes::SystemMessage *sm )
             }
 
             if( !activated )
-			{
+            {
                 dcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
-			}
+            }
             else 
             {
                 UniSetTypes::uniset_rwmutex_rlock l(mutex_start);
@@ -699,11 +699,11 @@ bool MBSlave::activateObject()
     // пока не пройдёт инициализация датчиков
     // см. sysCommand()
     {
-        activated = false;
+        activated = 0;
         UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
         UniSetObject_LT::activateObject();
         initIterators();
-        activated = true;
+        activated = 1;
     }
 
     return true;
@@ -711,8 +711,8 @@ bool MBSlave::activateObject()
 // ------------------------------------------------------------------------------------------
 void MBSlave::sigterm( int signo )
 {
-    cerr << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
-    activated = false;
+    dinfo << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
+    activated = 0;
     try
     {
         if( mbslot )

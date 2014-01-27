@@ -14,10 +14,10 @@ std::ostream& operator<<( std::ostream& os, IOControl::IOInfo& inf )
         << " card=" << inf.ncard << " channel=" << inf.channel << " subdev=" << inf.subdev 
         << " aref=" << inf.aref << " range=" << inf.range 
         << " default=" << inf.defval << " safety=" << inf.safety;
-    
+
     if( inf.cal.minRaw!=inf.cal.maxRaw )
         os << inf.cal;
-    
+
     return os;
 }
 // -----------------------------------------------------------------------------
@@ -43,7 +43,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
     force(false),
     force_out(false),
     maxCardNum(10),
-    activated(false),
+    activated(0),
     readconf_ok(false),
     term(false),
     testMode_as(UniSetTypes::DefaultObjectId),
@@ -295,7 +295,7 @@ void IOControl::execute()
 
     PassiveTimer ptAct(activateTimeout);
     while( !activated && !ptAct.checkTime() )
-    {    
+    {
         cout << myname << "(execute): wait activate..." << endl;
         msleep(300);
         if( activated )
@@ -783,9 +783,9 @@ bool IOControl::activateObject()
     // пока не пройдёт инициализация датчиков
     // см. sysCommand()
     {
-        activated = false;
+        activated = 0;
         UniSetObject::activateObject();
-        activated = true;
+        activated = 1;
     }
 
     return true;
@@ -1162,7 +1162,7 @@ void IOControl::sysCommand( const SystemMessage* sm )
         {
             PassiveTimer ptAct(activateTimeout);
             while( !activated && !ptAct.checkTime() )
-            {    
+            {
                 dinfo << myname << "(sysCommand): wait activate..." << endl;
                 msleep(300);
                 if( activated )

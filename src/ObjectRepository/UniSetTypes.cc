@@ -106,9 +106,9 @@ using namespace UniSetTypes;
     UniSetTypes::IDList::IDList():
         node(UniSetTypes::conf->getLocalNode())
     {
-    
+
     }
-    
+
     UniSetTypes::IDList::~IDList()
     {
     }
@@ -120,11 +120,10 @@ using namespace UniSetTypes;
             if( (*it) == id )
                 return;
         }
-        
+
         lst.push_back(id);
     }
-    
-    
+
     void UniSetTypes::IDList::del( ObjectId id )
     {
         for( list<ObjectId>::iterator it=lst.begin(); it!=lst.end(); ++it )
