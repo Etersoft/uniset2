@@ -184,8 +184,8 @@ class UniSetObject:
             */
             virtual void cleanMsgQueue( MessagesQueue& q );
 
-            bool isActive();
-            void setActive( bool set );
+            inline bool isActive(){ return active; }
+            inline void setActive( bool set ){ active = set ? 1 : 0; }
 
             UniSetTypes::VoidMessage msg;
             UniSetManager* mymngr;
@@ -219,8 +219,8 @@ class UniSetObject:
 
             pid_t msgpid; // pid потока обработки сообщений
             bool reg;
-            bool active;
-            UniSetTypes::uniset_rwmutex mutex_act;
+            UniSetTypes::mutex_atomic_t active;
+            // UniSetTypes::uniset_rwmutex mutex_act;
             bool threadcreate;
             UniSetTimer* tmr;
             UniSetTypes::ObjectId myid;

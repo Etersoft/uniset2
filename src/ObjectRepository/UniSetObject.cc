@@ -49,7 +49,7 @@ ui(UniSetTypes::DefaultObjectId),
 mymngr(NULL),
 msgpid(0),
 reg(false),
-active(false),
+active(0),
 threadcreate(false),
 tmr(NULL),
 myid(UniSetTypes::DefaultObjectId),
@@ -71,7 +71,7 @@ ui(id),
 mymngr(NULL),
 msgpid(0),
 reg(false),
-active(false),
+active(0),
 threadcreate(true),
 tmr(NULL),
 myid(id),
@@ -106,7 +106,7 @@ ui(UniSetTypes::DefaultObjectId),
 mymngr(NULL),
 msgpid(0),
 reg(false),
-active(false),
+active(0),
 threadcreate(true),
 tmr(NULL),
 myid(UniSetTypes::DefaultObjectId),
@@ -147,7 +147,7 @@ void UniSetObject::init_object()
 {
     qmutex.setName(myname + "_qmutex");
     refmutex.setName(myname + "_refmutex");
-    mutex_act.setName(myname + "_mutex_act");
+//    mutex_act.setName(myname + "_mutex_act");
 
     SizeOfMessageQueue = conf->getArgPInt("--uniset-object-size-message-queue",conf->getField("SizeOfMessageQueue"), 1000);
     MaxCountRemoveOfMessage = conf->getArgInt("--uniset-object-maxcount-remove-message",conf->getField("MaxCountRemoveOfMessage"));
@@ -726,9 +726,7 @@ bool UniSetObject::activate()
         // Activate object...
         poa->activate_object_with_id(oid, this);
     }
-    
 
-    
     {
         UniSetTypes::uniset_rwmutex_wrlock lock(refmutex);
         oref = poa->servant_to_reference(static_cast<PortableServer::ServantBase*>(this) );
@@ -877,20 +875,8 @@ bool UniSetObject::PriorVMsgCompare::operator()(const UniSetTypes::VoidMessage& 
             return lhs.tm.tv_usec >= rhs.tm.tv_usec;
         return lhs.tm.tv_sec >= rhs.tm.tv_sec;
     }
-    
+
     return lhs.priority < rhs.priority;
-}
-// ------------------------------------------------------------------------------------------
-void UniSetObject::setActive( bool set )
-{
-    uniset_rwmutex_wrlock l(mutex_act);
-    active = set;
-}
-// ------------------------------------------------------------------------------------------
-bool UniSetObject::isActive()
-{
-    uniset_rwmutex_rlock l(mutex_act);
-    return active;
 }
 // ------------------------------------------------------------------------------------------
 #undef CREATE_TIMER
