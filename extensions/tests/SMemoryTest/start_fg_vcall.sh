@@ -2,7 +2,7 @@
 
 START=uniset-start.sh
 
-${START} -vcall ./.libs/lt-smemory-test --confile test.xml --dlog-add-levels level1 --localNode LocalhostNode $*
+${START} -vcall ./.libs/lt-smemory-test --confile ./test.xml --dlog-add-levels level1 --localNode LocalhostNode $*
 
 #--unideb-add-levels crit,warn,info
 

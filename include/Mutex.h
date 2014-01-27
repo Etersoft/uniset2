@@ -49,12 +49,12 @@ namespace UniSetTypes
             bool isRelease();
             void lock();
             void unlock();
-            
+
             inline std::string name(){ return nm; }
             inline void setName( const std::string& name ){ nm = name; }
-            
+
         protected:
-        
+
         private:
             friend class uniset_mutex_lock;
                uniset_mutex (const uniset_mutex& r);

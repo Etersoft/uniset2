@@ -444,13 +444,13 @@ const UniSetObject* UniSetManager::itemO(const ObjectId id)
 int UniSetManager::objectsCount()
 {
     int res( olist.size()+mlist.size() );
-    
+
     for( UniSetManagerList::const_iterator it= beginMList();
             it!= endMList(); ++it )
     {
         res+= (*it)->objectsCount();
-    }    
-    
+    }
+
     return res;
 }
 
@@ -463,7 +463,7 @@ int UniSetManager::getObjectsInfo( UniSetManager* mngr, SimpleInfoSeq* seq,
     // получаем у самого менджера
     SimpleInfo_var msi=mngr->getInfo();
     (*seq)[ind] = msi;
-    
+
     ind++;
     if( ind > uplimit )
         return ind;

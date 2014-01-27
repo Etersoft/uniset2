@@ -39,7 +39,8 @@ c_filterField(""),
 c_filterValue(""),
 t_filterField(""),
 t_filterValue(""),
-fname(fname)
+fname(fname),
+uxml(0)
 {
     init(fname);
 }

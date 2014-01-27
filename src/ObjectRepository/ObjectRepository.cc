@@ -101,7 +101,7 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
         err << " содержит недопустимый символ " << bad;
         throw ( InvalidObjectName(err.str().c_str()) );
     }
-    
+
     CosNaming::Name_var oName = omniURI::stringToName(name.c_str());
     CosNaming::NamingContext_var ctx;
     for( unsigned int i=0; i<2; i++ )
@@ -110,7 +110,7 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
         {
             // Добавляем в репозиторий новую ссылку (заменяя если есть старую)
             CORBA::ORB_var orb = uconf->getORB();
-            ctx = ORepHelpers::getContext(orb, section, nsName);    
+            ctx = ORepHelpers::getContext(orb, section, nsName);
 
             ctx->bind(oName, oRef);
             return;

@@ -134,7 +134,7 @@ class UniSetManager:
         //! \note Переопределяя не забывайте вызвать базовую 
         virtual bool disactivateObject();
 
-        typedef UniSetManagerList::iterator MListIterator;        
+        typedef UniSetManagerList::iterator MListIterator;
 
         int getObjectsInfo( UniSetManager* mngr, UniSetTypes::SimpleInfoSeq* seq, 
                             int begin, const long uplimit );
@@ -143,9 +143,9 @@ class UniSetManager:
         PortableServer::POAManager_var pman;
 
     private:
-    
+
         friend class UniSetActivator;
-    
+
         int sig;
         UniSetManagerList mlist;
         ObjectsList olist;
