@@ -29,11 +29,10 @@
     module UniSetTypes
     {
         typedef string<100> BaseObjectName;
-        typedef long ObjectId;            /*!< идентификатор объекта */
-        typedef long ThresholdId;        /*!< идентификатор порога */
-        typedef long TimerId;            /*!< идентификатор таймера */
-        typedef string<30> ObjectType;    /*!< тип объекта */
-
+        typedef long ObjectId;          /*!< идентификатор объекта */
+        typedef long ThresholdId;       /*!< идентификатор порога */
+        typedef long TimerId;           /*!< идентификатор таймера */
+        typedef string<30> ObjectType;  /*!< тип объекта */
 
         const unsigned short SizeOfTransportMessage=85;
 
@@ -78,7 +77,7 @@
         struct ConsumerInfo
         {
             ObjectId id;    /*!< идентификатор заказчика */
-            ObjectId node;    /*!< узел на котором он находится */
+            ObjectId node;  /*!< узел на котором он находится */
         };
 
 
@@ -99,8 +98,8 @@
             UnknownIOType,
             DI, // DigitalInput
             DO, // DigitalOutput
-            AI,    // AnalogInput
-            AO    // AnalogOutput
+            AI, // AnalogInput
+            AO  // AnalogOutput
         };
 
          /*! Разрешенные команды для всех контроллеров ввода/вывода */
@@ -108,7 +107,7 @@
          {
              UIONotify,            /*!< заказать получение информации */
              UIODontNotify,        /*!< отказаться от получения информации */
-             UIONotifyChange,    /*!< заказ информации, только после изменения (без первого уведомления о текущем состоянии) */
+             UIONotifyChange,      /*!< заказ информации, только после изменения (без первого уведомления о текущем состоянии) */
              UIONotifyFirstNotNull /*!< заказ информации. Первое уведомление, только если датчик не "0" */
          };
 
