@@ -55,8 +55,8 @@ namespace UniSetTypes
     const ThresholdId DefaultThresholdId = -1;      /*!< идентификатор порогов по умолчанию */
     const ThresholdId DefaultTimerId = -1;      /*!< идентификатор таймера по умолчанию */
 
-    typedef long KeyType;    /*!< уникальный ключ объекта */
-    
+    typedef unsigned long KeyType;    /*!< уникальный ключ объекта */
+
     /*! генератор уникального положительного ключа
      *    Уникальность гарантируется только для пары значений
      *  id и node.
@@ -78,8 +78,8 @@ namespace UniSetTypes
     typedef std::list<std::string> ListObjectName;    /*!< Список объектов типа ObjectName */
 
     typedef ObjectId SysId;
-    typedef    CORBA::Object_ptr ObjectPtr;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
-    typedef    CORBA::Object_var ObjectVar;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
+    typedef CORBA::Object_ptr ObjectPtr;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
+    typedef CORBA::Object_var ObjectVar;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
 
     /*! Функция делает ObjectType из const char * (переводит const-строку в обычную, что плохо, но мы обещаем не писать в неё :) )  */
     inline static UniSetTypes::ObjectType getObjectType(const char * name) { const void *t = name;  return (UniSetTypes::ObjectType)t; }
@@ -90,11 +90,11 @@ namespace UniSetTypes
     /*! Команды для управления лампочками */
     enum LampCommand
     {
-        lmpOFF        = 0,    /*!< выключить */
-        lmpON        = 1,    /*!< включить */
+        lmpOFF      = 0,    /*!< выключить */
+        lmpON       = 1,    /*!< включить */
         lmpBLINK    = 2,    /*!< мигать */
-        lmpBLINK2    = 3,    /*!< мигать */
-        lmpBLINK3    = 4        /*!< мигать */
+        lmpBLINK2   = 3,    /*!< мигать */
+        lmpBLINK3   = 4     /*!< мигать */
     };
 
     static const long ChannelBreakValue = std::numeric_limits<long>::max();
@@ -107,20 +107,20 @@ namespace UniSetTypes
 
             void add( ObjectId id );
             void del( ObjectId id );
-    
+
             inline int size(){ return lst.size(); }
             inline bool empty(){ return lst.empty(); }
-        
+
             std::list<ObjectId> getList();
 
             // за освобождение выделеной памяти
             // отвечает вызывающий!
             IDSeq* getIDSeq();
-        
+
             // 
             ObjectId getFirst();
             ObjectId node;    // узел, на котором находятся датчики
-        
+
         private:
             std::list<ObjectId> lst;
     };
@@ -136,13 +136,13 @@ namespace UniSetTypes
         char* repName;        /*!< текстовое имя для регистрации в репозитории */
         char* textName;        /*!< текстовое имя */
         void* data;
-    
+
         inline bool operator < ( const ObjectInfo& o ) const
         {
             return (id < o.id);
         }
     };
-    
+
     typedef std::list<NodeInfo> ListOfNode;
 
     /*! Запрещенные для использования в именах объектов символы */
@@ -171,14 +171,14 @@ namespace UniSetTypes
     /*! Разбивка строки по указанному символу */
     IDList explode( const std::string& str, char sep=',' );
     std::list<std::string> explode_str( const std::string& str, char sep=',' );
-    
+
     struct ParamSInfo
     {
         IOController_i::SensorInfo si;
         long val;
         std::string fname; // fullname id@node or id
     };
-    
+
     /*! Функция разбора строки вида: id1@node1=val1,id2@node2=val2,...
        Если '=' не указано, возвращается val=0
       Если @node не указано, возвращается node=DefaultObjectId */
