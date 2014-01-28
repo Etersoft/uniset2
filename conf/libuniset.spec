@@ -7,8 +7,8 @@
 %define oname uniset
 
 Name: libuniset
-Version: 2.0
-Release: alt0.2
+Version: 1.7
+Release: alt3
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -202,6 +202,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %files utils
 %_bindir/%oname-admin
+%_bindir/%oname-infoserver
 %_bindir/%oname-mb*
 %_bindir/%oname-nullController
 %_bindir/%oname-sviewer-text
@@ -224,6 +225,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_includedir/%oname/*.h
 %_includedir/%oname/*.hh
 %_includedir/%oname/*.tcc
+%_includedir/%oname/IOs/
 %_includedir/%oname/modbus/
 %if_enabled mysql
 %_includedir/%oname/mysql/
@@ -333,33 +335,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
-* Fri Jan 24 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt0.2
-- oprimization processing message (warning: use reinterpret_cast<> )
-
-* Tue Dec 24 2013 Pavel Vainerman <pv@altlinux.ru> 2.0-alt0.1
-- rename "IOTypes" --> "IOType"
-- rename DigitalInput --> DI
-- rename DigitalOutput --> DO
-- rename AnalogInput --> AI
-- rename AnalogOutput --> AO
-- remove deprecated services: InfoServer,TimeService,SystemGuard
-- remove deprecated intefaces: MessageInterface
-- remove deprecated messages: AlarmMessage, InfoMessage, DBMessage
-- remove 'state' from SensorMessage
-- remove deprecated function setState,getState,askState
-  use simple function: setValue,getValue,askSensor
-- possible use of the property 'iotype' in uniset-codegen
-- refactoring <depends> mechanism
-- add iofront=[01,10] to IOBase
-- remove deprecated interfaces (Storages,CycleStorage,TableStorage,TextIndex,..)
-- rename unideb --> ulog
-- DebugStream refactoring (add new function, add syntax sugar for ulog, dlog /dcrit,dwarn,dlog1,ulog1,ucrit,.../)
-- UniversalInterface --> UInterface
-- ObjectsManager --> UniSetManager
-- ObjectsActitvator --> UniSetActivator
-- remove deprecated property: "sensebility"
-- rename property "inverse" --> "threshold_invert"
-
 * Tue Dec 10 2013 Pavel Vainerman <pv@altlinux.ru> 1.7-alt3
 - add RRDServer
 

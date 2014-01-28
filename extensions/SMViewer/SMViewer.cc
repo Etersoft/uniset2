@@ -7,26 +7,31 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 //--------------------------------------------------------------------------------
 SMViewer::SMViewer( UniSetTypes::ObjectId shmID ):
-    SViewer(conf->getControllersSection(),true)
+	SViewer(conf->getControllersSection(),true)
 {
-    shm = new SMInterface(shmID,&ui,DefaultObjectId,0);
+	shm = new SMInterface(shmID,&ui,DefaultObjectId,0);
 }
 // --------------------------------------------------------------------------
 SMViewer::~SMViewer()
 {
-    delete shm;
+	delete shm;
 }
 // --------------------------------------------------------------------------
 void SMViewer::run()
 {
-    IOController_i::SensorInfoSeq_var amap = shm->getSensorsMap();
-    IONotifyController_i::ThresholdsListSeq_var tlst = shm->getThresholdsList();
-    try
-    { updateSensors(amap,getSharedMemoryID());
-    }catch(...){}
+	IOController_i::DSensorInfoSeq_var dmap = shm->getDigitalSensorsMap();
+	IOController_i::ASensorInfoSeq_var amap = shm->getAnalogSensorsMap();
+	IONotifyController_i::ThresholdsListSeq_var tlst = shm->getThresholdsList();
+	try
+	{ updateDSensors(dmap,getSharedMemoryID());
+	}catch(...){};
 
-    try
-    { updateThresholds(tlst,getSharedMemoryID());
-    }catch(...){}
+	try
+	{ updateASensors(amap,getSharedMemoryID());
+	}catch(...){}
+
+	try
+	{ updateThresholds(tlst,getSharedMemoryID());
+	}catch(...){}
 }
 // --------------------------------------------------------------------------

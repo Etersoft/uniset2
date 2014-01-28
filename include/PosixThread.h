@@ -21,7 +21,7 @@
  * \brief Интефес для создания и управления потоками
  * \author Anthony Korbin
 */
-//---------------------------------------------------------------------------- 
+//----------------------------------------------------------------------------
 #ifndef PosixThread_h_
 #define PosixThread_h_
 //----------------------------------------------------------------------------------------
@@ -29,7 +29,7 @@
 #include <iostream>
 #include <signal.h>
 //----------------------------------------------------------------------------------------
-/*! \class PosixThread */ 
+/*! \class PosixThread */
 class PosixThread
 {
 public:
@@ -37,9 +37,9 @@ public:
 		virtual ~PosixThread();
 
 		void start( void *args );	/*!< запуск */
-		void stop();		
+		void stop();
 
-		void thrkill( int signo );		/*!< послать сигнал signo */	
+		void thrkill( int signo );		/*!< послать сигнал signo */
 
 		enum TAttr{ SCOPE, DETACH, PRIORITY };
 
@@ -55,7 +55,7 @@ public:
 
 protected:
 
-		void reinit();	
+		void reinit();
 
 		virtual void work() = 0; /*!< Функция выполняемая в потоке */
 
@@ -74,7 +74,7 @@ private:
 		static pthread_rwlock_t lockx;
 		static pthread_mutex_t mutex;
 		static pthread_cond_t condx;
-	
+
 		static int countThreads;
 };
 

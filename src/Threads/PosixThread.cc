@@ -20,15 +20,15 @@
 /*! \file
  * \author Anthony Korbin
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #include "PosixThread.h"
 #include <iostream>
 using namespace std;
 
 int PosixThread::countThreads = 1;
-pthread_rwlock_t PosixThread::lockx = PTHREAD_RWLOCK_INITIALIZER;	
-pthread_mutex_t PosixThread::mutex = PTHREAD_MUTEX_INITIALIZER;	
-pthread_cond_t PosixThread::condx = PTHREAD_COND_INITIALIZER;	
+pthread_rwlock_t PosixThread::lockx = PTHREAD_RWLOCK_INITIALIZER;
+pthread_mutex_t PosixThread::mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t PosixThread::condx = PTHREAD_COND_INITIALIZER;
 
 //----------------------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ PosixThread::~PosixThread()
 {
 	countThreads--;
 	delete attrPtr;
-//	pthread_exit( NULL );	
+//	pthread_exit( NULL );
 }
 
 //----------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ void PosixThread::start( void *args )
 	reinit();
 
 //	cout << "Создаю поток..."<< endl;
-	
+
 	if( pthread_create( &tid, attrPtr, PosixThread::funcp, args ) == -1 )
 		{/*throw ThreadNotCreate;*/}
 	else
@@ -69,7 +69,7 @@ void PosixThread::start( void *args )
 		countThreads++;
 		pthread_attr_destroy( attrPtr );
 	}
-	
+
 //	cout << "создал поток..."<< endl;
 }
 
@@ -83,7 +83,7 @@ void PosixThread::stop()
 	tid = 0;
 	countThreads--;
 
-	pthread_exit( NULL );	
+	pthread_exit( NULL );
 //	cout << "PosixThread: завершил поток"<< endl;
 //	tid = 0;
 //	countThreads--;
@@ -95,17 +95,17 @@ void PosixThread::reinit()
 {
 	if (attrPtr != NULL)
 		delete attrPtr;
-		
+
 	attrPtr = new pthread_attr_t;
 	if( pthread_attr_init( attrPtr ) == -1 )
 		{/*throw AttrNotInit;*/cerr << "PosixThread(reinit): не удалось..."<< endl;}
-		
+
 }
 //----------------------------------------------------------------------------------------
 
 void PosixThread::thrkill( int signo )
 {
-	pthread_kill( tid, signo );	
+	pthread_kill( tid, signo );
 }
 
 //----------------------------------------------------------------------------------------
@@ -172,7 +172,7 @@ void PosixThread::readlock( pthread_rwlock_t *lock )
 //----------------------------------------------------------------------------------------
 
 void PosixThread::writelock( pthread_rwlock_t *lock )
-{  
+{
 	pthread_rwlock_wrlock( lock );
 }
 

@@ -3,7 +3,7 @@
 
 import sys
 
-from pyUniSet import *
+from pyUExceptions import *
 from pyUConnector import *
 from pyUModbus import *
 from UGlobal import *

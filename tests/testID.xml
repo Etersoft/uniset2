@@ -29,7 +29,6 @@
 		<DocDir name=""/>
 		<LockDir name=""/>
 
-	<testnode name="testnode" id2="-100"/>
 	<Services>
 		<LocalTimeService name="TimeService" MaxCountTimers="100" AskLifeTimeSEC="10"/>
 		<LocalInfoServer name="InfoServer" dbrepeat="1">

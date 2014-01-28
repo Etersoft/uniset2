@@ -7,19 +7,19 @@ using namespace std;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
 TOR::TOR(ElementID id, int num, bool st):
-    Element(id),
-    myout(false)
+	Element(id),
+	myout(false)
 {
-    if( num!=0 )
-    {
-        // создаём заданное количество входов
-        for( unsigned int i=1;i<=num;i++ )
-        {
-            ins.push_front(InputInfo(i,st)); // addInput(i,st);
-            if( st == true )
-                myout = true;
-        }
-    }
+	if( num!=0 )
+	{
+		// создаём заданное количество входов
+		for( int i=1;i<=num;i++ )
+		{
+			ins.push_front(InputInfo(i,st)); // addInput(i,st);
+			if( st == true )
+				myout = true;
+		}
+	}
 }
 
 TOR::~TOR()
@@ -28,40 +28,41 @@ TOR::~TOR()
 // -------------------------------------------------------------------------
 void TOR::setIn( int num, bool state )
 {
-//    cout << getType() << "(" << myid << "):  input " << num << " set " << state << endl;
-    
-    for( InputList::iterator it=ins.begin(); it!=ins.end(); ++it )
-    {
-        if( it->num == num )
-        {
-            if( it->state == state )
-                return; // вход не менялся можно вообще прервать проверку
-            
-            it->state = state;    
-            break;
-        }
-    }
+//	cout << getType() << "(" << myid << "):  input " << num << " set " << state << endl;
 
-    bool prev = myout;
-    bool brk = false; // признак досрочного завершения проверки
+	for( InputList::iterator it=ins.begin(); it!=ins.end(); ++it )
+	{
+		if( it->num == num )
+		{
+			if( it->state == state )
+				return; // вход не менялся можно вообще прервать проверку
 
-    // проверяем изменился ли выход
-    // для тригера 'OR' проверка до первой единицы
-    for( InputList::iterator it=ins.begin(); it!=ins.end(); ++it )
-    {
-        if( it->state )
-        {
-            myout = true;
-            brk = true;
-            break;
-        }
-    }
+			it->state = state;
+			break;
+		}
+	}
 
-    if( !brk )
-        myout = false;
+	bool prev = myout;
+	bool brk = false; // признак досрочного завершения проверки
 
-    dinfo << this << ": myout " << myout << endl;
-    if( prev != myout )
-        Element::setChildOut();
+	// проверяем изменился ли выход
+	// для тригера 'OR' проверка до первой единицы
+	for( InputList::iterator it=ins.begin(); it!=ins.end(); ++it )
+	{
+		if( it->state )
+		{
+			myout = true;
+			brk = true;
+			break;
+		}
+	}
+
+	if( !brk )
+		myout = false;
+
+	if( dlog.debugging(Debug::INFO) )
+		dlog[Debug::INFO] << this << ": myout " << myout << endl;
+	if( prev != myout )
+		Element::setChildOut();
 }
 // -------------------------------------------------------------------------

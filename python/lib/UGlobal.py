@@ -6,7 +6,7 @@ import time
 import sys
 
 def is_id( str_id ):
-    if isinstance(str_id,int) or isinstance(str_id,long):
+    if str_id.__class__.__name__ == "int" or str_id.__class__.__name__ == "long":
        return True
 
     if str_id.strip().isdigit():
@@ -19,10 +19,10 @@ def to_int(s):
     if s == None or s == "":
        return 0
 
-    if isinstance(s,int) or isinstance(s,long):
+    if s.__class__.__name__ == "int" or s.__class__.__name__ == "long":
        return s
 
-    if isinstance(s,float):
+    if s.__class__.__name__ == "float":
        return int(s)
 
     if len(s)>2 and s[0] == '0' and s[1] == 'x':

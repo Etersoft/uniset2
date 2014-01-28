@@ -1,5 +1,5 @@
 /* File: This file is part of the UniSet project
- * Copyright (C) 2002 Vitaly Lipatov, Pavel Vainerman
+ * Copyright (C) 2002 Vitaly Lipatov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- * \author Pavel Vainerman
+ * \author Vitaly Lipatov
  */
 // -------------------------------------------------------------------------- 
 #ifndef ObjectIndex_XML_H_
@@ -32,36 +32,40 @@
 namespace UniSetTypes
 {
 
-/*! \todo Проверить функции этого класса на повторную входимость */
+/*!
+	\todo Проверить функции этого класса на повторную входимость
+	\bug При обращении к objectsMap[0].textName срабатывает исключение(видимо какое-то из std).
+		Требуется дополнительное изучение.
+*/
 class ObjectIndex_XML:
-    public ObjectIndex
+	public ObjectIndex
 {
-    public:
-        ObjectIndex_XML(const std::string& xmlfile, int minSize=1000 );
-        ObjectIndex_XML(UniXML& xml, int minSize=1000 );
-        virtual ~ObjectIndex_XML();
+	public:
+		ObjectIndex_XML(const std::string xmlfile, int minSize=1000 );
+		ObjectIndex_XML(UniXML& xml, int minSize=1000 );
+		virtual ~ObjectIndex_XML();
 
-        virtual const UniSetTypes::ObjectInfo* getObjectInfo(const ObjectId);
-        virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string& name );
-        virtual ObjectId getIdByName(const std::string& name);
-        virtual std::string getMapName(const ObjectId id);
-        virtual std::string getTextName(const ObjectId id);
+		virtual const UniSetTypes::ObjectInfo* getObjectInfo(const ObjectId);
+		virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string name );
+		virtual ObjectId getIdByName(const std::string& name);
+		virtual std::string getMapName(const ObjectId id);
+		virtual std::string getTextName(const ObjectId id);
 
-        virtual std::ostream& printMap(std::ostream& os);
-        friend std::ostream& operator<<(std::ostream& os, ObjectIndex_XML& oi );
+		virtual std::ostream& printMap(std::ostream& os);
+		friend std::ostream& operator<<(std::ostream& os, ObjectIndex_XML& oi );
 
-    protected:
-        virtual void build(UniXML& xml);
-        unsigned int read_section( UniXML& xml, const std::string& sec, unsigned int ind );
-        unsigned int read_nodes( UniXML& xml, const std::string& sec, unsigned int ind );
+	protected:
+		virtual void build(UniXML& xml);
+		unsigned int read_section( UniXML& xml, const std::string sec, unsigned int ind );
+		unsigned int read_nodes( UniXML& xml, const std::string sec, unsigned int ind );
 
-    private:
-        typedef std::map<std::string, ObjectId> MapObjectKey;
-        MapObjectKey mok; // для обратного писка
-        std::vector<ObjectInfo> omap; // для прямого поиска
+	private:
+		typedef std::map<std::string, ObjectId> MapObjectKey;
+		MapObjectKey mok; // для обратного писка
+		std::vector<ObjectInfo> omap; // для прямого поиска
 
 };
 // -----------------------------------------------------------------------------------------
-}    // end of namespace
+}	// end of namespace
 // -----------------------------------------------------------------------------------------
 #endif

@@ -14,7 +14,7 @@
 		<AutoStartUpTime name="1"/>
 		<DumpStateTime name="10"/>
 		<SleepTickMS name="500"/>
-		<UniSetDebug levels="crit,warn" name="ulog"/>
+		<UniSetDebug levels="crit,warn" name="unideb"/>
 		<ConfDir name="./"/>
 		<DataDir name="./"/>
 		<BinDir name="./"/>
@@ -33,22 +33,6 @@
 	</UniSet>
 	<dlog name="dlog"/>
 	<settings>
-		<TestProc name="TestProc1"
-			on_s="Input1_S"
-			lamp_c="Lamp58_C"
-			depend_c="Input4_S"
-			d1_check_s="Input5_S"
-			set_d1_check_s="Input5_S"
-			d2_check_s="AI11_AS"
-			set_d2_check_s="AI11_AS"
-			undef_c="AI54_S"
-			check_undef_s="AI54_S"
-			t_set_c="AI_AS"
-			t_check_s="Threshold1_S"
-			log_c="LogLevel_S"
-			log_s="LogLevel_S"
-		/>
-
 		<IOControl name="IOControl"/>
 		<testnode id="1000" id2="-100" name="testnode"/>
 		<SharedMemory name="SharedMemory" shmID="SharedMemory">
@@ -76,6 +60,9 @@
 			</GateList>
 		</MBMultiMaster1>
 
+		<MBSlave2 addr="0x3">
+		</MBSlave2>
+
 		<MBSlave1 addr="0x31" aftersend-pause="0" dev="/dev/ttyS0" levels="info,warn,crit" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600">
 			<filelist>
 				<!-- Список файлов разрешённых для передачи по modbus
@@ -89,7 +76,7 @@
 				<item directory="/tmp/" id="3" name="configure.xml.gz"/>
 				<item directory="ConfDir" id="4" name="SERIAL"/>
 			</filelist>
-			<MEI>
+			<MEI> 
 				<!-- ВНИМАНИЕ: должен заполняться в соответсвии со стандартом. ObjectID и DeviceID не случайны.. -->
 				<device id="0x01">
 					<object id="0" comm="VendorName">
@@ -137,7 +124,7 @@
 		<UNetExchange name="UNetExchange"/>
 		<HeartBeatTime time_msec="5000"/>
 		<TestGen input1_s="Input1_S" input2_s="DumpSensor1_S" name="TestGen" output1_c="DO_C"/>
-		<RRDServer1 name="RRDServer1">
+		<RRDStorage1 name="RRDStorage1">
 			<rrd filename="rrdtest.rrd" filter_field="rrd" filter_value="1" step="5" ds_field="rrd1_ds" overwrite="0">
 				<item rra="RRA:AVERAGE:0.5:1:4320"/>
 				<item rra="RRA:MAX:0.5:1:4320"/>
@@ -146,7 +133,7 @@
 				<item rra="RRA:AVERAGE:0.5:1:4320"/>
 				<item rra="RRA:MAX:0.5:1:4320"/>
 			</rrd>
-		</RRDServer1>
+		</RRDStorage1>
 	</settings>
 	<ObjectsMap idfromfile="1">
 		<!--
@@ -171,15 +158,16 @@
 		</nodes>
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">
-			<item dbignore="1" default="1" id="1" iotype="DI" name="Input1_S" priority="Medium" textname="Команда 1"/>
+			<item db_ignore="1" default="1" id="1" iotype="DI" name="Input1_S" priority="Medium" textname="Команда 1"/>
 			<item id="2" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="11" mbtype="rtu" name="Input2_S" priority="Medium" rs="4" textname="Команда 2"/>
 			<item id="3" iotype="DI"  mbtcp="1" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" name="Input3_S" priority="Medium" textname="Команда 3"/>
 			<item id="4" iotype="DI" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input4_S" priority="Medium" rs="2" textname="Команда 4"/>
-			<item id="5" iotype="DI" name="Input5_S" priority="Medium" textname="Команда 5" udp="2" depend="Input4_S"/>
-			<item id="6" iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2"/>
-			<item id="11" iotype="AI" name="AI11_AS" priority="Medium" textname="AI 11" depend="Input4_S" depend_off_value="-50"/>
-			<item id="12" iotype="DI" name="Input12_S" priority="Medium" textname="Команда 12" iofront="01"/>
-			<item id="60" iotype="DI" name="Input60_S" priority="Medium" textname="Команда 61" iofront="10"/>
+			<item id="5" iotype="DI" name="Input5_S" priority="Medium" textname="Команда 5" udp="2"/>
+			<item id="6" iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2">
+				<depends>
+					<depend name="Input4_S"/>
+				</depends>
+			</item>
 			<item id="7" iotype="DO" name="DO_C" priority="Medium" textname="Digital output"/>
 			<item id="8" iotype="DO" name="DO1_C" priority="Medium" textname="Digital output"/>
 			<item default="1000" id="9" iotype="AO" name="AO_AS" precision="2" priority="Medium" rs="2" rs_channel="1" rs_jack="j1" rs_mbaddr="0x01" rs_mbfunc="0x06" rs_mbreg="0x02" rs_mbtype="rtu188" textname="Analog output"/>
@@ -222,8 +210,7 @@
 			<item id="55" iotype="AI" name="AI55_S" textname="AI sensor 55" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
 			<item id="56" iotype="AI" name="AI56_S" textname="AI sensor 56" rrd="2" rrd2_ds="COUNTER:20:U:U"/>
 			<item id="57" iotype="AI" name="AI57_S" textname="AI sensor 57" rrd="2" rrd2_ds="DERIVE:20:U:U"/>
-			<item id="58" iotype="AO" name="Lamp58_C" textname="Lamp 58" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
-			<item id="62" iotype="AI" name="LogLevel_S" textname="LogLevel control"/>
+			<item id="58" iotype="AI" name="SVU_AskCount_AS" textname="svu asl count"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">
@@ -260,57 +247,8 @@
 			<item id="6008" name="UNetExchange"/>
 			<item id="6009" name="MBMaster2"/>
 			<item id="6010" name="MBMultiMaster1"/>
-			<item id="6011" name="RRDServer1"/>
-			<item id="6012" name="TestProc1"/>
-			<item id="6013" name="TestProc2"/>
-			<item id="6014" name="TestProc3"/>
-			<item id="6015" name="TestProc4"/>
-			<item id="6016" name="TestProc5"/>
-			<item id="6017" name="TestProc6"/>
-			<item id="6018" name="TestProc7"/>
-			<item id="6019" name="TestProc8"/>
-			<item id="6020" name="TestProc9"/>
-			<item id="6021" name="TestProc10"/>
-			<item id="6022" name="TestProc11"/>
-			<item id="6023" name="TestProc12"/>
-			<item id="6024" name="TestProc13"/>
-			<item id="6025" name="TestProc14"/>
-			<item id="6026" name="TestProc15"/>
-			<item id="6027" name="TestProc16"/>
-			<item id="6028" name="TestProc17"/>
-			<item id="6029" name="TestProc18"/>
-			<item id="6030" name="TestProc19"/>
-			<item id="6031" name="TestProc20"/>
-			<item id="6032" name="TestProc21"/>
-			<item id="6033" name="TestProc22"/>
-			<item id="6034" name="TestProc23"/>
-			<item id="6035" name="TestProc24"/>
-			<item id="6036" name="TestProc25"/>
-			<item id="6037" name="TestProc26"/>
-			<item id="6038" name="TestProc27"/>
-			<item id="6039" name="TestProc28"/>
-			<item id="6040" name="TestProc29"/>
-			<item id="6041" name="TestProc30"/>
-			<item id="6042" name="TestProc31"/>
-			<item id="6043" name="TestProc32"/>
-			<item id="6044" name="TestProc33"/>
-			<item id="6045" name="TestProc34"/>
-			<item id="6046" name="TestProc35"/>
-			<item id="6047" name="TestProc36"/>
-			<item id="6048" name="TestProc37"/>
-			<item id="6049" name="TestProc38"/>
-			<item id="6050" name="TestProc39"/>
-			<item id="6051" name="TestProc40"/>
-			<item id="6052" name="TestProc41"/>
-			<item id="6053" name="TestProc42"/>
-			<item id="6054" name="TestProc43"/>
-			<item id="6055" name="TestProc44"/>
-			<item id="6056" name="TestProc45"/>
-			<item id="6057" name="TestProc46"/>
-			<item id="6058" name="TestProc47"/>
-			<item id="6059" name="TestProc48"/>
-			<item id="6060" name="TestProc49"/>
-			<item id="6061" name="TestProc50"/>
+			<item id="6011" name="RRDStorage1"/>
+			<item id="6012" name="MBSlave2"/>
 		</objects>
 	</ObjectsMap>
 	<messages idfromfile="1" name="messages">
@@ -324,12 +262,6 @@
 	<!-- <xi:include href="testIDnon-exist.xml"/> -->
 	<Calibrations name="Calibrations">
 		<diagram name="testcal">
-			<point x="-1000" y="-300"/>
-			<point x="-900" y="-250"/>
-			<point x="-800" y="-200"/>
-			<point x="-700" y="-150"/>
-			<point x="-600" y="-100"/>
-			<point x="-500" y="-80"/>
 			<point x="-200" y="-60"/>
 			<point x="-100" y="-60"/>
 			<point x="-50" y="-20"/>
@@ -337,14 +269,6 @@
 			<point x="50" y="20"/>
 			<point x="100" y="60"/>
 			<point x="200" y="60"/>
-			<point x="300" y="80"/>
-			<point x="400" y="100"/>
-			<point x="500" y="150"/>
-			<point x="600" y="200"/>
-			<point x="700" y="250"/>
-			<point x="800" y="300"/>
-			<point x="900" y="400"/>
-			<point x="1000" y="600"/>
 		</diagram>
 	</Calibrations>
 </UNISETPLC>

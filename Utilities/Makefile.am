@@ -3,7 +3,10 @@
 ############################################################################
 
 SUBDIRS = scripts Admin NullController SViewer-text \
-	SMonit MBTester codegen SImitator
+	InfoServer SMonit MBTester codegen SImitator
+#MapSourceParser ClassGen
+
+include $(top_builddir)/conf/common.mk
 
 include $(top_builddir)/conf/common.mk
 

@@ -19,7 +19,7 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \brief Триггер, позволяющий красиво засекать изменения во флаге
- *  \author Vitaly Lipatov
+ * 	\author Vitaly Lipatov
 */
 //--------------------------------------------------------------------------
 #ifndef UNITRIGGER_H_
@@ -28,43 +28,43 @@
 /*! Триггер, позволяющий красиво засекать изменения во флаге */
 class Trigger
 {
-    public:
-        Trigger(bool initial = false)
-        {
-            oldstate = initial;
-        }
+	public:
+		Trigger(bool initial = false)
+		{
+			oldstate = initial;
+		}
 
-        /*! Срабатываем по верхнему фронту (при наступлении true) */
-        bool hi(bool state)
-        {
-            if (oldstate != state) {
-                oldstate = state;
-                if (state)
-                    return true;
-            }
-            return false;
-        }
-        /*! Срабатываем по нижнему фронту (при наступлении false) */
-        bool low(bool state)
-        {
-            if (oldstate != state) {
-                oldstate = state;
-                if (!state)
-                    return true;
-            }
-            return false;
-        }
-        /*! Срабатывает при любом изменении */
-        bool change(bool state)
-        {
-            if (oldstate != state) {
-                oldstate = state;
-                return true;
-            }
-            return false;
-        }
-    private:
-        bool oldstate; /*!< предыдущее состояние */
+		/*! Срабатываем по верхнему фронту (при наступлении true) */
+		bool hi(bool state)
+		{
+			if (oldstate != state) {
+				oldstate = state;
+				if (state)
+					return true;
+			}
+			return false;
+		}
+		/*! Срабатываем по нижнему фронту (при наступлении false) */
+		bool low(bool state)
+		{
+			if (oldstate != state) {
+				oldstate = state;
+				if (!state)
+					return true;
+			}
+			return false;
+		}
+		/*! Срабатывает при любом изменении */
+		bool change(bool state)
+		{
+			if (oldstate != state) {
+				oldstate = state;
+				return true;
+			}
+			return false;
+		}
+	private:
+		bool oldstate; /*!< предыдущее состояние */
 };
 // --------------------------------------------------------------------------
 #endif

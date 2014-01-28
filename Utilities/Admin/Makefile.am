@@ -9,4 +9,3 @@ uniset_admin_CPPFLAGS	= -I$(top_builddir)/lib
 
 
 include $(top_builddir)/conf/setting.mk
-

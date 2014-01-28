@@ -1,5 +1,5 @@
 /* File: This file is part of the UniSet project
- * Copyright (C) 2002 Vitaly Lipatov, Pavel Vainerman
+ * Copyright (C) 2002 Vitaly Lipatov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,23 +30,23 @@
 namespace UniSetTypes
 {
 /*! Класс работы с файлами содержащими IOR объекта 
-    \todo Для оптимизации можно сделать кэширование id:node > filename
+	\todo Для оптимизации можно сделать кэширование id:node > filename
 */
 class IORFile
 {
-    public:
-        IORFile();
+	public:
+		IORFile();
 
-        std::string getIOR( const ObjectId id, const ObjectId node ) const;
-        void setIOR( const ObjectId id, const ObjectId node, const std::string& sior ) const;
-        void unlinkIOR( const ObjectId id, const ObjectId node ) const;
+		std::string getIOR( const ObjectId id, const ObjectId node );
+		void setIOR( const ObjectId id, const ObjectId node, const std::string sior );
+		void unlinkIOR( const ObjectId id, const ObjectId node );
 
-    protected:
-        std::string genFName( const ObjectId id, const ObjectId node ) const;
+	protected:
+		std::string genFName( const ObjectId id, const ObjectId node);
 
-    private:
+	private:
 };
 // -----------------------------------------------------------------------------------------
-}    // end of namespace
+}	// end of namespace
 // -----------------------------------------------------------------------------------------
 #endif

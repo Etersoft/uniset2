@@ -8,4 +8,3 @@ uniset_nullController_LDADD 	= $(top_builddir)/lib/libUniSet.la
 uniset_nullController_CPPFLAGS	= -I$(top_builddir)/lib $(SIGC_CFLAGS)
 
 include $(top_builddir)/conf/setting.mk
-

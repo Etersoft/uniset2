@@ -35,12 +35,12 @@ using namespace UniSetTypes;
 using namespace UniversalIO;
 using namespace std;
 // --------------------------------------------------------------------------
-SViewer::SViewer(const string& csec, bool sn):
-    csec(csec),
-    rep(UniSetTypes::conf),
-    cache(500, 15),
-    ui(UniSetTypes::conf),
-    isShort(sn)
+SViewer::SViewer(const string csec, bool sn):
+	csec(csec),
+	rep(UniSetTypes::conf),
+	cache(500, 15),
+	ui(UniSetTypes::conf),
+	isShort(sn)
 {
 }
 
@@ -50,251 +50,299 @@ SViewer::~SViewer()
 
 void SViewer::on_SViewer_destroy()
 {
-//    activator->oakill(SIGINT);
-//    msleep(500);
-//    activator->oakill(SIGKILL);
+//	activator->oakill(SIGINT);
+//	msleep(500);
+//	activator->oakill(SIGKILL);
 }
 // --------------------------------------------------------------------------
 void SViewer::monitor( timeout_t timeMS )
 {
-    for(;;)
-    {
-        view();
-        msleep(timeMS);
-    }
+	for(;;)
+	{
+		view();
+		msleep(timeMS);
+	}
 }
 
 // --------------------------------------------------------------------------
 void SViewer::view()
 {
-    try
-    {
-        readSection(csec,"");
-    }
-    catch(Exception& ex)
-    {
-        cerr << ex << endl;
-    }
+	try
+	{
+		readSection(csec,"");
+	}
+	catch(Exception& ex)
+	{
+		cerr << ex << endl;
+	}
 }
 
 // ---------------------------------------------------------------------------
 
-void SViewer::readSection( const string& section, const string& secRoot )
+void SViewer::readSection(const string section, const string secRoot)
 {
-    ListObjectName lst;
-    string curSection;
-    try
-    {
-        if ( secRoot.empty() )
-            curSection = section;
-        else
-            curSection=secRoot+"/"+section;
+	ListObjectName lst;
+	string curSection;
+	try
+	{
+		if ( secRoot.empty() )
+			curSection = section;
+		else
+			curSection=secRoot+"/"+section;
 
-//        cout << " read sectionlist ..."<< endl;
-        if( !rep.listSections(curSection, &lst, 1000) )
-        {
-            cout << "(readSection): получен не полный список" << endl;
-        }
-    }
-    catch( ORepFailed ){}
-    catch(...)
-    {
-        cout << "(readSection): get sectionlist ... catch..." << endl;
-    }
+//		cout << " read sectionlist ..."<< endl;
+		if( !rep.listSections(curSection, &lst, 1000) )
+		{
+			cout << "(readSection): получен не полный список" << endl;
+		}
+	}
+	catch( ORepFailed ){}
+	catch(...)
+	{
+		cout << "(readSection): get sectionlist ... catch..." << endl;
+	}
 
-    if( !lst.empty() )
-    {
-        for ( ListObjectName::const_iterator li=lst.begin();li!=lst.end();++li)
-        {
-            readSection((*li), curSection);
-        }
-    }
-    else
-    {
-        string secName(curSection);
-        ListObjectName lstObj;
-        ListObjectName::const_iterator li;
-        try
-        {
-            if( !rep.list(secName, &lstObj, 1000) )
-                cout << "(readSection): получен не полный список" << endl;
-        }
-        catch( ORepFailed )
-        {
-            cout << "(readSection):.. catch ORepFailed" << endl;
-            return;
-        }
-        catch(...)
-        {
-            cout << "(readSection): catch..." << endl;
-            return;
-        }
+	if( !lst.empty() )
+	{
+		for ( ListObjectName::const_iterator li=lst.begin();li!=lst.end();++li)
+		{
+			readSection((*li), curSection);
+		}
+	}
+	else
+	{
+		string secName(curSection);
+		ListObjectName lstObj;
+		ListObjectName::const_iterator li;
+		try
+		{
+			if( !rep.list(secName, &lstObj, 1000) )
+				cout << "(readSection): получен не полный список" << endl;
+		}
+		catch( ORepFailed )
+		{
+			cout << "(readSection):.. catch ORepFailed" << endl;
+			return;
+		}
+		catch(...)
+		{
+			cout << "(readSection): catch..." << endl;
+			return;
+		}
 
-//        cout << " read objectlist ok."<< endl;
+//		cout << " read objectlist ok."<< endl;
 
-        if ( !lstObj.empty() )
-        {
-            for ( li=lstObj.begin();li!=lstObj.end();++li )
-            {
-                try
-                {
-                    string ob(*li);
-                    string fname(curSection+ "/"+ ob);
-                    ObjectId id = conf->oind->getIdByFullName( fname );
-                    if( id == DefaultObjectId )
-                        cout << "(readSection): ID?! для " << fname << endl;
-                    else
-                        getInfo(id);
-                }
-                catch(Exception& ex)
-                {
-                    cout << "(readSection): " << ex << endl;
-                }
+		if ( !lstObj.empty() )
+		{
+			for ( li=lstObj.begin();li!=lstObj.end();++li )
+			{
+				try
+				{
+					string ob(*li);
+					string fname(curSection+ "/"+ ob);
+					ObjectId id = conf->oind->getIdByFullName( fname );
+					if( id == DefaultObjectId )
+						cout << "(readSection): ID?! для " << fname << endl;
+					else
+						getInfo(id);
+				}
+				catch(Exception& ex)
+				{
+					cout << "(readSection): " << ex << endl;
+				}
 
-            }
-        }
-        else
-            cout << " секция " << secRoot << "/" << section << " не содержит объектов " << endl;
-    }
+			}
+		}
+		else
+			cout << " секция " << secRoot << "/" << section << " не содержит объектов " << endl;
+	}
 }
 // ---------------------------------------------------------------------------
 void SViewer::getInfo( ObjectId id )
 {
-    CORBA::Object_var oref;
-    try
-    {
-        try
-        {
-            oref = cache.resolve(id, conf->getLocalNode());
-        }
-        catch( NameNotFound ){}
+	CORBA::Object_var oref;
+	try
+	{
+		try
+		{
+			oref = cache.resolve(id, conf->getLocalNode());
+		}
+		catch( NameNotFound ){}
 
-        if( CORBA::is_nil(oref) )
-        {
-            oref = ui.resolve(id);
-            cache.cache(id, conf->getLocalNode(), oref);
-        }
+		if( CORBA::is_nil(oref) )
+		{
+			oref = ui.resolve(id);
+			cache.cache(id, conf->getLocalNode(), oref);
+		}
 
-        IONotifyController_i_var ioc = IONotifyController_i::_narrow(oref);
-        if( CORBA::is_nil(ioc) )
-        {
-            cout << "(getInfo): nil references" << endl;
-            return;
-        }
+		IONotifyController_i_var ioc = IONotifyController_i::_narrow(oref);
+		if( CORBA::is_nil(ioc) )
+		{
+			cout << "(getInfo): nil references" << endl;
+			return;
+		}
 
-        IOController_i::SensorInfoSeq_var amap = ioc->getSensorsMap();
-        IONotifyController_i::ThresholdsListSeq_var tlst = ioc->getThresholdsList();
+		IOController_i::DSensorInfoSeq_var dmap = ioc->getDigitalSensorsMap();
+		IOController_i::ASensorInfoSeq_var amap = ioc->getAnalogSensorsMap();
+		IONotifyController_i::ThresholdsListSeq_var tlst = ioc->getThresholdsList();
 
-        try
-        { updateSensors(amap, id);
-        }catch(...){}
+		try
+		{ updateDSensors(dmap, id);
+		}catch(...){};
 
-        try
-        { updateThresholds(tlst, id);
-        }catch(...){}
+		try
+		{ updateASensors(amap, id);
+		}catch(...){}
 
-        return;
-    }
-    catch(Exception& ex)
-    {
-        cout << "(getInfo):" << ex << endl;
-    }
-    catch(...)
-    {
-        cout << "(getInfo): catch ..." << endl;
-    }
+		try
+		{ updateThresholds(tlst, id);
+		}catch(...){}
 
-    cache.erase(id, conf->getLocalNode());
+		return;
+	}
+	catch(Exception& ex)
+	{
+		cout << "(getInfo):" << ex << endl;
+	}
+	catch(...)
+	{
+		cout << "(getInfo): catch ..." << endl;
+	}
+
+	cache.erase(id, conf->getLocalNode());
 }
 
 // ---------------------------------------------------------------------------
-void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetTypes::ObjectId oid )
+void SViewer::updateDSensors(IOController_i::DSensorInfoSeq_var& dmap, UniSetTypes::ObjectId oid )
 {
-    string owner = ORepHelpers::getShortName(conf->oind->getMapName(oid));
-    cout << "\n======================================================\n" << owner;
-    cout << "\t Датчики";
-    cout << "\n------------------------------------------------------"<< endl;
-    int size = amap->length();
-    for(int i=0; i<size; i++)
-    {
-        if( amap[i].type == UniversalIO::AI || amap[i].type == UniversalIO::DI )
-        {
-//            UniSetTypes::KeyType k = key(amap[i].si.id, amap[i].si.node);
-            string name(conf->oind->getNameById(amap[i].si.id, amap[i].si.node));
-            if( isShort )
-                name = ORepHelpers::getShortName(name);
-            string txtname( conf->oind->getTextName(amap[i].si.id) );
-            printInfo( amap[i].si.id, name, amap[i].value, owner, txtname, "AI");
-        }
-    }
-    cout << "------------------------------------------------------\n";
+	string owner = ORepHelpers::getShortName(conf->oind->getMapName(oid));
+	cout << "\n======================================================\n" << owner;
+	cout << "\t Дискретные датчики";
+	cout << "\n------------------------------------------------------"<< endl;
 
-    cout << "\n======================================================\n" << owner;
-    cout << "\t Выходы";
-    cout << "\n------------------------------------------------------"<< endl;
-    for(int i=0; i<size; i++)
-    {
-        if( amap[i].type == UniversalIO::AO || amap[i].type == UniversalIO::DO )
-        {
-//            UniSetTypes::KeyType k = key(amap[i].si.id, amap[i].si.node);
-            string name(conf->oind->getNameById(amap[i].si.id, amap[i].si.node));
-            if( isShort )
-                name = ORepHelpers::getShortName(name);
-            string txtname( conf->oind->getTextName(amap[i].si.id) );
-            printInfo( amap[i].si.id, name, amap[i].value, owner, txtname, "AO");
-        }
-    }
-    cout << "------------------------------------------------------\n";
+	int size = dmap->length();
+	for(int i=0; i<size; i++)
+	{
+		if( dmap[i].type == UniversalIO::DigitalInput )
+		{
+//			UniSetTypes::KeyType k = key(dmap[i].si.id, dmap[i].si.node);
+			string name(conf->oind->getNameById(dmap[i].si.id, dmap[i].si.node));
+			if( isShort )
+				name = ORepHelpers::getShortName(name);
+
+			string txtname( conf->oind->getTextName(dmap[i].si.id) );
+			printInfo(dmap[i].si.id, name, dmap[i].state, owner, txtname,"DI");
+		}
+	}
+	cout << "------------------------------------------------------\n";
+
+	cout << "\n======================================================\n" << owner;
+	cout << "\t Дискретные выходы";
+	cout << "\n------------------------------------------------------"<< endl;
+	for(int i=0; i<size; i++)
+	{
+		if( dmap[i].type == UniversalIO::DigitalOutput )
+		{
+//			UniSetTypes::KeyType k = key(dmap[i].si.id, dmap[i].si.node);
+			string name(conf->oind->getNameById(dmap[i].si.id, dmap[i].si.node));
+			if( isShort )
+				name = ORepHelpers::getShortName(name);
+
+			string txtname( conf->oind->getTextName(dmap[i].si.id) );
+			printInfo(dmap[i].si.id, name, dmap[i].state, owner, txtname, "DO");
+		}
+	}
+	cout << "------------------------------------------------------\n";
+
+}
+// ---------------------------------------------------------------------------
+void SViewer::updateASensors(IOController_i::ASensorInfoSeq_var& amap, UniSetTypes::ObjectId oid)
+{
+	string owner = ORepHelpers::getShortName(conf->oind->getMapName(oid));
+	cout << "\n======================================================\n" << owner;
+	cout << "\t Аналоговые датчики";
+	cout << "\n------------------------------------------------------"<< endl;
+	int size = amap->length();
+	for(int i=0; i<size; i++)
+	{
+		if( amap[i].type == UniversalIO::AnalogInput )
+		{
+//			UniSetTypes::KeyType k = key(amap[i].si.id, amap[i].si.node);
+			string name(conf->oind->getNameById(amap[i].si.id, amap[i].si.node));
+			if( isShort )
+				name = ORepHelpers::getShortName(name);
+			string txtname( conf->oind->getTextName(amap[i].si.id) );
+			printInfo( amap[i].si.id, name, amap[i].value, owner, txtname, "AI");
+		}
+	}
+	cout << "------------------------------------------------------\n";
+
+	cout << "\n======================================================\n" << owner;
+	cout << "\t Аналоговые выходы";
+	cout << "\n------------------------------------------------------"<< endl;
+	for(int i=0; i<size; i++)
+	{
+		if( amap[i].type == UniversalIO::AnalogOutput )
+		{
+//			UniSetTypes::KeyType k = key(amap[i].si.id, amap[i].si.node);
+			string name(conf->oind->getNameById(amap[i].si.id, amap[i].si.node));
+			if( isShort )
+				name = ORepHelpers::getShortName(name);
+			string txtname( conf->oind->getTextName(amap[i].si.id) );
+			printInfo( amap[i].si.id, name, amap[i].value, owner, txtname, "AO");
+		}
+	}
+	cout << "------------------------------------------------------\n";
 
 }
 // ---------------------------------------------------------------------------
 void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, UniSetTypes::ObjectId oid )
 {
-    int size = tlst->length();
-    string owner = ORepHelpers::getShortName(conf->oind->getMapName(oid));
-    cout << "\n======================================================\n" << owner;
-    cout << "\t Пороговые датчики";
-    cout << "\n------------------------------------------------------"<< endl;
+	int size = tlst->length();
+	string owner = ORepHelpers::getShortName(conf->oind->getMapName(oid));
+	cout << "\n======================================================\n" << owner;
+	cout << "\t Пороговые датчики";
+	cout << "\n------------------------------------------------------"<< endl;
 
-    for(int i=0; i<size; i++)
-    {
-        cout << "(" << setw(5) << tlst[i].si.id << ") | ";
-        switch( tlst[i].type  )
-        {
-            case UniversalIO::AI:
-                cout << "AI";
-            break;
+	for(int i=0; i<size; i++)
+	{
+		cout << "(" << setw(5) << tlst[i].si.id << ") | ";
+		switch( tlst[i].type  )
+		{
+			case UniversalIO::AnalogInput:
+				cout << "AI";
+			break;
 
-            case UniversalIO::AO:
-                cout << "AO";
-            break;
+			case UniversalIO::AnalogOutput:
+				cout << "AO";
+			break;
 
-            default:
-                cout << "??";
-            break;
-        }
+			default:
+				cout << "??";
+			break;
+		}
 
-        string sname(conf->oind->getNameById( tlst[i].si.id, tlst[i].si.node ));
-        if( isShort )
-                sname = ORepHelpers::getShortName(sname);
+		string sname(conf->oind->getNameById( tlst[i].si.id, tlst[i].si.node ));
+		if( isShort )
+				sname = ORepHelpers::getShortName(sname);
 
-        cout << " | " << setw(60) << sname << " | " << setw(5) << tlst[i].value << endl;
+		cout << " | " << setw(60) << sname << " | " << setw(5) << tlst[i].value << endl;
 
-        int m = tlst[i].tlist.length();
-        for( unsigned int k=0; k<m; k++ )
-        {
-            IONotifyController_i::ThresholdInfo* ti = &tlst[i].tlist[k];
-            cout << "\t(" << setw(3) << ti->id << ")  |  " << ti->state << "  |  hi: " << setw(5) << ti->hilimit;
-            cout << " | low: " << setw(5) << ti->lowlimit;
-            cout << endl;
-        }
-    }
+		int m = tlst[i].tlist.length();
+		for( int k=0; k<m; k++ )
+		{
+			IONotifyController_i::ThresholdInfo* ti = &tlst[i].tlist[k];
+			cout << "\t(" << setw(3) << ti->id << ")  |  " << ti->state << "  |  hi: " << setw(5) << ti->hilimit;
+			cout << " | low: " << setw(5) << ti->lowlimit;
+			cout << " | sb: " << setw(5) << ti->sensibility << endl;
+		}
+	}
 }
 // ---------------------------------------------------------------------------
 
 void SViewer::printInfo(UniSetTypes::ObjectId id, const string& sname, long value, const string& owner, 
-                        const string& txtname, const string& iotype)
+						const string& txtname, const string& iotype)
 {
-    cout << "(" << setw(5) << id << ")" << " | " << setw(2) << iotype << " | " << setw(60) << sname << "   | " << setw(5) << value << endl; // << "\t | " << setw(40) << owner << "\t | " << txtname << endl;
+	cout << "(" << setw(5) << id << ")" << " | " << setw(2) << iotype << " | " << setw(60) << sname << "   | " << setw(5) << value << endl; // << "\t | " << setw(40) << owner << "\t | " << txtname << endl;
 }
 // ---------------------------------------------------------------------------

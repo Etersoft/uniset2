@@ -30,34 +30,34 @@
 
 //---------------------------------------------------------------------------
 /*!
-    Реализация базового класса с использованием локальных таймеров
+	Реализация базового класса с использованием локальных таймеров
 */ 
 class IONotifyController_LT:
-    public IONotifyController
+	public IONotifyController
 {
-    public:
-        IONotifyController_LT( UniSetTypes::ObjectId id );
-        IONotifyController_LT();
-        virtual ~IONotifyController_LT();
+	public:
+		IONotifyController_LT( UniSetTypes::ObjectId id );
+		IONotifyController_LT();
+		virtual ~IONotifyController_LT();
 
-    protected:
+	protected:
 
-        /*! заказ локального таймера
-            \param timerid - идентификатор таймера
-            \param timeMS - период. 0 - означает отказ от таймера
-            \param ticks - количество уведомлений. "-1"- постоянно
-            \return Возвращает время [мсек] оставшееся до срабатывания
-            очередного таймера
-        */
-        void askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, short ticks=-1,
-                        UniSetTypes::Message::Priority p=UniSetTypes::Message::High );
+		/*! заказ локального таймера
+			\param timerid - идентификатор таймера
+			\param timeMS - период. 0 - означает отказ от таймера
+			\param ticks - количество уведомлений. "-1"- постоянно
+			\return Возвращает время [мсек] оставшееся до срабатывания
+			очередного таймера
+		*/
+		void askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, short ticks=-1,
+						UniSetTypes::Message::Priority p=UniSetTypes::Message::High );
 
-        /*! функция вызываемая из потока */
-        virtual void callback();
+		/*! функция вызываемая из потока */
+		virtual void callback();
 
-        timeout_t sleepTime;
-        LT_Object lt;
-    private:
+		timeout_t sleepTime;
+		LT_Object lt;
+	private:
 
 };
 //--------------------------------------------------------------------------

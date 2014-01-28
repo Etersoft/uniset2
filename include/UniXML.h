@@ -18,10 +18,10 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *  \author Vitaly Lipatov, PavelVainerman
+ *  \author Vitaly Lipatov
  *  \par
  
- *    \bug НЕ РАБОТАЕТ функция findNode. (не ищет по полю name, если задать)
+ *	\bug НЕ РАБОТАЕТ функция findNode. (не ищет по полю name, если задать)
  */
 // --------------------------------------------------------------------------
 
@@ -38,185 +38,180 @@
 #include <libxml/tree.h>
 // --------------------------------------------------------------------------
 class UniXML_iterator:
-    public std::iterator<std::bidirectional_iterator_tag, xmlNode, ptrdiff_t,xmlNode*, xmlNode&>
+	public std::iterator<std::bidirectional_iterator_tag, xmlNode, ptrdiff_t,xmlNode*, xmlNode&>
 {
-    public:
-        UniXML_iterator(xmlNode* node) :
-            curNode(node)
-        {}
-        UniXML_iterator() {}
+	public:
+		UniXML_iterator(xmlNode* node) :
+			curNode(node)
+		{}
+		UniXML_iterator() {}
 
-        std::string getProp( const std::string& name );
-        std::string getPropUtf8( const std::string& name );
-        int getIntProp( const std::string& name );
-        /// if value if not positive ( <= 0 ), returns def
-        int getPIntProp( const std::string& name, int def );
-        void setProp( const std::string& name, const std::string& text );
+		std::string getProp(const std::string name) const;
+		std::string getPropUtf8(const std::string name) const;
+		int getIntProp(const std::string name) const;
+		/// if value if not positive ( <= 0 ), returns def
+		int getPIntProp(const std::string name, int def) const;
+		void setProp(const std::string name, const std::string text);
 
-        bool findName( const std::string& node, const std::string& searchname );
-        bool find( const std::string& searchnode);
+		bool findName(const std::string node, const std::string searchname);
+		bool find(const std::string searchnode);
 
-        /*! Перейти к следующему узлу. Возвращает false, если некуда перейти */
-        bool goNext();
+		/*! Перейти к следующему узлу. Возвращает false, если некуда перейти */
+		bool goNext();
 
-        /*! Перейти насквозь к следующему узлу. Возвращает false, если некуда перейти */
-        bool goThrowNext();
+		/*! Перейти насквозь к следующему узлу. Возвращает false, если некуда перейти */
+		bool goThrowNext();
 
-        /*! Перейти к предыдущему узлу */
-        bool goPrev();
+		/*! Перейти к предыдущему узлу */
+		bool goPrev();
 
-        bool canPrev();
-        bool canNext();
+		bool canPrev();
+		bool canNext();
 
-        // Перейти к следующему узлу
-        UniXML_iterator operator ++(int);
-        UniXML_iterator operator ++();
+		// Перейти к следующему узлу
+		UniXML_iterator operator ++(int);
+		UniXML_iterator operator ++();
 
-        // Перейти к предыдущему узлу
-        UniXML_iterator operator --(int);
-        UniXML_iterator operator --();
+		// Перейти к предыдущему узлу
+		UniXML_iterator operator --(int);
+		UniXML_iterator operator --();
 
-        /*! Перейти на один уровень выше
-            \note Если перейти не удалось, итератор остаётся указывать на прежний узел
-        */
-        bool goParent();
+		/*! Перейти на один уровень выше
+			\note Если перейти не удалось, итератор остаётся указывать на прежний узел
+		*/
+		bool goParent();
 
-        /*! Перейти на один уровень ниже
-            \note Если перейти не удалось, итератор остаётся указывать на прежний узел
-        */
-        bool goChildren();
+		/*! Перейти на один уровень ниже
+			\note Если перейти не удалось, итератор остаётся указывать на прежний узел
+		*/
+		bool goChildren();
 
-        // Получить текущий узел
-        xmlNode* getCurrent()
-        {
-            return curNode;
-        }
+		// Получить текущий узел
+		xmlNode* getCurrent() const
+		{
+			return curNode;
+		}
 
-        // Получить название текущего узла
-        const std::string getName() const
-        {
-            if( curNode )
-                return (char*) curNode->name;
-            else
-                return "";
-        }
+		// Получить название текущего узла
+		const std::string getName() const
+		{
+			if( curNode )
+				return (char*) curNode->name;
+			else
+				return "";
+		}
 
-        const std::string getContent() const;
+		const std::string getContent() const;
 
-        operator xmlNode*() const
-        {
-            //ulog.< "current\n";
-            return curNode;
-        }
+		operator xmlNode*()
+		{
+			//unideb << "current\n";
+			return curNode;
+		}
 
-        inline void goBegin()
-        {
-            while(canPrev()){goPrev();}
-        }
+		inline void goBegin()
+		{
+			while(canPrev()){goPrev();}
+		}
 
-        inline void goEnd()
-        {
-            while(canNext()){goNext();}
-        }
+		inline void goEnd()
+		{
+			while(canNext()){goNext();}
+		}
 
-    protected:
-        xmlNode* curNode;
+	protected:
+		xmlNode* curNode;
 };
 // --------------------------------------------------------------------------
 class UniXML
 {
 public:
 
-    typedef UniXML_iterator iterator;
+	typedef UniXML_iterator iterator;
 
-    inline xmlNode* getFirstNode()
-    {
-        return xmlDocGetRootElement(doc);
-    }
+	inline xmlNode* getFirstNode()
+	{
+		return xmlDocGetRootElement(doc);
+	}
 
-    inline xmlNode* getFirstNode() const
-    {
-        return xmlDocGetRootElement(doc);
-    }
+	/*! возвращает итератор на самый первый узел документа */
+	inline iterator begin()
+	{
+		return iterator(getFirstNode());
+	}
 
+	inline iterator end()
+	{
+		return  iterator(NULL);
+	}
 
-    /*! возвращает итератор на самый первый узел документа */
-    inline iterator begin()
-    {
-        return iterator(getFirstNode());
-    }
+	// Загружает указанный файл
+	void open(const std::string filename);
 
-    inline iterator end()
-    {
-        return  iterator(NULL);
-    }
+	void close();
+	inline bool isOpen(){ return doc!=0; }
+	UniXML(const std::string filename);
 
-    // Загружает указанный файл
-    void open(const std::string& filename);
+	UniXML();
 
-    void close();
-    inline bool isOpen(){ return doc!=0; }
-    UniXML( const std::string& filename );
+	~UniXML();
 
-    UniXML();
+	xmlNode* cur;
+	xmlDoc* doc;
+	std::string filename;
 
-    ~UniXML();
+	// Создать новый XML-документ
+	void newDoc(const std::string& root_node, std::string xml_ver="1.0");
 
-    xmlNode* cur;
-    xmlDoc* doc;
-    std::string filename;
+	// Получить свойство name указанного узла node
+	static std::string getProp(const xmlNode* node, const std::string name);
+	static std::string getPropUtf8(const xmlNode* node, const std::string name);
+	static int getIntProp(const xmlNode* node, const std::string name);
+	/// if value if not positive ( <= 0 ), returns def
+	static int getPIntProp(const xmlNode* node, const std::string name, int def);
 
-    // Создать новый XML-документ
-    void newDoc(const std::string& root_node, std::string xml_ver="1.0");
+	// Установить свойство name указанного узла node
+	static void setProp(xmlNode* node, const std::string name, const std::string text);
 
-    // Получить свойство name указанного узла node
-    static std::string getProp(const xmlNode* node, const std::string& name);
-    static std::string getPropUtf8(const xmlNode* node, const std::string& name);
-    static int getIntProp(const xmlNode* node, const std::string& name);
-    /// if value if not positive ( <= 0 ), returns def
-    static int getPIntProp(const xmlNode* node, const std::string& name, int def);
+	// Добавить новый дочерний узел
+	static xmlNode* createChild(xmlNode* node, const std::string title, const std::string text);
 
-    // Установить свойство name указанного узла node
-    static void setProp(xmlNode* node, const std::string& name, const std::string& text);
+	// Добавить следующий узел
+	static xmlNode* createNext(xmlNode* node, const std::string title, const std::string text);
 
-    // Добавить новый дочерний узел
-    static xmlNode* createChild(xmlNode* node, const std::string& title, const std::string& text);
+	// Удалить указанный узел и все вложенные узлы
+	static void removeNode(xmlNode* node);
 
-    // Добавить следующий узел
-    static xmlNode* createNext(xmlNode* node, const std::string& title, const std::string& text);
+	// копировать указанный узел и все вложенные узлы
+	static xmlNode* copyNode(xmlNode* node, int recursive=1);
 
-    // Удалить указанный узел и все вложенные узлы
-    static void removeNode(xmlNode* node);
+	// Сохранить в файл, если параметр не указан, сохраняет в тот файл
+	// который был загружен последним.
+	bool save(const std::string filename="", int level = 2);
 
-    // копировать указанный узел и все вложенные узлы
-    static xmlNode* copyNode(xmlNode* node, int recursive=1);
+	// Переместить указатель к следующему узлу
+	static xmlNode* nextNode(xmlNode* node);
 
-    // Сохранить в файл, если параметр не указан, сохраняет в тот файл
-    // который был загружен последним.
-    bool save(const std::string& filename="", int level = 2);
+	// После проверки исправить рекурсивный алгоритм на обычный,
+	// используя ->parent
+	xmlNode* findNode(xmlNode* node, const std::string searchnode, const std::string name = "") const;
+	xmlNode* findNodeUtf8(xmlNode* node, const std::string searchnode, const std::string name = "") const;
 
-    // Переместить указатель к следующему узлу
-    static xmlNode* nextNode(xmlNode* node);
-
-    // После проверки исправить рекурсивный алгоритм на обычный,
-    // используя ->parent
-    xmlNode* findNode( xmlNode* node, const std::string& searchnode, const std::string& name = "") const;
-    xmlNode* findNodeUtf8( xmlNode* node, const std::string& searchnode, const std::string& name = "") const;
-
-    xmlNode* extFindNode( xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top=true ) const;
-    xmlNode* extFindNodeUtf8( xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top=true ) const;
+	xmlNode* extFindNode(xmlNode* node, int depth, int width, const std::string searchnode, const std::string name = "", bool top=true );
+	xmlNode* extFindNodeUtf8(xmlNode* node, int depth, int width, const std::string searchnode, const std::string name = "", bool top=true );
 
 
 protected:
-    // Преобразование текстовой строки из XML в строку нашего внутреннего представления
-    static std::string xml2local( const std::string& text );
+	// Преобразование текстовой строки из XML в строку нашего внутреннего представления
+	static std::string xml2local(const std::string text);
 
-    // Преобразование текстовой строки из нашего внутреннего представления в строку для XML
-    // Возвращает указатель на временный буфер, который один на все вызовы функции.
-    static const xmlChar* local2xml( const std::string& text );
-    static std::string local2utf8( const std::string& text );
+	// Преобразование текстовой строки из нашего внутреннего представления в строку для XML
+	// Возвращает указатель на временный буфер, который один на все вызовы функции.
+	static const xmlChar* local2xml(std::string text);
+	static std::string local2utf8(const std::string text);
 
-    static int recur;
+	static int recur;
+
 };
 // --------------------------------------------------------------------------
 #endif

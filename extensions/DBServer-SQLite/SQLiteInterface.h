@@ -25,7 +25,7 @@
 #define SQLiteInterface_H_
 // ---------------------------------------------------------------------------
 #include <string>
-#include <deque>
+#include <list>
 #include <vector>
 #include <iostream>
 #include <sqlite3.h>
@@ -37,120 +37,120 @@ class SQLiteResult;
 
    Пример использования:
 \code
-    try
-    {
-        SQLiteInterface db;
-        if( !db.connect("test.db") )
-        {
-            cerr << "db connect error: " << db.error() << endl;
-            return 1;
-        }
+	try
+	{
+		SQLiteInterface db;
+		if( !db.connect("test.db") )
+		{
+			cerr << "db connect error: " << db.error() << endl;
+			return 1;
+		}
 
-        stringstream q;
-        q << "SELECT * from main_history";
+		stringstream q;
+		q << "SELECT * from main_history";
 
-        SQLiteResult r = db.query(q.str());
-        if( !r )
-        {
-            cerr << "db connect error: " << db.error() << endl;
-            return 1;
-        }
+		SQLiteResult r = db.query(q.str());
+		if( !r )
+		{
+			cerr << "db connect error: " << db.error() << endl;
+			return 1;
+		}
 
-        for( SQLiteResult::iterator it=r.begin(); it!=r.end(); it++ )
-        {
-            cout << "ROW: ";
-            SQLiteResult::COL col(*it);
-            for( SQLiteResult::COL::iterator cit = it->begin(); cit!=it->end(); cit++ )
-                cout << as_string(cit) << "(" << as_double(cit) << ")  |  ";
-            cout << endl;
-        }
+		for( SQLiteResult::iterator it=r.begin(); it!=r.end(); it++ )
+		{
+			cout << "ROW: ";
+			SQLiteResult::COL col(*it);
+			for( SQLiteResult::COL::iterator cit = it->begin(); cit!=it->end(); cit++ )
+				cout << as_string(cit) << "(" << as_double(cit) << ")  |  ";
+			cout << endl;
+		}
 
-        db.close();
-    }
-    catch(Exception& ex)
-    {
-        cerr << "(test): " << ex << endl;
-    }
-    catch(...)
-    {
-        cerr << "(test): catch ..." << endl;
-    }
+		db.close();
+	}
+	catch(Exception& ex)
+	{
+		cerr << "(test): " << ex << endl;
+	}
+	catch(...)
+	{
+		cerr << "(test): catch ..." << endl;
+	}
 \endcode
 */
 // ----------------------------------------------------------------------------
 // Памятка:
 // Включение режима для журнала - "вести в памяти" (чтобы поберечь CompactFlash)
 // PRAGMA journal_mode = MEMORY
-// При этом конечно есть риск потерять данные при выключении..
+//
 // ----------------------------------------------------------------------------
 class SQLiteInterface
 {
-    public:
+	public:
 
-        SQLiteInterface();
-        ~SQLiteInterface();
+		SQLiteInterface();
+		~SQLiteInterface();
 
-        bool connect( const std::string& dbfile, bool create = false );
-        bool close();
-        bool isConnection();
-        bool ping(); // проверка доступности БД
+		bool connect( const std::string& dbfile, bool create = false );
+		bool close();
+		bool isConnection();
+		bool ping(); // проверка доступности БД
 
-        void setOperationTimeout( timeout_t msec );
-        inline timeout_t getOperationTimeout(){ return opTimeout; }
+		void setOperationTimeout( timeout_t msec );
+		inline timeout_t getOperationTimeout(){ return opTimeout; }
 
-        inline void setOperationCheckPause( timeout_t msec ){ opCheckPause = msec; }
-        inline timeout_t getOperationCheckPause(){ return opCheckPause; }
+		inline void setOperationCheckPause( timeout_t msec ){ opCheckPause = msec; }
+		inline timeout_t getOperationCheckPause(){ return opCheckPause; }
 
-        SQLiteResult query( const std::string& q );
-        const std::string lastQuery();
+		SQLiteResult query( const std::string& q );
+		const std::string lastQuery();
 
-        bool insert( const std::string& q );
-        int insert_id();
+		bool insert( const std::string& q );
+		int insert_id();
 
-        std::string error();
+		std::string error();
 
-    protected:
+	protected:
 
-        bool wait( sqlite3_stmt* stmt, int result );
-        static bool checkResult( int rc );
+		bool wait( sqlite3_stmt* stmt, int result );
+		static bool checkResult( int rc );
 
-    private:
+	private:
 
-        sqlite3* db;
-        // sqlite3_stmt* curStmt;
+		sqlite3* db;
+		// sqlite3_stmt* curStmt;
 
-        std::string lastQ;
-        std::string lastE;
-        bool queryok;    // успешность текущего запроса
-        bool connected;
+		std::string lastQ;
+		std::string lastE;
+		bool queryok;	// успешность текущего запроса
+		bool connected;
 
-        timeout_t opTimeout;
-        timeout_t opCheckPause;
+		timeout_t opTimeout;
+		timeout_t opCheckPause;
 };
 // ----------------------------------------------------------------------------------
 class SQLiteResult
 {
-    public:
-        SQLiteResult(){}
-        SQLiteResult( sqlite3_stmt* s, bool finalize=true );
-        ~SQLiteResult();
+	public:
+		SQLiteResult(){}
+		SQLiteResult( sqlite3_stmt* s, bool finalize=true );
+		~SQLiteResult();
 
-        typedef std::vector<std::string> COL;
-        typedef std::deque<COL> ROW;
+		typedef std::vector<std::string> COL;
+		typedef std::list<COL> ROW;
 
-        typedef ROW::iterator iterator;
+		typedef ROW::iterator iterator;
 
-        inline iterator begin(){ return res.begin(); }
-        inline iterator end(){ return res.end(); }
+		inline iterator begin(){ return res.begin(); }
+		inline iterator end(){ return res.end(); }
 
-        inline operator bool(){ return !res.empty(); }
+		inline operator bool(){ return !res.empty(); }
 
-        inline int size(){ return res.size(); }
-        inline bool empty(){ return res.empty(); }
+		inline int size(){ return res.size(); }
+		inline bool empty(){ return res.empty(); }
 
-    protected:
+	protected:
 
-        ROW res;
+		ROW res;
 };
 // ----------------------------------------------------------------------------
 int num_cols( SQLiteResult::iterator& );

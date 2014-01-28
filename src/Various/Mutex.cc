@@ -31,260 +31,181 @@
 using namespace std;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
-#define MUTEX_DEBUG(m) {}
-
+static mutex_atomic_t mutex_atomic_read( mutex_atomic_t* m ){ return (*m); }
+static mutex_atomic_t mutex_atomic_set( mutex_atomic_t* m, int val ){ return (*m) = val; }
+//static void mutex_atomic_inc( mutex_atomic_t* m ){ (*m)++; }
+//static void mutex_atomic_dec( mutex_atomic_t* m ){ (*m)--; }
+// -----------------------------------------------------------------------------
 uniset_mutex::uniset_mutex():
-    cnd(0),
-    nm(""),
-    locked(0)
+	cnd(0),
+	nm("")
 {
-    cnd = new omni_condition(&mtx);
+	mutex_atomic_set(&locked,0);
+	cnd = new omni_condition(&mtx);
 }
-// -----------------------------------------------------------------------------
-uniset_mutex::uniset_mutex( const string& name ):
-    cnd(0),
-    nm(name),
-    locked(0)
+
+uniset_mutex::uniset_mutex( string name ):
+	nm(name)
 {
-    cnd = new omni_condition(&mtx);
+	mutex_atomic_set(&locked,0);
+	cnd = new omni_condition(&mtx);
 }
-// -----------------------------------------------------------------------------
+
 uniset_mutex::~uniset_mutex()
 {
-    delete cnd;
+	unlock();
+	mutex_atomic_set(&locked,0);
+	delete cnd;
 }
-// -----------------------------------------------------------------------------
-std::ostream& UniSetTypes::operator<<(std::ostream& os, uniset_mutex& m )
-{
-    return os << m.name();
-}
-// -----------------------------------------------------------------------------
+
 void uniset_mutex::lock()
 {
-    sem.wait();
-    locked = 1;
-    MUTEX_DEBUG(cerr << nm << " Locked.." << endl;)
+	sem.wait();
+	mutex_atomic_set(&locked,1);
 }
-// -----------------------------------------------------------------------------
+
 void uniset_mutex::unlock()
 {
-    locked = 0;
-    MUTEX_DEBUG(cerr << nm << " Unlocked.." << endl;)
-    sem.post();
-    cnd->signal();
+	mutex_atomic_set(&locked,0);
+	sem.post();
+	cnd->signal();
 }
-// -----------------------------------------------------------------------------
+
 bool uniset_mutex::isRelease()
 {
-    return !locked;
+	return !(bool)mutex_atomic_read(&locked);
 }
 // -----------------------------------------------------------------------------
 const uniset_mutex &uniset_mutex::operator=(const uniset_mutex& r)
 {
-//    if( this != &r )
-//        locked = r.locked;
+	if( this != &r )
+		locked = r.locked;
 
-    return *this;
+	return *this;
 }
-// -----------------------------------------------------------------------------
+
 uniset_mutex::uniset_mutex( const uniset_mutex& r ):
-    cnd(0),
-    nm(r.nm),
-    locked(r.locked)
+	cnd(0),
+	nm(r.nm)
 {
-    cnd = new omni_condition(&mtx);
+	cnd = new omni_condition(&mtx);
 }
 
 // -----------------------------------------------------------------------------
 uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, int timeMS ):
-    mutex(&m)
+	mutex(&m)
 {
-    if( timeMS <= 0 || mutex->isRelease() )
-    {
-        mutex->lock();
-        mlock = 1;
-        return;
-    }
+	if( timeMS <= 0 || mutex->isRelease() )
+	{
+		mutex->lock();
+		mutex_atomic_set(&mlock,1);
+		return;
+	}
 
-    unsigned long sec, msec;
-    omni_thread::get_time(&sec,&msec, timeMS/1000, (timeMS%1000)*1000000 );
-    mutex->mtx.lock();
-    if( !mutex->cnd->timedwait(sec, msec) )
-    {
-        if( !mutex->name().empty() )
-        {
-            ulog9 << "(mutex_lock): вышло заданное время ожидания "
-                << timeMS << " msec для " << mutex->name() << endl;
-        }
+	unsigned long sec, msec;
+	omni_thread::get_time(&sec,&msec, timeMS/1000, (timeMS%1000)*1000000 );
+	mutex->mtx.lock();
+	if( !mutex->cnd->timedwait(sec, msec) )
+	{
+		if( !mutex->name().empty() && unideb.debugging( Debug::type(Debug::LEVEL9|Debug::WARN)) )
+		{
+			unideb[Debug::type(Debug::LEVEL9|Debug::WARN)]
+				<< "(mutex_lock): вышло заданное время ожидания "
+				<< timeMS << " msec для " << mutex->name() << endl;
+		}
 
-        mlock = 0;
-        mutex->mtx.unlock();
-        return;    //    ресурс не захватываем
-    }
+		mutex_atomic_set(&mlock,0);
+		mutex->mtx.unlock();
+		return;	//	ресурс не захватываем
+	}
 
-    mlock = 1;
-    mutex->lock();
-    mutex->mtx.unlock();
+	mutex_atomic_set(&mlock,1);
+	mutex->lock();
+	mutex->mtx.unlock();
 }
+
 // -----------------------------------------------------------------------------
 bool uniset_mutex_lock::lock_ok()
 { 
-    return mlock;
+	return (bool)mutex_atomic_read(&mlock);
 }
 
 uniset_mutex_lock::~uniset_mutex_lock()
-{    
-    if( mlock )
-    {
-        mlock = 0;
-        mutex->unlock();
-    }
+{
+	if( mutex_atomic_read(&mlock) )
+	{
+		mutex_atomic_set(&mlock,0);
+		mutex->unlock();
+	}
 }
 // -----------------------------------------------------------------------------
 uniset_mutex_lock& uniset_mutex_lock::operator=(const uniset_mutex_lock &r)
 {
-    return *this;
+	return *this;
 }
 // -----------------------------------------------------------------------------
-uniset_rwmutex::uniset_rwmutex( const std::string& name ):
-nm(name),
-wr_wait(0)
+uniset_spin_mutex::uniset_spin_mutex()
 {
-
+	unlock();
 }
 
-ost::AtomicCounter uniset_rwmutex::num  = 0;
-
-uniset_rwmutex::uniset_rwmutex():
-nm(""),
-wr_wait(0)
+uniset_spin_mutex::~uniset_spin_mutex()
 {
+	unlock();
 }
 
-uniset_rwmutex::~uniset_rwmutex()
+const uniset_spin_mutex &uniset_spin_mutex::operator=( const uniset_spin_mutex& r )
 {
+	if( this != &r )
+		unlock();
+
+	return *this;
 }
 
-std::ostream& UniSetTypes::operator<<(std::ostream& os, uniset_rwmutex& m )
+uniset_spin_mutex::uniset_spin_mutex( const uniset_spin_mutex& r )
 {
-    return os << m.name();
+	unlock();
 }
 
-const uniset_rwmutex &uniset_rwmutex::operator=( const uniset_rwmutex& r )
+void uniset_spin_mutex::lock( int check_pause_msec )
 {
-    if( this != &r )
-    {
-        lock();
-        ostringstream s;
-        s << r.nm << "." << (++num);
-        nm = s.str();
-        unlock();
-        MUTEX_DEBUG(cerr << "...copy mutex..." << nm << endl;)
-    }
-
-    return *this;
+	while( mutex_atomic_read(&m) != 0 )
+	{
+		if( check_pause_msec > 0 )
+			msleep(check_pause_msec);
+	}
+	mutex_atomic_set(&m,1);
 }
 
-uniset_rwmutex::uniset_rwmutex( const uniset_rwmutex& r ):
-nm(r.nm)
+void uniset_spin_mutex::unlock()
 {
-}
-
-void uniset_rwmutex::lock()
-{
-    MUTEX_DEBUG(cerr << nm << " prepare Locked.." << endl;)
-    wr_wait +=1;
-    m.writeLock();
-    wr_wait -=1;
-    MUTEX_DEBUG(cerr << nm << " Locked.." << endl;)
-}
-void uniset_rwmutex::wrlock()
-{
-    MUTEX_DEBUG(cerr << nm << " prepare WRLocked.." << endl;)
-    wr_wait +=1;
-    m.writeLock();
-    wr_wait -=1;
-    MUTEX_DEBUG(cerr << nm << " WRLocked.." << endl;)
-}
-void uniset_rwmutex::rlock()
-{
-    MUTEX_DEBUG(cerr << nm << " prepare RLocked.." << endl;)
-
-    while( wr_wait )
-       msleep(2);
-
-    m.readLock();
-    MUTEX_DEBUG(cerr << nm << " RLocked.." << endl;)
-}
-
-void uniset_rwmutex::unlock()
-{
-    m.unlock();
-    MUTEX_DEBUG(cerr << nm << " Unlocked.." << endl;)
-}
-
-bool uniset_rwmutex::tryrlock()
-{
-    return m.tryReadLock();
-}
-
-bool uniset_rwmutex::trywrlock()
-{
-    return m.tryWriteLock();
-}
-
-bool uniset_rwmutex::trylock()
-{
-    return m.tryWriteLock();
+	mutex_atomic_set(&m,0);
 }
 // -------------------------------------------------------------------------------------------
-uniset_rwmutex_wrlock::uniset_rwmutex_wrlock( uniset_rwmutex& _m ):
+uniset_spin_lock::uniset_spin_lock( uniset_spin_mutex& _m, int check_pause_msec ):
 m(_m)
 {
-    m.wrlock();
+	m.lock(check_pause_msec);
 }
 
-uniset_rwmutex_wrlock::~uniset_rwmutex_wrlock()
+uniset_spin_lock::~uniset_spin_lock()
 {
-    m.unlock();
+	m.unlock();
 }
 
-uniset_rwmutex_wrlock::uniset_rwmutex_wrlock( const uniset_rwmutex_wrlock& r ):
- m(r.m)
-{
-
-}
-
-uniset_rwmutex_wrlock& uniset_rwmutex_wrlock::operator=(const uniset_rwmutex_wrlock& r)
-{
-    if( this != &r )
-        m = r.m;
-
-    return *this;
-}
-// -------------------------------------------------------------------------------------------
-uniset_rwmutex_rlock::uniset_rwmutex_rlock( uniset_rwmutex& _m ):
-m(_m)
-{
-    m.rlock();
-}
-
-uniset_rwmutex_rlock::~uniset_rwmutex_rlock()
-{
-    m.unlock();
-}
-
-uniset_rwmutex_rlock::uniset_rwmutex_rlock( const uniset_rwmutex_rlock& r ):
+uniset_spin_lock::uniset_spin_lock( const uniset_spin_lock& r ):
 m(r.m)
 {
 
 }
 
-uniset_rwmutex_rlock& uniset_rwmutex_rlock::operator=(const uniset_rwmutex_rlock& r)
+uniset_spin_lock& uniset_spin_lock::operator=(const uniset_spin_lock& r)
 {
-    if( this != &r )
-        m = r.m;
+	if( this != &r )
+		m = r.m;
 
-    return *this;
+	return *this;
 }
+// -----------------------------------------------------------------------------
+#undef MUTEX_LOCK_SLEEP_MS
 // -----------------------------------------------------------------------------

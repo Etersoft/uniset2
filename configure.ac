@@ -3,7 +3,7 @@
 # See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset], [2.0.0], pv@etersoft.ru)
+AC_INIT([uniset], [1.7.0], pv@etersoft.ru)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 
 # AC_CONFIG_MACRO_DIR([m4])
@@ -30,7 +30,7 @@ AC_ENABLE_SHARED(yes)
 AC_ENABLE_STATIC(no)
 AM_PROG_LIBTOOL
 
-LIBVER=2:0:0
+LIBVER=1:7:0
 AC_SUBST(LIBVER)
 
 # Checks for libraries.
@@ -204,8 +204,10 @@ AC_CONFIG_FILES([Makefile
 				 IDL/Makefile
 				 IDL/UniSetTypes/Makefile
 				 IDL/Processes/Makefile
+				 IDL/Services/Makefile
 				 src/Communications/Makefile
 				 src/Communications/Modbus/Makefile
+				 src/IOs/Makefile
 				 src/Interfaces/Makefile
 				 src/ObjectRepository/Makefile
 				 src/Processes/Makefile
@@ -216,7 +218,9 @@ AC_CONFIG_FILES([Makefile
 				 src/Makefile
 				 include/Makefile
 				 include/modbus/Makefile
+				 include/IOs/Makefile
 				 tests/Makefile
+				 tests/JrnTests/Makefile
 				 tests/UniXmlTest/Makefile
 				 docs/Makefile
 				 docs/UniSetDox.cfg
@@ -227,6 +231,7 @@ AC_CONFIG_FILES([Makefile
 				 Utilities/NullController/Makefile
 				 Utilities/SViewer-text/Makefile
 				 Utilities/SMonit/Makefile
+				 Utilities/InfoServer/Makefile
 				 Utilities/MBTester/Makefile
 				 Utilities/SImitator/Makefile
 				 Utilities/codegen/Makefile

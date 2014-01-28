@@ -8,6 +8,7 @@ HHDIR=$(top_builddir)/include
 
 # Исходные файлы IDL
 IDLFILES=IOController_i.idl
+#UniSetObserver_i.idl
 
 include $(top_builddir)/conf/idl.mk
 
