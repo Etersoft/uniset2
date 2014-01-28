@@ -13,6 +13,8 @@ bin_PROGRAMS 					= uniset-mysql-dbserver
 uniset_mysql_dbserver_LDADD		= libUniSet-mysql.la $(top_builddir)/lib/libUniSet.la
 uniset_mysql_dbserver_SOURCES	= main.cc
 
+include $(top_builddir)/conf/setting.mk
+
 # install
 devel_include_HEADERS = *.h
 devel_includedir = $(includedir)/@PACKAGE@/mysql

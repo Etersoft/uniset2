@@ -6,7 +6,7 @@ bin_PROGRAMS = @PACKAGE@-rrdserver
 
 RRD_VER=@LIBVER@
 
-lib_LTLIBRARIES = libUniSetRRDServer.la
+lib_LTLIBRARIES 			= libUniSetRRDServer.la
 libUniSetRRDServer_la_LDFLAGS  = -version-info $(RRD_VER) 
 libUniSetRRDServer_la_LIBADD		= $(top_builddir)/lib/libUniSet.la \
 									$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \

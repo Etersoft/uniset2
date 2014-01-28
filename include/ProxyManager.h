@@ -32,32 +32,32 @@ class PassiveObject;
 //----------------------------------------------------------------------------
 
 /*! \class ProxyManager
- *    Менеджер пассивных объектов, который выступает вместо них во всех внешних связях....
+ *	Менеджер пассивных объектов, который выступает вместо них во всех внешних связях....
 */ 
 class ProxyManager: 
-    public UniSetObject
+	public UniSetObject
 {   
 
-    public:
-        ProxyManager( UniSetTypes::ObjectId id );
-        ~ProxyManager();
+	public:
+		ProxyManager( UniSetTypes::ObjectId id );
+		~ProxyManager();
 
-        void attachObject( PassiveObject* po, UniSetTypes::ObjectId id );
-        void detachObject( UniSetTypes::ObjectId id );
-    
-        UInterface* uin;
+		void attachObject( PassiveObject* po, UniSetTypes::ObjectId id );
+		void detachObject( UniSetTypes::ObjectId id );
+	
+		UniversalInterface* uin;
 
-    protected:
-        ProxyManager();    
-        virtual void processingMessage( UniSetTypes::VoidMessage* msg );
-        virtual void allMessage( UniSetTypes::VoidMessage* msg );
+	protected:
+		ProxyManager();	
+		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
+		virtual void allMessage( UniSetTypes::VoidMessage* msg );
 
-        virtual bool activateObject();
-        virtual bool disactivateObject();
+		virtual bool activateObject();
+		virtual bool disactivateObject();
 
-    private:
-        typedef std::map<UniSetTypes::ObjectId, PassiveObject*> PObjectMap;
-        PObjectMap omap;
+	private:
+		typedef std::map<UniSetTypes::ObjectId, PassiveObject*> PObjectMap;
+		PObjectMap omap;
 };
 //----------------------------------------------------------------------------------------
 #endif // ProxyManager

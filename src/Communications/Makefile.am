@@ -6,3 +6,4 @@ SUBDIRS=Modbus
 noinst_LTLIBRARIES 				= libCommunications.la
 libCommunications_la_SOURCES	= ComPort.cc ComPort485F.cc
 
+include $(top_builddir)/conf/common.mk

@@ -15,10 +15,12 @@ libUniSet_la_LDFLAGS	= -version-info @LIBVER@
 libUniSet_la_LIBADD		= \
  $(top_builddir)/src/Communications/libCommunications.la \
  $(top_builddir)/src/Communications/Modbus/libModbus.la \
+ $(top_builddir)/src/IOs/libIOs.la \
  $(top_builddir)/src/Interfaces/libInterfaces.la \
  $(top_builddir)/src/ObjectRepository/libObjectsRepository.la \
  $(top_builddir)/src/Processes/libProcesses.la \
  $(top_builddir)/src/Services/libServices.la \
+ $(top_builddir)/src/Threads/libThreads.la \
  $(top_builddir)/src/Timers/libTimers.la \
  $(top_builddir)/src/Various/libVarious.la
 

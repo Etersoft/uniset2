@@ -1,5 +1,3 @@
-SUBDIR=SMemoryTest
-
 noinst_PROGRAMS = calibration
 
 calibration_SOURCES 	= calibration.cc

@@ -39,51 +39,51 @@
       - \ref sec_DBS_Buffer
 
 
-    \section sec_DBS_Comm Общее описание работы DBServer_MySQL
-        Сервис предназначен для работы с БД MySQL. В его задачи входит
-    сохранение всех событий происходищих в системе в БД. К этим
-    событиям относятся изменение состояния датчиков, различные логи 
-    работы процессов и т.п.
-       К моменту запуска, подразумевается, что неободимые таблицы уже 
-    созданы, все необходимые настройки mysql сделаны.
-    \par
-    При работе с БД, сервис в основном пишет в БД. Обработка накопленных данных
-    ведётся уже другими программами (web-интерфейс).
-    
-    \par
-        Для повышения надежности DBServer переодически ( DBServer_MySQL::PingTimer ) проверяет наличие связи с сервером БД.
-    В случае если связь пропала (или не была установлена при старте) DBServer пытается вновь каждые DBServer::ReconnectTimer
-    произвести соединение.    При этом все запросы которые поступают для запии в БД, но не мгут быть записаны складываются
-    в буфер (см. \ref sec_DBS_Buffer).
-    \warning При каждой попытке восстановить соединение DBServer заново читает конф. файл. Поэтому он может подхватить
-    новые настройки.
+	\section sec_DBS_Comm Общее описание работы DBServer_MySQL
+	    Сервис предназначен для работы с БД MySQL. В его задачи входит
+	сохранение всех событий происходищих в системе в БД. К этим
+	событиям относятся изменение состояния датчиков, различные логи 
+	работы процессов и т.п.
+	   К моменту запуска, подразумевается, что неободимые таблицы уже 
+	созданы, все необходимые настройки mysql сделаны.
+	\par
+	При работе с БД, сервис в основном пишет в БД. Обработка накопленных данных
+	ведётся уже другими программами (web-интерфейс).
+	
+	\par
+		Для повышения надежности DBServer переодически ( DBServer_MySQL::PingTimer ) проверяет наличие связи с сервером БД.
+	В случае если связь пропала (или не была установлена при старте) DBServer пытается вновь каждые DBServer::ReconnectTimer
+	произвести соединение.	При этом все запросы которые поступают для запии в БД, но не мгут быть записаны складываются
+	в буфер (см. \ref sec_DBS_Buffer).
+	\warning При каждой попытке восстановить соединение DBServer заново читает конф. файл. Поэтому он может подхватить
+	новые настройки.
 
-    \todo Может не сохранять текст, если задан код... (для экономии в БД)
-    
-    \section sec_DBS_Conf Настройка DBServer
-        Объект DBServer берёт настройки из конфигурационного файла из секции \b<LocalDBServer>.
-    Возможно задать следующие параметры:
-    
-    - \b dbname - название БД
-    - \b dbnode - узел БД
-    - \b dbuser - пользователь 
-    - \b dbpass - пароль для доступа к БД
-    - \b pingTime - период проверки связи с сервером MySQL
-    - \b reconnectTime - время повторной попытки соединения с БД
-    
-    \section sec_DBS_Buffer Защита от потери данных
+	\todo Может не сохранять текст, если задан код... (для экономии в БД)
+	
+	\section sec_DBS_Conf Настройка DBServer
+	    Объект DBServer берёт настройки из конфигурационного файла из секции \b<LocalDBServer>.
+	Возможно задать следующие параметры:
+	
+	- \b dbname - название БД
+	- \b dbnode - узел БД
+	- \b dbuser - пользователь 
+	- \b dbpass - пароль для доступа к БД
+	- \b pingTime - период проверки связи с сервером MySQL
+	- \b reconnectTime - время повторной попытки соединения с БД
+	
+	\section sec_DBS_Buffer Защита от потери данных
      Для того, чтобы на момент отсутствия связи с БД данные по возможности не потерялись,
-    сделан "кольцевой" буфер. Размер которго можно регулировать параметром "--dbserver-buffer-size"
-    или параметром \b bufferSize=".." в конфигурационном файле секции "<LocalDBSErver...>".
+	сделан "кольцевой" буфер. Размер которго можно регулировать параметром "--dbserver-buffer-size"
+	или параметром \b bufferSize=".." в конфигурационном файле секции "<LocalDBSErver...>".
 
-    Механизм построен на том, что если связь с mysql сервером отсутствует или пропала,
-    то сообщения помещаются в колевой буфер, который "опустошается" как только она восстановится.
+	Механизм построен на том, что если связь с mysql сервером отсутствует или пропала,
+	то сообщения помещаются в колевой буфер, который "опустошается" как только она восстановится.
     Если связь не восстановилась, а буфер достиг максимального заданного размера, то удаляются
-    более ранние сообщения. Эту логику можно сменить, если указать параметр "--dbserver-buffer-last-remove" 
-    или \b bufferLastRemove="1", то терятся будут сообщения добавляемые в конец.
+	более ранние сообщения. Эту логику можно сменить, если указать параметр "--dbserver-buffer-last-remove" 
+	или \b bufferLastRemove="1", то терятся будут сообщения добавляемые в конец.
 
-    \section sec_DBS_Tables Таблицы MySQL
-      К основным таблицам относятся следующие:
+	\section sec_DBS_Tables Таблицы MySQL
+	  К основным таблицам относятся следующие:
 \code
 DROP TABLE IF EXISTS `main_history`;
 CREATE TABLE `main_history` (
@@ -132,61 +132,65 @@ CREATE TABLE `main_emergencyrecords` (
 \endcode
 */
 class DBServer_MySQL: 
-    public DBServer
+	public DBServer
 {
-    public:
-        DBServer_MySQL( UniSetTypes::ObjectId id );
-        DBServer_MySQL();
-        ~DBServer_MySQL();
+	public:
+		DBServer_MySQL( UniSetTypes::ObjectId id );
+		DBServer_MySQL();
+		~DBServer_MySQL();
 
-        static const Debug::type DBLogInfoLevel = Debug::LEVEL9;
+		static const Debug::type DBLogInfoLevel = Debug::LEVEL9;
 
-    protected:
-        typedef std::map<int, std::string> DBTableMap;
+	protected:
+		typedef std::map<int, std::string> DBTableMap;
 
-        virtual void initDB(DBInterface *db){};
-        virtual void initDBTableMap(DBTableMap& tblMap){};
+		virtual void initDB(DBInterface *db){};
+		virtual void initDBTableMap(DBTableMap& tblMap){};
 
-        virtual void timerInfo( const UniSetTypes::TimerMessage* tm );
-        virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
-        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm );
-        virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg );
+		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
+		virtual void timerInfo( UniSetTypes::TimerMessage* tm );
+		virtual void sysCommand( UniSetTypes::SystemMessage* sm );
 
-        bool writeToBase( const string& query );
-        virtual void init_dbserver();
-        void createTables( DBInterface* db );
+		// Функции обработки пришедших сообщений
+		virtual void parse( UniSetTypes::SensorMessage* sm );
+		virtual void parse( UniSetTypes::DBMessage* dbmsg );
+		virtual void parse( UniSetTypes::ConfirmMessage* cmsg );
 
-        inline const char* tblName(int key)
-        {
-            return tblMap[key].c_str();
-        }
+		bool writeToBase( const string& query );
+		virtual void init_dbserver();
+		void createTables( DBInterface* db );
+		
+		inline const char* tblName(int key)
+		{
+			return tblMap[key].c_str();
+		}
 
-        enum Timers
-        {
-            PingTimer,        /*!< таймер на переодическую проверку соединения  с сервером БД */
-            ReconnectTimer,   /*!< таймер на повторную попытку соединения с сервером БД (или восстановления связи) */
-            lastNumberOfTimer
-        };
+		enum Timers
+		{
+			PingTimer,        /*!< таймер на переодическую проверку соединения  с сервером БД */
+			ReconnectTimer,   /*!< таймер на повторную попытку соединения с сервером БД (или восстановления связи) */
+			lastNumberOfTimer
+		};
 
 
-        DBInterface *db;
-        int PingTime;
-        int ReconnectTime;
-        bool connect_ok;     /*! признак наличия соеднинения с сервером БД */
+		DBInterface *db;
+		int PingTime;
+		int ReconnectTime;
+		bool connect_ok; 	/*! признак наличия соеднинения с сервером БД */
 
-        bool activate;
+		bool activate;
 
-        typedef std::queue<std::string> QueryBuffer;
+		typedef std::queue<std::string> QueryBuffer;
 
-        QueryBuffer qbuf;
-        unsigned int qbufSize; // размер буфера сообщений.
-        bool lastRemove;
+		QueryBuffer qbuf;
+		unsigned int qbufSize; // размер буфера сообщений.
+		bool lastRemove;
 
-        void flushBuffer();
-        UniSetTypes::uniset_rwmutex mqbuf;
+		void flushBuffer();
+		UniSetTypes::uniset_mutex mqbuf;
 
-    private:
-        DBTableMap tblMap;
+	private:
+		DBTableMap tblMap;
 
 };
 //------------------------------------------------------------------------------------------

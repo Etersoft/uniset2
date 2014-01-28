@@ -5,60 +5,90 @@
 #include "UniSetTypes.h"
 #include "Mutex.h"
 #include "IONotifyController.h"
-#include "UInterface.h"
+#include "UniversalInterface.h"
 class SMInterface
 {
-    public:
+	public:
 
-        SMInterface( UniSetTypes::ObjectId _shmID, UInterface* ui, 
-                        UniSetTypes::ObjectId myid, IONotifyController* ic=0 );
-        ~SMInterface();
+		SMInterface( UniSetTypes::ObjectId _shmID, UniversalInterface* ui, 
+						UniSetTypes::ObjectId myid, IONotifyController* ic=0 );
+		~SMInterface();
 
-        void setValue ( UniSetTypes::ObjectId, long value );
-        void setUndefinedState( IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId supplier );
+		void setState ( UniSetTypes::ObjectId, bool state );
+		void setValue ( UniSetTypes::ObjectId, long value );
+		bool saveState ( IOController_i::SensorInfo& si, bool state, UniversalIO::IOTypes type, UniSetTypes::ObjectId supplier );
+		bool saveValue ( IOController_i::SensorInfo& si, long value, UniversalIO::IOTypes type, UniSetTypes::ObjectId supplier );
 
-        long getValue ( UniSetTypes::ObjectId id );
-        
-        void askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd,
-                        UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
+		bool saveLocalState ( UniSetTypes::ObjectId id, bool state, UniversalIO::IOTypes type=UniversalIO::DigitalInput );
+		bool saveLocalValue ( UniSetTypes::ObjectId id, long value, UniversalIO::IOTypes type=UniversalIO::AnalogInput );
+		
+		void setUndefinedState( IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId supplier );
 
-        IOController_i::SensorInfoSeq* getSensorsMap();
-        IONotifyController_i::ThresholdsListSeq* getThresholdsList();
+		long getValue ( UniSetTypes::ObjectId id );
+		bool getState ( UniSetTypes::ObjectId id );
+		
+		void askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd,
+						UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
-        void localSetValue( IOController::IOStateList::iterator& it, 
-                                UniSetTypes::ObjectId sid, 
-                                CORBA::Long newvalue, UniSetTypes::ObjectId sup_id );
+		inline bool alarm( UniSetTypes::AlarmMessage& msg,  UniSetTypes::ObjectId messenger )
+		{
+			return ui->alarm(msg,messenger);
+		}
+		
+		IOController_i::DSensorInfoSeq* getDigitalSensorsMap();
+		IOController_i::ASensorInfoSeq* getAnalogSensorsMap();
+		IONotifyController_i::ThresholdsListSeq* getThresholdsList();
 
-          long localGetValue( IOController::IOStateList::iterator& it, 
-                            UniSetTypes::ObjectId sid );
+		void localSaveValue( IOController::AIOStateList::iterator& it, 
+								UniSetTypes::ObjectId sid, 
+								CORBA::Long newvalue, UniSetTypes::ObjectId sup_id );
 
-        /*! функция выставления признака неопределённого состояния для аналоговых датчиков 
-            // для дискретных датчиков необходимости для подобной функции нет.
-            // см. логику выставления в функции localSaveState
-        */
-        void localSetUndefinedState( IOController::IOStateList::iterator& it, 
-                                    bool undefined, UniSetTypes::ObjectId sid );
-    
-        // специальные функции
-        IOController::IOStateList::iterator ioEnd();
-        void initIterator( IOController::IOStateList::iterator& it );
-            
-        bool exist();
-        bool waitSMready( int msec, int pause=5000 );
-        bool waitSMworking( UniSetTypes::ObjectId, int msec, int pause=3000 );
+		void localSaveState( IOController::DIOStateList::iterator& it, 
+								UniSetTypes::ObjectId sid, 
+								CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id );
 
-        inline bool isLocalwork(){ return (ic==NULL); }
-        inline UniSetTypes::ObjectId ID(){ return myid; }
-        inline IONotifyController* SM(){ return ic; }
-        inline UniSetTypes::ObjectId getSMID(){ return shmID; }
-        
-    protected:
-        IONotifyController* ic;
-        UInterface* ui;
-        CORBA::Object_var oref;
-        UniSetTypes::ObjectId shmID;
-        UniSetTypes::ObjectId myid;
-        UniSetTypes::uniset_rwmutex shmMutex;
+		void localSetState( IOController::DIOStateList::iterator& it, 
+							UniSetTypes::ObjectId sid, 
+							CORBA::Boolean newstate, UniSetTypes::ObjectId sup_id );
+
+		void localSetValue( IOController::AIOStateList::iterator& it, 
+							UniSetTypes::ObjectId sid, 
+							CORBA::Long value, UniSetTypes::ObjectId sup_id );
+
+		bool localGetState( IOController::DIOStateList::iterator& it, 
+							UniSetTypes::ObjectId sid );
+	  	long localGetValue( IOController::AIOStateList::iterator& it, 
+							UniSetTypes::ObjectId sid );
+
+		/*! функция выставления признака неопределённого состояния для аналоговых датчиков 
+			// для дискретных датчиков необходимости для подобной функции нет.
+			// см. логику выставления в функции localSaveState
+		*/
+		void localSetUndefinedState( IOController::AIOStateList::iterator& it, 
+									bool undefined, UniSetTypes::ObjectId sid );
+	
+		// специальные функции
+		IOController::DIOStateList::iterator dioEnd();
+		IOController::AIOStateList::iterator aioEnd();
+		void initAIterator( IOController::AIOStateList::iterator& it );
+		void initDIterator( IOController::DIOStateList::iterator& it );
+			
+		bool exist();
+		bool waitSMready( int msec, int pause=5000 );
+		bool waitSMworking( UniSetTypes::ObjectId, int msec, int pause=3000 );
+
+		inline bool isLocalwork(){ return (ic==NULL); }
+		inline UniSetTypes::ObjectId ID(){ return myid; }
+		inline IONotifyController* SM(){ return ic; }
+		inline UniSetTypes::ObjectId getSMID(){ return shmID; }
+		
+	protected:
+		IONotifyController* ic;
+		UniversalInterface* ui;
+		CORBA::Object_var oref;
+		UniSetTypes::ObjectId shmID;
+		UniSetTypes::ObjectId myid;
+		UniSetTypes::uniset_mutex shmMutex;
 };
 
 //--------------------------------------------------------------------------

@@ -37,138 +37,142 @@ ProxyManager::~ProxyManager()
 }
 
 ProxyManager::ProxyManager( UniSetTypes::ObjectId id ):
-    UniSetObject(id)
+	UniSetObject(id)
 {
-    uin = &ui;
+	uin = &ui;
 }
 
 
 // -------------------------------------------------------------------------
 void ProxyManager::attachObject( PassiveObject* po, UniSetTypes::ObjectId id )
 {
-    if( id == DefaultObjectId )
-    {
-        uwarn << myname << "(attachObject): попытка добавить объект с id="
-            << DefaultObjectId << " PassiveObject=" << po->getName() << endl;
-
-        return;
-    }
-
-    PObjectMap::iterator it = omap.find(id);
-    if( it==omap.end() )
-        omap.insert(PObjectMap::value_type(id,po));
+	if( id == DefaultObjectId )
+	{
+		unideb[Debug::WARN] << myname << "(attachObject): попытка добавить объект с id="
+			<< DefaultObjectId << " PassiveObject=" << po->getName() << endl;
+		
+		return;
+	}
+	
+	PObjectMap::iterator it = omap.find(id);
+	if( it==omap.end() )
+		omap.insert(PObjectMap::value_type(id,po));
 }
 // -------------------------------------------------------------------------
 void ProxyManager::detachObject( UniSetTypes::ObjectId id )
 {
-    PObjectMap::iterator it = omap.find(id);
-    if( it!=omap.end() )
-        omap.erase(it);
+	PObjectMap::iterator it = omap.find(id);
+	if( it!=omap.end() )
+		omap.erase(it);
 }
 // -------------------------------------------------------------------------
 bool ProxyManager::activateObject()
 {
-    bool ret = UniSetObject::activateObject();
-    if( !ret )
-        return false;
+	bool ret = UniSetObject::activateObject();
+	if( !ret )
+		return false;
 
-    // Регистрируемся от имени объектов
-    for( PObjectMap::const_iterator it=omap.begin();it!=omap.end();++it )
-    {
-        try
-        {
-            for( unsigned int i=0; i<2; i++ )
-            {        
-                try
-                {
-                    uinfo << myname << "(registered): попытка "
-                          << i+1 << " регистриую (id=" << it->first << ") "
-                          << " (pname=" << it->second->getName() << ") "
-                          << conf->oind->getNameById(it->first) << endl;
+	// Регистрируемся от имени объектов
+	for( PObjectMap::const_iterator it=omap.begin();it!=omap.end();++it )
+	{
+		try
+		{
+			for( int i=0; i<2; i++ )
+			{		
+				try
+				{
+					if( unideb.debugging(Debug::INFO) )	
+					{
+						unideb[Debug::INFO] << myname << "(registered): попытка " 
+									<< i+1 << " регистриую (id=" << it->first << ") "
+									<< " (pname=" << it->second->getName() << ") "
+									<< conf->oind->getNameById(it->first) << endl;
+					}
+					ui.registered(it->first, getRef(),true);
+					break;
+				}
+				catch( UniSetTypes::ObjectNameAlready& ex )
+				{
+					unideb[Debug::CRIT] << myname << "(registered): СПЕРВА РАЗРЕГИСТРИРУЮ (ObjectNameAlready)" << endl;				
+					try
+					{
+						ui.unregister(it->first);
+					}
+					catch(Exception & ex)
+					{
+						unideb[Debug::CRIT] << myname << "(unregistered): " << ex << endl;				
+					}
+				}
+			}
+		}
+		catch(Exception& ex )
+		{
+			unideb[Debug::CRIT] << myname << "(activate): " << ex << endl;
+		}
+	}
 
-                    ui.registered(it->first, getRef(),true);
-                    break;
-                }
-                catch( UniSetTypes::ObjectNameAlready& ex )
-                {
-                    ucrit << myname << "(registered): СПЕРВА РАЗРЕГИСТРИРУЮ (ObjectNameAlready)" << endl;
-                    try
-                    {
-                        ui.unregister(it->first);
-                    }
-                    catch(Exception & ex)
-                    {
-                        ucrit << myname << "(unregistered): " << ex << endl;
-                    }
-                }
-            }
-        }
-        catch( Exception& ex )
-        {
-            ucrit << myname << "(activate): " << ex << endl;
-        }
-    }
-
-    return ret;
+	return ret;
 }
 // -------------------------------------------------------------------------
 bool ProxyManager::disactivateObject()
 {
-    for( PObjectMap::const_iterator it=omap.begin();it!=omap.end();++it )
-    {
-        try
-        {
-            ui.unregister(it->first);
-        }
-        catch(Exception& ex )
-        {
-            ucrit << myname << "(activate): " << ex << endl;
-        }
-    }
-
-    return UniSetObject::disactivateObject();
+	for( PObjectMap::const_iterator it=omap.begin();it!=omap.end();++it )
+	{
+		try
+		{
+			ui.unregister(it->first);
+		}
+		catch(Exception& ex )
+		{
+			unideb[Debug::CRIT] << myname << "(activate): " << ex << endl;
+		}
+	}
+	
+	return UniSetObject::disactivateObject();
 }
 // -------------------------------------------------------------------------
 void ProxyManager::processingMessage( UniSetTypes::VoidMessage *msg )
 {
-    try
-    {
-        switch(msg->type)
-        {
-            case Message::SysCommand:
-                allMessage(msg);
-            break;
-
-            default:
-            {
-                PObjectMap::iterator it = omap.find(msg->consumer);
-                if( it!=omap.end() )
-                    it->second->processingMessage(msg);
-                else
-                    ucrit << myname << "(processingMessage): не найден объект "
-                        << " consumer= " << msg->consumer << endl;
-            }
-            break;
-        }
-    }
-    catch( Exception& ex )
-    {
-        ucrit << myname << "(processingMessage): " << ex << endl;
-    }
+	try
+	{
+		switch(msg->type)
+		{
+			case Message::SysCommand:
+				allMessage(msg);
+			break;
+				
+			default:
+			{
+				PObjectMap::iterator it = omap.find(msg->consumer);
+				if( it!=omap.end() )
+					it->second->processingMessage(msg);
+				else
+				{
+					unideb[Debug::CRIT] << myname << "(processingMessage): не найден объект "
+						<< " consumer= " << msg->consumer << endl;
+				}
+			}
+			break;
+		}
+	}
+	catch( Exception& ex )
+	{	
+		unideb[Debug::CRIT] << myname << "(processingMessage): " << ex << endl;
+	}
 }
 // -------------------------------------------------------------------------
 void ProxyManager::allMessage( UniSetTypes::VoidMessage* msg )
 {
-    for( PObjectMap::const_iterator it=omap.begin();it!=omap.end();++it )
-    {
-        try
-        {
-            it->second->processingMessage(msg);
-        }
-        catch( Exception& ex )
-        {
-            ucrit << myname << "(allMessage): " << ex << endl;
-        }
-    }
+	for( PObjectMap::const_iterator it=omap.begin();it!=omap.end();++it )
+	{
+		try
+		{
+			it->second->processingMessage(msg);
+		}
+		catch( Exception& ex )
+		{	
+			unideb[Debug::CRIT] << myname << "(allMessage): " << ex << endl;
+		}
+	}
 }
 // -------------------------------------------------------------------------

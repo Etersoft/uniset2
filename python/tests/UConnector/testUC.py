@@ -3,11 +3,13 @@
 
 import sys
 
-sys.path.append('../../')
+sys.path.append('./.libs/')
+sys.path.append('../../lib/pyUniSet/.libs/')
 sys.path.append('../../lib/pyUniSet/')
-sys.path.append('../../lib/pyUniSet/.libs')
 
-from lib import *
+#from pyUniSet import *
+from pyUConnector import *
+from pyUExceptions import *
 
 if __name__ == "__main__":
 	
@@ -43,14 +45,9 @@ if __name__ == "__main__":
 			print "(1)setValue exception: " + str(e.getError())
 
 		try:
-			print "(2)getValue: %d=%d" % ( 3, uc1.getValue(3,DefaultID) )
+			print "(1)getValue: %d=%d" % ( 3, uc1.getValue(3,DefaultID) )
 		except UException, e:
-			print "(2)getValue exception: " + str(e.getError())
-
-		try:
-			print "(3)getValue: %d=%d" % ( 100, uc1.getValue(100,DefaultID) )
-		except UException, e:
-			print "(3)getValue exception: " + str(e.getError())
+			print "(1)getValue exception: " + str(e.getError())
 
 	except UException, e:
 		print "(testUI): catch exception: " + str(e.getError())

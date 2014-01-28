@@ -8,7 +8,7 @@ bin_PROGRAMS 		= @PACKAGE@-smemory-plus
 	$(top_builddir)/extensions/IOControl/libUniSetIOControl.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
 	$(top_builddir)/extensions/lib/libUniSetExtensions.la \
-	$(SIGC_LIBS) $(COMCPP_LIBS)
+	$(SIGC_LIBS)
 
 @PACKAGE@_smemory_plus_CXXFLAGS	= -I$(top_builddir)/extensions/CanNetwork \
 	-I$(top_builddir)/extensions/UNetUDP \
@@ -17,6 +17,6 @@ bin_PROGRAMS 		= @PACKAGE@-smemory-plus
 	-I$(top_builddir)/extensions/IOControl \
 	-I$(top_builddir)/extensions/SharedMemory \
 	-I$(top_builddir)/extensions/include \
-	$(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+	$(SIGC_CFLAGS)
 
 @PACKAGE@_smemory_plus_SOURCES = smemory-plus.cc

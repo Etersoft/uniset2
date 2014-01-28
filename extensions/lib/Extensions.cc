@@ -8,13 +8,13 @@ using namespace std;
 // -------------------------------------------------------------------------
 namespace UniSetExtensions
 {
-    DebugStream dlog;
-    // -------------------------------------------------------------------------
-    static UniSetTypes::ObjectId shmID = DefaultObjectId;
+	DebugStream dlog;
+	// -------------------------------------------------------------------------
+	static UniSetTypes::ObjectId shmID = DefaultObjectId;
 
-    UniSetTypes::ObjectId getSharedMemoryID()
-    {
-        if( shmID != DefaultObjectId )
+	UniSetTypes::ObjectId getSharedMemoryID()
+	{
+		if( shmID != DefaultObjectId )
             return shmID;
 
         string sname = conf->getArgParam("--smemory-id","SharedMemory1");
@@ -24,110 +24,111 @@ namespace UniSetExtensions
         {
             ostringstream err;
             err << ": Unknown ID for '" << sname << "'" << endl;
-            dcrit << err.str() << endl;
+            dlog[Debug::CRIT] << err.str() << endl;
             throw SystemError(err.str());
         }
-    
-        // cout << "(uniset): shm=" << name << " id=" << shmID << endl;
-        return shmID;
-    }
-    // -------------------------------------------------------------------------
-    static int heartBeatTime = -1; // начальная инициализация
-    int getHeartBeatTime()
-    {
-        if( heartBeatTime != -1 )
-            return heartBeatTime;
+	
+		// cout << "(uniset): shm=" << name << " id=" << shmID << endl;
+		return shmID;
+	}
+	// -------------------------------------------------------------------------
+	static int heartBeatTime = -1; // начальная инициализация
+	int getHeartBeatTime()
+	{
+		if( heartBeatTime != -1 )
+			return heartBeatTime;
 
-        xmlNode* cnode = conf->getNode("HeartBeatTime");
-        if( cnode == NULL )
-        {
-            ostringstream err;
-            err << "Not found conf-node for HeartBeatTime";
-            cerr << err.str() << endl;
-            throw SystemError(err.str());
-        }
+		xmlNode* cnode = conf->getNode("HeartBeatTime");
+		if( cnode == NULL )
+		{
+			ostringstream err;
+			err << "Not found conf-node for HeartBeatTime";
+			cerr << err.str() << endl;
+			throw SystemError(err.str());
+		}
+	
+		UniXML_iterator it(cnode);
+		
+		heartBeatTime = it.getIntProp("time_msec");
+		if( heartBeatTime <= 0 )
+		{
+			heartBeatTime = 0;
+			dlog[Debug::WARN] << "(getHeartBeatTime): механизм 'HEARTBEAT' ОТКЛЮЧЁН!" << endl;
+		}
 
-        UniXML_iterator it(cnode);
+		if( dlog.debugging(Debug::INFO) )
+			dlog[Debug::INFO] << "(getHeartBeatTime): heartbeat time = " << heartBeatTime << endl;
 
-        heartBeatTime = it.getIntProp("time_msec");
-        if( heartBeatTime <= 0 )
-        {
-            heartBeatTime = 0;
-            dwarn << "(getHeartBeatTime): механизм 'HEARTBEAT' ОТКЛЮЧЁН!" << endl;
-        }
+		return heartBeatTime;
+	}
+	// -------------------------------------------------------------------------
+	void escape_string( string& s )
+	{
+		if( s.empty() )
+			return;
 
-        dinfo << "(getHeartBeatTime): heartbeat time = " << heartBeatTime << endl;
+		string::size_type pos = s.find("\\n");
+		
+		while( pos != string::npos )
+		{
+			s.replace(pos,2,"\n");
+			pos = s.find("\\n");
+		}
+	}
+	// -------------------------------------------------------------------------
+	static xmlNode* xmlCalibrationsNode=0;
 
-        return heartBeatTime;
-    }
-    // -------------------------------------------------------------------------
-    void escape_string( string& s )
-    {
-        if( s.empty() )
-            return;
+	xmlNode* getCalibrationsSection()
+	{
+		if( xmlCalibrationsNode )
+			return xmlCalibrationsNode;
+		
+		xmlCalibrationsNode = conf->getNode("Calibrations");
+		return xmlCalibrationsNode;
+		
+	}
+	// -------------------------------------------------------------------------
 
-        string::size_type pos = s.find("\\n");
-        
-        while( pos != string::npos )
-        {
-            s.replace(pos,2,"\n");
-            pos = s.find("\\n");
-        }
-    }
-    // -------------------------------------------------------------------------
-    static xmlNode* xmlCalibrationsNode=0;
+	xmlNode* findNode( xmlNode* node, const string& snode, const string& field )
+	{
+		if( !node )
+			return 0;
+	
+		UniXML_iterator it(node);
+		if( !it.goChildren() )
+			return 0;
 
-    xmlNode* getCalibrationsSection()
-    {
-        if( xmlCalibrationsNode )
-            return xmlCalibrationsNode;
-        
-        xmlCalibrationsNode = conf->getNode("Calibrations");
-        return xmlCalibrationsNode;
-        
-    }
-    // -------------------------------------------------------------------------
+		for( ;it;it.goNext() )
+		{
+			if( snode == it.getProp(field) )
+				return it;
+		}
 
-    xmlNode* findNode( xmlNode* node, const string& snode, const string& field )
-    {
-        if( !node )
-            return 0;
-    
-        UniXML_iterator it(node);
-        if( !it.goChildren() )
-            return 0;
+		return 0;
+	}
+	// -------------------------------------------------------------------------
+	Calibration* buildCalibrationDiagram( const std::string& dname )
+	{
+		xmlNode* root = getCalibrationsSection();
+		if( !root )
+		{
+			ostringstream err;
+			err << "(buildCalibrationDiagram): НЕ НАЙДЕН корневой узел для калибровочных диаграмм";
+			dlog[Debug::CRIT] << err.str() << endl;
+			throw SystemError( err.str());
+		}
 
-        for( ;it;it.goNext() )
-        {
-            if( snode == it.getProp(field) )
-                return it;
-        }
-
-        return 0;
-    }
-    // -------------------------------------------------------------------------
-    Calibration* buildCalibrationDiagram( const std::string& dname )
-    {
-        xmlNode* root = getCalibrationsSection();
-        if( !root )
-        {
-            ostringstream err;
-            err << "(buildCalibrationDiagram): НЕ НАЙДЕН корневой узел для калибровочных диаграмм";
-            dcrit << err.str() << endl;
-            throw SystemError( err.str());
-        }
-
-        xmlNode* dnode = findNode( root, dname, "name" );
-        if( !dnode )
-        {
-            ostringstream err;
-            err << "(buildCalibrationDiagram): НЕ НАЙДЕНА калибровочная диаграмма '" << dname << "'";
-            dcrit << err.str() << endl;
-            throw SystemError( err.str());
-        }
-
-        return new Calibration(dnode);
-    }
+		xmlNode* dnode = findNode( root, dname, "name" );
+		if( !dnode )
+		{
+			ostringstream err;
+			err << "(buildCalibrationDiagram): НЕ НАЙДЕНА калибровочная диаграмма '" << dname << "'";
+			dlog[Debug::CRIT] << err.str() << endl;
+			throw SystemError( err.str());
+		}
+	
+		return new Calibration(dnode);
+	}
 
 } // end of namespace
 // -------------------------------------------------------------------------

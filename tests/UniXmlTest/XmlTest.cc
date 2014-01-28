@@ -28,41 +28,41 @@
 
 int main()
 {
-    
-    UniXML* f = new UniXML();
-    f->newDoc("journal");
-    xmlNode *cur,*beg;
-    beg=cur=f->createChild(f->cur,"0","");
-    char* ch = new char[10];
-    for(int j=1;j<30;j++)
-    {
-        sprintf(ch,"%d",j);
-        cur=f->createNext(cur,ch,"");
-        f->setProp(cur,"name",ch);
-    }
-    for(int j=0;j<10;j++)
-    {
-        sprintf(ch,"%d",j);
-        cur=f->createChild(cur,ch,"");
-        f->setProp(cur,"name",ch);
-        for(int i=0;i<10;i++)
-        {
-            sprintf(ch,"%d",i*j);
-            cur=f->createNext(cur,ch,"");
-            f->setProp(cur,"name",ch);
-        }
-    }
+	
+	UniXML* f = new UniXML();
+	f->newDoc("journal");
+	xmlNode *cur,*beg;
+	beg=cur=f->createChild(f->cur,"0","");
+	char* ch = new char[10];
+	for(int j=1;j<30;j++)
+	{
+		sprintf(ch,"%d",j);
+		cur=f->createNext(cur,ch,"");
+		f->setProp(cur,"name",ch);
+	}
+	for(int j=0;j<10;j++)
+	{
+		sprintf(ch,"%d",j);
+		cur=f->createChild(cur,ch,"");
+		f->setProp(cur,"name",ch);
+		for(int i=0;i<10;i++)
+		{
+			sprintf(ch,"%d",i*j);
+			cur=f->createNext(cur,ch,"");
+			f->setProp(cur,"name",ch);
+		}
+	}
 
-    bool testPassed=true;
-    if(f->extFindNode(beg,9,30,"72","72")!=0)
-        printf("correct, \"72\" has width 30 and depth 9\n");
-    else testPassed=false;
-    if(f->extFindNode(beg,9,29,"72","72")==0)
-        printf("correct, \"72\" has width more than 29\n");
-    else testPassed=false;
-    if(f->extFindNode(beg,8,30,"72","72")==0)
-        printf("correct, \"72\" has depth more than 8\n");
-    else testPassed=false;
-    printf("If test passed it is 1: %d\n", testPassed);
-    return 0;
+	bool testPassed=true;
+	if(f->extFindNode(beg,9,30,"72","72")!=0)
+		printf("correct, \"72\" has width 30 and depth 9\n");
+	else testPassed=false;
+	if(f->extFindNode(beg,9,29,"72","72")==0)
+		printf("correct, \"72\" has width more than 29\n");
+	else testPassed=false;
+	if(f->extFindNode(beg,8,30,"72","72")==0)
+		printf("correct, \"72\" has depth more than 8\n");
+	else testPassed=false;
+	printf("If test passed it is 1: %d\n", testPassed);
+	return 0;
 }

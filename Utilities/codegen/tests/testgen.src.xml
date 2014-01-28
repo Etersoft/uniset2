@@ -39,10 +39,10 @@
   </variables>
   <smap> 
 	<!-- name - название переменной в конф. файле -->
-	<item name="input1_s" vartype="in" comment="comment for input1" smTestID="1"/>
-	<item name="input2_s" vartype="in" comment="comment for input2" />
-	<item name="output1_c" vartype="out" omment="comment for output1" no_check_id="1"/>
-	<item name="loglevel_s" vartype="in" comment="log level control" loglevel="1"/>
+	<item name="input1_s" vartype="in" iotype="DI" comment="comment for input1" smTestID="1"/>
+	<item name="input2_s" vartype="in" iotype="DI" comment="comment for input2" />
+	<item name="output1_c" vartype="out" iotype="DO" omment="comment for output1" no_check_id="1"/>
+	<item name="loglevel_s" vartype="in" iotype="AI" omment="log level control" loglevel="1"/>
   </smap>
 
   <msgmap>

@@ -19,6 +19,8 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \author Pavel Vainerman
+ *  \date   $Date: 2007/12/17 22:50:59 $
+ *  \version $Id: UniSetObject_i.idl,v 1.4 2007/12/17 22:50:59 vpashka Exp $
 */
 // --------------------------------------------------------------------------
 #ifndef UniSetObject_i_IDL_
@@ -29,27 +31,27 @@
 // ---------------------------------------------------------------------------
 //module UniSet
 //{
-    /*!
-     * \interface UniSetObject_i
-     * \brief Базовый интерфес для всех объектов
-     * \author Pavel Vainerman
-     *
-     * Первичный базовый класс. Прародитель всех объектов в системе.
-     * 
-    */
-    interface UniSetObject_i
-    {
-        UniSetTypes::ObjectId getId();            /*!< получение идентификатора объекта */
-        UniSetTypes::ObjectType getType();        /*!< получение типа объекта */
-        UniSetTypes::SimpleInfo getInfo();        /*!< получение информации о внутреннем состоянии объекта */
-        
-        boolean exist();     /*!< проверка существования объекта */
-    
-        /*!  Функция посылки сообщения объекту     */
-        void push(in UniSetTypes::TransportMessage msg);
-    };
+	/*!
+	 * \interface UniSetObject_i
+	 * \brief Базовый интерфес для всех объектов
+	 * \author Pavel Vainerman
+	 *
+	 * Первичный базовый класс. Прародитель всех объектов в системе.
+	 * 
+	*/
+	interface UniSetObject_i
+	{
+		UniSetTypes::ObjectId getId();			/*!< получение идентификатора объекта */
+		UniSetTypes::ObjectType getType();		/*!< получение типа объекта */
+		UniSetTypes::SimpleInfo getInfo();		/*!< получение информации о внутреннем состоянии объекта */
+		
+		boolean exist(); 	/*!< проверка существования объекта */
+	
+		/*!  Функция посылки сообщения объекту 	*/
+		void push(in UniSetTypes::TransportMessage msg);
+	};
 
-//};    // end of module UniSet
+//};	// end of module UniSet
 
 #endif
 // --------------------------------------------------------------------------------------------------------------

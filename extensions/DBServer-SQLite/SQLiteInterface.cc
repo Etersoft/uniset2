@@ -43,202 +43,202 @@ opCheckPause(50)
 
 SQLiteInterface::~SQLiteInterface()
 { 
-    close();
-    delete db;
+	close();
+	delete db;
 }
 
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::ping()
 {
-    return db && ( sqlite3_db_status(db,0,NULL,NULL,0) == SQLITE_OK );
+	return db && ( sqlite3_db_status(db,0,NULL,NULL,0) == SQLITE_OK );
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::connect( const string& dbfile, bool create )
 {
-    // т.к. sqlite3 по умолчанию, создаёт файл при открытии, то проверим "сами"
-//    if( !create && !UniSetTypes::file_exist(dbfile) )
-//        return false;
+	// т.к. sqlite3 по умолчанию, создаёт файл при открытии, то проверим "сами"
+//	if( !create && !UniSetTypes::file_exist(dbfile) )
+//		return false;
 
-    int flags = create ? 0 : SQLITE_OPEN_READWRITE;
+	int flags = create ? 0 : SQLITE_OPEN_READWRITE;
 
-    int rc = sqlite3_open_v2(dbfile.c_str(), &db, flags, NULL);
+	int rc = sqlite3_open_v2(dbfile.c_str(), &db, flags, NULL);
 
-    if( rc != SQLITE_OK )
-    {
-        // cerr << "SQLiteInterface::connect): rc=" << rc << " error: " << sqlite3_errmsg(db) << endl;
-        lastE = "open '" + dbfile + "' error: " + string(sqlite3_errmsg(db));
-        sqlite3_close(db);
-        db = 0;
-        connected = false;
-        return false;
-    }
-    
-    setOperationTimeout(opTimeout);
-    connected = true;
-    return true;
+	if( rc != SQLITE_OK )
+	{
+		// cerr << "SQLiteInterface::connect): rc=" << rc << " error: " << sqlite3_errmsg(db) << endl;
+		lastE = "open '" + dbfile + "' error: " + string(sqlite3_errmsg(db));
+		sqlite3_close(db);
+		db = 0;
+		connected = false;
+		return false;
+	}
+	
+	setOperationTimeout(opTimeout);
+	connected = true;
+	return true;
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::close()
 {
-    if( db )
-    {
-        sqlite3_close(db);
-        db = 0;
-    }
-    
-    return true;
+	if( db )
+	{
+		sqlite3_close(db);
+		db = 0;
+	}
+	
+	return true;
 }
 // -----------------------------------------------------------------------------------------
 void SQLiteInterface::setOperationTimeout( timeout_t msec )
 { 
-    opTimeout = msec; 
-    if( db )
-        sqlite3_busy_timeout(db,opTimeout);
+	opTimeout = msec; 
+	if( db )
+		sqlite3_busy_timeout(db,opTimeout);
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::insert( const string& q )
 {
-    if( !db )
-        return false;
+	if( !db )
+		return false;
 
-    // char* errmsg;
-    sqlite3_stmt* pStmt;
+	// char* errmsg;
+	sqlite3_stmt* pStmt;
 
-    // Компилируем SQL запрос
-    if( sqlite3_prepare(db, q.c_str(), -1, &pStmt, NULL) != SQLITE_OK )
-    {
-        queryok = false;
-        return false;
-    }
+	// Компилируем SQL запрос
+	if( sqlite3_prepare(db, q.c_str(), -1, &pStmt, NULL) != SQLITE_OK )
+	{
+		queryok = false;
+		return false;
+	}
 
-    int rc = sqlite3_step(pStmt);
-    
-    if( !checkResult(rc) && !wait(pStmt, SQLITE_DONE) )
-    { 
-        sqlite3_finalize(pStmt);
-        queryok = false;
-        return false;
-    }
+	int rc = sqlite3_step(pStmt);
+	
+	if( !checkResult(rc) && !wait(pStmt, SQLITE_DONE) )
+	{ 
+		sqlite3_finalize(pStmt);
+		queryok = false;
+		return false;
+	}
 
-    sqlite3_finalize(pStmt);
-    queryok=true;
-    return true;
+	sqlite3_finalize(pStmt);
+	queryok=true;
+	return true;
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::checkResult( int rc )
 {
-    if( rc==SQLITE_BUSY || rc==SQLITE_LOCKED || rc==SQLITE_INTERRUPT || rc==SQLITE_IOERR )
-        return false;
+	if( rc==SQLITE_BUSY || rc==SQLITE_LOCKED || rc==SQLITE_INTERRUPT || rc==SQLITE_IOERR )
+		return false;
 
-    return true;
+	return true;
 }
 // -----------------------------------------------------------------------------------------
 SQLiteResult SQLiteInterface::query( const string& q )
 {
-    if( !db )
-        return SQLiteResult();
+	if( !db )
+		return SQLiteResult();
 
-    // char* errmsg = 0;
-    sqlite3_stmt* pStmt;
+	// char* errmsg = 0;
+	sqlite3_stmt* pStmt;
 
-    // Компилируем SQL запрос
-    sqlite3_prepare(db, q.c_str(), -1, &pStmt, NULL);
-    int rc = sqlite3_step(pStmt);
-    if( !checkResult(rc) && !wait(pStmt, SQLITE_ROW) )
-    {
-        sqlite3_finalize(pStmt);
-        queryok = false;
-        return SQLiteResult();
-    }
-    
-    lastQ = q;
-    queryok=true;
-    return SQLiteResult(pStmt,true);
+	// Компилируем SQL запрос
+	sqlite3_prepare(db, q.c_str(), -1, &pStmt, NULL);
+	int rc = sqlite3_step(pStmt);
+	if( !checkResult(rc) && !wait(pStmt, SQLITE_ROW) )
+	{
+		sqlite3_finalize(pStmt);
+		queryok = false;
+		return SQLiteResult();
+	}
+	
+	lastQ = q;
+	queryok=true;
+	return SQLiteResult(pStmt,true);
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::wait( sqlite3_stmt* stmt, int result )
 {
-    PassiveTimer ptTimeout(opTimeout);
-    while( !ptTimeout.checkTime() )
-    {
-        sqlite3_reset(stmt);
-        int rc = sqlite3_step(stmt);
-        if(  rc == result || rc == SQLITE_DONE )
-            return true;
+	PassiveTimer ptTimeout(opTimeout);
+	while( !ptTimeout.checkTime() )
+	{
+		sqlite3_reset(stmt);
+		int rc = sqlite3_step(stmt);
+		if(  rc == result || rc == SQLITE_DONE )
+			return true;
 
-        msleep(opCheckPause);
-    }
+		msleep(opCheckPause);
+	}
 
-    return false;
+	return false;
 }
 // -----------------------------------------------------------------------------------------
 string SQLiteInterface::error()
 {
-    if( db )
-        lastE = sqlite3_errmsg(db);
+	if( db )
+		lastE = sqlite3_errmsg(db);
 
-    return lastE;
+	return lastE;
 }
 // -----------------------------------------------------------------------------------------
 const string SQLiteInterface::lastQuery()
 {
-    return lastQ;
+	return lastQ;
 }
 // -----------------------------------------------------------------------------------------
 int SQLiteInterface::insert_id()
 {
-    if( !db )
-        return 0;
+	if( !db )
+		return 0;
 
-    return sqlite3_last_insert_rowid(db);
+	return sqlite3_last_insert_rowid(db);
 }
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::isConnection()
 {
-    return connected;
+	return connected;
 }
 // -----------------------------------------------------------------------------------------
 int num_cols( SQLiteResult::iterator& it )
 {
-    return it->size();
+	return it->size();
 }
 // -----------------------------------------------------------------------------------------
 int as_int( SQLiteResult::iterator& it, int col )
 {
-//    if( col<0 || col >it->size() )
-//        return 0;
-    return uni_atoi( (*it)[col] );
+//	if( col<0 || col >it->size() )
+//		return 0;
+	return uni_atoi( (*it)[col] );
 }
 // -----------------------------------------------------------------------------------------
 double as_double( SQLiteResult::iterator& it, int col )
 {
-    return atof( ((*it)[col]).c_str() );
+	return atof( ((*it)[col]).c_str() );
 }
 // -----------------------------------------------------------------------------------------
 string as_string( SQLiteResult::iterator& it, int col )
 {
-    return ((*it)[col]);
+	return ((*it)[col]);
 }
 // -----------------------------------------------------------------------------------------
 int as_int( SQLiteResult::COL::iterator& it )
 {
-    return uni_atoi( (*it) );
+	return uni_atoi( (*it) );
 }
 // -----------------------------------------------------------------------------------------
 double as_double( SQLiteResult::COL::iterator& it )
 {
-    return atof( (*it).c_str() );
+	return atof( (*it).c_str() );
 }
 // -----------------------------------------------------------------------------------------
 std::string as_string( SQLiteResult::COL::iterator& it )
 {
-    return (*it);
+	return (*it);
 }
 // -----------------------------------------------------------------------------------------
 #if 0
 SQLiteResult::COL get_col( SQLiteResult::ROW::iterator& it )
 { 
-    return (*it); 
+	return (*it); 
 }
 #endif
 // -----------------------------------------------------------------------------------------
@@ -249,24 +249,24 @@ SQLiteResult::~SQLiteResult()
 // -----------------------------------------------------------------------------------------
 SQLiteResult::SQLiteResult( sqlite3_stmt* s, bool finalize )
 {
-    do
-    {
-        int n = sqlite3_data_count(s);
-        COL    c;
+	do
+	{
+		int n = sqlite3_data_count(s);
+		COL	c;
 
-        for( unsigned int i=0; i<n; i++ )
-        {
-            char* p = (char*)sqlite3_column_text(s,i);
-            if( p )
-                c.push_back(p);
-            else
-                c.push_back("");
-        }
-        res.push_back(c);
-    }
-    while( sqlite3_step(s) == SQLITE_ROW );
+		for( int i=0; i<n; i++ )
+		{
+			char* p = (char*)sqlite3_column_text(s,i);
+			if( p )
+				c.push_back(p);
+			else
+				c.push_back("");
+		}
+		res.push_back(c);
+	}
+	while( sqlite3_step(s) == SQLITE_ROW );
 
-    if( finalize )
-        sqlite3_finalize(s);
+	if( finalize )
+		sqlite3_finalize(s);
 }
 // -----------------------------------------------------------------------------------------

@@ -5,6 +5,8 @@
 FIRSTSUBDIRS=IDL
 SUBDIRS=. src lib include Utilities extensions python docs
 
+include $(top_builddir)/conf/common.mk
+
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSet.pc
 

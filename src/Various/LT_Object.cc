@@ -22,7 +22,6 @@
 */
 // -------------------------------------------------------------------------- 
 #include <sstream>
-#include <algorithm>
 #include "Exceptions.h"
 #include "UniSetObject.h"
 #include "LT_Object.h"
@@ -34,10 +33,9 @@ using namespace UniSetTypes;
 
 // -----------------------------------------------------------------------------
 LT_Object::LT_Object():
-lstMutex("LT_Object::lstMutex"),
 sleepTime(UniSetTimer::WaitUpTime)
 {
-    tmLast.setTiming(UniSetTimer::WaitUpTime);
+	tmLast.setTiming(UniSetTimer::WaitUpTime);
 }
 
 // -----------------------------------------------------------------------------
@@ -47,135 +45,148 @@ LT_Object::~LT_Object()
 // -----------------------------------------------------------------------------
 timeout_t LT_Object::checkTimers( UniSetObject* obj )
 {
-    try
-    {
-        {    // lock
-            uniset_rwmutex_rlock lock(lstMutex);
+	try
+	{
+		{	// lock
+			uniset_mutex_lock lock(lstMutex, 5000);
+			
+			if( tlst.empty() )
+			{
+				sleepTime = UniSetTimer::WaitUpTime;
+				return sleepTime;
+			}
+		}
 
-            if( tlst.empty() )
-            {
-                sleepTime = UniSetTimer::WaitUpTime;
-                return sleepTime;
-            }
-        }
+		// защита от непрерывного потока сообщений
+		if( tmLast.getCurrent() < UniSetTimer::MinQuantityTime )
+		{
+			// корректируем сперва sleepTime
+			sleepTime = tmLast.getLeft(sleepTime);
+			if( sleepTime < UniSetTimer::MinQuantityTime )
+			{
+				sleepTime=UniSetTimer::MinQuantityTime;
+				return sleepTime;
+			}
+		}
+		
+		{	// lock
+			uniset_mutex_lock lock(lstMutex, 5000);
+			sleepTime = UniSetTimer::WaitUpTime;
+			for( TimersList::iterator li=tlst.begin();li!=tlst.end();++li)
+			{
+				if( li->tmr.checkTime() )
+				{	
+					// помещаем себе в очередь сообщение
+					TransportMessage tm = TimerMessage(li->id, li->priority, obj->getId()).transport_msg();
+					obj->push(tm);
+	
+					// Проверка на количество заданных тактов
+					if( !li->curTick )
+					{
+						li = tlst.erase(li);
+						if( tlst.empty() )
+							sleepTime = UniSetTimer::WaitUpTime;
+						continue;
+					}
+					else if(li->curTick>0 )
+						li->curTick--;
 
-        // защита от непрерывного потока сообщений
-        if( tmLast.getCurrent() < UniSetTimer::MinQuantityTime )
-        {
-            // корректируем сперва sleepTime
-            sleepTime = tmLast.getLeft(sleepTime);
-            if( sleepTime < UniSetTimer::MinQuantityTime )
-            {
-                sleepTime=UniSetTimer::MinQuantityTime;
-                return sleepTime;
-            }
-        }
+					li->reset();
+				}
+				else
+				{
+					li->curTimeMS = tmLast.getLeft(li->curTimeMS);
+				}
 
-        {    // lock
-            uniset_rwmutex_wrlock lock(lstMutex);
-            sleepTime = UniSetTimer::WaitUpTime;
-            for( TimersList::iterator li=tlst.begin(); li!=tlst.end(); ++li )
-            {
-                if( li->tmr.checkTime() )
-                {
-                    // помещаем себе в очередь сообщение
-                    TransportMessage tm = TimerMessage(li->id, li->priority, obj->getId()).transport_msg();
-                    obj->push(tm);
+				// ищем минимальное оставшееся время
+				if( li->curTimeMS < sleepTime || sleepTime == UniSetTimer::WaitUpTime )
+					sleepTime = li->curTimeMS;
+			}	
 
-                    // Проверка на количество заданных тактов
-                    if( !li->curTick )
-                    {
-                        li = tlst.erase(li);
-                        if( li == tlst.end() ) --li;
+			if( sleepTime < UniSetTimer::MinQuantityTime )
+				sleepTime=UniSetTimer::MinQuantityTime;
+		} // unlock		
 
-                        if( tlst.empty() )
-                            sleepTime = UniSetTimer::WaitUpTime;
-                        continue;
-                    }
-                    else if(li->curTick>0 )
-                        li->curTick--;
-
-                    li->reset();
-                }
-                else
-                {
-                    li->curTimeMS = tmLast.getLeft(li->curTimeMS);
-                }
-
-                // ищем минимальное оставшееся время
-                if( li->curTimeMS < sleepTime || sleepTime == UniSetTimer::WaitUpTime )
-                    sleepTime = li->curTimeMS;
-            }
-
-            if( sleepTime < UniSetTimer::MinQuantityTime )
-                sleepTime=UniSetTimer::MinQuantityTime;
-        } // unlock
-
-        tmLast.reset();
-    }
-    catch( Exception& ex )
-    {
-        ucrit << "(checkTimers): " << ex << endl;
-    }
-
-    return sleepTime;
+		tmLast.reset();
+	}
+	catch(Exception& ex)
+	{
+		unideb[Debug::CRIT] << "(checkTimers): " << ex << endl;
+	}
+	
+	return sleepTime;
 }
 // ------------------------------------------------------------------------------------------
 
 timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, clock_t ticks, UniSetTypes::Message::Priority p )
 {
-    if( timeMS > 0 ) // заказ
-    {
-        if( timeMS < UniSetTimer::MinQuantityTime )
-        {
-            ucrit << "(LT_askTimer): [мс] попытка заказть таймер со временем срабатыания "
-                        << " меньше разрешённого " << UniSetTimer::MinQuantityTime << endl;
-            timeMS = UniSetTimer::MinQuantityTime;
-        }
+	if( timeMS > 0 ) // заказ
+	{
+		if( timeMS < UniSetTimer::MinQuantityTime )
+		{
+			unideb[Debug::CRIT] << "(LT_askTimer): [мс] попытка заказть таймер со временем срабатыания "
+						<< " меньше разрешённого " << UniSetTimer::MinQuantityTime << endl;
+			timeMS = UniSetTimer::MinQuantityTime;
+		}
+			
+		{	// lock
+			if( unideb.debugging(Debug::INFO) && !lstMutex.isRelease() )
+				unideb[Debug::INFO] << "(LT_askTimer): придется подождать освобождения lstMutex-а" << endl;
 
-        {    // lock
-            uniset_rwmutex_wrlock lock(lstMutex);
-            // поищем а может уж такой есть
-            if( !tlst.empty() )
-            {
-                for( TimersList::iterator li=tlst.begin(); li!=tlst.end(); ++li )
-                {
-                    if( li->id == timerid )
-                    {
-                        li->curTick = ticks;
-                        li->tmr.setTiming(timeMS);
-                        uinfo << "(LT_askTimer): заказ на таймер(id="
-                                << timerid << ") " << timeMS << " [мс] уже есть..." << endl;
-                        return sleepTime;
-                    }
-                }
-            }
+			uniset_mutex_lock lock(lstMutex, 2000);
+			// поищем а может уж такой есть
+			if( !tlst.empty() )
+			{
+				for( TimersList::iterator li=tlst.begin(); li!=tlst.end(); ++li )
+				{
+					if( li->id == timerid )
+					{
+						li->curTick = ticks;
+						li->tmr.setTiming(timeMS);
+						if( unideb.debugging(Debug::INFO) )
+						{
+							unideb[Debug::INFO] << "(LT_askTimer): заказ на таймер(id="
+								<< timerid << ") " << timeMS << " [мс] уже есть..." << endl;
+						}
+						return sleepTime;
+					}
+				}
+			}
 
-            TimerInfo newti(timerid, timeMS, ticks, p);
-            tlst.push_back(newti);
-            newti.reset();
-        }    // unlock
+			TimerInfo newti(timerid, timeMS, ticks, p);
+			tlst.push_back(newti);
+			newti.reset();
+		}	// unlock
+	
+		if( unideb.debugging(Debug::INFO) )
+			unideb[Debug::INFO] << "(LT_askTimer): поступил заказ на таймер(id="<< timerid << ") " << timeMS << " [мс]\n";
+	}
+	else // отказ (при timeMS == 0)
+	{
+		if( unideb.debugging(Debug::INFO) )
+			unideb[Debug::INFO] << "(LT_askTimer): поступил отказ по таймеру id="<< timerid << endl;	
+		{	// lock
+			if( unideb.debugging(Debug::INFO) && !lstMutex.isRelease() )
+				unideb[Debug::INFO] << "(LT_askTimer): придется подождать освобождения lstMutex-а\n";
+ 			
+ 			uniset_mutex_lock lock(lstMutex, 2000);
+			tlst.remove_if(Timer_eq(timerid));	// STL - способ
+		}	// unlock
+	}
+	
 
-        uinfo << "(LT_askTimer): поступил заказ на таймер(id="<< timerid << ") " << timeMS << " [мс]\n";
-    }
-    else // отказ (при timeMS == 0)
-    {
-        uinfo << "(LT_askTimer): поступил отказ по таймеру id="<< timerid << endl;
-        {    // lock
-            uniset_rwmutex_wrlock lock(lstMutex);
-            tlst.erase( std::remove_if(tlst.begin(),tlst.end(),Timer_eq(timerid)) );
-        }    // unlock
-    }
+	{	// lock
+		if( unideb.debugging(Debug::INFO) && !lstMutex.isRelease() )
+			unideb[Debug::INFO] << "(LT_askTimer): придется подождать освобождения lstMutex-а\n";
 
-    {    // lock
-        uniset_rwmutex_rlock lock(lstMutex);
+		uniset_mutex_lock lock(lstMutex, 2000);
 
-        if( tlst.empty() )
-            sleepTime = UniSetTimer::WaitUpTime;
-        else
-            sleepTime = UniSetTimer::MinQuantityTime;
-    }
+		if( tlst.empty() )
+			sleepTime = UniSetTimer::WaitUpTime;
+		else
+			sleepTime = UniSetTimer::MinQuantityTime;
+	}
 
-    return sleepTime;
+	return sleepTime;
 }
 // -----------------------------------------------------------------------------

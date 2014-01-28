@@ -66,7 +66,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		}
 
 		// обработка сообщений (таймеров и т.п.)
-		for( unsigned int i=0; i&lt;<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'msg-count'"/></xsl:call-template>; i++ )
+		for( int i=0; i&lt;<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'msg-count'"/></xsl:call-template>; i++ )
 		{
 			if( !receiveMessage(msg) )
 				break;
@@ -82,7 +82,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		// "сердцебиение"
 		if( idHeartBeat!=DefaultObjectId &amp;&amp; ptHeartBeat.checkTime() )
 		{
-			ui.setValue(idHeartBeat,maxHeartBeat,UniversalIO::AI);
+			ui.saveValue(idHeartBeat,maxHeartBeat,UniversalIO::AnalogInput);
 			ptHeartBeat.reset();
 		}
 
@@ -94,16 +94,16 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 	}
 	catch( Exception&amp; ex )
 	{
-		ucrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 	}
 	catch(CORBA::SystemException&amp; ex)
 	{
-		ucrit &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
 			&lt;&lt; ex.NP_minorString() &lt;&lt; endl;
 	}
 	catch(...)
 	{
-        ucrit &lt;&lt; myname &lt;&lt; "(execute): catch ..." &lt;&lt; endl;
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(execute): catch ..." &lt;&lt; endl;
 	}
 
 	if( !active )
@@ -125,22 +125,33 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 	}
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( const UniSetTypes::SensorMessage* _sm )
+void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( UniSetTypes::SensorMessage* _sm )
 {
 	sensorInfo(_sm);
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::askSensor( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
+void <xsl:value-of select="$CLASSNAME"/>_SK::askState( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
+{
+	if( _cmd == UniversalIO::UIONotify )
+	{
+		SensorMessage _sm( _sid, (bool)ui.getState(_sid,_node), Message::Medium );
+		_sm.sensor_type = UniversalIO::DigitalInput;
+		_sm.node = _node;
+		sensorInfo(&amp;_sm);
+	}
+}
+// -----------------------------------------------------------------------------
+void <xsl:value-of select="$CLASSNAME"/>_SK::askValue( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
 {
 	if( _cmd == UniversalIO::UIONotify )
 	{
 		// приходится искуственно использовать третий параметр, 
 		// что-бы компилятор выбрал
 		// правильный(для аналоговых) конструктор у SensorMessage
-		IOController_i::CalibrateIo _ci;
+		IOController_i::CalibrateInfo _ci;
 		SensorMessage _sm( _sid, (long)ui.getValue(_sid,_node), _ci );
 		_sm.node = _node;
-		_sm.sensor_type = UniversalIO::AI;
+		_sm.sensor_type = UniversalIO::AnalogInput;
 		sensorInfo(&amp;_sm);
 	}
 }
@@ -154,7 +165,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId _si
 	<xsl:if test="normalize-space(@vartype)='out'">
 	if( _sid == <xsl:value-of select="../../@name"/> )
 	{
-        ulog2 &lt;&lt;  "(setValue): <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = " &lt;&lt;  _val &lt;&lt;  endl;
+		unideb[Debug::LEVEL2] &lt;&lt;  "(setValue): <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = " &lt;&lt;  _val &lt;&lt;  endl;
 		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>	= _val;
 		return;
 	}
@@ -164,6 +175,11 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId _si
 	</xsl:for-each>
 }
 
+// -----------------------------------------------------------------------------
+bool <xsl:value-of select="$CLASSNAME"/>_SK::getState( UniSetTypes::ObjectId _sid )
+{
+	return (bool)getValue(_sid);
+}
 // -----------------------------------------------------------------------------
 long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _sid )
 {
@@ -176,7 +192,7 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 	</xsl:if>
 	</xsl:for-each>
 
-	ucrit &lt;&lt; myname &lt;&lt; "(getValue): Обращение к неизвестному датчику sid="
+	unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getState): Обращение к неизвестному ДИСКРЕТНОМУ датчику sid="
 		&lt;&lt; _sid &lt;&lt; endl;
 
 	return 0;
@@ -221,13 +237,28 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 	{
 <xsl:if test="normalize-space(../../@msg)!='1'">
 <xsl:if test="normalize-space(@name)=$OID">
+<xsl:choose>
+	<xsl:when test="normalize-space(../../@iotype)='DI'">
+		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = ui.getState(<xsl:value-of select="../../@name"/>);
+	</xsl:when>
+	<xsl:when test="normalize-space(../../@iotype)='AI'">
 		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = ui.getValue(<xsl:value-of select="../../@name"/>);
+	</xsl:when>
+</xsl:choose>
+<xsl:choose>
+	<xsl:when test="normalize-space(../../@iotype)='DO'">
+		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = ui.getState(<xsl:value-of select="../../@name"/>);
+	</xsl:when>
+	<xsl:when test="normalize-space(../../@iotype)='AO'">
+		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = ui.getValue(<xsl:value-of select="../../@name"/>);
+	</xsl:when>
+</xsl:choose>
 </xsl:if>
 </xsl:if>
 	}
 	catch( Exception&amp; ex )
 	{
-        ucrit &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
 </xsl:template>
@@ -256,13 +287,28 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 <xsl:template name="gensetdata">
 	try
 	{
+<xsl:choose>
+	<xsl:when test="normalize-space(../../@iotype)='DO'">
+		ui.setState( <xsl:value-of select="../../@name"/>, <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> );
+	</xsl:when>
+	<xsl:when test="normalize-space(../../@iotype)='AO'">
+		ui.setValue( <xsl:value-of select="../../@name"/>, <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> );
+	</xsl:when>
+	<xsl:when test="normalize-space(../../@iotype)='DI'">
 		si.id 	= <xsl:value-of select="../../@name"/>;
 		si.node = node_<xsl:value-of select="../../@name"/>;
-		ui.setValue( si,<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, getId() );
+		ui.saveState( si, <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, UniversalIO::DigitalInput, getId() );
+	</xsl:when>
+	<xsl:when test="normalize-space(../../@iotype)='AI'">
+		si.id 	= <xsl:value-of select="../../@name"/>;
+		si.node = node_<xsl:value-of select="../../@name"/>;
+		ui.saveValue( si,<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>,UniversalIO::AnalogInput, getId() );
+	</xsl:when>
+</xsl:choose>
 	}
 	catch( Exception&amp; ex )
 	{
-        ucrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
 </xsl:template>
@@ -271,13 +317,28 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 <xsl:param name="setval"></xsl:param>	
 	try
 	{
+<xsl:choose>
+	<xsl:when test="normalize-space(../../@iotype)='DO'">
+		ui.setState( <xsl:value-of select="../../@name"/>,<xsl:value-of select="$setval"/> );
+	</xsl:when>
+	<xsl:when test="normalize-space(../../@iotype)='AO'">
+		ui.setValue( <xsl:value-of select="../../@name"/>,<xsl:value-of select="$setval"/> );
+	</xsl:when>
+	<xsl:when test="normalize-space(../../@iotype)='DI'">
 		si.id 	= <xsl:value-of select="../../@name"/>;
 		si.node = node_<xsl:value-of select="../../@name"/>;
-		ui.setValue( si,<xsl:value-of select="$setval"/>, getId() );
+		ui.saveState( si,<xsl:value-of select="$setval"/>, UniversalIO::DigitalInput, getId() );
+	</xsl:when>
+	<xsl:when test="normalize-space(../../@iotype)='AI'">
+		si.id 	= <xsl:value-of select="../../@name"/>;
+		si.node = node_<xsl:value-of select="../../@name"/>;
+		ui.saveValue( si,<xsl:value-of select="$setval"/>,UniversalIO::AnalogInput, getId() );
+	</xsl:when>
+</xsl:choose>
 	}
 	catch( Exception&amp; ex )
 	{
-        ucrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
+		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
 
@@ -287,6 +348,54 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 <xsl:param name="onlymsg"></xsl:param>	
 <xsl:if test="normalize-space(../../@msg)!='1'">
 <xsl:if test="normalize-space(@name)=$OID">
+<xsl:choose>
+	<xsl:when test="normalize-space(../../@iotype)='DI'">
+		<xsl:if test="normalize-space($onlymsg)=''">
+		if( prev_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> != <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> )
+		</xsl:if>
+		{
+		<xsl:if test="normalize-space($onlymsg)=''">		
+//			cout &lt;&lt; myname &lt;&lt; ": (DI) change state <xsl:value-of select="../../@name"/> set " 
+//					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
+		</xsl:if>
+			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (bool)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, Message::Medium);
+			_sm.sensor_type = UniversalIO::DigitalInput;
+			sensorInfo(&amp;_sm);
+		}
+	</xsl:when>
+	<xsl:when test="normalize-space(../../@iotype)='AI'">
+		<xsl:if test="normalize-space($onlymsg)=''">
+		if( prev_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> != <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> )
+		</xsl:if>
+		{
+		<xsl:if test="normalize-space($onlymsg)=''">		
+//			cout &lt;&lt; myname &lt;&lt; ": (AI) change value <xsl:value-of select="../../@name"/> set " 
+//					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
+		</xsl:if>
+			// приходится искуственно использовать третий параметр, 
+			// что-бы компилятор выбрал
+			// правильный(для аналоговых) конструктор у SensorMessage
+			IOController_i::CalibrateInfo _ci;
+			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, _ci);
+			_sm.sensor_type = UniversalIO::AnalogInput;
+			sensorInfo(&amp;_sm);
+		}
+	</xsl:when>
+	<xsl:when test="normalize-space(../../@iotype)='DO'">
+		<xsl:if test="normalize-space($onlymsg)=''">
+		if( prev_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> != <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> )
+		</xsl:if>
+		{
+		<xsl:if test="normalize-space($onlymsg)=''">		
+//			cout &lt;&lt; myname &lt;&lt; ": (DO) change state <xsl:value-of select="../../@name"/> set " 
+//					&lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> &lt;&lt; endl;
+		</xsl:if>
+			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (bool)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, Message::Medium);
+			_sm.sensor_type = UniversalIO::DigitalOutput;
+			sensorInfo(&amp;_sm);
+		}
+	</xsl:when>
+	<xsl:when test="normalize-space(../../@iotype)='AO'">
 		<xsl:if test="normalize-space($onlymsg)=''">
 		if( prev_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> != <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> )
 		</xsl:if>
@@ -298,10 +407,13 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 			// приходится искуственно использовать третий параметр, 
 			// что-бы компилятор выбрал
 			// правильный(для аналоговых) конструктор у SensorMessage
-			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>);
-			_sm.sensor_type = UniversalIO::AI;
+			IOController_i::CalibrateInfo _ci;
+			SensorMessage _sm( <xsl:value-of select="../../@name"/>, (long)<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, _ci);
+			_sm.sensor_type = UniversalIO::AnalogOutput;
 			sensorInfo(&amp;_sm);
 		}
+	</xsl:when>
+</xsl:choose>
 </xsl:if>
 </xsl:if>
 </xsl:template>

@@ -18,203 +18,144 @@
  */
 //----------------------------------------------------------------------------------------
 /*! \file
- * \brief Шаблон дла легкого создания потоков (на основе callback).
+ * \brief Создатель потоков
  * \author Pavel Vainerman
  */
 //--------------------------------------------------------------------------------
 #ifndef ThreadCreator_h_
 #define ThreadCreator_h_
 //----------------------------------------------------------------------------------------
-#include <cc++/thread.h>
-#include <sys/resource.h>
+#include "PosixThread.h"
 //----------------------------------------------------------------------------------------
 /*! \class ThreadCreator
- *    Шаблон для создания потоков с указанием функции вызова. 
+ *	Шаблон для создания потоков с указанием функции вызова. 
  * Пример использования:
- *    
-    \code
-        class MyClass
-        {
-            public:
-                MyClass();
-                ~MyClass();
-                
-                execute();
-            
-            protected:
-                void thread();
-                
-            private:
-                ThreadCreator<MyClass>* thr;
-        };
-        
-        MyClass::MyClass()
-        {
-            thr = new ThreadCreator<MyClass>(this, &MyClass::thread);
-        }
-        MyClass::~MyClass()
-        {
-            delete thr;
-        }
+ *	
+	\code
+		class MyClass
+		{
+			public:
+				MyClass();
+				~MyClass();
+				
+				execute();
+			
+			protected:
+				void thread();
+				
+			private:
+				ThreadCreator<MyClass>* thr;
+		};
+		
+		MyClass::MyClass()
+		{
+			thr = new ThreadCreator<MyClass>(this, &MyClass::thread);
+		}
+		MyClass::~MyClass()
+		{
+			delete thr;
+		}
 
-        void MyClass::thread()
-        {
-            while(active)
-            {
-                //что-то делать
-            }
-        }
+		void MyClass::thread()
+		{
+			while(active)
+			{
+				//что-то делать
+			}
+		}
 
-        void MyClass::execute()
-        {
-            // создаем поток
-            thr->start();
+		void MyClass::execute()
+		{
+			// создаем поток
+			thr->start();
 
-            // делаем что-то еще
-        }
+			// делаем что-то еще
+		}
 
-        main()
-        {
-            MyClass* mc = new MyClass();
-            mc->execute();
-        }
-    \endcode
+		main()
+		{
+			MyClass* mc = new MyClass();
+			mc->execute();
+		}
+	\endcode
  *
 */ 
 //----------------------------------------------------------------------------------------
 template<class ThreadMaster>
 class ThreadCreator:
-    public ost::PosixThread
+	protected PosixThread
 {
-    public:
-    
-        /*! прототип функции вызова */
-        typedef void(ThreadMaster::* Action)(void);    
+	public:
+	
+		/*! прототип функции вызова */
+		typedef void(ThreadMaster::* Action)(void);	
 
-        ThreadCreator( ThreadMaster* m, Action a );
-        ~ThreadCreator();
+		pthread_t start();
+		pthread_t getTID(){ return PosixThread::getTID(); }
 
-        inline pid_t getTID(){ return pid; }
+		inline void stop()
+		{
+			PosixThread::stop();
+		}
+		
+		inline void kill( int signo )		/*!< послать сигнал signo */	
+		{
+			PosixThread::thrkill(signo);
+		}
+		
+		inline void setPriority( int priority )
+		{
+			PosixThread::setPriority(priority);
+		}
 
-        /*! \return 0 - sucess */
-        int setPriority( int prior );
+		ThreadCreator( ThreadMaster* m, Action a );
+		~ThreadCreator();
 
-        /*! \return < 0 - fail */
-        int getPriority();
+	protected:
+		virtual void work(); /*!< Функция выполняемая в потоке */
 
-        void stop();
+	private:
+		ThreadCreator();
+	
+		ThreadMaster* m;
+		Action act;
 
-        inline void setName( const std::string& name )
-        {
-            ost::PosixThread::setName( name.c_str() );
-        }
-
-        inline void setName( const char* name )
-        {
-            ost::PosixThread::setName( name );
-        }
-
-        inline void setCancel( ost::Thread::Cancel mode )
-        {
-            ost::PosixThread::setCancel(mode);
-        }
-
-        inline void setFinalAction( ThreadMaster* m, Action a )
-        {
-            finm = m;
-            finact = a;
-        }
-
-        inline void setInitialAction( ThreadMaster* m, Action a )
-        {
-            initm = m;
-            initact = a;
-        }
-
-    protected:
-        virtual void run();
-        virtual void final()
-        {
-            if( finm )
-                (finm->*finact)();
-        }
-
-        virtual void initial()
-        {
-            if( initm )
-                (initm->*initact)();
-        }
-
-    private:
-        ThreadCreator();
-
-        pid_t pid;
-    
-        ThreadMaster* m;
-        Action act;
-
-        ThreadMaster* finm;
-        Action finact;
-
-        ThreadMaster* initm;
-        Action initact;
 };
 
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::ThreadCreator( ThreadMaster* m, Action a ):
-    pid(-1),
-    m(m),
-    act(a),
-    finm(0),
-    finact(0),
-    initm(0),
-    initact(0)
+	m(m),
+	act(a)
 {
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
-void ThreadCreator<ThreadMaster>::run()
+void ThreadCreator<ThreadMaster>::work()
 {
-    pid = getpid();
-    if(m)
-        (m->*act)();
-//    PosixThread::stop()
+	if(m)
+		(m->*act)();
+//	PosixThread::stop()
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
-void ThreadCreator<ThreadMaster>::stop()
+pthread_t ThreadCreator<ThreadMaster>::start()
 {
-    terminate();
+	PosixThread::start( static_cast<PosixThread*>(this) );
+	return getTID();
 }
+
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::ThreadCreator():
-    pid(-1),
-    m(0),
-    act(0),
-    finm(0),
-    finact(0),
-    initm(0),
-    initact(0)
+	m(0),
+	act(0)
 {
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
 ThreadCreator<ThreadMaster>::~ThreadCreator()
 {
-}
-//----------------------------------------------------------------------------------------
-template <class ThreadMaster>
-int ThreadCreator<ThreadMaster>::setPriority( int prior )
-{
-    return setpriority(PRIO_PROCESS, pid, prior );
-}
-//----------------------------------------------------------------------------------------
-template <class ThreadMaster>
-int ThreadCreator<ThreadMaster>::getPriority()
-{
-    return getpriority(PRIO_PROCESS, pid);
 }
 //----------------------------------------------------------------------------------------
 #endif // ThreadCreator_h_

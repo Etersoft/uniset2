@@ -76,8 +76,8 @@ UniSetTypes::Message::TheLastFieldOfTypeOfMessage.
 ...
 <ObjectsMap idfromfile="0">
 	<nodes port="2809">
-	  <item name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1" dbserver=""/>
-	  <item name="Node2"			alias="" textname="Локальный узел"	ip="127.0.0.1" dbserver=""/>
+	  <item name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
+	  <item name="Node2"			alias="" textname="Локальный узел"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
 	</nodes>
 	<sensors>
 	  <item name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium" default="1" />
@@ -91,8 +91,10 @@ UniSetTypes::Message::TheLastFieldOfTypeOfMessage.
 
 	<!-- ******************* Идентификаторы сервисов ***************** -->
 	<services name="Services">
+		<item name="InfoServer"/>
 		<item name="DBServer"/>
 		<item name="PrintServer"/>
+		<item name="TimeService"/>
 	</services>
 
 	<!-- ******************* Идентификаторы объектов ***************** -->
@@ -132,8 +134,8 @@ UniSetTypes::Message::TheLastFieldOfTypeOfMessage.
 ...
 <ObjectsMap idfromfile="1">
 	<nodes port="2809">
-	  <item id="1000" name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1" dbserver=""/>
-	  <item id="1001" name="Node2"			alias="" textname="Локальный узел"	ip="127.0.0.1" dbserver=""/>
+	  <item id="1000" name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
+	  <item id="1001" name="Node2"			alias="" textname="Локальный узел"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
 	</nodes>
 	<sensors>
 	  <item id="1" name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium" default="1" />
@@ -147,8 +149,10 @@ UniSetTypes::Message::TheLastFieldOfTypeOfMessage.
 
 	<!-- ******************* Идентификаторы сервисов ***************** -->
 	<services name="Services">
+		<item id="500" name="InfoServer"/>
 		<item id="501" name="DBServer"/>
 		<item id="502" name="PrintServer"/>
+		<item id="503" name="TimeService"/>
 	</services>
 
 	<!-- ******************* Идентификаторы объектов ***************** -->

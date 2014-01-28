@@ -29,92 +29,89 @@
 #include <map>
 //---------------------------------------------------------------------------
 /*!
-    Триггер \b "И", со множеством входов.
-    Логика включения следующая: только "1" на \b ВСЕХ входах даёт на выходе "1", иначе "0".
+	Триггер \b "И", со множеством входов.
+	Логика включения следующая: только "1" на \b ВСЕХ входах даёт на выходе "1", иначе "0".
 
-    В конструкторе указывается функция, которая будет вызываться при \b ИЗМЕНЕНИИ состояния выхода.
+	В конструкторе указывается функция, которая будет вызываться при \b ИЗМЕНЕНИИ состояния выхода.
 
-    \warning Нет блокирования совместного доступа(не рассчитан на работу в многопоточной среде).
+	\warning Нет блокирования совместного доступа(не рассчитан на работу в многопоточной среде).
 
-    \par Пример использования
-    \code
-    #include "TriggerAND.h"
-    
-    class MyClass
-    {
-        public:
-            MyClass(){};
-            ~MyClass(){};
-            void out( bool newstate){ cout << "OR out state="<< newstate <<endl;}
-        ...
-    };
+	\par Пример использования
+	\code
+	#include "TriggerAND.h"
+	
+	class MyClass
+	{
+		public:
+			MyClass(){};
+			~MyClass(){};
+			void out( bool newstate){ cout << "OR out state="<< newstate <<endl;}
+		...
+	};
 
-    ...
-    MyClass rec;
-    // Создание
-    TriggerAND<MyClass, int> tr(&rec, &MyClass::out);
-    
-    // Добавление 'входов' (формирование списка входов)
-    tr.add(1,false);
-    tr.add(2,true);
-    tr.add(3,true);
-    tr.add(4,true);
-    ...
-
-    // Использование:
-    // подаём на вход N1 единицу
-    // после чего, при изменении состояния 'выхода' будет вызвана функция MyClass::out, в которой производится 
-    // фактическая обработка 'изменения состояния'
-
-    tr.commit(1,true);
-
-    \endcode
+	...
+	MyClass rec;
+	// Создание
+	TriggerAND<MyClass, int> tr_and(&rec, &MyClass::out);
+	
+	// Добавление 'входов'
+	tr_and.add(1,false);
+	tr_and.add(2,true);
+	tr_and.add(3,true);
+	tr_and.add(4,true);
+	...
+	// Использование
+	// подаёт на вход N1 "1"
+	// после чего, при изменении состояния 'выхода' будет вызвана функция MyClass::out, в которой производится 
+	// фактическая обработка 'изменения состояния'
+	tr_and.commit(1,true);
+	\endcode
 
 */
 template<class Caller, typename InputType>
 class TriggerAND
 {
-    public:
+	public:
 
-        /*! 
-            прототип функции вызова 
-            \param newstate - новое состояние 'выхода'
-        */
-        typedef void(Caller::* Action)(bool newstate);    
-    
-        TriggerAND(Caller* r, Action a);
-        ~TriggerAND();
-        
-        inline bool state(){ return out; }
-        
+		/*! 
+			прототип функции вызова 
+			\param newstate - новое состояние 'выхода'
+		*/
+		typedef void(Caller::* Action)(bool newstate);	
+	
+		TriggerAND(Caller* r, Action a);
+		~TriggerAND();
+		
+		inline bool state(){ return out; }
+		
 
-        bool getState(InputType in);
-        bool commit(InputType in, bool state);    
+		bool getState(InputType in);
+		bool commit(InputType in, bool state);	
 
-        void add(InputType in, bool state);        
-        void remove(InputType in);                
+		void add(InputType in, bool state);		
+		void remove(InputType in);				
 
-        typedef std::map<InputType, bool> InputMap;
+		typedef std::map<InputType, bool> InputMap;
 
-        inline typename InputMap::const_iterator begin()
-        {
-            return inputs.begin();
-        }
+		inline typename InputMap::const_iterator begin()
+		{
+			return inputs.begin();
+		}
 
-        inline typename InputMap::const_iterator end()
-        {
-            return inputs.end();
-        }
+		inline typename InputMap::const_iterator end()
+		{
+			return inputs.end();
+		}
 
-        void update();
-        void reset();        
+		void update();
+		void reset();		
 
-    protected:
-        void check();
-        InputMap inputs; // список входов
-        bool out;
-        Caller* cal;
-        Action act;
+	protected:
+		void check();
+		InputMap inputs; // список входов
+		bool out;
+		Caller* cal;
+		Action act;
 };
 
 //---------------------------------------------------------------------------
