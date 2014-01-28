@@ -23,7 +23,7 @@
 // -----------------------------------------------------------------------------
 /*!
       \page page_IOControl (IOControl) Реализация процесса ввода/вывода
-      
+
       - \ref sec_IOC_Comm
       - \ref sec_IOC_Conf
       - \ref sec_IOC_ConfList
@@ -207,8 +207,6 @@ class IOControl:
         /*! глобальная функция для вывода help-а */
         static void help_print( int argc, const char* const* argv );
 
-//        inline std::string getName(){ return myname; }
-
         /*! Информация о входе/выходе */
         struct IOInfo:
             public IOBase
@@ -225,9 +223,9 @@ class IOControl:
             {}
 
 
-            int subdev;        /*!< (UNIO) подустройство (см. comedi_test для конкретной карты в/в) */
+            int subdev;     /*!< (UNIO) подустройство (см. comedi_test для конкретной карты в/в) */
             int channel;    /*!< (UNIO) канал [0...23] */
-            int ncard;        /*!< номер карты [1|2]. 0 - не определена. FIXME from Lav: -1 - не определена? */
+            int ncard;      /*!< номер карты [1|2]. 0 - не определена. FIXME from Lav: -1 - не определена? */
 
             /*! Вид поключения
                 0    - analog ref = analog ground
@@ -245,9 +243,9 @@ class IOControl:
             */
             int range;
 
-            bool lamp;        /*!< признак, что данный выход является лампочкой (или сигнализатором) */
-            bool no_testlamp; /*!< флаг исключения из 'проверки ламп' */
-            bool enable_testmode; /*!< флаг для режима тестирования tmConfigEnable */
+            bool lamp;             /*!< признак, что данный выход является лампочкой (или сигнализатором) */
+            bool no_testlamp;      /*!< флаг исключения из 'проверки ламп' */
+            bool enable_testmode;  /*!< флаг для режима тестирования tmConfigEnable */
             bool disable_testmode; /*!< флаг для режима тестирования tmConfigDisable */
 
             friend std::ostream& operator<<(std::ostream& os, IOInfo& inf );
@@ -264,12 +262,12 @@ class IOControl:
 
         enum TestModeID
         {
-            tmNone        = 0,         /*!< тестовый режим отключён */
+            tmNone        = 0,       /*!< тестовый режим отключён */
             tmOffPoll    = 1,        /*!< отключить опрос */
-            tmConfigEnable    = 2,     /*!< специальный режим, в соответсвии с настройкой 'enable_testmode' */
-            tmConfigDisable    = 3,     /*!< специальный режим, в соответсвии с настройкой 'disable_testmode' */
+            tmConfigEnable    = 2,   /*!< специальный режим, в соответсвии с настройкой 'enable_testmode' */
+            tmConfigDisable    = 3,  /*!< специальный режим, в соответсвии с настройкой 'disable_testmode' */
             tmOnlyInputs    = 4,     /*!< включены только входы */
-            tmOnlyOutputs    = 5         /*!< включены только выходы */
+            tmOnlyOutputs    = 5     /*!< включены только выходы */
         };
 
         void execute();
@@ -306,15 +304,14 @@ class IOControl:
 
         bool checkCards( const std::string& func="" );
 
-//        std::string myname;
-        xmlNode* cnode;            /*!< xml-узел в настроечном файле */
+        xmlNode* cnode; /*!< xml-узел в настроечном файле */
 
-        int polltime;            /*!< переодичность обновления данных (опроса карт в/в), [мсек] */
-        CardList cards;            /*!< список карт - массив созданных ComediInterface */
+        int polltime;   /*!< переодичность обновления данных (опроса карт в/в), [мсек] */
+        CardList cards; /*!< список карт - массив созданных ComediInterface */
         bool noCards;
 
         typedef std::vector<IOInfo> IOMap;
-        IOMap iomap;            /*!< список входов/выходов */
+        IOMap iomap;    /*!< список входов/выходов */
 
         typedef std::deque<IOPriority> PIOMap;
         PIOMap pmap;    /*!< список приоритетных входов/выходов */
@@ -365,7 +362,7 @@ class IOControl:
 
         bool force;            /*!< флаг, означающий, что надо сохранять в SM, даже если значение не менялось */
         bool force_out;        /*!< флаг, включающий принудительное чтения выходов */
-        int smReadyTimeout;     /*!< время ожидания готовности SM к работе, мсек */
+        int smReadyTimeout;    /*!< время ожидания готовности SM к работе, мсек */
         int defCardNum;        /*!< номер карты по умолчанию */
         int maxCardNum;        /*! максимально разрешённый номер для карты */
 

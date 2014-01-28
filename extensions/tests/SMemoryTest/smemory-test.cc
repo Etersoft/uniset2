@@ -37,7 +37,7 @@ int main(int argc, const char **argv)
 
         act.addObject(static_cast<class UniSetObject*>(shm));
 
-        int num = conf->getArgPInt("--numproc",20);
+        int num = conf->getArgPInt("--numproc",1);
 
 		for( int i=1; i<=num; i++ )
 		{
