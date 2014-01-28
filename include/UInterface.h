@@ -256,12 +256,12 @@ class UInterface
         class CacheOfResolve
         {
             public:
-                    CacheOfResolve(unsigned int maxsize, int cleantime):
-                        MaxSize(maxsize), CleanTime(cleantime){};
+                    CacheOfResolve( unsigned int maxsize, int cleancount=20 ):
+                        MaxSize(maxsize), minCallCount(cleancount){};
                     ~CacheOfResolve(){};
 
                     UniSetTypes::ObjectPtr resolve( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const throw(UniSetTypes::NameNotFound);
-                    void cache( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node, UniSetTypes::ObjectVar ptr )const;
+                    void cache( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node, UniSetTypes::ObjectVar ptr ) const;
                     void erase( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const;
 
                     inline void setMaxSize( unsigned int ms )
@@ -269,66 +269,37 @@ class UInterface
                         MaxSize = ms;
                     };
 
-//                    void setCleanTime();
-
             protected:
                     CacheOfResolve(){};
 
             private:
 
-                bool clean();         /*!< функция очистки кэш-а от старых ссылок */
+                bool clean();       /*!< функция очистки кэш-а от старых ссылок */
                 inline void clear() /*!< удаление всей информации */
                 {
                     UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
                     mcache.clear();
-                }; 
- 
-                /*!
-                    \todo можно добавить поле CleanTime для каждой ссылки отдельно...
-                */
+                };
+
                 struct Info
                 {
-                    Info( UniSetTypes::ObjectVar ptr, time_t tm=0 ):
-                            ptr(ptr)
-                    {
-                        if(!tm)
-                             timestamp = time(NULL);
-                    }
-
-                    Info():
-                        ptr(NULL), timestamp(0){};
+                    Info( UniSetTypes::ObjectVar ptr ):ptr(ptr),ncall(0){}
+                    Info():ptr(NULL),ncall(0){}
 
                     UniSetTypes::ObjectVar ptr;
-                    time_t timestamp; // время последнего обращения 
+                    unsigned long ncall; // счётчик обращений
 
                     bool operator<( const CacheOfResolve::Info& rhs ) const
                     {
-                        return this->timestamp < rhs.timestamp;
+                        return this->ncall > rhs.ncall;
                     }
-
                 };
 
                 typedef std::map<int, Info> CacheMap;
                 mutable CacheMap mcache;
                 mutable UniSetTypes::uniset_rwmutex cmutex;
-                unsigned int MaxSize;    /*!< максимальный размер кэша */
-                unsigned int CleanTime;    /*!< период устаревания ссылок [мин] */
-
-/*
-                // В последствии написать функцию для использования
-                // remove_if
-                typedef std::pair<int, Info> CacheItem;
-                // функция-объект для поиска устаревших(по времени) ссылок
-                struct OldRef_eq: public unary_function<CacheItem, bool>
-                {        
-                    OldRef_eq(time_t tm):tm(tm){}
-                    bool operator()( const CacheItem& inf ) const
-                    {
-                        return inf.timestamp < tm;
-                    }
-                    time_t tm;
-                };
-*/ 
+                unsigned int MaxSize;      /*!< максимальный размер кэша */
+                unsigned int minCallCount; /*!< минимальное количество вызовов, меньше которого ссылка считается устаревшей */
         };
 
         void initBackId( UniSetTypes::ObjectId backid );
