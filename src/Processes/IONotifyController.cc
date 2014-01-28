@@ -130,7 +130,7 @@ bool IONotifyController::removeConsumer( ConsumerListInfo& lst, const ConsumerIn
     uniset_rwmutex_wrlock l(lst.mut);
     for( ConsumerList::iterator li=lst.clst.begin();li!=lst.clst.end(); ++li )
     {
-        if( li->id == cons.id && li->node == cons.node  )
+        if( li->id==cons.id && li->node==cons.node  )
         {
             lst.clst.erase(li);
             return true;
@@ -215,7 +215,7 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
     UniSetTypes::KeyType k( key(si.id,si.node) );
     AskMap::iterator askIterator = askLst.find(k);
 
-      switch (cmd)
+    switch (cmd)
     {
         case UniversalIO::UIONotify: // заказ
         case UniversalIO::UIONotifyChange:
@@ -265,12 +265,15 @@ void IONotifyController::ask(AskMap& askLst, const IOController_i::SensorInfo& s
         {
             if( askIterator!=askLst.end() )    // существует
             {
-//                ConsumerList lst(askIterator->second);
                 if( removeConsumer(askIterator->second, cons) )
                 {
                     uniset_rwmutex_wrlock l(askIterator->second.mut);
                     if( askIterator->second.clst.empty() )
-                        askLst.erase(askIterator);
+                    {
+//                         не удаляем, т.к. могут поломаться итераторы
+//                         используемые в это время в других потоках..
+//                         askLst.erase(askIterator);
+                    }
                     else
                     {
                         try
@@ -375,8 +378,6 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
 */
 void IONotifyController::send( ConsumerListInfo& lst, UniSetTypes::SensorMessage& sm )
 {
-    return;
-
     TransportMessage tmsg;
     uniset_rwmutex_wrlock l(lst.mut);
 
@@ -699,9 +700,13 @@ bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoEx
         {
             if( removeConsumer(it->clst, ci) )
             {
-                uniset_rwmutex_wrlock lock(it->clst.mut);
-                if( it->clst.clst.empty() )
-                    lst.erase(it);
+/*                  Не удаляем датчик из списка, чтобы не поломать итераторы
+                  которые могут использоваться в этот момент в других потоках*/
+
+
+//                uniset_rwmutex_wrlock lock(it->clst.mut);
+//                if( it->clst.clst.empty() )
+//                    lst.erase(it);
                 return true;
             }
         }
@@ -711,26 +716,22 @@ bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoEx
 }
 // --------------------------------------------------------------------------------------------------------------
 void IONotifyController::checkThreshold( IOStateList::iterator& li, 
-                                        const IOController_i::SensorInfo& si, 
-                                        bool send_msg )
+                                         const IOController_i::SensorInfo& si,
+                                         bool send_msg )
 {
-//        {
-//             uniset_rwmutex_rlock lock(trshMutex);
-
         // поиск списка порогов
         UniSetTypes::KeyType skey( key(si.id,si.node) );
         AskThresholdMap::iterator lst = askTMap.end();
 
         {
              uniset_rwmutex_rlock lock(trshMutex);
-
              lst = askTMap.find(skey);
              if( lst == askTMap.end() )
                  return;
 
              if( lst->second.list.empty() )
                  return;
-        }
+       }
 
         if( li == myioEnd() )
             li = myiofind(skey);
@@ -758,6 +759,8 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
         tm.tv_sec = 0; tm.tv_usec = 0;
         gettimeofday(&tm,&tz);
 
+     {
+        uniset_rwmutex_rlock l(lst->second.mut);
         for( ThresholdExtList::iterator it=lst->second.list.begin(); it!=lst->second.list.end(); ++it )
         {
             // Используем здесь sm.value чтобы не делать ещё раз lock на li->second.value
@@ -804,7 +807,7 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
             {
                 try
                 {
-                    localSetValue(it->sit,SensorInfo(it->sid),(sm.threshold ? 1:0),getId());
+                     localSetValue(it->sit,SensorInfo(it->sid),(sm.threshold ? 1:0),getId());
                 }
                 catch( UniSetTypes::Exception& ex )
                 {
@@ -816,7 +819,7 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
             if( send_msg )
                 send(it->clst, sm);
         }
-//    }    // unlock
+     }
 }
 // --------------------------------------------------------------------------------------------------------------
 IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold( UniSetTypes::KeyType key, UniSetTypes::ThresholdId tid )

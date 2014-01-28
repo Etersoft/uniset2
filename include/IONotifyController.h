@@ -183,6 +183,10 @@ class IONotifyController:
              UniSetTypes::uniset_rwmutex mut;
         };
 
+        /*! словарь: датчик -> список потребителей */
+        typedef std::map<UniSetTypes::KeyType,ConsumerListInfo> AskMap;
+
+
         /*! Информация о пороговом значении */
         struct ThresholdInfoExt:
             public IONotifyController_i::ThresholdInfo
@@ -192,13 +196,13 @@ class IONotifyController:
             sid(_sid),
             invert(inv)
             {
-                id            = tid;
-                hilimit        = hi;
-                lowlimit    = low;
-                state         = IONotifyController_i::NormalThreshold;
+                id       = tid;
+                hilimit  = hi;
+                lowlimit = low;
+                state    = IONotifyController_i::NormalThreshold;
             }
 
-            ConsumerListInfo clst;
+            ConsumerListInfo clst; /*!< список заказчиков данного порога */
 
             /*! идентификатор дискретного датчика связанного с данным порогом */
             UniSetTypes::ObjectId sid;
@@ -231,10 +235,8 @@ class IONotifyController:
             }
         };
 
+        /*! список порогов (информация по каждому порогу) */
         typedef std::list<ThresholdInfoExt> ThresholdExtList;
-
-        /*! массив пар датчик->список потребителей */
-        typedef std::map<UniSetTypes::KeyType,ConsumerListInfo> AskMap;
 
         struct ThresholdsListInfo
         {
@@ -243,13 +245,14 @@ class IONotifyController:
                                 UniversalIO::IOType t=UniversalIO::AI ):
                 si(si),type(t),list(list){}
 
-            IOController_i::SensorInfo si;
+            UniSetTypes::uniset_rwmutex mut;
+            IOController_i::SensorInfo si;  /*!< аналоговый датчик */
             IOStateList::iterator ait;
             UniversalIO::IOType type;
-            ThresholdExtList list;
+            ThresholdExtList list;   /*!< список порогов по данному аналоговому датчику */
         };
 
-        /*! массив пар [датчик,список порогов] */
+        /*! словарь: аналоговый датчик --> список порогов по нему */
         typedef std::map<UniSetTypes::KeyType,ThresholdsListInfo> AskThresholdMap;
 
     protected:
