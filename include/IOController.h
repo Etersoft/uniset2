@@ -47,7 +47,7 @@ class IOController:
 
         virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("IOController"); }
 
-          virtual CORBA::Long getValue( const IOController_i::SensorInfo& si );    
+        virtual CORBA::Long getValue( const IOController_i::SensorInfo& si );
 
 //     -------------------- !!!!!!!!! ---------------------------------
 //        Реализуются конкретным i/o контроллером
@@ -64,21 +64,21 @@ class IOController:
                                         UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
 
 
-        virtual IOController_i::SensorInfoSeq* getSensorSeq(const UniSetTypes::IDSeq& lst);
-        virtual UniSetTypes::IDSeq* setOutputSeq(const IOController_i::OutSeq& lst, UniSetTypes::ObjectId sup_id);
+        virtual IOController_i::SensorInfoSeq* getSensorSeq( const UniSetTypes::IDSeq& lst );
+        virtual UniSetTypes::IDSeq* setOutputSeq( const IOController_i::OutSeq& lst, UniSetTypes::ObjectId sup_id );
 
 //     ----------------------------------------------------------------
-        virtual UniversalIO::IOType getIOType(const IOController_i::SensorInfo& si);
+        virtual UniversalIO::IOType getIOType( const IOController_i::SensorInfo& si );
 
         virtual IOController_i::SensorInfoSeq* getSensorsMap();
-        virtual IOController_i::SensorIOInfo getSensorIOInfo(const IOController_i::SensorInfo& si);
+        virtual IOController_i::SensorIOInfo getSensorIOInfo( const IOController_i::SensorInfo& si );
 
         virtual CORBA::Long getRawValue(const IOController_i::SensorInfo& si);
         virtual void calibrate(const IOController_i::SensorInfo& si, 
                                     const IOController_i::CalibrateInfo& ci,
                                     UniSetTypes::ObjectId adminId );
 
-        IOController_i::CalibrateInfo getCalibrateInfo(const IOController_i::SensorInfo& si);
+        IOController_i::CalibrateInfo getCalibrateInfo( const IOController_i::SensorInfo& si );
 
         inline IOController_i::SensorInfo SensorInfo(UniSetTypes::ObjectId id, 
                                 UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode())
@@ -89,10 +89,9 @@ class IOController:
             return si;
         };
 
-        UniSetTypes::Message::Priority getPriority(const IOController_i::SensorInfo& si, 
-                                                    UniversalIO::IOType type);
- 
-        virtual IOController_i::ShortIOInfo getChangedTime(const IOController_i::SensorInfo& si);
+        UniSetTypes::Message::Priority getPriority( const IOController_i::SensorInfo& si, UniversalIO::IOType type );
+
+        virtual IOController_i::ShortIOInfo getChangedTime( const IOController_i::SensorInfo& si );
 
         virtual IOController_i::ShortMapSeq* getSensors();
 
@@ -122,7 +121,6 @@ class IOController:
         ChangeUndefinedStateSignal signal_change_undefined_state( const IOController_i::SensorInfo& si );
         ChangeUndefinedStateSignal signal_change_undefined_state();
         // -----------------------------------------------------------------------------------------
-
 
         struct USensorInfo:
             public IOController_i::SensorIOInfo
