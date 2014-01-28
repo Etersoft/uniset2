@@ -379,6 +379,7 @@ void MBSlave::execute_rtu()
 {
 	ModbusRTUSlaveSlot* rscomm = dynamic_cast<ModbusRTUSlaveSlot*>(mbslot);
 	
+	ModbusRTU::mbErrCode prev = erNoError;
 	while(1)
 	{
 		try
@@ -395,10 +396,10 @@ void MBSlave::execute_rtu()
 				askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
 				if( res!=ModbusRTU::erNoError )
 					errmap[res]++;
-	
-				prev = res;
 			}
-			
+
+			prev = res;
+
 			if( res!=ModbusRTU::erNoError && res!=ModbusRTU::erTimeOut )
 				dlog[Debug::WARN] << myname << "(execute_rtu): " << ModbusRTU::mbErr2Str(res) << endl;
 
@@ -460,6 +461,8 @@ void MBSlave::execute_tcp()
 {
 	ModbusTCPServerSlot* sslot = dynamic_cast<ModbusTCPServerSlot*>(mbslot);
 
+    ModbusRTU::mbErrCode prev = erNoError;
+
 	while(1)
 	{
 		try
@@ -476,9 +479,9 @@ void MBSlave::execute_tcp()
 				askCount = askCount>=numeric_limits<long>::max() ? 0 : askCount+1;
 				if( res!=ModbusRTU::erNoError )
 					errmap[res]++;
-	
-				prev = res;
 			}
+
+			prev = res;
 			
 			if( res!=ModbusRTU::erNoError && res!=ModbusRTU::erTimeOut )
 				dlog[Debug::WARN] << myname << "(execute_tcp): " << ModbusRTU::mbErr2Str(res) << endl;

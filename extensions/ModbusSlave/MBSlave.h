@@ -185,7 +185,6 @@ class MBSlave:
 		bool respond_invert;
 
 		PassiveTimer ptTimeout;
-		ModbusRTU::mbErrCode prev;
 		long askCount;
 		typedef std::map<ModbusRTU::mbErrCode,unsigned int> ExchangeErrorMap;
 		ExchangeErrorMap errmap; 	/*!< статистика обмена */
