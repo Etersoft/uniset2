@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include &lt;sstream&gt;
 #include <xsl:call-template name="preinclude"/>Configuration.h<xsl:call-template name="postinclude"/>
-#include <xsl:call-template name="preinclude"/>ObjectsActivator.h<xsl:call-template name="postinclude"/>
+#include <xsl:call-template name="preinclude"/>UniSetActivator.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>Debug.h<xsl:call-template name="postinclude"/>
 #include "<xsl:value-of select="$CLASSNAME"/>.h"
 // -----------------------------------------------------------------------------
@@ -53,10 +53,6 @@ int main( int argc,char* argv[] )
 		string confile = UniSetTypes::getArgParam( "--confile", argc, argv, "configure.xml" );
 		conf = new Configuration(argc, argv,confile);
 
-		string logfilename = conf->getArgParam("--logfile","<xsl:value-of select="$CLASSNAME"/>.log");
-
-		string logname( conf->getLogDir() + logfilename );
-		unideb.logFile( logname.c_str() );	
 
 		// определяем ID объекта
 		ObjectId ID(DefaultObjectId);
@@ -73,8 +69,12 @@ int main( int argc,char* argv[] )
 		}
 	
 		<xsl:value-of select="$CLASSNAME"/> obj(ID);
-		
-		ObjectsActivator act;
+
+		string logfilename = conf->getArgParam("--logfile","<xsl:value-of select="$CLASSNAME"/>.log");
+		string logname( conf->getLogDir() + logfilename );
+		obj.mylog.logFile( logname.c_str() );	
+
+		UniSetActivator act;
 		act.addObject(static_cast&lt;class UniSetObject*&gt;(&amp;obj));
 
 		SystemMessage sm(SystemMessage::StartUp); 

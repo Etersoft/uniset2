@@ -5,7 +5,7 @@ using namespace std;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 Skel::Skel( UniSetTypes::ObjectId id, xmlNode* confnode ):
-	Skel_SK( id, confnode )
+    Skel_SK( id, confnode )
 {
 }
 // -----------------------------------------------------------------------------
@@ -15,19 +15,19 @@ Skel::~Skel()
 // -----------------------------------------------------------------------------
 Skel::Skel()
 {
-	cerr << "(Skel): init failed!!!!!!!!!!!!!!!"<< endl;
-	throw Exception();
+    cerr << "(Skel): init failed!!!!!!!!!!!!!!!"<< endl;
+    throw Exception();
 }
 // -----------------------------------------------------------------------------
 void Skel::step()
 {
 }
 // -----------------------------------------------------------------------------
-void Skel::sensorInfo( SensorMessage *sm )
+void Skel::sensorInfo( const SensorMessage *sm )
 {
 }
 // -----------------------------------------------------------------------------
-void Skel::timerInfo( TimerMessage *tm )
+void Skel::timerInfo( const TimerMessage *tm )
 {
 }
 // -----------------------------------------------------------------------------

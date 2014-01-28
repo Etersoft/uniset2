@@ -28,7 +28,6 @@
 #include <omniORB4/Naming.hh>
 #include <string>
 #include "Exceptions.h"
-
 // -----------------------------------------------------------------------------------------
 /*!
  * \namespace ORepHelpers
@@ -37,30 +36,33 @@
 namespace ORepHelpers
 {
     //! Получение ссылки на корень репозитория 
-    CosNaming::NamingContext_ptr getRootNamingContext(CORBA::ORB_ptr orb, 
-														const std::string& nsName, int timeOutSec=2);
+    CosNaming::NamingContext_ptr getRootNamingContext( const CORBA::ORB_ptr orb, 
+                                                        const std::string& nsName, int timeOutSec=2);
 
     //! Получение контекста по заданному имени 
     CosNaming::NamingContext_ptr getContext(const std::string& cname, int argc,
-						const char* const* argv, const std::string& nsName)
-						throw(UniSetTypes::ORepFailed);
+                        const char* const* argv, const std::string& nsName)
+                        throw(UniSetTypes::ORepFailed);
 
-	CosNaming::NamingContext_ptr getContext(CORBA::ORB_ptr orb, const std::string& cname,
-											const std::string& nsName)
-															throw(UniSetTypes::ORepFailed);
-    
+    CosNaming::NamingContext_ptr getContext(const CORBA::ORB_ptr orb, const std::string& cname,
+                                            const std::string& nsName)
+                                                            throw(UniSetTypes::ORepFailed);
+
     //! Функция отделяющая имя секции от полного имени 
     const std::string getSectionName(const std::string& fullName, const std::string& brk="/");
-    
+
     //! Функция выделения имени из полного имени 
     const std::string getShortName(const std::string& fullName, const std::string& brk="/");
-	
-	
-	//! Проверка на наличие недопустимых символов
-	char checkBadSymbols(const std::string& str);
-	
-	/*! Получение строки запрещенных символов в виде '.', '/', и т.д. */
-	std::string BadSymbolsToStr();
+
+
+    //! Проверка на наличие недопустимых символов
+    char checkBadSymbols(const std::string& str);
+    
+    /*! Получение строки запрещенных символов в виде '.', '/', и т.д. */
+    std::string BadSymbolsToStr();
 
 }
+// -----------------------------------------------------------------------------------------
 #endif
+// -----------------------------------------------------------------------------------------
+

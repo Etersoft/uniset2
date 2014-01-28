@@ -12,4 +12,4 @@
 /* Для генерации классов и констант в Питоне */
 %include "UModbus.h"
 %include "UTypes.h"
-//%include "UExceptions.h"
+%include "UExceptions.h"

@@ -19,8 +19,6 @@
 // --------------------------------------------------------------------------
 /*! \file
  *  \author Pavel Vainerman
- *  \date   $Date: 2009/01/23 23:56:54 $
- *  \version $Id: UniSetTypes_i.idl,v 1.9 2009/01/23 23:56:54 vpashka Exp $
 */
 // --------------------------------------------------------------------------
 #ifndef UniSetTypes_i_IDL_
@@ -28,93 +26,94 @@
 // --------------------------------------------------------------------------
 //module UniSet
 //{
-	module UniSetTypes
-	{
-		typedef string<100> BaseObjectName; 
-		typedef long ObjectId;			/*!< идентификатор объекта */
-		typedef long MessageCode;		/*!< код сообщения */
-		typedef long ThresholdId;		/*!< идентификатор порога */
-		typedef long TimerId;			/*!< идентификатор таймера */
-		typedef string<30> ObjectType;	/*!< тип объекта */
-		
-		typedef octet ByteOfMessage;		/*!< тип для одного байта сообщения */
-		typedef ByteOfMessage RawDataOfTransportMessage[100];	/*!< данные в сообщении */
-	
-		/*!
-		 * Структура пакета предназначенного для пересылки по сети
-		 * \par
-		 * Сообщения любого типа должны непосредственно перед отправкой приводится к этому типу.
-		 * Все функции занимающиеся фактической пересылкой сообщений должны работать с этим типом сообщения.
-		*/
-		struct TransportMessage
-		{
-			RawDataOfTransportMessage data;
-		};
-		
+    module UniSetTypes
+    {
+        typedef string<100> BaseObjectName; 
+        typedef long ObjectId;            /*!< идентификатор объекта */
+        typedef long ThresholdId;        /*!< идентификатор порога */
+        typedef long TimerId;            /*!< идентификатор таймера */
+        typedef string<30> ObjectType;    /*!< тип объекта */
+        
+        
+        const unsigned short SizeOfTransportMessage=85;
+        
+        typedef octet ByteOfMessage;        /*!< тип для одного байта сообщения */
+        typedef ByteOfMessage RawDataOfTransportMessage[SizeOfTransportMessage];    /*!< данные в сообщении */
+    
+        /*!
+         * Структура пакета предназначенного для пересылки по сети
+         * \par
+         * Сообщения любого типа должны непосредственно перед отправкой приводится к этому типу.
+         * Все функции занимающиеся фактической пересылкой сообщений должны работать с этим типом сообщения.
+        */
+        struct TransportMessage
+        {
+            RawDataOfTransportMessage data;
+        };
+        
 
-		/*!
-		 * Информация об узле
-		*/		
-		struct NodeInfo
-		{
-			ObjectId id;
-			boolean connected;
-			ObjectId infserver;
-			ObjectId dbserver;
-			string host;
-			string port;
-		};
-		
-		/*! информация об объекте */
-		struct SimpleInfo
-		{
-			ObjectId id;
-			string info;
-		};
-		
-		typedef sequence<SimpleInfo> SimpleInfoSeq;
-		
+        /*!
+         * Информация об узле
+        */        
+        struct NodeInfo
+        {
+            ObjectId id;
+            boolean connected;
+            ObjectId dbserver;
+            string host;
+            string port;
+        };
+        
+        /*! информация об объекте */
+        struct SimpleInfo
+        {
+            ObjectId id;
+            string info;
+        };
+        
+        typedef sequence<SimpleInfo> SimpleInfoSeq;
+        
 
-		/*! Информация о заказчике */
-		struct ConsumerInfo
-		{
-			ObjectId id;	/*!< идентификатор заказчика */
-			ObjectId node;	/*!< узел на котором он находится */
-		};
-
-
-		/*! Список идентификаторов */
-		typedef sequence<ObjectId> IDSeq;
+        /*! Информация о заказчике */
+        struct ConsumerInfo
+        {
+            ObjectId id;    /*!< идентификатор заказчика */
+            ObjectId node;    /*!< узел на котором он находится */
+        };
 
 
-	};// end of module UniSetTypes
+        /*! Список идентификаторов */
+        typedef sequence<ObjectId> IDSeq;
 
 
-	module UniversalIO
-	{
-		/*!
-		 * Типы входов/выходов
-		*/
-		enum IOTypes
-		{
-			UnknownIOType,
-			DigitalInput,
-			DigitalOutput,
-			AnalogInput,
-			AnalogOutput
-		};
-		
-		 /*! Разрешенные команды для всех контроллеров ввода/вывода */
-	     enum UIOCommand
-		 { 
-			 UIONotify,			/*!< заказать получение информации */
-			 UIODontNotify,		/*!< отказаться от получения информации */
-			 UIONotifyChange,	/*!< заказ информации, только после изменения (без первого уведомления о текущем состоянии) */
-			 UIONotifyFirstNotNull /*!< заказ информации. Первое уведомление, только если датчик не "0" */
-		 };
-	
-	};	// end of module UniversalIO 
-	
-//};	// end of module UniSet
+    };// end of module UniSetTypes
+
+
+    module UniversalIO
+    {
+        /*!
+         * Типы входов/выходов
+        */
+        enum IOType
+        {
+            UnknownIOType,
+            DI, // DigitalInput
+            DO, // DigitalOutput
+            AI,    // AnalogInput
+            AO    // AnalogOutput
+        };
+        
+         /*! Разрешенные команды для всех контроллеров ввода/вывода */
+         enum UIOCommand
+         { 
+             UIONotify,            /*!< заказать получение информации */
+             UIODontNotify,        /*!< отказаться от получения информации */
+             UIONotifyChange,    /*!< заказ информации, только после изменения (без первого уведомления о текущем состоянии) */
+             UIONotifyFirstNotNull /*!< заказ информации. Первое уведомление, только если датчик не "0" */
+         };
+    
+    };    // end of module UniversalIO 
+    
+//};    // end of module UniSet
 // --------------------------------------------------------------------------------------------------------------
 #endif // of UniSetTypes_i_IDL

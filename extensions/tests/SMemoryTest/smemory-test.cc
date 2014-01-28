@@ -43,7 +43,7 @@ int main(int argc, const char **argv)
 		{
             ostringstream s;
             s << "TestProc" << i;
-
+        
             cout << "..create " << s.str() << endl;
             TestProc* tp = new TestProc(conf->getObjectID(s.str()));
             tp->init_dlog(dlog);

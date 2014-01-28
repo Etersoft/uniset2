@@ -96,13 +96,13 @@ void NCRestorer_XML::init( const std::string& fname )
     }
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer_XML::dump(const IONotifyController* ic, SInfo& inf,
+void NCRestorer_XML::dump(const IONotifyController* ic, SInfo& inf, 
                     const IONotifyController::ConsumerListInfo& lst)
 {
     uwarn << "NCRestorer_XML::dump NOT SUPPORT!!!!" << endl;
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer_XML::dumpThreshold(const IONotifyController* ic, SInfo& inf,
+void NCRestorer_XML::dumpThreshold(const IONotifyController* ic, SInfo& inf, 
                     const IONotifyController::ThresholdExtList& lst)
 {
     uwarn << "NCRestorer_XML::dumpThreshold NOT SUPPORT!!!!" << endl;
@@ -312,7 +312,7 @@ bool NCRestorer_XML::getSensorInfo( const UniXML& xml, xmlNode* it, SInfo& inf )
         inf.d_si.id = conf->getSensorID(d_txt);
         if( inf.d_si.id == UniSetTypes::DefaultObjectId )
         {
-            ucrit << "(NCRestorer_XML:getSensorInfo): sensor='"
+            ucrit << "(NCRestorer_XML:getSensorInfo): sensor='" 
                     << xml.getProp(it,"name") << "' err: "
                     << " Unknown SensorID for depend='"  << d_txt
                     << endl;
@@ -343,7 +343,7 @@ void NCRestorer_XML::read_thresholds(const UniXML& xml, xmlNode* node, IONotifyC
         NCRestorer_XML::SInfo inf;
         if( !getSensorInfo(xml,it.getCurrent(),inf) )
         {
-            uwarn << ic->getName()
+            uwarn << ic->getName() 
                 << "(read_thresholds): не смог получить информацию по датчику" << endl;
             continue;
         }
@@ -360,17 +360,17 @@ void NCRestorer_XML::read_thresholds(const UniXML& xml, xmlNode* node, IONotifyC
             IONotifyController::ThresholdInfoExt ti(0,0,0,0);
             if( !getThresholdInfo(xml,tit,ti) )
             {
-                uwarn << ic->getName()
+                uwarn << ic->getName() 
                             << "(read_thresholds): не смог получить информацию о пороге"
                             << " для датчика "
                             << conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
                 continue;
             }
 
-            uinfo  << "(read_thresholds): \tthreshold low="
+            uinfo  << "(read_thresholds): \tthreshold low=" 
                      << ti.lowlimit << " \thi=" << ti.hilimit
-                     << " \t sid=" << ti.sid
-                     << " \t invert=" << ti.invert
+                     << " \t sid=" << ti.sid 
+                     << " \t invert=" << ti.invert 
                      << endl << flush;
 
             xmlNode* cnode = find_node(xml,tit,"consumers","");
@@ -381,7 +381,7 @@ void NCRestorer_XML::read_thresholds(const UniXML& xml, xmlNode* node, IONotifyC
                 {
                     if( !getConsumerList(xml,ask_it,ti.clst) )
                     {
-                        uwarn << ic->getName()
+                        uwarn << ic->getName() 
                                 << "(read_thresholds): не смог получить список заказчиков"
                                 << " для порога " << ti.id 
                                 << " датчика " << conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
@@ -399,7 +399,7 @@ void NCRestorer_XML::read_thresholds(const UniXML& xml, xmlNode* node, IONotifyC
 }
 // ------------------------------------------------------------------------------------------
 
-void NCRestorer_XML::read_consumers( const UniXML& xml, xmlNode* it,
+void NCRestorer_XML::read_consumers( const UniXML& xml, xmlNode* it, 
                                         NCRestorer_XML::SInfo& inf, IONotifyController* ic )
 {
     // в новых ask-файлах список выделен <consumers>...</consumers>,
@@ -417,7 +417,7 @@ void NCRestorer_XML::read_consumers( const UniXML& xml, xmlNode* it,
 }
 // ------------------------------------------------------------------------------------------
 
-bool NCRestorer_XML::getConsumerList( const UniXML& xml, xmlNode* node,
+bool NCRestorer_XML::getConsumerList( const UniXML& xml, xmlNode* node, 
                                         IONotifyController::ConsumerListInfo& lst )
 {
     UniXML_iterator it(node);
@@ -439,7 +439,7 @@ bool NCRestorer_XML::getConsumerList( const UniXML& xml, xmlNode* node,
 
 }
 // ------------------------------------------------------------------------------------------
-bool NCRestorer_XML::getThresholdInfo( const UniXML& xml,xmlNode* node,
+bool NCRestorer_XML::getThresholdInfo( const UniXML& xml,xmlNode* node, 
                                         IONotifyController::ThresholdInfoExt& ti )
 {
     UniXML_iterator uit(node);
@@ -450,7 +450,7 @@ bool NCRestorer_XML::getThresholdInfo( const UniXML& xml,xmlNode* node,
         ti.sid = conf->getSensorID(sid_name);
         if( ti.sid == UniSetTypes::DefaultObjectId )
         {
-            ucrit << "(NCRestorer_XML:getThresholdInfo): "
+            ucrit << "(NCRestorer_XML:getThresholdInfo): " 
                     << " Not found ID for " << sid_name << endl;
         }
         else

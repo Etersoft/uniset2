@@ -152,7 +152,7 @@ class UInterface
         IOController_i::ShortIOInfo getChangedTime( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const;
 
         //! Получить список датчиков
-        IOController_i::ShortMapSeq* getSensors( const UniSetTypes::ObjectId id,
+        IOController_i::ShortMapSeq* getSensors( const UniSetTypes::ObjectId id, 
                                                     const UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode() );
 
         // ---------------------------------------------------------------
@@ -282,7 +282,7 @@ class UInterface
                     UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
                     mcache.clear();
                 }; 
-
+ 
                 /*!
                     \todo можно добавить поле CleanTime для каждой ссылки отдельно...
                 */
@@ -328,12 +328,12 @@ class UInterface
                     }
                     time_t tm;
                 };
-*/
+*/ 
         };
 
         void initBackId( UniSetTypes::ObjectId backid );
     protected:
-        std::string set_err(const std::string& pre, const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node) const;
+        std::string set_err(const std::string& pre, const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node) const; 
 
     private:
         void init();

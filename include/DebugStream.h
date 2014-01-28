@@ -24,20 +24,20 @@
 #ifdef TEST_DEBUGSTREAM
 #include <string>
 struct Debug {
-	enum type {
-		NONE = 0,
-		INFO       = (1 << 0),   // 1
-		WARN       = (1 << 1),   // 2
-		CRIT       = (1 << 2)   // 4
-	};
-	static const type ANY = type(INFO | WARN | CRIT);
-	static Debug::type value(std::string const & val) {
-		if (val == "NONE") return Debug::NONE;
-		if (val == "INFO") return Debug::INFO;
-		if (val == "WARN") return Debug::WARN;
-		if (val == "CRIT") return Debug::CRIT;
-		return Debug::NONE;
-	}
+    enum type {
+        NONE = 0,
+        INFO       = (1 << 0),   // 1
+        WARN       = (1 << 1),   // 2
+        CRIT       = (1 << 2)   // 4
+    };
+    static const type ANY = type(INFO | WARN | CRIT);
+    static Debug::type value(std::string const & val) {
+        if (val == "NONE") return Debug::NONE;
+        if (val == "INFO") return Debug::INFO;
+        if (val == "WARN") return Debug::WARN;
+        if (val == "CRIT") return Debug::CRIT;
+        return Debug::NONE;
+    }
 };
 #endif
 
@@ -58,8 +58,8 @@ struct Debug {
 
     If you want to have debug output from time critical code you should
     use this construct:
-    if (debug.debugging(Debug::INFO)) {
-	 debug << "...debug output...\n";
+    if (debug..is_info()) {
+     debug << "...debug output...\n";
     }
 
     To give debug info even if no debug (NONE) is requested:
@@ -81,108 +81,131 @@ struct Debug {
 class DebugStream : public std::ostream
 {
 public:
-	/// Constructor, sets the debug level to t.
-	explicit DebugStream(Debug::type t = Debug::NONE);
+    /// Constructor, sets the debug level to t.
+    explicit DebugStream(Debug::type t = Debug::NONE);
 
-	/// Constructor, sets the log file to f, and the debug level to t.
-	explicit
-	DebugStream(char const * f, Debug::type t = Debug::NONE);
+    /// Constructor, sets the log file to f, and the debug level to t.
+    explicit
+    DebugStream(char const * f, Debug::type t = Debug::NONE);
 
-	///
-	~DebugStream();
+    ///
+    ~DebugStream();
 
-	/// Sets the debug level to t.
-	void level(Debug::type t) {
-		dt = Debug::type(t & Debug::ANY);
-	}
+    /// Sets the debug level to t.
+    void level(Debug::type t) {
+        dt = Debug::type(t & Debug::ANY);
+    }
 
-	/// Returns the current debug level.
-	Debug::type level() const {
-		return dt;
-	}
+    /// Returns the current debug level.
+    Debug::type level() const {
+        return dt;
+    }
 
-	/// Adds t to the current debug level.
-	void addLevel(Debug::type t) {
-		dt = Debug::type(dt | t);
-	}
+    /// Adds t to the current debug level.
+    void addLevel(Debug::type t) {
+        dt = Debug::type(dt | t);
+    }
 
-	/// Deletes t from the current debug level.
-	void delLevel(Debug::type t) {
-		dt = Debug::type(dt & ~t);
-	}
+    /// Deletes t from the current debug level.
+    void delLevel(Debug::type t) {
+        dt = Debug::type(dt & ~t);
+    }
 
-	/// Sets the debugstreams' logfile to f.
-	void logFile(const std::string f);
-	
-	inline std::string getLogFile(){ return fname; }
-	
-	/// Returns true if t is part of the current debug level.
-	bool debugging(Debug::type t = Debug::ANY) const
-	{
-		if (dt & t) return true;
-		return false;
-	}
+    /// Sets the debugstreams' logfile to f.
+    void logFile( const std::string& f );
+    
+    inline std::string getLogFile(){ return fname; }
+    
+    /// Returns true if t is part of the current debug level.
+    inline bool debugging(Debug::type t = Debug::ANY) const
+    {  return (dt & t); }
 
-
-	/** Returns the no-op stream if t is not part of the
-	    current debug level otherwise the real debug stream
-	    is used.
-	*/
-	std::ostream & debug(Debug::type t = Debug::ANY);
-//		if (dt & t) return *this;
-//		return nullstream;
-//	}
+    /** Returns the no-op stream if t is not part of the
+        current debug level otherwise the real debug stream
+        is used.
+    */
+    std::ostream & debug(Debug::type t = Debug::ANY);
+//        if (dt & t) return *this;
+//        return nullstream;
+//    }
 
 
-	/** This is an operator to give a more convenient use:
-	    dbgstream[Debug::INFO] << "Info!\n";
-		Вывод осуществляется с датой и временем (если они не отключены)
-	*/
-	std::ostream & operator[](Debug::type t) {
-		return debug(t);
-	}
+    /** This is an operator to give a more convenient use:
+        dbgstream[Debug::INFO] << "Info!\n";
+        Вывод осуществляется с датой и временем (если они не отключены)
+    */
+    std::ostream & operator[](Debug::type t) {
+        return debug(t);
+    }
 
-	/**	
-		Вывод продолжения логов (без даты и времени)
-	*/
-	inline std::ostream& to_end(Debug::type t)
-	{
-		return this->operator()(t);
-	}
+    /**    
+        Вывод продолжения логов (без даты и времени)
+    */
+    inline std::ostream& to_end(Debug::type t)
+    { return this->operator()(t); }
 
-	/**	
-		Вывод продолжения логов (без даты и времени)
-	*/
-	std::ostream& operator()(Debug::type t);
+    /**    
+        Вывод продолжения логов (без даты и времени) "log()"
+    */
+    std::ostream& operator()(Debug::type t);
 
+    inline void showDateTime(bool s)
+    { show_datetime = s; }
 
-	inline void showDateTime(bool s)
-	{
-		show_datetime = s;
-	}
+// короткие функции (для удобства)
+// log.level1()  - вывод с датой и временем  "date time [LEVEL] ...",
+//    если вывод даты и времени не выключен при помощи showDateTime(false)
+// if( log.is_level1() ) - проверка включён ли лог.."
 
+#define DMANIP(FNAME,LEVEL) \
+    inline std::ostream& FNAME( bool showdatetime=true ) \
+    {\
+        if( showdatetime )\
+            return operator[](Debug::LEVEL); \
+        return  operator()(Debug::LEVEL); \
+    } \
+\
+    inline bool is_##FNAME() \
+    { return debugging(Debug::LEVEL); }
 
-	std::ostream& print_date(Debug::type t, char brk='/');
-	std::ostream& print_time(Debug::type t, char brk=':');
-	std::ostream& print_datetime(Debug::type t);
-	
-	
-	std::ostream& pos(int x, int y);
+    DMANIP(level1,LEVEL1)
+    DMANIP(level2,LEVEL2)
+    DMANIP(level3,LEVEL3)
+    DMANIP(level4,LEVEL4)
+    DMANIP(level5,LEVEL5)
+    DMANIP(level6,LEVEL6)
+    DMANIP(level7,LEVEL7)
+    DMANIP(level8,LEVEL8)
+    DMANIP(level9,LEVEL9)
+    DMANIP(info,INFO)
+    DMANIP(warn,WARN)
+    DMANIP(crit,CRIT)
+    DMANIP(repository,REPOSITORY)
+    DMANIP(system,SYSTEM)
+    DMANIP(exception,EXCEPTION)
+    DMANIP(any,ANY)
+#undef DMANIP
 
-	const DebugStream &operator=(const DebugStream& r);
-	
+    std::ostream& printDate(Debug::type t, char brk='/');
+    std::ostream& printTime(Debug::type t, char brk=':');
+    std::ostream& printDateTime(Debug::type t);
+    
+    std::ostream& pos(int x, int y);
+
+    const DebugStream &operator=(const DebugStream& r);
+    
 private:
-	/// The current debug level
-	Debug::type dt;
-	/// The no-op stream.
-	std::ostream nullstream;
-	///
-	struct debugstream_internal;
-	///
-	debugstream_internal * internal;
-	bool show_datetime;
-	std::string fname;
-	
+    /// The current debug level
+    Debug::type dt;
+    /// The no-op stream.
+    std::ostream nullstream;
+    ///
+    struct debugstream_internal;
+    ///
+    debugstream_internal * internal;
+    bool show_datetime;
+    std::string fname;
+    
 };
 
 #endif

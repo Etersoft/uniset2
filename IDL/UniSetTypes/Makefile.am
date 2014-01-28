@@ -7,9 +7,9 @@ CCDIR=$(top_builddir)/src/ObjectRepository
 HHDIR=$(top_builddir)/include
 
 # Исходные файлы IDL
-IDLFILES=UniSetTypes_i.idl UniSetObject_i.idl ObjectsManager_i.idl
+IDLFILES=UniSetTypes_i.idl UniSetObject_i.idl UniSetManager_i.idl
 
-include $(top_builddir)/conf/idl.mk
+include $(top_builddir)/IDL/idl.mk
 
 idl_include_HEADERS = *.idl
 idl_includedir = $(datadir)/idl/@PACKAGE@/UniSetTypes

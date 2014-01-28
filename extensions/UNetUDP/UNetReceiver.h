@@ -49,146 +49,144 @@
 // -----------------------------------------------------------------------------
 class UNetReceiver
 {
-	public:
-		UNetReceiver( const std::string& host, const ost::tpport_t port, SMInterface* smi );
-		~UNetReceiver();
+    public:
+        UNetReceiver( const std::string& host, const ost::tpport_t port, SMInterface* smi );
+        ~UNetReceiver();
 
-		 void start();
-		 void stop();
+         void start();
+         void stop();
 
-		 void receive();
-		 void update();
+         void receive();
+         void update();
 
-		 inline std::string getName(){ return myname; }
+         inline std::string getName(){ return myname; }
 
-		 // блокировать сохранение данный в SM
-		 void setLockUpdate( bool st );
+         // блокировать сохранение данный в SM
+         void setLockUpdate( bool st );
 
-		 void resetTimeout();
+         void resetTimeout();
 
-		 inline bool isRecvOK(){ return !ptRecvTimeout.checkTime(); }
-		 inline unsigned long getLostPacketsNum(){ return lostPackets; }
+         inline bool isRecvOK(){ return !ptRecvTimeout.checkTime(); }
+         inline unsigned long getLostPacketsNum(){ return lostPackets; }
 
-		 void setReceiveTimeout( timeout_t msec );
-		 void setReceivePause( timeout_t msec );
-		 void setUpdatePause( timeout_t msec );
-		 void setLostTimeout( timeout_t msec );
-		 void setPrepareTime( timeout_t msec );
-		 void setMaxDifferens( unsigned long set );
+         void setReceiveTimeout( timeout_t msec );
+         void setReceivePause( timeout_t msec );
+         void setUpdatePause( timeout_t msec );
+         void setLostTimeout( timeout_t msec );
+         void setPrepareTime( timeout_t msec );
+         void setMaxDifferens( unsigned long set );
 
-		 void setRespondID( UniSetTypes::ObjectId id, bool invert=false );
-		 void setLostPacketsID( UniSetTypes::ObjectId id );
+         void setRespondID( UniSetTypes::ObjectId id, bool invert=false );
+         void setLostPacketsID( UniSetTypes::ObjectId id );
 
-		 void setMaxProcessingCount( int set );
+         void setMaxProcessingCount( int set );
 
-		 inline ost::IPV4Address getAddress(){ return addr; }
-		 inline ost::tpport_t getPort(){ return port; }
+         inline ost::IPV4Address getAddress(){ return addr; }
+         inline ost::tpport_t getPort(){ return port; }
 
-		 /*! Коды событий */ 
-		 enum Event
-		 {
-			 evOK,		/*!< связь есть */
-			 evTimeout	/*!< потеря связи */
-		 };
+         /*! Коды событий */ 
+         enum Event
+         {
+             evOK,        /*!< связь есть */
+             evTimeout    /*!< потеря связи */
+         };
 
-		 typedef sigc::slot<void,UNetReceiver*,Event> EventSlot;
-		 void connectEvent( EventSlot sl );
+         typedef sigc::slot<void,UNetReceiver*,Event> EventSlot;
+         void connectEvent( EventSlot sl );
 
-	protected:
+    protected:
 
-		SMInterface* shm;
+        SMInterface* shm;
 
-		bool recv();
-		void step();
-		void real_update();
+        bool recv();
+        void step();
+        void real_update();
 
-		void initIterators();
+        void initIterators();
 
-	private:
-		UNetReceiver();
+    private:
+        UNetReceiver();
 
-		int recvpause;		/*!< пауза меджду приёмами пакетов, [мсек] */
-		int updatepause;	/*!< переодичность обновления данных в SM, [мсек] */
+        int recvpause;        /*!< пауза меджду приёмами пакетов, [мсек] */
+        int updatepause;    /*!< переодичность обновления данных в SM, [мсек] */
 
-		ost::UDPReceive* udp;
-		ost::IPV4Address addr;
-		ost::tpport_t port;
-		std::string myname;
+        ost::UDPReceive* udp;
+        ost::IPV4Address addr;
+        ost::tpport_t port;
+        std::string myname;
 
-		UniSetTypes::uniset_mutex pollMutex;
-		PassiveTimer ptRecvTimeout;
-		PassiveTimer ptPrepare;
-		timeout_t recvTimeout;
-		timeout_t prepareTime;
-		timeout_t lostTimeout;
-		PassiveTimer ptLostTimeout;
-		unsigned long lostPackets; /*!< счётчик потерянных пакетов */
+        UniSetTypes::uniset_rwmutex pollMutex;
+        PassiveTimer ptRecvTimeout;
+        PassiveTimer ptPrepare;
+        timeout_t recvTimeout;
+        timeout_t prepareTime;
+        timeout_t lostTimeout;
+        PassiveTimer ptLostTimeout;
+        unsigned long lostPackets; /*!< счётчик потерянных пакетов */
 
-		UniSetTypes::ObjectId sidRespond;
-		IOController::DIOStateList::iterator ditRespond;
-		bool respondInvert;
-		UniSetTypes::ObjectId sidLostPackets;
-		IOController::AIOStateList::iterator aitLostPackets;
+        UniSetTypes::ObjectId sidRespond;
+        IOController::IOStateList::iterator itRespond;
+        bool respondInvert;
+        UniSetTypes::ObjectId sidLostPackets;
+        IOController::IOStateList::iterator itLostPackets;
 
-		bool activated;
-		
-		ThreadCreator<UNetReceiver>* r_thr;		// receive thread
-		ThreadCreator<UNetReceiver>* u_thr;		// update thread
+        UniSetTypes::mutex_atomic_t activated;
 
-		// функция определения приоритетного сообщения для обработки
-		struct PacketCompare:
-		public std::binary_function<UniSetUDP::UDPMessage, UniSetUDP::UDPMessage, bool>
-		{
-			inline bool operator()(const UniSetUDP::UDPMessage& lhs,
-							const UniSetUDP::UDPMessage& rhs) const
-					{ return lhs.num > rhs.num; }
-		};
-		typedef std::priority_queue<UniSetUDP::UDPMessage,std::vector<UniSetUDP::UDPMessage>,PacketCompare> PacketQueue;
-		PacketQueue qpack;	/*!< очередь принятых пакетов (отсортированных по возрастанию номера пакета) */
-		UniSetUDP::UDPMessage pack;		/*!< просто буфер для получения очередного сообщения */
-		UniSetUDP::UDPPacket r_buf;
-		UniSetTypes::uniset_mutex packMutex; /*!< mutex для работы с очередью */
-		unsigned long pnum;	/*!< текущий номер обработанного сообщения, для проверки непрерывности последовательности пакетов */
+        ThreadCreator<UNetReceiver>* r_thr;        // receive thread
+        ThreadCreator<UNetReceiver>* u_thr;        // update thread
 
-		/*! максимальная разница межд номерами пакетов, при которой считается, что счётчик пакетов
-		 * прошёл через максимум или сбился...
-		 */
-		unsigned long maxDifferens;
+        // функция определения приоритетного сообщения для обработки
+        struct PacketCompare:
+        public std::binary_function<UniSetUDP::UDPMessage, UniSetUDP::UDPMessage, bool>
+        {
+            inline bool operator()(const UniSetUDP::UDPMessage& lhs,
+                            const UniSetUDP::UDPMessage& rhs) const
+                    { return lhs.num > rhs.num; }
+        };
+        typedef std::priority_queue<UniSetUDP::UDPMessage,std::vector<UniSetUDP::UDPMessage>,PacketCompare> PacketQueue;
+        PacketQueue qpack;    /*!< очередь принятых пакетов (отсортированных по возрастанию номера пакета) */
+        UniSetUDP::UDPMessage pack;        /*!< просто буфер для получения очередного сообщения */
+        UniSetUDP::UDPPacket r_buf;
+        UniSetTypes::uniset_rwmutex packMutex; /*!< mutex для работы с очередью */
+        unsigned long pnum;    /*!< текущий номер обработанного сообщения, для проверки непрерывности последовательности пакетов */
 
-		PacketQueue qtmp;	/*!< очередь на время обработки(очистки) основной очереди */
-		bool waitClean;		/*!< флаг означающий, что ждём очистики очереди до конца */
-		unsigned long rnum;	/*!< текущий номер принятого сообщения, для проверки "переполнения" или "сбоя" счётчика */
-		
-		int maxProcessingCount; /*!< максимальное число обрабатываемых за один раз сообщений */
-		
-		bool lockUpdate; /*!< флаг блокировки сохранения принятых данных в SM */
-		UniSetTypes::uniset_mutex lockMutex;
-		
-		EventSlot slEvent;
-		Trigger trTimeout;
-		UniSetTypes::uniset_mutex tmMutex;
+        /*! максимальная разница межд номерами пакетов, при которой считается, что счётчик пакетов
+         * прошёл через максимум или сбился...
+         */
+        unsigned long maxDifferens;
 
-		struct ItemInfo
-		{
-			long id;
-			IOController::AIOStateList::iterator ait;
-			IOController::DIOStateList::iterator dit;
-			UniversalIO::IOTypes iotype;
+        PacketQueue qtmp;    /*!< очередь на время обработки(очистки) основной очереди */
+        bool waitClean;        /*!< флаг означающий, что ждём очистики очереди до конца */
+        unsigned long rnum;    /*!< текущий номер принятого сообщения, для проверки "переполнения" или "сбоя" счётчика */
+        
+        int maxProcessingCount; /*!< максимальное число обрабатываемых за один раз сообщений */
+        
+        bool lockUpdate; /*!< флаг блокировки сохранения принятых данных в SM */
+        UniSetTypes::uniset_rwmutex lockMutex;
+        
+        EventSlot slEvent;
+        Trigger trTimeout;
+        UniSetTypes::uniset_rwmutex tmMutex;
 
-			ItemInfo():
-				id(UniSetTypes::DefaultObjectId),
-				iotype(UniversalIO::UnknownIOType){}
-		};
+        struct ItemInfo
+        {
+            long id;
+            IOController::IOStateList::iterator ioit;
+            UniversalIO::IOType iotype;
 
-		typedef std::vector<ItemInfo> ItemVec;
-		ItemVec d_icache;	/*!< кэш итераторов для булевых */
-		ItemVec a_icache;	/*!< кэш итераторов для аналоговых */
+            ItemInfo():
+                id(UniSetTypes::DefaultObjectId),iotype(UniversalIO::UnknownIOType){}
+        };
 
-		bool d_cache_init_ok;
-		bool a_cache_init_ok;
+        typedef std::vector<ItemInfo> ItemVec;
+        ItemVec d_icache;    /*!< кэш итераторов для булевых */
+        ItemVec a_icache;    /*!< кэш итераторов для аналоговых */
 
-		void initDCache( UniSetUDP::UDPMessage& pack, bool force=false );
-		void initACache( UniSetUDP::UDPMessage& pack, bool force=false );
+        bool d_cache_init_ok;
+        bool a_cache_init_ok;
+
+        void initDCache( UniSetUDP::UDPMessage& pack, bool force=false );
+        void initACache( UniSetUDP::UDPMessage& pack, bool force=false );
 };
 // -----------------------------------------------------------------------------
 #endif // UNetReceiver_H_

@@ -37,35 +37,35 @@ using namespace UniSetTypes;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 DBServer::DBServer(ObjectId id): 
-	UniSetObject_LT(id)
+    UniSetObject_LT(id)
 {
-	if( getId() == DefaultObjectId )
-	{
-		id = conf->getDBServer();
-		if( id == DefaultObjectId )
-		{
-			ostringstream msg;
-			msg << "(DBServer): Запуск невозможен! НЕ ОПРЕДЕЛЁН ObjectId !!!!!\n";
-			throw Exception(msg.str());
-		}
-		setID(id);
-	}
+    if( getId() == DefaultObjectId )
+    {
+        id = conf->getDBServer();
+        if( id == DefaultObjectId )
+        {
+            ostringstream msg;
+            msg << "(DBServer): Запуск невозможен! НЕ ОПРЕДЕЛЁН ObjectId !!!!!\n";
+            throw Exception(msg.str());
+        }
+        setID(id);
+    }
 }
 
 DBServer::DBServer(): 
-	UniSetObject_LT(conf->getDBServer())
+    UniSetObject_LT(conf->getDBServer())
 {
-	if( getId() == DefaultObjectId )
-	{
-		ObjectId id = conf->getDBServer();
-		if( id == DefaultObjectId )
-		{
-			ostringstream msg;
-			msg << "(DBServer): Запуск невозможен! НЕ ОПРЕДЕЛЁН ObjectId !!!!!\n";
-			throw Exception(msg.str());
-		}
-		setID(id);
-	}
+    if( getId() == DefaultObjectId )
+    {
+        ObjectId id = conf->getDBServer();
+        if( id == DefaultObjectId )
+        {
+            ostringstream msg;
+            msg << "(DBServer): Запуск невозможен! НЕ ОПРЕДЕЛЁН ObjectId !!!!!\n";
+            throw Exception(msg.str());
+        }
+        setID(id);
+    }
 }
 //--------------------------------------------------------------------------------------------
 DBServer::~DBServer()
@@ -74,60 +74,23 @@ DBServer::~DBServer()
 //--------------------------------------------------------------------------------------------
 void DBServer::processingMessage( UniSetTypes::VoidMessage *msg )
 {
-	switch(msg->type)
-	{
-		case Message::SysCommand:
-		{
-			SystemMessage sm(msg);
-			sysCommand(&sm);
-			break;
-		}
-			
-		case Message::DataBase:
-		{	
-			DBMessage dbm(msg);
-			parse(&dbm);
-			break;
-		}
+    switch(msg->type)
+    {
+        case Message::Confirm:
+            confirmInfo( reinterpret_cast<ConfirmMessage*>(msg) );
+        break;
 
-		case Message::Info:
-		{
-			InfoMessage im(msg);
-			parse(&im);
-			break;
-		}
-
-		case Message::Alarm:
-		{
-			AlarmMessage am(msg);
-			parse(&am);
-			break;
-		}
-
-		case Message::Confirm:
-		{
-			ConfirmMessage cm(msg);
-			parse(&cm);
-			break;
-		}
-	
-		case Message::SensorInfo:
-		{
-			SensorMessage sm(msg);
-			parse(&sm);
-			break;
-		}
-	
-		default:
-			break; 	
-	}
+        default:
+			UniSetObject_LT::processingMessage(msg);
+            break;
+    }
 
 }
 //--------------------------------------------------------------------------------------------
 bool DBServer::activateObject()
 {
-	UniSetObject_LT::activateObject();
-	init_dbserver();
-	return true;
+    UniSetObject_LT::activateObject();
+    init_dbserver();
+    return true;
 }
 //--------------------------------------------------------------------------------------------

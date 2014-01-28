@@ -19,8 +19,6 @@ libUniSetNetwork_la_SOURCES 	= UniExchange.cc
 @PACKAGE@_network_CPPFLAGS	= $(SIGC_CFLAGS) -I$(top_builddir)/extensions/include
 @PACKAGE@_network_SOURCES 	= uninet.cc
 
-include $(top_builddir)/conf/setting.mk
-
 # install
 devel_include_HEADERS = *.h
 devel_includedir = $(pkgincludedir)/extensions

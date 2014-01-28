@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2013-12-10+04:00
+// generate timestamp: 2014-01-27+04:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -30,20 +30,29 @@ class UObject_SK:
 		virtual ~UObject_SK();
 
 		
-
 		bool alarm( UniSetTypes::ObjectId sid, bool state );
-		bool getState( UniSetTypes::ObjectId sid );
 		long getValue( UniSetTypes::ObjectId sid );
 		void setValue( UniSetTypes::ObjectId sid, long value );
-		void setState( UniSetTypes::ObjectId sid, bool state );
-		void askState( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );
-		void askValue( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );
+		void askSensor( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );
 		void updateValues();
 		void setMsg( UniSetTypes::ObjectId code, bool state );
 
+		DebugStream mylog;
+		void init_dlog( DebugStream& d );
 
-		DebugStream dlog;
-		void init_dlog(DebugStream& dlog);
+        // "синтаксический сахар"..для логов
+        #define myinfo if( mylog.debugging(Debug::INFO) ) mylog
+        #define mywarn if( mylog.debugging(Debug::WARN) ) mylog
+        #define mycrit if( mylog.debugging(Debug::CRIT) ) mylog
+        #define mylog1 if( mylog.debugging(Debug::LEVEL1) ) mylog
+        #define mylog2 if( mylog.debugging(Debug::LEVEL2) ) mylog
+        #define mylog3 if( mylog.debugging(Debug::LEVEL3) ) mylog
+        #define mylog4 if( mylog.debugging(Debug::LEVEL4) ) mylog
+        #define mylog5 if( mylog.debugging(Debug::LEVEL5) ) mylog
+        #define mylog6 if( mylog.debugging(Debug::LEVEL6) ) mylog
+        #define mylog7 if( mylog.debugging(Debug::LEVEL7) ) mylog
+        #define mylog8 if( mylog.debugging(Debug::LEVEL8) ) mylog
+        #define mylog9 if( mylog.debugging(Debug::LEVEL9) ) mylog
 
 
 		// Используемые идентификаторы
@@ -69,10 +78,10 @@ class UObject_SK:
 		
 		virtual void callback();
 		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
-		virtual void sysCommand( UniSetTypes::SystemMessage* sm );
+		virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
 		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
-		virtual void sensorInfo( UniSetTypes::SensorMessage* sm ){}
-		virtual void timerInfo( UniSetTypes::TimerMessage* tm ){}
+		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ){}
+		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ){}
 		virtual void sigterm( int signo );
 		virtual bool activateObject();
 		virtual void testMode( bool state );
@@ -81,8 +90,8 @@ class UObject_SK:
 		void updateOutputs( bool force );
 
 		void preAskSensors( UniversalIO::UIOCommand cmd );
-		void preSensorInfo( UniSetTypes::SensorMessage* sm );
-		void preTimerInfo( UniSetTypes::TimerMessage* tm );
+		void preSensorInfo( const UniSetTypes::SensorMessage* sm );
+		void preTimerInfo( const UniSetTypes::TimerMessage* tm );
 		void waitSM( int wait_msec, UniSetTypes::ObjectId testID = UniSetTypes::DefaultObjectId );
 
 		void resetMsg();
@@ -110,7 +119,7 @@ class UObject_SK:
 		inline const std::string getProp(const std::string& name) { return UniSetTypes::conf->getProp(confnode, name); }
 
 		int smReadyTimeout; 	/*!< время ожидания готовности SM */
-		bool activated;
+		UniSetTypes::mutex_atomic_t activated;
 		int activateTimeout;	/*!< время ожидания готовности UniSetObject к работе */
 		PassiveTimer ptStartUpTimeout;	/*!< время на блокировку обработки WatchDog, если недавно был StartUp */
 		int askPause; /*!< пауза между неудачными попытками заказать датчики */

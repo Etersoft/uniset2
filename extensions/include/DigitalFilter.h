@@ -1,102 +1,98 @@
 //--------------------------------------------------------------------------
-// Цифровой фильтр с двумя (опционально) уровнями фильтрации сигнала
-// Первый уровень фильтра усредняет несколько значений, переданных через массив
-// Второй уровень - математическая реалезация RC фильтра
-// После вызова конструктора фильтра, его необходимо еще проинициализировать
-// вызвав функцию FirstValue
+// Реализация различных цифровых фильтров
 //--------------------------------------------------------------------------
 #ifndef DigitalFilter_H_
 #define DigitalFilter_H_
 //--------------------------------------------------------------------------
-#include <list>
+#include <deque>
 #include <vector>
 #include <ostream>
 #include "PassiveTimer.h"
 //--------------------------------------------------------------------------
 class DigitalFilter
 {
-	public:
-		DigitalFilter ( unsigned int bufsize=5, double T=0, double lsq=0.2,
-		                int iir_thr=10000, double iir_coeff_prev=0.5,
-		                double iir_coeff_new=0.5 );
-		~DigitalFilter ();
-		
-		// T <=0 - отключить вторую ступень фильтра
-		void setSettings( unsigned int bufsize, double T, double lsq,
-		                  int iir_thr, double iir_coeff_prev, double iir_coeff_new );
+    public:
+        DigitalFilter ( unsigned int bufsize=5, double T=0, double lsq=0.2,
+                        int iir_thr=10000, double iir_coeff_prev=0.5,
+                        double iir_coeff_new=0.5 );
+        ~DigitalFilter ();
 
-		// Усреднение с учётом СКОС
-		// На вход подается новое значение
-		// возвращается фильтрованное с учётом 
-		// предыдущих значений...
-		int filter1( int newValue );
-		
-		// RC-фильтр
-		int filterRC( int newVal );
-		
-		// медианный фильтр
-		int median( int newval );
-		
-		// адаптивный фильтр по схеме наименьших квадратов
-		int leastsqr( int newval );
+        // T <=0 - отключить вторую ступень фильтра
+        void setSettings( unsigned int bufsize, double T, double lsq,
+                          int iir_thr, double iir_coeff_prev, double iir_coeff_new );
 
-		// рекурсивный фильтр
-		int filterIIR( int newval );
+        // Усреднение с учётом СКОС
+        // На вход подается новое значение
+        // возвращается фильтрованное с учётом 
+        // предыдущих значений...
+        int filter1( int newValue );
 
-		// получить текущее фильтрованное значение
-		int current1();
-		int currentRC();
-		int currentMedian();
-		int currentLS();
-		int currentIIR();
+        // RC-фильтр
+        int filterRC( int newVal );
 
-		// просто добавить очередное значение
-		void add( int newValue );
+        // медианный фильтр
+        int median( int newval );
 
-		void init( int val );
-		
-		// void init( list<int>& data );
-	
-		inline int size(){ return buf.size(); }
+        // адаптивный фильтр по схеме наименьших квадратов
+        int leastsqr( int newval );
 
-		inline double middle(){ return M; }
-		inline double sko(){ return S; }
+        // рекурсивный фильтр
+        int filterIIR( int newval );
 
-		friend std::ostream& operator<<(std::ostream& os, const DigitalFilter& d);
-		friend std::ostream& operator<<(std::ostream& os, const DigitalFilter* d);
-		
-	private:
+        // получить текущее фильтрованное значение
+        int current1();
+        int currentRC();
+        int currentMedian();
+        int currentLS();
+        int currentIIR();
 
-		// Первая ступень фильтра
-		double firstLevel();
-		// Вторая ступень фильтра, математическая реализация RC фильтра
-		double secondLevel( double val );
+        // просто добавить очередное значение
+        void add( int newValue );
 
-		double Ti;		// Постоянная времени для апериодического звена в милисекундах
-		double val;		// Текущее значение второй ступени фильтра
-		double M;		// Среднее арифметическое
-		double S;		// Среднеквадратичное отклонение
-		PassiveTimer tmr;
-		
-		typedef std::list<int> FIFOBuffer;
-		FIFOBuffer buf;		
-		unsigned int maxsize;
-		
-		typedef std::vector<int> MedianVector;
-		MedianVector mvec;
+        void init( int val );
 
-		typedef std::vector<double> Coeff;
-		Coeff w;        // Вектор коэффициентов для filterIIR
+        // void init( list<int>& data );
 
-		double lsparam; // Параметр для filterIIR
-		double ls;      // Последнее значение, возвращённое filterIIR
+        inline int size(){ return buf.size(); }
 
-		int thr;        // Порог для изменений, обрабатываемых рекурсивным фильтром
-		int prev;       // Последнее значение, возвращённое рекурсивным фильтром
+        inline double middle(){ return M; }
+        inline double sko(){ return S; }
 
-		// Коэффициенты для рекурсивного фильтра
-		double coeff_prev;
-		double coeff_new;
+        friend std::ostream& operator<<(std::ostream& os, const DigitalFilter& d);
+        friend std::ostream& operator<<(std::ostream& os, const DigitalFilter* d);
+
+    private:
+
+        // Первая ступень фильтра
+        double firstLevel();
+        // Вторая ступень фильтра, математическая реализация RC фильтра
+        double secondLevel( double val );
+
+        double Ti;        // Постоянная времени для апериодического звена в милисекундах
+        double val;        // Текущее значение второй ступени фильтра
+        double M;        // Среднее арифметическое
+        double S;        // Среднеквадратичное отклонение
+        PassiveTimer tmr;
+
+        typedef std::deque<int> FIFOBuffer;
+        FIFOBuffer buf;
+        unsigned int maxsize;
+
+        typedef std::vector<int> MedianVector;
+        MedianVector mvec;
+
+        typedef std::vector<double> Coeff;
+        Coeff w;        // Вектор коэффициентов для filterIIR
+
+        double lsparam; // Параметр для filterIIR
+        double ls;      // Последнее значение, возвращённое filterIIR
+
+        int thr;        // Порог для изменений, обрабатываемых рекурсивным фильтром
+        int prev;       // Последнее значение, возвращённое рекурсивным фильтром
+
+        // Коэффициенты для рекурсивного фильтра
+        double coeff_prev;
+        double coeff_new;
 };
 //--------------------------------------------------------------------------
 #endif // DigitalFilter_H_

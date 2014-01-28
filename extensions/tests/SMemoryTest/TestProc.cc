@@ -53,7 +53,7 @@ void TestProc::sysCommand( const UniSetTypes::SystemMessage* sm )
 void TestProc::sensorInfo( const SensorMessage *sm )
 {
 /*
-    mylog2 << myname << "(sensorInfo): id=" << sm->id << " val=" << sm->value
+    mylog2 << myname << "(sensorInfo): id=" << sm->id << " val=" << sm->value 
             << "  " << timeToString(sm->sm_tv_sec,":")
             << "(" << setw(6) << sm->sm_tv_usec << "): "
             << endl;

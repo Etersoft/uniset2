@@ -81,8 +81,8 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 
 		// Текущее значение и предыдущее значение
 		<xsl:for-each select="//smap/item">
-		<xsl:call-template name="settype"><xsl:with-param name="iotype" select="@iotype"/></xsl:call-template><xsl:text> </xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
-		<xsl:call-template name="settype"><xsl:with-param name="iotype" select="@iotype"/></xsl:call-template><xsl:text> prev_</xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+		long <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+		long prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 		</xsl:for-each>
 
 		// --- public variables ---

@@ -32,61 +32,61 @@
 // ----------------------------------------------------------------------------
 class DBInterface
 {
-	public:
-	
-			DBInterface();
-			~DBInterface();
+    public:
+    
+            DBInterface();
+            ~DBInterface();
 
-//			bool createDB(const std::string dbname);
-//			bool dropDB(const std::string dbname);
-			MYSQL_RES * listFields(const std::string& table, const std::string& wild );
+//            bool createDB(const std::string dbname);
+//            bool dropDB(const std::string dbname);
+            MYSQL_RES * listFields(const std::string& table, const std::string& wild );
 
 
-			bool connect( const std::string& host, const std::string& user, const std::string& pswd,
-							const std::string& dbname);
-			bool close();
-			
-			bool query(const std::string& q);
-			const std::string lastQuery();
-			bool insert(const std::string& q);
+            bool connect( const std::string& host, const std::string& user, const std::string& pswd,
+                            const std::string& dbname);
+            bool close();
+            
+            bool query(const std::string& q);
+            const std::string lastQuery();
+            bool insert(const std::string& q);
 
-			std::string addslashes(const std::string& str);
-			
-			/*! 
-				проверка связи с БД.
-				в случае отсутсвия попытка восстановить...
-			*/
-			bool ping();
+            std::string addslashes(const std::string& str);
+            
+            /*! 
+                проверка связи с БД.
+                в случае отсутсвия попытка восстановить...
+            */
+            bool ping();
 
-			/*! связь с БД установлена (была) */
-			bool isConnection();
-			
-			bool nextRecord();
-			void freeResult();
+            /*! связь с БД установлена (была) */
+            bool isConnection();
+            
+            bool nextRecord();
+            void freeResult();
 
-			unsigned int numCols();
-			unsigned int numRows();
+            unsigned int numCols();
+            unsigned int numRows();
 
-			bool moveToRow(int ind);
-			
-			int insert_id();
+            bool moveToRow(int ind);
+            
+            int insert_id();
 
-			const MYSQL_ROW getRow();
-			const std::string error();
-			
-			MYSQL_ROW Row;
+            const MYSQL_ROW getRow();
+            const std::string error();
+            
+            MYSQL_ROW Row;
 
-			// *******************
-			const char* gethostinfo();
-	protected:
-	
-	private:
-	
-		MYSQL_RES *result;
-		MYSQL *mysql;
-		std::string lastQ;
-		bool queryok;	// успешность текущего запроса
-		bool connected;
+            // *******************
+            const char* gethostinfo();
+    protected:
+    
+    private:
+    
+        MYSQL_RES *result;
+        MYSQL *mysql;
+        std::string lastQ;
+        bool queryok;    // успешность текущего запроса
+        bool connected;
 };
 // ----------------------------------------------------------------------------------
 #endif
