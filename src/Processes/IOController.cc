@@ -142,7 +142,7 @@ long IOController::localGetValue( IOController::IOStateList::iterator& li,
         uniset_rwmutex_rlock lock(li->second.val_lock);
         return li->second.value;
     }
-    
+
     // -------------
     ostringstream err;
     err << myname << "(localGetValue): Not found sensor (" << si.id << ":" << si.node << ") " 
@@ -174,7 +174,7 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
             << "node: " << conf->oind->getMapName(si.node); 
         throw IOController_i::NameNotFound(err.str().c_str());
     }
-    
+
     bool changed = false;
     {    // lock
         uniset_rwmutex_wrlock lock(li->second.val_lock);
@@ -184,7 +184,7 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
 
     // сперва локальные события...
     try
-    {    
+    {
         if( changed )
         {
             uniset_rwmutex_wrlock l(li->second.undefMutex);
@@ -682,10 +682,10 @@ IOController_i::SensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
             (*res)[i] = it->second;
             continue;
         }
-        
+
         // элемент не найден...
         (*res)[i].si.id     = DefaultObjectId;
-        (*res)[i].si.node     = DefaultObjectId;
+        (*res)[i].si.node   = DefaultObjectId;
         (*res)[i].undefined = true;
     }
 
