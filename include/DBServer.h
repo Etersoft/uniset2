@@ -28,48 +28,41 @@
 #include "UniSetObject_LT.h"
 //------------------------------------------------------------------------------------------
 /*!
-	 \page ServicesPage
-	 \section secDBServer Сервис ведения БД
-	 \subsection subDBS_common Общие сведения
-		Предназначен для работы с БД.
-		Основная задача это - сохрание информации о датчиках, ведение журнала сообщений.
+     \page ServicesPage
+     \section secDBServer Сервис ведения БД
+     \subsection subDBS_common Общие сведения
+         Предназначен для работы с БД.
+        Основная задача это - сохрание информации о датчиках, ведение журнала сообщений.
 
-	 \subsection subDBS_idea Сценарий работы
-		На узле, где ведётся БД запускается один экземпляр сервиса. Клиенты могут получить доступ, несколькими способами:
-		- через NameService
-		- при помощи UniversalInterface::send()
+     \subsection subDBS_idea Сценарий работы
+         На узле, где ведётся БД запускается один экземпляр сервиса. Клиенты могут получить доступ, несколькими способами:
+        - через NameService
+        - при помощи UInterface::send()
 
-		Сервис является системным, поэтому его идентификатор можно получить при помощи
-	UniSetTypes::Configuration::getDBServer() объекта UniSetTypes::conf.
+        Сервис является системным, поэтому его идентификатор можно получить при помощи
+    UniSetTypes::Configuration::getDBServer() объекта UniSetTypes::conf.
 
-	Реализацию см. \ref page_DBServer_MySQL
+    Реализацию см. \ref page_DBServer_MySQL и \ref page_DBServer_SQLite
 */
 
 /*! Прототип реализации сервиса ведения БД */
 class DBServer: 
-	public UniSetObject_LT
+    public UniSetObject_LT
 {
-	public:
-		DBServer( UniSetTypes::ObjectId id );
-		DBServer();
-		~DBServer();
+    public:
+        DBServer( UniSetTypes::ObjectId id );
+        DBServer();
+        ~DBServer();
 
-	protected:
+    protected:
 
-		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
-		virtual void sysCommand( UniSetTypes::SystemMessage* sm ){};
+        virtual void processingMessage( UniSetTypes::VoidMessage* msg );
+        virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ){}
 
-		// Функции обработки пришедших сообщений
-		virtual void parse( UniSetTypes::SensorMessage* sm ){};
-		virtual void parse( UniSetTypes::DBMessage* dbmsg ){};
-		virtual void parse( UniSetTypes::InfoMessage* imsg ){};
-		virtual void parse( UniSetTypes::AlarmMessage* amsg ){};
-		virtual void parse( UniSetTypes::ConfirmMessage* cmsg ){};
+        virtual bool activateObject();
+        virtual void init_dbserver(){};
 
-		virtual bool activateObject();
-		virtual void init_dbserver(){};
-
-	private:
+    private:
 };
 //------------------------------------------------------------------------------------------
 #endif

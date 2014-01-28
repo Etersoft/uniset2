@@ -2,7 +2,7 @@
 #include "RRDServer.h"
 #include "Configuration.h"
 #include "Debug.h"
-#include "ObjectsActivator.h"
+#include "UniSetActivator.h"
 #include "Extensions.h"
 // -----------------------------------------------------------------------------
 using namespace std;
@@ -11,74 +11,74 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 int main( int argc, const char** argv )
 {
-	if( argc>1 && (!strcmp(argv[1],"--help") || !strcmp(argv[1],"-h")) )
-	{
-		cout << "--smemory-id objectName  - SharedMemory objectID. Default: autodetect" << endl;
-		cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
-		cout << "--rrdstorage-logfile filename    - logfilename. Default: rrdstorage.log" << endl;
-		cout << endl;
-		RRDServer::help_print(argc, argv);
-		return 0;
-	}
+    if( argc>1 && (!strcmp(argv[1],"--help") || !strcmp(argv[1],"-h")) )
+    {
+        cout << "--smemory-id objectName  - SharedMemory objectID. Default: autodetect" << endl;
+        cout << "--confile filename       - configuration file. Default: configure.xml" << endl;
+        cout << "--rrdstorage-logfile filename    - logfilename. Default: rrdstorage.log" << endl;
+        cout << endl;
+        RRDServer::help_print(argc, argv);
+        return 0;
+    }
 
-	try
-	{
-		string confile=UniSetTypes::getArgParam("--confile",argc, argv, "configure.xml");
-		conf = new Configuration( argc, argv, confile );
+    try
+    {
+        string confile=UniSetTypes::getArgParam("--confile",argc, argv, "configure.xml");
+        conf = new Configuration( argc, argv, confile );
 
-		string logfilename(conf->getArgParam("--rrdstorage-logfile"));
-		if( logfilename.empty() )
-			logfilename = "rrdstorage.log";
+        string logfilename(conf->getArgParam("--rrdstorage-logfile"));
+        if( logfilename.empty() )
+            logfilename = "rrdstorage.log";
 
-		conf->initDebug(dlog,"dlog");
+        conf->initDebug(dlog,"dlog");
 
-		std::ostringstream logname;
-		string dir(conf->getLogDir());
-		logname << dir << logfilename;
-		unideb.logFile( logname.str() );
-		dlog.logFile( logname.str() );
+        std::ostringstream logname;
+        string dir(conf->getLogDir());
+        logname << dir << logfilename;
+        ulog.logFile( logname.str() );
+        dlog.logFile( logname.str() );
 
-		ObjectId shmID = DefaultObjectId;
-		string sID = conf->getArgParam("--smemory-id");
-		if( !sID.empty() )
-			shmID = conf->getControllerID(sID);
-		else
-			shmID = getSharedMemoryID();
+        ObjectId shmID = DefaultObjectId;
+        string sID = conf->getArgParam("--smemory-id");
+        if( !sID.empty() )
+            shmID = conf->getControllerID(sID);
+        else
+            shmID = getSharedMemoryID();
 
-		if( shmID == DefaultObjectId )
-		{
-			cerr << sID << "? SharedMemoryID not found in " << conf->getControllersSection() << " section" << endl;
-			return 1;
-		}
+        if( shmID == DefaultObjectId )
+        {
+            cerr << sID << "? SharedMemoryID not found in " << conf->getControllersSection() << " section" << endl;
+            return 1;
+        }
 
-		RRDServer* db = RRDServer::init_rrdstorage(argc,argv,shmID);
-		if( !db )
-		{
-			dlog[Debug::CRIT] << "(rrdstorage): init не прошёл..." << endl;
-			return 1;
-		}
+        RRDServer* db = RRDServer::init_rrdstorage(argc,argv,shmID);
+        if( !db )
+        {
+            dcrit << "(rrdstorage): init не прошёл..." << endl;
+            return 1;
+        }
 
-		ObjectsActivator act;
-		act.addObject(static_cast<class UniSetObject*>(db));
+        UniSetActivator act;
+        act.addObject(static_cast<class UniSetObject*>(db));
 
-		SystemMessage sm(SystemMessage::StartUp);
-		act.broadcast( sm.transport_msg() );
+        SystemMessage sm(SystemMessage::StartUp);
+        act.broadcast( sm.transport_msg() );
 
-		unideb(Debug::ANY) << "\n\n\n";
-		unideb[Debug::ANY] << "(main): -------------- RRDServer START -------------------------\n\n";
-		dlog(Debug::ANY) << "\n\n\n";
-		dlog[Debug::ANY] << "(main): -------------- RRDServer START -------------------------\n\n";
-		act.run(false);
-		return 0;
-	}
-	catch( UniSetTypes::Exception& ex )
-	{
-		dlog[Debug::CRIT] << "(rrdstorage): " << ex << std::endl;
-	}
-	catch(...)
-	{
-		dlog[Debug::CRIT] << "(rrdstorage): catch ..." << std::endl;
-	}
+        ulog << "\n\n\n";
+        ulog << "(main): -------------- RRDServer START -------------------------\n\n";
+        dlog << "\n\n\n";
+        dlog << "(main): -------------- RRDServer START -------------------------\n\n";
+        act.run(false);
+        return 0;
+    }
+    catch( UniSetTypes::Exception& ex )
+    {
+        dcrit << "(rrdstorage): " << ex << std::endl;
+    }
+    catch(...)
+    {
+        dcrit << "(rrdstorage): catch ..." << std::endl;
+    }
 
-	return 1;
+    return 1;
 }

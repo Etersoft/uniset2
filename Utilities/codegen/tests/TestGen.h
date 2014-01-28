@@ -5,22 +5,22 @@
 #include "TestGen_SK.h"
 // -----------------------------------------------------------------------------
 class TestGen:
-	public TestGen_SK
+    public TestGen_SK
 {
-	public:
-		TestGen( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::conf->getNode("TestGen") );
-		virtual ~TestGen();
+    public:
+        TestGen( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::conf->getNode("TestGen") );
+        virtual ~TestGen();
 
 
-	protected:
-		TestGen();
+    protected:
+        TestGen();
 
-		virtual void step();
-		void sensorInfo( UniSetTypes::SensorMessage *sm );
-		void timerInfo( UniSetTypes::TimerMessage *tm );
-		virtual void sigterm( int signo );
+        virtual void step();
+        void sensorInfo( UniSetTypes::SensorMessage *sm );
+        void timerInfo( UniSetTypes::TimerMessage *tm );
+        virtual void sigterm( int signo );
 
-	private:
+    private:
 };
 // -----------------------------------------------------------------------------
 #endif // TestGen_H_

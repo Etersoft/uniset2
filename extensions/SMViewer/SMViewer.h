@@ -7,19 +7,19 @@
 #include "SMInterface.h"
 //--------------------------------------------------------------------------------
 class SMViewer:
-	public SViewer
+    public SViewer
 {   
-	public:
-		SMViewer( UniSetTypes::ObjectId shmID );
-		virtual ~SMViewer();
+    public:
+        SMViewer( UniSetTypes::ObjectId shmID );
+        virtual ~SMViewer();
 
-		void run();
+        void run();
 
-	protected:
+    protected:
 
-	private:
-		SMInterface* shm;
-		UniversalInterface ui;
+    private:
+        SMInterface* shm;
+        UInterface ui;
 };
 // --------------------------------------------------------------------------
 #endif

@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2013-12-10+04:00
+// generate timestamp: 2014-01-27+04:00
 // -----------------------------------------------------------------------------
 #include "Configuration.h"
 #include "Exceptions.h"
@@ -38,12 +38,12 @@ idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(0),
 smReadyTimeout(0),
-activated(false),
+activated(0),
 askPause(2000),
 
 end_private(false)
 {
-	unideb[Debug::CRIT] << "UObject: init failed!!!!!!!!!!!!!!!" << endl;
+	ucrit << "UObject: init failed!!!!!!!!!!!!!!!" << endl;
 	throw Exception( string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ static const std::string init3_str( const std::string& s1, const std::string& s2
 		return s1;
 	if( !s2.empty() )
 		return s2;
-
+	
 	return s3;
 }
 // -----------------------------------------------------------------------------
@@ -73,12 +73,12 @@ idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(cnode),
 smReadyTimeout(0),
-activated(false),
+activated(0),
 askPause(conf->getPIntProp(cnode,"askPause",2000)),
 
 end_private(false)
 {
-
+	
 	if( UniSetTypes::findArgParam("--print-id-list",conf->getArgc(),conf->getArgv()) != -1 )
 	{
 
@@ -117,8 +117,8 @@ end_private(false)
 	}
 
 	// Инициализация значений
-
-
+	
+	
 	sleep_msec = conf->getArgPInt("--sleep-msec","150", 150);
 
 	resetMsgTime = conf->getPIntProp(cnode,"resetMsgTime", 2000);
@@ -130,9 +130,8 @@ end_private(false)
 	else if( smReadyTimeout < 0 )
 		smReadyTimeout = UniSetTimer::WaitUpTime;
 
-	std::string tmp_smtestID("");
-
-	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),tmp_smtestID));
+	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),""));
+	
 
 	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
 
@@ -140,7 +139,7 @@ end_private(false)
 	ptStartUpTimeout.setTiming(msec);
 
 	// ===================== <variables> =====================
-
+	
 	// ===================== end of <variables> =====================
 }
 
@@ -153,40 +152,34 @@ UObject_SK::~UObject_SK()
 void UObject_SK::updateValues()
 {
 	// Опрашиваем все входы...
-
+	
 }
 // -----------------------------------------------------------------------------
 void UObject_SK::updatePreviousValues()
 {
-
+	
 }
 // -----------------------------------------------------------------------------
 void UObject_SK::checkSensors()
 {
-
+	
 }
 // -----------------------------------------------------------------------------
 bool UObject_SK::alarm( UniSetTypes::ObjectId _code, bool _state )
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-		unideb[Debug::CRIT]  << getName()
-							<< "(alarm): попытка послать сообщение с DefaultObjectId"
-							<< endl;
-		return false;
+        ucrit  << getName()
+				<< "(alarm): попытка послать сообщение с DefaultObjectId"
+				<< endl;
+		return false;	
 	}
 
-	unideb[Debug::LEVEL1]  << getName()  << "(alarm): ";
-	if( _state )
-		unideb(Debug::LEVEL1) << "SEND ";
-	else
-		unideb(Debug::LEVEL1) << "RESET ";
-
-	unideb(Debug::LEVEL1) << endl;
-
-
-
-	unideb[Debug::LEVEL1] << " not found MessgeOID?!!" << endl;
+    ulog1 << getName()  << "(alarm): " << ( _state ? "SEND " : "RESET " ) << endl;
+	
+	
+	
+    ulog1 << " not found MessgeOID?!!" << endl;
 	return false;
 }
 // -----------------------------------------------------------------------------
@@ -202,7 +195,7 @@ void UObject_SK::testMode( bool _state )
 		return;
 
 	// отключаем все выходы
-
+	
 }
 // -----------------------------------------------------------------------------
 
@@ -211,7 +204,7 @@ void UObject_SK::testMode( bool _state )
 // ------------------------------------------------------------------------------------------
 void UObject_SK::init_dlog( DebugStream& d )
 {
-	UObject_SK::dlog = d;
+	UObject_SK::mylog = d;
 }
 // ------------------------------------------------------------------------------------------
 void UObject_SK::processingMessage( UniSetTypes::VoidMessage* _msg )
@@ -221,45 +214,36 @@ void UObject_SK::processingMessage( UniSetTypes::VoidMessage* _msg )
 		switch( _msg->type )
 		{
 			case Message::SensorInfo:
-			{
-				SensorMessage _sm( _msg );
-				preSensorInfo( &_sm );
-				break;
-			}
+				preSensorInfo( reinterpret_cast<SensorMessage*>(_msg) );
+			break;
 
 			case Message::Timer:
-			{
-				TimerMessage _tm(_msg);
-				preTimerInfo(&_tm);
-				break;
-			}
+				preTimerInfo( reinterpret_cast<TimerMessage*>(_msg) );
+			break;
 
 			case Message::SysCommand:
-			{
-				SystemMessage _sm( _msg );
-				sysCommand( &_sm );
-				break;
-			}
+				sysCommand( reinterpret_cast<SystemMessage*>(_msg) );
+			break;
 
 			default:
 				break;
-		}
+		}	
 	}
-	catch(Exception& ex)
+	catch( Exception& ex )
 	{
-		cout  << myname << "(processingMessage): " << ex << endl;
+		ucrit  << myname << "(processingMessage): " << ex << endl;
 	}
 }
 // -----------------------------------------------------------------------------
-void UObject_SK::sysCommand( SystemMessage* _sm )
+void UObject_SK::sysCommand( const SystemMessage* _sm )
 {
 	switch( _sm->command )
 	{
 		case SystemMessage::WatchDog:
-			unideb << myname << "(sysCommand): WatchDog" << endl;
+			ulog << myname << "(sysCommand): WatchDog" << endl;
 			if( !active || !ptStartUpTimeout.checkTime() )
 			{
-				unideb[Debug::WARN] << myname << "(sysCommand): игнорируем WatchDog, потому-что только-что стартанули" << endl;
+                uwarn << myname << "(sysCommand): игнорируем WatchDog, потому-что только-что стартанули" << endl;
 				break;
 			}
 		case SystemMessage::StartUp:
@@ -275,22 +259,22 @@ void UObject_SK::sysCommand( SystemMessage* _sm )
 			active = true;
 			break;
 		}
-
+		
 		case SystemMessage::FoldUp:
 		case SystemMessage::Finish:
 			preAskSensors(UniversalIO::UIODontNotify);
 			askSensors(UniversalIO::UIODontNotify);
 			break;
-
+		
 		case SystemMessage::LogRotate:
 		{
 			// переоткрываем логи
-			unideb << myname << "(sysCommand): logRotate" << endl;
-			string fname = unideb.getLogFile();
+			mylog << myname << "(sysCommand): logRotate" << endl;
+			string fname( mylog.getLogFile() );
 			if( !fname.empty() )
 			{
-				unideb.logFile(fname.c_str());
-				unideb << myname << "(sysCommand): ***************** UNIDEB LOG ROTATE *****************" << endl;
+				mylog.logFile(fname.c_str());
+				mylog << myname << "(sysCommand): ***************** mylog LOG ROTATE *****************" << endl;
 			}
 		}
 		break;
@@ -298,11 +282,6 @@ void UObject_SK::sysCommand( SystemMessage* _sm )
 		default:
 			break;
 	}
-}
-// -----------------------------------------------------------------------------
-void UObject_SK::setState( UniSetTypes::ObjectId _sid, bool _state )
-{
-	setValue(_sid, _state ? 1 : 0 );
 }
 // -----------------------------------------------------------------------------
 
@@ -314,19 +293,19 @@ void UObject_SK::sigterm( int signo )
 // -----------------------------------------------------------------------------
 bool UObject_SK::activateObject()
 {
-	// блокирование обработки Startup
+	// блокирование обработки Startup 
 	// пока не пройдёт инициализация датчиков
 	// см. sysCommand()
 	{
-		activated = false;
+		activated = 0;
 		UniSetObject::activateObject();
-		activated = true;
+		activated = 1;
 	}
 
 	return true;
 }
 // -----------------------------------------------------------------------------
-void UObject_SK::preTimerInfo( UniSetTypes::TimerMessage* _tm )
+void UObject_SK::preTimerInfo( const UniSetTypes::TimerMessage* _tm )
 {
 	timerInfo(_tm);
 }
@@ -340,22 +319,19 @@ void UObject_SK::waitSM( int wait_msec, ObjectId _testID )
 
 	if( _testID == DefaultObjectId )
 		return;
-
-	if( unideb.debugging(Debug::INFO) )
-	{
-		unideb[Debug::INFO] << myname << "(waitSM): waiting SM ready "
+		
+	uinfo << myname << "(waitSM): waiting SM ready "
 			<< wait_msec << " msec"
 			<< " testID=" << _testID << endl;
-	}
-
+		
 	if( !ui.waitReady(_testID,wait_msec) )
 	{
 		ostringstream err;
-		err << myname
-			<< "(waitSM): Не дождались готовности(exist) SharedMemory к работе в течение "
+		err << myname 
+			<< "(waitSM): Не дождались готовности(exist) SharedMemory к работе в течение " 
 			<< wait_msec << " мсек";
 
-		unideb[Debug::CRIT] << err.str() << endl;
+        ucrit << err.str() << endl;
 		terminate();
 		abort();
 		// kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
@@ -384,7 +360,7 @@ void UObject_SK::callback()
 		}
 
 		// обработка сообщений (таймеров и т.п.)
-		for( int i=0; i<20; i++ )
+		for( unsigned int i=0; i<20; i++ )
 		{
 			if( !receiveMessage(msg) )
 				break;
@@ -399,7 +375,7 @@ void UObject_SK::callback()
 		// "сердцебиение"
 		if( idHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
 		{
-			ui.saveValue(idHeartBeat,maxHeartBeat,UniversalIO::AnalogInput);
+			ui.setValue(idHeartBeat,maxHeartBeat,UniversalIO::AI);
 			ptHeartBeat.reset();
 		}
 
@@ -409,55 +385,45 @@ void UObject_SK::callback()
 	}
 	catch( Exception& ex )
 	{
-		unideb[Debug::CRIT] << myname << "(execute): " << ex << endl;
+        ucrit << myname << "(execute): " << ex << endl;
 	}
 	catch(CORBA::SystemException& ex)
 	{
-		unideb[Debug::CRIT] << myname << "(execute): СORBA::SystemException: "
-			<< ex.NP_minorString() << endl;
+        ucrit << myname << "(execute): СORBA::SystemException: "
+                << ex.NP_minorString() << endl;
 	}
 	catch(...)
 	{
-		unideb[Debug::CRIT] << myname << "(execute): catch ..." << endl;
+        ucrit << myname << "(execute): catch ..." << endl;
 	}
 
 	if( !active )
 		return;
-
+	
 	msleep( sleep_msec );
 }
 // -----------------------------------------------------------------------------
 void UObject_SK::setValue( UniSetTypes::ObjectId _sid, long _val )
 {
 //	ui.setState(sid,state);
-
+	
 }
 // -----------------------------------------------------------------------------
 void UObject_SK::updateOutputs( bool _force )
 {
-
+	
 }
 // -----------------------------------------------------------------------------
-void UObject_SK::preSensorInfo( UniSetTypes::SensorMessage* _sm )
+void UObject_SK::preSensorInfo( const UniSetTypes::SensorMessage* _sm )
 {
-
-
+	
+	
 	sensorInfo(_sm);
 }
 // -----------------------------------------------------------------------------
-void UObject_SK::askState( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
+void UObject_SK::askSensor( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
 {
 	ui.askRemoteSensor(_sid,_cmd,_node,getId());
-}
-// -----------------------------------------------------------------------------
-void UObject_SK::askValue( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
-{
-	ui.askRemoteSensor(_sid,_cmd,_node,getId());
-}
-// -----------------------------------------------------------------------------
-bool UObject_SK::getState( UniSetTypes::ObjectId _sid )
-{
-	return (bool)getValue(_sid);
 }
 // -----------------------------------------------------------------------------
 long UObject_SK::getValue( UniSetTypes::ObjectId _sid )
@@ -465,15 +431,15 @@ long UObject_SK::getValue( UniSetTypes::ObjectId _sid )
 	try
 	{
 
-		unideb[Debug::CRIT] << myname << "(getState): Обращение к неизвестному ДИСКРЕТНОМУ датчику sid="
-			<< _sid << endl;
+        ucrit << myname << "(getValue): Обращение к неизвестному датчику sid="
+                << _sid << endl;
 	}
 	catch(Exception& ex)
 	{
-		unideb[Debug::CRIT] << myname << "(getState): " << ex << endl;
+        ucrit << myname << "(getValue): " << ex << endl;
 		throw;
 	}
-
+	
 	return 0;
 }
 // -----------------------------------------------------------------------------
@@ -482,35 +448,35 @@ void UObject_SK::preAskSensors( UniversalIO::UIOCommand _cmd )
 {
 	PassiveTimer ptAct(activateTimeout);
 	while( !activated && !ptAct.checkTime() )
-	{
+	{	
 		cout << myname << "(preAskSensors): wait activate..." << endl;
 		msleep(300);
 		if( activated )
 			break;
 	}
-
+			
 	if( !activated )
-		unideb[Debug::CRIT] << myname
+		ucrit << myname
 			<< "(preAskSensors): ************* don`t activated?! ************" << endl;
 
 	for( ;; )
 	{
 		try
 		{
-
+		
 			return;
 		}
 		catch(SystemError& err)
 		{
-			unideb[Debug::CRIT] << myname << "(preAskSensors): " << err << endl;
+            ucrit << myname << "(preAskSensors): " << err << endl;
 		}
 		catch(Exception& ex)
 		{
-			unideb[Debug::CRIT] << myname << "(preAskSensors): " << ex << endl;
+            ucrit << myname << "(preAskSensors): " << ex << endl;
 		}
 		catch(...)
 		{
-			unideb[Debug::CRIT] << myname << "(preAskSensors): catch(...)" << endl;
+            ucrit << myname << "(preAskSensors): catch(...)" << endl;
 		}
 		msleep(askPause);
 	}
@@ -522,10 +488,10 @@ void UObject_SK::setMsg( UniSetTypes::ObjectId _code, bool _state )
 	if( !_state )
 	{
 		ptResetMsg.reset();
-		return;
+		return; 
 	}
 
 	alarm( _code, _state );
 	ptResetMsg.reset();
-}
+}	
 // ----------------------------------------------------------------------------

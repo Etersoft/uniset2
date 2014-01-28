@@ -28,7 +28,6 @@
 #include <pthread.h>
 #include <time.h>
 
-#include "PosixThread.h"
 #include "PassiveTimer.h"
 
 // ------------------------------------------------------------------------------------------
@@ -37,167 +36,167 @@ using namespace std;
 // ------------------------------------------------------------------------------------------
 void PassiveSysTimer::call(int signo, siginfo_t *evp, void *ucontext)
 {
-	cout << "PassiveSysTimer: callme time="<< evp->si_value.sival_int<< " ms"<<endl;
+    cout << "PassiveSysTimer: callme time="<< evp->si_value.sival_int<< " ms"<<endl;
 }
 
 void PassiveSysTimer::callalrm(int signo)
 {
-//	cout << "PassiveSysTimer: callme signo "<< signo <<endl;
+//    cout << "PassiveSysTimer: callme signo "<< signo <<endl;
 }
 // ------------------------------------------------------------------------------------------
 
 PassiveSysTimer::PassiveSysTimer():
-	terminated(1)
+    terminated(1)
 {
-	init();
+    init();
 }
 // ------------------------------------------------------------------------------------------
 
 PassiveSysTimer::~PassiveSysTimer()
 {
-	terminate();
+    terminate();
 }
 // ------------------------------------------------------------------------------------------
 void PassiveSysTimer::init()
 {
 /*
-	struct itimerval val;
-	struct sigaction action;
-	sigemptyset(&action.sa_mask);
+    struct itimerval val;
+    struct sigaction action;
+    sigemptyset(&action.sa_mask);
 
-	action.sa_handler = (void(*)(int))callalrm;
-	action.sa_flags = SA_RESETHAND;//SA_RESTART;
+    action.sa_handler = (void(*)(int))callalrm;
+    action.sa_flags = SA_RESETHAND;//SA_RESTART;
 
-	if( sigaction(SIGALRM, &action, 0) == -1)
-	{
-		cerr << "PassiveSysTimer: error sigaction" << endl;
-		throw NotSetSignal("PassiveTimer: errir sigaction");
-	}
+    if( sigaction(SIGALRM, &action, 0) == -1)
+    {
+        cerr << "PassiveSysTimer: error sigaction" << endl;
+        throw NotSetSignal("PassiveTimer: errir sigaction");
+    }
 */
 }
 // ------------------------------------------------------------------------------------------
 void PassiveSysTimer::terminate()
 {
-	if (!terminated)
-	{
-		timeAct = 0;
-		terminated = 1;
-//		cout << "PassiveTimer("<< pid <<"): прерываю работу "<< endl;
-		kill(pid, SIGALRM);
-	}
+    if (!terminated)
+    {
+        timeAct = 0;
+        terminated = 1;
+//        cout << "PassiveTimer("<< pid <<"): прерываю работу "<< endl;
+        kill(pid, SIGALRM);
+    }
 }
 // ------------------------------------------------------------------------------------------
 bool PassiveSysTimer::wait(timeout_t timeMS)
 {
-	pid = getpid();
+    pid = getpid();
 
-//	struct itimerval val;
-	struct sigaction action;
-	sigemptyset(&action.sa_mask);
+//    struct itimerval val;
+    struct sigaction action;
+    sigemptyset(&action.sa_mask);
 
-	action.sa_handler = (void(*)(int))callalrm;
-	action.sa_flags = SA_RESETHAND;//SA_RESTART;
+    action.sa_handler = (void(*)(int))callalrm;
+    action.sa_flags = SA_RESETHAND;//SA_RESTART;
 
-	if( sigaction(SIGALRM, &action, 0) == -1)
-	{
-		cerr << "PassiveSysTimer: error sigaction" << endl;
-		return false;
-	}
+    if( sigaction(SIGALRM, &action, 0) == -1)
+    {
+        cerr << "PassiveSysTimer: error sigaction" << endl;
+        return false;
+    }
 
 
-//	if ( !terminated )
-//		terminate();
-	terminated = 0;
+//    if ( !terminated )
+//        terminate();
+    terminated = 0;
 
-	timeout_t sec;
-	timeout_t msec;
+    timeout_t sec;
+    timeout_t msec;
 
-	if (timeMS == WaitUpTime)
-	{
-		sec=15*60; // 15min
-		msec=0;
-	}
-	else
-	{
-		sec=timeMS/1000;
-		msec=(timeMS%1000)*1000;
-	}
+    if (timeMS == WaitUpTime)
+    {
+        sec=15*60; // 15min
+        msec=0;
+    }
+    else
+    {
+        sec=timeMS/1000;
+        msec=(timeMS%1000)*1000;
+    }
 
-	mtimer.it_value.tv_sec     = sec;
-	mtimer.it_value.tv_usec    = msec;
-	mtimer.it_interval.tv_sec  = 0;
-	mtimer.it_interval.tv_usec = 0;
-	setitimer( ITIMER_REAL, &mtimer, (struct itimerval *)0 );
+    mtimer.it_value.tv_sec     = sec;
+    mtimer.it_value.tv_usec    = msec;
+    mtimer.it_interval.tv_sec  = 0;
+    mtimer.it_interval.tv_usec = 0;
+    setitimer( ITIMER_REAL, &mtimer, (struct itimerval *)0 );
 
-	PassiveTimer::setTiming(timeMS); // вызываем для совместимости с обычным PassiveTimer-ом
+    PassiveTimer::setTiming(timeMS); // вызываем для совместимости с обычным PassiveTimer-ом
 
-	sigset_t mask, oldmask;
+    sigset_t mask, oldmask;
 
-	sigemptyset(&mask);
-	// блокируем все сигналы кроме этих
-	sigaddset( &mask, SIGALRM );
-	sigprocmask( SIG_BLOCK, &mask, &oldmask );
-	if (timeMS == WaitUpTime)
-	{
-		while (!terminated)
-			sigsuspend( &oldmask );
-	}
-	else
-		sigsuspend( &oldmask );
+    sigemptyset(&mask);
+    // блокируем все сигналы кроме этих
+    sigaddset( &mask, SIGALRM );
+    sigprocmask( SIG_BLOCK, &mask, &oldmask );
+    if (timeMS == WaitUpTime)
+    {
+        while (!terminated)
+            sigsuspend( &oldmask );
+    }
+    else
+        sigsuspend( &oldmask );
 
-	terminated = 1;
-	sigprocmask( SIG_UNBLOCK, &mask, NULL );
+    terminated = 1;
+    sigprocmask( SIG_UNBLOCK, &mask, NULL );
 
-//	cout << "PassiveSysTimer: time ok"<< endl;
-	return true;
+//    cout << "PassiveSysTimer: time ok"<< endl;
+    return true;
 }
 
 // ------------------------------------------------------------------------------------------
 /*
-	struct sigaction sigv;
-	struct sigevent sigx;
-	struct itimerspec val;
-	struct tm do_time;
-	timer_t t_id;
+    struct sigaction sigv;
+    struct sigevent sigx;
+    struct itimerspec val;
+    struct tm do_time;
+    timer_t t_id;
 
-	sigemptyset(&sigv.sa_mask);
-	sigv.sa_flags = SA_SIGINFO;
-	sigv.sa_sigaction = call;
+    sigemptyset(&sigv.sa_mask);
+    sigv.sa_flags = SA_SIGINFO;
+    sigv.sa_sigaction = call;
 
-	if (sigaction (SIGUSR1, &sigv, 0) == -1)
-	{
-		cerr << "Timer: sigaction" << endl;
-		return -1;
-	}
+    if (sigaction (SIGUSR1, &sigv, 0) == -1)
+    {
+        cerr << "Timer: sigaction" << endl;
+        return -1;
+    }
 
-	sigx.sigev_notify = SIGEV_SIGNAL;
-	sigx.sigev_signo = SIGUSR1;
-	sigx.sigev_value.sival_int = timeMS;
+    sigx.sigev_notify = SIGEV_SIGNAL;
+    sigx.sigev_signo = SIGUSR1;
+    sigx.sigev_value.sival_int = timeMS;
 
-	if ( timer_create(CLOCK_REALTIME, &sigx, &t_id) == -1 )
-	{
-		cerr << "Timer: timer create" << endl;
-		return -1;
-	}
+    if ( timer_create(CLOCK_REALTIME, &sigx, &t_id) == -1 )
+    {
+        cerr << "Timer: timer create" << endl;
+        return -1;
+    }
 
-	int sec=timeMS/1000;
-	int micsec=(timeMS%1000)*1000;
+    int sec=timeMS/1000;
+    int micsec=(timeMS%1000)*1000;
 
-	val.it_value.tv_sec	= sec;
-	val.it_value.tv_nsec= micsec;
-	val.it_interval.tv_sec	= sec;
-	val.it_interval.tv_nsec= micsec;
-	if ( timer_settime(t_id, 0, &val,0) == -1)
-	{
-		cerr << "settime "<< endl;
-		return -1;
-	}
-	pause();
+    val.it_value.tv_sec    = sec;
+    val.it_value.tv_nsec= micsec;
+    val.it_interval.tv_sec    = sec;
+    val.it_interval.tv_nsec= micsec;
+    if ( timer_settime(t_id, 0, &val,0) == -1)
+    {
+        cerr << "settime "<< endl;
+        return -1;
+    }
+    pause();
 
-	if ( timer_delete( t_id )==-1)
-	{
-		cerr << "Timer: timer delete" << endl;
-	}
+    if ( timer_delete( t_id )==-1)
+    {
+        cerr << "Timer: timer delete" << endl;
+    }
 
-	return 0;
+    return 0;
 */

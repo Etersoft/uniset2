@@ -9,227 +9,227 @@ using namespace ModbusRTU;
 using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 ModbusTCPServer::ModbusTCPServer( ost::InetAddress &ia, int port ):
-	TCPSocket(ia,port),
-	iaddr(ia),
-	ignoreAddr(false)
+    TCPSocket(ia,port),
+    iaddr(ia),
+    ignoreAddr(false)
 {
-	setCRCNoCheckit(true);
+    setCRCNoCheckit(true);
 }
 
 // -------------------------------------------------------------------------
 ModbusTCPServer::~ModbusTCPServer()
 {
-	terminate();
+    terminate();
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout )
 {
-	PassiveTimer ptTimeout(timeout);
-	ModbusMessage buf;
-	mbErrCode res = erTimeOut;
+    PassiveTimer ptTimeout(timeout);
+    ModbusMessage buf;
+    mbErrCode res = erTimeOut;
 
-//	Thread::setException(Thread::throwException);
+//    Thread::setException(Thread::throwException);
 //#warning "Why timeout can be 0 there?"
-	assert(timeout);
+    assert(timeout);
 
-	ptTimeout.reset();
-	try
-	{
-		if( isPendingConnection(timeout) )
-		{
-			tcp.connect(*this);
+    ptTimeout.reset();
+    try
+    {
+        if( isPendingConnection(timeout) )
+        {
+            tcp.connect(*this);
 
-			if( timeout != UniSetTimer::WaitUpTime )
-			{
-				timeout = ptTimeout.getLeft(timeout);
-				if( timeout == 0 )
-				{
-					tcp.disconnect();
-					return erTimeOut;
-				}
+            if( timeout != UniSetTimer::WaitUpTime )
+            {
+                timeout = ptTimeout.getLeft(timeout);
+                if( timeout == 0 )
+                {
+                    tcp.disconnect();
+                    return erTimeOut;
+                }
 
-				ptTimeout.setTiming(timeout);
-			}
+                ptTimeout.setTiming(timeout);
+            }
 
-			if( tcp.isPending(Socket::pendingInput, timeout) )
-			{
-				memset(&curQueryHeader,0,sizeof(curQueryHeader));
-				res = tcp_processing(tcp,curQueryHeader);
-				if( res!=erNoError )
-				{
-					tcp.disconnect();
-					return res;
-				}
+            if( tcp.isPending(Socket::pendingInput, timeout) )
+            {
+                memset(&curQueryHeader,0,sizeof(curQueryHeader));
+                res = tcp_processing(tcp,curQueryHeader);
+                if( res!=erNoError )
+                {
+                    tcp.disconnect();
+                    return res;
+                }
 
-				if( timeout != UniSetTimer::WaitUpTime )
-				{
-					timeout = ptTimeout.getLeft(timeout);
-					if( timeout == 0 )
-					{
-						tcp.disconnect();
-						return erTimeOut;
-					}
-				}
+                if( timeout != UniSetTimer::WaitUpTime )
+                {
+                    timeout = ptTimeout.getLeft(timeout);
+                    if( timeout == 0 )
+                    {
+                        tcp.disconnect();
+                        return erTimeOut;
+                    }
+                }
 
-				if( !qrecv.empty() )
-				{
-					// check addr
-					unsigned char _addr = qrecv.front();
+                if( !qrecv.empty() )
+                {
+                    // check addr
+                     unsigned char _addr = qrecv.front();
 
-					// для режима игнорирования RTU-адреса
-					// просто подменяем его на то который пришёл
-					// чтобы проверка всегда была успешной...
-					if( ignoreAddr )
-						addr = _addr;
-					else if( _addr != addr )
-					{
-						res = erTimeOut;
-						// На такие запросы просто не отвечаем...
-						/*
-						res = erBadReplyNodeAddress;
-						tmProcessing.setTiming(replyTimeout_ms);
-						ErrorRetMessage em( _addr, buf.func, res );
-						buf = em.transport_msg();
-						send(buf);
-						printProcessingTime();
-						if( aftersend_msec >= 0 )
-						msleep(aftersend_msec);
-						*/
-						tcp.disconnect();
-						return res;
-					}
-			}
+                    // для режима игнорирования RTU-адреса
+                    // просто подменяем его на то который пришёл
+                    // чтобы проверка всегда была успешной...
+                    if( ignoreAddr )
+                        addr = _addr;
+                    else if( _addr != addr )
+                    {
+                        res = erTimeOut;
+                        // На такие запросы просто не отвечаем...
+                        /*
+                        res = erBadReplyNodeAddress;
+                        tmProcessing.setTiming(replyTimeout_ms);
+                        ErrorRetMessage em( _addr, buf.func, res );
+                        buf = em.transport_msg();
+                        send(buf);
+                        printProcessingTime();
+                        if( aftersend_msec >= 0 )
+                            msleep(aftersend_msec);
+                        */
+                        tcp.disconnect();
+                        return res;
+                    }
+                }
 
-				res = recv( addr, buf, timeout );
+                res = recv( addr, buf, timeout );
 
-				if( res!=erNoError ) // && res!=erBadReplyNodeAddress )
-				{
-					if( res < erInternalErrorCode )
-					{
-						ErrorRetMessage em( addr, buf.func, res );
-						buf = em.transport_msg();
-						send(buf);
-						printProcessingTime();
-					}
-					else if( aftersend_msec >= 0 )
-				        msleep(aftersend_msec);
+                if( res!=erNoError ) // && res!=erBadReplyNodeAddress )
+                {
+                    if( res < erInternalErrorCode )
+                    {
+                        ErrorRetMessage em( addr, buf.func, res );
+                        buf = em.transport_msg();
+                        send(buf);
+                        printProcessingTime();
+                    }
+                    else if( aftersend_msec >= 0 )
+                        msleep(aftersend_msec);
 
-					tcp.disconnect();
-					return res;
-				}
+                    tcp.disconnect();
+                    return res;
+                }
 
-				if( timeout != UniSetTimer::WaitUpTime )
-				{
-					timeout = ptTimeout.getLeft(timeout);
-					if( timeout == 0 )
-					{
-						tcp.disconnect();
-						return erTimeOut;
-					}
-				}
+                if( timeout != UniSetTimer::WaitUpTime )
+                {
+                    timeout = ptTimeout.getLeft(timeout);
+                    if( timeout == 0 )
+                    {
+                        tcp.disconnect();
+                        return erTimeOut;
+                    }
+                }
 
-				if( res!=erNoError )
-				{
-					tcp.disconnect();
-					return res;
-				}
+                if( res!=erNoError )
+                {
+                    tcp.disconnect();
+                    return res;
+                }
 
-				// processing message...
-				res = processing(buf);
-			}
+                // processing message...
+                res = processing(buf);
+            }
 
-//			tcp << "exiting now" << endl;
-			tcp.disconnect();
-		}
-	}
-	catch( ost::Exception& e )
-	{
-		cout << "(ModbusTCPServer): " << e.what() << endl;
-		return erInternalErrorCode;
-	}
+//            tcp << "exiting now" << endl;
+            tcp.disconnect();
+        }
+    }
+    catch( ost::Exception& e )
+    {
+        cout << "(ModbusTCPServer): " << e.what() << endl;
+        return erInternalErrorCode;
+    }
 
-	return res;
+    return res;
 }
 
 // --------------------------------------------------------------------------------
 void ModbusTCPServer::setChannelTimeout( timeout_t msec )
 {
-	tcp.setTimeout(msec);
+    tcp.setTimeout(msec);
 }
 // --------------------------------------------------------------------------------
 mbErrCode ModbusTCPServer::sendData( unsigned char* buf, int len )
 {
-	return ModbusTCPCore::sendData(buf,len,&tcp);
+    return ModbusTCPCore::sendData(buf,len,&tcp);
 }
 // -------------------------------------------------------------------------
 int ModbusTCPServer::getNextData( unsigned char* buf, int len )
 {
-	return ModbusTCPCore::getNextData(buf,len,qrecv,&tcp);
+    return ModbusTCPCore::getNextData(buf,len,qrecv,&tcp);
 }
 // --------------------------------------------------------------------------------
 
 mbErrCode ModbusTCPServer::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPHeader& mhead )
 {
-	if( !tcp.isConnected() )
-		return erTimeOut;
+    if( !tcp.isConnected() )
+        return erTimeOut;
 
-	// чистим очередь
-	while( !qrecv.empty() )
-		qrecv.pop();
+    // чистим очередь
+    while( !qrecv.empty() )
+        qrecv.pop();
 
-	unsigned int len = getNextData((unsigned char*)(&mhead),sizeof(mhead));
-	if( len < sizeof(mhead) )
-		return erInvalidFormat;
+    unsigned int len = getNextData((unsigned char*)(&mhead),sizeof(mhead));
+    if( len < sizeof(mhead) )
+        return erInvalidFormat;
 
-	mhead.swapdata();
+    mhead.swapdata();
 
-	if( dlog.debugging(Debug::INFO) )
-	{
-		dlog[Debug::INFO] << "(ModbusTCPServer::tcp_processing): recv tcp header(" << len << "): ";
-		mbPrintMessage( dlog, (ModbusByte*)(&mhead), sizeof(mhead));
-		dlog(Debug::INFO) << endl;
-	}
+    if( dlog.is_info() )
+    {
+        dlog.info() << "(ModbusTCPServer::tcp_processing): recv tcp header(" << len << "): ";
+        mbPrintMessage( dlog, (ModbusByte*)(&mhead), sizeof(mhead));
+        dlog(Debug::INFO) << endl;
+    }
 
-	// check header
-	if( mhead.pID != 0 )
-		return erUnExpectedPacketType; // erTimeOut;
+    // check header
+    if( mhead.pID != 0 )
+        return erUnExpectedPacketType; // erTimeOut;
 
-	len = ModbusTCPCore::readNextData(&tcp,qrecv,mhead.len);
+    len = ModbusTCPCore::readNextData(&tcp,qrecv,mhead.len);
 
-	if( len<mhead.len )
-	{
-		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << "(ModbusTCPServer::tcp_processing): len(" << (int)len
-					<< ") < mhead.len(" << (int)mhead.len << ")" << endl;
+    if( len<mhead.len )
+    {
+        if( dlog.is_info() )
+            dlog.info() << "(ModbusTCPServer::tcp_processing): len(" << (int)len
+                    << ") < mhead.len(" << (int)mhead.len << ")" << endl;
 
-		return erInvalidFormat;
-	}
+        return erInvalidFormat;
+    }
 
-	return erNoError;
+    return erNoError;
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPServer::pre_send_request( ModbusMessage& request )
 {
-	if( !tcp.isConnected() )
-		return erTimeOut;
+    if( !tcp.isConnected() )
+        return erTimeOut;
 
-	curQueryHeader.len = request.len + szModbusHeader;
+    curQueryHeader.len = request.len + szModbusHeader;
 
-	if( crcNoCheckit )
-		curQueryHeader.len -= szCRC;
+    if( crcNoCheckit )
+        curQueryHeader.len -= szCRC;
 
-	curQueryHeader.swapdata();
-	if( dlog.debugging(Debug::INFO) )
-	{
-		dlog[Debug::INFO] << "(ModbusTCPServer::pre_send_request): send tcp header: ";
-		mbPrintMessage( dlog, (ModbusByte*)(&curQueryHeader), sizeof(curQueryHeader));
-		dlog(Debug::INFO) << endl;
-	}
+    curQueryHeader.swapdata();
+    if( dlog.is_info() )
+    {
+        dlog.info() << "(ModbusTCPServer::pre_send_request): send tcp header: ";
+        mbPrintMessage( dlog, (ModbusByte*)(&curQueryHeader), sizeof(curQueryHeader));
+        dlog(Debug::INFO) << endl;
+    }
 
-	tcp << curQueryHeader;
-	curQueryHeader.swapdata();
+    tcp << curQueryHeader;
+    curQueryHeader.swapdata();
 
-	return erNoError;
+    return erNoError;
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::cleanInputStream()
@@ -245,10 +245,10 @@ void ModbusTCPServer::cleanInputStream()
 // -------------------------------------------------------------------------
 void ModbusTCPServer::terminate()
 {
-	if( dlog.debugging(Debug::INFO) )
-		dlog[Debug::INFO] << "(ModbusTCPServer): terminate..." << endl;
+    if( dlog.is_info() )
+        dlog.info() << "(ModbusTCPServer): terminate..." << endl;
 
-	if( tcp && tcp.isConnected() )
-		tcp.disconnect();
+    if( tcp && tcp.isConnected() )
+        tcp.disconnect();
 }
 // -------------------------------------------------------------------------

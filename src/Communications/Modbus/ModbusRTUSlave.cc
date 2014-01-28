@@ -11,148 +11,157 @@ using namespace std;
 using namespace ModbusRTU;
 using namespace UniSetTypes;
 // -------------------------------------------------------------------------
-ModbusRTUSlave::ModbusRTUSlave( const string dev, bool use485, bool tr_ctl ):
-	port(NULL),
-	myport(true)
+ModbusRTUSlave::ModbusRTUSlave( const string& dev, bool use485, bool tr_ctl ):
+    port(NULL),
+    myport(true)
 {
-	if( use485 )
-	{
-		ComPort485F* cp;
-		if( dev == "/dev/ttyS2" )
-			cp = new ComPort485F(dev,5,tr_ctl);
-		else if( dev == "/dev/ttyS3" )
-			cp = new ComPort485F(dev,6,tr_ctl);
-		else
-			throw Exception("Open ComPort FAILED! dev must be /dev/ttyS2 or /dev/tytS3");
+    recvMutex.setName("(ModbusRTUSlave): dev='" + dev + "' recvMutex:");
 
-		port = cp;
-	}
-	else
-		port = new ComPort(dev);
+    if( use485 )
+    {
+        ComPort485F* cp;
+        if( dev == "/dev/ttyS2" )
+            cp = new ComPort485F(dev,5,tr_ctl);
+        else if( dev == "/dev/ttyS3" )
+            cp = new ComPort485F(dev,6,tr_ctl);
+        else
+            throw Exception("Open ComPort FAILED! dev must be /dev/ttyS2 or /dev/tytS3");
 
-	port->setSpeed(ComPort::ComSpeed38400);
-	port->setParity(ComPort::NoParity);
-	port->setCharacterSize(ComPort::CSize8);
-	port->setStopBits(ComPort::OneBit);
-	port->setWaiting(true);
-	port->setTimeout(recvTimeOut_ms*1000);
-//	port->setBlocking(false);
+        port = cp;
+    }
+    else
+        port = new ComPort(dev);
+
+    port->setSpeed(ComPort::ComSpeed38400);
+    port->setParity(ComPort::NoParity);
+    port->setCharacterSize(ComPort::CSize8);
+    port->setStopBits(ComPort::OneBit);
+    port->setWaiting(true);
+    port->setTimeout(recvTimeOut_ms*1000);
+//    port->setBlocking(false);
 }
 
 // -------------------------------------------------------------------------
 ModbusRTUSlave::ModbusRTUSlave( ComPort* com ):
-	port(com),
-	myport(false)
+    port(com),
+    myport(false)
 {
-	port->setSpeed(ComPort::ComSpeed38400);
-	port->setParity(ComPort::NoParity);
-	port->setCharacterSize(ComPort::CSize8);
-	port->setStopBits(ComPort::OneBit);
-	port->setWaiting(true);
-	port->setTimeout(recvTimeOut_ms*1000);
-//	port->setBlocking(false);
+    port->setSpeed(ComPort::ComSpeed38400);
+    port->setParity(ComPort::NoParity);
+    port->setCharacterSize(ComPort::CSize8);
+    port->setStopBits(ComPort::OneBit);
+    port->setWaiting(true);
+    port->setTimeout(recvTimeOut_ms*1000);
+//    port->setBlocking(false);
 }
 
 // -------------------------------------------------------------------------
 ModbusRTUSlave::~ModbusRTUSlave()
 {
-	if( myport )
-		delete port;
+    if( myport )
+        delete port;
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout )
 {
-	uniset_mutex_lock lck(recvMutex,timeout);
-	ModbusMessage buf;
-	mbErrCode res = erBadReplyNodeAddress;
-	do
-	{
-		res = recv(addr,buf,timeout);
-		if( res != erNoError && res != erBadReplyNodeAddress )
-		{
-			// Если ошибка подразумевает посылку ответа с сообщением об ошибке
-			// то посылаем
-			if( res < erInternalErrorCode )
-			{
-				ErrorRetMessage em( buf.addr, buf.func, res );
-				buf = em.transport_msg();
-				send(buf);
-				printProcessingTime();
-			}
+    uniset_mutex_lock lck(recvMutex,timeout);
+    if( !lck.lock_ok() )
+    {
+        if( dlog.debugging(Debug::CRIT) )
+            dlog.crit() << "(ModbusRTUSlave::receive): Don`t lock " << recvMutex << endl;
+        return erTimeOut;
+    }
 
-//			dlog[Debug::WARN] << "(receive): " << mbErr2Str(res) << endl;
-//			cerr << "**** (receive): " << mbErr2Str(res) << endl;
-			usleep(10000);
-			return res;
-		}
+    ModbusMessage buf;
+    mbErrCode res = erBadReplyNodeAddress;
+    do
+    {
+        res = recv(addr,buf,timeout);
+        if( res != erNoError && res != erBadReplyNodeAddress )
+        {
+            // Если ошибка подразумевает посылку ответа с сообщением об ошибке
+            // то посылаем
+            if( res < erInternalErrorCode )
+            {
+                ErrorRetMessage em( buf.addr, buf.func, res );
+                buf = em.transport_msg();
+                send(buf);
+                printProcessingTime();
+            }
 
-		// если полученный пакет адресован
-		// не данному узлу (и не широковещательный)
-		// то ждать следующий...
-	}
-	while( res == erBadReplyNodeAddress );
+//            dlog.warn() << "(receive): " << mbErr2Str(res) << endl;
+//            cerr << "**** (receive): " << mbErr2Str(res) << endl;
+            usleep(10000);
+            return res;
+        }
 
-	if( res!=erNoError )
-		return res;
+        // если полученный пакет адресован
+        // не данному узлу (и не широковещательный)
+        // то ждать следующий...
+    }
+    while( res == erBadReplyNodeAddress );
 
-	return processing(buf);
+    if( res!=erNoError )
+        return res;
+
+    return processing(buf);
 }
 
 // --------------------------------------------------------------------------------
 ComPort::Speed ModbusRTUSlave::getSpeed()
 {
-	if( port == NULL )
-		return ComPort::ComSpeed0;
+    if( port == NULL )
+        return ComPort::ComSpeed0;
 
-	return port->getSpeed();
+    return port->getSpeed();
 }
 // -------------------------------------------------------------------------
 
 void ModbusRTUSlave::setSpeed( ComPort::Speed s )
 {
-	if( port != NULL )
-		port->setSpeed(s);
+    if( port != NULL )
+        port->setSpeed(s);
 }
 // --------------------------------------------------------------------------------
-void ModbusRTUSlave::setSpeed( const std::string s )
+void ModbusRTUSlave::setSpeed( const std::string& s )
 {
-	if( port != NULL )
-		port->setSpeed(s);
+    if( port != NULL )
+        port->setSpeed(s);
 }
 // --------------------------------------------------------------------------------
 int ModbusRTUSlave::getNextData( unsigned char* buf, int len )
 {
-//	if( !port ) return 0;
-	return port->receiveBlock(buf, len);
+//    if( !port ) return 0;
+    return port->receiveBlock(buf, len);
 }
 // --------------------------------------------------------------------------------
 void ModbusRTUSlave::setChannelTimeout( timeout_t msec )
 {
-	if( msec == UniSetTimer::WaitUpTime )
-		port->setTimeout(15*60*1000*1000); // используем просто большое время (15 минут). Переведя его в наносекунды.
-	else
-		port->setTimeout(msec*1000);
+    if( msec == UniSetTimer::WaitUpTime )
+        port->setTimeout(15*60*1000*1000); // используем просто большое время (15 минут). Переведя его в наносекунды.
+    else
+        port->setTimeout(msec*1000);
 }
 // --------------------------------------------------------------------------------
 mbErrCode ModbusRTUSlave::sendData( unsigned char* buf, int len )
 {
-	try
-	{
-		port->sendBlock(buf,len);
-	}
-	catch( Exception& ex ) // SystemError
-	{
-		dlog[Debug::CRIT] << "(send): " << ex << endl;
-		return erHardwareError;
-	}
+    try
+    {
+        port->sendBlock(buf,len);
+    }
+    catch( Exception& ex ) // SystemError
+    {
+        dlog.crit() << "(send): " << ex << endl;
+        return erHardwareError;
+    }
 
-	return erNoError;
+    return erNoError;
 }
 // -------------------------------------------------------------------------
 void ModbusRTUSlave::terminate()
 {
-	try
-	{
-	}
-	catch(...){}
+    try
+    {
+    }
+    catch(...){}
 }

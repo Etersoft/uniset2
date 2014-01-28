@@ -3,11 +3,11 @@
 
 import sys
 
-sys.path.append('./.libs/')
-sys.path.append('../../lib/pyUniSet/.libs/')
+sys.path.append('../../')
 sys.path.append('../../lib/pyUniSet/')
+sys.path.append('../../lib/pyUniSet/.libs')
 
-from pyUniSet import *
+from lib import *
 
 if __name__ == "__main__":
 	
@@ -37,7 +37,8 @@ if __name__ == "__main__":
 			print "getValue exception: " + str(e.getError())
 
 		try:
-			print "setValue: %d=%d" % (14,setValue(14,22))
+			print "setValue: %d=%d" % (14,22)
+			setValue(14,22)
 		except UException, e:
 			print "setValue exception: " + str(e.getError())
 

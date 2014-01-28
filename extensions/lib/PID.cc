@@ -12,7 +12,7 @@ d1(0),
 d2(0),
 prevTs(0)
 {
-	reset();
+    reset();
 }
 
 // -----------------------------------------------------------------------------
@@ -26,56 +26,56 @@ PID::~PID()
 void PID::step( double X, double Z, double Ts )
 {
 
-	// Чтобы не пересчитывать коэффициенты на каждом шаге
-	// сделан пересчёт только по изменению
-//	d0 		= 1+Ts/Ti+Td/Ts;
-//	d1 		= -1-2*Td/Ts;
-//	d2 		= Td/Ts;
+    // Чтобы не пересчитывать коэффициенты на каждом шаге
+    // сделан пересчёт только по изменению
+//    d0         = 1+Ts/Ti+Td/Ts;
+//    d1         = -1-2*Td/Ts;
+//    d2         = Td/Ts;
 
-//	в случае изменения Td и Ts за вызов recalc отвечает "Родитель"(PIDControl)
-	if( prevTs != Ts )
-	{
-		prevTs = Ts;
-		recalc();
-	}
+//    в случае изменения Td и Ts за вызов recalc отвечает "Родитель"(PIDControl)
+    if( prevTs != Ts )
+    {
+        prevTs = Ts;
+        recalc();
+    }
 
-	sub2 	= sub1;	// ошибка 2 шага назад
-	sub1 	= sub;	// ошибка 1 шаг назад
-	sub 	= Z-X;	// текущая ошибка
-					// NOTE: в первоисточнике было "текущее"(X) - "заданное"(Z),
-					//	но правильно именно Z-X (проверено!)
+    sub2     = sub1;    // ошибка 2 шага назад
+    sub1     = sub;    // ошибка 1 шаг назад
+    sub     = Z-X;    // текущая ошибка
+                    // NOTE: в первоисточнике было "текущее"(X) - "заданное"(Z),
+                    //    но правильно именно Z-X (проверено!)
 
-	// окончальное выходное(расчётное) значение
-	Y = Y + Kc*( d0*sub + d1*sub1 + d2*sub2 );
+    // окончальное выходное(расчётное) значение
+    Y = Y + Kc*( d0*sub + d1*sub1 + d2*sub2 );
 
-	if( Y > vlim ) Y = vlim;
-	else if ( Y < -vlim ) Y = -vlim;
+    if( Y > vlim ) Y = vlim;
+    else if ( Y < -vlim ) Y = -vlim;
 }
 // -----------------------------------------------------------------------------
 void PID::reset()
 {
-	sub2 = sub1 = sub = Y = 0;
+    sub2 = sub1 = sub = Y = 0;
 }
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, PID& p )
 {
-	return os << "Kc=" << std::setw(4) << p.Kc
-				<< "  Ti=" << std::setw(4) << p.Ti
-				<< "  Td=" << std::setw(4) << p.Td
-				<< "  Y=" << std::setw(4) << p.Y
-				<< "  vlim=" << std::setw(4) << p.vlim
-				<< "  sub2=" << setw(4) << p.sub2
-				<< "  sub1=" << setw(4) << p.sub1
-				<< "  sub=" << setw(4) << p.sub;
+    return os << "Kc=" << std::setw(4) << p.Kc
+                << "  Ti=" << std::setw(4) << p.Ti
+                << "  Td=" << std::setw(4) << p.Td
+                << "  Y=" << std::setw(4) << p.Y
+                << "  vlim=" << std::setw(4) << p.vlim
+                << "  sub2=" << setw(4) << p.sub2
+                << "  sub1=" << setw(4) << p.sub1
+                << "  sub=" << setw(4) << p.sub;
 }
 // --------------------------------------------------------------------------
 
 void PID::recalc()
 {
-//	d0 		= 1+prevTs/Ti+Td/prevTs;
-//	d1 		= -1-2*Td/prevTs;
-	d2 		= Td/prevTs;
-	d1 		= -1-2*d2;
-	d0 		= 1+prevTs/Ti+d2;
+//    d0         = 1+prevTs/Ti+Td/prevTs;
+//    d1         = -1-2*Td/prevTs;
+    d2         = Td/prevTs;
+    d1         = -1-2*d2;
+    d0         = 1+prevTs/Ti+d2;
 }
 // --------------------------------------------------------------------------

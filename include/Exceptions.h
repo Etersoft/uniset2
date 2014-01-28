@@ -18,7 +18,7 @@
  */
 // --------------------------------------------------------------------------
 /*! \file
- *	\brief Иерархия генерируемых библиотекой исключений
+ *    \brief Иерархия генерируемых библиотекой исключений
  *  \author Pavel Vainerman
 */
 // -------------------------------------------------------------------------- 
@@ -45,56 +45,56 @@ namespace UniSetTypes
     \note Все вновь создаваемые исключения обязаны наследоваться от него или его потомков
 */
 class Exception:
-	public std::exception
+    public std::exception
 {
 public:
-	void printException()
-	{
-		std::cerr << "Exception: " << text << std::endl;
-	}
+    void printException()
+    {
+        std::cerr << "Exception: " << text << std::endl;
+    }
 
-	Exception(const std::string& txt):text(txt.c_str()){}
-	Exception():text("Exception"){}
-	virtual ~Exception() throw(){}
+    Exception(const std::string& txt):text(txt.c_str()){}
+    Exception():text("Exception"){}
+    virtual ~Exception() throw(){}
 
-	friend std::ostream& operator<<(std::ostream& os, Exception& ex )
-	{
-		os << ex.text;
-		return os;
-	}
+    friend std::ostream& operator<<(std::ostream& os, Exception& ex )
+    {
+        os << ex.text;
+        return os;
+    }
 
-	virtual const char* what() { return text.c_str(); }
+    virtual const char* what() { return text.c_str(); }
 
 protected:
-	const std::string text;
+    const std::string text;
 };
 
 
 class PermissionDenied: public Exception
 {
 public:
-	PermissionDenied():Exception("PermissionDenied"){}
+    PermissionDenied():Exception("PermissionDenied"){}
 };
 
 class NotEnoughMemory: public Exception
 {
 public:
-	NotEnoughMemory():Exception("NotEnoughMemory"){}
+    NotEnoughMemory():Exception("NotEnoughMemory"){}
 };
 
 
 class OutOfRange: public Exception
 {
 public:
-	OutOfRange():Exception("OutOfRange"){}
-	OutOfRange(const std::string err):Exception(err){}
+    OutOfRange():Exception("OutOfRange"){}
+    OutOfRange(const std::string& err):Exception(err){}
 };
 
 
 class ErrorHandleResource: public Exception
 {
 public:
-	ErrorHandleResource():Exception("ErrorHandleResource"){}
+    ErrorHandleResource():Exception("ErrorHandleResource"){}
 };
 
 /*!
@@ -104,10 +104,10 @@ public:
 class LimitWaitingPTimers: public Exception
 {
 public:
-	LimitWaitingPTimers():Exception("LimitWaitingPassiveTimers"){}
+    LimitWaitingPTimers():Exception("LimitWaitingPassiveTimers"){}
 
-	/*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-	LimitWaitingPTimers(const std::string err):Exception(err){}
+    /*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
+    LimitWaitingPTimers(const std::string& err):Exception(err){}
 };
 
 
@@ -118,10 +118,10 @@ public:
 class ORepFailed: public Exception
 {
 public:
-	ORepFailed():Exception("ORepFailed"){}
+    ORepFailed():Exception("ORepFailed"){}
 
-	/*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-	ORepFailed(const std::string err):Exception(err){}
+    /*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
+    ORepFailed(const std::string& err):Exception(err){}
 };
 
 
@@ -131,16 +131,16 @@ public:
 class SystemError: public Exception
 {
 public:
-	SystemError():Exception("SystemError"){}
+    SystemError():Exception("SystemError"){}
 
-	/*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-	SystemError(const std::string err):Exception(err){}
+    /*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
+    SystemError(const std::string& err):Exception(err){}
 };
 
 class CRCError: public Exception
 {
 public:
-	CRCError():Exception("CRCError"){}
+    CRCError():Exception("CRCError"){}
 };
 
 
@@ -150,10 +150,10 @@ public:
 class CommFailed: public Exception
 {
 public:
-	CommFailed():Exception("CommFailed"){}
+    CommFailed():Exception("CommFailed"){}
 
-	/*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-	CommFailed(const std::string err):Exception(err){}
+    /*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
+    CommFailed(const std::string& err):Exception(err){}
 };
 
 
@@ -163,11 +163,11 @@ public:
 */
 class TimeOut: public CommFailed
 {
-	public:
-		TimeOut():CommFailed("TimeOut") {}
+    public:
+        TimeOut():CommFailed("TimeOut") {}
 
-	/*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-	TimeOut(const std::string err):CommFailed(err){}
+    /*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
+    TimeOut(const std::string& err):CommFailed(err){}
 
 };
 
@@ -176,17 +176,17 @@ class TimeOut: public CommFailed
 */
 class ResolveNameError: public ORepFailed
 {
-	public:
-		ResolveNameError():ORepFailed("ResolveNameError"){}
-		ResolveNameError(const std::string err):ORepFailed(err){}
+    public:
+        ResolveNameError():ORepFailed("ResolveNameError"){}
+        ResolveNameError(const std::string& err):ORepFailed(err){}
 };
 
 
 class NSResolveError: public ORepFailed
 {
-	public:
-		NSResolveError():ORepFailed("NSResolveError"){}
-		NSResolveError(const std::string err):ORepFailed(err){}
+    public:
+        NSResolveError():ORepFailed("NSResolveError"){}
+        NSResolveError(const std::string& err):ORepFailed(err){}
 };
 
 
@@ -197,10 +197,10 @@ class NSResolveError: public ORepFailed
 class ObjectNameAlready: public ResolveNameError
 {
 public:
-	ObjectNameAlready():ResolveNameError("ObjectNameAlready"){}
+    ObjectNameAlready():ResolveNameError("ObjectNameAlready"){}
 
-	/*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-	ObjectNameAlready(const std::string err):ResolveNameError(err){}
+    /*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
+    ObjectNameAlready(const std::string& err):ResolveNameError(err){}
 };
 
 /*!
@@ -209,43 +209,43 @@ public:
 */
 class IOBadParam: public Exception
 {
-	public:
-	IOBadParam():Exception("IOBadParam"){}
+    public:
+    IOBadParam():Exception("IOBadParam"){}
 
-	/*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-	IOBadParam(const std::string err):Exception(err){}
+    /*! Конструктор, позволяющий вывести в сообщении об ошибке дополнительную информацию err */
+    IOBadParam(const std::string& err):Exception(err){}
 };
 
 /*!
     Исключение, вырабатываемое в случае присутствия в имени недопустимых символов.
-	См. UniSetTypes::BadSymbols[]
+    См. UniSetTypes::BadSymbols[]
 */
 class InvalidObjectName: public ResolveNameError
 {
-	public:
-		InvalidObjectName():ResolveNameError("InvalidObjectName"){}
-		InvalidObjectName(const std::string err):ResolveNameError(err){}
+    public:
+        InvalidObjectName():ResolveNameError("InvalidObjectName"){}
+        InvalidObjectName(const std::string& err):ResolveNameError(err){}
 };
 
 /*! Исключение, вырабатываемое в случае если не удалось установить обработчик сигнала */
 class NotSetSignal: public Exception
 {
-	public:
-		NotSetSignal():Exception("NotSetSignal"){}
-		NotSetSignal(const std::string err):Exception(err){}
+    public:
+        NotSetSignal():Exception("NotSetSignal"){}
+        NotSetSignal(const std::string& err):Exception(err){}
 };
 
 class NameNotFound: public ResolveNameError
 {
 public:
-	NameNotFound():ResolveNameError("NameNotFound"){}
-	NameNotFound(const std::string err):ResolveNameError(err){}
+    NameNotFound():ResolveNameError("NameNotFound"){}
+    NameNotFound(const std::string& err):ResolveNameError(err){}
 };
 
 //@}
 // end of UniSetException group
 // ---------------------------------------------------------------------
-}	// end of UniSetTypes namespace
+}    // end of UniSetTypes namespace
 // ---------------------------------------------------------------------
 #endif // Exception_h_
 // ---------------------------------------------------------------------

@@ -1,66 +1,66 @@
 #ifndef UModbus_H_
 #define UModbus_H_
 // -------------------------------------------------------------------------- 
-#include <Configuration.h>
-#include <UniversalInterface.h>
-#include <modbus/ModbusTCPMaster.h>
-#include <modbus/ModbusTypes.h>
-#include <extensions/VTypes.h>
-#include <Debug.h>
+#include "Configuration.h"
+#include "UInterface.h"
+#include "modbus/ModbusTCPMaster.h"
+#include "modbus/ModbusTypes.h"
+#include "extensions/VTypes.h"
+#include "Debug.h"
 #include "UTypes.h"
 #include "UExceptions.h"
 // -------------------------------------------------------------------------- 
 class UModbus
 {
-	public:
-//	  UModbus( int argc, char** argv )throw(UException);
-//	  UModbus( UTypes::Params* p )throw(UException);
-	  UModbus();
-	  ~UModbus();
+    public:
+//      UModbus( int argc, char** argv )throw(UException);
+//      UModbus( UTypes::Params* p )throw(UException);
+      UModbus();
+      ~UModbus();
 
       inline const char* getUIType(){ return "modbus"; } 
 
-	  inline bool isWriteFunction( int mbfunc ){ return ModbusRTU::isWriteFunction((ModbusRTU::SlaveFunctionCode)mbfunc); }
+      inline bool isWriteFunction( int mbfunc ){ return ModbusRTU::isWriteFunction((ModbusRTU::SlaveFunctionCode)mbfunc); }
 
-	  // выставление паметров связи, без установления соединения (!)
+      // выставление паметров связи, без установления соединения (!)
       void prepare( const char* ip, int port )throw(UException);
 
-	  void connect( const char* ip, int port )throw(UException);
-	  inline int conn_port(){ return port; }
-	  inline std::string conn_ip(){ return ip; }
-	  inline bool isConnection(){ return (mb && mb->isConnection()); }
+      void connect( const char* ip, int port )throw(UException);
+      inline int conn_port(){ return port; }
+      inline std::string conn_ip(){ return ip; }
+      inline bool isConnection(){ return (mb && mb->isConnection()); }
 
-	  inline void setTimeout( int msec ){ tout_msec = msec; }
+      inline void setTimeout( int msec ){ tout_msec = msec; }
 
-	  /*! Универсальная функция для чтения регистров.
-	   * Если не указывать ip и порт, будут использованы, те
-	   * чтобы были заданы в UModbus::connect(). Если заданы другие ip и port,
-	   * будет сделано переподключение..
-	   */
-	  long mbread( int addr, int mbreg, int mbfunc,
-					const char* vtype, int nbit=-1,
-					const char* ip=0, int port=-1 )throw(UException);
+      /*! Универсальная функция для чтения регистров.
+       * Если не указывать ip и порт, будут использованы, те
+       * чтобы были заданы в UModbus::connect(). Если заданы другие ip и port,
+       * будет сделано переподключение..
+       */
+      long mbread( int addr, int mbreg, int mbfunc,
+                    const char* vtype, int nbit=-1,
+                    const char* ip=0, int port=-1 )throw(UException);
 
-	  long getWord( int addr, int mbreg, int mbfunc=0x4 )throw(UException);
-	  long getByte( int addr, int mbreg, int mbfunc=0x4 )throw(UException);
-	  bool getBit( int addr, int mbreg, int mbfunc=0x2 )throw(UException);
+      long getWord( int addr, int mbreg, int mbfunc=0x4 )throw(UException);
+      long getByte( int addr, int mbreg, int mbfunc=0x4 )throw(UException);
+      bool getBit( int addr, int mbreg, int mbfunc=0x2 )throw(UException);
 
-	  /*! Функция записи регистров 0x06 или 0x10 задаётся параметром \a mbfunc.
-	   * Если не указывать ip и порт, будут использованы, те
-	   * чтобы были заданы в UModbus::connect(). Если заданы другие ip и port,
-	   * будет сделана переподключение..
-	  */
-	  void mbwrite( int addr, int mbreg, int val, int mbfunc, const char* ip=0, int port=-1 )throw(UException);
+      /*! Функция записи регистров 0x06 или 0x10 задаётся параметром \a mbfunc.
+       * Если не указывать ip и порт, будут использованы, те
+       * чтобы были заданы в UModbus::connect(). Если заданы другие ip и port,
+       * будет сделана переподключение..
+      */
+      void mbwrite( int addr, int mbreg, int val, int mbfunc, const char* ip=0, int port=-1 )throw(UException);
 
-	protected:
-		long data2value( VTypes::VType vt, ModbusRTU::ModbusData* data );
+    protected:
+        long data2value( VTypes::VType vt, ModbusRTU::ModbusData* data );
 
-	private:
-		// DebugStream dlog;
-		ModbusTCPMaster* mb;
-		int port;
-		string ip;
-		int tout_msec;
+    private:
+        // DebugStream dlog;
+        ModbusTCPMaster* mb;
+        int port;
+        string ip;
+        int tout_msec;
 };
 //---------------------------------------------------------------------------
 #endif

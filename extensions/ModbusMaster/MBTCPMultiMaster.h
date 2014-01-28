@@ -14,17 +14,17 @@
       - \ref sec_MBTCPM_Comm
       - \ref sec_MBTCPM_Conf
       - \ref sec_MBTCPM_ConfList
-	  - \ref sec_MBTCPM_ExchangeMode
+      - \ref sec_MBTCPM_ExchangeMode
       
       \section sec_MBTCPM_Comm Общее описание ModbusTCPMultiMaster
       Класс реализует процесс обмена (опрос/запись) с RTU-устройствами,
       через TCP-шлюз. Список регистров с которыми работает процесс задаётся в конфигурационном файле
       в секции \b <sensors>. см. \ref sec_MBTCPM_Conf
 
-	  При этом для шлюза можно задавать несколько ip-адресов (см. <GateList>), если связь пропадает по
-	одному каналу (ip), то происходит переключение на другой канал (через timeout мсек), если пропадает
-	с этим каналом, то переключается на следующий и так по кругу (в порядке уменьшения приоритета, задаваемого
-	для каждого канала (cм. <GateList> \a priority).
+      При этом для шлюза можно задавать несколько ip-адресов (см. <GateList>), если связь пропадает по
+    одному каналу (ip), то происходит переключение на другой канал (через timeout мсек), если пропадает
+    с этим каналом, то переключается на следующий и так по кругу (в порядке уменьшения приоритета, задаваемого
+    для каждого канала (cм. <GateList> \a priority).
 
       \section  sec_MBTCPM_Conf Конфигурирование ModbusTCPMultiMaster
 
@@ -36,16 +36,16 @@
       в которой указываются настроечные параметры по умолчанию.
       Пример:
       \code
-	<MBMaster1 name="MBMaster1" gateway_iaddr="127.0.0.1" gateway_port="30000" polltime="200">
-	     <DeviceList>
-	         <item addr="0x01" respondSensor="RTU1_Not_Respond_FS" timeout="2000" invert="1"/>
-		 <item addr="0x02" respondSensor="RTU2_Respond_FS" timeout="2000" invert="0"/>
-	     </DeviceList>
-		 <GateList>
-			<item ip="" port="" respond_id="" priority=""/>
-			<item ip="" port="" respond_id="" priority="" respond_invert="1"/>
-		 <GateList>
-	</MBMaster1>
+    <MBMaster1 name="MBMaster1" gateway_iaddr="127.0.0.1" gateway_port="30000" polltime="200">
+         <DeviceList>
+             <item addr="0x01" respondSensor="RTU1_Not_Respond_FS" timeout="2000" invert="1"/>
+         <item addr="0x02" respondSensor="RTU2_Respond_FS" timeout="2000" invert="0"/>
+         </DeviceList>
+         <GateList>
+            <item ip="" port="" respond_id="" priority=""/>
+            <item ip="" port="" respond_id="" priority="" respond_invert="1"/>
+         <GateList>
+    </MBMaster1>
       \endcode
       Секция <DeviceList> позволяет задать параметры обмена с конкретным RTU-устройством.
       
@@ -54,10 +54,10 @@
       - \b invert - инвертировать логику. По умолчанию датчик выставляется в "1" при \b наличии связи.
       - \b respondSensor - идентификатор датчика связи (DI).
       - \b modeSensor - идентификатор датчика режима работы (см. MBExchange::ExchangeMode).
-	  - \b ask_every_reg - 1 - опрашивать ВСЕ регистры подряд, не обращая внимания на timeout. По умолчанию - "0" Т.е. опрос устройства (на текущем шаге цикла опроса), прерывается на первом же регистре, при опросе которого возникнет timeout.
+      - \b ask_every_reg - 1 - опрашивать ВСЕ регистры подряд, не обращая внимания на timeout. По умолчанию - "0" Т.е. опрос устройства (на текущем шаге цикла опроса), прерывается на первом же регистре, при опросе которого возникнет timeout.
 
       Секция <GateList> позволяет задать несколько каналов связи со Slave-устройством. Это удобно для случая, когда Slave имеет
-	более одного канала связи с ним (основной и резервный например).
+    более одного канала связи с ним (основной и резервный например).
       
       - \b ip -  ip-адрес 
       - \b port - порт
@@ -67,7 +67,7 @@
 
       \par Параметры запуска
 
-	При создании объекта в конструкторе передаётся префикс для определения параметров командной строки.
+    При создании объекта в конструкторе передаётся префикс для определения параметров командной строки.
       По умолчанию \b xxx="mbtcp".
       Далее приведены основные параметры:
 
@@ -92,10 +92,10 @@
       
       
       \b --xxx-polltime или \b polltime msec - пауза между опросами. По умолчанию 100 мсек.
-	  \b --xxx-checktime или \b checktime msec - пауза между проверками связи по разным каналам. По умолчанию 5000 мсек.
+      \b --xxx-checktime или \b checktime msec - пауза между проверками связи по разным каналам. По умолчанию 5000 мсек.
         Если задать <=0, то каналы будут просто переключаться по кругу (по timeout-у) в соответсвии с приоритетом (см. <GateList>).
-		Если >0, то происходит проверка связи (раз в checktime) по всем каналам (см. <GateList>) и в случае потери связи,
-		происходит переключение на следующий канал, по которому связь есть.
+        Если >0, то происходит проверка связи (раз в checktime) по всем каналам (см. <GateList>) и в случае потери связи,
+        происходит переключение на следующий канал, по которому связь есть.
       
       \b --xxx-initPause или \b initPause msec - пауза перед началом работы, после активации. По умолчанию 50 мсек.
 
@@ -142,16 +142,16 @@
   <sensors name="Sensors">
     ...
     <item name="MySensor_S" textname="my sesnsor" iotype="DI" 
-	      tcp_mbtype="rtu" tcp_mbaddr="0x01" tcp_mbfunc="0x04" tcp_mbreg="0x02" my_tcp="1"
+          tcp_mbtype="rtu" tcp_mbaddr="0x01" tcp_mbfunc="0x04" tcp_mbreg="0x02" my_tcp="1"
      />
     ...
   </sensors>
 \endcode
 
    \warning По умолчанию для свойств используется префикс "tcp_". Но если задано поле \b filter-field,
-	то для свойств будет использован префикс <b>"filter-fileld"_</b>.
-	При этом при помощи --xxx-set-prop-prefix val можно принудительно задать префикс.
-	Если просто указать ключ --xxx-set-prop-prefix - будет использован "пустой" префикс (свойства без префикса).
+    то для свойств будет использован префикс <b>"filter-fileld"_</b>.
+    При этом при помощи --xxx-set-prop-prefix val можно принудительно задать префикс.
+    Если просто указать ключ --xxx-set-prop-prefix - будет использован "пустой" префикс (свойства без префикса).
 
   К основным параметрам относятся следующие (префикс \b tcp_ - для примера):
    - \b tcp_mbtype    - [rtu] - пока едиственный разрешённый тип.
@@ -164,7 +164,7 @@
    - \b tcp_rawdata   - [0|1]  - игнорировать или нет параметры калибровки
    - \b tcp_iotype    - [DI,DO,AI,AO] - переназначить тип датчика. По умолчанию используется поле iotype.
    - \b tcp_nbit      - номер бита в слове. Используется для DI,DO в случае когда для опроса используется
-			 функция читающая слова (03
+             функция читающая слова (03
    - \b tcp_nbyte     - [1|2] номер байта. Используется если tcp_vtype="byte".
    - \b tcp_mboffset  - "сдвиг"(может быть отрицательным) при опросе/записи. 
                         Т.е. фактически будет опрошен/записан регистр "mbreg+mboffset".
@@ -185,109 +185,108 @@
    \warning Регистр должен быть уникальным. И может повторятся только если указан параметр \a nbit или \a nbyte.
 
 
-	\section sec_MBTCPM_ExchangeMode Управление режимом работы MBTCPMultiMaster
-		В MBTCPMultiMaster заложена возможность управлять режимом работы процесса. Поддерживаются
-	следующие режимы:
-	- \b emNone - нормальная работа (по умолчанию)
+    \section sec_MBTCPM_ExchangeMode Управление режимом работы MBTCPMultiMaster
+        В MBTCPMultiMaster заложена возможность управлять режимом работы процесса. Поддерживаются
+    следующие режимы:
+    - \b emNone - нормальная работа (по умолчанию)
     - \b emWriteOnly - "только посылка данных" (работают только write-функции)
-	- \b emReadOnly - "только чтение" (работают только read-функции)
-	- \b emSkipSaveToSM - "не записывать данные в SM", это особый режим, похожий на \b emWriteOnly,
-			но отличие в том, что при этом режиме ведётся полноценый обмен (и read и write),
-	только реально данные не записываются в SharedMemory(SM).
-	- \b emSkipExchnage - отключить обмен (при этом данные "из SM" обновляются).
+    - \b emReadOnly - "только чтение" (работают только read-функции)
+    - \b emSkipSaveToSM - "не записывать данные в SM", это особый режим, похожий на \b emWriteOnly,
+            но отличие в том, что при этом режиме ведётся полноценый обмен (и read и write),
+    только реально данные не записываются в SharedMemory(SM).
+    - \b emSkipExchnage - отключить обмен (при этом данные "из SM" обновляются).
 
-	Режимы переключаются при помощи датчика, который можно задать либо аргументом командной строки
-	\b --prefix-exchange-mode-id либо в конф. файле параметром \b echangeModeID="". Константы определяющие режимы объявлены в MBTCPMultiMaster::ExchangeMode.
+    Режимы переключаются при помощи датчика, который можно задать либо аргументом командной строки
+    \b --prefix-exchange-mode-id либо в конф. файле параметром \b echangeModeID="". Константы определяющие режимы объявлены в MBTCPMultiMaster::ExchangeMode.
 
 */
 // -----------------------------------------------------------------------------
 /*!
-	\par Реализация Modbus TCP Multi Master для обмена с многими ModbusRTU устройствами
-	через один modbus tcp шлюз, доступный по нескольким ip-адресам.
+    \par Реализация Modbus TCP Multi Master для обмена с многими ModbusRTU устройствами
+    через один modbus tcp шлюз, доступный по нескольким ip-адресам.
 
-	\par Чтобы не зависеть от таймаутов TCP соединений, которые могут неопределённо зависать
-	на создании соединения с недоступным хостом. Обмен вынесен в отдельный поток.
-	При этом в этом же потоке обновляются данные в SM. В свою очередь информация о датчиках
-	связи обновляется в основном потоке (чтобы не зависеть от TCP).
+    \par Чтобы не зависеть от таймаутов TCP соединений, которые могут неопределённо зависать
+    на создании соединения с недоступным хостом. Обмен вынесен в отдельный поток.
+    При этом в этом же потоке обновляются данные в SM. В свою очередь информация о датчиках
+    связи обновляется в основном потоке (чтобы не зависеть от TCP).
 */
 class MBTCPMultiMaster:
-	public MBExchange
+    public MBExchange
 {
-	public:
-		MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
-						const std::string prefix="mbtcp" );
-		virtual ~MBTCPMultiMaster();
+    public:
+        MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
+                        const std::string& prefix="mbtcp" );
+        virtual ~MBTCPMultiMaster();
 
-		/*! глобальная функция для инициализации объекта */
-		static MBTCPMultiMaster* init_mbmaster( int argc, const char* const* argv,
-											UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
-											const std::string prefix="mbtcp" );
+        /*! глобальная функция для инициализации объекта */
+        static MBTCPMultiMaster* init_mbmaster( int argc, const char* const* argv,
+                                            UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
+                                            const std::string& prefix="mbtcp" );
 
-		/*! глобальная функция для вывода help-а */
-		static void help_print( int argc, const char* const* argv );
+        /*! глобальная функция для вывода help-а */
+        static void help_print( int argc, const char* const* argv );
 
-	protected:
-		virtual void sysCommand( UniSetTypes::SystemMessage *sm );
-		virtual void initIterators();
-		virtual ModbusClient* initMB( bool reopen=false );
-		void poll_thread();
-		void check_thread();
+    protected:
+        virtual void sysCommand( const UniSetTypes::SystemMessage *sm );
+        virtual void initIterators();
+        virtual ModbusClient* initMB( bool reopen=false );
+        void poll_thread();
+        void check_thread();
 
-		UniSetTypes::uniset_mutex mbMutex;
-		int recv_timeout;
-		bool force_disconnect;
-		int checktime;
+        UniSetTypes::uniset_rwmutex mbMutex;
+        bool force_disconnect;
+        int checktime;
 
-	 private:
-		MBTCPMultiMaster();
+     private:
+        MBTCPMultiMaster();
 
-		struct MBSlaveInfo
-		{
-			MBSlaveInfo():ip(""),port(0),mbtcp(0),priority(0),
-				respond(false),respond_id(UniSetTypes::DefaultObjectId),respond_invert(false),
-				recv_timeout(200),aftersend_pause(0),sleepPause_usec(100),
-				force_disconnect(true),
-				myname(""),initOK(false){}
+        struct MBSlaveInfo
+        {
+            MBSlaveInfo():ip(""),port(0),mbtcp(0),priority(0),
+                respond(false),respond_id(UniSetTypes::DefaultObjectId),respond_invert(false),
+                recv_timeout(200),aftersend_pause(0),sleepPause_usec(100),
+                force_disconnect(true),
+                myname(""),initOK(false){}
 
-			std::string ip;
-			int port;
-			ModbusTCPMaster* mbtcp;
-			int priority;
+            std::string ip;
+            int port;
+            ModbusTCPMaster* mbtcp;
+            int priority;
 
-			bool respond;
-			UniSetTypes::ObjectId respond_id;
-			IOController::DIOStateList::iterator respond_dit;
-			bool respond_invert;
+            bool respond;
+            UniSetTypes::ObjectId respond_id;
+            IOController::IOStateList::iterator respond_it;
+            bool respond_invert;
 
-			inline bool operator < ( const MBSlaveInfo& mbs ) const
-			{
-				return priority < mbs.priority;
-			}
+            inline bool operator < ( const MBSlaveInfo& mbs ) const
+            {
+                return priority < mbs.priority;
+            }
 
-			bool init();
-			bool check();
+            bool init();
+            bool check();
 
-			int recv_timeout;
-			int aftersend_pause;
-			int sleepPause_usec;
-			bool force_disconnect;
+            int recv_timeout;
+            int aftersend_pause;
+            int sleepPause_usec;
+            bool force_disconnect;
 
-			std::string myname;
+            std::string myname;
 
-			bool initOK;
-		};
+            bool initOK;
+        };
 
-		typedef std::list<MBSlaveInfo> MBGateList;
+        typedef std::list<MBSlaveInfo> MBGateList;
 
-		MBGateList mblist;
-		MBGateList::reverse_iterator mbi;
+        MBGateList mblist;
+        MBGateList::reverse_iterator mbi;
 
-		// т.к. TCP может "зависнуть" на подключении к недоступному узлу
-		// делаем опрос в отдельном потоке
-		ThreadCreator<MBTCPMultiMaster>* pollThread; /*!< поток опроса */
-		UniSetTypes::uniset_mutex tcpMutex;
+        // т.к. TCP может "зависнуть" на подключении к недоступному узлу
+        // делаем опрос в отдельном потоке
+        ThreadCreator<MBTCPMultiMaster>* pollThread; /*!< поток опроса */
+        UniSetTypes::uniset_rwmutex tcpMutex;
 
-		ThreadCreator<MBTCPMultiMaster>* checkThread; /*!< поток проверки связи по другим каналам */
+        ThreadCreator<MBTCPMultiMaster>* checkThread; /*!< поток проверки связи по другим каналам */
 };
 // -----------------------------------------------------------------------------
 #endif // _MBTCPMultiMaster_H_

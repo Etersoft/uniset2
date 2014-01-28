@@ -20,7 +20,7 @@
  */
 // -----------------------------------------------------------------------------------------
 /*! 
-	\todo Добавить проверку на предельный номер id
+    \todo Добавить проверку на предельный номер id
 */
 // -----------------------------------------------------------------------------------------
 #include <iomanip>
@@ -38,91 +38,91 @@ ObjectIndex_Array::~ObjectIndex_Array()
 }
 // -----------------------------------------------------------------------------------------
 ObjectIndex_Array::ObjectIndex_Array( const ObjectInfo *objectInfo ): 
-	objectInfo(objectInfo),
-	maxId(0)
+    objectInfo(objectInfo),
+    maxId(0)
 {
-	for (numOfObject=0;;numOfObject++)
-	{
-		if (!objectInfo[numOfObject].repName)
-			break;
-		assert (numOfObject==objectInfo[numOfObject].id);
-		mok[objectInfo[numOfObject].repName]=numOfObject;
-		maxId++;
-	}
+    for (numOfObject=0;;numOfObject++)
+    {
+        if (!objectInfo[numOfObject].repName)
+            break;
+        assert (numOfObject==objectInfo[numOfObject].id);
+        mok[objectInfo[numOfObject].repName]=numOfObject;
+        maxId++;
+    }
 }
 // -----------------------------------------------------------------------------------------
 ObjectId ObjectIndex_Array::getIdByName( const string& name )
 {
-	MapObjectKey::iterator it = mok.find(name);
-	if( it != mok.end() )
-		return it->second;
+    MapObjectKey::iterator it = mok.find(name);
+    if( it != mok.end() )
+        return it->second;
 
-	return DefaultObjectId;
+    return DefaultObjectId;
 }
 
 // -----------------------------------------------------------------------------------------
 string ObjectIndex_Array::getMapName( const ObjectId id )
 {
-	if( id!=UniSetTypes::DefaultObjectId && id>=0 && id<maxId )
-		return objectInfo[id].repName;
+    if( id!=UniSetTypes::DefaultObjectId && id>=0 && id<maxId )
+        return objectInfo[id].repName;
 
-	return "";
-//	throw OutOfRange("ObjectIndex_Array::getMapName OutOfRange");
+    return "";
+//    throw OutOfRange("ObjectIndex_Array::getMapName OutOfRange");
 }
 // -----------------------------------------------------------------------------------------
 string ObjectIndex_Array::getTextName( const ObjectId id )
 {
-	if( id!=UniSetTypes::DefaultObjectId && id>=0 && id<maxId )
-		return objectInfo[id].textName;
-	return "";
-//	throw OutOfRange("ObjectIndex_Array::getTextName OutOfRange");
+    if( id!=UniSetTypes::DefaultObjectId && id>=0 && id<maxId )
+        return objectInfo[id].textName;
+    return "";
+//    throw OutOfRange("ObjectIndex_Array::getTextName OutOfRange");
 }
 // -----------------------------------------------------------------------------------------
 std::ostream& operator<<(std::ostream& os, ObjectIndex_Array& oi )
 {
-	return oi.printMap(os);
+    return oi.printMap(os);
 }
 // -----------------------------------------------------------------------------------------
 
 std::ostream& ObjectIndex_Array::printMap( std::ostream& os )
 {
-	for( int i=0;;i++)
-	{
-		if( !objectInfo[i].repName )
-			break;
+    for( unsigned int i=0;;i++)
+    {
+        if( !objectInfo[i].repName )
+            break;
 
-		assert (i==objectInfo[i].id);
+        assert (i==objectInfo[i].id);
 
-		os  << setw(5) << objectInfo[i].id << "  "
-			<< setw(45) << conf->oind->getBaseName(objectInfo[i].repName)
-			<< "  " << objectInfo[i].textName << endl;
-	}
+        os  << setw(5) << objectInfo[i].id << "  "
+            << setw(45) << conf->oind->getBaseName(objectInfo[i].repName)
+            << "  " << objectInfo[i].textName << endl;
+    }
 
-	return os;
+    return os;
 }
 // -----------------------------------------------------------------------------------------
 const ObjectInfo* ObjectIndex_Array::getObjectInfo( const ObjectId id )
 {
-	if( id!=UniSetTypes::DefaultObjectId && id>=0 && id<maxId )
-		return &(objectInfo[id]);
+    if( id!=UniSetTypes::DefaultObjectId && id>=0 && id<maxId )
+        return &(objectInfo[id]);
 
-	return NULL;
+    return NULL;
 /*
-	ObjectInfo ret;
-	ret.id = DefaultObjectId;
-	ret.repName = "";
-	ret.textName = "";
-	return ret;
+    ObjectInfo ret;
+    ret.id = DefaultObjectId;
+    ret.repName = "";
+    ret.textName = "";
+    return ret;
 */
 
 }
 // -----------------------------------------------------------------------------------------
-const ObjectInfo* ObjectIndex_Array::getObjectInfo( const std::string name )
+const ObjectInfo* ObjectIndex_Array::getObjectInfo( const std::string& name )
 {
-	MapObjectKey::iterator it = mok.find(name);
-	if( it != mok.end() )
-		return &(objectInfo[it->second]);
+    MapObjectKey::iterator it = mok.find(name);
+    if( it != mok.end() )
+          return &(objectInfo[it->second]);
 
-	return NULL;
+    return NULL;
 }
 // ------------------------------------------------------------------------------------------

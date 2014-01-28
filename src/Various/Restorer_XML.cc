@@ -42,171 +42,117 @@ c_filterValue("")
 // -----------------------------------------------------------------------------
 Restorer_XML::~Restorer_XML()
 {
+
 }
 // -----------------------------------------------------------------------------
-void Restorer_XML::setItemFilter( const string field, const string val )
+void Restorer_XML::setItemFilter( const string& field, const string& val )
 {
-	i_filterField = field;
-	i_filterValue = val;
+    i_filterField = field;
+    i_filterValue = val;
 }
 // -----------------------------------------------------------------------------
-void Restorer_XML::setConsumerFilter( const string field, const string val )
+void Restorer_XML::setConsumerFilter( const string& field, const string& val )
 {
-	c_filterField = field;
-	c_filterValue = val;
+    c_filterField = field;
+    c_filterValue = val;
 }
 // -----------------------------------------------------------------------------
 bool Restorer_XML::getConsumerInfo( UniXML_iterator& it, 
-										ObjectId& cid, ObjectId& cnode )
+                                        ObjectId& cid, ObjectId& cnode )
 {
-	if( !check_consumer_item(it) )
-		return false;
+    if( !check_consumer_item(it) )
+        return false;
 
-	string cname( it.getProp("name"));
-	if( cname.empty() )
-	{
-		if( unideb.debugging(Debug::WARN) )
-			unideb[Debug::WARN] << "(Restorer_XML:getConsumerInfo): не указано имя заказчика..." << endl;
-		return false;
-	}
+    string cname( it.getProp("name"));
+    if( cname.empty() )
+    {
+        uwarn << "(Restorer_XML:getConsumerInfo): не указано имя заказчика..." << endl;
+        return false;
+    }
 
-	string otype(it.getProp("type"));
-	if( otype == "controllers" )
-		cname = conf->getControllersSection()+"/"+cname;
-	else if( otype == "objects" )
-		cname = conf->getObjectsSection()+"/"+cname;
-	else if( otype == "services" )
-		cname = conf->getServicesSection()+"/"+cname;
-	else
-	{
-		if( unideb.debugging(Debug::WARN) )
-		{
-			unideb[Debug::WARN] << "(Restorer_XML:getConsumerInfo): неизвестный тип объекта "
-							<< otype << endl;
-		}
-		return false;
-	}
+    string otype(it.getProp("type"));
+    if( otype == "controllers" )
+        cname = conf->getControllersSection()+"/"+cname;
+    else if( otype == "objects" )
+        cname = conf->getObjectsSection()+"/"+cname;
+    else if( otype == "services" )
+        cname = conf->getServicesSection()+"/"+cname;
+    else
+    {
+        uwarn << "(Restorer_XML:getConsumerInfo): неизвестный тип объекта "
+                            << otype << endl;
+        return false;
+    }
 
-	cid = conf->oind->getIdByName(cname);
-	if( cid == UniSetTypes::DefaultObjectId )
-	{
-		unideb[Debug::CRIT] << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->"
-							<< cname << endl;
-		return false;
-	}
+    cid = conf->oind->getIdByName(cname);
+    if( cid == UniSetTypes::DefaultObjectId )
+    {
+        ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->"
+                            << cname << endl;
+        return false;
+    }
 
-	string cnodename(it.getProp("node"));
-	if( !cnodename.empty() )
-	{
-		string virtnode = conf->oind->getVirtualNodeName(cnodename);
-		if( virtnode.empty() )
-			cnodename = conf->oind->mkFullNodeName(cnodename,cnodename);
+    string cnodename(it.getProp("node"));
+    if( !cnodename.empty() )
+    {
+        string virtnode = conf->oind->getVirtualNodeName(cnodename);
+        if( virtnode.empty() )
+            cnodename = conf->oind->mkFullNodeName(cnodename,cnodename);
 
-		cnode = conf->oind->getIdByName(cnodename);
-	}
-	else
-		cnode = conf->getLocalNode();
+        cnode = conf->oind->getIdByName(cnodename);
+    }
+    else
+        cnode = conf->getLocalNode();
 
-	if( cnode == UniSetTypes::DefaultObjectId )
-	{
-		unideb[Debug::CRIT] << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->"
-							<< cnodename << endl;
-		return false;
-	}
+    if( cnode == UniSetTypes::DefaultObjectId )
+    {
+        ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->"
+                            << cnodename << endl;
+        return false;
+    }
 
-	if( unideb.debugging(Debug::INFO) )
-	{
-		unideb[Debug::INFO] << "(Restorer_XML:getConsumerInfo): "
-				<< cname << ":" << cnodename << endl;
-	}
-	return true;
-}
-// -----------------------------------------------------------------------------
-bool Restorer_XML::old_getConsumerInfo( UniXML_iterator& it,
-											ObjectId& cid, ObjectId& cnode )
-{
-	string cname(it.getProp("name"));
-	if( cname.empty() )
-	{
-		if( unideb.debugging(Debug::WARN) )
-			unideb[Debug::WARN] << "(Restorer_XML:old_getConsumerInfo): не указано имя заказчика... пропускаем..." << endl;
-
-		return false;
-	}
-
-	cid = conf->oind->getIdByName(cname);
-	if( cid == UniSetTypes::DefaultObjectId )
-	{
-		unideb[Debug::CRIT] << "(Restorer_XML:old_getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->"
-							<< cname << endl;
-		return false;
-	}
-
-	string cnodename(it.getProp("node"));
-	if( !cnodename.empty() )
-	{
-		string virtnode = conf->oind->getVirtualNodeName(cnodename);
-		if( virtnode.empty() )
-			cnodename = conf->oind->mkFullNodeName(cnodename,cnodename);
-
-		cnode = conf->oind->getIdByName(cnodename);
-	}
-	else
-		cnode = conf->getLocalNode();
-
-	if( cnode == UniSetTypes::DefaultObjectId )
-	{
-		unideb[Debug::CRIT] << "(Restorer_XML:old_getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->"
-							<< cnodename << endl;
-		return false;
-	}
-
-	if( unideb.debugging(Debug::INFO) )
-	{
-		unideb[Debug::INFO] << "(Restorer_XML:old_getConsumerInfo): "
-							<< cname << ":" << cnodename << endl;
-	}
-	return true;
+    uinfo << "(Restorer_XML:getConsumerInfo): " << cname << ":" << cnodename << endl;
+    return true;
 }
 // -----------------------------------------------------------------------------
 bool Restorer_XML::check_list_item( UniXML_iterator& it )
 {
-	return UniSetTypes::check_filter(it,i_filterField,i_filterValue);
+    return UniSetTypes::check_filter(it,i_filterField,i_filterValue);
 }
 // -----------------------------------------------------------------------------
 bool Restorer_XML::check_consumer_item( UniXML_iterator& it )
 {
-	return UniSetTypes::check_filter(it,c_filterField,c_filterValue);
+    return UniSetTypes::check_filter(it,c_filterField,c_filterValue);
 }
 // -----------------------------------------------------------------------------
-xmlNode* Restorer_XML::find_node( UniXML& xml, xmlNode* root,
-									const string& nodename, const string nm )
+xmlNode* Restorer_XML::find_node( const UniXML& xml, xmlNode* root,
+                                    const string& nodename, const string& nm )
 {
-	UniXML_iterator it(root);
-	if( it.goChildren() )
-	{
-		for( ;it;it.goNext() )
-		{
-			if( it.getName()==nodename )
-			{
-				if( nm.empty() )
-					return it;
+    UniXML_iterator it(root);
+    if( it.goChildren() )
+    {
+        for( ;it;it.goNext() )
+        {
+            if( it.getName()==nodename )
+            {
+                if( nm.empty() )
+                    return it;
 
-				if( xml.getProp(it, "name") == nm )
-					return it;
-			}
-		}
-	}
-	return 0;
+                if( xml.getProp(it, "name") == nm )
+                    return it;
+            }
+        }
+    }
+    return 0;
 }
 // -----------------------------------------------------------------------------
 void Restorer_XML::setReadItem( ReaderSlot sl )
 {
-	rslot = sl;
+    rslot = sl;
 }
 // -----------------------------------------------------------------------------
 void Restorer_XML::setReadConsumerItem( ReaderSlot sl )
 {
-	cslot = sl;
+    cslot = sl;
 }
 // -----------------------------------------------------------------------------

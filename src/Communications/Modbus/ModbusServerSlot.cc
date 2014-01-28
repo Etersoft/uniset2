@@ -14,76 +14,76 @@ ModbusServerSlot::~ModbusServerSlot()
 // -------------------------------------------------------------------------
 void ModbusServerSlot::connectReadCoil( ReadCoilSlot sl )
 {
-	slReadCoil = sl;
+    slReadCoil = sl;
 }
 // -------------------------------------------------------------------------
 void ModbusServerSlot::connectReadInputStatus( ReadInputStatusSlot sl )
 {
-	slReadInputStatus = sl;
+    slReadInputStatus = sl;
 }
 // -------------------------------------------------------------------------
 
 void ModbusServerSlot::connectReadOutput( ReadOutputSlot sl )
 {
-	slReadOutputs = sl;
+    slReadOutputs = sl;
 }
 // -------------------------------------------------------------------------
 void ModbusServerSlot::connectReadInput( ReadInputSlot sl )
 {
-	slReadInputs = sl;
+    slReadInputs = sl;
 }
 // -------------------------------------------------------------------------
 void ModbusServerSlot::connectForceCoils( ForceCoilsSlot sl )
 {
-	slForceCoils = sl;
+    slForceCoils = sl;
 }
 // -------------------------------------------------------------------------
 void ModbusServerSlot::connectWriteOutput( WriteOutputSlot sl )
 {
-	slWriteOutputs = sl;
+    slWriteOutputs = sl;
 }
 
 // ------------------------------------------------------------------------
 void ModbusServerSlot::connectWriteSingleOutput( WriteSingleOutputSlot sl )
 {
-	slWriteSingleOutputs = sl;
+    slWriteSingleOutputs = sl;
 }
 
 // -------------------------------------------------------------------------
 void ModbusServerSlot::connectDiagnostics( DiagnosticsSlot sl )
 {
-	slDiagnostics = sl;
+    slDiagnostics = sl;
 }
 // -------------------------------------------------------------------------
 void ModbusServerSlot::connectMEIRDI( MEIRDISlot sl )
 {
-	slMEIRDI = sl;
+    slMEIRDI = sl;
 }
 // -------------------------------------------------------------------------
 void ModbusServerSlot::connectForceSingleCoil( ForceSingleCoilSlot sl )
 {
-	slForceSingleCoil = sl;
+    slForceSingleCoil = sl;
 }
 // -------------------------------------------------------------------------
 
 void ModbusServerSlot::connectJournalCommand( JournalCommandSlot sl )
 {
-	slJournalCommand = sl;
+    slJournalCommand = sl;
 }
 
 // -------------------------------------------------------------------------
 void ModbusServerSlot::connectSetDateTime( SetDateTimeSlot sl )
 {
-	slSetDateTime = sl;
+    slSetDateTime = sl;
 }
 // -------------------------------------------------------------------------
 void ModbusServerSlot::connectRemoteService( RemoteServiceSlot sl )
 {
-	slRemoteService = sl;
+    slRemoteService = sl;
 }
 // -------------------------------------------------------------------------
 void ModbusServerSlot::connectFileTransfer( FileTransferSlot sl )
 {
-	slFileTransfer = sl;
+    slFileTransfer = sl;
 }
 // -------------------------------------------------------------------------

@@ -35,20 +35,12 @@ using namespace omni;
 using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
-/*
-ObjectRepository::ObjectRepository(int* argc, char* **argv, const char* NSName):
-	argc(*argc),
-	argv(*argv),
-	nsName(NSName)
-{
-}
-*/
 
-ObjectRepository::ObjectRepository( Configuration* _conf ):
-	nsName(_conf->getNSName()),
-	uconf(_conf)
+ObjectRepository::ObjectRepository( const Configuration* _conf ):
+    nsName(_conf->getNSName()),
+    uconf(_conf)
 {
-	init();
+    init();
 }
 
 
@@ -59,30 +51,30 @@ ObjectRepository::~ObjectRepository()
 ObjectRepository::ObjectRepository():
 nsName("NameService")
 {
-	init();
+    init();
 }
 
-bool ObjectRepository::init()
+bool ObjectRepository::init() const
 {
-	try
-	{
-		CORBA::ORB_var orb = uconf->getORB();
-		{
-			ostringstream s;
-			s << uconf << "NameService";
-			nsName = s.str();
-		}
-		localctx = ORepHelpers::getRootNamingContext(orb, nsName );
-		if( CORBA::is_nil(localctx) )
-			localctx=0;
-	}
-	catch(...)
-	{
-		localctx=0;
-		return false;
-	}
+    try
+    {
+        CORBA::ORB_var orb = uconf->getORB();
+        {
+            ostringstream s;
+            s << uconf << "NameService";
+            nsName = s.str();
+        }
+        localctx = ORepHelpers::getRootNamingContext(orb, nsName );
+        if( CORBA::is_nil(localctx) )
+            localctx=0;
+    }
+    catch(...)
+    {
+        localctx=0;
+        return false;
+    }
 
-	return true;
+    return true;
 }
 // --------------------------------------------------------------------------
 /*!
@@ -93,189 +85,146 @@ bool ObjectRepository::init()
  * \exception ORepFailed - генерируется если произошла ошибка при регистрации
  * \sa registration(const string fullName, const CORBA::Object_ptr oRef) 
 */
-void ObjectRepository::registration(const string& name, const ObjectPtr oRef, const string& section, bool force)
+void ObjectRepository::registration(const string& name, const ObjectPtr oRef, const string& section, bool force) const
         throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
 {
-	ostringstream err;
+    ostringstream err;
 
-	if( unideb.debugging(Debug::type(Debug::INFO|Debug::REPOSITORY)) )
-		unideb[Debug::type(Debug::INFO|Debug::REPOSITORY)] << "ObjectRepository(registration): регистрируем " << name << endl;
+    uinfo << "ObjectRepository(registration): регистрируем " << name << endl;
 
-	// Проверка корректности имени
-	char bad = ORepHelpers::checkBadSymbols(name);
-	if( bad != 0 )
-	{
-		cerr << "orep reg: BAD Symbols" << endl;
-		err << "ObjectRepository(registration): (InvalidObjectName) " << name;
-		err << " содержит недопустимый символ " << bad;
-		throw ( InvalidObjectName(err.str().c_str()) );
-	}
+    // Проверка корректности имени
+    char bad = ORepHelpers::checkBadSymbols(name);
+    if( bad != 0 )
+    {
+        cerr << "orep reg: BAD Symbols" << endl;
+        err << "ObjectRepository(registration): (InvalidObjectName) " << name;
+        err << " содержит недопустимый символ " << bad;
+        throw ( InvalidObjectName(err.str().c_str()) );
+    }
 
-	CosNaming::Name_var oName = omniURI::stringToName(name.c_str());
-	CosNaming::NamingContext_var ctx;
-	for( int i=0; i<2; i++ )
-	{
-	    try
-	{
-	        // Добавляем в репозиторий новую ссылку (заменяя если есть старую)
+    CosNaming::Name_var oName = omniURI::stringToName(name.c_str());
+    CosNaming::NamingContext_var ctx;
+    for( unsigned int i=0; i<2; i++ )
+    {
+        try
+        {
+            // Добавляем в репозиторий новую ссылку (заменяя если есть старую)
+            CORBA::ORB_var orb = uconf->getORB();
+            ctx = ORepHelpers::getContext(orb, section, nsName);
 
-			CORBA::ORB_var orb = uconf->getORB();
-			ctx = ORepHelpers::getContext(orb, section, nsName);
+            ctx->bind(oName, oRef);
+            return;
+        }
+        catch(const CosNaming::NamingContext::AlreadyBound &nf)
+        {
+            uwarn << "(registration): "<< name <<" уже зарегестрирован в "<< section << "!!!" << endl;
 
-			ctx->bind(oName, oRef);
-			return;
-		}
-		catch(const CosNaming::NamingContext::AlreadyBound &nf)
-		{
-			if( unideb.debugging(Debug::type(Debug::WARN|Debug::REPOSITORY)) )
-				unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "(registration): "<< name <<" уже зарегестрирован в "<< section << "!!!" << endl;
+            if( !force )
+                throw ObjectNameAlready();
 
-			if( !force )
-				throw ObjectNameAlready();
+            // разрегистриуем, перед повтроной попыткой
+            ctx->unbind(oName);
+            continue;
+        }
+        catch(ORepFailed)
+        {
+            string er("ObjectRepository(registrartion): (getContext) не смог зарегистрировать "+name);
+            throw ORepFailed(er.c_str());
+        }
+        catch(CosNaming::NamingContext::NotFound)
+        {
+            throw NameNotFound();
+        }
+        catch(const CosNaming::NamingContext::InvalidName &nf)
+        {
+            err << "ObjectRepository(registration): (InvalidName) не смог зарегистрировать ссылку  " << name;;
+        }
+        catch(const CosNaming::NamingContext::CannotProceed &cp)
+        {
+            err << "ObjectRepository(registrartion): catch CannotProced " << name << " bad part=";
+            err << omniURI::nameToString(cp.rest_of_name);
+        }
+        catch(CORBA::SystemException& ex)
+        {
+            uwarn << "ObjectRepository(registrartion): поймали CORBA::SystemException: "
+                    << ex.NP_minorString() << endl;
 
-			// разрегистриуем, перед повтроной попыткой
-			ctx->unbind(oName);
-			continue;
-/*
-			// делаем проверку жив ли объект
-			bool life(false);
-			try
-			{
-				unideb[Debug::type(Debug::INFO|Debug::REPOSITORY)] << "(registration): " << name << " уже есть... проверяем живой ли? "<< endl;
-				CORBA::Object_var ref = ctx->resolve(oName);
-				UniSetObject_i_var uobj = UniSetObject_i::_narrow(ref);
-				uobj->getId(); // пытаемся вызвать функцию (любую), если не сможет сработает исключение
-				life = true;
-				unideb[Debug::type(Debug::INFO|Debug::REPOSITORY)] << "(registration): " << name << " живой! "<< endl;
-			}
-			catch(...)
-			{
-				life=false;
-			}
+            err << "ObjectRepository(registrartion): поймали CORBA::SystemException: " << ex.NP_minorString();
+        }
+    }
 
-			if( !life )
-			{
-				unideb(Debug::type(Debug::WARN|Debug::REPOSITORY)) << "(registration): " << name << " ЕСТЬ в репозитории, но недоступен. Заменяем на новую ссылку "<< endl;
-				ctx->rebind(oName, oRef);
-			}
-			else
-			{
-				unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "(registration): "<< name <<" уже зарегестрирован в "<< section<< "!!!!!!!!!!!" << endl;
-				throw ObjectNameAlready();
-			}
-			return;
-*/
-		}
-	    catch(ORepFailed)
-	    {
-			string er("ObjectRepository(registrartion): (getContext) не смог зарегистрировать "+name);
-				throw ORepFailed(er.c_str());
-	    }
-		catch(CosNaming::NamingContext::NotFound)
-	    {
-			throw NameNotFound();
-	    }
-	    catch(const CosNaming::NamingContext::InvalidName &nf)
-	    {
-			err << "ObjectRepository(registration): (InvalidName) не смог зарегистрировать ссылку  " << name;;
-	    }
-		catch(const CosNaming::NamingContext::CannotProceed &cp)
-		{
-				err << "ObjectRepository(registrartion): catch CannotProced " << name << " bad part=";
-			err << omniURI::nameToString(cp.rest_of_name);
-		}
-	    catch(CORBA::SystemException& ex)
-	    {
-			unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ObjectRepository(registrartion): поймали CORBA::SystemException: "
-					<< ex.NP_minorString() << endl;
-
-			err << "ObjectRepository(registrartion): поймали CORBA::SystemException: " << ex.NP_minorString();
-	    }
-	//	catch(...)
-	//	{
-	//		unideb[Debug::WARN] << "поймали что-то неизвестное..."<< endl;
-	//	}
-	}
-
-	throw ORepFailed(err.str().c_str());
+    throw ORepFailed(err.str().c_str());
 }
 // --------------------------------------------------------------------------
 
 /*!
  *  Функция регистрирует объект с именем "fullName" в репозитории объектов и связывает это имя со сылкой "oRef".
  *  \note При этом надо иметь ввиду, что задается полное имя объекта.
- *	Пример: registration("Root/SensorSection/sens1", oRef);
- *	\param fullName - полное имя регистрируемого объекта (т.е. включающее в себя имя секции)
- *	\param oRef - ссылка на объект
+ *    Пример: registration("Root/SensorSection/sens1", oRef);
+ *    \param fullName - полное имя регистрируемого объекта (т.е. включающее в себя имя секции)
+ *    \param oRef - ссылка на объект
  *  \exception ORepFailed - генерируется если произошла ошибка при регистрации
  *  \sa registration(const string name, const ObjectPtr oRef, const string section)
 */
-void ObjectRepository::registration( const std::string& fullName, const UniSetTypes::ObjectPtr oRef, bool force )
-	throw(ORepFailed,ObjectNameAlready,InvalidObjectName, NameNotFound)
+void ObjectRepository::registration( const std::string& fullName, const UniSetTypes::ObjectPtr oRef, bool force ) const
+    throw(ORepFailed,ObjectNameAlready,InvalidObjectName, NameNotFound)
 {
-//	string n(ORepHelpers::getShortName(fullName));
-	string n( uconf->oind->getBaseName(fullName) );
+//    string n(ORepHelpers::getShortName(fullName));
+    string n( uconf->oind->getBaseName(fullName) );
     string s(ORepHelpers::getSectionName(fullName.c_str()));
     registration(n, oRef, s,force);
 }
 // --------------------------------------------------------------------------
 
 /*!
- *	\param name - имя регистрируемого объекта (т.е. включающее в себя имя секции)
- *	\param section - имя секции в которой зарегистрирован объект
+ *    \param name - имя регистрируемого объекта (т.е. включающее в себя имя секции)
+ *    \param section - имя секции в которой зарегистрирован объект
  *  \exception ORepFailed - генерируется если произошла ошибка при удалении
- * 	\warning Нет проверки корректности удаляемого имени. т.е.
- *	проверки на, то не является ли имя ссылкой на объект или контекст
- *	т.к. для удаления ссылки на контекст нужен алгоритм посложнее...
+ *     \warning Нет проверки корректности удаляемого имени. т.е.
+ *    проверки на, то не является ли имя ссылкой на объект или контекст
+ *    т.к. для удаления ссылки на контекст нужен алгоритм посложнее...
 */
-void ObjectRepository::unregistration(const string& name, const string& section)
-	throw(ORepFailed, NameNotFound)
+void ObjectRepository::unregistration(const string& name, const string& section) const
+    throw(ORepFailed, NameNotFound)
 {
-//	unideb[Debug::INFO] << "OREP: unregistration "<< name << " из "<< section << endl;
-	ostringstream err;
+    ostringstream err;
     CosNaming::Name_var oName = omniURI::stringToName(name.c_str());
-
-//	unideb[Debug::INFO] << "OREP: string to name ok"<< endl;
-	CosNaming::NamingContext_var ctx;
-	CORBA::ORB_var orb = uconf->getORB();
-	ctx = ORepHelpers::getContext(orb, section, nsName);
-
-//	unideb[Debug::INFO] << "OREP: get context " << section <<" ok"<< endl;
+    CosNaming::NamingContext_var ctx;
+    CORBA::ORB_var orb = uconf->getORB();
+    ctx = ORepHelpers::getContext(orb, section, nsName);
 
     try
     {
-	    // Удаляем запись об объекте
-		ctx->unbind(oName);
-
-//		unideb[Debug::INFO] << "OREP: ok" << endl;
-		return;
+        // Удаляем запись об объекте
+        ctx->unbind(oName);
+        return;
     }
-	catch(const CosNaming::NamingContext::NotFound &nf)
+    catch(const CosNaming::NamingContext::NotFound &nf)
     {
-		err << "ObjectRepository(unregistrartion): не найден объект ->" << name;
+        err << "ObjectRepository(unregistrartion): не найден объект ->" << name;
     }
-	catch(const CosNaming::NamingContext::InvalidName &in)
-	{
-		err << "ObjectRepository(unregistrartion): не корректное имя объекта -> " << name;
-	}
-	catch(const CosNaming::NamingContext::CannotProceed &cp)
-	{
-		err << "ObjectRepository(unregistrartion): catch CannotProced " << name << " bad part=";
-		err << omniURI::nameToString(cp.rest_of_name);
-	}
+    catch(const CosNaming::NamingContext::InvalidName &in)
+    {
+        err << "ObjectRepository(unregistrartion): не корректное имя объекта -> " << name;
+    }
+    catch(const CosNaming::NamingContext::CannotProceed &cp)
+    {
+        err << "ObjectRepository(unregistrartion): catch CannotProced " << name << " bad part=";
+        err << omniURI::nameToString(cp.rest_of_name);
+    }
 
-	if (err.str().empty())
-		err << "ObjectRepository(unregistrartion): не смог удалить " << name;
-	throw ORepFailed(err.str().c_str());
+    if (err.str().empty())
+        err << "ObjectRepository(unregistrartion): не смог удалить " << name;
+       throw ORepFailed(err.str().c_str());
 }
 // --------------------------------------------------------------------------
 /*!
- *	\param fullName - полное имя регистрируемого объекта (т.е. включающее в себя имя секции)
+ *    \param fullName - полное имя регистрируемого объекта (т.е. включающее в себя имя секции)
  *  \exception ORepFailed - генерируется если произошла ошибка при удалении
- * 	\sa unregistration(const string name, const string section)
+ *     \sa unregistration(const string name, const string section)
 */
-void ObjectRepository::unregistration(const string& fullName)
-	throw(ORepFailed, NameNotFound)
+void ObjectRepository::unregistration(const string& fullName) const
+    throw(ORepFailed, NameNotFound)
 {
 //    string n(ORepHelpers::getShortName(fullName));
     string n(uconf->oind->getBaseName(fullName));
@@ -284,50 +233,50 @@ void ObjectRepository::unregistration(const string& fullName)
 }
 // --------------------------------------------------------------------------
 
-ObjectPtr ObjectRepository::resolve( const string& name, const string NSName )
-	throw(ORepFailed,  NameNotFound)
+ObjectPtr ObjectRepository::resolve( const string& name, const string& NSName ) const
+    throw(ORepFailed,  NameNotFound)
 {
-	ostringstream err;
-	try
-	{
-		if( !localctx && !init() )
-			throw ORepFailed("ObjectRepository(resolve): не смог получить ссылку на NameServices");
+    ostringstream err;
+    try
+    {
+        if( !localctx && !init() )
+            throw ORepFailed("ObjectRepository(resolve): не смог получить ссылку на NameServices");
 
-		CORBA::Object_var oRef;
-		CosNaming::Name_var nc = omniURI::stringToName(name.c_str());
-		oRef=localctx->resolve(nc);
-		if ( !CORBA::is_nil(oRef) )
-			return oRef._retn();
+        CORBA::Object_var oRef;
+        CosNaming::Name_var nc = omniURI::stringToName(name.c_str());
+        oRef=localctx->resolve(nc);
+        if ( !CORBA::is_nil(oRef) )
+            return oRef._retn();
 
-		err << "ObjectRepository(resolve): не смог получить ссылку на объект " << name.c_str();
-	}
-	catch(const CosNaming::NamingContext::NotFound &nf)
-	{
-		err << "ObjectRepository(resolve): NameNotFound name= " << name;
-	}
-	catch(const CosNaming::NamingContext::InvalidName &nf)
-	{
-		err << "ObjectRepository(resolve): не смог получить ссылку на контекст(InvalidName) ";
-	}
-	catch(const CosNaming::NamingContext::CannotProceed& cp)
-	{
-		err << "ObjectRepository(resolve): catch CannotProced " << name << " bad part=";
-		err << omniURI::nameToString(cp.rest_of_name);
-	}
+        err << "ObjectRepository(resolve): не смог получить ссылку на объект " << name.c_str();
+    }
+    catch(const CosNaming::NamingContext::NotFound &nf)
+    {
+        err << "ObjectRepository(resolve): NameNotFound name= " << name;
+    }
+    catch(const CosNaming::NamingContext::InvalidName &nf)
+    {
+        err << "ObjectRepository(resolve): не смог получить ссылку на контекст(InvalidName) ";
+    }
+    catch(const CosNaming::NamingContext::CannotProceed& cp)
+    {
+        err << "ObjectRepository(resolve): catch CannotProced " << name << " bad part=";
+        err << omniURI::nameToString(cp.rest_of_name);
+    }
     catch(CORBA::SystemException& ex)
     {
-		err << "ObjectRepository(resolve): catch SystemException: " << ex.NP_minorString()
-			<< " для " << name;
-	}
-	catch(...)
-	{
-		err << "ObjectRepository(resolve): catch ... для " << name;
-	}
+        err << "ObjectRepository(resolve): catch SystemException: " << ex.NP_minorString()
+            << " для " << name;
+    }
+    catch(...)
+    {
+        err << "ObjectRepository(resolve): catch ... для " << name;
+    }
 
-	if(err.str().empty())
-		err << "ObjectRepository(resolve): ??? для " << name;
+    if( err.str().empty() )
+        err << "ObjectRepository(resolve): unknown error for '" << name << "'";
 
-	throw ORepFailed(err.str().c_str());
+    throw ORepFailed(err.str().c_str());
 }
 
 // --------------------------------------------------------------------------
@@ -342,7 +291,7 @@ ObjectPtr ObjectRepository::resolve( const string& name, const string NSName )
 */ 
 bool ObjectRepository::list(const string& section, ListObjectName *ls, unsigned int how_many)throw(ORepFailed)
 {
-	return list(section, ls, how_many, ObjectRef);
+    return list(section, ls, how_many, ObjectRef);
 }
 
 // --------------------------------------------------------------------------
@@ -356,7 +305,7 @@ bool ObjectRepository::list(const string& section, ListObjectName *ls, unsigned 
 */ 
 bool ObjectRepository::listSections(const string& in_section, ListObjectName *ls, unsigned int how_many)throw(ORepFailed)
 {
-	return list(in_section, ls, how_many, Section);
+    return list(in_section, ls, how_many, Section);
 }
 
 // --------------------------------------------------------------------------
@@ -372,105 +321,103 @@ bool ObjectRepository::listSections(const string& in_section, ListObjectName *ls
 bool ObjectRepository::list(const string& section, ListObjectName *ls, unsigned int how_many, ObjectType type)
 {
   // Возвращает false если вынут не весь список...
-//  	unideb[Debug::INFO] << "получаем список из "<< section << endl;
-	CosNaming::NamingContext_var ctx;
-	try
-	{
-		CORBA::ORB_var orb = uconf->getORB();
-		ctx = ORepHelpers::getContext(orb, section, nsName);
-	}
-	catch(ORepFailed)
-	{
-		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ORepository(list): не смог получить ссылку на "<< section << endl;
-		throw;
-//		return false;
-	}
+    CosNaming::NamingContext_var ctx;
+    try
+    {
+        CORBA::ORB_var orb = uconf->getORB();
+        ctx = ORepHelpers::getContext(orb, section, nsName);
+    }
+    catch(ORepFailed)
+    {
+        uwarn << "ORepository(list): не смог получить ссылку на "<< section << endl;
+        throw;
+    }
 
-	if( CORBA::is_nil(ctx) )
-	{
-		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ORepository(list): не смог получить ссылку на "<< section << endl;
-		throw ORepFailed();
-	}
+    if( CORBA::is_nil(ctx) )
+    {
+        uwarn << "ORepository(list): не смог получить ссылку на "<< section << endl;
+        throw ORepFailed();
+    }
 
-	CosNaming::BindingList_var bl;
-	CosNaming::BindingIterator_var bi;
-	ctx->list(how_many,bl,bi);
+    CosNaming::BindingList_var bl;
+    CosNaming::BindingIterator_var bi;
+    ctx->list(how_many,bl,bi);
 
-	bool res = true;
+    bool res = true;
 
-	if(how_many>=bl->length())
-		how_many = bl->length();
-	else
-	{
-		if ( bi!=NULL )
-			res = false;
-	}
+    if(how_many>=bl->length())
+        how_many = bl->length();
+    else
+    {
+        if ( bi!=NULL )
+            res = false;
+    }
 
-//	cout << "получили список "<< section << " размером " << bl->length()<< endl;
+//    cout << "получили список "<< section << " размером " << bl->length()<< endl;
 
-	for( unsigned int i=0; i<how_many;i++)
-	{
-		switch( type )
-		{
-			case ObjectRef:
-			{
-				if(bl[i].binding_type == CosNaming::nobject)
-				{
-					string objn= omniURI::nameToString(bl[i].binding_name);
-					ls->push_front(objn);
-				}
-				break;
-			}
-			case Section:
-			{
-				if( bl[i].binding_type == CosNaming::ncontext)
-				{
-					string objn= omniURI::nameToString(bl[i].binding_name);
-					ls->push_front(objn);
-				}
-				break;
-			}
-		}
-	}
+    for( unsigned int i=0; i<how_many;i++)
+    {
+        switch( type )
+        {
+            case ObjectRef:
+            {
+                if(bl[i].binding_type == CosNaming::nobject)
+                  {
+                    string objn= omniURI::nameToString(bl[i].binding_name);
+                    ls->push_front(objn);
+                }
+                break;
+            }
+            case Section:
+            {
+                if( bl[i].binding_type == CosNaming::ncontext)
+                  {
+                    string objn= omniURI::nameToString(bl[i].binding_name);
+                    ls->push_front(objn);
+                }
+                break;
+            }
+        }
+    }
 
-	return res;
+    return res;
 }
 
 // --------------------------------------------------------------------------
-bool ObjectRepository::isExist( const string& fullName )
+bool ObjectRepository::isExist( const string& fullName ) const
 {
-	try
-	{
-		CORBA::Object_var oRef = resolve(fullName, nsName);
-		return isExist(oRef);
-	}
-	catch(...){}
+    try
+    {
+        CORBA::Object_var oRef = resolve(fullName, nsName);
+        return isExist(oRef);
+    }
+    catch(...){}
 
-	return false;
+    return false;
 }
 
 // --------------------------------------------------------------------------
 
-bool ObjectRepository::isExist( ObjectPtr oref )
+bool ObjectRepository::isExist( const ObjectPtr oref ) const
 {
-	try
-	{
-		UniSetObject_i_var o = UniSetObject_i::_narrow(oref);
-		return o->exist();
-	}
-	catch(CORBA::TRANSIENT){}
-	catch(CORBA::SystemException&){}
+    try
+    {
+        UniSetObject_i_var o = UniSetObject_i::_narrow(oref);
+        return o->exist();
+    }
+    catch(CORBA::TRANSIENT){}
+    catch(CORBA::SystemException&){}
     catch(CORBA::Exception&){}
     catch(omniORB::fatalException& fe)
     {
-		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "ObjectRepository(isExist): "<< "поймали omniORB::fatalException:" << endl;
-        unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "  file: " << fe.file() << endl;
-		unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "  line: " << fe.line() << endl;
-        unideb[Debug::type(Debug::WARN|Debug::REPOSITORY)] << "  mesg: " << fe.errmsg() << endl;
+        uwarn << "ObjectRepository(isExist): "<< "поймали omniORB::fatalException:" << endl;
+        uwarn << "  file: " << fe.file() << endl;
+        uwarn << "  line: " << fe.line() << endl;
+        uwarn << "  mesg: " << fe.errmsg() << endl;
     }
-	catch(...){}
+    catch(...){}
 
-	return false;
+    return false;
 }
 
 // --------------------------------------------------------------------------

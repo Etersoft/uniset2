@@ -3,5 +3,4 @@
 ############################################################################
 
 noinst_LTLIBRARIES 			= libInterfaces.la
-libInterfaces_la_SOURCES	= UniversalInterface.cc
-include $(top_builddir)/conf/setting.mk
+libInterfaces_la_SOURCES	= UInterface.cc

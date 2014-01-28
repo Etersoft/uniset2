@@ -17,8 +17,6 @@ libUniSetSharedMemory_la_SOURCES 	= SharedMemory.cc
 @PACKAGE@_smemory_CPPFLAGS	= $(SIGC_CFLAGS) -I$(top_builddir)/extensions/include
 @PACKAGE@_smemory_SOURCES 	= smemory.cc
 
-include $(top_builddir)/conf/setting.mk
-
 # install
 devel_include_HEADERS = *.h
 devel_includedir = $(pkgincludedir)/extensions
