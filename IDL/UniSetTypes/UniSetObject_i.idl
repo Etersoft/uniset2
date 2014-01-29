@@ -39,13 +39,13 @@
     */
     interface UniSetObject_i
     {
-        UniSetTypes::ObjectId getId();            /*!< получение идентификатора объекта */
-        UniSetTypes::ObjectType getType();        /*!< получение типа объекта */
-        UniSetTypes::SimpleInfo getInfo();        /*!< получение информации о внутреннем состоянии объекта */
+        UniSetTypes::ObjectId getId();       /*!< получение идентификатора объекта */
+        UniSetTypes::ObjectType getType();   /*!< получение типа объекта */
+        UniSetTypes::SimpleInfo getInfo();   /*!< получение информации о внутреннем состоянии объекта */
 
-        boolean exist();     /*!< проверка существования объекта */
+        boolean exist();   /*!< проверка существования объекта */
 
-        /*!  Функция посылки сообщения объекту     */
+        /*!  Функция посылки сообщения объекту */
         void push(in UniSetTypes::TransportMessage msg);
     };
 

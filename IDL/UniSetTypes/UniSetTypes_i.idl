@@ -28,7 +28,6 @@
 //{
     module UniSetTypes
     {
-        typedef string<100> BaseObjectName;
         typedef long ObjectId;          /*!< идентификатор объекта */
         typedef long ThresholdId;       /*!< идентификатор порога */
         typedef long TimerId;           /*!< идентификатор таймера */

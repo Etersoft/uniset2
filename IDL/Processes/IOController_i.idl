@@ -45,7 +45,7 @@ interface IOController_i : UniSetManager_i
 
     exception IOBadParam
     {
-           string err;
+        string err;
     };
 
     /*! Значение не определено
@@ -59,7 +59,7 @@ interface IOController_i : UniSetManager_i
     struct SensorInfo
     {
         UniSetTypes::ObjectId id;    /*!< идентификатор датчика */
-        UniSetTypes::ObjectId node;    /*!< узел на котором он находится */
+        UniSetTypes::ObjectId node;  /*!< узел на котором он находится */
     };
 
     long getValue(in SensorInfo si) raises(NameNotFound,Undefined);
@@ -83,11 +83,11 @@ interface IOController_i : UniSetManager_i
 
     struct CalibrateInfo
     {
-        long minRaw;        /*!< минимальное "сырое" значение */
-        long maxRaw;         /*!< максимальное "сырое" значение */
-        long minCal;         /*!< минимальное калиброванное значение */
-        long maxCal;         /*!< максимальное калиброванное значение */
-        short precision;    /*!< точность */
+        long minRaw;      /*!< минимальное "сырое" значение */
+        long maxRaw;      /*!< максимальное "сырое" значение */
+        long minCal;      /*!< минимальное калиброванное значение */
+        long maxCal;      /*!< максимальное калиброванное значение */
+        short precision;  /*!< точность */
     };
 
     void calibrate( in SensorInfo si, in CalibrateInfo ci, in UniSetTypes::ObjectId adminId ) raises(NameNotFound);
@@ -97,18 +97,18 @@ interface IOController_i : UniSetManager_i
     /*! Информация об аналоговом датчике */
     struct SensorIOInfo
     {
-        long value;                    /*!< значение */
-        boolean undefined;             /*!< признак неопределённости значения */
-        boolean blocked;             /*!< данное значение блокировано другим */
-        long real_value;            /*!< запомненное состояние, до блокировки */
-        UniversalIO::IOType type;    /*!< тип */
-        long priority;                 /*!< приоритет уведомления */
+        long value;                   /*!< значение */
+        boolean undefined;            /*!< признак неопределённости значения */
+        boolean blocked;              /*!< данное значение блокировано другим */
+        long real_value;              /*!< запомненное состояние, до блокировки */
+        UniversalIO::IOType type;     /*!< тип */
+        long priority;                /*!< приоритет уведомления */
         IOController_i::SensorInfo si;
         long default_val;             /*!< значение по умолчанию */
         CalibrateInfo ci;             /*!< калибровочные параметры */
-        long tv_sec;                /*!< время последнего изменения датчика, секунды (gettimeofday) */
-        long tv_usec;                /*!< время последнего изменения датчика, мксек (gettimeofday) */
-        boolean dbignore;            /*!< не сохранять изменения в БД */
+        long tv_sec;                  /*!< время последнего изменения датчика, секунды (gettimeofday) */
+        long tv_usec;                 /*!< время последнего изменения датчика, мксек (gettimeofday) */
+        boolean dbignore;             /*!< не сохранять изменения в БД */
     };
 
     typedef sequence<SensorIOInfo> SensorInfoSeq;
@@ -125,7 +125,7 @@ interface IOController_i : UniSetManager_i
     struct OutInfo
     {
         SensorInfo si;    /*!< идентификатор выхода */
-        long value;        /*!< значение */
+        long value;       /*!< значение */
     };
 
     typedef sequence<OutInfo> OutSeq;
@@ -143,7 +143,7 @@ interface IOController_i : UniSetManager_i
     {
         long value;
         long tv_sec;    /*!< время последнего изменения датчика, секунды (gettimeofday) */
-        long tv_usec;    /*!< время последнего изменения датчика, мксек (gettimeofday) */
+        long tv_usec;   /*!< время последнего изменения датчика, мксек (gettimeofday) */
     };
 
     ShortIOInfo getChangedTime(in SensorInfo si) raises(NameNotFound);
@@ -195,24 +195,23 @@ interface IONotifyController_i : IOController_i
                                         in UniversalIO::UIOCommand cmd );
 
 
-
     /*! Состояние порогового датчика */
     enum ThresholdState
     {
-        LowThreshold,        /*!< сработал нижний порог  (значение меньше нижнего) */
+        LowThreshold,       /*!< сработал нижний порог  (значение меньше нижнего) */
         NormalThreshold,    /*!< значение в заданных пределах (не достигли порога) */
-        HiThreshold            /*!< сработал верхний порог  (значение больше верхнего) */
+        HiThreshold         /*!< сработал верхний порог  (значение больше верхнего) */
     };
 
     struct ThresholdInfo
     {
         UniSetTypes::ThresholdId id;
-        long hilimit;            /*!< верхняя граница срабатывания */
-        long lowlimit;            /*!< нижняя гранийа срабатывания */
+        long hilimit;         /*!< верхняя граница срабатывания */
+        long lowlimit;        /*!< нижняя гранийа срабатывания */
         ThresholdState state;
-        long tv_sec;            /*!< время последнего изменения датчика, секунды (gettimeofday) */
-        long tv_usec;            /*!< время последнего изменения датчика, мксек (gettimeofday) */
-        boolean invert;            /*!< инвертированная логика */
+        long tv_sec;          /*!< время последнего изменения датчика, секунды (gettimeofday) */
+        long tv_usec;         /*!< время последнего изменения датчика, мксек (gettimeofday) */
+        boolean invert;       /*!< инвертированная логика */
     };
 
     typedef sequence<ThresholdInfo> ThresholdInfoSeq;
