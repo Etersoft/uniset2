@@ -42,8 +42,6 @@ NCRestorer::~NCRestorer()
 // ------------------------------------------------------------------------------------------
 void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController::ConsumerListInfo& lst, bool force )
 {
-    UniSetTypes::KeyType k( key(inf.si.id,inf.si.node) );
-
     // Проверка зарегистрирован-ли данный датчик
     // если такого дискретного датчика нет, то здесь сработает исключение...
     if( !force )
@@ -80,12 +78,12 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
         case UniversalIO::AI:
         case UniversalIO::DO:
         case UniversalIO::AO:
-            ic->askIOList[k]=lst;
+            ic->askIOList[inf.si.id]=lst;
         break;
 
         default:
             ucrit << ic->getName() << "(NCRestorer::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА!-> "
-                            << conf->oind->getNameById(inf.si.id) << endl;
+                  << conf->oind->getNameById(inf.si.id) << endl;
         break;
     }
 }
@@ -122,11 +120,10 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
     for( IONotifyController::ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it )
         it->sit = ic->myioEnd();
 
-    UniSetTypes::KeyType k( key(inf.si.id,inf.si.node) );
-    ic->askTMap[k].si    = inf.si;
-    ic->askTMap[k].type    = inf.type;
-    ic->askTMap[k].list    = lst;
-    ic->askTMap[k].ait     = ic->myioEnd();
+    ic->askTMap[inf.si.id].si      = inf.si;
+    ic->askTMap[inf.si.id].type    = inf.type;
+    ic->askTMap[inf.si.id].list    = lst;
+    ic->askTMap[inf.si.id].ait     = ic->myioEnd();
 }
 // ------------------------------------------------------------------------------------------
 NCRestorer::SInfo& NCRestorer::SInfo::operator=( IOController_i::SensorIOInfo& inf )
