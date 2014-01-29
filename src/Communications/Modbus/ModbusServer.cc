@@ -1501,13 +1501,15 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 
     if( msg.len > MAXLENPACKET + szModbusHeader )
     {
-        dwarn << "(send): длина пакета больше разрешённой..." << endl;
+        if( dlog.debugging(Debug::WARN) )
+           dlog[Debug::WARN] << "(send): длина пакета больше разрешённой..." << endl;
         return erPacketTooLong;
     }
 
     if( tmProcessing.checkTime() )
     {
-        dwarn << "(send): reply timeout(" << tmProcessing.getInterval() << ")...!!!" << endl;
+        if( dlog.debugging(Debug::WARN) )
+           dlog[Debug::WARN] << "(send): reply timeout(" << tmProcessing.getInterval() << ")...!!!" << endl;
         return erTimeOut;
     }
 
@@ -1519,7 +1521,8 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
     }
 
 
-    dinfo << "(send): data(" << len << " bytes): " << msg << endl;
+   if( dlog.debugging(Debug::INFO) )
+       dlog[Debug::INFO] << "(send): data(" << len << " bytes): " << msg << endl;
 
     try
     {
@@ -1527,7 +1530,8 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
     }
     catch( Exception& ex ) // SystemError
     {
-        dcrit << "(send): " << ex << endl;
+       if( dlog.debugging(Debug::CRIT) )
+           dlog[Debug::CRIT] << "(send): " << ex << endl;
         return erHardwareError;
     }
 
