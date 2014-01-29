@@ -1484,7 +1484,7 @@ ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessa
             (*dlog)[Debug::WARN] << "(replySetDateTime): settimeofday err: " << strerror(errno) << endl;
     }
     else if( dlog && dlog->is_warn() )
-        (*dlog)[Debug::WARN] << "(replySetDateTime): gettimeofday err: " << strerror(errno) << endl;
+        (*dlog).warn() << "(replySetDateTime): gettimeofday err: " << strerror(errno) << endl;
     
     return ModbusRTU::erOperationFailed;
 }                
@@ -1501,13 +1501,13 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
 
     if( msg.len > MAXLENPACKET + szModbusHeader )
     {
-        dlog.warn() << "(send): длина пакета больше разрешённой..." << endl;
+        dwarn << "(send): длина пакета больше разрешённой..." << endl;
         return erPacketTooLong;
     }
 
     if( tmProcessing.checkTime() )
     {
-        dlog.warn() << "(send): reply timeout(" << tmProcessing.getInterval() << ")...!!!" << endl;
+        dwarn << "(send): reply timeout(" << tmProcessing.getInterval() << ")...!!!" << endl;
         return erTimeOut;
     }
 
@@ -1518,9 +1518,8 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
         len -= szCRC;
     }
 
-//    printf("send to %02x type=%d size=%d\n",m.dest,(m.type&TypeMask),slen);
-    if( dlog.is_info() )
-        dlog.info() << "(send): data(" << len << " bytes): " << msg << endl;
+
+    dinfo << "(send): data(" << len << " bytes): " << msg << endl;
 
     try
     {
@@ -1528,7 +1527,7 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
     }
     catch( Exception& ex ) // SystemError
     {
-        dlog.crit() << "(send): " << ex << endl;
+        dcrit << "(send): " << ex << endl;
         return erHardwareError;
     }
 
