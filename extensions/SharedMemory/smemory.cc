@@ -32,12 +32,12 @@ int main(int argc, const char **argv)
         if( !shm )
             return 1;
 
-        UniSetActivator act;
+        UniSetActivator* act = UniSetActivator::Instance();
 
-        act.addObject(static_cast<class UniSetObject*>(shm));
+        act->addObject(static_cast<class UniSetObject*>(shm));
         SystemMessage sm(SystemMessage::StartUp);
-        act.broadcast( sm.transport_msg() );
-        act.run(false);
+        act->broadcast( sm.transport_msg() );
+        act->run(false);
 
 //        pause();    // пауза, чтобы дочерние потоки успели завершить работу
         return 0;

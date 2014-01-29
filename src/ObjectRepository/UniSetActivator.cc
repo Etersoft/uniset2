@@ -43,7 +43,7 @@ using namespace std;
      Завершение работы организовано следующим образом.
     Имеется глобальный указатель gActivator (т.к. активатор в системе должен быть только один).
     Он заказывает на себя все сигналы связанные с завершением работы.
-    
+
     В качестве обработчика сигналов регистрируется UniSetActivator::terminated( int signo ).
     В этом обработчике происходит вызов UniSetActivator::oaDestroy(int signo) для фактического
     завершения работы и заказывается сигнал SIG_ALRM на время TERMINATE_TIMEOUT,
@@ -74,8 +74,29 @@ ost::AtomicCounter procterm = 0;
 ost::AtomicCounter doneterm = 0;
 
 // PassiveTimer termtmr;
-// ------------------------------------------------------------------------------------------
-UniSetActivator::UniSetActivator( ObjectId id ):
+// ---------------------------------------------------------------------------
+UniSetActivator* UniSetActivator::inst=0;
+// ---------------------------------------------------------------------------
+UniSetActivator* UniSetActivator::Instance( const UniSetTypes::ObjectId id )
+{
+    if(inst==0)
+       inst = new UniSetActivator(id);
+
+    return inst;
+}
+
+// ---------------------------------------------------------------------------
+
+void UniSetActivator::Destroy()
+{
+    if(inst)
+        delete inst;
+
+    inst=0;
+}
+
+// ---------------------------------------------------------------------------
+UniSetActivator::UniSetActivator( const ObjectId id ):
 UniSetManager(id),
 orbthr(0),
 omDestroy(false),

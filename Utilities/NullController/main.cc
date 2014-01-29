@@ -71,9 +71,9 @@ int main(int argc, char** argv)
         bool dbDumping = conf->getArgInt("--dbDumping");
 
         NullController nc(ID,askfile,s_field,s_fvalue,c_field,c_fvalue,dbDumping);
-        UniSetActivator act;
-        act.addObject(static_cast<class UniSetObject*>(&nc));
-        act.run(false);
+        UniSetActivator* act = UniSetActivator::Instance();
+        act->addObject(static_cast<class UniSetObject*>(&nc));
+        act->run(false);
         return 0;
     }
     catch(Exception& ex)

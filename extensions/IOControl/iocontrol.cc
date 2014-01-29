@@ -52,17 +52,17 @@ int main(int argc, const char **argv)
             return 1;
         }
 
-        UniSetActivator act;
-        act.addObject(static_cast<class UniSetObject*>(ic));
+        UniSetActivator* act = UniSetActivator::Instance();
+        act->addObject(static_cast<class UniSetObject*>(ic));
 
         SystemMessage sm(SystemMessage::StartUp);
-        act.broadcast( sm.transport_msg() );
+        act->broadcast( sm.transport_msg() );
 
         ulog << "\n\n\n";
         ulog << "(main): -------------- IOControl START -------------------------\n\n";
         dlog << "\n\n\n";
         dlog << "(main): -------------- IOControl START -------------------------\n\n";
-        act.run(true);
+        act->run(true);
         msleep(500);
         ic->execute();
         return 0;

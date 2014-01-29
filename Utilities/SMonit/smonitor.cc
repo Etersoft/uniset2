@@ -33,13 +33,13 @@ int main( int argc, const char **argv )
             return 0;
         }
 
-        UniSetActivator act;
+        UniSetActivator* act = UniSetActivator::Instance();
         SMonitor tp(ID);
-        act.addObject(&tp);
+        act->addObject(&tp);
 
         SystemMessage sm(SystemMessage::StartUp);
-        act.broadcast( sm.transport_msg() );
-        act.run(false);
+        act->broadcast( sm.transport_msg() );
+        act->run(false);
         return 0;
     }
     catch( Exception& ex )

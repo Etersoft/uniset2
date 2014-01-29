@@ -70,17 +70,17 @@ int main(int argc, const char **argv)
 
         PassiveLProcessor plc(schema,ID,shmID);
 
-        UniSetActivator act;
-        act.addObject(static_cast<class UniSetObject*>(&plc));
+        UniSetActivator* act = UniSetActivator::Instance();
+        act->addObject(static_cast<class UniSetObject*>(&plc));
 
         SystemMessage sm(SystemMessage::StartUp);
-        act.broadcast( sm.transport_msg() );
+        act->broadcast( sm.transport_msg() );
 
         ulog << "\n\n\n";
         ulog << "(main): -------------- IOControl START -------------------------\n\n";
         dlog << "\n\n\n";
         dlog << "(main): -------------- IOControl START -------------------------\n\n";
-        act.run(false);
+        act->run(false);
         return 0;
     }
     catch( LogicException& ex )

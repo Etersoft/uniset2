@@ -46,12 +46,12 @@ int main(int argc, const char **argv)
         if( !shm )
             return 1;
 
-        UniSetActivator act;
+        UniSetActivator* act = UniSetActivator::Instance();
 
-        act.addObject(static_cast<class UniSetObject*>(shm));
+        act->addObject(static_cast<class UniSetObject*>(shm));
         SystemMessage sm(SystemMessage::StartUp);
-        act.broadcast( sm.transport_msg() );
-        act.run(true);
+        act->broadcast( sm.transport_msg() );
+        act->run(true);
         shm->execute();
         while( waitpid(-1, 0, 0) > 0 );
         return 0;

@@ -22,19 +22,7 @@ int main(int argc, const char **argv)
         }
 
         uniset_init(argc,argv,"configure.xml");
-/*
-        UInterface ui;
-        IDList lst;
-        lst.add(1);
-        lst.add(2);
-        lst.add(3);
-        lst.add(5);
-        lst.add(33);
-        IOController_i::ASensorInfoSeq_var seq = ui.getSensorSeq(lst);
-        int size = seq->length();
-        for(int i=0; i<size; i++)
-            cout << "id=" << seq[i].si.id << " val=" << seq[i].value << endl;
-*/
+
         bool fullname = false;
         if( findArgParam("--fullname",conf->getArgc(),conf->getArgv()) != -1 )
             fullname = true;

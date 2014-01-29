@@ -81,13 +81,13 @@ int main( int argc, const char** argv )
 		obj.mylog.logFile( logname.c_str() );
 
 		</xsl:if>
-		
-		UniSetActivator act;
-		act.addObject(static_cast&lt;class UniSetObject*&gt;(&amp;obj));
+
+	UniSetActivator* act = UniSetActivator::Instance();
+		act-&gt;addObject(static_cast&lt;class UniSetObject*&gt;(&amp;obj));
 
 		SystemMessage sm(SystemMessage::StartUp); 
-		act.broadcast( sm.transport_msg() );
-		act.run(false);
+		act-&gt;broadcast( sm.transport_msg() );
+		act-&gt;run(false);
 		pause();	// пауза, чтобы дочерние потоки успели завершить работ
 	}
 	catch(Exception&amp; ex)
