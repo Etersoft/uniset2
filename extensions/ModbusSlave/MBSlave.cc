@@ -66,6 +66,12 @@ prefix(prefix)
     respond_id = conf->getSensorID(conf->getArgParam("--" + prefix + "-respond-id",it.getProp("respond_id")));
     respond_invert = conf->getArgInt("--" + prefix + "-respond-invert",it.getProp("respond_invert"));
 
+    timeout_t reply_tout = conf->getArgInt("--" + prefix + "-reply-timeout",it.getProp("replyTimeout"));
+    if( reply_tout == 0 )
+        reply_tout = 3000;
+
+    timeout_t aftersend_pause = conf->getArgInt("--" + prefix + "-aftersend-pause",it.getProp("afterSendPause"));
+
     string stype = conf->getArgParam("--" + prefix + "-type",it.getProp("type"));
 
     if( stype == "RTU" )
@@ -85,8 +91,8 @@ prefix(prefix)
         ModbusRTUSlaveSlot* rs = new ModbusRTUSlaveSlot(dev,use485F,transmitCtl);
         rs->setSpeed(speed);
         rs->setRecvTimeout(2000);
-//        rs->setAfterSendPause(afterSend);
-//        rs->setReplyTimeout(replyTimeout);
+        rs->setAfterSendPause(aftersend_pause);
+        rs->setReplyTimeout(reply_tout);
         rs->setLog(dlog);
 
         mbslot = rs;
@@ -107,9 +113,13 @@ prefix(prefix)
                 << " inet=" << iaddr << " port=" << port << endl;
 
         ost::InetAddress ia(iaddr.c_str());
-        mbslot    = new ModbusTCPServerSlot(ia,port);
-        thr = new ThreadCreator<MBSlave>(this,&MBSlave::execute_tcp);
+        ModbusTCPServerSlot* mbtcp = new ModbusTCPServerSlot(ia,port);
 
+        mbtcp->setAfterSendPause(aftersend_pause);
+        mbtcp->setReplyTimeout(reply_tout);
+
+        mbslot = mbtcp;
+        thr = new ThreadCreator<MBSlave>(this,&MBSlave::execute_tcp);
         dinfo << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
     }
     else
@@ -857,9 +867,14 @@ void MBSlave::help_print( int argc, const char* const* argv )
     cout << "--prefix-initPause         - Задержка перед инициализацией (время на активизация процесса)" << endl;
     cout << "--prefix-force 1           - Читать данные из SM каждый раз, а не по изменению." << endl;
     cout << "--prefix-respond-id - respond sensor id" << endl;
-    cout << "--prefix-respond-invert [0|1] - invert respond logic" << endl;
-    cout << "--prefix-sm-ready-timeout - время на ожидание старта SM" << endl;
-    cout << "--prefix-timeout msec - timeout for check link" << endl;
+    cout << "--prefix-respond-invert [0|1]    - invert respond logic" << endl;
+    cout << "--prefix-sm-ready-timeout        - время на ожидание старта SM" << endl;
+    cout << "--prefix-timeout msec            - timeout for check link" << endl;
+    cout << "--prefix-after-send-pause msec   - принудительная пауза после посылки ответа. По умолчанию: 0" << endl;
+    cout << "--prefix-reply-timeout msec      - Контрольное время для формирования ответа. " << endl
+         << "                                   Если обработка запроса превысит это время, ответ не будет послан (timeout)." << endl
+         << "                                   По умолчанию: 3 сек" << endl;
+
     cout << "--prefix-allow-setdatetime - On set date and time (0x50) modbus function" << endl;
     cout << "--prefix-my-addr      - адрес текущего узла" << endl;
     cout << "--prefix-type [RTU|TCP] - modbus server type." << endl;
