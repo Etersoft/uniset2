@@ -132,20 +132,20 @@ class IONotifyController:
     public:
 
         IONotifyController(const std::string& name, const std::string& section, NCRestorer* dumper=0);
-        IONotifyController(UniSetTypes::ObjectId id, NCRestorer* dumper=0);
+        IONotifyController(const UniSetTypes::ObjectId id, NCRestorer* dumper=0);
 
         virtual ~IONotifyController();
 
         virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::ObjectType("IONotifyController"); }
-        virtual void askSensor(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
+        virtual void askSensor(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 
-        virtual void askThreshold(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci,
+        virtual void askThreshold(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci,
                                     UniSetTypes::ThresholdId tid,
                                     CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Boolean invert,
                                     UniversalIO::UIOCommand cmd );
 
-        virtual IONotifyController_i::ThresholdInfo getThresholdInfo( const IOController_i::SensorInfo& si, UniSetTypes::ThresholdId tid );
-        virtual IONotifyController_i::ThresholdList* getThresholds(const IOController_i::SensorInfo& si );
+        virtual IONotifyController_i::ThresholdInfo getThresholdInfo( const UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid );
+        virtual IONotifyController_i::ThresholdList* getThresholds(const UniSetTypes::ObjectId sid );
         virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList();
 
         virtual UniSetTypes::IDSeq* askSensorsSeq(const UniSetTypes::IDSeq& lst,
@@ -155,7 +155,7 @@ class IONotifyController:
 
         // функция для работы напрямую черех iterator (оптимизация)
         virtual void localSetValue( IOController::IOStateList::iterator& it,
-                                    const IOController_i::SensorInfo& si,
+                                    UniSetTypes::ObjectId sid,
                                     CORBA::Long value, UniSetTypes::ObjectId sup_id );
 
         // --------------------------------------------
@@ -263,27 +263,26 @@ class IONotifyController:
         bool myIOFilter(const USensorInfo& ai, CORBA::Long newvalue, UniSetTypes::ObjectId sup_id);
 
         //! посылка информации об изменении состояния датчика
-        virtual void send(ConsumerListInfo& lst, UniSetTypes::SensorMessage& sm);
+        virtual void send( ConsumerListInfo& lst, UniSetTypes::SensorMessage& sm );
 
         //! проверка срабатывания пороговых датчиков
-        virtual void checkThreshold( IOStateList::iterator& li,
-                                    const IOController_i::SensorInfo& si, bool send=true );
+        virtual void checkThreshold( IOStateList::iterator& li, const UniSetTypes::ObjectId sid, bool send=true );
 
         //! поиск информации о пороговом датчике
-        ThresholdExtList::iterator findThreshold( UniSetTypes::KeyType k, UniSetTypes::ThresholdId tid );
+        ThresholdExtList::iterator findThreshold( const UniSetTypes::ObjectId sid, const UniSetTypes::ThresholdId tid );
 
         //! сохранение информации об изменении состояния датчика в базу
-        virtual void loggingInfo(UniSetTypes::SensorMessage& sm);
+        virtual void loggingInfo( UniSetTypes::SensorMessage& sm );
 
         /*! сохранение списка заказчиков
             По умолчанию делает dump, если объявлен dumper.
         */
-        virtual void dumpOrdersList(const IOController_i::SensorInfo& si, const IONotifyController::ConsumerListInfo& lst);
+        virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerListInfo& lst );
 
         /*! сохранение списка заказчиков пороговых датчиков
             По умолчанию делает dump, если объявлен dumper.
         */
-        virtual void dumpThresholdList(const IOController_i::SensorInfo& si, const IONotifyController::ThresholdExtList& lst);
+        virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst );
 
         /*! чтение dump-файла */
         virtual void readDump();
@@ -291,9 +290,6 @@ class IONotifyController:
         NCRestorer* restorer;
 
         void onChangeUndefinedState( IOStateList::iterator& it, IOController* ic );
-
-//        UniSetTypes::uniset_rwmutex sig_mutex;
-//        ChangeSignal changeSignal;
 
     private:
         friend class NCRestorer;
@@ -303,14 +299,13 @@ class IONotifyController:
         bool removeConsumer(ConsumerListInfo& lst, const UniSetTypes::ConsumerInfo& cons );  //!< удалить потребителя сообщения
 
         //! обработка заказа
-        void ask(AskMap& askLst, const IOController_i::SensorInfo& si,
+        void ask(AskMap& askLst, const UniSetTypes::ObjectId sid,
                     const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 
          /*! добавить новый порог для датчика */
         bool addThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& cons);
         /*! удалить порог для датчика */
         bool removeThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci);
-
 
         AskMap askIOList; /*!< список потребителей по аналоговым датчикам */
         AskThresholdMap askTMap; /*!< список порогов по аналоговым датчикам */

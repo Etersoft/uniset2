@@ -281,7 +281,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         {
             new_argv[i] = "-ORBInitRef";
 
-            string name(oind->getRealNodeName(it->id));
+            string name(oind->getNodeName(it->id));
             ostringstream param;
             param << this << name;
             name = param.str();
@@ -513,12 +513,7 @@ void Configuration::initParameters()
 // -------------------------------------------------------------------------
 void Configuration::setLocalNode( const string& nodename )
 {
-    string virtnode = oind->getVirtualNodeName(nodename);
-	string nn(nodename);
-    if( virtnode.empty() )
-        nn = oind->mkFullNodeName(nodename,nodename);
-
-	localNode = oind->getIdByName(nn);
+    localNode = oind->getIdByName(nodename);
 
     if( localNode == DefaultObjectId )
     {
@@ -528,7 +523,7 @@ void Configuration::setLocalNode( const string& nodename )
         throw Exception(err.str());
     }
 
-    localNodeName = oind->getRealNodeName(nn);
+    localNodeName = nodename;
     oind->initLocalNode(localNode);
 }
 // -------------------------------------------------------------------------
@@ -620,9 +615,9 @@ void Configuration::createNodesList()
         }
 
         string nodename(sname);
-        string virtnode = oind->getVirtualNodeName(nodename);
-        if( virtnode.empty() )
-            nodename = oind->mkFullNodeName(nodename,nodename);
+//         string virtnode = oind->getVirtualNodeName(nodename);
+//         if( virtnode.empty() )
+//             nodename = oind->mkFullNodeName(nodename,nodename);
 
         NodeInfo ninf;
         ninf.id = oind->getIdByName(nodename);
@@ -877,14 +872,12 @@ ObjectId Configuration::getServiceID( const std::string& name )
     return oind->getIdByName(getServicesSection()+"/"+name);
 }
 // -------------------------------------------------------------------------
-UniSetTypes::ObjectId Configuration::getNodeID( const std::string& name, const std::string& alias )
+UniSetTypes::ObjectId Configuration::getNodeID( const std::string& name )
 {
     if( name.empty() )
         return DefaultObjectId;
 
-	string a( (alias.empty() ? name : alias ) );
-
-    return oind->getIdByName( oind->mkFullNodeName(name,a) );
+    return oind->getNodeId( name );
 }
 
 // -------------------------------------------------------------------------

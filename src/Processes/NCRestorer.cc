@@ -44,13 +44,13 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 {
     UniSetTypes::KeyType k( key(inf.si.id,inf.si.node) );
 
-    // Проверка зарегистрирован-ли данный датчик    
+    // Проверка зарегистрирован-ли данный датчик
     // если такого дискретного датчика нет, то здесь сработает исключение...
     if( !force )
     {
         try
         {
-            ic->getIOType(inf.si);
+            ic->getIOType(inf.si.id);
         }
         catch(...)
         {
@@ -66,7 +66,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 
                 default:
                     ucrit << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА! -> "
-                                    << conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
+                                    << conf->oind->getNameById(inf.si.id) << endl;
                     return;
                 break;
 
@@ -85,7 +85,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
 
         default:
             ucrit << ic->getName() << "(NCRestorer::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА!-> "
-                            << conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
+                            << conf->oind->getNameById(inf.si.id) << endl;
         break;
     }
 }
@@ -98,7 +98,7 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
     {
         try
         {
-            ic->getIOType(inf.si);
+            ic->getIOType(inf.si.id);
         }
         catch(...)
         {
@@ -162,7 +162,7 @@ void NCRestorer::init_depends_signals( IONotifyController* ic )
                 << " dep_name=(" << it->second.d_si.id << ")'" << conf->oind->getMapName(it->second.d_si.id) << "'"
                 << endl;
 
-        IOController::ChangeSignal s = ic->signal_change_value(it->second.d_si);
+        IOController::ChangeSignal s = ic->signal_change_value(it->second.d_si.id);
         s.connect( sigc::mem_fun( &it->second, &IOController::USensorInfo::checkDepend) );
 	}
 }

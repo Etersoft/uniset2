@@ -41,11 +41,11 @@ class ObjectIndex_XML:
         ObjectIndex_XML(UniXML& xml, int minSize=1000 );
         virtual ~ObjectIndex_XML();
 
-        virtual const UniSetTypes::ObjectInfo* getObjectInfo(const ObjectId);
+        virtual const UniSetTypes::ObjectInfo* getObjectInfo( const ObjectId );
         virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string& name );
-        virtual ObjectId getIdByName(const std::string& name);
-        virtual std::string getMapName(const ObjectId id);
-        virtual std::string getTextName(const ObjectId id);
+        virtual ObjectId getIdByName( const std::string& name );
+        virtual std::string getMapName( const ObjectId id );
+        virtual std::string getTextName( const ObjectId id );
 
         virtual std::ostream& printMap(std::ostream& os);
         friend std::ostream& operator<<(std::ostream& os, ObjectIndex_XML& oi );
@@ -59,7 +59,6 @@ class ObjectIndex_XML:
         typedef std::map<std::string, ObjectId> MapObjectKey;
         MapObjectKey mok; // для обратного писка
         std::vector<ObjectInfo> omap; // для прямого поиска
-
 };
 // -----------------------------------------------------------------------------------------
 }    // end of namespace

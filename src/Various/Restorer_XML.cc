@@ -94,13 +94,7 @@ bool Restorer_XML::getConsumerInfo( UniXML_iterator& it,
 
     string cnodename(it.getProp("node"));
     if( !cnodename.empty() )
-    {
-        string virtnode = conf->oind->getVirtualNodeName(cnodename);
-        if( virtnode.empty() )
-            cnodename = conf->oind->mkFullNodeName(cnodename,cnodename);
-
         cnode = conf->oind->getIdByName(cnodename);
-    }
     else
         cnode = conf->getLocalNode();
 

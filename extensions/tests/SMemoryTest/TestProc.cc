@@ -46,7 +46,7 @@ void TestProc::sysCommand( const UniSetTypes::SystemMessage* sm )
         askTimer(tmLogControl,checkLogTime);
 
         // В начальный момент времени блокирующий датчик =0, поэтому d2_check_s должен быть равен depend_off_value (-50).
-       cerr << myname << "(startup): check init depend: " << ( getValue(d2_check_s) == -50 ? "OK" : "FAIL" ) << endl;
+       cerr << myname << "(startup): check init depend: " << ( getValue(d2_check_s) == -50 ? "ok" : "FAIL" ) << endl;
     }
 }
 // -----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ void TestProc::sensorInfo( const SensorMessage *sm )
     }
     else if( sm->id == check_undef_s )
     {
-        cerr << myname << "(sensorInfo): CHECK UNDEFINED STATE ==> " << (sm->undefined==undef ? "OK" : "FAIL") << endl;
+        cerr << myname << "(sensorInfo): CHECK UNDEFINED STATE ==> " << (sm->undefined==undef ? "ok" : "FAIL") << endl;
     }
 }
 // -----------------------------------------------------------------------------
@@ -118,13 +118,13 @@ void TestProc::test_depend()
     setValue(depend_c,0);
     setValue(set_d1_check_s,test_val);
     setValue(set_d2_check_s,test_val);
-    cerr << myname << ": check depend OFF: d1: " << ( getValue(d1_check_s) == 0 ? "OK" : "FAIL" ) << endl;
-    cerr << myname << ": check depend OFF: d2: " << ( getValue(d2_check_s) == -50 ? "OK" : "FAIL" ) << endl;
+    cerr << myname << ": check depend OFF: d1: " << ( getValue(d1_check_s) == 0 ? "ok" : "FAIL" ) << endl;
+    cerr << myname << ": check depend OFF: d2: " << ( getValue(d2_check_s) == -50 ? "ok" : "FAIL" ) << endl;
     
     // set depend 1
     setValue(depend_c,1);
-    cerr << myname << ": check depend ON: d1: " << ( getValue(d1_check_s) == test_val ? "OK" : "FAIL" ) << endl;
-    cerr << myname << ": check depend ON: d2: " << ( getValue(d2_check_s) == test_val ? "OK" : "FAIL" ) << endl;
+    cerr << myname << ": check depend ON: d1: " << ( getValue(d1_check_s) == test_val ? "ok" : "FAIL" ) << endl;
+    cerr << myname << ": check depend ON: d2: " << ( getValue(d2_check_s) == test_val ? "ok" : "FAIL" ) << endl;
 }
 // -----------------------------------------------------------------------------
 void TestProc::test_undefined_state()
@@ -145,10 +145,10 @@ void TestProc::test_thresholds()
     cerr << myname << ": Check thresholds..." << endl;
 
     setValue(t_set_c,0);
-    cerr << myname << ": check threshold OFF value: " << ( getValue(t_check_s) == 0 ? "OK" : "FAIL" ) << endl;
+    cerr << myname << ": check threshold OFF value: " << ( getValue(t_check_s) == 0 ? "ok" : "FAIL" ) << endl;
 
     setValue(t_set_c,378);
-    cerr << myname << ": check threshold ON value: " << ( getValue(t_check_s) == 1 ? "OK" : "FAIL" ) << endl;
+    cerr << myname << ": check threshold ON value: " << ( getValue(t_check_s) == 1 ? "ok" : "FAIL" ) << endl;
     
     cerr << myname << ": ask threshold and check.. " << endl;
 
@@ -159,10 +159,10 @@ void TestProc::test_thresholds()
         ui.askThreshold( t_set_c, tid, UniversalIO::UIONotify, 10, 20 );
 
         IONotifyController_i::ThresholdInfo ti = ui.getThresholdInfo(t_set_c,tid);
-        cerr << myname << ": ask OFF threshold: " << ( ti.state == IONotifyController_i::NormalThreshold  ? "OK" : "FAIL" ) << endl;
+        cerr << myname << ": ask OFF threshold: " << ( ti.state == IONotifyController_i::NormalThreshold  ? "ok" : "FAIL" ) << endl;
         setValue(t_set_c, 25);
         ti = ui.getThresholdInfo(t_set_c,tid);
-        cerr << myname << ": ask ON threshold: " << ( ti.state == IONotifyController_i::HiThreshold  ? "OK" : "FAIL" ) << endl;
+        cerr << myname << ": ask ON threshold: " << ( ti.state == IONotifyController_i::HiThreshold  ? "ok" : "FAIL" ) << endl;
     }
     catch( Exception& ex )
     {

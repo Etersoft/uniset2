@@ -217,21 +217,21 @@
        filter       - поле используемое в качестве фильтра, определяющего датчики
                       входящие в данную группу (историю).
     \endcode
-       
+
        Каждый датчик может входить в любое количество групп (историй).
-       
+
        Механизм фукнционирует по следующей логике:
-       
+
        При запуске происходит считывание параметров секции <History>
        и заполнение соответствующих структур хранения. При этом происходит
-       проход по секции <sensors> и если встречается "не пустое" поле заданное 
+       проход по секции <sensors> и если встречается "не пустое" поле заданное
        в качестве фильтра (\b filter), датчик включается в соответствующую историю.
-       
+
        Далее каждые \b savetime мсек происходит запись очередной точки истории.
        При этом в конец буфера добавляется новое (текущее) значение датчика,
        а одно устаревшее удаляется, тем самым всегда поддерживается буфер не более
        \b size точек.
-       
+
        Помимо этого в фукнциях изменения датчиков  (saveXXX, setXXX) отслеживается
        изменение состояния "детонаторов". Если срабатывает заданое условие для
        "сброса" дампа, инициируется сигнал, в который передаётся идентификатор истории
@@ -251,13 +251,12 @@
        (реализованное в базовом классе IONotifyController).
        Параметр командной строки \b --db-logging 1 позволяет включить этот механизм
        (в свою очередь работа с БД требует отдельной настройки).
-   
 */
 class SharedMemory:
     public IONotifyController_LT
 {
     public:
-        SharedMemory( UniSetTypes::ObjectId id, std::string datafile, std::string confname="" );
+        SharedMemory( UniSetTypes::ObjectId id, const std::string& datafile, const std::string& confname="" );
         virtual ~SharedMemory();
 
         /*! глобальная функция для инициализации объекта */
@@ -417,9 +416,9 @@ class SharedMemory:
         int evntPause;
         int activateTimeout;
 
-        virtual void loggingInfo(UniSetTypes::SensorMessage& sm);
-        virtual void dumpOrdersList(const IOController_i::SensorInfo& si, const IONotifyController::ConsumerList& lst){}
-        virtual void dumpThresholdList(const IOController_i::SensorInfo& si, const IONotifyController::ThresholdExtList& lst){}
+        virtual void loggingInfo( UniSetTypes::SensorMessage& sm );
+        virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerList& lst ){}
+        virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst ){}
 
         bool dblogging;
 
@@ -434,7 +433,7 @@ class SharedMemory:
         bool isActivated();
 
         IOStateList::iterator itPulsar;
-        IOController_i::SensorInfo siPulsar;
+        UniSetTypes::ObjectId sidPulsar;
         int msecPulsar;
 
     private:

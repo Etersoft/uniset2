@@ -62,24 +62,24 @@ interface IOController_i : UniSetManager_i
         UniSetTypes::ObjectId node;  /*!< узел на котором он находится */
     };
 
-    long getValue(in SensorInfo si) raises(NameNotFound,Undefined);
-    void setValue(in SensorInfo si, in long value,
+    long getValue(in UniSetTypes::ObjectId sid) raises(NameNotFound,Undefined);
+    void setValue(in UniSetTypes::ObjectId sid, in long value,
                     in UniSetTypes::ObjectId sup_id) raises(NameNotFound);
 
     // установка неопределённого состояния
     // (пока работает только для аналоговых датчиков)
-    void setUndefinedState(in SensorInfo si, in boolean undefined, in UniSetTypes::ObjectId sup_id )
+    void setUndefinedState(in UniSetTypes::ObjectId sid, in boolean undefined, in UniSetTypes::ObjectId sup_id )
                             raises(NameNotFound);
 
     // fast version (не вырабатывает исключения)
-    oneway void fastSetValue(in SensorInfo si, in long value, in UniSetTypes::ObjectId sup_id);
+    oneway void fastSetValue(in UniSetTypes::ObjectId sid, in long value, in UniSetTypes::ObjectId sup_id);
 
-    UniversalIO::IOType getIOType(in SensorInfo si) raises(NameNotFound);
+    UniversalIO::IOType getIOType(in UniSetTypes::ObjectId sid) raises(NameNotFound);
 
     // --- Интерфейс для конфигурирования ---
 
     /*! Получение неколиброванного значения */
-    long getRawValue( in SensorInfo si ) raises(NameNotFound);
+    long getRawValue( in UniSetTypes::ObjectId sid ) raises(NameNotFound);
 
     struct CalibrateInfo
     {
@@ -90,8 +90,8 @@ interface IOController_i : UniSetManager_i
         short precision;  /*!< точность */
     };
 
-    void calibrate( in SensorInfo si, in CalibrateInfo ci, in UniSetTypes::ObjectId adminId ) raises(NameNotFound);
-    CalibrateInfo getCalibrateInfo( in SensorInfo si ) raises(NameNotFound);
+    void calibrate( in UniSetTypes::ObjectId sid, in CalibrateInfo ci, in UniSetTypes::ObjectId adminId ) raises(NameNotFound);
+    CalibrateInfo getCalibrateInfo( in UniSetTypes::ObjectId sid ) raises(NameNotFound);
 
     // --- Интерфес получения информации о всех датчиках ---
     /*! Информация об аналоговом датчике */
@@ -114,7 +114,7 @@ interface IOController_i : UniSetManager_i
     typedef sequence<SensorIOInfo> SensorInfoSeq;
 
     SensorInfoSeq getSensorsMap();
-    SensorIOInfo getSensorIOInfo( in SensorInfo si ) raises(NameNotFound);
+    SensorIOInfo getSensorIOInfo( in UniSetTypes::ObjectId sid ) raises(NameNotFound);
 
     // -- Функции работы со списком датчиков --
 
@@ -146,7 +146,7 @@ interface IOController_i : UniSetManager_i
         long tv_usec;   /*!< время последнего изменения датчика, мксек (gettimeofday) */
     };
 
-    ShortIOInfo getChangedTime(in SensorInfo si) raises(NameNotFound);
+    ShortIOInfo getChangedTime( in UniSetTypes::ObjectId sid ) raises(NameNotFound);
 
 
     /*! Информация о дискретном датчике */
@@ -183,7 +183,7 @@ interface IONotifyController_i : IOController_i
      *    Позволяет заказывать как дискретные так и аналоговые датчики
      * \sa UniversalIO::UniversalIOController::askSensor()
     */
-    void askSensor(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
+    void askSensor(in UniSetTypes::ObjectId sid, in UniSetTypes::ConsumerInfo ci, in UniversalIO::UIOCommand cmd ) raises(NameNotFound,IOBadParam);
 
     /*!
         Заказ сразу списка объектов.
@@ -225,7 +225,7 @@ interface IONotifyController_i : IOController_i
      * Если invert=false, порог срабатывает при условии >= hilimit и отпускается при <= lowlimit
      * Если invert=true, порог срабатывает при условии <= lowlimit и отпускается при <= hilimit
     */
-    void askThreshold(in SensorInfo si, in UniSetTypes::ConsumerInfo ci, in UniSetTypes::ThresholdId tid,
+    void askThreshold(in UniSetTypes::ObjectId sid, in UniSetTypes::ConsumerInfo ci, in UniSetTypes::ThresholdId tid,
                         in long lowLimit, in long hiLimit, in boolean invert,
                         in UniversalIO::UIOCommand cmd ) raises(NameNotFound, IOBadParam, BadRange);
 
@@ -233,7 +233,7 @@ interface IONotifyController_i : IOController_i
     /*! Получение информации о пороге
      *  Т.к. пороги могут иметь одинаковый tid для разных аналоговых датчиков, то передаётся и SensorInfo
     */
-    ThresholdInfo getThresholdInfo( in SensorInfo si, in UniSetTypes::ThresholdId tid ) raises(NameNotFound);
+    ThresholdInfo getThresholdInfo( in UniSetTypes::ObjectId sid, in UniSetTypes::ThresholdId tid ) raises(NameNotFound);
 
     struct ThresholdList
     {
@@ -246,7 +246,7 @@ interface IONotifyController_i : IOController_i
     typedef sequence<ThresholdList> ThresholdsListSeq;
 
     /*! получить список порогов для датчка "si" */
-    ThresholdList getThresholds( in SensorInfo si ) raises(NameNotFound);
+    ThresholdList getThresholds( in UniSetTypes::ObjectId sid ) raises(NameNotFound);
 
     /*! получить список ВСЕХ датчиков по которым созданы пороги */
     ThresholdsListSeq getThresholdsList();

@@ -195,18 +195,14 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string& sec )
         }
 
         string name(it.getProp("name"));
-        string alias(it.getProp("alias"));
-        if( alias.empty() )
-            alias = name;
 
-        string nodename = mkFullNodeName(name,alias);
-        inf.repName = new char[nodename.size()+1];
-        strcpy( inf.repName, nodename.c_str() );
+        inf.repName = new char[name.size()+1];
+        strcpy( inf.repName, name.c_str() );
 
         // textname
         string textname(xml.getProp(it,"textname"));
         if( textname.empty() )
-            textname = nodename;
+            textname = name;
 
         inf.textName = new char[textname.size()+1];
         strcpy( inf.textName, textname.c_str() );
@@ -214,7 +210,7 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string& sec )
         inf.data = (void*)(xmlNode*)(it);
 
         omap.insert(MapObjects::value_type(inf.id,inf));    // omap[inf.id] = inf;
-        mok.insert(MapObjectKey::value_type(nodename,inf.id)); // mok[name] = inf.id;
+        mok.insert(MapObjectKey::value_type(name,inf.id)); // mok[name] = inf.id;
     }
 }
 // ------------------------------------------------------------------------------------------

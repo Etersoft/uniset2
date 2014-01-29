@@ -118,7 +118,7 @@ namespace UniSetTypes
         UniSetTypes::ObjectId getControllerID( const std::string& name );
         UniSetTypes::ObjectId getObjectID( const std::string& name );
         UniSetTypes::ObjectId getServiceID( const std::string& name );
-        UniSetTypes::ObjectId getNodeID( const std::string& name, const std::string& alias="" );
+        UniSetTypes::ObjectId getNodeID( const std::string& name );
 
         inline const std::string getConfFileName() const { return fileConfName; }
         inline std::string getImagesDir() const { return imagesDir; }    // временно

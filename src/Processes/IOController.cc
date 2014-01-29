@@ -80,14 +80,13 @@ bool IOController::disactivateObject()
 void IOController::sensorsUnregistration()
 {
     // Разрегистрируем аналоговые датчики
-    for( IOStateList::iterator li = ioList.begin();
-         li != ioList.end(); ++li)
+    for( IOStateList::iterator li = ioList.begin(); li!=ioList.end(); ++li)
     {
         try
         {
-            ioUnRegistration( li->second.si );
+            ioUnRegistration( li->second.si.id );
         }
-        catch(Exception& ex)
+        catch( Exception& ex )
         {
             ucrit << myname << "(sensorsUnregistration): "<< ex << endl;
         }
@@ -122,17 +121,16 @@ void IOController::activateInit()
     }
 }
 // ------------------------------------------------------------------------------------------
-CORBA::Long IOController::getValue( const IOController_i::SensorInfo& si )
+CORBA::Long IOController::getValue( UniSetTypes::ObjectId sid )
 {
     IOStateList::iterator li(ioList.end());
-    return localGetValue(li,si);
+    return localGetValue(li,sid);
 }
 // ------------------------------------------------------------------------------------------
-long IOController::localGetValue( IOController::IOStateList::iterator& li,
-                                    const IOController_i::SensorInfo& si )
+long IOController::localGetValue( IOController::IOStateList::iterator& li, const UniSetTypes::ObjectId sid )
 {
     if( li == ioList.end() )
-        li = ioList.find( key(si.id,si.node) );
+        li = ioList.find(sid);
 
     if( li!=ioList.end() )
     {
@@ -145,33 +143,31 @@ long IOController::localGetValue( IOController::IOStateList::iterator& li,
 
     // -------------
     ostringstream err;
-    err << myname << "(localGetValue): Not found sensor (" << si.id << ":" << si.node << ") "
-        << conf->oind->getNameById(si.id);
+    err << myname << "(localGetValue): Not found sensor (" << sid << ") "
+        << conf->oind->getNameById(sid);
 
     uinfo << err.str() << endl;
     throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ------------------------------------------------------------------------------------------
-void IOController::setUndefinedState(const IOController_i::SensorInfo& si, 
-                                    CORBA::Boolean undefined, UniSetTypes::ObjectId sup_id )
+void IOController::setUndefinedState(UniSetTypes::ObjectId sid, CORBA::Boolean undefined, UniSetTypes::ObjectId sup_id )
 {
     IOController::IOStateList::iterator li(ioList.end());
-    localSetUndefinedState( li,undefined,si );
+    localSetUndefinedState( li,undefined, sid );
 }
 // -----------------------------------------------------------------------------
 void IOController::localSetUndefinedState( IOStateList::iterator& li,
-                                            bool undefined,    const IOController_i::SensorInfo& si )
+                                            bool undefined, const UniSetTypes::ObjectId sid )
 {
     // сохранение текущего состояния
     if( li == ioList.end() )
-        li = ioList.find(key(si.id, si.node));
+        li = ioList.find(sid);
 
     if( li==ioList.end() )
     {
         ostringstream err;
-        err << myname << "(localSetUndefined): Unknown sensor (" << si.id << ":" << si.node << ")"
-            << "name: " << conf->oind->getNameById(si.id)
-            << "node: " << conf->oind->getMapName(si.node);
+        err << myname << "(localSetUndefined): Unknown sensor (" << sid << ")"
+            << "name: " << conf->oind->getNameById(sid);
         throw IOController_i::NameNotFound(err.str().c_str());
     }
 
@@ -227,40 +223,38 @@ void IOController::localSetUndefinedState( IOStateList::iterator& li,
     catch(...){}
 }
 // ------------------------------------------------------------------------------------------
-void IOController::fastSetValue( const IOController_i::SensorInfo& si, CORBA::Long value, UniSetTypes::ObjectId sup_id )
+void IOController::fastSetValue( UniSetTypes::ObjectId sid, CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
     try
     {
         IOController::IOStateList::iterator li(ioList.end());
-        localSetValue( li, si, value, sup_id );
+        localSetValue( li, sid, value, sup_id );
     }
     catch(...){}
 }
 // ------------------------------------------------------------------------------------------
-void IOController::setValue( const IOController_i::SensorInfo& si, CORBA::Long value,
-                                UniSetTypes::ObjectId sup_id )
+void IOController::setValue( UniSetTypes::ObjectId sid, CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
     IOController::IOStateList::iterator li(ioList.end());
-    localSetValue( li, si, value, sup_id );
+    localSetValue( li, sid, value, sup_id );
 }
 // ------------------------------------------------------------------------------------------
 void IOController::localSetValue( IOController::IOStateList::iterator& li,
-                                    const IOController_i::SensorInfo& si,
-                                    CORBA::Long value, UniSetTypes::ObjectId sup_id )
+                                  UniSetTypes::ObjectId sid,
+                                  CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
     if( sup_id == UniSetTypes::DefaultObjectId )
         sup_id = getId();
 
     // сохранение текущего состояния
     if( li == ioList.end() )
-        li = ioList.find(key(si.id, si.node));
+        li = ioList.find(sid);
 
     if( li==ioList.end() )
     {
         ostringstream err;
-        err << myname << "(localSaveValue): Unknown sensor (" << si.id << ":" << si.node << ")"
-            << "name: " << conf->oind->getNameById(si.id)
-            << "node: " << conf->oind->getMapName(si.node);
+        err << myname << "(localSaveValue): Unknown sensor (" << sid << ")"
+            << "name: " << conf->oind->getNameById(sid);
         throw IOController_i::NameNotFound(err.str().c_str());
     }
 
@@ -275,9 +269,8 @@ void IOController::localSetValue( IOController::IOStateList::iterator& li,
 
         if( checkIOFilters(&li->second,value,sup_id) || blocked )
         {
-            uinfo << myname << ": save sensor value (" << si.id << ":" << si.node << ")"
-                    << " name: " << conf->oind->getNameById(si.id)
-                    << " node: " << conf->oind->getMapName(si.node)
+            uinfo << myname << ": save sensor value (" << sid << ")"
+                    << " name: " << conf->oind->getNameById(sid)
                     << " value="<< value << endl;
 
             long prev = li->second.value;
@@ -298,11 +291,11 @@ void IOController::localSetValue( IOController::IOStateList::iterator& li,
             // запоминаем время изменения
             struct timeval tm;
             struct timezone tz;
-            tm.tv_sec     = 0;
-            tm.tv_usec     = 0;
+            tm.tv_sec  = 0;
+            tm.tv_usec = 0;
             gettimeofday(&tm,&tz);
-            li->second.tv_sec     = tm.tv_sec;
-            li->second.tv_usec     = tm.tv_usec;
+            li->second.tv_sec  = tm.tv_sec;
+            li->second.tv_usec = tm.tv_usec;
         }
     }    // unlock
 
@@ -327,16 +320,14 @@ void IOController::localSetValue( IOController::IOStateList::iterator& li,
     catch(...){}
 }
 // ------------------------------------------------------------------------------------------
-IOType IOController::getIOType( const IOController_i::SensorInfo& si )
+IOType IOController::getIOType( UniSetTypes::ObjectId sid )
 {
-    UniSetTypes::KeyType k = key(si.id,si.node);
-
-    IOStateList::iterator ali = ioList.find(k);
+    IOStateList::iterator ali = ioList.find(sid);
     if( ali!=ioList.end() )
         return ali->second.type;
 
     ostringstream err;
-    err << myname << "(getIOType): датчик имя: " << conf->oind->getNameById(si.id) << " не найден";
+    err << myname << "(getIOType): датчик имя: " << conf->oind->getNameById(sid) << " не найден";
     throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ---------------------------------------------------------------------------
@@ -351,18 +342,16 @@ void IOController::ioRegistration( const USensorInfo& ainf, bool force )
         throw ResolveNameError(err.str().c_str());
     }
 
-    UniSetTypes::KeyType k = key(ainf.si.id, ainf.si.node);
     {    // lock
         uniset_rwmutex_wrlock lock(ioMutex);
         if( !force )
         {
-            IOStateList::iterator li = ioList.find(k);
+            IOStateList::iterator li = ioList.find(ainf.si.id);
             if( li!=ioList.end() )
             {
                 ostringstream err;
-                err << "Попытка повторной регистрации датчика("<< k << "). имя: "
-                    << conf->oind->getNameById(ainf.si.id)
-                    << " узел: " << conf->oind->getMapName(ainf.si.node);
+                err << "Попытка повторной регистрации датчика("<< ainf.si.id << "). имя: "
+                    << conf->oind->getNameById(ainf.si.id);
                 throw ObjectNameAlready(err.str().c_str());
             }
         }
@@ -371,15 +360,15 @@ void IOController::ioRegistration( const USensorInfo& ainf, bool force )
         // запоминаем начальное время
         struct timeval tm;
         struct timezone tz;
-        tm.tv_sec     = 0;
-        tm.tv_usec     = 0;
+        tm.tv_sec   = 0;
+        tm.tv_usec  = 0;
         gettimeofday(&tm,&tz);
-        ai.tv_sec     = tm.tv_sec;
-        ai.tv_usec     = tm.tv_usec;
-        ai.value     = ai.default_val;
+        ai.tv_sec   = tm.tv_sec;
+        ai.tv_usec  = tm.tv_usec;
+        ai.value    = ai.default_val;
 
         // более оптимальный способ(при условии вставки первый раз)
-        ioList.insert(IOStateList::value_type(k,ai));
+        ioList.insert(IOStateList::value_type(ainf.si.id,ai));
     }
 
     try
@@ -390,15 +379,15 @@ void IOController::ioRegistration( const USensorInfo& ainf, bool force )
             {
                 uinfo << myname
                         << "(ioRegistration): регистрирую "
-                        << conf->oind->getNameById(ainf.si.id, ainf.si.node) << endl;
+                        << conf->oind->getNameById(ainf.si.id) << endl;
 
-                ui.registered( ainf.si.id, ainf.si.node, getRef(), true );
+                ui.registered( ainf.si.id, getRef(), true );
                 return;
             }
             catch(ObjectNameAlready& ex )
             {
                 uwarn << myname << "(asRegistration): ЗАМЕНЯЮ СУЩЕСТВУЮЩИЙ ОБЪЕКТ (ObjectNameAlready)" << endl;
-                ui.unregister(ainf.si.id,ainf.si.node);
+                ui.unregister(ainf.si.id);
             }
         }
     }
@@ -412,9 +401,9 @@ void IOController::ioRegistration( const USensorInfo& ainf, bool force )
     }
 }
 // ---------------------------------------------------------------------------
-void IOController::ioUnRegistration( const IOController_i::SensorInfo& si )
+void IOController::ioUnRegistration( const UniSetTypes::ObjectId sid )
 {
-    ui.unregister( si.id, si.node );
+    ui.unregister(sid);
 }
 // ---------------------------------------------------------------------------
 void IOController::logging( UniSetTypes::SensorMessage& sm )
@@ -489,24 +478,18 @@ IOController_i::SensorInfoSeq* IOController::getSensorsMap()
     return res;
 }
 // --------------------------------------------------------------------------------------------------------------
-UniSetTypes::Message::Priority IOController::getMessagePriority(UniSetTypes::KeyType k, UniversalIO::IOType type )
+UniSetTypes::Message::Priority IOController::getPriority( const UniSetTypes::ObjectId sid )
 {
-    IOStateList::iterator it = ioList.find(k);
+    IOStateList::iterator it = ioList.find(sid);
     if( it!=ioList.end() )
         return (UniSetTypes::Message::Priority)it->second.priority;
 
     return UniSetTypes::Message::Medium; // ??
 }
 // --------------------------------------------------------------------------------------------------------------
-UniSetTypes::Message::Priority IOController::getPriority(const IOController_i::SensorInfo& si, 
-                                                            UniversalIO::IOType type)
+IOController_i::SensorIOInfo IOController::getSensorIOInfo( const UniSetTypes::ObjectId sid )
 {
-    return getMessagePriority(key(si.id,si.node), type);
-}
-// --------------------------------------------------------------------------------------------------------------
-IOController_i::SensorIOInfo IOController::getSensorIOInfo( const IOController_i::SensorInfo& si )
-{
-    IOStateList::iterator it = ioList.find( key(si.id, si.node) );
+    IOStateList::iterator it = ioList.find(sid);
     if( it!=ioList.end() )
     {
         uniset_rwmutex_rlock lock(it->second.val_lock);
@@ -515,22 +498,22 @@ IOController_i::SensorIOInfo IOController::getSensorIOInfo( const IOController_i
 
     // -------------
     ostringstream err;
-    err << myname << "(getSensorIOInfo): Unknown sensor (" << si.id << ":" << si.node << ")"
-        << conf->oind->getNameById(si.id,si.node);
+    err << myname << "(getSensorIOInfo): Unknown sensor (" << sid << ")"
+        << conf->oind->getNameById(sid);
 
     uinfo << err.str() << endl;
 
     throw IOController_i::NameNotFound(err.str().c_str());
 }
 // --------------------------------------------------------------------------------------------------------------
-CORBA::Long IOController::getRawValue(const IOController_i::SensorInfo& si)
+CORBA::Long IOController::getRawValue( UniSetTypes::ObjectId sid )
 {
-    IOStateList::iterator it = ioList.find( key(si.id, si.node) );
+    IOStateList::iterator it = ioList.find(sid);
     if( it==ioList.end() )
     {
         ostringstream err;
-        err << myname << "(getRawValue): Unknown analog sensor (" << si.id << ":" << si.node << ")"
-            << conf->oind->getNameById(si.id,si.node);
+        err << myname << "(getRawValue): Unknown analog sensor (" << sid << ")"
+            << conf->oind->getNameById(sid);
         throw IOController_i::NameNotFound(err.str().c_str());
     }
 
@@ -549,16 +532,16 @@ CORBA::Long IOController::getRawValue(const IOController_i::SensorInfo& si)
     return it->second.value;
 }
 // --------------------------------------------------------------------------------------------------------------
-void IOController::calibrate(const IOController_i::SensorInfo& si, 
+void IOController::calibrate( UniSetTypes::ObjectId sid,
                                 const IOController_i::CalibrateInfo& ci,
                                 UniSetTypes::ObjectId adminId )
 {
-    IOStateList::iterator it = ioList.find( key(si.id, si.node) );
+    IOStateList::iterator it = ioList.find(sid);
     if( it==ioList.end() )
     {
         ostringstream err;
-        err << myname << "(calibrate): Unknown analog sensor (" << si.id << ":" << si.node << ")"
-            << conf->oind->getNameById(si.id,si.node);
+        err << myname << "(calibrate): Unknown analog sensor (" << sid << ")"
+            << conf->oind->getNameById(sid);
         throw IOController_i::NameNotFound(err.str().c_str());
     }
 
@@ -567,25 +550,25 @@ void IOController::calibrate(const IOController_i::SensorInfo& si,
     it->second.ci = ci;
 }
 // --------------------------------------------------------------------------------------------------------------
-IOController_i::CalibrateInfo IOController::getCalibrateInfo(const IOController_i::SensorInfo& si)
+IOController_i::CalibrateInfo IOController::getCalibrateInfo( UniSetTypes::ObjectId sid )
 {
-    IOStateList::iterator it = ioList.find( key(si.id, si.node) );
+    IOStateList::iterator it = ioList.find(sid);
     if( it==ioList.end() )
     {
         ostringstream err;
-        err << myname << "(calibrate): Unknown analog sensor (" << si.id << ":" << si.node << ")"
-            << conf->oind->getNameById(si.id,si.node);
+        err << myname << "(calibrate): Unknown analog sensor (" << sid << ")"
+            << conf->oind->getNameById(sid);
         throw IOController_i::NameNotFound(err.str().c_str());
     }
     return it->second.ci;
 }
 // --------------------------------------------------------------------------------------------------------------
-IOController::USensorInfo::USensorInfo(IOController_i::SensorIOInfo& ai):
+IOController::USensorInfo::USensorInfo( IOController_i::SensorIOInfo& ai ):
     IOController_i::SensorIOInfo(ai),
     any(0)
 {}
 
-IOController::USensorInfo::USensorInfo(const IOController_i::SensorIOInfo& ai):
+IOController::USensorInfo::USensorInfo( const IOController_i::SensorIOInfo& ai ):
     IOController_i::SensorIOInfo(ai),
     any(0)
 {}
@@ -700,25 +683,27 @@ IDSeq* IOController::setOutputSeq(const IOController_i::OutSeq& lst, ObjectId su
 
     for(int i=0; i<size; i++)
     {
+        ObjectId sid = lst[i].si.id;
+
         {
-            IOStateList::iterator it = ioList.find( UniSetTypes::key(lst[i].si.id,lst[i].si.node) );
+            IOStateList::iterator it = ioList.find(sid);
             if( it!=ioList.end() )
             {
-                localSetValue(it,lst[i].si,lst[i].value, sup_id);
+                localSetValue(it,sid,lst[i].value, sup_id);
                 continue;
             }
         }
 
         // не найден
-        badlist.add( lst[i].si.id );
+        badlist.add(sid);
     }
 
     return badlist.getIDSeq();
 }
 // -----------------------------------------------------------------------------
-IOController_i::ShortIOInfo IOController::getChangedTime( const IOController_i::SensorInfo& si )
+IOController_i::ShortIOInfo IOController::getChangedTime( UniSetTypes::ObjectId sid )
 {
-    IOStateList::iterator ait = ioList.find( key(si.id, si.node) );
+    IOStateList::iterator ait = ioList.find(sid);
     if( ait!=ioList.end() )
     {
         IOController_i::ShortIOInfo i;
@@ -732,7 +717,7 @@ IOController_i::ShortIOInfo IOController::getChangedTime( const IOController_i::
     // -------------
     ostringstream err;
     err << myname << "(getChangedTime): вход(выход) с именем "
-        << conf->oind->getNameById(si.id) << " не найден";
+        << conf->oind->getNameById(sid) << " не найден";
 
 	uinfo << err.str() << endl;
     throw IOController_i::NameNotFound(err.str().c_str());
@@ -761,19 +746,14 @@ IOController_i::ShortMapSeq* IOController::getSensors()
     return res;
 }
 // -----------------------------------------------------------------------------
-IOController::ChangeSignal IOController::signal_change_value( const IOController_i::SensorInfo& si )
+IOController::ChangeSignal IOController::signal_change_value( UniSetTypes::ObjectId sid )
 {
-    return signal_change_value( si.id, si.node );
-}
-// -----------------------------------------------------------------------------
-IOController::ChangeSignal IOController::signal_change_value( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
-{
-    IOStateList::iterator it = ioList.find( key(id,node) );
+    IOStateList::iterator it = ioList.find(sid);
     if( it==ioList.end() )
     {
         ostringstream err;
         err << myname << "(signal_change_value): вход(выход) с именем "
-            << conf->oind->getNameById(id) << " не найден";
+            << conf->oind->getNameById(sid) << " не найден";
 
         uinfo << err.str() << endl;
         throw IOController_i::NameNotFound(err.str().c_str());
@@ -788,19 +768,14 @@ IOController::ChangeSignal IOController::signal_change_value()
     return sigAnyChange;
 }
 // -----------------------------------------------------------------------------
-IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_state( const IOController_i::SensorInfo& si )
+IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_state( UniSetTypes::ObjectId sid )
 {
-    return signal_change_undefined_state( si.id, si.node );
-}
-// -----------------------------------------------------------------------------
-IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_state( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
-{
-    IOStateList::iterator it = ioList.find( key(id,node) );
+    IOStateList::iterator it = ioList.find(sid);
     if( it==ioList.end() )
     {
         ostringstream err;
         err << myname << "(signal_change_undefine): вход(выход) с именем "
-            << conf->oind->getNameById(id) << " не найден";
+            << conf->oind->getNameById(sid) << " не найден";
 
         uinfo << err.str() << endl;
 
@@ -828,6 +803,6 @@ void IOController::USensorInfo::checkDepend( IOStateList::iterator& d_it, IOCont
     }
 
     if( changed )
-        ic->localSetValue( it, si, real_value, ic->getId() );
+        ic->localSetValue( it, si.id, real_value, ic->getId() );
 }
 // -----------------------------------------------------------------------------

@@ -239,12 +239,8 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string& sec, u
     for( ;it.getCurrent(); it.goNext() )
     {
         omap[ind].id = ind;
-        string name(xml.getProp(it,"name"));
-        string alias(xml.getProp(it,"alias"));
-        if( alias.empty() )
-            alias = name;
+        string nodename(xml.getProp(it,"name"));
 
-        string nodename = mkFullNodeName(name,alias);
         delete[] omap[ind].repName;
         omap[ind].repName = new char[nodename.size()+1];
         strcpy( omap[ind].repName, nodename.c_str() );

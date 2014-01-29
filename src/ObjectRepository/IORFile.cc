@@ -37,9 +37,9 @@ IORFile::IORFile()
 }
 
 // -----------------------------------------------------------------------------------------
-string IORFile::getIOR( const ObjectId id, const ObjectId node ) const
+string IORFile::getIOR( const ObjectId id ) const
 {
-    string fname( genFName(id,node) );
+    string fname( genFName(id) );
     ifstream ior_file(fname.c_str());
     string sior;
     ior_file >> sior;
@@ -47,9 +47,9 @@ string IORFile::getIOR( const ObjectId id, const ObjectId node ) const
     return sior;
 }
 // -----------------------------------------------------------------------------------------
-void IORFile::setIOR( const ObjectId id, const ObjectId node, const string& sior ) const
+void IORFile::setIOR( const ObjectId id, const string& sior ) const
 {
-    string fname( genFName(id,node) );
+    string fname( genFName(id) );
     ofstream ior_file(fname.c_str(), ios::out | ios::trunc);
 
     if( !ior_file )
@@ -62,16 +62,16 @@ void IORFile::setIOR( const ObjectId id, const ObjectId node, const string& sior
     ior_file.close();
 }
 // -----------------------------------------------------------------------------------------
-void IORFile::unlinkIOR( const ObjectId id, const ObjectId node ) const
+void IORFile::unlinkIOR( const ObjectId id ) const
 {
-    string fname( genFName(id,node) );
+    string fname( genFName(id) );
     unlink(fname.c_str());
 }
 // -----------------------------------------------------------------------------------------
-string IORFile::genFName( const ObjectId id, const ObjectId node ) const
+string IORFile::genFName( const ObjectId id ) const
 {
     ostringstream fname;
-    fname << conf->getLockDir() << id << "." << node;
+    fname << conf->getLockDir() << id;
     return fname.str();
 }
 // -----------------------------------------------------------------------------------------
