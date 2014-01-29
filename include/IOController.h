@@ -250,7 +250,7 @@ class IOController:
         // доступ к списку c изменением только для своих
         IOStateList::iterator myioBegin();
         IOStateList::iterator myioEnd();
-        IOStateList::iterator myiofind( UniSetTypes::KeyType k );
+        IOStateList::iterator myiofind( UniSetTypes::ObjectId id );
         // --------------------------
         // ФИЛЬТРОВАНИЕ
         // 

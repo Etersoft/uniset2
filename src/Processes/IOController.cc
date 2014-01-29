@@ -106,7 +106,7 @@ void IOController::activateInit()
             // Проверка зависимостей
             if( s.d_si.id != DefaultObjectId )
             {
-                IOStateList::iterator d_it = myiofind( UniSetTypes::key(s.d_si) );
+                IOStateList::iterator d_it = myiofind(s.d_si.id);
                 if( d_it != ioEnd() )
                     s.checkDepend(d_it, this);
             }
@@ -644,9 +644,9 @@ IOController::IOStateList::iterator IOController::myioEnd()
     return ioList.end();
 }
 
-IOController::IOStateList::iterator IOController::myiofind(UniSetTypes::KeyType k)
+IOController::IOStateList::iterator IOController::myiofind( const UniSetTypes::ObjectId id )
 {
-    return ioList.find(k);
+    return ioList.find(id);
 }
 // -----------------------------------------------------------------------------
 IOController_i::SensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
@@ -658,7 +658,7 @@ IOController_i::SensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
 
     for( unsigned int i=0; i<size; i++ )
     {
-        IOStateList::iterator it = ioList.find( UniSetTypes::key(lst[i],conf->getLocalNode()) );
+        IOStateList::iterator it = ioList.find(lst[i]);
         if( it!=ioList.end() )
         {
             uniset_rwmutex_rlock lock(it->second.val_lock);

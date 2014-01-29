@@ -224,7 +224,7 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
             {
                 ConsumerListInfo lst; // создаем новый список
                 addConsumer(lst,cons);
-                // более оптимальный способ(при условии вставки первый раз) //    askLst[key]=lst;
+                // более оптимальный способ(при условии вставки первый раз)
                 askLst.insert(AskMap::value_type(sid,lst));
 
                 try
@@ -826,7 +826,6 @@ IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold
     {    // lock
         uniset_rwmutex_rlock lock(trshMutex);
         // поиск списка порогов
-//        UniSetTypes::KeyType skey( key(si.id,si.node) );
         AskThresholdMap::iterator lst = askTMap.find(sid);
 
         if( lst!=askTMap.end() )
@@ -994,7 +993,7 @@ void IONotifyController::onChangeUndefinedState( IOStateList::iterator& lit, IOC
 
     { // lock
       uniset_rwmutex_rlock lock(askIOMutex);
-      AskMap::iterator it1 = askIOList.find( key(it.si.id,it.si.node) );
+      AskMap::iterator it1 = askIOList.find(it.si.id);
       if( it1!=askIOList.end() )
           send(it1->second, sm);
     } // unlock
