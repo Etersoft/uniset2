@@ -363,7 +363,7 @@ void NCRestorer_XML::read_thresholds(const UniXML& xml, xmlNode* node, IONotifyC
                 uwarn << ic->getName() 
                             << "(read_thresholds): не смог получить информацию о пороге"
                             << " для датчика "
-                            << conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
+                            << conf->oind->getNameById(inf.si.id) << endl;
                 continue;
             }
 
@@ -384,7 +384,7 @@ void NCRestorer_XML::read_thresholds(const UniXML& xml, xmlNode* node, IONotifyC
                         uwarn << ic->getName() 
                                 << "(read_thresholds): не смог получить список заказчиков"
                                 << " для порога " << ti.id 
-                                << " датчика " << conf->oind->getNameById(inf.si.id,inf.si.node) << endl;
+                                << " датчика " << conf->oind->getNameById(inf.si.id) << endl;
                     }
                 }
             }

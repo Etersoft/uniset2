@@ -129,9 +129,9 @@ void SViewer::readSection( const string& section, const string& secRoot )
             cout << "(readSection): catch..." << endl;
             return;
         }
-    
+
 //        cout << " read objectlist ok."<< endl;
-        
+
         if ( !lstObj.empty() )
         {
             for ( li=lstObj.begin();li!=lstObj.end();++li )
@@ -140,7 +140,7 @@ void SViewer::readSection( const string& section, const string& secRoot )
                 {
                     string ob(*li);
                     string fname(curSection+ "/"+ ob);
-                    ObjectId id = conf->oind->getIdByFullName( fname );
+                    ObjectId id = conf->oind->getIdByName( fname );
                     if( id == DefaultObjectId )
                         cout << "(readSection): ID?! для " << fname << endl;
                     else
@@ -150,7 +150,7 @@ void SViewer::readSection( const string& section, const string& secRoot )
                 {
                     cout << "(readSection): " << ex << endl;
                 }
-                
+
             }
         }
         else
@@ -219,8 +219,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
     {
         if( amap[i].type == UniversalIO::AI || amap[i].type == UniversalIO::DI )
         {
-//            UniSetTypes::KeyType k = key(amap[i].si.id, amap[i].si.node);
-            string name(conf->oind->getNameById(amap[i].si.id, amap[i].si.node));
+            string name(conf->oind->getNameById(amap[i].si.id));
             if( isShort )
                 name = ORepHelpers::getShortName(name);
             string txtname( conf->oind->getTextName(amap[i].si.id) );
@@ -236,8 +235,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
     {
         if( amap[i].type == UniversalIO::AO || amap[i].type == UniversalIO::DO )
         {
-//            UniSetTypes::KeyType k = key(amap[i].si.id, amap[i].si.node);
-            string name(conf->oind->getNameById(amap[i].si.id, amap[i].si.node));
+            string name(conf->oind->getNameById(amap[i].si.id));
             if( isShort )
                 name = ORepHelpers::getShortName(name);
             string txtname( conf->oind->getTextName(amap[i].si.id) );
@@ -268,16 +266,16 @@ void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tls
             case UniversalIO::AO:
                 cout << "AO";
             break;
-            
+
             default:
                 cout << "??";
             break;
         }
-        
-        string sname(conf->oind->getNameById( tlst[i].si.id, tlst[i].si.node ));
+
+        string sname(conf->oind->getNameById(tlst[i].si.id));
         if( isShort )
                 sname = ORepHelpers::getShortName(sname);
-        
+
         cout << " | " << setw(60) << sname << " | " << setw(5) << tlst[i].value << endl; 
 
         int m = tlst[i].tlist.length();
@@ -288,7 +286,7 @@ void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tls
             cout << " | low: " << setw(5) << ti->lowlimit;
             cout << endl;
         }
-    }    
+    }
 }
 // ---------------------------------------------------------------------------
 

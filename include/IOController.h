@@ -41,25 +41,25 @@ class IOController:
 {
     public:
 
-        IOController(const std::string& name, const std::string& section);
-        IOController(UniSetTypes::ObjectId id);
+        IOController( const std::string& name, const std::string& section );
+        IOController( const UniSetTypes::ObjectId id );
         ~IOController();
 
         virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::ObjectType("IOController"); }
 
-        virtual CORBA::Long getValue( const IOController_i::SensorInfo& si );
+        virtual CORBA::Long getValue( UniSetTypes::ObjectId sid );
 
 //     -------------------- !!!!!!!!! ---------------------------------
 //        Реализуются конкретным i/o контроллером
 //        Не забывайте писать реализацию этих функций
-        virtual void setValue( const IOController_i::SensorInfo& si, CORBA::Long value,
+        virtual void setValue( UniSetTypes::ObjectId sid, CORBA::Long value,
                                 UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
 
-        virtual void fastSetValue( const IOController_i::SensorInfo& si, CORBA::Long value,
+        virtual void fastSetValue( UniSetTypes::ObjectId sid, CORBA::Long value,
                                 UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
 
 //     ----------------------------------------------------------------
-        virtual void setUndefinedState(const IOController_i::SensorInfo& si, 
+        virtual void setUndefinedState( UniSetTypes::ObjectId sid,
                                         CORBA::Boolean undefined, 
                                         UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
 
@@ -68,30 +68,30 @@ class IOController:
         virtual UniSetTypes::IDSeq* setOutputSeq( const IOController_i::OutSeq& lst, UniSetTypes::ObjectId sup_id );
 
 //     ----------------------------------------------------------------
-        virtual UniversalIO::IOType getIOType( const IOController_i::SensorInfo& si );
+        virtual UniversalIO::IOType getIOType( UniSetTypes::ObjectId sid );
 
         virtual IOController_i::SensorInfoSeq* getSensorsMap();
-        virtual IOController_i::SensorIOInfo getSensorIOInfo( const IOController_i::SensorInfo& si );
+        virtual IOController_i::SensorIOInfo getSensorIOInfo( UniSetTypes::ObjectId sid );
 
-        virtual CORBA::Long getRawValue(const IOController_i::SensorInfo& si);
-        virtual void calibrate(const IOController_i::SensorInfo& si, 
+        virtual CORBA::Long getRawValue(UniSetTypes::ObjectId sid);
+        virtual void calibrate(UniSetTypes::ObjectId sid,
                                     const IOController_i::CalibrateInfo& ci,
                                     UniSetTypes::ObjectId adminId );
 
-        IOController_i::CalibrateInfo getCalibrateInfo( const IOController_i::SensorInfo& si );
+        IOController_i::CalibrateInfo getCalibrateInfo( UniSetTypes::ObjectId sid );
 
-        inline IOController_i::SensorInfo SensorInfo(UniSetTypes::ObjectId id, 
-                                UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode())
+        inline IOController_i::SensorInfo SensorInfo( const UniSetTypes::ObjectId sid,
+                                const UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode())
         {
             IOController_i::SensorInfo si;
-            si.id = id;
+            si.id = sid;
             si.node = node;
             return si;
         };
 
-        UniSetTypes::Message::Priority getPriority( const IOController_i::SensorInfo& si, UniversalIO::IOType type );
+        UniSetTypes::Message::Priority getPriority( const UniSetTypes::ObjectId id );
 
-        virtual IOController_i::ShortIOInfo getChangedTime( const IOController_i::SensorInfo& si );
+        virtual IOController_i::ShortIOInfo getChangedTime( const UniSetTypes::ObjectId id );
 
         virtual IOController_i::ShortMapSeq* getSensors();
 
@@ -99,7 +99,7 @@ class IOController:
 
         // предварительное объявление, чтобы в структуре объявить итератор..
         struct USensorInfo;
-        typedef std::map<UniSetTypes::KeyType, USensorInfo> IOStateList;
+        typedef std::map<UniSetTypes::ObjectId, USensorInfo> IOStateList;
 
         // ================== Достпуные сигналы =================
         /*!
@@ -111,14 +111,13 @@ class IOController:
         typedef sigc::signal<void, IOStateList::iterator&, IOController*> ChangeUndefinedStateSignal;
 
         // signal по изменению определённого датчика
-        ChangeSignal signal_change_value( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
-        ChangeSignal signal_change_value( const IOController_i::SensorInfo& si );
+        ChangeSignal signal_change_value( UniSetTypes::ObjectId sid );
+
         // signal по изменению любого датчика
         ChangeSignal signal_change_value();
 
         // сигналы по изменению флага "неопределённое состояние" (обрыв датчика например)
-        ChangeUndefinedStateSignal signal_change_undefined_state( UniSetTypes::ObjectId id, UniSetTypes::ObjectId node );
-        ChangeUndefinedStateSignal signal_change_undefined_state( const IOController_i::SensorInfo& si );
+        ChangeUndefinedStateSignal signal_change_undefined_state( UniSetTypes::ObjectId sid );
         ChangeUndefinedStateSignal signal_change_undefined_state();
         // -----------------------------------------------------------------------------------------
 
@@ -175,10 +174,10 @@ class IOController:
         inline int ioCount(){ return ioList.size(); }
 
         // доступ к элементам через итератор
-        virtual void localSetValue( IOStateList::iterator& it, const IOController_i::SensorInfo& si,
+        virtual void localSetValue( IOStateList::iterator& it, const UniSetTypes::ObjectId sid,
                                         CORBA::Long value, UniSetTypes::ObjectId sup_id );
 
-        virtual long localGetValue( IOStateList::iterator& it, const IOController_i::SensorInfo& si );
+        virtual long localGetValue( IOStateList::iterator& it, const UniSetTypes::ObjectId sid );
 
 
         /*! функция выставления признака неопределённого состояния для аналоговых датчиков 
@@ -186,7 +185,7 @@ class IOController:
             // см. логику выставления в функции localSaveState
         */
         virtual void localSetUndefinedState( IOStateList::iterator& it, bool undefined,
-                                                const IOController_i::SensorInfo& si );
+                                                const UniSetTypes::ObjectId sid );
 
     protected:
             // переопределяем для добавления вызова регистрации датчиков
@@ -211,9 +210,7 @@ class IOController:
             void ioRegistration( const USensorInfo&, bool force=false );
 
             /*! разрегистрация датчика */
-            void ioUnRegistration( const IOController_i::SensorInfo& si );
-
-            UniSetTypes::Message::Priority getMessagePriority(UniSetTypes::KeyType k, UniversalIO::IOType type);
+            void ioUnRegistration( const UniSetTypes::ObjectId sid );
 
             // ------------------------------
             inline IOController_i::SensorIOInfo
@@ -243,7 +240,7 @@ class IOController:
             };
 
             //! сохранение информации об изменении состояния датчика
-            virtual void logging(UniSetTypes::SensorMessage& sm);
+            virtual void logging( UniSetTypes::SensorMessage& sm );
 
             //! сохранение состояния всех датчиков в БД
             virtual void dumpToDB();

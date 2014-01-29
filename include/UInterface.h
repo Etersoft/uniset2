@@ -83,7 +83,7 @@ class UInterface
 
         // fast - это удалённый вызов "без подтверждения", он быстрее, но менее надёжен
         // т.к. вызывающий никогда не узнает об ошибке, если она была (датчик такой не найдён и т.п.)
-        void fastSetValue( IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
+        void fastSetValue( const IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
 
         //! Получение состояния для списка указанных датчиков
         IOController_i::SensorInfoSeq_var getSensorSeq( UniSetTypes::IDList& lst );
@@ -108,7 +108,7 @@ class UInterface
         // ------------------------------------------------------
 
         // установка неопределённого состояния
-        void setUndefinedState( IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId supplier );
+        void setUndefinedState( const IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId supplier );
 
         // ---------------------------------------------------------------
         // Калибровка... пороги...
@@ -160,11 +160,9 @@ class UInterface
 
 //        /*! регистрация объекта в репозитории */
         void registered(const UniSetTypes::ObjectId id, const UniSetTypes::ObjectPtr oRef, bool force=false)const throw(UniSetTypes::ORepFailed);
-        void registered(const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node, const UniSetTypes::ObjectPtr oRef, bool force=false)const throw(UniSetTypes::ORepFailed);
 
 //        /*! разрегистрация объекта */
         void unregister(const UniSetTypes::ObjectId id)throw(UniSetTypes::ORepFailed);
-        void unregister(const UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) throw(UniSetTypes::ORepFailed);
 
         /*! получение ссылки на объект */
         inline UniSetTypes::ObjectPtr resolve( const std::string& name ) const
@@ -174,7 +172,6 @@ class UInterface
 
         inline UniSetTypes::ObjectPtr resolve( const UniSetTypes::ObjectId id ) const
         {
-            // std::string nm = oind->getNameById(id);
             return rep.resolve( oind->getNameById(id) );
         }
 
@@ -211,19 +208,9 @@ class UInterface
             return oind->getNameById(id);
         }
 
-        inline std::string getNameById( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const
-        {
-            return oind->getNameById(id, node);
-        }
-
         inline UniSetTypes::ObjectId getNodeId( const std::string& fullname ) const
         {
             return oind->getNodeId(fullname);
-        }
-
-        inline std::string getName( const std::string& fullname ) const
-        {
-            return oind->getName(fullname);
         }
 
         inline std::string getTextName( const UniSetTypes::ObjectId id ) const
@@ -231,10 +218,9 @@ class UInterface
             return oind->getTextName(id);
         }
 
-
         // ---------------------------------------------------------------
         // Получение указателей на вспомогательные классы.
-        inline UniSetTypes::ObjectIndex* getObjectIndex() { return oind; }
+        inline const UniSetTypes::ObjectIndex* getObjectIndex() { return oind; }
         inline const UniSetTypes::Configuration* getConf() { return uconf; }
 
         // ---------------------------------------------------------------

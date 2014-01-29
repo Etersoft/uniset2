@@ -18,7 +18,7 @@ class SMInterface
         void setUndefinedState( IOController_i::SensorInfo& si, bool undefined, UniSetTypes::ObjectId supplier );
 
         long getValue ( UniSetTypes::ObjectId id );
-        
+
         void askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd,
                         UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
 
@@ -38,11 +38,11 @@ class SMInterface
         */
         void localSetUndefinedState( IOController::IOStateList::iterator& it, 
                                     bool undefined, UniSetTypes::ObjectId sid );
-    
+
         // специальные функции
         IOController::IOStateList::iterator ioEnd();
         void initIterator( IOController::IOStateList::iterator& it );
-            
+
         bool exist();
         bool waitSMready( int msec, int pause=5000 );
         bool waitSMworking( UniSetTypes::ObjectId, int msec, int pause=3000 );
@@ -51,7 +51,7 @@ class SMInterface
         inline UniSetTypes::ObjectId ID(){ return myid; }
         inline IONotifyController* SM(){ return ic; }
         inline UniSetTypes::ObjectId getSMID(){ return shmID; }
-        
+
     protected:
         IONotifyController* ic;
         UInterface* ui;

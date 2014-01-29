@@ -23,7 +23,7 @@ class ObjectIndex_idXML:
 
         virtual std::ostream& printMap( std::ostream& os );
         friend std::ostream& operator<<(std::ostream& os, ObjectIndex_idXML& oi );
-    
+
     protected:
         virtual void build( UniXML& xml );
         void read_section( UniXML& xml, const std::string& sec );

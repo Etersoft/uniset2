@@ -31,7 +31,7 @@ void SharedMemory::help_print( int argc, const char* const* argv )
     cout << "--pulsar-msec          - период 'мигания'. По умолчанию: 5000." << endl;
 }
 // -----------------------------------------------------------------------------
-SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname ):
+SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std::string& confname ):
     IONotifyController_LT(id),
     heartbeatCheckTime(5000),
     histSaveTime(0),
@@ -101,20 +101,18 @@ SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname )
 
     activateTimeout    = conf->getArgPInt("--activate-timeout", 10000);
 
-    siPulsar.id = DefaultObjectId;
-    siPulsar.node = DefaultObjectId;
+    sidPulsar = DefaultObjectId;
     string p = conf->getArgParam("--pulsar-id",it.getProp("pulsar_id"));
     if( !p.empty() )
     {
-        siPulsar.id = conf->getSensorID(p);
-        if( siPulsar.id == DefaultObjectId )
+        sidPulsar = conf->getSensorID(p);
+        if( sidPulsar == DefaultObjectId )
         {
             ostringstream err;
             err << myname << ": ID not found ('pulsar') for " << p;
             dcrit << myname << "(init): " << err.str() << endl;
             throw SystemError(err.str());
         }
-        siPulsar.node = conf->getLocalNode();
         msecPulsar = conf->getArgPInt("--pulsar-msec",it.getProp("pulsar_msec"), 5000);
     }
 }
@@ -149,11 +147,11 @@ void SharedMemory::timerInfo( const TimerMessage *tm )
         saveHistory();
     else if( tm->id == tmPulsar )
     {
-        if( siPulsar.id != DefaultObjectId )
+        if( sidPulsar != DefaultObjectId )
         {
-            bool st = (bool)localGetValue(itPulsar,siPulsar);
+            bool st = (bool)localGetValue(itPulsar,sidPulsar);
             st ^= true;
-            localSetValue(itPulsar,siPulsar, (st ? 1:0), getId() );
+            localSetValue(itPulsar,sidPulsar, (st ? 1:0), getId() );
         }
     }
 }
@@ -283,24 +281,19 @@ void SharedMemory::checkHeartBeat()
         return;
     }
 
-    IOController_i::SensorInfo si;
-    si.node = conf->getLocalNode();
-
     bool wdtpingOK = true;
 
     for( HeartBeatList::iterator it=hlist.begin(); it!=hlist.end(); ++it )
     {
         try
         {
-            si.id = it->a_sid;
-            long val = localGetValue(it->ioit,si);
+            long val = localGetValue(it->ioit,it->a_sid);
             val --;
             if( val < -1 )
                 val = -1;
-            localSetValue(it->ioit,si,val,getId());
+            localSetValue(it->ioit,it->a_sid,val,getId());
 
-            si.id = it->d_sid;
-            localSetValue(it->ioit,si,( val >= 0 ? true:false),getId());
+            localSetValue(it->ioit,it->d_sid,( val >= 0 ? true:false),getId());
 
             // проверяем нужна ли "перезагрузка" по данному датчику
             if( wdt && it->ptReboot.getInterval() )
@@ -642,16 +635,13 @@ void SharedMemory::saveHistory()
         for( HistoryList::iterator hit=it->hlst.begin(); hit!=it->hlst.end(); ++hit )
         {
             if( hit->ioit != myioEnd() )
-                hit->add( localGetValue( hit->ioit, hit->ioit->second.si ), it->size );
+                hit->add( localGetValue( hit->ioit, hit->ioit->second.si.id ), it->size );
             else
             {
-                IOController_i::SensorInfo si;
-                si.id     = hit->id;
-                si.node    = conf->getLocalNode();
                 try
                 {
 
-                    hit->add( localGetValue( hit->ioit, si ), it->size );
+                    hit->add( localGetValue( hit->ioit, hit->id ), it->size );
                     continue;
                 }
                 catch(...){}

@@ -196,26 +196,12 @@ namespace ORepHelpers
     */
     const string getShortName( const string& fname, const std::string& brk )
     {
-/*
+
         string::size_type pos = fname.rfind(brk);
         if( pos == string::npos )
             return fname;
 
         return fname.substr( pos+1, fname.length() );
-*/
-        string::size_type pos1 = fname.rfind(brk);
-        string::size_type pos2 = fname.rfind(conf->oind->sepName);
-
-        if( pos2 == string::npos && pos1 == string::npos )
-            return fname;
-
-        if( pos1 == string::npos )
-            return fname.substr( 0, pos2 );
-
-        if( pos2 == string::npos )
-            return fname.substr( pos1+1, fname.length() );
-
-        return fname.substr( pos1+1, pos2-pos1-1 );
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -231,17 +217,17 @@ namespace ORepHelpers
             return "";
 
         return fullName.substr(0, pos);
-    }    
+    }
 
     // ---------------------------------------------------------------------------------------------------------------
     /*
      *    Запрещенные символы см. UniSetTypes::BadSymbols[]
      *    \return Если не найдено запрещенных символов то будет возвращен 0, иначе найденный символ
     */
-    char checkBadSymbols(const string& str)
+    char checkBadSymbols( const string& str )
     {
         using namespace UniSetTypes;
-        
+
         for ( unsigned int i=0;i<str.length();i++)
         {
             for(unsigned int k=0; k<sizeof(BadSymbols); k++)
@@ -251,7 +237,7 @@ namespace ORepHelpers
             }
         }
         return 0;
-    }    
+    }
 
     // ---------------------------------------------------------------------------------------------------------------
     string BadSymbolsToStr()
@@ -269,4 +255,3 @@ namespace ORepHelpers
     }
     // ---------------------------------------------------------------------------------------------------------------
 }
-

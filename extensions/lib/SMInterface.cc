@@ -99,63 +99,56 @@ SMInterface::~SMInterface()
 
 }
 // --------------------------------------------------------------------------
-void SMInterface::setValue ( UniSetTypes::ObjectId id, long value )
+void SMInterface::setValue( UniSetTypes::ObjectId id, long value )
 {
+    if( ic )
+    {
+        BEG_FUNC1(SMInterface::setValue)
+        ic->fastSetValue(id,value,myid);
+        return;
+        END_FUNC(SMInterface::setValue)
+    }
+
     IOController_i::SensorInfo si;
     si.id = id;
     si.node = conf->getLocalNode();
 
-    if( ic )
-    {
-        BEG_FUNC1(SMInterface::setValue)
-        ic->fastSetValue(si,value,myid);
-        return;
-        END_FUNC(SMInterface::setValue)
-    }
-    
     BEG_FUNC1(SMInterface::setValue)
     ui->fastSetValue(si,value,myid);
     return;
     END_FUNC(SMInterface::setValue)
 }
 // --------------------------------------------------------------------------
-long SMInterface::getValue ( UniSetTypes::ObjectId id )
+long SMInterface::getValue( UniSetTypes::ObjectId id )
 {
-    IOController_i::SensorInfo si;
-    si.id = id;
-    si.node = conf->getLocalNode();
-
     if( ic )
     {
         BEG_FUNC1(SMInterface::getValue)
-        return ic->getValue(si);
+        return ic->getValue(id);
         END_FUNC(SMInterface::getValue)
     }
 
     BEG_FUNC1(SMInterface::getValue)
-    return ui->getValue(si.id,si.node);
+    return ui->getValue(id);
     END_FUNC(SMInterface::getValue)
 }
 // --------------------------------------------------------------------------
 void SMInterface::askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId backid )
 {
-    IOController_i::SensorInfo_var si;
-    si->id         = id;
-    si->node     = conf->getLocalNode();
     ConsumerInfo_var ci;
-    ci->id         = (backid==DefaultObjectId) ? myid : backid;
-    ci->node     = conf->getLocalNode();
+    ci->id   = (backid==DefaultObjectId) ? myid : backid;
+    ci->node = conf->getLocalNode();
 
     if( ic )
     {
         BEG_FUNC1(SMInterface::askSensor)
-        ic->askSensor(si, ci, cmd );
+        ic->askSensor(id, ci, cmd);
         return;
         END_FUNC(SMInterface::askSensor)
     }
 
     BEG_FUNC1(SMInterface::askSensor)
-    ui->askRemoteSensor(si->id,cmd,si->node,ci->id);
+    ui->askRemoteSensor(id,cmd,conf->getLocalNode(),ci->id);
     return;
     END_FUNC(SMInterface::askSensor)
 }
@@ -180,7 +173,7 @@ IONotifyController_i::ThresholdsListSeq* SMInterface::getThresholdsList()
     {
         BEG_FUNC1(SMInterface::getThresholdsList)
         return ic->getThresholdsList();
-        END_FUNC(SMInterface::getThresholdsList)        
+        END_FUNC(SMInterface::getThresholdsList)
     }
 
     BEG_FUNC(SMInterface::getThresholdsList)
@@ -194,12 +187,12 @@ void SMInterface::setUndefinedState( IOController_i::SensorInfo& si, bool undefi
     if( ic )
     {
         BEG_FUNC1(SMInterface::setUndefinedState)
-        ic->setUndefinedState(si,undefined,sup_id);
+        ic->setUndefinedState(si.id,undefined,sup_id);
         return;
         END_FUNC(SMInterface::setUndefinedState)
     }
     BEG_FUNC(SMInterface::setUndefinedState)
-    shm->setUndefinedState(si,undefined,sup_id);
+    shm->setUndefinedState(si.id,undefined,sup_id);
     return;
     END_FUNC(SMInterface::setUndefinedState)
 }
@@ -232,7 +225,7 @@ void SMInterface::localSetValue( IOController::IOStateList::iterator& it,
     IOController_i::SensorInfo si;
     si.id = sid;
     si.node = conf->getLocalNode();
-    ic->localSetValue(it,si,value,sup_id);
+    ic->localSetValue(it,si.id,value,sup_id);
 }
 // --------------------------------------------------------------------------
 long SMInterface::localGetValue( IOController::IOStateList::iterator& it, UniSetTypes::ObjectId sid )
@@ -241,10 +234,7 @@ long SMInterface::localGetValue( IOController::IOStateList::iterator& it, UniSet
         return getValue( sid );
 
 //    CHECK_IC_PTR(localGetValue)
-    IOController_i::SensorInfo si;
-    si.id = sid;
-    si.node = conf->getLocalNode();
-    return ic->localGetValue(it,si);
+    return ic->localGetValue(it,sid);
 }
 // --------------------------------------------------------------------------
 void SMInterface::localSetUndefinedState( IOController::IOStateList::iterator& it, 
@@ -257,15 +247,12 @@ void SMInterface::localSetUndefinedState( IOController::IOStateList::iterator& i
         IOController_i::SensorInfo si;
         si.id     = sid;
         si.node = conf->getLocalNode();
-        setUndefinedState( si,undefined,myid);
+        setUndefinedState(si,undefined,myid);
         return;
     }
 
-    IOController_i::SensorInfo si;
-    si.id     = sid;
-    si.node = conf->getLocalNode();
-    ic->localSetUndefinedState(it,undefined,si);
-}                                                
+    ic->localSetUndefinedState(it,undefined,sid);
+}
 // --------------------------------------------------------------------------
 void SMInterface::initIterator( IOController::IOStateList::iterator& it )
 {
@@ -286,10 +273,10 @@ bool SMInterface::waitSMready( int ready_timeout, int pmsec )
                 break;
         }
         catch(...){}
-    
+
         msleep(pmsec);
     }
-    
+
     return sm_ready;
 }
 // --------------------------------------------------------------------------
