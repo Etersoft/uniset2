@@ -38,18 +38,24 @@
  *    Создает POA менеджер и регистрирует в нем объекты. 
  *    Для обработки CORBA-запросов создается поток или передаются ресурсы 
  *        главного потока см. void activate(bool thread)
- *    
+ *    \warning Авктиватор может быть создан только один. Для его создания используйте код:
+  \code
+     ...
+     UniSetActivator* act = UniSetActivator::Instance()
+     ...
+\endcode
  *    Активатор в свою очередь сам является менеджером(и объектом) и обладает всеми его свойствами    
  *
- * \todo  Разобраться со всякими oaDestroy, stop, oakill и сделать одну надежную завершающую функцию.
 */ 
 class UniSetActivator: 
     public UniSetManager
 {
     public:
 
-        UniSetActivator();
-        UniSetActivator( UniSetTypes::ObjectId id );
+        static UniSetActivator* Instance( const UniSetTypes::ObjectId id=UniSetTypes::DefaultObjectId );
+        void Destroy();
+
+        // ------------------------------------
         virtual ~UniSetActivator();
 
         virtual void run(bool thread);
@@ -90,6 +96,13 @@ class UniSetActivator:
 
         virtual void sysCommand( const UniSetTypes::SystemMessage *sm );
 
+
+        // уносим в protected, т.к. Activator должен быть только один..
+        UniSetActivator();
+        UniSetActivator( const UniSetTypes::ObjectId id );
+
+        static UniSetActivator* inst;
+
     private:
 
 //        static void processingSignal(int signo);
@@ -114,7 +127,7 @@ class UniSetActivator:
         {
             pid_t msgpid;    // pid порожденого потока обработки сообщений
         };
-        
+
         struct OInfo:
             public Info
         {

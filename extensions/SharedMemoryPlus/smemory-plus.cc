@@ -55,13 +55,13 @@ int main( int argc, const char **argv )
         ulog.logFile( logname );
         conf->initDebug(UniSetExtensions::dlog,"dlog");
 
-        UniSetActivator act;
+        UniSetActivator* act = UniSetActivator::Instance();
         // ------------ SharedMemory ----------------
         SharedMemory* shm = SharedMemory::init_smemory(argc,argv);
         if( shm == NULL )
             return 1;
 
-        act.addManager(static_cast<class UniSetManager*>(shm));
+        act->addManager(static_cast<class UniSetManager*>(shm));
         
         // ------------ IOControl ----------------
         std::list< ThreadCreator<IOControl>* > lst_iothr;
@@ -90,7 +90,7 @@ int main( int argc, const char **argv )
                 if( io_thr == NULL )
                     return 1;
 
-                act.addObject(static_cast<class UniSetObject*>(ic));
+                act->addObject(static_cast<class UniSetObject*>(ic));
                 lst_iothr.push_back( io_thr );
             }
         }
@@ -115,7 +115,7 @@ int main( int argc, const char **argv )
                 if( rtu == NULL )
                     return 1;
                     
-                act.addObject(static_cast<class UniSetObject*>(rtu));
+                act->addObject(static_cast<class UniSetObject*>(rtu));
             }
         }
         // ------------- MBSlave --------------
@@ -139,7 +139,7 @@ int main( int argc, const char **argv )
                 if( mbs == NULL )
                     return 1;
 
-                act.addObject(static_cast<class UniSetObject*>(mbs));
+                act->addObject(static_cast<class UniSetObject*>(mbs));
             }
         }
 
@@ -165,7 +165,7 @@ int main( int argc, const char **argv )
                 if( mbm1 == NULL )
                     return 1;
 
-                act.addObject(static_cast<class UniSetObject*>(mbm1));
+                act->addObject(static_cast<class UniSetObject*>(mbm1));
             }
         }
         // ------------- UNetUDP --------------
@@ -179,19 +179,19 @@ int main( int argc, const char **argv )
             if( dlog.is_info() )
                 dlog.info() << "(smemory-plus): add UNetExchnage.." << endl;
 
-            act.addObject(static_cast<class UniSetObject*>(unet));
+            act->addObject(static_cast<class UniSetObject*>(unet));
         }
         // ---------------------------------------
            // попытка решить вопрос с "зомби" процессами
         signal( SIGCHLD, on_sigchild );
         // ---------------------------------------
         SystemMessage sm(SystemMessage::StartUp);
-        act.broadcast( sm.transport_msg() );
+        act->broadcast( sm.transport_msg() );
 
         for( std::list< ThreadCreator<IOControl>* >::iterator it=lst_iothr.begin(); it!=lst_iothr.end(); ++it )
             (*it)->start();
 
-        act.run(false);
+        act->run(false);
         on_sigchild(SIGTERM);
         
         return 0;

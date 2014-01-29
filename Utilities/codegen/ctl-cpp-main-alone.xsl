@@ -74,12 +74,12 @@ int main( int argc,char* argv[] )
 		string logname( conf->getLogDir() + logfilename );
 		obj.mylog.logFile( logname.c_str() );	
 
-		UniSetActivator act;
-		act.addObject(static_cast&lt;class UniSetObject*&gt;(&amp;obj));
+		UniSetActivator* act = UniSetActivator::Instance();
+		act-&gt;addObject(static_cast&lt;class UniSetObject*&gt;(&amp;obj));
 
 		SystemMessage sm(SystemMessage::StartUp); 
-		act.broadcast( sm.transport_msg() );
-		act.run(false);
+		act-&gt;broadcast( sm.transport_msg() );
+		act-&gt;run(false);
 		pause();	// пауза, чтобы дочерние потоки успели завершить работу
 	}
 	catch(Exception&amp; ex)

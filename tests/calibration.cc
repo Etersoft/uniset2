@@ -19,7 +19,7 @@ int main(int argc, const char **argv)
     {
 //        string confile = UniSetTypes::getArgParam( "--confile", argc, argv, "test.xml" );
 //        conf = new Configuration(argc, argv, confile);
-        for( int i=-5; i<5; i++ )
+        for( int i=-5; i<4095; i+=100 )
         {
             
             cout <<  "raw=" << (817+i)

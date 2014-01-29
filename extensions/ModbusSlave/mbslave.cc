@@ -64,17 +64,17 @@ int main(int argc, const char **argv)
             return 1;
         }
 
-        UniSetActivator act;
-        act.addObject(static_cast<class UniSetObject*>(s));
+        UniSetActivator* act = UniSetActivator::Instance();
+        act->addObject(static_cast<class UniSetObject*>(s));
         SystemMessage sm(SystemMessage::StartUp); 
-        act.broadcast( sm.transport_msg() );
+        act->broadcast( sm.transport_msg() );
 
         ulog << "\n\n\n";
         ulog << "(main): -------------- MBSlave START -------------------------\n\n";
         dlog << "\n\n\n";
         dlog << "(main): -------------- MBSlave START -------------------------\n\n";
 
-        act.run(false);
+        act->run(false);
         while( waitpid(-1, 0, 0) > 0 ); 
         return 0;
     }

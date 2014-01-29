@@ -59,17 +59,17 @@ int main( int argc, const char** argv )
             return 1;
         }
 
-        UniSetActivator act;
-        act.addObject(static_cast<class UniSetObject*>(mb));
+        UniSetActivator* act = UniSetActivator::Instance();
+        act->addObject(static_cast<class UniSetObject*>(mb));
 
         SystemMessage sm(SystemMessage::StartUp); 
-        act.broadcast( sm.transport_msg() );
+        act->broadcast( sm.transport_msg() );
 
         ulog << "\n\n\n";
         ulog << "(main): -------------- MBTCP Exchange START -------------------------\n\n";
         dlog << "\n\n\n";
         dlog << "(main): -------------- MBTCP Exchange START -------------------------\n\n";
-        act.run(false);
+        act->run(false);
         while( waitpid(-1, 0, 0) > 0 ); 
         return 0;
     }

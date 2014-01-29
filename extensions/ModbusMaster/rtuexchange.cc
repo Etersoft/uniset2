@@ -57,18 +57,18 @@ int main( int argc, char** argv )
             return 1;
         }
 
-        UniSetActivator act;
-        act.addObject(static_cast<class UniSetObject*>(rs));
+        UniSetActivator* act = UniSetActivator::Instance();
+        act->addObject(static_cast<class UniSetObject*>(rs));
 
         SystemMessage sm(SystemMessage::StartUp); 
-        act.broadcast( sm.transport_msg() );
+        act->broadcast( sm.transport_msg() );
 
         ulog << "\n\n\n";
         ulog << "(main): -------------- RTU Exchange START -------------------------\n\n";
         dlog << "\n\n\n";
         dlog << "(main): -------------- RTU Exchange START -------------------------\n\n";
 
-        act.run(false);
+        act->run(false);
         
         while( waitpid(-1, 0, 0) > 0 ); 
         return 0;
