@@ -45,7 +45,7 @@ class IOController:
         IOController(UniSetTypes::ObjectId id);
         ~IOController();
 
-        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("IOController"); }
+        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::ObjectType("IOController"); }
 
         virtual CORBA::Long getValue( const IOController_i::SensorInfo& si );
 

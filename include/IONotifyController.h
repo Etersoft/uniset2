@@ -136,8 +136,7 @@ class IONotifyController:
 
         virtual ~IONotifyController();
 
-        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("IONotifyController"); }
-
+        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::ObjectType("IONotifyController"); }
         virtual void askSensor(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 
         virtual void askThreshold(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci,

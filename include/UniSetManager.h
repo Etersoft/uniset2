@@ -62,7 +62,7 @@ class UniSetManager:
         UniSetManager( const std::string& name, const std::string& section );
         virtual ~UniSetManager();
 
-        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("UniSetManager"); }
+        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::ObjectType("UniSetManager"); }
 
         // ------  функции объявленные в интерфейсе(IDL) ------
         virtual void broadcast(const UniSetTypes::TransportMessage& msg);
