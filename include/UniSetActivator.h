@@ -47,7 +47,7 @@ class UniSetActivator:
     public UniSetManager
 {
     public:
-    
+
         UniSetActivator();
         UniSetActivator( UniSetTypes::ObjectId id );
         virtual ~UniSetActivator();
@@ -56,11 +56,11 @@ class UniSetActivator:
         virtual void stop();
         virtual void oaDestroy(int signo=0);
         void waitDestroy();
-        
+
         inline void oakill(int signo){ raise(signo);}
 
-        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("UniSetActivator"); }
-        
+        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::ObjectType("UniSetActivator"); }
+
     protected:
 
         /*! Команды доступные при заказе сигналов 

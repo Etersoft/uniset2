@@ -130,14 +130,13 @@ class IONotifyController:
     public POA_IONotifyController_i
 {
     public:
-    
+
         IONotifyController(const std::string& name, const std::string& section, NCRestorer* dumper=0);
         IONotifyController(UniSetTypes::ObjectId id, NCRestorer* dumper=0);
 
         virtual ~IONotifyController();
 
-        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::getObjectType("IONotifyController"); }
-
+        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::ObjectType("IONotifyController"); }
         virtual void askSensor(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 
         virtual void askThreshold(const IOController_i::SensorInfo& si, const UniSetTypes::ConsumerInfo& ci, 

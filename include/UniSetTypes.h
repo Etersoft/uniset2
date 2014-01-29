@@ -81,9 +81,6 @@ namespace UniSetTypes
     typedef CORBA::Object_ptr ObjectPtr;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
     typedef CORBA::Object_var ObjectVar;    /*!< Ссылка на объект регистрируемый в ObjectRepository */
 
-    /*! Функция делает ObjectType из const char * (переводит const-строку в обычную, что плохо, но мы обещаем не писать в неё :) )  */
-    inline static UniSetTypes::ObjectType getObjectType(const char * name) { const void *t = name;  return (UniSetTypes::ObjectType)t; }
-
     UniversalIO::IOType getIOType( const std::string& s );
     std::ostream& operator<<( std::ostream& os, const UniversalIO::IOType t );
 

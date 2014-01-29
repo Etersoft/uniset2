@@ -74,9 +74,10 @@ class UniSetObject:
         virtual CORBA::Boolean exist();
         virtual char* getName(){return (char*)myname.c_str();}
         virtual UniSetTypes::ObjectId getId(){ return myid; }
-        const UniSetTypes::ObjectId getId() const { return myid; }
 
-        virtual UniSetTypes::ObjectType getType() { return UniSetTypes::getObjectType("UniSetObject"); }
+        inline const UniSetTypes::ObjectId getId() const { return myid; }
+
+        virtual UniSetTypes::ObjectType getType() { return UniSetTypes::ObjectType("UniSetObject"); }
         virtual UniSetTypes::SimpleInfo* getInfo();
         friend std::ostream& operator<<(std::ostream& os, UniSetObject& obj );
 
