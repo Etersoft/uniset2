@@ -4,11 +4,11 @@
 %def_enable python
 %def_enable rrd
 
-%define oname uniset
+%define oname uniset2
 
-Name: libuniset
+Name: libuniset2
 Version: 2.0
-Release: alt0.3
+Release: alt0.4
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -158,7 +158,7 @@ Documentations for developing with UniSet
 
 %package extensions
 Group: Development/C++
-Summary: libUniSet extensions
+Summary: libUniSet2 extensions
 Requires: %name = %version-%release
 Provides: %oname-extentions
 Obsoletes: %oname-extentions
@@ -217,7 +217,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_datadir/%oname/xslt/skel*
 
 %files
-%_libdir/libUniSet.so.*
+%_libdir/libUniSet2.so.*
 
 %files devel
 %dir %_includedir/%oname/
@@ -232,9 +232,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_includedir/%oname/sqlite/
 %endif
 
-%_libdir/libUniSet.so
+%_libdir/libUniSet2.so
 %_datadir/idl/%oname/
-%_pkgconfigdir/libUniSet.pc
+%_pkgconfigdir/libUniSet2.pc
 
 %if_enabled mysql
 %files mysql-dbserver
@@ -242,7 +242,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_libdir/*-mysql.so*
 
 %files mysql-devel
-%_pkgconfigdir/libUniSetMySQL.pc
+%_pkgconfigdir/libUniSet2MySQL.pc
 %endif
 
 %if_enabled sqlite
@@ -252,7 +252,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_libdir/*-sqlite.so*
 
 %files sqlite-devel
-%_pkgconfigdir/libUniSetSQLite.pc
+%_pkgconfigdir/libUniSet2SQLite.pc
 %endif
 
 %if_enabled python
@@ -288,51 +288,54 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 #%_bindir/%oname-smdbserver
 
 %_libdir/*Extensions.so.*
-%_libdir/libUniSetIO*.so.*
-%_libdir/libUniSetLP*.so.*
-%_libdir/libUniSetMB*.so.*
-%_libdir/libUniSetRT*.so.*
-%_libdir/libUniSetShared*.so.*
-%_libdir/libUniSetNetwork*.so.*
-%_libdir/libUniSetUNetUDP*.so.*
-#%_libdir/libUniSetSMDBServer*.so.*
+%_libdir/libUniSet2IO*.so.*
+%_libdir/libUniSet2LP*.so.*
+%_libdir/libUniSet2MB*.so.*
+%_libdir/libUniSet2RT*.so.*
+%_libdir/libUniSet2Shared*.so.*
+%_libdir/libUniSet2Network*.so.*
+%_libdir/libUniSet2UNetUDP*.so.*
+#%_libdir/libUniSet2SMDBServer*.so.*
 
 %if_enabled rrd
 %_bindir/%oname-rrd*
-%_libdir/libUniSetRRD*.so.*
+%_libdir/libUniSet2RRD*.so.*
 %endif
 
 
 %files extensions-devel
 %_includedir/%oname/extensions/
 %_libdir/*Extensions.so
-%_libdir/libUniSetIO*.so
-%_libdir/libUniSetLP*.so
-%_libdir/libUniSetMB*.so
-%_libdir/libUniSetRT*.so
-%_libdir/libUniSetShared*.so
-%_libdir/libUniSetNetwork.so
-%_libdir/libUniSetUNetUDP.so
-#%_libdir/libUniSetSMDBServer.so
+%_libdir/libUniSet2IO*.so
+%_libdir/libUniSet2LP*.so
+%_libdir/libUniSet2MB*.so
+%_libdir/libUniSet2RT*.so
+%_libdir/libUniSet2Shared*.so
+%_libdir/libUniSet2Network.so
+%_libdir/libUniSet2UNetUDP.so
+#%_libdir/libUniSet2SMDBServer.so
 %_pkgconfigdir/*Extensions.pc
-%_pkgconfigdir/libUniSetIO*.pc
-%_pkgconfigdir/libUniSetLog*.pc
-%_pkgconfigdir/libUniSetMB*.pc
-%_pkgconfigdir/libUniSetRT*.pc
-%_pkgconfigdir/libUniSetShared*.pc
-%_pkgconfigdir/libUniSetNetwork*.pc
-%_pkgconfigdir/libUniSetUNet*.pc
+%_pkgconfigdir/libUniSet2IO*.pc
+%_pkgconfigdir/libUniSet2Log*.pc
+%_pkgconfigdir/libUniSet2MB*.pc
+%_pkgconfigdir/libUniSet2RT*.pc
+%_pkgconfigdir/libUniSet2Shared*.pc
+%_pkgconfigdir/libUniSet2Network*.pc
+%_pkgconfigdir/libUniSet2UNet*.pc
 
 %if_enabled rrd
-%_pkgconfigdir/libUniSetRRD*.pc
-%_libdir/libUniSetRRD*.so
+%_pkgconfigdir/libUniSet2RRD*.pc
+%_libdir/libUniSet2RRD*.so
 %endif
 
-#%_pkgconfigdir/libUniSetSMDBServer.pc
-#%_pkgconfigdir/libUniSet*.pc
-%exclude %_pkgconfigdir/libUniSet.pc
+#%_pkgconfigdir/libUniSet2SMDBServer.pc
+#%_pkgconfigdir/libUniSet2*.pc
+%exclude %_pkgconfigdir/libUniSet2.pc
 
 %changelog
+* Fri Jan 31 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt0.4
+- rename uniset --> uniset2
+
 * Thu Jan 30 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt0.3
 - optimization: avoiding the use of 'alias mechanism'
   ('objectid@virtualnode:realnode' ==> 'objectid')

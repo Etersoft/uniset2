@@ -2,5 +2,5 @@
 # This file is part of the UniSet library                                  #
 ############################################################################
 
-bin_SCRIPTS = uniset-start.sh uniset-stop.sh uniset-functions.sh
+bin_SCRIPTS = @PACKAGE@-start.sh @PACKAGE@-stop.sh @PACKAGE@-functions.sh
 

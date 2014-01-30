@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libUniSet2MySQL
+Description: Support library for libUniSet2MySQL
+Requires: libUniSet2
+Version: @VERSION@
+Libs: -L${libdir} -lUniSet2-mysql -lmysqlclient
+Cflags: -I${includedir}/@PACKAGE@ -I${includedir}/mysql

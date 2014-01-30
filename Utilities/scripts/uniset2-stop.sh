@@ -35,7 +35,7 @@ fi
 for i in $(tac $RANSERVICES | cut -d " " -f 2)
 do
 	TOKILL=$(basename $i)
-	echo -n Завершаем $TOKILL... 
+	echo -n Завершаем $TOKILL...
 	if [ $(ps ax | grep $TOKILL | wc -l) = 0 ]
 	then
 		echo " already stoppped [ OK ]"

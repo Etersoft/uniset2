@@ -1,13 +1,13 @@
 bin_PROGRAMS 		= @PACKAGE@-smemory-plus
 
-@PACKAGE@_smemory_plus_LDADD 		= $(top_builddir)/lib/libUniSet.la \
-	$(top_builddir)/extensions/UNetUDP/libUniSetUNetUDP.la \
-	$(top_builddir)/extensions/ModbusMaster/libUniSetMBTCPMaster.la \
-	$(top_builddir)/extensions/ModbusMaster/libUniSetRTU.la \
-	$(top_builddir)/extensions/ModbusSlave/libUniSetMBSlave.la \
-	$(top_builddir)/extensions/IOControl/libUniSetIOControl.la \
-	$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la \
-	$(top_builddir)/extensions/lib/libUniSetExtensions.la \
+@PACKAGE@_smemory_plus_LDADD 		= $(top_builddir)/lib/libUniSet2.la \
+	$(top_builddir)/extensions/UNetUDP/libUniSet2UNetUDP.la \
+	$(top_builddir)/extensions/ModbusMaster/libUniSet2MBTCPMaster.la \
+	$(top_builddir)/extensions/ModbusMaster/libUniSet2RTU.la \
+	$(top_builddir)/extensions/ModbusSlave/libUniSet2MBSlave.la \
+	$(top_builddir)/extensions/IOControl/libUniSet2IOControl.la \
+	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
+	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(SIGC_LIBS) $(COMCPP_LIBS)
 
 @PACKAGE@_smemory_plus_CXXFLAGS	= -I$(top_builddir)/extensions/CanNetwork \

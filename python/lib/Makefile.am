@@ -2,9 +2,9 @@ if DISABLE_PYTHON
 else
 SUBDIRS=pyUniSet
 
-#lib_LTLIBRARIES = libUniSetPython.la
-#libUniSetPython_la_SOURCES	=
-#libUniSetPython_la_LIBADD	= pyUniSet/_pyUniSet.la
+#lib_LTLIBRARIES = libUniSet2Python.la
+#libUniSet2Python_la_SOURCES	=
+#libUniSet2Python_la_LIBADD	= pyUniSet/_pyUniSet.la
 
 python_SCRIPTS = *.py
 endif

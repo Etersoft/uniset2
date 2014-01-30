@@ -5,14 +5,14 @@
 #LT_REVISION=0
 #LT_AGE=0
 #LT_RELEASE=0.99
-#libUniSet_la_LDFLAGS	= -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) -release $(LT_RELEASE)
+#libUniSet2_la_LDFLAGS	= -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) -release $(LT_RELEASE)
 # `0:0:0' (CURRENT=0, REVISION-0, AGE=0). Формат версии C:R:A.
 # -release 1
 
-lib_LTLIBRARIES 		= libUniSet.la
-libUniSet_la_SOURCES	=
-libUniSet_la_LDFLAGS	= -version-info @LIBVER@
-libUniSet_la_LIBADD		= \
+lib_LTLIBRARIES 		= libUniSet2.la
+libUniSet2_la_SOURCES	=
+libUniSet2_la_LDFLAGS	= -version-info @LIBVER@
+libUniSet2_la_LIBADD		= \
  $(top_builddir)/src/Communications/libCommunications.la \
  $(top_builddir)/src/Communications/Modbus/libModbus.la \
  $(top_builddir)/src/Interfaces/libInterfaces.la \

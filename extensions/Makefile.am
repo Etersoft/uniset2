@@ -11,7 +11,7 @@ SUBDIRS = lib include SharedMemory IOControl LogicProcessor \
 #SharedMemoryPlus
 
 pkgconfigdir 	= $(libdir)/pkgconfig
-pkgconfig_DATA 	= libUniSetExtensions.pc
+pkgconfig_DATA 	= libUniSet2Extensions.pc
 
 else
 SUBDIRS =

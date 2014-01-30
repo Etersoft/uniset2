@@ -3,9 +3,9 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libUniSet
+Name: libUniSet2
 Description: Support library for UniSet
 Requires: libxml-2.0 sigc++-2.0 omniORB4 libccgnu2
 Version: @VERSION@
-Libs: -L${libdir} -lUniSet
-Cflags: -I${includedir}/uniset -D__OMNIORB4
+Libs: -L${libdir} -lUniSet2
+Cflags: -I${includedir}/@PACKAGE@ -D__OMNIORB4

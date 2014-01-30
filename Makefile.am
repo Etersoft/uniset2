@@ -6,7 +6,7 @@ FIRSTSUBDIRS=IDL
 SUBDIRS=. src lib include Utilities extensions python docs
 
 pkgconfigdir 	= $(libdir)/pkgconfig
-pkgconfig_DATA 	= libUniSet.pc
+pkgconfig_DATA 	= libUniSet22.pc
 
 # Hack for fix build order
 all-local:

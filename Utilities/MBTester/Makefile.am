@@ -1,21 +1,21 @@
-bin_PROGRAMS 	= uniset-mbrtutest uniset-mbrtuslave-echo \
-		uniset-mbtcpserver-echo uniset-mbtcptest
-#uniset-mbtest
+bin_PROGRAMS 	= @PACKAGE@-mbrtutest @PACKAGE@-mbrtuslave-echo \
+		@PACKAGE@-mbtcpserver-echo @PACKAGE@-mbtcptest
+#@PACKAGE@-mbtest
 
-uniset_mbrtutest_SOURCES 	= mbrtutester.cc
-uniset_mbrtutest_LDADD 	= $(top_builddir)/lib/libUniSet.la
+@PACKAGE@_mbrtutest_SOURCES 	= mbrtutester.cc
+@PACKAGE@_mbrtutest_LDADD 	= $(top_builddir)/lib/libUniSet2.la
 
-uniset_mbtcptest_SOURCES 	= mbtcptester.cc
-uniset_mbtcptest_LDADD 	= $(top_builddir)/lib/libUniSet.la $(COMCPP_LIBS)
-uniset_mbtcptest_CPPFLAGS = $(COMCPP_CFLAGS)
+@PACKAGE@_mbtcptest_SOURCES 	= mbtcptester.cc
+@PACKAGE@_mbtcptest_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(COMCPP_LIBS)
+@PACKAGE@_mbtcptest_CPPFLAGS = $(COMCPP_CFLAGS)
 
-uniset_mbrtuslave_echo_SOURCES 	= MBSlave.cc mbrtuslave.cc
-uniset_mbrtuslave_echo_LDADD 		= $(top_builddir)/lib/libUniSet.la $(SIGC_LIBS)
-uniset_mbrtuslave_echo_CPPFLAGS	= $(SIGC_CFLAGS)
+@PACKAGE@_mbrtuslave_echo_SOURCES 	= MBSlave.cc mbrtuslave.cc
+@PACKAGE@_mbrtuslave_echo_LDADD 		= $(top_builddir)/lib/libUniSet2.la $(SIGC_LIBS)
+@PACKAGE@_mbrtuslave_echo_CPPFLAGS	= $(SIGC_CFLAGS)
 
-uniset_mbtcpserver_echo_SOURCES 	= MBTCPServer.cc mbtcpserver.cc
-uniset_mbtcpserver_echo_LDADD 		= $(top_builddir)/lib/libUniSet.la $(SIGC_LIBS) $(COMCPP_LIBS)
-uniset_mbtcpserver_echo_CPPFLAGS	= $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+@PACKAGE@_mbtcpserver_echo_SOURCES 	= MBTCPServer.cc mbtcpserver.cc
+@PACKAGE@_mbtcpserver_echo_LDADD 		= $(top_builddir)/lib/libUniSet2.la $(SIGC_LIBS) $(COMCPP_LIBS)
+@PACKAGE@_mbtcpserver_echo_CPPFLAGS	= $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
 
-#uniset_mbtest2_SOURCES 	= mbtester2.cc
-#uniset_mbtest2_LDADD 	= $(top_builddir)/lib/libUniSet.la
+#@PACKAGE@_mbtest2_SOURCES 	= mbtester2.cc
+#@PACKAGE@_mbtest2_LDADD 	= $(top_builddir)/lib/libUniSet2.la
