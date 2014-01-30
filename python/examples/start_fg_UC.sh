@@ -2,4 +2,4 @@
 
 START=uniset-start.sh
 
-${START} -f ./testUC.py --unideb-add-levels info,warn,crit
+${START} -f ./testUC.py --ulog-add-levels info,warn,crit
