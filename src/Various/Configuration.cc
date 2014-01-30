@@ -161,6 +161,13 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 //    PassiveTimer pt(UniSetTimer::WaitUpTime);
     ulogsys << "*** configure from file: " << fileConfName << endl;
 
+    // -------------------------------------------------------------------------
+    xmlSensorsSec = 0;
+    xmlObjectsSec = 0;
+    xmlControllersSec = 0;
+    xmlServicesSec = 0;
+    xmlNodesSec = 0;
+   // -------------------------------------------------------------------------
     char curdir[FILENAME_MAX];
     getcwd(curdir,FILENAME_MAX);
 
@@ -880,12 +887,6 @@ UniSetTypes::ObjectId Configuration::getNodeID( const std::string& name )
     return oind->getNodeId( name );
 }
 
-// -------------------------------------------------------------------------
-xmlNode* Configuration::xmlSensorsSec = 0;
-xmlNode* Configuration::xmlObjectsSec = 0;
-xmlNode* Configuration::xmlControllersSec = 0;
-xmlNode* Configuration::xmlServicesSec = 0;
-xmlNode* Configuration::xmlNodesSec = 0;
 // -------------------------------------------------------------------------
 xmlNode* Configuration::getXMLSensorsSection()
 {

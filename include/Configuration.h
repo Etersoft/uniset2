@@ -210,11 +210,11 @@ namespace UniSetTypes
         std::string secServices;
 
         // xml
-        static xmlNode* xmlSensorsSec;
-        static xmlNode* xmlObjectsSec;
-        static xmlNode* xmlControllersSec;
-        static xmlNode* xmlServicesSec;
-        static xmlNode* xmlNodesSec;
+        xmlNode* xmlSensorsSec;
+        xmlNode* xmlObjectsSec;
+        xmlNode* xmlControllersSec;
+        xmlNode* xmlServicesSec;
+        xmlNode* xmlNodesSec;
 
         ObjectId localDBServer;
         ObjectId localNode;
