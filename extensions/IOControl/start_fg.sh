@@ -9,11 +9,8 @@ uniset-start.sh -f ./uniset-iocontrol --smemory-id SharedMemory \
 	 --io-polltime 100 \
 	 --io-s-filter-field io \
 	 --io-s-filter-value 1 \
-	 --io-numcards 2 \
-	 --iodev1 /dev/null \
-	 --iodev2 /dev/null \
 	 --io-test-lamp Input1_S \
 	 --io-heartbeat-id AI_AS \
 	 --io-sm-ready-test-sid Input1_S \
-	--unideb-add-levels info,crit,warn,level9,system
+	 --unideb-add-levels any --dlog-add-levels any
 

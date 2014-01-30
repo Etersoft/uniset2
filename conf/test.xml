@@ -47,22 +47,20 @@
 		</UniExchange>
 		<MBMaster1 iaddr="127.0.0.1" levels="info,warn,crit" name="MBMaster1" poll_time="200" port="30000" reply_timeout="60">
 			<DeviceList>
-				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" timeout="5000" modeSensor="MB1_Mode_AS"/>
+				<item addr="0x01" invert="0" modeSensor="MB1_Mode_AS" respondSensor="RespondRTU_S" timeout="5000"/>
 			</DeviceList>
 		</MBMaster1>
 		<MBMultiMaster1 levels="info,warn,crit" name="MBMaster1" poll_time="200" reply_timeout="60">
 			<DeviceList>
-				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" timeout="5000" modeSensor="MB1_Mode_AS"/>
+				<item addr="0x01" invert="0" modeSensor="MB1_Mode_AS" respondSensor="RespondRTU_S" timeout="5000"/>
 			</DeviceList>
 			<GateList>
 				<item ip="127.0.0.1" port="2048" recv_timeout="200"/>
 				<item ip="127.0.0.1" port="2049" recv_timeout="200"/>
 			</GateList>
 		</MBMultiMaster1>
-
 		<MBSlave2 addr="0x3">
 		</MBSlave2>
-
 		<MBSlave1 addr="0x31" aftersend-pause="0" dev="/dev/ttyS0" levels="info,warn,crit" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600">
 			<filelist>
 				<!-- Список файлов разрешённых для передачи по modbus
@@ -76,47 +74,47 @@
 				<item directory="/tmp/" id="3" name="configure.xml.gz"/>
 				<item directory="ConfDir" id="4" name="SERIAL"/>
 			</filelist>
-			<MEI> 
+			<MEI>
 				<!-- ВНИМАНИЕ: должен заполняться в соответсвии со стандартом. ObjectID и DeviceID не случайны.. -->
 				<device id="0x01">
-					<object id="0" comm="VendorName">
+					<object comm="VendorName" id="0">
 						<string value="etersoft"/>
 					</object>
-					<object id="1" comm="ProductCode">
+					<object comm="ProductCode" id="1">
 						<string value="uniset"/>
 					</object>
-					<object id="2" comm="MajorMinorRevision">
+					<object comm="MajorMinorRevision" id="2">
 						<string value="1.6"/>
 					</object>
 				</device>
 				<device id="0x02">
-					<object id="3" comm="VendorURL">
+					<object comm="VendorURL" id="3">
 						<string value="http://www.etersoft.ru"/>
 					</object>
-					<object id="4" comm="ProductName">
+					<object comm="ProductName" id="4">
 						<string value="uniset"/>
 					</object>
-					<object id="5" comm="ModelName">
+					<object comm="ModelName" id="5">
 						<string value="uniset:MBSlave"/>
 					</object>
-					<object id="6" comm="UserApplicationName">
+					<object comm="UserApplicationName" id="6">
 						<string value="MBSlave1"/>
 					</object>
 				</device>
 				<device id="0x03">
-					<object id="128" comm="private objects">
+					<object comm="private objects" id="128">
 						<string id="129" value="etersoft"/>
 						<string id="130" value="uniset"/>
 						<string id="131" value="1.6"/>
 						<string id="132" value="http://www.etersoft.ru"/>
 						<string id="133" value="MBSlave1"/>
 					</object>
-                </device>
+				</device>
 			</MEI>
 		</MBSlave1>
 		<RTUExchange name="RTUExchange">
 			<DeviceList>
-				<item addr="0x01" invert="0" respondSensor="RespondRTU_S" modeSensor="MB1_Mode_AS" timeout="5000"/>
+				<item addr="0x01" invert="0" modeSensor="MB1_Mode_AS" respondSensor="RespondRTU_S" timeout="5000"/>
 			</DeviceList>
 		</RTUExchange>
 		<UDPExchange name="UDPExchange"/>
@@ -125,11 +123,11 @@
 		<HeartBeatTime time_msec="5000"/>
 		<TestGen input1_s="Input1_S" input2_s="DumpSensor1_S" name="TestGen" output1_c="DO_C"/>
 		<RRDStorage1 name="RRDStorage1">
-			<rrd filename="rrdtest.rrd" filter_field="rrd" filter_value="1" step="5" ds_field="rrd1_ds" overwrite="0">
+			<rrd ds_field="rrd1_ds" filename="rrdtest.rrd" filter_field="rrd" filter_value="1" overwrite="0" step="5">
 				<item rra="RRA:AVERAGE:0.5:1:4320"/>
 				<item rra="RRA:MAX:0.5:1:4320"/>
 			</rrd>
-			<rrd filename="rrdtest2.rrd" filter_field="rrd" filter_value="2" step="10" ds_field="rrd2_ds" overwrite="0">
+			<rrd ds_field="rrd2_ds" filename="rrdtest2.rrd" filter_field="rrd" filter_value="2" overwrite="0" step="10">
 				<item rra="RRA:AVERAGE:0.5:1:4320"/>
 				<item rra="RRA:MAX:0.5:1:4320"/>
 			</rrd>
@@ -145,11 +143,12 @@
 	textname 	- текстовое имя датчика
 -->
 		<nodes port="2809" unet_broadcast_ip="192.168.1.255" unet_broadcast_ip2="192.168.122.255">
-			<item id="3000" dbserver="DBServer1" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="0" unet_port="2048">
+			<item dbserver="DBServer1" id="3000" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" unet_ignore="0" unet_port="2048">
 				<iocards>
 					<item card="1" name="DI32"/>
 					<item card="2" name="DO32"/>
-					<item baddr="0x110" card="3" dev="/dev/comedi1" name="UNIO48" subdev1="TBI24_0" subdev2="TBI16_8"/>
+					<item baddr="0x110" card="3" dev="/dev/null" name="UNIO48" subdev1="TBI24_0" subdev2="TBI16_8"/>
+					<item avg="1" card="4" dev="/dev/null" module="aixx5a" module_params="1,1" name="AI16-5A-3"/>
 				</iocards>
 			</item>
 			<item id="3001" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode1" textname="Локальный узел" unet_ignore="0" unet_port="2049"/>
@@ -159,8 +158,8 @@
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">
 			<item db_ignore="1" default="1" id="1" iotype="DI" name="Input1_S" priority="Medium" textname="Команда 1"/>
-			<item id="2" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="11" mbtype="rtu" name="Input2_S" priority="Medium" rs="4" textname="Команда 2"/>
-			<item id="3" iotype="DI"  mbtcp="1" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" name="Input3_S" priority="Medium" textname="Команда 3"/>
+			<item id="2" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" mbtype="rtu" name="Input2_S" nbit="11" priority="Medium" rs="4" textname="Команда 2"/>
+			<item id="3" iotype="DI" mbtcp="1" mbtcp_mbaddr="0x02" mbtcp_mbfunc="0x03" mbtcp_mbreg="0x02" mbtcp_mbtype="rtu" name="Input3_S" priority="Medium" textname="Команда 3"/>
 			<item id="4" iotype="DI" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input4_S" priority="Medium" rs="2" textname="Команда 4"/>
 			<item id="5" iotype="DI" name="Input5_S" priority="Medium" textname="Команда 5" udp="2"/>
 			<item id="6" iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2">
@@ -177,7 +176,7 @@
 					<consumer name="PLCProcessor" type="objects"/>
 				</consumers>
 			</item>
-			<item id="30044" iotype="DI" depend="AlarmFuse2_AS" depend_value="3" name="DI1_S" priority="Medium" rs="1" rs_mbaddr="0x01" rs_mbfunc="0x02" rs_mbreg="30044" rs_mbtype="rtu" textname="Test DI sensor"/>
+			<item depend="AlarmFuse2_AS" depend_value="3" id="30044" iotype="DI" name="DI1_S" priority="Medium" rs="1" rs_mbaddr="0x01" rs_mbfunc="0x02" rs_mbreg="30044" rs_mbtype="rtu" textname="Test DI sensor"/>
 			<item id="30045" iotype="DI" name="DI2_S" priority="Medium" rs="1" rs_mbaddr="0x01" rs_mbfunc="0x02" rs_mbreg="30045" rs_mbtype="rtu" textname="Test DI sensor"/>
 			<item id="13" iotype="DI" name="Threshold1_S" priority="Medium" textname="Порог"/>
 			<item id="14" iotype="DI" name="TestMode_S" priority="Medium" textname="test"/>
@@ -201,16 +200,17 @@
 			<item id="32" iotype="AI" mbtcp_mbaddr="1" mbtcp_mbfunc="0x04" mbtcp_mbreg="43" mbtcp_mbtype="rtu" mbtcp_vtype="I2" name="performance1" noprecision="1" precision="6" rs="mbmaster" textname="Производительность танка 1"/>
 			<item id="33" iotype="DI" name="Message1" priority="Medium" textname="Текст сообщения 1"/>
 			<item id="34" iotype="AI" name="MB1_Mode_AS" priority="Medium" textname="ModbusExchange Mode"/>
-
-			<item id="50" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="0" mbtype="rtu" name="Input50_S" priority="Medium" rs="5" textname="Команда 2"/>
-			<item id="51" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" ntit="1" mbtype="rtu" name="Input51_S" priority="Medium" rs="5" textname="Команда 2"/>
-			<item id="52" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="1" mbtype="rtu" name="Input52_S" priority="Medium" rs="5" textname="Команда 2"/>
-			<item id="53" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" nbit="2" mbtype="rtu" name="Input53_S" priority="Medium" rs="5" textname="Команда 2"/>
-			<item id="54" iotype="AI" name="AI54_S" textname="AI sensor 54" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
-			<item id="55" iotype="AI" name="AI55_S" textname="AI sensor 55" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
-			<item id="56" iotype="AI" name="AI56_S" textname="AI sensor 56" rrd="2" rrd2_ds="COUNTER:20:U:U"/>
-			<item id="57" iotype="AI" name="AI57_S" textname="AI sensor 57" rrd="2" rrd2_ds="DERIVE:20:U:U"/>
+			<item id="50" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" mbtype="rtu" name="Input50_S" nbit="0" priority="Medium" rs="5" textname="Команда 2"/>
+			<item id="51" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" mbtype="rtu" name="Input51_S" ntit="1" priority="Medium" rs="5" textname="Команда 2"/>
+			<item id="52" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" mbtype="rtu" name="Input52_S" nbit="1" priority="Medium" rs="5" textname="Команда 2"/>
+			<item id="53" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" mbtype="rtu" name="Input53_S" nbit="2" priority="Medium" rs="5" textname="Команда 2"/>
+			<item id="54" iotype="AI" name="AI54_S" rrd="1" rrd1_ds="GAUGE:20:U:U" textname="AI sensor 54"/>
+			<item id="55" iotype="AI" name="AI55_S" rrd="1" rrd1_ds="GAUGE:20:U:U" textname="AI sensor 55"/>
+			<item id="56" iotype="AI" name="AI56_S" rrd="2" rrd2_ds="COUNTER:20:U:U" textname="AI sensor 56"/>
+			<item id="57" iotype="AI" name="AI57_S" rrd="2" rrd2_ds="DERIVE:20:U:U" textname="AI sensor 57"/>
 			<item id="58" iotype="AI" name="SVU_AskCount_AS" textname="svu asl count"/>
+			<item aref="2" card="4" channel="0" id="59" io="1" iotype="AI" name="AI59_S" subdev="2" textname="AI sensor 59" mbaddr="0x01" mbfunc="0x03" mbreg="200" mbtype="rtu" rs="6"/>
+			<item io="1" hilimit="10" id="60" card="4" inverse="1" iotype="DI" lowlimit="5" name="T60_S" textname="DI 69" threshold_aid="AI59_S"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">
