@@ -91,7 +91,7 @@ namespace UniSetTypes
         inline ObjectId getDBServer() const { return localDBServer; }        /*!< получение идентификатора DBServer-а */
         inline ObjectId getLocalNode() const { return localNode; }        /*!< получение идентификатора локального узла */
         inline std::string getLocalNodeName() const { return localNodeName; }        /*!< получение название локального узла */
-        inline const std::string getNSName() const { return NSName; }        
+        inline const std::string getNSName() const { return NSName; }
 
         // repository
         inline std::string getRootSection() const { return secRoot; }
@@ -182,9 +182,9 @@ namespace UniSetTypes
         void setConfFileName( const std::string& fn="" );
         void initParameters();
         void setLocalNode( const std::string& nodename );
-        
+
         std::string getPort( const std::string& port="" );
-            
+
         std::string rootDir;
         UniXML unixml;
 
@@ -192,7 +192,7 @@ namespace UniSetTypes
         const char* const* _argv;
         CORBA::ORB_var orb;
         CORBA::PolicyList policyList;
-        
+
         std::string NSName;        /*!< имя сервиса именования на ланной машине (обычно "NameService") */
         unsigned int countOfNet;    /*!< количество резервных каналов */
         unsigned int repeatCount;    /*!< количество попыток получить доступ к удаленному объекту
@@ -210,15 +210,15 @@ namespace UniSetTypes
         std::string secServices;
 
         // xml
-        static xmlNode* xmlSensorsSec;
-        static xmlNode* xmlObjectsSec;
-        static xmlNode* xmlControllersSec;
-        static xmlNode* xmlServicesSec;
-        static xmlNode* xmlNodesSec;
+        xmlNode* xmlSensorsSec;
+        xmlNode* xmlObjectsSec;
+        xmlNode* xmlControllersSec;
+        xmlNode* xmlServicesSec;
+        xmlNode* xmlNodesSec;
 
         ObjectId localDBServer;
         ObjectId localNode;
-        
+
         std::string localNodeName;
         std::string fileConfName;
         std::string imagesDir;
@@ -231,21 +231,21 @@ namespace UniSetTypes
         std::string lockDir;
         bool localIOR;
         bool transientIOR;
-        
+
         int heartbeat_msec;
     };
 
     /*! Глобальный указатель на конфигуратор */
     extern Configuration* conf;
-    
+
     /*! Глобальный объект для вывода логов */
     extern DebugStream ulog;
 
     // Инициализация UniSetTypes::conf.
     // ( учитываются параметры командной строки --confile и --id-from-config )
     void uniset_init( int argc, const char* const* argv, const std::string& xmlfile="configure.xml" );
-    
-    
+
+
 }    // end of UniSetTypes namespace
 // --------------------------------------------------------------------------
 // "синтаксический сахар"..для логов

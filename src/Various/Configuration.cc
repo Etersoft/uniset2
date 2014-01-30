@@ -161,6 +161,13 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 //    PassiveTimer pt(UniSetTimer::WaitUpTime);
     ulogsys << "*** configure from file: " << fileConfName << endl;
 
+    // -------------------------------------------------------------------------
+    xmlSensorsSec = 0;
+    xmlObjectsSec = 0;
+    xmlControllersSec = 0;
+    xmlServicesSec = 0;
+    xmlNodesSec = 0;
+   // -------------------------------------------------------------------------
     char curdir[FILENAME_MAX];
     getcwd(curdir,FILENAME_MAX);
 
@@ -881,17 +888,11 @@ UniSetTypes::ObjectId Configuration::getNodeID( const std::string& name )
 }
 
 // -------------------------------------------------------------------------
-xmlNode* Configuration::xmlSensorsSec = 0;
-xmlNode* Configuration::xmlObjectsSec = 0;
-xmlNode* Configuration::xmlControllersSec = 0;
-xmlNode* Configuration::xmlServicesSec = 0;
-xmlNode* Configuration::xmlNodesSec = 0;
-// -------------------------------------------------------------------------
 xmlNode* Configuration::getXMLSensorsSection()
 {
     if( xmlSensorsSec )
         return xmlSensorsSec;
-    
+
     xmlSensorsSec = unixml.findNode(unixml.getFirstNode(),"sensors");
     return xmlSensorsSec;
 }
@@ -900,7 +901,7 @@ xmlNode* Configuration::getXMLObjectsSection()
 {
     if( xmlObjectsSec )
         return xmlObjectsSec;
-    
+
     xmlObjectsSec = unixml.findNode(unixml.getFirstNode(),"objects");
     return xmlObjectsSec;
 }
@@ -909,7 +910,7 @@ xmlNode* Configuration::getXMLControllersSection()
 {
     if( xmlControllersSec )
         return xmlControllersSec;
-    
+
     xmlControllersSec = unixml.findNode(unixml.getFirstNode(),"controllers");
     return xmlControllersSec;
 
@@ -919,7 +920,7 @@ xmlNode* Configuration::getXMLServicesSection()
 {
     if( xmlServicesSec )
         return xmlServicesSec;
-    
+
     xmlServicesSec = unixml.findNode(unixml.getFirstNode(),"services");
     return xmlServicesSec;
 }
