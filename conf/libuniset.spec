@@ -8,7 +8,7 @@
 
 Name: libuniset
 Version: 2.0
-Release: alt0.2
+Release: alt0.3
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -333,6 +333,12 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Thu Jan 30 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt0.3
+- optimization: avoiding the use of 'alias mechanism'
+  ('objectid@virtualnode:realnode' ==> 'objectid')
+- add ObjectActivator::Instance function (singlton pattern)
+- minor fixes
+
 * Fri Jan 24 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt0.2
 - oprimization processing message (warning: use reinterpret_cast<> )
 
