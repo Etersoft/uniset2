@@ -26,12 +26,16 @@ class ObjectIndex_idXML:
 	
 	protected:
 		virtual void build( UniXML& xml );
-		void read_section( UniXML& xml, const std::string sec );
-		void read_nodes( UniXML& xml, const std::string sec );
+		void read_section( UniXML& xml, const std::string& sec );
+		void read_nodes( UniXML& xml, const std::string& sec );
 	
 	private:
 		typedef std::map<UniSetTypes::ObjectId, UniSetTypes::ObjectInfo> MapObjects;
 		MapObjects omap;
+
+		// чтобы не хранить дублирующие структуры (ObjectInfo)
+		typedef std::map<std::string, UniSetTypes::ObjectId> MapObjectKey;
+        MapObjectKey mok; // для обратного писка
 };
 // -----------------------------------------------------------------------------------------
 #endif
