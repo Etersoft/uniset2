@@ -59,7 +59,7 @@ class IOController:
                                 UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
 
 //     ----------------------------------------------------------------
-        virtual void setUndefinedState( UniSetTypes::ObjectId sid,
+        virtual void setUndefinedState( UniSetTypes::ObjectId sid, 
                                         CORBA::Boolean undefined, 
                                         UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
 
@@ -74,13 +74,13 @@ class IOController:
         virtual IOController_i::SensorIOInfo getSensorIOInfo( UniSetTypes::ObjectId sid );
 
         virtual CORBA::Long getRawValue(UniSetTypes::ObjectId sid);
-        virtual void calibrate(UniSetTypes::ObjectId sid,
+        virtual void calibrate(UniSetTypes::ObjectId sid, 
                                     const IOController_i::CalibrateInfo& ci,
                                     UniSetTypes::ObjectId adminId );
 
         IOController_i::CalibrateInfo getCalibrateInfo( UniSetTypes::ObjectId sid );
 
-        inline IOController_i::SensorInfo SensorInfo( const UniSetTypes::ObjectId sid,
+        inline IOController_i::SensorInfo SensorInfo( const UniSetTypes::ObjectId sid, 
                                 const UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode())
         {
             IOController_i::SensorInfo si;

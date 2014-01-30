@@ -334,7 +334,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %changelog
 * Thu Jan 30 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt0.3
-- optimization: avoiding the use of 'alias mechanism'
+- optimization: avoiding the use of 'alias mechanism' 
   ('objectid@virtualnode:realnode' ==> 'objectid')
 - add ObjectActivator::Instance function (singlton pattern)
 - minor fixes

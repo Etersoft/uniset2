@@ -143,7 +143,7 @@ long IOController::localGetValue( IOController::IOStateList::iterator& li, const
 
     // -------------
     ostringstream err;
-    err << myname << "(localGetValue): Not found sensor (" << sid << ") "
+    err << myname << "(localGetValue): Not found sensor (" << sid << ") " 
         << conf->oind->getNameById(sid);
 
     uinfo << err.str() << endl;
@@ -240,7 +240,7 @@ void IOController::setValue( UniSetTypes::ObjectId sid, CORBA::Long value, UniSe
 }
 // ------------------------------------------------------------------------------------------
 void IOController::localSetValue( IOController::IOStateList::iterator& li,
-                                  UniSetTypes::ObjectId sid,
+                                  UniSetTypes::ObjectId sid, 
                                   CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
     if( sup_id == UniSetTypes::DefaultObjectId )
@@ -350,7 +350,7 @@ void IOController::ioRegistration( const USensorInfo& ainf, bool force )
             if( li!=ioList.end() )
             {
                 ostringstream err;
-                err << "Попытка повторной регистрации датчика("<< ainf.si.id << "). имя: "
+                err << "Попытка повторной регистрации датчика("<< ainf.si.id << "). имя: " 
                     << conf->oind->getNameById(ainf.si.id);
                 throw ObjectNameAlready(err.str().c_str());
             }
@@ -498,7 +498,7 @@ IOController_i::SensorIOInfo IOController::getSensorIOInfo( const UniSetTypes::O
 
     // -------------
     ostringstream err;
-    err << myname << "(getSensorIOInfo): Unknown sensor (" << sid << ")"
+    err << myname << "(getSensorIOInfo): Unknown sensor (" << sid << ")" 
         << conf->oind->getNameById(sid);
 
     uinfo << err.str() << endl;
@@ -512,7 +512,7 @@ CORBA::Long IOController::getRawValue( UniSetTypes::ObjectId sid )
     if( it==ioList.end() )
     {
         ostringstream err;
-        err << myname << "(getRawValue): Unknown analog sensor (" << sid << ")"
+        err << myname << "(getRawValue): Unknown analog sensor (" << sid << ")" 
             << conf->oind->getNameById(sid);
         throw IOController_i::NameNotFound(err.str().c_str());
     }
@@ -532,7 +532,7 @@ CORBA::Long IOController::getRawValue( UniSetTypes::ObjectId sid )
     return it->second.value;
 }
 // --------------------------------------------------------------------------------------------------------------
-void IOController::calibrate( UniSetTypes::ObjectId sid,
+void IOController::calibrate( UniSetTypes::ObjectId sid, 
                                 const IOController_i::CalibrateInfo& ci,
                                 UniSetTypes::ObjectId adminId )
 {
@@ -540,7 +540,7 @@ void IOController::calibrate( UniSetTypes::ObjectId sid,
     if( it==ioList.end() )
     {
         ostringstream err;
-        err << myname << "(calibrate): Unknown analog sensor (" << sid << ")"
+        err << myname << "(calibrate): Unknown analog sensor (" << sid << ")" 
             << conf->oind->getNameById(sid);
         throw IOController_i::NameNotFound(err.str().c_str());
     }
@@ -556,7 +556,7 @@ IOController_i::CalibrateInfo IOController::getCalibrateInfo( UniSetTypes::Objec
     if( it==ioList.end() )
     {
         ostringstream err;
-        err << myname << "(calibrate): Unknown analog sensor (" << sid << ")"
+        err << myname << "(calibrate): Unknown analog sensor (" << sid << ")" 
             << conf->oind->getNameById(sid);
         throw IOController_i::NameNotFound(err.str().c_str());
     }

@@ -68,7 +68,7 @@ interface IOController_i : UniSetManager_i
 
     // установка неопределённого состояния
     // (пока работает только для аналоговых датчиков)
-    void setUndefinedState(in UniSetTypes::ObjectId sid, in boolean undefined, in UniSetTypes::ObjectId sup_id )
+    void setUndefinedState(in UniSetTypes::ObjectId sid, in boolean undefined, in UniSetTypes::ObjectId sup_id ) 
                             raises(NameNotFound);
 
     // fast version (не вырабатывает исключения)
@@ -101,8 +101,8 @@ interface IOController_i : UniSetManager_i
         boolean undefined;            /*!< признак неопределённости значения */
         boolean blocked;              /*!< данное значение блокировано другим */
         long real_value;              /*!< запомненное состояние, до блокировки */
-        UniversalIO::IOType type;     /*!< тип */
-        long priority;                /*!< приоритет уведомления */
+        UniversalIO::IOType type;     /*!< тип */    
+        long priority;                /*!< приоритет уведомления */    
         IOController_i::SensorInfo si;
         long default_val;             /*!< значение по умолчанию */
         CalibrateInfo ci;             /*!< калибровочные параметры */

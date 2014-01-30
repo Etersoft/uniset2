@@ -139,7 +139,7 @@ class IONotifyController:
         virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::ObjectType("IONotifyController"); }
         virtual void askSensor(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 
-        virtual void askThreshold(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci,
+        virtual void askThreshold(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci, 
                                     UniSetTypes::ThresholdId tid, 
                                     CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Boolean invert, 
                                     UniversalIO::UIOCommand cmd );

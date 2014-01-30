@@ -173,7 +173,7 @@ IONotifyController_i::ThresholdsListSeq* SMInterface::getThresholdsList()
     {
         BEG_FUNC1(SMInterface::getThresholdsList)
         return ic->getThresholdsList();
-        END_FUNC(SMInterface::getThresholdsList)
+        END_FUNC(SMInterface::getThresholdsList) 
     }
 
     BEG_FUNC(SMInterface::getThresholdsList)

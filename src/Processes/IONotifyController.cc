@@ -171,7 +171,7 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
         smsg.node        = conf->getLocalNode();
         smsg.consumer    = ci.id;
         smsg.supplier    = getId();
-        smsg.sensor_type = li->second.type;
+        smsg.sensor_type = li->second.type;    
         smsg.priority    = (Message::Priority)li->second.priority;
         smsg.sm_tv_sec   = li->second.tv_sec;
         smsg.sm_tv_usec  = li->second.tv_usec;
@@ -195,7 +195,7 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
         }
         catch( CORBA::SystemException& ex )
         {
-            uwarn << myname << "(askSensor): " << conf->oind->getNameById(ci.id) << "@" << ci.node
+            uwarn << myname << "(askSensor): " << conf->oind->getNameById(ci.id) << "@" << ci.node 
                   << " недоступен!!(CORBA::SystemException): "
                   << ex.NP_minorString() << endl;
         }
@@ -208,7 +208,7 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
 }
 
 // ------------------------------------------------------------------------------------------
-void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
+void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid, 
                                 const UniSetTypes::ConsumerInfo& cons, UniversalIO::UIOCommand cmd)
 {
     // поиск датчика в списке 
@@ -510,7 +510,7 @@ void IONotifyController::dumpThresholdList( const UniSetTypes::ObjectId sid, con
 }
 // --------------------------------------------------------------------------------------------------------------
 
-void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci,
+void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci, 
                                     UniSetTypes::ThresholdId tid,
                                     CORBA::Long lowLimit, CORBA::Long hiLimit,  CORBA::Boolean invert, 
                                     UniversalIO::UIOCommand cmd )
@@ -682,7 +682,7 @@ bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt& 
     // запоминаем начальное время
     struct timeval tm;
     struct timezone tz;
-    tm.tv_sec = 0;
+    tm.tv_sec = 0; 
     tm.tv_usec = 0;
     gettimeofday(&tm,&tz);
     ti.tv_sec  = tm.tv_sec;
@@ -849,7 +849,7 @@ IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( UniSet
     if( it == askTMap.end() )
     {
         ostringstream err;
-        err << myname << "(getThresholds): Not found sensor (" << sid << ") "
+        err << myname << "(getThresholds): Not found sensor (" << sid << ") " 
             << conf->oind->getNameById(sid);
 
         uinfo << err.str() << endl;
@@ -863,7 +863,7 @@ IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( UniSet
     }
 
     ostringstream err;
-    err << myname << "(getThresholds): Not found for sensor (" << sid << ") "
+    err << myname << "(getThresholds): Not found for sensor (" << sid << ") " 
         << conf->oind->getNameById(sid) << " ThresholdID='" << tid << "'";
 
     uinfo << err.str() << endl;
@@ -878,7 +878,7 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( UniSetTy
     if( it == askTMap.end() )
     {
         ostringstream err;
-        err << myname << "(getThresholds): Not found sensor (" << sid << ") "
+        err << myname << "(getThresholds): Not found sensor (" << sid << ") " 
             << conf->oind->getNameById(sid);
 
         uinfo << err.str() << endl;

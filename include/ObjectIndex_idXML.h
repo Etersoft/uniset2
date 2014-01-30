@@ -28,7 +28,7 @@ class ObjectIndex_idXML:
         virtual void build( UniXML& xml );
         void read_section( UniXML& xml, const std::string& sec );
         void read_nodes( UniXML& xml, const std::string& sec );
-    
+
     private:
         typedef std::map<UniSetTypes::ObjectId, UniSetTypes::ObjectInfo> MapObjects;
         MapObjects omap;

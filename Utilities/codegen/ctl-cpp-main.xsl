@@ -81,8 +81,8 @@ int main( int argc, const char** argv )
 		obj.mylog.logFile( logname.c_str() );
 
 		</xsl:if>
-
-	UniSetActivator* act = UniSetActivator::Instance();
+      
+      	UniSetActivator* act = UniSetActivator::Instance();	
 		act-&gt;addObject(static_cast&lt;class UniSetObject*&gt;(&amp;obj));
 
 		SystemMessage sm(SystemMessage::StartUp); 

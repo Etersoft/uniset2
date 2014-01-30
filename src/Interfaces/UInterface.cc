@@ -115,7 +115,7 @@ void UInterface::initBackId( const UniSetTypes::ObjectId backid )
  * \exception IOBadParam - генерируется если указано неправильное имя датчика или секции
  * \exception IOTimeOut - генерируется если в течение времени timeout небыл получен ответ
 */
-long UInterface::getValue( const ObjectId id, const ObjectId node ) const
+long UInterface::getValue( const ObjectId id, const ObjectId node ) const 
     throw(IO_THROW_EXCEPTIONS)
 {
     if ( id == DefaultObjectId )
@@ -1157,7 +1157,7 @@ string UInterface::set_err( const std::string& pre, const ObjectId id, const Obj
         nm = "UnknownName";
 
     ostringstream s;
-    s << pre << " (" << id << ":" << node <<")" << nm;
+    s << pre << " (" << id << ":" << node <<")" << nm; 
     return s.str();
 }
 // --------------------------------------------------------------------------------------------
