@@ -1,3 +1,3 @@
-bin_PROGRAMS 			= uniset-smonit
-uniset_smonit_LDADD 	= $(top_builddir)/lib/libUniSet.la
-uniset_smonit_SOURCES 	= smonitor.cc
+bin_PROGRAMS 			= @PACKAGE@-smonit
+@PACKAGE@_smonit_LDADD 	= $(top_builddir)/lib/libUniSet2.la
+@PACKAGE@_smonit_SOURCES 	= smonitor.cc

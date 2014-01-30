@@ -12,7 +12,7 @@ MAILDOMAIN=server
 TOPDIR=/var/ftp/pvt/Etersoft/Ourside/
 
 PKGNAME=uniset
-SPECNAME=libuniset.spec
+SPECNAME=libuniset2.spec
 
 PROJECT=$1
 test -n "$PROJECT" || PROJECT=$PKGNAME

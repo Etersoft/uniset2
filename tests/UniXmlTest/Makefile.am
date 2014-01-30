@@ -4,6 +4,6 @@
 
 bin_PROGRAMS 			= xmltest
 xmltest_SOURCES 	= XmlTest.cc
-xmltest_LDADD 		= $(top_builddir)/lib/libUniSet.la
+xmltest_LDADD 		= $(top_builddir)/lib/libUniSet2.la
 xmltest_CPPFLAGS	= -I$(top_builddir)/include
 

@@ -1,21 +1,21 @@
 bin_PROGRAMS		= @PACKAGE@-network
 
-# не забывайте править версию в pc-файле 
+# не забывайте править версию в2.pc-файле
 UNET_VER=@LIBVER@
 
-lib_LTLIBRARIES 	= libUniSetNetwork.la
-libUniSetNetwork_la_LDFLAGS  = -version-info $(UNET_VER) 
-libUniSetNetwork_la_LIBADD = $(SIGC_LIBS) $(top_builddir)/lib/libUniSet.la \
-	$(top_builddir)/extensions/lib/libUniSetExtensions.la \
-	$(top_builddir)/extensions/SharedMemory/libUniSetSharedMemory.la
-libUniSetNetwork_la_CPPFLAGS	= $(SIGC_CFLAGS) \
+lib_LTLIBRARIES 	= libUniSet2Network.la
+libUniSet2Network_la_LDFLAGS  = -version-info $(UNET_VER)
+libUniSet2Network_la_LIBADD = $(SIGC_LIBS) $(top_builddir)/lib/libUniSet2.la \
+	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
+	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la
+libUniSet2Network_la_CPPFLAGS	= $(SIGC_CFLAGS) \
 	-I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/SharedMemory
-libUniSetNetwork_la_SOURCES 	= UniExchange.cc 
+libUniSet2Network_la_SOURCES 	= UniExchange.cc
 
-@PACKAGE@_network_LDADD 	= libUniSetNetwork.la \
-	$(top_builddir)/lib/libUniSet.la \
-	$(top_builddir)/extensions/lib/libUniSetExtensions.la
+@PACKAGE@_network_LDADD 	= libUniSet2Network.la \
+	$(top_builddir)/lib/libUniSet2.la \
+	$(top_builddir)/extensions/lib/libUniSet2Extensions.la
 @PACKAGE@_network_CPPFLAGS	= $(SIGC_CFLAGS) -I$(top_builddir)/extensions/include
 @PACKAGE@_network_SOURCES 	= uninet.cc
 
@@ -24,7 +24,7 @@ devel_include_HEADERS = *.h
 devel_includedir = $(pkgincludedir)/extensions
 
 pkgconfigdir 	= $(libdir)/pkgconfig
-pkgconfig_DATA 	= libUniSetNetwork.pc
+pkgconfig_DATA 	= libUniSet2Network.pc
 
 all-local:
 	ln -sf ../UniNetwork/$(devel_include_HEADERS) ../include

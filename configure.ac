@@ -3,7 +3,7 @@
 # See doc: http://www.gnu.org/software/hello/manual/autoconf/Generic-Programs.html
 
 # AC_PREREQ(2.59)
-AC_INIT([uniset], [2.0.0], pv@etersoft.ru)
+AC_INIT([uniset2], [2.0.0], pv@etersoft.ru)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME,AC_PACKAGE_VERSION)
 
 # AC_CONFIG_MACRO_DIR([m4])
@@ -199,7 +199,7 @@ AC_TYPE_SIGNAL
 AC_CHECK_FUNCS([atexit getcwd gettimeofday atomic_set])
 
 AC_CONFIG_FILES([Makefile
-				 libUniSet.pc
+				 libUniSet2.pc
 				 lib/Makefile
 				 IDL/Makefile
 				 IDL/UniSetTypes/Makefile
@@ -232,32 +232,32 @@ AC_CONFIG_FILES([Makefile
 				 Utilities/codegen/uniset-codegen
 				 Utilities/codegen/tests/Makefile
 				 extensions/Makefile
-				 extensions/libUniSetExtensions.pc
+				 extensions/libUniSet2Extensions.pc
 				 extensions/lib/Makefile
 				 extensions/include/Makefile
 				 extensions/DBServer-MySQL/Makefile
-				 extensions/DBServer-MySQL/libUniSetMySQL.pc
+				 extensions/DBServer-MySQL/libUniSet2MySQL.pc
 				 extensions/DBServer-SQLite/Makefile
-				 extensions/DBServer-SQLite/libUniSetSQLite.pc
+				 extensions/DBServer-SQLite/libUniSet2SQLite.pc
 				 extensions/IOControl/Makefile
-				 extensions/IOControl/libUniSetIOControl.pc
+				 extensions/IOControl/libUniSet2IOControl.pc
 				 extensions/ModbusMaster/Makefile
-				 extensions/ModbusMaster/libUniSetRTU.pc
-				 extensions/ModbusMaster/libUniSetMBTCPMaster.pc
+				 extensions/ModbusMaster/libUniSet2RTU.pc
+				 extensions/ModbusMaster/libUniSet2MBTCPMaster.pc
 				 extensions/ModbusSlave/Makefile
-				 extensions/ModbusSlave/libUniSetMBSlave.pc
+				 extensions/ModbusSlave/libUniSet2MBSlave.pc
 				 extensions/LogicProcessor/Makefile
-				 extensions/LogicProcessor/libUniSetLogicProcessor.pc
+				 extensions/LogicProcessor/libUniSet2LogicProcessor.pc
 				 extensions/SMViewer/Makefile
 				 extensions/UniNetwork/Makefile
-				 extensions/UniNetwork/libUniSetNetwork.pc
+				 extensions/UniNetwork/libUniSet2Network.pc
 				 extensions/UNetUDP/Makefile
-				 extensions/UNetUDP/libUniSetUNetUDP.pc
+				 extensions/UNetUDP/libUniSet2UNetUDP.pc
 				 extensions/SharedMemory/Makefile
-				 extensions/SharedMemory/libUniSetSharedMemory.pc
+				 extensions/SharedMemory/libUniSet2SharedMemory.pc
 				 extensions/SharedMemoryPlus/Makefile
 				 extensions/RRDServer/Makefile
-				 extensions/RRDServer/libUniSetRRDServer.pc
+				 extensions/RRDServer/libUniSet2RRDServer.pc
 				 extensions/tests/Makefile
 				 extensions/tests/SMemoryTest/Makefile
 				 python/lib/Makefile
@@ -267,4 +267,4 @@ AC_CONFIG_FILES([Makefile
 AC_OUTPUT
 
 #				 extensions/SMDBServer/Makefile
-#				 extensions/SMDBServer/libUniSetSMDBServer.pc
+#				 extensions/SMDBServer/libUniSet2SMDBServer.pc

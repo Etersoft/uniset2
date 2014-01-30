@@ -2,7 +2,7 @@
 
 bin_SCRIPTS = @PACKAGE@-codegen
 
-xsldir 		= $(datadir)/uniset/xslt
+xsldir 		= $(datadir)/@PACKAGE@/xslt
 xsl_DATA 	= *.xsl skel*
 
 all-local:

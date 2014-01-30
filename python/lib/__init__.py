@@ -5,6 +5,6 @@ from UGlobal import *
 from UniXML import *
 from UInterface import *
 
-from pyUniSet import *
+from pyUniSet2 import *
 from pyUModbus import *
 from pyUConnector import *

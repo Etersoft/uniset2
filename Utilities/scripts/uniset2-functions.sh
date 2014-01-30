@@ -37,11 +37,11 @@ function set_omni_port
 {
 	while [ -n "$1" ]; do
 		case "$1" in
-			-p|--port) 
+			-p|--port)
 				shift
 					OMNIPORT=$1;
-					echo  "set OMNIPORT=$1" 
-				shift; 
+					echo  "set OMNIPORT=$1"
+				shift;
 				break;
 			;;
 
@@ -52,7 +52,7 @@ function set_omni_port
 	done
 }
 
-function set_omni 
+function set_omni
 {
 	# Каталог для хранения записей omniORB
 	OMNILOG=$TMPDIR/omniORB
@@ -92,8 +92,8 @@ function runOmniNames()
 		omniTest=$(ps aux | grep -q $OMNINAME | grep $USER  | grep -v grep | grep -v $0 | wc -l);
 	fi
 
-	if [ $omniTest \> 0 ]; 
-	then	 
+	if [ $omniTest \> 0 ];
+	then
 		echo $OMNINAME уже запущен. #Прерываем.
 		return 0;
 	fi
@@ -120,7 +120,7 @@ function runOmniNames()
 		return 1;
 	fi
 	#echo $! $OMNINAME >>$RANSERVICES
-	
+
 	if [ $(grep -q $OMNINAME $RANSERVICES | wc -l) \= 0 ]
 	then
 		echo 0 $OMNINAME >>$RANSERVICES

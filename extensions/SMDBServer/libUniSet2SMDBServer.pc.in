@@ -3,9 +3,9 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libUniSetSMDBServer
+Name: libUniSet2SMDBServer
 Description: Support library for UniSetSMDBServer
-Requires: libUniSetExtensions
+Requires: libUniSet2Extensions
 Version: @VERSION@
-Libs: -L${libdir} -lUniSetSMDBServer
-Cflags: -I${includedir}/uniset
+Libs: -L${libdir} -lUniSet2SMDBServer
+Cflags: -I${includedir}/@PACKAGE@
