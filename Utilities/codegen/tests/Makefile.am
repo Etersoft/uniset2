@@ -1,0 +1,25 @@
+noinst_PROGRAMS = test test2
+#test2
+
+test_LDADD 		= $(top_builddir)/lib/libUniSet.la
+test_CXXFLAGS	= -I$(top_builddir)/include
+test_SOURCES 	= TestGen_SK.cc TestGen.cc TestGen-main.cc
+
+test2_LDADD 	= $(top_builddir)/lib/libUniSet.la
+test2_CXXFLAGS	= -I$(top_builddir)/include
+test2_SOURCES 	= TestGenAlone_SK.cc TestGenAlone.cc TestGenAlone-main.cc
+
+GENERATED=TestGen_SK.h TestGen_SK.cc TestGen-main.cc 
+GENERATED2=TestGenAlone_SK.h TestGenAlone_SK.cc TestGenAlone-main.cc
+
+$(GENERATED): ../@PACKAGE@-codegen testgen.src.xml ../*.xsl
+	@UNISET_CODEGEN@ --local-include -l --ask -n TestGen testgen.src.xml
+
+$(GENERATED2): ../@PACKAGE@-codegen testgen-alone.src.xml ../*.xsl
+	@UNISET_CODEGEN@ --local-include -l --ask --alone -n TestGenAlone testgen-alone.src.xml
+
+clean-local:
+	rm -rf $(GENERATED) $(GENERATED2)
+
+#all-local: $(GENERATED)
+#	

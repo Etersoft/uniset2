@@ -1,0 +1,158 @@
+#!/bin/sh
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+datarootdir=@datarootdir@
+datadir=@datadir@
+sysconfdir=@sysconfdir@
+
+top_builddir=@top_builddir@
+
+xsltdir=@datadir@/uniset/xslt
+
+PROG="${0##*/}"
+
+print_usage()
+{
+    [ "$1" = 0 ] || exec >&2
+    cat <<EOF
+Usage: $PROG [options] [xmlfile]
+
+$PROG 	- generate source code for control process
+xmlfile - source xml-file
+
+Valid options are:
+  -m, --main filename for main.cc. Default: main.cc
+  -n, --name filename for *_SK files (base class implementation). Default: xmlfilename_SK
+  -h, --help	display help screen
+EOF
+    [ -n "$1" ] && exit "$1" || exit
+}
+
+#parse command line options
+TEMP=`getopt -n $PROG -o h,n:,m:,a,l -l help,name:,main:,no-main,topdir:,path:,alone,ask,local,local-include,add-cc-include,add-hh-include -- "$@"` || exit 1
+eval set -- "$TEMP"
+
+name=
+uni_h=
+uni_cc=
+uni_main=
+no_main=
+xmlfile=
+alone=
+ask=
+localinc=0
+add_cc_inc=
+add_hh_inc=
+xsltpath=
+
+xls_h="ctl-cpp-h.xsl"
+xls_c="ctl-cpp-cc.xsl"
+xls_m="ctl-cpp-main.xsl"
+
+while :; do
+    case "$1" in
+	-h|--help) print_usage 0
+	    ;;
+	-n|--name)
+	    shift
+		name="$1"
+	    ;;
+	-m|--main)
+	    shift
+		uni_main="$1".cc
+	    ;;
+	--no-main)
+		no_main=1
+	    ;;
+	--topdir)
+		shift
+		top_builddir="$1"
+		;;
+	--alone)
+		xls_h="ctl-cpp-h-alone.xsl"
+		xls_c="ctl-cpp-cc-alone.xsl"
+		xls_m="ctl-cpp-main-alone.xsl"
+		;;
+
+	--with-prev-values)
+		prev_val=1
+		;;
+
+	--local-include)
+		localinc=1
+		;;
+
+	--add-cc-include)
+		add_cc_inc="${add_cc_inc} $1"
+		;;
+
+	--add-hh-include)
+		add_hh_inc="${add_hh_inc} $1"
+		;;
+
+	--ask)
+		ask=1
+		;;
+
+	-l|--local)
+		xsltdir=.
+		;;
+
+	--xsltdir)
+		shift
+		xsltdir="$1"
+		;;
+
+	--path)
+		shift
+		xsltpath="--path $1"
+		;;
+
+	--) shift; break
+	;;
+	*) "unrecognized option: $1"
+	exit 1
+	;;
+    esac
+    shift
+done
+
+xmlfile="$1"
+
+[ -n "$xmlfile" ] || print_usage
+
+if [ -z "$name" ]; then
+	name=$( basename $( basename $xmlfile .xml ) .src )
+fi
+
+[ -z "${name}" ] && print_usage 0
+
+uni_h="${name}_SK.h"
+uni_cc="${name}_SK.cc"
+
+if [ -z "$uni_main" ]; then
+	uni_main="${name}-main.cc"
+fi
+
+if [ -n "$ask" ]; then
+	xls_c=$(basename $xls_c .xsl)-ask.xsl
+fi
+
+fname=$( basename $xmlfile )
+
+PARAMS=$( echo \
+		--stringparam SK_H_FILENAME "${uni_h}" \
+		--stringparam XML_FILENAME "${fname}" \
+		--stringparam CNAME "${name}" \
+		--stringparam LOCALINC "${localinc}" \
+		$xsltpath \
+		)
+#		--stringparam ADD_CC_INC "${add_cc_inc}" \
+#		--stringparam ADD_HH_INC "${add_hh_inc}" \
+
+# generate xxx_SK class
+xsltproc ${PARAMS} ${xsltdir}/${xls_h} $xmlfile > $uni_h || rm -f $uni_h
+xsltproc ${PARAMS} ${xsltdir}/${xls_c} $xmlfile > $uni_cc || rm -f $uni_cc
+[ -n "$no_main" ] || xsltproc ${PARAMS} ${xsltdir}/${xls_m} $xmlfile > $uni_main || rm -f $uni_main

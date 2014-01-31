@@ -1,0 +1,84 @@
+#!/bin/sh
+# Copyright (c) 2009 Free Software Foundation, Inc.
+# Copyright (c) 2009 Vitaly Lipatov <lav@etersoft.ru>
+
+# exports flags and libs from pc file for build with library for source tree
+# EXPORTPATH contains path to the project dir (../uniset f.i.)
+
+# Usage example:
+# TryExport()
+# {
+#	EXPORTPATH=$(readlink -f $1)
+#	test -r $1/$2 && . $1/$2
+# }
+#
+# TryExport ../uniset libUniSet.include
+
+
+PCFILE=$EXPORTPATH/libUniSet.pc
+test -r "$PCFILE" || exit 1
+
+# guess prefix in the first line of pkgconfig file
+eval $(head -n1 $PCFILE)
+
+test -d "$prefix" || exit 1
+
+export PKG_CONFIG_PATH=$EXPORTPATH:$EXPORTPATH/extensions:$EXPORTPATH/extensions/SharedMemory:$EXPORTPATH/extensions/UniNetwork:$PKG_CONFIG_PATH
+
+cflags()
+{
+	pkg-config --cflags $1 | sed -e "s|-I$prefix/include/uniset|-I$EXPORTPATH/include|g"
+}
+
+libs()
+{
+	echo -n "-L$EXPORTPATH/lib "
+	pkg-config --libs $1 | sed -e "s|-L$prefix | |g"
+}
+
+export UNISET_CFLAGS="$( cflags $PCFILE )"
+
+export UNISET_LIBS="$( libs $PCFILE )"
+
+ext_cflags()
+{
+	# FIXME: really use extensions/
+	echo -n "-I$1 "
+	cflags $1/$2
+}
+
+ext_libs()
+{
+	echo -n "-L$1 "
+	libs $1/$2
+}
+
+EXFILE="$EXPORTPATH/extensions libUniSetExtensions.pc"
+export UNISET_EXT_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_LIBS="-L$EXPORTPATH/extensions/lib $( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/IOControl libUniSetIOControl.pc"
+export UNISET_EXT_IO_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_IO_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/SharedMemory libUniSetSharedMemory.pc"
+export UNISET_EXT_SM_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_SM_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/ModbusSlave libUniSetMBSlave.pc"
+export UNISET_EXT_MBS_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_MBS_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/MBTCPMaster libUniSetMBTCPMaster.pc"
+export UNISET_EXT_MBM_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_MBM_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/UniNetwork libUniSetNetwork.pc"
+export UNISET_EXT_NET_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_NET_LIBS="$( ext_libs $EXFILE )"
+
+EXFILE="$EXPORTPATH/extensions/RTUExchange libUniSetRTU.pc"
+export UNISET_EXT_RTU_CFLAGS="$( ext_cflags $EXFILE )"
+export UNISET_EXT_RTU_LIBS="$( ext_libs $EXFILE )"
+
+export UNISET_CODEGEN="sh $EXPORTPATH/Utilities/codegen/uniset-codegen --path $EXPORTPATH/Utilities/codegen"

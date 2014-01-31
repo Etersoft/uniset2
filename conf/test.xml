@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UNISETPLC xmlns:xi="http://www.w3.org/2001/XInclude">
+	<UserData/>
+	<!-- Общие(стартовые) параметры по UniSet -->
+	<UniSet>
+		<NameService host="localhost" port="2809"/>
+		<LocalNode name="LocalhostNode"/>
+		<RootSection name="UNISET_PLC"/>
+		<CountOfNet name="1"/>
+		<RepeatCount name="3"/>
+		<RepeatTimeoutMS name="50"/>
+		<WatchDogTime name="0"/>
+		<PingNodeTime name="0"/>
+		<AutoStartUpTime name="1"/>
+		<DumpStateTime name="10"/>
+		<SleepTickMS name="500"/>
+		<UniSetDebug levels="crit,warn" name="unideb"/>
+		<ConfDir/>
+		<DataDir/>
+		<BinDir/>
+		<LogDir/>
+		<DocDir/>
+		<LockDir/>
+		<Services>
+			<LocalTimeService AskLifeTimeSEC="10" MaxCountTimers="100" name="TimeService"/>
+			<LocalInfoServer dbrepeat="1" name="InfoServer">
+				<RouteList>
+				</RouteList>
+			</LocalInfoServer>
+			<LocalDBServer dbname="UNISET_PLC" dbpass="dbadmin" dbuser="dbadmin" name="DBServer" pingTime="60000" reconnectTime="30000"/>
+			<LocalPrintServer checkTime="5000" device="/dev/lp0"/>
+		</Services>
+	</UniSet>
+	<dlog name="dlog"/>
+	<IOControl name="IOControl"/>
+	<testnode id="1000"/>
+	<SharedMemory name="SharedMemory" shmID="SharedMemory">
+		<History savetime="200">
+			<item filter="a1" fuse_id="AlarmFuse1_S" fuse_invert="1" id="1" size="30"/>
+			<item filter="a2" fuse_id="AlarmFuse2_AS" fuse_value="2" id="2" size="30"/>
+		</History>
+	</SharedMemory>
+	<UniExchange name="UniExchange">
+		<item name="UniExchange2" node="Node2"/>
+		<item id="3001" node_id="Node2"/>
+	</UniExchange>
+	<MBMaster1 addr="0x31" iaddr="127.0.0.1" levels="info,warn,crit" name="MBMaster1" poll_time="200" port="30000" reply_timeout="60">
+		<DeviceList>
+			<item addr="0x02" invert="0" respondSensor="RespondRTU_S" timeout="5000"/>
+		</DeviceList>
+	</MBMaster1>
+	<MBSlave1 addr="0x31" aftersend-pause="0" dev="/dev/ttyS0" levels="info,warn,crit" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600">
+		<filelist>
+			<!-- Список файлов разрешённых для передачи по modbus
+			directory - каталог где лежит файл. Можно не задавать
+				'ConfDir' - берётся из настроек (см. начало этого файла)
+				'DataDir' - берётся из настроек (см. начало этого файла)
+				'xxx'  - прямое указание каталога
+		-->
+			<item directory="ConfDir" id="1" name="configure.xml"/>
+			<item directory="ConfDir" id="2" name="VERSION"/>
+			<item directory="/tmp/" id="3" name="configure.xml.gz"/>
+			<item directory="ConfDir" id="4" name="SERIAL"/>
+		</filelist>
+	</MBSlave1>
+	<RTUExchange name="RTUExchange" speed="38400">
+		<DeviceList>
+			<item addr="0x01" invert="0" respondSensor="RespondRTU_S" speed="9600" timeout="5000"/>
+		</DeviceList>
+	</RTUExchange>
+	<UDPExchange name="UDPExchange"/>
+	<UDPExchange2 name="UDPExchange2"/>
+	<HeartBeatTime time_msec="5000"/>
+	<ObjectsMap idfromfile="0">
+		<!--
+	Краткие пояснения к полям секции 'sensors'
+	==========================================
+	node 		- узел на котором физически находится данный датчик
+	iotype 		- тип датчика
+	priority 	- приоритет сообщения об изменении данного датчика
+	textname 	- текстовое имя датчика
+-->
+		<nodes port="2809">
+			<item infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел" udp_port="3000">
+				<iocards>
+					<item card="1" name="DI32"/>
+					<item card="2" name="DO32"/>
+					<item baddr="0x110" card="3" dev="/dev/comedi1" name="UNIO48" subdev1="TBI24_0" subdev2="TBI16_8"/>
+				</iocards>
+			</item>
+			<item ip="192.168.56.10" name="Node1" textname="Node1" udp_port="3001"/>
+			<item ip="192.168.56.11" name="Node2" textname="Node2" udp_port="3002"/>
+		</nodes>
+		<!-- ************************ Датчики ********************** -->
+		<sensors name="Sensors">
+			<item db_ignore="1" default="1" iotype="DI" name="Input1_S" priority="Medium" textname="Команда 1"/>
+			<item iotype="DI" mbaddr="0x01" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input2_S" priority="Medium" rs="2" textname="Команда 2"/>
+			<item iotype="DI" mbtcp="1" name="Input3_S" priority="Medium" tcp_mbaddr="0x02" tcp_mbfunc="0x06" tcp_mbreg="0x02" tcp_mbtype="rtu" tcp_preinit="1" textname="Команда 3"/>
+			<item iotype="DI" mbaddr="0x02" mbfunc="0x04" mbreg="0x02" mbtype="rtu" name="Input4_S" priority="Medium" rs="2" textname="Команда 4"/>
+			<item iotype="DI" name="Input5_S" priority="Medium" textname="Команда 5" udp="2"/>
+			<item iotype="DI" name="Input6_S" priority="Medium" textname="Команда 6" udp="2">
+				<depends>
+					<depend name="Input4_S"/>
+				</depends>
+			</item>
+			<item iotype="DO" name="DO_C" priority="Medium" textname="Digital output"/>
+			<item iotype="DO" name="DO1_C" priority="Medium" textname="Digital output"/>
+			<item default="10" iotype="AO" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" mbtype="rtu" name="AO_AS" priority="Medium" rs="2" textname="Analog output"/>
+			<item default="378" iotype="AI" mbaddr="0x01" mbfunc="0x04" mbreg="0x01" mbtype="rtu" name="AI_AS" precision="45" priority="Medium" rs="1" textname="Analog input" vtype="F2">
+				<consumers>
+					<consumer cfilter="test1" name="TestProc" type="objects"/>
+					<consumer name="PLCProcessor" type="objects"/>
+				</consumers>
+			</item>
+			<item iotype="DI" name="Threshold1_S" priority="Medium" textname="Порог"/>
+			<item iotype="DI" name="TestMode_S" priority="Medium" textname="test"/>
+			<item iotype="DI" name="RespondRTU_S" textname="respond rtu"/>
+			<item iotype="DI" name="NoRespondRTU2_S" textname="no respond rtu"/>
+			<item iotype="DI" name="AlarmFuse1_S" priority="Medium" textname="alarm fuse sensor 1"/>
+			<item iotype="AI" name="AlarmFuse2_AS" priority="Medium" textname="alarm fuse sensor 2"/>
+			<item a1="1" iotype="DI" name="DumpSensor1_S" priority="Medium" textname="alarm dumpm sensor 1"/>
+			<item a1="1" iotype="DI" name="DumpSensor2_S" priority="Medium" textname="alarm dumpm sensor 2"/>
+			<item a1="1" iotype="DI" name="DumpSensor3_S" priority="Medium" textname="alarm dumpm sensor 3"/>
+			<item a1="1" iotype="DI" name="DumpSensor4_S" priority="Medium" textname="alarm dumpm sensor 4"/>
+			<item a2="1" iotype="DI" name="DumpSensor5_S" priority="Medium" textname="alarm dumpm sensor 5"/>
+			<item a2="1" iotype="DI" name="DumpSensor6_S" priority="Medium" textname="alarm dumpm sensor 6"/>
+			<item a2="1" iotype="DI" name="DumpSensor7_S" priority="Medium" textname="alarm dumpm sensor 7"/>
+			<item a2="1" iotype="DI" name="DumpSensor8_S" priority="Medium" textname="alarm dumpm sensor 8"/>
+			<item default="-655360" iotype="AI" mb_vtype="I2" mbaddr="0x01" mbreg="0x12" mbtcp="2" mbtype="rtu" name="MB1_AS" priority="Medium" textname="Analog input"/>
+			<item default="6553604" iotype="AI" mb_vtype="U2" mbaddr="0x01" mbreg="0x14" mbtcp="2" mbtype="rtu" name="MB2_AS" priority="Medium" textname="Analog input"/>
+			<item default="65536045" iotype="AI" mb_vtype="F2" mbaddr="0x01" mbreg="0x17" mbtcp="2" mbtype="rtu" name="MB3_AS" priority="Medium" textname="Analog input"/>
+			<item iotype="AI" name="IOTestMode_AS" priority="Medium" textname="testmode for IOControl"/>
+		</sensors>
+		<thresholds name="thresholds">
+			<sensor iotype="AI" name="AI_AS">
+				<threshold hilimit="376" id="1" lowlimit="374" name="t1" sensibility="0" sid="Threshold1_S">
+					<consumers>
+						<consumer name="TestProc" type="objects"/>
+					</consumers>
+				</threshold>
+			</sensor>
+		</thresholds>
+		<controllers name="Controllers">
+			<item name="SharedMemory"/>
+			<item name="UniExchange"/>
+			<item name="UniExchange2"/>
+		</controllers>
+		<!-- ******************* Идентификаторы сервисов ***************** -->
+		<services name="Services">
+			<item name="InfoServer"/>
+			<item name="DBServer"/>
+			<item name="PrintServer"/>
+			<item name="TimeService"/>
+		</services>
+		<!-- ******************* Идентификаторы объектов ***************** -->
+		<objects name="UniObjects">
+			<item name="TestProc"/>
+			<item name="LProcessor"/>
+			<item name="IOControl"/>
+			<item name="RTUExchange"/>
+			<item name="MBSlave1"/>
+			<item name="MBMaster1"/>
+			<item name="UDPExchange"/>
+			<item name="UDPExchange2"/>
+		</objects>
+	</ObjectsMap>
+	<messages idfromfile="1" name="messages">
+		<item id="101" name="midMsg1" text="Text for message 1"/>
+		<item id="102" name="midMsg2" text="Text for message 2"/>
+		<item id="103" name="midMsg3" text="Text for message 3"/>
+		<item id="104" name="midMsg4" text="Text for message 4"/>
+		<item id="105" name="midMsg5" text="Text for message 5"/>
+	</messages>
+	<!-- <xi:include href="testID.xml"/> -->
+	<!-- <xi:include href="testIDnon-exist.xml"/> -->
+</UNISETPLC>

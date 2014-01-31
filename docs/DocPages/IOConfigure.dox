@@ -1,0 +1,201 @@
+/* OBSOLETE DOC!!!
+	\page IOConfigurePage Настройка процессов ввода/вывода
+
+	- \ref pgIOC_secCommon
+	- \ref pgIOC_secIOTypes
+	- \ref pgIOC_secAskFile
+		- \ref pgIOC_secDIO
+		- \ref pgIOC_secAIO
+		- \ref pgIOC_secThresholds
+		- \ref pgIOC_secConsumers
+	- \ref pgIOC_secSensorMessage
+	- \ref pgIOC_secAutoGen
+
+	\section pgIOC_secCommon Общее описание
+		Процессы ввода/вывода построенные на основе IONotifyContoller-а можно
+	конфигурировать при помощи настроечного файла (dump-файла). В этом
+	файле прописываются все "входы" и "выходы" которые опрашивает данный процесс в/в,
+	а также список "заказчиков" по каждому датчику. Данный файл можно формировать автоматически.
+
+	\section pgIOC_secIOTypes Возможные типы входов/выходов
+	- \b DI - дискретный вход
+	- \b DO - дискретный выход
+	- \b AI - аналоговый вход
+	- \b AO - аналоговый выход
+		
+
+	\section pgIOC_secAskFile Конфигурацонные ask-файлы	
+	Формат файла имеет следующий вид:
+\code
+<IOConf readonly="1" dumptime="Wed Mar 23 14:14:42 2005">
+  <SensorsList>
+  	<sensor name="MyProject/Sensors/AnalogSensor1_AS" node="" iotype="AI" 
+				cmin="0" cmax="100" rmin="0" rmax="4096" default="50">
+
+		<consumer name="MyProject/ControlProcesses/Proc1" node=""/>
+		<consumer name="MyProject/ControlProcesses/Proc2" node=""/>
+		<consumer name="MyProject/ControlProcesses/Proc3" node=""/>
+	</sensor>
+ 
+  	<sensor name="MyProject/Sensors/AnalogSensor2_AS" node="" iotype="AI" 
+				cmin="10" cmax="500" rmin="0" rmax="4096" priority="">
+
+		<consumer name="MyProject/ControlProcesses/Proc1" node=""/>
+		<consumer name="MyProject/ControlProcesses/Proc2" node=""/>
+		<consumer name="MyProject/ControlProcesses/Proc3" node=""/>
+	</sensor>
+
+	<sensor name="MyProject/Sensors/DigitalSensor_S" node="" iotype="DI" default="1"  priority="Hi">
+		<consumer name="MyProject/ControlProcesses/Proc1" node=""/>
+	</sensor>
+
+	<sensor name="MyProject/Sensors/ThreshooldSensor_FS" node="" iotype="DI">
+		<consumer name="MyProject/ControlProcesses/Proc1" node=""/>
+		<consumer name="MyProject/ControlProcesses/Proc2" node=""/>
+	</sensor>
+
+  </SensorsList>
+
+  <ThresholdSensorList>
+
+	<sensor name="MyProject/Sensors/AnalogSensor1_AS" node="" iotype="AI">
+		<Threshold name="t1" lowlimit="5" hilimit="7" sensibility="0" id="0">
+			<consumer name="MyProject/ControlProcesses/Proc4" node=""/>
+		</Threshold>
+		<Threshold name="t2" lowlimit="90" hilimit="92" sensibility="0" id="1"
+			sid="MyProject/Sensors/ThreshooldSensor_FS" inverse="1"
+		/>
+	</sensor>
+	<sensor  name="MyProject/Sensors/AnalogSensor2_AS" node="" iotype="AI">
+		<Threshold name="t1" lowlimit="5" hilimit="7" sensibility="0" id="0" />
+		<Threshold name="t2" lowlimit="90" hilimit="92" sensibility="0" id="1"/>
+	</sensor>
+
+  </ThresholdSensorList>
+</IOConf>
+\endcode	
+	Данный файл состоит из двух основных частей:
+	- \a SensorsList  -  список входов/выходов
+	- \a ThresholdSensorList - список пороговых датчиков формируемых из аналоговых значений.
+
+	В верхней части имеются два общих поля:
+	- \a readonly - признак того, что данный файл предназначен только для чтения
+					(запрет на автоматическое обновление)
+	- \a dumptime - время последней модификации
+
+	\sa \ref pgIOC_secAutoGen
+	
+	\subsection pgIOC_secDIO Дискретные датчики
+\code
+	<sensor name="MyProject/Sensors/DigitalSensor_S" node="" iotype="DI" 
+			default="1" priotiry
+		anyparam...>
+		...
+	</sensor>
+\endcode
+	Минимально необходимыми являются следующие поля:
+	- \a name - полное текстовое название идентификатора датчика в системе
+	- \a node - название узла. Если не задано, то считается Localhost.
+	- \a iotype - Тип входа/выхода.( см. \ref pgIOC_secIOTypes )
+
+	Следующие поля необзатяельны:
+	- \a default - [1|0] значение по умолчанию. Т.е. значение на момент начального запуска.
+		По умолчанию имеет значение "0".
+	- \a priority - Приоритет посылаемого уведомления (UniSetTypes::SensorMessage) об изменении
+	данного датчика. По умолчанию имеет значение "Medium".
+	
+		Так же можно прописывать свои особенные параметры необходимые для специфичной настройки
+	каждого входа/выхода (например номер канала на плате в/в) и т.п.
+
+	\subsection pgIOC_secAIO Аналоговые датчики
+		В отличие от дискретных датчиков запись по аналоговому входу имеет вид:
+\code
+	<sensor name="MyProject/Sensors/AnalogSensor_S" node="" iotype="AI" 
+			cmin="0" cmax="100" rmin="0" rmax="4096" default="50"
+		anyparam...>
+		...
+	</sensor>
+\endcode
+	Минимально необходимыми являются следующие поля:
+	- \a name - полное текстовое название идентификатора датчика в системе
+	- \a node - название узла. Если не задано, то считается Localhost.
+	- \a iotype - Тип входа/выхода.( см. \ref pgIOC_secIOTypes )
+	- \a cmin - Минимальное калиброванное значение
+	- \a cmax - Максимальное калиброванное значение
+	- \a rmin - Минимальное "cырое" значение. ("сырое" - т.е. непосредственно получаемое)
+	- \a rmax - Максимальное "сырое" значение
+
+	Следующие поля необзатяельны:
+	- \a default - значение по умолчанию. Т.е. значение на момент начального запуска.
+		По умолчанию имеет значение "0".
+	- \a priority - Приоритет посылаемого уведомления (UniSetTypes::SensorMessage) об изменении
+	данного датчика. По умолчанию имеет значение "Medium".
+
+
+	\subsection pgIOC_secThresholds Пороговые датчики
+		Если какому-либо процессу требуется узнать о том, что значение аналогового датчика
+	достигло определённого порога. То для таких случае предназначены пороговые датчики.
+	Каждый аналоговый датчик может иметь любое (разумное) число порогов.
+	Формат записи выглядит следующим образом:
+\code
+	<sensor name="MyProject/Sensors/AnalogSensor1_AS" node="" iotype="AI">
+		<Threshold name="t1" lowlimit="5" hilimit="7" sensibility="0" id="0">
+			<consumer name="MyProject/ControlProcesses/Proc4" node=""/>
+		</Threshold>
+	</sensor>
+\endcode	
+	В секции sensor прописываются только \a name, \a node, \a iotype аналогового датчика, из которого
+	формируются данные пороги. Причём датчик обязательно должен быть прописан в \a SensorsList.
+	\par
+	Поля для секции Threshold:	
+
+	- \a name 		- любое текстовое имя (пока никак не используется)
+	- \a lowlimit 	- нижний порог срабатывания. Как только аналоговое значение станет 
+					<= (lowlimit-sensibility) посылается сообщение о срабатывании нижнего порога.
+	- \a hilimit 	- верхний порог срабатывания. Как только аналоговое значение станет 
+					>= (hilimit+sensibility) посылается сообщение о срабатывании верхнего порога.
+	- \a sensibility - чувствительность. Значение, определяющее "мёртвую" зону. См. lowlimit, hilimit.
+	- \a sid 		- идентификатор дискретного (фиктивного) датчика. Позволяет связать данный порог
+					с фиктивным дискретным датчиком. Т.е. значение порога будет выставляться как
+					состояние датчика, указанного в поле "sid". 
+					TRUE - при значении больше верхнего порога
+					FALSE - при значении меньше нижнего порога
+	- \a id			- идентификатор порога(число). Значение которое используется для передачи
+					в сообщении SensorMessage как идентифифкатор сработавшего порога. Должен
+				 	быть разный (уникальным) для разных порогов	у одного аналогового датчика.
+					В случае использования "sid" id указывать необязательно. 
+	- \a inverse	- [1|0] позволяет инвертировать логику для датчика, указанного в поле sid.
+			
+		В общем случае "пороги" не имеют отдельных уникальных идентификаторов. И каждый процесс
+	может заказать(сделать) себе любое количество "порогов" из одного аналогового датчика.
+	Но существует возможность связать дискртеный датчик (в данном случае это будет фиктивный дискретный датчик)
+	с пороговым значением. Для этого прописывается следующая запись:
+\code
+	<sensor name="MyProject/Sensors/AnalogSensor1_AS" node="" iotype="AI">
+		<Threshold name="t2" lowlimit="90" hilimit="92" sensibility="0" id="1"
+			sid="MyProject/Sensors/ThreshooldSensor_FS" inverse="1"
+		/>
+	</sensor>
+\endcode
+	В этом случае "порог" привязывается к датчику указанному в поле \a sid. При этом этот фиктивный
+	дискретный датчик должен быть прописан в \a SensorsList.
+	
+	\subsection pgIOC_secConsumers Заказчики
+		"Заказчиком" является объект (процесс) которому будет присылаться уведомление
+	UniSetTypes::SensorMessage об изменении данного датчика. Заказывать уведомления
+	можно об изменении не только "входов", но и "выходов".
+
+	\section pgIOC_secSensorMessage Формат уведомления об изменнии состояния (значения)
+		Для уведомления используется сообщение UniSetTypes::SensorMessage.
+	- \a state - текущее значение для дискретного датчика
+	- \a value - текущее значения для аналогового датчика
+
+	Для пороговых датчиков используются 
+	- \a tid - идентификатор сработавшего порога
+	- \a threshold - текущее значение порога
+
+	Остальные поля понятны из названия...
+	
+	\section pgIOC_secAutoGen Автоматическое генерирование ask-файла
+	
+*/

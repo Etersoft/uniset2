@@ -1,0 +1,13 @@
+// эти разделы сформируются автоматически из описаний сделанных в соответствующих h-файлах
+/*! 
+ \page ServicesPage Сервисы
+
+	 - \ref secDBServer
+	 - \ref secInfoService
+	 - \ref secTimerService
+
+
+    \section secDBServer Сервер БД
+
+	\sa \ref page_DBServer_MySQL
+*/

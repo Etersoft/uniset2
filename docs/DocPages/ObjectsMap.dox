@@ -1,0 +1,263 @@
+/* OBSOLETE DOC!!!
+ \page ObjectsMapPage Карта объектов
+
+  - \ref OMAP_secCommon
+  - \ref OMAP_secStatic
+	  - \ref OMAP_subStatic_Create
+	  - \ref OMAP_subStatic_Node
+	  - \ref OMAP_subStatic_Example
+  - \ref OMAP_secDynamicXML
+	  - \ref OMAP_subDynamic_Create
+	  - \ref OMAP_subDynamic_Example
+
+
+	\section OMAP_secCommon Общее описание карты объектов
+  	Карта объектов задает индентификаторы объектов, узлов сети и координаты их размещения в репозитории.
+ Идентификатор объекта должен быть уникальным в пределах одного узла. 
+ Идентификаторы являются неотрицательными числами, что \a минимизирует и \a упрощает передачу по 
+ сетям раздичного типа (ethernet, CAN, profibus и т.п.). Хотя в использовании конечно удобнее 
+ применять текстовые строки.
+
+	В данной реализации возможно использовать два способа задания карты объектов
+	- Статический на основе статического массива и enum-а.
+	- Динамический на основе xml-файла
+
+	\section OMAP_secStatic Статическая карта объектов
+
+	\subsection OMAP_subStatic_Create Создание карты  
+		Статическую карут проще всего создать на основе препроцессора. 
+	\par ObjectsMap.h
+		Заголовочный файл формируется при помощи препроцессора на основе файла ObjectsMapSource.h.
+
+\code
+#ifndef OBJECTSMAP_H_
+#define OBJECTSMAP_H_
+//------------------------------------------------------------------------------
+##include "BaseTypes.h"
+//------------------------------------------------------------------------------
+
+const int MAX_NUMOBJECTS=100;
+#define ROOT_SEC 			"MyProjectName"				/*	!< Имя Root секции в репозитории объектов */
+#define SENSORS_SEC 		ROOT_SEC "/Sensors"			/*	!< Имя секции для датчиков */
+#define	CONTROLLERS_SEC		ROOT_SEC "/Controllers"		/*	!< Имя секции для контроллеров */
+#define OBJECTS_SEC 		ROOT_SEC "/Objects"			/*	!< Имя секции для регистрации процессов управления */
+#define SERVICES_SEC 		ROOT_SEC "/Services"		/*	!< Имя секции для сервисов */
+
+#define SET_SENSOR(name,text_name) 	name
+#define SET_OBJECT(name) 			name
+#define SET_CONTROLLER(name) 		name
+#define SET_OBJECT(name) 			name
+#define SET_SERVICE(name)	 		name
+
+#define SET_NODENAME(alias,realname)	alias
+
+
+//------------------------------------------------------------------------------
+enum idObjects
+{
+\#include "ObjectsMapSource.h"
+};
+
+\#undef SET_SENSOR
+\#undef SET_CONTROLLER
+\#undef SET_OBJECT
+\#undef SET_SERVICE
+
+\#undef SET_NODENAME
+
+extern const UniSetTypes::ObjectInfo ObjectsMap[MAX_NUMOBJECTS];
+
+#endif
+
+\endcode
+
+	\par ObjectsMap.cc
+		cc-файл формируемый при помощи препроцессора из файла ObjectsMapSource.h.
+
+\code
+//------------------------------------------------------------------------------
+\#include "ObjectsMap.h"
+//------------------------------------------------------------------------------
+
+#define SET_SEC(sec,name)				sec "/" __STRING(name)
+
+#define SET_SENSOR(name, text_name)		{ name, SET_SEC(SENSORS_SEC,name), text_name } 
+#define SET_CONTROLLER(name) 			{ name, SET_SEC(CONTROLLERS_SEC,name), __STRING(name) }
+#define SET_OBJECT(name) 				{ name, SET_SEC(OBJECTS_SEC,name), __STRING(name) } 
+#define SET_SERVICE(name) 				{ name, SET_SEC(SERVICES_SEC,name), __STRING(name) }
+
+#define SET_NODENAME(virtualname,realname) 		{ virtualname, __STRING(virtualname:realname),  __STRING(virtualname:realname) }
+
+//-----------------------------------------------------------------------------------------------------------------
+const UniSetTypes::ObjectInfo ObjectsMap[MAX_NUMOBJECTS] = 
+{
+	\#include "ObjectsMapSource.h"
+    {0,0,0}
+};
+\endcode
+
+	
+\par ObjectsMapSource.h
+	Это собственно карта объектов, в которой прописываеются все объекты имеющие уникальные идентификаторы.
+\code
+
+    // Sensors
+    // идентификатор, "Текстовое имя"
+    SET_SENSOR(minPressureOilD1_016N400_S, "Датчик давления1"),
+    SET_SENSOR(minPressureOilD1_013N400_S, "Датчик давления2"),
+    SET_SENSOR(minPressureOilD1_038N750_S, "Датчик давления3"),
+    SET_SENSOR(minPressureOilD1_034N750_S, "Датчик давления4"),
+    
+    SET_SENSOR(maxTemperatureOilD1_S, "Датчик максимальной температуры"),
+    SET_SENSOR(maxDropPressureOilF1_S, "Датчик сброса давления"),
+    SET_SENSOR(levelUpOilPZ_S, "Верхний уровень давления масла"),
+    SET_SENSOR(levelDownOilPZ_S, "Нижний уровень давления масла"),
+    SET_SENSOR(levelUpOilMZ2_S, "Ля-ля-ля"),
+    SET_SENSOR(levelUpOilOZ_S, "Ля-ля-ля2"),
+
+    //	AnalogSensors
+    
+    SET_SENSOR(pressureOilD1_AS, "Датчик давления5"),
+    SET_SENSOR(temperatureOilD1_AS, "Датчик температуры"),
+    SET_SENSOR(dropPressureOilF1_AS, "Сброс давления"),
+
+    //	Objects    
+    
+    SET_OBJECT(guiSystem),
+	SET_OBJECT(testControlProcess),
+	SET_OBJECT(testControlProcess2),
+	SET_OBJECT(tst1),
+	SET_OBJECT(tst2),
+	SET_OBJECT(mynthon),
+
+	// Controllers        
+    SET_CONTROLLER(ioNotifyController1),
+	SET_CONTROLLER(ioNotifyController2),
+
+	// Services
+	SET_SERVICE(TimerService1),
+	SET_SERVICE(DBServer1),
+
+	// Nodes (alias, realname)
+	SET_NODENAME(ServerNode,ServerNode),	
+	SET_NODENAME(Client1Node,Client1Node),	
+	SET_NODENAME(Client2Node,Client2Node),		
+	SET_NODENAME(Client3Node,Client3Node),
+//------------------------------------------------------------------------------
+\endcode
+
+	\par Узлы
+	
+		Узлы задаются двумя параметрами: \a имя \a в \a программе и \a имя \a реальной \a ссылки. Для получения реального имени
+	необходимо пользоваться conf->getRealNodeName(nodeid).
+
+	\subsection OMAP_subStatic_Node Настройка узлов сети
+	
+		Для того чтобы задать узлы сети помимо идентификатора необходимо внести информацию о них в настройки CORB-ы("omniORB.cfg").
+	Если узел доступен по нескольким сетям, то узлы должны называтся (NodeName1...NodeNameX). NodeName - должно совпадать с именем realname в ObjectMap.
+	В ObjectsMap вносится только имя NodeName1(основной сети), остальные вносятся \b только в конф. файл.
+	При этом в UniversalInterface::resolve() автоматически будет пытаться связаться с другими узлами используя 
+	резервные каналы NodeName2...NodeNameX.
+	\par В итоге файл настроек (для omniORB v.3) должен выглядеть примерно следующим образом:
+
+	\code
+		ORBInitialHost localhost
+		ORBInitialPort 2809
+		ORBInitRef NameService=corbaname::localhost
+		ORBDefaultInitRef corbaloc::localhost
+
+		ORBInitRef Client1Node=corbaname::localhost
+		ORBInitRef Client2Node=corbaname::client3
+		ORBInitRef Client3Node=corbaname::client3
+
+		// допустим это узел 192.168.1.100
+		ORBInitRef ServerNode=corbaname::server
+
+		// резервные каналы для узла server
+		ORBInitRef ServerNode2=corbaname::192.168.2.100
+		ORBInitRef ServerNode3=corbaname::192.168.3.100
+		
+
+	\endcode
+
+	\note Определять ссылки на узлы можно также передавая в параметрах при запуске программы. Например так:
+	myprogram -ORBInitRef ServerNode=corbaname::server:OMNIPORT -ORBInitRef LocalhostNode=corbaname::localhost:OMNIPORT
+	-ORBInitRef Client3Node=corbaname::client3:OMNIPORT
+ 
+ 	\subsection OMAP_subStatic_Example Пример использования статической карты объектов
+ 	Как было показано выше, у нас должен быть создан файл \a ObjectsMapSource.h и два файла
+	с командами для препроцессора \a ObjectsMap.h (содержащий enum идентификаторов всех объектов в системе)
+	и \a ObjectsMap.cc (содержащий массив. Этот файл необходимо компилировать).
+	\par
+		При использовании статического способа в функции \a main при создании Configure используйте 
+	слудующий способ:
+\code
+	\#include <Configure.h>
+	\#include <ObjectsActivator.h>
+	\#include "ObjectysMap.h"
+	
+	using namespace UniSetTypes;
+
+	int main( int argc, char **argv )
+	{
+		try
+		{
+			// первым делом надо создать Configure и инициализировать
+			conf = new Configuration(argc, (const char**)argv, "configure.xml", (ObjectInfo*)ObjectsMap);
+			
+			// создание объектов
+			...
+			
+			// регистрация
+			ObjectsActivator act;
+			act.addObject( static_cast<UniSetObject*>( &obj1 ) );
+			act.addObject( static_cast<UniSetObject*>( &obj2 ) );
+			...
+			
+			// запуск
+			act.run(false);
+		}			
+		catch(Exception& ex )
+    	{
+			unideb[Debug::CRIT] << "(main): " << ex <<  endl;
+	    }
+    	catch(...)
+	    {
+    		unideb[Debug::CRIT] << "Неизвестное исключение!!!!"<< endl;
+	    }
+		retunr 0;
+	}
+\endcode
+
+		Для использования в программе код должен выглядеть примерно следующим образом:
+\code
+	\#include "ObjectsMap.h"
+	
+	...
+	// посылка сообщения объекту testControlProcess
+	MyMessage msg;
+	UniSetTypes::TransportMessage tmsg(msg.transport_msg());
+
+	cout << " send to object " << conf->oind->getNameById(testControlProcess);
+	if( ui.send(testControlProcess, tmsg) )
+		cout << " OK!!!\n";
+	else
+		cout << " FAILED!!!\n";
+	...
+
+	// заказ датчика
+	try
+	{
+		ui.askSensor(maxTemperatureOilD1_S,UniversalIO::UIONotify);
+	}
+	catch(UniSetTypes::Exception& ex)
+	{
+		cerr << ex << endl;
+	}
+
+\endcode
+		
+	\section OMAP_secDynamicXML Динамическая карта объектов на основе XML-файла
+	\subsection OMAP_subDynamic_Create Создание динамической карты объектов
+	\subsection OMAP_subDynamic_Example Пример использования динамической карты объектов
+*/

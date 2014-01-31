@@ -1,0 +1,13 @@
+/*!
+	\mainpage 
+
+	\image html uniset.png
+
+    \section MainSection Оглавление
+ 
+		- \ref CommitPage
+		- \ref page_Concept
+		- \ref UniSetLibStylePage
+		- \ref DebugPage
+*/  
+  

@@ -1,0 +1,79 @@
+/* This file is part of the UniSet project
+ * Copyright (c) 2002 Free Software Foundation, Inc.
+ * Copyright (c) 2002 Pavel Vainerman
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+// --------------------------------------------------------------------------
+/*! \file
+ * \author Pavel Vainerman
+ * \date   $Date: 2005/01/28 21:24:12 $
+ * \version $Id: TimerService_i.idl,v 1.1 2005/01/28 21:24:12 vitlav Exp $
+*/
+// --------------------------------------------------------------------------
+#ifndef TimerService_i_IDL_
+#define TimerService_i_IDL_
+// --------------------------------------------------------------------------
+#include "../UniSetTypes/UniSetTypes_i.idl"
+#include "../UniSetTypes/UniSetObject_i.idl"
+// --------------------------------------------------------------------------
+/*!
+ * \interface TimerService_i
+*/ 
+interface TimerService_i: UniSetObject_i
+{
+	/*! Превышения максимально возможного
+	 *  количества таймеров
+	*/
+	exception LimitTimers
+	{	
+		long maxTimers;
+	};
+
+	/*! Таймер с таким id уже заказан 
+	 * (от данного заказчика)
+	*/
+	exception TimerAlreadyExist
+	{	
+	};
+
+	/*! Задан интервал меньше 
+	 *  минимально разрешённого 
+	*/
+	exception TimeMSLowLimit
+	{	
+		unsigned long lowLimitMS; // instead timeout_t
+	};
+
+
+	/*! Информация о таймере */
+	struct Timer
+	{
+		UniSetTypes::TimerId timerid;
+		unsigned long timeMS;
+		long ticks; // instead clock_t
+		short msgPriority;
+	};
+
+
+	/*! заказ таймера */
+	void askTimer( in Timer ti, in UniSetTypes::ConsumerInfo ci ) 
+					raises(LimitTimers, TimerAlreadyExist, TimeMSLowLimit);
+
+//	void setSysTime(...);
+//	void getSysTime(...);
+};
+
+#endif

@@ -1,0 +1,167 @@
+<?xml version = '1.0' encoding = 'koi8-r' ?>
+<UNISETPLC>
+<UserData></UserData>
+<!-- Общие(стартовые) параметры по UniSet -->
+<Configure>
+		<NameService host="localhost" port="2817"/>
+		<LocalNode	 name="LocalhostNode"/>
+		<RootSection name="UniSetTest"/>
+
+		<CountOfNet 		name="1"/>
+		<RepeatCount 		name="2"/>
+		<RepeatTimeoutMS 	name="50"/>
+
+		<WatchDogTime 		name="0"/> <!-- [мин] -->
+		<PingNodeTime 		name="0"/> <!-- [сек] -->
+		<AutoStartUpTime 	name="1"/> <!-- [сек] -->
+		<DumpStateTime 		name="10"/><!-- [сек] -->
+		<SleepTickMS		name="500"/><!-- [мсек] -->
+
+		<!-- Debug, logs -->
+		<UniSetDebug name="unideb" levels="crit,warn" file=""/>
+
+		<!-- Если не указано, то считается текущий каталог -->
+		<ConfDir name=""/>
+		<DataDir name=""/>
+		<BinDir name=""/>
+		<LogDir name=""/>
+		<DocDir name=""/>
+		<LockDir name=""/>
+
+	<Services>
+		<LocalTimerService name="TimerService" MaxCountTimers="100" AskLifeTimeSEC="10"/>
+		<LocalInfoServer name="InfoServer" dbrepeat="1"><RouteList></RouteList></LocalInfoServer>
+		<LocalDBServer name="DBServer" dbnode="" dbname="UNISET_PLC" dbuser="dbadmin" dbpass="dbadmin" pingTime="60000" reconnectTime="30000"/>
+		<LocalPrintServer device="/dev/lp0" checkTime="5000" />
+	</Services>
+
+	<!-- Настройки для SimpleObject -->
+    <SimpleObject OnTime="1000" OffTime="2000" CommandTime="500"/>
+
+</Configure>
+<ObjectsMap>
+<!--
+	Краткие пояснения к полям секции 'sensors'
+	==========================================
+	usedby - указание на каком узле используются данные настройки.
+		Для "consumer" если не указан, генерируется для всех узлов. Иначе можно указать
+		через ',' для каких узлов генерить...
+
+			
+	pageid - идентификатор экрана GUI, с которым связан данный датчик
+	
+	matrix -
+	channel - 
+	output - 
+	lamptest - 
+	blink - 
+
+	node - узел на котором физически находится данный датчик
+	iotype - тип датчика
+	priority - приоритет сообщения об изменении данного датчика
+	textname - текстовое имя датчика
+	
+-->
+	<nodes port="2817">
+		<item name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1" infserver="InfoServer" dbserver=""/>
+	</nodes>
+
+	<!-- ************************ Датчики ********************** -->
+	<sensors name="Sensors">
+		<item name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium"/>
+		<item name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium"/>
+		<item name="Input3_S" textname="Команда 3" node="" iotype="DI" priority="Medium"/>
+		<item name="Input4_S" textname="Команда 4" node="" iotype="DI" priority="Medium"/>
+		<item name="Input5_S" textname="Команда 5" node="" iotype="DI" priority="Medium"/>
+		<item name="Input6_S" textname="Команда 6" node="" iotype="DI" priority="Medium"/>
+	</sensors>
+
+	<controllers name="Controllers">
+		<item name="IOCardController"/>
+	</controllers>
+
+	<!-- ******************* Идентификаторы сервисов ***************** -->
+	<services name="Services">
+		<item name="InfoServer"/>
+		<item name="DBServer"/>
+		<item name="PrintServer"/>
+		<item name="TimerService"/>
+	</services>
+
+	<!-- ******************* Идентификаторы объектов ***************** -->
+	<objects name="UniObjects">
+		<item name="TestObject"/>
+		<item name="TestObject2"/>
+	</objects>
+</ObjectsMap>
+<map-settings>
+<!--
+  	Поддерживаемые типы:
+	string 	- строка
+	bool	- {1|0}
+	int		- число 
+  	Для 'int' можно дополнительно задать поля:
+		digits 	- количество цифр после запятой
+		step 	- шаг изменения
+	 	min 	- минимальное число
+	 	max 	- максимальное число
+
+	list 	- список
+		Для 'list' обязательно необходимо задать
+		section - секция содержащая список (в этом файле) 
+
+	NODES	- список узлов
+	OBJECTS - список объектов
+	SENSORS -  список датчиков
+	ALL_OBJECTS -  список объектов и контроллеров
+
+	\todo Для всех списков можно задать свойство 
+			multi="1" - разрешение выбора нескольких элементов списка (будут перечислены через запятую
+		
+  -->
+    <nodes>
+<!-- 'name' - является обязательным параметром и добавляется автоматически -->
+      <item name="ip" default="localhost"/>
+      <item name="port" default="" type="int" min="1024" max="65535"/>
+      <item name="textname" default=""/>
+      <item name="alias" default=""/>
+    </nodes>
+    <sensors>
+      <item name="iotype" type="list" section="iotypes"/>
+      <item name="node" type="NODES"/>
+      <item name="priority" type="list" section="priority"/>
+      <item name="character" type="list" section="characters"/>
+    </sensors>
+<!--  Типы для списков -->
+    <iotypes>
+      <item name="DI" default="1"/>
+      <item name="DO"/>
+      <item name="AI"/>
+      <item name="AO"/>
+    </iotypes>
+    <priority>
+      <item name="Hi"/>
+      <item name="Medium" default="1"/>
+      <item name="Low"/>
+    </priority>
+    <characters>
+      <item name="Alarm"/>
+      <item name="Warning" default="1"/>
+      <item name="Normal"/>
+    </characters>
+    <controllers>
+	  <!-- 'name' - является обязательным параметром и добавляется автоматически -->
+      <item name="node" type="NODES"/>
+    </controllers>
+    <objects>
+	  <!-- 'name' - является обязательным параметром и добавляется автоматически -->
+    </objects>
+    <services>
+	  <!-- 'name' - является обязательным параметром и добавляется автоматически -->
+    </services>
+    <consumers>
+	  <!-- 'name' - является обязательным параметром и добавляется автоматически -->
+      <item name="usedby" default="" type="NODES" multi="1"/>
+    </consumers>
+</map-settings>
+</UNISETPLC>
