@@ -5,7 +5,7 @@ ARGS=$1
 
 # внимание при сборке пакета эта строка меняется,
 # поэтому лучше её не трогать :) (см. makefile :install)
-. uniset-functions.sh
+. uniset2-functions.sh
 
 std=0
 standart_control $std

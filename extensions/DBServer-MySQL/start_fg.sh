@@ -2,7 +2,7 @@
 
 ulimit -Sc 1000000
 
-uniset-start.sh -f ./uniset-mysql-dbserver --confile test.xml --name DBServer1 \
+uniset2-start.sh -f ./uniset2-mysql-dbserver --confile test.xml --name DBServer1 \
 --ulog-add-levels info,crit,warn,level9,system \
 --dbserver-buffer-size 100
 

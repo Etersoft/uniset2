@@ -8,7 +8,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt0.4
+Release: alt0.5
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -333,6 +333,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
 
 %changelog
+* Fri Jan 31 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt0.5
+- minor fixes
+- test build
+
 * Fri Jan 31 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt0.4
 - rename uniset --> uniset2
 

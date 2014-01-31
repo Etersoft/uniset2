@@ -9,7 +9,7 @@ sysconfdir=@sysconfdir@
 
 top_builddir=@top_builddir@
 
-xsltdir=@datadir@/uniset/xslt
+xsltdir=@datadir@/@PACKAGE@/xslt
 
 PROG="${0##*/}"
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-START=./uniset-start.sh
+START=./uniset2-start.sh
 
 export LD_LIBRARY_PATH="../../lib/.libs;../../lib/pyUniSet/.libs"
 

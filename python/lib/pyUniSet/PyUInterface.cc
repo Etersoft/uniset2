@@ -119,7 +119,7 @@ long pyUInterface::getSensorID( const char* name )
     if( UniSetTypes::conf )
       return UniSetTypes::conf->getSensorID(name);
     
-    return -1;
+    return UniSetTypes::DefaultObjectId;
 }
 //---------------------------------------------------------------------------
 const char* pyUInterface::getName( long id )

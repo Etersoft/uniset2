@@ -1,6 +1,6 @@
 #!/bin/sh
 
-uniset-start.sh -f ./uniset-smdbserver --confile test.xml \
+uniset2-start.sh -f ./uniset2-smdbserver --confile test.xml \
 	--dbserver-name DBServer \
 	--dlog-add-levels info,crit,warn
 	
