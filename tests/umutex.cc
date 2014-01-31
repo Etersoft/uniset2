@@ -140,6 +140,7 @@ int main( int argc, const char **argv )
     try
     {
 
+#if 0
         {
             uniset_rwmutex m1("mutex1");
             uniset_rwmutex m2("mutex2");
@@ -161,6 +162,7 @@ int main( int argc, const char **argv )
         }
         
         return 0;
+#endif
 
 #if 0
     ost::ThreadLock m;
