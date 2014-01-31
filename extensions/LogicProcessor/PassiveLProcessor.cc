@@ -6,36 +6,13 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
-PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId objId, 
-										UniSetTypes::ObjectId shmID, SharedMemory* ic, const std::string& prefix ):
+PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId objId,
+										UniSetTypes::ObjectId shmID, SharedMemory* ic ):
 	UniSetObject_LT(objId),
 	shm(0)
 {
-	logname = myname;
 	shm = new SMInterface(shmID,&(UniSetObject_LT::ui),objId,ic);
 	build(lfile);
-
-	// ********** HEARTBEAT *************
-	string heart = conf->getArgParam("--" + prefix + "-heartbeat-id",""); // it.getProp("heartbeat_id"));
-	if( !heart.empty() )
-	{
-		sidHeartBeat = conf->getSensorID(heart);
-		if( sidHeartBeat == DefaultObjectId )
-		{
-			ostringstream err;
-			err << myname << ": ID not found ('HeartBeat') for " << heart;
-			dlog[Debug::CRIT] << myname << "(init): " << err.str() << endl;
-			throw SystemError(err.str());
-		}
-
-		int heartbeatTime = conf->getArgPInt("--" + prefix + "-heartbeat-time",conf->getHeartBeatTime());
-		if( heartbeatTime )
-			ptHeartBeat.setTiming(heartbeatTime);
-		else
-			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
-
-		maxHeartBeat = conf->getArgPInt("--" + prefix + "-heartbeat-max","10", 10);
-	}
 }
 
 PassiveLProcessor::~PassiveLProcessor()
@@ -54,7 +31,7 @@ void PassiveLProcessor::step()
 		dlog[Debug::CRIT] << myname
 			<< "(step): (hb) " << ex << std::endl;
 	}
-	
+
 	if( sidHeartBeat!=DefaultObjectId && ptHeartBeat.checkTime() )
 	{
 		try
@@ -81,7 +58,7 @@ void PassiveLProcessor::askSensors( UniversalIO::UIOCommand cmd )
 	try
 	{
 		for( EXTList::iterator it=extInputs.begin(); it!=extInputs.end(); ++it )
-			shm->askSensor(it->sid,cmd);
+			UniSetObject::ui.askState(it->sid,cmd);
 	}
 	catch( Exception& ex )
 	{
@@ -111,14 +88,13 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 	{
 		case SystemMessage::StartUp:
 		{
-			if( !shm->waitSMready(smReadyTimeout) )
+			if( !shm->waitSMready(10000) )
 			{
-				dlog[Debug::CRIT] << myname << "(ERR): SM not ready. Terminated... " << endl;
+				cerr << "(ERR): SM not ready. Terminated... " << endl;
 				raise(SIGTERM);
 				return;
 			}
 
-			UniSetTypes::uniset_mutex_lock l(mutex_start, 10000);
 			askSensors(UniversalIO::UIONotify);
 			askTimer(tidStep,LProcessor::sleepTime);
 			break;
@@ -128,11 +104,11 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 		case SystemMessage::Finish:
 			askSensors(UniversalIO::UIODontNotify);
 			break;
-		
+
 		case SystemMessage::WatchDog:
 		{
 			// ОПТИМИЗАЦИЯ (защита от двойного перезаказа при старте)
-			// Если идёт локальная работа 
+			// Если идёт локальная работа
 			// (т.е. RTUExchange  запущен в одном процессе с SharedMemory2)
 			// то обрабатывать WatchDog не надо, т.к. мы и так ждём готовности SM
 			// при заказе датчиков, а если SM вылетит, то вместе с этим процессом(RTUExchange)
@@ -169,25 +145,6 @@ void PassiveLProcessor::sysCommand( UniSetTypes::SystemMessage *sm )
 	}
 }
 // -------------------------------------------------------------------------
-bool PassiveLProcessor::activateObject()
-{
-	// блокирование обработки Starsp 
-	// пока не пройдёт инициализация датчиков
-	// см. sysCommand()
-	{
-		UniSetTypes::uniset_mutex_lock l(mutex_start, 5000);
-		UniSetObject_LT::activateObject();
-		initIterators();
-	}
-
-	return true;
-}
-// ------------------------------------------------------------------------------------------
-void PassiveLProcessor::initIterators()
-{
-	shm->initAIterator(aitHeartBeat);
-}
-// -------------------------------------------------------------------------
 void PassiveLProcessor::setOuts()
 {
 	// выcтавляем выходы
@@ -198,25 +155,25 @@ void PassiveLProcessor::setOuts()
 			switch(it->iotype)
 			{
 				case UniversalIO::DigitalInput:
-					shm->saveLocalState(it->sid,it->lnk->from->getOut(),it->iotype);
+					UniSetObject::ui.saveState(it->sid,it->lnk->from->getOut(),it->iotype);
 				break;
 
 				case UniversalIO::DigitalOutput:
-					shm->setState(it->sid,it->lnk->from->getOut());
+					UniSetObject::ui.setState(it->sid,it->lnk->from->getOut());
 				break;
-				
+
 				default:
-					dlog[Debug::CRIT] << myname << "(setOuts): неподдерживаемый тип iotype=" << it->iotype << endl;
+					cerr << "(LProcessor::setOuts): неподдерживаемый тип iotype=" << it->iotype << endl;
 					break;
 			}
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::CRIT] << myname << "(setOuts): " << ex << endl;
+			cerr << "(LProcessor::setOuts): " << ex << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::CRIT] << myname << "(setOuts): catch...\n";
+			cerr << "(LProcessor::setOuts): catch...\n";
 		}
 	}
 }
@@ -230,25 +187,25 @@ void PassiveLProcessor::sigterm( int signo )
 			switch(it->iotype)
 			{
 				case UniversalIO::DigitalInput:
-					shm->saveLocalState(it->sid,false,it->iotype);
+					UniSetObject::ui.saveState(it->sid,false,it->iotype);
 				break;
 
 				case UniversalIO::DigitalOutput:
-					shm->setState(it->sid,false);
+					UniSetObject::ui.setState(it->sid,false);
 				break;
-				
+
 				default:
-					dlog[Debug::CRIT] << myname << "(sigterm): неподдерживаемый тип iotype=" << it->iotype << endl;
+					cerr << "(LProcessor::sigterm): неподдерживаемый тип iotype=" << it->iotype << endl;
 					break;
 			}
 		}
 		catch( Exception& ex )
 		{
-			dlog[Debug::CRIT] << myname << "(sigterm): " << ex << endl;
+			cerr << "(LProcessor::sigterm): " << ex << endl;
 		}
 		catch(...)
 		{
-			dlog[Debug::CRIT] << myname << "(sigterm): catch...\n";
+			cerr << "(LProcessor::sigterm): catch...\n";
 		}
 	}
 }
@@ -282,11 +239,11 @@ void PassiveLProcessor::processingMessage( UniSetTypes::VoidMessage* msg )
 
 			default:
 				break;
-		}	
+		}
 	}
 	catch(Exception& ex)
 	{
-		dlog[Debug::CRIT]  << myname << "(processingMessage): " << ex << endl;
+		cout  << myname << "(processingMessage): " << ex << endl;
 	}
 }
 // -----------------------------------------------------------------------------

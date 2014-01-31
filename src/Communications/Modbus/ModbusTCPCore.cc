@@ -3,7 +3,7 @@
 using namespace std;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
-int ModbusTCPCore::readNextData( ost::TCPStream* tcp, 
+int ModbusTCPCore::readNextData( ost::TCPStream* tcp,
 									std::queue<unsigned char>& qrecv, int max )
 {
 	if( !tcp || !tcp->isConnected() )
@@ -16,15 +16,15 @@ int ModbusTCPCore::readNextData( ost::TCPStream* tcp,
 		tcp->read(&c,sizeof(c));
 		if( tcp->gcount() <= 0 )
 			break;
-	
+
 		qrecv.push( (unsigned char)(c) );
 	}
-	
+
 	return i;
 }
 // -------------------------------------------------------------------------
-int ModbusTCPCore::getNextData( unsigned char* buf, int len, 
-								std::queue<unsigned char>& qrecv, 
+int ModbusTCPCore::getNextData( unsigned char* buf, int len,
+								std::queue<unsigned char>& qrecv,
 								ost::TCPStream* tcp )
 {
 	if( !tcp || !tcp->isConnected() )
@@ -60,17 +60,17 @@ mbErrCode ModbusTCPCore::sendData( unsigned char* buf, int len, ost::TCPStream* 
 	{
 		for( int i=0; i<len; i++ )
 			(*tcp) << buf[i];
-		
+
 		return erNoError;
 	}
-	catch( ost::SockException& e ) 
+	catch( ost::SockException& e )
 	{
 //		cerr << "(send): " << e.getString() << ": " << e.getSystemErrorString() << endl;
 	}
 	catch(...)
 	{
 //		cerr << "(send): cath..." << endl;
-	}	
+	}
 
 	return erHardwareError;
 }

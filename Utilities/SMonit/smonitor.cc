@@ -27,7 +27,7 @@ int main( int argc, const char **argv )
 		ID = conf->getObjectID(name);
 		if( ID == UniSetTypes::DefaultObjectId )
 		{
-			cerr << "(main): идентификатор '" << name 
+			cerr << "(main): идентификатор '" << name
 				<< "' не найден в конф. файле!"
 				<< " в секции " << conf->getObjectsSection() << endl;
 			return 0;
@@ -37,10 +37,9 @@ int main( int argc, const char **argv )
 		SMonitor tp(ID);
 		act.addObject(&tp);
 
-		SystemMessage sm(SystemMessage::StartUp); 
+		SystemMessage sm(SystemMessage::StartUp);
 		act.broadcast( sm.transport_msg() );
 		act.run(false);
-		return 0;
 	}
 	catch( Exception& ex )
 	{
@@ -51,6 +50,6 @@ int main( int argc, const char **argv )
 		cout << "(main): Неизвестное исключение!!!!"<< endl;
 	}
 
-	return 1;
+	return 0;
 }
 // ------------------------------------------------------------------------------------------
