@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # общие функции
-. uniset-functions.sh
+. uniset2-functions.sh
 
 WITH_PID=0
 std=0

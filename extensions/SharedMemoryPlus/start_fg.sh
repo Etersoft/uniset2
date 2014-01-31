@@ -1,9 +1,9 @@
 #!/bin/sh
 
 ulimit -Sc 10000000
-START=uniset-start.sh
+START=uniset2-start.sh
 
-${START} -f ./uniset-smemory-plus --smemory-id SharedMemory  --confile test.xml \
+${START} -f ./uniset2-smemory-plus --smemory-id SharedMemory  --confile test.xml \
 	 --dlog-add-levels any \
 	 --io-name IOControl \
 	 --io-polltime 100 \

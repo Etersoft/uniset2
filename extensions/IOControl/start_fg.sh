@@ -3,7 +3,7 @@
 export LD_LIBRARY_PATH="../../lib/.libs;../lib/.libs"
 #ulimit -Sc 1000000000000
 
-uniset-start.sh -f ./uniset-iocontrol --smemory-id SharedMemory \
+uniset2-start.sh -f ./uniset2-iocontrol --smemory-id SharedMemory \
 --confile test.xml \
 	 --io-name IOControl \
 	 --io-polltime 100 \
