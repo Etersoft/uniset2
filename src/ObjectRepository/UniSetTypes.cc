@@ -237,7 +237,7 @@ using namespace UniSetTypes;
         std::list<UniSetTypes::ParamSInfo> res;
 
         std::list<std::string> l = UniSetTypes::explode_str(str,',');
-        for( std::list<std::string>::iterator it=l.begin(); it!=l.end(); it++ )
+        for( std::list<std::string>::iterator it=l.begin(); it!=l.end(); ++it )
         {
             UniSetTypes::ParamSInfo item;
 

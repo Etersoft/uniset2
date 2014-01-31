@@ -462,7 +462,7 @@ int setValue( const string& args, UInterface &ui, Configuration* conf )
     typedef std::list<UniSetTypes::ParamSInfo> SList;
     SList sl = UniSetTypes::getSInfoList(args, conf);
     cout << "====== setValue ======" << endl;
-    for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
+    for( SList::iterator it=sl.begin(); it!=sl.end(); ++it )
     {
         try
         {
@@ -508,7 +508,7 @@ int getValue( const string& args, UInterface &ui, Configuration* conf )
     typedef std::list<UniSetTypes::ParamSInfo> SList;
     SList sl = UniSetTypes::getSInfoList( args, UniSetTypes::conf );
     cout << "====== getValue ======" << endl;
-    for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
+    for( SList::iterator it=sl.begin(); it!=sl.end(); ++it )
     {
         try
         {
@@ -551,7 +551,7 @@ int getCalibrate( const std::string& args, UInterface &ui )
       typedef std::list<UniSetTypes::ParamSInfo> SList;
     SList sl = UniSetTypes::getSInfoList( args, UniSetTypes::conf );
     cout << "====== getCalibrate ======" << endl;
-    for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
+    for( SList::iterator it=sl.begin(); it!=sl.end(); ++it )
     {
         if( it->si.node == DefaultObjectId )
             it->si.node = conf->getLocalNode();
@@ -578,10 +578,10 @@ int getCalibrate( const std::string& args, UInterface &ui )
 int getRawValue( const std::string& args, UInterface &ui )
 {
     int err = 0;
-      typedef std::list<UniSetTypes::ParamSInfo> SList;
+    typedef std::list<UniSetTypes::ParamSInfo> SList;
     SList sl = UniSetTypes::getSInfoList( args, UniSetTypes::conf );
     cout << "====== getRawValue ======" << endl;
-    for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
+    for( SList::iterator it=sl.begin(); it!=sl.end(); ++it )
     {
         if( it->si.node == DefaultObjectId )
             it->si.node = conf->getLocalNode();

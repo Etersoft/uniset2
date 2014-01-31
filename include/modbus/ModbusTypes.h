@@ -207,7 +207,7 @@ namespace ModbusRTU
         operator ModbusByte();
         ModbusByte mbyte();
 
-        bool operator[]( const int i ){ return b[i]; }
+        bool operator[]( const size_t i ){ return b[i]; }
 
         std::bitset<BitsPerByte> b;
     };
@@ -218,7 +218,7 @@ namespace ModbusRTU
     struct DataBits16
     {
         DataBits16( ModbusData d );
-        DataBits16( std::string s ); // example "1000111110001111"
+        DataBits16( const std::string& s ); // example "1000111110001111"
         DataBits16();
 
         const DataBits16& operator=(const ModbusData& r);
@@ -226,7 +226,7 @@ namespace ModbusRTU
         operator ModbusData();
         ModbusData mdata();
 
-        bool operator[]( const int i ){ return b[i]; }
+        bool operator[]( const size_t i ){ return b[i]; }
         void set( int n, bool s ){ b.set(n,s); }
 
         std::bitset<BitsPerData> b;
@@ -322,7 +322,7 @@ namespace ModbusRTU
         }
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
@@ -416,7 +416,7 @@ namespace ModbusRTU
         }
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
@@ -495,7 +495,7 @@ namespace ModbusRTU
         }
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
@@ -583,7 +583,7 @@ namespace ModbusRTU
         void swapData();
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
@@ -651,7 +651,7 @@ namespace ModbusRTU
         void init( ModbusMessage& m );
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! размер предварительного заголовка
          * (после основного до фактических данных)
@@ -741,7 +741,7 @@ namespace ModbusRTU
         void init( ModbusMessage& m );
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! размер предварительного заголовка
          * (после основного до фактических данных)
@@ -828,7 +828,7 @@ namespace ModbusRTU
         void init( ModbusMessage& m );
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! размер предварительного заголовка
          * (после основного до фактических данных)
@@ -911,7 +911,7 @@ namespace ModbusRTU
         void init( ModbusMessage& m );
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! размер предварительного заголовка
          * (после основного до фактических данных)
@@ -1015,7 +1015,7 @@ namespace ModbusRTU
         }
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
@@ -1143,7 +1143,7 @@ namespace ModbusRTU
         }
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
@@ -1211,7 +1211,7 @@ namespace ModbusRTU
         }
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
@@ -1314,7 +1314,7 @@ namespace ModbusRTU
         void init( ModbusMessage& m );
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! размер предварительного заголовка
          * (после основного до фактических данных)
@@ -1355,7 +1355,7 @@ namespace ModbusRTU
             { return ( count >= sizeof(data) ); }
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
@@ -1390,7 +1390,7 @@ namespace ModbusRTU
         void init( ModbusMessage& m );
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! размер предварительного заголовка
          * (после основного до фактических данных)
@@ -1473,7 +1473,7 @@ namespace ModbusRTU
         void clear();
 
         /*! размер данных(после заголовка) у данного типа сообщения */
-        int szData();
+        size_t szData();
 
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();

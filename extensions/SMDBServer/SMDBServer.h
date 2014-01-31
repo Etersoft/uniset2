@@ -12,13 +12,13 @@ class SMDBServer:
 {
     public:
         SMDBServer( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
-                    const std::string prefix="dbserver" );
+                    const std::string& prefix="dbserver" );
         virtual ~SMDBServer();
 
         /*! глобальная функция для инициализации объекта */
         static SMDBServer* init_smdbserver( int argc, const char* const* argv,
                             UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
-                            const std::string prefix="dbserver" );
+                            const std::string& prefix="dbserver" );
 
         /*! глобальная функция для вывода help-а */
         static void help_print( int argc, const char* const* argv );

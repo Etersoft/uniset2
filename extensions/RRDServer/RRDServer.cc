@@ -74,7 +74,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
         throw SystemError(err.str());
     }
 
-    for(;it_rra.getCurrent(); it_rra++ )
+    for(;it_rra.getCurrent(); ++it_rra )
     {
         string rra( it_rra.getProp("rra") );
         if( rra.empty() )
