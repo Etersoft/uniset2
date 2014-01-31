@@ -7,7 +7,7 @@ libMBMaster_la_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)
 libMBMaster_la_SOURCES 	= MBExchange.cc RTUStorage.cc
 
 bin_PROGRAMS 		= @PACKAGE@-mbtcpmaster @PACKAGE@-mbtcpmultimaster @PACKAGE@-rtuexchange @PACKAGE@-mtr-conv @PACKAGE@-rtu188-state @PACKAGE@-vtconv @PACKAGE@-mtr-setup @PACKAGE@-mtr-read
-lib_LTLIBRARIES 	= libUniSetMBTCPMaster2.la libUniSet2RTU.la
+lib_LTLIBRARIES 	= libUniSet2MBTCPMaster.la libUniSet2RTU.la
 
 # -------------------- Mobus TCP -------------------
 # не забывайте править версию в2.pc-файле
@@ -40,20 +40,20 @@ libUniSet2MBTCPMaster_la_SOURCES 	= MBTCPMaster.cc MBTCPMultiMaster.cc
 # не забывайте править версию в2.pc-файле
 URTU_VER=@LIBVER@
 
-libUniSet2RTU.la_LDFLAGS  = -version-info $(URTU_VER)
-libUniSet2RTU.la_LIBADD		= libMBMaster.la $(top_builddir)/lib/libUniSet2.la \
-								$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
-								$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
-								$(SIGC_LIBS)
-libUniSet2RTU.la_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
-libUniSet2RTU.la_SOURCES 	= RTUExchange.cc
+libUniSet2RTU_la_LDFLAGS  = -version-info $(URTU_VER)
+libUniSet2RTU_la_LIBADD   = libMBMaster.la $(top_builddir)/lib/libUniSet2.la \
+	                        $(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
+	                        $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
+	                        $(SIGC_LIBS)
+libUniSet2RTU_la_CXXFLAGS = -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
+libUniSet2RTU_la_SOURCES  = RTUExchange.cc
 
-@PACKAGE@_rtuexchange_SOURCES 	= rtuexchange.cc
-@PACKAGE@_rtuexchange_LDADD 	= libUniSet2RTU.la libMBMaster.la $(top_builddir)/lib/libUniSet2.la \
-									$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
-									$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
-									$(SIGC_LIBS)
-@PACKAGE@_rtuexchange_CXXFLAGS	= -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
+@PACKAGE@_rtuexchange_SOURCES = rtuexchange.cc
+@PACKAGE@_rtuexchange_LDADD   = libUniSet2RTU.la libMBMaster.la $(top_builddir)/lib/libUniSet2.la \
+	                            $(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
+	                            $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
+	                            $(SIGC_LIBS)
+@PACKAGE@_rtuexchange_CXXFLAGS = -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)
 
 @PACKAGE@_mtr_conv_SOURCES	= mtr-conv.cc
 @PACKAGE@_mtr_conv_LDADD	= $(top_builddir)/extensions/lib/libUniSet2Extensions.la $(top_builddir)/lib/libUniSet2.la

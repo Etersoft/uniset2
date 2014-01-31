@@ -168,12 +168,12 @@ echo "UNISET_CODEGEN: $UNISET_CODEGEN"
 
 UNISET_CFLAGS="-I \$(top_builddir) -I \$(top_builddir)/include"
 AC_SUBST(UNISET_CFLAGS)
-UNISET_LIBS="\$(top_builddir)/lib/libUniSet.la"
+UNISET_LIBS="\$(top_builddir)/lib/libUniSet2.la"
 AC_SUBST(UNISET_LIBS)
 
 UNISET_EXT_CFLAGS="-I \$(top_builddir)/extensions/include"
 AC_SUBST(UNISET_EXT_CFLAGS)
-UNISET_EXT_LIBS="\$(top_builddir)/extensions/lib/libUniSetExtensions.la"
+UNISET_EXT_LIBS="\$(top_builddir)/extensions/lib/libUniSet2Extensions.la"
 AC_SUBST(UNISET_EXT_LIBS)
 
 # Checks for header files.
@@ -229,7 +229,7 @@ AC_CONFIG_FILES([Makefile
 				 Utilities/MBTester/Makefile
 				 Utilities/SImitator/Makefile
 				 Utilities/codegen/Makefile
-				 Utilities/codegen/uniset-codegen
+				 Utilities/codegen/uniset2-codegen
 				 Utilities/codegen/tests/Makefile
 				 extensions/Makefile
 				 extensions/libUniSet2Extensions.pc

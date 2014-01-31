@@ -31,7 +31,7 @@ devel_include_HEADERS = *.h
 devel_includedir = $(pkgincludedir)/extensions
 
 pkgconfigdir 	= $(libdir)/pkgconfig
-pkgconfig_DATA 	= libUniSet2RRDServer2.pc
+pkgconfig_DATA 	= libUniSet2RRDServer.pc
 
 all-local:
 	ln -sf ../RRDServer/$(devel_include_HEADERS) ../include

@@ -4,14 +4,14 @@ bin_PROGRAMS = @PACKAGE@-iocontrol @PACKAGE@-iotest @PACKAGE@-iocalibr
 UIO_VER=@LIBVER@
 
 lib_LTLIBRARIES 	= libUniSet2IOControl.la
-libUniSet2IOControl_la_LDFLAGS  = -version-info $(UIO_VER)
-libUniSet2IOControl_la_LIBADD		= $(COMEDI_LIBS) $(SIGC_LIBS) \
+libUniSet2IOControl_la_LDFLAGS = -version-info $(UIO_VER)
+libUniSet2IOControl_la_LIBADD  = $(COMEDI_LIBS) $(SIGC_LIBS) \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	-lm
 
-libUniSetIOControl2_la_CXXFLAGS = $(COMEDI_CFLAGS) $(SIGC_CFLAGS) \
+libUniSet2IOControl_la_CXXFLAGS = $(COMEDI_CFLAGS) $(SIGC_CFLAGS) \
 	-I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/SharedMemory
 
@@ -29,7 +29,7 @@ libUniSet2IOControl_la_SOURCES = ComediInterface.cc IOControl.cc
 @PACKAGE@_iotest_LDADD 	= $(COMEDI_LIBS) -lm
 @PACKAGE@_iotest_SOURCES 	= iotest.cc
 
-@PACKAGE@_iocalibr_CXXFLAGS 	= $(COMEDI_CFLAGS)
+@PACKAGE@_iocalibr_CXXFLAGS = $(COMEDI_CFLAGS)
 @PACKAGE@_iocalibr_LDADD 		= $(COMEDI_LIBS) \
 	$(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
