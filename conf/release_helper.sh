@@ -11,7 +11,7 @@ MAILDOMAIN=server
 # builder50 path
 TOPDIR=/var/ftp/pvt/Etersoft/Ourside/
 
-PKGNAME=uniset
+PKGNAME=uniset2
 SPECNAME=libuniset2.spec
 
 PROJECT=$1
