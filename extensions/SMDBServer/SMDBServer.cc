@@ -10,7 +10,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 SMDBServer::SMDBServer( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic,
-            const string prefix ):
+            const string& prefix ):
 DBServer_MySQL(objId),
 prefix(prefix)
 {
@@ -178,7 +178,7 @@ void SMDBServer::help_print( int argc, const char* const* argv )
 // -----------------------------------------------------------------------------
 SMDBServer* SMDBServer::init_smdbserver( int argc, const char* const* argv, 
                                             UniSetTypes::ObjectId icID, SharedMemory* ic, 
-                                            const std::string prefix )
+                                            const std::string& prefix )
 {
     string name = conf->getArgParam("--" + prefix + "-name","DBServer");
     if( name.empty() )

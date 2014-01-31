@@ -235,12 +235,12 @@ using namespace UniSetTypes;
     std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str, Configuration* conf )
     {
         std::list<UniSetTypes::ParamSInfo> res;
-        
+
         std::list<std::string> l = UniSetTypes::explode_str(str,',');
-        for( std::list<std::string>::iterator it=l.begin(); it!=l.end(); it++ )
+        for( std::list<std::string>::iterator it=l.begin(); it!=l.end(); ++it )
         {
             UniSetTypes::ParamSInfo item;
-            
+
             std::list<std::string> p = UniSetTypes::explode_str((*it),'=');
             std::string s = "";
             if( p.size() == 1 )

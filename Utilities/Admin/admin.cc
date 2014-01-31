@@ -458,12 +458,12 @@ int omap()
 int setValue( const string& args, UInterface &ui, Configuration* conf )
 {
     int err = 0;
-    
+
     typedef std::list<UniSetTypes::ParamSInfo> SList;
     SList sl = UniSetTypes::getSInfoList(args, conf);
     cout << "====== setValue ======" << endl;
-    for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
-    {    
+    for( SList::iterator it=sl.begin(); it!=sl.end(); ++it )
+    {
         try
         {
             UniversalIO::IOType t = conf->getIOType(it->si.id);
@@ -471,10 +471,10 @@ int setValue( const string& args, UInterface &ui, Configuration* conf )
             cout << "   name: (" << it->si.id << ") " << it->fname << endl;
             cout << "   iotype: " << t << endl;
             cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
-            
+
             if( it->si.node == DefaultObjectId )
                 it->si.node = conf->getLocalNode();
-            
+
             switch(t)
             {
                 case UniversalIO::DI:
@@ -494,9 +494,9 @@ int setValue( const string& args, UInterface &ui, Configuration* conf )
         {
             cerr << "(setValue): " << ex << endl;;
             err = 1;
-        }    
+        }
     }
-    
+
     return err;
 }
 
@@ -504,11 +504,11 @@ int setValue( const string& args, UInterface &ui, Configuration* conf )
 int getValue( const string& args, UInterface &ui, Configuration* conf )
 {
     int err = 0;
-    
+
     typedef std::list<UniSetTypes::ParamSInfo> SList;
     SList sl = UniSetTypes::getSInfoList( args, UniSetTypes::conf );
     cout << "====== getValue ======" << endl;
-    for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
+    for( SList::iterator it=sl.begin(); it!=sl.end(); ++it )
     {    
         try
         {
@@ -516,10 +516,10 @@ int getValue( const string& args, UInterface &ui, Configuration* conf )
             cout << "   name: (" << it->si.id << ") " << it->fname << endl;
             cout << "   iotype: " << t << endl;
             cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
-            
+
             if( it->si.node == DefaultObjectId )
                 it->si.node = conf->getLocalNode();
-            
+
             switch(t)
             {
                 case UniversalIO::DO:
@@ -528,7 +528,7 @@ int getValue( const string& args, UInterface &ui, Configuration* conf )
                 case UniversalIO::AI:
                     cout << "  value: " << ui.getValue(it->si.id,it->si.node) << endl;
                 break;
-                
+
                 default:
                     cerr << "FAILED: Unknown 'iotype' for " << it->fname << endl;
                     err = 1;
@@ -539,9 +539,9 @@ int getValue( const string& args, UInterface &ui, Configuration* conf )
         {
             cerr << "(getValue): " << ex << endl;
             err = 1;
-        }    
+        }
     }
-    
+
     return err;
 }
 // --------------------------------------------------------------------------------------
@@ -551,11 +551,11 @@ int getCalibrate( const std::string& args, UInterface &ui )
       typedef std::list<UniSetTypes::ParamSInfo> SList;
     SList sl = UniSetTypes::getSInfoList( args, UniSetTypes::conf );
     cout << "====== getCalibrate ======" << endl;
-    for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
-    {    
+    for( SList::iterator it=sl.begin(); it!=sl.end(); ++it )
+    {
         if( it->si.node == DefaultObjectId )
             it->si.node = conf->getLocalNode();
-      
+
         cout << "      name: (" << it->si.id << ") " << it->fname << endl;
         cout << "      text: " << conf->oind->getTextName(it->si.id) << "\n";
         try
@@ -568,9 +568,9 @@ int getCalibrate( const std::string& args, UInterface &ui )
         {
             cerr << "(getCalibrate): " << ex << endl;;
             err = 1;
-        }    
+        }
     }
-    
+
     return err;
 }
 
@@ -578,14 +578,14 @@ int getCalibrate( const std::string& args, UInterface &ui )
 int getRawValue( const std::string& args, UInterface &ui )
 {
     int err = 0;
-      typedef std::list<UniSetTypes::ParamSInfo> SList;
+    typedef std::list<UniSetTypes::ParamSInfo> SList;
     SList sl = UniSetTypes::getSInfoList( args, UniSetTypes::conf );
     cout << "====== getRawValue ======" << endl;
-    for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
+    for( SList::iterator it=sl.begin(); it!=sl.end(); ++it )
     {    
         if( it->si.node == DefaultObjectId )
-            it->si.node = conf->getLocalNode();      
-        
+            it->si.node = conf->getLocalNode();
+
         cout << "   name: (" << it->si.id << ") " << it->fname << endl;
         cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
         try
@@ -596,7 +596,7 @@ int getRawValue( const std::string& args, UInterface &ui )
         {
             cerr << "(getRawValue): " << ex << endl;;
             err = 1;
-        }    
+        }
     }
     return err;
 }
@@ -621,7 +621,7 @@ int logRotate( const string& arg, UInterface &ui )
             cout << "(logrotate): name='" << arg << "' не найдено!!!\n";
             return 1;
         }
-            
+
         SystemMessage sm(SystemMessage::LogRotate);
         TransportMessage tm(sm.transport_msg());
         ui.send(id,tm);
@@ -655,7 +655,7 @@ int configure( const string& arg, UInterface &ui )
         ui.send(id,tm);
         cout << "\nSend 'ReConfigure' to " << arg << " OK.\n";
     }
-    return 0;            
+    return 0;
 }
 
 // --------------------------------------------------------------------------------------
@@ -667,7 +667,7 @@ int oinfo( const string& arg, UInterface &ui )
         cout << "(oinfo): Не задан OID!"<< endl;
         return 1;
     }
-            
+
     UniSetTypes::ObjectVar o = ui.resolve(oid);
     UniSetObject_i_var obj = UniSetObject_i::_narrow(o);
     if(CORBA::is_nil(obj))
@@ -679,7 +679,7 @@ int oinfo( const string& arg, UInterface &ui )
         SimpleInfo_var inf = obj->getInfo();
         cout << inf->info << endl;
     }
-            
+
     return 0;
 }
 

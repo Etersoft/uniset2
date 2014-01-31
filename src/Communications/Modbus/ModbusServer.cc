@@ -1448,7 +1448,7 @@ ModbusRTU::mbErrCode ModbusServer::replyFileTransfer( const std::string &fname,
     }
 
     return ModbusRTU::erNoError;    
-}                                                            
+}
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessage& query, 
                                                 ModbusRTU::SetDateTimeRetMessage& reply,
@@ -1462,15 +1462,16 @@ ModbusRTU::mbErrCode ModbusServer::replySetDateTime( ModbusRTU::SetDateTimeMessa
 
     if( gettimeofday(&set,&tz) == 0 )
     {
-        struct tm*  t = localtime(&set.tv_sec);
-        t->tm_sec     = query.sec;
-        t->tm_min     = query.min;
-        t->tm_hour     = query.hour;
-        t->tm_mday     = query.day;
-        t->tm_mon     = query.mon-1;
-//        t->tm_year     = (query.century>19) ? query.year + query.century*10 - 1900 : query.year;
-        t->tm_year     = (query.century>19) ? query.year + 2000 - 1900 : query.year;
-        set.tv_sec = mktime(t);
+        struct tm  t;
+        localtime_r(&set.tv_sec,&t);
+        t.tm_sec     = query.sec;
+        t.tm_min     = query.min;
+        t.tm_hour     = query.hour;
+        t.tm_mday     = query.day;
+        t.tm_mon     = query.mon-1;
+//        t.tm_year     = (query.century>19) ? query.year + query.century*10 - 1900 : query.year;
+        t.tm_year     = (query.century>19) ? query.year + 2000 - 1900 : query.year;
+        set.tv_sec = mktime(&t);
         set.tv_usec = 0;
 
         if( settimeofday(&set,&tz)==0 )
