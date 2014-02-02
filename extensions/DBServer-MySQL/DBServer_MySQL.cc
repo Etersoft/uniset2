@@ -39,7 +39,7 @@ const Debug::type DBLEVEL = Debug::LEVEL1;
 // --------------------------------------------------------------------------
 DBServer_MySQL::DBServer_MySQL(ObjectId id): 
     DBServer(id),
-    db(new DBInterface()),
+    db(new MySQLInterface()),
     PingTime(300000),
     ReconnectTime(180000),
     connect_ok(false),
@@ -59,7 +59,7 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id):
 
 DBServer_MySQL::DBServer_MySQL(): 
     DBServer(conf->getDBServer()),
-    db(new DBInterface()),
+    db(new MySQLInterface()),
     PingTime(300000),
     ReconnectTime(180000),
     connect_ok(false),
@@ -82,7 +82,6 @@ DBServer_MySQL::~DBServer_MySQL()
 {
     if( db != NULL )
     {
-        db->freeResult();
         db->close();
         delete db;
     }
@@ -98,7 +97,6 @@ void DBServer_MySQL::sysCommand( const UniSetTypes::SystemMessage *sm )
         case SystemMessage::Finish:
         {
             activate = false;
-            db->freeResult();
             db->close();
         }
         break;
@@ -106,7 +104,6 @@ void DBServer_MySQL::sysCommand( const UniSetTypes::SystemMessage *sm )
         case SystemMessage::FoldUp:
         {
             activate = false;
-            db->freeResult();
             db->close();
         }
         break;
@@ -136,7 +133,6 @@ void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
         if( !writeToBase(data.str()) )
         {
             ucrit << myname << "(update_confirm):  db error: "<< db->error() << endl;
-            db->freeResult();
         }
     }
     catch( Exception& ex )
@@ -183,14 +179,11 @@ bool DBServer_MySQL::writeToBase( const string& query )
     // Дело в том что на INSERT И UPDATE запросы 
     // db->query() может возвращать false и надо самому
     // отдельно проверять действительно ли произошла ошибка
-    // см. DBInterface::query.
+    // см. MySQLInterface::query.
     string err(db->error());
     if( err.empty() )
-    {
-        db->freeResult();
         return true;
-    }
-    
+
     return false;
 }
 //--------------------------------------------------------------------------------------------
@@ -206,11 +199,9 @@ void DBServer_MySQL::flushBuffer()
         // Дело в том что на INSERT И UPDATE запросы 
         // db->query() может возвращать false и надо самому
         // отдельно проверять действительно ли произошла ошибка
-        // см. DBInterface::query.
+        // см. MySQLInterface::query.
         string err(db->error());
-        if( err.empty() )
-            db->freeResult();
-        else
+        if( !err.empty() )
             ucrit << myname << "(writeToBase): error: " << err <<
                 " lost query: " << qbuf.front() << endl;
 
@@ -247,7 +238,6 @@ void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
         if( !writeToBase(data.str()) )
         {
             ucrit << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
-            db->freeResult();
         }
     }
     catch( Exception& ex )
@@ -340,7 +330,7 @@ void DBServer_MySQL::init_dbserver()
     }
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::createTables( DBInterface *db )
+void DBServer_MySQL::createTables( MySQLInterface *db )
 {
     UniXML_iterator it( conf->getNode("Tables") );
     if(!it)
