@@ -259,10 +259,10 @@ int main(int argc, char* argv[])
                     if( verb )
                         printf( "write: ch=%d val=%d\n",chan[k],val);
 
-                      if( comedi_dio_write(card, subdev, chan[k], val) < 0)
+                    if( comedi_dio_write(card, subdev, chan[k], val) < 0)
                     {
-                        fprintf(stderr,"can't write 1 to channel %d. (%d) %s\n",k,errno,strerror(errno));
-                          exret = EXIT_FAILURE;
+                        fprintf(stderr,"can't write 1 to channel %u. (%d) %s\n",k,errno,strerror(errno));
+                        exret = EXIT_FAILURE;
                     }
                 }
 

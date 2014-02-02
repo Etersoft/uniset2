@@ -12,6 +12,7 @@ using namespace UniSetExtensions;
 SMDBServer::SMDBServer( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic,
             const string& prefix ):
 DBServer_MySQL(objId),
+aiignore(false),
 prefix(prefix)
 {
     if( objId == DefaultObjectId )

@@ -292,15 +292,12 @@ void RTUExchange::poll()
     updateSM();
 
     // check thresholds
-    for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+    for( MBExchange::ThresholdList::iterator t=thrlist.begin(); t!=thrlist.end(); ++t )
     {
-        RTUDevice* d(it1->second);
-        for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
-        {
-            RegInfo* r(it->second);
-            for( PList::iterator i=r->slst.begin(); i!=r->slst.end(); ++i )
-                IOBase::processingThreshold( &(*i),shm,force);
-        }
+         if( !checkProcActive() )
+             return;
+
+         IOBase::processingThreshold(&(*t),shm,force);
     }
 
     if( trReopen.hi(allNotRespond) )

@@ -272,7 +272,10 @@ void IOControl::execute()
 
         // init iterators
         for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+        {
             shm->initIterator(it->ioit);
+            shm->initIterator(it->t_ait);
+        }
 
         readconf_ok = true; // т.к. waitSM() уже был...
     }

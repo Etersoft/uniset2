@@ -11,9 +11,9 @@
 #include "IOController.h"
 #include "SMInterface.h"
 // -----------------------------------------------------------------------------
-static const int DefaultSubdev     = -1;
+static const int DefaultSubdev  = -1;
 static const int DefaultChannel = -1;
-static const int NoSafety = -1;
+static const int NoSafety       = -1;
 // -----------------------------------------------------------------------------
         /*! Информация о входе/выходе */
         struct IOBase
@@ -92,6 +92,7 @@ static const int NoSafety = -1;
                                                 хранится идентификатор аналогового датчика
                                                 с которым он связан */
             IONotifyController_i::ThresholdInfo ti;
+            IOController::IOStateList::iterator t_ait; // итератор для аналогового датчика
 
             // Работа по фронтам сигнала
             enum FrontType

@@ -64,10 +64,10 @@ int main( int argc, const char** argv )
         SystemMessage sm(SystemMessage::StartUp);
         act.broadcast( sm.transport_msg() );
 
-        ulog.ebug::ANY) << "\n\n\n";
-        ulog.ebug::ANY] << "(main): -------------- SMDBServer START -------------------------\n\n";
-        dlog(Debug::ANY) << "\n\n\n";
-        dlog[Debug::ANY] << "(main): -------------- SMDBServer START -------------------------\n\n";
+        ulog << "\n\n\n";
+        ulog << "(main): -------------- SMDBServer START -------------------------\n\n";
+        dlog << "\n\n\n";
+        dlog << "(main): -------------- SMDBServer START -------------------------\n\n";
         act.run(false);
         return 0;
     }

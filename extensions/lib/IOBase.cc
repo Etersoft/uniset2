@@ -347,7 +347,7 @@ void IOBase::processingThreshold( IOBase* it, SMInterface* shm, bool force )
     if( it->t_ai == DefaultObjectId )
         return;
 
-    long val = shm->localGetValue(it->ioit,it->t_ai);
+    long val = shm->localGetValue(it->t_ait,it->t_ai);
     bool set = it->value ? true : false;
 
 //    cout  << "val=" << val << " set=" << set << endl;
@@ -547,6 +547,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
             b->ti.lowlimit = it.getIntProp("lowlimit");
             b->ti.hilimit = it.getIntProp("hilimit");
             b->ti.invert = it.getIntProp("threshold_invert");
+            shm->initIterator(b->t_ait);
         }
     }
 
