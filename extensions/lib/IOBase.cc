@@ -338,7 +338,7 @@ float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
                 return ( fval / pow10(it->cal.precision) );
         }
     }
-    
+
     return val;
 }
 // -----------------------------------------------------------------------------
@@ -346,8 +346,8 @@ void IOBase::processingThreshold( IOBase* it, SMInterface* shm, bool force )
 {
     if( it->t_ai == DefaultObjectId )
         return;
-    
-    long val = shm->localGetValue(it->ioit,it->t_ai);
+
+    long val = shm->localGetValue(it->t_ait,it->t_ai);
     bool set = it->value ? true : false;
 
 //    cout  << "val=" << val << " set=" << set << endl;
@@ -462,7 +462,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
     b->f_median = false;
     b->f_ls = false;
     b->f_filter_iir = false;
-        
+
     shm->initIterator(b->ioit);
 
     if( b->stype == UniversalIO::AI || b->stype == UniversalIO::AO )
@@ -480,7 +480,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
         int f_iir = it.getIntProp("iir_thr");
         float f_iir_coeff_prev = def_iir_coeff_prev;
         float f_iir_coeff_new = def_iir_coeff_new;
-        
+
         if( f_median > 0 )
         {
             f_size = f_median;
@@ -493,7 +493,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
             if( !it.getProp("filtersize").empty() )
                 f_size = it.getPIntProp("filtersize",def_filtersize);
         }
-        
+
         if( !it.getProp("filterT").empty() )
         {
             f_T = atof(it.getProp("filterT").c_str());
@@ -547,6 +547,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
             b->ti.lowlimit = it.getIntProp("lowlimit");
             b->ti.hilimit = it.getIntProp("hilimit");
             b->ti.invert = it.getIntProp("threshold_invert");
+            shm->initIterator(b->t_ait);
         }
     }
 

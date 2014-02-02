@@ -278,13 +278,13 @@ MBExchange::DeviceType MBExchange::getDeviceType( const std::string& dtype )
 
     if( dtype == "mtr" || dtype == "MTR" )
         return dtMTR;
-    
+
     if( dtype == "rtu" || dtype == "RTU" )
         return dtRTU;
 
     if( dtype == "rtu188" || dtype == "RTU188" )
         return dtRTU188;
-    
+
     return dtUnknown;
 }
 // ------------------------------------------------------------------------------------------
@@ -300,8 +300,17 @@ void MBExchange::initIterators()
         for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
         {
             for( PList::iterator it2=it->second->slst.begin();it2!=it->second->slst.end(); ++it2 )
+            {
                 shm->initIterator(it2->ioit);
+                shm->initIterator(it2->t_ait);
+            }
         }
+    }
+
+    for( MBExchange::ThresholdList::iterator t=thrlist.begin(); t!=thrlist.end(); ++t )
+    {
+         shm->initIterator(t->ioit);
+         shm->initIterator(t->t_ait);
     }
 }
 // -----------------------------------------------------------------------------
@@ -1739,7 +1748,6 @@ MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, RegID id, ModbusRTU::Modbus
                 << "(id=" << id << ")"
                 << " already added for " << (*it->second) 
                 << " Ignore register params for " << xmlit.getProp("name") << " ..." << endl;
-        
 
         it->second->rit = it;
         return it->second;
@@ -1790,6 +1798,17 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
     if( !IOBase::initItem(&p,it,shm,&dlog,myname) )
         return false;
 
+    // проверяем не пороговый ли это датчик (т.е. не связанный с обменом)
+    // тогда заносим его в отдельный список
+    if( p.t_ai != DefaultObjectId )
+    {
+        // испольуем конструктор копирования, чтобы сформировать IOBase 
+        // через преобразование указателя к базовому классу
+        IOBase b( *(static_cast<IOBase*>(&p)) );
+        thrlist.push_back(b);
+        return true;
+    }
+
     if( it.getIntProp(prop_prefix + "rawdata") )
     {
         p.cal.minRaw = 0;
@@ -1811,7 +1830,7 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
             return false;
         }
     }
-    
+
     string sbit(it.getProp(prop_prefix + "nbit"));
     if( !sbit.empty() )
     {
@@ -1823,7 +1842,7 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
             return false;
         }
     }
-    
+
     if( p.nbit > 0 && 
         ( p.stype == UniversalIO::AI ||
             p.stype == UniversalIO::AO ) )
@@ -2724,20 +2743,14 @@ void MBExchange::poll()
     updateSM();
 
     // check thresholds
-    for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+    for( MBExchange::ThresholdList::iterator t=thrlist.begin(); t!=thrlist.end(); ++t )
     {
-        RTUDevice* d(it1->second);
-        for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
-        {
-            if( !checkProcActive() )
-                return;
+         if( !checkProcActive() )
+             return;
 
-            RegInfo* r(it->second);
-            for( PList::iterator i=r->slst.begin(); i!=r->slst.end(); ++i )
-                IOBase::processingThreshold( &(*i),shm,force);
-        }
+         IOBase::processingThreshold(&(*t),shm,force);
     }
-    
+
     if( trReopen.hi(allNotRespond) )
          ptReopen.reset();
 

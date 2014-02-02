@@ -30,7 +30,7 @@ class MBExchange:
         MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
                         const std::string& prefix="mb" );
         virtual ~MBExchange();
-    
+
         /*! глобальная функция для вывода help-а */
         static void help_print( int argc, const char* const* argv );
 
@@ -47,7 +47,7 @@ class MBExchange:
         };
 
         friend std::ostream& operator<<( std::ostream& os, const ExchangeMode& em );
-        
+
         enum DeviceType
         {
             dtUnknown,        /*!< неизвестный */
@@ -70,7 +70,7 @@ class MBExchange:
             VTypes::VType vType;    /*!< type of value */
             short rnum;                /*!< count of registers */
             short nbyte;            /*!< byte number (1-2) */
-            
+
             RSProperty():
                 nbit(-1),vType(VTypes::vtUnknown),
                 rnum(VTypes::wsize(VTypes::vtUnknown)),
@@ -112,11 +112,11 @@ class MBExchange:
 
             // only for MTR
             MTR::MTRType mtrType;    /*!< тип регистра (согласно спецификации на MTR) */
-            
+
             // optimization
             int q_num;        /*!< number in query */
             int q_count;    /*!< count registers for query */
-            
+
             RegMap::iterator rit;
 
             // начальная инициалиазция для "записываемых" регистров
@@ -153,7 +153,7 @@ class MBExchange:
             {
                 resp_trTimeout.change(false);
             }
-            
+
             bool respnond;
             ModbusRTU::ModbusAddr mbaddr;    /*!< адрес устройства */
             RegMap regmap;
@@ -182,7 +182,7 @@ class MBExchange:
         };
 
         friend std::ostream& operator<<( std::ostream& os, RTUDevice& d );
-        
+
         typedef std::map<ModbusRTU::ModbusAddr,RTUDevice*> RTUDeviceMap;
 
         friend std::ostream& operator<<( std::ostream& os, RTUDeviceMap& d );
@@ -278,7 +278,7 @@ class MBExchange:
         std::string s_fvalue;
 
         SMInterface* shm;
-        
+
         bool initPause;
         UniSetTypes::uniset_rwmutex mutex_start;
 
@@ -317,11 +317,16 @@ class MBExchange:
         PassiveTimer ptTimeout;
         bool pollActivated;
         int recv_timeout;
-        
+
         int aftersend_pause;
-        
+
         PassiveTimer ptReopen; /*!< таймер для переоткрытия соединения */
         Trigger trReopen;
+
+        // т.к. пороговые датчики не связаны напрямую с обменом, создаём для них отдельный список
+        // и отдельно его проверяем потом
+        typedef std::list<IOBase> ThresholdList;
+        ThresholdList thrlist;
 
      private:
         MBExchange();

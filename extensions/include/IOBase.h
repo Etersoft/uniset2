@@ -11,9 +11,9 @@
 #include "IOController.h"
 #include "SMInterface.h"
 // -----------------------------------------------------------------------------
-static const int DefaultSubdev     = -1;
+static const int DefaultSubdev  = -1;
 static const int DefaultChannel = -1;
-static const int NoSafety = -1;
+static const int NoSafety       = -1;
 // -----------------------------------------------------------------------------
         /*! Информация о входе/выходе */
         struct IOBase
@@ -72,30 +72,31 @@ static const int NoSafety = -1;
             bool ignore;    /*!< игнорировать при опросе */
             bool invert;    /*!< инвертированная логика */
             bool noprecision;
-            
+
             PassiveTimer ptJar;         /*!< таймер на дребезг */
             PassiveTimer ptOnDelay;     /*!< задержка на срабатывание */
             PassiveTimer ptOffDelay;     /*!< задержка на отпускание */
-            
+
             bool jar_pause;
             Trigger trOnDelay;
             Trigger trOffDelay;
             Trigger trJar;
-            
+
             bool jar_state;            /*!< значение для фильтра дребезга */
             bool ondelay_state;        /*!< значение для задержки включения */
             bool offdelay_state;    /*!< значение для задержки отключения */
-            
+
             // Порог
             UniSetTypes::ObjectId t_ai; /*!< если данный датчик дискретный,
                                                 и является пороговым, то в данном поле
                                                 хранится идентификатор аналогового датчика
                                                 с которым он связан */
             IONotifyController_i::ThresholdInfo ti;
+            IOController::IOStateList::iterator t_ait; // итератор для аналогового датчика
 
             // Работа по фронтам сигнала
             enum FrontType
-            {    
+            {
                 ftUnknown,
                 ft01,    // срабатывание на переход "0-->1"
                 ft10  // срабатывание на переход "1-->0"
@@ -105,10 +106,10 @@ static const int NoSafety = -1;
             FrontType front_type;
             bool front_prev_state;
             bool front_state;
-            
+
             IOController::IOStateList::iterator ioit;
             UniSetTypes::uniset_rwmutex val_lock;     /*!< блокировка на время "работы" со значением */
-            
+
             friend std::ostream& operator<<(std::ostream& os, IOBase& inf );
 
             static void processingFasAI( IOBase* it, float new_val, SMInterface* shm, bool force );

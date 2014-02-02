@@ -16,7 +16,7 @@ class RTUExchange:
         RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID,
                       SharedMemory* ic=0, const std::string& prefix="rs" );
         virtual ~RTUExchange();
-    
+
         /*! глобальная функция для инициализации объекта */
         static RTUExchange* init_rtuexchange( int argc, const char* const* argv,
                                             UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
