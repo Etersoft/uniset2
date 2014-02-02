@@ -25,7 +25,7 @@ class PID
             \param Ts - интервал расчёта данных, [сек] (интервал между шагами расчёта).
                 Ts - должно быть больше нуля
         */
-        void step( double X, double Z, double Ts );
+        void step( const double& X, const double& Z, const double& Ts );
 
         /*!    рестарт регулятора... */
         void reset();
@@ -41,7 +41,6 @@ class PID
         double vlim;     /*!< максимальное(минимальное) разрешённое значение (для любого растущего во времени коэффициента)
                             защита от переполнения
                          */
-
         double d0;
         double d1;
         double d2;

@@ -90,7 +90,6 @@ bool DBInterface::query( const string& q )
         return false;
     }
 
-
     lastQ = q;
     result = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
     if( numRows()==0 )
