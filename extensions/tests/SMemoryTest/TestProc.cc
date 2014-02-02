@@ -84,6 +84,8 @@ void TestProc::timerInfo( const TimerMessage *tm )
         state^=true;
         out_lamp_c = ( state ? lmpBLINK : lmpOFF );
         mylog2 << myname << ": state=" << state << " lmp=" << out_lamp_c << endl;
+
+        askTimer(tmCheckWorking,0); // test remove timer
         askTimer(tmCheckWorking,checkTime); // reset timer
     }
     else if( tm->id == tmCheckWorking )
