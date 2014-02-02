@@ -8,7 +8,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt0.6
+Release: alt0.7
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -333,6 +333,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
 
 %changelog
+* Sun Feb 02 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt0.7
+- refactoring DBInterface (rename to MySQLInterface, add MySQLResult class,..)
+
 * Sun Feb 02 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt0.6
 - add thresholds processing for ModbusMaster (TCP and RTU)
 - minor fixes

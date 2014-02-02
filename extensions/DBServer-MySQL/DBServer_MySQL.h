@@ -27,7 +27,7 @@
 #include <map>
 #include <queue>
 #include "UniSetTypes.h"
-#include "DBInterface.h"
+#include "MySQLInterface.h"
 #include "DBServer.h"
 //------------------------------------------------------------------------------------------
 /*!
@@ -144,7 +144,7 @@ class DBServer_MySQL:
     protected:
         typedef std::map<int, std::string> DBTableMap;
 
-        virtual void initDB(DBInterface *db){};
+        virtual void initDB(MySQLInterface *db){};
         virtual void initDBTableMap(DBTableMap& tblMap){};
 
         virtual void timerInfo( const UniSetTypes::TimerMessage* tm );
@@ -154,7 +154,7 @@ class DBServer_MySQL:
 
         bool writeToBase( const string& query );
         virtual void init_dbserver();
-        void createTables( DBInterface* db );
+        void createTables( MySQLInterface* db );
 
         inline const char* tblName(int key)
         {
@@ -169,7 +169,7 @@ class DBServer_MySQL:
         };
 
 
-        DBInterface *db;
+        MySQLInterface *db;
         int PingTime;
         int ReconnectTime;
         bool connect_ok;     /*! признак наличия соеднинения с сервером БД */

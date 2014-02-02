@@ -20,34 +20,34 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 #include <sstream>
-#include "DBInterface.h"
+#include "UniSetTypes.h"
+#include "MySQLInterface.h"
 using namespace std;
+using namespace UniSetTypes;
 // -----------------------------------------------------------------------------------------
 
-DBInterface::DBInterface():
-result(0),
+MySQLInterface::MySQLInterface():
 lastQ(""),
-queryok(false),
 connected(false)
-{ 
+{
     mysql = new MYSQL();
     mysql_init(mysql);
 //    mysql_options(mysql,MYSQL_READ_DEFAULT_GROUP,"your_prog_name");
     mysql_options(mysql,MYSQL_OPT_COMPRESS,0);
 }
 
-DBInterface::~DBInterface()
-{ 
+MySQLInterface::~MySQLInterface()
+{
     close();
     delete mysql;
 }
 
 // -----------------------------------------------------------------------------------------
-bool DBInterface::connect( const string& host, const string& user, const string& pswd, const string& dbname)
+bool MySQLInterface::connect( const string& host, const string& user, const string& pswd, const string& dbname)
 {
-    if (!mysql_real_connect(mysql,host.c_str(), user.c_str(),pswd.c_str(),dbname.c_str(),0,NULL,0))
+    if( !mysql_real_connect(mysql,host.c_str(), user.c_str(),pswd.c_str(),dbname.c_str(),0,NULL,0) )
     {
         cout << error() << endl;
         mysql_close(mysql);
@@ -58,83 +58,73 @@ bool DBInterface::connect( const string& host, const string& user, const string&
     return true;
 }
 // -----------------------------------------------------------------------------------------
-bool DBInterface::close()
+bool MySQLInterface::close()
 {
     mysql_close(mysql);
     return true;
 }
 // -----------------------------------------------------------------------------------------
-bool DBInterface::insert( const string& q )
+bool MySQLInterface::insert( const string& q )
 {
     if( !mysql )
         return false;
 
     if( mysql_query(mysql,q.c_str()) )
-    {
-        queryok=false;
         return false;
-    }
 
-    queryok=true;
     return true;
 }
 // -----------------------------------------------------------------------------------------
-bool DBInterface::query( const string& q )
+MySQLResult MySQLInterface::query( const std::string& q )
 {
     if( !mysql )
-        return false;
+        return MySQLResult();
 
     if( mysql_query(mysql,q.c_str()) )
     {
-        queryok=false;
-        return false;
+        cerr << error() << endl;
+        return MySQLResult();
     }
 
     lastQ = q;
-    result = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
-    if( numRows()==0 )
+    MYSQL_RES* res = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
+    if( mysql_num_rows(res)==0 )
+        return MySQLResult();
+
+    return MySQLResult(res,true);
+}
+// -----------------------------------------------------------------------------------------
+bool MySQLInterface::query_ok( const string& q )
+{
+    if( !mysql )
+        return false;
+
+    if( mysql_query(mysql,q.c_str()) )
+        return false;
+
+    lastQ = q;
+    MYSQL_RES* res = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
+    if( mysql_num_rows(res)==0 )
     {
-        queryok=false;
+        mysql_free_result(res);
         return false;
     }
 
-    queryok=true;
+    mysql_free_result(res);
     return true;
 }
 // -----------------------------------------------------------------------------------------
-bool DBInterface::nextRecord()
-{
-    if( !mysql || !result || !queryok )
-        return false;
-
-    Row = mysql_fetch_row(result);
-    if( Row )
-        return true;
-
-    return false;
-}
-
-// -----------------------------------------------------------------------------------------
-const string DBInterface::error()
+const string MySQLInterface::error()
 {
     return mysql_error(mysql);
 }
 // -----------------------------------------------------------------------------------------
-const string DBInterface::lastQuery()
+const string MySQLInterface::lastQuery()
 {
     return lastQ;
 }
 // -----------------------------------------------------------------------------------------
-void DBInterface::freeResult()
-{
-    if( !mysql || !result || !queryok )
-        return;
-
-    queryok = false;
-    mysql_free_result( result );
-}
-// -----------------------------------------------------------------------------------------
-int DBInterface::insert_id()
+int MySQLInterface::insert_id()
 {
     if( !mysql )
         return 0;
@@ -142,80 +132,12 @@ int DBInterface::insert_id()
     return mysql_insert_id(mysql);
 }
 // -----------------------------------------------------------------------------------------
-unsigned int DBInterface::numCols()
-{
-    if( result )
-        return mysql_num_fields(result);
-    return 0;
-}
-
-// -----------------------------------------------------------------------------------------
-unsigned int DBInterface::numRows()
-{
-    if( result )
-        return mysql_num_rows(result);
-    return 0;
-}
-// -----------------------------------------------------------------------------------------
-const MYSQL_ROW DBInterface::getRow()
-{
-    return Row;
-}
-
-// -----------------------------------------------------------------------------------------
-const char* DBInterface::gethostinfo()
+const char* MySQLInterface::gethostinfo()
 {
     return mysql_get_host_info(mysql);
 }
 // -----------------------------------------------------------------------------------------
-/*
-bool DBInterface::createDB(const string dbname)
-{
-    if(!mysql)
-        return false;
-    if( mysql_create_db(mysql, dbname.c_str()) )
-        return true;
-    return false;
-}
-// -----------------------------------------------------------------------------------------
-
-bool DBInterface::dropDB(const string dbname)
-{
-    if( mysql_drop_db(mysql, dbname.c_str()))
-        return true;
-    return false;
-}
-*/
-// -----------------------------------------------------------------------------------------
-MYSQL_RES* DBInterface::listFields( const string& table, const string& wild )
-{
-    if( !mysql || !result )
-        return 0;
-
-    MYSQL_RES *res = mysql_list_fields(mysql, table.c_str(),wild.c_str());
-    unsigned int cols = mysql_num_fields(result); // numCols();
-
-    MYSQL_ROW row=mysql_fetch_row(res);
-//    MYSQL_FIELD *field = mysql_fetch_fields(res);
-//    cout << field << " | ";
-    for( unsigned int i = 0; i<cols; i++)
-    {
-        cout << row[i] << " | ";
-    }
-
-    return res; // mysql_list_fields(mysql, table,wild);
-}
-// -----------------------------------------------------------------------------------------
-bool DBInterface::moveToRow(int ind)
-{
-    if(!mysql || !result)
-        return false;
-
-    mysql_data_seek(result, ind);
-    return true;
-}
-// -----------------------------------------------------------------------------------------
-bool DBInterface::ping()
+bool MySQLInterface::ping()
 {
     if( !mysql || !connected )
         return false;
@@ -225,12 +147,12 @@ bool DBInterface::ping()
     return !mysql_ping(mysql);
 }
 // -----------------------------------------------------------------------------------------
-bool DBInterface::isConnection()
+bool MySQLInterface::isConnection()
 {
     return ping(); //!mysql;
 }
 // -----------------------------------------------------------------------------------------
-string DBInterface::addslashes( const string& str )
+string MySQLInterface::addslashes( const string& str )
 {
     ostringstream tmp;
     for( unsigned int i=0; i<str.size(); i++ )
@@ -243,3 +165,71 @@ string DBInterface::addslashes( const string& str )
 
     return tmp.str();
 }
+// -----------------------------------------------------------------------------------------
+int num_cols( MySQLResult::iterator& it )
+{
+    return it->size();
+}
+// -----------------------------------------------------------------------------------------
+int as_int( MySQLResult::iterator& it, int col )
+{
+//    if( col<0 || col >it->size() )
+//        return 0;
+    return uni_atoi( (*it)[col] );
+}
+// -----------------------------------------------------------------------------------------
+double as_double( MySQLResult::iterator& it, int col )
+{
+    return atof( ((*it)[col]).c_str() );
+}
+// -----------------------------------------------------------------------------------------
+string as_string( MySQLResult::iterator& it, int col )
+{
+    return ((*it)[col]);
+}
+// -----------------------------------------------------------------------------------------
+int as_int( MySQLResult::COL::iterator& it )
+{
+    return uni_atoi( (*it) );
+}
+// -----------------------------------------------------------------------------------------
+double as_double( MySQLResult::COL::iterator& it )
+{
+    return atof( (*it).c_str() );
+}
+// -----------------------------------------------------------------------------------------
+std::string as_string( MySQLResult::COL::iterator& it )
+{
+    return (*it);
+}
+// -----------------------------------------------------------------------------------------
+#if 0
+MySQLResult::COL get_col( MySQLResult::ROW::iterator& it )
+{
+    return (*it);
+}
+#endif
+// -----------------------------------------------------------------------------------------
+MySQLResult::~MySQLResult()
+{
+
+}
+// -----------------------------------------------------------------------------------------
+MySQLResult::MySQLResult( MYSQL_RES* myres, bool finalize )
+{
+    MYSQL_ROW row;
+    unsigned int nfields = mysql_num_fields(myres);
+
+    while( (row = mysql_fetch_row(myres)) )
+    {
+       COL c;
+       for( unsigned int i = 0; i<nfields; i++ )
+           c.push_back( (row[i]!=0 ? string(row[i]):"") );
+
+       res.push_back(c);
+    }
+
+    if( finalize )
+        mysql_free_result(myres);
+}
+// -----------------------------------------------------------------------------------------

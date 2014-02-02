@@ -21,34 +21,39 @@
  *  \author Pavel Vainerman
 */
 //----------------------------------------------------------------------------
-#ifndef DBInterface_H_
-#define DBInterface_H_
+#ifndef MySQLInterface_H_
+#define MySQLInterface_H_
 // ---------------------------------------------------------------------------
 #include <string>
+#include <vector>
+#include <deque>
 #include <iostream>
 //#warning Для использования mysql_create нужен define USE_OLD_FUNCTIONS
 //#define USE_OLD_FUNCTIONS
 #include <mysql/mysql.h>
 // ----------------------------------------------------------------------------
-class DBInterface
+class MySQLResult;
+// ----------------------------------------------------------------------------
+class MySQLInterface
 {
     public:
 
-            DBInterface();
-            ~DBInterface();
+            MySQLInterface();
+            ~MySQLInterface();
 
-//            bool createDB(const std::string dbname);
-//            bool dropDB(const std::string dbname);
-            MYSQL_RES * listFields(const std::string& table, const std::string& wild );
-
+//            MySQLResult listFields( const std::string& table, const std::string& wild );
 
             bool connect( const std::string& host, const std::string& user, const std::string& pswd,
                             const std::string& dbname);
             bool close();
 
-            bool query(const std::string& q);
+            bool query_ok( const std::string& q );
+
+            // \param finalize - освободить буфер после запроса
+            MySQLResult query( const std::string& q );
+
             const std::string lastQuery();
-            bool insert(const std::string& q);
+            bool insert( const std::string& q );
 
             std::string addslashes(const std::string& str);
 
@@ -61,20 +66,9 @@ class DBInterface
             /*! связь с БД установлена (была) */
             bool isConnection();
 
-            bool nextRecord();
-            void freeResult();
-
-            unsigned int numCols();
-            unsigned int numRows();
-
-            bool moveToRow(int ind);
-
             int insert_id();
 
-            const MYSQL_ROW getRow();
             const std::string error();
-
-            MYSQL_ROW Row;
 
             // *******************
             const char* gethostinfo();
@@ -82,11 +76,45 @@ class DBInterface
 
     private:
 
-        MYSQL_RES *result;
         MYSQL *mysql;
         std::string lastQ;
-        bool queryok;    // успешность текущего запроса
         bool connected;
 };
 // ----------------------------------------------------------------------------------
+class MySQLResult
+{
+    public:
+        MySQLResult(){}
+        MySQLResult( MYSQL_RES* r, bool finalize=true );
+        ~MySQLResult();
+
+        typedef std::vector<std::string> COL;
+        typedef std::deque<COL> ROW;
+
+        typedef ROW::iterator iterator;
+
+        inline iterator begin(){ return res.begin(); }
+        inline iterator end(){ return res.end(); }
+
+        inline operator bool(){ return !res.empty(); }
+
+        inline size_t size(){ return res.size(); }
+        inline bool empty(){ return res.empty(); }
+
+    protected:
+
+        ROW res;
+};
+// ----------------------------------------------------------------------------------
+int num_cols( MySQLResult::iterator& );
+// ROW
+int as_int( MySQLResult::iterator&, int col );
+double as_double( MySQLResult::iterator&, int col );
+std::string as_text( MySQLResult::iterator&, int col );
+// ----------------------------------------------------------------------------
+// COL
+int as_int( MySQLResult::COL::iterator& );
+double as_double( MySQLResult::COL::iterator& );
+std::string as_string( MySQLResult::COL::iterator& );
+// ----------------------------------------------------------------------------
 #endif

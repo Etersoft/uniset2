@@ -39,7 +39,7 @@ const Debug::type DBLEVEL = Debug::LEVEL1;
 // --------------------------------------------------------------------------
 DBServer_MySQL::DBServer_MySQL(ObjectId id): 
     DBServer(id),
-    db(new DBInterface()),
+    db(new MySQLInterface()),
     PingTime(300000),
     ReconnectTime(180000),
     connect_ok(false),
@@ -59,7 +59,7 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id):
 
 DBServer_MySQL::DBServer_MySQL(): 
     DBServer(conf->getDBServer()),
-    db(new DBInterface()),
+    db(new MySQLInterface()),
     PingTime(300000),
     ReconnectTime(180000),
     connect_ok(false),
@@ -74,7 +74,7 @@ DBServer_MySQL::DBServer_MySQL():
         msg << "(DBServer_MySQL): init failed! Unknown ID!" << endl;
         throw Exception(msg.str());
     }
-
+    
     mqbuf.setName(myname  + "_qbufMutex");
 }
 //--------------------------------------------------------------------------------------------
@@ -82,7 +82,6 @@ DBServer_MySQL::~DBServer_MySQL()
 {
     if( db != NULL )
     {
-        db->freeResult();
         db->close();
         delete db;
     }
@@ -98,7 +97,6 @@ void DBServer_MySQL::sysCommand( const UniSetTypes::SystemMessage *sm )
         case SystemMessage::Finish:
         {
             activate = false;
-            db->freeResult();
             db->close();
         }
         break;
@@ -106,7 +104,6 @@ void DBServer_MySQL::sysCommand( const UniSetTypes::SystemMessage *sm )
         case SystemMessage::FoldUp:
         {
             activate = false;
-            db->freeResult();
             db->close();
         }
         break;
@@ -123,7 +120,7 @@ void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
     {
         ostringstream data;
 
-        data << "UPDATE " << tblName(cem->type)
+        data << "UPDATE " << tblName(cem->type) 
             << " SET confirm='" << cem->confirm << "'"
             << " WHERE sensor_id='" << cem->sensor_id << "'"
             << " AND date='" << dateToString(cem->time, "-")<<" '"
@@ -136,7 +133,6 @@ void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
         if( !writeToBase(data.str()) )
         {
             ucrit << myname << "(update_confirm):  db error: "<< db->error() << endl;
-            db->freeResult();
         }
     }
     catch( Exception& ex )
@@ -178,18 +174,15 @@ bool DBServer_MySQL::writeToBase( const string& query )
     flushBuffer();
 
     // А теперь собственно запрос..
-    db->query(query);
+    db->query(query); 
 
-    // Дело в том что на INSERT И UPDATE запросы
+    // Дело в том что на INSERT И UPDATE запросы 
     // db->query() может возвращать false и надо самому
     // отдельно проверять действительно ли произошла ошибка
-    // см. DBInterface::query.
+    // см. MySQLInterface::query.
     string err(db->error());
     if( err.empty() )
-    {
-        db->freeResult();
         return true;
-    }
 
     return false;
 }
@@ -199,18 +192,16 @@ void DBServer_MySQL::flushBuffer()
     uniset_rwmutex_wrlock l(mqbuf);
 
     // Сперва пробуем очистить всё что накопилось в очереди до этого...
-    while( !qbuf.empty() )
+    while( !qbuf.empty() ) 
     {
-        db->query( qbuf.front() );
+        db->query( qbuf.front() ); 
 
-        // Дело в том что на INSERT И UPDATE запросы
+        // Дело в том что на INSERT И UPDATE запросы 
         // db->query() может возвращать false и надо самому
         // отдельно проверять действительно ли произошла ошибка
-        // см. DBInterface::query.
+        // см. MySQLInterface::query.
         string err(db->error());
-        if( err.empty() )
-            db->freeResult();
-        else
+        if( !err.empty() )
             ucrit << myname << "(writeToBase): error: " << err <<
                 " lost query: " << qbuf.front() << endl;
 
@@ -247,7 +238,6 @@ void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
         if( !writeToBase(data.str()) )
         {
             ucrit << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
-            db->freeResult();
         }
     }
     catch( Exception& ex )
@@ -268,7 +258,7 @@ void DBServer_MySQL::init_dbserver()
 
     if( connect_ok )
     {
-        initDBTableMap(tblMap);
+        initDBTableMap(tblMap);    
         initDB(db);
         return;
     }
@@ -277,7 +267,7 @@ void DBServer_MySQL::init_dbserver()
     {
         ostringstream msg;
         msg << myname << "(init): DBServer OFF for this node.."
-            << " In " << conf->getConfFileName()
+            << " In " << conf->getConfFileName() 
             << " for this node dbserver=''";
         throw NameNotFound(msg.str());
     }
@@ -296,7 +286,7 @@ void DBServer_MySQL::init_dbserver()
 
     tblMap[UniSetTypes::Message::SensorInfo] = "main_history";
     tblMap[UniSetTypes::Message::Confirm] = "main_history";
-
+    
     PingTime = conf->getIntProp(node,"pingTime");
     ReconnectTime = conf->getIntProp(node,"reconnectTime");
     qbufSize = conf->getArgPInt("--dbserver-buffer-size",it.getProp("bufferSize"),200);
@@ -307,14 +297,14 @@ void DBServer_MySQL::init_dbserver()
         lastRemove = true;
     else
         lastRemove = false;
-
+    
     if( dbnode.empty() )
         dbnode = "localhost";
 
     if( ulog.debugging(DBLogInfoLevel) )
         ulog[DBLogInfoLevel] << myname << "(init): connect dbnode=" << dbnode
         << "\tdbname=" << dbname
-        << " pingTime=" << PingTime
+        << " pingTime=" << PingTime 
         << " ReconnectTime=" << ReconnectTime << endl;
 
     if( !db->connect(dbnode, user, password, dbname) )
@@ -335,12 +325,12 @@ void DBServer_MySQL::init_dbserver()
         askTimer(DBServer_MySQL::PingTimer,PingTime);
 //        createTables(db);
         initDB(db);
-        initDBTableMap(tblMap);
+        initDBTableMap(tblMap);    
         flushBuffer();
     }
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::createTables( DBInterface *db )
+void DBServer_MySQL::createTables( MySQLInterface *db )
 {
     UniXML_iterator it( conf->getNode("Tables") );
     if(!it)
@@ -360,7 +350,7 @@ void DBServer_MySQL::createTables( DBInterface *db )
             if( !db->query(query.str()) )
                 ucrit << myname << "(createTables): error: \t\t" << db->error() << endl;
         }
-    }
+    }    
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::timerInfo( const UniSetTypes::TimerMessage* tm )
@@ -384,7 +374,7 @@ void DBServer_MySQL::timerInfo( const UniSetTypes::TimerMessage* tm )
             }
         }
         break;
-
+    
         case DBServer_MySQL::ReconnectTimer:
         {
             if( ulog.debugging(DBLogInfoLevel) )
