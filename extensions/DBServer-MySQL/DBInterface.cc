@@ -74,7 +74,7 @@ bool DBInterface::insert( const string& q )
         queryok=false;
         return false;
     }
-    
+
     queryok=true;
     return true;
 }
@@ -90,7 +90,6 @@ bool DBInterface::query( const string& q )
         return false;
     }
 
-        
     lastQ = q;
     result = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
     if( numRows()==0 )
@@ -200,7 +199,7 @@ MYSQL_RES* DBInterface::listFields( const string& table, const string& wild )
 //    MYSQL_FIELD *field = mysql_fetch_fields(res);
 //    cout << field << " | ";
     for( unsigned int i = 0; i<cols; i++)
-    {    
+    {
         cout << row[i] << " | ";
     }
 
@@ -241,6 +240,6 @@ string DBInterface::addslashes( const string& str )
             tmp << "\\";
         tmp << str[i];
     }
-    
-    return tmp.str();    
+
+    return tmp.str();
 }

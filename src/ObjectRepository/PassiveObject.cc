@@ -70,12 +70,6 @@ void PassiveObject::setID( UniSetTypes::ObjectId id_ )
 // ------------------------------------------------------------------------------------------
 void PassiveObject::init( ProxyManager* _mngr )
 {
-    if(mngr)
-        mngr->detachObject(id);
-
-    mngr->attachObject(this,id);
-
-#if 0
     if( _mngr == mngr || !_mngr )
         return;
 
@@ -85,7 +79,6 @@ void PassiveObject::init( ProxyManager* _mngr )
 
     mngr = _mngr;
     mngr->attachObject(this,id);
-#endif    
 }
 
 // ------------------------------------------------------------------------------------------

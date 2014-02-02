@@ -783,7 +783,7 @@ string Configuration::getRepSectionName( const string& sec, xmlNode* secnode )
         ucrit << msg.str() << endl;
         throw SystemError(msg.str());
     }
-    
+
     secnode = node;
 
     string ret(unixml.getProp(node,"section"));
