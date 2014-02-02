@@ -163,7 +163,7 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
         uinfo << "(LT_askTimer): поступил отказ по таймеру id="<< timerid << endl;    
         {    // lock
             uniset_rwmutex_wrlock lock(lstMutex);
-            tlst.erase( std::remove_if(tlst.begin(),tlst.end(),Timer_eq(timerid)) );
+            tlst.erase( std::remove_if(tlst.begin(),tlst.end(),Timer_eq(timerid)), tlst.end() );
         }    // unlock
     }
 

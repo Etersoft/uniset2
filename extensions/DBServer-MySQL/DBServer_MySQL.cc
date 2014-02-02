@@ -74,7 +74,7 @@ DBServer_MySQL::DBServer_MySQL():
         msg << "(DBServer_MySQL): init failed! Unknown ID!" << endl;
         throw Exception(msg.str());
     }
-    
+
     mqbuf.setName(myname  + "_qbufMutex");
 }
 //--------------------------------------------------------------------------------------------
