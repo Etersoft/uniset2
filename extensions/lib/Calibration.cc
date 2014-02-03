@@ -219,8 +219,8 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
 
         std::sort(pvec.begin(),pvec.end());
 
-        PartsVec::iterator beg = pvec.begin();
-        PartsVec::iterator end = pvec.end();
+        auto beg = pvec.begin();
+        auto end = pvec.end();
 
         if( pvec.size() > 0 )
         {
@@ -248,7 +248,7 @@ static Calibration::PartsVec::iterator find_range( long raw, Calibration::PartsV
     if( end->checkX(raw) )
         return end;
 
-    Calibration::PartsVec::iterator it = beg + std::distance(beg,end)/2;
+    auto it = beg + std::distance(beg,end)/2;
 
     if( raw < it->left_x() )
         return find_range(raw,beg,it);
@@ -271,16 +271,16 @@ long Calibration::getValue( long raw, bool crop_raw )
 
     if( szCache ) // > 0
     {
-         for( ValueCache::iterator c=cache.begin(); c!=cache.end(); ++c )
+         for( auto &c: cache )
          {
-              if( c->raw == raw )
+              if( c.raw == raw )
               {
                   --numCallToCache;
-                  c->cnt++;
+                  c.cnt++;
                   if( numCallToCache )
-                      return c->val;
+                      return c.val;
 
-                  long val = c->val; // после сортировки итератор станет недействительным, поэтому запоминаем..
+                  long val = c.val; // после сортировки итератор станет недействительным, поэтому запоминаем..
                   sort(cache.begin(),cache.end());
                   numCallToCache = numCacheResort;
                   return val;
@@ -288,7 +288,7 @@ long Calibration::getValue( long raw, bool crop_raw )
          }
     }
 
-    PartsVec::iterator fit = find_range(raw, pvec.begin(), pvec.end());
+    auto fit = find_range(raw, pvec.begin(), pvec.end());
 
     if( fit == pvec.end() )
     {
@@ -333,9 +333,9 @@ void Calibration::insertToCache( const long raw, const long val )
 // ----------------------------------------------------------------------------
 long Calibration::getRawValue( long cal, bool range )
 {
-    for( PartsVec::iterator it=pvec.begin(); it!=pvec.end(); ++it )
+    for( auto &it: pvec )
     {
-        TypeOfValue q = it->getX(cal);
+        TypeOfValue q = it.getX(cal);
         if( q != outOfRange )
             return tRound(q);
     }
@@ -355,10 +355,10 @@ long Calibration::getRawValue( long cal, bool range )
 std::ostream& operator<<( std::ostream& os, Calibration& c )
 {
     os << "*******************" << endl;
-    for( Calibration::PartsVec::iterator it=c.pvec.begin(); it!=c.pvec.end(); ++it )
+    for( auto &it: c.pvec )
     {
-        os << "[" << it->leftPoint().x << " : " << it->rightPoint().x << " ] --> ["
-            << it->leftPoint().y  << " : " << it->rightPoint().y << " ]"
+        os << "[" << it.leftPoint().x << " : " << it.rightPoint().x << " ] --> ["
+            << it.leftPoint().y  << " : " << it.rightPoint().y << " ]"
             << endl;
     }
     os << "*******************" << endl;
@@ -368,10 +368,10 @@ std::ostream& operator<<( std::ostream& os, Calibration& c )
 std::ostream& operator<<( std::ostream& os, Calibration* c )
 {
     os << "*******************" << endl;
-    for( Calibration::PartsVec::iterator it=c->pvec.begin(); it!=c->pvec.end(); ++it )
+    for( auto &it: c->pvec )
     {
-        os << "[" << it->leftPoint().x << " : " << it->rightPoint().x << " ] --> ["
-            << it->leftPoint().y  << " : " << it->rightPoint().y << " ]"
+        os << "[" << it.leftPoint().x << " : " << it.rightPoint().x << " ] --> ["
+            << it.leftPoint().y  << " : " << it.rightPoint().y << " ]"
             << endl;
     }
     os << "*******************" << endl;

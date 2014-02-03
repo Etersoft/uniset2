@@ -284,22 +284,22 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
             new_argv[i] = strdup(argv[i]);
 
         // формируем новые, используя i в качестве индекса
-        for( UniSetTypes::ListOfNode::iterator it=lnodes.begin(); it!=lnodes.end(); ++it )
+        for( auto &it: lnodes )
         {
             new_argv[i] = "-ORBInitRef";
 
-            string name(oind->getNodeName(it->id));
+            string name(oind->getNodeName(it.id));
             ostringstream param;
             param << this << name;
             name = param.str();
-            param << "=corbaname::" << it->host << ":" << it->port;
+            param << "=corbaname::" << it.host << ":" << it.port;
             new_argv[i+1] = strdup(param.str().c_str());
 
             uinfo << "(Configuration): внесли параметр " << param.str() << endl;
             i+=2;
 
              ostringstream uri;
-            uri << "corbaname::" << it->host << ":" << it->port;
+            uri << "corbaname::" << it.host << ":" << it.port;
             if( !omni::omniInitialReferences::setFromArgs(name.c_str(), uri.str().c_str()) )
                 cerr << "**********************!!!! FAILED ADD name=" << name << " uri=" << uri.str() << endl;
 

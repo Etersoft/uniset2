@@ -166,11 +166,11 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
         char** argv = new char*[ argc ];
 
         int k=0;
-        for( std::list<std::string>::iterator i=dslist.begin(); i!=dslist.end(); ++i,k++ )
-            argv[k] = strdup(i->c_str());
+        for( auto &i: dslist )
+            argv[k++] = strdup(i.c_str());
 
-        for( std::list<std::string>::iterator i=rralist.begin(); i!=rralist.end(); ++i,k++ )
-            argv[k] = strdup(i->c_str());
+        for( auto &i: rralist )
+            argv[k++] = strdup(i.c_str());
 
 //         for( k=0; k<argc; k++ )
 //             cout << "*** argv[" << k << "]='" << argv[k] << "'" << endl;
@@ -257,13 +257,13 @@ void RRDServer::askSensors( UniversalIO::UIOCommand cmd )
 {
     UObject_SK::askSensors(cmd);
 
-    for( RRDList::iterator it=rrdlist.begin(); it!=rrdlist.end(); ++it )
+    for( auto &it: rrdlist )
     {
-        for( DSMap::iterator s=it->dsmap.begin(); s!=it->dsmap.end(); ++s )
+        for( auto &s: it.dsmap )
         {
             try
             {
-                shm->askSensor(s->first,cmd);
+                shm->askSensor(s.first,cmd);
             }
             catch( std::exception& ex )
             {
@@ -278,11 +278,11 @@ void RRDServer::sysCommand( const UniSetTypes::SystemMessage* sm )
     UObject_SK::sysCommand(sm);
     if( sm->command == SystemMessage::StartUp || sm->command == SystemMessage::WatchDog )
     {
-        for( RRDList::iterator it=rrdlist.begin(); it!=rrdlist.end(); ++it )
+        for( auto &it: rrdlist )
         {
             try
             {
-                askTimer(it->tid,it->sec*1000);
+                askTimer(it.tid,it.sec*1000);
             }
             catch( std::exception& ex )
             {
@@ -294,10 +294,10 @@ void RRDServer::sysCommand( const UniSetTypes::SystemMessage* sm )
 // -----------------------------------------------------------------------------
 void RRDServer::sensorInfo( const UniSetTypes::SensorMessage* sm )
 {
-    for( RRDList::iterator it=rrdlist.begin(); it!=rrdlist.end(); ++it )
+    for( auto &it: rrdlist )
     {
-        DSMap::iterator s = it->dsmap.find(sm->id);
-        if( s!=it->dsmap.end() )
+        auto s = it.dsmap.find(sm->id);
+        if( s!=it.dsmap.end() )
             s->second.value = sm->value;
 
         // продолжаем искать по другим rrd, т.к. датчик может входить в несколько..
@@ -306,25 +306,25 @@ void RRDServer::sensorInfo( const UniSetTypes::SensorMessage* sm )
 // -----------------------------------------------------------------------------
 void RRDServer::timerInfo( const UniSetTypes::TimerMessage* tm )
 {
-    for( RRDList::iterator it=rrdlist.begin(); it!=rrdlist.end(); ++it )
+    for( auto &it: rrdlist )
     {
-        if( it->tid == tm->id )
+        if( it.tid == tm->id )
         {
             ostringstream v;
             v << time(0);
 
-            for( DSMap::iterator s=it->dsmap.begin(); s!=it->dsmap.end(); ++s )
-                v << ":" << s->second.value;
+            for( auto &s: it.dsmap )
+                v << ":" << s.second.value;
 
-            myinfo << myname << "(update): '" << it->filename << "' " << v.str() << endl;
+            myinfo << myname << "(update): '" << it.filename << "' " << v.str() << endl;
 
             rrd_clear_error();
             const char* argv = v.str().c_str();
 
-            if( rrd_update_r(it->filename.c_str(),NULL,1,&argv) < 0 )
+            if( rrd_update_r(it.filename.c_str(),NULL,1,&argv) < 0 )
             {
                 ostringstream err;
-                err << myname << "(update): Can`t update RRD ('" << it->filename << "'): err: " << string(rrd_get_error());
+                err << myname << "(update): Can`t update RRD ('" << it.filename << "'): err: " << string(rrd_get_error());
                 mycrit << err.str() << endl;
             }
 

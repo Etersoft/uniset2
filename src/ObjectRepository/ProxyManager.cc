@@ -54,14 +54,14 @@ void ProxyManager::attachObject( PassiveObject* po, UniSetTypes::ObjectId id )
         return;
     }
 
-    PObjectMap::iterator it = omap.find(id);
+    auto it = omap.find(id);
     if( it==omap.end() )
         omap.insert(PObjectMap::value_type(id,po));
 }
 // -------------------------------------------------------------------------
 void ProxyManager::detachObject( UniSetTypes::ObjectId id )
 {
-    PObjectMap::iterator it = omap.find(id);
+    auto it = omap.find(id);
     if( it!=omap.end() )
         omap.erase(it);
 }
@@ -73,7 +73,7 @@ bool ProxyManager::activateObject()
         return false;
 
     // Регистрируемся от имени объектов
-    for( PObjectMap::const_iterator it=omap.begin();it!=omap.end();++it )
+    for( auto &it: omap )
     {
         try
         {
@@ -82,11 +82,11 @@ bool ProxyManager::activateObject()
                 try
                 {
                     uinfo << myname << "(registered): попытка "
-                          << i+1 << " регистриую (id=" << it->first << ") "
-                          << " (pname=" << it->second->getName() << ") "
-                          << conf->oind->getNameById(it->first) << endl;
+                          << i+1 << " регистриую (id=" << it.first << ") "
+                          << " (pname=" << it.second->getName() << ") "
+                          << conf->oind->getNameById(it.first) << endl;
 
-                    ui.registered(it->first, getRef(),true);
+                    ui.registered(it.first, getRef(),true);
                     break;
                 }
                 catch( UniSetTypes::ObjectNameAlready& ex )
@@ -94,7 +94,7 @@ bool ProxyManager::activateObject()
                     ucrit << myname << "(registered): СПЕРВА РАЗРЕГИСТРИРУЮ (ObjectNameAlready)" << endl;
                     try
                     {
-                        ui.unregister(it->first);
+                        ui.unregister(it.first);
                     }
                     catch(Exception & ex)
                     {
@@ -141,7 +141,7 @@ void ProxyManager::processingMessage( UniSetTypes::VoidMessage *msg )
 
             default:
             {
-                PObjectMap::iterator it = omap.find(msg->consumer);
+                auto it = omap.find(msg->consumer);
                 if( it!=omap.end() )
                     it->second->processingMessage(msg);
                 else
@@ -159,11 +159,11 @@ void ProxyManager::processingMessage( UniSetTypes::VoidMessage *msg )
 // -------------------------------------------------------------------------
 void ProxyManager::allMessage( UniSetTypes::VoidMessage* msg )
 {
-    for( PObjectMap::const_iterator it=omap.begin();it!=omap.end();++it )
+    for( auto &o: omap )
     {
         try
         {
-            it->second->processingMessage(msg);
+            o.second->processingMessage(msg);
         }
         catch( Exception& ex )
         {

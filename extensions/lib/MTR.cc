@@ -379,7 +379,7 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
         return false;
     }
 
-    for( DataMap::iterator it=dmap.begin(); it!=dmap.end(); ++it )
+    for( auto it=dmap.begin(); it!=dmap.end(); ++it )
     {
 //        ModbusRTU::WriteOutputMessage msg(addr,it->first);
 //        cout << "send reg=" << ModbusRTU::dat2str(it->first)
@@ -387,7 +387,7 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
         int reg = it->first;
 //        bool ok = false;
 
-        for( DataList::iterator it1=it->second.begin(); it1!=it->second.end(); ++it1, reg++ )
+        for( auto it1=it->second.begin(); it1!=it->second.end(); ++it1, reg++ )
         {
             const ModbusRTU::ModbusData *last = skip + sizeof(skip)/sizeof(skip[0]);
             if( std::find(skip, last, reg) != last)

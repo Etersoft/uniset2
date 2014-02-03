@@ -490,11 +490,11 @@ bool UNetReceiver::recv()
 // -----------------------------------------------------------------------------
 void UNetReceiver::initIterators()
 {
-    for( ItemVec::iterator it=d_icache.begin(); it!=d_icache.end(); ++it )
-        shm->initIterator(it->ioit);
+    for( auto &it: d_icache )
+        shm->initIterator(it.ioit);
 
-    for( ItemVec::iterator it=a_icache.begin(); it!=a_icache.end(); ++it )
-        shm->initIterator(it->ioit);
+    for( auto &it: a_icache )
+        shm->initIterator(it.ioit);
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )

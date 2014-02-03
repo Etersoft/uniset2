@@ -176,11 +176,9 @@ bool ObjectRepositoryFactory::createContext(const char *cname, CosNaming::Naming
 /*!
     \note Функция не вывести список, если не сможет получить доступ к секции
 */
-void ObjectRepositoryFactory::printSection(const string& fullName)
+void ObjectRepositoryFactory::printSection( const string& fullName )
 {
     ListObjectName ls;
-    ListObjectName::const_iterator li;
-
     try
     {
         list(fullName.c_str(),&ls);
@@ -196,12 +194,8 @@ void ObjectRepositoryFactory::printSection(const string& fullName)
 
     cout << fullName << "(" << ls.size() <<"):" << endl;
 
-    for( li=ls.begin();li!=ls.end();++li )
-    {
-        string ob(*li);
-        cout << ob << endl;
-    }
-
+    for( auto v: ls )
+        cout << v << endl;
 }
 
 // -----------------------------------------------------------------------------------------------------------

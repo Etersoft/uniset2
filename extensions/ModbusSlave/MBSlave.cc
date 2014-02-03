@@ -455,8 +455,8 @@ void MBSlave::execute_rtu()
                 }
             }
 
-            for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
-                IOBase::processingThreshold(&it->second,shm,force);
+            for( auto &it: iomap )
+                IOBase::processingThreshold(&it.second,shm,force);
         }
         catch(...){}
     }
@@ -536,8 +536,8 @@ void MBSlave::execute_tcp()
                 }
             }
 
-            for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
-                IOBase::processingThreshold(&it->second,shm,force);
+            for( auto &it: iomap )
+                IOBase::processingThreshold(&it.second,shm,force);
         }
         catch(...){}
     }
@@ -644,10 +644,10 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
     if( force )
         return;
 
-    IOMap::iterator it=iomap.begin();
-    for( ; it!=iomap.end(); ++it )
+
+    for( auto &it: iomap )
     {
-        IOProperty* p(&it->second);
+        IOProperty* p(&it.second);
         try
         {
             shm->askSensor(p->si.id,cmd);
@@ -662,8 +662,7 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
 // ------------------------------------------------------------------------------------------
 void MBSlave::sensorInfo( const UniSetTypes::SensorMessage* sm )
 {
-    IOMap::iterator it=iomap.begin();
-    for( ; it!=iomap.end(); ++it )
+    for( auto it=iomap.begin(); it!=iomap.end(); ++it )
     {
         if( it->second.si.id == sm->id )
         {
@@ -832,7 +831,7 @@ bool MBSlave::initItem( UniXML_iterator& it )
         }
         p.vtype = v;
         p.wnum = 0;
-        for( unsigned int i=0; i<VTypes::wsize(p.vtype); i++ )
+        for( auto i=0; i<VTypes::wsize(p.vtype); i++ )
         {
             p.mbreg += i;
             p.wnum+= i;
@@ -846,7 +845,7 @@ bool MBSlave::initItem( UniXML_iterator& it )
 // ------------------------------------------------------------------------------------------
 void MBSlave::initIterators()
 {
-    IOMap::iterator it=iomap.begin();
+    auto it=iomap.begin();
     for( ; it!=iomap.end(); ++it )
         shm->initIterator(it->second.ioit);
 
@@ -989,7 +988,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( ModbusRTU::ModbusData reg, Modbus
 
 
     int i=0;
-    IOMap::iterator it = iomap.end();
+    auto it = iomap.end();
     for( ; i<count; i++ )
     {
         it = iomap.find(reg+i);
@@ -1022,7 +1021,7 @@ ModbusRTU::mbErrCode MBSlave::real_write( ModbusRTU::ModbusData reg, ModbusRTU::
             << " data=" << ModbusRTU::dat2str(mbval)
             << "(" << (int)mbval << ")" << endl;
 
-    IOMap::iterator it = iomap.find(reg);
+    auto it = iomap.find(reg);
     return real_write_it(it,mbval);
 }
 // -------------------------------------------------------------------------
@@ -1149,7 +1148,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( ModbusRTU::ModbusData reg, ModbusR
     dinfo << myname << "(much_real_read): read mbID="
             << ModbusRTU::dat2str(reg) << " count=" << count << endl;
 
-    IOMap::iterator it = iomap.end();
+    auto it = iomap.end();
     int i=0;
     for( ; i<count; i++ )
     {
@@ -1195,7 +1194,7 @@ ModbusRTU::mbErrCode MBSlave::real_read( ModbusRTU::ModbusData reg, ModbusRTU::M
     dinfo << myname << "(real_read): read mbID="
             << ModbusRTU::dat2str(reg) << endl;
 
-    IOMap::iterator it = iomap.find(reg);
+    auto it = iomap.find(reg);
     return real_read_it(it,val);
 }
 // -------------------------------------------------------------------------
@@ -1353,7 +1352,7 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
 {
     dinfo << myname << "(fileTransfer): " << query << endl;
 
-    FileList::iterator it = flist.find(query.numfile);
+    auto it = flist.find(query.numfile);
     if( it == flist.end() )
         return ModbusRTU::erBadDataValue;
 
@@ -1361,7 +1360,7 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
     return ModbusServer::replyFileTransfer( fname,query,reply,&dlog );
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query, 
+ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
                                                 ReadCoilRetMessage& reply )
 {
 //    cout << "(readInputStatus): " << query << endl;
@@ -1396,7 +1395,7 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
         while( i<query.count )
         {
             reply.addData(0);
-            for( unsigned int nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
+            for( auto nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
                 reply.setBit(bnum,nbit,buf[i]);
             bnum++;
         }
@@ -1440,7 +1439,7 @@ ModbusRTU::mbErrCode MBSlave::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& 
     for( unsigned int i = 0; i<query.bcnt; i++ )
     {
         ModbusRTU::DataBits b(query.data[i]);
-        for( unsigned int k=0; k<ModbusRTU::BitsPerByte && nbit<query.quant; k++, nbit++ )
+        for( auto k=0; k<ModbusRTU::BitsPerByte && nbit<query.quant; k++, nbit++ )
         {
             // ModbusRTU::mbErrCode ret =
             real_write(query.start+nbit, (b[k] ? 1 : 0) );
@@ -1518,18 +1517,18 @@ ModbusRTU::mbErrCode MBSlave::read4314( ModbusRTU::MEIMessageRDI& query,
 //    if( query.devID <= rdevMinNum || query.devID >= rdevMaxNum )
 //        return erOperationFailed;
 
-    MEIDevIDMap::iterator dit = meidev.find(query.devID);
+    auto dit = meidev.find(query.devID);
     if( dit == meidev.end() )
         return ModbusRTU::erBadDataAddress;
 
-    MEIObjIDMap::iterator oit = dit->second.find(query.objID);
+    auto oit = dit->second.find(query.objID);
     if( oit == dit->second.end() )
         return ModbusRTU::erBadDataAddress;
 
     reply.mf = 0xFF;
     reply.conformity = query.devID;
-    for( MEIValMap::iterator i=oit->second.begin(); i!=oit->second.end(); ++i )
-        reply.addData( i->first, i->second );
+    for( const auto &i: oit->second )
+        reply.addData( i.first, i.second );
 
     return erNoError;
 }

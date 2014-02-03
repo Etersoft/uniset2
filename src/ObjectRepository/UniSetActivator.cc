@@ -325,8 +325,7 @@ void UniSetActivator::work()
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::getinfo()
 {
-    for( UniSetManagerList::const_iterator it= beginMList();
-            it!= endMList(); ++it )
+    for( auto it=beginMList(); it!=endMList(); ++it )
     {
         MInfo mi;
         mi.mnr = (*it);
@@ -334,8 +333,7 @@ void UniSetActivator::getinfo()
         lstMInfo.push_back(mi);
     }
 
-    for( ObjectsList::const_iterator it= beginOList();
-            it!= endOList(); ++it )
+    for( auto it=beginOList(); it!= endOList(); ++it )
     {
         OInfo oi;
         oi.obj = (*it);

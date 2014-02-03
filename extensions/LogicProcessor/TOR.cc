@@ -30,14 +30,14 @@ void TOR::setIn( int num, bool state )
 {
 //    cout << getType() << "(" << myid << "):  input " << num << " set " << state << endl;
 
-    for( InputList::iterator it=ins.begin(); it!=ins.end(); ++it )
+    for( auto &it: ins )
     {
-        if( it->num == num )
+        if( it.num == num )
         {
-            if( it->state == state )
+            if( it.state == state )
                 return; // вход не менялся можно вообще прервать проверку
 
-            it->state = state;
+            it.state = state;
             break;
         }
     }
@@ -47,9 +47,9 @@ void TOR::setIn( int num, bool state )
 
     // проверяем изменился ли выход
     // для тригера 'OR' проверка до первой единицы
-    for( InputList::iterator it=ins.begin(); it!=ins.end(); ++it )
+    for( auto &it: ins )
     {
-        if( it->state )
+        if( it.state )
         {
             myout = true;
             brk = true;

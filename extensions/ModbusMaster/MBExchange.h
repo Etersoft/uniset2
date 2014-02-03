@@ -83,7 +83,7 @@ class MBExchange:
         friend std::ostream& operator<<( std::ostream& os, const RSProperty& p );
 
         typedef std::list<RSProperty> PList;
-        static std::ostream& print_plist( std::ostream& os, PList& p );
+        static std::ostream& print_plist( std::ostream& os, const PList& p );
 
         typedef unsigned long RegID;
 

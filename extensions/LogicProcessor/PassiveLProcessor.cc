@@ -78,8 +78,8 @@ void PassiveLProcessor::askSensors( UniversalIO::UIOCommand cmd )
 {
     try
     {
-        for( EXTList::iterator it=extInputs.begin(); it!=extInputs.end(); ++it )
-            shm->askSensor(it->sid,cmd);
+        for( auto &it: extInputs )
+            shm->askSensor(it.sid,cmd);
     }
     catch( Exception& ex )
     {
@@ -90,10 +90,10 @@ void PassiveLProcessor::askSensors( UniversalIO::UIOCommand cmd )
 // -------------------------------------------------------------------------
 void PassiveLProcessor::sensorInfo( const UniSetTypes::SensorMessage*sm )
 {
-    for( EXTList::iterator it=extInputs.begin(); it!=extInputs.end(); ++it )
+    for( auto& it: extInputs )
     {
-        if( it->sid == sm->id )
-            it->state = (bool)sm->value;
+        if( it.sid == sm->id )
+            it.state = sm->value ? true : false;
     }
 }
 // -------------------------------------------------------------------------
@@ -189,11 +189,11 @@ void PassiveLProcessor::initIterators()
 void PassiveLProcessor::setOuts()
 {
     // выcтавляем выходы
-    for( OUTList::iterator it=extOuts.begin(); it!=extOuts.end(); ++it )
+    for( auto &it: extOuts )
     {
         try
         {
-            shm->setValue( it->sid,it->lnk->from->getOut() );
+            shm->setValue( it.sid,it.lnk->from->getOut() );
         }
         catch( Exception& ex )
         {
@@ -208,11 +208,11 @@ void PassiveLProcessor::setOuts()
 // -------------------------------------------------------------------------
 void PassiveLProcessor::sigterm( int signo )
 {
-    for( OUTList::iterator it=extOuts.begin(); it!=extOuts.end(); ++it )
+    for( auto &it: extOuts )
     {
         try
         {
-            shm->setValue(it->sid,0);
+            shm->setValue(it.sid,0);
         }
         catch( Exception& ex )
         {

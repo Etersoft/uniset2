@@ -17,9 +17,9 @@ void Element::addChildOut( Element* el, int num )
     }
 
 
-    for( OutputList::iterator it=outs.begin(); it!=outs.end(); ++it )
+    for( auto &it: outs )
     {
-        if( it->el == el )
+        if( it.el == el )
         {
             ostringstream msg;
             msg << "(" << myid << "):" << el->getId() << " уже есть в списке дочерних(такое соединение уже есть)...";
@@ -42,7 +42,7 @@ void Element::addChildOut( Element* el, int num )
 // -------------------------------------------------------------------------
 void Element::delChildOut( Element* el )
 {
-    for( OutputList::iterator it=outs.begin(); it!=outs.end(); ++it )
+    for( auto it=outs.begin(); it!=outs.end(); ++it )
     {
         if( it->el == el )
         {
@@ -56,11 +56,11 @@ void Element::delChildOut( Element* el )
 void Element::setChildOut()
 {
     bool _myout(getOut());
-    for( OutputList::iterator it=outs.begin(); it!=outs.end(); ++it )
+    for( auto &it: outs )
     {
 //        try
 //        {
-            it->el->setIn(it->num,_myout);
+            it.el->setIn(it.num,_myout);
 //        }
 //        catch(...){}
     }
@@ -68,12 +68,12 @@ void Element::setChildOut()
 // -------------------------------------------------------------------------
 Element* Element::find( ElementID id )
 {
-    for( OutputList::iterator it=outs.begin(); it!=outs.end(); ++it )
+    for( auto &it: outs )
     {
-        if( it->el->getId() == id )
-            return it->el;
+        if( it.el->getId() == id )
+            return it.el;
 
-        Element* el( it->el->find(id) );
+        Element* el( it.el->find(id) );
         if( el != NULL )
             return el;
     }
@@ -83,9 +83,9 @@ Element* Element::find( ElementID id )
 // -------------------------------------------------------------------------
 void Element::addInput(int num, bool state)
 {
-    for( InputList::iterator it=ins.begin(); it!=ins.end(); ++it )
+    for( auto &it: ins )
     {
-        if( it->num == num )
+        if( it.num == num )
         {
             ostringstream msg;
             msg << "(" << myid << "): попытка второй раз добавить input N" << num;
@@ -98,7 +98,7 @@ void Element::addInput(int num, bool state)
 // -------------------------------------------------------------------------
 void Element::delInput( int num )
 {
-    for( InputList::iterator it=ins.begin(); it!=ins.end(); ++it )
+    for( auto it=ins.begin(); it!=ins.end(); ++it )
     {
         if( it->num == num )
         {
@@ -107,5 +107,4 @@ void Element::delInput( int num )
         }
     }
 }
-// -------------------------------------------------------------------------
 // -------------------------------------------------------------------------

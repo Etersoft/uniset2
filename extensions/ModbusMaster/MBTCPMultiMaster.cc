@@ -155,10 +155,10 @@ MBTCPMultiMaster::~MBTCPMultiMaster()
 {
     delete pollThread;
     delete checkThread;
-    for( MBGateList::iterator it=mblist.begin(); it!=mblist.end(); ++it )
+    for( auto &it: mblist )
     {
-        delete it->mbtcp;
-        it->mbtcp = 0;
+        delete it.mbtcp;
+        it.mbtcp = 0;
         mbi = mblist.rend();
     }
 }
@@ -195,7 +195,7 @@ ModbusClient* MBTCPMultiMaster::initMB( bool reopen )
     }
 
     // проходим по списку (в обратном порядке, т.к. самый приоритетный в конце)
-    for( MBGateList::reverse_iterator it=mblist.rbegin(); it!=mblist.rend(); ++it )
+    for( auto it=mblist.rbegin(); it!=mblist.rend(); ++it )
     {
         uniset_rwmutex_wrlock l(tcpMutex);
         if( it->respond && it->init() )
@@ -302,7 +302,7 @@ void MBTCPMultiMaster::check_thread()
 {
     while( checkProcActive() )
     {
-        for( MBGateList::iterator it=mblist.begin(); it!=mblist.end(); ++it )
+        for( auto it=mblist.begin(); it!=mblist.end(); ++it )
         {
             try
             {
@@ -345,8 +345,8 @@ void MBTCPMultiMaster::check_thread()
 void MBTCPMultiMaster::initIterators()
 {
     MBExchange::initIterators();
-    for( MBGateList::iterator it=mblist.begin(); it!=mblist.end(); ++it )
-        shm->initIterator(it->respond_it);
+    for( auto &it: mblist )
+        shm->initIterator(it.respond_it);
 }
 // -----------------------------------------------------------------------------
 void MBTCPMultiMaster::help_print( int argc, const char* const* argv )

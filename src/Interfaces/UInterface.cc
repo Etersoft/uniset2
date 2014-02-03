@@ -1032,7 +1032,7 @@ ObjectPtr UInterface::CacheOfResolve::resolve( const ObjectId id, const ObjectId
 {
     UniSetTypes::uniset_rwmutex_rlock l(cmutex);
 
-    CacheMap::iterator it = mcache.find( key(id,node) );
+    auto it = mcache.find( key(id,node) );
     if( it == mcache.end() )
         throw UniSetTypes::NameNotFound();
 
@@ -1054,7 +1054,7 @@ void UInterface::CacheOfResolve::cache( const ObjectId id, const ObjectId node, 
 
     UniSetTypes::KeyType k( key(id,node) );
 
-    CacheMap::iterator it = mcache.find(k);
+    auto it = mcache.find(k);
     if( it == mcache.end() )
         mcache.insert(CacheMap::value_type(k,Info(ptr)));
     else
@@ -1070,7 +1070,7 @@ bool UInterface::CacheOfResolve::clean()
 
     uinfo << "UI: clean cache...."<< endl;
 
-    for( CacheMap::iterator it=mcache.begin(); it!=mcache.end();)
+    for( auto it=mcache.begin(); it!=mcache.end();)
     {
         if( it->second.ncall <= minCallCount )
             mcache.erase(it++);
@@ -1088,7 +1088,7 @@ bool UInterface::CacheOfResolve::clean()
 void UInterface::CacheOfResolve::erase( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const
 {
     UniSetTypes::uniset_rwmutex_wrlock l(cmutex);
-    CacheMap::iterator it = mcache.find( key(id,node) );
+    auto it = mcache.find( key(id,node) );
     if( it != mcache.end() )
         mcache.erase(it);
 }

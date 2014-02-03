@@ -102,7 +102,7 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 {
     uniset_rwmutex_wrlock l(lst.mut);
 
-    for( ConsumerList::const_iterator it=lst.clst.begin(); it!=lst.clst.end(); ++it )
+    for( auto it=lst.clst.begin(); it!=lst.clst.end(); ++it )
     {
         if( it->id==ci.id && it->node==ci.node )
             return false;
@@ -128,7 +128,7 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
 bool IONotifyController::removeConsumer( ConsumerListInfo& lst, const ConsumerInfo& cons )
 {
     uniset_rwmutex_wrlock l(lst.mut);
-    for( ConsumerList::iterator li=lst.clst.begin();li!=lst.clst.end(); ++li )
+    for( auto li=lst.clst.begin();li!=lst.clst.end(); ++li )
     {
         if( li->id==cons.id && li->node==cons.node  )
         {
@@ -154,7 +154,7 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
             << conf->oind->getNameById(sid) << endl;
 
     // если такого аналогового датчика нет, здесь сработает исключение...
-    IOStateList::iterator li = myioEnd();
+    auto li = myioEnd();
     localGetValue(li,sid);
 
     {    // lock
@@ -212,7 +212,7 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
                                 const UniSetTypes::ConsumerInfo& cons, UniversalIO::UIOCommand cmd)
 {
     // поиск датчика в списке
-    AskMap::iterator askIterator = askLst.find(sid);
+    auto askIterator = askLst.find(sid);
 
     switch (cmd)
     {
@@ -357,7 +357,7 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
 
     {
         uniset_rwmutex_rlock lock(askIOMutex);
-        AskMap::iterator it = askIOList.find(sid);
+        auto it = askIOList.find(sid);
         if( it!=askIOList.end() )
             send(it->second, sm);
     }
@@ -380,7 +380,7 @@ void IONotifyController::send( ConsumerListInfo& lst, UniSetTypes::SensorMessage
     TransportMessage tmsg;
     uniset_rwmutex_wrlock l(lst.mut);
 
-    for( ConsumerList::iterator li=lst.clst.begin(); li!=lst.clst.end(); ++li )
+    for( auto li=lst.clst.begin(); li!=lst.clst.end(); ++li )
     {
         for( int i=0; i<2; i++ )    // на каждый объект по две поптыки
         {
@@ -519,14 +519,14 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
         throw IONotifyController_i::BadRange();
 
     // если такого дискретного датчика нет сдесь сработает исключение...
-    IOStateList::iterator li = myioEnd();
+    auto li = myioEnd();
     CORBA::Long val = localGetValue(li,sid);
 
     {    // lock
         uniset_rwmutex_wrlock lock(trshMutex);
 
         // поиск датчика в списке
-        AskThresholdMap::iterator it = askTMap.find(sid);
+        auto it = askTMap.find(sid);
 
         ThresholdInfoExt ti(tid,lowLimit,hiLimit,invert);
         ti.sit = myioEnd();
@@ -664,7 +664,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 // --------------------------------------------------------------------------------------------------------------
 bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci )
 {
-    for( ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it)
+    for( auto it=lst.begin(); it!=lst.end(); ++it)
     {
         if( ti==(*it) )
         {
@@ -694,7 +694,7 @@ bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt& 
 // --------------------------------------------------------------------------------------------------------------
 bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci )
 {
-    for( ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it)
+    for( auto it=lst.begin(); it!=lst.end(); ++it)
     {
         if( ti == (*it) )
         {
@@ -720,7 +720,7 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
                                          bool send_msg )
 {
         // поиск списка порогов
-        AskThresholdMap::iterator lst = askTMap.end();
+        auto lst = askTMap.end();
 
         {
              uniset_rwmutex_rlock lock(trshMutex);
@@ -760,7 +760,7 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 
      {
         uniset_rwmutex_rlock l(lst->second.mut);
-        for( ThresholdExtList::iterator it=lst->second.list.begin(); it!=lst->second.list.end(); ++it )
+        for( auto it=lst->second.list.begin(); it!=lst->second.list.end(); ++it )
         {
             // Используем здесь sm.value чтобы не делать ещё раз lock на li->second.value
 
@@ -826,11 +826,11 @@ IONotifyController::ThresholdExtList::iterator IONotifyController::findThreshold
     {    // lock
         uniset_rwmutex_rlock lock(trshMutex);
         // поиск списка порогов
-        AskThresholdMap::iterator lst = askTMap.find(sid);
+        auto lst = askTMap.find(sid);
 
         if( lst!=askTMap.end() )
         {
-            for( ThresholdExtList::iterator it=lst->second.list.begin(); it!=lst->second.list.end(); ++it)
+            for( auto it=lst->second.list.begin(); it!=lst->second.list.end(); ++it)
             {
                 if( it->id == tid )
                     return it;
@@ -845,7 +845,7 @@ IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( UniSet
 {
     uniset_rwmutex_rlock lock(trshMutex);
 
-    AskThresholdMap::iterator it = askTMap.find(sid);
+    auto it = askTMap.find(sid);
     if( it == askTMap.end() )
     {
         ostringstream err;
@@ -856,7 +856,7 @@ IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( UniSet
         throw IOController_i::NameNotFound(err.str().c_str());
     }
 
-    for( ThresholdExtList::const_iterator it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
+    for( auto it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
     {
         if( it2->id == tid )
             return IONotifyController_i::ThresholdInfo( *it2 );
@@ -874,7 +874,7 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( UniSetTy
 {
     uniset_rwmutex_rlock lock(trshMutex);
 
-    AskThresholdMap::iterator it = askTMap.find(sid);
+    auto it = askTMap.find(sid);
     if( it == askTMap.end() )
     {
         ostringstream err;
@@ -903,7 +903,7 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( UniSetTy
     res->tlist.length( it->second.list.size() );
 
     unsigned int k=0;
-    for( ThresholdExtList::const_iterator it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
+    for( auto it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
     {
         res->tlist[k].id       = it2->id;
         res->tlist[k].hilimit  = it2->hilimit;
@@ -927,7 +927,7 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
     if( !askTMap.empty() )
     {
         unsigned int i=0;
-        for( AskThresholdMap::iterator it=askTMap.begin(); it!=askTMap.end(); ++it )
+        for( auto it=askTMap.begin(); it!=askTMap.end(); ++it )
         {
             try
             {
@@ -946,7 +946,7 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
             (*res)[i].tlist.length( it->second.list.size() );
 
             unsigned int k=0;
-            for( ThresholdExtList::const_iterator it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
+            for( auto it2=it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
             {
                 (*res)[i].tlist[k].id             = it2->id;
                 (*res)[i].tlist[k].hilimit         = it2->hilimit;
@@ -993,7 +993,7 @@ void IONotifyController::onChangeUndefinedState( IOStateList::iterator& lit, IOC
 
     { // lock
       uniset_rwmutex_rlock lock(askIOMutex);
-      AskMap::iterator it1 = askIOList.find(it.si.id);
+      auto it1 = askIOList.find(it.si.id);
       if( it1!=askIOList.end() )
           send(it1->second, sm);
     } // unlock

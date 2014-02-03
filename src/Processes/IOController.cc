@@ -80,11 +80,11 @@ bool IOController::disactivateObject()
 void IOController::sensorsUnregistration()
 {
     // Разрегистрируем аналоговые датчики
-    for( IOStateList::iterator li = ioList.begin(); li!=ioList.end(); ++li)
+    for( const auto &li : ioList )
     {
         try
         {
-            ioUnRegistration( li->second.si.id );
+            ioUnRegistration( li.second.si.id );
         }
         catch( Exception& ex )
         {
@@ -97,7 +97,7 @@ void IOController::sensorsUnregistration()
 void IOController::activateInit()
 {
     // Разрегистрируем аналоговые датчики
-    for( IOStateList::iterator li = ioList.begin(); li != ioList.end(); ++li )
+    for( auto li=ioList.begin(); li!=ioList.end(); ++li )
     {
         try
         {
@@ -106,7 +106,7 @@ void IOController::activateInit()
             // Проверка зависимостей
             if( s.d_si.id != DefaultObjectId )
             {
-                IOStateList::iterator d_it = myiofind(s.d_si.id);
+                auto d_it = myiofind(s.d_si.id);
                 if( d_it != ioEnd() )
                     s.checkDepend(d_it, this);
             }
@@ -123,7 +123,7 @@ void IOController::activateInit()
 // ------------------------------------------------------------------------------------------
 CORBA::Long IOController::getValue( UniSetTypes::ObjectId sid )
 {
-    IOStateList::iterator li(ioList.end());
+    auto li = ioList.end();
     return localGetValue(li,sid);
 }
 // ------------------------------------------------------------------------------------------
@@ -152,7 +152,7 @@ long IOController::localGetValue( IOController::IOStateList::iterator& li, const
 // ------------------------------------------------------------------------------------------
 void IOController::setUndefinedState(UniSetTypes::ObjectId sid, CORBA::Boolean undefined, UniSetTypes::ObjectId sup_id )
 {
-    IOController::IOStateList::iterator li(ioList.end());
+    auto li = ioList.end();
     localSetUndefinedState( li,undefined, sid );
 }
 // -----------------------------------------------------------------------------
@@ -227,7 +227,7 @@ void IOController::fastSetValue( UniSetTypes::ObjectId sid, CORBA::Long value, U
 {
     try
     {
-        IOController::IOStateList::iterator li(ioList.end());
+        auto li = ioList.end();
         localSetValue( li, sid, value, sup_id );
     }
     catch(...){}
@@ -235,7 +235,7 @@ void IOController::fastSetValue( UniSetTypes::ObjectId sid, CORBA::Long value, U
 // ------------------------------------------------------------------------------------------
 void IOController::setValue( UniSetTypes::ObjectId sid, CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
-    IOController::IOStateList::iterator li(ioList.end());
+    auto li = ioList.end();
     localSetValue( li, sid, value, sup_id );
 }
 // ------------------------------------------------------------------------------------------
@@ -322,7 +322,7 @@ void IOController::localSetValue( IOController::IOStateList::iterator& li,
 // ------------------------------------------------------------------------------------------
 IOType IOController::getIOType( UniSetTypes::ObjectId sid )
 {
-    IOStateList::iterator ali = ioList.find(sid);
+    auto ali = ioList.find(sid);
     if( ali!=ioList.end() )
         return ali->second.type;
 
@@ -346,7 +346,7 @@ void IOController::ioRegistration( const USensorInfo& ainf, bool force )
         uniset_rwmutex_wrlock lock(ioMutex);
         if( !force )
         {
-            IOStateList::iterator li = ioList.find(ainf.si.id);
+            auto li = ioList.find(ainf.si.id);
             if( li!=ioList.end() )
             {
                 ostringstream err;
@@ -441,7 +441,7 @@ void IOController::dumpToDB()
 
     {    // lock
 //        uniset_mutex_lock lock(ioMutex, 100);
-        for( IOStateList::iterator li = ioList.begin(); li!=ioList.end(); ++li )
+        for( auto li = ioList.begin(); li!=ioList.end(); ++li )
         {
             uniset_rwmutex_rlock lock(li->second.val_lock);
             SensorMessage sm;
@@ -468,10 +468,10 @@ IOController_i::SensorInfoSeq* IOController::getSensorsMap()
     res->length( ioList.size());
 
     unsigned int i=0;
-    for( IOStateList::iterator it=ioList.begin(); it!=ioList.end(); ++it)
+    for( auto &it: ioList )
     {
-        uniset_rwmutex_rlock lock(it->second.val_lock);
-        (*res)[i] = it->second;
+        uniset_rwmutex_rlock lock(it.second.val_lock);
+        (*res)[i] = it.second;
         i++;
     }
 
@@ -480,7 +480,7 @@ IOController_i::SensorInfoSeq* IOController::getSensorsMap()
 // --------------------------------------------------------------------------------------------------------------
 UniSetTypes::Message::Priority IOController::getPriority( const UniSetTypes::ObjectId sid )
 {
-    IOStateList::iterator it = ioList.find(sid);
+    auto it = ioList.find(sid);
     if( it!=ioList.end() )
         return (UniSetTypes::Message::Priority)it->second.priority;
 
@@ -489,7 +489,7 @@ UniSetTypes::Message::Priority IOController::getPriority( const UniSetTypes::Obj
 // --------------------------------------------------------------------------------------------------------------
 IOController_i::SensorIOInfo IOController::getSensorIOInfo( const UniSetTypes::ObjectId sid )
 {
-    IOStateList::iterator it = ioList.find(sid);
+    auto it = ioList.find(sid);
     if( it!=ioList.end() )
     {
         uniset_rwmutex_rlock lock(it->second.val_lock);
@@ -508,7 +508,7 @@ IOController_i::SensorIOInfo IOController::getSensorIOInfo( const UniSetTypes::O
 // --------------------------------------------------------------------------------------------------------------
 CORBA::Long IOController::getRawValue( UniSetTypes::ObjectId sid )
 {
-    IOStateList::iterator it = ioList.find(sid);
+    auto it = ioList.find(sid);
     if( it==ioList.end() )
     {
         ostringstream err;
@@ -536,7 +536,7 @@ void IOController::calibrate( UniSetTypes::ObjectId sid,
                                 const IOController_i::CalibrateInfo& ci,
                                 UniSetTypes::ObjectId adminId )
 {
-    IOStateList::iterator it = ioList.find(sid);
+    auto it = ioList.find(sid);
     if( it==ioList.end() )
     {
         ostringstream err;
@@ -552,7 +552,7 @@ void IOController::calibrate( UniSetTypes::ObjectId sid,
 // --------------------------------------------------------------------------------------------------------------
 IOController_i::CalibrateInfo IOController::getCalibrateInfo( UniSetTypes::ObjectId sid )
 {
-    IOStateList::iterator it = ioList.find(sid);
+    auto it = ioList.find(sid);
     if( it==ioList.end() )
     {
         ostringstream err;
@@ -607,9 +607,9 @@ const IOController::USensorInfo&
 bool IOController::checkIOFilters( const USensorInfo& ai, CORBA::Long& newvalue,
                                     UniSetTypes::ObjectId sup_id )
 {
-    for( IOFilterSlotList::iterator it=iofilters.begin(); it!=iofilters.end(); ++it )
+    for( auto &it: iofilters )
     {
-        if( (*it)(ai,newvalue,sup_id) == false )
+        if( it(ai,newvalue,sup_id) == false )
             return false;
     }
     return true;
@@ -621,8 +621,7 @@ IOController::IOFilterSlotList::iterator IOController::addIOFilter( IOFilterSlot
     if( push_front == false )
     {
         iofilters.push_back(sl);
-        IOFilterSlotList::iterator it(iofilters.end());
-        return --it;
+        return --iofilters.end();
     }
 
     iofilters.push_front(sl);
@@ -656,9 +655,9 @@ IOController_i::SensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
     IOController_i::SensorInfoSeq* res = new IOController_i::SensorInfoSeq();
     res->length(size);
 
-    for( unsigned int i=0; i<size; i++ )
+    for( auto i=0; i<size; i++ )
     {
-        IOStateList::iterator it = ioList.find(lst[i]);
+        auto it = ioList.find(lst[i]);
         if( it!=ioList.end() )
         {
             uniset_rwmutex_rlock lock(it->second.val_lock);
@@ -686,7 +685,7 @@ IDSeq* IOController::setOutputSeq(const IOController_i::OutSeq& lst, ObjectId su
         ObjectId sid = lst[i].si.id;
 
         {
-            IOStateList::iterator it = ioList.find(sid);
+            auto it = ioList.find(sid);
             if( it!=ioList.end() )
             {
                 localSetValue(it,sid,lst[i].value, sup_id);
@@ -703,7 +702,7 @@ IDSeq* IOController::setOutputSeq(const IOController_i::OutSeq& lst, ObjectId su
 // -----------------------------------------------------------------------------
 IOController_i::ShortIOInfo IOController::getChangedTime( UniSetTypes::ObjectId sid )
 {
-    IOStateList::iterator ait = ioList.find(sid);
+    auto ait = ioList.find(sid);
     if( ait!=ioList.end() )
     {
         IOController_i::ShortIOInfo i;
@@ -731,14 +730,14 @@ IOController_i::ShortMapSeq* IOController::getSensors()
     res->length( ioList.size() );
 
     int i=0;
-    for( IOStateList::iterator it=ioList.begin(); it!=ioList.end(); ++it)
+    for( auto &it: ioList )
     {
         IOController_i::ShortMap m;
         {
-            uniset_rwmutex_rlock lock(it->second.val_lock);
-            m.id     = it->second.si.id;
-            m.value = it->second.value;
-            m.type = it->second.type;
+            uniset_rwmutex_rlock lock(it.second.val_lock);
+            m.id    = it.second.si.id;
+            m.value = it.second.value;
+            m.type  = it.second.type;
         }
         (*res)[i++] = m;
     }
@@ -748,7 +747,7 @@ IOController_i::ShortMapSeq* IOController::getSensors()
 // -----------------------------------------------------------------------------
 IOController::ChangeSignal IOController::signal_change_value( UniSetTypes::ObjectId sid )
 {
-    IOStateList::iterator it = ioList.find(sid);
+    auto it = ioList.find(sid);
     if( it==ioList.end() )
     {
         ostringstream err;
@@ -770,7 +769,7 @@ IOController::ChangeSignal IOController::signal_change_value()
 // -----------------------------------------------------------------------------
 IOController::ChangeUndefinedStateSignal IOController::signal_change_undefined_state( UniSetTypes::ObjectId sid )
 {
-    IOStateList::iterator it = ioList.find(sid);
+    auto it = ioList.find(sid);
     if( it==ioList.end() )
     {
         ostringstream err;

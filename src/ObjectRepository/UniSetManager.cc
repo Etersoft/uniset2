@@ -149,7 +149,7 @@ bool UniSetManager::addObject( UniSetObject *obj )
 {
     {    //lock
         uniset_rwmutex_wrlock lock(olistMutex);
-        ObjectsList::iterator li=find(olist.begin(),olist.end(), obj);
+        auto li=find(olist.begin(),olist.end(), obj);
         if( li==olist.end() )
         {
             uinfo << myname << "(activator): добавляем объект "<< obj->getName()<< endl;
@@ -164,7 +164,7 @@ bool UniSetManager::removeObject(UniSetObject* obj)
 {
     {    //lock
         uniset_rwmutex_wrlock lock(olistMutex);
-        ObjectsList::iterator li=find(olist.begin(),olist.end(), obj);
+        auto li=find(olist.begin(),olist.end(), obj);
         if( li!=olist.end() )
         {
             uinfo << myname << "(activator): удаляем объект "<< obj->getName()<< endl;
@@ -210,26 +210,26 @@ void UniSetManager::managers(OManagerCommand cmd)
                         << mlist.size() << " cmd=" << cmd  << endl;
     {    //lock
         uniset_rwmutex_rlock lock(mlistMutex);
-        for( UniSetManagerList::iterator li=mlist.begin();li!=mlist.end();++li )
+        for( auto &li: mlist )
         {
             try
             {
                 switch(cmd)
                 {
                     case initial:
-                        (*li)->initPOA(this);
+                        li->initPOA(this);
                         break;
 
                     case activ:
-                        (*li)->activate();
+                        li->activate();
                         break;
 
                     case deactiv:
-                        (*li)->disactivate();
+                        li->disactivate();
                         break;
 
                     case term:
-                        (*li)->sigterm(sig);
+                        li->sigterm(sig);
                         break;
 
                     default:
@@ -239,7 +239,7 @@ void UniSetManager::managers(OManagerCommand cmd)
             catch( Exception& ex )
             {
                  ucrit << myname << "(managers): " << ex << endl
-                       << " Не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
+                       << " Не смог зарегистрировать (разрегистрировать) объект -->"<< li->getName() << endl;
             }
             catch( CORBA::SystemException& ex )
             {
@@ -270,26 +270,26 @@ void UniSetManager::objects(OManagerCommand cmd)
     {    //lock
         uniset_rwmutex_rlock lock(olistMutex);
 
-        for (ObjectsList::iterator li=olist.begin();li!=olist.end();++li)
+        for( auto &li: olist )
         {
             try
             {
                 switch(cmd)
                 {
                     case initial:
-                        (*li)->init(this);
+                        li->init(this);
                         break;
 
                     case activ:
-                        (*li)->activate();
+                        li->activate();
                         break;
 
                     case deactiv:
-                        (*li)->disactivate();
+                        li->disactivate();
                         break;
 
                     case term:
-                        (*li)->sigterm(sig);
+                        li->sigterm(sig);
                         break;
 
                     default:
@@ -299,7 +299,7 @@ void UniSetManager::objects(OManagerCommand cmd)
             catch( Exception& ex )
             {
                 ucrit << myname << "(objects): " << ex << endl;
-                ucrit << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->"<< (*li)->getName() << endl;
+                ucrit << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->"<< li->getName() << endl;
             }
             catch(CORBA::SystemException& ex)
             {
@@ -309,9 +309,9 @@ void UniSetManager::objects(OManagerCommand cmd)
             {
                 ucrit << myname << "(objects): Caught CORBA::Exception. "
                       << ex._name()
-                      << " (" << (*li)->getName() << ")" << endl;
+                      << " (" << li->getName() << ")" << endl;
             }
-            catch( omniORB::fatalException& fe ) 
+            catch( omniORB::fatalException& fe )
             {
                ucrit << myname << "(objects): Caught omniORB::fatalException:" << endl;
                ucrit << myname << "(objects): file: " << fe.file()
@@ -382,7 +382,7 @@ bool UniSetManager::addManager( UniSetManager *child )
         uniset_rwmutex_wrlock lock(mlistMutex);
 
         // Проверка на совпадение
-        UniSetManagerList::iterator it= find(mlist.begin(),mlist.end(),child);
+        auto it= find(mlist.begin(),mlist.end(),child);
         if(it == mlist.end() )
         {
              mlist.push_back( child );
@@ -410,15 +410,15 @@ bool UniSetManager::removeManager( UniSetManager* child )
 
 const UniSetManager* UniSetManager::itemM(const ObjectId id)
 {
-    
+
     {    //lock
         uniset_rwmutex_rlock lock(mlistMutex);
-        for( UniSetManagerList::iterator li=mlist.begin(); li!=mlist.end();++li )
+        for( auto &li: mlist )
         {
-            if ( (*li)->getId()==id )
-                return (*li);    
+            if ( li->getId()==id )
+                return li;
         }
-    } // unlock    
+    } // unlock
 
     return 0;
 }
@@ -429,12 +429,12 @@ const UniSetObject* UniSetManager::itemO(const ObjectId id)
 {
     {    //lock
         uniset_rwmutex_rlock lock(olistMutex);
-        for (ObjectsList::iterator li=olist.begin(); li!=olist.end();++li)
+        for( auto &li: olist )
         {
-            if ( (*li)->getId()==id )
-                return (*li);    
+            if ( li->getId()==id )
+                return li;
         }
-    } // unlock    
+    } // unlock
 
     return 0;
 }
@@ -468,8 +468,7 @@ int UniSetManager::getObjectsInfo( UniSetManager* mngr, SimpleInfoSeq* seq,
     if( ind > uplimit )
         return ind;
 
-    for( ObjectsList::const_iterator it= mngr->beginOList();
-            it!=mngr->endOList(); ++it )
+    for( auto it=mngr->beginOList(); it!=mngr->endOList(); ++it )
     {
         try
         {
@@ -494,8 +493,7 @@ int UniSetManager::getObjectsInfo( UniSetManager* mngr, SimpleInfoSeq* seq,
         return ind;
 
     // а далее у его менеджеров (рекурсивно)
-    for( UniSetManagerList::const_iterator it=mngr->beginMList();
-         it!=mngr->endMList(); ++it )
+    for( auto it=mngr->beginMList(); it!=mngr->endMList(); ++it )
     {
         ind = getObjectsInfo((*it),seq,ind,uplimit);
         if( ind > uplimit )

@@ -161,7 +161,7 @@ void MBExchange::help_print( int argc, const char* const* argv )
 // -----------------------------------------------------------------------------
 MBExchange::~MBExchange()
 {
-    for( RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+    for( auto it1=rmap.begin(); it1!=rmap.end(); ++it1 )
     {
         if( it1->second->rtu )
         {
@@ -170,7 +170,7 @@ MBExchange::~MBExchange()
         }
 
         RTUDevice* d(it1->second);
-        for( RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+        for( auto it=d->regmap.begin(); it!=d->regmap.end(); ++it )
             delete it->second;
 
         delete it1->second;
@@ -292,14 +292,14 @@ void MBExchange::initIterators()
 {
     shm->initIterator(itHeartBeat);
     shm->initIterator(itExchangeMode);
-    for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+    for( auto it1=rmap.begin(); it1!=rmap.end(); ++it1 )
     {
         RTUDevice* d(it1->second);
         shm->initIterator(d->resp_it);
         shm->initIterator(d->mode_it);
-        for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+        for( auto it=d->regmap.begin(); it!=d->regmap.end(); ++it )
         {
-            for( PList::iterator it2=it->second->slst.begin();it2!=it->second->slst.end(); ++it2 )
+            for( auto it2=it->second->slst.begin();it2!=it->second->slst.end(); ++it2 )
             {
                 shm->initIterator(it2->ioit);
                 shm->initIterator(it2->t_ait);
@@ -307,7 +307,7 @@ void MBExchange::initIterators()
         }
     }
 
-    for( MBExchange::ThresholdList::iterator t=thrlist.begin(); t!=thrlist.end(); ++t )
+    for( auto t=thrlist.begin(); t!=thrlist.end(); ++t )
     {
          shm->initIterator(t->ioit);
          shm->initIterator(t->t_ait);
@@ -388,25 +388,23 @@ MBExchange::RegID MBExchange::genRegID( const ModbusRTU::ModbusData mbreg, const
 void MBExchange::printMap( MBExchange::RTUDeviceMap& m )
 {
     cout << "devices: " << endl;
-    for( MBExchange::RTUDeviceMap::iterator it=m.begin(); it!=m.end(); ++it )
-    {
+    for( auto it=m.begin(); it!=m.end(); ++it )
         cout << "  " <<  *(it->second) << endl;
-    }
 }
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, MBExchange::RTUDeviceMap& m )
 {
     os << "devices: " << endl;
-    for( MBExchange::RTUDeviceMap::iterator it=m.begin(); it!=m.end(); ++it )
-    {
+
+    for( auto it=m.begin(); it!=m.end(); ++it )
         os << "  " <<  *(it->second) << endl;
-    }
+
     return os;
 }
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, MBExchange::RTUDevice& d )
 {
-      os     << "addr=" << ModbusRTU::addr2str(d.mbaddr)
+      os  << "addr=" << ModbusRTU::addr2str(d.mbaddr)
           << " type=" << d.dtype
           << " respond_id=" << d.resp_id
           << " respond_timeout=" << d.resp_ptTimeout.getInterval()
@@ -416,7 +414,7 @@ std::ostream& operator<<( std::ostream& os, MBExchange::RTUDevice& d )
 
 
     os << "  regs: " << endl;
-    for( MBExchange::RegMap::iterator it=d.regmap.begin(); it!=d.regmap.end(); ++it )
+    for( auto it=d.regmap.begin(); it!=d.regmap.end(); ++it )
         os << "     " << *(it->second) << endl;
 
     return os;
@@ -438,7 +436,7 @@ std::ostream& operator<<( std::ostream& os, MBExchange::RegInfo& r )
         << " mtrType=" << MTR::type2str(r.mtrType)
         << endl;
 
-    for( MBExchange::PList::iterator it=r.slst.begin(); it!=r.slst.end(); ++it )
+    for( auto it=r.slst.begin(); it!=r.slst.end(); ++it )
         os << "         " << (*it) << endl;
 
     return os;
@@ -451,16 +449,16 @@ void MBExchange::rtuQueryOptimization( RTUDeviceMap& m )
 
     dinfo << myname << "(rtuQueryOptimization): optimization..." << endl;
 
-    for( MBExchange::RTUDeviceMap::iterator it1=m.begin(); it1!=m.end(); ++it1 )
+    for( auto it1=m.begin(); it1!=m.end(); ++it1 )
     {
         RTUDevice* d(it1->second);
 
         // Вообще в map они уже лежат в нужном порядке, т.е. функция genRegID() гарантирует
         // что регистры идущие подряд с одниковой функцией чтения/записи получат подряд идущие ID.
         // так что оптимтизация это просто нахождение мест где id идут не подряд...
-        for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+        for( auto it=d->regmap.begin(); it!=d->regmap.end(); ++it )
         {
-            MBExchange::RegMap::iterator beg = it;
+            auto beg = it;
             RegID id = it->second->id; // или собственно it->first
             beg->second->q_num = 1;
             beg->second->q_count = 1;
@@ -512,10 +510,10 @@ void MBExchange::rtuQueryOptimization( RTUDeviceMap& m )
 }
 // -----------------------------------------------------------------------------
 //std::ostream& operator<<( std::ostream& os, MBExchange::PList& lst )
-std::ostream& MBExchange::print_plist( std::ostream& os, MBExchange::PList& lst )
+std::ostream& MBExchange::print_plist( std::ostream& os, const MBExchange::PList& lst )
 {
     os << "[ ";
-    for( MBExchange::PList::const_iterator it=lst.begin(); it!=lst.end(); ++it )
+    for( auto it=lst.begin(); it!=lst.end(); ++it )
         os << "(" << it->si.id << ")" << conf->oind->getBaseName(conf->oind->getMapName(it->si.id)) << " ";
     os << "]";
 
@@ -526,7 +524,7 @@ void MBExchange::firstInitRegisters()
 {
     // если все вернут TRUE, значит OK.
     allInitOK = true;
-    for( InitList::iterator it=initRegList.begin(); it!=initRegList.end(); ++it )
+    for( auto it=initRegList.begin(); it!=initRegList.end(); ++it )
     {
         try
         {
@@ -953,7 +951,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 // -----------------------------------------------------------------------------
 void MBExchange::updateSM()
 {
-    for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+    for( auto it1=rmap.begin(); it1!=rmap.end(); ++it1 )
     {
         RTUDevice* d(it1->second);
 
@@ -996,7 +994,7 @@ void MBExchange::updateSM()
         // см. updateRespondSensors()
 
         // update values...
-        for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+        for( auto it=d->regmap.begin(); it!=d->regmap.end(); ++it )
         {
             try
             {
@@ -1043,7 +1041,7 @@ void MBExchange::updateSM()
 void MBExchange::updateRTU( RegMap::iterator& rit )
 {
     RegInfo* r(rit->second);
-    for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
+    for( auto it=r->slst.begin(); it!=r->slst.end(); ++it )
         updateRSProperty( &(*it),false );
 
 }
@@ -1230,7 +1228,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
             }
             else if( p->vType == VTypes::vtF2 )
             {
-                RegMap::iterator i(p->reg->rit);
+                auto i = p->reg->rit;
                 if( save )
                 {
                     if( r->mb_initOK )
@@ -1257,7 +1255,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
             }
             else if( p->vType == VTypes::vtF4 )
             {
-                RegMap::iterator i(p->reg->rit);
+                auto i = p->reg->rit;
                 if( save )
                 {
                     if( r->mb_initOK )
@@ -1282,7 +1280,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
             }
             else if( p->vType == VTypes::vtI2 )
             {
-                RegMap::iterator i(p->reg->rit);
+                auto i = p->reg->rit;
                 if( save )
                 {
                     if( r->mb_initOK )
@@ -1309,7 +1307,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
             }
             else if( p->vType == VTypes::vtU2 )
             {
-                RegMap::iterator i(p->reg->rit);
+                auto i = p->reg->rit;
                 if( save )
                 {
                     if( r->mb_initOK )
@@ -1381,7 +1379,7 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
         return;
 
     {
-        for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
+        for( auto it=r->slst.begin(); it!=r->slst.end(); ++it )
         {
             try
             {
@@ -1414,7 +1412,7 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
 
                 if( r->mtrType == MTR::mtT3 )
                 {
-                    RegMap::iterator i(rit);
+                    auto i = rit;
                     if( save )
                     {
                         MTR::T3 t(IOBase::processingAsAO( &(*it), shm, force_out ));
@@ -1439,7 +1437,7 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
                     if( save )
 					{
                         dwarn << myname << "(updateMTR): write (T4) reg(" << dat2str(r->mbreg) << ") to MTR NOT YET!!!" << endl;
-					}
+                    }
                     else
                     {
                         MTR::T4 t(r->mbval);
@@ -1450,7 +1448,7 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
 
                 if( r->mtrType == MTR::mtT5 )
                 {
-                    RegMap::iterator i(rit);
+                    auto i = rit;
                     if( save )
                     {
                         MTR::T5 t(IOBase::processingAsAO( &(*it), shm, force_out ));
@@ -1473,7 +1471,7 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
 
                 if( r->mtrType == MTR::mtT6 )
                 {
-                    RegMap::iterator i(rit);
+                    auto i = rit;
                     if( save )
                     {
                         MTR::T6 t(IOBase::processingAsAO( &(*it), shm, force_out ));
@@ -1496,7 +1494,7 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
 
                 if( r->mtrType == MTR::mtT7 )
                 {
-                    RegMap::iterator i(rit);
+                    auto i = rit;
                     if( save )
                     {
                         MTR::T7 t(IOBase::processingAsAO( &(*it), shm, force_out ));
@@ -1549,7 +1547,7 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
 
                 if( r->mtrType == MTR::mtF1 )
                 {
-                    RegMap::iterator i(rit);
+                    auto i = rit;
                     if( save )
                     {
                         float f = IOBase::processingFasAO( &(*it), shm, force_out );
@@ -1646,7 +1644,7 @@ void MBExchange::updateRTU188( RegMap::iterator& rit )
         return;
     }
 
-    for( PList::iterator it=r->slst.begin(); it!=r->slst.end(); ++it )
+    for( auto it=r->slst.begin(); it!=r->slst.end(); ++it )
     {
         try
         {
@@ -1692,7 +1690,7 @@ void MBExchange::updateRTU188( RegMap::iterator& rit )
 
 MBExchange::RTUDevice* MBExchange::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAddr a, UniXML_iterator& xmlit )
 {
-    RTUDeviceMap::iterator it = mp.find(a);
+    auto it = mp.find(a);
     if( it != mp.end() )
     {
         DeviceType dtype = getDeviceType(xmlit.getProp(prop_prefix + "mbtype"));
@@ -1727,7 +1725,7 @@ MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, RegID id, ModbusRTU::Modbus
                                             UniXML_iterator& xmlit, MBExchange::RTUDevice* dev,
                                             MBExchange::RegInfo* rcopy )
 {
-    RegMap::iterator it = mp.find(id);
+    auto it = mp.find(id);
     if( it != mp.end() )
     {
         if( !it->second->dev )
@@ -1781,14 +1779,14 @@ MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, RegID id, ModbusRTU::Modbus
 // ------------------------------------------------------------------------------------------
 MBExchange::RSProperty* MBExchange::addProp( PList& plist, RSProperty& p )
 {
-    for( PList::iterator it=plist.begin(); it!=plist.end(); ++it )
+    for( auto &it: plist )
     {
-        if( it->si.id == p.si.id && it->si.node == p.si.node )
-            return &(*it);
+        if( it.si.id == p.si.id && it.si.node == p.si.node )
+            return &it;
     }
 
     plist.push_back(p);
-    PList::iterator it = plist.end();
+    auto it = plist.end();
     --it;
     return &(*it);
 }
@@ -2089,7 +2087,7 @@ bool MBExchange::initItem( UniXML_iterator& it )
 
         if( p.nbit >= 0 && ri->slst.size() == 1 )
         {
-            PList::iterator it2 = ri->slst.begin();
+            auto it2 = ri->slst.begin();
             if( it2->nbit < 0 )
             {
                 dcrit << myname << "(initItem): FAILED! Sharing SAVE (mbreg="
@@ -2333,7 +2331,7 @@ void MBExchange::initDeviceList()
 // -----------------------------------------------------------------------------
 bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it )
 {
-    RTUDeviceMap::iterator d = m.find(a);
+    auto d = m.find(a);
     if( d == m.end() )
     {
         dwarn << myname << "(initDeviceInfo): not found device for addr=" << ModbusRTU::addr2str(a) << endl;
@@ -2530,7 +2528,7 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
         dwarn << myname << "(askSensors): 'sidExchangeMode' catch..." << std::endl;
     }
 
-    for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+    for( auto it1=rmap.begin(); it1!=rmap.end(); ++it1 )
     {
         RTUDevice* d(it1->second);
 
@@ -2551,12 +2549,12 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
         if( force_out )
             return;
 
-        for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+        for( auto it=d->regmap.begin(); it!=d->regmap.end(); ++it )
         {
             if( !isWriteFunction(it->second->mbfunc) )
                 continue;
 
-            for( PList::iterator i=it->second->slst.begin(); i!=it->second->slst.end(); ++i )
+            for( auto i=it->second->slst.begin(); i!=it->second->slst.end(); ++i )
             {
                 try
                 {
@@ -2584,7 +2582,7 @@ void MBExchange::sensorInfo( const UniSetTypes::SensorMessage* sm )
         //return; // этот датчик может встречаться и в списке обмена.. поэтому делать return нельзя.
     }
 
-    for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+    for( auto it1=rmap.begin(); it1!=rmap.end(); ++it1 )
     {
         RTUDevice* d(it1->second);
 
@@ -2594,25 +2592,25 @@ void MBExchange::sensorInfo( const UniSetTypes::SensorMessage* sm )
         if( force_out )
             continue;
 
-        for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+        for( auto &it: d->regmap )
         {
-            if( !isWriteFunction(it->second->mbfunc) )
+            if( !isWriteFunction(it.second->mbfunc) )
                 continue;
 
-            for( PList::iterator i=it->second->slst.begin(); i!=it->second->slst.end(); ++i )
+            for( auto &i: it.second->slst )
             {
-                if( sm->id == i->si.id && sm->node == i->si.node )
+                if( sm->id == i.si.id && sm->node == i.si.node )
                 {
                     dinfo << myname<< "(sensorInfo): si.id=" << sm->id
-                            << " reg=" << ModbusRTU::dat2str(i->reg->mbreg)
+                            << " reg=" << ModbusRTU::dat2str(i.reg->mbreg)
                             << " val=" << sm->value
-                            << " mb_initOK=" << i->reg->mb_initOK << endl;
+                            << " mb_initOK=" << i.reg->mb_initOK << endl;
 
-                    if( !i->reg->mb_initOK )
+                    if( !i.reg->mb_initOK )
                         continue;
 
-                    i->value = sm->value;
-                    updateRSProperty( &(*i),true );
+                    i.value = sm->value;
+                    updateRSProperty( &i,true );
                     return;
                 }
             }
@@ -2641,7 +2639,7 @@ void MBExchange::poll()
             mb = initMB(false);
             if( !mb )
             {
-                for( MBExchange::RTUDeviceMap::iterator it=rmap.begin(); it!=rmap.end(); ++it )
+                for( auto it=rmap.begin(); it!=rmap.end(); ++it )
                     it->second->resp_real = false;
             }
         }
@@ -2668,7 +2666,7 @@ void MBExchange::poll()
 
     bool allNotRespond = true;
 
-    for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+    for( auto it1=rmap.begin(); it1!=rmap.end(); ++it1 )
     {
         RTUDevice* d(it1->second);
 
@@ -2679,7 +2677,7 @@ void MBExchange::poll()
                 << " regs=" << d->regmap.size() << endl;
 
         d->resp_real = false;
-        for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+        for( auto it=d->regmap.begin(); it!=d->regmap.end(); ++it )
         {
             if( !checkProcActive() )
                 return;
@@ -2743,7 +2741,7 @@ void MBExchange::poll()
     updateSM();
 
     // check thresholds
-    for( MBExchange::ThresholdList::iterator t=thrlist.begin(); t!=thrlist.end(); ++t )
+    for( auto t=thrlist.begin(); t!=thrlist.end(); ++t )
     {
          if( !checkProcActive() )
              return;
@@ -2805,7 +2803,7 @@ void MBExchange::updateRespondSensors()
         chanTimeout = pollActivated && ptTimeout.checkTime();
     }
 
-    for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+    for( auto it1=rmap.begin(); it1!=rmap.end(); ++it1 )
     {
         RTUDevice* d(it1->second);
 

@@ -30,7 +30,7 @@ ui_CPPFLAGS	= -I$(top_builddir)/include
 
 umutex_SOURCES 	= umutex.cc
 umutex_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(COMCPP_LIBS)
-umutex_CPPFLAGS	= -I$(top_builddir)/include $(COMCPP_CFLAGS)
+umutex_CPPFLAGS	= -S -O2 -I$(top_builddir)/include $(COMCPP_CFLAGS)
 
 conftest_SOURCES 	= conftest.cc
 conftest_LDADD 	= $(top_builddir)/lib/libUniSet2.la

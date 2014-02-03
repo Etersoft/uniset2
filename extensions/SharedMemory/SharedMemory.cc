@@ -56,7 +56,7 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
     // ----------------------
     buildHistoryList(cnode);
     signal_change_value().connect(sigc::mem_fun(*this, &SharedMemory::updateHistory));
-    for( History::iterator i=hist.begin(); i!=hist.end(); ++i )
+    for( auto i=hist.begin(); i!=hist.end(); ++i )
         histmap[i->fuse_id].push_back(i);
     // ----------------------
     restorer = NULL;
@@ -239,17 +239,17 @@ bool SharedMemory::activateObject()
         res = IONotifyController_LT::activateObject();
 
         // инициализируем указатели
-        for( HeartBeatList::iterator it=hlist.begin(); it!=hlist.end(); ++it )
+        for( auto &it: hlist )
         {
-            it->ioit = myioEnd();
+            it.ioit = myioEnd();
         }
 
         itPulsar = myioEnd();
 
-        for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
+        for( auto &it: hist )
         {
-            for( HistoryList::iterator hit=it->hlst.begin(); hit!=it->hlst.end(); ++hit )
-                hit->ioit = myioEnd();
+            for( auto& hit: it.hlst )
+                hit.ioit = myioEnd();
         }
 
         activated = 1;
@@ -283,36 +283,36 @@ void SharedMemory::checkHeartBeat()
 
     bool wdtpingOK = true;
 
-    for( HeartBeatList::iterator it=hlist.begin(); it!=hlist.end(); ++it )
+    for( auto &it: hlist )
     {
         try
         {
-            long val = localGetValue(it->ioit,it->a_sid);
+            long val = localGetValue(it.ioit,it.a_sid);
             val --;
             if( val < -1 )
                 val = -1;
-            localSetValue(it->ioit,it->a_sid,val,getId());
+            localSetValue(it.ioit,it.a_sid,val,getId());
 
-            localSetValue(it->ioit,it->d_sid,( val >= 0 ? true:false),getId());
+            localSetValue(it.ioit,it.d_sid,( val >= 0 ? true:false),getId());
 
             // проверяем нужна ли "перезагрузка" по данному датчику
-            if( wdt && it->ptReboot.getInterval() )
+            if( wdt && it.ptReboot.getInterval() )
             {
                 if( val > 0  )
-                    it->timer_running = false;
+                    it.timer_running = false;
                 else
                 {
-                    if( !it->timer_running )
+                    if( !it.timer_running )
                     {
-                        it->timer_running = true;
-                        it->ptReboot.setTiming(it->reboot_msec);
+                        it.timer_running = true;
+                        it.ptReboot.setTiming(it.reboot_msec);
                     }
-                    else if( it->ptReboot.checkTime() )
+                    else if( it.ptReboot.checkTime() )
                         wdtpingOK = false;
                 }
             }
         }
-        catch(Exception& ex)
+        catch( Exception& ex )
         {
             dcrit << myname << "(checkHeartBeat): " << ex << endl;
         }
@@ -328,11 +328,11 @@ void SharedMemory::checkHeartBeat()
 // ------------------------------------------------------------------------------------------
 bool SharedMemory::readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 {
-    for( ReadSlotList::iterator r=lstRSlot.begin(); r!=lstRSlot.end(); ++r )
+    for( auto &r: lstRSlot )
     {
         try
         {
-            (*r)(xml,it,sec);
+            (r)(xml,it,sec);
         }
         catch(...){}
     }
@@ -476,14 +476,14 @@ void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
 {
     TransportMessage tm(sm.transport_msg());
 
-    for( EventList::iterator it=elst.begin(); it!=elst.end(); ++it )
+    for( auto &it: elst )
     {
         bool ok = false;
         for( unsigned int i=0; i<2; i++ )
         {
             try
             {
-                ui.send((*it),tm);
+                ui.send(it,tm);
                 ok = true;
                 break;
             }
@@ -491,7 +491,7 @@ void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
         }
 
         if(!ok)
-            dcrit << myname << "(sendEvent): Объект " << (*it) << " НЕДОСТУПЕН" << endl;
+            dcrit << myname << "(sendEvent): Объект " << it << " НЕДОСТУПЕН" << endl;
     }
 }
 // -----------------------------------------------------------------------------
@@ -591,9 +591,9 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 // -----------------------------------------------------------------------------
 void SharedMemory::checkHistoryFilter( UniXML_iterator& xit )
 {
-    for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
+    for( auto &it: hist )
     {
-        if( xit.getProp(it->filter).empty() )
+        if( xit.getProp(it.filter).empty() )
             continue;
 
         HistoryItem ai;
@@ -601,8 +601,8 @@ void SharedMemory::checkHistoryFilter( UniXML_iterator& xit )
         if( !xit.getProp("id").empty() )
         {
             ai.id = xit.getIntProp("id");
-            ai.init( it->size, xit.getIntProp("default") );
-            it->hlst.push_back(ai);
+            ai.init( it.size, xit.getIntProp("default") );
+            it.hlst.push_back(ai);
             continue;
         }
 
@@ -613,8 +613,8 @@ void SharedMemory::checkHistoryFilter( UniXML_iterator& xit )
             continue;
         }
 
-        ai.init( it->size, xit.getIntProp("default") );
-        it->hlst.push_back(ai);
+        ai.init( it.size, xit.getIntProp("default") );
+        it.hlst.push_back(ai);
     }
 }
 // -----------------------------------------------------------------------------
@@ -630,18 +630,18 @@ void SharedMemory::saveHistory()
 //    if( dlog.is_info() )
 //        dlog.info() << myname << "(saveHistory): ..." << endl;
 
-    for( History::iterator it=hist.begin();  it!=hist.end(); ++it )
+    for( auto &it: hist )
     {
-        for( HistoryList::iterator hit=it->hlst.begin(); hit!=it->hlst.end(); ++hit )
+        for( auto &hit: it.hlst )
         {
-            if( hit->ioit != myioEnd() )
-                hit->add( localGetValue( hit->ioit, hit->ioit->second.si.id ), it->size );
+            if( hit.ioit != myioEnd() )
+                hit.add( localGetValue( hit.ioit, hit.ioit->second.si.id ), it.size );
             else
             {
                 try
                 {
 
-                    hit->add( localGetValue( hit->ioit, hit->id ), it->size );
+                    hit.add( localGetValue( hit.ioit, hit.id ), it.size );
                     continue;
                 }
                 catch(...){}
@@ -655,7 +655,7 @@ void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
     if( hist.empty() )
         return;
 
-    HistoryFuseMap::iterator i = histmap.find(s_it->second.si.id);
+    auto i = histmap.find(s_it->second.si.id);
     if( i == histmap.end() )
         return;
 
@@ -674,9 +674,9 @@ void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
             << " value=" << value
             << endl;
 
-    for( HistoryItList::iterator it1=i->second.begin(); it1!=i->second.end(); ++it1 )
+    for( auto &it1: i->second )
     {
-        History::iterator it( (*it1) );
+        History::iterator it = it1;
 
         if( s_it->second.type == UniversalIO::DI ||
             s_it->second.type == UniversalIO::DO )

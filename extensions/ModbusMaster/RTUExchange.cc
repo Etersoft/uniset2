@@ -177,8 +177,8 @@ void RTUExchange::poll()
             mb = initMB(false);
             if( !mb )
             {
-                for( MBExchange::RTUDeviceMap::iterator it=rmap.begin(); it!=rmap.end(); ++it )
-                    it->second->resp_real = false;
+                for( auto &it: rmap )
+                    it.second->resp_real = false;
             }
         }
 
@@ -205,9 +205,9 @@ void RTUExchange::poll()
     bool allNotRespond = true;
     ComPort::Speed s = mbrtu->getSpeed();
 
-    for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+    for( auto it1: rmap )
     {
-        RTUDevice* d(it1->second);
+        RTUDevice* d(it1.second);
 
         if( d->mode_id != DefaultObjectId && d->mode == emSkipExchange )
             continue;
@@ -251,7 +251,7 @@ void RTUExchange::poll()
                 << " regs=" << d->regmap.size() << endl;
 
             d->resp_real = false;
-            for( RTUExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+            for( auto it=d->regmap.begin(); it!=d->regmap.end(); ++it )
             {
                 try
                 {
@@ -292,12 +292,12 @@ void RTUExchange::poll()
     updateSM();
 
     // check thresholds
-    for( MBExchange::ThresholdList::iterator t=thrlist.begin(); t!=thrlist.end(); ++t )
+    for( auto &t: thrlist )
     {
          if( !checkProcActive() )
              return;
 
-         IOBase::processingThreshold(&(*t),shm,force);
+         IOBase::processingThreshold(&t,shm,force);
     }
 
     if( trReopen.hi(allNotRespond) )
@@ -343,7 +343,7 @@ bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniX
     if( !MBExchange::initDeviceInfo(m,a,it) )
         return false;
 
-    RTUDeviceMap::iterator d = m.find(a);
+    auto d = m.find(a);
     if( d == m.end() )
     {
         dwarn << myname << "(initDeviceInfo): not found device for addr=" << ModbusRTU::addr2str(a) << endl;

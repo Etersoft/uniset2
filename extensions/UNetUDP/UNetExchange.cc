@@ -337,12 +337,12 @@ sender2(0)
 // -----------------------------------------------------------------------------
 UNetExchange::~UNetExchange()
 {
-    for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
+    for( auto &it: recvlist )
     {
-        if( it->r1 )
-            delete it->r1;
-        if( it->r2 )
-            delete it->r2;
+        if( it.r1 )
+            delete it.r1;
+        if( it.r2 )
+            delete it.r2;
     }
 
     delete sender;
@@ -353,9 +353,9 @@ UNetExchange::~UNetExchange()
 bool UNetExchange::checkExistUNetHost( const std::string& addr, ost::tpport_t port )
 {
     ost::IPV4Address a1(addr.c_str());
-    for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
+    for( auto &it: recvlist )
     {
-        if( it->r1->getAddress() == a1.getAddress() && it->r1->getPort() == port )
+        if( it.r1->getAddress() == a1.getAddress() && it.r1->getPort() == port )
             return true;
     }
 
@@ -364,12 +364,12 @@ bool UNetExchange::checkExistUNetHost( const std::string& addr, ost::tpport_t po
 // -----------------------------------------------------------------------------
 void UNetExchange::startReceivers()
 {
-    for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
+    for( auto &it: recvlist )
     {
-        if( it->r1 )
-            it->r1->start();
-        if( it->r2 )
-            it->r2->start();
+        if( it.r1 )
+            it.r1->start();
+        if( it.r2 )
+            it.r2->start();
     }
 }
 // -----------------------------------------------------------------------------
@@ -418,8 +418,8 @@ void UNetExchange::step()
         }
     }
 
-    for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
-        it->step(shm, myname);
+    for( auto &it: recvlist )
+        it.step(shm, myname);
 }
 
 // -----------------------------------------------------------------------------
@@ -590,18 +590,18 @@ void UNetExchange::sigterm( int signo )
 {
     dinfo << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
     activated = 0;
-    for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
+    for( auto &it: recvlist )
     {
         try
         {
-            if( it->r1 )
-                it->r1->stop();
+            if( it.r1 )
+                it.r1->stop();
         }
         catch(...){}
         try
         {
-            if( it->r2 )
-                it->r2->stop();
+            if( it.r2 )
+                it.r2->stop();
         }
         catch(...){}
     }
@@ -630,8 +630,8 @@ void UNetExchange::initIterators()
     if( sender2 )
         sender2->initIterators();
 
-    for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
-        it->initIterators(shm);
+    for( auto &it: recvlist )
+        it.initIterators(shm);
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::help_print( int argc, const char* argv[] )
@@ -682,31 +682,31 @@ void UNetExchange::receiverEvent( UNetReceiver* r, UNetReceiver::Event ev )
     if( ev != UNetReceiver::evTimeout )
         return;
 
-    for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
+    for( auto &it: recvlist )
     {
-        if( it->r1 == r )
+        if( it.r1 == r )
         {
             // если нет второго канала
             // то и переключать некуда
-            if( !it->r2 )
+            if( !it.r2 )
                 return;
 
             // пропала связь по первому каналу...
             // переключаемся на второй
-            it->r1->setLockUpdate(true);
-            it->r2->setLockUpdate(false);
+            it.r1->setLockUpdate(true);
+            it.r2->setLockUpdate(false);
 
             dinfo << myname << "(event): " << r->getName()
                     << ": timeout for channel1.. select channel 2" << endl;
             return;
         }
 
-        if( it->r2 == r )
+        if( it.r2 == r )
         {
             // пропала связь по второму каналу...
             // переключаемся на первый
-            it->r1->setLockUpdate(false);
-            it->r2->setLockUpdate(true);
+            it.r1->setLockUpdate(false);
+            it.r2->setLockUpdate(true);
 
             dinfo << myname << "(event): " << r->getName()
                         << ": timeout for channel2.. select channel 1" << endl;

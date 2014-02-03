@@ -68,11 +68,11 @@ int main( int argc, const char** argv )
     }
     catch( Exception& ex )
     {
-        cerr << "(unetexchange): " << ex << std::endl;
+        cerr << "(main): " << ex << std::endl;
     }
     catch(...)
     {
-        cerr << "(unetexchange): catch ..." << std::endl;
+        cerr << "(main): catch ..." << std::endl;
     }
 
     return 1;

@@ -544,44 +544,30 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 
     ucrit << myname << "(cleanMsgQueue): ******** cleanup RESULT ********" << endl;
 
-    for( map<UniSetTypes::ObjectId,tmpConsumerInfo>::iterator it0 = consumermap.begin();
-            it0!=consumermap.end(); ++it0 )
+    for( auto &c: consumermap )
     {
-            ucrit << myname << "(cleanMsgQueue): CONSUMER=" << it0->first << endl;
-            ucrit << myname << "(cleanMsgQueue): after clean SensorMessage: " << it0->second.smap.size() << endl;
-            ucrit << myname << "(cleanMsgQueue): after clean TimerMessage: " << it0->second.tmap.size() << endl;
-            ucrit << myname << "(cleanMsgQueue): after clean SystemMessage: " << it0->second.sysmap.size() << endl;
-            ucrit << myname << "(cleanMsgQueue): after clean ConfirmMessage: " << it0->second.cmap.size() << endl;
-            ucrit << myname << "(cleanMsgQueue): after clean other: " << it0->second.lstOther.size() << endl;
+        ucrit << myname << "(cleanMsgQueue): CONSUMER=" << c.first << endl;
+        ucrit << myname << "(cleanMsgQueue): after clean SensorMessage: " << c.second.smap.size() << endl;
+        ucrit << myname << "(cleanMsgQueue): after clean TimerMessage: " << c.second.tmap.size() << endl;
+        ucrit << myname << "(cleanMsgQueue): after clean SystemMessage: " << c.second.sysmap.size() << endl;
+        ucrit << myname << "(cleanMsgQueue): after clean ConfirmMessage: " << c.second.cmap.size() << endl;
+        ucrit << myname << "(cleanMsgQueue): after clean other: " << c.second.lstOther.size() << endl;
 
         // теперь ОСТАВШИЕСЯ запихиваем обратно в очередь...
-        map<UniSetTypes::KeyType,VoidMessage>::iterator it=it0->second.smap.begin();
-        for( ; it!=it0->second.smap.end(); ++it )
-        {
-            q.push(it->second);
-        }
+        for( auto &v: c.second.smap )
+            q.push(v.second);
 
-        map<int,VoidMessage>::iterator it1=it0->second.tmap.begin();
-        for( ; it1!=it0->second.tmap.end(); ++it1 )
-        {
-            q.push(it1->second);
-        }
+        for( auto &v: c.second.tmap )
+            q.push(v.second);
 
-        map<int,VoidMessage>::iterator it2=it0->second.sysmap.begin();
-        for( ; it2!=it0->second.sysmap.end(); ++it2 )
-        {
-            q.push(it2->second);
-        }
+        for( auto &v: c.second.sysmap )
+            q.push(v.second);
 
-        map<CInfo,VoidMessage>::iterator it5=it0->second.cmap.begin();
-        for( ; it5!=it0->second.cmap.end(); ++it5 )
-        {
-            q.push(it5->second);
-        }
+        for( auto &v: c.second.cmap )
+            q.push(v.second);
 
-        list<VoidMessage>::iterator it6=it0->second.lstOther.begin();
-        for( ; it6!=it0->second.lstOther.end(); ++it6 )
-            q.push(*it6);
+        for( auto &v: c.second.lstOther )
+            q.push(v);
     }
 
     ucrit << myname

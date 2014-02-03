@@ -74,7 +74,7 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
         {    // lock
             uniset_rwmutex_wrlock lock(lstMutex);
             sleepTime = UniSetTimer::WaitUpTime;
-            for( TimersList::iterator li=tlst.begin(); li!=tlst.end(); ++li )
+            for( auto li=tlst.begin(); li!=tlst.end(); ++li )
             {
                 if( li->tmr.checkTime() )
                 {
@@ -138,7 +138,7 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
             // поищем а может уж такой есть
             if( !tlst.empty() )
             {
-                for( TimersList::iterator li=tlst.begin(); li!=tlst.end(); ++li )
+                for( auto li=tlst.begin(); li!=tlst.end(); ++li )
                 {
                     if( li->id == timerid )
                     {
