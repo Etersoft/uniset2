@@ -1,4 +1,4 @@
-#include <sstream>           
+#include <sstream>
 #include "ORepHelpers.h"
 #include "UniSetTypes.h"
 #include "Extensions.h"
@@ -271,10 +271,10 @@ void IOControl::execute()
         iomap.resize(maxItem);
 
         // init iterators
-        for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+        for( auto &it: iomap )
         {
-            shm->initIterator(it->ioit);
-            shm->initIterator(it->t_ait);
+            shm->initIterator(it.ioit);
+            shm->initIterator(it.t_ait);
         }
 
         readconf_ok = true; // т.к. waitSM() уже был...
@@ -403,18 +403,18 @@ void IOControl::iopoll()
         return;
 
     // Опрос приоритетной очереди
-    for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
+    for( auto it: pmap )
     {
-        if( it->priority > 0 )
+        if( it.priority > 0 )
         {
-            ioread( &(iomap[it->index]) );
-            IOBase::processingThreshold((IOBase*)&(iomap[it->index]),shm,force);
+            ioread( &(iomap[it.index]) );
+            IOBase::processingThreshold((IOBase*)&(iomap[it.index]),shm,force);
         }
     }
 
     bool prior = false;
     unsigned int i = 0;
-    for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it,i++ )
+    for( auto it=iomap.begin(); it!=iomap.end(); ++it,i++ )
     {
         if( it->ignore )
             continue;
@@ -427,12 +427,12 @@ void IOControl::iopoll()
         // опять опросим приоритетные
         if( !prior && i>maxHalf )
         {
-            for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
+            for( auto &p: pmap )
             {
-                if( it->priority > 1 )
+                if( p.priority > 1 )
                 {
-                    ioread( &(iomap[it->index]) );
-                    IOBase::processingThreshold((IOBase*)&(iomap[it->index]),shm,force);
+                    ioread( &(iomap[p.index]) );
+                    IOBase::processingThreshold((IOBase*)&(iomap[p.index]),shm,force);
                 }
             }
 
@@ -441,12 +441,12 @@ void IOControl::iopoll()
     }
 
     // Опрос приоритетной очереди
-    for( PIOMap::iterator it=pmap.begin(); it!=pmap.end(); ++it )
+    for( auto &it: pmap )
     {
-        if( it->priority > 2 )
+        if( it.priority > 2 )
         {
-            ioread( &(iomap[it->index]) );
-            IOBase::processingThreshold((IOBase*)&(iomap[it->index]),shm,force);        
+            ioread( &(iomap[it.index]) );
+            IOBase::processingThreshold((IOBase*)&(iomap[it.index]),shm,force);
         }
     }
 }
@@ -802,29 +802,29 @@ void IOControl::sigterm( int signo )
         return;
 
     // выставляем безопасные состояния
-    for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+    for( auto &it: iomap )
     {
-        if( it->ignore )
+        if( it.ignore )
             continue;
 
-        ComediInterface* card = cards.getCard(it->ncard);
+        ComediInterface* card = cards.getCard(it.ncard);
 
         if( card == NULL )
             continue;
 
         try
         {
-            if( it->subdev==DefaultSubdev || it->safety == NoSafety )
+            if( it.subdev==DefaultSubdev || it.safety == NoSafety )
                 continue;
 
-            if( it->stype == UniversalIO::DO || it->lamp )
+            if( it.stype == UniversalIO::DO || it.lamp )
             {
-                bool set = it->invert ? !((bool)it->safety) : (bool)it->safety;
-                card->setDigitalChannel(it->subdev,it->channel,set);
+                bool set = it.invert ? !((bool)it.safety) : (bool)it.safety;
+                card->setDigitalChannel(it.subdev,it.channel,set);
             }
-            else if( it->stype == UniversalIO::AO )                
+            else if( it.stype == UniversalIO::AO )
             {
-                card->setAnalogChannel(it->subdev,it->channel,it->safety,it->range,it->aref);
+                card->setAnalogChannel(it.subdev,it.channel,it.safety,it.range,it.aref);
             }
         }
         catch( Exception& ex )
@@ -843,24 +843,24 @@ void IOControl::initOutputs()
         return;
 
     // выставляем значение по умолчанию
-    for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+    for( auto &it: iomap )
     {
-        if( it->ignore )
+        if( it.ignore )
             continue;
 
-        ComediInterface* card = cards.getCard(it->ncard);
+        ComediInterface* card = cards.getCard(it.ncard);
 
-        if( card == NULL || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
+        if( card == NULL || it.subdev==DefaultSubdev || it.channel==DefaultChannel )
             continue;
 
         try
         {
-            if( it->lamp )
-                card->setDigitalChannel(it->subdev,it->channel,(bool)it->defval);
-            else if( it->stype == UniversalIO::DO )
-                card->setDigitalChannel(it->subdev,it->channel,(bool)it->defval);
-            else if( it->stype == UniversalIO::AO )
-                card->setAnalogChannel(it->subdev,it->channel,it->defval,it->range,it->aref);
+            if( it.lamp )
+                card->setDigitalChannel(it.subdev,it.channel,(bool)it.defval);
+            else if( it.stype == UniversalIO::DO )
+                card->setDigitalChannel(it.subdev,it.channel,(bool)it.defval);
+            else if( it.stype == UniversalIO::AO )
+                card->setAnalogChannel(it.subdev,it.channel,it.defval,it.range,it.aref);
         }
         catch( Exception& ex )
         {
@@ -874,51 +874,49 @@ void IOControl::initIOCard()
     if( noCards )
         return;
 
-    for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+    for( auto &it: iomap )
     {
-        if( it->subdev == DefaultSubdev )
+        if( it.subdev == DefaultSubdev )
             continue;
 
-        ComediInterface* card = cards.getCard(it->ncard);
+        ComediInterface* card = cards.getCard(it.ncard);
 
-        if( card == NULL || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
+        if( card == NULL || it.subdev==DefaultSubdev || it.channel==DefaultChannel )
             continue;
 
         try
         {    
             // конфигурировать необходимо только дискретные входы/выходы
             // или "лампочки" (т.к. они фиктивные аналоговые датчики)
-            if( it->lamp )
-                card->configureChannel(it->subdev,it->channel,ComediInterface::DO);
-            else if( it->stype == UniversalIO::DI )
-                card->configureChannel(it->subdev,it->channel,ComediInterface::DI);
-            else if( it->stype == UniversalIO::DO )
-                card->configureChannel(it->subdev,it->channel,ComediInterface::DO);
-            else if( it->stype == UniversalIO::AI )
+            if( it.lamp )
+                card->configureChannel(it.subdev,it.channel,ComediInterface::DO);
+            else if( it.stype == UniversalIO::DI )
+                card->configureChannel(it.subdev,it.channel,ComediInterface::DI);
+            else if( it.stype == UniversalIO::DO )
+                card->configureChannel(it.subdev,it.channel,ComediInterface::DO);
+            else if( it.stype == UniversalIO::AI )
             {
-                card->configureChannel(it->subdev,it->channel,ComediInterface::AI);
-                it->df.init( card->getAnalogChannel(it->subdev, it->channel, it->range, it->aref) );
+                card->configureChannel(it.subdev,it.channel,ComediInterface::AI);
+                it.df.init( card->getAnalogChannel(it.subdev, it.channel, it.range, it.aref) );
             }
-            else if( it->stype == UniversalIO::AO )
-                card->configureChannel(it->subdev,it->channel,ComediInterface::AO);
+            else if( it.stype == UniversalIO::AO )
+                card->configureChannel(it.subdev,it.channel,ComediInterface::AO);
 
         }
         catch( Exception& ex)
         {
-            dcrit << myname << "(initIOCard): sid=" << it->si.id << " " << ex << endl;
+            dcrit << myname << "(initIOCard): sid=" << it.si.id << " " << ex << endl;
         }
     }
-}    
+}
 // -----------------------------------------------------------------------------
 void IOControl::blink( BlinkList& lst, bool& bstate )
 {
     if( lst.empty() )
         return;
 
-    for( BlinkList::iterator it=lst.begin(); it!=lst.end(); ++it )
+    for( auto &io: lst )
     {
-        IOInfo* io(*it);
-    
         if( io->subdev==DefaultSubdev || io->channel==DefaultChannel )
             continue;
 
@@ -935,25 +933,25 @@ void IOControl::blink( BlinkList& lst, bool& bstate )
             dcrit << myname << "(blink): " << ex << endl;
         }
     }
-    
+
     bstate ^= true;
 }
 // -----------------------------------------------------------------------------
 
 void IOControl::addBlink( IOInfo* io, BlinkList& lst )
 {
-    for( BlinkList::iterator it=lst.begin(); it!=lst.end(); ++it )
+    for( auto &it: lst )
     {
-        if( (*it) == io )
+        if( it == io )
             return;
     }
-    
+
     lst.push_back(io);
 }
 // -----------------------------------------------------------------------------
 void IOControl::delBlink( IOInfo* io, BlinkList& lst )
 {
-    for( BlinkList::iterator it=lst.begin(); it!=lst.end(); ++it )
+    for( auto it=lst.begin(); it!=lst.end(); ++it )
     {
         if( (*it) == io )
         {
@@ -983,35 +981,35 @@ void IOControl::check_testmode()
         if( testmode == tmOffPoll )
         {
             // выставляем безопасные состояния
-            for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+            for( auto &it: iomap )
             {
-                if( it->ignore )
+                if( it.ignore )
                     continue;
 
-                ComediInterface* card = cards.getCard(it->ncard);
+                ComediInterface* card = cards.getCard(it.ncard);
 
                 if( card == NULL )
                     continue;
 
-                if( testmode == tmConfigEnable && !it->enable_testmode )
+                if( testmode == tmConfigEnable && !it.enable_testmode )
                     return;
 
-                 if( testmode == tmConfigDisable && it->disable_testmode )
+                 if( testmode == tmConfigDisable && it.disable_testmode )
                      return;
 
                 try
                 {
-                    if( it->subdev==DefaultSubdev || it->safety == NoSafety )
+                    if( it.subdev==DefaultSubdev || it.safety == NoSafety )
                         continue;
 
-                    if( it->stype == UniversalIO::DO || it->lamp )
+                    if( it.stype == UniversalIO::DO || it.lamp )
                     {
-                        bool set = it->invert ? !((bool)it->safety) : (bool)it->safety;
-                        card->setDigitalChannel(it->subdev,it->channel,set);
+                        bool set = it.invert ? !((bool)it.safety) : (bool)it.safety;
+                        card->setDigitalChannel(it.subdev,it.channel,set);
                     }
-                    else if( it->stype == UniversalIO::AO )                
+                    else if( it.stype == UniversalIO::AO )
                     {
-                        card->setAnalogChannel(it->subdev,it->channel,it->safety,it->range,it->aref);
+                        card->setAnalogChannel(it.subdev,it.channel,it.safety,it.range,it.aref);
                     }
                 }
                 catch( Exception& ex )
@@ -1053,38 +1051,38 @@ void IOControl::check_testlamp()
 //            << isTestLamp << " *************" << endl;
 
         // проходим по списку и формируем список мигающих выходов...
-        for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+        for( auto &it: iomap )
         {
-            if( !it->lamp || it->no_testlamp )
+            if( !it.lamp || it.no_testlamp )
                 continue;
 
-            if(  it->stype == UniversalIO::AO )
+            if(  it.stype == UniversalIO::AO )
             {
                 if( isTestLamp )
                 {
-                    addBlink( &(*it),lstBlink);
-                    delBlink( &(*it),lstBlink2);
-                    delBlink( &(*it),lstBlink3);
+                    addBlink( &it,lstBlink);
+                    delBlink( &it,lstBlink2);
+                    delBlink( &it,lstBlink3);
                 }
-                else if( it->value == lmpBLINK )
-                    addBlink( &(*it),lstBlink);
-                else if( it->value == lmpBLINK2 )
-                    addBlink( &(*it),lstBlink2);
-                else if( it->value == lmpBLINK3 )
-                    addBlink( &(*it),lstBlink3);
+                else if( it.value == lmpBLINK )
+                    addBlink( &it,lstBlink);
+                else if( it.value == lmpBLINK2 )
+                    addBlink( &it,lstBlink2);
+                else if( it.value == lmpBLINK3 )
+                    addBlink( &it,lstBlink3);
                 else
                 {
-                    delBlink(&(*it),lstBlink);
-                    delBlink(&(*it),lstBlink2);
-                    delBlink(&(*it),lstBlink3);
+                    delBlink(&it,lstBlink);
+                    delBlink(&it,lstBlink2);
+                    delBlink(&it,lstBlink3);
                 }
             }
-            else if( it->stype == UniversalIO::DO )
+            else if( it.stype == UniversalIO::DO )
             {
                 if( isTestLamp )
-                    addBlink(&(*it),lstBlink);
+                    addBlink(&it,lstBlink);
                 else
-                    delBlink(&(*it),lstBlink);
+                    delBlink(&it,lstBlink);
             }
         }
     }
@@ -1287,22 +1285,21 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
         dcrit << myname << "(askSensors): " << ex << endl;
     }
 
-    for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+    for( auto &it: iomap )
     {
-        if( it->ignore )
+        if( it.ignore )
             continue;
 
-        ComediInterface* card = cards.getCard(it->ncard);
+        ComediInterface* card = cards.getCard(it.ncard);
 
-        if( card == NULL || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
+        if( card == NULL || it.subdev==DefaultSubdev || it.channel==DefaultChannel )
             continue;
 
-        if( it->stype == UniversalIO::AO ||
-            it->stype == UniversalIO::DO )
+        if( it.stype == UniversalIO::AO || it.stype == UniversalIO::DO )
         {
             try
             {
-                shm->askSensor(it->si.id,cmd,myid);
+                shm->askSensor(it.si.id,cmd,myid);
             }
             catch( Exception& ex)
             {
@@ -1330,39 +1327,39 @@ void IOControl::sensorInfo( const UniSetTypes::SensorMessage* sm )
         check_testmode();
     }
 
-    for( IOMap::iterator it=iomap.begin(); it!=iomap.end(); ++it )
+    for( auto& it: iomap )
     {
-        if( it->si.id == sm->id )
+        if( it.si.id == sm->id )
         {
             dinfo << myname << "(sensorInfo): sid=" << sm->id
                     << " value=" << sm->value
                     << endl;
 
-            if( it->stype == UniversalIO::AO )
+            if( it.stype == UniversalIO::AO )
             {
                 long prev_val = 0;
                 long cur_val = 0;
                 {
-                    uniset_rwmutex_wrlock lock(it->val_lock);
-                    prev_val = it->value;
-                    it->value = sm->value;
+                    uniset_rwmutex_wrlock lock(it.val_lock);
+                    prev_val = it.value;
+                    it.value = sm->value;
                     cur_val = sm->value;
                 }
 
-                if( it->lamp )
+                if( it.lamp )
                 {
                     switch( cur_val )
                     {
                         case lmpOFF:
-                            delBlink(&(*it),lstBlink);
-                            delBlink(&(*it),lstBlink2);
-                            delBlink(&(*it),lstBlink3);
+                            delBlink(&it,lstBlink);
+                            delBlink(&it,lstBlink2);
+                            delBlink(&it,lstBlink3);
                         break;
-    
+
                         case lmpON:
-                            delBlink(&(*it),lstBlink);
-                            delBlink(&(*it),lstBlink2);
-                            delBlink(&(*it),lstBlink3);
+                            delBlink(&it,lstBlink);
+                            delBlink(&it,lstBlink2);
+                            delBlink(&it,lstBlink3);
                         break;
 
 
@@ -1370,18 +1367,18 @@ void IOControl::sensorInfo( const UniSetTypes::SensorMessage* sm )
                         {
                             if( prev_val != lmpBLINK )
                             {
-                                delBlink(&(*it),lstBlink2);
-                                delBlink(&(*it),lstBlink3);
-                                addBlink(&(*it),lstBlink);
+                                delBlink(&it,lstBlink2);
+                                delBlink(&it,lstBlink3);
+                                addBlink(&it,lstBlink);
                                 // и сразу зажигаем, чтобы не было паузы
                                 // (так комфортнее выглядит для оператора)
-                                if( it->ignore || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
+                                if( it.ignore || it.subdev==DefaultSubdev || it.channel==DefaultChannel )
                                     break;
 
-                                ComediInterface* card = cards.getCard(it->ncard);
+                                ComediInterface* card = cards.getCard(it.ncard);
 
                                 if( card != NULL )
-                                    card->setDigitalChannel(it->subdev,it->channel,1);
+                                    card->setDigitalChannel(it.subdev,it.channel,1);
                             }
                         }
                         break;
@@ -1390,18 +1387,18 @@ void IOControl::sensorInfo( const UniSetTypes::SensorMessage* sm )
                         {
                             if( prev_val != lmpBLINK2 )
                             {
-                                delBlink(&(*it),lstBlink);
-                                delBlink(&(*it),lstBlink3);
-                                addBlink(&(*it),lstBlink2);
+                                delBlink(&it,lstBlink);
+                                delBlink(&it,lstBlink3);
+                                addBlink(&it,lstBlink2);
                                 // и сразу зажигаем, чтобы не было паузы
                                 // (так комфортнее выглядит для оператора)
-                                if( it->ignore || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
+                                if( it.ignore || it.subdev==DefaultSubdev || it.channel==DefaultChannel )
                                     break;
-                                
-                                ComediInterface* card = cards.getCard(it->ncard);
+
+                                ComediInterface* card = cards.getCard(it.ncard);
 
                                 if( card != NULL )
-                                    card->setDigitalChannel(it->subdev,it->channel,1);
+                                    card->setDigitalChannel(it.subdev,it.channel,1);
                             }
                         }
                         break;
@@ -1410,18 +1407,18 @@ void IOControl::sensorInfo( const UniSetTypes::SensorMessage* sm )
                         {
                             if( prev_val != lmpBLINK3 )
                             {
-                                delBlink(&(*it),lstBlink);
-                                delBlink(&(*it),lstBlink2);
-                                addBlink(&(*it),lstBlink3);
+                                delBlink(&it,lstBlink);
+                                delBlink(&it,lstBlink2);
+                                addBlink(&it,lstBlink3);
                                 // и сразу зажигаем, чтобы не было паузы
                                 // (так комфортнее выглядит для оператора)
-                                if( it->ignore || it->subdev==DefaultSubdev || it->channel==DefaultChannel )
+                                if( it.ignore || it.subdev==DefaultSubdev || it.channel==DefaultChannel )
                                     break;
 
-                                ComediInterface* card = cards.getCard(it->ncard);
+                                ComediInterface* card = cards.getCard(it.ncard);
 
                                 if( card != NULL )
-                                    card->setDigitalChannel(it->subdev,it->channel,1);
+                                    card->setDigitalChannel(it.subdev,it.channel,1);
                             }
                         }
                         break;
@@ -1431,13 +1428,13 @@ void IOControl::sensorInfo( const UniSetTypes::SensorMessage* sm )
                     }
                 }
             }
-            else if( it->stype == UniversalIO::DO )
+            else if( it.stype == UniversalIO::DO )
             {
                 dlog1 << myname << "(sensorInfo): DO: sm->id=" << sm->id 
                             << " val=" << sm->value << endl;
 
-                uniset_rwmutex_wrlock lock(it->val_lock);
-                it->value = sm->value ? 1:0;
+                uniset_rwmutex_wrlock lock(it.val_lock);
+                it.value = sm->value ? 1:0;
             }
             break;
         }
@@ -1592,16 +1589,16 @@ void IOControl::buildCardsList()
         }
         else if( cname == "UNIO48" || cname == "UNIO96" )
         {
-            int k = 4;
+            unsigned int k = 4;
             if( cname == "UNIO48" )
                 k = 2;
-            
+
             // инициализация subdev-ов
             for( unsigned int i=1; i<=k; i++ )
             {
                 ostringstream s;
                 s << "subdev" << i;
-                
+
                 string subdev_name( it.getProp(s.str()) );
                 if( subdev_name.empty() )
                 {

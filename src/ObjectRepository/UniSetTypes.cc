@@ -52,7 +52,7 @@ using namespace UniSetTypes;
             if( ret < calMax )
                 return calMax;
         }
-        
+
         return ret;
     }
     // -------------------------------------------------------------------------
@@ -85,7 +85,7 @@ using namespace UniSetTypes;
             if( ret < calMax )
                 return calMax;
         }
-        
+
         return ret;
     }
 
@@ -115,7 +115,7 @@ using namespace UniSetTypes;
 
     void UniSetTypes::IDList::add( ObjectId id )
     {
-        for( list<ObjectId>::iterator it=lst.begin(); it!=lst.end(); ++it )
+        for( auto it=lst.begin(); it!=lst.end(); ++it )
         {
             if( (*it) == id )
                 return;
@@ -126,7 +126,7 @@ using namespace UniSetTypes;
 
     void UniSetTypes::IDList::del( ObjectId id )
     {
-        for( list<ObjectId>::iterator it=lst.begin(); it!=lst.end(); ++it )
+        for( auto it=lst.begin(); it!=lst.end(); ++it )
         {
             if( (*it) == id )
             {
@@ -145,7 +145,7 @@ using namespace UniSetTypes;
     {
         if( lst.empty() )
             return UniSetTypes::DefaultObjectId;
-            
+
         return (*lst.begin());
     }
 
@@ -156,9 +156,9 @@ using namespace UniSetTypes;
         IDSeq* seq = new IDSeq();
         seq->length(lst.size());
         int i=0;
-        for( list<ObjectId>::iterator it=lst.begin(); it!=lst.end(); ++it,i++ )
+        for( auto it=lst.begin(); it!=lst.end(); ++it,i++ )
             (*seq)[i] = (*it);
-        
+
         return seq;
     }
     // -------------------------------------------------------------------------
@@ -195,7 +195,7 @@ using namespace UniSetTypes;
             }
         }
         while( pos!=string::npos );
-    
+
         return l;
     }
     // -------------------------------------------------------------------------
@@ -222,9 +222,9 @@ using namespace UniSetTypes;
     // ------------------------------------------------------------------------------------------
     bool UniSetTypes::is_digit( const std::string& s )
     {
-        for( std::string::const_iterator it=s.begin(); it!=s.end(); ++it )
+        for( auto c: s )
         {
-            if( !isdigit(*it) )
+            if( !isdigit(c) )
                 return false;
         }
  
@@ -236,12 +236,12 @@ using namespace UniSetTypes;
     {
         std::list<UniSetTypes::ParamSInfo> res;
 
-        std::list<std::string> l = UniSetTypes::explode_str(str,',');
-        for( std::list<std::string>::iterator it=l.begin(); it!=l.end(); ++it )
+        auto lst = UniSetTypes::explode_str(str,',');
+        for( auto it: lst )
         {
             UniSetTypes::ParamSInfo item;
 
-            std::list<std::string> p = UniSetTypes::explode_str((*it),'=');
+            auto p = UniSetTypes::explode_str(it,'=');
             std::string s = "";
             if( p.size() == 1 )
             {
@@ -250,17 +250,17 @@ using namespace UniSetTypes;
             }
             else if( p.size() == 2 )
             {
-                  s = *(p.begin());
+                s = *(p.begin());
                 item.val = uni_atoi(*(++p.begin()));
             }
             else
             {
-                cerr << "WARNING: parse error for '" << (*it) << "'. IGNORE..." << endl;
+                cerr << "WARNING: parse error for '" << it << "'. IGNORE..." << endl;
                 continue;
-            }              
-              
+            }
+
             item.fname = s;
-            std::list<std::string> t = UniSetTypes::explode_str(s,'@');
+            auto t = UniSetTypes::explode_str(s,'@');
             if( t.size() == 1 )
             {
                 std::string s_id = *(t.begin());
@@ -278,7 +278,7 @@ using namespace UniSetTypes;
                     item.si.id = uni_atoi(s_id);
                 else
                     item.si.id = conf->getSensorID(s_id);
-              
+
                 if( is_digit(s_node.c_str()) )
                     item.si.node = uni_atoi(s_node);
                 else
@@ -292,7 +292,7 @@ using namespace UniSetTypes;
 
             res.push_back(item);
         }
-     
+
         return res;
     }
     // --------------------------------------------------------------------------------------

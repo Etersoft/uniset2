@@ -30,7 +30,7 @@ ObjectIndex_idXML::~ObjectIndex_idXML()
 // -----------------------------------------------------------------------------------------
 ObjectId ObjectIndex_idXML::getIdByName( const string& name )
 {
-    MapObjectKey::iterator it = mok.find(name);
+    auto it = mok.find(name);
     if( it != mok.end() )
         return it->second;
 
@@ -39,7 +39,7 @@ ObjectId ObjectIndex_idXML::getIdByName( const string& name )
 // -----------------------------------------------------------------------------------------
 string ObjectIndex_idXML::getMapName( const ObjectId id )
 {
-    MapObjects::iterator it = omap.find(id);
+    auto it = omap.find(id);
     if( it!=omap.end() )
         return it->second.repName;
 
@@ -48,7 +48,7 @@ string ObjectIndex_idXML::getMapName( const ObjectId id )
 // -----------------------------------------------------------------------------------------        
 string ObjectIndex_idXML::getTextName( const ObjectId id )
 {
-    MapObjects::iterator it = omap.find(id);
+    auto it = omap.find(id);
     if( it!=omap.end() )
         return it->second.textName;
 
@@ -63,7 +63,7 @@ std::ostream& operator<<(std::ostream& os, ObjectIndex_idXML& oi )
 std::ostream& ObjectIndex_idXML::printMap( std::ostream& os )
 {
     os << "size: " << omap.size() << endl;
-    for( MapObjects::iterator it=omap.begin(); it!=omap.end(); ++it )
+    for( auto it=omap.begin(); it!=omap.end(); ++it )
     {
         if( it->second.repName == NULL )
             continue;
@@ -216,7 +216,7 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string& sec )
 // ------------------------------------------------------------------------------------------
 const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id )
 {
-    MapObjects::iterator it = omap.find(id);
+    auto it = omap.find(id);
     if( it!=omap.end() )
         return &(it->second);
 
@@ -225,7 +225,7 @@ const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id )
 // ------------------------------------------------------------------------------------------
 const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const std::string& name )
 {
-	MapObjectKey::iterator it = mok.find(name);
+	auto it = mok.find(name);
     if( it != mok.end() )
         return getObjectInfo(it->second);
 

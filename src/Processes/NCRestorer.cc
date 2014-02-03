@@ -117,8 +117,8 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
     }
 
     // default init iterators
-    for( IONotifyController::ThresholdExtList::iterator it=lst.begin(); it!=lst.end(); ++it )
-        it->sit = ic->myioEnd();
+    for( auto &it: lst )
+        it.sit = ic->myioEnd();
 
     ic->askTMap[inf.si.id].si      = inf.si;
     ic->askTMap[inf.si.id].type    = inf.type;
@@ -146,7 +146,7 @@ NCRestorer::SInfo& NCRestorer::SInfo::operator=( IOController_i::SensorIOInfo& i
 // ------------------------------------------------------------------------------------------
 void NCRestorer::init_depends_signals( IONotifyController* ic )
 {
-    for( IOController::IOStateList::iterator it=ic->ioList.begin(); it!=ic->ioList.end(); ++it )
+    for( auto it=ic->ioList.begin(); it!=ic->ioList.end(); ++it )
     {
         // обновляем итераторы...
         it->second.it = it;

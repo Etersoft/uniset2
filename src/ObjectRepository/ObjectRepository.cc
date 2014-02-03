@@ -198,7 +198,7 @@ void ObjectRepository::unregistration(const string& name, const string& section)
         // Удаляем запись об объекте
         ctx->unbind(oName);
         return;
-    }    
+    }
     catch(const CosNaming::NamingContext::NotFound &nf)
     {
         err << "ObjectRepository(unregistrartion): не найден объект ->" << name;

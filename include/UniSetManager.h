@@ -89,7 +89,7 @@ class UniSetManager:
         */ 
         const UniSetObject* itemO( const UniSetTypes::ObjectId id );
 
-        
+
         // Функции для аботы со списками подчиненных объектов
         inline UniSetManagerList::const_iterator beginMList()
         {

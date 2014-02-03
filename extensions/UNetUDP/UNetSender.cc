@@ -84,7 +84,7 @@ UNetSender::~UNetSender()
 // -----------------------------------------------------------------------------
 void UNetSender::updateFromSM()
 {
-    DMap::iterator it=dlist.begin();
+    auto it=dlist.begin();
     for( ; it!=dlist.end(); ++it )
     {
         long value = shm->localGetValue(it->ioit,it->id);
@@ -98,7 +98,7 @@ void UNetSender::updateSensor( UniSetTypes::ObjectId id, long value )
         return;
 
 //    cerr << myname << ": UPDATE SENSOR id=" << id << " value=" << value << endl;
-    DMap::iterator it=dlist.begin();
+    auto it=dlist.begin();
     for( ; it!=dlist.end(); ++it )
     {
         if( it->id == id )
@@ -318,14 +318,14 @@ std::ostream& operator<<( std::ostream& os, UNetSender::UItem& p )
 // -----------------------------------------------------------------------------
 void UNetSender::initIterators()
 {
-    DMap::iterator it=dlist.begin();
+    auto it=dlist.begin();
     for( ; it!=dlist.end(); ++it )
         shm->initIterator(it->ioit);
 }
 // -----------------------------------------------------------------------------
 void UNetSender::askSensors( UniversalIO::UIOCommand cmd )
 {
-    DMap::iterator it=dlist.begin();
+    auto it=dlist.begin();
     for( ; it!=dlist.end(); ++it )
         shm->askSensor(it->id,cmd);
 }

@@ -116,11 +116,11 @@ void LProcessor::build( const string& lfile )
 */
 void LProcessor::getInputs()
 {
-    for( EXTList::iterator it=extInputs.begin(); it!=extInputs.end(); ++it )
+    for( auto &it: extInputs )
     {
 //        try
 //        {
-            it->state = (bool)ui.getValue(it->sid);
+            it.state = (bool)ui.getValue(it.sid);
 //        }
     }
 }
@@ -128,22 +128,22 @@ void LProcessor::getInputs()
 void LProcessor::processing()
 {
     // выcтавляем все внешние входы
-    for( EXTList::iterator it=extInputs.begin(); it!=extInputs.end();++it )
-        it->lnk->to->setIn(it->lnk->numInput,it->state);
+    for( auto &it: extInputs )
+        it.lnk->to->setIn(it.lnk->numInput,it.state);
 
     // проходим по всем элементам
-    for( Schema::iterator it=sch.begin(); it!=sch.end(); ++it )
-        it->second->tick();
+    for( auto &it: sch )
+        it.second->tick();
 }
 // -------------------------------------------------------------------------
 void LProcessor::setOuts()
 {
     // выcтавляем выходы
-    for( OUTList::iterator it=extOuts.begin(); it!=extOuts.end(); ++it )
+    for( auto &it: extOuts )
     {
         try
         {
-            ui.setValue(it->sid,it->lnk->from->getOut(),DefaultObjectId);
+            ui.setValue(it.sid,it.lnk->from->getOut(),DefaultObjectId);
         }
         catch( Exception& ex )
         {

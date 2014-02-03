@@ -53,7 +53,7 @@ ObjectIndex_Array::ObjectIndex_Array( const ObjectInfo *objectInfo ):
 // -----------------------------------------------------------------------------------------
 ObjectId ObjectIndex_Array::getIdByName( const string& name )
 {
-    MapObjectKey::iterator it = mok.find(name);
+    auto it = mok.find(name);
     if( it != mok.end() )
         return it->second;
         
@@ -119,7 +119,7 @@ const ObjectInfo* ObjectIndex_Array::getObjectInfo( const ObjectId id )
 // -----------------------------------------------------------------------------------------
 const ObjectInfo* ObjectIndex_Array::getObjectInfo( const std::string& name )
 {
-    MapObjectKey::iterator it = mok.find(name);
+    auto it = mok.find(name);
     if( it != mok.end() )
           return &(objectInfo[it->second]);
 

@@ -103,8 +103,8 @@ void TestProc::timerInfo( const TimerMessage *tm )
         cerr << endl;
         cerr << "======= TEST LOG PRINT ======" << endl;
         cerr << "LOGLEVEL: [" << (int)(*lit) << "] " << (*lit) << endl;
-        for( std::vector<Debug::type>::iterator it=loglevels.begin(); it!=loglevels.end(); ++it )
-            mylog[*it] << myname << ": test log print..." << endl;
+        for( auto &it: loglevels )
+            mylog[it] << myname << ": test log print..." << endl;
 
         cerr << "======= END LOG PRINT ======" << endl;
     }

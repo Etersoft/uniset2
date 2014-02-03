@@ -145,18 +145,18 @@ void UniExchange::execute()
 
     while(1)
     {
-        for( NetNodeList::iterator it=nlst.begin(); it!=nlst.end(); ++it )
+        for( auto &it: nlst )
         {
             bool ok = false;
             try
             {
-                dinfo << myname << ": connect to id=" << it->id << " node=" << it->node << endl;
+                dinfo << myname << ": connect to id=" << it.id << " node=" << it.node << endl;
 
-                IOController_i::ShortMapSeq_var sseq = ui.getSensors( it->id, it->node );
+                IOController_i::ShortMapSeq_var sseq = ui.getSensors( it.id, it.node );
                 ok = true;
 
-                dinfo << myname << " update sensors from id=" << it->id << " node=" << it->node << endl;
-                it->update(sseq,shm);
+                dinfo << myname << " update sensors from id=" << it.id << " node=" << it.node << endl;
+                it.update(sseq,shm);
             }
             catch( Exception& ex )
             {
@@ -166,23 +166,23 @@ void UniExchange::execute()
             {
                 dwarn << myname << "(execute): catch ..." << endl;
             }
-    
-            if( it->sidConnection != DefaultObjectId )
+
+            if( it.sidConnection != DefaultObjectId )
             {
                 try
                 {
-                    shm->localSetValue(it->conn_it,it->sidConnection,ok,getId());
+                    shm->localSetValue(it.conn_it,it.sidConnection,ok,getId());
                 }
                 catch(...)
                 {
                     dcrit << myname << "(execute): sensor not avalible "
-                            << conf->oind->getNameById( it->sidConnection) 
+                            << conf->oind->getNameById(it.sidConnection) 
                             << endl; 
                 }
             }
 
             if( !ok )
-                dinfo << myname << ": ****** cannot connect with node=" << it->node << endl;
+                dinfo << myname << ": ****** cannot connect with node=" << it.node << endl;
         }
 
         if( ptUpdate.checkTime() )
@@ -190,7 +190,7 @@ void UniExchange::execute()
             updateLocalData();
             ptUpdate.reset();
         }
-    
+
         msleep(polltime);
     }
 }
@@ -249,14 +249,14 @@ IOController_i::ShortMapSeq* UniExchange::getSensors()
     res->length( mymap.size() );
 
     int i=0;
-    for( SList::iterator it=mymap.begin(); it!=mymap.end(); ++it )
+    for( auto &it: mymap )
     {
         IOController_i::ShortMap m;
         {
-            uniset_rwmutex_rlock lock(it->val_lock);
-            m.id     = it->id;
-            m.value = it->val;
-            m.type = it->type;
+            uniset_rwmutex_rlock lock(it.val_lock);
+            m.id     = it.id;
+            m.value  = it.val;
+            m.type   = it.type;
         }
         (*res)[i++] = m;
     }
@@ -266,12 +266,12 @@ IOController_i::ShortMapSeq* UniExchange::getSensors()
 // --------------------------------------------------------------------------
 void UniExchange::updateLocalData()
 {
-    for( SList::iterator it=mymap.begin(); it!=mymap.end(); ++it )
+    for( auto &it: mymap )
     {
         try
         {
-            uniset_rwmutex_wrlock lock(it->val_lock);
-            it->val = shm->localGetValue( it->ioit, it->id );
+            uniset_rwmutex_wrlock lock(it.val_lock);
+            it.val = shm->localGetValue( it.ioit, it.id );
         }
         catch( Exception& ex )
         {
@@ -282,14 +282,14 @@ void UniExchange::updateLocalData()
             dwarn  << "(update): catch ..." << endl;
         }
     }
-    
+
     init_ok = true;
 }
 // --------------------------------------------------------------------------
 void UniExchange::initIterators()
 {
-    for( SList::iterator it=mymap.begin(); it!=mymap.end(); ++it )
-        shm->initIterator(it->ioit);
+    for( auto &it: mymap )
+        shm->initIterator(it.ioit);
 }
 // --------------------------------------------------------------------------
 void UniExchange::askSensors( UniversalIO::UIOCommand cmd )

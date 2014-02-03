@@ -17,14 +17,14 @@ TAND::~TAND()
 void TAND::setIn( int num, bool state )
 {
 //    cout << this << ": input " << num << " set " << state << endl;
-    for( InputList::iterator it=ins.begin(); it!=ins.end(); ++it )
+    for( auto &it: ins )
     {
-        if( it->num == num )
+        if( it.num == num )
         {
-            if( it->state == state )
+            if( it.state == state )
                 return; // вход не менялся можно вообще прервать проверку
             
-            it->state = state;    
+            it.state = state;    
             break;
         }
     }
@@ -34,9 +34,9 @@ void TAND::setIn( int num, bool state )
 
     // проверяем изменился ли выход
     // для тригера 'AND' проверка до первого 0
-    for( InputList::iterator it=ins.begin(); it!=ins.end(); ++it )
+    for( auto &it: ins )
     {
-        if( !it->state )
+        if( !it.state )
         {
             myout = false;
             brk = true;

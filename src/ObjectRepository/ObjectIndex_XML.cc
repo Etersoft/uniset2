@@ -52,7 +52,7 @@ ObjectIndex_XML::~ObjectIndex_XML()
 // -----------------------------------------------------------------------------------------
 ObjectId ObjectIndex_XML::getIdByName( const string& name )
 {
-    MapObjectKey::iterator it = mok.find(name);
+    auto it = mok.find(name);
     if( it != mok.end() )
         return it->second;
 
@@ -83,7 +83,7 @@ std::ostream& operator<<(std::ostream& os, ObjectIndex_XML& oi )
 std::ostream& ObjectIndex_XML::printMap( std::ostream& os )
 {
     cout << "size: " << omap.size() << endl;
-    for( vector<ObjectInfo>::iterator it=omap.begin(); it!=omap.end(); ++it )
+    for( auto it=omap.begin(); it!=omap.end(); ++it )
     {
         if( it->repName == NULL )
             continue;
@@ -282,7 +282,7 @@ const ObjectInfo* ObjectIndex_XML::getObjectInfo( const ObjectId id )
 // ------------------------------------------------------------------------------------------
 const ObjectInfo* ObjectIndex_XML::getObjectInfo( const std::string& name )
 {
-    MapObjectKey::iterator it = mok.find(name);
+    auto it = mok.find(name);
     if( it != mok.end() )
         return &(omap[it->second]);
 

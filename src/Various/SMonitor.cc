@@ -46,15 +46,15 @@ void SMonitor::sysCommand( const SystemMessage *sm )
     {
         case SystemMessage::StartUp:
         {
-             for( MyIDList::iterator it=lst.begin(); it!=lst.end(); it++ )
+            for( auto &it: lst )
             {
-                if( it->si.node == DefaultObjectId )
-                    it->si.node = conf->getLocalNode();
+                if( it.si.node == DefaultObjectId )
+                    it.si.node = conf->getLocalNode();
 
                 try
                 {
-                    if( it->si.id != DefaultObjectId )
-                        ui.askRemoteSensor(it->si.id,UniversalIO::UIONotify,it->si.node);
+                    if( it.si.id != DefaultObjectId )
+                        ui.askRemoteSensor(it.si.id,UniversalIO::UIONotify,it.si.node);
                 }
                 catch(Exception& ex)
                 {

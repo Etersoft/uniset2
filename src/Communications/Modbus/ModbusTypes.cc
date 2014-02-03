@@ -2575,14 +2575,14 @@ ModbusMessage MEIMessageRetRDI::transport_msg()
     mm.data[5] = objNum;
     int ind = 6;
 
-    for( RDIObjectList::iterator it = dlist.begin(); it!=dlist.end() && ind <= MAXLENPACKET; ++it )
+    for( auto it = dlist.begin(); it!=dlist.end() && ind <= MAXLENPACKET; ++it )
     {
         mm.data[ind++] = it->id;
         int dlen = it->val.size(); // !! не копируем завершающий символ
         mm.data[ind++] = dlen;
         memcpy(&(mm.data[ind]), it->val.data(), dlen );
         ind += dlen;
-    }    
+    }
 
     // пересчитываем CRC по перевёрнутым данным
     ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+ind );
@@ -2617,8 +2617,8 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, MEIMessageRetRDI& m )
     if( !m.dlist.empty() )
     {
         os << endl;
-        for( RDIObjectList::iterator it=m.dlist.begin(); it!=m.dlist.end(); ++it )
-            os << "     " << rdi2str(it->id) << " : " << it->val << endl;
+        for( auto &it: m.dlist )
+            os << "     " << rdi2str(it.id) << " : " << it.val << endl;
     }
 
     return os;
@@ -2633,8 +2633,8 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os,RDIObjectList& dlist )
 {
     if( !dlist.empty() )
     {
-        for( RDIObjectList::iterator it=dlist.begin(); it!=dlist.end(); ++it )
-            os << "     " << rdi2str(it->id) << " : " << it->val << endl;
+        for( auto &it: dlist )
+            os << "     " << rdi2str(it.id) << " : " << it.val << endl;
     }
 
     return os;

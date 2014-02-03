@@ -54,7 +54,7 @@ void DigitalFilter::setSettings( unsigned int bufsize, double T, double lsq,
     {
         // удаляем лишние (первые) элементы
         int sub = buf.size() - maxsize;
-        for( unsigned int i=0; i<sub; i++ )
+        for( int i=0; i<sub; i++ )
             buf.pop_front();
     }
     buf.resize(maxsize);
@@ -82,17 +82,17 @@ double DigitalFilter::firstLevel()
 {
     // считаем среднее арифметическое
     M=0;
-    for( FIFOBuffer::iterator i=buf.begin(); i!=buf.end(); ++i )
-        M = M + (*i);
+    for( auto &i: buf )
+        M = M + i;
 
     M = M/buf.size();
 
     // считаем среднеквадратичное отклонение
     S=0;
     double r=0;
-    for( FIFOBuffer::iterator i=buf.begin(); i!=buf.end(); ++i )
+    for( auto &i: buf )
     {
-        r = M-(*i);
+        r = M - i;
         S = S + r*r;
     }
 
@@ -105,12 +105,12 @@ double DigitalFilter::firstLevel()
     // Находим среднее арифметическое без учета элементов, отклонение которых вдвое превышает среднеквадратичное
     int n = 0;
     double val = 0; // Конечное среднее значение
-    for( FIFOBuffer::iterator i=buf.begin(); i!=buf.end(); ++i )    
+    for( auto &i: buf )
     {
-        if( fabs(M-(*i)) > S*2 )
+        if( fabs(M-i) > S*2 )
         {
-            val = val + (*i);
-            n = n + 1;
+            val += i;
+            n++;
         }
     }
 
@@ -182,10 +182,10 @@ int DigitalFilter::currentRC()
 std::ostream& operator<<(std::ostream& os, const DigitalFilter& d )
 {
     os << "(" << d.buf.size() << ")[";
-    for( DigitalFilter::FIFOBuffer::const_iterator i=d.buf.begin(); i!=d.buf.end(); ++i )
-    {
-        os << " " << setw(5) << (*i);
-    }
+
+    for( auto &i: d.buf )
+        os << " " << setw(5) << i;
+
     os << " ]";
     return os;
 }
@@ -202,14 +202,7 @@ int DigitalFilter::median( int newval )
 
     add(newval);
 
-//    FIFOBuffer::iterator it = buf.begin();
-//    for( unsigned int i=0; i<maxsize && it!=buf.end(); i++,it++ )
-//        mvec[i] = (*it);
-
-//    copy(buf.begin(),buf.end(),mvec.begin());
-
     mvec.assign(buf.begin(),buf.end());
-
     sort(mvec.begin(),mvec.end());
 
     return mvec[maxsize/2];
@@ -227,7 +220,7 @@ int DigitalFilter::leastsqr( int newval )
     add(newval);
 
     // Цифровая фильтрация
-    FIFOBuffer::const_iterator it = buf.begin();
+    auto it = buf.begin();
     for( unsigned int i=0; i<maxsize; i++,it++ )
         ls += *it * w[i];
 
@@ -258,11 +251,12 @@ int DigitalFilter::filterIIR( int newval )
     }
     else
     {
-        double aver=0;
+        double aver = 0;
 
         add(newval);
-        for( FIFOBuffer::iterator i = buf.begin(); i != buf.end(); ++i )
-            aver += *i;
+        for( auto &i: buf )
+            aver += i;
+
         aver /= maxsize;
         prev = lroundf((coeff_prev * prev + coeff_new * aver)/(coeff_prev + coeff_new));
     }
