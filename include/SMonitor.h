@@ -15,10 +15,10 @@ class SMonitor:
 
         // -----
     protected:
-        virtual void sysCommand( const UniSetTypes::SystemMessage *sm );
-        virtual void sensorInfo( const UniSetTypes::SensorMessage *si );
-        virtual void timerInfo( const UniSetTypes::TimerMessage *tm );
-        virtual void sigterm( int signo );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *sm ) override;
+        virtual void sensorInfo( const UniSetTypes::SensorMessage *si ) override;
+        virtual void timerInfo( const UniSetTypes::TimerMessage *tm ) override;
+        virtual void sigterm( int signo ) override;
         SMonitor();
 
     private:

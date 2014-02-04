@@ -62,11 +62,11 @@ class UniSetManager:
         UniSetManager( const std::string& name, const std::string& section );
         virtual ~UniSetManager();
 
-        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::ObjectType("UniSetManager"); }
+        virtual UniSetTypes::ObjectType getType() override { return UniSetTypes::ObjectType("UniSetManager"); }
 
         // ------  функции объявленные в интерфейсе(IDL) ------
-        virtual void broadcast(const UniSetTypes::TransportMessage& msg);
-        virtual UniSetTypes::SimpleInfoSeq* getObjectsInfo( CORBA::Long MaxLength=300 );
+        virtual void broadcast( const UniSetTypes::TransportMessage& msg) override;
+        virtual UniSetTypes::SimpleInfoSeq* getObjectsInfo( CORBA::Long MaxLength=300 ) override ;
 
         // --------------------------
         void initPOA(UniSetManager* rmngr);
@@ -127,12 +127,12 @@ class UniSetManager:
         // работа со списком менеджеров
         void managers(OManagerCommand cmd);
 
-        virtual void sigterm( int signo );
+        virtual void sigterm( int signo ) override;
 
         //! \note Переопределяя не забывайте вызвать базовую
-        virtual bool activateObject();
+        virtual bool activateObject() override;
         //! \note Переопределяя не забывайте вызвать базовую
-        virtual bool disactivateObject();
+        virtual bool disactivateObject() override;
 
         typedef UniSetManagerList::iterator MListIterator;
 

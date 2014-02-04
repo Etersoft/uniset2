@@ -23,7 +23,7 @@ class ModbusRTUMaster:
         ModbusRTUMaster( const std::string& dev, bool use485=false, bool tr_ctl=false );
         virtual ~ModbusRTUMaster();
 
-        virtual void cleanupChannel(){ if( port ) port->cleanupChannel(); }
+        virtual void cleanupChannel() override { if( port ) port->cleanupChannel(); }
 
         void setSpeed( ComPort::Speed s );
         void setSpeed( const std::string& s );
@@ -43,16 +43,16 @@ class ModbusRTUMaster:
             \param len     - size of buf
             \return real data lenght ( must be <= len )
         */
-        virtual int getNextData( unsigned char* buf, int len );
+        virtual int getNextData( unsigned char* buf, int len ) override;
 
         /*! set timeout for send/receive data */
-        virtual void setChannelTimeout( timeout_t msec );
+        virtual void setChannelTimeout( timeout_t msec ) override;
 
-        virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len );
+        virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
 
         /*! функция запрос-ответ */
         virtual ModbusRTU::mbErrCode query( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& msg,
-                                            ModbusRTU::ModbusMessage& reply, timeout_t timeout );
+                                            ModbusRTU::ModbusMessage& reply, timeout_t timeout ) override;
 
 
         std::string dev;         /*!< устройство */

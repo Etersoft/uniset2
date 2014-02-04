@@ -49,13 +49,13 @@ class UniExchange:
         /*! глобальная функция для вывода help-а */
         static void help_print( int argc, const char** argv );
 
-        virtual IOController_i::ShortMapSeq* getSensors();
+        virtual IOController_i::ShortMapSeq* getSensors() override;
 
     protected:
 
-        virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
         virtual void askSensors( UniversalIO::UIOCommand cmd );
-        virtual void sigterm( int signo );
+        virtual void sigterm( int signo ) override;
 
         xmlNode* cnode;
         std::string s_field;

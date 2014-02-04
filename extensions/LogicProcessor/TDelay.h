@@ -15,12 +15,12 @@ class TDelay:
         virtual ~TDelay();
 
 
-        virtual void tick();
-        virtual void setIn( int num, bool state );
-        virtual bool getOut();
-        virtual std::string getType(){ return "Delay"; }
+        virtual void tick() override;
+        virtual void setIn( int num, bool state ) override;
+        virtual bool getOut() override;
+        virtual std::string getType() override { return "Delay"; }
 
-        virtual void setDelay(int timeMS);
+        void setDelay( int timeMS );
         inline int getDelay(){ return delay; }
 
     protected:

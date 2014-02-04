@@ -182,14 +182,14 @@
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PROTECTED">
-		virtual void callback();
-		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
+		virtual void callback() override;
+		virtual void processingMessage( UniSetTypes::VoidMessage* msg ) override;
+		virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
 		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ){}
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ){}
-		virtual void sigterm( int signo );
-		virtual bool activateObject();
+		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override{}
+		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override{}
+		virtual void sigterm( int signo ) override;
+		virtual bool activateObject() override;
 		virtual void testMode( bool state );
 		void updatePreviousValues();
 		void checkSensors();

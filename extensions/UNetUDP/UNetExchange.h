@@ -101,9 +101,9 @@ class UNetExchange:
         SMInterface* shm;
         void step();
 
-        void sysCommand( const UniSetTypes::SystemMessage *msg );
-        void sensorInfo( const UniSetTypes::SensorMessage*sm );
-        void timerInfo( const UniSetTypes::TimerMessage *tm );
+        void sysCommand( const UniSetTypes::SystemMessage *msg ) override;
+        void sensorInfo( const UniSetTypes::SensorMessage*sm ) override;
+        void timerInfo( const UniSetTypes::TimerMessage *tm ) override;
         void askSensors( UniversalIO::UIOCommand cmd );
         void waitSMReady();
         void receiverEvent( UNetReceiver* r, UNetReceiver::Event ev );

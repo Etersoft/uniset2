@@ -15,17 +15,17 @@ class ObjectIndex_idXML:
         ObjectIndex_idXML(UniXML& xml);
         virtual ~ObjectIndex_idXML();
 
-        virtual const UniSetTypes::ObjectInfo* getObjectInfo( const UniSetTypes::ObjectId );
-        virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string& name );
-        virtual UniSetTypes::ObjectId getIdByName( const std::string& name );
-        virtual std::string getMapName( const UniSetTypes::ObjectId id );
-        virtual std::string getTextName( const UniSetTypes::ObjectId id );
+        virtual const UniSetTypes::ObjectInfo* getObjectInfo( const UniSetTypes::ObjectId ) override;
+        virtual const UniSetTypes::ObjectInfo* getObjectInfo( const std::string& name ) override;
+        virtual UniSetTypes::ObjectId getIdByName( const std::string& name ) override;
+        virtual std::string getMapName( const UniSetTypes::ObjectId id ) override;
+        virtual std::string getTextName( const UniSetTypes::ObjectId id ) override;
 
-        virtual std::ostream& printMap( std::ostream& os );
+        virtual std::ostream& printMap( std::ostream& os ) override;
         friend std::ostream& operator<<(std::ostream& os, ObjectIndex_idXML& oi );
 
     protected:
-        virtual void build( UniXML& xml );
+        void build( UniXML& xml );
         void read_section( UniXML& xml, const std::string& sec );
         void read_nodes( UniXML& xml, const std::string& sec );
 

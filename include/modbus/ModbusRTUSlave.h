@@ -31,18 +31,18 @@ class ModbusRTUSlave:
         void setSpeed( const std::string& s );
         ComPort::Speed getSpeed();
 
-        virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout );
+        virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout ) override;
 
-        virtual void cleanupChannel(){ if(port) port->cleanupChannel(); }
+        virtual void cleanupChannel() override { if(port) port->cleanupChannel(); }
 
-        virtual void terminate();
+        virtual void terminate() override;
 
     protected:
 
         // realisation (see ModbusServer.h)
-        virtual int getNextData( unsigned char* buf, int len );
-        virtual void setChannelTimeout( timeout_t msec );
-        virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len );
+        virtual int getNextData( unsigned char* buf, int len ) override;
+        virtual void setChannelTimeout( timeout_t msec ) override;
+        virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
 
         std::string dev;    /*!< устройство */
         ComPort* port;        /*!< устройство для работы с COM-портом */

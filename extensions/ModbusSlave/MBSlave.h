@@ -138,17 +138,17 @@ class MBSlave:
 
         SMInterface* shm;
 
-        virtual void sysCommand( const UniSetTypes::SystemMessage *msg );
-        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *msg ) override;
+        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
         void askSensors( UniversalIO::UIOCommand cmd );
         void waitSMReady();
         void execute_rtu();
         void execute_tcp();
 
-        virtual bool activateObject();
+        virtual bool activateObject() override;
 
         // действия при завершении работы
-        virtual void sigterm( int signo );
+        virtual void sigterm( int signo ) override;
 
         void initIterators();
         bool initItem( UniXML_iterator& it );

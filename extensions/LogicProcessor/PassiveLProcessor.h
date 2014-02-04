@@ -33,16 +33,16 @@ class PassiveLProcessor:
         virtual void getInputs();
         virtual void setOuts();
 
-        void sysCommand( const UniSetTypes::SystemMessage *msg );
-        void sensorInfo( const UniSetTypes::SensorMessage*sm );
-        void timerInfo( const UniSetTypes::TimerMessage *tm );
+        void sysCommand( const UniSetTypes::SystemMessage *msg ) override;
+        void sensorInfo( const UniSetTypes::SensorMessage*sm ) override;
+        void timerInfo( const UniSetTypes::TimerMessage *tm ) override;
         void askSensors( const UniversalIO::UIOCommand cmd );
 //        void initOutput();
 
         // действия при завершении работы
-        virtual void sigterm( int signo );
+        virtual void sigterm( int signo ) override;
         void initIterators();
-        virtual bool activateObject();
+        virtual bool activateObject() override;
 
         SMInterface* shm;
 

@@ -71,18 +71,18 @@ class UniSetObject:
         virtual ~UniSetObject();
 
         // Функции объявленные в IDL
-        virtual CORBA::Boolean exist();
-        virtual char* getName(){return (char*)myname.c_str();}
-        virtual UniSetTypes::ObjectId getId(){ return myid; }
+        virtual CORBA::Boolean exist() override;
 
+        virtual UniSetTypes::ObjectId getId() override { return myid; }
         inline const UniSetTypes::ObjectId getId() const { return myid; }
+        inline std::string getName(){ return myname; }
 
-        virtual UniSetTypes::ObjectType getType() { return UniSetTypes::ObjectType("UniSetObject"); }
-        virtual UniSetTypes::SimpleInfo* getInfo();
+        virtual UniSetTypes::ObjectType getType() override { return UniSetTypes::ObjectType("UniSetObject"); }
+        virtual UniSetTypes::SimpleInfo* getInfo() override;
         friend std::ostream& operator<<(std::ostream& os, UniSetObject& obj );
 
         //! поместить сообщение в очередь
-        virtual void push(const UniSetTypes::TransportMessage& msg);
+        virtual void push( const UniSetTypes::TransportMessage& msg ) override;
 
         /*! получить ссылку (на себя) */
         inline UniSetTypes::ObjectPtr getRef() const

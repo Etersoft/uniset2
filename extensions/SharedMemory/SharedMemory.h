@@ -350,14 +350,14 @@ class SharedMemory:
         typedef std::list<Restorer_XML::ReaderSlot> ReadSlotList;
         ReadSlotList lstRSlot;
 
-        virtual void sysCommand( const UniSetTypes::SystemMessage *sm );
-        virtual void timerInfo( const UniSetTypes::TimerMessage *tm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *sm ) override;
+        virtual void timerInfo( const UniSetTypes::TimerMessage *tm ) override;
         virtual void askSensors( UniversalIO::UIOCommand cmd );
-        virtual void sendEvent( UniSetTypes::SystemMessage& sm );
+        void sendEvent( UniSetTypes::SystemMessage& sm );
 
         // действия при завершении работы
-        virtual void sigterm( int signo );
-        bool activateObject();
+        virtual void sigterm( int signo ) override;
+        virtual bool activateObject() override;
 //        virtual void logging(UniSetTypes::SensorMessage& sm){}
 //        virtual void dumpToDB(){}
         bool readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec );
@@ -416,9 +416,9 @@ class SharedMemory:
         int evntPause;
         int activateTimeout;
 
-        virtual void loggingInfo( UniSetTypes::SensorMessage& sm );
-        virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerList& lst ){}
-        virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst ){}
+        virtual void loggingInfo( UniSetTypes::SensorMessage& sm ) override;
+        virtual void dumpOrdersList( const UniSetTypes::ObjectId sid, const IONotifyController::ConsumerListInfo& lst ) override {};
+        virtual void dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst ) override {}
 
         bool dblogging;
 

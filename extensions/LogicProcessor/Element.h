@@ -112,10 +112,10 @@ class TOR:
         TOR( ElementID id, int numbers=0, bool st=false );
         virtual ~TOR();
 
-        virtual void setIn( int num, bool state );
-        virtual bool getOut(){ return myout; }
+        virtual void setIn( int num, bool state ) override;
+        virtual bool getOut() override { return myout; }
 
-        virtual std::string getType(){ return "OR"; }
+        virtual std::string getType() override { return "OR"; }
 
     protected:
         TOR():myout(false){}
@@ -133,8 +133,8 @@ class TAND:
         TAND( ElementID id, int numbers=0, bool st=false );
         virtual ~TAND();
 
-        virtual void setIn( int num, bool state );
-        virtual std::string getType(){ return "AND"; }
+        virtual void setIn( int num, bool state ) override;
+        virtual std::string getType() override { return "AND"; }
 
     protected:
         TAND(){}
@@ -152,14 +152,14 @@ class TNOT:
         TNOT( ElementID id, bool out_default );
         virtual ~TNOT();
 
-        virtual bool getOut(){ return myout; }
+        virtual bool getOut() override { return myout; }
 
         /* num игнорируется, т.к. элемент с одним входом
          */
-        virtual void setIn( int num, bool state );
-        virtual std::string getType(){ return "NOT"; }
-        virtual void addInput( int num, bool state=false ){}
-        virtual void delInput( int num ){}
+        virtual void setIn( int num, bool state ) override ;
+        virtual std::string getType() override { return "NOT"; }
+        virtual void addInput( int num, bool state=false ) override {}
+        virtual void delInput( int num ) override {}
 
     protected:
         TNOT():myout(false){}

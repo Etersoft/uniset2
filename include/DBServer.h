@@ -56,10 +56,10 @@ class DBServer:
 
     protected:
 
-        virtual void processingMessage( UniSetTypes::VoidMessage* msg );
+        virtual void processingMessage( UniSetTypes::VoidMessage* msg ) override;
         virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ){}
 
-        virtual bool activateObject();
+        virtual bool activateObject() override;
         virtual void init_dbserver(){};
 
     private:

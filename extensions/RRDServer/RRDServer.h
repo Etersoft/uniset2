@@ -73,13 +73,13 @@ class RRDServer:
     protected:
         RRDServer();
 
-        virtual void askSensors( UniversalIO::UIOCommand cmd );
-        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm );
-        virtual void timerInfo( const UniSetTypes::TimerMessage* tm );
-        virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
+        virtual void askSensors( UniversalIO::UIOCommand cmd ) override;
+        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
+        virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+        virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
 
-        virtual void initRRD( xmlNode* cnode, int tmID );
-        void step();
+        void initRRD( xmlNode* cnode, int tmID );
+        virtual void step() override;
 
         SMInterface* shm;
 

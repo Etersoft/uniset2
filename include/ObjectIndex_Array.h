@@ -44,14 +44,13 @@ class ObjectIndex_Array:
         ObjectIndex_Array(const ObjectInfo* objectInfo);
         virtual ~ObjectIndex_Array();
 
+        virtual const ObjectInfo* getObjectInfo( const ObjectId ) override;
+        virtual const ObjectInfo* getObjectInfo( const std::string& name ) override;
+        virtual ObjectId getIdByName( const std::string& name ) override;
+        virtual std::string getMapName( const ObjectId id ) override;
+        virtual std::string getTextName( const ObjectId id ) override;
 
-        virtual const ObjectInfo* getObjectInfo(const ObjectId);
-        virtual const ObjectInfo* getObjectInfo( const std::string& name );
-        virtual ObjectId getIdByName(const std::string& name);
-        virtual std::string getMapName(const ObjectId id);
-        virtual std::string getTextName(const ObjectId id);
-
-        virtual std::ostream& printMap(std::ostream& os);
+        virtual std::ostream& printMap(std::ostream& os) override;
         friend std::ostream& operator<<(std::ostream& os, ObjectIndex_Array& oi );
 
     private:

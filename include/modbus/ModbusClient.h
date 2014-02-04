@@ -199,8 +199,6 @@ class ModbusClient
         void printProcessingTime();
         PassiveTimer tmProcessing;
 
-
-
     private:
 };
 // -------------------------------------------------------------------------

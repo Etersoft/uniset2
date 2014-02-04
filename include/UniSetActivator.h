@@ -65,7 +65,7 @@ class UniSetActivator:
 
         inline void oakill(int signo){ raise(signo);}
 
-        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::ObjectType("UniSetActivator"); }
+        virtual UniSetTypes::ObjectType getType() override { return UniSetTypes::ObjectType("UniSetActivator"); }
 
     protected:
 
@@ -94,7 +94,7 @@ class UniSetActivator:
             return orb;
         }
 
-        virtual void sysCommand( const UniSetTypes::SystemMessage *sm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *sm ) override;
 
 
         // уносим в protected, т.к. Activator должен быть только один..

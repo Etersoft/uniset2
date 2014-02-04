@@ -45,40 +45,40 @@ class IOController:
         IOController( const UniSetTypes::ObjectId id );
         ~IOController();
 
-        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::ObjectType("IOController"); }
+        virtual UniSetTypes::ObjectType getType() override { return UniSetTypes::ObjectType("IOController"); }
 
-        virtual CORBA::Long getValue( UniSetTypes::ObjectId sid );
+        virtual CORBA::Long getValue( UniSetTypes::ObjectId sid ) override;
 
 //     -------------------- !!!!!!!!! ---------------------------------
 //        Реализуются конкретным i/o контроллером
 //        Не забывайте писать реализацию этих функций
         virtual void setValue( UniSetTypes::ObjectId sid, CORBA::Long value,
-                                UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
+                                UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId ) override;
 
         virtual void fastSetValue( UniSetTypes::ObjectId sid, CORBA::Long value,
-                                UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
+                                UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId ) override;
 
 //     ----------------------------------------------------------------
         virtual void setUndefinedState( UniSetTypes::ObjectId sid,
                                         CORBA::Boolean undefined,
-                                        UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId );
+                                        UniSetTypes::ObjectId sup_id = UniSetTypes::DefaultObjectId ) override;
 
 
-        virtual IOController_i::SensorInfoSeq* getSensorSeq( const UniSetTypes::IDSeq& lst );
-        virtual UniSetTypes::IDSeq* setOutputSeq( const IOController_i::OutSeq& lst, UniSetTypes::ObjectId sup_id );
+        virtual IOController_i::SensorInfoSeq* getSensorSeq( const UniSetTypes::IDSeq& lst ) override;
+        virtual UniSetTypes::IDSeq* setOutputSeq( const IOController_i::OutSeq& lst, UniSetTypes::ObjectId sup_id ) override;
 
 //     ----------------------------------------------------------------
-        virtual UniversalIO::IOType getIOType( UniSetTypes::ObjectId sid );
+        virtual UniversalIO::IOType getIOType( UniSetTypes::ObjectId sid ) override;
 
-        virtual IOController_i::SensorInfoSeq* getSensorsMap();
-        virtual IOController_i::SensorIOInfo getSensorIOInfo( UniSetTypes::ObjectId sid );
+        virtual IOController_i::SensorInfoSeq* getSensorsMap() override;
+        virtual IOController_i::SensorIOInfo getSensorIOInfo( UniSetTypes::ObjectId sid ) override;
 
-        virtual CORBA::Long getRawValue(UniSetTypes::ObjectId sid);
-        virtual void calibrate(UniSetTypes::ObjectId sid,
+        virtual CORBA::Long getRawValue( UniSetTypes::ObjectId sid ) override;
+        virtual void calibrate( UniSetTypes::ObjectId sid,
                                     const IOController_i::CalibrateInfo& ci,
-                                    UniSetTypes::ObjectId adminId );
+                                    UniSetTypes::ObjectId adminId ) override;
 
-        IOController_i::CalibrateInfo getCalibrateInfo( UniSetTypes::ObjectId sid );
+        IOController_i::CalibrateInfo getCalibrateInfo( UniSetTypes::ObjectId sid ) override;
 
         inline IOController_i::SensorInfo SensorInfo( const UniSetTypes::ObjectId sid,
                                 const UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode())
@@ -91,9 +91,9 @@ class IOController:
 
         UniSetTypes::Message::Priority getPriority( const UniSetTypes::ObjectId id );
 
-        virtual IOController_i::ShortIOInfo getChangedTime( const UniSetTypes::ObjectId id );
+        virtual IOController_i::ShortIOInfo getChangedTime( const UniSetTypes::ObjectId id ) override;
 
-        virtual IOController_i::ShortMapSeq* getSensors();
+        virtual IOController_i::ShortMapSeq* getSensors() override;
 
     public:
 
@@ -189,8 +189,8 @@ class IOController:
 
     protected:
             // переопределяем для добавления вызова регистрации датчиков
-            virtual bool disactivateObject();
-            virtual bool activateObject();
+            virtual bool disactivateObject() override;
+            virtual bool activateObject() override;
 
             /*! Начальная инициализация (выставление значений) */
             virtual void activateInit();

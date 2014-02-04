@@ -136,27 +136,27 @@ class IONotifyController:
 
         virtual ~IONotifyController();
 
-        virtual UniSetTypes::ObjectType getType(){ return UniSetTypes::ObjectType("IONotifyController"); }
-        virtual void askSensor(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
+        virtual UniSetTypes::ObjectType getType() override { return UniSetTypes::ObjectType("IONotifyController"); }
+        virtual void askSensor(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd) override;
 
         virtual void askThreshold(const UniSetTypes::ObjectId sid, const UniSetTypes::ConsumerInfo& ci,
                                     UniSetTypes::ThresholdId tid,
                                     CORBA::Long lowLimit, CORBA::Long hiLimit, CORBA::Boolean invert,
-                                    UniversalIO::UIOCommand cmd );
+                                    UniversalIO::UIOCommand cmd ) override;
 
-        virtual IONotifyController_i::ThresholdInfo getThresholdInfo( const UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid );
-        virtual IONotifyController_i::ThresholdList* getThresholds(const UniSetTypes::ObjectId sid );
-        virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList();
+        virtual IONotifyController_i::ThresholdInfo getThresholdInfo( const UniSetTypes::ObjectId sid, UniSetTypes::ThresholdId tid ) override;
+        virtual IONotifyController_i::ThresholdList* getThresholds(const UniSetTypes::ObjectId sid ) override;
+        virtual IONotifyController_i::ThresholdsListSeq* getThresholdsList() override;
 
         virtual UniSetTypes::IDSeq* askSensorsSeq(const UniSetTypes::IDSeq& lst,
-                                                    const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
+                                                    const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd) override;
 
         // --------------------------------------------
 
         // функция для работы напрямую черех iterator (оптимизация)
         virtual void localSetValue( IOController::IOStateList::iterator& it,
                                     UniSetTypes::ObjectId sid,
-                                    CORBA::Long value, UniSetTypes::ObjectId sup_id );
+                                    CORBA::Long value, UniSetTypes::ObjectId sup_id ) override;
 
         // --------------------------------------------
 
@@ -256,7 +256,7 @@ class IONotifyController:
 
     protected:
         IONotifyController();
-        virtual bool activateObject();
+        virtual bool activateObject() override;
         virtual void initItem( IOStateList::iterator& it, IOController* ic );
 
         // ФИЛЬТРЫ

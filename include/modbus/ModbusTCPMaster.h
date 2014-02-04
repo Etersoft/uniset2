@@ -31,15 +31,15 @@ class ModbusTCPMaster:
         void reconnect();
         void cleanInputStream();
 
-        virtual void cleanupChannel(){ cleanInputStream(); }
+        virtual void cleanupChannel() override { cleanInputStream(); }
 
     protected:
 
-        virtual int getNextData( unsigned char* buf, int len );
-        virtual void setChannelTimeout( timeout_t msec );
-        virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len );
+        virtual int getNextData( unsigned char* buf, int len ) override;
+        virtual void setChannelTimeout( timeout_t msec ) override;
+        virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
         virtual ModbusRTU::mbErrCode query( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& msg,
-                                            ModbusRTU::ModbusMessage& reply, timeout_t timeout );
+                                            ModbusRTU::ModbusMessage& reply, timeout_t timeout ) override;
 
     private:
         ost::TCPStream* tcp;
