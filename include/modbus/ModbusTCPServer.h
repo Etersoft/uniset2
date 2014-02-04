@@ -21,26 +21,26 @@ class ModbusTCPServer:
     public:
         ModbusTCPServer( ost::InetAddress &ia, int port=502 );
         virtual ~ModbusTCPServer();
-        
-        virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout );
+
+        virtual ModbusRTU::mbErrCode receive( ModbusRTU::ModbusAddr addr, timeout_t msecTimeout ) override;
 
         inline void setIgnoreAddrMode( bool st ){ ignoreAddr = st; }
         inline bool getIgnoreAddrMode(){ return ignoreAddr; }
 
         void cleanInputStream();
-        virtual void cleanupChannel(){ cleanInputStream(); }        
-        
-        virtual void terminate();
-        
+        virtual void cleanupChannel() override { cleanInputStream(); }
+
+        virtual void terminate() override;
+
     protected:
 
         virtual ModbusRTU::mbErrCode pre_send_request( ModbusRTU::ModbusMessage& request );
 //        virtual ModbusRTU::mbErrCode post_send_request( ModbusRTU::ModbusMessage& request );
 
         // realisation (see ModbusServer.h)
-        virtual int getNextData( unsigned char* buf, int len );
-        virtual void setChannelTimeout( timeout_t msec );
-        virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len );
+        virtual int getNextData( unsigned char* buf, int len ) override;
+        virtual void setChannelTimeout( timeout_t msec ) override;
+        virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
 
         virtual ModbusRTU::mbErrCode tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPHeader& mhead );
 

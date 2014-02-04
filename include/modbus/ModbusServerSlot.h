@@ -12,7 +12,7 @@ class ModbusServerSlot
     public:
         ModbusServerSlot();
         virtual ~ModbusServerSlot();
-        
+
         typedef sigc::slot<ModbusRTU::mbErrCode,
                             ModbusRTU::ReadCoilMessage&,
                             ModbusRTU::ReadCoilRetMessage&> ReadCoilSlot;
@@ -20,11 +20,11 @@ class ModbusServerSlot
         typedef sigc::slot<ModbusRTU::mbErrCode,
                             ModbusRTU::ReadInputStatusMessage&,
                             ModbusRTU::ReadInputStatusRetMessage&> ReadInputStatusSlot;
-        
+
         typedef sigc::slot<ModbusRTU::mbErrCode,
                             ModbusRTU::ReadOutputMessage&,
                             ModbusRTU::ReadOutputRetMessage&> ReadOutputSlot;
-        
+
         typedef sigc::slot<ModbusRTU::mbErrCode,
                             ModbusRTU::ReadInputMessage&,
                             ModbusRTU::ReadInputRetMessage&> ReadInputSlot;
@@ -44,7 +44,7 @@ class ModbusServerSlot
         typedef sigc::slot<ModbusRTU::mbErrCode,
                             ModbusRTU::WriteOutputMessage&,
                             ModbusRTU::WriteOutputRetMessage&> WriteOutputSlot;
-        
+
         typedef sigc::slot<ModbusRTU::mbErrCode,
                             ModbusRTU::DiagnosticMessage&,
                             ModbusRTU::DiagnosticRetMessage&> DiagnosticsSlot;
@@ -52,7 +52,7 @@ class ModbusServerSlot
         typedef sigc::slot<ModbusRTU::mbErrCode,
                             ModbusRTU::MEIMessageRDI&,
                             ModbusRTU::MEIMessageRetRDI&> MEIRDISlot;
-        
+
         typedef sigc::slot<ModbusRTU::mbErrCode,
                             ModbusRTU::JournalCommandMessage&,
                             ModbusRTU::JournalCommandRetMessage&> JournalCommandSlot;
@@ -112,7 +112,7 @@ class ModbusServerSlot
         void connectFileTransfer( FileTransferSlot sl );
 
         virtual void sigterm( int signo ){}
-    
+
     protected:
         ReadCoilSlot slReadCoil;
         ReadInputStatusSlot slReadInputStatus;

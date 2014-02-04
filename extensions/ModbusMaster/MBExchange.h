@@ -200,13 +200,13 @@ class MBExchange:
 
     protected:
         virtual void step();
-        virtual void sysCommand( const UniSetTypes::SystemMessage *msg );
-        virtual void sensorInfo( const UniSetTypes::SensorMessage*sm );
-        virtual void timerInfo( const UniSetTypes::TimerMessage *tm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *msg ) override;
+        virtual void sensorInfo( const UniSetTypes::SensorMessage*sm ) override;
+        virtual void timerInfo( const UniSetTypes::TimerMessage *tm ) override;
         virtual void askSensors( UniversalIO::UIOCommand cmd );
         virtual void initOutput();
-        virtual void sigterm( int signo );
-        virtual bool activateObject();
+        virtual void sigterm( int signo ) override;
+        virtual bool activateObject() override;
         virtual void initIterators();
 
         struct InitRegInfo

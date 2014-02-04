@@ -91,7 +91,7 @@ class ModbusServer
         */
         virtual ModbusRTU::mbErrCode readInputStatus( ModbusRTU::ReadInputStatusMessage& query, 
                                                             ModbusRTU::ReadInputStatusRetMessage& reply )=0;
-    
+
         /*! Обработка запроса на чтение данных (0x03).
             \param query - запрос
             \param reply - ответ. Заполняется в обработчике.

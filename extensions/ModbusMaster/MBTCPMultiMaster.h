@@ -227,9 +227,9 @@ class MBTCPMultiMaster:
         static void help_print( int argc, const char* const* argv );
 
     protected:
-        virtual void sysCommand( const UniSetTypes::SystemMessage *sm );
-        virtual void initIterators();
-        virtual ModbusClient* initMB( bool reopen=false );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *sm ) override;
+        virtual void initIterators() override;
+        virtual ModbusClient* initMB( bool reopen=false ) override;
         void poll_thread();
         void check_thread();
 

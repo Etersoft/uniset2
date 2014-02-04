@@ -205,17 +205,13 @@ class MBTCPMaster:
         static void help_print( int argc, const char* const* argv );
 
     protected:
-        virtual void sysCommand( const UniSetTypes::SystemMessage *sm );
+        virtual void sysCommand( const UniSetTypes::SystemMessage *sm ) override;
+        virtual ModbusClient* initMB( bool reopen=false ) override;
 
         UniSetTypes::uniset_rwmutex mbMutex;
         std::string iaddr;
-//        ost::InetAddress* ia;
         int port;
-//        int recv_timeout;
 
-//        virtual void step();
-        virtual ModbusClient* initMB( bool reopen=false );
-        
         void poll_thread();
         bool force_disconnect;
 

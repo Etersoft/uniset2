@@ -33,11 +33,11 @@ class RTUExchange:
         bool use485F;
         bool transmitCtl;
 
-        virtual void step();
-        virtual void poll();
+        virtual void step() override;
+        virtual void poll() override;
 
-        virtual ModbusClient* initMB( bool reopen=false );
-        virtual bool initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
+        virtual ModbusClient* initMB( bool reopen=false ) override;
+        virtual bool initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it ) override;
 
     private:
         RTUExchange();

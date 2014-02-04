@@ -134,7 +134,7 @@ class ModbusClient
         // ---------------------------------------------------------------------
         /*! установить время ожидания по умолчанию */
         void setTimeout( timeout_t msec );
-        
+
         /*! Установка паузы после посылки запроса
             \return старое значение
         */
@@ -190,7 +190,7 @@ class ModbusClient
         timeout_t replyTimeOut_ms;    /*!< таймаут на ожидание ответа */
         timeout_t aftersend_msec;    /*!< пауза после посылки запроса */
         timeout_t sleepPause_usec;     /*!< пауза между попытками чтения символа из канала */
-        
+
         bool crcNoCheckit;
 
         UniSetTypes::uniset_rwmutex sendMutex;
@@ -198,8 +198,6 @@ class ModbusClient
 
         void printProcessingTime();
         PassiveTimer tmProcessing;
-        
-        
 
     private:
 };

@@ -147,10 +147,10 @@ class DBServer_MySQL:
         virtual void initDB(MySQLInterface *db){};
         virtual void initDBTableMap(DBTableMap& tblMap){};
 
-        virtual void timerInfo( const UniSetTypes::TimerMessage* tm );
-        virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
-        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm );
-        virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg );
+        virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
+        virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
+        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
+        virtual void confirmInfo( const UniSetTypes::ConfirmMessage* cmsg ) override;
 
         bool writeToBase( const string& query );
         virtual void init_dbserver();
