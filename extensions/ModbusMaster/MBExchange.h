@@ -232,7 +232,7 @@ class MBExchange:
 
         RTUDeviceMap rmap;
         InitList initRegList;    /*!< список регистров для инициализации */
-        UniSetTypes::uniset_mutex pollMutex;
+        UniSetTypes::uniset_rwmutex pollMutex;
 
         virtual ModbusClient* initMB( bool reopen=false )= 0;
 

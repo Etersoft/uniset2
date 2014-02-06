@@ -172,7 +172,7 @@ void RTUExchange::poll()
     if( !mb )
     {
         {
-            uniset_mutex_lock l(pollMutex, 300);
+            uniset_rwmutex_wrlock l(pollMutex);
             pollActivated = false;
             mb = initMB(false);
             if( !mb )
@@ -191,7 +191,7 @@ void RTUExchange::poll()
     }
 
     {
-        uniset_mutex_lock l(pollMutex,200);
+        uniset_rwmutex_wrlock l(pollMutex);
         pollActivated = true;
         ptTimeout.reset();
     }
@@ -305,7 +305,6 @@ void RTUExchange::poll()
 
     if( allNotRespond && ptReopen.checkTime() )
     {
-        uniset_mutex_lock l(pollMutex, 300);
         dwarn << myname << ": REOPEN timeout..(" << ptReopen.getInterval() << ")" << endl;
 
         mb = initMB(true);

@@ -138,7 +138,7 @@ void MBTCPMaster::sysCommand( const UniSetTypes::SystemMessage *sm )
 void MBTCPMaster::poll_thread()
 {
     {
-        uniset_mutex_lock l(pollMutex,300);
+        uniset_rwmutex_wrlock l(pollMutex);
         ptTimeout.reset();
     }
 
