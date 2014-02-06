@@ -85,7 +85,7 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
     {
         if( !reopen )
             return mbtcp;
-        
+
         delete mbtcp;
         mb = 0;
         mbtcp = 0;
@@ -95,7 +95,7 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
     {
         ost::Thread::setException(ost::Thread::throwException);
         mbtcp = new ModbusTCPMaster();
-    
+
         ost::InetAddress ia(iaddr.c_str());
         mbtcp->connect(ia,port);
         mbtcp->setForceDisconnect(force_disconnect);
@@ -138,7 +138,7 @@ void MBTCPMaster::sysCommand( const UniSetTypes::SystemMessage *sm )
 void MBTCPMaster::poll_thread()
 {
     {
-        uniset_mutex_lock l(pollMutex,300);
+        uniset_rwmutex_wrlock l(pollMutex);
         ptTimeout.reset();
     }
 

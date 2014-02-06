@@ -2463,7 +2463,6 @@ void MBExchange::sysCommand( const UniSetTypes::SystemMessage *sm )
 
             if( !force )
             {
-                uniset_mutex_lock l(pollMutex,2000);
                 force = true;
                 poll();
                 force = false;
@@ -2634,7 +2633,7 @@ void MBExchange::poll()
     if( !mb )
     {
         {
-            uniset_mutex_lock l(pollMutex, 300);
+            uniset_rwmutex_wrlock l(pollMutex);
             pollActivated = false;
             mb = initMB(false);
             if( !mb )
@@ -2653,7 +2652,7 @@ void MBExchange::poll()
     }
 
     {
-        uniset_mutex_lock l(pollMutex);
+        uniset_rwmutex_wrlock l(pollMutex);
         pollActivated = true;
         ptTimeout.reset();
     }
@@ -2730,7 +2729,7 @@ void MBExchange::poll()
     }
 
     {
-        uniset_mutex_lock l(pollMutex);
+        uniset_rwmutex_wrlock l(pollMutex);
         pollActivated = false;
     }
 
@@ -2754,7 +2753,6 @@ void MBExchange::poll()
 
     if( allNotRespond && ptReopen.checkTime() )
     {
-        uniset_mutex_lock l(pollMutex, 300);
         dwarn << myname << ": REOPEN timeout..(" << ptReopen.getInterval() << ")" << endl;
 
         mb = initMB(true);
@@ -2799,7 +2797,7 @@ void MBExchange::updateRespondSensors()
 {
     bool chanTimeout = false;
     {
-        uniset_mutex_lock l(pollMutex);
+        uniset_rwmutex_rlock l(pollMutex);
         chanTimeout = pollActivated && ptTimeout.checkTime();
     }
 
@@ -2840,7 +2838,7 @@ void MBExchange::execute()
         askTimer(tmExchange,0);
     }
     catch(...){}
-    
+
     initMB(false);
 
     while(1)
