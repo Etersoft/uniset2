@@ -2542,7 +2542,6 @@ void MBExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 
 			if( !force )
 			{
-				uniset_mutex_lock l(pollMutex,2000);
 				force = true;
 				poll();
 				force = false;
@@ -2736,7 +2735,7 @@ void MBExchange::poll()
 	}
 
 	{
-		uniset_mutex_lock l(pollMutex);
+		uniset_mutex_lock l(pollMutex,200);
 		pollActivated = true;
 		ptTimeout.reset();
 	}
@@ -2818,7 +2817,7 @@ void MBExchange::poll()
 	}
 
 	{
-		uniset_mutex_lock l(pollMutex);
+		uniset_mutex_lock l(pollMutex,120);
 		pollActivated = false;
 	}
 
@@ -2894,7 +2893,7 @@ void MBExchange::updateRespondSensors()
 {
 	bool chanTimeout = false;
 	{
-		uniset_mutex_lock l(pollMutex);
+		uniset_mutex_lock l(pollMutex,240);
 		chanTimeout = pollActivated && ptTimeout.checkTime();
 	}
 
