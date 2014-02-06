@@ -130,8 +130,6 @@ class MBSlave:
         ModbusServerSlot* mbslot;
         ModbusRTU::ModbusAddr addr;            /*!< адрес данного узла */
 
-        UniSetTypes::uniset_rwmutex mbMutex;
-
         xmlNode* cnode;
         std::string s_field;
         std::string s_fvalue;

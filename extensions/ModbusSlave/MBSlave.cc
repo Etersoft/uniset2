@@ -385,7 +385,7 @@ void MBSlave::execute_rtu()
 {
     ModbusRTUSlaveSlot* rscomm = dynamic_cast<ModbusRTUSlaveSlot*>(mbslot);
 
-	ModbusRTU::mbErrCode prev = erNoError;
+    ModbusRTU::mbErrCode prev = erNoError;
 
     while(1)
     {
