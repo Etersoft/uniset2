@@ -117,7 +117,7 @@ class MBSlave:
 
         ModbusRTU::mbErrCode read4314( ModbusRTU::MEIMessageRDI& query, 
                                                         ModbusRTU::MEIMessageRetRDI& reply );
-        
+
         /*! Проверка корректности регистра перед сохранением.
             Вызывается для каждого регистра не зависимо от используемой функции (06 или 10)
         */
@@ -129,8 +129,6 @@ class MBSlave:
 
         ModbusServerSlot* mbslot;
         ModbusRTU::ModbusAddr addr;            /*!< адрес данного узла */
-
-        UniSetTypes::uniset_rwmutex mbMutex;
 
         xmlNode* cnode;
         std::string s_field;
