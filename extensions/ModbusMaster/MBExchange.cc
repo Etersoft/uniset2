@@ -1064,7 +1064,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
     if( save && !r->mb_initOK )
         return;
 
-    dlog3 << "updateP: sid=" << p->si.id
+    dlog3 << myname << "updateP: sid=" << p->si.id
                 << " mbval=" << r->mbval
                 << " vtype=" << p->vType
                 << " rnum=" << p->rnum
@@ -2371,7 +2371,7 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
             return false;
         }
     }
- 
+
     dinfo << myname << "(initDeviceInfo): add addr=" << ModbusRTU::addr2str(a) << endl;
     int tout = it.getPIntProp("timeout",5000);
     d->second->resp_ptTimeout.setTiming(tout);
