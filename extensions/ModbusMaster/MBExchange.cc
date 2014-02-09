@@ -1095,7 +1095,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 		return;
 
 	if( dlog.debugging(Debug::LEVEL3) )
-		dlog[Debug::LEVEL3] << "updateP: sid=" << p->si.id 
+		dlog[Debug::LEVEL3] << myname << "(updateP): sid=" << p->si.id 
 				<< " mbval=" << r->mbval 
 				<< " vtype=" << p->vType
 				<< " rnum=" << p->rnum

@@ -173,8 +173,9 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				if( dlog.debugging(Debug::INFO) )
 					dlog[Debug::INFO] << "(ModbusTCPMaster::query): ret=" << (int)ret
 							<< " < rmh=" << (int)sizeof(rmh)
-							<< " err: " << tcp->getErrorNumber()
+							<< " errnum: " << tcp->getErrorNumber()
 							<< " perr: " << tcp->getPeer(&port)
+							<< " err: " << string(tcp->getErrorString())
 							<< endl;
 							
 				disconnect();
