@@ -170,11 +170,12 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
             if( ret < (int)sizeof(rmh) )
             {
                 ost::tpport_t port;
-                if( dlog.is_info() )
-                    dlog.info() << "(ModbusTCPMaster::query): ret=" << (int)ret
+                if( dlog.is_warn() )
+                    dlog.warn() << "(ModbusTCPMaster::query): ret=" << (int)ret
                             << " < rmh=" << (int)sizeof(rmh)
-                            << " err: " << tcp->getErrorNumber()
+                            << " errnum: " << tcp->getErrorNumber()
                             << " perr: " << tcp->getPeer(&port)
+                            << " err: " << string(tcp->getErrorString())
                             << endl;
 
                 disconnect();
