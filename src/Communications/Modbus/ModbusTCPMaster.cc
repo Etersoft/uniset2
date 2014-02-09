@@ -149,7 +149,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
         tcp->sync();
         if( tcp->isPending(ost::Socket::pendingInput,timeout) ) 
         {
-/*            
+/*
             unsigned char rbuf[100];
             memset(rbuf,0,sizeof(rbuf));
             int ret = getNextData(rbuf,sizeof(rbuf));
@@ -170,19 +170,20 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
             if( ret < (int)sizeof(rmh) )
             {
                 ost::tpport_t port;
-                if( dlog.is_info() )
-                    dlog.info() << "(ModbusTCPMaster::query): ret=" << (int)ret
+                if( dlog.is_warn() )
+                    dlog.warn() << "(ModbusTCPMaster::query): ret=" << (int)ret
                             << " < rmh=" << (int)sizeof(rmh)
-                            << " err: " << tcp->getErrorNumber()
+                            << " errnum: " << tcp->getErrorNumber()
                             << " perr: " << tcp->getPeer(&port)
+                            << " err: " << string(tcp->getErrorString())
                             << endl;
-                            
+
                 disconnect();
                 return erTimeOut; // return erHardwareError;
             }
 
             rmh.swapdata();
-            
+
             if( rmh.tID != mh.tID )
             {
                 cleanInputStream();
@@ -198,12 +199,12 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
             // timeout = ptTimeout.getLeft(timeout);
             // в tcp ответе задержек уже не должно быть..
             mbErrCode res = recv(addr,msg.func,reply,1); //timeout);
-            
+
             if( force_disconnect )
             {
                 if( dlog.is_info() )
                     dlog.info() << "(query): force disconnect.." << endl;
-            
+
                 disconnect();
             }
 
@@ -217,7 +218,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
         {
             if( dlog.is_info() )
                 dlog.info() << "(query): force disconnect.." << endl;
-            
+
 //            cleanInputStream();
             disconnect();
         }
@@ -255,7 +256,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
     {
         if( dlog.is_warn() )
             dlog.warn() << "(query): cath..." << endl;
-    }    
+    }
 
     return erTimeOut; // erHardwareError
 }
