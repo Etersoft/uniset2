@@ -8,7 +8,7 @@
 
 Name: libuniset
 Version: 1.7
-Release: alt4
+Release: alt5
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -335,6 +335,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Mon Feb 10 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt5
+- ModbusMaster: minor fixes
+
 * Thu Feb 06 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt4
 - ModbusExchange: fixed bug:  deadlock for pollMutex..
 
