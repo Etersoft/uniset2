@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <memory>
 #include "IONotifyController.h"
 #include "UniSetObject_LT.h"
 #include "PassiveTimer.h"
@@ -234,7 +235,7 @@ class MBExchange:
         InitList initRegList;    /*!< список регистров для инициализации */
         UniSetTypes::uniset_rwmutex pollMutex;
 
-        virtual ModbusClient* initMB( bool reopen=false )= 0;
+        virtual std::shared_ptr<ModbusClient> initMB( bool reopen=false )= 0;
 
         virtual void poll();
         bool pollRTU( RTUDevice* dev, RegMap::iterator& it );
@@ -311,7 +312,7 @@ class MBExchange:
 
         std::string prop_prefix;  /*!< префикс для считывания параметров обмена */
 
-        ModbusClient* mb;
+        std::shared_ptr<ModbusClient> mb;
 
         // определение timeout для соединения
         PassiveTimer ptTimeout;

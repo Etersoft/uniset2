@@ -90,18 +90,18 @@ int main( int argc, char **argv )
                     << endl;
         }
 
-        ModbusRTUMaster mb(dev,use485);
+        std::shared_ptr<ModbusRTUMaster> mb = std::make_shared<ModbusRTUMaster>(dev,use485);
 
         if( verb )
             dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
 
-        mb.setTimeout(tout);
-        mb.setSpeed(speed);
-        mb.setLog(dlog);
+        mb->setTimeout(tout);
+        mb->setSpeed(speed);
+        mb->setLog(dlog);
 
         RTUStorage rtu(slaveaddr);
 
-        rtu.poll(&mb);
+        rtu.poll(mb);
         cout << rtu << endl;
 
         for( unsigned int i=0; i<24; i++ )

@@ -229,7 +229,7 @@ class MBTCPMultiMaster:
     protected:
         virtual void sysCommand( const UniSetTypes::SystemMessage *sm ) override;
         virtual void initIterators() override;
-        virtual ModbusClient* initMB( bool reopen=false ) override;
+        virtual std::shared_ptr<ModbusClient> initMB( bool reopen=false ) override;
         void poll_thread();
         void check_thread();
 
@@ -250,7 +250,7 @@ class MBTCPMultiMaster:
 
             std::string ip;
             int port;
-            ModbusTCPMaster* mbtcp;
+            std::shared_ptr<ModbusTCPMaster> mbtcp;
             int priority;
 
             bool respond;

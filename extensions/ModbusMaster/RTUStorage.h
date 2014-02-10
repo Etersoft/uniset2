@@ -4,6 +4,7 @@
 // -----------------------------------------------------------------------------
 #include <ostream>
 #include <string>
+#include <memory>
 #include "modbus/ModbusTypes.h"
 #include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
@@ -15,7 +16,7 @@ class RTUStorage
         RTUStorage( ModbusRTU::ModbusAddr addr );
         ~RTUStorage();
 
-        void poll( ModbusRTUMaster* mb )
+        void poll( const std::shared_ptr<ModbusRTUMaster> mb )
                     throw(ModbusRTU::mbException);
 
         inline ModbusRTU::ModbusAddr getAddress(){ return addr; }

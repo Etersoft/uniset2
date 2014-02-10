@@ -26,7 +26,7 @@ class RTUExchange:
         static void help_print( int argc, const char* const* argv );
 
     protected:
-        ModbusRTUMaster* mbrtu;
+        std::shared_ptr<ModbusRTUMaster> mbrtu;
         UniSetTypes::uniset_mutex mbMutex;
         std::string devname;
         ComPort::Speed defSpeed;
@@ -36,7 +36,7 @@ class RTUExchange:
         virtual void step() override;
         virtual void poll() override;
 
-        virtual ModbusClient* initMB( bool reopen=false ) override;
+        virtual std::shared_ptr<ModbusClient> initMB( bool reopen=false ) override;
         virtual bool initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it ) override;
 
     private:
