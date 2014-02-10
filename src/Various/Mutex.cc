@@ -22,6 +22,8 @@
 */
 // -------------------------------------------------------------------------- 
 
+#include <chrono>
+#include <thread>
 #include <unistd.h>
 #include "UniSetTypes.h"
 #include "Mutex.h"
@@ -34,24 +36,17 @@ using namespace UniSetTypes;
 #define MUTEX_DEBUG(m) {}
 
 uniset_mutex::uniset_mutex():
-    cnd(0),
-    nm(""),
-    locked(0)
+    nm("")
 {
-    cnd = new omni_condition(&mtx);
 }
 // -----------------------------------------------------------------------------
 uniset_mutex::uniset_mutex( const string& name ):
-    cnd(0),
-    nm(name),
-    locked(0)
+    nm(name)
 {
-    cnd = new omni_condition(&mtx);
 }
 // -----------------------------------------------------------------------------
 uniset_mutex::~uniset_mutex()
 {
-    delete cnd;
 }
 // -----------------------------------------------------------------------------
 std::ostream& UniSetTypes::operator<<(std::ostream& os, uniset_mutex& m )
@@ -61,99 +56,62 @@ std::ostream& UniSetTypes::operator<<(std::ostream& os, uniset_mutex& m )
 // -----------------------------------------------------------------------------
 void uniset_mutex::lock()
 {
-    sem.wait();
-    locked = 1;
+    m_lock.lock();
     MUTEX_DEBUG(cerr << nm << " Locked.." << endl;)
 }
 // -----------------------------------------------------------------------------
 void uniset_mutex::unlock()
 {
-    locked = 0;
+    m_lock.unlock();
     MUTEX_DEBUG(cerr << nm << " Unlocked.." << endl;)
-    sem.post();
-    cnd->signal();
 }
 // -----------------------------------------------------------------------------
-bool uniset_mutex::isRelease()
+bool uniset_mutex::try_lock_for( const time_t& msec )
 {
-    return !locked;
+     return m_lock.try_lock_for( std::chrono::milliseconds(msec) );
 }
 // -----------------------------------------------------------------------------
-const uniset_mutex &uniset_mutex::operator=(const uniset_mutex& r)
+uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, const time_t timeMS ):
+    mutex(&m),
+    locked(0)
 {
-//    if( this != &r )
-//        locked = r.locked;
 
-    return *this;
-}
-// -----------------------------------------------------------------------------
-uniset_mutex::uniset_mutex( const uniset_mutex& r ):
-    cnd(0),
-    nm(r.nm),
-    locked(r.locked)
-{
-    cnd = new omni_condition(&mtx);
-}
-
-// -----------------------------------------------------------------------------
-uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, int timeMS ):
-    mutex(&m)
-{
-    if( timeMS <= 0 || mutex->isRelease() )
+    if( timeMS == 0 )
     {
         mutex->lock();
-        mlock = 1;
+        locked = 1;
         return;
     }
 
-    unsigned long sec, msec;
-    omni_thread::get_time(&sec,&msec, timeMS/1000, (timeMS%1000)*1000000 );
-    mutex->mtx.lock();
-    if( !mutex->cnd->timedwait(sec, msec) )
+    if( !mutex->try_lock_for(timeMS) )
     {
         if( !mutex->name().empty() )
         {
             ulog9 << "(mutex_lock): вышло заданное время ожидания "
                 << timeMS << " msec для " << mutex->name() << endl;
         }
-
-        mlock = 0;
-        mutex->mtx.unlock();
-        return;    //    ресурс не захватываем
+        return;
     }
 
-    mlock = 1;
-    mutex->lock();
-    mutex->mtx.unlock();
+     locked = 1;
 }
 // -----------------------------------------------------------------------------
 bool uniset_mutex_lock::lock_ok()
-{ 
-    return mlock;
-}
-
-uniset_mutex_lock::~uniset_mutex_lock()
 {
-    if( mlock )
-    {
-        mlock = 0;
-        mutex->unlock();
-    }
+    return (locked == 1);
 }
 // -----------------------------------------------------------------------------
-uniset_mutex_lock& uniset_mutex_lock::operator=(const uniset_mutex_lock &r)
+uniset_mutex_lock::~uniset_mutex_lock()
 {
-    return *this;
+    mutex->unlock();
+    locked = 0;
 }
 // -----------------------------------------------------------------------------
 uniset_rwmutex::uniset_rwmutex( const std::string& name ):
 nm(name),
 wr_wait(0)
 {
-
 }
-
-ost::AtomicCounter uniset_rwmutex::num  = 0;
 
 uniset_rwmutex::uniset_rwmutex():
 nm(""),
@@ -170,6 +128,8 @@ std::ostream& UniSetTypes::operator<<(std::ostream& os, uniset_rwmutex& m )
     return os << m.name();
 }
 
+std::atomic<int> uniset_rwmutex::num(0);
+
 const uniset_rwmutex &uniset_rwmutex::operator=( const uniset_rwmutex& r )
 {
     if( this != &r )
@@ -178,6 +138,7 @@ const uniset_rwmutex &uniset_rwmutex::operator=( const uniset_rwmutex& r )
         ostringstream s;
         s << r.nm << "." << (++num);
         nm = s.str();
+        wr_wait = 0;
         unlock();
         MUTEX_DEBUG(cerr << "...copy mutex..." << nm << endl;)
     }
@@ -186,24 +147,25 @@ const uniset_rwmutex &uniset_rwmutex::operator=( const uniset_rwmutex& r )
 }
 
 uniset_rwmutex::uniset_rwmutex( const uniset_rwmutex& r ):
-nm(r.nm)
+nm(r.nm),
+wr_wait(0)
 {
 }
 
 void uniset_rwmutex::lock()
 {
     MUTEX_DEBUG(cerr << nm << " prepare Locked.." << endl;)
-    wr_wait +=1;
+    wr_wait++;
     m.writeLock();
-    wr_wait -=1;
+    wr_wait--;
     MUTEX_DEBUG(cerr << nm << " Locked.." << endl;)
 }
 void uniset_rwmutex::wrlock()
 {
     MUTEX_DEBUG(cerr << nm << " prepare WRLocked.." << endl;)
-    wr_wait +=1;
+    wr_wait++;
     m.writeLock();
-    wr_wait -=1;
+    wr_wait--;
     MUTEX_DEBUG(cerr << nm << " WRLocked.." << endl;)
 }
 void uniset_rwmutex::rlock()
@@ -211,7 +173,10 @@ void uniset_rwmutex::rlock()
     MUTEX_DEBUG(cerr << nm << " prepare RLocked.." << endl;)
 
     while( wr_wait )
-       msleep(2);
+    {
+        MUTEX_DEBUG( cerr << nm << " whait... WR=" << wr_wait << endl; )
+        msleep(2);
+    }
 
     m.readLock();
     MUTEX_DEBUG(cerr << nm << " RLocked.." << endl;)
