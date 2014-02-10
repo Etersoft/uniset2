@@ -32,9 +32,8 @@ RTUStorage::~RTUStorage()
 {
 
 }
-// -----------------------------------------------------------------------------    
-void RTUStorage::poll( ModbusRTUMaster* mb )
-                        throw( ModbusRTU::mbException )
+// -----------------------------------------------------------------------------
+void RTUStorage::poll( const std::shared_ptr<ModbusRTUMaster> mb ) throw( ModbusRTU::mbException )
 {
     try
     {

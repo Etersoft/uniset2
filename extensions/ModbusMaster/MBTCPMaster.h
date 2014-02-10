@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <memory>
 #include "MBExchange.h"
 #include "modbus/ModbusTCPMaster.h"
 // -----------------------------------------------------------------------------
@@ -206,7 +207,7 @@ class MBTCPMaster:
 
     protected:
         virtual void sysCommand( const UniSetTypes::SystemMessage *sm ) override;
-        virtual ModbusClient* initMB( bool reopen=false ) override;
+        virtual std::shared_ptr<ModbusClient> initMB( bool reopen=false ) override;
 
         UniSetTypes::uniset_rwmutex mbMutex;
         std::string iaddr;
@@ -218,7 +219,7 @@ class MBTCPMaster:
      private:
         MBTCPMaster();
 
-        ModbusTCPMaster* mbtcp;
+        std::shared_ptr<ModbusTCPMaster> mbtcp;
 
         // т.к. TCP может "зависнуть" на подключении к недоступному узлу
         // делаем опрос в отдельном потоке

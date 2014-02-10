@@ -88,16 +88,16 @@ void RTUExchange::help_print( int argc, const char* const* argv )
 // -----------------------------------------------------------------------------
 RTUExchange::~RTUExchange()
 {
-    delete mbrtu;
+//    delete mbrtu;
 }
 // -----------------------------------------------------------------------------
-ModbusClient* RTUExchange::initMB( bool reopen )
+std::shared_ptr<ModbusClient> RTUExchange::initMB( bool reopen )
 {
     if( !file_exist(devname) )
     {
         if( mbrtu )
         {
-            delete mbrtu;
+//          delete mbrtu;
             mb = 0;
             mbrtu = 0;
         }
@@ -108,15 +108,15 @@ ModbusClient* RTUExchange::initMB( bool reopen )
     {
         if( !reopen )
             return mbrtu;
-        
-        delete mbrtu;
+
+//        delete mbrtu;
         mbrtu = 0;
         mb = 0;
     }
 
     try
     {
-        mbrtu = new ModbusRTUMaster(devname,use485F,transmitCtl);
+        mbrtu = std::make_shared<ModbusRTUMaster>(devname,use485F,transmitCtl);
 
         if( defSpeed != ComPort::ComSpeed0 )
             mbrtu->setSpeed(defSpeed);
@@ -134,18 +134,18 @@ ModbusClient* RTUExchange::initMB( bool reopen )
     }
     catch( Exception& ex )
     {
-        if( mbrtu )
-            delete mbrtu;
+        //if( mbrtu )
+        //    delete mbrtu;
         mbrtu = 0;
 
         dwarn << myname << "(init): " << ex << endl;
     }
     catch(...)
     {
-        if( mbrtu )
-            delete mbrtu;
+//        if( mbrtu )
+//            delete mbrtu;
         mbrtu = 0;
- 
+
         dinfo << myname << "(init): catch...." << endl;
     }
 

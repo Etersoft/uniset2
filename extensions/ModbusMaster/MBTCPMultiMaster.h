@@ -217,7 +217,7 @@ class MBTCPMultiMaster:
         MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
                         const std::string& prefix="mbtcp" );
         virtual ~MBTCPMultiMaster();
-    
+
         /*! глобальная функция для инициализации объекта */
         static MBTCPMultiMaster* init_mbmaster( int argc, const char* const* argv, 
                                             UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
@@ -229,7 +229,7 @@ class MBTCPMultiMaster:
     protected:
         virtual void sysCommand( const UniSetTypes::SystemMessage *sm ) override;
         virtual void initIterators() override;
-        virtual ModbusClient* initMB( bool reopen=false ) override;
+        virtual std::shared_ptr<ModbusClient> initMB( bool reopen=false ) override;
         void poll_thread();
         void check_thread();
 
@@ -250,9 +250,9 @@ class MBTCPMultiMaster:
 
             std::string ip;
             int port;
-            ModbusTCPMaster* mbtcp;
+            std::shared_ptr<ModbusTCPMaster> mbtcp;
             int priority;
-            
+
             bool respond;
             UniSetTypes::ObjectId respond_id;
             IOController::IOStateList::iterator respond_it;
@@ -270,7 +270,7 @@ class MBTCPMultiMaster:
             int aftersend_pause;
             int sleepPause_usec;
             bool force_disconnect;
-            
+
             std::string myname;
 
             bool initOK;

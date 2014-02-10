@@ -14,7 +14,7 @@ MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
                             SharedMemory* ic, const std::string& prefix ):
 MBExchange(objId,shmId,ic,prefix),
 force_disconnect(true),
-mbtcp(0),
+mbtcp(nullptr),
 pollThread(0)
 {
     if( objId == DefaultObjectId )
@@ -76,25 +76,24 @@ pollThread(0)
 MBTCPMaster::~MBTCPMaster()
 {
     delete pollThread;
-    delete mbtcp;
+    //delete mbtcp;
 }
 // -----------------------------------------------------------------------------
-ModbusClient* MBTCPMaster::initMB( bool reopen )
+std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
 {
     if( mbtcp )
     {
         if( !reopen )
             return mbtcp;
 
-        delete mbtcp;
-        mb = 0;
-        mbtcp = 0;
+        mbtcp = nullptr;
+        mb = nullptr;
     }
 
     try
     {
         ost::Thread::setException(ost::Thread::throwException);
-        mbtcp = new ModbusTCPMaster();
+        mbtcp = std::make_shared<ModbusTCPMaster>();
 
         ost::InetAddress ia(iaddr.c_str());
         mbtcp->connect(ia,port);
@@ -118,10 +117,8 @@ ModbusClient* MBTCPMaster::initMB( bool reopen )
     }
     catch(...)
     {
-        if( mbtcp )
-            delete mbtcp;
-        mb = 0;
-        mbtcp = 0;
+        mb = nullptr;
+        mbtcp = nullptr;
     }
 
     mb = mbtcp;

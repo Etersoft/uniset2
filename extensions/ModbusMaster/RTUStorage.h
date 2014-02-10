@@ -4,6 +4,7 @@
 // -----------------------------------------------------------------------------
 #include <ostream>
 #include <string>
+#include <memory>
 #include "modbus/ModbusTypes.h"
 #include "UniSetTypes.h"
 // -----------------------------------------------------------------------------
@@ -14,8 +15,8 @@ class RTUStorage
     public:
         RTUStorage( ModbusRTU::ModbusAddr addr );
         ~RTUStorage();
-    
-        void poll( ModbusRTUMaster* mb )
+
+        void poll( const std::shared_ptr<ModbusRTUMaster> mb )
                     throw(ModbusRTU::mbException);
 
         inline ModbusRTU::ModbusAddr getAddress(){ return addr; }
@@ -25,7 +26,7 @@ class RTUStorage
         inline void setPollDI( bool set ){ pollDI = set; }
         inline void setPollDIO( bool set ){ pollDIO = set; }
         inline void setPollUNIO( bool set ){ pollUNIO = set; }
-        
+
         enum RTUJack
         {
             nUnknown,
@@ -37,18 +38,18 @@ class RTUStorage
             nX4,    // DI (8)
             nX5        // DI (8)
         };
-        
+
         static RTUJack s2j( const std::string& jack );
         static std::string j2s( RTUJack j );
-        
+
         long getInt( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
         float getFloat( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
         bool getState( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
 
         static ModbusRTU::ModbusData getRegister( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
-        
+
         static ModbusRTU::SlaveFunctionCode getFunction( RTUJack jack, unsigned short channel, UniversalIO::IOType t );
-    
+
         // ДОДЕЛАТЬ: setState, setValue
         void print();
     

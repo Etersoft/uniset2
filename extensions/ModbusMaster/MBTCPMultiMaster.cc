@@ -98,7 +98,7 @@ checkThread(0)
         }
 
         sinf.priority = it1.getIntProp("priority");
-        sinf.mbtcp = new ModbusTCPMaster();
+        sinf.mbtcp = std::make_shared<ModbusTCPMaster>();
 
         sinf.recv_timeout = it1.getPIntProp("recv_timeout",recv_timeout);
         sinf.aftersend_pause = it1.getPIntProp("aftersend_pause",aftersend_pause);
@@ -126,7 +126,7 @@ checkThread(0)
         dcrit << err.str() << endl;
         throw UniSetTypes::SystemError(err.str());
     }
-    
+
     mblist.sort();
     mbi = mblist.rbegin();
 
@@ -157,20 +157,19 @@ MBTCPMultiMaster::~MBTCPMultiMaster()
     delete checkThread;
     for( auto &it: mblist )
     {
-        delete it.mbtcp;
-        it.mbtcp = 0;
+        it.mbtcp = nullptr;
         mbi = mblist.rend();
     }
 }
 // -----------------------------------------------------------------------------
-ModbusClient* MBTCPMultiMaster::initMB( bool reopen )
+std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 {
     // просто движемся по кругу (т.к. связь не проверяется)
     // движемся в обратном порядке, т.к. сортировка по возрастанию приоритета
     if( checktime <=0 )
     {
         ++mbi;
-        if( mbi == mblist.rend() )    
+        if( mbi == mblist.rend() )
             mbi = mblist.rbegin();
 
         mbi->init();
@@ -209,7 +208,7 @@ ModbusClient* MBTCPMultiMaster::initMB( bool reopen )
     {
         uniset_rwmutex_wrlock l(tcpMutex);
         mbi = mblist.rend();
-        mb = 0;
+        mb = nullptr;
     }
 
     return 0;

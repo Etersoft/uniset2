@@ -1,6 +1,6 @@
 #!/bin/sh
 
-./uniset2-start.sh -f ./uniset2-mbtcpmultimaster \
+./uniset-start.sh -f ./uniset2-mbtcpmultimaster \
 --confile test.xml \
 --mbtcp-name MBMultiMaster1 \
 --smemory-id SharedMemory \
