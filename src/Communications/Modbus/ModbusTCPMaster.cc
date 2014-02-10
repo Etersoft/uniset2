@@ -125,7 +125,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
                 return erTimeOut;
             }
             cleanInputStream();
-        
+
             if( dlog.is_info() )
                 dlog.info() << "(ModbusTCPMaster::query): no write pending.. reconnnect OK" << endl;
         }
