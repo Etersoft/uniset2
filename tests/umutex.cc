@@ -140,7 +140,7 @@ int main( int argc, const char **argv )
     try
     {
 
-#if 0
+#if 1
         {
             uniset_rwmutex m1("mutex1");
             uniset_rwmutex m2("mutex2");
@@ -161,7 +161,7 @@ int main( int argc, const char **argv )
             cout << "m3.lock: wrlock OK" << endl;
         }
         
-        return 0;
+        // return 0;
 #endif
 
 #if 0

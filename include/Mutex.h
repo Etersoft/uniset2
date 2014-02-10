@@ -25,20 +25,15 @@
 #define UniSet_MUTEX_H_
 // -----------------------------------------------------------------------------------------
 #include <string>
-#include <omnithread.h>
-#include <signal.h>
+#include <atomic>
+#include <chrono>
+#include <mutex>
 #include <cc++/thread.h>
 // -----------------------------------------------------------------------------------------
 namespace UniSetTypes
 {
-    typedef ost::AtomicCounter mutex_atomic_t;
+    typedef std::atomic_int mutex_atomic_t;
 
-    /*! \class uniset_mutex 
-
-     * \note Напрямую функциями \a lock() и \a unlock() лучше не пользоваться. 
-     * Как пользоваться см. \ref MutexHowToPage
-     * \todo Проверить правильность конструкторов копирования и operator=
-    */
     class uniset_mutex
     {
         public:
@@ -46,9 +41,9 @@ namespace UniSetTypes
             uniset_mutex( const std::string& name );
             ~uniset_mutex();
 
-            bool isRelease();
             void lock();
             void unlock();
+            bool try_lock_for( const time_t& msec );
 
             inline std::string name(){ return nm; }
             inline void setName( const std::string& name ){ nm = name; }
@@ -57,13 +52,10 @@ namespace UniSetTypes
 
         private:
             friend class uniset_mutex_lock;
-            uniset_mutex (const uniset_mutex& r);
+            uniset_mutex(const uniset_mutex& r);
             const uniset_mutex &operator=(const uniset_mutex& r);
-            omni_condition* cnd;
             std::string nm;
-            omni_semaphore sem;
-            omni_mutex mtx;
-            mutex_atomic_t locked;
+            std::timed_mutex m_lock;
      };
 
     std::ostream& operator<<(std::ostream& os, uniset_mutex& m );
@@ -79,14 +71,15 @@ namespace UniSetTypes
     class uniset_mutex_lock
     {
         public:
-            uniset_mutex_lock( uniset_mutex& m, int timeoutMS=0 );
+            uniset_mutex_lock( uniset_mutex& m, const time_t timeoutMS=0 );
             ~uniset_mutex_lock();
 
             bool lock_ok();
 
         private:
             uniset_mutex* mutex;
-            mutex_atomic_t mlock;
+            std::atomic<int> locked;
+
             uniset_mutex_lock(const uniset_mutex_lock&);
             uniset_mutex_lock& operator=(const uniset_mutex_lock&);
     };
@@ -120,8 +113,8 @@ namespace UniSetTypes
             std::string nm;
             friend class uniset_rwmutex_lock;
             ost::ThreadLock m;
-            ost::AtomicCounter wr_wait;
-            static ost::AtomicCounter num;
+            std::atomic<int> wr_wait;
+            static std::atomic<int> num;
     };
 
     std::ostream& operator<<(std::ostream& os, uniset_rwmutex& m );

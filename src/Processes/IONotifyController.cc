@@ -445,9 +445,7 @@ bool IONotifyController::activateObject()
     // сперва вычитаем датчиков и заказчиков..
     readDump();
     // а потом уже собственно активация..
-    IOController::activateObject();
-
-    return true;
+    return IOController::activateObject();
 }
 // --------------------------------------------------------------------------------------------------------------
 void IONotifyController::readDump()
