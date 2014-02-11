@@ -312,7 +312,20 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
                                          CORBA::Long value, UniSetTypes::ObjectId sup_id )
 {
     // Если датчик не найден сдесь сработает исключение
-    long prevValue = IOController::localGetValue( li, sid );
+    long prevValue = 0;
+
+    try
+    {
+          prevValue = IOController::localGetValue( li, sid );
+    }
+    catch( IOController_i::Undefined )
+    {
+         // чтобы сработало prevValue!=value
+         // искусственно меняем значение
+         prevValue = value+1;
+    }
+
+
     if( li == myioEnd() ) // ???
     {
         ostringstream err;
