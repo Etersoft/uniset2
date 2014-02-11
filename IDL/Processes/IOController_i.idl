@@ -64,7 +64,7 @@ interface IOController_i : UniSetManager_i
 
     long getValue(in UniSetTypes::ObjectId sid) raises(NameNotFound,Undefined);
     void setValue(in UniSetTypes::ObjectId sid, in long value,
-                    in UniSetTypes::ObjectId sup_id) raises(NameNotFound);
+                    in UniSetTypes::ObjectId sup_id) raises(NameNotFound,Undefined);
 
     // установка неопределённого состояния
     // (пока работает только для аналоговых датчиков)
