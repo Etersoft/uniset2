@@ -217,7 +217,6 @@ class MBTCPMaster:
 		virtual ModbusClient* initMB( bool reopen=false );
 		
 		void poll_thread();
-		void check_thread();
 		bool force_disconnect;
 
 	 private:
@@ -229,11 +228,6 @@ class MBTCPMaster:
 		// делаем опрос в отдельном потоке
 		ThreadCreator<MBTCPMaster>* pollThread; /*!< поток опроса */
 		UniSetTypes::uniset_mutex tcpMutex;
-
-		ThreadCreator<MBTCPMaster>* checkThread; /*!< поток проверки "зависания связи" */
-		UniSetTypes::uniset_mutex checkMutex;
-		PassiveTimer ptExchangeTimeout;
-		timeout_t checkTime;
 };
 // -----------------------------------------------------------------------------
 #endif // _MBTCPMaster_H_
