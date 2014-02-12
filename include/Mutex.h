@@ -52,8 +52,8 @@ namespace UniSetTypes
 
         private:
             friend class uniset_mutex_lock;
-            uniset_mutex(const uniset_mutex& r);
-            const uniset_mutex &operator=(const uniset_mutex& r);
+            uniset_mutex(const uniset_mutex& r)=delete;
+            const uniset_mutex &operator=(const uniset_mutex& r) = delete;
             std::string nm;
             std::timed_mutex m_lock;
      };
@@ -80,8 +80,8 @@ namespace UniSetTypes
             uniset_mutex* mutex;
             std::atomic<int> locked;
 
-            uniset_mutex_lock(const uniset_mutex_lock&);
-            uniset_mutex_lock& operator=(const uniset_mutex_lock&);
+            uniset_mutex_lock(const uniset_mutex_lock&)=delete;
+            uniset_mutex_lock& operator=(const uniset_mutex_lock&)=delete;
     };
 
     // -------------------------------------------------------------------------
@@ -126,8 +126,8 @@ namespace UniSetTypes
             ~uniset_rwmutex_wrlock();
 
         private:
-            uniset_rwmutex_wrlock(const uniset_rwmutex_wrlock&);
-            uniset_rwmutex_wrlock& operator=(const uniset_rwmutex_wrlock&);
+            uniset_rwmutex_wrlock(const uniset_rwmutex_wrlock&)=delete;
+            uniset_rwmutex_wrlock& operator=(const uniset_rwmutex_wrlock&)=delete;
             uniset_rwmutex& m;
     };
 
@@ -138,8 +138,8 @@ namespace UniSetTypes
             ~uniset_rwmutex_rlock();
 
         private:
-            uniset_rwmutex_rlock(const uniset_rwmutex_rlock&);
-            uniset_rwmutex_rlock& operator=(const uniset_rwmutex_rlock&);
+            uniset_rwmutex_rlock(const uniset_rwmutex_rlock&)=delete;
+            uniset_rwmutex_rlock& operator=(const uniset_rwmutex_rlock&)=delete;
             uniset_rwmutex& m;
     };
     // -------------------------------------------------------------------------

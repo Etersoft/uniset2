@@ -199,13 +199,13 @@ bool UniSetObject::receiveMessage( VoidMessage& vm )
         if( !queueMsg.empty() )
         {
             // контроль переполнения
-            if( queueMsg.size() > SizeOfMessageQueue ) 
+            if( queueMsg.size() > SizeOfMessageQueue )
             {
                 ucrit << myname <<"(receiveMessages): messages queue overflow!" << endl << flush;
                 cleanMsgQueue(queueMsg);
                 // обновляем статистику по переполнениям
                 stCountOfQueueFull++;
-                stMaxQueueMessages=0;    
+                stMaxQueueMessages=0;
             }
 
             if( !queueMsg.empty() )

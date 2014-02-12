@@ -213,20 +213,6 @@ uniset_rwmutex_wrlock::~uniset_rwmutex_wrlock()
 {
     m.unlock();
 }
-
-uniset_rwmutex_wrlock::uniset_rwmutex_wrlock( const uniset_rwmutex_wrlock& r ):
- m(r.m)
-{
-
-}
-
-uniset_rwmutex_wrlock& uniset_rwmutex_wrlock::operator=(const uniset_rwmutex_wrlock& r)
-{
-    if( this != &r )
-        m = r.m;
-
-    return *this;
-}
 // -------------------------------------------------------------------------------------------
 uniset_rwmutex_rlock::uniset_rwmutex_rlock( uniset_rwmutex& _m ):
 m(_m)
@@ -237,19 +223,5 @@ m(_m)
 uniset_rwmutex_rlock::~uniset_rwmutex_rlock()
 {
     m.unlock();
-}
-
-uniset_rwmutex_rlock::uniset_rwmutex_rlock( const uniset_rwmutex_rlock& r ):
-m(r.m)
-{
-
-}
-
-uniset_rwmutex_rlock& uniset_rwmutex_rlock::operator=(const uniset_rwmutex_rlock& r)
-{
-    if( this != &r )
-        m = r.m;
-
-    return *this;
 }
 // -----------------------------------------------------------------------------
