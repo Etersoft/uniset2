@@ -15,7 +15,8 @@ MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shm
 MBExchange(objId,shmId,ic,prefix),
 force_disconnect(true),
 mbtcp(0),
-pollThread(0)
+pollThread(0),
+checkThread(0)
 {
 	if( objId == DefaultObjectId )
 		throw UniSetTypes::SystemError("(MBTCPMaster): objId=-1?!! Use --" + prefix + "-name" );
@@ -54,6 +55,20 @@ pollThread(0)
 		throw UniSetTypes::SystemError(myname+"(MBMaster): Unknown inet port...(Use: " + tmp +")" );
 
 
+	int t_check = conf->getArgInt("--" + prefix + "-exchange-timeout",it.getProp("exchange_timeout"));
+	if( t_check == 0 )
+		t_check = 5000;
+
+	checkTime = t_check < 0 ? 0 : t_check;
+
+	if( checkTime > 0 )
+	{
+		int etout = conf->getArgInt("--" + prefix + "-exchange-timeout",it.getProp("exchange_timeout"));
+		if( etout <= 0 )
+			etout = 5000;
+		ptExchangeTimeout.setTiming(etout);
+	}
+
 	force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection",it.getProp("persistent_connection")) ? false : true;
 	dlog[Debug::INFO] << myname << "(init): persisten-connection=" << (!force_disconnect) << endl;
 
@@ -67,6 +82,7 @@ pollThread(0)
 		ic->addReadItem( sigc::mem_fun(this,&MBTCPMaster::readItem) );
 
 	pollThread = new ThreadCreator<MBTCPMaster>(this, &MBTCPMaster::poll_thread);
+	checkThread = new ThreadCreator<MBTCPMaster>(this, &MBTCPMaster::check_thread);
 
 	if( dlog.debugging(Debug::INFO) )
 		printMap(rmap);
@@ -75,6 +91,7 @@ pollThread(0)
 MBTCPMaster::~MBTCPMaster()
 {
 	delete pollThread;
+	delete checkThread;
 	delete mbtcp;
 }
 // -----------------------------------------------------------------------------
@@ -131,7 +148,15 @@ void MBTCPMaster::sysCommand( UniSetTypes::SystemMessage *sm )
 {
 	MBExchange::sysCommand(sm);
 	if( sm->command == SystemMessage::StartUp )
+	{
 		pollThread->start();
+		{
+			uniset_mutex_lock l(checkMutex,300);
+			ptExchangeTimeout.reset();
+		}
+		if( checkTime > 0 )
+			checkThread->start();
+	}
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::poll_thread()
@@ -139,6 +164,11 @@ void MBTCPMaster::poll_thread()
 	{
 		uniset_mutex_lock l(pollMutex,300);
 		ptTimeout.reset();
+	}
+
+	{
+		uniset_mutex_lock l(checkMutex,300);
+		ptExchangeTimeout.reset();
 	}
 
 	while( checkProcActive() )
@@ -151,7 +181,16 @@ void MBTCPMaster::poll_thread()
 		catch(...){}
 		try
 		{
-			poll();
+			{
+				uniset_mutex_lock l(checkMutex,300);
+				ptExchangeTimeout.reset();
+			}
+				poll();
+
+			{
+				uniset_mutex_lock l(checkMutex,300);
+				ptExchangeTimeout.reset();
+			}
 		}
 		catch(...){}
 
@@ -195,5 +234,47 @@ MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv,
 
 	dlog[Debug::INFO] << "(MBTCPMaster): name = " << name << "(" << ID << ")" << endl;
 	return new MBTCPMaster(ID,icID,ic,prefix);
+}
+// -----------------------------------------------------------------------------
+void MBTCPMaster::check_thread()
+{
+	while( checkProcActive() )
+	{
+		try
+		{
+			bool fail = false;
+			{	
+				uniset_mutex_lock l(checkMutex,100);
+				fail = ptExchangeTimeout.checkTime();
+			}
+
+			if( dlog.debugging(Debug::LEVEL4) )
+				dlog[Debug::LEVEL4] << myname << ": check connection... " << ( fail ? "FAIL":"OK" ) << endl;
+
+			if( fail )
+			{
+				try
+				{
+					if( dlog.debugging(Debug::CRIT) )
+						dlog[Debug::CRIT] << myname << ": CONNECTION FAIL... terminate.." << endl;
+					mbtcp->disconnect();
+				}
+				catch( std::exception& ex )
+				{
+					cerr << "exception: " << ex.what() << endl;
+				}
+				catch( ... )
+				{
+					cerr << "exception: ...." << endl;
+				}
+			}
+		}
+		catch(...){}
+
+		if( !checkProcActive() )
+			break;
+
+		msleep(checkTime);
+	}
 }
 // -----------------------------------------------------------------------------

@@ -272,7 +272,7 @@ void ModbusTCPMaster::cleanInputStream()
 	while( ret > 0);
 }
 // -------------------------------------------------------------------------
-bool ModbusTCPMaster::checkConnection( const std::string ip, int port, int timeout_msec )
+bool ModbusTCPMaster::checkConnection( const std::string& ip, int port, int timeout_msec )
 {
 	try
 	{

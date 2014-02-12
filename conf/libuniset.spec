@@ -8,7 +8,7 @@
 
 Name: libuniset
 Version: 1.7
-Release: alt5
+Release: alt6
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -335,6 +335,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Feb 12 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt6
+- ModbusMaster: add thread for check connection
+
 * Mon Feb 10 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt5
 - ModbusMaster: minor fixes
 

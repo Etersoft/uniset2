@@ -21,7 +21,7 @@ class ModbusTCPMaster:
 		void disconnect();
 		bool isConnection();
 
-		static bool checkConnection( const std::string ip, int port, int timeout_msec=100 );
+		static bool checkConnection( const std::string& ip, int port, int timeout_msec=100 );
 
 		inline void setForceDisconnect( bool s )
 		{
@@ -47,6 +47,7 @@ class ModbusTCPMaster:
 		std::queue<unsigned char> qrecv;
 		PassiveTimer ptTimeout;
 		std::string iaddr;
+		std::string addr;
 		bool force_disconnect;
 };
 // -------------------------------------------------------------------------
