@@ -11,8 +11,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
-MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, 
-                    SharedMemory* ic, string prefix ):
+MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic, const string& prefix ):
 UniSetObject_LT(objId),
 mbslot(0),
 shm(0),
@@ -791,7 +790,7 @@ bool MBSlave::initItem( UniXML_iterator& it )
  
         p.mbreg = ModbusRTU::str2mbData(r);
     }
-    
+
     string stype( it.getProp("mb_iotype") );
     if( stype.empty() )
         stype = it.getProp("iotype");
@@ -888,7 +887,7 @@ void MBSlave::help_print( int argc, const char* const* argv )
 }
 // -----------------------------------------------------------------------------
 MBSlave* MBSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID, SharedMemory* ic,
-                                string prefix )
+                                const string& prefix )
 {
     string name = conf->getArgParam("--" + prefix + "-name","MBSlave1");
     if( name.empty() )

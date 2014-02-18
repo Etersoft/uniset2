@@ -79,6 +79,14 @@
 		<MBSlave2 addr="0x3">
 		</MBSlave2>
 
+
+		<MBMultiSlave1 addr="0x31" aftersend-pause="0" name="MBMultiSlave1" poll_time="200" reply_timeout="60">
+			<clients>
+					<item ip="localhost"/>
+			</clients>
+		</MBMultiSlave1>
+
+
 		<MBSlave1 addr="0x31" aftersend-pause="0" dev="/dev/ttyS0" levels="info,warn,crit" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600">
 			<filelist>
 				<!-- Список файлов разрешённых для передачи по modbus
@@ -318,6 +326,7 @@
 			<item id="6060" name="TestProc49"/>
 			<item id="6061" name="TestProc50"/>
 			<item id="6062" name="MBSlave2"/>
+			<item id="6063" name="MBMultiSlave1"/>
 		</objects>
 	</ObjectsMap>
 	<messages idfromfile="1" name="messages">
