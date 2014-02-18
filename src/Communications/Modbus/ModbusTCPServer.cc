@@ -11,7 +11,9 @@ using namespace UniSetTypes;
 ModbusTCPServer::ModbusTCPServer( ost::InetAddress &ia, int port ):
     TCPSocket(ia,port),
     iaddr(ia),
-    ignoreAddr(false)
+    ignoreAddr(false),
+    maxSessions(10),
+    sessCount(0)
 {
     setCRCNoCheckit(true);
 }
@@ -20,6 +22,90 @@ ModbusTCPServer::ModbusTCPServer( ost::InetAddress &ia, int port ):
 ModbusTCPServer::~ModbusTCPServer()
 {
     terminate();
+}
+// -------------------------------------------------------------------------
+void ModbusTCPServer::setMaxSessions( unsigned int num )
+{
+    if( num < sessCount )
+    {
+        uniset_mutex_lock l(sMutex);
+
+        int k = sessCount - num;
+        int d = 0;
+
+        for( SessionList::reverse_iterator i=slist.rbegin(); d<k && i!=slist.rend(); ++i,d++ )
+            delete *i;
+
+        sessCount = num;
+    }
+
+    maxSessions = num;
+}
+// -------------------------------------------------------------------------
+unsigned ModbusTCPServer::getCountSessions()
+{
+    return sessCount;
+}
+// -------------------------------------------------------------------------
+bool ModbusTCPServer::waitQuery( ModbusRTU::ModbusAddr mbaddr, timeout_t msec )
+{
+    if( msec == 0 )
+        msec = UniSetTimer::WaitUpTime;
+
+    cerr << "*** sessCount=" << sessCount << " maxSess=" << maxSessions << endl;
+
+    if( sessCount >= maxSessions )
+        return false;
+
+    try
+    {
+        cerr << "*** wait connection: " << msec << " msec" << endl;
+        if( isPendingConnection(msec) )
+        {
+            ModbusTCPSession* s = new ModbusTCPSession(*this,mbaddr);
+
+            s->connectReadCoil( sigc::mem_fun(this, &ModbusTCPServer::readCoilStatus) );
+            s->connectReadInputStatus( sigc::mem_fun(this, &ModbusTCPServer::readInputStatus) );
+            s->connectReadOutput( sigc::mem_fun(this, &ModbusTCPServer::readOutputRegisters) );
+            s->connectReadInput( sigc::mem_fun(this, &ModbusTCPServer::readInputRegisters) );
+            s->connectForceSingleCoil( sigc::mem_fun(this, &ModbusTCPServer::forceSingleCoil) );
+            s->connectForceCoils( sigc::mem_fun(this, &ModbusTCPServer::forceMultipleCoils) );
+            s->connectWriteOutput( sigc::mem_fun(this, &ModbusTCPServer::writeOutputRegisters) );
+            s->connectWriteSingleOutput( sigc::mem_fun(this, &ModbusTCPServer::writeOutputSingleRegister) );
+            s->connectMEIRDI( sigc::mem_fun(this, &ModbusTCPServer::read4314) );
+            s->connectSetDateTime( sigc::mem_fun(this, &ModbusTCPServer::setDateTime) );
+            s->connectDiagnostics( sigc::mem_fun(this, &ModbusTCPServer::diagnostics) );
+            s->connectFileTransfer( sigc::mem_fun(this, &ModbusTCPServer::fileTransfer) );
+            s->connectJournalCommand( sigc::mem_fun(this, &ModbusTCPServer::journalCommand) );
+            s->connectRemoteService( sigc::mem_fun(this, &ModbusTCPServer::remoteService) );
+            s->connectFileTransfer( sigc::mem_fun(this, &ModbusTCPServer::fileTransfer) );
+
+            s->setAfterSendPause(aftersend_msec);
+            s->setReplyTimeout(replyTimeout_ms);
+            s->setRecvTimeout(recvTimeOut_ms);
+            s->setSleepPause(sleepPause_usec);
+            s->setCleanBeforeSend(cleanBeforeSend);
+
+            s->setLog(dlog);
+            s->connectFinalSession( sigc::mem_fun(this, &ModbusTCPServer::sessionFinished) );
+
+            {
+                uniset_mutex_lock l(sMutex);
+                slist.push_back(s);
+                sessCount++;
+            }
+
+            s->detach();
+            return true;
+        }
+    }
+    catch( ost::Exception& e )
+    {
+        if( dlog.debugging(Debug::WARN) )
+            dlog[Debug::WARN] << "(ModbusTCPServer): " << e.what() << endl;
+    }
+
+    return false;
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout )
@@ -208,6 +294,12 @@ mbErrCode ModbusTCPServer::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPH
     return erNoError;
 }
 // -------------------------------------------------------------------------
+ModbusRTU::mbErrCode ModbusTCPServer::post_send_request( ModbusRTU::ModbusMessage& request )
+{
+    tcp << endl;
+    return erNoError;
+}
+// -------------------------------------------------------------------------
 mbErrCode ModbusTCPServer::pre_send_request( ModbusMessage& request )
 {
     if( !tcp.isConnected() )
@@ -250,5 +342,29 @@ void ModbusTCPServer::terminate()
 
     if( tcp && tcp.isConnected() )
         tcp.disconnect();
+}
+// -------------------------------------------------------------------------
+void ModbusTCPServer::sessionFinished( ModbusTCPSession* s )
+{
+    uniset_mutex_lock l(sMutex);
+    for( auto i=slist.begin(); i!=slist.end(); ++i )
+    {
+        if( (*i) == s )
+        {
+            slist.erase(i);
+            sessCount--;
+            break;
+        }
+    }
+}
+// -------------------------------------------------------------------------
+void ModbusTCPServer::getSessions( Sessions& lst )
+{
+    uniset_mutex_lock l(sMutex);
+    for( auto &i: slist )
+    {
+        SessionInfo inf( i->getClientAddress(), i->getAskCount() );
+        lst.push_back(inf);
+    }
 }
 // -------------------------------------------------------------------------

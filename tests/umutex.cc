@@ -139,6 +139,19 @@ int main( int argc, const char **argv )
 {
     try
     {
+	{
+		uniset_mutex m("testmutex");
+		{
+			uniset_mutex_lock l(m);
+			msleep(20);
+		}
+
+		{
+			uniset_mutex_lock l(m,100);
+			msleep(50);
+		}
+
+	}
 
 #if 1
         {

@@ -23,13 +23,13 @@ class MBSlave:
     public UniSetObject_LT
 {
     public:
-        MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0, std::string prefix="mbs" );
+        MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="mbs" );
         virtual ~MBSlave();
 
         /*! глобальная функция для инициализации объекта */
         static MBSlave* init_mbslave( int argc, const char* const* argv,
-                                            UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
-                                            std::string prefix="mbs" );
+                                      UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
+                                      const std::string& prefix="mbs" );
 
         /*! глобальная функция для вывода help-а */
         static void help_print( int argc, const char* const* argv );
@@ -140,15 +140,15 @@ class MBSlave:
         virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
         void askSensors( UniversalIO::UIOCommand cmd );
         void waitSMReady();
-        void execute_rtu();
-        void execute_tcp();
+        virtual void execute_rtu();
+        virtual void execute_tcp();
 
         virtual bool activateObject() override;
 
         // действия при завершении работы
         virtual void sigterm( int signo ) override;
 
-        void initIterators();
+        virtual void initIterators();
         bool initItem( UniXML_iterator& it );
         bool readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec );
 
@@ -162,7 +162,7 @@ class MBSlave:
 
         ModbusRTU::mbErrCode real_read_it( IOMap::iterator& it, ModbusRTU::ModbusData& val );
         ModbusRTU::mbErrCode real_write_it( IOMap::iterator& it, ModbusRTU::ModbusData& val );
-    private:
+
         MBSlave();
         bool initPause;
         UniSetTypes::uniset_rwmutex mutex_start;
