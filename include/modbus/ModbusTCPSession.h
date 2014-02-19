@@ -16,7 +16,7 @@ class ModbusTCPSession:
 {
     public:
 
-        ModbusTCPSession( ost::TCPSocket &server, ModbusRTU::ModbusAddr mbaddr );
+        ModbusTCPSession( ost::TCPSocket &server, ModbusRTU::ModbusAddr mbaddr, timeout_t timeout );
         virtual ~ModbusTCPSession();
 
         void cleanInputStream();
@@ -93,6 +93,7 @@ class ModbusTCPSession:
         ModbusTCP::MBAPHeader curQueryHeader;
         ModbusRTU::ModbusAddr addr;
         PassiveTimer ptTimeout;
+        timeout_t timeout;
         ModbusRTU::ModbusMessage buf;
 
         bool ignoreAddr;

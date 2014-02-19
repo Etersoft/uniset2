@@ -12,7 +12,8 @@ using namespace UniSetExtensions;
 using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
 MBTCPMultiSlave::MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic, const string& prefix ):
-MBSlave(objId,shmId,ic,prefix)
+MBSlave(objId,shmId,ic,prefix),
+sesscount_id(DefaultObjectId)
 {
     cnode = conf->getNode(myname);
     if( cnode == NULL )
@@ -23,6 +24,16 @@ MBSlave(objId,shmId,ic,prefix)
     waitTimeout = conf->getArgInt("--" + prefix + "-wait-timeout",it.getProp("waitTimeout"));
     if( waitTimeout == 0 )
         waitTimeout = 4000;
+
+    sessTimeout = conf->getArgInt("--" + prefix + "-session-timeout",it.getProp("sessTimeout"));
+    if( sessTimeout == 0 )
+        sessTimeout = 10000;
+
+    sessMaxNum = conf->getArgInt("--" + prefix + "-session-maxnum",it.getProp("sessMaxNum"));
+    if( sessMaxNum == 0 )
+        sessMaxNum = 10;
+
+    sesscount_id = conf->getSensorID( conf->getArgParam("--" + prefix + "-session-count-id",it.getProp("sesscount")) );
 
     UniXML::iterator cit(it);
 
@@ -89,6 +100,12 @@ MBTCPMultiSlave::~MBTCPMultiSlave()
 void MBTCPMultiSlave::help_print( int argc, const char* const* argv )
 {
    MBSlave::help_print(argc,argv);
+
+   cerr << endl;
+   cout << "--prefix-wait-timeout msec      - Время ожидания очередного соединения и обновление статистики работы. По умолчанию: 4 сек." << endl;
+   cout << "--prefix-session-timeout msec   - Таймаут на закрытие соединения с 'клиентом', если от него нет запросов. По умолчанию: 10 сек." << endl;
+   cout << "--prefix-session-maxnum num     - Маскимальное количество соединений. По умолчанию: 10." << endl;
+   cout << "--prefix-session-count-id  id - Датчик для отслеживания текущего количества соединений." << endl;
 }
 // -----------------------------------------------------------------------------
 MBTCPMultiSlave* MBTCPMultiSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID, SharedMemory* ic,
@@ -131,6 +148,8 @@ void MBTCPMultiSlave::execute_tcp()
     for( auto &i: cmap )
         i.second.ptTimeout.reset();
 
+    sslot->setMaxSessions( sessMaxNum );
+
     while(1)
     {
         try
@@ -142,7 +161,6 @@ void MBTCPMultiSlave::execute_tcp()
             sslot->getSessions(sess);
             for( auto& s: sess )
             {
-                cerr << " find " << s.iaddr << endl;
                 auto i = cmap.find( s.iaddr );
                 if( i!=cmap.end() )
                 {
@@ -253,6 +271,18 @@ void MBTCPMultiSlave::execute_tcp()
                     dcrit << myname << "(execute_rtu): (askCount) " << ex << std::endl;
                 }
             }
+
+            if( sesscount_id!=DefaultObjectId )
+            {
+                try
+                {
+                    shm->localSetValue(sesscount_it,sesscount_id, sslot->getCountSessions(),getId());
+                }
+                catch(Exception& ex)
+                {
+                    dcrit << myname << "(execute_rtu): (sessCount) " << ex << std::endl;
+                }
+            }
         }
         catch(...){}
     }
@@ -261,6 +291,9 @@ void MBTCPMultiSlave::execute_tcp()
 void MBTCPMultiSlave::initIterators()
 {
     MBSlave::initIterators();
+
+    shm->initIterator(sesscount_it);
+
     for( auto &i: cmap )
         i.second.initIterators(shm);
 }

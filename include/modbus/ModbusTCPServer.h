@@ -35,6 +35,10 @@ class ModbusTCPServer:
         void setMaxSessions( unsigned int num );
         inline unsigned int getMaxSessions(){ return maxSessions; }
 
+        /*! установить timeout для поддержания соединения с "клиентом" (Default: 10 сек) */
+        void setSessionTimeout( timeout_t msec );
+        inline timeout_t getSessionTimeout(){ return sessTimeout; }
+
         /*! текущее количество подключений */
         unsigned getCountSessions();
 
@@ -86,6 +90,8 @@ class ModbusTCPServer:
 
         unsigned int maxSessions;
         unsigned int sessCount;
+
+        timeout_t sessTimeout;
 
     private:
 
