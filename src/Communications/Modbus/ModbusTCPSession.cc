@@ -16,9 +16,10 @@ ModbusTCPSession::~ModbusTCPSession()
 {
 }
 // -------------------------------------------------------------------------
-ModbusTCPSession::ModbusTCPSession( ost::TCPSocket &server, ModbusRTU::ModbusAddr a ):
+ModbusTCPSession::ModbusTCPSession( ost::TCPSocket &server, ModbusRTU::ModbusAddr a, timeout_t timeout ):
 TCPSession(server),
 addr(a),
+timeout(timeout),
 peername(""),
 caddr(""),
 askCount(0)
@@ -34,12 +35,6 @@ unsigned int ModbusTCPSession::getAskCount()
 // -------------------------------------------------------------------------
 void ModbusTCPSession::run()
 {
-#warning DEBUG PARAM!!
-    timeout_t msec = 10000; // для отладки..
-
-    PassiveTimer ptTimeout(msec);
-    ModbusMessage buf;
-
     {
         ost::tpport_t p;
         ost::InetAddress iaddr = getIPV4Peer(&p);
@@ -50,14 +45,16 @@ void ModbusTCPSession::run()
         ostringstream s;
         s << iaddr << ":" << p;
         peername = s.str();
+
+//      struct in_addr a = iaddr.getAddress();
+//      cerr << "**************** CREATE SESS FOR " << string( inet_ntoa(a) ) << endl;
     }
 
     ModbusRTU::mbErrCode res = erTimeOut;
-    while( isPending(Socket::pendingInput, msec) )
+    while( isPending(Socket::pendingInput, timeout) )
     {
-         res = receive(addr,msec);
+         res = receive(addr,timeout);
 
-//         cerr << peername << ": query result=" << res << endl;
          if( res == erSessionClosed )
              break;
 

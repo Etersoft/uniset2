@@ -13,7 +13,8 @@ ModbusTCPServer::ModbusTCPServer( ost::InetAddress &ia, int port ):
     iaddr(ia),
     ignoreAddr(false),
     maxSessions(10),
-    sessCount(0)
+    sessCount(0),
+    sessTimeout(10000)
 {
     setCRCNoCheckit(true);
 }
@@ -47,22 +48,24 @@ unsigned ModbusTCPServer::getCountSessions()
     return sessCount;
 }
 // -------------------------------------------------------------------------
+void ModbusTCPServer::setSessionTimeout( timeout_t msec )
+{
+    sessTimeout = msec;
+}
+// -------------------------------------------------------------------------
 bool ModbusTCPServer::waitQuery( ModbusRTU::ModbusAddr mbaddr, timeout_t msec )
 {
     if( msec == 0 )
         msec = UniSetTimer::WaitUpTime;
-
-    cerr << "*** sessCount=" << sessCount << " maxSess=" << maxSessions << endl;
 
     if( sessCount >= maxSessions )
         return false;
 
     try
     {
-        cerr << "*** wait connection: " << msec << " msec" << endl;
         if( isPendingConnection(msec) )
         {
-            ModbusTCPSession* s = new ModbusTCPSession(*this,mbaddr);
+            ModbusTCPSession* s = new ModbusTCPSession(*this,mbaddr,sessTimeout);
 
             s->connectReadCoil( sigc::mem_fun(this, &ModbusTCPServer::readCoilStatus) );
             s->connectReadInputStatus( sigc::mem_fun(this, &ModbusTCPServer::readInputStatus) );
@@ -114,8 +117,8 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
     ModbusMessage buf;
     mbErrCode res = erTimeOut;
 
-//    Thread::setException(Thread::throwException);
-//#warning "Why timeout can be 0 there?"
+//  Thread::setException(Thread::throwException);
+//  #warning "Why timeout can be 0 there?"
     assert(timeout);
 
     ptTimeout.reset();

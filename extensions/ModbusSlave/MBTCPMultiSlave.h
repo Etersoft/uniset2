@@ -7,7 +7,7 @@
 #include "modbus/ModbusTCPServer.h"
 // -----------------------------------------------------------------------------
 /*!
-        <MBTCPMultiSlave ....>
+        <MBTCPMultiSlave ....sesscount="">
             <clients>
                 <item ip="" respond="" invert="1" askcount=""/>
                 <item ip="" respond="" invert="1" askcount=""/>
@@ -36,8 +36,10 @@ class MBTCPMultiSlave:
         virtual void execute_tcp() override;
         virtual void initIterators() override;
 
+        timeout_t sessTimeout;  /*!< таймаут на сессию */
         timeout_t waitTimeout;
         ModbusTCPServer::Sessions sess; /*!< список открытых сессий */
+        unsigned int sessMaxNum;
 
         struct ClientInfo
         {
@@ -65,6 +67,10 @@ class MBTCPMultiSlave:
 
         typedef std::map<const std::string,ClientInfo> ClientsMap;
         ClientsMap cmap;
+
+
+        UniSetTypes::ObjectId sesscount_id;
+        IOController::IOStateList::iterator sesscount_it;
 };
 // -----------------------------------------------------------------------------
 #endif // _MBTCPMultiSlave_H_
