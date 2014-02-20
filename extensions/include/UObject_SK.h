@@ -119,7 +119,7 @@ class UObject_SK:
 		inline const std::string getProp(const std::string& name) { return UniSetTypes::conf->getProp(confnode, name); }
 
 		int smReadyTimeout; 	/*!< время ожидания готовности SM */
-		UniSetTypes::mutex_atomic_t activated;
+		std::atomic_bool activated;
 		int activateTimeout;	/*!< время ожидания готовности UniSetObject к работе */
 		PassiveTimer ptStartUpTimeout;	/*!< время на блокировку обработки WatchDog, если недавно был StartUp */
 		int askPause; /*!< пауза между неудачными попытками заказать датчики */

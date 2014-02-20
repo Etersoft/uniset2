@@ -11,7 +11,7 @@ UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId s
 UniSetObject_LT(objId),
 shm(0),
 initPause(0),
-activated(0),
+activated(false),
 no_sender(false),
 sender(0),
 sender2(0)
@@ -576,11 +576,11 @@ bool UNetExchange::activateObject()
     // пока не пройдёт инициализация датчиков
     // см. sysCommand()
     {
-        activated = 0;
+        activated = false;
         UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
         UniSetObject_LT::activateObject();
         initIterators();
-        activated = 1;
+        activated = true;
     }
 
     return true;
@@ -589,7 +589,7 @@ bool UNetExchange::activateObject()
 void UNetExchange::sigterm( int signo )
 {
     dinfo << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
-    activated = 0;
+    activated = false;
     for( auto &it: recvlist )
     {
         try

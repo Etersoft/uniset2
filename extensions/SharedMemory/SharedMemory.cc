@@ -36,8 +36,8 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
     heartbeatCheckTime(5000),
     histSaveTime(0),
     wdt(0),
-    activated(0),
-    workready(0),
+    activated(false),
+    workready(false),
     dblogging(false),
     msecPulsar(0)
 {
@@ -233,7 +233,7 @@ bool SharedMemory::activateObject()
     // пока не пройдёт инициализация датчиков
     // см. sysCommand()
     {
-        activated = 0;
+        activated = false;
 
         UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
         res = IONotifyController_LT::activateObject();
@@ -252,7 +252,7 @@ bool SharedMemory::activateObject()
                 hit.ioit = myioEnd();
         }
 
-        activated = 1;
+        activated = true;
     }
 
     cerr << "************************** activate: " << pt.getCurrent() << " msec " << endl;

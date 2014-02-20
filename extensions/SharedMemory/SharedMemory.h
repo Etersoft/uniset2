@@ -407,8 +407,8 @@ class SharedMemory:
         typedef std::list<HeartBeatInfo> HeartBeatList;
         HeartBeatList hlist; // список датчиков "сердцебиения"
         WDTInterface* wdt;
-        UniSetTypes::mutex_atomic_t activated;
-        UniSetTypes::mutex_atomic_t workready;
+        std::atomic_bool activated;
+        std::atomic_bool workready;
 
         typedef std::list<UniSetTypes::ObjectId> EventList;
         EventList elst;

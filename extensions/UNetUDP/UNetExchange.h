@@ -134,7 +134,7 @@ class UNetExchange:
 
         int steptime;    /*!< периодичность вызова step, [мсек] */
 
-        UniSetTypes::mutex_atomic_t activated;
+        std::atomic_bool activated;
         int activateTimeout;
 
         struct ReceiverInfo

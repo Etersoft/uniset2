@@ -22,7 +22,7 @@ force_out(false),
 mbregFromID(false),
 sidExchangeMode(DefaultObjectId),
 exchangeMode(emNone),
-activated(0),
+activated(false),
 noQueryOptimization(false),
 no_extimer(false),
 prefix(prefix),
@@ -226,7 +226,7 @@ bool MBExchange::checkProcActive()
 // -----------------------------------------------------------------------------
 void MBExchange::setProcActive( bool st )
 {
-    activated = (st ? 1 : 0);
+    activated = st;
 }
 // -----------------------------------------------------------------------------
 void MBExchange::sigterm( int signo )

@@ -15,7 +15,7 @@ s_fvalue(s_val),
 shm(smi),
 s_host(s_host),
 sendpause(150),
-activated(0),
+activated(false),
 dlist(100),
 maxItem(0),
 packetnum(1),
@@ -195,7 +195,7 @@ void UNetSender::real_send()
 // -----------------------------------------------------------------------------
 void UNetSender::stop()
 {
-    activated = 0;
+    activated = false;
 //    s_thr->stop();
 }
 // -----------------------------------------------------------------------------
@@ -203,7 +203,7 @@ void UNetSender::start()
 {
     if( !activated )
     {
-        activated = 1;
+        activated = true;
         s_thr->start();
     }
 }
