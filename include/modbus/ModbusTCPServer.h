@@ -95,6 +95,7 @@ class ModbusTCPServer:
 
     private:
 
+        std::atomic_bool cancelled;
 };
 // -------------------------------------------------------------------------
 #endif // ModbusTCPServer_H_

@@ -150,7 +150,9 @@ void MBTCPMultiSlave::execute_tcp()
 
     sslot->setMaxSessions( sessMaxNum );
 
-    while(1)
+    dinfo << myname << "(execute_tcp): thread running.." << endl;
+
+    while( !cancelled )
     {
         try
         {
@@ -286,6 +288,8 @@ void MBTCPMultiSlave::execute_tcp()
         }
         catch(...){}
     }
+
+    dinfo << myname << "(execute_tcp): thread stopped.." << endl;
 }
 // -----------------------------------------------------------------------------
 void MBTCPMultiSlave::initIterators()
@@ -296,5 +300,29 @@ void MBTCPMultiSlave::initIterators()
 
     for( auto &i: cmap )
         i.second.initIterators(shm);
+}
+// -----------------------------------------------------------------------------
+bool MBTCPMultiSlave::disactivateObject()
+{
+    if( mbslot )
+    {
+        ModbusTCPServerSlot* sslot = dynamic_cast<ModbusTCPServerSlot*>(mbslot);
+        if( sslot )
+            sslot->sigterm(SIGTERM);
+    }
+
+    return MBSlave::disactivateObject();
+}
+// -----------------------------------------------------------------------------
+void MBTCPMultiSlave::sigterm( int signo )
+{
+    if( mbslot )
+    {
+        ModbusTCPServerSlot* sslot = dynamic_cast<ModbusTCPServerSlot*>(mbslot);
+        if( sslot )
+            sslot->sigterm(signo);
+    }
+
+    MBSlave::sigterm(signo);
 }
 // -----------------------------------------------------------------------------

@@ -73,7 +73,7 @@ bool uniset_mutex::try_lock_for( const time_t& msec )
 // -----------------------------------------------------------------------------
 uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, const time_t timeMS ):
     mutex(&m),
-    locked(0)
+    locked(false)
 {
 
     if( timeMS == 0 )
@@ -93,18 +93,21 @@ uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, const time_t timeMS ):
         return;
     }
 
-     locked = 1;
+    locked = true;
 }
 // -----------------------------------------------------------------------------
 bool uniset_mutex_lock::lock_ok()
 {
-    return (locked == 1);
+    return locked;
 }
 // -----------------------------------------------------------------------------
 uniset_mutex_lock::~uniset_mutex_lock()
 {
-    mutex->unlock();
-    locked = 0;
+    if( locked )
+    {
+        mutex->unlock();
+        locked = false;
+    }
 }
 // -----------------------------------------------------------------------------
 uniset_rwmutex::uniset_rwmutex( const std::string& name ):

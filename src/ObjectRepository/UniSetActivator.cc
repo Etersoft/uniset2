@@ -69,7 +69,7 @@ static UniSetActivator* gActivator=0;
 //static ThreadCreator<UniSetActivator>* termthread=0;
 static int SIGNO;
 static int MYPID;
-static const int TERMINATE_TIMEOUT = 2; //  время отведенное на завершение процесса [сек]
+static const int TERMINATE_TIMEOUT = 10; //  время отведенное на завершение процесса [сек]
 ost::AtomicCounter procterm = 0;
 ost::AtomicCounter doneterm = 0;
 
@@ -118,6 +118,9 @@ sig(false)
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::init()
 {
+    if( getId() == DefaultObjectId )
+        myname = "UniSetActivator";
+
     orb = conf->getORB();
     CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
     PortableServer::POA_var root_poa = PortableServer::POA::_narrow(obj);
@@ -145,8 +148,8 @@ UniSetActivator::~UniSetActivator()
 
         procterm = 1;
         doneterm = 1;
-        set_signals(false);    
-        gActivator=0;    
+        set_signals(false);
+        gActivator=0;
     }
 
     if( orbthr )
@@ -283,7 +286,7 @@ void UniSetActivator::work()
     ulogsys << myname << "(work): запускаем orb на обработку запросов..."<< endl;
     try
     {
-        if(orbthr)
+        if( orbthr )
             thpid = orbthr->getTID();
         else
             thpid = getpid();

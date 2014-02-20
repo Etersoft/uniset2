@@ -22,6 +22,7 @@ respond_id(DefaultObjectId),
 respond_invert(false),
 askCount(0),
 activated(false),
+cancelled(false),
 activateTimeout(500),
 pingOK(true),
 force(false),
@@ -120,6 +121,9 @@ prefix(prefix)
         mbslot = mbtcp;
         thr = new ThreadCreator<MBSlave>(this,&MBSlave::execute_tcp);
         dinfo << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
+
+        if( dlog.debugging(Debug::LEVEL9) )
+            mbtcp->setLog(dlog);
     }
     else
         throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown slave type. Use: --mbs-type [RTU|TCP]");
@@ -357,9 +361,17 @@ prefix(prefix)
 // -----------------------------------------------------------------------------
 MBSlave::~MBSlave()
 {
+    cancelled = true;
+
+    if( thr && thr->isRunning() )
+    {
+        thr->stop();
+        thr->join();
+    }
+
+    delete thr;
     delete mbslot;
     delete shm;
-    delete thr;
 }
 // -----------------------------------------------------------------------------
 void MBSlave::waitSMReady()
@@ -386,7 +398,7 @@ void MBSlave::execute_rtu()
 
     ModbusRTU::mbErrCode prev = erNoError;
 
-    while(1)
+    while( !cancelled )
     {
         try
         {
@@ -467,7 +479,9 @@ void MBSlave::execute_tcp()
 
     ModbusRTU::mbErrCode prev = erNoError;
 
-    while(1)
+    dinfo << myname << "(execute_tcp): thread running.." << endl;
+
+    while( !cancelled )
     {
         try
         {
@@ -540,6 +554,8 @@ void MBSlave::execute_tcp()
         }
         catch(...){}
     }
+
+    dinfo << myname << "(execute_tcp): thread stopped.." << endl;
 }
 // -------------------------------------------------------------------------
 void MBSlave::sysCommand( const UniSetTypes::SystemMessage *sm )
@@ -721,10 +737,27 @@ bool MBSlave::activateObject()
     return true;
 }
 // ------------------------------------------------------------------------------------------
+bool MBSlave::disactivateObject()
+{
+    dinfo << myname << "(disactivateObject): ..." << endl;
+
+    activated = false;
+    cancelled = true;
+    try
+    {
+        if( mbslot )
+            mbslot->sigterm(SIGTERM);
+    }
+    catch(...){}
+
+    return UniSetObject_LT::disactivateObject();
+}
+// ------------------------------------------------------------------------------------------
 void MBSlave::sigterm( int signo )
 {
     dinfo << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
     activated = false;
+    cancelled = true;
     try
     {
         if( mbslot )

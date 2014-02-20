@@ -93,8 +93,8 @@ stCountOfQueueFull(0)
     {
         threadcreate = false;
         myid = UniSetTypes::DefaultObjectId;
-        myname = "noname";
-        section = "nonameSection";
+        myname = "UnknownUniSetObject";
+        section = "UnknownSection";
     }
 
     init_object();
@@ -135,12 +135,20 @@ stCountOfQueueFull(0)
 UniSetObject::~UniSetObject() 
 {
     disactivate();
-    delete tmr;
-    if(thr)
+
+    tmr->terminate();
+
+    if( thr )
     {
         thr->stop();
+
+        if( thr->isRunning() )
+            thr->join();
+
         delete thr;
     }
+
+    delete tmr;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::init_object()
@@ -624,7 +632,7 @@ bool UniSetObject::disactivate()
 
     try
     {
-        uinfo << "disactivateObject..." << endl;
+        uinfo << myname << "(disactivate): ..." << endl;
 
         PortableServer::POA_var poamngr = mymngr->getPOA();
         if( !PortableServer::POA_Helper::is_nil(poamngr) )
@@ -634,33 +642,34 @@ bool UniSetObject::disactivate()
                 disactivateObject();
             }
             catch(...){}
+
             unregister();
             PortableServer::ObjectId_var oid = poamngr->servant_to_id(static_cast<PortableServer::ServantBase*>(this));
             poamngr->deactivate_object(oid);
-            uinfo << "ok..." << endl;
+            uinfo << myname << "(disacivate): finished..." << endl;
             return true;
         }
-        uwarn << "manager already destroyed.." << endl;
+        uwarn << myname << "(disactivate): manager already destroyed.." << endl;
     }
     catch(CORBA::TRANSIENT)
     {
-        uwarn << "isExist: нет связи..."<< endl;
+        uwarn << myname << "(disactivate): isExist: нет связи..."<< endl;
     }
     catch( CORBA::SystemException& ex )
     {
-        uwarn << "UniSetObject: "<<"поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
+        uwarn << myname << "(disactivate): " << "поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
     }
     catch(CORBA::Exception& ex)
     {
-        uwarn << "UniSetObject: "<<"поймали CORBA::Exception." << endl;
+        uwarn << myname << "(disactivate): " << "поймали CORBA::Exception." << endl;
     }
     catch(Exception& ex)
     {
-        uwarn << "UniSetObject: "<< ex << endl;
+        uwarn << myname << "(disactivate): " << ex << endl;
     }
     catch(...)
     {
-        uwarn << "UniSetObject: "<<" catch ..." << endl;
+        uwarn << myname << "(disactivate): " << " catch ..." << endl;
     }
 
     return false;
@@ -742,15 +751,15 @@ bool UniSetObject::activate()
 // ------------------------------------------------------------------------------------------
 void UniSetObject::work()
 {
-    uinfo << myname << ": thread processing messages run..." << endl;
+    uinfo << myname << ": thread processing messages running..." << endl;
+
     if( thr )
         msgpid = thr->getTID();
-    while( isActive() )
-    {
-        callback();
-    }
 
-    uinfo << myname << ": thread processing messages stop..." << endl;
+    while( isActive() )
+        callback();
+
+    uinfo << myname << ": thread processing messages stopped..." << endl;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::callback()

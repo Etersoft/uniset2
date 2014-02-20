@@ -140,6 +140,25 @@ int main( int argc, const char **argv )
     try
     {
 	{
+		cout << "check timed_mutex..." << endl;
+		std::timed_mutex m;
+
+		cout << " 'unlock' without 'lock'..";
+		m.unlock();
+		cout << " ok." << endl;
+
+			cout << "try lock (lock): " << ( m.try_lock() ? "OK" : "FAIL" ) << endl;
+
+			m.unlock();
+
+		m.lock();
+
+			cout << "try lock (fail): " << ( m.try_lock() ? "FAIL" : "OK" ) << endl;
+		m.unlock();
+	}
+
+
+	{
 		uniset_mutex m("testmutex");
 		{
 			uniset_mutex_lock l(m);

@@ -186,7 +186,7 @@ class UniSetObject:
             virtual void cleanMsgQueue( MessagesQueue& q );
 
             inline bool isActive(){ return active; }
-            inline void setActive( bool set ){ active = set ? 1 : 0; }
+            inline void setActive( bool set ){ active = set; }
 
             UniSetTypes::VoidMessage msg;
             UniSetManager* mymngr;

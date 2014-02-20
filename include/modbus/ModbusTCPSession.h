@@ -103,6 +103,8 @@ class ModbusTCPSession:
 
         FinalSlot slFin;
 
+        std::atomic_bool cancelled;
+
         // статистика
         UniSetTypes::uniset_rwmutex mAsk;
         unsigned int askCount;
