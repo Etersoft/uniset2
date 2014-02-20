@@ -297,9 +297,9 @@ bool UObject_SK::activateObject()
 	// пока не пройдёт инициализация датчиков
 	// см. sysCommand()
 	{
-		activated = 0;
+		activated = false;
 		UniSetObject::activateObject();
-		activated = 1;
+		activated = true;
 	}
 
 	return true;

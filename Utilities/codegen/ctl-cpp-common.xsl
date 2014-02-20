@@ -234,7 +234,7 @@
 		inline const std::string getProp(const std::string&amp; name) { return UniSetTypes::conf->getProp(confnode, name); }
 
 		int smReadyTimeout; 	/*!&lt; время ожидания готовности SM */
-		UniSetTypes::mutex_atomic_t activated;
+		std::atomic_bool activated;
 		int activateTimeout;	/*!&lt; время ожидания готовности UniSetObject к работе */
 		PassiveTimer ptStartUpTimeout;	/*!&lt; время на блокировку обработки WatchDog, если недавно был StartUp */
 		int askPause; /*!&lt; пауза между неудачными попытками заказать датчики */
@@ -350,10 +350,10 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::activateObject()
 	// пока не пройдёт инициализация датчиков
 	// см. sysCommand()
 	{
-		activated = 0;
+		activated = false;
 		<xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>::activateObject();</xsl:if>
 		<xsl:if test="normalize-space($BASECLASS)=''">UniSetObject::activateObject();</xsl:if>
-		activated = 1;
+		activated = true;
 	}
 
 	return true;
@@ -522,7 +522,7 @@ idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(0),
 smReadyTimeout(0),
-activated(0),
+activated(false),
 askPause(2000),
 <xsl:for-each select="//variables/item">
 <xsl:if test="normalize-space(@private)!=''">
@@ -586,7 +586,7 @@ idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(cnode),
 smReadyTimeout(0),
-activated(0),
+activated(false),
 askPause(conf->getPIntProp(cnode,"askPause",2000)),
 <xsl:for-each select="//variables/item">
 <xsl:if test="normalize-space(@private)!=''">
@@ -872,7 +872,7 @@ idLocalTestMode_S(DefaultObjectId),
 idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(0),
-activated(0),
+activated(false),
 askPause(2000)
 {
 	ucrit &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
@@ -906,7 +906,7 @@ in_LocalTestMode_S(false),
 idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(cnode),
-activated(0),
+activated(false),
 askPause(conf->getPIntProp(cnode,"askPause",2000))
 {
 	if( getId() == DefaultObjectId )

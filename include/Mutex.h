@@ -32,8 +32,6 @@
 // -----------------------------------------------------------------------------------------
 namespace UniSetTypes
 {
-    typedef std::atomic_int mutex_atomic_t;
-
     class uniset_mutex
     {
         public:

@@ -21,7 +21,7 @@ askcount_id(DefaultObjectId),
 respond_id(DefaultObjectId),
 respond_invert(false),
 askCount(0),
-activated(0),
+activated(false),
 activateTimeout(500),
 pingOK(true),
 force(false),
@@ -711,11 +711,11 @@ bool MBSlave::activateObject()
     // пока не пройдёт инициализация датчиков
     // см. sysCommand()
     {
-        activated = 0;
+        activated = false;
         UniSetTypes::uniset_rwmutex_wrlock l(mutex_start);
         UniSetObject_LT::activateObject();
         initIterators();
-        activated = 1;
+        activated = true;
     }
 
     return true;
@@ -724,7 +724,7 @@ bool MBSlave::activateObject()
 void MBSlave::sigterm( int signo )
 {
     dinfo << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
-    activated = 0;
+    activated = false;
     try
     {
         if( mbslot )

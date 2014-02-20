@@ -367,7 +367,7 @@ class IOControl:
         int maxCardNum;        /*! максимально разрешённый номер для карты */
 
         UniSetTypes::uniset_mutex iopollMutex;
-        UniSetTypes::mutex_atomic_t activated;
+        std::atomic_bool activated;
         bool readconf_ok;
         int activateTimeout;
         UniSetTypes::ObjectId sidTestSMReady;

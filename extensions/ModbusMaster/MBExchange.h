@@ -299,7 +299,7 @@ class MBExchange:
         IOController::IOStateList::iterator itExchangeMode;
         long exchangeMode; /*!< режим работы см. ExchangeMode */
 
-        UniSetTypes::mutex_atomic_t activated;
+        std::atomic_bool activated;
         int activateTimeout;
         bool noQueryOptimization;
         bool no_extimer;

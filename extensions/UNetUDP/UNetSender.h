@@ -86,7 +86,7 @@ class UNetSender
 
         std::string myname;
         int sendpause;
-        UniSetTypes::mutex_atomic_t activated;
+        std::atomic_bool activated;
 
         UniSetTypes::uniset_rwmutex pack_mutex;
         UniSetUDP::UDPMessage mypack;

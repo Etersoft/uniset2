@@ -43,7 +43,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
     force(false),
     force_out(false),
     maxCardNum(10),
-    activated(0),
+    activated(false),
     readconf_ok(false),
     term(false),
     testMode_as(UniSetTypes::DefaultObjectId),
@@ -786,9 +786,9 @@ bool IOControl::activateObject()
     // пока не пройдёт инициализация датчиков
     // см. sysCommand()
     {
-        activated = 0;
+        activated = false;
         UniSetObject::activateObject();
-        activated = 1;
+        activated = true;
     }
 
     return true;

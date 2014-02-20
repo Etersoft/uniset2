@@ -130,7 +130,7 @@ class UNetReceiver
         UniSetTypes::ObjectId sidLostPackets;
         IOController::IOStateList::iterator itLostPackets;
 
-        UniSetTypes::mutex_atomic_t activated;
+        std::atomic_bool activated;
 
         ThreadCreator<UNetReceiver>* r_thr;        // receive thread
         ThreadCreator<UNetReceiver>* u_thr;        // update thread

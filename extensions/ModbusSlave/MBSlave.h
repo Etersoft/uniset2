@@ -186,7 +186,7 @@ class MBSlave:
         typedef std::map<ModbusRTU::mbErrCode,unsigned int> ExchangeErrorMap;
         ExchangeErrorMap errmap;     /*!< статистика обмена */
 
-        UniSetTypes::mutex_atomic_t activated;
+        std::atomic_bool activated;
         int activateTimeout;
         bool pingOK;
         timeout_t wait_msec;
