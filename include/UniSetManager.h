@@ -133,7 +133,7 @@ class UniSetManager:
         //! \note Переопределяя не забывайте вызвать базовую 
         virtual bool activateObject() override;
         //! \note Переопределяя не забывайте вызвать базовую 
-        virtual bool disactivateObject() override;
+        virtual bool deactivateObject() override;
 
         typedef UniSetManagerList::iterator MListIterator;
 

@@ -8,7 +8,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt1
+Release: alt2
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -333,6 +333,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
 
 %changelog
+* Thu Feb 20 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt2
+- rename 'disactivate' --> 'deactivate'
+
 * Wed Feb 19 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt1
 - add ModbusMultiSlave (multithreaded modbus slave server)
 

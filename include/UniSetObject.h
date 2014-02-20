@@ -112,7 +112,7 @@ class UniSetObject:
             std::string section;
 
             //! Дизактивизация объекта (переопределяется для необходимых действий перед деактивацией)
-            virtual bool disactivateObject(){return true;}
+            virtual bool deactivateObject(){return true;}
             //! Активизация объекта (переопределяется для необходимых действий после активизации)
             virtual bool activateObject(){return true;}
 
@@ -133,7 +133,7 @@ class UniSetObject:
             */
             virtual void sigterm( int signo ){};
 
-            inline void terminate(){ disactivate(); }
+            inline void terminate(){ deactivate(); }
 
             /*! Ожидать сообщения timeMS */
             virtual bool waitMessage(UniSetTypes::VoidMessage& msg, timeout_t timeMS=UniSetTimer::WaitUpTime);
@@ -208,7 +208,7 @@ class UniSetObject:
             //! Инициализация параметров объекта
             bool init(UniSetManager* om);
             //! Прямая деактивизация объекта     
-            bool disactivate();
+            bool deactivate();
             //! Непосредственная активизация объекта
             bool activate();
             /* регистрация в репозитории объектов */

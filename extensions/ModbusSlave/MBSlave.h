@@ -144,7 +144,7 @@ class MBSlave:
         virtual void execute_tcp();
 
         virtual bool activateObject() override;
-        virtual bool disactivateObject() override;
+        virtual bool deactivateObject() override;
 
         // действия при завершении работы
         virtual void sigterm( int signo ) override;

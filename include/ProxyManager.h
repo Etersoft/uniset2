@@ -53,7 +53,7 @@ class ProxyManager:
         virtual void allMessage( UniSetTypes::VoidMessage* msg );
 
         virtual bool activateObject();
-        virtual bool disactivateObject();
+        virtual bool deactivateObject();
 
     private:
         typedef std::map<UniSetTypes::ObjectId, PassiveObject*> PObjectMap;

@@ -189,7 +189,7 @@ class IOController:
 
     protected:
             // переопределяем для добавления вызова регистрации датчиков
-            virtual bool disactivateObject() override;
+            virtual bool deactivateObject() override;
             virtual bool activateObject() override;
 
             /*! Начальная инициализация (выставление значений) */

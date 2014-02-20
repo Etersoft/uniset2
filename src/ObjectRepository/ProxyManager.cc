@@ -112,7 +112,7 @@ bool ProxyManager::activateObject()
     return ret;
 }
 // -------------------------------------------------------------------------
-bool ProxyManager::disactivateObject()
+bool ProxyManager::deactivateObject()
 {
     for( PObjectMap::const_iterator it=omap.begin();it!=omap.end();++it )
     {
@@ -126,7 +126,7 @@ bool ProxyManager::disactivateObject()
         }
     }
 
-    return UniSetObject::disactivateObject();
+    return UniSetObject::deactivateObject();
 }
 // -------------------------------------------------------------------------
 void ProxyManager::processingMessage( UniSetTypes::VoidMessage *msg )

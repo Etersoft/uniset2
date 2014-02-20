@@ -35,7 +35,7 @@ class MBTCPMultiSlave:
     protected:
         virtual void execute_tcp() override;
         virtual void initIterators() override;
-        virtual bool disactivateObject() override;
+        virtual bool deactivateObject() override;
         virtual void sigterm( int signo ) override;
 
         timeout_t sessTimeout;  /*!< таймаут на сессию */

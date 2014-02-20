@@ -71,10 +71,10 @@ bool IOController::activateObject()
     return res;
 }
 // ------------------------------------------------------------------------------------------
-bool IOController::disactivateObject()
+bool IOController::deactivateObject()
 {
     sensorsUnregistration();
-    return UniSetManager::disactivateObject();
+    return UniSetManager::deactivateObject();
 }
 // ------------------------------------------------------------------------------------------
 void IOController::sensorsUnregistration()

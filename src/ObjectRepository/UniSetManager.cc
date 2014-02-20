@@ -170,7 +170,7 @@ bool UniSetManager::removeObject( UniSetObject* obj )
             uinfo << myname << "(activator): удаляем объект "<< obj->getName()<< endl;
             try
             {
-                obj->disactivate();
+                obj->deactivate();
             }
             catch(Exception& ex)
             {
@@ -224,7 +224,7 @@ void UniSetManager::managers( OManagerCommand cmd )
                         break;
 
                     case deactiv:
-                        li->disactivate();
+                        li->deactivate();
                         break;
 
                     case term:
@@ -284,7 +284,7 @@ void UniSetManager::objects(OManagerCommand cmd)
                         break;
 
                     case deactiv:
-                        li->disactivate();
+                        li->deactivate();
                         break;
 
                     case term:
@@ -338,9 +338,9 @@ bool UniSetManager::activateObject()
  *    Удаление объекта и всех его подобъектов из репозитория.
  *    \note Объект становится недоступен другим процессам
 */
-bool UniSetManager::disactivateObject()
+bool UniSetManager::deactivateObject()
 {
-    uinfo << myname << "(disactivateObjects):  деактивизирую объекты"<< endl;
+    uinfo << myname << "(deactivateObjects):  деактивизирую объекты"<< endl;
     // именно в такой последовательности!
     objects(deactiv);
     managers(deactiv);

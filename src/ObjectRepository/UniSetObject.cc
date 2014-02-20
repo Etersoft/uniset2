@@ -134,7 +134,7 @@ stCountOfQueueFull(0)
 // ------------------------------------------------------------------------------------------
 UniSetObject::~UniSetObject() 
 {
-    disactivate();
+    deactivate();
 
     tmr->terminate();
 
@@ -608,13 +608,13 @@ unsigned int UniSetObject::countMessages()
     }
 }
 // ------------------------------------------------------------------------------------------
-bool UniSetObject::disactivate()
+bool UniSetObject::deactivate()
 {
     if( !isActive() )
     {
         try
         {
-            disactivateObject();
+            deactivateObject();
         }
         catch(...){}
         return true;
@@ -632,14 +632,14 @@ bool UniSetObject::disactivate()
 
     try
     {
-        uinfo << myname << "(disactivate): ..." << endl;
+        uinfo << myname << "(deactivate): ..." << endl;
 
         PortableServer::POA_var poamngr = mymngr->getPOA();
         if( !PortableServer::POA_Helper::is_nil(poamngr) )
         {
             try
             {
-                disactivateObject();
+                deactivateObject();
             }
             catch(...){}
 
@@ -649,27 +649,27 @@ bool UniSetObject::disactivate()
             uinfo << myname << "(disacivate): finished..." << endl;
             return true;
         }
-        uwarn << myname << "(disactivate): manager already destroyed.." << endl;
+        uwarn << myname << "(deactivate): manager already destroyed.." << endl;
     }
     catch(CORBA::TRANSIENT)
     {
-        uwarn << myname << "(disactivate): isExist: нет связи..."<< endl;
+        uwarn << myname << "(deactivate): isExist: нет связи..."<< endl;
     }
     catch( CORBA::SystemException& ex )
     {
-        uwarn << myname << "(disactivate): " << "поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
+        uwarn << myname << "(deactivate): " << "поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
     }
     catch(CORBA::Exception& ex)
     {
-        uwarn << myname << "(disactivate): " << "поймали CORBA::Exception." << endl;
+        uwarn << myname << "(deactivate): " << "поймали CORBA::Exception." << endl;
     }
     catch(Exception& ex)
     {
-        uwarn << myname << "(disactivate): " << ex << endl;
+        uwarn << myname << "(deactivate): " << ex << endl;
     }
     catch(...)
     {
-        uwarn << myname << "(disactivate): " << " catch ..." << endl;
+        uwarn << myname << "(deactivate): " << " catch ..." << endl;
     }
 
     return false;
