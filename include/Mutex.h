@@ -81,7 +81,7 @@ namespace UniSetTypes
     };
 
     // -------------------------------------------------------------------------
-    // Mutex c приоритетом WRlock над RLock...
+    // rwmutex..
     class uniset_rwmutex
     {
         public:
@@ -109,7 +109,6 @@ namespace UniSetTypes
             std::string nm;
             friend class uniset_rwmutex_lock;
             ost::ThreadLock m;
-            std::atomic<int> wr_wait;
             static std::atomic<int> num;
     };
 

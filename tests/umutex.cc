@@ -9,12 +9,12 @@ using namespace std;
 using namespace UniSetTypes;
 
 uniset_mutex m;
-uniset_rwmutex m_spin;
+uniset_rwmutex m_rw;
 
 class MyClass
 {
     public:
-        MyClass( const std::string& name ): nm(name),count(0)
+        MyClass( const std::string& name ): nm(name),term(false),count(0)
         {
             thr = new ThreadCreator<MyClass>(this, &MyClass::thread);
         }
@@ -29,6 +29,8 @@ class MyClass
             thr->start();
         }
 
+        void terminate() { term=true; }
+
         inline std::string name(){ return nm; }
         inline int lock_count(){ return count; }
 
@@ -38,17 +40,16 @@ class MyClass
 
     protected:
         std::string nm;
+        std::atomic_bool term;
 
         void thread()
         {
-            while(1)
+            while(!term)
             {
                 {
                     uniset_mutex_lock l(m);
                     count++;
-                    msleep(30);
                 }
-                msleep(10);
             }
         }
 
@@ -60,7 +61,7 @@ class MyClass
 class MyClassSpin
 {
     public:
-        MyClassSpin( const std::string& name, bool rl=false ): nm(name),readLock(rl),count(0)
+        MyClassSpin( const std::string& name, bool rl=false ): nm(name),readLock(rl),term(false),count(0)
         {
             thr = new ThreadCreator<MyClassSpin>(this, &MyClassSpin::thread);
         }
@@ -75,35 +76,36 @@ class MyClassSpin
             thr->start();
         }
 
+        void terminate() { term=true; }
+
+
         inline std::string name(){ return nm; }
         inline int lock_count(){ return count; }
+
+        // BAD CODE... only for test..
+        inline ThreadCreator<MyClassSpin>* get(){ return thr; }
 
     protected:
         std::string nm;
         bool readLock;
+        std::atomic_bool term;
 
         void thread()
         {
-            while(1)
+            while(!term)
             {
                 if( !readLock )
                 {
-//                    cerr << nm << ": before RWlock.." << endl;
-                    uniset_rwmutex_wrlock l(m_spin);
+                    uniset_rwmutex_wrlock l(m_rw);
                     count++;
-                    msleep(30);
-//                    cerr << nm << ": after RWlock.." << endl;
                 }
                 else
                 {
-//                    cerr << nm << "(readLock): before lock.." << endl;
-                    uniset_rwmutex_rlock l(m_spin);
+                    uniset_rwmutex_rlock l(m_rw);
                     count++;
-                    msleep(20);
-//                    cerr << nm << "(readLock): after lock.." << endl;
                 }
 
-                msleep(20);
+                //msleep(20);
             }
         }
 
@@ -139,6 +141,7 @@ int main( int argc, const char **argv )
 {
     try
     {
+#if 0
 	{
 		cout << "check timed_mutex..." << endl;
 		std::timed_mutex m;
@@ -171,8 +174,8 @@ int main( int argc, const char **argv )
 		}
 
 	}
-
-#if 1
+#endif
+#if 0
         {
             uniset_rwmutex m1("mutex1");
             uniset_rwmutex m2("mutex2");
@@ -229,6 +232,7 @@ int main( int argc, const char **argv )
     m1.wrlock();
     return 0;
 #endif
+
 #if 0
     uniset_mutex um;
 
@@ -283,70 +287,112 @@ int main( int argc, const char **argv )
     {
         ostringstream s;
         s << "t" << i;
-         MyClass* t = new MyClass(s.str());
+        MyClass* t = new MyClass(s.str());
         tvec[i] = t;
-         t->execute();
-         msleep(50);
+        t->execute();
+        msleep(50);
     }
 
-    cout << "TEST LOCK wait 10 sec.. (" << tvec.size() << " threads)" << endl;
+    cout << "TEST MUTEX LOCK wait 10 sec.. (" << tvec.size() << " threads)" << endl;
     msleep(10000);
 
-    cout << "TEST LOCK RESULT: " << endl;
+    cout << "TEST MUTEX LOCK RESULT: " << endl;
 
     for( TVec::iterator it=tvec.begin(); it!=tvec.end(); it++ )
     {
         int c = (*it)->lock_count();
-        (*it)->get()->stop();
-        cout << (*it)->name() << ": locked counter: " << c << " " << ( c!=0 ? "OK":"FAIL" ) << endl;
+        (*it)->terminate();
+        if( (*it)->get()->isRunning() )
+	        (*it)->get()->join();
+	//(*it)->get()->stop();
+        cout << (*it)->name() << ": locked counter: " << (c/10) << " " << ( c!=0 ? "OK":"FAIL" ) << endl;
     }
 #endif
 
 #if 1
     typedef std::vector<MyClassSpin*> TSpinVec;
-     TSpinVec tsvec(max);
+    TSpinVec tsvec(max);
+    int half = 3; // max/2;
     for( int i=0; i<max; i++ )
     {
         ostringstream s;
+        bool r=false;
+#if 1
+	if( i>=half )
+	{
+		r = true;
+		s << "(R)";
+	}
+	else
+#endif
+		s << "(W)";
+
         s << "t" << i;
-        MyClassSpin* t = new MyClassSpin(s.str());
+
+        MyClassSpin* t = new MyClassSpin(s.str(),r);
         tsvec[i] = t;
         t->execute();
-        msleep(50);
+        msleep(20);
     }
 
-    cout << "TEST WRLOCK wait 10 sec.. (" << tsvec.size() << " threads)" << endl;
+    cout << "TEST RWMUTEX LOCK wait 10 sec.. (" << tsvec.size() << " threads)" << endl;
     msleep(10000);
 
-    cout << "TEST WRLOCK RESULT: " << endl;
+    cout << "TEST RWMUTEX LOCK RESULT: " << endl;
 
     for( TSpinVec::iterator it=tsvec.begin(); it!=tsvec.end(); it++ )
     {
         int c = (*it)->lock_count();
-        cout << (*it)->name() << ": locked counter: " << c << " " << ( c!=0 ? "OK":"FAIL" ) << endl;
+        (*it)->terminate();
+        if( (*it)->get()->isRunning() )
+	        (*it)->get()->join();
+
+        cout << (*it)->name() << ": locked counter: " << (c/10) << " " << ( c!=0 ? "OK":"FAIL" ) << endl;
     }
 #endif
 
 #if 0
+    typedef std::vector<MyClassSpin*> TSpinVec2;
+    TSpinVec2 tsvec2(max);
+
     for( int i=0; i<max; i++ )
     {
         ostringstream s;
         s << "t" << i;
         MyClassSpin* t = new MyClassSpin(s.str(),true);
+
+        tsvec[i] = t;
         t->execute();
         msleep(50);
     }
 
-    while(1)
+	std::atomic_int cnt(0);
+	std::atomic_int num(10);
+
+    while( --num )
     {
         {
-            cerr << "(writeLock): ************* lock WAIT..." << endl;
-            uniset_spin_wrlock l(m_spin);
-            cerr << "(writeLock): ************* lock OK.." << endl;
+            // cerr << "(writeLock): ************* lock WAIT..." << endl;
+            uniset_rwmutex_wrlock l(m_rw);
+            cnt++;
+            // cerr << "(writeLock): ************* lock OK.." << endl;
         }
 
-        msleep(15);
+		msleep(10);
     }
+
+    cout << "WRITE LOCK: " << cnt << endl;
+
+    for( auto &it: tsvec2 )
+    {
+        int c = it->lock_count();
+        it->terminate();
+        if( it->get()->isRunning() )
+	        it->get()->join();
+
+//        cout << it->name() << ": locked counter: " << c << " " << ( c!=0 ? "OK":"FAIL" ) << endl;
+    }
+
 
 #endif
 //    pause();
