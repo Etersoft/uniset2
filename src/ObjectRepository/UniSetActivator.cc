@@ -250,16 +250,16 @@ void UniSetActivator::run(bool thread)
 */
 void UniSetActivator::stop()
 {
-//    uniset_mutex_lock l(disactivateMutex, 500);
+//    uniset_mutex_lock l(deactivateMutex, 500);
     if( active )
     {
         active=false;
 
-        ulogsys << myname << "(stop): disactivate...  "<< endl;
+        ulogsys << myname << "(stop): deactivate...  "<< endl;
 
-        disactivate();
+        deactivate();
 
-        ulogsys << myname << "(stop): disactivate ok.  "<<endl;
+        ulogsys << myname << "(stop): deactivate ok.  "<<endl;
         ulogsys << myname << "(stop): discard request..."<< endl;
 
         pman->discard_requests(true);

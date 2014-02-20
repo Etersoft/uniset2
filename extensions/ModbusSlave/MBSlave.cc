@@ -737,9 +737,9 @@ bool MBSlave::activateObject()
     return true;
 }
 // ------------------------------------------------------------------------------------------
-bool MBSlave::disactivateObject()
+bool MBSlave::deactivateObject()
 {
-    dinfo << myname << "(disactivateObject): ..." << endl;
+    dinfo << myname << "(deactivateObject): ..." << endl;
 
     activated = false;
     cancelled = true;
@@ -750,7 +750,7 @@ bool MBSlave::disactivateObject()
     }
     catch(...){}
 
-    return UniSetObject_LT::disactivateObject();
+    return UniSetObject_LT::deactivateObject();
 }
 // ------------------------------------------------------------------------------------------
 void MBSlave::sigterm( int signo )

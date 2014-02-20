@@ -21,10 +21,10 @@
  * \brief Реализация интерфейса менеджера объектов.
  * \author Pavel Vainerman
  */
-// --------------------------------------------------------------------------
+// -------------------------------------------------------------------------- 
 #ifndef UniSetManager_H_
 #define UniSetManager_H_
-// --------------------------------------------------------------------------
+// -------------------------------------------------------------------------- 
 #include <omniORB4/CORBA.h>
 #include "UniSetTypes.h"
 #include "UniSetObject.h"
@@ -33,27 +33,27 @@
 class UniSetActivator;
 
 class UniSetManager;
-typedef std::list<UniSetManager*> UniSetManagerList;
+typedef std::list<UniSetManager*> UniSetManagerList;        
 //---------------------------------------------------------------------------
 /*! \class UniSetManager
  *    \par
  *    Содержит в себе функции управления объектами. Их регистрации и т.п.
- *    Создается менеджер объектов, после чего вызывается initObjects()
- *    для инициализации объектов которыми управляет
+ *    Создается менеджер объектов, после чего вызывается initObjects() 
+ *    для инициализации объектов которыми управляет 
  *    данный менеджер...
- *    Менеджер в свою очередь сам является объектом и обладает всеми его свойствами
- *
- *     Для пересылки сообщения всем подчиненным объектам используется
+ *    Менеджер в свою очередь сам является объектом и обладает всеми его свойствами    
+ *    
+ *     Для пересылки сообщения всем подчиненным объектам используется 
  *        функция UniSetManager::broadcast(const TransportMessage& msg)
  *    \par
- *     У базового менеджера имеются базовые три функции см. UniSetManager_i.
- *    \note Только при вызове функции UniSetManager::broadcast() происходит
+ *     У базового менеджера имеются базовые три функции см. UniSetManager_i. 
+ *    \note Только при вызове функции UniSetManager::broadcast() происходит 
  *        формирование сообщения всем подчиненным объектам... Если команда проиходит
  *    при помощи push, то пересылки всем починённым объектам не происходит...
  *
  *
-*/
-class UniSetManager:
+*/ 
+class UniSetManager: 
     public UniSetObject,
     public POA_UniSetManager_i
 {
@@ -77,16 +77,16 @@ class UniSetManager:
         virtual bool addManager( UniSetManager *mngr );
         virtual bool removeManager( UniSetManager *mngr );
 
-
+        
         /*! Получение доступа к подчиненному менеджеру по идентификатору
          * \return объект ненайден будет возвращен 0.
-        */
+        */ 
         const UniSetManager* itemM(const UniSetTypes::ObjectId id);
 
 
         /*! Получение доступа к подчиненному объекту по идентификатору
          * \return объект ненайден будет возвращен 0.
-        */
+        */ 
         const UniSetObject* itemO( const UniSetTypes::ObjectId id );
 
 
@@ -130,17 +130,17 @@ class UniSetManager:
 
         virtual void sigterm( int signo ) override;
 
-        //! \note Переопределяя не забывайте вызвать базовую
+        //! \note Переопределяя не забывайте вызвать базовую 
         virtual bool activateObject() override;
-        //! \note Переопределяя не забывайте вызвать базовую
-        virtual bool disactivateObject() override;
+        //! \note Переопределяя не забывайте вызвать базовую 
+        virtual bool deactivateObject() override;
 
         typedef UniSetManagerList::iterator MListIterator;
 
-        int getObjectsInfo( UniSetManager* mngr, UniSetTypes::SimpleInfoSeq* seq,
+        int getObjectsInfo( UniSetManager* mngr, UniSetTypes::SimpleInfoSeq* seq, 
                             int begin, const long uplimit );
 
-        PortableServer::POA_var poa;
+        PortableServer::POA_var poa;    
         PortableServer::POAManager_var pman;
 
     private:

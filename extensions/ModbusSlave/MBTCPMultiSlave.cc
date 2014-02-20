@@ -302,7 +302,7 @@ void MBTCPMultiSlave::initIterators()
         i.second.initIterators(shm);
 }
 // -----------------------------------------------------------------------------
-bool MBTCPMultiSlave::disactivateObject()
+bool MBTCPMultiSlave::deactivateObject()
 {
     if( mbslot )
     {
@@ -311,7 +311,7 @@ bool MBTCPMultiSlave::disactivateObject()
             sslot->sigterm(SIGTERM);
     }
 
-    return MBSlave::disactivateObject();
+    return MBSlave::deactivateObject();
 }
 // -----------------------------------------------------------------------------
 void MBTCPMultiSlave::sigterm( int signo )
