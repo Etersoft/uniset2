@@ -54,7 +54,7 @@ class MPush: public unary_function<UniSetManager*, bool>
             catch(...){}
             return false;
         }
-    
+
     private:
         const UniSetTypes::TransportMessage& msg;
 };
@@ -110,7 +110,7 @@ UniSetManager::~UniSetManager()
 {
     try
     {
-        objects(deactiv);    
+        objects(deactiv);
     }
     catch(...){}
     try
@@ -160,14 +160,14 @@ bool UniSetManager::addObject( UniSetObject *obj )
 }
 
 // ------------------------------------------------------------------------------------------
-bool UniSetManager::removeObject(UniSetObject* obj)
+bool UniSetManager::removeObject( UniSetObject* obj )
 {
     {    //lock
         uniset_rwmutex_wrlock lock(olistMutex);
         auto li=find(olist.begin(),olist.end(), obj);
         if( li!=olist.end() )
         {
-            uinfo << myname << "(activator): удаляем объект "<< obj->getName()<< endl;                
+            uinfo << myname << "(activator): удаляем объект "<< obj->getName()<< endl;
             try
             {
                 obj->disactivate();
@@ -204,10 +204,9 @@ bool UniSetManager::removeObject(UniSetObject* obj)
 /*! 
  *    Функция работы со списком менеджеров
 */
-void UniSetManager::managers(OManagerCommand cmd)
+void UniSetManager::managers( OManagerCommand cmd )
 {
-    uinfo << myname <<"(managers): mlist.size=" 
-                        << mlist.size() << " cmd=" << cmd  << endl;
+    uinfo << myname <<"(managers): mlist.size=" << mlist.size() << " cmd=" << cmd  << endl;
     {    //lock
         uniset_rwmutex_rlock lock(mlistMutex);
         for( auto &li: mlist )
@@ -361,7 +360,7 @@ void UniSetManager::broadcast(const TransportMessage& msg)
 {
     // себя не забыть...
 //    push(msg);
-    
+
     // Всем объектам...
     {    //lock
         uniset_rwmutex_rlock lock(olistMutex);
@@ -511,7 +510,7 @@ SimpleInfoSeq* UniSetManager::getObjectsInfo( CORBA::Long maxlength )
     int length = objectsCount()+1;
     if( length >= maxlength )
         length = maxlength;
-    
+
     res->length(length);
 
     // используем рекурсивную функцию
@@ -521,4 +520,19 @@ SimpleInfoSeq* UniSetManager::getObjectsInfo( CORBA::Long maxlength )
     return res;
 }
 
+// ------------------------------------------------------------------------------------------
+std::ostream& operator<<(std::ostream& os, UniSetManager::OManagerCommand& cmd )
+{
+    // { deactiv, activ, initial, term };
+    if( cmd == UniSetManager::deactiv )
+        return os << "deactivate";
+    if( cmd == UniSetManager::activ )
+        return os << "activate";
+    if( cmd == UniSetManager::initial )
+        return os << "init";
+    if( cmd == UniSetManager::term )
+        return os << "terminate";
+
+    return os << "unkwnown";
+}
 // ------------------------------------------------------------------------------------------

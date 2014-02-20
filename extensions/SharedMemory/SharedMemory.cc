@@ -240,9 +240,7 @@ bool SharedMemory::activateObject()
 
         // инициализируем указатели
         for( auto &it: hlist )
-        {
             it.ioit = myioEnd();
-        }
 
         itPulsar = myioEnd();
 
@@ -261,7 +259,6 @@ bool SharedMemory::activateObject()
 // ------------------------------------------------------------------------------------------
 CORBA::Boolean SharedMemory::exist()
 {
-//    return activated;
     return workready;
 }
 // ------------------------------------------------------------------------------------------
@@ -270,6 +267,7 @@ void SharedMemory::sigterm( int signo )
     if( signo == SIGTERM )
         wdt->stop();
 //    raise(SIGKILL);
+	IONotifyController_LT::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
 void SharedMemory::checkHeartBeat()

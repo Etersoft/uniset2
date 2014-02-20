@@ -22,6 +22,7 @@ respond_id(DefaultObjectId),
 respond_invert(false),
 askCount(0),
 activated(false),
+cancelled(false),
 activateTimeout(500),
 pingOK(true),
 force(false),
@@ -72,7 +73,7 @@ prefix(prefix)
     timeout_t aftersend_pause = conf->getArgInt("--" + prefix + "-aftersend-pause",it.getProp("afterSendPause"));
 
     string stype = conf->getArgParam("--" + prefix + "-type",it.getProp("type"));
-    
+
     if( stype == "RTU" )
     {
         // ---------- init RS ----------
@@ -105,12 +106,12 @@ prefix(prefix)
         string iaddr = conf->getArgParam("--" + prefix + "-inet-addr",it.getProp("iaddr"));
         if( iaddr.empty() )
             throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown TCP server address. Use: --prefix-inet-addr [ XXX.XXX.XXX.XXX| hostname ]");
-        
+
         int port = conf->getArgPInt("--" + prefix + "-inet-port",it.getProp("iport"), 502);
 
         dinfo << myname << "(init): type=TCP myaddr=" << ModbusRTU::addr2str(addr) 
                 << " inet=" << iaddr << " port=" << port << endl;
-    
+
         ost::InetAddress ia(iaddr.c_str());
         ModbusTCPServerSlot* mbtcp = new ModbusTCPServerSlot(ia,port);
 
@@ -120,6 +121,9 @@ prefix(prefix)
         mbslot = mbtcp;
         thr = new ThreadCreator<MBSlave>(this,&MBSlave::execute_tcp);
         dinfo << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
+
+        if( dlog.debugging(Debug::LEVEL9) )
+            mbtcp->setLog(dlog);
     }
     else
         throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown slave type. Use: --mbs-type [RTU|TCP]");
@@ -137,8 +141,8 @@ prefix(prefix)
     if( findArgParam("--" + prefix + "-allow-setdatetime",conf->getArgc(),conf->getArgv())!=-1 )
         mbslot->connectSetDateTime( sigc::mem_fun(this, &MBSlave::setDateTime) );
 
-    mbslot->connectDiagnostics( sigc::mem_fun(this, &MBSlave::diagnostics) );    
-    mbslot->connectFileTransfer( sigc::mem_fun(this, &MBSlave::fileTransfer) );    
+    mbslot->connectDiagnostics( sigc::mem_fun(this, &MBSlave::diagnostics) );
+    mbslot->connectFileTransfer( sigc::mem_fun(this, &MBSlave::fileTransfer) );
 
 //    mbslot->connectJournalCommand( sigc::mem_fun(this, &MBSlave::journalCommand) );
 //    mbslot->connectRemoteService( sigc::mem_fun(this, &MBSlave::remoteService) );
@@ -357,9 +361,17 @@ prefix(prefix)
 // -----------------------------------------------------------------------------
 MBSlave::~MBSlave()
 {
+    cancelled = true;
+
+    if( thr && thr->isRunning() )
+    {
+        thr->stop();
+        thr->join();
+    }
+
+    delete thr;
     delete mbslot;
     delete shm;
-    delete thr;
 }
 // -----------------------------------------------------------------------------
 void MBSlave::waitSMReady()
@@ -386,7 +398,7 @@ void MBSlave::execute_rtu()
 
     ModbusRTU::mbErrCode prev = erNoError;
 
-    while(1)
+    while( !cancelled )
     {
         try
         {
@@ -467,7 +479,9 @@ void MBSlave::execute_tcp()
 
     ModbusRTU::mbErrCode prev = erNoError;
 
-    while(1)
+    dinfo << myname << "(execute_tcp): thread running.." << endl;
+
+    while( !cancelled )
     {
         try
         {
@@ -540,6 +554,8 @@ void MBSlave::execute_tcp()
         }
         catch(...){}
     }
+
+    dinfo << myname << "(execute_tcp): thread stopped.." << endl;
 }
 // -------------------------------------------------------------------------
 void MBSlave::sysCommand( const UniSetTypes::SystemMessage *sm )
@@ -699,7 +715,7 @@ void MBSlave::sensorInfo( const UniSetTypes::SensorMessage* sm )
             if( i != sz )
                 dcrit << myname << "(sensorInfo): update failed for sid=" << sm->id
                         << " (i=" << i << " sz=" << sz << ")" << endl;
- 
+
             return;
         }
     }
@@ -721,17 +737,34 @@ bool MBSlave::activateObject()
     return true;
 }
 // ------------------------------------------------------------------------------------------
+bool MBSlave::disactivateObject()
+{
+    dinfo << myname << "(disactivateObject): ..." << endl;
+
+    activated = false;
+    cancelled = true;
+    try
+    {
+        if( mbslot )
+            mbslot->sigterm(SIGTERM);
+    }
+    catch(...){}
+
+    return UniSetObject_LT::disactivateObject();
+}
+// ------------------------------------------------------------------------------------------
 void MBSlave::sigterm( int signo )
 {
     dinfo << myname << ": ********* SIGTERM(" << signo <<") ********" << endl;
     activated = false;
+    cancelled = true;
     try
     {
         if( mbslot )
             mbslot->sigterm(signo);
     }
     catch(...){}
-    
+
     UniSetObject_LT::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
@@ -1318,7 +1351,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMess
             reply.addData(d);
         else
             reply.addData(0);
-        
+
         return ret;
     }
 
@@ -1329,7 +1362,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMess
         for( unsigned int i=0; i<query.count; i++ )
             reply.addData( buf[i] );
     }
-    
+
     return ret;
 }
 // -------------------------------------------------------------------------

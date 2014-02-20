@@ -144,6 +144,7 @@ class MBSlave:
         virtual void execute_tcp();
 
         virtual bool activateObject() override;
+        virtual bool disactivateObject() override;
 
         // действия при завершении работы
         virtual void sigterm( int signo ) override;
@@ -187,6 +188,7 @@ class MBSlave:
         ExchangeErrorMap errmap;     /*!< статистика обмена */
 
         std::atomic_bool activated;
+        std::atomic_bool cancelled;
         int activateTimeout;
         bool pingOK;
         timeout_t wait_msec;

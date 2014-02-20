@@ -14,6 +14,9 @@ using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 ModbusTCPSession::~ModbusTCPSession()
 {
+    cancelled = true;
+    if( isRunning() )
+        ost::Thread::join();
 }
 // -------------------------------------------------------------------------
 ModbusTCPSession::ModbusTCPSession( ost::TCPSocket &server, ModbusRTU::ModbusAddr a, timeout_t timeout ):
@@ -22,6 +25,7 @@ addr(a),
 timeout(timeout),
 peername(""),
 caddr(""),
+cancelled(false),
 askCount(0)
 {
     setCRCNoCheckit(true);
@@ -35,6 +39,9 @@ unsigned int ModbusTCPSession::getAskCount()
 // -------------------------------------------------------------------------
 void ModbusTCPSession::run()
 {
+    if( cancelled )
+        return;
+
     {
         ost::tpport_t p;
         ost::InetAddress iaddr = getIPV4Peer(&p);
@@ -50,8 +57,12 @@ void ModbusTCPSession::run()
 //      cerr << "**************** CREATE SESS FOR " << string( inet_ntoa(a) ) << endl;
     }
 
+    if( dlog.debugging(Debug::INFO) )
+        dlog[Debug::INFO] << peername << "(run): run thread of sessions.." << endl;
+
     ModbusRTU::mbErrCode res = erTimeOut;
-    while( isPending(Socket::pendingInput, timeout) )
+    cancelled = false;
+    while( !cancelled && isPending(Socket::pendingInput, timeout) )
     {
          res = receive(addr,timeout);
 
@@ -68,7 +79,13 @@ void ModbusTCPSession::run()
         }
     }
 
+    if( dlog.debugging(Debug::INFO) )
+        dlog[Debug::INFO] << peername << "(run): stop thread of sessions..disconnect.." << endl;
+
     disconnect();
+
+    if( dlog.debugging(Debug::INFO) )
+        dlog[Debug::INFO] << peername << "(run): thread stopping..." << endl;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode ModbusTCPSession::receive( ModbusRTU::ModbusAddr addr, timeout_t msec )
@@ -106,8 +123,14 @@ ModbusRTU::mbErrCode ModbusTCPSession::receive( ModbusRTU::ModbusAddr addr, time
             }
         }
 
+        if( cancelled )
+            return erSessionClosed;
+
         memset(&buf,0,sizeof(buf));
         res = recv( addr, buf, msec );
+
+        if( cancelled )
+            return erSessionClosed;
 
         if( res!=erNoError ) // && res!=erBadReplyNodeAddress )
         {
@@ -120,19 +143,22 @@ ModbusRTU::mbErrCode ModbusTCPSession::receive( ModbusRTU::ModbusAddr addr, time
             }
             else if( aftersend_msec >= 0 )
                 msleep(aftersend_msec);
-    
+
             return res;
         }
-                    
+
         if( msec != UniSetTimer::WaitUpTime )
         {
             msec = ptTimeout.getLeft(msec);
             if( msec == 0 )
                 return erTimeOut;
         }
-                
+
         if( res!=erNoError )
             return res;
+
+        if( cancelled )
+            return erSessionClosed;
 
         // processing message...
         res = processing(buf);
@@ -195,7 +221,7 @@ mbErrCode ModbusTCPSession::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAP
         if( dlog.debugging(Debug::INFO) )
             dlog[Debug::INFO] << peername << "(tcp_processing): len(" << (int)len 
                     << ") < mhead.len(" << (int)mhead.len << ")" << endl;
-        
+
         return erInvalidFormat;
     }
 
@@ -212,7 +238,7 @@ mbErrCode ModbusTCPSession::pre_send_request( ModbusMessage& request )
 {
     if( !isConnected() )
         return erTimeOut;
-    
+
     curQueryHeader.len = request.len + szModbusHeader;
 
     if( crcNoCheckit )
@@ -229,7 +255,7 @@ mbErrCode ModbusTCPSession::pre_send_request( ModbusMessage& request )
     *tcp() << curQueryHeader;
 
     curQueryHeader.swapdata();
-    
+
     return erNoError;
 }
 // -------------------------------------------------------------------------
@@ -246,11 +272,18 @@ void ModbusTCPSession::cleanInputStream()
 // -------------------------------------------------------------------------
 void ModbusTCPSession::terminate()
 {
+    ModbusServer::terminate();
+
     if( dlog.debugging(Debug::INFO) )
-        dlog[Debug::INFO] << peername << "(ModbusTCPSession): terminate..." << endl;
-    
+        dlog[Debug::INFO] << peername << "(terminate)..." << endl;
+
+    cancelled = true;
+
     if( isConnected() )
         disconnect();
+
+//    if( isRunning() )
+//        ost::Thread::join();
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::readCoilStatus( ReadCoilMessage& query, 

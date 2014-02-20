@@ -138,7 +138,7 @@ ModbusRTU::mbErrCode ModbusTCPServerSlot::remoteService( ModbusRTU::RemoteServic
         return erOperationFailed;
 
     return slRemoteService(query,reply);
-}                                    
+}
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode ModbusTCPServerSlot::fileTransfer( ModbusRTU::FileTransferMessage& query, 
                                     ModbusRTU::FileTransferRetMessage& reply )
@@ -147,7 +147,7 @@ ModbusRTU::mbErrCode ModbusTCPServerSlot::fileTransfer( ModbusRTU::FileTransferM
         return erOperationFailed;
 
     return slFileTransfer(query,reply);
-}                                    
+}
 // -------------------------------------------------------------------------
 void ModbusTCPServerSlot::sigterm( int signo )
 {

@@ -59,12 +59,10 @@ namespace UniSetTypes
     std::ostream& operator<<(std::ostream& os, uniset_mutex& m );
     // -------------------------------------------------------------------------
     /*! \class uniset_mutex_lock
-     * \author Pavel Vainerman
+     *  \author Pavel Vainerman
      *
-     *    Предназначен для блокирования совместного доступа. Как пользоваться см. \ref MutexHowToPage
-     *    \note Если ресурс уже занят, то lock ждет его освобождения... 
-     *    \warning Насколько ожидание защищено от зависания надо еще проверять!
-     *     \todo Может на откуп пользователям оставить проверку занятости ресурса перед захватом? может не ждать?
+     *  Предназначен для блокирования совместного доступа. Как пользоваться см. \ref MutexHowToPage
+     *  \note Если ресурс уже занят, то lock ждет его освобождения... 
     */
     class uniset_mutex_lock
     {
@@ -76,7 +74,7 @@ namespace UniSetTypes
 
         private:
             uniset_mutex* mutex;
-            std::atomic<int> locked;
+            std::atomic_bool locked;
 
             uniset_mutex_lock(const uniset_mutex_lock&)=delete;
             uniset_mutex_lock& operator=(const uniset_mutex_lock&)=delete;

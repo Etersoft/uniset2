@@ -120,7 +120,8 @@ class UniSetManager:
 
         UniSetManager();
 
-        enum OManagerCommand{deactiv, activ, initial, term};
+        enum OManagerCommand{ deactiv, activ, initial, term };
+        friend std::ostream& operator<<(std::ostream& os, OManagerCommand& cmd );
 
         // работа со списком объектов
         void objects(OManagerCommand cmd);

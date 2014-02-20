@@ -53,7 +53,7 @@ void UniSetManager_LT::callback()
     // чтобы избежать ситуации, когда процесс до заказа таймера 'спал'(в функции waitMessage()) и после 
     // заказа продолжит спать(т.е. обработчик вызван не будет)...
     try
-    {    
+    {
         if( waitMessage(msg, sleepTime) )
             processingMessage(&msg);
 

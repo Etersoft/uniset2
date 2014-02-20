@@ -17,7 +17,7 @@ class ModbusTCPServerSlot:
         virtual ~ModbusTCPServerSlot();
 
         virtual void sigterm( int signo );
-    
+
     protected:
 
         virtual ModbusRTU::mbErrCode readCoilStatus( ModbusRTU::ReadCoilMessage& query, 

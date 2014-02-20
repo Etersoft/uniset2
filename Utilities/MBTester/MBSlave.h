@@ -99,7 +99,7 @@ class MBSlave
         ModbusRTU::ModbusAddr addr;            /*!< адрес данного узла */
 
         bool verbose;
-#if 0        
+#if 0
         typedef std::map<ModbusRTU::mbErrCode,unsigned int> ExchangeErrorMap;
         ExchangeErrorMap errmap;     /*!< статистика обмена */
         ModbusRTU::mbErrCode prev;
@@ -117,7 +117,7 @@ class MBSlave
         long replyVal2;
         long replyVal3;
     private:
-        
+
 };
 // -------------------------------------------------------------------------
 #endif // MBSlave_H_

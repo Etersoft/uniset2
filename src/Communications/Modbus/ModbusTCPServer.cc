@@ -14,7 +14,8 @@ ModbusTCPServer::ModbusTCPServer( ost::InetAddress &ia, int port ):
     ignoreAddr(false),
     maxSessions(10),
     sessCount(0),
-    sessTimeout(10000)
+    sessTimeout(10000),
+    cancelled(false)
 {
     setCRCNoCheckit(true);
 }
@@ -23,6 +24,16 @@ ModbusTCPServer::ModbusTCPServer( ost::InetAddress &ia, int port ):
 ModbusTCPServer::~ModbusTCPServer()
 {
     terminate();
+/*
+    {
+        uniset_mutex_lock l(sMutex);
+        for( auto& s: slist )
+        {
+            if( s->isRunning() )
+                s->ost::Thread::join();
+        }
+    }
+*/
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::setMaxSessions( unsigned int num )
@@ -61,10 +72,16 @@ bool ModbusTCPServer::waitQuery( ModbusRTU::ModbusAddr mbaddr, timeout_t msec )
     if( sessCount >= maxSessions )
         return false;
 
+    if( cancelled )
+        return false;
+
     try 
     {
         if( isPendingConnection(msec) )
         {
+            if( cancelled )
+                return false;
+
             ModbusTCPSession* s = new ModbusTCPSession(*this,mbaddr,sessTimeout);
 
             s->connectReadCoil( sigc::mem_fun(this, &ModbusTCPServer::readCoilStatus) );
@@ -340,11 +357,23 @@ void ModbusTCPServer::cleanInputStream()
 // -------------------------------------------------------------------------
 void ModbusTCPServer::terminate()
 {
+    cancelled = true;
+
     if( dlog.is_info() )
         dlog.info() << "(ModbusTCPServer): terminate..." << endl;
 
     if( tcp && tcp.isConnected() )
         tcp.disconnect();
+
+    uniset_mutex_lock l(sMutex);
+    for( auto &s: slist )
+    {
+        try
+        {
+            s->terminate();
+        }
+        catch(...){}
+    }
 }
 // -------------------------------------------------------------------------
 void ModbusTCPServer::sessionFinished( ModbusTCPSession* s )
