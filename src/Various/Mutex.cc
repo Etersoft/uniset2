@@ -79,7 +79,7 @@ uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, const time_t timeMS ):
     if( timeMS == 0 )
     {
         mutex->lock();
-        locked = 1;
+        locked = true;
         return;
     }
 
@@ -93,17 +93,18 @@ uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, const time_t timeMS ):
         return;
     }
 
+    // здесь мы уже под защитой mutex..
     locked = true;
 }
 // -----------------------------------------------------------------------------
 bool uniset_mutex_lock::lock_ok()
 {
-    return locked;
+    return locked.load();
 }
 // -----------------------------------------------------------------------------
 uniset_mutex_lock::~uniset_mutex_lock()
 {
-    if( locked )
+    if( locked)
     {
         mutex->unlock();
         locked = false;
@@ -111,14 +112,12 @@ uniset_mutex_lock::~uniset_mutex_lock()
 }
 // -----------------------------------------------------------------------------
 uniset_rwmutex::uniset_rwmutex( const std::string& name ):
-nm(name),
-wr_wait(0)
+nm(name)
 {
 }
 
 uniset_rwmutex::uniset_rwmutex():
-nm(""),
-wr_wait(0)
+nm("")
 {
 }
 
@@ -138,49 +137,45 @@ const uniset_rwmutex &uniset_rwmutex::operator=( const uniset_rwmutex& r )
     if( this != &r )
     {
         lock();
+        MUTEX_DEBUG(cerr << "...copy mutex...(" << r.nm << " --> " << nm << ")" << endl;)
         ostringstream s;
         s << r.nm << "." << (++num);
         nm = s.str();
-        wr_wait = 0;
         unlock();
-        MUTEX_DEBUG(cerr << "...copy mutex..." << nm << endl;)
     }
 
     return *this;
 }
 
-uniset_rwmutex::uniset_rwmutex( const uniset_rwmutex& r ):
-nm(r.nm),
-wr_wait(0)
+uniset_rwmutex::uniset_rwmutex( const uniset_rwmutex& r )
 {
+    if( this != &r )
+    {
+        lock();
+        MUTEX_DEBUG(cerr << "...copy constr mutex...(" << r.nm << " --> " << nm << ")" << endl;)
+        ostringstream s;
+        s << r.nm << "." << (++num);
+        nm = s.str();
+        unlock();
+    }
 }
 
 void uniset_rwmutex::lock()
 {
     MUTEX_DEBUG(cerr << nm << " prepare Locked.." << endl;)
-    wr_wait++;
     m.writeLock();
-    wr_wait--;
     MUTEX_DEBUG(cerr << nm << " Locked.." << endl;)
 }
 void uniset_rwmutex::wrlock()
 {
     MUTEX_DEBUG(cerr << nm << " prepare WRLocked.." << endl;)
-    wr_wait++;
     m.writeLock();
-    wr_wait--;
     MUTEX_DEBUG(cerr << nm << " WRLocked.." << endl;)
 }
+
 void uniset_rwmutex::rlock()
 {
     MUTEX_DEBUG(cerr << nm << " prepare RLocked.." << endl;)
-
-    while( wr_wait )
-    {
-        MUTEX_DEBUG( cerr << nm << " whait... WR=" << wr_wait << endl; )
-        msleep(2);
-    }
-
     m.readLock();
     MUTEX_DEBUG(cerr << nm << " RLocked.." << endl;)
 }
