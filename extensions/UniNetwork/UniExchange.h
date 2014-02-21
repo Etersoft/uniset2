@@ -61,9 +61,16 @@ class UniExchange:
         std::string s_field;
         std::string s_fvalue;
         SMInterface* shm;
-        
+
         struct SInfo
         {
+            // т.к. содержится rwmutex с запрещённым конструктором копирования
+            // приходится здесь тоже объявлять разрешенными только операции "перемещения"
+            SInfo( const SInfo& r ) = delete;
+            SInfo& operator=(const SInfo& r) = delete;
+            SInfo( SInfo&& r ) = default;
+            SInfo& operator=(SInfo&& r) = default;
+
             SInfo():
                 val(0),
                 id(UniSetTypes::DefaultObjectId),
@@ -76,13 +83,20 @@ class UniExchange:
             UniversalIO::IOType type;
             UniSetTypes::uniset_rwmutex val_lock;
         };
-        
+
         typedef std::vector<SInfo> SList;
-        
+
         struct NetNodeInfo
         {
+            // т.к. содержится SList в котором rwmutex с запрещённым конструктором копирования
+            // приходится здесь тоже объявлять разрешенными только операции "перемещения"
+            NetNodeInfo( const NetNodeInfo& r ) = delete;
+            NetNodeInfo& operator=(const NetNodeInfo& r) = delete;
+            NetNodeInfo( NetNodeInfo&& r ) = default;
+            NetNodeInfo& operator=(NetNodeInfo&& r) = default;
+
             NetNodeInfo();
-        
+
             CORBA::Object_var oref;
             IOController_i_var shm;
             UniSetTypes::ObjectId id;

@@ -696,7 +696,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
     }
 
     inf.subdev = it.getIntProp("subdev");
-    
+
     if( inf.subdev < 0 )
         inf.subdev = DefaultSubdev;
 
@@ -775,7 +775,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
                 << " priority=" << prior << endl;
     }
 
-    iomap[maxItem++] = inf;
+    iomap[maxItem++] = std::move(inf);
     return true;
 }
 // ------------------------------------------------------------------------------------------

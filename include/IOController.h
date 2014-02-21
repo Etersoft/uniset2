@@ -124,6 +124,11 @@ class IOController:
         struct USensorInfo:
             public IOController_i::SensorIOInfo
         {
+            USensorInfo( const USensorInfo& ) = delete;
+            const USensorInfo& operator=(const USensorInfo& ) = delete;
+            USensorInfo( USensorInfo&& ) = default;
+            USensorInfo& operator=(USensorInfo&& ) = default;
+
             USensorInfo():any(0),d_value(0),d_off_value(0)
             {
                 d_si.id = UniSetTypes::DefaultObjectId;
@@ -207,7 +212,7 @@ class IOController:
             /*! регистрация датчика
                 force=true - не проверять на дублирование (оптимизация)
             */
-            void ioRegistration( const USensorInfo&, bool force=false );
+            void ioRegistration( USensorInfo&&, bool force=false );
 
             /*! разрегистрация датчика */
             void ioUnRegistration( const UniSetTypes::ObjectId sid );

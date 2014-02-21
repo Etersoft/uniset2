@@ -77,24 +77,8 @@ IONotifyController::~IONotifyController()
 }
 
 // ------------------------------------------------------------------------------------------
-// функция-объект для поиска
-// !!!! для ассоциативных контейнеров должна возвращать false 
-// в случае равенства!!!!!!!!!!! (проверка эквивалетности. а не равенства)
-/*
-struct FindCons_eq: public unary_function<UniSetTypes::ConsumerInfo, bool>
-{
-    FindCons_eq(const UniSetTypes::ConsumerInfo& ci):ci(ci){}
-    inline bool operator()(const UniSetTypes::ConsumerInfo& c) const
-    {
-        return !( ci.id==c.id && ci.node==c.node );
-    }
-    UniSetTypes::ConsumerInfo ci;
-}
-*/
-
-// ------------------------------------------------------------------------------------------
 /*!
- *    \param lst - указатель на список в который необходимо внести потребителя
+ *    \param lst - список в который необходимо внести потребителя
  *    \param name - имя вносимого потребителя
  *    \note Добавление произойдет только если такого потребителя не существует в списке
 */
@@ -117,7 +101,7 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
     }
     catch(...){}
 
-    lst.clst.push_front(cinf);
+    lst.clst.push_front( std::move(cinf) );
     return true;
 }
 // ------------------------------------------------------------------------------------------
@@ -155,7 +139,11 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
 
     // если такого аналогового датчика нет, здесь сработает исключение...
     auto li = myioEnd();
-    localGetValue(li,sid);
+    try
+    {
+        localGetValue(li,sid);
+    }
+    catch( IOController_i::Undefined& ex ){}
 
     {    // lock
         uniset_rwmutex_wrlock lock(askIOMutex);
@@ -184,10 +172,9 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
             smsg.sm_tv_usec   = li->second.tv_usec;
         }
 
-        TransportMessage tm(smsg.transport_msg());
         try
         {
-            ui.send(ci.id, tm, ci.node);
+            ui.send(ci.id, std::move(smsg.transport_msg()), ci.node);
         }
         catch( Exception& ex )
         {
@@ -225,7 +212,7 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
                 ConsumerListInfo lst; // создаем новый список
                 addConsumer(lst,cons);
                 // более оптимальный способ(при условии вставки первый раз)
-                askLst.insert(AskMap::value_type(sid,lst));
+                askLst.insert(AskMap::value_type(sid,std::move(lst)));
 
                 try
                 {
@@ -412,7 +399,7 @@ void IONotifyController::send( ConsumerListInfo& lst, UniSetTypes::SensorMessage
                 // а формируем TransportMessage самостоятельно..
 
                 assert(sizeof(UniSetTypes::RawDataOfTransportMessage)>=sizeof(sm));
-                memcpy(&tmsg.data,&sm,sizeof(sm));
+                std::memcpy(&tmsg.data,&sm,sizeof(sm));
                 li->ref->push( tmsg );
 
                 li->attempt = maxAttemtps; // reinit attempts
@@ -436,7 +423,7 @@ void IONotifyController::send( ConsumerListInfo& lst, UniSetTypes::SensorMessage
                         << " catch..." << endl;
             }
 
-            if( maxAttemtps>0 && ( (li->attempt)-- <= 0 ) )
+            if( maxAttemtps>0 && --(li->attempt) <= 0 )
             {
                 li = lst.clst.erase(li);
                 if( li == lst.clst.end() ) --li;
@@ -483,7 +470,7 @@ void IONotifyController::initItem( IOStateList::iterator& li, IOController* ic )
 }
 // ------------------------------------------------------------------------------------------
 void IONotifyController::dumpOrdersList( const UniSetTypes::ObjectId sid,
-                                         const IONotifyController::ConsumerListInfo& lst)
+                                         const IONotifyController::ConsumerListInfo& lst )
 {
     if( restorer == NULL )
         return;
@@ -502,7 +489,7 @@ void IONotifyController::dumpOrdersList( const UniSetTypes::ObjectId sid,
 }
 // --------------------------------------------------------------------------------------------------------------
 
-void IONotifyController::dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst)
+void IONotifyController::dumpThresholdList( const UniSetTypes::ObjectId sid, const IONotifyController::ThresholdExtList& lst )
 {
     if( restorer == NULL )
         return;
@@ -531,7 +518,13 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
 
     // если такого дискретного датчика нет сдесь сработает исключение...
     auto li = myioEnd();
-    CORBA::Long val = localGetValue(li,sid);
+
+    long val = 0;
+    try
+    {
+        val = localGetValue(li,sid);
+    }
+    catch( IOController_i::Undefined& ex ){}
 
     {    // lock
         uniset_rwmutex_wrlock lock(trshMutex);
@@ -547,20 +540,21 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
             case UniversalIO::UIONotify: // заказ
             case UniversalIO::UIONotifyChange:
             {
-                if( it==askTMap.end() ) 
+                if( it==askTMap.end() )
                 {
                     ThresholdExtList lst;    // создаем новый список
                     ThresholdsListInfo tli;
                     tli.si.id   = sid;
                     tli.si.node = conf->getLocalNode();
-                    tli.list   = lst;
+                    tli.list   = std::move(lst);
                     tli.type   = li->second.type;
                     tli.ait    = myioEnd();
-                    addThreshold(lst,ti,ci);
-                    askTMap.insert(AskThresholdMap::value_type(sid,tli));
+
+                    // после этого вызова ti использовать нельзя
+                    addThreshold(tli.list,std::move(ti),ci);
                     try
                     {
-                        dumpThresholdList(sid,lst);
+                        dumpThresholdList(sid,tli.list);
                     }
                     catch(Exception& ex)
                     {
@@ -570,10 +564,13 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
                     {
                         uwarn << myname << " не смогли сделать dump" << endl;
                     }
+
+                    // т.к. делаем move... то надо гарантировать, что дальше уже tli не используется..
+                    askTMap.insert(AskThresholdMap::value_type(sid,std::move(tli)));
                 }
                 else
                 {
-                    if( addThreshold(it->second.list,ti,ci) )
+                    if( addThreshold(it->second.list,std::move(ti),ci) )
                     {
                         try
                         {
@@ -605,8 +602,6 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
                     sm.priority   = (Message::Priority)li->second.priority;
                     sm.consumer   = ci.id;
                     sm.tid        = tid;
-                    sm.sm_tv_sec  = ti.tv_sec;
-                    sm.sm_tv_usec = ti.tv_usec;
                     sm.ci         = li->second.ci;
 
                     // Проверка нижнего предела
@@ -616,7 +611,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
                         CORBA::Object_var op = ui.resolve(ci.id, ci.node);
                         UniSetObject_i_var ref = UniSetObject_i::_narrow(op);
                         if(!CORBA::is_nil(ref))
-                            ref->push(sm.transport_msg());
+                            ref->push( std::move(sm.transport_msg()) );
                     }
                     // Проверка верхнего предела
                     else if( val >= hiLimit )
@@ -625,10 +620,10 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
                         CORBA::Object_var op = ui.resolve(ci.id, ci.node);
                         UniSetObject_i_var ref = UniSetObject_i::_narrow(op);
                         if(!CORBA::is_nil(ref))
-                            ref->push(sm.transport_msg());
+                            ref->push( std::move(sm.transport_msg()) );
                     }
                 }
-                catch(Exception& ex)
+                catch( Exception& ex )
                 {
                     uwarn << myname << "(askThreshod): " << ex << endl;
                 }
@@ -673,17 +668,15 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
     }    // unlock
 } 
 // --------------------------------------------------------------------------------------------------------------
-bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci )
+bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt&& ti, const UniSetTypes::ConsumerInfo& ci )
 {
     for( auto it=lst.begin(); it!=lst.end(); ++it) 
     {
         if( ti==(*it) )
         {
             if( addConsumer(it->clst, ci) )
-            {
-                ti.clst = it->clst;
                 return true;
-            }
+
             return false;
         }
     }
@@ -699,7 +692,7 @@ bool IONotifyController::addThreshold( ThresholdExtList& lst, ThresholdInfoExt& 
     ti.tv_sec  = tm.tv_sec;
     ti.tv_usec = tm.tv_usec;
 
-    lst.push_front(ti);
+    lst.push_back( std::move(ti) );
     return true;
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -711,10 +704,9 @@ bool IONotifyController::removeThreshold( ThresholdExtList& lst, ThresholdInfoEx
         {
             if( removeConsumer(it->clst, ci) )
             {
-/*                  Не удаляем датчик из списка, чтобы не поломать итераторы
-                  которые могут использоваться в этот момент в других потоках*/
-
-
+/*                Даже если список заказчиков по данному датчику стал пуст.
+                  Не удаляем датчик из списка, чтобы не поломать итераторы
+                  которые могут использоваться в этот момент в других потоках */
 //                uniset_rwmutex_wrlock lock(it->clst.mut);
 //                if( it->clst.clst.empty() )
 //                    lst.erase(it);
@@ -773,8 +765,8 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
         uniset_rwmutex_rlock l(lst->second.mut);
         for( auto it=lst->second.list.begin(); it!=lst->second.list.end(); ++it ) 
         {
-            // Используем здесь sm.value чтобы не делать ещё раз lock на li->second.value
-
+            // Используем здесь значение скопированное в sm.value
+            // чтобы не делать ещё раз lock на li->second.value
             IONotifyController_i::ThresholdState state = it->state;
 
             if( !it->invert )
@@ -942,9 +934,9 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
         {
             try
             {
-                (*res)[i].si     = it->second.si;
-                (*res)[i].value    = IOController::localGetValue(it->second.ait,it->second.si.id);
-                (*res)[i].type     = it->second.type;
+                (*res)[i].si    = it->second.si;
+                (*res)[i].value = IOController::localGetValue(it->second.ait,it->second.si.id);
+                (*res)[i].type  = it->second.type;
             }
             catch(Exception& ex)
             {
@@ -959,12 +951,12 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
             unsigned int k=0;
             for( auto it2=it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
             {
-                (*res)[i].tlist[k].id             = it2->id;
-                (*res)[i].tlist[k].hilimit         = it2->hilimit;
-                (*res)[i].tlist[k].lowlimit     = it2->lowlimit;
-                (*res)[i].tlist[k].state         = it2->state;
-                (*res)[i].tlist[k].tv_sec         = it2->tv_sec;
-                (*res)[i].tlist[k].tv_usec         = it2->tv_usec;
+                (*res)[i].tlist[k].id       = it2->id;
+                (*res)[i].tlist[k].hilimit  = it2->hilimit;
+                (*res)[i].tlist[k].lowlimit = it2->lowlimit;
+                (*res)[i].tlist[k].state    = it2->state;
+                (*res)[i].tlist[k].tv_sec   = it2->tv_sec;
+                (*res)[i].tlist[k].tv_usec  = it2->tv_usec;
                 k++;
             }
             i++;

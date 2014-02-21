@@ -104,7 +104,7 @@ bool uniset_mutex_lock::lock_ok()
 // -----------------------------------------------------------------------------
 uniset_mutex_lock::~uniset_mutex_lock()
 {
-    if( locked)
+    if( locked )
     {
         mutex->unlock();
         locked = false;
@@ -128,36 +128,6 @@ uniset_rwmutex::~uniset_rwmutex()
 std::ostream& UniSetTypes::operator<<(std::ostream& os, uniset_rwmutex& m )
 {
     return os << m.name();
-}
-
-std::atomic<int> uniset_rwmutex::num(0);
-
-const uniset_rwmutex &uniset_rwmutex::operator=( const uniset_rwmutex& r )
-{
-    if( this != &r )
-    {
-        lock();
-        MUTEX_DEBUG(cerr << "...copy mutex...(" << r.nm << " --> " << nm << ")" << endl;)
-        ostringstream s;
-        s << r.nm << "." << (++num);
-        nm = s.str();
-        unlock();
-    }
-
-    return *this;
-}
-
-uniset_rwmutex::uniset_rwmutex( const uniset_rwmutex& r )
-{
-    if( this != &r )
-    {
-        lock();
-        MUTEX_DEBUG(cerr << "...copy constr mutex...(" << r.nm << " --> " << nm << ")" << endl;)
-        ostringstream s;
-        s << r.nm << "." << (++num);
-        nm = s.str();
-        unlock();
-    }
 }
 
 void uniset_rwmutex::lock()

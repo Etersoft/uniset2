@@ -72,8 +72,8 @@ namespace UniSetTypes
             {
                 TransportMessage tmsg;
                 assert(sizeof(UniSetTypes::RawDataOfTransportMessage)>=sizeof(msg));
-                memcpy(&tmsg.data,&msg,sizeof(msg));
-                return tmsg;
+                std::memcpy(&tmsg.data,&msg,sizeof(msg));
+                return std::move(tmsg);
             }
     };
 
@@ -91,7 +91,7 @@ namespace UniSetTypes
             {
                 if( priority != msg.priority )
                     return priority < msg.priority;
-    
+
                 if( tm.tv_sec != msg.tm.tv_sec )
                     return tm.tv_sec >= msg.tm.tv_sec;
 
@@ -121,7 +121,7 @@ namespace UniSetTypes
 
             UniversalIO::IOType sensor_type;
             IOController_i::CalibrateInfo ci;
-            
+
             // для пороговых датчиков
             bool threshold;  /*!< TRUE - сработал порог, FALSE - порог отключился */
             UniSetTypes::ThresholdId tid;

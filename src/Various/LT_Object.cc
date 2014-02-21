@@ -79,7 +79,7 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
                 if( li->tmr.checkTime() )
                 {
                     // помещаем себе в очередь сообщение
-                    TransportMessage tm = TimerMessage(li->id, li->priority, obj->getId()).transport_msg();
+                    TransportMessage tm( std::move(TimerMessage(li->id, li->priority, obj->getId()).transport_msg()) );
                     obj->push(tm);
 
                     // Проверка на количество заданных тактов
@@ -151,9 +151,8 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
                 }
             }
 
-            TimerInfo newti(timerid, timeMS, ticks, p);
-            tlst.push_back(newti);
-            newti.reset();
+            // TimerInfo newti(timerid, timeMS, ticks, p);
+            tlst.push_back( std::move(TimerInfo(timerid, timeMS, ticks, p)) );
         }    // unlock
 
         uinfo << "(LT_askTimer): поступил заказ на таймер(id="<< timerid << ") " << timeMS << " [мс]\n";

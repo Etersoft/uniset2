@@ -40,7 +40,7 @@ NCRestorer::~NCRestorer()
 {
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController::ConsumerListInfo& lst, bool force )
+void NCRestorer::addlist( IONotifyController* ic, SInfo&& inf, IONotifyController::ConsumerListInfo&& lst, bool force )
 {
     // Проверка зарегистрирован-ли данный датчик
     // если такого дискретного датчика нет, то здесь сработает исключение...
@@ -59,7 +59,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
                 case UniversalIO::DO:
                 case UniversalIO::AI:
                 case UniversalIO::AO:
-                    ic->ioRegistration(inf);
+                    ic->ioRegistration( std::move(inf) );
                 break;
 
                 default:
@@ -78,7 +78,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
         case UniversalIO::AI:
         case UniversalIO::DO:
         case UniversalIO::AO:
-            ic->askIOList[inf.si.id]=lst;
+            ic->askIOList[inf.si.id]=std::move(lst);
         break;
 
         default:
@@ -88,7 +88,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo& inf, IONotifyController
     }
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyController::ThresholdExtList& lst, bool force )
+void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo&& inf, IONotifyController::ThresholdExtList&& lst, bool force )
 {
     // Проверка зарегистрирован-ли данный датчик    
     // если такого дискретного датчика нет сдесь сработает исключение...
@@ -107,7 +107,7 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
                 case UniversalIO::DO:
                 case UniversalIO::AI:
                 case UniversalIO::AO:
-                    ic->ioRegistration(inf);
+                    ic->ioRegistration( std::move(inf) );
                 break;
 
                 default:
@@ -122,7 +122,7 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyC
 
     ic->askTMap[inf.si.id].si      = inf.si;
     ic->askTMap[inf.si.id].type    = inf.type;
-    ic->askTMap[inf.si.id].list    = lst;
+    ic->askTMap[inf.si.id].list    = std::move(lst);
     ic->askTMap[inf.si.id].ait     = ic->myioEnd();
 }
 // ------------------------------------------------------------------------------------------

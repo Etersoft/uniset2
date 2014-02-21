@@ -18,6 +18,13 @@ static const int NoSafety       = -1;
         /*! Информация о входе/выходе */
         struct IOBase
         {
+            // т.к. IOBase содержит rwmutex с запрещённым конструктором копирования
+            // приходится здесь тоже объявлять разрешенными только операции "перемещения"
+            IOBase( const IOBase& r ) = delete;
+            IOBase& operator=(const IOBase& r) = delete;
+            IOBase( IOBase&& r ) = default;
+            IOBase& operator=(IOBase&& r) = default;
+
             IOBase():
                 cdiagram(0),
                 breaklim(0),

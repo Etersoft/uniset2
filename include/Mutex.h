@@ -50,8 +50,8 @@ namespace UniSetTypes
 
         private:
             friend class uniset_mutex_lock;
-            uniset_mutex(const uniset_mutex& r)=delete;
-            const uniset_mutex &operator=(const uniset_mutex& r) = delete;
+            uniset_mutex(const uniset_mutex& r) = delete;
+            uniset_mutex &operator=(const uniset_mutex& r) = delete;
             std::string nm;
             std::timed_mutex m_lock;
      };
@@ -99,8 +99,11 @@ namespace UniSetTypes
             bool tryrlock();
             bool trywrlock();
 
-            uniset_rwmutex( const uniset_rwmutex& r );
-            const uniset_rwmutex &operator=(const uniset_rwmutex& r);
+            uniset_rwmutex( const uniset_rwmutex& r ) = delete;
+            uniset_rwmutex& operator=(const uniset_rwmutex& r)=delete;
+
+            uniset_rwmutex( uniset_rwmutex&& r ) = default;
+            uniset_rwmutex& operator=(uniset_rwmutex&& r)=default;
 
             inline std::string name(){ return nm; }
             inline void setName( const std::string& name ){ nm = name; }
@@ -109,7 +112,6 @@ namespace UniSetTypes
             std::string nm;
             friend class uniset_rwmutex_lock;
             ost::ThreadLock m;
-            static std::atomic<int> num;
     };
 
     std::ostream& operator<<(std::ostream& os, uniset_rwmutex& m );

@@ -1907,7 +1907,6 @@ bool UInterface::waitWorking( const ObjectId id, int msec, int pmsec, const Obje
     }
 
     return ready;
-
 }
 // -----------------------------------------------------------------------------
 UniversalIO::IOType UInterface::getConfIOType( const UniSetTypes::ObjectId id ) const

@@ -143,7 +143,7 @@ void NCRestorer_XML::read_list( const UniXML& xml, xmlNode* node, IONotifyContro
             {
                 try
                 {
-                    ioRegistration(ic, inf, true);
+                    ioRegistration(ic, std::move(inf), true);
                 }
                 catch(Exception& ex)
                 {
@@ -157,7 +157,7 @@ void NCRestorer_XML::read_list( const UniXML& xml, xmlNode* node, IONotifyContro
         }
 
         rslot(xml,it,node);
-        read_consumers(xml,it,inf,ic);
+        read_consumers(xml, it, std::move(inf), ic);
     }
 }
 // ------------------------------------------------------------------------------------------
@@ -348,7 +348,7 @@ void NCRestorer_XML::read_thresholds(const UniXML& xml, xmlNode* node, IONotifyC
             continue;
         }
 
-         uinfo << ic->getName() << "(read_thresholds): " << it.getProp("name") << endl;
+        uinfo << ic->getName() << "(read_thresholds): " << it.getProp("name") << endl;
 
         UniXML_iterator tit(it);
         if( !tit.goChildren() )
@@ -390,17 +390,17 @@ void NCRestorer_XML::read_thresholds(const UniXML& xml, xmlNode* node, IONotifyC
             }
 
             // порог добавляем в любом случае, даже если список заказчиков пуст...
-            tlst.push_back(ti);
+            tlst.push_back( std::move(ti) );
             rtslot(xml,tit,it);
         }
 
-        addthresholdlist(ic,inf,tlst);
+        addthresholdlist(ic, std::move(inf), std::move(tlst) );
     }
 }
 // ------------------------------------------------------------------------------------------
 
 void NCRestorer_XML::read_consumers( const UniXML& xml, xmlNode* it, 
-                                        NCRestorer_XML::SInfo& inf, IONotifyController* ic )
+                                        NCRestorer_XML::SInfo&& inf, IONotifyController* ic )
 {
     // в новых ask-файлах список выделен <consumers>...</consumers>,
     xmlNode* cnode = find_node(xml,it,"consumers","");
@@ -411,7 +411,7 @@ void NCRestorer_XML::read_consumers( const UniXML& xml, xmlNode* it,
         {
             IONotifyController::ConsumerListInfo lst;
             if( getConsumerList(xml,cit,lst) )
-                addlist(ic,inf,lst,true);
+                addlist(ic,std::move(inf),std::move(lst),true);
         }
     }
 }

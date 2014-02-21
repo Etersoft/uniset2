@@ -78,6 +78,13 @@ class MBExchange:
                 nbyte(0),reg(0)
             {}
 
+            // т.к. IOBase содержит rwmutex с запрещённым конструктором копирования
+            // приходится здесь тоже объявлять разрешенными только операции "перемещения"
+            RSProperty( const RSProperty& r ) = delete;
+            RSProperty& operator=(const RSProperty& r) = delete;
+            RSProperty( RSProperty&& r ) = default;
+            RSProperty& operator=(RSProperty&& r) = default;
+
             RegInfo* reg;
         };
 
@@ -91,6 +98,13 @@ class MBExchange:
         typedef std::map<RegID,RegInfo*> RegMap;
         struct RegInfo
         {
+            // т.к. RSProperty содержит rwmutex с запрещённым конструктором копирования
+            // приходится здесь тоже объявлять разрешенными только операции "перемещения"
+            RegInfo( const RegInfo& r ) = default;
+            RegInfo& operator=(const RegInfo& r) = delete;
+            RegInfo( RegInfo&& r ) = delete;
+            RegInfo& operator=(RegInfo&& r) = default;
+
             RegInfo():
                 mbval(0),mbreg(0),mbfunc(ModbusRTU::fnUnknown),
                 id(0),dev(0),
@@ -261,9 +275,8 @@ class MBExchange:
         void initOffsetList();
 
         RTUDevice* addDev( RTUDeviceMap& dmap, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
-        RegInfo* addReg( RegMap& rmap, RegID id, ModbusRTU::ModbusData r, UniXML_iterator& it,
-                            RTUDevice* dev, RegInfo* rcopy=0 );
-        RSProperty* addProp( PList& plist, RSProperty& p );
+        RegInfo* addReg( RegMap& rmap, RegID id, ModbusRTU::ModbusData r, UniXML_iterator& it, RTUDevice* dev );
+        RSProperty* addProp( PList& plist, RSProperty&& p );
 
         bool initMTRitem( UniXML_iterator& it, RegInfo* p );
         bool initRTU188item( UniXML_iterator& it, RegInfo* p );

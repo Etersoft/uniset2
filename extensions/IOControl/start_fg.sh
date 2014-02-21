@@ -15,5 +15,5 @@ uniset2-start.sh -f ./uniset2-iocontrol --smemory-id SharedMemory \
 	 --io-test-lamp Input1_S \
 	 --io-heartbeat-id AI_AS \
 	 --io-sm-ready-test-sid Input1_S \
-	--ulog-add-levels info,crit,warn,level9,system
+	--ulog-add-levels any --dlog-add-levels any
 

@@ -48,6 +48,11 @@ class NCRestorer
         struct SInfo:
             public IOController::USensorInfo
         {
+            SInfo( const SInfo& ) = delete;
+            const SInfo& operator=(const SInfo& ) = delete;
+            SInfo( SInfo&& ) = default;
+            SInfo& operator=(SInfo&& ) = default;
+
             SInfo( IOController_i::SensorInfo& si, UniversalIO::IOType& t,
                     UniSetTypes::Message::Message::Priority& p, long& def )
             {
@@ -74,14 +79,14 @@ class NCRestorer
     protected:
 
         // добавление списка заказчиков
-        static void addlist( IONotifyController* ic, SInfo& inf, IONotifyController::ConsumerListInfo& lst, bool force=false );
+        static void addlist( IONotifyController* ic, SInfo&& inf, IONotifyController::ConsumerListInfo&& lst, bool force=false );
 
         // добавление списка порогов и заказчиков
-        static void addthresholdlist( IONotifyController* ic, SInfo& inf, IONotifyController::ThresholdExtList& lst, bool force=false );
+        static void addthresholdlist( IONotifyController* ic, SInfo&& inf, IONotifyController::ThresholdExtList&& lst, bool force=false );
 
-        static inline void ioRegistration( IONotifyController* ic, IOController::USensorInfo& inf, bool force=false )
+        static inline void ioRegistration( IONotifyController* ic, IOController::USensorInfo&& inf, bool force=false )
         {
-            ic->ioRegistration(inf,force);
+            ic->ioRegistration( std::move(inf),force);
         }
 
         static inline IOController::IOStateList::iterator ioFind( IONotifyController* ic, UniSetTypes::KeyType k )
@@ -121,7 +126,7 @@ class NCRestorer_XML:
             \param fname - файл. (формата uniset-project)
             \param sensor_filterField - читать из списка только те узлы, у которых filterField="filterValue"
             \param sensor_filterValue - значение для фильтрования списка
-        */    
+        */
         NCRestorer_XML( const std::string& fname, const std::string& sensor_filterField, const std::string& sensor_filterValue="" );
 
         virtual ~NCRestorer_XML();
@@ -157,7 +162,7 @@ class NCRestorer_XML:
     protected:
 
         bool check_thresholds_item( UniXML_iterator& it );
-        void read_consumers(const UniXML& xml, xmlNode* node, NCRestorer_XML::SInfo& inf, IONotifyController* ic );
+        void read_consumers(const UniXML& xml, xmlNode* node, NCRestorer_XML::SInfo&& inf, IONotifyController* ic );
         void read_list(const UniXML& xml, xmlNode* node, IONotifyController* ic);
         void read_thresholds(const UniXML& xml, xmlNode* node, IONotifyController* ic);
         void init( const std::string& fname );

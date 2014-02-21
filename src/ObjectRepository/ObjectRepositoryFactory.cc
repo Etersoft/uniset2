@@ -228,7 +228,7 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
     ctx->list(how_many,bl,bi);
 
 
-    if(how_many>bl->length())
+    if( how_many>bl->length() )
         how_many = bl->length();
 
     bool rem = true; // удалять или нет 
@@ -266,7 +266,7 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
 
 
     // Удаляем контекст, если он уже пустой
-    if (rem)
+    if( rem )
     {
         // Получаем имя контекста содержащего удаляемый
         string in_sec(ORepHelpers::getSectionName(fullName));

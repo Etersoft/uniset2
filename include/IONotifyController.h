@@ -171,15 +171,25 @@ class IONotifyController:
 
             UniSetObject_i_var ref;
             int attempt;
+
+            ConsumerInfoExt( const ConsumerInfoExt& ) = default;
+            ConsumerInfoExt& operator=( const ConsumerInfoExt& ) = default;
+            ConsumerInfoExt( ConsumerInfoExt&& ) = default;
+            ConsumerInfoExt& operator=(ConsumerInfoExt&& ) = default;
         };
 
         typedef std::list<ConsumerInfoExt> ConsumerList;
 
         struct ConsumerListInfo
         {
-             ConsumerListInfo():mut("ConsumerInfoMutex"){}
-             ConsumerList clst;
-             UniSetTypes::uniset_rwmutex mut;
+            ConsumerListInfo():mut("ConsumerInfoMutex"){}
+            ConsumerList clst;
+            UniSetTypes::uniset_rwmutex mut;
+
+            ConsumerListInfo( const ConsumerListInfo& ) = delete;
+            ConsumerListInfo& operator=( const ConsumerListInfo& ) = delete;
+            ConsumerListInfo( ConsumerListInfo&& ) = default;
+            ConsumerListInfo& operator=(ConsumerListInfo&& ) = default;
         };
 
         /*! словарь: датчик -> список потребителей */
@@ -232,6 +242,11 @@ class IONotifyController:
                 r.state = state;
                 return r;
             }
+
+            ThresholdInfoExt( const ThresholdInfoExt& ) = delete;
+            ThresholdInfoExt& operator=( const ThresholdInfoExt& ) = delete;
+            ThresholdInfoExt( ThresholdInfoExt&& ) = default;
+            ThresholdInfoExt& operator=(ThresholdInfoExt&& ) = default;
         };
 
         /*! список порогов (информация по каждому порогу) */
@@ -240,9 +255,9 @@ class IONotifyController:
         struct ThresholdsListInfo
         {
             ThresholdsListInfo(){}
-            ThresholdsListInfo( IOController_i::SensorInfo& si, ThresholdExtList& list, 
+            ThresholdsListInfo( IOController_i::SensorInfo& si, ThresholdExtList&& list,
                                 UniversalIO::IOType t=UniversalIO::AI ):
-                si(si),type(t),list(list){}
+                si(si),type(t),list( std::move(list) ){}
 
             UniSetTypes::uniset_rwmutex mut;
             IOController_i::SensorInfo si;  /*!< аналоговый датчик */
@@ -303,7 +318,7 @@ class IONotifyController:
                     const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd);
 
          /*! добавить новый порог для датчика */
-        bool addThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& cons);
+        bool addThreshold(ThresholdExtList& lst, ThresholdInfoExt&& ti, const UniSetTypes::ConsumerInfo& ci);
         /*! удалить порог для датчика */
         bool removeThreshold(ThresholdExtList& lst, ThresholdInfoExt& ti, const UniSetTypes::ConsumerInfo& ci);
 
@@ -312,7 +327,7 @@ class IONotifyController:
 
         /*! замок для блокирования совместного доступа к cписку потребителей датчиков */
         UniSetTypes::uniset_rwmutex askIOMutex;
-        /*! замок для блокирования совместного доступа к cписку потребителей пороговых датчиков */            
+        /*! замок для блокирования совместного доступа к cписку потребителей пороговых датчиков */
         UniSetTypes::uniset_rwmutex trshMutex;
 
         int maxAttemtps; /*! timeout for consumer */

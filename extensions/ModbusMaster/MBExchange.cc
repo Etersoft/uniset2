@@ -593,7 +593,7 @@ bool MBExchange::preInitRead( InitList::iterator& p )
             for( unsigned int i=0; i<ret.bcnt; i++ )
             {
                 ModbusRTU::DataBits b(ret.data[i]);
-                for( unsigned int k=0;k<ModbusRTU::BitsPerByte && m<q_count; k++,m++ )
+                for( int k=0;k<ModbusRTU::BitsPerByte && m<q_count; k++,m++ )
                     dat[m] = b[k];
             }
 
@@ -610,7 +610,7 @@ bool MBExchange::preInitRead( InitList::iterator& p )
             for( unsigned int i=0; i<ret.bcnt; i++ )
             {
                 ModbusRTU::DataBits b(ret.data[i]);
-                for( unsigned int k=0;k<ModbusRTU::BitsPerByte && m<q_count; k++,m++ )
+                for( int k=0;k<ModbusRTU::BitsPerByte && m<q_count; k++,m++ )
                     dat[m] = b[k];
             }
 
@@ -830,7 +830,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
             for( unsigned int i=0; i<ret.bcnt; i++ )
             {
                 ModbusRTU::DataBits b(ret.data[i]);
-                for( unsigned int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
+                for( int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
                     it->second->mbval = b[k];
             }
             it--;
@@ -1722,8 +1722,7 @@ MBExchange::RTUDevice* MBExchange::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAd
 }
 // ------------------------------------------------------------------------------------------
 MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, RegID id, ModbusRTU::ModbusData r,
-                                            UniXML_iterator& xmlit, MBExchange::RTUDevice* dev,
-                                            MBExchange::RegInfo* rcopy )
+                                            UniXML_iterator& xmlit, MBExchange::RTUDevice* dev )
 {
     auto it = mp.find(id);
     if( it != mp.end() )
@@ -1751,24 +1750,14 @@ MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, RegID id, ModbusRTU::Modbus
         return it->second;
     }
 
-    MBExchange::RegInfo* ri;
-    if( rcopy )
+    MBExchange::RegInfo* ri = new MBExchange::RegInfo();
+    if( !initRegInfo(ri,xmlit,dev) )
     {
-        ri = new MBExchange::RegInfo(*rcopy);
-        ri->slst.clear();
-        ri->mbreg = r;
-    }
-    else
-    {
-        ri = new MBExchange::RegInfo();
-        if( !initRegInfo(ri,xmlit,dev) )
-        {
-            delete ri;
-            return 0;
-        }
-        ri->mbreg = r;
+         delete ri;
+         return 0;
     }
 
+    ri->mbreg = r;
     ri->id = id;
 
     mp.insert(RegMap::value_type(id,ri));
@@ -1777,7 +1766,7 @@ MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, RegID id, ModbusRTU::Modbus
     return ri;
 }
 // ------------------------------------------------------------------------------------------
-MBExchange::RSProperty* MBExchange::addProp( PList& plist, RSProperty& p )
+MBExchange::RSProperty* MBExchange::addProp( PList& plist, RSProperty&& p )
 {
     for( auto &it: plist )
     {
@@ -1785,7 +1774,7 @@ MBExchange::RSProperty* MBExchange::addProp( PList& plist, RSProperty& p )
             return &it;
     }
 
-    plist.push_back(p);
+    plist.push_back( std::move(p) );
     auto it = plist.end();
     --it;
     return &(*it);
@@ -1800,10 +1789,9 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
     // тогда заносим его в отдельный список
     if( p.t_ai != DefaultObjectId )
     {
-        // испольуем конструктор копирования, чтобы сформировать IOBase 
-        // через преобразование указателя к базовому классу
-        IOBase b( *(static_cast<IOBase*>(&p)) );
-        thrlist.push_back(b);
+        // испольуем конструктор копирования
+        // IOBase b( *(static_cast<IOBase*>(&p)));
+        thrlist.push_back( std::move(p) );
         return true;
     }
 
@@ -2122,7 +2110,7 @@ bool MBExchange::initItem( UniXML_iterator& it )
     }
 
 
-    RSProperty* p1 = addProp(ri->slst,p);
+    RSProperty* p1 = addProp(ri->slst, std::move(p) );
     if( !p1 )
         return false;
 
@@ -2136,7 +2124,7 @@ bool MBExchange::initItem( UniXML_iterator& it )
         for( unsigned int i=1; i<p1->rnum; i++ )
         {
             RegID id1 = genRegID(mbreg+i,ri->mbfunc);
-            RegInfo* r = addReg(dev->regmap,id1,mbreg+i,it,dev,ri);
+            RegInfo* r = addReg(dev->regmap,id1,mbreg+i,it,dev);
             r->q_num=i+1;
             r->q_count=1;
             r->mbfunc = ri->mbfunc;
@@ -2165,8 +2153,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
     bool need_init = it.getIntProp(prop_prefix + "preinit");
     if( need_init && ModbusRTU::isWriteFunction(ri->mbfunc) )
     {
-        InitRegInfo    ii;
-        ii.p = p;
+        InitRegInfo ii;
+        ii.p = std::move(p);
         ii.dev = dev;
         ii.ri = ri;
 
@@ -2208,12 +2196,12 @@ bool MBExchange::initItem( UniXML_iterator& it )
                 break;
 
                 default:
-                    ii.mbfunc = ModbusRTU::fnReadOutputRegisters;      
+                    ii.mbfunc = ModbusRTU::fnReadOutputRegisters;
                 break;
             }
         }
 
-        initRegList.push_back(ii);
+        initRegList.push_back( std::move(ii) );
         ri->mb_initOK = false;
         ri->sm_initOK = false;
     }

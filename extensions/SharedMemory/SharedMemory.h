@@ -430,7 +430,6 @@ class SharedMemory:
 
         void buildHistoryList( xmlNode* cnode );
         void checkHistoryFilter( UniXML_iterator& it );
-        bool isActivated();
 
         IOStateList::iterator itPulsar;
         UniSetTypes::ObjectId sidPulsar;

@@ -64,7 +64,7 @@ smReadyTimeout(15000)
         for( ; it.getCurrent(); it.goNext() )
         {
             UniSetTypes::ObjectId id;
-        
+
             string n(it.getProp("id"));
             if( !n.empty() )
                 id = it.getIntProp("id");
@@ -73,7 +73,7 @@ smReadyTimeout(15000)
                 id = conf->getControllerID( it.getProp("name") );
                 n = it.getProp("name");
             }
-                
+
             if( id == DefaultObjectId )
                 throw SystemError("(UniExchange): Uknown ID for " + n );
 
@@ -90,7 +90,7 @@ smReadyTimeout(15000)
 
             if( id == DefaultObjectId )
                 throw SystemError("(UniExchange): Uknown ID for node=" + n1 );
-            
+
             NetNodeInfo ni;
             ni.oref = CORBA::Object::_nil();
             ni.id   = id;
@@ -98,10 +98,10 @@ smReadyTimeout(15000)
             ni.sidConnection = conf->getSensorID(it.getProp("sid_connection"));
 
             dinfo << myname << ": add point " << n << ":" << n1 << endl;
-            nlst.push_back(ni);
+            nlst.push_back( std::move(ni) );
         }
     }
-    
+
     if( shm->isLocalwork() )
     {
         readConfiguration();
@@ -204,9 +204,9 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMI
         // init new map...
         smap.resize(map->length());
     }
-    
-    int size = map->length();
-    for( unsigned int i=0; i<size; i++ )
+
+    size_t size = map->length();
+    for( size_t i=0; i<size; i++ )
     {
         SInfo* s = &(smap[i]);
         IOController_i::ShortMap* m = &(map[i]);
@@ -218,7 +218,7 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMI
         }
 
         s->val = m->value;
-        
+
         try
         {
 /*
@@ -408,7 +408,7 @@ bool UniExchange::initItem( UniXML_iterator& it )
 
     i.val = 0;
 
-    mymap[maxIndex++] = i;
+    mymap[maxIndex++] = std::move(i);
     if( maxIndex >= mymap.size() )
         mymap.resize(maxIndex+10);
 
