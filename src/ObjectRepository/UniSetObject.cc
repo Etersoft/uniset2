@@ -443,7 +443,7 @@ void UniSetObject::setThreadPriority( int p )
         thr->setPriority(p);
 }
 // ------------------------------------------------------------------------------------------
-void UniSetObject::push(const TransportMessage& tm)
+void UniSetObject::push( const TransportMessage& tm )
 {
     { // lock
         uniset_rwmutex_wrlock mlk(qmutex);

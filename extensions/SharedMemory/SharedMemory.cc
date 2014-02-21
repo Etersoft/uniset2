@@ -164,13 +164,13 @@ void SharedMemory::sysCommand( const SystemMessage *sm )
         case SystemMessage::StartUp:
         {
             PassiveTimer ptAct(activateTimeout);
-            while( !isActivated() && !ptAct.checkTime() )
+            while( !activated && !ptAct.checkTime() )
             {
                 cout << myname << "(sysCommand): wait activate..." << endl;
                 msleep(100);
             }
 
-            if( !isActivated()  )
+            if( !activated  )
                 dcrit << myname << "(sysCommand): ************* don`t activate?! ************" << endl;
 
             // подождать пока пройдёт инициализация
@@ -472,16 +472,16 @@ void SharedMemory::readEventList( const std::string& oname )
 // -----------------------------------------------------------------------------
 void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
 {
-    TransportMessage tm(sm.transport_msg());
-
     for( auto &it: elst )
     {
         bool ok = false;
+        sm.consumer = it;
+
         for( unsigned int i=0; i<2; i++ )
         {
             try
             {
-                ui.send(it,tm);
+                ui.send(it, std::move(sm.transport_msg()) );
                 ok = true;
                 break;
             }
@@ -625,25 +625,20 @@ void SharedMemory::saveHistory()
 {
     if( hist.empty() )
         return;
-//    if( dlog.is_info() )
-//        dlog.info() << myname << "(saveHistory): ..." << endl;
 
     for( auto &it: hist )
     {
         for( auto &hit: it.hlst )
         {
-            if( hit.ioit != myioEnd() )
-                hit.add( localGetValue( hit.ioit, hit.ioit->second.si.id ), it.size );
-            else
+            try
             {
-                try
-                {
-
-                    hit.add( localGetValue( hit.ioit, hit.id ), it.size );
-                    continue;
-                }
-                catch(...){}
+                hit.add( localGetValue( hit.ioit, hit.id ), it.size );
             }
+            catch( IOController_i::Undefined& ex )
+            {
+                hit.add( numeric_limits<long>::max(), it.size );
+            }
+            catch(...){}
         }
     }
 }
@@ -745,10 +740,5 @@ std::ostream& operator<<( std::ostream& os, const SharedMemory::HistoryInfo& h )
     }
 
     return os;
-}
-// ------------------------------------------------------------------------------------------
-bool SharedMemory::isActivated()
-{
-    return activated;
 }
 // ------------------------------------------------------------------------------------------

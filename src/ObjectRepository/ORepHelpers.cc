@@ -142,52 +142,52 @@ namespace ORepHelpers
     CosNaming::NamingContext_ptr getRootNamingContext(const CORBA::ORB_ptr orb, const string& nsName, int timeoutSec)
     {
         CosNaming::NamingContext_var rootContext;
-    try
-    {
-//        cout << "ORepHelpers(getRootNamingContext): nsName->" << nsName << endl;
-        CORBA::Object_var initServ = orb->resolve_initial_references(nsName.c_str());
-        ulogrep << "OREPHELP: get rootcontext...(nsName = "<< nsName << ")" <<endl;
-
-        rootContext = CosNaming::NamingContext::_narrow(initServ);
-        if (CORBA::is_nil(rootContext))
+        try
         {
-            string err("ORepHelpers: Не удалось преобразовать ссылку к нужному типу.");
-            throw ORepFailed(err.c_str());
+            //        cout << "ORepHelpers(getRootNamingContext): nsName->" << nsName << endl;
+            CORBA::Object_var initServ = orb->resolve_initial_references(nsName.c_str());
+            ulogrep << "OREPHELP: get rootcontext...(nsName = "<< nsName << ")" <<endl;
+
+            rootContext = CosNaming::NamingContext::_narrow(initServ);
+            if (CORBA::is_nil(rootContext))
+            {
+                string err("ORepHelpers: Не удалось преобразовать ссылку к нужному типу.");
+                throw ORepFailed(err.c_str());
+            }
+
+            ulogrep << "OREPHELP: init NameService ok"<< endl;
+        }
+        catch(CORBA::ORB::InvalidName& ex)
+        {
+            ostringstream err;
+            err << "ORepHelpers(getRootNamingContext): InvalidName=" << nsName;
+            uwarn << err.str() << endl;
+            throw ORepFailed(err.str());
+        }
+        catch (CORBA::COMM_FAILURE& ex)
+        {
+            ostringstream err;
+            err << "ORepHelpers(getRootNamingContext): Не смог получить ссылку на контекст ->" << nsName;
+            throw ORepFailed(err.str());
+        }
+        catch(omniORB::fatalException& ex)
+        {
+            string err("ORepHelpers(getRootNamingContext): Caught Fatal Exception");
+            throw ORepFailed(err);
+        }
+        catch (...)
+        {
+            string err("ORepHelpers(getRootNamingContext): Caught a system exception while resolving the naming service.");
+            throw ORepFailed(err);
         }
 
-        ulogrep << "OREPHELP: init NameService ok"<< endl;
-    }
-    catch(CORBA::ORB::InvalidName& ex)
-    {
-        ostringstream err;
-        err << "ORepHelpers(getRootNamingContext): InvalidName=" << nsName;
-        uwarn << err.str() << endl;
-        throw ORepFailed(err.str());
-    }
-    catch (CORBA::COMM_FAILURE& ex)
-    {
-        ostringstream err;
-        err << "ORepHelpers(getRootNamingContext): Не смог получить ссылку на контекст ->" << nsName;
-        throw ORepFailed(err.str());
-    }
-    catch(omniORB::fatalException& ex)
-    {
-        string err("ORepHelpers(getRootNamingContext): Caught Fatal Exception");
-        throw ORepFailed(err);
-    }
-    catch (...)
-    {
-        string err("ORepHelpers(getRootNamingContext): Caught a system exception while resolving the naming service.");
-        throw ORepFailed(err);
-    }
+        ulogrep << "OREPHELP: get root context ok"<< endl;
 
-    ulogrep << "OREPHELP: get root context ok"<< endl;
+        //    // Если создан как _ptr
+        //    return rootContext;
 
-//    // Если создан как _ptr
-//    return rootContext;
-
-//    Если создан как _var
-    return rootContext._retn();
+        //    Если создан как _var
+        return rootContext._retn();
     }
     // ---------------------------------------------------------------------------------------------------------------
     /*!
@@ -196,7 +196,6 @@ namespace ORepHelpers
     */
     const string getShortName( const string& fname, const std::string& brk )
     {
-
         string::size_type pos = fname.rfind(brk);
         if( pos == string::npos )
             return fname;
@@ -251,7 +250,7 @@ namespace ORepHelpers
 
         }
         string err("Имя не должно содержать символы: "+ bad);
-        return err;
+        return std::move(err);
     }
     // ---------------------------------------------------------------------------------------------------------------
 }

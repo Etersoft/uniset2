@@ -134,10 +134,11 @@ long IOController::localGetValue( IOController::IOStateList::iterator& li, const
 
     if( li!=ioList.end() )
     {
+        uniset_rwmutex_rlock lock(li->second.val_lock);
+
         if( li->second.undefined )
             throw IOController_i::Undefined();
 
-        uniset_rwmutex_rlock lock(li->second.val_lock);
         return li->second.value;
     }
 
@@ -150,7 +151,7 @@ long IOController::localGetValue( IOController::IOStateList::iterator& li, const
     throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ------------------------------------------------------------------------------------------
-void IOController::setUndefinedState(UniSetTypes::ObjectId sid, CORBA::Boolean undefined, UniSetTypes::ObjectId sup_id )
+void IOController::setUndefinedState( UniSetTypes::ObjectId sid, CORBA::Boolean undefined, UniSetTypes::ObjectId sup_id )
 {
     auto li = ioList.end();
     localSetUndefinedState( li,undefined, sid );
@@ -267,7 +268,7 @@ void IOController::localSetValue( IOController::IOStateList::iterator& li,
         // поэтому передаём (и затем сохраняем) напрямую(ссылку) value (а не const value)
         bool blocked = ( li->second.blocked || li->second.undefined );
 
-        if( checkIOFilters(&li->second,value,sup_id) || blocked )
+        if( checkIOFilters(li->second,value,sup_id) || blocked )
         {
             uinfo << myname << ": save sensor value (" << sid << ")"
                     << " name: " << conf->oind->getNameById(sid)
@@ -331,7 +332,7 @@ IOType IOController::getIOType( UniSetTypes::ObjectId sid )
     throw IOController_i::NameNotFound(err.str().c_str());
 }
 // ---------------------------------------------------------------------------
-void IOController::ioRegistration( const USensorInfo& ainf, bool force )
+void IOController::ioRegistration( USensorInfo&& ainf, bool force )
 {
     // проверка задан ли контроллеру идентификатор
     if( getId() == DefaultObjectId )
@@ -356,7 +357,7 @@ void IOController::ioRegistration( const USensorInfo& ainf, bool force )
             }
         }
 
-        IOStateList::mapped_type ai(ainf);
+        IOStateList::mapped_type ai( std::move(ainf) );
         // запоминаем начальное время
         struct timeval tm;
         struct timezone tz;
@@ -368,7 +369,7 @@ void IOController::ioRegistration( const USensorInfo& ainf, bool force )
         ai.value    = ai.default_val;
 
         // более оптимальный способ(при условии вставки первый раз)
-        ioList.insert(IOStateList::value_type(ainf.si.id,ai));
+        ioList.insert( IOStateList::value_type(ainf.si.id, std::move(ai) ));
     }
 
     try
@@ -420,7 +421,7 @@ void IOController::logging( UniSetTypes::SensorMessage& sm )
 
         sm.consumer = dbID;
         TransportMessage tm(sm.transport_msg());
-        ui.send(sm.consumer, tm);
+        ui.send( sm.consumer, std::move(tm) );
         isPingDBServer = true;
     }
     catch(...)
@@ -676,7 +677,7 @@ IOController_i::SensorInfoSeq* IOController::getSensorSeq( const IDSeq& lst )
 // -----------------------------------------------------------------------------
 IDSeq* IOController::setOutputSeq(const IOController_i::OutSeq& lst, ObjectId sup_id )
 {
-    UniSetTypes::IDList badlist; // писок не найденных идентификаторов
+    UniSetTypes::IDList badlist; // список не найденных идентификаторов
 
     int size = lst.length();
 

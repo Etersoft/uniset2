@@ -622,8 +622,8 @@ int logRotate( const string& arg, UInterface &ui )
             return 1;
         }
 
-        SystemMessage sm(SystemMessage::LogRotate);
-        TransportMessage tm(sm.transport_msg());
+
+        TransportMessage tm( std::move(SystemMessage(SystemMessage::LogRotate).transport_msg()) );
         ui.send(id,tm);
         cout << "\nSend 'LogRotate' to " << arg << " OK.\n";
     }
@@ -650,8 +650,8 @@ int configure( const string& arg, UInterface &ui )
             cout << "(configure): name='" << arg << "' не найдено!!!\n";
             return 1;
         }
-        SystemMessage sm(SystemMessage::ReConfiguration);
-        TransportMessage tm(sm.transport_msg());
+
+        TransportMessage tm( std::move( SystemMessage(SystemMessage::ReConfiguration).transport_msg() ));
         ui.send(id,tm);
         cout << "\nSend 'ReConfigure' to " << arg << " OK.\n";
     }

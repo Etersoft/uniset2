@@ -72,8 +72,8 @@ namespace UniSetTypes
             {
                 TransportMessage tmsg;
                 assert(sizeof(UniSetTypes::RawDataOfTransportMessage)>=sizeof(msg));
-                memcpy(&tmsg.data,&msg,sizeof(msg));
-                return tmsg;
+                std::memcpy(&tmsg.data,&msg,sizeof(msg));
+                return std::move(tmsg);
             }
     };
 

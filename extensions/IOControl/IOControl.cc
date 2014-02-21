@@ -775,7 +775,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
                 << " priority=" << prior << endl;
     }
 
-    iomap[maxItem++] = inf;
+    iomap[maxItem++] = std::move(inf);
     return true;
 }
 // ------------------------------------------------------------------------------------------

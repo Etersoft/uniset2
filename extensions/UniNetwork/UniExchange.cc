@@ -98,7 +98,7 @@ smReadyTimeout(15000)
             ni.sidConnection = conf->getSensorID(it.getProp("sid_connection"));
 
             dinfo << myname << ": add point " << n << ":" << n1 << endl;
-            nlst.push_back(ni);
+            nlst.push_back( std::move(ni) );
         }
     }
 
@@ -205,8 +205,8 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMI
         smap.resize(map->length());
     }
 
-    int size = map->length();
-    for( unsigned int i=0; i<size; i++ )
+    size_t size = map->length();
+    for( size_t i=0; i<size; i++ )
     {
         SInfo* s = &(smap[i]);
         IOController_i::ShortMap* m = &(map[i]);
@@ -408,7 +408,7 @@ bool UniExchange::initItem( UniXML_iterator& it )
 
     i.val = 0;
 
-    mymap[maxIndex++] = i;
+    mymap[maxIndex++] = std::move(i);
     if( maxIndex >= mymap.size() )
         mymap.resize(maxIndex+10);
 

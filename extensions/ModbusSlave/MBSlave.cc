@@ -847,8 +847,8 @@ bool MBSlave::initItem( UniXML_iterator& it )
     {
         p.vtype = VTypes::vtUnknown;
         p.wnum = 0;
-        iomap[p.mbreg] = p;
         dinfo << myname << "(initItem): add " << p << endl;
+        iomap[p.mbreg] = std::move(p);
     }
     else
     {
@@ -867,8 +867,8 @@ bool MBSlave::initItem( UniXML_iterator& it )
         {
             p.mbreg += i;
             p.wnum+= i;
-            iomap[p.mbreg] = p;
             dinfo << myname << "(initItem): add " << p << endl;
+            iomap[p.mbreg] = std::move(p);
         }
     }
 

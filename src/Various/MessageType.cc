@@ -79,8 +79,8 @@ threshold(false),
 tid(UniSetTypes::DefaultThresholdId)
 {
     type        = Message::SensorInfo;
-    sm_tv_sec     = tm.tv_sec;
-    sm_tv_usec     = tm.tv_usec;
+    sm_tv_sec   = tm.tv_sec;
+    sm_tv_usec  = tm.tv_usec;
 
     ci.minRaw = 0;
     ci.maxRaw = 0;

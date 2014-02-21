@@ -211,6 +211,13 @@ class IOControl:
         struct IOInfo:
             public IOBase
         {
+            // т.к. IOBase содержит rwmutex с запрещённым конструктором копирования
+            // приходится здесь тоже объявлять разрешенными только операции "перемещения"
+            IOInfo( const IOInfo& r ) = delete;
+            IOInfo& operator=(const IOInfo& r) = delete;
+            IOInfo( IOInfo&& r ) = default;
+            IOInfo& operator=(IOInfo&& r) = default;
+
             IOInfo():
                 subdev(DefaultSubdev),channel(DefaultChannel),
                 ncard(-1),

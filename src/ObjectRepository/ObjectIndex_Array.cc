@@ -74,6 +74,7 @@ string ObjectIndex_Array::getTextName( const ObjectId id )
 {
     if( id!=UniSetTypes::DefaultObjectId && id>=0 && id<maxId )
         return objectInfo[id].textName;
+
     return "";
 //    throw OutOfRange("ObjectIndex_Array::getTextName OutOfRange");
 }
@@ -107,14 +108,6 @@ const ObjectInfo* ObjectIndex_Array::getObjectInfo( const ObjectId id )
         return &(objectInfo[id]);
 
     return NULL;
-/*
-    ObjectInfo ret;
-    ret.id = DefaultObjectId;
-    ret.repName = "";
-    ret.textName = "";
-    return ret;
-*/
-
 }
 // -----------------------------------------------------------------------------------------
 const ObjectInfo* ObjectIndex_Array::getObjectInfo( const std::string& name )
