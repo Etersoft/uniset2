@@ -167,6 +167,13 @@ size_t UDPMessage::getMessage( UDPMessage& m, UDPPacket& p )
     memcpy(&m,&(p.data[i]),sizeof(UDPHeader));
     i += sizeof(UDPHeader);
 
+    // проверяем наш ли пакет..
+    if( m.magic != UniSetUDP::UNETUDP_MAGICNUM )
+    {
+	m.magic = 0;
+	return 0;
+    }
+
     // копируем аналоговые данные
     size_t sz = m.acount*sizeof(UDPAData);
     if( sz > sizeof(m.a_dat) )
