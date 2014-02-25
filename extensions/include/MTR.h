@@ -36,48 +36,48 @@ namespace MTR
         mtT_Str8
     };
     // -------------------------------------------------------------------------
-    std::string type2str( MTRType t );            /*!< преоразование строки в тип */
-    MTRType str2type( const std::string& s );    /*!< преобразование названия в строку */
+    std::string type2str( MTRType t );          /*!< преоразование строки в тип */
+    MTRType str2type( const std::string& s );   /*!< преобразование названия в строку */
     int wsize( MTRType t );                     /*!< длина данных в словах */
     // -------------------------------------------------------------------------
     // Информация
-    const ModbusRTU::ModbusData regModelNumber    = 0x01;
-    const ModbusRTU::ModbusData regSerialNumber    = 0x09;
-    
+    const ModbusRTU::ModbusData regModelNumber  = 0x01;
+    const ModbusRTU::ModbusData regSerialNumber = 0x09;
+
     std::string getModelNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr );
     std::string getSerialNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr );
     // -------------------------------------------------------------------------
     // Настройки связи (чтение - read03, запись - write06)
     const ModbusRTU::ModbusData regUpdateConfiguration = 53;
-    const ModbusRTU::ModbusData regAddress        = 55;
-    const ModbusRTU::ModbusData regBaudRate        = 56;
-    const ModbusRTU::ModbusData regStopBit        = 57; /* 0 - Stop bit, 1 - Stop bits */
-    const ModbusRTU::ModbusData regParity        = 58;
-    const ModbusRTU::ModbusData regDataBits        = 59;
+    const ModbusRTU::ModbusData regAddress   = 55;
+    const ModbusRTU::ModbusData regBaudRate  = 56;
+    const ModbusRTU::ModbusData regStopBit   = 57; /* 0 - Stop bit, 1 - Stop bits */
+    const ModbusRTU::ModbusData regParity    = 58;
+    const ModbusRTU::ModbusData regDataBits  = 59;
 
     enum mtrBaudRate
     {
-        br1200         = 0,
-        br2400         = 1,
-        br4800         = 2,
-        br9600         = 3,
-        br19200     = 4,
-        br38400     = 5,
-        br57600        = 6,
-        br115200    = 7
+        br1200    = 0,
+        br2400    = 1,
+        br4800    = 2,
+        br9600    = 3,
+        br19200   = 4,
+        br38400   = 5,
+        br57600   = 6,
+        br115200  = 7
     };
-    
+
     enum mtrParity
     {
-        mpNoParity        = 0,
-        mpOddParity     = 1,
-        mpEvenParity     = 2
+        mpNoParity   = 0,
+        mpOddParity  = 1,
+        mpEvenParity = 2
     };
 
     enum mtrDataBits
     {
-        db8Bits    = 0,
-        db7Bits    = 1
+        db8Bits = 0,
+        db7Bits = 1
     };
 
     bool setAddress( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusAddr newAddr );
@@ -129,7 +129,7 @@ namespace MTR
             static MTRType type(){ return mtT1; }
             // ------------------------------------------
             unsigned short val;
-    };    
+    };
     std::ostream& operator<<(std::ostream& os, T1& t );
     // -------------------------------------------------------------------------
     class T2
@@ -162,7 +162,7 @@ namespace MTR
             // ------------------------------------------
             // конструкторы на разные случаи...
             T3(){ memset(raw.v,0,sizeof(raw.v)); }
-            
+
             T3( signed int i ){ raw.val = i; }
 
             T3( unsigned short v1, unsigned short v2 )
@@ -170,7 +170,7 @@ namespace MTR
                 raw.v[0] = v1;
                 raw.v[1] = v2;
             }
-            
+
             T3( const ModbusRTU::ModbusData* data, int size )
             {
                 if( size >= u2size )
@@ -207,7 +207,7 @@ namespace MTR
                 memcpy(c,&v1,sizeof(c));
                 sval = std::string(c);
             }
-            
+
             T4( const ModbusRTU::ModbusData* data ):
                 raw(data[0])
             {
@@ -215,7 +215,7 @@ namespace MTR
                 memcpy(c,&(data[0]),sizeof(c));
                 sval     = std::string(c);
             }
-            
+
             ~T4(){}
             // ------------------------------------------
             /*! размер в словах */
@@ -257,7 +257,7 @@ namespace MTR
             {
                 raw.lval = v;
             }
-            
+
             T5( const ModbusRTU::ModbusData* data, int size )
             {
                 if( size >= u2size )
@@ -310,7 +310,7 @@ namespace MTR
             {
                 raw.lval = v;
             }
-            
+
             T6( const ModbusRTU::ModbusData* data, int size )
             {
                 if( size >= u2size )
@@ -363,7 +363,7 @@ namespace MTR
             {
                 raw.lval = v;
             }
-            
+
             T7( const ModbusRTU::ModbusData* data, int size )
             {
                 if( size >= u2size )
@@ -421,7 +421,7 @@ namespace MTR
                     raw.v[0] = data[1];
                 }
             }
-            
+
             inline unsigned short day(){ return raw.u2.day; }
             inline unsigned short mon(){ return raw.u2.mon; }
             inline unsigned short hour(){ return raw.u2.hour; }
@@ -522,7 +522,7 @@ namespace MTR
                     raw.v[1] = data[0];
                 }
             }
-            
+
             inline unsigned short year(){ return raw.u2.year; }
             inline unsigned short mon(){ return raw.u2.mon; }
             inline unsigned short day(){ return raw.u2.day; }
@@ -538,7 +538,7 @@ namespace MTR
     };
     std::ostream& operator<<(std::ostream& os, T10& t );
     // --------------------------------------------------------------------------
-    
+
     class T16
     {
         public:
@@ -650,7 +650,7 @@ namespace MTR
             // ------------------------------------------
             operator float(){ return raw.val; }
             operator long(){ return lroundf(raw.val); }
-            
+
             F1mem raw;
     };
     std::ostream& operator<<(std::ostream& os, F1& t );

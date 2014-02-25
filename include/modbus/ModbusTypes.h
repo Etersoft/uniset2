@@ -175,16 +175,16 @@ namespace ModbusRTU
     {
         ModbusByte ecode;
         ModbusCRC crc;
-        
+
         // ------- from slave -------
         ErrorRetMessage( ModbusMessage& m );
         ErrorRetMessage& operator=( ModbusMessage& m );
         void init( ModbusMessage& m );
-        
+
         // ------- to master -------
         ErrorRetMessage( ModbusAddr _from, ModbusByte _func, ModbusByte ecode );
 
-        /*! преобразование для посылки в сеть */    
+        /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
 
         /*! размер данных(после заголовка) у данного типа сообщения 
