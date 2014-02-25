@@ -36,48 +36,48 @@ namespace MTR
         mtT_Str8
     };
     // -------------------------------------------------------------------------
-    std::string type2str( MTRType t );            /*!< преоразование строки в тип */
-    MTRType str2type( const std::string& s );    /*!< преобразование названия в строку */
+    std::string type2str( MTRType t );          /*!< преоразование строки в тип */
+    MTRType str2type( const std::string& s );   /*!< преобразование названия в строку */
     int wsize( MTRType t );                     /*!< длина данных в словах */
     // -------------------------------------------------------------------------
     // Информация
-    const ModbusRTU::ModbusData regModelNumber    = 0x01;
-    const ModbusRTU::ModbusData regSerialNumber    = 0x09;
+    const ModbusRTU::ModbusData regModelNumber  = 0x01;
+    const ModbusRTU::ModbusData regSerialNumber = 0x09;
 
     std::string getModelNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr );
     std::string getSerialNumber( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr );
     // -------------------------------------------------------------------------
     // Настройки связи (чтение - read03, запись - write06)
     const ModbusRTU::ModbusData regUpdateConfiguration = 53;
-    const ModbusRTU::ModbusData regAddress        = 55;
-    const ModbusRTU::ModbusData regBaudRate        = 56;
-    const ModbusRTU::ModbusData regStopBit        = 57; /* 0 - Stop bit, 1 - Stop bits */
-    const ModbusRTU::ModbusData regParity        = 58;
-    const ModbusRTU::ModbusData regDataBits        = 59;
+    const ModbusRTU::ModbusData regAddress   = 55;
+    const ModbusRTU::ModbusData regBaudRate  = 56;
+    const ModbusRTU::ModbusData regStopBit   = 57; /* 0 - Stop bit, 1 - Stop bits */
+    const ModbusRTU::ModbusData regParity    = 58;
+    const ModbusRTU::ModbusData regDataBits  = 59;
 
     enum mtrBaudRate
     {
-        br1200         = 0,
-        br2400         = 1,
-        br4800         = 2,
-        br9600         = 3,
-        br19200     = 4,
-        br38400     = 5,
-        br57600        = 6,
-        br115200    = 7
+        br1200    = 0,
+        br2400    = 1,
+        br4800    = 2,
+        br9600    = 3,
+        br19200   = 4,
+        br38400   = 5,
+        br57600   = 6,
+        br115200  = 7
     };
 
     enum mtrParity
     {
-        mpNoParity        = 0,
-        mpOddParity     = 1,
-        mpEvenParity     = 2
+        mpNoParity   = 0,
+        mpOddParity  = 1,
+        mpEvenParity = 2
     };
 
     enum mtrDataBits
     {
-        db8Bits    = 0,
-        db7Bits    = 1
+        db8Bits = 0,
+        db7Bits = 1
     };
 
     bool setAddress( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusAddr newAddr );
