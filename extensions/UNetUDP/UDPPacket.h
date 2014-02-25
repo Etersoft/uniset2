@@ -15,9 +15,13 @@ namespace UniSetUDP
         (по количеству битов такого же размера).
     */
 
+
+    const unsigned int UNETUDP_MAGICNUM = 0xfb07ee55; // идентификатор протокола
+
     struct UDPHeader
     {
-        UDPHeader():num(0),nodeID(0),procID(0),dcount(0),acount(0){}
+        UDPHeader():magic(UNETUDP_MAGICNUM),num(0),nodeID(0),procID(0),dcount(0),acount(0){}
+        unsigned int magic;
         unsigned long num;
         long nodeID;
         long procID;
@@ -63,7 +67,7 @@ namespace UniSetUDP
         UDPMessage();
 
         UDPMessage( UDPPacket& p );
-         size_t transport_msg( UDPPacket& p );
+        size_t transport_msg( UDPPacket& p );
         static size_t getMessage( UDPMessage& m, UDPPacket& p );
 
         size_t addDData( long id, bool val );
@@ -78,7 +82,6 @@ namespace UniSetUDP
         inline bool isFull(){ return ((dcount<MaxDCount) && (acount<MaxACount)); }
         inline int dsize(){ return dcount; }
         inline int asize(){ return acount; }
-//        inline int byte_size(){ return (dcount*sizeof(long)*UDPDData) + acount*sizeof(UDPAData)); }
 
         // количество байт в пакете с булевыми переменными...
         int d_byte(){ return dcount*sizeof(long) + dcount; }

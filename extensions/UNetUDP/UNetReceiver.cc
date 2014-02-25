@@ -420,6 +420,12 @@ bool UNetReceiver::recv()
         return false;
     }
 
+    if( pack.magic != UniSetUDP::UNETUDP_MAGICNUM )
+    {
+        // пакет не нашей "системы"
+        return false;
+    }
+
     if( rnum>0 && labs(pack.num - rnum) > maxDifferens )
     {
         /* А что делать если мы уже ждём и ещё не "разгребли предыдущее".. а тут уже повторный "разрыв"
