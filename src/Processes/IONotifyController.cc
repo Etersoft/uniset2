@@ -426,7 +426,7 @@ void IONotifyController::send( ConsumerListInfo& lst, UniSetTypes::SensorMessage
             if( maxAttemtps>0 && --(li->attempt) <= 0 )
             {
                 li = lst.clst.erase(li);
-                if( li == lst.clst.end() ) --li;
+                --li;
                 break;
             }
 

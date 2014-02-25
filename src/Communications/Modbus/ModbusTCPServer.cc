@@ -385,7 +385,7 @@ void ModbusTCPServer::sessionFinished( ModbusTCPSession* s )
         {
             slist.erase(i);
             sessCount--;
-            break;
+            return;
         }
     }
 }

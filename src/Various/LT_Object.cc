@@ -86,10 +86,10 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
                     if( !li->curTick )
                     {
                         li = tlst.erase(li);
-                        if( li == tlst.end() ) --li;
-
+                        --li;
                         if( tlst.empty() )
                             sleepTime = UniSetTimer::WaitUpTime;
+
                         continue;
                     }
                     else if(li->curTick>0 )
