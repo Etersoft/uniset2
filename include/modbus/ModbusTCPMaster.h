@@ -6,6 +6,7 @@
 #include <cc++/socket.h>
 #include "ModbusTypes.h"
 #include "ModbusClient.h"
+#include "UTCPStream.h"
 // -------------------------------------------------------------------------
 /*!    Modbus TCP master interface */
 class ModbusTCPMaster:
@@ -42,11 +43,13 @@ class ModbusTCPMaster:
                                             ModbusRTU::ModbusMessage& reply, timeout_t timeout ) override;
 
     private:
-        ost::TCPStream* tcp;
+        //ost::TCPStream* tcp;
+        UTCPStream* tcp;
         ModbusRTU::ModbusData nTransaction;
         std::queue<unsigned char> qrecv;
         PassiveTimer ptTimeout;
         std::string iaddr;
+        int port;
         bool force_disconnect;
 };
 // -------------------------------------------------------------------------
