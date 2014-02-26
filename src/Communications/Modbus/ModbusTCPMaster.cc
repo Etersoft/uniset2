@@ -147,7 +147,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
             qrecv.pop();
 
         tcp->sync();
-        if( tcp->isPending(ost::Socket::pendingInput,timeout) )
+        if( tcp->isPending(ost::Socket::pendingInput,timeout) ) 
         {
 /*
             unsigned char rbuf[100];
@@ -240,7 +240,7 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
         if( dlog.is_warn() )
             dlog.warn() << "(query): " << ex << endl;
     }
-    catch( ost::SockException& e )
+    catch( ost::SockException& e ) 
     {
         if( dlog.is_warn() )
             dlog.warn() << "(query): tcp error: " << e.getString() << endl;
@@ -280,10 +280,8 @@ bool ModbusTCPMaster::checkConnection( const std::string& ip, int port, int time
         s << ip << ":" << port;
 
         // Проверяем просто попыткой создать соединение..
-
-//        ost::Thread::setException(ost::Thread::throwException);
-          //     TCPStream (const char *name, Family family=IPV4, unsigned mss=536, bool throwflag=false, timeout_t timer=0)
-        ost::TCPStream t(s.str().c_str(),ost::Socket::IPV4,536,true,timeout_msec);
+        UTCPStream t;
+        t.create(ip,port,true,timeout_msec);
         t.disconnect();
         return true;
     }
@@ -301,18 +299,16 @@ void ModbusTCPMaster::reconnect()
 
     if( tcp )
     {
-//        cerr << "tcp diconnect..." << endl;
         tcp->disconnect();
         delete tcp;
         tcp = 0;
     }
 
-    // ost::Thread::setException(ost::Thread::throwException);
-
     try
     {
-          //     TCPStream (const char *name, Family family=IPV4, unsigned mss=536, bool throwflag=false, timeout_t timer=0)
-        tcp = new ost::TCPStream(iaddr.c_str(),ost::Socket::IPV4,536,true,500);
+          tcp = new UTCPStream();
+          tcp->create(iaddr,port,true,500);
+
         tcp->setTimeout(replyTimeOut_ms);
     }
     catch( std::exception& e )
@@ -335,13 +331,13 @@ void ModbusTCPMaster::reconnect()
     }
 }
 // -------------------------------------------------------------------------
-void ModbusTCPMaster::connect( const std::string& addr, int port )
+void ModbusTCPMaster::connect( const std::string& addr, int _port )
 {
     ost::InetAddress ia(addr.c_str());
-    connect(ia,port);
+    connect(ia,_port);
 }
 // -------------------------------------------------------------------------
-void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
+void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
 {
     if( tcp )
     {
@@ -352,18 +348,21 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
 
 //    if( !tcp )
 //    {
+
         ostringstream s;
-        s << addr << ":" << port;
+        s << addr;
+        iaddr = s.str();
+        port = _port;
 
         if( dlog.is_info() )
-            dlog.info() << "(ModbusTCPMaster): connect to " << s.str() << endl;
-
-        iaddr = s.str();
+            dlog.info() << "(ModbusTCPMaster): connect to " << iaddr << ":" << port << endl;
 
         ost::Thread::setException(ost::Thread::throwException);
         try
         {
-            tcp = new ost::TCPStream(iaddr.c_str(),ost::Socket::IPV4,536,true,500);
+            ostringstream aa;
+            tcp = new UTCPStream();
+            tcp->create(iaddr,port,true,500);
             tcp->setTimeout(replyTimeOut_ms);
         }
         catch( std::exception& e )
@@ -394,7 +393,7 @@ void ModbusTCPMaster::disconnect()
 
     if( !tcp )
         return;
-
+    
     tcp->disconnect();
     delete tcp;
     tcp = 0;
