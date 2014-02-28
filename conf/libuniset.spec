@@ -41,6 +41,7 @@ BuildRequires: librrd-devel
 %if_enabled python
 BuildRequires: python-devel
 BuildRequires(pre): rpm-build-python
+Requires: python-module-libxml2
 
 # swig
 # add_findprov_lib_path %python_sitelibdir/%oname
