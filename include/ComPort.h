@@ -82,9 +82,9 @@ public:
 	void setCharacterSize(CharacterSize);
 	void setStopBits(StopBits sBit);
 	
-	virtual void setTimeout(int timeout);
-	void setWaiting(bool waiting);
-	inline int getTimeout(){ return uTimeout*1000; } // msec
+	virtual void setTimeout( int msec );
+	inline int getTimeout(){ return uTimeout/1000; } // msec
+	void setWaiting( bool waiting );
 	
 	virtual unsigned char receiveByte();
 	virtual void sendByte(unsigned char x);
