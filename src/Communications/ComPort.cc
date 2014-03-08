@@ -257,9 +257,9 @@ void ComPort::sendByte(unsigned char x)
 }
 // --------------------------------------------------------------------------------
 // Lav: убрать, переделать в receiveBlock
-void ComPort::setTimeout(int timeout)
+void ComPort::setTimeout( int msec )
 {
-    uTimeout=timeout;
+    uTimeout = msec * 1000;
 }
 // --------------------------------------------------------------------------------
 // Lav: ситуация, когда отправлено меньше запрошенного, не типична и должна
