@@ -35,7 +35,7 @@ ModbusRTUMaster::ModbusRTUMaster( const string& dev, bool use485, bool tr_ctl ):
     port->setCharacterSize(ComPort::CSize8);
     port->setStopBits(ComPort::OneBit);
     port->setWaiting(true);
-    port->setTimeout(replyTimeOut_ms*1000);
+    port->setTimeout(replyTimeOut_ms);
 //    port->setBlocking(false);
 }
 // -------------------------------------------------------------------------
@@ -51,7 +51,7 @@ ModbusRTUMaster::ModbusRTUMaster( ComPort* com ):
     port->setCharacterSize(ComPort::CSize8);
     port->setStopBits(ComPort::OneBit);
     port->setWaiting(true);
-    port->setTimeout(replyTimeOut_ms*1000);
+    port->setTimeout(replyTimeOut_ms);
 //    port->setBlocking(false);
 }
 // -------------------------------------------------------------------------
@@ -116,7 +116,7 @@ int ModbusRTUMaster::getNextData( unsigned char* buf, int len )
 void ModbusRTUMaster::setChannelTimeout( timeout_t msec )
 {
     if( port )
-        port->setTimeout(msec*1000);
+        port->setTimeout(msec);
 }
 // --------------------------------------------------------------------------------
 mbErrCode ModbusRTUMaster::sendData( unsigned char* buf, int len )

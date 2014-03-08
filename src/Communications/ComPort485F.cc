@@ -73,10 +73,10 @@ ComPort485F::ComPort485F( const string& dev, int gpio_num, bool tmit_ctrl ):
     }
 }
 // --------------------------------------------------------------------------------
-void ComPort485F::setTimeout( int timeout )
+void ComPort485F::setTimeout( int msec )
 {
-    tout_msec = timeout / 1000;
-    ComPort::setTimeout(timeout);
+    tout_msec = msec;
+    ComPort::setTimeout(msec);
 }
 // --------------------------------------------------------------------------------
 unsigned char ComPort485F::m_receiveByte( bool wait )
