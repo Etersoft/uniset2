@@ -44,19 +44,19 @@ int main(int argc, const char **argv)
     }
     catch( SystemError& err )
     {
-        ulog.crit() << "(smemory): " << err << endl;
+        dlog.crit() << "(smemory): " << err << endl;
     }
     catch( Exception& ex )
     {
-        ulog.crit() << "(smemory): " << ex << endl;
+        dlog.crit() << "(smemory): " << ex << endl;
     }
     catch( std::exception& e )
     {
-        ulog.crit() << "(smemory): " << e.what() << endl;
+        dlog.crit() << "(smemory): " << e.what() << endl;
     }
     catch(...)
     {
-        ulog.crit() << "(smemory): catch(...)" << endl;
+        dlog.crit() << "(smemory): catch(...)" << endl;
     }
     
     return 1;
