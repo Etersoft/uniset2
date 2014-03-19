@@ -58,15 +58,15 @@ int main(int argc, const char **argv)
     }
     catch(SystemError& err)
     {
-        ulog.crit() << "(uninetwork): " << err << endl;
+        dlog.crit() << "(uninetwork): " << err << endl;
     }
     catch(Exception& ex)
     {
-        ulog.crit() << "(uninetwork): " << ex << endl;
+        dlog.crit() << "(uninetwork): " << ex << endl;
     }
     catch(...)
     {
-        ulog.crit() << "(uninetwork): catch(...)" << endl;
+        dlog.crit() << "(uninetwork): catch(...)" << endl;
     }
 
     while( waitpid(-1, 0, 0) > 0 );
