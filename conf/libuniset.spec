@@ -8,7 +8,7 @@
 
 Name: libuniset
 Version: 1.7
-Release: alt8
+Release: alt9
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -335,6 +335,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Wed Mar 19 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt9
+- add thresholds processing for ModbusMaster (TCP and RTU)
+- minor fixes
+
 * Fri Mar 07 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt8
 - fixed bug in ComPort class (getTimeout.  eterbug #9890)
 

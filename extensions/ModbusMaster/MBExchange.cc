@@ -309,8 +309,16 @@ void MBExchange::initIterators()
 			{
 				shm->initDIterator(it2->dit);
 				shm->initAIterator(it2->ait);
+                shm->initAIterator(it2->t_ait);
 			}
 		}
+	}
+	
+	for( ThresholdList::iterator t=thrlist.begin(); t!=thrlist.end(); ++t )
+	{
+		shm->initDIterator(t->dit);
+		shm->initAIterator(t->ait);
+		shm->initAIterator(t->t_ait);
 	}
 }
 // -----------------------------------------------------------------------------
@@ -1832,6 +1840,15 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 	if( !IOBase::initItem(&p,it,shm,&dlog,myname) )
 		return false;
 
+	// проверяем не пороговый ли это датчик (т.е. не связанный с обменом)
+	// тогда заносим его в отдельный список
+	if( p.t_ai != DefaultObjectId )
+	{
+		thrlist.push_back(p);
+		return true;
+	}    
+    
+    
 	if( it.getIntProp(prop_prefix + "rawdata") )
 	{
 		p.cal.minRaw = 0;
@@ -2838,18 +2855,12 @@ void MBExchange::poll()
 	updateSM();
 	
 	// check thresholds
-	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+	for( ThresholdList::iterator t=thrlist.begin(); t!=thrlist.end(); ++t )
 	{
-		RTUDevice* d(it1->second);
-		for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
-		{
-			if( !checkProcActive() )
-				return;
-
-			RegInfo* r(it->second);
-			for( PList::iterator i=r->slst.begin(); i!=r->slst.end(); ++i )
-				IOBase::processingThreshold( &(*i),shm,force);
-		}
+		if( !checkProcActive() )
+			return;
+        
+		IOBase::processingThreshold(&(*t),shm,force);
 	}
 	
 	if( trReopen.hi(allNotRespond) )
