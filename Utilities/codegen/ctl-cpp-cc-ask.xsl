@@ -210,16 +210,14 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 	</xsl:choose>
 		}
 </xsl:for-each>
-		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getState): Обращение к неизвестному ДИСКРЕТНОМУ датчику sid="
-			&lt;&lt; _sid &lt;&lt; endl;
+
+		return ui.getValue(_sid);
 	}
 	catch(Exception&amp; ex)
 	{
 		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getState): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
-	
-	return 0;
 }
 // -----------------------------------------------------------------------------
 
