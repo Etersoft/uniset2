@@ -124,6 +124,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId sid
 		}
 		</xsl:if>
 	</xsl:for-each>
+
+	ui.setValue( sid, val );
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool force )
