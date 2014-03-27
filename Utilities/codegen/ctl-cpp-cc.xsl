@@ -113,7 +113,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId sid, long val )
 {
-//	ui.setState(sid,state);
 	<xsl:for-each select="//smap/item">
 		<xsl:if test="normalize-space(@vartype)='out'">
 		if( sid == <xsl:value-of select="@name"/> )
@@ -124,6 +123,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId sid
 		}
 		</xsl:if>
 	</xsl:for-each>
+
+	ui.setValue(sid,val);
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool force )
