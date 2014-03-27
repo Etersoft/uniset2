@@ -184,16 +184,14 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 			return <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 		}
 </xsl:for-each>
-        ucrit &lt;&lt; myname &lt;&lt; "(getValue): Обращение к неизвестному датчику sid="
-                &lt;&lt; _sid &lt;&lt; endl;
+
+		return ui.getValue(_sid);
 	}
 	catch(Exception&amp; ex)
 	{
         ucrit &lt;&lt; myname &lt;&lt; "(getValue): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
-	
-	return 0;
 }
 // -----------------------------------------------------------------------------
 

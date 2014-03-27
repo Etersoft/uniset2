@@ -217,10 +217,8 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 	</xsl:if>
 	</xsl:if>
 	</xsl:for-each>
-		ucrit &lt;&lt; myname &lt;&lt; "(getValue): Обращение к неизвестному датчику sid="
-				&lt;&lt; _sid &lt;&lt; endl;
 
-		return 0;
+		return ui.getValue(_sid);
 	}
 	catch(Exception&amp; ex)
 	{
