@@ -733,6 +733,11 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 			VTypes::F2 f(data,VTypes::F2::wsize());
 			IOBase::processingFasAI( p, (float)f, shm, true );
 		}
+		else if( p->vType == VTypes::vtF2r )
+		{
+			VTypes::F2r f(data,VTypes::F2r::wsize());
+			IOBase::processingFasAI( p, (float)f, shm, true );
+		}
 		else if( p->vType == VTypes::vtF4 )
 		{
 			VTypes::F4 f(data,VTypes::F4::wsize());
@@ -743,9 +748,19 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 			VTypes::I2 i2(data,VTypes::I2::wsize());
 			IOBase::processingAsAI( p, (int)i2, shm, true );
 		}
+		else if( p->vType == VTypes::vtI2r )
+		{
+			VTypes::I2r i2(data,VTypes::I2::wsize());
+			IOBase::processingAsAI( p, (int)i2, shm, true );
+		}
 		else if( p->vType == VTypes::vtU2 )
 		{
 			VTypes::U2 u2(data,VTypes::U2::wsize());
+			IOBase::processingAsAI( p, (unsigned int)u2, shm, true );
+		}
+		else if( p->vType == VTypes::vtU2r )
+		{
+			VTypes::U2r u2(data,VTypes::U2::wsize());
 			IOBase::processingAsAI( p, (unsigned int)u2, shm, true );
 		}
 
@@ -1265,7 +1280,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 				
 				return;
 			}
-			else if( p->vType == VTypes::vtF2 )
+			else if( p->vType == VTypes::vtF2 || p->vType == VTypes::vtF2r )
 			{
 				RegMap::iterator i(p->reg->rit);
 				if( save )
@@ -1273,9 +1288,18 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					if( r->mb_initOK )
 					{
 						float f = IOBase::processingFasAO( p, shm, force_out );
-						VTypes::F2 f2(f);
-						for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
-							i->second->mbval = f2.raw.v[k];
+						if( p->vType == VTypes::vtF2 )
+						{
+							VTypes::F2 f2(f);
+							for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
+								i->second->mbval = f2.raw.v[k];
+						}
+						else if( p->vType == VTypes::vtF2r )
+						{
+							VTypes::F2r f2(f);
+							for( int k=0; k<VTypes::F2r::wsize(); k++, i++ )
+								i->second->mbval = f2.raw.v[k];
+						}
 
 						r->sm_initOK = true;
 					}
@@ -1285,11 +1309,22 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F2::wsize()];
 					for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
 						data[k] = i->second->mbval;
-				
-					VTypes::F2 f(data,VTypes::F2::wsize());
+	
+					float f=0;
+					if( p->vType == VTypes::vtF2 )
+					{
+						VTypes::F2 f1(data,VTypes::F2::wsize());
+						f = (float)f1;
+					}
+					else if( p->vType == VTypes::vtF2r )
+					{
+						VTypes::F2r f1(data,VTypes::F2r::wsize());
+						f = (float)f1;
+					}
+	
 					delete[] data;
 				
-					IOBase::processingFasAI( p, (float)f, shm, force );
+					IOBase::processingFasAI( p, f, shm, force );
 				}
 			}
 			else if( p->vType == VTypes::vtF4 )
@@ -1317,7 +1352,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					IOBase::processingFasAI( p, (float)f, shm, force );
 				}
 			}
-			else if( p->vType == VTypes::vtI2 )
+			else if( p->vType == VTypes::vtI2 || p->vType == VTypes::vtI2r )
 			{
 				RegMap::iterator i(p->reg->rit);
 				if( save )
@@ -1325,10 +1360,18 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					if( r->mb_initOK )
 					{
 						long v = IOBase::processingAsAO( p, shm, force_out );
-						VTypes::I2 i2(v);
-						for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
-							i->second->mbval = i2.raw.v[k];
-
+						if( p->vType == VTypes::vtI2 )
+						{
+							VTypes::I2 i2(v);
+							for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
+								i->second->mbval = i2.raw.v[k];
+						}
+						else if( p->vType == VTypes::vtI2r )
+						{
+							VTypes::I2r i2(v);
+							for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
+								i->second->mbval = i2.raw.v[k];
+						}
 						r->sm_initOK = true;
 					}
 				}
@@ -1338,13 +1381,23 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
 						data[k] = i->second->mbval;
 				
-					VTypes::I2 i2(data,VTypes::I2::wsize());
+					int v = 0;
+					if( p->vType == VTypes::vtI2 )
+					{
+						VTypes::I2 i2(data,VTypes::I2::wsize());
+						v = (int)i2;
+					}
+					else if( p->vType == VTypes::vtI2r )
+					{
+						VTypes::I2r i2(data,VTypes::I2::wsize());
+						v = (int)i2;
+					}
+
 					delete[] data;
-				
-					IOBase::processingAsAI( p, (int)i2, shm, force );
+					IOBase::processingAsAI( p, v, shm, force );
 				}
 			}
-			else if( p->vType == VTypes::vtU2 )
+			else if( p->vType == VTypes::vtU2 || p->vType == VTypes::vtU2r )
 			{
 				RegMap::iterator i(p->reg->rit);
 				if( save )
@@ -1352,9 +1405,18 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					if( r->mb_initOK )
 					{
 						long v = IOBase::processingAsAO( p, shm, force_out );
-						VTypes::U2 u2(v);
-						for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
-							i->second->mbval = u2.raw.v[k];
+						if( p->vType == VTypes::vtU2 )
+						{
+							VTypes::U2 u2(v);
+							for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
+								i->second->mbval = u2.raw.v[k];
+						}
+						else if( p->vType == VTypes::vtU2r )
+						{
+							VTypes::U2r u2(v);
+							for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
+								i->second->mbval = u2.raw.v[k];
+						}
 
 						r->sm_initOK = true;
 					}
@@ -1365,16 +1427,26 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
 						data[k] = i->second->mbval;
 				
-					VTypes::U2 u2(data,VTypes::U2::wsize());
+					unsigned int v = 0;
+					if( p->vType == VTypes::vtU2 )
+					{
+						VTypes::U2 u2(data,VTypes::U2::wsize());
+						v = (unsigned int)u2;
+					}
+					else if( p->vType == VTypes::vtU2r )
+					{
+						VTypes::U2r u2(data,VTypes::U2::wsize());
+						v = (unsigned int)u2;
+					}
+
 					delete[] data;
-				
-					IOBase::processingAsAI( p, (unsigned int)u2, shm, force );
+					IOBase::processingAsAI( p, v, shm, force );
 				}
 			}
 
 			return;
 		}
-		catch(IOController_i::NameNotFound &ex)
+		catch(IOController_i::NameNotFound& ex)
 		{
 			dlog[Debug::LEVEL3] << myname << "(updateRSProperty):(NameNotFound) " << ex.err << endl;
 		}

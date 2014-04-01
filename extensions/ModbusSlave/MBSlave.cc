@@ -1287,10 +1287,20 @@ ModbusRTU::mbErrCode MBSlave::real_read_it( IOMap::iterator& it, ModbusRTU::Modb
 			{
 				val = IOBase::processingAsAO(p,shm,force);
 			}		
-			if( p->vtype == VTypes::vtF2 )
+			else if( p->vtype == VTypes::vtF2 )
 			{
 				float f = IOBase::processingFasAO(p,shm,force);
 				VTypes::F2 f2(f);
+				// оптимизируем и проверку не делаем
+				// считая, что при "загрузке" всё было правильно
+				// инициализировано
+				// if( p->wnum >=0 && p->wnum < f4.wsize()
+				val = f2.raw.v[p->wnum];
+			}
+			else if( p->vtype == VTypes::vtF2r )
+			{
+				float f = IOBase::processingFasAO(p,shm,force);
+				VTypes::F2r f2(f);
 				// оптимизируем и проверку не делаем
 				// считая, что при "загрузке" всё было правильно
 				// инициализировано
@@ -1317,10 +1327,30 @@ ModbusRTU::mbErrCode MBSlave::real_read_it( IOMap::iterator& it, ModbusRTU::Modb
 				// if( p->wnum >=0 && p->wnum < i2.wsize()
 				val = i2.raw.v[p->wnum];
 			}
+			else if( p->vtype == VTypes::vtI2r )
+			{
+				long v = IOBase::processingAsAO(p,shm,force);
+				VTypes::I2r i2(v);
+				// оптимизируем и проверку не делаем
+				// считая, что при "загрузке" всё было правильно
+				// инициализировано
+				// if( p->wnum >=0 && p->wnum < i2.wsize()
+				val = i2.raw.v[p->wnum];
+			}
 			else if( p->vtype == VTypes::vtU2 )
 			{
 				unsigned long v = IOBase::processingAsAO(p,shm,force);
 				VTypes::U2 u2(v);
+				// оптимизируем и проверку не делаем
+				// считая, что при "загрузке" всё было правильно
+				// инициализировано
+				// if( p->wnum >=0 && p->wnum < u2.wsize()
+				val = u2.raw.v[p->wnum];
+			}
+			else if( p->vtype == VTypes::vtU2r )
+			{
+				unsigned long v = IOBase::processingAsAO(p,shm,force);
+				VTypes::U2r u2(v);
 				// оптимизируем и проверку не делаем
 				// считая, что при "загрузке" всё было правильно
 				// инициализировано

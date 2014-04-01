@@ -8,7 +8,7 @@
 
 Name: libuniset
 Version: 1.7
-Release: alt9
+Release: alt10
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -335,6 +335,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Apr 01 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt10
+- add new vtype:  F2r, I2r, U2r  (reverse data order)
+
 * Wed Mar 19 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt9
 - add thresholds processing for ModbusMaster (TCP and RTU)
 - minor fixes
