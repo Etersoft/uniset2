@@ -208,7 +208,7 @@
 		int resetMsgTime;
 
 		// Выполнение очередного шага программы
-		virtual void step()=0;
+		virtual void step(){}
 
 		int sleep_msec; /*!&lt; пауза между итерациями */
 		bool active;
