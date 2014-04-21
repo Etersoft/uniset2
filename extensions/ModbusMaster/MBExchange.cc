@@ -80,7 +80,7 @@ pollActivated(false)
 
 	initPause = conf->getArgPInt("--" + prefix + "-initPause",it.getProp("initPause"), 3000);
 
-	sleepPause_usec = conf->getArgPInt("--" + prefix + "-sleepPause-usec",it.getProp("slepePause"), 100);
+	sleepPause_usec = conf->getArgPInt("--" + prefix + "-sleepPause-usec",it.getProp("sleepPause"), 100);
 
 	force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
 	force_out = conf->getArgInt("--" + prefix + "-force-out",it.getProp("force_out"));

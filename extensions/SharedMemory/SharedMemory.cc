@@ -32,6 +32,7 @@ void SharedMemory::help_print( int argc, const char* const* argv )
 	cout << "--pulsar-id            - датчик 'мигания'" << endl;
     cout << "--pulsar-msec          - период 'мигания'. По умолчанию: 5000." << endl;
     cout << "--pulsar-iotype        - [DI|DO]тип датчика для 'мигания'. По умолчанию DI." << endl;	
+    cout << "--db-logging [1,0]     - Включение логирования в DBServer. По умолчанию 0 (выключено)" << endl;	
 }
 // -----------------------------------------------------------------------------
 SharedMemory::SharedMemory( ObjectId id, string datafile, std::string confname ):
