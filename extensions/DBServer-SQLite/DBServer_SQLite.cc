@@ -25,6 +25,7 @@
 #include <sys/time.h>
 #include <sstream>
 #include <iomanip>
+#include <cmath>
 
 #include "ORepHelpers.h"
 #include "DBServer_SQLite.h"
@@ -205,6 +206,8 @@ void DBServer_SQLite::sensorInfo( const UniSetTypes::SensorMessage *si )
             gettimeofday(const_cast<struct timeval*>(&si->tm),&tz);
         }
 
+        float val = (float)si->value / (float)pow10(si->ci.precision);
+
         // см. DBTABLE AnalogSensors, DigitalSensors
         ostringstream data;
         data << "INSERT INTO " << tblName(si->type)
@@ -213,9 +216,9 @@ void DBServer_SQLite::sensorInfo( const UniSetTypes::SensorMessage *si )
             << dateToString(si->sm_tv_sec,"-") << "','"    //  date
             << timeToString(si->sm_tv_sec,":") << "','"    //  time
             << si->sm_tv_usec << "',"                //  time_usec
-            << si->id << ","                    //  sensor_id
-            << si->value << ","                //  value
-            << si->node << ")";                //  node
+            << si->id << "','"                    //  sensor_id
+            << val << "','"                //  value
+            << si->node << "')";                //  node
 
         if( ulog.debugging(DBLEVEL) )
             ulog[DBLEVEL] << myname << "(insert_main_history): " << data.str() << endl;
