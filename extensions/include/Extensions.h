@@ -13,9 +13,6 @@ namespace UniSetExtensions
 	/*! Получение идентификатора объекта(процесса) разделяемой памяти */
 	UniSetTypes::ObjectId getSharedMemoryID();
 
-	/*! Получение времени для подтверждения "живости" */
-	int getHeartBeatTime();
-
 	xmlNode* findNode( xmlNode* node, const std::string& snode, const std::string& field );
 	
 	xmlNode* getCalibrationsSection();
