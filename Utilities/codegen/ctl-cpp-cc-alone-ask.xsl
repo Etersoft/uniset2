@@ -247,13 +247,15 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 	</xsl:if>
 	</xsl:for-each>
 
-		return ui.getValue(_sid);
+	    return ui.getValue(_sid);
 	}
 	catch(Exception&amp; ex)
 	{
 		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getState): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
+	
+	return 0;
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )

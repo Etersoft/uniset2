@@ -213,7 +213,7 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 		}
 </xsl:for-each>
 
-		return ui.getValue(_sid);
+	    return ui.getValue(_sid);
 	}
 	catch(Exception&amp; ex)
 	{
