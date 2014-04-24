@@ -120,6 +120,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId _si
 		}
 		</xsl:if>
 	</xsl:for-each>
+
+	ui.setValue( _sid, _val );
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
@@ -218,8 +220,6 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getState): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
-	
-	return 0;
 }
 // -----------------------------------------------------------------------------
 

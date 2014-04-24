@@ -8,7 +8,7 @@
 
 Name: libuniset
 Version: 1.7
-Release: alt4
+Release: alt10
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -335,6 +335,25 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Tue Apr 01 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt10
+- add new vtype:  F2r, I2r, U2r  (reverse data order)
+
+* Wed Mar 19 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt9
+- add thresholds processing for ModbusMaster (TCP and RTU)
+- minor fixes
+
+* Fri Mar 07 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt8
+- fixed bug in ComPort class (getTimeout.  eterbug #9890)
+
+* Wed Feb 12 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt7
+- revert last changes ("ModbusMaster: add thread for check connection")
+
+* Wed Feb 12 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt6
+- ModbusMaster: add thread for check connection
+
+* Mon Feb 10 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt5
+- ModbusMaster: minor fixes
+
 * Thu Feb 06 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt4
 - ModbusExchange: fixed bug:  deadlock for pollMutex..
 

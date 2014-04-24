@@ -101,7 +101,7 @@ static const int NoSafety = -1;
 												хранится идентификатор аналогового датчика
 												с которым он связан */
 			IONotifyController_i::ThresholdInfo ti;
-	
+			IOController::AIOStateList::iterator t_ait; /*! итератор на датчик по которому формируется порог */
 			
 			IOController::AIOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;

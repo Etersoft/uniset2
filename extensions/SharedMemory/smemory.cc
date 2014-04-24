@@ -44,19 +44,19 @@ int main(int argc, const char **argv)
 	}
 	catch( SystemError& err )
 	{
-		unideb[Debug::CRIT] << "(smemory): " << err << endl;
+		dlog[Debug::CRIT] << "(smemory): " << err << endl;
 	}
 	catch( Exception& ex )
 	{
-		unideb[Debug::CRIT] << "(smemory): " << ex << endl;
+		dlog[Debug::CRIT] << "(smemory): " << ex << endl;
 	}
 	catch( std::exception& e )
 	{
-		unideb[Debug::CRIT] << "(smemory): " << e.what() << endl;
+		dlog[Debug::CRIT] << "(smemory): " << e.what() << endl;
 	}
 	catch(...)
 	{
-		unideb[Debug::CRIT] << "(smemory): catch(...)" << endl;
+		dlog[Debug::CRIT] << "(smemory): catch(...)" << endl;
 	}
 	
 	return 1;

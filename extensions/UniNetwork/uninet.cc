@@ -58,15 +58,15 @@ int main(int argc, const char **argv)
 	}
 	catch(SystemError& err)
 	{
-		unideb[Debug::CRIT] << "(uninetwork): " << err << endl;
+		dlog[Debug::CRIT] << "(uninetwork): " << err << endl;
 	}
 	catch(Exception& ex)
 	{
-		unideb[Debug::CRIT] << "(uninetwork): " << ex << endl;
+		dlog[Debug::CRIT] << "(uninetwork): " << ex << endl;
 	}
 	catch(...)
 	{
-		unideb[Debug::CRIT] << "(uninetwork): catch(...)" << endl;
+		dlog[Debug::CRIT] << "(uninetwork): catch(...)" << endl;
 	}
 	
 	while( waitpid(-1, 0, 0) > 0 ); 

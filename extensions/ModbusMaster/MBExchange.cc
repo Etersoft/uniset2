@@ -80,7 +80,7 @@ pollActivated(false)
 
 	initPause = conf->getArgPInt("--" + prefix + "-initPause",it.getProp("initPause"), 3000);
 
-	sleepPause_usec = conf->getArgPInt("--" + prefix + "-sleepPause-usec",it.getProp("slepePause"), 100);
+	sleepPause_usec = conf->getArgPInt("--" + prefix + "-sleepPause-usec",it.getProp("sleepPause"), 100);
 
 	force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
 	force_out = conf->getArgInt("--" + prefix + "-force-out",it.getProp("force_out"));
@@ -309,8 +309,16 @@ void MBExchange::initIterators()
 			{
 				shm->initDIterator(it2->dit);
 				shm->initAIterator(it2->ait);
+                shm->initAIterator(it2->t_ait);
 			}
 		}
+	}
+	
+	for( ThresholdList::iterator t=thrlist.begin(); t!=thrlist.end(); ++t )
+	{
+		shm->initDIterator(t->dit);
+		shm->initAIterator(t->ait);
+		shm->initAIterator(t->t_ait);
 	}
 }
 // -----------------------------------------------------------------------------
@@ -661,7 +669,7 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 			if( p->nbit >= 0 )
 			{
 				bool set = b[p->nbit];
-				IOBase::processingAsDI( p, set, shm, force );
+				IOBase::processingAsDI( p, set, shm, true );
 				return true;
 			}
 
@@ -670,10 +678,10 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 				if( p->stype == UniversalIO::DigitalInput ||
 					p->stype == UniversalIO::DigitalOutput )
 				{
-					IOBase::processingAsDI( p, data[0], shm, force );
+					IOBase::processingAsDI( p, data[0], shm, true );
 				}
 				else
-					IOBase::processingAsAI( p, (signed short)(data[0]), shm, force );
+					IOBase::processingAsAI( p, (signed short)(data[0]), shm, true );
 
 				return true;
 			}
@@ -688,10 +696,10 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 			if( p->stype == UniversalIO::DigitalInput ||
 				p->stype == UniversalIO::DigitalOutput )
 			{
-				IOBase::processingAsDI( p, data[0], shm, force );
+				IOBase::processingAsDI( p, data[0], shm, true );
 			}
 			else
-				IOBase::processingAsAI( p, (signed short)(data[0]), shm, force );
+				IOBase::processingAsAI( p, (signed short)(data[0]), shm, true );
 
 			return true;
 		}
@@ -700,10 +708,10 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 			if( p->stype == UniversalIO::DigitalInput ||
 				p->stype == UniversalIO::DigitalOutput )
 			{
-				IOBase::processingAsDI( p, data[0], shm, force );
+				IOBase::processingAsDI( p, data[0], shm, true );
 			}
 			else
-				IOBase::processingAsAI( p, (unsigned short)data[0], shm, force );
+				IOBase::processingAsAI( p, (unsigned short)data[0], shm, true );
 
 			return true;
 		}
@@ -717,28 +725,43 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
 			}
 
 			VTypes::Byte b(data[0]);
-			IOBase::processingAsAI( p, b.raw.b[p->nbyte-1], shm, force );
+			IOBase::processingAsAI( p, b.raw.b[p->nbyte-1], shm, true );
 			return true;
 		}
 		else if( p->vType == VTypes::vtF2 )
 		{
 			VTypes::F2 f(data,VTypes::F2::wsize());
-			IOBase::processingFasAI( p, (float)f, shm, force );
+			IOBase::processingFasAI( p, (float)f, shm, true );
+		}
+		else if( p->vType == VTypes::vtF2r )
+		{
+			VTypes::F2r f(data,VTypes::F2r::wsize());
+			IOBase::processingFasAI( p, (float)f, shm, true );
 		}
 		else if( p->vType == VTypes::vtF4 )
 		{
 			VTypes::F4 f(data,VTypes::F4::wsize());
-			IOBase::processingFasAI( p, (float)f, shm, force );
+			IOBase::processingFasAI( p, (float)f, shm, true );
 		}
 		else if( p->vType == VTypes::vtI2 )
 		{
 			VTypes::I2 i2(data,VTypes::I2::wsize());
-			IOBase::processingAsAI( p, (int)i2, shm, force );
+			IOBase::processingAsAI( p, (int)i2, shm, true );
+		}
+		else if( p->vType == VTypes::vtI2r )
+		{
+			VTypes::I2r i2(data,VTypes::I2::wsize());
+			IOBase::processingAsAI( p, (int)i2, shm, true );
 		}
 		else if( p->vType == VTypes::vtU2 )
 		{
 			VTypes::U2 u2(data,VTypes::U2::wsize());
-			IOBase::processingAsAI( p, (unsigned int)u2, shm, force );
+			IOBase::processingAsAI( p, (unsigned int)u2, shm, true );
+		}
+		else if( p->vType == VTypes::vtU2r )
+		{
+			VTypes::U2r u2(data,VTypes::U2::wsize());
+			IOBase::processingAsAI( p, (unsigned int)u2, shm, true );
 		}
 
 		return true;
@@ -831,7 +854,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 
 		case ModbusRTU::fnReadOutputRegisters:
 		{
-			ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr, p->mbreg,p->q_count);
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr,p->mbreg,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
 			it--;
@@ -1095,7 +1118,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 		return;
 
 	if( dlog.debugging(Debug::LEVEL3) )
-		dlog[Debug::LEVEL3] << "updateP: sid=" << p->si.id 
+		dlog[Debug::LEVEL3] << myname << "(updateP): sid=" << p->si.id 
 				<< " mbval=" << r->mbval 
 				<< " vtype=" << p->vType
 				<< " rnum=" << p->rnum
@@ -1257,7 +1280,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 				
 				return;
 			}
-			else if( p->vType == VTypes::vtF2 )
+			else if( p->vType == VTypes::vtF2 || p->vType == VTypes::vtF2r )
 			{
 				RegMap::iterator i(p->reg->rit);
 				if( save )
@@ -1265,9 +1288,18 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					if( r->mb_initOK )
 					{
 						float f = IOBase::processingFasAO( p, shm, force_out );
-						VTypes::F2 f2(f);
-						for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
-							i->second->mbval = f2.raw.v[k];
+						if( p->vType == VTypes::vtF2 )
+						{
+							VTypes::F2 f2(f);
+							for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
+								i->second->mbval = f2.raw.v[k];
+						}
+						else if( p->vType == VTypes::vtF2r )
+						{
+							VTypes::F2r f2(f);
+							for( int k=0; k<VTypes::F2r::wsize(); k++, i++ )
+								i->second->mbval = f2.raw.v[k];
+						}
 
 						r->sm_initOK = true;
 					}
@@ -1277,11 +1309,22 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					ModbusRTU::ModbusData* data = new ModbusRTU::ModbusData[VTypes::F2::wsize()];
 					for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
 						data[k] = i->second->mbval;
-				
-					VTypes::F2 f(data,VTypes::F2::wsize());
+	
+					float f=0;
+					if( p->vType == VTypes::vtF2 )
+					{
+						VTypes::F2 f1(data,VTypes::F2::wsize());
+						f = (float)f1;
+					}
+					else if( p->vType == VTypes::vtF2r )
+					{
+						VTypes::F2r f1(data,VTypes::F2r::wsize());
+						f = (float)f1;
+					}
+	
 					delete[] data;
 				
-					IOBase::processingFasAI( p, (float)f, shm, force );
+					IOBase::processingFasAI( p, f, shm, force );
 				}
 			}
 			else if( p->vType == VTypes::vtF4 )
@@ -1309,7 +1352,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					IOBase::processingFasAI( p, (float)f, shm, force );
 				}
 			}
-			else if( p->vType == VTypes::vtI2 )
+			else if( p->vType == VTypes::vtI2 || p->vType == VTypes::vtI2r )
 			{
 				RegMap::iterator i(p->reg->rit);
 				if( save )
@@ -1317,10 +1360,18 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					if( r->mb_initOK )
 					{
 						long v = IOBase::processingAsAO( p, shm, force_out );
-						VTypes::I2 i2(v);
-						for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
-							i->second->mbval = i2.raw.v[k];
-
+						if( p->vType == VTypes::vtI2 )
+						{
+							VTypes::I2 i2(v);
+							for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
+								i->second->mbval = i2.raw.v[k];
+						}
+						else if( p->vType == VTypes::vtI2r )
+						{
+							VTypes::I2r i2(v);
+							for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
+								i->second->mbval = i2.raw.v[k];
+						}
 						r->sm_initOK = true;
 					}
 				}
@@ -1330,13 +1381,23 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
 						data[k] = i->second->mbval;
 				
-					VTypes::I2 i2(data,VTypes::I2::wsize());
+					int v = 0;
+					if( p->vType == VTypes::vtI2 )
+					{
+						VTypes::I2 i2(data,VTypes::I2::wsize());
+						v = (int)i2;
+					}
+					else if( p->vType == VTypes::vtI2r )
+					{
+						VTypes::I2r i2(data,VTypes::I2::wsize());
+						v = (int)i2;
+					}
+
 					delete[] data;
-				
-					IOBase::processingAsAI( p, (int)i2, shm, force );
+					IOBase::processingAsAI( p, v, shm, force );
 				}
 			}
-			else if( p->vType == VTypes::vtU2 )
+			else if( p->vType == VTypes::vtU2 || p->vType == VTypes::vtU2r )
 			{
 				RegMap::iterator i(p->reg->rit);
 				if( save )
@@ -1344,9 +1405,18 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					if( r->mb_initOK )
 					{
 						long v = IOBase::processingAsAO( p, shm, force_out );
-						VTypes::U2 u2(v);
-						for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
-							i->second->mbval = u2.raw.v[k];
+						if( p->vType == VTypes::vtU2 )
+						{
+							VTypes::U2 u2(v);
+							for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
+								i->second->mbval = u2.raw.v[k];
+						}
+						else if( p->vType == VTypes::vtU2r )
+						{
+							VTypes::U2r u2(v);
+							for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
+								i->second->mbval = u2.raw.v[k];
+						}
 
 						r->sm_initOK = true;
 					}
@@ -1357,16 +1427,26 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 					for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
 						data[k] = i->second->mbval;
 				
-					VTypes::U2 u2(data,VTypes::U2::wsize());
+					unsigned int v = 0;
+					if( p->vType == VTypes::vtU2 )
+					{
+						VTypes::U2 u2(data,VTypes::U2::wsize());
+						v = (unsigned int)u2;
+					}
+					else if( p->vType == VTypes::vtU2r )
+					{
+						VTypes::U2r u2(data,VTypes::U2::wsize());
+						v = (unsigned int)u2;
+					}
+
 					delete[] data;
-				
-					IOBase::processingAsAI( p, (unsigned int)u2, shm, force );
+					IOBase::processingAsAI( p, v, shm, force );
 				}
 			}
 
 			return;
 		}
-		catch(IOController_i::NameNotFound &ex)
+		catch(IOController_i::NameNotFound& ex)
 		{
 			dlog[Debug::LEVEL3] << myname << "(updateRSProperty):(NameNotFound) " << ex.err << endl;
 		}
@@ -1832,6 +1912,15 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 	if( !IOBase::initItem(&p,it,shm,&dlog,myname) )
 		return false;
 
+	// проверяем не пороговый ли это датчик (т.е. не связанный с обменом)
+	// тогда заносим его в отдельный список
+	if( p.t_ai != DefaultObjectId )
+	{
+		thrlist.push_back(p);
+		return true;
+	}    
+    
+    
 	if( it.getIntProp(prop_prefix + "rawdata") )
 	{
 		p.cal.minRaw = 0;
@@ -2063,6 +2152,16 @@ bool MBExchange::initItem( UniXML_iterator& it )
 				return false;
 			}
 			mbreg = ModbusRTU::str2mbData(reg);
+		}
+
+		if( p.nbit != -1 )
+		{
+			if( fn == ModbusRTU::fnReadCoilStatus || fn == ModbusRTU::fnReadInputStatus )
+			{
+				dlog[Debug::CRIT] << myname << "(initItem): MISMATCHED CONFIGURATION!  nbit=" << p.nbit << " func=" << fn
+									<< " for " << it.getProp("name") << endl;
+				return false;
+			}
 		}
 	}
 
@@ -2828,18 +2927,12 @@ void MBExchange::poll()
 	updateSM();
 	
 	// check thresholds
-	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+	for( ThresholdList::iterator t=thrlist.begin(); t!=thrlist.end(); ++t )
 	{
-		RTUDevice* d(it1->second);
-		for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
-		{
-			if( !checkProcActive() )
-				return;
-
-			RegInfo* r(it->second);
-			for( PList::iterator i=r->slst.begin(); i!=r->slst.end(); ++i )
-				IOBase::processingThreshold( &(*i),shm,force);
-		}
+		if( !checkProcActive() )
+			return;
+        
+		IOBase::processingThreshold(&(*t),shm,force);
 	}
 	
 	if( trReopen.hi(allNotRespond) )

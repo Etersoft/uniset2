@@ -173,8 +173,9 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
 				if( dlog.debugging(Debug::INFO) )
 					dlog[Debug::INFO] << "(ModbusTCPMaster::query): ret=" << (int)ret
 							<< " < rmh=" << (int)sizeof(rmh)
-							<< " err: " << tcp->getErrorNumber()
+							<< " errnum: " << tcp->getErrorNumber()
 							<< " perr: " << tcp->getPeer(&port)
+							<< " err: " << string(tcp->getErrorString())
 							<< endl;
 							
 				disconnect();
@@ -313,6 +314,7 @@ void ModbusTCPMaster::reconnect()
   		// 	TCPStream (const char *name, Family family=IPV4, unsigned mss=536, bool throwflag=false, timeout_t timer=0)
 		tcp = new ost::TCPStream(iaddr.c_str(),ost::Socket::IPV4,536,true,500);
 		tcp->setTimeout(replyTimeOut_ms);
+		tcp->setKeepAlive(true);
 	}
 	catch( std::exception& e )
 	{
@@ -364,6 +366,7 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
 		{		
 			tcp = new ost::TCPStream(iaddr.c_str(),ost::Socket::IPV4,536,true,500);
 			tcp->setTimeout(replyTimeOut_ms);
+			tcp->setKeepAlive(true);
 		}
 		catch( std::exception& e )
 		{

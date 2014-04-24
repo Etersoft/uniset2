@@ -25,6 +25,7 @@
 #include <sys/time.h>
 #include <sstream>
 #include <iomanip>
+#include <cmath>
 
 #include "ORepHelpers.h"
 #include "DBServer_SQLite.h"
@@ -258,7 +259,9 @@ void DBServer_SQLite::parse( UniSetTypes::SensorMessage *si )
 			struct timezone tz;
 			gettimeofday(&si->tm,&tz);
 		}
-
+		
+		float val = (float)si->value / (float)pow10(si->ci.precision);
+		
 		// см. DBTABLE AnalogSensors, DigitalSensors
 		ostringstream data;
 		data << "INSERT INTO " << tblName(si->type)
@@ -266,10 +269,10 @@ void DBServer_SQLite::parse( UniSetTypes::SensorMessage *si )
 											// Поля таблицы
 			<< ui.dateToString(si->sm_tv_sec,"-") << "','"	//  date
 			<< ui.timeToString(si->sm_tv_sec,":") << "','"	//  time
-			<< si->sm_tv_usec << "',"				//  time_usec
-			<< si->id << ","					//  sensor_id
-			<< si->value << ","				//  value
-			<< si->node << ")";				//  node
+			<< si->sm_tv_usec << "','"				//  time_usec
+			<< si->id << "','"					//  sensor_id
+			<< si->value << "','"				//  value
+			<< si->node << "')";				//  node
 
 		if( unideb.debugging(DBLEVEL) )
 			unideb[DBLEVEL] << myname << "(insert_main_history): " << data.str() << endl;
