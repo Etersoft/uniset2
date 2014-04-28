@@ -236,7 +236,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 	<xsl:if test="normalize-space(../../@msg)!='1'">
 	<xsl:choose>
 	<xsl:when test="normalize-space(@vartype)='out'">
+	<xsl:if test="normalize-space(../../@force)=''">
 		if( _force || prev_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> != <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> )
+	</xsl:if>
 		{
 			<xsl:call-template name="setdata"/>
 			prev_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>;
