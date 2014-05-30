@@ -44,12 +44,18 @@ class DelayTimer
         {
             onDelay = on_msec;
             offDelay = off_msec;
+            waiting_on = false;
+            waiting_off = false;
+            state = false;
         }
 
         // запустить часы (заново)
         inline void reset()
         {
             pt.reset();
+            waiting_on = false;
+            waiting_off = false;
+            state = false;
         }
 
         inline bool check( bool st )
