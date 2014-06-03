@@ -62,34 +62,39 @@ class DelayTimer
         {
             if( waiting_off )
             {
-                if( !st && pt.checkTime() )
+                if( pt.checkTime() )
                 {
                     waiting_off = false;
-                    state = false;
+                    if( !st )
+                        state = false;
+                    
                     return state;
                 }
-                else if( st != prevState )
+                else if( st != prevState && !st )
                     pt.reset();
-        
+                
                 prevState = st;
                 return state;
             }
-
+            
             if( waiting_on )
             {
-                if( st && pt.checkTime() )
+                if( pt.checkTime() )
                 {
                     waiting_on = false;
-                    state = true;
-                    return state;
+                    if( st )
+                        state = true;
+                    else
+                        
+                        return state;
                 }
-                else if( st != prevState )
+                else if( st != prevState && st )
                     pt.reset();
-
+                
                 prevState = st;
                 return state;
             }
-
+            
             if( state != st )
             {
                 prevState = st;
@@ -103,11 +108,11 @@ class DelayTimer
                     pt.setTiming(offDelay);
                     waiting_off = true;
                 }
-
+                
                 if( pt.checkTime() )
                     return st;
             }
-
+            
             return state;
         }
 
