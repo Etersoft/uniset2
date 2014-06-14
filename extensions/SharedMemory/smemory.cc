@@ -38,8 +38,6 @@ int main(int argc, const char **argv)
         SystemMessage sm(SystemMessage::StartUp); 
         act->broadcast( sm.transport_msg() );
         act->run(false);
-
-//        pause();    // пауза, чтобы дочерние потоки успели завершить работу
         return 0;
     }
     catch( SystemError& err )

@@ -1,6 +1,5 @@
 // --------------------------------------------------------------------------
 #include <string>
-#include <sys/wait.h>
 #include <error.h>
 #include <errno.h>
 #include <Debug.h>
@@ -21,18 +20,6 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // --------------------------------------------------------------------------
 const int MaxAddNum = 10;
-// --------------------------------------------------------------------------
-void on_sigchild( int sig )
-{
-//  while( waitpid(0,NULL,WNOHANG) > 0 ){}
-    while(1)
-    {
-        int istatus;
-        pid_t pid = waitpid( -1, &istatus, WNOHANG );
-        if( pid == -1 && errno == EINTR )  continue;
-        if( pid <= 0 )  break;
-    }
-}
 // --------------------------------------------------------------------------
 static void help_print( int argc, const char* argv[] );
 // --------------------------------------------------------------------------

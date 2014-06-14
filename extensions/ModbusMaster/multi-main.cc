@@ -1,4 +1,3 @@
-#include <sys/wait.h>
 #include <sstream>
 #include "MBTCPMultiMaster.h"
 #include "Configuration.h"
@@ -71,7 +70,7 @@ int main( int argc, const char** argv )
         dlog << "(main): -------------- MBTCPMulti Exchange START -------------------------\n\n";
         
         act->run(false);
-        while( waitpid(-1, 0, 0) > 0 ); 
+        on_sigchild(SIGTERM);
         
         return 0;
     }
@@ -84,6 +83,6 @@ int main( int argc, const char** argv )
         dcrit << "(mbtcpmultimaster): catch ..." << std::endl;
     }
 
-    while( waitpid(-1, 0, 0) > 0 ); 
+    on_sigchild(SIGTERM);
     return 1;
 }

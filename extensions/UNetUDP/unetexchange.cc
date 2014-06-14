@@ -1,5 +1,4 @@
 #include <sstream>
-#include <sys/wait.h>
 #include "UniSetActivator.h"
 #include "Extensions.h"
 #include "UNetExchange.h"
@@ -68,7 +67,7 @@ int main( int argc, const char** argv )
         dlog << "(main): -------------- UDPReceiver START -------------------------\n\n";
 
         act->run(false);
-        while( waitpid(-1, 0, 0) > 0 );
+        on_sigchild(SIGTERM);
     }
     catch( Exception& ex )
     {
@@ -79,6 +78,6 @@ int main( int argc, const char** argv )
         dcrit << "(unetexchange): catch ..." << std::endl;
     }
 
-    while( waitpid(-1, 0, 0) > 0 );
+    on_sigchild(SIGTERM);
     return 0;
 }
