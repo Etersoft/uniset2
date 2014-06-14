@@ -1,4 +1,3 @@
-#include <sys/wait.h>
 #include <string>
 #include "Debug.h"
 #include "UniSetActivator.h"
@@ -53,7 +52,7 @@ int main(int argc, const char **argv)
         act->broadcast( sm.transport_msg() );
         act->run(true);
         shm->execute();
-        while( waitpid(-1, 0, 0) > 0 );
+        on_sigchild(SIGTERM);
         return 0;
     }
     catch(SystemError& err)
@@ -69,6 +68,6 @@ int main(int argc, const char **argv)
         dlog.crit() << "(uninetwork): catch(...)" << endl;
     }
 
-    while( waitpid(-1, 0, 0) > 0 );
+    on_sigchild(SIGTERM);
     return 1;
 }

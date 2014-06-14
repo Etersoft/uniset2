@@ -1,4 +1,3 @@
-#include <sys/wait.h>
 #include <sstream>
 #include "UniSetActivator.h"
 #include "Extensions.h"
@@ -70,7 +69,7 @@ int main( int argc, char** argv )
 
         act->run(false);
 
-        while( waitpid(-1, 0, 0) > 0 );
+        on_sigchild(SIGTERM);
         return 0;
     }
     catch( Exception& ex )
@@ -82,6 +81,6 @@ int main( int argc, char** argv )
         dcrit << "(rtuexchange): catch ..." << std::endl;
     }
 
-    while( waitpid(-1, 0, 0) > 0 );
+    on_sigchild(SIGTERM);
     return 1;
 }

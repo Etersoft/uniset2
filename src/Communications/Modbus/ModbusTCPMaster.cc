@@ -360,7 +360,6 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
         ost::Thread::setException(ost::Thread::throwException);
         try
         {
-            ostringstream aa;
             tcp = new UTCPStream();
             tcp->create(iaddr,port,true,500);
             tcp->setTimeout(replyTimeOut_ms);

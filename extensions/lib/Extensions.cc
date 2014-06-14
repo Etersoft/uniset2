@@ -1,5 +1,6 @@
 #include <sstream>
 #include <string>
+#include <sys/wait.h>
 #include "Configuration.h"
 #include "Extensions.h"
 // -------------------------------------------------------------------------
@@ -128,6 +129,17 @@ namespace UniSetExtensions
 
         return new Calibration(dnode);
     }
-
+    // -------------------------------------------------------------------------
+    void on_sigchild( int sig )
+    {
+	    while(1)
+        {
+            int istatus;
+            pid_t pid = waitpid( -1, &istatus, WNOHANG );
+            if( pid == -1 && errno == EINTR )  continue;
+            if( pid <= 0 )  break;
+        }
+    }
+// --------------------------------------------------------------------------
 } // end of namespace
 // -------------------------------------------------------------------------
