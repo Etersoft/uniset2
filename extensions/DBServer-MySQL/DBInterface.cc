@@ -47,7 +47,7 @@ DBInterface::~DBInterface()
 // -----------------------------------------------------------------------------------------
 bool DBInterface::connect( const string& host, const string& user, const string& pswd, const string& dbname)
 {
-	if( !mysql_real_connect(mysql,host.c_str(), user.c_str(),pswd.c_str(),dbname.c_str(),0,NULL,CLIENT_MULTI_STATEMENTS) )
+	if( !mysql_real_connect(mysql,host.c_str(), user.c_str(),pswd.c_str(),dbname.c_str(),0,NULL,0) ) // CLIENT_MULTI_STATEMENTS) )
 	{
 		cout << error() << endl;
 		mysql_close(mysql);
@@ -55,7 +55,6 @@ bool DBInterface::connect( const string& host, const string& user, const string&
 		return false;
 	}
 
-// 	mysql_set_server_option(mysql,MYSQL_OPTION_MULTI_STATEMENTS_ON);
 	connected = true;
 	return true;
 }
@@ -101,6 +100,7 @@ bool DBInterface::query( const char* q, bool noLastQ )
 
 	result = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
 
+#if 0
 	// Если при соединении используется CLIENT_MULTI_STATEMENTS
 	// то необходимо вынуть все результаты..
 	while( mysql_more_results(mysql) )
@@ -109,6 +109,7 @@ bool DBInterface::query( const char* q, bool noLastQ )
 		if( mysql_next_result(mysql) >=0 )
 			mysql_store_result(mysql);
 	}
+#endif
 
 	if( numRows()==0 )
 	{

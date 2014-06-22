@@ -37,7 +37,7 @@
       - \ref sec_DBS_Conf
       - \ref sec_DBS_Tables
       - \ref sec_DBS_Buffer
-
+      - \ref sec_DBS_InsertBuffer
 
 	\section sec_DBS_Comm Общее описание работы DBServer_MySQL
 	    Сервис предназначен для работы с БД MySQL. В его задачи входит
@@ -73,14 +73,28 @@
 	
 	\section sec_DBS_Buffer Защита от потери данных
      Для того, чтобы на момент отсутствия связи с БД данные по возможности не потерялись,
-	сделан "кольцевой" буфер. Размер которго можно регулировать параметром "--dbserver-buffer-size"
-	или параметром \b bufferSize=".." в конфигурационном файле секции "<LocalDBSErver...>".
+	сделан "кольцевой" буфер. Размер которго можно регулировать параметром "--dbserver-lost-buffer-size"
+	или параметром \b lostBufferSize=".." в конфигурационном файле секции "<LocalDBServer...>".
 
 	Механизм построен на том, что если связь с mysql сервером отсутствует или пропала,
 	то сообщения помещаются в колевой буфер, который "опустошается" как только она восстановится.
     Если связь не восстановилась, а буфер достиг максимального заданного размера, то удаляются
 	более ранние сообщения. Эту логику можно сменить, если указать параметр "--dbserver-buffer-last-remove" 
 	или \b bufferLastRemove="1", то терятся будут сообщения добавляемые в конец.
+
+	\section sec_DBS_InsertBuffer Добавление данных (буферизованный INSERT)
+		Для оптимизации работы с БД, для каждой таблицы сделан отдельный буфер INSERT-запросов (см. TableInfo).
+	Размер буфера (в количестве сообщений) задаётся параметром "--dbserver-insert-buffer-size"
+	или параметром \b insertBufferSize=".." в конфигурационном файле секции "<LocalDBServer...>".
+
+	Данные буферы (для каждой таблицы!) скидываются в БД в двух случаях:
+	-# если буфер заполнился (т.е. по заполнению)
+	-# если истекло заданное время (т.е. принудительно). Время скидывания insert-буферов задаётся параметром "--dbserver-flush-buffer-time" или параметром \b flushBufferTime=".." в конфигурационном файле секции "<LocalDBServer...>".
+
+	\note Следует иметь ввиду, что размер буфера (и период принудительного скидывания) потенциально влияют на то, сколько данных
+	будет ПОТЕРЯНО если произодёт отключение питания или вылет процесса. С другой стороны, постоянная запись в БД без промежуточного клэширования (буферизации) приводит к большой нагрузке на БД (диск и т.п.).
+	\note Для примерного расчёта размера буфера, можно считать, что размер одной записи в буфере ~ 50 байт.
+	\note Следует иметь ввиду, что итоговый "INSERT" (когда буфер будет скидываться в БД) не должен по размеру превышать \b max_allowed_packet, которая задаётся в настройках MySQL (см. документацию).
 
 	\section sec_DBS_Tables Таблицы MySQL
 	  К основным таблицам относятся следующие:
@@ -142,7 +156,19 @@ class DBServer_MySQL:
 		static const Debug::type DBLogInfoLevel = Debug::LEVEL9;
 
 	protected:
-		typedef std::map<int, std::string> DBTableMap;
+
+		typedef std::queue<std::string> QueryBuffer;
+
+		struct TableInfo
+		{
+			QueryBuffer qbuf;		// буфер для данных
+			unsigned int qbufSize;	// размер буфера сообщений.
+			unsigned int qbufByteSize; // размер буфера в байтах
+			std::string tblname; // название таблицы
+			std::string insHeader;	 // заголовок запроса (например: INSERT INTO tblname(date, time, time_usec, sensor_id, value, node) VALUES( '"
+		};
+
+		typedef std::map<int, TableInfo> DBTableMap;
 
 		virtual void initDB(DBInterface *db){};
 		virtual void initDBTableMap(DBTableMap& tblMap){};
@@ -156,13 +182,18 @@ class DBServer_MySQL:
 		virtual void parse( UniSetTypes::DBMessage* dbmsg );
 		virtual void parse( UniSetTypes::ConfirmMessage* cmsg );
 
+		/*! запись в БД */
 		bool writeToBase( const string& query );
+
+		/*! поместить в буфер для INSERT запросов к таблице 'key' */
+		bool insertToBuffer( int key, const string& values );
+
 		virtual void init_dbserver();
 		void createTables( DBInterface* db );
 		
-		inline const char* tblName(int key)
+		inline const char* tblName( int key )
 		{
-			return tblMap[key].c_str();
+			return tblMap[key].tblname.c_str();
 		}
 
 		enum Timers
@@ -173,7 +204,6 @@ class DBServer_MySQL:
 			lastNumberOfTimer
 		};
 
-
 		DBInterface *db;
 		int PingTime;
 		int ReconnectTime;
@@ -181,19 +211,21 @@ class DBServer_MySQL:
 
 		bool activate;
 
-		typedef std::queue<std::string> QueryBuffer;
-
-		QueryBuffer qbuf;
-		unsigned int qbufSize; // размер буфера сообщений.
 		bool lastRemove;
 
-		void flushBuffer();
-		UniSetTypes::uniset_mutex mqbuf;
-		int qbufByteSize; // размер буфера в байтах
+		int flushBufferTime;
+
+		/*! сброс insert-буфера для конкретной таблицы */
+		void flushTableBuffer( DBTableMap::iterator& i );
+
+		void flushQBuffer();
 
 	private:
-		DBTableMap tblMap;
 
+		DBTableMap tblMap;
+		UniSetTypes::uniset_mutex mqbuf;
+		QueryBuffer qbuf;	// юуфер для запросов, пока нет связи с БД
+		unsigned int qbufSize;
 };
 //------------------------------------------------------------------------------------------
 #endif

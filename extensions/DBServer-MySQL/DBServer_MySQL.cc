@@ -45,9 +45,9 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id):
 	ReconnectTime(180000),
 	connect_ok(false),
 	activate(true),
-	qbufSize(200),
 	lastRemove(false),
-	qbufByteSize(0)
+	flushBufferTime(120000),
+	qbufSize(200)
 {
 	if( getId() == DefaultObjectId )
 	{
@@ -64,8 +64,6 @@ DBServer_MySQL::DBServer_MySQL():
 	ReconnectTime(180000),
 	connect_ok(false),
 	activate(true),
-	qbufSize(200),
-	qbufByteSize(0),
 	lastRemove(false)
 {
 //	init();
@@ -202,28 +200,36 @@ void DBServer_MySQL::parse( UniSetTypes::ConfirmMessage* cem )
 	}
 }
 //--------------------------------------------------------------------------------------------
+bool DBServer_MySQL::insertToBuffer( int key, const string& values )
+{
+	// Складываем в очередь
+	DBTableMap::iterator it = tblMap.find(key);
+	if( it == tblMap.end() )
+	{
+		if( unideb.debugging(DBLogInfoLevel) )
+			unideb[DBLogInfoLevel] << myname << "(insertToBuffer): table key=" << key << " not found.." << endl;
+		return false;
+	}
+
+	if( unideb.debugging(DBLogInfoLevel) )
+		unideb[DBLogInfoLevel] << myname << "(insertToBuffer): " << it->second.tblname << " val: " << values << endl;
+
+	TableInfo* ti = &it->second;
+	
+	ti->qbuf.push(values);
+	ti->qbufByteSize += values.size();
+
+	if( ti->qbuf.size() >= ti->qbufSize )
+		flushTableBuffer(it);
+
+	return true;
+}
+//--------------------------------------------------------------------------------------------
 bool DBServer_MySQL::writeToBase( const string& query )
 {
 	if( unideb.debugging(DBLogInfoLevel) )
 		unideb[DBLogInfoLevel] << myname << "(writeToBase): " << query << endl;
 
-	// Складываем в очередь
-	bool fb = false;
-	{
-		uniset_mutex_lock l(mqbuf,2000);
-		qbuf.push(query);
-		fb = ( qbuf.size() >= qbufSize );
-		qbufByteSize += query.size();
-	}
-
-	if( fb )
-		flushBuffer();
-
-	return true;
-
-#if 0
-
-//	cout << "DBServer_MySQL: " << query << endl;
 	if( !db || !connect_ok )
 	{
 		uniset_mutex_lock l(mqbuf,200);
@@ -237,16 +243,16 @@ bool DBServer_MySQL::writeToBase( const string& query )
 				qlost = qbuf.front();
 
 			qbuf.pop();
-
 			if( unideb.debugging(Debug::CRIT) )
 				unideb[Debug::CRIT] << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
 						<< ") overflow! lost query: " << qlost << endl;
 		}
+
 		return false;
 	}
 
-	// На всякий скидываем очередь
-	flushBuffer();
+    // На всякий скидываем очередь
+    flushQBuffer();
 
 	// А теперь собственно запрос..
 	db->query(query); 
@@ -263,46 +269,83 @@ bool DBServer_MySQL::writeToBase( const string& query )
 	}
 	
 	return false;
-#endif
+}
+//-------------------------------------------------------------------------------------------
+void DBServer_MySQL::flushQBuffer()
+{
+    uniset_mutex_lock l(mqbuf);
+
+    // Сперва пробуем очистить всё что накопилось в очереди до этого...
+    while( !qbuf.empty() ) 
+    {
+        db->query( qbuf.front() ); 
+
+        // Дело в том что на INSERT И UPDATE запросы 
+        // db->query() может возвращать false и надо самому
+        // отдельно проверять действительно ли произошла ошибка
+        // см. MySQLInterface::query.
+        string err(db->error());
+        if( !err.empty() && unideb.debugging(Debug::CRIT) )
+            unideb[Debug::CRIT] << myname << "(writeToBase): error: " << err <<
+                " lost query: " << qbuf.front() << endl;
+
+        qbuf.pop();
+    }
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_MySQL::flushBuffer()
+void DBServer_MySQL::flushTableBuffer( DBTableMap::iterator& it )
 {
-	uniset_mutex_lock l(mqbuf,400);
+	if( it == tblMap.end() )
+		return;
 
-	if( qbuf.empty() )
+	TableInfo* ti(&it->second);
+
+	if( ti->qbuf.empty() )
 		return;
 
 	if( unideb.debugging(DBLEVEL) )
-		unideb[DBLEVEL] << myname << "(flushBuffer): qbufSize=" << qbufSize << " qbufByteSize=" << qbufByteSize << endl;
+		unideb[DBLEVEL] << myname << "(flushBuffer): '" << ti->tblname << "' qbufSize=" << ti->qbufSize << " qbufByteSize=" << ti->qbufByteSize << endl;
 
 	// buffer  чтобы записать всё одним запросом..
-	char* cbuf = new char[ qbufByteSize + 1 ];
-	int i= 0;
+	// "ti->qbuf.size() - 1" - это количество добавляемых запятых..
+
+	unsigned int cbufSize = ti->insHeader.size() + ti->qbuf.size() - 1 + ti->qbufByteSize + 1;
+
+	char* cbuf = new char[cbufSize];
+	unsigned int i= 0;
 
 	if( !cbuf )
 	{
 		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << myname << "(flushBuffer): Can`t allocate memory for buffer (sz=" << qbufByteSize + 1 << endl;
+			unideb[Debug::CRIT] << myname << "(flushBuffer): Can`t allocate memory for buffer (sz=" << ti->qbufByteSize + 1 << endl;
 		return;
 	}
 	
-	while( !qbuf.empty() )
+	std::memcpy( &(cbuf[i]), ti->insHeader.c_str(), ti->insHeader.size() );
+	i+=ti->insHeader.size();
+
+	int n = 1;
+	while( !ti->qbuf.empty() )
 	{
-		std::string q(qbuf.front());
+		std::string q(ti->qbuf.front());
 		
-		int sz = q.size();
-		if( i + sz  > qbufByteSize )
+		unsigned int sz = q.size();
+		if( i + sz  > cbufSize )
 		{
 			if( unideb.debugging(Debug::CRIT) )
-				unideb[Debug::CRIT] << myname << "(flushBuffer): BUFFER OVERFLOW bytesize=" << qbufByteSize + 1 << " i=" << i << " sz=" << sz<< endl;
+				unideb[Debug::CRIT] << myname << "(flushBuffer): BUFFER OVERFLOW bytesize=" << cbufSize << " i=" << i << " sz=" << sz<< endl;
 
 			break;
 		}
-		
+
+		if( n > 1 ) // если запись не первая.. добавляем ',' в конец предыдущей записи
+			cbuf[i++] = ',';
+	
 		std::memcpy( &(cbuf[i]), q.c_str(), sz );
 		i += sz;
-		qbuf.pop();
+
+		ti->qbuf.pop();
+		n++;
 	}
 
 	// последняя точка с запятой, вроде не нужна (по документации и примерам из MySQL)..
@@ -311,14 +354,14 @@ void DBServer_MySQL::flushBuffer()
 	else
 		cbuf[i] = '\0';
 	
-	if( i < qbufByteSize )
+	if( i < cbufSize )
 	{
 		if( unideb.debugging(Debug::CRIT) )
-			unideb[Debug::CRIT] << myname << "(writeToBase): BAD qbufByteSize=" << qbufByteSize << " LOST RECORDS..(i=" << i << ")" << endl;
+			unideb[Debug::CRIT] << myname << "(writeToBase): BAD qbufByteSize=" << ti->qbufByteSize << " LOST RECORDS..(i=" << i << ")" << endl;
 
-		qbufByteSize = 0;
-		while( !qbuf.empty() )
-			qbuf.pop();
+		ti->qbufByteSize = 0;
+		while( !ti->qbuf.empty() )
+			ti->qbuf.pop();
 	}
 
 	try
@@ -345,7 +388,7 @@ void DBServer_MySQL::flushBuffer()
 	}
 
 	delete[] cbuf;
-	qbufByteSize = 0;
+	ti->qbufByteSize = 0;
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
@@ -363,25 +406,19 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 		
 		// см. DBTABLE AnalogSensors, DigitalSensors
 		ostringstream data;
-		data << "INSERT INTO " << tblName(si->type)
-			<< "(date, time, time_usec, sensor_id, value, node) VALUES( '"
+		data << "('"
 											// Поля таблицы
 			<< ui.dateToString(si->sm_tv_sec,"-") << "','"	//  date
 			<< ui.timeToString(si->sm_tv_sec,":") << "','"	//  time
 			<< si->sm_tv_usec << "','"				//  time_usec
 			<< si->id << "','"					//  sensor_id
 			<< val << "','"				//  value
-			<< si->node << "');";		//  node
+			<< si->node << "')";		//  node
 
 		if( unideb.debugging(DBLEVEL) )
 			unideb[DBLEVEL] << myname << "(insert_main_history): " << data.str() << endl;
 
-		if( !writeToBase(data.str()) )
-		{
-			if( unideb.debugging(Debug::CRIT) )
-				unideb[Debug::CRIT] << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
-			db->freeResult();
-		}
+		insertToBuffer(si->type, data.str());
 	}
 	catch( Exception& ex )
 	{
@@ -427,12 +464,22 @@ void DBServer_MySQL::init_dbserver()
 	string user(conf->getProp(node,"dbuser"));
 	string password(conf->getProp(node,"dbpass"));
 
-	tblMap[UniSetTypes::Message::SensorInfo] = "main_history";
-	tblMap[UniSetTypes::Message::Confirm] = "main_history";
-	
 	PingTime = conf->getIntProp(node,"pingTime");
 	ReconnectTime = conf->getIntProp(node,"reconnectTime");
-	qbufSize = conf->getArgPInt("--dbserver-buffer-size",it.getProp("bufferSize"),200);
+	flushBufferTime = conf->getArgPInt("--dbserver-flush-buffer-time",it.getProp("flushBufferTime"),120000);
+
+	qbufSize = conf->getArgPInt("--dbserver-lost-buffer-size",it.getProp("lostBufferSize"),200);
+
+	int insbufSize = conf->getArgPInt("--dbserver-insert-buffer-size",it.getProp("insertBufferSize"),100000);
+
+	TableInfo ti;
+	ti.tblname = "main_history";
+	ti.qbufSize = insbufSize;
+	ti.qbufByteSize = 0;
+	ti.insHeader = "INSERT INTO main_history(date, time, time_usec, sensor_id, value, node) VALUES";
+
+	tblMap[UniSetTypes::Message::SensorInfo] = ti;
+	tblMap[UniSetTypes::Message::Confirm] = ti;
 
 	if( findArgParam("--dbserver-buffer-last-remove",conf->getArgc(),conf->getArgv()) != -1 )
 		lastRemove = true;
@@ -459,6 +506,7 @@ void DBServer_MySQL::init_dbserver()
 			<< db->error() << endl;
 //		throw Exception( string(myname+"(init): не смогли создать соединение с БД "+db->error()) );
 		askTimer(DBServer_MySQL::ReconnectTimer,ReconnectTime);
+		askTimer(DBServer_MySQL::FlushBufferTimer,0);
 	}
 	else
 	{
@@ -467,10 +515,12 @@ void DBServer_MySQL::init_dbserver()
 		connect_ok = true;
 		askTimer(DBServer_MySQL::ReconnectTimer,0);
 		askTimer(DBServer_MySQL::PingTimer,PingTime);
+		askTimer(DBServer_MySQL::FlushBufferTimer,flushBufferTime);
+
 //		createTables(db);
 		initDB(db);
 		initDBTableMap(tblMap);	
-		flushBuffer();
+		flushQBuffer();
 	}
 }
 //--------------------------------------------------------------------------------------------
@@ -511,6 +561,7 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
 				connect_ok = false;
 				askTimer(DBServer_MySQL::PingTimer,0);
 				askTimer(DBServer_MySQL::ReconnectTimer,ReconnectTime);
+				askTimer(DBServer_MySQL::FlushBufferTimer,0);
 			}
 			else
 			{
@@ -532,6 +583,7 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
 					connect_ok = true;
 					askTimer(DBServer_MySQL::ReconnectTimer,0);
 					askTimer(DBServer_MySQL::PingTimer,PingTime);
+					askTimer(DBServer_MySQL::FlushBufferTimer,flushBufferTime);
 				}
 				connect_ok = false;
 				if( unideb.debugging(Debug::WARN) )
@@ -539,6 +591,13 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
 			}
 			else
 				init_dbserver();
+		}
+		break;
+
+		case FlushBufferTimer:
+		{
+			for( DBTableMap::iterator it=tblMap.begin(); it!=tblMap.end(); ++it )
+				flushTableBuffer(it);
 		}
 		break;
 
