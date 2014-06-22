@@ -169,6 +169,7 @@ class DBServer_MySQL:
 		{
 			PingTimer,        /*!< таймер на переодическую проверку соединения  с сервером БД */
 			ReconnectTimer,   /*!< таймер на повторную попытку соединения с сервером БД (или восстановления связи) */
+			FlushBufferTimer, /*!< таймер на сброс буфера */
 			lastNumberOfTimer
 		};
 
@@ -188,6 +189,7 @@ class DBServer_MySQL:
 
 		void flushBuffer();
 		UniSetTypes::uniset_mutex mqbuf;
+		int qbufByteSize; // размер буфера в байтах
 
 	private:
 		DBTableMap tblMap;

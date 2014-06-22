@@ -46,7 +46,8 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id):
 	connect_ok(false),
 	activate(true),
 	qbufSize(200),
-	lastRemove(false)
+	lastRemove(false),
+	qbufByteSize(0)
 {
 	if( getId() == DefaultObjectId )
 	{
@@ -64,6 +65,7 @@ DBServer_MySQL::DBServer_MySQL():
 	connect_ok(false),
 	activate(true),
 	qbufSize(200),
+	qbufByteSize(0),
 	lastRemove(false)
 {
 //	init();
@@ -204,6 +206,23 @@ bool DBServer_MySQL::writeToBase( const string& query )
 {
 	if( unideb.debugging(DBLogInfoLevel) )
 		unideb[DBLogInfoLevel] << myname << "(writeToBase): " << query << endl;
+
+	// Складываем в очередь
+	bool fb = false;
+	{
+		uniset_mutex_lock l(mqbuf,2000);
+		qbuf.push(query);
+		fb = ( qbuf.size() >= qbufSize );
+		qbufByteSize += query.size();
+	}
+
+	if( fb )
+		flushBuffer();
+
+	return true;
+
+#if 0
+
 //	cout << "DBServer_MySQL: " << query << endl;
 	if( !db || !connect_ok )
 	{
@@ -244,32 +263,89 @@ bool DBServer_MySQL::writeToBase( const string& query )
 	}
 	
 	return false;
+#endif
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::flushBuffer()
 {
 	uniset_mutex_lock l(mqbuf,400);
 
-	// Сперва пробуем очистить всё что накопилось в очереди до этого...
-	while( !qbuf.empty() ) 
+	if( qbuf.empty() )
+		return;
+
+	if( unideb.debugging(DBLEVEL) )
+		unideb[DBLEVEL] << myname << "(flushBuffer): qbufSize=" << qbufSize << " qbufByteSize=" << qbufByteSize << endl;
+
+	// buffer  чтобы записать всё одним запросом..
+	char* cbuf = new char[ qbufByteSize + 1 ];
+	int i= 0;
+
+	if( !cbuf )
 	{
-		db->query( qbuf.front() ); 
-
-		// Дело в том что на INSERT И UPDATE запросы 
-		// db->query() может возвращать false и надо самому
-		// отдельно проверять действительно ли произошла ошибка
-		// см. DBInterface::query.
-		string err(db->error());
-		if( err.empty() )
-			db->freeResult();
-		else if( unideb.debugging(Debug::CRIT) )
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << myname << "(flushBuffer): Can`t allocate memory for buffer (sz=" << qbufByteSize + 1 << endl;
+		return;
+	}
+	
+	while( !qbuf.empty() )
+	{
+		std::string q(qbuf.front());
+		
+		int sz = q.size();
+		if( i + sz  > qbufByteSize )
 		{
-			unideb[Debug::CRIT] << myname << "(writeToBase): error: " << err <<
-				" lost query: " << qbuf.front() << endl;
-		}
+			if( unideb.debugging(Debug::CRIT) )
+				unideb[Debug::CRIT] << myname << "(flushBuffer): BUFFER OVERFLOW bytesize=" << qbufByteSize + 1 << " i=" << i << " sz=" << sz<< endl;
 
+			break;
+		}
+		
+		std::memcpy( &(cbuf[i]), q.c_str(), sz );
+		i += sz;
 		qbuf.pop();
 	}
+
+	// последняя точка с запятой, вроде не нужна (по документации и примерам из MySQL)..
+	if( cbuf[i-1] == ';' )
+		cbuf[i-1] = '\0';
+	else
+		cbuf[i] = '\0';
+	
+	if( i < qbufByteSize )
+	{
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << myname << "(writeToBase): BAD qbufByteSize=" << qbufByteSize << " LOST RECORDS..(i=" << i << ")" << endl;
+
+		qbufByteSize = 0;
+		while( !qbuf.empty() )
+			qbuf.pop();
+	}
+
+	try
+	{
+		if( i > 0 )
+		{
+			db->query( (const char*)cbuf, false );
+
+			// Дело в том что на INSERT И UPDATE запросы 
+			// db->query() может возвращать false и надо самому
+			// отдельно проверять действительно ли произошла ошибка
+			// см. DBInterface::queryh.
+			string err(db->error());
+			if( !err.empty() && unideb.debugging(Debug::CRIT) )
+				unideb[Debug::CRIT] << myname << "(flushBuffer): error: " << err << endl;
+
+			db->freeResult();
+		}
+	}
+	catch( Exception& ex )
+	{
+		if( unideb.debugging(Debug::CRIT) )
+			unideb[Debug::CRIT] << myname << "(flushBuffer): " << ex << endl;
+	}
+
+	delete[] cbuf;
+	qbufByteSize = 0;
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
@@ -295,7 +371,7 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 			<< si->sm_tv_usec << "','"				//  time_usec
 			<< si->id << "','"					//  sensor_id
 			<< val << "','"				//  value
-			<< si->node << "')";				//  node
+			<< si->node << "');";		//  node
 
 		if( unideb.debugging(DBLEVEL) )
 			unideb[DBLEVEL] << myname << "(insert_main_history): " << data.str() << endl;

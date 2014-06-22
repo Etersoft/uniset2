@@ -47,13 +47,15 @@ DBInterface::~DBInterface()
 // -----------------------------------------------------------------------------------------
 bool DBInterface::connect( const string& host, const string& user, const string& pswd, const string& dbname)
 {
-	if (!mysql_real_connect(mysql,host.c_str(), user.c_str(),pswd.c_str(),dbname.c_str(),0,NULL,0))
+	if( !mysql_real_connect(mysql,host.c_str(), user.c_str(),pswd.c_str(),dbname.c_str(),0,NULL,CLIENT_MULTI_STATEMENTS) )
 	{
 		cout << error() << endl;
 		mysql_close(mysql);
 		connected = false;
 		return false;
 	}
+
+// 	mysql_set_server_option(mysql,MYSQL_OPTION_MULTI_STATEMENTS_ON);
 	connected = true;
 	return true;
 }
@@ -78,28 +80,43 @@ bool DBInterface::insert( const string& q )
 	queryok=true;
 	return true;
 }
-// -----------------------------------------------------------------------------------------			
+// -----------------------------------------------------------------------------------------
 bool DBInterface::query( const string& q )
+{
+	return query( q.c_str(), true );
+}
+// -----------------------------------------------------------------------------------------
+bool DBInterface::query( const char* q, bool noLastQ )
 {
 	if( !mysql )
 		return false;
 
-	if( mysql_query(mysql,q.c_str()) )
+	if( mysql_query(mysql,q) )
 	{
 		queryok=false;
 		return false;
 	}
 
-		
-	lastQ = q;
+	lastQ = ( noLastQ ) ? q : "";
+
 	result = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
+
+	// Если при соединении используется CLIENT_MULTI_STATEMENTS
+	// то необходимо вынуть все результаты..
+	while( mysql_more_results(mysql) )
+	{	
+		cerr << "**** store result..." << endl;
+		if( mysql_next_result(mysql) >=0 )
+			mysql_store_result(mysql);
+	}
+
 	if( numRows()==0 )
 	{
 		queryok=false;
 		return false;
 	}
 
-	queryok=true;	
+	queryok=true;
 	return true;
 }
 // -----------------------------------------------------------------------------------------
