@@ -208,7 +208,8 @@ int main(int argc, char** argv)
 					uniset_init(argc,argv,conffile);
 					UniversalInterface ui(conf);
 				
-					Command cmd=Exist;	
+					Command cmd=Exist;
+					verb = true;
 					ObjectRepository* rep = new ObjectRepository(conf);
 					commandToAll(conf->getServicesSection(), rep, (Command)cmd);
 					commandToAll(conf->getControllersSection(), rep, (Command)cmd);
