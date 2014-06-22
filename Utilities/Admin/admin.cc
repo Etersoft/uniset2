@@ -199,12 +199,13 @@ int main(int argc, char** argv)
                     uniset_init(argc,argv,conffile);
                     UInterface ui(conf);
 
+			verb = true;
                     Command cmd=Exist;
                     ObjectRepository* rep = new ObjectRepository(conf);
                     commandToAll(conf->getServicesSection(), rep, (Command)cmd);
                     commandToAll(conf->getControllersSection(), rep, (Command)cmd);
                     commandToAll(conf->getObjectsSection(), rep, (Command)cmd);
-                     delete rep;
+                    delete rep;
 //                    cout<<"(exist): done"<<endl;
                 }
                 return 0;
