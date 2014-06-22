@@ -220,6 +220,8 @@ class DBServer_MySQL:
 
 		void flushQBuffer();
 
+		virtual void sigterm( int signo );
+
 	private:
 
 		DBTableMap tblMap;

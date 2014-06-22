@@ -295,6 +295,9 @@ void DBServer_MySQL::flushQBuffer()
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::flushTableBuffer( DBTableMap::iterator& it )
 {
+	if( !db || !connect_ok )
+		return;
+
 	if( it == tblMap.end() )
 		return;
 
@@ -606,5 +609,24 @@ void DBServer_MySQL::timerInfo( UniSetTypes::TimerMessage* tm )
 				unideb[Debug::WARN] << myname << "(timerInfo): Unknown TimerID=" << tm->id << endl;
 		break;
 	}
+}
+//--------------------------------------------------------------------------------------------
+void DBServer_MySQL::sigterm( int signo )
+{
+	for( DBTableMap::iterator it=tblMap.begin(); it!=tblMap.end(); ++it )
+	{
+		try {
+			flushTableBuffer(it);
+		}
+		catch(...){}
+	}
+
+	try
+	{
+		flushQBuffer();
+	}
+	catch(...){}
+
+	DBServer::sigterm(signo);
 }
 //--------------------------------------------------------------------------------------------
