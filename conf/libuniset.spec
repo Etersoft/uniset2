@@ -8,7 +8,7 @@
 
 Name: libuniset
 Version: 1.7
-Release: alt14
+Release: alt15
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -335,6 +335,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Sun Jun 22 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt15
+- optimization: add insert-buffer for DBServer_MySQL (see uniset-docs)
+
 * Sat Jun 14 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt14
 - backport UTCPStream for MBTCPMultiMaster
 
