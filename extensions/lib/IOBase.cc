@@ -20,35 +20,35 @@ bool IOBase::check_channel_break( long val )
     return ( val < breaklim );
 }
 // -----------------------------------------------------------------------------
-bool IOBase::check_jar( bool val )
+bool IOBase::check_debounce( bool val )
 {
     // нет защиты от дребезга
-    if( ptJar.getInterval() <= 0 )
+    if( ptDebounce.getInterval() <= 0 )
     {
-        jar_state = val;
+        debounce_state = val;
         return val;
     }
 
-    if( trJar.change(val) )
+    if( trdebounce.change(val) )
     {
-        if( !jar_pause )
+        if( !debounce_pause )
         {
             // засекаем время...
-            jar_pause = true;
-            ptJar.reset();
+            debounce_pause = true;
+            ptDebounce.reset();
         }
     }
 
-    if( jar_pause && ptJar.checkTime() )
+    if( debounce_pause && ptDebounce.checkTime() )
     {
         // пауза на дребезг кончилась
         // сохраняем значение
-        jar_state = val;
-        jar_pause = false;
+        debounce_state = val;
+        debounce_pause = false;
     }
 
     // возвращаем ТЕКУЩЕЕ, А НЕ НОВОЕ значение
-    return jar_state;
+    return debounce_state;
 }
 // -----------------------------------------------------------------------------
 bool IOBase::check_on_delay( bool val )
@@ -226,10 +226,10 @@ void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force 
         set ^= true;
 
     // Проверяем именно в такой последовательности!
-    set = it->check_jar(set);       // фильтр дребезга
+    set = it->check_debounce(set);       // фильтр дребезга
     set = it->check_on_delay(set);  // фильтр на срабатывание
     set = it->check_off_delay(set); // фильтр на отпускание
-    set = it->check_front(set);     // работа по фронту (проверять после jar_xxx!)
+    set = it->check_front(set);     // работа по фронту (проверять после debounce_xxx!)
 
     {
         uniset_rwmutex_wrlock lock(it->val_lock);
@@ -409,8 +409,8 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
     b->value    = b->defval;
     b->breaklim = it.getIntProp("breaklim");
 
-    long msec = it.getPIntProp("jardelay", UniSetTimer::WaitUpTime);
-    b->ptJar.setTiming(msec);
+    long msec = it.getPIntProp("debouncedelay", UniSetTimer::WaitUpTime);
+    b->ptDebounce.setTiming(msec);
 
     msec = it.getPIntProp("ondelay", UniSetTimer::WaitUpTime);
     b->ptOnDelay.setTiming(msec);
