@@ -40,7 +40,7 @@ static const int NoSafety       = -1;
                 ignore(false),
                 invert(false),
                 noprecision(false),
-                jar_state(false),
+                debounce_state(false),
                 ondelay_state(false),
                 offdelay_state(false),
                 t_ai(UniSetTypes::DefaultObjectId),
@@ -53,44 +53,44 @@ static const int NoSafety       = -1;
 
             bool check_channel_break( long val );     /*!< проверка обрыва провода */
 
-            bool check_jar( bool val );            /*!< реализация фильтра против дребезга */
+            bool check_debounce( bool val );    /*!< реализация фильтра против дребезга */
             bool check_on_delay( bool val );    /*!< реализация задержки на включение */
-            bool check_off_delay( bool val );    /*!< реализация задержки на отключение */
-            bool check_front( bool val );        /*!< реализация срабатывания по фронту сигнала */
+            bool check_off_delay( bool val );   /*!< реализация задержки на отключение */
+            bool check_front( bool val );       /*!< реализация срабатывания по фронту сигнала */
 
             IOController_i::SensorInfo si;
-            UniversalIO::IOType stype;            /*!< тип канала (DI,DO,AI,AO) */
-            IOController_i::CalibrateInfo cal;     /*!< калибровочные параметры */
-            Calibration* cdiagram;                /*!< специальная калибровочная диаграмма */
+            UniversalIO::IOType stype;           /*!< тип канала (DI,DO,AI,AO) */
+            IOController_i::CalibrateInfo cal;   /*!< калибровочные параметры */
+            Calibration* cdiagram;               /*!< специальная калибровочная диаграмма */
 
-            long breaklim;     /*!< значение задающее порог определяющий обрыв (задаётся 'сырое' значение) */
-            long value;        /*!< текущее значение */
-            long craw;        /*!< текущее 'сырое' значение до калибровки */
-            long cprev;        /*!< предыдущее значение после калибровки */
+            long breaklim;  /*!< значение задающее порог определяющий обрыв (задаётся 'сырое' значение) */
+            long value;     /*!< текущее значение */
+            long craw;      /*!< текущее 'сырое' значение до калибровки */
+            long cprev;     /*!< предыдущее значение после калибровки */
             long safety;    /*!< безопасное состояние при завершении процесса */
             long defval;    /*!< состояние по умолчанию (при запуске) */
 
-            DigitalFilter df;    /*!< реализация программного фильтра */
-            bool nofilter;        /*!< отключение фильтра */
-            bool f_median;        /*!< признак использования медианного фильтра */
-            bool f_ls;            /*!< признак использования адаптивного фильтра по методу наименьших квадратов */
-            bool f_filter_iir;    /*!< признак использования рекурсивного фильтра */
+            DigitalFilter df;   /*!< реализация программного фильтра */
+            bool nofilter;      /*!< отключение фильтра */
+            bool f_median;      /*!< признак использования медианного фильтра */
+            bool f_ls;          /*!< признак использования адаптивного фильтра по методу наименьших квадратов */
+            bool f_filter_iir;  /*!< признак использования рекурсивного фильтра */
 
             bool ignore;    /*!< игнорировать при опросе */
             bool invert;    /*!< инвертированная логика */
             bool noprecision;
 
-            PassiveTimer ptJar;         /*!< таймер на дребезг */
+            PassiveTimer ptDebounce;    /*!< таймер на дребезг */
             PassiveTimer ptOnDelay;     /*!< задержка на срабатывание */
-            PassiveTimer ptOffDelay;     /*!< задержка на отпускание */
+            PassiveTimer ptOffDelay;    /*!< задержка на отпускание */
 
-            bool jar_pause;
+            bool debounce_pause;
             Trigger trOnDelay;
             Trigger trOffDelay;
-            Trigger trJar;
+            Trigger trdebounce;
 
-            bool jar_state;            /*!< значение для фильтра дребезга */
-            bool ondelay_state;        /*!< значение для задержки включения */
+            bool debounce_state;    /*!< значение для фильтра антидребезга */
+            bool ondelay_state;     /*!< значение для задержки включения */
             bool offdelay_state;    /*!< значение для задержки отключения */
 
             // Порог
@@ -105,8 +105,8 @@ static const int NoSafety       = -1;
             enum FrontType
             {
                 ftUnknown,
-                ft01,    // срабатывание на переход "0-->1"
-                ft10  // срабатывание на переход "1-->0"
+                ft01,      // срабатывание на переход "0-->1"
+                ft10       // срабатывание на переход "1-->0"
             };
 
             bool front; // флаг работы по фронту
