@@ -56,15 +56,15 @@ sender2(0)
 
 	UniXML_iterator n_it(nodes);
 	
-	string default_ip(n_it.getProp("unet_broadcast_ip"));
-	string default_ip2(n_it.getProp("unet_broadcast_ip2"));
+	string default_ip(n_it.getProp(prefix+"_broadcast_ip"));
+	string default_ip2(n_it.getProp(prefix+"_broadcast_ip2"));
 
 	if( !n_it.goChildren() )
 		throw UniSetTypes::SystemError("(UNetExchange): Items not found for <nodes>");
 
 	for( ; n_it.getCurrent(); n_it.goNext() )
 	{
-		if( n_it.getIntProp("unet_ignore") )
+		if( n_it.getIntProp(prefix+"_ignore") )
 		{
 			dlog[Debug::INFO] << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
 			continue;
@@ -80,13 +80,13 @@ sender2(0)
 		string h2("");
 		if( !default_ip.empty() )
 			h = default_ip;
-		if( !n_it.getProp("unet_broadcast_ip").empty() )
-			h = n_it.getProp("unet_broadcast_ip");
+		if( !n_it.getProp(prefix+"_broadcast_ip").empty() )
+			h = n_it.getProp(prefix+"_broadcast_ip");
 
 		if( !default_ip2.empty() )
 			h2 = default_ip2;
-		if( !n_it.getProp("unet_broadcast_ip2").empty() )
-			h2 = n_it.getProp("unet_broadcast_ip2");
+		if( !n_it.getProp(prefix+"_broadcast_ip2").empty() )
+			h2 = n_it.getProp(prefix+"_broadcast_ip2");
 		
 		if( h.empty() )
 		{
@@ -102,12 +102,12 @@ sender2(0)
 		// Если указано поле unet_port - используем его
 		// Иначе port = идентификатору узла
 		int p = n_it.getIntProp("id");
-		if( !n_it.getProp("unet_port").empty() )
-			p = n_it.getIntProp("unet_port");
+		if( !n_it.getProp(prefix+"_port").empty() )
+			p = n_it.getIntProp(prefix+"_port");
 
 		int p2 = p; // по умолчанию порт на втором канале такой же как на первом
-		if( !n_it.getProp("unet_port2").empty() )
-			p2 = n_it.getIntProp("unet_port2");
+		if( !n_it.getProp(prefix+"_port2").empty() )
+			p2 = n_it.getIntProp(prefix+"_port2");
 
 		string n(n_it.getProp("name"));
 		if( n == conf->getLocalNodeName() )
@@ -152,9 +152,9 @@ sender2(0)
 			continue;
 		}
 
-		bool resp_invert = n_it.getIntProp("unet_respond_invert");
+		bool resp_invert = n_it.getIntProp(prefix+"_respond_invert");
 		
-		string s_resp_id(n_it.getProp("unet_respond1_id"));
+		string s_resp_id(n_it.getProp(prefix+"_respond1_id"));
 		UniSetTypes::ObjectId resp_id = UniSetTypes::DefaultObjectId;
 		if( !s_resp_id.empty() )
 		{
@@ -168,7 +168,7 @@ sender2(0)
 			}
 		}
 
-		string s_resp2_id(n_it.getProp("unet_respond2_id"));
+		string s_resp2_id(n_it.getProp(prefix+"_respond2_id"));
 		UniSetTypes::ObjectId resp2_id = UniSetTypes::DefaultObjectId;
 		if( !s_resp2_id.empty() )
 		{
@@ -182,7 +182,7 @@ sender2(0)
 			}
 		}		
 		
-		string s_lp_id(n_it.getProp("unet_lostpackets1_id"));
+		string s_lp_id(n_it.getProp(prefix+"_lostpackets1_id"));
 		UniSetTypes::ObjectId lp_id = UniSetTypes::DefaultObjectId;
 		if( !s_lp_id.empty() )
 		{
@@ -196,7 +196,7 @@ sender2(0)
 			}
 		}
 		
-		string s_lp2_id(n_it.getProp("unet_lostpackets2_id"));
+		string s_lp2_id(n_it.getProp(prefix+"_lostpackets2_id"));
 		UniSetTypes::ObjectId lp2_id = UniSetTypes::DefaultObjectId;
 		if( !s_lp2_id.empty() )
 		{
@@ -210,7 +210,7 @@ sender2(0)
 			}
 		}
 
-		string s_lp_comm_id(n_it.getProp("unet_lostpackets_id"));
+		string s_lp_comm_id(n_it.getProp(prefix+"_lostpackets_id"));
 		UniSetTypes::ObjectId lp_comm_id = UniSetTypes::DefaultObjectId;
 		if( !s_lp_comm_id.empty() )
 		{
@@ -224,7 +224,7 @@ sender2(0)
 			}
 		}
 
-		string s_resp_comm_id(n_it.getProp("unet_respond_id"));
+		string s_resp_comm_id(n_it.getProp(prefix+"_respond_id"));
 		UniSetTypes::ObjectId resp_comm_id = UniSetTypes::DefaultObjectId;
 		if( !s_resp_comm_id.empty() )
 		{
