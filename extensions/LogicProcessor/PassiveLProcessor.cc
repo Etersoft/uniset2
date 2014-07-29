@@ -28,7 +28,7 @@ PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId o
 			throw SystemError(err.str());
 		}
 
-		int heartbeatTime = getHeartBeatTime();
+		int heartbeatTime = conf->getArgPInt("--" + prefix + "-heartbeat-time",conf->getHeartBeatTime());
 		if( heartbeatTime )
 			ptHeartBeat.setTiming(heartbeatTime);
 		else

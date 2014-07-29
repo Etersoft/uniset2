@@ -34,6 +34,7 @@ class DelayTimer
 				onDelay(0),offDelay(0),waiting_on(false),waiting_off(false){}
 
 		DelayTimer( timeout_t on_msec, timeout_t off_msec ):prevState(false),state(false),
+
 				onDelay(on_msec),offDelay(off_msec),waiting_on(false),waiting_off(false)
 		{
 		}
@@ -44,25 +45,33 @@ class DelayTimer
 		{
 			onDelay = on_msec;
 			offDelay = off_msec;
+			waiting_on = false;
+			waiting_off = false;
+			state = false;
 		}
 		
 		// запустить часы (заново)
 		inline void reset()
 		{
 			pt.reset();
+			waiting_on = false;
+			waiting_off = false;
+			state = false;
 		}
 
 		inline bool check( bool st )
 		{
 			if( waiting_off )
 			{
-				if( !st && pt.checkTime() )
+				if( pt.checkTime() )
 				{
 					waiting_off = false;
-					state = false;
+					if( !st )
+						state = false;
+
 					return state;
 				}
-				else if( st != prevState )
+				else if( st != prevState && !st )
 					pt.reset();
 		
 				prevState = st;
@@ -71,13 +80,16 @@ class DelayTimer
 
 			if( waiting_on )
 			{
-				if( st && pt.checkTime() )
+				if( pt.checkTime() )
 				{
 					waiting_on = false;
-					state = true;
+					if( st )
+						state = true;
+					else
+
 					return state;
 				}
-				else if( st != prevState )
+				else if( st != prevState && st )
 					pt.reset();
 
 				prevState = st;

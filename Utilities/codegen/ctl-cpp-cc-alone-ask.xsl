@@ -194,6 +194,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId _si
 	</xsl:if>
 	</xsl:if>
 	</xsl:for-each>
+
+
+	ui.setValue(_sid, _val);
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::askState( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
@@ -243,16 +246,16 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 	</xsl:if>
 	</xsl:if>
 	</xsl:for-each>
-		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getState): Обращение к неизвестному ДИСКРЕТНОМУ датчику sid="
-			&lt;&lt; _sid &lt;&lt; endl;
 
-		return 0;
+	    return ui.getValue(_sid);
 	}
 	catch(Exception&amp; ex)
 	{
 		unideb[Debug::CRIT] &lt;&lt; myname &lt;&lt; "(getState): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
 	}
+	
+	return 0;
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
@@ -262,7 +265,9 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 	<xsl:if test="normalize-space(../../@msg)!='1'">
 	<xsl:choose>
 	<xsl:when test="normalize-space(@vartype)='out'">
+	<xsl:if test="normalize-space(../../@force)=''">
 		if( _force || prev_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> != <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> )
+	</xsl:if>	
 		{
 			<xsl:call-template name="setdata"/>
 			prev_<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>;

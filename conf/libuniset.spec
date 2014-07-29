@@ -8,7 +8,7 @@
 
 Name: libuniset
 Version: 1.7
-Release: alt7
+Release: alt15
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -336,6 +336,32 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Sun Jun 22 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt15
+- optimization: add insert-buffer for DBServer_MySQL (see uniset-docs)
+
+* Sat Jun 14 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt14
+- backport UTCPStream for MBTCPMultiMaster
+
+* Tue Apr 29 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt13
+- (uniset-codegen): add "force" parameters for vartype="out"
+
+* Thu Apr 24 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt12
+- remove deprecated Extensions:getHeartBeatTime(). Use conf->getHeartBeatTime()
+- rename parameter:  "time_msec" --> "msec" for <HeartBeatTime msec=""/>
+
+* Thu Apr 24 2014 Pavel Vainerman <pv@server> 1.7-alt11
+- minor fixes IOControl::setValue
+
+* Tue Apr 01 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt10
+- add new vtype:  F2r, I2r, U2r  (reverse data order)
+
+* Wed Mar 19 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt9
+- add thresholds processing for ModbusMaster (TCP and RTU)
+- minor fixes
+
+* Fri Mar 07 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt8
+- fixed bug in ComPort class (getTimeout.  eterbug #9890)
+
 * Wed Feb 12 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt7
 - revert last changes ("ModbusMaster: add thread for check connection")
 

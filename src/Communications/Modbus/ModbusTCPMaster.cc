@@ -14,6 +14,7 @@ ModbusTCPMaster::ModbusTCPMaster():
 tcp(0),
 nTransaction(0),
 iaddr(""),
+port(0),
 force_disconnect(true)
 {
 	setCRCNoCheckit(true);
@@ -272,18 +273,17 @@ void ModbusTCPMaster::cleanInputStream()
 	while( ret > 0);
 }
 // -------------------------------------------------------------------------
-bool ModbusTCPMaster::checkConnection( const std::string ip, int port, int timeout_msec )
+bool ModbusTCPMaster::checkConnection( const std::string ip, int _port, int timeout_msec )
 {
 	try
 	{
 		ostringstream s;
-		s << ip << ":" << port;
+		s << ip << ":" << _port;
 
 		// Проверяем просто попыткой создать соединение..
 
-//		ost::Thread::setException(ost::Thread::throwException);
-  		// 	TCPStream (const char *name, Family family=IPV4, unsigned mss=536, bool throwflag=false, timeout_t timer=0)
-		ost::TCPStream t(s.str().c_str(),ost::Socket::IPV4,536,true,timeout_msec);
+		UTCPStream t;
+		t.create(ip,_port,true,timeout_msec);
 		t.disconnect();
 		return true;
 	}
@@ -311,10 +311,9 @@ void ModbusTCPMaster::reconnect()
 
 	try
 	{
-  		// 	TCPStream (const char *name, Family family=IPV4, unsigned mss=536, bool throwflag=false, timeout_t timer=0)
-		tcp = new ost::TCPStream(iaddr.c_str(),ost::Socket::IPV4,536,true,500);
+		tcp = new UTCPStream();
+		tcp->create(iaddr,port,true,500);
 		tcp->setTimeout(replyTimeOut_ms);
-		tcp->setKeepAlive(true);
 	}
 	catch( std::exception& e )
 	{
@@ -342,7 +341,7 @@ void ModbusTCPMaster::connect( const std::string addr, int port )
 	connect(ia,port);
 }
 // -------------------------------------------------------------------------
-void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
+void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
 {
 	if( tcp )
 	{
@@ -354,19 +353,20 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int port )
 //	if( !tcp )
 //	{
 		ostringstream s;
-		s << addr << ":" << port;
+		s << addr;
 		
 		if( dlog.debugging(Debug::INFO) )
-			dlog[Debug::INFO] << "(ModbusTCPMaster): connect to " << s.str() << endl;
+			dlog[Debug::INFO] << "(ModbusTCPMaster): connect to " << addr << ":" << _port << endl;
 		
 		iaddr = s.str();
+		port = _port;
 		
 		ost::Thread::setException(ost::Thread::throwException);
 		try
 		{		
-			tcp = new ost::TCPStream(iaddr.c_str(),ost::Socket::IPV4,536,true,500);
+			tcp = new UTCPStream();
+			tcp->create(iaddr,port,true,500);
 			tcp->setTimeout(replyTimeOut_ms);
-			tcp->setKeepAlive(true);
 		}
 		catch( std::exception& e )
 		{

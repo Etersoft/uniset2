@@ -282,7 +282,7 @@ void DBServer_MySQL::parse( UniSetTypes::SensorMessage *si )
 			gettimeofday(&si->tm,&tz);
 		}
 
-		// см. DBTABLE AnalogSensors, DigitalSensors
+		// см. main_history
 		ostringstream data;
 		data << "INSERT INTO " << tblName(si->type)
 			<< "(date, time, time_usec, sensor_id, value, node) VALUES( '"
