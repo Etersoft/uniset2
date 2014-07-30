@@ -92,7 +92,7 @@ class UNetExchange:
 		bool checkExistUNetHost( const std::string& host, ost::tpport_t port );
 		
 		std::list<UNetReceiver*> get_receivers();
-		/*! игнорировать запись датчик в шару */
+		/*! игнорировать запись датчика в SM */
 		void ignore_item(UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId, bool set = true);
 	protected:
 

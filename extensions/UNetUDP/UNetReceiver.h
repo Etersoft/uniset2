@@ -93,7 +93,7 @@ class UNetReceiver
 
 		 typedef sigc::slot<void,UNetReceiver*,Event> EventSlot;
 		 void connectEvent( EventSlot sl );
-		 /*! игнорировать запись датчик в шару */
+		 /*! игнорировать запись датчика в SM */
 		 void ignore_item(UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId, bool set = true);
 
 	protected:
