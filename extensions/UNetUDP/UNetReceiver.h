@@ -93,8 +93,8 @@ class UNetReceiver
 
 		 typedef sigc::slot<void,UNetReceiver*,Event> EventSlot;
 		 void connectEvent( EventSlot sl );
-		 void enable(UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId);
-		 void disable(UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId);
+		 /*! игнорировать запись датчик в шару */
+		 void ignore_item(UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId, bool set = true);
 
 	protected:
 
@@ -176,12 +176,12 @@ class UNetReceiver
 			IOController::AIOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;
 			UniversalIO::IOTypes iotype;
-			bool update;
+			bool ignore; /*!< флаг игнорирования сохранения в SM*/
 			
 			ItemInfo():
 				id(UniSetTypes::DefaultObjectId),
 				iotype(UniversalIO::UnknownIOType),
-				update(true){}
+				ignore(false){}
 		};
 
 		typedef std::vector<ItemInfo> ItemVec;

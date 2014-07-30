@@ -765,20 +765,12 @@ void UNetExchange::receiverEvent( UNetReceiver* r, UNetReceiver::Event ev )
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetExchange::enable(UniSetTypes::ObjectId id)
+void UNetExchange::ignore_item(UniSetTypes::ObjectId id, bool set)
 {
 	std::list<UNetReceiver*> rList = get_receivers();
 	std::list<UNetReceiver*>::iterator rIt = rList.begin();
 	for(; rIt != rList.end(); ++ rIt )
-		(*rIt)->enable(id);
-}
-// -----------------------------------------------------------------------------
-void UNetExchange::disable(UniSetTypes::ObjectId id)
-{
-	std::list<UNetReceiver*> rList = get_receivers();
-	std::list<UNetReceiver*>::iterator rIt = rList.begin();
-	for(; rIt != rList.end(); ++ rIt )
-		(*rIt)->disable(id);
+		(*rIt)->ignore_item(id, set);
 }
 // -----------------------------------------------------------------------------
 std::list<UNetReceiver*> UNetExchange::get_receivers()

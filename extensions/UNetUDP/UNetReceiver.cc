@@ -297,7 +297,7 @@ void UNetReceiver::real_update()
 					if( lockUpdate )
 						continue;
 				}
-				if( !ii.update )
+				if( ii.ignore )
 					continue;
 				else if( ii.iotype == UniversalIO::DigitalInput )
 					shm->localSaveState(ii.dit,id,val,shm->ID());
@@ -342,7 +342,7 @@ void UNetReceiver::real_update()
 						continue;
 				}
 				
-				if( !ii.update )
+				if( ii.ignore )
 					continue;
 				else if( ii.iotype == UniversalIO::DigitalInput )
 					shm->localSaveState(ii.dit,d.id,d.val,shm->ID());
@@ -522,49 +522,25 @@ void UNetReceiver::initIterators()
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::enable(UniSetTypes::ObjectId id)
+void UNetReceiver::ignore_item(UniSetTypes::ObjectId id, bool set)
 {
 	for( ItemVec::iterator it=d_icache.begin(); it!=d_icache.end(); ++it )
 	{
 		if( id == UniSetTypes::DefaultObjectId )
-			it->update = true;
+			it->ignore = set;
 		else if( id == it->id )
 		{
-			it->update = true;
+			it->ignore = set;
 			return;
 		}
 	}
 	for( ItemVec::iterator it=a_icache.begin(); it!=a_icache.end(); ++it )
 	{
 		if( id == UniSetTypes::DefaultObjectId )
-			it->update = true;
+			it->ignore = set;
 		else if( id == it->id )
 		{
-			it->update = true;
-			return;
-		}
-	}
-}
-// -----------------------------------------------------------------------------
-void UNetReceiver::disable(UniSetTypes::ObjectId id)
-{
-	for( ItemVec::iterator it=d_icache.begin(); it!=d_icache.end(); ++it )
-	{
-		if( id == UniSetTypes::DefaultObjectId )
-			it->update = false;
-		else if( id == it->id )
-		{
-			it->update = false;
-			return;
-		}
-	}
-	for( ItemVec::iterator it=a_icache.begin(); it!=a_icache.end(); ++it )
-	{
-		if( id == UniSetTypes::DefaultObjectId )
-			it->update = false;
-		else if( id == it->id )
-		{
-			it->update = false;
+			it->ignore = set;
 			return;
 		}
 	}
