@@ -90,7 +90,9 @@ class UNetExchange:
 		static void help_print( int argc, const char* argv[] );
 
 		bool checkExistUNetHost( const std::string& host, ost::tpport_t port );
-
+		std::list<UNetReceiver*> get_receivers();
+		void enable(UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId);
+		void disable(UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId);
 	protected:
 
 		xmlNode* cnode;

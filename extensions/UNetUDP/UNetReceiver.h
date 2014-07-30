@@ -93,6 +93,8 @@ class UNetReceiver
 
 		 typedef sigc::slot<void,UNetReceiver*,Event> EventSlot;
 		 void connectEvent( EventSlot sl );
+		 void enable(UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId);
+		 void disable(UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId);
 
 	protected:
 
@@ -174,10 +176,12 @@ class UNetReceiver
 			IOController::AIOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;
 			UniversalIO::IOTypes iotype;
-
+			bool update;
+			
 			ItemInfo():
 				id(UniSetTypes::DefaultObjectId),
-				iotype(UniversalIO::UnknownIOType){}
+				iotype(UniversalIO::UnknownIOType),
+				update(true){}
 		};
 
 		typedef std::vector<ItemInfo> ItemVec;

@@ -765,4 +765,32 @@ void UNetExchange::receiverEvent( UNetReceiver* r, UNetReceiver::Event ev )
 	}
 }
 // -----------------------------------------------------------------------------
-
+void UNetExchange::enable(UniSetTypes::ObjectId id)
+{
+	std::list<UNetReceiver*> rList = get_receivers();
+	std::list<UNetReceiver*>::iterator rIt = rList.begin();
+	for(; rIt != rList.end(); ++ rIt )
+		(*rIt)->enable(id);
+}
+// -----------------------------------------------------------------------------
+void UNetExchange::disable(UniSetTypes::ObjectId id)
+{
+	std::list<UNetReceiver*> rList = get_receivers();
+	std::list<UNetReceiver*>::iterator rIt = rList.begin();
+	for(; rIt != rList.end(); ++ rIt )
+		(*rIt)->disable(id);
+}
+// -----------------------------------------------------------------------------
+std::list<UNetReceiver*> UNetExchange::get_receivers()
+{
+	std::list<UNetReceiver*> tList;
+	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
+	{
+		if(it->r1)
+			tList.push_back(it->r1);
+		if(it->r2)
+			tList.push_back(it->r2);
+	}
+	return tList;
+}
+// -----------------------------------------------------------------------------

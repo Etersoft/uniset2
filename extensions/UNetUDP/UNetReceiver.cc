@@ -297,8 +297,9 @@ void UNetReceiver::real_update()
 					if( lockUpdate )
 						continue;
 				}
-				
-				if( ii.iotype == UniversalIO::DigitalInput )
+				if( !ii.update )
+					continue;
+				else if( ii.iotype == UniversalIO::DigitalInput )
 					shm->localSaveState(ii.dit,id,val,shm->ID());
 				else if( ii.iotype == UniversalIO::AnalogInput )
 					shm->localSaveValue(ii.ait,id,val,shm->ID());
@@ -341,7 +342,9 @@ void UNetReceiver::real_update()
 						continue;
 				}
 				
-				if( ii.iotype == UniversalIO::DigitalInput )
+				if( !ii.update )
+					continue;
+				else if( ii.iotype == UniversalIO::DigitalInput )
 					shm->localSaveState(ii.dit,d.id,d.val,shm->ID());
 				else if( ii.iotype == UniversalIO::AnalogInput )
 					shm->localSaveValue(ii.ait,d.id,d.val,shm->ID());
@@ -516,6 +519,54 @@ void UNetReceiver::initIterators()
 	{
 		shm->initAIterator(it->ait);
 		shm->initDIterator(it->dit);
+	}
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::enable(UniSetTypes::ObjectId id)
+{
+	for( ItemVec::iterator it=d_icache.begin(); it!=d_icache.end(); ++it )
+	{
+		if( id == UniSetTypes::DefaultObjectId )
+			it->update = true;
+		else if( id == it->id )
+		{
+			it->update = true;
+			return;
+		}
+	}
+	for( ItemVec::iterator it=a_icache.begin(); it!=a_icache.end(); ++it )
+	{
+		if( id == UniSetTypes::DefaultObjectId )
+			it->update = true;
+		else if( id == it->id )
+		{
+			it->update = true;
+			return;
+		}
+	}
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::disable(UniSetTypes::ObjectId id)
+{
+	for( ItemVec::iterator it=d_icache.begin(); it!=d_icache.end(); ++it )
+	{
+		if( id == UniSetTypes::DefaultObjectId )
+			it->update = false;
+		else if( id == it->id )
+		{
+			it->update = false;
+			return;
+		}
+	}
+	for( ItemVec::iterator it=a_icache.begin(); it!=a_icache.end(); ++it )
+	{
+		if( id == UniSetTypes::DefaultObjectId )
+			it->update = false;
+		else if( id == it->id )
+		{
+			it->update = false;
+			return;
+		}
 	}
 }
 // -----------------------------------------------------------------------------
