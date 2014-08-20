@@ -88,7 +88,7 @@ MySQLResult MySQLInterface::query( const std::string& q )
 
     lastQ = q;
     MYSQL_RES* res = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
-    if( mysql_num_rows(res)==0 )
+    if( !res || mysql_num_rows(res)==0 )
         return MySQLResult();
 
     return MySQLResult(res,true);
@@ -104,9 +104,10 @@ bool MySQLInterface::query_ok( const string& q )
 
     lastQ = q;
     MYSQL_RES* res = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
-    if( mysql_num_rows(res)==0 )
+    if( !res || mysql_num_rows(res)==0 )
     {
-        mysql_free_result(res);
+	if( res )
+	        mysql_free_result(res);
         return false;
     }
 

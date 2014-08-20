@@ -8,7 +8,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt4
+Release: alt5
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -333,6 +333,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
 
 %changelog
+* Wed Aug 20 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt5
+- (iobase): rename 'jar' ==> 'debounce'
+- fixed bug (setbug# 6219) in DBServer_MySQL (SIGSEGV)
+
 * Tue Jun 10 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt4
 - minor fixes..
 
