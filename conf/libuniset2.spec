@@ -3,12 +3,14 @@
 %def_enable sqlite
 %def_enable python
 %def_enable rrd
+%def_enable io
+#%def_enable modbus
 
 %define oname uniset2
 
 Name: libuniset2
 Version: 2.0
-Release: alt5
+Release: alt6
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -23,7 +25,11 @@ Source: %name-%version.tar
 
 # manually removed: glibc-devel-static
 # Automatically added by buildreq on Fri Nov 26 2010
-BuildRequires: libcomedi-devel libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel xsltproc
+BuildRequires: libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel xsltproc
+
+%if_enabled io
+BuildRequires: libcomedi-devel
+%endif
 
 %if_enabled mysql
 # Using old package name instead of libmysqlclient-devel it absent in branch 5.0 for yauza
@@ -77,49 +83,6 @@ Requires: %name = %version-%release
 %description devel
 Libraries needed to develop for UniSet.
 
-%if_enabled mysql
-%package mysql-dbserver
-Group: Development/Databases
-Summary: MySQL-dbserver implementatioin for UniSet
-Requires: %name = %version-%release
-Provides: %oname-mysql-dbserver
-Obsoletes: %oname-mysql-dbserver
-
-%description mysql-dbserver
-MySQL dbserver for %name
-
-%package mysql-devel
-Group: Development/Databases
-Summary: Libraries needed to develop for uniset MySQL
-Requires: %name = %version-%release
-Provides: %oname-mysql-devel
-Obsoletes: %oname-mysql-devel
-
-%description mysql-devel
-Libraries needed to develop for uniset MySQL
-%endif
-
-%if_enabled sqlite
-%package sqlite-dbserver
-Group: Development/Databases
-Summary: SQLite-dbserver implementatioin for UniSet
-Requires: %name = %version-%release
-Provides: %oname-sqlite-dbserver
-Obsoletes: %oname-sqlite-dbserver
-
-%description sqlite-dbserver
-SQLite dbserver for %name
-
-%package sqlite-devel
-Group: Development/Databases
-Summary: Libraries needed to develop for uniset SQLite
-Requires: %name = %version-%release
-Provides: %oname-sqlite-devel
-Obsoletes: %oname-sqlite-devel
-
-%description sqlite-devel
-Libraries needed to develop for uniset SQLite
-%endif
 
 %if_enabled python
 %package -n python-module-%oname
@@ -155,35 +118,101 @@ BuildArch: noarch
 Documentations for developing with UniSet
 %endif
 
-
-%package extensions
+%package extension-common
 Group: Development/C++
 Summary: libUniSet2 extensions
 Requires: %name = %version-%release
-Provides: %oname-extentions
-Obsoletes: %oname-extentions
-Provides: %name-extentions
-Obsoletes: %name-extentions
 
-%description extensions
+%description extension-common
 Extensions for libuniset
 
-%package extensions-devel
+%package extension-common-devel
 Group: Development/C++
 Summary: Libraries needed to develop for uniset extensions
 Requires: %name-extensions = %version-%release
 Provides: %name-extentions-devel
 Obsoletes: %name-extentions-devel
 
-%description extensions-devel
+%description extension-common-devel
 Libraries needed to develop for uniset extensions
+
+%if_enabled mysql
+%package extension-mysql
+Group: Development/Databases
+Summary: MySQL-dbserver implementatioin for UniSet
+Requires: %name-extension-common = %version-%release
+
+%description extension-mysql
+MySQL dbserver for %name
+
+%package extension-mysql-devel
+Group: Development/Databases
+Summary: Libraries needed to develop for uniset MySQL
+Requires: %name-extension-common-devel = %version-%release
+
+%description extension-mysql-devel
+Libraries needed to develop for uniset MySQL
+%endif
+
+%if_enabled sqlite
+%package extension-sqlite
+Group: Development/Databases
+Summary: SQLite-dbserver implementatioin for UniSet
+Requires: %name-extension-common = %version-%release
+
+%description extension-sqlite
+SQLite dbserver for %name
+
+%package extension-sqlite-devel
+Group: Development/Databases
+Summary: Libraries needed to develop for uniset SQLite
+Requires: %name-extension-common = %version-%release
+
+%description extension-sqlite-devel
+Libraries needed to develop for uniset SQLite
+%endif
+
+%if_enabled rrd
+%package extension-rrd
+Group: Development/C++
+Summary: libUniSet2 RRD extension
+Requires: %name-extension-common = %version-%release
+%description extension-rrd
+RRD extensions for libuniset
+
+%package extension-rrd-devel
+Group: Development/C++
+Summary: Libraries needed to develop for uniset RRD extension
+Requires: %name-extension-common-devel = %version-%release
+
+%description extension-rrd-devel
+Libraries needed to develop for uniset RRD extension
+%endif
+
+%if_enabled io
+%package extension-io
+Group: Development/C++
+Summary: IOControl with io for UniSet
+Requires: %name-extension-common = %version-%release
+
+%description extension-io
+IOControl for %name
+
+%package extension-io-devel
+Group: Development/C++
+Summary: Libraries needed to develop for uniset IOControl (io)
+Requires: %name-extension-common-devel = %version-%release
+
+%description extension-io-devel
+Libraries needed to develop for uniset IOControl (io)
+%endif
 
 %prep
 %setup
 
 %build
 %autoreconf
-%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable python} %{subst_enable rrd}
+%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable python} %{subst_enable rrd} %{subst_enable io}
 %make
 
 %install
@@ -237,21 +266,20 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_pkgconfigdir/libUniSet2.pc
 
 %if_enabled mysql
-%files mysql-dbserver
+%files extension-mysql
 %_bindir/%oname-mysql-*dbserver
 %_libdir/*-mysql.so*
 
-%files mysql-devel
+%files extension-mysql-devel
 %_pkgconfigdir/libUniSet2MySQL.pc
 %endif
 
 %if_enabled sqlite
-
-%files sqlite-dbserver
+%files extension-sqlite
 %_bindir/%oname-sqlite-*dbserver
 %_libdir/*-sqlite.so*
 
-%files sqlite-devel
+%files extension-sqlite-devel
 %_pkgconfigdir/libUniSet2SQLite.pc
 %endif
 
@@ -268,10 +296,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_docdir/%oname
 %endif
 
-%files extensions
-%_bindir/%oname-iocontrol
-%_bindir/%oname-iotest
-%_bindir/%oname-iocalibr
+%files extension-common
 %_bindir/%oname-logicproc
 %_bindir/%oname-plogicproc
 %_bindir/%oname-mtr-conv
@@ -288,7 +313,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 #%_bindir/%oname-smdbserver
 
 %_libdir/*Extensions.so.*
-%_libdir/libUniSet2IO*.so.*
 %_libdir/libUniSet2LP*.so.*
 %_libdir/libUniSet2MB*.so.*
 %_libdir/libUniSet2RT*.so.*
@@ -298,15 +322,30 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 #%_libdir/libUniSet2SMDBServer*.so.*
 
 %if_enabled rrd
+%files extension-rrd
 %_bindir/%oname-rrd*
 %_libdir/libUniSet2RRD*.so.*
+
+%files extension-rrd-devel
+%_pkgconfigdir/libUniSet2RRD*.pc
+%_libdir/libUniSet2RRD*.so
 %endif
 
+%if_enabled io
+%files extension-io
+%_bindir/%oname-iocontrol
+%_bindir/%oname-iotest
+%_bindir/%oname-iocalibr
+%_libdir/libUniSet2IO*.so.*
 
-%files extensions-devel
+%files extension-io-devel
+%_libdir/libUniSet2IO*.so
+%_pkgconfigdir/libUniSet2IO*.pc
+%endif
+
+%files extension-common-devel
 %_includedir/%oname/extensions/
 %_libdir/*Extensions.so
-%_libdir/libUniSet2IO*.so
 %_libdir/libUniSet2LP*.so
 %_libdir/libUniSet2MB*.so
 %_libdir/libUniSet2RT*.so
@@ -315,7 +354,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_libdir/libUniSet2UNetUDP.so
 #%_libdir/libUniSet2SMDBServer.so
 %_pkgconfigdir/*Extensions.pc
-%_pkgconfigdir/libUniSet2IO*.pc
 %_pkgconfigdir/libUniSet2Log*.pc
 %_pkgconfigdir/libUniSet2MB*.pc
 %_pkgconfigdir/libUniSet2RT*.pc
@@ -323,16 +361,18 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_pkgconfigdir/libUniSet2Network*.pc
 %_pkgconfigdir/libUniSet2UNet*.pc
 
-%if_enabled rrd
-%_pkgconfigdir/libUniSet2RRD*.pc
-%_libdir/libUniSet2RRD*.so
-%endif
-
 #%_pkgconfigdir/libUniSet2SMDBServer.pc
 #%_pkgconfigdir/libUniSet2*.pc
 %exclude %_pkgconfigdir/libUniSet2.pc
 
 %changelog
+* Thu Aug 21 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt6
+- make "extension-common" package
+- make "extension-rrd" package
+- make "extension-mysql" package
+- make "extension-sqlite" package
+- make "extension-io" package
+
 * Wed Aug 20 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt5
 - (iobase): rename 'jar' ==> 'debounce'
 - fixed bug (setbug# 6219) in DBServer_MySQL (SIGSEGV)
