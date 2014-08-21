@@ -56,11 +56,6 @@ fi
 AM_CONDITIONAL(DISABLE_SQLITE, test ${buildsqlite} = false)
 
 
-# export
-LDFLAGS="${OMNI_LIBS} ${XML_LIBS}"
-CXXFLAGS="-pedantic -Wall -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} -I\$(top_builddir)/include"
-AC_SUBST(LDFLAGS)
-AC_SUBST(CXXFLAGS)
 
 # check IDL compiler
 AC_PATH_PROG([IDL], [omniidl])
@@ -101,6 +96,25 @@ fi
 
 AM_CONDITIONAL(DISABLE_RRD, test ${buildrrd} = false)
 
+#check io support
+AC_MSG_CHECKING([io support])
+buildio=true
+AC_ARG_ENABLE(io, AC_HELP_STRING([--disable-io], [disable IO support]),
+[ if test $enableval = yes; then buildio=true; else buildio=false; fi],[ buildio=true; ])
+
+if test ${buildio} = true; then
+	AC_MSG_RESULT([enabled])
+
+	# check comedilib
+	PKG_CHECK_MODULES(COMEDI,comedilib)
+	AC_SUBST(COMEDI_LIBS)
+	AC_SUBST(COMEDI_CFLAGS)
+else
+	AC_MSG_RESULT([disabled])
+fi
+
+AM_CONDITIONAL(DISABLE_IO, test ${buildio} = false)
+AM_CONDITIONAL(ENABLE_IO, test ${buildio} = true)
 
 #check build extensions
 ext=true
@@ -110,11 +124,6 @@ AC_ARG_ENABLE(extensions,AC_HELP_STRING([--disable-extensions], [disable build u
 
 if test ${ext} = true; then
 	AC_MSG_RESULT([enabled])
-
-	# check comedilib
-	PKG_CHECK_MODULES(COMEDI,comedilib)
-	AC_SUBST(COMEDI_LIBS)
-	AC_SUBST(COMEDI_CFLAGS)
 else
 	AC_MSG_RESULT([disabled])
 fi
@@ -175,6 +184,13 @@ UNISET_EXT_CFLAGS="-I \$(top_builddir)/extensions/include"
 AC_SUBST(UNISET_EXT_CFLAGS)
 UNISET_EXT_LIBS="\$(top_builddir)/extensions/lib/libUniSet2Extensions.la"
 AC_SUBST(UNISET_EXT_LIBS)
+
+
+# export
+LDFLAGS="${OMNI_LIBS} ${XML_LIBS}"
+CXXFLAGS="-pedantic -Wall -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} -I\$(top_builddir)/include"
+AC_SUBST(LDFLAGS)
+AC_SUBST(CXXFLAGS)
 
 # Checks for header files.
 AC_HEADER_DIRENT
