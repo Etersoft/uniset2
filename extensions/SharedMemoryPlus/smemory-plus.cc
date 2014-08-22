@@ -10,10 +10,12 @@
 #include "MBSlave.h"
 #include "MBTCPMaster.h"
 #include "SharedMemory.h"
-#include "IOControl.h"
 //#include "UniExchange.h"
 #include "UNetExchange.h"
 #include "Configuration.h"
+#ifdef UNISET_ENABLE_IO
+#include "IOControl.h"
+#endif
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -50,6 +52,7 @@ int main( int argc, const char **argv )
 
         act->addManager(static_cast<class UniSetManager*>(shm));
 
+#ifdef UNISET_ENABLE_IO
         // ------------ IOControl ----------------
         std::list< ThreadCreator<IOControl>* > lst_iothr;
         for( unsigned int i=0; i<MaxAddNum; i++ )
@@ -81,6 +84,7 @@ int main( int argc, const char **argv )
                 lst_iothr.push_back( io_thr );
             }
         }
+#endif
         // ------------- RTU Exchange --------------
         for( unsigned int i=0; i<MaxAddNum; i++ )
         {
@@ -175,8 +179,10 @@ int main( int argc, const char **argv )
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
 
+#ifdef UNISET_IO_ENABLE
         for( std::list< ThreadCreator<IOControl>* >::iterator it=lst_iothr.begin(); it!=lst_iothr.end(); ++it )
             (*it)->start();
+#endif
 
         act->run(false);
         on_sigchild(SIGTERM);
@@ -213,8 +219,10 @@ void help_print( int argc, const char* argv[] )
     cout << endl << "###### SM options ######" << endl;
     SharedMemory::help_print(argc,argv);
 
+#ifdef UNISET_IO_ENABLE
     cout << endl << "###### IO options ###### (prefix: --ioX)" << endl;
     IOControl::help_print(argc,argv);
+#endif
 
     cout << endl << "###### RTU options ###### (prefix: --rtuX)" << endl;
     RTUExchange::help_print(argc,argv);

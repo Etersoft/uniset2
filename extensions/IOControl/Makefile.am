@@ -1,3 +1,4 @@
+if ENABLE_IO
 bin_PROGRAMS = @PACKAGE@-iocontrol @PACKAGE@-iotest @PACKAGE@-iocalibr
 
 # не забывайте править версию в2.pc-файле
@@ -5,13 +6,13 @@ UIO_VER=@LIBVER@
 
 lib_LTLIBRARIES 	= libUniSet2IOControl.la
 libUniSet2IOControl_la_LDFLAGS = -version-info $(UIO_VER)
-libUniSet2IOControl_la_LIBADD  = $(COMEDI_LIBS) $(SIGC_LIBS) \
+libUniSet2IOControl_la_LIBADD  = $(COMEDI_LIBS) $(SIGC_LIBS) $(COMCPP_LIBS) \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
 	-lm
 
-libUniSet2IOControl_la_CXXFLAGS = $(COMEDI_CFLAGS) $(SIGC_CFLAGS) \
+libUniSet2IOControl_la_CXXFLAGS = $(COMEDI_CFLAGS) $(SIGC_CFLAGS) $(COMCPP_CFLAGS) \
 	-I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/SharedMemory
 
@@ -19,8 +20,8 @@ libUniSet2IOControl_la_SOURCES = ComediInterface.cc IOControl.cc
 
 @PACKAGE@_iocontrol_LDADD = libUniSet2IOControl.la \
 	$(top_builddir)/lib/libUniSet2.la \
-	$(top_builddir)/extensions/lib/libUniSet2Extensions.la $(COMEDI_LIBS) -lm
-@PACKAGE@_iocontrol_CXXFLAGS = $(COMEDI_CFLAGS) $(SIGC_CFLAGS) \
+	$(top_builddir)/extensions/lib/libUniSet2Extensions.la $(COMEDI_LIBS) $(SIGC_LIBS) $(COMCPP_LIBS) -lm
+@PACKAGE@_iocontrol_CXXFLAGS = $(COMEDI_CFLAGS) $(SIGC_CFLAGS) $(COMCPP_CFLAGS) \
 	-I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/SharedMemory
 @PACKAGE@_iocontrol_SOURCES = iocontrol.cc
@@ -45,3 +46,6 @@ pkgconfig_DATA 	= libUniSet2IOControl.pc
 
 all-local:
 	ln -sf ../IOControl/$(devel_include_HEADERS) ../include
+
+endif
+# end of ENABLE_IO
