@@ -21,9 +21,9 @@ UConnector_wrap.cxx: UConnector.i UConnector.h
 	swig -python -c++ -classic UConnector.i
 
 _pyUModbus_la_SOURCES 	= UModbus.cc UModbus_wrap.cxx
-_pyUModbus_la_CXXFLAGS	= $(UNISET_CFLAGS) $(UNISET_EXT_CFLAGS) $(PYTHON_CFLAGS) 
+_pyUModbus_la_CXXFLAGS	= $(UNISET_CFLAGS) $(UNISET_EXT_CFLAGS) $(COMCPP_CFLAGS) $(PYTHON_CFLAGS) 
 _pyUModbus_la_LDFLAGS 	= -module -avoid-version
-_pyUModbus_la_LIBADD 	= $(UNISET_LIBS) $(UNISET_EXT_LIBS) $(PYTHON_LIBS)
+_pyUModbus_la_LIBADD 	= $(UNISET_LIBS) $(UNISET_EXT_LIBS) $(COMCPP_LIBS) $(PYTHON_LIBS)
 
 UModbus_wrap.cxx: UInterface.i UModbus.h
 	swig -python -c++ -classic UModbus.i

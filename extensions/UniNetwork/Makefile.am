@@ -7,16 +7,18 @@ lib_LTLIBRARIES 	= libUniSet2Network.la
 libUniSet2Network_la_LDFLAGS  = -version-info $(UNET_VER)
 libUniSet2Network_la_LIBADD = $(SIGC_LIBS) $(top_builddir)/lib/libUniSet2.la \
 	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
-	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la
-libUniSet2Network_la_CPPFLAGS	= $(SIGC_CFLAGS) \
+	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
+	$(COMCPP_LIBS)
+libUniSet2Network_la_CPPFLAGS	= $(SIGC_CFLAGS) $(COMCPP_CFLAGS)\
 	-I$(top_builddir)/extensions/include \
 	-I$(top_builddir)/extensions/SharedMemory
 libUniSet2Network_la_SOURCES 	= UniExchange.cc
 
 @PACKAGE@_network_LDADD 	= libUniSet2Network.la \
 	$(top_builddir)/lib/libUniSet2.la \
-	$(top_builddir)/extensions/lib/libUniSet2Extensions.la
-@PACKAGE@_network_CPPFLAGS	= $(SIGC_CFLAGS) -I$(top_builddir)/extensions/include
+	$(top_builddir)/extensions/lib/libUniSet2Extensions.la \
+	$(COMCPP_LIBS)
+@PACKAGE@_network_CPPFLAGS	= $(SIGC_CFLAGS) $(COMCPP_CFLAGS) -I$(top_builddir)/extensions/include
 @PACKAGE@_network_SOURCES 	= uninet.cc
 
 # install

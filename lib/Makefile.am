@@ -12,7 +12,7 @@
 lib_LTLIBRARIES 		= libUniSet2.la
 libUniSet2_la_SOURCES	=
 libUniSet2_la_LDFLAGS	= -version-info @LIBVER@
-libUniSet2_la_LIBADD		= \
+libUniSet2_la_LIBADD	= -lm \
  $(top_builddir)/src/Communications/libCommunications.la \
  $(top_builddir)/src/Communications/Modbus/libModbus.la \
  $(top_builddir)/src/Interfaces/libInterfaces.la \

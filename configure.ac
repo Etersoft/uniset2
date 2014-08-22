@@ -56,7 +56,6 @@ fi
 AM_CONDITIONAL(DISABLE_SQLITE, test ${buildsqlite} = false)
 
 
-
 # check IDL compiler
 AC_PATH_PROG([IDL], [omniidl])
 test "x$IDL" = "x" && AC_MSG_ERROR([*** omniidl not found.])
