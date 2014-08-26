@@ -2772,8 +2772,7 @@ void MBExchange::poll()
                 if( ex.err == ModbusRTU::erTimeOut && !d->ask_every_reg )
                     break;
 
-                // если контроллер хоть что-то ответил, то вроде как связь есть..
-                if( ex.err !=  ModbusRTU::erTimeOut )
+                if( ex.err == ModbusRTU::erNoError )
                     d->resp_real = true;
             }
 
