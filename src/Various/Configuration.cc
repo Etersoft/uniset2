@@ -200,8 +200,6 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
             throw;
         }
 
-        // default value
-        heartbeat_msec = 5000;
 
 //    cerr << "*************** initConfiguration: xmlOpen: " << pt.getCurrent() << " msec " << endl;
 //    pt.reset();
@@ -245,20 +243,15 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
         initParameters();
 
-        // help
-//        if( !getArgParam("--help").empty() )
-//            help(cout);
 
         initRepSections();
 
         // localIOR
-//        localIOR = false; // ??. initParameters()
         int lior = getArgInt("--localIOR");
         if( lior )
             localIOR = lior;
 
         // transientIOR
-//        transientIOR = false; // ??. initParameters()
         int tior = getArgInt("--transientIOR");
         if( tior )
             transientIOR = tior;
@@ -511,10 +504,16 @@ void Configuration::initParameters()
             if( confDir.empty() )
                 confDir = getRootDir();
         }
-        else if( name == "HeartBeatTime" )
+	}
+
+	// Heartbeat init...
+	xmlNode* cnode = getNode("HeartBeatTime");
+	if( cnode )
         {
-            heartbeat_msec = it.getIntProp("name");
-        }
+		UniXML_iterator hit(cnode);
+		heartbeat_msec = hit.getIntProp("msec");
+		if( heartbeat_msec <= 0 )
+			heartbeat_msec = 5000;
     }
 }
 // -------------------------------------------------------------------------
