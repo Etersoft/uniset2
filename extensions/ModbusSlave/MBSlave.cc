@@ -175,7 +175,7 @@ prefix(prefix)
             throw SystemError(err.str());
         }
 
-        int heartbeatTime = getHeartBeatTime();
+        int heartbeatTime = conf->getArgPInt("--" + prefix + "-heartbeat-time",it.getProp("heartbeatTime"),conf->getHeartBeatTime());
         if( heartbeatTime )
             ptHeartBeat.setTiming(heartbeatTime);
         else
@@ -200,7 +200,7 @@ prefix(prefix)
     dinfo << myname << ": init askcount_id=" << askcount_id << endl;
     dinfo << myname << ": init test_id=" << test_id << endl;
 
-    wait_msec = getHeartBeatTime() - 100;
+    wait_msec = conf->getHeartBeatTime() - 100;
     if( wait_msec < 500 )
         wait_msec = 500;
 
