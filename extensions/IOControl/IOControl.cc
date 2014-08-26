@@ -717,6 +717,36 @@ bool IOControl::initIOItem( UniXML_iterator& it )
             inf.subdev = DefaultSubdev;
     }
 
+	if( !IOBase::initItem(&inf,it,shm,&dlog,myname,filtersize,filterT) )
+		return false;
+
+	// если вектор уже заполнен
+	// то увеличиваем его на 30 элементов (с запасом)
+	// после инициализации делается resize
+	// под реальное количество
+	if( maxItem >= iomap.size() )
+		iomap.resize(maxItem+30);
+
+	int prior = it.getIntProp("iopriority");
+	if( prior > 0 )
+	{
+		IOPriority p(prior,maxItem);
+		pmap.push_back(p);
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(readItem): add to priority list: " <<
+						it.getProp("name")
+						<< " priority=" << prior << endl;
+	}
+
+	// значит это пороговый датчик..
+	if( inf.t_ai != DefaultObjectId )
+	{
+		iomap[maxItem++] = std::move(inf);
+		if( dlog.debugging(Debug::LEVEL3) )
+			dlog[Debug::LEVEL3] << myname << "(readItem): add threshold '" << it.getProp("name")
+						<< " for '" << conf->oind->getNameById(inf.t_ai) << endl;
+		return true;
+	}
     inf.channel = it.getIntProp("channel");
     if( inf.channel < 0 || inf.channel > 32 )
     {
@@ -725,8 +755,6 @@ bool IOControl::initIOItem( UniXML_iterator& it )
         return false;
     }
 
-    if( !IOBase::initItem(&inf,it,shm,&dlog,myname,filtersize,filterT) )
-        return false;
 
     inf.lamp = it.getIntProp("lamp");
     inf.no_testlamp = it.getIntProp("no_iotestlamp");
@@ -757,23 +785,6 @@ bool IOControl::initIOItem( UniXML_iterator& it )
     }
 
     dlog3 << myname << "(readItem): add: " << inf.stype << " " << inf << endl;
-
-    // если вектор уже заполнен
-    // то увеличиваем его на 10 элементов (с запасом)
-    // после инициализации делается resize
-    // под реальное количество
-    if( maxItem >= iomap.size() )
-        iomap.resize(maxItem+90);
-
-    int prior = it.getIntProp("iopriority");
-    if( prior > 0 )
-    {
-        IOPriority p(prior,maxItem);
-        pmap.push_back(p);
-        dlog3 << myname << "(readItem): add to priority list: "
-                << it.getProp("name")
-                << " priority=" << prior << endl;
-    }
 
     iomap[maxItem++] = std::move(inf);
     return true;
