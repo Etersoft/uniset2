@@ -85,8 +85,8 @@ prefix(prefix)
         if( speed.empty() )
             speed = "38400";
 
-        bool use485F = conf->getArgInt("--rs-use485F",it.getProp("use485F"));
-        bool transmitCtl = conf->getArgInt("--rs-transmit-ctl",it.getProp("transmitCtl"));
+        bool use485F = conf->getArgInt("--" + prefix + "-use485F",it.getProp("use485F"));
+        bool transmitCtl = conf->getArgInt("--" + prefix + "-transmit-ctl",it.getProp("transmitCtl"));
 
         ModbusRTUSlaveSlot* rs = new ModbusRTUSlaveSlot(dev,use485F,transmitCtl);
         rs->setSpeed(speed);
