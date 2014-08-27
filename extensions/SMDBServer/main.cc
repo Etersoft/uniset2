@@ -29,9 +29,9 @@ int main( int argc, const char** argv )
         string logfilename(conf->getArgParam("--smdbserver-logfile"));
         if( logfilename.empty() )
             logfilename = "smdbserver.log";
-
+    
         conf->initDebug(dlog,"dlog");
-
+    
         std::ostringstream logname;
         string dir(conf->getLogDir());
         logname << dir << logfilename;
@@ -61,7 +61,7 @@ int main( int argc, const char** argv )
         UniSetActivator act;
         act.addObject(static_cast<class UniSetObject*>(db));
 
-        SystemMessage sm(SystemMessage::StartUp);
+        SystemMessage sm(SystemMessage::StartUp); 
         act.broadcast( sm.transport_msg() );
 
         ulog << "\n\n\n";

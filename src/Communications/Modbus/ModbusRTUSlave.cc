@@ -38,7 +38,7 @@ ModbusRTUSlave::ModbusRTUSlave( const string& dev, bool use485, bool tr_ctl ):
     port->setStopBits(ComPort::OneBit);
     port->setWaiting(true);
     port->setTimeout(recvTimeOut_ms);
-//    port->setBlocking(false);
+//    port->setBlocking(false); 
 }
 
 // -------------------------------------------------------------------------
@@ -52,7 +52,7 @@ ModbusRTUSlave::ModbusRTUSlave( ComPort* com ):
     port->setStopBits(ComPort::OneBit);
     port->setWaiting(true);
     port->setTimeout(recvTimeOut_ms);
-//    port->setBlocking(false);
+//    port->setBlocking(false); 
 }
 
 // -------------------------------------------------------------------------
@@ -83,7 +83,7 @@ mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout
             // то посылаем
             if( res < erInternalErrorCode )
             {
-                ErrorRetMessage em( buf.addr, buf.func, res );
+                ErrorRetMessage em( buf.addr, buf.func, res ); 
                 buf = em.transport_msg();
                 send(buf);
                 printProcessingTime();
@@ -95,7 +95,7 @@ mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout
             return res;
         }
 
-        // если полученный пакет адресован
+        // если полученный пакет адресован 
         // не данному узлу (и не широковещательный)
         // то ждать следующий...
     }
@@ -112,7 +112,7 @@ ComPort::Speed ModbusRTUSlave::getSpeed()
 {
     if( port == NULL )
         return ComPort::ComSpeed0;
-
+    
     return port->getSpeed();
 }
 // -------------------------------------------------------------------------

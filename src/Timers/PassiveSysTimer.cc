@@ -71,7 +71,7 @@ void PassiveSysTimer::init()
     {
         cerr << "PassiveSysTimer: error sigaction" << endl;
         throw NotSetSignal("PassiveTimer: errir sigaction");
-    }
+    }    
 */
 }
 // ------------------------------------------------------------------------------------------
@@ -101,7 +101,7 @@ bool PassiveSysTimer::wait(timeout_t timeMS)
     {
         cerr << "PassiveSysTimer: error sigaction" << endl;
         return false;
-    }
+    }    
 
 
 //    if ( !terminated )
@@ -110,7 +110,7 @@ bool PassiveSysTimer::wait(timeout_t timeMS)
 
     timeout_t sec;
     timeout_t msec;
-
+    
     if (timeMS == WaitUpTime)
     {
         sec=15*60; // 15min
@@ -129,7 +129,7 @@ bool PassiveSysTimer::wait(timeout_t timeMS)
     setitimer( ITIMER_REAL, &mtimer, (struct itimerval *)0 );
 
     PassiveTimer::setTiming(timeMS); // вызываем для совместимости с обычным PassiveTimer-ом
-
+    
     sigset_t mask, oldmask;
 
     sigemptyset(&mask);
@@ -146,7 +146,7 @@ bool PassiveSysTimer::wait(timeout_t timeMS)
 
     terminated = 1;
     sigprocmask( SIG_UNBLOCK, &mask, NULL );
-
+    
 //    cout << "PassiveSysTimer: time ok"<< endl;
     return true;
 }
@@ -158,21 +158,21 @@ bool PassiveSysTimer::wait(timeout_t timeMS)
     struct itimerspec val;
     struct tm do_time;
     timer_t t_id;
-
+    
     sigemptyset(&sigv.sa_mask);
     sigv.sa_flags = SA_SIGINFO;
     sigv.sa_sigaction = call;
-
+    
     if (sigaction (SIGUSR1, &sigv, 0) == -1)
     {
         cerr << "Timer: sigaction" << endl;
         return -1;
     }
-
+    
     sigx.sigev_notify = SIGEV_SIGNAL;
     sigx.sigev_signo = SIGUSR1;
     sigx.sigev_value.sival_int = timeMS;
-
+    
     if ( timer_create(CLOCK_REALTIME, &sigx, &t_id) == -1 )
     {
         cerr << "Timer: timer create" << endl;
@@ -181,7 +181,7 @@ bool PassiveSysTimer::wait(timeout_t timeMS)
 
     int sec=timeMS/1000;
     int micsec=(timeMS%1000)*1000;
-
+    
     val.it_value.tv_sec    = sec;
     val.it_value.tv_nsec= micsec;
     val.it_interval.tv_sec    = sec;
@@ -197,6 +197,6 @@ bool PassiveSysTimer::wait(timeout_t timeMS)
     {
         cerr << "Timer: timer delete" << endl;
     }
-
+    
     return 0;
 */

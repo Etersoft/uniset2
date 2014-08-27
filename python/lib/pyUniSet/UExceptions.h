@@ -7,9 +7,9 @@ struct UException
     UException( const std::string& e ):err(e){}
     UException( const char* e ):err( std::string(e)){}
     ~UException(){}
-
+    
     const char* getError(){ return err.c_str(); }
-
+    
     std::string err;
 };
 //---------------------------------------------------------------------------

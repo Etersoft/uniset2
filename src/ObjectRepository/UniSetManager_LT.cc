@@ -20,7 +20,7 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// --------------------------------------------------------------------------
+// -------------------------------------------------------------------------- 
 #include "Exceptions.h"
 #include "UniSetManager_LT.h"
 #include "Debug.h"
@@ -37,20 +37,20 @@ sleepTime(UniSetTimer::WaitUpTime)
 }
 // ------------------------------------------------------------------------------------------
 UniSetManager_LT::UniSetManager_LT():
-sleepTime(UniSetTimer::WaitUpTime)
+sleepTime(UniSetTimer::WaitUpTime) 
 {
 }
 
 // ------------------------------------------------------------------------------------------
-UniSetManager_LT::~UniSetManager_LT()
+UniSetManager_LT::~UniSetManager_LT() 
 {
 }
 // ------------------------------------------------------------------------------------------
 void UniSetManager_LT::callback()
 {
-    // При реализации с использованием waitMessage() каждый раз при вызове askTimer() необходимо
-    // проверять возвращаемое значение на UniSetTimers::WaitUpTime и вызывать termWaiting(),
-    // чтобы избежать ситуации, когда процесс до заказа таймера 'спал'(в функции waitMessage()) и после
+    // При реализации с использованием waitMessage() каждый раз при вызове askTimer() необходимо 
+    // проверять возвращаемое значение на UniSetTimers::WaitUpTime и вызывать termWaiting(), 
+    // чтобы избежать ситуации, когда процесс до заказа таймера 'спал'(в функции waitMessage()) и после 
     // заказа продолжит спать(т.е. обработчик вызван не будет)...
     try
     {

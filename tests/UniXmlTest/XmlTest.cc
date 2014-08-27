@@ -28,7 +28,7 @@
 
 int main()
 {
-
+    
     UniXML* f = new UniXML();
     f->newDoc("journal");
     xmlNode *cur,*beg;

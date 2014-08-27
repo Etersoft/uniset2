@@ -87,7 +87,7 @@ uniset_mutex_lock::uniset_mutex_lock( uniset_mutex& m, const time_t timeMS ):
     {
         if( !mutex->name().empty() )
         {
-            ulog9 << "(mutex_lock): вышло заданное время ожидания "
+            ulog9 << "(mutex_lock): вышло заданное время ожидания " 
                 << timeMS << " msec для " << mutex->name() << endl;
         }
         return;

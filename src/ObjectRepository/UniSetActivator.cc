@@ -233,7 +233,7 @@ void UniSetActivator::run(bool thread)
         int ret = orbthr->start();
         if( ret !=0 )
         {
-            ucrit << myname << "(run):  НЕ СМОГЛИ СОЗДАТЬ ORB-поток"<<endl;
+            ucrit << myname << "(run):  НЕ СМОГЛИ СОЗДАТЬ ORB-поток"<<endl;    
             throw SystemError("(UniSetActivator::run): CREATE ORB THREAD FAILED");
         }
     }

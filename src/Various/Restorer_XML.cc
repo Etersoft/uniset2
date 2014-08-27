@@ -79,7 +79,7 @@ bool Restorer_XML::getConsumerInfo( UniXML_iterator& it,
         cname = conf->getServicesSection()+"/"+cname;
     else
     {
-        uwarn << "(Restorer_XML:getConsumerInfo): неизвестный тип объекта "
+        uwarn << "(Restorer_XML:getConsumerInfo): неизвестный тип объекта " 
                             << otype << endl;
         return false;
     }
@@ -87,7 +87,7 @@ bool Restorer_XML::getConsumerInfo( UniXML_iterator& it,
     cid = conf->oind->getIdByName(cname);
     if( cid == UniSetTypes::DefaultObjectId )
     {
-        ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->"
+        ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->" 
                             << cname << endl;
         return false;
     }
@@ -100,7 +100,7 @@ bool Restorer_XML::getConsumerInfo( UniXML_iterator& it,
 
     if( cnode == UniSetTypes::DefaultObjectId )
     {
-        ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->"
+        ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР узла -->" 
                             << cnodename << endl;
         return false;
     }
@@ -119,7 +119,7 @@ bool Restorer_XML::check_consumer_item( UniXML_iterator& it )
     return UniSetTypes::check_filter(it,c_filterField,c_filterValue);
 }
 // -----------------------------------------------------------------------------
-xmlNode* Restorer_XML::find_node( const UniXML& xml, xmlNode* root,
+xmlNode* Restorer_XML::find_node( const UniXML& xml, xmlNode* root, 
                                     const string& nodename, const string& nm )
 {
     UniXML_iterator it(root);
@@ -131,7 +131,7 @@ xmlNode* Restorer_XML::find_node( const UniXML& xml, xmlNode* root,
             {
                 if( nm.empty() )
                     return it;
-
+ 
                 if( xml.getProp(it, "name") == nm )
                     return it;
             }

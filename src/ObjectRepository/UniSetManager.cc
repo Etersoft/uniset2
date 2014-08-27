@@ -201,7 +201,7 @@ bool UniSetManager::removeObject( UniSetObject* obj )
 }
 
 // ------------------------------------------------------------------------------------------
-/*!
+/*! 
  *    Функция работы со списком менеджеров
 */
 void UniSetManager::managers( OManagerCommand cmd )
@@ -264,7 +264,7 @@ void UniSetManager::managers( OManagerCommand cmd )
 */
 void UniSetManager::objects(OManagerCommand cmd)
 {
-    uinfo << myname <<"(objects): olist.size="
+    uinfo << myname <<"(objects): olist.size=" 
                         << olist.size() << " cmd=" << cmd  << endl;
     {    //lock
         uniset_rwmutex_rlock lock(olistMutex);
@@ -306,11 +306,11 @@ void UniSetManager::objects(OManagerCommand cmd)
             }
             catch( CORBA::Exception& ex )
             {
-                ucrit << myname << "(objects): Caught CORBA::Exception. "
+                ucrit << myname << "(objects): Caught CORBA::Exception. " 
                       << ex._name()
                       << " (" << li->getName() << ")" << endl;
             }
-            catch( omniORB::fatalException& fe )
+            catch( omniORB::fatalException& fe ) 
             {
                ucrit << myname << "(objects): Caught omniORB::fatalException:" << endl;
                ucrit << myname << "(objects): file: " << fe.file()
@@ -387,9 +387,9 @@ bool UniSetManager::addManager( UniSetManager *child )
              mlist.push_back( child );
              uinfo << myname << ": добавляем менеджер "<< child->getName()<< endl;
         }
-        else
+        else 
             uwarn << myname << ": попытка повторного добавления объекта "<< child->getName() << endl;
-    } // unlock
+    } // unlock 
 
     return true;
 }

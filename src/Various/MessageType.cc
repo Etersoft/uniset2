@@ -90,7 +90,7 @@ tid(UniSetTypes::DefaultThresholdId)
 }
 
 SensorMessage::SensorMessage(ObjectId id, long value, const IOController_i::CalibrateInfo& ci,
-                            Priority priority,
+                            Priority priority, 
                             UniversalIO::IOType st, ObjectId consumer):
 id(id),
 value(value),
@@ -102,7 +102,7 @@ tid(UniSetTypes::DefaultThresholdId)
 {
     type            = Message::SensorInfo;
     this->priority     = priority;
-    this->consumer     = consumer;
+    this->consumer     = consumer;    
     sm_tv_sec         = tm.tv_sec;
     sm_tv_usec         = tm.tv_usec;
 }
@@ -154,7 +154,7 @@ TimerMessage::TimerMessage(const VoidMessage *msg):
     memcpy(this,msg,sizeof(*this));
     assert(this->type == Message::Timer);
 }
-//--------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------    
 ConfirmMessage::ConfirmMessage( const VoidMessage *msg ):
     Message(1) // вызываем dummy-конструктор, который не инициализирует данные (оптимизация)
 {
@@ -180,7 +180,7 @@ ConfirmMessage::ConfirmMessage(long in_sensor_id,
    priority = in_priority;
 }
 
-//--------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------    
 } // end of namespace UniSetTypes
-//--------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------    
 

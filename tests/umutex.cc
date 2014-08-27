@@ -18,26 +18,26 @@ class MyClass
         {
             thr = new ThreadCreator<MyClass>(this, &MyClass::thread);
         }
-
+        
         ~MyClass()
         {
             delete thr;
         }
-
+                
         void execute()
         {
             thr->start();
         }
-
+        
         void terminate() { term=true; }
 
         inline std::string name(){ return nm; }
         inline int lock_count(){ return count; }
-
-
+        
+        
         // BAD CODE... only for test..
         inline ThreadCreator<MyClass>* get(){ return thr; }
-
+            
     protected:
         std::string nm;
         std::atomic_bool term;
@@ -52,7 +52,7 @@ class MyClass
                 }
             }
         }
-
+                
         private:
             ThreadCreator<MyClass>* thr;
             int count;
@@ -65,12 +65,12 @@ class MyClassSpin
         {
             thr = new ThreadCreator<MyClassSpin>(this, &MyClassSpin::thread);
         }
-
+        
         ~MyClassSpin()
         {
             delete thr;
         }
-
+                
         void execute()
         {
             thr->start();
@@ -81,10 +81,10 @@ class MyClassSpin
 
         inline std::string name(){ return nm; }
         inline int lock_count(){ return count; }
-
+  
         // BAD CODE... only for test..
         inline ThreadCreator<MyClassSpin>* get(){ return thr; }
-
+            
     protected:
         std::string nm;
         bool readLock;
@@ -104,17 +104,17 @@ class MyClassSpin
                     uniset_rwmutex_rlock l(m_rw);
                     count++;
                 }
-
+                
                 //msleep(20);
             }
         }
-
+                
         private:
             ThreadCreator<MyClassSpin>* thr;
             int count;
     };
-
-
+        
+        
 bool check_wr_lock( ost::ThreadLock& m )
 {
     if( m.tryWriteLock() )
@@ -122,7 +122,7 @@ bool check_wr_lock( ost::ThreadLock& m )
         m.unlock();
         return true;
     }
-
+    
     return false;
 }
 
@@ -133,7 +133,7 @@ bool check_r_lock( ost::ThreadLock& m )
         m.unlock();
         return true;
     }
-
+    
     return false;
 }
 
@@ -142,60 +142,60 @@ int main( int argc, const char **argv )
     try
     {
 #if 0
-	{
-		cout << "check timed_mutex..." << endl;
-		std::timed_mutex m;
-
-		cout << " 'unlock' without 'lock'..";
-		m.unlock();
-		cout << " ok." << endl;
+    	{
+    		cout << "check timed_mutex..." << endl;
+    	 	std::timed_mutex m;
+    	 	
+    	 	cout << " 'unlock' without 'lock'..";
+    	 	m.unlock();
+    	 	cout << " ok." << endl;
 
 			cout << "try lock (lock): " << ( m.try_lock() ? "OK" : "FAIL" ) << endl;
 
 			m.unlock();
-
-		m.lock();
+			
+    	 	m.lock();
 
 			cout << "try lock (fail): " << ( m.try_lock() ? "FAIL" : "OK" ) << endl;
-		m.unlock();
-	}
-
-
-	{
-		uniset_mutex m("testmutex");
-		{
-			uniset_mutex_lock l(m);
-			msleep(20);
-		}
-
-		{
-			uniset_mutex_lock l(m,100);
-			msleep(50);
-		}
-
-	}
+    	 	m.unlock();
+    	}
+    
+    
+    	{
+    		uniset_mutex m("testmutex");
+    		{
+	    		uniset_mutex_lock l(m);
+	    		msleep(20);
+	    	}
+	    	
+	    	{
+	    		uniset_mutex_lock l(m,100);
+	    		msleep(50);
+	    	}
+    		
+    	}
 #endif
 #if 0
         {
             uniset_rwmutex m1("mutex1");
             uniset_rwmutex m2("mutex2");
             uniset_rwmutex m3_lcopy("mutex3");
-
-            cout << "m1: " << m1.name() << endl;
-            cout << "m2: " << m2.name() << endl;
-            cout << "m3: " << m3_lcopy.name() << endl;
-
+            
+            cout << "m1: " << m1.name() << endl;            
+            cout << "m2: " << m2.name() << endl;            
+            cout << "m3: " << m3_lcopy.name() << endl;            
+            
             m2 = m1;
-            cout << "copy m1... m2: " << m2.name() << endl;
-
+            cout << "copy m1... m2: " << m2.name() << endl;            
+            
             m1.wrlock();
             m3_lcopy = m1;
-            cout << "copy m1... m3: " << m2.name() << endl;
+            cout << "copy m1... m3: " << m2.name() << endl;            
             cout << "m3.lock: ..." << endl;
             m3_lcopy.wrlock();
             cout << "m3.lock: wrlock OK" << endl;
         }
-
+        
         // return 0;
 #endif
 
@@ -258,7 +258,7 @@ int main( int argc, const char **argv )
         cerr << "test lock: " << ( !um.isRelease() ? "OK" : "FAIL") << endl;
     }
     cerr << "test unlock: " << (um.isRelease() ? "OK" : "FAIL") << endl;
-
+    
     {
         uniset_mutex_lock l(um);
         cerr << "test second lock: " << (!um.isRelease() ? "OK" : "FAIL") << endl;
@@ -266,20 +266,20 @@ int main( int argc, const char **argv )
         uniset_mutex_lock l2(um,500);
         cerr << "test wait lock: " << ( !l2.lock_ok() ? "OK" : "FAIL") << endl;
     }
-
+    
     uniset_mutex_lock l3(um,500);
     cerr << "test wait lock: " << ( l3.lock_ok() ? "OK" : "FAIL") << endl;
-
+    
     return 0;
 #endif
-
-
+    
+    
     int max = 10;
-
+    
     if( argc > 1 )
         max = UniSetTypes::uni_atoi(argv[1]);
 
-#if 1
+#if 1    
     typedef std::vector<MyClass*> TVec;
      TVec tvec(max);
 
@@ -291,20 +291,20 @@ int main( int argc, const char **argv )
         tvec[i] = t;
         t->execute();
         msleep(50);
-    }
+    }    
 
     cout << "TEST MUTEX LOCK wait 10 sec.. (" << tvec.size() << " threads)" << endl;
     msleep(10000);
-
+    
     cout << "TEST MUTEX LOCK RESULT: " << endl;
-
+    
     for( TVec::iterator it=tvec.begin(); it!=tvec.end(); it++ )
     {
         int c = (*it)->lock_count();
         (*it)->terminate();
         if( (*it)->get()->isRunning() )
 	        (*it)->get()->join();
-	//(*it)->get()->stop();
+       	//(*it)->get()->stop();
         cout << (*it)->name() << ": locked counter: " << (c/10) << " " << ( c!=0 ? "OK":"FAIL" ) << endl;
     }
 #endif
@@ -318,14 +318,14 @@ int main( int argc, const char **argv )
         ostringstream s;
         bool r=false;
 #if 1
-	if( i>=half )
-	{
-		r = true;
-		s << "(R)";
-	}
-	else
+    	if( i>=half )
+    	{
+    		r = true;
+    		s << "(R)";
+    	}
+    	else
 #endif
-		s << "(W)";
+    		s << "(W)";
 
         s << "t" << i;
 
@@ -364,7 +364,7 @@ int main( int argc, const char **argv )
         tsvec[i] = t;
         t->execute();
         msleep(50);
-    }
+    }   
 
 	std::atomic_int cnt(0);
 	std::atomic_int num(10);
@@ -394,7 +394,7 @@ int main( int argc, const char **argv )
     }
 
 
-#endif
+#endif    
 //    pause();
 
     }
@@ -404,7 +404,7 @@ int main( int argc, const char **argv )
         cerr << "  file: " << fe.file() << endl;
         cerr << "  line: " << fe.line() << endl;
         cerr << "  mesg: " << fe.errmsg() << endl;
-    }
+    }    
     catch( std::exception& e )
     {
         cerr << "catch: " << e.what() << endl;
@@ -413,6 +413,6 @@ int main( int argc, const char **argv )
     {
         cerr << "catch(...)" << endl;
     }
-
+    
     return 0;
 }

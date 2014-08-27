@@ -28,3 +28,4 @@ bin_PROGRAMS 		= @PACKAGE@-smemory-plus
 	$(SIGC_CFLAGS) $(COMCPP_CFLAGS)
 
 @PACKAGE@_smemory_plus_SOURCES = smemory-plus.cc
+

@@ -1,4 +1,4 @@
-// --------------------------------------------------------------------------
+// --------------------------------------------------------------------------    
 // --------------------------------------------------------------------------
 #include <iostream>
 #include <cstring>
@@ -43,7 +43,7 @@ bool WDTInterface::stop()
         cerr << ": Unable to open device " << dev << " with err: " << strerror(errno) << endl;
         return false;
     }
-
+    
     write(fd, (void*)CMD_STOP, sizeof(CMD_STOP));
     close(fd);
     return true;

@@ -16,9 +16,9 @@ class TCPCheck
     public:
         TCPCheck();
         ~TCPCheck();
-
+    
         bool check( const std::string& _ip, int _port, timeout_t tout, timeout_t sleep_msec );
-
+        
         /*! \param iaddr - 'ip:port' */
         bool check( const std::string& iaddr, timeout_t tout, timeout_t sleep_msec );
 

@@ -45,7 +45,7 @@ string ObjectIndex_idXML::getMapName( const ObjectId id )
 
     return "";
 }
-// -----------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------        
 string ObjectIndex_idXML::getTextName( const ObjectId id )
 {
     auto it = omap.find(id);
@@ -68,9 +68,9 @@ std::ostream& ObjectIndex_idXML::printMap( std::ostream& os )
         if( it->second.repName == NULL )
             continue;
 
-        os  << setw(5) << it->second.id << "  "
-//            << setw(45) << ORepHelpers::getShortName(it->repName,'/')
-            << setw(45) << it->second.repName
+        os  << setw(5) << it->second.id << "  " 
+//            << setw(45) << ORepHelpers::getShortName(it->repName,'/') 
+            << setw(45) << it->second.repName 
             << "  " << it->second.textName << endl;
     }
 
@@ -136,7 +136,7 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string& sec )
         if( inf.id <= 0 )
         {
             ostringstream msg;
-            msg << "(ObjectIndex_idXML::build): НЕ УКАЗАН id для " << it.getProp("name")
+            msg << "(ObjectIndex_idXML::build): НЕ УКАЗАН id для " << it.getProp("name") 
                 << " секция " << sec;
             throw NameNotFound(msg.str());
         }

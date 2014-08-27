@@ -105,7 +105,7 @@ void UModbus::connect( const char* _ip, int _port )throw(UException)
         std::ostringstream err;
         err << "Connection failed: ip=" << ip << " port=" << port;
         throw UException(err.str());
-    }
+    }    
 }
 // --------------------------------------------------------------------------
 long UModbus::getWord( int addr, int mbreg, int mbfunc )throw(UException)
@@ -130,10 +130,10 @@ long UModbus::mbread( int mbaddr, int mbreg, int mbfunc, const char* s_vtype, in
 
 //    const char* n_ip = strcmp(new_ip,"") ? new_ip : ip;
     const char* n_ip = (new_ip != 0) ? new_ip : ip.c_str();
-    int n_port = ( new_port > 0 ) ? new_port : port;
+    int n_port = ( new_port > 0 ) ? new_port : port;    
 
     connect(n_ip,n_port);
-
+    
     VType vt = str2type(s_vtype);
     if( vt == vtUnknown )
     {
@@ -217,7 +217,7 @@ long UModbus::mbread( int mbaddr, int mbreg, int mbfunc, const char* s_vtype, in
 //---------------------------------------------------------------------------
 long UModbus::data2value( VTypes::VType vtype, ModbusRTU::ModbusData* data )
 {
-#if 0
+#if 0    
     if( vt == VTypes::vtUnknown )
     {
         ModbusRTU::DataBits16 b(data[0]);

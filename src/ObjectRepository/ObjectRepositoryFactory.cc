@@ -121,7 +121,7 @@ bool ObjectRepositoryFactory::createRootSection(const string& name)
 // -----------------------------------------------------------------------------------------------------------
 bool ObjectRepositoryFactory::createContext(const char *cname, CosNaming::NamingContext_ptr ctx)
 {
-
+    
     CosNaming::Name_var nc = omniURI::stringToName(cname);
     try
     {
@@ -133,12 +133,12 @@ bool ObjectRepositoryFactory::createContext(const char *cname, CosNaming::Naming
     catch(const CosNaming::NamingContext::AlreadyBound &ab)
     {
 //        ctx->resolve(nc);
-        ulogrep << "ORepFactory(createContext): context "<< cname << " уже есть"<< endl;
+        ulogrep << "ORepFactory(createContext): context "<< cname << " уже есть"<< endl;        
         return true;
     }
     catch(CosNaming::NamingContext::NotFound)
     {
-        ulogrep << "ORepFactory(createContext): NotFound "<< cname << endl;
+        ulogrep << "ORepFactory(createContext): NotFound "<< cname << endl;        
         throw NameNotFound();
     }
     catch(const CosNaming::NamingContext::InvalidName &nf)
@@ -147,7 +147,7 @@ bool ObjectRepositoryFactory::createContext(const char *cname, CosNaming::Naming
     }
     catch(const CosNaming::NamingContext::CannotProceed &cp)
     {
-        uwarn << "ORepFactory(createContext): catch CannotProced "
+        uwarn << "ORepFactory(createContext): catch CannotProced " 
                 << cname << " bad part="
                 << omniURI::nameToString(cp.rest_of_name);
         throw NameNotFound();
@@ -212,7 +212,7 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
     unsigned int how_many = 1000;
     CosNaming::NamingContext_var ctx;
     try
-    {
+    {    
         int argc(uconf->getArgc());
         const char * const* argv(uconf->getArgv());
         ctx = ORepHelpers::getContext(fullName, argc, argv, nsName);
@@ -231,11 +231,11 @@ bool ObjectRepositoryFactory::removeSection(const string& fullName, bool recursi
     if( how_many>bl->length() )
         how_many = bl->length();
 
-    bool rem = true; // удалять или нет
-
+    bool rem = true; // удалять или нет 
+    
     for(unsigned int i=0; i<how_many;i++)
     {
-
+    
         if(    bl[i].binding_type == CosNaming::nobject)
           {
 //            cout <<"удаляем "<< omniURI::nameToString(bl[i].binding_name) << endl;
@@ -317,8 +317,8 @@ bool ObjectRepositoryFactory::renameSection( const string& newFName, const strin
     {
         int argc(uconf->getArgc());
         const char * const* argv(uconf->getArgv());
-        CosNaming::NamingContext_var in_ctx = ORepHelpers::getContext(in_sec, argc, argv, nsName);
-        CosNaming::NamingContext_var ctx = ORepHelpers::getContext(oldFName, argc, argv, nsName);
+        CosNaming::NamingContext_var in_ctx = ORepHelpers::getContext(in_sec, argc, argv, nsName);    
+        CosNaming::NamingContext_var ctx = ORepHelpers::getContext(oldFName, argc, argv, nsName);    
 
         // заменит контекст newFName если он существовал
         in_ctx->rebind_context(ctxNewName, ctx);

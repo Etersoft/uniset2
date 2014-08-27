@@ -292,7 +292,7 @@ std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str,
 
         res.push_back(item);
     }
-
+    
     return res;
 }
 // --------------------------------------------------------------------------------------

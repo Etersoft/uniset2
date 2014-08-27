@@ -8,9 +8,9 @@ using namespace UniSetTypes;
 int main( int argc, const char **argv )
 {
     DebugStream tlog;
-
+    
     tlog.addLevel(Debug::ANY);
-
+    
     tlog[Debug::INFO] << ": [info] ..." << endl;
     tlog(Debug::INFO) << ": (info) ..." << endl;
     cout << endl;

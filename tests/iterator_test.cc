@@ -24,12 +24,12 @@ void myf(xmlNode it)
 {
     cout<<it.name<<endl;
 }
-
+    
 int main()
 {
         UniXML xml("iterator_test.xml");
         UniXML::iterator it=xml.begin();
-
+        
         it.find("messages");
         check( "Check find():", "messages", it.getName() );
 
@@ -58,7 +58,7 @@ int main()
         --it;
         check( "Check iterator -- :", "a2", it.getName() );
 
-
+        
         it=xml.begin();
         it.goChildren();
         cout<<"Check algorythm 'for_each()':\n";
@@ -73,6 +73,6 @@ int main()
         if( it.find("messages") )
             cout << "ERROR! begin=<UniSet> but find <messages>!" << endl;
 
-
+        
     return 0;
 }

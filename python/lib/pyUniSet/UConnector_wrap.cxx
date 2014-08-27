@@ -2980,7 +2980,7 @@ static swig_module_info swig_module = {swig_types, 5, 0, 0, 0, 0};
 #endif
 #define SWIG_name    "_pyUConnector"
 
-#define SWIGVERSION 0x020010
+#define SWIGVERSION 0x020010 
 #define SWIG_VERSION SWIGVERSION
 
 

@@ -8,7 +8,7 @@
 #include <list>
 #include "ModbusRTUErrors.h"
 // -------------------------------------------------------------------------
-/* Основные предположения:
+/* Основные предположения:    
  * - младший и старший байт переворачиваются только в CRC
  * - В случае неправильного формата пакета(запроса), логической ошибки и т.п
  *         ОТВЕТ просто не посылается, а пакет отбрасывается...
@@ -20,7 +20,7 @@
 // -------------------------------------------------------------------------
 namespace ModbusRTU
 {
-    // Базовые типы
+    // Базовые типы 
     typedef unsigned char ModbusByte;    /*!< modbus-байт */
     const int BitsPerByte = 8;
     typedef unsigned char ModbusAddr;    /*!< адрес узла в modbus-сети */
@@ -79,7 +79,7 @@ namespace ModbusRTU
     int szRequestDiagnosticData( DiagnosticsSubFunction f );
 
     /*! Read Device Identification ObjectID (0x2B/0xE) */
-    enum RDIObjectID
+    enum RDIObjectID 
     {
         rdiVendorName = 0x0,
         rdiProductCode = 0x1,
@@ -93,7 +93,7 @@ namespace ModbusRTU
     };
 
     /*! Read Device Identification ObjectID (0x2B/0xE) */
-    enum RDIRequestDeviceID
+    enum RDIRequestDeviceID 
     {
         rdevMinNum = 0,
         rdevBasicDevice = 0x1,   // request to get the basic device identification (stream access)
@@ -153,7 +153,7 @@ namespace ModbusRTU
     std::ostream& operator<<(std::ostream& os, ModbusHeader* m );
     // -----------------------------------------------------------------------
 
-    /*! Базовое (сырое) сообщение
+    /*! Базовое (сырое) сообщение 
         \todo Может переименовать ModbusMessage в TransportMessage?
     */
     struct ModbusMessage:
@@ -169,7 +169,7 @@ namespace ModbusRTU
     std::ostream& operator<<(std::ostream& os, ModbusMessage& m );
     std::ostream& operator<<(std::ostream& os, ModbusMessage* m );
     // -----------------------------------------------------------------------
-    /*! Ответ сообщающий об ошибке */
+    /*! Ответ сообщающий об ошибке */    
     struct ErrorRetMessage:
         public ModbusHeader
     {
@@ -187,14 +187,14 @@ namespace ModbusRTU
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
 
-        /*! размер данных(после заголовка) у данного типа сообщения
+        /*! размер данных(после заголовка) у данного типа сообщения 
             Для данного типа он постоянный..
         */
         inline static int szData(){ return sizeof(ModbusByte)+szCRC; }
     };
 
-    std::ostream& operator<<(std::ostream& os, ErrorRetMessage& m );
-    std::ostream& operator<<(std::ostream& os, ErrorRetMessage* m );
+    std::ostream& operator<<(std::ostream& os, ErrorRetMessage& m ); 
+    std::ostream& operator<<(std::ostream& os, ErrorRetMessage* m ); 
     // -----------------------------------------------------------------------
     struct DataBits
     {
@@ -213,7 +213,7 @@ namespace ModbusRTU
     };
 
     std::ostream& operator<<(std::ostream& os, DataBits& m );
-    std::ostream& operator<<(std::ostream& os, DataBits* m );
+    std::ostream& operator<<(std::ostream& os, DataBits* m ); 
     // -----------------------------------------------------------------------
     struct DataBits16
     {
@@ -233,7 +233,7 @@ namespace ModbusRTU
     };
 
     std::ostream& operator<<(std::ostream& os, DataBits16& m );
-    std::ostream& operator<<(std::ostream& os, DataBits16* m );
+    std::ostream& operator<<(std::ostream& os, DataBits16* m ); 
     // -----------------------------------------------------------------------
     /*! Запрос 0x01 */
     struct ReadCoilMessage:
@@ -258,12 +258,12 @@ namespace ModbusRTU
 
     }__attribute__((packed));
 
-    std::ostream& operator<<(std::ostream& os, ReadCoilMessage& m );
-    std::ostream& operator<<(std::ostream& os, ReadCoilMessage* m );
+    std::ostream& operator<<(std::ostream& os, ReadCoilMessage& m ); 
+    std::ostream& operator<<(std::ostream& os, ReadCoilMessage* m ); 
 
     // -----------------------------------------------------------------------
 
-    /*! Ответ на 0x01 */
+    /*! Ответ на 0x01 */    
     struct ReadCoilRetMessage:
         public ModbusHeader
     {
@@ -274,8 +274,8 @@ namespace ModbusRTU
         ReadCoilRetMessage( ModbusMessage& m );
         ReadCoilRetMessage& operator=( ModbusMessage& m );
         void init( ModbusMessage& m );
-        /*! размер предварительного заголовка
-         * (после основного до фактических данных)
+        /*! размер предварительного заголовка 
+         * (после основного до фактических данных) 
         */
         static inline int szHead()
         {
@@ -315,7 +315,7 @@ namespace ModbusRTU
         /*! очистка данных */
         void clear();
 
-        /*! проверка на переполнение */
+        /*! проверка на переполнение */    
         inline bool isFull()
         {
             return ( (int)bcnt >= MAXLENPACKET );
@@ -331,7 +331,7 @@ namespace ModbusRTU
     std::ostream& operator<<(std::ostream& os, ReadCoilRetMessage& m );
     std::ostream& operator<<(std::ostream& os, ReadCoilRetMessage* m );
     // -----------------------------------------------------------------------
-    /*! Запрос 0x02 */
+    /*! Запрос 0x02 */    
     struct ReadInputStatusMessage:
         public ModbusHeader
     {
@@ -354,10 +354,10 @@ namespace ModbusRTU
 
     }__attribute__((packed));
 
-    std::ostream& operator<<(std::ostream& os, ReadInputStatusMessage& m );
-    std::ostream& operator<<(std::ostream& os, ReadInputStatusMessage* m );
+    std::ostream& operator<<(std::ostream& os, ReadInputStatusMessage& m ); 
+    std::ostream& operator<<(std::ostream& os, ReadInputStatusMessage* m ); 
     // -----------------------------------------------------------------------
-    /*! Ответ на 0x02 */
+    /*! Ответ на 0x02 */    
     struct ReadInputStatusRetMessage:
         public ModbusHeader
     {
@@ -368,8 +368,8 @@ namespace ModbusRTU
         ReadInputStatusRetMessage( ModbusMessage& m );
         ReadInputStatusRetMessage& operator=( ModbusMessage& m );
         void init( ModbusMessage& m );
-        /*! размер предварительного заголовка
-         * (после основного до фактических данных)
+        /*! размер предварительного заголовка 
+         * (после основного до фактических данных) 
         */
         static inline int szHead()
         {
@@ -418,7 +418,7 @@ namespace ModbusRTU
         /*! размер данных(после заголовка) у данного типа сообщения */
         size_t szData();
 
-        /*! преобразование для посылки в сеть */
+        /*! преобразование для посылки в сеть */    
         ModbusMessage transport_msg();
     };
 
@@ -449,10 +449,10 @@ namespace ModbusRTU
 
     }__attribute__((packed));
 
-    std::ostream& operator<<(std::ostream& os, ReadOutputMessage& m );
-    std::ostream& operator<<(std::ostream& os, ReadOutputMessage* m );
+    std::ostream& operator<<(std::ostream& os, ReadOutputMessage& m ); 
+    std::ostream& operator<<(std::ostream& os, ReadOutputMessage* m ); 
     // -----------------------------------------------------------------------
-    /*! Ответ для 0x03 */
+    /*! Ответ для 0x03 */    
     struct ReadOutputRetMessage:
         public ModbusHeader
     {
@@ -463,8 +463,8 @@ namespace ModbusRTU
         ReadOutputRetMessage( ModbusMessage& m );
         ReadOutputRetMessage& operator=( ModbusMessage& m );
         void init( ModbusMessage& m );
-        /*! размер предварительного заголовка
-         * (после основного до фактических данных)
+        /*! размер предварительного заголовка 
+         * (после основного до фактических данных) 
         */
         static inline int szHead()
         {
@@ -501,9 +501,9 @@ namespace ModbusRTU
         ModbusMessage transport_msg();
 
         // Это поле не входит в стандарт modbus
-        // оно вспомогательное и игнорируется при
+        // оно вспомогательное и игнорируется при 
         // преобразовании в ModbusMessage.
-        // Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно.
+        // Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно. 
         // Используйте специальную функцию transport_msg()
         int    count;    /*!< фактическое количество данных в сообщении */
     };
@@ -511,7 +511,7 @@ namespace ModbusRTU
     std::ostream& operator<<(std::ostream& os, ReadOutputRetMessage& m );
     std::ostream& operator<<(std::ostream& os, ReadOutputRetMessage* m );
     // -----------------------------------------------------------------------
-    /*! Запрос 0x04 */
+    /*! Запрос 0x04 */    
     struct ReadInputMessage:
         public ModbusHeader
     {
@@ -534,8 +534,8 @@ namespace ModbusRTU
 
     }__attribute__((packed));
 
-    std::ostream& operator<<(std::ostream& os, ReadInputMessage& m );
-    std::ostream& operator<<(std::ostream& os, ReadInputMessage* m );
+    std::ostream& operator<<(std::ostream& os, ReadInputMessage& m ); 
+    std::ostream& operator<<(std::ostream& os, ReadInputMessage* m ); 
     // -----------------------------------------------------------------------
 
     /*! Ответ для 0x04 */
@@ -549,8 +549,8 @@ namespace ModbusRTU
         ReadInputRetMessage( ModbusMessage& m );
         ReadInputRetMessage& operator=( ModbusMessage& m );
         void init( ModbusMessage& m );
-        /*! размер предварительного заголовка
-         * (после основного до фактических данных)
+        /*! размер предварительного заголовка 
+         * (после основного до фактических данных) 
         */
         static inline int szHead()
         {
@@ -574,7 +574,7 @@ namespace ModbusRTU
         /*! очистка данных */
         void clear();
 
-        /*! проверка на переполнение */
+        /*! проверка на переполнение */    
         inline bool isFull()
         {
             return ( count*sizeof(ModbusData) >= MAXLENPACKET );
@@ -589,9 +589,9 @@ namespace ModbusRTU
         ModbusMessage transport_msg();
 
         // Это поле не входит в стандарт modbus
-        // оно вспомогательное и игнорируется при
+        // оно вспомогательное и игнорируется при 
         // преобразовании в ModbusMessage.
-        // Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно.
+        // Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно. 
         // Используйте специальную функцию transport_msg()
         int    count;    /*!< фактическое количество данных в сообщении */
     };
@@ -604,7 +604,7 @@ namespace ModbusRTU
         public ModbusHeader
     {
         ModbusData start;    /*!< стартовый адрес записи */
-        ModbusData quant;    /*!< количество записываемых битов */
+        ModbusData quant;    /*!< количество записываемых битов */ 
         ModbusByte bcnt;    /*!< количество байт данных */
         /*! данные */
         ModbusByte data[MAXLENPACKET-sizeof(ModbusData)*2-sizeof(ModbusByte)];
@@ -620,13 +620,13 @@ namespace ModbusRTU
          * \return FALSE - если НЕ удалось
         */
         bool addData( DataBits d );
-
+        
         // return number of bit
         // -1 - error
         int addBit( bool state );
-
+        
         bool setBit( int nbit, bool state );
-
+        
         inline int last(){ return quant; }
 
         /*! получение данных.
@@ -636,7 +636,7 @@ namespace ModbusRTU
          * \return FALSE - если НЕ найдено
         */
         bool getData( unsigned char dnum, DataBits& d );
-
+        
         bool getBit( unsigned char bnum );
 
         void clear();
@@ -645,7 +645,7 @@ namespace ModbusRTU
             return ( (int)bcnt >= MAXLENPACKET );
         }
 
-        // ------- from master -------
+        // ------- from master -------    
         ForceCoilsMessage( ModbusMessage& m );
         ForceCoilsMessage& operator=( ModbusMessage& m );
         void init( ModbusMessage& m );
@@ -653,29 +653,29 @@ namespace ModbusRTU
         /*! размер данных(после заголовка) у данного типа сообщения */
         size_t szData();
 
-        /*! размер предварительного заголовка
-         * (после основного до фактических данных)
+        /*! размер предварительного заголовка 
+         * (после основного до фактических данных) 
         */
         static inline int szHead()
         {
             // start + quant + count
             return sizeof(ModbusData)*2+sizeof(ModbusByte);
         }
-
+        
         /*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
         static int getDataLen( ModbusMessage& m );
 
-        /*! проверка корректности данных
+        /*! проверка корректности данных 
             что quant и bcnt - совпадают...
         */
         bool checkFormat();
-
+        
     }__attribute__((packed));
 
     std::ostream& operator<<(std::ostream& os, ForceCoilsMessage& m );
     std::ostream& operator<<(std::ostream& os, ForceCoilsMessage* m );
     // -----------------------------------------------------------------------
-    /*! Ответ для запроса на запись 0x0F */
+    /*! Ответ для запроса на запись 0x0F */    
     struct ForceCoilsRetMessage:
         public ModbusHeader
     {
@@ -687,9 +687,9 @@ namespace ModbusRTU
         ForceCoilsRetMessage( ModbusMessage& m );
         ForceCoilsRetMessage& operator=( ModbusMessage& m );
         void init( ModbusMessage& m );
-
+        
         // ------- to master -------
-        /*!
+        /*! 
          * \param _from - адрес отправителя
          * \param start    - записанный регистр
          * \param quant    - количество записанных слов
@@ -699,25 +699,25 @@ namespace ModbusRTU
         /*! записать данные */
         void set( ModbusData start, ModbusData quant );
 
-        /*! преобразование для посылки в сеть */
+        /*! преобразование для посылки в сеть */    
         ModbusMessage transport_msg();
-
-        /*! размер данных(после заголовка) у данного типа сообщения
+        
+        /*! размер данных(после заголовка) у данного типа сообщения 
             Для данного типа он постоянный..
         */
         inline static int szData(){ return sizeof(ModbusData)*2+sizeof(ModbusCRC); }
     };
-
+    
     std::ostream& operator<<(std::ostream& os, ForceCoilsRetMessage& m );
     std::ostream& operator<<(std::ostream& os, ForceCoilsRetMessage* m );
     // -----------------------------------------------------------------------
 
-    /*! Запрос на запись 0x10 */
+    /*! Запрос на запись 0x10 */    
     struct WriteOutputMessage:
         public ModbusHeader
     {
         ModbusData start;    /*!< стартовый адрес записи */
-        ModbusData quant;    /*!< количество слов данных */
+        ModbusData quant;    /*!< количество слов данных */ 
         ModbusByte bcnt;    /*!< количество байт данных */
         /*! данные */
         ModbusData data[MAXLENPACKET/sizeof(ModbusData)-sizeof(ModbusData)*2-sizeof(ModbusByte)];
@@ -730,12 +730,12 @@ namespace ModbusRTU
 
         bool addData( ModbusData d );
         void clear();
-        inline bool isFull()
+        inline bool isFull()         
         {
             return ( quant*sizeof(ModbusData) >= MAXLENPACKET );
         }
 
-        // ------- from master -------
+        // ------- from master -------    
         WriteOutputMessage( ModbusMessage& m );
         WriteOutputMessage& operator=( ModbusMessage& m );
         void init( ModbusMessage& m );
@@ -743,30 +743,30 @@ namespace ModbusRTU
         /*! размер данных(после заголовка) у данного типа сообщения */
         size_t szData();
 
-        /*! размер предварительного заголовка
-         * (после основного до фактических данных)
+        /*! размер предварительного заголовка 
+         * (после основного до фактических данных) 
         */
         static inline int szHead()
         {
             // start + quant + count
             return sizeof(ModbusData)*2+sizeof(ModbusByte);
         }
-
+        
         /*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
         static int getDataLen( ModbusMessage& m );
 
-        /*! проверка корректности данных
+        /*! проверка корректности данных 
             что quant и bcnt - совпадают...
         */
         bool checkFormat();
-
+        
     }__attribute__((packed));
 
 
     std::ostream& operator<<(std::ostream& os, WriteOutputMessage& m );
     std::ostream& operator<<(std::ostream& os, WriteOutputMessage* m );
 
-    /*! Ответ для запроса на запись 0x10 */
+    /*! Ответ для запроса на запись 0x10 */    
     struct WriteOutputRetMessage:
         public ModbusHeader
     {
@@ -780,7 +780,7 @@ namespace ModbusRTU
         ModbusCRC crc;
 
         // ------- to master -------
-        /*!
+        /*! 
          * \param _from - адрес отправителя
          * \param start    - записанный регистр
          * \param quant    - количество записанных слов
@@ -790,19 +790,19 @@ namespace ModbusRTU
         /*! записать данные */
         void set( ModbusData start, ModbusData quant );
 
-        /*! преобразование для посылки в сеть */
+        /*! преобразование для посылки в сеть */    
         ModbusMessage transport_msg();
-
-        /*! размер данных(после заголовка) у данного типа сообщения
+        
+        /*! размер данных(после заголовка) у данного типа сообщения 
             Для данного типа он постоянный..
         */
         inline static int szData(){ return sizeof(ModbusData)*2+sizeof(ModbusCRC); }
     };
-
+    
     std::ostream& operator<<(std::ostream& os, WriteOutputRetMessage& m );
     std::ostream& operator<<(std::ostream& os, WriteOutputRetMessage* m );
     // -----------------------------------------------------------------------
-    /*! Запрос 0x05 */
+    /*! Запрос 0x05 */    
     struct ForceSingleCoilMessage:
         public ModbusHeader
     {
@@ -821,7 +821,7 @@ namespace ModbusRTU
         ForceSingleCoilMessage( ModbusAddr addr, ModbusData reg, bool state );
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
-
+    
         // ------- from master -------
         ForceSingleCoilMessage( ModbusMessage& m );
         ForceSingleCoilMessage& operator=( ModbusMessage& m );
@@ -830,20 +830,20 @@ namespace ModbusRTU
         /*! размер данных(после заголовка) у данного типа сообщения */
         size_t szData();
 
-        /*! размер предварительного заголовка
-         * (после основного до фактических данных)
+        /*! размер предварительного заголовка 
+         * (после основного до фактических данных) 
         */
         static inline int szHead()
         {
             return sizeof(ModbusData);
         }
-
-        /*! узнать длину данных следующий за
-            предварительным заголовком ( в байтах )
+        
+        /*! узнать длину данных следующий за 
+            предварительным заголовком ( в байтах ) 
         */
         static int getDataLen( ModbusMessage& m );
 
-        /*! проверка корректности данных
+        /*! проверка корректности данных 
             что quant и bcnt - совпадают...
         */
         bool checkFormat();
@@ -854,7 +854,7 @@ namespace ModbusRTU
     std::ostream& operator<<(std::ostream& os, ForceSingleCoilMessage* m );
     // -----------------------------------------------------------------------
 
-    /*! Ответ для запроса 0x05 */
+    /*! Ответ для запроса 0x05 */    
     struct ForceSingleCoilRetMessage:
         public ModbusHeader
     {
@@ -869,7 +869,7 @@ namespace ModbusRTU
         void init( ModbusMessage& m );
 
         // ------- to master -------
-        /*!
+        /*! 
          * \param _from - адрес отправителя
          * \param start    - записанный регистр
         */
@@ -878,20 +878,20 @@ namespace ModbusRTU
         /*! записать данные */
         void set( ModbusData start, bool cmd );
 
-        /*! преобразование для посылки в сеть */
+        /*! преобразование для посылки в сеть */    
         ModbusMessage transport_msg();
-
-        /*! размер данных(после заголовка) у данного типа сообщения
+        
+        /*! размер данных(после заголовка) у данного типа сообщения 
             Для данного типа он постоянный..
         */
         inline static int szData(){ return 2*sizeof(ModbusData)+sizeof(ModbusCRC); }
     };
-
+    
     std::ostream& operator<<(std::ostream& os, ForceSingleCoilRetMessage& m );
     std::ostream& operator<<(std::ostream& os, ForceSingleCoilRetMessage* m );
     // -----------------------------------------------------------------------
 
-    /*! Запрос на запись одного регистра 0x06 */
+    /*! Запрос на запись одного регистра 0x06 */    
     struct WriteSingleOutputMessage:
         public ModbusHeader
     {
@@ -904,7 +904,7 @@ namespace ModbusRTU
         WriteSingleOutputMessage( ModbusAddr addr, ModbusData reg=0, ModbusData data=0 );
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
-
+    
         // ------- from master -------
         WriteSingleOutputMessage( ModbusMessage& m );
         WriteSingleOutputMessage& operator=( ModbusMessage& m );
@@ -913,20 +913,20 @@ namespace ModbusRTU
         /*! размер данных(после заголовка) у данного типа сообщения */
         size_t szData();
 
-        /*! размер предварительного заголовка
-         * (после основного до фактических данных)
+        /*! размер предварительного заголовка 
+         * (после основного до фактических данных) 
         */
         static inline int szHead()
         {
             return sizeof(ModbusData);
         }
-
-        /*! узнать длину данных следующий за
-            предварительным заголовком ( в байтах )
+        
+        /*! узнать длину данных следующий за 
+            предварительным заголовком ( в байтах ) 
         */
         static int getDataLen( ModbusMessage& m );
 
-        /*! проверка корректности данных
+        /*! проверка корректности данных 
             что quant и bcnt - совпадают...
         */
         bool checkFormat();
@@ -937,7 +937,7 @@ namespace ModbusRTU
     std::ostream& operator<<(std::ostream& os, WriteSingleOutputMessage* m );
     // -----------------------------------------------------------------------
 
-    /*! Ответ для запроса на запись */
+    /*! Ответ для запроса на запись */    
     struct WriteSingleOutputRetMessage:
         public ModbusHeader
     {
@@ -952,7 +952,7 @@ namespace ModbusRTU
         void init( ModbusMessage& m );
 
         // ------- to master -------
-        /*!
+        /*! 
          * \param _from - адрес отправителя
          * \param start    - записанный регистр
         */
@@ -961,19 +961,19 @@ namespace ModbusRTU
         /*! записать данные */
         void set( ModbusData start, ModbusData data );
 
-        /*! преобразование для посылки в сеть */
+        /*! преобразование для посылки в сеть */    
         ModbusMessage transport_msg();
-
-        /*! размер данных(после заголовка) у данного типа сообщения
+        
+        /*! размер данных(после заголовка) у данного типа сообщения 
             Для данного типа он постоянный..
         */
         inline static int szData(){ return 2*sizeof(ModbusData)+sizeof(ModbusCRC); }
     };
-
+    
     std::ostream& operator<<(std::ostream& os, WriteSingleOutputRetMessage& m );
     std::ostream& operator<<(std::ostream& os, WriteSingleOutputRetMessage* m );
     // -----------------------------------------------------------------------
-    /*! Запрос 0x08 */
+    /*! Запрос 0x08 */    
     struct DiagnosticMessage:
         public ModbusHeader
     {
@@ -984,8 +984,8 @@ namespace ModbusRTU
         DiagnosticMessage( ModbusMessage& m );
         DiagnosticMessage& operator=( ModbusMessage& m );
         void init( ModbusMessage& m );
-        /*! размер предварительного заголовка
-         * (после основного до фактических данных)
+        /*! размер предварительного заголовка 
+         * (после основного до фактических данных) 
         */
         static inline int szHead()
         {
@@ -995,7 +995,7 @@ namespace ModbusRTU
         /*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
         static int getDataLen( ModbusMessage& m );
         ModbusCRC crc;
-
+        
         // ------- to master -------
         DiagnosticMessage( ModbusAddr _from, DiagnosticsSubFunction subf, ModbusData d=0 );
 
@@ -1007,30 +1007,30 @@ namespace ModbusRTU
 
         /*! очистка данных */
         void clear();
-
-        /*! проверка на переполнение */
-        inline bool isFull()
+        
+        /*! проверка на переполнение */    
+        inline bool isFull()         
         {
             return ( sizeof(subf)+count*sizeof(ModbusData) >= MAXLENPACKET );
         }
 
         /*! размер данных(после заголовка) у данного типа сообщения */
         size_t szData();
-
-        /*! преобразование для посылки в сеть */
+        
+        /*! преобразование для посылки в сеть */    
         ModbusMessage transport_msg();
-
+        
         // Это поле не входит в стандарт modbus
-        // оно вспомогательное и игнорируется при
+        // оно вспомогательное и игнорируется при 
         // преобразовании в ModbusMessage.
-        // Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно.
+        // Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно. 
         // Используйте специальную функцию transport_msg()
         int    count;    /*!< фактическое количество данных в сообщении */
     };
     std::ostream& operator<<(std::ostream& os, DiagnosticMessage& m );
     std::ostream& operator<<(std::ostream& os, DiagnosticMessage* m );
     // -----------------------------------------------------------------------
-    /*! Ответ для 0x08 */
+    /*! Ответ для 0x08 */    
     struct DiagnosticRetMessage:
         public DiagnosticMessage
     {
@@ -1057,13 +1057,13 @@ namespace ModbusRTU
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
 
-        // ------- from master -------
+        // ------- from master -------    
         MEIMessageRDI( ModbusMessage& m );
         MEIMessageRDI& operator=( ModbusMessage& m );
         void init( ModbusMessage& m );
 
-        /*! размер предварительного заголовка
-         * (после основного до фактических данных)
+        /*! размер предварительного заголовка 
+         * (после основного до фактических данных) 
         */
         static inline int szHead(){ return sizeof(ModbusByte)*3; }
 
@@ -1122,7 +1122,7 @@ namespace ModbusRTU
 
 //        /*! узнать длину данных следующих за предварительным заголовком ( в байтах ) */
 //        static int getDataLen( ModbusMessage& m );
-
+        
         // ------- to master -------
         MEIMessageRetRDI( ModbusAddr _from, ModbusByte devID, ModbusByte conformity, ModbusByte mf, ModbusByte objID );
 
@@ -1135,16 +1135,16 @@ namespace ModbusRTU
 
         /*! очистка данных */
         void clear();
-
-        /*! проверка на переполнение */
+        
+        /*! проверка на переполнение */    
         inline bool isFull()
         {
             return ( bcnt >= MAXLENPACKET );
         }
-
+        
         /*! размер данных(после заголовка) у данного типа сообщения */
         size_t szData();
-
+        
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
 
@@ -1158,14 +1158,14 @@ namespace ModbusRTU
     // -----------------------------------------------------------------------
     // -----------------------------------------------------------------------
 
-    /*! Чтение информации об ошибке */
+    /*! Чтение информации об ошибке */    
     struct JournalCommandMessage:
         public ModbusHeader
     {
         ModbusData cmd;            /*!< код операции */
         ModbusData num;            /*!< номер записи */
         ModbusCRC crc;
-
+        
         // -------------
         JournalCommandMessage( ModbusMessage& m );
         JournalCommandMessage& operator=( ModbusMessage& m );
@@ -1175,10 +1175,10 @@ namespace ModbusRTU
 
     }__attribute__((packed));
 
-    std::ostream& operator<<(std::ostream& os, JournalCommandMessage& m );
-    std::ostream& operator<<(std::ostream& os, JournalCommandMessage* m );
+    std::ostream& operator<<(std::ostream& os, JournalCommandMessage& m ); 
+    std::ostream& operator<<(std::ostream& os, JournalCommandMessage* m ); 
     // -----------------------------------------------------------------------
-    /*! Ответ для запроса на чтение ошибки */
+    /*! Ответ для запроса на чтение ошибки */    
     struct JournalCommandRetMessage:
         public ModbusHeader
     {
@@ -1203,23 +1203,23 @@ namespace ModbusRTU
 
         /*! очистка данных */
         void clear();
-
-        /*! проверка на переполнение */
-        inline bool isFull()
+        
+        /*! проверка на переполнение */    
+        inline bool isFull()         
         {
             return ( count*sizeof(ModbusData) >= MAXLENPACKET );
         }
 
         /*! размер данных(после заголовка) у данного типа сообщения */
         size_t szData();
-
-        /*! преобразование для посылки в сеть */
+        
+        /*! преобразование для посылки в сеть */    
         ModbusMessage transport_msg();
-
+        
         // Это поле не входит в стандарт modbus
-        // оно вспомогательное и игнорируется при
+        // оно вспомогательное и игнорируется при 
         // преобразовании в ModbusMessage.
-        // Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно.
+        // Делать что-типа memcpy(buf,this,sizeof(*this)); будет не верно. 
         // Используйте специальную функцию transport_msg()
         int    count;    /*!< фактическое количество данных в сообщении */
     };
@@ -1227,7 +1227,7 @@ namespace ModbusRTU
     std::ostream& operator<<(std::ostream& os, JournalCommandRetMessage& m );
     std::ostream& operator<<(std::ostream& os, JournalCommandRetMessage* m );
     // -----------------------------------------------------------------------
-    /*! ответ в случае необходимости подтверждения команды
+    /*! ответ в случае необходимости подтверждения команды 
         (просто пакует в JournalCommandRetMessage код команды и ошибки )
     */
     struct JournalCommandRetOK:
@@ -1239,11 +1239,11 @@ namespace ModbusRTU
         static void set( JournalCommandRetMessage& m, ModbusData cmd, ModbusData ecode );
     };
 
-    std::ostream& operator<<(std::ostream& os, JournalCommandRetOK& m );
-    std::ostream& operator<<(std::ostream& os, JournalCommandRetOK* m );
+    std::ostream& operator<<(std::ostream& os, JournalCommandRetOK& m ); 
+    std::ostream& operator<<(std::ostream& os, JournalCommandRetOK* m ); 
     // -----------------------------------------------------------------------
 
-    /*! Установка времени */
+    /*! Установка времени */    
     struct SetDateTimeMessage:
         public ModbusHeader
     {
@@ -1256,12 +1256,12 @@ namespace ModbusRTU
         ModbusByte century;    /*!< столетие [19-20] */
 
         ModbusCRC crc;
-
+        
         // ------- to slave -------
         SetDateTimeMessage( ModbusAddr addr );
         /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
-
+        
         // ------- from master -------
         SetDateTimeMessage( ModbusMessage& m );
         SetDateTimeMessage& operator=( ModbusMessage& m );
@@ -1274,8 +1274,8 @@ namespace ModbusRTU
 
     }__attribute__((packed));
 
-    std::ostream& operator<<(std::ostream& os, SetDateTimeMessage& m );
-    std::ostream& operator<<(std::ostream& os, SetDateTimeMessage* m );
+    std::ostream& operator<<(std::ostream& os, SetDateTimeMessage& m ); 
+    std::ostream& operator<<(std::ostream& os, SetDateTimeMessage* m ); 
     // -----------------------------------------------------------------------
 
     /*! Ответ (просто повторяет запрос) */
@@ -1293,12 +1293,12 @@ namespace ModbusRTU
         SetDateTimeRetMessage( const SetDateTimeMessage& query );
         static void cpy( SetDateTimeRetMessage& reply, SetDateTimeMessage& query );
 
-        /*! преобразование для посылки в сеть */
+        /*! преобразование для посылки в сеть */    
         ModbusMessage transport_msg();
     };
     // -----------------------------------------------------------------------
 
-    /*! Вызов удалённого сервиса */
+    /*! Вызов удалённого сервиса */    
     struct RemoteServiceMessage:
         public ModbusHeader
     {
@@ -1307,7 +1307,7 @@ namespace ModbusRTU
         /*! данные */
         ModbusByte data[MAXLENPACKET-sizeof(ModbusByte)];
         ModbusCRC crc;        /*!< контрольная сумма */
-
+    
         // -----------
         RemoteServiceMessage( ModbusMessage& m );
         RemoteServiceMessage& operator=( ModbusMessage& m );
@@ -1316,19 +1316,19 @@ namespace ModbusRTU
         /*! размер данных(после заголовка) у данного типа сообщения */
         size_t szData();
 
-        /*! размер предварительного заголовка
-         * (после основного до фактических данных)
+        /*! размер предварительного заголовка 
+         * (после основного до фактических данных) 
         */
         static inline int szHead()
         { return sizeof(ModbusByte); } // bcnt
-
+        
         /*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
         static int getDataLen( ModbusMessage& m );
 
     }__attribute__((packed));
 
-    std::ostream& operator<<(std::ostream& os, RemoteServiceMessage& m );
-    std::ostream& operator<<(std::ostream& os, RemoteServiceMessage* m );
+    std::ostream& operator<<(std::ostream& os, RemoteServiceMessage& m ); 
+    std::ostream& operator<<(std::ostream& os, RemoteServiceMessage* m ); 
     // -----------------------------------------------------------------------
     struct RemoteServiceRetMessage:
         public ModbusHeader
@@ -1349,19 +1349,19 @@ namespace ModbusRTU
 
         /*! очистка данных */
         void clear();
-
-        /*! проверка на переполнение */
-        inline bool isFull()
+        
+        /*! проверка на переполнение */    
+        inline bool isFull()         
             { return ( count >= sizeof(data) ); }
 
         /*! размер данных(после заголовка) у данного типа сообщения */
         size_t szData();
-
-        /*! преобразование для посылки в сеть */
+        
+        /*! преобразование для посылки в сеть */    
         ModbusMessage transport_msg();
-
+        
         // Это поле не входит в стандарт modbus
-        // оно вспомогательное и игнорируется при
+        // оно вспомогательное и игнорируется при 
         // преобразовании в ModbusMessage.
         unsigned int    count;    /*!< фактическое количество данных в сообщении */
     };
@@ -1376,14 +1376,14 @@ namespace ModbusRTU
             ModbusData numfile; /*!< file number 0x0000 to 0xFFFF */
             ModbusData numrec;  /*!< record number 0x0000 to 0x270F */
             ModbusData reglen;  /*!< registers length */
-        }__attribute__((packed));
+        }__attribute__((packed));    
 
         ModbusByte bcnt;    /*!< количество байт 0x07 to 0xF5 */
  
         /*! данные */
         SubRequest data[MAXLENPACKET/sizeof(SubRequest)-sizeof(ModbusByte)];
         ModbusCRC crc;        /*!< контрольная сумма */
-
+    
         // -----------
         ReadFileRecordMessage( ModbusMessage& m );
         ReadFileRecordMessage& operator=( ModbusMessage& m );
@@ -1392,24 +1392,24 @@ namespace ModbusRTU
         /*! размер данных(после заголовка) у данного типа сообщения */
         size_t szData();
 
-        /*! размер предварительного заголовка
-         * (после основного до фактических данных)
+        /*! размер предварительного заголовка 
+         * (после основного до фактических данных) 
         */
         static inline int szHead()
         { return sizeof(ModbusByte); } // bcnt
-
+        
         /*! узнать длину данных следующий за предварительным заголовком ( в байтах ) */
         static int getDataLen( ModbusMessage& m );
 
         /*! проверка корректности данных */
         bool checkFormat();
-
+        
         // это поле служебное и не используется в релальном обмене
         int count; /*!< фактическое количество данных */
     };
 
-    std::ostream& operator<<(std::ostream& os, ReadFileRecordMessage& m );
-    std::ostream& operator<<(std::ostream& os, ReadFileRecordMessage* m );
+    std::ostream& operator<<(std::ostream& os, ReadFileRecordMessage& m ); 
+    std::ostream& operator<<(std::ostream& os, ReadFileRecordMessage* m ); 
     // -----------------------------------------------------------------------
 
     struct FileTransferMessage:
@@ -1418,11 +1418,11 @@ namespace ModbusRTU
         ModbusData numfile;     /*!< file number 0x0000 to 0xFFFF */
         ModbusData numpacket;      /*!< number of packet */
         ModbusCRC crc;            /*!< контрольная сумма */
-
+    
         // ------- to slave -------
         FileTransferMessage( ModbusAddr addr, ModbusData numfile, ModbusData numpacket );
         ModbusMessage transport_msg();     /*!< преобразование для посылки в сеть */
-
+    
         // ------- from master -------
         FileTransferMessage( ModbusMessage& m );
         FileTransferMessage& operator=( ModbusMessage& m );
@@ -1434,14 +1434,14 @@ namespace ModbusRTU
 
     }__attribute__((packed));
 
-    std::ostream& operator<<(std::ostream& os, FileTransferMessage& m );
-    std::ostream& operator<<(std::ostream& os, FileTransferMessage* m );
+    std::ostream& operator<<(std::ostream& os, FileTransferMessage& m ); 
+    std::ostream& operator<<(std::ostream& os, FileTransferMessage* m ); 
     // -----------------------------------------------------------------------
 
     struct FileTransferRetMessage:
         public ModbusHeader
     {
-        // 255 - max of bcnt...(1 byte)
+        // 255 - max of bcnt...(1 byte)        
 //        static const int MaxDataLen = 255 - szCRC - szModbusHeader - sizeof(ModbusData)*3 - sizeof(ModbusByte)*2;
         static const int MaxDataLen = MAXLENPACKET - sizeof(ModbusData)*3 - sizeof(ModbusByte)*2;
 
@@ -1452,7 +1452,7 @@ namespace ModbusRTU
         ModbusByte dlen;        /*!< количество байт данных в ответе */
         ModbusByte data[MaxDataLen];
 
-
+    
         // ------- from slave -------
         FileTransferRetMessage( ModbusMessage& m );
         FileTransferRetMessage& operator=( ModbusMessage& m );
@@ -1460,7 +1460,7 @@ namespace ModbusRTU
         ModbusCRC crc;
         static int szHead(){ return sizeof(ModbusByte); }
         static int getDataLen( ModbusMessage& m );
-
+        
         // ------- to master -------
         FileTransferRetMessage( ModbusAddr _from );
 
@@ -1471,15 +1471,15 @@ namespace ModbusRTU
 
         /*! очистка данных */
         void clear();
-
+        
         /*! размер данных(после заголовка) у данного типа сообщения */
         size_t szData();
-
-        /*! преобразование для посылки в сеть */
+        
+        /*! преобразование для посылки в сеть */    
         ModbusMessage transport_msg();
     };
 
-    std::ostream& operator<<(std::ostream& os, FileTransferRetMessage& m );
+    std::ostream& operator<<(std::ostream& os, FileTransferRetMessage& m ); 
     std::ostream& operator<<(std::ostream& os, FileTransferRetMessage* m );
     // -----------------------------------------------------------------------
 } // end of ModbusRTU namespace
@@ -1494,12 +1494,12 @@ namespace ModbusTCP
 /*        ModbusRTU::ModbusByte    uID; */ /*!< unit ID */ /* <------- see ModbusHeader */
 
         MBAPHeader():tID(0),pID(0) /*,uID(0) */{}
-
+        
         void swapdata();
 
     }__attribute__((packed));
 
-    std::ostream& operator<<(std::ostream& os, MBAPHeader& m );
+    std::ostream& operator<<(std::ostream& os, MBAPHeader& m ); 
 
   // -----------------------------------------------------------------------
 } // end of namespace ModbusTCP

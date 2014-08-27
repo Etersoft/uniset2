@@ -38,21 +38,21 @@ static error_item errorTags[] = {
     { Debug::LEVEL2,    "level2",    ("UniSet debug level2")},
     { Debug::LEVEL3,    "level3",    ("UniSet debug level3")},
     { Debug::LEVEL4,    "level4",    ("UniSet debug level4")},
-    { Debug::LEVEL5,    "level5",    ("UniSet debug level5")},
+    { Debug::LEVEL5,    "level5",    ("UniSet debug level5")},    
     { Debug::LEVEL6,    "level6",    ("UniSet debug level6")},
     { Debug::LEVEL7,    "level7",    ("UniSet debug level7")},
     { Debug::LEVEL8,    "level8",    ("UniSet debug level8")},
-    { Debug::LEVEL9,    "level9",    ("UniSet debug level9")},
+    { Debug::LEVEL9,    "level9",    ("UniSet debug level9")},    
     { Debug::REPOSITORY,"repository",("UniSet repository messages")},
     { Debug::ANY,       "any",       ("All debugging messages")},
     { Debug::EXCEPTION, "exception", ("Exception debug messages")},
-
+    
 };
 
 
 static const int numErrorTags = sizeof(errorTags)/sizeof(error_item);
 
-
+    
 Debug::type const Debug::ANY = Debug::type(
     Debug::INFO | Debug::INIT | Debug::WARN | Debug::CRIT |
     Debug::LEVEL1 | Debug::LEVEL2 | Debug::LEVEL3 | Debug::LEVEL4 |
@@ -71,13 +71,13 @@ Debug::type Debug::value(string const & val)
         string tmp(v.substr(0, st));
         if (tmp.empty())
             break;
-
+        
         // Is it a number?
-        //if (isStrInt(tmp))
+        //if (isStrInt(tmp)) 
         //    l |= static_cast<type>(strToInt(tmp));
         //else
         // Search for an explicit name
-        for (int i = 0 ; i < numErrorTags ; ++i)
+        for (int i = 0 ; i < numErrorTags ; ++i) 
             if (tmp == errorTags[i].name) {
                 l |= errorTags[i].level;
                 break;
@@ -112,7 +112,7 @@ void Debug::showTags(ostream & os)
 
 std::ostream& operator<<(std::ostream& os, Debug::type level )
 {
-
+    
     for (int i = 0 ; i < numErrorTags ; ++i)
     {
         if( errorTags[i].level & level)        // errorTags[i].level != Debug::ANY && errorTags[i].level != Debug::NONE

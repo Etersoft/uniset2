@@ -106,7 +106,7 @@ void UniXML::close()
         xmlFreeDoc(doc);
         doc=0;
     }
-
+    
     filename = "";
 }
 
@@ -121,7 +121,7 @@ string UniXML::getProp(const xmlNode* node, const string& name)
     const char * text = (const char*)::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
     if( text == NULL )
         return "";
-
+    
     string t(text);
     xmlFree( (void*)text );
     return t;
@@ -137,7 +137,7 @@ int UniXML::getPIntProp(const xmlNode* node, const string& name, int def )
     string param = getProp(node,name);
     if( param.empty() )
         return def;
-
+    
     return UniSetTypes::uni_atoi(param);
 }
 
@@ -173,7 +173,7 @@ xmlNode* UniXML::copyNode(xmlNode* node, int recursive)
 /*!    \bug Почему-то портятся русские имена (точнее становятся UTF8)
         независимо от текущей локали файла
          спасает только такое вот дополнительное копирование списка свойств
-    \bug Непонятный параметр 'target'
+    \bug Непонятный параметр 'target' 
         - при указании NULL нормально работает
         - при указании copynode - проблеммы с русским при сохранении
         - при указании node - SEGFAULT при попытке удалить исходный(node) узел
@@ -323,7 +323,7 @@ bool UniXML_iterator::goThrowNext()
         return goThrowNext();
     return true;
 }
-// -------------------------------------------------------------------------
+// -------------------------------------------------------------------------        
 bool UniXML_iterator::goPrev()
 {
     if( !curNode ) // || !curNode->prev )
@@ -335,33 +335,33 @@ bool UniXML_iterator::goPrev()
         return goPrev();
     return true;
 }
-// -------------------------------------------------------------------------
+// -------------------------------------------------------------------------        
 bool UniXML_iterator::canPrev()
 {
     if( !curNode || !curNode->prev )
         return false;
     return true;
 }
-// -------------------------------------------------------------------------
+// -------------------------------------------------------------------------        
 bool UniXML_iterator::canNext()
 {
     if (!curNode || !curNode->next )
         return false;
     return true;
 }
-// -------------------------------------------------------------------------
+// -------------------------------------------------------------------------        
 bool UniXML_iterator::goParent()
 {
     if( !curNode )
         return false;
-
+    
     if( !curNode->parent )
         return false;
-
+        
     curNode = curNode->parent;
     return true;
 }
-// -------------------------------------------------------------------------
+// -------------------------------------------------------------------------        
 bool UniXML_iterator::goChildren()
 {
     if (!curNode || !curNode->children )
@@ -422,9 +422,9 @@ void UniXML_iterator::setProp( const string& name, const string& text )
     UniXML::setProp(curNode, name, text);
 }
 
-// -------------------------------------------------------------------------
+// -------------------------------------------------------------------------    
 bool UniXML_iterator::findName( const std::string& node, const std::string& searchname )
-{
+{    
     while( this->find(node) )
     {
         if ( searchname == getProp("name") )
@@ -435,47 +435,47 @@ bool UniXML_iterator::findName( const std::string& node, const std::string& sear
     return false;
 }
 
-// -------------------------------------------------------------------------
+// -------------------------------------------------------------------------    
 bool UniXML_iterator::find( const std::string& searchnode )
-{
+{    
     // Функция ищет "в ширину и в глубь"
 
     xmlNode* rnode = curNode;
-
+    
     while (curNode != NULL)
-    {
+    {    
         while( curNode->children )
         {
             curNode = curNode->children;
-
+            
             if ( searchnode == (const char*)curNode->name )
                 return true;
         }
 
         while( !curNode->next && curNode->parent )
-        {
+        {    
             // выше исходного узла "подыматься" нельзя
             if( curNode == rnode )
-                break;
+                break;            
 
             curNode = curNode->parent;
         }
-
+        
         curNode = curNode->next;
-
+    
         if ( curNode && searchnode == (const char*)curNode->name )
-        {
+        {    
             return true;
         }
     }
-
+    
     return false;
 }
-// -------------------------------------------------------------------------
+// -------------------------------------------------------------------------    
 UniXML_iterator UniXML_iterator::operator++()
 {
     if (!curNode->next)
-    {
+    {    
         curNode=curNode->next;
         return *this;
     }
@@ -486,7 +486,7 @@ UniXML_iterator UniXML_iterator::operator++()
         if (getName() == "text" || getName() == "comment")
             continue;
         else
-            break;
+            break;    
     }
 
     return *this;
@@ -497,18 +497,18 @@ UniXML_iterator UniXML_iterator::operator++(int)
     UniXML_iterator it = *this;
 
     if (!curNode->next)
-    {
+    {    
         curNode=curNode->next;
         return it;
     }
-
+    
     for(;;)
     {
         curNode=curNode->next;
         if (getName() == "text" || getName() == "comment")
             continue;
         else
-            break;
+            break;    
     }
 
     return it;
@@ -518,7 +518,7 @@ UniXML_iterator UniXML_iterator::operator++(int)
 UniXML_iterator UniXML_iterator::operator--()
 {
     if (!curNode->prev)
-    {
+    {    
         curNode=curNode->prev;
         return *this;
     }
@@ -529,7 +529,7 @@ UniXML_iterator UniXML_iterator::operator--()
         if (getName() == "text" || getName() == "comment")
             continue;
         else
-            break;
+            break;    
     }
 
     return *this;
@@ -540,18 +540,18 @@ UniXML_iterator UniXML_iterator::operator--(int)
     UniXML_iterator it = *this;
 
     if (!curNode->prev)
-    {
+    {    
         curNode=curNode->prev;
         return it;
     }
-
+    
     for(;;)
     {
         curNode=curNode->prev;
         if (getName() == "text" || getName() == "comment")
             continue;
         else
-            break;
+            break;    
     }
 
     return it;

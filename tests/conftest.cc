@@ -14,7 +14,7 @@ int main(int argc, const char **argv)
         cout << "--confile    - Configuration file. Default: test.xml" << endl;
         return 0;
     }
-
+    
     cout << "**** uni_atoi('')=" << uni_atoi("") << endl;
 
     try
@@ -23,7 +23,7 @@ int main(int argc, const char **argv)
         conf = new Configuration(argc, argv, confile);
 
         cout << "getLocalNode()=" << conf->getLocalNode() << endl;
-
+        
         string t(conf->oind->getTextName(1));
         cout << "**** check getTextName: " << ( t.empty() ?  "FAILED" : "OK" ) << endl;
 
@@ -35,8 +35,8 @@ int main(int argc, const char **argv)
         cout << "**** check getMapName: " << ( mn.empty() ?  "FAILED" : "OK" ) << endl;
 
 
-        cout << "getSensorID(Input1_S): " << conf->getSensorID("Input1_S") << endl;
-
+        cout << "getSensorID(Input1_S): " << conf->getSensorID("Input1_S") << endl; 
+        
         std::string iname = conf->oind->getNameById(1);
         cout << "getNameById(1): " << iname << endl;
 
@@ -45,11 +45,11 @@ int main(int argc, const char **argv)
 
         UniversalIO::IOType t1=conf->getIOType(1);
         cout << "**** getIOType for " << mn << endl;
-        cout << "**** check getIOType(id): (" << t1 << ") " << ( t1 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;
+        cout << "**** check getIOType(id): (" << t1 << ") " << ( t1 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;        
         UniversalIO::IOType t2=conf->getIOType(mn);
-        cout << "**** check getIOType(name): (" << t2 << ") " << ( t2 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;
+        cout << "**** check getIOType(name): (" << t2 << ") " << ( t2 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;        
         UniversalIO::IOType t3=conf->getIOType("Input1_S");
-        cout << "**** check getIOType(name): for short name 'Input1_S': (" << t3 << ") " << ( t3 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;
+        cout << "**** check getIOType(name): for short name 'Input1_S': (" << t3 << ") " << ( t3 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;        
 
 
         int i1 = uni_atoi("-100");
@@ -57,7 +57,7 @@ int main(int argc, const char **argv)
 
         int i2 = uni_atoi("20");
         cout << "**** check uni_atoi: '20' " << ( ( i2 != 20 ) ? "FAILED" : "OK" ) << endl;
-
+        
         xmlNode* cnode = conf->getNode("testnode");
         if( cnode == NULL )                                                                                                                                                         
         {                                                                                                                                                                           
@@ -83,10 +83,10 @@ int main(int argc, const char **argv)
 
         int prop5 = conf->getArgPInt("--prop-dummy",it.getProp("dummy"),0);
         cerr << "**** check conf->getArgPInt(...,...,defval): " << ( (prop5 != 0) ? "[FAILED]" : "OK" ) << endl;
+        
 
 
-
-
+        
         return 0;
     }
     catch(SystemError& err)
@@ -101,6 +101,6 @@ int main(int argc, const char **argv)
     {
         cerr << "(conftest): catch(...)" << endl;
     }
-
+    
     return 1;
 }

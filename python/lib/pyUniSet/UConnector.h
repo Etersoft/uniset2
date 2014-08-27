@@ -22,12 +22,12 @@ class UConnector
 
       long getSensorID( const char* );
       long getNodeID( const char* );
-
+    
       const char* getShortName( long id );
       const char* getName( long id );
       const char* getTextName( long id );
 
-
+      
     private:
       UniSetTypes::Configuration* conf;
       UInterface* ui;

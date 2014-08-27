@@ -115,7 +115,7 @@ void UInterface::initBackId( const UniSetTypes::ObjectId backid )
  * \exception IOBadParam - генерируется если указано неправильное имя датчика или секции
  * \exception IOTimeOut - генерируется если в течение времени timeout небыл получен ответ
 */
-long UInterface::getValue( const ObjectId id, const ObjectId node ) const
+long UInterface::getValue( const ObjectId id, const ObjectId node ) const 
     throw(IO_THROW_EXCEPTIONS)
 {
     if ( id == DefaultObjectId )
@@ -252,7 +252,7 @@ void UInterface::setUndefinedState( const IOController_i::SensorInfo& si, bool u
     catch(CORBA::NO_IMPLEMENT)
     {
         rcache.erase(si.id, si.node);
-        uwarn << set_err("UI(setUndefinedState): method no implement",si.id,si.node) << endl;
+        uwarn << set_err("UI(setUndefinedState): method no implement",si.id,si.node) << endl;    
     }
     catch(CORBA::OBJECT_NOT_EXIST)
     {
@@ -344,7 +344,7 @@ void UInterface::setValue( const ObjectId id, long value, const ObjectId node ) 
     throw UniSetTypes::TimeOut(set_err("UI(setValue): Timeout",id,node));
 }
 
-void UInterface::setValue( const ObjectId name, long value ) const
+void UInterface::setValue( const ObjectId name, long value ) const 
 {
     setValue(name, value, uconf->getLocalNode());
 }
@@ -884,7 +884,7 @@ ObjectPtr UInterface::resolve( const ObjectId rid , const ObjectId node, int tim
 }
 
 // -------------------------------------------------------------------------------------------
-void UInterface::send( const ObjectId name, const TransportMessage& msg, const ObjectId node )
+void UInterface::send( const ObjectId name, const TransportMessage& msg, const ObjectId node ) 
     throw(IO_THROW_EXCEPTIONS)
 {
     if ( name == DefaultObjectId )
@@ -1157,7 +1157,7 @@ string UInterface::set_err( const std::string& pre, const ObjectId id, const Obj
         nm = "UnknownName";
 
     ostringstream s;
-    s << pre << " (" << id << ":" << node <<")" << nm;
+    s << pre << " (" << id << ":" << node <<")" << nm; 
     return s.str();
 }
 // --------------------------------------------------------------------------------------------

@@ -81,7 +81,7 @@ bool ProxyManager::activateObject()
             {
                 try
                 {
-                    uinfo << myname << "(registered): попытка "
+                    uinfo << myname << "(registered): попытка " 
                           << i+1 << " регистриую (id=" << it.first << ") "
                           << " (pname=" << it.second->getName() << ") "
                           << conf->oind->getNameById(it.first) << endl;
@@ -144,7 +144,7 @@ void ProxyManager::processingMessage( UniSetTypes::VoidMessage *msg )
                 auto it = omap.find(msg->consumer);
                 if( it!=omap.end() )
                     it->second->processingMessage(msg);
-                else
+                else 
                     ucrit << myname << "(processingMessage): не найден объект "
                         << " consumer= " << msg->consumer << endl;
             }

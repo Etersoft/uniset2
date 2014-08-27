@@ -49,12 +49,12 @@ IONotifyController_LT::~IONotifyController_LT()
 // ------------------------------------------------------------------------------------------
 void IONotifyController_LT::callback()
 {
-    // При реализации с использованием waitMessage() каждый раз при вызове askTimer() необходимо
-    // проверять возвращаемое значение на UniSetTimers::WaitUpTime и вызывать termWaiting(),
-    // чтобы избежать ситуации, когда процесс до заказа таймера 'спал'(в функции waitMessage()) и после
+    // При реализации с использованием waitMessage() каждый раз при вызове askTimer() необходимо 
+    // проверять возвращаемое значение на UniSetTimers::WaitUpTime и вызывать termWaiting(), 
+    // чтобы избежать ситуации, когда процесс до заказа таймера 'спал'(в функции waitMessage()) и после 
     // заказа продолжит спать(т.е. обработчик вызван не будет)...
     try
-    {
+    {    
         if( waitMessage(msg, sleepTime) )
             processingMessage(&msg);
 

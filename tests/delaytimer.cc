@@ -8,7 +8,7 @@ using namespace std;
 
 int main()
 {
-    // ----------------------
+    // ---------------------- 
     // test DelayTimer
     DelayTimer dtm(1000,500);
 
@@ -85,14 +85,14 @@ int main()
     if( !dtm2.check(true) )
     {
         cerr << "DelayTimer: TEST9 FAILED! " << endl;
-        return 1;
+        return 1;    
     }
     cerr << "DelayTimer: TEST9 OK! " << endl;
 
     if( dtm2.check(false) )
     {
         cerr << "DelayTimer: TEST10 FAILED! " << endl;
-        return 1;
+        return 1;    
     }
     cerr << "DelayTimer: TEST10 OK! " << endl;
 
@@ -106,7 +106,7 @@ int main()
     if( dtm3.check(true) )
     {
         cerr << "DelayTimer: TEST11 FAILED! " << endl;
-        return 1;
+        return 1;    
     }
     cerr << "DelayTimer: TEST11 OK! " << endl;
 
@@ -114,7 +114,7 @@ int main()
     if( !dtm3.check(true) )
     {
         cerr << "DelayTimer: TEST12 FAILED! " << endl;
-        return 1;
+        return 1;    
     }
     cerr << "DelayTimer: TEST12 OK! " << endl;
 

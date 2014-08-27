@@ -36,7 +36,7 @@ ModbusRTUMaster::ModbusRTUMaster( const string& dev, bool use485, bool tr_ctl ):
     port->setStopBits(ComPort::OneBit);
     port->setWaiting(true);
     port->setTimeout(replyTimeOut_ms);
-//    port->setBlocking(false);
+//    port->setBlocking(false); 
 }
 // -------------------------------------------------------------------------
 ModbusRTUMaster::ModbusRTUMaster( ComPort* com ):
@@ -52,12 +52,12 @@ ModbusRTUMaster::ModbusRTUMaster( ComPort* com ):
     port->setStopBits(ComPort::OneBit);
     port->setWaiting(true);
     port->setTimeout(replyTimeOut_ms);
-//    port->setBlocking(false);
+//    port->setBlocking(false); 
 }
 // -------------------------------------------------------------------------
 ModbusRTUMaster::~ModbusRTUMaster()
 {
-    if( myport )
+    if( myport ) 
         delete port;
 }
 // -------------------------------------------------------------------------

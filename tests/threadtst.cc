@@ -22,22 +22,22 @@ class MyClass
         {
             thr = new ThreadCreator<MyClass>(this, &MyClass::thread);
         }
-
+        
         ~MyClass()
         {
             delete thr;
         }
-
+                
         inline cctid_t start(){ return thr->start(); }
         inline void stop(){ thr->stop(); }
-        inline pid_t getTID(){ return thr->getTID(); }
+        inline pid_t getTID(){ return thr->getTID(); }        
 
         // BAD code...only for tests
-        inline ThreadCreator<MyClass>* mythr(){ return thr; }
-
+        inline ThreadCreator<MyClass>* mythr(){ return thr; }        
+            
     protected:
         std::string nm;
-
+        
 
         void thread()
         {
@@ -49,7 +49,7 @@ class MyClass
 
             cout << nm << ": finish thread (" << getTID() << ")" << endl;
         }
-
+                
         private:
             ThreadCreator<MyClass>* thr;
 };
@@ -61,17 +61,17 @@ class MyClass2
         {
             thr = new ThreadCreator<MyClass2>(this, &MyClass2::thread);
         }
-
+        
         ~MyClass2(){ delete thr; }
-
+                
         inline cctid_t start(){ return thr->start(); }
         inline void stop(){ thr->stop(); }
-        inline pid_t getTID(){ return thr->getTID(); }
-
+        inline pid_t getTID(){ return thr->getTID(); }        
+            
     protected:
         std::string nm;
         TCPCheck tcp;
-
+        
         void thread()
         {
             pthread_setcancelstate(PTHREAD_CANCEL_ENABLE,NULL);
@@ -91,7 +91,7 @@ class MyClass2
 
             cout << nm << ": finish thread (" << getTID() << ")" << endl;
         }
-
+                
         private:
             ThreadCreator<MyClass2>* thr;
 };
@@ -115,7 +115,7 @@ int main( int argc, const char **argv )
 
         cout << "start2..." << endl;
         t1.start();
-
+    
         int prior = t1.mythr()->getPriority();
         cout << "priority: " << prior << endl;
 
@@ -136,7 +136,7 @@ int main( int argc, const char **argv )
 
 //        cout << "start3..." << endl;
 //        t1.start();
-
+    
 //        pause();
 
         cout << "finished3..." << endl;
@@ -149,8 +149,8 @@ int main( int argc, const char **argv )
 
         msleep(50);
         cout << "check finished..." << endl;
-
-
+    
+    
         // поток в потоке..
         MyClass2 t2("Thread2");
         cout << "thread2 start..." << endl;

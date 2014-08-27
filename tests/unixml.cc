@@ -18,7 +18,7 @@ int main()
         {
             cerr << "<testnode> not found" << endl;
             return 1;
-        }
+        } 
         UniXML_iterator it(cnode);
 
         cout << "string id=" << it.getProp("id")
@@ -31,7 +31,7 @@ int main()
         {
             cerr << "<testnode> not found" << endl;
             return 1;
-        }
+        } 
 
         cout << "string id=" << it.getProp("dbrepeat")
              << " int id=" << it.getIntProp("dbrepeat")
@@ -44,13 +44,13 @@ int main()
         {
             cerr << "<testnode> not found" << endl;
             return 1;
-        }
+        } 
         UniXML_iterator it = xml.findNode(xml.getFirstNode(),"item", "LocalhostNode");
         if( it == NULL )
         {
             cerr << "<testnode> not found" << endl;
             return 1;
-        }
+        } 
         cout << "textname=" << it.getProp("textname");
                 }
 

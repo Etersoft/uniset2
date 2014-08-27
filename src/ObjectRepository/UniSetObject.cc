@@ -40,7 +40,7 @@
 using namespace std;
 using namespace UniSetTypes;
 
-#define CREATE_TIMER    new ThrPassiveTimer();
+#define CREATE_TIMER    new ThrPassiveTimer();     
 // new PassiveSysTimer();
 
 // ------------------------------------------------------------------------------------------
@@ -188,7 +188,7 @@ void UniSetObject::setID( UniSetTypes::ObjectId id )
         throw ObjectNameAlready("ObjectId already set(setID)");
 
     string myfullname = ui.getNameById(id);
-    myname = ORepHelpers::getShortName(myfullname.c_str());
+    myname = ORepHelpers::getShortName(myfullname.c_str()); 
     section = ORepHelpers::getSectionName(myfullname.c_str());
     myid = id;
     ui.initBackId(myid);
@@ -253,13 +253,13 @@ struct MsgInfo
        inline bool operator < ( const MsgInfo& mi ) const
     {
         if( type != mi.type )
-            return type < mi.type;
+            return type < mi.type; 
 
         if( id != mi.id )
             return id < mi.id;
 
         if( node != mi.node )
-            return node < mi.node;
+            return node < mi.node; 
 
         if( tm.tv_sec != mi.tm.tv_sec )
             return tm.tv_sec < mi.tm.tv_sec;
@@ -282,7 +282,7 @@ struct CInfo
      confirm(0)
     {
     }
-
+    
     CInfo( ConfirmMessage& cm ):
         sensor_id(cm.sensor_id),
         value(cm.value),
@@ -359,15 +359,15 @@ void UniSetObject::registered()
             catch( ObjectNameAlready& al )
             {
 /*! 
-    \warning По умолчанию объекты должны быть уникальны! Поэтому если идёт попытка повторной регистрации.
-    Мы чистим существующую ссылку и заменяем её на новую.
+    \warning По умолчанию объекты должны быть уникальны! Поэтому если идёт попытка повторной регистрации. 
+    Мы чистим существующую ссылку и заменяем её на новую.    
     Это сделано для более надежной работы, иначе может получится, что если объект перед завершением
     не очистил за собой ссылку(не разрегистрировался), то больше он никогда не сможет вновь зарегистрироваться.
     Т.к. \b надёжной функции проверки "жив" ли объект пока нет...
     (так бы можно было проверить и если "не жив", то смело заменять ссылку на новую). Но существует обратная сторона:
-    если заменяемый объект "жив" и завершит свою работу, то он может почистить за собой ссылку и это тогда наш(новый)
+    если заменяемый объект "жив" и завершит свою работу, то он может почистить за собой ссылку и это тогда наш(новый) 
     объект станет недоступен другим, а знать об этом не будет!!!
-
+    
 */
                 ucrit << myname << "(registered): replace object (ObjectNameAlready)" << endl;
                 reg = true;
@@ -578,8 +578,8 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
             q.push(v);
     }
 
-    ucrit << myname
-        << "(cleanMsgQueue): ******* result size of queue: "
+    ucrit << myname 
+        << "(cleanMsgQueue): ******* result size of queue: " 
         << q.size()
         << " < " << getMaxSizeOfMessageQueue() << endl;
 
@@ -590,8 +590,8 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
 
         for( unsigned int i=0; i<getMaxCountRemoveOfMessage(); i++ )
         {
-            q.top();
-            q.pop();
+            q.top(); 
+            q.pop(); 
             if( q.empty() )
                 break;
         }
@@ -627,7 +627,7 @@ bool UniSetObject::deactivate()
     { // lock
         uniset_rwmutex_wrlock mlk(qmutex);
         while( !queueMsg.empty() )
-            queueMsg.pop();
+            queueMsg.pop(); 
     }
 
     try
@@ -700,8 +700,8 @@ bool UniSetObject::activate()
     }
     else
     {
-        // А если myid==UniSetTypes::DefaultObjectId
-        // то myname = noname. ВСЕГДА!
+        // А если myid==UniSetTypes::DefaultObjectId 
+        // то myname = noname. ВСЕГДА! 
         if( myid == UniSetTypes::DefaultObjectId )
         {
             ucrit << myname << "(activate): Не задан ID!!! activate failure..." << endl;
@@ -736,10 +736,10 @@ bool UniSetObject::activate()
         thr = new ThreadCreator<UniSetObject>(this, &UniSetObject::work);
         thr->start();
     }
-    else
+    else 
     {
-        uinfo << myname << ": ?? не задан ObjectId...("
-              << "myid=" << myid << " threadcreate=" << threadcreate
+        uinfo << myname << ": ?? не задан ObjectId...(" 
+              << "myid=" << myid << " threadcreate=" << threadcreate 
               << ")" << endl;
         thread(false);
     }
@@ -806,7 +806,7 @@ void UniSetObject::processingMessage( UniSetTypes::VoidMessage *msg )
     {
         uwarn << myname << "(processingMessage): CORBA::Exception: " << ex._name() << endl;
     }
-    catch( omniORB::fatalException& fe )
+    catch( omniORB::fatalException& fe ) 
     {
         if( ulog.is_crit() )
         {
@@ -831,26 +831,26 @@ UniSetTypes::SimpleInfo* UniSetObject::getInfo()
     info << "tid=" << setw(10);
     if( threadcreate )
     {
-        if(thr)
+        if(thr)    
         {
             msgpid = thr->getId();    // заодно(на всякий) обновим и внутреннюю информацию
-            info << msgpid;
+            info << msgpid;  
         }
         else
             info << "не запущен";
     }
     else
-        info << "откл.";
-
+        info << "откл.";  
+    
     info << "\tcount=" << countMessages();
     info << "\tmaxMsg=" << stMaxQueueMessages;
     info << "\tqFull("<< SizeOfMessageQueue << ")=" << stCountOfQueueFull;
 //    info << "\n";
-
+    
     SimpleInfo* res = new SimpleInfo();
     res->info     =  info.str().c_str(); // CORBA::string_dup(info.str().c_str());
     res->id     =  myid;
-
+    
     return res; // ._retn();
 }
 // ------------------------------------------------------------------------------------------

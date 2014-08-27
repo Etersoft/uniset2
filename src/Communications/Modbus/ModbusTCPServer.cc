@@ -75,7 +75,7 @@ bool ModbusTCPServer::waitQuery( ModbusRTU::ModbusAddr mbaddr, timeout_t msec )
     if( cancelled )
         return false;
 
-    try
+    try 
     {
         if( isPendingConnection(msec) )
         {
@@ -94,8 +94,8 @@ bool ModbusTCPServer::waitQuery( ModbusRTU::ModbusAddr mbaddr, timeout_t msec )
             s->connectWriteSingleOutput( sigc::mem_fun(this, &ModbusTCPServer::writeOutputSingleRegister) );
             s->connectMEIRDI( sigc::mem_fun(this, &ModbusTCPServer::read4314) );
             s->connectSetDateTime( sigc::mem_fun(this, &ModbusTCPServer::setDateTime) );
-            s->connectDiagnostics( sigc::mem_fun(this, &ModbusTCPServer::diagnostics) );
-            s->connectFileTransfer( sigc::mem_fun(this, &ModbusTCPServer::fileTransfer) );
+            s->connectDiagnostics( sigc::mem_fun(this, &ModbusTCPServer::diagnostics) );    
+            s->connectFileTransfer( sigc::mem_fun(this, &ModbusTCPServer::fileTransfer) );  
             s->connectJournalCommand( sigc::mem_fun(this, &ModbusTCPServer::journalCommand) );
             s->connectRemoteService( sigc::mem_fun(this, &ModbusTCPServer::remoteService) );
             s->connectFileTransfer( sigc::mem_fun(this, &ModbusTCPServer::fileTransfer) );
@@ -139,7 +139,7 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
     assert(timeout);
 
     ptTimeout.reset();
-    try
+    try 
     {
         if( isPendingConnection(timeout) )
         {
@@ -185,7 +185,7 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
                     // для режима игнорирования RTU-адреса
                     // просто подменяем его на то который пришёл
                     // чтобы проверка всегда была успешной...
-                    if( ignoreAddr )
+                    if( ignoreAddr ) 
                         addr = _addr;
                     else if( _addr != addr )
                     {
@@ -194,7 +194,7 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
                         /*
                         res = erBadReplyNodeAddress;
                         tmProcessing.setTiming(replyTimeout_ms);
-                        ErrorRetMessage em( _addr, buf.func, res );
+                        ErrorRetMessage em( _addr, buf.func, res ); 
                         buf = em.transport_msg();
                         send(buf);
                         printProcessingTime();
@@ -212,7 +212,7 @@ mbErrCode ModbusTCPServer::receive( ModbusRTU::ModbusAddr addr, timeout_t timeou
                 {
                     if( res < erInternalErrorCode )
                     {
-                        ErrorRetMessage em( addr, buf.func, res );
+                        ErrorRetMessage em( addr, buf.func, res ); 
                         buf = em.transport_msg();
                         send(buf);
                         printProcessingTime();
@@ -305,7 +305,7 @@ mbErrCode ModbusTCPServer::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPH
     if( len<mhead.len )
     {
         if( dlog.is_info() )
-            dlog.info() << "(ModbusTCPServer::tcp_processing): len(" << (int)len
+            dlog.info() << "(ModbusTCPServer::tcp_processing): len(" << (int)len 
                     << ") < mhead.len(" << (int)mhead.len << ")" << endl;
 
         return erInvalidFormat;

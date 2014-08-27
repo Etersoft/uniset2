@@ -24,7 +24,7 @@ class UModbus
 
       // выставление паметров связи, без установления соединения (!)
       void prepare( const char* ip, int port )throw(UException);
-
+      
       void connect( const char* ip, int port )throw(UException);
       inline int conn_port(){ return port; }
       inline std::string conn_ip(){ return ip; }
@@ -32,7 +32,7 @@ class UModbus
 
       inline void setTimeout( int msec ){ tout_msec = msec; }
 
-      /*! Универсальная функция для чтения регистров.
+      /*! Универсальная функция для чтения регистров. 
        * Если не указывать ip и порт, будут использованы, те
        * чтобы были заданы в UModbus::connect(). Если заданы другие ip и port,
        * будет сделано переподключение..
@@ -54,7 +54,7 @@ class UModbus
 
     protected:
         long data2value( VTypes::VType vt, ModbusRTU::ModbusData* data );
-
+    
     private:
         // DebugStream dlog;
         ModbusTCPMaster* mb;

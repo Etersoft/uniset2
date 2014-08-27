@@ -35,12 +35,12 @@ using namespace std;
 
 namespace ORepHelpers
 {
-
+    
 
 // --------------------------------------------------------------------------
     /*!
-     *    \param cname - полное имя контекста ссылку на который, возвратит функция.
-     *    \param argc, argv  - параметры инициализации ORB
+     *    \param cname - полное имя контекста ссылку на который, возвратит функция. 
+     *    \param argc, argv  - параметры инициализации ORB      
     */
     CosNaming::NamingContext_ptr getContext(const string& cname, int argc, const char* const* argv, const string& nsName ) throw(ORepFailed)
     {
@@ -192,7 +192,7 @@ namespace ORepHelpers
     // ---------------------------------------------------------------------------------------------------------------
     /*!
      *    \param fname - полное имя включающее в себя путь ("Root/Section1/name|Node:Alias")
-     *    \param brk  - используемый символ разделитель
+     *    \param brk  - используемый символ разделитель      
     */
     const string getShortName( const string& fname, const std::string& brk )
     {
@@ -206,7 +206,7 @@ namespace ORepHelpers
     // ---------------------------------------------------------------------------------------------------------------
     /*!
      *    \param fullName - полное имя включающее в себя путь
-     *    \param brk  - используемый символ разделитель
+     *    \param brk  - используемый символ разделитель      
      *  \note Функция возвращает путь без последнего символа разделителя ("Root/Section1/name" -> "Root/Section1")
     */
     const string getSectionName( const string& fullName, const std::string& brk )

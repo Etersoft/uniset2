@@ -50,7 +50,7 @@ SViewer::~SViewer()
 
 void SViewer::on_SViewer_destroy()
 {
-//    activator->oakill(SIGINT);
+//    activator->oakill(SIGINT); 
 //    msleep(500);
 //    activator->oakill(SIGKILL);
 }
@@ -82,14 +82,14 @@ void SViewer::view()
 void SViewer::readSection( const string& section, const string& secRoot )
 {
     ListObjectName lst;
-    string curSection;
+    string curSection;    
     try
     {
         if ( secRoot.empty() )
             curSection = section;
         else
             curSection=secRoot+"/"+section;
-
+        
 //        cout << " read sectionlist ..."<< endl;
         if( !rep.listSections(curSection, &lst, 1000) )
         {
@@ -102,7 +102,7 @@ void SViewer::readSection( const string& section, const string& secRoot )
         cout << "(readSection): get sectionlist ... catch..." << endl;
     }
 
-    if( !lst.empty() )
+    if( !lst.empty() )    
     {
         for ( ListObjectName::const_iterator li=lst.begin();li!=lst.end();++li)
         {
@@ -184,7 +184,7 @@ void SViewer::getInfo( ObjectId id )
 
         IOController_i::SensorInfoSeq_var amap = ioc->getSensorsMap();
         IONotifyController_i::ThresholdsListSeq_var tlst = ioc->getThresholdsList();
-
+    
         try
         { updateSensors(amap, id);
         }catch(...){}
@@ -226,7 +226,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
             printInfo( amap[i].si.id, name, amap[i].value, owner, txtname, "AI");
         }
     }
-    cout << "------------------------------------------------------\n";
+    cout << "------------------------------------------------------\n";    
 
     cout << "\n======================================================\n" << owner;
     cout << "\t Выходы";
@@ -242,7 +242,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
             printInfo( amap[i].si.id, name, amap[i].value, owner, txtname, "AO");
         }
     }
-    cout << "------------------------------------------------------\n";
+    cout << "------------------------------------------------------\n";    
 
 }
 // ---------------------------------------------------------------------------
@@ -276,7 +276,7 @@ void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tls
         if( isShort )
                 sname = ORepHelpers::getShortName(sname);
 
-        cout << " | " << setw(60) << sname << " | " << setw(5) << tlst[i].value << endl;
+        cout << " | " << setw(60) << sname << " | " << setw(5) << tlst[i].value << endl; 
 
         int m = tlst[i].tlist.length();
         for( unsigned int k=0; k<m; k++ )

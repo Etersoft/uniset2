@@ -11,7 +11,7 @@
 #include "ModbusTypes.h"
 #include "ModbusClient.h"
 // -------------------------------------------------------------------------
-/*!    Modbus RTU master mode
+/*!    Modbus RTU master mode 
     \todo Добавить ведение статистики по ошибкам
 */
 class ModbusRTUMaster:
@@ -37,11 +37,11 @@ class ModbusRTUMaster:
 
     protected:
 
-        /*! get next data block from channel ot recv buffer
+        /*! get next data block from channel ot recv buffer 
             \param begin - get from position
             \param buf  - buffer for data
             \param len     - size of buf
-            \return real data lenght ( must be <= len )
+            \return real data lenght ( must be <= len ) 
         */
         virtual int getNextData( unsigned char* buf, int len ) override;
 
@@ -51,7 +51,7 @@ class ModbusRTUMaster:
         virtual ModbusRTU::mbErrCode sendData( unsigned char* buf, int len ) override;
 
         /*! функция запрос-ответ */
-        virtual ModbusRTU::mbErrCode query( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& msg,
+        virtual ModbusRTU::mbErrCode query( ModbusRTU::ModbusAddr addr, ModbusRTU::ModbusMessage& msg, 
                                             ModbusRTU::ModbusMessage& reply, timeout_t timeout ) override;
 
 

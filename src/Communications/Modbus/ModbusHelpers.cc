@@ -50,7 +50,7 @@ ModbusAddr ModbusHelpers::autodetectSlave( ModbusRTUMaster* m,
             {
                 ReadOutputRetMessage ret = m->read03(a,reg,1);
             }
-            else
+            else 
                 throw mbException(erOperationFailed);
 
             return a;
@@ -65,7 +65,7 @@ ModbusAddr ModbusHelpers::autodetectSlave( ModbusRTUMaster* m,
         if( (beg == 0xff) || (end == 0xff) )
             break;
     }
-
+    
     throw TimeOut();
 }
 // -------------------------------------------------------------------------
@@ -109,7 +109,7 @@ ComPort::Speed ModbusHelpers::autodetectSpeed( ModbusRTUMaster* m, ModbusAddr sl
             {
                 ReadOutputRetMessage ret = m->read03(slave,reg,1);
             }
-            else
+            else 
                 throw mbException(erOperationFailed);
 
 
@@ -126,12 +126,12 @@ ComPort::Speed ModbusHelpers::autodetectSpeed( ModbusRTUMaster* m, ModbusAddr sl
         }
         catch(...){}
     }
-
+    
     m->setSpeed(cur);
 
     if( s!=ComPort::ComSpeed0 )
         return s;
-
+    
     throw TimeOut();
 }
 // -------------------------------------------------------------------------

@@ -87,7 +87,7 @@ unsigned char ComPort485F::m_receiveByte( bool wait )
         gpio_low_set_value(gpio_num, 0);
     }
     if( rq.empty() )
-    {
+    {    
         int rc = 0;
         if( wait )
         {
@@ -100,17 +100,17 @@ unsigned char ComPort485F::m_receiveByte( bool wait )
             {
                 ioctl(fd, FIONREAD, &rc);
                 if( rc > 0 )
-                {
+                {            
                     rc = ::read(fd,tbuf,sizeof(tbuf));
                     if( rc > 0 )
                     {
-                        if( remove_echo(tbuf,rc) )
+                        if( remove_echo(tbuf,rc) ) 
                             break;
                     }
                 }
                 usleep(3000);
             }
-
+            
             if ( ptRecv.checkTime() )
                 rc = -1;
         }
@@ -132,7 +132,7 @@ unsigned char ComPort485F::m_receiveByte( bool wait )
             throw UniSetTypes::TimeOut();
     }
 
-
+        
     unsigned char x = rq.front();
     rq.pop();
     return x;
@@ -250,7 +250,7 @@ bool ComPort485F::remove_echo( unsigned char tb[], int len )
             rq.push(tb[i]);
     }
 
-    // возвращаем число оставшихся символов
+    // возвращаем число оставшихся символов    
     return wq.empty();
 }
 // --------------------------------------------------------------------------------
@@ -262,7 +262,7 @@ void ComPort485F::m_read( int tmsec )
     {
         ioctl(fd, FIONREAD, &rc);
         if( rc > 0 )
-        {
+        {            
             rc = ::read(fd,tbuf,sizeof(tbuf));
             if( rc > 0 )
             {

@@ -162,7 +162,7 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
  *  \note При этом надо иметь ввиду, что задается полное имя объекта.
  *    Пример: registration("Root/SensorSection/sens1", oRef);
  *    \param fullName - полное имя регистрируемого объекта (т.е. включающее в себя имя секции)
- *    \param oRef - ссылка на объект
+ *    \param oRef - ссылка на объект 
  *  \exception ORepFailed - генерируется если произошла ошибка при регистрации
  *  \sa registration(const string name, const ObjectPtr oRef, const string section)
 */
@@ -325,7 +325,7 @@ bool ObjectRepository::list(const string& section, ListObjectName *ls, unsigned 
     try
     {
         CORBA::ORB_var orb = uconf->getORB();
-        ctx = ORepHelpers::getContext(orb, section, nsName);
+        ctx = ORepHelpers::getContext(orb, section, nsName);    
     }
     catch(ORepFailed)
     {
@@ -358,7 +358,7 @@ bool ObjectRepository::list(const string& section, ListObjectName *ls, unsigned 
     for( unsigned int i=0; i<how_many;i++)
     {
         switch( type )
-        {
+        { 
             case ObjectRef:
             {
                 if(bl[i].binding_type == CosNaming::nobject)

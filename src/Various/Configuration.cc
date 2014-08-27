@@ -66,7 +66,7 @@ ostream& UniSetTypes::Configuration::help(ostream& os)
     print_help(os,25,"--uniport num","использовать заданный порт (переопеределяет 'defaultport' заданный в конф. файле в разделе <nodes>)\n");
     print_help(os,25,"--localIOR {1,0}","использовать локальные файлы для получения IOR (т.е. не использовать omniNames). Переопределяет параметр в конфигурационном файле.\n");
     print_help(os,25,"--transientIOR {1,0}","использовать генерируемые IOR(не постоянные). Переопределяет параметр в конфигурационном файле. Default=1\n");
-
+    
     return os << "\nПример использования:\t myUniSetProgram "
               << "--ulog-add-levels level1,info,system,warn --ulog-log-in-file myprogrpam.log\n\n";
 }
@@ -80,7 +80,7 @@ namespace UniSetTypes
 Configuration::Configuration():
     oind(NULL),
     NSName("NameService"),
-    repeatCount(2),repeatTimeout(100),
+    repeatCount(2),repeatTimeout(100),     
     localDBServer(UniSetTypes::DefaultObjectId),
     localNode(UniSetTypes::DefaultObjectId),
     localNodeName(""),
@@ -124,7 +124,7 @@ Configuration::Configuration( int argc, const char* const* argv, ObjectIndex* _o
     _argc(argc),
     _argv(argv),
     NSName("NameService"),
-    repeatCount(2),repeatTimeout(100),
+    repeatCount(2),repeatTimeout(100), 
     localDBServer(UniSetTypes::DefaultObjectId),
     localNode(UniSetTypes::DefaultObjectId),
     localNodeName(""),
@@ -143,7 +143,7 @@ Configuration::Configuration( int argc, const char* const* argv, const string& f
     _argc(argc),
     _argv(argv),
     NSName("NameService"),
-    repeatCount(2),repeatTimeout(100),
+    repeatCount(2),repeatTimeout(100), 
     localDBServer(UniSetTypes::DefaultObjectId),
     localNode(UniSetTypes::DefaultObjectId),
     localNodeName(""),
@@ -203,7 +203,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
 //    cerr << "*************** initConfiguration: xmlOpen: " << pt.getCurrent() << " msec " << endl;
 //    pt.reset();
-
+    
         // Init ObjectIndex interface
         {
             if( oind == NULL )
@@ -229,7 +229,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
                 }
             }
         }
-
+    
         // Настраиваем отладочные логи
         initDebug(ulog,"UniSetDebug");
 
@@ -294,7 +294,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
              ostringstream uri;
             uri << "corbaname::" << it.host << ":" << it.port;
             if( !omni::omniInitialReferences::setFromArgs(name.c_str(), uri.str().c_str()) )
-                cerr << "**********************!!!! FAILED ADD name=" << name << " uri=" << uri.str() << endl;
+                cerr << "**********************!!!! FAILED ADD name=" << name << " uri=" << uri.str() << endl; 
 
             assert( i < _argc );
         }
@@ -329,12 +329,12 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
                 ostringstream uri;
                 uri << "corbaname::" << getProp(nsnode,"host") << ":" << defPort;
                 if( !omni::omniInitialReferences::setFromArgs(ns_name.str().c_str(), uri.str().c_str()) )
-                    cerr << "**********************!!!! FAILED ADD name=" <<ns_name << " uri=" << uri.str() << endl;
+                    cerr << "**********************!!!! FAILED ADD name=" <<ns_name << " uri=" << uri.str() << endl; 
             }
         }
 
         _argv = new_argv;
-        // ------------- CORBA INIT -------------
+        // ------------- CORBA INIT -------------        
         // orb init
         orb = CORBA::ORB_init(_argc,(char**)_argv);
         // create policy
@@ -357,10 +357,10 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
             pl[1] = root_poa->create_servant_retention_policy(PortableServer::RETAIN);
             pl[2] = root_poa->create_request_processing_policy(PortableServer::USE_ACTIVE_OBJECT_MAP_ONLY);
 //            pl[3] = root_poa->create_thread_policy(PortableServer::SINGLE_THREAD_MODEL);
-        }
-
+        }    
+    
         policyList = pl;
-        // ---------------------------------------
+        // ---------------------------------------        
 
     }
     catch( Exception& ex )
@@ -663,7 +663,7 @@ void Configuration::createNodesList()
         initNode(ninf, it);
         uinfo << "Configuration(createNodesList): add to list of nodes: node=" << nodename << " id=" << ninf.id << endl;
         lnodes.push_back(ninf);
-    }
+    } 
 
     uinfo << "Configuration(createNodesList): size of node list " << lnodes.size() << endl;
 }
@@ -957,7 +957,7 @@ UniversalIO::IOType Configuration::getIOType( UniSetTypes::ObjectId id )
 UniversalIO::IOType Configuration::getIOType( const std::string& name )
 {
     // Если указано "короткое" имя
-    // то просто сперва ищём ID, а потом по нему
+    // то просто сперва ищём ID, а потом по нему 
     // iotype
     ObjectId id = getSensorID(name);
     if( id != DefaultObjectId )

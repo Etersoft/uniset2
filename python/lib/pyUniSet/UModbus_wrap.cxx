@@ -2983,7 +2983,7 @@ static swig_module_info swig_module = {swig_types, 8, 0, 0, 0, 0};
 #endif
 #define SWIG_name    "_pyUModbus"
 
-#define SWIGVERSION 0x020010
+#define SWIGVERSION 0x020010 
 #define SWIG_VERSION SWIGVERSION
 
 
@@ -5214,7 +5214,7 @@ SWIGINTERN PyObject *Params_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObjec
 SWIGINTERN PyObject *_wrap_new_UException__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UException *result = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)":new_UException")) SWIG_fail;
   result = (UException *)new UException();
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UException, SWIG_POINTER_NEW |  0 );
@@ -5231,14 +5231,14 @@ SWIGINTERN PyObject *_wrap_new_UException__SWIG_1(PyObject *SWIGUNUSEDPARM(self)
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
   UException *result = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)"O:new_UException",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1, SWIGTYPE_p_std__string,  0  | 0);
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_UException" "', argument " "1"" of type '" "std::string const &""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_UException" "', argument " "1"" of type '" "std::string const &""'"); 
   }
   if (!argp1) {
-    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_UException" "', argument " "1"" of type '" "std::string const &""'");
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_UException" "', argument " "1"" of type '" "std::string const &""'"); 
   }
   arg1 = reinterpret_cast< std::string * >(argp1);
   result = (UException *)new UException((std::string const &)*arg1);
@@ -5257,7 +5257,7 @@ SWIGINTERN PyObject *_wrap_new_UException__SWIG_2(PyObject *SWIGUNUSEDPARM(self)
   int alloc1 = 0 ;
   PyObject * obj0 = 0 ;
   UException *result = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)"O:new_UException",&obj0)) SWIG_fail;
   res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
   if (!SWIG_IsOK(res1)) {
@@ -5278,7 +5278,7 @@ SWIGINTERN PyObject *_wrap_new_UException(PyObject *self, PyObject *args) {
   int argc;
   PyObject *argv[2];
   int ii;
-
+  
   if (!PyTuple_Check(args)) SWIG_fail;
   argc = args ? (int)PyObject_Length(args) : 0;
   for (ii = 0; (ii < 1) && (ii < argc); ii++) {
@@ -5303,7 +5303,7 @@ SWIGINTERN PyObject *_wrap_new_UException(PyObject *self, PyObject *args) {
       return _wrap_new_UException__SWIG_2(self, args);
     }
   }
-
+  
 fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'new_UException'.\n"
     "  Possible C/C++ prototypes are:\n"
@@ -5320,11 +5320,11 @@ SWIGINTERN PyObject *_wrap_delete_UException(PyObject *SWIGUNUSEDPARM(self), PyO
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)"O:delete_UException",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UException, SWIG_POINTER_DISOWN |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_UException" "', argument " "1"" of type '" "UException *""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_UException" "', argument " "1"" of type '" "UException *""'"); 
   }
   arg1 = reinterpret_cast< UException * >(argp1);
   delete arg1;
@@ -5342,11 +5342,11 @@ SWIGINTERN PyObject *_wrap_UException_getError(PyObject *SWIGUNUSEDPARM(self), P
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
   char *result = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)"O:UException_getError",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UException, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UException_getError" "', argument " "1"" of type '" "UException *""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UException_getError" "', argument " "1"" of type '" "UException *""'"); 
   }
   arg1 = reinterpret_cast< UException * >(argp1);
   result = (char *)(arg1)->getError();
@@ -5367,18 +5367,18 @@ SWIGINTERN PyObject *_wrap_UException_err_set(PyObject *SWIGUNUSEDPARM(self), Py
   int res2 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)"OO:UException_err_set",&obj0,&obj1)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UException, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UException_err_set" "', argument " "1"" of type '" "UException *""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UException_err_set" "', argument " "1"" of type '" "UException *""'"); 
   }
   arg1 = reinterpret_cast< UException * >(argp1);
   {
     res2 = SWIG_ConvertPtr(obj1, &argp2, SWIGTYPE_p_std__string,  0  | 0);
     if (!SWIG_IsOK(res2)) {
-      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "UException_err_set" "', argument " "2"" of type '" "std::string""'");
-    }
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "UException_err_set" "', argument " "2"" of type '" "std::string""'"); 
+    }  
     if (!argp2) {
       SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "UException_err_set" "', argument " "2"" of type '" "std::string""'");
     } else {
@@ -5402,11 +5402,11 @@ SWIGINTERN PyObject *_wrap_UException_err_get(PyObject *SWIGUNUSEDPARM(self), Py
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
   std::string result;
-
+  
   if (!PyArg_ParseTuple(args,(char *)"O:UException_err_get",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UException, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UException_err_get" "', argument " "1"" of type '" "UException *""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "UException_err_get" "', argument " "1"" of type '" "UException *""'"); 
   }
   arg1 = reinterpret_cast< UException * >(argp1);
   result =  ((arg1)->err);
@@ -5427,7 +5427,7 @@ SWIGINTERN PyObject *UException_swigregister(PyObject *SWIGUNUSEDPARM(self), PyO
 SWIGINTERN PyObject *_wrap_new_UTimeOut__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   UTimeOut *result = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)":new_UTimeOut")) SWIG_fail;
   result = (UTimeOut *)new UTimeOut();
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_UTimeOut, SWIG_POINTER_NEW |  0 );
@@ -5444,14 +5444,14 @@ SWIGINTERN PyObject *_wrap_new_UTimeOut__SWIG_1(PyObject *SWIGUNUSEDPARM(self), 
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
   UTimeOut *result = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)"O:new_UTimeOut",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1, SWIGTYPE_p_std__string,  0  | 0);
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_UTimeOut" "', argument " "1"" of type '" "std::string const &""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_UTimeOut" "', argument " "1"" of type '" "std::string const &""'"); 
   }
   if (!argp1) {
-    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_UTimeOut" "', argument " "1"" of type '" "std::string const &""'");
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_UTimeOut" "', argument " "1"" of type '" "std::string const &""'"); 
   }
   arg1 = reinterpret_cast< std::string * >(argp1);
   result = (UTimeOut *)new UTimeOut((std::string const &)*arg1);
@@ -5466,7 +5466,7 @@ SWIGINTERN PyObject *_wrap_new_UTimeOut(PyObject *self, PyObject *args) {
   int argc;
   PyObject *argv[2];
   int ii;
-
+  
   if (!PyTuple_Check(args)) SWIG_fail;
   argc = args ? (int)PyObject_Length(args) : 0;
   for (ii = 0; (ii < 1) && (ii < argc); ii++) {
@@ -5483,7 +5483,7 @@ SWIGINTERN PyObject *_wrap_new_UTimeOut(PyObject *self, PyObject *args) {
       return _wrap_new_UTimeOut__SWIG_1(self, args);
     }
   }
-
+  
 fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'new_UTimeOut'.\n"
     "  Possible C/C++ prototypes are:\n"
@@ -5499,11 +5499,11 @@ SWIGINTERN PyObject *_wrap_delete_UTimeOut(PyObject *SWIGUNUSEDPARM(self), PyObj
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)"O:delete_UTimeOut",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_UTimeOut, SWIG_POINTER_DISOWN |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_UTimeOut" "', argument " "1"" of type '" "UTimeOut *""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_UTimeOut" "', argument " "1"" of type '" "UTimeOut *""'"); 
   }
   arg1 = reinterpret_cast< UTimeOut * >(argp1);
   delete arg1;
@@ -5524,7 +5524,7 @@ SWIGINTERN PyObject *UTimeOut_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObj
 SWIGINTERN PyObject *_wrap_new_USysError__SWIG_0(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   USysError *result = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)":new_USysError")) SWIG_fail;
   result = (USysError *)new USysError();
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_USysError, SWIG_POINTER_NEW |  0 );
@@ -5541,14 +5541,14 @@ SWIGINTERN PyObject *_wrap_new_USysError__SWIG_1(PyObject *SWIGUNUSEDPARM(self),
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
   USysError *result = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)"O:new_USysError",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1, SWIGTYPE_p_std__string,  0  | 0);
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_USysError" "', argument " "1"" of type '" "std::string const &""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_USysError" "', argument " "1"" of type '" "std::string const &""'"); 
   }
   if (!argp1) {
-    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_USysError" "', argument " "1"" of type '" "std::string const &""'");
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_USysError" "', argument " "1"" of type '" "std::string const &""'"); 
   }
   arg1 = reinterpret_cast< std::string * >(argp1);
   result = (USysError *)new USysError((std::string const &)*arg1);
@@ -5563,7 +5563,7 @@ SWIGINTERN PyObject *_wrap_new_USysError(PyObject *self, PyObject *args) {
   int argc;
   PyObject *argv[2];
   int ii;
-
+  
   if (!PyTuple_Check(args)) SWIG_fail;
   argc = args ? (int)PyObject_Length(args) : 0;
   for (ii = 0; (ii < 1) && (ii < argc); ii++) {
@@ -5580,7 +5580,7 @@ SWIGINTERN PyObject *_wrap_new_USysError(PyObject *self, PyObject *args) {
       return _wrap_new_USysError__SWIG_1(self, args);
     }
   }
-
+  
 fail:
   SWIG_SetErrorMsg(PyExc_NotImplementedError,"Wrong number or type of arguments for overloaded function 'new_USysError'.\n"
     "  Possible C/C++ prototypes are:\n"
@@ -5596,11 +5596,11 @@ SWIGINTERN PyObject *_wrap_delete_USysError(PyObject *SWIGUNUSEDPARM(self), PyOb
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
-
+  
   if (!PyArg_ParseTuple(args,(char *)"O:delete_USysError",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_USysError, SWIG_POINTER_DISOWN |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_USysError" "', argument " "1"" of type '" "USysError *""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_USysError" "', argument " "1"" of type '" "USysError *""'"); 
   }
   arg1 = reinterpret_cast< USysError * >(argp1);
   delete arg1;

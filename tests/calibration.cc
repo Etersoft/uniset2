@@ -21,12 +21,12 @@ int main(int argc, const char **argv)
 //        conf = new Configuration(argc, argv, confile);
         for( int i=-5; i<4095; i+=100 )
         {
-
+            
             cout <<  "raw=" << (817+i)
-                 <<  "   cal=" << lcalibrate(817+i,817,4095,0,400)
+                 <<  "   cal=" << lcalibrate(817+i,817,4095,0,400) 
                  << endl;
         }
-
+        
         return 0;
     }
     catch(SystemError& err)
@@ -41,6 +41,6 @@ int main(int argc, const char **argv)
     {
         cerr << "(calibration): catch(...)" << endl;
     }
-
+    
     return 1;
 }

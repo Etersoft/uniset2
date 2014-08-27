@@ -53,12 +53,12 @@ void ComPort::openPort()
         string strErr="Unable to open "+dev+" [Error: "+strerror(errno)+"]";
         throw UniSetTypes::SystemError(strErr.c_str());
     }
-
+    
      /* Get the current options for the port */
     tcgetattr(fd, &options);
 
     oldTermios=options;
-
+    
     cfsetispeed(&options, B19200);          /* Set the baud rates to 19200 */
     cfsetospeed(&options, B19200);
 
@@ -93,7 +93,7 @@ void ComPort::reopen()
         openPort();
         if( fd > 0 )
             tcsetattr(fd, TCSAFLUSH, &options);
-    }
+    }    
 }
 // --------------------------------------------------------------------------------
 void ComPort::setSpeed( Speed s )
@@ -114,7 +114,7 @@ void ComPort::setParity(Parity parity)
     struct termios options;
 
     tcgetattr(fd, &options);
-
+    
     switch(parity)
     {
     case Odd:
@@ -205,14 +205,14 @@ unsigned char ComPort::m_receiveByte( bool wait )
         {
             fd_set set;
             timeval timeout;
-
+            
             FD_ZERO (&set);
             FD_SET (fd, &set);
-
+            
             /* Initialize the timeout data structure. */
             timeout.tv_sec = 0;
             timeout.tv_usec = uTimeout;
-
+            
             /* select' returns 0 if timeout, 1 if input available, -1 if error. */
 
             if(select(FD_SETSIZE, &set, NULL, NULL, &timeout)==1)
@@ -287,10 +287,10 @@ int ComPort::sendBlock(unsigned char* msg, int len)
 int ComPort::receiveBlock(unsigned char* msg, int len)
 {
     int k;
-
+    
     if(!len)
         return 0;
-
+    
     for(k=0;k<len;k++)
     {
         try
@@ -302,12 +302,12 @@ int ComPort::receiveBlock(unsigned char* msg, int len)
             break;
         }
     }
-
+    
     if(!k)
     {
         throw UniSetTypes::TimeOut();
     }
-
+    
     return k;
 }
 
@@ -424,13 +424,13 @@ std::string ComPort::getSpeed( Speed s )
 // --------------------------------------------------------------------------------
 #define CHECK_SPEED(var,speed) \
     if( var == __STRING(speed) ) \
-        return ComPort::ComSpeed##speed;
-
+        return ComPort::ComSpeed##speed; 
+        
 ComPort::Speed ComPort::getSpeed( const string& s )
 {
-    // см. ComPort.h
+    // см. ComPort.h    
 
-    // сперва самые вероятные
+    // сперва самые вероятные 
     CHECK_SPEED(s,9600)
     CHECK_SPEED(s,19200)
     CHECK_SPEED(s,38400)
@@ -450,7 +450,7 @@ ComPort::Speed ComPort::getSpeed( const string& s )
     CHECK_SPEED(s,1800)
     CHECK_SPEED(s,2400)
     CHECK_SPEED(s,4800)
-
+    
     CHECK_SPEED(s,230400)
     CHECK_SPEED(s,460800)
     CHECK_SPEED(s,500000)

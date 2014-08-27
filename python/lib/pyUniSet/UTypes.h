@@ -6,7 +6,7 @@
 namespace UTypes
 {
     const long DefaultID = UniSetTypes::DefaultObjectId;
-
+    
     struct Params
     {
         static const int max = 20;
@@ -25,7 +25,7 @@ namespace UTypes
 
         int argc;
         char* argv[max];
-
+        
         static Params inst(){ return Params(); }
     };
 }

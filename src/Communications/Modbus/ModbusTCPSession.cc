@@ -114,7 +114,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::receive( ModbusRTU::ModbusAddr addr, time
             // для режима игнорирования RTU-адреса
             // просто подменяем его на то который пришёл
             // чтобы проверка всегда была успешной...
-            if( ignoreAddr )
+            if( ignoreAddr ) 
                 addr = _addr;
             else if( _addr != addr )
             {
@@ -136,7 +136,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::receive( ModbusRTU::ModbusAddr addr, time
         {
             if( res < erInternalErrorCode )
             {
-                ErrorRetMessage em( addr, buf.func, res );
+                ErrorRetMessage em( addr, buf.func, res ); 
                 buf = em.transport_msg();
                 send(buf);
                 printProcessingTime();
@@ -219,7 +219,7 @@ mbErrCode ModbusTCPSession::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAP
     if( len<mhead.len )
     {
         if( dlog.debugging(Debug::INFO) )
-            dlog[Debug::INFO] << peername << "(tcp_processing): len(" << (int)len
+            dlog[Debug::INFO] << peername << "(tcp_processing): len(" << (int)len 
                     << ") < mhead.len(" << (int)mhead.len << ")" << endl;
 
         return erInvalidFormat;
@@ -286,7 +286,7 @@ void ModbusTCPSession::terminate()
 //        ost::Thread::join();
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPSession::readCoilStatus( ReadCoilMessage& query,
+mbErrCode ModbusTCPSession::readCoilStatus( ReadCoilMessage& query, 
                                                 ReadCoilRetMessage& reply )
 {
     if( !slReadCoil )
@@ -296,7 +296,7 @@ mbErrCode ModbusTCPSession::readCoilStatus( ReadCoilMessage& query,
 }
 
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPSession::readInputStatus( ReadInputStatusMessage& query,
+mbErrCode ModbusTCPSession::readInputStatus( ReadInputStatusMessage& query, 
                                                 ReadInputStatusRetMessage& reply )
 {
     if( !slReadInputStatus )
@@ -307,7 +307,7 @@ mbErrCode ModbusTCPSession::readInputStatus( ReadInputStatusMessage& query,
 
 // -------------------------------------------------------------------------
 
-mbErrCode ModbusTCPSession::readOutputRegisters( ReadOutputMessage& query,
+mbErrCode ModbusTCPSession::readOutputRegisters( ReadOutputMessage& query, 
                                                 ReadOutputRetMessage& reply )
 {
     if( !slReadOutputs )
@@ -317,7 +317,7 @@ mbErrCode ModbusTCPSession::readOutputRegisters( ReadOutputMessage& query,
 }
 
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPSession::readInputRegisters( ReadInputMessage& query,
+mbErrCode ModbusTCPSession::readInputRegisters( ReadInputMessage& query, 
                                                 ReadInputRetMessage& reply )
 {
     if( !slReadInputs )
@@ -327,7 +327,7 @@ mbErrCode ModbusTCPSession::readInputRegisters( ReadInputMessage& query,
 }
 
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPSession::forceMultipleCoils( ForceCoilsMessage& query,
+mbErrCode ModbusTCPSession::forceMultipleCoils( ForceCoilsMessage& query, 
                                                 ForceCoilsRetMessage& reply )
 {
     if( !slForceCoils )
@@ -338,7 +338,7 @@ mbErrCode ModbusTCPSession::forceMultipleCoils( ForceCoilsMessage& query,
 
 // -------------------------------------------------------------------------
 
-mbErrCode ModbusTCPSession::writeOutputRegisters( WriteOutputMessage& query,
+mbErrCode ModbusTCPSession::writeOutputRegisters( WriteOutputMessage& query, 
                                                 WriteOutputRetMessage& reply )
 {
     if( !slWriteOutputs )
@@ -348,7 +348,7 @@ mbErrCode ModbusTCPSession::writeOutputRegisters( WriteOutputMessage& query,
 }
 
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPSession::diagnostics( DiagnosticMessage& query,
+mbErrCode ModbusTCPSession::diagnostics( DiagnosticMessage& query, 
                                                 DiagnosticRetMessage& reply )
 {
     if( !slDiagnostics )
@@ -357,7 +357,7 @@ mbErrCode ModbusTCPSession::diagnostics( DiagnosticMessage& query,
     return slDiagnostics(query,reply);
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode ModbusTCPSession::read4314( ModbusRTU::MEIMessageRDI& query,
+ModbusRTU::mbErrCode ModbusTCPSession::read4314( ModbusRTU::MEIMessageRDI& query, 
                                         ModbusRTU::MEIMessageRetRDI& reply )
 {
     if( !slMEIRDI )
@@ -366,7 +366,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::read4314( ModbusRTU::MEIMessageRDI& query
     return slMEIRDI(query,reply);
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPSession::forceSingleCoil( ForceSingleCoilMessage& query,
+mbErrCode ModbusTCPSession::forceSingleCoil( ForceSingleCoilMessage& query, 
                                             ForceSingleCoilRetMessage& reply )
 {
     if( !slForceSingleCoil )
@@ -376,7 +376,7 @@ mbErrCode ModbusTCPSession::forceSingleCoil( ForceSingleCoilMessage& query,
 }
 
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPSession::writeOutputSingleRegister( WriteSingleOutputMessage& query,
+mbErrCode ModbusTCPSession::writeOutputSingleRegister( WriteSingleOutputMessage& query, 
                                                 WriteSingleOutputRetMessage& reply )
 {
     if( !slWriteSingleOutputs )
@@ -386,7 +386,7 @@ mbErrCode ModbusTCPSession::writeOutputSingleRegister( WriteSingleOutputMessage&
 }
 
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPSession::journalCommand( JournalCommandMessage& query,
+mbErrCode ModbusTCPSession::journalCommand( JournalCommandMessage& query, 
                                                 JournalCommandRetMessage& reply )
 {
     if( !slJournalCommand )
@@ -395,7 +395,7 @@ mbErrCode ModbusTCPSession::journalCommand( JournalCommandMessage& query,
     return slJournalCommand(query,reply);
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode ModbusTCPSession::setDateTime( ModbusRTU::SetDateTimeMessage& query,
+ModbusRTU::mbErrCode ModbusTCPSession::setDateTime( ModbusRTU::SetDateTimeMessage& query, 
                                     ModbusRTU::SetDateTimeRetMessage& reply )
 {
     if( !slSetDateTime )
@@ -404,7 +404,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::setDateTime( ModbusRTU::SetDateTimeMessag
     return slSetDateTime(query,reply);
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode ModbusTCPSession::remoteService( ModbusRTU::RemoteServiceMessage& query,
+ModbusRTU::mbErrCode ModbusTCPSession::remoteService( ModbusRTU::RemoteServiceMessage& query, 
                                     ModbusRTU::RemoteServiceRetMessage& reply )
 {
     if( !slRemoteService )
@@ -413,7 +413,7 @@ ModbusRTU::mbErrCode ModbusTCPSession::remoteService( ModbusRTU::RemoteServiceMe
     return slRemoteService(query,reply);
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode ModbusTCPSession::fileTransfer( ModbusRTU::FileTransferMessage& query,
+ModbusRTU::mbErrCode ModbusTCPSession::fileTransfer( ModbusRTU::FileTransferMessage& query, 
                                     ModbusRTU::FileTransferRetMessage& reply )
 {
     if( !slFileTransfer )

@@ -88,9 +88,9 @@ std::ostream& ObjectIndex_XML::printMap( std::ostream& os )
         if( it->repName == NULL )
             continue;
 
-        os  << setw(5) << it->id << "  "
-//            << setw(45) << ORepHelpers::getShortName(it->repName,'/')
-            << setw(45) << it->repName
+        os  << setw(5) << it->id << "  " 
+//            << setw(45) << ORepHelpers::getShortName(it->repName,'/') 
+            << setw(45) << it->repName 
             << "  " << it->textName << endl;
     }
 
@@ -107,8 +107,8 @@ void ObjectIndex_XML::build(UniXML& xml)
     ind = read_section(xml,"controllers",ind);
     ind = read_section(xml,"services",ind);
     ind = read_nodes(xml,"nodes",ind);
-
-    //
+    
+    // 
     omap.resize(ind);
 //    omap[ind].repName=NULL;
 //    omap[ind].textName=NULL;
@@ -255,7 +255,7 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string& sec, u
         strcpy( omap[ind].textName, textname.c_str() );
 
         omap[ind].data = (void*)(xmlNode*)(it);
-        //
+        // 
         mok[omap[ind].repName] = ind;
 
 //        cout << "read: " << "(" << ind << ") " << omap[ind].repName << "\t" << omap[ind].textName << endl;

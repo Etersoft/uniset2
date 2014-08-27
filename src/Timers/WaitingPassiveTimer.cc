@@ -37,10 +37,10 @@ void WaitingPassiveTimer::checkCount()
     {
         char err[200];
         sprintf(err,"LimitThrPassiveTimers: превышено максимальное количество таймеров %d", MAX_COUNT_THRPASSIVE_TIMERS);
-        throw LimitWaitingPTimers(err);
+        throw LimitWaitingPTimers(err); 
     }
-
-    countTimers++;
+    
+    countTimers++;    
 }
 
 WaitingPassiveTimer::WaitingPassiveTimer()throw(LimitWaitingPTimers):
@@ -86,26 +86,26 @@ void WaitingPassiveTimer::work()
     terminated = false;
     while( !terminated )
     {
-        usleep(sleepMKS);
+        usleep(sleepMKS); 
         if ( checkTime() )
             break;
     }
-
+    
     terminated = true;
     if(pValue != NULL)
         *pValue ^= true;
-/*
+/*    
     if(pCall!=NULL)
     {
         pCall();
     }
 
-*/
+*/    
 /*
     check = false;
     pause();
     check = true;
-*/
+*/    
     stop();
 //    cout << "Timer: завершил поток..."<< endl;
 }

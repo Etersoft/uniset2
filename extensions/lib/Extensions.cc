@@ -28,7 +28,7 @@ namespace UniSetExtensions
             dcrit << err.str() << endl;
             throw SystemError(err.str());
         }
-
+    
         // cout << "(uniset): shm=" << name << " id=" << shmID << endl;
         return shmID;
     }
@@ -39,7 +39,7 @@ namespace UniSetExtensions
             return;
 
         string::size_type pos = s.find("\\n");
-
+        
         while( pos != string::npos )
         {
             s.replace(pos,2,"\n");
@@ -53,10 +53,10 @@ namespace UniSetExtensions
     {
         if( xmlCalibrationsNode )
             return xmlCalibrationsNode;
-
+        
         xmlCalibrationsNode = conf->getNode("Calibrations");
         return xmlCalibrationsNode;
-
+        
     }
     // -------------------------------------------------------------------------
 
@@ -64,7 +64,7 @@ namespace UniSetExtensions
     {
         if( !node )
             return 0;
-
+    
         UniXML_iterator it(node);
         if( !it.goChildren() )
             return 0;

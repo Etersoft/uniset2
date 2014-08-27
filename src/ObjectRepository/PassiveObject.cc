@@ -42,7 +42,7 @@ PassiveObject::PassiveObject( UniSetTypes::ObjectId id ):
     id(id)
 {
     string myfullname = conf->oind->getNameById(id);
-    myname = ORepHelpers::getShortName(myfullname.c_str());
+    myname = ORepHelpers::getShortName(myfullname.c_str()); 
 }
 
 PassiveObject::PassiveObject( ObjectId id, ProxyManager* mngr ):
@@ -116,7 +116,7 @@ void PassiveObject::processingMessage( UniSetTypes::VoidMessage *msg )
     {
         uwarn << myname << "(processingMessage): CORBA::Exception: " << ex._name() << endl;
     }
-    catch( omniORB::fatalException& fe )
+    catch( omniORB::fatalException& fe ) 
     {
         if( ulog.is_crit() )
         {

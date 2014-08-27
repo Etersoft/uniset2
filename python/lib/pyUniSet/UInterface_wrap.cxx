@@ -2982,7 +2982,7 @@ static swig_module_info swig_module = {swig_types, 7, 0, 0, 0, 0};
 #endif
 #define SWIG_name    "_pyUniSet"
 
-#define SWIGVERSION 0x020010
+#define SWIGVERSION 0x020010 
 #define SWIG_VERSION SWIGVERSION
 
 
@@ -3834,10 +3834,10 @@ SWIGINTERN PyObject *_wrap_new_UException__SWIG_1(PyObject *SWIGUNUSEDPARM(self)
   if (!PyArg_ParseTuple(args,(char *)"O:new_UException",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1, SWIGTYPE_p_std__string,  0  | 0);
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_UException" "', argument " "1"" of type '" "std::string const &""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_UException" "', argument " "1"" of type '" "std::string const &""'"); 
   }
   if (!argp1) {
-    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_UException" "', argument " "1"" of type '" "std::string const &""'");
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_UException" "', argument " "1"" of type '" "std::string const &""'"); 
   }
   arg1 = reinterpret_cast< std::string * >(argp1);
   result = (UException *)new UException((std::string const &)*arg1);
@@ -4047,10 +4047,10 @@ SWIGINTERN PyObject *_wrap_new_UTimeOut__SWIG_1(PyObject *SWIGUNUSEDPARM(self), 
   if (!PyArg_ParseTuple(args,(char *)"O:new_UTimeOut",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1, SWIGTYPE_p_std__string,  0  | 0);
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_UTimeOut" "', argument " "1"" of type '" "std::string const &""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_UTimeOut" "', argument " "1"" of type '" "std::string const &""'"); 
   }
   if (!argp1) {
-    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_UTimeOut" "', argument " "1"" of type '" "std::string const &""'");
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_UTimeOut" "', argument " "1"" of type '" "std::string const &""'"); 
   }
   arg1 = reinterpret_cast< std::string * >(argp1);
   result = (UTimeOut *)new UTimeOut((std::string const &)*arg1);
@@ -4144,10 +4144,10 @@ SWIGINTERN PyObject *_wrap_new_USysError__SWIG_1(PyObject *SWIGUNUSEDPARM(self),
   if (!PyArg_ParseTuple(args,(char *)"O:new_USysError",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1, SWIGTYPE_p_std__string,  0  | 0);
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_USysError" "', argument " "1"" of type '" "std::string const &""'");
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_USysError" "', argument " "1"" of type '" "std::string const &""'"); 
   }
   if (!argp1) {
-    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_USysError" "', argument " "1"" of type '" "std::string const &""'");
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_USysError" "', argument " "1"" of type '" "std::string const &""'"); 
   }
   arg1 = reinterpret_cast< std::string * >(argp1);
   result = (USysError *)new USysError((std::string const &)*arg1);

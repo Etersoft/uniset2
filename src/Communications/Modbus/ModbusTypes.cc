@@ -14,7 +14,7 @@ using namespace std;
 
 unsigned short ModbusRTU::SWAPSHORT( unsigned short x ) 
 { 
-    return ((((x)>>8)&0xff)|(((x)<<8)&0xff00));
+    return ((((x)>>8)&0xff)|(((x)<<8)&0xff00)); 
 }
 
 // -------------------------------------------------------------------------
@@ -105,7 +105,7 @@ static int get_crc_ccitt( unsigned short crc, unsigned char* buf, int size )
 #else
         register int i;
         crc ^= (unsigned short)(*(buf++)) << 8;
-        for (i = 0; i < 8; i++)
+        for (i = 0; i < 8; i++) 
         {
             if (crc & 0x8000)
                 crc = (crc << 1) ^ 0x1021;
@@ -125,12 +125,12 @@ static int get_crc_16( unsigned short crc, unsigned char* buf, int size )
 
     while( size-- )
     {
-#ifdef USE_CRC_TAB
+#ifdef USE_CRC_TAB    
         crc = (crc >> 8) ^ crc_16_tab[ (crc ^ *(buf++)) & 0xff ];
 #else
         register int i, ch;
         ch = *(buf++);
-        for (i = 0; i < 8; i++)
+        for (i = 0; i < 8; i++) 
         {
             if ((crc ^ ch) & 1)
                 crc = (crc >> 1) ^ 0xa001;
@@ -141,7 +141,7 @@ static int get_crc_16( unsigned short crc, unsigned char* buf, int size )
         }
 #endif
         // crc = crc & 0xffff;
-    }
+    } 
     return crc;
 }
 // -------------------------------------------------------------------------
@@ -160,12 +160,12 @@ ModbusCRC ModbusRTU::checkCRC( ModbusByte* buf, int len )
 // -------------------------------------------------------------------------
 bool ModbusRTU::isWriteFunction( SlaveFunctionCode c )
 {
-    if( c == fnWriteOutputRegisters ||
+    if( c == fnWriteOutputRegisters || 
         c == fnWriteOutputSingleRegister ||
         c == fnForceSingleCoil ||
         c == fnForceMultipleCoils )
         return true;
-
+        
     return false;
 }
 // -------------------------------------------------------------------------
@@ -180,7 +180,7 @@ std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, int le
     for( unsigned int i=0; i<len; i++ )
         s << setw(2) << (short)(m[i]) << " ";
 //        s << "<" << setw(2) << (int)(m[i]) << ">";
-
+    
     return os << s.str();
 }
 // -------------------------------------------------------------------------
@@ -266,8 +266,8 @@ ModbusMessage ErrorRetMessage::transport_msg()
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ErrorRetMessage& m )
 {
 //    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
-    return os << "addr=" << addr2str(m.addr)
-                << " func=" << (int)m.func
+    return os << "addr=" << addr2str(m.addr) 
+                << " func=" << (int)m.func 
                 << " errcode=" << dat2str(m.ecode);
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ErrorRetMessage* m )
@@ -329,7 +329,7 @@ void ReadCoilMessage::init( ModbusMessage& m )
     assert( m.func == fnReadCoilStatus );
     memset(this,0,sizeof(*this));
     memcpy(this,&m,sizeof(*this)); // m.len
-
+    
     // переворачиваем слова
     start = SWAPSHORT(start);
     count = SWAPSHORT(count);
@@ -339,7 +339,7 @@ void ReadCoilMessage::init( ModbusMessage& m )
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadCoilMessage& m )
 {
 //    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
-    return os << "addr=" << addr2str(m.addr)
+    return os << "addr=" << addr2str(m.addr) 
                 << " start=" << dat2str(m.start) << "(" << (int)(m.start) << ")"
                 << " count=" << dat2str(m.count) << "(" << (int)(m.count) << ")";
 }
@@ -351,7 +351,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadCoilMessage* m )
 DataBits::DataBits( std::string s ):
 b(s)
 {
-
+    
 }
 // -------------------------------------------------------------------------
 DataBits::DataBits( ModbusByte ubyte )
@@ -567,7 +567,7 @@ ModbusMessage ReadCoilRetMessage::transport_msg()
     ind+=szCRC;
 
     // длина сообщения...
-    mm.len = ind;
+    mm.len = ind; 
     return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -652,7 +652,7 @@ void ReadInputStatusMessage::init( ModbusMessage& m )
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputStatusMessage& m )
 {
 //    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
-    return os << "addr=" << addr2str(m.addr)
+    return os << "addr=" << addr2str(m.addr) 
                 << " start=" << dat2str(m.start) << "(" << (int)m.start << ")"
                 << " count=" << dat2str(m.count) << "(" << (int)m.count << ")";
 }
@@ -713,7 +713,7 @@ bool ReadInputStatusRetMessage::setBit( unsigned char dnum, unsigned char bnum, 
         data[dnum] = d;
         return true;
     }
-
+    
     return false;
 }
 // -------------------------------------------------------------------------
@@ -721,7 +721,7 @@ bool ReadInputStatusRetMessage::addData( DataBits d )
 {
     if( isFull() )
         return false;
-
+    
     data[bcnt++] = d.mbyte();
     return true;
 }
@@ -733,7 +733,7 @@ bool ReadInputStatusRetMessage::getData( unsigned char dnum, DataBits& d )
         d = data[dnum];
         return true;
     }
-
+    
     return false;
 }
 // -------------------------------------------------------------------------
@@ -752,7 +752,7 @@ ModbusMessage ReadInputStatusRetMessage::transport_msg()
     // копируем заголовок и данные
     memcpy(&mm,this,szModbusHeader);
 
-    memcpy(&mm.data,&bcnt,sizeof(bcnt));
+    memcpy(&mm.data,&bcnt,sizeof(bcnt));    
     int ind = sizeof(bcnt);
 
     // копируем данные
@@ -767,7 +767,7 @@ ModbusMessage ReadInputStatusRetMessage::transport_msg()
     ind+=szCRC;
 
     // длина сообщения...
-    mm.len = ind;
+    mm.len = ind; 
     return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -843,7 +843,7 @@ void ReadOutputMessage::init( ModbusMessage& m )
     assert( m.func == fnReadOutputRegisters );
     memset(this,0,sizeof(*this));
     memcpy(this,&m,sizeof(*this)); // m.len
-
+    
     // переворачиваем слова
     start = SWAPSHORT(start);
     count = SWAPSHORT(count);
@@ -855,7 +855,7 @@ void ReadOutputMessage::init( ModbusMessage& m )
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadOutputMessage& m )
 {
 //    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
-    return os << "addr=" << addr2str(m.addr)
+    return os << "addr=" << addr2str(m.addr) 
                 << " start=" << dat2str(m.start) << "(" << (int)(m.start) << ")"
                 << " count=" << dat2str(m.count) << "(" << (int)m.count << ")";
 
@@ -883,12 +883,12 @@ void ReadOutputRetMessage::init( ModbusMessage& m )
     memset(this,0,sizeof(*this));
     addr = m.addr;
     func = m.func;
-
+    
     // bcnt = m.data[0];
     unsigned int cnt = m.data[0] / sizeof(ModbusData);
     if( cnt > MAXLENPACKET/sizeof(ModbusData) )
     {
-//        cerr << "(ReadOutputRetMessage): BAD bcnt="
+//        cerr << "(ReadOutputRetMessage): BAD bcnt=" 
 //            << (int)bcnt << " count=" << cnt << endl;
         throw mbException(erPacketTooLong);
     }
@@ -896,13 +896,13 @@ void ReadOutputRetMessage::init( ModbusMessage& m )
     count     = cnt;
     bcnt     = m.data[0];
     memcpy(&data,&(m.data[1]),bcnt);
-
+    
     // переворачиваем данные
     for( unsigned int i=0; i<cnt; i++ )
         data[i] = SWAPSHORT(data[i]);
 
      memcpy(&crc,&(m.data[bcnt+1]),szCRC);
-}
+}    
 // -------------------------------------------------------------------------
 int ReadOutputRetMessage::getDataLen( ModbusMessage& m )
 {
@@ -913,7 +913,7 @@ int ReadOutputRetMessage::getDataLen( ModbusMessage& m )
 /*
     ReadOutputMessage rm(m);
     return (int)(rm.bcnt);
-*/
+*/    
 }
 // -------------------------------------------------------------------------
 ReadOutputRetMessage::ReadOutputRetMessage( ModbusAddr _addr ):
@@ -929,7 +929,7 @@ bool ReadOutputRetMessage::addData( ModbusData d )
 {
     if( isFull() )
         return false;
-
+    
     data[count++] = d;
     bcnt = count*sizeof(ModbusData);
     return true;
@@ -985,7 +985,7 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
     ind+=szCRC;
 
     // длина сообщения...
-    mm.len = ind;
+    mm.len = ind; 
 
     return std::move(mm);
 }
@@ -1072,7 +1072,7 @@ void ReadInputMessage::init( ModbusMessage& m )
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ReadInputMessage& m )
 {
 //    return mbPrintMessage(os,(ModbusByte*)(&m),sizeof(m));
-    return os << "addr=" << addr2str(m.addr)
+    return os << "addr=" << addr2str(m.addr) 
                 << " start=" << dat2str(m.start) << "(" << (int)(m.start) << ")"
                 << " count=" << dat2str(m.count)
                 << "(" << (int)m.count << ")";
@@ -1100,7 +1100,7 @@ void ReadInputRetMessage::init( ModbusMessage& m )
     memset(this,0,sizeof(*this));
     addr = m.addr;
     func = m.func;
-
+    
     // bcnt = m.data[0];
     unsigned int cnt = m.data[0] / sizeof(ModbusData);
     if( cnt > MAXLENPACKET/sizeof(ModbusData) )
@@ -1109,12 +1109,12 @@ void ReadInputRetMessage::init( ModbusMessage& m )
     count     = cnt;
     bcnt     = m.data[0];
     memcpy(&data,&(m.data[1]),bcnt);
-
+    
     // переворачиваем данные
     swapData();
 
      memcpy(&crc,&(m.data[bcnt+1]),szCRC);
-}
+}    
 // -------------------------------------------------------------------------
 void ReadInputRetMessage::swapData()
 {
@@ -1144,7 +1144,7 @@ bool ReadInputRetMessage::addData( ModbusData d )
 {
     if( isFull() )
         return false;
-
+    
     data[count++] = d;
     bcnt = count*sizeof(ModbusData);
     return true;
@@ -1192,7 +1192,7 @@ ModbusMessage ReadInputRetMessage::transport_msg()
     ind+=szCRC;
 
     // длина сообщения...
-    mm.len = ind;
+    mm.len = ind; 
     return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -1227,7 +1227,7 @@ bool ForceCoilsMessage::addData( DataBits d )
 {
     if( isFull() )
         return false;
-
+    
     data[bcnt++] = d.mbyte();
     quant += BitsPerByte;
     return true;
@@ -1251,7 +1251,7 @@ bool ForceCoilsMessage::setBit( int nbit, bool state )
 {
     if( nbit<0 || nbit >= quant )
         return false;
-
+    
     int bnum = nbit / BitsPerByte;
     int qnum = nbit % BitsPerByte;
 
@@ -1268,7 +1268,7 @@ bool ForceCoilsMessage::getData( unsigned char dnum, DataBits& d )
         d = data[dnum];
         return true;
     }
-
+    
     return false;
 }
 // -------------------------------------------------------------------------
@@ -1314,7 +1314,7 @@ ModbusMessage ForceCoilsMessage::transport_msg()
     ind+=szCRC;
 
     // длина сообщения...
-    mm.len = ind;
+    mm.len = ind; 
     return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -1335,10 +1335,10 @@ void ForceCoilsMessage::init( ModbusMessage& m )
     assert( m.func == fnForceMultipleCoils );
  
     memset(this,0,sizeof(*this));
-
+    
     // copy not include CRC
-    memcpy(this,&m,szModbusHeader+m.len);
-
+    memcpy(this,&m,szModbusHeader+m.len); 
+    
     // Сперва переворачиваем обратно слова
     start = SWAPSHORT(start);
     quant = SWAPSHORT(quant);
@@ -1348,7 +1348,7 @@ void ForceCoilsMessage::init( ModbusMessage& m )
     {
 #ifdef DEBUG
         cerr << "(ForceCoilsMessage): BAD format!" << endl;
-        cerr << "bcnt=" << (int)bcnt
+        cerr << "bcnt=" << (int)bcnt 
             << " quant=" << (int)quant
             << endl;
 #endif
@@ -1385,18 +1385,18 @@ int ForceCoilsMessage::getDataLen( ModbusMessage& m )
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsMessage& m )
 {
-    os << "addr=" << addr2str(m.addr)
+    os << "addr=" << addr2str(m.addr) 
         << " start=" << dat2str(m.start) << "(" << (int)(m.start) << ")"
         << " quant=" << dat2str(m.quant) << "(" << (int)(m.quant) << ")"
         << " bcnt=" << b2str(m.bcnt)
         << " data[" << (int)m.quant <<"]={ ";
-
+        
     for( unsigned int i=0; i<m.bcnt; i++ )
     {
         DataBits d(m.data[i]);
         os << "" << d << "  ";
     }
-
+    
     os << "}";
     return os;
 }
@@ -1421,18 +1421,18 @@ void ForceCoilsRetMessage::init( ModbusMessage& m )
     assert( m.func == fnForceMultipleCoils );
  
     memset(this,0,sizeof(*this));
-
+    
     // copy not include CRC
-    memcpy(this,&m,szModbusHeader+m.len);
+    memcpy(this,&m,szModbusHeader+m.len); 
 
 /*! \todo (WriteOutputRetMessage): необходимо встроить проверку на корректность данных */
-
+    
     // Сперва переворачиваем обратно слова
     start = SWAPSHORT(start);
     quant = SWAPSHORT(quant);
-
+    
     int ind = sizeof(quant)+sizeof(start);
-
+    
     // копируем CRC (последний элемент). Без переворачивания...
      memcpy(&crc,&(m.data[ind]),szCRC);
 }
@@ -1501,7 +1501,7 @@ bool WriteOutputMessage::addData( ModbusData d )
 {
     if( isFull() )
         return false;
-
+    
     data[quant++] = d;
     bcnt = quant*sizeof(ModbusData);
     return true;
@@ -1532,7 +1532,7 @@ ModbusMessage WriteOutputMessage::transport_msg()
     // копируем
     memcpy(mm.data,&d,ind);
 
-    // copy bcnt
+    // copy bcnt    
     bcnt    = quant*sizeof(ModbusData);
     memcpy(&(mm.data[ind]),&bcnt,sizeof(bcnt));
     ind+=sizeof(bcnt);
@@ -1556,7 +1556,7 @@ ModbusMessage WriteOutputMessage::transport_msg()
     ind+=szCRC;
 
     // длина сообщения...
-    mm.len = ind;
+    mm.len = ind; 
     return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -1577,10 +1577,10 @@ void WriteOutputMessage::init( ModbusMessage& m )
     assert( m.func == fnWriteOutputRegisters );
  
     memset(this,0,sizeof(*this));
-
+    
     // copy not include CRC
-    memcpy(this,&m,szModbusHeader+m.len);
-
+    memcpy(this,&m,szModbusHeader+m.len); 
+    
     // Сперва переворачиваем обратно слова
     start = SWAPSHORT(start);
     quant = SWAPSHORT(quant);
@@ -1590,7 +1590,7 @@ void WriteOutputMessage::init( ModbusMessage& m )
     {
 #ifdef DEBUG
         cerr << "(WriteOutputMessage): BAD format!" << endl;
-        cerr << "bcnt=" << (int)bcnt
+        cerr << "bcnt=" << (int)bcnt 
             << " quant=" << (int)quant
             << endl;
 #endif
@@ -1645,17 +1645,17 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteOutputMessage& m )
 //    return mbPrintMessage(os,(ModbusByte*)(&m.crc), szCRC );
 
 //    интелектуальный вывод :)
-    os << "addr=" << addr2str(m.addr)
+    os << "addr=" << addr2str(m.addr) 
         << " start=" << dat2str(m.start) << "(" << (int)(m.start) << ")"
         << " quant=" << dat2str(m.quant) << "(" << (int)(m.quant) << ")"
         << " bcnt=" << dat2str(m.bcnt)
         << " data[" << (int)m.quant <<"]={ ";
-
+        
     for( unsigned int i=0; i<m.quant; i++ )
         os << "" << dat2str(m.data[i]) << "  ";
-
+    
     os << "}";
-    return os;
+    return os;    
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteOutputMessage* m )
 {
@@ -1678,18 +1678,18 @@ void WriteOutputRetMessage::init( ModbusMessage& m )
     assert( m.func == fnWriteOutputRegisters );
  
     memset(this,0,sizeof(*this));
-
+    
     // copy not include CRC
-    memcpy(this,&m,szModbusHeader+m.len);
+    memcpy(this,&m,szModbusHeader+m.len); 
 
 /*! \todo (WriteOutputRetMessage): необходимо встроить проверку на корректность данных */
-
+    
     // Сперва переворачиваем обратно слова
     start = SWAPSHORT(start);
     quant = SWAPSHORT(quant);
-
+    
     int ind = sizeof(quant)+sizeof(start);
-
+    
     // копируем CRC (последний элемент). Без переворачивания...
      memcpy(&crc,&(m.data[ind]),szCRC);
 }
@@ -1786,9 +1786,9 @@ void ForceSingleCoilMessage::init( ModbusMessage& m )
     assert( m.func == fnForceSingleCoil );
     memset(this,0,sizeof(*this));
 
-    // копируем данные вместе с CRC
-    memcpy(this,&m,szModbusHeader+m.len+szCRC);
-
+    // копируем данные вместе с CRC    
+    memcpy(this,&m,szModbusHeader+m.len+szCRC); 
+    
     // Сперва переворачиваем обратно слова
     start     = SWAPSHORT(start);
     data     = SWAPSHORT(data);
@@ -1796,7 +1796,7 @@ void ForceSingleCoilMessage::init( ModbusMessage& m )
     // потом проверяем
     if( !checkFormat() )
     {
-#ifdef DEBUG
+#ifdef DEBUG    
         cerr << "(ForceSingleCoil): BAD format!" << endl;
 #endif
         // Если собщение некорректно
@@ -1826,7 +1826,7 @@ int ForceSingleCoilMessage::getDataLen( ModbusMessage& m )
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceSingleCoilMessage& m )
 {
-    return os << "addr=" << addr2str(m.addr)
+    return os << "addr=" << addr2str(m.addr) 
         << " start=" << dat2str(m.start) << "(" << (int)(m.start) << ")"
         << " data=" << dat2str(m.data) << "(" << (int)(m.data) << ")"
         << "  ";
@@ -1851,12 +1851,12 @@ ForceSingleCoilRetMessage& ForceSingleCoilRetMessage::operator=( ModbusMessage& 
 void ForceSingleCoilRetMessage::init( ModbusMessage& m )
 {
     memset(this,0,sizeof(*this));
-
+    
     // copy not include CRC
-    memcpy(this,&m,szModbusHeader+m.len);
+    memcpy(this,&m,szModbusHeader+m.len); 
 
 /*! \todo (ForceSingleCoilRetMessage): необходимо встроить проверку на корректность данных */
-
+    
     // переворачиваем обратно слова
     start     = SWAPSHORT(start);
     data     = SWAPSHORT(data);
@@ -1957,9 +1957,9 @@ void WriteSingleOutputMessage::init( ModbusMessage& m )
     assert( m.func == fnWriteOutputSingleRegister );
     memset(this,0,sizeof(*this));
 
-    // копируем данные вместе с CRC
-    memcpy(this,&m,szModbusHeader+m.len+szCRC);
-
+    // копируем данные вместе с CRC    
+    memcpy(this,&m,szModbusHeader+m.len+szCRC); 
+    
     // Сперва переворачиваем обратно слова
     start     = SWAPSHORT(start);
     data     = SWAPSHORT(data);
@@ -1967,7 +1967,7 @@ void WriteSingleOutputMessage::init( ModbusMessage& m )
     // потом проверяем
     if( !checkFormat() )
     {
-#ifdef DEBUG
+#ifdef DEBUG    
         cerr << "(WriteSingleOutputMessage): BAD format!" << endl;
 #endif
         // Если собщение некорректно
@@ -2003,7 +2003,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteSingleOutputMessage& 
 //    return mbPrintMessage(os,(ModbusByte*)(&m.crc), szCRC );
 
 //    интелектуальный вывод :)
-    return os << "addr=" << addr2str(m.addr)
+    return os << "addr=" << addr2str(m.addr) 
         << " start=" << dat2str(m.start) << "(" << (int)(m.start) << ")"
         << " data=" << dat2str(m.data) << "(" << (int)(m.data) << ")"
         << "  ";
@@ -2028,12 +2028,12 @@ WriteSingleOutputRetMessage& WriteSingleOutputRetMessage::operator=( ModbusMessa
 void WriteSingleOutputRetMessage::init( ModbusMessage& m )
 {
     memset(this,0,sizeof(*this));
-
+    
     // copy not include CRC
-    memcpy(this,&m,szModbusHeader+m.len);
+    memcpy(this,&m,szModbusHeader+m.len); 
 
 /*! \todo (WriteSingleOutputRetMessage): необходимо встроить проверку на корректность данных */
-
+    
     // переворачиваем обратно слова
     start     = SWAPSHORT(start);
     data     = SWAPSHORT(data);
@@ -2098,46 +2098,46 @@ int ModbusRTU::szRequestDiagnosticData( DiagnosticsSubFunction f )
     if( f == subEcho )
         return 1;     // тут странно, вроде в стандарте количество динамическое
                     // но везде вроде в примерах.. "одно слово"..
-
+    
     if( f == dgRestartComm )
         return 1;
-
+        
     if( f == dgDiagReg )
         return 1;
-
+        
     if( f == dgChangeASCII )
         return 1;
-
+    
     if( f == dgForceListen )
-        return 1;
+        return 1;        
 
-    if( f == dgClearCounters)
+    if( f == dgClearCounters) 
         return 1;
 
     if( f == dgBusMsgCount )
         return 1;
-
+    
     if( f == dgBusErrCount )
         return 1;
-
+    
     if( f == dgBusExceptCount )
         return 1;
-
+    
     if( f == dgMsgSlaveCount )
         return 1;
-
+    
     if( f == dgNoNoResponseCount )
         return 1;
-
+    
     if( f == dgSlaveNAKCount )
         return 1;
-
+    
     if( f == dgSlaveBusyCount )
         return 1;
-
+    
     if( f == dgBusCharOverrunCount )
         return 1;
-
+    
     if( f == dgClearOverrunCounter )
         return 1;
 
@@ -2165,7 +2165,7 @@ void DiagnosticMessage::init( ModbusMessage& m )
 
     memcpy( &subf,&(m.data[0]),sizeof(subf) );
     int last = sizeof(subf);
-
+    
     subf =     SWAPSHORT(subf);
     count = szRequestDiagnosticData((DiagnosticsSubFunction)subf );
     if( count > MAXDATALEN )
@@ -2176,13 +2176,13 @@ void DiagnosticMessage::init( ModbusMessage& m )
 
     memcpy(&data,&(m.data[last]),sizeof(ModbusData)*count);
     last +=sizeof(ModbusData)*count;
-
+    
     // переворачиваем данные
     for( unsigned int i=0; i<count; i++ )
         data[i] = SWAPSHORT(data[i]);
 
      memcpy(&crc,&(m.data[last]),szCRC);
-}
+}    
 // -------------------------------------------------------------------------
 int DiagnosticMessage::getDataLen( ModbusMessage& m )
 {
@@ -2215,7 +2215,7 @@ bool DiagnosticMessage::addData( ModbusData d )
 {
     if( isFull() )
         return false;
-
+    
     data[count++] = d;
     return true;
 }
@@ -2261,7 +2261,7 @@ ModbusMessage DiagnosticMessage::transport_msg()
     ind+=szCRC;
 
     // длина сообщения...
-    mm.len = szData();
+    mm.len = szData(); 
     return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -2296,9 +2296,9 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticMessage& m )
 
     for( unsigned int i=0; i<m.count; i++ )
         os << dat2str(m.data[i]) << "  ";
-
+    
     os << "}";
-
+    
     return os;
 }
 
@@ -2316,9 +2316,9 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticRetMessage& m )
 
     for( unsigned int i=0; i<m.count; i++ )
         os << dat2str(m.data[i]) << "  ";
-
+    
     os << "}";
-
+    
     return os;
 }
 
@@ -2378,10 +2378,10 @@ void MEIMessageRDI::init( ModbusMessage& m )
     assert( m.func == fnMEI );
  
     memset(this,0,sizeof(*this));
-
+    
     // copy not include CRC
     memcpy(this,&m,szModbusHeader+m.len);
-
+    
     // потом проверяем
     if( !checkFormat() )
     {
@@ -2403,13 +2403,13 @@ bool MEIMessageRDI::checkFormat()
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, MEIMessageRDI& m )
 {
-    os << "addr=" << addr2str(m.addr)
-        << " func=0x" << b2str(m.func)
-        << " type=0x" << b2str(m.type)
-        << " devID=0x" << b2str(m.devID)
+    os << "addr=" << addr2str(m.addr) 
+        << " func=0x" << b2str(m.func) 
+        << " type=0x" << b2str(m.type) 
+        << " devID=0x" << b2str(m.devID) 
         << " objID=0x" << b2str(m.objID);
 
-    return os;
+    return os;    
 }
 std::ostream& ModbusRTU::operator<<(std::ostream& os, MEIMessageRDI* m )
 {
@@ -2493,7 +2493,7 @@ void MEIMessageRetRDI::init( ModbusMessage& m )
     {
         if( m.len < 7 )
             throw mbException(erInvalidFormat);
-
+        
         while( i < m.len && dlist.size() < objNum )
         {
             ModbusByte id = m.data[i];
@@ -2510,7 +2510,7 @@ void MEIMessageRetRDI::init( ModbusMessage& m )
     }
 
      memcpy(&crc,&(m.data[i]),szCRC);
-}
+}    
 // -------------------------------------------------------------------------
 MEIMessageRetRDI::MEIMessageRetRDI():
     type(0x00),
@@ -2542,7 +2542,7 @@ bool MEIMessageRetRDI::addData( ModbusByte id, const std::string& val )
 {
     if( isFull() )
         return false;
-
+    
     RDIObjectInfo r(id,val);
     dlist.push_back(r);
     objNum = dlist.size();
@@ -2603,11 +2603,11 @@ size_t MEIMessageRetRDI::szData()
 std::ostream& ModbusRTU::operator<<(std::ostream& os, MEIMessageRetRDI& m )
 {
     // return mbPrintMessage(os,(ModbusByte*)(&m), szModbusHeader + m.szData() );
-    os << "addr=" << addr2str(m.addr)
-        << " func=0x" << b2str(m.func)
-        << " type=0x" << b2str(m.type)
-        << " devID=0x" << b2str(m.devID)
-        << " conformity=0x" << b2str(m.conformity)
+    os << "addr=" << addr2str(m.addr) 
+        << " func=0x" << b2str(m.func) 
+        << " type=0x" << b2str(m.type) 
+        << " devID=0x" << b2str(m.devID) 
+        << " conformity=0x" << b2str(m.conformity) 
         << " mf=0x" << b2str(m.mf)
         << " objID=0x" << b2str(m.objID)
         << " objNum=" << (int)(m.objNum);
@@ -2691,7 +2691,7 @@ bool JournalCommandRetMessage::setData( ModbusByte* buf, int len )
 {
     if( isFull() )
         return false;
-
+    
     if( sizeof(ModbusByte)*len > sizeof(data) )
         return false;
 
@@ -2756,7 +2756,7 @@ ModbusMessage JournalCommandRetMessage::transport_msg()
     ind += szCRC;
 
     // длина сообщения...
-    mm.len = ind;
+    mm.len = ind; 
     return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -2806,7 +2806,7 @@ float ModbusRTU::dat2f( const ModbusData dat1, const ModbusData dat2 )
 {
     ModbusData d[2]={dat1,dat2};
     float f=0;
-
+    
     assert(sizeof(f)>=sizeof(d));
     memcpy(&f,d,sizeof(d));
     return f;
@@ -2863,25 +2863,25 @@ std::string ModbusRTU::mbErr2Str( ModbusRTU::mbErrCode e )
 
         case erInvalidFormat:
             return "неправильный формат";
-
+        
         case erBadCheckSum:
             return "У пакета не сошлась контрольная сумма";
-
+            
         case erBadReplyNodeAddress:
             return "Ответ на запрос адресован не мне или от станции,которую не спрашивали";
-
+            
         case erTimeOut:
             return "Тайм-аут при приеме";
-
+            
         case erUnExpectedPacketType:
             return "Неожидаемый тип пакета";
-
+                
         case erPacketTooLong:
             return "пакет длинее буфера приема";
-
+            
         case erHardwareError:
             return "ошибка оборудования";
-
+    
         case erBadDataAddress:
             return "регистр не существует или запрещён к опросу";
 
@@ -2893,10 +2893,10 @@ std::string ModbusRTU::mbErr2Str( ModbusRTU::mbErrCode e )
 
         case erSlaveBusy:
             return "контроллер занят длительной операцией (повторить запрос позже)";
-
+        
         case erOperationFailed:
             return "сбой при выполнении операции (например: доступ запрещён)";
-
+            
         case erMemoryParityError:
             return "ошибка паритета при чтении памяти";
 
@@ -2929,15 +2929,15 @@ SetDateTimeMessage::SetDateTimeMessage()
 std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage& m )
 {
     ostringstream s;
-    s << setfill('0')
-        << setw(2) << (int)m.day << "-"
-        << setw(2) << (int)m.mon << "-"
-        << setw(2) << (int)m.century
+    s << setfill('0') 
+        << setw(2) << (int)m.day << "-" 
+        << setw(2) << (int)m.mon << "-" 
+        << setw(2) << (int)m.century 
         << setw(2) << (int)m.year << " "
-        << setw(2) << (int)m.hour << ":"
-        << setw(2) << (int)m.min << ":"
+        << setw(2) << (int)m.hour << ":" 
+        << setw(2) << (int)m.min << ":" 
         << setw(2) << (int)m.sec;
-
+    
     return os << s.str();
 }
 
@@ -2949,7 +2949,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, SetDateTimeMessage* m )
 bool SetDateTimeMessage::checkFormat()
 {
 /*
-    // Lav: проверка >=0 бессмысленна, потому что в типе данных Modbusbyte не могут храниться отрицательные числа
+    // Lav: проверка >=0 бессмысленна, потому что в типе данных Modbusbyte не могут храниться отрицательные числа 
     return     ( hour>=0 && hour<=23 ) &&
             ( min>=0 && min<=59 ) &&
             ( sec>=0 && sec<=59 ) &&
@@ -2957,7 +2957,7 @@ bool SetDateTimeMessage::checkFormat()
             ( mon>=1 && mon<=12 ) &&
             ( year>=0 && year<=99 ) &&
             ( century>=19 && century<=20 );
-*/
+*/            
     return     ( hour<=23 ) &&
             ( min<=59 ) &&
             ( sec<=59 ) &&
@@ -3140,7 +3140,7 @@ bool RemoteServiceRetMessage::setData( ModbusByte* buf, int len )
 {
     if( isFull() )
         return false;
-
+    
     if( len*sizeof(ModbusByte) > sizeof(data) )
         return false;
 
@@ -3196,7 +3196,7 @@ ModbusMessage RemoteServiceRetMessage::transport_msg()
     ind += szCRC;
 
     // длина сообщения...
-    mm.len = ind;
+    mm.len = ind; 
     return std::move(mm);
 }
 // -------------------------------------------------------------------------
@@ -3219,11 +3219,11 @@ bool ReadFileRecordMessage::checkFormat()
 void ReadFileRecordMessage::init( ModbusMessage& m )
 {
     assert( m.func == fnReadFileRecord );
-
+ 
     memset(this,0,sizeof(*this));
 
     // copy not include CRC
-    memcpy(this,&m,szModbusHeader+m.len);
+    memcpy(this,&m,szModbusHeader+m.len); 
 
     // потом проверяем
     if( !checkFormat() )
@@ -3260,7 +3260,7 @@ int ReadFileRecordMessage::getDataLen( ModbusMessage& m )
         return 0;
 
     return (int)(m.data[0]);
-
+    
 //    ReadFileRecordMessage rfm(m); // может просто смотреть m.data[0] ?!
 //    return (int)(rfm.bcnt);
 }
@@ -3322,10 +3322,10 @@ void FileTransferMessage::init( ModbusMessage& m )
     assert( m.func == fnFileTransfer );
  
     memset(this,0,sizeof(*this));
-
+    
     // copy not include CRC
-    memcpy(this,&m,szModbusHeader+m.len);
-
+    memcpy(this,&m,szModbusHeader+m.len); 
+    
     // последний элемент это CRC
     memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 
@@ -3360,10 +3360,10 @@ void FileTransferRetMessage::init( ModbusMessage& m )
 {
     assert( m.func == fnFileTransfer );
      memset(this,0,sizeof(*this));
-
+    
     // copy header
     memcpy(this,&m,szModbusHeader);
-
+    
     bcnt = m.data[0];
     memcpy(&numfile,&(m.data[1]),sizeof(ModbusData));
     memcpy(&numpacks,&(m.data[1+sizeof(ModbusData)]),sizeof(ModbusData));

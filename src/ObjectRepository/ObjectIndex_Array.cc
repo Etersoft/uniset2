@@ -20,7 +20,7 @@
  */
 // -----------------------------------------------------------------------------------------
 /*! 
-    \todo Добавить проверку на предельный номер id
+    \todo Добавить проверку на предельный номер id 
 */
 // -----------------------------------------------------------------------------------------
 #include <iomanip>
@@ -56,7 +56,7 @@ ObjectId ObjectIndex_Array::getIdByName( const string& name )
     auto it = mok.find(name);
     if( it != mok.end() )
         return it->second;
-
+        
     return DefaultObjectId;
 }
 
@@ -67,9 +67,9 @@ string ObjectIndex_Array::getMapName( const ObjectId id )
         return objectInfo[id].repName;
 
     return "";
-//    throw OutOfRange("ObjectIndex_Array::getMapName OutOfRange");
+//    throw OutOfRange("ObjectIndex_Array::getMapName OutOfRange");                
 }
-// -----------------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------        
 string ObjectIndex_Array::getTextName( const ObjectId id )
 {
     if( id!=UniSetTypes::DefaultObjectId && id>=0 && id<maxId )
@@ -94,7 +94,7 @@ std::ostream& ObjectIndex_Array::printMap( std::ostream& os )
 
         assert (i==objectInfo[i].id);
 
-        os  << setw(5) << objectInfo[i].id << "  "
+        os  << setw(5) << objectInfo[i].id << "  " 
             << setw(45) << conf->oind->getBaseName(objectInfo[i].repName)
             << "  " << objectInfo[i].textName << endl;
     }

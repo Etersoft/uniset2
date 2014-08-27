@@ -140,7 +140,7 @@ ModbusRTU::mbErrCode ModbusTCPServerSlot::remoteService( ModbusRTU::RemoteServic
     return slRemoteService(query,reply);
 }
 // -------------------------------------------------------------------------
-ModbusRTU::mbErrCode ModbusTCPServerSlot::fileTransfer( ModbusRTU::FileTransferMessage& query,
+ModbusRTU::mbErrCode ModbusTCPServerSlot::fileTransfer( ModbusRTU::FileTransferMessage& query, 
                                     ModbusRTU::FileTransferRetMessage& reply )
 {
     if( !slFileTransfer )

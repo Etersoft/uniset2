@@ -216,7 +216,7 @@ const DebugStream& DebugStream::operator=( const DebugStream& r )
     fname = r.fname;
     if( !r.fname.empty() )
         logFile(fname);
-
+    
     return *this;
 }
 //--------------------------------------------------------------------------
@@ -243,7 +243,7 @@ std::ostream & DebugStream::debug(Debug::type t)
         *this << "(" << std::setfill(' ') << std::setw(6) << t << "):  "; // "):\t";
         return *this;
     }
-
+    
     return nullstream;
 }
 //--------------------------------------------------------------------------
@@ -251,7 +251,7 @@ std::ostream& DebugStream::operator()(Debug::type t)
 {
     if(dt & t)
         return *this;
-
+        
     return nullstream;
 }
 //--------------------------------------------------------------------------
@@ -265,7 +265,7 @@ std::ostream& DebugStream::printDate(Debug::type t, char brk)
                       << std::setw(2) << std::setfill('0') << tms->tm_mon+1 << brk
                      << std::setw(4) << std::setfill('0') << tms->tm_year+1900;
     }
-
+    
     return nullstream;
 }
 //--------------------------------------------------------------------------
@@ -279,7 +279,7 @@ std::ostream& DebugStream::printTime(Debug::type t, char brk)
                      << std::setw(2) << std::setfill('0') << tms->tm_min << brk
                      << std::setw(2) << std::setfill('0') << tms->tm_sec;
     }
-
+    
     return nullstream;
 }
 //--------------------------------------------------------------------------
@@ -296,7 +296,7 @@ std::ostream& DebugStream::printDateTime(Debug::type t)
                      << std::setw(2) << std::setfill('0') << tms->tm_min << ":"
                      << std::setw(2) << std::setfill('0') << tms->tm_sec;
     }
-
+    
     return nullstream;
 }
 //--------------------------------------------------------------------------

@@ -44,7 +44,7 @@ int main( int argc, const char **argv )
 
         char t_str[ 150 ];
         strftime( t_str, sizeof(t_str), "%d %b %Y %H:%M:%S", tms );
-
+    
         cout << "id=" << id
             << " value=" << inf.value
             << " last changed: " << string(t_str) << endl;
@@ -62,7 +62,7 @@ int main( int argc, const char **argv )
     {
         cout << "(uitest): catch ..."<< endl;
     }
-
+    
 
     return 0;
 }
