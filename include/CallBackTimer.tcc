@@ -20,10 +20,10 @@
 /*! \file
  *  \author Pavel Vainerman
 */
-// --------------------------------------------------------------------------
-# ifndef CallBackTimer_TEMPLATE_H_
-# define CallBackTimer_TEMPLATE_H_
-// --------------------------------------------------------------------------
+// -------------------------------------------------------------------------- 
+# ifndef CallBackTimer_TCC_H_
+# define CallBackTimer_TCC_H_
+// -------------------------------------------------------------------------- 
 #include <unistd.h>
 #include <sstream>
 #include "CallBackTimer.h"
@@ -69,7 +69,7 @@ void CallBackTimer<Caller>::work()
 	terminated = false;
 	while( !terminated )
 	{
-		usleep(UniSetTimer::MIN_QUANTITY_TIME_MKS);
+		usleep(UniSetTimer::MIN_QUANTITY_TIME_MKS); 
 
 		for( typename TimersList::iterator li=lst.begin(); li!=lst.end(); ++li )
 		{
@@ -110,9 +110,9 @@ void CallBackTimer<Caller>::add( int id, int timeMS )throw(UniSetTypes::LimitTim
 	{
 		ostringstream err;
 		err << "CallBackTimers: превышено максимальное количество таймеров" << MAXCallBackTimer;
-		throw UniSetTypes::LimitTimers(err.str());
+		throw UniSetTypes::LimitTimers(err.str()); 
 	}
-
+	
 	PassiveTimer pt(timeMS);
 	TimerInfo ti(id, pt);
 	lst.push_back(ti);
@@ -124,7 +124,7 @@ template <class Caller>
 void CallBackTimer<Caller>::remove( int id )
 {
 	// STL - способ поиска
-	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));
+	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));	
 	if( li!=lst.end() )
 		lst.erase(li);
 }
@@ -147,7 +147,7 @@ void CallBackTimer<Caller>::clearTimers()
 template <class Caller>
 void CallBackTimer<Caller>::reset( int id )
 {
-	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));
+	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));	
 	if( li!=lst.end() )
 		li->pt.reset();
 }
@@ -155,7 +155,7 @@ void CallBackTimer<Caller>::reset( int id )
 template <class Caller>
 void CallBackTimer<Caller>::setTiming( int id, int timeMS )
 {
-	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));
+	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));		
 	if( li!=lst.end() )
 		li->pt.setTimer(timeMS);
 }
@@ -163,7 +163,7 @@ void CallBackTimer<Caller>::setTiming( int id, int timeMS )
 template <class Caller>
 int CallBackTimer<Caller>::getInterval( int id )
 {
-	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));
+	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));		
 	if( li!=lst.end() )
 		return li->pt.getInterval();
 	return -1;
@@ -172,12 +172,12 @@ int CallBackTimer<Caller>::getInterval( int id )
 template <class Caller>
 int CallBackTimer<Caller>::getCurrent( int id )
 {
-	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));
+	typename TimersList::iterator li= find_if(lst.begin(),lst.end(),FindId_eq(id));			
 	if( li!=lst.end() )
 		return li->pt.getCurrent();
-
+	
 	return -1;
 }
 // ------------------------------------------------------------------------------------------
 
-# endif //CallBackTimer_H_
+# endif //CallBackTimer_TCC_H_

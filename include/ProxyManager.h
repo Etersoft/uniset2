@@ -44,11 +44,11 @@ class ProxyManager:
 
         void attachObject( PassiveObject* po, UniSetTypes::ObjectId id );
         void detachObject( UniSetTypes::ObjectId id );
-
+    
         UInterface* uin;
 
     protected:
-        ProxyManager();
+        ProxyManager();    
         virtual void processingMessage( UniSetTypes::VoidMessage* msg );
         virtual void allMessage( UniSetTypes::VoidMessage* msg );
 

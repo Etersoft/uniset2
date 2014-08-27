@@ -108,7 +108,7 @@ void PassiveLProcessor::sysCommand( const UniSetTypes::SystemMessage *sm )
     switch( sm->command )
     {
         case SystemMessage::StartUp:
-        {
+        {                                       
             if( !shm->waitSMready(smReadyTimeout) )
             {
                 dcrit << myname << "(ERR): SM not ready. Terminated... " << endl;
@@ -126,11 +126,11 @@ void PassiveLProcessor::sysCommand( const UniSetTypes::SystemMessage *sm )
         case SystemMessage::Finish:
             askSensors(UniversalIO::UIODontNotify);
             break;
-
+        
         case SystemMessage::WatchDog:
         {
             // ОПТИМИЗАЦИЯ (защита от двойного перезаказа при старте)
-            // Если идёт локальная работа
+            // Если идёт локальная работа 
             // (т.е. RTUExchange  запущен в одном процессе с SharedMemory2)
             // то обрабатывать WatchDog не надо, т.к. мы и так ждём готовности SM
             // при заказе датчиков, а если SM вылетит, то вместе с этим процессом(RTUExchange)
@@ -169,7 +169,7 @@ void PassiveLProcessor::sysCommand( const UniSetTypes::SystemMessage *sm )
 // -------------------------------------------------------------------------
 bool PassiveLProcessor::activateObject()
 {
-    // блокирование обработки Starsp
+    // блокирование обработки Starsp 
     // пока не пройдёт инициализация датчиков
     // см. sysCommand()
     {

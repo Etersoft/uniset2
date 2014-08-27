@@ -5,7 +5,5 @@
 SUBDIRS = scripts Admin NullController SViewer-text \
 	SMonit MBTester codegen SImitator
 
-include $(top_builddir)/conf/common.mk
-
 
 

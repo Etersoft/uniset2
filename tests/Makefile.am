@@ -50,6 +50,3 @@ dlog_SOURCES = dlog.cc
 dlog_LDADD 	= $(top_builddir)/lib/libUniSet2.la ${SIGC_LIBS} $(COMCPP_LIBS)
 dlog_CPPFLAGS = -I$(top_builddir)/include ${SIGC_CFLAGS} $(COMCPP_CFLAGS)
 
-
-include $(top_builddir)/conf/setting.mk
-
