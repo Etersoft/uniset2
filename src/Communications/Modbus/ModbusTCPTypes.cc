@@ -369,14 +369,14 @@ const DataBits& DataBits::operator=( const ModbusByte& r )
 {
     for( unsigned int i=0; i<b.size(); i++ )
         b[i] = r&(1<<i);
-    
+
     return (*this);
 }
 // -------------------------------------------------------------------------
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DataBits& d )
 {
     os << "[";
-    for( unsigned int i=d.b.size()-1; i>=0; i-- )
+    for( unsigned int i=d.b.size()-1; i!=0; i-- )
         os << d.b[i];
     os << "]";
 
@@ -432,7 +432,7 @@ const DataBits16& DataBits16::operator=( const ModbusData& r )
 std::ostream& ModbusRTU::operator<<(std::ostream& os, DataBits16& d )
 {
     os << "[";
-    for( unsigned int i=d.b.size()-1; i>=0; i-- )
+    for( unsigned int i=d.b.size()-1; i!=0; i-- )
         os << d.b[i];
     os << "]";
 

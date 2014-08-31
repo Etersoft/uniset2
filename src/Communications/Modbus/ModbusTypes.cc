@@ -2257,7 +2257,7 @@ ModbusMessage DiagnosticMessage::transport_msg()
     ModbusData crc = checkCRC( (ModbusByte*)(&mm), szModbusHeader+sizeof(subf)+sizeof(ModbusData)*count );
 
     // копируем CRC (последний элемент). Без переворачивания...
-     memcpy(&(mm.data[ind]),&crc,szCRC);
+    memcpy(&(mm.data[ind]),&crc,szCRC);
     ind+=szCRC;
 
     // длина сообщения...
