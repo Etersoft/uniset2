@@ -13,8 +13,8 @@ LogServer::~LogServer()
 
 	{
 		uniset_rwmutex_wrlock l(mutSList);
-		for( SessionList::iterator i=slist.begin(); i!=slist.end(); ++i )
-			delete (*i);
+		for( auto& i: slist )
+			delete i;
 	}
 
 	if( thr )
@@ -24,16 +24,27 @@ LogServer::~LogServer()
 	}
 }
 // -------------------------------------------------------------------------
-LogServer::LogServer():
-timeout(600000),
+LogServer::LogServer( DebugStream& log ):
+timeout(TIMEOUT_INF),
 session_timeout(3600000),
 cancelled(false),
 thr(0),
-tcp(0)
+tcp(0),
+elog(&log)
 {
 }
 // -------------------------------------------------------------------------
-void LogServer::run( const std::string& addr, ost::tpport_t port, timeout_t msec, bool thread )
+LogServer::LogServer():
+timeout(TIMEOUT_INF),
+session_timeout(3600000),
+cancelled(false),
+thr(0),
+tcp(0),
+elog(0)
+{
+}
+// -------------------------------------------------------------------------
+void LogServer::run( const std::string& addr, ost::tpport_t port, bool thread )
 {
 	try
 	{
@@ -75,7 +86,7 @@ void LogServer::work()
 		{
 			while( tcp->isPendingConnection(timeout) )
 			{
-				LogSession* s = new LogSession(*tcp, session_timeout);
+				LogSession* s = new LogSession(*tcp, elog, session_timeout);
 				{
 					uniset_rwmutex_wrlock l(mutSList);
 					slist.push_back(s);
@@ -98,8 +109,6 @@ void LogServer::work()
 			else
 				cerr << "client socket failed" << endl;
 		}
-	
-		cout << "timeout after 30 seconds inactivity, exiting" << endl;
 	}
 
 	{
@@ -115,7 +124,8 @@ void LogServer::sessionFinished( LogSession* s )
 	for( SessionList::iterator i=slist.begin(); i!=slist.end(); ++i )
 	{
 		if( (*i) == s )
-		{
+		{	
+			// cerr << "session '" << s->getClientAddress() << "' closed.." << endl;
 			slist.erase(i);
 			return;
 		}

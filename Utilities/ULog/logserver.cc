@@ -14,6 +14,7 @@ static struct option longopts[] = {
     { "iaddr", required_argument, 0, 'a' },
     { "port", required_argument, 0, 'p' },
     { "verbose", no_argument, 0, 'v' },
+    { "delay", required_argument, 0, 'd' },
     { NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -24,6 +25,7 @@ static void print_help()
     printf("[-v|--verbose]      - Print all messages to stdout\n");
     printf("[-a|--iaddr] addr   - Inet address for listen connections.\n");
     printf("[-p|--port] port    - Bind port.\n");
+    printf("[-d|--delay] msec   - Delay for generate message. Default 5000.\n");
 }
 // --------------------------------------------------------------------------
 int main( int argc, char **argv )
@@ -35,10 +37,11 @@ int main( int argc, char **argv )
     int port = 3333;
     int tout = 2000;
     DebugStream dlog;
+    timeout_t delay = 5000;
 
     try
     {
-        while( (opt = getopt_long(argc, argv, "hva:p:",longopts,&optindex)) != -1 )
+        while( (opt = getopt_long(argc, argv, "hva:p:d:",longopts,&optindex)) != -1 )
         {
             switch (opt)
             {
@@ -52,6 +55,10 @@ int main( int argc, char **argv )
 
                 case 'p':
                     port = uni_atoi(optarg);
+                break;
+
+                case 'd':
+                    delay = uni_atoi(optarg);
                 break;
 
                 case 'v':
@@ -74,8 +81,20 @@ int main( int argc, char **argv )
             dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
         }
 
-        LogServer ls;
-        ls.run( addr, port, TIMEOUT_INF, false );
+        LogServer ls(dlog);
+        dlog.addLevel(Debug::ANY);
+        ls.run( addr, port, true );
+        
+        unsigned int i=0;
+        while( true )
+        {
+        	dlog << "[" << ++i << "] Test message for log" << endl;
+        	dlog.info() << ": INFO message" << endl;
+        	dlog.warn() << ": WARN message" << endl;
+        	dlog.crit() << ": CRIT message" << endl;
+        	
+        	msleep(delay);
+        }
     }
     catch( SystemError& err )
     {

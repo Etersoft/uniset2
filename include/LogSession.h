@@ -7,13 +7,14 @@
 #include <cc++/socket.h>
 #include "Mutex.h"
 #include "DebugStream.h"
+#include "PassiveTimer.h"
 // -------------------------------------------------------------------------
 class LogSession:
     public ost::TCPSession
 {
     public:
 
-        LogSession( ost::TCPSocket &server, timeout_t timeout );
+        LogSession( ost::TCPSocket &server, DebugStream* log, timeout_t timeout );
         virtual ~LogSession();
 
         typedef sigc::slot<void, LogSession*> FinalSlot;
@@ -24,6 +25,7 @@ class LogSession:
     protected:
         virtual void run();
         virtual void final();
+        void  logOnEvent( const std::string& s );
 
     private:
         typedef std::deque<std::string> LogBuffer;
@@ -32,12 +34,14 @@ class LogSession:
         std::string caddr;
 
         timeout_t timeout;
+        PassiveTimer ptSessionTimeout;
 
         FinalSlot slFin;
         std::atomic_bool cancelled;
         UniSetTypes::uniset_rwmutex mLBuf;
 
         DebugStream slog;
+
 };
 // -------------------------------------------------------------------------
 #endif // LogSession_H_

@@ -14,7 +14,7 @@ class LogReader
         LogReader();
         ~LogReader();
 
-        void readlogs( const std::string& addr, ost::tpport_t port, timeout_t tout=TIMEOUT_INF );
+        void readlogs( const std::string& addr, ost::tpport_t port, bool verbose = false );
 
         bool isConnection();
 

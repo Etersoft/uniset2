@@ -14,12 +14,13 @@ class LogServer
 {
     public:
 
-        LogServer();
+        LogServer( DebugStream& log );
         ~LogServer();
 
-        void run( const std::string& addr, ost::tpport_t port, timeout_t msec=60000, bool thread=true );
+        void run( const std::string& addr, ost::tpport_t port, bool thread=true );
 
     protected:
+         LogServer();
 
          void work();
          void sessionFinished( LogSession* s );
@@ -36,6 +37,7 @@ class LogServer
         ThreadCreator<LogServer>* thr;
 
         ost::TCPSocket* tcp;
+        DebugStream* elog;
 };
 // -------------------------------------------------------------------------
 #endif // LogServer_H_

@@ -20,13 +20,21 @@ LogSession::~LogSession()
 	}
 }
 // -------------------------------------------------------------------------
-LogSession::LogSession( ost::TCPSocket &server, timeout_t msec ):
+LogSession::LogSession( ost::TCPSocket &server, DebugStream* log, timeout_t msec ):
 TCPSession(server),
 peername(""),
 caddr(""),
 timeout(msec),
 cancelled(false)
 {
+	// slog.addLevel(Debug::ANY);
+	log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
+}
+// -------------------------------------------------------------------------
+void  LogSession::logOnEvent( const std::string& s )
+{
+	uniset_rwmutex_wrlock l(mLBuf);
+	lbuf.push_back(s);
 }
 // -------------------------------------------------------------------------
 void LogSession::run()
@@ -49,13 +57,40 @@ void LogSession::run()
     if( slog.debugging(Debug::INFO) )
         slog[Debug::INFO] << peername << "(run): run thread of sessions.." << endl;
 
+    ptSessionTimeout.setTiming(10000);
+    timeout_t inTimeout = 2000;
+    timeout_t outTimeout = 2000;
+
     cancelled = false;
-    while( !cancelled && isPending(Socket::pendingOutput, timeout) )
+    while( !cancelled && !ptSessionTimeout.checkTime() )
     {
-//        char rbuf[100];
-//       int ret = readData(&rbuf,sizeof(rbuf));
-         *tcp() << "test log... test log" << endl;
-         sleep(8000);
+        if( isPending(Socket::pendingInput, inTimeout) )
+        {
+			char buf[100];
+			// проверяем канал..(если данных нет, значит "клиент отвалился"...
+			if( peek(buf,sizeof(buf)) <=0 )
+				break;
+
+			ptSessionTimeout.reset();
+			slog.warn() << peername << "(run): receive command.." << endl;
+			// Обработка команд..
+		}
+
+        if( isPending(Socket::pendingOutput, outTimeout) )
+        {
+			// slog.warn() << peername << "(run): send.." << endl;
+			ptSessionTimeout.reset();
+			uniset_rwmutex_wrlock l(mLBuf);
+
+			if( !lbuf.empty() )
+				slog.info() << peername << "(run): send messages.." << endl;
+
+			while( !lbuf.empty() )
+			{
+				*tcp() << lbuf.front();
+				lbuf.pop_front();
+			}
+		}
     }
 
     if( slog.debugging(Debug::INFO) )
@@ -69,6 +104,7 @@ void LogSession::run()
 // -------------------------------------------------------------------------
 void LogSession::final()
 {
+     *tcp() << endl;
      slFin(this);
      delete this;
 }

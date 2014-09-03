@@ -4,6 +4,7 @@
 #include <sstream>
 #include "Exceptions.h"
 #include "LogReader.h"
+#include "UniSetTypes.h"
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -18,7 +19,10 @@ iaddr("")
 LogReader::~LogReader()
 {
     if( isConnection() )
+	{
+        (*tcp) << endl;
         disconnect();
+	}
 }
 // -------------------------------------------------------------------------
 void LogReader::connect( const std::string& addr, ost::tpport_t _port, timeout_t msec )
@@ -31,6 +35,7 @@ void LogReader::connect( ost::InetAddress addr, ost::tpport_t _port, timeout_t m
 {
     if( tcp )
     {
+        (*tcp) << endl;
         disconnect();
         delete tcp;
         tcp = 0;
@@ -53,6 +58,7 @@ void LogReader::connect( ost::InetAddress addr, ost::tpport_t _port, timeout_t m
             tcp = new UTCPStream();
             tcp->create(iaddr,port,true,500);
             tcp->setTimeout(msec);
+            tcp->setKeepAlive(true);
         }
         catch( std::exception& e )
         {
@@ -62,6 +68,9 @@ void LogReader::connect( ost::InetAddress addr, ost::tpport_t _port, timeout_t m
                 s << "(LogReader): connection " << s.str() << " error: " << e.what();
                 rlog.crit() << s.str() << std::endl;
             }
+
+            delete tcp;
+            tcp = 0;
         }
         catch( ... )
         {
@@ -77,11 +86,11 @@ void LogReader::connect( ost::InetAddress addr, ost::tpport_t _port, timeout_t m
 // -------------------------------------------------------------------------
 void LogReader::disconnect()
 {
-    if( rlog.is_info() )
-        rlog.info() << iaddr << "(LogReader): disconnect." << endl;
-
     if( !tcp )
         return;
+
+    if( rlog.is_info() )
+        rlog.info() << iaddr << "(LogReader): disconnect." << endl;
 
     tcp->disconnect();
     delete tcp;
@@ -93,32 +102,48 @@ bool LogReader::isConnection()
     return tcp && tcp->isConnected();
 }
 // -------------------------------------------------------------------------
-void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, timeout_t msec )
+void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, bool verbose )
 {
-	if( !isConnection() )
-		connect(_addr,_port,msec);
+	timeout_t inTimeout = 10000;
+	timeout_t reconDelay = 5000;
+	char buf[100001];
 
-	if( !isConnection() )
-		throw TimeOut();
+	if( verbose )
+		rlog.addLevel(Debug::ANY);
 
-	char buf[1000];
-	while( tcp->isPending(ost::Socket::pendingInput,msec) )
-    {
-		int n = tcp->peek( buf,sizeof(buf) );
-		if( n > 0 )
+	while( true )
+	{
+		if( !isConnection() )
+			connect(_addr,_port,reconDelay);
+
+		if( !isConnection() )
 		{
-			tcp->read(buf,n);
-			cout << buf;
+			rlog.warn() << "**** connection timeout.." << endl;
+			msleep(reconDelay);
+			continue;
 		}
-#if 0
-        if( tcp->gcount() > 0 )
-            break;
+	
+		while( tcp->isPending(ost::Socket::pendingInput,inTimeout) )
+		{
+			int n = tcp->peek( buf,sizeof(buf)-1 );
+			if( n > 0 )
+			{
+				tcp->read(buf,n);
+				buf[n] = '\0';
+				cout << buf;
+			}
+			else 
+				break;
+		}
+	
+		rlog.warn() << "...connection timeout..." << endl;
+		disconnect();
+	}
 
-		int n = tcp->peek( buf,sizeof(buf) );
-		tcp->read(buf,sizeof(buf));
-		for( int i=0; i<n; i++ )
-			cout << buf[i];
-#endif
+    if( isConnection() )
+	{
+		(*tcp) << endl;
+		disconnect();
 	}
 }
 // -------------------------------------------------------------------------

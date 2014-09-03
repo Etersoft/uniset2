@@ -20,7 +20,6 @@ static struct option longopts[] = {
 static void print_help()
 {
     printf("-h|--help           - this message\n");
-//    printf("[-t|--timeout] msec  - Timeout. Default: 2000.\n");
     printf("[-v|--verbose]      - Print all messages to stdout\n");
     printf("[-a|--iaddr] addr   - Inet address for listen connections.\n");
     printf("[-p|--port] port    - Bind port.\n");
@@ -33,7 +32,6 @@ int main( int argc, char **argv )
     int verb = 0;
     string addr("localhost");
     int port = 3333;
-    int tout = 2000;
     DebugStream dlog;
 
     try
@@ -67,15 +65,13 @@ int main( int argc, char **argv )
 
         if( verb )
         {
-            cout << "(init): read from " << addr << ":" << port
-//                   << " timeout=" << tout << " msec "
-                    << endl;
+            cout << "(init): read from " << addr << ":" << port << endl;
 
             dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
         }
 
         LogReader lr;
-        lr.readlogs( addr, port, TIMEOUT_INF );
+        lr.readlogs( addr, port, verb );
     }
     catch( SystemError& err )
     {
