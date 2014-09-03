@@ -186,8 +186,8 @@ AC_SUBST(UNISET_EXT_LIBS)
 
 
 # export
-LDFLAGS="${OMNI_LIBS} ${XML_LIBS}"
-CXXFLAGS="-pedantic -Wall -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} -I\$(top_builddir)/include"
+LDFLAGS="${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS}"
+CXXFLAGS="-pedantic -Wall -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} -I\$(top_builddir)/include"
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
 

@@ -5,9 +5,18 @@
 using namespace std;
 using namespace UniSetTypes;
 
+void check_log_signal( const string& s )
+{
+//	cout << "log signal: ||| " << s  << "|||";
+	cout << "*ENDL*[" << s << flush;
+}
+
 int main( int argc, const char **argv )
 {
     DebugStream tlog;
+    
+	tlog.signal_stream_event().connect(&check_log_signal);    
+    
     
     tlog.addLevel(Debug::ANY);
     

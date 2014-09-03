@@ -10,6 +10,7 @@
 // but should be adaptable to any project.
 
 // (c) 2002 adapted for UniSet by Lav, GNU GPL license
+// Modify for UniSet by pv@eterspft.ru, GNU GPL license
 
 #ifndef DEBUGSTREAM_H
 #define DEBUGSTREAM_H
@@ -20,6 +21,7 @@
 
 #include <iostream>
 #include <string>
+#include <sigc++/sigc++.h>
 
 #ifdef TEST_DEBUGSTREAM
 #include <string>
@@ -90,6 +92,9 @@ public:
 
     ///
     ~DebugStream();
+
+    typedef sigc::signal<void,const std::string&> StreamEvent_Signal;
+    StreamEvent_Signal signal_stream_event();
 
     /// Sets the debug level to t.
     void level(Debug::type t) {
@@ -193,6 +198,8 @@ public:
     std::ostream& pos(int x, int y);
 
     const DebugStream &operator=(const DebugStream& r);
+protected:
+	void sbuf_overflow( const std::string& s );
 
 private:
     /// The current debug level
@@ -201,11 +208,14 @@ private:
     std::ostream nullstream;
     ///
     struct debugstream_internal;
+	struct debugstream_sbuf;
     ///
     debugstream_internal * internal;
+	debugstream_sbuf * internal_sbuf;
     bool show_datetime;
     std::string fname;
 
+	StreamEvent_Signal s_stream;
 };
 
 #endif

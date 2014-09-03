@@ -29,11 +29,13 @@
 #include <iomanip>
 #include <time.h>
 #include <iomanip>
+#include <sstream>
 
 using std::ostream;
 using std::streambuf;
 using std::streamsize;
 using std::filebuf;
+using std::stringbuf;
 using std::cerr;
 using std::ios;
 
@@ -127,6 +129,64 @@ private:
     streambuf * sb2;
 };
 
+/** A streambuf that sends the output to two different streambufs. These
+    can be any kind of streambufs.
+*/
+class threebuf : public streambuf {
+public:
+    ///
+    threebuf(streambuf * b1, streambuf * b2, streambuf * b3)
+        : streambuf(), sb1(b1), sb2(b2), sb3(b3) {}
+protected:
+#ifdef MODERN_STL_STREAMS
+    ///
+    virtual int sync() {
+        sb2->pubsync();
+        return sb1->pubsync();
+    }
+    ///
+    virtual streamsize xsputn(char_type const * p, streamsize n) {
+        sb2->sputn(p, n);
+		sb3->sputn(p, n);
+        return sb1->sputn(p, n);
+    }
+    ///
+    virtual int_type overflow(int_type c = traits_type::eof()) {
+        sb2->sputc(c);
+		sb3->sputc(c);
+        return sb1->sputc(c);
+    }
+#else
+    typedef char char_type;
+    typedef int int_type;
+    ///
+    virtual int sync() {
+        sb2->sync();
+		sb3->sync();
+        return sb1->sync();
+    }
+    ///
+    virtual streamsize xsputn(char_type const * p, streamsize n) {
+        sb2->xsputn(p, n);
+		sb2->xsputn(p, n);
+        return sb1->xsputn(p, n);
+    }
+    ///
+    virtual int_type overflow(int_type c = EOF) {
+        sb2->overflow(c);
+		sb3->owerflow(c);
+        return sb1->overflow(c);
+    }
+#endif
+private:
+    ///
+    streambuf * sb1;
+    ///
+    streambuf * sb2;
+	///
+	streambuf * sb3;
+};
+
 ///
 class debugbuf : public streambuf {
 public:
@@ -168,6 +228,76 @@ private:
     streambuf * sb;
 };
 
+///
+class stringsigbuf : public stringbuf {
+public:
+    stringsigbuf():sb(0)
+	{
+		sb = new stringbuf();
+	}
+
+    ~stringsigbuf()
+	{
+		delete sb;
+	}
+
+    ///
+    stringsigbuf( stringbuf* b )
+        : stringbuf(), sb(b) {}
+
+    typedef sigc::signal<void,const std::string&> StrBufOverflow_Signal;
+    inline StrBufOverflow_Signal signal_overflow(){ return s_overflow; }
+
+protected:
+#ifdef MODERN_STL_STREAMS
+    ///
+    virtual int sync() {
+        return sb->pubsync();
+    }
+
+    ///
+    virtual streamsize xsputn(char_type const * p, streamsize n) {
+        return sb->sputn(p, n);
+    }
+    ///
+    virtual int_type overflow(int_type c = traits_type::eof()) {
+        int_type r = sb->sputc(c);
+        if( r == '\n' )
+        {
+            s_overflow.emit( sb->str() );
+            delete sb;
+            sb = new stringbuf();
+        }
+        return r;
+    }
+#else
+    typedef char char_type;
+    typedef int int_type;
+    ///
+    virtual int sync() {
+        return sb->sync();
+    }
+    ///
+    virtual streamsize xsputn(char_type const * p, streamsize n) {
+        return sb->xsputn(p, n);
+    }
+
+    virtual int_type overflow(int_type c = EOF) {
+        int_type r = sb->overflow(c);
+        if( r == '\n' )
+        {
+            s_overflow.emit( sb->str() );
+            sb->rdbug.clear();
+        }
+        return r;
+    }
+#endif
+private:
+    ///
+    StrBufOverflow_Signal s_overflow;
+	stringbuf* sb;
+};
+
 //--------------------------------------------------------------------------
 /// So that public parts of DebugStream does not need to know about filebuf
 struct DebugStream::debugstream_internal {
@@ -175,34 +305,50 @@ struct DebugStream::debugstream_internal {
     filebuf fbuf;
 };
 //--------------------------------------------------------------------------
+struct DebugStream::debugstream_sbuf {
+    /// Used when logging to file.
+    stringsigbuf sbuf;
+};
+//--------------------------------------------------------------------------
 
 /// Constructor, sets the debug level to t.
 DebugStream::DebugStream(Debug::type t)
     : ostream(new debugbuf(cerr.rdbuf())),
-      dt(t), nullstream(new nullbuf), internal(0),
+      dt(t), nullstream(new nullbuf), internal(0),internal_sbuf(new debugstream_sbuf),
       show_datetime(true),
-      fname(""){}
+      fname("")
+{
+    delete rdbuf(new teebuf(cerr.rdbuf(),&internal_sbuf->sbuf));
+	internal_sbuf->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
+}
 
 //--------------------------------------------------------------------------
 /// Constructor, sets the log file to f, and the debug level to t.
 DebugStream::DebugStream(char const * f, Debug::type t)
     : ostream(new debugbuf(cerr.rdbuf())),
       dt(t), nullstream(new nullbuf),
-      internal(new debugstream_internal),
+      internal(new debugstream_internal),internal_sbuf(new debugstream_sbuf),
       show_datetime(true),
       fname("")
 {
     internal->fbuf.open(f, ios::out|ios::app);
-    delete rdbuf(new teebuf(cerr.rdbuf(),
-                &internal->fbuf));
+    delete rdbuf(new threebuf(cerr.rdbuf(),
+                &internal->fbuf,&internal_sbuf->sbuf));
+
+	internal_sbuf->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
 }
 //--------------------------------------------------------------------------
-
+void DebugStream::sbuf_overflow( const std::string& s )
+{
+	s_stream.emit(s);
+}
+//--------------------------------------------------------------------------
 DebugStream::~DebugStream()
 {
     delete nullstream.rdbuf(0); // Without this we leak
     delete rdbuf(0);            // Without this we leak
     delete internal;
+	delete internal_sbuf;
 }
 
 //--------------------------------------------------------------------------
@@ -216,7 +362,7 @@ const DebugStream& DebugStream::operator=( const DebugStream& r )
     fname = r.fname;
     if( !r.fname.empty() )
         logFile(fname);
-    
+
     return *this;
 }
 //--------------------------------------------------------------------------
@@ -230,8 +376,8 @@ void DebugStream::logFile( const std::string& f )
         internal = new debugstream_internal;
     }
     internal->fbuf.open(f.c_str(), ios::out|ios::app);
-    delete rdbuf(new teebuf(cerr.rdbuf(),
-                &internal->fbuf));
+    delete rdbuf(new threebuf(cerr.rdbuf(),
+                &internal->fbuf,&internal_sbuf->sbuf));
 }
 //--------------------------------------------------------------------------
 std::ostream & DebugStream::debug(Debug::type t) 
@@ -243,7 +389,7 @@ std::ostream & DebugStream::debug(Debug::type t)
         *this << "(" << std::setfill(' ') << std::setw(6) << t << "):  "; // "):\t";
         return *this;
     }
-    
+
     return nullstream;
 }
 //--------------------------------------------------------------------------
@@ -251,7 +397,7 @@ std::ostream& DebugStream::operator()(Debug::type t)
 {
     if(dt & t)
         return *this;
-        
+
     return nullstream;
 }
 //--------------------------------------------------------------------------
@@ -308,6 +454,11 @@ std::ostream& DebugStream::pos(int x, int y)
     return *this << "\033[" << y << ";" << x << "f";
 }
 
+//--------------------------------------------------------------------------
+DebugStream::StreamEvent_Signal DebugStream::signal_stream_event()
+{
+	return s_stream;
+}
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
