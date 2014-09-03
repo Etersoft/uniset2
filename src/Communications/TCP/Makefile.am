@@ -1,8 +1,8 @@
 ############################################################################
 # This file is part of the UniSet library                                  #
 ############################################################################
-SUBDIRS=TCP Modbus
-
-noinst_LTLIBRARIES 				= libCommunications.la
-libCommunications_la_SOURCES	= ComPort.cc ComPort485F.cc
-
+noinst_LTLIBRARIES 	= libTCP.la
+libTCP_la_SOURCES	= UTCPStream.cc TCPCheck.cc
+	
+libTCP_la_CXXFLAGS	= $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
+libTCP_la_LIBADD	= $(SIGC_LIBS) $(COMCPP_LIBS)

@@ -221,12 +221,14 @@ AC_CONFIG_FILES([Makefile
 				 IDL/Processes/Makefile
 				 src/Communications/Makefile
 				 src/Communications/Modbus/Makefile
+				 src/Communications/TCP/Makefile
 				 src/Interfaces/Makefile
 				 src/ObjectRepository/Makefile
 				 src/Processes/Makefile
 				 src/Services/Makefile
 				 src/Timers/Makefile
 				 src/Various/Makefile
+				 src/LogServer/Makefile
 				 src/Makefile
 				 include/Makefile
 				 include/modbus/Makefile
@@ -246,6 +248,7 @@ AC_CONFIG_FILES([Makefile
 				 Utilities/codegen/Makefile
 				 Utilities/codegen/uniset2-codegen
 				 Utilities/codegen/tests/Makefile
+				 Utilities/ULog/Makefile
 				 extensions/Makefile
 				 extensions/libUniSet2Extensions.pc
 				 extensions/lib/Makefile

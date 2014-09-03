@@ -5,10 +5,11 @@
 using namespace std;
 using namespace UniSetTypes;
 
+std::ostringstream ss;
+
 void check_log_signal( const string& s )
 {
-//	cout << "log signal: ||| " << s  << "|||";
-	cout << "*ENDL*[" << s << flush;
+	ss << s;
 }
 
 int main( int argc, const char **argv )
@@ -28,6 +29,9 @@ int main( int argc, const char **argv )
 
     if( tlog.is_level1() )
         tlog.level1() << ": is level1..." << endl;
+
+	cout << "********" << endl;
+	cout << ss.str();
 
     return 0;
 }

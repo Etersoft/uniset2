@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <cstring>
 #include <cc++/socket.h>
-#include "modbus/UTCPStream.h"
+#include "UTCPStream.h"
 #include "PassiveTimer.h"
 #include "UniSetTypes.h"
 // -------------------------------------------------------------------------

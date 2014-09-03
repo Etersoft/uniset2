@@ -3,7 +3,7 @@
 ############################################################################
 
 SUBDIRS = scripts Admin NullController SViewer-text \
-	SMonit MBTester codegen SImitator
+	SMonit MBTester codegen SImitator ULog
 
 
 

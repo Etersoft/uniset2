@@ -22,6 +22,8 @@
 #include <iostream>
 #include <string>
 #include <sigc++/sigc++.h>
+#include "Debug.h"
+
 
 #ifdef TEST_DEBUGSTREAM
 #include <string>
