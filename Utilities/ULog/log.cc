@@ -26,10 +26,19 @@ static struct option longopts[] = {
 // --------------------------------------------------------------------------
 static void print_help()
 {
-    printf("-h|--help           - this message\n");
-    printf("[-v|--verbose]      - Print all messages to stdout\n");
-    printf("[-a|--iaddr] addr   - Inet address for listen connections.\n");
-    printf("[-p|--port] port    - Bind port.\n");
+    printf("-h, --help         - this message\n");
+    printf("-v, --verbose      - Print all messages to stdout\n");
+    printf("[-a|--iaddr] addr  - ULogServer ip or hostname.\n");
+    printf("[-p|--port] port   - ULogServer port.\n");
+    printf("\n");
+    printf("Commands:\n");
+
+    printf("[--add | -l] info,warn,crit,...  - Add log levels.\n");
+    printf("[--del | -d] info,warn,crit,...  - Delete log levels.\n");
+    printf("[--set | -s] info,wanr,crit,...  - Set log levels.\n");
+    printf("--off, -o                        - Off the write log file (if enabled).\n");
+    printf("--on, -n                         - On the write log file (if before disabled).\n");
+    printf("--rotate, -r                     - rotate log file.\n");
 }
 // --------------------------------------------------------------------------
 int main( int argc, char **argv )
@@ -113,7 +122,7 @@ int main( int argc, char **argv )
         if( !sdata.empty() )
         {
             data = (int)Debug::value(sdata);
-            
+
             if( verb )
             	cout << "SEND COMMAND: '" << (LogServerTypes::Command)cmd << " data='" << sdata << "'" << endl;
         }
