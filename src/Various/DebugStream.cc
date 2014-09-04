@@ -375,9 +375,15 @@ void DebugStream::logFile( const std::string& f )
     } else {
         internal = new debugstream_internal;
     }
-    internal->fbuf.open(f.c_str(), ios::out|ios::app);
-    delete rdbuf(new threebuf(cerr.rdbuf(),
+
+    if( !f.empty() )
+    {
+        internal->fbuf.open(f.c_str(), ios::out|ios::app);
+        delete rdbuf(new threebuf(cerr.rdbuf(),
                 &internal->fbuf,&internal_sbuf->sbuf));
+    }
+    else
+        delete rdbuf(new teebuf(cerr.rdbuf(),&internal_sbuf->sbuf));
 }
 //--------------------------------------------------------------------------
 std::ostream & DebugStream::debug(Debug::type t) 

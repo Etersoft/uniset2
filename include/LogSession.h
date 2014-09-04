@@ -32,6 +32,7 @@ class LogSession:
         LogBuffer lbuf;
         std::string peername;
         std::string caddr;
+        DebugStream* log;
 
         timeout_t timeout;
         PassiveTimer ptSessionTimeout;

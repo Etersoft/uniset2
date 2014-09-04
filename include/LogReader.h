@@ -6,6 +6,7 @@
 #include <cc++/socket.h>
 #include "UTCPStream.h"
 #include "DebugStream.h"
+#include "LogServerTypes.h"
 // -------------------------------------------------------------------------
 class LogReader
 {
@@ -14,7 +15,7 @@ class LogReader
         LogReader();
         ~LogReader();
 
-        void readlogs( const std::string& addr, ost::tpport_t port, bool verbose = false );
+        void readlogs( const std::string& addr, ost::tpport_t port, LogServerTypes::Command c, int data, bool verbose = false );
 
         bool isConnection();
 

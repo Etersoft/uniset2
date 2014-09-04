@@ -102,14 +102,17 @@ bool LogReader::isConnection()
     return tcp && tcp->isConnected();
 }
 // -------------------------------------------------------------------------
-void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, bool verbose )
+void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServerTypes::Command cmd, int data, bool verbose )
 {
 	timeout_t inTimeout = 10000;
+	timeout_t outTimeout = 6000;
 	timeout_t reconDelay = 5000;
 	char buf[100001];
 
 	if( verbose )
 		rlog.addLevel(Debug::ANY);
+	
+	bool send_ok = false;
 
 	while( true )
 	{
@@ -122,7 +125,26 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, bool ve
 			msleep(reconDelay);
 			continue;
 		}
-	
+		
+		if( !send_ok && cmd != LogServerTypes::cmdNOP )
+		{
+			if( tcp->isPending(ost::Socket::pendingOutput,outTimeout) )
+			{
+				rlog.info() << "** send command: '" << cmd << "' data='" << data << "'" << endl;
+
+				LogServerTypes::lsMessage msg;
+				msg.cmd = cmd;
+				msg.data = data;
+				for( size_t i=0; i<sizeof(msg); i++ )
+					(*tcp) << ((unsigned char*)(&msg))[i];
+
+				tcp->sync();
+				send_ok = true;
+			}
+			else
+				rlog.warn() << "**** SEND COMMAND ('" << cmd << "' FAILED!" << endl;
+		}	
+
 		while( tcp->isPending(ost::Socket::pendingInput,inTimeout) )
 		{
 			int n = tcp->peek( buf,sizeof(buf)-1 );
@@ -137,6 +159,7 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, bool ve
 		}
 	
 		rlog.warn() << "...connection timeout..." << endl;
+		send_ok = false; // ??!! делать ли?
 		disconnect();
 	}
 
