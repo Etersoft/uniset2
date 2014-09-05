@@ -124,7 +124,7 @@ int main( int argc, char **argv )
             data = (int)Debug::value(sdata);
 
             if( verb )
-            	cout << "SEND COMMAND: '" << (LogServerTypes::Command)cmd << " data='" << sdata << "'" << endl;
+                cout << "SEND COMMAND: '" << (LogServerTypes::Command)cmd << " data='" << sdata << "'" << endl;
         }
 
         lr.readlogs( addr, port, (LogServerTypes::Command)cmd, data, verb );

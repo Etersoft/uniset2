@@ -17,6 +17,10 @@ class LogServer
         LogServer( DebugStream& log );
         ~LogServer();
 
+        inline void setSessionTimeout( timeout_t msec ){ sessTimeout = msec; }
+        inline void setCmdTimeout( timeout_t msec ){ cmdTimeout = msec; }
+        inline void setOutTimeout( timeout_t msec ){ outTimeout = msec; }
+
         void run( const std::string& addr, ost::tpport_t port, bool thread=true );
 
     protected:
@@ -31,7 +35,10 @@ class LogServer
         UniSetTypes::uniset_rwmutex mutSList;
 
         timeout_t timeout;
-        timeout_t session_timeout;
+        timeout_t sessTimeout;
+        timeout_t cmdTimeout;
+        timeout_t outTimeout;
+
         std::atomic_bool cancelled;
         DebugStream mylog;
         ThreadCreator<LogServer>* thr;

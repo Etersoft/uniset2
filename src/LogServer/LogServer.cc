@@ -26,7 +26,9 @@ LogServer::~LogServer()
 // -------------------------------------------------------------------------
 LogServer::LogServer( DebugStream& log ):
 timeout(TIMEOUT_INF),
-session_timeout(3600000),
+sessTimeout(3600000),
+cmdTimeout(2000),
+outTimeout(2000),
 cancelled(false),
 thr(0),
 tcp(0),
@@ -36,7 +38,9 @@ elog(&log)
 // -------------------------------------------------------------------------
 LogServer::LogServer():
 timeout(TIMEOUT_INF),
-session_timeout(3600000),
+sessTimeout(3600000),
+cmdTimeout(2000),
+outTimeout(2000),
 cancelled(false),
 thr(0),
 tcp(0),
@@ -86,7 +90,7 @@ void LogServer::work()
 		{
 			while( tcp->isPendingConnection(timeout) )
 			{
-				LogSession* s = new LogSession(*tcp, elog, session_timeout);
+				LogSession* s = new LogSession(*tcp, elog, sessTimeout, cmdTimeout, outTimeout);
 				{
 					uniset_rwmutex_wrlock l(mutSList);
 					slist.push_back(s);

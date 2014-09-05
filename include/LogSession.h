@@ -14,7 +14,7 @@ class LogSession:
 {
     public:
 
-        LogSession( ost::TCPSocket &server, DebugStream* log, timeout_t timeout );
+        LogSession( ost::TCPSocket &server, DebugStream* log, timeout_t sessTimeout=10000, timeout_t cmdTimeout=2000, timeout_t outTimeout=2000 );
         virtual ~LogSession();
 
         typedef sigc::slot<void, LogSession*> FinalSlot;
@@ -34,7 +34,9 @@ class LogSession:
         std::string caddr;
         DebugStream* log;
 
-        timeout_t timeout;
+        timeout_t sessTimeout;
+        timeout_t cmdTimeout;
+        timeout_t outTimeout;
         PassiveTimer ptSessionTimeout;
 
         FinalSlot slFin;

@@ -21,12 +21,14 @@ LogSession::~LogSession()
 	}
 }
 // -------------------------------------------------------------------------
-LogSession::LogSession( ost::TCPSocket &server, DebugStream* _log, timeout_t msec ):
+LogSession::LogSession( ost::TCPSocket &server, DebugStream* _log, timeout_t _sessTimeout, timeout_t _cmdTimeout, timeout_t _outTimeout ):
 TCPSession(server),
 peername(""),
 caddr(""),
 log(_log),
-timeout(msec),
+sessTimeout(_sessTimeout),
+cmdTimeout(_cmdTimeout),
+outTimeout(_outTimeout),
 cancelled(false)
 {
 	// slog.addLevel(Debug::ANY);
@@ -59,14 +61,12 @@ void LogSession::run()
     if( slog.debugging(Debug::INFO) )
         slog[Debug::INFO] << peername << "(run): run thread of sessions.." << endl;
 
-    ptSessionTimeout.setTiming(10000);
-    timeout_t inTimeout = 2000;
-    timeout_t outTimeout = 2000;
+    ptSessionTimeout.setTiming(sessTimeout);
 
     string oldLogFile( log->getLogFile() );
 
     // Команды могут посылаться только в начале сессии..
-    if( isPending(Socket::pendingInput, inTimeout) )
+    if( isPending(Socket::pendingInput, cmdTimeout) )
     {
 		LogServerTypes::lsMessage msg;
 		// проверяем канал..(если данных нет, значит "клиент отвалился"...
@@ -167,7 +167,7 @@ void LogSession::run()
 // -------------------------------------------------------------------------
 void LogSession::final()
 {
-     *tcp() << endl;
+     tcp()->sync();
      slFin(this);
      delete this;
 }
