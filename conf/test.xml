@@ -32,6 +32,9 @@
 		</Services>
 	</UniSet>
 	<dlog name="dlog"/>
+	<LogServer name="dlog" port="3333" host="localhost" />
+	<LogServer name="ulog" port="3335" host="localhost" />
+	
 	<settings>
 		<TestProc name="TestProc1"
 			on_s="Input1_S"

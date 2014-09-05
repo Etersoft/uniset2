@@ -24,7 +24,6 @@
 #include <sigc++/sigc++.h>
 #include "Debug.h"
 
-
 #ifdef TEST_DEBUGSTREAM
 #include <string>
 struct Debug {
@@ -201,7 +200,7 @@ public:
 
     const DebugStream &operator=(const DebugStream& r);
 protected:
-	void sbuf_overflow( const std::string& s );
+    void sbuf_overflow( const std::string& s );
 
 private:
     /// The current debug level
@@ -210,14 +209,14 @@ private:
     std::ostream nullstream;
     ///
     struct debugstream_internal;
-	struct debugstream_sbuf;
+    struct debugstream_sbuf;
     ///
     debugstream_internal * internal;
-	debugstream_sbuf * internal_sbuf;
+    debugstream_sbuf * internal_sbuf;
     bool show_datetime;
     std::string fname;
 
-	StreamEvent_Signal s_stream;
+    StreamEvent_Signal s_stream;
 };
 
 #endif

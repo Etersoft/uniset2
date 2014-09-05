@@ -30,8 +30,9 @@ int main( int argc, const char **argv )
     if( tlog.is_level1() )
         tlog.level1() << ": is level1..." << endl;
 
-	cout << "********" << endl;
+	cout << "==================" << endl;
 	cout << ss.str();
+	cout << "==================" << endl;
 
     return 0;
 }

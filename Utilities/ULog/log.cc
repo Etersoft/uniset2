@@ -13,9 +13,9 @@ using namespace std;
 static struct option longopts[] = {
     { "help", no_argument, 0, 'h' },
     { "verbose", no_argument, 0, 'v' },
-    { "iaddr", required_argument, 0, 'a' },
+    { "iaddr", required_argument, 0, 'i' },
     { "port", required_argument, 0, 'p' },
-    { "add", required_argument, 0, 'l' },
+    { "add", required_argument, 0, 'a' },
     { "del", required_argument, 0, 'd' },
     { "set", required_argument, 0, 's' },
     { "off", required_argument, 0, 'o' },
@@ -28,12 +28,12 @@ static void print_help()
 {
     printf("-h, --help         - this message\n");
     printf("-v, --verbose      - Print all messages to stdout\n");
-    printf("[-a|--iaddr] addr  - ULogServer ip or hostname.\n");
+    printf("[-i|--iaddr] addr  - ULogServer ip or hostname.\n");
     printf("[-p|--port] port   - ULogServer port.\n");
     printf("\n");
     printf("Commands:\n");
 
-    printf("[--add | -l] info,warn,crit,...  - Add log levels.\n");
+    printf("[--add | -a] info,warn,crit,...  - Add log levels.\n");
     printf("[--del | -d] info,warn,crit,...  - Delete log levels.\n");
     printf("[--set | -s] info,wanr,crit,...  - Set log levels.\n");
     printf("--off, -o                        - Off the write log file (if enabled).\n");
@@ -55,7 +55,7 @@ int main( int argc, char **argv )
 
     try
     {
-        while( (opt = getopt_long(argc, argv, "hva:p:l:d:s:onr",longopts,&optindex)) != -1 )
+        while( (opt = getopt_long(argc, argv, "hva:p:i:d:s:onr",longopts,&optindex)) != -1 )
         {
             switch (opt)
             {
@@ -63,7 +63,7 @@ int main( int argc, char **argv )
                     print_help();
                 return 0;
 
-                case 'l':
+                case 'a':
                 {
                     cmd = LogServerTypes::cmdAddLevel;
                     sdata = string(optarg);
@@ -91,7 +91,7 @@ int main( int argc, char **argv )
                     cmd = LogServerTypes::cmdRotate;
                 break;
 
-                case 'a':
+                case 'i':
                     addr = string(optarg);
                 break;
 

@@ -82,6 +82,7 @@ int main( int argc, char **argv )
         }
 
         LogServer ls(dlog);
+//		LogServer ls(cout);
         dlog.addLevel(Debug::ANY);
         ls.run( addr, port, true );
         

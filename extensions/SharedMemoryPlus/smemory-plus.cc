@@ -16,14 +16,16 @@
 #ifdef UNISET_ENABLE_IO
 #include "IOControl.h"
 #endif
+#include "LogServer.h"
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // --------------------------------------------------------------------------
-const int MaxAddNum = 10;
+const unsigned int MaxAddNum = 10;
 // --------------------------------------------------------------------------
 static void help_print( int argc, const char* argv[] );
+static LogServer* run_logserver( const std::string& cnamem, DebugStream& log );
 // --------------------------------------------------------------------------
 int main( int argc, const char **argv )
 {
@@ -40,8 +42,8 @@ int main( int argc, const char **argv )
 
         string logfilename = conf->getArgParam("--logfile", "smemory-plus.log");
         string logname( conf->getLogDir() + logfilename );
-        UniSetExtensions::dlog.logFile( logname );
-        ulog.logFile( logname );
+//        UniSetExtensions::dlog.logFile( logname );
+//        ulog.logFile( logname );
         conf->initDebug(UniSetExtensions::dlog,"dlog");
 
         UniSetActivator* act = UniSetActivator::Instance();
@@ -122,7 +124,7 @@ int main( int argc, const char **argv )
                 stringstream p;
                 p << "mbs";
                 if( i > 0 ) p << i;
-   
+
                 if( dlog.is_info() )
                     dlog.info() << "(smemory-plus): add MBSlave(" << p.str() << ")" << endl;
 
@@ -184,6 +186,18 @@ int main( int argc, const char **argv )
             (*it)->start();
 #endif
 
+        if( run_logserver("ulog",ulog) == 0 )
+		{
+			ulog.crit() << "(smemory-plus): run logserver for 'ulog' FAILED" << endl;
+			return 1;
+		}
+
+		if( run_logserver("dlog",dlog) == 0 )
+		{
+			dlog.crit() << "(smemory-plus): run logserver for 'dlog' FAILED" << endl;
+			return 1;
+		}
+
         act->run(false);
         on_sigchild(SIGTERM);
 
@@ -240,3 +254,47 @@ void help_print( int argc, const char* argv[] )
     cout << "--confile            - Use confile. Default: configure.xml" << endl;
     cout << "--logfile            - Use logfile. Default: smemory-plus.log" << endl;
 }
+// -----------------------------------------------------------------------------
+LogServer* run_logserver( const std::string& cname, DebugStream& log )
+{
+	const UniXML* xml = UniSetTypes::conf->getConfXML();
+	xmlNode* cnode = UniSetTypes::conf->findNode(xml->getFirstNode(),"LogServer",cname);
+	if( cnode == 0 )
+	{
+		cerr << "(init_ulogserver): Not found xmlnode for '" << cname << "'" << endl;
+		return 0;
+		
+	}
+	
+	UniXML::iterator it(cnode);
+	
+	LogServer* ls = new LogServer( log );
+	
+	timeout_t sessTimeout = conf->getArgPInt("--" + cname + "-session-timeout",it.getProp("sessTimeout"),3600000);
+	timeout_t cmdTimeout = conf->getArgPInt("--" + cname + "-cmd-timeout",it.getProp("cmdTimeout"),2000);
+	timeout_t outTimeout = conf->getArgPInt("--" + cname + "-out-timeout",it.getProp("outTimeout"),2000);
+
+	ls->setSessionTimeout(sessTimeout);
+	ls->setCmdTimeout(cmdTimeout);
+	ls->setOutTimeout(outTimeout);
+
+	std::string host = conf->getArgParam("--" + cname + "-host",it.getProp("host"));
+	if( host.empty() )
+	{
+		cerr << "(init_ulogserver): " << cname << ": unknown host.." << endl;
+		delete ls;
+		return 0;
+	}
+
+	ost::tpport_t port = conf->getArgPInt("--" + cname + "-port",it.getProp("port"),0);
+	if( port == 0 )
+	{
+		cerr << "(init_ulogserver): " << cname << ": unknown port.." << endl;
+		delete ls;
+		return 0;
+	}
+
+	ls->run(host, port, true);
+	return ls;
+}
+// -----------------------------------------------------------------------------

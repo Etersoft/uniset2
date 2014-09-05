@@ -16,6 +16,7 @@
 
 //#include "DebugStream.h"
 #include "Debug.h"
+#include "Mutex.h"
 
 //�Since the current C++ lib in egcs does not have a standard implementation
 // of basic_streambuf and basic_filebuf we don't have to include this
@@ -229,11 +230,10 @@ private:
 };
 
 ///
-class stringsigbuf : public stringbuf {
+class stringsigbuf : public streambuf {
 public:
-    stringsigbuf():sb(0)
+    stringsigbuf():sb(new stringbuf())
 	{
-		sb = new stringbuf();
 	}
 
     ~stringsigbuf()
@@ -243,7 +243,7 @@ public:
 
     ///
     stringsigbuf( stringbuf* b )
-        : stringbuf(), sb(b) {}
+        : streambuf(), sb(b) {}
 
     typedef sigc::signal<void,const std::string&> StrBufOverflow_Signal;
     inline StrBufOverflow_Signal signal_overflow(){ return s_overflow; }
@@ -252,11 +252,13 @@ protected:
 #ifdef MODERN_STL_STREAMS
     ///
     virtual int sync() {
+        UniSetTypes::uniset_mutex_lock l(mut);
         return sb->pubsync();
     }
 
     ///
     virtual streamsize xsputn(char_type const * p, streamsize n) {
+        UniSetTypes::uniset_mutex_lock l(mut);
         return sb->sputn(p, n);
     }
     ///
@@ -264,9 +266,12 @@ protected:
         int_type r = sb->sputc(c);
         if( r == '\n' )
         {
+            UniSetTypes::uniset_mutex_lock l(mut);
             s_overflow.emit( sb->str() );
-            delete sb;
-            sb = new stringbuf();
+            sb->str("");
+//            stringbuf* old = sb;
+//            sb = new stringbuf();
+//            delete old;
         }
         return r;
     }
@@ -287,7 +292,15 @@ protected:
         if( r == '\n' )
         {
             s_overflow.emit( sb->str() );
-            sb->rdbug.clear();
+        if( r == '\n' )
+        {
+            s_overflow.emit( sb->str() );
+            uniset_mutex_lock l(mut);
+            // из-за многопоточности.. сперва переприсвоим указатель на новый поток..
+            // а потом уже удалим старый..
+            stringbuf* old = sb;
+            sb = new stringbuf();
+            delete old;
         }
         return r;
     }
@@ -295,7 +308,8 @@ protected:
 private:
     ///
     StrBufOverflow_Signal s_overflow;
-	stringbuf* sb;
+    stringbuf* sb;
+    UniSetTypes::uniset_mutex mut;
 };
 
 //--------------------------------------------------------------------------
@@ -374,6 +388,10 @@ void DebugStream::logFile( const std::string& f )
         internal->fbuf.close();
     } else {
         internal = new debugstream_internal;
+    }
+
+    if( !internal_sbuf ) {
+        internal_sbuf  = new debugstream_sbuf;
     }
 
     if( !f.empty() )

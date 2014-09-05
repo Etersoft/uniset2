@@ -15,6 +15,7 @@ class LogServer
     public:
 
         LogServer( DebugStream& log );
+        LogServer( std::ostream& os );
         ~LogServer();
 
         inline void setSessionTimeout( timeout_t msec ){ sessTimeout = msec; }
@@ -45,6 +46,7 @@ class LogServer
 
         ost::TCPSocket* tcp;
         DebugStream* elog;
+        std::ostream* oslog;
 };
 // -------------------------------------------------------------------------
 #endif // LogServer_H_
