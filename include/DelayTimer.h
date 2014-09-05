@@ -85,7 +85,6 @@ class DelayTimer
 					waiting_on = false;
 					if( st )
 						state = true;
-					else
 
 					return state;
 				}
@@ -116,6 +115,8 @@ class DelayTimer
 
 			return state;
 		}
+
+		inline bool get(){ return state; }
 
 	protected:
 		PassiveTimer pt;
