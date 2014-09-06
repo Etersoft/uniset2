@@ -33,7 +33,7 @@ outTimeout(_outTimeout),
 delayTime(_delay),
 cancelled(false)
 {
-    // slog.addLevel(Debug::ANY);
+    //slog.addLevel(Debug::ANY);
     log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
 }
 // -------------------------------------------------------------------------

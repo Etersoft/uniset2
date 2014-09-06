@@ -252,26 +252,26 @@ protected:
 #ifdef MODERN_STL_STREAMS
     ///
     virtual int sync() {
-        UniSetTypes::uniset_mutex_lock l(mut);
+        UniSetTypes::uniset_rwmutex_wrlock l(mut);
         return sb->pubsync();
     }
 
     ///
     virtual streamsize xsputn(char_type const * p, streamsize n) {
-        UniSetTypes::uniset_mutex_lock l(mut);
-        return sb->sputn(p, n);
+        UniSetTypes::uniset_rwmutex_wrlock l(mut);
+        streamsize r = sb->sputn(p, n);
+        s_overflow.emit( sb->str() );
+        sb->str("");
+        return r;
     }
     ///
     virtual int_type overflow(int_type c = traits_type::eof()) {
         int_type r = sb->sputc(c);
         if( r == '\n' )
         {
-            UniSetTypes::uniset_mutex_lock l(mut);
+            UniSetTypes::uniset_rwmutex_wrlock l(mut);
             s_overflow.emit( sb->str() );
             sb->str("");
-//            stringbuf* old = sb;
-//            sb = new stringbuf();
-//            delete old;
         }
         return r;
     }
@@ -291,16 +291,9 @@ protected:
         int_type r = sb->overflow(c);
         if( r == '\n' )
         {
+            UniSetTypes::uniset_rwmutex_wrlock l(mut);
             s_overflow.emit( sb->str() );
-        if( r == '\n' )
-        {
-            s_overflow.emit( sb->str() );
-            uniset_mutex_lock l(mut);
-            // из-за многопоточности.. сперва переприсвоим указатель на новый поток..
-            // а потом уже удалим старый..
-            stringbuf* old = sb;
-            sb = new stringbuf();
-            delete old;
+            sb->str("");
         }
         return r;
     }
@@ -309,7 +302,7 @@ private:
     ///
     StrBufOverflow_Signal s_overflow;
     stringbuf* sb;
-    UniSetTypes::uniset_mutex mut;
+    UniSetTypes::uniset_rwmutex mut;
 };
 
 //--------------------------------------------------------------------------
