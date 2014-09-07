@@ -8,6 +8,7 @@
 #include "LogSession.h"
 #include "UniSetTypes.h"
 #include "LogServerTypes.h"
+#include "LogAgregator.h"
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -82,47 +83,60 @@ void LogSession::run()
             {
                 slog.info() << peername << "(run): receive command: '" << msg.cmd << "'" << endl;
 
-                // Обработка команд..
-                // \warning Работа с логом ведётся без mutex-а, хотя он разделяется отдельными потоками 
-                switch( msg.cmd )
+                string cmdLogName(msg.logname);
+				DebugStream* cmdlog = 0;
+
+				if( !cmdLogName.empty () )
+				{
+					LogAgregator* lag = dynamic_cast<LogAgregator*>(log);
+					cmdlog = lag ? lag->getLog( cmdLogName ) : log;
+				}
+
+				// обрабатываем команды только если нашли log
+                if( cmdlog )
                 {
-                    case LogServerTypes::cmdSetLevel:
-                        log->level( (Debug::type)msg.data );
-                    break;
-                    case LogServerTypes::cmdAddLevel:
-                        log->addLevel((Debug::type)msg.data );
-                    break;
-                    case LogServerTypes::cmdDelLevel:
-                        log->delLevel( (Debug::type)msg.data );
-                    break;
-
-                    case LogServerTypes::cmdRotate:
-                    {
-                        string lfile( log->getLogFile() );
-                        if( !lfile.empty() )
-                            log->logFile(lfile);
-                    }
-                    break;
-
-                    case LogServerTypes::cmdOffLogFile:
-                    {
-                        string lfile( log->getLogFile() );
-                        if( !lfile.empty() )
-                            log->logFile("");
-                    }
-                    break;
-
-                    case LogServerTypes::cmdOnLogFile:
-                    {
-                        if( !oldLogFile.empty() && oldLogFile != log->getLogFile() )
-                            log->logFile(oldLogFile);
-                    }
-                    break;
-
-                    default:
-                        slog.warn() << peername << "(run): Unknown command '" << msg.cmd << "'" << endl;
-                    break;
-                }
+					// Обработка команд..
+					// \warning Работа с логом ведётся без mutex-а, хотя он разделяется отдельными потоками 
+					switch( msg.cmd )
+					{
+						case LogServerTypes::cmdSetLevel:
+							cmdlog->level( (Debug::type)msg.data );
+						break;
+						case LogServerTypes::cmdAddLevel:
+							cmdlog->addLevel((Debug::type)msg.data );
+						break;
+						case LogServerTypes::cmdDelLevel:
+							cmdlog->delLevel( (Debug::type)msg.data );
+						break;
+	
+						case LogServerTypes::cmdRotate:
+						{
+							string lfile( cmdlog->getLogFile() );
+							if( !lfile.empty() )
+								cmdlog->logFile(lfile);
+						}
+						break;
+	
+						case LogServerTypes::cmdOffLogFile:
+						{
+							string lfile( cmdlog->getLogFile() );
+							if( !lfile.empty() )
+								cmdlog->logFile("");
+						}
+						break;
+	
+						case LogServerTypes::cmdOnLogFile:
+						{
+							if( !oldLogFile.empty() && oldLogFile != cmdlog->getLogFile() )
+								cmdlog->logFile(oldLogFile);
+						}
+						break;
+	
+						default:
+							slog.warn() << peername << "(run): Unknown command '" << msg.cmd << "'" << endl;
+						break;
+					}
+				}
             }
         }
     }

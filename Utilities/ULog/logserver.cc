@@ -5,6 +5,7 @@
 #include "UniSetTypes.h"
 #include "Exceptions.h"
 #include "LogServer.h"
+#include "LogAgregator.h"
 // --------------------------------------------------------------------------
 using namespace UniSetTypes;
 using namespace std;
@@ -36,7 +37,6 @@ int main( int argc, char **argv )
     string addr("localhost");
     int port = 3333;
     int tout = 2000;
-    DebugStream dlog;
     timeout_t delay = 5000;
 
     try
@@ -78,21 +78,37 @@ int main( int argc, char **argv )
 //                   << " timeout=" << tout << " msec "
                     << endl;
 
-            dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
+//            dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
         }
 
-        LogServer ls(dlog);
+
+	    DebugStream dlog;
+	    dlog.setLogName("dlog");
+        DebugStream dlog2;
+	    dlog2.setLogName("dlog2");
+
+		LogAgregator la;
+		la.add(dlog);
+		la.add(dlog2);
+
+        LogServer ls(la);
 //		LogServer ls(cout);
         dlog.addLevel(Debug::ANY);
+        dlog2.addLevel(Debug::ANY);
+        
         ls.run( addr, port, true );
         
         unsigned int i=0;
         while( true )
         {
         	dlog << "[" << ++i << "] Test message for log" << endl;
-        	dlog.info() << ": INFO message" << endl;
-        	dlog.warn() << ": WARN message" << endl;
-        	dlog.crit() << ": CRIT message" << endl;
+        	dlog.info() << ": dlog : INFO message" << endl;
+        	dlog.warn() << ": dlog : WARN message" << endl;
+        	dlog.crit() << ": dlog : CRIT message" << endl;
+
+        	dlog2.info() << ": dlog2: INFO message" << endl;
+        	dlog2.warn() << ": dlog2: WARN message" << endl;
+        	dlog2.crit() << ": dlog2: CRIT message" << endl;
         	
         	msleep(delay);
         }

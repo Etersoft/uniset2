@@ -228,7 +228,7 @@ AC_CONFIG_FILES([Makefile
 				 src/Services/Makefile
 				 src/Timers/Makefile
 				 src/Various/Makefile
-				 src/LogServer/Makefile
+				 src/Log/Makefile
 				 src/Makefile
 				 include/Makefile
 				 include/modbus/Makefile

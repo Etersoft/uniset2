@@ -3,6 +3,7 @@
 #define LogServerTypes_H_
 // -------------------------------------------------------------------------
 #include <ostream>
+#include <cstring>
 // -------------------------------------------------------------------------
 namespace LogServerTypes
 {
@@ -23,16 +24,21 @@ namespace LogServerTypes
 
     struct lsMessage
     {
-        lsMessage():magic(MAGICNUM),cmd(cmdNOP),data(0){}
+        lsMessage():magic(MAGICNUM),cmd(cmdNOP),data(0){ std::memset(logname,0,sizeof(logname)); }
         unsigned int magic;
         Command cmd;
         unsigned int data;
 
+        static const size_t MAXLOGNAME = 20;
+        char logname[MAXLOGNAME+1]; // +1 reserverd for '\0'
+
+        void setLogName( const std::string& name );
+
         // для команды 'cmdSetLogFile'
-        // static const short MAXLOGFILENAME = 100;
-        // char logname[MAXLOGFILENAME];
+        // static const size_t MAXLOGFILENAME = 200;
+        // char logfile[MAXLOGFILENAME];
     }__attribute__((packed));
-    
+
     std::ostream& operator<<(std::ostream& os, lsMessage& m );
 }
 // -------------------------------------------------------------------------

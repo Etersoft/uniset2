@@ -11,7 +11,8 @@ using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 LogReader::LogReader():
 tcp(0),
-iaddr("")
+iaddr(""),
+cmdonly(false)
 {
 }
 
@@ -102,7 +103,16 @@ bool LogReader::isConnection()
     return tcp && tcp->isConnected();
 }
 // -------------------------------------------------------------------------
-void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServerTypes::Command cmd, int data, bool verbose )
+void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServerTypes::Command cmd, int data, const std::string& logname, bool verbose )
+{
+    LogServerTypes::lsMessage msg;
+    msg.cmd = cmd;
+    msg.data = data;
+    msg.setLogName(logname);
+    readlogs(_addr,_port,msg,verbose );
+}
+// -------------------------------------------------------------------------
+void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServerTypes::lsMessage& msg, bool verbose )
 {
     timeout_t inTimeout = 10000;
     timeout_t outTimeout = 6000;
@@ -126,15 +136,15 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
             continue;
         }
 
-        if( !send_ok && cmd != LogServerTypes::cmdNOP )
+        if( !send_ok && msg.cmd != LogServerTypes::cmdNOP )
         {
             if( tcp->isPending(ost::Socket::pendingOutput,outTimeout) )
             {
-                rlog.info() << "** send command: '" << cmd << "' data='" << data << "'" << endl;
+                rlog.info() << "** send command: logname='" << msg.logname << "' cmd='" << msg.cmd << "' data='" << msg.data << "'" << endl;
 
-                LogServerTypes::lsMessage msg;
-                msg.cmd = cmd;
-                msg.data = data;
+//               LogServerTypes::lsMessage msg;
+//               msg.cmd = cmd;
+//               msg.data = data;
                 for( size_t i=0; i<sizeof(msg); i++ )
                     (*tcp) << ((unsigned char*)(&msg))[i];
 
@@ -142,10 +152,13 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
                 send_ok = true;
             }
             else
-                rlog.warn() << "**** SEND COMMAND ('" << cmd << "' FAILED!" << endl;
+                rlog.warn() << "**** SEND COMMAND ('" << msg.cmd << "' FAILED!" << endl;
+
+            if( cmdonly )
+                return;
         }
 
-        while( tcp->isPending(ost::Socket::pendingInput,inTimeout) )
+        while( !cmdonly && tcp->isPending(ost::Socket::pendingInput,inTimeout) )
         {
             int n = tcp->peek( buf,sizeof(buf)-1 );
             if( n > 0 )

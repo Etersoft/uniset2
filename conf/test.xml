@@ -32,8 +32,7 @@
 		</Services>
 	</UniSet>
 	<dlog name="dlog"/>
-	<LogServer name="dlog" port="3333" host="localhost" />
-	<LogServer name="ulog" port="3335" host="localhost" />
+	<LogServer name="smplus" port="3333" host="localhost" />
 	
 	<settings>
 		<TestProc name="TestProc1"

@@ -55,12 +55,13 @@ int main( int argc, char* argv[], char* envp[] )
 			case 0:
 			{
 				/* Child. */
-				close(1); /* Close current stdout. */
-				dup(cp[1]); /* Make stdout go to write end of pipe. */
+				close(cp[0]);
 
-	//			close(0); /* Close current stdin. */
-	//			dup( pc[0]); /* Make stdin come from read end of pipe. */
-				close( cp[0]);
+	            close( fileno(stderr) );   //close stderr
+				dup2(fileno(stdout),fileno(stderr));
+
+				close(fileno(stdout)); /* Close current stdout. */
+  				dup2(cp[1],fileno(stdout)); /* Make stdout go to write end of pipe. */
 
 				execvpe(argv[3], argv + 3, envp);
 				perror("No exec");
@@ -89,6 +90,7 @@ int main( int argc, char* argv[], char* envp[] )
 					ssize_t r = read(cp[0], &buf, sizeof(buf)-1 );
 					if( r > 0 )
 					{
+						cout << "***READ**" << endl;
 						buf[r] = '\0';
 						zlog << buf;
 					}

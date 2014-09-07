@@ -16,6 +16,7 @@
 #ifdef UNISET_ENABLE_IO
 #include "IOControl.h"
 #endif
+#include "LogAgregator.h"
 #include "LogServer.h"
 // --------------------------------------------------------------------------
 using namespace std;
@@ -186,15 +187,13 @@ int main( int argc, const char **argv )
             (*it)->start();
 #endif
 
-        if( run_logserver("ulog",ulog) == 0 )
+		LogAgregator la;
+		la.add(ulog);
+		la.add(dlog);
+		
+        if( run_logserver("smplus",la) == 0 )
 		{
-			ulog.crit() << "(smemory-plus): run logserver for 'ulog' FAILED" << endl;
-			return 1;
-		}
-
-		if( run_logserver("dlog",dlog) == 0 )
-		{
-			dlog.crit() << "(smemory-plus): run logserver for 'dlog' FAILED" << endl;
+			cerr << "(smemory-plus): run logserver for 'smplus' FAILED" << endl;
 			return 1;
 		}
 

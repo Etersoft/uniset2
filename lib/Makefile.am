@@ -22,4 +22,4 @@ libUniSet2_la_LIBADD	= -lm \
  $(top_builddir)/src/Services/libServices.la \
  $(top_builddir)/src/Timers/libTimers.la \
  $(top_builddir)/src/Various/libVarious.la \
- $(top_builddir)/src/LogServer/libLogServer.la
+ $(top_builddir)/src/Log/libLog.la

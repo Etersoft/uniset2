@@ -92,7 +92,7 @@ public:
     DebugStream(char const * f, Debug::type t = Debug::NONE);
 
     ///
-    ~DebugStream();
+    virtual ~DebugStream();
 
     typedef sigc::signal<void,const std::string&> StreamEvent_Signal;
     StreamEvent_Signal signal_stream_event();
@@ -118,7 +118,7 @@ public:
     }
 
     /// Sets the debugstreams' logfile to f.
-    void logFile( const std::string& f );
+    virtual void logFile( const std::string& f );
 
     inline std::string getLogFile(){ return fname; }
 
@@ -199,24 +199,27 @@ public:
     std::ostream& pos(int x, int y);
 
     const DebugStream &operator=(const DebugStream& r);
+
+    inline void setLogName( const std::string& n ){ logname = n; }
+    inline std::string  getLogName(){ return logname; }
+
 protected:
     void sbuf_overflow( const std::string& s );
 
-private:
+// private:
     /// The current debug level
     Debug::type dt;
     /// The no-op stream.
     std::ostream nullstream;
     ///
     struct debugstream_internal;
-    struct debugstream_sbuf;
     ///
     debugstream_internal * internal;
-    debugstream_sbuf * internal_sbuf;
     bool show_datetime;
     std::string fname;
 
     StreamEvent_Signal s_stream;
+    std::string logname; 
 };
 
 #endif

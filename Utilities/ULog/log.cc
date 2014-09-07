@@ -21,15 +21,20 @@ static struct option longopts[] = {
     { "off", required_argument, 0, 'o' },
     { "on", required_argument, 0, 'n' },
     { "rotate", required_argument, 0, 'r' },
+    { "logname", required_argument, 0, 'l' },
+    { "command-only", no_argument, 0, 'b' },
     { NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
 static void print_help()
 {
-    printf("-h, --help         - this message\n");
-    printf("-v, --verbose      - Print all messages to stdout\n");
-    printf("[-i|--iaddr] addr  - ULogServer ip or hostname.\n");
-    printf("[-p|--port] port   - ULogServer port.\n");
+    printf("-h, --help          - this message\n");
+    printf("-v, --verbose       - Print all messages to stdout\n");
+    printf("[-i|--iaddr] addr   - LogServer ip or hostname.\n");
+    printf("[-p|--port] port    - LogServer port.\n");
+    printf("[-l|--logname] name - Send command only for 'logname'.\n");
+    printf("[-b|--command-only] - Send command and break. (No read logs).\n");
+
     printf("\n");
     printf("Commands:\n");
 
@@ -52,10 +57,12 @@ int main( int argc, char **argv )
     int cmd = LogServerTypes::cmdNOP;
     int data = 0;
     string sdata("");
+    int cmdonly = 0;
+    string logname("");
 
     try
     {
-        while( (opt = getopt_long(argc, argv, "hva:p:i:d:s:onr",longopts,&optindex)) != -1 )
+        while( (opt = getopt_long(argc, argv, "hva:p:i:d:s:l:onrb",longopts,&optindex)) != -1 )
         {
             switch (opt)
             {
@@ -95,6 +102,14 @@ int main( int argc, char **argv )
                     addr = string(optarg);
                 break;
 
+                case 'l':
+                    logname = string(optarg);
+                break;
+
+                case 'b':
+                    cmdonly = 1;
+                break;
+
                 case 'p':
                     port = uni_atoi(optarg);
                 break;
@@ -118,6 +133,7 @@ int main( int argc, char **argv )
         }
 
         LogReader lr;
+        lr.setCommandOnlyMode(cmdonly);
 
         if( !sdata.empty() )
         {
@@ -127,7 +143,7 @@ int main( int argc, char **argv )
                 cout << "SEND COMMAND: '" << (LogServerTypes::Command)cmd << " data='" << sdata << "'" << endl;
         }
 
-        lr.readlogs( addr, port, (LogServerTypes::Command)cmd, data, verb );
+        lr.readlogs( addr, port, (LogServerTypes::Command)cmd, data, logname, verb );
     }
     catch( SystemError& err )
     {

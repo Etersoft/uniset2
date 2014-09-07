@@ -701,7 +701,10 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
     else
     {
         if( !getProp(dnode,"name").empty() )
+        {
             debname = getProp(dnode,"name");
+            deb.setLogName(debname);
+        }
     }
 
     string no_deb("--"+debname+"-no-debug");
@@ -978,6 +981,7 @@ UniversalIO::IOType Configuration::getIOType( const std::string& name )
 void uniset_init( int argc, const char* const* argv, const std::string& xmlfile )
 {
     string confile = UniSetTypes::getArgParam( "--confile", argc, argv, xmlfile );
+    ulog.setLogName("ulog");
     UniSetTypes::conf = new Configuration(argc, argv, confile);
 }
 // -------------------------------------------------------------------------

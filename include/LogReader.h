@@ -15,9 +15,17 @@ class LogReader
         LogReader();
         ~LogReader();
 
-        void readlogs( const std::string& addr, ost::tpport_t port, LogServerTypes::Command c, int data, bool verbose = false );
+        void readlogs( const std::string& addr, ost::tpport_t port, 
+                       LogServerTypes::Command c = LogServerTypes::cmdNOP, 
+                       int data = 0, 
+                       const std::string& logname="", 
+                       bool verbose = false );
+
+        void readlogs( const std::string& addr, ost::tpport_t port, LogServerTypes::lsMessage& m, bool verbose = false );
 
         bool isConnection();
+
+        inline void setCommandOnlyMode( bool s ){ cmdonly = s; }
 
     protected:
 
@@ -29,6 +37,7 @@ class LogReader
         UTCPStream* tcp;
         std::string iaddr;
         ost::tpport_t port;
+        bool cmdonly;
 
         DebugStream rlog;
 };

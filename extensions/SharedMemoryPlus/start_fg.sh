@@ -4,7 +4,6 @@ ulimit -Sc 10000000
 START=uniset2-start.sh
 
 ${START} -f ./uniset2-smemory-plus --smemory-id SharedMemory  --confile test.xml \
-	 --dlog-add-levels any \
 	 --io-name IOControl \
 	 --io-polltime 100 \
 	 --io-s-filter-field io \
@@ -31,7 +30,8 @@ ${START} -f ./uniset2-smemory-plus --smemory-id SharedMemory  --confile test.xml
      --mbtcp2-gateway-port 2049 \
      --mbtcp2-recv-timeout 200 \
      --mbtcp2-force-out 1 \
-     $*
+#	 --dlog-add-levels any \
+#     $*
 #	 --add-rtu \
 #	 --rs-dev /dev/cbsideA1 \
 #	 --rs-id RTUExchange \
