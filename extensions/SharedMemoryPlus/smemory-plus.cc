@@ -33,16 +33,26 @@ std::list< ThreadCreator<IOControl>* > lst_iothr;
 #endif
 // --------------------------------------------------------------------------
 void activator_terminate( int signo )
-{
+{	
 	if( logserver )
 	{
-		delete logserver;
-		logserver = 0;
+		try
+		{
+			delete logserver;
+			logserver = 0;
+		}
+		catch(...){}
 	}
 
 #ifdef UNISET_IO_ENABLE
         for( auto& i: lst_iothr )
-            i->stop();
+        {
+        	try
+        	{
+	            i->stop();
+	        }
+	        catch(...){}
+        }
 #endif
 }
 // --------------------------------------------------------------------------
@@ -211,14 +221,13 @@ int main( int argc, const char **argv )
 		la.add(ulog);
 		la.add(dlog);
 
-#if 0		
 		logserver = run_logserver("smplus",la);
         if( logserver == 0 )
 		{
 			cerr << "(smemory-plus): run logserver for 'smplus' FAILED" << endl;
 			return 1;
 		}
-#endif
+
         act->run(false);
 
         on_sigchild(SIGTERM);

@@ -78,9 +78,12 @@ int main( int argc, const char** argv )
     }
     catch(...)
     {
+        std::exception_ptr p = std::current_exception();
+        std::clog <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
+
         dcrit << "(mbtcpmaster): catch ..." << std::endl;
     }
 
-	on_sigchild(SIGTERM);
+    on_sigchild(SIGTERM);
     return 1;
 }

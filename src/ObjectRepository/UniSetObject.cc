@@ -134,16 +134,27 @@ stCountOfQueueFull(0)
 // ------------------------------------------------------------------------------------------
 UniSetObject::~UniSetObject() 
 {
-    deactivate();
+    try
+    {
+        deactivate();
+    }
+    catch(...){}
 
-    tmr->terminate();
+    try
+    {
+        tmr->terminate();
+    }
+    catch(...){}
 
     if( thr )
     {
-        thr->stop();
-
-        if( thr->isRunning() )
-            thr->join();
+        try
+        {
+            thr->stop();
+            if( thr->isRunning() )
+                thr->join();
+        }
+        catch(...){}
 
         delete thr;
     }
@@ -757,8 +768,8 @@ void UniSetObject::work()
     if( thr )
         msgpid = thr->getTID();
 
-    while( isActive() )
-        callback();
+       while( isActive() )
+           callback();
 
     uinfo << myname << ": thread processing messages stopped..." << endl;
 }
@@ -817,10 +828,17 @@ void UniSetObject::processingMessage( UniSetTypes::VoidMessage *msg )
                 << " mesg: " << fe.errmsg() << endl;
         }
     }
-    catch(...)
+    catch( const std::exception& ex )
     {
-        ucrit << myname << "(processingMessage): catch..." << endl;
+        ucrit << myname << "(processingMessage): " << ex.what() << endl;
     }
+/*
+    catch( ... )
+    {
+        std::exception_ptr p = std::current_exception();
+        ucrit <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
+    }
+*/
 }
 // ------------------------------------------------------------------------------------------
 

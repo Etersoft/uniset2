@@ -75,6 +75,12 @@ pollThread(0)
 // -----------------------------------------------------------------------------
 MBTCPMaster::~MBTCPMaster()
 {
+    if( pollThread )
+    {
+        pollThread->stop();
+        if( pollThread->isRunning() )
+            pollThread->join();
+    }
     delete pollThread;
     //delete mbtcp;
 }
@@ -146,12 +152,20 @@ void MBTCPMaster::poll_thread()
             if( sidExchangeMode != DefaultObjectId && force )
                 exchangeMode = shm->localGetValue(itExchangeMode,sidExchangeMode);
         }
-        catch(...){}
+        catch(...)
+        {
+            throw;
+        }
+
         try
         {
             poll();
         }
-        catch(...){}
+        catch(...)
+        {
+//            if( !checkProcActive() )
+                throw;
+        }
 
         if( !checkProcActive() )
             break;
@@ -159,6 +173,36 @@ void MBTCPMaster::poll_thread()
         msleep(polltime);
     }
 }
+// -----------------------------------------------------------------------------
+void MBTCPMaster::sigterm( int signo )
+{
+    setProcActive(false);
+
+    if( pollThread )
+    {
+        pollThread->stop();
+        if( pollThread->isRunning() )
+            pollThread->join();
+        
+        delete pollThread;
+        pollThread = 0;
+    }
+
+    try
+    {
+        MBExchange::sigterm(signo);
+    }
+    catch( const std::exception& ex )
+    {
+        cerr << "catch: " << ex.what() << endl;
+    }
+    catch( ... )
+    {
+        std::exception_ptr p = std::current_exception();
+        std::clog <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
+    }
+}
+
 // -----------------------------------------------------------------------------
 void MBTCPMaster::help_print( int argc, const char* const* argv )
 {

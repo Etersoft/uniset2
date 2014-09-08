@@ -7,12 +7,12 @@
 #include "LogServerTypes.h"
 // -------------------------------------------------------------------------
 class LogAgregator:
-	public DebugStream
+    public DebugStream
 {
     public:
 
-		explicit LogAgregator( Debug::type t = Debug::NONE );
-    	explicit LogAgregator( char const * f, Debug::type t = Debug::NONE );
+        explicit LogAgregator( Debug::type t = Debug::NONE );
+        explicit LogAgregator( char const * f, Debug::type t = Debug::NONE );
 
         virtual ~LogAgregator();
 
@@ -25,7 +25,7 @@ class LogAgregator:
         void delLevel( const std::string& logname, Debug::type t );
         void level( const std::string& logname, Debug::type t );
 
-		DebugStream* getLog( const std::string& logname );
+        DebugStream* getLog( const std::string& logname );
 
     protected:
         void logOnEvent( const std::string& s );

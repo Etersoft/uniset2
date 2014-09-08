@@ -2,24 +2,24 @@
 #include "LogAgregator.h"
 // -------------------------------------------------------------------------
 LogAgregator::LogAgregator( char const * f, Debug::type t ):
-	DebugStream(f,t)
+    DebugStream(f,t)
 {
     delete rdbuf(new teebuf(&internal->fbuf,&internal->sbuf));
 }
 // -------------------------------------------------------------------------
 LogAgregator::LogAgregator( Debug::type t ):
-	DebugStream(t)
+    DebugStream(t)
 {
-	delete rdbuf(new teebuf(&internal->nbuf,&internal->sbuf));
+    delete rdbuf(new teebuf(&internal->nbuf,&internal->sbuf));
 }
 // -------------------------------------------------------------------------
 void LogAgregator::logFile( const std::string& f )
 {
-	DebugStream::logFile(f);
-	if( f.empty() )
-    	delete rdbuf(new teebuf(&internal->fbuf,&internal->sbuf));
-	else
-		delete rdbuf(new teebuf(&internal->nbuf,&internal->sbuf));
+    DebugStream::logFile(f);
+    if( f.empty() )
+        delete rdbuf(new teebuf(&internal->fbuf,&internal->sbuf));
+    else
+        delete rdbuf(new teebuf(&internal->nbuf,&internal->sbuf));
 }
 // -------------------------------------------------------------------------
 LogAgregator::~LogAgregator()
@@ -45,51 +45,51 @@ void LogAgregator::add( DebugStream& l )
 // -------------------------------------------------------------------------
 void LogAgregator::addLevel( const std::string& logname, Debug::type t )
 {
-	for( auto& i: llst )
-	{	
-		if( i->getLogName() == logname )
-		{
-			i->addLevel(t);
-			break;
-		}
-	}
+    for( auto& i: llst )
+    {    
+        if( i->getLogName() == logname )
+        {
+            i->addLevel(t);
+            break;
+        }
+    }
 }
 // -------------------------------------------------------------------------
 void LogAgregator::delLevel( const std::string& logname, Debug::type t )
 {
-	for( auto& i: llst )
-	{	
-		if( i->getLogName() == logname )
-		{
-			i->delLevel(t);
-			break;
-		}
-	}
+    for( auto& i: llst )
+    {    
+        if( i->getLogName() == logname )
+        {
+            i->delLevel(t);
+            break;
+        }
+    }
 }
 // -------------------------------------------------------------------------
 void LogAgregator::level( const std::string& logname, Debug::type t )
 {
-	for( auto& i: llst )
-	{	
-		if( i->getLogName() == logname )
-		{
-			i->level(t);
-			break;
-		}
-	}
+    for( auto& i: llst )
+    {    
+        if( i->getLogName() == logname )
+        {
+            i->level(t);
+            break;
+        }
+    }
 }
 // -------------------------------------------------------------------------
 DebugStream* LogAgregator::getLog( const std::string& logname )
 {
-	if( logname.empty() )
-		return 0;
+    if( logname.empty() )
+        return 0;
 
-	for( auto& i: llst )
-	{	
-		if( i->getLogName() == logname )
-			return i;
-	}
+    for( auto& i: llst )
+    {    
+        if( i->getLogName() == logname )
+            return i;
+    }
 
-	return 0;
+    return 0;
 }
 // -------------------------------------------------------------------------

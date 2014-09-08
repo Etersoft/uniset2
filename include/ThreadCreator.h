@@ -177,9 +177,8 @@ template <class ThreadMaster>
 void ThreadCreator<ThreadMaster>::run()
 {
     pid = getpid();
-    if(m)
-        (m->*act)();
-//    PosixThread::stop()
+    if( m )
+           (m->*act)();
 }
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>

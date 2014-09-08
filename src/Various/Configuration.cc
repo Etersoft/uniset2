@@ -504,16 +504,16 @@ void Configuration::initParameters()
             if( confDir.empty() )
                 confDir = getRootDir();
         }
-	}
+    }
 
-	// Heartbeat init...
-	xmlNode* cnode = getNode("HeartBeatTime");
-	if( cnode )
+    // Heartbeat init...
+    xmlNode* cnode = getNode("HeartBeatTime");
+    if( cnode )
         {
-		UniXML_iterator hit(cnode);
-		heartbeat_msec = hit.getIntProp("msec");
-		if( heartbeat_msec <= 0 )
-			heartbeat_msec = 5000;
+        UniXML_iterator hit(cnode);
+        heartbeat_msec = hit.getIntProp("msec");
+        if( heartbeat_msec <= 0 )
+            heartbeat_msec = 5000;
     }
 }
 // -------------------------------------------------------------------------

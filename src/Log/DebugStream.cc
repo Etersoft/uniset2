@@ -50,7 +50,7 @@ DebugStream::DebugStream(Debug::type t)
       logname("")
 {
     delete rdbuf(new teebuf(cerr.rdbuf(),&internal->sbuf));
-	internal->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
+    internal->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
 }
 
 //--------------------------------------------------------------------------
@@ -67,12 +67,12 @@ DebugStream::DebugStream(char const * f, Debug::type t)
     delete rdbuf(new threebuf(cerr.rdbuf(),
                 &internal->fbuf,&internal->sbuf));
 
-	internal->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
+    internal->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
 }
 //--------------------------------------------------------------------------
 void DebugStream::sbuf_overflow( const std::string& s )
 {
-	s_stream.emit(s);
+    s_stream.emit(s);
 }
 //--------------------------------------------------------------------------
 DebugStream::~DebugStream()
@@ -195,7 +195,7 @@ std::ostream& DebugStream::pos(int x, int y)
 //--------------------------------------------------------------------------
 DebugStream::StreamEvent_Signal DebugStream::signal_stream_event()
 {
-	return s_stream;
+    return s_stream;
 }
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------

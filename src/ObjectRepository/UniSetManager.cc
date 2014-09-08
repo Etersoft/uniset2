@@ -120,10 +120,22 @@ UniSetManager::~UniSetManager()
     catch(...){}
 
     for( auto& i: olist )
-        delete i;
+    {
+        try
+        {
+            delete i;
+        }
+        catch(...){}
+    }
 
     for( auto& i: mlist )
-        delete i;
+    {
+        try
+        {
+            delete i;
+        }
+        catch(...){}
+    }
 
     olist.clear();
     mlist.clear();
@@ -357,8 +369,18 @@ bool UniSetManager::deactivateObject()
 void UniSetManager::sigterm( int signo )
 {
     sig=signo;
-    objects(term);
-    managers(term);
+    try
+    {
+        objects(term);
+    }
+    catch(...){}
+    
+    try
+    {
+        managers(term);
+    }
+    catch(...){}
+
     UniSetObject::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------

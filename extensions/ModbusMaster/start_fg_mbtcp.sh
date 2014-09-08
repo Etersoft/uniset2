@@ -4,7 +4,7 @@
 --confile test.xml \
 --mbtcp-name MBMaster1 \
 --smemory-id SharedMemory \
---dlog-add-levels info,crit,warn,level4,level3 \
+--dlog-add-levels system,info,crit,warn,level4,level3 \
 --mbtcp-set-prop-prefix \
 --mbtcp-filter-field rs \
 --mbtcp-filter-value 5 \

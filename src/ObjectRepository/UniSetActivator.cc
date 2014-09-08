@@ -191,8 +191,6 @@ void UniSetActivator::oaDestroy(int signo)
 
             try
             {
-
-
                 stop();
             }
             catch(...){}
@@ -210,13 +208,17 @@ void UniSetActivator::oaDestroy(int signo)
             ulogsys << myname << "(oaDestroy): orbthr=" << orbthr << endl;
             if( orbthr )
             {
-                ulogsys << myname << "(oaDestroy): orb thread stop... " << endl;
+                try
+                {
+                    ulogsys << myname << "(oaDestroy): orb thread stop... " << endl;
 
-                orbthr->stop();
-                if( orbthr->isRunning() )
-                      orbthr->join();
+                    orbthr->stop();
+                    if( orbthr->isRunning() )
+                          orbthr->join();
 
-                ulogsys << myname << "(oaDestroy): orb thread stop ok. " << endl;
+                    ulogsys << myname << "(oaDestroy): orb thread stop ok. " << endl;
+                }
+                catch(...){}
             }
 
         try
@@ -520,6 +522,9 @@ void UniSetActivator::normalexit()
 {
     if( gActivator )
         ulogsys << gActivator->getName() << "(default exit): good bye."<< endl << flush;
+
+//     std::exception_ptr p = std::current_exception();
+//     std::clog <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
 }
 
 void UniSetActivator::normalterminate()
@@ -527,6 +532,9 @@ void UniSetActivator::normalterminate()
     if( gActivator )
         ucrit << gActivator->getName() << "(default exception terminate): Никто не выловил исключение!!! Good bye."<< endl<< flush;
 //    abort();
+
+//     std::exception_ptr p = std::current_exception();
+//     std::clog <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::term( int signo )

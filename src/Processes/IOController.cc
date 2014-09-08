@@ -719,7 +719,7 @@ IOController_i::ShortIOInfo IOController::getChangedTime( UniSetTypes::ObjectId 
     err << myname << "(getChangedTime): вход(выход) с именем " 
         << conf->oind->getNameById(sid) << " не найден";
 
-	uinfo << err.str() << endl;
+    uinfo << err.str() << endl;
     throw IOController_i::NameNotFound(err.str().c_str());
 }
 // -----------------------------------------------------------------------------
