@@ -68,6 +68,9 @@ void LogSession::run()
 
     string oldLogFile( log->getLogFile() );
 
+    setKeepAlive(true);
+//    setTimeout(sessTimeout);
+
     // Команды могут посылаться только в начале сессии..
     if( isPending(Socket::pendingInput, cmdTimeout) )
     {
@@ -84,65 +87,65 @@ void LogSession::run()
                 slog.info() << peername << "(run): receive command: '" << msg.cmd << "'" << endl;
 
                 string cmdLogName(msg.logname);
-				DebugStream* cmdlog = 0;
+                DebugStream* cmdlog = 0;
 
-				if( !cmdLogName.empty () )
-				{
-					LogAgregator* lag = dynamic_cast<LogAgregator*>(log);
-					cmdlog = lag ? lag->getLog( cmdLogName ) : log;
-				}
+                if( !cmdLogName.empty () )
+                {
+                    LogAgregator* lag = dynamic_cast<LogAgregator*>(log);
+                    cmdlog = lag ? lag->getLog( cmdLogName ) : log;
+                }
 
-				// обрабатываем команды только если нашли log
+                // обрабатываем команды только если нашли log
                 if( cmdlog )
                 {
-					// Обработка команд..
-					// \warning Работа с логом ведётся без mutex-а, хотя он разделяется отдельными потоками 
-					switch( msg.cmd )
-					{
-						case LogServerTypes::cmdSetLevel:
-							cmdlog->level( (Debug::type)msg.data );
-						break;
-						case LogServerTypes::cmdAddLevel:
-							cmdlog->addLevel((Debug::type)msg.data );
-						break;
-						case LogServerTypes::cmdDelLevel:
-							cmdlog->delLevel( (Debug::type)msg.data );
-						break;
-	
-						case LogServerTypes::cmdRotate:
-						{
-							string lfile( cmdlog->getLogFile() );
-							if( !lfile.empty() )
-								cmdlog->logFile(lfile);
-						}
-						break;
-	
-						case LogServerTypes::cmdOffLogFile:
-						{
-							string lfile( cmdlog->getLogFile() );
-							if( !lfile.empty() )
-								cmdlog->logFile("");
-						}
-						break;
-	
-						case LogServerTypes::cmdOnLogFile:
-						{
-							if( !oldLogFile.empty() && oldLogFile != cmdlog->getLogFile() )
-								cmdlog->logFile(oldLogFile);
-						}
-						break;
-	
-						default:
-							slog.warn() << peername << "(run): Unknown command '" << msg.cmd << "'" << endl;
-						break;
-					}
-				}
+                    // Обработка команд..
+                    // \warning Работа с логом ведётся без mutex-а, хотя он разделяется отдельными потоками 
+                    switch( msg.cmd )
+                    {
+                        case LogServerTypes::cmdSetLevel:
+                            cmdlog->level( (Debug::type)msg.data );
+                        break;
+                        case LogServerTypes::cmdAddLevel:
+                            cmdlog->addLevel((Debug::type)msg.data );
+                        break;
+                        case LogServerTypes::cmdDelLevel:
+                            cmdlog->delLevel( (Debug::type)msg.data );
+                        break;
+
+                        case LogServerTypes::cmdRotate:
+                        {
+                            string lfile( cmdlog->getLogFile() );
+                            if( !lfile.empty() )
+                                cmdlog->logFile(lfile);
+                        }
+                        break;
+    
+                        case LogServerTypes::cmdOffLogFile:
+                        {
+                            string lfile( cmdlog->getLogFile() );
+                            if( !lfile.empty() )
+                                cmdlog->logFile("");
+                        }
+                        break;
+    
+                        case LogServerTypes::cmdOnLogFile:
+                        {
+                            if( !oldLogFile.empty() && oldLogFile != cmdlog->getLogFile() )
+                                cmdlog->logFile(oldLogFile);
+                        }
+                        break;
+    
+                        default:
+                            slog.warn() << peername << "(run): Unknown command '" << msg.cmd << "'" << endl;
+                        break;
+                    }
+                }
             }
         }
     }
 
     cancelled = false;
-    while( !cancelled && !ptSessionTimeout.checkTime() )
+    while( !cancelled && isConnected() ) // !ptSessionTimeout.checkTime()
     {
         // проверка только ради проверки "целостности" соединения
         if( isPending(Socket::pendingInput, 10) )
@@ -155,37 +158,35 @@ void LogSession::run()
 
         if( isPending(Socket::pendingOutput, outTimeout) )
         {
-            // slog.warn() << peername << "(run): send.." << endl;
-            ptSessionTimeout.reset();
+            //slog.info() << peername << "(run): send.." << endl;
+      //      ptSessionTimeout.reset();
 
-			if( log )
+            // чтобы не застревать на посылке в сеть..
+            // делаем через промежуточный буффер (stringstream)
+            ostringstream sbuf;
+            bool send = false;
             {
-				// чтобы не застревать на посылке в сеть..
-				// делаем через промежуточный буффер (stringstream)
-				ostringstream sbuf;
-				bool send = false;
-				{
-					uniset_rwmutex_wrlock l(mLBuf);
-					if( !lbuf.empty() )
-					{
-						slog.info() << peername << "(run): send messages.." << endl;
-						while( !lbuf.empty() )
-						{
-							sbuf << lbuf.front();
-							lbuf.pop_front();
-						}
-						send = true;
-					}
-				}
-				if( send )
-				{
-					*tcp() << sbuf.str();
-					tcp()->sync();
-				}
+                uniset_rwmutex_wrlock l(mLBuf);
+                if( !lbuf.empty() )
+                {
+                    slog.info() << peername << "(run): send messages.." << endl;
+                    while( !lbuf.empty() )
+                    {
+                        sbuf << lbuf.front();
+                        lbuf.pop_front();
+                    }
+                    send = true;
+                }
+            }
 
-				// чтобы постоянно не проверять... (надо переделать на condition)
-				sleep(delayTime);
-			}
+            if( send )
+            {
+                *tcp() << sbuf.str();
+                tcp()->sync();
+            }
+
+            // чтобы постоянно не проверять... (надо переделать на condition)
+            sleep(delayTime);
         }
     }
 
@@ -200,9 +201,9 @@ void LogSession::run()
 // -------------------------------------------------------------------------
 void LogSession::final()
 {
-     tcp()->sync();
-     slFin(this);
-     delete this;
+    tcp()->sync();
+    slFin(this);
+    delete this;
 }
 // -------------------------------------------------------------------------
 void LogSession::connectFinalSession( FinalSlot sl )

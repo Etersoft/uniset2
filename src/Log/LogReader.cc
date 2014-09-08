@@ -20,10 +20,7 @@ cmdonly(false)
 LogReader::~LogReader()
 {
     if( isConnection() )
-    {
-        (*tcp) << endl;
         disconnect();
-    }
 }
 // -------------------------------------------------------------------------
 void LogReader::connect( const std::string& addr, ost::tpport_t _port, timeout_t msec )
@@ -155,7 +152,10 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
                 rlog.warn() << "**** SEND COMMAND ('" << msg.cmd << "' FAILED!" << endl;
 
             if( cmdonly )
+            {
+                disconnect();
                 return;
+            }
         }
 
         while( !cmdonly && tcp->isPending(ost::Socket::pendingInput,inTimeout) )
@@ -167,7 +167,7 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
                 buf[n] = '\0';
                 cout << buf;
             }
-            else 
+            else
                 break;
         }
 
@@ -177,9 +177,6 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
     }
 
     if( isConnection() )
-    {
-        (*tcp) << endl;
         disconnect();
-    }
 }
 // -------------------------------------------------------------------------

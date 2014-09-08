@@ -10,18 +10,24 @@ using namespace UniSetTypes;
 LogServer::~LogServer()
 {
     cancelled = true;
-
-    {
-        uniset_rwmutex_wrlock l(mutSList);
-        for( auto& i: slist )
-            delete i;
-    }
-
     if( thr )
     {
         thr->stop();
+        if( thr->isRunning() )
+            thr->join();
         delete thr;
     }
+
+    {
+        // uniset_rwmutex_wrlock l(mutSList);
+        for( auto& i: slist )
+        {
+            if( i->isRunning() )
+                delete i;
+        }
+    }
+
+    delete tcp;
 }
 // -------------------------------------------------------------------------
 LogServer::LogServer( std::ostream& os ):
@@ -102,7 +108,7 @@ void LogServer::work()
     {
         try
         {
-            while( tcp->isPendingConnection(timeout) )
+            while( !cancelled && tcp->isPendingConnection(timeout) )
             {
                 LogSession* s = new LogSession(*tcp, elog, sessTimeout, cmdTimeout, outTimeout);
                 {
@@ -129,10 +135,12 @@ void LogServer::work()
         }
     }
 
+    cerr << "*** LOG SERVER THREAD STOPPED.." << endl;
+
     {
-        uniset_rwmutex_wrlock l(mutSList);
-        for( SessionList::iterator i=slist.begin(); i!=slist.end(); ++i )
-            (*i)->disconnect();
+//      uniset_rwmutex_wrlock l(mutSList);
+        for( auto& i: slist )
+               i->disconnect();
     }
 }
 // -------------------------------------------------------------------------
@@ -143,7 +151,6 @@ void LogServer::sessionFinished( LogSession* s )
     {
         if( (*i) == s )
         {
-            // cerr << "session '" << s->getClientAddress() << "' closed.." << endl;
             slist.erase(i);
             return;
         }

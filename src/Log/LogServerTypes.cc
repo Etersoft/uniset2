@@ -39,8 +39,8 @@ std::ostream& LogServerTypes::operator<<(std::ostream& os, LogServerTypes::lsMes
 // -------------------------------------------------------------------------
 void LogServerTypes::lsMessage::setLogName( const std::string& name )
 {
-	size_t s = name.size()> MAXLOGNAME ? MAXLOGNAME : name.size();
-	memcpy( &logname, name.c_str(), s );
+    size_t s = name.size()> MAXLOGNAME ? MAXLOGNAME : name.size();
+    memcpy( &logname, name.c_str(), s );
     logname[s] = '\0';
 }
 // -------------------------------------------------------------------------
