@@ -27,6 +27,7 @@
 // --------------------------------------------------------------------------
 #include <deque>
 #include <omniORB4/CORBA.h>
+#include <cc++/socket.h>
 #include "UniSetTypes.h"
 #include "UniSetObject.h"
 #include "UniSetManager.h"
@@ -66,6 +67,9 @@ class UniSetActivator:
         inline void oakill(int signo){ raise(signo);}
 
         virtual UniSetTypes::ObjectType getType() override { return UniSetTypes::ObjectType("UniSetActivator"); }
+
+        typedef sigc::signal<void,int> TerminateEvent_Signal;
+        TerminateEvent_Signal signal_terminate_event();
 
     protected:
 
@@ -118,6 +122,7 @@ class UniSetActivator:
         ThreadCreator<UniSetActivator> *orbthr;
 
         CORBA::ORB_var orb;
+        TerminateEvent_Signal s_term;
 
         bool omDestroy;
         bool sig;

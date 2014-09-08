@@ -11,7 +11,7 @@
 class WDTInterface
 {
     public:
-        WDTInterface(const std::string& dev);
+        WDTInterface( const std::string& dev );
         ~WDTInterface();
 
         bool ping();

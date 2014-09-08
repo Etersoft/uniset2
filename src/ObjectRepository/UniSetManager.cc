@@ -115,9 +115,16 @@ UniSetManager::~UniSetManager()
     catch(...){}
     try
     {
-        managers(deactiv);    
+        managers(deactiv);
     }
     catch(...){}
+
+    for( auto& i: olist )
+        delete i;
+
+    for( auto& i: mlist )
+        delete i;
+
     olist.clear();
     mlist.clear();
 }

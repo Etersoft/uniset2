@@ -621,7 +621,8 @@ bool UniSetObject::deactivate()
     }
 
     setActive(false); // завершаем поток обработки сообщений
-    tmr->stop();
+    if( tmr )
+        tmr->stop();
 
     // Очищаем очередь
     { // lock

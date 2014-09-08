@@ -264,7 +264,7 @@ CORBA::Boolean SharedMemory::exist()
 // ------------------------------------------------------------------------------------------
 void SharedMemory::sigterm( int signo )
 {
-    if( signo == SIGTERM )
+    if( signo == SIGTERM && wdt )
         wdt->stop();
 //    raise(SIGKILL);
 	IONotifyController_LT::sigterm(signo);

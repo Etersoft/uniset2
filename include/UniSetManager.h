@@ -77,7 +77,7 @@ class UniSetManager:
         virtual bool addManager( UniSetManager *mngr );
         virtual bool removeManager( UniSetManager *mngr );
 
-        
+
         /*! Получение доступа к подчиненному менеджеру по идентификатору
          * \return объект ненайден будет возвращен 0.
         */ 

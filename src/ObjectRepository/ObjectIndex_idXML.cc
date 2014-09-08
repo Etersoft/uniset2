@@ -225,10 +225,10 @@ const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const ObjectId id )
 // ------------------------------------------------------------------------------------------
 const ObjectInfo* ObjectIndex_idXML::getObjectInfo( const std::string& name )
 {
-	auto it = mok.find(name);
+    auto it = mok.find(name);
     if( it != mok.end() )
         return getObjectInfo(it->second);
 
-	return NULL;
+    return NULL;
 }
 // ------------------------------------------------------------------------------------------

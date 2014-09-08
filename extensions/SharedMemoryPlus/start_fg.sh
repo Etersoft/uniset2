@@ -30,8 +30,8 @@ ${START} -f ./uniset2-smemory-plus --smemory-id SharedMemory  --confile test.xml
      --mbtcp2-gateway-port 2049 \
      --mbtcp2-recv-timeout 200 \
      --mbtcp2-force-out 1 \
-#	 --dlog-add-levels any \
-#     $*
+     --ulog-add-levels system \
+     $*
 #	 --add-rtu \
 #	 --rs-dev /dev/cbsideA1 \
 #	 --rs-id RTUExchange \

@@ -27,7 +27,26 @@ const unsigned int MaxAddNum = 10;
 // --------------------------------------------------------------------------
 static void help_print( int argc, const char* argv[] );
 static LogServer* run_logserver( const std::string& cnamem, DebugStream& log );
+static LogServer* logserver = 0;
+#ifdef UNISET_ENABLE_IO
+std::list< ThreadCreator<IOControl>* > lst_iothr;
+#endif
 // --------------------------------------------------------------------------
+void activator_terminate( int signo )
+{
+	if( logserver )
+	{
+		delete logserver;
+		logserver = 0;
+	}
+
+#ifdef UNISET_IO_ENABLE
+        for( auto& i: lst_iothr )
+            i->stop();
+#endif
+}
+// --------------------------------------------------------------------------
+
 int main( int argc, const char **argv )
 {
     if( argc>1 && ( strcmp(argv[1],"--help")==0 || strcmp(argv[1],"-h")==0 ) )
@@ -48,6 +67,7 @@ int main( int argc, const char **argv )
         conf->initDebug(UniSetExtensions::dlog,"dlog");
 
         UniSetActivator* act = UniSetActivator::Instance();
+        act->signal_terminate_event().connect( &activator_terminate );
         // ------------ SharedMemory ----------------
         SharedMemory* shm = SharedMemory::init_smemory(argc,argv);
         if( shm == NULL )
@@ -57,7 +77,7 @@ int main( int argc, const char **argv )
 
 #ifdef UNISET_ENABLE_IO
         // ------------ IOControl ----------------
-        std::list< ThreadCreator<IOControl>* > lst_iothr;
+//        std::list< ThreadCreator<IOControl>* > lst_iothr;
         for( unsigned int i=0; i<MaxAddNum; i++ )
         {
             stringstream s;
@@ -183,23 +203,25 @@ int main( int argc, const char **argv )
         act->broadcast( sm.transport_msg() );
 
 #ifdef UNISET_IO_ENABLE
-        for( std::list< ThreadCreator<IOControl>* >::iterator it=lst_iothr.begin(); it!=lst_iothr.end(); ++it )
-            (*it)->start();
+        for( auto& i: lst_iothr )
+            i->start();
 #endif
 
 		LogAgregator la;
 		la.add(ulog);
 		la.add(dlog);
-		
-        if( run_logserver("smplus",la) == 0 )
+
+#if 0		
+		logserver = run_logserver("smplus",la);
+        if( logserver == 0 )
 		{
 			cerr << "(smemory-plus): run logserver for 'smplus' FAILED" << endl;
 			return 1;
 		}
-
+#endif
         act->run(false);
-        on_sigchild(SIGTERM);
 
+        on_sigchild(SIGTERM);
         return 0;
     }
     catch(Exception& ex)
@@ -293,6 +315,7 @@ LogServer* run_logserver( const std::string& cname, DebugStream& log )
 		return 0;
 	}
 
+	cout << "logserver: " << host << ":" << port << endl;
 	ls->run(host, port, true);
 	return ls;
 }
