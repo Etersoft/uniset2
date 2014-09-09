@@ -1226,7 +1226,7 @@ void IOControl::sysCommand( const SystemMessage* sm )
             string fname( ulog.getLogFile() );
             if( !fname.empty() )
             {
-                ulog.logFile(fname);
+                ulog.logFile(fname,true);
                 ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << endl;
             }
 
@@ -1234,7 +1234,7 @@ void IOControl::sysCommand( const SystemMessage* sm )
             fname = dlog.getLogFile();
             if( !fname.empty() )
             {
-                dlog.logFile(fname);
+                dlog.logFile(fname,true);
                 dlog << myname << "(sysCommand): ***************** GGDEB LOG ROTATE *****************" << endl;
             }
         }

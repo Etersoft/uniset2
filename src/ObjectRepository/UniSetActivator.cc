@@ -409,7 +409,7 @@ void UniSetActivator::sysCommand( const UniSetTypes::SystemMessage *sm )
             string fname = ulog.getLogFile();
             if( !fname.empty() )
             {
-                ulog.logFile(fname.c_str());
+                ulog.logFile(fname.c_str(),true);
                 ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << endl;
             }
         }

@@ -72,8 +72,8 @@ int main( int argc, const char **argv )
 
         string logfilename = conf->getArgParam("--logfile", "smemory-plus.log");
         string logname( conf->getLogDir() + logfilename );
-//        UniSetExtensions::dlog.logFile( logname );
-//        ulog.logFile( logname );
+        UniSetExtensions::dlog.logFile( logname );
+        ulog.logFile( logname );
         conf->initDebug(UniSetExtensions::dlog,"dlog");
 
         UniSetActivator* act = UniSetActivator::Instance();

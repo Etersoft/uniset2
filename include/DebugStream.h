@@ -89,7 +89,7 @@ public:
 
     /// Constructor, sets the log file to f, and the debug level to t.
     explicit
-    DebugStream(char const * f, Debug::type t = Debug::NONE);
+    DebugStream(char const * f, Debug::type t = Debug::NONE, bool truncate=false );
 
     ///
     virtual ~DebugStream();
@@ -118,7 +118,7 @@ public:
     }
 
     /// Sets the debugstreams' logfile to f.
-    virtual void logFile( const std::string& f );
+    virtual void logFile( const std::string& f, bool truncate=false );
 
     inline std::string getLogFile(){ return fname; }
 

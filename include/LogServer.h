@@ -10,6 +10,40 @@
 #include "ThreadCreator.h"
 class LogSession;
 // -------------------------------------------------------------------------
+/*! \page pgLogServer Лог сервер
+	Лог сервер предназначен для возможности удалённого чтения логов (DebugStream).
+Ему указывается host и port для прослушивания запросов, которые можно делать при помощи
+LogReader. Читающих клиентов может быть скольугодно много, на каждого создаётся своя "сессия"(LogSession).
+При этом через лог сервер имеется возможность управлять включением или отключением определённых уровней логов,
+записью, отключением записи или ротацией файла с логами.  DebugStream за которым ведётся "слежение"
+задаётся в конструкторе для LogServer. 
+\code
+   DebugStream mylog;
+   LogServer logsrv(mylog);
+   ...
+   logsrv.run(host,port,create_thread);
+   ...
+\endcode
+
+При этом если необходимо управлять или читать сразу несколько логов можно воспользоваться специальным классом LogAgregator.
+\code
+    DebugStream log1;
+    log1.setLogName("log1");
+
+    DebugStream log2;
+    log2.setLogName("log2");
+
+    LogAgregator la;
+    la.add(log1);
+    la.add(log2);
+
+    LogServer logsrv(la);
+    ...
+    logsrv.run(host,port,create_thread);
+    ...
+\endcode
+*/
+// -------------------------------------------------------------------------
 class LogServer
 {
     public:

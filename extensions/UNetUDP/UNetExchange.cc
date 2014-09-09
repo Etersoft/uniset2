@@ -523,7 +523,7 @@ void UNetExchange::sysCommand( const UniSetTypes::SystemMessage *sm )
             string fname(ulog.getLogFile());
             if( !fname.empty() )
             {
-                ulog.logFile(fname);
+                ulog.logFile(fname,true);
                 ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << std::endl;
             }
 
@@ -531,7 +531,7 @@ void UNetExchange::sysCommand( const UniSetTypes::SystemMessage *sm )
             fname = dlog.getLogFile();
             if( !fname.empty() )
             {
-                dlog.logFile(fname);
+                dlog.logFile(fname,true);
                 dlog << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
             }
         }

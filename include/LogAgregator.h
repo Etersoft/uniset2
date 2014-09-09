@@ -25,13 +25,24 @@ class LogAgregator:
         void delLevel( const std::string& logname, Debug::type t );
         void level( const std::string& logname, Debug::type t );
 
+
+        struct LogInfo
+        {
+            LogInfo():log(0),logfile(""){}
+            LogInfo( DebugStream* l ):log(l),logfile(l->getLogFile()){}
+            DebugStream* log;
+            std::string logfile;
+        };
+
         DebugStream* getLog( const std::string& logname );
+        LogInfo getLogInfo( const std::string& logname );
 
     protected:
         void logOnEvent( const std::string& s );
 
+
     private:
-        typedef std::list<DebugStream*> LogList;
+        typedef std::list<LogInfo> LogList;
         LogList llst;
 };
 // -------------------------------------------------------------------------

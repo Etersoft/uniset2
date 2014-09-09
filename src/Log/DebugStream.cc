@@ -55,7 +55,7 @@ DebugStream::DebugStream(Debug::type t)
 
 //--------------------------------------------------------------------------
 /// Constructor, sets the log file to f, and the debug level to t.
-DebugStream::DebugStream(char const * f, Debug::type t)
+DebugStream::DebugStream(char const * f, Debug::type t, bool truncate )
     : ostream(new debugbuf(cerr.rdbuf())),
       dt(t), nullstream(new nullbuf),
       internal(new debugstream_internal),
@@ -63,7 +63,10 @@ DebugStream::DebugStream(char const * f, Debug::type t)
       fname(""),
       logname("")
 {
-    internal->fbuf.open(f, ios::out|ios::app);
+    std::ios_base::openmode mode = ios::out;
+    mode |= truncate ? ios::trunc : ios::app;
+
+    internal->fbuf.open(f, mode);
     delete rdbuf(new threebuf(cerr.rdbuf(),
                 &internal->fbuf,&internal->sbuf));
 
@@ -99,7 +102,7 @@ const DebugStream& DebugStream::operator=( const DebugStream& r )
 }
 //--------------------------------------------------------------------------
 /// Sets the debugstreams' logfile to f.
-void DebugStream::logFile( const std::string& f )
+void DebugStream::logFile( const std::string& f, bool truncate )
 {
     fname = f;
     if( internal ) {
@@ -110,7 +113,10 @@ void DebugStream::logFile( const std::string& f )
 
     if( !f.empty() )
     {
-        internal->fbuf.open(f.c_str(), ios::out|ios::app);
+        std::ios_base::openmode mode = ios::out;
+        mode |= truncate ? ios::trunc : ios::app;
+
+        internal->fbuf.open(f.c_str(), mode);
         delete rdbuf(new threebuf(cerr.rdbuf(),
                 &internal->fbuf,&internal->sbuf));
     }

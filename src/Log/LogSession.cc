@@ -66,8 +66,6 @@ void LogSession::run()
 
     ptSessionTimeout.setTiming(sessTimeout);
 
-    string oldLogFile( log->getLogFile() );
-
     setKeepAlive(true);
 //    setTimeout(sessTimeout);
 
@@ -87,12 +85,38 @@ void LogSession::run()
                 slog.info() << peername << "(run): receive command: '" << msg.cmd << "'" << endl;
 
                 string cmdLogName(msg.logname);
-                DebugStream* cmdlog = 0;
+                DebugStream* cmdlog = log;
+                string logfile(log->getLogFile());
 
                 if( !cmdLogName.empty () )
                 {
                     LogAgregator* lag = dynamic_cast<LogAgregator*>(log);
-                    cmdlog = lag ? lag->getLog( cmdLogName ) : log;
+                    if( lag )
+                    {
+                        LogAgregator::LogInfo inf = lag->getLogInfo(cmdLogName);
+                        if( inf.log )
+                        {
+                            cmdlog = inf.log;
+                            logfile = inf.logfile;
+                        }
+                        else
+                        {
+                              // если имя задали, но такого лога не нашлось
+                              // то игнорируем команду
+                              cmdlog = 0;
+                              logfile = "";
+                        }
+                    }
+                    else
+                    {
+                        // если имя лога задали, а оно не совпадает с текущим
+                        // игнорируем команду
+                        if( log->getLogFile() != cmdLogName )
+                        {
+                            cmdlog = 0;
+                            logfile = "";
+                        }
+                    }
                 }
 
                 // обрабатываем команды только если нашли log
@@ -106,35 +130,31 @@ void LogSession::run()
                             cmdlog->level( (Debug::type)msg.data );
                         break;
                         case LogServerTypes::cmdAddLevel:
-                            cmdlog->addLevel((Debug::type)msg.data );
+                            cmdlog->addLevel( (Debug::type)msg.data );
                         break;
                         case LogServerTypes::cmdDelLevel:
                             cmdlog->delLevel( (Debug::type)msg.data );
                         break;
 
                         case LogServerTypes::cmdRotate:
-                        {
-                            string lfile( cmdlog->getLogFile() );
-                            if( !lfile.empty() )
-                                cmdlog->logFile(lfile);
-                        }
+                            if( !logfile.empty() )
+                                 cmdlog->logFile(logfile,true);
                         break;
-    
+
                         case LogServerTypes::cmdOffLogFile:
                         {
-                            string lfile( cmdlog->getLogFile() );
-                            if( !lfile.empty() )
+                            if( !logfile.empty() )
                                 cmdlog->logFile("");
                         }
                         break;
-    
+
                         case LogServerTypes::cmdOnLogFile:
                         {
-                            if( !oldLogFile.empty() && oldLogFile != cmdlog->getLogFile() )
-                                cmdlog->logFile(oldLogFile);
+                            if( !logfile.empty() )
+                                cmdlog->logFile(logfile);
                         }
                         break;
-    
+
                         default:
                             slog.warn() << peername << "(run): Unknown command '" << msg.cmd << "'" << endl;
                         break;

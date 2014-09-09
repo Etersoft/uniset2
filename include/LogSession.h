@@ -9,6 +9,7 @@
 #include "DebugStream.h"
 #include "PassiveTimer.h"
 // -------------------------------------------------------------------------
+/*! Реализация "сессии" для клиентов LogServer. */
 class LogSession:
     public ost::TCPSession
 {

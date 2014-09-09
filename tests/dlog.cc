@@ -63,5 +63,15 @@ int main( int argc, const char **argv )
 	if( l != &log1 )
 		cout << "**** TEST FAILED:  LogAgregator::getLog() " << endl;
 
+
+
+	cout << "===== Test 3 =====" << endl;
+    tlog.level(Debug::ANY);
+    tlog.logFile("tlog.log");
+    tlog << "TEST TEXT" << endl;
+    tlog.logFile("tlog.log",true);
+    
+   
+
     return 0;
 }

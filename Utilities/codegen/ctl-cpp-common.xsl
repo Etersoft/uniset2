@@ -319,7 +319,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( const SystemMessage* _s
 			string fname( mylog.getLogFile() );
 			if( !fname.empty() )
 			{
-				mylog.logFile(fname.c_str());
+				mylog.logFile(fname.c_str(),true);
 				mylog &lt;&lt; myname &lt;&lt; "(sysCommand): ***************** mylog LOG ROTATE *****************" &lt;&lt; endl;
 			}
 		}
