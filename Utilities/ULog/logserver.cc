@@ -82,17 +82,17 @@ int main( int argc, char **argv )
         }
 
 
-	    DebugStream dlog;
-	    dlog.setLogName("dlog");
+        DebugStream dlog;
+        dlog.setLogName("dlog");
         DebugStream dlog2;
-	    dlog2.setLogName("dlog2");
+        dlog2.setLogName("dlog2");
 
-		LogAgregator la;
-		la.add(dlog);
-		la.add(dlog2);
+        LogAgregator la;
+        la.add(dlog);
+        la.add(dlog2);
 
         LogServer ls(la);
-//		LogServer ls(cout);
+//        LogServer ls(cout);
         dlog.addLevel(Debug::ANY);
         dlog2.addLevel(Debug::ANY);
         
@@ -101,16 +101,16 @@ int main( int argc, char **argv )
         unsigned int i=0;
         while( true )
         {
-        	dlog << "[" << ++i << "] Test message for log" << endl;
-        	dlog.info() << ": dlog : INFO message" << endl;
-        	dlog.warn() << ": dlog : WARN message" << endl;
-        	dlog.crit() << ": dlog : CRIT message" << endl;
+            dlog << "[" << ++i << "] Test message for log" << endl;
+            dlog.info() << ": dlog : INFO message" << endl;
+            dlog.warn() << ": dlog : WARN message" << endl;
+            dlog.crit() << ": dlog : CRIT message" << endl;
 
-        	dlog2.info() << ": dlog2: INFO message" << endl;
-        	dlog2.warn() << ": dlog2: WARN message" << endl;
-        	dlog2.crit() << ": dlog2: CRIT message" << endl;
-        	
-        	msleep(delay);
+            dlog2.info() << ": dlog2: INFO message" << endl;
+            dlog2.warn() << ": dlog2: WARN message" << endl;
+            dlog2.crit() << ": dlog2: CRIT message" << endl;
+            
+            msleep(delay);
         }
     }
     catch( SystemError& err )

@@ -1,5 +1,5 @@
-bin_PROGRAMS = @PACKAGE@-log @PACKAGE@-log-stdin @PACKAGE@-logserver-wrap
-noinst_PROGRAMS = @PACKAGE@-test-logserver
+bin_PROGRAMS = @PACKAGE@-log  @PACKAGE@-logserver-wrap
+noinst_PROGRAMS = @PACKAGE@-test-logserver @PACKAGE@-log-stdin
 
 @PACKAGE@_test_logserver_SOURCES = logserver.cc
 @PACKAGE@_test_logserver_LDADD = $(top_builddir)/lib/libUniSet2.la $(COMCPP_LIBS)
