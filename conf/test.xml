@@ -14,7 +14,7 @@
 		<AutoStartUpTime name="1"/>
 		<DumpStateTime name="10"/>
 		<SleepTickMS name="500"/>
-		<UniSetDebug levels="crit,warn" name="ulog"/>
+		<UniSetDebug levels="" name="ulog"/>
 		<ConfDir name="./"/>
 		<DataDir name="./"/>
 		<BinDir name="./"/>
@@ -32,6 +32,8 @@
 		</Services>
 	</UniSet>
 	<dlog name="dlog"/>
+	<LogServer name="smplus" port="3333" host="localhost" />
+	
 	<settings>
 		<TestProc name="TestProc1"
 			on_s="Input1_S"

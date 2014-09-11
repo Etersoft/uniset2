@@ -165,13 +165,19 @@ MBExchange::~MBExchange()
     {
         if( it1->second->rtu )
         {
-            delete it1->second->rtu;
-            it1->second->rtu = 0;
+            try {
+                delete it1->second->rtu;
+                it1->second->rtu = 0;
+            }catch(...){}
         }
 
         RTUDevice* d(it1->second);
         for( auto it=d->regmap.begin(); it!=d->regmap.end(); ++it )
-            delete it->second;
+        {
+            try {
+                delete it->second;
+            }catch(...){}
+        }
 
         delete it1->second;
     }
@@ -193,7 +199,8 @@ void MBExchange::waitSMReady()
         ostringstream err;
         err << myname << "(waitSMReady): failed waiting SharedMemory " << ready_timeout << " msec";
         dcrit << err.str() << endl;
-        throw SystemError(err.str());
+        if( checkProcActive() )
+               throw SystemError(err.str());
     }
 }
 // -----------------------------------------------------------------------------
@@ -233,7 +240,15 @@ void MBExchange::sigterm( int signo )
 {
     dwarn << myname << ": ********* SIGTERM(" << signo << ") ********" << endl;
     setProcActive(false);
-    UniSetObject_LT::sigterm(signo);
+    try
+    {
+        UniSetObject_LT::sigterm(signo);
+    }
+    catch( ... )
+    {
+//        std::exception_ptr p = std::current_exception();
+//        std::clog <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
+    }
 }
 // ------------------------------------------------------------------------------------------
 void MBExchange::readConfiguration()
@@ -1507,7 +1522,7 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
                 if( r->mtrType == MTR::mtT4 )
                 {
                     if( save )
-					{
+                    {
                         dwarn << myname << "(updateMTR): write (T4) reg(" << dat2str(r->mbreg) << ") to MTR NOT YET!!!" << endl;
                     }
                     else
@@ -2547,14 +2562,14 @@ void MBExchange::sysCommand( const UniSetTypes::SystemMessage *sm )
             string fname(ulog.getLogFile());
             if( !fname.empty() )
             {
-                ulog.logFile(fname);
+                ulog.logFile(fname,true);
                 ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << std::endl;
             }
             dlog << myname << "(sysCommand): logRotate" << std::endl;
             fname = dlog.getLogFile();
             if( !fname.empty() )
             {
-                dlog.logFile(fname);
+                dlog.logFile(fname,true);
                 dlog << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
             }
         }
@@ -2580,7 +2595,8 @@ void MBExchange::askSensors( UniversalIO::UIOCommand cmd )
 
         dcrit << err.str() << endl;
         kill(SIGTERM,getpid());    // прерываем (перезапускаем) процесс...
-        throw SystemError(err.str());
+        // throw SystemError(err.str());
+        return;
     }
 
     try

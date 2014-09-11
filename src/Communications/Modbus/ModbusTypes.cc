@@ -165,7 +165,7 @@ bool ModbusRTU::isWriteFunction( SlaveFunctionCode c )
         c == fnForceSingleCoil ||
         c == fnForceMultipleCoils )
         return true;
-        
+
     return false;
 }
 // -------------------------------------------------------------------------
@@ -177,10 +177,10 @@ std::ostream& ModbusRTU::mbPrintMessage( std::ostream& os, ModbusByte* m, int le
 
     // << setiosflags(ios::showbase) // для вывода в формате 0xNN
     s << hex << showbase << setfill('0'); // << showbase;
-    for( unsigned int i=0; i<len; i++ )
+    for( ssize_t i=0; i<len; i++ )
         s << setw(2) << (short)(m[i]) << " ";
 //        s << "<" << setw(2) << (int)(m[i]) << ">";
-    
+
     return os << s.str();
 }
 // -------------------------------------------------------------------------
@@ -965,7 +965,7 @@ ModbusMessage ReadOutputRetMessage::transport_msg()
 
     // Создаём временно массив, переворачиваем байты
     ModbusData* dtmp = new ModbusData[count];
-    for( unsigned int i=0; i<count; i++ )
+    for( ssize_t i=0; i<count; i++ )
         dtmp[i] = SWAPSHORT(data[i]);
 
     // копируем
@@ -1109,17 +1109,17 @@ void ReadInputRetMessage::init( ModbusMessage& m )
     count     = cnt;
     bcnt     = m.data[0];
     memcpy(&data,&(m.data[1]),bcnt);
-    
+
     // переворачиваем данные
     swapData();
 
      memcpy(&crc,&(m.data[bcnt+1]),szCRC);
-}    
+}
 // -------------------------------------------------------------------------
 void ReadInputRetMessage::swapData()
 {
     // переворачиваем данные
-    for( unsigned int i=0; i<count; i++ )
+    for( ssize_t i=0; i<count; i++ )
         data[i] = SWAPSHORT(data[i]);
 }
 // -------------------------------------------------------------------------
@@ -1174,7 +1174,7 @@ ModbusMessage ReadInputRetMessage::transport_msg()
 
     // Создаём временно массив, переворачиваем байты
     ModbusData* dtmp = new ModbusData[count];
-    for( unsigned int i=0; i<count; i++ )
+    for( ssize_t i=0; i<count; i++ )
         dtmp[i] = SWAPSHORT(data[i]);
 
     // копируем
@@ -1391,7 +1391,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, ForceCoilsMessage& m )
         << " bcnt=" << b2str(m.bcnt)
         << " data[" << (int)m.quant <<"]={ ";
         
-    for( unsigned int i=0; i<m.bcnt; i++ )
+    for( ssize_t i=0; i<m.bcnt; i++ )
     {
         DataBits d(m.data[i]);
         os << "" << d << "  ";
@@ -1539,7 +1539,7 @@ ModbusMessage WriteOutputMessage::transport_msg()
 
     // Создаём временно массив, переворачиваем байты
     ModbusData* dtmp = new ModbusData[quant];
-    for( unsigned int i=0; i<quant; i++ )
+    for( ssize_t i=0; i<quant; i++ )
         dtmp[i] = SWAPSHORT(data[i]);
 
     // копируем данные
@@ -1606,7 +1606,7 @@ void WriteOutputMessage::init( ModbusMessage& m )
     memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 
     int count( bcnt/sizeof(ModbusData) );
-    for( unsigned int i=0; i<count; i++ )
+    for( ssize_t i=0; i<count; i++ )
         data[i] = SWAPSHORT(data[i]);
 }
 // -------------------------------------------------------------------------
@@ -1651,7 +1651,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, WriteOutputMessage& m )
         << " bcnt=" << dat2str(m.bcnt)
         << " data[" << (int)m.quant <<"]={ ";
         
-    for( unsigned int i=0; i<m.quant; i++ )
+    for( ssize_t i=0; i<m.quant; i++ )
         os << "" << dat2str(m.data[i]) << "  ";
     
     os << "}";
@@ -2178,7 +2178,7 @@ void DiagnosticMessage::init( ModbusMessage& m )
     last +=sizeof(ModbusData)*count;
     
     // переворачиваем данные
-    for( unsigned int i=0; i<count; i++ )
+    for( ssize_t i=0; i<count; i++ )
         data[i] = SWAPSHORT(data[i]);
 
      memcpy(&crc,&(m.data[last]),szCRC);
@@ -2243,7 +2243,7 @@ ModbusMessage DiagnosticMessage::transport_msg()
 
     // Создаём временно массив, переворачиваем байты
     ModbusData* dtmp = new ModbusData[count];
-    for( unsigned int i=0; i<count; i++ )
+    for( ssize_t i=0; i<count; i++ )
         dtmp[i] = SWAPSHORT(data[i]);
 
     // копируем
@@ -2294,7 +2294,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticMessage& m )
                 << " subf=" << dat2str(m.subf)
             << " data[" << m.count << "]={";
 
-    for( unsigned int i=0; i<m.count; i++ )
+    for( ssize_t i=0; i<m.count; i++ )
         os << dat2str(m.data[i]) << "  ";
     
     os << "}";
@@ -2314,7 +2314,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, DiagnosticRetMessage& m )
                 << " subf=" << dat2str(m.subf)
                 << " data[" << m.count << "]={";
 
-    for( unsigned int i=0; i<m.count; i++ )
+    for( ssize_t i=0; i<m.count; i++ )
         os << dat2str(m.data[i]) << "  ";
     
     os << "}";
@@ -2440,7 +2440,7 @@ RDIObjectInfo::RDIObjectInfo( ModbusByte id, ModbusByte* dat, ModbusByte len ):
 {
     val.reserve(len);
 
-    for( unsigned int i=0; i<len; i++ )
+    for( ssize_t i=0; i<len; i++ )
         val.push_back( (char)dat[i] );
 }
 // -------------------------------------------------------------------------
@@ -2738,7 +2738,7 @@ ModbusMessage JournalCommandRetMessage::transport_msg()
     // --------------------
     // копирование с переворотом данных (для ModbusData)
     ModbusData* dtmp = new ModbusData[count];
-    for( unsigned int i=0; i<count; i++ )
+    for( ssize_t i=0; i<count; i++ )
         dtmp[i] = SWAPSHORT(data[i]);
 
     // копируем
@@ -3240,7 +3240,7 @@ void ReadFileRecordMessage::init( ModbusMessage& m )
     memcpy(&crc,&(m.data[m.len-szCRC]),szCRC);
 
     count = bcnt/sizeof(SubRequest);
-    for( unsigned int i=0; i<count; i++ )
+    for( ssize_t i=0; i<count; i++ )
     {
         data[i].numfile = SWAPSHORT(data[i].numfile);
         data[i].numrec = SWAPSHORT(data[i].numrec);
@@ -3440,7 +3440,7 @@ ModbusMessage FileTransferRetMessage::transport_msg()
 
     // копируем предварительный заголовок
     ModbusData dhead[] = { numfile, numpacks, packet };
-    for( unsigned int i=0; i<sizeof(dhead)/sizeof(ModbusData); i++ )
+    for( size_t i=0; i<sizeof(dhead)/sizeof(ModbusData); i++ )
         dhead[i] = SWAPSHORT(dhead[i]);
 
     memcpy(&(mm.data[ind]),dhead,sizeof(dhead));
@@ -3479,7 +3479,7 @@ std::ostream& ModbusRTU::operator<<(std::ostream& os, FileTransferRetMessage* m 
 std::ostream& ModbusTCP::operator<<(std::ostream& os, MBAPHeader& m )
 {
 //    m.swapdata();
-    for( unsigned int i=0; i<sizeof(m); i++ )
+    for( size_t i=0; i<sizeof(m); i++ )
         os << ((unsigned char*)(&m))[i];
 //    m.swapdata();
     return os;

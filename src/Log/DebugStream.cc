@@ -16,6 +16,7 @@
 
 //#include "DebugStream.h"
 #include "Debug.h"
+#include "Mutex.h"
 
 //�Since the current C++ lib in egcs does not have a standard implementation
 // of basic_streambuf and basic_filebuf we don't have to include this
@@ -29,175 +30,54 @@
 #include <iomanip>
 #include <time.h>
 #include <iomanip>
+#include "DebugExtBuf.h"
 
 using std::ostream;
 using std::streambuf;
 using std::streamsize;
 using std::filebuf;
+using std::stringbuf;
 using std::cerr;
 using std::ios;
-
-/*
-ostream & operator<<(ostream & o, Debug::type t)
-{
-    return o << int(t);
-}
-*/
-
-/** This is a streambuffer that never prints out anything, at least
-    that is the intention. You can call it a no-op streambuffer, and
-    the ostream that uses it will be a no-op stream.
-*/
-class nullbuf : public streambuf {
-protected:
-#ifndef MODERN_STL_STREAMS
-    typedef char char_type;
-    typedef int int_type;
-    ///
-    virtual int sync() { return 0; }
-#endif
-    ///
-    virtual streamsize xsputn(char_type const *, streamsize n) {
-        // fakes a purge of the buffer by returning n
-        return n;
-    }
-#ifdef MODERN_STL_STREAMS
-    ///
-    virtual int_type overflow(int_type c = traits_type::eof()) {
-        // fakes success by returning c
-        return c == traits_type::eof() ? ' ' : c;
-    }
-#else
-    ///
-    virtual int_type overflow(int_type c = EOF) {
-        // fakes success by returning c
-        return c == EOF ? ' ' : c;
-    }
-#endif
-};
-
-/** A streambuf that sends the output to two different streambufs. These
-    can be any kind of streambufs.
-*/
-class teebuf : public streambuf {
-public:
-    ///
-    teebuf(streambuf * b1, streambuf * b2)
-        : streambuf(), sb1(b1), sb2(b2) {}
-protected:
-#ifdef MODERN_STL_STREAMS
-    ///
-    virtual int sync() {
-        sb2->pubsync();
-        return sb1->pubsync();
-    }
-    ///
-    virtual streamsize xsputn(char_type const * p, streamsize n) {
-        sb2->sputn(p, n);
-        return sb1->sputn(p, n);
-    }
-    ///
-    virtual int_type overflow(int_type c = traits_type::eof()) {
-        sb2->sputc(c);
-        return sb1->sputc(c);
-    }
-#else
-    typedef char char_type;
-    typedef int int_type;
-    ///
-    virtual int sync() {
-        sb2->sync();
-        return sb1->sync();
-    }
-    ///
-    virtual streamsize xsputn(char_type const * p, streamsize n) {
-        sb2->xsputn(p, n);
-        return sb1->xsputn(p, n);
-    }
-    ///
-    virtual int_type overflow(int_type c = EOF) {
-        sb2->overflow(c);
-        return sb1->overflow(c);
-    }
-#endif
-private:
-    ///
-    streambuf * sb1;
-    ///
-    streambuf * sb2;
-};
-
-///
-class debugbuf : public streambuf {
-public:
-    ///
-    debugbuf(streambuf * b)
-        : streambuf(), sb(b) {}
-protected:
-#ifdef MODERN_STL_STREAMS
-    ///
-    virtual int sync() {
-        return sb->pubsync();
-    }
-    ///
-    virtual streamsize xsputn(char_type const * p, streamsize n) {
-        return sb->sputn(p, n);
-    }
-    ///
-    virtual int_type overflow(int_type c = traits_type::eof()) {
-        return sb->sputc(c);
-    }
-#else
-    typedef char char_type;
-    typedef int int_type;
-    ///
-    virtual int sync() {
-        return sb->sync();
-    }
-    ///
-    virtual streamsize xsputn(char_type const * p, streamsize n) {
-        return sb->xsputn(p, n);
-    }
-    ///
-    virtual int_type overflow(int_type c = EOF) {
-        return sb->overflow(c);
-    }
-#endif
-private:
-    ///
-    streambuf * sb;
-};
-
-//--------------------------------------------------------------------------
-/// So that public parts of DebugStream does not need to know about filebuf
-struct DebugStream::debugstream_internal {
-    /// Used when logging to file.
-    filebuf fbuf;
-};
 //--------------------------------------------------------------------------
 
 /// Constructor, sets the debug level to t.
 DebugStream::DebugStream(Debug::type t)
     : ostream(new debugbuf(cerr.rdbuf())),
-      dt(t), nullstream(new nullbuf), internal(0),
+      dt(t), nullstream(new nullbuf), internal(new debugstream_internal),
       show_datetime(true),
-      fname(""){}
+      fname(""),
+      logname("")
+{
+    delete rdbuf(new teebuf(cerr.rdbuf(),&internal->sbuf));
+    internal->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
+}
 
 //--------------------------------------------------------------------------
 /// Constructor, sets the log file to f, and the debug level to t.
-DebugStream::DebugStream(char const * f, Debug::type t)
+DebugStream::DebugStream(char const * f, Debug::type t, bool truncate )
     : ostream(new debugbuf(cerr.rdbuf())),
       dt(t), nullstream(new nullbuf),
       internal(new debugstream_internal),
       show_datetime(true),
-      fname("")
+      fname(""),
+      logname("")
 {
-    internal->fbuf.open(f, ios::out|ios::app);
-    delete rdbuf(new teebuf(cerr.rdbuf(),
-                &internal->fbuf));
+    std::ios_base::openmode mode = ios::out;
+    mode |= truncate ? ios::trunc : ios::app;
+
+    internal->fbuf.open(f, mode);
+    delete rdbuf(new threebuf(cerr.rdbuf(),
+                &internal->fbuf,&internal->sbuf));
+
+    internal->sbuf.signal_overflow().connect(sigc::mem_fun(*this, &DebugStream::sbuf_overflow));
 }
 //--------------------------------------------------------------------------
-
+void DebugStream::sbuf_overflow( const std::string& s )
+{
+    s_stream.emit(s);
+}
+//--------------------------------------------------------------------------
 DebugStream::~DebugStream()
 {
     delete nullstream.rdbuf(0); // Without this we leak
@@ -216,22 +96,32 @@ const DebugStream& DebugStream::operator=( const DebugStream& r )
     fname = r.fname;
     if( !r.fname.empty() )
         logFile(fname);
-    
+
+    // s_stream = r.s_stream;
     return *this;
 }
 //--------------------------------------------------------------------------
 /// Sets the debugstreams' logfile to f.
-void DebugStream::logFile( const std::string& f )
+void DebugStream::logFile( const std::string& f, bool truncate )
 {
     fname = f;
-    if (internal) {
+    if( internal ) {
         internal->fbuf.close();
     } else {
         internal = new debugstream_internal;
     }
-    internal->fbuf.open(f.c_str(), ios::out|ios::app);
-    delete rdbuf(new teebuf(cerr.rdbuf(),
-                &internal->fbuf));
+
+    if( !f.empty() )
+    {
+        std::ios_base::openmode mode = ios::out;
+        mode |= truncate ? ios::trunc : ios::app;
+
+        internal->fbuf.open(f.c_str(), mode);
+        delete rdbuf(new threebuf(cerr.rdbuf(),
+                &internal->fbuf,&internal->sbuf));
+    }
+    else
+        delete rdbuf(new teebuf(cerr.rdbuf(),&internal->sbuf));
 }
 //--------------------------------------------------------------------------
 std::ostream & DebugStream::debug(Debug::type t) 
@@ -243,7 +133,7 @@ std::ostream & DebugStream::debug(Debug::type t)
         *this << "(" << std::setfill(' ') << std::setw(6) << t << "):  "; // "):\t";
         return *this;
     }
-    
+
     return nullstream;
 }
 //--------------------------------------------------------------------------
@@ -251,7 +141,7 @@ std::ostream& DebugStream::operator()(Debug::type t)
 {
     if(dt & t)
         return *this;
-        
+
     return nullstream;
 }
 //--------------------------------------------------------------------------
@@ -308,6 +198,11 @@ std::ostream& DebugStream::pos(int x, int y)
     return *this << "\033[" << y << ";" << x << "f";
 }
 
+//--------------------------------------------------------------------------
+DebugStream::StreamEvent_Signal DebugStream::signal_stream_event()
+{
+    return s_stream;
+}
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------

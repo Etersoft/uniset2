@@ -21,24 +21,24 @@
 #include "DebugStream.h"
 // -----------------------------------------------------------------------------
 class UObject_SK:
-	public UniSetObject,
-	public LT_Object
+    public UniSetObject,
+    public LT_Object
 {
-	public:
-		UObject_SK( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::conf->getNode("UObject"), const std::string& argprefix="" );
-		UObject_SK();
-		virtual ~UObject_SK();
+    public:
+        UObject_SK( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::conf->getNode("UObject"), const std::string& argprefix="" );
+        UObject_SK();
+        virtual ~UObject_SK();
 
-		
-		bool alarm( UniSetTypes::ObjectId sid, bool state );
-		long getValue( UniSetTypes::ObjectId sid );
-		void setValue( UniSetTypes::ObjectId sid, long value );
-		void askSensor( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );
-		void updateValues();
-		void setMsg( UniSetTypes::ObjectId code, bool state );
+        
+        bool alarm( UniSetTypes::ObjectId sid, bool state );
+        long getValue( UniSetTypes::ObjectId sid );
+        void setValue( UniSetTypes::ObjectId sid, long value );
+        void askSensor( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );
+        void updateValues();
+        void setMsg( UniSetTypes::ObjectId code, bool state );
 
-		DebugStream mylog;
-		void init_dlog( DebugStream& d );
+        DebugStream mylog;
+        void init_dlog( DebugStream& d );
 
         // "синтаксический сахар"..для логов
         #define myinfo if( mylog.debugging(Debug::INFO) ) mylog
@@ -55,86 +55,86 @@ class UObject_SK:
         #define mylog9 if( mylog.debugging(Debug::LEVEL9) ) mylog
 
 
-		// Используемые идентификаторы
-		
+        // Используемые идентификаторы
+        
 
-		// Используемые идентификаторы сообщений
-		
+        // Используемые идентификаторы сообщений
+        
 
-		// Текущее значение и предыдущее значение
-		
+        // Текущее значение и предыдущее значение
+        
 
-		// --- public variables ---
-		
-		
-		// --- end of public variables ---
+        // --- public variables ---
+        
+        
+        // --- end of public variables ---
 
-	protected:
-		// --- protected variables ---
-		
-		
-		// ---- end of protected variables ----
+    protected:
+        // --- protected variables ---
+        
+        
+        // ---- end of protected variables ----
 
-		
-		virtual void callback();
-		virtual void processingMessage( UniSetTypes::VoidMessage* msg );
-		virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
-		virtual void askSensors( UniversalIO::UIOCommand cmd ){}
-		virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ){}
-		virtual void timerInfo( const UniSetTypes::TimerMessage* tm ){}
-		virtual void sigterm( int signo );
-		virtual bool activateObject();
-		virtual void testMode( bool state );
-		void updatePreviousValues();
-		void checkSensors();
-		void updateOutputs( bool force );
+        
+        virtual void callback();
+        virtual void processingMessage( UniSetTypes::VoidMessage* msg );
+        virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
+        virtual void askSensors( UniversalIO::UIOCommand cmd ){}
+        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ){}
+        virtual void timerInfo( const UniSetTypes::TimerMessage* tm ){}
+        virtual void sigterm( int signo );
+        virtual bool activateObject();
+        virtual void testMode( bool state );
+        void updatePreviousValues();
+        void checkSensors();
+        void updateOutputs( bool force );
 
-		void preAskSensors( UniversalIO::UIOCommand cmd );
-		void preSensorInfo( const UniSetTypes::SensorMessage* sm );
-		void preTimerInfo( const UniSetTypes::TimerMessage* tm );
-		void waitSM( int wait_msec, UniSetTypes::ObjectId testID = UniSetTypes::DefaultObjectId );
+        void preAskSensors( UniversalIO::UIOCommand cmd );
+        void preSensorInfo( const UniSetTypes::SensorMessage* sm );
+        void preTimerInfo( const UniSetTypes::TimerMessage* tm );
+        void waitSM( int wait_msec, UniSetTypes::ObjectId testID = UniSetTypes::DefaultObjectId );
 
-		void resetMsg();
-		Trigger trResetMsg;
-		PassiveTimer ptResetMsg;
-		int resetMsgTime;
+        void resetMsg();
+        Trigger trResetMsg;
+        PassiveTimer ptResetMsg;
+        int resetMsgTime;
 
-		// Выполнение очередного шага программы
-		virtual void step()=0;
+        // Выполнение очередного шага программы
+        virtual void step()=0;
 
-		int sleep_msec; /*!< пауза между итерациями */
-		bool active;
+        int sleep_msec; /*!< пауза между итерациями */
+        bool active;
 
-		UniSetTypes::ObjectId smTestID; /*!< идентификатор датчика для тестирования готовности SM */
+        UniSetTypes::ObjectId smTestID; /*!< идентификатор датчика для тестирования готовности SM */
 
-		// управление датчиком "сердцебиения"
-		PassiveTimer ptHeartBeat;				/*! < период "сердцебиения" */
-		UniSetTypes::ObjectId idHeartBeat;		/*! < идентификатор датчика (AI) "сердцебиения" */
-		int maxHeartBeat;						/*! < сохраняемое значение */
-		
-		xmlNode* confnode;
-		/*! получить числовое свойство из конф. файла по привязанной confnode */
-		int getIntProp(const std::string& name) { return UniSetTypes::conf->getIntProp(confnode, name); }
-		/*! получить текстовое свойство из конф. файла по привязанной confnode */
-		inline const std::string getProp(const std::string& name) { return UniSetTypes::conf->getProp(confnode, name); }
+        // управление датчиком "сердцебиения"
+        PassiveTimer ptHeartBeat;                /*! < период "сердцебиения" */
+        UniSetTypes::ObjectId idHeartBeat;        /*! < идентификатор датчика (AI) "сердцебиения" */
+        int maxHeartBeat;                        /*! < сохраняемое значение */
+        
+        xmlNode* confnode;
+        /*! получить числовое свойство из конф. файла по привязанной confnode */
+        int getIntProp(const std::string& name) { return UniSetTypes::conf->getIntProp(confnode, name); }
+        /*! получить текстовое свойство из конф. файла по привязанной confnode */
+        inline const std::string getProp(const std::string& name) { return UniSetTypes::conf->getProp(confnode, name); }
 
-		int smReadyTimeout; 	/*!< время ожидания готовности SM */
-		std::atomic_bool activated;
-		int activateTimeout;	/*!< время ожидания готовности UniSetObject к работе */
-		PassiveTimer ptStartUpTimeout;	/*!< время на блокировку обработки WatchDog, если недавно был StartUp */
-		int askPause; /*!< пауза между неудачными попытками заказать датчики */
-		
-		IOController_i::SensorInfo si;
+        int smReadyTimeout;     /*!< время ожидания готовности SM */
+        std::atomic_bool activated;
+        int activateTimeout;    /*!< время ожидания готовности UniSetObject к работе */
+        PassiveTimer ptStartUpTimeout;    /*!< время на блокировку обработки WatchDog, если недавно был StartUp */
+        int askPause; /*!< пауза между неудачными попытками заказать датчики */
+        
+        IOController_i::SensorInfo si;
 
 
-	private:
-		
-		// --- private variables ---
-		// --- end of private variables ---
+    private:
+        
+        // --- private variables ---
+        // --- end of private variables ---
 
-		
+        
 
-		bool end_private; // вспомогательное поле (для внутреннего использования при генерировании кода)
+        bool end_private; // вспомогательное поле (для внутреннего использования при генерировании кода)
 };
 
 // -----------------------------------------------------------------------------

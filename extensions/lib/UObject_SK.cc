@@ -273,7 +273,7 @@ void UObject_SK::sysCommand( const SystemMessage* _sm )
 			string fname( mylog.getLogFile() );
 			if( !fname.empty() )
 			{
-				mylog.logFile(fname.c_str());
+				mylog.logFile(fname.c_str(),true);
 				mylog << myname << "(sysCommand): ***************** mylog LOG ROTATE *****************" << endl;
 			}
 		}

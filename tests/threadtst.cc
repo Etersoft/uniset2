@@ -3,7 +3,7 @@
 #include "Mutex.h"
 #include "ThreadCreator.h"
 #include "UniSetTypes.h"
-#include "modbus/TCPCheck.h"
+#include "TCPCheck.h"
 
 using namespace std;
 using namespace UniSetTypes;

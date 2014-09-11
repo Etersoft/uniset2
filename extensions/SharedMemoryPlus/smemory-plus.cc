@@ -16,15 +16,47 @@
 #ifdef UNISET_ENABLE_IO
 #include "IOControl.h"
 #endif
+#include "LogAgregator.h"
+#include "LogServer.h"
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // --------------------------------------------------------------------------
-const int MaxAddNum = 10;
+const unsigned int MaxAddNum = 10;
 // --------------------------------------------------------------------------
 static void help_print( int argc, const char* argv[] );
+static LogServer* run_logserver( const std::string& cnamem, DebugStream& log );
+static LogServer* logserver = 0;
+#ifdef UNISET_ENABLE_IO
+std::list< ThreadCreator<IOControl>* > lst_iothr;
+#endif
 // --------------------------------------------------------------------------
+void activator_terminate( int signo )
+{	
+	if( logserver )
+	{
+		try
+		{
+			delete logserver;
+			logserver = 0;
+		}
+		catch(...){}
+	}
+
+#ifdef UNISET_IO_ENABLE
+        for( auto& i: lst_iothr )
+        {
+        	try
+        	{
+	            i->stop();
+	        }
+	        catch(...){}
+        }
+#endif
+}
+// --------------------------------------------------------------------------
+
 int main( int argc, const char **argv )
 {
     if( argc>1 && ( strcmp(argv[1],"--help")==0 || strcmp(argv[1],"-h")==0 ) )
@@ -45,6 +77,7 @@ int main( int argc, const char **argv )
         conf->initDebug(UniSetExtensions::dlog,"dlog");
 
         UniSetActivator* act = UniSetActivator::Instance();
+        act->signal_terminate_event().connect( &activator_terminate );
         // ------------ SharedMemory ----------------
         SharedMemory* shm = SharedMemory::init_smemory(argc,argv);
         if( shm == NULL )
@@ -54,7 +87,7 @@ int main( int argc, const char **argv )
 
 #ifdef UNISET_ENABLE_IO
         // ------------ IOControl ----------------
-        std::list< ThreadCreator<IOControl>* > lst_iothr;
+//        std::list< ThreadCreator<IOControl>* > lst_iothr;
         for( unsigned int i=0; i<MaxAddNum; i++ )
         {
             stringstream s;
@@ -122,7 +155,7 @@ int main( int argc, const char **argv )
                 stringstream p;
                 p << "mbs";
                 if( i > 0 ) p << i;
-   
+
                 if( dlog.is_info() )
                     dlog.info() << "(smemory-plus): add MBSlave(" << p.str() << ")" << endl;
 
@@ -180,13 +213,24 @@ int main( int argc, const char **argv )
         act->broadcast( sm.transport_msg() );
 
 #ifdef UNISET_IO_ENABLE
-        for( std::list< ThreadCreator<IOControl>* >::iterator it=lst_iothr.begin(); it!=lst_iothr.end(); ++it )
-            (*it)->start();
+        for( auto& i: lst_iothr )
+            i->start();
 #endif
 
-        act->run(false);
-        on_sigchild(SIGTERM);
+		LogAgregator la;
+		la.add(ulog);
+		la.add(dlog);
 
+		logserver = run_logserver("smplus",la);
+        if( logserver == 0 )
+		{
+			cerr << "(smemory-plus): run logserver for 'smplus' FAILED" << endl;
+			return 1;
+		}
+
+        act->run(false);
+
+        on_sigchild(SIGTERM);
         return 0;
     }
     catch(Exception& ex)
@@ -240,3 +284,48 @@ void help_print( int argc, const char* argv[] )
     cout << "--confile            - Use confile. Default: configure.xml" << endl;
     cout << "--logfile            - Use logfile. Default: smemory-plus.log" << endl;
 }
+// -----------------------------------------------------------------------------
+LogServer* run_logserver( const std::string& cname, DebugStream& log )
+{
+	const UniXML* xml = UniSetTypes::conf->getConfXML();
+	xmlNode* cnode = UniSetTypes::conf->findNode(xml->getFirstNode(),"LogServer",cname);
+	if( cnode == 0 )
+	{
+		cerr << "(init_ulogserver): Not found xmlnode for '" << cname << "'" << endl;
+		return 0;
+		
+	}
+	
+	UniXML::iterator it(cnode);
+	
+	LogServer* ls = new LogServer( log );
+	
+	timeout_t sessTimeout = conf->getArgPInt("--" + cname + "-session-timeout",it.getProp("sessTimeout"),3600000);
+	timeout_t cmdTimeout = conf->getArgPInt("--" + cname + "-cmd-timeout",it.getProp("cmdTimeout"),2000);
+	timeout_t outTimeout = conf->getArgPInt("--" + cname + "-out-timeout",it.getProp("outTimeout"),2000);
+
+	ls->setSessionTimeout(sessTimeout);
+	ls->setCmdTimeout(cmdTimeout);
+	ls->setOutTimeout(outTimeout);
+
+	std::string host = conf->getArgParam("--" + cname + "-host",it.getProp("host"));
+	if( host.empty() )
+	{
+		cerr << "(init_ulogserver): " << cname << ": unknown host.." << endl;
+		delete ls;
+		return 0;
+	}
+
+	ost::tpport_t port = conf->getArgPInt("--" + cname + "-port",it.getProp("port"),0);
+	if( port == 0 )
+	{
+		cerr << "(init_ulogserver): " << cname << ": unknown port.." << endl;
+		delete ls;
+		return 0;
+	}
+
+	cout << "logserver: " << host << ":" << port << endl;
+	ls->run(host, port, true);
+	return ls;
+}
+// -----------------------------------------------------------------------------

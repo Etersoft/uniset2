@@ -26,7 +26,7 @@ namespace UniSetExtensions
     Calibration* buildCalibrationDiagram( const std::string& dname );
 
 
-	void on_sigchild( int sig );
+    void on_sigchild( int sig );
 
     extern DebugStream dlog;
 }

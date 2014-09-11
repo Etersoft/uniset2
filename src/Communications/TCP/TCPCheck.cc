@@ -2,7 +2,7 @@
 #include <sstream>
 #include "UniSetTypes.h"
 #include "PassiveTimer.h"
-#include "modbus/TCPCheck.h"
+#include "TCPCheck.h"
 // -----------------------------------------------------------------------------
 using namespace std;
 // -----------------------------------------------------------------------------

@@ -48,7 +48,7 @@ using namespace std;
     В этом обработчике происходит вызов UniSetActivator::oaDestroy(int signo) для фактического
     завершения работы и заказывается сигнал SIG_ALRM на время TERMINATE_TIMEOUT,
     c обработчиком UniSetActivator::finishterm в котором происходит
-    "надежное" прибивание текущего процесса (raise(SIGKILL)). Это сделано на тот случай, если
+    "надежное" прибивание текущего процесса (kill(getpid(),SIGKILL)). Это сделано на тот случай, если
     в oaDestroy произойдет зависание.
 */
 // ------------------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ void UniSetActivator::init()
 
 UniSetActivator::~UniSetActivator()
 {
-    if(!procterm )
+    if( !procterm )
     {
         ulogsys << myname << "(destructor): ..."<< endl << flush;
         if( !omDestroy )
@@ -153,7 +153,27 @@ UniSetActivator::~UniSetActivator()
     }
 
     if( orbthr )
+    {
+        orbthr->stop();
+        if( orbthr->isRunning() )
+            orbthr->join();
+
         delete orbthr;
+        orbthr = 0;
+    }
+
+#if 0
+    try
+    {
+        if( !CORBA::is_nil(orb) )
+        {
+            ulogsys << myname << "(oaDestroy): orb destroy... " << endl;
+            orb->destroy();
+            ulogsys << myname << "(oaDestroy): orb destroy ok."<< endl;
+        }
+    }
+    catch(...){}
+#endif
 }
 // ------------------------------------------------------------------------------------------
 
@@ -170,8 +190,14 @@ void UniSetActivator::oaDestroy(int signo)
             ulogsys << myname << "(oaDestroy): terminate ok. " << endl;
 
             try
-            {    
+            {
                 stop();
+            }
+            catch(...){}
+
+            try
+            {
+                deactivateObject();
             }
             catch(...){}
 
@@ -179,21 +205,49 @@ void UniSetActivator::oaDestroy(int signo)
             pman->deactivate(false,true);
             ulogsys << myname << "(oaDestroy): pman deactivate ok. " << endl;
 
-            ulogsys << myname << "(oaDestroy): orb destroy... " << endl;
-            try
+            ulogsys << myname << "(oaDestroy): orbthr=" << orbthr << endl;
+            if( orbthr )
             {
-                orb->destroy();
+                try
+                {
+                    ulogsys << myname << "(oaDestroy): orb thread stop... " << endl;
+
+                    orbthr->stop();
+                    if( orbthr->isRunning() )
+                          orbthr->join();
+
+                    ulogsys << myname << "(oaDestroy): orb thread stop ok. " << endl;
+                }
+                catch(...){}
             }
-            catch(...){}
 
-            ulogsys << myname << "(oaDestroy): orb destroy ok."<< endl;
+        try
+        {
+            ulogsys << myname << "(stop):: shutdown orb...  "<<endl;
+            orb->shutdown(false);
+        }
+        catch(...){}
+        ulogsys << myname << "(stop): shutdown ok."<< endl;
 
+#if 0
+        try
+        {
+            if( !CORBA::is_nil(orb) )
+            {
+                ulogsys << myname << "(oaDestroy): orb destroy... " << endl;
+                orb->destroy();
+                ulogsys << myname << "(oaDestroy): orb destroy ok."<< endl;
+            }
+        }
+        catch(...){}
+#endif
+/*
             if( orbthr )
             {
                 delete orbthr;
                 orbthr = 0;
             }
-
+*/
         }
 //        waittermMutex.unlock();
 }
@@ -225,7 +279,7 @@ void UniSetActivator::run(bool thread)
     pman->activate();
     msleep(50);
 
-    set_signals(true);    
+    set_signals(true);
     if( thread )
     {
         uinfo << myname << "(run): запускаемся с созданием отдельного потока...  "<< endl;
@@ -266,16 +320,15 @@ void UniSetActivator::stop()
 
         ulogsys << myname << "(stop): discard request ok."<< endl;
 
-/*
+#if 1
         try
         {
             ulogsys << myname << "(stop):: shutdown orb...  "<<endl;
-            orb->shutdown(false);
+            orb->shutdown(true);
         }
         catch(...){}
-
         ulogsys << myname << "(stop): shutdown ok."<< endl;
-*/
+#endif
     }
 }
 
@@ -283,7 +336,7 @@ void UniSetActivator::stop()
 
 void UniSetActivator::work()
 {
-    ulogsys << myname << "(work): запускаем orb на обработку запросов..."<< endl;
+    ulogsys << myname << "(work): запускаем orb на обработку запросов...(orbthr=" << orbthr << ")" << endl;
     try
     {
         if( orbthr )
@@ -313,17 +366,17 @@ void UniSetActivator::work()
         ucrit << myname << "(work): catch ..." << endl;
     }
 
-    ulogsys << myname << "(work): orb стоп!!!"<< endl;
+    ulogsys << myname << "(work): orb thread stopped!" << endl;
 
-/*
+
     ulogsys << myname << "(oaDestroy): orb destroy... " << endl;
     try
     {
         orb->destroy();
     }
     catch(...){}
+
     ulogsys << myname << "(oaDestroy): orb destroy ok."<< endl;
-*/
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::getinfo()
@@ -356,7 +409,7 @@ void UniSetActivator::sysCommand( const UniSetTypes::SystemMessage *sm )
             string fname = ulog.getLogFile();
             if( !fname.empty() )
             {
-                ulog.logFile(fname.c_str());
+                ulog.logFile(fname.c_str(),true);
                 ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << endl;
             }
         }
@@ -364,18 +417,8 @@ void UniSetActivator::sysCommand( const UniSetTypes::SystemMessage *sm )
     }
 }
 // -------------------------------------------------------------------------
-
-/*
-void UniSetActivator::sig_child(int signo)
-{
-    ulogsys << gActivator->getName() << "(sig_child): дочерний процесс закончил работу...(sig=" << signo << ")" << endl;
-    while( waitpid(-1, 0, WNOHANG) > 0);
-}
-*/
-// ------------------------------------------------------------------------------------------
 void UniSetActivator::set_signals(bool ask)
 {
-
     struct sigaction act, oact;
     sigemptyset(&act.sa_mask);
     sigemptyset(&oact.sa_mask);
@@ -397,7 +440,7 @@ void UniSetActivator::set_signals(bool ask)
         act.sa_handler = terminated;
     else
         act.sa_handler = SIG_DFL;
-        
+
     sigaction(SIGINT, &act, &oact);
     sigaction(SIGTERM, &act, &oact);
     sigaction(SIGABRT, &act, &oact);
@@ -419,8 +462,13 @@ void UniSetActivator::finishterm( int signo )
 
         sigset(SIGALRM, SIG_DFL);
         doneterm = 1;
-        raise(SIGKILL);
+        kill(getpid(),SIGKILL);
     }
+}
+// ------------------------------------------------------------------------------------------
+UniSetActivator::TerminateEvent_Signal UniSetActivator::signal_terminate_event()
+{
+    return s_term;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::terminated( int signo )
@@ -447,17 +495,24 @@ void UniSetActivator::terminated( int signo )
             alarm(TERMINATE_TIMEOUT);
             sigrelse(SIGALRM);
             if( gActivator )
+            {
+                ulogsys << ( gActivator ? gActivator->getName() : "" ) << "(terminated): call oaDestroy.." << endl;
                 gActivator->oaDestroy(SIGNO); // gActivator->term(SIGNO);
+            }
 
             doneterm = 1;
 
             ulogsys << ( gActivator ? gActivator->getName() : "" ) << "(terminated): завершаемся..."<< endl<< flush;
 
             if( gActivator )
+            {
                 UniSetActivator::set_signals(false);
+                delete gActivator;
+                gActivator = 0;
+            }
 
             sigset(SIGALRM, SIG_DFL);
-            raise(SIGNO);
+            kill(getpid(), SIGNO );
         }
     }
 }
@@ -467,6 +522,9 @@ void UniSetActivator::normalexit()
 {
     if( gActivator )
         ulogsys << gActivator->getName() << "(default exit): good bye."<< endl << flush;
+
+//     std::exception_ptr p = std::current_exception();
+//     std::clog <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
 }
 
 void UniSetActivator::normalterminate()
@@ -474,6 +532,9 @@ void UniSetActivator::normalterminate()
     if( gActivator )
         ucrit << gActivator->getName() << "(default exception terminate): Никто не выловил исключение!!! Good bye."<< endl<< flush;
 //    abort();
+
+//     std::exception_ptr p = std::current_exception();
+//     std::clog <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::term( int signo )
@@ -490,7 +551,7 @@ void UniSetActivator::term( int signo )
     {
         ulogsys << myname << "(term): вызываем sigterm()" << endl;
         sigterm(signo);
-
+        s_term.emit(signo);
         ulogsys << myname << "(term): sigterm() ok." << endl;
     }
     catch(Exception& ex)
@@ -506,7 +567,5 @@ void UniSetActivator::waitDestroy()
 {
     while( !doneterm && gActivator )
         msleep(50);
-
-    gActivator = 0;
 }
 // ------------------------------------------------------------------------------------------

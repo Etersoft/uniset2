@@ -186,8 +186,8 @@ AC_SUBST(UNISET_EXT_LIBS)
 
 
 # export
-LDFLAGS="${OMNI_LIBS} ${XML_LIBS}"
-CXXFLAGS="-pedantic -Wall -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} -I\$(top_builddir)/include"
+LDFLAGS="${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS}"
+CXXFLAGS="-pedantic -Wall -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} -I\$(top_builddir)/include"
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
 
@@ -221,12 +221,14 @@ AC_CONFIG_FILES([Makefile
 				 IDL/Processes/Makefile
 				 src/Communications/Makefile
 				 src/Communications/Modbus/Makefile
+				 src/Communications/TCP/Makefile
 				 src/Interfaces/Makefile
 				 src/ObjectRepository/Makefile
 				 src/Processes/Makefile
 				 src/Services/Makefile
 				 src/Timers/Makefile
 				 src/Various/Makefile
+				 src/Log/Makefile
 				 src/Makefile
 				 include/Makefile
 				 include/modbus/Makefile
@@ -246,6 +248,7 @@ AC_CONFIG_FILES([Makefile
 				 Utilities/codegen/Makefile
 				 Utilities/codegen/uniset2-codegen
 				 Utilities/codegen/tests/Makefile
+				 Utilities/ULog/Makefile
 				 extensions/Makefile
 				 extensions/libUniSet2Extensions.pc
 				 extensions/lib/Makefile

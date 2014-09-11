@@ -10,6 +10,7 @@
 // but should be adaptable to any project.
 
 // (c) 2002 adapted for UniSet by Lav, GNU GPL license
+// Modify for UniSet by pv@eterspft.ru, GNU GPL license
 
 #ifndef DEBUGSTREAM_H
 #define DEBUGSTREAM_H
@@ -20,6 +21,8 @@
 
 #include <iostream>
 #include <string>
+#include <sigc++/sigc++.h>
+#include "Debug.h"
 
 #ifdef TEST_DEBUGSTREAM
 #include <string>
@@ -86,10 +89,13 @@ public:
 
     /// Constructor, sets the log file to f, and the debug level to t.
     explicit
-    DebugStream(char const * f, Debug::type t = Debug::NONE);
+    DebugStream(char const * f, Debug::type t = Debug::NONE, bool truncate=false );
 
     ///
-    ~DebugStream();
+    virtual ~DebugStream();
+
+    typedef sigc::signal<void,const std::string&> StreamEvent_Signal;
+    StreamEvent_Signal signal_stream_event();
 
     /// Sets the debug level to t.
     void level(Debug::type t) {
@@ -112,7 +118,7 @@ public:
     }
 
     /// Sets the debugstreams' logfile to f.
-    void logFile( const std::string& f );
+    virtual void logFile( const std::string& f, bool truncate=false );
 
     inline std::string getLogFile(){ return fname; }
 
@@ -194,7 +200,13 @@ public:
 
     const DebugStream &operator=(const DebugStream& r);
 
-private:
+    inline void setLogName( const std::string& n ){ logname = n; }
+    inline std::string  getLogName(){ return logname; }
+
+protected:
+    void sbuf_overflow( const std::string& s );
+
+// private:
     /// The current debug level
     Debug::type dt;
     /// The no-op stream.
@@ -206,6 +218,8 @@ private:
     bool show_datetime;
     std::string fname;
 
+    StreamEvent_Signal s_stream;
+    std::string logname; 
 };
 
 #endif

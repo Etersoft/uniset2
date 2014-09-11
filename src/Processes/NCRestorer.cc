@@ -161,6 +161,6 @@ void NCRestorer::init_depends_signals( IONotifyController* ic )
 
         IOController::ChangeSignal s = ic->signal_change_value(it->second.d_si.id);
         s.connect( sigc::mem_fun( &it->second, &IOController::USensorInfo::checkDepend) );
-	}
+    }
 }
 // -----------------------------------------------------------------------------
