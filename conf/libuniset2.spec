@@ -4,13 +4,14 @@
 %def_enable python
 %def_enable rrd
 %def_enable io
+%def_enable logicproc
 #%def_enable modbus
 
 %define oname uniset2
 
 Name: libuniset2
 Version: 2.0
-Release: alt6
+Release: alt7
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -136,6 +137,7 @@ Obsoletes: %name-extentions-devel
 %description extension-common-devel
 Libraries needed to develop for uniset extensions
 
+
 %if_enabled mysql
 %package extension-mysql
 Group: Development/Databases
@@ -189,6 +191,24 @@ Requires: %name-extension-common-devel = %version-%release
 Libraries needed to develop for uniset RRD extension
 %endif
 
+%if_enabled logicproc
+%package extension-logicproc
+Group: Development/c++
+Summary: LogicProcessor extension for libUniSet
+Requires: %name-extension-common = %version-%release
+
+%description extension-logicproc
+LogicProcessor for %name
+
+%package extension-logicproc-devel
+Group: Development/C++
+Summary: Libraries needed to develop for uniset LogicProcesor extension
+Requires: %name-extension-common-devel = %version-%release
+
+%description extension-logicproc-devel
+Libraries needed to develop for uniset LogicProcessor extension
+%endif
+
 %if_enabled io
 %package extension-io
 Group: Development/C++
@@ -207,12 +227,20 @@ Requires: %name-extension-common-devel = %version-%release
 Libraries needed to develop for uniset IOControl (io)
 %endif
 
+%package extension-smplus
+Group: Development/C++
+Summary: libUniSet2 SharedMemoryPlus extension ('all in one')
+Requires: %name-extension-common = %version-%release
+
+%description extension-smplus
+SharedMemoryPlus extension ('all in one') for libuniset
+
 %prep
 %setup
 
 %build
 %autoreconf
-%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable python} %{subst_enable rrd} %{subst_enable io}
+%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc}
 %make
 
 %install
@@ -236,6 +264,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_bindir/%oname-sviewer-text
 %_bindir/%oname-smonit
 %_bindir/%oname-simitator
+%_bindir/%oname-log
+%_bindir/%oname-logserver-wrap
 %_bindir/%oname-start*
 %_bindir/%oname-stop*
 %_bindir/%oname-func*
@@ -297,8 +327,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %endif
 
 %files extension-common
-%_bindir/%oname-logicproc
-%_bindir/%oname-plogicproc
 %_bindir/%oname-mtr-conv
 %_bindir/%oname-mtr-setup
 %_bindir/%oname-mtr-read
@@ -306,20 +334,32 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_bindir/%oname-rtu188-state
 %_bindir/%oname-rtuexchange
 %_bindir/%oname-smemory
-%_bindir/%oname-smemory-plus
 %_bindir/%oname-smviewer
 %_bindir/%oname-network
 %_bindir/%oname-unet*
 #%_bindir/%oname-smdbserver
 
-%_libdir/*Extensions.so.*
-%_libdir/libUniSet2LP*.so.*
+%_libdir/libUniSet2Extensions.so.*
 %_libdir/libUniSet2MB*.so.*
 %_libdir/libUniSet2RT*.so.*
 %_libdir/libUniSet2Shared*.so.*
 %_libdir/libUniSet2Network*.so.*
 %_libdir/libUniSet2UNetUDP*.so.*
 #%_libdir/libUniSet2SMDBServer*.so.*
+
+%files extension-smplus
+%_bindir/%oname-smemory-plus
+
+%if_enabled logicproc
+%files extension-logicproc
+%_libdir/libUniSet2LP*.so.*
+%_bindir/%oname-logicproc
+%_bindir/%oname-plogicproc
+
+%files extension-logicproc-devel
+%_pkgconfigdir/libUniSet2Log*.pc
+%_libdir/libUniSet2LP*.so
+%endif
 
 %if_enabled rrd
 %files extension-rrd
@@ -345,16 +385,14 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %files extension-common-devel
 %_includedir/%oname/extensions/
-%_libdir/*Extensions.so
-%_libdir/libUniSet2LP*.so
+%_libdir/libUniSet2Extensions.so
 %_libdir/libUniSet2MB*.so
 %_libdir/libUniSet2RT*.so
 %_libdir/libUniSet2Shared*.so
 %_libdir/libUniSet2Network.so
 %_libdir/libUniSet2UNetUDP.so
 #%_libdir/libUniSet2SMDBServer.so
-%_pkgconfigdir/*Extensions.pc
-%_pkgconfigdir/libUniSet2Log*.pc
+%_pkgconfigdir/libUniSet2Extensions.pc
 %_pkgconfigdir/libUniSet2MB*.pc
 %_pkgconfigdir/libUniSet2RT*.pc
 %_pkgconfigdir/libUniSet2Shared*.pc
@@ -366,6 +404,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
 
 %changelog
+* Wed Oct 01 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt7
+- make "extension-smplus" package
+- make "extension-logicproc" package
+
 * Thu Aug 21 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt6
 - make "extension-common" package
 - make "extension-rrd" package

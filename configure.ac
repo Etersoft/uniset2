@@ -115,6 +115,19 @@ fi
 AM_CONDITIONAL(DISABLE_IO, test ${buildio} = false)
 AM_CONDITIONAL(ENABLE_IO, test ${buildio} = true)
 
+#check logicproc build
+AC_MSG_CHECKING([build logic processor extension])
+buildlproc=true
+AC_ARG_ENABLE(rrd, AC_HELP_STRING([--disable-logicproc], [disable build LogicProcessor extension]),
+[ if test $enableval = yes; then buildlproc=true; else buildlproc=false; fi],[ buildlproc=true; ])
+if test ${buildlproc} = true; then
+	AC_MSG_RESULT([enabled])
+else
+	AC_MSG_RESULT([disabled])
+fi
+
+AM_CONDITIONAL(DISABLE_LOGICPROC, test ${buildlproc} = false)
+
 #check build extensions
 ext=true
 AC_MSG_CHECKING([Extensions])
