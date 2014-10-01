@@ -193,7 +193,7 @@ Libraries needed to develop for uniset RRD extension
 
 %if_enabled logicproc
 %package extension-logicproc
-Group: Development/c++
+Group: Development/C++
 Summary: LogicProcessor extension for libUniSet
 Requires: %name-extension-common = %version-%release
 
