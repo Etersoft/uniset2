@@ -120,7 +120,7 @@ Documentations for developing with UniSet
 
 %package extension-common
 Group: Development/C++
-Summary: libUniSet2 extensions
+Summary: libUniSet2 extensions common
 Requires: %name = %version-%release
 
 %description extension-common
@@ -129,7 +129,7 @@ Extensions for libuniset
 %package extension-common-devel
 Group: Development/C++
 Summary: Libraries needed to develop for uniset extensions
-Requires: %name-extensions = %version-%release
+Requires: %name-devel = %version-%release
 Provides: %name-extentions-devel
 Obsoletes: %name-extentions-devel
 
