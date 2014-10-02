@@ -43,8 +43,9 @@
     \par Пример использования.
     Допустим у вас есть сигнал "перегрев"(in_overheating) и вам необходимо выставить какой-то
     флаг о перегреве (isOverheating), если этот сигнал устойчиво держится в течение 10 секунд,
-    и при этом если сигнал снялся, то вам необходимо как минимум те же 10 секунд,
-    подождать прежде чем "снять" флаг. Для этого удобно использовать данный класс.
+    то check() станет "true". При этом если сигнал снимется на 5 секунд ("песок начнёт обратно пересыпаться"), 
+    а потом опять выставиться, то до срабатывания check() == true уже останется 5 сек, а не 10 сек.
+    Получается, что для срабатывания check()=true сигнал должен не колеблясь держаться больше заданного времени.
 \code
     HourGlass hg;
     hg.run(10000); // настраиваем часы на 10 сек..
@@ -67,7 +68,7 @@ class HourGlass
         inline void run( timeout_t msec )
         {
             t.setTiming(msec);
-            _state     = true;
+            _state   = true;
             _sand    = msec;
             _size    = msec;
         }
@@ -77,6 +78,7 @@ class HourGlass
             run(_size);
         }
 
+        // "ёмкость" песочных часов..
         inline int duration()
         {
             return _size;
@@ -93,27 +95,25 @@ class HourGlass
             _state = st;
             if( !_state )
             {
-                int cur = t.getCurrent();
-                _sand -= cur;
+				int cur = t.getCurrent();
+                if( cur > _size )
+                    cur = _size;
 
-                if( _sand < 0 )
-                    _sand = 0;
-
-//                std::cout << "перевернули: прошло " << cur
-//                            << " осталось " << sand
-//                            << " засекаем " << cur << endl;
+				_sand -= cur;
+				if( _sand < 0 )
+					_sand = 0;
 
                 t.setTiming(cur);
             }
             else
             {
-                _sand += t.getCurrent();
+                int cur = t.getCurrent();
+                if( cur > _size )
+                    cur = _size;
+     
+                _sand += cur;
                 if( _sand > _size )
                     _sand = _size;
-
-//                std::cout << "вернули: прошло " << t.getCurrent()
-//                            << " осталось " << sand
-//                            << " засекам " << sand << endl;
 
                 t.setTiming(_sand);
             }
@@ -121,15 +121,13 @@ class HourGlass
         }
 
         // получить прошедшее время
-        // для положения st
-        inline timeout_t current( bool st )
+        inline timeout_t current()
         {
-            return t.getCurrent();
+			return t.getCurrent();
         }
 
         // получить заданное время
-        // для положения st
-        inline timeout_t interval( bool st )
+        inline timeout_t interval()
         {
             return t.getInterval();
         }
@@ -147,11 +145,42 @@ class HourGlass
 
         inline bool state(){ return _state; }
 
+		// текущее "насыпавшееся" количество "песка"
+        inline timeout_t amount()
+		{
+			return ( _size - remain() );
+		}
+
+		// остаток песка (времени)
+        inline timeout_t remain()
+		{
+			timeout_t c = t.getCurrent();
+			if( c > _size )
+				c = _size;
+			
+			// _state=false - означает, что песок пересыпается обратно..
+			if( !_state )
+			{
+				int ret = ( _sand + c );
+				if( ret > _size )
+					return _size;
+				
+				return ret;
+			}
+
+			// _state=true  - означает, что песок пересыпается..
+			int ret = ( _sand - c );
+			if( ret < 0 )
+				return 0;
+
+			return ret;
+		}
+        
     protected:
-        PassiveTimer t;
-        bool _state;
-        int _sand;
-        timeout_t _size;
+        PassiveTimer t;   /*!< таймер для отсчёта времени.. */
+        bool _state;      /*!< текущее "положение часов", true - прямое, false - обратное (перевёрнутое) */
+        int _sand;        /*!< сколько песка ещё осталось.. */
+        timeout_t _size;  /*!< размер часов */
 };
 // --------------------------------------------------------------------------
 #endif

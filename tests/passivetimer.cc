@@ -1,65 +1,59 @@
-#include <iostream>
-
-using namespace std;
+#include <Catch/catch.hpp>
 
 #include "PassiveTimer.h"
 #include "UniSetTypes.h"
+using namespace std;
 
-PassiveTimer pt(1000);
-
-void func( const std::string& s1 )
+TEST_CASE("PassiveTimer", "[PassiveTimer]" ) 
 {
-
-}
-
-int main()
-{
-    func("test");
-
-    PassiveTimer pt1(5000);
-    cout << " pt1.getInterval()=" << pt1.getInterval() << " TEST: " << ((pt1.getInterval()==5000) ? "OK" : "FAILED") << endl;
-    
-    PassiveTimer pt2;
-    cout << " pt2.getInterval()=" << pt2.getInterval() << endl;
-    if( pt2.getInterval() != 0 )
+    SECTION( "Default constructor" ) 
     {
-        cerr << "BAD DEFAULT INITIALIZATION!!!" << endl;
-        return 1;
+		PassiveTimer pt;
+
+		REQUIRE_FALSE( pt.checkTime() );
+		msleep(15);
+        REQUIRE( pt.getCurrent() >= 10 );
+		REQUIRE( pt.getInterval() == 0 ); // TIMEOUT_INF );
+		REQUIRE( pt.getLeft( pt.getCurrent() + 10 ) == 10 );
     }
 
-    PassiveTimer pt3(UniSetTimer::WaitUpTime);
-    cout << "pt3.getCurrent(): " << pt3.getCurrent() << endl;
-    msleep(3000);
-    int pt3_ms = pt3.getCurrent();
-    cout << "pt3.getCurrent(): " << pt3_ms << endl;
-    if( pt3_ms < 3000 )
+    SECTION( "Init constructor" ) 
     {
-        cerr << "BAD getCurrent() function for WaitUpTime timer (pt3)" << endl;
-        return 1;
+		PassiveTimer pt(100);
+		msleep(15); // т.к. точность +-10 мсек.. делаем паузу 60.. а проверяем 50
+        REQUIRE( pt.getCurrent() >= 10 );
+		REQUIRE( pt.getInterval() == 100 );
+		REQUIRE( pt.getLeft(50) > 0 );
     }
 
-
-    PassiveTimer pt0(0);
-    cout << "pt0: check msec=0: " << ( pt0.checkTime() ? "OK" : "FAILED" ) << endl;
-
-
-    PassiveTimer pt4(350);
-
-    for( int i=0;i<12; i++ )
+    SECTION( "Init zero" ) 
     {
-        cerr << "pt4: check time = " << pt4.checkTime() << endl;
-        if( pt4.checkTime() )
-        {
-            cerr << "pt4: reset..." << endl;
-            pt4.reset();
-        }
-        msleep(200);
+		PassiveTimer pt(0);
+		REQUIRE( pt.getInterval() == 0 ); // TIMEOUT_INF );
+		REQUIRE( pt.getLeft(100) == 100 );
     }
 
-    while(1)
+    SECTION( "Init < 0 " ) 
     {
-        cerr << "timer=" << pt.checkTime() << endl;
-        msleep(500);
+		PassiveTimer pt(-10);
+		REQUIRE( pt.getInterval() >= (timeout_t)(-10) ); // '>=' т.к. переданное время может быть округлено в большую сторону.
+		REQUIRE( pt.getLeft(10) == 10 );
     }
-    return 0;
+
+    SECTION( "Check working" ) 
+    {
+		PassiveTimer pt(100);
+		msleep(120); // т.к. точность +-10 мсек.. делаем паузу 60.. а проверяем 50
+		REQUIRE( pt.getCurrent() >= 110 );
+		CHECK( pt.checkTime() );
+		INFO("Check reset");
+		pt.reset();
+		REQUIRE_FALSE( pt.checkTime() );
+
+		INFO("Check setTiming");
+		REQUIRE_FALSE( pt.checkTime() );
+		pt.setTiming(50);
+		msleep(55); // т.к. точность +-10 мсек.. делаем паузу 55..
+		CHECK( pt.checkTime() );
+    }
 }

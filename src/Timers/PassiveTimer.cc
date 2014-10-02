@@ -81,9 +81,7 @@ bool PassiveTimer::checkTime()
 timeout_t PassiveTimer::setTiming( timeout_t timeMS )
 {
     if( timeMS == WaitUpTime )
-    {
         timeSS = WaitUpTime;
-    }
     else
     {
         timeSS=timeMS/10; // задержка в сантисекундах
