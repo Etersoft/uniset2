@@ -116,7 +116,7 @@ void UInterface::initBackId( const UniSetTypes::ObjectId backid )
  * \exception IOTimeOut - генерируется если в течение времени timeout небыл получен ответ
 */
 long UInterface::getValue( const ObjectId id, const ObjectId node ) const 
-    throw(IO_THROW_EXCEPTIONS)
+    throw(UI_THROW_EXCEPTIONS)
 {
     if ( id == DefaultObjectId )
         throw ORepFailed("UI(getValue): error id=UniSetTypes::DefaultObjectId");
@@ -274,7 +274,7 @@ void UInterface::setUndefinedState( const IOController_i::SensorInfo& si, bool u
  * \exception IOBadParam - генерируется если указано неправильное имя вывода или секции
 */
 void UInterface::setValue( const ObjectId id, long value, const ObjectId node ) const
-    throw(IO_THROW_EXCEPTIONS)
+    throw(UI_THROW_EXCEPTIONS)
 {
     if ( id == DefaultObjectId )
         throw ORepFailed("UI(setValue): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
@@ -458,7 +458,7 @@ void UInterface::fastSetValue( const IOController_i::SensorInfo& si, long value,
  * \param backid - обратный адрес (идентификатор заказчика)
 */
 void UInterface::askRemoteSensor( const ObjectId id, UniversalIO::UIOCommand cmd, const ObjectId node,
-                                    UniSetTypes::ObjectId backid ) const throw(IO_THROW_EXCEPTIONS)
+                                    UniSetTypes::ObjectId backid ) const throw(UI_THROW_EXCEPTIONS)
 {
     if( backid==UniSetTypes::DefaultObjectId )
         backid = myid;
@@ -552,7 +552,7 @@ void UInterface::askSensor( const ObjectId name, UniversalIO::UIOCommand cmd, co
  * \param node - идентификатор узла
 */
 IOType UInterface::getIOType( const ObjectId id, const ObjectId node ) const
-    throw(IO_THROW_EXCEPTIONS)
+    throw(UI_THROW_EXCEPTIONS)
 {
     if ( id == DefaultObjectId )
         throw ORepFailed("UI(getIOType): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
@@ -634,7 +634,7 @@ IOType UInterface::getIOType( const ObjectId id ) const
  * \param node - идентификатор узла
 */
 ObjectType UInterface::getType(const ObjectId name, const ObjectId node) const
-    throw(IO_THROW_EXCEPTIONS)
+    throw(UI_THROW_EXCEPTIONS)
 {
     if ( name == DefaultObjectId )
         throw ORepFailed("UI(getType): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
@@ -885,7 +885,7 @@ ObjectPtr UInterface::resolve( const ObjectId rid , const ObjectId node, int tim
 
 // -------------------------------------------------------------------------------------------
 void UInterface::send( const ObjectId name, const TransportMessage& msg, const ObjectId node ) 
-    throw(IO_THROW_EXCEPTIONS)
+    throw(UI_THROW_EXCEPTIONS)
 {
     if ( name == DefaultObjectId )
         throw ORepFailed("UI(send): ERROR: id=UniSetTypes::DefaultObjectId");
@@ -1898,7 +1898,7 @@ bool UInterface::waitWorking( const ObjectId id, int msec, int pmsec, const Obje
     {
         try
         {
-            getValue(id,node); // getValue подходит и для Dx и для Ax
+            getValue(id,node);
             ready = true;
             break;
         }

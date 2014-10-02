@@ -49,7 +49,7 @@ namespace UniversalIO
 }
 
 // -----------------------------------------------------------------------------------------
-#define IO_THROW_EXCEPTIONS UniSetTypes::TimeOut,UniSetTypes::IOBadParam,UniSetTypes::ORepFailed
+#define UI_THROW_EXCEPTIONS UniSetTypes::TimeOut,UniSetTypes::IOBadParam,UniSetTypes::ORepFailed
 // -----------------------------------------------------------------------------------------
 /*!
  * \class UInterface
@@ -72,12 +72,12 @@ class UInterface
         // Работа с датчиками
 
         //! Получение состояния датчика
-        long getValue ( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const throw(IO_THROW_EXCEPTIONS);
+        long getValue ( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const throw(UI_THROW_EXCEPTIONS);
         long getValue ( const UniSetTypes::ObjectId id ) const;
         long getRawValue( const IOController_i::SensorInfo& si );
 
         //! Выставление состояния датчика
-        void setValue ( const UniSetTypes::ObjectId id, long value, const UniSetTypes::ObjectId node ) const throw(IO_THROW_EXCEPTIONS);
+        void setValue ( const UniSetTypes::ObjectId id, long value, const UniSetTypes::ObjectId node ) const throw(UI_THROW_EXCEPTIONS);
         void setValue ( const UniSetTypes::ObjectId id, long value ) const;
         void setValue ( IOController_i::SensorInfo& si, long value, const UniSetTypes::ObjectId supplier );
 
@@ -100,7 +100,7 @@ class UInterface
                             UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId ) const;
 
         void askRemoteSensor( const UniSetTypes::ObjectId id, UniversalIO::UIOCommand cmd, const UniSetTypes::ObjectId node,
-                            UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId ) const throw(IO_THROW_EXCEPTIONS);
+                            UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId ) const throw(UI_THROW_EXCEPTIONS);
 
         //! Заказ по списку
         UniSetTypes::IDSeq_var askSensorsSeq( UniSetTypes::IDList& lst, UniversalIO::UIOCommand cmd,
@@ -137,14 +137,14 @@ class UInterface
         // ---------------------------------------------------------------
         // Вспомогательные функции
 
-        UniversalIO::IOType getIOType(const UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) const throw(IO_THROW_EXCEPTIONS);
+        UniversalIO::IOType getIOType(const UniSetTypes::ObjectId id, UniSetTypes::ObjectId node) const throw(UI_THROW_EXCEPTIONS);
         UniversalIO::IOType getIOType(const UniSetTypes::ObjectId id) const;
 
         // read from xml (only for xml!) т.е. без удалённого запроса
         UniversalIO::IOType getConfIOType( const UniSetTypes::ObjectId id ) const;
 
         // Получение типа объекта..
-        UniSetTypes::ObjectType getType(const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node) const throw(IO_THROW_EXCEPTIONS);
+        UniSetTypes::ObjectType getType(const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node) const throw(UI_THROW_EXCEPTIONS);
         UniSetTypes::ObjectType getType(const UniSetTypes::ObjectId id) const;
 
 
@@ -227,7 +227,7 @@ class UInterface
         // Посылка сообщений
 
         /*! посылка сообщения msg объекту name на узел node */
-        void send( const UniSetTypes::ObjectId name, const UniSetTypes::TransportMessage& msg, UniSetTypes::ObjectId node ) throw(IO_THROW_EXCEPTIONS);
+        void send( const UniSetTypes::ObjectId name, const UniSetTypes::TransportMessage& msg, UniSetTypes::ObjectId node ) throw(UI_THROW_EXCEPTIONS);
         void send( const UniSetTypes::ObjectId name, const UniSetTypes::TransportMessage& msg);
 
         // ---------------------------------------------------------------
