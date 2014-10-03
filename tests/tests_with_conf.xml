@@ -5,7 +5,7 @@
 <!-- Общие(стартовые) параметры по UniSet -->
 <UniSet>
 		<NameService host="localhost" port="2809"/>
-		<LocalNode	 name="LocalhostNode"/>
+		<LocalNode	 name="localhost"/>
 		<RootSection name="UNISET_PLC"/>
 
 		<CountOfNet 		name="1"/>
@@ -55,8 +55,8 @@
 	textname 	- текстовое имя датчика
 -->
 	<nodes port="2809">
-		<item id="1000" name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1"/>
-		<item id="1001" name="Node2"			alias="" textname="Локальный узел"	ip="127.0.0.1"/>
+		<item id="1000" name="localhost"	alias="" textname="Локальный узел"	ip="127.0.0.1"/>
+		<item id="1001" name="node2"			alias="" textname="Локальный узел"	ip="127.0.0.1"/>
 	</nodes>
 
 	<!-- ************************ Датчики ********************** -->

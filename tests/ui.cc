@@ -1,3 +1,5 @@
+#include <catch.hpp>
+
 #include <time.h>
 #include "UInterface.h"
 #include "UniSetTypes.h"
@@ -5,64 +7,63 @@
 using namespace std;
 using namespace UniSetTypes;
 
-int main( int argc, const char **argv )
+TEST_CASE("UInterface","[UInterface]")
 {
-    try
-    {
-        uniset_init(argc,argv,"test.xml");
-        UInterface ui;
+	CHECK( conf!=0 );
 
-        cout << "** check getSensorID function **" << endl;
-        ObjectId id1 = conf->getSensorID("Input1_S");
-        if( id1 != 1 )
-        {
-            cout << "** FAILED! check getSensorID function **" << endl;
-            return 1;
-        }
+	std::string sidName("Input1_S");
 
-        cout << "** check getConfIOType function **" << endl;
-        UniversalIO::IOType t = ui.getConfIOType(id1);
-        cout << "sensor ID=" << id1 << " iotype=" << t << endl;
-        if( t != UniversalIO::DI )
-        {
-            cout << "** FAILED! check getSensorID function **" << endl;
-            return 1;
-        }
+	ObjectId testOID = conf->getObjectID("TestProc");
+	CHECK( testOID != DefaultObjectId );
 
-        int id = conf->getArgInt("--sid");
-        if( id <= 0 )
-        {
-            cerr << "unknown sensor ID. Use --sid " << endl;
-            return 1;
-        }
+	ObjectId sid = conf->getSensorID(sidName);
+	CHECK( sid != DefaultObjectId );
 
-        cout << "** check getChangedTime for ID=" << id << ":" << endl;
+	UInterface ui;
 
-        IOController_i::ShortIOInfo inf = ui.getChangedTime(id,conf->getLocalNode());
+	CHECK( ui.getObjectIndex() != 0 );
+	CHECK( ui.getConf() == UniSetTypes::conf );
 
-        struct tm* tms = localtime(&inf.tv_sec);
+	CHECK( ui.getConfIOType(sid) != UniversalIO::UnknownIOType );
 
-        char t_str[ 150 ];
-        strftime( t_str, sizeof(t_str), "%d %b %Y %H:%M:%S", tms );
-    
-        cout << "id=" << id
-            << " value=" << inf.value
-            << " last changed: " << string(t_str) << endl;
+	REQUIRE_THROWS_AS( ui.getValue(DefaultObjectId), UniSetTypes::ORepFailed );
+	REQUIRE_THROWS_AS( ui.getValue(sid), UniSetTypes::Exception );
+	REQUIRE_THROWS_AS( ui.getValue(sid, DefaultObjectId), UniSetTypes::Exception );
+	REQUIRE_THROWS_AS( ui.getValue(sid, 100), UniSetTypes::Exception );
 
-        cout << "check getValue: " << ui.getValue(id1) << endl;
-        cout << "check setValue: id='" << id1 << "' val=2 ...";
-        ui.setValue(id1,2);
-        cout << ( ui.getValue(id1) == 2 ? "OK" : "FAIL" ) << endl;
-    }
-    catch( Exception& ex )
-    {
-        cout << "(uitest):" << ex << endl;
-    }
-    catch(...)
-    {
-        cout << "(uitest): catch ..."<< endl;
-    }
-    
+	REQUIRE_THROWS_AS( ui.resolve(sid), UniSetTypes::ORepFailed );
+	REQUIRE_THROWS_AS( ui.resolve(sid,10), UniSetTypes::ORepFailed );
+	REQUIRE_THROWS_AS( ui.resolve(sid,DefaultObjectId), UniSetTypes::ORepFailed );
 
-    return 0;
+	TransportMessage tm( SensorMessage(sid,10).transport_msg() );
+	
+	REQUIRE_THROWS_AS( ui.send(testOID,tm), UniSetTypes::Exception );
+	REQUIRE_THROWS_AS( ui.send(testOID,tm, -20), UniSetTypes::Exception );
+	REQUIRE_THROWS_AS( ui.send(testOID,tm, DefaultObjectId), UniSetTypes::Exception );
+	REQUIRE_THROWS_AS( ui.getChangedTime(sid,-20), UniSetTypes::Exception );
+	REQUIRE_THROWS_AS( ui.getChangedTime(sid,DefaultObjectId), UniSetTypes::Exception );
+	REQUIRE_THROWS_AS( ui.getChangedTime(sid,conf->getLocalNode()), UniSetTypes::Exception );
+
+	CHECK_FALSE( ui.isExist(sid) );
+	CHECK_FALSE( ui.isExist(sid,DefaultObjectId) );
+	CHECK_FALSE( ui.isExist(sid,100) );
+
+	CHECK_FALSE( ui.waitReady(sid,100,50) );
+	CHECK_FALSE( ui.waitReady(sid,300,50,DefaultObjectId) );
+	CHECK_FALSE( ui.waitReady(sid,300,50,-20) );
+	CHECK_FALSE( ui.waitReady(sid,-1,50) );
+	CHECK_FALSE( ui.waitReady(sid,300,-1) );
+	
+	CHECK_FALSE( ui.waitWorking(sid,100,50) );
+	CHECK_FALSE( ui.waitWorking(sid,100,50,DefaultObjectId) );
+	CHECK_FALSE( ui.waitWorking(sid,100,50,-20) );
+	CHECK_FALSE( ui.waitWorking(sid,-1,50) );
+	CHECK_FALSE( ui.waitWorking(sid,100,-1) );
+
+	std::string longName("UNISET_PLC/Sensors/" + sidName);
+	CHECK( ui.getIdByName(longName) == sid );
+	CHECK( ui.getNameById(sid) == longName );
+	CHECK( ui.getTextName(sid) == "Команда 1" );
+
+	CHECK( ui.getNodeId("localhost") == 1000 );
 }

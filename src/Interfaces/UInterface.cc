@@ -121,6 +121,9 @@ long UInterface::getValue( const ObjectId id, const ObjectId node ) const
     if ( id == DefaultObjectId )
         throw ORepFailed("UI(getValue): error id=UniSetTypes::DefaultObjectId");
 
+    if ( node == DefaultObjectId )
+        throw ORepFailed("UI(getValue): error node=UniSetTypes::DefaultObjectId");
+
     try
     {
         CORBA::Object_var oref;
@@ -278,6 +281,9 @@ void UInterface::setValue( const ObjectId id, long value, const ObjectId node ) 
 {
     if ( id == DefaultObjectId )
         throw ORepFailed("UI(setValue): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+
+    if ( node == DefaultObjectId )
+        throw ORepFailed("UI(setValue): error node=UniSetTypes::DefaultObjectId");
 
     try
     {
@@ -469,6 +475,9 @@ void UInterface::askRemoteSensor( const ObjectId id, UniversalIO::UIOCommand cmd
     if ( id == DefaultObjectId )
         throw ORepFailed("UI(askRemoteSensor): id=UniSetTypes::DefaultObjectId");
 
+    if ( node == DefaultObjectId )
+        throw ORepFailed("UI(askRemoteSensor): error node=UniSetTypes::DefaultObjectId");
+
     try
     {
         CORBA::Object_var oref;
@@ -557,6 +566,9 @@ IOType UInterface::getIOType( const ObjectId id, const ObjectId node ) const
     if ( id == DefaultObjectId )
         throw ORepFailed("UI(getIOType): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
 
+    if ( node == DefaultObjectId )
+        throw ORepFailed("UI(getIOType): error node=UniSetTypes::DefaultObjectId");
+
     try
     {
         CORBA::Object_var oref;
@@ -638,6 +650,9 @@ ObjectType UInterface::getType(const ObjectId name, const ObjectId node) const
 {
     if ( name == DefaultObjectId )
         throw ORepFailed("UI(getType): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+
+    if ( node == DefaultObjectId )
+        throw ORepFailed("UI(getType): error node=UniSetTypes::DefaultObjectId");
 
     try
     {
@@ -761,6 +776,9 @@ ObjectPtr UInterface::resolve( const ObjectId rid , const ObjectId node, int tim
 {
     if ( rid == DefaultObjectId )
         throw ResolveNameError("UI(resolve): ID=UniSetTypes::DefaultObjectId");
+
+    if ( node == DefaultObjectId )
+        throw ResolveNameError("UI(resolve): error node=UniSetTypes::DefaultObjectId");
 
     CosNaming::NamingContext_var ctx;
     rcache.erase(rid, node);
@@ -890,6 +908,9 @@ void UInterface::send( const ObjectId name, const TransportMessage& msg, const O
     if ( name == DefaultObjectId )
         throw ORepFailed("UI(send): ERROR: id=UniSetTypes::DefaultObjectId");
 
+    if ( node == DefaultObjectId )
+        throw ORepFailed("UI(send): error node=UniSetTypes::DefaultObjectId");
+
     try
     {
         CORBA::Object_var oref;
@@ -957,6 +978,9 @@ IOController_i::ShortIOInfo UInterface::getChangedTime( const ObjectId id, const
 {
     if( id == DefaultObjectId )
         throw ORepFailed("UI(getChangedTime): Unknown id=UniSetTypes::DefaultObjectId");
+
+    if ( node == DefaultObjectId )
+        throw ORepFailed("UI(getChangedTime): error node=UniSetTypes::DefaultObjectId");
 
     try
     {
@@ -1183,6 +1207,9 @@ void UInterface::askRemoteThreshold( const ObjectId sid, const ObjectId node,
     if ( sid == DefaultObjectId )
         throw ORepFailed("UI(askRemoteThreshold): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
 
+    if ( node == DefaultObjectId )
+        throw ORepFailed("UI(askRemoteThreshold): error node=UniSetTypes::DefaultObjectId");
+
     try
     {
         CORBA::Object_var oref;
@@ -1341,6 +1368,9 @@ long UInterface::getRawValue( const IOController_i::SensorInfo& si )
     if ( si.id == DefaultObjectId )
         throw ORepFailed("UI(getRawValue): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
 
+    if ( si.node == DefaultObjectId )
+        throw ORepFailed("UI(cgetRawValue): error node=UniSetTypes::DefaultObjectId");
+
     try
     {
         CORBA::Object_var oref;
@@ -1417,8 +1447,11 @@ void UInterface::calibrate(const IOController_i::SensorInfo& si,
 //    if( admId==UniSetTypes::DefaultObjectId )
 //        throw UniSetTypes::IOBadParam("UI(askTreshold): неизвестен ID администратора");
 
-    if ( si.id == DefaultObjectId )
+    if( si.id == DefaultObjectId )
         throw ORepFailed("UI(calibrate): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+
+    if( si.node == DefaultObjectId )
+        throw ORepFailed("UI(calibrate): error node=UniSetTypes::DefaultObjectId");
 
     try
     {
@@ -1491,6 +1524,9 @@ IOController_i::CalibrateInfo UInterface::getCalibrateInfo( const IOController_i
 {
     if ( si.id == DefaultObjectId )
         throw ORepFailed("UI(getCalibrateInfo): попытка обратиться к объекту с id=UniSetTypes::DefaultObjectId");
+
+    if ( si.node == DefaultObjectId )
+        throw ORepFailed("UI(getCalibrateInfo): error node=UniSetTypes::DefaultObjectId");
 
     try
     {
@@ -1803,6 +1839,12 @@ UniSetTypes::IDSeq_var UInterface::askSensorsSeq( UniSetTypes::IDList& lst,
 // -----------------------------------------------------------------------------
 IOController_i::ShortMapSeq* UInterface::getSensors( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node )
 {
+    if ( id == DefaultObjectId )
+        throw ORepFailed("UI(getSensors): error node=UniSetTypes::DefaultObjectId");
+
+    if ( node == DefaultObjectId )
+        throw ORepFailed("UI(getSensors): error node=UniSetTypes::DefaultObjectId");
+
     try
     {
         CORBA::Object_var oref;
@@ -1871,6 +1913,12 @@ IOController_i::ShortMapSeq* UInterface::getSensors( const UniSetTypes::ObjectId
 // -----------------------------------------------------------------------------
 bool UInterface::waitReady( const ObjectId id, int msec, int pmsec, const ObjectId node )
 {
+	if( msec < 0 )
+		msec = 0;
+
+	if( pmsec < 0 )
+		pmsec = 0;
+
     PassiveTimer ptReady(msec);
     bool ready = false;
     while( !ptReady.checkTime() && !ready )
@@ -1891,6 +1939,12 @@ bool UInterface::waitReady( const ObjectId id, int msec, int pmsec, const Object
 // -----------------------------------------------------------------------------
 bool UInterface::waitWorking( const ObjectId id, int msec, int pmsec, const ObjectId node )
 {
+	if( msec < 0 )
+		msec = 0;
+
+	if( pmsec < 0 )
+		pmsec = 0;
+
     PassiveTimer ptReady(msec);
     bool ready = false;
 

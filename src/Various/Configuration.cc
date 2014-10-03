@@ -75,12 +75,12 @@ ostream& UniSetTypes::Configuration::help(ostream& os)
 namespace UniSetTypes
 {
     DebugStream ulog;
-    Configuration *conf = 0;
+    Configuration* conf = 0;
 
 Configuration::Configuration():
     oind(NULL),
     NSName("NameService"),
-    repeatCount(2),repeatTimeout(100),     
+    repeatCount(2),repeatTimeout(100),
     localDBServer(UniSetTypes::DefaultObjectId),
     localNode(UniSetTypes::DefaultObjectId),
     localNodeName(""),
@@ -172,10 +172,6 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
     getcwd(curdir,FILENAME_MAX);
 
     rootDir = string(curdir) + "/";
-
-    /*! \todo Надо избавляться от глобального conf (!) */
-    if( !UniSetTypes::conf )
-        UniSetTypes::conf = this;
 
     {
         ostringstream s;
