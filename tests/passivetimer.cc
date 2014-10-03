@@ -56,4 +56,21 @@ TEST_CASE("PassiveTimer", "[PassiveTimer]" )
 		msleep(55); // т.к. точность +-10 мсек.. делаем паузу 55..
 		CHECK( pt.checkTime() );
     }
+
+    SECTION( "Copy" ) 
+    {
+		PassiveTimer pt1(100);
+		PassiveTimer pt2(200);
+
+		REQUIRE( pt1.getInterval() == 100 );
+		REQUIRE( pt2.getInterval() == 200 );
+
+		pt2 = pt1;
+		REQUIRE( pt1.getInterval() == 100 );
+		REQUIRE( pt2.getInterval() == 100 );
+
+		msleep(110);
+		CHECK( pt1.checkTime() );
+		CHECK( pt2.checkTime() );
+    }
 }

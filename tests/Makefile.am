@@ -5,7 +5,7 @@
 noinst_PROGRAMS 		= tests 
 #hourglass delaytimer unixml ui umutex conftest iterator_test sscanf_hex calibration threadtst dlog
 
-tests_SOURCES = tests.cc passivetimer.cc hourglass.cc
+tests_SOURCES = tests.cc passivetimer.cc hourglass.cc delaytimer.cc
 tests_LDADD 		= $(top_builddir)/lib/libUniSet2.la
 tests_CPPFLAGS	= -I$(top_builddir)/include -I$(includeir)/Catch
      
