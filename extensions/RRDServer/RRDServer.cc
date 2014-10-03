@@ -30,7 +30,7 @@ prefix(prefix)
     }
 
     int tmID=1;
-    for( ;it1.getCurrent(); ++it1,++tmID )
+    for( ;it1.getCurrent(); it1++,++tmID )
         initRRD(it1,tmID);
 }
 // -----------------------------------------------------------------------------
@@ -74,7 +74,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
         throw SystemError(err.str());
     }
 
-    for(;it_rra.getCurrent(); ++it_rra )
+    for(;it_rra.getCurrent(); it_rra++ )
     {
         string rra( it_rra.getProp("rra") );
         if( rra.empty() )

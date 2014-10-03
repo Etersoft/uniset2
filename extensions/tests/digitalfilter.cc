@@ -1,3 +1,6 @@
+#include <catch.hpp>
+
+#if 0
 #include <iostream>
 #include <vector>
 #include <iomanip>
@@ -44,3 +47,4 @@ int main( int argc, const char** argv )
 
     return 1;
 }
+#endif

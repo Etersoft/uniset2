@@ -361,20 +361,21 @@ void UniSetActivator::work()
         ucrit << myname << "(work):   line: " << fe.line() << endl;
         ucrit << myname << "(work):   mesg: " << fe.errmsg() << endl;
     }
-    catch(...)
-    {
-        ucrit << myname << "(work): catch ..." << endl;
-    }
 
     ulogsys << myname << "(work): orb thread stopped!" << endl;
 
-
-    ulogsys << myname << "(oaDestroy): orb destroy... " << endl;
-    try
-    {
-        orb->destroy();
+	try
+	{
+    	ulogsys << myname << "(oaDestroy): orb destroy... " << endl;
+    	orb->destroy();
     }
-    catch(...){}
+    catch(omniORB::fatalException& fe)
+    {
+        ucrit << myname << "(work): : поймали omniORB::fatalException:" << endl;
+        ucrit << myname << "(work):   file: " << fe.file() << endl;
+        ucrit << myname << "(work):   line: " << fe.line() << endl;
+        ucrit << myname << "(work):   mesg: " << fe.errmsg() << endl;
+    }
 
     ulogsys << myname << "(oaDestroy): orb destroy ok."<< endl;
 }

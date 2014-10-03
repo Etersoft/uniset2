@@ -1,3 +1,6 @@
+#include <catch.hpp>
+
+#if 0
 #include <iostream>
 #include "Exceptions.h"
 #include "UniXML.h"
@@ -77,3 +80,4 @@ int main( int argc, const char** argv )
 
     return 1;
 }
+#endif
