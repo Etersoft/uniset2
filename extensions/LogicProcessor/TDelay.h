@@ -4,8 +4,8 @@
 #include "PassiveTimer.h"
 #include "Element.h"
 // ---------------------------------------------------------------------------
-// add on delay, off delay
-
+// "ON" delay element
+// Сбрасывается без задержки.. а срабатывает с задержкой.
 class TDelay:
     public Element
 {

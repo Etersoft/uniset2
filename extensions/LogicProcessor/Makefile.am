@@ -1,6 +1,7 @@
 if DISABLE_LOGICPROC
 
 else
+SUBDIRS=unit-tests
 
 # не забывайте править версию в2.pc-файле
 ULPROC_VER=@LIBVER@

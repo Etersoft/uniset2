@@ -279,6 +279,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/ModbusSlave/libUniSet2MBSlave.pc
 				 extensions/LogicProcessor/Makefile
 				 extensions/LogicProcessor/libUniSet2LogicProcessor.pc
+				 extensions/LogicProcessor/unit-tests/Makefile
 				 extensions/SMViewer/Makefile
 				 extensions/UniNetwork/Makefile
 				 extensions/UniNetwork/libUniSet2Network.pc
