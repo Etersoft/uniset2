@@ -209,7 +209,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
             if( oind == NULL )
             {
                 UniXML_iterator it = unixml.findNode(unixml.getFirstNode(),"ObjectsMap");
-                if( it == NULL )
+                if( !it )
                 {
                     ucrit << "(Configuration:init): not found <ObjectsMap> node in "  << fileConfName << endl;
                     throw SystemError("(Configuration:init): not found <ObjectsMap> node in " + fileConfName );

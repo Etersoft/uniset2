@@ -1,3 +1,5 @@
+#include <catch.hpp>
+
 #include <iostream>
 
 using namespace std;
@@ -6,67 +8,95 @@ using namespace std;
 #include "UniXML.h"
 #include "UniSetTypes.h"
 
-int main()
+TEST_CASE("UniXML", "[UniXML]" )
 {
-/*    try
+    SECTION( "Default constructor" ) 
     {
-*/
-        UniXML xml("test.xml");
+		UniXML xml;
+		CHECK_FALSE( xml.isOpen() );
+	}
 
-        xmlNode* cnode = xml.findNode(xml.getFirstNode(),"UniSet");
-        if( cnode == NULL )
-        {
-            cerr << "<testnode> not found" << endl;
-            return 1;
-        } 
-        UniXML_iterator it(cnode);
-
-        cout << "string id=" << it.getProp("id")
-             << " int id=" << it.getIntProp("id")
-             << endl;
-
-        {
-        UniXML_iterator it = xml.findNode(xml.getFirstNode(),"LocalInfoServer", "InfoServer");
-        if( it == NULL )
-        {
-            cerr << "<testnode> not found" << endl;
-            return 1;
-        } 
-
-        cout << "string id=" << it.getProp("dbrepeat")
-             << " int id=" << it.getIntProp("dbrepeat")
-             << endl;
-        }
-
-                {
-        xmlNode* cnode = xml.findNode(xml.getFirstNode(),"ObjectsMap");
-        if( cnode == NULL )
-        {
-            cerr << "<testnode> not found" << endl;
-            return 1;
-        } 
-        UniXML_iterator it = xml.findNode(xml.getFirstNode(),"item", "LocalhostNode");
-        if( it == NULL )
-        {
-            cerr << "<testnode> not found" << endl;
-            return 1;
-        } 
-        cout << "textname=" << it.getProp("textname");
-                }
-
-        xml.save("test.out.xml");
-/*
-    }
-    catch( UniSetTypes::Exception& ex )
+    SECTION( "Bad file" )
     {
-        cerr << ex << endl;
-        return 1;
-    }
-    catch( ... )
-    {
-        cerr << "catch ... " << endl;
-        return 1;
-    }
-*/
-    return 0;
+		REQUIRE_THROWS_AS( UniXML("unknown.xml"), UniSetTypes::NameNotFound );
+		REQUIRE_THROWS_AS( UniXML("tests_unixml_badfile.xml"), UniSetTypes::Exception );
+	}
+	
+	UniXML uxml("tests_unixml.xml");
+	CHECK( uxml.isOpen() );
+
+    xmlNode* cnode = uxml.findNode(uxml.getFirstNode(),"UniSet");
+    CHECK( cnode != NULL );
+	// проверка поиска "вглубь"
+	CHECK( uxml.findNode(uxml.getFirstNode(),"Services") != NULL );
+
+	// getProp
+	// getIntProp
+	// nextNode
+	// getPIntProp
+	// create
+	// remove
+	// copy
+	// nextNode
+
+	SECTION( "Iterator" );
+	{
+    	UniXML_iterator it(cnode);
+		CHECK( it.getCurrent() != 0 );
+		it = uxml.begin();
+		CHECK( it.find("UniSet") != 0 );
+
+		// поиск в глубину..
+		it = uxml.begin();
+		CHECK( it.find("TestProc") != 0 );
+		
+		it = uxml.begin();
+		CHECK( it.getName() == "UNISETPLC" );
+		it.goChildren();
+		CHECK( it.getName() == "UserData" );
+
+		it += 4;
+		CHECK( it.getName() == "settings" );
+
+		it -= 4;
+		CHECK( it.getName() == "UserData" );
+
+		it = it + 4;
+		CHECK( it.getName() == "settings" );
+
+		it = it - 4;
+		CHECK( it.getName() == "UserData" );
+
+		it++;
+		CHECK( it.getName() == "UniSet" );
+
+		it--;
+		CHECK( it.getName() == "UserData" );
+
+		it = uxml.begin();
+		CHECK( it.findName("TestNode","TestNode1") != 0 );
+		it = uxml.begin();
+		CHECK( it.findName("TestNode","TestNode2") != 0 );
+
+		it = uxml.begin();
+		it.goChildren();
+		CHECK( it.getName() == "UserData" );
+		it.goParent();
+		CHECK( it.getName() == "UNISETPLC" );
+
+		it = uxml.begin();
+		it.goChildren();
+		it.goEnd();
+		CHECK( it.getName() == "EndSection" );
+		it.goBegin();
+		CHECK( it.getName() == "UserData" );
+
+		it = uxml.begin();
+		CHECK( it.find("TestData") != 0 );
+
+		CHECK( it.getProp("text") == "text" );
+		CHECK( it.getIntProp("x") == 10 );
+		CHECK( it.getPIntProp("y",-20) == 100 );
+		CHECK( it.getPIntProp("unknown",20) == 20 );
+	}
 }

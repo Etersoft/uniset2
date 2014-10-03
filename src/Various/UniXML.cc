@@ -424,7 +424,7 @@ void UniXML_iterator::setProp( const string& name, const string& text )
 
 // -------------------------------------------------------------------------    
 bool UniXML_iterator::findName( const std::string& node, const std::string& searchname )
-{    
+{
     while( this->find(node) )
     {
         if ( searchname == getProp("name") )
@@ -471,89 +471,59 @@ bool UniXML_iterator::find( const std::string& searchnode )
     
     return false;
 }
-// -------------------------------------------------------------------------    
-UniXML_iterator UniXML_iterator::operator++()
-{
-    if (!curNode->next)
-    {    
-        curNode=curNode->next;
-        return *this;
-    }
-
-    for(;;)
-    {
-        curNode=curNode->next;
-        if (getName() == "text" || getName() == "comment")
-            continue;
-        else
-            break;    
-    }
-
-    return *this;
-}
-
+// -------------------------------------------------------------------------
 UniXML_iterator UniXML_iterator::operator++(int)
 {
-    UniXML_iterator it = *this;
-
-    if (!curNode->next)
-    {    
-        curNode=curNode->next;
-        return it;
-    }
-    
-    for(;;)
-    {
-        curNode=curNode->next;
-        if (getName() == "text" || getName() == "comment")
-            continue;
-        else
-            break;    
-    }
-
-    return it;
+	return (*this)+1;
 }
-
 // -------------------------------------------------------------------------
-UniXML_iterator UniXML_iterator::operator--()
+UniXML_iterator UniXML_iterator::operator+=(int s)
 {
-    if (!curNode->prev)
-    {    
-        curNode=curNode->prev;
-        return *this;
-    }
-
-    for(;;)
-    {
-        curNode=curNode->prev;
-        if (getName() == "text" || getName() == "comment")
-            continue;
-        else
-            break;    
+	return (*this)+s;
+}
+// -------------------------------------------------------------------------
+UniXML_iterator UniXML_iterator::operator+(int step)
+{
+	int i = 0;
+    while( i<step && curNode )
+	{
+		curNode = curNode->next;
+		if( curNode )
+		{
+        	if( getName() == "text" || getName() == "comment" )
+            	continue;
+			i++;
+		}
     }
 
     return *this;
 }
-
+// -------------------------------------------------------------------------
 UniXML_iterator UniXML_iterator::operator--(int)
 {
-    UniXML_iterator it = *this;
+	return (*this)-1;
+}
 
-    if (!curNode->prev)
-    {    
-        curNode=curNode->prev;
-        return it;
-    }
-    
-    for(;;)
+UniXML_iterator UniXML_iterator::operator-=(int s)
+{
+	return (*this)-s;
+}
+// -------------------------------------------------------------------------
+
+UniXML_iterator UniXML_iterator::operator-(int step)
+{
+	int i=0;
+    while( i<step && curNode )
     {
-        curNode=curNode->prev;
-        if (getName() == "text" || getName() == "comment")
-            continue;
-        else
-            break;    
+        curNode = curNode->prev;
+		if( curNode )
+		{
+        	if( getName() == "text" || getName() == "comment" )
+            	continue;
+			i++;
+		}
     }
 
-    return it;
+    return (*this);
 }
 // -------------------------------------------------------------------------------

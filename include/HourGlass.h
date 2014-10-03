@@ -95,7 +95,7 @@ class HourGlass
             _state = st;
             if( !_state )
             {
-				int cur = t.getCurrent();
+				timeout_t cur = t.getCurrent();
                 if( cur > _size )
                     cur = _size;
 
@@ -107,7 +107,7 @@ class HourGlass
             }
             else
             {
-                int cur = t.getCurrent();
+                timeout_t cur = t.getCurrent();
                 if( cur > _size )
                     cur = _size;
      
@@ -175,7 +175,7 @@ class HourGlass
 
 			return ret;
 		}
-        
+
     protected:
         PassiveTimer t;   /*!< таймер для отсчёта времени.. */
         bool _state;      /*!< текущее "положение часов", true - прямое, false - обратное (перевёрнутое) */
