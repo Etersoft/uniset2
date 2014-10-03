@@ -229,7 +229,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
                 }
             }
         }
-    
+
         // Настраиваем отладочные логи
         initDebug(ulog,"UniSetDebug");
 
@@ -978,10 +978,18 @@ UniversalIO::IOType Configuration::getIOType( const std::string& name )
     return UniversalIO::UnknownIOType;
 }
 // -------------------------------------------------------------------------
-void uniset_init( int argc, const char* const* argv, const std::string& xmlfile )
+void uniset_init( int argc, const char* const* argv, const std::string& xmlfile, bool force )
 {
     string confile = UniSetTypes::getArgParam( "--confile", argc, argv, xmlfile );
     ulog.setLogName("ulog");
+	if( UniSetTypes::conf )
+	{
+		if( !force && confile == UniSetTypes::conf->getConfFileName() )
+			return;
+
+		delete UniSetTypes::conf;
+	}
+
     UniSetTypes::conf = new Configuration(argc, argv, confile);
 }
 // -------------------------------------------------------------------------

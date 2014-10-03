@@ -1,4 +1,4 @@
-#include <Catch/catch.hpp>
+#include <catch.hpp>
 
 #include <cmath>
 

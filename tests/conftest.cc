@@ -1,57 +1,107 @@
+#include <catch.hpp>
 // --------------------------------------------------------------------------
 #include <string>
-#include "Debug.h"
 #include "Configuration.h"
 #include "ORepHelpers.h"
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 // --------------------------------------------------------------------------
-int main(int argc, const char **argv)
-{   
-    if( argc>1 && strcmp(argv[1],"--help")==0 )
-    {
-        cout << "--confile    - Configuration file. Default: test.xml" << endl;
-        return 0;
-    }
-    
-    cout << "**** uni_atoi('')=" << uni_atoi("") << endl;
+TEST_CASE( "Configuration", "[Configuration]" )
+{
+	assert( conf != 0 );
+	assert( conf->oind != 0 );
 
+	// смотри tests_with_conf.xml
+	ObjectId testID = 1;
+	const std::string testSensor("Input1_S");
+	const std::string testObject("TestProc");
+	const std::string testController("SharedMemory");
+	const std::string testService("TimeService");
+
+//	CHECK( conf != 0 );
+//	CHECK( conf->oind != 0 );
+
+	SECTION( "ObjectIndex tests.." )
+	{
+		CHECK( conf->getLocalNode()!=DefaultObjectId );
+		CHECK( conf->oind->getTextName(testID) != "" );
+	
+		string ln("/Projects/Sensors/VeryVeryLongNameSensor_ForTest_AS");
+		string ln_short("VeryVeryLongNameSensor_ForTest_AS");
+		REQUIRE( ORepHelpers::getShortName(ln) == ln_short );
+
+		CHECK( conf->oind->getNameById(testID) != "" );
+	
+		string mn(conf->oind->getMapName(testID));
+		CHECK( mn != "" );
+		CHECK( conf->oind->getIdByName(mn) != DefaultObjectId );
+	
+		CHECK( conf->getIOType(testID) != UniversalIO::UnknownIOType );
+		CHECK( conf->getIOType(mn) != UniversalIO::UnknownIOType );
+		CHECK( conf->getIOType(testSensor) != UniversalIO::UnknownIOType );
+	}
+
+	SECTION( "Arguments" )
+	{
+        xmlNode* cnode = conf->getNode("testnode");
+        CHECK( cnode != NULL );
+
+        UniXML_iterator it(cnode);
+
+        CHECK( conf->getArgInt("--prop-id2",it.getProp("id2")) != 0 );
+        CHECK( conf->getArgInt("--prop-dummy",it.getProp("id2")) == -100 );
+        CHECK( conf->getArgPInt("--prop-id2",it.getProp("id2"),0) != 0 );
+        CHECK( conf->getArgPInt("--prop-dummy",it.getProp("dummy"),20) == 20 );
+        CHECK( conf->getArgPInt("--prop-dummy",it.getProp("dummy"),0) == 0 );
+	}
+
+	SECTION( "XML sections" )
+	{
+        CHECK( conf->getXMLSensorsSection() != 0 );
+        CHECK( conf->getXMLObjectsSection() != 0 );
+        CHECK( conf->getXMLControllersSection() != 0 );
+        CHECK( conf->getXMLServicesSection() != 0 );
+        CHECK( conf->getXMLNodesSection() != 0 );
+
+		CHECK( conf->getSensorID(testSensor) != DefaultObjectId );
+		CHECK( conf->getObjectID(testObject) != DefaultObjectId );
+		CHECK( conf->getControllerID(testController) != DefaultObjectId );
+		CHECK( conf->getServiceID(testService) != DefaultObjectId );
+	}
+
+	SECTION( "Empty Constructor" )
+	{
+		int t_argc = 0;
+		char t_argv[]={""};
+		REQUIRE_THROWS_AS( Configuration(t_argc,(const char* const*)(t_argv),""), UniSetTypes::SystemError );
+	}
+
+	// SECTION( "ObjectIndex Constructor" )
+	// SECTION( "ObjectsMap Constructor" )
+
+	
+	SECTION( "Bad conf: no <ObjectsMap>" )
+	{
+		int t_argc = 0;
+		char t_argv[]={""};
+		ulog.level(Debug::NONE);
+		REQUIRE_THROWS_AS( Configuration(t_argc,(const char* const*)(t_argv),"tests_no_objectsmap.xml"), UniSetTypes::SystemError );
+	}
+
+	SECTION( "Bad conf: no <UniSet>" )
+	{
+		int t_argc = 0;
+		char t_argv[]={""};
+		ulog.level(Debug::NONE);
+		REQUIRE_THROWS_AS( Configuration(t_argc,(const char* const*)(t_argv),"tests_no_uniset_section.xml"), UniSetTypes::SystemError );
+	}
+
+}
+
+#if 0
     try
     {
-        string confile = UniSetTypes::getArgParam( "--confile", argc, argv, "test.xml" );
-        conf = new Configuration(argc, argv, confile);
-
-        cout << "getLocalNode()=" << conf->getLocalNode() << endl;
-        
-        string t(conf->oind->getTextName(1));
-        cout << "**** check getTextName: " << ( t.empty() ?  "FAILED" : "OK" ) << endl;
-
-        string ln("/Projects/Sensors/VeryVeryLongNameSensor_ForTest_AS");
-        string ln_t("VeryVeryLongNameSensor_ForTest_AS");
-        cout << "**** check getShortName: " << ( ln_t == ORepHelpers::getShortName(ln) ? "OK" : "FAILED" ) << endl;
-
-        string mn(conf->oind->getMapName(1));
-        cout << "**** check getMapName: " << ( mn.empty() ?  "FAILED" : "OK" ) << endl;
-
-
-        cout << "getSensorID(Input1_S): " << conf->getSensorID("Input1_S") << endl; 
-        
-        std::string iname = conf->oind->getNameById(1);
-        cout << "getNameById(1): " << iname << endl;
-
-        ObjectId i_id = conf->oind->getIdByName(mn);
-        cout << "getIdByName(" << iname << "): " << (i_id == DefaultObjectId ? "FAIL" : "OK" ) << endl;
-
-        UniversalIO::IOType t1=conf->getIOType(1);
-        cout << "**** getIOType for " << mn << endl;
-        cout << "**** check getIOType(id): (" << t1 << ") " << ( t1 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;        
-        UniversalIO::IOType t2=conf->getIOType(mn);
-        cout << "**** check getIOType(name): (" << t2 << ") " << ( t2 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;        
-        UniversalIO::IOType t3=conf->getIOType("Input1_S");
-        cout << "**** check getIOType(name): for short name 'Input1_S': (" << t3 << ") " << ( t3 == UniversalIO::UnknownIOType ?  "FAILED" : "OK" ) << endl;        
-
-
         int i1 = uni_atoi("-100");
         cout << "**** check uni_atoi: '-100' " << ( ( i1 != -100 ) ? "FAILED" : "OK" ) << endl;
 
@@ -104,3 +154,4 @@ int main(int argc, const char **argv)
     
     return 1;
 }
+#endif

@@ -1,0 +1,48 @@
+<?xml version = '1.0' encoding = 'UTF-8' ?>
+<UNISETPLC>
+<UserData></UserData>
+
+	<dlog name="dlog" levels="" file=""/>
+
+<ObjectsMap idfromfile="1">
+<!--
+	Краткие пояснения к полям секции 'sensors'
+	==========================================
+	node 		- узел на котором физически находится данный датчик
+	iotype 		- тип датчика
+	priority 	- приоритет сообщения об изменении данного датчика
+	textname 	- текстовое имя датчика
+-->
+	<nodes port="2809">
+		<item id="1000" name="LocalhostNode"	alias="" textname="Локальный узел"	ip="127.0.0.1"/>
+		<item id="1001" name="Node2"			alias="" textname="Локальный узел"	ip="127.0.0.1"/>
+	</nodes>
+
+	<!-- ************************ Датчики ********************** -->
+	<sensors name="Sensors">
+		<item id="1" name="Input1_S" textname="Команда 1" node="" iotype="DI" priority="Medium" default="1" />
+		<item id="4" name="Input2_S" textname="Команда 2" node="" iotype="DI" priority="Medium" />
+		<item id="140" name="Input3_S" textname="Команда 3" node="" iotype="DI" priority="Medium"/>
+	</sensors>
+
+	<thresholds name="thresholds">
+	</thresholds>
+
+	<controllers name="Controllers">
+		<item id="90" name="SharedMemory"/>
+	</controllers>
+
+	<!-- ******************* Идентификаторы сервисов ***************** -->
+	<services name="Services">
+		<item id="99" name="TimeService"/>
+	</services>
+
+	<!-- ******************* Идентификаторы объектов ***************** -->
+	<objects name="UniObjects">
+		<item id="100" name="TestProc"/>
+	</objects>
+</ObjectsMap>
+
+	<messages name="messages" idfromfile="1" >
+	</messages>
+</UNISETPLC>
