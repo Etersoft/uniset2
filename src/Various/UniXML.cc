@@ -472,6 +472,11 @@ bool UniXML_iterator::find( const std::string& searchnode )
     return false;
 }
 // -------------------------------------------------------------------------
+UniXML_iterator UniXML_iterator::operator++()
+{
+	return (*this)+1;
+}
+// -------------------------------------------------------------------------
 UniXML_iterator UniXML_iterator::operator++(int)
 {
 	return (*this)+1;
@@ -500,6 +505,11 @@ UniXML_iterator UniXML_iterator::operator+(int step)
 }
 // -------------------------------------------------------------------------
 UniXML_iterator UniXML_iterator::operator--(int)
+{
+	return (*this)-1;
+}
+
+UniXML_iterator UniXML_iterator::operator--()
 {
 	return (*this)-1;
 }

@@ -73,6 +73,12 @@ TEST_CASE("UniXML", "[UniXML]" )
 		it--;
 		CHECK( it.getName() == "UserData" );
 
+		++it;
+		CHECK( it.getName() == "UniSet" );
+
+		--it;
+		CHECK( it.getName() == "UserData" );
+
 		it = uxml.begin();
 		CHECK( it.findName("TestNode","TestNode1") != 0 );
 		it = uxml.begin();

@@ -87,10 +87,12 @@ class UniXML_iterator:
         UniXML_iterator operator+(int);
         UniXML_iterator operator++(int);
         UniXML_iterator operator+=(int);
+        UniXML_iterator operator++();
 
         // Перейти к предыдущему узлу
         UniXML_iterator operator-(int);
         UniXML_iterator operator--(int);
+        UniXML_iterator operator--();
         UniXML_iterator operator-=(int);
 
         /*! Перейти на один уровень выше
