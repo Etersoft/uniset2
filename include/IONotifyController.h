@@ -255,7 +255,7 @@ class IONotifyController:
         struct ThresholdsListInfo
         {
             ThresholdsListInfo(){}
-            ThresholdsListInfo( IOController_i::SensorInfo& si, ThresholdExtList&& list,
+            ThresholdsListInfo( const IOController_i::SensorInfo& si, ThresholdExtList&& list,
                                 UniversalIO::IOType t=UniversalIO::AI ):
                 si(si),type(t),list( std::move(list) ){}
 

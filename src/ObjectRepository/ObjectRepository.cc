@@ -398,7 +398,7 @@ bool ObjectRepository::isExist( const string& fullName ) const
 
 // --------------------------------------------------------------------------
 
-bool ObjectRepository::isExist( const ObjectPtr oref ) const
+bool ObjectRepository::isExist( const ObjectPtr& oref ) const
 {
     try
     {

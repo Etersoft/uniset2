@@ -86,7 +86,7 @@ class UInterface
         void fastSetValue( const IOController_i::SensorInfo& si, long value, UniSetTypes::ObjectId supplier );
 
         //! Получение состояния для списка указанных датчиков
-        IOController_i::SensorInfoSeq_var getSensorSeq( UniSetTypes::IDList& lst );
+        IOController_i::SensorInfoSeq_var getSensorSeq( const UniSetTypes::IDList& lst );
 
         /*! Изменения состояния списка входов/выходов
             \return Возвращает список не найденных идентификаторов */
@@ -103,7 +103,7 @@ class UInterface
                             UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId ) const throw(UI_THROW_EXCEPTIONS);
 
         //! Заказ по списку
-        UniSetTypes::IDSeq_var askSensorsSeq( UniSetTypes::IDList& lst, UniversalIO::UIOCommand cmd,
+        UniSetTypes::IDSeq_var askSensorsSeq( const UniSetTypes::IDList& lst, UniversalIO::UIOCommand cmd,
                                                 UniSetTypes::ObjectId backid = UniSetTypes::DefaultObjectId );
         // ------------------------------------------------------
 

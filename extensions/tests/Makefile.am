@@ -10,7 +10,7 @@ tests_with_conf_SOURCES   = tests_with_conf.cc
 tests_with_conf_LDADD     = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la
 tests_with_conf_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include -I$(includedir)/Catch
 
-tests_with_sm_SOURCES   = tests_with_sm.cc
+tests_with_sm_SOURCES   = tests_with_sm.cc ui.cc
 tests_with_sm_LDADD     = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la $(SIGC_LIBS) $(COMCPP_LIBS)
 tests_with_sm_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include -I$(includedir)/Catch \

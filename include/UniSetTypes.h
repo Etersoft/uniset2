@@ -105,17 +105,17 @@ namespace UniSetTypes
             void add( ObjectId id );
             void del( ObjectId id );
 
-            inline int size(){ return lst.size(); }
-            inline bool empty(){ return lst.empty(); }
+            inline int size() const { return lst.size(); }
+            inline bool empty() const { return lst.empty(); }
 
             std::list<ObjectId> getList();
 
             // за освобождение выделеной памяти
             // отвечает вызывающий!
-            IDSeq* getIDSeq();
+            IDSeq* getIDSeq() const;
 
             //
-            ObjectId getFirst();
+            ObjectId getFirst() const;
             ObjectId node;    // узел, на котором находятся датчики
 
         private:

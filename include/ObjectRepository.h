@@ -71,7 +71,7 @@
         UniSetTypes::ObjectPtr resolve(const std::string& name, const std::string& NSName="NameService")const throw(UniSetTypes::ORepFailed, UniSetTypes::NameNotFound);
 
         /*!  Проверка существования и доступности объекта */
-        bool isExist( const UniSetTypes::ObjectPtr oref ) const;
+        bool isExist( const UniSetTypes::ObjectPtr& oref ) const;
         /*!  Проверка существования и доступности объекта */
         bool isExist( const std::string& fullName ) const;
 

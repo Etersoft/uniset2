@@ -4,6 +4,7 @@
 #include <string>
 #include "Debug.h"
 #include "UniSetActivator.h"
+#include "PassiveTimer.h"
 #include "SharedMemory.h"
 #include "Extensions.h"
 // --------------------------------------------------------------------------
@@ -47,6 +48,17 @@ int main(int argc, char* argv[] )
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
         act->run(true);
+        
+        int tout = 6000;
+        PassiveTimer pt(tout);
+        while( !pt.checkTime() && !act->exist() )
+        	msleep(100);
+        	
+        if( !act->exist() )
+        {
+        	cerr << "(tests_with_sm): SharedMemory not exist! (timeout=" << tout << ")" << endl;
+			return 1;        	
+        }
 		
 		int ret = session.run();
 

@@ -861,6 +861,9 @@ IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( UniSet
 
     for( auto it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
     {
+		/*! \warning На самом деле список разрешает иметь много порогов с одинаковым ID, для разных "заказчиков".
+			Но здесь мы возвращаем первый встретившийся..
+		*/
         if( it2->id == tid )
             return IONotifyController_i::ThresholdInfo( *it2 );
     }

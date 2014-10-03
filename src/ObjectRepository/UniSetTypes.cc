@@ -141,7 +141,7 @@ std::list<UniSetTypes::ObjectId> UniSetTypes::IDList::getList()
     return lst;
 }
 
-UniSetTypes::ObjectId UniSetTypes::IDList::getFirst()
+UniSetTypes::ObjectId UniSetTypes::IDList::getFirst() const
 {
     if( lst.empty() )
         return UniSetTypes::DefaultObjectId;
@@ -151,7 +151,7 @@ UniSetTypes::ObjectId UniSetTypes::IDList::getFirst()
 
 // за освобождение выделеной памяти
 // отвечает вызывающий!
-IDSeq* UniSetTypes::IDList::getIDSeq()
+IDSeq* UniSetTypes::IDList::getIDSeq() const
 {
     IDSeq* seq = new IDSeq();
     seq->length(lst.size());

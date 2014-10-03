@@ -1141,7 +1141,7 @@ bool UInterface::isExist( const UniSetTypes::ObjectId id ) const
     }
     catch( UniSetTypes::Exception& ex )
     {
-//        uwarn << "UI(isExist): " << ex << endl;
+        // uwarn << "UI(isExist): " << ex << endl;
     }
     catch(...){}
     return false;
@@ -1594,7 +1594,7 @@ IOController_i::CalibrateInfo UInterface::getCalibrateInfo( const IOController_i
     throw UniSetTypes::TimeOut(set_err("UI(getCalibrateInfo): Timeout",si.id,si.node));
 }
 // --------------------------------------------------------------------------------------------
-IOController_i::SensorInfoSeq_var UInterface::getSensorSeq( UniSetTypes::IDList& lst )
+IOController_i::SensorInfoSeq_var UInterface::getSensorSeq( const UniSetTypes::IDList& lst )
 {
     if( lst.empty() )
         return IOController_i::SensorInfoSeq_var();
@@ -1622,7 +1622,7 @@ IOController_i::SensorInfoSeq_var UInterface::getSensorSeq( UniSetTypes::IDList&
 
                 IOController_i_var iom = IOController_i::_narrow(oref);
 
-                UniSetTypes::IDSeq_var seq = lst.getIDSeq();
+                UniSetTypes::IDSeq_var seq(lst.getIDSeq());
                 return iom->getSensorSeq(seq);
             }
             catch(CORBA::TRANSIENT){}
@@ -1748,7 +1748,7 @@ IDSeq_var UInterface::setOutputSeq( const IOController_i::OutSeq& lst, UniSetTyp
     throw UniSetTypes::TimeOut(set_err("UI(setOutputSeq): Timeout",lst[0].si.id,lst[0].si.node));
 }
 // --------------------------------------------------------------------------------------------
-UniSetTypes::IDSeq_var UInterface::askSensorsSeq( UniSetTypes::IDList& lst, 
+UniSetTypes::IDSeq_var UInterface::askSensorsSeq( const UniSetTypes::IDList& lst, 
                                                   UniversalIO::UIOCommand cmd, UniSetTypes::ObjectId backid )
 {
     if( lst.empty() )
