@@ -19,6 +19,7 @@ DigitalFilter::DigitalFilter( unsigned int bufsize, double T, double lsq,
     tmr(UniSetTimer::WaitUpTime),
     maxsize(bufsize),
     mvec(bufsize),
+    mvec_sorted(false),
     w(bufsize),
     lsparam(lsq),
     ls(0),
@@ -107,7 +108,7 @@ double DigitalFilter::firstLevel()
     double val = 0; // Конечное среднее значение
     for( auto &i: buf )
     {
-        if( fabs(M-i) > S*2 )
+        if( fabs(M-i) < S*2 ) // откидываем 
         {
             val += i;
             n++;
@@ -204,12 +205,20 @@ int DigitalFilter::median( int newval )
 
     mvec.assign(buf.begin(),buf.end());
     sort(mvec.begin(),mvec.end());
+    mvec_sorted = true;
 
     return mvec[maxsize/2];
 }
 //--------------------------------------------------------------------------
 int DigitalFilter::currentMedian()
 {
+	if( !mvec_sorted )
+	{
+	    mvec.assign(buf.begin(),buf.end());
+    	sort(mvec.begin(),mvec.end());
+		// mvec_sorted = true; // специально не выставляю, чтобы если данные добавляются через add(), то тут надо каждый раз пересчитыать..
+	}
+
     return mvec[maxsize/2];
 }
 //--------------------------------------------------------------------------

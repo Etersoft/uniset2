@@ -2,7 +2,7 @@ SUBDIR=SMemoryTest
 
 noinst_PROGRAMS = tests tests_with_conf tests_with_sm
 
-tests_SOURCES   = tests.cc calibration.cc digitalfilter.cc
+tests_SOURCES   = tests.cc digitalfilter.cc
 tests_LDADD     = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la
 tests_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include -I$(includedir)/Catch
 

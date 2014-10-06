@@ -68,8 +68,8 @@ class DigitalFilter
         // Вторая ступень фильтра, математическая реализация RC фильтра
         double secondLevel( double val );
 
-        double Ti;        // Постоянная времени для апериодического звена в милисекундах
-        double val;        // Текущее значение второй ступени фильтра
+        double Ti;       // Постоянная времени для апериодического звена в милисекундах
+        double val;      // Текущее значение второй ступени фильтра
         double M;        // Среднее арифметическое
         double S;        // Среднеквадратичное отклонение
         PassiveTimer tmr;
@@ -80,6 +80,7 @@ class DigitalFilter
 
         typedef std::vector<int> MedianVector;
         MedianVector mvec;
+        bool mvec_sorted; // флаг, что mvec остортирован (заполнен)
 
         typedef std::vector<double> Coeff;
         Coeff w;        // Вектор коэффициентов для filterIIR
