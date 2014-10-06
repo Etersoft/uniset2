@@ -80,19 +80,19 @@ class Calibration
         long getValue( long raw, bool crop_raw=false );
 
         /*! Возвращает минимальное значение 'x' встретившееся в диаграмме */
-        inline long getMinVal(){ return minVal; }
+        inline long getMinValue(){ return minVal; }
         /*! Возвращает максимальное значение 'x' втретившееся в диаграмме */
-        inline long getMaxVal(){ return maxVal; }
+        inline long getMaxValue(){ return maxVal; }
 
         /*! Возвращает крайнее левое значение 'x' встретившееся в диаграмме (ПОСЛЕ СОРТИРОВКИ ПО ВОЗРАСТАНИЮ 'x'!) */
-        inline long getLeftVal(){ return leftVal; }
+        inline long getLeftValue(){ return leftVal; }
         /*! Возвращает крайнее правое значение 'x' встретившееся в диаграмме (ПОСЛЕ СОРТИРОВКИ ПО ВОЗРАСТАНИЮ 'x'!) */
-        inline long getRightVal(){ return rightVal; }
+        inline long getRightValue(){ return rightVal; }
 
         /*!
             Получение сырого значения по калиброванному
             \param range=true вернуть крайнее значение в диаграмме
-                если cal<leftVal или cal>rightVal (т.е. выходит за диапазон)
+                если cal < leftVal или cal > rightVal (т.е. выходит за диапазон)
 
             Если range=false, то может быть возвращено значение outOfRange.
         */

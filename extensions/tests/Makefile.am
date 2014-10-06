@@ -6,7 +6,7 @@ tests_SOURCES   = tests.cc calibration.cc digitalfilter.cc
 tests_LDADD     = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la
 tests_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include -I$(includedir)/Catch
 
-tests_with_conf_SOURCES   = tests_with_conf.cc
+tests_with_conf_SOURCES   = tests_with_conf.cc  calibration.cc
 tests_with_conf_LDADD     = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la
 tests_with_conf_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include -I$(includedir)/Catch
 

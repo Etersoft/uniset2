@@ -86,4 +86,31 @@
 
 	<messages name="messages" idfromfile="1" >
 	</messages>
+	<Calibrations name="Calibrations">
+		<diagram name="testcal">
+			<point x="-1000" y="-300"/>
+			<point x="-900" y="-250"/>
+			<point x="-800" y="-200"/>
+			<point x="-700" y="-150"/>
+			<point x="-600" y="-100"/>
+			<point x="-500" y="-80"/>
+			<point x="-200" y="-60"/>
+			<point x="-100" y="-60"/>
+			<point x="-50" y="-20"/>
+			<point x="-10" y="0"/>			
+			<point x="0" y="0"/>
+			<point x="10" y="0"/>
+			<point x="50" y="20"/>
+			<point x="100" y="60"/>
+			<point x="200" y="60"/>
+			<point x="300" y="80"/>
+			<point x="400" y="100"/>
+			<point x="500" y="150"/>
+			<point x="600" y="200"/>
+			<point x="700" y="250"/>
+			<point x="800" y="300"/>
+			<point x="900" y="400"/>
+			<point x="1000" y="600"/>
+		</diagram>
+	</Calibrations>
 </UNISETPLC>
