@@ -2,8 +2,13 @@
 # This file is part of the UniSet library                                  #
 ############################################################################
 
-noinst_PROGRAMS 		= tests tests_with_conf
-#ui umutex sscanf_hexthreadtst dlog
+check_PROGRAMS = tests tests_with_conf
+
+#TESTS_ENVIRONMENT = CATCH_TEST_ARGS="$(CATCH_TEST_ARGS)" ./test-run.sh
+TESTS = tests tests_with_conf.sh
+EXTRA_DIR=$(TESTS)
+
+#umutex sscanf_hexthreadtst dlog
 
 tests_SOURCES = tests.cc passivetimer.cc hourglass.cc delaytimer.cc unixml.cc
 tests_LDADD 	= $(top_builddir)/lib/libUniSet2.la
@@ -31,3 +36,9 @@ tests_with_conf_CPPFLAGS = -I$(top_builddir)/include -I$(includedir)/Catch
 # dlog_LDADD 	= $(top_builddir)/lib/libUniSet2.la ${SIGC_LIBS} $(COMCPP_LIBS)
 # dlog_CPPFLAGS = -I$(top_builddir)/include ${SIGC_CFLAGS} $(COMCPP_CFLAGS)
 # 
+
+testdir=$(top_builddir)/tests
+
+#check-local: tests tests_with_conf
+#	$(SHELL) $(testdir)/tests 2>/dev/null
+#	$(SHELL) $(testdir)/tests_with_conf -- --confile $(testdir)/tests_with_conf.xml --prop-id2 -10 --ulog-no-debug 2>/dev/null

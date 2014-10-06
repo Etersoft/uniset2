@@ -5,6 +5,7 @@
 #include "UniXML.h"
 #include "Exceptions.h"
 #include "Calibration.h"
+#include "Extensions.h"
 // ----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -188,7 +189,7 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
 
             if( p.x==0 || p.y==0 )
             {
-                cerr << myname << "(Calibration::build): (warn) x="
+                dwarn << myname << "(Calibration::build): (warn) x="
                         << p.x << " y=" << p.y << endl;
             }
 
@@ -233,7 +234,7 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
     }
     catch( Exception& ex )
     {
-        cerr << myname << "(Calibration::build): Failed open " << confile << endl;
+        dcrit << myname << "(Calibration::build): Failed open " << confile << endl;
         throw;
     }
 }

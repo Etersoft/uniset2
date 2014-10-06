@@ -16,5 +16,3 @@ pkgconfig_DATA 	= libUniSet2Extensions.pc
 else
 SUBDIRS =
 endif
-
-

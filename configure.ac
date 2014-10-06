@@ -12,6 +12,15 @@ AC_CONFIG_HEADER(uniset-config.h)
 dnl Initialize maintainer mode
 AM_MAINTAINER_MODE
 
+
+dnl Initialize test suite
+#CATCH_TEST_ARGS="-s"
+CATCH_TEST_ARGS=
+AC_SUBST(CATCH_TEST_ARGS)
+
+TESTS_ENVIRONMENT="CATCH_TEST_ARGS=\"${CATCH_TEST_ARGS}\" \$(top_builddir)/Utilities/scripts/catch-test-run.sh"
+AC_SUBST(TESTS_ENVIRONMENT)
+
 dnl Checks for programs.
 AC_PROG_INSTALL
 AC_PROG_CC
