@@ -21,8 +21,8 @@
  *  \author Pavel Vainerman
 */
 //----------------------------------------------------------------------------
-# ifndef CallBackTimer_H_
-# define CallBackTimer_H_
+# ifndef CallbackTimer_H_
+# define CallbackTimer_H_
 //----------------------------------------------------------------------------
 #include <list>
 #include "Exceptions.h"
@@ -45,7 +45,7 @@ namespace UniSetTypes
             /*! Конструктор позволяющий вывести в сообщении об ошибке дополнительную информацию err */
             LimitTimers(const std::string& err):Exception(err){ printException(); }
     };
-};
+}
 //@}
 // end of UniSetException group
 //----------------------------------------------------------------------------------------
@@ -54,9 +54,9 @@ namespace UniSetTypes
  * \brief Таймер 
  * \author Pavel Vainerman
  * \par
- * Создает поток, в котором происходит отсчет тактов (10ms). Позволяет заказывать до CallBackTimer::MAXCallBackTimer таймеров.
+ * Создает поток, в котором происходит отсчет тактов (10ms). Позволяет заказывать до CallbackTimer::MAXCallbackTimer таймеров.
  * При срабатывании будет вызвана указанная функция с указанием \b Id таймера, который сработал. 
- * Функция обратного вызова должна удовлетворять шаблону CallBackTimer::Action.
+ * Функция обратного вызова должна удовлетворять шаблону CallbackTimer::Action.
  * Пример создания таймера:
  *
     \code
@@ -68,29 +68,29 @@ namespace UniSetTypes
 
         MyClass* rec = new MyClass();
          ...
-         CallBackTimer<MyClass> *timer1 = new CallBackTimer<MyClass>(rec);
+         CallbackTimer<MyClass> *timer1 = new CallbackTimer<MyClass>(rec);
         timer1->add(1, &MyClass::Time, 1000);
         timer1->add(5, &MyClass::Time, 1200);
         timer1->run();
     \endcode
  *
- * \note Каждый экземпляр класса CallBackTimer создает поток, поэтому \b желательно не создавать больше одного экземпляра,
+ * \note Каждый экземпляр класса CallbackTimer создает поток, поэтому \b желательно не создавать больше одного экземпляра,
  * для одного процесса (чтобы не порождать много потоков).
 */ 
 template <class Caller>
-class CallBackTimer
+class CallbackTimer
 //    public PassiveTimer
 { 
     public:
 
         /*! Максимальное количество таймеров */
-        static const int MAXCallBackTimer = 20;
+        static const int MAXCallbackTimer = 20;
 
         /*! прототип функции вызова */
         typedef void(Caller::* Action)( int id );
 
-        CallBackTimer(Caller* r, Action a);
-        ~CallBackTimer();
+        CallbackTimer(Caller* r, Action a);
+        ~CallbackTimer();
 
         // Управление таймером
         void run();        /*!< запуск таймера */
@@ -108,7 +108,7 @@ class CallBackTimer
 
     protected:
 
-        CallBackTimer();
+        CallbackTimer();
         void work();
 
         void startTimers();
@@ -116,7 +116,7 @@ class CallBackTimer
 
     private:
 
-        typedef CallBackTimer<Caller> CBT;
+        typedef CallbackTimer<Caller> CBT;
         friend class ThreadCreator<CBT>;
         Caller* cal;
         Action act;
@@ -137,7 +137,7 @@ class CallBackTimer
         TimersList lst;
 
         // функция-объект для поиска по id
-        struct FindId_eq: public unary_function<TimerInfo, bool>
+        struct FindId_eq: public std::unary_function<TimerInfo, bool>
         {
             FindId_eq(const int id):id(id){}
             inline bool operator()(const TimerInfo& ti) const{return ti.id==id;}
@@ -145,5 +145,5 @@ class CallBackTimer
         };
 };
 
-#include "CallBackTimer.tcc"
-# endif //CallBackTimer_H_
+#include "CallbackTimer.tcc"
+# endif //CallbackTimer_H_

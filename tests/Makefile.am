@@ -5,9 +5,10 @@
 check_PROGRAMS = tests tests_with_conf
 
 #umutex threadtst dlog
-tests_SOURCES = tests.cc passivetimer.cc hourglass.cc delaytimer.cc unixml.cc sscanf_hex.cc
-tests_LDADD 	= $(top_builddir)/lib/libUniSet2.la
-tests_CPPFLAGS	= -I$(top_builddir)/include -I$(includedir)/Catch
+tests_SOURCES = tests.cc passivetimer.cc hourglass.cc delaytimer.cc unixml.cc sscanf_hex.cc \
+	callbacktimer.cc
+tests_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(SIGC_LIBS) $(COMCPP_LIBS)
+tests_CPPFLAGS	= -I$(top_builddir)/include -I$(includedir)/Catch $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
 
 tests_with_conf_SOURCES = tests_with_conf.cc conftest.cc ui.cc
 tests_with_conf_LDADD   = $(top_builddir)/lib/libUniSet2.la
