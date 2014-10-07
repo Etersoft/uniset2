@@ -25,6 +25,7 @@
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
 TriggerOR<Caller,InputType>::TriggerOR(Caller* c, Action a):
+out(false),
 cal(c),
 act(a)
 {
@@ -84,21 +85,16 @@ template<class Caller, typename InputType>
 void TriggerOR<Caller,InputType>::check()
 {
 	bool old = out;
-	for( typename InputMap::iterator it=inputs.begin(); it!=inputs.end(); ++it )
+	for( auto it=inputs.begin(); it!=inputs.end(); ++it )
 	{
 		if( it->second )
 		{
-			// если хоть один вход "1" на выходе "1"
+			// если хоть один вход "1" выставляем на выходе "1"
 			// и прекращаем дальнейший поиск
 			out = true;
 			if( old != out )
-			{
-//				try
-//				{
-					(cal->*act)(out);
-//				}
-//				catch(...){}
-			}
+				(cal->*act)(out);
+				
 			return;
 		}
 	}
@@ -106,13 +102,7 @@ void TriggerOR<Caller,InputType>::check()
 	out = false;
 
 	if( old != out )
-	{
-//		try
-//		{
-			(cal->*act)(out);
-//		}
-//		catch(...){}
-	}
+		(cal->*act)(out);
 }
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>

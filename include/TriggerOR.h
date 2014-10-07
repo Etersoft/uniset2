@@ -86,7 +86,6 @@ class TriggerOR
 
         inline bool state(){ return out; }
 
-
         bool getState(InputType in);
         bool commit(InputType in, bool state);
 
@@ -115,7 +114,6 @@ class TriggerOR
         bool out;
         Caller* cal;
         Action act;
-
 };
 
 //---------------------------------------------------------------------------

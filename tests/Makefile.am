@@ -2,11 +2,12 @@
 # This file is part of the UniSet library                                  #
 ############################################################################
 
-check_PROGRAMS = tests tests_with_conf
+#check_PROGRAMS = tests tests_with_conf
+noinst_PROGRAMS = tests tests_with_conf
 
 #umutex threadtst dlog
 tests_SOURCES = tests.cc passivetimer.cc hourglass.cc delaytimer.cc unixml.cc sscanf_hex.cc \
-	callbacktimer.cc
+	callbacktimer.cc trigger.cc triggerOR.cc triggerAND.cc
 tests_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(SIGC_LIBS) $(COMCPP_LIBS)
 tests_CPPFLAGS	= -I$(top_builddir)/include -I$(includedir)/Catch $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
 
