@@ -13,14 +13,7 @@ dnl Initialize maintainer mode
 AM_MAINTAINER_MODE
 
 dnl Initialize test suite
-AC_CONFIG_TESTDIR(tests)
-
-#CATCH_TEST_ARGS="-s"
-CATCH_TEST_ARGS=
-AC_SUBST(CATCH_TEST_ARGS)
-
-CATCH_TESTS_ENVIRONMENT="CATCH_TEST_ARGS=\"$(CATCH_TEST_ARGS)\" \$(top_builddir)/Utilities/scripts/catch-test-run.sh"
-AC_SUBST(CATCH_TESTS_ENVIRONMENT)
+AC_CONFIG_TESTDIR(testsuite)
 
 dnl Checks for programs.
 AC_PROG_INSTALL
@@ -32,7 +25,6 @@ AC_PROG_INSTALL
 
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-
 
 dnl Initialize libtool
 AC_DISABLE_STATIC
@@ -302,6 +294,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/RRDServer/libUniSet2RRDServer.pc
 				 extensions/tests/Makefile
 				 extensions/tests/SMemoryTest/Makefile
+				 testsuite/Makefile
 				 python/lib/Makefile
 				 python/lib/pyUniSet/Makefile
 				 python/Makefile])

@@ -3,7 +3,7 @@
 ############################################################################
 
 FIRSTSUBDIRS=IDL
-SUBDIRS=. src lib include Utilities tests extensions python docs
+SUBDIRS=. src lib include Utilities tests extensions python testsuite docs
 
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSet2.pc

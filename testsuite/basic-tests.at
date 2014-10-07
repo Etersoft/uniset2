@@ -1,0 +1,7 @@
+AT_SETUP([Basic tests])
+AT_CHECK([at-test-launch.sh $abs_top_builddir/tests tests],[0],[ignore],[ignore])
+AT_CLEANUP
+
+AT_SETUP([Tests with conf])
+AT_CHECK([at-test-launch.sh $abs_top_builddir/tests tests_with_conf.sh],[0],[ignore],[ignore])
+AT_CLEANUP

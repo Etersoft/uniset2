@@ -1,0 +1,7 @@
+m4_include(package.m4)
+
+AT_COLOR_TESTS
+
+AT_INIT([Uniset test suite])
+   
+m4_include(basic-tests.at)
