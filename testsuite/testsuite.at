@@ -4,4 +4,6 @@ AT_COLOR_TESTS
 
 AT_INIT([Uniset test suite])
    
-m4_include(basic-tests.at)
+m4_include(../tests/tests.at)
+m4_include(../extensions/tests/extensions-tests.at)
+m4_include(../extensions/LogicProcessor/unit-tests/lproc-tests.at)

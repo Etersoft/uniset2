@@ -4,8 +4,8 @@
 
 check_PROGRAMS = tests tests_with_conf
 
-#umutex sscanf_hexthreadtst dlog
-tests_SOURCES = tests.cc passivetimer.cc hourglass.cc delaytimer.cc unixml.cc
+#umutex threadtst dlog
+tests_SOURCES = tests.cc passivetimer.cc hourglass.cc delaytimer.cc unixml.cc sscanf_hex.cc
 tests_LDADD 	= $(top_builddir)/lib/libUniSet2.la
 tests_CPPFLAGS	= -I$(top_builddir)/include -I$(includedir)/Catch
 
@@ -13,15 +13,9 @@ tests_with_conf_SOURCES = tests_with_conf.cc conftest.cc ui.cc
 tests_with_conf_LDADD   = $(top_builddir)/lib/libUniSet2.la
 tests_with_conf_CPPFLAGS = -I$(top_builddir)/include -I$(includedir)/Catch
      
-# ui_SOURCES 	= ui.cc
-# ui_LDADD 	= $(top_builddir)/lib/libUniSet2.la
-# ui_CPPFLAGS	= -I$(top_builddir)/include
-# 
 # umutex_SOURCES 	= umutex.cc
 # umutex_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(COMCPP_LIBS)
 # umutex_CPPFLAGS	= -I$(top_builddir)/include $(COMCPP_CFLAGS)
-# 
-# sscanf_hex_SOURCES 	= sscanf_hex.cc
 # 
 # threadtst_SOURCES = threadtst.cc
 # threadtst_LDADD 	= $(top_builddir)/lib/libUniSet2.la ${SIGC_LIBS} $(COMCPP_LIBS)
@@ -32,8 +26,11 @@ tests_with_conf_CPPFLAGS = -I$(top_builddir)/include -I$(includedir)/Catch
 # dlog_CPPFLAGS = -I$(top_builddir)/include ${SIGC_CFLAGS} $(COMCPP_CFLAGS)
 # 
 
-# testdir=$(top_builddir)/tests
-#check-local: tests tests_with_conf
-#	$(SHELL) $(testdir)/tests 2>/dev/null
-#	$(SHELL) $(testdir)/tests_with_conf -- --confile $(testdir)/tests_with_conf.xml --prop-id2 -10 --ulog-no-debug 2>/dev/null
+include $(top_builddir)/testsuite/testsuite-common.mk
 
+check-local: atconfig package.m4 $(TESTSUITE)
+	$(SHELL) $(TESTSUITE) $(TESTSUITEFLAGS)
+
+clean-local:
+	test ! -f '$(TESTSUITE)'|| $(SHELL) '$(TESTSUITE)' --clean
+	rm -rf $(CLEANFILES)

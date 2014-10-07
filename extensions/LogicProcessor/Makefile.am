@@ -1,7 +1,6 @@
 if DISABLE_LOGICPROC
 
 else
-SUBDIRS=unit-tests
 
 # не забывайте править версию в2.pc-файле
 ULPROC_VER=@LIBVER@
@@ -44,4 +43,5 @@ pkgconfig_DATA 	= libUniSet2LogicProcessor.pc
 all-local:
 	ln -sf ../LogicProcessor/$(devel_include_HEADERS) ../include
 
+SUBDIRS=unit-tests
 endif

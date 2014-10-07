@@ -1,24 +1,21 @@
+#include <catch.hpp>
+
 #include <stdio.h>
 
-bool check(const char *t, int nres)
+int check( const char *t )
 {
-    int n = 105;
-    sscanf(t, "%i", &n);
-    printf("res=%d\n", n);
-    if ( n != nres )
-        printf("check %d   [FAILED]\n",nres);
-    return n == nres;
-}
+    int r = 0;
+    sscanf(t, "%i", &r);
+	return r;
+} 
 
-int main()
+TEST_CASE("sscanf hex","[sscanf hex]")
 {
-    check("100",100);
-    check("0x100",0x100);
-    check("0XFF",0xff);
-    check("010",010);
-    check("-10",-10);
-    check("-1000",-1000);
-    check("",0);
-    // check(NULL,0); // SegFault
-    return 0;
+	REQUIRE( check("100") == 100 );
+	REQUIRE( check("0x100") == 0x100 );
+	REQUIRE( check("0xFF") == 0xff );
+	REQUIRE( check("010") == 010 );
+	REQUIRE( check("-10") == -10 );
+	REQUIRE( check("-1000") == -1000 );
+	REQUIRE( check("") == 0 );
 }

@@ -14,6 +14,12 @@ AM_MAINTAINER_MODE
 
 dnl Initialize test suite
 AC_CONFIG_TESTDIR(testsuite)
+AC_CONFIG_TESTDIR(tests)
+AC_CONFIG_TESTDIR(extensions/tests)
+AC_CONFIG_TESTDIR(extensions/LogicProcessor/unit-tests)
+
+TESTSUITE_DIR="\$(top_builddir)/testsuite"
+AC_SUBST(TESTSUITE_DIR)
 
 dnl Checks for programs.
 AC_PROG_INSTALL
