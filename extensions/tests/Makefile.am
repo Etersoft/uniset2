@@ -1,8 +1,9 @@
 SUBDIR=SMemoryTest
 
 #noinst_PROGRAMS = tests tests_with_conf tests_with_sm
-
 check_PROGRAMS = tests tests_with_conf tests_with_sm
+
+TESTS_ENVIRONMENT=$(CATCH_TESTS_ENVIRONMENT)
 TESTS=tests tests_with_conf.sh tests_with_sm.sh
 
 tests_SOURCES   = tests.cc digitalfilter.cc

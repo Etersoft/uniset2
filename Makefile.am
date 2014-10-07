@@ -3,7 +3,7 @@
 ############################################################################
 
 FIRSTSUBDIRS=IDL
-SUBDIRS=. src lib include Utilities extensions python docs
+SUBDIRS=. src lib include Utilities tests extensions python docs
 
 pkgconfigdir 	= $(libdir)/pkgconfig
 pkgconfig_DATA 	= libUniSet2.pc
@@ -17,3 +17,5 @@ clean-local:
 
 install-data-local:
 	$(MAKE) -C $(FIRSTSUBDIRS) -j1 install
+
+	
