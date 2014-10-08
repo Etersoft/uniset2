@@ -33,7 +33,7 @@ class Pulse
 
         inline void set_next( int _t1_msec, int _t0_msec )
         {
-            t1_msec    = _t1_msec;
+            t1_msec = _t1_msec;
             t0_msec = _t0_msec;
         }
 
