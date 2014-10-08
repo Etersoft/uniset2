@@ -23,48 +23,46 @@
 // --------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
-#include "TriggerOutput.h"
+#include "TriggerOUT.h"
 //---------------------------------------------------------------------------
 
 template<class Caller, typename OutIdType, typename ValueType>
-TriggerOutput<Caller,OutIdType,ValueType>::TriggerOutput( Caller* r, Action a):
+TriggerOUT<Caller,OutIdType,ValueType>::TriggerOUT( Caller* r, Action a):
 	cal(r),
 	act(a)
 {
 }
 
 template <class Caller, typename OutIdType, typename ValueType>
-TriggerOutput<Caller,OutIdType,ValueType>::~TriggerOutput()
+TriggerOUT<Caller,OutIdType,ValueType>::~TriggerOUT()
 {
 }
 
 //---------------------------------------------------------------------------
 template <class Caller, typename OutIdType, typename ValueType>
-void TriggerOutput<Caller,OutIdType,ValueType>::add(OutIdType num, ValueType val)
+void TriggerOUT<Caller,OutIdType,ValueType>::add(OutIdType num, ValueType val)
 {
 	outs[num] = val;
 	set(num,val);
-	try
-	{
-		(cal->*act)(num,val);
-	}
-	catch(...){}
+
+	resetOuts(num);	 // выставляем сперва все нули
+	(cal->*act)(num,val); // потом выставляем указанный выход
 }
 
 //---------------------------------------------------------------------------
 template <class Caller, typename OutIdType, typename ValueType>
-void TriggerOutput<Caller,OutIdType,ValueType>::remove(OutIdType num)
+void TriggerOUT<Caller,OutIdType,ValueType>::remove(OutIdType num)
 {
-	typename OutList::iterator it=outs.find(num);
+	auto it=outs.find(num);
 	if( it!=outs.end() )
 		outs.erase(it);
 }
 
 //---------------------------------------------------------------------------
 template <class Caller, typename OutIdType, typename ValueType>
-bool TriggerOutput<Caller,OutIdType,ValueType>::getState(OutIdType out)
+bool TriggerOUT<Caller,OutIdType,ValueType>::getState(OutIdType out)
 {
-	typename OutList::iterator it=outs.find(out);
+	auto it=outs.find(out);
 	if( it!=outs.end() )
 		return it->second;
 
@@ -72,55 +70,47 @@ bool TriggerOutput<Caller,OutIdType,ValueType>::getState(OutIdType out)
 }
 //---------------------------------------------------------------------------
 template <class Caller, typename OutIdType, typename ValueType>
-void TriggerOutput<Caller,OutIdType,ValueType>::set(OutIdType out, ValueType val)
+void TriggerOUT<Caller,OutIdType,ValueType>::set(OutIdType out, ValueType val)
 {
-	typename OutList::iterator it=outs.find(out);
+	auto it=outs.find(out);
 	if( it==outs.end() )
 		return;
 
-	// потом val
-	ValueType prev(it->second);
+	// сперва сбрасываем все остальные выходы
+	resetOuts(out);	 // выставляем сперва все нули
+
+	// потом выставляем заданный выход
+	ValueType prev = it->second;
 	it->second = val;
 	if( prev != val )
-	{
-		check(out);	 // выставляем сперва все нули
-		try
-		{
-			(cal->*act)(it->first, it->second);
-		}
-		catch(...){}
-	}
+		(cal->*act)(it->first, it->second); 
 }
 //---------------------------------------------------------------------------
 template <class Caller, typename OutIdType, typename ValueType>
-void TriggerOutput<Caller,OutIdType,ValueType>::check(OutIdType newout)
+void TriggerOUT<Caller,OutIdType,ValueType>::resetOuts( OutIdType outIgnore )
 {
-	for( typename OutList::iterator it=outs.begin(); it!=outs.end(); ++it )
+	for( auto it=outs.begin(); it!=outs.end(); ++it )
 	{
-		if( it->first != newout && it->second )
+		if( it->first != outIgnore && it->second )
 		{
 			it->second = 0;
-//			try
-//			{
-				(cal->*act)(it->first, it->second);
-//			}
-//			catch(...){}
+			(cal->*act)(it->first, it->second);
 		}
 	}
 
 }
 //---------------------------------------------------------------------------
 template <class Caller, typename OutIdType, typename ValueType>
-void TriggerOutput<Caller,OutIdType,ValueType>::update()
+void TriggerOUT<Caller,OutIdType,ValueType>::update()
 {
-	for( typename OutList::iterator it=outs.begin(); it!=outs.end(); ++it )
+	for( auto it=outs.begin(); it!=outs.end(); ++it )
 		(cal->*act)(it->first, it->second);
 }
 //---------------------------------------------------------------------------
 template <class Caller, typename OutIdType, typename ValueType>
-void TriggerOutput<Caller,OutIdType,ValueType>::reset()
+void TriggerOUT<Caller,OutIdType,ValueType>::reset()
 {
-	for( typename OutList::iterator it=outs.begin(); it!=outs.end(); ++it )
+	for( auto it=outs.begin(); it!=outs.end(); ++it )
 	{
 		it->second = 0;
 		(cal->*act)(it->first, it->second);

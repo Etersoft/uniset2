@@ -22,15 +22,15 @@
 */
 // --------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-#ifndef TriggerOutput_H_
-#define TriggerOutput_H_
+#ifndef TriggerOUT_H_
+#define TriggerOUT_H_
 //---------------------------------------------------------------------------
 #include <map>
 //---------------------------------------------------------------------------
 /*!
     \par Описание
         Этот триггер гарантирует, что значению "val" будет равен всегда только один выход (или ни одного).
-    При помощи TriggerOutput::set(), на определённый выход подаётся "val"(val также может быть = "0"),
+    При помощи TriggerOUT::set(), на определённый выход подаётся "val"(val также может быть = "0"),
     при этом все остальные выходы выставляются в "0".
         Работает в следующей последовательности: сперва выставляются все выходы в "0", а потом
     уже нужный (единственный) выход выставляется в "val".
@@ -45,7 +45,7 @@
 
     \par Пример использования
     \code
-    #include "TriggerOutput.h"
+    #include "TriggerOUT.h"
 
     class MyClass
     {
@@ -60,7 +60,7 @@
     ...
     MyClass rec;
     // Создание:
-    TriggerOutput<MyClass,int,int> tr_out(&rec, &MyClass::out);
+    TriggerOUT<MyClass,int,int> tr_out(&rec, &MyClass::out);
 
     // формируем OUT триггер с двумя 'выходами'
     tr_out.add(1,0);
@@ -81,8 +81,8 @@
 
     \endcode
 */
-template<class Caller, typename OutIdType, typename ValueType>
-class TriggerOutput
+template<class Caller, typename OutIdType=int, typename ValueType=bool>
+class TriggerOUT
 {
     public:
 
@@ -92,8 +92,8 @@ class TriggerOutput
         */
         typedef void(Caller::* Action)(OutIdType out, ValueType val);
 
-        TriggerOutput(Caller* r, Action a);
-        ~TriggerOutput();
+        TriggerOUT(Caller* r, Action a);
+        ~TriggerOUT();
 
 
         /*! получить текущее значение указанного 'выхода' */
@@ -118,7 +118,7 @@ class TriggerOutput
         void reset();
 
     protected:
-        void check(OutIdType newout);
+        void resetOuts( OutIdType outIgnore );
 
         typedef std::map<OutIdType, ValueType> OutList;
         OutList outs; // список выходов
@@ -129,6 +129,6 @@ class TriggerOutput
 };
 
 //---------------------------------------------------------------------------
-#include "TriggerOutput.tcc"
+#include "TriggerOUT.tcc"
 //---------------------------------------------------------------------------
 #endif
