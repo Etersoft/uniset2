@@ -71,7 +71,7 @@
     \endcode
 
 */
-template<class Caller, typename InputType>
+template<class Caller, typename InputType=int>
 class TriggerAND
 {
     public:

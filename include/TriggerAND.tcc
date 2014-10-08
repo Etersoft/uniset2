@@ -89,30 +89,19 @@ void TriggerAND<Caller,InputType>::check()
 	{
 		if( !it->second )
 		{
-			// если хоть один вход "0" на выходе "0"
+			// если хоть один вход "0" выставляем на выходе "0"
 			// и прекращаем дальнейший поиск
 			out = false;
 			if( old != out )
-			{
-//				try
-//				{
-					(cal->*act)(out);
-//				}
-//				catch(...){}
-			}
+				(cal->*act)(out);
+				
 			return;
 		}
 	}
 
 	out = true;
 	if( old != out )
-	{
-//		try
-//		{
-			(cal->*act)(out);
-//		}
-//		catch(...){}
-	}
+		(cal->*act)(out);
 }
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
