@@ -11,7 +11,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt7
+Release: alt8
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -26,7 +26,7 @@ Source: %name-%version.tar
 
 # manually removed: glibc-devel-static
 # Automatically added by buildreq on Fri Nov 26 2010
-BuildRequires: libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel xsltproc
+BuildRequires: libcommoncpp2-devel libomniORB-devel libsigc++2.0-devel xsltproc catch
 
 %if_enabled io
 BuildRequires: libcomedi-devel
@@ -404,6 +404,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
 
 %changelog
+* Wed Oct 08 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt8
+- added unit-tests (use "catch" test unit framework)
+- added use autoconf testsuite 
+
 * Wed Oct 01 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt7
 - make "extension-smplus" package
 - make "extension-logicproc" package
