@@ -52,7 +52,7 @@
     ...
     MyClass rec;
     // Создание
-    TriggerOR<MyClass, int> tr(&rec, &MyClass::out);
+    TriggerOR<MyClass> tr(&rec, &MyClass::out);
 
     // Добавление 'входов'
     tr.add(1,true);
@@ -70,7 +70,7 @@
 
     \endcode
 */
-template<class Caller, typename InputType>
+template<class Caller, typename InputType=int>
 class TriggerOR
 {
     public:

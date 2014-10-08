@@ -85,6 +85,7 @@ template<class Caller, typename InputType>
 void TriggerOR<Caller,InputType>::check()
 {
 	bool old = out;
+
 	for( auto it=inputs.begin(); it!=inputs.end(); ++it )
 	{
 		if( it->second )
@@ -94,7 +95,6 @@ void TriggerOR<Caller,InputType>::check()
 			out = true;
 			if( old != out )
 				(cal->*act)(out);
-				
 			return;
 		}
 	}

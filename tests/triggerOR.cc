@@ -42,13 +42,13 @@ TEST_CASE("TriggerOR", "[TriggerOR]" )
 	SECTION("Working")
 	{
 		MyTestClass tc;
- 		TriggerOR<MyTestClass, bool> tr(&tc, &MyTestClass::setOut);
+ 		TriggerOR<MyTestClass> tr(&tc, &MyTestClass::setOut);
 		REQUIRE( tc.getNum() == 0 );
 		tr.add(1, true);
 		REQUIRE( tc.getNum() == 1 );
 		CHECK( tr.state() );
 		tr.add(2, false);
-
+		CHECK( tr.state() );
 		REQUIRE( tc.getNum() == 1 );
 		tr.add(3, false);
 		REQUIRE( tc.getNum() == 1 );

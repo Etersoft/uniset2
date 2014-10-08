@@ -25,6 +25,7 @@
 //---------------------------------------------------------------------------
 template<class Caller, typename InputType>
 TriggerAND<Caller,InputType>::TriggerAND(Caller* c, Action a):
+out(false),
 cal(c),
 act(a)
 {
@@ -84,7 +85,7 @@ template<class Caller, typename InputType>
 void TriggerAND<Caller,InputType>::check()
 {
 	bool old = out;
-	for( typename InputMap::iterator it=inputs.begin(); it!=inputs.end(); ++it )
+	for( auto it=inputs.begin(); it!=inputs.end(); ++it )
 	{
 		if( !it->second )
 		{
