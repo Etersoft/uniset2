@@ -53,6 +53,6 @@ void TCPCheck::check_thread()
         setResult(true);
         t.disconnect();
     }
-    catch(...){}
+    catch( ost::Exception& e ){}
 }
 // -----------------------------------------------------------------------------
