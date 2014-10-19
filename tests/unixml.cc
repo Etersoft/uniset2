@@ -103,6 +103,8 @@ TEST_CASE("UniXML", "[UniXML]" )
 		CHECK( it.getProp("text") == "text" );
 		CHECK( it.getIntProp("x") == 10 );
 		CHECK( it.getPIntProp("y",-20) == 100 );
+		CHECK( it.getPIntProp("zero",20) == 0 );
+		CHECK( it.getPIntProp("negative",20) == -10 );
 		CHECK( it.getPIntProp("unknown",20) == 20 );
 	}
 }

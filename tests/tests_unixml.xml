@@ -35,7 +35,7 @@
 	<LogServer name="smplus" port="3333" host="localhost" />
 	
 	<settings>
-		<TestData x="10" y="100" text="text"/>
+		<TestData x="10" y="100" text="text" zero="0" negative="-10"/>
 		<TestNode name="TestNode1"/>
 		<TestNode name="TestNode2"/>
 		<TestNode name="TestNode3"/>
