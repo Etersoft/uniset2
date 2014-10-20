@@ -30,10 +30,16 @@ TEST_CASE("UniXML", "[UniXML]" )
 	// проверка поиска "вглубь"
 	CHECK( uxml.findNode(uxml.getFirstNode(),"Services") != NULL );
 
-	// getProp
-	// getIntProp
+	xmlNode* tnode = uxml.findNode(uxml.getFirstNode(),"TestData");
+	CHECK( tnode != NULL );
+	CHECK( uxml.getProp(tnode,"text") == "text" );
+	CHECK( uxml.getIntProp(tnode,"x") == 10 );
+	CHECK( uxml.getPIntProp(tnode,"y",-20) == 100 );
+	CHECK( uxml.getPIntProp(tnode,"zero",20) == 0 );
+	CHECK( uxml.getPIntProp(tnode,"negative",20) == -10 );
+	CHECK( uxml.getPIntProp(tnode,"unknown",20) == 20 );
+
 	// nextNode
-	// getPIntProp
 	// create
 	// remove
 	// copy
