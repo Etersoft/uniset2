@@ -431,7 +431,7 @@ void IOBase::processingThreshold( IOBase* it, SMInterface* shm, bool force )
 	processingAsDI(it,set,shm,force);
 }
 // -----------------------------------------------------------------------------
-static std::string initProp( UniXML_iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const std::string& defval="" )
+std::string IOBase::initProp( UniXML_iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const std::string& defval )
 {
 	if( !it.getProp(prefix+prop).empty() )
 		return it.getProp(prefix+prop);
@@ -445,7 +445,7 @@ static std::string initProp( UniXML_iterator& it, const std::string& prop, const
 	return defval;
 }
 
-static int initIntProp( UniXML_iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const int defval=0 )
+int IOBase::initIntProp( UniXML_iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const int defval )
 {
 	string pp(prefix+prop);
 

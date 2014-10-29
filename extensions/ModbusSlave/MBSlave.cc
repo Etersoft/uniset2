@@ -817,43 +817,44 @@ bool MBSlave::readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
 bool MBSlave::initItem( UniXML_iterator& it )
 {
 	IOProperty p;
+	
+	string prop_prefix(prefix + "_");
 
-	if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,prefix,false,&dlog,myname) )
+	if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,prop_prefix,false,&dlog,myname) )
 		return false;
+
+	if( it.getIntProp(prop_prefix + "rawdata") )
+	{
+		p.cal.minRaw = 0;
+		p.cal.maxRaw = 0;
+		p.cal.minCal = 0;
+		p.cal.maxCal = 0;
+		p.cal.precision = 0;
+		p.cdiagram = 0;
+	}
 
 	if( mbregFromID )
 		p.mbreg = p.si.id;
 	else
 	{
-		string r = it.getProp("mbreg");
+		string r = IOBase::initProp(it,"mbreg",prop_prefix,false);
 		if( r.empty() )
 		{
-			dlog[Debug::CRIT] << myname << "(initItem): Unknown 'mbreg' for " << it.getProp("name") << endl;
+			dlog[Debug::CRIT] << myname << "(initItem): Unknown 'mbreg' for " << IOBase::initProp(it,"name",prop_prefix,false) << endl;
 			return false;
 		}
 		
 		p.mbreg = ModbusRTU::str2mbData(r);
 	}
 	
-	string stype( it.getProp("mb_iotype") );
-	if( stype.empty() )
-		stype = it.getProp("iotype");
-
-	p.stype = UniSetTypes::getIOType(stype);
-	if( p.stype == UniversalIO::UnknownIOType )
-	{
-		dlog[Debug::CRIT] << myname << "(initItem): Unknown 'iotype' or 'mb_iotype' for " << it.getProp("name") << endl;
-		return false;
-	}
-
 	p.amode = MBSlave::amRW;
-	string am(it.getProp("mb_accessmode"));
+	string am(IOBase::initProp(it,"mb_accessmode",prop_prefix,false));
 	if( am == "ro" )
 		p.amode = MBSlave::amRO;
 	else if( am == "rw" )
 		p.amode = MBSlave::amRW;
 
-	string vt(it.getProp("mb_vtype"));
+	string vt(IOBase::initProp(it,"mb_vtype",prop_prefix,false));
 	if( vt.empty() )
 	{
 		p.vtype = VTypes::vtUnknown;
@@ -869,7 +870,7 @@ bool MBSlave::initItem( UniXML_iterator& it )
 		if( v == VTypes::vtUnknown )
 		{
 			dlog[Debug::CRIT] << myname << "(initItem): Unknown rtuVType=" << vt << " for " 
-					<< it.getProp("name") 
+					<< IOBase::initProp(it,"name",prop_prefix,false) 
 					<< endl;
 
 			return false;

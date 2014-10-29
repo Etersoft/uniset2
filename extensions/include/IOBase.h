@@ -127,6 +127,11 @@ static const int NoSafety = -1;
 									float def_lsparam=0.2, float def_iir_coeff_prev=0.5,
 									float def_iir_coeff_new=0.5 );
 
+
+			// helpers
+			static std::string initProp( UniXML_iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const std::string& defval="" );
+
+			static int initIntProp( UniXML_iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const int defval=0 );
 		};
 
 

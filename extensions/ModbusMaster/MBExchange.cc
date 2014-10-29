@@ -1909,7 +1909,7 @@ MBExchange::RSProperty* MBExchange::addProp( PList& plist, RSProperty& p )
 // ------------------------------------------------------------------------------------------
 bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 {
-	if( !IOBase::initItem(&p,it,shm,prefix,false,&dlog,myname) )
+	if( !IOBase::initItem(&p,it,shm,prop_prefix,false,&dlog,myname) )
 		return false;
 
 	// проверяем не пороговый ли это датчик (т.е. не связанный с обменом)
@@ -1931,19 +1931,6 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 		p.cdiagram = 0;
 	}
 
-	string stype( it.getProp(prop_prefix + "iotype") );
-	if( !stype.empty() )
-	{
-		p.stype = UniSetTypes::getIOType(stype);
-		if( p.stype == UniversalIO::UnknownIOType )
-		{
-			if( dlog )
-				dlog[Debug::CRIT] << myname << "(IOBase::readItem): неизвестный iotype=: " 
-					<< stype << " for " << it.getProp("name") << endl;
-			return false;
-		}
-	}
-	
 	string sbit(it.getProp(prop_prefix + "nbit"));
 	if( !sbit.empty() )
 	{
