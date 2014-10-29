@@ -23,7 +23,6 @@ static void print_help()
 {
 	printf("Example: uniset-mbtcpserver-echo -i localhost -p 2049 -v \n");
 	printf("-h|--help 		        - this message\n");
-	printf("[-t|--timeout] msec     - Timeout. Default: 2000.\n");
 	printf("[-v|--verbose]          - Print all messages to stdout\n");
 	printf("[-i|--iaddr] ip         - Server listen ip. Default 127.0.0.1\n");
 	printf("[-a|--myaddr] addr      - Modbus address for master. Default: 0x01.\n");
@@ -40,7 +39,6 @@ int main( int argc, char **argv )
 	int port = 502;
 	string iaddr("127.0.0.1");
 	ModbusRTU::ModbusAddr myaddr = 0x01;
-	int tout = 2000;
 	DebugStream dlog;
 	bool ignoreAddr = false;
 	int replyVal=-1;
@@ -49,7 +47,7 @@ int main( int argc, char **argv )
 
 	try
 	{
-		while( (opt = getopt_long(argc, argv, "ht:va:p:i:bxc:",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "hva:p:i:bxc:",longopts,&optindex)) != -1 ) 
 		{
 			switch (opt) 
 			{
@@ -63,10 +61,6 @@ int main( int argc, char **argv )
 
 				case 'p':	
 					port = uni_atoi(optarg);
-				break;
-
-				case 't':	
-					tout = uni_atoi(optarg);
 				break;
 
 				case 'a':	
@@ -96,7 +90,6 @@ int main( int argc, char **argv )
 		{
 			cout << "(init): iaddr: " << iaddr << ":" << port
 					<< " myaddr=" << ModbusRTU::addr2str(myaddr)
-					<< " timeout=" << tout << " msec "
 					<< endl;					
 	
 			dlog.addLevel( Debug::ANY );

@@ -22,7 +22,6 @@ static struct option longopts[] = {
 static void print_help()
 {
 	printf("-h|--help 		      - this message\n");
-	printf("[-t|--timeout] msec   - Timeout. Default: 2000.\n");
 	printf("[-v|--verbose]        - Print all messages to stdout\n");
 	printf("[-d|--device] dev     - use device dev. Default: /dev/ttyS0\n");
 	printf("[-a|--myaddr] addr    - Modbus address for master. Default: 0x01.\n");
@@ -42,7 +41,6 @@ int main( int argc, char **argv )
 	string dev("/dev/ttyS0");
 	string speed("38400");
 	ModbusRTU::ModbusAddr myaddr = 0x01;
-	int tout = 2000;
 	DebugStream dlog;
 	int use485 = 0;
 	int replyVal=-1;
@@ -65,10 +63,6 @@ int main( int argc, char **argv )
 
 				case 's':
 					speed = string(optarg);
-				break;
-
-				case 't':
-					tout = uni_atoi(optarg);
 				break;
 
 				case 'a':
@@ -102,7 +96,6 @@ int main( int argc, char **argv )
 		{
 			cout << "(init): dev=" << dev << " speed=" << speed
 					<< " myaddr=" << ModbusRTU::addr2str(myaddr)
-					<< " timeout=" << tout << " msec "
 					<< endl;					
 	
 			dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
