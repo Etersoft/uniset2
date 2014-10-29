@@ -137,6 +137,9 @@
     <br>\b enable_testmode  - включить в работу во время тестового режима tmConfigEnable
     <br>\b disable_testmode  - исключить из работы в тестовом режиме tmConfigDisable.
 
+    \note Помимо этого для конкретного процесса можно переопределять настройки используя "prefix_" (префикс плюс подчёркивание).
+     Где "prefix" - это префикс это префикс заданный в конструкторе IOControl.
+
     \section sec_IOC_ConfList Список датчиков для процесса в/в
 
     \section sec_IOC_TestMode Тестовый режим

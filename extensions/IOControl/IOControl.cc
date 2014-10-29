@@ -716,8 +716,10 @@ bool IOControl::initIOItem( UniXML_iterator& it )
         else
             inf.subdev = DefaultSubdev;
     }
+	
+	std::string prop_prefix( prefix+"_" );
 
-	if( !IOBase::initItem(&inf,it,shm,&dlog,myname,filtersize,filterT) )
+	if( !IOBase::initItem(&inf,it,shm,prop_prefix,false,&dlog,myname,filtersize,filterT) )
 		return false;
 
 	// если вектор уже заполнен
@@ -727,7 +729,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 	if( maxItem >= iomap.size() )
 		iomap.resize(maxItem+30);
 
-	int prior = it.getIntProp("iopriority");
+	int prior = IOBase::initIntProp(it,"iopriority",prop_prefix,false);
 	if( prior > 0 )
 	{
 		IOPriority p(prior,maxItem);
@@ -747,7 +749,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 						<< " for '" << conf->oind->getNameById(inf.t_ai) << endl;
 		return true;
 	}
-    inf.channel = it.getIntProp("channel");
+    inf.channel = IOBase::initIntProp(it,"channel",prop_prefix,false);
     if( inf.channel < 0 || inf.channel > 32 )
     {
         dwarn << myname << "(readItem): Unknown channel: " << inf.channel
@@ -756,16 +758,16 @@ bool IOControl::initIOItem( UniXML_iterator& it )
     }
 
 
-    inf.lamp = it.getIntProp("lamp");
-    inf.no_testlamp = it.getIntProp("no_iotestlamp");
-    inf.enable_testmode = it.getIntProp("enable_testmode");
-    inf.disable_testmode = it.getIntProp("disable_testmode");
+    inf.lamp = IOBase::initIntProp(it,"lamp",prop_prefix,false);
+    inf.no_testlamp = IOBase::initIntProp(it,"no_iotestlamp",prop_prefix,false);
+    inf.enable_testmode = IOBase::initIntProp(it,"enable_testmode",prop_prefix,false);
+    inf.disable_testmode = IOBase::initIntProp(it,"disable_testmode",prop_prefix,false);
     inf.aref = 0;
     inf.range = 0;
 
     if( inf.stype == UniversalIO::AI || inf.stype == UniversalIO::AO )
     {
-        inf.range = it.getIntProp("range");
+        inf.range = IOBase::initIntProp(it,"range",prop_prefix,false);
         if( inf.range < 0 || inf.range > 3 )
         {
             dcrit << myname << "(readItem): Unknown 'range': " << inf.range
@@ -774,7 +776,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
             return false;
         }
 
-        inf.aref = it.getIntProp("aref");
+        inf.aref = IOBase::initIntProp(it,"aref",prop_prefix,false);
         if( inf.aref < 0 || inf.aref > 3 )
         {
             dcrit << myname << "(readItem): Unknown 'aref': " << inf.aref

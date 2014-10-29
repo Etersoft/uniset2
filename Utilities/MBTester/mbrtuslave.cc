@@ -96,7 +96,6 @@ int main( int argc, char **argv )
         {
             cout << "(init): dev=" << dev << " speed=" << speed
                     << " myaddr=" << ModbusRTU::addr2str(myaddr)
-                    << " timeout=" << tout << " msec "
                     << endl;
 
             dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );

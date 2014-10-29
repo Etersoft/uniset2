@@ -126,11 +126,21 @@ static const int NoSafety       = -1;
             static float processingFasAO( IOBase* it, SMInterface* shm, bool force );
             static bool processingAsDO( IOBase* it, SMInterface* shm, bool force );
             static void processingThreshold( IOBase* it, SMInterface* shm, bool force );
+
+            /*! \param initPrefixOnly - TRUE - инициализировать только свойста с prefix (или брать значения по умолчанию).
+                                        FALSE - сперва искать свойство с prefix, если не найдено брать без prefix.
+            */
             static bool initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
+                                  const std::string& prefix, bool init_prefix_only,
                                     DebugStream* dlog=0, std::string myname="",
                                     int def_filtersize=0, float def_filterT=0.0,
                                     float def_lsparam=0.2, float def_iir_coeff_prev=0.5,
                                     float def_iir_coeff_new=0.5 );
+
+
+            // helpes
+             static std::string initProp( UniXML_iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const std::string& defval="" );
+             static int initIntProp( UniXML_iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const int defval=0 );
         };
 
 
