@@ -7,8 +7,8 @@
 %define oname uniset
 
 Name: libuniset
-Version: 1.7
-Release: alt16
+Version: 1.8
+Release: alt1
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -335,6 +335,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Thu Oct 30 2014 Pavel Vainerman <pv@altlinux.ru> 1.8-alt1
+- (IOBase): added the ability to override the basic settings using the prefix.
+
 * Mon Oct 20 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt16
 - fixed bug in UniXML::iteartor getPIntProp() for prop <= 0
 

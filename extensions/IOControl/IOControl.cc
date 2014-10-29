@@ -749,7 +749,7 @@ bool IOControl::initIOItem( UniXML_iterator& it )
 			inf.subdev = DefaultSubdev;
 	}
 
-	if( !IOBase::initItem(&inf,it,shm,&unideb,myname,filtersize,filterT) )
+	if( !IOBase::initItem(&inf,it,shm,prefix,false,&unideb,myname,filtersize,filterT) )
 		return false;
 
 	// если вектор уже заполнен

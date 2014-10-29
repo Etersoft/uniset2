@@ -1909,7 +1909,7 @@ MBExchange::RSProperty* MBExchange::addProp( PList& plist, RSProperty& p )
 // ------------------------------------------------------------------------------------------
 bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 {
-	if( !IOBase::initItem(&p,it,shm,&dlog,myname) )
+	if( !IOBase::initItem(&p,it,shm,prefix,false,&dlog,myname) )
 		return false;
 
 	// проверяем не пороговый ли это датчик (т.е. не связанный с обменом)
@@ -1918,9 +1918,9 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 	{
 		thrlist.push_back(p);
 		return true;
-	}    
-    
-    
+	}
+
+
 	if( it.getIntProp(prop_prefix + "rawdata") )
 	{
 		p.cal.minRaw = 0;

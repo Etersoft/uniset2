@@ -106,7 +106,7 @@ static const int NoSafety = -1;
 			IOController::AIOStateList::iterator ait;
 			IOController::DIOStateList::iterator dit;
 			UniSetTypes::uniset_spin_mutex val_lock; 	/*!< блокировка на время "работы" со значением */
-			
+
 			friend std::ostream& operator<<(std::ostream& os, IOBase& inf );
 
 			static void processingFasAI( IOBase* it, float new_val, SMInterface* shm, bool force );
@@ -116,11 +116,17 @@ static const int NoSafety = -1;
 			static float processingFasAO( IOBase* it, SMInterface* shm, bool force );
 			static bool processingAsDO( IOBase* it, SMInterface* shm, bool force );
 			static void processingThreshold( IOBase* it, SMInterface* shm, bool force );
-			static bool initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,  
-									DebugStream* dlog=0, std::string myname="",
+
+			/*! \param initPrefixOnly - TRUE - инициализировать только свойста с prefix (или брать значения по умолчанию).
+										FALSE - сперва искать свойство с prefix, если не найдено брать без prefix.
+			*/
+			static bool initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm, const std::string& prefix="", 
+									bool initPrefixOnly=false,
+									DebugStream* dlog=0, const std::string& myname="",
 									int def_filtersize=0, float def_filterT=0.0,
 									float def_lsparam=0.2, float def_iir_coeff_prev=0.5,
 									float def_iir_coeff_new=0.5 );
+
 		};
 
 

@@ -431,20 +431,50 @@ void IOBase::processingThreshold( IOBase* it, SMInterface* shm, bool force )
 	processingAsDI(it,set,shm,force);
 }
 // -----------------------------------------------------------------------------
+static std::string initProp( UniXML_iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const std::string& defval="" )
+{
+	if( !it.getProp(prefix+prop).empty() )
+		return it.getProp(prefix+prop);
 
-bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,  
-						DebugStream* dlog, std::string myname,
+	if( prefonly )
+		return defval;
+
+	if( !it.getProp(prop).empty() )
+		return it.getProp(prop);
+
+	return defval;
+}
+
+static int initIntProp( UniXML_iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const int defval=0 )
+{
+	string pp(prefix+prop);
+
+	if( !it.getProp(pp).empty() )
+		return it.getIntProp(pp);
+	
+	if( prefonly )
+		return defval;
+
+	if( !it.getProp(prop).empty() )
+		return it.getIntProp(prop);
+
+	return defval;
+}
+
+bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm, const std::string& prefix, 
+						bool init_prefix_only,
+						DebugStream* dlog, const std::string& myname,
 						int def_filtersize, float def_filterT, float def_lsparam,
 						float def_iir_coeff_prev, float def_iir_coeff_new )
 {
-	string sname( it.getProp("name") );
+	string sname( initProp(it,"name",prefix,init_prefix_only) );
 
 	ObjectId sid = DefaultObjectId;
-	if( it.getProp("id").empty() )
+	if( initProp(it,"id",prefix,init_prefix_only).empty() )
 		sid = conf->getSensorID(sname);
 	else
 	{
-		sid = it.getPIntProp("id", DefaultObjectId);
+		sid = initIntProp(it,"id",prefix,init_prefix_only,DefaultObjectId);
 	}
 	
 	if( sid == DefaultObjectId )
@@ -458,26 +488,26 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	b->si.id 	= sid;
 	b->si.node 	= conf->getLocalNode();
 
-	b->nofilter = it.getIntProp("nofilter");
-	b->ignore	= it.getIntProp("ioignore");
-	b->invert	= it.getIntProp("ioinvert");
-	b->defval 	= it.getIntProp("default");
-	b->noprecision	= it.getIntProp("noprecision");
+	b->nofilter = initIntProp(it,"nofilter",prefix,init_prefix_only);
+	b->ignore	= initIntProp(it,"ioignore",prefix,init_prefix_only);
+	b->invert	= initIntProp(it,"ioinvert",prefix,init_prefix_only);
+	b->defval 	= initIntProp(it,"default",prefix,init_prefix_only);
+	b->noprecision	= initIntProp(it,"noprecision",prefix,init_prefix_only);
 	b->value	= b->defval;
-	b->breaklim = it.getIntProp("breaklim");
+	b->breaklim = initIntProp(it,"breaklim",prefix,init_prefix_only);
 	
-	long msec = it.getPIntProp("jardelay", UniSetTimer::WaitUpTime);
+	long msec = initIntProp(it,"jardelay",prefix,init_prefix_only,UniSetTimer::WaitUpTime);
 	b->ptJar.setTiming(msec);
 
-	msec = it.getPIntProp("ondelay", UniSetTimer::WaitUpTime);
+	msec = initIntProp(it,"ondelay",prefix,init_prefix_only,UniSetTimer::WaitUpTime);
 	b->ptOnDelay.setTiming(msec);
 
-	msec = it.getPIntProp("offdelay", UniSetTimer::WaitUpTime);
+	msec = initIntProp(it,"offdelay",prefix,init_prefix_only,UniSetTimer::WaitUpTime);
 	b->ptOffDelay.setTiming(msec);
 	
-	b->safety = it.getPIntProp("safety", NoSafety);
+	b->safety = initIntProp(it,"safety",prefix,init_prefix_only,NoSafety);
 
-	b->stype = UniSetTypes::getIOType(it.getProp("iotype"));
+	b->stype = UniSetTypes::getIOType( initProp(it,"iotype",prefix,init_prefix_only) );
 	if( b->stype == UniversalIO::UnknownIOType )
 	{
 		if( dlog )
@@ -502,7 +532,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 	shm->initDIterator(b->dit);
 	shm->initDIterator(b->d_dit);
 
-	string d_txt(it.getProp("depend"));
+	string d_txt( initProp(it,"depend",prefix,init_prefix_only) );
 	if( !d_txt.empty() )
 	{
 		b->d_id = conf->getSensorID(d_txt);
@@ -517,25 +547,25 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		}
 
 		// по умолчанию срабатывание на "1"
-		b->d_value = it.getProp("depend_value").empty() ? 1 : it.getIntProp("depend_value");
-		b->d_off_value = it.getIntProp("depend_off_value");
+		b->d_value = initProp(it,"depend_value",prefix,init_prefix_only).empty() ? 1 : initIntProp(it,"depend_value",prefix,init_prefix_only);
+		b->d_off_value = initIntProp(it,"depend_off_value",prefix,init_prefix_only);
 		b->d_iotype = conf->getIOType(b->d_id);
 	}
 
 	if( b->stype == UniversalIO::AnalogInput || b->stype == UniversalIO::AnalogOutput )
 	{
-		b->cal.minRaw = it.getIntProp("rmin");
-		b->cal.maxRaw = it.getIntProp("rmax");
-		b->cal.minCal = it.getIntProp("cmin");
-		b->cal.maxCal = it.getIntProp("cmax");
-		b->cal.sensibility = it.getIntProp("sensibility");
-		b->cal.precision = it.getIntProp("precision");
+		b->cal.minRaw = initIntProp(it,"rmin",prefix,init_prefix_only);
+		b->cal.maxRaw = initIntProp(it,"rmax",prefix,init_prefix_only);
+		b->cal.minCal = initIntProp(it,"cmin",prefix,init_prefix_only);
+		b->cal.maxCal = initIntProp(it,"cmax",prefix,init_prefix_only);
+		b->cal.sensibility = initIntProp(it,"sensibility",prefix,init_prefix_only);
+		b->cal.precision = initIntProp(it,"precision",prefix,init_prefix_only);
 
 		int f_size 	= def_filtersize;
 		float f_T 	= def_filterT;
 		float f_lsparam = def_lsparam;
-		int f_median = it.getIntProp("filtermedian");
-		int f_iir = it.getIntProp("iir_thr");
+		int f_median = initIntProp(it,"filtermedian",prefix,init_prefix_only);
+		int f_iir = initIntProp(it,"iir_thr",prefix,init_prefix_only);
 		float f_iir_coeff_prev = def_iir_coeff_prev;
 		float f_iir_coeff_new = def_iir_coeff_new;
 		
@@ -548,29 +578,29 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 		{
 			if( f_iir > 0 )
 				b->f_filter_iir = true;
-			if( !it.getProp("filtersize").empty() )
-				f_size = it.getPIntProp("filtersize",def_filtersize);
+			if( !initProp(it,"filtersize",prefix,init_prefix_only).empty() )
+				f_size = initIntProp(it,"filtersize",prefix,init_prefix_only,def_filtersize);
 		}
 		
-		if( !it.getProp("filterT").empty() )
+		if( !initProp(it,"filterT",prefix,init_prefix_only).empty() )
 		{
-			f_T = atof(it.getProp("filterT").c_str());
+			f_T = atof(initProp(it,"filterT",prefix,init_prefix_only).c_str());
 			if( f_T < 0 )
 				f_T = 0.0;
 		}
 
-		if( !it.getProp("leastsqr").empty() )
+		if( !initProp(it,"leastsqr",prefix,init_prefix_only).empty() )
 		{
 			b->f_ls = true;
-			f_lsparam = atof(it.getProp("leastsqr").c_str());
+			f_lsparam = atof(initProp(it,"leastsqr",prefix,init_prefix_only).c_str());
 			if( f_lsparam < 0 )
 				f_lsparam = def_lsparam;
 		}
 
-		if( !it.getProp("iir_coeff_prev").empty() )
-			f_iir_coeff_prev = atof(it.getProp("iir_coeff_prev").c_str());
-		if( !it.getProp("iir_coeff_new").empty() )
-			f_iir_coeff_new = atof(it.getProp("iir_coeff_new").c_str());
+		if( !initProp(it,"iir_coeff_prev",prefix,init_prefix_only).empty() )
+			f_iir_coeff_prev = atof(initProp(it,"iir_coeff_prev",prefix,init_prefix_only).c_str());
+		if( !initProp(it,"iir_coeff_new",prefix,init_prefix_only).empty() )
+			f_iir_coeff_new = atof(initProp(it,"iir_coeff_new",prefix,init_prefix_only).c_str());
 
 		if( b->stype == UniversalIO::AnalogInput )
 			b->df.setSettings( f_size, f_T, f_lsparam, f_iir,
@@ -578,13 +608,13 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 
 		b->df.init(b->defval);
 
-		std::string caldiagram( it.getProp("caldiagram") );
+		std::string caldiagram( initProp(it,"caldiagram",prefix,init_prefix_only) );
 		if( !caldiagram.empty() )
 			b->cdiagram = UniSetExtensions::buildCalibrationDiagram(caldiagram);
 	}
 	else if( b->stype == UniversalIO::DigitalInput || b->stype == UniversalIO::DigitalOutput )
 	{
-		string tai(it.getProp("threshold_aid"));
+		string tai(initProp(it,"threshold_aid",prefix,init_prefix_only));
 		if( !tai.empty() )
 		{
 			b->t_ai = conf->getSensorID(tai);
@@ -596,10 +626,10 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
 				return false;
 			}
 		
-			b->ti.lowlimit 	= it.getIntProp("lowlimit");
-			b->ti.hilimit 		= it.getIntProp("hilimit");
-			b->ti.sensibility 	= it.getIntProp("sensibility");
-			b->ti.inverse 		= it.getIntProp("inverse");
+			b->ti.lowlimit 	= initIntProp(it,"lowlimit",prefix,init_prefix_only);
+			b->ti.hilimit 		= initIntProp(it,"hilimit",prefix,init_prefix_only);
+			b->ti.sensibility 	= initIntProp(it,"sensibility",prefix,init_prefix_only);
+			b->ti.inverse 		= initIntProp(it,"inverse",prefix,init_prefix_only);
 		}
 	}
 //	else

@@ -818,7 +818,7 @@ bool MBSlave::initItem( UniXML_iterator& it )
 {
 	IOProperty p;
 
-	if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,&dlog,myname) )
+	if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,prefix,false,&dlog,myname) )
 		return false;
 
 	if( mbregFromID )
