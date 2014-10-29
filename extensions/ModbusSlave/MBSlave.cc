@@ -836,25 +836,14 @@ bool MBSlave::initItem( UniXML_iterator& it )
         p.mbreg = ModbusRTU::str2mbData(r);
     }
 
-    string stype( IOBase::initProp(it,"mb_iotype",prop_prefix,false) );
-    if( stype.empty() )
-        stype = IOBase::initProp(it,"iotype",prop_prefix,false);
-
-    p.stype = UniSetTypes::getIOType(stype);
-    if( p.stype == UniversalIO::UnknownIOType )
-    {
-        dcrit << myname << "(initItem): Unknown 'iotype' or 'mb_iotype' for " << IOBase::initProp(it,"name",prop_prefix,false) << endl;
-        return false;
-    }
-
     p.amode = MBSlave::amRW;
-    string am(IOBase::initProp(it,"mb_accessmode",prop_prefix,false));
+    string am(IOBase::initProp(it,"accessmode",prop_prefix,false));
     if( am == "ro" )
         p.amode = MBSlave::amRO;
     else if( am == "rw" )
         p.amode = MBSlave::amRW;
 
-    string vt(IOBase::initProp(it,"mb_vtype",prop_prefix,false));
+    string vt(IOBase::initProp(it,"vtype",prop_prefix,false));
     if( vt.empty() )
     {
         p.vtype = VTypes::vtUnknown;
