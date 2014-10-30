@@ -8,4 +8,4 @@ Description: Support library for UniSetRTUExchange
 Requires: libUniSetExtensions
 Version: 2.1.0
 Libs: -L${libdir} -lUniSetRTU
-Cflags: -I${includedir}/uniset
+Cflags: -I${includedir}/@PACKAGE@

@@ -8,4 +8,4 @@ Description: Support library for UniSetSMDBServer
 Requires: libUniSetExtensions
 Version: @VERSION@
 Libs: -L${libdir} -lUniSetSMDBServer
-Cflags: -I${includedir}/uniset
+Cflags: -I${includedir}/@PACKAGE@

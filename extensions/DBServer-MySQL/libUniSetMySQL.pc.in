@@ -8,4 +8,4 @@ Description: Support library for libUniSetMySQL
 Requires: libUniSet
 Version: 1.0.0
 Libs: -L${libdir} -lUniSet-mysql -lmysqlclient
-Cflags: -I${includedir}/uniset -I${includedir}/mysql
+Cflags: -I${includedir}/@PACKAGE@ -I${includedir}/@PACKAGE@/mysql

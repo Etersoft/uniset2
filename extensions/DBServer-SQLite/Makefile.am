@@ -15,8 +15,12 @@ uniset_sqlite_dbserver_LDADD = libUniSet-sqlite.la $(top_builddir)/lib/libUniSet
 uniset_sqlite_dbserver_SOURCES = main.cc
 
 noinst_PROGRAMS = sqlite-test
+
 sqlite_test_LDADD = libUniSet-sqlite.la $(top_builddir)/lib/libUniSet.la
 sqlite_test_SOURCES = test.cc
+
+# sqlite_test2_LDADD = libUniSet-sqlite.la $(top_builddir)/lib/libUniSet.la
+# sqlite_test2_SOURCES = test-create.cc
 
 include $(top_builddir)/conf/setting.mk
 

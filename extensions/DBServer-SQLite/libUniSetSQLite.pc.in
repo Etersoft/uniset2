@@ -8,4 +8,4 @@ Description: Support library for libUniSetSQLite
 Requires: libUniSet sqlite3
 Version: 1.0.0
 Libs: -L${libdir} -lUniSet-sqlite
-Cflags: -I${includedir}/uniset -I${includedir}/sqlite
+Cflags: -I${includedir}/@PACKAGE@ -I${includedir}/@PACKAGE@/sqlite
