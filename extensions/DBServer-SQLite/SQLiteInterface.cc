@@ -38,7 +38,7 @@ queryok(false),
 connected(false),
 opTimeout(300),
 opCheckPause(50)
-{ 
+{
 }
 
 SQLiteInterface::~SQLiteInterface()
@@ -59,7 +59,9 @@ bool SQLiteInterface::connect( const string& dbfile, bool create )
 //	if( !create && !UniSetTypes::file_exist(dbfile) )
 //		return false;
 
-	int flags = create ? 0 : SQLITE_OPEN_READWRITE;
+	int flags = SQLITE_OPEN_READWRITE;
+	if( create )
+		flags |= SQLITE_OPEN_CREATE;
 
 	int rc = sqlite3_open_v2(dbfile.c_str(), &db, flags, NULL);
 
@@ -127,7 +129,7 @@ bool SQLiteInterface::insert( const string& q )
 // -----------------------------------------------------------------------------------------
 bool SQLiteInterface::checkResult( int rc )
 {
-	if( rc==SQLITE_BUSY || rc==SQLITE_LOCKED || rc==SQLITE_INTERRUPT || rc==SQLITE_IOERR )
+	if( rc==SQLITE_BUSY || rc==SQLITE_LOCKED || rc==SQLITE_INTERRUPT || rc==SQLITE_IOERR ) // || rc==SQLITE_NOMEM || rc==SQLITE_FULL )
 		return false;
 
 	return true;
