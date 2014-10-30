@@ -26,10 +26,12 @@ static const int NoSafety       = -1;
             IOBase& operator=(IOBase&& r) = default;
 
             IOBase():
+                stype(UniversalIO::UnknownIOType),
                 cdiagram(0),
                 breaklim(0),
                 value(0),
                 craw(0),
+                cprev(0),
                 safety(0),
                 defval(0),
                 df(1),
@@ -48,7 +50,11 @@ static const int NoSafety       = -1;
                 front_type(ftUnknown),
                 front_prev_state(false),
                 front_state(false)
-            {}
+            {
+                si.id = UniSetTypes::DefaultObjectId;
+                si.node = UniSetTypes::DefaultObjectId;
+                cal.minRaw = cal.maxRaw = cal.minCal = cal.maxCal = cal.precision = 0;
+            }
 
 
             bool check_channel_break( long val );     /*!< проверка обрыва провода */

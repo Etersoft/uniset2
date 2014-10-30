@@ -30,6 +30,10 @@
 		<LockDir name=""/>
 
 	<testnode name="testnode" id2="-100"/>
+	
+	<iobasetest id="1" name="TestInput1_S" textname="IOBase test 1" iotype="AI" default="-10" rmin="-100" rmax="100" cmin="0" cmax="50" precision="3" />
+	<iobasetest2 id="1" name="TestInput2_S" textname="IOBase test 2" iotype="AI" default="10" rmin="-100" rmax="100" cmin="0" cmax="50" precision="3" />
+	
 	<Services>
 		<LocalTimeService name="TimeService" MaxCountTimers="100" AskLifeTimeSEC="10"/>
 		<LocalInfoServer name="InfoServer" dbrepeat="1">
@@ -43,6 +47,8 @@
 
 </UniSet>
 
+
+	<iobasetest name="iobasetest" />
 	<dlog name="dlog" levels="" file=""/>
 
 <ObjectsMap idfromfile="1">
