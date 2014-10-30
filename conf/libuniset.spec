@@ -337,6 +337,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %changelog
 * Thu Oct 30 2014 Pavel Vainerman <pv@altlinux.ru> 1.8-alt1
 - (IOBase): added the ability to override the basic settings using the prefix.
+- (SQLiteInterface): fixed bug in SQLiteResult
 
 * Mon Oct 20 2014 Pavel Vainerman <pv@altlinux.ru> 1.7-alt16
 - fixed bug in UniXML::iteartor getPIntProp() for prop <= 0

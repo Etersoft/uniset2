@@ -254,6 +254,13 @@ SQLiteResult::SQLiteResult( sqlite3_stmt* s, bool finalize )
 	do
 	{
 		int n = sqlite3_data_count(s);
+		if( n<=0 )
+		{
+			if( finalize )
+				sqlite3_finalize(s);
+			return;
+		}
+			
 		COL	c;
 
 		for( int i=0; i<n; i++ )
@@ -264,6 +271,7 @@ SQLiteResult::SQLiteResult( sqlite3_stmt* s, bool finalize )
 			else
 				c.push_back("");
 		}
+		
 		res.push_back(c);
 	}
 	while( sqlite3_step(s) == SQLITE_ROW );
