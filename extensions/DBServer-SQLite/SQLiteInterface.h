@@ -157,7 +157,7 @@ int num_cols( SQLiteResult::iterator& );
 // ROW
 int as_int( SQLiteResult::iterator&, int col );
 double as_double( SQLiteResult::iterator&, int col );
-std::string as_text( SQLiteResult::iterator&, int col );
+std::string as_string( SQLiteResult::iterator&, int col );
 // ----------------------------------------------------------------------------
 // COL
 int as_int( SQLiteResult::COL::iterator& );
