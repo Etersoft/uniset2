@@ -56,7 +56,6 @@ static const int NoSafety       = -1;
                 cal.minRaw = cal.maxRaw = cal.minCal = cal.maxCal = cal.precision = 0;
             }
 
-
             bool check_channel_break( long val );     /*!< проверка обрыва провода */
 
             bool check_debounce( bool val );    /*!< реализация фильтра против дребезга */

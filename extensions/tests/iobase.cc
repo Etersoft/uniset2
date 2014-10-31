@@ -80,17 +80,152 @@ TEST_CASE("IOBase","[IOBase class tests]")
 
     SECTION("Debounce function")
     {
+        IOBase ib;
+        ib.ptDebounce.setTiming(100);
+		// Проверка установки сигнала (с дребезгом)
+		CHECK_FALSE( ib.check_debounce(true) );
+		msleep(20);
+		CHECK_FALSE( ib.check_debounce(false) );
+		CHECK_FALSE( ib.check_debounce(true) );
+		CHECK_FALSE( ib.check_debounce(false) );
+		msleep(10);
+		CHECK_FALSE( ib.check_debounce(true) );
+		msleep(40);
+		CHECK_FALSE( ib.check_debounce(false) );
+		msleep(10);
+		CHECK_FALSE( ib.check_debounce(true) );
+		msleep(30);
+		CHECK( ib.check_debounce(true) ); // сработал..
+		// Проверка сброса сигнала (с дребезгом)
+		msleep(30);
+		CHECK( ib.check_debounce(true) );
+		CHECK( ib.check_debounce(false) );
+		msleep(20);
+		CHECK( ib.check_debounce(false) );
+		msleep(20);
+		CHECK( ib.check_debounce(false) );
+		CHECK( ib.check_debounce(true) );
+		CHECK( ib.check_debounce(false) );
+		CHECK( ib.check_debounce(true) );
+		CHECK( ib.check_debounce(false) );
+		msleep(80);
+		CHECK_FALSE( ib.check_debounce(false) ); // сбросился
+
+		// Проверка "устойчивости"
+		msleep(30);
+		CHECK_FALSE( ib.check_debounce(true) );
+		msleep(10);
+		CHECK_FALSE( ib.check_debounce(false) );
+		msleep(90);
+		CHECK_FALSE( ib.check_debounce(false) );
 	}
 
-    SECTION("Delay function")
+    SECTION("On delay..")
     {
+        IOBase ib;
+        ib.ptOnDelay.setTiming(100);
+		// простое срабатывание..
+		CHECK_FALSE( ib.check_on_delay(true) );
+		msleep(50);
+		CHECK_FALSE( ib.check_on_delay(true) );
+		msleep(60);
+		CHECK( ib.check_on_delay(true) );
+
+		// сброс "без задержки"
+		CHECK_FALSE( ib.check_on_delay(false) );
+
+		// задержка засекается каждый раз при переходе "FALSE" --> "TRUE"
+		CHECK_FALSE( ib.check_on_delay(true) );
+		msleep(90);
+		CHECK_FALSE( ib.check_on_delay(false) );
+		msleep(20);
+		CHECK_FALSE( ib.check_on_delay(false) );
+		CHECK_FALSE( ib.check_on_delay(true) );
+		msleep(110);
+		CHECK( ib.check_on_delay(true) );
+	}
+    SECTION("Off delay..")
+    {
+        IOBase ib;
+        ib.ptOffDelay.setTiming(100);
+		// простое срабатывание..
+		CHECK( ib.check_off_delay(true) );
+		CHECK( ib.check_off_delay(false) );
+		msleep(50);
+		CHECK( ib.check_off_delay(false) );
+		msleep(60);
+		CHECK_FALSE( ib.check_off_delay(false) );
+
+		// устновка "без задержки"
+		CHECK( ib.check_off_delay(true) );
+
+		// задержка засекается каждый раз при переходе "TRUE" --> "FALSE"
+		CHECK( ib.check_off_delay(false) );
+		msleep(90);
+		CHECK( ib.check_off_delay(true) );
+		CHECK( ib.check_off_delay(false) );
+		msleep(20);
+		CHECK( ib.check_off_delay(false) );
+		msleep(50);
+		CHECK( ib.check_off_delay(false) );
+		msleep(40);
+		CHECK_FALSE( ib.check_off_delay(false) );
 	}
 
-    SECTION("Front function")
+    SECTION("Front '0-->1'")
     {
+		IOBase ib;
+		ib.front_type = IOBase::ft01;
+		ib.front = true;
+		CHECK( ib.check_front(true) );
+		CHECK( ib.check_front(true) );
+		CHECK( ib.check_front(false) );
+		CHECK( ib.check_front(false) );
+		CHECK_FALSE( ib.check_front(true) );
+		CHECK_FALSE( ib.check_front(true) );
+		CHECK_FALSE( ib.check_front(false) );
+		CHECK( ib.check_front(true) );
+	}
+
+    SECTION("Front '1-->0'")
+    {
+		IOBase ib;
+		ib.front_type = IOBase::ft10;
+		ib.front = true;
+		CHECK_FALSE( ib.check_front(true) );
+		CHECK_FALSE( ib.check_front(true) );
+		CHECK( ib.check_front(false) );
+		CHECK( ib.check_front(false) );
+		CHECK( ib.check_front(true) );
+		CHECK( ib.check_front(true) );
+		CHECK_FALSE( ib.check_front(false) );
+	}
+
+    SECTION("Front 'unkown' (off)")
+    {
+		IOBase ib;
+		CHECK( ib.check_front(true) );
+		CHECK_FALSE( ib.check_front(false) );
+		CHECK( ib.check_front(true) );
+		CHECK_FALSE( ib.check_front(false) );
 	}
 
     SECTION("'Channel break' function")
     {
+		IOBase ib;
+		// просто проверка.. при отключнном breaklim.. (всегда FALSE)
+		CHECK_FALSE( ib.check_channel_break(100) );
+		CHECK_FALSE( ib.check_channel_break(-100) );
+		CHECK_FALSE( ib.check_channel_break(0) );
+	
+		const int breakValue = 200;
+
+		ib.breaklim = breakValue;
+		CHECK( ib.check_channel_break(breakValue - 10) );
+		CHECK( ib.check_channel_break(-breakValue) );
+		CHECK( ib.check_channel_break(0) );
+
+		CHECK_FALSE( ib.check_channel_break(breakValue+1) );
+		CHECK_FALSE( ib.check_channel_break(breakValue) );
 	}
 }
