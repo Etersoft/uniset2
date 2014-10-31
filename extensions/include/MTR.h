@@ -124,7 +124,7 @@ namespace MTR
             ~T1(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return 1; }
+            static unsigned int wsize(){ return 1; }
             /*! тип значения */
             static MTRType type(){ return mtT1; }
             // ------------------------------------------
@@ -141,7 +141,7 @@ namespace MTR
             ~T2(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return 1; }
+            static unsigned int wsize(){ return 1; }
             /*! тип значения */
             static MTRType type(){ return mtT2; }
             // ------------------------------------------
@@ -184,7 +184,7 @@ namespace MTR
             ~T3(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return u2size; }
+            static unsigned int wsize(){ return u2size; }
             /*! тип значения */
             static MTRType type(){ return mtT3; }
             // ------------------------------------------
@@ -219,7 +219,7 @@ namespace MTR
             ~T4(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return 1; }
+            static unsigned int wsize(){ return 1; }
             /*! тип значения */
             static MTRType type(){ return mtT4; }
             // ------------------------------------------
@@ -272,7 +272,7 @@ namespace MTR
             ~T5(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return u2size; }
+            static unsigned int wsize(){ return u2size; }
             /*! тип значения */
             static MTRType type(){ return mtT5; }
             // ------------------------------------------
@@ -325,7 +325,7 @@ namespace MTR
             ~T6(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return u2size; }
+            static unsigned int wsize(){ return u2size; }
             /*! тип значения */
             static MTRType type(){ return mtT6; }
             // ------------------------------------------
@@ -378,7 +378,7 @@ namespace MTR
             ~T7(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return u2size; }
+            static unsigned int wsize(){ return u2size; }
             /*! тип значения */
             static MTRType type(){ return mtT7; }
             // ------------------------------------------
@@ -430,7 +430,7 @@ namespace MTR
             ~T8(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return u2size; }
+            static unsigned int wsize(){ return u2size; }
             /*! тип значения */
             static MTRType type(){ return mtT8; }
             // ------------------------------------------
@@ -481,7 +481,7 @@ namespace MTR
             ~T9(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return u2size; }
+            static unsigned int wsize(){ return u2size; }
             /*! тип значения */
             static MTRType type(){ return mtT9; }
             // ------------------------------------------
@@ -530,7 +530,7 @@ namespace MTR
             ~T10(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return u2size; }
+            static unsigned int wsize(){ return u2size; }
             /*! тип значения */
             static MTRType type(){ return mtT10; }
             // ------------------------------------------
@@ -559,7 +559,7 @@ namespace MTR
             ~T16(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return 1; }
+            static unsigned int wsize(){ return 1; }
             /*! тип значения */
             static MTRType type(){ return mtT16; }
             // ------------------------------------------
@@ -595,7 +595,7 @@ namespace MTR
             ~T17(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return 1; }
+            static unsigned int wsize(){ return 1; }
             /*! тип значения */
             static MTRType type(){ return mtT17; }
             // ------------------------------------------
@@ -644,7 +644,7 @@ namespace MTR
             ~F1(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return u2size; }
+            static unsigned int wsize(){ return u2size; }
             /*! тип значения */
             static MTRType type(){ return mtF1; }
             // ------------------------------------------
@@ -676,7 +676,7 @@ namespace MTR
             ~T_Str16(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return 8; }
+            static unsigned int wsize(){ return 8; }
             /*! тип значения */
             static MTRType type(){ return mtT_Str16; }
             // ------------------------------------------
@@ -705,7 +705,7 @@ namespace MTR
             ~T_Str8(){}
             // ------------------------------------------
             /*! размер в словах */
-            static int wsize(){ return 4; }
+            static unsigned int wsize(){ return 4; }
             /*! тип значения */
             static MTRType type(){ return mtT_Str8; }
             // ------------------------------------------

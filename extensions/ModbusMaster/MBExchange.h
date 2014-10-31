@@ -129,8 +129,8 @@ class MBExchange:
             MTR::MTRType mtrType;    /*!< тип регистра (согласно спецификации на MTR) */
 
             // optimization
-            int q_num;        /*!< number in query */
-            int q_count;    /*!< count registers for query */
+            unsigned int q_num;      /*!< number in query */
+            unsigned int q_count;    /*!< count registers for query */
 
             RegMap::iterator rit;
 

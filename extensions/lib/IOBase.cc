@@ -408,20 +408,19 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm, const s
                         int def_filtersize, float def_filterT, float def_lsparam,
                         float def_iir_coeff_prev, float def_iir_coeff_new )
 {
-    string sname( initProp(it,"name",prefix,init_prefix_only) );
+	// Переопределять ID и name - нельзя..s
+    string sname( it.getProp("name") );
 
     ObjectId sid = DefaultObjectId;
-    if( initProp(it,"id",prefix,init_prefix_only).empty() )
+    if( it.getProp("id").empty() )
         sid = conf->getSensorID(sname);
     else
-    {
-        sid = initIntProp(it,"id",prefix,init_prefix_only,DefaultObjectId);
-    }
+        sid = it.getPIntProp("id",DefaultObjectId);
 
     if( sid == DefaultObjectId )
     {
         if( dlog && dlog->is_crit() )
-            dlog->crit() << myname << "(readItem): (-1) Не удалось получить ID для датчика: "
+            dlog->crit() << myname << "(readItem): (" << DefaultObjectId << ") Не удалось получить ID для датчика: "
                         << sname << endl;
         return false;
     }

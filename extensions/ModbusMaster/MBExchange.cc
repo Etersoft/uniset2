@@ -860,7 +860,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
             for( unsigned int i=0; i<ret.bcnt; i++ )
             {
                 ModbusRTU::DataBits b(ret.data[i]);
-                for( int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
+                for( unsigned int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
                     it->second->mbval = b[k];
             }
             it--;
@@ -1882,7 +1882,7 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
         return true;
     }
 
-    if( it.getIntProp(prop_prefix + "rawdata") )
+    if( IOBase::initIntProp(it,"rawdata",prefix,false) )
     {
         p.cal.minRaw = 0;
         p.cal.maxRaw = 0;
@@ -1892,7 +1892,7 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
         p.cdiagram = 0;
     }
 
-    string sbit(it.getProp(prop_prefix + "nbit"));
+    string sbit(IOBase::initProp(it,"nbit",prefix,false));
     if( !sbit.empty() )
     {
         p.nbit = UniSetTypes::uni_atoi(sbit.c_str());
@@ -1912,7 +1912,7 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
                 << " but iotype=" << p.stype << " for " << it.getProp("name") << endl;
     }
 
-    string sbyte(it.getProp(prop_prefix + "nbyte"));
+    string sbyte(IOBase::initProp(it,"nbyte",prefix,false) );
     if( !sbyte.empty() )
     {
         p.nbyte = UniSetTypes::uni_atoi(sbyte.c_str());
@@ -1924,7 +1924,7 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
         }
     }
 
-    string vt(it.getProp(prop_prefix + "vtype"));
+    string vt( IOBase::initProp(it,"vtype",prefix,false) );
     if( vt.empty() )
     {
         p.rnum = VTypes::wsize(VTypes::vtUnknown);
@@ -1952,7 +1952,7 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
 bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUDevice* dev )
 {
     r->dev = dev;
-    r->mbval = it.getIntProp("default");
+    r->mbval = IOBase::initIntProp(it,"default",prefix,false);
 
     if( dev->dtype == MBExchange::dtRTU )
     {
@@ -1970,7 +1970,7 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
          if( !initRTU188item(it,r) )
             return false;
 
-        UniversalIO::IOType t = UniSetTypes::getIOType(it.getProp("iotype"));
+        UniversalIO::IOType t = UniSetTypes::getIOType(IOBase::initProp(it,"iotype",prefix,false));
         r->mbreg = RTUStorage::getRegister(r->rtuJack,r->rtuChan,t);
         r->mbfunc = RTUStorage::getFunction(r->rtuJack,r->rtuChan,t);
 
@@ -1995,7 +1995,7 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
     }
     else
     {
-        string sr = it.getProp(prop_prefix + "mbreg");
+        string sr( IOBase::initProp(it,"mbreg",prefix,false) );
         if( sr.empty() )
         {
             dcrit << myname << "(initItem): Unknown 'mbreg' for " << it.getProp("name") << endl;
@@ -2005,7 +2005,7 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
     }
 
     r->mbfunc     = ModbusRTU::fnUnknown;
-    string f = it.getProp(prop_prefix + "mbfunc");
+    string f( IOBase::initProp(it,"mbfunc",prefix,false) );
     if( !f.empty() )
     {
         r->mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f.c_str());
@@ -2022,17 +2022,18 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
 // ------------------------------------------------------------------------------------------
 bool MBExchange::initRTUDevice( RTUDevice* d, UniXML_iterator& it )
 {
-    d->dtype = getDeviceType(it.getProp(prop_prefix + "mbtype"));
+	string mbtype(IOBase::initProp(it,"mbtype",prefix,false));
+    d->dtype = getDeviceType(mbtype);
 
     if( d->dtype == dtUnknown )
     {
-        dcrit << myname << "(initRTUDevice): Unknown tcp_mbtype=" << it.getProp(prop_prefix + "mbtype")
+        dcrit << myname << "(initRTUDevice): Unknown tcp_mbtype='" << mbtype << "'"
                 << ". Use: rtu "
                 << " for " << it.getProp("name") << endl;
         return false;
     }
 
-    string addr = it.getProp(prop_prefix + "mbaddr");
+    string addr( IOBase::initProp(it,"mbaddr",prefix,false) );
     if( addr.empty() )
     {
         dcrit << myname << "(initRTUDevice): Unknown mbaddr for " << it.getProp("name") << endl;
@@ -2056,10 +2057,10 @@ bool MBExchange::initItem( UniXML_iterator& it )
     if( !initRSProperty(p,it) )
         return false;
 
-    string addr(it.getProp(prop_prefix + "mbaddr"));
+    string addr( IOBase::initProp(it,"mbaddr",prefix,false) );
     if( addr.empty() )
     {
-        dcrit << myname << "(initItem): Unknown mbaddr(" << prop_prefix << "mbaddr)='" << addr << "' for " << it.getProp("name") << endl;
+        dcrit << myname << "(initItem): Unknown mbaddr(" << IOBase::initProp(it,"mbaddr",prefix,false) << ")='" << addr << "' for " << it.getProp("name") << endl;
         return false;
     }
 
@@ -2073,7 +2074,7 @@ bool MBExchange::initItem( UniXML_iterator& it )
     }
 
     ModbusRTU::ModbusData mbreg = 0;
-    int fn = it.getIntProp(prop_prefix + "mbfunc");
+    int fn = IOBase::initIntProp(it,"mbfunc",prefix,false);
 
     if( dev->dtype == dtRTU188 )
     {
@@ -2093,7 +2094,7 @@ bool MBExchange::initItem( UniXML_iterator& it )
             mbreg = p.si.id; // conf->getSensorID(it.getProp("name"));
         else
         {
-            string reg = it.getProp(prop_prefix + "mbreg");
+            string reg( IOBase::initProp(it,"mbreg",prefix,false) );
             if( reg.empty() )
             {
                 dcrit << myname << "(initItem): unknown mbreg(" << prop_prefix << ") for " << it.getProp("name") << endl;
@@ -2173,7 +2174,7 @@ bool MBExchange::initItem( UniXML_iterator& it )
 
         // Раз это регистр для записи, то как минимум надо сперва
         // инициализировать значением из SM
-        ri->sm_initOK = it.getIntProp(prop_prefix + "sm_initOK");
+        ri->sm_initOK = IOBase::initIntProp(it,"sm_initOK",prefix,false);
         ri->mb_initOK = true;  // может быть переопределён если будет указан tcp_preinit="1" (см. ниже)
     }
     else
@@ -2225,7 +2226,7 @@ bool MBExchange::initItem( UniXML_iterator& it )
     }
 
     // Фомируем список инициализации
-    bool need_init = it.getIntProp(prop_prefix + "preinit");
+    bool need_init = IOBase::initIntProp(it,"preinit",prefix,false);
     if( need_init && ModbusRTU::isWriteFunction(ri->mbfunc) )
     {
         InitRegInfo ii;
@@ -2233,7 +2234,7 @@ bool MBExchange::initItem( UniXML_iterator& it )
         ii.dev = dev;
         ii.ri = ri;
 
-        string s_reg(it.getProp(prop_prefix + "init_mbreg"));
+        string s_reg(IOBase::initProp(it,"init_mbreg",prefix,false));
         if( !s_reg.empty() )
             ii.mbreg = ModbusRTU::str2mbData(s_reg);
         else
@@ -2301,8 +2302,8 @@ bool MBExchange::initMTRitem( UniXML_iterator& it, RegInfo* p )
 // ------------------------------------------------------------------------------------------
 bool MBExchange::initRTU188item( UniXML_iterator& it, RegInfo* p )
 {
-    string jack(it.getProp(prop_prefix + "jack"));
-    string chan(it.getProp(prop_prefix + "channel"));
+    string jack(IOBase::initProp(it,"jakc",prefix,false));
+    string chan(IOBase::initProp(it,"channel",prefix,false));
 
     if( jack.empty() )
     {

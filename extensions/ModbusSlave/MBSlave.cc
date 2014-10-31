@@ -812,7 +812,7 @@ bool MBSlave::initItem( UniXML_iterator& it )
     if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,prop_prefix,false,&dlog,myname) )
         return false;
 
-    if( it.getIntProp(prop_prefix + "rawdata") )
+    if( IOBase::initIntProp(it,"rawdata",prefix,false) )
     {
         p.cal.minRaw = 0;
         p.cal.maxRaw = 0;
@@ -829,7 +829,7 @@ bool MBSlave::initItem( UniXML_iterator& it )
         string r = IOBase::initProp(it,"mbreg",prop_prefix,false);
         if( r.empty() )
         {
-            dcrit << myname << "(initItem): Unknown 'mbreg' for " << IOBase::initProp(it,"name",prop_prefix,false) << endl;
+            dcrit << myname << "(initItem): Unknown 'mbreg' for " << it.getProp("name") << endl;
             return false;
         }
 
