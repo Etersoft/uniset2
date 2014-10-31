@@ -840,7 +840,7 @@ bool MBSlave::initItem( UniXML_iterator& it )
 		string r = IOBase::initProp(it,"mbreg",prop_prefix,false);
 		if( r.empty() )
 		{
-			dlog[Debug::CRIT] << myname << "(initItem): Unknown 'mbreg' for " << IOBase::initProp(it,"name",prop_prefix,false) << endl;
+			dlog[Debug::CRIT] << myname << "(initItem): Unknown 'mbreg' for " << it.getProp("name") << endl;
 			return false;
 		}
 		
