@@ -252,7 +252,14 @@ SQLiteResult::SQLiteResult( sqlite3_stmt* s, bool finalize )
     do
     {
         int n = sqlite3_data_count(s);
-        COL    c;
+        if( n<=0 )
+        {
+		    if( finalize )
+        		sqlite3_finalize(s);
+        	return;
+        }
+        	
+        COL c;
 
         for( unsigned int i=0; i<n; i++ )
         {
