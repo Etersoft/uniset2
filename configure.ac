@@ -12,14 +12,6 @@ AC_CONFIG_HEADER(uniset-config.h)
 dnl Initialize maintainer mode
 AM_MAINTAINER_MODE
 
-dnl Initialize test suite
-AC_CONFIG_TESTDIR(testsuite)
-AC_CONFIG_TESTDIR(tests)
-AC_CONFIG_TESTDIR(extensions/tests)
-AC_CONFIG_TESTDIR(extensions/LogicProcessor/tests)
-
-TESTSUITE_DIR="\$(top_builddir)/testsuite"
-AC_SUBST(TESTSUITE_DIR)
 
 dnl Checks for programs.
 AC_PROG_INSTALL
@@ -285,6 +277,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/ModbusMaster/libUniSet2MBTCPMaster.pc
 				 extensions/ModbusSlave/Makefile
 				 extensions/ModbusSlave/libUniSet2MBSlave.pc
+				 extensions/ModbusSlave/tests/Makefile
 				 extensions/LogicProcessor/Makefile
 				 extensions/LogicProcessor/libUniSet2LogicProcessor.pc
 				 extensions/LogicProcessor/tests/Makefile
@@ -305,7 +298,19 @@ AC_CONFIG_FILES([Makefile
 				 python/lib/pyUniSet/Makefile
 				 python/Makefile])
 				 
+dnl Initialize test suite
+AC_CONFIG_TESTDIR(testsuite)
+AC_CONFIG_TESTDIR(tests)
+AC_CONFIG_TESTDIR(extensions/tests)
+AC_CONFIG_TESTDIR(extensions/LogicProcessor/tests)
+AC_CONFIG_TESTDIR(extensions/ModbusSlave/tests)
+
+TESTSUITE_DIR="\$(top_builddir)/testsuite"
+AC_SUBST(TESTSUITE_DIR)
+
+
 AC_OUTPUT
 
 #				 extensions/SMDBServer/Makefile
 #				 extensions/SMDBServer/libUniSet2SMDBServer.pc
+

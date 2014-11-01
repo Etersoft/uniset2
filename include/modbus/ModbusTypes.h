@@ -862,6 +862,11 @@ namespace ModbusRTU
         ModbusData data;     /*!< данные */
         ModbusCRC crc;
 
+        /*! получить значение команды */
+        inline bool cmd()
+        {
+            return (data & 0xFF00);
+        }
 
         // ------- from slave -------
         ForceSingleCoilRetMessage( ModbusMessage& m );

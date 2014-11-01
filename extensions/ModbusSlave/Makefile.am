@@ -35,3 +35,5 @@ pkgconfig_DATA 	= libUniSet2MBSlave.pc
 
 all-local:
 	ln -sf ../ModbusSlave/$(devel_include_HEADERS) ../include
+
+SUBDIRS=tests

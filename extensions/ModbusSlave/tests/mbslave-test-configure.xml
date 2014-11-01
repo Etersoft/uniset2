@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UNISETPLC xmlns:xi="http://www.w3.org/2001/XInclude">
+	<UserData/>
+	<!-- Общие(стартовые) параметры по UniSet -->
+	<UniSet>
+		<NameService host="localhost" port="2809"/>
+		<LocalNode name="LocalhostNode"/>
+		<RootSection name="UNISET_PLC"/>
+		<CountOfNet name="1"/>
+		<RepeatCount name="3"/>
+		<RepeatTimeoutMS name="50"/>
+		<WatchDogTime name="0"/>
+		<PingNodeTime name="0"/>
+		<AutoStartUpTime name="1"/>
+		<DumpStateTime name="10"/>
+		<SleepTickMS name="500"/>
+		<UniSetDebug levels="" name="ulog"/>
+		<ConfDir name="./"/>
+		<DataDir name="./"/>
+		<BinDir name="./"/>
+		<LogDir name="./"/>
+		<DocDir name="./"/>
+		<LockDir name="./"/>
+		<Services></Services>
+	</UniSet>
+	<dlog name="dlog"/>
+	
+	<settings>
+	    <SharedMemory name="SharedMemory" shmID="SharedMemory">
+            <History savetime="200">
+                <item filter="a1" fuse_id="AlarmFuse1_S" fuse_invert="1" id="1" size="30"/>
+                <item filter="a2" fuse_id="AlarmFuse2_AS" fuse_value="2" id="2" size="30"/>
+            </History>
+        </SharedMemory>
+        
+		<MBSlave1 addr="0x31" aftersend-pause="0" dev="/dev/ttyS0" levels="info,warn,crit" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600">
+			<filelist>
+				<!-- Список файлов разрешённых для передачи по modbus
+			directory - каталог где лежит файл. Можно не задавать
+				'ConfDir' - берётся из настроек (см. начало этого файла)
+				'DataDir' - берётся из настроек (см. начало этого файла)
+				'xxx'  - прямое указание каталога
+		-->
+				<item directory="ConfDir" id="1" name="configure.xml"/>
+				<item directory="ConfDir" id="2" name="VERSION"/>
+				<item directory="/tmp/" id="3" name="configure.xml.gz"/>
+				<item directory="ConfDir" id="4" name="SERIAL"/>
+			</filelist>
+			<MEI> 
+				<!-- ВНИМАНИЕ: должен заполняться в соответсвии со стандартом. ObjectID и DeviceID не случайны.. -->
+				<device id="0x01">
+					<object id="0" comm="VendorName">
+						<string value="etersoft"/>
+					</object>
+					<object id="1" comm="ProductCode">
+						<string value="uniset"/>
+					</object>
+					<object id="2" comm="MajorMinorRevision">
+						<string value="1.6"/>
+					</object>
+				</device>
+				<device id="0x02">
+					<object id="3" comm="VendorURL">
+						<string value="http://www.etersoft.ru"/>
+					</object>
+					<object id="4" comm="ProductName">
+						<string value="uniset"/>
+					</object>
+					<object id="5" comm="ModelName">
+						<string value="uniset:MBSlave"/>
+					</object>
+					<object id="6" comm="UserApplicationName">
+						<string value="MBSlave1"/>
+					</object>
+				</device>
+				<device id="0x03">
+					<object id="128" comm="private objects">
+						<string id="129" value="etersoft"/>
+						<string id="130" value="uniset"/>
+						<string id="131" value="1.6"/>
+						<string id="132" value="http://www.etersoft.ru"/>
+						<string id="133" value="MBSlave1"/>
+					</object>
+                </device>
+			</MEI>
+		</MBSlave1>
+	</settings>
+	<ObjectsMap idfromfile="1">
+		<!--
+	Краткие пояснения к полям секции 'sensors'
+	==========================================
+	node 		- узел на котором физически находится данный датчик
+	iotype 		- тип датчика
+	priority 	- приоритет сообщения об изменении данного датчика
+	textname 	- текстовое имя датчика
+-->
+		<nodes port="2809">
+			<item id="3000" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел"/>
+		</nodes>
+		<!-- ************************ Датчики ********************** -->
+		<sensors name="Sensors">
+
+			<item default="1" id="1000" mbs="1" mbreg="0x01" nbit="0" iotype="DI" name="TestReadCoil_S" textname="Тестовый регистр для ReadCoil"/>
+			<item default="1" id="1001" mbs="1" mbreg="0x01" nbit="1" iotype="DI" name="TestReadCoil_S" textname="Тестовый регистр для ReadCoil"/>
+			<item id="1002" mbs="1" mbreg="0x01" nbit="2" iotype="DI" name="TestReadCoil_S" textname="Тестовый регистр для ReadCoil"/>
+
+			<item default="10" id="1003" mbs="1" mbreg="10" iotype="AI" name="TestRead03" textname="Тестовый регистр для 0x03"/>
+			<item default="11" id="1004" mbs="1" mbreg="11" iotype="AI" name="TestRead03" textname="Тестовый регистр для 0x03"/>
+			<item default="-10" id="1005" mbs="1" mbreg="12" iotype="AI" name="TestRead03" textname="Тестовый регистр для 0x03"/>
+			<item default="-10000" id="1006" mbs="1" mbreg="13" iotype="AI" name="TestRead03" textname="Тестовый регистр для 0x03"/>
+			<item id="1007" mbs="1" mbreg="14" iotype="AI" name="TestRead05" textname="Тестовый регистр для 0x05"/>
+
+			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
+
+		</sensors>
+		<thresholds/>
+		<controllers name="Controllers">
+			<item id="5000" name="SharedMemory"/>
+		</controllers>
+		<!-- ******************* Идентификаторы сервисов ***************** -->
+		<services name="Services">
+		</services>
+		<!-- ******************* Идентификаторы объектов ***************** -->
+		<objects name="UniObjects">
+			<item id="6000" name="TestProc"/>
+			<item id="6004" name="MBSlave1"/>
+		</objects>
+	</ObjectsMap>
+	<messages idfromfile="1" name="messages"/>
+</UNISETPLC>
