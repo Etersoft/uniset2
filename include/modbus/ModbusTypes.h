@@ -208,6 +208,7 @@ namespace ModbusRTU
         ModbusByte mbyte();
 
         bool operator[]( const size_t i ){ return b[i]; }
+        void set( int n, bool s ){ b.set(n,s); }
 
         std::bitset<BitsPerByte> b;
     };
@@ -620,13 +621,13 @@ namespace ModbusRTU
          * \return FALSE - если НЕ удалось
         */
         bool addData( DataBits d );
-        
+
         // return number of bit
         // -1 - error
         int addBit( bool state );
-        
+
         bool setBit( int nbit, bool state );
-        
+
         inline int last(){ return quant; }
 
         /*! получение данных.
@@ -636,7 +637,7 @@ namespace ModbusRTU
          * \return FALSE - если НЕ найдено
         */
         bool getData( unsigned char dnum, DataBits& d );
-        
+
         bool getBit( unsigned char bnum );
 
         void clear();
@@ -730,7 +731,7 @@ namespace ModbusRTU
 
         bool addData( ModbusData d );
         void clear();
-        inline bool isFull()         
+        inline bool isFull()
         {
             return ( quant*sizeof(ModbusData) >= MAXLENPACKET );
         }
@@ -947,7 +948,7 @@ namespace ModbusRTU
         public ModbusHeader
     {
         ModbusData start;     /*!< записанный начальный адрес */
-        ModbusData data;     /*!< записанный начальный адрес */
+        ModbusData data;     /*!< записанные данные */
         ModbusCRC crc;
 
 

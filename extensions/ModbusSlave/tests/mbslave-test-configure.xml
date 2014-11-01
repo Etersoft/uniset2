@@ -100,15 +100,54 @@
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">
 
-			<item default="1" id="1000" mbs="1" mbreg="0x01" nbit="0" iotype="DI" name="TestReadCoil_S" textname="Тестовый регистр для ReadCoil"/>
-			<item default="1" id="1001" mbs="1" mbreg="0x01" nbit="1" iotype="DI" name="TestReadCoil_S" textname="Тестовый регистр для ReadCoil"/>
-			<item id="1002" mbs="1" mbreg="0x01" nbit="2" iotype="DI" name="TestReadCoil_S" textname="Тестовый регистр для ReadCoil"/>
+			<item default="1" id="1000" mbs="1" mbreg="1" iotype="DI" name="TestReadCoil1_S" textname="Тестовый регистр для ReadCoil"/>
+			<item default="1" id="1001" mbs="1" mbreg="2" iotype="DI" name="TestReadCoil2_S" textname="Тестовый регистр для ReadCoil"/>
+			<item id="1002" mbs="1" mbreg="3" iotype="DI" name="TestReadCoil3_S" textname="Тестовый регистр для ReadCoil"/>
 
-			<item default="10" id="1003" mbs="1" mbreg="10" iotype="AI" name="TestRead03" textname="Тестовый регистр для 0x03"/>
-			<item default="11" id="1004" mbs="1" mbreg="11" iotype="AI" name="TestRead03" textname="Тестовый регистр для 0x03"/>
-			<item default="-10" id="1005" mbs="1" mbreg="12" iotype="AI" name="TestRead03" textname="Тестовый регистр для 0x03"/>
-			<item default="-10000" id="1006" mbs="1" mbreg="13" iotype="AI" name="TestRead03" textname="Тестовый регистр для 0x03"/>
+			<item default="10" id="1003" mbs="1" mbreg="10" iotype="AI" name="TestRead03_1" textname="Тестовый регистр для 0x03"/>
+			<item default="11" id="1004" mbs="1" mbreg="11" iotype="AI" name="TestRead03_2" textname="Тестовый регистр для 0x03"/>
+			<item default="-10" id="1005" mbs="1" mbreg="12" iotype="AI" name="TestRead03_3" textname="Тестовый регистр для 0x03"/>
+			<item default="-10000" id="1006" mbs="1" mbreg="13" iotype="AI" name="TestRead03_4" textname="Тестовый регистр для 0x03"/>
 			<item id="1007" mbs="1" mbreg="14" iotype="AI" name="TestRead05" textname="Тестовый регистр для 0x05"/>
+			<item id="1008" mbs="1" mbreg="15" iotype="AI" name="TestRead06" textname="Тестовый регистр для 0x06"/>
+
+			<item id="1009" mbs="1" mbreg="16" nbit="0" iotype="DI" name="TestForceCoil0_S" textname="Тестовый регистр для force coil"/>
+			<item id="1010" mbs="1" mbreg="16" nbit="1" iotype="DI" name="TestForceCoil1_S" textname="Тестовый регистр для force coil"/>
+			<item id="1011" mbs="1" mbreg="16" nbit="2" iotype="DI" name="TestForceCoil2_S" textname="Тестовый регистр для force coil"/>
+			<item id="1012" mbs="1" mbreg="16" nbit="3" iotype="DI" name="TestForceCoil3_S" textname="Тестовый регистр для force coil"/>
+			<item id="1013" mbs="1" mbreg="16" nbit="4" iotype="DI" name="TestForceCoil4_S" textname="Тестовый регистр для force coil"/>
+			<item id="1014" mbs="1" mbreg="16" nbit="5" iotype="DI" name="TestForceCoil5_S" textname="Тестовый регистр для force coil"/>
+			<item id="1015" mbs="1" mbreg="16" nbit="6" iotype="DI" name="TestForceCoil6_S" textname="Тестовый регистр для force coil"/>
+			<item id="1016" mbs="1" mbreg="16" nbit="7" iotype="DI" name="TestForceCoil7_S" textname="Тестовый регистр для force coil"/>
+			<item id="1017" mbs="1" mbreg="17" nbit="0" iotype="DI" name="TestForceCoil8_S" textname="Тестовый регистр для force coil"/>
+			<item id="1018" mbs="1" mbreg="17" nbit="1" iotype="DI" name="TestForceCoil9_S" textname="Тестовый регистр для force coil"/>
+			<item id="1019" mbs="1" mbreg="17" nbit="2" iotype="DI" name="TestForceCoil10_S" textname="Тестовый регистр для force coil"/>
+			<item id="1020" mbs="1" mbreg="17" nbit="3" iotype="DI" name="TestForceCoil11_S" textname="Тестовый регистр для force coil"/>
+			<item id="1021" mbs="1" mbreg="17" nbit="4" iotype="DI" name="TestForceCoil12_S" textname="Тестовый регистр для force coil"/>
+			<item id="1022" mbs="1" mbreg="17" nbit="5" iotype="DI" name="TestForceCoil13_S" textname="Тестовый регистр для force coil"/>
+			<item id="1023" mbs="1" mbreg="17" nbit="6" iotype="DI" name="TestForceCoil14_S" textname="Тестовый регистр для force coil"/>
+			<item id="1024" mbs="1" mbreg="17" nbit="7" iotype="DI" name="TestForceCoil15_S" textname="Тестовый регистр для force coil"/>
+
+			<item id="1025" mbs="1" mbreg="18" iotype="AI" name="TestWrite10_S" textname="Тестовый регистр для 0x10"/>
+			<item id="1026" mbs="1" mbreg="19" iotype="AI" name="TestWrite10_S" textname="Тестовый регистр для 0x10"/>
+			<item id="1027" mbs="1" mbreg="20" iotype="DI" name="TestWrite10_S" textname="Тестовый регистр для 0x10"/>
+			<item id="1028" iotype="DI" name="TestWrite10_S" textname="Тестовый регистр для 0x10 (несуществующий)"/>
+
+			
+			<!-- vtypes test -->
+			<item id="2001" mbs="1" mbreg="100" iotype="AI" vtype="I2" name="TestVtype1" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2002" mbs="1" mbreg="102" iotype="AI" vtype="I2r" name="TestVtype2" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2003" mbs="1" mbreg="104" iotype="AI" vtype="U2" name="TestVtype3" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2004" mbs="1" mbreg="106" iotype="AI" vtype="U2r" name="TestVtype4" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2005" mbs="1" mbreg="108" iotype="AI" vtype="byte" nbyte="1" name="TestVtype5" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2006" mbs="1" mbreg="108" iotype="AI" vtype="byte" nbyte="2" name="TestVtype6" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2007" mbs="1" mbreg="110" iotype="AI" vtype="F2" name="TestVtype7" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2008" mbs="1" mbreg="112" iotype="AI" vtype="F2r" name="TestVtype8" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2009" mbs="1" mbreg="110" iotype="AI" vtype="F2" name="TestVtype9" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2010" mbs="1" mbreg="114" iotype="AI" vtype="F4" name="TestVtype10" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2011" mbs="1" mbreg="118" iotype="AI" vtype="signed" name="TestVtype11" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2012" mbs="1" mbreg="119" iotype="AI" vtype="unsigned" name="TestVtype12" textname="Тестовый регистр для проверки vtype"/>
+			
 
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
 
