@@ -1,0 +1,3 @@
+AT_SETUP([LogicProcessor tests])
+AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/LogicProcessor/tests tests],[0],[ignore],[ignore])
+AT_CLEANUP

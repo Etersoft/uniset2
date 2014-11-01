@@ -43,5 +43,5 @@ pkgconfig_DATA 	= libUniSet2LogicProcessor.pc
 all-local:
 	ln -sf ../LogicProcessor/$(devel_include_HEADERS) ../include
 
-SUBDIRS=unit-tests
+SUBDIRS=tests
 endif

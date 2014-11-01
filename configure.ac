@@ -16,7 +16,7 @@ dnl Initialize test suite
 AC_CONFIG_TESTDIR(testsuite)
 AC_CONFIG_TESTDIR(tests)
 AC_CONFIG_TESTDIR(extensions/tests)
-AC_CONFIG_TESTDIR(extensions/LogicProcessor/unit-tests)
+AC_CONFIG_TESTDIR(extensions/LogicProcessor/tests)
 
 TESTSUITE_DIR="\$(top_builddir)/testsuite"
 AC_SUBST(TESTSUITE_DIR)
@@ -287,7 +287,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/ModbusSlave/libUniSet2MBSlave.pc
 				 extensions/LogicProcessor/Makefile
 				 extensions/LogicProcessor/libUniSet2LogicProcessor.pc
-				 extensions/LogicProcessor/unit-tests/Makefile
+				 extensions/LogicProcessor/tests/Makefile
 				 extensions/SMViewer/Makefile
 				 extensions/UniNetwork/Makefile
 				 extensions/UniNetwork/libUniSet2Network.pc
