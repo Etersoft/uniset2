@@ -1,6 +1,7 @@
 #include <catch.hpp>
 // -----------------------------------------------------------------------------
 #include <time.h>
+#include <limits>
 #include "MBSlave.h"
 #include "UniSetTypes.h"
 #include "modbus/ModbusTCPMaster.h"
@@ -420,6 +421,40 @@ TEST_CASE("(0x10): write register outputs or memories","[modbus][mbslave][mbtcps
 			REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
 		}
 	}
+	SECTION("Test: write bad format packet..(incorrect data count)")
+	{
+		ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG+20000);
+		msg.addData(10);
+		msg.addData(11);
+		msg.addData(12);
+		msg.quant-=1;
+		
+		try
+		{
+			mb->write10(msg);
+		}
+		catch( ModbusRTU::mbException& ex )
+		{
+			REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
+		}
+	}
+	SECTION("Test: write bad format packet..(incorrect size of bytes)")
+	{
+		ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG+20000);
+		msg.addData(10);
+		msg.addData(11);
+		msg.addData(12);
+		msg.bcnt -= 1;
+		
+		try
+		{
+			mb->write10(msg);
+		}
+		catch( ModbusRTU::mbException& ex )
+		{
+			REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
+		}
+	}
 }
 
 TEST_CASE("Read(0x03,0x04): vtypes..","[modbus][mbslave][mbtcpslave]")
@@ -541,10 +576,144 @@ TEST_CASE("Read(0x03,0x04): vtypes..","[modbus][mbslave][mbtcpslave]")
 	}
 }
 
+// -------------------------------------------------------------
+static void test_write10_I2( int val )
+{
+	using namespace VTypes;
+	ModbusRTU::ModbusData tREG = 100;
+    ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
+	I2 tmp(val);
+	msg.addData( tmp.raw.v[0] );
+	msg.addData( tmp.raw.v[1] );
+	ModbusRTU::WriteOutputRetMessage  ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == I2::wsize() );
+	REQUIRE( ui->getValue(2001) == val );
+}
+static void test_write10_I2r( int val )
+{
+	using namespace VTypes;
+	ModbusRTU::ModbusData tREG = 102;
+    ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
+	I2r tmp(val);
+	msg.addData( tmp.raw_backorder.v[0] );
+	msg.addData( tmp.raw_backorder.v[1] );
+	ModbusRTU::WriteOutputRetMessage  ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == I2r::wsize() );
+	REQUIRE( ui->getValue(2002) == val );
+}
+static void test_write10_U2( unsigned int val )
+{
+	using namespace VTypes;
+	ModbusRTU::ModbusData tREG = 104;
+    ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
+	U2 tmp(val);
+	msg.addData( tmp.raw.v[0] );
+	msg.addData( tmp.raw.v[1] );
+	ModbusRTU::WriteOutputRetMessage  ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == U2::wsize() );
+	REQUIRE( (unsigned int)ui->getValue(2003) == val );
+}
+static void test_write10_U2r( unsigned int val )
+{
+	using namespace VTypes;
+	ModbusRTU::ModbusData tREG = 106;
+    ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
+	U2r tmp(val);
+	msg.addData( tmp.raw_backorder.v[0] );
+	msg.addData( tmp.raw_backorder.v[1] );
+	ModbusRTU::WriteOutputRetMessage  ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == U2r::wsize() );
+	REQUIRE( (unsigned int)ui->getValue(2004) == val );
+}
+static void test_write10_F2( float val )
+{
+	using namespace VTypes;
+	ModbusRTU::ModbusData tREG = 110;
+    ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
+	F2 tmp(val);
+	msg.addData( tmp.raw.v[0] );
+	msg.addData( tmp.raw.v[1] );
+	ModbusRTU::WriteOutputRetMessage  ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == F2::wsize() );
+
+	IOController_i::SensorInfo si;
+	si.id = 2007;
+	si.node = conf->getLocalNode();
+	IOController_i::CalibrateInfo cal = ui->getCalibrateInfo(si);
+	float fval = (float)ui->getValue(si.id) / pow10(cal.precision);
+
+	REQUIRE( fval == val );
+}
+static void test_write10_F2r( float val )
+{
+	using namespace VTypes;
+	ModbusRTU::ModbusData tREG = 112;
+    ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
+	F2r tmp(val);
+	msg.addData( tmp.raw_backorder.v[0] );
+	msg.addData( tmp.raw_backorder.v[1] );
+	ModbusRTU::WriteOutputRetMessage  ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == F2r::wsize() );
+
+	IOController_i::SensorInfo si;
+	si.id = 2008;
+	si.node = conf->getLocalNode();
+	IOController_i::CalibrateInfo cal = ui->getCalibrateInfo(si);
+	float fval = (float)ui->getValue(si.id) / pow10(cal.precision);
+
+	REQUIRE( fval == val );
+}
+
 TEST_CASE("Write(0x10): vtypes..","[modbus][mbslave][mbtcpslave]")
 {
+	using namespace VTypes;
 	InitTest();
-	FAIL("Tests for '0x10 and vtypes' not yet..");
+
+	SECTION("Test: write vtype 'I2'")
+	{
+		test_write10_I2(numeric_limits<int>::max());
+		test_write10_I2(0);
+		test_write10_I2(numeric_limits<int>::min());
+	}
+	SECTION("Test: write vtype 'I2r'")
+	{
+		test_write10_I2r(numeric_limits<int>::max());
+		test_write10_I2r(0);
+		test_write10_I2r(numeric_limits<int>::min());
+	}
+	SECTION("Test: write vtype 'U2'")
+	{
+		test_write10_U2(numeric_limits<unsigned int>::max());
+		test_write10_U2(0);
+		test_write10_U2(numeric_limits<unsigned int>::min());
+	}
+	SECTION("Test: write vtype 'U2r'")
+	{
+		test_write10_U2r(numeric_limits<unsigned int>::max());
+		test_write10_U2r(0);
+		test_write10_U2r(numeric_limits<unsigned int>::min());
+	}
+	SECTION("Test: write vtype 'F2'")
+	{
+		test_write10_F2(-0.05);
+		test_write10_F2(0);
+		test_write10_F2(100000.23);
+	}
+	SECTION("Test: write vtype 'F2r'")
+	{
+		test_write10_F2r(-0.05);
+		test_write10_F2r(0);
+		test_write10_F2r(100000.23);
+	}
+	SECTION("Test: write vtype 'F4'")
+	{
+	}
 }
 
 #if 0
