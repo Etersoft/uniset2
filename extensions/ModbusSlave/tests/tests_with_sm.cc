@@ -34,11 +34,13 @@ int main(int argc, char* argv[] )
 		uniset_init(argc,argv);
         conf->initDebug(dlog,"dlog");
         
+        bool apart = findArgParam("--apart",argc,argv) != -1;
+        
         SharedMemory* shm = SharedMemory::init_smemory(argc, argv);
         if( !shm )
             return 1;
 
-        MBSlave* mbs = MBSlave::init_mbslave(argc,argv,shm->getId(),shm);
+        MBSlave* mbs = MBSlave::init_mbslave(argc,argv,shm->getId(), (apart ? nullptr : shm ));
         if( !mbs )
             return 1;
 

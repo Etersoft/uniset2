@@ -17,7 +17,7 @@ $(top_builddir)/extensions/ModbusSlave/libUniSet2MBSlave.la:
 
 include $(top_builddir)/testsuite/testsuite-common.mk
 
-check-local: atconfig package.m4 $(TESTSUITE)
+check-local: atconfig package.m4 $(TESTSUITE) mbslave-tests.at
 	$(SHELL) $(TESTSUITE) $(TESTSUITEFLAGS)
     
 clean-local:
