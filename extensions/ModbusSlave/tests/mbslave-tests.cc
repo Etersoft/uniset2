@@ -574,6 +574,38 @@ TEST_CASE("Read(0x03,0x04): vtypes..","[modbus][mbslave][mbtcpslave]")
 			REQUIRE( (float)f4 == 2.5 );
 		}
 	}
+	SECTION("Test: read vtype 'Byte N1'")
+	{
+		ModbusRTU::ModbusData tREG = 108;
+		SECTION("Test: read03")
+		{
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,Byte::wsize());
+			Byte b(ret.data[0]);
+			REQUIRE(  (unsigned short)b == 200 );
+		}
+		SECTION("Test: read04")
+		{
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,Byte::wsize());
+			Byte b(ret.data[0]);
+			REQUIRE(  (unsigned short)b == 200 );
+		}
+	}
+	SECTION("Test: read vtype 'Byte N2'")
+	{
+		ModbusRTU::ModbusData tREG = 109;
+		SECTION("Test: read03")
+		{
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,Byte::wsize());
+			Byte b(ret.data[0]);
+			REQUIRE(  (unsigned short)b == 200 );
+		}
+		SECTION("Test: read04")
+		{
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,Byte::wsize());
+			Byte b(ret.data[0]);
+			REQUIRE(  (unsigned short)b == 200 );
+		}
+	}
 }
 
 // -------------------------------------------------------------
@@ -716,6 +748,32 @@ static void test_write10_F4prec( const float& val )
 
 	REQUIRE( fval == val );
 }
+static void test_write10_byte1( unsigned char val )
+{
+	using namespace VTypes;
+	ModbusRTU::ModbusData tREG = 108;
+    ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
+	Byte tmp(val,0);
+	msg.addData( (unsigned short)tmp );
+
+	ModbusRTU::WriteOutputRetMessage  ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == Byte::wsize() );
+	REQUIRE( ui->getValue(2005) == (long)val );
+}
+static void test_write10_byte2( unsigned char val )
+{
+	using namespace VTypes;
+	ModbusRTU::ModbusData tREG = 109;
+    ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
+	Byte tmp(0,val);
+	msg.addData( (unsigned short)tmp );
+
+	ModbusRTU::WriteOutputRetMessage  ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == Byte::wsize() );
+	REQUIRE( ui->getValue(2006) == (long)val );
+}
 
 TEST_CASE("Write(0x10): vtypes..","[modbus][mbslave][mbtcpslave]")
 {
@@ -769,6 +827,22 @@ TEST_CASE("Write(0x10): vtypes..","[modbus][mbslave][mbtcpslave]")
 		test_write10_F4prec(15.55555);
 		test_write10_F4prec(0);
 		test_write10_F4prec(-15.00001);
+	}
+	SECTION("Test: write vtype 'Byte N1'")
+	{
+		test_write10_byte1(numeric_limits<unsigned char>::max());
+		test_write10_byte1(0);
+		test_write10_byte1(numeric_limits<unsigned char>::min());
+		test_write10_byte1(numeric_limits<char>::max());
+		test_write10_byte1(numeric_limits<char>::min());
+	}
+	SECTION("Test: write vtype 'Byte N2'")
+	{
+		test_write10_byte2(numeric_limits<unsigned char>::max());
+		test_write10_byte2(0);
+		test_write10_byte2(numeric_limits<unsigned char>::min());
+		test_write10_byte2(numeric_limits<char>::max());
+		test_write10_byte2(numeric_limits<char>::min());
 	}
 }
 

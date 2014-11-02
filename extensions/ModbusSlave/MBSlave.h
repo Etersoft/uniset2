@@ -50,6 +50,7 @@ class MBSlave:
             AccessMode amode;
             VTypes::VType vtype;    /*!< type of value */
             int wnum;               /*!< номер слова (для типов с размеров больше 2х байт */
+            int nbyte;              /*!< номер байта, который надо "сохранить" из "пришедщего в запросе" слова. [1-2] */
             bool rawdata;           /*!< флаг, что в SM просто сохраняются 4-байта (актуально для типа F4)*/
 
             IOProperty():
@@ -57,6 +58,7 @@ class MBSlave:
                 amode(amRW),
                 vtype(VTypes::vtUnknown),
                 wnum(0),
+                nbyte(0),
                 rawdata(false)
             {}
 

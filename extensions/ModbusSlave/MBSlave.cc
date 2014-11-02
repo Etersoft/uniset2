@@ -847,11 +847,31 @@ bool MBSlave::initItem( UniXML_iterator& it )
         if( v == VTypes::vtUnknown )
         {
             dcrit << myname << "(initItem): Unknown rtuVType=" << vt << " for "
-                  << IOBase::initProp(it,"name",prop_prefix,false)
+                  << it.getProp("name")
                   << endl;
 
             return false;
         }
+        else if( v == VTypes::vtByte )
+        {
+            p.nbyte = IOBase::initIntProp(it,"nbyte",prop_prefix,false);
+            if( p.nbyte <=0 )
+            {
+	            dcrit << myname << "(initItem): Unknown nbyte='' for "
+    	              << it.getProp("name")
+        	          << endl;
+    	        return false;
+            }
+			else if( p.nbyte > 2 )
+			{
+	            dcrit << myname << "(initItem): BAD nbyte='" << p.nbyte << "' for "
+    	              << it.getProp("name")
+    	              << ". Must be [1,2]."
+        	          << endl;
+				return false;
+			}
+		}
+
         p.vtype = v;
         p.wnum = 0;
         for( auto i=0; i<VTypes::wsize(p.vtype); i++ )
@@ -1207,12 +1227,10 @@ ModbusRTU::mbErrCode MBSlave::real_write_it( IOMap::iterator& it, ModbusRTU::Mod
 			delete[] d;
 			IOBase::processingFasAI( p, (float)f4, shm, force );
 		}
-/*
         else if( p->vtype == VTypes::vtByte )
         {
-            VTypes::Byte b(r->mbval);
+            VTypes::Byte b(mbval);
             IOBase::processingAsAI( p, b.raw.b[p->nbyte-1], shm, force );
-            return;
         }
 /*
         if( p->stype == UniversalIO::DI ||
@@ -1227,7 +1245,6 @@ ModbusRTU::mbErrCode MBSlave::real_write_it( IOMap::iterator& it, ModbusRTU::Mod
             IOBase::processingAsAI( p, val, shm, force );
         }
 */
-        i++;
         pingOK = true;
         return ModbusRTU::erNoError;
     }

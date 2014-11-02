@@ -140,7 +140,7 @@
 			<item default="4294967295" id="2003" mbs="1" mbreg="104" iotype="AI" vtype="U2" name="TestVtype3" textname="Тестовый регистр для проверки vtype"/>
 			<item default="4294967295" id="2004" mbs="1" mbreg="106" iotype="AI" vtype="U2r" name="TestVtype4" textname="Тестовый регистр для проверки vtype"/>
 			<item default="200" id="2005" mbs="1" mbreg="108" iotype="AI" vtype="byte" nbyte="1" name="TestVtype5" textname="Тестовый регистр для проверки vtype"/>
-			<item default="200" id="2006" mbs="1" mbreg="108" iotype="AI" vtype="byte" nbyte="2" name="TestVtype6" textname="Тестовый регистр для проверки vtype"/>
+			<item default="200" id="2006" mbs="1" mbreg="109" iotype="AI" vtype="byte" nbyte="2" name="TestVtype6" textname="Тестовый регистр для проверки vtype"/>
 			<item id="2007" default="250" precision="2" mbs="1" mbreg="110" iotype="AI" vtype="F2" name="TestVtype7" textname="Тестовый регистр для проверки vtype"/>
 			<item id="2008" default="250" precision="2" mbs="1" mbreg="112" iotype="AI" vtype="F2r" name="TestVtype8" textname="Тестовый регистр для проверки vtype"/>
 			<item id="2009" default="250000" precision="5" mbs="1" mbreg="114" iotype="AI" vtype="F4" name="TestVtype9" textname="Тестовый регистр для проверки vtype"/>
