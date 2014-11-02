@@ -420,26 +420,67 @@ TEST_CASE("(0x10): write register outputs or memories","[modbus][mbslave][mbtcps
 			REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
 		}
 	}
-	SECTION("Test: limit the amount of data verification")
-	{
-		ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
-		for( int i=0; i<ModbusRTU::MAXDATALEN; i++ )
-			msg.addData(10+i);
-		
-		CHECK_FALSE( msg.isFull() );
-		msg.addData(1);
-		CHECK( msg.isFull() );
-	}
 }
 
 TEST_CASE("Read(0x03,0x04): vtypes..","[modbus][mbslave][mbtcpslave]")
 {
+	using namespace VTypes;
 	InitTest();
+
+	SECTION("Test: read vtype 'I2'")
+	{
+		ModbusRTU::ModbusData tREG = 100;
+		SECTION("Test: read03")
+		{
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,2);
+			I2 i2(ret.data,ret.count);
+			REQUIRE( (int)i2 == -100000 );
+		}
+		SECTION("Test: read04")
+		{
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,2);
+			I2 i2(ret.data,ret.count);
+			REQUIRE( (int)i2 == -100000 );
+		}
+	}
+	SECTION("Test: read vtype 'I2r'")
+	{
+		ModbusRTU::ModbusData tREG = 102;
+		SECTION("Test: read03")
+		{
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,2);
+			I2r i2r(ret.data,ret.count);
+			REQUIRE( (int)i2r == -100000 );
+		}
+		SECTION("Test: read04")
+		{
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,2);
+			I2r i2r(ret.data,ret.count);
+			REQUIRE( (int)i2r == -100000 );
+		}
+	}
+	SECTION("Test: read vtype 'U2'")
+	{
+		ModbusRTU::ModbusData tREG = 101;
+		SECTION("Test: read03")
+		{
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,2);
+			U2 u2(ret.data,ret.count);
+			REQUIRE( (unsigned int)u2 == 4294967295 );
+		}
+		SECTION("Test: read04")
+		{
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,2);
+			U2 u2(ret.data,ret.count);
+			REQUIRE( (unsigned int)u2 == 4294967295 );
+		}
+	}
 }
 
 TEST_CASE("Write(0x10): vtypes..","[modbus][mbslave][mbtcpslave]")
 {
 	InitTest();
+	FAIL("Tests for '0x10 and vtypes' not yet..");
 }
 
 #if 0

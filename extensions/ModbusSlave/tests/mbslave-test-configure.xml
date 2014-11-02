@@ -135,19 +135,18 @@
 
 			
 			<!-- vtypes test -->
-			<item id="2001" mbs="1" mbreg="100" iotype="AI" vtype="I2" name="TestVtype1" textname="Тестовый регистр для проверки vtype"/>
-			<item id="2002" mbs="1" mbreg="102" iotype="AI" vtype="I2r" name="TestVtype2" textname="Тестовый регистр для проверки vtype"/>
-			<item id="2003" mbs="1" mbreg="104" iotype="AI" vtype="U2" name="TestVtype3" textname="Тестовый регистр для проверки vtype"/>
-			<item id="2004" mbs="1" mbreg="106" iotype="AI" vtype="U2r" name="TestVtype4" textname="Тестовый регистр для проверки vtype"/>
-			<item id="2005" mbs="1" mbreg="108" iotype="AI" vtype="byte" nbyte="1" name="TestVtype5" textname="Тестовый регистр для проверки vtype"/>
-			<item id="2006" mbs="1" mbreg="108" iotype="AI" vtype="byte" nbyte="2" name="TestVtype6" textname="Тестовый регистр для проверки vtype"/>
+			<item default="-100000" id="2001" mbs="1" mbreg="100" iotype="AI" vtype="I2" name="TestVtype1" textname="Тестовый регистр для проверки vtype"/>
+			<item default="-100000" id="2002" mbs="1" mbreg="102" iotype="AI" vtype="I2r" name="TestVtype2" textname="Тестовый регистр для проверки vtype"/>
+			<item default="4294967295" id="2003" mbs="1" mbreg="104" iotype="AI" vtype="U2" name="TestVtype3" textname="Тестовый регистр для проверки vtype"/>
+			<item default="4294967295" id="2004" mbs="1" mbreg="106" iotype="AI" vtype="U2r" name="TestVtype4" textname="Тестовый регистр для проверки vtype"/>
+			<item default="200" id="2005" mbs="1" mbreg="108" iotype="AI" vtype="byte" nbyte="1" name="TestVtype5" textname="Тестовый регистр для проверки vtype"/>
+			<item default="200" id="2006" mbs="1" mbreg="108" iotype="AI" vtype="byte" nbyte="2" name="TestVtype6" textname="Тестовый регистр для проверки vtype"/>
 			<item id="2007" mbs="1" mbreg="110" iotype="AI" vtype="F2" name="TestVtype7" textname="Тестовый регистр для проверки vtype"/>
 			<item id="2008" mbs="1" mbreg="112" iotype="AI" vtype="F2r" name="TestVtype8" textname="Тестовый регистр для проверки vtype"/>
 			<item id="2009" mbs="1" mbreg="110" iotype="AI" vtype="F2" name="TestVtype9" textname="Тестовый регистр для проверки vtype"/>
 			<item id="2010" mbs="1" mbreg="114" iotype="AI" vtype="F4" name="TestVtype10" textname="Тестовый регистр для проверки vtype"/>
-			<item id="2011" mbs="1" mbreg="118" iotype="AI" vtype="signed" name="TestVtype11" textname="Тестовый регистр для проверки vtype"/>
-			<item id="2012" mbs="1" mbreg="119" iotype="AI" vtype="unsigned" name="TestVtype12" textname="Тестовый регистр для проверки vtype"/>
-			
+			<item default="-100" id="2011" mbs="1" mbreg="118" iotype="AI" vtype="signed" name="TestVtype11" textname="Тестовый регистр для проверки vtype"/>
+			<item default="65534" id="2012" mbs="1" mbreg="119" iotype="AI" vtype="unsigned" name="TestVtype12" textname="Тестовый регистр для проверки vtype"/>
 
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
 

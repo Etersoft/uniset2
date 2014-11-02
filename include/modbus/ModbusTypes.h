@@ -733,7 +733,7 @@ namespace ModbusRTU
         void clear();
         inline bool isFull()
         {
-            return ( quant*sizeof(ModbusData) >= MAXLENPACKET );
+            return ( quant >= MAXDATALEN );
         }
 
         // ------- from master -------    
@@ -1014,18 +1014,19 @@ namespace ModbusRTU
         /*! очистка данных */
         void clear();
         
-        /*! проверка на переполнение */    
-        inline bool isFull()         
+        /*! проверка на переполнение */
+        inline bool isFull()
         {
-            return ( sizeof(subf)+count*sizeof(ModbusData) >= MAXLENPACKET );
+			// (1)subf + data count 
+            return ( 1+count >= MAXDATALEN );
         }
 
         /*! размер данных(после заголовка) у данного типа сообщения */
         size_t szData();
-        
-        /*! преобразование для посылки в сеть */    
+
+        /*! преобразование для посылки в сеть */
         ModbusMessage transport_msg();
-        
+
         // Это поле не входит в стандарт modbus
         // оно вспомогательное и игнорируется при 
         // преобразовании в ModbusMessage.
@@ -1209,11 +1210,11 @@ namespace ModbusRTU
 
         /*! очистка данных */
         void clear();
-        
-        /*! проверка на переполнение */    
-        inline bool isFull()         
+
+        /*! проверка на переполнение */
+        inline bool isFull()
         {
-            return ( count*sizeof(ModbusData) >= MAXLENPACKET );
+            return ( count >= MAXDATALEN );
         }
 
         /*! размер данных(после заголовка) у данного типа сообщения */
@@ -1357,7 +1358,7 @@ namespace ModbusRTU
         void clear();
         
         /*! проверка на переполнение */    
-        inline bool isFull()         
+        inline bool isFull()
             { return ( count >= sizeof(data) ); }
 
         /*! размер данных(после заголовка) у данного типа сообщения */
