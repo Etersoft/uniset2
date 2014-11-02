@@ -49,7 +49,8 @@ static const int NoSafety       = -1;
                 front(false),
                 front_type(ftUnknown),
                 front_prev_state(false),
-                front_state(false)
+                front_state(false),
+                rawdata(false)
             {
                 si.id = UniSetTypes::DefaultObjectId;
                 si.node = UniSetTypes::DefaultObjectId;
@@ -118,6 +119,8 @@ static const int NoSafety       = -1;
             FrontType front_type;
             bool front_prev_state;
             bool front_state;
+
+            bool rawdata; // флаг для сохранения данный в таком виде в каком они пришли (4байта просто копируются в long). Актуально для Vtypes::F4.
 
             IOController::IOStateList::iterator ioit;
             UniSetTypes::uniset_rwmutex val_lock;     /*!< блокировка на время "работы" со значением */

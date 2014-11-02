@@ -136,27 +136,29 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
                 val = it->df.filterRC(val);
         }
 
-        if( it->cdiagram )    // задана специальная калибровочная диаграмма
-        {
-            if( it->craw != val )
-            {
-                it->craw = val;
-                val = it->cdiagram->getValue(val);
-                it->cprev = val;
-            }
-            else
-                val = it->cprev;        // просто передаём предыдущее значение
-        }
-        else
-        {
-            IOController_i::CalibrateInfo* cal( &(it->cal) );
-            if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
-                val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
-        }
-
-        if( !it->noprecision && it->cal.precision > 0 )
-            val *= lround(pow10(it->cal.precision));
-
+		if( !it->rawdata )
+		{
+			if( it->cdiagram )    // задана специальная калибровочная диаграмма
+			{
+				if( it->craw != val )
+				{
+					it->craw = val;
+					val = it->cdiagram->getValue(val);
+					it->cprev = val;
+				}
+				else
+					val = it->cprev;        // просто передаём предыдущее значение
+			}
+			else
+			{
+				IOController_i::CalibrateInfo* cal( &(it->cal) );
+				if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
+					val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
+			}
+	
+			if( !it->noprecision && it->cal.precision > 0 )
+				val *= lround(pow10(it->cal.precision));
+		}
     // если предыдущее значение "обрыв",
     // то сбрасываем признак
     {
@@ -176,7 +178,12 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 {
     long val = lroundf(fval);
 
-    if( it->cal.precision > 0 )
+	if( it->rawdata )
+	{
+		val = 0;
+		memcpy(&val,&fval, std::min(sizeof(val),sizeof(fval)));
+	}
+	else if( it->cal.precision > 0 )
         val = lroundf( fval * pow10(it->cal.precision) );
 
     // проверка на обрыв
@@ -199,9 +206,12 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
             val = it->df.filterRC(val);
         }
 
-        IOController_i::CalibrateInfo* cal( &(it->cal) );
-        if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
-            val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
+        if( !it->rawdata )
+        {
+            IOController_i::CalibrateInfo* cal( &(it->cal) );
+            if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
+                val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
+        }
     }
 
     // если предыдущее значение "обрыв",
@@ -251,6 +261,9 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
         val = shm->localGetValue(it->ioit,it->si.id);
         it->value = val;
     }
+
+    if( it->rawdata )
+        return val;
 
     if( it->stype == UniversalIO::AO ||
         it->stype == UniversalIO::AI )
@@ -307,6 +320,13 @@ float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
     {
         val = shm->localGetValue(it->ioit,it->si.id);
         it->value = val;
+    }
+
+    if( it->rawdata )
+    {
+        float fval=0;
+		memcpy(&fval,&val, std::min(sizeof(val),sizeof(fval)));
+        return fval;
     }
 
     if( it->stype == UniversalIO::AO ||
@@ -437,6 +457,7 @@ bool IOBase::initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm, const s
     b->noprecision    = initIntProp(it,"noprecision",prefix,init_prefix_only);
     b->value    = b->defval;
     b->breaklim = initIntProp(it,"breaklim",prefix,init_prefix_only);
+	b->rawdata = initIntProp(it,"rawdata",prefix,init_prefix_only);
 
     long msec = initIntProp(it,"debouncedelay",prefix,init_prefix_only, UniSetTimer::WaitUpTime);
     b->ptDebounce.setTiming(msec);

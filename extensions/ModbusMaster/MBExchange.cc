@@ -1882,16 +1882,6 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
         return true;
     }
 
-    if( IOBase::initIntProp(it,"rawdata",prefix,false) )
-    {
-        p.cal.minRaw = 0;
-        p.cal.maxRaw = 0;
-        p.cal.minCal = 0;
-        p.cal.maxCal = 0;
-        p.cal.precision = 0;
-        p.cdiagram = 0;
-    }
-
     string sbit(IOBase::initProp(it,"nbit",prefix,false));
     if( !sbit.empty() )
     {

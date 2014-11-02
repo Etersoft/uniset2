@@ -49,13 +49,15 @@ class MBSlave:
             ModbusRTU::ModbusData mbreg;    /*!< регистр */
             AccessMode amode;
             VTypes::VType vtype;    /*!< type of value */
-            int wnum;                /*!< номер слова (для типов с размеров больше 2х байт */
+            int wnum;               /*!< номер слова (для типов с размеров больше 2х байт */
+            bool rawdata;           /*!< флаг, что в SM просто сохраняются 4-байта (актуально для типа F4)*/
 
             IOProperty():
                 mbreg(0),
                 amode(amRW),
                 vtype(VTypes::vtUnknown),
-                wnum(0)
+                wnum(0),
+                rawdata(false)
             {}
 
             friend std::ostream& operator<<( std::ostream& os, IOProperty& p );

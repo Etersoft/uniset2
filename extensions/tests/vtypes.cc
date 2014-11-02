@@ -197,22 +197,40 @@ TEST_CASE("VTypes: F4","[vtypes][F4]")
 	}
 	SECTION("'float' constructor")
 	{
-		F4 v( numeric_limits<float>::max() );
-		REQUIRE( (float)v == numeric_limits<float>::max() );
+		{
+			F4 v( numeric_limits<float>::max() );
+			REQUIRE( (float)v == numeric_limits<float>::max() );
+		}
+		{
+	
+			F4 v( numeric_limits<float>::min() );
+			REQUIRE( (float)v == numeric_limits<float>::min() );
+		}
 	}
 	SECTION("Modbus constructor")
 	{
-		float f = 2^32;
-		ModbusRTU::ModbusData data[4];
-		memcpy(data,&f,sizeof(data));
-		F4 v1(data,4);
-		REQUIRE( (float)v1 == f );
-
-		ModbusRTU::ModbusData data5[5];
-		memset(data5,0,sizeof(data5));
-		memcpy(data5,&f,4*sizeof(ModbusRTU::ModbusData));
-		F4 v2(data5,5);
-		REQUIRE( (float)v2 == f );
+		{
+			float f = numeric_limits<float>::max();
+			ModbusRTU::ModbusData data[4];
+			memcpy(data,&f,sizeof(data));
+			F4 v1(data,4);
+			REQUIRE( (float)v1 == f );
+		}
+		{
+			float f = numeric_limits<float>::max();
+			ModbusRTU::ModbusData data5[5];
+			memset(data5,0,sizeof(data5));
+			memcpy(data5,&f,4*sizeof(ModbusRTU::ModbusData));
+			F4 v2(data5,5);
+			REQUIRE( (float)v2 == f );
+		}
+		{
+			float f = numeric_limits<float>::min();
+			ModbusRTU::ModbusData data[4];
+			memcpy(data,&f,sizeof(data));
+			F4 v1(data,4);
+			REQUIRE( (float)v1 == f );
+		}
 	}
 }
 

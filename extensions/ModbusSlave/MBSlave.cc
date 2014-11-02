@@ -812,16 +812,6 @@ bool MBSlave::initItem( UniXML_iterator& it )
     if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,prop_prefix,false,&dlog,myname) )
         return false;
 
-    if( IOBase::initIntProp(it,"rawdata",prefix,false) )
-    {
-        p.cal.minRaw = 0;
-        p.cal.maxRaw = 0;
-        p.cal.minCal = 0;
-        p.cal.maxCal = 0;
-        p.cal.precision = 0;
-        p.cdiagram = 0;
-    }
-
     if( mbregFromID )
         p.mbreg = p.si.id;
     else

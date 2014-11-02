@@ -629,7 +629,7 @@ static void test_write10_U2r( unsigned int val )
 	REQUIRE( ret.quant == U2r::wsize() );
 	REQUIRE( (unsigned int)ui->getValue(2004) == val );
 }
-static void test_write10_F2( float val )
+static void test_write10_F2( const float& val )
 {
 	using namespace VTypes;
 	ModbusRTU::ModbusData tREG = 110;
@@ -649,7 +649,7 @@ static void test_write10_F2( float val )
 
 	REQUIRE( fval == val );
 }
-static void test_write10_F2r( float val )
+static void test_write10_F2r( const float& val )
 {
 	using namespace VTypes;
 	ModbusRTU::ModbusData tREG = 112;
@@ -663,6 +663,53 @@ static void test_write10_F2r( float val )
 
 	IOController_i::SensorInfo si;
 	si.id = 2008;
+	si.node = conf->getLocalNode();
+	IOController_i::CalibrateInfo cal = ui->getCalibrateInfo(si);
+	float fval = (float)ui->getValue(si.id) / pow10(cal.precision);
+
+	REQUIRE( fval == val );
+}
+
+static void test_write10_F4raw( const float& val )
+{
+	using namespace VTypes;
+	ModbusRTU::ModbusData tREG = 120;
+    ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
+	F4 tmp(val);
+	msg.addData( tmp.raw.v[0] );
+	msg.addData( tmp.raw.v[1] );
+	msg.addData( tmp.raw.v[2] );
+	msg.addData( tmp.raw.v[3] );
+	ModbusRTU::WriteOutputRetMessage  ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == F4::wsize() );
+
+	IOController_i::SensorInfo si;
+	si.id = 2013;
+	si.node = conf->getLocalNode();
+
+	long raw = ui->getValue(si.id);
+	float fval = 0;
+	memcpy( &fval,&raw,std::min(sizeof(fval),sizeof(raw)) );
+	REQUIRE( fval == val );
+}
+
+static void test_write10_F4prec( const float& val )
+{
+	using namespace VTypes;
+	ModbusRTU::ModbusData tREG = 114;
+    ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
+	F4 tmp(val);
+	msg.addData( tmp.raw.v[0] );
+	msg.addData( tmp.raw.v[1] );
+	msg.addData( tmp.raw.v[2] );
+	msg.addData( tmp.raw.v[3] );
+	ModbusRTU::WriteOutputRetMessage  ret = mb->write10(msg);
+	REQUIRE( ret.start == tREG );
+	REQUIRE( ret.quant == F4::wsize() );
+
+	IOController_i::SensorInfo si;
+	si.id = 2009;
 	si.node = conf->getLocalNode();
 	IOController_i::CalibrateInfo cal = ui->getCalibrateInfo(si);
 	float fval = (float)ui->getValue(si.id) / pow10(cal.precision);
@@ -711,8 +758,17 @@ TEST_CASE("Write(0x10): vtypes..","[modbus][mbslave][mbtcpslave]")
 		test_write10_F2r(0);
 		test_write10_F2r(100000.23);
 	}
-	SECTION("Test: write vtype 'F4'")
+	SECTION("Test: write vtype 'F4'(raw)")
 	{
+		test_write10_F4raw(numeric_limits<float>::max());
+		test_write10_F4raw(0);
+		test_write10_F4raw(numeric_limits<float>::min());
+	}
+	SECTION("Test: write vtype 'F4'(precision)")
+	{
+		test_write10_F4prec(15.55555);
+		test_write10_F4prec(0);
+		test_write10_F4prec(-15.00001);
 	}
 }
 
@@ -746,3 +802,8 @@ TEST_CASE("(0x66): file transfer")
 	
 }
 #endif
+
+TEST_CASE("access mode","[modbus][mbslvae][mbtcpslave]")
+{
+	
+}

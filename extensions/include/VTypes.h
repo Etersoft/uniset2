@@ -50,7 +50,7 @@ namespace VTypes
             // конструкторы на разные случаи...
             F2(){ memset(raw.v,0,sizeof(raw.v)); }
 
-            F2( float f ){ raw.val = f; }
+            F2( const float& f ){ raw.val = f; }
             F2( const ModbusRTU::ModbusData* data, int size )
             {
                 for( int i=0; i<wsize() && i<size; i++ )
@@ -80,7 +80,7 @@ namespace VTypes
             // конструкторы на разные случаи...
             F2r(){}
 
-            F2r( float f ):F2(f)
+            F2r( const float& f ):F2(f)
             {
                 raw_backorder = raw;
                 std::swap(raw_backorder.v[0],raw_backorder.v[1]);
@@ -112,7 +112,7 @@ namespace VTypes
             // конструкторы на разные случаи...
             F4(){ memset(raw.v,0,sizeof(raw.v)); }
 
-            F4( float f ){ raw.val = f; }
+            F4( const float& f ){ raw.val = f; }
             F4( const ModbusRTU::ModbusData* data, int size )
             {
                 for( int i=0; i<wsize() && i<size; i++ )
@@ -150,7 +150,7 @@ namespace VTypes
             Byte(){ raw.w = 0; }
 
             Byte( unsigned char b1, unsigned char b2 ){ raw.b[0]=b1; raw.b[1]=b2; }
-            Byte( const long val )
+            Byte( const long& val )
             {
                 raw.w = val;
             }
@@ -182,7 +182,7 @@ namespace VTypes
             // конструкторы на разные случаи...
             Unsigned():raw(0){}
 
-            Unsigned( const long val )
+            Unsigned( const long& val )
             {
                 raw = val;
             }
@@ -212,7 +212,7 @@ namespace VTypes
             // конструкторы на разные случаи...
             Signed():raw(0){}
 
-            Signed( const long val )
+            Signed( const long& val )
             {
                 raw = val;
             }
@@ -275,7 +275,7 @@ namespace VTypes
         public:
             I2r(){}
 
-            I2r( int v ):I2(v)
+            I2r( const int v ):I2(v)
             {
                 raw_backorder = raw;
                 std::swap(raw_backorder.v[0],raw_backorder.v[1]);
