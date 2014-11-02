@@ -805,5 +805,62 @@ TEST_CASE("(0x66): file transfer")
 
 TEST_CASE("access mode","[modbus][mbslvae][mbtcpslave]")
 {
-	
+	SECTION("test 'RO' register")
+	{
+		ModbusRTU::ModbusData tREG=124;
+
+		// read
+		ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,1);
+		REQUIRE( ret.data[0] == 1002 );
+
+		// write
+		try
+		{
+			ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
+			msg.addData(33);
+			mb->write10(msg);
+		}
+		catch( ModbusRTU::mbException& ex )
+		{
+			REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
+		}
+	}
+	SECTION("test 'WO' register")
+	{
+		ModbusRTU::ModbusData tREG=125;
+
+		// read
+		try
+		{
+			mb->read04(slaveaddr,tREG,1);
+		}
+		catch( ModbusRTU::mbException& ex )
+		{
+			REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
+		}
+		
+		// write
+		ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
+		msg.addData(555);
+		ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+		REQUIRE( ret.start == tREG );
+		REQUIRE( ret.quant == 1 );
+		REQUIRE( ui->getValue(2015) == 555 );
+	}
+	SECTION("test 'RW' register")
+	{
+		ModbusRTU::ModbusData tREG=126;
+
+		// write
+		ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
+		msg.addData(555);
+		ModbusRTU::WriteOutputRetMessage ret = mb->write10(msg);
+		REQUIRE( ret.start == tREG );
+		REQUIRE( ret.quant == 1 );
+		REQUIRE( ui->getValue(2016) == 555 );
+
+		// read
+		ModbusRTU::ReadInputRetMessage rret = mb->read04(slaveaddr,tREG,1);
+		REQUIRE( rret.data[0] == 555 );
+	}
 }

@@ -830,8 +830,8 @@ bool MBSlave::initItem( UniXML_iterator& it )
     string am(IOBase::initProp(it,"accessmode",prop_prefix,false));
     if( am == "ro" )
         p.amode = MBSlave::amRO;
-    else if( am == "rw" )
-        p.amode = MBSlave::amRW;
+    else if( am == "wo" )
+        p.amode = MBSlave::amWO;
 
     string vt(IOBase::initProp(it,"vtype",prop_prefix,false));
     if( vt.empty() )

@@ -147,6 +147,11 @@
 			<item default="-100" id="2011" mbs="1" mbreg="118" iotype="AI" vtype="signed" name="TestVtype11" textname="Тестовый регистр для проверки vtype"/>
 			<item default="65534" id="2012" mbs="1" mbreg="119" iotype="AI" vtype="unsigned" name="TestVtype12" textname="Тестовый регистр для проверки vtype"/>
 			<item id="2013" rawdata="1" mbs="1" mbreg="120" iotype="AI" vtype="F4" name="TestVtype9" textname="Тестовый регистр для проверки vtype"/>
+			
+			<!-- access mode test -->
+			<item id="2014" default="1002" accessmode="ro" mbs="1" mbreg="124" iotype="AI" name="TestAccessMode1" textname="Тестовый регистр для проверки access mode"/>
+			<item id="2015" default="2222" accessmode="wo" mbs="1" mbreg="125" iotype="AI" name="TestAccessMode2" textname="Тестовый регистр для проверки access mode"/>
+			<item id="2016" default="1000" accessmode="rw" mbs="1" mbreg="126" iotype="AI" name="TestAccessMode3" textname="Тестовый регистр для проверки access mode"/>
 
 			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
 
