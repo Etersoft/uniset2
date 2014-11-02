@@ -80,13 +80,21 @@ namespace VTypes
             // конструкторы на разные случаи...
             F2r(){}
 
-            F2r( float f ):F2(f){}
+            F2r( float f ):F2(f)
+            {
+                raw_backorder = raw;
+                std::swap(raw_backorder.v[0],raw_backorder.v[1]);
+            }
             F2r( const ModbusRTU::ModbusData* data, int size ):F2(data,size)
             {
+                // принимаем в обратном порядке.. поэтому переворачиваем raw
+                raw_backorder = raw;
                 std::swap(raw.v[0],raw.v[1]);
             }
 
             ~F2r(){}
+
+           F2mem raw_backorder;
     };
     // --------------------------------------------------------------------------
     class F4
@@ -267,13 +275,21 @@ namespace VTypes
         public:
             I2r(){}
 
-            I2r( int v ):I2(v){}
+            I2r( int v ):I2(v)
+            {
+                raw_backorder = raw;
+                std::swap(raw_backorder.v[0],raw_backorder.v[1]);
+            }
             I2r( const ModbusRTU::ModbusData* data, int size ):I2(data,size)
             {
+                // принимаем в обратном порядке.. поэтому переворачиваем raw
+                raw_backorder = raw;
                 std::swap(raw.v[0],raw.v[1]);
             }
 
             ~I2r(){}
+
+            I2mem raw_backorder;
     };
     // --------------------------------------------------------------------------
     class U2
@@ -317,13 +333,21 @@ namespace VTypes
         public:
             U2r(){}
 
-            U2r( int v ):U2(v){}
+            U2r( int v ):U2(v)
+            {
+                raw_backorder = raw;
+                std::swap(raw_backorder.v[0],raw_backorder.v[1]);
+            }
             U2r( const ModbusRTU::ModbusData* data, int size ):U2(data,size)
             {
+                // принимаем в обратном порядке.. поэтому переворачиваем raw
+                raw_backorder = raw;
                 std::swap(raw.v[0],raw.v[1]);
             }
 
             ~U2r(){}
+
+            U2mem raw_backorder;
     };
     // --------------------------------------------------------------------------
 

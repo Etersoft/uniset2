@@ -432,13 +432,13 @@ TEST_CASE("Read(0x03,0x04): vtypes..","[modbus][mbslave][mbtcpslave]")
 		ModbusRTU::ModbusData tREG = 100;
 		SECTION("Test: read03")
 		{
-			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,2);
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,I2::wsize());
 			I2 i2(ret.data,ret.count);
 			REQUIRE( (int)i2 == -100000 );
 		}
 		SECTION("Test: read04")
 		{
-			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,2);
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,I2::wsize());
 			I2 i2(ret.data,ret.count);
 			REQUIRE( (int)i2 == -100000 );
 		}
@@ -448,31 +448,95 @@ TEST_CASE("Read(0x03,0x04): vtypes..","[modbus][mbslave][mbtcpslave]")
 		ModbusRTU::ModbusData tREG = 102;
 		SECTION("Test: read03")
 		{
-			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,2);
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,I2r::wsize());
 			I2r i2r(ret.data,ret.count);
 			REQUIRE( (int)i2r == -100000 );
 		}
 		SECTION("Test: read04")
 		{
-			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,2);
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,I2r::wsize());
 			I2r i2r(ret.data,ret.count);
 			REQUIRE( (int)i2r == -100000 );
 		}
 	}
 	SECTION("Test: read vtype 'U2'")
 	{
-		ModbusRTU::ModbusData tREG = 101;
+		ModbusRTU::ModbusData tREG = 104;
 		SECTION("Test: read03")
 		{
-			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,2);
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,U2::wsize());
 			U2 u2(ret.data,ret.count);
 			REQUIRE( (unsigned int)u2 == 4294967295 );
 		}
 		SECTION("Test: read04")
 		{
-			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,2);
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,U2::wsize());
 			U2 u2(ret.data,ret.count);
 			REQUIRE( (unsigned int)u2 == 4294967295 );
+		}
+	}
+	SECTION("Test: read vtype 'U2r'")
+	{
+		ModbusRTU::ModbusData tREG = 106;
+		SECTION("Test: read03")
+		{
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,U2r::wsize());
+			U2r u2r(ret.data,ret.count);
+			REQUIRE( (unsigned int)u2r == 4294967295 );
+		}
+		SECTION("Test: read04")
+		{
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,U2r::wsize());
+			U2r u2r(ret.data,ret.count);
+			REQUIRE( (unsigned int)u2r == 4294967295 );
+		}
+	}
+	SECTION("Test: read vtype 'F2'")
+	{
+		ModbusRTU::ModbusData tREG = 110;
+		SECTION("Test: read03")
+		{
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,F2::wsize());
+			F2 f2(ret.data,ret.count);
+			REQUIRE( (float)f2 == 2.5 );
+		}
+		SECTION("Test: read04")
+		{
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,F2::wsize());
+			F2 f2(ret.data,ret.count);
+			REQUIRE( (float)f2 == 2.5 );
+		}
+	}
+	SECTION("Test: read vtype 'F2r'")
+	{
+		ModbusRTU::ModbusData tREG = 112;
+		SECTION("Test: read03")
+		{
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,F2r::wsize());
+			F2r f2r(ret.data,ret.count);
+			REQUIRE( (float)f2r == 2.5 );
+		}
+		SECTION("Test: read04")
+		{
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,F2r::wsize());
+			F2r f2r(ret.data,ret.count);
+			REQUIRE( (float)f2r == 2.5 );
+		}
+	}
+	SECTION("Test: read vtype 'F4'")
+	{
+		ModbusRTU::ModbusData tREG = 114;
+		SECTION("Test: read03")
+		{
+			ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,F4::wsize());
+			F4 f4(ret.data,ret.count);
+			REQUIRE( (float)f4 == 2.5 );
+		}
+		SECTION("Test: read04")
+		{
+			ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,F4::wsize());
+			F4 f4(ret.data,ret.count);
+			REQUIRE( (float)f4 == 2.5 );
 		}
 	}
 }

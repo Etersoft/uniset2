@@ -40,7 +40,7 @@ static bool split_addr( const string& addr, string& host, ost::tpport_t& port )
     {
         host = addr.substr(0,pos);
         string s_port(addr.substr(pos+1,addr.size()-1));
-        port = UniSetTypes::uni_atoi(s_port.c_str());
+        port = atoi(s_port.c_str());
         return true;
     }
 
@@ -97,23 +97,23 @@ int main(int argc, char* argv[])
             break;
 
             case 't':
-                tout = UniSetTypes::uni_atoi(optarg);
+                tout = atoi(optarg);
             break;
 
             case 'x':
-                usecpause = UniSetTypes::uni_atoi(optarg)*1000;
+                usecpause = atoi(optarg)*1000;
             break;
 
             case 'c':
-                count = UniSetTypes::uni_atoi(optarg);
+                count = atoi(optarg);
             break;
 
             case 'p':
-                procID = UniSetTypes::uni_atoi(optarg);
+                procID = atoi(optarg);
             break;
 
             case 'n':
-                nodeID = UniSetTypes::uni_atoi(optarg);
+                nodeID = atoi(optarg);
             break;
 
             case 'b':
@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
             break;
 
             case 'z':
-                ncycles = UniSetTypes::uni_atoi(optarg);
+                ncycles = atoi(optarg);
             break;
 
             case '?':

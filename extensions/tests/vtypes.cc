@@ -18,6 +18,9 @@ TEST_CASE("VTypes: I2","[vtypes][I2]")
 	{
 		I2 v(100);
 		REQUIRE( (int)v == 100 );
+
+		I2 v2(-1000000);
+		REQUIRE( (int)v2 == -1000000 );
 	}
 	SECTION("Modbus constructor")
 	{
@@ -42,6 +45,9 @@ TEST_CASE("VTypes: I2r","[vtypes][I2r]")
 	{
 		I2r v(100);
 		REQUIRE( (int)v == 100 );
+
+		I2r v1(-1000000);
+		REQUIRE( (int)v1 == -1000000 );
 	}
 	SECTION("Modbus constructor")
 	{
@@ -52,6 +58,14 @@ TEST_CASE("VTypes: I2r","[vtypes][I2r]")
 		ModbusRTU::ModbusData data3[3] = {0,0xFFFF,0xFFFF};
 		I2r v2(data3,3);
 		REQUIRE( (int)v2 == 65535 );
+
+		I2r tmp(-100000);
+		ModbusRTU::ModbusData d2[2];
+		d2[0] = tmp.raw.v[1];
+		d2[1] = tmp.raw.v[0];
+		I2r v3(d2,2);
+		REQUIRE( (int)v3 == -100000 );
+
 	}
 }
 
@@ -64,8 +78,17 @@ TEST_CASE("VTypes: U2","[vtypes][U2]")
 	}
 	SECTION("'unsigned int' constructor")
 	{
-		U2 v( numeric_limits<unsigned int>::max() );
-		REQUIRE( (unsigned int)v == numeric_limits<unsigned int>::max() );
+		{
+			U2 v( numeric_limits<unsigned int>::max() );
+			REQUIRE( (unsigned int)v == numeric_limits<unsigned int>::max() );
+			REQUIRE( v.raw.v[0] == 0xffff );
+			REQUIRE( v.raw.v[1] == 0xffff );
+		}
+
+		{
+			U2 v(-1);
+			REQUIRE( (unsigned int)v == 4294967295 );
+		}
 	}
 	SECTION("Modbus constructor")
 	{
