@@ -1,4 +1,5 @@
 check_PROGRAMS = tests
+#noinst_PROGRAMS = tests
 
 tests_SOURCES   = tests.cc lproc.cc
 tests_LDADD     = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
