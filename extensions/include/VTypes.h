@@ -66,6 +66,7 @@ namespace VTypes
             // ------------------------------------------
             operator float(){ return raw.val; }
             operator long(){ return lroundf(raw.val); }
+            operator int(){ return lroundf(raw.val); }
 
             F2mem raw;
     };
