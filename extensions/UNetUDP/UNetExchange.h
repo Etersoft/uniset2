@@ -99,7 +99,10 @@ class UNetExchange:
 
 		SMInterface* shm;
 		void step();
-
+		
+		virtual UNetReceiver* create_receiver( const std::string& h, const ost::tpport_t p, SMInterface* shm );
+		virtual UNetSender* create_sender( const std::string h, const ost::tpport_t p, SMInterface* shm,
+					const std::string s_field="", const std::string s_fvalue="", SharedMemory* ic=0 );
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
 		void sysCommand( UniSetTypes::SystemMessage *msg );
 		void sensorInfo( UniSetTypes::SensorMessage*sm );

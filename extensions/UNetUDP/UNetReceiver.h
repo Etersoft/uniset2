@@ -100,7 +100,7 @@ class UNetReceiver
 
 		bool recv();
 		void step();
-		void real_update();
+		virtual void real_update();
 
 		void initIterators();
 
@@ -187,8 +187,8 @@ class UNetReceiver
 		bool d_cache_init_ok;
 		bool a_cache_init_ok;
 
-		void initDCache( UniSetUDP::UDPMessage& pack, bool force=false );
-		void initACache( UniSetUDP::UDPMessage& pack, bool force=false );
+		virtual void initDCache( UniSetUDP::UDPMessage& pack, bool force=false );
+		virtual void initACache( UniSetUDP::UDPMessage& pack, bool force=false );
 };
 // -----------------------------------------------------------------------------
 #endif // UNetReceiver_H_

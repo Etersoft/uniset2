@@ -120,7 +120,7 @@ sender2(0)
 			}
 			
 			dlog[Debug::INFO] << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
-			sender = new UNetSender(h,p,shm,s_field,s_fvalue,ic);
+			sender = create_sender(h,p,shm,s_field,s_fvalue,ic);
 			sender->setSendPause(sendpause);
 
 			try
@@ -129,7 +129,7 @@ sender2(0)
 				if( !h2.empty() )
 				{
 					dlog[Debug::INFO] << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
-					sender2 = new UNetSender(h2,p2,shm,s_field,s_fvalue,ic);
+					sender2 = create_sender(h2,p2,shm,s_field,s_fvalue,ic);
 					sender2->setSendPause(sendpause);
 				}
 			}
@@ -241,7 +241,7 @@ sender2(0)
 
 		dlog[Debug::INFO] << myname << "(init): (node='" << n << "') add receiver " 
 						<< h2 << ":" << p2 << endl;
-		UNetReceiver* r = new UNetReceiver(h,p,shm);
+		UNetReceiver* r = create_receiver(h,p,shm);
 
 		// на всякий принудительно разблокируем, 
 		// чтобы не зависеть от значения по умолчанию
@@ -266,7 +266,7 @@ sender2(0)
 				dlog[Debug::INFO] << myname << "(init): (node='" << n << "') add reserv receiver " 
 						<< h2 << ":" << p2 << endl;
 				
-				r2 = new UNetReceiver(h2,p2,shm);
+				r2 = create_receiver(h2,p2,shm);
 
 				// т.к. это резервный канал (по началу блокируем его)
 				r2->setLockUpdate(true);
@@ -349,6 +349,17 @@ UNetExchange::~UNetExchange()
 	delete sender;
 	delete sender2;
 	delete shm;
+}
+// -----------------------------------------------------------------------------
+UNetReceiver* UNetExchange::create_receiver( const std::string& h, const ost::tpport_t p, SMInterface* shm )
+{
+	return new UNetReceiver(h,p,shm);
+}
+// -----------------------------------------------------------------------------
+UNetSender* UNetExchange::create_sender( const std::string h, const ost::tpport_t p, SMInterface* shm,
+					const std::string s_field, const std::string s_fvalue, SharedMemory* ic )
+{
+	return new UNetSender(h,p,shm,s_field,s_fvalue,ic);
 }
 // -----------------------------------------------------------------------------
 bool UNetExchange::checkExistUNetHost( const std::string& addr, ost::tpport_t port )
