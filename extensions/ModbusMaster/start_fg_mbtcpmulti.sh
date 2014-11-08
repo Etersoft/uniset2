@@ -13,7 +13,7 @@
 --mbtcp-recv-timeout 3000 \
 --mbtcp-timeout 2000 \
 --mbtcp-force-disconnect 1 \
---mbtcp-polltime 3000 \
+--mbtcp-polltime 100 \
 --mbtcp-force-out 1 \
 $*
 

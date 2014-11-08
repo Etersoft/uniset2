@@ -77,8 +77,8 @@ prefix(prefix)
 		if( speed.empty() )
 			speed = "38400";
 
-		bool use485F = conf->getArgInt("--rs-use485F",it.getProp("use485F"));
-		bool transmitCtl = conf->getArgInt("--rs-transmit-ctl",it.getProp("transmitCtl"));
+		bool use485F = conf->getArgInt("--" + prefix +"-use485F",it.getProp("use485F"));
+		bool transmitCtl = conf->getArgInt("--" + prefix + "-transmit-ctl",it.getProp("transmitCtl"));
 
 		ModbusRTUSlaveSlot* rs = new ModbusRTUSlaveSlot(dev,use485F,transmitCtl);
 		rs->setSpeed(speed);
@@ -160,7 +160,7 @@ prefix(prefix)
 			throw SystemError(err.str());
 		}
 
-		int heartbeatTime = getHeartBeatTime();
+		int heartbeatTime = conf->getArgPInt("--" + prefix + "-heartbeat-time",it.getProp("heartbeatTime"),conf->getHeartBeatTime());
 		if( heartbeatTime )
 			ptHeartBeat.setTiming(heartbeatTime);
 		else
@@ -186,7 +186,7 @@ prefix(prefix)
 
 	dlog[Debug::INFO] << myname << ": init test_id=" << test_id << endl;
 
-	wait_msec = getHeartBeatTime() - 100;
+	wait_msec = conf->getHeartBeatTime() - 100;
 	if( wait_msec < 500 )
 		wait_msec = 500;
 
@@ -196,7 +196,6 @@ prefix(prefix)
 	ptTimeout.setTiming(msec);
 
 	dlog[Debug::INFO] << myname << "(init): rs-timeout=" << msec << " msec" << endl;
-
 
 	// build file list...
 	xmlNode* fnode = 0;
@@ -1287,10 +1286,20 @@ ModbusRTU::mbErrCode MBSlave::real_read_it( IOMap::iterator& it, ModbusRTU::Modb
 			{
 				val = IOBase::processingAsAO(p,shm,force);
 			}		
-			if( p->vtype == VTypes::vtF2 )
+			else if( p->vtype == VTypes::vtF2 )
 			{
 				float f = IOBase::processingFasAO(p,shm,force);
 				VTypes::F2 f2(f);
+				// оптимизируем и проверку не делаем
+				// считая, что при "загрузке" всё было правильно
+				// инициализировано
+				// if( p->wnum >=0 && p->wnum < f4.wsize()
+				val = f2.raw.v[p->wnum];
+			}
+			else if( p->vtype == VTypes::vtF2r )
+			{
+				float f = IOBase::processingFasAO(p,shm,force);
+				VTypes::F2r f2(f);
 				// оптимизируем и проверку не делаем
 				// считая, что при "загрузке" всё было правильно
 				// инициализировано
@@ -1317,10 +1326,30 @@ ModbusRTU::mbErrCode MBSlave::real_read_it( IOMap::iterator& it, ModbusRTU::Modb
 				// if( p->wnum >=0 && p->wnum < i2.wsize()
 				val = i2.raw.v[p->wnum];
 			}
+			else if( p->vtype == VTypes::vtI2r )
+			{
+				long v = IOBase::processingAsAO(p,shm,force);
+				VTypes::I2r i2(v);
+				// оптимизируем и проверку не делаем
+				// считая, что при "загрузке" всё было правильно
+				// инициализировано
+				// if( p->wnum >=0 && p->wnum < i2.wsize()
+				val = i2.raw.v[p->wnum];
+			}
 			else if( p->vtype == VTypes::vtU2 )
 			{
 				unsigned long v = IOBase::processingAsAO(p,shm,force);
 				VTypes::U2 u2(v);
+				// оптимизируем и проверку не делаем
+				// считая, что при "загрузке" всё было правильно
+				// инициализировано
+				// if( p->wnum >=0 && p->wnum < u2.wsize()
+				val = u2.raw.v[p->wnum];
+			}
+			else if( p->vtype == VTypes::vtU2r )
+			{
+				unsigned long v = IOBase::processingAsAO(p,shm,force);
+				VTypes::U2r u2(v);
 				// оптимизируем и проверку не делаем
 				// считая, что при "загрузке" всё было правильно
 				// инициализировано

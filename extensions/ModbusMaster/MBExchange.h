@@ -325,6 +325,11 @@ class MBExchange:
 		PassiveTimer ptReopen; /*!< таймер для переоткрытия соединения */
 		Trigger trReopen;
 
+		// т.к. пороговые датчики не связаны напрямую с обменом, создаём для них отдельный список
+		// и отдельно его проверяем потом
+		typedef std::list<IOBase> ThresholdList;
+		ThresholdList thrlist;
+
 	 private:
 		MBExchange();
 

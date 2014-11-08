@@ -431,12 +431,26 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
 //		if( !ok )
 //			return false;
 	}
- 
-    ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06(addr,regUpdateConfiguration,1);
-    if( verb )
-      cout << "(mtr-setup): save parameters " << endl;
 
-	return true;
+  try
+  {
+    ModbusRTU::ModbusData dat = 1;
+    ModbusRTU::WriteSingleOutputRetMessage ret = mb->write06( addr, regUpdateConfiguration, dat);
+    if( ret.start == regUpdateConfiguration && ret.data == dat )
+    {
+      if( verb )
+        cout << "(mtr-setup): save parameters " << endl;
+      return true;
+    }
+  }
+  catch(  ModbusRTU::mbException& ex )
+  {
+  }
+
+  if( verb )
+    cout << "(mtr-setup): not save parameters " << endl;
+
+	return false;
 }
 // ------------------------------------------------------------------------------------------
 MTR::MTRError update_configuration( ModbusRTUMaster* mb, ModbusRTU::ModbusAddr slaveaddr,

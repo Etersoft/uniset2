@@ -46,7 +46,7 @@ prefix(prefix)
 			throw SystemError(err.str());
 		}
 
-		int heartbeatTime = getHeartBeatTime();
+		int heartbeatTime = conf->getArgPInt("--" + prefix + "-heartbeat-time",it.getProp("heartbeatTime"),conf->getHeartBeatTime());
 		if( heartbeatTime )
 			ptHeartBeat.setTiming(heartbeatTime);
 		else

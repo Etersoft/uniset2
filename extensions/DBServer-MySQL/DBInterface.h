@@ -47,6 +47,8 @@ class DBInterface
 			bool close();
 			
 			bool query(const std::string& q);
+			bool query( const char* q, bool noLastQ=false ); // noLastQ - не запоминать запрос
+
 			const std::string lastQuery();
 			bool insert(const std::string& q);
 

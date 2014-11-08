@@ -469,8 +469,16 @@ void IOController::setValue( const IOController_i::SensorInfo& si, CORBA::Long v
 	if( sup_id == UniSetTypes::DefaultObjectId )
 		sup_id = getId();
 
-	IOController::AIOStateList::iterator li(aioList.end());
-	localSetValue(li,si,value,sup_id);
+	try
+	{
+		IOController::AIOStateList::iterator li(aioList.end());
+		localSetValue(li,si,value,sup_id);
+	} // getValue if not found...
+	catch( IOController_i::NameNotFound )
+	{
+		IOController::DIOStateList::iterator li(dioList.end());
+		localSetState(li, si, (value ? true : false), sup_id);
+	}
 }
 
 void IOController::fastSetValue( const IOController_i::SensorInfo& si, CORBA::Long value, UniSetTypes::ObjectId sup_id )

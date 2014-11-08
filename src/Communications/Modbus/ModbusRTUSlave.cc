@@ -35,7 +35,7 @@ ModbusRTUSlave::ModbusRTUSlave( const string dev, bool use485, bool tr_ctl ):
 	port->setCharacterSize(ComPort::CSize8);
 	port->setStopBits(ComPort::OneBit);
 	port->setWaiting(true);
-	port->setTimeout(recvTimeOut_ms*1000);
+	port->setTimeout(recvTimeOut_ms);
 //	port->setBlocking(false); 
 }
 
@@ -49,7 +49,7 @@ ModbusRTUSlave::ModbusRTUSlave( ComPort* com ):
 	port->setCharacterSize(ComPort::CSize8);
 	port->setStopBits(ComPort::OneBit);
 	port->setWaiting(true);
-	port->setTimeout(recvTimeOut_ms*1000);
+	port->setTimeout(recvTimeOut_ms);
 //	port->setBlocking(false); 
 }
 
@@ -129,9 +129,9 @@ int ModbusRTUSlave::getNextData( unsigned char* buf, int len )
 void ModbusRTUSlave::setChannelTimeout( timeout_t msec )
 {
 	if( msec == UniSetTimer::WaitUpTime )
-		port->setTimeout(15*60*1000*1000); // используем просто большое время (15 минут). Переведя его в наносекунды.
+		port->setTimeout(15*60*1000); // используем просто большое время (15 минут).
 	else
-		port->setTimeout(msec*1000);
+		port->setTimeout(msec);
 }
 // --------------------------------------------------------------------------------
 mbErrCode ModbusRTUSlave::sendData( unsigned char* buf, int len )

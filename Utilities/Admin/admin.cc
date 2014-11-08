@@ -49,6 +49,7 @@ static struct option longopts[] = {
 	{ "getRawValue", required_argument, 0, 'w' },
 	{ "getCalibrate", required_argument, 0, 'y' },
 	{ "oinfo", required_argument, 0, 'p' },
+	{ "verbose", no_argument, 0, 'v' },
 	{ NULL, 0, 0, 0 }
 };
 
@@ -110,17 +111,18 @@ static void usage()
 	cout << endl;
 	print_help(36, "-w|--getRawValue id1@node1=val,id2@node2=val2,id3=val3,.. ","Получить 'сырое' значение.\n");
 	print_help(36, "-y|--getCalibrate id1@node1=val,id2@node2=val2,id3=val3,.. ","Получить параметры калибровки.\n");
+	print_help(36, "-v|--verbose","Подробный вывод логов.\n");
 	cout << endl;
 }
 
 // --------------------------------------------------------------------------------------
 /*! 
-	\todo Сделать по умолчанию режим silent и ключ --verbose.
 	\todo Оптимизировать commandToAll, т.к. сейчас НА КАЖДОМ ШАГЕ цикла 
 		создаётся сообщение и происходит преобразование в TransportMessage. 
 		TransportMessage можно создать один раз до цикла.
 */
 // --------------------------------------------------------------------------------------
+static bool verb = false;
 int main(int argc, char** argv)
 {
 	try
@@ -128,13 +130,17 @@ int main(int argc, char** argv)
 		int optindex = 0;
 		char opt = 0;
 
-		while( (opt = getopt_long(argc, argv, "hc:beomsfur:l:i:x:g:w:y:p:",longopts,&optindex)) != -1 ) 
+		while( (opt = getopt_long(argc, argv, "vhc:beomsfur:l:i:x:g:w:y:p:",longopts,&optindex)) != -1 ) 
 		{
 			switch (opt) //разбираем параметры 
 			{
 				case 'h':	//--help
 					usage();
 				return 0;
+
+				case 'v':
+					verb=true;
+				break;
 
 				case 'c':	//--confile
 					conffile = optarg;
@@ -202,7 +208,8 @@ int main(int argc, char** argv)
 					uniset_init(argc,argv,conffile);
 					UniversalInterface ui(conf);
 				
-					Command cmd=Exist;	
+					Command cmd=Exist;
+					verb = true;
 					ObjectRepository* rep = new ObjectRepository(conf);
 					commandToAll(conf->getServicesSection(), rep, (Command)cmd);
 					commandToAll(conf->getControllersSection(), rep, (Command)cmd);
@@ -297,26 +304,33 @@ int main(int argc, char** argv)
     }
 	catch(Exception& ex)
 	{
-		cout <<"admin(main): " << ex << endl;
+		if( verb )
+			cout <<"admin(main): " << ex << endl;
 	}
 	catch(CORBA::SystemException& ex)
     {
-		cerr << "поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
+		if( verb )
+			cerr << "поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
     }
     catch(CORBA::Exception&)
     {
-		cerr << "поймали CORBA::Exception." << endl;
+        if( verb )
+			cerr << "поймали CORBA::Exception." << endl;
     }
     catch(omniORB::fatalException& fe)
     {
-		cerr << "поймали omniORB::fatalException:" << endl;
-        cerr << "  file: " << fe.file() << endl;
-		cerr << "  line: " << fe.line() << endl;
-        cerr << "  mesg: " << fe.errmsg() << endl;
+    	if( verb )
+    	{
+			cerr << "поймали omniORB::fatalException:" << endl;
+    	    cerr << "  file: " << fe.file() << endl;
+			cerr << "  line: " << fe.line() << endl;
+	        cerr << "  mesg: " << fe.errmsg() << endl;
+	    }
     }
     catch(...)
     {
-		cerr << "неизвестное исключение" << endl;
+    	if( verb )
+			cerr << "неизвестное исключение" << endl;
     }
 
     return 1;
@@ -325,15 +339,17 @@ int main(int argc, char** argv)
 // ==============================================================================================
 static bool commandToAll(const string& section, ObjectRepository *rep, Command cmd)
 {
-	cout <<"\n||=======********  " << section << "  ********=========||\n"<< endl;
+	if( verb )
+		cout <<"\n||=======********  " << section << "  ********=========||\n"<< endl;
 	
 	try
 	{
 		ListObjectName ls;
 	  	rep->list(section.c_str(),&ls);
-		if(ls.empty())
+		if( ls.empty() )
 		{
-			cout << "пусто!!!!!!" << endl;
+			if( verb )
+				cout << "пусто!!!!!!" << endl;
 			return false;
 		}
 
@@ -361,7 +377,8 @@ static bool commandToAll(const string& section, ObjectRepository *rep, Command c
 						if(CORBA::is_nil(obj))	break;
 						SystemMessage msg(SystemMessage::StartUp);
 						obj->push( Message::transport(msg) );
-						cout << setw(55) << ob <<"   <--- start OK" <<   endl;
+						if( verb )
+							cout << setw(55) << ob <<"   <--- start OK" <<   endl;
 					}
 					break;
 					
@@ -370,7 +387,8 @@ static bool commandToAll(const string& section, ObjectRepository *rep, Command c
 						if(CORBA::is_nil(obj))	break;
 						SystemMessage msg(SystemMessage::FoldUp);
 						obj->push( Message::transport(msg) );
-						cout << setw(55) << ob << "   <--- foldUp OK" <<   endl;
+						if( verb )
+							cout << setw(55) << ob << "   <--- foldUp OK" <<   endl;
 					}
 					break;
 
@@ -379,15 +397,19 @@ static bool commandToAll(const string& section, ObjectRepository *rep, Command c
 						if(CORBA::is_nil(obj))	break;
 						SystemMessage msg(SystemMessage::Finish);
 						obj->push( Message::transport(msg) );							
-						cout << setw(55)<< ob << "   <--- finish OK" <<   endl;
+						if( verb )
+							cout << setw(55)<< ob << "   <--- finish OK" <<   endl;
 					}
 					break;
 						
 					case Exist:
 					{
 						if (obj->exist())
-							cout << setw(55) << ob << "   <--- exist ok\n";
-						else
+						{
+							if( verb )
+								cout << setw(55) << ob << "   <--- exist ok\n";
+						}
+						else if( verb )
 							cout << setw(55) << ob << "   <--- exist NOT OK\n";
 					}
 					break;
@@ -396,7 +418,8 @@ static bool commandToAll(const string& section, ObjectRepository *rep, Command c
 					{
 						SystemMessage sm(SystemMessage::ReConfiguration); 
 						obj->push(sm.transport_msg());
-						cout << setw(55) << ob << "   <--- configure ok\n";
+						if( verb )
+							cout << setw(55) << ob << "   <--- configure ok\n";
 					}
 					break;
 
@@ -404,24 +427,28 @@ static bool commandToAll(const string& section, ObjectRepository *rep, Command c
 					{
 						SystemMessage msg(SystemMessage::LogRotate);
 						obj->push( Message::transport(msg) );
-						cout << setw(55) << ob << "   <--- logrotate ok\n";
+						if( verb )
+							cout << setw(55) << ob << "   <--- logrotate ok\n";
 						break;
 					}
 						
 					default:
 					{
-						cout << "неизвестная команда -" << cmd << endl;
+						if( verb )
+							cout << "неизвестная команда -" << cmd << endl;
 						return false;
 					}	
 				}
 			}
 			catch(Exception& ex)
 			{
-				cout << setw(55) << ob << "   <--- " << ex << endl;
+				if( verb )
+					cout << setw(55) << ob << "   <--- " << ex << endl;
 			}
 			catch( CORBA::SystemException& ex )
 			{
-				cout << setw(55) << ob  << "   <--- недоступен!!(CORBA::SystemException): " << ex.NP_minorString() << endl;
+				if( verb )
+					cout << setw(55) << ob  << "   <--- недоступен!!(CORBA::SystemException): " << ex.NP_minorString() << endl;
 			}
 		}
 	}
@@ -443,7 +470,8 @@ static void createSections( UniSetTypes::Configuration* rconf )
 	repf.createRootSection(rconf->getObjectsSection());
 	repf.createRootSection(rconf->getControllersSection());
 	repf.createRootSection(rconf->getServicesSection());
-	cout<<"(create): created"<<endl;	
+	if( verb )
+		cout<<"(create): created"<<endl;	
 }
 
 // ==============================================================================================
@@ -458,7 +486,8 @@ int omap()
 	}
 	catch(Exception& ex)
 	{
-		unideb[Debug::CRIT] << " configuration init  FAILED!!! \n";
+		if( verb )
+			unideb[Debug::CRIT] << " configuration init  FAILED!!! \n";
 		return 1;
 	}
 	return 0;
@@ -476,7 +505,8 @@ int msgmap()
 	}
 	catch(Exception& ex)
 	{
-		unideb[Debug::CRIT] << " configuration init  FAILED!!! " << ex << endl;;
+		if( verb )
+			unideb[Debug::CRIT] << " configuration init  FAILED!!! " << ex << endl;;
 		return 1;
 	}
 	
@@ -490,16 +520,20 @@ int setValue( const string& args, UniversalInterface &ui, Configuration* conf )
 	
 	typedef std::list<UniSetTypes::ParamSInfo> SList;
 	SList sl = UniSetTypes::getSInfoList(args, conf);
-	cout << "====== setValue ======" << endl;
+	if( verb )
+		cout << "====== setValue ======" << endl;
 	for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
 	{	
 		try
 		{
 			UniversalIO::IOTypes t = conf->getIOType(it->si.id);
-			cout << "  value: " << it->val << endl;
-			cout << "   name: (" << it->si.id << ") " << it->fname << endl;
-			cout << "   iotype: " << t << endl;
-			cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
+			if( verb )
+			{
+				cout << "  value: " << it->val << endl;
+				cout << "   name: (" << it->si.id << ") " << it->fname << endl;
+				cout << "   iotype: " << t << endl;
+				cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
+			}
 			
 			if( it->si.node == DefaultObjectId )
 				it->si.node = conf->getLocalNode();
@@ -523,14 +557,16 @@ int setValue( const string& args, UniversalInterface &ui, Configuration* conf )
 				break;
 				
 				default:
-					cerr << "FAILED: Unknown 'iotype' for " << it->fname << endl;
+					if( verb )
+						cerr << "FAILED: Unknown 'iotype' for " << it->fname << endl;
 					err = 1;
 					break;
 			}
 		}
 		catch(Exception& ex)
 		{
-			cerr << "(setValue): " << ex << endl;;
+			if( verb )
+				cerr << "(setValue): " << ex << endl;;
 			err = 1;
 		}	
 	}
@@ -545,16 +581,21 @@ int getValue( const string& args, UniversalInterface &ui, Configuration* conf )
 	
 	typedef std::list<UniSetTypes::ParamSInfo> SList;
 	SList sl = UniSetTypes::getSInfoList( args, UniSetTypes::conf );
-	cout << "====== getValue ======" << endl;
+	if( verb )
+		cout << "====== getValue ======" << endl;
 	for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
 	{	
 		try
 		{
-			UniversalIO::IOTypes t = conf->getIOType(it->si.id);
-			cout << "   name: (" << it->si.id << ") " << it->fname << endl;
-			cout << "   iotype: " << t << endl;
-			cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
-			
+       		UniversalIO::IOTypes t = conf->getIOType(it->si.id);
+
+			if( verb )
+			{
+				cout << "   name: (" << it->si.id << ") " << it->fname << endl;
+				cout << "   iotype: " << t << endl;
+				cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
+			}
+					
 			if( it->si.node == DefaultObjectId )
 				it->si.node = conf->getLocalNode();
 			
@@ -562,23 +603,31 @@ int getValue( const string& args, UniversalInterface &ui, Configuration* conf )
 			{
 				case UniversalIO::DigitalOutput:
 				case UniversalIO::DigitalInput:
-					cout << "  state: " << ui.getState(it->si.id,it->si.node) << endl;
+					if( verb )
+						cout << "  state: " << ui.getState(it->si.id,it->si.node) << endl;
+					else
+						cout << ui.getState(it->si.id,it->si.node);
 				break;
 				
 				case UniversalIO::AnalogOutput:
 				case UniversalIO::AnalogInput:
-					cout << "  value: " << ui.getValue(it->si.id,it->si.node) << endl;
+					if( verb )
+						cout << "  value: " << ui.getValue(it->si.id,it->si.node) << endl;
+					else
+						cout << ui.getValue(it->si.id,it->si.node);
 				break;
 				
 				default:
-					cerr << "FAILED: Unknown 'iotype' for " << it->fname << endl;
+					if( verb )
+						cerr << "FAILED: Unknown 'iotype' for " << it->fname << endl;
 					err = 1;
 					break;
 			}
 		}
 		catch(Exception& ex)
 		{
-			cerr << "(getValue): " << ex << endl;
+			if( verb )
+				cerr << "(getValue): " << ex << endl;
 			err = 1;
 		}	
 	}
@@ -591,7 +640,8 @@ int getCalibrate( const std::string& args, UniversalInterface &ui )
 	int err = 0;
   	typedef std::list<UniSetTypes::ParamSInfo> SList;
 	SList sl = UniSetTypes::getSInfoList( args, UniSetTypes::conf );
-	cout << "====== getCalibrate ======" << endl;
+	if( verb )
+		cout << "====== getCalibrate ======" << endl;
 	for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
 	{	
 		if( it->si.node == DefaultObjectId )
@@ -621,21 +671,30 @@ int getRawValue( const std::string& args, UniversalInterface &ui )
 	int err = 0;
   	typedef std::list<UniSetTypes::ParamSInfo> SList;
 	SList sl = UniSetTypes::getSInfoList( args, UniSetTypes::conf );
-	cout << "====== getRawValue ======" << endl;
+	if( verb )
+		cout << "====== getRawValue ======" << endl;
 	for( SList::iterator it=sl.begin(); it!=sl.end(); it++ )
 	{	
 		if( it->si.node == DefaultObjectId )
 			it->si.node = conf->getLocalNode();	  
 		
-		cout << "   name: (" << it->si.id << ") " << it->fname << endl;
-		cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
+		if( verb )
+		{
+			cout << "   name: (" << it->si.id << ") " << it->fname << endl;
+			cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
+		}
+		
 		try
 		{
-			cout << "  value: " << ui.getRawValue(it->si) << endl;
+			if( verb )
+				cout << "  value: " << ui.getRawValue(it->si) << endl;
+			else 
+				cout << "  value: " << ui.getRawValue(it->si);
 		}
 		catch(Exception& ex)
 		{
-			cerr << "(getRawValue): " << ex << endl;;
+			if( verb )
+				cerr << "(getRawValue): " << ex << endl;;
 			err = 1;
 		}	
 	}
@@ -659,14 +718,16 @@ int logRotate( const string& arg, UniversalInterface &ui )
 		UniSetTypes::ObjectId id = conf->oind->getIdByName(arg);
 		if( id == DefaultObjectId )
 		{
-			cout << "(logrotate): name='" << arg << "' не найдено!!!\n";
+			if( verb )
+				cout << "(logrotate): name='" << arg << "' не найдено!!!\n";
 			return 1;
 		}
 			
 		SystemMessage sm(SystemMessage::LogRotate);
 		TransportMessage tm(sm.transport_msg());
 		ui.send(id,tm);
-		cout << "\nSend 'LogRotate' to " << arg << " OK.\n";
+		if( verb )
+			cout << "\nSend 'LogRotate' to " << arg << " OK.\n";
 	}
 	return 0;
 }
@@ -688,13 +749,15 @@ int configure( const string& arg, UniversalInterface &ui )
 		UniSetTypes::ObjectId id = conf->oind->getIdByName(arg);
 		if( id == DefaultObjectId )
 		{
-			cout << "(configure): name='" << arg << "' не найдено!!!\n";
+			if( verb )
+				cout << "(configure): name='" << arg << "' не найдено!!!\n";
 			return 1;
 		}
 		SystemMessage sm(SystemMessage::ReConfiguration);
 		TransportMessage tm(sm.transport_msg());
 		ui.send(id,tm);
-		cout << "\nSend 'ReConfigure' to " << arg << " OK.\n";
+		if( verb )
+			cout << "\nSend 'ReConfigure' to " << arg << " OK.\n";
 	}
 	return 0;			
 }
@@ -705,7 +768,8 @@ int oinfo( const string& arg, UniversalInterface &ui )
 	UniSetTypes::ObjectId oid(uni_atoi(arg));
 	if( oid==0 )
 	{
-		cout << "(oinfo): Не задан OID!"<< endl;
+		if( verb )
+			cout << "(oinfo): Не задан OID!"<< endl;
 		return 1;
 	}
 			
@@ -713,7 +777,8 @@ int oinfo( const string& arg, UniversalInterface &ui )
 	UniSetObject_i_var obj = UniSetObject_i::_narrow(o);
 	if(CORBA::is_nil(obj))
 	{
-		cout << "(oinfo): объект " << oid << " недоступен" << endl;
+		if( verb )
+			cout << "(oinfo): объект " << oid << " недоступен" << endl;
 	}
 	else
 	{

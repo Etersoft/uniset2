@@ -86,14 +86,14 @@ Configuration::Configuration():
 	mi(NULL),
 	oind(NULL),
 	NSName("NameService"),
-	repeatCount(2),repeatTimeout(100), 	
+	repeatCount(2),repeatTimeout(100),
 	localTimerService(UniSetTypes::DefaultObjectId),
 	localDBServer(UniSetTypes::DefaultObjectId),
 	localInfoServer(UniSetTypes::DefaultObjectId),
 	localNode(UniSetTypes::DefaultObjectId),
 	localNodeName(""),
 	fileConfName(""),
-	heartbeat_msec(10000)
+	heartbeat_msec(5000)
 {
 //	unideb[Debug::CRIT] << " configuration FAILED!!!!!!!!!!!!!!!!!" << endl;
 //	throw Exception();
@@ -228,10 +228,6 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 			throw;
 		}
 
-	
-		// default value
-		heartbeat_msec = 5000;
-
 //	cerr << "*************** initConfiguration: xmlOpen: " << pt.getCurrent() << " msec " << endl;
 //	pt.reset();
 	
@@ -278,9 +274,6 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 		// Настраиваем отладочные логи
 		initDebug(unideb, "UniSetDebug");
 
-//		cerr << "*************** initConfiguration: oind: " << pt.getCurrent() << " msec " << endl;
-//		pt.reset();
-
 		// default init...
 		transientIOR 	= false;
 		localIOR 	= false;
@@ -291,20 +284,14 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
 		initParameters();
 
-		// help
-//		if( !getArgParam("--help").empty() )
-//			help(cout);
-
 		initRepSections();
 
 		// localIOR
-//		localIOR = false; // ??. initParameters()
 		int lior = getArgInt("--localIOR");
 		if( lior )
 			localIOR = lior;
 
 		// transientIOR
-//		transientIOR = false; // ??. initParameters()
 		int tior = getArgInt("--transientIOR");
 		if( tior )
 			transientIOR = tior;
@@ -312,9 +299,6 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 		if( imagesDir[0]!='/' && imagesDir[0]!='.' )
 			imagesDir = dataDir + imagesDir + "/";
 
-//		cerr << "*************** initConfiguration: parameters...: " << pt.getCurrent() << " msec " << endl;
-//		pt.reset();
-		
 		// считываем список узлов
 		createNodesList();
 
@@ -596,10 +580,16 @@ void Configuration::initParameters()
 			if( confDir.empty() )
 				confDir = getRootDir();
 		}
-		else if( name == "HeartBeatTime" )
-		{
-			heartbeat_msec = it.getIntProp("name");
-		}
+	}
+
+	// Heartbeat init...
+	xmlNode* cnode = conf->getNode("HeartBeatTime");
+	if( cnode )
+	{
+		UniXML_iterator hit(cnode);
+		heartbeat_msec = hit.getIntProp("msec");
+		if( heartbeat_msec <= 0 )
+			heartbeat_msec = 5000;
 	}
 }
 // -------------------------------------------------------------------------
