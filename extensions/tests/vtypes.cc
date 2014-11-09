@@ -239,7 +239,7 @@ TEST_CASE("VTypes: Byte","[vtypes][byte]")
 	SECTION("Default constructor")
 	{
 		Byte v;
-		REQUIRE( (char)v == 0 );
+		REQUIRE( v[0] == 0 );
 	}
 	SECTION("'2 byte' constructor")
 	{
@@ -251,13 +251,13 @@ TEST_CASE("VTypes: Byte","[vtypes][byte]")
 	{
 		long l=0xff;
 		Byte v(l);
-		REQUIRE( (unsigned char)v == 0xff );
+		REQUIRE( (long)v == 0xff );
 	}
 	SECTION("Modbus constructor")
 	{
 		ModbusRTU::ModbusData d = 255;
 		Byte v(d);
-		REQUIRE( (unsigned char)v == 255 );
+		REQUIRE( (unsigned char)v[0] == 255 );
 	}
 }
 
