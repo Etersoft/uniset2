@@ -430,8 +430,8 @@ bool NCRestorer_XML::getConsumerList( const UniXML& xml, xmlNode* node,
         if( !getConsumerInfo(it,ci.id,ci.node) )
             continue;
 
-        IONotifyController::ConsumerInfoExt cinf(ci);
-        lst.clst.push_back(cinf);
+//        IONotifyController::ConsumerInfoExt cinf(ci);
+        lst.clst.emplace_back(ci);
         cslot(xml,it,node);
     }
 

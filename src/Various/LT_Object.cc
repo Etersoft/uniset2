@@ -152,7 +152,7 @@ timeout_t LT_Object::askTimer( UniSetTypes::TimerId timerid, timeout_t timeMS, c
             }
 
             // TimerInfo newti(timerid, timeMS, ticks, p);
-            tlst.push_back( std::move(TimerInfo(timerid, timeMS, ticks, p)) );
+            tlst.emplace_back(timerid, timeMS, ticks, p);
         }    // unlock
 
         uinfo << "(LT_askTimer): поступил заказ на таймер(id="<< timerid << ") " << timeMS << " [мс]\n";

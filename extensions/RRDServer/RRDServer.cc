@@ -199,8 +199,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 
         delete[] argv;
 
-        RRDInfo rrd(fname,tmID,rrdstep,dsmap);
-        rrdlist.push_back(rrd);
+        rrdlist.emplace_back(fname,tmID,rrdstep,dsmap);
     }
 /*    catch( Exception& ex )
     {

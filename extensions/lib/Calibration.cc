@@ -328,7 +328,7 @@ void Calibration::setCacheSize( unsigned int sz )
 void Calibration::insertToCache( const long raw, const long val )
 {
     cache.pop_back(); // удаляем последний элемент (как самый неиспользуемый)
-    cache.push_back( CacheInfo(raw,val) ); // добавляем в конец..
+    cache.emplace_back(raw,val); // добавляем в конец..
     sort(cache.begin(),cache.end()); // пересортируем в порядке уменьшения обращений (см. CacheInfo::operator< )
 }
 // ----------------------------------------------------------------------------

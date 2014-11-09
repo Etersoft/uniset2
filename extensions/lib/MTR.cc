@@ -280,7 +280,7 @@ DataMap read_confile( const std::string& f )
                             tmp = "0x" + tmp;
 //                            cout << "find data=" << ModbusRTU::str2mbData(tmp)
 //                                    << "(" << tmp << ")" << endl;
-                            dlst.push_back( ModbusRTU::str2mbData(tmp) );
+                            dlst.emplace_back( ModbusRTU::str2mbData(tmp) );
                         }
                     }
 
