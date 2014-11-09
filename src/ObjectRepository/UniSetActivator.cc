@@ -383,20 +383,10 @@ void UniSetActivator::work()
 void UniSetActivator::getinfo()
 {
     for( auto it=beginMList(); it!=endMList(); ++it )
-    {
-        MInfo mi;
-        mi.mnr = (*it);
-        mi.msgpid = (*it)->getMsgPID();
-        lstMInfo.push_back(mi);
-    }
+        lstMInfo.emplace_back( (*it), (*it)->getMsgPID() );
 
     for( auto it=beginOList(); it!= endOList(); ++it )
-    {
-        OInfo oi;
-        oi.obj = (*it);
-        oi.msgpid = (*it)->getMsgPID();
-        lstOInfo.push_back(oi);
-    }
+        lstOInfo.emplace_back( (*it), (*it)->getMsgPID() );
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::sysCommand( const UniSetTypes::SystemMessage *sm )

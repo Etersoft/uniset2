@@ -211,7 +211,7 @@ std::list<std::string> UniSetTypes::explode_str( const string& str, char sep )
         string s(str.substr(prev,pos-prev));
         if( !s.empty() )
         {
-            l.push_back(s);
+            l.emplace_back(s);
             prev=pos+1;
         }
     }

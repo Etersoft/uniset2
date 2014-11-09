@@ -130,18 +130,22 @@ class UniSetActivator:
 
         struct Info
         {
+        	Info( pid_t p ):msgpid(p){}
+        	
             pid_t msgpid;    // pid порожденого потока обработки сообщений
         };
 
         struct OInfo:
             public Info
         {
+        	OInfo( UniSetObject* o, pid_t p ):Info(p),obj(o){}
             UniSetObject* obj;
         };
 
         struct MInfo:
             public Info
         {
+        	MInfo( UniSetManager* m, pid_t p ):Info(p),mnr(m){}
             UniSetManager* mnr;
         };
 
