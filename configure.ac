@@ -77,6 +77,7 @@ AC_ARG_ENABLE(mysql, AC_HELP_STRING([--disable-mysql], [disable MySQL support]),
 if test ${buildmysql} = true; then
 	AC_MSG_RESULT([enabled])
 	AC_CHECK_HEADERS([mysql/mysql.h])
+	AC_CHECK_LIB([mysqlclient],mysql_init,,exit)
 else
 	AC_MSG_RESULT([disabled])
 fi

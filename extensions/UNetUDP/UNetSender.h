@@ -49,7 +49,7 @@ class UNetSender
 		void real_send();
 		
 		/*! (принудительно) обновить все данные (из SM) */
-		void updateFromSM();
+		virtual void updateFromSM();
 
 		/*! Обновить значение по ID датчика */
 		void updateSensor( UniSetTypes::ObjectId id, long value );
@@ -60,39 +60,40 @@ class UNetSender
 		inline void setSendPause( int msec ){ sendpause = msec; }
 		
 		/*! заказать датчики */
-		void askSensors( UniversalIO::UIOCommand cmd );
+		virtual void askSensors( UniversalIO::UIOCommand cmd );
 
 		/*! инициализация  итераторов */
 		void initIterators();
 		
 	protected:
+		UNetSender();
 
+		std::string myname;
+		UniSetUDP::UDPMessage mypack;
+		DMap dlist;
+		int maxItem;
+		
 		std::string s_field;
 		std::string s_fvalue;
 
 		SMInterface* shm;
 
-		bool initItem( UniXML_iterator& it );
+		virtual bool initItem( UniXML_iterator& it );
 		bool readItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec );
 
-		void readConfiguration();
+		virtual void readConfiguration();
 
 	private:
-		UNetSender();
 
 		ost::UDPBroadcast* udp;
 		ost::IPV4Address addr;
 		ost::tpport_t port;
 		std::string s_host;
 
-		std::string myname;
 		int sendpause;
 		bool activated;
 		
 		UniSetTypes::uniset_mutex pack_mutex;
-		UniSetUDP::UDPMessage mypack;
-		DMap dlist;
-		int maxItem;
 		unsigned long packetnum;
 		UniSetUDP::UDPPacket s_msg;
 

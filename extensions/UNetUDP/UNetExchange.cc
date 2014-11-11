@@ -56,15 +56,15 @@ sender2(0)
 
 	UniXML_iterator n_it(nodes);
 	
-	string default_ip(n_it.getProp("unet_broadcast_ip"));
-	string default_ip2(n_it.getProp("unet_broadcast_ip2"));
+	string default_ip(n_it.getProp(prefix+"_broadcast_ip"));
+	string default_ip2(n_it.getProp(prefix+"_broadcast_ip2"));
 
 	if( !n_it.goChildren() )
 		throw UniSetTypes::SystemError("(UNetExchange): Items not found for <nodes>");
 
 	for( ; n_it.getCurrent(); n_it.goNext() )
 	{
-		if( n_it.getIntProp("unet_ignore") )
+		if( n_it.getIntProp(prefix+"_ignore") )
 		{
 			dlog[Debug::INFO] << myname << "(init): unet_ignore.. for " << n_it.getProp("name") << endl;
 			continue;
@@ -80,13 +80,13 @@ sender2(0)
 		string h2("");
 		if( !default_ip.empty() )
 			h = default_ip;
-		if( !n_it.getProp("unet_broadcast_ip").empty() )
-			h = n_it.getProp("unet_broadcast_ip");
+		if( !n_it.getProp(prefix+"_broadcast_ip").empty() )
+			h = n_it.getProp(prefix+"_broadcast_ip");
 
 		if( !default_ip2.empty() )
 			h2 = default_ip2;
-		if( !n_it.getProp("unet_broadcast_ip2").empty() )
-			h2 = n_it.getProp("unet_broadcast_ip2");
+		if( !n_it.getProp(prefix+"_broadcast_ip2").empty() )
+			h2 = n_it.getProp(prefix+"_broadcast_ip2");
 		
 		if( h.empty() )
 		{
@@ -102,12 +102,12 @@ sender2(0)
 		// Если указано поле unet_port - используем его
 		// Иначе port = идентификатору узла
 		int p = n_it.getIntProp("id");
-		if( !n_it.getProp("unet_port").empty() )
-			p = n_it.getIntProp("unet_port");
+		if( !n_it.getProp(prefix+"_port").empty() )
+			p = n_it.getIntProp(prefix+"_port");
 
 		int p2 = p; // по умолчанию порт на втором канале такой же как на первом
-		if( !n_it.getProp("unet_port2").empty() )
-			p2 = n_it.getIntProp("unet_port2");
+		if( !n_it.getProp(prefix+"_port2").empty() )
+			p2 = n_it.getIntProp(prefix+"_port2");
 
 		string n(n_it.getProp("name"));
 		if( n == conf->getLocalNodeName() )
@@ -120,7 +120,7 @@ sender2(0)
 			}
 			
 			dlog[Debug::INFO] << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
-			sender = new UNetSender(h,p,shm,s_field,s_fvalue,ic);
+			sender = create_sender(h,p,shm,s_field,s_fvalue,ic);
 			sender->setSendPause(sendpause);
 
 			try
@@ -129,7 +129,7 @@ sender2(0)
 				if( !h2.empty() )
 				{
 					dlog[Debug::INFO] << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
-					sender2 = new UNetSender(h2,p2,shm,s_field,s_fvalue,ic);
+					sender2 = create_sender(h2,p2,shm,s_field,s_fvalue,ic);
 					sender2->setSendPause(sendpause);
 				}
 			}
@@ -152,9 +152,9 @@ sender2(0)
 			continue;
 		}
 
-		bool resp_invert = n_it.getIntProp("unet_respond_invert");
+		bool resp_invert = n_it.getIntProp(prefix+"_respond_invert");
 		
-		string s_resp_id(n_it.getProp("unet_respond1_id"));
+		string s_resp_id(n_it.getProp(prefix+"_respond1_id"));
 		UniSetTypes::ObjectId resp_id = UniSetTypes::DefaultObjectId;
 		if( !s_resp_id.empty() )
 		{
@@ -168,7 +168,7 @@ sender2(0)
 			}
 		}
 
-		string s_resp2_id(n_it.getProp("unet_respond2_id"));
+		string s_resp2_id(n_it.getProp(prefix+"_respond2_id"));
 		UniSetTypes::ObjectId resp2_id = UniSetTypes::DefaultObjectId;
 		if( !s_resp2_id.empty() )
 		{
@@ -182,7 +182,7 @@ sender2(0)
 			}
 		}		
 		
-		string s_lp_id(n_it.getProp("unet_lostpackets1_id"));
+		string s_lp_id(n_it.getProp(prefix+"_lostpackets1_id"));
 		UniSetTypes::ObjectId lp_id = UniSetTypes::DefaultObjectId;
 		if( !s_lp_id.empty() )
 		{
@@ -196,7 +196,7 @@ sender2(0)
 			}
 		}
 		
-		string s_lp2_id(n_it.getProp("unet_lostpackets2_id"));
+		string s_lp2_id(n_it.getProp(prefix+"_lostpackets2_id"));
 		UniSetTypes::ObjectId lp2_id = UniSetTypes::DefaultObjectId;
 		if( !s_lp2_id.empty() )
 		{
@@ -210,7 +210,7 @@ sender2(0)
 			}
 		}
 
-		string s_lp_comm_id(n_it.getProp("unet_lostpackets_id"));
+		string s_lp_comm_id(n_it.getProp(prefix+"_lostpackets_id"));
 		UniSetTypes::ObjectId lp_comm_id = UniSetTypes::DefaultObjectId;
 		if( !s_lp_comm_id.empty() )
 		{
@@ -224,7 +224,7 @@ sender2(0)
 			}
 		}
 
-		string s_resp_comm_id(n_it.getProp("unet_respond_id"));
+		string s_resp_comm_id(n_it.getProp(prefix+"_respond_id"));
 		UniSetTypes::ObjectId resp_comm_id = UniSetTypes::DefaultObjectId;
 		if( !s_resp_comm_id.empty() )
 		{
@@ -241,7 +241,7 @@ sender2(0)
 
 		dlog[Debug::INFO] << myname << "(init): (node='" << n << "') add receiver " 
 						<< h2 << ":" << p2 << endl;
-		UNetReceiver* r = new UNetReceiver(h,p,shm);
+		UNetReceiver* r = create_receiver(h,p,shm);
 
 		// на всякий принудительно разблокируем, 
 		// чтобы не зависеть от значения по умолчанию
@@ -266,7 +266,7 @@ sender2(0)
 				dlog[Debug::INFO] << myname << "(init): (node='" << n << "') add reserv receiver " 
 						<< h2 << ":" << p2 << endl;
 				
-				r2 = new UNetReceiver(h2,p2,shm);
+				r2 = create_receiver(h2,p2,shm);
 
 				// т.к. это резервный канал (по началу блокируем его)
 				r2->setLockUpdate(true);
@@ -349,6 +349,17 @@ UNetExchange::~UNetExchange()
 	delete sender;
 	delete sender2;
 	delete shm;
+}
+// -----------------------------------------------------------------------------
+UNetReceiver* UNetExchange::create_receiver( const std::string& h, const ost::tpport_t p, SMInterface* shm )
+{
+	return new UNetReceiver(h,p,shm);
+}
+// -----------------------------------------------------------------------------
+UNetSender* UNetExchange::create_sender( const std::string h, const ost::tpport_t p, SMInterface* shm,
+					const std::string s_field, const std::string s_fvalue, SharedMemory* ic )
+{
+	return new UNetSender(h,p,shm,s_field,s_fvalue,ic);
 }
 // -----------------------------------------------------------------------------
 bool UNetExchange::checkExistUNetHost( const std::string& addr, ost::tpport_t port )
@@ -765,4 +776,24 @@ void UNetExchange::receiverEvent( UNetReceiver* r, UNetReceiver::Event ev )
 	}
 }
 // -----------------------------------------------------------------------------
-
+void UNetExchange::ignore_item(UniSetTypes::ObjectId id, bool set)
+{
+	std::list<UNetReceiver*> rList = get_receivers();
+	std::list<UNetReceiver*>::iterator rIt = rList.begin();
+	for(; rIt != rList.end(); ++ rIt )
+		(*rIt)->ignore_item(id, set);
+}
+// -----------------------------------------------------------------------------
+std::list<UNetReceiver*> UNetExchange::get_receivers()
+{
+	std::list<UNetReceiver*> tList;
+	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
+	{
+		if(it->r1)
+			tList.push_back(it->r1);
+		if(it->r2)
+			tList.push_back(it->r2);
+	}
+	return tList;
+}
+// -----------------------------------------------------------------------------

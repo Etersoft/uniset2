@@ -90,8 +90,12 @@ class UNetExchange:
 		static void help_print( int argc, const char* argv[] );
 
 		bool checkExistUNetHost( const std::string& host, ost::tpport_t port );
-
+		
+		std::list<UNetReceiver*> get_receivers();
+		/*! игнорировать запись датчика в SM */
+		void ignore_item(UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId, bool set = true);
 	protected:
+		UNetExchange();
 
 		xmlNode* cnode;
 		std::string s_field;
@@ -99,7 +103,10 @@ class UNetExchange:
 
 		SMInterface* shm;
 		void step();
-
+		
+		virtual UNetReceiver* create_receiver( const std::string& h, const ost::tpport_t p, SMInterface* shm );
+		virtual UNetSender* create_sender( const std::string h, const ost::tpport_t p, SMInterface* shm,
+					const std::string s_field="", const std::string s_fvalue="", SharedMemory* ic=0 );
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
 		void sysCommand( UniSetTypes::SystemMessage *msg );
 		void sensorInfo( UniSetTypes::SensorMessage*sm );
@@ -123,7 +130,6 @@ class UNetExchange:
 		};
 
 	private:
-		UNetExchange();
 		bool initPause;
 		UniSetTypes::uniset_mutex mutex_start;
 
