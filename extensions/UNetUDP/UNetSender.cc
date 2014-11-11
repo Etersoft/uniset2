@@ -70,7 +70,6 @@ s_thr(0)
 	else
 		ic->addReadItem( sigc::mem_fun(this,&UNetSender::readItem) );
 
-
 	// выставляем поля, которые не меняются
 	mypack.nodeID = conf->getLocalNode();
 	mypack.procID = shm->ID();

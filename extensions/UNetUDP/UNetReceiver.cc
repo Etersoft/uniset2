@@ -380,16 +380,16 @@ void UNetReceiver::updateDItem( ItemInfo& ii, const long& id, bool val )
 		else if( ii.iotype == UniversalIO::DigitalOutput )
 			shm->localSetState(ii.dit,id,val,shm->ID());
 		else
-		  	dlog[Debug::CRIT] << myname << "(updateAItem): Unknown iotype for sid=" << id << endl;
+		  	dlog[Debug::CRIT] << myname << "(updateDItem): Unknown iotype for sid=" << id << endl;
 	}
 	catch( UniSetTypes::Exception& ex)
 	{
-		dlog[Debug::CRIT] << myname << "(updateAItem): " << ex << std::endl;
+		dlog[Debug::CRIT] << myname << "(updateDItem): " << ex << std::endl;
 		throw ex;
 	}
 	catch(...)
 	{
-		dlog[Debug::CRIT] << myname << "(updateAItem): catch ..." << std::endl;
+		dlog[Debug::CRIT] << myname << "(updateDItem): catch ..." << std::endl;
 		throw;
 	}
 }
@@ -575,7 +575,7 @@ void UNetReceiver::initIterators()
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetReceiver::ignore_item(UniSetTypes::ObjectId id, bool set)
+void UNetReceiver::setIgnore( UniSetTypes::ObjectId id, bool set )
 {
 	for( ItemVec::iterator it=d_icache.begin(); it!=d_icache.end(); ++it )
 	{

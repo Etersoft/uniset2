@@ -86,14 +86,20 @@ class UNetExchange:
 		static UNetExchange* init_unetexchange( int argc, const char* argv[],
 											UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="unet" );
 
+		virtual UNetReceiver* create_receiver( const std::string& h, const ost::tpport_t p, SMInterface* shm );
+		virtual UNetSender* create_sender( const std::string& h, const ost::tpport_t p, SMInterface* shm,
+					const std::string& s_field="", const std::string& s_fvalue="", SharedMemory* ic=0 );
+
 		/*! глобальная функция для вывода help-а */
 		static void help_print( int argc, const char* argv[] );
 
 		bool checkExistUNetHost( const std::string& host, ost::tpport_t port );
 		
 		std::list<UNetReceiver*> get_receivers();
+		
 		/*! игнорировать запись датчика в SM */
-		void ignore_item(UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId, bool set = true);
+		void setIgnore(UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId, bool set = true);
+
 	protected:
 		UNetExchange();
 
@@ -104,9 +110,7 @@ class UNetExchange:
 		SMInterface* shm;
 		void step();
 		
-		virtual UNetReceiver* create_receiver( const std::string& h, const ost::tpport_t p, SMInterface* shm );
-		virtual UNetSender* create_sender( const std::string h, const ost::tpport_t p, SMInterface* shm,
-					const std::string s_field="", const std::string s_fvalue="", SharedMemory* ic=0 );
+
 		virtual void processingMessage( UniSetTypes::VoidMessage *msg );
 		void sysCommand( UniSetTypes::SystemMessage *msg );
 		void sensorInfo( UniSetTypes::SensorMessage*sm );

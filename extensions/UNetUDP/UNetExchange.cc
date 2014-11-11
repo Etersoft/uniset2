@@ -356,8 +356,8 @@ UNetReceiver* UNetExchange::create_receiver( const std::string& h, const ost::tp
 	return new UNetReceiver(h,p,shm);
 }
 // -----------------------------------------------------------------------------
-UNetSender* UNetExchange::create_sender( const std::string h, const ost::tpport_t p, SMInterface* shm,
-					const std::string s_field, const std::string s_fvalue, SharedMemory* ic )
+UNetSender* UNetExchange::create_sender( const std::string& h, const ost::tpport_t p, SMInterface* shm,
+					const std::string& s_field, const std::string& s_fvalue, SharedMemory* ic )
 {
 	return new UNetSender(h,p,shm,s_field,s_fvalue,ic);
 }
@@ -776,12 +776,12 @@ void UNetExchange::receiverEvent( UNetReceiver* r, UNetReceiver::Event ev )
 	}
 }
 // -----------------------------------------------------------------------------
-void UNetExchange::ignore_item(UniSetTypes::ObjectId id, bool set)
+void UNetExchange::setIgnore( UniSetTypes::ObjectId id, bool set )
 {
 	std::list<UNetReceiver*> rList = get_receivers();
 	std::list<UNetReceiver*>::iterator rIt = rList.begin();
 	for(; rIt != rList.end(); ++ rIt )
-		(*rIt)->ignore_item(id, set);
+		(*rIt)->setIgnore(id, set);
 }
 // -----------------------------------------------------------------------------
 std::list<UNetReceiver*> UNetExchange::get_receivers()
