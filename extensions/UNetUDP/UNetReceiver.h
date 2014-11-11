@@ -97,6 +97,7 @@ class UNetReceiver
 		 void ignore_item(UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId, bool set = true);
 
 	protected:
+		UNetReceiver();
 
 		SMInterface* shm;
 
@@ -104,10 +105,33 @@ class UNetReceiver
 		void step();
 		virtual void real_update();
 
+		std::string myname;
+		
+		struct ItemInfo
+		{
+			long id;
+			IOController::AIOStateList::iterator ait;
+			IOController::DIOStateList::iterator dit;
+			UniversalIO::IOTypes iotype;
+			bool ignore; /*!< флаг игнорирования сохранения в SM*/
+			
+			ItemInfo():
+				id(UniSetTypes::DefaultObjectId),
+				iotype(UniversalIO::UnknownIOType),
+				ignore(false){}
+		};
+		virtual void updateDItem( ItemInfo& ii, const long& id, bool val );
+		virtual void updateAItem( ItemInfo& ii, const UniSetUDP::UDPAData& d );
+
 		void initIterators();
 
+		typedef std::vector<ItemInfo> ItemVec;
+		ItemVec d_icache;	/*!< кэш итераторов для булевых */
+		ItemVec a_icache;	/*!< кэш итераторов для аналоговых */
+
+		bool d_cache_init_ok;
+		bool a_cache_init_ok;
 	private:
-		UNetReceiver();
 
 		int recvpause;		/*!< пауза меджду приёмами пакетов, [мсек] */
 		int updatepause;	/*!< переодичность обновления данных в SM, [мсек] */
@@ -115,7 +139,6 @@ class UNetReceiver
 		ost::UDPReceive* udp;
 		ost::IPV4Address addr;
 		ost::tpport_t port;
-		std::string myname;
 
 		UniSetTypes::uniset_mutex pollMutex;
 		PassiveTimer ptRecvTimeout;
@@ -169,27 +192,6 @@ class UNetReceiver
 		EventSlot slEvent;
 		Trigger trTimeout;
 		UniSetTypes::uniset_mutex tmMutex;
-
-		struct ItemInfo
-		{
-			long id;
-			IOController::AIOStateList::iterator ait;
-			IOController::DIOStateList::iterator dit;
-			UniversalIO::IOTypes iotype;
-			bool ignore; /*!< флаг игнорирования сохранения в SM*/
-			
-			ItemInfo():
-				id(UniSetTypes::DefaultObjectId),
-				iotype(UniversalIO::UnknownIOType),
-				ignore(false){}
-		};
-
-		typedef std::vector<ItemInfo> ItemVec;
-		ItemVec d_icache;	/*!< кэш итераторов для булевых */
-		ItemVec a_icache;	/*!< кэш итераторов для аналоговых */
-
-		bool d_cache_init_ok;
-		bool a_cache_init_ok;
 
 		virtual void initDCache( UniSetUDP::UDPMessage& pack, bool force=false );
 		virtual void initACache( UniSetUDP::UDPMessage& pack, bool force=false );

@@ -366,7 +366,60 @@ void UNetReceiver::real_update()
 		}
 	}
 }
-
+// -----------------------------------------------------------------------------
+void UNetReceiver::updateDItem( ItemInfo& ii, const long& id, bool val )
+{
+	try
+	{
+		if( ii.iotype == UniversalIO::DigitalInput )
+			shm->localSaveState(ii.dit,id,val,shm->ID());
+		else if( ii.iotype == UniversalIO::AnalogInput )
+			shm->localSaveValue(ii.ait,id,val,shm->ID());
+		else if( ii.iotype == UniversalIO::AnalogOutput )
+			shm->localSetValue(ii.ait,id,val,shm->ID());
+		else if( ii.iotype == UniversalIO::DigitalOutput )
+			shm->localSetState(ii.dit,id,val,shm->ID());
+		else
+		  	dlog[Debug::CRIT] << myname << "(updateAItem): Unknown iotype for sid=" << id << endl;
+	}
+	catch( UniSetTypes::Exception& ex)
+	{
+		dlog[Debug::CRIT] << myname << "(updateAItem): " << ex << std::endl;
+		throw ex;
+	}
+	catch(...)
+	{
+		dlog[Debug::CRIT] << myname << "(updateAItem): catch ..." << std::endl;
+		throw;
+	}
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::updateAItem( ItemInfo& ii, const UniSetUDP::UDPAData& d )
+{
+	try
+	{
+		if( ii.iotype == UniversalIO::DigitalInput )
+			shm->localSaveState(ii.dit,d.id,d.val,shm->ID());
+		else if( ii.iotype == UniversalIO::AnalogInput )
+			shm->localSaveValue(ii.ait,d.id,d.val,shm->ID());
+		else if( ii.iotype == UniversalIO::AnalogOutput )
+			shm->localSetValue(ii.ait,d.id,d.val,shm->ID());
+ 		else if( ii.iotype == UniversalIO::DigitalOutput )
+			shm->localSetState(ii.dit,d.id,d.val,shm->ID());
+		else
+		  	dlog[Debug::CRIT] << myname << "(updateAItem): Unknown iotype for sid=" << d.id << endl;
+	}
+	catch( UniSetTypes::Exception& ex)
+	{
+		dlog[Debug::CRIT] << myname << "(updateAItem): " << ex << std::endl;
+		throw ex;
+	}
+	catch(...)
+	{
+		dlog[Debug::CRIT] << myname << "(updateAItem): catch ..." << std::endl;
+		throw;
+	}
+}
 // -----------------------------------------------------------------------------
 void UNetReceiver::stop()
 {

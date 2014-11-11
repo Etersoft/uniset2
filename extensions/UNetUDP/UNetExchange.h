@@ -95,6 +95,7 @@ class UNetExchange:
 		/*! игнорировать запись датчика в SM */
 		void ignore_item(UniSetTypes::ObjectId id = UniSetTypes::DefaultObjectId, bool set = true);
 	protected:
+		UNetExchange();
 
 		xmlNode* cnode;
 		std::string s_field;
@@ -129,7 +130,6 @@ class UNetExchange:
 		};
 
 	private:
-		UNetExchange();
 		bool initPause;
 		UniSetTypes::uniset_mutex mutex_start;
 

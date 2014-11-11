@@ -66,7 +66,13 @@ class UNetSender
 		void initIterators();
 		
 	protected:
+		UNetSender();
 
+		std::string myname;
+		UniSetUDP::UDPMessage mypack;
+		DMap dlist;
+		int maxItem;
+		
 		std::string s_field;
 		std::string s_fvalue;
 
@@ -78,21 +84,16 @@ class UNetSender
 		virtual void readConfiguration();
 
 	private:
-		UNetSender();
 
 		ost::UDPBroadcast* udp;
 		ost::IPV4Address addr;
 		ost::tpport_t port;
 		std::string s_host;
 
-		std::string myname;
 		int sendpause;
 		bool activated;
 		
 		UniSetTypes::uniset_mutex pack_mutex;
-		UniSetUDP::UDPMessage mypack;
-		DMap dlist;
-		int maxItem;
 		unsigned long packetnum;
 		UniSetUDP::UDPPacket s_msg;
 
