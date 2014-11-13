@@ -2026,10 +2026,18 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
 	
 	if( mbregFromID )
 	{
-		if( it.getProp("id").empty() )
+		// всё-таки несмотря на "mbregFromID" разрешим переопределить регистр..
+		string sr = IOBase::initProp(it,"id",prop_prefix,false);
+		if( sr.empty() )
+		{
 			r->mbreg = conf->getSensorID(it.getProp("name"));
-		else
-			r->mbreg = it.getIntProp("id");
+			if( r->mbreg == DefaultObjectId )
+			{
+				dlog[Debug::CRIT] << myname << "(initItem): Unknown 'id' for " << it.getProp("name") << endl;
+				return false;
+			}
+		}
+		r->mbreg = ModbusRTU::str2mbData(sr);
 	}
 	else
 	{
