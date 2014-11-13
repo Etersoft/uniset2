@@ -29,11 +29,16 @@ Version 2.0
 - uniset-codegen:  сделать в src.xml <description> и генерировать на его основе описание класса
 
 
+- уйти по возможности на стандартные исключения.. вместо Exceptions..
+- использовать везде где нужно(и можно) вместо прямых указателей.. shared_ptr и т.п.
+
+
 Version 2.1
 ============
 - smonit запись значений в файл (csv?,sqlite?)
 - python: gui sensor monitor 
-+
+
+
 
 version 3
 =========

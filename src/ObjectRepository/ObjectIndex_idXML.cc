@@ -131,9 +131,9 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string& sec )
     for( ;it.getCurrent(); it.goNext() )
     {
         ObjectInfo inf;
-        inf.id = it.getIntProp("id");
+        inf.id = it.getPIntProp("id",DefaultObjectId);
 
-        if( inf.id <= 0 )
+        if( inf.id == DefaultObjectId )
         {
             ostringstream msg;
             msg << "(ObjectIndex_idXML::build): НЕ УКАЗАН id для " << it.getProp("name") 
