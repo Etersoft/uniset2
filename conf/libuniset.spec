@@ -8,7 +8,7 @@
 
 Name: libuniset
 Version: 1.8
-Release: alt1
+Release: alt2
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -336,6 +336,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet.pc
 
 %changelog
+* Thu Nov 13 2014 Pavel Vainerman <pv@altlinux.ru> 1.8-alt2
+- fixed bug: Now ObjectID=0 does not cause an error
+
 * Thu Oct 30 2014 Pavel Vainerman <pv@altlinux.ru> 1.8-alt1
 - (IOBase): added the ability to override the basic settings using the prefix.
 - (SQLiteInterface): fixed bug in SQLiteResult
