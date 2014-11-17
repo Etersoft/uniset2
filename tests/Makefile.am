@@ -1,3 +1,4 @@
+if HAVE_TESTS
 ############################################################################
 # This file is part of the UniSet library                                  #
 ############################################################################
@@ -37,3 +38,5 @@ check-local: atconfig package.m4 $(TESTSUITE)
 clean-local:
 	test ! -f '$(TESTSUITE)'|| $(SHELL) '$(TESTSUITE)' --clean
 	rm -rf $(CLEANFILES)
+
+endif

@@ -1,3 +1,5 @@
+if HAVE_TESTS
+
 # Common rules fot uniset testsuite
 include $(top_builddir)/testsuite/testsuite-common.mk
 
@@ -8,3 +10,4 @@ clean-local:
 	test ! -f '$(TESTSUITE)'|| $(SHELL) '$(TESTSUITE)' --clean
 	rm -rf $(CLEANFILES)
 
+endif

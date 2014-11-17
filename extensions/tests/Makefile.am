@@ -1,5 +1,6 @@
 SUBDIR=SMemoryTest
 
+if  HAVE_TESTS
 noinst_PROGRAMS = tests tests_with_conf tests_with_sm
 
 tests_SOURCES   = tests.cc digitalfilter.cc vtypes.cc
@@ -25,3 +26,5 @@ check-local: atconfig package.m4 $(TESTSUITE)
 clean-local:
 	test ! -f '$(TESTSUITE)'|| $(SHELL) '$(TESTSUITE)' --clean
 	rm -rf $(CLEANFILES)
+
+endif

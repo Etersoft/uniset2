@@ -1,3 +1,5 @@
+if HAVE_TESTS
+
 noinst_PROGRAMS = tests-with-sm
 
 tests_with_sm_SOURCES   = tests_with_sm.cc mbslave-tests.cc
@@ -22,3 +24,5 @@ check-local: atconfig package.m4 $(TESTSUITE) mbslave-tests.at
     
 clean-local:
 	rm -rf $(CLEANFILES)
+
+endif

@@ -199,6 +199,32 @@ UNISET_EXT_LIBS="\$(top_builddir)/extensions/lib/libUniSet2Extensions.la"
 AC_SUBST(UNISET_EXT_LIBS)
 
 
+AC_MSG_CHECKING([tests support])
+buildtests=true
+AC_ARG_ENABLE(tests, AC_HELP_STRING([--disable-tests], [disable tests build]),
+[ if test $enableval = yes; then buildtests=true; else buildtests=false; fi],[ buildtests=true; ])
+
+if test ${buildtests} = true; then
+    AC_MSG_RESULT([yes])
+    AC_LANG_PUSH([C++])
+    AC_CHECK_HEADERS([catch.hpp],,exit)
+    AC_LANG_POP([C++])
+
+	dnl Initialize test suite
+	AC_CONFIG_TESTDIR(testsuite)
+	AC_CONFIG_TESTDIR(tests)
+	AC_CONFIG_TESTDIR(extensions/tests)
+	AC_CONFIG_TESTDIR(extensions/LogicProcessor/tests)
+	AC_CONFIG_TESTDIR(extensions/ModbusSlave/tests)
+
+	TESTSUITE_DIR="\$(top_builddir)/testsuite"
+	AC_SUBST(TESTSUITE_DIR)
+else
+    AC_MSG_RESULT([no])
+fi
+
+AM_CONDITIONAL(HAVE_TESTS, test ${buildtests} = true)
+
 # export
 LDFLAGS="${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS}"
 CXXFLAGS="-pedantic -Wall -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} -I\$(top_builddir)/include"
@@ -299,16 +325,6 @@ AC_CONFIG_FILES([Makefile
 				 python/lib/pyUniSet/Makefile
 				 python/Makefile])
 				 
-dnl Initialize test suite
-AC_CONFIG_TESTDIR(testsuite)
-AC_CONFIG_TESTDIR(tests)
-AC_CONFIG_TESTDIR(extensions/tests)
-AC_CONFIG_TESTDIR(extensions/LogicProcessor/tests)
-AC_CONFIG_TESTDIR(extensions/ModbusSlave/tests)
-
-TESTSUITE_DIR="\$(top_builddir)/testsuite"
-AC_SUBST(TESTSUITE_DIR)
-
 
 AC_OUTPUT
 

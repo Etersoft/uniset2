@@ -1,3 +1,5 @@
+if HAVE_TESTS
+
 check_PROGRAMS = tests
 #noinst_PROGRAMS = tests
 
@@ -20,3 +22,5 @@ check-local: atconfig package.m4 $(TESTSUITE)
     
 clean-local:
 	rm -rf $(CLEANFILES)
+
+endif
