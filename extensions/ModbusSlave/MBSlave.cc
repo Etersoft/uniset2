@@ -545,14 +545,17 @@ void MBSlave::execute_tcp()
                 catch(Exception& ex)
                 {
                     dcrit << myname
-                          << "(execute_rtu): (askCount) " << ex << std::endl;
+                          << "(execute_tcp): (askCount) " << ex << std::endl;
                 }
             }
 
             for( auto &it: iomap )
                 IOBase::processingThreshold(&it.second,shm,force);
         }
-        catch(...){}
+        catch( std::exception& ex)
+		{
+			dcrit << myname << "(execute_tcp): " << ex.what() << endl;
+		}
     }
 
     dinfo << myname << "(execute_tcp): thread stopped.." << endl;
