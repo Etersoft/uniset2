@@ -6,6 +6,7 @@
 %def_enable io
 %def_enable logicproc
 #%def_enable modbus
+%def_disable tests
 
 %define oname uniset2
 
@@ -240,7 +241,7 @@ SharedMemoryPlus extension ('all in one') for libuniset
 
 %build
 %autoreconf
-%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc}
+%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests}
 %make
 
 %install
