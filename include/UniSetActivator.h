@@ -26,6 +26,7 @@
 #define UniSetActivator_H_
 // --------------------------------------------------------------------------
 #include <deque>
+#include <memory>
 #include <omniORB4/CORBA.h>
 #include <cc++/socket.h>
 #include "UniSetTypes.h"
@@ -34,6 +35,9 @@
 #include "ThreadCreator.h"
 
 //#include "OmniThreadCreator.h"
+//----------------------------------------------------------------------------------------
+class UniSetActivator;
+typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
 //----------------------------------------------------------------------------------------
 /*! \class UniSetActivator
  *    Создает POA менеджер и регистрирует в нем объекты.
@@ -53,7 +57,7 @@ class UniSetActivator:
 {
     public:
 
-        static UniSetActivator* Instance( const UniSetTypes::ObjectId id=UniSetTypes::DefaultObjectId );
+        static UniSetActivatorPtr Instance( const UniSetTypes::ObjectId id=UniSetTypes::DefaultObjectId );
         void Destroy();
 
         // ------------------------------------
@@ -105,7 +109,7 @@ class UniSetActivator:
         UniSetActivator();
         UniSetActivator( const UniSetTypes::ObjectId id );
 
-        static UniSetActivator* inst;
+        static std::shared_ptr<UniSetActivator> inst;
 
     private:
 

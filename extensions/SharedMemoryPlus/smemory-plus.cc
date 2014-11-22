@@ -76,7 +76,7 @@ int main( int argc, const char **argv )
         ulog.logFile( logname );
         conf->initDebug(UniSetExtensions::dlog,"dlog");
 
-        UniSetActivator* act = UniSetActivator::Instance();
+        UniSetActivatorPtr act = UniSetActivator::Instance();
         act->signal_terminate_event().connect( &activator_terminate );
         // ------------ SharedMemory ----------------
         SharedMemory* shm = SharedMemory::init_smemory(argc,argv);

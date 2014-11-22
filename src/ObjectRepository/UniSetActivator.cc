@@ -63,7 +63,7 @@ static UniSetTypes::uniset_rwmutex signalMutex("Activator::signalMutex");
 //static omni_condition pcondx(&pmutex);
 
 // ------------------------------------------------------------------------------------------
-static UniSetActivator* gActivator=0;
+static std::shared_ptr<UniSetActivator> gActivator;
 //static omni_mutex termutex;
 //static omni_condition termcond(&termutex);
 //static ThreadCreator<UniSetActivator>* termthread=0;
@@ -75,12 +75,15 @@ ost::AtomicCounter doneterm = 0;
 
 // PassiveTimer termtmr;
 // ---------------------------------------------------------------------------
-UniSetActivator* UniSetActivator::inst=0;
+UniSetActivatorPtr UniSetActivator::inst;
 // ---------------------------------------------------------------------------
-UniSetActivator* UniSetActivator::Instance( const UniSetTypes::ObjectId id )
+UniSetActivatorPtr UniSetActivator::Instance( const UniSetTypes::ObjectId id )
 {
-    if(inst==0)
-       inst = new UniSetActivator(id);
+    if( inst == nullptr )
+	{
+       inst = shared_ptr<UniSetActivator>( new UniSetActivator(id) );
+       gActivator = inst;
+	}
 
     return inst;
 }
@@ -89,10 +92,7 @@ UniSetActivator* UniSetActivator::Instance( const UniSetTypes::ObjectId id )
 
 void UniSetActivator::Destroy()
 {
-    if(inst)
-        delete inst;
-
-    inst=0;
+	inst.reset();
 }
 
 // ---------------------------------------------------------------------------
@@ -131,7 +131,6 @@ void UniSetActivator::init()
     if( CORBA::is_nil(poa) )
         ucrit << myname << "(init): init poa failed!!!" << endl;
 
-    gActivator=this;
     atexit( UniSetActivator::normalexit );
     set_terminate( UniSetActivator::normalterminate ); // ловушка для неизвестных исключений
 }
@@ -149,7 +148,7 @@ UniSetActivator::~UniSetActivator()
         procterm = 1;
         doneterm = 1;
         set_signals(false);
-        gActivator=0;
+        gActivator.reset();
     }
 
     if( orbthr )
@@ -498,8 +497,7 @@ void UniSetActivator::terminated( int signo )
             if( gActivator )
             {
                 UniSetActivator::set_signals(false);
-                delete gActivator;
-                gActivator = 0;
+                gActivator.reset();
             }
 
             sigset(SIGALRM, SIG_DFL);

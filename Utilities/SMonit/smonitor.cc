@@ -33,7 +33,7 @@ int main( int argc, const char **argv )
             return 0;
         }
 
-        UniSetActivator* act = UniSetActivator::Instance();
+        UniSetActivatorPtr act = UniSetActivator::Instance();
         SMonitor tp(ID);
         act->addObject(&tp);
 

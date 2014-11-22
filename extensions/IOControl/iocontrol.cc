@@ -52,7 +52,7 @@ int main(int argc, const char **argv)
             return 1;
         }
 
-        UniSetActivator* act = UniSetActivator::Instance();
+        UniSetActivatorPtr act = UniSetActivator::Instance();
         act->addObject(static_cast<class UniSetObject*>(ic));
 
         SystemMessage sm(SystemMessage::StartUp);

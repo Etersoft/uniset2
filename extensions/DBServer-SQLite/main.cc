@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 
         DBServer_SQLite dbs(ID);
 
-        UniSetActivator* act = UniSetActivator::Instance();
+        UniSetActivatorPtr act = UniSetActivator::Instance();
         act->addObject(static_cast<class UniSetObject*>(&dbs));
         act->run(false);
     }

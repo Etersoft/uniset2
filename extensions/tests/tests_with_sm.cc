@@ -42,7 +42,7 @@ int main(int argc, char* argv[] )
         if( !shm )
             return 1;
 
-        UniSetActivator* act = UniSetActivator::Instance();
+        UniSetActivatorPtr act = UniSetActivator::Instance();
 
         act->addObject(static_cast<class UniSetObject*>(shm));
         SystemMessage sm(SystemMessage::StartUp);

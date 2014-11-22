@@ -70,7 +70,7 @@ int main(int argc, const char **argv)
 
         PassiveLProcessor plc(schema,ID,shmID);
 
-        UniSetActivator* act = UniSetActivator::Instance();
+        UniSetActivatorPtr act = UniSetActivator::Instance();
         act->addObject(static_cast<class UniSetObject*>(&plc));
 
         SystemMessage sm(SystemMessage::StartUp);

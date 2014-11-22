@@ -44,7 +44,7 @@ int main(int argc, char* argv[] )
         if( !mbs )
             return 1;
 
-        UniSetActivator* act = UniSetActivator::Instance();
+        UniSetActivatorPtr act = UniSetActivator::Instance();
 
         act->addObject(static_cast<class UniSetObject*>(shm));
         act->addObject(static_cast<class UniSetObject*>(mbs));

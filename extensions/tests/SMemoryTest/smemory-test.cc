@@ -33,7 +33,7 @@ int main(int argc, const char **argv)
         if( !shm )
             return 1;
 
-        UniSetActivator* act = UniSetActivator::Instance();
+        UniSetActivatorPtr act = UniSetActivator::Instance();
 
         act->addObject(static_cast<class UniSetObject*>(shm));
 
