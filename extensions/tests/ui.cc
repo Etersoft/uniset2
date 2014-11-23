@@ -25,7 +25,7 @@ TEST_CASE("UInterface","[UInterface]")
 
 	UInterface ui;
 
-	CHECK( ui.getObjectIndex() != 0 );
+	CHECK( ui.getObjectIndex() != nullptr );
 	CHECK( ui.getConf() == UniSetTypes::conf );
 
 	REQUIRE( ui.getConfIOType(sid) == UniversalIO::DI );

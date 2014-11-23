@@ -25,6 +25,7 @@
 #ifndef UInterface_H_
 #define UInterface_H_
 // ---------------------------------------------------------------------------
+#include <memory>
 #include <string>
 #include <sstream>
 #include <map>
@@ -64,7 +65,7 @@ class UInterface
 {
     public:
 
-        UInterface( const UniSetTypes::ObjectId backid, CORBA::ORB_var orb=NULL, UniSetTypes::ObjectIndex* oind=NULL );
+        UInterface( const UniSetTypes::ObjectId backid, CORBA::ORB_var orb=NULL, std::shared_ptr<UniSetTypes::ObjectIndex> oind=nullptr );
         UInterface( const UniSetTypes::Configuration* uconf=UniSetTypes::conf );
         ~UInterface();
 
@@ -220,7 +221,7 @@ class UInterface
 
         // ---------------------------------------------------------------
         // Получение указателей на вспомогательные классы.
-        inline const UniSetTypes::ObjectIndex* getObjectIndex() { return oind; }
+        inline const std::shared_ptr<UniSetTypes::ObjectIndex> getObjectIndex() { return oind; }
         inline const UniSetTypes::Configuration* getConf() { return uconf; }
 
         // ---------------------------------------------------------------
@@ -300,7 +301,7 @@ class UInterface
         mutable CosNaming::NamingContext_var localctx;
         mutable CORBA::ORB_var orb;
         CacheOfResolve rcache;
-        UniSetTypes::ObjectIndex* oind;
+        std::shared_ptr<UniSetTypes::ObjectIndex> oind;
         const UniSetTypes::Configuration* uconf;
 };
 // --------------------------------------------------------------------------

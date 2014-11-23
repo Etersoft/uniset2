@@ -24,7 +24,7 @@ void InitTest()
 	{
 		ui = new UInterface();
 		// UI понадобиться для проверки записанных в SM значений.
-		CHECK( ui->getObjectIndex() != 0 );
+		CHECK( ui->getObjectIndex() != nullptr );
 		CHECK( ui->getConf() == UniSetTypes::conf );
 		CHECK( ui->waitReady(slaveID,5000) );
 	}

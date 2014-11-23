@@ -51,7 +51,7 @@ UInterface::UInterface( const UniSetTypes::Configuration* _uconf ):
     init();
 }
 // -----------------------------------------------------------------------------
-UInterface::UInterface( const ObjectId backid, CORBA::ORB_var orb, ObjectIndex* _oind ):
+UInterface::UInterface( const ObjectId backid, CORBA::ORB_var orb, shared_ptr<ObjectIndex> _oind ):
     rep(UniSetTypes::conf),
     myid(backid),
     orb(orb),
@@ -737,7 +737,7 @@ void UInterface::registered( const ObjectId id, const ObjectPtr oRef, bool force
         if( CORBA::is_nil(orb) )
             orb = uconf->getORB();
 
-        uconf->iorfile.setIOR(id,orb->object_to_string(oRef));
+        uconf->iorfile->setIOR(id,orb->object_to_string(oRef));
         return;
     }
 
@@ -756,7 +756,7 @@ void UInterface::unregister( const ObjectId id )throw(ORepFailed)
 {
     if( uconf->isLocalIOR() )
     {
-        uconf->iorfile.unlinkIOR(id);
+        uconf->iorfile->unlinkIOR(id);
         return;
     }
 
@@ -789,7 +789,7 @@ ObjectPtr UInterface::resolve( const ObjectId rid , const ObjectId node, int tim
             if( CORBA::is_nil(orb) )
                 orb = uconf->getORB();
 
-            string sior(uconf->iorfile.getIOR(rid));
+            string sior(uconf->iorfile->getIOR(rid));
             if( !sior.empty() )
             {
                 CORBA::Object_var nso = orb->string_to_object(sior.c_str());
@@ -1127,7 +1127,7 @@ bool UInterface::isExist( const UniSetTypes::ObjectId id ) const
             if( CORBA::is_nil(orb) )
                 orb = uconf->getORB();
 
-            string sior( uconf->iorfile.getIOR(id) );
+            string sior( uconf->iorfile->getIOR(id) );
             if( !sior.empty() )
             {
                 CORBA::Object_var oref = orb->string_to_object(sior.c_str());

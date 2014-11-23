@@ -93,11 +93,6 @@ Configuration::Configuration():
 
 Configuration::~Configuration()
 {
-    if( oind != NULL )
-    {
-        delete oind;
-        oind=0;
-    }
 }
 // ---------------------------------------------------------------------------------
 
@@ -118,7 +113,7 @@ Configuration::Configuration( int argc, const char* const* argv, const string& x
     initConfiguration(argc,argv);
 }
 // ---------------------------------------------------------------------------------
-Configuration::Configuration( int argc, const char* const* argv, ObjectIndex* _oind,
+Configuration::Configuration( int argc, const char* const* argv, shared_ptr<ObjectIndex> _oind,
                                 const string& fileConf ):
     oind(NULL),
     _argc(argc),
@@ -152,7 +147,9 @@ Configuration::Configuration( int argc, const char* const* argv, const string& f
     if( fileConf.empty() )
         setConfFileName();
 
-    oind = new ObjectIndex_Array(omap);
+	ObjectIndex_Array* _oi = new ObjectIndex_Array(omap);
+	oind = shared_ptr<ObjectIndex>(_oi);
+
     initConfiguration(argc,argv);
 }
 // ---------------------------------------------------------------------------------
@@ -160,6 +157,8 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 {
 //    PassiveTimer pt(UniSetTimer::WaitUpTime);
     ulogsys << "*** configure from file: " << fileConfName << endl;
+
+	iorfile = make_shared<IORFile>();
 
     // -------------------------------------------------------------------------
     xmlSensorsSec = 0;
@@ -205,7 +204,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
     
         // Init ObjectIndex interface
         {
-            if( oind == NULL )
+            if( oind == nullptr )
             {
                 UniXML::iterator it = unixml->findNode(unixml->getFirstNode(),"ObjectsMap");
                 if( !it )
@@ -217,9 +216,15 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
                 try
                 {
                     if( it.getIntProp("idfromfile") == 0 )
-                        oind = new ObjectIndex_XML(unixml); //(fileConfName);
+					{
+                        ObjectIndex_XML* oi = new ObjectIndex_XML(unixml); //(fileConfName);
+						oind = shared_ptr<ObjectIndex>(oi);
+					}
                     else
-                        oind = new ObjectIndex_idXML(unixml); //(fileConfName);
+					{
+                        ObjectIndex_idXML* oi = new ObjectIndex_idXML(unixml); //(fileConfName);
+						oind = shared_ptr<ObjectIndex>(oi);
+					}
                 }
                 catch(Exception& ex )
                 {

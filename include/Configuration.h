@@ -53,7 +53,7 @@ namespace UniSetTypes
             Configuration( int argc, const char* const* argv, const std::string& xmlfile="" );
 
             /*! конфигурирование xml-файлом    */
-            Configuration( int argc, const char* const* argv, ObjectIndex* oind, const std::string& xmlfile="" );
+            Configuration( int argc, const char* const* argv, std::shared_ptr<ObjectIndex> oind, const std::string& xmlfile="" );
 
             /*! устаревший вариант, для поддержки старых проектов */
             Configuration( int argc, const char* const* argv,
@@ -152,10 +152,10 @@ namespace UniSetTypes
         }
 
         /*! интерфейс к карте объектов */
-        ObjectIndex* oind;
+        std::shared_ptr<ObjectIndex> oind;
 
         /*! интерфейс к работе с локальнымми ior-файлами */
-        IORFile iorfile;
+        std::shared_ptr<IORFile> iorfile;
 
         /*! указатель на конфигурационный xml */
         inline const std::shared_ptr<UniXML> getConfXML() const { return unixml; }
