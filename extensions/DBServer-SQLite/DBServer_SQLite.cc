@@ -57,7 +57,7 @@ DBServer_SQLite::DBServer_SQLite( ObjectId id ):
 }
 
 DBServer_SQLite::DBServer_SQLite(): 
-    DBServer(conf->getDBServer()),
+    DBServer(uniset_conf()->getDBServer()),
     db(new SQLiteInterface()),
     PingTime(300000),
     ReconnectTime(180000),
@@ -251,6 +251,8 @@ void DBServer_SQLite::init_dbserver()
         return;
     }
 
+    auto conf = uniset_conf();
+
     if( conf->getDBServer() == UniSetTypes::DefaultObjectId )
     {
         ostringstream msg;
@@ -313,6 +315,7 @@ void DBServer_SQLite::init_dbserver()
 //--------------------------------------------------------------------------------------------
 void DBServer_SQLite::createTables( SQLiteInterface *db )
 {
+    auto conf = uniset_conf();
     UniXML::iterator it( conf->getNode("Tables") );
     if(!it)
     {

@@ -150,13 +150,13 @@ protected:
     ///
     virtual streamsize xsputn(char_type const * p, streamsize n) {
         sb2->sputn(p, n);
-		sb3->sputn(p, n);
+        sb3->sputn(p, n);
         return sb1->sputn(p, n);
     }
     ///
     virtual int_type overflow(int_type c = traits_type::eof()) {
         sb2->sputc(c);
-		sb3->sputc(c);
+        sb3->sputc(c);
         return sb1->sputc(c);
     }
 #else
@@ -165,19 +165,19 @@ protected:
     ///
     virtual int sync() {
         sb2->sync();
-		sb3->sync();
+        sb3->sync();
         return sb1->sync();
     }
     ///
     virtual streamsize xsputn(char_type const * p, streamsize n) {
         sb2->xsputn(p, n);
-		sb2->xsputn(p, n);
+        sb2->xsputn(p, n);
         return sb1->xsputn(p, n);
     }
     ///
     virtual int_type overflow(int_type c = EOF) {
         sb2->overflow(c);
-		sb3->owerflow(c);
+        sb3->owerflow(c);
         return sb1->overflow(c);
     }
 #endif
@@ -186,8 +186,8 @@ private:
     streambuf * sb1;
     ///
     streambuf * sb2;
-	///
-	streambuf * sb3;
+    ///
+    streambuf * sb3;
 };
 
 ///
@@ -235,17 +235,17 @@ private:
 class stringsigbuf : public streambuf {
 public:
     stringsigbuf():sb(new stringbuf())
-	{
-	}
+    {
+    }
 
     ~stringsigbuf()
-	{
-		if( sb )
-		{
-			delete sb;
-			sb = 0;
-		}
-	}
+    {
+        if( sb )
+        {
+            delete sb;
+            sb = 0;
+        }
+    }
 
     ///
     stringsigbuf( stringbuf* b )

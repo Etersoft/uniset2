@@ -36,7 +36,7 @@ using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
 
-ObjectRepository::ObjectRepository( const Configuration* _conf ):
+ObjectRepository::ObjectRepository( const std::shared_ptr<UniSetTypes::Configuration>& _conf ):
     nsName(_conf->getNSName()),
     uconf(_conf)
 {

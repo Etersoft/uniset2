@@ -35,7 +35,7 @@ namespace UniSetTypes
 //--------------------------------------------------------------------------------------------
 Message::Message():
     type(Unused), priority(Medium),
-    node(UniSetTypes::conf->getLocalNode()),
+    node(UniSetTypes::uniset_conf()->getLocalNode()),
     supplier(DefaultObjectId),
     consumer(DefaultObjectId)
 {

@@ -104,7 +104,7 @@ long UniSetTypes::setoutregion(long ret, long calMin, long calMax)
 
 // -------------------------------------------------------------------------
 UniSetTypes::IDList::IDList():
-node(UniSetTypes::conf->getLocalNode())
+node(UniSetTypes::uniset_conf()->getLocalNode())
 {
 
 }
@@ -232,8 +232,11 @@ bool UniSetTypes::is_digit( const std::string& s )
     //return (std::count_if(s.begin(),s.end(),std::isdigit) == s.size()) ? true : false;
 }
 // --------------------------------------------------------------------------------------
-std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str, Configuration* conf )
+std::list<UniSetTypes::ParamSInfo> UniSetTypes::getSInfoList( const string& str, std::shared_ptr<Configuration> conf )
 {
+    if( conf == nullptr )
+        conf = uniset_conf();
+
     std::list<UniSetTypes::ParamSInfo> res;
 
     auto lst = UniSetTypes::explode_str(str,',');
@@ -374,27 +377,27 @@ string UniSetTypes::dateToString(time_t tm, const std::string& brk )
 //--------------------------------------------------------------------------------------------
 int UniSetTypes::uni_atoi( const char* str )
 {
-	// if str is NULL or sscanf failed, we return 0
+    // if str is NULL or sscanf failed, we return 0
     if( str == nullptr )
         return 0;
 
-	// приходиться самостоятельно проверять на наличие префикса "0x"
-	// чтобы применить соответствующую функцию.
-	// причём для чисел применяется atoll, 
-	// чтобы корректно обрабатывать большие числа типа std::numeric_limits<unsigned int>::max()
-	// \warning есть сомнения, что на 64bit-тах это будет корректно работать..
+    // приходиться самостоятельно проверять на наличие префикса "0x"
+    // чтобы применить соответствующую функцию.
+    // причём для чисел применяется atoll, 
+    // чтобы корректно обрабатывать большие числа типа std::numeric_limits<unsigned int>::max()
+    // \warning есть сомнения, что на 64bit-тах это будет корректно работать..
 
     int n = 0; 
     if( strlen(str) > 2 )
-	{
-		if( str[0]=='0' && str[1]=='x' )
-		{
-			std::sscanf(str, "%x", &n);
-			return n;
-		}
-	}
+    {
+        if( str[0]=='0' && str[1]=='x' )
+        {
+            std::sscanf(str, "%x", &n);
+            return n;
+        }
+    }
 
-   	n = std::atoll(str); // универсальнее получать unsigned..чтобы не потерять "большие числа"..
+       n = std::atoll(str); // универсальнее получать unsigned..чтобы не потерять "большие числа"..
     return n;
 }
 //--------------------------------------------------------------------------------------------

@@ -24,7 +24,8 @@
 // -------------------------------------------------------------------------- 
 #ifndef ObjectRepository_H_
 #define ObjectRepository_H_
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
+#include <memory>
 #include <omniORB4/CORBA.h>
 #include <omniORB4/Naming.hh>
 #include <string>
@@ -46,7 +47,7 @@
     {
         public:
 
-            ObjectRepository( const UniSetTypes::Configuration* conf);
+            ObjectRepository( const std::shared_ptr<UniSetTypes::Configuration>& conf );
             ~ObjectRepository();
 
         /**
@@ -100,7 +101,7 @@
 
         ObjectRepository();
         mutable std::string nsName;
-        const UniSetTypes::Configuration* uconf;
+        std::shared_ptr<UniSetTypes::Configuration> uconf;
 
         bool list(const std::string& section, UniSetTypes::ListObjectName *ls, unsigned int how_many, ObjectType type);
 

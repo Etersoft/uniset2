@@ -18,8 +18,7 @@ int main( int argc, const char **argv )
             return 0;
         }
 
-        string confile = UniSetTypes::getArgParam( "--confile", argc, argv, "configure.xml" );
-        conf = new Configuration( argc, argv, confile );
+        auto conf = uniset_init( argc, argv );
 
         ObjectId shmID = DefaultObjectId;
         string sID = conf->getArgParam("--smemory-id");

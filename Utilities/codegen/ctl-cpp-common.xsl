@@ -50,10 +50,10 @@
 		<xsl:if test="normalize-space(@vartype)!='io'">
 		        <xsl:value-of select="../../@name"/>(<xsl:value-of select="../../@id"/>),
 			<xsl:if test="not(normalize-space(../../@node)='')">
-				node_<xsl:value-of select="../../@name"/>(conf->getNodeID("<xsl:value-of select="../../@node"/>")),
+				node_<xsl:value-of select="../../@name"/>(uniset_conf()->getNodeID("<xsl:value-of select="../../@node"/>")),
 			</xsl:if>
 			<xsl:if test="normalize-space(../../@node)=''">
-				node_<xsl:value-of select="../../@name"/>(UniSetTypes::conf->getLocalNode()),
+				node_<xsl:value-of select="../../@name"/>(UniSetTypes::uniset_conf()->getLocalNode()),
 			</xsl:if>
 			<xsl:if test="normalize-space(../../@default)=''">
 				<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>(0),
@@ -159,7 +159,7 @@
 		bool alarm( UniSetTypes::ObjectId sid, bool state );
 		long getValue( UniSetTypes::ObjectId sid );
 		void setValue( UniSetTypes::ObjectId sid, long value );
-		void askSensor( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );
+		void askSensor( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
 		void updateValues();
 		void setMsg( UniSetTypes::ObjectId code, bool state );
 
@@ -229,9 +229,9 @@
 		
 		xmlNode* confnode;
 		/*! получить числовое свойство из конф. файла по привязанной confnode */
-		int getIntProp(const std::string&amp; name) { return UniSetTypes::conf->getIntProp(confnode, name); }
+		int getIntProp(const std::string&amp; name) { return UniSetTypes::uniset_conf()->getIntProp(confnode, name); }
 		/*! получить текстовое свойство из конф. файла по привязанной confnode */
-		inline const std::string getProp(const std::string&amp; name) { return UniSetTypes::conf->getProp(confnode, name); }
+		inline const std::string getProp(const std::string&amp; name) { return UniSetTypes::uniset_conf()->getProp(confnode, name); }
 
 		int smReadyTimeout; 	/*!&lt; время ожидания готовности SM */
 		std::atomic_bool activated;
@@ -418,7 +418,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 </xsl:template>
 
 <xsl:template name="COMMON-ID-LIST">
-	if( UniSetTypes::findArgParam("--print-id-list",conf->getArgc(),conf->getArgv()) != -1 )
+	if( UniSetTypes::findArgParam("--print-id-list",uniset_conf()->getArgc(),uniset_conf()->getArgv()) != -1 )
 	{
 <xsl:for-each select="//smap/item">
 		if( <xsl:value-of select="normalize-space(@name)"/> != UniSetTypes::DefaultObjectId )
@@ -444,22 +444,22 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 </xsl:template>
 <xsl:template name="init-variables">
 <xsl:if test="normalize-space(@type)='int'">
-<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(conf->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
+<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
 </xsl:if>
 <xsl:if test="normalize-space(@type)='long'">
-<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(conf->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
+<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
 </xsl:if>
 <xsl:if test="normalize-space(@type)='float'">
-<xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(conf->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
+<xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
 </xsl:if>
 <xsl:if test="normalize-space(@type)='double'">
-<xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(conf->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
+<xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
 </xsl:if>
 <xsl:if test="normalize-space(@type)='bool'">
-<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(conf->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
+<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
 </xsl:if>
 <xsl:if test="normalize-space(@type)='str'">
-<xsl:value-of select="normalize-space(@name)"/>(init3_str(conf->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),conf->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>")),
+<xsl:value-of select="normalize-space(@name)"/>(init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>")),
 </xsl:if>
 </xsl:template>
 
@@ -552,13 +552,13 @@ static const std::string init3_str( const std::string&amp; s1, const std::string
 // Инициализация идентификаторов (имена берутся из конф. файла)
 <xsl:for-each select="//smap/item">
 <xsl:if test="normalize-space(@vartype)!='io'">
-	<xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
-node_<xsl:value-of select="normalize-space(@name)"/>( conf->getNodeID(conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>")) ),
+	<xsl:value-of select="normalize-space(@name)"/>(uniset_conf()->getSensorID(uniset_conf()->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
+node_<xsl:value-of select="normalize-space(@name)"/>( uniset_conf()->getNodeID(uniset_conf()->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>")) ),
 </xsl:if>
 </xsl:for-each>
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
-<xsl:for-each select="//msgmap/item"><xsl:value-of select="normalize-space(@name)"/>(conf->getSensorID(conf->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
-node_<xsl:value-of select="normalize-space(@name)"/>(conf->getNodeID( conf->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>"))),
+<xsl:for-each select="//msgmap/item"><xsl:value-of select="normalize-space(@name)"/>(uniset_conf()->getSensorID(uniset_conf()->getProp(cnode,"<xsl:value-of select="normalize-space(@name)"/>"))),
+node_<xsl:value-of select="normalize-space(@name)"/>(uniset_conf()->getNodeID( uniset_conf()->getProp(cnode,"node_<xsl:value-of select="normalize-space(@name)"/>"))),
 m_<xsl:value-of select="normalize-space(@name)"/>(false),
 prev_m_<xsl:value-of select="normalize-space(@name)"/>(false),
 </xsl:for-each>
@@ -577,8 +577,8 @@ sleep_msec(<xsl:call-template name="settings"><xsl:with-param name="varname" sel
 active(true),
 <xsl:if test="normalize-space($TESTMODE)!=''">
 isTestMode(false),
-idTestMode_S(conf->getSensorID("TestMode_S")),
-idLocalTestMode_S(conf->getSensorID(conf->getProp(cnode,"LocalTestMode_S"))),
+idTestMode_S(uniset_conf()->getSensorID("TestMode_S")),
+idLocalTestMode_S(uniset_conf()->getSensorID(uniset_conf()->getProp(cnode,"LocalTestMode_S"))),
 in_TestMode_S(false),
 in_LocalTestMode_S(false),
 </xsl:if>
@@ -587,7 +587,7 @@ maxHeartBeat(10),
 confnode(cnode),
 smReadyTimeout(0),
 activated(false),
-askPause(conf->getPIntProp(cnode,"askPause",2000)),
+askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000)),
 <xsl:for-each select="//variables/item">
 <xsl:if test="normalize-space(@private)!=''">
 <xsl:call-template name="init-variables"/>
@@ -595,6 +595,8 @@ askPause(conf->getPIntProp(cnode,"askPause",2000)),
 </xsl:for-each>
 end_private(false)
 {
+	auto conf = uniset_conf();
+
 	<xsl:call-template name="COMMON-ID-LIST"/>
 
 	if( getId() == DefaultObjectId )
@@ -898,8 +900,8 @@ sleep_msec(<xsl:call-template name="settings-alone"><xsl:with-param name="varnam
 active(true),
 <xsl:if test="normalize-space($TESTMODE)!=''">
 isTestMode(false),
-idTestMode_S(conf->getSensorID("TestMode_S")),
-idLocalTestMode_S(conf->getSensorID(conf->getProp(cnode,"LocalTestMode_S"))),
+idTestMode_S(uniset_conf()->getSensorID("TestMode_S")),
+idLocalTestMode_S(uniset_conf()->getSensorID(uniset_conf()->getProp(cnode,"LocalTestMode_S"))),
 in_TestMode_S(false),
 in_LocalTestMode_S(false),
 </xsl:if>
@@ -907,8 +909,10 @@ idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(cnode),
 activated(false),
-askPause(conf->getPIntProp(cnode,"askPause",2000))
+askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 {
+	auto conf = uniset_conf();
+
 	if( getId() == DefaultObjectId )
 	{
 		ostringstream err;

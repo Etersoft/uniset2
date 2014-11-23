@@ -25,6 +25,7 @@
 #ifndef UniSetTypes_H_
 #define UniSetTypes_H_
 // -------------------------------------------------------------------------- 
+#include <memory>
 #include <cstdlib>
 #include <cstdio>
 #include <string>
@@ -46,8 +47,6 @@ inline void msleep( unsigned int m ) { usleep(m*1000); }
 namespace UniSetTypes
 {
     class Configuration;
-    extern Configuration* conf;
-
     // ---------------------------------------------------------------
     // Вспомогательные типы данных и константы
 
@@ -172,7 +171,7 @@ namespace UniSetTypes
     /*! Функция разбора строки вида: id1@node1=val1,id2@node2=val2,...
        Если '=' не указано, возвращается val=0
       Если @node не указано, возвращается node=DefaultObjectId */
-    std::list<ParamSInfo> getSInfoList( const std::string& s, Configuration* conf=UniSetTypes::conf );
+    std::list<ParamSInfo> getSInfoList( const std::string& s, std::shared_ptr<UniSetTypes::Configuration> conf = nullptr );
 
     /*! проверка является текст в строке - числом..*/
     bool is_digit( const std::string& s );

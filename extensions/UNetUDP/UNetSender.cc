@@ -71,7 +71,7 @@ s_thr(0)
 
 
     // выставляем поля, которые не меняются
-    mypack.nodeID = conf->getLocalNode();
+    mypack.nodeID = uniset_conf()->getLocalNode();
     mypack.procID = shm->ID();
 }
 // -----------------------------------------------------------------------------
@@ -210,7 +210,7 @@ void UNetSender::start()
 // -----------------------------------------------------------------------------
 void UNetSender::readConfiguration()
 {
-    xmlNode* root = conf->getXMLSensorsSection();
+    xmlNode* root = uniset_conf()->getXMLSensorsSection();
     if(!root)
     {
         ostringstream err;
@@ -253,7 +253,7 @@ bool UNetSender::initItem( UniXML::iterator& it )
             sid = DefaultObjectId;
     }
     else
-        sid = conf->getSensorID(sname);
+        sid = uniset_conf()->getSensorID(sname);
 
     if( sid == DefaultObjectId )
     {

@@ -1,6 +1,7 @@
 #ifndef UConnector_H_
 #define UConnector_H_
 // --------------------------------------------------------------------------
+#include <memory>
 #include <string>
 #include "Configuration.h"
 #include "UInterface.h"
@@ -29,8 +30,8 @@ class UConnector
 
       
     private:
-      UniSetTypes::Configuration* conf;
-      UInterface* ui;
+      std::shared_ptr<UniSetTypes::Configuration> conf;
+      std::shared_ptr<UInterface> ui;
       const char* xmlfile;
 };
 //---------------------------------------------------------------------------

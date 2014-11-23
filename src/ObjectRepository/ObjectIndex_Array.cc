@@ -87,6 +87,7 @@ std::ostream& operator<<(std::ostream& os, ObjectIndex_Array& oi )
 
 std::ostream& ObjectIndex_Array::printMap( std::ostream& os )
 {
+    auto oind = uniset_conf()->oind;
     for( unsigned int i=0;;i++)
     {
         if( !objectInfo[i].repName )
@@ -95,7 +96,7 @@ std::ostream& ObjectIndex_Array::printMap( std::ostream& os )
         assert (i==objectInfo[i].id);
 
         os  << setw(5) << objectInfo[i].id << "  " 
-            << setw(45) << conf->oind->getBaseName(objectInfo[i].repName)
+            << setw(45) << oind->getBaseName(objectInfo[i].repName)
             << "  " << objectInfo[i].textName << endl;
     }
 

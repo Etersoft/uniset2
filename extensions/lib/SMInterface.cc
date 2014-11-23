@@ -10,6 +10,7 @@ using namespace UniSetTypes;
 #define BEG_FUNC(name) \
     try \
     {     \
+        auto conf = ui->getConf(); \
         uniset_rwmutex_wrlock l(shmMutex); \
         IONotifyController_i_var shm;\
         for( unsigned int i=0; i<conf->getRepeatCount(); i++)\
@@ -33,6 +34,7 @@ using namespace UniSetTypes;
 #define BEG_FUNC1(name) \
     try \
     {     \
+        auto conf = ui->getConf(); \
         uniset_rwmutex_wrlock l(shmMutex); \
         if( true ) \
         { \
@@ -111,7 +113,7 @@ void SMInterface::setValue( UniSetTypes::ObjectId id, long value )
 
     IOController_i::SensorInfo si;
     si.id = id;
-    si.node = conf->getLocalNode();
+    si.node = ui->getConf()->getLocalNode();
 
     BEG_FUNC1(SMInterface::setValue)
     ui->fastSetValue(si,value,myid);
@@ -137,7 +139,7 @@ void SMInterface::askSensor( UniSetTypes::ObjectId id, UniversalIO::UIOCommand c
 {
     ConsumerInfo_var ci;
     ci->id   = (backid==DefaultObjectId) ? myid : backid;
-    ci->node = conf->getLocalNode();
+    ci->node = ui->getConf()->getLocalNode();
 
     if( ic )
     {
@@ -224,7 +226,7 @@ void SMInterface::localSetValue( IOController::IOStateList::iterator& it,
 //    CHECK_IC_PTR(localSetValue)
     IOController_i::SensorInfo si;
     si.id = sid;
-    si.node = conf->getLocalNode();
+    si.node = ui->getConf()->getLocalNode();
     ic->localSetValue(it,si.id,value,sup_id);
 }
 // --------------------------------------------------------------------------
@@ -246,7 +248,7 @@ void SMInterface::localSetUndefinedState( IOController::IOStateList::iterator& i
     {
         IOController_i::SensorInfo si;
         si.id     = sid;
-        si.node = conf->getLocalNode();
+        si.node = ui->getConf()->getLocalNode();
         setUndefinedState(si,undefined,myid);
         return;
     }

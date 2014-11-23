@@ -168,7 +168,7 @@ namespace VTypes
             static VType type(){ return vtByte; }
             // ------------------------------------------
             operator long(){ return lroundf(raw.w); }
-			operator unsigned short(){ return raw.w; }
+            operator unsigned short(){ return raw.w; }
 
             unsigned char operator[]( const int i ){ return raw.b[i]; }
 

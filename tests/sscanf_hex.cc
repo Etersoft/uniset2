@@ -6,16 +6,16 @@ int check( const char *t )
 {
     int r = 0;
     sscanf(t, "%i", &r);
-	return r;
+    return r;
 } 
 
 TEST_CASE("sscanf hex","[sscanf hex]")
 {
-	REQUIRE( check("100") == 100 );
-	REQUIRE( check("0x100") == 0x100 );
-	REQUIRE( check("0xFF") == 0xff );
-	REQUIRE( check("010") == 010 );
-	REQUIRE( check("-10") == -10 );
-	REQUIRE( check("-1000") == -1000 );
-	REQUIRE( check("") == 0 );
+    REQUIRE( check("100") == 100 );
+    REQUIRE( check("0x100") == 0x100 );
+    REQUIRE( check("0xFF") == 0xff );
+    REQUIRE( check("010") == 010 );
+    REQUIRE( check("-10") == -10 );
+    REQUIRE( check("-1000") == -1000 );
+    REQUIRE( check("") == 0 );
 }

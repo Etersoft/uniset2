@@ -22,6 +22,8 @@ checkThread(0)
     if( objId == DefaultObjectId )
         throw UniSetTypes::SystemError("(MBTCPMultiMaster): objId=-1?!! Use --" + prefix + "-name" );
 
+    auto conf = uniset_conf();
+
     // префикс для "свойств" - по умолчанию
     prop_prefix = "tcp_";
     // если задано поле для "фильтрации"
@@ -365,6 +367,8 @@ MBTCPMultiMaster* MBTCPMultiMaster::init_mbmaster( int argc, const char* const* 
                                             UniSetTypes::ObjectId icID, SharedMemory* ic,
                                             const std::string& prefix )
 {
+    auto conf = uniset_conf();
+
     string name = conf->getArgParam("--" + prefix + "-name","MBTCPMultiMaster1");
     if( name.empty() )
     {

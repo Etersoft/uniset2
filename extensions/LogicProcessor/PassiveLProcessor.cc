@@ -11,6 +11,8 @@ PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId o
     UniSetObject_LT(objId),
     shm(0)
 {
+    auto conf = uniset_conf();
+
     logname = myname;
     shm = new SMInterface(shmID,&(UniSetObject_LT::ui),objId,ic);
     build(lfile);
@@ -28,7 +30,7 @@ PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId o
             throw SystemError(err.str());
         }
 
-		int heartbeatTime = conf->getArgPInt("--" + prefix + "-heartbeat-time",conf->getHeartBeatTime());
+        int heartbeatTime = conf->getArgPInt("--" + prefix + "-heartbeat-time",conf->getHeartBeatTime());
         if( heartbeatTime )
             ptHeartBeat.setTiming(heartbeatTime);
         else

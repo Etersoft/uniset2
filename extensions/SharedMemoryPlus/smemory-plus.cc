@@ -33,25 +33,25 @@ std::list< ThreadCreator<IOControl>* > lst_iothr;
 #endif
 // --------------------------------------------------------------------------
 void activator_terminate( int signo )
-{	
-	if( logserver )
-	{
-		try
-		{
-			delete logserver;
-			logserver = 0;
-		}
-		catch(...){}
-	}
+{    
+    if( logserver )
+    {
+        try
+        {
+            delete logserver;
+            logserver = 0;
+        }
+        catch(...){}
+    }
 
 #ifdef UNISET_IO_ENABLE
         for( auto& i: lst_iothr )
         {
-        	try
-        	{
-	            i->stop();
-	        }
-	        catch(...){}
+            try
+            {
+                i->stop();
+            }
+            catch(...){}
         }
 #endif
 }
@@ -67,8 +67,7 @@ int main( int argc, const char **argv )
 
     try
     {
-        string confile = UniSetTypes::getArgParam( "--confile", argc, argv, "configure.xml" );
-        conf = new Configuration(argc, argv, confile);
+        auto conf = uniset_init(argc, argv);
 
         string logfilename = conf->getArgParam("--logfile", "smemory-plus.log");
         string logname( conf->getLogDir() + logfilename );
@@ -217,16 +216,16 @@ int main( int argc, const char **argv )
             i->start();
 #endif
 
-		LogAgregator la;
-		la.add(ulog);
-		la.add(dlog);
+        LogAgregator la;
+        la.add(ulog);
+        la.add(dlog);
 
-		logserver = run_logserver("smplus",la);
+        logserver = run_logserver("smplus",la);
         if( logserver == 0 )
-		{
-			cerr << "(smemory-plus): run logserver for 'smplus' FAILED" << endl;
-			return 1;
-		}
+        {
+            cerr << "(smemory-plus): run logserver for 'smplus' FAILED" << endl;
+            return 1;
+        }
 
         act->run(false);
 
@@ -287,45 +286,46 @@ void help_print( int argc, const char* argv[] )
 // -----------------------------------------------------------------------------
 LogServer* run_logserver( const std::string& cname, DebugStream& log )
 {
-	const std::shared_ptr<UniXML> xml = UniSetTypes::conf->getConfXML();
-	xmlNode* cnode = UniSetTypes::conf->findNode(xml->getFirstNode(),"LogServer",cname);
-	if( cnode == 0 )
-	{
-		cerr << "(init_ulogserver): Not found xmlnode for '" << cname << "'" << endl;
-		return 0;
-		
-	}
-	
-	UniXML::iterator it(cnode);
-	
-	LogServer* ls = new LogServer( log );
-	
-	timeout_t sessTimeout = conf->getArgPInt("--" + cname + "-session-timeout",it.getProp("sessTimeout"),3600000);
-	timeout_t cmdTimeout = conf->getArgPInt("--" + cname + "-cmd-timeout",it.getProp("cmdTimeout"),2000);
-	timeout_t outTimeout = conf->getArgPInt("--" + cname + "-out-timeout",it.getProp("outTimeout"),2000);
+    auto conf = uniset_conf();
+    auto xml = conf->getConfXML();
+    xmlNode* cnode = conf->findNode(xml->getFirstNode(),"LogServer",cname);
+    if( cnode == 0 )
+    {
+        cerr << "(init_ulogserver): Not found xmlnode for '" << cname << "'" << endl;
+        return 0;
+        
+    }
+    
+    UniXML::iterator it(cnode);
+    
+    LogServer* ls = new LogServer( log );
+    
+    timeout_t sessTimeout = conf->getArgPInt("--" + cname + "-session-timeout",it.getProp("sessTimeout"),3600000);
+    timeout_t cmdTimeout = conf->getArgPInt("--" + cname + "-cmd-timeout",it.getProp("cmdTimeout"),2000);
+    timeout_t outTimeout = conf->getArgPInt("--" + cname + "-out-timeout",it.getProp("outTimeout"),2000);
 
-	ls->setSessionTimeout(sessTimeout);
-	ls->setCmdTimeout(cmdTimeout);
-	ls->setOutTimeout(outTimeout);
+    ls->setSessionTimeout(sessTimeout);
+    ls->setCmdTimeout(cmdTimeout);
+    ls->setOutTimeout(outTimeout);
 
-	std::string host = conf->getArgParam("--" + cname + "-host",it.getProp("host"));
-	if( host.empty() )
-	{
-		cerr << "(init_ulogserver): " << cname << ": unknown host.." << endl;
-		delete ls;
-		return 0;
-	}
+    std::string host = conf->getArgParam("--" + cname + "-host",it.getProp("host"));
+    if( host.empty() )
+    {
+        cerr << "(init_ulogserver): " << cname << ": unknown host.." << endl;
+        delete ls;
+        return 0;
+    }
 
-	ost::tpport_t port = conf->getArgPInt("--" + cname + "-port",it.getProp("port"),0);
-	if( port == 0 )
-	{
-		cerr << "(init_ulogserver): " << cname << ": unknown port.." << endl;
-		delete ls;
-		return 0;
-	}
+    ost::tpport_t port = conf->getArgPInt("--" + cname + "-port",it.getProp("port"),0);
+    if( port == 0 )
+    {
+        cerr << "(init_ulogserver): " << cname << ": unknown port.." << endl;
+        delete ls;
+        return 0;
+    }
 
-	cout << "logserver: " << host << ":" << port << endl;
-	ls->run(host, port, true);
-	return ls;
+    cout << "logserver: " << host << ":" << port << endl;
+    ls->run(host, port, true);
+    return ls;
 }
 // -----------------------------------------------------------------------------

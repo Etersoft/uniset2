@@ -10,7 +10,7 @@ using namespace UniSetExtensions;
 UniExchange::NetNodeInfo::NetNodeInfo():
     oref(CORBA::Object::_nil()),
     id(DefaultObjectId),
-    node(conf->getLocalNode()),
+    node(uniset_conf()->getLocalNode()),
     sidConnection(DefaultObjectId),
     smap(1)
 {
@@ -26,6 +26,8 @@ mymap(1),
 maxIndex(0),
 smReadyTimeout(15000)
 {
+    auto conf = uniset_conf();
+
     cnode = conf->getNode(myname);
     if( cnode == NULL )
         throw UniSetTypes::SystemError("(UniExchange): Not found conf-node for " + myname );
@@ -176,7 +178,7 @@ void UniExchange::execute()
                 catch(...)
                 {
                     dcrit << myname << "(execute): sensor not avalible "
-                            << conf->oind->getNameById(it.sidConnection)
+                            << uniset_conf()->oind->getNameById(it.sidConnection)
                             << endl;
                 }
             }
@@ -329,6 +331,8 @@ UniExchange* UniExchange::init_exchange( int argc, const char* const* argv,
                                         UniSetTypes::ObjectId icID, SharedMemory* ic,
                                             const std::string& prefix )
 {
+    auto conf = uniset_conf();
+
     string p("--" + prefix + "-name");
     string nm(UniSetTypes::getArgParam(p,argc,argv,"UniExchange"));
 
@@ -345,7 +349,7 @@ UniExchange* UniExchange::init_exchange( int argc, const char* const* argv,
 void UniExchange::readConfiguration()
 {
 //    readconf_ok = false;
-    xmlNode* root = conf->getXMLSensorsSection();
+    xmlNode* root = uniset_conf()->getXMLSensorsSection();
     if(!root)
     {
         ostringstream err;
@@ -383,7 +387,7 @@ bool UniExchange::initItem( UniXML::iterator& it )
 
     i.id = DefaultObjectId;
     if( it.getProp("id").empty() )
-        i.id = conf->getSensorID(it.getProp("name"));
+        i.id = uniset_conf()->getSensorID(it.getProp("name"));
     else
     {
         i.id = it.getIntProp("id");

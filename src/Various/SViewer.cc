@@ -37,9 +37,9 @@ using namespace std;
 // --------------------------------------------------------------------------
 SViewer::SViewer(const string& csec, bool sn):
     csec(csec),
-    rep(UniSetTypes::conf),
+    rep(UniSetTypes::uniset_conf()),
     cache(500, 15),
-    ui(UniSetTypes::conf),
+    ui(UniSetTypes::uniset_conf()),
     isShort(sn)
 {
 }
@@ -140,7 +140,7 @@ void SViewer::readSection( const string& section, const string& secRoot )
                 {
                     string ob(*li);
                     string fname(curSection+ "/"+ ob);
-                    ObjectId id = conf->oind->getIdByName( fname );
+                    ObjectId id = uniset_conf()->oind->getIdByName( fname );
                     if( id == DefaultObjectId )
                         cout << "(readSection): ID?! для " << fname << endl;
                     else
@@ -165,14 +165,14 @@ void SViewer::getInfo( ObjectId id )
     {
         try
         {
-            oref = cache.resolve(id, conf->getLocalNode());
+            oref = cache.resolve(id, uniset_conf()->getLocalNode());
         }
         catch( NameNotFound ){}
 
         if( CORBA::is_nil(oref) )
         {
             oref = ui.resolve(id);
-            cache.cache(id, conf->getLocalNode(), oref);
+            cache.cache(id, uniset_conf()->getLocalNode(), oref);
         }
 
         IONotifyController_i_var ioc = IONotifyController_i::_narrow(oref);
@@ -204,13 +204,13 @@ void SViewer::getInfo( ObjectId id )
         cout << "(getInfo): catch ..." << endl;
     }
 
-    cache.erase(id, conf->getLocalNode());
+    cache.erase(id, uniset_conf()->getLocalNode());
 }
 
 // ---------------------------------------------------------------------------
 void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetTypes::ObjectId oid )
 {
-    string owner = ORepHelpers::getShortName(conf->oind->getMapName(oid));
+    string owner = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(oid));
     cout << "\n======================================================\n" << owner;
     cout << "\t Датчики";
     cout << "\n------------------------------------------------------"<< endl;
@@ -219,10 +219,10 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
     {
         if( amap[i].type == UniversalIO::AI || amap[i].type == UniversalIO::DI )
         {
-            string name(conf->oind->getNameById(amap[i].si.id));
+            string name(uniset_conf()->oind->getNameById(amap[i].si.id));
             if( isShort )
                 name = ORepHelpers::getShortName(name);
-            string txtname( conf->oind->getTextName(amap[i].si.id) );
+            string txtname( uniset_conf()->oind->getTextName(amap[i].si.id) );
             printInfo( amap[i].si.id, name, amap[i].value, owner, txtname, "AI");
         }
     }
@@ -235,10 +235,10 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
     {
         if( amap[i].type == UniversalIO::AO || amap[i].type == UniversalIO::DO )
         {
-            string name(conf->oind->getNameById(amap[i].si.id));
+            string name(uniset_conf()->oind->getNameById(amap[i].si.id));
             if( isShort )
                 name = ORepHelpers::getShortName(name);
-            string txtname( conf->oind->getTextName(amap[i].si.id) );
+            string txtname( uniset_conf()->oind->getTextName(amap[i].si.id) );
             printInfo( amap[i].si.id, name, amap[i].value, owner, txtname, "AO");
         }
     }
@@ -249,7 +249,7 @@ void SViewer::updateSensors( IOController_i::SensorInfoSeq_var& amap, UniSetType
 void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tlst, UniSetTypes::ObjectId oid )
 {
     int size = tlst->length();
-    string owner = ORepHelpers::getShortName(conf->oind->getMapName(oid));
+    string owner = ORepHelpers::getShortName(uniset_conf()->oind->getMapName(oid));
     cout << "\n======================================================\n" << owner;
     cout << "\t Пороговые датчики";
     cout << "\n------------------------------------------------------"<< endl;
@@ -272,7 +272,7 @@ void SViewer::updateThresholds( IONotifyController_i::ThresholdsListSeq_var& tls
             break;
         }
 
-        string sname(conf->oind->getNameById(tlst[i].si.id));
+        string sname(uniset_conf()->oind->getNameById(tlst[i].si.id));
         if( isShort )
                 sname = ORepHelpers::getShortName(sname);
 

@@ -41,7 +41,7 @@ DBServer::DBServer(ObjectId id):
 {
     if( getId() == DefaultObjectId )
     {
-        id = conf->getDBServer();
+        id = uniset_conf()->getDBServer();
         if( id == DefaultObjectId )
         {
             ostringstream msg;
@@ -53,11 +53,11 @@ DBServer::DBServer(ObjectId id):
 }
 
 DBServer::DBServer(): 
-    UniSetObject_LT(conf->getDBServer())
+    UniSetObject_LT(uniset_conf()->getDBServer())
 {
     if( getId() == DefaultObjectId )
     {
-        ObjectId id = conf->getDBServer();
+        ObjectId id = uniset_conf()->getDBServer();
         if( id == DefaultObjectId )
         {
             ostringstream msg;
@@ -81,7 +81,7 @@ void DBServer::processingMessage( UniSetTypes::VoidMessage *msg )
         break;
 
         default:
-			UniSetObject_LT::processingMessage(msg);
+            UniSetObject_LT::processingMessage(msg);
             break;
     }
 

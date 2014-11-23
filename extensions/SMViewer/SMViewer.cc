@@ -7,7 +7,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 //--------------------------------------------------------------------------------
 SMViewer::SMViewer( UniSetTypes::ObjectId shmID ):
-    SViewer(conf->getControllersSection(),true)
+    SViewer(uniset_conf()->getControllersSection(),true)
 {
     shm = new SMInterface(shmID,&ui,DefaultObjectId,0);
 }

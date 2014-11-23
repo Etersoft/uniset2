@@ -11,6 +11,7 @@ using namespace UniSetExtensions;
 LProcessor::LProcessor( const std::string& name ):
 logname(name)
 {
+    auto conf = uniset_conf();
     sleepTime = conf->getArgPInt("--sleepTime", 200);
     smReadyTimeout = conf->getArgInt("--sm-ready-timeout","");
     if( smReadyTimeout == 0 )
@@ -58,6 +59,8 @@ void LProcessor::step()
 // -------------------------------------------------------------------------
 void LProcessor::build( const string& lfile )
 {
+    auto conf = uniset_conf();
+
     sch.read(lfile);
 
     // составляем карту внешних входов

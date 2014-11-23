@@ -71,11 +71,23 @@ ostream& UniSetTypes::Configuration::help(ostream& os)
               << "--ulog-add-levels level1,info,system,warn --ulog-log-in-file myprogrpam.log\n\n";
 }
 // -------------------------------------------------------------------------
+    
 
 namespace UniSetTypes
 {
     DebugStream ulog;
-    Configuration* conf = 0;
+
+    static shared_ptr<Configuration> uconf;
+
+    std::shared_ptr<Configuration> uniset_conf()
+    {
+        if( uconf == nullptr )
+            throw SystemError("Don`t init uniset configuration! First use uniset_init().");
+
+        return uconf; // см. uniset_init..
+    }
+    // -------------------------------------------------------------------------
+
 
 Configuration::Configuration():
     oind(NULL),
@@ -147,8 +159,8 @@ Configuration::Configuration( int argc, const char* const* argv, const string& f
     if( fileConf.empty() )
         setConfFileName();
 
-	ObjectIndex_Array* _oi = new ObjectIndex_Array(omap);
-	oind = shared_ptr<ObjectIndex>(_oi);
+    ObjectIndex_Array* _oi = new ObjectIndex_Array(omap);
+    oind = shared_ptr<ObjectIndex>(_oi);
 
     initConfiguration(argc,argv);
 }
@@ -158,7 +170,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 //    PassiveTimer pt(UniSetTimer::WaitUpTime);
     ulogsys << "*** configure from file: " << fileConfName << endl;
 
-	iorfile = make_shared<IORFile>();
+    iorfile = make_shared<IORFile>();
 
     // -------------------------------------------------------------------------
     xmlSensorsSec = 0;
@@ -183,8 +195,8 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
         try
         {
-			if( unixml == nullptr )
-				unixml = std::shared_ptr<UniXML>( new UniXML() );
+            if( unixml == nullptr )
+                unixml = std::shared_ptr<UniXML>( new UniXML() );
 
             if( !unixml->isOpen() )
             {
@@ -216,15 +228,15 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
                 try
                 {
                     if( it.getIntProp("idfromfile") == 0 )
-					{
+                    {
                         ObjectIndex_XML* oi = new ObjectIndex_XML(unixml); //(fileConfName);
-						oind = shared_ptr<ObjectIndex>(oi);
-					}
+                        oind = shared_ptr<ObjectIndex>(oi);
+                    }
                     else
-					{
+                    {
                         ObjectIndex_idXML* oi = new ObjectIndex_idXML(unixml); //(fileConfName);
-						oind = shared_ptr<ObjectIndex>(oi);
-					}
+                        oind = shared_ptr<ObjectIndex>(oi);
+                    }
                 }
                 catch(Exception& ex )
                 {
@@ -982,19 +994,18 @@ UniversalIO::IOType Configuration::getIOType( const std::string& name )
     return UniversalIO::UnknownIOType;
 }
 // -------------------------------------------------------------------------
-void uniset_init( int argc, const char* const* argv, const std::string& xmlfile, bool force )
+std::shared_ptr<Configuration> uniset_init( int argc, const char* const* argv, const std::string& xmlfile )
 {
+    if( UniSetTypes::uconf )
+    {
+        cerr << "Reusable call uniset_init... ignore.." << endl;
+        return UniSetTypes::uconf;
+    }
+
     string confile = UniSetTypes::getArgParam( "--confile", argc, argv, xmlfile );
     ulog.setLogName("ulog");
-	if( UniSetTypes::conf )
-	{
-		if( !force && confile == UniSetTypes::conf->getConfFileName() )
-			return;
-
-		delete UniSetTypes::conf;
-	}
-
-    UniSetTypes::conf = new Configuration(argc, argv, confile);
+    UniSetTypes::uconf = make_shared<Configuration>(argc, argv, confile);
+    return UniSetTypes::uconf;
 }
 // -------------------------------------------------------------------------
 } // end of UniSetTypes namespace

@@ -9,7 +9,7 @@ int main( int argc, const char **argv )
 {
     try
     {
-        uniset_init(argc, argv);
+        auto conf = uniset_init(argc, argv);
 
         string logfilename = conf->getArgParam("--logfile", "Skel.log");
         string logname( conf->getLogDir() + logfilename );
@@ -17,7 +17,7 @@ int main( int argc, const char **argv )
         ulog.logFile( logname.c_str() );
 //        conf->initDebug(dlog,"dlog");
 
-        UniSetActivator act;
+        auto act = UniSetActivator::Instance();
         xmlNode* cnode = conf->getNode("Skel");
         if( cnode == NULL )
         {
@@ -35,7 +35,7 @@ int main( int argc, const char **argv )
         ulog << "(Skel::main): -------------- Skel START -------------------------\n\n";
         dlog << "\n\n\n";
         dlog << "(Skel::main): -------------- Skel START -------------------------\n\n";
-        act.run(false);
+        act->run(false);
     }
     catch(SystemError& err)
     {

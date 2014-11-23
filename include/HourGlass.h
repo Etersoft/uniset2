@@ -95,13 +95,13 @@ class HourGlass
             _state = st;
             if( !_state )
             {
-				timeout_t cur = t.getCurrent();
+                timeout_t cur = t.getCurrent();
                 if( cur > _size )
                     cur = _size;
 
-				_sand -= cur;
-				if( _sand < 0 )
-					_sand = 0;
+                _sand -= cur;
+                if( _sand < 0 )
+                    _sand = 0;
 
                 t.setTiming(cur);
             }
@@ -123,7 +123,7 @@ class HourGlass
         // получить прошедшее время
         inline timeout_t current()
         {
-			return t.getCurrent();
+            return t.getCurrent();
         }
 
         // получить заданное время
@@ -145,36 +145,36 @@ class HourGlass
 
         inline bool state(){ return _state; }
 
-		// текущее "насыпавшееся" количество "песка"
+        // текущее "насыпавшееся" количество "песка"
         inline timeout_t amount()
-		{
-			return ( _size - remain() );
-		}
+        {
+            return ( _size - remain() );
+        }
 
-		// остаток песка (времени)
+        // остаток песка (времени)
         inline timeout_t remain()
-		{
-			timeout_t c = t.getCurrent();
-			if( c > _size )
-				c = _size;
-			
-			// _state=false - означает, что песок пересыпается обратно..
-			if( !_state )
-			{
-				int ret = ( _sand + c );
-				if( ret > _size )
-					return _size;
-				
-				return ret;
-			}
+        {
+            timeout_t c = t.getCurrent();
+            if( c > _size )
+                c = _size;
+            
+            // _state=false - означает, что песок пересыпается обратно..
+            if( !_state )
+            {
+                int ret = ( _sand + c );
+                if( ret > _size )
+                    return _size;
+                
+                return ret;
+            }
 
-			// _state=true  - означает, что песок пересыпается..
-			int ret = ( _sand - c );
-			if( ret < 0 )
-				return 0;
+            // _state=true  - означает, что песок пересыпается..
+            int ret = ( _sand - c );
+            if( ret < 0 )
+                return 0;
 
-			return ret;
-		}
+            return ret;
+        }
 
     protected:
         PassiveTimer t;   /*!< таймер для отсчёта времени.. */

@@ -519,7 +519,7 @@ void UNetReceiver::initDCache( UniSetUDP::UDPMessage& pack, bool force )
           if( d.id != pack.d_id[i] )
           {
                 d.id = pack.d_id[i];
-                d.iotype = conf->getIOType(d.id);
+                d.iotype = uniset_conf()->getIOType(d.id);
                 shm->initIterator(d.ioit);
           }
      }
@@ -540,7 +540,7 @@ void UNetReceiver::initACache( UniSetUDP::UDPMessage& pack, bool force )
           if( d.id != pack.a_dat[i].id )
           {
                 d.id = pack.a_dat[i].id;
-                d.iotype = conf->getIOType(d.id);
+                d.iotype = uniset_conf()->getIOType(d.id);
                 shm->initIterator(d.ioit);
           }
      }

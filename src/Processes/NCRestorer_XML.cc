@@ -85,8 +85,8 @@ void NCRestorer_XML::init( const std::string& fname )
     */
     try
     {
-        if( fname == conf->getConfFileName() )
-            uxml = conf->getConfXML();
+        if( fname == uniset_conf()->getConfFileName() )
+            uxml = uniset_conf()->getConfXML();
         else
             uxml = make_shared<UniXML>(fname);
     }
@@ -163,12 +163,12 @@ void NCRestorer_XML::read_list( const std::shared_ptr<UniXML>& xml, xmlNode* nod
 // ------------------------------------------------------------------------------------------
 void NCRestorer_XML::read( IONotifyController* ic, const string& fn )
 {
-    const std::shared_ptr<UniXML> confxml = conf->getConfXML();
+    const std::shared_ptr<UniXML> confxml = uniset_conf()->getConfXML();
 
     if( !fn.empty() )
     {
          // оптимизация (не загружаем второй раз xml-файл)
-        if( fn == conf->getConfFileName() && confxml )
+        if( fn == uniset_conf()->getConfFileName() && confxml )
             read( ic, confxml );
         else
         {
@@ -180,7 +180,7 @@ void NCRestorer_XML::read( IONotifyController* ic, const string& fn )
     else if( !fname.empty() )
     {
         // оптимизация (не загружаем второй раз xml-файл)
-        if( fname == conf->getConfFileName() && confxml )
+        if( fname == uniset_conf()->getConfFileName() && confxml )
             read( ic, confxml );
         else if( uxml && uxml->isOpen() && uxml->filename == fn )
             read(ic,uxml);
@@ -197,8 +197,8 @@ void NCRestorer_XML::read( IONotifyController* ic, const std::shared_ptr<UniXML>
 {
     xmlNode* node;
 
-    if( xml == conf->getConfXML() )
-        node = conf->getXMLSensorsSection();
+    if( xml == uniset_conf()->getConfXML() )
+        node = uniset_conf()->getXMLSensorsSection();
     else
         node = xml->findNode( xml->getFirstNode(),"sensors");
 
@@ -232,7 +232,7 @@ bool NCRestorer_XML::getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* i
     if( !id.empty() )
         sid = uni_atoi( id );
     else
-        sid = conf->getSensorID(sname);
+        sid = uniset_conf()->getSensorID(sname);
 
     if( sid == UniSetTypes::DefaultObjectId )
     {
@@ -240,10 +240,10 @@ bool NCRestorer_XML::getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* i
         return false;
     }
     
-    ObjectId snode = conf->getLocalNode();
+    ObjectId snode = uniset_conf()->getLocalNode();
     string snodename(xml->getProp(it,"node"));
     if( !snodename.empty() )
-        snode = conf->getNodeID(snodename);
+        snode = uniset_conf()->getNodeID(snodename);
 
     if( snode == UniSetTypes::DefaultObjectId )
     {
@@ -309,7 +309,7 @@ bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode*
     string d_txt( xml->getProp(it, "depend") );
     if( !d_txt.empty() )
     {
-        inf.d_si.id = conf->getSensorID(d_txt);
+        inf.d_si.id = uniset_conf()->getSensorID(d_txt);
         if( inf.d_si.id == UniSetTypes::DefaultObjectId )
         {
             ucrit << "(NCRestorer_XML:getSensorInfo): sensor='" 
@@ -319,7 +319,7 @@ bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode*
             return false;
         }
 
-        inf.d_si.node = conf->getLocalNode();
+        inf.d_si.node = uniset_conf()->getLocalNode();
 
         // по умолчанию срабатывание на "1"
         inf.d_value = xml->getProp(it,"depend_value").empty() ? 1 : xml->getIntProp(it,"depend_value");
@@ -363,7 +363,7 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
                 uwarn << ic->getName() 
                             << "(read_thresholds): не смог получить информацию о пороге"
                             << " для датчика "
-                            << conf->oind->getNameById(inf.si.id) << endl;
+                            << uniset_conf()->oind->getNameById(inf.si.id) << endl;
                 continue;
             }
 
@@ -384,7 +384,7 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
                         uwarn << ic->getName() 
                                 << "(read_thresholds): не смог получить список заказчиков"
                                 << " для порога " << ti.id 
-                                << " датчика " << conf->oind->getNameById(inf.si.id) << endl;
+                                << " датчика " << uniset_conf()->oind->getNameById(inf.si.id) << endl;
                     }
                 }
             }
@@ -447,7 +447,7 @@ bool NCRestorer_XML::getThresholdInfo( const std::shared_ptr<UniXML>& xml,xmlNod
     string sid_name = uit.getProp("sid");
     if( !sid_name.empty() )
     {
-        ti.sid = conf->getSensorID(sid_name);
+        ti.sid = uniset_conf()->getSensorID(sid_name);
         if( ti.sid == UniSetTypes::DefaultObjectId )
         {
             ucrit << "(NCRestorer_XML:getThresholdInfo): " 
@@ -455,7 +455,7 @@ bool NCRestorer_XML::getThresholdInfo( const std::shared_ptr<UniXML>& xml,xmlNod
         }
         else
         {
-            UniversalIO::IOType iotype = conf->getIOType(ti.sid);
+            UniversalIO::IOType iotype = uniset_conf()->getIOType(ti.sid);
             // Пока что IONotifyController поддерживает работу только с 'DI'.
             if( iotype != UniversalIO::DI )
             {

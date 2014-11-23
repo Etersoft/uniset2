@@ -59,7 +59,7 @@ DBServer_MySQL::DBServer_MySQL(ObjectId id):
 }
 
 DBServer_MySQL::DBServer_MySQL(): 
-    DBServer(conf->getDBServer()),
+    DBServer(uniset_conf()->getDBServer()),
     db(new MySQLInterface()),
     PingTime(300000),
     ReconnectTime(180000),
@@ -261,10 +261,12 @@ void DBServer_MySQL::init_dbserver()
 
     if( connect_ok )
     {
-        initDBTableMap(tblMap);    
+        initDBTableMap(tblMap);
         initDB(db);
         return;
     }
+
+    auto conf = uniset_conf();
 
     if( conf->getDBServer() == UniSetTypes::DefaultObjectId )
     {
@@ -335,6 +337,8 @@ void DBServer_MySQL::init_dbserver()
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::createTables( MySQLInterface *db )
 {
+    auto conf = uniset_conf();
+
     UniXML::iterator it( conf->getNode("Tables") );
     if(!it)
     {

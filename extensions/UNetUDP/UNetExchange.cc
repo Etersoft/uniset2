@@ -18,6 +18,8 @@ sender2(0)
 {
     if( objId == DefaultObjectId )
         throw UniSetTypes::SystemError("(UNetExchange): objId=-1?!! Use --" + prefix +"-unet-name" );
+    
+    auto conf = uniset_conf();
 
     cnode = conf->getNode(myname);
     if( cnode == NULL )
@@ -376,7 +378,7 @@ void UNetExchange::startReceivers()
 void UNetExchange::waitSMReady()
 {
     // waiting for SM is ready...
-    int ready_timeout = conf->getArgInt("--unet-sm-ready-timeout","15000");
+    int ready_timeout = uniset_conf()->getArgInt("--unet-sm-ready-timeout","15000");
     if( ready_timeout == 0 )
         ready_timeout = 15000;
     else if( ready_timeout < 0 )
@@ -656,6 +658,8 @@ void UNetExchange::help_print( int argc, const char* argv[] )
 UNetExchange* UNetExchange::init_unetexchange( int argc, const char* argv[], UniSetTypes::ObjectId icID, 
                                                 SharedMemory* ic, const std::string& prefix )
 {
+    auto conf = uniset_conf();
+
     string p("--" + prefix + "-name");
     string name = conf->getArgParam(p,"UNetExchange1");
     if( name.empty() )

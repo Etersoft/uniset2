@@ -20,6 +20,8 @@ rs_pre_clean(false)
     if( objId == DefaultObjectId )
         throw UniSetTypes::SystemError("(RTUExchange): objId=-1?!! Use --" + prefix + "-name" );
 
+    auto conf = uniset_conf();
+
     // префикс для "свойств" - по умолчанию
     prop_prefix = "";
     // если задано поле для "фильтрации"
@@ -317,6 +319,8 @@ void RTUExchange::poll()
 RTUExchange* RTUExchange::init_rtuexchange( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
                                             SharedMemory* ic, const std::string& prefix )
 {
+    auto conf = uniset_conf();
+
     string name = conf->getArgParam("--" + prefix + "-name","RTUExchange1");
     if( name.empty() )
     {

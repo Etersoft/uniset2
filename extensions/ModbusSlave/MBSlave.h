@@ -24,20 +24,20 @@
       - \ref sec_MBSlave_Comm
       - \ref sec_MBSlave_Conf
       - \ref sec_MBSlave_ConfList
-	  - \ref sec_MBSlave_FileTransfer
-	  - \ref sec_MBSlave_MEIRDI
-	  - \ref sec_MBSlave_DIAG
+      - \ref sec_MBSlave_FileTransfer
+      - \ref sec_MBSlave_MEIRDI
+      - \ref sec_MBSlave_DIAG
       
       \section sec_MBSlave_Comm Общее описание Modbus slave
       Класс реализует базовые функции для протокола Modbus в slave режиме. Реализацию Modbus RTU - см. RTUExchange.
-	  Реализацию Modbus slave (TCP) - см. MBSlave. Список регистров с которыми работает процесс задаётся в конфигурационном файле
+      Реализацию Modbus slave (TCP) - см. MBSlave. Список регистров с которыми работает процесс задаётся в конфигурационном файле
       в секции \b <sensors>. см. \ref sec_MBSlave_Conf
 
-	  В данной версии поддерживаются следующие функции:
-	 - 0x02 - read input status
-	 - 0x03 - read register outputs or memories or read word outputs or memories
+      В данной версии поддерживаются следующие функции:
+     - 0x02 - read input status
+     - 0x03 - read register outputs or memories or read word outputs or memories
      - 0x04 - read input registers or memories or read word outputs or memories
-	 - 0x05 - forces a single coil to either ON or OFF
+     - 0x05 - forces a single coil to either ON or OFF
      - 0x06 - write register outputs or memories
      - 0x08 - Diagnostics (Serial Line only)
      - 0x0F - force multiple coils
@@ -58,47 +58,47 @@
       в которой указываются настроечные параметры по умолчанию.
       Пример:
       \code
-		<MBSlave1 name="MBSlave1" addr="0x31" 
-		afterSendPause="0" 
-		reg_from_id="0" 
-		replyTimeout="60" 
-		askcount_id=""
-		respond_invert=""
-		respond_id=""
-		timeout=""
-		heartbeat_id=""
-		initPause=""
-		force=""
-		...
-	  \endcode
-	
+        <MBSlave1 name="MBSlave1" addr="0x31" 
+        afterSendPause="0" 
+        reg_from_id="0" 
+        replyTimeout="60" 
+        askcount_id=""
+        respond_invert=""
+        respond_id=""
+        timeout=""
+        heartbeat_id=""
+        initPause=""
+        force=""
+        ...
+      \endcode
+    
       - \b addr -  адрес данного устройства
-	  - \b afterSendPause - принудительная пауза после посылки ответа
-	  - \b reg_from_id - номер регистра брать из ID датчика
-	  - \b replyTimeout - таймаут на формирование ответа. Если ответ на запрос будет сформирован за большее время, он не будет отослан.
-	  - \b askcount_id - идентификатор датчика для счётчика запросов
-	  - \b respond_id - идентификатор датчика наличия связи. Выставляется в "1" когда связь есть.
-	  - \b respond_invert - инвертировать логику выставления датчика связи (т.е. выставлять "1" - когда нет связи).
-	  - \b heartbeat_id - идентификтор датчика "сердцебиения". См. \ref sec_SM_HeartBeat
-	  - \b initPause - пауза перед началом работы, после активации. По умолчанию 3000 мсек. 
-	  - \b force - [1,0] перезаписывать ли значения в SharedMemory каждый раз (а не по изменению).
+      - \b afterSendPause - принудительная пауза после посылки ответа
+      - \b reg_from_id - номер регистра брать из ID датчика
+      - \b replyTimeout - таймаут на формирование ответа. Если ответ на запрос будет сформирован за большее время, он не будет отослан.
+      - \b askcount_id - идентификатор датчика для счётчика запросов
+      - \b respond_id - идентификатор датчика наличия связи. Выставляется в "1" когда связь есть.
+      - \b respond_invert - инвертировать логику выставления датчика связи (т.е. выставлять "1" - когда нет связи).
+      - \b heartbeat_id - идентификтор датчика "сердцебиения". См. \ref sec_SM_HeartBeat
+      - \b initPause - пауза перед началом работы, после активации. По умолчанию 3000 мсек. 
+      - \b force - [1,0] перезаписывать ли значения в SharedMemory каждый раз (а не по изменению).
       - \b timeout msec - таймаут, для определения отсутствия связи
 
-		Специфичные для RTU настройки:
-	\code
-			device="/dev/ttyS0" speed="9600" use485F="1" transmitCtl="0">
+        Специфичные для RTU настройки:
+    \code
+            device="/dev/ttyS0" speed="9600" use485F="1" transmitCtl="0">
       \endcode
       - \b device -  устройство (порт)
-	  - \b speed - скорость обмена
-	  - \b use485F - [0,1] - использовать специальный класс для обмена по RS485 на контрллерах фаствел (убирает echo программным путём).
-	  - \b transmitCtl - [0,1] - управлять ли приёмопередатчиков (ну программном уровне). Обычно это на аппаратном или драйвером.
+      - \b speed - скорость обмена
+      - \b use485F - [0,1] - использовать специальный класс для обмена по RS485 на контрллерах фаствел (убирает echo программным путём).
+      - \b transmitCtl - [0,1] - управлять ли приёмопередатчиков (ну программном уровне). Обычно это на аппаратном или драйвером.
 
-		Специфичные для TCP настройки:
-	\code
-		iaddr="localhost" iport="502"
-	\endcode
+        Специфичные для TCP настройки:
+    \code
+        iaddr="localhost" iport="502"
+    \endcode
       - \b iaddr - ip адрес данного устройства
-	  - \b iport - tcp порт.
+      - \b iport - tcp порт.
 
 
       \par Параметры запуска
@@ -108,12 +108,12 @@
       Далее приведены основные параметры:
 
       \b --xxx-name ID - идентификатор процесса.
-	  
+      
       \b --xxx-my-addr addr - slave-адрес для данного устройства.
       
       \b --xxx-timeout или \b timeout msec  - таймаут на определение отсутсвия связи.
 
-	  \b --xxx-reply-timeout msec  - таймаут на формирование ответа.
+      \b --xxx-reply-timeout msec  - таймаут на формирование ответа.
       
       \b --xxx-initPause или \b initPause msec - пауза перед началом работы, после активации. По умолчанию 50 мсек.
 
@@ -131,7 +131,7 @@
       
       \b --xxx-activate-timeout msec . По умолчанию 2000. - время ожидания готовности SharedMemory к работе.
 
-	  \b --xxx-allow-setdatetime 0,1 - Включить функцию 0x50. Выставление даты и времени.
+      \b --xxx-allow-setdatetime 0,1 - Включить функцию 0x50. Выставление даты и времени.
 
       \par Настройки протокола RTU: 
 
@@ -184,10 +184,10 @@
 
    \warning Регистр должен быть уникальным. И может повторятся только если указан параметр \a nbyte.
 
-	\section sec_MBSlave_FileTransfer Настройка передачи файлов в ModbusSlave (0x66)
-		Данная реализация позволяет передавать по протоколу Modbus заранее заданные файлы.
-	Настройка происходвится в конфигурационном файле.
-	\code
+    \section sec_MBSlave_FileTransfer Настройка передачи файлов в ModbusSlave (0x66)
+        Данная реализация позволяет передавать по протоколу Modbus заранее заданные файлы.
+    Настройка происходвится в конфигурационном файле.
+    \code
             <filelist>
                 <!-- Список файлов разрешённых для передачи по modbus
             directory - каталог где лежит файл. Можно не задавать
@@ -200,54 +200,54 @@
                 <item directory="/tmp/" id="3" name="configure.xml.gz"/>
                 <item directory="ConfDir" id="4" name="SERIAL"/>
             </filelist>
-	\endcode
-	- \b id - задаёт идентификтор файла (собственно он и будет запрашиваться.
-	- \b name - название файла
-	- \b directory - каталог где храниться файл.
+    \endcode
+    - \b id - задаёт идентификтор файла (собственно он и будет запрашиваться.
+    - \b name - название файла
+    - \b directory - каталог где храниться файл.
 
-	\section sec_MBSlave_MEIRDI Поддержка "MODBUS Encapsulated Interface" (0x2B)[0x0E]
-	\code
-			<MEI> 
-				<!-- ВНИМАНИЕ: должен заполняться в соответсвии со стандартом. ObjectID и DeviceID не случайны.. -->
-				<device id="0x01">
-					<object id="0" comm="VendorName">
-						<string value="etersoft"/>
-					</object>
-					<object id="1" comm="ProductCode">
-						<string value="uniset"/>
-					</object>
-					<object id="2" comm="MajorMinorRevision">
-						<string value="1.6"/>
-					</object>
-				</device>
-				<device id="0x02">
-					<object id="3" comm="VendorURL">
-						<string value="http://www.etersoft.ru"/>
-					</object>
-					<object id="4" comm="ProductName">
-						<string value="uniset"/>
-					</object>
-					<object id="5" comm="ModelName">
-						<string value="uniset:MBSlave"/>
-					</object>
-					<object id="6" comm="UserApplicationName">
-						<string value="MBSlave1"/>
-					</object>
-				</device>
-				<device id="0x03">
-					<object id="128" comm="private objects">
-						<string id="129" value="etersoft"/>
-						<string id="130" value="uniset"/>
-						<string id="131" value="1.6"/>
-						<string id="132" value="http://www.etersoft.ru"/>
-						<string id="133" value="MBSlave1"/>
-					</object>
+    \section sec_MBSlave_MEIRDI Поддержка "MODBUS Encapsulated Interface" (0x2B)[0x0E]
+    \code
+            <MEI> 
+                <!-- ВНИМАНИЕ: должен заполняться в соответсвии со стандартом. ObjectID и DeviceID не случайны.. -->
+                <device id="0x01">
+                    <object id="0" comm="VendorName">
+                        <string value="etersoft"/>
+                    </object>
+                    <object id="1" comm="ProductCode">
+                        <string value="uniset"/>
+                    </object>
+                    <object id="2" comm="MajorMinorRevision">
+                        <string value="1.6"/>
+                    </object>
                 </device>
-			</MEI>
-	\endcode
+                <device id="0x02">
+                    <object id="3" comm="VendorURL">
+                        <string value="http://www.etersoft.ru"/>
+                    </object>
+                    <object id="4" comm="ProductName">
+                        <string value="uniset"/>
+                    </object>
+                    <object id="5" comm="ModelName">
+                        <string value="uniset:MBSlave"/>
+                    </object>
+                    <object id="6" comm="UserApplicationName">
+                        <string value="MBSlave1"/>
+                    </object>
+                </device>
+                <device id="0x03">
+                    <object id="128" comm="private objects">
+                        <string id="129" value="etersoft"/>
+                        <string id="130" value="uniset"/>
+                        <string id="131" value="1.6"/>
+                        <string id="132" value="http://www.etersoft.ru"/>
+                        <string id="133" value="MBSlave1"/>
+                    </object>
+                </device>
+            </MEI>
+    \endcode
 
 
-	\section sec_MBSlave_DIAG Диагностические функции (0x08)
+    \section sec_MBSlave_DIAG Диагностические функции (0x08)
 
 
 */

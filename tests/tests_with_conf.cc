@@ -6,21 +6,21 @@
 
 int main( int argc, char* argv[] )
 {
-	Catch::Session session;
-	try
-	{
-		UniSetTypes::uniset_init(argc,argv);
+    Catch::Session session;
+    try
+    {
+        UniSetTypes::uniset_init(argc,argv);
 
-  		int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );
-  		if( returnCode != 0 ) // Indicates a command line error
-    		return returnCode;
-		
-		return session.run();
-	}
-	catch( UniSetTypes::Exception& ex )
-	{
-		std::cerr << ex << std::endl;
-	}
+          int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );
+          if( returnCode != 0 ) // Indicates a command line error
+            return returnCode;
+        
+        return session.run();
+    }
+    catch( UniSetTypes::Exception& ex )
+    {
+        std::cerr << ex << std::endl;
+    }
 
-	return 1;
+    return 1;
 }

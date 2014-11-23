@@ -36,8 +36,8 @@ int main( int argc, char **argv )
         }
         // -------------------------------------
 
-        uniset_init(argc, argv, "configure.xml" );
-        UInterface ui;
+        auto conf = uniset_init(argc, argv, "configure.xml" );
+        UInterface ui(conf);
 
         string sid(conf->getArgParam("--sid"));
         if( sid.empty() )
@@ -46,7 +46,7 @@ int main( int argc, char **argv )
             return 1;
         }
 
-        std::list<UniSetTypes::ParamSInfo> lst = UniSetTypes::getSInfoList(sid,UniSetTypes::conf);
+        std::list<UniSetTypes::ParamSInfo> lst = UniSetTypes::getSInfoList(sid,conf);
 
         if( lst.empty() )
         {

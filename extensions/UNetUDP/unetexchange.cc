@@ -21,7 +21,7 @@ int main( int argc, const char** argv )
             return 0;
         }
 
-        uniset_init(argc,argv);
+        auto conf = uniset_init(argc,argv);
 
         string logfilename(conf->getArgParam("--unet-logfile"));
         if( logfilename.empty() )

@@ -170,8 +170,8 @@ size_t UDPMessage::getMessage( UDPMessage& m, UDPPacket& p )
     // проверяем наш ли пакет..
     if( m.magic != UniSetUDP::UNETUDP_MAGICNUM )
     {
-	m.magic = 0;
-	return 0;
+    m.magic = 0;
+    return 0;
     }
 
     // копируем аналоговые данные

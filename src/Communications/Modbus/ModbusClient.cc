@@ -1042,16 +1042,16 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
                     ostringstream err;
                     err << "(0x50): bad crc. calc.crc=" << dat2str(tcrc)
                         << " msg.crc=" << dat2str(mSet.crc);
-					if( dlog.is_warn() )
-                    	dlog.warn() << err.str() << endl;
+                    if( dlog.is_warn() )
+                        dlog.warn() << err.str() << endl;
                     return erBadCheckSum;
                 }
             }
             
             if( !mSet.checkFormat() )
             {
-				if( dlog.is_warn() )
-                	dlog.warn() << "(0x50): некорректные значения..." << endl;
+                if( dlog.is_warn() )
+                    dlog.warn() << "(0x50): некорректные значения..." << endl;
                 return erBadDataValue; // return erInvalidFormat;
             }
 
@@ -1070,13 +1070,13 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
             if( rlen1 < szDataLen )
             {
                 rbuf.len = bcnt + rlen1 - szModbusHeader;
-				if( dlog.is_warn() )
-				{
-	                dlog.warn() << "(0x66): buf: " << rbuf << endl;
-    	            dlog.warn() << "(0x66)(" 
-        	            << rbuf.func << "):(fnFileTransfer) "
-            	        << "Получили данных меньше чем ждали...(" 
-                	    << rlen1 << " < " << szDataLen << ")" << endl;
+                if( dlog.is_warn() )
+                {
+                    dlog.warn() << "(0x66): buf: " << rbuf << endl;
+                    dlog.warn() << "(0x66)(" 
+                        << rbuf.func << "):(fnFileTransfer) "
+                        << "Получили данных меньше чем ждали...(" 
+                        << rlen1 << " < " << szDataLen << ")" << endl;
                 }
                 cleanupChannel();
                 return erInvalidFormat;
@@ -1102,8 +1102,8 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
                 ostringstream err;
                 err << "(0x66): bad crc. calc.crc=" << dat2str(tcrc)
                     << " msg.crc=" << dat2str(mFT.crc);
-				if( dlog.is_warn() )
-                	dlog.warn() << err.str() << endl;
+                if( dlog.is_warn() )
+                    dlog.warn() << err.str() << endl;
                 return erBadCheckSum;
             }
 
@@ -1236,14 +1236,14 @@ mbErrCode ModbusClient::send( ModbusMessage& msg )
     }
     catch( mbException& ex )
     {
-		if( dlog.is_crit() )
-        	dlog.crit() << "(send): " << ex << endl;
+        if( dlog.is_crit() )
+            dlog.crit() << "(send): " << ex << endl;
         return ex.err;
     }
     catch( Exception& ex ) // SystemError
     {
-		if( dlog.is_crit() )
-        	dlog.crit() << "(send): " << ex << endl;
+        if( dlog.is_crit() )
+            dlog.crit() << "(send): " << ex << endl;
         return erHardwareError;
     }
 

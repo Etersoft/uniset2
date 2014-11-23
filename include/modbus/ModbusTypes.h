@@ -1017,7 +1017,7 @@ namespace ModbusRTU
         /*! проверка на переполнение */
         inline bool isFull()
         {
-			// (1)subf + data count 
+            // (1)subf + data count 
             return ( 1+count >= MAXDATALEN );
         }
 

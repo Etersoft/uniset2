@@ -50,9 +50,7 @@ int main( int argc,char* argv[] )
 
 	try
 	{
-		string confile = UniSetTypes::getArgParam( "--confile", argc, argv, "configure.xml" );
-		conf = new Configuration(argc, argv,confile);
-
+		auto conf = uniset_init(argc, argv);
 
 		// определяем ID объекта
 		ObjectId ID(DefaultObjectId);
@@ -74,7 +72,7 @@ int main( int argc,char* argv[] )
 		string logname( conf->getLogDir() + logfilename );
 		obj.mylog.logFile( logname.c_str() );
 
-		UniSetActivator* act = UniSetActivator::Instance();
+		auto act = UniSetActivator::Instance();
 		act-&gt;addObject(static_cast&lt;class UniSetObject*&gt;(&amp;obj));
 
 		SystemMessage sm(SystemMessage::StartUp);

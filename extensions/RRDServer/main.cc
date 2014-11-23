@@ -23,8 +23,7 @@ int main( int argc, const char** argv )
 
     try
     {
-        string confile=UniSetTypes::getArgParam("--confile",argc, argv, "configure.xml");
-        conf = new Configuration( argc, argv, confile );
+        auto conf = uniset_init( argc, argv );
 
         string logfilename(conf->getArgParam("--rrdstorage-logfile"));
         if( logfilename.empty() )

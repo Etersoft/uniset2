@@ -20,14 +20,14 @@ SMonitor::SMonitor(ObjectId id):
     UniSetObject_LT(id),
     script("")
 {
-    string sid(conf->getArgParam("--sid"));
-    
-    lst = UniSetTypes::getSInfoList(sid,UniSetTypes::conf); 
+    string sid(uniset_conf()->getArgParam("--sid"));
+
+    lst = UniSetTypes::getSInfoList(sid,uniset_conf());
 
     if( lst.empty() )
         throw SystemError("Не задан список датчиков (--sid)");
 
-    script = conf->getArgParam("--script");
+    script = uniset_conf()->getArgParam("--script");
 }
 
 
@@ -49,7 +49,7 @@ void SMonitor::sysCommand( const SystemMessage *sm )
             for( auto &it: lst )
             {
                 if( it.si.node == DefaultObjectId )
-                    it.si.node = conf->getLocalNode();
+                    it.si.node = uniset_conf()->getLocalNode();
 
                 try
                 {
@@ -86,7 +86,7 @@ void SMonitor::sensorInfo( const SensorMessage* si )
 {
     cout << "(" << setw(6) << si->id << "): " << setw(8) << timeToString(si->sm_tv_sec,":") 
          << "(" << setw(6) << si->sm_tv_usec << "): ";
-    cout << setw(45) << conf->oind->getMapName(si->id);
+    cout << setw(45) << uniset_conf()->oind->getMapName(si->id);
     cout << "\tvalue=" << si->value << "\tfvalue=" << ( (float)si->value / pow(10.0,si->ci.precision) ) << endl;
 
     if( !script.empty() )
@@ -97,7 +97,7 @@ void SMonitor::sensorInfo( const SensorMessage* si )
         if( script[0] == '.' || script[0] == '/' )
             cmd << script;
         else
-            cmd << conf->getBinDir() << script;    
+            cmd << uniset_conf()->getBinDir() << script;
 
         cmd << " " << si->id << " " << si->value << " " << si->sm_tv_sec << " " << si->sm_tv_usec;
 

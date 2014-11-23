@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2014-01-27+04:00
+// generate timestamp: 2014-11-24+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -25,7 +25,7 @@ class UObject_SK:
     public LT_Object
 {
     public:
-        UObject_SK( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::conf->getNode("UObject"), const std::string& argprefix="" );
+        UObject_SK( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::uniset_conf()->getNode("UObject"), const std::string& argprefix="" );
         UObject_SK();
         virtual ~UObject_SK();
 
@@ -33,7 +33,7 @@ class UObject_SK:
         bool alarm( UniSetTypes::ObjectId sid, bool state );
         long getValue( UniSetTypes::ObjectId sid );
         void setValue( UniSetTypes::ObjectId sid, long value );
-        void askSensor( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );
+        void askSensor( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
         void updateValues();
         void setMsg( UniSetTypes::ObjectId code, bool state );
 
@@ -76,14 +76,14 @@ class UObject_SK:
         // ---- end of protected variables ----
 
         
-        virtual void callback();
-        virtual void processingMessage( UniSetTypes::VoidMessage* msg );
-        virtual void sysCommand( const UniSetTypes::SystemMessage* sm );
+        virtual void callback() override;
+        virtual void processingMessage( UniSetTypes::VoidMessage* msg ) override;
+        virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
         virtual void askSensors( UniversalIO::UIOCommand cmd ){}
-        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ){}
-        virtual void timerInfo( const UniSetTypes::TimerMessage* tm ){}
-        virtual void sigterm( int signo );
-        virtual bool activateObject();
+        virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override{}
+        virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override{}
+        virtual void sigterm( int signo ) override;
+        virtual bool activateObject() override;
         virtual void testMode( bool state );
         void updatePreviousValues();
         void checkSensors();
@@ -100,7 +100,7 @@ class UObject_SK:
         int resetMsgTime;
 
         // Выполнение очередного шага программы
-        virtual void step()=0;
+        virtual void step(){}
 
         int sleep_msec; /*!< пауза между итерациями */
         bool active;
@@ -114,9 +114,9 @@ class UObject_SK:
         
         xmlNode* confnode;
         /*! получить числовое свойство из конф. файла по привязанной confnode */
-        int getIntProp(const std::string& name) { return UniSetTypes::conf->getIntProp(confnode, name); }
+        int getIntProp(const std::string& name) { return UniSetTypes::uniset_conf()->getIntProp(confnode, name); }
         /*! получить текстовое свойство из конф. файла по привязанной confnode */
-        inline const std::string getProp(const std::string& name) { return UniSetTypes::conf->getProp(confnode, name); }
+        inline const std::string getProp(const std::string& name) { return UniSetTypes::uniset_conf()->getProp(confnode, name); }
 
         int smReadyTimeout;     /*!< время ожидания готовности SM */
         std::atomic_bool activated;

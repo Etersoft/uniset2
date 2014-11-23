@@ -40,7 +40,7 @@ using namespace UniversalIO;
 using namespace UniSetTypes;
 using namespace std;
 // -----------------------------------------------------------------------------
-UInterface::UInterface( const UniSetTypes::Configuration* _uconf ):
+UInterface::UInterface( const std::shared_ptr<UniSetTypes::Configuration>& _uconf ):
     rep(_uconf),
     myid(UniSetTypes::DefaultObjectId),
     orb(CORBA::ORB::_nil()),
@@ -51,15 +51,15 @@ UInterface::UInterface( const UniSetTypes::Configuration* _uconf ):
     init();
 }
 // -----------------------------------------------------------------------------
-UInterface::UInterface( const ObjectId backid, CORBA::ORB_var orb, shared_ptr<ObjectIndex> _oind ):
-    rep(UniSetTypes::conf),
+UInterface::UInterface( const ObjectId backid, CORBA::ORB_var orb, const shared_ptr<ObjectIndex> _oind ):
+    rep(UniSetTypes::uniset_conf()),
     myid(backid),
     orb(orb),
     rcache(200,40),
     oind(_oind),
-    uconf(UniSetTypes::conf)
+    uconf(UniSetTypes::uniset_conf())
 {
-    if( oind == NULL )
+    if( oind == nullptr )
         oind = uconf->oind;
 
     init();
@@ -1287,7 +1287,7 @@ IONotifyController_i::ThresholdInfo
 {
     IOController_i::SensorInfo si;
     si.id = sid;
-    si.node = conf->getLocalNode();
+    si.node = uconf->getLocalNode();
     return getThresholdInfo(si,tid);
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -1609,7 +1609,7 @@ IOController_i::SensorInfoSeq_var UInterface::getSensorSeq( const UniSetTypes::I
         CORBA::Object_var oref;
         try
         {
-            oref = rcache.resolve(sid,conf->getLocalNode());
+            oref = rcache.resolve(sid,uconf->getLocalNode());
         }
         catch( NameNotFound ){}
 
@@ -1618,7 +1618,7 @@ IOController_i::SensorInfoSeq_var UInterface::getSensorSeq( const UniSetTypes::I
             try
             {
                 if( CORBA::is_nil(oref) )
-                    oref = resolve(sid,conf->getLocalNode());
+                    oref = resolve(sid,uconf->getLocalNode());
 
                 IOController_i_var iom = IOController_i::_narrow(oref);
 
@@ -1635,29 +1635,29 @@ IOController_i::SensorInfoSeq_var UInterface::getSensorSeq( const UniSetTypes::I
     catch(UniSetTypes::TimeOut){}
     catch(IOController_i::NameNotFound &ex)
     {
-        rcache.erase(sid,conf->getLocalNode());
+        rcache.erase(sid,uconf->getLocalNode());
         throw UniSetTypes::NameNotFound("UI(getSensorSeq): "+string(ex.err));
     }
     catch(IOController_i::IOBadParam& ex)
     {
-        rcache.erase(sid,conf->getLocalNode());
+        rcache.erase(sid,uconf->getLocalNode());
         throw UniSetTypes::IOBadParam("UI(getSensorSeq): "+string(ex.err));
     }
     catch(ORepFailed)
     {
-        rcache.erase(sid,conf->getLocalNode());
+        rcache.erase(sid,uconf->getLocalNode());
         // не смогли получить ссылку на объект
-        throw UniSetTypes::IOBadParam(set_err("UI(getSensorSeq): resolve failed ",sid,conf->getLocalNode()));
+        throw UniSetTypes::IOBadParam(set_err("UI(getSensorSeq): resolve failed ",sid,uconf->getLocalNode()));
     }
     catch(CORBA::NO_IMPLEMENT)
     {
-        rcache.erase(sid,conf->getLocalNode());
-        throw UniSetTypes::IOBadParam(set_err("UI(getSensorSeq): method no implement",sid,conf->getLocalNode()));
+        rcache.erase(sid,uconf->getLocalNode());
+        throw UniSetTypes::IOBadParam(set_err("UI(getSensorSeq): method no implement",sid,uconf->getLocalNode()));
     }
     catch(CORBA::OBJECT_NOT_EXIST)
     {
-        rcache.erase(sid,conf->getLocalNode());
-        throw UniSetTypes::IOBadParam(set_err("UI(getSensorSeq): object not exist",sid,conf->getLocalNode()));
+        rcache.erase(sid,uconf->getLocalNode());
+        throw UniSetTypes::IOBadParam(set_err("UI(getSensorSeq): object not exist",sid,uconf->getLocalNode()));
     }
     catch(CORBA::COMM_FAILURE& ex)
     {
@@ -1668,8 +1668,8 @@ IOController_i::SensorInfoSeq_var UInterface::getSensorSeq( const UniSetTypes::I
         // ошибка системы коммуникации
         // uwarn << "UI(getValue): CORBA::SystemException" << endl;
     }
-    rcache.erase(sid,conf->getLocalNode());
-    throw UniSetTypes::TimeOut(set_err("UI(getSensorSeq): Timeout",sid,conf->getLocalNode()));
+    rcache.erase(sid,uconf->getLocalNode());
+    throw UniSetTypes::TimeOut(set_err("UI(getSensorSeq): Timeout",sid,uconf->getLocalNode()));
 
 }
 // --------------------------------------------------------------------------------------------
@@ -1770,7 +1770,7 @@ UniSetTypes::IDSeq_var UInterface::askSensorsSeq( const UniSetTypes::IDList& lst
         CORBA::Object_var oref;
         try
         {
-            oref = rcache.resolve(sid,conf->getLocalNode());
+            oref = rcache.resolve(sid,uconf->getLocalNode());
         }
         catch( NameNotFound ){}
 
@@ -1779,7 +1779,7 @@ UniSetTypes::IDSeq_var UInterface::askSensorsSeq( const UniSetTypes::IDList& lst
             try
             {
                 if( CORBA::is_nil(oref) )
-                    oref = resolve(sid,conf->getLocalNode());
+                    oref = resolve(sid,uconf->getLocalNode());
 
                 IONotifyController_i_var iom = IONotifyController_i::_narrow(oref);
 
@@ -1800,29 +1800,29 @@ UniSetTypes::IDSeq_var UInterface::askSensorsSeq( const UniSetTypes::IDList& lst
     catch(UniSetTypes::TimeOut){}
     catch(IOController_i::NameNotFound &ex)
     {
-        rcache.erase(sid,conf->getLocalNode());
+        rcache.erase(sid,uconf->getLocalNode());
         throw UniSetTypes::NameNotFound("UI(getSensorSeq): "+string(ex.err));
     }
     catch(IOController_i::IOBadParam& ex)
     {
-        rcache.erase(sid,conf->getLocalNode());
+        rcache.erase(sid,uconf->getLocalNode());
         throw UniSetTypes::IOBadParam("UI(getSensorSeq): "+string(ex.err));
     }
     catch(ORepFailed)
     {
-        rcache.erase(sid,conf->getLocalNode());
+        rcache.erase(sid,uconf->getLocalNode());
         // не смогли получить ссылку на объект
-        throw UniSetTypes::IOBadParam(set_err("UI(askSensorSeq): resolve failed ",sid,conf->getLocalNode()));
+        throw UniSetTypes::IOBadParam(set_err("UI(askSensorSeq): resolve failed ",sid,uconf->getLocalNode()));
     }
     catch(CORBA::NO_IMPLEMENT)
     {
-        rcache.erase(sid,conf->getLocalNode());
-        throw UniSetTypes::IOBadParam(set_err("UI(askSensorSeq): method no implement",sid,conf->getLocalNode()));
+        rcache.erase(sid,uconf->getLocalNode());
+        throw UniSetTypes::IOBadParam(set_err("UI(askSensorSeq): method no implement",sid,uconf->getLocalNode()));
     }
     catch(CORBA::OBJECT_NOT_EXIST)
     {
-        rcache.erase(sid,conf->getLocalNode());
-        throw UniSetTypes::IOBadParam(set_err("UI(askSensorSeq): object not exist",sid,conf->getLocalNode()));
+        rcache.erase(sid,uconf->getLocalNode());
+        throw UniSetTypes::IOBadParam(set_err("UI(askSensorSeq): object not exist",sid,uconf->getLocalNode()));
     }
     catch(CORBA::COMM_FAILURE& ex)
     {
@@ -1833,11 +1833,11 @@ UniSetTypes::IDSeq_var UInterface::askSensorsSeq( const UniSetTypes::IDList& lst
         // ошибка системы коммуникации
         // uwarn << "UI(getValue): CORBA::SystemException" << endl;
     }
-    rcache.erase(sid,conf->getLocalNode());
-    throw UniSetTypes::TimeOut(set_err("UI(askSensorSeq): Timeout",sid,conf->getLocalNode()));
+    rcache.erase(sid,uconf->getLocalNode());
+    throw UniSetTypes::TimeOut(set_err("UI(askSensorSeq): Timeout",sid,uconf->getLocalNode()));
 }
 // -----------------------------------------------------------------------------
-IOController_i::ShortMapSeq* UInterface::getSensors( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node )
+IOController_i::ShortMapSeq* UInterface::getSensors( const UniSetTypes::ObjectId id, UniSetTypes::ObjectId node )
 {
     if ( id == DefaultObjectId )
         throw ORepFailed("UI(getSensors): error node=UniSetTypes::DefaultObjectId");
@@ -1913,11 +1913,11 @@ IOController_i::ShortMapSeq* UInterface::getSensors( const UniSetTypes::ObjectId
 // -----------------------------------------------------------------------------
 bool UInterface::waitReady( const ObjectId id, int msec, int pmsec, const ObjectId node )
 {
-	if( msec < 0 )
-		msec = 0;
+    if( msec < 0 )
+        msec = 0;
 
-	if( pmsec < 0 )
-		pmsec = 0;
+    if( pmsec < 0 )
+        pmsec = 0;
 
     PassiveTimer ptReady(msec);
     bool ready = false;
@@ -1939,11 +1939,11 @@ bool UInterface::waitReady( const ObjectId id, int msec, int pmsec, const Object
 // -----------------------------------------------------------------------------
 bool UInterface::waitWorking( const ObjectId id, int msec, int pmsec, const ObjectId node )
 {
-	if( msec < 0 )
-		msec = 0;
+    if( msec < 0 )
+        msec = 0;
 
-	if( pmsec < 0 )
-		pmsec = 0;
+    if( pmsec < 0 )
+        pmsec = 0;
 
     PassiveTimer ptReady(msec);
     bool ready = false;
@@ -1965,10 +1965,10 @@ bool UInterface::waitWorking( const ObjectId id, int msec, int pmsec, const Obje
 // -----------------------------------------------------------------------------
 UniversalIO::IOType UInterface::getConfIOType( const UniSetTypes::ObjectId id ) const
 {
-    if( !conf )
+    if( !uconf )
         return UniversalIO::UnknownIOType;
 
-    xmlNode* x = conf->getXMLObjectNode(id);
+    xmlNode* x = uconf->getXMLObjectNode(id);
     if( !x )
         return UniversalIO::UnknownIOType;
 

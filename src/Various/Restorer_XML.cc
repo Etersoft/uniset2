@@ -72,11 +72,11 @@ bool Restorer_XML::getConsumerInfo( UniXML::iterator& it,
 
     string otype(it.getProp("type"));
     if( otype == "controllers" )
-        cname = conf->getControllersSection()+"/"+cname;
+        cname = uniset_conf()->getControllersSection()+"/"+cname;
     else if( otype == "objects" )
-        cname = conf->getObjectsSection()+"/"+cname;
+        cname = uniset_conf()->getObjectsSection()+"/"+cname;
     else if( otype == "services" )
-        cname = conf->getServicesSection()+"/"+cname;
+        cname = uniset_conf()->getServicesSection()+"/"+cname;
     else
     {
         uwarn << "(Restorer_XML:getConsumerInfo): неизвестный тип объекта " 
@@ -84,7 +84,7 @@ bool Restorer_XML::getConsumerInfo( UniXML::iterator& it,
         return false;
     }
 
-    cid = conf->oind->getIdByName(cname);
+    cid = uniset_conf()->oind->getIdByName(cname);
     if( cid == UniSetTypes::DefaultObjectId )
     {
         ucrit << "(Restorer_XML:getConsumerInfo): НЕ НАЙДЕН ИДЕНТИФИКАТОР заказчика -->" 
@@ -94,9 +94,9 @@ bool Restorer_XML::getConsumerInfo( UniXML::iterator& it,
 
     string cnodename(it.getProp("node"));
     if( !cnodename.empty() )
-        cnode = conf->oind->getIdByName(cnodename);
+        cnode = uniset_conf()->oind->getIdByName(cnodename);
     else
-        cnode = conf->getLocalNode();
+        cnode = uniset_conf()->getLocalNode();
 
     if( cnode == UniSetTypes::DefaultObjectId )
     {

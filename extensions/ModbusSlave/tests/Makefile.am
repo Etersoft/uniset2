@@ -11,11 +11,11 @@ tests_with_sm_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions
 	-I$(top_builddir)/extensions/ModbusSlave \
 	-I$(top_builddir)/extensions/SharedMemory $(SIGC_CFLAGS)  $(COMCPP_CFLAGS)
 
-$(top_builddir)/extensions/lib/libUniSet2Extensions.la:
-	cd $(top_builddir)/extensions/lib/ && make
+#$(top_builddir)/extensions/lib/libUniSet2Extensions.la:
+#	cd $(top_builddir)/extensions/lib/ && make
 
-$(top_builddir)/extensions/ModbusSlave/libUniSet2MBSlave.la:
-	cd $(top_builddir)/extensions/ModbusSlave/ && make
+#$(top_builddir)/extensions/ModbusSlave/libUniSet2MBSlave.la:
+#	cd $(top_builddir)/extensions/ModbusSlave/ && make
 
 include $(top_builddir)/testsuite/testsuite-common.mk
 

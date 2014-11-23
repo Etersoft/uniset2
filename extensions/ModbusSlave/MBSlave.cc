@@ -32,6 +32,7 @@ prefix(prefix)
     if( objId == DefaultObjectId )
         throw UniSetTypes::SystemError("(MBSlave): objId=-1?!! Use --mbs-name" );
 
+    auto conf = uniset_conf();
     mutex_start.setName(myname + "_mutex_start");
 
 //    xmlNode* cnode = conf->getNode(myname);
@@ -377,7 +378,7 @@ MBSlave::~MBSlave()
 void MBSlave::waitSMReady()
 {
     // waiting for SM is ready...
-    int ready_timeout = conf->getArgInt("--" + prefix + "-sm-ready-timeout","15000");
+    int ready_timeout = uniset_conf()->getArgInt("--" + prefix + "-sm-ready-timeout","15000");
     if( ready_timeout == 0 )
         ready_timeout = 15000;
     else if( ready_timeout < 0 )
@@ -553,9 +554,9 @@ void MBSlave::execute_tcp()
                 IOBase::processingThreshold(&it.second,shm,force);
         }
         catch( std::exception& ex)
-		{
-			dcrit << myname << "(execute_tcp): " << ex.what() << endl;
-		}
+        {
+            dcrit << myname << "(execute_tcp): " << ex.what() << endl;
+        }
     }
 
     dinfo << myname << "(execute_tcp): thread stopped.." << endl;
@@ -774,7 +775,7 @@ void MBSlave::sigterm( int signo )
 void MBSlave::readConfiguration()
 {
 //    readconf_ok = false;
-    xmlNode* root = conf->getXMLSensorsSection();
+    xmlNode* root = uniset_conf()->getXMLSensorsSection();
     if(!root)
     {
         ostringstream err;
@@ -809,8 +810,8 @@ bool MBSlave::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it
 bool MBSlave::initItem( UniXML::iterator& it )
 {
     IOProperty p;
-	
-	string prop_prefix(prefix+"_");
+    
+    string prop_prefix(prefix+"_");
 
     if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,prop_prefix,false,&dlog,myname) )
         return false;
@@ -860,20 +861,20 @@ bool MBSlave::initItem( UniXML::iterator& it )
             p.nbyte = IOBase::initIntProp(it,"nbyte",prop_prefix,false);
             if( p.nbyte <=0 )
             {
-	            dcrit << myname << "(initItem): Unknown nbyte='' for "
-    	              << it.getProp("name")
-        	          << endl;
-    	        return false;
+                dcrit << myname << "(initItem): Unknown nbyte='' for "
+                      << it.getProp("name")
+                      << endl;
+                return false;
             }
-			else if( p.nbyte > 2 )
-			{
-	            dcrit << myname << "(initItem): BAD nbyte='" << p.nbyte << "' for "
-    	              << it.getProp("name")
-    	              << ". Must be [1,2]."
-        	          << endl;
-				return false;
-			}
-		}
+            else if( p.nbyte > 2 )
+            {
+                dcrit << myname << "(initItem): BAD nbyte='" << p.nbyte << "' for "
+                      << it.getProp("name")
+                      << ". Must be [1,2]."
+                      << endl;
+                return false;
+            }
+        }
 
         p.vtype = v;
         p.wnum = 0;
@@ -936,6 +937,7 @@ void MBSlave::help_print( int argc, const char* const* argv )
 MBSlave* MBSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID, SharedMemory* ic,
                                 const string& prefix )
 {
+    auto conf = uniset_conf();
     string name = conf->getArgParam("--" + prefix + "-name","MBSlave1");
     if( name.empty() )
     {
@@ -1029,7 +1031,7 @@ ModbusRTU::mbErrCode MBSlave::writeOutputSingleRegister( ModbusRTU::WriteSingleO
 ModbusRTU::mbErrCode MBSlave::much_real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, 
                         int count )
 {
-	dinfo << myname << "(much_real_write): read mbID="
+    dinfo << myname << "(much_real_write): read mbID="
             << ModbusRTU::dat2str(reg) << " count=" << count << endl;
 
 
@@ -1063,14 +1065,14 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( ModbusRTU::ModbusData reg, Modbus
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::real_write(  ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val )
 {
-	ModbusRTU::ModbusData dat[1] = {val};
-	int i=0;
-	return real_write(reg,dat,i,1);
+    ModbusRTU::ModbusData dat[1] = {val};
+    int i=0;
+    return real_write(reg,dat,i,1);
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int &i, int count )
 {
-	ModbusRTU::ModbusData mbval = dat[i];
+    ModbusRTU::ModbusData mbval = dat[i];
 
     dinfo << myname << "(write): save mbID="
             << ModbusRTU::dat2str(reg)
@@ -1086,7 +1088,7 @@ ModbusRTU::mbErrCode MBSlave::real_write_it( IOMap::iterator& it, ModbusRTU::Mod
     if( it == iomap.end() )
         return ModbusRTU::erBadDataAddress;
 
-	ModbusRTU::ModbusData mbval = dat[i++];
+    ModbusRTU::ModbusData mbval = dat[i++];
     try
     {
         IOProperty* p(&it->second);
@@ -1120,116 +1122,116 @@ ModbusRTU::mbErrCode MBSlave::real_write_it( IOMap::iterator& it, ModbusRTU::Mod
         }
         else if( p->vtype == VTypes::vtI2 )
         {
-			if( (i + VTypes::I2::wsize() - 1) > count )
-			{
-				i += VTypes::I2::wsize();
-				return ModbusRTU::erInvalidFormat;
-			}
+            if( (i + VTypes::I2::wsize() - 1) > count )
+            {
+                i += VTypes::I2::wsize();
+                return ModbusRTU::erInvalidFormat;
+            }
 
             ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::I2::wsize()];
             for( int k=0; k<VTypes::I2::wsize(); k++, i++ )
                  d[k] = dat[i-1];
 
             VTypes::I2 i2(d,VTypes::I2::wsize());
-			delete[] d;
+            delete[] d;
             IOBase::processingAsAI( p, (long)i2, shm, force );
-		}
+        }
         else if( p->vtype == VTypes::vtI2r )
         {
-			if( (i + VTypes::I2r::wsize() - 1) > count )
-			{
-				i += VTypes::I2r::wsize();
-				return ModbusRTU::erInvalidFormat;
-			}
+            if( (i + VTypes::I2r::wsize() - 1) > count )
+            {
+                i += VTypes::I2r::wsize();
+                return ModbusRTU::erInvalidFormat;
+            }
 
             ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::I2r::wsize()];
             for( int k=0; k<VTypes::I2r::wsize(); k++, i++ )
                  d[k] = dat[i-1];
 
             VTypes::I2r i2r(d,VTypes::I2r::wsize());
-			delete[] d;
+            delete[] d;
             IOBase::processingAsAI( p, (long)i2r, shm, force );
-		}
+        }
         else if( p->vtype == VTypes::vtU2 )
         {
-			if( (i + VTypes::U2::wsize() - 1) > count )
-			{
-				i += VTypes::U2::wsize();
-				return ModbusRTU::erInvalidFormat;
-			}
+            if( (i + VTypes::U2::wsize() - 1) > count )
+            {
+                i += VTypes::U2::wsize();
+                return ModbusRTU::erInvalidFormat;
+            }
 
             ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::U2::wsize()];
             for( int k=0; k<VTypes::U2::wsize(); k++, i++ )
                  d[k] = dat[i-1];
 
             VTypes::U2 u2(d,VTypes::U2::wsize());
-			delete[] d;
+            delete[] d;
             IOBase::processingAsAI( p, (unsigned long)u2, shm, force );
-		}
+        }
         else if( p->vtype == VTypes::vtU2r )
         {
-			if( (i + VTypes::U2r::wsize() - 1) > count )
-			{
-				i += VTypes::U2r::wsize();
-				return ModbusRTU::erInvalidFormat;
-			}
+            if( (i + VTypes::U2r::wsize() - 1) > count )
+            {
+                i += VTypes::U2r::wsize();
+                return ModbusRTU::erInvalidFormat;
+            }
 
             ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::U2r::wsize()];
             for( int k=0; k<VTypes::U2r::wsize(); k++, i++ )
                  d[k] = dat[i-1];
 
             VTypes::U2r u2r(d,VTypes::U2r::wsize());
-			delete[] d;
+            delete[] d;
             IOBase::processingAsAI( p, (unsigned long)u2r, shm, force );
-		}
+        }
         else if( p->vtype == VTypes::vtF2 )
         {
-			if( (i + VTypes::F2::wsize() - 1) > count )
-			{
-				i += VTypes::F2::wsize();
-				return ModbusRTU::erInvalidFormat;
-			}
+            if( (i + VTypes::F2::wsize() - 1) > count )
+            {
+                i += VTypes::F2::wsize();
+                return ModbusRTU::erInvalidFormat;
+            }
 
             ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::F2::wsize()];
             for( int k=0; k<VTypes::F2::wsize(); k++, i++ )
                  d[k] = dat[i-1];
 
             VTypes::F2 f2(d,VTypes::F2::wsize());
-			delete[] d;
-			IOBase::processingFasAI( p, (float)f2, shm, force );
-		}
+            delete[] d;
+            IOBase::processingFasAI( p, (float)f2, shm, force );
+        }
         else if( p->vtype == VTypes::vtF2r )
         {
-			if( (i + VTypes::F2r::wsize() - 1) > count )
-			{
-				i += VTypes::F2r::wsize();
-				return ModbusRTU::erInvalidFormat;
-			}
+            if( (i + VTypes::F2r::wsize() - 1) > count )
+            {
+                i += VTypes::F2r::wsize();
+                return ModbusRTU::erInvalidFormat;
+            }
 
             ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::F2r::wsize()];
             for( int k=0; k<VTypes::F2r::wsize(); k++, i++ )
                  d[k] = dat[i-1];
 
             VTypes::F2r f2r(d,VTypes::F2r::wsize());
-			delete[] d;
-			IOBase::processingFasAI( p, (float)f2r, shm, force );
-		}
+            delete[] d;
+            IOBase::processingFasAI( p, (float)f2r, shm, force );
+        }
         else if( p->vtype == VTypes::vtF4 )
         {
-			if( (i + VTypes::F4::wsize() - 1) > count )
-			{
-				i += VTypes::F4::wsize();
-				return ModbusRTU::erInvalidFormat;
-			}
+            if( (i + VTypes::F4::wsize() - 1) > count )
+            {
+                i += VTypes::F4::wsize();
+                return ModbusRTU::erInvalidFormat;
+            }
 
             ModbusRTU::ModbusData* d = new ModbusRTU::ModbusData[VTypes::F4::wsize()];
             for( int k=0; k<VTypes::F4::wsize(); k++, i++ )
                  d[k] = dat[i-1];
 
             VTypes::F4 f4(d,VTypes::F4::wsize());
-			delete[] d;
-			IOBase::processingFasAI( p, (float)f4, shm, force );
-		}
+            delete[] d;
+            IOBase::processingFasAI( p, (float)f4, shm, force );
+        }
         else if( p->vtype == VTypes::vtByte )
         {
             VTypes::Byte b(mbval);

@@ -8,9 +8,9 @@ using namespace std;
 // --------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
-	std::string dbname("test-db");
-	if( argc > 1 )
-	    dbname = string(argv[1]);
+    std::string dbname("test-db");
+    if( argc > 1 )
+        dbname = string(argv[1]);
 
     try
     {

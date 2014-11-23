@@ -80,10 +80,10 @@ UniSetActivatorPtr UniSetActivator::inst;
 UniSetActivatorPtr UniSetActivator::Instance( const UniSetTypes::ObjectId id )
 {
     if( inst == nullptr )
-	{
+    {
        inst = shared_ptr<UniSetActivator>( new UniSetActivator(id) );
        gActivator = inst;
-	}
+    }
 
     return inst;
 }
@@ -92,7 +92,7 @@ UniSetActivatorPtr UniSetActivator::Instance( const UniSetTypes::ObjectId id )
 
 void UniSetActivator::Destroy()
 {
-	inst.reset();
+    inst.reset();
 }
 
 // ---------------------------------------------------------------------------
@@ -121,6 +121,7 @@ void UniSetActivator::init()
     if( getId() == DefaultObjectId )
         myname = "UniSetActivator";
 
+    auto conf = uniset_conf();
     orb = conf->getORB();
     CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
     PortableServer::POA_var root_poa = PortableServer::POA::_narrow(obj);
@@ -363,10 +364,10 @@ void UniSetActivator::work()
 
     ulogsys << myname << "(work): orb thread stopped!" << endl;
 
-	try
-	{
-    	ulogsys << myname << "(oaDestroy): orb destroy... " << endl;
-    	orb->destroy();
+    try
+    {
+        ulogsys << myname << "(oaDestroy): orb destroy... " << endl;
+        orb->destroy();
     }
     catch(omniORB::fatalException& fe)
     {

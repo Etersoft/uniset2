@@ -14,23 +14,23 @@ using namespace UniSetExtensions;
 // --------------------------------------------------------------------------
 int main(int argc, char* argv[] )
 {
-	Catch::Session session;
+    Catch::Session session;
     if( argc>1 && ( strcmp(argv[1],"--help")==0 || strcmp(argv[1],"-h")==0 ) )
     {
         cout << "--confile    - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
         SharedMemory::help_print(argc, argv);
-		cout << endl << endl << "--------------- CATCH HELP --------------" << endl;
-		session.showHelp("test_with_sm");
-		return 0;
+        cout << endl << endl << "--------------- CATCH HELP --------------" << endl;
+        session.showHelp("test_with_sm");
+        return 0;
     }
 
     int returnCode = session.applyCommandLine( argc, argv, Catch::Session::OnUnusedOptions::Ignore );
-  	if( returnCode != 0 ) // Indicates a command line error
-		return returnCode;
+      if( returnCode != 0 ) // Indicates a command line error
+        return returnCode;
    
     try
     {
-		uniset_init(argc,argv);
+        uniset_init(argc,argv);
 /*
         conf->initDebug(dlog,"dlog");
         string logfilename = conf->getArgParam("--logfile", "smemory.log");
@@ -52,18 +52,18 @@ int main(int argc, char* argv[] )
         int tout = 6000;
         PassiveTimer pt(tout);
         while( !pt.checkTime() && !act->exist() )
-        	msleep(100);
-        	
+            msleep(100);
+            
         if( !act->exist() )
         {
-        	cerr << "(tests_with_sm): SharedMemory not exist! (timeout=" << tout << ")" << endl;
-			return 1;        	
+            cerr << "(tests_with_sm): SharedMemory not exist! (timeout=" << tout << ")" << endl;
+            return 1;            
         }
-		
-		int ret = session.run();
+        
+        int ret = session.run();
 
-		act->oaDestroy();
-		return ret;
+        act->oaDestroy();
+        return ret;
     }
     catch( SystemError& err )
     {

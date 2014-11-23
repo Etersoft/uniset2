@@ -21,7 +21,7 @@ int main(int argc, const char **argv)
             return 0;
         }
 
-        uniset_init(argc,argv,"configure.xml");
+        auto conf = uniset_init(argc,argv,"configure.xml");
 
         bool fullname = false;
         if( findArgParam("--fullname",conf->getArgc(),conf->getArgv()) != -1 )

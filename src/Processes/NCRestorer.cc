@@ -64,7 +64,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo&& inf, IONotifyControlle
 
                 default:
                     ucrit << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА! -> "
-                                    << conf->oind->getNameById(inf.si.id) << endl;
+                                    << uniset_conf()->oind->getNameById(inf.si.id) << endl;
                     return;
                 break;
 
@@ -83,7 +83,7 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo&& inf, IONotifyControlle
 
         default:
             ucrit << ic->getName() << "(NCRestorer::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА!-> "
-                  << conf->oind->getNameById(inf.si.id) << endl;
+                  << uniset_conf()->oind->getNameById(inf.si.id) << endl;
         break;
     }
 }
@@ -155,8 +155,8 @@ void NCRestorer::init_depends_signals( IONotifyController* ic )
             continue;
 
         uinfo << ic->getName() << "(NCRestorer::init_depends_signals): "
-                << " init depend: '" << conf->oind->getMapName(it->second.si.id) << "'"
-                << " dep_name=(" << it->second.d_si.id << ")'" << conf->oind->getMapName(it->second.d_si.id) << "'"
+                << " init depend: '" << uniset_conf()->oind->getMapName(it->second.si.id) << "'"
+                << " dep_name=(" << it->second.d_si.id << ")'" << uniset_conf()->oind->getMapName(it->second.d_si.id) << "'"
                 << endl;
 
         IOController::ChangeSignal s = ic->signal_change_value(it->second.d_si.id);

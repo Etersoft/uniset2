@@ -40,7 +40,7 @@
         public:
 //              ObjectRepositoryFactory();
 //            ObjectRepositoryFactory(int* argc=argc_ptr, char* **argv=argv_ptr); // параметры инициализации ORB
-            ObjectRepositoryFactory( UniSetTypes::Configuration* conf );
+            ObjectRepositoryFactory( const std::shared_ptr<UniSetTypes::Configuration>& conf );
             ~ObjectRepositoryFactory();
 
             //! Создание секции

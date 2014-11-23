@@ -106,8 +106,8 @@ bool MySQLInterface::query_ok( const string& q )
     MYSQL_RES* res = mysql_store_result(mysql); // _use_result - некорректно работает с _num_rows
     if( !res || mysql_num_rows(res)==0 )
     {
-	if( res )
-	        mysql_free_result(res);
+    if( res )
+            mysql_free_result(res);
         return false;
     }
 

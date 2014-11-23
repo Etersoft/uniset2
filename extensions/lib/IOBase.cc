@@ -7,7 +7,7 @@ using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, IOBase& inf )
 {
-    return os << "(" << inf.si.id << ")" << conf->oind->getMapName(inf.si.id)
+    return os << "(" << inf.si.id << ")" << uniset_conf()->oind->getMapName(inf.si.id)
         << " default=" << inf.defval << " safety=" << inf.safety;
 }
 // -----------------------------------------------------------------------------
@@ -136,29 +136,29 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
                 val = it->df.filterRC(val);
         }
 
-		if( !it->rawdata )
-		{
-			if( it->cdiagram )    // задана специальная калибровочная диаграмма
-			{
-				if( it->craw != val )
-				{
-					it->craw = val;
-					val = it->cdiagram->getValue(val);
-					it->cprev = val;
-				}
-				else
-					val = it->cprev;        // просто передаём предыдущее значение
-			}
-			else
-			{
-				IOController_i::CalibrateInfo* cal( &(it->cal) );
-				if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
-					val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
-			}
-	
-			if( !it->noprecision && it->cal.precision > 0 )
-				val *= lround(pow10(it->cal.precision));
-		}
+        if( !it->rawdata )
+        {
+            if( it->cdiagram )    // задана специальная калибровочная диаграмма
+            {
+                if( it->craw != val )
+                {
+                    it->craw = val;
+                    val = it->cdiagram->getValue(val);
+                    it->cprev = val;
+                }
+                else
+                    val = it->cprev;        // просто передаём предыдущее значение
+            }
+            else
+            {
+                IOController_i::CalibrateInfo* cal( &(it->cal) );
+                if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
+                    val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
+            }
+    
+            if( !it->noprecision && it->cal.precision > 0 )
+                val *= lround(pow10(it->cal.precision));
+        }
     // если предыдущее значение "обрыв",
     // то сбрасываем признак
     {
@@ -178,12 +178,12 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 {
     long val = lroundf(fval);
 
-	if( it->rawdata )
-	{
-		val = 0;
-		memcpy(&val,&fval, std::min(sizeof(val),sizeof(fval)));
-	}
-	else if( it->cal.precision > 0 )
+    if( it->rawdata )
+    {
+        val = 0;
+        memcpy(&val,&fval, std::min(sizeof(val),sizeof(fval)));
+    }
+    else if( it->cal.precision > 0 )
         val = lroundf( fval * pow10(it->cal.precision) );
 
     // проверка на обрыв
@@ -325,7 +325,7 @@ float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
     if( it->rawdata )
     {
         float fval=0;
-		memcpy(&fval,&val, std::min(sizeof(val),sizeof(fval)));
+        memcpy(&fval,&val, std::min(sizeof(val),sizeof(fval)));
         return fval;
     }
 
@@ -394,32 +394,32 @@ void IOBase::processingThreshold( IOBase* it, SMInterface* shm, bool force )
 // -----------------------------------------------------------------------------
 std::string IOBase::initProp( UniXML::iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const std::string& defval )
 {
-	if( !it.getProp(prefix+prop).empty() )
-		return it.getProp(prefix+prop);
+    if( !it.getProp(prefix+prop).empty() )
+        return it.getProp(prefix+prop);
 
-	if( prefonly )
-		return defval;
+    if( prefonly )
+        return defval;
 
-	if( !it.getProp(prop).empty() )
-		return it.getProp(prop);
+    if( !it.getProp(prop).empty() )
+        return it.getProp(prop);
 
-	return defval;
+    return defval;
 }
 // -----------------------------------------------------------------------------
 int IOBase::initIntProp( UniXML::iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const int defval )
 {
-	string pp(prefix+prop);
+    string pp(prefix+prop);
 
-	if( !it.getProp(pp).empty() )
-		return it.getIntProp(pp);
-	
-	if( prefonly )
-		return defval;
+    if( !it.getProp(pp).empty() )
+        return it.getIntProp(pp);
+    
+    if( prefonly )
+        return defval;
 
-	if( !it.getProp(prop).empty() )
-		return it.getIntProp(prop);
+    if( !it.getProp(prop).empty() )
+        return it.getIntProp(prop);
 
-	return defval;
+    return defval;
 }
 // -----------------------------------------------------------------------------
 bool IOBase::initItem( IOBase* b, UniXML::iterator& it, SMInterface* shm, const std::string& prefix, 
@@ -428,12 +428,12 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, SMInterface* shm, const 
                         int def_filtersize, float def_filterT, float def_lsparam,
                         float def_iir_coeff_prev, float def_iir_coeff_new )
 {
-	// Переопределять ID и name - нельзя..s
+    // Переопределять ID и name - нельзя..s
     string sname( it.getProp("name") );
 
     ObjectId sid = DefaultObjectId;
     if( it.getProp("id").empty() )
-        sid = conf->getSensorID(sname);
+        sid = uniset_conf()->getSensorID(sname);
     else
         sid = it.getPIntProp("id",DefaultObjectId);
 
@@ -448,16 +448,16 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, SMInterface* shm, const 
     b->val_lock.setName(sname + "_lock");
 
     b->si.id     = sid;
-    b->si.node     = conf->getLocalNode();
+    b->si.node   = uniset_conf()->getLocalNode();
 
     b->nofilter = initIntProp(it,"nofilter",prefix,init_prefix_only);
-    b->ignore    = initIntProp(it,"ioignore",prefix,init_prefix_only);
-    b->invert    = initIntProp(it,"ioinvert",prefix,init_prefix_only);
-    b->defval     = initIntProp(it,"default",prefix,init_prefix_only);
+    b->ignore   = initIntProp(it,"ioignore",prefix,init_prefix_only);
+    b->invert   = initIntProp(it,"ioinvert",prefix,init_prefix_only);
+    b->defval   = initIntProp(it,"default",prefix,init_prefix_only);
     b->noprecision    = initIntProp(it,"noprecision",prefix,init_prefix_only);
     b->value    = b->defval;
     b->breaklim = initIntProp(it,"breaklim",prefix,init_prefix_only);
-	b->rawdata = initIntProp(it,"rawdata",prefix,init_prefix_only);
+    b->rawdata  = initIntProp(it,"rawdata",prefix,init_prefix_only);
 
     long msec = initIntProp(it,"debouncedelay",prefix,init_prefix_only, UniSetTimer::WaitUpTime);
     b->ptDebounce.setTiming(msec);
@@ -585,7 +585,7 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, SMInterface* shm, const 
         string tai(initProp(it,"threshold_aid",prefix,init_prefix_only));
         if( !tai.empty() )
         {
-            b->t_ai = conf->getSensorID(tai);
+            b->t_ai = uniset_conf()->getSensorID(tai);
             if( b->t_ai == DefaultObjectId )
             {
                 if( dlog && dlog->is_crit() )

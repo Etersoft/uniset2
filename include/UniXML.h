@@ -68,20 +68,20 @@ class UniXML_iterator:
         bool canPrev();
         bool canNext();
 #if 0
-		friend inline bool operator==(const UniXML_iterator& lhs, const UniXML_iterator& rhs)
-		{
-			return ( lhs.curNode != 0 && rhs.curNode!=0 && lhs.curNode == rhs.curNode );
-		}
-		
-		friend inline bool operator!=(const UniXML_iterator& lhs, const UniXML_iterator& rhs){return !(lhs == rhs);}
+        friend inline bool operator==(const UniXML_iterator& lhs, const UniXML_iterator& rhs)
+        {
+            return ( lhs.curNode != 0 && rhs.curNode!=0 && lhs.curNode == rhs.curNode );
+        }
+        
+        friend inline bool operator!=(const UniXML_iterator& lhs, const UniXML_iterator& rhs){return !(lhs == rhs);}
 
-		inline bool operator==(int a)
-		{
-			if( a == 0 )
-				return (curNode == NULL);
+        inline bool operator==(int a)
+        {
+            if( a == 0 )
+                return (curNode == NULL);
 
-			return false;
-		}
+            return false;
+        }
 #endif
         // Перейти к следующему узлу
         UniXML_iterator operator+(int);
@@ -115,12 +115,12 @@ class UniXML_iterator:
         inline const std::string getName() const
         {
             if( curNode )
-			{
-				if( !curNode->name )
-					return "";
+            {
+                if( !curNode->name )
+                    return "";
 
                 return (char*) curNode->name;
-			}
+            }
 
             return "";
         }
@@ -227,9 +227,9 @@ public:
     xmlNode* findNode( xmlNode* node, const std::string& searchnode, const std::string& name = "") const;
     xmlNode* findNodeUtf8( xmlNode* node, const std::string& searchnode, const std::string& name = "") const;
 
-	// ??
-	//width means number of nodes of the same level as node in 1-st parameter (width number includes first node)
-	//depth means number of times we can go to the children, if 0 we can't go only to elements of the same level
+    // ??
+    //width means number of nodes of the same level as node in 1-st parameter (width number includes first node)
+    //depth means number of times we can go to the children, if 0 we can't go only to elements of the same level
     xmlNode* extFindNode( xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top=true ) const;
     xmlNode* extFindNodeUtf8( xmlNode* node, int depth, int width, const std::string& searchnode, const std::string& name = "", bool top=true ) const;
 

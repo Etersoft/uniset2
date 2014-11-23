@@ -36,10 +36,11 @@ void pyUInterface::uniset_init( int argc, char* argv[], const char* xmlfile )thr
 //---------------------------------------------------------------------------
 long pyUInterface::getValue( long id )throw(UException)
 {
-    if( !UniSetTypes::conf || !ui )
+    auto conf = UniSetTypes::uniset_conf();
+    if( !conf || !ui )
       throw USysError();
     
-    UniversalIO::IOType t = UniSetTypes::conf->getIOType(id);
+    UniversalIO::IOType t = conf->getIOType(id);
     try
     {
         switch(t)
@@ -77,10 +78,12 @@ long pyUInterface::getValue( long id )throw(UException)
 //---------------------------------------------------------------------------
 void pyUInterface::setValue( long id, long val )throw(UException)
 {
-    if( !UniSetTypes::conf || !ui )
+    auto conf = UniSetTypes::uniset_conf();
+
+    if( !conf || !ui )
       throw USysError();
     
-    UniversalIO::IOType t = UniSetTypes::conf->getIOType(id);
+    UniversalIO::IOType t = conf->getIOType(id);
     try
     {
         switch(t)
@@ -116,40 +119,45 @@ void pyUInterface::setValue( long id, long val )throw(UException)
 //---------------------------------------------------------------------------
 long pyUInterface::getSensorID( const char* name )
 {
-    if( UniSetTypes::conf )
-      return UniSetTypes::conf->getSensorID(name);
+    auto conf = UniSetTypes::uniset_conf();
+    if( conf )
+      return conf->getSensorID(name);
     
     return UniSetTypes::DefaultObjectId;
 }
 //---------------------------------------------------------------------------
 const char* pyUInterface::getName( long id )
 {
-    if( UniSetTypes::conf )
-        return UniSetTypes::conf->oind->getMapName(id).c_str();
+    auto conf = UniSetTypes::uniset_conf();
+    if( conf )
+        return conf->oind->getMapName(id).c_str();
         
     return "";
 }
 //---------------------------------------------------------------------------
 const char* pyUInterface::getShortName( long id )
 {
-    if( UniSetTypes::conf )
-        return ORepHelpers::getShortName(UniSetTypes::conf->oind->getMapName(id)).c_str();
+    auto conf = UniSetTypes::uniset_conf();
+    if( conf )
+        return ORepHelpers::getShortName(conf->oind->getMapName(id)).c_str();
         
     return "";
 }
 //---------------------------------------------------------------------------
 const char* pyUInterface::getTextName( long id )
 {
-    if( UniSetTypes::conf )
-        return UniSetTypes::conf->oind->getTextName(id).c_str();
+    auto conf = UniSetTypes::uniset_conf();
+    if( conf )
+        return conf->oind->getTextName(id).c_str();
         
     return "";
 }
 //---------------------------------------------------------------------------
 const char* pyUInterface::getConfFileName()
 {
-    if( UniSetTypes::conf )
-        return UniSetTypes::conf->getConfFileName().c_str();
+    auto conf = UniSetTypes::uniset_conf();
+    if( conf )
+        return conf->getConfFileName().c_str();
         
     return "";
 

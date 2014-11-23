@@ -35,7 +35,7 @@ using namespace UniSetTypes;
 using namespace std;
 using namespace omni;
 // ---------------------------------------------------------------------------------------------------------------
-ObjectRepositoryFactory::ObjectRepositoryFactory( Configuration* _conf ):
+ObjectRepositoryFactory::ObjectRepositoryFactory( const std::shared_ptr<UniSetTypes::Configuration>& _conf ):
 ObjectRepository(_conf)
 {
 }

@@ -51,10 +51,10 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 {
 	public:
 		<xsl:if test="not(normalize-space($OID))=''">
-				<xsl:value-of select="$CLASSNAME"/>_SK( UniSetTypes::ObjectId id = UniSetTypes::conf->getObjectID("<xsl:value-of select="$OID"/>"), xmlNode* node=UniSetTypes::conf->getNode("<xsl:value-of select="normalize-space($OID)"/>"), const string&amp; argprefix="" );
+				<xsl:value-of select="$CLASSNAME"/>_SK( UniSetTypes::ObjectId id = UniSetTypes::uniset_conf()->getObjectID("<xsl:value-of select="$OID"/>"), xmlNode* node=UniSetTypes::uniset_conf()->getNode("<xsl:value-of select="normalize-space($OID)"/>"), const string&amp; argprefix="" );
 		</xsl:if>
 		<xsl:if test="normalize-space($OID)=''">
-				<xsl:value-of select="$CLASSNAME"/>_SK( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::conf->getNode("<xsl:value-of select="normalize-space($OID)"/>") );
+				<xsl:value-of select="$CLASSNAME"/>_SK( UniSetTypes::ObjectId id, xmlNode* node=UniSetTypes::uniset_conf()->getNode("<xsl:value-of select="normalize-space($OID)"/>") );
 		</xsl:if>
 		<xsl:value-of select="$CLASSNAME"/>_SK();
 

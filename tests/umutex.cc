@@ -142,38 +142,38 @@ int main( int argc, const char **argv )
     try
     {
 #if 0
-    	{
-    		cout << "check timed_mutex..." << endl;
-    	 	std::timed_mutex m;
-    	 	
-    	 	cout << " 'unlock' without 'lock'..";
-    	 	m.unlock();
-    	 	cout << " ok." << endl;
+        {
+            cout << "check timed_mutex..." << endl;
+             std::timed_mutex m;
+             
+             cout << " 'unlock' without 'lock'..";
+             m.unlock();
+             cout << " ok." << endl;
 
-			cout << "try lock (lock): " << ( m.try_lock() ? "OK" : "FAIL" ) << endl;
+            cout << "try lock (lock): " << ( m.try_lock() ? "OK" : "FAIL" ) << endl;
 
-			m.unlock();
-			
-    	 	m.lock();
+            m.unlock();
+            
+             m.lock();
 
-			cout << "try lock (fail): " << ( m.try_lock() ? "FAIL" : "OK" ) << endl;
-    	 	m.unlock();
-    	}
+            cout << "try lock (fail): " << ( m.try_lock() ? "FAIL" : "OK" ) << endl;
+             m.unlock();
+        }
     
     
-    	{
-    		uniset_mutex m("testmutex");
-    		{
-	    		uniset_mutex_lock l(m);
-	    		msleep(20);
-	    	}
-	    	
-	    	{
-	    		uniset_mutex_lock l(m,100);
-	    		msleep(50);
-	    	}
-    		
-    	}
+        {
+            uniset_mutex m("testmutex");
+            {
+                uniset_mutex_lock l(m);
+                msleep(20);
+            }
+            
+            {
+                uniset_mutex_lock l(m,100);
+                msleep(50);
+            }
+            
+        }
 #endif
 #if 0
         {
@@ -303,8 +303,8 @@ int main( int argc, const char **argv )
         int c = (*it)->lock_count();
         (*it)->terminate();
         if( (*it)->get()->isRunning() )
-	        (*it)->get()->join();
-       	//(*it)->get()->stop();
+            (*it)->get()->join();
+           //(*it)->get()->stop();
         cout << (*it)->name() << ": locked counter: " << (c/10) << " " << ( c!=0 ? "OK":"FAIL" ) << endl;
     }
 #endif
@@ -318,14 +318,14 @@ int main( int argc, const char **argv )
         ostringstream s;
         bool r=false;
 #if 1
-    	if( i>=half )
-    	{
-    		r = true;
-    		s << "(R)";
-    	}
-    	else
+        if( i>=half )
+        {
+            r = true;
+            s << "(R)";
+        }
+        else
 #endif
-    		s << "(W)";
+            s << "(W)";
 
         s << "t" << i;
 
@@ -345,7 +345,7 @@ int main( int argc, const char **argv )
         int c = (*it)->lock_count();
         (*it)->terminate();
         if( (*it)->get()->isRunning() )
-	        (*it)->get()->join();
+            (*it)->get()->join();
 
         cout << (*it)->name() << ": locked counter: " << (c/10) << " " << ( c!=0 ? "OK":"FAIL" ) << endl;
     }
@@ -366,8 +366,8 @@ int main( int argc, const char **argv )
         msleep(50);
     }   
 
-	std::atomic_int cnt(0);
-	std::atomic_int num(10);
+    std::atomic_int cnt(0);
+    std::atomic_int num(10);
 
     while( --num )
     {
@@ -378,7 +378,7 @@ int main( int argc, const char **argv )
             // cerr << "(writeLock): ************* lock OK.." << endl;
         }
 
-		msleep(10);
+        msleep(10);
     }
 
     cout << "WRITE LOCK: " << cnt << endl;
@@ -388,7 +388,7 @@ int main( int argc, const char **argv )
         int c = it->lock_count();
         it->terminate();
         if( it->get()->isRunning() )
-	        it->get()->join();
+            it->get()->join();
 
 //        cout << it->name() << ": locked counter: " << c << " " << ( c!=0 ? "OK":"FAIL" ) << endl;
     }

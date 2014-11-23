@@ -41,7 +41,7 @@ PassiveObject::PassiveObject( UniSetTypes::ObjectId id ):
     mngr(0),
     id(id)
 {
-    string myfullname = conf->oind->getNameById(id);
+    string myfullname = uniset_conf()->oind->getNameById(id);
     myname = ORepHelpers::getShortName(myfullname.c_str()); 
 }
 
@@ -49,7 +49,7 @@ PassiveObject::PassiveObject( ObjectId id, ProxyManager* mngr ):
     mngr(mngr),
     id(id)
 {
-    string myfullname = conf->oind->getNameById(id);
+    string myfullname = uniset_conf()->oind->getNameById(id);
     myname = ORepHelpers::getShortName(myfullname.c_str());
 
     if( mngr )

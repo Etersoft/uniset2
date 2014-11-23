@@ -10,8 +10,8 @@ xmlfile(xfile)
 {
     try
     {
-        conf = new UniSetTypes::Configuration(p->argc,p->argv,xmlfile);
-        ui = new UInterface(conf);
+        conf = UniSetTypes::uniset_init(p->argc,p->argv,xmlfile);
+        ui = make_shared<UInterface>(conf);
     }
     catch( UniSetTypes::Exception& ex )
     {
@@ -30,8 +30,8 @@ xmlfile(xfile)
 {
     try
     {
-        conf = new UniSetTypes::Configuration(argc,argv,xmlfile);
-        ui = new UInterface(conf);
+        conf = UniSetTypes::uniset_init(argc,argv,xmlfile);
+        ui = make_shared<UInterface>(conf);
     }
     catch( UniSetTypes::Exception& ex )
     {
@@ -45,8 +45,6 @@ xmlfile(xfile)
 // -------------------------------------------------------------------------- 
 UConnector::~UConnector()
 {
-    delete ui;
-    delete conf;
 }
 // --------------------------------------------------------------------------
 const char* UConnector::getConfFileName()

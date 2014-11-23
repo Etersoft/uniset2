@@ -71,7 +71,7 @@ void IORFile::unlinkIOR( const ObjectId id ) const
 string IORFile::genFName( const ObjectId id ) const
 {
     ostringstream fname;
-    fname << conf->getLockDir() << id;
+    fname << uniset_conf()->getLockDir() << id;
     return std::move( fname.str() );
 }
 // -----------------------------------------------------------------------------------------

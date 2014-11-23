@@ -516,7 +516,7 @@ int UniSetManager::getObjectsInfo( UniSetManager* mngr, SimpleInfoSeq* seq,
         catch(...)
         {
             uwarn << myname << "(getObjectsInfo): не смог получить у объекта "
-                    << conf->oind->getNameById( (*it)->getId() ) << " информацию" << endl;
+                    << uniset_conf()->oind->getNameById( (*it)->getId() ) << " информацию" << endl;
         }
     }
 

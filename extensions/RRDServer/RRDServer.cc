@@ -98,6 +98,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 
 //    try
     {
+        auto conf = uniset_conf();
 
         xmlNode* snode = conf->getXMLSensorsSection();
         if(!snode)
@@ -225,6 +226,8 @@ RRDServer* RRDServer::init_rrdstorage( int argc, const char* const* argv,
                                             UniSetTypes::ObjectId icID, SharedMemory* ic,
                                             const std::string& prefix )
 {
+    auto conf = uniset_conf();
+
     string name = conf->getArgParam("--" + prefix + "-name","RRDServer");
     if( name.empty() )
     {

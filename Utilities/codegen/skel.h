@@ -8,7 +8,7 @@ class Skel:
     public Skel_SK
 {
     public:
-        Skel( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::conf->getNode("Skel") );
+        Skel( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::uniset_conf()->getNode("Skel") );
         virtual ~Skel();
 
     protected:

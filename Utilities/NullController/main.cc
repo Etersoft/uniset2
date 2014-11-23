@@ -36,7 +36,7 @@ int main(int argc, char** argv)
             return 0;
         }
 
-        uniset_init(argc,argv,"configure.xml");
+        auto conf = uniset_init(argc,argv,"configure.xml");
 
 
         // определяем ID объекта

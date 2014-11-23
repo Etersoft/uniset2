@@ -8,7 +8,7 @@ class TestGen:
     public TestGen_SK
 {
     public:
-        TestGen( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::conf->getNode("TestGen") );
+        TestGen( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::uniset_conf()->getNode("TestGen") );
         virtual ~TestGen();
 
 

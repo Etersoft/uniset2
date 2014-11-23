@@ -65,8 +65,8 @@ class UInterface
 {
     public:
 
-        UInterface( const UniSetTypes::ObjectId backid, CORBA::ORB_var orb=NULL, std::shared_ptr<UniSetTypes::ObjectIndex> oind=nullptr );
-        UInterface( const UniSetTypes::Configuration* uconf=UniSetTypes::conf );
+        UInterface( const UniSetTypes::ObjectId backid, CORBA::ORB_var orb=NULL, const std::shared_ptr<UniSetTypes::ObjectIndex> oind=nullptr );
+        UInterface( const std::shared_ptr<UniSetTypes::Configuration>& uconf = UniSetTypes::uniset_conf() );
         ~UInterface();
 
         // ---------------------------------------------------------------
@@ -154,7 +154,7 @@ class UInterface
 
         //! Получить список датчиков
         IOController_i::ShortMapSeq* getSensors( const UniSetTypes::ObjectId id,
-                                                    const UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode() );
+                                                    const UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
 
         // ---------------------------------------------------------------
         // Работа с репозиторием
@@ -185,10 +185,10 @@ class UInterface
         bool isExist( const UniSetTypes::ObjectId id, const UniSetTypes::ObjectId node ) const;
 
         bool waitReady( const UniSetTypes::ObjectId id, int msec, int pause=5000,
-                        const UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );     // used exist
+                        const UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );     // used exist
 
         bool waitWorking( const UniSetTypes::ObjectId id, int msec, int pause=3000,
-                            const UniSetTypes::ObjectId node = UniSetTypes::conf->getLocalNode() );     // used getValue
+                            const UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );     // used getValue
 
         // ---------------------------------------------------------------
         // Работа с ID, Name
@@ -222,8 +222,7 @@ class UInterface
         // ---------------------------------------------------------------
         // Получение указателей на вспомогательные классы.
         inline const std::shared_ptr<UniSetTypes::ObjectIndex> getObjectIndex() { return oind; }
-        inline const UniSetTypes::Configuration* getConf() { return uconf; }
-
+        inline const std::shared_ptr<UniSetTypes::Configuration> getConf() { return uconf; }
         // ---------------------------------------------------------------
         // Посылка сообщений
 
@@ -302,7 +301,7 @@ class UInterface
         mutable CORBA::ORB_var orb;
         CacheOfResolve rcache;
         std::shared_ptr<UniSetTypes::ObjectIndex> oind;
-        const UniSetTypes::Configuration* uconf;
+        std::shared_ptr<UniSetTypes::Configuration> uconf;
 };
 // --------------------------------------------------------------------------
 #endif

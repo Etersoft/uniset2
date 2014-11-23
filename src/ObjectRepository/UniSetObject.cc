@@ -168,6 +168,8 @@ void UniSetObject::init_object()
     refmutex.setName(myname + "_refmutex");
 //    mutex_act.setName(myname + "_mutex_act");
 
+    auto conf = uniset_conf();
+
     SizeOfMessageQueue = conf->getArgPInt("--uniset-object-size-message-queue",conf->getField("SizeOfMessageQueue"), 1000);
     MaxCountRemoveOfMessage = conf->getArgInt("--uniset-object-maxcount-remove-message",conf->getField("MaxCountRemoveOfMessage"));
     if( MaxCountRemoveOfMessage <= 0 )
@@ -705,7 +707,7 @@ bool UniSetObject::activate()
         throw ORepFailed(err.c_str());
     }
 
-    if( conf->isTransientIOR() )
+    if( uniset_conf()->isTransientIOR() )
     {
         // activate witch generate id
         poa->activate_object(static_cast<PortableServer::ServantBase*>(this));

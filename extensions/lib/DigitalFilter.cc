@@ -212,12 +212,12 @@ int DigitalFilter::median( int newval )
 //--------------------------------------------------------------------------
 int DigitalFilter::currentMedian()
 {
-	if( !mvec_sorted )
-	{
-	    mvec.assign(buf.begin(),buf.end());
-    	sort(mvec.begin(),mvec.end());
-		// mvec_sorted = true; // специально не выставляю, чтобы если данные добавляются через add(), то тут надо каждый раз пересчитыать..
-	}
+    if( !mvec_sorted )
+    {
+        mvec.assign(buf.begin(),buf.end());
+        sort(mvec.begin(),mvec.end());
+        // mvec_sorted = true; // специально не выставляю, чтобы если данные добавляются через add(), то тут надо каждый раз пересчитыать..
+    }
 
     return mvec[maxsize/2];
 }

@@ -42,7 +42,7 @@ IONotifyController::IONotifyController():
 restorer(NULL),
 askIOMutex("askIOMutex"),
 trshMutex("trshMutex"),
-maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
+maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 5))
 {
 
 }
@@ -52,7 +52,7 @@ IONotifyController::IONotifyController(const string& name, const string& section
     restorer(d),
     askIOMutex(name+"askIOMutex"),
     trshMutex(name+"trshMutex"),
-    maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
+    maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 5))
 {
     // добавляем фильтры
     addIOFilter( sigc::mem_fun(this,&IONotifyController::myIOFilter) );
@@ -61,9 +61,9 @@ IONotifyController::IONotifyController(const string& name, const string& section
 IONotifyController::IONotifyController( ObjectId id, NCRestorer* d ):
     IOController(id),
     restorer(d),
-    askIOMutex(string(conf->oind->getMapName(id))+"_askIOMutex"),
-    trshMutex(string(conf->oind->getMapName(id))+"_trshMutex"),
-    maxAttemtps(conf->getPIntField("ConsumerMaxAttempts", 5))
+    askIOMutex(string(uniset_conf()->oind->getMapName(id))+"_askIOMutex"),
+    trshMutex(string(uniset_conf()->oind->getMapName(id))+"_trshMutex"),
+    maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 5))
 {
     signal_change_undefined_state().connect(sigc::mem_fun(*this, &IONotifyController::onChangeUndefinedState));
     signal_init().connect(sigc::mem_fun(*this, &IONotifyController::initItem));
@@ -133,9 +133,9 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
                                     const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd )
 {
     uinfo << "(askSensor): поступил " << ( cmd == UIODontNotify ? "отказ" :"заказ" ) << " от "
-            << conf->oind->getNameById(ci.id) << "@" << ci.node
+            << uniset_conf()->oind->getNameById(ci.id) << "@" << ci.node
             << " на аналоговый датчик "
-            << conf->oind->getNameById(sid) << endl;
+            << uniset_conf()->oind->getNameById(sid) << endl;
 
     // если такого аналогового датчика нет, здесь сработает исключение...
     auto li = myioEnd();
@@ -156,7 +156,7 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
     {
         SensorMessage  smsg;
         smsg.id          = sid;
-        smsg.node        = conf->getLocalNode();
+        smsg.node        = uniset_conf()->getLocalNode();
         smsg.consumer    = ci.id;
         smsg.supplier    = getId();
         smsg.sensor_type = li->second.type;    
@@ -178,17 +178,17 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
         }
         catch( Exception& ex )
         {
-            uwarn << myname << "(askSensor): " <<  conf->oind->getNameById(sid) << " error: "<< ex << endl;
+            uwarn << myname << "(askSensor): " <<  uniset_conf()->oind->getNameById(sid) << " error: "<< ex << endl;
         }
         catch( CORBA::SystemException& ex )
         {
-            uwarn << myname << "(askSensor): " << conf->oind->getNameById(ci.id) << "@" << ci.node 
+            uwarn << myname << "(askSensor): " << uniset_conf()->oind->getNameById(ci.id) << "@" << ci.node 
                   << " недоступен!!(CORBA::SystemException): "
                   << ex.NP_minorString() << endl;
         }
         catch(...)
         {
-            uwarn << myname << "(askSensor): " << conf->oind->getNameById(ci.id) << "@" << ci.node
+            uwarn << myname << "(askSensor): " << uniset_conf()->oind->getNameById(ci.id) << "@" << ci.node
                   << " catch..." << endl;
         }
     }
@@ -317,7 +317,7 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
     {
         ostringstream err;
         err << myname << "(localSetValue):  вход(выход) с именем " 
-        << conf->oind->getNameById(sid) << " не найден";
+        << uniset_conf()->oind->getNameById(sid) << " не найден";
 
         uinfo << err.str() << endl;
         throw IOController_i::NameNotFound(err.str().c_str());
@@ -337,7 +337,7 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
 
         // Рассылаем уведомления только в слуае изменения значения
         sm.id           = sid;
-        sm.node         = conf->getLocalNode();
+        sm.node         = uniset_conf()->getLocalNode();
         sm.value        = li->second.value;
         sm.undefined    = li->second.undefined;
         sm.priority     = (Message::Priority)li->second.priority;
@@ -408,18 +408,18 @@ void IONotifyController::send( ConsumerListInfo& lst, UniSetTypes::SensorMessage
             catch(Exception& ex)
             {
                 uwarn << myname << "(IONotifyController::send): " << ex
-                        << " for " << conf->oind->getNameById(li->id) << "@" << li->node << endl;
+                        << " for " << uniset_conf()->oind->getNameById(li->id) << "@" << li->node << endl;
             }
             catch( CORBA::SystemException& ex )
             {
                 uwarn << myname << "(IONotifyController::send): " 
-                        << conf->oind->getNameById(li->id) << "@" << li->node << " (CORBA::SystemException): "
+                        << uniset_conf()->oind->getNameById(li->id) << "@" << li->node << " (CORBA::SystemException): "
                         << ex.NP_minorString() << endl;
             }
             catch(...)
             {
                 ucrit << myname << "(IONotifyController::send): "
-                        << conf->oind->getNameById(li->id) << "@" << li->node
+                        << uniset_conf()->oind->getNameById(li->id) << "@" << li->node
                         << " catch..." << endl;
             }
 
@@ -545,7 +545,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
                     ThresholdExtList lst;    // создаем новый список
                     ThresholdsListInfo tli;
                     tli.si.id   = sid;
-                    tli.si.node = conf->getLocalNode();
+                    tli.si.node = uniset_conf()->getLocalNode();
                     tli.list   = std::move(lst);
                     tli.type   = li->second.type;
                     tli.ait    = myioEnd();
@@ -595,7 +595,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
                 {
                     SensorMessage sm;
                     sm.id         = sid;
-                    sm.node       = conf->getLocalNode();
+                    sm.node       = uniset_conf()->getLocalNode();
                     sm.value      = val;
                     sm.undefined  = li->second.undefined;
                     sm.sensor_type  = li->second.type;
@@ -743,7 +743,7 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 
         SensorMessage sm;
         sm.id           = sid;
-        sm.node         = conf->getLocalNode();
+        sm.node         = uniset_conf()->getLocalNode();
         sm.sensor_type  = li->second.type;
         sm.priority     = (Message::Priority)li->second.priority;
         sm.ci           = li->second.ci;
@@ -853,7 +853,7 @@ IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( UniSet
     {
         ostringstream err;
         err << myname << "(getThresholds): Not found sensor (" << sid << ") " 
-            << conf->oind->getNameById(sid);
+            << uniset_conf()->oind->getNameById(sid);
 
         uinfo << err.str() << endl;
         throw IOController_i::NameNotFound(err.str().c_str());
@@ -861,16 +861,16 @@ IONotifyController_i::ThresholdInfo IONotifyController::getThresholdInfo( UniSet
 
     for( auto it2= it->second.list.begin(); it2!=it->second.list.end(); ++it2 )
     {
-		/*! \warning На самом деле список разрешает иметь много порогов с одинаковым ID, для разных "заказчиков".
-			Но здесь мы возвращаем первый встретившийся..
-		*/
+        /*! \warning На самом деле список разрешает иметь много порогов с одинаковым ID, для разных "заказчиков".
+            Но здесь мы возвращаем первый встретившийся..
+        */
         if( it2->id == tid )
             return IONotifyController_i::ThresholdInfo( *it2 );
     }
 
     ostringstream err;
     err << myname << "(getThresholds): Not found for sensor (" << sid << ") " 
-        << conf->oind->getNameById(sid) << " ThresholdID='" << tid << "'";
+        << uniset_conf()->oind->getNameById(sid) << " ThresholdID='" << tid << "'";
 
     uinfo << err.str() << endl;
     throw IOController_i::NameNotFound(err.str().c_str());
@@ -885,7 +885,7 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( UniSetTy
     {
         ostringstream err;
         err << myname << "(getThresholds): Not found sensor (" << sid << ") " 
-            << conf->oind->getNameById(sid);
+            << uniset_conf()->oind->getNameById(sid);
 
         uinfo << err.str() << endl;
         throw IOController_i::NameNotFound(err.str().c_str());
@@ -902,7 +902,7 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( UniSetTy
     catch( Exception& ex )
     {
         uwarn << myname << "(getThresholdsList): для датчика " 
-                << conf->oind->getNameById(it->second.si.id)
+                << uniset_conf()->oind->getNameById(it->second.si.id)
                 << " " << ex << endl;
     }
 
@@ -944,7 +944,7 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
             catch(Exception& ex)
             {
                 uwarn << myname << "(getThresholdsList): для датчика " 
-                        << conf->oind->getNameById(it->second.si.id)
+                        << uniset_conf()->oind->getNameById(it->second.si.id)
                         << " " << ex << endl;
                 continue;
             }

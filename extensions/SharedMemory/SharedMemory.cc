@@ -43,11 +43,13 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 {
     mutex_start.setName(myname + "_mutex_start");
 
+    auto conf = uniset_conf();
+
     string cname(confname);
     if( cname.empty() )
-        cname = ORepHelpers::getShortName(conf->oind->getMapName(id));
+        cname = ORepHelpers::getShortName( conf->oind->getMapName(id));
 
-    xmlNode* cnode =  conf->getNode(cname);
+    xmlNode* cnode = conf->getNode(cname);
     if( cnode == NULL )
         throw SystemError("Not found conf-node for " + cname );
 
@@ -71,9 +73,9 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
 
     heartbeat_node = conf->getArgParam("--heartbeat-node");
     if( heartbeat_node.empty() )
-	{
+    {
         dwarn << myname << "(init): --heartbeat-node NULL ===> heartbeat NOT USED..." << endl;
-	}
+    }
     else
         dinfo << myname << "(init): heartbeat-node: " << heartbeat_node << endl;
 
@@ -267,7 +269,7 @@ void SharedMemory::sigterm( int signo )
     if( signo == SIGTERM && wdt )
         wdt->stop();
 //    raise(SIGKILL);
-	IONotifyController_LT::sigterm(signo);
+    IONotifyController_LT::sigterm(signo);
 }
 // ------------------------------------------------------------------------------------------
 void SharedMemory::checkHeartBeat()
@@ -374,7 +376,7 @@ bool SharedMemory::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterato
     }
     else
     {
-        hi.d_sid = conf->getSensorID(it.getProp("heartbeat_ds_name"));
+        hi.d_sid = uniset_conf()->getSensorID(it.getProp("heartbeat_ds_name"));
         if( hi.d_sid == DefaultObjectId )
         {
             ostringstream msg;
@@ -410,6 +412,7 @@ bool SharedMemory::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterato
 // ------------------------------------------------------------------------------------------
 SharedMemory* SharedMemory::init_smemory( int argc, const char* const* argv )
 {
+    auto conf = uniset_conf();
     string dfile = conf->getArgParam("--datfile", conf->getConfFileName());
 
     if( dfile[0]!='.' && dfile[0]!='/' )
@@ -439,7 +442,7 @@ void SharedMemory::buildEventList( xmlNode* cnode )
 // -----------------------------------------------------------------------------
 void SharedMemory::readEventList( const std::string& oname )
 {
-    xmlNode* enode = conf->getNode(oname);
+    xmlNode* enode = uniset_conf()->getNode(oname);
     if( enode == NULL )
     {
         dwarn << myname << "(readEventList): " << oname << " не найден..." << endl;
@@ -508,7 +511,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 {
     dinfo << myname << "(buildHistoryList): ..."  << endl;
 
-    const std::shared_ptr<UniXML> xml = conf->getConfXML();
+    const std::shared_ptr<UniXML> xml = uniset_conf()->getConfXML();
     if( !xml )
     {
         dwarn << myname << "(buildHistoryList): xml=NULL?!" << endl;
@@ -525,7 +528,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 
     UniXML::iterator it(n);
 
-    bool no_history = conf->getArgInt("--sm-no-history",it.getProp("no_history"));
+    bool no_history = uniset_conf()->getArgInt("--sm-no-history",it.getProp("no_history"));
     if( no_history )
     {
         dwarn << myname << "(buildHistoryList): no_history='1'.. history skipped..." << endl;
@@ -555,7 +558,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
         if( hi.filter.empty() )
             continue;
 
-        hi.fuse_id = conf->getSensorID(it.getProp("fuse_id"));
+        hi.fuse_id = uniset_conf()->getSensorID(it.getProp("fuse_id"));
         if( hi.fuse_id == DefaultObjectId )
         {
             dwarn << myname << "(buildHistory): not found sensor ID for "
@@ -604,7 +607,7 @@ void SharedMemory::checkHistoryFilter( UniXML::iterator& xit )
             continue;
         }
 
-        ai.id = conf->getSensorID(xit.getProp("name"));
+        ai.id = uniset_conf()->getSensorID(xit.getProp("name"));
         if( ai.id == DefaultObjectId )
         {
             dwarn << myname << "(checkHistoryFilter): not found sensor ID for " << xit.getProp("name") << endl;

@@ -17,6 +17,8 @@ namespace UniSetExtensions
     {
         if( shmID != DefaultObjectId )
             return shmID;
+        
+        auto conf = uniset_conf();
 
         string sname = conf->getArgParam("--smemory-id","SharedMemory1");
         shmID = conf->getControllerID(sname);
@@ -54,7 +56,7 @@ namespace UniSetExtensions
         if( xmlCalibrationsNode )
             return xmlCalibrationsNode;
         
-        xmlCalibrationsNode = conf->getNode("Calibrations");
+        xmlCalibrationsNode = uniset_conf()->getNode("Calibrations");
         return xmlCalibrationsNode;
         
     }
@@ -103,7 +105,7 @@ namespace UniSetExtensions
     // -------------------------------------------------------------------------
     void on_sigchild( int sig )
     {
-	    while(1)
+        while(1)
         {
             int istatus;
             pid_t pid = waitpid( -1, &istatus, WNOHANG );

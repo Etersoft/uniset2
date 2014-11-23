@@ -229,17 +229,14 @@ namespace UniSetTypes
         int heartbeat_msec;
     };
 
-    /*! Глобальный указатель на конфигуратор */
-    extern Configuration* conf;
+    /*! Глобальный указатель на конфигурацию (singleton) */
+    std::shared_ptr<Configuration> uniset_conf();
 
     /*! Глобальный объект для вывода логов */
     extern DebugStream ulog;
 
-    // Инициализация UniSetTypes::conf.
-    // ( учитываются параметры командной строки --confile и --id-from-config )
-	// force - инициализировать принудительно, даже если это повторная инициализация
-    void uniset_init( int argc, const char* const* argv, const std::string& xmlfile="configure.xml", bool force = false );
-
+    /*! инициализация "глобальной" конфигурации */
+    std::shared_ptr<Configuration> uniset_init( int argc, const char* const* argv, const std::string& xmlfile="configure.xml" );
 
 }    // end of UniSetTypes namespace
 // --------------------------------------------------------------------------

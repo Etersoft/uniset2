@@ -81,7 +81,7 @@ class IOController:
         IOController_i::CalibrateInfo getCalibrateInfo( UniSetTypes::ObjectId sid ) override;
 
         inline IOController_i::SensorInfo SensorInfo( const UniSetTypes::ObjectId sid,
-                                const UniSetTypes::ObjectId node=UniSetTypes::conf->getLocalNode())
+                                const UniSetTypes::ObjectId node=UniSetTypes::uniset_conf()->getLocalNode())
         {
             IOController_i::SensorInfo si;
             si.id = sid;

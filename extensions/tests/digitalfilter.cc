@@ -10,86 +10,86 @@ using namespace UniSetExtensions;
 
 TEST_CASE("DigitalFilter","[DigitalFilter]")
 {
-	SECTION("..")
-	{
-		WARN("List of tests for [DigitalFilter] is not complete (is not sufficient)");
-	}
-
-	SECTION("Default constructor (const data)")
-	{
-	 	DigitalFilter df;
-	 	DigitalFilter df10(10);
-
-		REQUIRE( df.size() == 5 );
-		REQUIRE( df10.size() == 10 );
-
-	    for( int i=0; i<20; i++ )
-		{
-			df.add(50);
-			df10.add(50);
-		}
-
-		REQUIRE( df.current1() == 50 );
-		REQUIRE( df.currentRC() == 50 );
-		REQUIRE( df.currentMedian() == 50 );
-
-		REQUIRE( df10.current1() == 50 );
-		REQUIRE( df10.currentRC() == 50 );
-		REQUIRE( df10.currentMedian() == 50 );
+    SECTION("..")
+    {
+        WARN("List of tests for [DigitalFilter] is not complete (is not sufficient)");
     }
 
-	SECTION("Median filter")
-	{
-	 	DigitalFilter df;
-	    for( int i=0; i<20; i++ )
-			df.median(50);
-		
-		REQUIRE( df.currentMedian() == 50 );
+    SECTION("Default constructor (const data)")
+    {
+         DigitalFilter df;
+         DigitalFilter df10(10);
 
-	 	DigitalFilter df1;
-	 	DigitalFilter df10;
-		vector<long> dat={0,234,356,344,234,320,250,250,250,250,250,250,250,251,252,251,252,252,250};
-	    for( auto v: dat )
-		{
-			df1.median(v);
-			df10.median(v);
-		}
+        REQUIRE( df.size() == 5 );
+        REQUIRE( df10.size() == 10 );
 
-		REQUIRE( df1.currentMedian() == 252 );
-		REQUIRE( df10.currentMedian() == 252 );
+        for( int i=0; i<20; i++ )
+        {
+            df.add(50);
+            df10.add(50);
+        }
+
+        REQUIRE( df.current1() == 50 );
+        REQUIRE( df.currentRC() == 50 );
+        REQUIRE( df.currentMedian() == 50 );
+
+        REQUIRE( df10.current1() == 50 );
+        REQUIRE( df10.currentRC() == 50 );
+        REQUIRE( df10.currentMedian() == 50 );
     }
 
-	SECTION("filter1")
-	{
-	 	DigitalFilter df1;
-	 	DigitalFilter df10;
-		// "выброс" за СКО отсекается..
-		vector<long> dat={10,12,10,-8,10,10,-230,10,10};
-	    for( auto v: dat )
-		{
-			df1.add(v);
-			df10.add(v);
-		}
+    SECTION("Median filter")
+    {
+         DigitalFilter df;
+        for( int i=0; i<20; i++ )
+            df.median(50);
+        
+        REQUIRE( df.currentMedian() == 50 );
 
-		REQUIRE( df1.current1() == 10 );
-		REQUIRE( df10.current1() == 10 );
+         DigitalFilter df1;
+         DigitalFilter df10;
+        vector<long> dat={0,234,356,344,234,320,250,250,250,250,250,250,250,251,252,251,252,252,250};
+        for( auto v: dat )
+        {
+            df1.median(v);
+            df10.median(v);
+        }
+
+        REQUIRE( df1.currentMedian() == 252 );
+        REQUIRE( df10.currentMedian() == 252 );
     }
 
-	SECTION("filterRC")
-	{
-		double Ti = 0.09; // постоянная времени фильтра
-	 	DigitalFilter df1(5,Ti);
-	 	DigitalFilter df10(10,Ti);
-		vector<long> dat={10,12,10,-8,10,10,-230,10,10,12,12,10,-8,-8,10,11,9,11,11,11,9,12,12,10,10,11,-4560,12,10,10,11,10,10,10,10};
+    SECTION("filter1")
+    {
+         DigitalFilter df1;
+         DigitalFilter df10;
+        // "выброс" за СКО отсекается..
+        vector<long> dat={10,12,10,-8,10,10,-230,10,10};
+        for( auto v: dat )
+        {
+            df1.add(v);
+            df10.add(v);
+        }
 
-	    for( auto v: dat )
-		{
-			df1.add(v);
-			df10.add(v);
-			msleep(30);
-		}
+        REQUIRE( df1.current1() == 10 );
+        REQUIRE( df10.current1() == 10 );
+    }
 
-		REQUIRE( df1.currentRC() == 10 );
-		REQUIRE( df10.currentRC() == 10 );
+    SECTION("filterRC")
+    {
+        double Ti = 0.09; // постоянная времени фильтра
+         DigitalFilter df1(5,Ti);
+         DigitalFilter df10(10,Ti);
+        vector<long> dat={10,12,10,-8,10,10,-230,10,10,12,12,10,-8,-8,10,11,9,11,11,11,9,12,12,10,10,11,-4560,12,10,10,11,10,10,10,10};
+
+        for( auto v: dat )
+        {
+            df1.add(v);
+            df10.add(v);
+            msleep(30);
+        }
+
+        REQUIRE( df1.currentRC() == 10 );
+        REQUIRE( df10.currentRC() == 10 );
     }
 }

@@ -19,7 +19,7 @@ int main( int argc, const char **argv )
             return 0;
         }
 
-        uniset_init(argc,argv,"configure.xml");
+        auto conf = uniset_init(argc,argv,"configure.xml");
 
         ObjectId ID(DefaultObjectId);
         string name = conf->getArgParam("--name", "TestProc");

@@ -10,7 +10,7 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, IOControl::IOInfo& inf )
 {
-    os << "(" << inf.si.id << ")" << conf->oind->getMapName(inf.si.id)
+    os << "(" << inf.si.id << ")" << uniset_conf()->oind->getMapName(inf.si.id)
         << " card=" << inf.ncard << " channel=" << inf.channel << " subdev=" << inf.subdev
         << " aref=" << inf.aref << " range=" << inf.range
         << " default=" << inf.defval << " safety=" << inf.safety;
@@ -50,6 +50,8 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
     testmode(tmNone),
     prev_testmode(tmNone)
 {
+    auto conf = uniset_conf();
+
     string cname = conf->getArgParam("--"+prefix+"-confnode",myname);
     cnode = conf->getNode(cname);
     if( cnode == NULL )
@@ -288,7 +290,7 @@ void IOControl::execute()
     // чтение параметров по входам-выходам
     initIOCard();
 
-    bool skip_iout = conf->getArgInt("--"+prefix+"-skip-init-output");
+    bool skip_iout = uniset_conf()->getArgInt("--"+prefix+"-skip-init-output");
     if( !skip_iout )
         initOutputs();
 
@@ -646,7 +648,7 @@ void IOControl::readConfiguration()
 {
     readconf_ok = false;
 
-    xmlNode* root = conf->getXMLSensorsSection();
+    xmlNode* root = uniset_conf()->getXMLSensorsSection();
     if(!root)
     {
         ostringstream err;
@@ -716,39 +718,39 @@ bool IOControl::initIOItem( UniXML::iterator& it )
         else
             inf.subdev = DefaultSubdev;
     }
-	
-	std::string prop_prefix( prefix+"_" );
+    
+    std::string prop_prefix( prefix+"_" );
 
-	if( !IOBase::initItem(&inf,it,shm,prop_prefix,false,&dlog,myname,filtersize,filterT) )
-		return false;
+    if( !IOBase::initItem(&inf,it,shm,prop_prefix,false,&dlog,myname,filtersize,filterT) )
+        return false;
 
-	// если вектор уже заполнен
-	// то увеличиваем его на 30 элементов (с запасом)
-	// после инициализации делается resize
-	// под реальное количество
-	if( maxItem >= iomap.size() )
-		iomap.resize(maxItem+30);
+    // если вектор уже заполнен
+    // то увеличиваем его на 30 элементов (с запасом)
+    // после инициализации делается resize
+    // под реальное количество
+    if( maxItem >= iomap.size() )
+        iomap.resize(maxItem+30);
 
-	int prior = IOBase::initIntProp(it,"iopriority",prop_prefix,false);
-	if( prior > 0 )
-	{
-		IOPriority p(prior,maxItem);
-		pmap.push_back(p);
-		if( dlog.debugging(Debug::LEVEL3) )
-			dlog[Debug::LEVEL3] << myname << "(readItem): add to priority list: " <<
-						it.getProp("name")
-						<< " priority=" << prior << endl;
-	}
+    int prior = IOBase::initIntProp(it,"iopriority",prop_prefix,false);
+    if( prior > 0 )
+    {
+        IOPriority p(prior,maxItem);
+        pmap.push_back(p);
+        if( dlog.debugging(Debug::LEVEL3) )
+            dlog[Debug::LEVEL3] << myname << "(readItem): add to priority list: " <<
+                        it.getProp("name")
+                        << " priority=" << prior << endl;
+    }
 
-	// значит это пороговый датчик..
-	if( inf.t_ai != DefaultObjectId )
-	{
-		iomap[maxItem++] = std::move(inf);
-		if( dlog.debugging(Debug::LEVEL3) )
-			dlog[Debug::LEVEL3] << myname << "(readItem): add threshold '" << it.getProp("name")
-						<< " for '" << conf->oind->getNameById(inf.t_ai) << endl;
-		return true;
-	}
+    // значит это пороговый датчик..
+    if( inf.t_ai != DefaultObjectId )
+    {
+        iomap[maxItem++] = std::move(inf);
+        if( dlog.debugging(Debug::LEVEL3) )
+            dlog[Debug::LEVEL3] << myname << "(readItem): add threshold '" << it.getProp("name")
+                        << " for '" << uniset_conf()->oind->getNameById(inf.t_ai) << endl;
+        return true;
+    }
     inf.channel = IOBase::initIntProp(it,"channel",prop_prefix,false);
     if( inf.channel < 0 || inf.channel > 32 )
     {
@@ -1105,7 +1107,7 @@ void IOControl::check_testlamp()
     }
     catch(...)
     {
-		dcrit << myname << "(check_testlamp): catch ..." << endl;
+        dcrit << myname << "(check_testlamp): catch ..." << endl;
     }
 }
 
@@ -1114,6 +1116,7 @@ IOControl* IOControl::init_iocontrol( int argc, const char* const* argv,
                                         UniSetTypes::ObjectId icID, SharedMemory* ic,
                                         const std::string& prefix )
 {
+    auto conf = uniset_conf();
     string name = conf->getArgParam("--"+prefix+"-name","IOControl1");
     if( name.empty() )
     {
@@ -1474,6 +1477,8 @@ void IOControl::waitSM()
 // -----------------------------------------------------------------------------
 void IOControl::buildCardsList()
 {
+    auto conf = uniset_conf();
+
     xmlNode* nnode = conf->getXMLNodesSection();
     if( !nnode )
     {
@@ -1481,7 +1486,7 @@ void IOControl::buildCardsList()
         return;
     }
 
-    const std::shared_ptr<UniXML> xml = conf->getConfXML();
+    auto xml = conf->getConfXML();
     if( !xml )
     {
         dwarn << myname << "(buildCardsList): xml=NULL?!" << endl;

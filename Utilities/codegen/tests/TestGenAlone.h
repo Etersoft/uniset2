@@ -8,7 +8,7 @@ class TestGenAlone:
     public TestGenAlone_SK
 {
     public:
-        TestGenAlone( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::conf->getNode("TestGenAlone") );
+        TestGenAlone( UniSetTypes::ObjectId id, xmlNode* confnode = UniSetTypes::uniset_conf()->getNode("TestGenAlone") );
         virtual ~TestGenAlone();
 
 

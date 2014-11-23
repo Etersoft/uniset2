@@ -15,6 +15,8 @@ MBTCPMultiSlave::MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::Obje
 MBSlave(objId,shmId,ic,prefix),
 sesscount_id(DefaultObjectId)
 {
+    auto conf = uniset_conf();
+
     cnode = conf->getNode(myname);
     if( cnode == NULL )
         throw UniSetTypes::SystemError("(MBSlave): Not found conf-node for " + myname );
@@ -111,6 +113,7 @@ void MBTCPMultiSlave::help_print( int argc, const char* const* argv )
 MBTCPMultiSlave* MBTCPMultiSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID, SharedMemory* ic,
                                 const string& prefix )
 {
+    auto conf = uniset_conf();
     string name = conf->getArgParam("--" + prefix + "-name","MBSlave1");
     if( name.empty() )
     {

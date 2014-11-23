@@ -475,31 +475,31 @@ bool UniXML_iterator::find( const std::string& searchnode )
 // -------------------------------------------------------------------------
 UniXML_iterator UniXML_iterator::operator++()
 {
-	return (*this)+1;
+    return (*this)+1;
 }
 // -------------------------------------------------------------------------
 UniXML_iterator UniXML_iterator::operator++(int)
 {
-	return (*this)+1;
+    return (*this)+1;
 }
 // -------------------------------------------------------------------------
 UniXML_iterator UniXML_iterator::operator+=(int s)
 {
-	return (*this)+s;
+    return (*this)+s;
 }
 // -------------------------------------------------------------------------
 UniXML_iterator UniXML_iterator::operator+(int step)
 {
-	int i = 0;
+    int i = 0;
     while( i<step && curNode )
-	{
-		curNode = curNode->next;
-		if( curNode )
-		{
-        	if( getName() == "text" || getName() == "comment" )
-            	continue;
-			i++;
-		}
+    {
+        curNode = curNode->next;
+        if( curNode )
+        {
+            if( getName() == "text" || getName() == "comment" )
+                continue;
+            i++;
+        }
     }
 
     return *this;
@@ -507,32 +507,32 @@ UniXML_iterator UniXML_iterator::operator+(int step)
 // -------------------------------------------------------------------------
 UniXML_iterator UniXML_iterator::operator--(int)
 {
-	return (*this)-1;
+    return (*this)-1;
 }
 
 UniXML_iterator UniXML_iterator::operator--()
 {
-	return (*this)-1;
+    return (*this)-1;
 }
 
 UniXML_iterator UniXML_iterator::operator-=(int s)
 {
-	return (*this)-s;
+    return (*this)-s;
 }
 // -------------------------------------------------------------------------
 
 UniXML_iterator UniXML_iterator::operator-(int step)
 {
-	int i=0;
+    int i=0;
     while( i<step && curNode )
     {
         curNode = curNode->prev;
-		if( curNode )
-		{
-        	if( getName() == "text" || getName() == "comment" )
-            	continue;
-			i++;
-		}
+        if( curNode )
+        {
+            if( getName() == "text" || getName() == "comment" )
+                continue;
+            i++;
+        }
     }
 
     return (*this);

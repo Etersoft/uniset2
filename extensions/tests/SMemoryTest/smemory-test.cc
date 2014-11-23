@@ -39,8 +39,8 @@ int main(int argc, const char **argv)
 
         int num = conf->getArgPInt("--numproc",1);
 
-		for( int i=1; i<=num; i++ )
-		{
+        for( int i=1; i<=num; i++ )
+        {
             ostringstream s;
             s << "TestProc" << i;
 

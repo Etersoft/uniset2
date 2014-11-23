@@ -34,6 +34,7 @@ pollActivated(false)
     if( objId == DefaultObjectId )
         throw UniSetTypes::SystemError("(MBExchange): objId=-1?!! Use --" + prefix + "-name" );
 
+    auto conf = uniset_conf();
     mutex_start.setName(myname + "_mutex_start");
 
     string conf_name(conf->getArgParam("--" + prefix + "-confnode",myname));
@@ -188,7 +189,7 @@ MBExchange::~MBExchange()
 void MBExchange::waitSMReady()
 {
     // waiting for SM is ready...
-    int ready_timeout = conf->getArgInt("--" + prefix +"-sm-ready-timeout","15000");
+    int ready_timeout = uniset_conf()->getArgInt("--" + prefix +"-sm-ready-timeout","15000");
     if( ready_timeout == 0 )
         ready_timeout = 15000;
     else if( ready_timeout < 0 )
@@ -254,7 +255,7 @@ void MBExchange::sigterm( int signo )
 void MBExchange::readConfiguration()
 {
 //    readconf_ok = false;
-    xmlNode* root = conf->getXMLSensorsSection();
+    xmlNode* root = uniset_conf()->getXMLSensorsSection();
     if(!root)
     {
         ostringstream err;
@@ -527,6 +528,8 @@ void MBExchange::rtuQueryOptimization( RTUDeviceMap& m )
 //std::ostream& operator<<( std::ostream& os, MBExchange::PList& lst )
 std::ostream& MBExchange::print_plist( std::ostream& os, const MBExchange::PList& lst )
 {
+    auto conf = uniset_conf();
+
     os << "[ ";
     for( auto it=lst.begin(); it!=lst.end(); ++it )
         os << "(" << it->si.id << ")" << conf->oind->getBaseName(conf->oind->getMapName(it->si.id)) << " ";
@@ -1979,7 +1982,7 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML::iterator& it,  MBExchange::RTU
     if( mbregFromID )
     {
         if( it.getProp("id").empty() )
-            r->mbreg = conf->getSensorID(it.getProp("name"));
+            r->mbreg = uniset_conf()->getSensorID(it.getProp("name"));
         else
             r->mbreg = it.getIntProp("id");
     }
@@ -2012,7 +2015,7 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML::iterator& it,  MBExchange::RTU
 // ------------------------------------------------------------------------------------------
 bool MBExchange::initRTUDevice( RTUDevice* d, UniXML::iterator& it )
 {
-	string mbtype(IOBase::initProp(it,"mbtype",prefix,false));
+    string mbtype(IOBase::initProp(it,"mbtype",prefix,false));
     d->dtype = getDeviceType(mbtype);
 
     if( d->dtype == dtUnknown )
@@ -2370,6 +2373,7 @@ std::ostream& operator<<( std::ostream& os, const MBExchange::RSProperty& p )
 // -----------------------------------------------------------------------------
 void MBExchange::initDeviceList()
 {
+    auto conf = uniset_conf();
     xmlNode* respNode = 0;
     const std::shared_ptr<UniXML> xml = conf->getConfXML();
     if( xml )
@@ -2410,13 +2414,15 @@ bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXM
     string s(it.getProp("respondSensor"));
     if( !s.empty() )
     {
-        d->second->resp_id = conf->getSensorID(s);
+        d->second->resp_id = uniset_conf()->getSensorID(s);
         if( d->second->resp_id == DefaultObjectId )
         {
             dinfo << myname << "(initDeviceInfo): not found ID for respondSensor=" << s << endl;
             return false;
         }
     }
+
+    auto conf = uniset_conf();
 
     string mod(it.getProp("modeSensor"));
     if( !mod.empty() )
