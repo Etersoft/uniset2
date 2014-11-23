@@ -389,7 +389,7 @@ class MBSlave:
 
         virtual void initIterators();
         bool initItem( UniXML_iterator& it );
-        bool readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec );
+        bool readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec );
 
         void readConfiguration();
         bool check_item( UniXML_iterator& it );

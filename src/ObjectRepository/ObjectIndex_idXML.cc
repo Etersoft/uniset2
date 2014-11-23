@@ -10,16 +10,16 @@ using namespace std;
 // -----------------------------------------------------------------------------------------
 ObjectIndex_idXML::ObjectIndex_idXML( const string& xmlfile )
 {
-    UniXML xml;
+   shared_ptr<UniXML> xml = make_shared<UniXML>();
 //    try
 //    {
-        xml.open(xmlfile);
+        xml->open(xmlfile);
         build(xml);
 //    }
 //    catch(...){}
 }
 // -----------------------------------------------------------------------------------------
-ObjectIndex_idXML::ObjectIndex_idXML( UniXML& xml )
+ObjectIndex_idXML::ObjectIndex_idXML( const shared_ptr<UniXML>& xml )
 {
     build(xml);
 }
@@ -77,7 +77,7 @@ std::ostream& ObjectIndex_idXML::printMap( std::ostream& os )
     return os;
 }
 // -----------------------------------------------------------------------------------------
-void ObjectIndex_idXML::build(UniXML& xml)
+void ObjectIndex_idXML::build( const shared_ptr<UniXML>& xml )
 {
     read_section(xml,"sensors");
     read_section(xml,"objects");
@@ -86,9 +86,9 @@ void ObjectIndex_idXML::build(UniXML& xml)
     read_nodes(xml,"nodes");
 }
 // ------------------------------------------------------------------------------------------
-void ObjectIndex_idXML::read_section( UniXML& xml, const std::string& sec )
+void ObjectIndex_idXML::read_section( const std::shared_ptr<UniXML>& xml, const std::string& sec )
 {
-    string secRoot = xml.getProp( xml.findNode(xml.getFirstNode(),"RootSection"), "name");
+    string secRoot = xml->getProp( xml->findNode(xml->getFirstNode(),"RootSection"), "name");
     if( secRoot.empty() )
     {
         ostringstream msg;
@@ -97,7 +97,7 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string& sec )
         throw SystemError(msg.str());
     }
 
-    xmlNode* root( xml.findNode(xml.getFirstNode(),sec) );
+    xmlNode* root( xml->findNode(xml->getFirstNode(),sec) );
     if( !root )
     {
         ostringstream msg;
@@ -114,9 +114,9 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string& sec )
         throw NameNotFound(msg.str());
     }
 
-    string secname = xml.getProp(root,"section");
+    string secname = xml->getProp(root,"section");
     if( secname.empty() )
-        secname = xml.getProp(root,"name");
+        secname = xml->getProp(root,"name");
 
     if( secname.empty() )
     {
@@ -148,9 +148,9 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string& sec )
         strcpy( inf.repName, name.c_str() );
 
         // textname
-        string textname(xml.getProp(it,"textname"));
+        string textname(xml->getProp(it,"textname"));
         if( textname.empty() )
-            textname = xml.getProp(it,"name");
+            textname = xml->getProp(it,"name");
 
         inf.textName = new char[textname.size()+1];
         strcpy( inf.textName, textname.c_str() );
@@ -162,9 +162,9 @@ void ObjectIndex_idXML::read_section( UniXML& xml, const std::string& sec )
     }
 }
 // ------------------------------------------------------------------------------------------
-void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string& sec )
+void ObjectIndex_idXML::read_nodes( const std::shared_ptr<UniXML>& xml, const std::string& sec )
 {
-    xmlNode* root( xml.findNode(xml.getFirstNode(),sec) );
+    xmlNode* root( xml->findNode(xml->getFirstNode(),sec) );
     if( !root )
     {
         ostringstream msg;
@@ -200,7 +200,7 @@ void ObjectIndex_idXML::read_nodes( UniXML& xml, const std::string& sec )
         strcpy( inf.repName, name.c_str() );
 
         // textname
-        string textname(xml.getProp(it,"textname"));
+        string textname(xml->getProp(it,"textname"));
         if( textname.empty() )
             textname = name;
 

@@ -369,7 +369,7 @@ void UniExchange::readConfiguration()
 //    readconf_ok = true;
 }
 // ------------------------------------------------------------------------------------------
-bool UniExchange::readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec )
+bool UniExchange::readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec )
 {
     if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
         initItem(it);

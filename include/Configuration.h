@@ -25,7 +25,7 @@
 #ifndef Configuration_H_
 #define Configuration_H_
 // --------------------------------------------------------------------------
-// Убрать UniXML.h, сменить unixml на указатель!!!!!!!!
+#include <memory>
 #include <string>
 #include <ostream>
 #include "UniXML.h"
@@ -33,15 +33,9 @@
 #include "ObjectIndex.h"
 #include "IORFile.h"
 #include "Debug.h"
-
+// --------------------------------------------------------------------------
 /*
-    В функции main нужно вызвать конструктор класса Configuration
-    fileConf - название файла конфигурации, который будет открываться.
-    Если в каталоге conf того каталога, откуда была запущена программа.
-    getTopDir позволяет получить каталог, откуда запущена программа.
-
-    Современный способ инициализации:
-    UniSetTypes::uniset_init(argc,argv);
+    В функции main нужно обязательно вызывать UniSetTypes::uniset_init(argc,argv);
 */
 namespace UniSetTypes
 {
@@ -164,7 +158,7 @@ namespace UniSetTypes
         IORFile iorfile;
 
         /*! указатель на конфигурационный xml */
-        inline const UniXML* getConfXML() const { return &unixml; }
+        inline const std::shared_ptr<UniXML> getConfXML() const { return unixml; }
 
         CORBA::ORB_ptr getORB()const { return CORBA::ORB::_duplicate(orb); }
         CORBA::PolicyList getPolicy() const { return policyList; }
@@ -186,7 +180,7 @@ namespace UniSetTypes
         std::string getPort( const std::string& port="" );
 
         std::string rootDir;
-        UniXML unixml;
+        std::shared_ptr<UniXML> unixml;
 
         int _argc;
         const char* const* _argv;

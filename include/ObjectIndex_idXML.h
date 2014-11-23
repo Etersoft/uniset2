@@ -12,7 +12,7 @@ class ObjectIndex_idXML:
 {
     public:
         ObjectIndex_idXML( const std::string& xmlfile );
-        ObjectIndex_idXML(UniXML& xml);
+        ObjectIndex_idXML( const std::shared_ptr<UniXML>& xml );
         virtual ~ObjectIndex_idXML();
 
         virtual const UniSetTypes::ObjectInfo* getObjectInfo( const UniSetTypes::ObjectId ) override;
@@ -25,9 +25,9 @@ class ObjectIndex_idXML:
         friend std::ostream& operator<<(std::ostream& os, ObjectIndex_idXML& oi );
 
     protected:
-        void build( UniXML& xml );
-        void read_section( UniXML& xml, const std::string& sec );
-        void read_nodes( UniXML& xml, const std::string& sec );
+        void build( const std::shared_ptr<UniXML>& xml );
+        void read_section( const std::shared_ptr<UniXML>& xml, const std::string& sec );
+        void read_nodes( const std::shared_ptr<UniXML>& xml, const std::string& sec );
 
     private:
         typedef std::map<UniSetTypes::ObjectId, UniSetTypes::ObjectInfo> MapObjects;

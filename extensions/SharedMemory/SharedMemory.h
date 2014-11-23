@@ -360,7 +360,7 @@ class SharedMemory:
         virtual bool activateObject() override;
 //        virtual void logging(UniSetTypes::SensorMessage& sm){}
 //        virtual void dumpToDB(){}
-        bool readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec );
+        bool readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec );
 
         void buildEventList( xmlNode* cnode );
         void readEventList( const std::string& oname );

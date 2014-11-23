@@ -31,16 +31,16 @@ using namespace std;
 ObjectIndex_XML::ObjectIndex_XML( const string& xmlfile, int minSize ):
     omap(minSize)
 {
-    UniXML xml;
+    shared_ptr<UniXML> xml = make_shared<UniXML>();
 //    try
 //    {
-        xml.open(xmlfile);
+        xml->open(xmlfile);
         build(xml);
 //    }
 //    catch(...){}
 }
 // -----------------------------------------------------------------------------------------
-ObjectIndex_XML::ObjectIndex_XML( UniXML& xml, int minSize ):
+ObjectIndex_XML::ObjectIndex_XML( const std::shared_ptr<UniXML>& xml, int minSize ):
 omap(minSize)
 {
     build(xml);
@@ -97,7 +97,7 @@ std::ostream& ObjectIndex_XML::printMap( std::ostream& os )
     return os;
 }
 // -----------------------------------------------------------------------------------------
-void ObjectIndex_XML::build(UniXML& xml)
+void ObjectIndex_XML::build( const std::shared_ptr<UniXML>& xml )
 {
     // выделяем память
 //    ObjectInfo* omap = new ObjectInfo[maxSize];
@@ -115,7 +115,7 @@ void ObjectIndex_XML::build(UniXML& xml)
 //    omap[ind].id = ind;
 }
 // ------------------------------------------------------------------------------------------
-unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string& sec, unsigned int ind )
+unsigned int ObjectIndex_XML::read_section( const std::shared_ptr<UniXML>& xml, const std::string& sec, unsigned int ind )
 {
     if( (unsigned)ind >= omap.size() )
     {
@@ -125,7 +125,7 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string& sec,
         omap.resize(omap.size()+100);
     }
 
-    string secRoot = xml.getProp( xml.findNode(xml.getFirstNode(),"RootSection"), "name");
+    string secRoot = xml->getProp( xml->findNode(xml->getFirstNode(),"RootSection"), "name");
     if( secRoot.empty() )
     {
         ostringstream msg;
@@ -134,7 +134,7 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string& sec,
         throw SystemError(msg.str());
     }
 
-    xmlNode* root( xml.findNode(xml.getFirstNode(),sec) );
+    xmlNode* root( xml->findNode(xml->getFirstNode(),sec) );
     if( !root )
     {
         ostringstream msg;
@@ -153,9 +153,9 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string& sec,
         throw NameNotFound(msg.str());
     }
 
-    string secname = xml.getProp(root,"section");
+    string secname = xml->getProp(root,"section");
     if( secname.empty() )
-        secname = xml.getProp(root,"name");
+        secname = xml->getProp(root,"name");
 
     if( secname.empty() )
     {
@@ -173,7 +173,7 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string& sec,
         omap[ind].id = ind;
 
         // name
-        const string name(secname + xml.getProp(it,"name"));
+        const string name(secname + xml->getProp(it,"name"));
         delete[] omap[ind].repName;
         omap[ind].repName = new char[name.size()+1];
         strcpy( omap[ind].repName, name.c_str() );
@@ -182,9 +182,9 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string& sec,
         mok[name] = ind; // mok[omap[ind].repName] = ind;
 
         // textname
-        string textname(xml.getProp(it,"textname"));
+        string textname(xml->getProp(it,"textname"));
         if( textname.empty() )
-            textname = xml.getProp(it,"name");
+            textname = xml->getProp(it,"name");
 
         delete[] omap[ind].textName;
         omap[ind].textName = new char[textname.size()+1];
@@ -207,7 +207,7 @@ unsigned int ObjectIndex_XML::read_section( UniXML& xml, const std::string& sec,
     return ind;
 }
 // ------------------------------------------------------------------------------------------
-unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string& sec, unsigned int ind )
+unsigned int ObjectIndex_XML::read_nodes( const std::shared_ptr<UniXML>& xml, const std::string& sec, unsigned int ind )
 {
     if( ind >= omap.size() )
     {
@@ -217,7 +217,7 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string& sec, u
         omap.resize(omap.size()+100);
     }
 
-    xmlNode* root( xml.findNode(xml.getFirstNode(),sec) );
+    xmlNode* root( xml->findNode(xml->getFirstNode(),sec) );
     if( !root )
     {
         ostringstream msg;
@@ -234,19 +234,19 @@ unsigned int ObjectIndex_XML::read_nodes( UniXML& xml, const std::string& sec, u
         throw NameNotFound(msg.str());
     }
 
-//    string secname = xml.getProp(root,"section");
+//    string secname = xml->getProp(root,"section");
 
     for( ;it.getCurrent(); it.goNext() )
     {
         omap[ind].id = ind;
-        string nodename(xml.getProp(it,"name"));
+        string nodename(xml->getProp(it,"name"));
 
         delete[] omap[ind].repName;
         omap[ind].repName = new char[nodename.size()+1];
         strcpy( omap[ind].repName, nodename.c_str() );
 
         // textname
-        string textname(xml.getProp(it,"textname"));
+        string textname(xml->getProp(it,"textname"));
         if( textname.empty() )
             textname = nodename;
 

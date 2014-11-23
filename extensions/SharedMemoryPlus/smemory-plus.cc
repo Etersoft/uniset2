@@ -287,7 +287,7 @@ void help_print( int argc, const char* argv[] )
 // -----------------------------------------------------------------------------
 LogServer* run_logserver( const std::string& cname, DebugStream& log )
 {
-	const UniXML* xml = UniSetTypes::conf->getConfXML();
+	const std::shared_ptr<UniXML> xml = UniSetTypes::conf->getConfXML();
 	xmlNode* cnode = UniSetTypes::conf->findNode(xml->getFirstNode(),"LogServer",cname);
 	if( cnode == 0 )
 	{

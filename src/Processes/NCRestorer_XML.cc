@@ -73,7 +73,7 @@ NCRestorer_XML::~NCRestorer_XML()
     if( uxml)
     {
         uxml->close();
-        delete uxml;
+        uxml.reset();
     }
 }
 // ------------------------------------------------------------------------------------------
@@ -86,9 +86,9 @@ void NCRestorer_XML::init( const std::string& fname )
     try
     {
         if( fname == conf->getConfFileName() )
-            uxml = const_cast<UniXML*>(conf->getConfXML());
+            uxml = conf->getConfXML();
         else
-            uxml = new UniXML(fname);
+            uxml = make_shared<UniXML>(fname);
     }
     catch( UniSetTypes::NameNotFound& ex )
     {
@@ -108,7 +108,7 @@ void NCRestorer_XML::dumpThreshold(const IONotifyController* ic, SInfo& inf,
     uwarn << "NCRestorer_XML::dumpThreshold NOT SUPPORT!!!!" << endl;
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer_XML::read_list( const UniXML& xml, xmlNode* node, IONotifyController* ic )
+void NCRestorer_XML::read_list( const std::shared_ptr<UniXML>& xml, xmlNode* node, IONotifyController* ic )
 {
     UniXML_iterator it(node);
     if( !it.goChildren() )
@@ -163,44 +163,44 @@ void NCRestorer_XML::read_list( const UniXML& xml, xmlNode* node, IONotifyContro
 // ------------------------------------------------------------------------------------------
 void NCRestorer_XML::read( IONotifyController* ic, const string& fn )
 {
-    const UniXML* confxml = conf->getConfXML();
+    const std::shared_ptr<UniXML> confxml = conf->getConfXML();
 
     if( !fn.empty() )
     {
          // оптимизация (не загружаем второй раз xml-файл)
         if( fn == conf->getConfFileName() && confxml )
-            read( ic, *confxml );
+            read( ic, confxml );
         else
         {
-            UniXML xml(fn);
+            shared_ptr<UniXML> xml = make_shared<UniXML>(fn);
             read( ic, xml );
-            xml.close();
+            xml->close();
         }
     }
     else if( !fname.empty() )
     {
         // оптимизация (не загружаем второй раз xml-файл)
         if( fname == conf->getConfFileName() && confxml )
-            read( ic, *confxml );
+            read( ic, confxml );
         else if( uxml && uxml->isOpen() && uxml->filename == fn )
-            read(ic,*uxml);
+            read(ic,uxml);
         else
         {
             uxml->close();
             uxml->open(fname);
-            read(ic,*uxml);
+            read(ic,uxml);
         }
     }
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer_XML::read( IONotifyController* ic, const UniXML& xml )
+void NCRestorer_XML::read( IONotifyController* ic, const std::shared_ptr<UniXML>& xml )
 {
     xmlNode* node;
 
-    if( (&xml) == conf->getConfXML() )
+    if( xml == conf->getConfXML() )
         node = conf->getXMLSensorsSection();
     else
-        node = xml.findNode( xml.getFirstNode(),"sensors");
+        node = xml->findNode( xml->getFirstNode(),"sensors");
 
     if( node )
     {
@@ -210,15 +210,15 @@ void NCRestorer_XML::read( IONotifyController* ic, const UniXML& xml )
         init_depends_signals(ic);
     }
 
-    xmlNode* tnode( xml.findNode(xml.getFirstNode(),"thresholds") );
+    xmlNode* tnode( xml->findNode(xml->getFirstNode(),"thresholds") );
     if( tnode )
         read_thresholds(xml, tnode, ic);
 
 }
 // ------------------------------------------------------------------------------------------
-bool NCRestorer_XML::getBaseInfo( const UniXML& xml, xmlNode* it, IOController_i::SensorInfo& si )
+bool NCRestorer_XML::getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* it, IOController_i::SensorInfo& si )
 {
-    string sname( xml.getProp(it,"name"));
+    string sname( xml->getProp(it,"name"));
     if( sname.empty() )
     {
         uwarn << "(getBaseInfo): не указано имя датчика... пропускаем..." << endl;
@@ -228,7 +228,7 @@ bool NCRestorer_XML::getBaseInfo( const UniXML& xml, xmlNode* it, IOController_i
     // преобразуем в полное имя
     ObjectId sid = UniSetTypes::DefaultObjectId;
 
-    string id(xml.getProp(it,"id"));
+    string id(xml->getProp(it,"id"));
     if( !id.empty() )
         sid = uni_atoi( id );
     else
@@ -241,7 +241,7 @@ bool NCRestorer_XML::getBaseInfo( const UniXML& xml, xmlNode* it, IOController_i
     }
     
     ObjectId snode = conf->getLocalNode();
-    string snodename(xml.getProp(it,"node"));
+    string snodename(xml->getProp(it,"node"));
     if( !snodename.empty() )
         snode = conf->getNodeID(snodename);
 
@@ -253,16 +253,16 @@ bool NCRestorer_XML::getBaseInfo( const UniXML& xml, xmlNode* it, IOController_i
 
     si.id =    sid; 
     si.node = snode;
-    return true;    
+    return true;
 }
 // ------------------------------------------------------------------------------------------
-bool NCRestorer_XML::getSensorInfo( const UniXML& xml, xmlNode* it, SInfo& inf )
+bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode* it, SInfo& inf )
 {
     if( !getBaseInfo(xml,it,inf.si) )
         return false;
 
     inf.priority = Message::Medium;
-    string prior(xml.getProp(it,"priority"));
+    string prior(xml->getProp(it,"priority"));
     if( prior == "Low" )
         inf.priority = Message::Low;
     else if( prior == "Medium" )
@@ -274,22 +274,22 @@ bool NCRestorer_XML::getSensorInfo( const UniXML& xml, xmlNode* it, SInfo& inf )
     else
         inf.priority = Message::Medium;
 
-    inf.type = UniSetTypes::getIOType(xml.getProp(it,"iotype"));
+    inf.type = UniSetTypes::getIOType(xml->getProp(it,"iotype"));
     if( inf.type == UniversalIO::UnknownIOType )
     {
-        ucrit << "(NCRestorer_XML:getSensorInfo): unknown iotype=" << xml.getProp(it,"iotype")
-            << " for  " << xml.getProp(it,"name") << endl;
+        ucrit << "(NCRestorer_XML:getSensorInfo): unknown iotype=" << xml->getProp(it,"iotype")
+            << " for  " << xml->getProp(it,"name") << endl;
         return false;
     }
 
     // калибровка
     if( inf.type == UniversalIO::AI || inf.type == UniversalIO::AO )
     {
-        inf.ci.minRaw = xml.getIntProp(it,"rmin");
-        inf.ci.maxRaw = xml.getIntProp(it,"rmax");
-        inf.ci.minCal = xml.getIntProp(it,"cmin");
-        inf.ci.maxCal = xml.getIntProp(it,"cmax");
-        inf.ci.precision = xml.getIntProp(it,"precision");
+        inf.ci.minRaw = xml->getIntProp(it,"rmin");
+        inf.ci.maxRaw = xml->getIntProp(it,"rmax");
+        inf.ci.minCal = xml->getIntProp(it,"cmin");
+        inf.ci.maxCal = xml->getIntProp(it,"cmax");
+        inf.ci.precision = xml->getIntProp(it,"precision");
     }
     else
     {
@@ -300,20 +300,20 @@ bool NCRestorer_XML::getSensorInfo( const UniXML& xml, xmlNode* it, SInfo& inf )
         inf.ci.precision = 0;
     }
 
-    inf.default_val = xml.getIntProp(it,"default");
-    inf.dbignore = xml.getIntProp(it,"dbignore");
+    inf.default_val = xml->getIntProp(it,"default");
+    inf.dbignore = xml->getIntProp(it,"dbignore");
     inf.value = inf.default_val;
     inf.undefined = false;
     inf.real_value = inf.value;
 
-    string d_txt( xml.getProp(it, "depend") );
+    string d_txt( xml->getProp(it, "depend") );
     if( !d_txt.empty() )
     {
         inf.d_si.id = conf->getSensorID(d_txt);
         if( inf.d_si.id == UniSetTypes::DefaultObjectId )
         {
             ucrit << "(NCRestorer_XML:getSensorInfo): sensor='" 
-                    << xml.getProp(it,"name") << "' err: "
+                    << xml->getProp(it,"name") << "' err: "
                     << " Unknown SensorID for depend='"  << d_txt
                     << endl;
             return false;
@@ -322,14 +322,14 @@ bool NCRestorer_XML::getSensorInfo( const UniXML& xml, xmlNode* it, SInfo& inf )
         inf.d_si.node = conf->getLocalNode();
 
         // по умолчанию срабатывание на "1"
-        inf.d_value = xml.getProp(it,"depend_value").empty() ? 1 : xml.getIntProp(it,"depend_value");
-        inf.d_off_value = xml.getPIntProp(it,"depend_off_value",0);
+        inf.d_value = xml->getProp(it,"depend_value").empty() ? 1 : xml->getIntProp(it,"depend_value");
+        inf.d_off_value = xml->getPIntProp(it,"depend_off_value",0);
     }
 
     return true;
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer_XML::read_thresholds(const UniXML& xml, xmlNode* node, IONotifyController* ic )
+void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNode* node, IONotifyController* ic )
 {
     UniXML_iterator it(node);
     if( !it.goChildren() )
@@ -399,7 +399,7 @@ void NCRestorer_XML::read_thresholds(const UniXML& xml, xmlNode* node, IONotifyC
 }
 // ------------------------------------------------------------------------------------------
 
-void NCRestorer_XML::read_consumers( const UniXML& xml, xmlNode* it, 
+void NCRestorer_XML::read_consumers( const std::shared_ptr<UniXML>& xml, xmlNode* it, 
                                         NCRestorer_XML::SInfo&& inf, IONotifyController* ic )
 {
     // в новых ask-файлах список выделен <consumers>...</consumers>,
@@ -417,7 +417,7 @@ void NCRestorer_XML::read_consumers( const UniXML& xml, xmlNode* it,
 }
 // ------------------------------------------------------------------------------------------
 
-bool NCRestorer_XML::getConsumerList( const UniXML& xml, xmlNode* node, 
+bool NCRestorer_XML::getConsumerList( const std::shared_ptr<UniXML>& xml, xmlNode* node, 
                                         IONotifyController::ConsumerListInfo& lst )
 {
     UniXML_iterator it(node);
@@ -439,7 +439,7 @@ bool NCRestorer_XML::getConsumerList( const UniXML& xml, xmlNode* node,
 
 }
 // ------------------------------------------------------------------------------------------
-bool NCRestorer_XML::getThresholdInfo( const UniXML& xml,xmlNode* node, 
+bool NCRestorer_XML::getThresholdInfo( const std::shared_ptr<UniXML>& xml,xmlNode* node, 
                                         IONotifyController::ThresholdInfoExt& ti )
 {
     UniXML_iterator uit(node);

@@ -278,7 +278,7 @@ void MBExchange::readConfiguration()
 //    readconf_ok = true;
 }
 // ------------------------------------------------------------------------------------------
-bool MBExchange::readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec )
+bool MBExchange::readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec )
 {
     if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
         initItem(it);
@@ -2371,7 +2371,7 @@ std::ostream& operator<<( std::ostream& os, const MBExchange::RSProperty& p )
 void MBExchange::initDeviceList()
 {
     xmlNode* respNode = 0;
-    const UniXML* xml = conf->getConfXML();
+    const std::shared_ptr<UniXML> xml = conf->getConfXML();
     if( xml )
         respNode = xml->extFindNode(cnode,1,1,"DeviceList");
 

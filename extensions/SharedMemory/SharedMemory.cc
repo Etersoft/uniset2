@@ -324,7 +324,7 @@ void SharedMemory::checkHeartBeat()
         wdt->ping();
 }
 // ------------------------------------------------------------------------------------------
-bool SharedMemory::readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec )
+bool SharedMemory::readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec )
 {
     for( auto &r: lstRSlot )
     {
@@ -508,14 +508,14 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
 {
     dinfo << myname << "(buildHistoryList): ..."  << endl;
 
-    const UniXML* xml = conf->getConfXML();
+    const std::shared_ptr<UniXML> xml = conf->getConfXML();
     if( !xml )
     {
         dwarn << myname << "(buildHistoryList): xml=NULL?!" << endl;
         return;
     }
 
-    xmlNode* n = const_cast<UniXML*>(xml)->extFindNode(cnode,1,1,"History","");
+    xmlNode* n = xml->extFindNode(cnode,1,1,"History","");
     if( !n )
     {
         dwarn << myname << "(buildHistoryList): <History> not found. ignore..." << endl;

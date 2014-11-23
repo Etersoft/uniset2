@@ -670,7 +670,7 @@ void IOControl::readConfiguration()
     readconf_ok = true;
 }
 // ------------------------------------------------------------------------------------------
-bool IOControl::readItem( const UniXML& xml, UniXML_iterator& it, xmlNode* sec )
+bool IOControl::readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec )
 {
     if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
         initIOItem(it);
@@ -1481,7 +1481,7 @@ void IOControl::buildCardsList()
         return;
     }
 
-    const UniXML* xml = conf->getConfXML();
+    const std::shared_ptr<UniXML> xml = conf->getConfXML();
     if( !xml )
     {
         dwarn << myname << "(buildCardsList): xml=NULL?!" << endl;

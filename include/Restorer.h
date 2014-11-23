@@ -25,6 +25,7 @@
 #ifndef Restorer_H_
 #define Restorer_H_
 // --------------------------------------------------------------------------
+#include <memory>
 #include <sigc++/sigc++.h>
 #include <string>
 #include "UniXML.h"
@@ -48,7 +49,7 @@ class Restorer_XML
             \param sec    - итератор (указатель) на корневой узел секции (SubscriberList)
             \return TRUE - если чтение параметров прошло успешно, FALSE - если нет
         */
-        typedef sigc::slot<bool,const UniXML&,UniXML_iterator&,xmlNode*> ReaderSlot;
+        typedef sigc::slot<bool,const std::shared_ptr<UniXML>&,UniXML_iterator&,xmlNode*> ReaderSlot;
 
         /*! установить функцию для callback-вызова при чтении списка сообщений
             For example:
@@ -98,12 +99,12 @@ class Restorer_XML
                                 UniSetTypes::ObjectId& cid, UniSetTypes::ObjectId& cnode );
 
         /*! Функция поиска по текущему уровню (без рекурсии для дочерних узлов) */
-        static xmlNode* find_node( const UniXML& xml, xmlNode* root, const std::string& nodename, const std::string& nm="" );
+        static xmlNode* find_node( const std::shared_ptr<UniXML>& xml, xmlNode* root, const std::string& nodename, const std::string& nm="" );
 
     protected:
 
-        virtual bool check_list_item( UniXML_iterator& it );
-        virtual bool check_consumer_item( UniXML_iterator& it );
+        virtual bool check_list_item( UniXML::iterator& it );
+        virtual bool check_consumer_item( UniXML::iterator& it );
 
         ReaderSlot rslot;
         ReaderSlot cslot;

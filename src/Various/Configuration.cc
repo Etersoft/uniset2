@@ -184,10 +184,13 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
         try
         {
-            if( !unixml.isOpen() )
+			if( unixml == nullptr )
+				unixml = std::shared_ptr<UniXML>( new UniXML() );
+
+            if( !unixml->isOpen() )
             {
                 uinfo << "(Configuration): open from file " <<  fileConfName << endl;
-                unixml.open(fileConfName);
+                unixml->open(fileConfName);
             }
         }
         catch(...)
@@ -204,7 +207,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         {
             if( oind == NULL )
             {
-                UniXML_iterator it = unixml.findNode(unixml.getFirstNode(),"ObjectsMap");
+                UniXML_iterator it = unixml->findNode(unixml->getFirstNode(),"ObjectsMap");
                 if( !it )
                 {
                     ucrit << "(Configuration:init): not found <ObjectsMap> node in "  << fileConfName << endl;
@@ -406,7 +409,7 @@ int Configuration::getArgPInt( const string& name, const string& strdefval, int 
 // -------------------------------------------------------------------------
 void Configuration::initParameters()
 {
-    xmlNode* root = unixml.findNode( unixml.getFirstNode(),"UniSet" );
+    xmlNode* root = unixml->findNode( unixml->getFirstNode(),"UniSet" );
     if( !root )
     {
         ucrit << "Configuration: INIT PARAM`s FAILED! <UniSet>...</UniSet> not found"<< endl;
@@ -531,7 +534,7 @@ void Configuration::setLocalNode( const string& nodename )
 // -------------------------------------------------------------------------
 xmlNode* Configuration::getNode(const string& path)
 {
-    return unixml.findNode(unixml.getFirstNode(), path);
+    return unixml->findNode(unixml->getFirstNode(), path);
 }
 // -------------------------------------------------------------------------
 string Configuration::getProp(xmlNode* node, const string& name)
@@ -556,7 +559,7 @@ string Configuration::getField(const string& path)
 // -------------------------------------------------------------------------
 int Configuration::getIntField(const std::string& path)
 {
-    return unixml.getIntProp(getNode(path), "name");
+    return unixml->getIntProp(getNode(path), "name");
 }
 
 // -------------------------------------------------------------------------
@@ -571,10 +574,10 @@ int Configuration::getPIntField(const std::string& path, int def)
 // -------------------------------------------------------------------------
 xmlNode* Configuration::findNode(xmlNode* node, const std::string& snode, const std::string& sname)
 {
-    if( !unixml.isOpen() )
+    if( !unixml->isOpen() )
         return 0;
 
-    return unixml.findNode(node,snode,sname);
+    return unixml->findNode(node,snode,sname);
 }
 // -------------------------------------------------------------------------
 string Configuration::getRootDir()
@@ -585,7 +588,7 @@ string Configuration::getRootDir()
 // -------------------------------------------------------------------------
 void Configuration::createNodesList()
 {
-    xmlNode* omapnode = unixml.findNode(unixml.getFirstNode(), "ObjectsMap");
+    xmlNode* omapnode = unixml->findNode(unixml->getFirstNode(), "ObjectsMap");
     if( !omapnode )
     {
         ucrit << "(Configuration): <ObjectsMap> not found!!!" << endl;
@@ -593,7 +596,7 @@ void Configuration::createNodesList()
     }
 
 
-    xmlNode* node = unixml.findNode(omapnode, "nodes");
+    xmlNode* node = unixml->findNode(omapnode, "nodes");
     if(!node)
     {
         ucrit << "(Configuration): <nodes> section not found!"<< endl;
@@ -604,7 +607,7 @@ void Configuration::createNodesList()
     it.goChildren();
 
     // определяем порт
-    string defPort(getPort(unixml.getProp(node,"port")));
+    string defPort(getPort(unixml->getProp(node,"port")));
 
     lnodes.clear();
     for( ;it;it.goNext() )
@@ -755,7 +758,7 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
 void Configuration::initRepSections()
 {
     // Реализация под жёсткую структуру репозитория
-    xmlNode* node( unixml.findNode(unixml.getFirstNode(),"RootSection") );
+    xmlNode* node( unixml->findNode(unixml->getFirstNode(),"RootSection") );
     if( node == NULL )
     {
         ostringstream msg;
@@ -764,7 +767,7 @@ void Configuration::initRepSections()
         throw SystemError(msg.str());
     }
 
-    secRoot         = unixml.getProp(node,"name");
+    secRoot         = unixml->getProp(node,"name");
     secSensors         = secRoot + "/" + getRepSectionName("sensors",xmlSensorsSec);
     secObjects        = secRoot + "/" + getRepSectionName("objects",xmlObjectsSec);
     secControlles     = secRoot + "/" + getRepSectionName("controllers",xmlControllersSec);
@@ -773,7 +776,7 @@ void Configuration::initRepSections()
 
 string Configuration::getRepSectionName( const string& sec, xmlNode* secnode )
 {
-    xmlNode* node = unixml.findNode(unixml.getFirstNode(),sec);
+    xmlNode* node = unixml->findNode(unixml->getFirstNode(),sec);
     if( node == NULL )
     {
         ostringstream msg;
@@ -784,9 +787,9 @@ string Configuration::getRepSectionName( const string& sec, xmlNode* secnode )
 
     secnode = node;
 
-    string ret(unixml.getProp(node,"section"));
+    string ret(unixml->getProp(node,"section"));
     if( ret.empty() )
-        ret = unixml.getProp(node,"name");
+        ret = unixml->getProp(node,"name");
 
     return ret;
 }
@@ -891,7 +894,7 @@ xmlNode* Configuration::getXMLSensorsSection()
     if( xmlSensorsSec )
         return xmlSensorsSec;
 
-    xmlSensorsSec = unixml.findNode(unixml.getFirstNode(),"sensors");
+    xmlSensorsSec = unixml->findNode(unixml->getFirstNode(),"sensors");
     return xmlSensorsSec;
 }
 // -------------------------------------------------------------------------
@@ -900,7 +903,7 @@ xmlNode* Configuration::getXMLObjectsSection()
     if( xmlObjectsSec )
         return xmlObjectsSec;
 
-    xmlObjectsSec = unixml.findNode(unixml.getFirstNode(),"objects");
+    xmlObjectsSec = unixml->findNode(unixml->getFirstNode(),"objects");
     return xmlObjectsSec;
 }
 // -------------------------------------------------------------------------
@@ -909,7 +912,7 @@ xmlNode* Configuration::getXMLControllersSection()
     if( xmlControllersSec )
         return xmlControllersSec;
 
-    xmlControllersSec = unixml.findNode(unixml.getFirstNode(),"controllers");
+    xmlControllersSec = unixml->findNode(unixml->getFirstNode(),"controllers");
     return xmlControllersSec;
 
 }
@@ -919,7 +922,7 @@ xmlNode* Configuration::getXMLServicesSection()
     if( xmlServicesSec )
         return xmlServicesSec;
 
-    xmlServicesSec = unixml.findNode(unixml.getFirstNode(),"services");
+    xmlServicesSec = unixml->findNode(unixml->getFirstNode(),"services");
     return xmlServicesSec;
 }
 // -------------------------------------------------------------------------
@@ -928,7 +931,7 @@ xmlNode* Configuration::getXMLNodesSection()
     if( xmlNodesSec )
         return xmlNodesSec;
 
-    xmlNodesSec = unixml.findNode(unixml.getFirstNode(),"nodes");
+    xmlNodesSec = unixml->findNode(unixml->getFirstNode(),"nodes");
     return xmlNodesSec;
 }
 // -------------------------------------------------------------------------

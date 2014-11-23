@@ -24,6 +24,7 @@
 #define ObjectIndex_XML_H_
 // --------------------------------------------------------------------------
 #include <map>
+#include <memory>
 #include <vector>
 #include <string>
 #include "ObjectIndex.h"
@@ -38,7 +39,7 @@ class ObjectIndex_XML:
 {
     public:
         ObjectIndex_XML(const std::string& xmlfile, int minSize=1000 );
-        ObjectIndex_XML(UniXML& xml, int minSize=1000 );
+        ObjectIndex_XML( const std::shared_ptr<UniXML>& xml, int minSize=1000 );
         virtual ~ObjectIndex_XML();
 
         virtual const UniSetTypes::ObjectInfo* getObjectInfo( const ObjectId ) override;
@@ -51,9 +52,9 @@ class ObjectIndex_XML:
         friend std::ostream& operator<<(std::ostream& os, ObjectIndex_XML& oi );
 
     protected:
-        void build( UniXML& xml );
-        unsigned int read_section( UniXML& xml, const std::string& sec, unsigned int ind );
-        unsigned int read_nodes( UniXML& xml, const std::string& sec, unsigned int ind );
+        void build( const std::shared_ptr<UniXML>& xml );
+        unsigned int read_section( const std::shared_ptr<UniXML>& xml, const std::string& sec, unsigned int ind );
+        unsigned int read_nodes( const std::shared_ptr<UniXML>& xml, const std::string& sec, unsigned int ind );
 
     private:
         typedef std::map<std::string, ObjectId> MapObjectKey;
