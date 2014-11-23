@@ -57,7 +57,7 @@ void Restorer_XML::setConsumerFilter( const string& field, const string& val )
     c_filterValue = val;
 }
 // -----------------------------------------------------------------------------
-bool Restorer_XML::getConsumerInfo( UniXML_iterator& it, 
+bool Restorer_XML::getConsumerInfo( UniXML::iterator& it, 
                                         ObjectId& cid, ObjectId& cnode )
 {
     if( !check_consumer_item(it) )
@@ -109,12 +109,12 @@ bool Restorer_XML::getConsumerInfo( UniXML_iterator& it,
     return true;
 }
 // -----------------------------------------------------------------------------
-bool Restorer_XML::check_list_item( UniXML_iterator& it )
+bool Restorer_XML::check_list_item( UniXML::iterator& it )
 {
     return UniSetTypes::check_filter(it,i_filterField,i_filterValue);
 }
 // -----------------------------------------------------------------------------
-bool Restorer_XML::check_consumer_item( UniXML_iterator& it )
+bool Restorer_XML::check_consumer_item( UniXML::iterator& it )
 {
     return UniSetTypes::check_filter(it,c_filterField,c_filterValue);
 }
@@ -122,7 +122,7 @@ bool Restorer_XML::check_consumer_item( UniXML_iterator& it )
 xmlNode* Restorer_XML::find_node( const std::shared_ptr<UniXML>& xml, xmlNode* root, 
                                     const string& nodename, const string& nm )
 {
-    UniXML_iterator it(root);
+    UniXML::iterator it(root);
     if( it.goChildren() )
     {
         for( ;it;it.goNext() )

@@ -169,7 +169,7 @@ namespace UniSetTypes
         virtual void initConfiguration(int argc, const char* const* argv);
 
         void createNodesList();
-        virtual void initNode( UniSetTypes::NodeInfo& ninfo, UniXML_iterator& it);
+        virtual void initNode( UniSetTypes::NodeInfo& ninfo, UniXML::iterator& it);
 
         void initRepSections();
         std::string getRepSectionName(const std::string& sec, xmlNode* secnode=0 );

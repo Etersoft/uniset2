@@ -106,7 +106,7 @@ void ObjectIndex_idXML::read_section( const std::shared_ptr<UniXML>& xml, const 
     }
 
     // Считываем список элементов
-    UniXML_iterator it(root);
+    UniXML::iterator it(root);
     if( !it.goChildren() )
     {
         ostringstream msg;
@@ -173,7 +173,7 @@ void ObjectIndex_idXML::read_nodes( const std::shared_ptr<UniXML>& xml, const st
     }
 
     // Считываем список элементов
-    UniXML_iterator it(root);
+    UniXML::iterator it(root);
     if( !it.goChildren() )
     {
         ostringstream msg;

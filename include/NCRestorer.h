@@ -142,14 +142,14 @@ class NCRestorer_XML:
             при чтении списка пороговых датчиков.
 
             bool xxxMyClass::myfunc(UniXML& xml,
-                                    UniXML_iterator& it, xmlNode* sec)
+                                    UniXML::iterator& it, xmlNode* sec)
             uxml    - интерфейс для работы с xml-файлом
             it     - интератор(указатель) на текущий считываемый xml-узел (<sensor>)
             sec    - указатель на корневой узел секции (<threshold>)
         */
         void setReadThresholdItem( ReaderSlot sl );
 
-        typedef sigc::slot<bool,const std::shared_ptr<UniXML>&,UniXML_iterator&,xmlNode*,SInfo&> NCReaderSlot;
+        typedef sigc::slot<bool,const std::shared_ptr<UniXML>&,UniXML::iterator&,xmlNode*,SInfo&> NCReaderSlot;
 
         void setNCReadItem( NCReaderSlot sl );
 
@@ -161,7 +161,7 @@ class NCRestorer_XML:
 
     protected:
 
-        bool check_thresholds_item( UniXML_iterator& it );
+        bool check_thresholds_item( UniXML::iterator& it );
         void read_consumers( const std::shared_ptr<UniXML>& xml, xmlNode* node, NCRestorer_XML::SInfo&& inf, IONotifyController* ic );
         void read_list( const std::shared_ptr<UniXML>& xml, xmlNode* node, IONotifyController* ic);
         void read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNode* node, IONotifyController* ic);

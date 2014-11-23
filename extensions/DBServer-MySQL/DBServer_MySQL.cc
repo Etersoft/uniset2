@@ -335,7 +335,7 @@ void DBServer_MySQL::init_dbserver()
 //--------------------------------------------------------------------------------------------
 void DBServer_MySQL::createTables( MySQLInterface *db )
 {
-    UniXML_iterator it( conf->getNode("Tables") );
+    UniXML::iterator it( conf->getNode("Tables") );
     if(!it)
     {
         ucrit << myname << ": section <Tables> not found.."<< endl;

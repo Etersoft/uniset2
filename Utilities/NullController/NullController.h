@@ -23,9 +23,9 @@ class NullController:
 
         virtual void dumpToDB();
 
-//        bool readSItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec, NCRestorer::SInfo& inf );
-//        bool readTItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec);
-//        bool readCItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec);
+//        bool readSItem( UniXML& xml, UniXML::iterator& it, xmlNode* sec, NCRestorer::SInfo& inf );
+//        bool readTItem( UniXML& xml, UniXML::iterator& it, xmlNode* sec);
+//        bool readCItem( UniXML& xml, UniXML::iterator& it, xmlNode* sec);
 
     private:
         bool dumpingToDB;

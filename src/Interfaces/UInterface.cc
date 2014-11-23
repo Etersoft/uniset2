@@ -1972,7 +1972,7 @@ UniversalIO::IOType UInterface::getConfIOType( const UniSetTypes::ObjectId id ) 
     if( !x )
         return UniversalIO::UnknownIOType;
 
-    UniXML_iterator it(x);
+    UniXML::iterator it(x);
     return UniSetTypes::getIOType( it.getProp("iotype") );
 }
 // -----------------------------------------------------------------------------

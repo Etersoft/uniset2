@@ -44,7 +44,7 @@ pollActivated(false)
 
     shm = new SMInterface(shmId,&ui,objId,ic);
 
-    UniXML_iterator it(cnode);
+    UniXML::iterator it(cnode);
 
     // определяем фильтр
     s_field = conf->getArgParam("--" + prefix + "-filter-field");
@@ -262,7 +262,7 @@ void MBExchange::readConfiguration()
         throw SystemError(err.str());
     }
 
-    UniXML_iterator it(root);
+    UniXML::iterator it(root);
     if( !it.goChildren() )
     {
         dcrit << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
@@ -278,7 +278,7 @@ void MBExchange::readConfiguration()
 //    readconf_ok = true;
 }
 // ------------------------------------------------------------------------------------------
-bool MBExchange::readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec )
+bool MBExchange::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
 {
     if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
         initItem(it);
@@ -1775,7 +1775,7 @@ void MBExchange::updateRTU188( RegMap::iterator& rit )
 }
 // -----------------------------------------------------------------------------
 
-MBExchange::RTUDevice* MBExchange::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAddr a, UniXML_iterator& xmlit )
+MBExchange::RTUDevice* MBExchange::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAddr a, UniXML::iterator& xmlit )
 {
     auto it = mp.find(a);
     if( it != mp.end() )
@@ -1809,7 +1809,7 @@ MBExchange::RTUDevice* MBExchange::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAd
 }
 // ------------------------------------------------------------------------------------------
 MBExchange::RegInfo* MBExchange::addReg( RegMap& mp, RegID id, ModbusRTU::ModbusData r,
-                                            UniXML_iterator& xmlit, MBExchange::RTUDevice* dev )
+                                            UniXML::iterator& xmlit, MBExchange::RTUDevice* dev )
 {
     auto it = mp.find(id);
     if( it != mp.end() )
@@ -1867,7 +1867,7 @@ MBExchange::RSProperty* MBExchange::addProp( PList& plist, RSProperty&& p )
     return &(*it);
 }
 // ------------------------------------------------------------------------------------------
-bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
+bool MBExchange::initRSProperty( RSProperty& p, UniXML::iterator& it )
 {
     if( !IOBase::initItem(&p,it,shm,prop_prefix,false,&dlog,myname) )
         return false;
@@ -1939,7 +1939,7 @@ bool MBExchange::initRSProperty( RSProperty& p, UniXML_iterator& it )
     return true;
 }
 // ------------------------------------------------------------------------------------------
-bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUDevice* dev )
+bool MBExchange::initRegInfo( RegInfo* r, UniXML::iterator& it,  MBExchange::RTUDevice* dev )
 {
     r->dev = dev;
     r->mbval = IOBase::initIntProp(it,"default",prefix,false);
@@ -2010,7 +2010,7 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML_iterator& it,  MBExchange::RTUD
     return true;
 }
 // ------------------------------------------------------------------------------------------
-bool MBExchange::initRTUDevice( RTUDevice* d, UniXML_iterator& it )
+bool MBExchange::initRTUDevice( RTUDevice* d, UniXML::iterator& it )
 {
 	string mbtype(IOBase::initProp(it,"mbtype",prefix,false));
     d->dtype = getDeviceType(mbtype);
@@ -2041,7 +2041,7 @@ bool MBExchange::initRTUDevice( RTUDevice* d, UniXML_iterator& it )
     return true;
 }
 // ------------------------------------------------------------------------------------------
-bool MBExchange::initItem( UniXML_iterator& it )
+bool MBExchange::initItem( UniXML::iterator& it )
 {
     RSProperty p;
     if( !initRSProperty(p,it) )
@@ -2275,7 +2275,7 @@ bool MBExchange::initItem( UniXML_iterator& it )
     return true;
 }
 // ------------------------------------------------------------------------------------------
-bool MBExchange::initMTRitem( UniXML_iterator& it, RegInfo* p )
+bool MBExchange::initMTRitem( UniXML::iterator& it, RegInfo* p )
 {
     p->mtrType = MTR::str2type(it.getProp(prop_prefix + "mtrtype"));
     if( p->mtrType == MTR::mtUnknown )
@@ -2290,7 +2290,7 @@ bool MBExchange::initMTRitem( UniXML_iterator& it, RegInfo* p )
     return true;
 }
 // ------------------------------------------------------------------------------------------
-bool MBExchange::initRTU188item( UniXML_iterator& it, RegInfo* p )
+bool MBExchange::initRTU188item( UniXML::iterator& it, RegInfo* p )
 {
     string jack(IOBase::initProp(it,"jakc",prefix,false));
     string chan(IOBase::initProp(it,"channel",prefix,false));
@@ -2377,7 +2377,7 @@ void MBExchange::initDeviceList()
 
     if( respNode )
     {
-        UniXML_iterator it1(respNode);
+        UniXML::iterator it1(respNode);
         if( it1.goChildren() )
         {
             for(;it1.getCurrent(); it1.goNext() )
@@ -2393,7 +2393,7 @@ void MBExchange::initDeviceList()
         dwarn << myname << "(init): <DeviceList> not found..." << endl;
 }
 // -----------------------------------------------------------------------------
-bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it )
+bool MBExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML::iterator& it )
 {
     auto d = m.find(a);
     if( d == m.end() )

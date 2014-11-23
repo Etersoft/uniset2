@@ -40,7 +40,7 @@ pollThread(0)
 
     dinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
-    UniXML_iterator it(cnode);
+    UniXML::iterator it(cnode);
 
     // ---------- init MBTCP ----------
     string pname("--" + prefix + "-gateway-iaddr");

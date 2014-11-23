@@ -108,7 +108,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
             throw SystemError(err.str());
         }
 
-        UniXML_iterator it1(snode);
+        UniXML::iterator it1(snode);
         if( !it1.goChildren() )
         {
             ostringstream err;

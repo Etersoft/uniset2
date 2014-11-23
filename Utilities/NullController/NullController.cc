@@ -51,8 +51,8 @@ void NullController::dumpToDB()
 }
 // --------------------------------------------------------------------------------
 /*
-//bool NullController::readSItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
-bool NullController::readSItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec, NCRestorer::SInfo& inf )
+//bool NullController::readSItem( UniXML& xml, UniXML::iterator& it, xmlNode* sec )
+bool NullController::readSItem( UniXML& xml, UniXML::iterator& it, xmlNode* sec, NCRestorer::SInfo& inf )
 {
     cout << "******************* (readSItem): sec=" << sec->name << " it=" << it.getProp("name") << endl;
 
@@ -60,13 +60,13 @@ bool NullController::readSItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec, 
     return true;
 }
 // --------------------------------------------------------------------------------
-bool NullController::readTItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
+bool NullController::readTItem( UniXML& xml, UniXML::iterator& it, xmlNode* sec )
 {
     cout << "******************* (readTItem): sec=" << sec->name << " it=" << it.getProp("name") << endl;
     return true;
 }
 // --------------------------------------------------------------------------------
-bool NullController::readCItem( UniXML& xml, UniXML_iterator& it, xmlNode* sec )
+bool NullController::readCItem( UniXML& xml, UniXML::iterator& it, xmlNode* sec )
 {
     cout << "******************* (readCItem): sec=" << sec->name << " it=" << it.getProp("name") << endl;
     return true;

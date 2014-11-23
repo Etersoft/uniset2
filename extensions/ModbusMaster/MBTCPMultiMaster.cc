@@ -42,12 +42,12 @@ checkThread(0)
 
     dinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
-    UniXML_iterator it(cnode);
+    UniXML::iterator it(cnode);
 
     checktime = conf->getArgPInt("--" + prefix + "-checktime",it.getProp("checktime"), 5000);
     force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection",it.getProp("persistent_connection")) ? false : true;
 
-    UniXML_iterator it1(it);
+    UniXML::iterator it1(it);
     if( !it1.find("GateList") )
     {
         ostringstream err;

@@ -27,7 +27,7 @@ prefix(prefix)
 
     shm = new SMInterface(shmId,&ui,objId,ic);
 
-    UniXML_iterator it(cnode);
+    UniXML::iterator it(cnode);
 
     db_locale = conf->getArgParam("--" + prefix + "-locale",it.getProp("locale"));
     if( db_locale.empty() )
@@ -135,7 +135,7 @@ void SMDBServer::initDB( DBInterface *db )
             return;
         }
 
-            UniXML_iterator it(snode);
+            UniXML::iterator it(snode);
             if( !it.goChildren() )
             {
                 dcrit << myname << ": section <sensors> empty?!.." << endl;

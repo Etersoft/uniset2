@@ -335,7 +335,7 @@ std::ostream& UniSetTypes::operator<<( std::ostream& os, const IOController_i::C
     << " precision=" << c.precision;
 }
 // ------------------------------------------------------------------------------------------
-bool UniSetTypes::check_filter( UniXML_iterator& it, const std::string& f_prop, const std::string& f_val )
+bool UniSetTypes::check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val )
 {
     if( f_prop.empty() )
         return true;

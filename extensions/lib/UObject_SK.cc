@@ -95,7 +95,7 @@ end_private(false)
 
 
 
-	UniXML_iterator it(cnode);
+	UniXML::iterator it(cnode);
 	string heart = conf->getArgParam("--heartbeat-id",it.getProp("heartbeat_id"));
 	if( !heart.empty() )
 	{

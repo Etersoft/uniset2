@@ -110,7 +110,7 @@ void NCRestorer_XML::dumpThreshold(const IONotifyController* ic, SInfo& inf,
 // ------------------------------------------------------------------------------------------
 void NCRestorer_XML::read_list( const std::shared_ptr<UniXML>& xml, xmlNode* node, IONotifyController* ic )
 {
-    UniXML_iterator it(node);
+    UniXML::iterator it(node);
     if( !it.goChildren() )
         return;
 
@@ -331,7 +331,7 @@ bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode*
 // ------------------------------------------------------------------------------------------
 void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNode* node, IONotifyController* ic )
 {
-    UniXML_iterator it(node);
+    UniXML::iterator it(node);
     if( !it.goChildren() )
         return;
 
@@ -350,7 +350,7 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
 
         uinfo << ic->getName() << "(read_thresholds): " << it.getProp("name") << endl;
 
-        UniXML_iterator tit(it);
+        UniXML::iterator tit(it);
         if( !tit.goChildren() )
             continue;
 
@@ -376,7 +376,7 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
             xmlNode* cnode = find_node(xml,tit,"consumers","");
             if( cnode )
             {
-                UniXML_iterator ask_it(cnode);
+                UniXML::iterator ask_it(cnode);
                 if( ask_it.goChildren() )
                 {
                     if( !getConsumerList(xml,ask_it,ti.clst) )
@@ -406,7 +406,7 @@ void NCRestorer_XML::read_consumers( const std::shared_ptr<UniXML>& xml, xmlNode
     xmlNode* cnode = find_node(xml,it,"consumers","");
     if( cnode )
     {
-        UniXML_iterator cit(cnode);
+        UniXML::iterator cit(cnode);
         if( cit.goChildren() )
         {
             IONotifyController::ConsumerListInfo lst;
@@ -420,7 +420,7 @@ void NCRestorer_XML::read_consumers( const std::shared_ptr<UniXML>& xml, xmlNode
 bool NCRestorer_XML::getConsumerList( const std::shared_ptr<UniXML>& xml, xmlNode* node, 
                                         IONotifyController::ConsumerListInfo& lst )
 {
-    UniXML_iterator it(node);
+    UniXML::iterator it(node);
     for(;it;it.goNext())
     {
         if( !check_consumer_item(it) )
@@ -442,7 +442,7 @@ bool NCRestorer_XML::getConsumerList( const std::shared_ptr<UniXML>& xml, xmlNod
 bool NCRestorer_XML::getThresholdInfo( const std::shared_ptr<UniXML>& xml,xmlNode* node, 
                                         IONotifyController::ThresholdInfoExt& ti )
 {
-    UniXML_iterator uit(node);
+    UniXML::iterator uit(node);
 
     string sid_name = uit.getProp("sid");
     if( !sid_name.empty() )
@@ -475,7 +475,7 @@ bool NCRestorer_XML::getThresholdInfo( const std::shared_ptr<UniXML>& xml,xmlNod
     return true;
 }
 // ------------------------------------------------------------------------------------------
-bool NCRestorer_XML::check_thresholds_item( UniXML_iterator& it )
+bool NCRestorer_XML::check_thresholds_item( UniXML::iterator& it )
 {    
     return UniSetTypes::check_filter(it,t_filterField,t_filterValue);
 }

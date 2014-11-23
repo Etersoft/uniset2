@@ -313,7 +313,7 @@ void DBServer_SQLite::init_dbserver()
 //--------------------------------------------------------------------------------------------
 void DBServer_SQLite::createTables( SQLiteInterface *db )
 {
-    UniXML_iterator it( conf->getNode("Tables") );
+    UniXML::iterator it( conf->getNode("Tables") );
     if(!it)
     {
         ucrit << myname << ": section <Tables> not found.."<< endl;

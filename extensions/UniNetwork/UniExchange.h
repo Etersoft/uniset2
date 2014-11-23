@@ -112,8 +112,8 @@ class UniExchange:
         NetNodeList nlst;
 
         void readConfiguration();
-        bool readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec );
-        bool initItem( UniXML_iterator& it );
+        bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
+        bool initItem( UniXML::iterator& it );
         void updateLocalData();
         void initIterators();
 

@@ -306,8 +306,8 @@ class IOControl:
 
         // чтение файла конфигурации
         void readConfiguration();
-        bool initIOItem( UniXML_iterator& it );
-        bool readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec );
+        bool initIOItem( UniXML::iterator& it );
+        bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
         void buildCardsList();
 
         void waitSM();

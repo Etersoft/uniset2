@@ -402,7 +402,7 @@ void openXML()
                 return;
             }
 
-            UniXML_iterator it(root);
+            UniXML::iterator it(root);
             if( !it.goChildren() )
             {
                 cout<<"The diagram "<< nodeXml <<" does not consist any points"<<endl;

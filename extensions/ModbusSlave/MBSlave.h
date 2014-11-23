@@ -388,11 +388,11 @@ class MBSlave:
         virtual void sigterm( int signo ) override;
 
         virtual void initIterators();
-        bool initItem( UniXML_iterator& it );
-        bool readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec );
+        bool initItem( UniXML::iterator& it );
+        bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
 
         void readConfiguration();
-        bool check_item( UniXML_iterator& it );
+        bool check_item( UniXML::iterator& it );
 
         ModbusRTU::mbErrCode real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData val );
         ModbusRTU::mbErrCode real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int& i, int count );

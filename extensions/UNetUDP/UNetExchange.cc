@@ -25,7 +25,7 @@ sender2(0)
 
     shm = new SMInterface(shmId,&ui,objId,ic);
 
-    UniXML_iterator it(cnode);
+    UniXML::iterator it(cnode);
 
     // определяем фильтр
     s_field = conf->getArgParam("--" + prefix + "-filter-field");
@@ -54,7 +54,7 @@ sender2(0)
     if( !nodes )
       throw UniSetTypes::SystemError("(UNetExchange): Not found <nodes>");
 
-    UniXML_iterator n_it(nodes);
+    UniXML::iterator n_it(nodes);
 
     string default_ip(n_it.getProp("unet_broadcast_ip"));
     string default_ip2(n_it.getProp("unet_broadcast_ip2"));

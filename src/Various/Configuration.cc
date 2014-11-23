@@ -207,7 +207,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         {
             if( oind == NULL )
             {
-                UniXML_iterator it = unixml->findNode(unixml->getFirstNode(),"ObjectsMap");
+                UniXML::iterator it = unixml->findNode(unixml->getFirstNode(),"ObjectsMap");
                 if( !it )
                 {
                     ucrit << "(Configuration:init): not found <ObjectsMap> node in "  << fileConfName << endl;
@@ -416,7 +416,7 @@ void Configuration::initParameters()
         throw Exception("Configuration: INIT PARAM`s FAILED! <UniSet>...</UniSet> not found!");
     }
 
-    UniXML_iterator it(root);
+    UniXML::iterator it(root);
     if( !it.goChildren() )
     {
         ucrit << "Configuration: INIT PARAM`s FAILED!!!!"<< endl;
@@ -509,7 +509,7 @@ void Configuration::initParameters()
     xmlNode* cnode = getNode("HeartBeatTime");
     if( cnode )
         {
-        UniXML_iterator hit(cnode);
+        UniXML::iterator hit(cnode);
         heartbeat_msec = hit.getIntProp("msec");
         if( heartbeat_msec <= 0 )
             heartbeat_msec = 5000;
@@ -603,7 +603,7 @@ void Configuration::createNodesList()
         throw Exception("(Configiuration): <nodes> section not found");
     }
 
-    UniXML_iterator it(node);
+    UniXML::iterator it(node);
     it.goChildren();
 
     // определяем порт
@@ -667,7 +667,7 @@ void Configuration::createNodesList()
     uinfo << "Configuration(createNodesList): size of node list " << lnodes.size() << endl;
 }
 // -------------------------------------------------------------------------
-void Configuration::initNode( UniSetTypes::NodeInfo& ninfo, UniXML_iterator& it )
+void Configuration::initNode( UniSetTypes::NodeInfo& ninfo, UniXML::iterator& it )
 {
     if( ninfo.id == getLocalNode() )
         ninfo.connected = true;
@@ -949,7 +949,7 @@ UniversalIO::IOType Configuration::getIOType( UniSetTypes::ObjectId id )
     const ObjectInfo* i = oind->getObjectInfo(id);
     if( i && (xmlNode*)(i->data) )
     {
-        UniXML_iterator it((xmlNode*)(i->data));
+        UniXML::iterator it((xmlNode*)(i->data));
         return UniSetTypes::getIOType( it.getProp("iotype") );
     }
 
@@ -970,7 +970,7 @@ UniversalIO::IOType Configuration::getIOType( const std::string& name )
     const ObjectInfo* i = oind->getObjectInfo(name);
     if( i && (xmlNode*)(i->data) )
     {
-        UniXML_iterator it((xmlNode*)(i->data));
+        UniXML::iterator it((xmlNode*)(i->data));
         return UniSetTypes::getIOType( it.getProp("iotype") );
     }
 

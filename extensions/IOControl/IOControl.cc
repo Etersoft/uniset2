@@ -61,7 +61,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
 
     dinfo << myname << "(init): numcards=" << numcards << endl;
 
-    UniXML_iterator it(cnode);
+    UniXML::iterator it(cnode);
 
     noCards = true;
     for( unsigned int i=1; i<cards.size(); i++ )
@@ -253,7 +253,7 @@ IOControl::~IOControl()
 void IOControl::execute()
 {
 //    set_signals(true);
-    UniXML_iterator it(cnode);
+    UniXML::iterator it(cnode);
 
     waitSM(); // необходимо дождаться, чтобы нормально инициализировать итераторы
 
@@ -654,7 +654,7 @@ void IOControl::readConfiguration()
         throw SystemError(err.str());
     }
 
-    UniXML_iterator it(root);
+    UniXML::iterator it(root);
     if( !it.goChildren() )
     {
         dwarn << myname << "(readConfiguration): section <sensors> empty?!!\n";
@@ -670,7 +670,7 @@ void IOControl::readConfiguration()
     readconf_ok = true;
 }
 // ------------------------------------------------------------------------------------------
-bool IOControl::readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec )
+bool IOControl::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
 {
     if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
         initIOItem(it);
@@ -678,7 +678,7 @@ bool IOControl::readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& i
     return true;
 }
 // ------------------------------------------------------------------------------------------
-bool IOControl::initIOItem( UniXML_iterator& it )
+bool IOControl::initIOItem( UniXML::iterator& it )
 {
     IOInfo inf;
 
@@ -1489,7 +1489,7 @@ void IOControl::buildCardsList()
     }
 
     xmlNode* mynode = 0;
-    UniXML_iterator it1(nnode);
+    UniXML::iterator it1(nnode);
     it1.goChildren();
     for( ; it1.getCurrent(); it1.goNext() )
     {
@@ -1516,7 +1516,7 @@ void IOControl::buildCardsList()
         return;
     }
 
-    UniXML_iterator it(cnode);
+    UniXML::iterator it(cnode);
     if( !it.goChildren() )
     {
         dwarn << myname << "(buildCardsList): <iocards> empty.." << endl;

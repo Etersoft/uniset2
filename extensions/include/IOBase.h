@@ -138,7 +138,7 @@ static const int NoSafety       = -1;
             /*! \param initPrefixOnly - TRUE - инициализировать только свойста с prefix (или брать значения по умолчанию).
                                         FALSE - сперва искать свойство с prefix, если не найдено брать без prefix.
             */
-            static bool initItem( IOBase* b, UniXML_iterator& it, SMInterface* shm,
+            static bool initItem( IOBase* b, UniXML::iterator& it, SMInterface* shm,
                                   const std::string& prefix, bool init_prefix_only,
                                     DebugStream* dlog=0, std::string myname="",
                                     int def_filtersize=0, float def_filterT=0.0,
@@ -147,8 +147,8 @@ static const int NoSafety       = -1;
 
 
             // helpes
-             static std::string initProp( UniXML_iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const std::string& defval="" );
-             static int initIntProp( UniXML_iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const int defval=0 );
+             static std::string initProp( UniXML::iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const std::string& defval="" );
+             static int initIntProp( UniXML::iterator& it, const std::string& prop, const std::string& prefix, bool prefonly, const int defval=0 );
         };
 
 

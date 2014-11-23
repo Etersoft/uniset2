@@ -51,7 +51,7 @@ SharedMemory::SharedMemory( ObjectId id, const std::string& datafile, const std:
     if( cnode == NULL )
         throw SystemError("Not found conf-node for " + cname );
 
-    UniXML_iterator it(cnode);
+    UniXML::iterator it(cnode);
 
     // ----------------------
     buildHistoryList(cnode);
@@ -324,7 +324,7 @@ void SharedMemory::checkHeartBeat()
         wdt->ping();
 }
 // ------------------------------------------------------------------------------------------
-bool SharedMemory::readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec )
+bool SharedMemory::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
 {
     for( auto &r: lstRSlot )
     {
@@ -446,7 +446,7 @@ void SharedMemory::readEventList( const std::string& oname )
         return;
     }
 
-    UniXML_iterator it(enode);
+    UniXML::iterator it(enode);
     if( !it.goChildren() )
     {
         dwarn << myname << "(readEventList): <eventlist> пустой..." << endl;
@@ -587,7 +587,7 @@ void SharedMemory::buildHistoryList( xmlNode* cnode )
     dinfo << myname << "(buildHistoryList): history logs count=" << hist.size() << endl;
 }
 // -----------------------------------------------------------------------------
-void SharedMemory::checkHistoryFilter( UniXML_iterator& xit )
+void SharedMemory::checkHistoryFilter( UniXML::iterator& xit )
 {
     for( auto &it: hist )
     {

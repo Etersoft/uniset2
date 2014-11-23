@@ -40,7 +40,7 @@ rs_pre_clean(false)
 
     dinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
-    UniXML_iterator it(cnode);
+    UniXML::iterator it(cnode);
 
     // ---------- init RS ----------
     devname    = conf->getArgParam("--"+prefix+"-dev",it.getProp("device"));
@@ -337,7 +337,7 @@ RTUExchange* RTUExchange::init_rtuexchange( int argc, const char* const* argv, U
     return new RTUExchange(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
-bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it )
+bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML::iterator& it )
 {
     if( !MBExchange::initDeviceInfo(m,a,it) )
         return false;

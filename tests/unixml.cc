@@ -47,7 +47,7 @@ TEST_CASE("UniXML", "[UniXML]" )
 
 	SECTION( "Iterator" );
 	{
-    	UniXML_iterator it(cnode);
+    	UniXML::iterator it(cnode);
 		CHECK( it.getCurrent() != 0 );
 		it = uxml.begin();
 		CHECK( it.find("UniSet") != 0 );

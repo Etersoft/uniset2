@@ -49,14 +49,14 @@ class Restorer_XML
             \param sec    - итератор (указатель) на корневой узел секции (SubscriberList)
             \return TRUE - если чтение параметров прошло успешно, FALSE - если нет
         */
-        typedef sigc::slot<bool,const std::shared_ptr<UniXML>&,UniXML_iterator&,xmlNode*> ReaderSlot;
+        typedef sigc::slot<bool,const std::shared_ptr<UniXML>&,UniXML::iterator&,xmlNode*> ReaderSlot;
 
         /*! установить функцию для callback-вызова при чтении списка сообщений
             For example:
                 setReadItem( sigc::mem_fun(this,&MyClass::myReadItem) );
 
             bool myReadItem::myfunc(UniXML& xml,
-                                        UniXML_iterator& it, xmlNode* sec)
+                                        UniXML::iterator& it, xmlNode* sec)
 
             uxml    - интерфейс для работы с xml-файлом
             it     - интератор(указатель) на текущий считываемый xml-узел (item)
@@ -70,7 +70,7 @@ class Restorer_XML
                 setReadItem( sigc::mem_fun(this,&MyClass::myReadItem) );
 
             bool myReadItem::myfunc(UniXML& xml,
-                                        UniXML_iterator& it, xmlNode* sec)
+                                        UniXML::iterator& it, xmlNode* sec)
 
             uxml    - интерфейс для работы с xml-файлом
             it     - интератор(указатель) на текущий считываемый xml-узел (<consumer>)
@@ -95,7 +95,7 @@ class Restorer_XML
             по новому формату файла (<consumer name="xxxx" type="objects" />)
             \return true - если идентификаторы определены
         */
-        bool getConsumerInfo( UniXML_iterator& it,
+        bool getConsumerInfo( UniXML::iterator& it,
                                 UniSetTypes::ObjectId& cid, UniSetTypes::ObjectId& cnode );
 
         /*! Функция поиска по текущему уровню (без рекурсии для дочерних узлов) */

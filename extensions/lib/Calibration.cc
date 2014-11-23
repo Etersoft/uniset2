@@ -136,7 +136,7 @@ numCacheResort(20),
 numCallToCache(5)
 {
     cache.assign(szCache,CacheInfo());
-    UniXML_iterator it(node);
+    UniXML::iterator it(node);
     myname = it.getProp("name");
     build("","",node);
 }
@@ -165,7 +165,7 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
             }
         }
 
-        UniXML_iterator it(root);
+        UniXML::iterator it(root);
 
         if( !it.goChildren() )
         {

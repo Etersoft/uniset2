@@ -269,21 +269,21 @@ class MBExchange:
         void waitSMReady();
 
         void readConfiguration();
-        bool readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec );
-        bool initItem( UniXML_iterator& it );
+        bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );
+        bool initItem( UniXML::iterator& it );
         void initDeviceList();
         void initOffsetList();
 
-        RTUDevice* addDev( RTUDeviceMap& dmap, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
-        RegInfo* addReg( RegMap& rmap, RegID id, ModbusRTU::ModbusData r, UniXML_iterator& it, RTUDevice* dev );
+        RTUDevice* addDev( RTUDeviceMap& dmap, ModbusRTU::ModbusAddr a, UniXML::iterator& it );
+        RegInfo* addReg( RegMap& rmap, RegID id, ModbusRTU::ModbusData r, UniXML::iterator& it, RTUDevice* dev );
         RSProperty* addProp( PList& plist, RSProperty&& p );
 
-        bool initMTRitem( UniXML_iterator& it, RegInfo* p );
-        bool initRTU188item( UniXML_iterator& it, RegInfo* p );
-        bool initRSProperty( RSProperty& p, UniXML_iterator& it );
-        bool initRegInfo( RegInfo* r, UniXML_iterator& it, RTUDevice* dev  );
-        bool initRTUDevice( RTUDevice* d, UniXML_iterator& it );
-        virtual bool initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it );
+        bool initMTRitem( UniXML::iterator& it, RegInfo* p );
+        bool initRTU188item( UniXML::iterator& it, RegInfo* p );
+        bool initRSProperty( RSProperty& p, UniXML::iterator& it );
+        bool initRegInfo( RegInfo* r, UniXML::iterator& it, RTUDevice* dev  );
+        bool initRTUDevice( RTUDevice* d, UniXML::iterator& it );
+        virtual bool initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML::iterator& it );
 
         void rtuQueryOptimization( RTUDeviceMap& m );
 

@@ -218,7 +218,7 @@ void UNetSender::readConfiguration()
         throw SystemError(err.str());
     }
 
-    UniXML_iterator it(root);
+    UniXML::iterator it(root);
     if( !it.goChildren() )
     {
         std::cerr << myname << "(readConfiguration): empty <sensors>?!!" << endl;
@@ -232,14 +232,14 @@ void UNetSender::readConfiguration()
     }
 }
 // ------------------------------------------------------------------------------------------
-bool UNetSender::readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec )
+bool UNetSender::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
 {
     if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
         initItem(it);
     return true;
 }
 // ------------------------------------------------------------------------------------------
-bool UNetSender::initItem( UniXML_iterator& it )
+bool UNetSender::initItem( UniXML::iterator& it )
 {
     string sname( it.getProp("name") );
 

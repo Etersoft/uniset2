@@ -37,7 +37,7 @@ class RTUExchange:
         virtual void poll() override;
 
         virtual std::shared_ptr<ModbusClient> initMB( bool reopen=false ) override;
-        virtual bool initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML_iterator& it ) override;
+        virtual bool initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML::iterator& it ) override;
 
     private:
         RTUExchange();

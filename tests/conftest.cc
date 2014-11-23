@@ -47,7 +47,7 @@ TEST_CASE( "Configuration", "[Configuration]" )
         xmlNode* cnode = conf->getNode("testnode");
         CHECK( cnode != NULL );
 
-        UniXML_iterator it(cnode);
+        UniXML::iterator it(cnode);
 
         CHECK( conf->getArgInt("--prop-id2",it.getProp("id2")) != 0 );
         CHECK( conf->getArgInt("--prop-dummy",it.getProp("id2")) == -100 );

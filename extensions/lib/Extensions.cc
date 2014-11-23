@@ -65,7 +65,7 @@ namespace UniSetExtensions
         if( !node )
             return 0;
     
-        UniXML_iterator it(node);
+        UniXML::iterator it(node);
         if( !it.goChildren() )
             return 0;
 

@@ -38,7 +38,7 @@ void SchemaXML::read( const string& xmlfile )
     }
 
     // Считываем список элементов
-    UniXML_iterator it(root);
+    UniXML::iterator it(root);
     if( !it.goChildren() )
     {
         ostringstream msg;

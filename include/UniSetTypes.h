@@ -245,7 +245,7 @@ namespace UniSetTypes
 
     // Проверка xml-узла на соответствие <...f_prop="f_val">,
     // если не задано f_val, то проверяется, что просто f_prop!=""
-    bool check_filter( UniXML_iterator& it, const std::string& f_prop, const std::string& f_val="" );
+    bool check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val="" );
 
     /*! алгоритм копирования элементов последовательности удовлетворяющих условию */
     template<typename InputIterator,

@@ -41,7 +41,7 @@ prefix(prefix)
 
     shm = new SMInterface(shmId,&ui,objId,ic);
 
-    UniXML_iterator it(cnode);
+    UniXML::iterator it(cnode);
 
     // определяем фильтр
     s_field = conf->getArgParam("--" + prefix + "-filter-field");
@@ -219,7 +219,7 @@ prefix(prefix)
 
     if( fnode )
     {
-        UniXML_iterator fit(fnode);
+        UniXML::iterator fit(fnode);
         if( fit.goChildren() )
         {
             for( ;fit.getCurrent(); fit.goNext() )
@@ -284,7 +284,7 @@ prefix(prefix)
 //                 ...
 //               </device>
 //      </MEI>
-        UniXML_iterator dit(mnode);
+        UniXML::iterator dit(mnode);
         if( dit.goChildren() )
         {
             // Device ID list..
@@ -298,7 +298,7 @@ prefix(prefix)
 
                 int devID = dit.getIntProp("id");
 
-                UniXML_iterator oit(dit);
+                UniXML::iterator oit(dit);
                 if( oit.goChildren() )
                 {
                     dwarn << myname << "(init): MEI: read dev='" << devID << "'" << endl;
@@ -317,7 +317,7 @@ prefix(prefix)
                         }
 
                         int objID = oit.getIntProp("id");
-                        UniXML_iterator sit(oit);
+                        UniXML::iterator sit(oit);
                         if( sit.goChildren() )
                         {
                             dinfo << myname << "(init): MEI: read obj='" << objID << "'" << endl;
@@ -782,7 +782,7 @@ void MBSlave::readConfiguration()
         throw SystemError(err.str());
     }
 
-    UniXML_iterator it(root);
+    UniXML::iterator it(root);
     if( !it.goChildren() )
     {
         dcrit << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
@@ -798,7 +798,7 @@ void MBSlave::readConfiguration()
 //    readconf_ok = true;
 }
 // ------------------------------------------------------------------------------------------
-bool MBSlave::readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec )
+bool MBSlave::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
 {
     if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
         initItem(it);
@@ -806,7 +806,7 @@ bool MBSlave::readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it,
 }
 
 // ------------------------------------------------------------------------------------------
-bool MBSlave::initItem( UniXML_iterator& it )
+bool MBSlave::initItem( UniXML::iterator& it )
 {
     IOProperty p;
 	

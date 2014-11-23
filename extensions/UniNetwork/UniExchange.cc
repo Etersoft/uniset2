@@ -32,7 +32,7 @@ smReadyTimeout(15000)
 
     shm = new SMInterface(shmID,&ui,id,ic);
 
-    UniXML_iterator it(cnode);
+    UniXML::iterator it(cnode);
 
     s_field = conf->getArgParam("--" + prefix + "-filter-field");
     s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
@@ -353,7 +353,7 @@ void UniExchange::readConfiguration()
         throw SystemError(err.str());
     }
 
-    UniXML_iterator it(root);
+    UniXML::iterator it(root);
     if( !it.goChildren() )
     {
         std::cerr << myname << "(readConfiguration): раздел <sensors> не содержит секций ?!!\n";
@@ -369,7 +369,7 @@ void UniExchange::readConfiguration()
 //    readconf_ok = true;
 }
 // ------------------------------------------------------------------------------------------
-bool UniExchange::readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator& it, xmlNode* sec )
+bool UniExchange::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec )
 {
     if( UniSetTypes::check_filter(it,s_field,s_fvalue) )
         initItem(it);
@@ -377,7 +377,7 @@ bool UniExchange::readItem( const std::shared_ptr<UniXML>& xml, UniXML_iterator&
 }
 
 // ------------------------------------------------------------------------------------------
-bool UniExchange::initItem( UniXML_iterator& it )
+bool UniExchange::initItem( UniXML::iterator& it )
 {
     SInfo i;
 

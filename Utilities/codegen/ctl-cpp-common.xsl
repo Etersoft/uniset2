@@ -638,7 +638,7 @@ end_private(false)
 	}
 </xsl:for-each>
 
-	UniXML_iterator it(cnode);
+	UniXML::iterator it(cnode);
 	string heart = conf->getArgParam("--heartbeat-id",it.getProp("heartbeat_id"));
 	if( !heart.empty() )
 	{
@@ -924,7 +924,7 @@ askPause(conf->getPIntProp(cnode,"askPause",2000))
 	</xsl:call-template>
 </xsl:for-each>
 
-	UniXML_iterator it(cnode);
+	UniXML::iterator it(cnode);
 	string heart = conf->getArgParam("--heartbeat-id",it.getProp("heartbeat_id"));
 	if( !heart.empty() )
 	{
