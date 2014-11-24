@@ -12,7 +12,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt9
+Release: alt10
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -405,6 +405,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
 
 %changelog
+* Mon Nov 24 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt10
+- use shared_ptr 
+
 * Mon Oct 20 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt9
 - fixed bug in UniXML::iterator getPIntProp() for prop<=0
 
