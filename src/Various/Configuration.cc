@@ -81,8 +81,8 @@ namespace UniSetTypes
 
     std::shared_ptr<Configuration> uniset_conf()
     {
-        if( uconf == nullptr )
-            throw SystemError("Don`t init uniset configuration! First use uniset_init().");
+//        if( uconf == nullptr )
+//            throw SystemError("Don`t init uniset configuration! First use uniset_init().");
 
         return uconf; // см. uniset_init..
     }
