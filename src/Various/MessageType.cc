@@ -33,6 +33,26 @@
 namespace UniSetTypes
 {
 //--------------------------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, const Message::TypeOfMessage& t )
+{
+	if( t == Message::Unused )
+		return os << "Unused";
+
+	if( t == Message::SensorInfo )
+		return os << "SensorInfo";
+	
+	if( t == Message::SysCommand )
+		return os << "SysCommand";
+	
+	if( t == Message::Confirm )
+		return os << "Confirm";
+
+	if( t == Message::Timer )
+		return os << "Timer";
+
+	return os << "Unkown";
+}
+//--------------------------------------------------------------------------------------------
 Message::Message():
     type(Unused), priority(Medium),
     node(UniSetTypes::uniset_conf()->getLocalNode()),
@@ -115,7 +135,7 @@ SensorMessage::SensorMessage(const VoidMessage *msg):
 }
 //--------------------------------------------------------------------------------------------
 SystemMessage::SystemMessage():
-    command(SystemMessage::ReConfiguration)
+    command(SystemMessage::Unknown)
 {
     type = Message::SysCommand;
 }
@@ -133,6 +153,28 @@ SystemMessage::SystemMessage(const VoidMessage *msg):
 {
     memcpy(this,msg,sizeof(*this));
     assert(this->type == Message::SysCommand);
+}
+//--------------------------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, const SystemMessage::Command& c )
+{
+	if( c == SystemMessage::Unknown )
+		return os << "Unknown";
+	if( c == SystemMessage::StartUp )
+		return os << "StartUp";
+	if( c == SystemMessage::FoldUp )
+		return os << "FoldUp";
+	if( c == SystemMessage::Finish )
+		return os << "Finish";
+	if( c == SystemMessage::WatchDog )
+		return os << "WatchDog";
+	if( c == SystemMessage::ReConfiguration )
+		return os << "ReConfiguration";
+	if( c == SystemMessage::NetworkInfo )
+		return os << "NetworkInfo";
+	if( c == SystemMessage::LogRotate )
+		return os << "LogRotate";
+
+	return os << "";
 }
 //--------------------------------------------------------------------------------------------
 TimerMessage::TimerMessage():

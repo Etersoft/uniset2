@@ -13,7 +13,7 @@ tests_SOURCES = tests.cc passivetimer.cc hourglass.cc delaytimer.cc unixml.cc ss
 tests_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(SIGC_LIBS) $(COMCPP_LIBS)
 tests_CPPFLAGS	= -I$(top_builddir)/include $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
 
-tests_with_conf_SOURCES = tests_with_conf.cc conftest.cc ui.cc iorfile.cc
+tests_with_conf_SOURCES = tests_with_conf.cc conftest.cc ui.cc iorfile.cc messagetype.cc 
 tests_with_conf_LDADD   = $(top_builddir)/lib/libUniSet2.la
 tests_with_conf_CPPFLAGS = -I$(top_builddir)/include
      

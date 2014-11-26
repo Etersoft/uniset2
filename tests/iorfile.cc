@@ -7,7 +7,7 @@
 using namespace std;
 using namespace UniSetTypes;
 
-TEST_CASE("IORFile", "[iorfile]" ) 
+TEST_CASE("IORFile", "[iorfile][basic]" ) 
 {
 	CHECK( uniset_conf()!=nullptr );
 

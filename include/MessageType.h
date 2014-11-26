@@ -26,10 +26,11 @@
 #define MessageType_H_
 // --------------------------------------------------------------------------
 #include <sys/time.h>
+#include <ostream>
 #include "Configuration.h"
 #include "UniSetTypes.h"
 #include "IOController_i.hh"
-
+// --------------------------------------------------------------------------
 namespace UniSetTypes
 {
     class Message
@@ -77,6 +78,7 @@ namespace UniSetTypes
             }
     };
 
+    std::ostream& operator<<( std::ostream& os, const Message::TypeOfMessage& t );
 
     class VoidMessage : public Message
     {
@@ -145,6 +147,7 @@ namespace UniSetTypes
         public:
             enum Command
             {
+                Unknown,
                 StartUp,    /*! начать работу */
                 FoldUp,     /*! нет связи с главной станцией */
                 Finish,        /*! завершить работу */
@@ -171,6 +174,8 @@ namespace UniSetTypes
             int command;
             long data[2];
     };
+    std::ostream& operator<<( std::ostream& os, const SystemMessage::Command& c );
+
 
     /*! Собщение о срабатывании таймера */
     class TimerMessage : public Message
