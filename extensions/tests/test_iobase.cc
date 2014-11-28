@@ -9,7 +9,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 
-TEST_CASE("IOBase","[IOBase class tests]")
+TEST_CASE("IOBase","[iobase][extensions]")
 {
     CHECK( uniset_conf()!=nullptr );
 
@@ -202,7 +202,7 @@ TEST_CASE("IOBase","[IOBase class tests]")
         CHECK_FALSE( ib.check_front(false) );
     }
 
-    SECTION("Front 'unkown' (off)")
+    SECTION("Front 'unknown' (off)")
     {
         IOBase ib;
         CHECK( ib.check_front(true) );
