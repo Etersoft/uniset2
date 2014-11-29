@@ -76,13 +76,10 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		const UniSetTypes::ObjectId <xsl:value-of select="@name"/>; 	/*!&lt; <xsl:value-of select="@comment"/> */
 		UniSetTypes::ObjectId node_<xsl:value-of select="@name"/>;
 		bool m_<xsl:value-of select="@name"/>; 							/*!&lt; текущее состояние /> */
-		bool prev_m_<xsl:value-of select="@name"/>; 					/*!&lt; предыдущее состояние /> */
 		</xsl:for-each>
 
-		// Текущее значение и предыдущее значение
-		<xsl:for-each select="//smap/item">
-		long <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
-		long prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+		// Текущее значение
+		<xsl:for-each select="//smap/item">long <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 		</xsl:for-each>
 
 		// --- public variables ---
@@ -154,6 +151,14 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		</xsl:if>
 		</xsl:if>
 		</xsl:for-each>// --- end of private variables ---
+
+		// предыдущее значение (для работы UpdateValue())
+		<xsl:for-each select="//smap/item">long prev_<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+		</xsl:for-each>
+
+		// Используемые идентификаторы сообщений
+		<xsl:for-each select="//msgmap/item">bool prev_m_<xsl:value-of select="@name"/>; /*!&lt; предыдущее состояние /> */
+		</xsl:for-each>
 
 		<xsl:call-template name="COMMON-HEAD-PRIVATE"/>
 

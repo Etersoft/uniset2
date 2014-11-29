@@ -81,6 +81,21 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		
 	private:
 		<xsl:call-template name="COMMON-HEAD-PRIVATE"/>
+
+		// Используемые идентификаторы
+		<xsl:for-each select="//sensors/item">
+			<xsl:call-template name="setvar">
+				<xsl:with-param name="GENTYPE" select="'H-PRIVATE'"/>
+			</xsl:call-template>
+		</xsl:for-each>
+
+		// Используемые идентификаторы сообщений
+		<xsl:for-each select="//sensors/item">
+			<xsl:call-template name="setmsg">
+				<xsl:with-param name="GENTYPE" select="'H-PRIVATE'"/>
+			</xsl:call-template>
+		</xsl:for-each>
+
 };
 
 // -----------------------------------------------------------------------------
