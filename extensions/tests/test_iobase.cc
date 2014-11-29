@@ -1,61 +1,63 @@
 #include <catch.hpp>
-
+// -----------------------------------------------------------------------------
 #include "Exceptions.h"
 #include "Extensions.h"
 #include "UniXML.h"
 #include "IOBase.h"
-
+// -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
-
-TEST_CASE("IOBase","[iobase][extensions]")
+// -----------------------------------------------------------------------------
+TEST_CASE("IOBase default constructor","[iobase][extensions]")
 {
     CHECK( uniset_conf()!=nullptr );
 
-    SECTION("Default constructor (const data)")
-    {
-        IOBase ib;
-        CHECK( ib.si.id == DefaultObjectId );
-        CHECK( ib.si.node == DefaultObjectId );
-        CHECK( ib.stype == UniversalIO::UnknownIOType );
+	IOBase ib;
+	CHECK( ib.si.id == DefaultObjectId );
+	CHECK( ib.si.node == DefaultObjectId );
+	CHECK( ib.stype == UniversalIO::UnknownIOType );
 
-        CHECK( ib.cal.minRaw == 0 );
-        CHECK( ib.cal.maxRaw == 0 );
-        CHECK( ib.cal.minCal == 0 );
-        CHECK( ib.cal.maxCal == 0 );
+	CHECK( ib.cal.minRaw == 0 );
+	CHECK( ib.cal.maxRaw == 0 );
+	CHECK( ib.cal.minCal == 0 );
+	CHECK( ib.cal.maxCal == 0 );
 
-        CHECK( ib.cdiagram == nullptr );
-        CHECK( ib.calcrop == true );
+	CHECK( ib.cdiagram == nullptr );
+	CHECK( ib.calcrop == true );
 
-        CHECK( ib.breaklim == 0 );
-        CHECK( ib.value == 0 );
-        CHECK( ib.craw == 0 );
-        CHECK( ib.cprev == 0 );     /*!< предыдущее значение после калибровки */
-        CHECK( ib.safety == 0 );    /*!< безопасное состояние при завершении процесса */
-        CHECK( ib.defval == 0 );    /*!< состояние по умолчанию (при запуске) */
+	CHECK( ib.breaklim == 0 );
+	CHECK( ib.value == 0 );
+	CHECK( ib.craw == 0 );
+	CHECK( ib.cprev == 0 );     /*!< предыдущее значение после калибровки */
+	CHECK( ib.safety == 0 );    /*!< безопасное состояние при завершении процесса */
+	CHECK( ib.defval == 0 );    /*!< состояние по умолчанию (при запуске) */
 
-        CHECK( ib.nofilter == 0 );      /*!< отключение фильтра */
-        CHECK_FALSE( ib.f_median );      /*!< признак использования медианного фильтра */
-        CHECK_FALSE( ib.f_ls );          /*!< признак использования адаптивного фильтра по методу наименьших квадратов */
-        CHECK_FALSE( ib.f_filter_iir );  /*!< признак использования рекурсивного фильтра */
+	CHECK( ib.nofilter == 0 );      /*!< отключение фильтра */
+	CHECK_FALSE( ib.f_median );      /*!< признак использования медианного фильтра */
+	CHECK_FALSE( ib.f_ls );          /*!< признак использования адаптивного фильтра по методу наименьших квадратов */
+	CHECK_FALSE( ib.f_filter_iir );  /*!< признак использования рекурсивного фильтра */
 
-        CHECK_FALSE( ib.ignore );    /*!< игнорировать при опросе */
-        CHECK_FALSE( ib.invert );    /*!< инвертированная логика */
-        CHECK_FALSE( ib.noprecision );
+	CHECK_FALSE( ib.ignore );    /*!< игнорировать при опросе */
+	CHECK_FALSE( ib.invert );    /*!< инвертированная логика */
+	CHECK_FALSE( ib.noprecision );
 
-        CHECK_FALSE( ib.debounce_pause );
-        CHECK_FALSE( ib.debounce_state );    /*!< значение для фильтра антидребезга */
-        CHECK_FALSE( ib.ondelay_state );     /*!< значение для задержки включения */
-        CHECK_FALSE( ib.offdelay_state );    /*!< значение для задержки отключения */
+	CHECK_FALSE( ib.debounce_pause );
+	CHECK_FALSE( ib.debounce_state );    /*!< значение для фильтра антидребезга */
+	CHECK_FALSE( ib.ondelay_state );     /*!< значение для задержки включения */
+	CHECK_FALSE( ib.offdelay_state );    /*!< значение для задержки отключения */
 
-        // Порог
-        REQUIRE( ib.t_ai == DefaultObjectId );
-        CHECK_FALSE( ib.front ); // флаг работы по фронту
-        REQUIRE( ib.front_type == IOBase::ftUnknown );
-        CHECK_FALSE( ib.front_prev_state );
-        CHECK_FALSE( ib.front_state );
-    }
+	// Порог
+	REQUIRE( ib.t_ai == DefaultObjectId );
+	CHECK_FALSE( ib.front ); // флаг работы по фронту
+	REQUIRE( ib.front_type == IOBase::ftUnknown );
+	CHECK_FALSE( ib.front_prev_state );
+	CHECK_FALSE( ib.front_state );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("IOBase Init from xml","[iobase][init][extensions]")
+{
+    CHECK( uniset_conf()!=nullptr );
 
     SECTION("Init from xml")
     {
@@ -105,48 +107,55 @@ TEST_CASE("IOBase","[iobase][extensions]")
         CHECK( ib.cal.maxCal == 30 );
         CHECK( ib.cdiagram != nullptr );
     }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("IOBase: Debounce function","[iobase][debounce][extensions]")
+{
+    CHECK( uniset_conf()!=nullptr );
 
-    SECTION("Debounce function")
-    {
-        IOBase ib;
-        ib.ptDebounce.setTiming(100);
-        // Проверка установки сигнала (с дребезгом)
-        CHECK_FALSE( ib.check_debounce(true) );
-        msleep(20);
-        CHECK_FALSE( ib.check_debounce(false) );
-        CHECK_FALSE( ib.check_debounce(true) );
-        CHECK_FALSE( ib.check_debounce(false) );
-        msleep(10);
-        CHECK_FALSE( ib.check_debounce(true) );
-        msleep(40);
-        CHECK_FALSE( ib.check_debounce(false) );
-        msleep(10);
-        CHECK_FALSE( ib.check_debounce(true) );
-        msleep(30);
-        CHECK( ib.check_debounce(true) ); // сработал..
-        // Проверка сброса сигнала (с дребезгом)
-        msleep(30);
-        CHECK( ib.check_debounce(true) );
-        CHECK( ib.check_debounce(false) );
-        msleep(20);
-        CHECK( ib.check_debounce(false) );
-        msleep(20);
-        CHECK( ib.check_debounce(false) );
-        CHECK( ib.check_debounce(true) );
-        CHECK( ib.check_debounce(false) );
-        CHECK( ib.check_debounce(true) );
-        CHECK( ib.check_debounce(false) );
-        msleep(80);
-        CHECK_FALSE( ib.check_debounce(false) ); // сбросился
+	IOBase ib;
+	ib.ptDebounce.setTiming(100);
+	// Проверка установки сигнала (с дребезгом)
+	CHECK_FALSE( ib.check_debounce(true) );
+	msleep(20);
+	CHECK_FALSE( ib.check_debounce(false) );
+	CHECK_FALSE( ib.check_debounce(true) );
+	CHECK_FALSE( ib.check_debounce(false) );
+	msleep(10);
+	CHECK_FALSE( ib.check_debounce(true) );
+	msleep(40);
+	CHECK_FALSE( ib.check_debounce(false) );
+	msleep(10);
+	CHECK_FALSE( ib.check_debounce(true) );
+	msleep(30);
+	CHECK( ib.check_debounce(true) ); // сработал..
+	// Проверка сброса сигнала (с дребезгом)
+	msleep(30);
+	CHECK( ib.check_debounce(true) );
+	CHECK( ib.check_debounce(false) );
+	msleep(20);
+	CHECK( ib.check_debounce(false) );
+	msleep(20);
+	CHECK( ib.check_debounce(false) );
+	CHECK( ib.check_debounce(true) );
+	CHECK( ib.check_debounce(false) );
+	CHECK( ib.check_debounce(true) );
+	CHECK( ib.check_debounce(false) );
+	msleep(80);
+	CHECK_FALSE( ib.check_debounce(false) ); // сбросился
 
-        // Проверка "устойчивости"
-        msleep(30);
-        CHECK_FALSE( ib.check_debounce(true) );
-        msleep(10);
-        CHECK_FALSE( ib.check_debounce(false) );
-        msleep(90);
-        CHECK_FALSE( ib.check_debounce(false) );
-    }
+	// Проверка "устойчивости"
+	msleep(30);
+	CHECK_FALSE( ib.check_debounce(true) );
+	msleep(10);
+	CHECK_FALSE( ib.check_debounce(false) );
+	msleep(90);
+	CHECK_FALSE( ib.check_debounce(false) );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("IOBase: delay function","[iobase][delay][extensions]")
+{
+    CHECK( uniset_conf()!=nullptr );
 
     SECTION("On delay..")
     {
@@ -199,6 +208,11 @@ TEST_CASE("IOBase","[iobase][extensions]")
         msleep(40);
         CHECK_FALSE( ib.check_off_delay(false) );
     }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("IOBase: front function","[iobase][front][extensions]")
+{
+    CHECK( uniset_conf()!=nullptr );
 
     SECTION("Front '0-->1'")
     {
@@ -237,27 +251,29 @@ TEST_CASE("IOBase","[iobase][extensions]")
         CHECK( ib.check_front(true) );
         CHECK_FALSE( ib.check_front(false) );
     }
-
-    SECTION("'Channel break' function")
-    {
-        IOBase ib;
-        // просто проверка.. при отключнном breaklim.. (всегда FALSE)
-        CHECK_FALSE( ib.check_channel_break(100) );
-        CHECK_FALSE( ib.check_channel_break(-100) );
-        CHECK_FALSE( ib.check_channel_break(0) );
-
-        const int breakValue = 200;
-
-        ib.breaklim = breakValue;
-        CHECK( ib.check_channel_break(breakValue - 10) );
-        CHECK( ib.check_channel_break(-breakValue) );
-        CHECK( ib.check_channel_break(0) );
-
-        CHECK_FALSE( ib.check_channel_break(breakValue+1) );
-        CHECK_FALSE( ib.check_channel_break(breakValue) );
-    }
 }
+// -----------------------------------------------------------------------------
+TEST_CASE("IOBase: channel break","[iobase][extensions]")
+{
+    CHECK( uniset_conf()!=nullptr );
 
+	IOBase ib;
+	// просто проверка.. при отключнном breaklim.. (всегда FALSE)
+	CHECK_FALSE( ib.check_channel_break(100) );
+	CHECK_FALSE( ib.check_channel_break(-100) );
+	CHECK_FALSE( ib.check_channel_break(0) );
+
+	const int breakValue = 200;
+
+	ib.breaklim = breakValue;
+	CHECK( ib.check_channel_break(breakValue - 10) );
+	CHECK( ib.check_channel_break(-breakValue) );
+	CHECK( ib.check_channel_break(0) );
+
+	CHECK_FALSE( ib.check_channel_break(breakValue+1) );
+	CHECK_FALSE( ib.check_channel_break(breakValue) );
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("IOBase with SM","[iobase][extensions]")
 {
 	WARN("IOBase with SM not yet!");
@@ -266,3 +282,4 @@ TEST_CASE("IOBase with SM","[iobase][extensions]")
 	// ioinvert
 	// precision
 }
+// -----------------------------------------------------------------------------
