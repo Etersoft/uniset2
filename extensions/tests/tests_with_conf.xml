@@ -31,8 +31,10 @@
 
 	<testnode name="testnode" id2="-100"/>
 	
-	<iobasetest id="1" name="TestInput1_S" textname="IOBase test 1" iotype="AI" default="-10" rmin="-100" rmax="100" cmin="0" cmax="50" precision="3" />
+	<iobasetest id="1" name="TestInput1_S" textname="IOBase test 1" iotype="AI" default="-10" rmin="-100" rmax="100" cmin="0" cmax="50" precision="3"/>
 	<iobasetest2 id="1" name="TestInput2_S" textname="IOBase test 2" iotype="AI" default="10" rmin="-100" rmax="100" cmin="0" cmax="50" precision="3" />
+	<iobasetest3 id="10" name="TestInput3_S" textname="IOBase test 3" iotype="AI" myprefix_default="5" myprefix_rmin="-10" myprefix_rmax="10" myprefix_cmin="-4" myprefix_cmax="30" myprefix_precision="5" 
+		 myprefix_caldiagram="testcal" myprefix_cal_nocrop="1"/>
 	
 	<Services>
 		<LocalTimeService name="TimeService" MaxCountTimers="100" AskLifeTimeSEC="10"/>

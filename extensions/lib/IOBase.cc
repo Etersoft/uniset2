@@ -143,7 +143,7 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
                 if( it->craw != val )
                 {
                     it->craw = val;
-                    val = it->cdiagram->getValue(val);
+                    val = it->cdiagram->getValue(val,it->calcrop);
                     it->cprev = val;
                 }
                 else
@@ -153,7 +153,7 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
             {
                 IOController_i::CalibrateInfo* cal( &(it->cal) );
                 if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
-                    val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
+                    val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,it->calcrop);
             }
     
             if( !it->noprecision && it->cal.precision > 0 )
@@ -210,7 +210,7 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
         {
             IOController_i::CalibrateInfo* cal( &(it->cal) );
             if( cal->maxRaw!=cal->minRaw ) // задана обычная калибровка
-                val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,true);
+                val = UniSetTypes::lcalibrate(val,cal->minRaw,cal->maxRaw,cal->minCal,cal->maxCal,it->calcrop);
         }
     }
 
@@ -273,7 +273,7 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
             if( it->cprev != it->value )
             {
                 it->cprev = it->value;
-                val = it->cdiagram->getRawValue(val);
+                val = it->cdiagram->getRawValue(val,it->calcrop);
                 it->craw = val;
             }
             else
@@ -286,7 +286,7 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
             {
                 // Калибруем в обратную сторону!!!
                 val = UniSetTypes::lcalibrate(it->value,
-                            cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, true );
+                            cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
             }
             else
                 val = it->value;
@@ -351,7 +351,7 @@ float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
             {
                 // Калибруем в обратную сторону!!!
                 fval = UniSetTypes::fcalibrate(fval,
-                            cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, true );
+                            cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
             }
 
             if( !it->noprecision && it->cal.precision > 0 )
@@ -428,7 +428,7 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, SMInterface* shm, const 
                         int def_filtersize, float def_filterT, float def_lsparam,
                         float def_iir_coeff_prev, float def_iir_coeff_new )
 {
-    // Переопределять ID и name - нельзя..s
+    // Переопределять ID и name - нельзя..
     string sname( it.getProp("name") );
 
     ObjectId sid = DefaultObjectId;
@@ -522,6 +522,7 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, SMInterface* shm, const 
         b->cal.minCal = initIntProp(it,"cmin",prefix,init_prefix_only);
         b->cal.maxCal = initIntProp(it,"cmax",prefix,init_prefix_only);
         b->cal.precision = initIntProp(it,"precision",prefix,init_prefix_only);
+        b->calcrop = initIntProp(it,"cal_nocrop",prefix,init_prefix_only) ? false : true;
 
         int f_size     = def_filtersize;
         float f_T     = def_filterT;

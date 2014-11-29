@@ -25,7 +25,8 @@ TEST_CASE("IOBase","[iobase][extensions]")
         CHECK( ib.cal.minCal == 0 );
         CHECK( ib.cal.maxCal == 0 );
 
-        CHECK( ib.cdiagram == 0 );
+        CHECK( ib.cdiagram == nullptr );
+        CHECK( ib.calcrop == true );
 
         CHECK( ib.breaklim == 0 );
         CHECK( ib.value == 0 );
@@ -72,11 +73,37 @@ TEST_CASE("IOBase","[iobase][extensions]")
         CHECK( ib.si.id == 1 );
         CHECK( ib.si.node == conf->getLocalNode() );
         CHECK( ib.defval == -10 );
+        CHECK( ib.calcrop == true );
         CHECK( ib.cal.precision == 3 );
         CHECK( ib.cal.minRaw == -100 );
         CHECK( ib.cal.maxRaw == 100 );
         CHECK( ib.cal.minCal == 0 );
         CHECK( ib.cal.maxCal == 50 );
+    }
+
+    SECTION("Init from xml (prefix)")
+    {
+        auto conf = uniset_conf();
+        xmlNode* cnode = conf->getNode("iobasetest3");
+        CHECK( cnode != NULL );
+        UniXML::iterator it(cnode);
+           UInterface ui;
+        ObjectId shmID = conf->getControllerID("SharedMemory");
+        CHECK( shmID != DefaultObjectId );
+
+        SMInterface shm(shmID,&ui,DefaultObjectId);
+        IOBase ib;
+        IOBase::initItem(&ib,it,&shm,"myprefix_",false);
+        CHECK( ib.si.id == 10 );
+        CHECK( ib.si.node == conf->getLocalNode() );
+        CHECK( ib.defval == 5 );
+        CHECK( ib.calcrop == false );
+        CHECK( ib.cal.precision == 5 );
+        CHECK( ib.cal.minRaw == -10 );
+        CHECK( ib.cal.maxRaw == 10 );
+        CHECK( ib.cal.minCal == -4 );
+        CHECK( ib.cal.maxCal == 30 );
+        CHECK( ib.cdiagram != nullptr );
     }
 
     SECTION("Debounce function")
@@ -218,7 +245,7 @@ TEST_CASE("IOBase","[iobase][extensions]")
         CHECK_FALSE( ib.check_channel_break(100) );
         CHECK_FALSE( ib.check_channel_break(-100) );
         CHECK_FALSE( ib.check_channel_break(0) );
-    
+
         const int breakValue = 200;
 
         ib.breaklim = breakValue;
@@ -229,4 +256,13 @@ TEST_CASE("IOBase","[iobase][extensions]")
         CHECK_FALSE( ib.check_channel_break(breakValue+1) );
         CHECK_FALSE( ib.check_channel_break(breakValue) );
     }
+}
+
+TEST_CASE("IOBase with SM","[iobase][extensions]")
+{
+	WARN("IOBase with SM not yet!");
+	// rawdata
+	// ignore
+	// ioinvert
+	// precision
 }
