@@ -36,19 +36,19 @@ ModbusAddr ModbusHelpers::autodetectSlave( ModbusRTUMaster* m,
         {
             if( fn == fnReadInputRegisters )
             {
-                ReadInputRetMessage ret = m->read04(a,reg,1);
+                m->read04(a,reg,1);
             }
             else if( fn == fnReadInputStatus )
             {
-                ReadInputStatusRetMessage ret = m->read02(a,reg,1);
+                m->read02(a,reg,1);
             }
             else if( fn == fnReadCoilStatus )
             {
-                ReadCoilRetMessage ret = m->read01(a,reg,1);
+                m->read01(a,reg,1);
             }
             else if( fn == fnReadOutputRegisters )
             {
-                ReadOutputRetMessage ret = m->read03(a,reg,1);
+                m->read03(a,reg,1);
             }
             else 
                 throw mbException(erOperationFailed);
@@ -95,19 +95,19 @@ ComPort::Speed ModbusHelpers::autodetectSpeed( ModbusRTUMaster* m, ModbusAddr sl
 
             if( fn == fnReadInputRegisters )
             {
-                ReadInputRetMessage ret = m->read04(slave,reg,1);
+                m->read04(slave,reg,1);
             }
             else if( fn == fnReadInputStatus )
             {
-                ReadInputStatusRetMessage ret = m->read02(slave,reg,1);
+                m->read02(slave,reg,1);
             }
             else if( fn == fnReadCoilStatus )
             {
-                ReadCoilRetMessage ret = m->read01(slave,reg,1);
+                m->read01(slave,reg,1);
             }
             else if( fn == fnReadOutputRegisters )
             {
-                ReadOutputRetMessage ret = m->read03(slave,reg,1);
+                m->read03(slave,reg,1);
             }
             else 
                 throw mbException(erOperationFailed);

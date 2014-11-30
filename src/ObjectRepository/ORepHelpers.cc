@@ -40,7 +40,9 @@ namespace ORepHelpers
 // --------------------------------------------------------------------------
     /*!
      *    \param cname - полное имя контекста ссылку на который, возвратит функция. 
-     *    \param argc, argv  - параметры инициализации ORB      
+     *    \param argc  - argc
+     *    \param argc  - argv
+     *    \param nsName  - параметры инициализации ORB
     */
     CosNaming::NamingContext_ptr getContext(const string& cname, int argc, const char* const* argv, const string& nsName ) throw(ORepFailed)
     {

@@ -860,10 +860,10 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
         {
             ModbusRTU::ReadInputStatusRetMessage ret = mb->read02(dev->mbaddr,p->mbreg,p->q_count);
             int m=0;
-            for( unsigned int i=0; i<ret.bcnt; i++ )
+            for( auto i=0; i<ret.bcnt; i++ )
             {
                 ModbusRTU::DataBits b(ret.data[i]);
-                for( unsigned int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
+                for( auto k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
                     it->second->mbval = b[k];
             }
             it--;
@@ -874,10 +874,10 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
         {
             ModbusRTU::ReadCoilRetMessage ret = mb->read01(dev->mbaddr,p->mbreg,p->q_count);
             int m = 0;
-            for( unsigned int i=0; i<ret.bcnt; i++ )
+            for( auto i=0; i<ret.bcnt; i++ )
             {
                 ModbusRTU::DataBits b(ret.data[i]);
-                for( unsigned int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
+                for( auto k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
                     it->second->mbval = b[k] ? 1 : 0;
             }
             it--;
@@ -925,7 +925,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
             }
 
             ModbusRTU::WriteOutputMessage msg(dev->mbaddr,p->mbreg);
-            for( unsigned int i=0; i<p->q_count; i++,it++ )
+            for( auto i=0; i<p->q_count; i++,it++ )
                 msg.addData(it->second->mbval);
 
             it--;
@@ -962,7 +962,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
             }
 
             ModbusRTU::ForceCoilsMessage msg(dev->mbaddr,p->mbreg);
-            for( unsigned int i=0; i<p->q_count; i++,it++ )
+            for( auto i=0; i<p->q_count; i++,it++ )
                 msg.addBit( (it->second->mbval ? true : false) );
 
             it--;
@@ -2190,7 +2190,7 @@ bool MBExchange::initItem( UniXML::iterator& it )
     {
         ri->q_count = p1->rnum;
         ri->q_num = 1;
-        for( unsigned int i=1; i<p1->rnum; i++ )
+        for( auto i=1; i<p1->rnum; i++ )
         {
             RegID id1 = genRegID(mbreg+i,ri->mbfunc);
             RegInfo* r = addReg(dev->regmap,id1,mbreg+i,it,dev);

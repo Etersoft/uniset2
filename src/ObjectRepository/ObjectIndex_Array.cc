@@ -88,7 +88,7 @@ std::ostream& operator<<(std::ostream& os, ObjectIndex_Array& oi )
 std::ostream& ObjectIndex_Array::printMap( std::ostream& os )
 {
     auto oind = uniset_conf()->oind;
-    for( unsigned int i=0;;i++)
+    for( auto i=0;;i++)
     {
         if( !objectInfo[i].repName )
             break;

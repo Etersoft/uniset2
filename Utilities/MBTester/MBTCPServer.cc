@@ -161,7 +161,7 @@ ModbusRTU::mbErrCode MBTCPServer::readInputStatus( ReadInputStatusMessage& query
         while( i<query.count )
         {
             reply.addData(0);
-            for( unsigned int nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
+            for( auto nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
                 reply.setBit(bnum,nbit,d.b[nbit]);
             bnum++;
         }
@@ -172,7 +172,7 @@ ModbusRTU::mbErrCode MBTCPServer::readInputStatus( ReadInputStatusMessage& query
         if( (query.count % ModbusRTU::BitsPerByte) > 0 )
             bcnt++;
 
-        for( unsigned int i=0; i<bcnt; i++ )
+        for( auto i=0; i<bcnt; i++ )
             reply.addData(replyVal);
     }
 
