@@ -68,7 +68,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 			if( !receiveMessage(msg) )
 				break;
 			processingMessage(&amp;msg);
-			updateOutputs(false);
+			updateOutputs(forceOut);
 //			updatePreviousValues();
 		}
 
@@ -83,7 +83,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		}
 
 		// обновление выходов
-		updateOutputs(false);
+		updateOutputs(forceOut);
 		updatePreviousValues();
 	}
 	catch( Exception&amp; ex )

@@ -245,6 +245,7 @@
 		int askPause; /*!&lt; пауза между неудачными попытками заказать датчики */
 		
 		IOController_i::SensorInfo si;
+		bool forceOut; /*!&lt; флаг принудительного обноления "выходов" */
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PRIVATE">
@@ -529,6 +530,7 @@ confnode(0),
 smReadyTimeout(0),
 activated(false),
 askPause(2000),
+forceOut(false),
 <xsl:for-each select="//variables/item">
 <xsl:if test="normalize-space(@private)!=''">
 <xsl:call-template name="default-init-variables"/>
@@ -593,6 +595,7 @@ confnode(cnode),
 smReadyTimeout(0),
 activated(false),
 askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000)),
+forceOut(false),
 <xsl:for-each select="//variables/item">
 <xsl:if test="normalize-space(@private)!=''">
 <xsl:call-template name="init-variables"/>
@@ -610,6 +613,9 @@ end_private(false)
 		err &lt;&lt; "(<xsl:value-of select="$CLASSNAME"/>::init): Unknown ObjectID!";
 		throw SystemError( err.str() );
 	}
+
+
+
 
 <xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
@@ -646,7 +652,10 @@ end_private(false)
 </xsl:for-each>
 
 	UniXML::iterator it(cnode);
-	string heart = conf->getArgParam("--heartbeat-id",it.getProp("heartbeat_id"));
+
+	forceOut = conf->getArgPInt("--" + argprefix + "force-out",it.getProp("forceOut"),false);
+
+	string heart = conf->getArgParam("--" + argprefix + "heartbeat-id",it.getProp("heartbeat_id"));
 	if( !heart.empty() )
 	{
 		idHeartBeat = conf->getSensorID(heart);
@@ -657,13 +666,13 @@ end_private(false)
 			throw SystemError(err.str());
 		}
 
-		int heartbeatTime = conf->getArgPInt("--heartbeat-time",it.getProp("heartbeatTime"),conf-&gt;getHeartBeatTime());
+		int heartbeatTime = conf->getArgPInt("--" + argprefix + "heartbeat-time",it.getProp("heartbeatTime"),conf-&gt;getHeartBeatTime());
 		if( heartbeatTime>0 )
 			ptHeartBeat.setTiming(heartbeatTime);
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = conf->getArgPInt("--heartbeat-max",it.getProp("heartbeat_max"), 10);
+		maxHeartBeat = conf->getArgPInt("--" + argprefix + "heartbeat-max",it.getProp("heartbeat_max"), 10);
 	}
 
 	// Инициализация значений
@@ -685,12 +694,12 @@ end_private(false)
 	</xsl:if>
 	</xsl:for-each>
 	
-	sleep_msec = conf->getArgPInt("--sleep-msec","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
+	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
 
 	resetMsgTime = conf->getPIntProp(cnode,"resetMsgTime", 2000);
 	ptResetMsg.setTiming(resetMsgTime);
 
-	smReadyTimeout = conf->getArgInt("--sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
+	smReadyTimeout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
 	if( smReadyTimeout == 0 )
 		smReadyTimeout = 60000;
 	else if( smReadyTimeout &lt; 0 )
@@ -704,9 +713,9 @@ end_private(false)
 	</xsl:if>
 	</xsl:for-each>
 
-	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
+	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 20000);
 
-	int msec = conf->getArgPInt("--startup-timeout", 10000);
+	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 10000);
 	ptStartUpTimeout.setTiming(msec);
 
 	// ===================== &lt;variables&gt; =====================
@@ -880,7 +889,8 @@ idHeartBeat(DefaultObjectId),
 maxHeartBeat(10),
 confnode(0),
 activated(false),
-askPause(2000)
+askPause(2000),
+forceOut(false)
 {
 	ucrit &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
 	throw Exception( string(myname+": init failed!!!") );
@@ -927,6 +937,7 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 
 	si.node = conf->getLocalNode();
 
+
 <xsl:for-each select="//sensors/item">
 	<xsl:call-template name="setmsg">
 		<xsl:with-param name="GENTYPE" select="'CHECK'"/>
@@ -934,7 +945,10 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 </xsl:for-each>
 
 	UniXML::iterator it(cnode);
-	string heart = conf->getArgParam("--heartbeat-id",it.getProp("heartbeat_id"));
+
+    forceOut = conf->getArgPInt("--" + argprefix + "force-out",it.getProp("forceOut"),false);
+
+	string heart = conf->getArgParam("--" + argprefix + "heartbeat-id",it.getProp("heartbeat_id"));
 	if( !heart.empty() )
 	{
 		idHeartBeat = conf->getSensorID(heart);
@@ -945,23 +959,23 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 			throw SystemError(err.str());
 		}
 
-		int heartbeatTime = conf->getArgPInt("--heartbeat-time",it.getProp("heartbeatTime"),conf-&gt;getHeartBeatTime());
+		int heartbeatTime = conf->getArgPInt("--" + argprefix + "heartbeat-time",it.getProp("heartbeatTime"),conf-&gt;getHeartBeatTime());
 
 		if( heartbeatTime>0 )
 			ptHeartBeat.setTiming(heartbeatTime);
 		else
 			ptHeartBeat.setTiming(UniSetTimer::WaitUpTime);
 
-		maxHeartBeat = conf->getArgPInt("--heartbeat-max",it.getProp("heartbeat_max"), 10);
+		maxHeartBeat = conf->getArgPInt("--" + argprefix + "heartbeat-max",it.getProp("heartbeat_max"), 10);
 	}
 
 
-	sleep_msec = conf->getArgPInt("--sleep-msec","<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
+	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
 
 	resetMsgTime = conf->getPIntProp(cnode,"resetMsgTime", 2000);
 	ptResetMsg.setTiming(resetMsgTime);
 
-	smReadyTimeout = conf->getArgInt("--sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
+	smReadyTimeout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
 	if( smReadyTimeout == 0 )
 		smReadyTimeout = 60000;
 	else if( smReadyTimeout &lt; 0 )
@@ -969,9 +983,9 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 
 	smTestID = conf->getSensorID(init3_str(conf->getArgParam("--" + argprefix + "sm-test-id"),conf->getProp(cnode,"smTestID"),""));
 
-	activateTimeout	= conf->getArgPInt("--activate-timeout", 20000);
+	activateTimeout	= conf->getArgPInt("--" + argprefix + "activate-timeout", 20000);
 
-	int msec = conf->getArgPInt("--startup-timeout", 10000);
+	int msec = conf->getArgPInt("--" + argprefix + "startup-timeout", 10000);
 	ptStartUpTimeout.setTiming(msec);
 }
 
