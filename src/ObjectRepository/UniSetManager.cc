@@ -489,7 +489,7 @@ int UniSetManager::objectsCount()
 int UniSetManager::getObjectsInfo( UniSetManager* mngr, SimpleInfoSeq* seq, 
                                     int begin, const long uplimit )
 {
-    unsigned int ind = begin;
+    auto ind = begin;
 
     // получаем у самого менджера
     SimpleInfo_var msi=mngr->getInfo();

@@ -6,10 +6,10 @@ using namespace std;
 // --------------------------------------------------------------------------
 #if 0
 UModbus::UModbus( UTypes::Params* p )throw(UException):
-mb(0),
-ip(""),
-port(512),
-tout_msec(5000)
+  mb(0),
+  port(512),
+  ip(""),
+  tout_msec(5000)
 {
     try
     {
