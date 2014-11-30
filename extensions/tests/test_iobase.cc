@@ -258,7 +258,7 @@ TEST_CASE("IOBase: channel break","[iobase][extensions]")
     CHECK( uniset_conf()!=nullptr );
 
 	IOBase ib;
-	// просто проверка.. при отключнном breaklim.. (всегда FALSE)
+	// просто проверка.. при отключённом breaklim.. (всегда FALSE)
 	CHECK_FALSE( ib.check_channel_break(100) );
 	CHECK_FALSE( ib.check_channel_break(-100) );
 	CHECK_FALSE( ib.check_channel_break(0) );

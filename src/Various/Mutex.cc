@@ -156,17 +156,17 @@ void uniset_rwmutex::unlock()
     MUTEX_DEBUG(cerr << nm << " Unlocked.." << endl;)
 }
 
-bool uniset_rwmutex::tryrlock()
+bool uniset_rwmutex::try_rlock()
 {
     return m.tryReadLock();
 }
 
-bool uniset_rwmutex::trywrlock()
+bool uniset_rwmutex::try_wrlock()
 {
     return m.tryWriteLock();
 }
 
-bool uniset_rwmutex::trylock()
+bool uniset_rwmutex::try_lock()
 {
     return m.tryWriteLock();
 }

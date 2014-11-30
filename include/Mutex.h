@@ -95,9 +95,9 @@ namespace UniSetTypes
             void wrlock();
             void rlock();
 
-            bool trylock();
-            bool tryrlock();
-            bool trywrlock();
+            bool try_lock();
+            bool try_rlock();
+            bool try_wrlock();
 
             uniset_rwmutex( const uniset_rwmutex& r ) = delete;
             uniset_rwmutex& operator=(const uniset_rwmutex& r)=delete;

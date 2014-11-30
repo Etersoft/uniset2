@@ -8,7 +8,7 @@ using namespace std;
 #include "UniXML.h"
 #include "UniSetTypes.h"
 
-TEST_CASE("UniXML", "[UniXML]" )
+TEST_CASE("UniXML", "[unixml][basic]" )
 {
     SECTION( "Default constructor" ) 
     {
