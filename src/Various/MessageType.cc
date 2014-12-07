@@ -137,6 +137,7 @@ SensorMessage::SensorMessage(const VoidMessage *msg):
 SystemMessage::SystemMessage():
     command(SystemMessage::Unknown)
 {
+	memset(data,0,sizeof(data));
     type = Message::SysCommand;
 }
 

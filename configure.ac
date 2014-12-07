@@ -199,6 +199,8 @@ UNISET_EXT_LIBS="\$(top_builddir)/extensions/lib/libUniSet2Extensions.la"
 AC_SUBST(UNISET_EXT_LIBS)
 
 
+COV_LIBS=
+COV_CFLAGS=
 AC_MSG_CHECKING([tests support])
 buildtests=true
 AC_ARG_ENABLE(tests, AC_HELP_STRING([--disable-tests], [disable tests build]),
@@ -219,6 +221,27 @@ if test ${buildtests} = true; then
 
 	TESTSUITE_DIR="\$(top_builddir)/testsuite"
 	AC_SUBST(TESTSUITE_DIR)
+
+	#check gcov
+	AC_MSG_CHECKING([test coverage])
+	buildgcov=true
+	AC_ARG_ENABLE(coverage, AC_HELP_STRING([--disable-coverage], [disable gcov support]),
+	[ if test $enableval = yes; then buildgcov=true; else buildgcov=false; fi],[ buildgcov=true; ])
+    if test ${buildgcov} = true; then
+    	AC_MSG_RESULT([yes])
+		COV_LIBS="-lgcov"
+		COV_CFLAGS="-fprofile-arcs -ftest-coverage -g -ggdb"
+		AC_PATH_PROG([LCOV], [lcov])
+		test "x$LCOV" = "x" && AC_MSG_ERROR([*** lcov not found (install lcov or use --disable-coverage)])
+		AC_SUBST(LCOV)
+		AC_PATH_PROG([LCOV_GENHTML], [genhtml])
+		test "x$LCOV_GENHTML" = "x" && AC_MSG_ERROR([*** genhtml not found (install lcov or use --disable-coverage)])
+		AC_SUBST(LCOV_GENHTML)
+	else
+    	AC_MSG_RESULT([no])
+	fi
+
+	AM_CONDITIONAL(HAVE_COVERAGE, test ${buildgcov} = true)
 else
     AC_MSG_RESULT([no])
 fi
@@ -226,8 +249,10 @@ fi
 AM_CONDITIONAL(HAVE_TESTS, test ${buildtests} = true)
 
 # export
-LDFLAGS="${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS}"
-CXXFLAGS="-pedantic -Wall -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} -I\$(top_builddir)/include"
+LDFLAGS="${OMNI_LIBS} ${XML_LIBS} ${SIGC_LIBS} ${COV_LIBS}"
+CXXFLAGS="-pedantic -Wall -funsigned-char -std=c++11 -g -D_GNU_SOURCE ${OMNI_CFLAGS} ${XML_CFLAGS} ${SIGC_CFLAGS} ${COV_CFLAGS} -I\$(top_builddir)/include"
+
+
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXXFLAGS)
 
