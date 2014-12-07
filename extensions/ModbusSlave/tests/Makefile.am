@@ -24,5 +24,10 @@ check-local: atconfig package.m4 $(TESTSUITE) mbslave-tests.at
     
 clean-local:
 	rm -rf $(CLEANFILES)
+	rm -rf $(COVERAGE_REPORT_DIR)
+
+if HAVE_COVERAGE
+include $(top_builddir)/testsuite/testsuite-coverage-common.mk
+endif
 
 endif
