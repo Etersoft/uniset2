@@ -26,7 +26,7 @@ check-local: atconfig package.m4 $(TESTSUITE)
 clean-local:
 	test ! -f '$(TESTSUITE)'|| $(SHELL) '$(TESTSUITE)' --clean
 	rm -rf $(CLEANFILES)
-	rm -rf $(COVERAGE_REPORT_DIR)
+	rm -rf $(COVERAGE_REPORT_DIR)  .coverage* *.gcno
 
 if HAVE_COVERAGE
 include $(top_builddir)/testsuite/testsuite-coverage-common.mk
