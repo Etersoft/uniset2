@@ -2806,7 +2806,6 @@ float ModbusRTU::dat2f( const ModbusData dat1, const ModbusData dat2 )
 {
     ModbusData d[2]={dat1,dat2};
     float f=0;
-    
     assert(sizeof(f)>=sizeof(d));
     memcpy(&f,d,sizeof(d));
     return f;

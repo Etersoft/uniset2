@@ -1,6 +1,8 @@
 COVERAGE_REPORT_DIR=$(abs_srcdir)/coverage-report
 
 cov: all
+	make clean
+	make
 	$(LCOV) --directory $(abs_srcdir) --zerocounters
 	$(LCOV) -c -i -d $(abs_srcdir) -o $(abs_srcdir)/.coverage.base
 	make check
