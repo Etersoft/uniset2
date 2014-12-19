@@ -8,8 +8,7 @@
 
 Name: libuniset
 Version: 1.8
-Release: alt2
-
+Release: alt2.1
 Summary: UniSet - library for building distributed industrial control systems
 
 License: GPL
@@ -335,7 +334,19 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 #%_pkgconfigdir/libUniSet*.pc
 %exclude %_pkgconfigdir/libUniSet.pc
 
+
+
+
+
 %changelog
+* Wed Nov 26 2014 Pavel Vainerman <pv@altlinux.ru> 1.8-alt2.1
+- update for alt/sisyphus..
+- fixed changelog (save for history):
+  - Thu Dec 06 2012 Eugeny A. Rostovtsev (REAL) <real at altlinux.org> 1.4-alt1.2
+    - Fixed build with glibc 2.16
+  - Fri Sep 14 2012 Eugeny A. Rostovtsev (REAL) <real at altlinux.org> 1.4-alt1.1
+    - Rebuilt with updated libomniORB
+
 * Thu Nov 13 2014 Pavel Vainerman <pv@altlinux.ru> 1.8-alt2
 - fixed bug: Now ObjectID=0 does not cause an error
 
@@ -525,6 +536,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 * Fri Jun 08 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt2
 - added support type 'double' for uniset-codegen (<variables>)
+
 
 * Thu May 31 2012 Pavel Vainerman <pv@altlinux.ru> 1.4-alt1
 - rename unet2 -->unetudp

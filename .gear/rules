@@ -1,2 +1,3 @@
 tar: . name=libuniset-@version@
 spec: conf/libuniset.spec
+# copy: conf/*.patch
