@@ -1,6 +1,7 @@
 %def_enable docs
 %def_enable mysql
 %def_enable sqlite
+%def_enable postgresql
 %def_enable python
 %def_enable rrd
 %def_enable io
@@ -12,7 +13,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt30
+Release: alt24.1
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -40,6 +41,10 @@ BuildRequires: libMySQL-devel
 
 %if_enabled sqlite
 BuildRequires: libsqlite3-devel
+%endif
+
+%if_enabled postgresql
+BuildRequires: postgresql9.3-devel libpq5.6-devel
 %endif
 
 %if_enabled rrd
@@ -175,6 +180,24 @@ Requires: %name-extension-common = %version-%release
 Libraries needed to develop for uniset SQLite
 %endif
 
+%if_enabled postgresql
+%package extension-postgresql
+Group: Development/Databases
+Summary: PostgreSQL-dbserver implementatioin for UniSet
+Requires: %name-extension-common = %version-%release
+
+%description extension-postgresql
+PostgreSQL dbserver for %name
+
+%package extension-postgresql-devel
+Group: Development/Databases
+Summary: Libraries needed to develop for uniset PostgreSQL
+Requires: %name-extension-common-devel = %version-%release
+
+%description extension-postgresql-devel
+Libraries needed to develop for uniset PostgreSQL
+%endif
+
 %if_enabled rrd
 %package extension-rrd
 Group: Development/C++
@@ -241,7 +264,7 @@ SharedMemoryPlus extension ('all in one') for libuniset
 
 %build
 %autoreconf
-%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests}
+%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable postgresql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests}
 %make
 
 %install
@@ -292,6 +315,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %if_enabled sqlite
 %_includedir/%oname/sqlite/
 %endif
+%if_enabled postgresql
+%_includedir/%oname/postgresql/
+%endif
 
 %_libdir/libUniSet2.so
 %_datadir/idl/%oname/
@@ -313,6 +339,15 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %files extension-sqlite-devel
 %_pkgconfigdir/libUniSet2SQLite.pc
+%endif
+
+%if_enabled postgresql
+%files extension-postgresql
+%_bindir/%oname-postgresql-*dbserver
+%_libdir/*-postgresql.so*
+
+%files extension-postgresql-devel
+%_pkgconfigdir/libUniSet2PostgreSQL.pc
 %endif
 
 %if_enabled python
@@ -409,38 +444,6 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
-* Fri May 08 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt30
-- ModbusSlave: added support nbit='' for 0x06 and 0x10 function (setbug #7337)
-
-* Tue May 05 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt29
-- SM: add reserv mechanism for initializing (setbug #7289)
-- SM: fixed bug in 'heartbeat'
-- SM: add tests
-- minor fixes
-- refactoring
-- add new tests
-
-* Thu Apr 23 2015 Pavel Vainerman <pv@etersoft.ru> 2.0-alt28.2
-- unet-udp: special build... change maximum for digital and analog data. Set A=1500, D=5000.
-
-* Thu Apr 23 2015 Pavel Vainerman <pv@etersoft.ru> 2.0-alt28.1
-- unet-udp: special build... change maximum for digital and analog data. Set A=800, D=5000.
-
-* Mon Apr 20 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt28
-- optimization: use std::unordered_map instead of std::map
-
-* Thu Apr 16 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt27
-- (UniXML): refactoring UniXML::iterator::find..
-
-* Thu Apr 09 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt26
-- (ModbusSlave): added support nbit
-- (ModbusSlave): added support 0x01 (readCoilStatus) function
-- (ModbusSlave): minor fixes
-
-* Tue Apr 07 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt25
-- fixed bug in 'MBSlave' (thank`s Alexandr Hanadeev)
-- add --xxx-set-prop-prefix for MBSlave 
-
 * Thu Apr 02 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt24
 - codegen: modify interface for messages (setMsg())
 - remove alarm() function (deprecated)
@@ -497,6 +500,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - refactoring "exit process"
 - fixed bug in specfile: --enable-doc --> --enable-docs
 - transition to use shared_ptr wherever possible
+
+* Sat Dec 20 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt10.1
+- added PostgreSQL support
 
 * Mon Nov 24 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt10
 - use shared_ptr 
