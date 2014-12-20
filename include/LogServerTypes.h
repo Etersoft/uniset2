@@ -10,12 +10,12 @@ namespace LogServerTypes
     const unsigned int MAGICNUM = 0x20140904;
     enum Command
     {
-        cmdNOP,            /*!< отсутствие команды */
+        cmdNOP,         /*!< отсутствие команды */
         cmdSetLevel,    /*!< установить уровень вывода */
         cmdAddLevel,    /*!< добавить уровень вывода */
         cmdDelLevel,    /*!< удалить уровень вывода */
-        cmdRotate,        /*!< пересоздать файл с логами */
-        cmdOffLogFile,    /*!< отключить запись файла логов (если включена) */
+        cmdRotate,      /*!< пересоздать файл с логами */
+        cmdOffLogFile,  /*!< отключить запись файла логов (если включена) */
         cmdOnLogFile    /*!< включить запись файла логов (если была отключена) */
         // cmdSetLogFile
     };
