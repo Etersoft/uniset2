@@ -18,7 +18,7 @@ TEST_CASE("HourGlass", "[HourGlass]" )
         REQUIRE( hg.interval() == 0 );
         REQUIRE( hg.amount() == 0 );
         REQUIRE( hg.remain() == 0 );
-        CHECK_FALSE( hg.state() );
+        CHECK_FALSE( hg.enabled() );
         CHECK_FALSE( hg.check() );
     }
 
@@ -26,7 +26,7 @@ TEST_CASE("HourGlass", "[HourGlass]" )
     {
         HourGlass hg;
         hg.run(100);
-        CHECK( hg.state() ); // часы начали тикать.. (в нормальном положении)
+        CHECK( hg.enabled() ); // часы начали тикать.. (в нормальном положении)
         REQUIRE( hg.duration() == 100 );
         CHECK_FALSE( hg.check() );
         msleep(110);
@@ -36,7 +36,7 @@ TEST_CASE("HourGlass", "[HourGlass]" )
         // "песок высыпается назад" в течении 50 мсек, 
         // потом опять ставим "на ноги", ждём 60 мсек.. должно сработать
         hg.rotate(false);
-        CHECK_FALSE( hg.state() );
+        CHECK_FALSE( hg.enabled() );
         CHECK_FALSE( hg.check() );
         msleep(50);
         CHECK_FALSE( hg.check() );

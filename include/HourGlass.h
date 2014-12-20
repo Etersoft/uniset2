@@ -143,7 +143,7 @@ class HourGlass
             return t.checkTime();
         }
 
-        inline bool state(){ return _state; }
+        inline bool enabled(){ return _state; }
 
         // текущее "насыпавшееся" количество "песка"
         inline timeout_t amount()
