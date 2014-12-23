@@ -395,7 +395,8 @@ class SharedMemory:
             tmHeartBeatCheck,
             tmEvent,
             tmHistory,
-            tmPulsar
+            tmPulsar,
+            tmLastOfTimerID
         };
 
         int heartbeatCheckTime;
