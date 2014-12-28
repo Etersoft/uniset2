@@ -271,6 +271,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_bindir/%oname-stop*
 %_bindir/%oname-func*
 %_bindir/%oname-codegen
+%_bindir/%oname-log2val
 %dir %_datadir/%oname/
 %dir %_datadir/%oname/xslt/
 %_datadir/%oname/xslt/*.xsl

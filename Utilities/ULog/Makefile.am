@@ -1,4 +1,4 @@
-bin_PROGRAMS = @PACKAGE@-log  @PACKAGE@-logserver-wrap
+bin_PROGRAMS = @PACKAGE@-log  @PACKAGE@-logserver-wrap @PACKAGE@-log2val
 noinst_PROGRAMS = @PACKAGE@-test-logserver @PACKAGE@-log-stdin
 
 @PACKAGE@_test_logserver_SOURCES = logserver.cc
@@ -16,3 +16,7 @@ noinst_PROGRAMS = @PACKAGE@-test-logserver @PACKAGE@-log-stdin
 @PACKAGE@_logserver_wrap_SOURCES = log-wrap.cc
 @PACKAGE@_logserver_wrap_LDADD = $(top_builddir)/lib/libUniSet2.la $(COMCPP_LIBS)
 @PACKAGE@_logserver_wrap_CPPFLAGS = $(COMCPP_CFLAGS)
+
+@PACKAGE@_log2val_SOURCES = log2val.cc
+@PACKAGE@_log2val_LDADD = $(top_builddir)/lib/libUniSet2.la
+
