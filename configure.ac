@@ -203,6 +203,7 @@ COV_LIBS=
 COV_CFLAGS=
 AC_MSG_CHECKING([tests support])
 buildtests=true
+buildgcov=true
 AC_ARG_ENABLE(tests, AC_HELP_STRING([--disable-tests], [disable tests build]),
 [ if test $enableval = yes; then buildtests=true; else buildtests=false; fi],[ buildtests=true; ])
 
@@ -224,7 +225,6 @@ if test ${buildtests} = true; then
 
 	#check gcov
 	AC_MSG_CHECKING([test coverage])
-	buildgcov=true
 	AC_ARG_ENABLE(coverage, AC_HELP_STRING([--disable-coverage], [disable gcov support]),
 	[ if test $enableval = yes; then buildgcov=true; else buildgcov=false; fi],[ buildgcov=true; ])
     if test ${buildgcov} = true; then
@@ -241,11 +241,11 @@ if test ${buildtests} = true; then
     	AC_MSG_RESULT([no])
 	fi
 
-	AM_CONDITIONAL(HAVE_COVERAGE, test ${buildgcov} = true)
 else
     AC_MSG_RESULT([no])
 fi
 
+AM_CONDITIONAL(HAVE_COVERAGE, test ${buildgcov} = true)
 AM_CONDITIONAL(HAVE_TESTS, test ${buildtests} = true)
 
 # export
