@@ -231,8 +231,6 @@
 			<item id="51" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" ntit="1" mbtype="rtu" name="Input51_S" priority="Medium" rs="5" textname="Команда 2"/>
 			<item id="52" iotype="DI" mbaddr="0x01" mbfunc="0x06" mbreg="0x02" nbit="1" mbtype="rtu" name="Input52_S" priority="Medium" rs="5" textname="Команда 2"/>
 			<item id="53" iotype="DI" mbaddr="0x01" mbfunc="0x03" mbreg="0x01" nbit="2" mbtype="rtu" name="Input53_S" priority="Medium" rs="5" textname="Команда 2"/>
-			<item id="54" iotype="AI" name="AI54_S" textname="AI sensor 54" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
-			<item id="55" iotype="AI" name="AI55_S" textname="AI sensor 55" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
 			<item id="56" iotype="AI" name="AI56_S" textname="AI sensor 56" rrd="2" rrd2_ds="COUNTER:20:U:U"/>
 			<item id="57" iotype="AI" name="AI57_S" textname="AI sensor 57" rrd="2" rrd2_ds="DERIVE:20:U:U"/>
 			<item id="58" iotype="AO" name="Lamp58_C" textname="Lamp 58" rrd="1" rrd1_ds="GAUGE:20:U:U"/>
@@ -240,6 +238,23 @@
 			<item id="63" iotype="AI" name="SVU_AskCount_AS" textname="svu asl count"/>
 			<item id="64" iotype="AI" name="AI64_AS" textname="AI64" mbaddr="0x01" mbfunc="0x03" mbreg="64" mbtype="rtu" rs="5"/>
 			<item id="65" iotype="DI" name="D65_S" textname="D65" threshold_aid="AI64_AS" lowlimit="3" hilimit="5" threshold_invert="1" rs="5" />
+
+			<!-- Depend test -->
+			<item id="100" iotype="AI" name="DependTest_AI_AS" textname="Depend test: AI1"/>
+			<item id="101" iotype="AI" name="DependTest_AI2_AS" textname="Depend test: AI2" depend="DependTest_AI_AS" depend_value="10" depend_off_value="-10"/>
+			<item id="103" iotype="DI" name="DependTest_DI1_S" textname="Depend test: DI1" depend="DependTest_AI_AS" depend_value="1" depend_off_value="0"/>
+			<item id="104" iotype="DI" name="DependTest_DI2_S" textname="Depend test: DI2" depend="DependTest_AI_AS" depend_value="0" depend_off_value="1"/>
+			<item id="112" iotype="DI" name="DependTest_DI6_S" textname="Depend test: DI6" depend="DependTest_AI_AS"/>
+			<item id="105" iotype="AO" name="DependTest_AO1_AS" textname="Depend test: AO1" depend="DependTest_AI_AS" depend_value="10" depend_off_value="10000"/>
+			<item id="106" iotype="DO" name="DependTest_DO1_S" textname="Depend test: DO1" depend="DependTest_AI_AS" depend_value="-10" depend_off_value="2"/>
+
+			<item id="107" iotype="DI" name="DependTest_DI_S" textname="Depend test: DI"/>
+			<item id="108" iotype="DI" name="DependTest_DI3_S" textname="Depend test: DI3" depend="DependTest_DI_S" depend_value="1" depend_off_value="0"/>
+			<item id="109" iotype="DI" name="DependTest_DI4_S" textname="Depend test: DI4" depend="DependTest_DI_S" depend_value="0" depend_off_value="0"/>
+			<item id="110" iotype="DI" name="DependTest_DI5_S" textname="Depend test: DI5" depend="DependTest_DI_S"/>
+			<item id="111" iotype="DO" name="DependTest_DO2_S" textname="Depend test: DO2" depend="DependTest_DI_S" depend_value="1" depend_off_value="0"/>
+			<item id="113" iotype="AO" name="DependTest_AO2_AS" textname="Depend test: AO2" depend="DependTest_DI_S" depend_value="1" depend_off_value="10000" default="15"/>
+
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">

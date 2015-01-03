@@ -47,6 +47,12 @@ TEST_CASE("IOBase default constructor","[iobase][extensions]")
 	CHECK_FALSE( ib.ondelay_state );     /*!< значение для задержки включения */
 	CHECK_FALSE( ib.offdelay_state );    /*!< значение для задержки отключения */
 
+	// Зависимость (d - depend)
+	CHECK( ib.d_id == DefaultObjectId );  /*!< идентификатор датчика, от которого зависит данный */
+	REQUIRE( ib.d_value == 1 ) ; /*!< разрешающее работу значение датчика от которого зависит данный */
+	REQUIRE( ib.d_off_value == 0); /*!< блокирующее значение */
+	REQUIRE( ib.d_iotype == UniversalIO::UnknownIOType );
+	
 	// Порог
 	REQUIRE( ib.t_ai == DefaultObjectId );
 	CHECK_FALSE( ib.front ); // флаг работы по фронту
@@ -272,14 +278,5 @@ TEST_CASE("IOBase: channel break","[iobase][extensions]")
 
 	CHECK_FALSE( ib.check_channel_break(breakValue+1) );
 	CHECK_FALSE( ib.check_channel_break(breakValue) );
-}
-// -----------------------------------------------------------------------------
-TEST_CASE("IOBase with SM","[iobase][extensions]")
-{
-	WARN("IOBase with SM not yet!");
-	// rawdata
-	// ignore
-	// ioinvert
-	// precision
 }
 // -----------------------------------------------------------------------------

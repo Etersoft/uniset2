@@ -46,6 +46,10 @@ struct IOBase
 		debounce_state(false),
 		ondelay_state(false),
 		offdelay_state(false),
+		d_id(UniSetTypes::DefaultObjectId),
+		d_value(1),
+		d_off_value(0),
+		d_iotype(UniversalIO::UnknownIOType),
 		t_ai(UniSetTypes::DefaultObjectId),
 		front(false),
 		front_type(ftUnknown),
@@ -64,6 +68,7 @@ struct IOBase
 	bool check_on_delay( bool val );    /*!< реализация задержки на включение */
 	bool check_off_delay( bool val );   /*!< реализация задержки на отключение */
 	bool check_front( bool val );       /*!< реализация срабатывания по фронту сигнала */
+	bool check_depend( SMInterface* shm ); /*!< проверка разрешения(зависимости) от другого датчика */
 
 	IOController_i::SensorInfo si;
 	UniversalIO::IOType stype;           /*!< тип канала (DI,DO,AI,AO) */
@@ -101,6 +106,13 @@ struct IOBase
 	bool ondelay_state;     /*!< значение для задержки включения */
 	bool offdelay_state;    /*!< значение для задержки отключения */
 
+	// Зависимость (d - depend)
+	UniSetTypes::ObjectId d_id;  /*!< идентификатор датчика, от которого зависит данный */
+	IOController::IOStateList::iterator d_it; /*! итератор на датчик от которого зависит данный */
+	long d_value; /*!< разрешающее работу значение датчика от которого зависит данный */
+	long d_off_value; /*!< блокирующее значение */
+	UniversalIO::IOType d_iotype;
+			
 	// Порог
 	UniSetTypes::ObjectId t_ai; /*!< если данный датчик дискретный,
 										и является пороговым, то в данном поле

@@ -20,6 +20,30 @@ bool IOBase::check_channel_break( long val )
     return ( val < breaklim );
 }
 // -----------------------------------------------------------------------------
+bool IOBase::check_depend( SMInterface* shm )
+{
+	if( d_id == DefaultObjectId )
+		return true;
+
+	if( d_iotype == UniversalIO::DI || d_iotype == UniversalIO::DO  )
+	{
+		if( (bool)shm->localGetValue(d_it,d_id) == (bool)d_value )
+			return true;
+
+		return false;
+	}
+
+	if( d_iotype == UniversalIO::AI || d_iotype == UniversalIO::AO )
+	{
+		if( shm->localGetValue(d_it,d_id) == d_value )
+			return true;
+
+		return false;
+	}
+
+	return true;
+}
+// -----------------------------------------------------------------------------
 bool IOBase::check_debounce( bool val )
 {
     // нет защиты от дребезга
@@ -124,6 +148,10 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
     }
 
     // проверка зависимости
+	if( !it->check_depend(shm) )
+		val = it->d_off_value;
+	else
+	{
         if( !it->nofilter && it->df.size() > 1 )
         {
             if( it->f_median )
@@ -159,6 +187,8 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
             if( !it->noprecision && it->cal.precision > 0 )
                 val *= lround(pow10(it->cal.precision));
         }
+	} // end of 'check_depend'
+	
     // если предыдущее значение "обрыв",
     // то сбрасываем признак
     {
@@ -196,6 +226,9 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
     }
 
     // проверка зависимости
+    if( !it->check_depend(shm) )
+		val = it->d_off_value;
+	else
     {
         // Читаем с использованием фильтра...
         if( !it->nofilter )
@@ -232,7 +265,9 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
 void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force )
 {
     // проверка зависимости
-    if( it->invert )
+	if( !it->check_depend(shm) )
+		set = (bool)it->d_off_value;
+	else if( it->invert )
         set ^= true;
 
     // Проверяем именно в такой последовательности!
@@ -253,10 +288,14 @@ void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force 
 // -----------------------------------------------------------------------------
 long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 {
-    uniset_rwmutex_rlock lock(it->val_lock);
+	// проверка зависимости
+	if( !it->check_depend(shm) )
+		return it->d_off_value;
+	
+	uniset_rwmutex_rlock lock(it->val_lock);
     long val = it->value;
-
-    if( force )
+    
+	if( force )
     {
         val = shm->localGetValue(it->ioit,it->si.id);
         it->value = val;
@@ -301,7 +340,11 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
 // -----------------------------------------------------------------------------
 bool IOBase::processingAsDO( IOBase* it, SMInterface* shm, bool force )
 {
-    uniset_rwmutex_rlock lock(it->val_lock);
+	// проверка зависимости
+	if( !it->check_depend(shm) )
+		return (bool)it->d_off_value;
+
+	uniset_rwmutex_rlock lock(it->val_lock);
     bool set = it->value;
 
     if( force )
@@ -313,7 +356,11 @@ bool IOBase::processingAsDO( IOBase* it, SMInterface* shm, bool force )
 // -----------------------------------------------------------------------------
 float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
 {
-    uniset_rwmutex_rlock lock(it->val_lock);
+	// проверка зависимости
+	if( !it->check_depend(shm) )
+		return (float)it->d_off_value;
+
+	uniset_rwmutex_rlock lock(it->val_lock);
     long val = it->value;
 
     if( force )
@@ -428,12 +475,13 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, SMInterface* shm, const 
                         int def_filtersize, float def_filterT, float def_lsparam,
                         float def_iir_coeff_prev, float def_iir_coeff_new )
 {
+	auto conf = uniset_conf();
     // Переопределять ID и name - нельзя..
     string sname( it.getProp("name") );
 
     ObjectId sid = DefaultObjectId;
     if( it.getProp("id").empty() )
-        sid = uniset_conf()->getSensorID(sname);
+        sid = conf->getSensorID(sname);
     else
         sid = it.getPIntProp("id",DefaultObjectId);
 
@@ -448,7 +496,7 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, SMInterface* shm, const 
     b->val_lock.setName(sname + "_lock");
 
     b->si.id     = sid;
-    b->si.node   = uniset_conf()->getLocalNode();
+    b->si.node   = conf->getLocalNode();
 
     b->nofilter = initIntProp(it,"nofilter",prefix,init_prefix_only);
     b->ignore   = initIntProp(it,"ioignore",prefix,init_prefix_only);
@@ -502,6 +550,27 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, SMInterface* shm, const 
                 << initProp(it,"iotype",prefix,init_prefix_only) << " для " << sname << endl;
         return false;
     }
+
+	string d_txt( initProp(it,"depend",prefix,init_prefix_only) );
+	if( !d_txt.empty() )
+	{
+		b->d_id = conf->getSensorID(d_txt);
+		if( b->d_id == DefaultObjectId )
+		{
+			if( dlog && dlog->is_crit() )
+				dlog->crit() << myname << "(IOBase::readItem): sensor='" 
+					<< it.getProp("name") << "' err: "
+					<< " Unknown SensorID for depend='"  << d_txt
+					<< endl;
+			return false;
+		}
+
+		// по умолчанию срабатывание на "1"
+		b->d_value = initProp(it,"depend_value",prefix,init_prefix_only).empty() ? 1 : initIntProp(it,"depend_value",prefix,init_prefix_only);
+		b->d_off_value = initIntProp(it,"depend_off_value",prefix,init_prefix_only);
+		b->d_iotype = conf->getIOType(b->d_id);
+		shm->initIterator(b->d_it);
+	}
 
     b->cal.minRaw = 0;
     b->cal.maxRaw = 0;
@@ -586,7 +655,7 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, SMInterface* shm, const 
         string tai(initProp(it,"threshold_aid",prefix,init_prefix_only));
         if( !tai.empty() )
         {
-            b->t_ai = uniset_conf()->getSensorID(tai);
+            b->t_ai = conf->getSensorID(tai);
             if( b->t_ai == DefaultObjectId )
             {
                 if( dlog && dlog->is_crit() )

@@ -6,11 +6,41 @@
 #include "UniSetActivator.h"
 #include "PassiveTimer.h"
 #include "SharedMemory.h"
+#include "SMInterface.h"
 #include "Extensions.h"
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
+// --------------------------------------------------------------------------
+static SMInterface* smi = nullptr;
+static SharedMemory* shm = nullptr;
+static UInterface* ui = nullptr;
+static ObjectId myID = 6000;
+// --------------------------------------------------------------------------
+SharedMemory* shmInstance()
+{
+	if( shm == nullptr )
+		throw SystemError("SharedMemory don`t initialize..");
+
+	return shm;
+}
+// --------------------------------------------------------------------------
+SMInterface* smiInstance()
+{
+	if( smi == nullptr )
+	{
+		if( shm == nullptr )
+			throw SystemError("SharedMemory don`t initialize..");
+		
+		if( ui == nullptr )
+			ui = new UInterface();
+
+		smi = new SMInterface(shm->getId(), ui, myID, shm );		
+	}	
+
+	return smi;
+}
 // --------------------------------------------------------------------------
 int main(int argc, char* argv[] )
 {
@@ -38,7 +68,7 @@ int main(int argc, char* argv[] )
         ulog.logFile( logname );
         dlog.logFile( logname );
 */
-        SharedMemory* shm = SharedMemory::init_smemory(argc, argv);
+        shm = SharedMemory::init_smemory(argc, argv);
         if( !shm )
             return 1;
 
