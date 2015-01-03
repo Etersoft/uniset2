@@ -9,7 +9,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-TEST_CASE("IOBase default constructor","[iobase][extensions]")
+TEST_CASE("[IOBase]: default constructor","[iobase][extensions]")
 {
     CHECK( uniset_conf()!=nullptr );
 
@@ -61,7 +61,7 @@ TEST_CASE("IOBase default constructor","[iobase][extensions]")
 	CHECK_FALSE( ib.front_state );
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("IOBase Init from xml","[iobase][init][extensions]")
+TEST_CASE("[IOBase]: Init from xml","[iobase][init][extensions]")
 {
     CHECK( uniset_conf()!=nullptr );
 
@@ -115,7 +115,7 @@ TEST_CASE("IOBase Init from xml","[iobase][init][extensions]")
     }
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("IOBase: Debounce function","[iobase][debounce][extensions]")
+TEST_CASE("[IOBase]: Debounce function","[iobase][debounce][extensions]")
 {
     CHECK( uniset_conf()!=nullptr );
 
@@ -159,7 +159,7 @@ TEST_CASE("IOBase: Debounce function","[iobase][debounce][extensions]")
 	CHECK_FALSE( ib.check_debounce(false) );
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("IOBase: delay function","[iobase][delay][extensions]")
+TEST_CASE("[IOBase]: delay function","[iobase][delay][extensions]")
 {
     CHECK( uniset_conf()!=nullptr );
 
@@ -216,7 +216,7 @@ TEST_CASE("IOBase: delay function","[iobase][delay][extensions]")
     }
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("IOBase: front function","[iobase][front][extensions]")
+TEST_CASE("[IOBase]: front function","[iobase][front][extensions]")
 {
     CHECK( uniset_conf()!=nullptr );
 
@@ -259,7 +259,7 @@ TEST_CASE("IOBase: front function","[iobase][front][extensions]")
     }
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("IOBase: channel break","[iobase][extensions]")
+TEST_CASE("[IOBase]: channel break","[iobase][extensions]")
 {
     CHECK( uniset_conf()!=nullptr );
 

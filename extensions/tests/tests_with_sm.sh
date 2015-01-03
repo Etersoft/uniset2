@@ -10,4 +10,4 @@ cd ../../Utilities/Admin/
 
 cd -
 
-./uniset2-start.sh -f ./tests_with_sm $* -- --confile tests_with_sm.xml --e-startup-pause 10 --ulog-levels warn,crit --dlog-levels warn,crit 
+./uniset2-start.sh -f ./tests_with_sm $* -- --confile tests_with_sm.xml --e-startup-pause 10 --ulog-levels warn,crit --dlog-levels warn,crit

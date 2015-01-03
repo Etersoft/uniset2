@@ -31,7 +31,7 @@ static bool init_iobase( IOBase* ib, const std::string& sensor )
 	return IOBase::initItem(ib,it,shm, "", false);
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("IOBase: DI depend on the DI","[iobase][depend][di-di][extensions]")
+TEST_CASE("[IOBase::depend]: DI depend on the DI","[iobase][depend][di-di][extensions]")
 {
     CHECK( uniset_conf()!=nullptr );
 	auto conf = uniset_conf();
@@ -78,7 +78,7 @@ TEST_CASE("IOBase: DI depend on the DI","[iobase][depend][di-di][extensions]")
     }
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("IOBase: DI depend on the AI","[iobase][depend][di-ai][extensions]")
+TEST_CASE("[IOBase::depend]: DI depend on the AI","[iobase][depend][di-ai][extensions]")
 {
     CHECK( uniset_conf()!=nullptr );
 	auto conf = uniset_conf();
@@ -125,7 +125,7 @@ TEST_CASE("IOBase: DI depend on the AI","[iobase][depend][di-ai][extensions]")
     }
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("IOBase: AI depend on the AI","[iobase][depend][ai-ai][extensions]")
+TEST_CASE("[IOBase::depend]: AI depend on the AI","[iobase][depend][ai-ai][extensions]")
 {
     CHECK( uniset_conf()!=nullptr );
 	auto conf = uniset_conf();
@@ -159,7 +159,7 @@ TEST_CASE("IOBase: AI depend on the AI","[iobase][depend][ai-ai][extensions]")
     }
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("IOBase: AO depend on the DI","[iobase][depend][ao-di][extensions]")
+TEST_CASE("[IOBase::depend]: AO depend on the DI","[iobase][depend][ao-di][extensions]")
 {
     CHECK( uniset_conf()!=nullptr );
 	auto conf = uniset_conf();
