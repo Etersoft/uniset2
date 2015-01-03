@@ -120,8 +120,10 @@ UniSetManager::~UniSetManager()
     catch(...){}
 
 #if 0
+/*
 # НЕ МЫ СОЗДАВАЛИ.. НЕ НАМ И УНИЧТОЖАТЬ!
 # нужно перейти на shared_ptr<>..
+*/
     for( auto& i: olist )
     {
         try

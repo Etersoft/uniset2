@@ -84,7 +84,7 @@ class CallbackTimer
     public:
 
         /*! Максимальное количество таймеров */
-        static const int MAXCallbackTimer = 20;
+        static const unsigned int MAXCallbackTimer = 20;
 
         /*! прототип функции вызова */
         typedef void(Caller::* Action)( int id );

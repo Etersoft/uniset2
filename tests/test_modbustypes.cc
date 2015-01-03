@@ -71,7 +71,7 @@ TEST_CASE("Modbus  helpers", "[modbus][helpers]" )
 }
 
 #if 0
- Надо ещё подумать как тут протестировать
+/*! \TODO Надо ещё подумать как тут протестировать */
 TEST_CASE("dat2f", "[modbus]" )
 {
     using namespace ModbusRTU;

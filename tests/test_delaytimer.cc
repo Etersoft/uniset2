@@ -53,6 +53,18 @@ TEST_CASE("DelayTimer", "[DelayTimer]" )
         msleep(50); // в сумме уже 20+50=70 > 60, значит должно "отпустить"
         CHECK_FALSE( dt.check(false) );
         CHECK_FALSE( dt.get() );
+
+        dt.reset();
+        CHECK_FALSE( dt.check(true) );
+        msleep(50);
+        CHECK_FALSE( dt.check(true) );
+        dt.reset();
+        CHECK_FALSE( dt.check(true) );
+        msleep(60);
+        CHECK_FALSE( dt.check(true) );
+        msleep(60);
+        CHECK( dt.check(true) );
+        CHECK( dt.get() );
     }
 
     SECTION( "Debounce" )
@@ -105,5 +117,16 @@ TEST_CASE("DelayTimer", "[DelayTimer]" )
         msleep(220);
         CHECK( dt1.get() );
         CHECK_FALSE( dt2.get() );
+    }
+
+    SECTION( "Other" )
+    {
+        DelayTimer dt(100,50);
+        REQUIRE( dt.getOnDelay() == 100 );
+        REQUIRE( dt.getOffDelay() == 50 );
+
+        dt.set(150,200);
+        REQUIRE( dt.getOnDelay() == 150 );
+        REQUIRE( dt.getOffDelay() == 200 );
     }
 }

@@ -300,7 +300,7 @@ TEST_CASE("(0x06): write register outputs or memories","[modbus][mbslave][mbtcps
 #endif
 
 #if 0
-    \TODO  Переписать реализацию MBSlave... ввести понятие nbit.
+/*! \TODO  Переписать реализацию MBSlave... ввести понятие nbit. */
 TEST_CASE("(0x0F): force multiple coils","[modbus][mbslave][mbtcpslave]")
 {
     WARN("FIXME: 'force coil status'. Use 'nbit'?"):
