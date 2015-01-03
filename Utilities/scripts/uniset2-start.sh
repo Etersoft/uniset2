@@ -71,7 +71,7 @@ then
 		start_line="gdb --args $PROG $* --uniset-port $OMNIPORT"
 	fi
 
-	echo Running "$start_line"
+	uniset_msg "Running: '$start_line'"
     $start_line
 	exit $?
 fi
@@ -81,19 +81,19 @@ then
 		COMLINE=$*
 		if [ -z "$COMLINE" ]
 		then
-			echo "Не указана команда для запуска"
+			uinset_msg "Error: Не указана команда для запуска"
 			exit 1
 		fi
 
 		COMLINE="$COMLINE --uniset-port $OMNIPORT"
-		echo Запускаем "$COMLINE"
+		uniset_msg "Запускаем '$COMLINE'"
 		$COMLINE
 		exit $?
 fi
 
 if [ -z "$*" ]
 then
-	echo "Не указана команда для запуска"
+	uniset_msg "Error: Не указана команда для запуска"
 	exit 1
 fi
 
@@ -107,11 +107,11 @@ fi
 		PIDFILE="$RUNDIR/$(basename $NAMEPROG).pid"
 	fi
 
-	echo -n Запускаем $NAMEPROG в фоновом режиме...
-	echo ""
-    ulimit -S -c 0 >/dev/null 2>&1
+	uniset_msg -n "Запускаем $NAMEPROG в фоновом режиме..."
+	uniset_msg ""
+	ulimit -S -c 0 >/dev/null 2>&1
 #	$* --uniset-port $OMNIPORT &
-	echo ЗАПУСК: "$* --uniset-port $OMNIPORT"
+	uniset_msg "ЗАПУСК: '$* --uniset-port $OMNIPORT'"
 
 	pid=$!
 	echo $pid >$PIDFILE # создаём pid-файл
@@ -120,11 +120,11 @@ fi
 
 	if [ -n "$PROGLINE" ]; then
 		RETVAL=1
-	    echo [ OK ]
+	    uniset_msg "[ OK ]"
 		echo $( echo $PROGLINE | cut -d " " -f 1 ) $NAMEPROG >>$RANSERVICES
 	else
 		RETVAL=0
-		echo [ FAILED ]
+		uniset_msg "[ FAILED ]"
 	fi
 
 exit $RETVAL

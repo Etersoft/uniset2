@@ -2,11 +2,18 @@
 
 USERID=0
 BASEOMNIPORT=2809
+UNISET_SCRIPT_VERBOSE=
 
 # Получаем наш внутренний номер пользователя
 function get_userid()
 {
 	USERID=$(expr $UID + 50000)
+}
+
+function uniset_msg()
+{
+    [ -z "$UNISET_SCRIPT_VERBOSE" ] && return
+    echo $1 $2 $3
 }
 
 # usage: standart_control {1/0} - {standart port/debug port}
@@ -15,20 +22,20 @@ function standart_control()
 	if [ -z $TMPDIR ]
 	then
 		TMPDIR=$HOME/tmp
-		echo Не определена переменная окружения TMPDIR. Используем $TMPDIR
+		uniset_msg "Не определена переменная окружения TMPDIR. Используем $TMPDIR"
 	else
-		echo Определена TMPDIR=$TMPDIR
+		uniset_msg "Определена TMPDIR=$TMPDIR"
 	fi
 
 	if [ $1 = 1 ]; then
 		TMPDIR=/var/tmp
-		echo Используем стандартный порт Omni: $BASEOMNIPORT и временный каталог $TMPDIR
+		uniset_msg  "Используем стандартный порт Omni: $BASEOMNIPORT и временный каталог $TMPDIR"
 	else
 		get_userid
 		if [ $USERID = 0 ]
 		then
-			echo Не разрешено запускать пользователю $(whoami) с uid=$UID
-			exit 0
+			uniset_msg "Не разрешено запускать пользователю $(whoami) с uid=$UID"
+			exit 1
 		fi
 	fi
 }
@@ -40,7 +47,7 @@ function set_omni_port
 			-p|--port)
 				shift
 					OMNIPORT=$1;
-					echo  "set OMNIPORT=$1"
+					uniset_msg "set OMNIPORT=$1"
 				shift;
 				break;
 			;;
@@ -69,15 +76,15 @@ function set_omni
 	then
 		if [ $USERID = 0 ]
 		then
-			echo INFO: Запись о порте $OMNIPORT присутствует в /etc/services.
+			uniset_msg "INFO: Запись о порте $OMNIPORT присутствует в /etc/services."
 		else
-			echo Извините, порт $OMNIPORT уже присутствует в /etc/services.
-			echo Запуск omniNames невозможен.
-			echo Завершаемся
+			uniset_msg "Извините, порт $OMNIPORT уже присутствует в /etc/services."
+			uniset_msg "Запуск omniNames невозможен."
+			uniset_msg "Завершаемся"
 			exit 0
 		fi
 	fi
-	[ -e $(which $OMNINAME) ]  || { echo Error: Команда $OMNINAME не найдена ; exit 0; }
+	[ -e $(which $OMNINAME) ]  || { uniset_msg "Error: Команда $OMNINAME не найдена" ; exit 0; }
 
 }
 
@@ -94,19 +101,19 @@ function runOmniNames()
 
 	if [ $omniTest \> 0 ];
 	then
-		echo $OMNINAME уже запущен. #Прерываем.
+		uniset_msg "$OMNINAME уже запущен. #Прерываем."
 		return 0;
 	fi
 
 	if [ ! -d $OMNILOG ]
 	then
 		mkdir -p $OMNILOG
-		echo Запуск omniNames первый раз с портом $OMNIPORT
+		uniset_msg "Запуск omniNames первый раз с портом $OMNIPORT"
 		$OMNINAME -start $OMNIPORT -logdir $OMNILOG &>$OMNILOG/background.output &
 		pid=$!
-		echo Создание структуры репозитория объектов
+		uniset_msg "Создание структуры репозитория объектов"
 	else
-		echo Обычный запуск omniNames. Если есть проблемы, сотрите $OMNILOG
+		uniset_msg "Обычный запуск omniNames. Если есть проблемы, сотрите $OMNILOG"
 		$OMNINAME -logdir $OMNILOG &>$OMNILOG/background.output &
 		pid=$!
 	fi
@@ -116,7 +123,7 @@ function runOmniNames()
 			echo $pid >"$RUNDIR/$OMNINAME.pid" # создаём pid-файл
 		fi;
 	else
-		echo Запуск omniNames не удался
+		uniset_msg "Запуск omniNames не удался"
 		return 1;
 	fi
 	#echo $! $OMNINAME >>$RANSERVICES
@@ -129,7 +136,7 @@ function runOmniNames()
 	# Проверка на запуск omniNames -а
 	yes=$(echo $* | grep omniNames )
 	if [ -n "$yes" ]; then
-		echo Запуск omniNames [ OK ]
+		uniset_msg "Запуск omniNames [ OK ]"
 		$RETVAL=0
 	fi
 

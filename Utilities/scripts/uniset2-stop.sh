@@ -20,7 +20,7 @@ esac
 checkPID=$(echo "$1" | grep pidfile=)
 if [ -n "$checkPID" ]; then
 	PID=$( echo $(cat $RUNDIR/${1#--pidfile=}) )
-	echo "KILL PID: $PID "
+	uniset_msg "KILL PID: $PID "
 	kill $PID
 	exit 1;
 fi
@@ -28,23 +28,23 @@ fi
 
 if [ ! -e $RANSERVICES ]
 then
-	echo Не существует $RANSERVICES с запущенными сервисами
+	uniset_msg "Warning: Не существует $RANSERVICES с запущенными сервисами"
 	exit -1
 fi
 
 for i in $(tac $RANSERVICES | cut -d " " -f 2)
 do
 	TOKILL=$(basename $i)
-	echo -n Завершаем $TOKILL...
+	uniset_msg -n "Завершаем $TOKILL..."
 	if [ $(ps ax | grep $TOKILL | wc -l) = 0 ]
 	then
-		echo " already stoppped [ OK ]"
+		uniset_msg " already stoppped [ OK ]"
 	else
 		killall $SIG $TOKILL
-		echo " [ OK ]"
+		uniset_msg " [ OK ]"
 	fi
 done
 
 rm -f $RANSERVICES
 
-echo "[ OK ]"
+uniset_msg "[ OK ]"
