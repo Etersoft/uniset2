@@ -43,6 +43,7 @@ struct IOBase
 		invert(false),
 		noprecision(false),
 		calcrop(true),
+		debounce_pause(false),
 		debounce_state(false),
 		ondelay_state(false),
 		offdelay_state(false),
@@ -97,11 +98,11 @@ struct IOBase
 	PassiveTimer ptOnDelay;     /*!< задержка на срабатывание */
 	PassiveTimer ptOffDelay;    /*!< задержка на отпускание */
 
-	bool debounce_pause;
 	Trigger trOnDelay;
 	Trigger trOffDelay;
 	Trigger trdebounce;
 
+	bool debounce_pause;
 	bool debounce_state;    /*!< значение для фильтра антидребезга */
 	bool ondelay_state;     /*!< значение для задержки включения */
 	bool offdelay_state;    /*!< значение для задержки отключения */
