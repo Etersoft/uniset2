@@ -1,13 +1,13 @@
 #include <catch.hpp>
-
+// -----------------------------------------------------------------------------
 #include <iostream>
-
-using namespace std;
-
+// -----------------------------------------------------------------------------
 #include "Exceptions.h"
 #include "UniXML.h"
 #include "UniSetTypes.h"
-
+// -----------------------------------------------------------------------------
+using namespace std;
+// -----------------------------------------------------------------------------
 TEST_CASE("UniXML", "[unixml][basic]" )
 {
     SECTION( "Default constructor" ) 
@@ -44,73 +44,79 @@ TEST_CASE("UniXML", "[unixml][basic]" )
     // remove
     // copy
     // nextNode
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniXML::iterator", "[unixml][iterator][basic]" )
+{
+    UniXML uxml("tests_unixml.xml");
+    CHECK( uxml.isOpen() );
 
-    SECTION( "Iterator" );
-    {
-        UniXML::iterator it(cnode);
-        CHECK( it.getCurrent() != 0 );
-        it = uxml.begin();
-        CHECK( it.find("UniSet") != 0 );
+    xmlNode* cnode = uxml.findNode(uxml.getFirstNode(),"UniSet");
+    CHECK( cnode != NULL );
 
-        // поиск в глубину..
-        it = uxml.begin();
-        CHECK( it.find("TestProc") != 0 );
-        
-        it = uxml.begin();
-        CHECK( it.getName() == "UNISETPLC" );
-        it.goChildren();
-        CHECK( it.getName() == "UserData" );
+	UniXML::iterator it(cnode);
+	CHECK( it.getCurrent() != 0 );
+	it = uxml.begin();
+	CHECK( it.find("UniSet") != 0 );
 
-        it += 4;
-        CHECK( it.getName() == "settings" );
+	// поиск в глубину..
+	it = uxml.begin();
+	CHECK( it.find("TestProc") != 0 );
 
-        it -= 4;
-        CHECK( it.getName() == "UserData" );
+	it = uxml.begin();
+	CHECK( it.getName() == "UNISETPLC" );
+	it.goChildren();
+	CHECK( it.getName() == "UserData" );
 
-        it = it + 4;
-        CHECK( it.getName() == "settings" );
+	it += 4;
+	CHECK( it.getName() == "settings" );
 
-        it = it - 4;
-        CHECK( it.getName() == "UserData" );
+	it -= 4;
+	CHECK( it.getName() == "UserData" );
 
-        it++;
-        CHECK( it.getName() == "UniSet" );
+	it = it + 4;
+	CHECK( it.getName() == "settings" );
 
-        it--;
-        CHECK( it.getName() == "UserData" );
+	it = it - 4;
+	CHECK( it.getName() == "UserData" );
 
-        ++it;
-        CHECK( it.getName() == "UniSet" );
+	it++;
+	CHECK( it.getName() == "UniSet" );
 
-        --it;
-        CHECK( it.getName() == "UserData" );
+	it--;
+	CHECK( it.getName() == "UserData" );
 
-        it = uxml.begin();
-        CHECK( it.findName("TestNode","TestNode1") != 0 );
-        it = uxml.begin();
-        CHECK( it.findName("TestNode","TestNode2") != 0 );
+	++it;
+	CHECK( it.getName() == "UniSet" );
 
-        it = uxml.begin();
-        it.goChildren();
-        CHECK( it.getName() == "UserData" );
-        it.goParent();
-        CHECK( it.getName() == "UNISETPLC" );
+	--it;
+	CHECK( it.getName() == "UserData" );
 
-        it = uxml.begin();
-        it.goChildren();
-        it.goEnd();
-        CHECK( it.getName() == "EndSection" );
-        it.goBegin();
-        CHECK( it.getName() == "UserData" );
+	it = uxml.begin();
+	CHECK( it.findName("TestNode","TestNode1") != 0 );
+	it = uxml.begin();
+	CHECK( it.findName("TestNode","TestNode2") != 0 );
 
-        it = uxml.begin();
-        CHECK( it.find("TestData") != 0 );
+	it = uxml.begin();
+	it.goChildren();
+	CHECK( it.getName() == "UserData" );
+	it.goParent();
+	CHECK( it.getName() == "UNISETPLC" );
 
-        CHECK( it.getProp("text") == "text" );
-        CHECK( it.getIntProp("x") == 10 );
-        CHECK( it.getPIntProp("y",-20) == 100 );
-        CHECK( it.getPIntProp("zero",20) == 0 );
-        CHECK( it.getPIntProp("negative",20) == -10 );
-        CHECK( it.getPIntProp("unknown",20) == 20 );
-    }
+	it = uxml.begin();
+	it.goChildren();
+	it.goEnd();
+	CHECK( it.getName() == "EndSection" );
+	it.goBegin();
+	CHECK( it.getName() == "UserData" );
+
+	it = uxml.begin();
+	CHECK( it.find("TestData") != 0 );
+
+	CHECK( it.getProp("text") == "text" );
+	CHECK( it.getIntProp("x") == 10 );
+	CHECK( it.getPIntProp("y",-20) == 100 );
+	CHECK( it.getPIntProp("zero",20) == 0 );
+	CHECK( it.getPIntProp("negative",20) == -10 );
+	CHECK( it.getPIntProp("unknown",20) == 20 );
 }
