@@ -79,7 +79,10 @@ namespace UniSetUDP
         size_t addAData( long id, long val );
         bool setAData( size_t index, long val );
 
-        inline bool isFull(){ return ((dcount<MaxDCount) && (acount<MaxACount)); }
+        inline bool isAFull(){ return (acount>=MaxACount); }
+        inline bool isDFull(){ return (dcount>=MaxDCount); }
+
+        inline bool isFull(){ return !((dcount<MaxDCount) && (acount<MaxACount)); }
         inline int dsize(){ return dcount; }
         inline int asize(){ return acount; }
         unsigned short getDataCRC();

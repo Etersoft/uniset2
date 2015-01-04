@@ -21,6 +21,7 @@ clean-local:
 	rm -rf $(COVERAGE_REPORT_DIR)
 
 if HAVE_COVERAGE
+# COVERAGE_EXCLUDE_FILES='include/*'
 include $(top_builddir)/testsuite/testsuite-coverage-common.mk
 endif
 

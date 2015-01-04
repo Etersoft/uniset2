@@ -170,7 +170,7 @@ void UNetReceiver::start()
 // -----------------------------------------------------------------------------
 void UNetReceiver::update()
 {
-    cerr << "******************* update start" << endl;
+    dinfo << myname << "(update): start.." << endl;
     while(activated)
     {
         try
