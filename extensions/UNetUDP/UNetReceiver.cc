@@ -164,6 +164,8 @@ void UNetReceiver::start()
         u_thr->start();
         r_thr->start();
     }
+    else
+        forceUpdate();
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::update()
@@ -211,6 +213,13 @@ void UNetReceiver::update()
 
         msleep(updatepause);
     }
+}
+// -----------------------------------------------------------------------------
+void UNetReceiver::forceUpdate()
+{
+    uniset_rwmutex_wrlock l(packMutex);
+    pnum = 0; // сбрасываем запомненый номер последнего обработанного пакета
+              // и тем самым заставляем обновить данные в SM (см. real_update)
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::real_update()

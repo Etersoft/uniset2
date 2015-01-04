@@ -18,7 +18,7 @@ sender2(0)
 {
     if( objId == DefaultObjectId )
         throw UniSetTypes::SystemError("(UNetExchange): objId=-1?!! Use --" + prefix +"-unet-name" );
-    
+
     auto conf = uniset_conf();
 
     cnode = conf->getNode(myname);
@@ -508,6 +508,7 @@ void UNetExchange::sysCommand( const UniSetTypes::SystemMessage *sm )
 
         case SystemMessage::WatchDog:
         {
+            startReceivers(); // если уже запущены, то это приведёт к вызову UNetReceiver::forceUpdate() ( см. UNetReceiver::start() )
             // ОПТИМИЗАЦИЯ (защита от двойного перезаказа при старте)
             // Если идёт автономная работа, то нужно заказывать датчики
             // если запущены в одном процессе с SharedMemory2,
@@ -646,7 +647,7 @@ void UNetExchange::help_print( int argc, const char* argv[] )
     cout << "--prefix-recvpause msec         - Пауза между приёмами. По умолчанию 10" << endl;
     cout << "--prefix-sendpause msec         - Пауза между посылками. По умолчанию 100" << endl;
     cout << "--prefix-updatepause msec       - Пауза между обновлением информации в SM (Корелирует с recvpause и sendpause). По умолчанию 100" << endl;
-    cout << "--prefix-steptime msec           - Пауза между обновлением информации о связи с узлами." << endl;
+    cout << "--prefix-steptime msec          - Пауза между обновлением информации о связи с узлами." << endl;
     cout << "--prefix-maxdifferense num      - Маскимальная разница в номерах пакетов для фиксации события 'потеря пакетов' " << endl;
     cout << "--prefix-maxprocessingcount num - время на ожидание старта SM" << endl;
     cout << "--prefix-nosender [0,1]         - Отключить посылку." << endl;
@@ -655,7 +656,7 @@ void UNetExchange::help_print( int argc, const char* argv[] )
     cout << "--prefix-filter-value name      - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
 }
 // -----------------------------------------------------------------------------
-UNetExchange* UNetExchange::init_unetexchange( int argc, const char* argv[], UniSetTypes::ObjectId icID, 
+UNetExchange* UNetExchange::init_unetexchange( int argc, const char* const argv[], UniSetTypes::ObjectId icID,
                                                 SharedMemory* ic, const std::string& prefix )
 {
     auto conf = uniset_conf();

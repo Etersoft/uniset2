@@ -19,6 +19,7 @@ activated(false),
 dlist(100),
 maxItem(0),
 packetnum(1),
+lastcrc(0),
 s_thr(0)
 {
 
@@ -77,7 +78,7 @@ s_thr(0)
 // -----------------------------------------------------------------------------
 UNetSender::~UNetSender()
 {
-      delete s_thr;
+    delete s_thr;
     delete udp;
     delete shm;
 }
@@ -176,11 +177,21 @@ void UNetSender::send()
     dinfo << "************* execute FINISH **********" << endl;
 }
 // -----------------------------------------------------------------------------
+// #define UNETUDP_DISABLE_OPTIMIZATION_N1
+
 void UNetSender::real_send()
 {
     UniSetTypes::uniset_rwmutex_rlock l(pack_mutex);
-    mypack.num = packetnum++;
-
+#ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
+	mypack.num = packetnum++;
+#else
+    unsigned short crc = mypack.getDataCRC();
+    if( crc != lastcrc )
+    {
+        mypack.num = packetnum++;
+        lastcrc = crc;
+    }
+#endif
     if( packetnum > UniSetUDP::MaxPacketNum )
         packetnum = 1;
 

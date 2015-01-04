@@ -84,7 +84,7 @@ class UNetExchange:
         virtual ~UNetExchange();
 
         /*! глобальная функция для инициализации объекта */
-        static UNetExchange* init_unetexchange( int argc, const char* argv[],
+        static UNetExchange* init_unetexchange( int argc, const char* const argv[],
                                             UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="unet" );
 
         /*! глобальная функция для вывода help-а */

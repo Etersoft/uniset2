@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UNISETPLC xmlns:xi="http://www.w3.org/2001/XInclude">
+	<UserData/>
+	<!-- Общие(стартовые) параметры по UniSet -->
+	<UniSet>
+		<NameService host="localhost" port="2809"/>
+		<LocalNode name="localhost"/>
+		<RootSection name="UNISET_PLC"/>
+		<CountOfNet name="1"/>
+		<RepeatCount name="3"/>
+		<RepeatTimeoutMS name="50"/>
+		<WatchDogTime name="0"/>
+		<PingNodeTime name="0"/>
+		<AutoStartUpTime name="1"/>
+		<DumpStateTime name="10"/>
+		<SleepTickMS name="500"/>
+		<UniSetDebug levels="" name="ulog"/>
+		<ConfDir name="./"/>
+		<DataDir name="./"/>
+		<BinDir name="./"/>
+		<LogDir name="./"/>
+		<DocDir name="./"/>
+		<LockDir name="./"/>
+		<Services/>
+	</UniSet>
+	<dlog name="dlog"/>
+	<LogServer name="smplus" port="3333" host="localhost" />
+
+	<settings>
+		<SharedMemory name="SharedMemory" shmID="SharedMemory"/>
+		<UNetExchange name="UNetExchange"/>
+	</settings>
+
+	<ObjectsMap idfromfile="1">
+		<nodes port="2809" unet_broadcast_ip="127.255.255.255">
+			<item id="3000" ip="127.0.0.1" name="localhost" textname="Локальный узел" unet_ignore="0" unet_port="3000"/>
+			<item id="3001" ip="127.0.0.1" name="localhost1" textname="Локальный узел" unet_ignore="1" unet_port="3001"/>
+			<item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="0" unet_ip="192.168.56.255" unet_port="3001" unet_respond_id="Node1_Respond_S" unet_respond_invert="1"/>
+			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="0" unet_ip="192.168.56.255" unet_port="3002"/>
+		</nodes>
+		<!-- ************************ Датчики ********************** -->
+		<sensors name="Sensors">
+			<item id="100" iotype="DI" name="TestMode_S" textname="Test sensor"/>
+
+			<item id="1" iotype="DI" name="Node1_Respond_S" textname="Node1 respond"/>
+			<item id="2" iotype="AI" name="AI1_S" textname="AI sensor 1" unet="1" default="1"/>
+			<item id="3" iotype="AI" name="AI2_S" textname="AI sensor 2" unet="1" default="2"/>
+			<item id="4" iotype="AI" name="AI3_S" textname="AI sensor 3" unet="1" default="3"/>
+			<item id="5" iotype="AI" name="AI4_S" textname="AI sensor 4" unet="1" default="4"/>
+			<item id="6" iotype="DI" name="DI1_S" textname="DI sensor 1" unet="1" default="1"/>
+			<item id="7" iotype="DI" name="DI2_S" textname="DI sensor 2" unet="1"/>
+		</sensors>
+		<thresholds name="thresholds"/>
+		<controllers name="Controllers">
+			<item id="5000" name="SharedMemory1"/>
+			<item id="5003" name="SharedMemory"/>
+		</controllers>
+		<!-- ******************* Идентификаторы сервисов ***************** -->
+		<services name="Services">
+			<item id="5010" name="InfoServer"/>
+			<item id="5011" name="DBServer1"/>
+			<item id="5012" name="PrintServer"/>
+			<item id="5013" name="TimeService"/>
+		</services>
+		<!-- ******************* Идентификаторы объектов ***************** -->
+		<objects name="UniObjects">
+			<item id="6000" name="TestProc"/>
+			<item id="6008" name="UNetExchange"/>
+		</objects>
+	</ObjectsMap>
+</UNISETPLC>

@@ -1,0 +1,7 @@
+AT_SETUP([UNetUDP tests (with SM)])
+AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/UNetUDP/tests tests_with_sm.sh],[0],[ignore],[ignore])
+AT_CLEANUP
+
+# AT_SETUP([UNetUDP tests (Apart)])
+# AT_CHECK([$abs_top_builddir/testsuite/at-test-launch.sh $abs_top_builddir/extensions/UNetUDP/tests tests_with_sm_apart.sh],[0],[ignore],[ignore])
+# AT_CLEANUP

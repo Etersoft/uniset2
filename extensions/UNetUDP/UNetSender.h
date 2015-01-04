@@ -14,7 +14,9 @@
 #include "UDPPacket.h"
 // -----------------------------------------------------------------------------
 /*
- *
+ *    ОПТИМИЗАЦИЯ N1: Для оптимизации обработки посылаемых пакетов (на стороне UNetReceiver) следана следующая логика:
+ *                  Номер очередного посылаемого пакета меняется (увеличивается) только, если изменились данные с момента
+                    последней посылки. Для по данным каждый раз производится расчёт UNetUDP::makeCRC() и сравнивается с последним..
  */
 class UNetSender
 {
@@ -93,6 +95,7 @@ class UNetSender
         DMap dlist;
         int maxItem;
         unsigned long packetnum;
+        unsigned short lastcrc;
         UniSetUDP::UDPPacket s_msg;
 
         ThreadCreator<UNetSender>* s_thr;    // send thread

@@ -82,6 +82,7 @@ namespace UniSetUDP
         inline bool isFull(){ return ((dcount<MaxDCount) && (acount<MaxACount)); }
         inline int dsize(){ return dcount; }
         inline int asize(){ return acount; }
+        unsigned short getDataCRC();
 
         // количество байт в пакете с булевыми переменными...
         int d_byte(){ return dcount*sizeof(long) + dcount; }
@@ -92,6 +93,8 @@ namespace UniSetUDP
 
         friend std::ostream& operator<<( std::ostream& os, UDPMessage& p );
     };
+
+    unsigned short makeCRC( unsigned char* buf, size_t len );
 }
 // -----------------------------------------------------------------------------
 #endif // UDPPacket_H_

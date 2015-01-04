@@ -3,8 +3,11 @@
 #include <getopt.h>
 #include <cstring>
 #include <iostream>
+#include <chrono>
+#include <iomanip>
 #include <cc++/socket.h>
 #include "UDPPacket.h"
+#include "PassiveTimer.h"
 // --------------------------------------------------------------------------
 static struct option longopts[] = {
     { "help", no_argument, 0, 'h' },
@@ -20,11 +23,13 @@ static struct option longopts[] = {
     { "check-lost", no_argument, 0, 'l' },
     { "verbode", required_argument, 0, 'v' },
     { "num-cycles", required_argument, 0, 'z' },
+    { "prof", required_argument, 0, 'y' },
     { NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetUDP;
+using namespace std::chrono;
 // --------------------------------------------------------------------------
 enum Command
 {
@@ -64,8 +69,9 @@ int main(int argc, char* argv[])
     bool lost = false;
     bool show = false;
     int ncycles = -1;
+    unsigned int nprof = 0;
 
-    while( (opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvdz:",longopts,&optindex)) != -1 )
+    while( (opt = getopt_long(argc, argv, "hs:c:r:p:n:t:x:blvdz:y:",longopts,&optindex)) != -1 )
     {
         switch (opt)
         {
@@ -83,6 +89,7 @@ int main(int argc, char* argv[])
                 cout << "[-v|--verbose]           - verbose mode." << endl;
                 cout << "[-d|--show-data]         - show receive data." << endl;
                 cout << "[-z|--num-cycles] num    - Number of cycles of exchange. Default: -1 - infinitely." << endl;
+                cout << "[-y|--prof] num          - Print receive statistics every NUM packets (for -r only)" << endl;
                 cout << endl;
             return 0;
 
@@ -102,6 +109,10 @@ int main(int argc, char* argv[])
 
             case 'x':
                 usecpause = atoi(optarg)*1000;
+            break;
+
+            case 'y':
+                nprof = atoi(optarg);
             break;
 
             case 'c':
@@ -195,10 +206,23 @@ int main(int argc, char* argv[])
                 if( ncycles > 0 )
                     nc = ncycles;
 
+                auto t_start = high_resolution_clock::now();
+
+                unsigned int npack = 0;
                 while( nc )
                 {
                     try
                     {
+                        if( nprof > 0 && npack >= nprof )
+                        {
+                            auto t_end = high_resolution_clock::now();
+                            float sec = duration_cast<duration<float>>(t_end - t_start).count();
+                            cout << "Receive " << setw(5) << npack << " packets for " << setw(8) << sec << " sec "
+                                 << " [ 1 packet per " << setw(10) << ( sec / (float)npack ) << " sec ]" << endl;
+                            t_start = t_end;
+                            npack = 0;
+                        }
+
                         if( !udp.isInputReady(tout) )
                         {
                             cout << "(recv): Timeout.." << endl;
@@ -222,6 +246,8 @@ int main(int argc, char* argv[])
 
                             prev_num = pack.num;
                         }
+
+                        npack++;
 
                         if( verb )
                             cout << "receive OK:  "
