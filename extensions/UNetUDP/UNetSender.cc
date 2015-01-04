@@ -183,7 +183,7 @@ void UNetSender::real_send()
 {
     UniSetTypes::uniset_rwmutex_rlock l(pack_mutex);
 #ifdef UNETUDP_DISABLE_OPTIMIZATION_N1
-	mypack.num = packetnum++;
+    mypack.num = packetnum++;
 #else
     unsigned short crc = mypack.getDataCRC();
     if( crc != lastcrc )

@@ -35,22 +35,22 @@ namespace UniSetTypes
 //--------------------------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, const Message::TypeOfMessage& t )
 {
-	if( t == Message::Unused )
-		return os << "Unused";
+    if( t == Message::Unused )
+        return os << "Unused";
 
-	if( t == Message::SensorInfo )
-		return os << "SensorInfo";
-	
-	if( t == Message::SysCommand )
-		return os << "SysCommand";
-	
-	if( t == Message::Confirm )
-		return os << "Confirm";
+    if( t == Message::SensorInfo )
+        return os << "SensorInfo";
 
-	if( t == Message::Timer )
-		return os << "Timer";
+    if( t == Message::SysCommand )
+        return os << "SysCommand";
 
-	return os << "Unkown";
+    if( t == Message::Confirm )
+        return os << "Confirm";
+
+    if( t == Message::Timer )
+        return os << "Timer";
+
+    return os << "Unkown";
 }
 //--------------------------------------------------------------------------------------------
 Message::Message():
@@ -137,7 +137,7 @@ SensorMessage::SensorMessage(const VoidMessage *msg):
 SystemMessage::SystemMessage():
     command(SystemMessage::Unknown)
 {
-	memset(data,0,sizeof(data));
+    memset(data,0,sizeof(data));
     type = Message::SysCommand;
 }
 
@@ -158,24 +158,24 @@ SystemMessage::SystemMessage(const VoidMessage *msg):
 //--------------------------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, const SystemMessage::Command& c )
 {
-	if( c == SystemMessage::Unknown )
-		return os << "Unknown";
-	if( c == SystemMessage::StartUp )
-		return os << "StartUp";
-	if( c == SystemMessage::FoldUp )
-		return os << "FoldUp";
-	if( c == SystemMessage::Finish )
-		return os << "Finish";
-	if( c == SystemMessage::WatchDog )
-		return os << "WatchDog";
-	if( c == SystemMessage::ReConfiguration )
-		return os << "ReConfiguration";
-	if( c == SystemMessage::NetworkInfo )
-		return os << "NetworkInfo";
-	if( c == SystemMessage::LogRotate )
-		return os << "LogRotate";
+    if( c == SystemMessage::Unknown )
+        return os << "Unknown";
+    if( c == SystemMessage::StartUp )
+        return os << "StartUp";
+    if( c == SystemMessage::FoldUp )
+        return os << "FoldUp";
+    if( c == SystemMessage::Finish )
+        return os << "Finish";
+    if( c == SystemMessage::WatchDog )
+        return os << "WatchDog";
+    if( c == SystemMessage::ReConfiguration )
+        return os << "ReConfiguration";
+    if( c == SystemMessage::NetworkInfo )
+        return os << "NetworkInfo";
+    if( c == SystemMessage::LogRotate )
+        return os << "LogRotate";
 
-	return os << "";
+    return os << "";
 }
 //--------------------------------------------------------------------------------------------
 TimerMessage::TimerMessage():

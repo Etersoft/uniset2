@@ -20,26 +20,26 @@ static ObjectId myID = 6000;
 // --------------------------------------------------------------------------
 SharedMemory* shmInstance()
 {
-	if( shm == nullptr )
-		throw SystemError("SharedMemory don`t initialize..");
+    if( shm == nullptr )
+        throw SystemError("SharedMemory don`t initialize..");
 
-	return shm;
+    return shm;
 }
 // --------------------------------------------------------------------------
 SMInterface* smiInstance()
 {
-	if( smi == nullptr )
-	{
-		if( shm == nullptr )
-			throw SystemError("SharedMemory don`t initialize..");
-		
-		if( ui == nullptr )
-			ui = new UInterface();
+    if( smi == nullptr )
+    {
+        if( shm == nullptr )
+            throw SystemError("SharedMemory don`t initialize..");
 
-		smi = new SMInterface(shm->getId(), ui, myID, shm );		
-	}	
+        if( ui == nullptr )
+            ui = new UInterface();
 
-	return smi;
+        smi = new SMInterface(shm->getId(), ui, myID, shm );
+    }
+
+    return smi;
 }
 // --------------------------------------------------------------------------
 int main(int argc, char* argv[] )

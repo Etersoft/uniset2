@@ -28,39 +28,39 @@ void InitTest()
         CHECK( ui->waitReady(aid,10000) );
     }
 
-	if( udp_r == nullptr )
-		udp_r = new ost::UDPDuplex(host,port);
+    if( udp_r == nullptr )
+        udp_r = new ost::UDPDuplex(host,port);
 }
 // -----------------------------------------------------------------------------
 static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 2000, int ncycle = 1000 )
 {
-	UniSetUDP::UDPMessage pack;
-	UniSetUDP::UDPPacket buf;
+    UniSetUDP::UDPMessage pack;
+    UniSetUDP::UDPPacket buf;
 
-	while( ncycle > 0 )
-	{
-		if( !udp_r->isInputReady(tout) )
-			break;
+    while( ncycle > 0 )
+    {
+        if( !udp_r->isInputReady(tout) )
+            break;
 
-		size_t ret = udp_r->UDPReceive::receive( &(buf.data), sizeof(buf.data) );
-		size_t sz = UniSetUDP::UDPMessage::getMessage(pack,buf);
-		if( pnum ==0 || ( pnum > 0 && pack.num >= pnum ) )
-			break;
+        size_t ret = udp_r->UDPReceive::receive( &(buf.data), sizeof(buf.data) );
+        size_t sz = UniSetUDP::UDPMessage::getMessage(pack,buf);
+        if( pnum ==0 || ( pnum > 0 && pack.num >= pnum ) )
+            break;
 
-		ncycle--;
-	}
+        ncycle--;
+    }
 
-	return std::move(pack);
+    return std::move(pack);
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: respond sensor","[unetudp]")
 {
     InitTest();
 
-	// в запускающем файле стоит --unet-recv-timeout 2000
-	msleep(2500);
-	ObjectId node1_not_respond_s = 1;
-	REQUIRE( ui->getValue(node1_not_respond_s) == 1 );
+    // в запускающем файле стоит --unet-recv-timeout 2000
+    msleep(2500);
+    ObjectId node1_not_respond_s = 1;
+    REQUIRE( ui->getValue(node1_not_respond_s) == 1 );
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: check sender","[unetudp][sender]")
@@ -69,46 +69,46 @@ TEST_CASE("[UNetUDP]: check sender","[unetudp][sender]")
 
     SECTION("Test: read default pack...")
     {
-		UniSetUDP::UDPMessage pack = receive();
-		REQUIRE( pack.num!=0 );
-		REQUIRE( pack.asize()==4 );
-		REQUIRE( pack.dsize()==2 );
+        UniSetUDP::UDPMessage pack = receive();
+        REQUIRE( pack.num!=0 );
+        REQUIRE( pack.asize()==4 );
+        REQUIRE( pack.dsize()==2 );
 
-		for( int i=0; i<pack.asize(); i++ )
-		{
-			REQUIRE( pack.a_dat[i].val == i+1 );
-		}
+        for( int i=0; i<pack.asize(); i++ )
+        {
+            REQUIRE( pack.a_dat[i].val == i+1 );
+        }
 
-		REQUIRE( pack.dValue(0) == 1 );
-		REQUIRE( pack.dValue(1) == 0 );
+        REQUIRE( pack.dValue(0) == 1 );
+        REQUIRE( pack.dValue(1) == 0 );
 
-		// т.к. данные в SM не менялись, то должен придти пакет с тем же номером что и был..
-		UniSetUDP::UDPMessage pack2 = receive();
-		REQUIRE( pack2.num == pack.num );
-	}
+        // т.к. данные в SM не менялись, то должен придти пакет с тем же номером что и был..
+        UniSetUDP::UDPMessage pack2 = receive();
+        REQUIRE( pack2.num == pack.num );
+    }
 
     SECTION("Test: change data...")
     {
-		UniSetUDP::UDPMessage pack0 = receive();
-		ui->setValue(2,100);
-		REQUIRE( ui->getValue(2) == 100 );
-		msleep(120);
-		UniSetUDP::UDPMessage pack = receive( pack0.num+1 );
-		REQUIRE( pack.num!=0 );
-		REQUIRE( pack.asize()==4 );
-		REQUIRE( pack.dsize()==2 );
-		REQUIRE( pack.a_dat[0].val == 100 );
+        UniSetUDP::UDPMessage pack0 = receive();
+        ui->setValue(2,100);
+        REQUIRE( ui->getValue(2) == 100 );
+        msleep(120);
+        UniSetUDP::UDPMessage pack = receive( pack0.num+1 );
+        REQUIRE( pack.num!=0 );
+        REQUIRE( pack.asize()==4 );
+        REQUIRE( pack.dsize()==2 );
+        REQUIRE( pack.a_dat[0].val == 100 );
 
-		ui->setValue(2,250);
-		REQUIRE( ui->getValue(2) == 250 );
-		msleep(120);
-		UniSetUDP::UDPMessage pack2 = receive( pack.num+1 );
-		REQUIRE( pack2.num!=0 );
-		REQUIRE( pack2.num > pack.num );
-		REQUIRE( pack2.asize()==4 );
-		REQUIRE( pack2.dsize()==2 );
-		REQUIRE( pack2.a_dat[0].val == 250 );
-	}
+        ui->setValue(2,250);
+        REQUIRE( ui->getValue(2) == 250 );
+        msleep(120);
+        UniSetUDP::UDPMessage pack2 = receive( pack.num+1 );
+        REQUIRE( pack2.num!=0 );
+        REQUIRE( pack2.num > pack.num );
+        REQUIRE( pack2.asize()==4 );
+        REQUIRE( pack2.dsize()==2 );
+        REQUIRE( pack2.a_dat[0].val == 250 );
+    }
 }
 // -----------------------------------------------------------------------------
 #if 0

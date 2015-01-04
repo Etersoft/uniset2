@@ -76,8 +76,8 @@ TEST_CASE("dat2f", "[modbus]" )
 {
     using namespace ModbusRTU;
     REQUIRE( dat2f(0,0) == 0.0f );
-//	REQUIRE( dat2f(1,0) == 0.0f );
-//	REQUIRE( dat2f(0xff,0xff) == 0.0f );
+//    REQUIRE( dat2f(1,0) == 0.0f );
+//    REQUIRE( dat2f(0xff,0xff) == 0.0f );
 }
 #endif
 
