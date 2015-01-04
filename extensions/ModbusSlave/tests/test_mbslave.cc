@@ -33,7 +33,7 @@ void InitTest()
     if( mb == nullptr )
     {
         mb = new ModbusTCPMaster();
-        ost::InetAddress ia(addr.c_str()); 
+        ost::InetAddress ia(addr.c_str());
         mb->setTimeout(2000);
         REQUIRE_NOTHROW( mb->connect(ia,port) );
     }
@@ -429,7 +429,7 @@ TEST_CASE("(0x10): write register outputs or memories","[modbus][mbslave][mbtcps
         msg.addData(11);
         msg.addData(12);
         msg.quant-=1;
-        
+
         try
         {
             mb->write10(msg);
@@ -446,7 +446,7 @@ TEST_CASE("(0x10): write register outputs or memories","[modbus][mbslave][mbtcps
         msg.addData(11);
         msg.addData(12);
         msg.bcnt -= 1;
-        
+
         try
         {
             mb->write10(msg);
@@ -854,31 +854,31 @@ TEST_CASE("Write(0x10): vtypes..","[modbus][mbslave][mbtcpslave]")
 #if 0
 TEST_CASE("(0x14): read file record","[modbus][mbslave][mbtcpslave]")
 {
-    
+
 }
 TEST_CASE("(0x15): write file record","[modbus][mbslave][mbtcpslave]")
 {
-    
+
 }
 TEST_CASE("(0x2B): Modbus Encapsulated Interface","[modbus][mbslave][mbtcpslave]")
 {
-    
+
 }
 TEST_CASE("(0x50): set date and time")
 {
-    
+
 }
 TEST_CASE("(0x53): call remote service")
 {
-    
+
 }
 TEST_CASE("(0x65): read,write,delete alarm journal")
 {
-    
+
 }
 TEST_CASE("(0x66): file transfer")
 {
-    
+
 }
 #endif
 
@@ -917,7 +917,7 @@ TEST_CASE("access mode","[modbus][mbslvae][mbtcpslave]")
         {
             REQUIRE( ex.err == ModbusRTU::erBadDataAddress );
         }
-        
+
         // write
         ModbusRTU::WriteOutputMessage msg(slaveaddr,tREG);
         msg.addData(555);

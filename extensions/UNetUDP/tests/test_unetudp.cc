@@ -5,6 +5,11 @@
 #include "UInterface.h"
 #include "UDPPacket.h"
 // -----------------------------------------------------------------------------
+// include-ы искплючительно для того, чтобы их обработал gcov (покрытие кода)
+#include "UNetReceiver.h"
+#include "UNetSender.h"
+#include "UNetExchange.h"
+// -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
@@ -230,6 +235,8 @@ TEST_CASE("[UNetUDP]: check receiver","[unetudp][receiver]")
 		REQUIRE( ui->getValue(9) == -100 );
 		REQUIRE( ui->getValue(10) == 1 );
 		REQUIRE( ui->getValue(11) == 0 );
+
+		msleep(1000);
 		REQUIRE( ui->getValue(node2_respond_s) == 1 );
 	}
 	SECTION("Test: send data pack2..")

@@ -2,7 +2,7 @@ if HAVE_TESTS
 
 noinst_PROGRAMS = tests-with-sm
 
-tests_with_sm_SOURCES   = tests_with_sm.cc mbslave-tests.cc
+tests_with_sm_SOURCES   = tests_with_sm.cc test_mbslave.cc
 tests_with_sm_LDADD     = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/ModbusSlave/libUniSet2MBSlave.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
