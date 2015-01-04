@@ -35,8 +35,8 @@
 		<nodes port="2809" unet_broadcast_ip="127.255.255.255">
 			<item id="3000" ip="127.0.0.1" name="localhost" textname="Локальный узел" unet_ignore="0" unet_port="3000"/>
 			<item id="3001" ip="127.0.0.1" name="localhost1" textname="Локальный узел" unet_ignore="1" unet_port="3001"/>
-			<item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="0" unet_ip="192.168.56.255" unet_port="3001" unet_respond_id="Node1_Respond_S" unet_respond_invert="1"/>
-			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="0" unet_ip="192.168.56.255" unet_port="3002"/>
+			<item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="0" unet_ip="192.168.56.255" unet_respond_id="Node1_Respond_S" unet_respond_invert="1"/>
+			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="0" unet_ip="192.168.56.255" unet_respond_id="Node2_Respond_S"/>
 		</nodes>
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">
@@ -49,6 +49,11 @@
 			<item id="5" iotype="AI" name="AI4_S" textname="AI sensor 4" unet="1" default="4"/>
 			<item id="6" iotype="DI" name="DI1_S" textname="DI sensor 1" unet="1" default="1"/>
 			<item id="7" iotype="DI" name="DI2_S" textname="DI sensor 2" unet="1"/>
+			<item id="8" iotype="AI" name="AI3_S" textname="AI sensor 3"/>
+			<item id="9" iotype="AI" name="AI4_S" textname="AI sensor 4"/>
+			<item id="10" iotype="DI" name="DI3_S" textname="DI sensor 3"/>
+			<item id="11" iotype="DI" name="DI4_S" textname="DI sensor 4"/>
+			<item id="12" iotype="DI" name="Node2_Respond_S" textname="Node2 respond"/>
 		</sensors>
 		<thresholds name="thresholds"/>
 		<controllers name="Controllers">
