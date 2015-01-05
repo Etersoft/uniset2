@@ -1,11 +1,12 @@
 #include <catch.hpp>
-
+// -----------------------------------------------------------------------------
 #include <sstream>
 #include <limits>
 #include "UniSetTypes.h"
+// -----------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
-
+// -----------------------------------------------------------------------------
 TEST_CASE("UniSetTypes: uni_atoi", "[utypes][uni_atoi]" ) 
 {
     SECTION("int")
@@ -52,4 +53,24 @@ TEST_CASE("UniSetTypes: uni_atoi", "[utypes][uni_atoi]" )
 
     WARN("Tests for 'UniSetTypes' incomplete...");
 }
+// -----------------------------------------------------------------------------
+TEST_CASE("UniSetTypes: uni_strdup", "[utypes][uni_strdup]" )
+{
+    SECTION("uni_strdup string")
+    {
+        string str("Test string");
+        const char* cp = uni_strdup(str);
+        string str2(cp);
+        REQUIRE( str == str2 );
+        delete[] cp;
+    }
 
+    SECTION("uni_strdup char*")
+    {
+        const char* str = "Test string";
+        char* str2 = uni_strdup(str);
+        REQUIRE( !strcmp(str,str2) );
+        delete[] str2;
+    }
+}
+// -----------------------------------------------------------------------------

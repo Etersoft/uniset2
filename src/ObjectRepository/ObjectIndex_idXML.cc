@@ -26,6 +26,11 @@ ObjectIndex_idXML::ObjectIndex_idXML( const shared_ptr<UniXML>& xml )
 // -----------------------------------------------------------------------------------------
 ObjectIndex_idXML::~ObjectIndex_idXML()
 {
+    for( auto& it: omap )
+    {
+        delete[] it.second.repName;
+        delete[] it.second.textName;
+    }
 }
 // -----------------------------------------------------------------------------------------
 ObjectId ObjectIndex_idXML::getIdByName( const string& name )
@@ -142,7 +147,9 @@ void ObjectIndex_idXML::read_section( const std::shared_ptr<UniXML>& xml, const 
         }
 
         // name
-        string name( secname+it.getProp("name") );
+        ostringstream n;
+        n << secname << it.getProp("name");
+        string name(n.str());
 
         inf.repName = new char[name.size()+1];
         strcpy( inf.repName, name.c_str() );

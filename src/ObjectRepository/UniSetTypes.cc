@@ -401,3 +401,12 @@ int UniSetTypes::uni_atoi( const char* str )
     return n;
 }
 //--------------------------------------------------------------------------------------------
+char* UniSetTypes::uni_strdup( const string& src )
+{
+    const char* s = src.c_str();
+    size_t len = strlen(s);
+    char* d = new char[len+1];
+    memcpy(d,s,len+1);
+    return d;
+}
+// -------------------------------------------------------------------------

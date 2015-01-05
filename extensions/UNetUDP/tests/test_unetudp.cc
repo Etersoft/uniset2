@@ -72,15 +72,15 @@ static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 20
 // -----------------------------------------------------------------------------
 void send( UniSetUDP::UDPMessage& pack, int tout=2000 )
 {
-	CHECK( udp_s->isPending(ost::Socket::pendingOutput,tout) );
+    CHECK( udp_s->isPending(ost::Socket::pendingOutput,tout) );
 
     pack.nodeID = s_nodeID;
     pack.procID = s_procID;
-	pack.num = s_numpack++;
+    pack.num = s_numpack++;
 
-	UniSetUDP::UDPPacket s_buf;
+    UniSetUDP::UDPPacket s_buf;
     pack.transport_msg(s_buf);
-	size_t ret = udp_s->send((char*)&s_buf.data, s_buf.len);
+    size_t ret = udp_s->send((char*)&s_buf.data, s_buf.len);
     REQUIRE( ret == s_buf.len );
 }
 // -----------------------------------------------------------------------------
@@ -216,45 +216,45 @@ TEST_CASE("[UNetUDP]: check receiver","[unetudp][receiver]")
 
     SECTION("Test: send data pack...")
     {
-		REQUIRE( ui->getValue(node2_respond_s) == 0 );
+        REQUIRE( ui->getValue(node2_respond_s) == 0 );
 
-		UniSetUDP::UDPMessage pack;
-		pack.addAData(8,100);
-		pack.addAData(9,-100);
-		pack.addDData(10,true);
-		pack.addDData(11,false);
+        UniSetUDP::UDPMessage pack;
+        pack.addAData(8,100);
+        pack.addAData(9,-100);
+        pack.addDData(10,true);
+        pack.addDData(11,false);
 
-		REQUIRE( ui->getValue(8) == 0 );
-		REQUIRE( ui->getValue(9) == 0 );
-		REQUIRE( ui->getValue(10) == 0 );
-		REQUIRE( ui->getValue(11) == 0 );
+        REQUIRE( ui->getValue(8) == 0 );
+        REQUIRE( ui->getValue(9) == 0 );
+        REQUIRE( ui->getValue(10) == 0 );
+        REQUIRE( ui->getValue(11) == 0 );
 
-		send(pack);
-		msleep(120);
-		REQUIRE( ui->getValue(8) == 100 );
-		REQUIRE( ui->getValue(9) == -100 );
-		REQUIRE( ui->getValue(10) == 1 );
-		REQUIRE( ui->getValue(11) == 0 );
+        send(pack);
+        msleep(120);
+        REQUIRE( ui->getValue(8) == 100 );
+        REQUIRE( ui->getValue(9) == -100 );
+        REQUIRE( ui->getValue(10) == 1 );
+        REQUIRE( ui->getValue(11) == 0 );
 
-		msleep(1000);
-		REQUIRE( ui->getValue(node2_respond_s) == 1 );
-	}
-	SECTION("Test: send data pack2..")
+        msleep(1500);
+        REQUIRE( ui->getValue(node2_respond_s) == 1 );
+    }
+     SECTION("Test: send data pack2..")
     {
-		UniSetUDP::UDPMessage pack;
-		pack.addAData(8,10);
-		pack.addAData(9,-10);
-		pack.addDData(10,false);
-		pack.addDData(11,true);
-		send(pack);
-		msleep(120);
-		REQUIRE( ui->getValue(8) == 10 );
-		REQUIRE( ui->getValue(9) == -10 );
-		REQUIRE( ui->getValue(10) == 0 );
-		REQUIRE( ui->getValue(11) == 1 );
-		REQUIRE( ui->getValue(node2_respond_s) == 1 );
-		msleep(3000); // в запускающем файле стоит --unet-recv-timeout 2000
-		REQUIRE( ui->getValue(node2_respond_s) == 0 );
-	}
+        UniSetUDP::UDPMessage pack;
+        pack.addAData(8,10);
+        pack.addAData(9,-10);
+        pack.addDData(10,false);
+        pack.addDData(11,true);
+        send(pack);
+        msleep(120);
+        REQUIRE( ui->getValue(8) == 10 );
+        REQUIRE( ui->getValue(9) == -10 );
+        REQUIRE( ui->getValue(10) == 0 );
+        REQUIRE( ui->getValue(11) == 1 );
+        REQUIRE( ui->getValue(node2_respond_s) == 1 );
+        msleep(2000); // в запускающем файле стоит --unet-recv-timeout 2000
+        REQUIRE( ui->getValue(node2_respond_s) == 0 );
+    }
 }
 // -----------------------------------------------------------------------------

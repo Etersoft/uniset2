@@ -1,3 +1,4 @@
+
 #include "Configuration.h"
 #include "Extensions.h"
 #include "IOBase.h"
@@ -9,6 +10,11 @@ std::ostream& operator<<( std::ostream& os, IOBase& inf )
 {
     return os << "(" << inf.si.id << ")" << uniset_conf()->oind->getMapName(inf.si.id)
         << " default=" << inf.defval << " safety=" << inf.safety;
+}
+// -----------------------------------------------------------------------------
+IOBase::~IOBase()
+{
+    delete cdiagram;
 }
 // -----------------------------------------------------------------------------
 bool IOBase::check_channel_break( long val )

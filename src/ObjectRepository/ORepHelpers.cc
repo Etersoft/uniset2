@@ -76,8 +76,8 @@ namespace ORepHelpers
         CosNaming::NamingContext_var ctx;
         try
         {
-            CORBA::Object_var o = rootC->resolve(ctxName);
-            ctx = CosNaming::NamingContext::_narrow(o);
+            CORBA::Object_var o = rootC->resolve( ctxName.in() );
+            ctx = CosNaming::NamingContext::_narrow(o.in());
             if( CORBA::is_nil(ctx) )
             {
                 const string err("OREPHELPER(getContext): не смог получить ссылку на контекст(is_nil) "+cname);

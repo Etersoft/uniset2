@@ -1,0 +1,54 @@
+{
+   sed
+   Memcheck:Leak
+   ...
+   obj:/bin/sed
+}
+
+{
+   ps
+   Memcheck:Leak
+   ...
+   obj:/bin/ps
+}
+
+{
+   bash
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:xmalloc
+   fun:make_if_command
+   fun:yyparse
+   fun:parse_command
+   fun:read_command
+   fun:reader_loop
+}
+
+{
+   omniORB
+   Memcheck:Leak
+   ...
+   obj:/usr/lib/libomniORB4.so.*
+}
+
+{
+   omniNames
+   Memcheck:Leak
+   ...
+   obj:/usr/bin/omniNames
+}
+
+{
+   libxml2
+   Memcheck:Leak
+   ...
+   obj:/usr/lib/libxml2.so.*
+}
+
+#{
+#   libstdc++
+#   Memcheck:Leak
+#   ...
+#   /usr/lib/libstdc++.so.*
+#}

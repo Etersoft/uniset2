@@ -48,6 +48,11 @@ omap(minSize)
 // -----------------------------------------------------------------------------------------
 ObjectIndex_XML::~ObjectIndex_XML()
 {
+    for( auto& it: omap )
+    {
+        delete[] it.repName;
+        delete[] it.textName;
+    }
 }
 // -----------------------------------------------------------------------------------------
 ObjectId ObjectIndex_XML::getIdByName( const string& name )
@@ -173,7 +178,9 @@ unsigned int ObjectIndex_XML::read_section( const std::shared_ptr<UniXML>& xml, 
         omap[ind].id = ind;
 
         // name
-        const string name(secname + xml->getProp(it,"name"));
+        ostringstream n;
+        n << secname << xml->getProp(it,"name");
+        const string name(n.str());
         delete[] omap[ind].repName;
         omap[ind].repName = new char[name.size()+1];
         strcpy( omap[ind].repName, name.c_str() );

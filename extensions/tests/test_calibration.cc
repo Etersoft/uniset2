@@ -62,4 +62,6 @@ TEST_CASE("Calibration","[calibration]")
         REQUIRE( cal->getLeftRaw() == -1000 );
         REQUIRE( cal->getRightRaw() == 1000 );
     }
+
+    delete cal;
 }

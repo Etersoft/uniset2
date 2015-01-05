@@ -70,7 +70,7 @@ uxml(0)
 // ------------------------------------------------------------------------------------------
 NCRestorer_XML::~NCRestorer_XML()
 {
-    if( uxml)
+    if( uxml )
     {
         uxml->close();
         uxml.reset();

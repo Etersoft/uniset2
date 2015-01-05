@@ -25,6 +25,7 @@ struct IOBase
     IOBase( IOBase&& r ) = default;
     IOBase& operator=(IOBase&& r) = default;
 
+    ~IOBase();
     IOBase():
         stype(UniversalIO::UnknownIOType),
         cdiagram(nullptr),

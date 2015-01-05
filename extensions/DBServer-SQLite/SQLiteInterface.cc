@@ -44,7 +44,6 @@ opCheckPause(50)
 SQLiteInterface::~SQLiteInterface()
 { 
     close();
-    delete db;
 }
 
 // -----------------------------------------------------------------------------------------
@@ -261,7 +260,7 @@ SQLiteResult::SQLiteResult( sqlite3_stmt* s, bool finalize )
             
         COL c;
 
-        for( unsigned int i=0; i<n; i++ )
+        for( int i=0; i<n; i++ )
         {
             char* p = (char*)sqlite3_column_text(s,i);
             if( p )

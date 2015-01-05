@@ -71,8 +71,6 @@ ostream& UniSetTypes::Configuration::help(ostream& os)
               << "--ulog-add-levels level1,info,system,warn --ulog-log-in-file myprogrpam.log\n\n";
 }
 // -------------------------------------------------------------------------
-    
-
 namespace UniSetTypes
 {
     DebugStream ulog;
@@ -105,6 +103,10 @@ Configuration::Configuration():
 
 Configuration::~Configuration()
 {
+    for( int i=0; i<_argc; i++ )
+        delete[] _argv[i];
+
+    delete[] _argv;
 }
 // ---------------------------------------------------------------------------------
 
@@ -258,8 +260,6 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
             setLocalNode(lnode);
 
         initParameters();
-
-
         initRepSections();
 
         // localIOR
@@ -285,12 +285,12 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         // +N --> -ORBIniRef NodeName=
         // +2 --> -ORBIniRef NameService=
         _argc     = argc+2*lnodes.size()+2;
-        const char** new_argv    = new const char*[_argc];
+        const char** new_argv = new const char*[_argc];
 
         int i = 0;
         // перегоняем старые параметры
         for( ; i < argc; i++ )
-            new_argv[i] = strdup(argv[i]);
+            new_argv[i] = uni_strdup(argv[i]);
 
         // формируем новые, используя i в качестве индекса
         for( auto &it: lnodes )
@@ -302,12 +302,13 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
             param << this << name;
             name = param.str();
             param << "=corbaname::" << it.host << ":" << it.port;
-            new_argv[i+1] = strdup(param.str().c_str());
+            const string sparam(param.str());
+            new_argv[i+1] = uni_strdup(sparam);
 
-            uinfo << "(Configuration): внесли параметр " << param.str() << endl;
+            uinfo << "(Configuration): внесли параметр " << sparam << endl;
             i+=2;
 
-             ostringstream uri;
+            ostringstream uri;
             uri << "corbaname::" << it.host << ":" << it.port;
             if( !omni::omniInitialReferences::setFromArgs(name.c_str(), uri.str().c_str()) )
                 cerr << "**********************!!!! FAILED ADD name=" << name << " uri=" << uri.str() << endl; 
@@ -324,20 +325,21 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         if( !nsnode )
         {
             uwarn << "(Configuration): не нашли раздела 'NameService' \n";
-            new_argv[i]     = "";
-            new_argv[i+1]     = "";
+            new_argv[i]   = "";
+            new_argv[i+1] = "";
         }
         else
         {
             new_argv[i] = "-ORBInitRef";
-            new_argv[i+1]     = ""; // сперва инициализиуем пустой строкой (т.к. будет вызываться getArgParam)
+            new_argv[i+1] = ""; // сперва инициализиуем пустой строкой (т.к. будет вызываться getArgParam)
 
             string defPort( getPort( getProp(nsnode,"port") ) ); // здесь вызывается getArgParam! проходящий по _argv
 
             ostringstream param;
             param << this << "NameService=corbaname::" << getProp(nsnode,"host") << ":" << defPort;
-            new_argv[i+1] = strdup(param.str().c_str());
-            uinfo << "(Configuration): внесли параметр " << param.str() << endl;
+            const string sparam(param.str());
+            new_argv[i+1] = uni_strdup(sparam);
+            uinfo << "(Configuration): внесли параметр " << sparam << endl;
 
             {
                 ostringstream ns_name;
@@ -345,12 +347,12 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
                 ostringstream uri;
                 uri << "corbaname::" << getProp(nsnode,"host") << ":" << defPort;
                 if( !omni::omniInitialReferences::setFromArgs(ns_name.str().c_str(), uri.str().c_str()) )
-                    cerr << "**********************!!!! FAILED ADD name=" <<ns_name << " uri=" << uri.str() << endl; 
+                    cerr << "**********************!!!! FAILED ADD name=" << ns_name << " uri=" << uri.str() << endl;
             }
         }
 
         _argv = new_argv;
-        // ------------- CORBA INIT -------------        
+        // ------------- CORBA INIT -------------
         // orb init
         orb = CORBA::ORB_init(_argc,(char**)_argv);
         // create policy
@@ -373,10 +375,10 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
             pl[1] = root_poa->create_servant_retention_policy(PortableServer::RETAIN);
             pl[2] = root_poa->create_request_processing_policy(PortableServer::USE_ACTIVE_OBJECT_MAP_ONLY);
 //            pl[3] = root_poa->create_thread_policy(PortableServer::SINGLE_THREAD_MODEL);
-        }    
-    
+        }
+
         policyList = pl;
-        // ---------------------------------------        
+        // ---------------------------------------
 
     }
     catch( Exception& ex )
@@ -772,6 +774,13 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
     return dnode;
 }
 // -------------------------------------------------------------------------
+static std::string makeSecName( const std::string& sec, const std::string& name )
+{
+    ostringstream n;
+    n << sec << "/" << name;
+    return std::move(n.str());
+}
+// -------------------------------------------------------------------------
 void Configuration::initRepSections()
 {
     // Реализация под жёсткую структуру репозитория
@@ -784,13 +793,13 @@ void Configuration::initRepSections()
         throw SystemError(msg.str());
     }
 
-    secRoot         = unixml->getProp(node,"name");
-    secSensors         = secRoot + "/" + getRepSectionName("sensors",xmlSensorsSec);
-    secObjects        = secRoot + "/" + getRepSectionName("objects",xmlObjectsSec);
-    secControlles     = secRoot + "/" + getRepSectionName("controllers",xmlControllersSec);
-    secServices        = secRoot + "/" + getRepSectionName("services",xmlServicesSec);
+    secRoot       = unixml->getProp(node,"name");
+    secSensors    = makeSecName(secRoot, getRepSectionName("sensors",xmlSensorsSec));
+    secObjects    = makeSecName(secRoot, getRepSectionName("objects",xmlObjectsSec));
+    secControlles = makeSecName(secRoot, getRepSectionName("controllers",xmlControllersSec));
+    secServices   = makeSecName(secRoot, getRepSectionName("services",xmlServicesSec));
 }
-
+// -------------------------------------------------------------------------
 string Configuration::getRepSectionName( const string& sec, xmlNode* secnode )
 {
     xmlNode* node = unixml->findNode(unixml->getFirstNode(),sec);
@@ -808,7 +817,7 @@ string Configuration::getRepSectionName( const string& sec, xmlNode* secnode )
     if( ret.empty() )
         ret = unixml->getProp(node,"name");
 
-    return ret;
+    return std::move(ret);
 }
 // -------------------------------------------------------------------------
 void Configuration::setConfFileName( const string& fn )

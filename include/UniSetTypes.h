@@ -129,8 +129,8 @@ namespace UniSetTypes
             repName(0),textName(0),data(0){}
 
         ObjectId id;        /*!< идентификатор */
-        char* repName;        /*!< текстовое имя для регистрации в репозитории */
-        char* textName;        /*!< текстовое имя */
+        char* repName;      /*!< текстовое имя для регистрации в репозитории */
+        char* textName;     /*!< текстовое имя */
         void* data;
 
         inline bool operator < ( const ObjectInfo& o ) const
@@ -153,6 +153,8 @@ namespace UniSetTypes
     {
         return uni_atoi(str.c_str());
     }
+
+    char* uni_strdup( const std::string& src );
 
     std::string timeToString(time_t tm=time(0), const std::string& brk=":"); /*!< Преобразование времени в строку HH:MM:SS */
     std::string dateToString(time_t tm=time(0), const std::string& brk="/"); /*!< Преобразование даты в строку DD/MM/YYYY */
