@@ -98,7 +98,7 @@ prefix(prefix)
 
         mbslot = rs;
         thr = new ThreadCreator<MBSlave>(this,&MBSlave::execute_rtu);
-
+        thr->setFinalAction(this,&MBSlave::finalThread);
         dinfo << myname << "(init): type=RTU myaddr=" << ModbusRTU::addr2str(addr)
             << " dev=" << dev << " speed=" << speed << endl;
     }
@@ -121,6 +121,7 @@ prefix(prefix)
 
         mbslot = mbtcp;
         thr = new ThreadCreator<MBSlave>(this,&MBSlave::execute_tcp);
+        thr->setFinalAction(this,&MBSlave::finalThread);
         dinfo << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
 
         if( dlog.debugging(Debug::LEVEL9) )
@@ -367,12 +368,18 @@ MBSlave::~MBSlave()
     if( thr && thr->isRunning() )
     {
         thr->stop();
-        thr->join();
+//        thr->join();
     }
 
     delete thr;
     delete mbslot;
     delete shm;
+}
+// -----------------------------------------------------------------------------
+void MBSlave::finalThread()
+{
+    activated = false;
+    cancelled = true;
 }
 // -----------------------------------------------------------------------------
 void MBSlave::waitSMReady()

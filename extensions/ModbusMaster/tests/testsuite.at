@@ -1,0 +1,7 @@
+m4_include(package.m4)
+
+AT_COLOR_TESTS
+
+AT_INIT([ModbusMaster tests])
+
+m4_include(mbmaster-tests.at)

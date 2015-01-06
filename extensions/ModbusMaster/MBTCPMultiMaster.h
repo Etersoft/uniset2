@@ -232,6 +232,7 @@ class MBTCPMultiMaster:
         virtual std::shared_ptr<ModbusClient> initMB( bool reopen=false ) override;
         void poll_thread();
         void check_thread();
+        void final_thread();
 
         UniSetTypes::uniset_rwmutex mbMutex;
         bool force_disconnect;

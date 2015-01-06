@@ -142,7 +142,9 @@ checkThread(0)
         ic->addReadItem( sigc::mem_fun(this,&MBTCPMultiMaster::readItem) );
 
     pollThread = new ThreadCreator<MBTCPMultiMaster>(this, &MBTCPMultiMaster::poll_thread);
+    pollThread->setFinalAction(this,&MBTCPMultiMaster::final_thread);
     checkThread = new ThreadCreator<MBTCPMultiMaster>(this, &MBTCPMultiMaster::check_thread);
+    checkThread->setFinalAction(this,&MBTCPMultiMaster::final_thread);
 
 
     // Т.к. при "многоканальном" доступе к slave, смена канала должна происходит сразу после
@@ -155,8 +157,22 @@ checkThread(0)
 // -----------------------------------------------------------------------------
 MBTCPMultiMaster::~MBTCPMultiMaster()
 {
-    delete pollThread;
-    delete checkThread;
+    if( pollThread )
+    {
+        pollThread->stop();
+        if( pollThread->isRunning() )
+            pollThread->join();
+        delete pollThread;
+    }
+
+    if( checkThread )
+    {
+        checkThread->stop();
+        if( checkThread->isRunning() )
+            checkThread->join();
+        delete checkThread;
+    }
+
     for( auto &it: mblist )
     {
         it.mbtcp = nullptr;
@@ -216,6 +232,12 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
     return 0;
 }
 // -----------------------------------------------------------------------------
+void MBTCPMultiMaster::final_thread()
+{
+    setProcActive(false);
+}
+// -----------------------------------------------------------------------------
+
 bool MBTCPMultiMaster::MBSlaveInfo::check()
 {
      return mbtcp->checkConnection(ip,port);

@@ -70,6 +70,7 @@ pollThread(0)
         ic->addReadItem( sigc::mem_fun(this,&MBTCPMaster::readItem) );
 
     pollThread = new ThreadCreator<MBTCPMaster>(this, &MBTCPMaster::poll_thread);
+    pollThread->setFinalAction(this,&MBTCPMaster::final_thread);
 
     if( dlog.is_info() )
         printMap(rmap);
@@ -138,6 +139,11 @@ void MBTCPMaster::sysCommand( const UniSetTypes::SystemMessage *sm )
     MBExchange::sysCommand(sm);
     if( sm->command == SystemMessage::StartUp )
         pollThread->start();
+}
+// -----------------------------------------------------------------------------
+void MBTCPMaster::final_thread()
+{
+    setProcActive(false);
 }
 // -----------------------------------------------------------------------------
 void MBTCPMaster::poll_thread()

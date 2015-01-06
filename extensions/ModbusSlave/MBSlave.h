@@ -386,6 +386,7 @@ class MBSlave:
 
         // действия при завершении работы
         virtual void sigterm( int signo ) override;
+        virtual void finalThread();
 
         virtual void initIterators();
         bool initItem( UniXML::iterator& it );

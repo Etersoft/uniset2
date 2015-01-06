@@ -215,6 +215,7 @@ class MBTCPMaster:
         int port;
 
         void poll_thread();
+        void final_thread();
         bool force_disconnect;
 
      private:

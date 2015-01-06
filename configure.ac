@@ -165,11 +165,11 @@ AM_CONDITIONAL(DISABLE_PYTHON, test ${buildpython} = false)
 
 # check Doxygen
 DOXYGEN=""
-doc=true
+doc=false
 dox=
 AC_MSG_CHECKING([Generate docs])
-AC_ARG_ENABLE(docs,AC_HELP_STRING([--disable-docs], [disable build docs]),
-[ if test $enableval = yes; then doc=true; else doc=false; fi],[ doc=true; ])
+AC_ARG_ENABLE(docs,AC_HELP_STRING([--enable-docs], [enable build docs]),
+[ if test $enableval = yes; then doc=true; else doc=false; fi],[ doc=false; ])
 
 if test ${doc} = true; then
 	AC_MSG_RESULT([yes])
@@ -219,6 +219,7 @@ if test ${buildtests} = true; then
 	AC_CONFIG_TESTDIR(extensions/tests)
 	AC_CONFIG_TESTDIR(extensions/LogicProcessor/tests)
 	AC_CONFIG_TESTDIR(extensions/ModbusSlave/tests)
+	AC_CONFIG_TESTDIR(extensions/ModbusMaster/tests)
 	AC_CONFIG_TESTDIR(extensions/UNetUDP/tests)
 
 	TESTSUITE_DIR="\$(top_builddir)/testsuite"
@@ -328,6 +329,7 @@ AC_CONFIG_FILES([Makefile
 				 extensions/ModbusMaster/Makefile
 				 extensions/ModbusMaster/libUniSet2RTU.pc
 				 extensions/ModbusMaster/libUniSet2MBTCPMaster.pc
+				 extensions/ModbusMaster/tests/Makefile
 				 extensions/ModbusSlave/Makefile
 				 extensions/ModbusSlave/libUniSet2MBSlave.pc
 				 extensions/ModbusSlave/tests/Makefile

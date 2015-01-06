@@ -16,7 +16,7 @@ static ObjectId slaveID = 6004; // conf->getObjectID( conf->getArgParam("--mbs-n
 static ModbusTCPMaster* mb = nullptr;
 static UInterface* ui = nullptr;
 // -----------------------------------------------------------------------------
-void InitTest()
+static void InitTest()
 {
     auto conf = uniset_conf();
     CHECK( conf!=nullptr );

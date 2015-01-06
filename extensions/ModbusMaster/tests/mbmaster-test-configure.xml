@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UNISETPLC xmlns:xi="http://www.w3.org/2001/XInclude">
+	<UserData/>
+	<!-- Общие(стартовые) параметры по UniSet -->
+	<UniSet>
+		<NameService host="localhost" port="2809"/>
+		<LocalNode name="LocalhostNode"/>
+		<RootSection name="UNISET_PLC"/>
+		<CountOfNet name="1"/>
+		<RepeatCount name="3"/>
+		<RepeatTimeoutMS name="50"/>
+		<WatchDogTime name="0"/>
+		<PingNodeTime name="0"/>
+		<AutoStartUpTime name="1"/>
+		<DumpStateTime name="10"/>
+		<SleepTickMS name="500"/>
+		<UniSetDebug levels="" name="ulog"/>
+		<ConfDir name="./"/>
+		<DataDir name="./"/>
+		<BinDir name="./"/>
+		<LogDir name="./"/>
+		<DocDir name="./"/>
+		<LockDir name="./"/>
+		<Services></Services>
+	</UniSet>
+	<dlog name="dlog"/>
+
+	<settings>
+	    <SharedMemory name="SharedMemory" shmID="SharedMemory">
+            <History savetime="200">
+                <item filter="a1" fuse_id="AlarmFuse1_S" fuse_invert="1" id="1" size="30"/>
+                <item filter="a2" fuse_id="AlarmFuse2_AS" fuse_value="2" id="2" size="30"/>
+            </History>
+        </SharedMemory>
+
+		<MBSlave1 addr="0x31" aftersend-pause="0" device="/dev/ttyS0" name="MBSlave1" poll_time="200" reply_timeout="60" speed="9600">
+			<filelist>
+				<!-- Список файлов разрешённых для передачи по modbus
+			directory - каталог где лежит файл. Можно не задавать
+				'ConfDir' - берётся из настроек (см. начало этого файла)
+				'DataDir' - берётся из настроек (см. начало этого файла)
+				'xxx'  - прямое указание каталога
+		-->
+				<item directory="ConfDir" id="1" name="configure.xml"/>
+				<item directory="ConfDir" id="2" name="VERSION"/>
+				<item directory="/tmp/" id="3" name="configure.xml.gz"/>
+				<item directory="ConfDir" id="4" name="SERIAL"/>
+			</filelist>
+			<MEI>
+				<!-- ВНИМАНИЕ: должен заполняться в соответсвии со стандартом. ObjectID и DeviceID не случайны.. -->
+				<device id="0x01">
+					<object id="0" comm="VendorName">
+						<string value="etersoft"/>
+					</object>
+					<object id="1" comm="ProductCode">
+						<string value="uniset"/>
+					</object>
+					<object id="2" comm="MajorMinorRevision">
+						<string value="1.6"/>
+					</object>
+				</device>
+				<device id="0x02">
+					<object id="3" comm="VendorURL">
+						<string value="http://www.etersoft.ru"/>
+					</object>
+					<object id="4" comm="ProductName">
+						<string value="uniset"/>
+					</object>
+					<object id="5" comm="ModelName">
+						<string value="uniset:MBSlave"/>
+					</object>
+					<object id="6" comm="UserApplicationName">
+						<string value="MBSlave1"/>
+					</object>
+				</device>
+				<device id="0x03">
+					<object id="128" comm="private objects">
+						<string id="129" value="etersoft"/>
+						<string id="130" value="uniset"/>
+						<string id="131" value="1.6"/>
+						<string id="132" value="http://www.etersoft.ru"/>
+						<string id="133" value="MBSlave1"/>
+					</object>
+                </device>
+			</MEI>
+		</MBSlave1>
+	</settings>
+	<ObjectsMap idfromfile="1">
+		<!--
+	Краткие пояснения к полям секции 'sensors'
+	==========================================
+	node 		- узел на котором физически находится данный датчик
+	iotype 		- тип датчика
+	priority 	- приоритет сообщения об изменении данного датчика
+	textname 	- текстовое имя датчика
+-->
+		<nodes port="2809">
+			<item id="3000" infserver="InfoServer" ip="127.0.0.1" name="LocalhostNode" textname="Локальный узел"/>
+		</nodes>
+		<!-- ************************ Датчики ********************** -->
+		<sensors name="Sensors">
+
+			<item default="1" id="1000" mbs="1" mbreg="1" iotype="DI" name="TestReadCoil1_S" textname="Тестовый регистр для ReadCoil"/>
+			<item default="1" id="1001" mbs="1" mbreg="2" iotype="DI" name="TestReadCoil2_S" textname="Тестовый регистр для ReadCoil"/>
+			<item id="1002" mbs="1" mbreg="3" iotype="DI" name="TestReadCoil3_S" textname="Тестовый регистр для ReadCoil"/>
+
+			<item default="10" id="1003" mbs="1" mbreg="10" iotype="AI" name="TestRead03_1" textname="Тестовый регистр для 0x03"/>
+			<item default="11" id="1004" mbs="1" mbreg="11" iotype="AI" name="TestRead03_2" textname="Тестовый регистр для 0x03"/>
+			<item default="-10" id="1005" mbs="1" mbreg="12" iotype="AI" name="TestRead03_3" textname="Тестовый регистр для 0x03"/>
+			<item default="-10000" id="1006" mbs="1" mbreg="13" iotype="AI" name="TestRead03_4" textname="Тестовый регистр для 0x03"/>
+			<item id="1007" mbs="1" mbreg="14" iotype="AI" name="TestRead05" textname="Тестовый регистр для 0x05"/>
+			<item id="1008" mbs="1" mbreg="15" iotype="AI" name="TestRead06" textname="Тестовый регистр для 0x06"/>
+
+			<item id="1009" mbs="1" mbreg="16" nbit="0" iotype="DI" name="TestForceCoil0_S" textname="Тестовый регистр для force coil"/>
+			<item id="1010" mbs="1" mbreg="16" nbit="1" iotype="DI" name="TestForceCoil1_S" textname="Тестовый регистр для force coil"/>
+			<item id="1011" mbs="1" mbreg="16" nbit="2" iotype="DI" name="TestForceCoil2_S" textname="Тестовый регистр для force coil"/>
+			<item id="1012" mbs="1" mbreg="16" nbit="3" iotype="DI" name="TestForceCoil3_S" textname="Тестовый регистр для force coil"/>
+			<item id="1013" mbs="1" mbreg="16" nbit="4" iotype="DI" name="TestForceCoil4_S" textname="Тестовый регистр для force coil"/>
+			<item id="1014" mbs="1" mbreg="16" nbit="5" iotype="DI" name="TestForceCoil5_S" textname="Тестовый регистр для force coil"/>
+			<item id="1015" mbs="1" mbreg="16" nbit="6" iotype="DI" name="TestForceCoil6_S" textname="Тестовый регистр для force coil"/>
+			<item id="1016" mbs="1" mbreg="16" nbit="7" iotype="DI" name="TestForceCoil7_S" textname="Тестовый регистр для force coil"/>
+			<item id="1017" mbs="1" mbreg="17" nbit="0" iotype="DI" name="TestForceCoil8_S" textname="Тестовый регистр для force coil"/>
+			<item id="1018" mbs="1" mbreg="17" nbit="1" iotype="DI" name="TestForceCoil9_S" textname="Тестовый регистр для force coil"/>
+			<item id="1019" mbs="1" mbreg="17" nbit="2" iotype="DI" name="TestForceCoil10_S" textname="Тестовый регистр для force coil"/>
+			<item id="1020" mbs="1" mbreg="17" nbit="3" iotype="DI" name="TestForceCoil11_S" textname="Тестовый регистр для force coil"/>
+			<item id="1021" mbs="1" mbreg="17" nbit="4" iotype="DI" name="TestForceCoil12_S" textname="Тестовый регистр для force coil"/>
+			<item id="1022" mbs="1" mbreg="17" nbit="5" iotype="DI" name="TestForceCoil13_S" textname="Тестовый регистр для force coil"/>
+			<item id="1023" mbs="1" mbreg="17" nbit="6" iotype="DI" name="TestForceCoil14_S" textname="Тестовый регистр для force coil"/>
+			<item id="1024" mbs="1" mbreg="17" nbit="7" iotype="DI" name="TestForceCoil15_S" textname="Тестовый регистр для force coil"/>
+
+			<item id="1025" mbs="1" mbreg="18" iotype="AI" name="TestWrite10_S" textname="Тестовый регистр для 0x10"/>
+			<item id="1026" mbs="1" mbreg="19" iotype="AI" name="TestWrite10_S" textname="Тестовый регистр для 0x10"/>
+			<item id="1027" mbs="1" mbreg="20" iotype="DI" name="TestWrite10_S" textname="Тестовый регистр для 0x10"/>
+			<item id="1028" iotype="DI" name="TestWrite10_S" textname="Тестовый регистр для 0x10 (несуществующий)"/>
+
+
+			<!-- vtypes test -->
+			<item default="-100000" id="2001" mbs="1" mbreg="100" iotype="AI" vtype="I2" name="TestVtype1" textname="Тестовый регистр для проверки vtype"/>
+			<item default="-100000" id="2002" mbs="1" mbreg="102" iotype="AI" vtype="I2r" name="TestVtype2" textname="Тестовый регистр для проверки vtype"/>
+			<item default="4294967295" id="2003" mbs="1" mbreg="104" iotype="AI" vtype="U2" name="TestVtype3" textname="Тестовый регистр для проверки vtype"/>
+			<item default="4294967295" id="2004" mbs="1" mbreg="106" iotype="AI" vtype="U2r" name="TestVtype4" textname="Тестовый регистр для проверки vtype"/>
+			<item default="200" id="2005" mbs="1" mbreg="108" iotype="AI" vtype="byte" nbyte="1" name="TestVtype5" textname="Тестовый регистр для проверки vtype"/>
+			<item default="200" id="2006" mbs="1" mbreg="109" iotype="AI" vtype="byte" nbyte="2" name="TestVtype6" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2007" default="250" precision="2" mbs="1" mbreg="110" iotype="AI" vtype="F2" name="TestVtype7" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2008" default="250" precision="2" mbs="1" mbreg="112" iotype="AI" vtype="F2r" name="TestVtype8" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2009" default="250000" precision="5" mbs="1" mbreg="114" iotype="AI" vtype="F4" name="TestVtype9" textname="Тестовый регистр для проверки vtype"/>
+			<item default="-100" id="2011" mbs="1" mbreg="118" iotype="AI" vtype="signed" name="TestVtype11" textname="Тестовый регистр для проверки vtype"/>
+			<item default="65534" id="2012" mbs="1" mbreg="119" iotype="AI" vtype="unsigned" name="TestVtype12" textname="Тестовый регистр для проверки vtype"/>
+			<item id="2013" rawdata="1" mbs="1" mbreg="120" iotype="AI" vtype="F4" name="TestVtype9" textname="Тестовый регистр для проверки vtype"/>
+
+			<!-- access mode test -->
+			<item id="2014" default="1002" accessmode="ro" mbs="1" mbreg="124" iotype="AI" name="TestAccessMode1" textname="Тестовый регистр для проверки access mode"/>
+			<item id="2015" default="2222" accessmode="wo" mbs="1" mbreg="125" iotype="AI" name="TestAccessMode2" textname="Тестовый регистр для проверки access mode"/>
+			<item id="2016" default="1000" accessmode="rw" mbs="1" mbreg="126" iotype="AI" name="TestAccessMode3" textname="Тестовый регистр для проверки access mode"/>
+
+			<item id="10000" iotype="DI" name="TestMode_S" textname="Тестовый датчик"/>
+
+		</sensors>
+		<thresholds/>
+		<controllers name="Controllers">
+			<item id="5000" name="SharedMemory"/>
+		</controllers>
+		<!-- ******************* Идентификаторы сервисов ***************** -->
+		<services name="Services">
+		</services>
+		<!-- ******************* Идентификаторы объектов ***************** -->
+		<objects name="UniObjects">
+			<item id="6000" name="TestProc"/>
+			<item id="6004" name="MBSlave1"/>
+		</objects>
+	</ObjectsMap>
+	<messages idfromfile="1" name="messages"/>
+</UNISETPLC>
