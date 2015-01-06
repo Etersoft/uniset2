@@ -40,7 +40,7 @@ c_filterValue(""),
 t_filterField(""),
 t_filterValue(""),
 fname(fname),
-uxml(0)
+uxml(nullptr)
 {
     init(fname);
 }
@@ -55,7 +55,7 @@ c_filterValue(""),
 t_filterField(""),
 t_filterValue(""),
 fname(fname),
-uxml(0)
+uxml(nullptr)
 {
     init(fname);
     setItemFilter(f_field,f_value);
@@ -63,7 +63,7 @@ uxml(0)
 
 NCRestorer_XML::NCRestorer_XML():
 fname(""),
-uxml(0)
+uxml(nullptr)
 {
 }
 
@@ -77,7 +77,7 @@ NCRestorer_XML::~NCRestorer_XML()
     }
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer_XML::init( const std::string& fname )
+void NCRestorer_XML::init( const std::string& xmlfile )
 {
     /*! 
         \warning Файл открывается только при создании... 
@@ -85,14 +85,22 @@ void NCRestorer_XML::init( const std::string& fname )
     */
     try
     {
-        if( fname == uniset_conf()->getConfFileName() )
+        if( xmlfile == uniset_conf()->getConfFileName() )
             uxml = uniset_conf()->getConfXML();
         else
-            uxml = make_shared<UniXML>(fname);
+        {
+            if( uxml )
+            {
+                uxml->close();
+                uxml.reset();
+            }
+            uxml = make_shared<UniXML>(xmlfile);
+        }
+        fname = xmlfile;
     }
     catch( UniSetTypes::NameNotFound& ex )
     {
-        uwarn << "(NCRestorer_XML): файл " << fname << " не найден, создаём новый...\n";
+        uwarn << "(NCRestorer_XML): файл " << xmlfile << " не найден, создаём новый...\n";
     }
 }
 // ------------------------------------------------------------------------------------------
@@ -180,9 +188,9 @@ void NCRestorer_XML::read( IONotifyController* ic, const string& fn )
     else if( !fname.empty() )
     {
         // оптимизация (не загружаем второй раз xml-файл)
-        if( fname == uniset_conf()->getConfFileName() && confxml )
-            read( ic, confxml );
-        else if( uxml && uxml->isOpen() && uxml->filename == fn )
+        if( confxml && fname == confxml->getFileName() )
+            read(ic,confxml);
+        else if( uxml && uxml->isOpen() && uxml->getFileName() == fname )
             read(ic,uxml);
         else
         {

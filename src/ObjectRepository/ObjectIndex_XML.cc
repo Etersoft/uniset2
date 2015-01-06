@@ -180,10 +180,9 @@ unsigned int ObjectIndex_XML::read_section( const std::shared_ptr<UniXML>& xml, 
         // name
         ostringstream n;
         n << secname << xml->getProp(it,"name");
-        const string name(n.str());
         delete[] omap[ind].repName;
-        omap[ind].repName = new char[name.size()+1];
-        strcpy( omap[ind].repName, name.c_str() );
+        const string name(n.str());
+        omap[ind].repName = uni_strdup(name);
 
         // mok
         mok[name] = ind; // mok[omap[ind].repName] = ind;
@@ -194,8 +193,7 @@ unsigned int ObjectIndex_XML::read_section( const std::shared_ptr<UniXML>& xml, 
             textname = xml->getProp(it,"name");
 
         delete[] omap[ind].textName;
-        omap[ind].textName = new char[textname.size()+1];
-        strcpy( omap[ind].textName, textname.c_str() );
+        omap[ind].textName = uni_strdup(textname);
 
         omap[ind].data = (void*)(xmlNode*)it;
 
@@ -249,8 +247,7 @@ unsigned int ObjectIndex_XML::read_nodes( const std::shared_ptr<UniXML>& xml, co
         string nodename(xml->getProp(it,"name"));
 
         delete[] omap[ind].repName;
-        omap[ind].repName = new char[nodename.size()+1];
-        strcpy( omap[ind].repName, nodename.c_str() );
+        omap[ind].repName = uni_strdup(nodename);
 
         // textname
         string textname(xml->getProp(it,"textname"));
@@ -258,9 +255,7 @@ unsigned int ObjectIndex_XML::read_nodes( const std::shared_ptr<UniXML>& xml, co
             textname = nodename;
 
         delete[] omap[ind].textName;
-        omap[ind].textName = new char[textname.size()+1];
-        strcpy( omap[ind].textName, textname.c_str() );
-
+        omap[ind].textName = uni_strdup(textname);
         omap[ind].data = (void*)(xmlNode*)(it);
         // 
         mok[omap[ind].repName] = ind;

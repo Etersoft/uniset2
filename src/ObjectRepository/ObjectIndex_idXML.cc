@@ -149,23 +149,18 @@ void ObjectIndex_idXML::read_section( const std::shared_ptr<UniXML>& xml, const 
         // name
         ostringstream n;
         n << secname << it.getProp("name");
-        string name(n.str());
+        const string name(n.str());
+        inf.repName = uni_strdup(name);
 
-        inf.repName = new char[name.size()+1];
-        strcpy( inf.repName, name.c_str() );
-
-        // textname
         string textname(xml->getProp(it,"textname"));
         if( textname.empty() )
             textname = xml->getProp(it,"name");
 
-        inf.textName = new char[textname.size()+1];
-        strcpy( inf.textName, textname.c_str() );
-
+        inf.textName = uni_strdup(textname);
         inf.data = (void*)(xmlNode*)(it);
 
-        omap.insert(MapObjects::value_type(inf.id,inf));    // omap[inf.id] = inf;
         mok.insert(MapObjectKey::value_type(name,inf.id)); // mok[name] = inf.id;
+        omap.insert(MapObjects::value_type(inf.id, std::move(inf)));    // omap[inf.id] = inf;
     }
 }
 // ------------------------------------------------------------------------------------------
@@ -202,18 +197,14 @@ void ObjectIndex_idXML::read_nodes( const std::shared_ptr<UniXML>& xml, const st
         }
 
         string name(it.getProp("name"));
-
-        inf.repName = new char[name.size()+1];
-        strcpy( inf.repName, name.c_str() );
+        inf.repName = uni_strdup(name);
 
         // textname
         string textname(xml->getProp(it,"textname"));
         if( textname.empty() )
             textname = name;
 
-        inf.textName = new char[textname.size()+1];
-        strcpy( inf.textName, textname.c_str() );
-
+        inf.textName = uni_strdup(textname);
         inf.data = (void*)(xmlNode*)(it);
 
         omap.insert(MapObjects::value_type(inf.id,inf));    // omap[inf.id] = inf;

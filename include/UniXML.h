@@ -188,7 +188,7 @@ public:
 
     xmlNode* cur;
     xmlDoc* doc;
-    std::string filename;
+    inline std::string getFileName(){ return filename; }
 
     // Создать новый XML-документ
     void newDoc(const std::string& root_node, std::string xml_ver="1.0");
@@ -235,6 +235,8 @@ public:
 
 
 protected:
+    std::string filename;
+
     // Преобразование текстовой строки из XML в строку нашего внутреннего представления
     static std::string xml2local( const std::string& text );
 

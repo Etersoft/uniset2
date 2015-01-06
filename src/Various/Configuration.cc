@@ -107,11 +107,17 @@ Configuration::~Configuration()
         delete[] _argv[i];
 
     delete[] _argv;
+
+    if( oind )
+        oind.reset();
+    if( unixml )
+        unixml.reset();
 }
 // ---------------------------------------------------------------------------------
 
 Configuration::Configuration( int argc, const char* const* argv, const string& xmlfile ):
-    oind(NULL),
+    oind(nullptr),
+    unixml(nullptr),
     _argc(argc),
     _argv(argv),
     NSName("NameService"),
@@ -129,7 +135,8 @@ Configuration::Configuration( int argc, const char* const* argv, const string& x
 // ---------------------------------------------------------------------------------
 Configuration::Configuration( int argc, const char* const* argv, shared_ptr<ObjectIndex> _oind,
                                 const string& fileConf ):
-    oind(NULL),
+    oind(nullptr),
+    unixml(nullptr),
     _argc(argc),
     _argv(argv),
     NSName("NameService"),
@@ -198,7 +205,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         try
         {
             if( unixml == nullptr )
-                unixml = std::shared_ptr<UniXML>( new UniXML() );
+                unixml = make_shared<UniXML>();
 
             if( !unixml->isOpen() )
             {
@@ -358,26 +365,23 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         // create policy
         CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
         PortableServer::POA_var root_poa = PortableServer::POA::_narrow(obj);
-        CORBA::PolicyList pl;
 
         if( transientIOR == false )
         {
-            pl.length(3);
-            pl[0] = root_poa->create_lifespan_policy(PortableServer::PERSISTENT);
-            pl[1] = root_poa->create_id_assignment_policy(PortableServer::USER_ID);
-            pl[2] = root_poa->create_request_processing_policy(PortableServer::USE_ACTIVE_OBJECT_MAP_ONLY);
-//            pl[3] = root_poa->create_thread_policy(PortableServer::SINGLE_THREAD_MODEL);
+            policyList.length(3);
+            policyList[0] = root_poa->create_lifespan_policy(PortableServer::PERSISTENT);
+            policyList[1] = root_poa->create_id_assignment_policy(PortableServer::USER_ID);
+            policyList[2] = root_poa->create_request_processing_policy(PortableServer::USE_ACTIVE_OBJECT_MAP_ONLY);
+//            policyList[3] = root_poa->create_thread_policy(PortableServer::SINGLE_THREAD_MODEL);
         }
         else
         {
-            pl.length(3);
-            pl[0] = root_poa->create_lifespan_policy(PortableServer::TRANSIENT);
-            pl[1] = root_poa->create_servant_retention_policy(PortableServer::RETAIN);
-            pl[2] = root_poa->create_request_processing_policy(PortableServer::USE_ACTIVE_OBJECT_MAP_ONLY);
-//            pl[3] = root_poa->create_thread_policy(PortableServer::SINGLE_THREAD_MODEL);
+            policyList.length(3);
+            policyList[0] = root_poa->create_lifespan_policy(PortableServer::TRANSIENT);
+            policyList[1] = root_poa->create_servant_retention_policy(PortableServer::RETAIN);
+            policyList[2] = root_poa->create_request_processing_policy(PortableServer::USE_ACTIVE_OBJECT_MAP_ONLY);
+//            policyList[3] = root_poa->create_thread_policy(PortableServer::SINGLE_THREAD_MODEL);
         }
-
-        policyList = pl;
         // ---------------------------------------
 
     }

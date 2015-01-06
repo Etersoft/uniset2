@@ -160,8 +160,8 @@ namespace UniSetTypes
         /*! указатель на конфигурационный xml */
         inline const std::shared_ptr<UniXML> getConfXML() const { return unixml; }
 
-        CORBA::ORB_ptr getORB()const { return CORBA::ORB::_duplicate(orb); }
-        CORBA::PolicyList getPolicy() const { return policyList; }
+        inline CORBA::ORB_ptr getORB() const { return CORBA::ORB::_duplicate(orb); }
+        inline const CORBA::PolicyList getPolicy() const { return policyList; }
 
     protected:
         Configuration();

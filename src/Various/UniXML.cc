@@ -118,13 +118,16 @@ string UniXML::getPropUtf8(const xmlNode* node, const string& name)
 
 string UniXML::getProp(const xmlNode* node, const string& name)
 {
-    const char * text = (const char*)::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
+    xmlChar* text = ::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
     if( text == NULL )
+    {
+        xmlFree(text);
         return "";
+    }
     
-    string t(text);
-    xmlFree( (void*)text );
-    return t;
+    const string t( (const char*)text );
+    xmlFree(text);
+    return std::move(t);
 }
 
 int UniXML::getIntProp(const xmlNode* node, const string& name )

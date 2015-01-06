@@ -331,6 +331,9 @@ class IONotifyController:
         UniSetTypes::uniset_rwmutex trshMutex;
 
         int maxAttemtps; /*! timeout for consumer */
+
+        sigc::connection conInit;
+        sigc::connection conUndef;
 };
 // --------------------------------------------------------------------------
 #endif

@@ -126,7 +126,7 @@ void UniSetActivator::init()
     CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
     PortableServer::POA_var root_poa = PortableServer::POA::_narrow(obj);
     pman = root_poa->the_POAManager();
-    CORBA::PolicyList pl = conf->getPolicy();
+    const CORBA::PolicyList pl = conf->getPolicy();
     poa = root_poa->create_POA("my poa", pman, pl);
 
     if( CORBA::is_nil(poa) )
@@ -410,7 +410,11 @@ void UniSetActivator::sysCommand( const UniSetTypes::SystemMessage *sm )
 // -------------------------------------------------------------------------
 void UniSetActivator::set_signals(bool ask)
 {
-    struct sigaction act, oact;
+    struct sigaction act; // = { { 0 } };
+    struct sigaction oact; // = { { 0 } };
+    memset(&act,0,sizeof(act));
+    memset(&act,0,sizeof(oact));
+
     sigemptyset(&act.sa_mask);
     sigemptyset(&oact.sa_mask);
 

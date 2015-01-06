@@ -65,8 +65,8 @@ IONotifyController::IONotifyController( ObjectId id, NCRestorer* d ):
     trshMutex(string(uniset_conf()->oind->getMapName(id))+"_trshMutex"),
     maxAttemtps(uniset_conf()->getPIntField("ConsumerMaxAttempts", 5))
 {
-    signal_change_undefined_state().connect(sigc::mem_fun(*this, &IONotifyController::onChangeUndefinedState));
-    signal_init().connect(sigc::mem_fun(*this, &IONotifyController::initItem));
+    conUndef = signal_change_undefined_state().connect(sigc::mem_fun(*this, &IONotifyController::onChangeUndefinedState));
+    conInit = signal_init().connect(sigc::mem_fun(*this, &IONotifyController::initItem));
 
     // добавляем фильтры
     addIOFilter( sigc::mem_fun(this,&IONotifyController::myIOFilter) );
@@ -74,6 +74,8 @@ IONotifyController::IONotifyController( ObjectId id, NCRestorer* d ):
 
 IONotifyController::~IONotifyController()
 {
+    conUndef.disconnect();
+    conInit.disconnect();
 }
 
 // ------------------------------------------------------------------------------------------

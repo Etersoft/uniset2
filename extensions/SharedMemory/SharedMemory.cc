@@ -597,25 +597,22 @@ void SharedMemory::checkHistoryFilter( UniXML::iterator& xit )
         if( xit.getProp(it.filter).empty() )
             continue;
 
-        HistoryItem ai;
-
         if( !xit.getProp("id").empty() )
         {
-            ai.id = xit.getIntProp("id");
-            ai.init( it.size, xit.getIntProp("default") );
-            it.hlst.push_back(ai);
+            HistoryItem ai(xit.getIntProp("id"), it.size, xit.getIntProp("default") );
+            it.hlst.push_back( std::move(ai) );
             continue;
         }
 
-        ai.id = uniset_conf()->getSensorID(xit.getProp("name"));
-        if( ai.id == DefaultObjectId )
+        ObjectId id = uniset_conf()->getSensorID(xit.getProp("name"));
+        if( id == DefaultObjectId )
         {
             dwarn << myname << "(checkHistoryFilter): not found sensor ID for " << xit.getProp("name") << endl;
             continue;
         }
 
-        ai.init( it.size, xit.getIntProp("default") );
-        it.hlst.push_back(ai);
+        HistoryItem ai(id, it.size, xit.getIntProp("default") );
+        it.hlst.push_back( std::move(ai) );
     }
 }
 // -----------------------------------------------------------------------------
