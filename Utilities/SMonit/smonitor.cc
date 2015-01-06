@@ -35,7 +35,7 @@ int main( int argc, const char **argv )
 
         UniSetActivatorPtr act = UniSetActivator::Instance();
         SMonitor tp(ID);
-        act->addObject(&tp);
+        act->addObject(tp.get_ptr());
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );

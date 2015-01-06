@@ -50,15 +50,15 @@ int main( int argc, const char** argv )
             return 1;
         }
 
-        RRDServer* db = RRDServer::init_rrdstorage(argc,argv,shmID);
+        auto db = RRDServer::init_rrdstorage(argc,argv,shmID);
         if( !db )
         {
             dcrit << "(rrdstorage): init не прошёл..." << endl;
             return 1;
         }
 
-        UniSetActivatorPtr act = UniSetActivator::Instance();
-        act->addObject(static_cast<class UniSetObject*>(db));
+        auto act = UniSetActivator::Instance();
+        act->addObject(db);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );

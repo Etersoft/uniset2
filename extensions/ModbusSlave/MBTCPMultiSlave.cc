@@ -11,7 +11,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
-MBTCPMultiSlave::MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic, const string& prefix ):
+MBTCPMultiSlave::MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic, const string& prefix ):
 MBSlave(objId,shmId,ic,prefix),
 sesscount_id(DefaultObjectId)
 {
@@ -110,8 +110,8 @@ void MBTCPMultiSlave::help_print( int argc, const char* const* argv )
    cout << "--prefix-session-count-id  id - Датчик для отслеживания текущего количества соединений." << endl;
 }
 // -----------------------------------------------------------------------------
-MBTCPMultiSlave* MBTCPMultiSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID, SharedMemory* ic,
-                                const string& prefix )
+std::shared_ptr<MBTCPMultiSlave> MBTCPMultiSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
+                                                                const std::shared_ptr<SharedMemory> ic, const string& prefix )
 {
     auto conf = uniset_conf();
     string name = conf->getArgParam("--" + prefix + "-name","MBSlave1");
@@ -131,7 +131,7 @@ MBTCPMultiSlave* MBTCPMultiSlave::init_mbslave( int argc, const char* const* arg
     }
 
     dinfo << "(mbslave): name = " << name << "(" << ID << ")" << endl;
-    return new MBTCPMultiSlave(ID,icID,ic,prefix);
+    return make_shared<MBTCPMultiSlave>(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
 void MBTCPMultiSlave::execute_tcp()

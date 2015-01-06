@@ -50,15 +50,15 @@ int main( int argc, const char** argv )
             return 1;
         }
 
-        MBTCPMaster* mb = MBTCPMaster::init_mbmaster(argc,argv,shmID);
+        auto mb = MBTCPMaster::init_mbmaster(argc,argv,shmID);
         if( !mb )
         {
             dcrit << "(mbmaster): init MBTCPMaster failed." << endl;
             return 1;
         }
 
-        UniSetActivatorPtr act = UniSetActivator::Instance();
-        act->addObject(static_cast<class UniSetObject*>(mb));
+        auto act = UniSetActivator::Instance();
+        act->addObject(mb);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );

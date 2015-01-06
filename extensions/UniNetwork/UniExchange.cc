@@ -18,7 +18,7 @@ UniExchange::NetNodeInfo::NetNodeInfo():
 }
 // --------------------------------------------------------------------------
 UniExchange::UniExchange( UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID, 
-                            SharedMemory* ic, const std::string& prefix ):
+                          const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
 IOController(id),
 shm(0),
 polltime(200),
@@ -327,8 +327,8 @@ void UniExchange::sigterm( int signo )
 {
 }
 // -----------------------------------------------------------------------------
-UniExchange* UniExchange::init_exchange( int argc, const char* const* argv, 
-                                        UniSetTypes::ObjectId icID, SharedMemory* ic,
+std::shared_ptr<UniExchange> UniExchange::init_exchange( int argc, const char* const* argv,
+                                        UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory> ic,
                                             const std::string& prefix )
 {
     auto conf = uniset_conf();
@@ -343,7 +343,7 @@ UniExchange* UniExchange::init_exchange( int argc, const char* const* argv,
             << " in section " << conf->getControllersSection() << endl;
         return 0;
     }
-    return new UniExchange(ID,icID,ic,prefix);
+    return make_shared<UniExchange>(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
 void UniExchange::readConfiguration()

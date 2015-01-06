@@ -11,7 +11,7 @@ class SMInterface
     public:
 
         SMInterface( UniSetTypes::ObjectId _shmID, UInterface* ui,
-                        UniSetTypes::ObjectId myid, IONotifyController* ic=0 );
+                        UniSetTypes::ObjectId myid, const std::shared_ptr<IONotifyController> ic=nullptr );
         ~SMInterface();
 
         void setValue ( UniSetTypes::ObjectId, long value );
@@ -49,11 +49,11 @@ class SMInterface
 
         inline bool isLocalwork(){ return (ic==NULL); }
         inline UniSetTypes::ObjectId ID(){ return myid; }
-        inline IONotifyController* SM(){ return ic; }
+        inline const std::shared_ptr<IONotifyController> SM(){ return ic; }
         inline UniSetTypes::ObjectId getSMID(){ return shmID; }
 
     protected:
-        IONotifyController* ic;
+        const std::shared_ptr<IONotifyController> ic;
         UInterface* ui;
         CORBA::Object_var oref;
         UniSetTypes::ObjectId shmID;

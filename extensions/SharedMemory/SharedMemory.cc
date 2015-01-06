@@ -410,7 +410,7 @@ bool SharedMemory::readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterato
     return true;
 }
 // ------------------------------------------------------------------------------------------
-SharedMemory* SharedMemory::init_smemory( int argc, const char* const* argv )
+shared_ptr<SharedMemory> SharedMemory::init_smemory( int argc, const char* const* argv )
 {
     auto conf = uniset_conf();
     string dfile = conf->getArgParam("--datfile", conf->getConfFileName());
@@ -429,8 +429,7 @@ SharedMemory* SharedMemory::init_smemory( int argc, const char* const* argv )
     }
 
     string cname = conf->getArgParam("--smemory--confnode", ORepHelpers::getShortName(conf->oind->getMapName(ID)) );
-
-    return new SharedMemory(ID,dfile,cname);
+    return make_shared<SharedMemory>(ID,dfile,cname);
 }
 // -----------------------------------------------------------------------------
 void SharedMemory::buildEventList( xmlNode* cnode )

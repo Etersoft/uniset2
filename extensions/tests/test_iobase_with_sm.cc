@@ -10,11 +10,13 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-static SMInterface* shm = nullptr;
+static std::shared_ptr<SMInterface> shared_shm;
+static SMInterface* shm;
 static void init_test()
 {
-    shm = smiInstance();
-    CHECK( shm != nullptr );
+    shared_shm = smiInstance();
+    CHECK( shared_shm != nullptr );
+    shm = shared_shm.get();
 }
 
 static bool init_iobase( IOBase* ib, const std::string& sensor )

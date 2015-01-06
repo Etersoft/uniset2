@@ -39,11 +39,11 @@ using namespace UniSetTypes;
 using namespace std;
 // ------------------------------------------------------------------------------------------
 // объект-функция для посылки сообщения менеджеру
-class MPush: public unary_function<UniSetManager*, bool>
+class MPush: public unary_function< const std::shared_ptr<UniSetManager>& , bool>
 {
     public: 
         MPush(const UniSetTypes::TransportMessage& msg):msg(msg){}
-        bool operator()(UniSetManager* m) const
+        bool operator()( const std::shared_ptr<UniSetManager>& m ) const
         {
             try
             {
@@ -60,11 +60,11 @@ class MPush: public unary_function<UniSetManager*, bool>
 };
 
 // объект-функция для посылки сообщения объекту
-class OPush: public unary_function<UniSetObject*, bool>
+class OPush: public unary_function< const std::shared_ptr<UniSetObject>& , bool>
 {
     public: 
         OPush(const UniSetTypes::TransportMessage& msg):msg(msg){}
-        bool operator()(UniSetObject* o) const
+        bool operator()( const std::shared_ptr<UniSetObject>& o ) const
         {
             try
             {
@@ -169,7 +169,7 @@ void UniSetManager::initPOA( UniSetManager* rmngr )
     managers(initial);
 }
 // ------------------------------------------------------------------------------------------
-bool UniSetManager::addObject( UniSetObject *obj )
+bool UniSetManager::addObject( std::shared_ptr<UniSetObject> obj )
 {
     {    //lock
         uniset_rwmutex_wrlock lock(olistMutex);
@@ -184,7 +184,7 @@ bool UniSetManager::addObject( UniSetObject *obj )
 }
 
 // ------------------------------------------------------------------------------------------
-bool UniSetManager::removeObject( UniSetObject* obj )
+bool UniSetManager::removeObject( std::shared_ptr<UniSetObject> obj )
 {
     {    //lock
         uniset_rwmutex_wrlock lock(olistMutex);
@@ -194,7 +194,8 @@ bool UniSetManager::removeObject( UniSetObject* obj )
             uinfo << myname << "(activator): удаляем объект "<< obj->getName()<< endl;
             try
             {
-                obj->deactivate();
+                if(obj)
+                    obj->deactivate();
             }
             catch(Exception& ex)
             {
@@ -235,6 +236,8 @@ void UniSetManager::managers( OManagerCommand cmd )
         uniset_rwmutex_rlock lock(mlistMutex);
         for( auto &li: mlist )
         {
+            if( !li )
+                continue;
             try
             {
                 switch(cmd)
@@ -295,6 +298,8 @@ void UniSetManager::objects(OManagerCommand cmd)
 
         for( auto &li: olist )
         {
+            if( !li )
+                continue;
             try
             {
                 switch(cmd)
@@ -409,7 +414,7 @@ void UniSetManager::broadcast(const TransportMessage& msg)
 }
 
 // ------------------------------------------------------------------------------------------
-bool UniSetManager::addManager( UniSetManager *child )
+bool UniSetManager::addManager( std::shared_ptr<UniSetManager> child )
 {
     {    //lock
         uniset_rwmutex_wrlock lock(mlistMutex);
@@ -429,7 +434,7 @@ bool UniSetManager::addManager( UniSetManager *child )
 }
 
 // ------------------------------------------------------------------------------------------
-bool UniSetManager::removeManager( UniSetManager* child )
+bool UniSetManager::removeManager( std::shared_ptr<UniSetManager> child )
 {
     {    //lock
         uniset_rwmutex_wrlock lock(mlistMutex);
@@ -441,7 +446,7 @@ bool UniSetManager::removeManager( UniSetManager* child )
 
 // ------------------------------------------------------------------------------------------
 
-const UniSetManager* UniSetManager::itemM(const ObjectId id)
+const std::shared_ptr<UniSetManager> UniSetManager::itemM( const ObjectId id )
 {
 
     {    //lock
@@ -458,7 +463,7 @@ const UniSetManager* UniSetManager::itemM(const ObjectId id)
 
 // ------------------------------------------------------------------------------------------
 
-const UniSetObject* UniSetManager::itemO(const ObjectId id)
+const std::shared_ptr<UniSetObject> UniSetManager::itemO( const ObjectId id )
 {
     {    //lock
         uniset_rwmutex_rlock lock(olistMutex);
@@ -469,7 +474,7 @@ const UniSetObject* UniSetManager::itemO(const ObjectId id)
         }
     } // unlock
 
-    return 0;
+    return std::shared_ptr<UniSetObject>();
 }
 
 // ------------------------------------------------------------------------------------------
@@ -488,7 +493,7 @@ int UniSetManager::objectsCount()
 }
 
 // ------------------------------------------------------------------------------------------
-int UniSetManager::getObjectsInfo( UniSetManager* mngr, SimpleInfoSeq* seq, 
+int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, SimpleInfoSeq* seq,
                                     int begin, const long uplimit )
 {
     auto ind = begin;
@@ -550,7 +555,8 @@ SimpleInfoSeq* UniSetManager::getObjectsInfo( CORBA::Long maxlength )
     // используем рекурсивную функцию
     int ind = 0;
     const int limit = length; 
-    ind = getObjectsInfo( this, res, ind, limit );
+
+    ind = getObjectsInfo( get_mptr(), res, ind, limit );
     return res;
 }
 

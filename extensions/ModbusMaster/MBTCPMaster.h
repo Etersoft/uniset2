@@ -193,13 +193,13 @@ class MBTCPMaster:
     public MBExchange
 {
     public:
-        MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
+        MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr,
                         const std::string& prefix="mbtcp" );
         virtual ~MBTCPMaster();
 
         /*! глобальная функция для инициализации объекта */
-        static MBTCPMaster* init_mbmaster( int argc, const char* const* argv,
-                                            UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
+        static std::shared_ptr<MBTCPMaster> init_mbmaster( int argc, const char* const* argv,
+                                            UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr,
                                             const std::string& prefix="mbtcp" );
 
         /*! глобальная функция для вывода help-а */

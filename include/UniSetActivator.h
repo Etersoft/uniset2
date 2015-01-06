@@ -60,6 +60,7 @@ class UniSetActivator:
         static UniSetActivatorPtr Instance( const UniSetTypes::ObjectId id=UniSetTypes::DefaultObjectId );
         void Destroy();
 
+        std::shared_ptr<UniSetActivator> get_aptr(){ return std::dynamic_pointer_cast<UniSetActivator>(get_ptr()); }
         // ------------------------------------
         virtual ~UniSetActivator();
 
@@ -142,15 +143,15 @@ class UniSetActivator:
         struct OInfo:
             public Info
         {
-            OInfo( UniSetObject* o, pid_t p ):Info(p),obj(o){}
-            UniSetObject* obj;
+            OInfo( std::shared_ptr<UniSetObject> o, pid_t p ):Info(p),obj(o){}
+            std::shared_ptr<UniSetObject> obj;
         };
 
         struct MInfo:
             public Info
         {
-            MInfo( UniSetManager* m, pid_t p ):Info(p),mnr(m){}
-            UniSetManager* mnr;
+            MInfo( std::shared_ptr<UniSetManager> m, pid_t p ):Info(p),mnr(m){}
+            std::shared_ptr<UniSetManager> mnr;
         };
 
         std::deque<OInfo> lstOInfo;

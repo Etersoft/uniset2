@@ -8,7 +8,7 @@
 // Для некоторых тестов необходим SMInterface инициализированный для работы с SharedMemory
 // поэтому сделана такая специальная функция
 // реализацию смотри в tests_with_sm.cc
-SMInterface* smiInstance();
-SharedMemory* shmInstance();
+std::shared_ptr<SMInterface> smiInstance();
+std::shared_ptr<SharedMemory> shmInstance();
 // --------------------------------------------------------------------------
 #endif // tests_with_sm_H_

@@ -26,6 +26,7 @@
 #define UniSetManager_H_
 // -------------------------------------------------------------------------- 
 #include <omniORB4/CORBA.h>
+#include <memory>
 #include "UniSetTypes.h"
 #include "UniSetObject.h"
 #include "UniSetManager_i.hh"
@@ -33,7 +34,7 @@
 class UniSetActivator;
 
 class UniSetManager;
-typedef std::list<UniSetManager*> UniSetManagerList;        
+typedef std::list< std::shared_ptr<UniSetManager> > UniSetManagerList;
 //---------------------------------------------------------------------------
 /*! \class UniSetManager
  *    \par
@@ -62,6 +63,8 @@ class UniSetManager:
         UniSetManager( const std::string& name, const std::string& section );
         virtual ~UniSetManager();
 
+        std::shared_ptr<UniSetManager> get_mptr() { return std::dynamic_pointer_cast<UniSetManager>(get_ptr()); }
+
         virtual UniSetTypes::ObjectType getType() override { return UniSetTypes::ObjectType("UniSetManager"); }
 
         // ------  функции объявленные в интерфейсе(IDL) ------
@@ -71,23 +74,22 @@ class UniSetManager:
         // --------------------------
         void initPOA(UniSetManager* rmngr);
 
-        virtual bool addObject(UniSetObject *obj);
-        virtual bool removeObject(UniSetObject *obj);
+        virtual bool addObject( std::shared_ptr<UniSetObject> obj );
+        virtual bool removeObject( std::shared_ptr<UniSetObject> obj );
 
-        virtual bool addManager( UniSetManager *mngr );
-        virtual bool removeManager( UniSetManager *mngr );
-
+        virtual bool addManager( std::shared_ptr<UniSetManager> mngr );
+        virtual bool removeManager( std::shared_ptr<UniSetManager> mngr );
 
         /*! Получение доступа к подчиненному менеджеру по идентификатору
          * \return объект ненайден будет возвращен 0.
         */ 
-        const UniSetManager* itemM(const UniSetTypes::ObjectId id);
+        const std::shared_ptr<UniSetManager> itemM(const UniSetTypes::ObjectId id);
 
 
         /*! Получение доступа к подчиненному объекту по идентификатору
          * \return объект ненайден будет возвращен 0.
         */ 
-        const UniSetObject* itemO( const UniSetTypes::ObjectId id );
+        const std::shared_ptr<UniSetObject> itemO( const UniSetTypes::ObjectId id );
 
 
         // Функции для аботы со списками подчиненных объектов
@@ -137,7 +139,7 @@ class UniSetManager:
 
         typedef UniSetManagerList::iterator MListIterator;
 
-        int getObjectsInfo( UniSetManager* mngr, UniSetTypes::SimpleInfoSeq* seq, 
+        int getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, UniSetTypes::SimpleInfoSeq* seq,
                             int begin, const long uplimit );
 
         PortableServer::POA_var poa;    

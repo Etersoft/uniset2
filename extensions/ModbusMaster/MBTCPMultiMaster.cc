@@ -11,7 +11,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 MBTCPMultiMaster::MBTCPMultiMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, 
-                            SharedMemory* ic, const std::string& prefix ):
+                            const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
 MBExchange(objId,shmId,ic,prefix),
 force_disconnect(true),
 pollThread(0),
@@ -363,8 +363,8 @@ void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
     cout << " Переключение на следующий канал зависит от '--prefix-timeout'" << endl;
 }
 // -----------------------------------------------------------------------------
-MBTCPMultiMaster* MBTCPMultiMaster::init_mbmaster( int argc, const char* const* argv, 
-                                            UniSetTypes::ObjectId icID, SharedMemory* ic,
+std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, const char* const* argv,
+                                            UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory> ic,
                                             const std::string& prefix )
 {
     auto conf = uniset_conf();
@@ -386,6 +386,6 @@ MBTCPMultiMaster* MBTCPMultiMaster::init_mbmaster( int argc, const char* const* 
     }
 
     dinfo << "(MBTCPMultiMaster): name = " << name << "(" << ID << ")" << endl;
-    return new MBTCPMultiMaster(ID,icID,ic,prefix);
+    return make_shared<MBTCPMultiMaster>(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------

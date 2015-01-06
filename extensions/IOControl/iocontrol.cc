@@ -44,15 +44,15 @@ int main(int argc, const char **argv)
         }
 
 
-        IOControl* ic = IOControl::init_iocontrol(argc,argv,shmID);
+        auto ic = IOControl::init_iocontrol(argc,argv,shmID);
         if( !ic )
         {
             dcrit << "(iocontrol): init не прошёл..." << endl;
             return 1;
         }
 
-        UniSetActivatorPtr act = UniSetActivator::Instance();
-        act->addObject(static_cast<class UniSetObject*>(ic));
+        auto act = UniSetActivator::Instance();
+        act->addObject(ic);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );

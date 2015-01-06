@@ -3,6 +3,7 @@
 #define SharedMemory_H_
 // -----------------------------------------------------------------------------
 #include <string>
+#include <memory>
 #include <deque>
 #include "IONotifyController_LT.h"
 #include "Mutex.h"
@@ -260,7 +261,7 @@ class SharedMemory:
         virtual ~SharedMemory();
 
         /*! глобальная функция для инициализации объекта */
-        static SharedMemory* init_smemory( int argc, const char* const* argv );
+        static std::shared_ptr<SharedMemory> init_smemory( int argc, const char* const* argv );
         /*! глобальная функция для вывода help-а */
         static void help_print( int argc, const char* const* argv );
 

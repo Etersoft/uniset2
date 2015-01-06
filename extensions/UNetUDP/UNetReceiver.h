@@ -52,7 +52,7 @@
 class UNetReceiver
 {
     public:
-        UNetReceiver( const std::string& host, const ost::tpport_t port, SMInterface* smi );
+        UNetReceiver( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface> smi );
         ~UNetReceiver();
 
          void start();
@@ -100,7 +100,7 @@ class UNetReceiver
 
     protected:
 
-        SMInterface* shm;
+        const std::shared_ptr<SMInterface> shm;
 
         bool recv();
         void step();

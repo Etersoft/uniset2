@@ -11,7 +11,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 MBTCPMaster::MBTCPMaster( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, 
-                            SharedMemory* ic, const std::string& prefix ):
+                          const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
 MBExchange(objId,shmId,ic,prefix),
 force_disconnect(true),
 mbtcp(nullptr),
@@ -217,8 +217,8 @@ void MBTCPMaster::help_print( int argc, const char* const* argv )
     cout << "--prefix-persistent-connection 0,1     - Не закрывать соединение на каждом цикле опроса" << endl;
 }
 // -----------------------------------------------------------------------------
-MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv, 
-                                            UniSetTypes::ObjectId icID, SharedMemory* ic,
+std::shared_ptr<MBTCPMaster> MBTCPMaster::init_mbmaster( int argc, const char* const* argv,
+                                            UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory> ic,
                                             const std::string& prefix )
 {
     auto conf = uniset_conf();
@@ -239,6 +239,6 @@ MBTCPMaster* MBTCPMaster::init_mbmaster( int argc, const char* const* argv,
     }
 
     dinfo << "(MBTCPMaster): name = " << name << "(" << ID << ")" << endl;
-    return new MBTCPMaster(ID,icID,ic,prefix);
+    return make_shared<MBTCPMaster>(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------

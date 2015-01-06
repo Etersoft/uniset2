@@ -80,12 +80,12 @@ class UNetExchange:
     public UniSetObject_LT
 {
     public:
-        UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="unet" );
+        UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr, const std::string& prefix="unet" );
         virtual ~UNetExchange();
 
         /*! глобальная функция для инициализации объекта */
-        static UNetExchange* init_unetexchange( int argc, const char* const argv[],
-                                            UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="unet" );
+        static std::shared_ptr<UNetExchange> init_unetexchange( int argc, const char* const argv[],
+                                            UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=0, const std::string& prefix="unet" );
 
         /*! глобальная функция для вывода help-а */
         static void help_print( int argc, const char* argv[] );
@@ -98,7 +98,7 @@ class UNetExchange:
         std::string s_field;
         std::string s_fvalue;
 
-        SMInterface* shm;
+        std::shared_ptr<SMInterface> shm;
         void step();
 
         void sysCommand( const UniSetTypes::SystemMessage *msg ) override;
@@ -155,7 +155,7 @@ class UNetExchange:
             UNetReceiver* r1;      /*!< приём по первому каналу */
             UNetReceiver* r2;    /*!< приём по второму каналу */
 
-            void step( SMInterface* shm, const std::string& myname );
+            void step( const std::shared_ptr<SMInterface> shm, const std::string& myname );
 
             inline void setRespondID( UniSetTypes::ObjectId id, bool invert=false )
             { 
@@ -163,9 +163,9 @@ class UNetExchange:
                 respondInvert = invert;
             }
             inline void setLostPacketsID( UniSetTypes::ObjectId id ){ sidLostPackets = id; }
-            inline void initIterators( SMInterface* shm )
+            inline void initIterators( const std::shared_ptr<SMInterface> shm )
             {
-                 shm->initIterator(itLostPackets);
+                shm->initIterator(itLostPackets);
                 shm->initIterator(itRespond);
             }
 

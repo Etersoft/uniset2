@@ -8,7 +8,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-RTUExchange::RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic,
+RTUExchange::RTUExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic,
                           const std::string& prefix_ ):
 MBExchange(objId,shmId,ic,prefix_),
 mbrtu(0),
@@ -316,8 +316,8 @@ void RTUExchange::poll()
 //    printMap(rmap);
 }
 // -----------------------------------------------------------------------------
-RTUExchange* RTUExchange::init_rtuexchange( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
-                                            SharedMemory* ic, const std::string& prefix )
+std::shared_ptr<RTUExchange> RTUExchange::init_rtuexchange( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
+                                            const std::shared_ptr<SharedMemory> ic, const std::string& prefix )
 {
     auto conf = uniset_conf();
 
@@ -338,7 +338,7 @@ RTUExchange* RTUExchange::init_rtuexchange( int argc, const char* const* argv, U
     }
 
     dinfo << "(rtuexchange): name = " << name << "(" << ID << ")" << endl;
-    return new RTUExchange(ID,icID,ic,prefix);
+    return make_shared<RTUExchange>(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
 bool RTUExchange::initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML::iterator& it )

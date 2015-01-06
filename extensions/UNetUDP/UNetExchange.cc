@@ -7,7 +7,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic, const std::string& prefix ):
+UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
 UniSetObject_LT(objId),
 shm(0),
 initPause(0),
@@ -25,7 +25,7 @@ sender2(0)
     if( cnode == NULL )
         throw UniSetTypes::SystemError("(UNetExchange): Not found conf-node for " + myname );
 
-    shm = new SMInterface(shmId,&ui,objId,ic);
+    shm = make_shared<SMInterface>(shmId,&ui,objId,ic);
 
     UniXML::iterator it(cnode);
 
@@ -122,7 +122,7 @@ sender2(0)
             }
 
             dinfo << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
-            sender = new UNetSender(h,p,shm,s_field,s_fvalue,ic);
+            sender = new UNetSender(h,p,shm,s_field,s_fvalue);
             sender->setSendPause(sendpause);
 
             try
@@ -131,7 +131,7 @@ sender2(0)
                 if( !h2.empty() )
                 {
                     dinfo << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
-                    sender2 = new UNetSender(h2,p2,shm,s_field,s_fvalue,ic);
+                    sender2 = new UNetSender(h2,p2,shm,s_field,s_fvalue);
                     sender2->setSendPause(sendpause);
                 }
             }
@@ -349,7 +349,6 @@ UNetExchange::~UNetExchange()
 
     delete sender;
     delete sender2;
-    delete shm;
 }
 // -----------------------------------------------------------------------------
 bool UNetExchange::checkExistUNetHost( const std::string& addr, ost::tpport_t port )
@@ -425,7 +424,7 @@ void UNetExchange::step()
 }
 
 // -----------------------------------------------------------------------------
-void UNetExchange::ReceiverInfo::step( SMInterface* shm, const std::string& myname )
+void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface> shm, const std::string& myname )
 {
     try
     {
@@ -656,8 +655,8 @@ void UNetExchange::help_print( int argc, const char* argv[] )
     cout << "--prefix-filter-value name      - Значение фильтрующего поля при формировании списка датчиков посылаемых данным узлом" << endl;
 }
 // -----------------------------------------------------------------------------
-UNetExchange* UNetExchange::init_unetexchange( int argc, const char* const argv[], UniSetTypes::ObjectId icID,
-                                                SharedMemory* ic, const std::string& prefix )
+std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange( int argc, const char* const argv[], UniSetTypes::ObjectId icID,
+                                                const std::shared_ptr<SharedMemory> ic, const std::string& prefix )
 {
     auto conf = uniset_conf();
 
@@ -678,7 +677,7 @@ UNetExchange* UNetExchange::init_unetexchange( int argc, const char* const argv[
     }
 
     dinfo << "(unetexchange): name = " << name << "(" << ID << ")" << endl;
-    return new UNetExchange(ID,icID,ic,prefix);
+    return make_shared<UNetExchange>(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
 void UNetExchange::receiverEvent( UNetReceiver* r, UNetReceiver::Event ev )

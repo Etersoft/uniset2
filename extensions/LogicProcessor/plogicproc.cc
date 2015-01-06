@@ -69,8 +69,8 @@ int main(int argc, const char **argv)
 
         PassiveLProcessor plc(schema,ID,shmID);
 
-        UniSetActivatorPtr act = UniSetActivator::Instance();
-        act->addObject(static_cast<class UniSetObject*>(&plc));
+        auto act = UniSetActivator::Instance();
+        act->addObject(plc.get_ptr());
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );

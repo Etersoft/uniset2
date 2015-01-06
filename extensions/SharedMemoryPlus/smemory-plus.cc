@@ -75,14 +75,14 @@ int main( int argc, const char **argv )
         ulog.logFile( logname );
         conf->initDebug(UniSetExtensions::dlog,"dlog");
 
-        UniSetActivatorPtr act = UniSetActivator::Instance();
+        auto act = UniSetActivator::Instance();
         act->signal_terminate_event().connect( &activator_terminate );
         // ------------ SharedMemory ----------------
-        SharedMemory* shm = SharedMemory::init_smemory(argc,argv);
-        if( shm == NULL )
+        auto shm = SharedMemory::init_smemory(argc,argv);
+        if( !shm )
             return 1;
 
-        act->addManager(static_cast<class UniSetManager*>(shm));
+        act->addManager(shm);
 
 #ifdef UNISET_ENABLE_IO
         // ------------ IOControl ----------------
@@ -104,15 +104,15 @@ int main( int argc, const char **argv )
                 if( dlog.is_info() )
                     dlog.info() << "(smemory-plus): add IOControl(" << p.str() << ")" << endl;
 
-                IOControl* ic = IOControl::init_iocontrol(argc,argv,shm->getId(),shm,p.str());
-                if( ic == NULL )
+                auto ic = IOControl::init_iocontrol(argc,argv,shm->getId(),shm,p.str());
+                if( !ic )
                     return 1;
 
-                ThreadCreator<IOControl>* io_thr = new ThreadCreator<IOControl>(ic, &IOControl::execute);
+                ThreadCreator<IOControl>* io_thr = new ThreadCreator<IOControl>(ic.get(), &IOControl::execute);
                 if( io_thr == NULL )
                     return 1;
 
-                act->addObject(static_cast<class UniSetObject*>(ic));
+                act->addObject(ic);
                 lst_iothr.push_back( io_thr );
             }
         }
@@ -134,11 +134,11 @@ int main( int argc, const char **argv )
                 if( dlog.is_info() )
                     dlog.info() << "(smemory-plus): add RTUExchange(" << p.str() << ")" << endl;
 
-                RTUExchange* rtu = RTUExchange::init_rtuexchange(argc,argv,shm->getId(),shm,p.str());
-                if( rtu == NULL )
+                auto rtu = RTUExchange::init_rtuexchange(argc,argv,shm->getId(),shm,p.str());
+                if( !rtu )
                     return 1;
 
-                act->addObject(static_cast<class UniSetObject*>(rtu));
+                act->addObject(rtu);
             }
         }
         // ------------- MBSlave --------------
@@ -158,11 +158,11 @@ int main( int argc, const char **argv )
                 if( dlog.is_info() )
                     dlog.info() << "(smemory-plus): add MBSlave(" << p.str() << ")" << endl;
 
-                MBSlave* mbs = MBSlave::init_mbslave(argc,argv,shm->getId(),shm,p.str());
-                if( mbs == NULL )
+                auto mbs = MBSlave::init_mbslave(argc,argv,shm->getId(),shm,p.str());
+                if( !mbs )
                     return 1;
 
-                act->addObject(static_cast<class UniSetObject*>(mbs));
+                act->addObject(mbs);
             }
         }
 
@@ -184,25 +184,25 @@ int main( int argc, const char **argv )
                 if( dlog.is_info() )
                     dlog.info() << "(smemory-plus): add MBTCPMaster(" << p.str() << ")" << endl;
 
-                MBTCPMaster* mbm1 = MBTCPMaster::init_mbmaster(argc,argv,shm->getId(),shm,p.str());
-                if( mbm1 == NULL )
+                auto mbm1 = MBTCPMaster::init_mbmaster(argc,argv,shm->getId(),shm,p.str());
+                if( !mbm1 )
                     return 1;
 
-                act->addObject(static_cast<class UniSetObject*>(mbm1));
+                act->addObject(mbm1);
             }
         }
         // ------------- UNetUDP --------------
         bool add_unet = findArgParam("--add-unet",argc,argv) != -1;
         if( add_unet )
         {
-            UNetExchange* unet = UNetExchange::init_unetexchange(argc,argv,shm->getId(),shm);
+            auto unet = UNetExchange::init_unetexchange(argc,argv,shm->getId(),shm);
             if( unet == NULL )
                 return 1;
 
             if( dlog.is_info() )
                 dlog.info() << "(smemory-plus): add UNetExchnage.." << endl;
 
-            act->addObject(static_cast<class UniSetObject*>(unet));
+            act->addObject(unet);
         }
         // ---------------------------------------
            // попытка решить вопрос с "зомби" процессами

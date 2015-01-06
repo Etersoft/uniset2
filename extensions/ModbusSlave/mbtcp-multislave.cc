@@ -55,15 +55,15 @@ int main(int argc, const char **argv)
             return 1;
         }
 
-        MBTCPMultiSlave* s = MBTCPMultiSlave::init_mbslave(argc,argv,shmID);
+        auto s = MBTCPMultiSlave::init_mbslave(argc,argv,shmID);
         if( !s )
         {
             dcrit << "(mbslave): init не прошёл..." << endl;
             return 1;
         }
 
-        UniSetActivatorPtr act = UniSetActivator::Instance();
-        act->addObject(static_cast<class UniSetObject*>(s));
+        auto act = UniSetActivator::Instance();
+        act->addObject(s);
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
 

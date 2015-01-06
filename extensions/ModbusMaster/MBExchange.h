@@ -28,7 +28,7 @@ class MBExchange:
     public UniSetObject_LT
 {
     public:
-        MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
+        MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr,
                         const std::string& prefix="mb" );
         virtual ~MBExchange();
 

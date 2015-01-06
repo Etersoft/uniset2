@@ -21,12 +21,12 @@ class MBTCPMultiSlave:
     public MBSlave
 {
     public:
-        MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="mbs" );
+        MBTCPMultiSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr, const std::string& prefix="mbs" );
         virtual ~MBTCPMultiSlave();
 
         /*! глобальная функция для инициализации объекта */
-        static MBTCPMultiSlave* init_mbslave( int argc, const char* const* argv,
-                                            UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
+        static std::shared_ptr<MBTCPMultiSlave> init_mbslave( int argc, const char* const* argv,
+                                            UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr,
                                             const std::string& prefix="mbs" );
 
         /*! глобальная функция для вывода help-а */

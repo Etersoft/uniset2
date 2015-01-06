@@ -30,6 +30,7 @@
 #include <sys/time.h>
 #include <queue>
 #include <ostream>
+#include <memory>
 #include <string>
 #include <list>
 
@@ -49,7 +50,7 @@ class UniSetManager;
 
 //---------------------------------------------------------------------------
 class UniSetObject;
-typedef std::list<UniSetObject *> ObjectsList;     /*!< Список подчиненных объектов */
+typedef std::list< std::shared_ptr<UniSetObject> > ObjectsList;     /*!< Список подчиненных объектов */
 //---------------------------------------------------------------------------
 /*! \class UniSetObject
  *    Класс задает такие свойства объекта как: получение сообщений, помещение сообщения в очередь и т.п.
@@ -62,6 +63,7 @@ typedef std::list<UniSetObject *> ObjectsList;     /*!< Список подчи�
  *    на разработчика.
 */ 
 class UniSetObject:
+    public std::enable_shared_from_this<UniSetObject>,
     public POA_UniSetObject_i
 {
     public:
@@ -69,6 +71,8 @@ class UniSetObject:
         UniSetObject(UniSetTypes::ObjectId id);
         UniSetObject();
         virtual ~UniSetObject();
+
+        std::shared_ptr<UniSetObject> get_ptr(){ return shared_from_this(); }
 
         // Функции объявленные в IDL
         virtual CORBA::Boolean exist() override;

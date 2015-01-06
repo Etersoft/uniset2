@@ -21,8 +21,8 @@
 class UNetSender
 {
     public:
-        UNetSender( const std::string& host, const ost::tpport_t port, SMInterface* smi,
-                    const std::string& s_field="", const std::string& s_fvalue="", SharedMemory* ic=0 );
+        UNetSender( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface> smi,
+                    const std::string& s_field="", const std::string& s_fvalue="" );
 
         ~UNetSender();
 
@@ -71,7 +71,7 @@ class UNetSender
         std::string s_field;
         std::string s_fvalue;
 
-        SMInterface* shm;
+        const std::shared_ptr<SMInterface> shm;
 
         bool initItem( UniXML::iterator& it );
         bool readItem( const std::shared_ptr<UniXML>& xml, UniXML::iterator& it, xmlNode* sec );

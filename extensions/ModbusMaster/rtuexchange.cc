@@ -48,15 +48,15 @@ int main( int argc, char** argv )
             return 1;
         }
 
-        RTUExchange* rs = RTUExchange::init_rtuexchange(argc,argv,shmID,0,"rs");
+        auto rs = RTUExchange::init_rtuexchange(argc,argv,shmID,0,"rs");
         if( !rs )
         {
             dcrit << "(rtuexchange): init не прошёл..." << endl;
             return 1;
         }
 
-        UniSetActivatorPtr act = UniSetActivator::Instance();
-        act->addObject(static_cast<class UniSetObject*>(rs));
+        auto act = UniSetActivator::Instance();
+        act->addObject(rs);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );

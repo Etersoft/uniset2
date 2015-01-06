@@ -58,13 +58,13 @@ class RRDServer:
     public UObject_SK
 {
     public:
-        RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
+        RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr,
                     const std::string& prefix="rrd", DebugStream& log=UniSetExtensions::dlog );
         virtual ~RRDServer();
 
         /*! глобальная функция для инициализации объекта */
-        static RRDServer* init_rrdstorage( int argc, const char* const* argv,
-                            UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
+        static std::shared_ptr<RRDServer> init_rrdstorage( int argc, const char* const* argv,
+                            UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr,
                             const std::string& prefix="rrd" );
 
         /*! глобальная функция для вывода help-а */
@@ -81,7 +81,7 @@ class RRDServer:
         void initRRD( xmlNode* cnode, int tmID );
         virtual void step() override;
 
-        SMInterface* shm;
+        std::shared_ptr<SMInterface> shm;
 
         struct DSInfo
         {

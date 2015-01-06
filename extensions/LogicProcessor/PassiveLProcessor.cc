@@ -7,7 +7,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -------------------------------------------------------------------------
 PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId objId, 
-                                        UniSetTypes::ObjectId shmID, SharedMemory* ic, const std::string& prefix ):
+                                        UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
     UniSetObject_LT(objId),
     shm(0)
 {

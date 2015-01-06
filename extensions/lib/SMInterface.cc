@@ -85,7 +85,7 @@ using namespace UniSetTypes;
 
 // --------------------------------------------------------------------------
 SMInterface::SMInterface( UniSetTypes::ObjectId _shmID, UInterface* _ui,
-                            UniSetTypes::ObjectId _myid, IONotifyController* ic ):
+                            UniSetTypes::ObjectId _myid, const std::shared_ptr<IONotifyController> ic ):
     ic(ic),
     ui(_ui),
     oref( CORBA::Object::_nil() ),

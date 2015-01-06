@@ -11,12 +11,12 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-RRDServer::RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, SharedMemory* ic,
+RRDServer::RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic,
             const string& prefix, DebugStream& log ):
 UObject_SK(objId,cnode),
-shm( new SMInterface(shmId,&ui,objId,ic) ),
 prefix(prefix)
 {
+    shm = make_shared<SMInterface>(shmId,&ui,objId,ic);
     mylog = log;
     UniXML::iterator it(cnode);
 
@@ -222,8 +222,8 @@ void RRDServer::help_print( int argc, const char* const* argv )
     cout << "--prefix-heartbeat-max val   - max value for heartbeat sensor." << endl;
 }
 // -----------------------------------------------------------------------------
-RRDServer* RRDServer::init_rrdstorage( int argc, const char* const* argv, 
-                                            UniSetTypes::ObjectId icID, SharedMemory* ic,
+std::shared_ptr<RRDServer> RRDServer::init_rrdstorage( int argc, const char* const* argv,
+                                            UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory> ic,
                                             const std::string& prefix )
 {
     auto conf = uniset_conf();
@@ -252,7 +252,7 @@ RRDServer* RRDServer::init_rrdstorage( int argc, const char* const* argv,
     }
 
     dinfo << "(RRDServer): name = " << name << "(" << ID << ")" << endl;
-    return new RRDServer(ID,cnode,icID,ic,prefix);
+    return make_shared<RRDServer>(ID,cnode,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
 void RRDServer::askSensors( UniversalIO::UIOCommand cmd )

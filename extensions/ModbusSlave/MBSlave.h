@@ -257,12 +257,12 @@ class MBSlave:
     public UniSetObject_LT
 {
     public:
-        MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="mbs" );
+        MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr, const std::string& prefix="mbs" );
         virtual ~MBSlave();
 
         /*! глобальная функция для инициализации объекта */
-        static MBSlave* init_mbslave( int argc, const char* const* argv,
-                                      UniSetTypes::ObjectId shmID, SharedMemory* ic=0,
+        static std::shared_ptr<MBSlave> init_mbslave(int argc, const char* const* argv,
+                                      UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr,
                                       const std::string& prefix="mbs" );
 
         /*! глобальная функция для вывода help-а */

@@ -19,7 +19,7 @@ bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 }
 */
 // ------------------------------------------------------------------------------------------
-UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port, SMInterface* smi ):
+UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port, const std::shared_ptr<SMInterface> smi ):
 shm(smi),
 recvpause(10),
 updatepause(100),
@@ -388,11 +388,12 @@ void UNetReceiver::receive()
         {
             dwarn << myname << "(receive): " << e.what()<< std::endl;
         }
+/*
         catch(...)
         {
             dwarn << myname << "(receive): catch ..." << std::endl;
         }
-
+*/
         // делаем через промежуточную переменную
         // чтобы поскорее освободить mutex
         {

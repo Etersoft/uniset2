@@ -36,18 +36,18 @@ int main(int argc, char* argv[] )
 
         bool apart = findArgParam("--apart",argc,argv) != -1;
 
-        SharedMemory* shm = SharedMemory::init_smemory(argc, argv);
+        auto shm = SharedMemory::init_smemory(argc, argv);
         if( !shm )
             return 1;
 
-        MBSlave* mbs = MBSlave::init_mbslave(argc,argv,shm->getId(), (apart ? nullptr : shm ));
+        auto mbs = MBSlave::init_mbslave(argc,argv,shm->getId(), (apart ? nullptr : shm ));
         if( !mbs )
             return 1;
 
-        UniSetActivatorPtr act = UniSetActivator::Instance();
+        auto act = UniSetActivator::Instance();
 
-        act->addObject(static_cast<class UniSetObject*>(shm));
-        act->addObject(static_cast<class UniSetObject*>(mbs));
+        act->addObject(shm);
+        act->addObject(mbs);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );

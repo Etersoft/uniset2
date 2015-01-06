@@ -81,8 +81,8 @@ UniSetActivatorPtr UniSetActivator::Instance( const UniSetTypes::ObjectId id )
 {
     if( inst == nullptr )
     {
-       inst = shared_ptr<UniSetActivator>( new UniSetActivator(id) );
-       gActivator = inst;
+        inst = std::shared_ptr<UniSetActivator>( new UniSetActivator(id) );
+        gActivator = inst;
     }
 
     return inst;

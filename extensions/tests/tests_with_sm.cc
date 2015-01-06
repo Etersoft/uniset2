@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch.hpp>
 
+#include <memory>
 #include <string>
 #include "Debug.h"
 #include "UniSetActivator.h"
@@ -13,20 +14,20 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // --------------------------------------------------------------------------
-static SMInterface* smi = nullptr;
-static SharedMemory* shm = nullptr;
+static shared_ptr<SMInterface> smi;
+static shared_ptr<SharedMemory> shm;
 static UInterface* ui = nullptr;
 static ObjectId myID = 6000;
 // --------------------------------------------------------------------------
-SharedMemory* shmInstance()
+shared_ptr<SharedMemory> shmInstance()
 {
-    if( shm == nullptr )
+    if( !shm )
         throw SystemError("SharedMemory don`t initialize..");
 
     return shm;
 }
 // --------------------------------------------------------------------------
-SMInterface* smiInstance()
+shared_ptr<SMInterface> smiInstance()
 {
     if( smi == nullptr )
     {
@@ -36,7 +37,7 @@ SMInterface* smiInstance()
         if( ui == nullptr )
             ui = new UInterface();
 
-        smi = new SMInterface(shm->getId(), ui, myID, shm );
+        smi = make_shared<SMInterface>(shm->getId(), ui, myID, shm );
     }
 
     return smi;
@@ -60,7 +61,7 @@ int main(int argc, char* argv[] )
    
     try
     {
-        uniset_init(argc,argv);
+        auto conf = uniset_init(argc,argv);
 /*
         conf->initDebug(dlog,"dlog");
         string logfilename = conf->getArgParam("--logfile", "smemory.log");
@@ -72,9 +73,10 @@ int main(int argc, char* argv[] )
         if( !shm )
             return 1;
 
-        UniSetActivatorPtr act = UniSetActivator::Instance();
+        auto act = UniSetActivator::Instance();
 
-        act->addObject(static_cast<class UniSetObject*>(shm));
+
+        act->addObject(shm);
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
         act->run(true);
@@ -93,6 +95,8 @@ int main(int argc, char* argv[] )
         int ret = session.run();
 
         act->oaDestroy();
+		act.reset();
+        conf.reset();
         return ret;
     }
     catch( SystemError& err )

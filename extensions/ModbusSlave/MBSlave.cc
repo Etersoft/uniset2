@@ -11,7 +11,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
-MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, SharedMemory* ic, const string& prefix ):
+MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic, const string& prefix ):
 UniSetObject_LT(objId),
 mbslot(0),
 shm(0),
@@ -934,8 +934,8 @@ void MBSlave::help_print( int argc, const char* const* argv )
     cout << "--prefix-inet-port num - this modbus server port. Default: 502" << endl;
 }
 // -----------------------------------------------------------------------------
-MBSlave* MBSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID, SharedMemory* ic,
-                                const string& prefix )
+std::shared_ptr<MBSlave> MBSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::ObjectId icID,
+                                                const std::shared_ptr<SharedMemory> ic, const string& prefix )
 {
     auto conf = uniset_conf();
     string name = conf->getArgParam("--" + prefix + "-name","MBSlave1");
@@ -955,12 +955,12 @@ MBSlave* MBSlave::init_mbslave( int argc, const char* const* argv, UniSetTypes::
     }
 
     dinfo << "(mbslave): name = " << name << "(" << ID << ")" << endl;
-    return new MBSlave(ID,icID,ic,prefix);
+    return make_shared<MBSlave>(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, MBSlave::IOProperty& p )
 {
-    os     << " reg=" << ModbusRTU::dat2str(p.mbreg)
+    os  << " reg=" << ModbusRTU::dat2str(p.mbreg)
         << " sid=" << p.si.id
         << " stype=" << p.stype
         << " wnum=" << p.wnum

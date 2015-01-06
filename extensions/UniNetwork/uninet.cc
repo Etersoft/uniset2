@@ -40,17 +40,17 @@ int main(int argc, const char **argv)
             return 1;
         }
 
-        UniExchange* shm = UniExchange::init_exchange(argc, argv, shmID);
-        if( !shm )
+        auto uex = UniExchange::init_exchange(argc, argv, shmID);
+        if( !uex )
             return 1;
 
-        UniSetActivatorPtr act = UniSetActivator::Instance();
+        auto act = UniSetActivator::Instance();
 
-        act->addObject(static_cast<class UniSetObject*>(shm));
+        act->addObject(uex);
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
         act->run(true);
-        shm->execute();
+        uex->execute();
         on_sigchild(SIGTERM);
         return 0;
     }

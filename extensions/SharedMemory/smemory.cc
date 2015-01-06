@@ -27,13 +27,13 @@ int main(int argc, const char **argv)
         ulog.logFile( logname );
         dlog.logFile( logname );
 
-        SharedMemory* shm = SharedMemory::init_smemory(argc, argv);
+        auto shm = SharedMemory::init_smemory(argc, argv);
         if( !shm )
             return 1;
 
         UniSetActivatorPtr act = UniSetActivator::Instance();
 
-        act->addObject(static_cast<class UniSetObject*>(shm));
+        act->addObject( shm ); // ->get_ptr() );
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
         act->run(false);

@@ -48,15 +48,15 @@ int main( int argc, const char** argv )
             return 1;
         }
 
-        UNetExchange* unet = UNetExchange::init_unetexchange(argc,argv,shmID);
+        auto unet = UNetExchange::init_unetexchange(argc,argv,shmID);
         if( !unet )
         {
             dcrit << "(unetexchange): init failed.." << endl;
             return 1;
         }
 
-        UniSetActivatorPtr act = UniSetActivator::Instance();
-        act->addObject(static_cast<class UniSetObject*>(unet));
+        auto act = UniSetActivator::Instance();
+        act->addObject(unet);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );

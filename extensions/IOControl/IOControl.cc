@@ -23,7 +23,7 @@ std::ostream& operator<<( std::ostream& os, IOControl::IOInfo& inf )
 // -----------------------------------------------------------------------------
 
 IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
-                        SharedMemory* ic, int numcards, const std::string& prefix_ ):
+                        const std::shared_ptr<SharedMemory> ic, int numcards, const std::string& prefix_ ):
     UniSetObject(id),
     polltime(150),
     cards(11),
@@ -1112,8 +1112,8 @@ void IOControl::check_testlamp()
 }
 
 // -----------------------------------------------------------------------------
-IOControl* IOControl::init_iocontrol( int argc, const char* const* argv,
-                                        UniSetTypes::ObjectId icID, SharedMemory* ic,
+std::shared_ptr<IOControl> IOControl::init_iocontrol( int argc, const char* const* argv,
+                                        UniSetTypes::ObjectId icID, const std::shared_ptr<SharedMemory> ic,
                                         const std::string& prefix )
 {
     auto conf = uniset_conf();
@@ -1135,7 +1135,7 @@ IOControl* IOControl::init_iocontrol( int argc, const char* const* argv,
     int numcards = conf->getArgPInt("--"+prefix+"-numcards",1);
 
     dinfo << "(iocontrol): name = " << name << "(" << ID << ")" << endl;
-    return new IOControl(ID,icID,ic,numcards,prefix);
+    return make_shared<IOControl>(ID,icID,ic,numcards,prefix);
 }
 // -----------------------------------------------------------------------------
 void IOControl::help_print( int argc, const char* const* argv )

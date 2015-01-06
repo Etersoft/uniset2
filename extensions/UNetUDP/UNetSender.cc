@@ -8,8 +8,8 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, SMInterface* smi,
-                        const std::string& s_f, const std::string& s_val, SharedMemory* ic ):
+UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, const std::shared_ptr<SMInterface> smi,
+                        const std::string& s_f, const std::string& s_val ):
 s_field(s_f),
 s_fvalue(s_val),
 shm(smi),
@@ -68,7 +68,18 @@ s_thr(0)
         dinfo << myname << "(init): dlist size = " << dlist.size() << endl;
     }
     else
-        ic->addReadItem( sigc::mem_fun(this,&UNetSender::readItem) );
+    {
+        auto ic = std::dynamic_pointer_cast<SharedMemory>(shm->SM());
+        if( ic )
+            ic->addReadItem( sigc::mem_fun(this,&UNetSender::readItem) );
+        else
+        {
+            dwarn << myname << "(init): Failed to convert the pointer 'IONotifyController' -> 'SharedMemory'" << endl;
+            readConfiguration();
+            dlist.resize(maxItem);
+            dinfo << myname << "(init): dlist size = " << dlist.size() << endl;
+        }
+    }
 
 
     // выставляем поля, которые не меняются
@@ -80,7 +91,6 @@ UNetSender::~UNetSender()
 {
     delete s_thr;
     delete udp;
-    delete shm;
 }
 // -----------------------------------------------------------------------------
 void UNetSender::updateFromSM()

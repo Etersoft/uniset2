@@ -18,7 +18,7 @@ class PassiveLProcessor:
     public:
 
         PassiveLProcessor( std::string schema, UniSetTypes::ObjectId objId,
-                            UniSetTypes::ObjectId shmID, SharedMemory* ic=0, const std::string& prefix="lproc" );
+                            UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr, const std::string& prefix="lproc" );
         virtual ~PassiveLProcessor();
 
         enum Timers
