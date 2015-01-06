@@ -140,18 +140,6 @@ void UniSetActivator::init()
 
 UniSetActivator::~UniSetActivator()
 {
-    if( !procterm )
-    {
-        ulogsys << myname << "(destructor): ..."<< endl << flush;
-        if( !omDestroy )
-            oaDestroy();
-
-        procterm = 1;
-        doneterm = 1;
-        set_signals(false);
-        gActivator.reset();
-    }
-
     if( orbthr )
     {
         orbthr->stop();
@@ -160,6 +148,18 @@ UniSetActivator::~UniSetActivator()
 
         delete orbthr;
         orbthr = 0;
+    }
+
+    if( !procterm )
+    {
+        ulogsys << myname << "(destructor): ..." << endl << flush;
+        if( !omDestroy )
+            oaDestroy();
+
+        procterm = 1;
+        doneterm = 1;
+        set_signals(false);
+        gActivator.reset();
     }
 
 #if 0
@@ -220,7 +220,7 @@ void UniSetActivator::oaDestroy(int signo)
                 }
                 catch(...){}
             }
-
+        }
         try
         {
             ulogsys << myname << "(stop):: shutdown orb...  "<<endl;
@@ -241,15 +241,6 @@ void UniSetActivator::oaDestroy(int signo)
         }
         catch(...){}
 #endif
-/*
-            if( orbthr )
-            {
-                delete orbthr;
-                orbthr = 0;
-            }
-*/
-        }
-//        waittermMutex.unlock();
 }
 
 // ------------------------------------------------------------------------------------------
@@ -261,7 +252,7 @@ void UniSetActivator::oaDestroy(int signo)
  *    Иначе все ресурсы основного потока передаются для обработки приходящих сообщений (и она не выходит)
  *
 */
-void UniSetActivator::run(bool thread)
+void UniSetActivator::run( bool thread )
 {
     ulogsys << myname << "(run): создаю менеджер "<< endl;
 
@@ -502,7 +493,7 @@ void UniSetActivator::terminated( int signo )
             if( gActivator )
             {
                 UniSetActivator::set_signals(false);
-                gActivator.reset();
+//                gActivator.reset();
             }
 
             sigset(SIGALRM, SIG_DFL);
@@ -524,7 +515,7 @@ void UniSetActivator::normalexit()
 void UniSetActivator::normalterminate()
 {
     if( gActivator )
-        ucrit << gActivator->getName() << "(default exception terminate): Никто не выловил исключение!!! Good bye."<< endl<< flush;
+        ucrit << gActivator->getName() << "(default exception terminate): Unkown exception.. Good bye."<< endl<< flush;
 //    abort();
 
 //     std::exception_ptr p = std::current_exception();
@@ -544,6 +535,16 @@ void UniSetActivator::term( int signo )
     try
     {
         ulogsys << myname << "(term): вызываем sigterm()" << endl;
+        if( orbthr )
+        {
+            orbthr->stop();
+            if( orbthr->isRunning() )
+                orbthr->join();
+
+            delete orbthr;
+            orbthr = 0;
+        }
+
         sigterm(signo);
         s_term.emit(signo);
         ulogsys << myname << "(term): sigterm() ok." << endl;

@@ -783,7 +783,14 @@ void UniSetObject::callback()
         if( waitMessage(msg) )
             processingMessage(&msg);
     }
-    catch(...){}
+    catch( Exception& ex )
+    {
+        ucrit << ex << endl;
+    }
+    catch( std::exception& ex )
+    {
+        ucrit << ex.what() << endl;
+    }
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::processingMessage( UniSetTypes::VoidMessage *msg )

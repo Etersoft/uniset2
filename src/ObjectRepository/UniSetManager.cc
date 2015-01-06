@@ -47,8 +47,11 @@ class MPush: public unary_function< const std::shared_ptr<UniSetManager>& , bool
         {
             try
             {
-                m->push( msg );
-                m->broadcast( msg );
+                if( m )
+                {
+                    m->push( msg );
+                    m->broadcast( msg );
+                }
                 return true;
             }
             catch(...){}
@@ -68,8 +71,11 @@ class OPush: public unary_function< const std::shared_ptr<UniSetObject>& , bool>
         {
             try
             {
-                o->push( msg );
-                return true;
+                if( o )
+                {
+                    o->push( msg );
+                    return true;
+                }
             }
             catch(...){}
             return false;
