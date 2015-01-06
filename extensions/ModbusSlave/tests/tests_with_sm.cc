@@ -64,10 +64,7 @@ int main(int argc, char* argv[] )
             return 1;            
         }
         
-        int ret = session.run();
-
-        act->oaDestroy();
-        return ret;
+        return session.run();
     }
     catch( SystemError& err )
     {
