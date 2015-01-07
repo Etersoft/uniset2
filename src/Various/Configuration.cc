@@ -400,6 +400,18 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 }
 
 // -------------------------------------------------------------------------
+std::string Configuration::getArg2Param( const std::string& name, const std::string& defval, const std::string& defval2 )
+{
+    string s(UniSetTypes::getArgParam(name, _argc, _argv,""));
+    if( !s.empty() )
+        return std::move(s);
+
+    if( !defval.empty() )
+        return defval;
+
+    return defval2;
+}
+
 string Configuration::getArgParam( const string& name, const string& defval )
 {
     return UniSetTypes::getArgParam(name, _argc, _argv, defval);

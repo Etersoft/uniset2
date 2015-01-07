@@ -39,6 +39,9 @@ TEST_CASE("UniXML", "[unixml][basic]" )
     CHECK( uxml.getPIntProp(tnode,"negative",20) == -10 );
     CHECK( uxml.getPIntProp(tnode,"unknown",20) == 20 );
 
+    CHECK( uxml.getProp2(tnode,"unknown","def") == "def" );
+    CHECK( uxml.getProp2(tnode,"text","def") == "text" );
+
     // nextNode
     // create
     // remove
@@ -114,6 +117,8 @@ TEST_CASE("UniXML::iterator", "[unixml][iterator][basic]" )
     CHECK( it.find("TestData") != 0 );
 
     CHECK( it.getProp("text") == "text" );
+    CHECK( it.getProp2("text","def") == "text" );
+    CHECK( it.getProp2("unknown","def") == "def" );
     CHECK( it.getIntProp("x") == 10 );
     CHECK( it.getPIntProp("y",-20) == 100 );
     CHECK( it.getPIntProp("zero",20) == 0 );

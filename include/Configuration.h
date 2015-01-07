@@ -133,6 +133,8 @@ namespace UniSetTypes
 
         /*! получить значение указанного параметра, или значение по умолчанию */
         std::string getArgParam(const std::string& name, const std::string& defval="");
+        /*! получить значение, если пустое, то defval, если defval="" return defval2 */
+        std::string getArg2Param(const std::string& name, const std::string& defval, const std::string& defval2="");
         /*! получить числовое значение параметра, если не число, то 0. Если параметра нет, используется значение defval */
         int getArgInt(const std::string& name, const std::string& defval="");
         /*! получить числовое значение параметра, но если оно не положительное, вернуть defval */

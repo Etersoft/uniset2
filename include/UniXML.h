@@ -46,6 +46,7 @@ class UniXML_iterator:
         {}
         UniXML_iterator() {}
 
+        std::string getProp2( const std::string& name, const std::string& defval="" );
         std::string getProp( const std::string& name );
         std::string getPropUtf8( const std::string& name );
         int getIntProp( const std::string& name );
@@ -195,6 +196,8 @@ public:
 
     // Получить свойство name указанного узла node
     static std::string getProp(const xmlNode* node, const std::string& name);
+    static std::string getProp2(const xmlNode* node, const std::string& name, const std::string& defval="" );
+
     static std::string getPropUtf8(const xmlNode* node, const std::string& name);
     static int getIntProp(const xmlNode* node, const std::string& name);
     /// if value if not positive ( <= 0 ), returns def

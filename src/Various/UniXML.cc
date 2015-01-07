@@ -116,6 +116,15 @@ string UniXML::getPropUtf8(const xmlNode* node, const string& name)
     return getProp(node, name);
 }
 
+string UniXML::getProp2(const xmlNode* node, const string& name, const string& defval)
+{
+    string s(getProp(node,name));
+    if( !s.empty() )
+        return std::move(s);
+
+    return defval;
+}
+
 string UniXML::getProp(const xmlNode* node, const string& name)
 {
     xmlChar* text = ::xmlGetProp((xmlNode*)node, (const xmlChar*)name.c_str());
@@ -386,6 +395,11 @@ bool UniXML_iterator::goChildren()
 }
 
 // -------------------------------------------------------------------------
+string UniXML_iterator::getProp2( const string& name, const string& defval )
+{
+    return UniXML::getProp2(curNode,name,defval);
+}
+
 string UniXML_iterator::getProp( const string& name )
 {
     return UniXML::getProp(curNode, name);
