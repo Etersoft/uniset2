@@ -342,6 +342,9 @@ class MBExchange:
         typedef std::list<IOBase> ThresholdList;
         ThresholdList thrlist;
 
+        std::string defaultMBtype;
+        std::string defaultMBaddr;
+
      private:
         MBExchange();
 

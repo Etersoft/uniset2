@@ -40,15 +40,14 @@ int main(int argc, char* argv[] )
         if( !shm )
             return 1;
 
-/*
-        auto mbs = MBSlave::init_mbslave(argc,argv,shm->getId(), (apart ? nullptr : shm ));
-        if( !mbs )
+        auto mb = MBTCPMaster::init_mbmaster(argc,argv,shm->getId(), (apart ? nullptr : shm ));
+        if( !mb )
             return 1;
-*/
+
         auto act = UniSetActivator::Instance();
 
         act->addObject(shm);
-//        act->addObject(mbs);
+        act->addObject(mb);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );

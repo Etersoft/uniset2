@@ -84,6 +84,9 @@ pollActivated(false)
     force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
     force_out = conf->getArgInt("--" + prefix + "-force-out",it.getProp("force_out"));
 
+    defaultMBtype = conf->getArg2Param("--" + prefix + "-default-mbtype",it.getProp("default_mbtype"),"rtu");
+    defaultMBaddr = conf->getArg2Param("--" + prefix + "-default-mbaddr",it.getProp("default_mbaddr"),"");
+
     // ********** HEARTBEAT *************
     string heart = conf->getArgParam("--" + prefix + "-heartbeat-id",it.getProp("heartbeat_id"));
     if( !heart.empty() )
@@ -158,6 +161,8 @@ void MBExchange::help_print( int argc, const char* const* argv )
     cout << "--prefix-sm-ready-timeout       - время на ожидание старта SM" << endl;
     cout << "--prefix-exchange-mode-id       - Идентификатор (AI) датчика, позволяющего управлять работой процесса" << endl;
     cout << "--prefix-set-prop-prefix val    - Использовать для свойств указанный или пустой префикс." << endl;
+    cout << "--prefix-default-mbtype [rtu|rtu188|mtr]  - У датчиков которых не задан 'mbtype' использовать данный. По умолчанию: 'rtu'" << endl;
+    cout << "--prefix-default-mbadd addr     - У датчиков которых не задан 'mbaddr' использовать данный. По умолчанию: ''" << endl;
 }
 // -----------------------------------------------------------------------------
 MBExchange::~MBExchange()
@@ -1783,7 +1788,10 @@ MBExchange::RTUDevice* MBExchange::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAd
     auto it = mp.find(a);
     if( it != mp.end() )
     {
-        DeviceType dtype = getDeviceType(xmlit.getProp(prop_prefix + "mbtype"));
+        string s_dtype(xmlit.getProp(prop_prefix + "mbtype"));
+        if( s_dtype.empty() )
+            s_dtype=defaultMBtype;
+        DeviceType dtype = getDeviceType(s_dtype);
         if( it->second->dtype != dtype )
         {
             dcrit << myname << "(addDev): OTHER mbtype=" << dtype << " for " << xmlit.getProp("name")
@@ -2016,6 +2024,9 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML::iterator& it,  MBExchange::RTU
 bool MBExchange::initRTUDevice( RTUDevice* d, UniXML::iterator& it )
 {
     string mbtype(IOBase::initProp(it,"mbtype",prop_prefix,false));
+    if(mbtype.empty())
+        mbtype = defaultMBtype;
+
     d->dtype = getDeviceType(mbtype);
 
     if( d->dtype == dtUnknown )
@@ -2027,6 +2038,9 @@ bool MBExchange::initRTUDevice( RTUDevice* d, UniXML::iterator& it )
     }
 
     string addr( IOBase::initProp(it,"mbaddr",prop_prefix,false) );
+    if( addr.empty() )
+        addr = defaultMBaddr;
+
     if( addr.empty() )
     {
         dcrit << myname << "(initRTUDevice): Unknown mbaddr for " << it.getProp("name") << endl;
@@ -2051,6 +2065,9 @@ bool MBExchange::initItem( UniXML::iterator& it )
         return false;
 
     string addr( IOBase::initProp(it,"mbaddr",prop_prefix,false) );
+    if( addr.empty() )
+        addr = defaultMBaddr;
+
     if( addr.empty() )
     {
         dcrit << myname << "(initItem): Unknown mbaddr(" << IOBase::initProp(it,"mbaddr",prop_prefix,false) << ")='" << addr << "' for " << it.getProp("name") << endl;

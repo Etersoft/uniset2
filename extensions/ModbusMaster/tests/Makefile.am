@@ -2,7 +2,7 @@ if HAVE_TESTS
 
 noinst_PROGRAMS = tests-with-sm
 
-tests_with_sm_SOURCES   = tests_with_sm.cc test_mbtcpmaster.cc test_mbtcpmultimaster.cc
+tests_with_sm_SOURCES   = tests_with_sm.cc test_mbtcpmaster.cc test_mbtcpmultimaster.cc MBTCPTestServer.cc
 tests_with_sm_LDADD     = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
 	$(top_builddir)/extensions/ModbusMaster/libUniSet2MBTCPMaster.la \
 	$(top_builddir)/extensions/SharedMemory/libUniSet2SharedMemory.la \
