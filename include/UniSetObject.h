@@ -201,7 +201,7 @@ class UniSetObject:
 
             friend class UniSetManager;
             friend class UniSetActivator;
-            friend class ThreadCreator<UniSetObject>;
+
             inline pid_t getMsgPID()
             {
                 return msgpid;
@@ -227,10 +227,11 @@ class UniSetObject:
             std::atomic_bool active;
 
             bool threadcreate;
-            UniSetTimer* tmr;
+            std::shared_ptr<UniSetTimer> tmr;
             UniSetTypes::ObjectId myid;
             CORBA::Object_var oref;
-            ThreadCreator<UniSetObject>* thr;
+
+            std::shared_ptr< ThreadCreator<UniSetObject> > thr;
 
             /*! очередь сообщений для объекта */
             MessagesQueue queueMsg;

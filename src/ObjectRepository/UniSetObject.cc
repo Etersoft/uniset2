@@ -40,7 +40,7 @@
 using namespace std;
 using namespace UniSetTypes;
 
-#define CREATE_TIMER    new ThrPassiveTimer();     
+#define CREATE_TIMER    make_shared<ThrPassiveTimer>();
 // new PassiveSysTimer();
 
 // ------------------------------------------------------------------------------------------
@@ -51,10 +51,8 @@ msgpid(0),
 reg(false),
 active(0),
 threadcreate(false),
-tmr(NULL),
 myid(UniSetTypes::DefaultObjectId),
 oref(0),
-thr(NULL),
 SizeOfMessageQueue(1000),
 MaxCountRemoveOfMessage(10),
 stMaxQueueMessages(0),
@@ -73,10 +71,8 @@ msgpid(0),
 reg(false),
 active(0),
 threadcreate(true),
-tmr(NULL),
 myid(id),
 oref(0),
-thr(NULL),
 SizeOfMessageQueue(1000),
 MaxCountRemoveOfMessage(10),
 stMaxQueueMessages(0),
@@ -108,10 +104,8 @@ msgpid(0),
 reg(false),
 active(0),
 threadcreate(true),
-tmr(NULL),
 myid(UniSetTypes::DefaultObjectId),
 oref(0),
-thr(NULL),
 SizeOfMessageQueue(1000),
 MaxCountRemoveOfMessage(10),
 stMaxQueueMessages(0),
@@ -155,11 +149,7 @@ UniSetObject::~UniSetObject()
                 thr->join();
         }
         catch(...){}
-
-        delete thr;
     }
-
-    delete tmr;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::init_object()
@@ -446,7 +436,7 @@ CORBA::Boolean UniSetObject::exist()
 // ------------------------------------------------------------------------------------------
 void UniSetObject::termWaiting()
 {
-    if( tmr!=NULL )
+    if( tmr )
         tmr->terminate();
 }
 // ------------------------------------------------------------------------------------------
@@ -747,7 +737,7 @@ bool UniSetObject::activate()
 
     if( myid!=UniSetTypes::DefaultObjectId && threadcreate )
     {
-        thr = new ThreadCreator<UniSetObject>(this, &UniSetObject::work);
+        thr = make_shared< ThreadCreator<UniSetObject> >(this, &UniSetObject::work);
         thr->start();
     }
     else 
