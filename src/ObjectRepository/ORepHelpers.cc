@@ -150,6 +150,12 @@ namespace ORepHelpers
             CORBA::Object_var initServ = orb->resolve_initial_references(nsName.c_str());
             ulogrep << "OREPHELP: get rootcontext...(nsName = "<< nsName << ")" <<endl;
 
+            if (CORBA::is_nil(initServ))
+            {
+                string err("ORepHelpers: fail resolve_initial_references '" + nsName + "'");
+                throw ORepFailed(err.c_str());
+            }
+
             rootContext = CosNaming::NamingContext::_narrow(initServ);
             if (CORBA::is_nil(rootContext))
             {

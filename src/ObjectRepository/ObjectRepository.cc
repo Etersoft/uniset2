@@ -83,7 +83,7 @@ bool ObjectRepository::init() const
  * \param oRef - ссылка на объект 
  * \param section - имя секции в которую заносится регистрационная запись
  * \exception ORepFailed - генерируется если произошла ошибка при регистрации
- * \sa registration(const string fullName, const CORBA::Object_ptr oRef) 
+ * \sa registration(const std::string& fullName, const CORBA::Object_ptr oRef)
 */
 void ObjectRepository::registration(const string& name, const ObjectPtr oRef, const string& section, bool force) const
         throw(ORepFailed, ObjectNameAlready, InvalidObjectName, NameNotFound)
@@ -92,18 +92,29 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
 
     uinfo << "ObjectRepository(registration): регистрируем " << name << endl;
 
+    if( CORBA::is_nil(oRef) )
+    {
+        err << "ObjectRepository(registrartion): oRef=nil! for '" << name << "'";
+        throw ORepFailed(err.str());
+    }
+
+    if( name.empty() )
+    {
+        err << "ObjectRepository(registration): (InvalidObjectName): empty name?!";
+        throw ( InvalidObjectName(err.str()) );
+    }
+
     // Проверка корректности имени
     char bad = ORepHelpers::checkBadSymbols(name);
     if( bad != 0 )
     {
-        cerr << "orep reg: BAD Symbols" << endl;
         err << "ObjectRepository(registration): (InvalidObjectName) " << name;
         err << " содержит недопустимый символ " << bad;
-        throw ( InvalidObjectName(err.str().c_str()) );
+        throw ( InvalidObjectName(err.str()) );
     }
 
     CosNaming::Name_var oName = omniURI::stringToName(name.c_str());
-    CosNaming::NamingContext_var ctx;
+    CosNaming::NamingContext_var ctx =  CosNaming::NamingContext::_nil();
     for( unsigned int i=0; i<2; i++ )
     {
         try
@@ -123,13 +134,14 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
                 throw ObjectNameAlready();
 
             // разрегистриуем, перед повтроной попыткой
-            ctx->unbind(oName);
+            if( !CORBA::is_nil(ctx) )
+                ctx->unbind(oName);
             continue;
         }
         catch(ORepFailed)
         {
             string er("ObjectRepository(registrartion): (getContext) не смог зарегистрировать "+name);
-            throw ORepFailed(er.c_str());
+            throw ORepFailed(er);
         }
         catch(CosNaming::NamingContext::NotFound)
         {
@@ -153,7 +165,10 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
         }
     }
 
-    throw ORepFailed(err.str().c_str());
+    if( err.str().empty() )
+        err << "(ObjectRepository(registrartion): unknown error..";
+
+    throw ORepFailed(err.str());
 }
 // --------------------------------------------------------------------------
 
@@ -171,7 +186,7 @@ void ObjectRepository::registration( const std::string& fullName, const UniSetTy
 {
 //    string n(ORepHelpers::getShortName(fullName));
     string n( uconf->oind->getBaseName(fullName) );
-    string s(ORepHelpers::getSectionName(fullName.c_str()));
+    string s(ORepHelpers::getSectionName(fullName));
     registration(n, oRef, s,force);
 }
 // --------------------------------------------------------------------------
@@ -215,7 +230,8 @@ void ObjectRepository::unregistration(const string& name, const string& section)
 
     if (err.str().empty())
         err << "ObjectRepository(unregistrartion): не смог удалить " << name;
-       throw ORepFailed(err.str().c_str());
+
+    throw ORepFailed(err.str().c_str());
 }
 // --------------------------------------------------------------------------
 /*!
