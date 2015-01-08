@@ -86,11 +86,10 @@
 
 
 			<item id="1019" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="31" mbfunc="0x10" iotype="AO" name="TestWrite10_1" textname="Тестовый регистр для 0x10"/>
-			<item id="1020" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="32" mbfunc="0x10" iotype="AO" name="TestWrite10_2" textname="Тестовый регистр для 0x10"/>
-			<!-- делаем дырку в регистрах, специально для проверки.. -->
-			<item id="1021" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="34" mbfunc="0x10" iotype="AO" name="TestWrite10_3" textname="Тестовый регистр для 0x10"/>
-			<item id="1022" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="35" mbfunc="0x10" iotype="AO" name="TestWrite10_4" textname="Тестовый регистр для 0x10"/>
-			<item id="1023" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="36" mbfunc="0x10" vtype="I2" iotype="AO" name="TestWrite10_5" textname="Тестовый регистр для 0x10"/>
+			<item id="1020" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="32" mbfunc="0x10" iotype="DO" name="TestWrite10_2" textname="Тестовый регистр для 0x10"/>
+			<item id="1021" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="33" mbfunc="0x10" iotype="AO" name="TestWrite10_3" textname="Тестовый регистр для 0x10"/>
+			<item id="1022" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="34" mbfunc="0x10" iotype="AO" name="TestWrite10_4" textname="Тестовый регистр для 0x10"/>
+			<item id="1023" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="35" mbfunc="0x10" vtype="I2" iotype="AO" name="TestWrite10_5" textname="Тестовый регистр для 0x10"/>
 
 			<item id="1024" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="38" mbfunc="0x0F" iotype="DO" name="TestWrite0F_1" textname="Тестовый регистр для 0x0F"/>
 			<item id="1025" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="39" mbfunc="0x0F" iotype="DO" name="TestWrite0F_2" textname="Тестовый регистр для 0x0F"/>
