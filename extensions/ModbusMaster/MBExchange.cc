@@ -340,7 +340,7 @@ bool MBExchange::checkUpdateSM( bool wrFunc, long mdev )
     if( exchangeMode == emSkipExchange || mdev == emSkipExchange )
     {
         if( wrFunc )
-            return true; // данные для посылки, должны обновляться всегда (чтобы быть актуальными)
+            return true; // данные для посылки, должны обновляться всегда (чтобы быть актуальными, когда режим переключиться обратно..)
 
         dlog3 << "(checkUpdateSM):"
               << " skip... mode='emSkipExchange' " << endl;
@@ -361,7 +361,7 @@ bool MBExchange::checkUpdateSM( bool wrFunc, long mdev )
         return false;
     }
 
-    if( wrFunc && (exchangeMode == emSkipSaveToSM || mdev == emSkipSaveToSM) )
+    if( !wrFunc && (exchangeMode == emSkipSaveToSM || mdev == emSkipSaveToSM) )
     {
         dlog3 << "(checkUpdateSM):"
                 << " skip... mode='emSkipSaveToSM' " << endl;
@@ -382,6 +382,12 @@ bool MBExchange::checkPoll( bool wrFunc )
     if( exchangeMode == emReadOnly && wrFunc )
     {
         dlog3 << myname << "(checkPoll): skip.. poll mode='emReadOnly'" << endl;
+        return false;
+    }
+
+    if( exchangeMode == emSkipExchange )
+    {
+        dlog3 << myname << "(checkPoll): skip.. poll mode='emSkipExchange'" << endl;
         return false;
     }
 
@@ -802,12 +808,12 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 {
     RegInfo* p(it->second);
 
-     if( dev->mode == emSkipExchange )
+    if( dev->mode == emSkipExchange )
     {
         dlog3 << myname << "(pollRTU): SKIP EXCHANGE (mode=emSkipExchange) "
                 << " mbaddr=" << ModbusRTU::addr2str(dev->mbaddr)
                 << endl;
-        return true;
+        return false;
     }
 
     if( dlog.debugging(Debug::LEVEL3)  )
@@ -822,13 +828,13 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
             << " mbval=" << p->mbval
             << endl;
 
-            if( p->q_count > ModbusRTU::MAXDATALEN )
-            {
-                    dlog3 << myname << "(pollRTU): count(" << p->q_count
-                    << ") > MAXDATALEN(" << ModbusRTU::MAXDATALEN
-                    << " ..ignore..."
-                    << endl;
-            }
+        if( p->q_count > ModbusRTU::MAXDATALEN )
+        {
+            dlog3 << myname << "(pollRTU): count(" << p->q_count
+                  << ") > MAXDATALEN(" << ModbusRTU::MAXDATALEN
+                  << " ..ignore..."
+                  << endl;
+        }
     }
 
     if( !checkPoll(ModbusRTU::isWriteFunction(p->mbfunc)) )
@@ -854,7 +860,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 
         case ModbusRTU::fnReadOutputRegisters:
         {
-            ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr, p->mbreg,p->q_count);
+            ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr,p->mbreg,p->q_count);
             for( unsigned int i=0; i<p->q_count; i++,it++ )
                 it->second->mbval = ret.data[i];
             it--;
@@ -2769,6 +2775,12 @@ void MBExchange::poll()
             if( !checkProcActive() )
                 return;
 
+            if( exchangeMode == emSkipExchange )
+            {
+                d->resp_real = false;
+                continue;
+            }
+
             try
             {
                 if( d->dtype==MBExchange::dtRTU || d->dtype==MBExchange::dtMTR )
@@ -2835,10 +2847,10 @@ void MBExchange::poll()
          IOBase::processingThreshold(&(*t),shm,force);
     }
 
-    if( trReopen.hi(allNotRespond) )
+    if( trReopen.hi(allNotRespond && exchangeMode!=emSkipExchange) )
          ptReopen.reset();
 
-    if( allNotRespond && ptReopen.checkTime() )
+    if( allNotRespond && exchangeMode!=emSkipExchange && ptReopen.checkTime() )
     {
         dwarn << myname << ": REOPEN timeout..(" << ptReopen.getInterval() << ")" << endl;
 
@@ -2945,5 +2957,25 @@ void MBExchange::execute()
 
         msleep(polltime);
     }
+}
+// -----------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, const MBExchange::ExchangeMode& em )
+{
+    if( em == MBExchange::emNone )
+        return os << "emNone";
+
+    if( em == MBExchange::emWriteOnly )
+        return os << "emWriteOnly";
+
+    if( em == MBExchange::emReadOnly )
+        return os << "emReadOnly";
+
+    if( em == MBExchange::emSkipSaveToSM )
+        return os << "emSkipSaveToSM";
+
+    if( em == MBExchange::emSkipExchange )
+        return os << "emSkipExchange";
+
+    return os;
 }
 // -----------------------------------------------------------------------------

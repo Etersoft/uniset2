@@ -33,6 +33,7 @@ int main(int argc, char* argv[] )
     {
         auto conf = uniset_init(argc,argv);
         conf->initDebug(dlog,"dlog");
+		dlog.logFile("./smtest.log");
 
         bool apart = findArgParam("--apart",argc,argv) != -1;
 

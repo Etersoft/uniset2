@@ -17,8 +17,9 @@ static ModbusRTU::ModbusAddr slaveADDR = 0x01;
 static shared_ptr<MBTCPTestServer> mbs;
 static shared_ptr<UInterface> ui;
 static ObjectId mbID = 6004; // MBTCPMaster1
-static int polltime=300; // conf->getArgInt("--mbtcp-polltime");
+static int polltime=50; // conf->getArgInt("--mbtcp-polltime");
 static ObjectId slaveNotRespond = 10; // Slave_Not_Respond_S
+static const ObjectId exchangeMode = 11; // MBTCPMaster_Mode_AS
 // -----------------------------------------------------------------------------
 static void InitTest()
 {
@@ -355,43 +356,185 @@ TEST_CASE("MBTCPMaster: 0x10 (write register outputs or memories)","[modbus][0x1
     }
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("MBTCPMaster: 0x14 (read file record","[modbus][0x14][mbmaster][mbtcpmaster]")
+TEST_CASE("MBTCPMaster: exchangeMode","[modbus][exchangemode][mbmaster][mbtcpmaster]")
+{
+    InitTest();
+
+    SECTION("None")
+    {
+        SECTION("read")
+        {
+            mbs->setReply(10);
+            msleep(polltime+100);
+            REQUIRE( ui->getValue(1003) == 10 );
+        }
+        SECTION("write")
+        {
+            ui->setValue(1018,10);
+            REQUIRE( ui->getValue(1018) == 10 );
+            msleep(polltime+100);
+            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 10 );
+        }
+    }
+
+    SECTION("WriteOnly")
+    {
+        // emWriteOnly=1,     /*!< "только посылка данных" (работают только write-функции) */
+        ui->setValue(exchangeMode,MBExchange::emWriteOnly );
+        REQUIRE( ui->getValue(exchangeMode) == MBExchange::emWriteOnly );
+
+        SECTION("read")
+        {
+            mbs->setReply(150);
+            msleep(2*polltime+100);
+            REQUIRE( ui->getValue(1003) != 150 );
+            mbs->setReply(-10);
+            msleep(2*polltime+100);
+            REQUIRE( ui->getValue(1003) != -10 );
+            REQUIRE( ui->getValue(1003) != 150 );
+        }
+        SECTION("write")
+        {
+            ui->setValue(1018,150);
+            REQUIRE( ui->getValue(1018) == 150 );
+            msleep(polltime+100);
+            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 150 );
+            ui->setValue(1018,155);
+            REQUIRE( ui->getValue(1018) == 155 );
+            msleep(polltime+100);
+            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 155 );
+        }
+    }
+
+    SECTION("ReadOnly")
+    {
+        // emReadOnly=2,        /*!< "только чтение" (работают только read-функции) */
+        ui->setValue(exchangeMode,MBExchange::emReadOnly );
+        REQUIRE( ui->getValue(exchangeMode) == MBExchange::emReadOnly );
+
+        SECTION("read")
+        {
+            mbs->setReply(150);
+            msleep(polltime+100);
+            REQUIRE( ui->getValue(1003) == 150 );
+            mbs->setReply(-100);
+            msleep(polltime+100);
+            REQUIRE( ui->getValue(1003) == -100 );
+        }
+        SECTION("write")
+        {
+            ui->setValue(1018,50);
+            REQUIRE( ui->getValue(1018) == 50 );
+            msleep(2*polltime+100);
+            REQUIRE( mbs->getLastWriteOutputSingleRegister() != 50 );
+            ui->setValue(1018,55);
+            REQUIRE( ui->getValue(1018) == 55 );
+            msleep(2*polltime+100);
+            REQUIRE( mbs->getLastWriteOutputSingleRegister() != 55 );
+            REQUIRE( mbs->getLastWriteOutputSingleRegister() != 50 );
+        }
+    }
+
+    SECTION("SkipSaveToSM")
+    {
+        // emSkipSaveToSM=3,    /*!< не писать данные в SM (при этом работают и read и write функции */
+        ui->setValue(exchangeMode,MBExchange::emSkipSaveToSM );
+        REQUIRE( ui->getValue(exchangeMode) == MBExchange::emSkipSaveToSM );
+
+        SECTION("read")
+        {
+            mbs->setReply(50);
+            msleep(polltime+100);
+            REQUIRE( ui->getValue(1003) != 50 );
+        }
+        SECTION("write")
+        {
+            // а write работает в этом режиме.. (а чем отличается от writeOnly?)
+            ui->setValue(1018,60);
+            REQUIRE( ui->getValue(1018) == 60 );
+            msleep(polltime+100);
+            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 60 );
+            ui->setValue(1018,65);
+            REQUIRE( ui->getValue(1018) == 65 );
+            msleep(polltime+100);
+            REQUIRE( mbs->getLastWriteOutputSingleRegister() == 65 );
+        }
+    }
+
+    SECTION("SkipExchange")
+    {
+        // emSkipExchange=4  /*!< отключить обмен */
+        ui->setValue(exchangeMode,MBExchange::emSkipExchange );
+        REQUIRE( ui->getValue(exchangeMode) == MBExchange::emSkipExchange );
+
+        SECTION("read")
+        {
+            mbs->setReply(70);
+            msleep(polltime+100);
+            REQUIRE( ui->getValue(1003) != 70 );
+        }
+        SECTION("write")
+        {
+            ui->setValue(1018,70);
+            REQUIRE( ui->getValue(1018) == 70 );
+            msleep(polltime+100);
+            REQUIRE( mbs->getLastWriteOutputSingleRegister() != 70 );
+        }
+
+        SECTION("check connection")
+        {
+            msleep(1100);
+            CHECK( ui->getValue(slaveNotRespond) == 1 );
+            ui->setValue(exchangeMode,MBExchange::emNone );
+            REQUIRE( ui->getValue(exchangeMode) == MBExchange::emNone );
+            msleep(1100);
+            CHECK( ui->getValue(slaveNotRespond) == 0 );
+        }
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: iobase functions","[modbus][iobase][mbmaster][mbtcpmaster]")
+{
+    WARN("Test of 'iobase functions'..not yet.. ");
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: reconnection","[modbus][reconnection][mbmaster][mbtcpmaster]")
+{
+    WARN("Test of 'reconnection'..not yet.. ");
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("MBTCPMaster: 0x14 (read file record)","[modbus][0x14][mbmaster][mbtcpmaster]")
 {
     WARN("Test of '0x14'..not yet.. ");
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("MBTCPMaster: 0x15 (write file record","[modbus][0x15][mbmaster][mbtcpmaster]")
+TEST_CASE("MBTCPMaster: 0x15 (write file record)","[modbus][0x15][mbmaster][mbtcpmaster]")
 {
     WARN("Test of '0x15'..not yet.. ");
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("MBTCPMaster: 0x2B (Modbus Encapsulated Interface","[modbus][0x2B][mbmaster][mbtcpmaster]")
+TEST_CASE("MBTCPMaster: 0x2B (Modbus Encapsulated Interface / MEI /)","[modbus][0x2B][mbmaster][mbtcpmaster]")
 {
     WARN("Test of '0x2B'..not yet.. ");
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("MBTCPMaster: 0x50 (set date and time","[modbus][0x50][mbmaster][mbtcpmaster]")
+TEST_CASE("MBTCPMaster: 0x50 (set date and time)","[modbus][0x50][mbmaster][mbtcpmaster]")
 {
     WARN("Test of '0x50'..not yet.. ");
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("MBTCPMaster: 0x53 (call remote service","[modbus][0x53][mbmaster][mbtcpmaster]")
+TEST_CASE("MBTCPMaster: 0x53 (call remote service)","[modbus][0x53][mbmaster][mbtcpmaster]")
 {
     WARN("Test of '0x53'..not yet.. ");
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("MBTCPMaster: 0x65 (read,write,delete alarm journal","[modbus][0x65][mbmaster][mbtcpmaster]")
+TEST_CASE("MBTCPMaster: 0x65 (read,write,delete alarm journal)","[modbus][0x65][mbmaster][mbtcpmaster]")
 {
     WARN("Test of '0x65'..not yet.. ");
 }
 // -----------------------------------------------------------------------------
-TEST_CASE("MBTCPMaster: 0x66 (file transfer","[modbus][0x66][mbmaster][mbtcpmaster]")
+TEST_CASE("MBTCPMaster: 0x66 (file transfer)","[modbus][0x66][mbmaster][mbtcpmaster]")
 {
     WARN("Test of '0x66'..not yet.. ");
-}
-// -----------------------------------------------------------------------------
-TEST_CASE("MBTCPMaster: exchangeMode","[modbus][exchangemode][mbmaster][mbtcpmaster]")
-{
-    WARN("Test of 'exchangeMode'..not yet.. ");
 }
 // -----------------------------------------------------------------------------

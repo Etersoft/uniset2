@@ -27,7 +27,7 @@
 
 	<settings>
 	    <SharedMemory name="SharedMemory" shmID="SharedMemory"/>
-	    <MBTCPMaster1 name="MBTCPMaster1">
+	    <MBTCPMaster1 name="MBTCPMaster1" exchangeModeID="MBTCPMaster_Mode_AS">
             <DeviceList>
                 <item addr="0x01" invert="1" respondSensor="Slave_Not_Respond_S" timeout="1000"/>
             </DeviceList>
@@ -49,6 +49,7 @@
 		<sensors name="Sensors">
 
 			<item id="10" iotype="DI" name="Slave_Not_Respond_S" textname="Наличие связи со Slave"/>
+			<item id="11" iotype="AI" name="MBTCPMaster_Mode_AS" textname="Режим работы MBTCPMaster"/>
 
 			<item id="1000" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="1" mbfunc="0x01" iotype="DI" name="TestReadCoil1_S" textname="Тестовый регистр для ReadCoil"/>
 			<item id="1001" mb="1" mbtype="rtu" mbaddr="0x01" mbreg="2" mbfunc="0x01" iotype="DI" name="TestReadCoil2_S" textname="Тестовый регистр для ReadCoil"/>

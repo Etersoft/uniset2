@@ -15,7 +15,8 @@ cd -
 --mbtcp-filter-value 1 \
 --mbtcp-gateway-iaddr localhost \
 --mbtcp-gateway-port 20048 \
---mbtcp-polltime 300 --mbtcp-recv-timeout 1000
+--mbtcp-polltime 50 --mbtcp-recv-timeout 1000
+#--dlog-add-levels any
 
 #--mbtcp-force-out 1
 #--dlog-add-levels any
