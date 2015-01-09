@@ -135,7 +135,7 @@ string UniXML::getProp(const xmlNode* node, const string& name)
     }
     
     const string t( (const char*)text );
-    xmlFree(text);
+    xmlFree( (xmlChar*) text );
     return std::move(t);
 }
 
