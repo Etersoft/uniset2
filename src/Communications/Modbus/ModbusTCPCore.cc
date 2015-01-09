@@ -22,10 +22,10 @@ int ModbusTCPCore::readNextData( ost::TCPStream* tcp,
     
     return i;
 }
-// -------------------------------------------------------------------------
-int ModbusTCPCore::getNextData( unsigned char* buf, int len, 
+// ------------------------------------------------------------------------
+int ModbusTCPCore::getNextData( ost::TCPStream* tcp,
                                 std::queue<unsigned char>& qrecv, 
-                                ost::TCPStream* tcp )
+                                unsigned char* buf, int len )
 {
     if( !tcp || !tcp->isConnected() )
         return 0;
@@ -51,7 +51,7 @@ int ModbusTCPCore::getNextData( unsigned char* buf, int len,
     return i;
 }
 // -------------------------------------------------------------------------
-mbErrCode ModbusTCPCore::sendData( unsigned char* buf, int len, ost::TCPStream* tcp )
+mbErrCode ModbusTCPCore::sendData( ost::TCPStream* tcp, unsigned char* buf, int len )
 {
     if( !tcp || !tcp->isConnected() )
         return erTimeOut;

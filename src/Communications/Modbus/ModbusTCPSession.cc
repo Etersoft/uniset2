@@ -174,12 +174,12 @@ void ModbusTCPSession::final()
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPSession::sendData( unsigned char* buf, int len )
 {
-    return ModbusTCPCore::sendData(buf,len,this);
+    return ModbusTCPCore::sendData(this,buf,len);
 }
 // -------------------------------------------------------------------------
 int ModbusTCPSession::getNextData( unsigned char* buf, int len )
 {
-    return ModbusTCPCore::getNextData(buf,len,qrecv,this);
+    return ModbusTCPCore::getNextData(this,qrecv,buf,len);
 }
 // --------------------------------------------------------------------------------
 

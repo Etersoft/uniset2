@@ -175,7 +175,7 @@ void UniSetManager::initPOA( UniSetManager* rmngr )
     managers(initial);
 }
 // ------------------------------------------------------------------------------------------
-bool UniSetManager::addObject( std::shared_ptr<UniSetObject> obj )
+bool UniSetManager::addObject( const std::shared_ptr<UniSetObject>& obj )
 {
     {    //lock
         uniset_rwmutex_wrlock lock(olistMutex);
@@ -190,7 +190,7 @@ bool UniSetManager::addObject( std::shared_ptr<UniSetObject> obj )
 }
 
 // ------------------------------------------------------------------------------------------
-bool UniSetManager::removeObject( std::shared_ptr<UniSetObject> obj )
+bool UniSetManager::removeObject( const std::shared_ptr<UniSetObject>& obj )
 {
     {    //lock
         uniset_rwmutex_wrlock lock(olistMutex);
@@ -420,7 +420,7 @@ void UniSetManager::broadcast(const TransportMessage& msg)
 }
 
 // ------------------------------------------------------------------------------------------
-bool UniSetManager::addManager( std::shared_ptr<UniSetManager> child )
+bool UniSetManager::addManager( const std::shared_ptr<UniSetManager>& child )
 {
     {    //lock
         uniset_rwmutex_wrlock lock(mlistMutex);
@@ -440,7 +440,7 @@ bool UniSetManager::addManager( std::shared_ptr<UniSetManager> child )
 }
 
 // ------------------------------------------------------------------------------------------
-bool UniSetManager::removeManager( std::shared_ptr<UniSetManager> child )
+bool UniSetManager::removeManager( const std::shared_ptr<UniSetManager>& child )
 {
     {    //lock
         uniset_rwmutex_wrlock lock(mlistMutex);
@@ -464,7 +464,7 @@ const std::shared_ptr<UniSetManager> UniSetManager::itemM( const ObjectId id )
         }
     } // unlock
 
-    return 0;
+    return nullptr; // std::shared_ptr<UniSetManager>();
 }
 
 // ------------------------------------------------------------------------------------------
@@ -480,7 +480,7 @@ const std::shared_ptr<UniSetObject> UniSetManager::itemO( const ObjectId id )
         }
     } // unlock
 
-    return std::shared_ptr<UniSetObject>();
+    return nullptr; // std::shared_ptr<UniSetObject>();
 }
 
 // ------------------------------------------------------------------------------------------

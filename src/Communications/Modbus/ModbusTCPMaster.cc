@@ -11,7 +11,7 @@ using namespace ModbusRTU;
 using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 ModbusTCPMaster::ModbusTCPMaster():
-tcp(0),
+tcp(nullptr),
 nTransaction(0),
 iaddr(""),
 force_disconnect(true)
@@ -29,11 +29,13 @@ ModbusTCPMaster::~ModbusTCPMaster()
 {
     if( isConnection() )
         disconnect();
+
+	tcp.reset();
 }
 // -------------------------------------------------------------------------
 int ModbusTCPMaster::getNextData( unsigned char* buf, int len )
 {
-    return ModbusTCPCore::getNextData(buf,len,qrecv,tcp);
+    return ModbusTCPCore::getNextData(tcp.get(),qrecv,buf,len);
 }
 // -------------------------------------------------------------------------
 void ModbusTCPMaster::setChannelTimeout( timeout_t msec )
@@ -44,7 +46,7 @@ void ModbusTCPMaster::setChannelTimeout( timeout_t msec )
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPMaster::sendData( unsigned char* buf, int len )
 {
-    return ModbusTCPCore::sendData(buf,len,tcp);
+    return ModbusTCPCore::sendData(tcp.get(),buf,len);
 }
 // -------------------------------------------------------------------------
 mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg, 
@@ -300,15 +302,13 @@ void ModbusTCPMaster::reconnect()
     if( tcp )
     {
         tcp->disconnect();
-        delete tcp;
-        tcp = 0;
+        tcp.reset();
     }
 
     try
     {
-          tcp = new UTCPStream();
-          tcp->create(iaddr,port,true,500);
-
+        tcp = make_shared<UTCPStream>();
+        tcp->create(iaddr,port,true,500);
         tcp->setTimeout(replyTimeOut_ms);
     }
     catch( std::exception& e )
@@ -342,8 +342,7 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
     if( tcp )
     {
         disconnect();
-        delete tcp;
-        tcp = 0;
+        tcp.reset();
     }
 
 //    if( !tcp )
@@ -360,7 +359,7 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
         ost::Thread::setException(ost::Thread::throwException);
         try
         {
-            tcp = new UTCPStream();
+            tcp = make_shared<UTCPStream>();
             tcp->create(iaddr,port,true,500);
             tcp->setTimeout(replyTimeOut_ms);
         }
@@ -394,8 +393,7 @@ void ModbusTCPMaster::disconnect()
         return;
     
     tcp->disconnect();
-    delete tcp;
-    tcp = 0;
+    tcp.reset();
 }
 // -------------------------------------------------------------------------
 bool ModbusTCPMaster::isConnection()

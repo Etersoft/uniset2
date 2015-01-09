@@ -10,8 +10,8 @@
 namespace ModbusTCPCore
 {
     int readNextData( ost::TCPStream* tcp, std::queue<unsigned char>& qrecv, int max=100 );
-    int getNextData( unsigned char* buf, int len, std::queue<unsigned char>& qrecv, ost::TCPStream* tcp );
-    ModbusRTU::mbErrCode sendData( unsigned char* buf, int len, ost::TCPStream* tcp );
+    int getNextData( ost::TCPStream* tcp, std::queue<unsigned char>& qrecv, unsigned char* buf, int len );
+    ModbusRTU::mbErrCode sendData( ost::TCPStream* tcp, unsigned char* buf, int len );
 }
 // -------------------------------------------------------------------------
 #endif // ModbusTCPCore_H_

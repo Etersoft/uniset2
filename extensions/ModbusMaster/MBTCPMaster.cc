@@ -85,7 +85,7 @@ MBTCPMaster::~MBTCPMaster()
             pollThread->join();
     }
     delete pollThread;
-    //delete mbtcp;
+    mbtcp.reset();
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
@@ -95,8 +95,8 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
         if( !reopen )
             return mbtcp;
 
-        mbtcp = nullptr;
-        mb = nullptr;
+        mbtcp.reset();
+        mb.reset();
     }
 
     try
@@ -115,7 +115,7 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
 
         mbtcp->setAfterSendPause(aftersend_pause);
 
-         dinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
+        dinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
 
         if( dlog.is_level9() )
             mbtcp->setLog(dlog);

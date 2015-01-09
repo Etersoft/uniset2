@@ -269,7 +269,7 @@ class UInterface
 
                 struct Info
                 {
-                    Info( UniSetTypes::ObjectVar ptr ):ptr(ptr),ncall(0){}
+                    Info( const UniSetTypes::ObjectVar& ptr ):ptr(ptr),ncall(0){}
                     Info():ptr(NULL),ncall(0){}
 
                     UniSetTypes::ObjectVar ptr;

@@ -62,13 +62,7 @@ int main(int argc, char* argv[] )
     try
     {
         auto conf = uniset_init(argc,argv);
-/*
-        conf->initDebug(dlog,"dlog");
-        string logfilename = conf->getArgParam("--logfile", "smemory.log");
-        string logname( conf->getLogDir() + logfilename );
-        ulog.logFile( logname );
-        dlog.logFile( logname );
-*/
+
         shm = SharedMemory::init_smemory(argc, argv);
         if( !shm )
             return 1;

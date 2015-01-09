@@ -188,6 +188,7 @@ MBExchange::~MBExchange()
         delete it1->second;
     }
 
+    mb.reset();
     delete shm;
 }
 // -----------------------------------------------------------------------------

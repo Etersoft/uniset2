@@ -74,11 +74,11 @@ class UniSetManager:
         // --------------------------
         void initPOA(UniSetManager* rmngr);
 
-        virtual bool addObject( std::shared_ptr<UniSetObject> obj );
-        virtual bool removeObject( std::shared_ptr<UniSetObject> obj );
+        virtual bool addObject( const std::shared_ptr<UniSetObject>& obj );
+        virtual bool removeObject( const std::shared_ptr<UniSetObject>& obj );
 
-        virtual bool addManager( std::shared_ptr<UniSetManager> mngr );
-        virtual bool removeManager( std::shared_ptr<UniSetManager> mngr );
+        virtual bool addManager( const std::shared_ptr<UniSetManager>& mngr );
+        virtual bool removeManager( const std::shared_ptr<UniSetManager>& mngr );
 
         /*! Получение доступа к подчиненному менеджеру по идентификатору
          * \return объект ненайден будет возвращен 0.

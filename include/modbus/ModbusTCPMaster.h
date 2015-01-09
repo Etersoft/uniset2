@@ -1,6 +1,7 @@
 #ifndef ModbusTCPMaster_H_
 #define ModbusTCPMaster_H_
 // -------------------------------------------------------------------------
+#include <memory>
 #include <string>
 #include <queue>
 #include <cc++/socket.h>
@@ -44,7 +45,7 @@ class ModbusTCPMaster:
 
     private:
         //ost::TCPStream* tcp;
-        UTCPStream* tcp;
+        std::shared_ptr<UTCPStream> tcp;
         ModbusRTU::ModbusData nTransaction;
         std::queue<unsigned char> qrecv;
         PassiveTimer ptTimeout;

@@ -265,12 +265,12 @@ void ModbusTCPServer::setChannelTimeout( timeout_t msec )
 // --------------------------------------------------------------------------------
 mbErrCode ModbusTCPServer::sendData( unsigned char* buf, int len )
 {
-    return ModbusTCPCore::sendData(buf,len,&tcp);
+    return ModbusTCPCore::sendData(&tcp,buf,len);
 }
 // -------------------------------------------------------------------------
 int ModbusTCPServer::getNextData( unsigned char* buf, int len )
 {
-    return ModbusTCPCore::getNextData(buf,len,qrecv,&tcp);
+    return ModbusTCPCore::getNextData(&tcp,qrecv,buf,len);
 }
 // --------------------------------------------------------------------------------
 
