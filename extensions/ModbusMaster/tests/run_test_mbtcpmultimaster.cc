@@ -7,7 +7,7 @@
 #include "PassiveTimer.h"
 #include "SharedMemory.h"
 #include "Extensions.h"
-#include "MBTCPMaster.h"
+#include "MBTCPMultiMaster.h"
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -21,7 +21,7 @@ int main(int argc, char* argv[] )
         cout << "--confile    - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
         SharedMemory::help_print(argc, argv);
         cout << endl << endl << "--------------- CATCH HELP --------------" << endl;
-        session.showHelp("test_with_sm");
+        session.showHelp("test_mbtcpmultimaster");
         return 0;
     }
 
@@ -33,7 +33,7 @@ int main(int argc, char* argv[] )
     {
         auto conf = uniset_init(argc,argv);
         conf->initDebug(dlog,"dlog");
-		dlog.logFile("./smtest.log");
+        dlog.logFile("./smtest.log");
 
         bool apart = findArgParam("--apart",argc,argv) != -1;
 
@@ -41,7 +41,7 @@ int main(int argc, char* argv[] )
         if( !shm )
             return 1;
 
-        auto mb = MBTCPMaster::init_mbmaster(argc,argv,shm->getId(), (apart ? nullptr : shm ));
+        auto mb = MBTCPMultiMaster::init_mbmaster(argc,argv,shm->getId(), (apart ? nullptr : shm ));
         if( !mb )
             return 1;
 
@@ -53,7 +53,6 @@ int main(int argc, char* argv[] )
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
         act->run(true);
-
         int tout = 6000;
         PassiveTimer pt(tout);
         while( !pt.checkTime() && !act->exist() )
@@ -61,7 +60,7 @@ int main(int argc, char* argv[] )
 
         if( !act->exist() )
         {
-            cerr << "(tests_with_sm): SharedMemory not exist! (timeout=" << tout << ")" << endl;
+            cerr << "(tests_mbtcpmultimaster): SharedMemory not exist! (timeout=" << tout << ")" << endl;
             return 1;
         }
 
@@ -69,19 +68,19 @@ int main(int argc, char* argv[] )
     }
     catch( SystemError& err )
     {
-        cerr << "(tests_with_sm): " << err << endl;
+        cerr << "(tests_mbtcpmultimaster): " << err << endl;
     }
     catch( Exception& ex )
     {
-        cerr << "(tests_with_sm): " << ex << endl;
+        cerr << "(tests_mbtcpmultimaster): " << ex << endl;
     }
     catch( std::exception& e )
     {
-        cerr << "(tests_with_sm): " << e.what() << endl;
+        cerr << "(tests_mbtcpmultimaster): " << e.what() << endl;
     }
     catch(...)
     {
-        cerr << "(tests_with_sm): catch(...)" << endl;
+        cerr << "(tests_mbtcpmultimaster): catch(...)" << endl;
     }
 
     return 1;

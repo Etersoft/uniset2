@@ -12,6 +12,11 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace ModbusRTU;
 // -------------------------------------------------------------------------
+std::ostream& operator<<(std::ostream& os, const MBTCPTestServer* m )
+{
+    return os << m->myname;
+}
+// -------------------------------------------------------------------------
 MBTCPTestServer::MBTCPTestServer( ModbusAddr myaddr, const string& inetaddr, int port, bool verb ):
     sslot(NULL),
     addr(myaddr),
@@ -22,13 +27,20 @@ MBTCPTestServer::MBTCPTestServer( ModbusAddr myaddr, const string& inetaddr, int
     lastForceCoilsQ(0,0),
     lastWriteOutputQ(0,0),
     thr(0),
-    isrunning(false)
+    isrunning(false),
+    disabled(false)
 {
     ost::InetAddress ia(inetaddr.c_str());
 
     if( verbose )
         cout << "(init): "
             << " addr: " << ia << ":" << port << endl;
+
+    {
+        ostringstream s;
+        s << ia << ":" << port;
+        myname = s.str();
+    }
 
     sslot = new ModbusTCPServerSlot(ia,port);
 
@@ -83,7 +95,7 @@ void MBTCPTestServer::runThread()
 void MBTCPTestServer::execute()
 {
     isrunning = true;
-    cerr << "******************** MBTCPTestServer running... " << endl;
+    cerr << "******************** MBTCPTestServer(" << myname << ") running... " << endl;
     // Работа...
     while(1)
     {
@@ -115,6 +127,9 @@ void MBTCPTestServer::sigterm( int signo )
 ModbusRTU::mbErrCode MBTCPTestServer::readCoilStatus( ReadCoilMessage& query,
                                                 ReadCoilRetMessage& reply )
 {
+    if( disabled )
+        return ModbusRTU::erTimeOut;
+
     if( verbose )
         cout << "(readCoilStatus): " << query << endl;
 
@@ -158,6 +173,9 @@ ModbusRTU::mbErrCode MBTCPTestServer::readCoilStatus( ReadCoilMessage& query,
 ModbusRTU::mbErrCode MBTCPTestServer::readInputStatus( ReadInputStatusMessage& query,
                                                 ReadInputStatusRetMessage& reply )
 {
+    if( disabled )
+        return ModbusRTU::erTimeOut;
+
     if( verbose )
         cout << "(readInputStatus): " << query << endl;
 
@@ -194,6 +212,9 @@ ModbusRTU::mbErrCode MBTCPTestServer::readInputStatus( ReadInputStatusMessage& q
 mbErrCode MBTCPTestServer::readInputRegisters( ReadInputMessage& query,
                                         ReadInputRetMessage& reply )
 {
+    if( disabled )
+        return ModbusRTU::erTimeOut;
+
     if( verbose )
         cout << "(readInputRegisters): " << query << endl;
 
@@ -235,6 +256,9 @@ mbErrCode MBTCPTestServer::readInputRegisters( ReadInputMessage& query,
 ModbusRTU::mbErrCode MBTCPTestServer::readOutputRegisters(
                 ModbusRTU::ReadOutputMessage& query, ModbusRTU::ReadOutputRetMessage& reply )
 {
+    if( disabled )
+        return ModbusRTU::erTimeOut;
+
     if( verbose )
         cout << "(readOutputRegisters): " << query << endl;
 
@@ -272,6 +296,9 @@ ModbusRTU::mbErrCode MBTCPTestServer::readOutputRegisters(
 ModbusRTU::mbErrCode MBTCPTestServer::forceMultipleCoils( ModbusRTU::ForceCoilsMessage& query,
                                                     ModbusRTU::ForceCoilsRetMessage& reply )
 {
+    if( disabled )
+        return ModbusRTU::erTimeOut;
+
     if( verbose )
         cout << "(forceMultipleCoils): " << query << endl;
 
@@ -284,6 +311,9 @@ ModbusRTU::mbErrCode MBTCPTestServer::forceMultipleCoils( ModbusRTU::ForceCoilsM
 ModbusRTU::mbErrCode MBTCPTestServer::writeOutputRegisters( ModbusRTU::WriteOutputMessage& query,
                                             ModbusRTU::WriteOutputRetMessage& reply )
 {
+    if( disabled )
+        return ModbusRTU::erTimeOut;
+
     if( verbose )
         cout << "(writeOutputRegisters): " << query << endl;
 
@@ -297,6 +327,9 @@ ModbusRTU::mbErrCode MBTCPTestServer::writeOutputRegisters( ModbusRTU::WriteOutp
 ModbusRTU::mbErrCode MBTCPTestServer::writeOutputSingleRegister( ModbusRTU::WriteSingleOutputMessage& query,
                                             ModbusRTU::WriteSingleOutputRetMessage& reply )
 {
+    if( disabled )
+        return ModbusRTU::erTimeOut;
+
     if( verbose )
         cout << "(writeOutputSingleRegisters): " << query << endl;
 
@@ -309,6 +342,9 @@ ModbusRTU::mbErrCode MBTCPTestServer::writeOutputSingleRegister( ModbusRTU::Writ
 ModbusRTU::mbErrCode MBTCPTestServer::forceSingleCoil( ModbusRTU::ForceSingleCoilMessage& query,
                                             ModbusRTU::ForceSingleCoilRetMessage& reply )
 {
+    if( disabled )
+        return ModbusRTU::erTimeOut;
+
     if( verbose )
         cout << "(forceSingleCoil): " << query << endl;
 
@@ -322,6 +358,9 @@ ModbusRTU::mbErrCode MBTCPTestServer::forceSingleCoil( ModbusRTU::ForceSingleCoi
 ModbusRTU::mbErrCode MBTCPTestServer::journalCommand( ModbusRTU::JournalCommandMessage& query,
                                 ModbusRTU::JournalCommandRetMessage& reply )
 {
+    if( disabled )
+        return ModbusRTU::erTimeOut;
+
     if( verbose )
         cout << "(journalCommand): " << query << endl;
 
@@ -358,6 +397,9 @@ ModbusRTU::mbErrCode MBTCPTestServer::journalCommand( ModbusRTU::JournalCommandM
 ModbusRTU::mbErrCode MBTCPTestServer::setDateTime( ModbusRTU::SetDateTimeMessage& query,
                                     ModbusRTU::SetDateTimeRetMessage& reply )
 {
+    if( disabled )
+        return ModbusRTU::erTimeOut;
+
     if( verbose )
         cout << "(setDateTime): " << query << endl;
 
@@ -445,6 +487,9 @@ ModbusRTU::mbErrCode MBTCPTestServer::fileTransfer( ModbusRTU::FileTransferMessa
 ModbusRTU::mbErrCode MBTCPTestServer::diagnostics( ModbusRTU::DiagnosticMessage& query,
                                             ModbusRTU::DiagnosticRetMessage& reply )
 {
+    if( disabled )
+        return ModbusRTU::erTimeOut;
+
     if( query.subf == ModbusRTU::subEcho )
     {
         reply = query;
@@ -484,6 +529,9 @@ ModbusRTU::mbErrCode MBTCPTestServer::diagnostics( ModbusRTU::DiagnosticMessage&
 ModbusRTU::mbErrCode MBTCPTestServer::read4314( ModbusRTU::MEIMessageRDI& query,
                                 ModbusRTU::MEIMessageRetRDI& reply )
 {
+    if( disabled )
+        return ModbusRTU::erTimeOut;
+
     if( verbose )
         cout << "(read4314): " << query << endl;
 

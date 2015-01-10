@@ -1808,7 +1808,7 @@ MBExchange::RTUDevice* MBExchange::addDev( RTUDeviceMap& mp, ModbusRTU::ModbusAd
             return 0;
         }
 
-        dcrit << myname << "(addDev): device for addr=" << ModbusRTU::addr2str(a)
+        dinfo << myname << "(addDev): device for addr=" << ModbusRTU::addr2str(a)
                 << " already added. Ignore device params for " << xmlit.getProp("name") << " ..." << endl;
         return it->second;
     }
@@ -2723,7 +2723,7 @@ void MBExchange::timerInfo( const TimerMessage *tm )
     }
 }
 // -----------------------------------------------------------------------------
-void MBExchange::poll()
+bool MBExchange::poll()
 {
     if( !mb )
     {
@@ -2739,11 +2739,11 @@ void MBExchange::poll()
         }
 
         if( !checkProcActive() )
-            return;
+            return false;
 
         updateSM();
         allInitOK = false;
-        return;
+        return false;
     }
 
     {
@@ -2756,7 +2756,7 @@ void MBExchange::poll()
         firstInitRegisters();
 
     if( !checkProcActive() )
-        return;
+        return false;
 
     bool allNotRespond = true;
 
@@ -2774,7 +2774,7 @@ void MBExchange::poll()
         for( auto it=d->regmap.begin(); it!=d->regmap.end(); ++it )
         {
             if( !checkProcActive() )
-                return;
+                return false;
 
             if( exchangeMode == emSkipExchange )
             {
@@ -2814,7 +2814,7 @@ void MBExchange::poll()
                 break;
 
             if( !checkProcActive() )
-                return;
+                return false;
         }
 
         if( stat_time > 0 )
@@ -2834,7 +2834,7 @@ void MBExchange::poll()
     }
 
     if( !checkProcActive() )
-        return;
+        return false;
 
     // update SharedMemory...
     updateSM();
@@ -2843,7 +2843,7 @@ void MBExchange::poll()
     for( auto t=thrlist.begin(); t!=thrlist.end(); ++t )
     {
          if( !checkProcActive() )
-             return;
+             return false;
 
          IOBase::processingThreshold(&(*t),shm,force);
     }
@@ -2860,6 +2860,8 @@ void MBExchange::poll()
     }
 
 //    printMap(rmap);
+
+    return !allNotRespond;
 }
 // -----------------------------------------------------------------------------
 bool MBExchange::RTUDevice::checkRespond()

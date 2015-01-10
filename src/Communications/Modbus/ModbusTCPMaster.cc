@@ -30,7 +30,7 @@ ModbusTCPMaster::~ModbusTCPMaster()
     if( isConnection() )
         disconnect();
 
-	tcp.reset();
+    tcp.reset();
 }
 // -------------------------------------------------------------------------
 int ModbusTCPMaster::getNextData( unsigned char* buf, int len )
@@ -297,7 +297,7 @@ bool ModbusTCPMaster::checkConnection( const std::string& ip, int port, int time
 void ModbusTCPMaster::reconnect()
 {
     if( dlog.is_info() )
-        dlog.info() << "(ModbusTCPMaster): reconnect " << iaddr << endl;
+        dlog.info() << "(ModbusTCPMaster): reconnect " << iaddr << ":" << port << endl;
 
     if( tcp )
     {
@@ -387,11 +387,11 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
 void ModbusTCPMaster::disconnect()
 {
     if( dlog.is_info() )
-        dlog.info() << iaddr << "(ModbusTCPMaster): disconnect." << endl;
+        dlog.info() << iaddr << "(ModbusTCPMaster): disconnect (" << iaddr << ":" << port <<")." << endl;
 
     if( !tcp )
         return;
-    
+
     tcp->disconnect();
     tcp.reset();
 }

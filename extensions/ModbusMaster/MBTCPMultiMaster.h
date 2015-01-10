@@ -247,7 +247,7 @@ class MBTCPMultiMaster:
                 respond(false),respond_id(UniSetTypes::DefaultObjectId),respond_invert(false),
                 recv_timeout(200),aftersend_pause(0),sleepPause_usec(100),
                 force_disconnect(true),
-                myname(""),initOK(false){}
+                myname(""),initOK(false),ignore(false){}
 
             std::string ip;
             int port;
@@ -275,6 +275,8 @@ class MBTCPMultiMaster:
             std::string myname;
 
             bool initOK;
+            bool ignore; // игнорировать данное соединение (обычно флаг выставляется на время ignoreTimeout, если узел не отвечает, хотя связь есть.
+            PassiveTimer ptIgnoreTimeout;
         };
 
         typedef std::list<MBSlaveInfo> MBGateList;

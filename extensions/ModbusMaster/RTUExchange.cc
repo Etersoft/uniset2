@@ -169,7 +169,7 @@ void RTUExchange::step()
     MBExchange::step();
 }
 // -----------------------------------------------------------------------------
-void RTUExchange::poll()
+bool RTUExchange::poll()
 {
     if( !mb )
     {
@@ -185,11 +185,11 @@ void RTUExchange::poll()
         }
 
         if( !checkProcActive() )
-            return;
+            return false;
 
         updateSM();
         allInitOK = false;
-        return;
+        return false;
     }
 
     {
@@ -202,7 +202,7 @@ void RTUExchange::poll()
         firstInitRegisters();
 
     if( !checkProcActive() )
-        return;
+        return false;
 
     bool allNotRespond = true;
     ComPort::Speed s = mbrtu->getSpeed();
@@ -282,7 +282,7 @@ void RTUExchange::poll()
                     break;
 
                 if( !checkProcActive() )
-                    return;
+                    return false;
             }
         }
 
@@ -297,7 +297,7 @@ void RTUExchange::poll()
     for( auto &t: thrlist )
     {
          if( !checkProcActive() )
-             return;
+             return false;
 
          IOBase::processingThreshold(&t,shm,force);
     }
@@ -314,6 +314,7 @@ void RTUExchange::poll()
     }
 
 //    printMap(rmap);
+    return !allNotRespond;
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<RTUExchange> RTUExchange::init_rtuexchange( int argc, const char* const* argv, UniSetTypes::ObjectId icID,

@@ -49,6 +49,8 @@ checkThread(0)
     checktime = conf->getArgPInt("--" + prefix + "-checktime",it.getProp("checktime"), 5000);
     force_disconnect = conf->getArgInt("--" + prefix + "-persistent-connection",it.getProp("persistent_connection")) ? false : true;
 
+    int ignore_timeout = conf->getArgPInt("--" + prefix + "-ignore-timeout",it.getProp("ignoreTimeout"), ptReopen.getInterval());
+
     UniXML::iterator it1(it);
     if( !it1.find("GateList") )
     {
@@ -102,6 +104,7 @@ checkThread(0)
         sinf.priority = it1.getIntProp("priority");
         sinf.mbtcp = std::make_shared<ModbusTCPMaster>();
 
+        sinf.ptIgnoreTimeout.setTiming( it1.getPIntProp("ignore_timeout",ignore_timeout) );
         sinf.recv_timeout = it1.getPIntProp("recv_timeout",recv_timeout);
         sinf.aftersend_pause = it1.getPIntProp("aftersend_pause",aftersend_pause);
         sinf.sleepPause_usec = it1.getPIntProp("sleepPause_usec",sleepPause_usec);
@@ -175,7 +178,7 @@ MBTCPMultiMaster::~MBTCPMultiMaster()
 
     for( auto &it: mblist )
     {
-        it.mbtcp = nullptr;
+        it.mbtcp.reset(); // = nullptr;
         mbi = mblist.rend();
     }
 }
@@ -197,13 +200,33 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
 
     {
         uniset_rwmutex_wrlock l(tcpMutex);
+
+        // если reopen=true - значит почему текущему каналу нет (хотя соединение есть)
+        // тогда выставляем ему признак игнорирования
+        if( mbi!=mblist.rend() && reopen )
+        {
+            mbi->ignore = true;
+            mbi->ptIgnoreTimeout.reset();
+            dwarn << myname << "(initMB): set ignore=true for " << mbi->ip << ":" << mbi->port << endl;
+        }
+
         // Если по текущему каналу связь есть, то возвращаем его
-        if( mbi!=mblist.rend() && mbi->respond )
+        if( mbi!=mblist.rend() && !mbi->ignore && mbi->respond )
         {
             if( mbi->mbtcp->isConnection() || ( !mbi->mbtcp->isConnection() && mbi->init()) )
             {
-                mb = mbi->mbtcp;
-                return mbi->mbtcp;
+                if( !mbi->ignore  )
+                {
+                    mb = mbi->mbtcp;
+                    return mbi->mbtcp;
+                }
+
+                if( mbi->ptIgnoreTimeout.checkTime() )
+                {
+                    mbi->ignore = false;
+                    mb = mbi->mbtcp;
+                    return mbi->mbtcp;
+                }
             }
         }
 
@@ -217,6 +240,14 @@ std::shared_ptr<ModbusClient> MBTCPMultiMaster::initMB( bool reopen )
         uniset_rwmutex_wrlock l(tcpMutex);
         if( it->respond && it->init() )
         {
+            if( it->ignore )
+            {
+                if( !it->ptIgnoreTimeout.checkTime() )
+                    continue;
+
+                it->ignore = false;
+            }
+
             mbi = it;
             mb = mbi->mbtcp;
             return it->mbtcp;
@@ -378,11 +409,13 @@ void MBTCPMultiMaster::help_print( int argc, const char* const* argv )
     MBExchange::help_print(argc,argv);
     cout << endl;
     cout << " Настройки протокола TCP(MultiMaster): " << endl;
-    cout << "--prefix-persistent-connection 0,1     - Не закрывать соединение на каждом цикле опроса" << endl;
-    cout << "--prefix-checktime                     - период проверки связи по каналам (<GateList>)" << endl;
+    cout << "--prefix-persistent-connection 0,1 - Не закрывать соединение на каждом цикле опроса" << endl;
+    cout << "--prefix-checktime                 - период проверки связи по каналам (<GateList>)" << endl;
+    cout << "--prefix-ignore-timeout            - Timeout на повторную попытку использования канала после 'reopen-timeout'. По умолчанию: reopen-timeout * 3" << endl;
     cout << endl;
     cout << " ВНИМАНИЕ! '--prefix-reopen-timeout' для MBTCPMultiMaster НЕ ДЕЙСТВУЕТ! " << endl;
-    cout << " Переключение на следующий канал зависит от '--prefix-timeout'" << endl;
+    cout << " Смена канала происходит по --prefix-timeout. " << endl;
+    cout << " При этом следует учитывать блокировку отключаемого канала на время: --prefix-ignore-timeout" << endl;
 }
 // -----------------------------------------------------------------------------
 std::shared_ptr<MBTCPMultiMaster> MBTCPMultiMaster::init_mbmaster( int argc, const char* const* argv,

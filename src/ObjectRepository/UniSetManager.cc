@@ -185,7 +185,7 @@ bool UniSetManager::addObject( const std::shared_ptr<UniSetObject>& obj )
             uinfo << myname << "(activator): добавляем объект "<< obj->getName()<< endl;
             olist.push_back(obj);
         }
-    } // unlock    
+    } // unlock
     return true;
 }
 

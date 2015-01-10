@@ -251,7 +251,7 @@ class MBExchange:
 
         virtual std::shared_ptr<ModbusClient> initMB( bool reopen=false )= 0;
 
-        virtual void poll();
+        virtual bool poll();
         bool pollRTU( RTUDevice* dev, RegMap::iterator& it );
 
         void updateSM();

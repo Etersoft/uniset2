@@ -3,6 +3,7 @@
 // -------------------------------------------------------------------------
 #include <string>
 #include <atomic>
+#include <ostream>
 #include "ThreadCreator.h"
 #include "modbus/ModbusTCPServerSlot.h"
 // -------------------------------------------------------------------------
@@ -36,10 +37,14 @@ class MBTCPTestServer
 
         inline bool isRunning(){ return isrunning; }
 
+        inline void disableExchange( bool set = true ){ disabled = set; }
+
         inline bool getForceSingleCoilCmd(){ return forceSingleCoilCmd; }
         inline int getLastWriteOutputSingleRegister(){ return lastWriteOutputSingleRegister; }
         inline ModbusRTU::ForceCoilsMessage getLastForceCoilsQ(){ return lastForceCoilsQ; }
         inline ModbusRTU::WriteOutputMessage getLastWriteOutput(){ return lastWriteOutputQ; }
+
+        friend std::ostream& operator<<(std::ostream& os, const MBTCPTestServer* m );
 
     protected:
         // действия при завершении работы
@@ -128,7 +133,8 @@ class MBTCPTestServer
     private:
         ThreadCreator<MBTCPTestServer>* thr;
         std::atomic_bool isrunning;
-
+        bool disabled;
+        std::string myname;
 };
 // -------------------------------------------------------------------------
 #endif // MBTCPTestServer_H_
