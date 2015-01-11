@@ -3,7 +3,7 @@ There are set of base components to construct this kind of systems:
 * base interfaces for your implementation of control algorithms.
 * algorithms for the discrete and analog input/output based on COMEDI interface.
 * IPC mechanism based on CORBA (omniORB).
-* logging system based on MySQL database.
+* logging system based on MySQL,SQLite,PostgreeSQL databases.
 * Web interface to display logging and statistic information.
 * utilities for system's configuration based on XML.
 
