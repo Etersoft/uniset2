@@ -49,6 +49,7 @@ static struct option longopts[] = {
     { "getCalibrate", required_argument, 0, 'y' },
     { "oinfo", required_argument, 0, 'p' },
     { "verbose", no_argument, 0, 'v' },
+    { "quiet", no_argument, 0, 'q' },
     { NULL, 0, 0, 0 }
 };
 
@@ -109,6 +110,7 @@ static void usage()
     print_help(36, "-w|--getRawValue id1@node1=val,id2@node2=val2,id3=val3,.. ","Получить 'сырое' значение.\n");
     print_help(36, "-y|--getCalibrate id1@node1=val,id2@node2=val2,id3=val3,.. ","Получить параметры калибровки.\n");
     print_help(36, "-v|--verbose","Подробный вывод логов.\n");
+    print_help(36, "-q|--quiet","Выводит только результат.\n");
     cout << endl;
 }
 
@@ -120,15 +122,17 @@ static void usage()
 */
 // --------------------------------------------------------------------------------------
 static bool verb = false;
+static bool quiet = false;
 
 int main(int argc, char** argv)
 {
+    std::ios::sync_with_stdio(false);
     try
     {
         int optindex = 0;
         char opt = 0;
 
-        while( (opt = getopt_long(argc, argv, "hc:beosfur:l:i:x:g:w:y:p:v",longopts,&optindex)) != -1 )
+        while( (opt = getopt_long(argc, argv, "hc:beosfur:l:i:x:g:w:y:p:vq",longopts,&optindex)) != -1 )
         {
             switch (opt) //разбираем параметры
             {
@@ -138,6 +142,10 @@ int main(int argc, char** argv)
 
                 case 'v':
                     verb=true;
+                break;
+
+                case 'q':
+                    quiet=true;
                 break;
 
                 case 'c':    //--confile
@@ -296,22 +304,22 @@ int main(int argc, char** argv)
     }
     catch(Exception& ex)
     {
-        if( verb )
+        if( !quiet )
             cout <<"admin(main): " << ex << endl;
     }
     catch(CORBA::SystemException& ex)
     {
-        if( verb )
+        if( !quiet )
             cerr << "поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
     }
     catch(CORBA::Exception&)
     {
-        if( verb )
+        if( !quiet )
             cerr << "поймали CORBA::Exception." << endl;
     }
     catch(omniORB::fatalException& fe)
     {
-        if( verb )
+        if( !quiet )
         {
             cerr << "поймали omniORB::fatalException:" << endl;
             cerr << "  file: " << fe.file() << endl;
@@ -321,8 +329,8 @@ int main(int argc, char** argv)
     }
     catch(...)
     {
-        if( verb )
-            cerr << "неизвестное исключение" << endl;
+        if( !quiet )
+            cerr << "Unknown exception.." << endl;
     }
 
     return 1;
@@ -331,7 +339,8 @@ int main(int argc, char** argv)
 // ==============================================================================================
 static bool commandToAll(const string& section, ObjectRepository *rep, Command cmd)
 {
-    cout <<"\n||=======********  " << section << "  ********=========||\n"<< endl;
+	if( verb )
+	    cout <<"\n||=======********  " << section << "  ********=========||\n"<< endl;
 
     try
     {
@@ -396,9 +405,9 @@ static bool commandToAll(const string& section, ObjectRepository *rep, Command c
                     case Exist:
                     {
                          if( obj->exist() )
-                             cout << setw(55) << ob << "   <--- exist ok\n";
+                            cout << setw(55) << ob << "   <--- exist ok\n";
                          else
-                            cout << setw(55) << ob << "   <--- exist NOT OK\n";
+                         	cout << setw(55) << ob << "   <--- exist NOT OK\n";
                     }
                     break;
 
@@ -422,7 +431,7 @@ static bool commandToAll(const string& section, ObjectRepository *rep, Command c
 
                     default:
                     {
-                        if( verb )
+                        if( !quiet )
                             cout << "неизвестная команда -" << cmd << endl;
                         return false;
                     }
@@ -430,13 +439,13 @@ static bool commandToAll(const string& section, ObjectRepository *rep, Command c
             }
             catch(Exception& ex)
             {
-                if( verb )
-                    cout << setw(55) << ob << "   <--- " << ex << endl;
+                if( !quiet )
+                    cerr << setw(55) << ob << "   <--- " << ex << endl;
             }
             catch( CORBA::SystemException& ex )
             {
-                if( verb )
-                    cout << setw(55) << ob  << "   <--- недоступен!!(CORBA::SystemException): " << ex.NP_minorString() << endl;
+                if( !quiet )
+                    cerr << setw(55) << ob  << "   <--- недоступен!!(CORBA::SystemException): " << ex.NP_minorString() << endl;
             }
         }
     }
@@ -474,8 +483,8 @@ int omap()
     }
     catch( Exception& ex )
     {
-        if( verb )
-            ucrit << " configuration init failed: " << ex << endl;
+        if( !quiet )
+            cerr << " configuration init failed: " << ex << endl;
         return 1;
     }
     return 0;
@@ -519,7 +528,7 @@ int setValue( const string& args, UInterface &ui )
                 break;
 
                 default:
-                    if( verb )
+                    if( !quiet )
                         cerr << "FAILED: Unknown 'iotype' for " << it->fname << endl;
                     err = 1;
                     break;
@@ -527,7 +536,7 @@ int setValue( const string& args, UInterface &ui )
         }
         catch(Exception& ex)
         {
-            if( verb )
+            if( !quiet )
                 cerr << "(setValue): " << ex << endl;;
             err = 1;
         }
@@ -545,7 +554,7 @@ int getValue( const string& args, UInterface &ui )
     typedef std::list<UniSetTypes::ParamSInfo> SList;
     SList sl = UniSetTypes::getSInfoList( args, conf );
 
-    if( verb )
+    if( !quiet )
         cout << "====== getValue ======" << endl;
 
     for( SList::iterator it=sl.begin(); it!=sl.end(); ++it )
@@ -553,7 +562,7 @@ int getValue( const string& args, UInterface &ui )
         try
         {
             UniversalIO::IOType t = conf->getIOType(it->si.id);
-            if( verb )
+            if( !quiet )
             {
                 cout << "   name: (" << it->si.id << ") " << it->fname << endl;
                 cout << "   iotype: " << t << endl;
@@ -569,23 +578,23 @@ int getValue( const string& args, UInterface &ui )
                 case UniversalIO::DI:
                 case UniversalIO::AO:
                 case UniversalIO::AI:
-                    if( verb )
+                    if( !quiet )
                         cout << "  value: " << ui.getValue(it->si.id,it->si.node) << endl;
                     else
                         cout << ui.getValue(it->si.id,it->si.node);
                 break;
 
                 default:
-                    if( verb )
-                        cerr << "FAILED: Unknown 'iotype' for " << it->fname << endl;
+                	if( !quiet )
+	                    cerr << "FAILED: Unknown 'iotype' for " << it->fname << endl;
                     err = 1;
                     break;
             }
         }
         catch(Exception& ex)
         {
-            if( verb )
-                cerr << "(getValue): " << ex << endl;
+        	if( !quiet )
+	            cerr << "(getValue): " << ex << endl;
             err = 1;
         }
     }
@@ -600,7 +609,7 @@ int getCalibrate( const std::string& args, UInterface &ui )
     typedef std::list<UniSetTypes::ParamSInfo> SList;
     SList sl = UniSetTypes::getSInfoList( args, conf );
 
-    if( verb )
+    if( !quiet )
         cout << "====== getCalibrate ======" << endl;
 
     for( SList::iterator it=sl.begin(); it!=sl.end(); ++it )
@@ -610,7 +619,7 @@ int getCalibrate( const std::string& args, UInterface &ui )
 
         try
         {
-            if( verb )
+            if( !quiet )
             {
                 cout << "      name: (" << it->si.id << ") " << it->fname << endl;
                 cout << "      text: " << conf->oind->getTextName(it->si.id) << "\n";
@@ -618,14 +627,14 @@ int getCalibrate( const std::string& args, UInterface &ui )
             }
 
             IOController_i::CalibrateInfo ci = ui.getCalibrateInfo(it->si);
-            if( verb )
+            if( !quiet )
                 cout << ci << endl;
             else
                 cout << ci;
         }
         catch(Exception& ex)
         {
-            if( verb )
+            if( !quiet )
                 cerr << "(getCalibrate): " << ex << endl;;
             err = 1;
         }
@@ -641,7 +650,7 @@ int getRawValue( const std::string& args, UInterface &ui )
     auto conf = ui.getConf();
     typedef std::list<UniSetTypes::ParamSInfo> SList;
     SList sl = UniSetTypes::getSInfoList( args, conf );
-    if( verb )
+    if( !quiet )
         cout << "====== getRawValue ======" << endl;
     for( SList::iterator it=sl.begin(); it!=sl.end(); ++it )
     {
@@ -650,7 +659,7 @@ int getRawValue( const std::string& args, UInterface &ui )
 
         try
         {
-            if( verb )
+            if( !quiet )
             {
                 cout << "   name: (" << it->si.id << ") " << it->fname << endl;
                 cout << "   text: " << conf->oind->getTextName(it->si.id) << "\n\n";
@@ -661,7 +670,7 @@ int getRawValue( const std::string& args, UInterface &ui )
         }
         catch(Exception& ex)
         {
-            if( verb )
+            if( !quiet )
                 cerr << "(getRawValue): " << ex << endl;;
             err = 1;
         }
@@ -687,7 +696,7 @@ int logRotate( const string& arg, UInterface &ui )
         UniSetTypes::ObjectId id = conf->oind->getIdByName(arg);
         if( id == DefaultObjectId )
         {
-            if( verb )
+            if( !quiet )
                 cout << "(logrotate): name='" << arg << "' не найдено!!!\n";
             return 1;
         }
@@ -719,7 +728,7 @@ int configure( const string& arg, UInterface &ui )
         UniSetTypes::ObjectId id = conf->oind->getIdByName(arg);
         if( id == DefaultObjectId )
         {
-            if( verb )
+            if( !quiet )
                 cout << "(configure): name='" << arg << "' не найдено!!!\n";
             return 1;
         }
@@ -738,8 +747,8 @@ int oinfo( const string& arg, UInterface &ui )
     UniSetTypes::ObjectId oid(uni_atoi(arg));
     if( oid==0 )
     {
-    if( verb )
-            cout << "(oinfo): Не задан OID!"<< endl;
+	    if( !quiet )
+			cout << "(oinfo): Не задан OID!"<< endl;
         return 1;
     }
 
@@ -747,7 +756,7 @@ int oinfo( const string& arg, UInterface &ui )
     UniSetObject_i_var obj = UniSetObject_i::_narrow(o);
     if(CORBA::is_nil(obj))
     {
-        if( verb )
+        if( !quiet )
             cout << "(oinfo): объект " << oid << " недоступен" << endl;
     }
     else
