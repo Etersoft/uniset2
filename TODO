@@ -60,3 +60,6 @@ UResolver (или ObjectRepository) позволяющего манипулир�
 - resolve(name)
 - resolve(name,node) // обращение к IResolver удалённого узла..
 - create(rootname)
+
+- вместо commoncpp,libxml2,DebugStream и т.п. перейти всё-таки на boost?
+
