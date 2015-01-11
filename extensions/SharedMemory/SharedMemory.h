@@ -343,8 +343,8 @@ class SharedMemory:
         typedef std::list<History::iterator> HistoryItList;
         typedef std::map<UniSetTypes::ObjectId,HistoryItList> HistoryFuseMap;
 
-        typedef sigc::signal<void,HistoryInfo*> HistorySlot;
-        HistorySlot signal_history(); /*!< сигнал о срабатывании условий "сборса" дампа истории */
+        typedef sigc::signal<void, const HistoryInfo&> HistorySlot;
+        HistorySlot signal_history(); /*!< сигнал о срабатывании условий "сброса" дампа истории */
 
         inline int getHistoryStep(){ return histSaveTime; } /*!< период между точками "дампа", мсек */
 

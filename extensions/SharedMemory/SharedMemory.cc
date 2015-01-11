@@ -691,7 +691,7 @@ void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
 
                 it->fuse_sec = sm_tv_sec;
                 it->fuse_usec = sm_tv_usec;
-                m_historySignal.emit( &(*it) );
+                m_historySignal.emit( (*it) );
             }
         }
         else if( s_it->second.type == UniversalIO::AI ||
@@ -710,7 +710,7 @@ void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
 
                     it->fuse_sec = sm_tv_sec;
                     it->fuse_usec = sm_tv_usec;
-                    m_historySignal.emit( &(*it) );
+                    m_historySignal.emit( (*it) );
                 }
             }
             else
@@ -721,7 +721,7 @@ void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
 
                     it->fuse_sec = sm_tv_sec;
                     it->fuse_usec = sm_tv_usec;
-                    m_historySignal.emit( &(*it) );
+                    m_historySignal.emit( (*it) );
                 }
             }
         }
