@@ -415,8 +415,15 @@ shared_ptr<SharedMemory> SharedMemory::init_smemory( int argc, const char* const
     auto conf = uniset_conf();
     string dfile = conf->getArgParam("--datfile", conf->getConfFileName());
 
-    if( dfile[0]!='.' && dfile[0]!='/' )
-        dfile = conf->getConfDir() + dfile;
+    // если dfile == confile, то преобразовывать имя не надо, чтобы сработала
+    // оптимизация и когда NCRestorer_XML будет загружать файл, он использует conf->getUniXML()
+    // т.е. не будет загружать повторно.. (см. конструктор SharedMemory и NCRestorer_XML).
+    if( dfile != conf->getConfFileName() )
+    {
+        if( dfile[0]!='.' && dfile[0]!='/' )
+            dfile = conf->getConfDir() + dfile;
+    }
+
 
     dinfo << "(smemory): datfile = " << dfile << endl;
     UniSetTypes::ObjectId ID = conf->getControllerID(conf->getArgParam("--smemory-id","SharedMemory"));
