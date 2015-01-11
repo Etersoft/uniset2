@@ -256,7 +256,7 @@ void UniSetActivator::run( bool thread )
 {
     ulogsys << myname << "(run): создаю менеджер "<< endl;
 
-    UniSetManager::initPOA(this);
+    UniSetManager::initPOA( get_aptr() );
 
     if( getId() == UniSetTypes::DefaultObjectId )
         offThread(); // отключение потока обработки сообщений, раз не задан ObjectId

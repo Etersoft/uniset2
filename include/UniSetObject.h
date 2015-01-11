@@ -193,7 +193,7 @@ class UniSetObject:
             inline void setActive( bool set ){ active = set; }
 
             UniSetTypes::VoidMessage msg;
-            UniSetManager* mymngr; 
+            std::weak_ptr<UniSetManager> mymngr;
 
             void setThreadPriority( int p );
 
@@ -208,10 +208,10 @@ class UniSetObject:
             }
 
             /*! функция потока */
-            void work();    
+            void work();
             //! Инициализация параметров объекта
-            bool init(UniSetManager* om);
-            //! Прямая деактивизация объекта     
+            bool init( const std::weak_ptr<UniSetManager>& om );
+            //! Прямая деактивизация объекта
             bool deactivate();
             //! Непосредственная активизация объекта
             bool activate();

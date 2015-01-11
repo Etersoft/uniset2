@@ -152,19 +152,23 @@ UniSetManager::~UniSetManager()
     mlist.clear();
 }
 // ------------------------------------------------------------------------------------------
-void UniSetManager::initPOA( UniSetManager* rmngr )
+void UniSetManager::initPOA( const std::weak_ptr<UniSetManager>& rmngr )
 {
+	auto m = rmngr.lock();
+	if( !m )
+	{
+		ostringstream err;
+		err << myname << "(initPOA): failed weak_ptr !!";
+		ucrit << err.str() << endl;
+		throw SystemError(err.str());
+	}
+
     if( CORBA::is_nil(pman) )
-        this->pman = rmngr->getPOAManager();
-/*
-    string mname(getName());
-    mname+="_poamngr";
-    PortableServer::POA_var root_poa = rmngr->getPOA();
-    poa = root_poa->create_POA(mname.c_str(), pman, policyList); 
-*/
-    PortableServer::POA_var rpoa = rmngr->getPOA();
+        this->pman = m->getPOAManager();
+
+    PortableServer::POA_var rpoa = m->getPOA();
     if( rpoa != poa )
-        poa = rmngr->getPOA();
+        poa = m->getPOA();
 
     if( CORBA::is_nil(poa) )
         ucrit << myname << "(initPOA): failed init poa " << endl;
@@ -249,7 +253,7 @@ void UniSetManager::managers( OManagerCommand cmd )
                 switch(cmd)
                 {
                     case initial:
-                        li->initPOA(this);
+                        li->initPOA( get_mptr() );
                         break;
 
                     case activ:
@@ -311,7 +315,7 @@ void UniSetManager::objects(OManagerCommand cmd)
                 switch(cmd)
                 {
                     case initial:
-                        li->init(this);
+                        li->init(get_mptr());
                         break;
 
                     case activ:

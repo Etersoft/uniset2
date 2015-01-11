@@ -72,7 +72,7 @@ class UniSetManager:
         virtual UniSetTypes::SimpleInfoSeq* getObjectsInfo( CORBA::Long MaxLength=300 ) override ;
 
         // --------------------------
-        void initPOA(UniSetManager* rmngr);
+        void initPOA( const std::weak_ptr<UniSetManager>& rmngr );
 
         virtual bool addObject( const std::shared_ptr<UniSetObject>& obj );
         virtual bool removeObject( const std::shared_ptr<UniSetObject>& obj );

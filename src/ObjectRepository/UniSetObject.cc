@@ -46,7 +46,6 @@ using namespace UniSetTypes;
 // ------------------------------------------------------------------------------------------
 UniSetObject::UniSetObject():
 ui(UniSetTypes::DefaultObjectId),
-mymngr(NULL),
 msgpid(0),
 reg(false),
 active(0),
@@ -66,7 +65,6 @@ stCountOfQueueFull(0)
 // ------------------------------------------------------------------------------------------
 UniSetObject::UniSetObject( ObjectId id ):
 ui(id),
-mymngr(NULL),
 msgpid(0),
 reg(false),
 active(0),
@@ -99,7 +97,6 @@ stCountOfQueueFull(0)
 
 UniSetObject::UniSetObject(const string& name, const string& section):
 ui(UniSetTypes::DefaultObjectId),
-mymngr(NULL),
 msgpid(0),
 reg(false),
 active(0),
@@ -177,7 +174,7 @@ void UniSetObject::init_object()
  *    \param om - указазтель на менджер управляющий объектом
  *    \return Возращает \a true если инициализация прошда успешно, и \a false если нет
 */
-bool UniSetObject::init( UniSetManager* om )
+bool UniSetObject::init( const std::weak_ptr<UniSetManager>& om )
 {
     uinfo << myname << ": init..." << endl;
     this->mymngr = om;
@@ -334,7 +331,8 @@ void UniSetObject::registered()
         return;
     }
 
-    if( !mymngr )
+	auto m = mymngr.lock();
+    if( !m )
     {
         uwarn << myname << "(registered): unknown my manager" << endl;
         string err(myname+": unknown my manager");
@@ -370,7 +368,6 @@ void UniSetObject::registered()
     (так бы можно было проверить и если "не жив", то смело заменять ссылку на новую). Но существует обратная сторона:
     если заменяемый объект "жив" и завершит свою работу, то он может почистить за собой ссылку и это тогда наш(новый) 
     объект станет недоступен другим, а знать об этом не будет!!!
-    
 */
                 ucrit << myname << "(registered): replace object (ObjectNameAlready)" << endl;
                 reg = true;
@@ -638,21 +635,26 @@ bool UniSetObject::deactivate()
     {
         uinfo << myname << "(deactivate): ..." << endl;
 
-        PortableServer::POA_var poamngr = mymngr->getPOA();
-        if( !PortableServer::POA_Helper::is_nil(poamngr) )
-        {
-            try
-            {
-                deactivateObject();
-            }
-            catch(...){}
+		auto m = mymngr.lock();
+		if( m )
+		{
+			PortableServer::POA_var poamngr = m->getPOA();
+			if( !PortableServer::POA_Helper::is_nil(poamngr) )
+			{
+				try
+				{
+					deactivateObject();
+				}
+				catch(...){}
+	
+				unregister();
+				PortableServer::ObjectId_var oid = poamngr->servant_to_id(static_cast<PortableServer::ServantBase*>(this));
+				poamngr->deactivate_object(oid);
+				uinfo << myname << "(disacivate): finished..." << endl;
+				return true;
+			}
+		}
 
-            unregister();
-            PortableServer::ObjectId_var oid = poamngr->servant_to_id(static_cast<PortableServer::ServantBase*>(this));
-            poamngr->deactivate_object(oid);
-            uinfo << myname << "(disacivate): finished..." << endl;
-            return true;
-        }
         uwarn << myname << "(deactivate): manager already destroyed.." << endl;
     }
     catch(CORBA::TRANSIENT)
@@ -684,13 +686,16 @@ bool UniSetObject::activate()
 {
     uinfo << myname << ": activate..." << endl;
 
-    if( mymngr == NULL )
+	auto m = mymngr.lock();
+    if( !m )
     {
-        ucrit << myname << "(activate): mymngr=NULL!!! activate failure..." << endl;
-        return false;
+		ostringstream err;
+		err << myname << "(activate): mymngr=NULL!!! activate failure...";
+		ucrit << err.str() << endl;
+        throw SystemError(err.str());
     }
 
-    PortableServer::POA_var poa = mymngr->getPOA();
+    PortableServer::POA_var poa = m->getPOA();
     if( poa == NULL || CORBA::is_nil(poa) )
     {
         string err(myname+": не задан менеджер");
