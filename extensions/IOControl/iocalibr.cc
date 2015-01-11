@@ -75,6 +75,7 @@ static struct option longopts[] = {
 // --------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
+    std::ios::sync_with_stdio(false);
     comedi_t* card;
     const char* dev = "/dev/comedi0";
     lsampl_t data = 0;

@@ -35,6 +35,7 @@ static char* checkArg( int ind, int argc, char* argv[] );
 // --------------------------------------------------------------------------
 int main( int argc, char **argv )
 {   
+    std::ios::sync_with_stdio(false);
     int optindex = 0;
     int opt = 0;
     int verb = 0;

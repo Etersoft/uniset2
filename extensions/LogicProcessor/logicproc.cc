@@ -9,6 +9,7 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 int main(int argc, const char **argv)
 {
+    std::ios::sync_with_stdio(false);
     try
     {
         auto conf = uniset_init( argc, argv );

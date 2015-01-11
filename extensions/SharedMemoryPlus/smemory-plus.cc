@@ -59,12 +59,13 @@ void activator_terminate( int signo )
 
 int main( int argc, const char **argv )
 {
+    std::ios::sync_with_stdio(false);
+
     if( argc>1 && ( strcmp(argv[1],"--help")==0 || strcmp(argv[1],"-h")==0 ) )
     {
         help_print( argc, argv );
         return 0;
     }
-
     try
     {
         auto conf = uniset_init(argc, argv);

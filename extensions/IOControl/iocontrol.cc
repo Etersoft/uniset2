@@ -10,7 +10,8 @@ using namespace std;
 using namespace UniSetExtensions;
 // --------------------------------------------------------------------------
 int main(int argc, const char **argv)
-{   
+{
+    std::ios::sync_with_stdio(false);   
     if( argc>1 && strcmp(argv[1],"--help")==0 )
     {
         cout << "--io-confile    - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;

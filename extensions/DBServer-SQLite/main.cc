@@ -13,6 +13,7 @@ static void short_usage()
 // --------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
+    std::ios::sync_with_stdio(false);
     try
     {
         if( argc > 1 && !strcmp(argv[1],"--help") )

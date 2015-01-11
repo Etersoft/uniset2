@@ -10,13 +10,15 @@ using namespace UniSetExtensions;
 // --------------------------------------------------------------------------
 int main(int argc, const char **argv)
 {   
+    std::ios::sync_with_stdio(false);
+
     if( argc>1 && ( strcmp(argv[1],"--help")==0 || strcmp(argv[1],"-h")==0 ) )
     {
         cout << "--confile    - Использовать указанный конф. файл. По умолчанию configure.xml" << endl;
         SharedMemory::help_print(argc, argv);
         return 0;
     }
-
+    
     try
     {
         auto conf = uniset_init(argc, argv);

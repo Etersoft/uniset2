@@ -13,7 +13,8 @@ static void print_help()
 }
 // --------------------------------------------------------------------------
 int main( int argc, const char **argv )
-{   
+{
+    std::ios::sync_with_stdio(false);   
     unsigned short v1 = 0;
     unsigned short v2 = 0;
     const char* type="";
