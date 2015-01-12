@@ -73,7 +73,7 @@ int main( int argc,char* argv[] )
 		obj.mylog.logFile( logname.c_str() );
 
 		auto act = UniSetActivator::Instance();
-		act-&gt;addObject(static_cast&lt;class UniSetObject*&gt;(&amp;obj));
+		act-&gt;add(obj.get_ptr());
 
 		SystemMessage sm(SystemMessage::StartUp);
 		act-&gt;broadcast( sm.transport_msg() );

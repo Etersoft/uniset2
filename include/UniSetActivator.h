@@ -69,7 +69,7 @@ class UniSetActivator:
         virtual void oaDestroy(int signo=0);
         void waitDestroy();
 
-        inline void oakill(int signo){ raise(signo);}
+//        inline void oakill(int signo){ raise(signo); }
 
         virtual UniSetTypes::ObjectType getType() override { return UniSetTypes::ObjectType("UniSetActivator"); }
 
@@ -114,7 +114,6 @@ class UniSetActivator:
 
     private:
 
-//        static void processingSignal(int signo);
         static void terminated(int signo);
         static void finishterm(int signo);
         static void normalexit();
@@ -123,8 +122,7 @@ class UniSetActivator:
         void term( int signo );
         void init();
 
-        friend class ThreadCreator<UniSetActivator>;
-        ThreadCreator<UniSetActivator> *orbthr;
+        std::shared_ptr< ThreadCreator<UniSetActivator> > orbthr;
 
         CORBA::ORB_var orb;
         TerminateEvent_Signal s_term;
@@ -132,31 +130,6 @@ class UniSetActivator:
         bool omDestroy;
         bool sig;
         pid_t thpid; // pid orb потока
-
-        struct Info
-        {
-            Info( pid_t p ):msgpid(p){}
-            
-            pid_t msgpid;    // pid порожденого потока обработки сообщений
-        };
-
-        struct OInfo:
-            public Info
-        {
-            OInfo( std::shared_ptr<UniSetObject> o, pid_t p ):Info(p),obj(o){}
-            std::shared_ptr<UniSetObject> obj;
-        };
-
-        struct MInfo:
-            public Info
-        {
-            MInfo( std::shared_ptr<UniSetManager> m, pid_t p ):Info(p),mnr(m){}
-            std::shared_ptr<UniSetManager> mnr;
-        };
-
-        std::deque<OInfo> lstOInfo;
-        std::deque<MInfo> lstMInfo;
-        void getinfo();
 };
 
 /*

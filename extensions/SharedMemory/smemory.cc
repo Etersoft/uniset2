@@ -33,9 +33,9 @@ int main(int argc, const char **argv)
         if( !shm )
             return 1;
 
-        UniSetActivatorPtr act = UniSetActivator::Instance();
+        auto act = UniSetActivator::Instance();
 
-        act->addObject( shm ); // ->get_ptr() );
+        act->add(shm);
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
         act->run(false);

@@ -53,7 +53,7 @@ int main(int argc, const char **argv)
         }
 
         auto act = UniSetActivator::Instance();
-        act->addObject(ic);
+        act->add(ic);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );

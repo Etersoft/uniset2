@@ -26,7 +26,7 @@ int main( int argc, const char **argv )
         }
 
         Skel o("Skel",cnode);
-        act.addObject( static_cast<UniSetObject*>(&o) );
+        act.add(o.get_ptr());
 
         SystemMessage sm(SystemMessage::StartUp);
         act.broadcast( sm.transport_msg() );

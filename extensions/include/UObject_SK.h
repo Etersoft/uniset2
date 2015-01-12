@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2014-11-30+03:00
+// generate timestamp: 2015-01-12+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -29,7 +29,7 @@ class UObject_SK:
         UObject_SK();
         virtual ~UObject_SK();
 
-
+        
         bool alarm( UniSetTypes::ObjectId sid, bool state );
         long getValue( UniSetTypes::ObjectId sid );
         void setValue( UniSetTypes::ObjectId sid, long value );
@@ -56,26 +56,26 @@ class UObject_SK:
 
 
         // Используемые идентификаторы
-
+        
 
         // Используемые идентификаторы сообщений
-
+        
 
         // Текущее значение
-
+        
 
         // --- public variables ---
-
-
+        
+        
         // --- end of public variables ---
 
     protected:
         // --- protected variables ---
-
-
+        
+        
         // ---- end of protected variables ----
 
-
+        
         virtual void callback() override;
         virtual void processingMessage( UniSetTypes::VoidMessage* msg ) override;
         virtual void sysCommand( const UniSetTypes::SystemMessage* sm ) override;
@@ -111,7 +111,7 @@ class UObject_SK:
         PassiveTimer ptHeartBeat;                /*! < период "сердцебиения" */
         UniSetTypes::ObjectId idHeartBeat;        /*! < идентификатор датчика (AI) "сердцебиения" */
         int maxHeartBeat;                        /*! < сохраняемое значение */
-
+        
         xmlNode* confnode;
         /*! получить числовое свойство из конф. файла по привязанной confnode */
         int getIntProp(const std::string& name) { return UniSetTypes::uniset_conf()->getIntProp(confnode, name); }
@@ -123,20 +123,21 @@ class UObject_SK:
         int activateTimeout;    /*!< время ожидания готовности UniSetObject к работе */
         PassiveTimer ptStartUpTimeout;    /*!< время на блокировку обработки WatchDog, если недавно был StartUp */
         int askPause; /*!< пауза между неудачными попытками заказать датчики */
-
+        
         IOController_i::SensorInfo si;
+        bool forceOut; /*!< флаг принудительного обноления "выходов" */
 
 
     private:
-
+        
         // --- private variables ---
         // --- end of private variables ---
 
         // предыдущее значение (для работы UpdateValue())
-
+        
 
         // Используемые идентификаторы сообщений
-
+        
 
         bool end_private; // вспомогательное поле (для внутреннего использования при генерировании кода)
 };

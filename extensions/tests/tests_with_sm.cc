@@ -70,7 +70,7 @@ int main(int argc, char* argv[] )
         auto act = UniSetActivator::Instance();
 
 
-        act->addObject(shm);
+        act->add(shm);
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
         act->run(true);

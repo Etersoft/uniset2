@@ -72,25 +72,18 @@ class UniSetManager:
         virtual UniSetTypes::SimpleInfoSeq* getObjectsInfo( CORBA::Long MaxLength=300 ) override ;
 
         // --------------------------
-        void initPOA( const std::weak_ptr<UniSetManager>& rmngr );
-
-        virtual bool addObject( const std::shared_ptr<UniSetObject>& obj );
-        virtual bool removeObject( const std::shared_ptr<UniSetObject>& obj );
-
-        virtual bool addManager( const std::shared_ptr<UniSetManager>& mngr );
-        virtual bool removeManager( const std::shared_ptr<UniSetManager>& mngr );
-
+        virtual bool add( const std::shared_ptr<UniSetObject>& obj );
+        virtual bool remove( const std::shared_ptr<UniSetObject>& obj );
+        // --------------------------
         /*! Получение доступа к подчиненному менеджеру по идентификатору
-         * \return объект ненайден будет возвращен 0.
+         * \return shared_ptr<>, если объект не найден будет возвращен shared_ptr<> = nullptr
         */ 
         const std::shared_ptr<UniSetManager> itemM(const UniSetTypes::ObjectId id);
 
-
         /*! Получение доступа к подчиненному объекту по идентификатору
-         * \return объект ненайден будет возвращен 0.
+         * \return shared_ptr<>, если объект не найден будет возвращен shared_ptr<> = nullptr
         */ 
         const std::shared_ptr<UniSetObject> itemO( const UniSetTypes::ObjectId id );
-
 
         // Функции для аботы со списками подчиненных объектов
         inline UniSetManagerList::const_iterator beginMList()
@@ -122,6 +115,11 @@ class UniSetManager:
 
         UniSetManager();
 
+        virtual bool addManager( const std::shared_ptr<UniSetManager>& mngr );
+        virtual bool removeManager( const std::shared_ptr<UniSetManager>& mngr );
+        virtual bool addObject( const std::shared_ptr<UniSetObject>& obj );
+        virtual bool removeObject( const std::shared_ptr<UniSetObject>& obj );
+
         enum OManagerCommand{ deactiv, activ, initial, term };
         friend std::ostream& operator<<(std::ostream& os, OManagerCommand& cmd );
 
@@ -131,6 +129,8 @@ class UniSetManager:
         void managers(OManagerCommand cmd);
 
         virtual void sigterm( int signo ) override;
+
+        void initPOA( const std::weak_ptr<UniSetManager>& rmngr );
 
         //! \note Переопределяя не забывайте вызвать базовую 
         virtual bool activateObject() override;
@@ -146,8 +146,6 @@ class UniSetManager:
         PortableServer::POAManager_var pman;
 
     private:
-
-        friend class UniSetActivator;
 
         int sig;
         UniSetManagerList mlist;

@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 
         NullController nc(ID,askfile,s_field,s_fvalue,c_field,c_fvalue,dbDumping);
         UniSetActivatorPtr act = UniSetActivator::Instance();
-        act->addObject( nc.get_ptr() );
+        act->add( nc.get_ptr() );
         act->run(false);
         return 0;
     }

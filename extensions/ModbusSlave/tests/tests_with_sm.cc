@@ -46,8 +46,8 @@ int main(int argc, char* argv[] )
 
         auto act = UniSetActivator::Instance();
 
-        act->addObject(shm);
-        act->addObject(mbs);
+        act->add(shm);
+        act->add(mbs);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );

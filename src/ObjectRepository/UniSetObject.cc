@@ -331,7 +331,7 @@ void UniSetObject::registered()
         return;
     }
 
-	auto m = mymngr.lock();
+    auto m = mymngr.lock();
     if( !m )
     {
         uwarn << myname << "(registered): unknown my manager" << endl;
@@ -635,25 +635,25 @@ bool UniSetObject::deactivate()
     {
         uinfo << myname << "(deactivate): ..." << endl;
 
-		auto m = mymngr.lock();
-		if( m )
-		{
-			PortableServer::POA_var poamngr = m->getPOA();
-			if( !PortableServer::POA_Helper::is_nil(poamngr) )
-			{
-				try
-				{
-					deactivateObject();
-				}
-				catch(...){}
-	
-				unregister();
-				PortableServer::ObjectId_var oid = poamngr->servant_to_id(static_cast<PortableServer::ServantBase*>(this));
-				poamngr->deactivate_object(oid);
-				uinfo << myname << "(disacivate): finished..." << endl;
-				return true;
-			}
-		}
+        auto m = mymngr.lock();
+        if( m )
+        {
+            PortableServer::POA_var poamngr = m->getPOA();
+            if( !PortableServer::POA_Helper::is_nil(poamngr) )
+            {
+                try
+                {
+                    deactivateObject();
+                }
+                catch(...){}
+    
+                unregister();
+                PortableServer::ObjectId_var oid = poamngr->servant_to_id(static_cast<PortableServer::ServantBase*>(this));
+                poamngr->deactivate_object(oid);
+                uinfo << myname << "(disacivate): finished..." << endl;
+                return true;
+            }
+        }
 
         uwarn << myname << "(deactivate): manager already destroyed.." << endl;
     }
@@ -686,12 +686,12 @@ bool UniSetObject::activate()
 {
     uinfo << myname << ": activate..." << endl;
 
-	auto m = mymngr.lock();
+    auto m = mymngr.lock();
     if( !m )
     {
-		ostringstream err;
-		err << myname << "(activate): mymngr=NULL!!! activate failure...";
-		ucrit << err.str() << endl;
+        ostringstream err;
+        err << myname << "(activate): mymngr=NULL!!! activate failure...";
+        ucrit << err.str() << endl;
         throw SystemError(err.str());
     }
 

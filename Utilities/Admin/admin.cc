@@ -339,8 +339,8 @@ int main(int argc, char** argv)
 // ==============================================================================================
 static bool commandToAll(const string& section, ObjectRepository *rep, Command cmd)
 {
-	if( verb )
-	    cout <<"\n||=======********  " << section << "  ********=========||\n"<< endl;
+    if( verb )
+        cout <<"\n||=======********  " << section << "  ********=========||\n"<< endl;
 
     try
     {
@@ -407,7 +407,7 @@ static bool commandToAll(const string& section, ObjectRepository *rep, Command c
                          if( obj->exist() )
                             cout << setw(55) << ob << "   <--- exist ok\n";
                          else
-                         	cout << setw(55) << ob << "   <--- exist NOT OK\n";
+                             cout << setw(55) << ob << "   <--- exist NOT OK\n";
                     }
                     break;
 
@@ -585,16 +585,16 @@ int getValue( const string& args, UInterface &ui )
                 break;
 
                 default:
-                	if( !quiet )
-	                    cerr << "FAILED: Unknown 'iotype' for " << it->fname << endl;
+                    if( !quiet )
+                        cerr << "FAILED: Unknown 'iotype' for " << it->fname << endl;
                     err = 1;
                     break;
             }
         }
         catch(Exception& ex)
         {
-        	if( !quiet )
-	            cerr << "(getValue): " << ex << endl;
+            if( !quiet )
+                cerr << "(getValue): " << ex << endl;
             err = 1;
         }
     }
@@ -747,8 +747,8 @@ int oinfo( const string& arg, UInterface &ui )
     UniSetTypes::ObjectId oid(uni_atoi(arg));
     if( oid==0 )
     {
-	    if( !quiet )
-			cout << "(oinfo): Не задан OID!"<< endl;
+        if( !quiet )
+            cout << "(oinfo): Не задан OID!"<< endl;
         return 1;
     }
 

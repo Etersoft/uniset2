@@ -98,7 +98,6 @@ void UniSetActivator::Destroy()
 // ---------------------------------------------------------------------------
 UniSetActivator::UniSetActivator( const ObjectId id ):
 UniSetManager(id),
-orbthr(0),
 omDestroy(false),
 sig(false)
 {
@@ -107,7 +106,6 @@ sig(false)
 // ------------------------------------------------------------------------------------------
 UniSetActivator::UniSetActivator():
 UniSetManager(UniSetTypes::DefaultObjectId),
-orbthr(0),
 omDestroy(false),
 sig(false)
 {
@@ -146,8 +144,7 @@ UniSetActivator::~UniSetActivator()
         if( orbthr->isRunning() )
             orbthr->join();
 
-        delete orbthr;
-        orbthr = 0;
+        orbthr.reset();
     }
 
     if( !procterm )
@@ -205,7 +202,6 @@ void UniSetActivator::oaDestroy(int signo)
             pman->deactivate(false,true);
             ulogsys << myname << "(oaDestroy): pman deactivate ok. " << endl;
 
-            ulogsys << myname << "(oaDestroy): orbthr=" << orbthr << endl;
             if( orbthr )
             {
                 try
@@ -263,7 +259,6 @@ void UniSetActivator::run( bool thread )
 
     UniSetManager::activate(); // а там вызывается активация всех подчиненных объектов и менеджеров
 
-    getinfo();        // заполнение информации об объектах
     active=true;
 
     ulogsys << myname << "(run): активизируем менеджер"<<endl;
@@ -274,7 +269,7 @@ void UniSetActivator::run( bool thread )
     if( thread )
     {
         uinfo << myname << "(run): запускаемся с созданием отдельного потока...  "<< endl;
-        orbthr = new ThreadCreator<UniSetActivator>(this, &UniSetActivator::work);
+        orbthr = make_shared< ThreadCreator<UniSetActivator> >(this, &UniSetActivator::work);
         int ret = orbthr->start();
         if( ret !=0 )
         {
@@ -327,7 +322,7 @@ void UniSetActivator::stop()
 
 void UniSetActivator::work()
 {
-    ulogsys << myname << "(work): запускаем orb на обработку запросов...(orbthr=" << orbthr << ")" << endl;
+    ulogsys << myname << "(work): запускаем orb на обработку запросов..." << endl;
     try
     {
         if( orbthr )
@@ -369,15 +364,6 @@ void UniSetActivator::work()
     }
 
     ulogsys << myname << "(oaDestroy): orb destroy ok."<< endl;
-}
-// ------------------------------------------------------------------------------------------
-void UniSetActivator::getinfo()
-{
-    for( auto it=beginMList(); it!=endMList(); ++it )
-        lstMInfo.emplace_back( (*it), (*it)->getMsgPID() );
-
-    for( auto it=beginOList(); it!= endOList(); ++it )
-        lstOInfo.emplace_back( (*it), (*it)->getMsgPID() );
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::sysCommand( const UniSetTypes::SystemMessage *sm )
@@ -541,8 +527,7 @@ void UniSetActivator::term( int signo )
             if( orbthr->isRunning() )
                 orbthr->join();
 
-            delete orbthr;
-            orbthr = 0;
+            orbthr.reset();
         }
 
         sigterm(signo);

@@ -59,7 +59,7 @@ int main( int argc, const char** argv )
         }
 
         auto act = UniSetActivator::Instance();
-        act->addObject(db);
+        act->add(db);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );

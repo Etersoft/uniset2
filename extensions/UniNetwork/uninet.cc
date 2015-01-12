@@ -46,7 +46,7 @@ int main(int argc, const char **argv)
 
         auto act = UniSetActivator::Instance();
 
-        act->addObject(uex);
+        act->add(uex);
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
         act->run(true);

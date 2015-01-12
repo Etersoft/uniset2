@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 
         DBServer_MySQL dbs(ID);
         auto act = UniSetActivator::Instance();
-        act->addObject(dbs.get_ptr());
+        act->add(dbs.get_ptr());
         act->run(false);
     }
     catch(Exception& ex)

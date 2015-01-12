@@ -88,8 +88,8 @@ class OPush: public unary_function< const std::shared_ptr<UniSetObject>& , bool>
 UniSetManager::UniSetManager():
 UniSetObject(UniSetTypes::DefaultObjectId),
 sig(0),
-olistMutex("olistMutex"),
-mlistMutex("mlistMutex")
+olistMutex("UniSetManager_olistMutex"),
+mlistMutex("UniSetManager_mlistMutex")
 {
 }
 // ------------------------------------------------------------------------------------------
@@ -154,14 +154,14 @@ UniSetManager::~UniSetManager()
 // ------------------------------------------------------------------------------------------
 void UniSetManager::initPOA( const std::weak_ptr<UniSetManager>& rmngr )
 {
-	auto m = rmngr.lock();
-	if( !m )
-	{
-		ostringstream err;
-		err << myname << "(initPOA): failed weak_ptr !!";
-		ucrit << err.str() << endl;
-		throw SystemError(err.str());
-	}
+    auto m = rmngr.lock();
+    if( !m )
+    {
+        ostringstream err;
+        err << myname << "(initPOA): failed weak_ptr !!";
+        ucrit << err.str() << endl;
+        throw SystemError(err.str());
+    }
 
     if( CORBA::is_nil(pman) )
         this->pman = m->getPOAManager();
@@ -179,8 +179,27 @@ void UniSetManager::initPOA( const std::weak_ptr<UniSetManager>& rmngr )
     managers(initial);
 }
 // ------------------------------------------------------------------------------------------
+bool UniSetManager::add( const std::shared_ptr<UniSetObject>& obj )
+{
+    auto m = std::dynamic_pointer_cast<UniSetManager>(obj);
+    if( m )
+        return addManager(m);
+
+    return addObject(obj);
+}
+// ------------------------------------------------------------------------------------------
+bool UniSetManager::remove( const std::shared_ptr<UniSetObject>& obj )
+{
+    auto m = std::dynamic_pointer_cast<UniSetManager>(obj);
+    if( m )
+        return removeManager(m);
+
+    return removeObject(obj);
+}
+// ------------------------------------------------------------------------------------------
 bool UniSetManager::addObject( const std::shared_ptr<UniSetObject>& obj )
 {
+
     {    //lock
         uniset_rwmutex_wrlock lock(olistMutex);
         auto li=find(olist.begin(),olist.end(), obj);
@@ -493,11 +512,8 @@ int UniSetManager::objectsCount()
 {
     int res( olist.size()+mlist.size() );
 
-    for( UniSetManagerList::const_iterator it= beginMList();
-            it!= endMList(); ++it )
-    {
-        res+= (*it)->objectsCount();
-    }
+    for( auto i: mlist )
+        res += i->objectsCount();
 
     return res;
 }
@@ -541,9 +557,9 @@ int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, S
         return ind;
 
     // а далее у его менеджеров (рекурсивно)
-    for( auto it=mngr->beginMList(); it!=mngr->endMList(); ++it )
+    for( auto &i: mlist )
     {
-        ind = getObjectsInfo((*it),seq,ind,uplimit);
+        ind = getObjectsInfo(i,seq,ind,uplimit);
         if( ind > uplimit )
             break;
     }

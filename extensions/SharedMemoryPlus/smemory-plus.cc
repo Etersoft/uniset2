@@ -83,7 +83,7 @@ int main( int argc, const char **argv )
         if( !shm )
             return 1;
 
-        act->addManager(shm);
+        act->add(shm);
 
 #ifdef UNISET_ENABLE_IO
         // ------------ IOControl ----------------
@@ -113,7 +113,7 @@ int main( int argc, const char **argv )
                 if( io_thr == NULL )
                     return 1;
 
-                act->addObject(ic);
+                act->add(ic);
                 lst_iothr.push_back( io_thr );
             }
         }
@@ -139,7 +139,7 @@ int main( int argc, const char **argv )
                 if( !rtu )
                     return 1;
 
-                act->addObject(rtu);
+                act->add(rtu);
             }
         }
         // ------------- MBSlave --------------
@@ -163,7 +163,7 @@ int main( int argc, const char **argv )
                 if( !mbs )
                     return 1;
 
-                act->addObject(mbs);
+                act->add(mbs);
             }
         }
 
@@ -189,7 +189,7 @@ int main( int argc, const char **argv )
                 if( !mbm1 )
                     return 1;
 
-                act->addObject(mbm1);
+                act->add(mbm1);
             }
         }
         // ------------- UNetUDP --------------
@@ -203,7 +203,7 @@ int main( int argc, const char **argv )
             if( dlog.is_info() )
                 dlog.info() << "(smemory-plus): add UNetExchnage.." << endl;
 
-            act->addObject(unet);
+            act->add(unet);
         }
         // ---------------------------------------
            // попытка решить вопрос с "зомби" процессами

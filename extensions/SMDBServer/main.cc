@@ -23,8 +23,7 @@ int main( int argc, const char** argv )
 
     try
     {
-        string confile=UniSetTypes::getArgParam("--confile",argc, argv, "configure.xml");
-        conf = new Configuration( argc, argv, confile );
+        auto conf = uniset_init( argc, argv, confile );
 
         string logfilename(conf->getArgParam("--smdbserver-logfile"));
         if( logfilename.empty() )
@@ -51,24 +50,24 @@ int main( int argc, const char** argv )
             return 1;
         }
 
-        SMDBServer* db = SMDBServer::init_smdbserver(argc,argv,shmID);
+        auto db = SMDBServer::init_smdbserver(argc,argv,shmID);
         if( !db )
         {
             dcrit << "(smdbserver): init не прошёл..." << endl;
             return 1;
         }
 
-        UniSetActivator act;
-        act.addObject(static_cast<class UniSetObject*>(db));
+        auto act = UniSetActivator::Instance();
+        act->add(db);
 
         SystemMessage sm(SystemMessage::StartUp); 
-        act.broadcast( sm.transport_msg() );
+        act->broadcast( sm.transport_msg() );
 
         ulog << "\n\n\n";
         ulog << "(main): -------------- SMDBServer START -------------------------\n\n";
         dlog << "\n\n\n";
         dlog << "(main): -------------- SMDBServer START -------------------------\n\n";
-        act.run(false);
+        act->run(false);
         return 0;
     }
     catch( Exception& ex )
