@@ -26,6 +26,7 @@
 #define OmniThreadCreator_h_
 //---------------------------------------------------------------------------
 #include <omnithread.h>
+#include <memory>
 //----------------------------------------------------------------------------
 /*! \class OmniThreadCreator
  * \par
@@ -94,16 +95,20 @@ class OmniThreadCreator:
     public:
 
         /*! прототип функции вызова */
-        typedef void(ThreadMaster::* Action)(void*);
+        typedef void(ThreadMaster::* Action)();
 
-        OmniThreadCreator( ThreadMaster* m, Action a, bool undetached=false );
-        ~OmniThreadCreator(){};
+        OmniThreadCreator( const std::shared_ptr<ThreadMaster>& m, Action a, bool undetached=false );
+        ~OmniThreadCreator(){}
+
+       inline bool isRunning(){ return state()==omni_thread::STATE_RUNNING; }
+       inline void stop(){ exit(0); }
+       inline pid_t getTID(){ return id(); }
 
     protected:
         void* run_undetached(void *x)
         {
             if(m)
-                (m->*act)(x);
+                (m.get()->*act)();
 
             return (void*)0;
         }
@@ -111,20 +116,20 @@ class OmniThreadCreator:
         virtual void run(void* arg)
         {
             if(m)
-                (m->*act)(arg);
+                (m.get()->*act)();
         }
 
     private:
         OmniThreadCreator();
-        ThreadMaster* m;
+        std::shared_ptr<ThreadMaster> m;
         Action act;
 };
 
 //----------------------------------------------------------------------------------------
 template <class ThreadMaster>
-OmniThreadCreator<ThreadMaster>::OmniThreadCreator( ThreadMaster* m, Action a, bool undetach  ):
+OmniThreadCreator<ThreadMaster>::OmniThreadCreator( const std::shared_ptr<ThreadMaster>& _m, Action a, bool undetach  ):
     omni_thread(),
-    m(m),
+    m(_m),
     act(a)
 {
     if(undetach)

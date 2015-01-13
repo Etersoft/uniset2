@@ -54,26 +54,13 @@ using namespace std;
 // ------------------------------------------------------------------------------------------
 /*! замок для блокирования совместного доступа к функции обрабтки сигналов */
 static UniSetTypes::uniset_rwmutex signalMutex("Activator::signalMutex");
-// static UniSetTypes::uniset_mutex waittermMutex("Activator::waittermMutex");
-
-/*! замок для блокирования совместного к списку получателей сигналов */
-//UniSetTypes::uniset_mutex sigListMutex("Activator::sigListMutex");
-
-//static omni_mutex pmutex;
-//static omni_condition pcondx(&pmutex);
-
 // ------------------------------------------------------------------------------------------
 static std::shared_ptr<UniSetActivator> gActivator;
-//static omni_mutex termutex;
-//static omni_condition termcond(&termutex);
-//static ThreadCreator<UniSetActivator>* termthread=0;
-static int SIGNO;
-static int MYPID;
+static int SIGNO = 0;
+static int MYPID = 0;
 static const int TERMINATE_TIMEOUT = 10; //  время отведенное на завершение процесса [сек]
 ost::AtomicCounter procterm = 0;
 ost::AtomicCounter doneterm = 0;
-
-// PassiveTimer termtmr;
 // ---------------------------------------------------------------------------
 UniSetActivatorPtr UniSetActivator::inst;
 // ---------------------------------------------------------------------------
@@ -89,27 +76,25 @@ UniSetActivatorPtr UniSetActivator::Instance( const UniSetTypes::ObjectId id )
 }
 
 // ---------------------------------------------------------------------------
-
 void UniSetActivator::Destroy()
 {
     inst.reset();
 }
-
 // ---------------------------------------------------------------------------
 UniSetActivator::UniSetActivator( const ObjectId id ):
-UniSetManager(id),
-omDestroy(false),
-sig(false)
+    UniSetManager(id),
+    omDestroy(false),
+    sig(false)
 {
     UniSetActivator::init();
 }
 // ------------------------------------------------------------------------------------------
 UniSetActivator::UniSetActivator():
-UniSetManager(UniSetTypes::DefaultObjectId),
-omDestroy(false),
-sig(false)
+    UniSetManager(UniSetTypes::DefaultObjectId),
+    omDestroy(false),
+    sig(false)
 {
-//    thread(false);    //    отключаем поток (раз не задан id)
+    //    thread(false);    //    отключаем поток (раз не задан id)
     UniSetActivator::init();
 }
 
@@ -138,14 +123,6 @@ void UniSetActivator::init()
 
 UniSetActivator::~UniSetActivator()
 {
-    if( orbthr )
-    {
-        orbthr->stop();
-        if( orbthr->isRunning() )
-            orbthr->join();
-
-        orbthr.reset();
-    }
 
     if( !procterm )
     {
@@ -159,84 +136,138 @@ UniSetActivator::~UniSetActivator()
         gActivator.reset();
     }
 
-#if 0
-    try
+#if 1
+    if( orbthr )
     {
-        if( !CORBA::is_nil(orb) )
+        try
         {
-            ulogsys << myname << "(oaDestroy): orb destroy... " << endl;
-            orb->destroy();
-            ulogsys << myname << "(oaDestroy): orb destroy ok."<< endl;
+            if( orbthr->isRunning() )
+            {
+                orbthr->stop();
+                orbthr->join(0);
+            }
+        }
+        catch(omniORB::fatalException& fe)
+        {
+            ucrit << myname << "(oaDestroy): : поймали omniORB::fatalException:" << endl;
+            ucrit << myname << "(oaDestroy):   file: " << fe.file() << endl;
+            ucrit << myname << "(oaDestroy):   line: " << fe.line() << endl;
+            ucrit << myname << "(oaDestroy):   mesg: " << fe.errmsg() << endl;
+        }
+        catch(std::exception& ex)
+        {
+            ucrit << myname << "(destructor): " << ex.what() << endl;
+        }
+
+        try
+        {
+            ulogsys << myname << "(destructor): orb destroy... " << endl;
+            if( !CORBA::is_nil(orb) )
+                orb->destroy();
+            ulogsys << myname << "(destructor): orb destroy ok."<< endl;
+        }
+        catch(omniORB::fatalException& fe)
+        {
+            ucrit << myname << "(oaDestroy): : поймали omniORB::fatalException:" << endl;
+            ucrit << myname << "(oaDestroy):   file: " << fe.file() << endl;
+            ucrit << myname << "(oaDestroy):   line: " << fe.line() << endl;
+            ucrit << myname << "(oaDestroy):   mesg: " << fe.errmsg() << endl;
+        }
+        catch(std::exception& ex)
+        {
+            ucrit << myname << "(destructor): " << ex.what() << endl;
         }
     }
-    catch(...){}
 #endif
+
 }
 // ------------------------------------------------------------------------------------------
 
 void UniSetActivator::oaDestroy(int signo)
 {
-//        waittermMutex.lock();
-        if( !omDestroy )
-        {
-            omDestroy = true;
-            ulogsys << myname << "(oaDestroy): begin..."<< endl;
+    //        waittermMutex.lock();
+    if( !omDestroy )
+    {
+        omDestroy = true;
+        ulogsys << myname << "(oaDestroy): begin..."<< endl;
 
-            ulogsys << myname << "(oaDestroy): terminate... " << endl;
-            term(signo);
-            ulogsys << myname << "(oaDestroy): terminate ok. " << endl;
+        ulogsys << myname << "(oaDestroy): terminate... " << endl;
+        term(signo);
+        ulogsys << myname << "(oaDestroy): terminate ok. " << endl;
 
-            try
-            {
-                stop();
-            }
-            catch(...){}
-
-            try
-            {
-                deactivateObject();
-            }
-            catch(...){}
-
-            ulogsys << myname << "(oaDestroy): pman deactivate... " << endl;
-            pman->deactivate(false,true);
-            ulogsys << myname << "(oaDestroy): pman deactivate ok. " << endl;
-
-            if( orbthr )
-            {
-                try
-                {
-                    ulogsys << myname << "(oaDestroy): orb thread stop... " << endl;
-
-                    orbthr->stop();
-                    if( orbthr->isRunning() )
-                          orbthr->join();
-
-                    ulogsys << myname << "(oaDestroy): orb thread stop ok. " << endl;
-                }
-                catch(...){}
-            }
-        }
         try
         {
-            ulogsys << myname << "(stop):: shutdown orb...  "<<endl;
-            orb->shutdown(false);
+            stop();
         }
         catch(...){}
-        ulogsys << myname << "(stop): shutdown ok."<< endl;
 
-#if 0
-        try
+        ulogsys << myname << "(oaDestroy): pman deactivate... " << endl;
+        pman->deactivate(false,true);
+        ulogsys << myname << "(oaDestroy): pman deactivate ok. " << endl;
+        if( orbthrIsFinished==0 && orbthr )
         {
-            if( !CORBA::is_nil(orb) )
+            try
             {
-                ulogsys << myname << "(oaDestroy): orb destroy... " << endl;
-                orb->destroy();
-                ulogsys << myname << "(oaDestroy): orb destroy ok."<< endl;
+                ulogsys << myname << "(stop):: shutdown orb...  "<<endl;
+                if( orbthr->isRunning() )
+                    orb->shutdown(false);
+                ulogsys << myname << "(stop): shutdown ok."<< endl;
+                
+                orbthr->join(0);
             }
+            catch(omniORB::fatalException& fe)
+            {
+                ucrit << myname << "(oaDestroy): : поймали omniORB::fatalException:" << endl;
+                ucrit << myname << "(oaDestroy):   file: " << fe.file() << endl;
+                ucrit << myname << "(oaDestroy):   line: " << fe.line() << endl;
+                ucrit << myname << "(oaDestroy):   mesg: " << fe.errmsg() << endl;
+            }
+            catch(...)
+            {
+                ulogsys << myname << "(oaDestroy): orb shutdown: catch... " << endl;
+            }
+            ulogsys << myname << "(stop): shutdown ok."<< endl;
+#if 1
+            try
+            {
+                ulogsys << myname << "(oaDestroy): orb thread stop... " << endl;
+
+                orbthr->stop();
+                if( orbthr->isRunning() )
+                    orbthr->join(0);
+
+                ulogsys << myname << "(oaDestroy): orb thread stop ok. " << endl;
+                orbthr.reset();
+            }
+            catch(omniORB::fatalException& fe)
+            {
+                ucrit << myname << "(oaDestroy): : поймали omniORB::fatalException:" << endl;
+                ucrit << myname << "(oaDestroy):   file: " << fe.file() << endl;
+                ucrit << myname << "(oaDestroy):   line: " << fe.line() << endl;
+                ucrit << myname << "(oaDestroy):   mesg: " << fe.errmsg() << endl;
+            }
+#endif            
         }
-        catch(...){}
-#endif
+        else
+        {
+            try
+            {
+                ulogsys << myname << "(oaDestroy):: shutdown orb...  "<<endl;
+                orb->shutdown(true);
+                ulogsys << myname << "(stop): shutdown ok."<< endl;
+
+            }
+            catch(omniORB::fatalException& fe)
+            {
+                ucrit << myname << "(oaDestroy): : поймали omniORB::fatalException:" << endl;
+                ucrit << myname << "(oaDestroy):   file: " << fe.file() << endl;
+                ucrit << myname << "(oaDestroy):   line: " << fe.line() << endl;
+                ucrit << myname << "(oaDestroy):   mesg: " << fe.errmsg() << endl;
+            }
+            
+        }
+
+    }
 }
 
 // ------------------------------------------------------------------------------------------
@@ -269,18 +300,16 @@ void UniSetActivator::run( bool thread )
     if( thread )
     {
         uinfo << myname << "(run): запускаемся с созданием отдельного потока...  "<< endl;
-        orbthr = make_shared< ThreadCreator<UniSetActivator> >(this, &UniSetActivator::work);
-        int ret = orbthr->start();
-        if( ret !=0 )
-        {
-            ucrit << myname << "(run):  НЕ СМОГЛИ СОЗДАТЬ ORB-поток"<<endl;    
-            throw SystemError("(UniSetActivator::run): CREATE ORB THREAD FAILED");
-        }
+        orbthr = make_shared< OmniThreadCreator<UniSetActivator> >( get_aptr(), &UniSetActivator::work);
+        orbthrIsFinished = 0;
+        orbthr->start();
+        orbthr->yield();
     }
     else
     {
         uinfo << myname << "(run): запускаемся без создания отдельного потока...  "<< endl;
         work();
+        orbthrIsFinished = 1;
     }
 }
 // ------------------------------------------------------------------------------------------
@@ -290,7 +319,7 @@ void UniSetActivator::run( bool thread )
 */
 void UniSetActivator::stop()
 {
-//    uniset_mutex_lock l(deactivateMutex, 500);
+    //    uniset_mutex_lock l(deactivateMutex, 500);
     if( active )
     {
         active=false;
@@ -299,22 +328,28 @@ void UniSetActivator::stop()
 
         deactivate();
 
+        try
+        {
+            deactivateObject();
+        }
+        catch(omniORB::fatalException& fe)
+        {
+            ucrit << myname << "(stop): : поймали omniORB::fatalException:" << endl;
+            ucrit << myname << "(stop):   file: " << fe.file() << endl;
+            ucrit << myname << "(stop):   line: " << fe.line() << endl;
+            ucrit << myname << "(stop):   mesg: " << fe.errmsg() << endl;
+        }
+        catch( std::exception& ex )
+        {
+            ucrit << myname << "(stop): " << ex.what() << endl;
+        }
+
         ulogsys << myname << "(stop): deactivate ok.  "<<endl;
         ulogsys << myname << "(stop): discard request..."<< endl;
 
         pman->discard_requests(true);
 
         ulogsys << myname << "(stop): discard request ok."<< endl;
-
-#if 1
-        try
-        {
-            ulogsys << myname << "(stop):: shutdown orb...  "<<endl;
-            orb->shutdown(true);
-        }
-        catch(...){}
-        ulogsys << myname << "(stop): shutdown ok."<< endl;
-#endif
     }
 }
 
@@ -330,6 +365,7 @@ void UniSetActivator::work()
         else
             thpid = getpid();
 
+        omniORB::setMainThread();
         orb->run();
     }
     catch(CORBA::SystemException& ex)
@@ -350,37 +386,48 @@ void UniSetActivator::work()
 
     ulogsys << myname << "(work): orb thread stopped!" << endl;
 
-    try
+    if( orbthr )
     {
-        ulogsys << myname << "(oaDestroy): orb destroy... " << endl;
-        orb->destroy();
-    }
-    catch(omniORB::fatalException& fe)
-    {
-        ucrit << myname << "(work): : поймали omniORB::fatalException:" << endl;
-        ucrit << myname << "(work):   file: " << fe.file() << endl;
-        ucrit << myname << "(work):   line: " << fe.line() << endl;
-        ucrit << myname << "(work):   mesg: " << fe.errmsg() << endl;
+        try
+        {
+            ulogsys << myname << "(work): orb shutdown... " << endl;
+            orb->shutdown(false);
+        }
+        catch(omniORB::fatalException& fe)
+        {
+            ucrit << myname << "(work): : поймали omniORB::fatalException:" << endl;
+            ucrit << myname << "(work):   file: " << fe.file() << endl;
+            ucrit << myname << "(work):   line: " << fe.line() << endl;
+            ucrit << myname << "(work):   mesg: " << fe.errmsg() << endl;
+        }
+        catch( std::exception& ex )
+        {
+            ucrit << myname << "(work):   mesg: " << ex.what() << endl;
+        }
+        
+
+        ulogsys << myname << "(work): orb shutdown ok."<< endl;
     }
 
-    ulogsys << myname << "(oaDestroy): orb destroy ok."<< endl;
+    orbthrIsFinished = 1;
+    orbthr = nullptr;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::sysCommand( const UniSetTypes::SystemMessage *sm )
 {
     switch(sm->command)
     {
-        case SystemMessage::LogRotate:
+    case SystemMessage::LogRotate:
+    {
+        ulogsys << myname << "(sysCommand): logRotate" << endl;
+        // переоткрываем логи
+        string fname = ulog.getLogFile();
+        if( !fname.empty() )
         {
-            ulogsys << myname << "(sysCommand): logRotate" << endl;
-            // переоткрываем логи
-            string fname = ulog.getLogFile();
-            if( !fname.empty() )
-            {
-                ulog.logFile(fname.c_str(),true);
-                ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << endl;
-            }
+            ulog.logFile(fname.c_str(),true);
+            ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << endl;
         }
+    }
         break;
     }
 }
@@ -396,18 +443,18 @@ void UniSetActivator::set_signals(bool ask)
     sigemptyset(&oact.sa_mask);
 
     // добавляем сигналы, которые будут игнорироваться
-    // при обработке сигнала 
+    // при обработке сигнала
     sigaddset(&act.sa_mask, SIGINT);
     sigaddset(&act.sa_mask, SIGTERM);
     sigaddset(&act.sa_mask, SIGABRT );
     sigaddset(&act.sa_mask, SIGQUIT);
-//    sigaddset(&act.sa_mask, SIGSEGV);
+    //    sigaddset(&act.sa_mask, SIGSEGV);
 
 
-//    sigaddset(&act.sa_mask, SIGALRM);
-//    act.sa_flags = 0;
-//    act.sa_flags |= SA_RESTART;
-//    act.sa_flags |= SA_RESETHAND;
+    //    sigaddset(&act.sa_mask, SIGALRM);
+    //    act.sa_flags = 0;
+    //    act.sa_flags |= SA_RESTART;
+    //    act.sa_flags |= SA_RESETHAND;
     if(ask)
         act.sa_handler = terminated;
     else
@@ -418,7 +465,7 @@ void UniSetActivator::set_signals(bool ask)
     sigaction(SIGABRT, &act, &oact);
     sigaction(SIGQUIT, &act, &oact);
 
-//    sigaction(SIGSEGV, &act, &oact);
+    //    sigaction(SIGSEGV, &act, &oact);
 }
 
 // ------------------------------------------------------------------------------------------
@@ -469,7 +516,7 @@ void UniSetActivator::terminated( int signo )
             if( gActivator )
             {
                 ulogsys << ( gActivator ? gActivator->getName() : "" ) << "(terminated): call oaDestroy.." << endl;
-                gActivator->oaDestroy(SIGNO); // gActivator->term(SIGNO);
+                if( gActivator ) gActivator->oaDestroy(SIGNO); // gActivator->term(SIGNO);
             }
 
             doneterm = 1;
@@ -479,7 +526,7 @@ void UniSetActivator::terminated( int signo )
             if( gActivator )
             {
                 UniSetActivator::set_signals(false);
-//                gActivator.reset();
+                gActivator.reset();
             }
 
             sigset(SIGALRM, SIG_DFL);
@@ -492,20 +539,18 @@ void UniSetActivator::terminated( int signo )
 void UniSetActivator::normalexit()
 {
     if( gActivator )
+    {
         ulogsys << gActivator->getName() << "(default exit): good bye."<< endl << flush;
-
-//     std::exception_ptr p = std::current_exception();
-//     std::clog <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
+        gActivator->stop();
+    }
 }
 
 void UniSetActivator::normalterminate()
 {
     if( gActivator )
+    {
         ucrit << gActivator->getName() << "(default exception terminate): Unkown exception.. Good bye."<< endl<< flush;
-//    abort();
-
-//     std::exception_ptr p = std::current_exception();
-//     std::clog <<(p ? p.__cxa_exception_type()->name() : "null") << std::endl;
+    }
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::term( int signo )
@@ -521,15 +566,6 @@ void UniSetActivator::term( int signo )
     try
     {
         ulogsys << myname << "(term): вызываем sigterm()" << endl;
-        if( orbthr )
-        {
-            orbthr->stop();
-            if( orbthr->isRunning() )
-                orbthr->join();
-
-            orbthr.reset();
-        }
-
         sigterm(signo);
         s_term.emit(signo);
         ulogsys << myname << "(term): sigterm() ok." << endl;

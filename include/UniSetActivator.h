@@ -32,7 +32,7 @@
 #include "UniSetTypes.h"
 #include "UniSetObject.h"
 #include "UniSetManager.h"
-#include "ThreadCreator.h"
+#include "OmniThreadCreator.h"
 
 //#include "OmniThreadCreator.h"
 //----------------------------------------------------------------------------------------
@@ -122,10 +122,11 @@ class UniSetActivator:
         void term( int signo );
         void init();
 
-        std::shared_ptr< ThreadCreator<UniSetActivator> > orbthr;
+        std::shared_ptr< OmniThreadCreator<UniSetActivator> > orbthr;
 
         CORBA::ORB_var orb;
         TerminateEvent_Signal s_term;
+        ost::AtomicCounter orbthrIsFinished;
 
         bool omDestroy;
         bool sig;
