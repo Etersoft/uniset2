@@ -53,13 +53,13 @@ TEST_CASE("CallbackTimer", "[CallbackTimer]" )
         REQUIRE( tc.getNum3() == 0 );
         
         msleep(210);
-        REQUIRE( tc.getNum1() >= 7 );
+        REQUIRE( tc.getNum1() >= 5 );
         REQUIRE( tc.getNum2() >= 2 );
         REQUIRE( tc.getNum3() == 1 );
     
         tmr.remove(1);
         msleep(60);
-        REQUIRE( tc.getNum1() >= 7 );
+        REQUIRE( tc.getNum1() >= 6 );
     
         tmr.terminate();
         REQUIRE( tc.getNum2() >= 2 );

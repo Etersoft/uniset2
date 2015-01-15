@@ -15,7 +15,7 @@
 {
    bash
    Memcheck:Leak
-   match-leak-kinds: definite
+#   match-leak-kinds: definite
    fun:malloc
    fun:xmalloc
    fun:make_if_command

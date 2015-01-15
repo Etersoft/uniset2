@@ -66,10 +66,7 @@ class UniSetActivator:
 
         virtual void run(bool thread);
         virtual void stop();
-        virtual void oaDestroy(int signo=0);
-        void waitDestroy();
-
-//        inline void oakill(int signo){ raise(signo); }
+        virtual void uaDestroy(int signo=0);
 
         virtual UniSetTypes::ObjectType getType() override { return UniSetTypes::ObjectType("UniSetActivator"); }
 
@@ -114,8 +111,11 @@ class UniSetActivator:
 
     private:
 
+        friend void terminate_thread();
+        friend void finished_thread();
+
         static void terminated(int signo);
-        static void finishterm(int signo);
+//        static void finishterm(int signo);
         static void normalexit();
         static void normalterminate();
         static void set_signals(bool ask);

@@ -54,7 +54,7 @@ int main(int argc, char* argv[] )
         act->broadcast( sm.transport_msg() );
         act->run(true);
 
-        int tout = 6000;
+        int tout = conf->getArgPInt("--timeout",8000);
         PassiveTimer pt(tout);
         while( !pt.checkTime() && !act->exist() )
             msleep(100);
