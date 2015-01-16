@@ -54,7 +54,7 @@ static void print_help()
 	printf("          reg - register of test. Default: 0\n");
 	printf("          fn - function of test [0x01,0x02,0x03,0x04]. Default: 0x04\n");
 	printf("[--min-addr] - start addres for autodetect. Default: 0\n");
-	printf("[--max-addr] - end addres for autodetect. Default: 255\n");
+	printf("[--max-addr] - end addres for autodetect. Default: 254\n");
 	printf("\n");
 }
 // --------------------------------------------------------------------------
@@ -85,7 +85,7 @@ int main( int argc, char **argv )
 	ModbusRTU::ModbusAddr slaveaddr = 0x00;
 	ModbusRTU::SlaveFunctionCode fn = ModbusRTU::fnReadInputRegisters;
 	ModbusRTU::ModbusAddr beg = 0;
-	ModbusRTU::ModbusAddr end = 255;
+	ModbusRTU::ModbusAddr end = 254;
 	int tout = 20;
 	DebugStream dlog;
 	//string tofile("");
