@@ -1,5 +1,7 @@
 #include <catch.hpp>
 
+#include <atomic>
+
 #include "CallbackTimer.h"
 #include "UniSetTypes.h"
 using namespace std;
@@ -25,9 +27,9 @@ class MyTestClass
         inline int getNum3(){ return num3; }
     
     private:
-        int num1;
-        int num2;
-        int num3;
+        std::atomic_int num1;
+        std::atomic_int num2;
+        std::atomic_int num3;
 };
 
 TEST_CASE("CallbackTimer", "[CallbackTimer]" ) 
@@ -48,7 +50,7 @@ TEST_CASE("CallbackTimer", "[CallbackTimer]" )
         REQUIRE( tc.getNum3() == 0 );
     
         msleep(110);
-        REQUIRE( tc.getNum1() >= 3 );
+        REQUIRE( tc.getNum1() >= 2 );
         REQUIRE( tc.getNum2() >= 1 );
         REQUIRE( tc.getNum3() == 0 );
         
