@@ -2,6 +2,7 @@
 #define SMInterface_H_
 //--------------------------------------------------------------------------
 #include <string>
+#include <memory>
 #include "UniSetTypes.h"
 #include "Mutex.h"
 #include "IONotifyController.h"
@@ -10,7 +11,7 @@ class SMInterface
 {
     public:
 
-        SMInterface( UniSetTypes::ObjectId _shmID, UInterface* ui,
+        SMInterface( UniSetTypes::ObjectId _shmID, const std::shared_ptr<UInterface>& ui,
                         UniSetTypes::ObjectId myid, const std::shared_ptr<IONotifyController> ic=nullptr );
         ~SMInterface();
 
@@ -54,7 +55,7 @@ class SMInterface
 
     protected:
         const std::shared_ptr<IONotifyController> ic;
-        UInterface* ui;
+        const std::shared_ptr<UInterface> ui;
         CORBA::Object_var oref;
         UniSetTypes::ObjectId shmID;
         UniSetTypes::ObjectId myid;

@@ -8,7 +8,7 @@ using namespace std;
 using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
-UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, const std::shared_ptr<SMInterface> smi,
+UNetSender::UNetSender( const std::string& s_host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi,
                         const std::string& s_f, const std::string& s_val ):
 s_field(s_f),
 s_fvalue(s_val),
@@ -19,8 +19,7 @@ activated(false),
 dlist(100),
 maxItem(0),
 packetnum(1),
-lastcrc(0),
-s_thr(0)
+lastcrc(0)
 {
 
     {
@@ -41,7 +40,7 @@ s_thr(0)
     try
     {
         addr = s_host.c_str();
-        udp = new ost::UDPBroadcast(addr,port);
+        udp = make_shared<ost::UDPBroadcast>(addr,port);
     }
     catch( std::exception& e )
     {
@@ -58,7 +57,7 @@ s_thr(0)
         throw SystemError(s.str());
     }
 
-    s_thr = new ThreadCreator<UNetSender>(this, &UNetSender::send);
+    s_thr = make_shared< ThreadCreator<UNetSender> >(this, &UNetSender::send);
 
     // -------------------------------
     if( shm->isLocalwork() )
@@ -89,8 +88,6 @@ s_thr(0)
 // -----------------------------------------------------------------------------
 UNetSender::~UNetSender()
 {
-    delete s_thr;
-    delete udp;
 }
 // -----------------------------------------------------------------------------
 void UNetSender::updateFromSM()

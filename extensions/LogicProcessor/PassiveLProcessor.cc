@@ -9,12 +9,12 @@ using namespace UniSetExtensions;
 PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId objId, 
                                         UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
     UniSetObject_LT(objId),
-    shm(0)
+    shm(nullptr)
 {
     auto conf = uniset_conf();
 
     logname = myname;
-    shm = new SMInterface(shmID,&(UniSetObject_LT::ui),objId,ic);
+    shm = make_shared<SMInterface>(shmID,UniSetObject_LT::ui,objId,ic);
     build(lfile);
 
     // ********** HEARTBEAT *************
@@ -42,7 +42,7 @@ PassiveLProcessor::PassiveLProcessor( std::string lfile, UniSetTypes::ObjectId o
 
 PassiveLProcessor::~PassiveLProcessor()
 {
-    delete shm;
+
 }
 // -------------------------------------------------------------------------
 void PassiveLProcessor::step()

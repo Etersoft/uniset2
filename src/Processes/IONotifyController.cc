@@ -98,7 +98,7 @@ bool IONotifyController::addConsumer( ConsumerListInfo& lst, const ConsumerInfo&
     // получаем ссылку
     try
     {
-        UniSetTypes::ObjectVar op = ui.resolve(ci.id,ci.node);
+        UniSetTypes::ObjectVar op = ui->resolve(ci.id,ci.node);
         cinf.ref = UniSetObject_i::_narrow(op);
     }
     catch(...){}
@@ -176,7 +176,7 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
 
         try
         {
-            ui.send(ci.id, std::move(smsg.transport_msg()), ci.node);
+            ui->send(ci.id, std::move(smsg.transport_msg()), ci.node);
         }
         catch( Exception& ex )
         {
@@ -390,7 +390,7 @@ void IONotifyController::send( ConsumerListInfo& lst, UniSetTypes::SensorMessage
             {
                 if( CORBA::is_nil(li->ref) )
                 {
-                    CORBA::Object_var op = ui.resolve(li->id, li->node);
+                    CORBA::Object_var op = ui->resolve(li->id, li->node);
                     li->ref = UniSetObject_i::_narrow(op);
                 }
 
@@ -610,7 +610,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
                     if( val <= lowLimit )
                     {
                         sm.threshold = false;
-                        CORBA::Object_var op = ui.resolve(ci.id, ci.node);
+                        CORBA::Object_var op = ui->resolve(ci.id, ci.node);
                         UniSetObject_i_var ref = UniSetObject_i::_narrow(op);
                         if(!CORBA::is_nil(ref))
                             ref->push( std::move(sm.transport_msg()) );
@@ -619,7 +619,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
                     else if( val >= hiLimit )
                     {
                         sm.threshold = true;
-                        CORBA::Object_var op = ui.resolve(ci.id, ci.node);
+                        CORBA::Object_var op = ui->resolve(ci.id, ci.node);
                         UniSetObject_i_var ref = UniSetObject_i::_narrow(op);
                         if(!CORBA::is_nil(ref))
                             ref->push( std::move(sm.transport_msg()) );

@@ -165,13 +165,13 @@ AM_CONDITIONAL(DISABLE_PYTHON, test ${buildpython} = false)
 
 # check Doxygen
 DOXYGEN=""
-doc=false
+docs=false
 dox=
 AC_MSG_CHECKING([Generate docs])
 AC_ARG_ENABLE(docs,AC_HELP_STRING([--enable-docs], [enable build docs]),
-[ if test $enableval = yes; then doc=true; else doc=false; fi],[ doc=false; ])
+[ if test $enableval = yes; then docs=true; else docs=false; fi],[ docs=false; ])
 
-if test ${doc} = true; then
+if test ${docs} = true; then
 	AC_MSG_RESULT([yes])
 	AC_PATH_PROG([DOXYGEN], [doxygen])
 	test "x$DOXYGEN" = "x" && AC_MSG_WARN([*** Doxygen not found])

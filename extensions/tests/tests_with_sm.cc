@@ -16,7 +16,7 @@ using namespace UniSetExtensions;
 // --------------------------------------------------------------------------
 static shared_ptr<SMInterface> smi;
 static shared_ptr<SharedMemory> shm;
-static UInterface* ui = nullptr;
+static shared_ptr<UInterface> ui;
 static ObjectId myID = 6000;
 // --------------------------------------------------------------------------
 shared_ptr<SharedMemory> shmInstance()
@@ -35,7 +35,7 @@ shared_ptr<SMInterface> smiInstance()
             throw SystemError("SharedMemory don`t initialize..");
 
         if( ui == nullptr )
-            ui = new UInterface();
+            ui = make_shared<UInterface>();
 
         smi = make_shared<SMInterface>(shm->getId(), ui, myID, shm );
     }

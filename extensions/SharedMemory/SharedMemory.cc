@@ -215,7 +215,7 @@ void SharedMemory::askSensors( UniversalIO::UIOCommand cmd )
         {
             try
             {
-                ui.askState( SID, cmd);
+                ui->askState( SID, cmd);
             }
             catch(Exception& ex)
             {
@@ -490,7 +490,7 @@ void SharedMemory::sendEvent( UniSetTypes::SystemMessage& sm )
         {
             try
             {
-                ui.send(it, std::move(sm.transport_msg()) );
+                ui->send(it, std::move(sm.transport_msg()) );
                 ok = true;
                 break;
             }

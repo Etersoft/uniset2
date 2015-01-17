@@ -106,7 +106,7 @@ class UNetExchange:
         void timerInfo( const UniSetTypes::TimerMessage *tm ) override;
         void askSensors( UniversalIO::UIOCommand cmd );
         void waitSMReady();
-        void receiverEvent( UNetReceiver* r, UNetReceiver::Event ev );
+        void receiverEvent( const std::shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev );
 
         virtual bool activateObject();
 
@@ -139,21 +139,21 @@ class UNetExchange:
 
         struct ReceiverInfo
         {
-            ReceiverInfo():r1(0),r2(0),
+            ReceiverInfo():r1(nullptr),r2(nullptr),
                 sidRespond(UniSetTypes::DefaultObjectId),
                 respondInvert(false),
                 sidLostPackets(UniSetTypes::DefaultObjectId)
             {}
 
-            ReceiverInfo(UNetReceiver* _r1, UNetReceiver* _r2 ):
+            ReceiverInfo( const std::shared_ptr<UNetReceiver>& _r1, const std::shared_ptr<UNetReceiver>& _r2 ):
                 r1(_r1),r2(_r2),
                 sidRespond(UniSetTypes::DefaultObjectId),
                 respondInvert(false),
                 sidLostPackets(UniSetTypes::DefaultObjectId)
             {}
 
-            UNetReceiver* r1;      /*!< приём по первому каналу */
-            UNetReceiver* r2;    /*!< приём по второму каналу */
+            std::shared_ptr<UNetReceiver> r1;    /*!< приём по первому каналу */
+            std::shared_ptr<UNetReceiver> r2;    /*!< приём по второму каналу */
 
             void step( const std::shared_ptr<SMInterface> shm, const std::string& myname );
 
@@ -184,8 +184,8 @@ class UNetExchange:
         ReceiverList recvlist;
 
         bool no_sender;  /*!< флаг отключения посылки сообщений (создания потока для посылки)*/
-        UNetSender* sender;
-        UNetSender* sender2;
+        std::shared_ptr<UNetSender> sender;
+        std::shared_ptr<UNetSender> sender2;
 };
 // -----------------------------------------------------------------------------
 #endif // UNetExchange_H_

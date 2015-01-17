@@ -26,6 +26,7 @@
 #define _SVIEWER_H
 //--------------------------------------------------------------------------------
 #include <string>
+#include <memory>
 #include "IOController_i.hh"
 #include "ObjectRepository.h"
 #include "UInterface.h"
@@ -55,10 +56,11 @@ class SViewer
         void printInfo(UniSetTypes::ObjectId id, const std::string& sname, long value, const std::string& owner,
                         const std::string& txtname, const std::string& iotype);
 
+        std::shared_ptr<UInterface> ui;
+
     private:
         ObjectRepository rep;
         UInterface::CacheOfResolve cache;
-        UInterface ui;
         bool isShort;
 
 };

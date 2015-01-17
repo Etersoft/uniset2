@@ -3,6 +3,7 @@
 #define UniExchange_H_
 // -----------------------------------------------------------------------------
 #include <list>
+#include <memory>
 #include "UniXML.h"
 #include "IOController.h"
 #include "SMInterface.h"
@@ -60,7 +61,7 @@ class UniExchange:
         xmlNode* cnode;
         std::string s_field;
         std::string s_fvalue;
-        SMInterface* shm;
+        std::shared_ptr<SMInterface> shm;
 
         struct SInfo
         {
@@ -105,7 +106,7 @@ class UniExchange:
             IOController::IOStateList::iterator conn_it;
             SList smap;
 
-            void update(IOController_i::ShortMapSeq_var& map, SMInterface* shm );
+            void update(IOController_i::ShortMapSeq_var& map, const std::shared_ptr<SMInterface>& shm );
         };
 
         typedef std::list<NetNodeInfo> NetNodeList;

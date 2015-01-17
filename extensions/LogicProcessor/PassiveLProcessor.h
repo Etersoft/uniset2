@@ -2,6 +2,7 @@
 #define PassiveLProcessor_H_
 // --------------------------------------------------------------------------
 #include <map>
+#include <memory>
 #include "UniSetTypes.h"
 #include "UniSetObject_LT.h"
 #include "Extensions.h"
@@ -44,7 +45,7 @@ class PassiveLProcessor:
         void initIterators();
         virtual bool activateObject() override;
 
-        SMInterface* shm;
+        std::shared_ptr<SMInterface> shm;
 
     private:
         PassiveTimer ptHeartBeat;

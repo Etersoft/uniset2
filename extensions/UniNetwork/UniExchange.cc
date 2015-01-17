@@ -20,7 +20,6 @@ UniExchange::NetNodeInfo::NetNodeInfo():
 UniExchange::UniExchange( UniSetTypes::ObjectId id, UniSetTypes::ObjectId shmID, 
                           const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
 IOController(id),
-shm(0),
 polltime(200),
 mymap(1),
 maxIndex(0),
@@ -32,7 +31,7 @@ smReadyTimeout(15000)
     if( cnode == NULL )
         throw UniSetTypes::SystemError("(UniExchange): Not found conf-node for " + myname );
 
-    shm = new SMInterface(shmID,&ui,id,ic);
+    shm = make_shared<SMInterface>(shmID,ui,id,ic);
 
     UniXML::iterator it(cnode);
 
@@ -114,12 +113,9 @@ smReadyTimeout(15000)
 }
 
 // -----------------------------------------------------------------------------
-
 UniExchange::~UniExchange()
 {
-    delete shm;
 }
-
 // -----------------------------------------------------------------------------
 void UniExchange::execute()
 {
@@ -154,7 +150,7 @@ void UniExchange::execute()
             {
                 dinfo << myname << ": connect to id=" << it.id << " node=" << it.node << endl;
 
-                IOController_i::ShortMapSeq_var sseq = ui.getSensors( it.id, it.node );
+                IOController_i::ShortMapSeq_var sseq = ui->getSensors( it.id, it.node );
                 ok = true;
 
                 dinfo << myname << " update sensors from id=" << it.id << " node=" << it.node << endl;
@@ -197,7 +193,7 @@ void UniExchange::execute()
     }
 }
 // -----------------------------------------------------------------------------
-void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, SMInterface* shm  )
+void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, const std::shared_ptr<SMInterface>& shm  )
 {
     bool reinit = false;
     if( smap.size() != map->length() )

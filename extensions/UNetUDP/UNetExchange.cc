@@ -9,12 +9,9 @@ using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 UNetExchange::UNetExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
 UniSetObject_LT(objId),
-shm(0),
 initPause(0),
 activated(false),
-no_sender(false),
-sender(0),
-sender2(0)
+no_sender(false)
 {
     if( objId == DefaultObjectId )
         throw UniSetTypes::SystemError("(UNetExchange): objId=-1?!! Use --" + prefix +"-unet-name" );
@@ -25,7 +22,7 @@ sender2(0)
     if( cnode == NULL )
         throw UniSetTypes::SystemError("(UNetExchange): Not found conf-node for " + myname );
 
-    shm = make_shared<SMInterface>(shmId,&ui,objId,ic);
+    shm = make_shared<SMInterface>(shmId,ui,objId,ic);
 
     UniXML::iterator it(cnode);
 
@@ -122,7 +119,7 @@ sender2(0)
             }
 
             dinfo << myname << "(init): init sender.. my node " << n_it.getProp("name") << endl;
-            sender = new UNetSender(h,p,shm,s_field,s_fvalue);
+            sender = make_shared<UNetSender>(h,p,shm,s_field,s_fvalue);
             sender->setSendPause(sendpause);
 
             try
@@ -131,7 +128,7 @@ sender2(0)
                 if( !h2.empty() )
                 {
                     dinfo << myname << "(init): init sender2.. my node " << n_it.getProp("name") << endl;
-                    sender2 = new UNetSender(h2,p2,shm,s_field,s_fvalue);
+                    sender2 = make_shared<UNetSender>(h2,p2,shm,s_field,s_fvalue);
                     sender2->setSendPause(sendpause);
                 }
             }
@@ -242,7 +239,7 @@ sender2(0)
 
         dinfo << myname << "(init): (node='" << n << "') add receiver "
                         << h2 << ":" << p2 << endl;
-        UNetReceiver* r = new UNetReceiver(h,p,shm);
+        auto r = make_shared<UNetReceiver>(h,p,shm);
 
         // на всякий принудительно разблокируем,
         // чтобы не зависеть от значения по умолчанию
@@ -259,7 +256,7 @@ sender2(0)
         r->setLostPacketsID(lp_id);
         r->connectEvent( sigc::mem_fun(this, &UNetExchange::receiverEvent) );
 
-        UNetReceiver* r2 = 0;
+        shared_ptr<UNetReceiver> r2(nullptr);
         try
         {
             if( !h2.empty() ) // создаём читателя впо второму каналу
@@ -267,7 +264,7 @@ sender2(0)
                 dinfo << myname << "(init): (node='" << n << "') add reserv receiver "
                         << h2 << ":" << p2 << endl;
 
-                r2 = new UNetReceiver(h2,p2,shm);
+                r2 = make_shared<UNetReceiver>(h2,p2,shm);
 
                 // т.к. это резервный канал (по началу блокируем его)
                 r2->setLockUpdate(true);
@@ -339,16 +336,6 @@ sender2(0)
 // -----------------------------------------------------------------------------
 UNetExchange::~UNetExchange()
 {
-    for( auto &it: recvlist )
-    {
-        if( it.r1 )
-            delete it.r1;
-        if( it.r2 )
-            delete it.r2;
-    }
-
-    delete sender;
-    delete sender2;
 }
 // -----------------------------------------------------------------------------
 bool UNetExchange::checkExistUNetHost( const std::string& addr, ost::tpport_t port )
@@ -680,7 +667,7 @@ std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange( int argc, const c
     return make_shared<UNetExchange>(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
-void UNetExchange::receiverEvent( UNetReceiver* r, UNetReceiver::Event ev )
+void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev )
 {
     // пока, что другие события нас не интересуют
     if( ev != UNetReceiver::evTimeout )

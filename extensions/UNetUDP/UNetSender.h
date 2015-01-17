@@ -21,7 +21,7 @@
 class UNetSender
 {
     public:
-        UNetSender( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface> smi,
+        UNetSender( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi,
                     const std::string& s_field="", const std::string& s_fvalue="" );
 
         ~UNetSender();
@@ -81,7 +81,7 @@ class UNetSender
     private:
         UNetSender();
 
-        ost::UDPBroadcast* udp;
+        std::shared_ptr<ost::UDPBroadcast> udp;
         ost::IPV4Address addr;
         ost::tpport_t port;
         std::string s_host;
@@ -98,7 +98,7 @@ class UNetSender
         unsigned short lastcrc;
         UniSetUDP::UDPPacket s_msg;
 
-        ThreadCreator<UNetSender>* s_thr;    // send thread
+        std::shared_ptr< ThreadCreator<UNetSender> > s_thr;    // send thread
 };
 // -----------------------------------------------------------------------------
 #endif // UNetSender_H_

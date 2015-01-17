@@ -45,7 +45,6 @@ using namespace UniSetTypes;
 
 // ------------------------------------------------------------------------------------------
 UniSetObject::UniSetObject():
-ui(UniSetTypes::DefaultObjectId),
 msgpid(0),
 reg(false),
 active(0),
@@ -57,6 +56,8 @@ MaxCountRemoveOfMessage(10),
 stMaxQueueMessages(0),
 stCountOfQueueFull(0)
 {
+	ui = make_shared<UInterface>(UniSetTypes::DefaultObjectId);
+
     tmr = CREATE_TIMER;
     myname = "noname";
     section = "nonameSection";
@@ -64,7 +65,6 @@ stCountOfQueueFull(0)
 }
 // ------------------------------------------------------------------------------------------
 UniSetObject::UniSetObject( ObjectId id ):
-ui(id),
 msgpid(0),
 reg(false),
 active(0),
@@ -76,10 +76,11 @@ MaxCountRemoveOfMessage(10),
 stMaxQueueMessages(0),
 stCountOfQueueFull(0)
 {
+	ui = make_shared<UInterface>(id);
     tmr = CREATE_TIMER;
     if (myid >=0)
     {
-        string myfullname = ui.getNameById(id);
+        string myfullname = ui->getNameById(id);
         myname = ORepHelpers::getShortName(myfullname.c_str());
         section = ORepHelpers::getSectionName(myfullname.c_str());
     }
@@ -95,8 +96,7 @@ stCountOfQueueFull(0)
 }
 
 
-UniSetObject::UniSetObject(const string& name, const string& section):
-ui(UniSetTypes::DefaultObjectId),
+UniSetObject::UniSetObject( const string& name, const string& section ):
 msgpid(0),
 reg(false),
 active(0),
@@ -108,10 +108,12 @@ MaxCountRemoveOfMessage(10),
 stMaxQueueMessages(0),
 stCountOfQueueFull(0)
 {
+	ui = make_shared<UInterface>(UniSetTypes::DefaultObjectId);
+
     /*! \warning UniverslalInterface не инициализируется идентификатором объекта */
     tmr = CREATE_TIMER;
     myname = section + "/" + name;
-    myid = ui.getIdByName(myname);
+    myid = ui->getIdByName(myname);
     if( myid == DefaultObjectId )
     {
         uwarn << "name: my ID not found!" << endl;
@@ -119,7 +121,7 @@ stCountOfQueueFull(0)
     }
 
     init_object();
-    ui.initBackId(myid);
+    ui->initBackId(myid);
 }
 
 // ------------------------------------------------------------------------------------------
@@ -187,11 +189,11 @@ void UniSetObject::setID( UniSetTypes::ObjectId id )
     if( myid!=UniSetTypes::DefaultObjectId )
         throw ObjectNameAlready("ObjectId already set(setID)");
 
-    string myfullname = ui.getNameById(id);
+    string myfullname = ui->getNameById(id);
     myname = ORepHelpers::getShortName(myfullname.c_str()); 
     section = ORepHelpers::getSectionName(myfullname.c_str());
     myid = id;
-    ui.initBackId(myid);
+    ui->initBackId(myid);
 }
 
 // ------------------------------------------------------------------------------------------
@@ -354,7 +356,7 @@ void UniSetObject::registered()
         {
             try
             {
-                ui.registered(myid, getRef(),true);
+                ui->registered(myid, getRef(),true);
                 break;
             }
             catch( ObjectNameAlready& al )
@@ -415,7 +417,7 @@ void UniSetObject::unregister()
     try
     {
         uinfo << myname << ": unregister "<< endl;
-        ui.unregister(myid);
+        ui->unregister(myid);
         uinfo << myname << ": unregister ok. "<< endl;
     }
     catch(...)

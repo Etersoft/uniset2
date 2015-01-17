@@ -82,7 +82,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		// "сердцебиение"
 		if( idHeartBeat!=DefaultObjectId &amp;&amp; ptHeartBeat.checkTime() )
 		{
-			ui.setValue(idHeartBeat,maxHeartBeat,UniversalIO::AI);
+			ui->setValue(idHeartBeat,maxHeartBeat,UniversalIO::AI);
 			ptHeartBeat.reset();
 		}
 
@@ -123,7 +123,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId sid
 		</xsl:if>
 	</xsl:for-each>
 
-	ui.setValue(sid,val);
+	ui->setValue(sid,val);
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool force )
@@ -138,7 +138,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool force )
 // update messages
 <xsl:for-each select="//msgmap/item">
 	si.id = <xsl:value-of select="@name"/>;
-	ui.setValue( si,m_<xsl:value-of select="@name"/>,getId() );
+	ui->setValue( si,m_<xsl:value-of select="@name"/>,getId() );
 </xsl:for-each>
 -->
 }
@@ -160,7 +160,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::askSensor( UniSetTypes::ObjectId si
 		// что-бы компилятор выбрал
 		// правильный(для аналоговых) конструктор у SensorMessage
 		IOController_i::CalibrateInfo _ci;
-		SensorMessage sm( sid, (long)ui.getValue(sid,node), _ci );
+		SensorMessage sm( sid, (long)ui->getValue(sid,node), _ci );
 		sm.sensor_type = UniversalIO::AI;
 		sm.node = node;
 		sensorInfo(&amp;sm);
@@ -174,7 +174,7 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 		return <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
 	</xsl:for-each>
 
-	return ui.getValue(_sid);
+	return ui->getValue(_sid);
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( const UniSetTypes::SensorMessage* sm )
@@ -203,7 +203,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 	try
 	{
 		if( <xsl:value-of select="@name"/> != DefaultObjectId )
-            <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui.getValue(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
+            <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = ui->getValue(<xsl:value-of select="@name"/>,node_<xsl:value-of select="@name"/>);
 	}
 	catch( Exception&amp; ex )
 	{
@@ -219,7 +219,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 		{
 			si.id 	= <xsl:value-of select="@name"/>;
 			si.node = node_<xsl:value-of select="@name"/>;
-			ui.setValue( si, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, getId() );
+			ui->setValue( si, <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>, getId() );
 		}
 	}
 	catch( Exception&amp; ex )
@@ -237,7 +237,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 		{
 			si.id 	= <xsl:value-of select="@name"/>;
 			si.node = node_<xsl:value-of select="@name"/>;
-			ui.setValue( si,<xsl:value-of select="$setval"/>, getId() );
+			ui->setValue( si,<xsl:value-of select="$setval"/>, getId() );
 		}
 	}
 	catch( Exception&amp; ex )
@@ -254,7 +254,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code,
 		{
 			si.id 	= <xsl:value-of select="@name"/>;
 			si.node = node_<xsl:value-of select="@name"/>;
-			ui.setValue( si,(long)m_<xsl:value-of select="@name"/>, getId() );
+			ui->setValue( si,(long)m_<xsl:value-of select="@name"/>, getId() );
 		}
 	}
 	catch( Exception&amp; ex )

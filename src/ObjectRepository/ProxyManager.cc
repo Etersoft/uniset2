@@ -39,7 +39,7 @@ ProxyManager::~ProxyManager()
 ProxyManager::ProxyManager( UniSetTypes::ObjectId id ):
     UniSetObject(id)
 {
-    uin = &ui;
+    uin = ui;
 }
 
 
@@ -86,7 +86,7 @@ bool ProxyManager::activateObject()
                           << " (pname=" << it.second->getName() << ") "
                           << uniset_conf()->oind->getNameById(it.first) << endl;
 
-                    ui.registered(it.first, getRef(),true);
+                    ui->registered(it.first, getRef(),true);
                     break;
                 }
                 catch( UniSetTypes::ObjectNameAlready& ex )
@@ -94,7 +94,7 @@ bool ProxyManager::activateObject()
                     ucrit << myname << "(registered): СПЕРВА РАЗРЕГИСТРИРУЮ (ObjectNameAlready)" << endl;
                     try
                     {
-                        ui.unregister(it.first);
+                        ui->unregister(it.first);
                     }
                     catch(Exception & ex)
                     {
@@ -118,7 +118,7 @@ bool ProxyManager::deactivateObject()
     {
         try
         {
-            ui.unregister(it->first);
+            ui->unregister(it->first);
         }
         catch(Exception& ex )
         {

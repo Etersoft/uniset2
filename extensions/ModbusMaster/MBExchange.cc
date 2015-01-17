@@ -15,7 +15,6 @@ MBExchange::MBExchange( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId
                             const std::shared_ptr<SharedMemory> ic, const std::string& prefix ):
 UniSetObject_LT(objId),
 allInitOK(false),
-shm(0),
 initPause(0),
 force(false),
 force_out(false),
@@ -43,7 +42,7 @@ pollActivated(false)
     if( cnode == NULL )
         throw UniSetTypes::SystemError("(MBExchange): Not found node <" + conf_name + " ...> for " + myname );
 
-    shm = new SMInterface(shmId,&ui,objId,ic);
+    shm = make_shared<SMInterface>(shmId,ui,objId,ic);
 
     UniXML::iterator it(cnode);
 
@@ -189,7 +188,6 @@ MBExchange::~MBExchange()
     }
 
     mb.reset();
-    delete shm;
 }
 // -----------------------------------------------------------------------------
 void MBExchange::waitSMReady()

@@ -84,7 +84,7 @@ using namespace UniSetTypes;
         } \
 
 // --------------------------------------------------------------------------
-SMInterface::SMInterface( UniSetTypes::ObjectId _shmID, UInterface* _ui,
+SMInterface::SMInterface( UniSetTypes::ObjectId _shmID, const std::shared_ptr<UInterface>& _ui,
                             UniSetTypes::ObjectId _myid, const std::shared_ptr<IONotifyController> ic ):
     ic(ic),
     ui(_ui),

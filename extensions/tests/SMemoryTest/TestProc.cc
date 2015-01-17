@@ -138,7 +138,7 @@ void TestProc::test_undefined_state()
     si.id = undef_c;
     si.node = conf->getLocalNode();
     cerr << myname << ": set undefined=" << undef << endl;      
-    ui.setUndefinedState( si, undef, getId() );
+    ui->setUndefinedState( si, undef, getId() );
 }
 // -----------------------------------------------------------------------------
 void TestProc::test_thresholds()
@@ -158,12 +158,12 @@ void TestProc::test_thresholds()
     {
         setValue(t_set_c, 0);
         UniSetTypes::ThresholdId tid = 100;
-        ui.askThreshold( t_set_c, tid, UniversalIO::UIONotify, 10, 20 );
+        ui->askThreshold( t_set_c, tid, UniversalIO::UIONotify, 10, 20 );
 
-        IONotifyController_i::ThresholdInfo ti = ui.getThresholdInfo(t_set_c,tid);
+        IONotifyController_i::ThresholdInfo ti = ui->getThresholdInfo(t_set_c,tid);
         cerr << myname << ": ask OFF threshold: " << ( ti.state == IONotifyController_i::NormalThreshold  ? "ok" : "FAIL" ) << endl;
         setValue(t_set_c, 25);
-        ti = ui.getThresholdInfo(t_set_c,tid);
+        ti = ui->getThresholdInfo(t_set_c,tid);
         cerr << myname << ": ask ON threshold: " << ( ti.state == IONotifyController_i::HiThreshold  ? "ok" : "FAIL" ) << endl;
     }
     catch( Exception& ex )

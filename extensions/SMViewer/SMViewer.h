@@ -3,6 +3,7 @@
 #define _SMVIEWER_H
 //--------------------------------------------------------------------------------
 #include <string>
+#include <memory>
 #include "SViewer.h"
 #include "SMInterface.h"
 //--------------------------------------------------------------------------------
@@ -17,9 +18,8 @@ class SMViewer:
 
     protected:
 
+        std::shared_ptr<SMInterface> shm;
     private:
-        SMInterface* shm;
-        UInterface ui;
 };
 // --------------------------------------------------------------------------
 #endif

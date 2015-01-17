@@ -31,7 +31,6 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
     iomap(100),
     maxItem(0),
     filterT(0),
-    shm(0),
     myid(id),
     prefix(prefix_),
     blink_state(true),
@@ -172,7 +171,7 @@ IOControl::IOControl( UniSetTypes::ObjectId id, UniSetTypes::ObjectId icID,
         dinfo << myname << "(init): testMode_as='" << testmode << "'" << endl;
     }
 
-    shm = new SMInterface(icID,&ui,myid,ic);
+    shm = make_shared<SMInterface>(icID,ui,myid,ic);
 
     // определяем фильтр
     s_field = conf->getArgParam("--"+prefix+"-s-filter-field");
@@ -247,8 +246,6 @@ IOControl::~IOControl()
     //
     for( unsigned int i=0; i<cards.size(); i++ )
         delete cards[i];
-
-    delete shm;
 }
 
 // --------------------------------------------------------------------------------

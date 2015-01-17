@@ -2,6 +2,7 @@
 #define UNetReceiver_H_
 // -----------------------------------------------------------------------------
 #include <ostream>
+#include <memory>
 #include <string>
 #include <queue>
 #include <cc++/socket.h>
@@ -49,10 +50,11 @@
  * ОПТИМИЗАЦИЯ N1: см. UNetSender.h. Если номер последнего принятого пакета не менялся.. не обрабатываем..
 */
 // -----------------------------------------------------------------------------
-class UNetReceiver
+class UNetReceiver:
+	public std::enable_shared_from_this<UNetReceiver>
 {
     public:
-        UNetReceiver( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface> smi );
+        UNetReceiver( const std::string& host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi );
         ~UNetReceiver();
 
          void start();
@@ -95,7 +97,7 @@ class UNetReceiver
              evTimeout    /*!< потеря связи */
          };
 
-         typedef sigc::slot<void,UNetReceiver*,Event> EventSlot;
+         typedef sigc::slot<void,const std::shared_ptr<UNetReceiver>&,Event> EventSlot;
          void connectEvent( EventSlot sl );
 
     protected:
@@ -114,7 +116,7 @@ class UNetReceiver
         int recvpause;        /*!< пауза меджду приёмами пакетов, [мсек] */
         int updatepause;    /*!< переодичность обновления данных в SM, [мсек] */
 
-        ost::UDPReceive* udp;
+        std::shared_ptr<ost::UDPReceive> udp;
         ost::IPV4Address addr;
         ost::tpport_t port;
         std::string myname;
@@ -136,8 +138,8 @@ class UNetReceiver
 
         std::atomic_bool activated;
 
-        ThreadCreator<UNetReceiver>* r_thr;        // receive thread
-        ThreadCreator<UNetReceiver>* u_thr;        // update thread
+        std::shared_ptr< ThreadCreator<UNetReceiver> > r_thr;        // receive thread
+        std::shared_ptr< ThreadCreator<UNetReceiver> > u_thr;        // update thread
 
         // функция определения приоритетного сообщения для обработки
         struct PacketCompare:

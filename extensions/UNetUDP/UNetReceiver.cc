@@ -19,11 +19,10 @@ bool UNetReceiver::PacketCompare::operator()(const UniSetUDP::UDPMessage& lhs,
 }
 */
 // ------------------------------------------------------------------------------------------
-UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port, const std::shared_ptr<SMInterface> smi ):
+UNetReceiver::UNetReceiver( const std::string& s_host, const ost::tpport_t port, const std::shared_ptr<SMInterface>& smi ):
 shm(smi),
 recvpause(10),
 updatepause(100),
-udp(0),
 recvTimeout(5000),
 prepareTime(2000),
 lostTimeout(5000),
@@ -32,8 +31,6 @@ sidRespond(UniSetTypes::DefaultObjectId),
 respondInvert(false),
 sidLostPackets(UniSetTypes::DefaultObjectId),
 activated(false),
-r_thr(0),
-u_thr(0),
 pnum(0),
 maxDifferens(1000),
 waitClean(false),
@@ -58,7 +55,7 @@ a_cache_init_ok(false)
 //        addr = ci.getBroadcast();
 //        cerr << "****************** addr: " << addr << endl;
         addr = s_host.c_str();
-        udp = new ost::UDPDuplex(addr,port);
+        udp = make_shared<ost::UDPDuplex>(addr,port);
     }
     catch( std::exception& e )
     {
@@ -75,8 +72,8 @@ a_cache_init_ok(false)
         throw SystemError(s.str());
     }
 
-    r_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::receive);
-    u_thr = new ThreadCreator<UNetReceiver>(this, &UNetReceiver::update);
+    r_thr = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::receive);
+    u_thr = make_shared< ThreadCreator<UNetReceiver> >(this, &UNetReceiver::update);
 
     ptRecvTimeout.setTiming(recvTimeout);
     ptPrepare.setTiming(prepareTime);
@@ -84,9 +81,6 @@ a_cache_init_ok(false)
 // -----------------------------------------------------------------------------
 UNetReceiver::~UNetReceiver()
 {
-    delete r_thr;
-    delete u_thr;
-    delete udp;
 }
 // -----------------------------------------------------------------------------
 void UNetReceiver::setReceiveTimeout( timeout_t msec )
@@ -405,9 +399,9 @@ void UNetReceiver::receive()
         if( ptPrepare.checkTime() && trTimeout.change(tout) )
         {
             if( tout )
-                slEvent(this,evTimeout);
+                slEvent(shared_from_this(),evTimeout);
             else
-                slEvent(this,evOK);
+                slEvent(shared_from_this(),evOK);
         }
 
         msleep(recvpause);

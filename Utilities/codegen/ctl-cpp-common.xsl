@@ -101,7 +101,7 @@
 			</xsl:when>
 			<xsl:when test="$GENTYPE='U'">
 				si.id 	= mid_<xsl:value-of select="../../@name"/>;
-				ui.setValue( si,( m_<xsl:value-of select="../../@name"/> ? 1:0), getId() );
+				ui->setValue( si,( m_<xsl:value-of select="../../@name"/> ? 1:0), getId() );
 			</xsl:when>		
 			<xsl:when test="$GENTYPE='A'">
 			if( _code == mid_<xsl:value-of select="../../@name"/> )
@@ -112,7 +112,7 @@
 				{
 					// сохраняем сразу...
 					si.id = mid_<xsl:value-of select="../../@name"/>;
-					ui.setValue( si,(m_<xsl:value-of select="../../@name"/> ? 1:0), getId() );
+					ui->setValue( si,(m_<xsl:value-of select="../../@name"/> ? 1:0), getId() );
 					return true;
 				}
 				catch(...){}
@@ -126,7 +126,7 @@
 				 	try
 					{
 						si.id = mid_<xsl:value-of select="../../@name"/>;
-						ui.setValue( si,0,getId() );
+						ui->setValue( si,0,getId() );
 					}
 					catch( UniSetTypes::Exception&amp; ex )
 					{
@@ -387,7 +387,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; wait_msec &lt;&lt; " msec"
 			&lt;&lt; " testID=" &lt;&lt; _testID &lt;&lt; endl;
 		
-	if( !ui.waitReady(_testID,wait_msec) )
+	if( !ui->waitReady(_testID,wait_msec) )
 	{
 		ostringstream err;
 		err &lt;&lt; myname 
@@ -404,7 +404,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 <xsl:if test="normalize-space($TESTMODE)!=''">
 	if( idTestMode_S != DefaultObjectId )
 	{
-		if( !ui.waitWorking(idTestMode_S,wait_msec) )
+		if( !ui->waitWorking(idTestMode_S,wait_msec) )
 		{
 			ostringstream err;
 			err &lt;&lt; myname 
@@ -749,8 +749,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 {
 	// Опрашиваем все входы...
 <xsl:if test="normalize-space($TESTMODE)!=''">
-	in_TestMode_S  		= (idTestMode_S!=DefaultObjectId) ? ui.getValue(idTestMode_S):false;
-	in_LocalTestMode_S 	= (idLocalTestMode_S!=DefaultObjectId) ? ui.getValue(idLocalTestMode_S):false;
+	in_TestMode_S  		= (idTestMode_S!=DefaultObjectId) ? ui->getValue(idTestMode_S):false;
+	in_LocalTestMode_S 	= (idLocalTestMode_S!=DefaultObjectId) ? ui->getValue(idLocalTestMode_S):false;
 </xsl:if>
 		<xsl:for-each select="//smap/item">
 			<xsl:choose>
@@ -806,7 +806,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 			// сохраняем сразу...
 			si.id = <xsl:value-of select="@name"/>;
 			si.node = node_<xsl:value-of select="@name"/>;
-			ui.setValue( si,m_<xsl:value-of select="@name"/>,getId() );
+			ui->setValue( si,m_<xsl:value-of select="@name"/>,getId() );
 			return true;
 		}
 		catch(...){}
@@ -829,7 +829,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 		{
 			si.id = <xsl:value-of select="@name"/>;
 			si.node = node_<xsl:value-of select="@name"/>;
-			ui.setValue( si, 0, getId() );
+			ui->setValue( si, 0, getId() );
 		}
 		catch( UniSetTypes::Exception&amp; ex )
 		{
@@ -998,8 +998,8 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 void <xsl:value-of select="$CLASSNAME"/>_SK::updateValues()
 {
 <xsl:if test="normalize-space($TESTMODE)!=''">
-	in_TestMode_S  		= (idTestMode_S!=DefaultObjectId) ? ui.getValue(idTestMode_S):false;
-	in_LocalTestMode_S 	= (idLocalTestMode_S!=DefaultObjectId) ? ui.getValue(idLocalTestMode_S):false;
+	in_TestMode_S  		= (idTestMode_S!=DefaultObjectId) ? ui->getValue(idTestMode_S):false;
+	in_LocalTestMode_S 	= (idLocalTestMode_S!=DefaultObjectId) ? ui->getValue(idLocalTestMode_S):false;
 </xsl:if>
 	// Опрашиваем все входы...
 	<xsl:for-each select="//sensors/item/consumers/consumer">

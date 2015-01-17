@@ -26,7 +26,7 @@ bool IOBase::check_channel_break( long val )
     return ( val < breaklim );
 }
 // -----------------------------------------------------------------------------
-bool IOBase::check_depend( SMInterface* shm )
+bool IOBase::check_depend( const std::shared_ptr<SMInterface>& shm )
 {
     if( d_id == DefaultObjectId )
         return true;
@@ -142,7 +142,7 @@ bool IOBase::check_front( bool val )
     return front_state;
 }
 // -----------------------------------------------------------------------------
-void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force )
+void IOBase::processingAsAI( IOBase* it, long val, const std::shared_ptr<SMInterface>& shm, bool force )
 {
     // проверка на обрыв
     if( it->check_channel_break(val) )
@@ -210,7 +210,7 @@ void IOBase::processingAsAI( IOBase* it, long val, SMInterface* shm, bool force 
     }
 }
 // -----------------------------------------------------------------------------
-void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool force )
+void IOBase::processingFasAI( IOBase* it, float fval, const std::shared_ptr<SMInterface>& shm, bool force )
 {
     long val = lroundf(fval);
 
@@ -268,7 +268,7 @@ void IOBase::processingFasAI( IOBase* it, float fval, SMInterface* shm, bool for
     }
 }
 // -----------------------------------------------------------------------------
-void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force )
+void IOBase::processingAsDI( IOBase* it, bool set, const std::shared_ptr<SMInterface>& shm, bool force )
 {
     // проверка зависимости
     if( !it->check_depend(shm) )
@@ -292,7 +292,7 @@ void IOBase::processingAsDI( IOBase* it, bool set, SMInterface* shm, bool force 
     }
 }
 // -----------------------------------------------------------------------------
-long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
+long IOBase::processingAsAO( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force )
 {
     // проверка зависимости
     if( !it->check_depend(shm) )
@@ -344,7 +344,7 @@ long IOBase::processingAsAO( IOBase* it, SMInterface* shm, bool force )
     return val;
 }
 // -----------------------------------------------------------------------------
-bool IOBase::processingAsDO( IOBase* it, SMInterface* shm, bool force )
+bool IOBase::processingAsDO( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force )
 {
     // проверка зависимости
     if( !it->check_depend(shm) )
@@ -360,7 +360,7 @@ bool IOBase::processingAsDO( IOBase* it, SMInterface* shm, bool force )
     return set;
 }
 // -----------------------------------------------------------------------------
-float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
+float IOBase::processingFasAO( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force )
 {
     // проверка зависимости
     if( !it->check_depend(shm) )
@@ -415,7 +415,7 @@ float IOBase::processingFasAO( IOBase* it, SMInterface* shm, bool force )
     return val;
 }
 // -----------------------------------------------------------------------------
-void IOBase::processingThreshold( IOBase* it, SMInterface* shm, bool force )
+void IOBase::processingThreshold( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force )
 {
     if( it->t_ai == DefaultObjectId )
         return;
@@ -475,7 +475,7 @@ int IOBase::initIntProp( UniXML::iterator& it, const std::string& prop, const st
     return defval;
 }
 // -----------------------------------------------------------------------------
-bool IOBase::initItem( IOBase* b, UniXML::iterator& it, SMInterface* shm, const std::string& prefix, 
+bool IOBase::initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SMInterface>& shm, const std::string& prefix, 
                         bool init_prefix_only,
                         DebugStream* dlog, std::string myname,
                         int def_filtersize, float def_filterT, float def_lsparam,

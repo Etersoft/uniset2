@@ -3,6 +3,7 @@
 #define IOControl_H_
 // -----------------------------------------------------------------------------
 #include <vector>
+#include <memory>
 #include <deque>
 #include <string>
 #include "UniXML.h"
@@ -335,8 +336,7 @@ class IOControl:
         std::string s_field;
         std::string s_fvalue;
 
-        SMInterface* shm;
-        UInterface ui;
+        std::shared_ptr<SMInterface> shm;
         UniSetTypes::ObjectId myid;
         std::string prefix;
 

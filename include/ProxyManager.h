@@ -25,6 +25,7 @@
 #define ProxyManager_H_
 //---------------------------------------------------------------------------
 #include <map>
+#include <memory>
 #include "UniSetObject.h"
 
 //----------------------------------------------------------------------------
@@ -45,7 +46,7 @@ class ProxyManager:
         void attachObject( PassiveObject* po, UniSetTypes::ObjectId id );
         void detachObject( UniSetTypes::ObjectId id );
     
-        UInterface* uin;
+        std::shared_ptr<UInterface> uin;
 
     protected:
         ProxyManager();    

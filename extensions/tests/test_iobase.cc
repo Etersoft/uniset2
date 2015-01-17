@@ -71,13 +71,13 @@ TEST_CASE("[IOBase]: Init from xml","[iobase][init][extensions]")
         xmlNode* cnode = conf->getNode("iobasetest");
         CHECK( cnode != NULL );
         UniXML::iterator it(cnode);
-           UInterface ui;
+        auto ui = make_shared<UInterface>();
         ObjectId shmID = conf->getControllerID("SharedMemory");
         CHECK( shmID != DefaultObjectId );
 
-        SMInterface shm(shmID,&ui,DefaultObjectId);
+        auto shm = make_shared<SMInterface>(shmID,ui,DefaultObjectId);
         IOBase ib;
-        IOBase::initItem(&ib,it,&shm,"",false);
+        IOBase::initItem(&ib,it,shm,"",false);
         CHECK( ib.si.id == 1 );
         CHECK( ib.si.node == conf->getLocalNode() );
         CHECK( ib.defval == -10 );
@@ -95,13 +95,13 @@ TEST_CASE("[IOBase]: Init from xml","[iobase][init][extensions]")
         xmlNode* cnode = conf->getNode("iobasetest3");
         CHECK( cnode != NULL );
         UniXML::iterator it(cnode);
-           UInterface ui;
+        auto ui = make_shared<UInterface>();
         ObjectId shmID = conf->getControllerID("SharedMemory");
         CHECK( shmID != DefaultObjectId );
 
-        SMInterface shm(shmID,&ui,DefaultObjectId);
+        auto shm = make_shared<SMInterface>(shmID,ui,DefaultObjectId);
         IOBase ib;
-        IOBase::initItem(&ib,it,&shm,"myprefix_",false);
+        IOBase::initItem(&ib,it,shm,"myprefix_",false);
         CHECK( ib.si.id == 10 );
         CHECK( ib.si.node == conf->getLocalNode() );
         CHECK( ib.defval == 5 );

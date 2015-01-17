@@ -136,7 +136,7 @@ std::shared_ptr<MBTCPMultiSlave> MBTCPMultiSlave::init_mbslave( int argc, const 
 // -----------------------------------------------------------------------------
 void MBTCPMultiSlave::execute_tcp()
 {
-    ModbusTCPServerSlot* sslot = dynamic_cast<ModbusTCPServerSlot*>(mbslot);
+    auto sslot = dynamic_pointer_cast<ModbusTCPServerSlot>(mbslot);
 
     if( !sslot )
     {
@@ -309,7 +309,7 @@ bool MBTCPMultiSlave::deactivateObject()
 {
     if( mbslot )
     {
-        ModbusTCPServerSlot* sslot = dynamic_cast<ModbusTCPServerSlot*>(mbslot);
+        auto sslot = dynamic_pointer_cast<ModbusTCPServerSlot>(mbslot);
         if( sslot )
             sslot->sigterm(SIGTERM);
     }
@@ -321,7 +321,7 @@ void MBTCPMultiSlave::sigterm( int signo )
 {
     if( mbslot )
     {
-        ModbusTCPServerSlot* sslot = dynamic_cast<ModbusTCPServerSlot*>(mbslot);
+        auto sslot = dynamic_pointer_cast<ModbusTCPServerSlot>(mbslot);
         if( sslot )
             sslot->sigterm(signo);
     }

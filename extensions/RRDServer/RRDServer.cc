@@ -16,7 +16,7 @@ RRDServer::RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::
 UObject_SK(objId,cnode),
 prefix(prefix)
 {
-    shm = make_shared<SMInterface>(shmId,&ui,objId,ic);
+    shm = make_shared<SMInterface>(shmId,ui,objId,ic);
     mylog = log;
     UniXML::iterator it(cnode);
 

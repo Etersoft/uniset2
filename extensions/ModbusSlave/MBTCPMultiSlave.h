@@ -60,7 +60,7 @@ class MBTCPMultiSlave:
             UniSetTypes::ObjectId askcount_s;
             IOController::IOStateList::iterator askcount_it;
 
-            inline void initIterators( SMInterface* shm )
+            inline void initIterators( const std::shared_ptr<SMInterface>& shm )
             {
                 shm->initIterator( respond_it );
                 shm->initIterator( askcount_it );

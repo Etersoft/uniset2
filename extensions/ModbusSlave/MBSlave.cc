@@ -13,8 +13,6 @@ using namespace ModbusRTU;
 // -----------------------------------------------------------------------------
 MBSlave::MBSlave( UniSetTypes::ObjectId objId, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic, const string& prefix ):
 UniSetObject_LT(objId),
-mbslot(0),
-shm(0),
 initPause(0),
 test_id(DefaultObjectId),
 askcount_id(DefaultObjectId),
@@ -40,7 +38,7 @@ prefix(prefix)
     if( cnode == NULL )
         throw UniSetTypes::SystemError("(MBSlave): Not found conf-node for " + myname );
 
-    shm = new SMInterface(shmId,&ui,objId,ic);
+    shm = make_shared<SMInterface>(shmId,ui,objId,ic);
 
     UniXML::iterator it(cnode);
 
@@ -89,15 +87,15 @@ prefix(prefix)
         bool use485F = conf->getArgInt("--" + prefix + "-use485F",it.getProp("use485F"));
         bool transmitCtl = conf->getArgInt("--" + prefix + "-transmit-ctl",it.getProp("transmitCtl"));
 
-        ModbusRTUSlaveSlot* rs = new ModbusRTUSlaveSlot(dev,use485F,transmitCtl);
+        auto rs = make_shared<ModbusRTUSlaveSlot>(dev,use485F,transmitCtl);
         rs->setSpeed(speed);
         rs->setRecvTimeout(2000);
         rs->setAfterSendPause(aftersend_pause);
         rs->setReplyTimeout(reply_tout);
         rs->setLog(dlog);
 
-        mbslot = rs;
-        thr = new ThreadCreator<MBSlave>(this,&MBSlave::execute_rtu);
+        mbslot = std::static_pointer_cast<ModbusServerSlot>(rs);
+        thr = make_shared< ThreadCreator<MBSlave> >(this,&MBSlave::execute_rtu);
         thr->setFinalAction(this,&MBSlave::finalThread);
         dinfo << myname << "(init): type=RTU myaddr=" << ModbusRTU::addr2str(addr)
             << " dev=" << dev << " speed=" << speed << endl;
@@ -114,13 +112,13 @@ prefix(prefix)
                 << " inet=" << iaddr << " port=" << port << endl;
 
         ost::InetAddress ia(iaddr.c_str());
-        ModbusTCPServerSlot* mbtcp = new ModbusTCPServerSlot(ia,port);
+        auto mbtcp = make_shared<ModbusTCPServerSlot>(ia,port);
 
         mbtcp->setAfterSendPause(aftersend_pause);
         mbtcp->setReplyTimeout(reply_tout);
 
-        mbslot = mbtcp;
-        thr = new ThreadCreator<MBSlave>(this,&MBSlave::execute_tcp);
+        mbslot = mbslot = std::static_pointer_cast<ModbusServerSlot>(mbtcp);
+        thr = make_shared< ThreadCreator<MBSlave> >(this,&MBSlave::execute_tcp);
         thr->setFinalAction(this,&MBSlave::finalThread);
         dinfo << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
 
@@ -364,16 +362,11 @@ prefix(prefix)
 MBSlave::~MBSlave()
 {
     cancelled = true;
-
     if( thr && thr->isRunning() )
     {
         thr->stop();
 //        thr->join();
     }
-
-    delete thr;
-    delete mbslot;
-    delete shm;
 }
 // -----------------------------------------------------------------------------
 void MBSlave::finalThread()
@@ -402,7 +395,7 @@ void MBSlave::waitSMReady()
 // -----------------------------------------------------------------------------
 void MBSlave::execute_rtu()
 {
-    ModbusRTUSlaveSlot* rscomm = dynamic_cast<ModbusRTUSlaveSlot*>(mbslot);
+    auto rscomm = dynamic_pointer_cast<ModbusRTUSlaveSlot>(mbslot);
 
     ModbusRTU::mbErrCode prev = erNoError;
 
@@ -483,7 +476,7 @@ void MBSlave::execute_rtu()
 // -------------------------------------------------------------------------
 void MBSlave::execute_tcp()
 {
-    ModbusTCPServerSlot* sslot = dynamic_cast<ModbusTCPServerSlot*>(mbslot);
+    auto sslot = dynamic_pointer_cast<ModbusTCPServerSlot>(mbslot);
 
     ModbusRTU::mbErrCode prev = erNoError;
 

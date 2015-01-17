@@ -111,7 +111,7 @@ class UniSetObject:
             /*! прервать ожидание сообщений */
             void termWaiting();
 
-            UInterface ui; /*!< универсальный интерфейс для работы с другими процессами */
+            std::shared_ptr<UInterface> ui; /*!< универсальный интерфейс для работы с другими процессами */
             std::string myname;
             std::string section;
 

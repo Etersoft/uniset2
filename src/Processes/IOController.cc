@@ -382,13 +382,13 @@ void IOController::ioRegistration( USensorInfo&& ainf, bool force )
                         << "(ioRegistration): регистрирую " 
                         << uniset_conf()->oind->getNameById(ainf.si.id) << endl;
 
-                ui.registered( ainf.si.id, getRef(), true );
+                ui->registered( ainf.si.id, getRef(), true );
                 return;
             }
             catch(ObjectNameAlready& ex )
             {
                 uwarn << myname << "(asRegistration): ЗАМЕНЯЮ СУЩЕСТВУЮЩИЙ ОБЪЕКТ (ObjectNameAlready)" << endl;
-                ui.unregister(ainf.si.id);
+                ui->unregister(ainf.si.id);
             }
         }
     }
@@ -404,7 +404,7 @@ void IOController::ioRegistration( USensorInfo&& ainf, bool force )
 // ---------------------------------------------------------------------------
 void IOController::ioUnRegistration( const UniSetTypes::ObjectId sid )
 {
-    ui.unregister(sid);
+    ui->unregister(sid);
 }
 // ---------------------------------------------------------------------------
 void IOController::logging( UniSetTypes::SensorMessage& sm )
@@ -421,7 +421,7 @@ void IOController::logging( UniSetTypes::SensorMessage& sm )
 
         sm.consumer = dbID;
         TransportMessage tm(sm.transport_msg());
-        ui.send( sm.consumer, std::move(tm) );
+        ui->send( sm.consumer, std::move(tm) );
         isPingDBServer = true;
     }
     catch(...)

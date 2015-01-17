@@ -39,9 +39,9 @@ SViewer::SViewer(const string& csec, bool sn):
     csec(csec),
     rep(UniSetTypes::uniset_conf()),
     cache(500, 15),
-    ui(UniSetTypes::uniset_conf()),
     isShort(sn)
 {
+	ui = make_shared<UInterface>(UniSetTypes::uniset_conf());
 }
 
 SViewer::~SViewer()
@@ -171,7 +171,7 @@ void SViewer::getInfo( ObjectId id )
 
         if( CORBA::is_nil(oref) )
         {
-            oref = ui.resolve(id);
+            oref = ui->resolve(id);
             cache.cache(id, uniset_conf()->getLocalNode(), oref);
         }
 

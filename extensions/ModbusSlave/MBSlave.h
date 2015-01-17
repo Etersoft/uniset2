@@ -4,6 +4,7 @@
 // -----------------------------------------------------------------------------
 #include <ostream>
 #include <string>
+#include <memory>
 #include <map>
 #include <vector>
 #include "UniSetObject_LT.h"
@@ -365,14 +366,14 @@ class MBSlave:
         typedef std::map<ModbusRTU::ModbusData,IOProperty> IOMap;
         IOMap iomap;            /*!< список входов/выходов */
 
-        ModbusServerSlot* mbslot;
+        std::shared_ptr<ModbusServerSlot> mbslot;
         ModbusRTU::ModbusAddr addr;            /*!< адрес данного узла */
 
         xmlNode* cnode;
         std::string s_field;
         std::string s_fvalue;
 
-        SMInterface* shm;
+        std::shared_ptr<SMInterface> shm;
 
         virtual void sysCommand( const UniSetTypes::SystemMessage *msg ) override;
         virtual void sensorInfo( const UniSetTypes::SensorMessage* sm ) override;
@@ -407,7 +408,7 @@ class MBSlave:
         MBSlave();
         bool initPause;
         UniSetTypes::uniset_rwmutex mutex_start;
-        ThreadCreator<MBSlave>* thr;
+        std::shared_ptr< ThreadCreator<MBSlave> > thr;
 
         PassiveTimer ptHeartBeat;
         UniSetTypes::ObjectId sidHeartBeat;

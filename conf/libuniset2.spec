@@ -1,4 +1,4 @@
-%def_enable doc
+%def_enable docs
 %def_enable mysql
 %def_enable sqlite
 %def_enable python
@@ -12,7 +12,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt10
+Release: alt11
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -54,7 +54,7 @@ BuildRequires(pre): rpm-build-python
 # add_findprov_lib_path %python_sitelibdir/%oname
 %endif
 
-%if_enabled doc
+%if_enabled docs
 BuildRequires: doxygen
 %endif
 
@@ -108,15 +108,15 @@ Obsoletes: %oname-utils
 %description utils
 UniSet utilities
 
-%if_enabled doc
+%if_enabled docs
 
-%package doc
+%package docs
 Group: Development/C++
 Summary: Documentations for developing with UniSet
 Requires: %name = %version-%release
 BuildArch: noarch
 
-%description doc
+%description docs
 Documentations for developing with UniSet
 %endif
 
@@ -241,7 +241,7 @@ SharedMemoryPlus extension ('all in one') for libuniset
 
 %build
 %autoreconf
-%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests}
+%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests}
 %make
 
 %install
@@ -323,8 +323,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 %endif
 
-%if_enabled doc
-%files doc
+%if_enabled docs
+%files docs
 %_docdir/%oname
 %endif
 
@@ -406,6 +406,11 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
 
 %changelog
+* Sat Jan 17 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt11
+- refactoring "exit process"
+- fixed bug in specfile: --enable-doc --> --enable-docs
+- transition to use shared_ptr wherever possible
+
 * Mon Nov 24 2014 Pavel Vainerman <pv@altlinux.ru> 2.0-alt10
 - use shared_ptr 
 

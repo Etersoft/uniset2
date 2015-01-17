@@ -291,7 +291,7 @@ class MBExchange:
         std::string s_field;
         std::string s_fvalue;
 
-        SMInterface* shm;
+        std::shared_ptr<SMInterface> shm;
 
         bool initPause;
         UniSetTypes::uniset_rwmutex mutex_start;

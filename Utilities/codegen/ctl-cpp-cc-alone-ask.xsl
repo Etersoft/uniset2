@@ -79,7 +79,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		// "сердцебиение"
 		if( idHeartBeat!=DefaultObjectId &amp;&amp; ptHeartBeat.checkTime() )
 		{
-			ui.setValue(idHeartBeat,maxHeartBeat,UniversalIO::AI);
+			ui->setValue(idHeartBeat,maxHeartBeat,UniversalIO::AI);
 			ptHeartBeat.reset();
 		}
 
@@ -154,7 +154,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 		<xsl:for-each select="//sensors/item/consumers/consumer">
 		<xsl:if test="normalize-space(@name)=$OID">
 		<xsl:if test="normalize-space(@vartype)='in'">
-			ui.askRemoteSensor(<xsl:value-of select="../../@name"/>,_cmd,node_<xsl:value-of select="../../@name"/>, getId());
+			ui->askRemoteSensor(<xsl:value-of select="../../@name"/>,_cmd,node_<xsl:value-of select="../../@name"/>, getId());
 		</xsl:if>
 		</xsl:if>
 		</xsl:for-each>
@@ -178,7 +178,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId _sid, long _val )
 {
-//	ui.setState(sid,state);
+//	ui->setState(sid,state);
 	<xsl:for-each select="//sensors/item/consumers/consumer">
 	<xsl:if test="normalize-space(@name)=$OID">
 	<xsl:if test="normalize-space(../../@msg)!='1'">
@@ -195,12 +195,12 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId _si
 	</xsl:if>
 	</xsl:for-each>
 
-	ui.setValue(_sid,_val);
+	ui->setValue(_sid,_val);
 }
 // -----------------------------------------------------------------------------
 void <xsl:value-of select="$CLASSNAME"/>_SK::askSensor( UniSetTypes::ObjectId _sid, UniversalIO::UIOCommand _cmd, UniSetTypes::ObjectId _node )
 {
-	ui.askRemoteSensor(_sid,_cmd,_node,getId());
+	ui->askRemoteSensor(_sid,_cmd,_node,getId());
 }
 
 // -----------------------------------------------------------------------------
@@ -213,14 +213,14 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 	<xsl:if test="normalize-space(../../@msg)!='1'">
 		if( _sid == <xsl:value-of select="../../@name"/> )
 		{
-		<xsl:text>		</xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = ui.getValue(<xsl:value-of select="../../@name"/>);
+		<xsl:text>		</xsl:text><xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = ui->getValue(<xsl:value-of select="../../@name"/>);
 			return <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>;
 		}
 	</xsl:if>
 	</xsl:if>
 	</xsl:for-each>
 
-		return ui.getValue(_sid);
+		return ui->getValue(_sid);
 	}
 	catch(Exception&amp; ex)
 	{
@@ -255,7 +255,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 	if( _force || prev_m_<xsl:value-of select="../../@name"/> != m_<xsl:value-of select="../../@name"/> )
 	{
 		si.id 	= mid_<xsl:value-of select="../../@name"/>;
-		ui.setValue( si,m_<xsl:value-of select="../../@name"/>, getId() );
+		ui->setValue( si,m_<xsl:value-of select="../../@name"/>, getId() );
 		prev_m_<xsl:value-of select="../../@name"/> = m_<xsl:value-of select="../../@name"/>;
 	}
 </xsl:if>
@@ -286,7 +286,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 	{
 <xsl:if test="normalize-space(../../@msg)!='1'">
 <xsl:if test="normalize-space(@name)=$OID">
-		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = ui.getValue(<xsl:value-of select="../../@name"/>);
+		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = ui->getValue(<xsl:value-of select="../../@name"/>);
 </xsl:if>
 </xsl:if>
 	}
@@ -323,7 +323,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 			{
 				si.id 	= <xsl:value-of select="../../@name"/>;
 				si.node = node_<xsl:value-of select="../../@name"/>;
-				ui.setValue( si,<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, getId() );
+				ui->setValue( si,<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, getId() );
 			}
 			catch(Exception&amp; ex)
 			{
@@ -338,7 +338,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 	{
 		si.id 	= <xsl:value-of select="../../@name"/>;
 		si.node = node_<xsl:value-of select="../../@name"/>;
-		ui.setValue( si,<xsl:value-of select="$setval"/>, getId() );
+		ui->setValue( si,<xsl:value-of select="$setval"/>, getId() );
 	}
 	catch(Exception&amp; ex)
 	{

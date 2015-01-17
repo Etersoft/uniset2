@@ -3,6 +3,7 @@
 #define IOBase_H_
 // -----------------------------------------------------------------------------
 #include <string>
+#include <memory>
 #include "PassiveTimer.h"
 #include "Trigger.h"
 #include "Mutex.h"
@@ -70,7 +71,7 @@ struct IOBase
     bool check_on_delay( bool val );    /*!< реализация задержки на включение */
     bool check_off_delay( bool val );   /*!< реализация задержки на отключение */
     bool check_front( bool val );       /*!< реализация срабатывания по фронту сигнала */
-    bool check_depend( SMInterface* shm ); /*!< проверка разрешения(зависимости) от другого датчика */
+    bool check_depend( const std::shared_ptr<SMInterface>& shm ); /*!< проверка разрешения(зависимости) от другого датчика */
 
     IOController_i::SensorInfo si;
     UniversalIO::IOType stype;           /*!< тип канала (DI,DO,AI,AO) */
@@ -143,18 +144,18 @@ struct IOBase
 
     friend std::ostream& operator<<(std::ostream& os, IOBase& inf );
 
-    static void processingFasAI( IOBase* it, float new_val, SMInterface* shm, bool force );
-    static void processingAsAI( IOBase* it, long new_val, SMInterface* shm, bool force );
-    static void processingAsDI( IOBase* it, bool new_set, SMInterface* shm, bool force );
-    static long processingAsAO( IOBase* it, SMInterface* shm, bool force );
-    static float processingFasAO( IOBase* it, SMInterface* shm, bool force );
-    static bool processingAsDO( IOBase* it, SMInterface* shm, bool force );
-    static void processingThreshold( IOBase* it, SMInterface* shm, bool force );
+    static void processingFasAI( IOBase* it, float new_val, const std::shared_ptr<SMInterface>& shm, bool force );
+    static void processingAsAI( IOBase* it, long new_val, const std::shared_ptr<SMInterface>& shm, bool force );
+    static void processingAsDI( IOBase* it, bool new_set, const std::shared_ptr<SMInterface>& shm, bool force );
+    static long processingAsAO( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force );
+    static float processingFasAO( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force );
+    static bool processingAsDO( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force );
+    static void processingThreshold( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force );
 
     /*! \param initPrefixOnly - TRUE - инициализировать только свойста с prefix (или брать значения по умолчанию).
                                 FALSE - сперва искать свойство с prefix, если не найдено брать без prefix.
     */
-    static bool initItem( IOBase* b, UniXML::iterator& it, SMInterface* shm,
+    static bool initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SMInterface>& shm,
                             const std::string& prefix, bool init_prefix_only,
                             DebugStream* dlog=0, std::string myname="",
                             int def_filtersize=0, float def_filterT=0.0,

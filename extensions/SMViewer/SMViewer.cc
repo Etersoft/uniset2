@@ -9,12 +9,11 @@ using namespace UniSetExtensions;
 SMViewer::SMViewer( UniSetTypes::ObjectId shmID ):
     SViewer(uniset_conf()->getControllersSection(),true)
 {
-    shm = new SMInterface(shmID,&ui,DefaultObjectId,0);
+    shm = make_shared<SMInterface>(shmID,ui,DefaultObjectId);
 }
 // --------------------------------------------------------------------------
 SMViewer::~SMViewer()
 {
-    delete shm;
 }
 // --------------------------------------------------------------------------
 void SMViewer::run()
