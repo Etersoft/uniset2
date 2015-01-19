@@ -26,6 +26,10 @@
 #ifndef UniSetObject_H_
 #define UniSetObject_H_
 //--------------------------------------------------------------------------
+#include <condition_variable>
+#include <thread>
+#include <mutex>
+#include <atomic>
 #include <unistd.h>
 #include <sys/time.h>
 #include <queue>
@@ -135,7 +139,7 @@ class UniSetObject:
              *    Например переход в безопасное состояние.
              *  \warning В обработчике сигналов \b ЗАПРЕЩЕНО вызывать функции подобные exit(..), abort()!!!! 
             */
-            virtual void sigterm( int signo ){};
+            virtual void sigterm( int signo );
 
             inline void terminate(){ deactivate(); }
 
@@ -249,7 +253,12 @@ class UniSetObject:
 
             // статистическая информация 
             unsigned long stMaxQueueMessages;    /*<! Максимальное число сообщений хранившихся в очереди */
-            unsigned long stCountOfQueueFull;     /*! количество переполнений очереди сообщений */
+            unsigned long stCountOfQueueFull;     /*!< количество переполнений очереди сообщений */
+
+            std::atomic_bool a_working;
+            std::mutex    m_working;
+            std::condition_variable cv_working;
+//            timeout_t workingTerminateTimeout; /*!< время ожидания завершения потока */
 };
 //---------------------------------------------------------------------------
 #endif

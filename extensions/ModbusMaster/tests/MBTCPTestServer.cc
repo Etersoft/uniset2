@@ -95,7 +95,7 @@ void MBTCPTestServer::runThread()
 void MBTCPTestServer::execute()
 {
     isrunning = true;
-    cerr << "******************** MBTCPTestServer(" << myname << ") running... " << endl;
+//    cerr << "******************** MBTCPTestServer(" << myname << ") running... " << endl;
     // Работа...
     while(1)
     {

@@ -137,6 +137,8 @@ class ThreadCreator:
         {
             if( finm )
                 (finm->*finact)();
+
+            //delete this;
         }
 
         virtual void initial()

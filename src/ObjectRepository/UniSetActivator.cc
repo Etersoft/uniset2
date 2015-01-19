@@ -63,9 +63,12 @@ using namespace std;
     - завершение CORBA-потока (если был создан) (функция work).
     - orb destroy
 
-    Для защиты от "зависания" во время завершения, создаётся ещё один временный поток g_fini_thread,
-    который в течение TERMINATE_TIMEOUT секунд ждёт события 'g_finievent'. После чего происходит
-    "принудительное" отключение, обработчики сигналов восстанавливаются на умолчательные и процесс
+    Для защиты от "зависания" во время завершения, создаётся ещё один поток g_kill_thread, который ожидает завершения
+    в течение KILL_TIMEOUT и формирует сигнал SIGKILL если в течение этого времени не выставился флаг g_done = true;
+
+    Помимио этого в процессе завершения создаётся временный поток g_fini_thread,
+    который в течение TERMINATE_TIMEOUT секунд ждёт события 'g_finievent' (от процесса остановки котока для ORB). 
+    После чего происходит "принудительное" отключение, обработчики сигналов восстанавливаются на умолчательные и процесс
     завершается..
 
     В случае, если для UniSetActivator был создан отдельный поток ( run(true) ) при завершении работы программы
@@ -89,7 +92,9 @@ static std::mutex              g_donemutex;
 static std::condition_variable g_doneevent;
 static std::shared_ptr<std::thread> g_term_thread;
 static std::shared_ptr<std::thread> g_fini_thread;
+static std::shared_ptr<std::thread> g_kill_thread;
 static const int TERMINATE_TIMEOUT = 3; //  время отведенное на завершение процесса [сек]
+static const int KILL_TIMEOUT = 8;
 // ------------------------------------------------------------------------------------------
 static void activator_terminate( int signo )
 {
@@ -111,7 +116,7 @@ static void activator_terminate( int signo )
 // ------------------------------------------------------------------------------------------
 void finished_thread()
 {
-    ulogsys << "****** FINISHED THREAD START **** "<< endl << flush;
+    ulogsys << "****** FINISHED START **** "<< endl << flush;
     std::unique_lock<std::mutex> lk(g_finimutex);
 
     if( g_finished )
@@ -121,7 +126,25 @@ void finished_thread()
 
     std::unique_lock<std::mutex> lkw(g_workmutex);
     g_finievent.wait_for(lkw, std::chrono::milliseconds(TERMINATE_TIMEOUT*1000), [](){ return (g_work_stopped == true); } );
-    ulogsys << "****** FINISHED THREAD END.." << endl << flush;
+    ulogsys << "****** FINISHED END ****" << endl << flush;
+}
+// ------------------------------------------------------------------------------------------
+void kill_thread()
+{
+    std::unique_lock<std::mutex> lk(g_donemutex);
+
+    if( g_done )
+        return;
+
+    g_doneevent.wait_for(lk, std::chrono::milliseconds(KILL_TIMEOUT*1000), [](){ return (g_done == true); } );
+
+    if( !g_done )
+    {
+        ulogsys << "****** KILL TIMEOUT.. *******" << endl << flush;
+        raise(SIGKILL);
+    }
+
+    ulogsys << "KILL THREAD: ..bye.." << endl;
 }
 // ------------------------------------------------------------------------------------------
 void terminate_thread()
@@ -138,10 +161,18 @@ void terminate_thread()
         // g_termmutex надо отпустить, т.к. он будет проверяться  в ~UniSetActvator
     }
 
+    ulogsys << "****** TERMINATE THREAD: event signo=" << g_signo << endl << flush;
+
     {
         std::unique_lock<std::mutex> locker(g_finimutex);
         if( g_finished )
             return;
+    }
+
+    {
+        std::unique_lock<std::mutex> lk(g_donemutex);
+        g_done = false;
+        g_kill_thread = make_shared<std::thread>(kill_thread);
     }
 
     if( g_act )
@@ -150,37 +181,55 @@ void terminate_thread()
             std::unique_lock<std::mutex> lk(g_finimutex);
             if( g_finished )
             {
-                ulogsys << "...FINISHED TREAD ALREADY STARTED..." << endl << flush;
+                ulogsys << "...FINISHED ALREADY STARTED..." << endl << flush;
                 return;
             }
 
             g_fini_thread = make_shared<std::thread>(finished_thread);
         }
 
-        ulogsys << "TERMINATE THREAD: call terminated.." << endl << flush;
+        try
+        {
+            ulogsys << "TERMINATE THREAD: destroy.." << endl;
+            g_act->orb->shutdown(true);
+            ulogsys << "TERMINATE THREAD: destroy ok.." << endl;
+        }
+        catch(omniORB::fatalException& fe)
+        {
+            ulogsys << "(TERMINATE THREAD): : поймали omniORB::fatalException:" << endl;
+            ulogsys << "(TERMINATE THREAD):   file: " << fe.file() << endl;
+            ulogsys << "(TERMINATE THREAD):   line: " << fe.line() << endl;
+            ulogsys << "(TERMINATE THREAD):   mesg: " << fe.errmsg() << endl;
+        }
+        catch(std::exception& ex)
+        {
+            ulogsys << "(TERMINATE THREAD): " << ex.what() << endl;
+        }
+
+        ulogsys << "(TERMINATE THREAD): call terminated.." << endl << flush;
         g_act->terminated(g_signo);
         if( g_fini_thread && g_fini_thread->joinable() )
             g_fini_thread->join();
 
-        ulogsys << "TERMINATE THREAD: FINISHED OK.." << endl << flush;
+        ulogsys << "(TERMINATE THREAD): FINISHED OK.." << endl << flush;
         if( g_act &&  g_act->orb )
         {
             try
             {
-                ulogsys << "TERMINATE THREAD: destroy.." << endl;
+                ulogsys << "(TERMINATE THREAD): destroy.." << endl;
                 g_act->orb->destroy();
-                ulogsys << "TERMINATE THREAD: destroy ok.." << endl;
+                ulogsys << "(TERMINATE THREAD): destroy ok.." << endl;
             }
             catch(omniORB::fatalException& fe)
             {
-                ulogsys << "(uaDestroy): : поймали omniORB::fatalException:" << endl;
-                ulogsys << "(uaDestroy):   file: " << fe.file() << endl;
-                ulogsys << "(uaDestroy):   line: " << fe.line() << endl;
-                ulogsys << "(uaDestroy):   mesg: " << fe.errmsg() << endl;
+                ulogsys << "(TERMINATE THREAD): : поймали omniORB::fatalException:" << endl;
+                ulogsys << "(TERMINATE THREAD):   file: " << fe.file() << endl;
+                ulogsys << "(TERMINATE THREAD):   line: " << fe.line() << endl;
+                ulogsys << "(TERMINATE THREAD):   mesg: " << fe.errmsg() << endl;
             }
             catch(std::exception& ex)
             {
-                ulogsys << "(destructor): " << ex.what() << endl;
+                ulogsys << "(TERMINATE THREAD): " << ex.what() << endl;
             }
         }
 
@@ -188,14 +237,14 @@ void terminate_thread()
         UniSetActivator::set_signals(false);
     }
 
-    ulogsys << "TERMINATE THREAD: ..bye.." << endl;
-
     {
         std::unique_lock<std::mutex> lk(g_donemutex);
         g_done = true;
     }
+     g_doneevent.notify_all();
 
-    g_doneevent.notify_all();
+    g_kill_thread->join();
+    ulogsys << "(TERMINATE THREAD): ..bye.." << endl;
 }
 // ---------------------------------------------------------------------------
 UniSetActivatorPtr UniSetActivator::inst;
@@ -204,7 +253,7 @@ UniSetActivatorPtr UniSetActivator::Instance( const UniSetTypes::ObjectId id )
 {
     if( inst == nullptr )
     {
-        inst = std::shared_ptr<UniSetActivator>( new UniSetActivator(id) );
+        inst = shared_ptr<UniSetActivator>( new UniSetActivator(id) );
         g_act = inst;
     }
 
@@ -251,8 +300,10 @@ void UniSetActivator::init()
     if( CORBA::is_nil(poa) )
         ucrit << myname << "(init): init poa failed!!!" << endl;
 
-    atexit( UniSetActivator::normalexit );
-    set_terminate( UniSetActivator::normalterminate ); // ловушка для неизвестных исключений
+//    Чтобы подключиться к функциям завершения как можно раньше (раньше создания объектов)
+//  этот код перенесён в Configuration::uniset_init (в надежде, что uniset_init всегда вызывается одной из первых).
+//    atexit( UniSetActivator::normalexit );
+//    set_terminate( UniSetActivator::normalterminate ); // ловушка для неизвестных исключений
 }
 
 // ------------------------------------------------------------------------------------------
@@ -269,8 +320,8 @@ UniSetActivator::~UniSetActivator()
         g_termevent.notify_one();
         ulogsys << myname << "(run): wait done.." << endl;
 #if 1
-        if( g_term_thread->joinable() )
-            g_term_thread->join();
+//        if( g_term_thread->joinable() )
+//            g_term_thread->join();
 #else
         std::unique_lock<std::mutex> locker(g_donemutex);
         while( !g_done )
@@ -360,6 +411,7 @@ void UniSetActivator::run( bool thread )
     msleep(50);
 
     set_signals(true);
+
     if( thread )
     {
         uinfo << myname << "(run): запускаемся с созданием отдельного потока...  "<< endl;
@@ -446,7 +498,6 @@ void UniSetActivator::work()
     }
 
     ulogsys << myname << "(work): orb thread stopped!" << endl << flush;
-//    orbthr = nullptr;
 
     {
         std::unique_lock<std::mutex> lkw(g_workmutex);
@@ -456,9 +507,8 @@ void UniSetActivator::work()
 
     if( orbthr )
     {
-        // HACK: почему-то мы должны тут застрять, пока не завершится основной процесс
-        // (terminate_thread) иначе возникает double free corruption.. :(
-        // возможно что-то некорректно с уничтожением orbthr..
+        // HACK: почему-то мы должны тут застрять,
+        // где-то что-то некорректно с уничтожением потока..
         pause();
     }
 }
@@ -550,7 +600,6 @@ void UniSetActivator::terminated( int signo )
     ulogsys << "terminated ok.." << endl;
 }
 // ------------------------------------------------------------------------------------------
-
 void UniSetActivator::normalexit()
 {
     if( g_act )
@@ -570,12 +619,15 @@ void UniSetActivator::normalexit()
 
         ulogsys << "(default exit): wait done.." << endl << flush;
 #if 1
-        if( g_term_thread->joinable() )
+        if( g_term_thread && g_term_thread->joinable() )
             g_term_thread->join();
 #else
-        std::unique_lock<std::mutex> locker(g_donemutex);
-        while( !g_done )
-            g_doneevent.wait(locker);
+        if( g_doneevent )
+        {
+            std::unique_lock<std::mutex> locker(g_donemutex);
+            while( !g_done )
+                g_doneevent.wait(locker);
+        }
 #endif
 
          ulogsys << "(default exit): wait done OK (good bye)" << endl << flush;
@@ -601,12 +653,15 @@ void UniSetActivator::normalterminate()
 
         ulogsys << "(default terminate): wait done.." << endl << flush;
 #if 1
-        if( g_term_thread->joinable() )
+        if( g_term_thread && g_term_thread->joinable() )
             g_term_thread->join();
 #else
-        std::unique_lock<std::mutex> locker(g_donemutex);
-        while( !g_done )
-            g_doneevent.wait(locker);
+        if( g_doneevent )
+        {
+            std::unique_lock<std::mutex> locker(g_donemutex);
+            while( !g_done )
+                g_doneevent.wait(locker);
+        }
 #endif
         ulogsys << "(default terminate): wait done OK (good bye)" << endl << flush;
     }

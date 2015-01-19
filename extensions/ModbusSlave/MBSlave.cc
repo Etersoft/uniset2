@@ -389,7 +389,10 @@ void MBSlave::waitSMReady()
         ostringstream err;
         err << myname << "(waitSMReady): Не дождались готовности SharedMemory к работе в течение " << ready_timeout << " мсек";
         dcrit << err.str() << endl;
-        throw SystemError(err.str());
+//        throw SystemError(err.str());
+        raise(SIGTERM);
+        terminate();
+//		abort();
     }
 }
 // -----------------------------------------------------------------------------

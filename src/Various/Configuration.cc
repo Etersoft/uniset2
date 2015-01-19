@@ -37,6 +37,7 @@
 #include "ObjectIndex_Array.h"
 #include "ObjectIndex_XML.h"
 #include "ObjectIndex_idXML.h"
+#include "UniSetActivator.h"
 // -------------------------------------------------------------------------
 using namespace std;
 // -------------------------------------------------------------------------
@@ -1026,6 +1027,9 @@ std::shared_ptr<Configuration> uniset_init( int argc, const char* const* argv, c
         cerr << "Reusable call uniset_init... ignore.." << endl;
         return UniSetTypes::uconf;
     }
+
+    atexit( UniSetActivator::normalexit );
+    set_terminate( UniSetActivator::normalterminate ); // ловушка для неизвестных исключений
 
     string confile = UniSetTypes::getArgParam( "--confile", argc, argv, xmlfile );
     ulog.setLogName("ulog");

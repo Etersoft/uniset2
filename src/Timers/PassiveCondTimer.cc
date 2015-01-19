@@ -25,76 +25,45 @@
 #include <unistd.h>
 #include <sstream>
 #include <time.h>
-#include <omnithread.h>
-
 #include "PassiveTimer.h"
-
 // ------------------------------------------------------------------------------------------
 using namespace std;
 // ------------------------------------------------------------------------------------------
 
-ThrPassiveTimer::ThrPassiveTimer():
-    terminated(1)
+PassiveCondTimer::PassiveCondTimer():
+    terminated(ATOMIC_VAR_INIT(1))
 {
-    // были сделаны указателями
-    // чтобы уйти от include в head-файле
-    tmutex = new omni_mutex();
-    tcondx = new omni_condition(tmutex);
 }
 // ------------------------------------------------------------------------------------------
-ThrPassiveTimer::~ThrPassiveTimer()
+PassiveCondTimer::~PassiveCondTimer()
 {
     terminate();
-//    while( !terminated ){};
-    delete tcondx;
-    delete tmutex;
 }
 // ------------------------------------------------------------------------------------------
-bool ThrPassiveTimer::isTerminated()
+void PassiveCondTimer::terminate()
 {
-    UniSetTypes::uniset_mutex_lock l(term_mutex,100);
-    return terminated;
-}
-// ------------------------------------------------------------------------------------------
-void ThrPassiveTimer::setTerminated( bool set )
-{
-      UniSetTypes::uniset_mutex_lock l(term_mutex,200);
-    terminated = set;
-}
-// ------------------------------------------------------------------------------------------
-void ThrPassiveTimer::terminate()
-{
-    if( !isTerminated() )
     {
-        setTerminated(true);
-        tcondx->signal();
+        std::unique_lock<std::mutex> lk(m_working);
+        terminated = true;
     }
+    cv_working.notify_all();
 }
 // ------------------------------------------------------------------------------------------
-bool ThrPassiveTimer::wait( timeout_t time_msec )
+bool PassiveCondTimer::wait( timeout_t time_msec )
 {
-    setTerminated(false);
+    std::unique_lock<std::mutex> lk(m_working);
+    terminated = false;
+
+    timeout_t t_msec = PassiveTimer::setTiming(time_msec); // вызываем для совместимости с обычным PassiveTimer-ом
+    if( time_msec == WaitUpTime )
     {
-        tmutex->lock();
-        timeout_t t_msec = PassiveTimer::setTiming(time_msec); // вызываем для совместимости с обычным PassiveTimer-ом
-        if( time_msec == WaitUpTime )
-        {
-            while( !isTerminated() )    // на всякий, вдруг проснется по ошибке...
-                tcondx->wait();
-        }
-        else
-        {
-            unsigned long sec, msec;
-            omni_thread::get_time(&sec,&msec, t_msec/1000, (t_msec%1000)*1000000 );
-//            cout <<"timer: спим "<< timeMS/1000 << "[сек] и " << (timeMS%1000)*1000000 <<"[мсек]" << endl;
-            tcondx->timedwait(sec, msec);
-        }
-
-        tmutex->unlock();
+        while( !terminated )
+            cv_working.wait(lk);
     }
+    else
+        cv_working.wait_for(lk, std::chrono::milliseconds(t_msec), [&](){ return (terminated == true); } );
 
-    setTerminated(true);
+    terminated = true;
     return true;
 }
 // ------------------------------------------------------------------------------------------
-

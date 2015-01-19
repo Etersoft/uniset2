@@ -110,12 +110,11 @@ class UniSetActivator:
         static std::shared_ptr<UniSetActivator> inst;
 
     private:
-
         friend void terminate_thread();
         friend void finished_thread();
+        friend std::shared_ptr<UniSetTypes::Configuration> UniSetTypes::uniset_init( int argc, const char* const* argv, const std::string& xmlfile );
 
         static void terminated(int signo);
-//        static void finishterm(int signo);
         static void normalexit();
         static void normalterminate();
         static void set_signals(bool ask);

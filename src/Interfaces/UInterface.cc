@@ -1929,7 +1929,16 @@ bool UInterface::waitReady( const ObjectId id, int msec, int pmsec, const Object
             if( ready )
                 break;
         }
-        catch(...){}
+        catch(CORBA::OBJECT_NOT_EXIST)
+        {
+        }
+        catch(CORBA::COMM_FAILURE& ex)
+        {
+        }
+        catch(...)
+        {
+            break;
+        }
 
         msleep(pmsec);
     }

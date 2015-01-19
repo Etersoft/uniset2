@@ -115,7 +115,10 @@
 					ui->setValue( si,(m_<xsl:value-of select="../../@name"/> ? 1:0), getId() );
 					return true;
 				}
-				catch(...){}
+			    catch( std::exception&amp;ex )
+			    {
+			        ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+			    }
 				return false;
 			}
 			</xsl:when>		
@@ -395,10 +398,11 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 			&lt;&lt; wait_msec &lt;&lt; " мсек";
 
         ucrit &lt;&lt; err.str() &lt;&lt; endl;
+//		terminate();
+//		abort();
+		raise(SIGTERM);
 		terminate();
-		abort();
-		// kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
-		throw SystemError(err.str());
+//		throw SystemError(err.str());
 	}
 
 <xsl:if test="normalize-space($TESTMODE)!=''">
@@ -412,10 +416,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 				&lt;&lt; wait_msec &lt;&lt; " мсек";
 	
             ucrit &lt;&lt; err.str() &lt;&lt; endl;
-			terminate();
-			abort();
-			// kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
-			throw SystemError(err.str());
+//			terminate();
+//			abort();
+			raise(SIGTERM);
+//			throw SystemError(err.str());
 		}
 	}
 </xsl:if>
@@ -809,7 +813,11 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 			ui->setValue( si,m_<xsl:value-of select="@name"/>,getId() );
 			return true;
 		}
-		catch(...){}
+	    catch( std::exception&amp;ex )
+    	{
+        	ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+	    }
+
 		return false;
 	}
 	</xsl:for-each>

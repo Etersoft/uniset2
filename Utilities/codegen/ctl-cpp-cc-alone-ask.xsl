@@ -96,10 +96,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
         ucrit &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
 			&lt;&lt; ex.NP_minorString() &lt;&lt; endl;
 	}
-	catch(...)
-	{
-        ucrit &lt;&lt; myname &lt;&lt; "(execute): catch ..." &lt;&lt; endl;
-	}
+    catch( std::exception&amp;ex )
+    {
+        ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+    }
 
 	if( !active )
 		return;
@@ -168,11 +168,11 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 		{
             ucrit &lt;&lt; myname &lt;&lt; "(preAskSensors): " &lt;&lt; ex &lt;&lt; endl;
 		}
-		catch(...)
-		{
-            ucrit &lt;&lt; myname &lt;&lt; "(preAskSensors): catch(...)" &lt;&lt; endl;
-		}
-		msleep(askPause);
+    	catch( std::exception&amp;ex )
+	    {
+    	    ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+	    }
+    	msleep(askPause);
 	}
 }
 // -----------------------------------------------------------------------------

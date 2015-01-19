@@ -92,6 +92,10 @@ int main( int argc, const char** argv )
 	{
 		cerr &lt;&lt; "(main): " &lt;&lt; ex &lt;&lt; endl;
 	}
+    catch( std::exception&amp;ex )
+    {
+        cerr &lt;&lt; "(main): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+    }
 	catch(...)
 	{
 		cerr &lt;&lt; "(main): catch ..." &lt;&lt; endl;

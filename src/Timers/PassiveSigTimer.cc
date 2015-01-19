@@ -34,30 +34,30 @@
 using namespace std;
 //using namespace UniSetTypes;
 // ------------------------------------------------------------------------------------------
-void PassiveSysTimer::call(int signo, siginfo_t *evp, void *ucontext)
+void PassiveSigTimer::call(int signo, siginfo_t *evp, void *ucontext)
 {
-    cout << "PassiveSysTimer: callme time="<< evp->si_value.sival_int<< " ms"<<endl;
+    cout << "PassiveSigTimer: callme time="<< evp->si_value.sival_int<< " ms"<<endl;
 }
 
-void PassiveSysTimer::callalrm(int signo)
+void PassiveSigTimer::callalrm(int signo)
 {
-//    cout << "PassiveSysTimer: callme signo "<< signo <<endl;
+//    cout << "PassiveSigTimer: callme signo "<< signo <<endl;
 }
 // ------------------------------------------------------------------------------------------
 
-PassiveSysTimer::PassiveSysTimer():
+PassiveSigTimer::PassiveSigTimer():
     terminated(1)
 {
     init();
 }
 // ------------------------------------------------------------------------------------------
 
-PassiveSysTimer::~PassiveSysTimer()
+PassiveSigTimer::~PassiveSigTimer()
 {
     terminate();
 }
 // ------------------------------------------------------------------------------------------
-void PassiveSysTimer::init()
+void PassiveSigTimer::init()
 {
 /*
     struct itimerval val;
@@ -69,13 +69,13 @@ void PassiveSysTimer::init()
 
     if( sigaction(SIGALRM, &action, 0) == -1)
     {
-        cerr << "PassiveSysTimer: error sigaction" << endl;
+        cerr << "PassiveSigTimer: error sigaction" << endl;
         throw NotSetSignal("PassiveTimer: errir sigaction");
     }    
 */
 }
 // ------------------------------------------------------------------------------------------
-void PassiveSysTimer::terminate()
+void PassiveSigTimer::terminate()
 {
     if (!terminated)
     {
@@ -86,7 +86,7 @@ void PassiveSysTimer::terminate()
     }
 }
 // ------------------------------------------------------------------------------------------
-bool PassiveSysTimer::wait(timeout_t timeMS)
+bool PassiveSigTimer::wait(timeout_t timeMS)
 {
     pid = getpid();
 
@@ -99,7 +99,7 @@ bool PassiveSysTimer::wait(timeout_t timeMS)
 
     if( sigaction(SIGALRM, &action, 0) == -1)
     {
-        cerr << "PassiveSysTimer: error sigaction" << endl;
+        cerr << "PassiveSigTimer: error sigaction" << endl;
         return false;
     }    
 
@@ -147,7 +147,7 @@ bool PassiveSysTimer::wait(timeout_t timeMS)
     terminated = 1;
     sigprocmask( SIG_UNBLOCK, &mask, NULL );
     
-//    cout << "PassiveSysTimer: time ok"<< endl;
+//    cout << "PassiveSigTimer: time ok"<< endl;
     return true;
 }
 

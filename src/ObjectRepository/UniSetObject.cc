@@ -27,6 +27,7 @@
 #include <pthread.h>
 #include <sys/types.h>
 #include <sstream>
+#include <chrono>
 
 #include "Exceptions.h"
 #include "ORepHelpers.h"
@@ -40,7 +41,7 @@
 using namespace std;
 using namespace UniSetTypes;
 
-#define CREATE_TIMER    make_shared<ThrPassiveTimer>();
+#define CREATE_TIMER    make_shared<PassiveCondTimer>();
 // new PassiveSysTimer();
 
 // ------------------------------------------------------------------------------------------
@@ -56,7 +57,7 @@ MaxCountRemoveOfMessage(10),
 stMaxQueueMessages(0),
 stCountOfQueueFull(0)
 {
-	ui = make_shared<UInterface>(UniSetTypes::DefaultObjectId);
+    ui = make_shared<UInterface>(UniSetTypes::DefaultObjectId);
 
     tmr = CREATE_TIMER;
     myname = "noname";
@@ -76,7 +77,7 @@ MaxCountRemoveOfMessage(10),
 stMaxQueueMessages(0),
 stCountOfQueueFull(0)
 {
-	ui = make_shared<UInterface>(id);
+    ui = make_shared<UInterface>(id);
     tmr = CREATE_TIMER;
     if (myid >=0)
     {
@@ -108,7 +109,7 @@ MaxCountRemoveOfMessage(10),
 stMaxQueueMessages(0),
 stCountOfQueueFull(0)
 {
-	ui = make_shared<UInterface>(UniSetTypes::DefaultObjectId);
+    ui = make_shared<UInterface>(UniSetTypes::DefaultObjectId);
 
     /*! \warning UniverslalInterface не инициализируется идентификатором объекта */
     tmr = CREATE_TIMER;
@@ -153,6 +154,9 @@ UniSetObject::~UniSetObject()
 // ------------------------------------------------------------------------------------------
 void UniSetObject::init_object()
 {
+    a_working = ATOMIC_VAR_INIT(0);
+    active = ATOMIC_VAR_INIT(0);
+
     qmutex.setName(myname + "_qmutex");
     refmutex.setName(myname + "_refmutex");
 //    mutex_act.setName(myname + "_mutex_act");
@@ -160,11 +164,8 @@ void UniSetObject::init_object()
     auto conf = uniset_conf();
 
     SizeOfMessageQueue = conf->getArgPInt("--uniset-object-size-message-queue",conf->getField("SizeOfMessageQueue"), 1000);
-    MaxCountRemoveOfMessage = conf->getArgInt("--uniset-object-maxcount-remove-message",conf->getField("MaxCountRemoveOfMessage"));
-    if( MaxCountRemoveOfMessage <= 0 )
-        MaxCountRemoveOfMessage = SizeOfMessageQueue / 4;
-    if( MaxCountRemoveOfMessage <= 0 )
-        MaxCountRemoveOfMessage = 10;
+    MaxCountRemoveOfMessage = conf->getArgPInt("--uniset-object-maxcount-remove-message",conf->getField("MaxCountRemoveOfMessage"),SizeOfMessageQueue / 4);
+//    workingTerminateTimeout = conf->getArgPInt("--uniset-object-working-terminate-timeout",conf->getField("WorkingTerminateTimeout"),2000);
 
     uinfo << myname << "(init): SizeOfMessageQueue=" << SizeOfMessageQueue
           << " MaxCountRemoveOfMessage=" << MaxCountRemoveOfMessage
@@ -610,6 +611,10 @@ unsigned int UniSetObject::countMessages()
     }
 }
 // ------------------------------------------------------------------------------------------
+void UniSetObject::sigterm( int signo )
+{
+}
+// ------------------------------------------------------------------------------------------
 bool UniSetObject::deactivate()
 {
     if( !isActive() )
@@ -624,13 +629,23 @@ bool UniSetObject::deactivate()
 
     setActive(false); // завершаем поток обработки сообщений
     if( tmr )
-        tmr->stop();
+        tmr->terminate();
+
+    if( thr )
+    {
+        std::unique_lock<std::mutex> lk(m_working);
+//        cv_working.wait_for(lk, std::chrono::milliseconds(workingTerminateTimeout), [&](){ return (a_working == false); } );
+        if( a_working )
+            cv_working.wait(lk);
+        if( a_working )
+            thr->stop();
+    }
 
     // Очищаем очередь
     { // lock
         uniset_rwmutex_wrlock mlk(qmutex);
         while( !queueMsg.empty() )
-            queueMsg.pop(); 
+            queueMsg.pop();
     }
 
     try
@@ -745,6 +760,10 @@ bool UniSetObject::activate()
     if( myid!=UniSetTypes::DefaultObjectId && threadcreate )
     {
         thr = make_shared< ThreadCreator<UniSetObject> >(this, &UniSetObject::work);
+        thr->setCancel(ost::Thread::cancelDeferred);
+         
+        std::unique_lock<std::mutex> locker(m_working);
+        a_working = true;
         thr->start();
     }
     else 
@@ -767,10 +786,22 @@ void UniSetObject::work()
     if( thr )
         msgpid = thr->getTID();
 
-       while( isActive() )
-           callback();
+    {
+        std::unique_lock<std::mutex> locker(m_working);
+        a_working = true;
+    }
+
+    while( isActive() )
+        callback();
 
     uinfo << myname << ": thread processing messages stopped..." << endl;
+
+    {
+        std::unique_lock<std::mutex> locker(m_working);
+        a_working = false;
+    }
+
+    cv_working.notify_all();
 }
 // ------------------------------------------------------------------------------------------
 void UniSetObject::callback()

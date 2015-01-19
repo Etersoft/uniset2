@@ -104,6 +104,8 @@ class OmniThreadCreator:
        inline void stop(){ exit(0); }
        inline pid_t getTID(){ return id(); }
 
+        inline void join(){ omni_thread::join(NULL); }
+
     protected:
         void* run_undetached(void *x)
         {

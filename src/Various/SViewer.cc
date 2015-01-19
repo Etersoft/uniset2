@@ -41,7 +41,7 @@ SViewer::SViewer(const string& csec, bool sn):
     cache(500, 15),
     isShort(sn)
 {
-	ui = make_shared<UInterface>(UniSetTypes::uniset_conf());
+    ui = make_shared<UInterface>(UniSetTypes::uniset_conf());
 }
 
 SViewer::~SViewer()

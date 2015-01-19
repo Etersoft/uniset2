@@ -99,10 +99,10 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
         ucrit &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
 			&lt;&lt; ex.NP_minorString() &lt;&lt; endl;
 	}
-	catch(...)
-	{
-        ucrit &lt;&lt; myname &lt;&lt; "(execute): catch ..." &lt;&lt; endl;
-	}
+    catch( std::exception&amp;ex )
+    {
+        ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+    }
 
 	if( !active )
 		return;

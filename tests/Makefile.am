@@ -11,6 +11,7 @@ tests_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(SIGC_LIBS) $(COMCPP_LIBS) $(C
 tests_CPPFLAGS	= -I$(top_builddir)/include $(SIGC_CFLAGS) $(COMCPP_CFLAGS) $(COV_CFLAGS)
 tests_SOURCES = tests.cc \
 test_passivetimer.cc \
+test_passivecondtimer.cc \
 test_hourglass.cc \
 test_delaytimer.cc \
 test_unixml.cc \

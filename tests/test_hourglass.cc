@@ -81,7 +81,7 @@ TEST_CASE("HourGlass", "[HourGlass]" )
         REQUIRE( hg.amount() >= 60 );
 
         hg.rotate(false); // опять назад..
-        msleep(80);  // по сути сигнал сбросился..(т.к. оставалось 70.. а прошло 80)
+        msleep(90);  // по сути сигнал сбросился..(т.к. оставалось 70.. а прошло 90)
         CHECK_FALSE( hg.check() );
         REQUIRE( hg.amount() == 0 );
         REQUIRE( hg.remain() == 100 );

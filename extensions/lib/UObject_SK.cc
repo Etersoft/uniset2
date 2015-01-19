@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2015-01-17+03:00
+// generate timestamp: 2015-01-19+03:00
 // -----------------------------------------------------------------------------
 #include "Configuration.h"
 #include "Exceptions.h"
@@ -342,10 +342,11 @@ void UObject_SK::waitSM( int wait_msec, ObjectId _testID )
 			<< wait_msec << " мсек";
 
         ucrit << err.str() << endl;
+//		terminate();
+//		abort();
+		raise(SIGTERM);
 		terminate();
-		abort();
-		// kill(SIGTERM,getpid());	// прерываем (перезапускаем) процесс...
-		throw SystemError(err.str());
+//		throw SystemError(err.str());
 	}
 
 
@@ -402,10 +403,10 @@ void UObject_SK::callback()
         ucrit << myname << "(execute): СORBA::SystemException: "
                 << ex.NP_minorString() << endl;
 	}
-	catch(...)
-	{
-        ucrit << myname << "(execute): catch ..." << endl;
-	}
+    catch( std::exception&ex )
+    {
+        ucrit << myname << "(execute): catch " << ex.what()  <<   endl;
+    }
 
 	if( !active )
 		return;
@@ -483,10 +484,11 @@ void UObject_SK::preAskSensors( UniversalIO::UIOCommand _cmd )
 		{
             ucrit << myname << "(preAskSensors): " << ex << endl;
 		}
-		catch(...)
-		{
-            ucrit << myname << "(preAskSensors): catch(...)" << endl;
-		}
+	    catch( std::exception&ex )
+    	{
+        	ucrit << myname << "(execute): catch " << ex.what()  <<   endl;
+	    }
+
 		msleep(askPause);
 	}
 }

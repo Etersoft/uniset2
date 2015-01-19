@@ -27,6 +27,10 @@
 #include <signal.h>
 #include <sys/time.h>
 #include <cc++/socket.h>
+#include <condition_variable>
+#include <thread>
+#include <mutex>
+#include <atomic>
 #include "Mutex.h"
 //----------------------------------------------------------------------------------------
 /*! \class UniSetTimer
@@ -111,53 +115,48 @@ private:
 };
 
 //----------------------------------------------------------------------------------------
-class omni_mutex;
-class omni_condition;
-
-/*! \class ThrPassiveTimer
+/*! \class PassiveCondTimer
  * \brief Пассивный таймер с режимом засыпания (ожидания)
  * \author Pavel Vainerman
  * \par
  * Позволяет заснуть на заданное время wait(timeout_t timeMS).
- * Механизм работает на основе взаимных блокировок потоков (mutex и condition). 
+ * Механизм работает на основе std::condition_variable
  * \note Если таймер запущен в режиме ожидания (WaitUpTime), то он может быть выведен из него
- * при помощи terminate().
+ * ТОЛЬКО при помощи terminate().
 */ 
-class ThrPassiveTimer:
+class PassiveCondTimer:
         public PassiveTimer
 { 
     public:
 
-        ThrPassiveTimer();
-        ~ThrPassiveTimer();
+        PassiveCondTimer();
+        ~PassiveCondTimer();
 
         virtual bool wait(timeout_t timeMS);    /*!< блокировать вызывающий поток на заданное время */
         virtual void terminate();        /*!< прервать работу таймера */
+
     protected:
-          bool isTerminated();
-          void setTerminated( bool set );
 
     private:
-        bool terminated;
-        omni_mutex* tmutex;
-        omni_condition* tcondx;
-        UniSetTypes::uniset_mutex term_mutex;
+        std::atomic_bool terminated;
+        std::mutex    m_working;
+        std::condition_variable cv_working;
 };
 //----------------------------------------------------------------------------------------
 
-/*! \class PassiveSysTimer
+/*! \class PassiveSigTimer
  * \brief Пассивный таймер с режимом засыпания (ожидания)
  * \author Pavel Vainerman
  * \par
  * Создан на основе сигнала (SIGALRM).
 */ 
-class PassiveSysTimer:
+class PassiveSigTimer:
         public PassiveTimer
 { 
     public:
 
-        PassiveSysTimer();
-        ~PassiveSysTimer();
+        PassiveSigTimer();
+        ~PassiveSigTimer();
 
         virtual bool wait(timeout_t timeMS); //throw(UniSetTypes::NotSetSignal);
         virtual void terminate();
