@@ -28,8 +28,6 @@ int main( int argc, char** argv )
         if( logfilename.empty() )
             logfilename = "rtuexchange.log";
 
-        conf->initDebug(dlog(),"dlog");
-
         std::ostringstream logname;
         string dir(conf->getLogDir());
         logname << dir << logfilename;

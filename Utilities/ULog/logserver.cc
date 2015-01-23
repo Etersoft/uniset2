@@ -81,22 +81,22 @@ int main( int argc, char **argv )
 //            dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
         }
 
+        LogAgregator la;
+
 
         auto dlog = make_shared<DebugStream>();
         dlog->setLogName("dlog");
-        auto dlog2 = make_shared<DebugStream>();
-        dlog2->setLogName("dlog2");
-
-        LogAgregator la;
         la.add(dlog);
-        la.add(dlog2);
+
+        auto dlog2 = la.create("dlog2");
 
         LogServer ls(la);
 //        LogServer ls(cout);
         dlog->addLevel(Debug::ANY);
         dlog2->addLevel(Debug::ANY);
-        
+
         ls.run( addr, port, true );
+#if 0        
         
         unsigned int i=0;
         while( true )
@@ -112,6 +112,7 @@ int main( int argc, char **argv )
             
             msleep(delay);
         }
+#endif        
     }
     catch( SystemError& err )
     {

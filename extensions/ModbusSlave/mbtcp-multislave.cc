@@ -40,8 +40,6 @@ int main(int argc, const char **argv)
         ulog()->logFile( logname.str() );
         dlog()->logFile( logname.str() );
 
-        conf->initDebug(dlog(),"dlog");
-
         ObjectId shmID = DefaultObjectId;
         string sID = conf->getArgParam("--smemory-id");
         if( !sID.empty() )

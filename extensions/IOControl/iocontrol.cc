@@ -24,7 +24,6 @@ int main(int argc, const char **argv)
     {
         auto conf = uniset_init(argc, argv);
 
-        conf->initDebug(dlog(),"dlog");
         string logfilename = conf->getArgParam("--io-logfile","iocontrol.log");
         string logname( conf->getLogDir() + logfilename );
         dlog()->logFile( logname );

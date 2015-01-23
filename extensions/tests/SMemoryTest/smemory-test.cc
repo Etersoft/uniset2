@@ -23,11 +23,10 @@ int main(int argc, const char **argv)
         string confile = UniSetTypes::getArgParam( "--confile", argc, argv, "configure.xml" );
         conf = new Configuration(argc, argv, confile);
 
-        conf->initDebug(dlog,"dlog");
         string logfilename = conf->getArgParam("--logfile", "smemory.log");
         string logname( conf->getLogDir() + logfilename );
-        ulog.logFile( logname );
-        dlog.logFile( logname );
+        ulog()->logFile( logname );
+        dlog()->logFile( logname );
 
         auto shm = SharedMemory::init_smemory(argc, argv);
         if( !shm )

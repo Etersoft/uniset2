@@ -75,7 +75,7 @@ ostream& UniSetTypes::Configuration::help(ostream& os)
 namespace UniSetTypes
 {
     static shared_ptr<Configuration> uconf;
-    static std::shared_ptr<DebugStream> _ulog;
+    static std::shared_ptr<DebugStream> _ulog = nullptr;
 
     std::shared_ptr<DebugStream> ulog()
     {
@@ -83,6 +83,7 @@ namespace UniSetTypes
             return _ulog;
 
         _ulog = make_shared<DebugStream>();
+        _ulog->setLogName("ulog");
         return _ulog;
     }
 
@@ -1055,8 +1056,6 @@ std::shared_ptr<Configuration> uniset_init( int argc, const char* const* argv, c
 
     atexit( UniSetActivator::normalexit );
     set_terminate( UniSetActivator::normalterminate ); // ловушка для неизвестных исключений
-
-    ulog()->setLogName("ulog");
 
     string confile = UniSetTypes::getArgParam( "--confile", argc, argv, xmlfile );
     UniSetTypes::uconf = make_shared<Configuration>(argc, argv, confile);

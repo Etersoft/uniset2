@@ -34,7 +34,6 @@ int main( int argc, const char** argv )
         logname << dir << logfilename;
         ulog()->logFile( logname.str() );
         UniSetExtensions::dlog()->logFile( logname.str() );
-        conf->initDebug(UniSetExtensions::dlog(),"dlog");
 
         ObjectId shmID = DefaultObjectId;
         string sID = conf->getArgParam("--smemory-id");

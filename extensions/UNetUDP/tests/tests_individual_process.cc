@@ -32,7 +32,6 @@ int main(int argc, char* argv[] )
     try
     {
         uniset_init(argc,argv);
-        conf->initDebug(dlog,"dlog");
 
         UNetExchange* unet = UNetExchange::init_unetexchange(argc,argv,getSharedMemoryID());
         if( !unet )

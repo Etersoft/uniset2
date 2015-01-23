@@ -21,7 +21,6 @@ int main(int argc, const char **argv)
     {
         auto conf = uniset_init(argc, argv);
 
-        conf->initDebug(dlog(),"dlog");
         string logfilename = conf->getArgParam("--logfile", "smemory.log");
         string logname( conf->getLogDir() + logfilename );
         ulog()->logFile( logname );

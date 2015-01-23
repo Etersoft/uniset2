@@ -30,7 +30,7 @@ static shared_ptr<MBTCPTestServer> mbs1;
 static shared_ptr<MBTCPTestServer> mbs2;
 static shared_ptr<UInterface> ui;
 static ObjectId mbID = 6005; // MBTCPMultiMaster1
-static int polltime=50; // conf->getArgInt("--mbtcp-polltime");
+static int polltime=100; // conf->getArgInt("--mbtcp-polltime");
 static ObjectId slaveNotRespond = 10; // Slave_Not_Respond_S
 static ObjectId slave1NotRespond = 12; // Slave1_Not_Respond_S
 static ObjectId slave2NotRespond = 13; // Slave2_Not_Respond_S

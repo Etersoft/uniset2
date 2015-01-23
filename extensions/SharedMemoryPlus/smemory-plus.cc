@@ -74,7 +74,7 @@ int main( int argc, const char **argv )
         string logname( conf->getLogDir() + logfilename );
         UniSetExtensions::dlog()->logFile( logname );
         ulog()->logFile( logname );
-        conf->initDebug(UniSetExtensions::dlog(),"dlog");
+        dlog()->logFile( logname );
 
         auto act = UniSetActivator::Instance();
         act->signal_terminate_event().connect( &activator_terminate );

@@ -15,7 +15,13 @@ namespace UniSetExtensions
     {
         if( _dlog )
             return _dlog;
+
         _dlog = make_shared<DebugStream>();
+
+        auto conf = uniset_conf();
+        if( conf )
+            conf->initDebug(_dlog,"dlog");
+
         return _dlog;
     }
     // -------------------------------------------------------------------------

@@ -17,7 +17,7 @@ static ModbusRTU::ModbusAddr slaveADDR = 0x01;
 static shared_ptr<MBTCPTestServer> mbs;
 static shared_ptr<UInterface> ui;
 static ObjectId mbID = 6004; // MBTCPMaster1
-static int polltime=50; // conf->getArgInt("--mbtcp-polltime");
+static int polltime=100; // conf->getArgInt("--mbtcp-polltime");
 static ObjectId slaveNotRespond = 10; // Slave_Not_Respond_S
 static const ObjectId exchangeMode = 11; // MBTCPMaster_Mode_AS
 // -----------------------------------------------------------------------------

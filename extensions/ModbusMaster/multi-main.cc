@@ -29,8 +29,6 @@ int main( int argc, const char** argv )
         if( logfilename.empty() )
             logfilename = "mbtcpmultimaster.log";
 
-        conf->initDebug(dlog(),"dlog");
-
         std::ostringstream logname;
         string dir(conf->getLogDir());
         logname << dir << logfilename;

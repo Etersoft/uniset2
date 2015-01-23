@@ -32,7 +32,6 @@ int main(int argc, char* argv[] )
     try
     {
         auto conf = uniset_init(argc,argv);
-        conf->initDebug(dlog(),"dlog");
 
         bool apart = findArgParam("--apart",argc,argv) != -1;
 
