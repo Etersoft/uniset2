@@ -36,7 +36,7 @@ int main( int argc, char **argv )
     int verb = 0;
     string addr("localhost");
     int port = 3333;
-    int tout = 2000;
+    //int tout = 2000;
     timeout_t delay = 5000;
 
     try
@@ -82,10 +82,10 @@ int main( int argc, char **argv )
         }
 
 
-        DebugStream dlog;
-        dlog.setLogName("dlog");
-        DebugStream dlog2;
-        dlog2.setLogName("dlog2");
+        auto dlog = make_shared<DebugStream>();
+        dlog->setLogName("dlog");
+        auto dlog2 = make_shared<DebugStream>();
+        dlog2->setLogName("dlog2");
 
         LogAgregator la;
         la.add(dlog);
@@ -93,22 +93,22 @@ int main( int argc, char **argv )
 
         LogServer ls(la);
 //        LogServer ls(cout);
-        dlog.addLevel(Debug::ANY);
-        dlog2.addLevel(Debug::ANY);
+        dlog->addLevel(Debug::ANY);
+        dlog2->addLevel(Debug::ANY);
         
         ls.run( addr, port, true );
         
         unsigned int i=0;
         while( true )
         {
-            dlog << "[" << ++i << "] Test message for log" << endl;
-            dlog.info() << ": dlog : INFO message" << endl;
-            dlog.warn() << ": dlog : WARN message" << endl;
-            dlog.crit() << ": dlog : CRIT message" << endl;
+            dlog->any() << "[" << ++i << "] Test message for log" << endl;
+            dlog->info() << ": dlog : INFO message" << endl;
+            dlog->warn() << ": dlog : WARN message" << endl;
+            dlog->crit() << ": dlog : CRIT message" << endl;
 
-            dlog2.info() << ": dlog2: INFO message" << endl;
-            dlog2.warn() << ": dlog2: WARN message" << endl;
-            dlog2.crit() << ": dlog2: CRIT message" << endl;
+            dlog2->info() << ": dlog2: INFO message" << endl;
+            dlog2->warn() << ": dlog2: WARN message" << endl;
+            dlog2->crit() << ": dlog2: CRIT message" << endl;
             
             msleep(delay);
         }

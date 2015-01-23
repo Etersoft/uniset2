@@ -23,7 +23,7 @@ LogServer::~LogServer()
         for( auto& i: slist )
         {
             if( i->isRunning() )
-                delete i;
+                i.reset();
         }
     }
 
@@ -38,12 +38,12 @@ outTimeout(2000),
 cancelled(false),
 thr(0),
 tcp(0),
-elog(0),
+elog(nullptr),
 oslog(&os)
 {
 }
 // -------------------------------------------------------------------------
-LogServer::LogServer( DebugStream& log ):
+LogServer::LogServer( std::shared_ptr<DebugStream>& log ):
 timeout(TIMEOUT_INF),
 sessTimeout(3600000),
 cmdTimeout(2000),
@@ -51,7 +51,7 @@ outTimeout(2000),
 cancelled(false),
 thr(0),
 tcp(0),
-elog(&log),
+elog(log),
 oslog(0)
 {
 }
@@ -64,7 +64,7 @@ outTimeout(2000),
 cancelled(false),
 thr(0),
 tcp(0),
-elog(0)
+elog(nullptr)
 {
 }
 // -------------------------------------------------------------------------
@@ -110,7 +110,7 @@ void LogServer::work()
         {
             while( !cancelled && tcp->isPendingConnection(timeout) )
             {
-                LogSession* s = new LogSession(*tcp, elog, sessTimeout, cmdTimeout, outTimeout);
+                auto s = make_shared<LogSession>(*tcp, elog, sessTimeout, cmdTimeout, outTimeout);
                 {
                     uniset_rwmutex_wrlock l(mutSList);
                     slist.push_back(s);
@@ -144,12 +144,12 @@ void LogServer::work()
     }
 }
 // -------------------------------------------------------------------------
-void LogServer::sessionFinished( LogSession* s )
+void LogServer::sessionFinished( std::shared_ptr<LogSession> s )
 {
     uniset_rwmutex_wrlock l(mutSList);
     for( SessionList::iterator i=slist.begin(); i!=slist.end(); ++i )
     {
-        if( (*i) == s )
+        if( i->get() == s.get() )
         {
             slist.erase(i);
             return;

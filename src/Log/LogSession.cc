@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 #include <string>
 #include <sstream>
 #include <fcntl.h>
@@ -23,7 +24,7 @@ LogSession::~LogSession()
     }
 }
 // -------------------------------------------------------------------------
-LogSession::LogSession( ost::TCPSocket &server, DebugStream* _log, timeout_t _sessTimeout, timeout_t _cmdTimeout, timeout_t _outTimeout, timeout_t _delay ):
+LogSession::LogSession( ost::TCPSocket &server, std::shared_ptr<DebugStream>& _log, timeout_t _sessTimeout, timeout_t _cmdTimeout, timeout_t _outTimeout, timeout_t _delay ):
 TCPSession(server),
 peername(""),
 caddr(""),
@@ -85,12 +86,12 @@ void LogSession::run()
                 slog.info() << peername << "(run): receive command: '" << msg.cmd << "'" << endl;
 
                 string cmdLogName(msg.logname);
-                DebugStream* cmdlog = log;
+                auto cmdlog = log;
                 string logfile(log->getLogFile());
 
                 if( !cmdLogName.empty () )
                 {
-                    LogAgregator* lag = dynamic_cast<LogAgregator*>(log);
+                    auto lag = dynamic_pointer_cast<LogAgregator>(log);
                     if( lag )
                     {
                         LogAgregator::LogInfo inf = lag->getLogInfo(cmdLogName);
@@ -222,7 +223,7 @@ void LogSession::run()
 void LogSession::final()
 {
     tcp()->sync();
-    slFin(this);
+    slFin( shared_from_this() );
     delete this;
 }
 // -------------------------------------------------------------------------

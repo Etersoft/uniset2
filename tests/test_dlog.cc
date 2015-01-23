@@ -41,28 +41,27 @@ int main( int argc, const char **argv )
     cout << ss.str();
     cout << "==================" << endl;
 
-    DebugStream log1;
-    log1.setLogName("log1");
-    DebugStream log2;
-    log2.setLogName("log2");
+    auto log1 = make_shared<DebugStream>();
+    log1->setLogName("log1");
+    auto log2 = make_shared<DebugStream>();
+    log2->setLogName("log2");
     
     LogAgregator la;
     la.signal_stream_event().connect(&check_alog_signal);
     la.add(log1);
     la.add(log2);
     
-    log1 << "log1: test message..." << endl;
-    log2 << "log2: test message..." << endl;
+    log1->any() << "log1: test message..." << endl;
+    log2->any() << "log2: test message..." << endl;
     la << "la: test message.." << endl;
 
     cout << "===== Test 2 =====" << endl;
     cout << ss1.str();
     cout << "==================" << endl;
     
-    DebugStream* l = la.getLog("log1");
+    auto l = la.getLog("log1");
     if( l != &log1 )
         cout << "**** TEST FAILED:  LogAgregator::getLog() " << endl;
-
 
 
     cout << "===== Test 3 =====" << endl;
@@ -70,8 +69,7 @@ int main( int argc, const char **argv )
     tlog.logFile("tlog.log");
     tlog << "TEST TEXT" << endl;
     tlog.logFile("tlog.log",true);
-    
-   
+  
 
     return 0;
 }

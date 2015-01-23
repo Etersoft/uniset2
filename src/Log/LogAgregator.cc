@@ -1,3 +1,4 @@
+#include <memory>
 #include "DebugExtBuf.h"
 #include "LogAgregator.h"
 // -------------------------------------------------------------------------
@@ -31,66 +32,68 @@ void LogAgregator::logOnEvent( const std::string& s )
     (*this) << s;
 }
 // -------------------------------------------------------------------------
-void LogAgregator::add( DebugStream& l )
+std::shared_ptr<DebugStream> LogAgregator::create( const std::string& logname )
 {
-    l.signal_stream_event().connect( sigc::mem_fun(this, &LogAgregator::logOnEvent) );
-    for( LogList::iterator i=llst.begin(); i!=llst.end(); i++ )
-    {
-         if( &l == i->log )
-             return;
-    }
+    auto t = getLog(logname);
+    if( t )
+        return t;
 
-    llst.push_back(&l);
+    auto l = std::make_shared<DebugStream>();
+    l->setLogName(logname);
+    l->signal_stream_event().connect( sigc::mem_fun(this, &LogAgregator::logOnEvent) );
+    lmap[logname] = l;
+    return l;
+}
+// -------------------------------------------------------------------------
+void LogAgregator::add( DebugStream& log )
+{
+    // очень не красиво создавать shared-указатель по объекту
+    // вместо maske_shared..
+    auto l = std::shared_ptr<DebugStream>(&log);
+    add(l);
+}
+// -------------------------------------------------------------------------
+void LogAgregator::add( std::shared_ptr<DebugStream>& l )
+{
+    auto i = lmap.find(l->getLogName());
+    if( i != lmap.end() )
+        return;
+
+    l->signal_stream_event().connect( sigc::mem_fun(this, &LogAgregator::logOnEvent) );
+    lmap[l->getLogName()] = l;
 }
 // -------------------------------------------------------------------------
 void LogAgregator::addLevel( const std::string& logname, Debug::type t )
 {
-    for( auto& i: llst )
-    {
-        if( i.log->getLogName() == logname )
-        {
-            i.log->addLevel(t);
-            break;
-        }
-    }
+    auto i = lmap.find(logname);
+    if( i != lmap.end() )
+        i->second.log->addLevel(t);
 }
 // -------------------------------------------------------------------------
 void LogAgregator::delLevel( const std::string& logname, Debug::type t )
 {
-    for( auto& i: llst )
-    {
-        if( i.log->getLogName() == logname )
-        {
-            i.log->delLevel(t);
-            break;
-        }
-    }
+    auto i = lmap.find(logname);
+    if( i != lmap.end() )
+        i->second.log->delLevel(t);
 }
 // -------------------------------------------------------------------------
 void LogAgregator::level( const std::string& logname, Debug::type t )
 {
-    for( auto& i: llst )
-    {
-        if( i.log->getLogName() == logname )
-        {
-            i.log->level(t);
-            break;
-        }
-    }
+    auto i = lmap.find(logname);
+    if( i != lmap.end() )
+        i->second.log->level(t);
 }
 // -------------------------------------------------------------------------
-DebugStream* LogAgregator::getLog( const std::string& logname )
+std::shared_ptr<DebugStream> LogAgregator::getLog( const std::string& logname )
 {
     if( logname.empty() )
-        return 0;
+        return nullptr;
 
-    for( auto& i: llst )
-    {
-        if( i.log->getLogName() == logname )
-            return i.log;
-    }
+    auto i = lmap.find(logname);
+    if( i != lmap.end() )
+        return i->second.log;
 
-    return 0;
+    return nullptr;
 }
 // -------------------------------------------------------------------------
 LogAgregator::LogInfo LogAgregator::getLogInfo( const std::string& logname )
@@ -98,11 +101,9 @@ LogAgregator::LogInfo LogAgregator::getLogInfo( const std::string& logname )
     if( logname.empty() )
         return LogInfo();
 
-    for( auto& i: llst )
-    {
-        if( i.log->getLogName() == logname )
-            return i;
-    }
+    auto i = lmap.find(logname);
+    if( i != lmap.end() )
+        return i->second;
 
     return LogInfo();
 }

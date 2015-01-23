@@ -3,6 +3,7 @@
 #define LogSession_H_
 // -------------------------------------------------------------------------
 #include <string>
+#include <memory>
 #include <deque>
 #include <cc++/socket.h>
 #include "Mutex.h"
@@ -11,14 +12,15 @@
 // -------------------------------------------------------------------------
 /*! Реализация "сессии" для клиентов LogServer. */
 class LogSession:
+    public std::enable_shared_from_this<LogSession>,
     public ost::TCPSession
 {
     public:
 
-        LogSession( ost::TCPSocket& server, DebugStream* log, timeout_t sessTimeout=10000, timeout_t cmdTimeout=2000, timeout_t outTimeout=2000, timeout_t delay=2000 );
+        LogSession( ost::TCPSocket& server, std::shared_ptr<DebugStream>& log, timeout_t sessTimeout=10000, timeout_t cmdTimeout=2000, timeout_t outTimeout=2000, timeout_t delay=2000 );
         virtual ~LogSession();
 
-        typedef sigc::slot<void, LogSession*> FinalSlot;
+        typedef sigc::slot<void, std::shared_ptr<LogSession>> FinalSlot;
         void connectFinalSession( FinalSlot sl );
 
         inline std::string getClientAddress(){ return caddr; }
@@ -34,7 +36,7 @@ class LogSession:
         LogBuffer lbuf;
         std::string peername;
         std::string caddr;
-        DebugStream* log;
+        std::shared_ptr<DebugStream> log;
 
         timeout_t sessTimeout;
         timeout_t cmdTimeout;

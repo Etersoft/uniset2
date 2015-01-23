@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------
 #include <list>
 #include <string>
+#include <memory>
 #include <cc++/socket.h>
 #include "Mutex.h"
 #include "DebugStream.h"
@@ -27,11 +28,11 @@ LogReader. Читающих клиентов может быть скольуг�
 
 При этом если необходимо управлять или читать сразу несколько логов можно воспользоваться специальным классом LogAgregator.
 \code
-    DebugStream log1;
-    log1.setLogName("log1");
+    auto log1 = make_shared<DebugStream>();
+    log1->setLogName("log1");
 
-    DebugStream log2;
-    log2.setLogName("log2");
+    auto log2 = make_shared<DebugStream>();
+    log2->setLogName("log2");
 
     LogAgregator la;
     la.add(log1);
@@ -48,7 +49,7 @@ class LogServer
 {
     public:
 
-        LogServer( DebugStream& log );
+        LogServer( std::shared_ptr<DebugStream>& log );
         LogServer( std::ostream& os );
         ~LogServer();
 
@@ -62,10 +63,10 @@ class LogServer
          LogServer();
 
          void work();
-         void sessionFinished( LogSession* s );
+         void sessionFinished( std::shared_ptr<LogSession> s );
 
     private:
-        typedef std::list<LogSession*> SessionList;
+        typedef std::list< std::shared_ptr<LogSession> > SessionList;
         SessionList slist;
         UniSetTypes::uniset_rwmutex mutSList;
 
@@ -79,7 +80,7 @@ class LogServer
         ThreadCreator<LogServer>* thr;
 
         ost::TCPSocket* tcp;
-        DebugStream* elog;
+        std::shared_ptr<DebugStream> elog;
         std::ostream* oslog;
 };
 // -------------------------------------------------------------------------

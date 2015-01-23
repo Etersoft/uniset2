@@ -12,7 +12,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt11
+Release: alt12
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -406,6 +406,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
 
 %changelog
+* Fri Jan 23 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt12
+- refactoring LogAgregator,LogServer,LogSesson --> use shared_ptr
+
 * Sat Jan 17 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt11
 - refactoring "exit process"
 - fixed bug in specfile: --enable-doc --> --enable-docs

@@ -2,7 +2,8 @@
 #define LogAgregator_H_
 // -------------------------------------------------------------------------
 #include <string>
-#include <list>
+#include <memory>
+#include <map>
 #include "DebugStream.h"
 #include "LogServerTypes.h"
 // -------------------------------------------------------------------------
@@ -18,7 +19,13 @@ class LogAgregator:
 
         virtual void logFile( const std::string& f );
 
+        // функция не рекомендуется к использованию и сделана для
+        // совместимости со старым кодом или для глобальных DebugStream
+        // Рекомендуется, всё-таки использовать add( std::shared_ptr<DebugStream>.. );
         void add( DebugStream& log );
+
+        void add( std::shared_ptr<DebugStream>& log );
+        std::shared_ptr<DebugStream> create( const std::string& logname );
 
         // Управление "подчинёнными" логами
         void addLevel( const std::string& logname, Debug::type t );
@@ -29,12 +36,12 @@ class LogAgregator:
         struct LogInfo
         {
             LogInfo():log(0),logfile(""){}
-            LogInfo( DebugStream* l ):log(l),logfile(l->getLogFile()){}
-            DebugStream* log;
+            LogInfo( std::shared_ptr<DebugStream>& l ):log(l),logfile(l->getLogFile()){}
+            std::shared_ptr<DebugStream> log;
             std::string logfile;
         };
 
-        DebugStream* getLog( const std::string& logname );
+        std::shared_ptr<DebugStream> getLog( const std::string& logname );
         LogInfo getLogInfo( const std::string& logname );
 
     protected:
@@ -42,8 +49,8 @@ class LogAgregator:
 
 
     private:
-        typedef std::list<LogInfo> LogList;
-        LogList llst;
+        typedef std::map<std::string, LogInfo> LogMap;
+        LogMap lmap;
 };
 // -------------------------------------------------------------------------
 #endif // LogAgregator_H_
