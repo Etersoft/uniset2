@@ -30,13 +30,13 @@ int main( int argc, const char** argv )
         if( logfilename.empty() )
             logfilename = "mbtcpmaster.log";
 
-        conf->initDebug(dlog,"dlog");
+        conf->initDebug(dlog(),"dlog");
 
         std::ostringstream logname;
         string dir(conf->getLogDir());
         logname << dir << logfilename;
-        ulog.logFile( logname.str() );
-        dlog.logFile( logname.str() );
+        ulog()->logFile( logname.str() );
+        dlog()->logFile( logname.str() );
 
         ObjectId shmID = DefaultObjectId;
         string sID = conf->getArgParam("--smemory-id");
@@ -64,12 +64,11 @@ int main( int argc, const char** argv )
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
 
-        ulog << "\n\n\n";
-        ulog << "(main): -------------- MBTCP Exchange START -------------------------\n\n";
-        dlog << "\n\n\n";
-        dlog << "(main): -------------- MBTCP Exchange START -------------------------\n\n";
+        ulogany << "\n\n\n";
+        ulogany << "(main): -------------- MBTCP Exchange START -------------------------\n\n";
+        dlogany << "\n\n\n";
+        dlogany << "(main): -------------- MBTCP Exchange START -------------------------\n\n";
         act->run(false);
-        on_sigchild(SIGTERM);
         return 0;
     }
     catch( Exception& ex )
@@ -84,6 +83,5 @@ int main( int argc, const char** argv )
         dcrit << "(mbtcpmaster): catch ..." << std::endl;
     }
 
-    on_sigchild(SIGTERM);
     return 1;
 }

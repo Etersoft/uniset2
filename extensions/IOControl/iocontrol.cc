@@ -24,11 +24,11 @@ int main(int argc, const char **argv)
     {
         auto conf = uniset_init(argc, argv);
 
-        conf->initDebug(dlog,"dlog");
+        conf->initDebug(dlog(),"dlog");
         string logfilename = conf->getArgParam("--io-logfile","iocontrol.log");
         string logname( conf->getLogDir() + logfilename );
-        dlog.logFile( logname );
-        ulog.logFile( logname );
+        dlog()->logFile( logname );
+        ulog()->logFile( logname );
 
         ObjectId shmID = DefaultObjectId;
         string sID = conf->getArgParam("--smemory-id");
@@ -58,10 +58,10 @@ int main(int argc, const char **argv)
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
 
-        ulog << "\n\n\n";
-        ulog << "(main): -------------- IOControl START -------------------------\n\n";
-        dlog << "\n\n\n";
-        dlog << "(main): -------------- IOControl START -------------------------\n\n";
+        ulogany << "\n\n\n";
+        ulogany << "(main): -------------- IOControl START -------------------------\n\n";
+        dlogany << "\n\n\n";
+        dlogany << "(main): -------------- IOControl START -------------------------\n\n";
         act->run(true);
         msleep(500);
         ic->execute();

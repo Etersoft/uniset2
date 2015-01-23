@@ -92,7 +92,7 @@ prefix(prefix)
         rs->setRecvTimeout(2000);
         rs->setAfterSendPause(aftersend_pause);
         rs->setReplyTimeout(reply_tout);
-        rs->setLog(dlog);
+        rs->setLog(dlog());
 
         mbslot = std::static_pointer_cast<ModbusServerSlot>(rs);
         thr = make_shared< ThreadCreator<MBSlave> >(this,&MBSlave::execute_rtu);
@@ -122,8 +122,8 @@ prefix(prefix)
         thr->setFinalAction(this,&MBSlave::finalThread);
         dinfo << myname << "(init): init TCP connection ok. " << " inet=" << iaddr << " port=" << port << endl;
 
-        if( dlog.debugging(Debug::LEVEL9) )
-            mbtcp->setLog(dlog);
+        if( dlog()->is_level9() )
+            mbtcp->setLog(dlog());
     }
     else
         throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown slave type. Use: --mbs-type [RTU|TCP]");
@@ -626,20 +626,20 @@ void MBSlave::sysCommand( const UniSetTypes::SystemMessage *sm )
         case SystemMessage::LogRotate:
         {
             // переоткрываем логи
-            ulog << myname << "(sysCommand): logRotate" << std::endl;
-            string fname(ulog.getLogFile());
+            ulogany << myname << "(sysCommand): logRotate" << std::endl;
+            string fname(ulog()->getLogFile());
             if( !fname.empty() )
             {
-                ulog.logFile(fname,true);
-                ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << std::endl;
+                ulog()->logFile(fname,true);
+                ulogany << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << std::endl;
             }
 
-            dlog << myname << "(sysCommand): logRotate" << std::endl;
-            fname = dlog.getLogFile();
+            dlogany << myname << "(sysCommand): logRotate" << std::endl;
+            fname = dlog()->getLogFile();
             if( !fname.empty() )
             {
-                dlog.logFile(fname,true);
-                dlog << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
+                dlog()->logFile(fname,true);
+                dlogany << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
             }
         }
         break;
@@ -816,7 +816,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
     
     string prop_prefix(prefix+"_");
 
-    if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,prop_prefix,false,&dlog,myname) )
+    if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,prop_prefix,false,dlog(),myname) )
         return false;
 
     if( mbregFromID )
@@ -1512,7 +1512,7 @@ mbErrCode MBSlave::readInputRegisters( ReadInputMessage& query, ReadInputRetMess
 ModbusRTU::mbErrCode MBSlave::setDateTime( ModbusRTU::SetDateTimeMessage& query, 
                                     ModbusRTU::SetDateTimeRetMessage& reply )
 {
-    return ModbusServer::replySetDateTime(query,reply,&dlog);
+    return ModbusServer::replySetDateTime(query,reply,dlog());
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::remoteService( ModbusRTU::RemoteServiceMessage& query, 
@@ -1532,7 +1532,7 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
         return ModbusRTU::erBadDataValue;
 
     std::string fname(it->second);
-    return ModbusServer::replyFileTransfer( fname,query,reply,&dlog );
+    return ModbusServer::replyFileTransfer( fname,query,reply,dlog() );
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,

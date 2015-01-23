@@ -12,7 +12,7 @@ using namespace UniSetTypes;
 using namespace UniSetExtensions;
 // -----------------------------------------------------------------------------
 RRDServer::RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmId, const std::shared_ptr<SharedMemory> ic,
-            const string& prefix, DebugStream& log ):
+            const string& prefix, std::shared_ptr<DebugStream> log ):
 UObject_SK(objId,cnode),
 prefix(prefix)
 {
@@ -25,7 +25,7 @@ prefix(prefix)
     {
         ostringstream err;
         err << myname << "(init): empty rrd list...";
-        mylog << err.str() << endl;
+        mycrit << err.str() << endl;
         throw NameNotFound(err.str());
     }
 

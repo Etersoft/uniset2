@@ -19,12 +19,7 @@ class LogAgregator:
 
         virtual void logFile( const std::string& f );
 
-        // функция не рекомендуется к использованию и сделана для
-        // совместимости со старым кодом или для глобальных DebugStream
-        // Рекомендуется, всё-таки использовать add( std::shared_ptr<DebugStream>.. );
-        void add( DebugStream& log );
-
-        void add( std::shared_ptr<DebugStream>& log );
+        void add( std::shared_ptr<DebugStream> log );
         std::shared_ptr<DebugStream> create( const std::string& logname );
 
         // Управление "подчинёнными" логами

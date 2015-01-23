@@ -69,7 +69,7 @@ MBSlave::~MBSlave()
     delete rscomm;
 }
 // -------------------------------------------------------------------------
-void MBSlave::setLog( DebugStream& dlog )
+void MBSlave::setLog( std::shared_ptr<DebugStream> dlog )
 {
     if( rscomm )
         rscomm->setLog(dlog);

@@ -37,10 +37,10 @@ int main(int argc, const char **argv)
         std::ostringstream logname;
         string dir(conf->getLogDir());
         logname << dir << logfilename;
-        ulog.logFile( logname.str() );
-        dlog.logFile( logname.str() );
+        ulog()->logFile( logname.str() );
+        dlog()->logFile( logname.str() );
 
-        conf->initDebug(dlog,"dlog");
+        conf->initDebug(dlog(),"dlog");
 
         ObjectId shmID = DefaultObjectId;
         string sID = conf->getArgParam("--smemory-id");
@@ -67,13 +67,13 @@ int main(int argc, const char **argv)
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
 
-        ulog << "\n\n\n";
-        ulog << "(main): -------------- MBSlave START -------------------------\n\n";
-        dlog << "\n\n\n";
-        dlog << "(main): -------------- MBSlave START -------------------------\n\n";
+        ulogany << "\n\n\n";
+        ulogany << "(main): -------------- MBSlave START -------------------------\n\n";
+        dlogany << "\n\n\n";
+        dlogany << "(main): -------------- MBSlave START -------------------------\n\n";
 
         act->run(false);
-        on_sigchild(SIGTERM);
+//        on_sigchild(SIGTERM);
         return 0;
     }
     catch( SystemError& err )
@@ -93,7 +93,7 @@ int main(int argc, const char **argv)
         dcrit << "(mbslave): catch(...)" << endl;
     }
 
-    on_sigchild(SIGTERM);
+  //  on_sigchild(SIGTERM);
     return 1;
 }
 // --------------------------------------------------------------------------

@@ -36,7 +36,7 @@
 using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
-const Debug::type DBLEVEL = Debug::LEVEL1;
+#define dblog if( ulog()->debugging(DBLogInfoLevel) ) (*(ulog().get()))[DBLogInfoLevel]
 // --------------------------------------------------------------------------
 DBServer_MySQL::DBServer_MySQL(ObjectId id): 
     DBServer(id),
@@ -128,8 +128,7 @@ void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
             << " AND time='" << timeToString(cem->time, ":") <<" '"
             << " AND time_usec='" << cem->time_usec <<" '";
 
-        if( ulog.debugging(DBLEVEL) )
-            ulog[DBLEVEL] << myname << "(update_confirm): " << data.str() << endl;
+        dblog << myname << "(update_confirm): " << data.str() << endl;
 
         if( !writeToBase(data.str()) )
         {
@@ -148,8 +147,7 @@ void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 //--------------------------------------------------------------------------------------------
 bool DBServer_MySQL::writeToBase( const string& query )
 {
-    if( ulog.debugging(DBLogInfoLevel) )
-        ulog[DBLogInfoLevel] << myname << "(writeToBase): " << query << endl;
+    dblog << myname << "(writeToBase): " << query << endl;
 //    cout << "DBServer_MySQL: " << query << endl;
     if( !db || !connect_ok )
     {
@@ -235,8 +233,7 @@ void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
             << val << "','"                //  value
             << si->node << "')";                //  node
 
-        if( ulog.debugging(DBLEVEL) )
-            ulog[DBLEVEL] << myname << "(insert_main_history): " << data.str() << endl;
+        dblog << myname << "(insert_main_history): " << data.str() << endl;
 
         if( !writeToBase(data.str()) )
         {
@@ -256,8 +253,7 @@ void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
 void DBServer_MySQL::init_dbserver()
 {
     DBServer::init_dbserver();
-    if( ulog.debugging(DBLogInfoLevel) )
-        ulog[DBLogInfoLevel] << myname << "(init): ..." << endl;
+    dblog << myname << "(init): ..." << endl;
 
     if( connect_ok )
     {
@@ -283,7 +279,7 @@ void DBServer_MySQL::init_dbserver()
 
     UniXML::iterator it(node);
 
-    ulog[DBLogInfoLevel] << myname << "(init): init connection.." << endl;
+    dblog << myname << "(init): init connection.." << endl;
     string dbname(conf->getProp(node,"dbname"));
     string dbnode(conf->getProp(node,"dbnode"));
     string user(conf->getProp(node,"dbuser"));
@@ -306,8 +302,7 @@ void DBServer_MySQL::init_dbserver()
     if( dbnode.empty() )
         dbnode = "localhost";
 
-    if( ulog.debugging(DBLogInfoLevel) )
-        ulog[DBLogInfoLevel] << myname << "(init): connect dbnode=" << dbnode
+    dblog << myname << "(init): connect dbnode=" << dbnode
         << "\tdbname=" << dbname
         << " pingTime=" << PingTime 
         << " ReconnectTime=" << ReconnectTime << endl;
@@ -323,8 +318,7 @@ void DBServer_MySQL::init_dbserver()
     }
     else
     {
-        if( ulog.debugging(DBLogInfoLevel) )
-            ulog[DBLogInfoLevel] << myname << "(init): connect [OK]" << endl;
+        dblog << myname << "(init): connect [OK]" << endl;
         connect_ok = true;
         askTimer(DBServer_MySQL::ReconnectTimer,0);
         askTimer(DBServer_MySQL::PingTimer,PingTime);
@@ -350,8 +344,7 @@ void DBServer_MySQL::createTables( MySQLInterface *db )
     {
         if( it.getName() != "comment" )
         {
-            if( ulog.debugging(DBLogInfoLevel) )
-                ulog[DBLogInfoLevel] << myname  << "(createTables): create " << it.getName() << endl;
+            dblog << myname  << "(createTables): create " << it.getName() << endl;
             ostringstream query;
             query << "CREATE TABLE " << conf->getProp(it,"name") << "(" << conf->getProp(it,"create") << ")";
             if( !db->query(query.str()) )
@@ -376,16 +369,14 @@ void DBServer_MySQL::timerInfo( const UniSetTypes::TimerMessage* tm )
             else
             {
                 connect_ok = true;
-                if( ulog.debugging(DBLogInfoLevel) )
-                    ulog[DBLogInfoLevel] << myname << "(timerInfo): DB ping ok" << endl;
+                dblog << myname << "(timerInfo): DB ping ok" << endl;
             }
         }
         break;
     
         case DBServer_MySQL::ReconnectTimer:
         {
-            if( ulog.debugging(DBLogInfoLevel) )
-                ulog[DBLogInfoLevel] << myname << "(timerInfo): reconnect timer" << endl;
+            dblog << myname << "(timerInfo): reconnect timer" << endl;
             if( db->isConnection() )
             {
                 if( db->ping() )

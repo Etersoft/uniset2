@@ -38,7 +38,7 @@ int main( int argc, char **argv )
     string speed("38400");
     ModbusRTU::ModbusAddr slaveaddr = 0x01;
     int tout = 2000;
-    DebugStream dlog;
+    auto dlog = make_shared<DebugStream>();
     int use485 = 0;
 
     try
@@ -93,7 +93,7 @@ int main( int argc, char **argv )
         std::shared_ptr<ModbusRTUMaster> mb = std::make_shared<ModbusRTUMaster>(dev,use485);
 
         if( verb )
-            dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
+            dlog->addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
 
         mb->setTimeout(tout);
         mb->setSpeed(speed);

@@ -20,13 +20,13 @@ int main(int argc, const char **argv)
         if( logfilename.empty() )
             logfilename = "logicproc.log";
 
-        conf->initDebug(dlog,"dlog");
+        conf->initDebug(dlog(),"dlog");
 
         std::ostringstream logname;
         string dir(conf->getLogDir());
         logname << dir << logfilename;
-        ulog.logFile( logname.str() );
-        dlog.logFile( logname.str() );
+        ulog()->logFile( logname.str() );
+        dlog()->logFile( logname.str() );
 
         string schema = conf->getArgParam("--schema");
         if( schema.empty() )
@@ -76,10 +76,10 @@ int main(int argc, const char **argv)
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
 
-        ulog << "\n\n\n";
-        ulog << "(main): -------------- IOControl START -------------------------\n\n";
-        dlog << "\n\n\n";
-        dlog << "(main): -------------- IOControl START -------------------------\n\n";
+        ulogany << "\n\n\n";
+        ulogany << "(main): -------------- IOControl START -------------------------\n\n";
+        dlogany << "\n\n\n";
+        dlogany << "(main): -------------- IOControl START -------------------------\n\n";
         act->run(false);
         return 0;
     }

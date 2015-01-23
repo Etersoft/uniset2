@@ -582,7 +582,7 @@ bool MBExchange::preInitRead( InitList::iterator& p )
     RTUDevice* dev = p->dev;
     int q_count = p->p.rnum;
 
-    if( dlog.is_level3()  )
+    if( dlog()->is_level3()  )
     {
         dlog3 << myname << "(preInitRead): poll "
             << " mbaddr=" << ModbusRTU::addr2str(dev->mbaddr)
@@ -817,7 +817,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
         return false;
     }
 
-    if( dlog.debugging(Debug::LEVEL3)  )
+    if( dlog()->is_level3() )
     {
         dlog3 << myname << "(pollRTU): poll "
             << " mbaddr=" << ModbusRTU::addr2str(dev->mbaddr)
@@ -1887,7 +1887,7 @@ MBExchange::RSProperty* MBExchange::addProp( PList& plist, RSProperty&& p )
 // ------------------------------------------------------------------------------------------
 bool MBExchange::initRSProperty( RSProperty& p, UniXML::iterator& it )
 {
-    if( !IOBase::initItem(&p,it,shm,prop_prefix,false,&dlog,myname) )
+    if( !IOBase::initItem(&p,it,shm,prop_prefix,false,dlog(),myname) )
         return false;
 
     // проверяем не пороговый ли это датчик (т.е. не связанный с обменом)
@@ -2570,19 +2570,19 @@ void MBExchange::sysCommand( const UniSetTypes::SystemMessage *sm )
         case SystemMessage::LogRotate:
         {
             // переоткрываем логи
-            ulog << myname << "(sysCommand): logRotate" << std::endl;
-            string fname(ulog.getLogFile());
+            ulogany << myname << "(sysCommand): logRotate" << std::endl;
+            string fname(ulog()->getLogFile());
             if( !fname.empty() )
             {
-                ulog.logFile(fname,true);
-                ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << std::endl;
+                ulog()->logFile(fname,true);
+                ulogany << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << std::endl;
             }
-            dlog << myname << "(sysCommand): logRotate" << std::endl;
-            fname = dlog.getLogFile();
+            dlogany << myname << "(sysCommand): logRotate" << std::endl;
+            fname = dlog()->getLogFile();
             if( !fname.empty() )
             {
-                dlog.logFile(fname,true);
-                dlog << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
+                dlog()->logFile(fname,true);
+                dlogany << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
             }
         }
         break;
@@ -2799,7 +2799,7 @@ bool MBExchange::poll()
 //                {
                     dlog3 << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
                             << " reg=" << ModbusRTU::dat2str(it->second->mbreg)
-                            << " for sensors: "; print_plist(dlog(Debug::LEVEL3),it->second->slst)
+                            << " for sensors: "; print_plist(dlog()->level3(),it->second->slst)
                             << endl << " err: " << ex << endl;
 
                 // d->resp_real = false;

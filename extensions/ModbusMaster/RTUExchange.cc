@@ -71,7 +71,7 @@ rs_pre_clean(false)
 
     initMB(false);
 
-    if( dlog.is_info() )
+    if( dlog()->is_info() )
         printMap(rmap);
 }
 // -----------------------------------------------------------------------------
@@ -123,8 +123,8 @@ std::shared_ptr<ModbusClient> RTUExchange::initMB( bool reopen )
         if( defSpeed != ComPort::ComSpeed0 )
             mbrtu->setSpeed(defSpeed);
 
-        if( dlog.debugging(Debug::LEVEL9) )
-            mbrtu->setLog(dlog);
+        if( dlog()->is_level9() )
+            mbrtu->setLog(dlog());
 
         if( recv_timeout > 0 )
             mbrtu->setTimeout(recv_timeout);
@@ -271,8 +271,8 @@ bool RTUExchange::poll()
 //                    {
                         dlog3 << myname << "(poll): FAILED ask addr=" << ModbusRTU::addr2str(d->mbaddr)
                                 << " reg=" << ModbusRTU::dat2str(it->second->mbreg)
-                                << " for sensors: "; print_plist(dlog(Debug::LEVEL3), it->second->slst);
-                                dlog(Debug::LEVEL3) << " err: " << ex << endl;
+                                << " for sensors: "; print_plist(dlog()->level3(), it->second->slst);
+                                dlog()->level3() << " err: " << ex << endl;
 
                 //        d->resp_real = false;
 //                    }

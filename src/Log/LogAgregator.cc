@@ -45,15 +45,7 @@ std::shared_ptr<DebugStream> LogAgregator::create( const std::string& logname )
     return l;
 }
 // -------------------------------------------------------------------------
-void LogAgregator::add( DebugStream& log )
-{
-    // очень не красиво создавать shared-указатель по объекту
-    // вместо maske_shared..
-    auto l = std::shared_ptr<DebugStream>(&log);
-    add(l);
-}
-// -------------------------------------------------------------------------
-void LogAgregator::add( std::shared_ptr<DebugStream>& l )
+void LogAgregator::add( std::shared_ptr<DebugStream> l )
 {
     auto i = lmap.find(l->getLogName());
     if( i != lmap.end() )

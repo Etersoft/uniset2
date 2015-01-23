@@ -18,13 +18,13 @@ int main(int argc, const char **argv)
         if( logfilename.empty() )
             logfilename = "logicproc.log";
 
-        conf->initDebug(dlog,"dlog");
+        conf->initDebug(dlog(),"dlog");
 
         std::ostringstream logname;
         string dir(conf->getLogDir());
         logname << dir << logfilename;
-        ulog.logFile( logname.str() );
-        dlog.logFile( logname.str() );
+        ulog()->logFile( logname.str() );
+        dlog()->logFile( logname.str() );
 
         string schema = conf->getArgParam("--schema");
         if( schema.empty() )

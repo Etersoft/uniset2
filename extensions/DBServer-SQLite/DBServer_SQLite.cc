@@ -33,6 +33,7 @@
 #include "Debug.h"
 #include "UniXML.h"
 // -------------------------------------------------------------------------- 
+#define dblog if( ulog()->debugging(DBLogInfoLevel) ) (*(ulog().get()))[DBLogInfoLevel]
 using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
@@ -126,8 +127,7 @@ void DBServer_SQLite::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
             << " AND time='" << timeToString(cem->time, ":") <<" '"
             << " AND time_usec='" << cem->time_usec <<" '";
 
-        if( ulog.debugging(DBLEVEL) )
-            ulog[DBLEVEL] << myname << "(update_confirm): " << data.str() << endl;
+        dblog << myname << "(update_confirm): " << data.str() << endl;
 
         if( !writeToBase(data.str()) )
         {
@@ -146,8 +146,7 @@ void DBServer_SQLite::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
 //--------------------------------------------------------------------------------------------
 bool DBServer_SQLite::writeToBase( const string& query )
 {
-    if( ulog.debugging(DBLogInfoLevel) )
-        ulog[DBLogInfoLevel] << myname << "(writeToBase): " << query << endl;
+    dblog << myname << "(writeToBase): " << query << endl;
 //    cout << "DBServer_SQLite: " << query << endl;
     if( !db || !connect_ok )
     {
@@ -220,8 +219,7 @@ void DBServer_SQLite::sensorInfo( const UniSetTypes::SensorMessage *si )
             << val << "','"                //  value
             << si->node << "')";                //  node
 
-        if( ulog.debugging(DBLEVEL) )
-            ulog[DBLEVEL] << myname << "(insert_main_history): " << data.str() << endl;
+        dblog << myname << "(insert_main_history): " << data.str() << endl;
 
         if( !writeToBase(data.str()) )
         {
@@ -241,8 +239,7 @@ void DBServer_SQLite::sensorInfo( const UniSetTypes::SensorMessage *si )
 void DBServer_SQLite::init_dbserver()
 {
     DBServer::init_dbserver();
-    if( ulog.debugging(DBLogInfoLevel) )
-        ulog[DBLogInfoLevel] << myname << "(init): ..." << endl;
+    dblog << myname << "(init): ..." << endl;
 
     if( connect_ok )
     {
@@ -268,7 +265,7 @@ void DBServer_SQLite::init_dbserver()
 
     UniXML::iterator it(node);
 
-    ulog[DBLogInfoLevel] << myname << "(init): init connection.." << endl;
+    dblog << myname << "(init): init connection.." << endl;
     string dbfile(conf->getProp(node,"dbfile"));
 
     tblMap[UniSetTypes::Message::SensorInfo] = "main_history";
@@ -285,8 +282,7 @@ void DBServer_SQLite::init_dbserver()
     else
         lastRemove = false;
 
-    if( ulog.debugging(DBLogInfoLevel) )
-        ulog[DBLogInfoLevel] << myname << "(init): connect dbfile=" << dbfile
+    dblog << myname << "(init): connect dbfile=" << dbfile
         << " pingTime=" << PingTime
         << " ReconnectTime=" << ReconnectTime << endl;
 
@@ -301,8 +297,7 @@ void DBServer_SQLite::init_dbserver()
     }
     else
     {
-        if( ulog.debugging(DBLogInfoLevel) )
-            ulog[DBLogInfoLevel] << myname << "(init): connect [OK]" << endl;
+        dblog << myname << "(init): connect [OK]" << endl;
         connect_ok = true;
         askTimer(DBServer_SQLite::ReconnectTimer,0);
         askTimer(DBServer_SQLite::PingTimer,PingTime);
@@ -327,8 +322,7 @@ void DBServer_SQLite::createTables( SQLiteInterface *db )
     {
         if( it.getName() != "comment" )
         {
-            if( ulog.debugging(DBLogInfoLevel) )
-                ulog[DBLogInfoLevel] << myname  << "(createTables): create " << it.getName() << endl;
+            dblog << myname  << "(createTables): create " << it.getName() << endl;
             ostringstream query;
             query << "CREATE TABLE " << conf->getProp(it,"name") << "(" << conf->getProp(it,"create") << ")";
             if( !db->query(query.str()) )
@@ -353,16 +347,14 @@ void DBServer_SQLite::timerInfo( const UniSetTypes::TimerMessage* tm )
             else
             {
                 connect_ok = true;
-                if( ulog.debugging(DBLogInfoLevel) )
-                    ulog[DBLogInfoLevel] << myname << "(timerInfo): DB ping ok" << endl;
+                dblog << myname << "(timerInfo): DB ping ok" << endl;
             }
         }
         break;
 
         case DBServer_SQLite::ReconnectTimer:
         {
-            if( ulog.debugging(DBLogInfoLevel) )
-                ulog[DBLogInfoLevel] << myname << "(timerInfo): reconnect timer" << endl;
+            dblog << myname << "(timerInfo): reconnect timer" << endl;
             if( db->isConnection() )
             {
                 if( db->ping() )

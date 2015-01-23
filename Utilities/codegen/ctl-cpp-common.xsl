@@ -171,22 +171,23 @@
 		void updateValues();
 		void setMsg( UniSetTypes::ObjectId code, bool state );
 
-		DebugStream mylog;
-		void init_dlog( DebugStream&amp; d );
+		std::shared_ptr&lt;DebugStream&gt; mylog;
+		void init_dlog( std::shared_ptr&lt;DebugStream&gt; d );
 
         // "синтаксический сахар"..для логов
-        #define myinfo if( mylog.debugging(Debug::INFO) ) mylog
-        #define mywarn if( mylog.debugging(Debug::WARN) ) mylog
-        #define mycrit if( mylog.debugging(Debug::CRIT) ) mylog
-        #define mylog1 if( mylog.debugging(Debug::LEVEL1) ) mylog
-        #define mylog2 if( mylog.debugging(Debug::LEVEL2) ) mylog
-        #define mylog3 if( mylog.debugging(Debug::LEVEL3) ) mylog
-        #define mylog4 if( mylog.debugging(Debug::LEVEL4) ) mylog
-        #define mylog5 if( mylog.debugging(Debug::LEVEL5) ) mylog
-        #define mylog6 if( mylog.debugging(Debug::LEVEL6) ) mylog
-        #define mylog7 if( mylog.debugging(Debug::LEVEL7) ) mylog
-        #define mylog8 if( mylog.debugging(Debug::LEVEL8) ) mylog
-        #define mylog9 if( mylog.debugging(Debug::LEVEL9) ) mylog
+        #define myinfo if( mylog->debugging(Debug::INFO) ) mylog->any()
+        #define mywarn if( mylog->debugging(Debug::WARN) ) mylog->any()
+        #define mycrit if( mylog->debugging(Debug::CRIT) ) mylog->any()
+        #define mylog1 if( mylog->debugging(Debug::LEVEL1) ) mylog->any()
+        #define mylog2 if( mylog->debugging(Debug::LEVEL2) ) mylog->any()
+        #define mylog3 if( mylog->debugging(Debug::LEVEL3) ) mylog->any()
+        #define mylog4 if( mylog->debugging(Debug::LEVEL4) ) mylog->any()
+        #define mylog5 if( mylog->debugging(Debug::LEVEL5) ) mylog->any()
+        #define mylog6 if( mylog->debugging(Debug::LEVEL6) ) mylog->any()
+        #define mylog7 if( mylog->debugging(Debug::LEVEL7) ) mylog->any()
+        #define mylog8 if( mylog->debugging(Debug::LEVEL8) ) mylog->any()
+        #define mylog9 if( mylog->debugging(Debug::LEVEL9) ) mylog->any()
+        #define mylogany mylog->any()
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PROTECTED">
@@ -257,7 +258,7 @@
 
 <xsl:template name="COMMON-CC-FILE">
 // ------------------------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::init_dlog( DebugStream&amp; d )
+void <xsl:value-of select="$CLASSNAME"/>_SK::init_dlog( std::shared_ptr&lt;DebugStream&gt; d )
 {
 	<xsl:value-of select="$CLASSNAME"/>_SK::mylog = d;
 }
@@ -295,7 +296,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( const SystemMessage* _s
 	switch( _sm->command )
 	{
 		case SystemMessage::WatchDog:
-			ulog &lt;&lt; myname &lt;&lt; "(sysCommand): WatchDog" &lt;&lt; endl;
+			ulogany &lt;&lt; myname &lt;&lt; "(sysCommand): WatchDog" &lt;&lt; endl;
 			if( !active || !ptStartUpTimeout.checkTime() )
 			{
                 uwarn &lt;&lt; myname &lt;&lt; "(sysCommand): игнорируем WatchDog, потому-что только-что стартанули" &lt;&lt; endl;
@@ -324,12 +325,12 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::sysCommand( const SystemMessage* _s
 		case SystemMessage::LogRotate:
 		{
 			// переоткрываем логи
-			mylog &lt;&lt; myname &lt;&lt; "(sysCommand): logRotate" &lt;&lt; endl;
-			string fname( mylog.getLogFile() );
+			mylogany &lt;&lt; myname &lt;&lt; "(sysCommand): logRotate" &lt;&lt; endl;
+			string fname( mylog->getLogFile() );
 			if( !fname.empty() )
 			{
-				mylog.logFile(fname.c_str(),true);
-				mylog &lt;&lt; myname &lt;&lt; "(sysCommand): ***************** mylog LOG ROTATE *****************" &lt;&lt; endl;
+				mylog->logFile(fname.c_str(),true);
+				mylogany &lt;&lt; myname &lt;&lt; "(sysCommand): ***************** mylog LOG ROTATE *****************" &lt;&lt; endl;
 			}
 		}
 		break;
@@ -485,6 +486,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 // --------------------------------------------------------------------------
 // generate timestamp: <xsl:value-of select="date:date()"/>
 // -----------------------------------------------------------------------------
+#include &lt;memory&gt;
 #include <xsl:call-template name="preinclude"/>Configuration.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>Exceptions.h<xsl:call-template name="postinclude"/>
 #include "<xsl:value-of select="$SK_H_FILENAME"/>"
@@ -618,7 +620,8 @@ end_private(false)
 		throw SystemError( err.str() );
 	}
 
-	mylog.setLogName(myname);
+    mylog = make_shared&lt;DebugStream&gt;();
+	mylog-&gt;setLogName(myname);
 
 <xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
@@ -942,7 +945,8 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 		throw SystemError( err.str() );
 	}
 
-	mylog.setLogName(myname);
+	mylog = make_shared&lt;DebugStream&gt;();
+	mylog-&gt;setLogName(myname);
 	
 	si.node = conf->getLocalNode();
 

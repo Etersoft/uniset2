@@ -3,6 +3,7 @@
 #define ModbusClient_H_
 // -------------------------------------------------------------------------
 #include <string>
+#include <memory>
 #include "Mutex.h"
 #include "Debug.h"
 #include "Configuration.h"
@@ -144,7 +145,7 @@ class ModbusClient
         inline void setSleepPause( timeout_t usec ){ sleepPause_usec = usec; }
 
         void initLog( UniSetTypes::Configuration* conf, const std::string& name, const std::string& logfile="" );
-        void setLog( DebugStream& dlog );
+        void setLog( std::shared_ptr<DebugStream> dlog );
 
 
         inline void setCRCNoCheckit( bool set ){ crcNoCheckit = set; }
@@ -194,7 +195,7 @@ class ModbusClient
         bool crcNoCheckit;
 
         UniSetTypes::uniset_rwmutex sendMutex;
-        DebugStream dlog;
+        std::shared_ptr<DebugStream> dlog;
 
         void printProcessingTime();
         PassiveTimer tmProcessing;

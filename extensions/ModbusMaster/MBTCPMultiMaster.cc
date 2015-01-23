@@ -116,8 +116,8 @@ checkThread(0)
         n << sinf.ip << ":" << sinf.port;
         sinf.myname = n.str();
 
-        if( dlog.is_level9() )
-            sinf.mbtcp->setLog(dlog);
+        if( dlog()->is_level9() )
+            sinf.mbtcp->setLog(dlog());
 
         mblist.push_back(sinf);
 
@@ -154,7 +154,7 @@ checkThread(0)
     // неудачной попытки запросов по одному из каналов, то ПЕРЕОПРЕДЕЛЯЕМ reopen, на timeout..
     ptReopen.setTiming(ptTimeout.getInterval());
 
-    if( dlog.is_info() )
+    if( dlog()->is_info() )
         printMap(rmap);
 }
 // -----------------------------------------------------------------------------

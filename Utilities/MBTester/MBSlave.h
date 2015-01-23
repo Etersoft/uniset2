@@ -35,7 +35,7 @@ class MBSlave
         void execute();    /*!< основной цикл работы */
 
 
-        void setLog( DebugStream& dlog );
+        void setLog( std::shared_ptr<DebugStream> dlog );
 
     protected:
         // действия при завершении работы

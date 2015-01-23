@@ -42,7 +42,7 @@ int main( int argc, char **argv )
     string dev("/dev/ttyS0");
     string speed("38400");
     ModbusRTU::ModbusAddr myaddr = 0x01;
-    DebugStream dlog;
+    auto dlog = make_shared<DebugStream>();
     int use485 = 0;
     int replyVal=-1;
     int replyVal2=-1;
@@ -99,7 +99,7 @@ int main( int argc, char **argv )
                     << " myaddr=" << ModbusRTU::addr2str(myaddr)
                     << endl;
 
-            dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
+            dlog->addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
         }
 
         MBSlave mbs(myaddr,dev,speed,use485);

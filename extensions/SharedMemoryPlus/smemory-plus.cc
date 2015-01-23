@@ -72,9 +72,9 @@ int main( int argc, const char **argv )
 
         string logfilename = conf->getArgParam("--logfile", "smemory-plus.log");
         string logname( conf->getLogDir() + logfilename );
-        UniSetExtensions::dlog.logFile( logname );
-        ulog.logFile( logname );
-        conf->initDebug(UniSetExtensions::dlog,"dlog");
+        UniSetExtensions::dlog()->logFile( logname );
+        ulog()->logFile( logname );
+        conf->initDebug(UniSetExtensions::dlog(),"dlog");
 
         auto act = UniSetActivator::Instance();
         act->signal_terminate_event().connect( &activator_terminate );
@@ -102,8 +102,7 @@ int main( int argc, const char **argv )
                 p << "io";
                 if( i > 0 ) p << i;
 
-                if( dlog.is_info() )
-                    dlog.info() << "(smemory-plus): add IOControl(" << p.str() << ")" << endl;
+                dinfo << "(smemory-plus): add IOControl(" << p.str() << ")" << endl;
 
                 auto ic = IOControl::init_iocontrol(argc,argv,shm->getId(),shm,p.str());
                 if( !ic )
@@ -132,8 +131,7 @@ int main( int argc, const char **argv )
                 p << "rtu";
                 if( i > 0 ) p << i;
 
-                if( dlog.is_info() )
-                    dlog.info() << "(smemory-plus): add RTUExchange(" << p.str() << ")" << endl;
+                dinfo << "(smemory-plus): add RTUExchange(" << p.str() << ")" << endl;
 
                 auto rtu = RTUExchange::init_rtuexchange(argc,argv,shm->getId(),shm,p.str());
                 if( !rtu )
@@ -156,8 +154,7 @@ int main( int argc, const char **argv )
                 p << "mbs";
                 if( i > 0 ) p << i;
 
-                if( dlog.is_info() )
-                    dlog.info() << "(smemory-plus): add MBSlave(" << p.str() << ")" << endl;
+                dinfo << "(smemory-plus): add MBSlave(" << p.str() << ")" << endl;
 
                 auto mbs = MBSlave::init_mbslave(argc,argv,shm->getId(),shm,p.str());
                 if( !mbs )
@@ -182,8 +179,7 @@ int main( int argc, const char **argv )
                 p << "mbtcp";
                 if( i > 0 ) p << i;
 
-                if( dlog.is_info() )
-                    dlog.info() << "(smemory-plus): add MBTCPMaster(" << p.str() << ")" << endl;
+                dinfo << "(smemory-plus): add MBTCPMaster(" << p.str() << ")" << endl;
 
                 auto mbm1 = MBTCPMaster::init_mbmaster(argc,argv,shm->getId(),shm,p.str());
                 if( !mbm1 )
@@ -200,8 +196,7 @@ int main( int argc, const char **argv )
             if( unet == NULL )
                 return 1;
 
-            if( dlog.is_info() )
-                dlog.info() << "(smemory-plus): add UNetExchnage.." << endl;
+            dinfo << "(smemory-plus): add UNetExchnage.." << endl;
 
             act->add(unet);
         }
@@ -218,8 +213,8 @@ int main( int argc, const char **argv )
 #endif
 
         LogAgregator la;
-        la.add(ulog);
-        la.add(dlog);
+        la.add(ulog());
+        la.add(dlog());
 
         logserver = run_logserver("smplus",la);
         if( logserver == 0 )
@@ -235,15 +230,15 @@ int main( int argc, const char **argv )
     }
     catch(Exception& ex)
     {
-        ulog.crit() << "(smemory-plus): " << ex << endl;
+        dcrit << "(smemory-plus): " << ex << endl;
     }
     catch( CORBA::SystemException& ex )
     {
-        ulog.crit() << "(smemory-plus): " << ex.NP_minorString() << endl;
+        dcrit << "(smemory-plus): " << ex.NP_minorString() << endl;
     }
     catch(...)
     {
-        ulog.crit() << "(smemory-plus): catch(...)" << endl;
+        dcrit << "(smemory-plus): catch(...)" << endl;
     }
 
     on_sigchild(SIGTERM);

@@ -146,20 +146,20 @@ void PassiveLProcessor::sysCommand( const UniSetTypes::SystemMessage *sm )
         case SystemMessage::LogRotate:
         {
             // переоткрываем логи
-            ulog << myname << "(sysCommand): logRotate" << std::endl;
-            string fname (ulog.getLogFile() );
+            ulogany << myname << "(sysCommand): logRotate" << std::endl;
+            string fname (ulog()->getLogFile() );
             if( !fname.empty() )
             {
-                ulog.logFile(fname,true);
-                ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << std::endl;
+                ulog()->logFile(fname,true);
+                ulogany << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << std::endl;
             }
 
-            dlog << myname << "(sysCommand): logRotate" << std::endl;
-            fname = dlog.getLogFile();
+            dlogany << myname << "(sysCommand): logRotate" << std::endl;
+            fname = dlog()->getLogFile();
             if( !fname.empty() )
             {
-                dlog.logFile(fname,true);
-                dlog << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
+                dlog()->logFile(fname,true);
+                dlogany << myname << "(sysCommand): ***************** dlog LOG ROTATE *****************" << std::endl;
             }
         }
         break;

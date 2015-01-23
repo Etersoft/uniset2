@@ -37,6 +37,7 @@
 #ifndef <xsl:value-of select="$CLASSNAME"/>_SK_H_
 #define <xsl:value-of select="$CLASSNAME"/>_SK_H_
 // -----------------------------------------------------------------------------
+#include &lt;memory&gt;
 #include &lt;string&gt;
 <xsl:if test="normalize-space($BASECLASS)!=''">#include <xsl:call-template name="preinclude"/><xsl:value-of select="normalize-space($BASECLASS)"/>.h<xsl:call-template name="postinclude"/></xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">#include <xsl:call-template name="preinclude"/>UniSetObject.h<xsl:call-template name="postinclude"/></xsl:if>

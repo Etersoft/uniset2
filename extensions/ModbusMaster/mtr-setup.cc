@@ -88,7 +88,7 @@ int main( int argc, char **argv )
     ModbusRTU::ModbusAddr beg = 0;
     ModbusRTU::ModbusAddr end = 255;
     int tout = 20;
-    DebugStream dlog;
+    auto dlog = make_shared<DebugStream>();
     //string tofile("");
     int use485 = 0;
     ComPort::StopBits sbits = ComPort::OneBit;
@@ -233,7 +233,7 @@ int main( int argc, char **argv )
         ModbusRTUMaster mb(dev,use485);
 
         if( verb )
-            dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
+            dlog->addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
 
         mb.setTimeout(tout);
         mb.setSpeed(speed);

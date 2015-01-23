@@ -67,8 +67,8 @@ mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout
     uniset_mutex_lock lck(recvMutex,timeout);
     if( !lck.lock_ok() )
     {
-        if( dlog.debugging(Debug::CRIT) )
-            dlog.crit() << "(ModbusRTUSlave::receive): Don`t lock " << recvMutex << endl;
+        if( dlog->is_crit() )
+            dlog->crit() << "(ModbusRTUSlave::receive): Don`t lock " << recvMutex << endl;
         return erTimeOut;
     }
 
@@ -89,7 +89,7 @@ mbErrCode ModbusRTUSlave::receive( ModbusRTU::ModbusAddr addr, timeout_t timeout
                 printProcessingTime();
             }
 
-//            dlog.warn() << "(receive): " << mbErr2Str(res) << endl;
+//            dlog->warn() << "(receive): " << mbErr2Str(res) << endl;
 //            cerr << "**** (receive): " << mbErr2Str(res) << endl;
             usleep(10000);
             return res;
@@ -151,7 +151,8 @@ mbErrCode ModbusRTUSlave::sendData( unsigned char* buf, int len )
     }
     catch( Exception& ex ) // SystemError
     {
-        dlog.crit() << "(send): " << ex << endl;
+        if( dlog->is_crit() )
+            dlog->crit() << "(send): " << ex << endl;
         return erHardwareError;
     }
 

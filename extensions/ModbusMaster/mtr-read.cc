@@ -67,7 +67,7 @@ int main( int argc, char **argv )
     ModbusRTU::ModbusData reg = 0;
     ModbusRTU::ModbusAddr slaveaddr = 0x00;
     int tout = 2000;
-    DebugStream dlog;
+    auto dlog = make_shared<DebugStream>();
 //    string tofile("");
     int use485 = 0;
     int ncycles = -1;
@@ -169,7 +169,7 @@ int main( int argc, char **argv )
         ModbusRTUMaster mb(dev,use485);
 
         if( verb )
-            dlog.addLevel(Debug::ANY);
+            dlog->addLevel(Debug::ANY);
 
         mb.setTimeout(tout);
         mb.setSpeed(speed);

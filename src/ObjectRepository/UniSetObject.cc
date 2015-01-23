@@ -857,10 +857,10 @@ void UniSetObject::processingMessage( UniSetTypes::VoidMessage *msg )
     }
     catch( omniORB::fatalException& fe ) 
     {
-        if( ulog.is_crit() )
+        if( ulog()->is_crit() )
         {
-            ulog.crit() << myname << "(processingMessage): Caught omniORB::fatalException:" << endl;
-            ulog.crit() << myname << "(processingMessage): file: " << fe.file()
+            ulog()->crit() << myname << "(processingMessage): Caught omniORB::fatalException:" << endl;
+            ulog()->crit() << myname << "(processingMessage): file: " << fe.file()
                 << " line: " << fe.line()
                 << " mesg: " << fe.errmsg() << endl;
         }

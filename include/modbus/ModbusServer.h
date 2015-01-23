@@ -18,7 +18,7 @@ class ModbusServer
         virtual ~ModbusServer();
 
         void initLog( UniSetTypes::Configuration* conf, const std::string& name, const std::string& logfile="" );
-        void setLog( DebugStream& dlog );
+        void setLog( std::shared_ptr<DebugStream> dlog );
 
 
         /*! обработать очередное сообщение 
@@ -59,7 +59,7 @@ class ModbusServer
         */
         static ModbusRTU::mbErrCode replySetDateTime( ModbusRTU::SetDateTimeMessage& query, 
                                                         ModbusRTU::SetDateTimeRetMessage& reply,
-                                                        DebugStream* dlog=0 );
+                                                        std::shared_ptr<DebugStream> dlog=nullptr );
 
 
         /*! Вспомогательная функция реализующая обработку передачи файла 
@@ -70,7 +70,7 @@ class ModbusServer
         static ModbusRTU::mbErrCode replyFileTransfer( const std::string& fname, 
                                                             ModbusRTU::FileTransferMessage& query, 
                                                             ModbusRTU::FileTransferRetMessage& reply,
-                                                            DebugStream* dlog=0 );
+                                                            std::shared_ptr<DebugStream> dlog=nullptr );
 
         virtual void cleanupChannel(){}
         virtual void terminate(){}
@@ -233,7 +233,7 @@ class ModbusServer
         void printProcessingTime();
         PassiveTimer tmProcessing;
 
-        DebugStream dlog;
+        std::shared_ptr<DebugStream> dlog;
 
     private:
 

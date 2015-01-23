@@ -76,7 +76,7 @@ int main( int argc, const char** argv )
 
 		string logfilename = conf->getArgParam("--logfile","<xsl:value-of select="$CLASSNAME"/>.log");
 		string logname( conf->getLogDir() + logfilename );
-		obj.mylog.logFile( logname.c_str() );
+		obj.mylog->logFile( logname.c_str() );
 
 		</xsl:if>
 

@@ -516,12 +516,16 @@ void UniSetActivator::sysCommand( const UniSetTypes::SystemMessage *sm )
         case SystemMessage::LogRotate:
         {
             ulogsys << myname << "(sysCommand): logRotate" << endl;
+            auto ul = ulog();
+            if( !ul )
+                break;
+
             // переоткрываем логи
-            string fname = ulog.getLogFile();
-            if( !fname.empty() )
+            string fname = ul->getLogFile();
+            if( fname.empty() )
             {
-                ulog.logFile(fname.c_str(),true);
-                ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << endl;
+                ul->logFile(fname.c_str(),true);
+                ulogany << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << endl;
             }
         }
         break;

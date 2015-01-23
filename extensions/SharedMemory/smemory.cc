@@ -23,11 +23,11 @@ int main(int argc, const char **argv)
     {
         auto conf = uniset_init(argc, argv);
 
-        conf->initDebug(dlog,"dlog");
+        conf->initDebug(dlog(),"dlog");
         string logfilename = conf->getArgParam("--logfile", "smemory.log");
         string logname( conf->getLogDir() + logfilename );
-        ulog.logFile( logname );
-        dlog.logFile( logname );
+        ulog()->logFile( logname );
+        dlog()->logFile( logname );
 
         auto shm = SharedMemory::init_smemory(argc, argv);
         if( !shm )
@@ -43,19 +43,19 @@ int main(int argc, const char **argv)
     }
     catch( SystemError& err )
     {
-        dlog.crit() << "(smemory): " << err << endl;
+        dcrit << "(smemory): " << err << endl;
     }
     catch( Exception& ex )
     {
-        dlog.crit() << "(smemory): " << ex << endl;
+        dcrit << "(smemory): " << ex << endl;
     }
     catch( std::exception& e )
     {
-        dlog.crit() << "(smemory): " << e.what() << endl;
+        dcrit << "(smemory): " << e.what() << endl;
     }
     catch(...)
     {
-        dlog.crit() << "(smemory): catch(...)" << endl;
+        dcrit << "(smemory): catch(...)" << endl;
     }
 
     return 1;

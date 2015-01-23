@@ -72,7 +72,7 @@ pollThread(0)
     pollThread = new ThreadCreator<MBTCPMaster>(this, &MBTCPMaster::poll_thread);
     pollThread->setFinalAction(this,&MBTCPMaster::final_thread);
 
-    if( dlog.is_info() )
+    if( dlog()->is_info() )
         printMap(rmap);
 }
 // -----------------------------------------------------------------------------
@@ -117,8 +117,8 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
 
         dinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
 
-        if( dlog.is_level9() )
-            mbtcp->setLog(dlog);
+        if( dlog()->is_level9() )
+            mbtcp->setLog(dlog());
     }
     catch( ModbusRTU::mbException& ex )
     {

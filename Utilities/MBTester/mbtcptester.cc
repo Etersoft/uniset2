@@ -91,7 +91,7 @@ int main( int argc, char **argv )
     ModbusRTU::DiagnosticsSubFunction subfunc = ModbusRTU::subEcho;
     ModbusRTU::ModbusData dat = 0;
     int tout = 2000;
-    DebugStream dlog;
+    auto dlog = make_shared<DebugStream>();
     int ncycles = -1;
     ModbusRTU::ModbusByte devID = 0;
     ModbusRTU::ModbusByte objID = 0;
@@ -256,7 +256,7 @@ int main( int argc, char **argv )
                     << " timeout=" << tout << " msec "
                     << endl;
 
-            dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
+            dlog->addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
         }
 
         ModbusTCPMaster mb;

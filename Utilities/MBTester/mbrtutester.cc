@@ -114,7 +114,7 @@ int main( int argc, char **argv )
     ModbusRTU::DiagnosticsSubFunction subfunc = ModbusRTU::subEcho;
     ModbusRTU::ModbusData dat = 0;
     int tout = 2000;
-    DebugStream dlog;
+    auto dlog = make_shared<DebugStream>();
     string tofile("");
     int use485 = 0;
     int ncycles = -1;
@@ -370,7 +370,7 @@ int main( int argc, char **argv )
         ModbusRTUMaster mb(dev,use485);
 
         if( verb )
-            dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
+            dlog->addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
 
         mb.setTimeout(tout);
         mb.setSpeed(speed);

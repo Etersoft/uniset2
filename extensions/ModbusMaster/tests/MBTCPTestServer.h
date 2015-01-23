@@ -33,7 +33,7 @@ class MBTCPTestServer
         void runThread(); /*!< запуск с отдельным потоком */
 
         void execute();    /*!< основной цикл работы */
-        void setLog( DebugStream& dlog );
+        void setLog( std::shared_ptr<DebugStream> dlog );
 
         inline bool isRunning(){ return isrunning; }
 

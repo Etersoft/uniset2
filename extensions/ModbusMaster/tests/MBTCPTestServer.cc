@@ -80,7 +80,7 @@ MBTCPTestServer::~MBTCPTestServer()
     delete sslot;
 }
 // -------------------------------------------------------------------------
-void MBTCPTestServer::setLog( DebugStream& dlog )
+void MBTCPTestServer::setLog( std::shared_ptr<DebugStream> dlog )
 {
     if( sslot )
         sslot->setLog(dlog);

@@ -40,7 +40,7 @@ int main( int argc, char **argv )
     int port = 502;
     string iaddr("127.0.0.1");
     ModbusRTU::ModbusAddr myaddr = 0x01;
-    DebugStream dlog;
+    auto dlog = make_shared<DebugStream>();
     bool ignoreAddr = false;
     int replyVal=-1;
 
@@ -93,7 +93,7 @@ int main( int argc, char **argv )
                     << " myaddr=" << ModbusRTU::addr2str(myaddr)
                     << endl;
 
-            dlog.addLevel( Debug::ANY );
+            dlog->addLevel( Debug::ANY );
         }
 
         MBTCPServer mbs(myaddr,iaddr,port,verb);

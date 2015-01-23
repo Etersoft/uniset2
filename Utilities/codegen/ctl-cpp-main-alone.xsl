@@ -70,7 +70,7 @@ int main( int argc,char* argv[] )
 
 		string logfilename = conf->getArgParam("--logfile","<xsl:value-of select="$CLASSNAME"/>.log");
 		string logname( conf->getLogDir() + logfilename );
-		obj.mylog.logFile( logname.c_str() );
+		obj.mylog->logFile( logname.c_str() );
 
 		auto act = UniSetActivator::Instance();
 		act-&gt;add(obj.get_ptr());

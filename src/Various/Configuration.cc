@@ -74,9 +74,17 @@ ostream& UniSetTypes::Configuration::help(ostream& os)
 // -------------------------------------------------------------------------
 namespace UniSetTypes
 {
-    DebugStream ulog;
-
     static shared_ptr<Configuration> uconf;
+    static std::shared_ptr<DebugStream> _ulog;
+
+    std::shared_ptr<DebugStream> ulog()
+    {
+        if( _ulog )
+            return _ulog;
+
+        _ulog = make_shared<DebugStream>();
+        return _ulog;
+    }
 
     std::shared_ptr<Configuration> uniset_conf()
     {
@@ -216,7 +224,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         }
         catch(...)
         {
-            ulog << "(Configuration): FAILED open configuration from " <<  fileConfName << endl;
+            ulogany << "(Configuration): FAILED open configuration from " <<  fileConfName << endl;
             throw;
         }
 
@@ -257,7 +265,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         }
 
         // Настраиваем отладочные логи
-        initDebug(ulog,"UniSetDebug");
+        initDebug(ulog(),"UniSetDebug");
 
         // default init...
         transientIOR     = false;
@@ -720,25 +728,42 @@ string Configuration::getPropByNodeName(const string& nodename, const string& pr
     return getProp(node,prop);
 }
 // -------------------------------------------------------------------------
+xmlNode* Configuration::initDebug( std::shared_ptr<DebugStream> deb, const string& _debname )
+{
+    if( !deb )
+        return NULL;
+
+    return initDebug( deb.get(), _debname );
+}
+// -------------------------------------------------------------------------
 xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
 {
+    return initDebug(&deb, _debname);
+}
+// -------------------------------------------------------------------------
+xmlNode* Configuration::initDebug( DebugStream* deb, const string& _debname )
+{
+    if( !deb )
+        return NULL;
+
     if( _debname.empty() )
     {
-        deb << "(Configuration)(initDebug): INIT DEBUG FAILED!!!" << endl;
+        deb->any() << "(Configuration)(initDebug): INIT DEBUG FAILED!!!" << endl;
         return 0;
     }
+
 
     string debname(_debname);
 
     xmlNode* dnode = getNode(_debname);
     if( dnode == NULL )
-        deb << "(Configuration)(initDebug):  WARNING! Not found conf. section for log '" << _debname  << "'" << endl;
+        deb->any() << "(Configuration)(initDebug):  WARNING! Not found conf. section for log '" << _debname  << "'" << endl;
     else
     {
         if( !getProp(dnode,"name").empty() )
         {
             debname = getProp(dnode,"name");
-            deb.setLogName(debname);
+            deb->setLogName(debname);
         }
     }
 
@@ -747,7 +772,7 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
     {
         if( no_deb == _argv[i] )
         {
-            deb.addLevel(Debug::NONE);
+            deb->addLevel(Debug::NONE);
             return dnode;
         }
     }
@@ -757,13 +782,13 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
     {
         string conf_debug_levels(getProp(dnode,"levels"));
         if( !conf_debug_levels.empty() )
-            deb.addLevel( Debug::value(conf_debug_levels) );
+            deb->addLevel( Debug::value(conf_debug_levels) );
         else
-            deb.addLevel(Debug::NONE);
+            deb->addLevel(Debug::NONE);
 
             string debug_file(getProp(dnode,"file"));
             if( !debug_file.empty() )
-                deb.logFile(debug_file);
+                deb->logFile(debug_file);
     }
 
     // теперь смотрим командную строку
@@ -776,15 +801,15 @@ xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
     {
         if( log_in == _argv[i] )        // "--debug-log_in_file"
         {
-            deb.logFile(_argv[i+1]);
+            deb->logFile(_argv[i+1]);
         }
         else if( add_level == _argv[i] )    // "--debug-add-levels"
         {
-            deb.addLevel(Debug::value(_argv[i+1]));
+            deb->addLevel(Debug::value(_argv[i+1]));
         }
         else if( del_level == _argv[i] )    // "--debug-del-levels"
         {
-            deb.delLevel(Debug::value(_argv[i+1]));
+            deb->delLevel(Debug::value(_argv[i+1]));
         }
     }
 
@@ -1031,8 +1056,9 @@ std::shared_ptr<Configuration> uniset_init( int argc, const char* const* argv, c
     atexit( UniSetActivator::normalexit );
     set_terminate( UniSetActivator::normalterminate ); // ловушка для неизвестных исключений
 
+    ulog()->setLogName("ulog");
+
     string confile = UniSetTypes::getArgParam( "--confile", argc, argv, xmlfile );
-    ulog.setLogName("ulog");
     UniSetTypes::uconf = make_shared<Configuration>(argc, argv, confile);
     return UniSetTypes::uconf;
 }

@@ -32,9 +32,9 @@ int main( int argc, const char** argv )
         std::ostringstream logname;
         string dir(conf->getLogDir());
         logname << dir << logfilename;
-        ulog.logFile( logname.str() );
-        UniSetExtensions::dlog.logFile( logname.str() );
-        conf->initDebug(UniSetExtensions::dlog,"dlog");
+        ulog()->logFile( logname.str() );
+        UniSetExtensions::dlog()->logFile( logname.str() );
+        conf->initDebug(UniSetExtensions::dlog(),"dlog");
 
         ObjectId shmID = DefaultObjectId;
         string sID = conf->getArgParam("--smemory-id");
@@ -62,10 +62,10 @@ int main( int argc, const char** argv )
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
 
-        ulog << "\n\n\n";
-        ulog << "(main): -------------- UDPRecevier START -------------------------\n\n";
-        dlog << "\n\n\n";
-        dlog << "(main): -------------- UDPReceiver START -------------------------\n\n";
+        ulogany << "\n\n\n";
+        ulogany << "(main): -------------- UDPRecevier START -------------------------\n\n";
+        dlogany << "\n\n\n";
+        dlogany << "(main): -------------- UDPReceiver START -------------------------\n\n";
 
         act->run(false);
         on_sigchild(SIGTERM);

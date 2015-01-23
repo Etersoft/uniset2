@@ -1,6 +1,7 @@
 #ifndef _RRDServer_H_
 #define _RRDServer_H_
 // -----------------------------------------------------------------------------
+#include <memory>
 #include "UObject_SK.h"
 #include "SMInterface.h"
 #include "SharedMemory.h"
@@ -59,7 +60,7 @@ class RRDServer:
 {
     public:
         RRDServer( UniSetTypes::ObjectId objId, xmlNode* cnode, UniSetTypes::ObjectId shmID, const std::shared_ptr<SharedMemory> ic=nullptr,
-                    const std::string& prefix="rrd", DebugStream& log=UniSetExtensions::dlog );
+                    const std::string& prefix="rrd", std::shared_ptr<DebugStream> log=UniSetExtensions::dlog() );
         virtual ~RRDServer();
 
         /*! глобальная функция для инициализации объекта */

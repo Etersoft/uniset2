@@ -145,8 +145,8 @@ void MBTCPMultiSlave::execute_tcp()
         return;
     }
 
-    if( dlog.debugging(Debug::LEVEL9) )
-        sslot->setLog(dlog);
+    if( dlog()->is_level9() )
+        sslot->setLog(dlog());
 
     for( auto &i: cmap )
         i.second.ptTimeout.reset();
@@ -184,8 +184,7 @@ void MBTCPMultiSlave::execute_tcp()
             {
                 ClientInfo& c(it.second);
 
-                if( dlog.is_level4() )
-                    dlog4 << myname << "(work): " << c.iaddr << " resp=" << (c.invert ? c.ptTimeout.checkTime() : !c.ptTimeout.checkTime())
+                dlog4 << myname << "(work): " << c.iaddr << " resp=" << (c.invert ? c.ptTimeout.checkTime() : !c.ptTimeout.checkTime())
                         << " askcount=" << c.askCount
                         << endl;
 

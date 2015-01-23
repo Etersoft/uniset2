@@ -87,7 +87,7 @@ TEST_CASE( "Configuration", "[Configuration]" )
     {
         int t_argc = 0;
         char t_argv[]={""};
-        ulog.level(Debug::NONE);
+        ulog()->level(Debug::NONE);
         REQUIRE_THROWS_AS( Configuration(t_argc,(const char* const*)(t_argv),"tests_no_objectsmap.xml"), UniSetTypes::SystemError );
     }
 
@@ -95,7 +95,7 @@ TEST_CASE( "Configuration", "[Configuration]" )
     {
         int t_argc = 0;
         char t_argv[]={""};
-        ulog.level(Debug::NONE);
+        ulog()->level(Debug::NONE);
         REQUIRE_THROWS_AS( Configuration(t_argc,(const char* const*)(t_argv),"tests_no_uniset_section.xml"), UniSetTypes::SystemError );
     }
 

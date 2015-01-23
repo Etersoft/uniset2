@@ -9,7 +9,15 @@ using namespace std;
 // -------------------------------------------------------------------------
 namespace UniSetExtensions
 {
-    DebugStream dlog;
+    static std::shared_ptr<DebugStream> _dlog;
+
+    std::shared_ptr<DebugStream> dlog()
+    {
+        if( _dlog )
+            return _dlog;
+        _dlog = make_shared<DebugStream>();
+        return _dlog;
+    }
     // -------------------------------------------------------------------------
     static UniSetTypes::ObjectId shmID = DefaultObjectId;
 

@@ -477,7 +477,7 @@ int IOBase::initIntProp( UniXML::iterator& it, const std::string& prop, const st
 // -----------------------------------------------------------------------------
 bool IOBase::initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SMInterface>& shm, const std::string& prefix, 
                         bool init_prefix_only,
-                        DebugStream* dlog, std::string myname,
+                        std::shared_ptr<DebugStream> dlog, std::string myname,
                         int def_filtersize, float def_filterT, float def_lsparam,
                         float def_iir_coeff_prev, float def_iir_coeff_new )
 {

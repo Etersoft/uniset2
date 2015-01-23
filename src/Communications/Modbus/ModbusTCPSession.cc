@@ -57,8 +57,8 @@ void ModbusTCPSession::run()
 //      cerr << "**************** CREATE SESS FOR " << string( inet_ntoa(a) ) << endl;
     }
 
-    if( dlog.debugging(Debug::INFO) )
-        dlog[Debug::INFO] << peername << "(run): run thread of sessions.." << endl;
+    if( dlog->is_info() )
+        dlog->info() << peername << "(run): run thread of sessions.." << endl;
 
     ModbusRTU::mbErrCode res = erTimeOut;
     cancelled = false;
@@ -79,13 +79,13 @@ void ModbusTCPSession::run()
         }
     }
 
-    if( dlog.debugging(Debug::INFO) )
-        dlog[Debug::INFO] << peername << "(run): stop thread of sessions..disconnect.." << endl;
+    if( dlog->is_info() )
+        dlog->info() << peername << "(run): stop thread of sessions..disconnect.." << endl;
 
     disconnect();
 
-    if( dlog.debugging(Debug::INFO) )
-        dlog[Debug::INFO] << peername << "(run): thread stopping..." << endl;
+    if( dlog->is_info() )
+        dlog->info() << peername << "(run): thread stopping..." << endl;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode ModbusTCPSession::receive( ModbusRTU::ModbusAddr addr, timeout_t msec )
@@ -203,11 +203,11 @@ mbErrCode ModbusTCPSession::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAP
 
     mhead.swapdata();
 
-    if( dlog.debugging(Debug::INFO) )
+    if( dlog->is_info() )
     {
-        dlog[Debug::INFO] << peername << "(tcp_processing): recv tcp header(" << len << "): ";
-        mbPrintMessage( dlog, (ModbusByte*)(&mhead), sizeof(mhead));
-        dlog(Debug::INFO) << endl;
+        dlog->info() << peername << "(tcp_processing): recv tcp header(" << len << "): ";
+        mbPrintMessage( *(dlog.get()), (ModbusByte*)(&mhead), sizeof(mhead));
+        (*(dlog.get()))(Debug::INFO) << endl;
     }
 
     // check header
@@ -218,8 +218,8 @@ mbErrCode ModbusTCPSession::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAP
 
     if( len<mhead.len )
     {
-        if( dlog.debugging(Debug::INFO) )
-            dlog[Debug::INFO] << peername << "(tcp_processing): len(" << (int)len 
+        if( dlog->is_info() )
+            dlog->info() << peername << "(tcp_processing): len(" << (int)len
                     << ") < mhead.len(" << (int)mhead.len << ")" << endl;
 
         return erInvalidFormat;
@@ -245,11 +245,11 @@ mbErrCode ModbusTCPSession::pre_send_request( ModbusMessage& request )
         curQueryHeader.len -= szCRC;
 
     curQueryHeader.swapdata();
-    if( dlog.debugging(Debug::INFO) )
+    if( dlog->is_info() )
     {
-        dlog[Debug::INFO] << peername << "(pre_send_request): send tcp header: ";
-        mbPrintMessage( dlog, (ModbusByte*)(&curQueryHeader), sizeof(curQueryHeader));
-        dlog(Debug::INFO) << endl;
+        dlog->info() << peername << "(pre_send_request): send tcp header: ";
+        mbPrintMessage( *(dlog.get()), (ModbusByte*)(&curQueryHeader), sizeof(curQueryHeader));
+        (*(dlog.get()))(Debug::INFO) << endl;
     }
 
     *tcp() << curQueryHeader;
@@ -274,8 +274,8 @@ void ModbusTCPSession::terminate()
 {
     ModbusServer::terminate();
 
-    if( dlog.debugging(Debug::INFO) )
-        dlog[Debug::INFO] << peername << "(terminate)..." << endl;
+    if( dlog->is_info() )
+        dlog->info() << peername << "(terminate)..." << endl;
 
     cancelled = true;
 

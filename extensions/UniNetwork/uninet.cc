@@ -21,11 +21,11 @@ int main(int argc, const char **argv)
     {
         auto conf = uniset_init(argc, argv);
 
-        conf->initDebug(dlog,"dlog");
+        conf->initDebug(dlog(),"dlog");
         string logfilename = conf->getArgParam("--logfile", "smemory.log");
         string logname( conf->getLogDir() + logfilename );
-        ulog.logFile( logname );
-        dlog.logFile( logname );
+        ulog()->logFile( logname );
+        dlog()->logFile( logname );
 
         ObjectId shmID = DefaultObjectId;
         string sID = conf->getArgParam("--smemory-id");
@@ -56,15 +56,15 @@ int main(int argc, const char **argv)
     }
     catch(SystemError& err)
     {
-        dlog.crit() << "(uninetwork): " << err << endl;
+        dcrit << "(uninetwork): " << err << endl;
     }
     catch(Exception& ex)
     {
-        dlog.crit() << "(uninetwork): " << ex << endl;
+        dcrit << "(uninetwork): " << ex << endl;
     }
     catch(...)
     {
-        dlog.crit() << "(uninetwork): catch(...)" << endl;
+        dcrit << "(uninetwork): catch(...)" << endl;
     }
 
     on_sigchild(SIGTERM);

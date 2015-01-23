@@ -718,7 +718,7 @@ bool IOControl::initIOItem( UniXML::iterator& it )
     
     std::string prop_prefix( prefix+"_" );
 
-    if( !IOBase::initItem(&inf,it,shm,prop_prefix,false,&dlog,myname,filtersize,filterT) )
+    if( !IOBase::initItem(&inf,it,shm,prop_prefix,false,dlog(),myname,filtersize,filterT) )
         return false;
 
     // если вектор уже заполнен
@@ -733,8 +733,7 @@ bool IOControl::initIOItem( UniXML::iterator& it )
     {
         IOPriority p(prior,maxItem);
         pmap.push_back(p);
-        if( dlog.debugging(Debug::LEVEL3) )
-            dlog[Debug::LEVEL3] << myname << "(readItem): add to priority list: " <<
+        dlog3 << myname << "(readItem): add to priority list: " <<
                         it.getProp("name")
                         << " priority=" << prior << endl;
     }
@@ -743,8 +742,7 @@ bool IOControl::initIOItem( UniXML::iterator& it )
     if( inf.t_ai != DefaultObjectId )
     {
         iomap[maxItem++] = std::move(inf);
-        if( dlog.debugging(Debug::LEVEL3) )
-            dlog[Debug::LEVEL3] << myname << "(readItem): add threshold '" << it.getProp("name")
+        dlog3 << myname << "(readItem): add threshold '" << it.getProp("name")
                         << " for '" << uniset_conf()->oind->getNameById(inf.t_ai) << endl;
         return true;
     }
@@ -1224,20 +1222,20 @@ void IOControl::sysCommand( const SystemMessage* sm )
         case SystemMessage::LogRotate:
         {
             // переоткрываем логи
-            ulog << myname << "(sysCommand): logRotate" << endl;
-            string fname( ulog.getLogFile() );
+            ulogany << myname << "(sysCommand): logRotate" << endl;
+            string fname( ulog()->getLogFile() );
             if( !fname.empty() )
             {
-                ulog.logFile(fname,true);
-                ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << endl;
+                ulog()->logFile(fname,true);
+                ulogany << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << endl;
             }
 
-            dlog << myname << "(sysCommand): logRotate" << endl;
-            fname = dlog.getLogFile();
+            dlogany << myname << "(sysCommand): logRotate" << endl;
+            fname = dlog()->getLogFile();
             if( !fname.empty() )
             {
-                dlog.logFile(fname,true);
-                dlog << myname << "(sysCommand): ***************** GGDEB LOG ROTATE *****************" << endl;
+                dlog()->logFile(fname,true);
+                dlogany << myname << "(sysCommand): ***************** GGDEB LOG ROTATE *****************" << endl;
             }
         }
         break;

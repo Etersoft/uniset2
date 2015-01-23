@@ -121,7 +121,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( const UniSetTypes::S
 	if( _sm->id == <xsl:value-of select="../../@name"/> )
 	{
 		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = _sm->value;
-        mylog.level( Debug::type(_sm->value) );
+        mylog->level( Debug::type(_sm->value) );
     }
     </xsl:if>
 	</xsl:if>

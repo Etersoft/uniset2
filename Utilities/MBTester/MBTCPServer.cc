@@ -66,7 +66,7 @@ MBTCPServer::~MBTCPServer()
     delete sslot;
 }
 // -------------------------------------------------------------------------
-void MBTCPServer::setLog( DebugStream& dlog )
+void MBTCPServer::setLog( std::shared_ptr<DebugStream> dlog )
 {
     if( sslot )
         sslot->setLog(dlog);

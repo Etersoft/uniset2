@@ -157,7 +157,7 @@ struct IOBase
     */
     static bool initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SMInterface>& shm,
                             const std::string& prefix, bool init_prefix_only,
-                            DebugStream* dlog=0, std::string myname="",
+                            std::shared_ptr<DebugStream> dlog=nullptr, std::string myname="",
                             int def_filtersize=0, float def_filterT=0.0,
                             float def_lsparam=0.2, float def_iir_coeff_prev=0.5,
                             float def_iir_coeff_new=0.5 );

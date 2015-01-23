@@ -121,8 +121,8 @@ bool ModbusTCPServer::waitQuery( ModbusRTU::ModbusAddr mbaddr, timeout_t msec )
     }
     catch( ost::Exception& e )
     {
-        if( dlog.debugging(Debug::WARN) )
-            dlog[Debug::WARN] << "(ModbusTCPServer): " << e.what() << endl;
+        if( dlog->is_warn() )
+            dlog->warn() << "(ModbusTCPServer): " << e.what() << endl;
     }
 
     return false;
@@ -289,11 +289,11 @@ mbErrCode ModbusTCPServer::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPH
 
     mhead.swapdata();
 
-    if( dlog.is_info() )
+    if( dlog->is_info() )
     {
-        dlog.info() << "(ModbusTCPServer::tcp_processing): recv tcp header(" << len << "): ";
-        mbPrintMessage( dlog, (ModbusByte*)(&mhead), sizeof(mhead));
-        dlog(Debug::INFO) << endl;
+        dlog->info() << "(ModbusTCPServer::tcp_processing): recv tcp header(" << len << "): ";
+        mbPrintMessage( *(dlog.get()), (ModbusByte*)(&mhead), sizeof(mhead));
+        (*(dlog.get()))(Debug::INFO) << endl;
     }
 
     // check header
@@ -304,8 +304,8 @@ mbErrCode ModbusTCPServer::tcp_processing( ost::TCPStream& tcp, ModbusTCP::MBAPH
 
     if( len<mhead.len )
     {
-        if( dlog.is_info() )
-            dlog.info() << "(ModbusTCPServer::tcp_processing): len(" << (int)len 
+        if( dlog->is_info() )
+            dlog->info() << "(ModbusTCPServer::tcp_processing): len(" << (int)len
                     << ") < mhead.len(" << (int)mhead.len << ")" << endl;
 
         return erInvalidFormat;
@@ -331,11 +331,11 @@ mbErrCode ModbusTCPServer::pre_send_request( ModbusMessage& request )
         curQueryHeader.len -= szCRC;
 
     curQueryHeader.swapdata();
-    if( dlog.is_info() )
+    if( dlog->is_info() )
     {
-        dlog.info() << "(ModbusTCPServer::pre_send_request): send tcp header: ";
-        mbPrintMessage( dlog, (ModbusByte*)(&curQueryHeader), sizeof(curQueryHeader));
-        dlog(Debug::INFO) << endl;
+        dlog->info() << "(ModbusTCPServer::pre_send_request): send tcp header: ";
+        mbPrintMessage( *(dlog.get()), (ModbusByte*)(&curQueryHeader), sizeof(curQueryHeader));
+        (*(dlog.get()))(Debug::INFO) << endl;
     }
 
     tcp << curQueryHeader;
@@ -359,8 +359,8 @@ void ModbusTCPServer::terminate()
 {
     cancelled = true;
 
-    if( dlog.is_info() )
-        dlog.info() << "(ModbusTCPServer): terminate..." << endl;
+    if( dlog->is_info() )
+        dlog->info() << "(ModbusTCPServer): terminate..." << endl;
 
     if( tcp && tcp.isConnected() )
         tcp.disconnect();

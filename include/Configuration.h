@@ -142,6 +142,8 @@ namespace UniSetTypes
         int getArgPInt(const std::string& name, const std::string& strdefval, int defval);
 
         xmlNode* initDebug( DebugStream& deb, const std::string& nodename );
+        xmlNode* initDebug( std::shared_ptr<DebugStream> deb, const std::string& nodename );
+        xmlNode* initDebug( DebugStream* deb, const std::string& nodename );
 
         UniSetTypes::ListOfNode::const_iterator listNodesBegin()
         {
@@ -235,7 +237,7 @@ namespace UniSetTypes
     std::shared_ptr<Configuration> uniset_conf();
 
     /*! Глобальный объект для вывода логов */
-    extern DebugStream ulog;
+    std::shared_ptr<DebugStream> ulog();
 
     /*! инициализация "глобальной" конфигурации */
     std::shared_ptr<Configuration> uniset_init( int argc, const char* const* argv, const std::string& xmlfile="configure.xml" );
@@ -243,19 +245,20 @@ namespace UniSetTypes
 }    // end of UniSetTypes namespace
 // --------------------------------------------------------------------------
 // "синтаксический сахар"..для логов
-#define uinfo if( UniSetTypes::ulog.debugging(Debug::INFO) ) UniSetTypes::ulog[Debug::INFO]
-#define uwarn if( UniSetTypes::ulog.debugging(Debug::WARN) ) UniSetTypes::ulog[Debug::WARN]
-#define ucrit if( UniSetTypes::ulog.debugging(Debug::CRIT) ) UniSetTypes::ulog[Debug::CRIT]
-#define ulog1 if( UniSetTypes::ulog.debugging(Debug::LEVEL1) ) UniSetTypes::ulog[Debug::LEVEL1]
-#define ulog2 if( UniSetTypes::ulog.debugging(Debug::LEVEL2) ) UniSetTypes::ulog[Debug::LEVEL2]
-#define ulog3 if( UniSetTypes::ulog.debugging(Debug::LEVEL3) ) UniSetTypes::ulog[Debug::LEVEL3]
-#define ulog4 if( UniSetTypes::ulog.debugging(Debug::LEVEL4) ) UniSetTypes::ulog[Debug::LEVEL4]
-#define ulog5 if( UniSetTypes::ulog.debugging(Debug::LEVEL5) ) UniSetTypes::ulog[Debug::LEVEL5]
-#define ulog6 if( UniSetTypes::ulog.debugging(Debug::LEVEL6) ) UniSetTypes::ulog[Debug::LEVEL6]
-#define ulog7 if( UniSetTypes::ulog.debugging(Debug::LEVEL7) ) UniSetTypes::ulog[Debug::LEVEL7]
-#define ulog8 if( UniSetTypes::ulog.debugging(Debug::LEVEL8) ) UniSetTypes::ulog[Debug::LEVEL8]
-#define ulog9 if( UniSetTypes::ulog.debugging(Debug::LEVEL9) ) UniSetTypes::ulog[Debug::LEVEL9]
-#define ulogsys if( UniSetTypes::ulog.debugging(Debug::SYSTEM) ) UniSetTypes::ulog[Debug::SYSTEM]
-#define ulogrep if( UniSetTypes::ulog.debugging(Debug::REPOSITORY) ) UniSetTypes::ulog[Debug::REPOSITORY]
+#define uinfo if( UniSetTypes::ulog()->debugging(Debug::INFO) ) UniSetTypes::ulog()->info()
+#define uwarn if( UniSetTypes::ulog()->debugging(Debug::WARN) ) UniSetTypes::ulog()->warn()
+#define ucrit if( UniSetTypes::ulog()->debugging(Debug::CRIT) ) UniSetTypes::ulog()->crit()
+#define ulog1 if( UniSetTypes::ulog()->debugging(Debug::LEVEL1) ) UniSetTypes::ulog()->level1()
+#define ulog2 if( UniSetTypes::ulog()->debugging(Debug::LEVEL2) ) UniSetTypes::ulog()->level2()
+#define ulog3 if( UniSetTypes::ulog()->debugging(Debug::LEVEL3) ) UniSetTypes::ulog()->level3()
+#define ulog4 if( UniSetTypes::ulog()->debugging(Debug::LEVEL4) ) UniSetTypes::ulog()->level4()
+#define ulog5 if( UniSetTypes::ulog()->debugging(Debug::LEVEL5) ) UniSetTypes::ulog()->level5()
+#define ulog6 if( UniSetTypes::ulog()->debugging(Debug::LEVEL6) ) UniSetTypes::ulog()->level6()
+#define ulog7 if( UniSetTypes::ulog()->debugging(Debug::LEVEL7) ) UniSetTypes::ulog()->level7()
+#define ulog8 if( UniSetTypes::ulog()->debugging(Debug::LEVEL8) ) UniSetTypes::ulog()->level8()
+#define ulog9 if( UniSetTypes::ulog()->debugging(Debug::LEVEL9) ) UniSetTypes::ulog()->level9()
+#define ulogsys if( UniSetTypes::ulog()->debugging(Debug::SYSTEM) ) UniSetTypes::ulog()->system()
+#define ulogrep if( UniSetTypes::ulog()->debugging(Debug::REPOSITORY) ) UniSetTypes::ulog()->repository()
+#define ulogany UniSetTypes::ulog()->any()
 // --------------------------------------------------------------------------
 #endif // Configuration_H_
