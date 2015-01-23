@@ -87,11 +87,11 @@ TEST_CASE("MBTCPMultiMaster: rotate channel","[modbus][mbmaster][mbtcpmultimaste
     msleep(polltime+1000);
     REQUIRE( ui->getValue(1003) == 100 );
     mbs1->disableExchange(true);
-    msleep(3200); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
+    msleep(4000); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
     REQUIRE( ui->getValue(1003) == 10 );
     mbs1->disableExchange(false);
     mbs2->disableExchange(true);
-    msleep(3200); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
+    msleep(4000); // --mbtcp-timeout 3000 (см. run_test_mbtcmultipmaster.sh)
     REQUIRE( ui->getValue(1003) == 100 );
     mbs2->disableExchange(false);
     REQUIRE( ui->getValue(1003) == 100 );
