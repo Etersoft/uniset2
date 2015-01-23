@@ -2,7 +2,7 @@
 
 USERID=0
 BASEOMNIPORT=2809
-UNISET_SCRIPT_VERBOSE=
+[ -z "$UNISET_SCRIPT_VERBOSE" ] && UNISET_SCRIPT_VERBOSE=
 
 # Получаем наш внутренний номер пользователя
 function get_userid()

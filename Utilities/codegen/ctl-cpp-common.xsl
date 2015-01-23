@@ -618,8 +618,7 @@ end_private(false)
 		throw SystemError( err.str() );
 	}
 
-
-
+	mylog.setLogName(myname);
 
 <xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
@@ -943,6 +942,8 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 		throw SystemError( err.str() );
 	}
 
+	mylog.setLogName(myname);
+	
 	si.node = conf->getLocalNode();
 
 

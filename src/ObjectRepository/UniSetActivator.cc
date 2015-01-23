@@ -268,16 +268,14 @@ void UniSetActivator::Destroy()
 // ---------------------------------------------------------------------------
 UniSetActivator::UniSetActivator( const ObjectId id ):
     UniSetManager(id),
-    omDestroy(false),
-    sig(false)
+    omDestroy(false)
 {
     UniSetActivator::init();
 }
 // ------------------------------------------------------------------------------------------
 UniSetActivator::UniSetActivator():
     UniSetManager(UniSetTypes::DefaultObjectId),
-    omDestroy(false),
-    sig(false)
+    omDestroy(false)
 {
     //    thread(false);    //    отключаем поток (раз не задан id)
     UniSetActivator::init();
@@ -301,7 +299,7 @@ void UniSetActivator::init()
         ucrit << myname << "(init): init poa failed!!!" << endl;
 
 //    Чтобы подключиться к функциям завершения как можно раньше (раньше создания объектов)
-//  этот код перенесён в Configuration::uniset_init (в надежде, что uniset_init всегда вызывается одной из первых).
+//    этот код перенесён в Configuration::uniset_init (в надежде, что uniset_init всегда вызывается одной из первых).
 //    atexit( UniSetActivator::normalexit );
 //    set_terminate( UniSetActivator::normalterminate ); // ловушка для неизвестных исключений
 }
@@ -403,8 +401,7 @@ void UniSetActivator::run( bool thread )
         offThread(); // отключение потока обработки сообщений, раз не задан ObjectId
 
     UniSetManager::activate(); // а там вызывается активация всех подчиненных объектов и менеджеров
-
-    active=true;
+    active = true;
 
     ulogsys << myname << "(run): активизируем менеджер"<<endl;
     pman->activate();
@@ -431,38 +428,37 @@ void UniSetActivator::run( bool thread )
 */
 void UniSetActivator::stop()
 {
-    //    uniset_mutex_lock l(deactivateMutex, 500);
-    if( active )
+    if( !active )
+        return;
+
+    active = false;
+
+    ulogsys << myname << "(stop): deactivate...  "<< endl;
+
+    deactivate();
+
+    try
     {
-        active=false;
-
-        ulogsys << myname << "(stop): deactivate...  "<< endl;
-
-        deactivate();
-
-        try
-        {
-            deactivateObject();
-        }
-        catch(omniORB::fatalException& fe)
-        {
-            ucrit << myname << "(stop): : поймали omniORB::fatalException:" << endl;
-            ucrit << myname << "(stop):   file: " << fe.file() << endl;
-            ucrit << myname << "(stop):   line: " << fe.line() << endl;
-            ucrit << myname << "(stop):   mesg: " << fe.errmsg() << endl;
-        }
-        catch( std::exception& ex )
-        {
-            ucrit << myname << "(stop): " << ex.what() << endl;
-        }
-
-        ulogsys << myname << "(stop): deactivate ok.  "<<endl;
-        ulogsys << myname << "(stop): discard request..."<< endl;
-
-        pman->discard_requests(true);
-
-        ulogsys << myname << "(stop): discard request ok."<< endl;
+        deactivateObject();
     }
+    catch(omniORB::fatalException& fe)
+    {
+        ucrit << myname << "(stop): : поймали omniORB::fatalException:" << endl;
+        ucrit << myname << "(stop):   file: " << fe.file() << endl;
+        ucrit << myname << "(stop):   line: " << fe.line() << endl;
+        ucrit << myname << "(stop):   mesg: " << fe.errmsg() << endl;
+    }
+    catch( std::exception& ex )
+    {
+        ucrit << myname << "(stop): " << ex.what() << endl;
+    }
+
+    ulogsys << myname << "(stop): deactivate ok.  "<<endl;
+    ulogsys << myname << "(stop): discard request..."<< endl;
+
+    pman->discard_requests(true);
+
+    ulogsys << myname << "(stop): discard request ok."<< endl;
 }
 
 // ------------------------------------------------------------------------------------------
@@ -517,17 +513,17 @@ void UniSetActivator::sysCommand( const UniSetTypes::SystemMessage *sm )
 {
     switch(sm->command)
     {
-    case SystemMessage::LogRotate:
-    {
-        ulogsys << myname << "(sysCommand): logRotate" << endl;
-        // переоткрываем логи
-        string fname = ulog.getLogFile();
-        if( !fname.empty() )
+        case SystemMessage::LogRotate:
         {
-            ulog.logFile(fname.c_str(),true);
-            ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << endl;
+            ulogsys << myname << "(sysCommand): logRotate" << endl;
+            // переоткрываем логи
+            string fname = ulog.getLogFile();
+            if( !fname.empty() )
+            {
+                ulog.logFile(fname.c_str(),true);
+                ulog << myname << "(sysCommand): ***************** ulog LOG ROTATE *****************" << endl;
+            }
         }
-    }
         break;
     }
 }
@@ -602,69 +598,69 @@ void UniSetActivator::terminated( int signo )
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::normalexit()
 {
-    if( g_act )
-    {
-        ulogsys << g_act->getName() << "(default exit): ..begin..."<< endl << flush;
-        if( g_term == false )
-        {
-            // прежде чем вызывать notify_one(), мы должны освободить mutex!
-            {
-                std::unique_lock<std::mutex> locker(g_termmutex);
-                g_term = true;
-                g_signo = 0;
-            }
-            ulogsys << "(default exit): notify terminate.." << endl << flush;
-            g_termevent.notify_one();
-        }
+    if( !g_act )
+        return;
 
-        ulogsys << "(default exit): wait done.." << endl << flush;
-#if 1
-        if( g_term_thread && g_term_thread->joinable() )
-            g_term_thread->join();
-#else
-        if( g_doneevent )
+    ulogsys << g_act->getName() << "(default exit): ..begin..."<< endl << flush;
+    if( g_term == false )
+    {
+        // прежде чем вызывать notify_one(), мы должны освободить mutex!
         {
-            std::unique_lock<std::mutex> locker(g_donemutex);
-            while( !g_done )
-                g_doneevent.wait(locker);
+            std::unique_lock<std::mutex> locker(g_termmutex);
+            g_term = true;
+            g_signo = 0;
         }
+        ulogsys << "(default exit): notify terminate.." << endl << flush;
+        g_termevent.notify_one();
+    }
+
+    ulogsys << "(default exit): wait done.." << endl << flush;
+#if 1
+    if( g_term_thread && g_term_thread->joinable() )
+        g_term_thread->join();
+#else
+    if( g_doneevent )
+    {
+        std::unique_lock<std::mutex> locker(g_donemutex);
+        while( !g_done )
+            g_doneevent.wait(locker);
+    }
 #endif
 
-         ulogsys << "(default exit): wait done OK (good bye)" << endl << flush;
-    }
+    ulogsys << "(default exit): wait done OK (good bye)" << endl << flush;
 }
-
+// ------------------------------------------------------------------------------------------
 void UniSetActivator::normalterminate()
 {
-    if( g_act )
-    {
-        ulogsys << g_act->getName() << "(default terminate): ..begin..."<< endl << flush;
-        if( g_term == false )
-        {
-            // прежде чем вызывать notify_one(), мы должны освободить mutex!
-            {
-                std::unique_lock<std::mutex> locker(g_termmutex);
-                g_term = true;
-                g_signo = 0;
-            }
-            ulogsys << "(default terminate): notify terminate.." << endl << flush;
-            g_termevent.notify_one();
-        }
+    if( !g_act )
+        return;
 
-        ulogsys << "(default terminate): wait done.." << endl << flush;
-#if 1
-        if( g_term_thread && g_term_thread->joinable() )
-            g_term_thread->join();
-#else
-        if( g_doneevent )
+    ulogsys << g_act->getName() << "(default terminate): ..begin..."<< endl << flush;
+    if( g_term == false )
+    {
+        // прежде чем вызывать notify_one(), мы должны освободить mutex!
         {
-            std::unique_lock<std::mutex> locker(g_donemutex);
-            while( !g_done )
-                g_doneevent.wait(locker);
+            std::unique_lock<std::mutex> locker(g_termmutex);
+            g_term = true;
+            g_signo = 0;
         }
-#endif
-        ulogsys << "(default terminate): wait done OK (good bye)" << endl << flush;
+        ulogsys << "(default terminate): notify terminate.." << endl << flush;
+        g_termevent.notify_one();
     }
+
+    ulogsys << "(default terminate): wait done.." << endl << flush;
+#if 1
+    if( g_term_thread && g_term_thread->joinable() )
+        g_term_thread->join();
+#else
+    if( g_doneevent )
+    {
+        std::unique_lock<std::mutex> locker(g_donemutex);
+        while( !g_done )
+            g_doneevent.wait(locker);
+    }
+#endif
+    ulogsys << "(default terminate): wait done OK (good bye)" << endl << flush;
 }
 // ------------------------------------------------------------------------------------------
 void UniSetActivator::term( int signo )
@@ -676,9 +672,6 @@ void UniSetActivator::term( int signo )
         if( g_term )
             return;
     }
-
-    if( signo )
-        sig = true;
 
     try
     {

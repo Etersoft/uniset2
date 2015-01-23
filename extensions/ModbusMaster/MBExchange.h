@@ -41,9 +41,9 @@ class MBExchange:
         enum ExchangeMode
         {
             emNone=0,         /*!< нормальная работа (по умолчанию) */
-            emWriteOnly=1,     /*!< "только посылка данных" (работают только write-функции) */
-            emReadOnly=2,        /*!< "только чтение" (работают только read-функции) */
-            emSkipSaveToSM=3,    /*!< не писать данные в SM (при этом работают и read и write функции */
+            emWriteOnly=1,    /*!< "только посылка данных" (работают только write-функции) */
+            emReadOnly=2,     /*!< "только чтение" (работают только read-функции) */
+            emSkipSaveToSM=3, /*!< не писать данные в SM (при этом работают и read и write функции) */
             emSkipExchange=4  /*!< отключить обмен */
         };
 
@@ -51,9 +51,9 @@ class MBExchange:
 
         enum DeviceType
         {
-            dtUnknown,        /*!< неизвестный */
-            dtRTU,            /*!< RTU (default) */
-            dtMTR,            /*!< MTR (DEIF) */
+            dtUnknown,      /*!< неизвестный */
+            dtRTU,          /*!< RTU (default) */
+            dtMTR,          /*!< MTR (DEIF) */
             dtRTU188        /*!< RTU188 (Fastwell) */
         };
 
@@ -67,9 +67,9 @@ class MBExchange:
             public IOBase
         {
             // only for RTU
-            short nbit;                /*!< bit number) */
+            short nbit;             /*!< bit number) */
             VTypes::VType vType;    /*!< type of value */
-            short rnum;                /*!< count of registers */
+            short rnum;             /*!< count of registers */
             short nbyte;            /*!< byte number (1-2) */
 
             RSProperty():

@@ -392,7 +392,7 @@ void MBSlave::waitSMReady()
 //        throw SystemError(err.str());
         raise(SIGTERM);
         terminate();
-//		abort();
+//        abort();
     }
 }
 // -----------------------------------------------------------------------------

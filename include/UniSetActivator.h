@@ -33,8 +33,6 @@
 #include "UniSetObject.h"
 #include "UniSetManager.h"
 #include "OmniThreadCreator.h"
-
-//#include "OmniThreadCreator.h"
 //----------------------------------------------------------------------------------------
 class UniSetActivator;
 typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
@@ -46,7 +44,7 @@ typedef std::shared_ptr<UniSetActivator> UniSetActivatorPtr;
  *    \warning Авктиватор может быть создан только один. Для его создания используйте код:
   \code
      ...
-     UniSetActivator* act = UniSetActivator::Instance()
+     auto act = UniSetActivator::Instance()
      ...
 \endcode
  *    Активатор в свою очередь сам является менеджером(и объектом) и обладает всеми его свойствами
@@ -75,24 +73,6 @@ class UniSetActivator:
 
     protected:
 
-        /*! Команды доступные при заказе сигналов
-         * см. askSignal()
-        */
-        enum AskSigCommand    {
-                                Ask,     /*!< заказать получение сигнала */
-                                Denial /*!< отказаться от получения сигнала */
-                            };
-
-        /*! заказ на обработку сигнала signo
-         * Для обработки предназначена функция signal().
-         * \warning Сообщение о приходе сигналов SITERM, SIGINT, SIGABRT приходит
-         * вне зависимости от заказа. От этих сообщений нельзя отказаться...
-         * \warning Заказ других сигналов пока не работает..
-         * \warning функция временно недоступна (private). Ведуться работы...
-         * \todo сделать возможность заказа других сигналов
-        */
-//        void askSignal(int signo, AskSigCommand cmd=Ask);
-
         virtual void work();
 
         inline CORBA::ORB_ptr getORB()
@@ -102,11 +82,9 @@ class UniSetActivator:
 
         virtual void sysCommand( const UniSetTypes::SystemMessage *sm ) override;
 
-
         // уносим в protected, т.к. Activator должен быть только один..
         UniSetActivator();
         UniSetActivator( const UniSetTypes::ObjectId id );
-
         static std::shared_ptr<UniSetActivator> inst;
 
     private:
@@ -125,23 +103,10 @@ class UniSetActivator:
 
         CORBA::ORB_var orb;
         TerminateEvent_Signal s_term;
-        ost::AtomicCounter orbthrIsFinished;
 
-        bool omDestroy;
-        bool sig;
+        std::atomic_bool omDestroy;
         pid_t thpid; // pid orb потока
 };
-
-/*
-template<class TClass>
-int    UniSetActivator::attach(TClass* p, void(TClass:: *f)(void*) )
-{
-    if( next >= MAX_CHILD_THREAD )
-        return -1;
-
-    callpull[next] = new OmniThreadCreator<TClass>( p, f);
-    next++;
-    return 0;
-}
-*/
+//----------------------------------------------------------------------------------------
 #endif
+//----------------------------------------------------------------------------------------
