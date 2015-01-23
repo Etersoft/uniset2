@@ -202,10 +202,12 @@ void MBExchange::waitSMReady()
     if( !shm->waitSMready(ready_timeout, 50) )
     {
         ostringstream err;
-        err << myname << "(waitSMReady): failed waiting SharedMemory " << ready_timeout << " msec";
+        err << myname << "(waitSMReady): failed waiting SharedMemory " << ready_timeout << " msec. ==> TERMINATE!";
         dcrit << err.str() << endl;
-        if( checkProcActive() )
-               throw SystemError(err.str());
+        raise(SIGTERM);
+        //if( checkProcActive() )
+        //       throw SystemError(err.str());
+        
     }
 }
 // -----------------------------------------------------------------------------
@@ -2001,7 +2003,7 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML::iterator& it,  MBExchange::RTU
     }
     else
     {
-        string sr( IOBase::initProp(it,"mbreg",prefix,false) );
+        string sr( IOBase::initProp(it,"mbreg",prop_prefix,false) );
         if( sr.empty() )
         {
             dcrit << myname << "(initItem): Unknown 'mbreg' for " << it.getProp("name") << endl;
@@ -2011,7 +2013,7 @@ bool MBExchange::initRegInfo( RegInfo* r, UniXML::iterator& it,  MBExchange::RTU
     }
 
     r->mbfunc     = ModbusRTU::fnUnknown;
-    string f( IOBase::initProp(it,"mbfunc",prefix,false) );
+    string f( IOBase::initProp(it,"mbfunc",prop_prefix,false) );
     if( !f.empty() )
     {
         r->mbfunc = (ModbusRTU::SlaveFunctionCode)UniSetTypes::uni_atoi(f.c_str());
@@ -2068,6 +2070,9 @@ bool MBExchange::initItem( UniXML::iterator& it )
     RSProperty p;
     if( !initRSProperty(p,it) )
         return false;
+
+    if( p.t_ai != DefaultObjectId ) // пороговые датчики в список обмена вносить не надо.
+        return true;
 
     string addr( IOBase::initProp(it,"mbaddr",prop_prefix,false) );
     if( addr.empty() )

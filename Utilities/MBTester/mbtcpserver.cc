@@ -14,7 +14,7 @@ static struct option longopts[] = {
     { "verbose", no_argument, 0, 'v' },
     { "myaddr", required_argument, 0, 'a' },
     { "port", required_argument, 0, 'p' },
-    { "ignore-addr", no_argument, 0, 'x' },
+    { "reply-all", no_argument, 0, 'r' },
     { "const-reply", required_argument, 0, 'c' },
     { NULL, 0, 0, 0 }
 };
@@ -26,7 +26,7 @@ static void print_help()
     printf("[-v|--verbose]          - Print all messages to stdout\n");
     printf("[-i|--iaddr] ip         - Server listen ip. Default 127.0.0.1\n");
     printf("[-a|--myaddr] addr      - Modbus address for master. Default: 0x01.\n");
-    printf("[-x|--ignore-addr]      - Ignore modbus RTU-address.\n");
+    printf("[-r|--reply-all]        - Reply to all RTU-addresses.\n");
     printf("[-p|--port] port        - Server port. Default: 502.\n");
     printf("[-c|--const-reply] val  - Reply 'val' for all queries\n");
 }
@@ -48,7 +48,7 @@ int main( int argc, char **argv )
 
     try
     {
-        while( (opt = getopt_long(argc, argv, "hva:p:i:bxc:",longopts,&optindex)) != -1 )
+        while( (opt = getopt_long(argc, argv, "hva:p:i:brc:",longopts,&optindex)) != -1 )
         {
             switch (opt)
             {
@@ -72,7 +72,7 @@ int main( int argc, char **argv )
                     verb = 1;
                 break;
 
-                case 'x':
+                case 'r':
                     ignoreAddr = true;
                 break;
 

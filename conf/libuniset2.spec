@@ -408,6 +408,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %changelog
 * Fri Jan 23 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt12
 - refactoring LogAgregator,LogServer,LogSesson --> use shared_ptr
+- fixed bug in MBExchange (read prop_prefix)
+- mbtcpserver-echo:  rename command line parameter: --ignore-addr ==> --reply-all 
 
 * Sat Jan 17 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt11
 - refactoring "exit process"
