@@ -13,9 +13,7 @@ int main( int argc, const char **argv )
 
         string logfilename = conf->getArgParam("--logfile", "Skel.log");
         string logname( conf->getLogDir() + logfilename );
-//        dlog.logFile( logname.c_str() );
         ulog.logFile( logname.c_str() );
-//        conf->initDebug(dlog,"dlog");
 
         auto act = UniSetActivator::Instance();
         xmlNode* cnode = conf->getNode("Skel");

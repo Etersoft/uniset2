@@ -1261,7 +1261,7 @@ mbErrCode ModbusClient::send( ModbusMessage& msg )
 void ModbusClient::initLog( UniSetTypes::Configuration* conf,
                             const std::string& lname, const string& logfile )
 {
-    conf->initDebug(dlog,lname);
+    conf->initLogStream(dlog,lname);
 
     if( !logfile.empty() )
         dlog->logFile( logfile );

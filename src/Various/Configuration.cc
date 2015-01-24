@@ -266,7 +266,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         }
 
         // Настраиваем отладочные логи
-        initDebug(ulog(),"UniSetDebug");
+        initLogStream(ulog(),"UniSetDebug");
 
         // default init...
         transientIOR     = false;
@@ -729,27 +729,27 @@ string Configuration::getPropByNodeName(const string& nodename, const string& pr
     return getProp(node,prop);
 }
 // -------------------------------------------------------------------------
-xmlNode* Configuration::initDebug( std::shared_ptr<DebugStream> deb, const string& _debname )
+xmlNode* Configuration::initLogStream( std::shared_ptr<DebugStream> deb, const string& _debname )
 {
     if( !deb )
         return NULL;
 
-    return initDebug( deb.get(), _debname );
+    return initLogStream( deb.get(), _debname );
 }
 // -------------------------------------------------------------------------
-xmlNode* Configuration::initDebug( DebugStream& deb, const string& _debname )
+xmlNode* Configuration::initLogStream( DebugStream& deb, const string& _debname )
 {
-    return initDebug(&deb, _debname);
+    return initLogStream(&deb, _debname);
 }
 // -------------------------------------------------------------------------
-xmlNode* Configuration::initDebug( DebugStream* deb, const string& _debname )
+xmlNode* Configuration::initLogStream( DebugStream* deb, const string& _debname )
 {
     if( !deb )
         return NULL;
 
     if( _debname.empty() )
     {
-        deb->any() << "(Configuration)(initDebug): INIT DEBUG FAILED!!!" << endl;
+        deb->any() << "(Configuration)(initLogStream): INIT DEBUG FAILED!!!" << endl;
         return 0;
     }
 
@@ -758,7 +758,7 @@ xmlNode* Configuration::initDebug( DebugStream* deb, const string& _debname )
 
     xmlNode* dnode = getNode(_debname);
     if( dnode == NULL )
-        deb->any() << "(Configuration)(initDebug):  WARNING! Not found conf. section for log '" << _debname  << "'" << endl;
+        deb->any() << "(Configuration)(initLogStream):  WARNING! Not found conf. section for log '" << _debname  << "'" << endl;
     else
     {
         if( !getProp(dnode,"name").empty() )

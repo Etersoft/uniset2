@@ -633,7 +633,7 @@ end_private(false)
 	{
 		ostringstream s;
 		s &lt;&lt; myname &lt;&lt; "-log";
-		conf->initDebug(mylog,s.str());
+		conf->initLogStream(mylog,s.str());
 	}
 
 <xsl:for-each select="//smap/item">
@@ -963,7 +963,7 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
     {
         ostringstream s;
         s &lt;&lt; myname &lt;&lt; "-log";
-        conf->initDebug(mylog, s.str());
+        conf->initLogStream(mylog, s.str());
     }
     	
 	si.node = conf->getLocalNode();

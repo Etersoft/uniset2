@@ -18,9 +18,11 @@ namespace UniSetExtensions
 
         _dlog = make_shared<DebugStream>();
 
+        _dlog->setLogName("dlog");
+
         auto conf = uniset_conf();
         if( conf )
-            conf->initDebug(_dlog,"dlog");
+            conf->initLogStream(_dlog,"dlog");
 
         return _dlog;
     }

@@ -141,9 +141,9 @@ namespace UniSetTypes
         int getArgPInt(const std::string& name, int defval);
         int getArgPInt(const std::string& name, const std::string& strdefval, int defval);
 
-        xmlNode* initDebug( DebugStream& deb, const std::string& nodename );
-        xmlNode* initDebug( std::shared_ptr<DebugStream> deb, const std::string& nodename );
-        xmlNode* initDebug( DebugStream* deb, const std::string& nodename );
+        xmlNode* initLogStream( DebugStream& deb, const std::string& nodename );
+        xmlNode* initLogStream( std::shared_ptr<DebugStream> deb, const std::string& nodename );
+        xmlNode* initLogStream( DebugStream* deb, const std::string& nodename );
 
         UniSetTypes::ListOfNode::const_iterator listNodesBegin()
         {
