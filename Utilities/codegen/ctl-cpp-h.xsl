@@ -88,7 +88,7 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		</xsl:text>
 		<xsl:for-each select="//variables/item">
         <xsl:if test="normalize-space(@public)!=''">
-		<xsl:if test="normalize-space(@const)!=''">const </xsl:if>
+    		<xsl:if test="normalize-space(@type)!=''"><xsl:if test="normalize-space(@const)!=''">const </xsl:if></xsl:if>
 		<xsl:if test="normalize-space(@type)='int'">int <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
 		<xsl:if test="normalize-space(@type)='long'">long <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
@@ -100,6 +100,10 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		<xsl:if test="normalize-space(@type)='bool'">bool <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
 		<xsl:if test="normalize-space(@type)='str'">std::string <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='sensor'">UniSetTypes::ObjectId <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='object'">UniSetTypes::ObjectId <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
 		</xsl:if>
 		</xsl:for-each>
@@ -112,7 +116,7 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		<xsl:for-each select="//variables/item">
         <xsl:if test="normalize-space(@private)=''">
 		<xsl:if test="normalize-space(@public)=''">
-		<xsl:if test="normalize-space(@const)!=''">const </xsl:if>
+		<xsl:if test="normalize-space(@type)!=''"><xsl:if test="normalize-space(@const)!=''">const </xsl:if></xsl:if>
 		<xsl:if test="normalize-space(@type)='int'">int <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
 		<xsl:if test="normalize-space(@type)='long'">long <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
@@ -124,6 +128,10 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		<xsl:if test="normalize-space(@type)='bool'">bool <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
 		<xsl:if test="normalize-space(@type)='str'">std::string <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='sensor'">UniSetTypes::ObjectId <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='object'">UniSetTypes::ObjectId <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
 		</xsl:if>
 		</xsl:if>
@@ -149,6 +157,8 @@ class <xsl:value-of select="$CLASSNAME"/>_SK:
 		<xsl:if test="normalize-space(@type)='bool'">bool <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
 		<xsl:if test="normalize-space(@type)='str'">std::string <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
+		</xsl:if>
+		<xsl:if test="normalize-space(@type)='sensor'">UniSetTypes::ObjectId <xsl:value-of select="@name"/>; /*!&lt; <xsl:value-of select="@comment"/> */
 		</xsl:if>
 		</xsl:if>
 		</xsl:for-each>// --- end of private variables ---

@@ -451,6 +451,8 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 <xsl:if test="normalize-space(@type)='double'"><xsl:value-of select="normalize-space(@name)"/>(0),</xsl:if>
 <xsl:if test="normalize-space(@type)='bool'"><xsl:value-of select="normalize-space(@name)"/>(false),</xsl:if>
 <xsl:if test="normalize-space(@type)='str'"><xsl:value-of select="normalize-space(@name)"/>(""),</xsl:if>
+<xsl:if test="normalize-space(@type)='sensor'"><xsl:value-of select="normalize-space(@name)"/>(DefaultObjectId),</xsl:if>
+<xsl:if test="normalize-space(@type)='object'"><xsl:value-of select="normalize-space(@name)"/>(DefaultObjectId),</xsl:if>
 </xsl:if>
 </xsl:template>
 <xsl:template name="init-variables">
@@ -471,6 +473,12 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 </xsl:if>
 <xsl:if test="normalize-space(@type)='str'">
 <xsl:value-of select="normalize-space(@name)"/>(init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>")),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='sensor'">
+<xsl:value-of select="normalize-space(@name)"/>(uniset_conf()->getSensorID(init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
+</xsl:if>
+<xsl:if test="normalize-space(@type)='object'">
+<xsl:value-of select="normalize-space(@name)"/>(uniset_conf()->getObjectID(init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
 </xsl:if>
 </xsl:template>
 
@@ -622,6 +630,11 @@ end_private(false)
 
     mylog = make_shared&lt;DebugStream&gt;();
 	mylog-&gt;setLogName(myname);
+	{
+		ostringstream s;
+		s &lt;&lt; myname &lt;&lt; "-log";
+		conf->initDebug(mylog,s.str());
+	}
 
 <xsl:for-each select="//smap/item">
 	<xsl:if test="normalize-space(@no_check_id)!='1'">
@@ -947,7 +960,12 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 
 	mylog = make_shared&lt;DebugStream&gt;();
 	mylog-&gt;setLogName(myname);
-	
+    {
+        ostringstream s;
+        s &lt;&lt; myname &lt;&lt; "-log";
+        conf->initDebug(mylog, s.str());
+    }
+    	
 	si.node = conf->getLocalNode();
 
 
