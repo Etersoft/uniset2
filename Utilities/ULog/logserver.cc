@@ -16,6 +16,7 @@ static struct option longopts[] = {
     { "port", required_argument, 0, 'p' },
     { "verbose", no_argument, 0, 'v' },
     { "delay", required_argument, 0, 'd' },
+    { "max-sessions", required_argument, 0, 'm' },
     { NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
@@ -27,6 +28,7 @@ static void print_help()
     printf("[-i|--iaddr] addr   - Inet address for listen connections.\n");
     printf("[-p|--port] port    - Bind port.\n");
     printf("[-d|--delay] msec   - Delay for generate message. Default 5000.\n");
+    printf("[-m|--max-sessions] num - Maximum count sessions for server. Default: 5\n");
 }
 // --------------------------------------------------------------------------
 int main( int argc, char **argv )
@@ -38,10 +40,11 @@ int main( int argc, char **argv )
     int port = 3333;
     //int tout = 2000;
     timeout_t delay = 5000;
+    int msess = 5;
 
     try
     {
-        while( (opt = getopt_long(argc, argv, "hvi:p:d:",longopts,&optindex)) != -1 )
+        while( (opt = getopt_long(argc, argv, "hvi:p:d:m:",longopts,&optindex)) != -1 )
         {
             switch (opt)
             {
@@ -59,6 +62,10 @@ int main( int argc, char **argv )
 
                 case 'd':
                     delay = uni_atoi(optarg);
+                break;
+
+                case 'm':
+                    msess = uni_atoi(optarg);
                 break;
 
                 case 'v':
@@ -106,7 +113,8 @@ int main( int argc, char **argv )
         }
 
         LogServer ls(la);
-//        LogServer ls(cout);
+        ls.setMaxSessionCount(msess);
+
         dlog->addLevel(Debug::ANY);
         dlog2->addLevel(Debug::ANY);
 

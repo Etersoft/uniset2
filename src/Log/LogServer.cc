@@ -43,6 +43,7 @@ sessTimeout(3600000),
 cmdTimeout(2000),
 outTimeout(2000),
 sessLogLevel(Debug::NONE),
+sessMaxCount(10),
 cancelled(false),
 thr(0),
 tcp(0),
@@ -57,6 +58,7 @@ sessTimeout(3600000),
 cmdTimeout(2000),
 outTimeout(2000),
 sessLogLevel(Debug::NONE),
+sessMaxCount(10),
 cancelled(false),
 thr(0),
 tcp(0),
@@ -106,6 +108,21 @@ void LogServer::work()
         {
             while( !cancelled && tcp->isPendingConnection(timeout) )
             {
+                {
+                    uniset_rwmutex_wrlock l(mutSList);
+                    int sz = slist.size();
+                    if( sz >= sessMaxCount )
+                    {
+                        ostringstream err;
+                        err << "(LOG SERVER): Exceeded the limit on the number of sessions = " << sessMaxCount << endl;
+                        auto s = make_shared<NullLogSession>(*tcp,err.str());
+                        slist.push_back(s);
+                        s->connectFinalSession( sigc::mem_fun(this, &LogServer::sessionFinished) );
+                        s->detach();
+                        continue;
+                    }
+                }
+            	
                 auto s = make_shared<LogSession>(*tcp, elog, sessTimeout, cmdTimeout, outTimeout);
                 s->setSessionLogLevel(sessLogLevel);
                 {

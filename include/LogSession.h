@@ -30,10 +30,17 @@ class LogSession:
         inline void delSessionLogLevel( Debug::type t ){ slog.delLevel(t); }
 
     protected:
+        LogSession( ost::TCPSocket& server );
+
         virtual void run();
         virtual void final();
         void logOnEvent( const std::string& s );
         void readStream();
+
+        timeout_t sessTimeout;
+        timeout_t cmdTimeout;
+        timeout_t outTimeout;
+        timeout_t delayTime;
 
     private:
         typedef std::deque<std::string> LogBuffer;
@@ -42,10 +49,6 @@ class LogSession:
         std::string caddr;
         std::shared_ptr<DebugStream> log;
 
-        timeout_t sessTimeout;
-        timeout_t cmdTimeout;
-        timeout_t outTimeout;
-        timeout_t delayTime;
         PassiveTimer ptSessionTimeout;
 
         FinalSlot slFin;
@@ -53,6 +56,23 @@ class LogSession:
         UniSetTypes::uniset_rwmutex mLBuf;
 
         DebugStream slog;
+};
+// -------------------------------------------------------------------------
+/*! Сессия просто заверщающаяся с указанным сообщением */
+class NullLogSession:
+    public LogSession
+{
+    public:
+
+        NullLogSession( ost::TCPSocket& server, const std::string& _msg );
+        virtual ~NullLogSession();
+
+    protected:
+
+        virtual void run();
+
+    private:
+        std::string msg;
 };
 // -------------------------------------------------------------------------
 #endif // LogSession_H_

@@ -24,6 +24,12 @@ LogSession::~LogSession()
     }
 }
 // -------------------------------------------------------------------------
+LogSession::LogSession( ost::TCPSocket& server ):
+TCPSession(server)
+{
+
+}
+// -------------------------------------------------------------------------
 LogSession::LogSession( ost::TCPSocket &server, std::shared_ptr<DebugStream>& _log, timeout_t _sessTimeout, timeout_t _cmdTimeout, timeout_t _outTimeout, timeout_t _delay ):
 TCPSession(server),
 peername(""),
@@ -237,5 +243,40 @@ void LogSession::final()
 void LogSession::connectFinalSession( FinalSlot sl )
 {
     slFin = sl;
+}
+// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+NullLogSession::NullLogSession( ost::TCPSocket& server, const std::string& _msg ):
+    LogSession(server),
+    msg(_msg)
+{
+}
+// ---------------------------------------------------------------------
+NullLogSession::~NullLogSession()
+{
+
+}
+// ---------------------------------------------------------------------
+void NullLogSession::run()
+{
+    int i = 0;
+    while( isConnected() && i++<=3 )
+    {
+        if( isPending(Socket::pendingInput, 10) )
+        {
+            char buf[10];
+            // проверяем канал..(если данных нет, значит "клиент отвалился"...
+            if( peek(buf,sizeof(buf)) <=0 )
+                break;
+        }
+
+        if( isPending(Socket::pendingOutput) )
+        {
+            *tcp() << msg << endl;
+            tcp()->sync();
+        }
+
+        msleep(5000);
+    }
 }
 // ---------------------------------------------------------------------
