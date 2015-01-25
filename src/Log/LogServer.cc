@@ -167,8 +167,6 @@ void LogServer::work()
         }
     }
 
-    cerr << "*** LOG SERVER THREAD STOPPED.." << endl;
-
     {
 //      uniset_rwmutex_wrlock l(mutSList);
         for( auto& i: slist )

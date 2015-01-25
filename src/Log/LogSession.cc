@@ -288,7 +288,7 @@ void NullLogSession::run()
 {
     while( !cancelled )
     {
-        {
+        { // lock slist
             uniset_rwmutex_wrlock l(smutex);
             for( auto i=slist.begin(); !cancelled && i!=slist.end(); ++i )
             {
@@ -308,14 +308,27 @@ void NullLogSession::run()
                 {
                     (*s.get()) << msg << endl;
                     s->sync();
+                    s->disconnect(); // послали сообщение и закрываем соединение..
                 }
             }
-        }
+
+            slist.clear();
+        } // unlock slist
 
         if( cancelled )
             break;
 
-        msleep(5000);
+        msleep(5000); // делаем паузу, чтобы освободить на время "список"..
+    }
+
+    {
+        uniset_rwmutex_wrlock l(smutex);
+        for( auto i=slist.begin(); i!=slist.end(); ++i )
+        {
+            auto s(*i);
+            if( s )
+                s->disconnect();
+        }
     }
 }
 // ---------------------------------------------------------------------
