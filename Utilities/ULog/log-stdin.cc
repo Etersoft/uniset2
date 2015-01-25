@@ -65,7 +65,7 @@ int main( int argc, char* argv[], char* envp[] )
         if( verb )
             cout << "(init): listen " << addr << ":" << port << endl;
         
-        DebugStream log;
+        auto log = make_shared<DebugStream>();
         LogServer ls(log);
         
         ls.run(addr,port,true);
@@ -78,7 +78,7 @@ int main( int argc, char* argv[], char* envp[] )
             if( r > 0 )
             {
                 buf[r] = '\0';
-                log << buf;
+                (*(log.get())) << buf;
             }
         }
     }

@@ -81,14 +81,29 @@ int main( int argc, char **argv )
 //            dlog.addLevel( Debug::type(Debug::CRIT | Debug::WARN | Debug::INFO) );
         }
 
-        LogAgregator la;
+        auto la = make_shared<LogAgregator>();
 
 
         auto dlog = make_shared<DebugStream>();
         dlog->setLogName("dlog");
-        la.add(dlog);
+        la->add(dlog);
 
-        auto dlog2 = la.create("dlog2");
+        auto dlog2 = la->create("dlog2");
+
+
+        if( la->getLog("dlog") == nullptr )
+        {
+            cerr << "Not found 'dlog'" << endl;
+            return 1;
+            
+        }
+
+        if( la->getLog("dlog2") == nullptr )
+        {
+            cerr << "Not found 'dlog2'" << endl;
+            return 1;
+            
+        }
 
         LogServer ls(la);
 //        LogServer ls(cout);
@@ -96,7 +111,7 @@ int main( int argc, char **argv )
         dlog2->addLevel(Debug::ANY);
 
         ls.run( addr, port, true );
-#if 0        
+        ls.setSessionLog(Debug::ANY);
         
         unsigned int i=0;
         while( true )
@@ -112,7 +127,6 @@ int main( int argc, char **argv )
             
             msleep(delay);
         }
-#endif        
     }
     catch( SystemError& err )
     {

@@ -23,24 +23,28 @@ static struct option longopts[] = {
     { "rotate", required_argument, 0, 'r' },
     { "logname", required_argument, 0, 'l' },
     { "command-only", no_argument, 0, 'b' },
+    { "timeout", required_argument, 0, 'w' },
+    { "reconnect-delay", required_argument, 0, 'x' },
     { NULL, 0, 0, 0 }
 };
 // --------------------------------------------------------------------------
 static void print_help()
 {
-    printf("-h, --help          - this message\n");
-    printf("-v, --verbose       - Print all messages to stdout\n");
-    printf("[-i|--iaddr] addr   - LogServer ip or hostname.\n");
-    printf("[-p|--port] port    - LogServer port.\n");
-    printf("[-l|--logname] name - Send command only for 'logname'.\n");
-    printf("[-b|--command-only] - Send command and break. (No read logs).\n");
+    printf("-h, --help                  - this message\n");
+    printf("-v, --verbose               - Print all messages to stdout\n");
+    printf("[-i|--iaddr] addr           - LogServer ip or hostname.\n");
+    printf("[-p|--port] port            - LogServer port.\n");
+    printf("[-l|--logname] name         - Send command only for 'logname'.\n");
+    printf("[-b|--command-only]         - Send command and break. (No read logs).\n");
+    printf("[-w|--timeout] msec         - Timeout for wait data. Default: 0 - endless waiting\n");
+    printf("[-x|--reconnect-delay] msec - Pause for repeat connect to LogServer. Default: 5000 msec.\n");
 
     printf("\n");
     printf("Commands:\n");
 
     printf("[--add | -a] info,warn,crit,...  - Add log levels.\n");
     printf("[--del | -d] info,warn,crit,...  - Delete log levels.\n");
-    printf("[--set | -s] info,wanr,crit,...  - Set log levels.\n");
+    printf("[--set | -s] info,warn,crit,...  - Set log levels.\n");
     printf("--off, -o                        - Off the write log file (if enabled).\n");
     printf("--on, -n                         - On the write log file (if before disabled).\n");
     printf("--rotate, -r                     - rotate log file.\n");
@@ -59,10 +63,12 @@ int main( int argc, char **argv )
     string sdata("");
     int cmdonly = 0;
     string logname("");
+    timeout_t tout = 0;
+    timeout_t rdelay = 5000;
 
     try
     {
-        while( (opt = getopt_long(argc, argv, "hva:p:i:d:s:l:onrb",longopts,&optindex)) != -1 )
+        while( (opt = getopt_long(argc, argv, "hva:p:i:d:s:l:onrbx:w:",longopts,&optindex)) != -1 )
         {
             switch (opt)
             {
@@ -114,6 +120,14 @@ int main( int argc, char **argv )
                     port = uni_atoi(optarg);
                 break;
 
+                case 'x':
+                    rdelay = uni_atoi(optarg);
+                break;
+
+                case 'w':
+                    tout = uni_atoi(optarg);
+                break;
+
                 case 'v':
                     verb = 1;
                 break;
@@ -134,6 +148,8 @@ int main( int argc, char **argv )
 
         LogReader lr;
         lr.setCommandOnlyMode(cmdonly);
+        lr.setinTimeout(tout);
+        lr.setReconnectDelay(rdelay);
 
         if( !sdata.empty() )
         {

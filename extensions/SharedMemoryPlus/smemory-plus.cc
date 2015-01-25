@@ -2,6 +2,7 @@
 #include <string>
 #include <error.h>
 #include <errno.h>
+#include <memory>
 #include <Debug.h>
 #include <UniSetActivator.h>
 #include <ThreadCreator.h>
@@ -26,37 +27,11 @@ using namespace UniSetExtensions;
 const unsigned int MaxAddNum = 10;
 // --------------------------------------------------------------------------
 static void help_print( int argc, const char* argv[] );
-static LogServer* run_logserver( const std::string& cnamem, DebugStream& log );
-static LogServer* logserver = 0;
+static std::shared_ptr<LogServer> run_logserver( const std::string& cnamem, std::shared_ptr<LogAgregator>& log );
 #ifdef UNISET_ENABLE_IO
 std::list< ThreadCreator<IOControl>* > lst_iothr;
 #endif
 // --------------------------------------------------------------------------
-void activator_terminate( int signo )
-{    
-    if( logserver )
-    {
-        try
-        {
-            delete logserver;
-            logserver = 0;
-        }
-        catch(...){}
-    }
-
-#ifdef UNISET_IO_ENABLE
-        for( auto& i: lst_iothr )
-        {
-            try
-            {
-                i->stop();
-            }
-            catch(...){}
-        }
-#endif
-}
-// --------------------------------------------------------------------------
-
 int main( int argc, const char **argv )
 {
     std::ios::sync_with_stdio(false);
@@ -77,7 +52,7 @@ int main( int argc, const char **argv )
         dlog()->logFile( logname );
 
         auto act = UniSetActivator::Instance();
-        act->signal_terminate_event().connect( &activator_terminate );
+        //act->signal_terminate_event().connect( &activator_terminate );
         // ------------ SharedMemory ----------------
         auto shm = SharedMemory::init_smemory(argc,argv);
         if( !shm )
@@ -212,11 +187,11 @@ int main( int argc, const char **argv )
             i->start();
 #endif
 
-        LogAgregator la;
-        la.add(ulog());
-        la.add(dlog());
+        auto la = make_shared<LogAgregator>();
+        la->add(ulog());
+        la->add(dlog());
 
-        logserver = run_logserver("smplus",la);
+        auto logserver = run_logserver("smplus",la);
         if( logserver == 0 )
         {
             cerr << "(smemory-plus): run logserver for 'smplus' FAILED" << endl;
@@ -280,7 +255,7 @@ void help_print( int argc, const char* argv[] )
     cout << "--logfile            - Use logfile. Default: smemory-plus.log" << endl;
 }
 // -----------------------------------------------------------------------------
-LogServer* run_logserver( const std::string& cname, DebugStream& log )
+std::shared_ptr<LogServer> run_logserver( const std::string& cname, std::shared_ptr<LogAgregator>& log )
 {
     auto conf = uniset_conf();
     auto xml = conf->getConfXML();
@@ -294,7 +269,7 @@ LogServer* run_logserver( const std::string& cname, DebugStream& log )
     
     UniXML::iterator it(cnode);
     
-    LogServer* ls = new LogServer( log );
+    auto ls = make_shared<LogServer>( log );
     
     timeout_t sessTimeout = conf->getArgPInt("--" + cname + "-session-timeout",it.getProp("sessTimeout"),3600000);
     timeout_t cmdTimeout = conf->getArgPInt("--" + cname + "-cmd-timeout",it.getProp("cmdTimeout"),2000);
@@ -308,16 +283,14 @@ LogServer* run_logserver( const std::string& cname, DebugStream& log )
     if( host.empty() )
     {
         cerr << "(init_ulogserver): " << cname << ": unknown host.." << endl;
-        delete ls;
-        return 0;
+        return nullptr;
     }
 
     ost::tpport_t port = conf->getArgPInt("--" + cname + "-port",it.getProp("port"),0);
     if( port == 0 )
     {
         cerr << "(init_ulogserver): " << cname << ": unknown port.." << endl;
-        delete ls;
-        return 0;
+        return nullptr;
     }
 
     cout << "logserver: " << host << ":" << port << endl;

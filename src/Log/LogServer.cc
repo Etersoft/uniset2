@@ -3,6 +3,7 @@
 #include "UniSetTypes.h"
 #include "Exceptions.h"
 #include "LogSession.h"
+#include "LogAgregator.h"
 // -------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
@@ -30,24 +31,18 @@ LogServer::~LogServer()
     delete tcp;
 }
 // -------------------------------------------------------------------------
-LogServer::LogServer( std::ostream& os ):
-timeout(TIMEOUT_INF),
-sessTimeout(3600000),
-cmdTimeout(2000),
-outTimeout(2000),
-cancelled(false),
-thr(0),
-tcp(0),
-elog(nullptr),
-oslog(&os)
+LogServer::LogServer( std::shared_ptr<LogAgregator> log ):
+    LogServer(static_pointer_cast<DebugStream>(log))
 {
+
 }
 // -------------------------------------------------------------------------
-LogServer::LogServer( std::shared_ptr<DebugStream>& log ):
+LogServer::LogServer( std::shared_ptr<DebugStream> log ):
 timeout(TIMEOUT_INF),
 sessTimeout(3600000),
 cmdTimeout(2000),
 outTimeout(2000),
+sessLogLevel(Debug::NONE),
 cancelled(false),
 thr(0),
 tcp(0),
@@ -61,6 +56,7 @@ timeout(TIMEOUT_INF),
 sessTimeout(3600000),
 cmdTimeout(2000),
 outTimeout(2000),
+sessLogLevel(Debug::NONE),
 cancelled(false),
 thr(0),
 tcp(0),
@@ -111,6 +107,7 @@ void LogServer::work()
             while( !cancelled && tcp->isPendingConnection(timeout) )
             {
                 auto s = make_shared<LogSession>(*tcp, elog, sessTimeout, cmdTimeout, outTimeout);
+                s->setSessionLogLevel(sessLogLevel);
                 {
                     uniset_rwmutex_wrlock l(mutSList);
                     slist.push_back(s);

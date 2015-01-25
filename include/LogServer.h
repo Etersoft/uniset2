@@ -10,6 +10,7 @@
 #include "DebugStream.h"
 #include "ThreadCreator.h"
 class LogSession;
+class LogAgregator;
 // -------------------------------------------------------------------------
 /*! \page pgLogServer Лог сервер
     Лог сервер предназначен для возможности удалённого чтения логов (DebugStream).
@@ -49,13 +50,14 @@ class LogServer
 {
     public:
 
-        LogServer( std::shared_ptr<DebugStream>& log );
-        LogServer( std::ostream& os );
+        LogServer( std::shared_ptr<DebugStream> log );
+        LogServer( std::shared_ptr<LogAgregator> log );
         ~LogServer();
 
         inline void setSessionTimeout( timeout_t msec ){ sessTimeout = msec; }
         inline void setCmdTimeout( timeout_t msec ){ cmdTimeout = msec; }
         inline void setOutTimeout( timeout_t msec ){ outTimeout = msec; }
+        inline void setSessionLog( Debug::type t ){ sessLogLevel = t; }
 
         void run( const std::string& addr, ost::tpport_t port, bool thread=true );
 
@@ -74,6 +76,7 @@ class LogServer
         timeout_t sessTimeout;
         timeout_t cmdTimeout;
         timeout_t outTimeout;
+        Debug::type sessLogLevel;
 
         std::atomic_bool cancelled;
         DebugStream mylog;

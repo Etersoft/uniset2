@@ -36,7 +36,10 @@ delayTime(_delay),
 cancelled(false)
 {
     //slog.addLevel(Debug::ANY);
-    log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
+    if( log )
+        log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
+    else
+        slog.crit() << "LOG NULL!!" << endl;
 }
 // -------------------------------------------------------------------------
 void  LogSession::logOnEvent( const std::string& s )
@@ -64,6 +67,10 @@ void LogSession::run()
 
     if( slog.debugging(Debug::INFO) )
         slog[Debug::INFO] << peername << "(run): run thread of sessions.." << endl;
+
+    if( !log )
+        slog.crit() << peername << "(run): LOG NULL!!" << endl;
+
 
     ptSessionTimeout.setTiming(sessTimeout);
 

@@ -25,6 +25,10 @@ class LogSession:
 
         inline std::string getClientAddress(){ return caddr; }
 
+        inline void setSessionLogLevel( Debug::type t ){ slog.level(t); }
+        inline void addSessionLogLevel( Debug::type t ){ slog.addLevel(t); }
+        inline void delSessionLogLevel( Debug::type t ){ slog.delLevel(t); }
+
     protected:
         virtual void run();
         virtual void final();

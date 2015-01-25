@@ -74,8 +74,8 @@ int main( int argc, char* argv[], char* envp[] )
                 /* Parent. */
                 close(cp[1]);
 
-                DebugStream zlog;
-                zlog.addLevel(Debug::ANY);
+                auto zlog = make_shared<DebugStream>();
+                zlog->addLevel(Debug::ANY);
 
                 LogServer ls(zlog);
                 
@@ -90,7 +90,7 @@ int main( int argc, char* argv[], char* envp[] )
                     if( r > 0 )
                     {
                         buf[r] = '\0';
-                        zlog << buf;
+                        (*(zlog.get())) << buf;
                     }
                 }
     

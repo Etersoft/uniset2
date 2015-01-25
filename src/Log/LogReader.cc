@@ -10,6 +10,9 @@ using namespace std;
 using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 LogReader::LogReader():
+inTimeout(10000),
+outTimeout(6000),
+reconDelay(5000),
 tcp(0),
 iaddr(""),
 cmdonly(false)
@@ -111,15 +114,18 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
 // -------------------------------------------------------------------------
 void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServerTypes::lsMessage& msg, bool verbose )
 {
-    timeout_t inTimeout = 10000;
-    timeout_t outTimeout = 6000;
-    timeout_t reconDelay = 5000;
     char buf[100001];
 
     if( verbose )
         rlog.addLevel(Debug::ANY);
 
     bool send_ok = false;
+
+    if( inTimeout == 0 )
+        inTimeout = TIMEOUT_INF;
+
+    if( outTimeout == 0 )
+        outTimeout = TIMEOUT_INF;
 
     while( true )
     {
