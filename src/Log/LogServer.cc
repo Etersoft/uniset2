@@ -10,6 +10,18 @@ using namespace UniSetTypes;
 // -------------------------------------------------------------------------
 LogServer::~LogServer()
 {
+    if( nullsess )
+        nullsess->cancel();
+
+    {
+        // uniset_rwmutex_wrlock l(mutSList);
+        for( auto& i: slist )
+        {
+            if( i->isRunning() )
+                i->cancel();
+        }
+    }
+
     cancelled = true;
     if( thr )
     {
@@ -17,15 +29,6 @@ LogServer::~LogServer()
         if( thr->isRunning() )
             thr->join();
         delete thr;
-    }
-
-    {
-        // uniset_rwmutex_wrlock l(mutSList);
-        for( auto& i: slist )
-        {
-            if( i->isRunning() )
-                i.reset();
-        }
     }
 
     delete tcp;
@@ -72,6 +75,14 @@ void LogServer::run( const std::string& addr, ost::tpport_t port, bool thread )
     {
         ost::InetAddress iaddr(addr.c_str());
         tcp = new ost::TCPSocket(iaddr,port);
+#if 0
+        if( !nullsess )
+        {
+            ostringstream err;
+            err << "(LOG SERVER): Exceeded the limit on the number of sessions = " << sessMaxCount << endl;
+            nullsess = make_shared<NullLogSession>(err.str());
+        }
+#endif
     }
     catch( ost::Socket *socket )
     {
@@ -115,10 +126,17 @@ void LogServer::work()
                     {
                         ostringstream err;
                         err << "(LOG SERVER): Exceeded the limit on the number of sessions = " << sessMaxCount << endl;
-                        auto s = make_shared<NullLogSession>(*tcp,err.str());
-                        slist.push_back(s);
-                        s->connectFinalSession( sigc::mem_fun(this, &LogServer::sessionFinished) );
-                        s->detach();
+                        if( !nullsess )
+                        {
+                            ostringstream err;
+                            err << "(LOG SERVER): Exceeded the limit on the number of sessions = " << sessMaxCount << endl;
+                            nullsess = make_shared<NullLogSession>(err.str());
+                            nullsess->detach(); // start();
+                        }
+                        else
+                            nullsess->setMessage(err.str());
+
+                        nullsess->add(*tcp);
                         continue;
                     }
                 }
@@ -155,6 +173,9 @@ void LogServer::work()
 //      uniset_rwmutex_wrlock l(mutSList);
         for( auto& i: slist )
                i->disconnect();
+
+        if( nullsess )
+            nullsess->cancel();
     }
 }
 // -------------------------------------------------------------------------

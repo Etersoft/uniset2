@@ -23,6 +23,7 @@ class LogSession:
         typedef sigc::slot<void, std::shared_ptr<LogSession>> FinalSlot;
         void connectFinalSession( FinalSlot sl );
 
+        inline void cancel(){ cancelled = true; }
         inline std::string getClientAddress(){ return caddr; }
 
         inline void setSessionLogLevel( Debug::type t ){ slog.level(t); }
@@ -60,19 +61,30 @@ class LogSession:
 // -------------------------------------------------------------------------
 /*! Сессия просто заверщающаяся с указанным сообщением */
 class NullLogSession:
-    public LogSession
+        public ost::Thread
 {
     public:
 
-        NullLogSession( ost::TCPSocket& server, const std::string& _msg );
-        virtual ~NullLogSession();
+        NullLogSession( const std::string& _msg );
+        ~NullLogSession();
+
+        void add( ost::TCPSocket& server );
+        void setMessage( const std::string& _msg );
+
+        inline void cancel(){ cancelled = true; }
 
     protected:
 
         virtual void run();
+        virtual void final();
 
     private:
         std::string msg;
+
+        typedef std::list< std::shared_ptr<ost::TCPStream> > TCPStreamList;
+        TCPStreamList slist;
+        UniSetTypes::uniset_rwmutex smutex;
+        std::atomic_bool cancelled;
 };
 // -------------------------------------------------------------------------
 #endif // LogSession_H_

@@ -20,7 +20,8 @@ LogSession::~LogSession()
     if( isRunning() )
     {
         disconnect();
-        ost::Thread::join();
+//        if( isRunning() )
+//            ost::Thread::join();
     }
 }
 // -------------------------------------------------------------------------
@@ -236,7 +237,17 @@ void LogSession::run()
 void LogSession::final()
 {
     tcp()->sync();
-    slFin( shared_from_this() );
+    try
+    {
+        auto s = shared_from_this();
+        if( s )
+            slFin(s);
+    }
+    catch( std::bad_weak_ptr )
+    {
+
+    }
+
     delete this;
 }
 // -------------------------------------------------------------------------
@@ -246,37 +257,80 @@ void LogSession::connectFinalSession( FinalSlot sl )
 }
 // ---------------------------------------------------------------------
 // ---------------------------------------------------------------------
-NullLogSession::NullLogSession( ost::TCPSocket& server, const std::string& _msg ):
-    LogSession(server),
-    msg(_msg)
+NullLogSession::NullLogSession( const std::string& _msg ):
+    msg(_msg),
+    cancelled(false)
 {
 }
 // ---------------------------------------------------------------------
 NullLogSession::~NullLogSession()
 {
-
+    cancelled = true;
+    if( isRunning() )
+        exit(); // terminate();
+}
+// ---------------------------------------------------------------------
+void NullLogSession::add( ost::TCPSocket& sock )
+{
+    uniset_rwmutex_wrlock l(smutex);
+    auto s = make_shared<ost::TCPStream>();
+    s->connect(sock);
+    slist.push_back(s);
+}
+// ---------------------------------------------------------------------
+void NullLogSession::setMessage( const std::string& _msg )
+{
+    uniset_rwmutex_wrlock l(smutex);
+    msg = _msg;
 }
 // ---------------------------------------------------------------------
 void NullLogSession::run()
 {
-    int i = 0;
-    while( isConnected() && i++<=3 )
+    while( !cancelled )
     {
-        if( isPending(Socket::pendingInput, 10) )
         {
-            char buf[10];
-            // проверяем канал..(если данных нет, значит "клиент отвалился"...
-            if( peek(buf,sizeof(buf)) <=0 )
-                break;
+            uniset_rwmutex_wrlock l(smutex);
+            for( auto i=slist.begin(); !cancelled && i!=slist.end(); ++i )
+            {
+                auto s(*i);
+                if( s->isPending(ost::Socket::pendingInput, 10) )
+                {
+                    char buf[10];
+                    // проверяем канал..(если данных нет, значит "клиент отвалился"...
+                    if( s->peek(buf,sizeof(buf)) <=0 )
+                    {
+                        i = slist.erase(i);
+                        continue;
+                    }
+                }
+
+                if( s->isPending(ost::Socket::pendingOutput) )
+                {
+                    (*s.get()) << msg << endl;
+                    s->sync();
+                }
+            }
         }
 
-        if( isPending(Socket::pendingOutput) )
-        {
-            *tcp() << msg << endl;
-            tcp()->sync();
-        }
+        if( cancelled )
+            break;
 
         msleep(5000);
     }
+}
+// ---------------------------------------------------------------------
+void NullLogSession::final()
+{
+#if 0
+    {
+        uniset_rwmutex_wrlock l(smutex);
+        for( auto i=slist.begin(); i!=slist.end(); ++i )
+        {
+            auto s(*i);
+            if( s )
+                s->disconnect();
+        }
+    }
+#endif
 }
 // ---------------------------------------------------------------------

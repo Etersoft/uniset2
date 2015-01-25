@@ -11,6 +11,7 @@
 #include "ThreadCreator.h"
 class LogSession;
 class LogAgregator;
+class NullLogSession;
 // -------------------------------------------------------------------------
 /*! \page pgLogServer Лог сервер
     Лог сервер предназначен для возможности удалённого чтения логов (DebugStream).
@@ -87,6 +88,8 @@ class LogServer
         ost::TCPSocket* tcp;
         std::shared_ptr<DebugStream> elog;
         std::ostream* oslog;
+
+        std::shared_ptr<NullLogSession> nullsess;
 };
 // -------------------------------------------------------------------------
 #endif // LogServer_H_
