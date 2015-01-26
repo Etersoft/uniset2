@@ -12,7 +12,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt13
+Release: alt14
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -406,6 +406,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
 
 %changelog
+* Mon Jan 26 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt14
+- change LogServer,LogSession,LogReader interfaces
+
 * Fri Jan 23 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt13
 - refactoring ulog and dlog: Objects converted to shared_ptr<DebugStream>
   for subsequent use LogAgregator.
