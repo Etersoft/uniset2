@@ -45,6 +45,9 @@ LogReader. Читающих клиентов может быть скольуг�
     logsrv.run(host,port,create_thread);
     ...
 \endcode
+
+\warning Логи отдаются "клиентам" только целоиком строкой. Т.е. по сети информация передаваться не будет пока не будет записан "endl".
+    Это сделано для "оптимизации передачи" (чтобы не передавать каждый байт)
 */
 // -------------------------------------------------------------------------
 class LogServer
@@ -62,6 +65,8 @@ class LogServer
         inline void setMaxSessionCount( int num ){ sessMaxCount = num; }
 
         void run( const std::string& addr, ost::tpport_t port, bool thread=true );
+
+        inline bool isRunning(){ return (thr && thr->isRunning()); }
 
     protected:
          LogServer();

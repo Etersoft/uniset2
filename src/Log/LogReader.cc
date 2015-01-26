@@ -15,8 +15,11 @@ outTimeout(6000),
 reconDelay(5000),
 tcp(0),
 iaddr(""),
-cmdonly(false)
+cmdonly(false),
+readcount(0)
 {
+    log.level(Debug::ANY);
+    log.signal_stream_event().connect( sigc::mem_fun(this, &LogReader::logOnEvent) );
 }
 
 // -------------------------------------------------------------------------
@@ -25,6 +28,17 @@ LogReader::~LogReader()
     if( isConnection() )
         disconnect();
 }
+// -------------------------------------------------------------------------
+void LogReader::setLogLevel( Debug::type t )
+{
+    log.level(t);
+}
+// -------------------------------------------------------------------------
+DebugStream::StreamEvent_Signal LogReader::signal_stream_event()
+{
+    return m_logsig;
+}
+
 // -------------------------------------------------------------------------
 void LogReader::connect( const std::string& addr, ost::tpport_t _port, timeout_t msec )
 {
@@ -127,14 +141,25 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
     if( outTimeout == 0 )
         outTimeout = TIMEOUT_INF;
 
-    while( true )
+    unsigned int n = 1;
+    if( readcount > 0 )
+        n = readcount;
+
+    while( n > 0 )
     {
         if( !isConnection() )
             connect(_addr,_port,reconDelay);
 
         if( !isConnection() )
         {
-            rlog.warn() << "**** connection timeout.." << endl;
+            rlog.warn() << "(LogReader): **** connection timeout.." << endl;
+
+            if( readcount > 0 )
+                n--;
+
+            if( n<0 )
+                break;
+
             msleep(reconDelay);
             continue;
         }
@@ -143,7 +168,7 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
         {
             if( tcp->isPending(ost::Socket::pendingOutput,outTimeout) )
             {
-                rlog.info() << "** send command: logname='" << msg.logname << "' cmd='" << msg.cmd << "' data='" << msg.data << "'" << endl;
+                rlog.info() << "(LogReader): ** send command: logname='" << msg.logname << "' cmd='" << msg.cmd << "' data='" << msg.data << "'" << endl;
 
 //               LogServerTypes::lsMessage msg;
 //               msg.cmd = cmd;
@@ -155,7 +180,7 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
                 send_ok = true;
             }
             else
-                rlog.warn() << "**** SEND COMMAND ('" << msg.cmd << "' FAILED!" << endl;
+                rlog.warn() << "(LogReader): **** SEND COMMAND ('" << msg.cmd << "' FAILED!" << endl;
 
             if( cmdonly )
             {
@@ -171,18 +196,26 @@ void LogReader::readlogs( const std::string& _addr, ost::tpport_t _port, LogServ
             {
                 tcp->read(buf,n);
                 buf[n] = '\0';
-                cout << buf;
+                log << buf;
             }
             else
                 break;
         }
 
-        rlog.warn() << "...connection timeout..." << endl;
+        rlog.warn() << "(LogReader): ...connection timeout..." << endl;
         send_ok = false; // ??!! делать ли?
         disconnect();
+
+        if( readcount > 0 )
+            n--;
     }
 
     if( isConnection() )
         disconnect();
+}
+// -------------------------------------------------------------------------
+void LogReader::logOnEvent( const std::string& s )
+{
+    m_logsig.emit(s);
 }
 // -------------------------------------------------------------------------

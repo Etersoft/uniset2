@@ -45,7 +45,7 @@ using std::ios;
 DebugStream::DebugStream(Debug::type t)
     : ostream(new debugbuf(cerr.rdbuf())),
       dt(t), nullstream(new nullbuf), internal(new debugstream_internal),
-      show_datetime(true),
+      show_datetime(true),show_logtype(true),
       fname(""),
       logname("")
 {
@@ -59,7 +59,7 @@ DebugStream::DebugStream(char const * f, Debug::type t, bool truncate )
     : ostream(new debugbuf(cerr.rdbuf())),
       dt(t), nullstream(new nullbuf),
       internal(new debugstream_internal),
-      show_datetime(true),
+      show_datetime(true),show_logtype(true),
       fname(""),
       logname("")
 {
@@ -130,7 +130,10 @@ std::ostream & DebugStream::debug(Debug::type t)
     {
         if( show_datetime )
             printDateTime(t);
-        *this << "(" << std::setfill(' ') << std::setw(6) << t << "):  "; // "):\t";
+
+        if( show_logtype )
+            *this << "(" << std::setfill(' ') << std::setw(6) << t << "):  "; // "):\t";
+
         return *this;
     }
 

@@ -158,6 +158,9 @@ public:
     inline void showDateTime(bool s)
     { show_datetime = s; }
 
+    inline void showLogType(bool s)
+    { show_logtype = s; }
+
 // короткие функции (для удобства)
 // log.level1()  - вывод с датой и временем  "date time [LEVEL] ...",
 //    если вывод даты и времени не выключен при помощи showDateTime(false)
@@ -216,6 +219,7 @@ protected:
     ///
     debugstream_internal * internal;
     bool show_datetime;
+    bool show_logtype;
     std::string fname;
 
     StreamEvent_Signal s_stream;

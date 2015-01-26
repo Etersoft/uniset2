@@ -42,6 +42,8 @@ outTimeout(_outTimeout),
 delayTime(_delay),
 cancelled(false)
 {
+    log_notify = ATOMIC_VAR_INIT(0);
+
     //slog.addLevel(Debug::ANY);
     if( log )
         log->signal_stream_event().connect( sigc::mem_fun(this, &LogSession::logOnEvent) );
@@ -49,10 +51,15 @@ cancelled(false)
         slog.crit() << "LOG NULL!!" << endl;
 }
 // -------------------------------------------------------------------------
-void  LogSession::logOnEvent( const std::string& s )
+void LogSession::logOnEvent( const std::string& s )
 {
-    uniset_rwmutex_wrlock l(mLBuf);
-    lbuf.push_back(s);
+    {
+        std::unique_lock<std::mutex> lk(log_mutex);
+        lbuf.push_back(s);
+        log_notify = true;
+    }
+
+    log_event.notify_one();
 }
 // -------------------------------------------------------------------------
 void LogSession::run()
@@ -79,7 +86,7 @@ void LogSession::run()
         slog.crit() << peername << "(run): LOG NULL!!" << endl;
 
 
-    ptSessionTimeout.setTiming(sessTimeout);
+    // ptSessionTimeout.setTiming(sessTimeout);
 
     setKeepAlive(true);
 //    setTimeout(sessTimeout);
@@ -201,7 +208,8 @@ void LogSession::run()
             ostringstream sbuf;
             bool send = false;
             {
-                uniset_rwmutex_wrlock l(mLBuf);
+                std::unique_lock<std::mutex> lk(log_mutex);
+                // uniset_rwmutex_wrlock l(mLBuf);
                 if( !lbuf.empty() )
                 {
                     slog.info() << peername << "(run): send messages.." << endl;
@@ -220,8 +228,13 @@ void LogSession::run()
                 tcp()->sync();
             }
 
-            // чтобы постоянно не проверять... (надо переделать на condition)
-            sleep(delayTime);
+            {
+                std::unique_lock<std::mutex> lk(log_mutex);
+                log_event.wait_for(lk, std::chrono::milliseconds(outTimeout), [&](){ return (log_notify == true || cancelled); } );
+            }
+
+            if( cancelled )
+                break;
         }
     }
 

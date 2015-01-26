@@ -6,6 +6,8 @@
 #include <memory>
 #include <deque>
 #include <cc++/socket.h>
+#include <condition_variable>
+#include <mutex>
 #include "Mutex.h"
 #include "DebugStream.h"
 #include "PassiveTimer.h"
@@ -50,13 +52,15 @@ class LogSession:
         std::string caddr;
         std::shared_ptr<DebugStream> log;
 
-        PassiveTimer ptSessionTimeout;
-
+//        PassiveTimer ptSessionTimeout;
         FinalSlot slFin;
         std::atomic_bool cancelled;
-        UniSetTypes::uniset_rwmutex mLBuf;
 
         DebugStream slog;
+
+        std::mutex              log_mutex;
+        std::condition_variable log_event;
+        std::atomic_bool log_notify = ATOMIC_VAR_INIT(0);
 };
 // -------------------------------------------------------------------------
 /*! Сессия просто заверщающаяся с указанным сообщением */

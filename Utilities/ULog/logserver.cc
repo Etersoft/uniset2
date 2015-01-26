@@ -119,7 +119,8 @@ int main( int argc, char **argv )
         dlog2->addLevel(Debug::ANY);
 
         ls.run( addr, port, true );
-        ls.setSessionLog(Debug::ANY);
+        if( verb )
+	        ls.setSessionLog(Debug::ANY);
         
         unsigned int i=0;
         while( true )

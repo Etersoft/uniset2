@@ -25,17 +25,24 @@ class LogReader
 
         bool isConnection();
 
+        inline void setReadCount( unsigned int n ){ readcount = n; }
+
         inline void setCommandOnlyMode( bool s ){ cmdonly = s; }
 
         inline void setinTimeout( timeout_t msec ){ inTimeout = msec; }
         inline void setoutTimeout( timeout_t msec ){ outTimeout = msec; }
         inline void setReconnectDelay( timeout_t msec ){ reconDelay = msec; }
 
+        DebugStream::StreamEvent_Signal signal_stream_event();
+
+        void setLogLevel( Debug::type );
+
     protected:
 
         void connect( const std::string& addr, ost::tpport_t port, timeout_t tout=TIMEOUT_INF );
         void connect( ost::InetAddress addr, ost::tpport_t port, timeout_t tout=TIMEOUT_INF );
         void disconnect();
+        void logOnEvent( const std::string& s );
 
         timeout_t inTimeout;
         timeout_t outTimeout;
@@ -46,8 +53,12 @@ class LogReader
         std::string iaddr;
         ost::tpport_t port;
         bool cmdonly;
+        unsigned int readcount; // количество циклов чтения
 
         DebugStream rlog;
+        DebugStream log; // рабочий лог в который выводиться полученная информация..
+
+        DebugStream::StreamEvent_Signal m_logsig;
 };
 // -------------------------------------------------------------------------
 #endif // LogReader_H_
