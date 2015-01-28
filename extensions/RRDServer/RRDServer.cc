@@ -321,7 +321,8 @@ void RRDServer::timerInfo( const UniSetTypes::TimerMessage* tm )
             myinfo << myname << "(update): '" << it.filename << "' " << v.str() << endl;
 
             rrd_clear_error();
-            const char* argv = v.str().c_str();
+            
+            const char* argv = uni_strdup(v.str().c_str());
 
             if( rrd_update_r(it.filename.c_str(),NULL,1,&argv) < 0 )
             {
@@ -329,7 +330,8 @@ void RRDServer::timerInfo( const UniSetTypes::TimerMessage* tm )
                 err << myname << "(update): Can`t update RRD ('" << it.filename << "'): err: " << string(rrd_get_error());
                 mycrit << err.str() << endl;
             }
-
+ 
+            delete argv;
             break;
         }
     }

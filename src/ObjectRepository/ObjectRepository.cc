@@ -231,7 +231,7 @@ void ObjectRepository::unregistration(const string& name, const string& section)
     if (err.str().empty())
         err << "ObjectRepository(unregistrartion): не смог удалить " << name;
 
-    throw ORepFailed(err.str().c_str());
+    throw ORepFailed(err.str());
 }
 // --------------------------------------------------------------------------
 /*!
@@ -292,7 +292,7 @@ ObjectPtr ObjectRepository::resolve( const string& name, const string& NSName ) 
     if( err.str().empty() )
         err << "ObjectRepository(resolve): unknown error for '" << name << "'";
 
-    throw ORepFailed(err.str().c_str());
+    throw ORepFailed(err.str());
 }
 
 // --------------------------------------------------------------------------
