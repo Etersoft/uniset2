@@ -9,5 +9,4 @@ check-local: atconfig package.m4 $(TESTSUITE)
 clean-local:
 	test ! -f '$(TESTSUITE)'|| $(SHELL) '$(TESTSUITE)' --clean
 	rm -rf $(CLEANFILES)
-
 endif

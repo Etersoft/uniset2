@@ -19,4 +19,8 @@ clean-local:
 install-data-local:
 	$(MAKE) -C $(FIRSTSUBDIRS) -j1 install
 
-	
+
+if HAVE_COVERAGE
+COVERAGE_DIRS=$(COVERAGE_DEFAULT_DIRS)
+include $(top_builddir)/testsuite/testcoverage-common.mk
+endif

@@ -5,8 +5,8 @@ check_PROGRAMS = tests
 
 tests_SOURCES   = tests.cc lproc.cc
 tests_LDADD     = $(top_builddir)/lib/libUniSet2.la $(top_builddir)/extensions/lib/libUniSet2Extensions.la \
-	$(top_builddir)/extensions/LogicProcessor/libUniSet2LProcessor.la $(COV_LIBS)
-tests_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/LogicProcessor $(COV_CFLAGS)
+	$(top_builddir)/extensions/LogicProcessor/libUniSet2LProcessor.la
+tests_CPPFLAGS  = -I$(top_builddir)/include -I$(top_builddir)/extensions/include -I$(top_builddir)/extensions/LogicProcessor
 
 $(top_builddir)/extensions/lib/libUniSet2Extensions.la:
 	cd $(top_builddir)/extensions/lib/ && make
@@ -23,10 +23,5 @@ check-local: atconfig package.m4 $(TESTSUITE)
 clean-local:
 	rm -rf $(CLEANFILES)
 	rm -rf $(COVERAGE_REPORT_DIR)
-	rm -f *.gcno *.gcda
-
-if HAVE_COVERAGE
-include $(top_builddir)/testsuite/testsuite-coverage-common.mk
-endif
 
 endif

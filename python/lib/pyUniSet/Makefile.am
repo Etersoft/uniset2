@@ -2,6 +2,19 @@ if DISABLE_PYTHON
 else
 python_SCRIPTS = pyUniSet.py pyUConnector.py pyUModbus.py pyUExceptions.py
 
+
+pyUniSet.py: UInterface_wrap.cxx _pyUniSet.la 
+	
+
+pyUConnector.py: UConnector_wrap.cxx _pyUConnector.la 
+	
+
+pyUModbus.py: _pyUModbus.la UModbus_wrap.cxx
+	
+
+pyUExceptions.py: _pyUExceptions.la
+	
+
 pyexec_LTLIBRARIES = _pyUConnector.la _pyUModbus.la _pyUExceptions.la _pyUniSet.la
 
 _pyUniSet_la_SOURCES 	= PyUInterface.cc UInterface_wrap.cxx
@@ -12,7 +25,7 @@ _pyUniSet_la_LIBADD 	= $(UNISET_LIBS) $(PYTHON_LIBS)
 UInterface_wrap.cxx: UInterface.i PyUInterface.h
 	swig -python -c++ -classic UInterface.i
 
-_pyUConnector_la_SOURCES 	= UConnector.cc UConnector_wrap.cxx 
+_pyUConnector_la_SOURCES 	= UConnector.cc UConnector_wrap.cxx
 _pyUConnector_la_CXXFLAGS	= $(UNISET_CFLAGS) $(PYTHON_CFLAGS) 
 _pyUConnector_la_LDFLAGS 	= -module -avoid-version
 _pyUConnector_la_LIBADD 	= $(UNISET_LIBS) $(PYTHON_LIBS)

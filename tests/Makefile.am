@@ -7,8 +7,8 @@ if HAVE_TESTS
 noinst_PROGRAMS = tests tests_with_conf
 
 #umutex threadtst dlog
-tests_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(SIGC_LIBS) $(COMCPP_LIBS) $(COV_LIBS)
-tests_CPPFLAGS	= -I$(top_builddir)/include $(SIGC_CFLAGS) $(COMCPP_CFLAGS) $(COV_CFLAGS)
+tests_LDADD 	= $(top_builddir)/lib/libUniSet2.la $(SIGC_LIBS) $(COMCPP_LIBS)
+tests_CPPFLAGS	= -I$(top_builddir)/include $(SIGC_CFLAGS) $(COMCPP_CFLAGS)
 tests_SOURCES = tests.cc \
 test_passivetimer.cc \
 test_passivecondtimer.cc \
@@ -27,8 +27,8 @@ test_utypes.cc \
 test_mutex.cc \
 test_logserver.cc
 
-tests_with_conf_LDADD   = $(top_builddir)/lib/libUniSet2.la $(COV_LIBS)
-tests_with_conf_CPPFLAGS = -I$(top_builddir)/include $(COV_CFLAGS)
+tests_with_conf_LDADD   = $(top_builddir)/lib/libUniSet2.la
+tests_with_conf_CPPFLAGS = -I$(top_builddir)/include
 tests_with_conf_SOURCES = tests_with_conf.cc \
 test_conftest.cc \
 test_ui.cc \
@@ -47,11 +47,10 @@ check-local: atconfig package.m4 $(TESTSUITE)
 clean-local:
 	test ! -f '$(TESTSUITE)'|| $(SHELL) '$(TESTSUITE)' --clean
 	rm -rf $(CLEANFILES)
-	rm -rf $(COVERAGE_REPORT_DIR) .coverage*
-	rm -f *.gcno *.gcda
 
 if HAVE_COVERAGE
-include $(top_builddir)/testsuite/testsuite-coverage-common.mk
+COVERAGE_DIRS=$(abs_srcdir) $(top_builddir)/src
+include $(top_builddir)/testsuite/testcoverage-common.mk
 endif
 
 endif
