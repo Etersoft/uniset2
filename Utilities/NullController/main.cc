@@ -71,9 +71,9 @@ int main(int argc, char** argv)
         // надо ли писать изменения в БД
         bool dbDumping = conf->getArgInt("--dbDumping");
 
-        NullController nc(ID,askfile,s_field,s_fvalue,c_field,c_fvalue,dbDumping);
-        UniSetActivatorPtr act = UniSetActivator::Instance();
-        act->add( nc.get_ptr() );
+        auto nc = make_shared<NullController>(ID,askfile,s_field,s_fvalue,c_field,c_fvalue,dbDumping);
+        auto act = UniSetActivator::Instance();
+        act->add(nc);
         act->run(false);
         return 0;
     }

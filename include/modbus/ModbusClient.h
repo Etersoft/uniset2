@@ -144,7 +144,7 @@ class ModbusClient
         /*! установить паузу при ожидании символа */
         inline void setSleepPause( timeout_t usec ){ sleepPause_usec = usec; }
 
-        void initLog( UniSetTypes::Configuration* conf, const std::string& name, const std::string& logfile="" );
+        void initLog( std::shared_ptr<UniSetTypes::Configuration> conf, const std::string& name, const std::string& logfile="" );
         void setLog( std::shared_ptr<DebugStream> dlog );
 
 

@@ -1258,7 +1258,7 @@ mbErrCode ModbusClient::send( ModbusMessage& msg )
 }
 
 // -------------------------------------------------------------------------
-void ModbusClient::initLog( UniSetTypes::Configuration* conf,
+void ModbusClient::initLog( std::shared_ptr<UniSetTypes::Configuration> conf,
                             const std::string& lname, const string& logfile )
 {
     conf->initLogStream(dlog,lname);
