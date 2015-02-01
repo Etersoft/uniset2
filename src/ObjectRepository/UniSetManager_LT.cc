@@ -59,7 +59,7 @@ void UniSetManager_LT::callback()
 
         sleepTime=lt.checkTimers(this);
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         ucrit << myname << "(callback): " << ex << endl;
     }

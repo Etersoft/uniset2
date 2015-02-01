@@ -40,10 +40,10 @@ namespace UniSetTypes
         public UniSetTypes::Exception
     {
         public:
-            LimitTimers():Exception("LimitTimers"){ printException(); }
+            LimitTimers():Exception("LimitTimers"){}
 
             /*! Конструктор позволяющий вывести в сообщении об ошибке дополнительную информацию err */
-            LimitTimers(const std::string& err):Exception(err){ printException(); }
+            LimitTimers(const std::string& err):Exception(err){}
     };
 }
 //@}

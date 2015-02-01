@@ -66,13 +66,9 @@ int main(int argc, const char **argv)
         ic->execute();
         return 0;
     }
-    catch(SystemError& err)
+    catch( const std::exception& ex )
     {
-        dcrit << "(iocontrol): " << err << endl;
-    }
-    catch(Exception& ex)
-    {
-        dcrit << "(iocontrol): " << ex << endl;
+        dcrit << "(iocontrol): " << ex.what() << endl;
     }
     catch(...)
     {

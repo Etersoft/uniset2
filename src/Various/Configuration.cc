@@ -257,7 +257,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
                         oind = shared_ptr<ObjectIndex>(oi);
                     }
                 }
-                catch(Exception& ex )
+                catch( const Exception& ex )
                 {
                     ucrit << "(Configuration:init): INIT FAILED! from "  << fileConfName << endl;
                     throw;
@@ -395,7 +395,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         // ---------------------------------------
 
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         ucrit << "Configuration:" << ex << endl;
         throw;

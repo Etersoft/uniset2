@@ -45,7 +45,7 @@ TEST_CASE("uniset_mutex_lock", "[mutex][basic]" )
             CHECK_FALSE( m.try_lock_for(20) );
             throw std::logic_error("err");
         }
-        catch( std::logic_error& e )
+        catch( const std::logic_error& e )
         {
         } // unlock
 
@@ -114,7 +114,7 @@ TEST_CASE("uniset_rwmutex_wrlock", "[mutex][basic]" )
             CHECK_FALSE( m.try_lock() );
             throw std::logic_error("err");
         }
-        catch( std::logic_error& e )
+        catch( const std::logic_error& e )
         {
         } // unlock
 
@@ -146,7 +146,7 @@ TEST_CASE("uniset_rwmutex_rlock", "[mutex][basic]" )
             CHECK_FALSE( m.try_lock() );
             throw std::logic_error("err");
         }
-        catch( std::logic_error& e )
+        catch( const std::logic_error& e )
         {
         } // unlock
 

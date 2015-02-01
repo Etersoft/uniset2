@@ -125,7 +125,7 @@ int main( int argc, char **argv )
                       {
                             ui.setValue(it->si, j, DefaultObjectId);
                       }
-                      catch( Exception& ex )
+                      catch( const Exception& ex )
                       {
                           cerr << endl << "save id="<< it->fname << " " << ex << endl;
                       }
@@ -150,7 +150,7 @@ int main( int argc, char **argv )
                       {
                             ui.setValue(it->si, i, DefaultObjectId);
                       }
-                      catch( Exception& ex )
+                      catch( const Exception& ex )
                       {
                           cerr << endl << "save id="<< it->fname << " " << ex << endl;
                       }
@@ -158,9 +158,8 @@ int main( int argc, char **argv )
             }
             msleep(amsec);
         }
-
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         cerr << endl << "(simitator): " << ex << endl;
         return 1;

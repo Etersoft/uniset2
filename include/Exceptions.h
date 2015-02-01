@@ -48,22 +48,18 @@ class Exception:
     public std::exception
 {
 public:
-    void printException()
-    {
-        std::cerr << "Exception: " << text << std::endl;
-    }
 
     Exception(const std::string& txt):text(txt.c_str()){}
     Exception():text("Exception"){}
-    virtual ~Exception() throw(){}
+    virtual ~Exception() noexcept(true) {}
 
-    friend std::ostream& operator<<(std::ostream& os, Exception& ex )
+    friend std::ostream& operator<<(std::ostream& os, const Exception& ex )
     {
         os << ex.text;
         return os;
     }
 
-    virtual const char* what() { return text.c_str(); }
+    virtual const char* what() const noexcept override { return text.c_str(); }
 
 protected:
     const std::string text;

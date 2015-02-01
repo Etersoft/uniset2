@@ -33,13 +33,13 @@ TCPSession(server)
 // -------------------------------------------------------------------------
 LogSession::LogSession( ost::TCPSocket &server, std::shared_ptr<DebugStream>& _log, timeout_t _sessTimeout, timeout_t _cmdTimeout, timeout_t _outTimeout, timeout_t _delay ):
 TCPSession(server),
-peername(""),
-caddr(""),
-log(_log),
 sessTimeout(_sessTimeout),
 cmdTimeout(_cmdTimeout),
 outTimeout(_outTimeout),
 delayTime(_delay),
+peername(""),
+caddr(""),
+log(_log),
 cancelled(false)
 {
     log_notify = ATOMIC_VAR_INIT(0);
@@ -256,7 +256,7 @@ void LogSession::final()
         if( s )
             slFin(s);
     }
-    catch( std::bad_weak_ptr )
+    catch( const std::bad_weak_ptr )
     {
 
     }

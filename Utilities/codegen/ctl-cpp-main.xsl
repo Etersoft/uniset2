@@ -88,11 +88,11 @@ int main( int argc, const char** argv )
 		act-&gt;run(false);
 		pause();	// пауза, чтобы дочерние потоки успели завершить работ
 	}
-	catch(Exception&amp; ex)
+	catch( const Exception&amp; ex)
 	{
 		cerr &lt;&lt; "(main): " &lt;&lt; ex &lt;&lt; endl;
 	}
-    catch( std::exception&amp;ex )
+    catch( const std::exception&amp;ex )
     {
         cerr &lt;&lt; "(main): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
     }

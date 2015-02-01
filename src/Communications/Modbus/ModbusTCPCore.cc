@@ -58,7 +58,7 @@ mbErrCode ModbusTCPCore::sendData( ost::TCPStream* tcp, unsigned char* buf, int 
 
     try
     {
-        for( unsigned int i=0; i<len; i++ )
+        for( auto i=0; i<len; i++ )
             (*tcp) << buf[i];
         
         return erNoError;

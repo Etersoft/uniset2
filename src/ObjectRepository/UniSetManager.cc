@@ -226,19 +226,19 @@ bool UniSetManager::removeObject( const std::shared_ptr<UniSetObject>& obj )
                 if(obj)
                     obj->deactivate();
             }
-            catch(Exception& ex)
+            catch( const Exception& ex )
             {
                 uwarn << myname << "(removeObject): " << ex << endl;
             }
-            catch(CORBA::SystemException& ex)
+            catch( const CORBA::SystemException& ex )
             {
                 uwarn << myname << "(removeObject): поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
             }
-            catch(CORBA::Exception& ex)
+            catch( const CORBA::Exception& ex )
             {
                 uwarn << myname << "(removeObject): CORBA::Exception" << endl;
             }
-            catch( omniORB::fatalException& fe ) 
+            catch( const omniORB::fatalException& fe ) 
             {
                 ucrit << myname << "(managers): Caught omniORB::fatalException:" << endl;
                 ucrit << myname << "(managers): file: " << fe.file()
@@ -291,20 +291,20 @@ void UniSetManager::managers( OManagerCommand cmd )
                         break;
                 }
             }
-            catch( Exception& ex )
+            catch( const Exception& ex )
             {
                  ucrit << myname << "(managers): " << ex << endl
                        << " Не смог зарегистрировать (разрегистрировать) объект -->"<< li->getName() << endl;
             }
-            catch( CORBA::SystemException& ex )
+            catch( const CORBA::SystemException& ex )
             {
                 ucrit << myname << "(managers): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
             }
-            catch( CORBA::Exception& ex )
+            catch( const CORBA::Exception& ex )
             {
                 ucrit << myname << "(managers): Caught CORBA::Exception. " << ex._name() << endl;
             }
-            catch( omniORB::fatalException& fe )
+            catch( const omniORB::fatalException& fe )
             {
                 ucrit << myname << "(managers): Caught omniORB::fatalException:" << endl;
                 ucrit << myname << "(managers): file: " << fe.file()
@@ -353,22 +353,22 @@ void UniSetManager::objects(OManagerCommand cmd)
                         break;
                 }
             }
-            catch( Exception& ex )
+            catch( const Exception& ex )
             {
                 ucrit << myname << "(objects): " << ex << endl;
                 ucrit << myname << "(objects): не смог зарегистрировать (разрегистрировать) объект -->"<< li->getName() << endl;
             }
-            catch(CORBA::SystemException& ex)
+            catch( const CORBA::SystemException& ex )
             {
                 ucrit << myname << "(objects): поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
             }
-            catch( CORBA::Exception& ex )
+            catch( const CORBA::Exception& ex )
             {
                 ucrit << myname << "(objects): Caught CORBA::Exception. " 
                       << ex._name()
                       << " (" << li->getName() << ")" << endl;
             }
-            catch( omniORB::fatalException& fe ) 
+            catch( const omniORB::fatalException& fe ) 
             {
                ucrit << myname << "(objects): Caught omniORB::fatalException:" << endl;
                ucrit << myname << "(objects): file: " << fe.file()
@@ -542,7 +542,7 @@ int UniSetManager::getObjectsInfo( const std::shared_ptr<UniSetManager>& mngr, S
             if( ind>uplimit )
                 break;
         }
-        catch(CORBA::Exception& ex)
+        catch( const CORBA::Exception& ex )
         {
             uwarn << myname << "(getObjectsInfo): CORBA::Exception" << endl;
         }

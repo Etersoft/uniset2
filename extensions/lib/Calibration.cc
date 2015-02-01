@@ -232,7 +232,7 @@ void Calibration::build( const string& name, const string& confile, xmlNode* roo
             rightVal = end->right_y();
         }
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         dcrit << myname << "(Calibration::build): Failed open " << confile << endl;
         throw;

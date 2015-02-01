@@ -38,13 +38,13 @@ void LProcessor::execute( const string& lfile )
         {
             dcrit << logname << "(execute): " << ex << endl;
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             dcrit << logname << "(execute): " << ex << endl;
         }
-        catch(...)
+        catch( const std::exception& ex )
         {
-            dcrit << logname << "(execute): catch...\n";
+            dcrit << logname << "(execute): " << ex.what() << endl;
         }
         msleep(sleepTime);
     }
@@ -148,13 +148,13 @@ void LProcessor::setOuts()
         {
             ui.setValue(it.sid,it.lnk->from->getOut(),DefaultObjectId);
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             dcrit << "(LProcessor::setOuts): " << ex << endl;
         }
-        catch(...)
+        catch( const std::exception& ex )
         {
-            dcrit << "(LProcessor::setOuts): catch...\n";
+            dcrit << "(LProcessor::setOuts): catch: " << ex.what() << endl;
         }
     }
 }

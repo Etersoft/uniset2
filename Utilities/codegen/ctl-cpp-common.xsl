@@ -115,7 +115,7 @@
 					ui->setValue( si,(m_<xsl:value-of select="../../@name"/> ? 1:0), getId() );
 					return true;
 				}
-			    catch( std::exception&amp;ex )
+			    catch( const std::exception&amp;ex )
 			    {
 			        ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
 			    }
@@ -131,7 +131,7 @@
 						si.id = mid_<xsl:value-of select="../../@name"/>;
 						ui->setValue( si,0,getId() );
 					}
-					catch( UniSetTypes::Exception&amp; ex )
+					catch( const UniSetTypes::Exception&amp; ex )
 					{
                         ulog1 &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
 					}
@@ -285,7 +285,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::processingMessage( UniSetTypes::Voi
 				break;
 		}	
 	}
-	catch( Exception&amp; ex )
+	catch( const Exception&amp; ex )
 	{
 		ucrit  &lt;&lt; myname &lt;&lt; "(processingMessage): " &lt;&lt; ex &lt;&lt; endl;
 	}
@@ -828,7 +828,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 			ui->setValue( si,m_<xsl:value-of select="@name"/>,getId() );
 			return true;
 		}
-	    catch( std::exception&amp;ex )
+	    catch( const std::exception&amp;ex )
     	{
         	ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
 	    }
@@ -854,7 +854,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 			si.node = node_<xsl:value-of select="@name"/>;
 			ui->setValue( si, 0, getId() );
 		}
-		catch( UniSetTypes::Exception&amp; ex )
+		catch( const UniSetTypes::Exception&amp; ex )
 		{
             ulog1 &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
 		}

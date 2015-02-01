@@ -7,7 +7,7 @@ using namespace std;
 #if 0
 UModbus::UModbus( UTypes::Params* p )throw(UException):
   mb(0),
-  port(512),
+  port(502),
   ip(""),
   tout_msec(5000)
 {
@@ -22,10 +22,10 @@ UModbus::UModbus( UTypes::Params* p )throw(UException):
 }
 //---------------------------------------------------------------------------
 UModbus::UModbus( int argc, char** argv )throw(UException):
-mb(0),
-ip(""),
-port(512),
-tout_msec(5000)
+  mb(0),
+  port(502),
+  ip(""),
+  tout_msec(5000)
 {
     try
     {
@@ -40,8 +40,8 @@ tout_msec(5000)
 // --------------------------------------------------------------------------
 UModbus::UModbus():
 mb(0),
+port(502),
 ip(""),
-port(512),
 tout_msec(5000)
 {
     mb = new ModbusTCPMaster();

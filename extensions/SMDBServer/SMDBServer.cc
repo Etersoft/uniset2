@@ -105,7 +105,7 @@ void SMDBServer::step()
             shm->localSaveValue(aitHeartBeat,sidHeartBeat,maxHeartBeat,getId());
             ptHeartBeat.reset();
         }
-        catch(Exception& ex)
+        catch( const Exception& ex )
         {
             dcrit << myname << "(step): (hb) " << ex << std::endl;
         }
@@ -159,7 +159,7 @@ void SMDBServer::initDB( DBInterface *db )
                 }
             }
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         dcrit << myname << "(filling ObjectsMap): " << ex << std::endl;
     }

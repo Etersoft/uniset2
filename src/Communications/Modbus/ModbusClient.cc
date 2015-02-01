@@ -355,7 +355,7 @@ mbErrCode ModbusClient::recv( ModbusAddr addr, ModbusByte qfunc,
     {
 //        cout << "(recv): catch TimeOut " << endl;
     }
-    catch( Exception& ex ) // SystemError
+    catch( const Exception& ex ) // SystemError
     {
         if( dlog->is_crit() )
             dlog->crit() << "(recv): " << ex << endl;
@@ -1205,7 +1205,7 @@ mbErrCode ModbusClient::recv_pdu( ModbusByte qfunc, ModbusMessage& rbuf, timeout
     {
 //        cout << "(recv): catch TimeOut " << endl;
     }
-    catch( Exception& ex ) // SystemError
+    catch( const Exception& ex ) // SystemError
     {
         if( dlog->is_crit() )
             dlog->crit() << "(recv): " << ex << endl;
@@ -1241,7 +1241,7 @@ mbErrCode ModbusClient::send( ModbusMessage& msg )
             dlog->crit() << "(send): " << ex << endl;
         return ex.err;
     }
-    catch( Exception& ex ) // SystemError
+    catch( const Exception& ex ) // SystemError
     {
         if( dlog->is_crit() )
             dlog->crit() << "(send): " << ex << endl;
@@ -1258,7 +1258,7 @@ mbErrCode ModbusClient::send( ModbusMessage& msg )
 }
 
 // -------------------------------------------------------------------------
-void ModbusClient::initLog( UniSetTypes::Configuration* conf,
+void ModbusClient::initLog( std::shared_ptr<UniSetTypes::Configuration> conf,
                             const std::string& lname, const string& logfile )
 {
     conf->initLogStream(dlog,lname);

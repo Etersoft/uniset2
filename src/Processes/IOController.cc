@@ -86,11 +86,10 @@ void IOController::sensorsUnregistration()
         {
             ioUnRegistration( li.second.si.id );
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             ucrit << myname << "(sensorsUnregistration): "<< ex << endl;
         }
-        catch(...){}
     }
 }
 // ------------------------------------------------------------------------------------------
@@ -113,11 +112,10 @@ void IOController::activateInit()
 
             sigInit.emit(li,this);
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             ucrit << myname << "(activateInit): "<< ex << endl;
         }
-        catch(...){}
     }
 }
 // ------------------------------------------------------------------------------------------
@@ -385,20 +383,16 @@ void IOController::ioRegistration( USensorInfo&& ainf, bool force )
                 ui->registered( ainf.si.id, getRef(), true );
                 return;
             }
-            catch(ObjectNameAlready& ex )
+            catch( const ObjectNameAlready& ex )
             {
                 uwarn << myname << "(asRegistration): ЗАМЕНЯЮ СУЩЕСТВУЮЩИЙ ОБЪЕКТ (ObjectNameAlready)" << endl;
                 ui->unregister(ainf.si.id);
             }
         }
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         ucrit << myname << "(ioRegistration): " << ex << endl;
-    }
-    catch(...)
-    {
-        ucrit << myname << "(ioRegistration): catch ..."<< endl;
     }
 }
 // ---------------------------------------------------------------------------

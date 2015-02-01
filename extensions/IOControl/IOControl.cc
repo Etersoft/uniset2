@@ -373,11 +373,11 @@ void IOControl::execute()
                 ptHeartBeat.reset();
             }
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             dlog3 << myname << "(execute): " << ex << endl;
         }
-        catch(CORBA::SystemException& ex)
+        catch( const CORBA::SystemException& ex )
         {
             dlog3 << myname << "(execute): CORBA::SystemException: "
                     << ex.NP_minorString() << endl;
@@ -613,32 +613,27 @@ void IOControl::ioread( IOInfo* it )
                     card->setDigitalChannel(it->subdev,it->channel,set);
             }
         }
-        catch(IOController_i::NameNotFound &ex)
+        catch( const IOController_i::NameNotFound &ex )
         {
             dlog3 << myname << "(iopoll):(NameNotFound) " << ex.err << endl;
         }
-        catch(IOController_i::IOBadParam& ex )
+        catch( const IOController_i::IOBadParam& ex )
         {
             dlog3 << myname << "(iopoll):(IOBadParam) " << ex.err << endl;
         }
-        catch(IONotifyController_i::BadRange )
+        catch( const IONotifyController_i::BadRange& ex )
         {
             dlog3 << myname << "(iopoll): (BadRange)..." << endl;
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             dlog3 << myname << "(iopoll): " << ex << endl;
         }
-        catch(CORBA::SystemException& ex)
+        catch( const CORBA::SystemException& ex )
         {
             dlog3 << myname << "(iopoll): СORBA::SystemException: "
                     << ex.NP_minorString() << endl;
         }
-        catch(...)
-        {
-            dlog3 << myname << "(iopoll): catch ..." << endl;
-        }
-
 }
 // --------------------------------------------------------------------------------
 void IOControl::readConfiguration()
@@ -837,11 +832,10 @@ void IOControl::sigterm( int signo )
                 card->setAnalogChannel(it.subdev,it.channel,it.safety,it.range,it.aref);
             }
         }
-        catch( Exception& ex )
+        catch( const std::exception& ex )
         {
-            dlog3 << myname << "(sigterm): " << ex << endl;
+            dlog3 << myname << "(sigterm): " << ex.what() << endl;
         }
-        catch(...){}
     }
 
     while( term ){}
@@ -872,7 +866,7 @@ void IOControl::initOutputs()
             else if( it.stype == UniversalIO::AO )
                 card->setAnalogChannel(it.subdev,it.channel,it.defval,it.range,it.aref);
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             dlog3 << myname << "(initOutput): " << ex << endl;
         }
@@ -913,7 +907,7 @@ void IOControl::initIOCard()
                 card->configureChannel(it.subdev,it.channel,ComediInterface::AO);
 
         }
-        catch( Exception& ex)
+        catch( const Exception& ex)
         {
             dcrit << myname << "(initIOCard): sid=" << it.si.id << " " << ex << endl;
         }
@@ -938,7 +932,7 @@ void IOControl::blink( BlinkList& lst, bool& bstate )
         {
             card->setDigitalChannel(io->subdev,io->channel,bstate);
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             dcrit << myname << "(blink): " << ex << endl;
         }
@@ -1022,7 +1016,7 @@ void IOControl::check_testmode()
                         card->setAnalogChannel(it.subdev,it.channel,it.safety,it.range,it.aref);
                     }
                 }
-                catch( Exception& ex )
+                catch( const Exception& ex )
                 {
                     dlog3 << myname << "(sigterm): " << ex << endl;
                 }
@@ -1031,7 +1025,7 @@ void IOControl::check_testmode()
         }
 
     }
-    catch( Exception& ex)
+    catch( const Exception& ex)
     {
         dcrit << myname << "(check_testmode): " << ex << endl;
     }
@@ -1096,11 +1090,11 @@ void IOControl::check_testlamp()
             }
         }
     }
-    catch( Exception& ex)
+    catch( const Exception& ex)
     {
         dcrit << myname << "(check_testlamp): " << ex << endl;
     }
-    catch(...)
+    catch( const std::exception& ex )
     {
         dcrit << myname << "(check_testlamp): catch ..." << endl;
     }
@@ -1281,7 +1275,7 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
         if( testLamp_S != DefaultObjectId )
             shm->askSensor(testLamp_S,cmd);
     }
-    catch( Exception& ex)
+    catch( const Exception& ex)
     {
         dcrit << myname << "(askSensors): " << ex << endl;
     }
@@ -1291,7 +1285,7 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
         if( testMode_as != DefaultObjectId )
             shm->askSensor(testMode_as,cmd);
     }
-    catch( Exception& ex)
+    catch( const Exception& ex )
     {
         dcrit << myname << "(askSensors): " << ex << endl;
     }
@@ -1312,7 +1306,7 @@ void IOControl::askSensors( UniversalIO::UIOCommand cmd )
             {
                 shm->askSensor(it.si.id,cmd,myid);
             }
-            catch( Exception& ex)
+            catch( const Exception& ex )
             {
                 dcrit << myname << "(askSensors): " << ex << endl;
             }
@@ -1585,7 +1579,7 @@ void IOControl::buildCardsList()
             cards[cardnum] = new ComediInterface(iodev);
             noCards = false;
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             dcrit << myname << "(buildCardsList): " << ex << endl;
             throw;

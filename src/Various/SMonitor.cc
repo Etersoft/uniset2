@@ -56,7 +56,7 @@ void SMonitor::sysCommand( const SystemMessage *sm )
                     if( it.si.id != DefaultObjectId )
                         ui->askRemoteSensor(it.si.id,UniversalIO::UIONotify,it.si.node);
                 }
-                catch(Exception& ex)
+                catch( const Exception& ex )
                 {
                     cerr << myname << ":(askSensor): " << ex << endl;
                     raise(SIGTERM);

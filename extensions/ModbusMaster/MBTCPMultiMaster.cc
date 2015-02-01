@@ -371,11 +371,14 @@ void MBTCPMultiMaster::check_thread()
                         shm->localSetValue(it->respond_it,it->respond_id,(set ? 1:0),getId());
                     }
                 }
-                catch( Exception& ex )
+                catch( const Exception& ex )
                 {
                     dcrit << myname << "(check): (respond) " << ex << std::endl;
                 }
-                catch(...){}
+                catch( const std::exception& ex )
+                {
+                    dcrit << myname << "(check): (respond) " << ex.what() << std::endl;
+                }
 
 
                 {
@@ -383,7 +386,10 @@ void MBTCPMultiMaster::check_thread()
                     it->respond = r;
                 }
             }
-            catch(...){}
+            catch( const std::exception& ex )
+            {
+                dcrit << myname << "(check): (respond) " << ex.what() << std::endl;
+            }
 
             if( !checkProcActive() )
                 break;

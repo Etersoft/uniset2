@@ -139,11 +139,11 @@ int main( int argc, char **argv )
         }
 
     }
-    catch( SystemError& err )
+    catch( const SystemError& err )
     {
         cerr << "(logserver): " << err << endl;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         cerr << "(logserver): " << ex << endl;
     }

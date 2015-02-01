@@ -82,12 +82,12 @@ int main( int argc, char* argv[], char* envp[] )
             }
         }
     }
-    catch( SystemError& err )
+    catch( const SystemError& err )
     {
         cerr << "(log-stdin): " << err << endl;
         return 1;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         cerr << "(log-stdin): " << ex << endl;
         return 1;

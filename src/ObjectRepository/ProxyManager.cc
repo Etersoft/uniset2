@@ -96,14 +96,14 @@ bool ProxyManager::activateObject()
                     {
                         ui->unregister(it.first);
                     }
-                    catch(Exception & ex)
+                    catch( const Exception& ex )
                     {
                         ucrit << myname << "(unregistered): " << ex << endl;
                     }
                 }
             }
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             ucrit << myname << "(activate): " << ex << endl;
         }
@@ -120,7 +120,7 @@ bool ProxyManager::deactivateObject()
         {
             ui->unregister(it->first);
         }
-        catch(Exception& ex )
+        catch( const Exception& ex )
         {
             ucrit << myname << "(activate): " << ex << endl;
         }
@@ -151,7 +151,7 @@ void ProxyManager::processingMessage( UniSetTypes::VoidMessage *msg )
             break;
         }
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         ucrit << myname << "(processingMessage): " << ex << endl;
     }
@@ -165,7 +165,7 @@ void ProxyManager::allMessage( UniSetTypes::VoidMessage* msg )
         {
             o.second->processingMessage(msg);
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             ucrit << myname << "(allMessage): " << ex << endl;
         }

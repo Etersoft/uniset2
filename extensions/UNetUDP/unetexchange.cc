@@ -69,7 +69,7 @@ int main( int argc, const char** argv )
         act->run(false);
         on_sigchild(SIGTERM);
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         dcrit << "(unetexchange): " << ex << std::endl;
     }

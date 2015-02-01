@@ -253,17 +253,13 @@ int main( int argc, char **argv )
             msleep(500);
         }
     }
-    catch( ModbusRTU::mbException& ex )
+    catch( const ModbusRTU::mbException& ex )
     {
         cerr << "(mtr-read): " << ex << endl;
     }
-    catch(SystemError& err)
+    catch( const std::exception& ex )
     {
-        cerr << "(mtr-read): " << err << endl;
-    }
-    catch(Exception& ex)
-    {
-        cerr << "(mtr-read): " << ex << endl;
+        cerr << "(mtr-read): " << ex.what() << endl;
     }
     catch(...)
     {

@@ -65,15 +65,15 @@ int main(int argc, char* argv[] )
 
         return session.run();
     }
-    catch( SystemError& err )
+    catch( const SystemError& err )
     {
         cerr << "(tests_mbtcpmultimaster): " << err << endl;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         cerr << "(tests_mbtcpmultimaster): " << ex << endl;
     }
-    catch( std::exception& e )
+    catch( const std::exception& e )
     {
         cerr << "(tests_mbtcpmultimaster): " << e.what() << endl;
     }

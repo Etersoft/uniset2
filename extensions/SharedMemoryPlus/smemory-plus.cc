@@ -203,11 +203,11 @@ int main( int argc, const char **argv )
         on_sigchild(SIGTERM);
         return 0;
     }
-    catch(Exception& ex)
+    catch( const Exception& ex )
     {
         dcrit << "(smemory-plus): " << ex << endl;
     }
-    catch( CORBA::SystemException& ex )
+    catch( const CORBA::SystemException& ex )
     {
         dcrit << "(smemory-plus): " << ex.NP_minorString() << endl;
     }
