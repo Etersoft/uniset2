@@ -34,22 +34,26 @@ int main( int argc, const char **argv )
             return 0;
         }
 
-        UniSetActivatorPtr act = UniSetActivator::Instance();
-        SMonitor tp(ID);
-        act->add(tp.get_ptr());
+        auto act = UniSetActivator::Instance();
+        auto smon = make_shared<SMonitor>(ID);
+        act->add(smon);
 
         SystemMessage sm(SystemMessage::StartUp);
         act->broadcast( sm.transport_msg() );
         act->run(false);
         return 0;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         cout << "(main):" << ex << endl;
     }
+    catch( const std::exception& ex )
+    {
+        cout << "(main): exception: " << ex.what() << endl;
+    }
     catch(...)
     {
-        cout << "(main): Неизвестное исключение!!!!"<< endl;
+        cout << "(main): Unknown exception!!"<< endl;
     }
 
     return 1;

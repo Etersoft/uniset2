@@ -161,6 +161,11 @@ public:
     inline void showLogType(bool s)
     { show_logtype = s; }
 
+    inline std::ostream& log(Debug::type l)
+    {
+        return this->operator[](l);
+    }
+
 // короткие функции (для удобства)
 // log.level1()  - вывод с датой и временем  "date time [LEVEL] ...",
 //    если вывод даты и времени не выключен при помощи showDateTime(false)
