@@ -526,19 +526,19 @@ int main( int argc, char **argv )
 
         mb.disconnect();
     }
-    catch( ModbusRTU::mbException& ex )
+    catch( const ModbusRTU::mbException& ex )
     {
         cerr << "(mbtester): " << ex << endl;
     }
-    catch(SystemError& err)
+    catch( const SystemError& err )
     {
         cerr << "(mbtester): " << err << endl;
     }
-    catch(Exception& ex)
+    catch( const Exception& ex )
     {
         cerr << "(mbtester): " << ex << endl;
     }
-    catch( std::exception& e )
+    catch( const std::exception& e )
     {
         cerr << "(mbtester): " << e.what() << endl;
     }

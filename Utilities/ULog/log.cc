@@ -161,11 +161,11 @@ int main( int argc, char **argv )
 
         lr.readlogs( addr, port, (LogServerTypes::Command)cmd, data, logname, verb );
     }
-    catch( SystemError& err )
+    catch( const SystemError& err )
     {
         cerr << "(log): " << err << endl;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         cerr << "(log): " << ex << endl;
     }

@@ -366,17 +366,13 @@ int main( int argc, char **argv )
 
         return 0;
     }
-    catch( ModbusRTU::mbException& ex )
+    catch( const ModbusRTU::mbException& ex )
     {
         cerr << "(mtr-setup): " << ex << endl;
     }
-    catch(SystemError& err)
+    catch( const std::exception& ex )
     {
-        cerr << "(mtr-setup): " << err << endl;
-    }
-    catch(Exception& ex)
-    {
-        cerr << "(mtr-setup): " << ex << endl;
+        cerr << "(mtr-setup): " << ex.what() << endl;
     }
     catch(...)
     {

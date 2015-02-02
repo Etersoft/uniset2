@@ -153,7 +153,7 @@ void NCRestorer_XML::read_list( const std::shared_ptr<UniXML>& xml, xmlNode* nod
                 {
                     ioRegistration(ic, std::move(inf), true);
                 }
-                catch(Exception& ex)
+                catch( const Exception& ex )
                 {
                     uwarn << "(read_list): " << ex << endl;
                 }

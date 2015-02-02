@@ -75,7 +75,7 @@ void LogReader::connect( ost::InetAddress addr, ost::tpport_t _port, timeout_t m
             tcp->setTimeout(msec);
             tcp->setKeepAlive(true);
         }
-        catch( std::exception& e )
+        catch( const std::exception& e )
         {
             if( rlog.debugging(Debug::CRIT) )
             {

@@ -353,7 +353,7 @@ int main(int argc, char* argv[])
             break;
         }
     }
-    catch( std::exception& e )
+    catch( const std::exception& e )
     {
         cerr << "(main): " << e.what() << endl;
     }

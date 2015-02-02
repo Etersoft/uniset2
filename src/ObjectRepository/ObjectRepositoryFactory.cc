@@ -136,32 +136,32 @@ bool ObjectRepositoryFactory::createContext(const char *cname, CosNaming::Naming
         ulogrep << "ORepFactory(createContext): context "<< cname << " уже есть"<< endl;        
         return true;
     }
-    catch(CosNaming::NamingContext::NotFound)
+    catch( const CosNaming::NamingContext::NotFound )
     {
         ulogrep << "ORepFactory(createContext): NotFound "<< cname << endl;        
         throw NameNotFound();
     }
-    catch(const CosNaming::NamingContext::InvalidName &nf)
+    catch( const CosNaming::NamingContext::InvalidName &nf )
     {
         uwarn << "ORepFactory(createContext): (InvalidName)  " << cname;
     }
-    catch(const CosNaming::NamingContext::CannotProceed &cp)
+    catch( const CosNaming::NamingContext::CannotProceed &cp )
     {
         uwarn << "ORepFactory(createContext): catch CannotProced " 
                 << cname << " bad part="
                 << omniURI::nameToString(cp.rest_of_name);
         throw NameNotFound();
     }
-    catch( CORBA::SystemException& ex)
+    catch( const CORBA::SystemException& ex )
     {
         ucrit << "ORepFactory(createContext): CORBA::SystemException: "
               << ex.NP_minorString() << endl;
     }
-    catch(CORBA::Exception&)
+    catch( const CORBA::Exception& )
     {
         ucrit << "поймали CORBA::Exception." << endl;
     }
-    catch(omniORB::fatalException& fe)
+    catch( const omniORB::fatalException& fe )
     {
        ucrit << "поймали omniORB::fatalException:" << endl;
        ucrit << "  file: " << fe.file() << endl;

@@ -225,7 +225,7 @@ void MBExchange::step()
             shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
             ptHeartBeat.reset();
         }
-        catch(Exception& ex)
+        catch( const Exception& ex )
         {
             dcrit << myname << "(step): (hb) " << ex << std::endl;
         }
@@ -788,11 +788,11 @@ bool MBExchange::initSMValue( ModbusRTU::ModbusData* data, int count, RSProperty
     {
         dlog3 << myname << "(initSMValue): (BadRange)..." << endl;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         dlog3 << myname << "(initSMValue): " << ex << endl;
     }
-    catch(CORBA::SystemException& ex)
+    catch( const CORBA::SystemException& ex)
     {
         dlog3 << myname << "(initSMValue): CORBA::SystemException: "
                 << ex.NP_minorString() << endl;
@@ -1019,11 +1019,11 @@ void MBExchange::updateSM()
             {
                 dlog3 << myname << "(updateSM): (BadRange)..." << endl;
             }
-            catch( Exception& ex )
+            catch( const Exception& ex )
             {
                 dlog3 << myname << "(updateSM): " << ex << endl;
             }
-            catch(CORBA::SystemException& ex)
+            catch( const CORBA::SystemException& ex )
             {
                 dlog3 << myname << "(updateSM): CORBA::SystemException: "
                         << ex.NP_minorString() << endl;
@@ -1062,16 +1062,16 @@ void MBExchange::updateSM()
             {
                 dlog3 << myname << "(updateSM): (BadRange)..." << endl;
             }
-            catch( Exception& ex )
+            catch( const Exception& ex )
             {
                 dlog3 << myname << "(updateSM): " << ex << endl;
             }
-            catch(CORBA::SystemException& ex)
+            catch( const CORBA::SystemException& ex )
             {
                 dlog3 << myname << "(updateSM): CORBA::SystemException: "
                     << ex.NP_minorString() << endl;
             }
-            catch(...)
+            catch( const std::exception& ex )
             {
                 dlog3 << myname << "(updateSM): catch ..." << endl;
             }
@@ -1449,11 +1449,11 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
         {
             dlog3 << myname << "(updateRSProperty): (BadRange)..." << endl;
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             dlog3 << myname << "(updateRSProperty): " << ex << endl;
         }
-        catch(CORBA::SystemException& ex)
+        catch( const CORBA::SystemException& ex )
         {
             dlog3 << myname << "(updateRSProperty): CORBA::SystemException: "
                 << ex.NP_minorString() << endl;
@@ -1683,11 +1683,11 @@ void MBExchange::updateMTR( RegMap::iterator& rit )
             {
                 dlog3 << myname << "(updateMTR): (BadRange)..." << endl;
             }
-            catch( Exception& ex )
+            catch( const Exception& ex )
             {
                 dlog3 << myname << "(updateMTR): " << ex << endl;
             }
-            catch(CORBA::SystemException& ex)
+            catch( const CORBA::SystemException& ex )
             {
                 dlog3 << myname << "(updateMTR): CORBA::SystemException: "
                     << ex.NP_minorString() << endl;
@@ -1773,11 +1773,11 @@ void MBExchange::updateRTU188( RegMap::iterator& rit )
         {
             dlog3 << myname << "(updateRTU188): (BadRange)..." << endl;
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             dlog3 << myname << "(updateRTU188): " << ex << endl;
         }
-        catch(CORBA::SystemException& ex)
+        catch( const CORBA::SystemException& ex )
         {
             dlog3 << myname << "(updateRTU188): CORBA::SystemException: "
                 << ex.NP_minorString() << endl;
@@ -2926,7 +2926,7 @@ void MBExchange::updateRespondSensors()
                 bool set = d->resp_invert ? !d->resp_state : d->resp_state;
                 shm->localSetValue(d->resp_it,d->resp_id,( set ? 1:0 ),getId());
             }
-            catch( Exception& ex )
+            catch( const Exception& ex )
             {
                 dcrit << myname << "(step): (respond) " << ex << std::endl;
             }
@@ -2942,7 +2942,9 @@ void MBExchange::execute()
     {
         askTimer(tmExchange,0);
     }
-    catch(...){}
+    catch( const std::exception& ex )
+    {
+    }
 
     initMB(false);
 
@@ -2952,13 +2954,13 @@ void MBExchange::execute()
         {
             step();
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             dcrit << myname << "(execute): " << ex << std::endl;
         }
-        catch(...)
+        catch( const std::exception& ex )
         {
-            dcrit << myname << "(execute): catch ..." << endl;
+            dcrit << myname << "(execute): catch: " << ex.what() << endl;
         }
 
         msleep(polltime);

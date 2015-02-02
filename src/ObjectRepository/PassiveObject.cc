@@ -104,19 +104,19 @@ void PassiveObject::processingMessage( UniSetTypes::VoidMessage *msg )
                 break;
         }
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         ucrit  << myname << "(processingMessage): " << ex << endl;
     }
-    catch(CORBA::SystemException& ex)
+    catch( const CORBA::SystemException& ex )
     {
         ucrit << myname << "(processingMessage): CORBA::SystemException: " << ex.NP_minorString() << endl;
-      }
-    catch(CORBA::Exception& ex)
+    }
+    catch( const CORBA::Exception& ex )
     {
         uwarn << myname << "(processingMessage): CORBA::Exception: " << ex._name() << endl;
     }
-    catch( omniORB::fatalException& fe ) 
+    catch( const omniORB::fatalException& fe ) 
     {
         auto ul = ulog();
         if( ul && ul->is_crit() )
@@ -126,10 +126,6 @@ void PassiveObject::processingMessage( UniSetTypes::VoidMessage *msg )
                 << " line: " << fe.line()
                 << " mesg: " << fe.errmsg() << endl;
         }
-    }
-    catch(...)
-    {
-        ucrit << myname << "(processingMessage): catch..." << endl;
     }
 }
 // -------------------------------------------------------------------------

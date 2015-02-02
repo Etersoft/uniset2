@@ -160,7 +160,7 @@ int main( int argc, const char **argv )
         cout << "thread2 stop..." << endl;
         t2.stop();
     }
-    catch( std::exception& ex )
+    catch( const std::exception& ex )
     {
         cerr << "catch: " << ex.what() << endl;
     }

@@ -138,25 +138,25 @@ void ObjectRepository::registration(const string& name, const ObjectPtr oRef, co
                 ctx->unbind(oName);
             continue;
         }
-        catch(ORepFailed)
+        catch( const ORepFailed )
         {
             string er("ObjectRepository(registrartion): (getContext) не смог зарегистрировать "+name);
             throw ORepFailed(er);
         }
-        catch(CosNaming::NamingContext::NotFound)
+        catch( const CosNaming::NamingContext::NotFound& )
         {
             throw NameNotFound();
         }
-        catch(const CosNaming::NamingContext::InvalidName &nf)
+        catch( const CosNaming::NamingContext::InvalidName &nf )
         {
             err << "ObjectRepository(registration): (InvalidName) не смог зарегистрировать ссылку  " << name;;
         }
-        catch(const CosNaming::NamingContext::CannotProceed &cp)
+        catch( const CosNaming::NamingContext::CannotProceed &cp )
         {
             err << "ObjectRepository(registrartion): catch CannotProced " << name << " bad part=";
             err << omniURI::nameToString(cp.rest_of_name);
         }
-        catch(CORBA::SystemException& ex)
+        catch( const CORBA::SystemException& ex )
         {
             uwarn << "ObjectRepository(registrartion): поймали CORBA::SystemException: "
                     << ex.NP_minorString() << endl;
@@ -279,7 +279,7 @@ ObjectPtr ObjectRepository::resolve( const string& name, const string& NSName ) 
         err << "ObjectRepository(resolve): catch CannotProced " << name << " bad part=";
         err << omniURI::nameToString(cp.rest_of_name);
     }
-    catch(CORBA::SystemException& ex)
+    catch( const CORBA::SystemException& ex )
     {
         err << "ObjectRepository(resolve): catch SystemException: " << ex.NP_minorString()
             << " для " << name;
@@ -343,7 +343,7 @@ bool ObjectRepository::list(const string& section, ListObjectName *ls, unsigned 
         CORBA::ORB_var orb = uconf->getORB();
         ctx = ORepHelpers::getContext(orb, section, nsName);    
     }
-    catch(ORepFailed)
+    catch( const ORepFailed )
     {
         uwarn << "ORepository(list): не смог получить ссылку на "<< section << endl;
         throw;
@@ -421,10 +421,10 @@ bool ObjectRepository::isExist( const ObjectPtr& oref ) const
         UniSetObject_i_var o = UniSetObject_i::_narrow(oref);
         return o->exist();
     }
-    catch(CORBA::TRANSIENT){}
-    catch(CORBA::SystemException&){}
-    catch(CORBA::Exception&){}
-    catch(omniORB::fatalException& fe)
+    catch( const CORBA::TRANSIENT){}
+    catch( const CORBA::SystemException&){}
+    catch( const CORBA::Exception&){}
+    catch( const omniORB::fatalException& fe )
     {
         uwarn << "ObjectRepository(isExist): "<< "поймали omniORB::fatalException:" << endl;
         uwarn << "  file: " << fe.file() << endl;

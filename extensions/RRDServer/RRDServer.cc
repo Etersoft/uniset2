@@ -202,7 +202,7 @@ void RRDServer::initRRD( xmlNode* cnode, int tmID )
 
         rrdlist.emplace_back(fname,tmID,rrdstep,dsmap);
     }
-/*    catch( Exception& ex )
+/*    catch( const Exception& ex )
     {
         mycrit << myname << "(init) " << ex << std::endl;
     }
@@ -267,7 +267,7 @@ void RRDServer::askSensors( UniversalIO::UIOCommand cmd )
             {
                 shm->askSensor(s.first,cmd);
             }
-            catch( std::exception& ex )
+            catch( const std::exception& ex )
             {
                 mycrit << myname << "(askSensors): " << ex.what() << endl;
             }
@@ -286,7 +286,7 @@ void RRDServer::sysCommand( const UniSetTypes::SystemMessage* sm )
             {
                 askTimer(it.tid,it.sec*1000);
             }
-            catch( std::exception& ex )
+            catch( const std::exception& ex )
             {
                 mycrit << myname << "(askTimer): " << ex.what() << endl;
             }

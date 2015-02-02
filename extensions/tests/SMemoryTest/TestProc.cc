@@ -166,7 +166,7 @@ void TestProc::test_thresholds()
         ti = ui->getThresholdInfo(t_set_c,tid);
         cerr << myname << ": ask ON threshold: " << ( ti.state == IONotifyController_i::HiThreshold  ? "ok" : "FAIL" ) << endl;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         mylog2 << myname << ": CHECK 'ask and get threshold' FAILED: " << ex << endl;
     }

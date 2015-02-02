@@ -68,7 +68,7 @@ int main( int argc, const char** argv )
         act->run(false);
         return 0;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         dcrit << "(smdbserver): " << ex << std::endl;
     }

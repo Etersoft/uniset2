@@ -74,15 +74,15 @@ int main(int argc, const char **argv)
 //        on_sigchild(SIGTERM);
         return 0;
     }
-    catch( SystemError& err )
+    catch( const SystemError& err )
     {
         dcrit << "(mbslave): " << err << endl;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         dcrit << "(mbslave): " << ex << endl;
     }
-    catch( std::exception& e )
+    catch( const std::exception& e )
     {
         dcrit << "(mbslave): " << e.what() << endl;
     }

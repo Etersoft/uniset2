@@ -71,7 +71,7 @@ void SViewer::view()
     {
         readSection(csec,"");
     }
-    catch(Exception& ex)
+    catch( const Exception& ex )
     {
         cerr << ex << endl;
     }
@@ -146,7 +146,7 @@ void SViewer::readSection( const string& section, const string& secRoot )
                     else
                         getInfo(id);
                 }
-                catch(Exception& ex)
+                catch( const Exception& ex )
                 {
                     cout << "(readSection): " << ex << endl;
                 }
@@ -195,7 +195,7 @@ void SViewer::getInfo( ObjectId id )
 
         return;
     }
-    catch(Exception& ex)
+    catch( const Exception& ex )
     {
         cout << "(getInfo):" << ex << endl;
     }

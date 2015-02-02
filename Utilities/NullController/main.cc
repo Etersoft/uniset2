@@ -77,9 +77,9 @@ int main(int argc, char** argv)
         act->run(false);
         return 0;
     }
-    catch(Exception& ex)
+    catch( const std::exception& ex )
     {
-        cerr << "(nullController::main): " << ex << endl;
+        cerr << "(nullController::main): " << ex.what() << endl;
     }
     catch(...)
     {

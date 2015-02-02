@@ -237,27 +237,22 @@ mbErrCode ModbusTCPMaster::query( ModbusAddr addr, ModbusMessage& msg,
         if( dlog->is_warn() )
             dlog->warn() << "(query): " << err << endl;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         if( dlog->is_warn() )
             dlog->warn() << "(query): " << ex << endl;
     }
-    catch( ost::SockException& e ) 
+    catch( const ost::SockException& e ) 
     {
         if( dlog->is_warn() )
             dlog->warn() << "(query): tcp error: " << e.getString() << endl;
         return erTimeOut;
     }
-    catch( std::exception& e )
+    catch( const std::exception& e )
     {
         if( dlog->is_warn() )
             dlog->crit() << "(query): " << e.what() << std::endl;
         return erTimeOut;
-    }
-    catch(...)
-    {
-        if( dlog->is_warn() )
-            dlog->warn() << "(query): cath..." << endl;
     }
 
     return erTimeOut; // erHardwareError
@@ -311,7 +306,7 @@ void ModbusTCPMaster::reconnect()
         tcp->create(iaddr,port,true,500);
         tcp->setTimeout(replyTimeOut_ms);
     }
-    catch( std::exception& e )
+    catch( const std::exception& e )
     {
         if( dlog->debugging(Debug::CRIT) )
         {
@@ -363,7 +358,7 @@ void ModbusTCPMaster::connect( ost::InetAddress addr, int _port )
             tcp->create(iaddr,port,true,500);
             tcp->setTimeout(replyTimeOut_ms);
         }
-        catch( std::exception& e )
+        catch( const std::exception& e )
         {
             if( dlog->debugging(Debug::CRIT) )
             {

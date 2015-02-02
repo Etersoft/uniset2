@@ -42,7 +42,7 @@ lastcrc(0)
         addr = s_host.c_str();
         udp = make_shared<ost::UDPBroadcast>(addr,port);
     }
-    catch( std::exception& e )
+    catch( const std::exception& e )
     {
         ostringstream s;
         s << myname << ": " << e.what();
@@ -169,7 +169,7 @@ void UNetSender::send()
         {
             dwarn << myname << "(send): " << ex << std::endl;
         }
-        catch( std::exception& e )
+        catch( const std::exception& e )
         {
             dwarn << myname << "(send): " << e.what() << std::endl;
         }

@@ -106,19 +106,19 @@ namespace ORepHelpers
             uwarn << err.str() << endl;
             throw ORepFailed(err.str());
         }
-        catch(CORBA::SystemException& ex)
+        catch( const CORBA::SystemException& ex )
         {
             ostringstream err;
             err << "OREPHELPER(getContext): поймали CORBA::SystemException: " << ex.NP_minorString();
             uwarn <<  err.str() << endl;
             throw ORepFailed(err.str());
         }
-        catch(CORBA::Exception&)
+        catch( const CORBA::Exception& )
         {
             uwarn << "OREPHELPER(getContext): поймали CORBA::Exception." << endl;
             throw ORepFailed();
         }
-        catch(omniORB::fatalException& fe)
+        catch( const omniORB::fatalException& fe )
         {
             ostringstream err;
             err << "OREPHELPER(getContext): поймали omniORB::fatalException:";
@@ -165,20 +165,20 @@ namespace ORepHelpers
 
             ulogrep << "OREPHELP: init NameService ok"<< endl;
         }
-        catch(CORBA::ORB::InvalidName& ex)
+        catch( const CORBA::ORB::InvalidName& ex )
         {
             ostringstream err;
             err << "ORepHelpers(getRootNamingContext): InvalidName=" << nsName;
             uwarn << err.str() << endl;
             throw ORepFailed(err.str());
         }
-        catch (CORBA::COMM_FAILURE& ex)
+        catch( const CORBA::COMM_FAILURE& ex )
         {
             ostringstream err;
             err << "ORepHelpers(getRootNamingContext): Не смог получить ссылку на контекст ->" << nsName;
             throw ORepFailed(err.str());
         }
-        catch(omniORB::fatalException& ex)
+        catch( const omniORB::fatalException& ex )
         {
             string err("ORepHelpers(getRootNamingContext): Caught Fatal Exception");
             throw ORepFailed(err);

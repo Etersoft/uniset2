@@ -194,14 +194,14 @@ void terminate_thread()
             g_act->orb->shutdown(true);
             ulogsys << "TERMINATE THREAD: destroy ok.." << endl;
         }
-        catch(omniORB::fatalException& fe)
+        catch( const omniORB::fatalException& fe )
         {
             ulogsys << "(TERMINATE THREAD): : поймали omniORB::fatalException:" << endl;
             ulogsys << "(TERMINATE THREAD):   file: " << fe.file() << endl;
             ulogsys << "(TERMINATE THREAD):   line: " << fe.line() << endl;
             ulogsys << "(TERMINATE THREAD):   mesg: " << fe.errmsg() << endl;
         }
-        catch(std::exception& ex)
+        catch( const std::exception& ex )
         {
             ulogsys << "(TERMINATE THREAD): " << ex.what() << endl;
         }
@@ -220,14 +220,14 @@ void terminate_thread()
                 g_act->orb->destroy();
                 ulogsys << "(TERMINATE THREAD): destroy ok.." << endl;
             }
-            catch(omniORB::fatalException& fe)
+            catch( const omniORB::fatalException& fe )
             {
                 ulogsys << "(TERMINATE THREAD): : поймали omniORB::fatalException:" << endl;
                 ulogsys << "(TERMINATE THREAD):   file: " << fe.file() << endl;
                 ulogsys << "(TERMINATE THREAD):   line: " << fe.line() << endl;
                 ulogsys << "(TERMINATE THREAD):   mesg: " << fe.errmsg() << endl;
             }
-            catch(std::exception& ex)
+            catch( const std::exception& ex )
             {
                 ulogsys << "(TERMINATE THREAD): " << ex.what() << endl;
             }
@@ -346,7 +346,7 @@ void UniSetActivator::uaDestroy(int signo)
     {
         stop();
     }
-    catch(omniORB::fatalException& fe)
+    catch( const omniORB::fatalException& fe )
     {
         ucrit << myname << "(uaDestroy): : поймали omniORB::fatalException:" << endl;
         ucrit << myname << "(uaDestroy):   file: " << fe.file() << endl;
@@ -368,7 +368,7 @@ void UniSetActivator::uaDestroy(int signo)
         orb->shutdown(true);
         ulogsys << myname << "(uaDestroy): shutdown ok."<< endl;
     }
-    catch(omniORB::fatalException& fe)
+    catch( const omniORB::fatalException& fe )
     {
         ucrit << myname << "(uaDestroy): : поймали omniORB::fatalException:" << endl;
         ucrit << myname << "(uaDestroy):   file: " << fe.file() << endl;
@@ -441,14 +441,14 @@ void UniSetActivator::stop()
     {
         deactivateObject();
     }
-    catch(omniORB::fatalException& fe)
+    catch( const omniORB::fatalException& fe )
     {
         ucrit << myname << "(stop): : поймали omniORB::fatalException:" << endl;
         ucrit << myname << "(stop):   file: " << fe.file() << endl;
         ucrit << myname << "(stop):   line: " << fe.line() << endl;
         ucrit << myname << "(stop):   mesg: " << fe.errmsg() << endl;
     }
-    catch( std::exception& ex )
+    catch( const std::exception& ex )
     {
         ucrit << myname << "(stop): " << ex.what() << endl;
     }
@@ -477,15 +477,15 @@ void UniSetActivator::work()
         omniORB::setMainThread();
         orb->run();
     }
-    catch(CORBA::SystemException& ex)
+    catch( const CORBA::SystemException& ex )
     {
         ucrit << myname << "(work): поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
     }
-    catch(CORBA::Exception& ex)
+    catch( const CORBA::Exception& ex )
     {
         ucrit << myname << "(work): поймали CORBA::Exception." << endl;
     }
-    catch(omniORB::fatalException& fe)
+    catch( const omniORB::fatalException& fe )
     {
         ucrit << myname << "(work): : поймали omniORB::fatalException:" << endl;
         ucrit << myname << "(work):   file: " << fe.file() << endl;
@@ -585,14 +585,14 @@ void UniSetActivator::terminated( int signo )
         g_act->uaDestroy(signo);
         ulogsys << "(terminated): uaDestroy ok.." << endl;
     }
-    catch(omniORB::fatalException& fe)
+    catch( const omniORB::fatalException& fe )
     {
         ulogsys << "(terminated): : поймали omniORB::fatalException:" << endl;
         ulogsys << "(terminated):   file: " << fe.file() << endl;
         ulogsys << "(terminated):   line: " << fe.line() << endl;
         ulogsys << "(terminated):   mesg: " << fe.errmsg() << endl;
     }
-    catch(std::exception& ex)
+    catch( const std::exception& ex )
     {
         ulogsys << "(terminated): " << ex.what() << endl;
     }
@@ -684,7 +684,7 @@ void UniSetActivator::term( int signo )
         s_term.emit(signo);
         ulogsys << myname << "(term): sigterm() ok." << endl;
     }
-    catch(Exception& ex)
+    catch( const Exception& ex )
     {
         ucrit << myname << "(term): " << ex << endl;
     }

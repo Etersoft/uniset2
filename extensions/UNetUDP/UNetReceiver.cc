@@ -57,7 +57,7 @@ a_cache_init_ok(false)
         addr = s_host.c_str();
         udp = make_shared<ost::UDPDuplex>(addr,port);
     }
-    catch( std::exception& e )
+    catch( const std::exception& e )
     {
         ostringstream s;
         s << myname << ": " << e.what();
@@ -187,7 +187,7 @@ void UNetReceiver::update()
                 bool r = respondInvert ? !isRecvOK() : isRecvOK();
                 shm->localSetValue(itRespond,sidRespond,( r ? 1:0 ),shm->ID());
             }
-            catch(Exception& ex)
+            catch( const Exception& ex )
             {
                 dcrit << myname << "(step): (respond) " << ex << std::endl;
             }
@@ -199,7 +199,7 @@ void UNetReceiver::update()
             {
                 shm->localSetValue(itLostPackets,sidLostPackets,getLostPacketsNum(),shm->ID());
             }
-            catch(Exception& ex)
+            catch( const Exception& ex )
             {
                 dcrit << myname << "(step): (lostPackets) " << ex << std::endl;
             }
@@ -378,7 +378,7 @@ void UNetReceiver::receive()
         {
             dwarn << myname << "(receive): " << ex << std::endl;
         }
-        catch( std::exception& e )
+        catch( const std::exception& e )
         {
             dwarn << myname << "(receive): " << e.what()<< std::endl;
         }

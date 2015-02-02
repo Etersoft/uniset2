@@ -35,11 +35,11 @@ int main(int argc, const char **argv)
         plc.execute(schema);
         return 0;
     }
-    catch( LogicException& ex )
+    catch( const LogicException& ex )
     {
         cerr << ex << endl;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         cerr << ex << endl;
     }

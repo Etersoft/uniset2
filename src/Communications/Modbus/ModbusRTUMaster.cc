@@ -125,7 +125,7 @@ mbErrCode ModbusRTUMaster::sendData( unsigned char* buf, int len )
     {
         port->sendBlock(buf,len);
     }
-    catch( Exception& ex ) // SystemError
+    catch( const Exception& ex ) // SystemError
     {
         dlog->crit() << "(send): " << ex << endl;
         return erHardwareError;

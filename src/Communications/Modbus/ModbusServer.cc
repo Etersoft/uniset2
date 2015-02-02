@@ -576,7 +576,7 @@ mbErrCode ModbusServer::recv( ModbusRTU::ModbusAddr addr, ModbusMessage& rbuf, t
     {
 //        cout << "(recv): catch TimeOut " << endl;
     }
-    catch( Exception& ex ) // SystemError
+    catch( const Exception& ex ) // SystemError
     {
         dlog->crit() << "(recv): " << ex << endl;
         cleanupChannel();
@@ -1530,7 +1530,7 @@ mbErrCode ModbusServer::send( ModbusMessage& msg )
     {
         sendData((unsigned char*)(&msg),len);
     }
-    catch( Exception& ex ) // SystemError
+    catch( const Exception& ex ) // SystemError
     {
        if( dlog->is_crit() )
            dlog->crit() << "(send): " << ex << endl;

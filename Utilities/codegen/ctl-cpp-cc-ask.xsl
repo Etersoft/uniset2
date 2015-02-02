@@ -86,16 +86,16 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		updateOutputs(forceOut);
 		updatePreviousValues();
 	}
-	catch( Exception&amp; ex )
+	catch( const Exception&amp; ex )
 	{
         ucrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 	}
-	catch(CORBA::SystemException&amp; ex)
+	catch( const CORBA::SystemException&amp; ex )
 	{
         ucrit &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
                 &lt;&lt; ex.NP_minorString() &lt;&lt; endl;
 	}
-    catch( std::exception&amp;ex )
+    catch( const std::exception&amp;ex )
     {
         ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
     }
@@ -190,7 +190,7 @@ long <xsl:value-of select="$CLASSNAME"/>_SK::getValue( UniSetTypes::ObjectId _si
 
 		return ui->getValue(_sid);
 	}
-	catch(Exception&amp; ex)
+	catch( const Exception&amp; ex )
 	{
         ucrit &lt;&lt; myname &lt;&lt; "(getValue): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
@@ -225,15 +225,11 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preAskSensors( UniversalIO::UIOComm
 		</xsl:for-each>
 			return;
 		}
-		catch(SystemError&amp; err)
-		{
-            ucrit &lt;&lt; myname &lt;&lt; "(preAskSensors): " &lt;&lt; err &lt;&lt; endl;
-		}
-		catch(Exception&amp; ex)
+		catch( const Exception&amp; ex )
 		{
             ucrit &lt;&lt; myname &lt;&lt; "(preAskSensors): " &lt;&lt; ex &lt;&lt; endl;
 		}
-	    catch( std::exception&amp;ex )
+	    catch( const std::exception&amp;ex )
     	{
         	ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
 	    }

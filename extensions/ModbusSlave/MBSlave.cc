@@ -435,7 +435,7 @@ void MBSlave::execute_rtu()
                     shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
                     ptHeartBeat.reset();
                 }
-                catch(Exception& ex)
+                catch( const Exception& ex )
                 {
                     dcrit << myname
                           << "(execute_rtu): (hb) " << ex << std::endl;
@@ -452,7 +452,7 @@ void MBSlave::execute_rtu()
                 {
                     shm->localSetValue(itRespond,respond_id,state,getId());
                 }
-                catch(Exception& ex)
+                catch( const Exception& ex )
                 {
                     dcrit << myname << "(execute_rtu): (respond) " << ex << std::endl;
                 }
@@ -464,7 +464,7 @@ void MBSlave::execute_rtu()
                 {
                     shm->localSetValue(itAskCount,askcount_id,askCount,getId());
                 }
-                catch(Exception& ex)
+                catch( const Exception& ex )
                 {
                     dcrit << myname << "(execute_rtu): (askCount) " << ex << std::endl;
                 }
@@ -518,7 +518,7 @@ void MBSlave::execute_tcp()
                     shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
                     ptHeartBeat.reset();
                 }
-                catch(Exception& ex)
+                catch( const Exception& ex )
                 {
                     dcrit << myname << "(execute_tcp): (hb) " << ex << std::endl;
                 }
@@ -533,7 +533,7 @@ void MBSlave::execute_tcp()
                 {
                     shm->localSetValue(itRespond,respond_id,state,getId());
                 }
-                catch(Exception& ex)
+                catch( const Exception& ex )
                 {
                     dcrit << myname
                           << "(execute_rtu): (respond) " << ex << std::endl;
@@ -546,7 +546,7 @@ void MBSlave::execute_tcp()
                 {
                     shm->localSetValue(itAskCount,askcount_id,askCount,getId());
                 }
-                catch(Exception& ex)
+                catch( const Exception& ex )
                 {
                     dcrit << myname
                           << "(execute_tcp): (askCount) " << ex << std::endl;
@@ -556,7 +556,7 @@ void MBSlave::execute_tcp()
             for( auto &it: iomap )
                 IOBase::processingThreshold(&it.second,shm,force);
         }
-        catch( std::exception& ex)
+        catch( const std::exception& ex )
         {
             dcrit << myname << "(execute_tcp): " << ex.what() << endl;
         }
@@ -1266,12 +1266,12 @@ ModbusRTU::mbErrCode MBSlave::real_write_it( IOMap::iterator& it, ModbusRTU::Mod
         dwarn << myname << "(write): " << ex << endl;
         return ModbusRTU::erBadDataValue;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         if( pingOK )
             dcrit << myname << "(write): " << ex << endl;
     }
-    catch( CORBA::SystemException& ex )
+    catch( const CORBA::SystemException& ex )
     {
         if( pingOK )
             dcrit << myname << "(write): СORBA::SystemException: "
@@ -1460,12 +1460,12 @@ ModbusRTU::mbErrCode MBSlave::real_read_it( IOMap::iterator& it, ModbusRTU::Modb
         dwarn << myname << "(real_read_it): " << ex << endl;
         return ModbusRTU::erBadDataValue;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         if( pingOK )
             dcrit << myname << "(real_read_it): " << ex << endl;
     }
-    catch( CORBA::SystemException& ex )
+    catch( const CORBA::SystemException& ex )
     {
         if( pingOK )
             dcrit << myname << "(real_read_it): CORBA::SystemException: "
@@ -1583,12 +1583,12 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
         dwarn << myname << "(readInputStatus): " << ex << endl;
         return ModbusRTU::erBadDataAddress;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         if( pingOK )
             dcrit << myname << "(readInputStatus): " << ex << endl;
     }
-    catch( CORBA::SystemException& ex )
+    catch( const CORBA::SystemException& ex )
     {
         if( pingOK )
             dcrit << myname << "(readInputStatus): СORBA::SystemException: "

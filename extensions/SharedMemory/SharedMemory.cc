@@ -217,7 +217,7 @@ void SharedMemory::askSensors( UniversalIO::UIOCommand cmd )
             {
                 ui->askState( SID, cmd);
             }
-            catch(Exception& ex)
+            catch( const Exception& ex )
             {
                 dlog.crit() << myname << "(askSensors): " << ex << endl;
             }
@@ -312,7 +312,7 @@ void SharedMemory::checkHeartBeat()
                 }
             }
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             dcrit << myname << "(checkHeartBeat): " << ex << endl;
         }
