@@ -409,6 +409,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 * Sun Feb 01 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt15
 - fixed minor bug in uniset2-smonit utility
 - minor fixes
+- (minor) refactoring try/catch exceptions
 
 * Mon Jan 26 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt14
 - change LogServer,LogSession,LogReader interfaces
