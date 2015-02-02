@@ -156,7 +156,7 @@ void UniExchange::execute()
                 dinfo << myname << " update sensors from id=" << it.id << " node=" << it.node << endl;
                 it.update(sseq,shm);
             }
-            catch( Exception& ex )
+            catch( const Exception& ex )
             {
                 dwarn << myname << "(execute): " << ex << endl;
             }
@@ -227,7 +227,7 @@ void UniExchange::NetNodeInfo::update( IOController_i::ShortMapSeq_var& map, con
 */
             shm->localSetValue( s->ioit, m->id, m->value, shm->ID() );
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             dwarn  << "(update): " << ex << endl;
         }
@@ -271,7 +271,7 @@ void UniExchange::updateLocalData()
             uniset_rwmutex_wrlock lock(it.val_lock);
             it.val = shm->localGetValue( it.ioit, it.id );
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             dwarn  << "(update): " << ex << endl;
         }

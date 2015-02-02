@@ -38,9 +38,9 @@ int main(int argc, char** argv)
 
         db.close();
     }
-    catch(Exception& ex)
+    catch( const std::exception& ex )
     {
-        cerr << "(test): " << ex << endl;
+        cerr << "(test): " << ex.what() << endl;
     }
     catch(...)
     {

@@ -57,9 +57,9 @@ int main(int argc, char** argv)
         act->add(dbs.get_ptr());
         act->run(false);
     }
-    catch(Exception& ex)
+    catch( const std::exception& ex )
     {
-        cerr << "(DBServer::main): " << ex << endl;
+        cerr << "(DBServer::main): " << ex.what() << endl;
     }
     catch(...)
     {

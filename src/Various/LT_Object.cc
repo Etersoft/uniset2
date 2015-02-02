@@ -113,7 +113,7 @@ timeout_t LT_Object::checkTimers( UniSetObject* obj )
 
         tmLast.reset();
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         ucrit << "(checkTimers): " << ex << endl;
     }

@@ -135,13 +135,13 @@ void DBServer_MySQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
             ucrit << myname << "(update_confirm):  db error: "<< db->error() << endl;
         }
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         ucrit << myname << "(update_confirm): " << ex << endl;
     }
-    catch( ... )
+    catch( const std::exception& ex )
     {
-        ucrit << myname << "(update_confirm):  catch..." << endl;
+        ucrit << myname << "(update_confirm): exception: " << ex.what() << endl;
     }
 }
 //--------------------------------------------------------------------------------------------
@@ -240,13 +240,13 @@ void DBServer_MySQL::sensorInfo( const UniSetTypes::SensorMessage* si )
             ucrit << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
         }
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         ucrit << myname << "(insert_main_history): " << ex << endl;
     }
-    catch( ... )
+    catch( const std::exception& ex )
     {
-        ucrit << myname << "(insert_main_history): catch ..." << endl;
+        ucrit << myname << "(insert_main_history): catch: " << ex.what() << endl;
     }
 }
 //--------------------------------------------------------------------------------------------

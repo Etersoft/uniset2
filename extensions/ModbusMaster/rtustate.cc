@@ -111,17 +111,17 @@ int main( int argc, char **argv )
 
         return 0;
     }
-    catch( ModbusRTU::mbException& ex )
+    catch( const ModbusRTU::mbException& ex )
     {
         cerr << "(rtustate): " << ex << endl;
     }
-    catch(SystemError& err)
+    catch( const SystemError& err )
     {
         cerr << "(rtustate): " << err << endl;
     }
-    catch(Exception& ex)
+    catch( const std::exception& ex )
     {
-        cerr << "(rtustate): " << ex << endl;
+        cerr << "(rtustate): " << ex.what() << endl;
     }
     catch(...)
     {

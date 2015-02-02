@@ -99,12 +99,12 @@ int main( int argc, char* argv[], char* envp[] )
             break;
         }
     }
-    catch( SystemError& err )
+    catch( const SystemError& err )
     {
         cerr << "(logserver-wrap): " << err << endl;
         return 1;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         cerr << "(logserver-wrap): " << ex << endl;
         return 1;

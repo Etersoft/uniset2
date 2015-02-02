@@ -134,7 +134,7 @@ std::shared_ptr<ModbusClient> RTUExchange::initMB( bool reopen )
 
         dinfo << myname << "(init): dev=" << devname << " speed=" << ComPort::getSpeed( mbrtu->getSpeed() ) << endl;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         //if( mbrtu )
         //    delete mbrtu;

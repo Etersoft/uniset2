@@ -400,7 +400,7 @@ void UNetExchange::step()
             shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
             ptHeartBeat.reset();
         }
-        catch(Exception& ex)
+        catch( const Exception& ex )
         {
             dcrit << myname << "(step): (hb) " << ex << std::endl;
         }
@@ -424,7 +424,7 @@ void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface> shm, c
             shm->localSetValue(itRespond,sidRespond,resp,shm->ID());
         }
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         dcrit << myname << "(ReceiverInfo::step): (respond): " << ex << std::endl;
     }
@@ -442,7 +442,7 @@ void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface> shm, c
             shm->localSetValue(itLostPackets,sidLostPackets,l,shm->ID());
         }
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         dcrit << myname << "(ReceiverInfo::step): (lostpackets): " << ex << std::endl;
     }

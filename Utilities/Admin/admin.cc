@@ -302,22 +302,22 @@ int main(int argc, char** argv)
 
         return 0;
     }
-    catch(Exception& ex)
+    catch( const Exception& ex )
     {
         if( !quiet )
             cout <<"admin(main): " << ex << endl;
     }
-    catch(CORBA::SystemException& ex)
+    catch( const CORBA::SystemException& ex )
     {
         if( !quiet )
             cerr << "поймали CORBA::SystemException:" << ex.NP_minorString() << endl;
     }
-    catch(CORBA::Exception&)
+    catch( const CORBA::Exception& )
     {
         if( !quiet )
             cerr << "поймали CORBA::Exception." << endl;
     }
-    catch(omniORB::fatalException& fe)
+    catch( const omniORB::fatalException& fe )
     {
         if( !quiet )
         {
@@ -437,12 +437,12 @@ static bool commandToAll(const string& section, ObjectRepository *rep, Command c
                     }
                 }
             }
-            catch(Exception& ex)
+            catch( const Exception& ex )
             {
                 if( !quiet )
                     cerr << setw(55) << ob << "   <--- " << ex << endl;
             }
-            catch( CORBA::SystemException& ex )
+            catch( const CORBA::SystemException& ex )
             {
                 if( !quiet )
                     cerr << setw(55) << ob  << "   <--- недоступен!!(CORBA::SystemException): " << ex.NP_minorString() << endl;
@@ -481,7 +481,7 @@ int omap()
         uniset_conf()->oind->printMap(cout);
         cout << "==========================================================================\n";
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         if( !quiet )
             cerr << " configuration init failed: " << ex << endl;
@@ -591,7 +591,7 @@ int getValue( const string& args, UInterface &ui )
                     break;
             }
         }
-        catch(Exception& ex)
+        catch( const Exception& ex )
         {
             if( !quiet )
                 cerr << "(getValue): " << ex << endl;
@@ -632,7 +632,7 @@ int getCalibrate( const std::string& args, UInterface &ui )
             else
                 cout << ci;
         }
-        catch(Exception& ex)
+        catch( const Exception& ex )
         {
             if( !quiet )
                 cerr << "(getCalibrate): " << ex << endl;;
@@ -668,7 +668,7 @@ int getRawValue( const std::string& args, UInterface &ui )
             else
                 cout << ui.getRawValue(it->si);
         }
-        catch(Exception& ex)
+        catch( const Exception& ex )
         {
             if( !quiet )
                 cerr << "(getRawValue): " << ex << endl;;

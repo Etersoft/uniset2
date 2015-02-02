@@ -37,7 +37,7 @@ int main( int argc, const char **argv )
         smv.run();
         return 0;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         cout << "(main):" << ex << endl;
     }

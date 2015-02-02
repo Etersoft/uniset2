@@ -44,34 +44,30 @@ using namespace UniSetTypes;
 
 #define END_FUNC(fname) \
             }\
-            catch(CORBA::TRANSIENT){}\
-            catch(CORBA::OBJECT_NOT_EXIST){}\
-            catch(CORBA::SystemException& ex){}\
+            catch( const CORBA::TRANSIENT& ){}\
+            catch( const CORBA::OBJECT_NOT_EXIST& ){}\
+            catch( const CORBA::SystemException& ex){}\
             oref = CORBA::Object::_nil();\
             msleep(conf->getRepeatTimeout());    \
         }\
     } \
-    catch( IOController_i::NameNotFound &ex ) \
+    catch( const IOController_i::NameNotFound &ex ) \
     { \
         uwarn << "(" << __STRING(fname) << "): " << ex.err << endl; \
     } \
-    catch( IOController_i::IOBadParam &ex ) \
+    catch( const IOController_i::IOBadParam &ex ) \
     { \
         uwarn << "(" << __STRING(fname) << "): " << ex.err << endl; \
     } \
-    catch( Exception& ex ) \
+    catch( const Exception& ex ) \
     { \
         uwarn << "(" << __STRING(fname) << "): " << ex << endl; \
     } \
-    catch(CORBA::SystemException& ex) \
+    catch( const CORBA::SystemException& ex ) \
     { \
         uwarn << "(" << __STRING(fname) << "): CORBA::SystemException: " \
             << ex.NP_minorString() << endl; \
     } \
-    catch(...) \
-    { \
-        uwarn << "(" << __STRING(fname) << "): catch ..." << endl; \
-    }    \
  \
     oref = CORBA::Object::_nil(); \
     throw UniSetTypes::TimeOut(); \

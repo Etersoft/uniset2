@@ -92,16 +92,16 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::callback()
 		// обновление списка предыдущих состояний
 		updatePreviousValues();
 	}
-	catch( Exception&amp; ex )
+	catch( const Exception&amp; ex )
 	{
 		ucrit &lt;&lt; myname &lt;&lt; "(execute): " &lt;&lt; ex &lt;&lt; endl;
 	}
-	catch(CORBA::SystemException&amp; ex)
+	catch( const CORBA::SystemException&amp; ex)
 	{
 		ucrit &lt;&lt; myname &lt;&lt; "(execute): СORBA::SystemException: "
 			&lt;&lt; ex.NP_minorString() &lt;&lt; endl;
 	}
-	catch( std::exception&amp;ex )
+	catch( const std::exception&amp;ex )
 	{
         ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
 	}
@@ -224,7 +224,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 </xsl:if>
 </xsl:if>
 	}
-	catch( Exception&amp; ex )
+	catch( const Exception&amp; ex )
 	{
         ucrit &lt;&lt; myname &lt;&lt; "(getdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
@@ -259,7 +259,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 		si.node = node_<xsl:value-of select="../../@name"/>;
 		ui->setValue( si,<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>, getId() );
 	}
-	catch( Exception&amp; ex )
+	catch( const Exception&amp; ex )
 	{
         ucrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;
@@ -274,7 +274,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 		si.node = node_<xsl:value-of select="../../@name"/>;
 		ui->setValue( si,<xsl:value-of select="$setval"/>, getId() );
 	}
-	catch( Exception&amp; ex )
+	catch( const Exception&amp; ex )
 	{
         ucrit &lt;&lt; myname &lt;&lt; "(setdata): " &lt;&lt; ex &lt;&lt; endl;
 		throw;

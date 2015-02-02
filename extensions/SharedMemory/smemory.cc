@@ -40,15 +40,15 @@ int main(int argc, const char **argv)
         act->run(false);
         return 0;
     }
-    catch( SystemError& err )
+    catch( const SystemError& err )
     {
         dcrit << "(smemory): " << err << endl;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         dcrit << "(smemory): " << ex << endl;
     }
-    catch( std::exception& e )
+    catch( const std::exception& e )
     {
         dcrit << "(smemory): " << e.what() << endl;
     }

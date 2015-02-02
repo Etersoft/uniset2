@@ -383,7 +383,7 @@ void UniSetObject::registered()
         string err(myname+": don`t registration in object reposotory");
         throw ORepFailed(err.c_str());
     }
-    catch(Exception& ex)
+    catch( const Exception& ex )
     {
         uwarn << myname << "(registered):  " << ex << endl;
         string err(myname+": don`t registration in object reposotory");
@@ -674,7 +674,7 @@ bool UniSetObject::deactivate()
 
         uwarn << myname << "(deactivate): manager already destroyed.." << endl;
     }
-    catch(CORBA::TRANSIENT)
+    catch( const CORBA::TRANSIENT& )
     {
         uwarn << myname << "(deactivate): isExist: нет связи..."<< endl;
     }
@@ -682,11 +682,11 @@ bool UniSetObject::deactivate()
     {
         uwarn << myname << "(deactivate): " << "поймали CORBA::SystemException: " << ex.NP_minorString() << endl;
     }
-    catch(CORBA::Exception& ex)
+    catch( const CORBA::Exception& ex )
     {
         uwarn << myname << "(deactivate): " << "поймали CORBA::Exception." << endl;
     }
-    catch(Exception& ex)
+    catch( const Exception& ex )
     {
         uwarn << myname << "(deactivate): " << ex << endl;
     }
@@ -811,11 +811,11 @@ void UniSetObject::callback()
         if( waitMessage(msg) )
             processingMessage(&msg);
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         ucrit << ex << endl;
     }
-    catch( std::exception& ex )
+    catch( const std::exception& ex )
     {
         ucrit << ex.what() << endl;
     }
@@ -843,15 +843,15 @@ void UniSetObject::processingMessage( UniSetTypes::VoidMessage *msg )
                 break;
         }
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         ucrit  << myname << "(processingMessage): " << ex << endl;
     }
-    catch(CORBA::SystemException& ex)
+    catch( const CORBA::SystemException& ex )
     {
         ucrit << myname << "(processingMessage): CORBA::SystemException: " << ex.NP_minorString() << endl;
-      }
-    catch(CORBA::Exception& ex)
+    }
+    catch( const CORBA::Exception& ex )
     {
         uwarn << myname << "(processingMessage): CORBA::Exception: " << ex._name() << endl;
     }

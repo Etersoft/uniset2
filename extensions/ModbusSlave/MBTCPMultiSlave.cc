@@ -196,7 +196,7 @@ void MBTCPMultiSlave::execute_tcp()
                         bool st = c.invert ? c.ptTimeout.checkTime() : !c.ptTimeout.checkTime();
                         shm->localSetValue(c.respond_it,c.respond_s,st,getId());
                     }
-                    catch(Exception& ex)
+                    catch( const Exception& ex )
                     {
                         dcrit << myname << "(execute_tcp): " << ex << std::endl;
                     }
@@ -208,7 +208,7 @@ void MBTCPMultiSlave::execute_tcp()
                    {
                        shm->localSetValue(c.askcount_it,c.askcount_s, c.askCount,getId());
                    }
-                   catch(Exception& ex)
+                   catch( const Exception& ex )
                    {
                        dcrit << myname << "(execute_tcp): " << ex << std::endl;
                    }
@@ -243,7 +243,7 @@ void MBTCPMultiSlave::execute_tcp()
                     shm->localSetValue(itHeartBeat,sidHeartBeat,maxHeartBeat,getId());
                     ptHeartBeat.reset();
                 }
-                catch(Exception& ex)
+                catch( const Exception& ex )
                 {
                     dcrit << myname << "(execute_tcp): (hb) " << ex << std::endl;
                 }
@@ -258,7 +258,7 @@ void MBTCPMultiSlave::execute_tcp()
                 {
                     shm->localSetValue(itRespond,respond_id,(state ? 1 : 0),getId());
                 }
-                catch(Exception& ex)
+                catch( const Exception& ex )
                 {
                     dcrit << myname << "(execute_rtu): (respond) " << ex << std::endl;
                 }
@@ -270,7 +270,7 @@ void MBTCPMultiSlave::execute_tcp()
                 {
                     shm->localSetValue(itAskCount,askcount_id,askCount,getId());
                 }
-                catch(Exception& ex)
+                catch( const Exception& ex )
                 {
                     dcrit << myname << "(execute_rtu): (askCount) " << ex << std::endl;
                 }
@@ -282,7 +282,7 @@ void MBTCPMultiSlave::execute_tcp()
                 {
                     shm->localSetValue(sesscount_it,sesscount_id, sslot->getCountSessions(),getId());
                 }
-                catch(Exception& ex)
+                catch( const Exception& ex )
                 {
                     dcrit << myname << "(execute_rtu): (sessCount) " << ex << std::endl;
                 }

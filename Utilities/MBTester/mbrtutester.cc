@@ -696,13 +696,9 @@ int main( int argc, char **argv )
     {
         cerr << "(mbtester): " << ex << endl;
     }
-    catch(SystemError& err)
+    catch( const std::exception& ex )
     {
-        cerr << "(mbtester): " << err << endl;
-    }
-    catch(Exception& ex)
-    {
-        cerr << "(mbtester): " << ex << endl;
+        cerr << "(mbtester): " << ex.what() << endl;
     }
     catch(...)
     {

@@ -20,7 +20,7 @@ void thread_function( int msec )
         if( tmr )
             tmr->terminate();
     }
-    catch( std::exception& ex )
+    catch( const std::exception& ex )
     {
         FAIL( ex.what() );
     }

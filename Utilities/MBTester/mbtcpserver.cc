@@ -104,19 +104,11 @@ int main( int argc, char **argv )
             mbs.setReply(replyVal);
         mbs.execute();
     }
-    catch( ModbusRTU::mbException& ex )
+    catch( const ModbusRTU::mbException& ex )
     {
         cerr << "(mbtcpserver): " << ex << endl;
     }
-    catch(SystemError& err)
-    {
-        cerr << "(mbtcpserver): " << err << endl;
-    }
-    catch(Exception& ex)
-    {
-        cerr << "(mbtcpserver): " << ex << endl;
-    }
-    catch( std::exception& e )
+    catch( const std::exception& e )
     {
         cerr << "(mbtcpserver): " << e.what() << endl;
     }

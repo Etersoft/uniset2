@@ -398,14 +398,14 @@ int main( int argc, const char **argv )
 //    pause();
 
     }
-    catch(omniORB::fatalException& fe)
+    catch( const omniORB::fatalException& fe )
     {
         cerr << "поймали omniORB::fatalException:" << endl;
         cerr << "  file: " << fe.file() << endl;
         cerr << "  line: " << fe.line() << endl;
         cerr << "  mesg: " << fe.errmsg() << endl;
     }    
-    catch( std::exception& e )
+    catch( const std::exception& e )
     {
         cerr << "catch: " << e.what() << endl;
     }

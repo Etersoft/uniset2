@@ -65,15 +65,15 @@ int main(int argc, char* argv[] )
         
         return session.run();
     }
-    catch( SystemError& err )
+    catch( const SystemError& err )
     {
         cerr << "(tests_with_sm): " << err << endl;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         cerr << "(tests_with_sm): " << ex << endl;
     }
-    catch( std::exception& e )
+    catch( const std::exception& e )
     {
         cerr << "(tests_with_sm): " << e.what() << endl;
     }

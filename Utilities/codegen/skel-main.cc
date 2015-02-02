@@ -35,13 +35,9 @@ int main( int argc, const char **argv )
         dlogany << "(Skel::main): -------------- Skel START -------------------------\n\n";
         act->run(false);
     }
-    catch(SystemError& err)
+    catch( const std::exception& ex )
     {
-        cerr << "(Skel::main): " << err << endl;
-    }
-    catch(Exception& ex)
-    {
-        cerr << "(Skel::main): " << ex << endl;
+        cerr << "(Skel::main): " << ex.what() << endl;
     }
     catch(...)
     {

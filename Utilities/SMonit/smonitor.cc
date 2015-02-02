@@ -43,11 +43,11 @@ int main( int argc, const char **argv )
         act->run(false);
         return 0;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         cout << "(main):" << ex << endl;
     }
-    catch( std::exception& ex)
+    catch( const std::exception& ex )
     {
         cout << "(main): exception: " << ex.what() << endl;
     }

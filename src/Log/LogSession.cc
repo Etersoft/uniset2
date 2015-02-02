@@ -256,7 +256,7 @@ void LogSession::final()
         if( s )
             slFin(s);
     }
-    catch( std::bad_weak_ptr )
+    catch( const std::bad_weak_ptr )
     {
 
     }

@@ -178,20 +178,15 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
         {
             ui->send(ci.id, std::move(smsg.transport_msg()), ci.node);
         }
-        catch( Exception& ex )
+        catch( const Exception& ex )
         {
             uwarn << myname << "(askSensor): " <<  uniset_conf()->oind->getNameById(sid) << " error: "<< ex << endl;
         }
-        catch( CORBA::SystemException& ex )
+        catch( const CORBA::SystemException& ex )
         {
             uwarn << myname << "(askSensor): " << uniset_conf()->oind->getNameById(ci.id) << "@" << ci.node 
                   << " недоступен!!(CORBA::SystemException): "
                   << ex.NP_minorString() << endl;
-        }
-        catch(...)
-        {
-            uwarn << myname << "(askSensor): " << uniset_conf()->oind->getNameById(ci.id) << "@" << ci.node
-                  << " catch..." << endl;
         }
     }
 }
@@ -220,13 +215,9 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
                 {
                     dumpOrdersList(sid,lst);
                 }
-                catch(Exception& ex)
+                catch( const Exception& ex )
                 {
                     uwarn << myname << " не смогли сделать dump: " << ex << endl;
-                }
-                catch(...)
-                {
-                    uwarn << myname << " не смогли сделать dump (catch...)" << endl;
                 }
             }
             else
@@ -237,9 +228,9 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
                     {
                         dumpOrdersList(sid,askIterator->second);
                     }
-                    catch(Exception& ex)
+                    catch( const std::exception& ex )
                     {
-                        uwarn << myname << " не смогли сделать dump: " << ex << endl;
+                        uwarn << myname << " не смогли сделать dump: " << ex.what() << endl;
                     }
                     catch(...)
                     {
@@ -268,9 +259,9 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
                         {
                             dumpOrdersList(sid,askIterator->second);
                         }
-                        catch(Exception& ex)
+                        catch( const std::exception& ex )
                         {
-                            uwarn << myname << " не смогли сделать dump: " << ex << endl;
+                            uwarn << myname << " не смогли сделать dump: " << ex.what() << endl;
                         }
                         catch(...)
                         {
@@ -407,16 +398,16 @@ void IONotifyController::send( ConsumerListInfo& lst, UniSetTypes::SensorMessage
                 li->attempt = maxAttemtps; // reinit attempts
                 break;
             }
-            catch(Exception& ex)
-            {
-                uwarn << myname << "(IONotifyController::send): " << ex
-                        << " for " << uniset_conf()->oind->getNameById(li->id) << "@" << li->node << endl;
-            }
-            catch( CORBA::SystemException& ex )
+            catch( const CORBA::SystemException& ex )
             {
                 uwarn << myname << "(IONotifyController::send): " 
                         << uniset_conf()->oind->getNameById(li->id) << "@" << li->node << " (CORBA::SystemException): "
                         << ex.NP_minorString() << endl;
+            }
+            catch( const std::exception& ex )
+            {
+                uwarn << myname << "(IONotifyController::send): " << ex.what()
+                        << " for " << uniset_conf()->oind->getNameById(li->id) << "@" << li->node << endl;
             }
             catch(...)
             {
@@ -457,9 +448,9 @@ void IONotifyController::readDump()
         if( restorer != NULL )
             restorer->read(this);
     }
-    catch(Exception& ex)
+    catch( const std::exception& ex )
     { 
-        uwarn << myname << "(IONotifyController::readDump): " << ex << endl;
+        uwarn << myname << "(IONotifyController::readDump): " << ex.what() << endl;
     }
 }
 // --------------------------------------------------------------------------------------------------------------
@@ -484,7 +475,7 @@ void IONotifyController::dumpOrdersList( const UniSetTypes::ObjectId sid,
         inf=ainf;
         restorer->dump(this,inf,lst);
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         uwarn << myname << "(IONotifyController::dumpOrderList): " << ex << endl;
     }
@@ -503,7 +494,7 @@ void IONotifyController::dumpThresholdList( const UniSetTypes::ObjectId sid, con
         inf=ainf;
         restorer->dumpThreshold(this,inf,lst);
     }
-    catch(Exception& ex)
+    catch( const Exception& ex )
     { 
         uwarn << myname << "(IONotifyController::dumpThresholdList): " << ex << endl;
     }
@@ -526,7 +517,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
     {
         val = localGetValue(li,sid);
     }
-    catch( IOController_i::Undefined& ex ){}
+    catch( const IOController_i::Undefined& ex ){}
 
     {    // lock
         uniset_rwmutex_wrlock lock(trshMutex);
@@ -558,13 +549,9 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
                     {
                         dumpThresholdList(sid,tli.list);
                     }
-                    catch(Exception& ex)
+                    catch( const Exception& ex )
                     {
                         uwarn << myname << " не смогли сделать dump: " << ex << endl;
-                    }
-                    catch(...)
-                    {
-                        uwarn << myname << " не смогли сделать dump" << endl;
                     }
 
                     // т.к. делаем move... то надо гарантировать, что дальше уже tli не используется..
@@ -578,13 +565,9 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
                         {
                             dumpThresholdList(sid,it->second.list);
                         }
-                        catch(Exception& ex)
+                        catch( const Exception& ex )
                         {
                             uwarn << myname << "(askThreshold): dump: " << ex << endl;
-                        }
-                        catch(...)
-                        {
-                            uwarn << myname << "(askThreshold): dump catch..." << endl;
                         }
                     }
                 }
@@ -625,18 +608,14 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
                             ref->push( std::move(sm.transport_msg()) );
                     }
                 }
-                catch( Exception& ex )
+                catch( const Exception& ex )
                 {
                     uwarn << myname << "(askThreshod): " << ex << endl;
                 }
-                catch( CORBA::SystemException& ex )
+                catch( const CORBA::SystemException& ex )
                 {
                     uwarn << myname << "(askThreshod): CORBA::SystemException: "
                             << ex.NP_minorString() << endl;
-                }
-                catch(...)
-                {
-                    uwarn << myname << "(askThreshold): dump catch..." << endl;
                 }
             }
             break;
@@ -651,13 +630,9 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
                         {
                             dumpThresholdList(sid,it->second.list);
                         }
-                        catch(Exception& ex)
+                        catch( const Exception& ex )
                         {
                             uwarn << myname << "(askThreshold): dump: " << ex << endl;
-                        }
-                        catch(...)
-                        {
-                            uwarn << myname << "(askThreshold): dump catch..." << endl;
                         }
                     }
                 }
@@ -901,7 +876,7 @@ IONotifyController_i::ThresholdList* IONotifyController::getThresholds( UniSetTy
         res->value  = IOController::localGetValue(it->second.ait,it->second.si.id);
         res->type   = it->second.type;
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         uwarn << myname << "(getThresholdsList): для датчика " 
                 << uniset_conf()->oind->getNameById(it->second.si.id)
@@ -943,11 +918,11 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
                 (*res)[i].value = IOController::localGetValue(it->second.ait,it->second.si.id);
                 (*res)[i].type  = it->second.type;
             }
-            catch(Exception& ex)
+            catch( const std::exception& ex )
             {
                 uwarn << myname << "(getThresholdsList): для датчика " 
                         << uniset_conf()->oind->getNameById(it->second.si.id)
-                        << " " << ex << endl;
+                        << " " << ex.what() << endl;
                 continue;
             }
 

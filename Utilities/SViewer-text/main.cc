@@ -40,9 +40,9 @@ int main(int argc, const char **argv)
 
         return 0;
     }
-    catch(Exception& ex )
+    catch( const std::exception& ex )
     {
-        cerr << "(main): Поймали исключение " << ex <<  endl;
+        cerr << "(main): Поймали исключение " << ex.what() <<  endl;
     }
     catch(...)
     {
