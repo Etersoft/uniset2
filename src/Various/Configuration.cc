@@ -266,7 +266,7 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         }
 
         // Настраиваем отладочные логи
-        initLogStream(ulog(),"UniSetDebug");
+        initLogStream(ulog(),"ulog");
 
         // default init...
         transientIOR     = false;
@@ -295,13 +295,35 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
         // считываем список узлов
         createNodesList();
 
+        std::list< std::pair<string,string> > omniParams;
+        // ---------------------------------------------------------------------------------
+        UniXML::iterator omniIt(unixml->findNode(unixml->getFirstNode(),"omniORB") );
+        if( omniIt && omniIt.goChildren() )
+        {
+            for(; omniIt.getCurrent(); omniIt++ )
+            {
+                std::string p(omniIt.getProp("name"));
+                if( p.empty() )
+                {
+                    uwarn << "(Configuration::init): unknown omniORB param...name=''" << endl;
+                }
+                else
+                {
+                    const string a(omniIt.getProp("arg"));
+                    uinfo << "(Configuration): add omniORB param: " << p << " " << a << endl;
+                    omniParams.push_back( std::make_pair(p,a) );
+                }
+            }
+        }
+
         // ---------------------------------------------------------------------------------
         // добавляем новые параметры в argv
         // для передачи параметров orb по списку узлов
         // взятому из configure.xml
         // +N --> -ORBIniRef NodeName=
         // +2 --> -ORBIniRef NameService=
-        _argc     = argc+2*lnodes.size()+2;
+        // +  --> -ORBxxxx from configure.xml (<omniORB>)
+        _argc     = argc+2*lnodes.size() + 2 + 2*omniParams.size();
         const char** new_argv = new const char*[_argc];
 
         int i = 0;
@@ -332,6 +354,14 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
 
             assert( i < _argc );
         }
+
+        for( auto& p: omniParams )
+        {
+            new_argv[i++] = uni_strdup(p.first);
+            new_argv[i++] = uni_strdup(p.second);
+            assert( i < _argc );
+        }
+
 
         // т..к _argc уже изменился, то и _argv надо обновить
         // чтобы вызов getArgParam не привел к SIGSEGV

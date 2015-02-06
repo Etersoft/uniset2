@@ -12,7 +12,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt15
+Release: alt16
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -406,6 +406,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %exclude %_pkgconfigdir/libUniSet2.pc
 
 %changelog
+* Fri Feb 06 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt16
+- add <omniORB> section to configure.xml (for use in the ORB_init())
+
 * Sun Feb 01 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt15
 - fixed minor bug in uniset2-smonit utility
 - minor fixes
