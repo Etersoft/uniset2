@@ -140,7 +140,7 @@ void LogServer::work()
                         continue;
                     }
                 }
-            	
+                
                 auto s = make_shared<LogSession>(*tcp, elog, sessTimeout, cmdTimeout, outTimeout);
                 s->setSessionLogLevel(sessLogLevel);
                 {

@@ -99,9 +99,9 @@ TEST_CASE("LogAgregator", "[LogServer][LogAgregator]" )
 TEST_CASE("LogServer", "[LogServer]" )
 {
     g_read_cancel = false;
-	auto la = make_shared<LogAgregator>();
-	auto log1 = la->create("log1");
-	auto log2 = la->create("log2");
+    auto la = make_shared<LogAgregator>();
+    auto log1 = la->create("log1");
+    auto log2 = la->create("log2");
 
     log1->level(Debug::ANY);
     log2->level(Debug::ANY);
@@ -115,7 +115,7 @@ TEST_CASE("LogServer", "[LogServer]" )
 
     LogServer ls(la);
     //ls.setSessionLog(Debug::ANY);
-	ls.run( ip, port, true );
+    ls.run( ip, port, true );
 
     for( int i=0; i<3 && !ls.isRunning(); i++ )
         msleep(500);
