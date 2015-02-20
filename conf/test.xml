@@ -3,7 +3,7 @@
 	<UserData/>
 	
 	<omniORB>
-		<option name="-ORBendPoint" arg="giop:tcp:localhost:"/>
+		<option name="endPoint" arg="giop:tcp:localhost:"/>
 	</omniORB>
 	<!-- Общие(стартовые) параметры по UniSet -->
 	<UniSet>

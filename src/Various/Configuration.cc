@@ -113,11 +113,6 @@ Configuration::Configuration():
 
 Configuration::~Configuration()
 {
-    for( int i=0; i<_argc; i++ )
-        delete[] _argv[i];
-
-    delete[] _argv;
-
     if( oind )
         oind.reset();
     if( unixml )
@@ -310,83 +305,81 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
                 else
                 {
                     const string a(omniIt.getProp("arg"));
-                    uinfo << "(Configuration): add omniORB param: " << p << " " << a << endl;
+                    uinfo << "(Configuration): add omniORB option '" << p << "' " << a << endl;
                     omniParams.push_back( std::make_pair(p,a) );
                 }
             }
         }
 
+
+        xmlNode* nsnode = getNode("NameService");
+
         // ---------------------------------------------------------------------------------
-        // добавляем новые параметры в argv
-        // для передачи параметров orb по списку узлов
-        // взятому из configure.xml
-        // +N --> -ORBIniRef NodeName=
-        // +2 --> -ORBIniRef NameService=
-        // +  --> -ORBxxxx from configure.xml (<omniORB>)
-        _argc     = argc+2*lnodes.size() + 2 + 2*omniParams.size();
-        const char** new_argv = new const char*[_argc];
+        // формируем options для ORB_init()
+        // Прототип из документации на omniORB4: const char* options[][2] = { { "traceLevel", "1" }, { 0, 0 } };
+        // --------------------------------------------------
+        // + спискок узлов (сформированный из configure.xml)
+        // + список параметров omniORB из секции <omniORB>
+        // +1 для завершающего {0,0}
+        int onum = lnodes.size() + omniParams.size() + 1;
+
+        if( nsnode )
+            onum += 1; // +1 --> IniRef NameService=
+
+        const char* (*omni_options)[2] = new const char*[onum][2];
 
         int i = 0;
-        // перегоняем старые параметры
-        for( ; i < argc; i++ )
-            new_argv[i] = uni_strdup(argv[i]);
 
         // формируем новые, используя i в качестве индекса
         for( auto &it: lnodes )
         {
-            new_argv[i] = "-ORBInitRef";
+            // делаем uni_strdup чтобы потом не думая
+            // "где мы выделяли, а где не мы"
+            // делать delete[]
+            omni_options[i][0] = uni_strdup("InitRef");
 
             string name(oind->getNodeName(it.id));
-            ostringstream param;
-            param << this << name;
-            name = param.str();
-            param << "=corbaname::" << it.host << ":" << it.port;
-            const string sparam(param.str());
-            new_argv[i+1] = uni_strdup(sparam);
+            ostringstream o;
+            o << this << name;
+            name = o.str();
+            o << "=corbaname::" << it.host << ":" << it.port;
+            omni_options[i][1] = uni_strdup(o.str());
 
-            uinfo << "(Configuration): внесли параметр " << sparam << endl;
-            i+=2;
+            uinfo << "(Configuration): add omniORB option 'InitRef' (nodes) " << o.str() << endl;
+            i++;
 
             ostringstream uri;
             uri << "corbaname::" << it.host << ":" << it.port;
             if( !omni::omniInitialReferences::setFromArgs(name.c_str(), uri.str().c_str()) )
-                cerr << "**********************!!!! FAILED ADD name=" << name << " uri=" << uri.str() << endl; 
+                ucrit << "(Configuration): init omniInitialReferences: FAILED ADD name=" << name << " uri=" << uri.str() << endl;
 
-            assert( i < _argc );
+            assert( i < onum );
         }
 
         for( auto& p: omniParams )
         {
-            new_argv[i++] = uni_strdup(p.first);
-            new_argv[i++] = uni_strdup(p.second);
-            assert( i < _argc );
+            // делаем uni_strdup чтобы потом не думая
+            // "где мы выделяли, а где не мы"
+            // делать delete[]
+            omni_options[i][0] = uni_strdup(p.first);
+            omni_options[i][1] = uni_strdup(p.second);
+            i++;
+            assert( i < onum );
         }
 
-
-        // т..к _argc уже изменился, то и _argv надо обновить
-        // чтобы вызов getArgParam не привел к SIGSEGV
-        _argv = new_argv;
-
-        // NameService (+2)
-        xmlNode* nsnode = getNode("NameService");
-        if( !nsnode )
+        // initRef for NameService
+        if( nsnode )
         {
-            uwarn << "(Configuration): не нашли раздела 'NameService' \n";
-            new_argv[i]   = "";
-            new_argv[i+1] = "";
-        }
-        else
-        {
-            new_argv[i] = "-ORBInitRef";
-            new_argv[i+1] = ""; // сперва инициализиуем пустой строкой (т.к. будет вызываться getArgParam)
-
-            string defPort( getPort( getProp(nsnode,"port") ) ); // здесь вызывается getArgParam! проходящий по _argv
+            // делаем uni_strdup чтобы потом не думая
+            // "где мы выделяли, а где не мы"
+            // делать delete[]
+            omni_options[i][0] = uni_strdup("InitRef");
+            string defPort( getPort( getProp(nsnode,"port") ) );
 
             ostringstream param;
             param << this << "NameService=corbaname::" << getProp(nsnode,"host") << ":" << defPort;
-            const string sparam(param.str());
-            new_argv[i+1] = uni_strdup(sparam);
-            uinfo << "(Configuration): внесли параметр " << sparam << endl;
+            omni_options[i][1] = uni_strdup(param.str());
+            uinfo << "(Configuration): add omniORB option 'InitRef' " << param.str() << endl;
 
             {
                 ostringstream ns_name;
@@ -396,12 +389,31 @@ void Configuration::initConfiguration( int argc, const char* const* argv )
                 if( !omni::omniInitialReferences::setFromArgs(ns_name.str().c_str(), uri.str().c_str()) )
                     cerr << "**********************!!!! FAILED ADD name=" << ns_name << " uri=" << uri.str() << endl;
             }
-        }
 
-        _argv = new_argv;
+            i++;
+        }
+        else
+            uwarn << "(Configuration): не нашли раздела 'NameService' \n";
+
+        omni_options[i][0]=0;
+        omni_options[i][1]=0;
         // ------------- CORBA INIT -------------
         // orb init
-        orb = CORBA::ORB_init(_argc,(char**)_argv);
+        orb = CORBA::ORB_init(_argc,(char**)_argv,"omniORB4",omni_options);
+
+        // освобождаем память..
+        for( int k=0; k<onum; k++ )
+        {
+            // на самом деле последний элемент = {0,0}
+            // но delete от 0 разрёшён и не приводит "к краху"
+            // так что отдельно не обрабатываем этот случай.
+
+            delete[] omni_options[k][0]; // см. uni_strdup()
+            delete[] omni_options[k][1]; // см. uni_strdup()
+        }
+
+        delete[] omni_options;
+
         // create policy
         CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
         PortableServer::POA_var root_poa = PortableServer::POA::_narrow(obj);
