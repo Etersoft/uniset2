@@ -175,18 +175,18 @@
 		void init_dlog( std::shared_ptr&lt;DebugStream&gt; d );
 
         // "синтаксический сахар"..для логов
-        #define myinfo if( mylog->debugging(Debug::INFO) ) mylog->any()
-        #define mywarn if( mylog->debugging(Debug::WARN) ) mylog->any()
-        #define mycrit if( mylog->debugging(Debug::CRIT) ) mylog->any()
-        #define mylog1 if( mylog->debugging(Debug::LEVEL1) ) mylog->any()
-        #define mylog2 if( mylog->debugging(Debug::LEVEL2) ) mylog->any()
-        #define mylog3 if( mylog->debugging(Debug::LEVEL3) ) mylog->any()
-        #define mylog4 if( mylog->debugging(Debug::LEVEL4) ) mylog->any()
-        #define mylog5 if( mylog->debugging(Debug::LEVEL5) ) mylog->any()
-        #define mylog6 if( mylog->debugging(Debug::LEVEL6) ) mylog->any()
-        #define mylog7 if( mylog->debugging(Debug::LEVEL7) ) mylog->any()
-        #define mylog8 if( mylog->debugging(Debug::LEVEL8) ) mylog->any()
-        #define mylog9 if( mylog->debugging(Debug::LEVEL9) ) mylog->any()
+        #define myinfo if( mylog->debugging(Debug::INFO) ) mylog->info()
+        #define mywarn if( mylog->debugging(Debug::WARN) ) mylog->warn()
+        #define mycrit if( mylog->debugging(Debug::CRIT) ) mylog->crit()
+        #define mylog1 if( mylog->debugging(Debug::LEVEL1) ) mylog->level1()
+        #define mylog2 if( mylog->debugging(Debug::LEVEL2) ) mylog->level2()
+        #define mylog3 if( mylog->debugging(Debug::LEVEL3) ) mylog->level3()
+        #define mylog4 if( mylog->debugging(Debug::LEVEL4) ) mylog->level4()
+        #define mylog5 if( mylog->debugging(Debug::LEVEL5) ) mylog->level5()
+        #define mylog6 if( mylog->debugging(Debug::LEVEL6) ) mylog->level6()
+        #define mylog7 if( mylog->debugging(Debug::LEVEL7) ) mylog->level7()
+        #define mylog8 if( mylog->debugging(Debug::LEVEL8) ) mylog->level8()
+        #define mylog9 if( mylog->debugging(Debug::LEVEL9) ) mylog->level9()
         #define mylogany mylog->any()
 </xsl:template>
 
