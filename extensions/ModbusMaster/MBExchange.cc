@@ -322,6 +322,34 @@ void MBExchange::initIterators()
 	}
 }
 // -----------------------------------------------------------------------------
+void MBExchange::initValues()
+{
+	for( MBExchange::RTUDeviceMap::iterator it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+	{
+		RTUDevice* d(it1->second);
+		for( MBExchange::RegMap::iterator it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+		{
+			
+			for( PList::iterator it2=it->second->slst.begin();it2!=it->second->slst.end(); ++it2 )
+			{
+				if( it2->stype == UniversalIO::DigitalInput || it2->stype == UniversalIO::DigitalOutput )
+					it2->value = shm->localGetState(it2->dit,it2->si.id);
+				else if( it2->stype == UniversalIO::AnalogInput || it2->stype == UniversalIO::AnalogOutput )
+					it2->value = shm->localGetValue(it2->ait,it2->si.id);
+			}
+			it->second->sm_initOK = true;
+		}
+	}
+
+	for( ThresholdList::iterator t=thrlist.begin(); t!=thrlist.end(); ++t )
+	{
+		if( t->stype == UniversalIO::DigitalInput || t->stype == UniversalIO::DigitalOutput )
+			t->value = shm->localGetState(t->dit,t->si.id);
+		else if( t->stype == UniversalIO::AnalogInput || t->stype == UniversalIO::AnalogOutput )
+			t->value = shm->localGetValue(t->ait,t->si.id);
+	}
+}
+// -----------------------------------------------------------------------------
 bool MBExchange::checkUpdateSM( bool wrFunc, long mdev )
 {
 	if( exchangeMode == emSkipExchange || mdev == emSkipExchange )
@@ -848,6 +876,8 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr,p->mbreg,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
+
+			p->mb_initOK = true;
 			it--;
 		}
 		break;
@@ -857,6 +887,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 			ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr,p->mbreg,p->q_count);
 			for( int i=0; i<p->q_count; i++,it++ )
 				it->second->mbval = ret.data[i];
+			p->mb_initOK = true;
 			it--;
 		}
 		break;
@@ -871,6 +902,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 				for( int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
 					it->second->mbval = b[k];
 			}
+			p->mb_initOK = true;
 			it--;
 		}
 		break;
@@ -885,6 +917,7 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
 				for( int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
 					it->second->mbval = b[k] ? 1 : 0;
 			}
+			p->mb_initOK = true;
 			it--;
 		}
 		break;
@@ -1114,7 +1147,12 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
 	
 	// если требуется инициализация и она ещё не произведена,
 	// то игнорируем
-	if( save && !r->mb_initOK )
+//	if( save && !r->mb_initOK )
+//		return;
+
+	// если мы ещё не разу не считали значение из устройства, то обновлять в SM
+	// не нужно!
+	if( !r->mb_initOK )
 		return;
 
 	if( dlog.debugging(Debug::LEVEL3) )
@@ -2227,8 +2265,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 	{
 		// Если это регистр для чтения, то сразу можно работать
 		// инициализировать не надо
-		ri->mb_initOK = true;
-		ri->sm_initOK = true;
+//		ri->mb_initOK = true;
+//		ri->sm_initOK = true;
 	}
 	
 
@@ -2250,8 +2288,8 @@ bool MBExchange::initItem( UniXML_iterator& it )
 			r->q_num=i+1;
 			r->q_count=1;
 			r->mbfunc = ri->mbfunc;
-			r->mb_initOK = true;
-			r->sm_initOK = true;
+	//		r->mb_initOK = true;
+	//		r->sm_initOK = true;
 			if( ModbusRTU::isWriteFunction(ri->mbfunc) )
 			{
 				// Если занимает несколько регистров, а указана функция записи "одного",
@@ -2516,6 +2554,7 @@ bool MBExchange::activateObject()
 		if( !shm->isLocalwork() )
 			rtuQueryOptimization(rmap);
 		initIterators();
+		initValues();
 		setProcActive(true);
 	}
 
@@ -2609,7 +2648,6 @@ void MBExchange::sysCommand( UniSetTypes::SystemMessage *sm )
 				askSensors(UniversalIO::UIONotify);
 				initOutput();
 			}
-
 
 			updateSM();
 			askTimer(tmExchange,polltime);

@@ -8,7 +8,7 @@
 
 Name: libuniset
 Version: 1.8
-Release: alt2.1
+Release: alt3
 Summary: UniSet - library for building distributed industrial control systems
 
 License: GPL
@@ -339,6 +339,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 
 %changelog
+* Sun Mar 01 2015 Pavel Vainerman <pv@altlinux.ru> 1.8-alt3
+- ModbusMaster: fixed bug in initialization (close setbug #5583)
+
 * Wed Nov 26 2014 Pavel Vainerman <pv@altlinux.ru> 1.8-alt2.1
 - update for alt/sisyphus..
 - fixed changelog (save for history):

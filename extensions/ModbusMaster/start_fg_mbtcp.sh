@@ -8,7 +8,7 @@
 --mbtcp-set-prop-prefix \
 --mbtcp-filter-field rs \
 --mbtcp-filter-value 5 \
---mbtcp-gateway-iaddr 192.168.1.42 \
+--mbtcp-gateway-iaddr localhost \
 --mbtcp-gateway-port 2048 \
 --mbtcp-recv-timeout 5000 \
 --mbtcp-force-disconnect 1 \

@@ -215,6 +215,7 @@
 			<item id="58" iotype="AI" name="SVU_AskCount_AS" textname="svu asl count"/>
 			<item aref="2" card="4" channel="0" id="59" io="1" iotype="AI" name="AI59_S" subdev="2" textname="AI sensor 59" mbaddr="0x01" mbfunc="0x03" mbreg="200" mbtype="rtu" rs="6"/>
 			<item io="1" hilimit="10" id="60" card="4" inverse="1" iotype="DI" lowlimit="5" name="T60_S" textname="DI 69" threshold_aid="AI59_S"/>
+			<item id="64" iotype="AI" mbaddr="0x01" mbfunc="0x03" mbreg="64" mbtype="rtu" name="Input64_AS" priority="Medium" rs="5" textname="AI64"/>
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">

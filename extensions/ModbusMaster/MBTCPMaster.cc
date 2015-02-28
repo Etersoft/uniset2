@@ -141,6 +141,11 @@ void MBTCPMaster::poll_thread()
 		ptTimeout.reset();
 	}
 
+	while( !checkProcActive() )
+	{
+			uniset_mutex_lock l(mutex_start,3000);
+	}
+
 	while( checkProcActive() )
 	{
 		try

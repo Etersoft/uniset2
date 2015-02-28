@@ -95,7 +95,7 @@ class MBExchange:
 				id(0),dev(0),
 				rtuJack(RTUStorage::nUnknown),rtuChan(0),
 				mtrType(MTR::mtUnknown),
-				q_num(0),q_count(1),mb_initOK(true),sm_initOK(true)
+				q_num(0),q_count(1),mb_initOK(false),sm_initOK(false)
 			{}
 
 			ModbusRTU::ModbusData mbval;
@@ -209,6 +209,7 @@ class MBExchange:
 		virtual void sigterm( int signo );
 		virtual bool activateObject();
 		virtual void initIterators();
+		virtual void initValues();
 
 		struct InitRegInfo
 		{
