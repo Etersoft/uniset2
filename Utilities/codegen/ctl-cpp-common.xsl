@@ -634,7 +634,7 @@ end_private(false)
 	mylog-&gt;setLogName(myname);
 	{
 		ostringstream s;
-		s &lt;&lt; myname &lt;&lt; "-log";
+		s &lt;&lt; argprefix &lt;&lt; "log";
 		conf->initLogStream(mylog,s.str());
 	}
 
@@ -965,7 +965,7 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 	mylog-&gt;setLogName(myname);
     {
         ostringstream s;
-        s &lt;&lt; myname &lt;&lt; "-log";
+        s &lt;&lt; argprefix &lt;&lt; "log";
         conf->initLogStream(mylog, s.str());
     }
     	

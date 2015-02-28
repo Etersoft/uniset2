@@ -12,7 +12,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt17
+Release: alt18
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -404,8 +404,16 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 #%_pkgconfigdir/libUniSet2SMDBServer.pc
 #%_pkgconfigdir/libUniSet2*.pc
 %exclude %_pkgconfigdir/libUniSet2.pc
+        
+# history of current unpublished changes
+# ..
 
 %changelog
+* Sat Feb 28 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt18
+- codegen: set default argprefix=myname (object name)
+- codegen: fixed minor bug in mylog..
+- refactoring IORFile interface
+
 * Sat Feb 21 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt17
 - use omni_options[] argument for ORB_init().
 - minor fixes
