@@ -38,6 +38,7 @@ static void InitTest()
     if( !mbs )
     {
         mbs = make_shared<MBTCPTestServer>(slaveADDR,addr,port,false);
+        //mbs->setVerbose(true);
         CHECK( mbs!= nullptr );
         mbs->runThread();
         for( int i=0; !mbs->isRunning() && i<10; i++ )

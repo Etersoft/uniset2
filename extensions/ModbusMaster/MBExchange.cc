@@ -86,6 +86,8 @@ pollActivated(false)
     defaultMBtype = conf->getArg2Param("--" + prefix + "-default-mbtype",it.getProp("default_mbtype"),"rtu");
     defaultMBaddr = conf->getArg2Param("--" + prefix + "-default-mbaddr",it.getProp("default_mbaddr"),"");
 
+    defaultMBinitOK = conf->getArgPInt("--" + prefix + "-default-mbinit-ok",it.getProp("default_mbinitOK"), 0);
+
     // ********** HEARTBEAT *************
     string heart = conf->getArgParam("--" + prefix + "-heartbeat-id",it.getProp("heartbeat_id"));
     if( !heart.empty() )
@@ -162,6 +164,7 @@ void MBExchange::help_print( int argc, const char* const* argv )
     cout << "--prefix-set-prop-prefix val    - Использовать для свойств указанный или пустой префикс." << endl;
     cout << "--prefix-default-mbtype [rtu|rtu188|mtr]  - У датчиков которых не задан 'mbtype' использовать данный. По умолчанию: 'rtu'" << endl;
     cout << "--prefix-default-mbadd addr     - У датчиков которых не задан 'mbaddr' использовать данный. По умолчанию: ''" << endl;
+    cout << "--prefix-default-mbinit-ok 0,1  - Флаг инициализации. 1 - не ждать первого обмена с устройством, а сохранить при старте в SM значение 'default'" << endl;
 }
 // -----------------------------------------------------------------------------
 MBExchange::~MBExchange()
@@ -333,6 +336,27 @@ void MBExchange::initIterators()
     {
          shm->initIterator(t->ioit);
          shm->initIterator(t->t_ait);
+    }
+}
+// -----------------------------------------------------------------------------
+void MBExchange::initValues()
+{
+    for( auto it1=rmap.begin(); it1!=rmap.end(); ++it1 )
+    {
+        RTUDevice* d(it1->second);
+        for( auto it=d->regmap.begin(); it!=d->regmap.end(); ++it )
+        {
+            for( auto it2=it->second->slst.begin();it2!=it->second->slst.end(); ++it2 )
+            {
+                it2->value = shm->localGetValue(it2->ioit,it2->si.id);
+            }
+            it->second->sm_initOK = true;
+        }
+    }
+
+    for( auto t=thrlist.begin(); t!=thrlist.end(); ++t )
+    {
+         t->value = shm->localGetValue(t->ioit,t->si.id);
     }
 }
 // -----------------------------------------------------------------------------
@@ -660,7 +684,7 @@ bool MBExchange::preInitRead( InitList::iterator& p )
         // выставляем флаг принудительного обновления
         force_out = true;
         p->ri->mb_initOK = true;
-        p->ri->sm_initOK = false;
+        // p->ri->sm_initOK = false;
         updateRTU(p->ri->rit);
         force_out = f_out;
     }
@@ -854,8 +878,12 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
         {
             ModbusRTU::ReadInputRetMessage ret = mb->read04(dev->mbaddr,p->mbreg,p->q_count);
             for( unsigned int i=0; i<p->q_count; i++,it++ )
+            {
                 it->second->mbval = ret.data[i];
+                it->second->mb_initOK = true;
+            }
             it--;
+
         }
         break;
 
@@ -863,7 +891,10 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
         {
             ModbusRTU::ReadOutputRetMessage ret = mb->read03(dev->mbaddr,p->mbreg,p->q_count);
             for( unsigned int i=0; i<p->q_count; i++,it++ )
+            {
                 it->second->mbval = ret.data[i];
+                it->second->mb_initOK = true;
+            }
             it--;
         }
         break;
@@ -876,7 +907,10 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
             {
                 ModbusRTU::DataBits b(ret.data[i]);
                 for( unsigned int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
+                {
                     it->second->mbval = b[k];
+                    it->second->mb_initOK = true;
+                }
             }
             it--;
         }
@@ -890,7 +924,10 @@ bool MBExchange::pollRTU( RTUDevice* dev, RegMap::iterator& it )
             {
                 ModbusRTU::DataBits b(ret.data[i]);
                 for( unsigned int k=0;k<ModbusRTU::BitsPerByte && m<p->q_count; k++,it++,m++ )
+                {
                     it->second->mbval = b[k] ? 1 : 0;
+                    it->second->mb_initOK = true;
+                }
             }
             it--;
         }
@@ -1104,9 +1141,8 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
     if( !checkUpdateSM(save,r->dev->mode) )
         return;
 
-    // если требуется инициализация и она ещё не произведена,
-    // то игнорируем
-    if( save && !r->mb_initOK )
+    // если ещё не обменивались ни разу с устройством, то ингнорируем (не обновляем значение в SM)
+    if( !r->mb_initOK )
         return;
 
     dlog3 << myname << "(updateP): sid=" << p->si.id
@@ -1252,7 +1288,7 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
                     return;
                 }
 
-                if( save && r->sm_initOK )
+                if( save )
                 {
                       if( r->mb_initOK )
                       {
@@ -1329,6 +1365,8 @@ void MBExchange::updateRSProperty( RSProperty* p, bool write_only )
                         VTypes::F4 f4(f);
                         for( int k=0; k<VTypes::F4::wsize(); k++, i++ )
                             i->second->mbval = f4.raw.v[k];
+
+                        r->sm_initOK = true;
                     }
                 }
                 else
@@ -2167,7 +2205,7 @@ bool MBExchange::initItem( UniXML::iterator& it )
     // и если идёт попытка внести в список не битовый датчик то ОШИБКА!
     // И наоборот: если идёт попытка внести битовый датчик, а в списке
     // уже сидит датчик занимающий целый регистр, то тоже ОШИБКА!
-    if(    ModbusRTU::isWriteFunction(ri->mbfunc) )
+    if( ModbusRTU::isWriteFunction(ri->mbfunc) )
     {
         if( p.nbit<0 &&  ri->slst.size() > 1 )
         {
@@ -2195,14 +2233,12 @@ bool MBExchange::initItem( UniXML::iterator& it )
         // Раз это регистр для записи, то как минимум надо сперва
         // инициализировать значением из SM
         ri->sm_initOK = IOBase::initIntProp(it,"sm_initOK",prop_prefix,false);
-        ri->mb_initOK = true;  // может быть переопределён если будет указан tcp_preinit="1" (см. ниже)
+        ri->mb_initOK = true;
     }
     else
     {
-        // Если это регистр для чтения, то сразу можно работать
-        // инициализировать не надо
-        ri->mb_initOK = true;
-        ri->sm_initOK = true;
+        ri->mb_initOK = defaultMBinitOK;
+        ri->sm_initOK = false;
     }
 
 
@@ -2224,8 +2260,8 @@ bool MBExchange::initItem( UniXML::iterator& it )
             r->q_num=i+1;
             r->q_count=1;
             r->mbfunc = ri->mbfunc;
-            r->mb_initOK = true;
-            r->sm_initOK = true;
+            r->mb_initOK = defaultMBinitOK;
+            r->sm_initOK = false;
             if( ModbusRTU::isWriteFunction(ri->mbfunc) )
             {
                 // Если занимает несколько регистров, а указана функция записи "одного",
@@ -2534,7 +2570,7 @@ void MBExchange::sysCommand( const UniSetTypes::SystemMessage *sm )
                 initOutput();
             }
 
-
+            initValues();
             updateSM();
             askTimer(tmExchange,polltime);
             break;
@@ -2557,6 +2593,7 @@ void MBExchange::sysCommand( const UniSetTypes::SystemMessage *sm )
 
             askSensors(UniversalIO::UIONotify);
             initOutput();
+            initValues();
 
             if( !force )
             {

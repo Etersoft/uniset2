@@ -413,6 +413,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 - codegen: set default argprefix=myname (object name)
 - codegen: fixed minor bug in mylog..
 - refactoring IORFile interface
+- (modbusmaster): fixed bug (setbug #5583) in initialization..
 
 * Sat Feb 21 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt17
 - use omni_options[] argument for ORB_init().
