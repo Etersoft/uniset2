@@ -175,18 +175,18 @@
 		void init_dlog( std::shared_ptr&lt;DebugStream&gt; d );
 
         // "синтаксический сахар"..для логов
-        #define myinfo if( mylog->debugging(Debug::INFO) ) mylog->any()
-        #define mywarn if( mylog->debugging(Debug::WARN) ) mylog->any()
-        #define mycrit if( mylog->debugging(Debug::CRIT) ) mylog->any()
-        #define mylog1 if( mylog->debugging(Debug::LEVEL1) ) mylog->any()
-        #define mylog2 if( mylog->debugging(Debug::LEVEL2) ) mylog->any()
-        #define mylog3 if( mylog->debugging(Debug::LEVEL3) ) mylog->any()
-        #define mylog4 if( mylog->debugging(Debug::LEVEL4) ) mylog->any()
-        #define mylog5 if( mylog->debugging(Debug::LEVEL5) ) mylog->any()
-        #define mylog6 if( mylog->debugging(Debug::LEVEL6) ) mylog->any()
-        #define mylog7 if( mylog->debugging(Debug::LEVEL7) ) mylog->any()
-        #define mylog8 if( mylog->debugging(Debug::LEVEL8) ) mylog->any()
-        #define mylog9 if( mylog->debugging(Debug::LEVEL9) ) mylog->any()
+        #define myinfo if( mylog->debugging(Debug::INFO) ) mylog->info()
+        #define mywarn if( mylog->debugging(Debug::WARN) ) mylog->warn()
+        #define mycrit if( mylog->debugging(Debug::CRIT) ) mylog->crit()
+        #define mylog1 if( mylog->debugging(Debug::LEVEL1) ) mylog->level1()
+        #define mylog2 if( mylog->debugging(Debug::LEVEL2) ) mylog->level2()
+        #define mylog3 if( mylog->debugging(Debug::LEVEL3) ) mylog->level3()
+        #define mylog4 if( mylog->debugging(Debug::LEVEL4) ) mylog->level4()
+        #define mylog5 if( mylog->debugging(Debug::LEVEL5) ) mylog->level5()
+        #define mylog6 if( mylog->debugging(Debug::LEVEL6) ) mylog->level6()
+        #define mylog7 if( mylog->debugging(Debug::LEVEL7) ) mylog->level7()
+        #define mylog8 if( mylog->debugging(Debug::LEVEL8) ) mylog->level8()
+        #define mylog9 if( mylog->debugging(Debug::LEVEL9) ) mylog->level9()
         #define mylogany mylog->any()
 </xsl:template>
 
@@ -229,6 +229,7 @@
 		bool in_TestMode_S;
 		bool in_LocalTestMode_S;
 </xsl:if>
+		const std::string argprefix;
 		UniSetTypes::ObjectId smTestID; /*!&lt; идентификатор датчика для тестирования готовности SM */
 
 		// управление датчиком "сердцебиения"
@@ -567,9 +568,10 @@ static const std::string init3_str( const std::string&amp; s1, const std::string
 	return s3;
 }
 // -----------------------------------------------------------------------------
-<xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode, const std::string&amp; argprefix ):
+<xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode, const std::string&amp; _argprefix ):
 <xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>(id),</xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">UniSetObject(id),</xsl:if>
+argprefix( (_argprefix.empty() ? myname+"-" : argprefix) ),
 // Инициализация идентификаторов (имена берутся из конф. файла)
 <xsl:for-each select="//smap/item">
 <xsl:if test="normalize-space(@vartype)!='io'">
@@ -632,7 +634,7 @@ end_private(false)
 	mylog-&gt;setLogName(myname);
 	{
 		ostringstream s;
-		s &lt;&lt; myname &lt;&lt; "-log";
+		s &lt;&lt; argprefix &lt;&lt; "log";
 		conf->initLogStream(mylog,s.str());
 	}
 
@@ -919,9 +921,10 @@ forceOut(false)
 	throw Exception( string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
-<xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode, const string&amp; argprefix ):
+<xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode, const string&amp; _argprefix ):
 <xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>(id),</xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">UniSetObject(id),</xsl:if>
+argprefix( (_argprefix.empty() ? myname+"-" : _argprefix) ),
 // Инициализация идентификаторов (имена берутся из конф. файла)
 <xsl:for-each select="//sensors/item">
 	<xsl:call-template name="setvar">
@@ -962,7 +965,7 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 	mylog-&gt;setLogName(myname);
     {
         ostringstream s;
-        s &lt;&lt; myname &lt;&lt; "-log";
+        s &lt;&lt; argprefix &lt;&lt; "log";
         conf->initLogStream(mylog, s.str());
     }
     	

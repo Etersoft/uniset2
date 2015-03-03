@@ -110,7 +110,7 @@ class MBExchange:
                 id(0),dev(0),
                 rtuJack(RTUStorage::nUnknown),rtuChan(0),
                 mtrType(MTR::mtUnknown),
-                q_num(0),q_count(1),mb_initOK(true),sm_initOK(true)
+                q_num(0),q_count(1),mb_initOK(false),sm_initOK(false)
             {}
 
             ModbusRTU::ModbusData mbval;
@@ -223,6 +223,7 @@ class MBExchange:
         virtual void sigterm( int signo ) override;
         virtual bool activateObject() override;
         virtual void initIterators();
+        virtual void initValues();
 
         struct InitRegInfo
         {
@@ -344,6 +345,7 @@ class MBExchange:
 
         std::string defaultMBtype;
         std::string defaultMBaddr;
+        bool defaultMBinitOK; // флаг определяющий нужно ли ждать "первого обмена" или при запуске сохранять в SM значение default.
 
      private:
         MBExchange();

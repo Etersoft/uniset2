@@ -129,11 +129,11 @@ TEST_CASE("[IOBase]: Debounce function","[iobase][debounce][extensions]")
     CHECK_FALSE( ib.check_debounce(false) );
     msleep(10);
     CHECK_FALSE( ib.check_debounce(true) );
-    msleep(40);
+    msleep(30);
     CHECK_FALSE( ib.check_debounce(false) );
     msleep(10);
     CHECK_FALSE( ib.check_debounce(true) );
-    msleep(30);
+    msleep(35);
     CHECK( ib.check_debounce(true) ); // сработал..
     // Проверка сброса сигнала (с дребезгом)
     msleep(30);

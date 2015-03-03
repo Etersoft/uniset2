@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2015-02-02+03:00
+// generate timestamp: 2015-02-28+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include "Configuration.h"
@@ -60,8 +60,9 @@ static const std::string init3_str( const std::string& s1, const std::string& s2
 	return s3;
 }
 // -----------------------------------------------------------------------------
-UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& argprefix ):
+UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& _argprefix ):
 UniSetObject(id),
+argprefix( (_argprefix.empty() ? myname+"-" : argprefix) ),
 // Инициализация идентификаторов (имена берутся из конф. файла)
 
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
@@ -102,7 +103,7 @@ end_private(false)
 	mylog->setLogName(myname);
 	{
 		ostringstream s;
-		s << myname << "-log";
+		s << argprefix << "-log";
 		conf->initLogStream(mylog,s.str());
 	}
 

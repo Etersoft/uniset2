@@ -6,11 +6,26 @@
 }
 
 {
+   sh
+   Memcheck:Leak
+   ...
+   obj:/bin/sh
+}
+
+{
    ps
    Memcheck:Leak
    ...
    obj:/bin/ps
 }
+
+{
+   grep
+   Memcheck:Leak
+   ...
+   obj:/bin/grep
+}
+
 
 {
    bash

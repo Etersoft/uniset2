@@ -37,12 +37,13 @@ class IORFile
     public:
         IORFile();
 
-        std::string getIOR( const ObjectId id ) const;
-        void setIOR( const ObjectId id, const std::string& sior ) const;
-        void unlinkIOR( const ObjectId id ) const;
+        static std::string getIOR( const ObjectId id );
+        static void setIOR( const ObjectId id, const std::string& sior );
+        static void unlinkIOR( const ObjectId id );
+
+        static std::string getFileName( const ObjectId id );
 
     protected:
-        std::string genFName( const ObjectId id ) const;
 
     private:
 };

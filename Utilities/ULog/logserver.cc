@@ -120,11 +120,11 @@ int main( int argc, char **argv )
 
         ls.run( addr, port, true );
         if( verb )
-	        ls.setSessionLog(Debug::ANY);
+            ls.setSessionLog(Debug::ANY);
         
         unsigned int i=0;
         while( true )
-//		for( int n=0; n<2; n++ )
+//        for( int n=0; n<2; n++ )
         {
             dlog->any() << "[" << ++i << "] Test message for log" << endl;
             dlog->info() << ": dlog : INFO message" << endl;

@@ -37,9 +37,9 @@ IORFile::IORFile()
 }
 
 // -----------------------------------------------------------------------------------------
-string IORFile::getIOR( const ObjectId id ) const
+string IORFile::getIOR( const ObjectId id )
 {
-    string fname( genFName(id) );
+    string fname( getFileName(id) );
     ifstream ior_file(fname.c_str());
     string sior;
     ior_file >> sior;
@@ -47,9 +47,9 @@ string IORFile::getIOR( const ObjectId id ) const
     return std::move(sior);
 }
 // -----------------------------------------------------------------------------------------
-void IORFile::setIOR( const ObjectId id, const string& sior ) const
+void IORFile::setIOR( const ObjectId id, const string& sior )
 {
-    string fname( genFName(id) );
+    string fname( getFileName(id) );
     ofstream ior_file(fname.c_str(), ios::out | ios::trunc);
 
     if( !ior_file )
@@ -62,13 +62,13 @@ void IORFile::setIOR( const ObjectId id, const string& sior ) const
     ior_file.close();
 }
 // -----------------------------------------------------------------------------------------
-void IORFile::unlinkIOR( const ObjectId id ) const
+void IORFile::unlinkIOR( const ObjectId id )
 {
-    string fname( genFName(id) );
+    string fname( getFileName(id) );
     unlink(fname.c_str());
 }
 // -----------------------------------------------------------------------------------------
-string IORFile::genFName( const ObjectId id ) const
+string IORFile::getFileName( const ObjectId id )
 {
     ostringstream fname;
     fname << uniset_conf()->getLockDir() << id;

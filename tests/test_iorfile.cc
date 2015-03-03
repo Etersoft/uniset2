@@ -17,12 +17,8 @@ TEST_CASE("IORFile", "[iorfile][basic]" )
     ior.setIOR(testID,iorstr);
     REQUIRE( ior.getIOR(testID) == iorstr );
 
-    // здесь выносим "наружу" немного "внутренней кухни" IORFile,
-    // т.к. снаружи не известно как формируется "название файла"
-    ostringstream s;
-    s << uniset_conf()->getLockDir() << testID;
-    CHECK( file_exist(s.str()) );
+    CHECK( file_exist(ior.getFileName(testID)) );
 
     ior.unlinkIOR(testID);
-    CHECK_FALSE( file_exist(s.str()) );
+    CHECK_FALSE( file_exist(ior.getFileName(testID)) );
 }

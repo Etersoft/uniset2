@@ -132,11 +132,7 @@ namespace ORepHelpers
         ulogrep << "getContext: получили "<< cname << endl;
 
         // Если _var
-//          return CosNaming::NamingContext::_duplicate(ctx);
         return ctx._retn();
-
-        // Если _ptr
-//        return ctx;
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -190,9 +186,6 @@ namespace ORepHelpers
         }
 
         ulogrep << "OREPHELP: get root context ok"<< endl;
-
-        //    // Если создан как _ptr
-        //    return rootContext;
 
         //    Если создан как _var
         return rootContext._retn();
