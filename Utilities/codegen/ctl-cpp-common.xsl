@@ -106,7 +106,7 @@
 			<xsl:when test="$GENTYPE='A'">
 			if( _code == mid_<xsl:value-of select="../../@name"/> )
 			{				
-                ulog8 &lt;&lt; "<xsl:value-of select="../../@name"/>" &lt;&lt; endl;
+                mylog8 &lt;&lt; "<xsl:value-of select="../../@name"/>" &lt;&lt; endl;
 				m_<xsl:value-of select="../../@name"/> = _state;
 				try
 				{
@@ -133,7 +133,7 @@
 					}
 					catch( const UniSetTypes::Exception&amp; ex )
 					{
-                        ulog1 &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
+                        mywarn &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
 					}
 				}
 			</xsl:when>
@@ -175,19 +175,45 @@
 		void init_dlog( std::shared_ptr&lt;DebugStream&gt; d );
 
         // "синтаксический сахар"..для логов
-        #define myinfo if( mylog->debugging(Debug::INFO) ) mylog->info()
-        #define mywarn if( mylog->debugging(Debug::WARN) ) mylog->warn()
-        #define mycrit if( mylog->debugging(Debug::CRIT) ) mylog->crit()
-        #define mylog1 if( mylog->debugging(Debug::LEVEL1) ) mylog->level1()
-        #define mylog2 if( mylog->debugging(Debug::LEVEL2) ) mylog->level2()
-        #define mylog3 if( mylog->debugging(Debug::LEVEL3) ) mylog->level3()
-        #define mylog4 if( mylog->debugging(Debug::LEVEL4) ) mylog->level4()
-        #define mylog5 if( mylog->debugging(Debug::LEVEL5) ) mylog->level5()
-        #define mylog6 if( mylog->debugging(Debug::LEVEL6) ) mylog->level6()
-        #define mylog7 if( mylog->debugging(Debug::LEVEL7) ) mylog->level7()
-        #define mylog8 if( mylog->debugging(Debug::LEVEL8) ) mylog->level8()
-        #define mylog9 if( mylog->debugging(Debug::LEVEL9) ) mylog->level9()
-        #define mylogany mylog->any()
+        #ifndef myinfo 
+        	#define myinfo if( mylog->debugging(Debug::INFO) ) mylog->info() 
+        #endif
+        #ifndef mywarn
+	        #define mywarn if( mylog->debugging(Debug::WARN) ) mylog->warn()
+        #endif
+        #ifndef mycrit
+    	    #define mycrit if( mylog->debugging(Debug::CRIT) ) mylog->crit()
+        #endif
+        #ifndef mylog1
+        	#define mylog1 if( mylog->debugging(Debug::LEVEL1) ) mylog->level1()
+        #endif
+        #ifndef mylog2
+	        #define mylog2 if( mylog->debugging(Debug::LEVEL2) ) mylog->level2()
+        #endif
+        #ifndef mylog3
+    	    #define mylog3 if( mylog->debugging(Debug::LEVEL3) ) mylog->level3()
+        #endif
+        #ifndef mylog4
+        	#define mylog4 if( mylog->debugging(Debug::LEVEL4) ) mylog->level4()
+        #endif
+        #ifndef mylog5
+	        #define mylog5 if( mylog->debugging(Debug::LEVEL5) ) mylog->level5()
+        #endif
+        #ifndef mylog6
+    	    #define mylog6 if( mylog->debugging(Debug::LEVEL6) ) mylog->level6()
+        #endif
+        #ifndef mylog7
+        	#define mylog7 if( mylog->debugging(Debug::LEVEL7) ) mylog->level7()
+        #endif
+        #ifndef mylog8
+	        #define mylog8 if( mylog->debugging(Debug::LEVEL8) ) mylog->level8()
+        #endif
+        #ifndef mylog9
+    	    #define mylog9 if( mylog->debugging(Debug::LEVEL9) ) mylog->level9()
+        #endif
+        #ifndef mylogany
+        	#define mylogany mylog->any()
+        #endif
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PROTECTED">
@@ -458,28 +484,28 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 </xsl:template>
 <xsl:template name="init-variables">
 <xsl:if test="normalize-space(@type)='int'">
-<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
+<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
 </xsl:if>
 <xsl:if test="normalize-space(@type)='long'">
-<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
+<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
 </xsl:if>
 <xsl:if test="normalize-space(@type)='float'">
-<xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
+<xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
 </xsl:if>
 <xsl:if test="normalize-space(@type)='double'">
-<xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
+<xsl:value-of select="normalize-space(@name)"/>(atof( init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>").c_str())),
 </xsl:if>
 <xsl:if test="normalize-space(@type)='bool'">
-<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
+<xsl:value-of select="normalize-space(@name)"/>(uni_atoi( init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
 </xsl:if>
 <xsl:if test="normalize-space(@type)='str'">
-<xsl:value-of select="normalize-space(@name)"/>(init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>")),
+<xsl:value-of select="normalize-space(@name)"/>(init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>")),
 </xsl:if>
 <xsl:if test="normalize-space(@type)='sensor'">
-<xsl:value-of select="normalize-space(@name)"/>(uniset_conf()->getSensorID(init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
+<xsl:value-of select="normalize-space(@name)"/>(uniset_conf()->getSensorID(init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
 </xsl:if>
 <xsl:if test="normalize-space(@type)='object'">
-<xsl:value-of select="normalize-space(@name)"/>(uniset_conf()->getObjectID(init3_str(uniset_conf()->getArgParam("--" + argprefix + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
+<xsl:value-of select="normalize-space(@name)"/>(uniset_conf()->getObjectID(init3_str(uniset_conf()->getArgParam("--" + (_argprefix.empty() ? myname+"-" : _argprefix) + "<xsl:value-of select="@name"/>"),uniset_conf()->getProp(cnode,"<xsl:value-of select="@name"/>"),"<xsl:value-of select="normalize-space(@default)"/>"))),
 </xsl:if>
 </xsl:template>
 
@@ -571,7 +597,7 @@ static const std::string init3_str( const std::string&amp; s1, const std::string
 <xsl:value-of select="$CLASSNAME"/>_SK::<xsl:value-of select="$CLASSNAME"/>_SK( ObjectId id, xmlNode* cnode, const std::string&amp; _argprefix ):
 <xsl:if test="normalize-space($BASECLASS)!=''"><xsl:value-of select="normalize-space($BASECLASS)"/>(id),</xsl:if>
 <xsl:if test="normalize-space($BASECLASS)=''">UniSetObject(id),</xsl:if>
-argprefix( (_argprefix.empty() ? myname+"-" : argprefix) ),
+argprefix( (_argprefix.empty() ? myname+"-" : _argprefix) ),
 // Инициализация идентификаторов (имена берутся из конф. файла)
 <xsl:for-each select="//smap/item">
 <xsl:if test="normalize-space(@vartype)!='io'">
@@ -809,18 +835,18 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-        ucrit  &lt;&lt; getName()
+        mycrit  &lt;&lt; getName()
 				&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId"
 				&lt;&lt; endl;
 		return false;	
 	}
 
-    ulog1 &lt;&lt; getName()  &lt;&lt; "(alarm): " &lt;&lt; ( _state ? "SEND " : "RESET " ) &lt;&lt; endl;
+    mylog8 &lt;&lt; getName()  &lt;&lt; "(alarm): " &lt;&lt; ( _state ? "SEND " : "RESET " ) &lt;&lt; endl;
 	
 	<xsl:for-each select="//msgmap/item">
 	if( _code == <xsl:value-of select="@name"/> )
 	{
-        ulog1 &lt;&lt; "<xsl:value-of select="@name"/>" &lt;&lt; endl;
+        mylog8 &lt;&lt; "<xsl:value-of select="@name"/>" &lt;&lt; endl;
 		try
 		{
 			m_<xsl:value-of select="@name"/> = _state;
@@ -832,14 +858,14 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 		}
 	    catch( const std::exception&amp;ex )
     	{
-        	ucrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+        	mycrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
 	    }
 
 		return false;
 	}
 	</xsl:for-each>
 	
-    ulog1 &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
+    mylog8 &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
 	return false;
 }
 // -----------------------------------------------------------------------------
@@ -858,7 +884,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 		}
 		catch( const UniSetTypes::Exception&amp; ex )
 		{
-            ulog1 &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
+            mywarn &lt;&lt; getName() &lt;&lt; ex &lt;&lt; endl;
 		}
 	}
 </xsl:for-each>
@@ -917,7 +943,7 @@ activated(false),
 askPause(2000),
 forceOut(false)
 {
-	ucrit &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
+	mycrit &lt;&lt; "<xsl:value-of select="$CLASSNAME"/>: init failed!!!!!!!!!!!!!!!" &lt;&lt; endl;
 	throw Exception( string(myname+": init failed!!!") );
 }
 // -----------------------------------------------------------------------------
@@ -1094,13 +1120,13 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-        ucrit  &lt;&lt; getName()
+        mycrit  &lt;&lt; getName()
 				&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId"
 				&lt;&lt; endl;
 		return false;	
 	}
 
-    ulog1 &lt;&lt; getName()  &lt;&lt; "(alarm): (" &lt;&lt; _code  &lt;&lt; ")"  &lt;&lt; ( _state ? "SEND" : "RESET" ) &lt;&lt; endl;
+    mylog8 &lt;&lt; getName()  &lt;&lt; "(alarm): (" &lt;&lt; _code  &lt;&lt; ")"  &lt;&lt; ( _state ? "SEND" : "RESET" ) &lt;&lt; endl;
 
 <xsl:for-each select="//sensors/item">
 	<xsl:call-template name="setmsg">
@@ -1108,7 +1134,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 	</xsl:call-template>
 </xsl:for-each>
 	
-    ulog8 &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
+    mylog8 &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
 	return false;
 }
 // -----------------------------------------------------------------------------

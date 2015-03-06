@@ -181,7 +181,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId _si
 	<xsl:if test="normalize-space(@vartype)='out'">
 	if( _sid == <xsl:value-of select="../../@name"/> )
 	{
-        ulog2 &lt;&lt;  "(setValue): <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = " &lt;&lt; _val &lt;&lt;  endl;
+        mylog8 &lt;&lt;  "(setValue): <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/> = " &lt;&lt; _val &lt;&lt;  endl;
 		<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>	= _val;
 		<xsl:call-template name="setdata"/>
 		return;

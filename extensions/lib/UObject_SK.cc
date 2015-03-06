@@ -11,7 +11,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2015-02-28+03:00
+// generate timestamp: 2015-03-06+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include "Configuration.h"
@@ -62,7 +62,7 @@ static const std::string init3_str( const std::string& s1, const std::string& s2
 // -----------------------------------------------------------------------------
 UObject_SK::UObject_SK( ObjectId id, xmlNode* cnode, const std::string& _argprefix ):
 UniSetObject(id),
-argprefix( (_argprefix.empty() ? myname+"-" : argprefix) ),
+argprefix( (_argprefix.empty() ? myname+"-" : _argprefix) ),
 // Инициализация идентификаторов (имена берутся из конф. файла)
 
 // Используемые идентификаторы сообщений (имена берутся из конф. файла)
@@ -103,7 +103,7 @@ end_private(false)
 	mylog->setLogName(myname);
 	{
 		ostringstream s;
-		s << argprefix << "-log";
+		s << argprefix << "log";
 		conf->initLogStream(mylog,s.str());
 	}
 
@@ -186,17 +186,17 @@ bool UObject_SK::alarm( UniSetTypes::ObjectId _code, bool _state )
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-        ucrit  << getName()
+        mycrit  << getName()
 				<< "(alarm): попытка послать сообщение с DefaultObjectId"
 				<< endl;
 		return false;	
 	}
 
-    ulog1 << getName()  << "(alarm): " << ( _state ? "SEND " : "RESET " ) << endl;
+    mylog8 << getName()  << "(alarm): " << ( _state ? "SEND " : "RESET " ) << endl;
 	
 	
 	
-    ulog1 << " not found MessgeOID?!!" << endl;
+    mylog8 << " not found MessgeOID?!!" << endl;
 	return false;
 }
 // -----------------------------------------------------------------------------

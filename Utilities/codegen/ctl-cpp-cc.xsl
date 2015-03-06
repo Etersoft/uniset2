@@ -116,7 +116,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::setValue( UniSetTypes::ObjectId sid
 		<xsl:if test="normalize-space(@vartype)='out'">
 		if( sid == <xsl:value-of select="@name"/> )
 		{
-            ulog2 &lt;&lt;  "(setValue): <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = " &lt;&lt;  val &lt;&lt;  endl;
+            mylog8 &lt;&lt;  "(setValue): <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/> = " &lt;&lt;  val &lt;&lt;  endl;
 			<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>	= val;
 			return;
 		}
