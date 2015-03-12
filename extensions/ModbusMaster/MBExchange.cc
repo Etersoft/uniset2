@@ -5,6 +5,7 @@
 #include <Exceptions.h>
 #include <UniSetTypes.h>
 #include <extensions/Extensions.h>
+#include <ORepHelpers.h>
 #include "MBExchange.h"
 // -----------------------------------------------------------------------------
 using namespace std;
@@ -2209,9 +2210,16 @@ bool MBExchange::initItem( UniXML::iterator& it )
     {
         if( p.nbit<0 &&  ri->slst.size() > 1 )
         {
+            auto conf = uniset_conf();
+            ostringstream sl;
+            sl << "[ ";
+            for( auto& i: ri->slst )
+                sl << ORepHelpers::getShortName(conf->oind->getMapName(i.si.id)) << ",";
+            sl << "]";
+
             dcrit << myname << "(initItem): FAILED! Sharing SAVE (not bit saving) to "
-                    << " tcp_mbreg=" << ModbusRTU::dat2str(ri->mbreg)
-                    << " for " << it.getProp("name") << endl;
+                    << " tcp_mbreg=" << ModbusRTU::dat2str(ri->mbreg) << "(" << (int)ri->mbreg << ")"
+                    << " conflict with sensors " << sl.str() << endl;
 
             abort();     // ABORT PROGRAM!!!!
             return false;
@@ -2223,7 +2231,7 @@ bool MBExchange::initItem( UniXML::iterator& it )
             if( it2->nbit < 0 )
             {
                 dcrit << myname << "(initItem): FAILED! Sharing SAVE (mbreg="
-                        << ModbusRTU::dat2str(ri->mbreg) << "  already used)!"
+                        << ModbusRTU::dat2str(ri->mbreg) << "(" << (int)ri->mbreg << ") already used)!"
                         << " IGNORE --> " << it.getProp("name") << endl;
                     abort();     // ABORT PROGRAM!!!!
                     return false;

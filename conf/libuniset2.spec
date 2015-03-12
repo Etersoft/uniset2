@@ -12,7 +12,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt19
+Release: alt20
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -409,6 +409,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Fri Mar 06 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt20
+- (modbustcpmaster): minor fixes in error messages
+
 * Fri Mar 06 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt19
 - codegen: fixed bug (in previous commit)
 - codegen: fixed warning (redefined mylog macroses)
