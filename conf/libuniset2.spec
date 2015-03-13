@@ -411,6 +411,7 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %changelog
 * Thu Mar 12 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt21
 - codegen: adjustment documentation
+- unetudp: add tests, minor optimization (thank`s uzum)
 
 * Fri Mar 06 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt20
 - (modbustcpmaster): minor fixes in error messages

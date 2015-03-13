@@ -580,7 +580,6 @@ extensions/UNetUDP/UDPPacket.h
 extensions/UNetUDP/unet-udp-tester.cc
 extensions/UNetUDP/UNetExchange.cc
 extensions/UNetUDP/unetexchange.cc
-extensions/UNetUDP/UNetExchange.cc.c
 extensions/UNetUDP/UNetExchange.h
 extensions/UNetUDP/UNetReceiver.cc
 extensions/UNetUDP/UNetReceiver.h

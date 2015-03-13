@@ -65,7 +65,7 @@ class UNetReceiver:
 
          inline std::string getName(){ return myname; }
 
-         // блокировать сохранение данный в SM
+         // блокировать сохранение данных в SM
          void setLockUpdate( bool st );
 
          void resetTimeout();
@@ -110,6 +110,19 @@ class UNetReceiver:
 
         void initIterators();
 
+    public:
+
+        // функция определения приоритетного сообщения для обработки
+        struct PacketCompare:
+        public std::binary_function<UniSetUDP::UDPMessage, UniSetUDP::UDPMessage, bool>
+        {
+            inline bool operator()(const UniSetUDP::UDPMessage& lhs,
+                            const UniSetUDP::UDPMessage& rhs) const
+                    { return lhs.num > rhs.num; }
+        };
+        typedef std::priority_queue<UniSetUDP::UDPMessage,std::vector<UniSetUDP::UDPMessage>,PacketCompare> PacketQueue;
+
+
     private:
         UNetReceiver();
 
@@ -141,15 +154,6 @@ class UNetReceiver:
         std::shared_ptr< ThreadCreator<UNetReceiver> > r_thr;        // receive thread
         std::shared_ptr< ThreadCreator<UNetReceiver> > u_thr;        // update thread
 
-        // функция определения приоритетного сообщения для обработки
-        struct PacketCompare:
-        public std::binary_function<UniSetUDP::UDPMessage, UniSetUDP::UDPMessage, bool>
-        {
-            inline bool operator()(const UniSetUDP::UDPMessage& lhs,
-                            const UniSetUDP::UDPMessage& rhs) const
-                    { return lhs.num > rhs.num; }
-        };
-        typedef std::priority_queue<UniSetUDP::UDPMessage,std::vector<UniSetUDP::UDPMessage>,PacketCompare> PacketQueue;
         PacketQueue qpack;    /*!< очередь принятых пакетов (отсортированных по возрастанию номера пакета) */
         UniSetUDP::UDPMessage pack;        /*!< просто буфер для получения очередного сообщения */
         UniSetUDP::UDPPacket r_buf;

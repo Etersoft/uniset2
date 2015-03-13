@@ -36,7 +36,7 @@
 			<item id="3000" ip="127.0.0.1" name="localhost" textname="Локальный узел" unet_ignore="0" unet_port="3000"/>
 			<item id="3001" ip="127.0.0.1" name="localhost1" textname="Локальный узел" unet_ignore="1" unet_port="3001"/>
 			<item id="3002" ip="192.168.56.10" name="Node1" textname="Node1" unet_ignore="0" unet_ip="192.168.56.255" unet_respond_id="Node1_Respond_S" unet_respond_invert="1"/>
-			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="0" unet_ip="192.168.56.255" unet_respond_id="Node2_Respond_S"/>
+			<item id="3003" ip="192.168.56.11" name="Node2" textname="Node2" unet_ignore="0" unet_ip="192.168.56.255" unet_respond_id="Node2_Respond_S" unet_lostpackets_id="Node2_LostPackets_AS"/>
 		</nodes>
 		<!-- ************************ Датчики ********************** -->
 		<sensors name="Sensors">
@@ -54,6 +54,8 @@
 			<item id="10" iotype="DI" name="DI3_S" textname="DI sensor 3"/>
 			<item id="11" iotype="DI" name="DI4_S" textname="DI sensor 4"/>
 			<item id="12" iotype="DI" name="Node2_Respond_S" textname="Node2 respond"/>
+			<item id="13" iotype="AI" name="Node2_LostPackets_AS" textname="Node2 lost packets"/>
+			
 		</sensors>
 		<thresholds name="thresholds"/>
 		<controllers name="Controllers">
