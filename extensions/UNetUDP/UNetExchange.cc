@@ -39,12 +39,12 @@ no_sender(false)
 
     int recvTimeout = conf->getArgPInt("--" + prefix + "-recv-timeout",it.getProp("recvTimeout"), 5000);
     int prepareTime = conf->getArgPInt("--" + prefix + "-preapre-time",it.getProp("prepareTime"), 2000);
-    int lostTimeout = conf->getArgPInt("--" + prefix + "-lost-timeout",it.getProp("lostTimeout"), recvTimeout);
     int recvpause = conf->getArgPInt("--" + prefix + "-recvpause",it.getProp("recvpause"), 10);
     int sendpause = conf->getArgPInt("--" + prefix + "-sendpause",it.getProp("sendpause"), 100);
     int updatepause = conf->getArgPInt("--" + prefix + "-updatepause",it.getProp("updatepause"), 100);
+    int lostTimeout = conf->getArgPInt("--" + prefix + "-lost-timeout",it.getProp("lostTimeout"), 2*updatepause);
     steptime = conf->getArgPInt("--" + prefix + "-steptime",it.getProp("steptime"), 1000);
-    int maxDiff = conf->getArgPInt("--" + prefix + "-maxdifferense",it.getProp("maxDifferense"), 1000);
+    int maxDiff = conf->getArgPInt("--" + prefix + "-maxdifferense",it.getProp("maxDifferense"), 100);
     int maxProcessingCount = conf->getArgPInt("--" + prefix + "-maxprocessingcount",it.getProp("maxProcessingCount"), 100);
 
     no_sender = conf->getArgInt("--" + prefix + "-nosender",it.getProp("nosender"));

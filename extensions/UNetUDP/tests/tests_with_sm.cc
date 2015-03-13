@@ -39,7 +39,7 @@ int main(int argc, char* argv[] )
         if( !shm )
             return 1;
 
-        auto unet = UNetExchange::init_unetexchange(argc,argv,shm->getId(), (apart ? nullptr : shm ));
+        auto unet = UNetExchange::init_unetexchange(argc,argv,shm->getId(), (apart ? nullptr : shm ),"unet");
         if( !unet )
             return 1;
 

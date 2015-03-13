@@ -24,6 +24,8 @@ static int s_nodeID = 3003;
 static int s_procID = 123;
 static int s_numpack = 1;
 static ObjectId node2_respond_s = 12;
+static ObjectId node2_lostpackets_as = 13;
+static int maxDifferense = 5; // см. unetudp-test-configure.xml --unet-maxdifferense
 // -----------------------------------------------------------------------------
 void InitTest()
 {
@@ -47,7 +49,7 @@ void InitTest()
 }
 // -----------------------------------------------------------------------------
 // pnum - минималный номер ожидаемого пакета ( 0 - любой пришедщий )
-// ncycle - сколько пакетов разрещено "пропустить" прежде чем дождёмся нужного.. (чтобы не ждать бесконечно)
+// ncycle - сколько пакетов разрешено "пропустить" прежде чем дождёмся нужного.. (чтобы не ждать бесконечно)
 static UniSetUDP::UDPMessage receive( unsigned int pnum = 0, timeout_t tout = 2000, int ncycle = 10 )
 {
     UniSetUDP::UDPMessage pack;
@@ -82,6 +84,44 @@ void send( UniSetUDP::UDPMessage& pack, int tout=2000 )
     pack.transport_msg(s_buf);
     size_t ret = udp_s->send((char*)&s_buf.data, s_buf.len);
     REQUIRE( ret == s_buf.len );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: queue sort","[unetudp][packetqueue]")
+{
+    UNetReceiver::PacketQueue q;
+
+    UniSetUDP::UDPMessage m1;
+    m1.num = 10;
+    UniSetUDP::UDPMessage m2;
+    m2.num = 11;
+    UniSetUDP::UDPMessage m3;
+    m3.num = 13;
+
+    UniSetUDP::UDPMessage m4;
+    m4.num = 100;
+
+    // специально сладываем в обратном порядке
+    // чтобы проверить "сортировку"
+    q.push(m1);
+    q.push(m3);
+    q.push(m2);
+    q.push(m4);
+
+    UniSetUDP::UDPMessage t = q.top();
+    REQUIRE( t.num == 10 );
+    q.pop();
+
+    t = q.top();
+    REQUIRE( t.num == 11 );
+    q.pop();
+
+    t = q.top();
+    REQUIRE( t.num == 13 );
+    q.pop();
+
+    t = q.top();
+    REQUIRE( t.num == 100 );
+    q.pop();
 }
 // -----------------------------------------------------------------------------
 TEST_CASE("[UNetUDP]: UDPMessage","[unetudp][udpmessage]")
@@ -258,5 +298,122 @@ TEST_CASE("[UNetUDP]: check receiver","[unetudp][receiver]")
         //msleep(2000); // в запускающем файле стоит --unet-recv-timeout 2000
         //REQUIRE( ui->getValue(node2_respond_s) == 0 );
     }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: check packets 'hole'","[unetudp][udphole]")
+{
+    InitTest();
+
+    // проверяем обработку "дырок" в пакетах..
+    UniSetUDP::UDPMessage pack;
+    pack.addAData(8,15);
+    send(pack);
+    msleep(120);
+    REQUIRE( ui->getValue(8) == 15 );
+
+    unsigned long nlost = ui->getValue(node2_lostpackets_as);
+
+    int lastnum = s_numpack-1;
+
+    // искуственно делаем дырку в два пакета
+    s_numpack = lastnum+3;
+    UniSetUDP::UDPMessage pack_hole;
+    pack_hole.addAData(8,30);
+    send(pack_hole); // пакет с дыркой
+
+    msleep(120);
+    REQUIRE( ui->getValue(8) == 15 );
+    REQUIRE( ui->getValue(node2_lostpackets_as) == nlost );
+
+    s_numpack = lastnum+1;
+    UniSetUDP::UDPMessage pack1;
+    pack1.addAData(8,21);
+    send(pack1); // заполняем первую дырку..// дырка закроется.. пакет тут же обработается
+    msleep(120);
+    REQUIRE( ui->getValue(8) == 21 );
+    REQUIRE( ui->getValue(node2_lostpackets_as) == nlost );
+
+    s_numpack = lastnum+2;
+    UniSetUDP::UDPMessage pack2;
+    pack2.addAData(8,25);
+    send(pack2); // заполняем следующую дырку
+    msleep(120);
+
+    // тут обработка дойдёт уже до "первого" пакета..
+    REQUIRE( ui->getValue(8) == 30 );
+    REQUIRE( ui->getValue(node2_lostpackets_as) == nlost );
+
+    // возвращаем к нормальному..чтобы следующие тесты не поломались..
+    for( int i=0; i<10; i++ )
+        send(pack2);
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: check packets 'MaxDifferens'","[unetudp][maxdifferens]")
+{
+    InitTest();
+
+    // проверяем обработку "дырок" в пакетах..
+    UniSetUDP::UDPMessage pack;
+    pack.addAData(8,50);
+    send(pack);
+
+    msleep(1000);
+    REQUIRE( ui->getValue(8) == 50 );
+
+    unsigned long nlost = ui->getValue(node2_lostpackets_as);
+
+    int need_num = s_numpack;
+    // искуственно делаем дырку в два пакета
+    s_numpack += maxDifferense+1;
+
+    UniSetUDP::UDPMessage pack_hole;
+    pack_hole.addAData(8,150);
+    send(pack_hole); // пакет с дыркой > maxDifference (должен обработаться)
+
+    msleep(120);
+    REQUIRE( ui->getValue(8) == 150 );
+    msleep(2000);
+    REQUIRE( ui->getValue(node2_lostpackets_as) > nlost );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: bad packet number","[unetudp][badnumber]")
+{
+    InitTest();
+
+    // посылаем нормальный пакет
+    UniSetUDP::UDPMessage pack;
+    pack.addAData(8,60);
+    send(pack);
+    msleep(120);
+    REQUIRE( ui->getValue(8) == 60 );
+
+    int lastpack = s_numpack-1;
+
+    // посылаем пакет с тем же номером
+    s_numpack = lastpack;
+    UniSetUDP::UDPMessage pack1;
+    pack1.addAData(8,150);
+    send(pack1); // должен быть "откинут"
+
+    msleep(120);
+    REQUIRE( ui->getValue(8) == 60 );
+
+    // посылаем пакет с меньшим номером
+    s_numpack=lastpack-2;
+    UniSetUDP::UDPMessage pack2;
+    pack2.addAData(8,155);
+    send(pack2); // должен быть "откинут"
+
+    msleep(120);
+    REQUIRE( ui->getValue(8) == 60 );
+
+    // посылаем нормальный
+    s_numpack=lastpack+1;
+    UniSetUDP::UDPMessage pack3;
+    pack3.addAData(8,160);
+    send(pack3); // должен быть "обработан"
+
+    msleep(120);
+    REQUIRE( ui->getValue(8) == 160 );
 }
 // -----------------------------------------------------------------------------
