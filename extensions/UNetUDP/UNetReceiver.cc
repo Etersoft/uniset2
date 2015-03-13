@@ -26,7 +26,7 @@ updatepause(100),
 udp(0),
 recvTimeout(5000),
 prepareTime(2000),
-lostTimeout(5000),
+lostTimeout(200), /* 2*updatepause */
 lostPackets(0),
 sidRespond(UniSetTypes::DefaultObjectId),
 respondInvert(false),
@@ -35,7 +35,7 @@ activated(false),
 r_thr(0),
 u_thr(0),
 pnum(0),
-maxDifferens(1000),
+maxDifferens(20),
 waitClean(false),
 rnum(0),
 maxProcessingCount(100),
@@ -241,19 +241,36 @@ void UNetReceiver::real_update()
 				// чтобы констатировать потерю пакета..
 				if( sub > 1 && sub < maxDifferens )
 				{
+					// если p.num < pnum, то это какой-то "дубль",
+					// т.к мы все пакеты <= pnum уже "отработали".
+					// а значит можно не ждать, а откидывать пакет и
+					// дальше работать..
+					if( p.num < pnum )
+					{
+						qpack.pop();
+						continue;
+					}
+
 					if( !ptLostTimeout.checkTime() )
 						return;
 
-					lostPackets++;
+					lostPackets += sub;
 				}
 				else if( p.num == pnum )
 				{
-				   /* а что делать если идут повторные пакеты ?!
+					/* а что делать если идут повторные пакеты ?!
 					* для надёжности лучше обрабатывать..
 					* для "оптимизации".. лучше игнорировать
 					*/
-					qpack.pop(); // пока выбрали вариант "оптимизации"
+					qpack.pop(); // пока выбрали вариант "оптимизации" (выкидываем из очереди и идём дальше)
 					continue;
+				}
+
+				if( sub >= maxDifferens )
+				{
+					// считаем сколько пакетов потеряли..
+					if( p.num > pnum )
+						lostPackets+=sub;
 				}
 			}
 
