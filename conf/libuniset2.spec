@@ -113,7 +113,7 @@ UniSet utilities
 %package docs
 Group: Development/C++
 Summary: Documentations for developing with UniSet
-Requires: %name = %version-%release
+# Requires: %name = %version-%release
 BuildArch: noarch
 
 %description docs
