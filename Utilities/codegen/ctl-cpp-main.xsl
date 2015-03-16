@@ -53,7 +53,6 @@ int main( int argc, const char** argv )
 	try
 	{
 		auto conf = uniset_init(argc, argv);
-
 		<xsl:if test="not(normalize-space(//@OID))=''">
 				<xsl:value-of select="$CLASSNAME"/> obj;
 		</xsl:if>
@@ -72,21 +71,20 @@ int main( int argc, const char** argv )
 				return 0;
 			}
 		}
-		<xsl:value-of select="$CLASSNAME"/> obj(ID);
+		auto obj = make_shared&lt;<xsl:value-of select="$CLASSNAME"/>&gt;(ID);
 
 		string logfilename = conf->getArgParam("--logfile","<xsl:value-of select="$CLASSNAME"/>.log");
 		string logname( conf->getLogDir() + logfilename );
-		obj.mylog->logFile( logname.c_str() );
-
+		obj->mylog->logFile( logname.c_str() );
 		</xsl:if>
 
 		auto act = UniSetActivator::Instance();
-		act-&gt;add(obj.get_ptr());
+		act-&gt;add(obj);
 
 		SystemMessage sm(SystemMessage::StartUp); 
 		act-&gt;broadcast( sm.transport_msg() );
 		act-&gt;run(false);
-		pause();	// пауза, чтобы дочерние потоки успели завершить работ
+		return 0;
 	}
 	catch( const Exception&amp; ex)
 	{
@@ -101,7 +99,7 @@ int main( int argc, const char** argv )
 		cerr &lt;&lt; "(main): catch ..." &lt;&lt; endl;
 	}
 
-	return 0;
+	return 1;
 }
 </xsl:template>
 </xsl:stylesheet>
