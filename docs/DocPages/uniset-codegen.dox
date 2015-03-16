@@ -11,8 +11,8 @@
     - \ref pg_Codegen_Make
 	- \ref pg_Codegen_Templ_Ask
 	- \ref pg_Codegen_Templ_Alone
+	- \ref pg_Codegen_log
 	- \ref pg_Codegen_loglevel
-
 
 \section pg_Codegen_Common Общее описание утилиты uniset-codegen
  Утилита uniset-codegen предназначена для генерирования "скелета" процесса управления на основе
@@ -38,7 +38,8 @@
  - обновление датчика "сердцебиения" /см. \ref sec_SM_HeartBeat /
  - Обновление выходов
 
-\warning По умолчанию, ВСЕ "выходы"(out_xxx) перезаписывают свои значения в SharedMemory(SM) только по изменению.
+\warning По умолчанию, генерируется скелет для "пассивного процесса" (см. \ref pg_Codegen_Templ_Ask), в котором 
+"ВСЕ "выходы"(out_xxx) перезаписывают свои значения в SharedMemory(SM) только по изменению.
 Поэтому если в вашем процессе вы не меняли переменную out_xxx, а какой-то другой процесс обновил значение в SM,
 то значение в SM так и останется и не будет перезаписано Вашим процессом, пока он не обновит у себя значение out_xxx.
 Т.е. ПО УМОЛЧАНИЮ СЧИТАЕТСЯ (в целях оптимизации и уменьшения количества "удалённых вызовов"), что каждый процесс
@@ -305,6 +306,45 @@ MyClass_SK.cc: myclass.src.xml
  - \b --no-main - отключает генерирование "запускающего" файла (функция main)
  - \b -n - опредеяет название файлов для сгенерированного класса. В данном случае будут сгенерированы \a MyClass_SK.h и \a MyClass_SK.cc
 
+\section pg_Codegen_log Логи
+  Для логирования событий каждый класс содержит объект mylog (класса DebugStream) и несколько предопределённых макросов
+  для удобства использования.
+  - myinfo  - info
+  - mywarn  - warn
+  - mycrit  - crit
+  - mylog1..mylog9  - вывод в уровни level1....level9
+  - mylogany - any 
+  
+  Так же можно использовать функции напрямую:
+\code
+	mylog->info() << "....test..." << endl;
+	mylog->log1() << "....test..." << endl;
+\endcode
+  
+  \p Помимо объекта mylog класс содержит ряд вспомогательных функций:
+  
+  - \b string \b dumpIO() - вывод состояния всех входов и выходов в строку, в виде:
+\code
+  ObjectName:
+    in_input1_s(Sensor1_S)=1
+    in_output2_c(Output1_C)=0
+    ...
+\endcode
+  
+  - \b string \b str( ObjectId,showLinkName) - вывод названия указанного входа или выхода в формате "in_input1_s(Sensor1_S)". Если
+  showLinkName=false, то будет сформирована строка "in_input1_s". Пример использования:
+\code
+ ..
+ myinfo << str(input1_s) << endl;
+\endcode
+
+  - \b string \b strval( ObjectId,showLinkName) - вывод названия и текущего значения указанного входа или выхода в формате "in_input1_s(Sensor1_S)=1". Если
+  showLinkName=false, то будет сформирована строка "in_input1_s=1". Пример использования:
+\code
+ ..
+ myinfo << strval(input1_s) << endl;
+\endcode
+
 
 \section pg_Codegen_loglevel Управление логами объекта (процесса) через специальный датчик
    Для динамического управления логами процесса предусмотрен механизм, который позволяет указать аналговый датчик (AI),
@@ -325,5 +365,4 @@ MyClass_SK.cc: myclass.src.xml
     4117
 \endcode
    Т.е. для того, чтобы включить указанные логи в датчик нужно записать число \b 4117
-
 */

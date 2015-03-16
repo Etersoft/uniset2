@@ -21,16 +21,19 @@ TestGen::TestGen()
 // -----------------------------------------------------------------------------
 void TestGen::step()
 {
-    cout << "input2 state=" << in_input2_s << endl;
+	cout << "strval: " << strval(input2_s) << endl;
+	cout << "str: " << str(input2_s) << endl;
+	cout << "===========" << endl;
+	cout << dumpIO() << endl;
 }
 // -----------------------------------------------------------------------------
-void TestGen::sensorInfo( SensorMessage *sm )
+void TestGen::sensorInfo( const SensorMessage *sm )
 {
     if( sm->id == input1_s )
         out_output1_c = in_input1_s; // sm->state
 }
 // -----------------------------------------------------------------------------
-void TestGen::timerInfo( TimerMessage *tm )
+void TestGen::timerInfo( const TimerMessage *tm )
 {
 }
 // -----------------------------------------------------------------------------

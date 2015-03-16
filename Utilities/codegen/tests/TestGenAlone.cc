@@ -15,7 +15,7 @@ TestGenAlone::~TestGenAlone()
 // -----------------------------------------------------------------------------
 void TestGenAlone::step()
 {
-    cout << "input2 state=" << in_input2_s << endl;
+    cout << strval(in_input2_s) << endl;
 }
 // -----------------------------------------------------------------------------
 void TestGenAlone::sensorInfo( SensorMessage *sm )

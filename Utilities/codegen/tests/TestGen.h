@@ -15,10 +15,10 @@ class TestGen:
     protected:
         TestGen();
 
-        virtual void step();
-        void sensorInfo( UniSetTypes::SensorMessage *sm );
-        void timerInfo( UniSetTypes::TimerMessage *tm );
-        virtual void sigterm( int signo );
+        virtual void step() override;
+        virtual void sensorInfo( const UniSetTypes::SensorMessage *sm ) override;
+        virtual void timerInfo( const UniSetTypes::TimerMessage *tm ) override;
+        virtual void sigterm( int signo ) override;
 
     private:
 };

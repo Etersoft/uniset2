@@ -214,6 +214,31 @@
         #ifndef mylogany
         	#define mylogany mylog->any()
         #endif
+        
+        // Вспомогательные функции для удобства логирования
+        // ------------------------------------------------------------
+        /*!&lt; вывод в строку значение всех входов и выходов в формате 
+           ObjectName: 
+              in_xxx  = val
+              in_xxx2 = val
+              out_zzz = val
+              ...
+        */
+        std::string dumpIO();
+        
+        /*!&lt; Вывод в строку названия входа/выхода в формате: in_xxx(SensorName) 
+           \param id           - идентификатор датчика
+           \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
+        */
+        std::string str( UniSetTypes::ObjectId id, bool showLinkName=true );
+        
+        /*!&lt; Вывод значения входа/выхода в формате: in_xxx(SensorName)=val 
+           \param id           - идентификатор датчика
+           \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
+        */
+        std::string strval( UniSetTypes::ObjectId id, bool showLinkName=true );        
+        // ------------------------------------------------------------
+        
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PROTECTED">
@@ -524,6 +549,7 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::waitSM( int wait_msec, ObjectId _te
 #include &lt;memory&gt;
 #include <xsl:call-template name="preinclude"/>Configuration.h<xsl:call-template name="postinclude"/>
 #include <xsl:call-template name="preinclude"/>Exceptions.h<xsl:call-template name="postinclude"/>
+#include <xsl:call-template name="preinclude"/>ORepHelpers.h<xsl:call-template name="postinclude"/>
 #include "<xsl:value-of select="$SK_H_FILENAME"/>"
 
 // -----------------------------------------------------------------------------
@@ -903,6 +929,46 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::testMode( bool _state )
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
+std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
+{
+	ostringstream s;
+	s &lt;&lt; myname &lt;&lt; ": " &lt;&lt; endl;
+	<xsl:for-each select="//smap/item">
+	s &lt;&lt; "   " &lt;&lt; strval(<xsl:value-of select="@name"/>) &lt;&lt; endl;
+	</xsl:for-each>
+	return s.str();
+}
+// ----------------------------------------------------------------------------
+std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( UniSetTypes::ObjectId id, bool showLinkName )
+{
+	ostringstream s;
+	<xsl:for-each select="//smap/item">
+	if( id == <xsl:value-of select="@name"/> )
+	{
+		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>";
+		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")";
+		return s.str();
+	}
+	</xsl:for-each>	
+	return "";
+}
+// ----------------------------------------------------------------------------
+std::string  <xsl:value-of select="$CLASSNAME"/>_SK::strval( UniSetTypes::ObjectId id, bool showLinkName )
+{
+	ostringstream s;
+	<xsl:for-each select="//smap/item">
+	if( id == <xsl:value-of select="@name"/> )
+	{
+		// s &lt;&lt; str(id,showLinkName) &lt;&lt; "=" &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>";
+		if( showLinkName ) s &lt;&lt; "(" &lt;&lt; ORepHelpers::getShortName( uniset_conf()->oind->getMapName(<xsl:value-of select="@name"/>)) &lt;&lt; ")";		
+		s &lt;&lt; "=" &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="@name"/>;
+		return s.str();
+	}
+	</xsl:for-each>	
+	return "";
+}
+// ----------------------------------------------------------------------------
 </xsl:template>
 
 
@@ -1138,6 +1204,58 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 	return false;
 }
 // -----------------------------------------------------------------------------
+std::string  <xsl:value-of select="$CLASSNAME"/>_SK::dumpIO()
+{
+	ostringstream s;
+	s &lt;&lt; myname &lt;&lt; ": " &lt;&lt; endl;
+	
+	<xsl:for-each select="//sensors/item/consumers/consumer">
+	<xsl:if test="normalize-space(../../@msg)!='1'">
+	<xsl:if test="normalize-space(@name)=$OID">
+	s &lt;&lt; "   " &lt;&lt; strval(<xsl:value-of select="../../@name"/>) &lt;&lt; endl;
+	</xsl:if>
+	</xsl:if>
+	</xsl:for-each>
+	return s.str();
+}
+// ----------------------------------------------------------------------------
+std::string  <xsl:value-of select="$CLASSNAME"/>_SK::str( UniSetTypes::ObjectId id, bool showLinkName )
+{
+	ostringstream s;
+	<xsl:for-each select="//sensors/item/consumers/consumer">
+	<xsl:if test="normalize-space(../../@msg)!='1'">
+	<xsl:if test="normalize-space(@name)=$OID">
+	if( id == <xsl:value-of select="../../@name"/> )
+	{
+		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>";
+		if( showLinkName ) s &lt;&lt; "(<xsl:value-of select="../../@name"/>)";
+		return s.str();
+	}
+	</xsl:if>
+	</xsl:if>
+	</xsl:for-each>
+	return "";
+}
+// ----------------------------------------------------------------------------
+std::string  <xsl:value-of select="$CLASSNAME"/>_SK::strval( UniSetTypes::ObjectId id, bool showLinkName )
+{
+	ostringstream s;
+	<xsl:for-each select="//sensors/item/consumers/consumer">
+	<xsl:if test="normalize-space(../../@msg)!='1'">
+	<xsl:if test="normalize-space(@name)=$OID">
+	if( id == <xsl:value-of select="../../@name"/> )
+	{
+		s &lt;&lt; "<xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>";
+		if( showLinkName ) s &lt;&lt; "(<xsl:value-of select="../../@name"/>)";
+		s &lt;&lt; "=" &lt;&lt; <xsl:call-template name="setprefix"/><xsl:value-of select="../../@name"/>;
+		return s.str();
+	}
+	</xsl:if>
+	</xsl:if>
+	</xsl:for-each>
+	return "";
+}
+// ----------------------------------------------------------------------------
 </xsl:template>
 
 <xsl:template name="check_changes">
