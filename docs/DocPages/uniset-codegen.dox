@@ -331,14 +331,14 @@ MyClass_SK.cc: myclass.src.xml
     ...
 \endcode
   
-  - \b string \b str( ObjectId,showLinkName) - вывод названия указанного входа или выхода в формате "in_input1_s(Sensor1_S)". Если
+  - \b string \b str(ObjectId,showLinkName) - вывод названия указанного входа или выхода в формате "in_input1_s(Sensor1_S)". Если
   showLinkName=false, то будет сформирована строка "in_input1_s". Пример использования:
 \code
  ..
  myinfo << str(input1_s) << endl;
 \endcode
 
-  - \b string \b strval( ObjectId,showLinkName) - вывод названия и текущего значения указанного входа или выхода в формате "in_input1_s(Sensor1_S)=1". Если
+  - \b string \b strval(ObjectId,showLinkName) - вывод названия и текущего значения указанного входа или выхода в формате "in_input1_s(Sensor1_S)=1". Если
   showLinkName=false, то будет сформирована строка "in_input1_s=1". Пример использования:
 \code
  ..

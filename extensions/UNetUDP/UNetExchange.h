@@ -142,14 +142,16 @@ class UNetExchange:
             ReceiverInfo():r1(nullptr),r2(nullptr),
                 sidRespond(UniSetTypes::DefaultObjectId),
                 respondInvert(false),
-                sidLostPackets(UniSetTypes::DefaultObjectId)
+                sidLostPackets(UniSetTypes::DefaultObjectId),
+                sidChannelNum(UniSetTypes::DefaultObjectId)
             {}
 
             ReceiverInfo( const std::shared_ptr<UNetReceiver>& _r1, const std::shared_ptr<UNetReceiver>& _r2 ):
                 r1(_r1),r2(_r2),
                 sidRespond(UniSetTypes::DefaultObjectId),
                 respondInvert(false),
-                sidLostPackets(UniSetTypes::DefaultObjectId)
+                sidLostPackets(UniSetTypes::DefaultObjectId),
+                sidChannelNum(UniSetTypes::DefaultObjectId)
             {}
 
             std::shared_ptr<UNetReceiver> r1;    /*!< приём по первому каналу */
@@ -163,21 +165,26 @@ class UNetExchange:
                 respondInvert = invert;
             }
             inline void setLostPacketsID( UniSetTypes::ObjectId id ){ sidLostPackets = id; }
+            inline void setChannelNumID( UniSetTypes::ObjectId id ){ sidChannelNum = id; }
+
             inline void initIterators( const std::shared_ptr<SMInterface> shm )
             {
                 shm->initIterator(itLostPackets);
                 shm->initIterator(itRespond);
+                shm->initIterator(itChannelNum);
             }
 
             // Сводная информация по двум каналам
             // сумма потерянных пакетов и наличие связи
-            // хотя бы по одному каналу
+            // хотя бы по одному каналу, номер рабочего канала
             // ( реализацию см. ReceiverInfo::step() )
             UniSetTypes::ObjectId sidRespond;
             IOController::IOStateList::iterator itRespond;
             bool respondInvert;
             UniSetTypes::ObjectId sidLostPackets;
             IOController::IOStateList::iterator itLostPackets;
+            UniSetTypes::ObjectId sidChannelNum;
+            IOController::IOStateList::iterator itChannelNum;
         };
 
         typedef std::deque<ReceiverInfo> ReceiverList;

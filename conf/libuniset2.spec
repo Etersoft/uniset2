@@ -12,7 +12,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt22
+Release: alt23
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -409,12 +409,15 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Thu Mar 19 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt23
+- unetudp: fxied critial bug in "switching channels" (thank`s Alexey Surov)
+
 * Mon Mar 16 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt22
 - codegen: add dumpIO(), str(), strval() functions (debug helpers)
 
 * Thu Mar 12 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt21
 - codegen: adjustment documentation
-- unetudp: add tests, minor optimization (thank`s uzum)
+- unetudp: add tests, minor optimization (thank`s Alexey Vinogradov)
 
 * Fri Mar 06 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt20
 - (modbustcpmaster): minor fixes in error messages

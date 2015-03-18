@@ -26,6 +26,8 @@ static int s_numpack = 1;
 static ObjectId node2_respond_s = 12;
 static ObjectId node2_lostpackets_as = 13;
 static int maxDifferense = 5; // см. unetudp-test-configure.xml --unet-maxdifferense
+static int recvTimeout = 1000; // --unet-recv-timeout
+static ObjectId node1_numchannel_as = 14;
 // -----------------------------------------------------------------------------
 void InitTest()
 {
@@ -415,5 +417,23 @@ TEST_CASE("[UNetUDP]: bad packet number","[unetudp][badnumber]")
 
     msleep(120);
     REQUIRE( ui->getValue(8) == 160 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[UNetUDP]: switching channels","[unetudp][chswitch]")
+{
+    InitTest();
+    UniSetUDP::UDPMessage pack;
+    pack.addAData(8,70);
+    send(pack);
+    msleep(120);
+    REQUIRE( ui->getValue(8) == 70 );
+
+    // К сожалению в текущей реализации тестов
+    // обмена по второму каналу нет
+    // поэтому проверить переключение нет возможности
+    // остаётся только проверить, что мы не "ушли" с первого канала
+    // т.к. на втором нет связи и мы не должны на него переключаться
+    msleep(recvTimeout*2);
+    REQUIRE( ui->getValue(node1_numchannel_as) == 1 );
 }
 // -----------------------------------------------------------------------------

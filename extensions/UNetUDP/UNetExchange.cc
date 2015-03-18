@@ -237,6 +237,20 @@ no_sender(false)
             }
         }
 
+        string s_numchannel_id(n_it.getProp("unet_numchannel_id"));
+        UniSetTypes::ObjectId numchannel_id = UniSetTypes::DefaultObjectId;
+        if( !s_numchannel_id.empty() )
+        {
+            numchannel_id = conf->getSensorID(s_numchannel_id);
+            if( numchannel_id == UniSetTypes::DefaultObjectId )
+            {
+                ostringstream err;
+                err << myname << ": Unknown NumChannelID.. Not found id for '" << s_numchannel_id << "'" << endl;
+                dcrit << myname << "(init): " << err.str() << endl;
+                throw SystemError(err.str());
+            }
+        }
+
         dinfo << myname << "(init): (node='" << n << "') add receiver "
                         << h2 << ":" << p2 << endl;
         auto r = make_shared<UNetReceiver>(h,p,shm);
@@ -291,6 +305,7 @@ no_sender(false)
         ReceiverInfo ri(r,r2);
         ri.setRespondID(resp_comm_id,resp_invert);
         ri.setLostPacketsID(lp_comm_id);
+        ri.setChannelNumID(numchannel_id);
         recvlist.push_back(ri);
     }
 
@@ -445,6 +460,24 @@ void UNetExchange::ReceiverInfo::step( const std::shared_ptr<SMInterface> shm, c
     catch( const Exception& ex )
     {
         dcrit << myname << "(ReceiverInfo::step): (lostpackets): " << ex << std::endl;
+    }
+
+    try
+    {
+        if( sidChannelNum != DefaultObjectId )
+        {
+            long c = 0;
+            if( r1 && !r1->isLockUpdate() )
+                c = 1;
+            if( r2 && !r2->isLockUpdate() )
+                c = 2;
+
+            shm->localSetValue(itChannelNum,sidChannelNum,c,shm->ID());
+        }
+    }
+    catch( const Exception& ex )
+    {
+        dcrit << myname << "(ReceiverInfo::step): (channelnum): " << ex << std::endl;
     }
 }
 // -----------------------------------------------------------------------------
@@ -669,38 +702,78 @@ std::shared_ptr<UNetExchange> UNetExchange::init_unetexchange( int argc, const c
 // -----------------------------------------------------------------------------
 void UNetExchange::receiverEvent( const shared_ptr<UNetReceiver>& r, UNetReceiver::Event ev )
 {
-    // пока, что другие события нас не интересуют
-    if( ev != UNetReceiver::evTimeout )
-        return;
-
     for( auto &it: recvlist )
     {
         if( it.r1 == r )
         {
-            // если нет второго канала
-            // то и переключать некуда
-            if( !it.r2 )
-                return;
+            if( ev == UNetReceiver::evTimeout )
+            {
+                // если нет второго канала или нет связи
+                // то и переключать не надо
+                if( !it.r2 || !it.r2->isRecvOK() )
+                    return;
 
-            // пропала связь по первому каналу...
-            // переключаемся на второй
-            it.r1->setLockUpdate(true);
-            it.r2->setLockUpdate(false);
+                // пропала связь по первому каналу...
+                // переключаемся на второй
+                it.r1->setLockUpdate(true);
+                it.r2->setLockUpdate(false);
 
-            dinfo << myname << "(event): " << r->getName()
-                    << ": timeout for channel1.. select channel 2" << endl;
+                dlog8 << myname << "(event): " << r->getName()
+                      << ": timeout for channel1.. select channel 2" << endl;
+            }
+            else if( ev == UNetReceiver::evOK )
+            {
+                // если связь восстановилась..
+                // проверяем, а что там со вторым каналом
+                // если у него связи нет, то забираем себе..
+                if( !it.r2 || !it.r2->isRecvOK() )
+                {
+                    it.r1->setLockUpdate(false);
+                    if( it.r2 )
+                        it.r2->setLockUpdate(true);
+
+                    dlog8 << myname << "(event): " << r->getName()
+                          << ": link failed for channel2.. select again channel1.." << endl;
+                }
+            }
+
             return;
         }
 
         if( it.r2 == r )
         {
-            // пропала связь по второму каналу...
-            // переключаемся на первый
-            it.r1->setLockUpdate(false);
-            it.r2->setLockUpdate(true);
+            if( ev == UNetReceiver::evTimeout )
+            {
+                // если первого канала нет или нет связи
+                // то и переключать не надо
+                if( !it.r1 || !it.r1->isRecvOK() )
+                    return;
 
-            dinfo << myname << "(event): " << r->getName()
+                // пропала связь по второму каналу...
+                // переключаемся на первый
+                it.r1->setLockUpdate(false);
+                it.r2->setLockUpdate(true);
+
+                dlog8 << myname << "(event): " << r->getName()
                         << ": timeout for channel2.. select channel 1" << endl;
+            }
+            else if( ev == UNetReceiver::evOK )
+            {
+                // если связь восстановилась..
+                // проверяем, а что там со первым каналом
+                // если у него связи нет, то забираем себе..
+                if( !it.r1 || !it.r1->isRecvOK() )
+                {
+                    if( it.r1 )
+                        it.r1->setLockUpdate(true);
+
+                    it.r2->setLockUpdate(false);
+
+                    dlog8 << myname << "(event): " << r->getName()
+                          << ": link failed for channel1.. select again channel2.." << endl;
+                }
+            }
+
             return;
         }
     }

@@ -67,6 +67,7 @@ class UNetReceiver:
 
          // блокировать сохранение данных в SM
          void setLockUpdate( bool st );
+         inline bool isLockUpdate(){ return lockUpdate; }
 
          void resetTimeout();
 
