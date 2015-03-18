@@ -8,7 +8,7 @@
 
 Name: libuniset
 Version: 1.8
-Release: alt4
+Release: alt5
 Summary: UniSet - library for building distributed industrial control systems
 
 License: GPL
@@ -339,8 +339,11 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 
 
 %changelog
+* Thu Mar 19 2015 Pavel Vainerman <pv@altlinux.ru> 1.8-alt5
+- unetudp: fxied critial bug in "switching channels" (thank`s Alexey Surov)
+
 * Fri Mar 13 2015 Pavel Vainerman <pv@altlinux.ru> 1.8-alt4
-- unetudp: minor optimization (thank`s uzum)
+- unetudp: minor optimization (thank`s thank`s Alexey Vinogradov)
 
 * Sun Mar 01 2015 Pavel Vainerman <pv@altlinux.ru> 1.8-alt3
 - ModbusMaster: fixed bug in initialization (close setbug #5583)

@@ -737,40 +737,84 @@ UNetExchange* UNetExchange::init_unetexchange( int argc, const char* argv[], Uni
 // -----------------------------------------------------------------------------
 void UNetExchange::receiverEvent( UNetReceiver* r, UNetReceiver::Event ev )
 {
-	// пока, что другие события нас не интересуют
-	if( ev != UNetReceiver::evTimeout )
-		return;
-
+	
 	for( ReceiverList::iterator it=recvlist.begin(); it!=recvlist.end(); ++it )
 	{
 		if( it->r1 == r )
 		{
-			// если нет второго канала
-			// то и переключать некуда
-			if( !it->r2 )
-				return;
-
-			// пропала связь по первому каналу...
-			// переключаемся на второй
-			it->r1->setLockUpdate(true);
-			it->r2->setLockUpdate(false);
-
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << myname << "(event): " << r->getName() 
+			if( ev == UNetReceiver::evTimeout )
+			{
+				// если нет второго канала или нет связи
+				// то и переключать не надо
+				if( !it->r2 || !it->r2->isRecvOK() )
+					return;
+				
+				// пропала связь по первому каналу...
+				// переключаемся на второй
+				it->r1->setLockUpdate(true);
+				it->r2->setLockUpdate(false);
+				
+				if( dlog.debugging(Debug::LEVEL8) )
+					dlog[Debug::INFO] << myname << "(event): " << r->getName() 
 					<< ": timeout for channel1.. select channel 2" << endl;
+			}
+			else if( ev == UNetReceiver::evOK )
+			{
+				// если связь восстановилась..
+				// проверяем, а что там со вторым каналом
+				// если у него связи нет, то забираем себе..
+				if( !it->r2 || !it->r2->isRecvOK() )
+				{
+					it->r1->setLockUpdate(false);
+					if( it->r2 )
+						it->r2->setLockUpdate(true);
+
+					if( dlog.debugging(Debug::LEVEL8) )
+						dlog[Debug::LEVEL8] << "(event): " << r->getName()
+							<< ": link failed for channel2.. select again channel1.." << endl;
+				}
+			}
+			
 			return;
 		}
 		
 		if( it->r2 == r )
 		{
-			// пропала связь по второму каналу...
-			// переключаемся на первый
-			it->r1->setLockUpdate(false);
-			it->r2->setLockUpdate(true);
-			
-			if( dlog.debugging(Debug::INFO) )
-				dlog[Debug::INFO] << myname << "(event): " << r->getName() 
-						<< ": timeout for channel2.. select channel 1" << endl;
+			if( ev == UNetReceiver::evTimeout )
+			{
+				// если первого канала нет или нет связи
+				// то и переключать не надо
+				if( !it->r1 || !it->r1->isRecvOK() )
+					return;
+				
+				// пропала связь по второму каналу...
+				// переключаемся на первый
+				it->r1->setLockUpdate(false);
+				it->r2->setLockUpdate(true);
+				
+				if( dlog.debugging(Debug::INFO) )
+					dlog[Debug::INFO] << myname << "(event): " << r->getName() 
+					<< ": timeout for channel2.. select channel 1" << endl;
+				return;
+			}
+			else if( ev == UNetReceiver::evOK )
+			{
+				// если связь восстановилась..
+				// проверяем, а что там со первым каналом
+				// если у него связи нет, то забираем себе..
+				if( !it->r1 || !it->r1->isRecvOK() )
+				{
+					if( it->r1 )
+						it->r1->setLockUpdate(true);
+					
+					it->r2->setLockUpdate(false);
+
+					if( dlog.debugging(Debug::LEVEL8) )
+						dlog[Debug::LEVEL8] << myname << "(event): " << r->getName()
+							<< ": link failed for channel1.. select again channel2.." << endl;
+				}
+			}
+
 			return;
 		}
 	}

@@ -51,7 +51,7 @@ class UNetReceiver
 {
 	public:
 		UNetReceiver( const std::string& host, const ost::tpport_t port, SMInterface* smi );
-		~UNetReceiver();
+		virtual ~UNetReceiver();
 
 		 void start();
 		 void stop();

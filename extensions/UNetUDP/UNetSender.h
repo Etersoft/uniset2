@@ -22,7 +22,7 @@ class UNetSender
 		UNetSender( const std::string host, const ost::tpport_t port, SMInterface* smi,
 					const std::string s_field="", const std::string s_fvalue="", SharedMemory* ic=0 );
 
-		~UNetSender();
+		virtual ~UNetSender();
 	
 		struct UItem
 		{
