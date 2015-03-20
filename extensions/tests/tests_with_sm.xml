@@ -255,6 +255,10 @@
 			<item id="111" iotype="DO" name="DependTest_DO2_S" textname="Depend test: DO2" depend="DependTest_DI_S" depend_value="1" depend_off_value="0"/>
 			<item id="113" iotype="AO" name="DependTest_AO2_AS" textname="Depend test: AO2" depend="DependTest_DI_S" depend_value="1" depend_off_value="10000" default="15"/>
 
+			<!-- calibration test -->
+			<item id="114" iotype="AI" name="CalibrationTest_AI1_AS" textname="Calibration test: AI1" rmin="-100" rmax="100" cmin="-1000" cmax="1000"/>
+			<item id="115" iotype="AI" name="CalibrationTest_AI2_AS" textname="Calibration test: AI2" rmin="-100" rmax="100" cmin="-1000" cmax="1000" precision="2"/>
+
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">

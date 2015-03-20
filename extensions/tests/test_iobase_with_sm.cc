@@ -27,7 +27,8 @@ static bool init_iobase( IOBase* ib, const std::string& sensor )
     CHECK( snode != 0 );
     UniXML::iterator it(snode);
     shm->initIterator(ib->d_it);
-    shm->initIterator(ib->d_it);
+    shm->initIterator(ib->ioit);
+    shm->initIterator(ib->t_ait);
     return IOBase::initItem(ib,it,shm, "", false);
 }
 // -----------------------------------------------------------------------------
@@ -188,12 +189,257 @@ TEST_CASE("[IOBase::depend]: AO depend on the DI","[iobase][depend][ao-di][exten
     }
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("[IOBase::calibration]: AI calibration","[iobase][calibration][ai][extensions]")
+{
+    CHECK( uniset_conf()!=nullptr );
+    auto conf = uniset_conf();
+
+    init_test();
+
+    ObjectId ai = conf->getSensorID("CalibrationTest_AI1_AS");
+    CHECK( ai != DefaultObjectId );
+
+    IOBase ib;
+    CHECK( init_iobase(&ib,"CalibrationTest_AI1_AS") );
+
+    SECTION("AI calibration (asAI)")
+    {
+        IOBase::processingAsAI(&ib,0,shm,true);
+        REQUIRE( shm->getValue(ai) == 0 );
+
+        IOBase::processingAsAI(&ib,-100,shm,true);
+        REQUIRE( shm->getValue(ai) == -1000 );
+
+        IOBase::processingAsAI(&ib,100,shm,true);
+        REQUIRE(  shm->getValue(ai) == 1000 );
+    }
+
+    SECTION("AI calibration (asAO)")
+    {
+        shm->setValue(ai,0);
+        REQUIRE( IOBase::processingAsAO(&ib,shm,true) == 0 );
+
+        shm->setValue(ai,-1000);
+        REQUIRE( IOBase::processingAsAO(&ib,shm,true) == -100 );
+
+        shm->setValue(ai,1000);
+        REQUIRE( IOBase::processingAsAO(&ib,shm,true) == 100 );
+    }
+
+    SECTION("AI calibration (FasAI)")
+    {
+        IOBase::processingFasAI(&ib,0.0,shm,true);
+        REQUIRE( shm->getValue(ai) == 0 );
+
+        IOBase::processingFasAI(&ib,-99.9,shm,true); // округлится до 100
+        REQUIRE( shm->getValue(ai) == -1000 );
+
+        IOBase::processingFasAI(&ib,-99.4,shm,true); // округлится до 99
+        REQUIRE( shm->getValue(ai) == -990 );
+
+        IOBase::processingFasAI(&ib,99.9,shm,true);
+        REQUIRE(  shm->getValue(ai) == 1000 );
+
+        IOBase::processingFasAI(&ib,99.4,shm,true);
+        REQUIRE(  shm->getValue(ai) == 990 );
+    }
+
+    SECTION("AI calibration (FasAO)")
+    {
+        shm->setValue(ai,0);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == 0 );
+
+        shm->setValue(ai,-1000);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == -100 );
+
+        shm->setValue(ai,-995);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == -99.5f );
+
+        shm->setValue(ai,1000);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == 100 );
+
+        shm->setValue(ai,995);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == 99.5f );
+
+        shm->setValue(ai,994);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == 99.4f );
+    }
+
+    SECTION("AI calibration rawdata=1 (asAI)")
+    {
+        ib.rawdata = true;
+
+        IOBase::processingAsAI(&ib,0,shm,true);
+        REQUIRE( shm->getValue(ai) == 0 );
+
+        IOBase::processingAsAI(&ib,-100,shm,true);
+        REQUIRE( shm->getValue(ai) == -100 );
+
+        IOBase::processingAsAI(&ib,100,shm,true);
+        REQUIRE(  shm->getValue(ai) == 100 );
+    }
+
+    SECTION("AI calibration rawdata=1 (asAO)")
+    {
+        ib.rawdata = true;
+
+        shm->setValue(ai,0);
+        REQUIRE( IOBase::processingAsAO(&ib,shm,true) == 0 );
+
+        shm->setValue(ai,-1000);
+        REQUIRE( IOBase::processingAsAO(&ib,shm,true) == -1000 );
+
+        shm->setValue(ai,1000);
+        REQUIRE( IOBase::processingAsAO(&ib,shm,true) == 1000 );
+    }
+
+    SECTION("AI calibration rawdata=1 (FasAI)")
+    {
+        ib.rawdata = true;
+
+        IOBase::processingFasAI(&ib,0.0,shm,true);
+        REQUIRE( shm->getValue(ai) == 0 );
+
+        IOBase::processingFasAI(&ib,1.0f,shm,true);
+        REQUIRE( shm->getValue(ai) == 1065353216 );
+    }
+
+    SECTION("AI calibration (FasAO)")
+    {
+        ib.rawdata = true;
+
+        shm->setValue(ai,0);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == 0 );
+
+        shm->setValue(ai,1065353216);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == 1.0f );
+    }
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("[IOBase::calibration]: AI calibration (precision)","[iobase][calibration][precision][ai][extensions]")
+{
+    CHECK( uniset_conf()!=nullptr );
+    auto conf = uniset_conf();
+
+    init_test();
+
+    ObjectId ai = conf->getSensorID("CalibrationTest_AI2_AS");
+    CHECK( ai != DefaultObjectId );
+
+    IOBase ib;
+    CHECK( init_iobase(&ib,"CalibrationTest_AI2_AS") );
+
+    SECTION("AI calibration with precision (asAI)")
+    {
+        IOBase::processingAsAI(&ib,0,shm,true);
+        REQUIRE( shm->getValue(ai) == 0 );
+
+        IOBase::processingAsAI(&ib,-100,shm,true);
+        REQUIRE( shm->getValue(ai) == -100000 );
+
+        IOBase::processingAsAI(&ib,100,shm,true);
+        REQUIRE(  shm->getValue(ai) == 100000 );
+    }
+
+    SECTION("AI calibration with precision (asAO)")
+    {
+        shm->setValue(ai,0);
+        REQUIRE( IOBase::processingAsAO(&ib,shm,true) == 0 );
+
+        shm->setValue(ai,-100000);
+        REQUIRE( IOBase::processingAsAO(&ib,shm,true) == -100 );
+
+        shm->setValue(ai,100000);
+        REQUIRE( IOBase::processingAsAO(&ib,shm,true) == 100 );
+    }
+
+    SECTION("AI calibration with precision (FasAI)")
+    {
+        IOBase::processingFasAI(&ib,0.0,shm,true);
+        REQUIRE( shm->getValue(ai) == 0 );
+
+        IOBase::processingFasAI(&ib,-0.99,shm,true); // сперва будет возведено в степень (10^precision)
+        REQUIRE( shm->getValue(ai) == -990 ); // потом откалибруется
+
+        IOBase::processingFasAI(&ib,0.99,shm,true);
+        REQUIRE(  shm->getValue(ai) == 990 );
+
+        IOBase::processingFasAI(&ib,0.87,shm,true);
+        REQUIRE(  shm->getValue(ai) == 870 );
+    }
+
+    SECTION("AI calibration (FasAO)")
+    {
+        shm->setValue(ai,0);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == 0 );
+
+        shm->setValue(ai,-990);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == -0.99f );
+
+        shm->setValue(ai,-995);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == -0.995f );
+
+        shm->setValue(ai,1000);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == 1.0f );
+
+        shm->setValue(ai,995);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == 0.995f );
+
+        shm->setValue(ai,994);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == 0.994f );
+    }
+
+    SECTION("AI calibration noprecision=1 (FasAO)")
+    {
+        ib.noprecision=true;
+
+        shm->setValue(ai,0);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == 0 );
+
+        shm->setValue(ai,-990);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == -99.0f );
+
+        shm->setValue(ai,-995);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == -99.5f );
+
+        shm->setValue(ai,1000);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == 100.0f );
+
+        shm->setValue(ai,995);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == 99.5f );
+
+        shm->setValue(ai,994);
+        REQUIRE( IOBase::processingFasAO(&ib,shm,true) == 99.4f );
+
+        ib.noprecision=false;
+    }
+
+    SECTION("AI calibration noprecision=1 (FasAI)")
+    {
+        ib.noprecision=true;
+
+        IOBase::processingFasAI(&ib,0.0,shm,true);
+        REQUIRE( shm->getValue(ai) == 0 );
+
+        IOBase::processingFasAI(&ib,-99.5,shm,true); // округлится до -100
+        REQUIRE( shm->getValue(ai) == -1000 ); // потом откалибруется
+
+        IOBase::processingFasAI(&ib,99.4,shm,true); // округлися до 99
+        REQUIRE(  shm->getValue(ai) == 990 );
+
+        ib.noprecision=false;
+    }
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("IOBase with SM","[iobase][extensions]")
 {
-    WARN("IOBase with SM not yet!");
-    // rawdata
+    WARN("IOBase with SM: Not all tests implemented!");
     // ignore
     // ioinvert
-    // precision
+    // asDO (!)
+    // asDI (!)
+    // iofront
+    // UndefinedState
+    // threshold_ai
 }
 // -----------------------------------------------------------------------------

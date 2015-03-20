@@ -219,7 +219,7 @@ void IOBase::processingFasAI( IOBase* it, float fval, const std::shared_ptr<SMIn
         val = 0;
         memcpy(&val,&fval, std::min(sizeof(val),sizeof(fval)));
     }
-    else if( it->cal.precision > 0 )
+    else if( it->cal.precision > 0 && !it->noprecision )
         val = lroundf( fval * pow10(it->cal.precision) );
 
     // проверка на обрыв
@@ -326,18 +326,17 @@ long IOBase::processingAsAO( IOBase* it, const std::shared_ptr<SMInterface>& shm
         }
         else
         {
+            // сперва "убираем степень", потом калибруем.. (это обратная последовательность для AsAI)
+            if( !it->noprecision && it->cal.precision > 0 )
+                val = lroundf( (float)it->value / pow10(it->cal.precision) );
+
             IOController_i::CalibrateInfo* cal( &(it->cal) );
             if( cal && cal->maxRaw!=cal->minRaw ) // задана калибровка
             {
                 // Калибруем в обратную сторону!!!
-                val = UniSetTypes::lcalibrate(it->value,
+                val = UniSetTypes::lcalibrate(val,
                             cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
             }
-            else
-                val = it->value;
-
-            if( !it->noprecision && it->cal.precision > 0 )
-                return lroundf( (float)it->value / pow10(it->cal.precision) );
         }
     }
 
@@ -372,7 +371,7 @@ float IOBase::processingFasAO( IOBase* it, const std::shared_ptr<SMInterface>& s
     if( force )
     {
         val = shm->localGetValue(it->ioit,it->si.id);
-        it->value = val;
+        it->value = val; // обновим на всякий
     }
 
     if( it->rawdata )
@@ -382,37 +381,25 @@ float IOBase::processingFasAO( IOBase* it, const std::shared_ptr<SMInterface>& s
         return fval;
     }
 
+    float fval = val;
+
     if( it->stype == UniversalIO::AO ||
         it->stype == UniversalIO::AI )
     {
-        if( it->cdiagram )    // задана специальная калибровочная диаграмма
-        {
-            if( it->cprev != it->value )
-            {
-                it->cprev = it->value;
-                val = it->cdiagram->getRawValue(val);
-                it->craw = val;
-            }
-            else
-                val = it->craw; // просто передаём предыдущее значение
-        }
-        else
-        {
-            float fval = val;
-            IOController_i::CalibrateInfo* cal( &(it->cal) );
-            if( cal->maxRaw!=cal->minRaw ) // задана калибровка
-            {
-                // Калибруем в обратную сторону!!!
-                fval = UniSetTypes::fcalibrate(fval,
-                            cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
-            }
 
-            if( !it->noprecision && it->cal.precision > 0 )
-                return ( fval / pow10(it->cal.precision) );
+        IOController_i::CalibrateInfo* cal( &(it->cal) );
+        if( cal->maxRaw!=cal->minRaw ) // задана калибровка
+        {
+            // Калибруем в обратную сторону!!!
+            fval = UniSetTypes::fcalibrate(fval,
+                                           cal->minCal, cal->maxCal, cal->minRaw, cal->maxRaw, it->calcrop );
         }
+
+        if( !it->noprecision && it->cal.precision > 0 )
+            return ( fval / pow10(it->cal.precision) );
     }
 
-    return val;
+    return fval;
 }
 // -----------------------------------------------------------------------------
 void IOBase::processingThreshold( IOBase* it, const std::shared_ptr<SMInterface>& shm, bool force )
