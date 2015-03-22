@@ -1,6 +1,7 @@
 
 #include "Configuration.h"
 #include "Extensions.h"
+#include "UniSetTypes.h"
 #include "IOBase.h"
 // -----------------------------------------------------------------------------
 using namespace std;
@@ -9,7 +10,38 @@ using namespace UniSetTypes;
 std::ostream& operator<<( std::ostream& os, IOBase& inf )
 {
     return os << "(" << inf.si.id << ")" << uniset_conf()->oind->getMapName(inf.si.id)
-        << " default=" << inf.defval << " safety=" << inf.safety;
+        << " default=" << inf.defval
+        << " safety=" << inf.safety
+        << " stype=" << inf.stype
+        << " calibration=" << inf.cal
+        << " cdiagram=" << ( inf.cdiagram ? inf.cdiagram->getName() : "null" )
+        << " breaklim=" << inf.breaklim
+        << " value=" << inf.value
+        << " craw=" << inf.craw
+        << " cprev" << inf.cprev
+        << " nofilter=" << inf.nofilter
+        << " f_median=" << inf.f_median
+        << " f_ls=" << inf.f_ls
+        << " f_filter_iir=" << inf.f_filter_iir
+        << " ignore=" << inf.ignore
+        << " invert=" << inf.invert
+        << " noprecision=" << inf.noprecision
+        << " calcrop=" << inf.calcrop
+        << " debounce_pause=" << inf.debounce_pause
+        << " debounce_state=" << inf.debounce_state
+        << " ondelay_state=" << inf.ondelay_state
+        << " offdelay_state=" << inf.offdelay_state
+        << " d_id=" << uniset_conf()->oind->getMapName(inf.d_id)
+        << " d_value=" << inf.d_value
+        << " d_off_value=" << inf.d_off_value
+        << " d_iotype=" << inf.d_iotype
+        << " t_ai=" << inf.t_ai
+        << " ti=" << inf.ti
+        << " front=" << inf.front
+        << " front_type=" << inf.front_type
+        << " front_prev_state=" << inf.front_prev_state
+        << " front_state=" << inf.front_state
+        << " rawdata=" << inf.rawdata;
 }
 // -----------------------------------------------------------------------------
 IOBase::~IOBase()
@@ -665,5 +697,27 @@ bool IOBase::initItem( IOBase* b, UniXML::iterator& it, const std::shared_ptr<SM
     }
 
     return true;
+}
+// -----------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, const IOBase::FrontType& f )
+{
+    switch(f)
+    {
+        case IOBase::ft01:
+            os << "(ft01)[0-->1]";
+            break;
+
+        case IOBase::ft10:
+            os << "(ft10)[1-->0]";
+            break;
+
+        case IOBase::ftUnknown:
+        default:
+            os << "ftUnknown";
+            break;
+
+    }
+
+    return os;
 }
 // -----------------------------------------------------------------------------

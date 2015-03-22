@@ -488,10 +488,9 @@ TEST_CASE("IOBase with SM","[iobase][extensions]")
     WARN("IOBase with SM: Not all tests implemented!");
     // ignore
     // ioinvert
-    // asDO (!)
-    // asDI (!)
     // iofront
     // UndefinedState
     // threshold_ai
+    // processingThreshold
 }
 // -----------------------------------------------------------------------------

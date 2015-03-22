@@ -331,13 +331,6 @@ std::ostream& UniSetTypes::operator<<( std::ostream& os, const UniversalIO::IOTy
     return os << "UnknownIOType";
 }
 // ------------------------------------------------------------------------------------------
-std::ostream& UniSetTypes::operator<<( std::ostream& os, const IOController_i::CalibrateInfo c )
-{
-    return os << " rmin=" << c.minRaw << " rmax=" << c.maxRaw
-    << " cmin=" << c.minCal << " cmax=" << c.maxCal
-    << " precision=" << c.precision;
-}
-// ------------------------------------------------------------------------------------------
 bool UniSetTypes::check_filter( UniXML::iterator& it, const std::string& f_prop, const std::string& f_val )
 {
     if( f_prop.empty() )
@@ -408,5 +401,31 @@ char* UniSetTypes::uni_strdup( const string& src )
     char* d = new char[len+1];
     memcpy(d,s,len+1);
     return d;
+}
+// -------------------------------------------------------------------------
+std::ostream& UniSetTypes::operator<<( std::ostream& os, const IOController_i::CalibrateInfo& c )
+{
+    os << "[ rmin=" << c.minRaw
+       << " rmax=" << c.maxRaw
+       << " cmin=" << c.minCal
+       << " cmax=" << c.maxCal
+       << " prec=" << c.precision
+       << " ]";
+
+    return os;
+}
+// -------------------------------------------------------------------------
+std::ostream& UniSetTypes::operator<<( std::ostream& os, const IONotifyController_i::ThresholdInfo& ti )
+{
+    os << "[ id=" << ti.id
+       << " hilim=" << ti.hilimit
+       << " lowlim=" << ti.lowlimit
+       << " state=" << ti.state
+       << " tv_sec=" << ti.tv_sec
+       << " tv_usec=" << ti.tv_usec
+       << " invert=" << ti.invert
+       << " ]";
+
+    return os;
 }
 // -------------------------------------------------------------------------

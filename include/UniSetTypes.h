@@ -82,6 +82,7 @@ namespace UniSetTypes
 
     UniversalIO::IOType getIOType( const std::string& s );
     std::ostream& operator<<( std::ostream& os, const UniversalIO::IOType t );
+    std::ostream& operator<<( std::ostream& os, const IONotifyController_i::ThresholdInfo& ti );
 
     /*! Команды для управления лампочками */
     enum LampCommand
@@ -224,14 +225,14 @@ namespace UniSetTypes
     // ---------------------------------------------------------------
     // Калибровка
 
-    std::ostream& operator<<( std::ostream& os, const IOController_i::CalibrateInfo c );
+    std::ostream& operator<<( std::ostream& os, const IOController_i::CalibrateInfo& c );
 
     // Функции калибровки значений
-    // raw         - преобразуемое значение
-    // rawMin     - минимальная граница исходного диапазона
-    // rawMax     - максимальная граница исходного диапазона
-    // calMin     - минимальная граница калиброванного диапазона
-    // calMin     - минимальная граница калиброванного диапазона
+    // raw      - преобразуемое значение
+    // rawMin   - минимальная граница исходного диапазона
+    // rawMax   - максимальная граница исходного диапазона
+    // calMin   - минимальная граница калиброванного диапазона
+    // calMin   - минимальная граница калиброванного диапазона
     // limit    - обрезать итоговое значение по границам
     float fcalibrate(float raw, float rawMin, float rawMax, float calMin, float calMax, bool limit=true );
     long lcalibrate(long raw, long rawMin, long rawMax, long calMin, long calMax, bool limit=true );

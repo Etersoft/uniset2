@@ -132,6 +132,8 @@ struct IOBase
         ft10       // срабатывание на переход "1-->0"
     };
 
+    friend std::ostream& operator<<( std::ostream& os, const FrontType& f );
+
     bool front; // флаг работы по фронту
     FrontType front_type;
     bool front_prev_state;
@@ -142,7 +144,7 @@ struct IOBase
     IOController::IOStateList::iterator ioit;
     UniSetTypes::uniset_rwmutex val_lock;     /*!< блокировка на время "работы" со значением */
 
-    friend std::ostream& operator<<(std::ostream& os, IOBase& inf );
+    friend std::ostream& operator<<(std::ostream& os, const IOBase& inf );
 
     static void processingFasAI( IOBase* it, float new_val, const std::shared_ptr<SMInterface>& shm, bool force );
     static void processingAsAI( IOBase* it, long new_val, const std::shared_ptr<SMInterface>& shm, bool force );

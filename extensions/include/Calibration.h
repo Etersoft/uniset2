@@ -197,6 +197,8 @@ class Calibration
         // список надо отсортировать по x!
         typedef std::vector<Part> PartsVec;
 
+        inline std::string getName(){ return myname; }
+
     protected:
 
         long minRaw, maxRaw, minVal, maxVal, rightVal, leftVal, rightRaw, leftRaw;
