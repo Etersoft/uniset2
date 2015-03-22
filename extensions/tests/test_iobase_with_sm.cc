@@ -431,6 +431,58 @@ TEST_CASE("[IOBase::calibration]: AI calibration (precision)","[iobase][calibrat
     }
 }
 // -----------------------------------------------------------------------------
+TEST_CASE("[IOBase::calibration]: asDI, asDO","[iobase][di][do][extensions]")
+{
+    CHECK( uniset_conf()!=nullptr );
+    auto conf = uniset_conf();
+
+    init_test();
+
+    SECTION("AI as DI,DO..")
+    {
+        ObjectId ai = conf->getSensorID("AsDI1_AS");
+        CHECK( ai != DefaultObjectId );
+
+        IOBase ib;
+        CHECK( init_iobase(&ib,"AsDI1_AS") );
+
+        IOBase::processingAsDI(&ib,false,shm,true);
+        REQUIRE( shm->getValue(ai) == 0 );
+        REQUIRE( IOBase::processingAsDO(&ib,shm,true) == false );
+
+        IOBase::processingAsDI(&ib,true,shm,true);
+        REQUIRE( shm->getValue(ai) == 1 );
+        REQUIRE( IOBase::processingAsDO(&ib,shm,true) == true );
+
+        shm->setValue(ai,-10);
+        REQUIRE( IOBase::processingAsDO(&ib,shm,true) == 1 );
+        shm->setValue(ai,0);
+        REQUIRE( IOBase::processingAsDO(&ib,shm,true) == false );
+        shm->setValue(ai,10);
+        REQUIRE( IOBase::processingAsDO(&ib,shm,true) == true );
+    }
+
+    SECTION("DI as DI,DO..")
+    {
+        ObjectId di = conf->getSensorID("AsDI2_S");
+        CHECK( di != DefaultObjectId );
+
+        IOBase ib;
+        CHECK( init_iobase(&ib,"AsDI2_S") );
+
+        IOBase::processingAsDI(&ib,false,shm,true);
+        REQUIRE( shm->getValue(di) == 0 );
+        REQUIRE( IOBase::processingAsDO(&ib,shm,true) == false );
+
+        IOBase::processingAsDI(&ib,true,shm,true);
+        REQUIRE( shm->getValue(di) == 1 );
+        REQUIRE( IOBase::processingAsDO(&ib,shm,true) == true );
+
+        shm->setValue(di,0);
+        REQUIRE( IOBase::processingAsDO(&ib,shm,true) == false );
+    }
+}
+// -----------------------------------------------------------------------------
 TEST_CASE("IOBase with SM","[iobase][extensions]")
 {
     WARN("IOBase with SM: Not all tests implemented!");

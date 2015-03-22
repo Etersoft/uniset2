@@ -259,6 +259,11 @@
 			<item id="114" iotype="AI" name="CalibrationTest_AI1_AS" textname="Calibration test: AI1" rmin="-100" rmax="100" cmin="-1000" cmax="1000"/>
 			<item id="115" iotype="AI" name="CalibrationTest_AI2_AS" textname="Calibration test: AI2" rmin="-100" rmax="100" cmin="-1000" cmax="1000" precision="2"/>
 
+			<!-- asDI, asDO -->
+			<item id="116" iotype="AI" name="AsDI1_AS" textname="AsDI1"/>
+			<item id="117" iotype="DI" name="AsDI2_S" textname="AsDI2"/>
+			<item id="118" iotype="DO" name="AsDO_S" textname="AsDO"/>
+
 		</sensors>
 		<thresholds name="thresholds">
 			<sensor iotype="AI" name="AI_AS">
