@@ -1096,6 +1096,9 @@ std::shared_ptr<Configuration> uniset_init( int argc, const char* const* argv, c
         return UniSetTypes::uconf;
     }
 
+    // инициализация исключений для libcommoncpp
+    ost::Thread::setException(ost::Thread::throwException);
+
     atexit( UniSetActivator::normalexit );
     set_terminate( UniSetActivator::normalterminate ); // ловушка для неизвестных исключений
 
