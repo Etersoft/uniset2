@@ -3,7 +3,7 @@
 
 import sys
 import libxml2
-import xml.dom.minidom as md
+from lxml import etree
 import re
 import os
 # ----------------------------- 
@@ -162,13 +162,13 @@ class UniXML():
 
     def pretty_save(self, filename):
         context = self.doc.serialize(encoding="utf-8")
-        mdoc = md.parseString(context) 
-        s = mdoc.toprettyxml(encoding="utf-8").split("\n")
+        mdoc = etree.XML(context)
+        s = etree.tostring(mdoc,pretty_print=True,encoding="UTF-8",method='xml',xml_declaration=True).split("\n")
         out = open(filename,"w")
         p = re.compile(r'\ [^\s]{1,}=""')
         for l in s:
             if l.strip():
-               # удаяем пустые свойства prop=""
+               # удаляем пустые свойства prop=""
                l = p.sub('', l)
                out.write(l+"\n")
         out.close()
