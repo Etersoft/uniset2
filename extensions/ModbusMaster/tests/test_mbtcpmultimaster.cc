@@ -21,9 +21,9 @@ using namespace std;
 using namespace UniSetTypes;
 // -----------------------------------------------------------------------------
 static ModbusRTU::ModbusAddr slaveaddr = 0x01; // conf->getArgInt("--mbs-my-addr");
-static int port = 20050; // conf->getArgInt("--mbs-inet-port");
+static int port = 20053; // conf->getArgInt("--mbs-inet-port");
 static string addr("127.0.0.1"); // conf->getArgParam("--mbs-inet-addr");
-static int port2 = 20052;
+static int port2 = 20055;
 static string addr2("127.0.0.1");
 static ModbusRTU::ModbusAddr slaveADDR = 0x01;
 static shared_ptr<MBTCPTestServer> mbs1;
@@ -52,7 +52,23 @@ static void InitTest()
 
     if( !mbs1 )
     {
-        mbs1 = make_shared<MBTCPTestServer>(slaveADDR,addr,port,false);
+        try
+        {
+            ost::Thread::setException(ost::Thread::throwException);
+            mbs1 = make_shared<MBTCPTestServer>(slaveADDR,addr,port,false);
+        }
+        catch( const ost::SockException& e )
+        {
+            ostringstream err;
+            err << "(mb1): Can`t create socket " << addr << ":" << port << " err: " << e.getString() << endl;
+            cerr << err.str() << endl;
+            throw SystemError(err.str());
+        }
+        catch( const std::exception& ex )
+        {
+            cerr << "(mb1): Can`t create socket " << addr << ":" << port << " err: " << ex.what() << endl;
+            throw ex;
+        }
         CHECK( mbs1!= nullptr );
         mbs1->setReply(0);
         mbs1->runThread();
@@ -65,7 +81,23 @@ static void InitTest()
 
     if( !mbs2 )
     {
-        mbs2 = make_shared<MBTCPTestServer>(slaveADDR,addr2,port2,false);
+        try
+        {
+            ost::Thread::setException(ost::Thread::throwException);
+            mbs2 = make_shared<MBTCPTestServer>(slaveADDR,addr2,port2,false);
+        }
+        catch( const ost::SockException& e )
+        {
+            ostringstream err;
+            err << "(mb2): Can`t create socket " << addr << ":" << port << " err: " << e.getString() << endl;
+            cerr << err.str() << endl;
+            throw SystemError(err.str());
+        }
+        catch( const std::exception& ex )
+        {
+            cerr << "(mb2): Can`t create socket " << addr << ":" << port << " err: " << ex.what() << endl;
+            throw ex;
+        }
         CHECK( mbs2!= nullptr );
         mbs2->setReply(0);
         mbs2->runThread();

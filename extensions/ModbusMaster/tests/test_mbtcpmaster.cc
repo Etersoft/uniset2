@@ -37,7 +37,22 @@ static void InitTest()
 
     if( !mbs )
     {
-        mbs = make_shared<MBTCPTestServer>(slaveADDR,addr,port,false);
+        try
+        {
+            mbs = make_shared<MBTCPTestServer>(slaveADDR,addr,port,false);
+        }
+        catch( const ost::SockException& e )
+        {
+            ostringstream err;
+            err << "(mbs): Can`t create socket " << addr << ":" << port << " err: " << e.getString() << endl;
+            cerr << err.str() << endl;
+            throw SystemError(err.str());
+        }
+        catch( const std::exception& ex )
+        {
+            cerr << "(mbs): Can`t create socket " << addr << ":" << port << " err: " << ex.what() << endl;
+            throw ex;
+        }
         //mbs->setVerbose(true);
         CHECK( mbs!= nullptr );
         mbs->runThread();

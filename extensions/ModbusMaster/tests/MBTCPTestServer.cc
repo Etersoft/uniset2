@@ -33,7 +33,7 @@ MBTCPTestServer::MBTCPTestServer( ModbusAddr myaddr, const string& inetaddr, int
     ost::InetAddress ia(inetaddr.c_str());
 
     if( verbose )
-        cout << "(init): "
+        cout << "(MBTCPTestServer::init): "
             << " addr: " << ia << ":" << port << endl;
 
     {
@@ -42,9 +42,24 @@ MBTCPTestServer::MBTCPTestServer( ModbusAddr myaddr, const string& inetaddr, int
         myname = s.str();
     }
 
-    sslot = new ModbusTCPServerSlot(ia,port);
-
-//    sslot->initLog(conf,name,logfile);
+    try
+    {
+        ost::Thread::setException(ost::Thread::throwException);
+        sslot = new ModbusTCPServerSlot(ia,port);
+    }
+    catch( const ost::SockException& e )
+    {
+        ostringstream err;
+        err << "(MBTCPTestServer::init): Can`t create socket " << addr << ":" << port << " err: " << e.getString() << endl;
+        cerr << err.str() << endl;
+        throw SystemError(err.str());
+    }
+    catch( const std::exception& ex )
+    {
+        cerr << "(MBTCPTestServer::init): Can`t create socket " << addr << ":" << port << " err: " << ex.what() << endl;
+        throw ex;
+    }
+    //    sslot->initLog(conf,name,logfile);
 
     sslot->connectReadCoil( sigc::mem_fun(this, &MBTCPTestServer::readCoilStatus) );
     sslot->connectReadInputStatus( sigc::mem_fun(this, &MBTCPTestServer::readInputStatus) );

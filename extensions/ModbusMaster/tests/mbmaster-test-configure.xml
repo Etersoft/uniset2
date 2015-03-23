@@ -37,8 +37,8 @@
                 <item addr="0x01" invert="1" respondSensor="Slave_Not_Respond_S" timeout="1000"/>
             </DeviceList>
             <GateList>
-                <item ip="127.0.0.1" port="20050" recv_timeout="200" invert="1" respondSensor="Slave1_Not_Respond_S"/>
-                <item ip="127.0.0.1" port="20052" recv_timeout="200" invert="1" respondSensor="Slave2_Not_Respond_S"/>
+                <item ip="127.0.0.1" port="20053" recv_timeout="200" invert="1" respondSensor="Slave1_Not_Respond_S"/>
+                <item ip="127.0.0.1" port="20055" recv_timeout="200" invert="1" respondSensor="Slave2_Not_Respond_S"/>
             </GateList>
         </MBTCPMultiMaster1>
 	</settings>

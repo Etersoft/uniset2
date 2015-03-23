@@ -278,7 +278,7 @@ bool MBTCPMultiMaster::MBSlaveInfo::init()
 {
     try
     {
-        // ost::Thread::setException(ost::Thread::throwException);
+        ost::Thread::setException(ost::Thread::throwException);
 
         dinfo << myname << "(init): connect..." << endl;
 
@@ -288,7 +288,7 @@ bool MBTCPMultiMaster::MBSlaveInfo::init()
         if( recv_timeout > 0 )
             mbtcp->setTimeout(recv_timeout);
 
-//        if( !initOK )
+        // if( !initOK )
         {
             mbtcp->setSleepPause(sleepPause_usec);
             mbtcp->setAfterSendPause(aftersend_pause);
@@ -303,6 +303,10 @@ bool MBTCPMultiMaster::MBSlaveInfo::init()
     catch( ModbusRTU::mbException& ex )
     {
         dwarn << "(init): " << ex << endl;
+    }
+    catch( const ost::Exception& e )
+    {
+        dwarn << myname << "(init): Can`t create socket " << ip << ":" << port << " err: " << e.getString() << endl;
     }
     catch(...)
     {

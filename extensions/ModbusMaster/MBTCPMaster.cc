@@ -112,7 +112,6 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
             mbtcp->setTimeout(recv_timeout);
 
         mbtcp->setSleepPause(sleepPause_usec);
-
         mbtcp->setAfterSendPause(aftersend_pause);
 
         dinfo << myname << "(init): ipaddr=" << iaddr << " port=" << port << endl;
@@ -123,6 +122,14 @@ std::shared_ptr<ModbusClient> MBTCPMaster::initMB( bool reopen )
     catch( ModbusRTU::mbException& ex )
     {
         dwarn << "(init): " << ex << endl;
+        mb = nullptr;
+        mbtcp = nullptr;
+    }
+    catch( const ost::Exception& e )
+    {
+        dwarn << myname << "(init): Can`t create socket " << iaddr << ":" << port << " err: " << e.getString() << endl;
+        mb = nullptr;
+        mbtcp = nullptr;
     }
     catch(...)
     {
