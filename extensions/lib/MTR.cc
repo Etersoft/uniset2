@@ -445,6 +445,9 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
   }
   catch(  ModbusRTU::mbException& ex )
   {
+	  if( verb )
+    	cout << "(mtr-setup): not save parameters: " << ex << endl;
+
   }
 
   if( verb )
