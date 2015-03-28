@@ -443,8 +443,10 @@ bool send_param( ModbusRTUMaster* mb, DataMap& dmap, ModbusRTU::ModbusAddr addr,
             return true;
         }
     }
-    catch(  ModbusRTU::mbException& ex )
+    catch(  const ModbusRTU::mbException& ex )
     {
+		if( verb )
+        	cout << "(mtr-setup): save parameter error: " << ex << endl;
     }
 
     if( verb )
