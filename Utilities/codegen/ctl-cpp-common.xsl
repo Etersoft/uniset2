@@ -769,7 +769,11 @@ end_private(false)
 	
 	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
 
-	resetMsgTime = conf->getPIntProp(cnode,"resetMsgTime", 2000);
+	string s_resetTime("<xsl:call-template name="settings"><xsl:with-param name="varname" select="'resetMsgTime'"/></xsl:call-template>");
+	if( s_resetTime.empty() )
+		s_resetTime = "500";
+
+	resetMsgTime = uni_atoi(init3_str(conf->getArgParam("--" + argprefix + "resetMsgTime"),conf->getProp(cnode,"resetMsgTime"),s_resetTime));
 	ptResetMsg.setTiming(resetMsgTime);
 
 	smReadyTimeout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
@@ -1098,7 +1102,11 @@ askPause(uniset_conf()->getPIntProp(cnode,"askPause",2000))
 
 	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>", <xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>);
 
-	resetMsgTime = conf->getPIntProp(cnode,"resetMsgTime", 2000);
+	string s_resetTime("<xsl:call-template name="settings-alone"><xsl:with-param name="varname" select="'sleep-msec'"/></xsl:call-template>");
+	if( s_resetTime.empty() )
+		s_resetTime = "500";
+
+	resetMsgTime = uni_atoi(init3_str(conf->getArgParam("--" + argprefix + "resetMsgTime"),conf->getProp(cnode,"resetMsgTime"),s_resetTime));
 	ptResetMsg.setTiming(resetMsgTime);
 
 	smReadyTimeout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","<xsl:call-template name="settings"><xsl:with-param name="varname" select="'smReadyTimeout'"/></xsl:call-template>");
