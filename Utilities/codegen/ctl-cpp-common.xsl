@@ -164,12 +164,12 @@
 </xsl:template>
 
 <xsl:template name="COMMON-HEAD-PUBLIC">
-		bool alarm( UniSetTypes::ObjectId sid, bool state );
 		long getValue( UniSetTypes::ObjectId sid );
 		void setValue( UniSetTypes::ObjectId sid, long value );
 		void askSensor( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
 		void updateValues();
-		void setMsg( UniSetTypes::ObjectId code, bool state );
+
+		virtual bool setMsg( UniSetTypes::ObjectId code, bool state = true );
 
 		std::shared_ptr&lt;DebugStream&gt; mylog;
 		void init_dlog( std::shared_ptr&lt;DebugStream&gt; d );
@@ -861,18 +861,20 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::checkSensors()
 	</xsl:for-each>
 }
 // -----------------------------------------------------------------------------
-bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code, bool _state )
+bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code, bool _state )
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-        mycrit  &lt;&lt; getName()
-				&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId"
-				&lt;&lt; endl;
+        mycrit  &lt;&lt; "(setMsg): попытка послать сообщение с DefaultObjectId" &lt;&lt; endl;
 		return false;	
 	}
 
-    mylog8 &lt;&lt; getName()  &lt;&lt; "(alarm): " &lt;&lt; ( _state ? "SEND " : "RESET " ) &lt;&lt; endl;
-	
+    mylog8 &lt;&lt; "(setMsg): " &lt;&lt; ( _state ? "SEND " : "RESET " ) &lt;&lt; endl;
+
+    // взводим автоматический сброс
+    if( _state )
+        ptResetMsg.reset();
+
 	<xsl:for-each select="//msgmap/item">
 	if( _code == <xsl:value-of select="@name"/> )
 	{
@@ -888,14 +890,14 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code,
 		}
 	    catch( const std::exception&amp;ex )
     	{
-        	mycrit &lt;&lt; myname &lt;&lt; "(execute): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+        	mycrit &lt;&lt; "(setMsg): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
 	    }
 
 		return false;
 	}
 	</xsl:for-each>
 	
-    mylog8 &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
+    mylog8 &lt;&lt; "(setMsg): not found MessgeOID?!!" &lt;&lt; endl;
 	return false;
 }
 // -----------------------------------------------------------------------------
@@ -1190,25 +1192,28 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::resetMsg()
 
 }
 // -----------------------------------------------------------------------------
-bool <xsl:value-of select="$CLASSNAME"/>_SK::alarm( UniSetTypes::ObjectId _code, bool _state )
+bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code, bool _state )
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-        mycrit  &lt;&lt; getName()
-				&lt;&lt; "(alarm): попытка послать сообщение с DefaultObjectId"
+        mycrit  &lt;&lt; "(setMsg): попытка послать сообщение с DefaultObjectId"
 				&lt;&lt; endl;
 		return false;	
 	}
 
-    mylog8 &lt;&lt; getName()  &lt;&lt; "(alarm): (" &lt;&lt; _code  &lt;&lt; ")"  &lt;&lt; ( _state ? "SEND" : "RESET" ) &lt;&lt; endl;
+    mylog8 &lt;&lt; "(setMsg): (" &lt;&lt; _code  &lt;&lt; ")"  &lt;&lt; ( _state ? "SEND" : "RESET" ) &lt;&lt; endl;
 
+    // взводим таймер автоматического сброса
+    if( _state )
+        ptResetMsg.reset();
+    
 <xsl:for-each select="//sensors/item">
 	<xsl:call-template name="setmsg">
 		<xsl:with-param name="GENTYPE" select="'A'"/>
 	</xsl:call-template>
 </xsl:for-each>
 	
-    mylog8 &lt;&lt; " not found MessgeOID?!!" &lt;&lt; endl;
+    mylog8 &lt;&lt; "(setMsg): not found MessgeOID?!!" &lt;&lt; endl;
 	return false;
 }
 // -----------------------------------------------------------------------------

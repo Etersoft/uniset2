@@ -11,11 +11,12 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2015-03-06+03:00
+// generate timestamp: 2015-04-02+03:00
 // -----------------------------------------------------------------------------
 #include <memory>
 #include "Configuration.h"
 #include "Exceptions.h"
+#include "ORepHelpers.h"
 #include "UObject_SK.h"
 
 // -----------------------------------------------------------------------------
@@ -138,7 +139,11 @@ end_private(false)
 	
 	sleep_msec = conf->getArgPInt("--" + argprefix + "sleep-msec","150", 150);
 
-	resetMsgTime = conf->getPIntProp(cnode,"resetMsgTime", 2000);
+	string s_resetTime("");
+	if( s_resetTime.empty() )
+		s_resetTime = "500";
+
+	resetMsgTime = uni_atoi(init3_str(conf->getArgParam("--" + argprefix + "resetMsgTime"),conf->getProp(cnode,"resetMsgTime"),s_resetTime));
 	ptResetMsg.setTiming(resetMsgTime);
 
 	smReadyTimeout = conf->getArgInt("--" + argprefix + "sm-ready-timeout","");
@@ -182,21 +187,23 @@ void UObject_SK::checkSensors()
 	
 }
 // -----------------------------------------------------------------------------
-bool UObject_SK::alarm( UniSetTypes::ObjectId _code, bool _state )
+bool UObject_SK::setMsg( UniSetTypes::ObjectId _code, bool _state )
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-        mycrit  << getName()
-				<< "(alarm): попытка послать сообщение с DefaultObjectId"
-				<< endl;
+        mycrit  << "(setMsg): попытка послать сообщение с DefaultObjectId" << endl;
 		return false;	
 	}
 
-    mylog8 << getName()  << "(alarm): " << ( _state ? "SEND " : "RESET " ) << endl;
+    mylog8 << "(setMsg): " << ( _state ? "SEND " : "RESET " ) << endl;
+
+    // взводим автоматический сброс
+    if( _state )
+        ptResetMsg.reset();
+
 	
 	
-	
-    mylog8 << " not found MessgeOID?!!" << endl;
+    mylog8 << "(setMsg): not found MessgeOID?!!" << endl;
 	return false;
 }
 // -----------------------------------------------------------------------------
@@ -215,6 +222,28 @@ void UObject_SK::testMode( bool _state )
 	
 }
 // -----------------------------------------------------------------------------
+std::string  UObject_SK::dumpIO()
+{
+	ostringstream s;
+	s << myname << ": " << endl;
+	
+	return s.str();
+}
+// ----------------------------------------------------------------------------
+std::string  UObject_SK::str( UniSetTypes::ObjectId id, bool showLinkName )
+{
+	ostringstream s;
+		
+	return "";
+}
+// ----------------------------------------------------------------------------
+std::string  UObject_SK::strval( UniSetTypes::ObjectId id, bool showLinkName )
+{
+	ostringstream s;
+		
+	return "";
+}
+// ----------------------------------------------------------------------------
 
 // --------------------------------------------------------------------------
 
@@ -496,16 +525,3 @@ void UObject_SK::preAskSensors( UniversalIO::UIOCommand _cmd )
 	}
 }
 // -----------------------------------------------------------------------------
-void UObject_SK::setMsg( UniSetTypes::ObjectId _code, bool _state )
-{
-	// блокируем сброс (т.к. он автоматически по таймеру)
-	if( !_state )
-	{
-		ptResetMsg.reset();
-		return; 
-	}
-
-	alarm( _code, _state );
-	ptResetMsg.reset();
-}	
-// ----------------------------------------------------------------------------

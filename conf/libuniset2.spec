@@ -12,7 +12,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt23
+Release: alt24
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -409,6 +409,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Thu Apr 02 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt24
+- codegen: modify interface for messages (setMsg())
+- remove alarm() function (deprecated)
+
 * Thu Mar 19 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt23
 - unetudp: fxied critial bug in "switching channels" (thank`s Alexey Surov)
 

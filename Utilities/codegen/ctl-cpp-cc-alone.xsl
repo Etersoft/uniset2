@@ -197,20 +197,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::updateOutputs( bool _force )
 -->
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code, bool _state )
-{
-	// блокируем сброс (т.к. он автоматически по таймеру)
-	if( !_state )
-	{
-		ptResetMsg.reset();
-		return; 
-	}
-
-	alarm( _code, _state );
-	ptResetMsg.reset();
-}	
-// ----------------------------------------------------------------------------
-
 <!-- END CC-FILE -->
 </xsl:template>
 

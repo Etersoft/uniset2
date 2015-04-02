@@ -182,19 +182,6 @@ void <xsl:value-of select="$CLASSNAME"/>_SK::preSensorInfo( const UniSetTypes::S
 	sensorInfo(sm);
 }
 // -----------------------------------------------------------------------------
-void <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId code, bool state )
-{
-	// блокируем сброс (т.к. он автоматически по таймеру)
-	if( !state )
-	{
-		ptResetMsg.reset();
-		return; 
-	}
-
-	alarm( code, state );
-	ptResetMsg.reset();
-}	
-// ----------------------------------------------------------------------------
 <!-- END CC-FILE -->
 </xsl:template>
 

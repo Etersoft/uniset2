@@ -8,7 +8,7 @@
  ВСЕ ВАШИ ИЗМЕНЕНИЯ БУДУТ ПОТЕРЯНЫ.
 */ 
 // --------------------------------------------------------------------------
-// generate timestamp: 2015-03-06+03:00
+// generate timestamp: 2015-04-02+03:00
 // -----------------------------------------------------------------------------
 #ifndef UObject_SK_H_
 #define UObject_SK_H_
@@ -31,12 +31,12 @@ class UObject_SK:
 		virtual ~UObject_SK();
 
 		
-		bool alarm( UniSetTypes::ObjectId sid, bool state );
 		long getValue( UniSetTypes::ObjectId sid );
 		void setValue( UniSetTypes::ObjectId sid, long value );
 		void askSensor( UniSetTypes::ObjectId sid, UniversalIO::UIOCommand, UniSetTypes::ObjectId node = UniSetTypes::uniset_conf()->getLocalNode() );
 		void updateValues();
-		void setMsg( UniSetTypes::ObjectId code, bool state );
+
+		virtual bool setMsg( UniSetTypes::ObjectId code, bool state = true );
 
 		std::shared_ptr<DebugStream> mylog;
 		void init_dlog( std::shared_ptr<DebugStream> d );
@@ -81,6 +81,31 @@ class UObject_SK:
         #ifndef mylogany
         	#define mylogany mylog->any()
         #endif
+        
+        // Вспомогательные функции для удобства логирования
+        // ------------------------------------------------------------
+        /*!< вывод в строку значение всех входов и выходов в формате 
+           ObjectName: 
+              in_xxx  = val
+              in_xxx2 = val
+              out_zzz = val
+              ...
+        */
+        std::string dumpIO();
+        
+        /*!< Вывод в строку названия входа/выхода в формате: in_xxx(SensorName) 
+           \param id           - идентификатор датчика
+           \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
+        */
+        std::string str( UniSetTypes::ObjectId id, bool showLinkName=true );
+        
+        /*!< Вывод значения входа/выхода в формате: in_xxx(SensorName)=val 
+           \param id           - идентификатор датчика
+           \param showLinkName - TRUE - выводить SensorName, FALSE - не выводить
+        */
+        std::string strval( UniSetTypes::ObjectId id, bool showLinkName=true );        
+        // ------------------------------------------------------------
+        
 
 
 		// Используемые идентификаторы
