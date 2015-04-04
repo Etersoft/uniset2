@@ -264,7 +264,7 @@ SharedMemoryPlus extension ('all in one') for libuniset
 
 %build
 %autoreconf
-%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests}
+%configure %{subst_enable docs} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests}
 %make
 
 %install
@@ -444,6 +444,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Sat Apr 04 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt24.1
+- test pgsql extension build
+
 * Thu Apr 02 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt24
 - codegen: modify interface for messages (setMsg())
 - remove alarm() function (deprecated)
