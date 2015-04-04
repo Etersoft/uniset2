@@ -1,7 +1,7 @@
 %def_enable docs
 %def_enable mysql
 %def_enable sqlite
-%def_enable postgresql
+%def_enable pgsql
 %def_enable python
 %def_enable rrd
 %def_enable io
@@ -43,7 +43,7 @@ BuildRequires: libMySQL-devel
 BuildRequires: libsqlite3-devel
 %endif
 
-%if_enabled postgresql
+%if_enabled pgsql
 BuildRequires: postgresql9.3-devel libpq5.6-devel
 %endif
 
@@ -180,21 +180,21 @@ Requires: %name-extension-common = %version-%release
 Libraries needed to develop for uniset SQLite
 %endif
 
-%if_enabled postgresql
-%package extension-postgresql
+%if_enabled pgsql
+%package extension-pgsql
 Group: Development/Databases
 Summary: PostgreSQL-dbserver implementatioin for UniSet
 Requires: %name-extension-common = %version-%release
 
-%description extension-postgresql
+%description extension-pgsql
 PostgreSQL dbserver for %name
 
-%package extension-postgresql-devel
+%package extension-pgsql-devel
 Group: Development/Databases
 Summary: Libraries needed to develop for uniset PostgreSQL
 Requires: %name-extension-common-devel = %version-%release
 
-%description extension-postgresql-devel
+%description extension-pgsql-devel
 Libraries needed to develop for uniset PostgreSQL
 %endif
 
@@ -264,7 +264,7 @@ SharedMemoryPlus extension ('all in one') for libuniset
 
 %build
 %autoreconf
-%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable postgresql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests}
+%configure %{subst_enable doc} %{subst_enable mysql} %{subst_enable sqlite} %{subst_enable pgsql} %{subst_enable python} %{subst_enable rrd} %{subst_enable io} %{subst_enable logicproc} %{subst_enable tests}
 %make
 
 %install
@@ -315,8 +315,8 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %if_enabled sqlite
 %_includedir/%oname/sqlite/
 %endif
-%if_enabled postgresql
-%_includedir/%oname/postgresql/
+%if_enabled pgsql
+%_includedir/%oname/pgsql/
 %endif
 
 %_libdir/libUniSet2.so
@@ -341,12 +341,12 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 %_pkgconfigdir/libUniSet2SQLite.pc
 %endif
 
-%if_enabled postgresql
-%files extension-postgresql
-%_bindir/%oname-postgresql-*dbserver
-%_libdir/*-postgresql.so*
+%if_enabled pgsql
+%files extension-pgsql
+%_bindir/%oname-pgsql-*dbserver
+%_libdir/*-pgsql.so*
 
-%files extension-postgresql-devel
+%files extension-pgsql-devel
 %_pkgconfigdir/libUniSet2PostgreSQL.pc
 %endif
 

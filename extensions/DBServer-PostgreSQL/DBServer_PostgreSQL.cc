@@ -12,11 +12,10 @@
 using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
-const Debug::type DBLEVEL = Debug::LEVEL1;
+#define dblog if( ulog()->debugging(DBLogInfoLevel) ) ulog()->debug(DBLogInfoLevel)
 // --------------------------------------------------------------------------
-DBServer_PostgreSQL::DBServer_PostgreSQL(ObjectId id):
+DBServer_PostgreSQL::DBServer_PostgreSQL(ObjectId id, const std::string& prefix ):
     DBServer(id),
-    db(new PostgreSQLInterface()),
     PingTime(300000),
     ReconnectTime(180000),
     connect_ok(false),
@@ -24,6 +23,8 @@ DBServer_PostgreSQL::DBServer_PostgreSQL(ObjectId id):
     qbufSize(200),
     lastRemove(false)
 {
+    db = make_shared<PostgreSQLInterface>();
+
     if( getId() == DefaultObjectId )
     {
         ostringstream msg;
@@ -34,7 +35,6 @@ DBServer_PostgreSQL::DBServer_PostgreSQL(ObjectId id):
 
 DBServer_PostgreSQL::DBServer_PostgreSQL():
     DBServer(uniset_conf()->getDBServer()),
-    db(new PostgreSQLInterface()),
     PingTime(300000),
     ReconnectTime(180000),
     connect_ok(false),
@@ -42,6 +42,7 @@ DBServer_PostgreSQL::DBServer_PostgreSQL():
     qbufSize(200),
     lastRemove(false)
 {
+    db = make_shared<PostgreSQLInterface>();
 //    init();
     if( getId() == DefaultObjectId )
     {
@@ -53,12 +54,8 @@ DBServer_PostgreSQL::DBServer_PostgreSQL():
 //--------------------------------------------------------------------------------------------
 DBServer_PostgreSQL::~DBServer_PostgreSQL()
 {
-    if( db != NULL )
-    {
-        db->freeResult();
+    if( db )
         db->close();
-        delete db;
-    }
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_PostgreSQL::sysCommand( const UniSetTypes::SystemMessage* sm )
@@ -71,7 +68,6 @@ void DBServer_PostgreSQL::sysCommand( const UniSetTypes::SystemMessage* sm )
         case SystemMessage::Finish:
         {
             activate = false;
-            db->freeResult();
             db->close();
         }
         break;
@@ -103,32 +99,27 @@ void DBServer_PostgreSQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
             << " AND time='" << timeToString(cem->time, ":") <<" '"
             << " AND time_usec='" << cem->time_usec <<" '";
 
-        if( ulog.debugging(DBLEVEL) )
-            ulog[DBLEVEL] << myname << "(update_confirm): " << data.str() << endl;
+        dblog << myname << "(update_confirm): " << data.str() << endl;
 
         if( !writeToBase(data.str()) )
         {
-            if( ulog.debugging(Debug::CRIT) )
-                ulog[Debug::CRIT] << myname << "(update_confirm):  db error: "<< db->error() << endl;
+            ucrit << myname << "(update_confirm):  db error: "<< db->error() << endl;
             db->freeResult();
         }
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
-        if( ulog.debugging(Debug::CRIT) )
-            ulog[Debug::CRIT] << myname << "(update_confirm): " << ex << endl;
+        ucrit << myname << "(update_confirm): " << ex << endl;
     }
     catch( ... )
     {
-        if( ulog.debugging(Debug::CRIT) )
-            ulog[Debug::CRIT] << myname << "(update_confirm):  catch..." << endl;
+        ucrit << myname << "(update_confirm):  catch..." << endl;
     }
 }
 //--------------------------------------------------------------------------------------------
 bool DBServer_PostgreSQL::writeToBase( const string& query )
 {
-    if( ulog.debugging(DBLogInfoLevel) )
-        ulog[DBLogInfoLevel] << myname << "(writeToBase): " << query << endl;
+    dblog << myname << "(writeToBase): " << query << endl;
 
     if( !db || !connect_ok )
     {
@@ -143,8 +134,7 @@ bool DBServer_PostgreSQL::writeToBase( const string& query )
                 qlost = qbuf.front();
 
             qbuf.pop();
-            if( ulog.debugging(Debug::CRIT) )
-                ulog[Debug::CRIT] << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
+            ucrit << myname << "(writeToBase): DB not connected! buffer(" << qbufSize
                         << ") overflow! lost query: " << qlost << endl;
         }
 
@@ -173,12 +163,7 @@ void DBServer_PostgreSQL::flushBuffer()
     {
         if(!db->insertAndSaveRowid( qbuf.front() ))
         {
-            if(ulog.debugging(Debug::CRIT) )
-            {
-                string err(db->error());
-                ulog[Debug::CRIT] << myname << "(writeToBase): error: " << err <<
-                    " lost query: " << qbuf.front() << endl;
-            }
+          ucrit << myname << "(writeToBase): error: " << db->error() << " lost query: " << qbuf.front() << endl;
         }
 
         qbuf.pop();
@@ -210,31 +195,28 @@ void DBServer_PostgreSQL::sensorInfo( const UniSetTypes::SensorMessage *si )
             << si->value << ","                //  value
             << si->node << ")";                //  node
 
-        if( ulog.debugging(DBLEVEL) )
-            ulog[DBLEVEL] << myname << "(insert_main_history): " << data.str() << endl;
+        dblog << myname << "(insert_main_history): " << data.str() << endl;
 
         if( !writeToBase(data.str()) )
         {
-            if( ulog.debugging(Debug::CRIT) )
-                ulog[Debug::CRIT] << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
+            ucrit << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
             db->freeResult();
         }
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
-        ulog[Debug::CRIT] << myname << "(insert_main_history): " << ex << endl;
+        ucrit << myname << "(insert_main_history): " << ex << endl;
     }
     catch( ... )
     {
-        ulog[Debug::CRIT] << myname << "(insert_main_history): catch ..." << endl;
+        ucrit << myname << "(insert_main_history): catch ..." << endl;
     }
 }
 //--------------------------------------------------------------------------------------------
 void DBServer_PostgreSQL::init_dbserver()
 {
     DBServer::init_dbserver();
-    if( ulog.debugging(DBLogInfoLevel) )
-        ulog[DBLogInfoLevel] << myname << "(init): ..." << endl;
+    dblog << myname << "(init): ..." << endl;
 
     if( connect_ok )
     {
@@ -260,7 +242,7 @@ void DBServer_PostgreSQL::init_dbserver()
 
     UniXML::iterator it(node);
 
-    ulog[DBLogInfoLevel] << myname << "(init): init connection.." << endl;
+    dblog << myname << "(init): init connection.." << endl;
     string dbname(conf->getProp(node,"dbname"));
     string dbnode(conf->getProp(node,"dbnode"));
     string user(conf->getProp(node,"dbuser"));
@@ -283,27 +265,19 @@ void DBServer_PostgreSQL::init_dbserver()
     if( dbnode.empty() )
         dbnode = "localhost";
 
-    if( ulog.debugging(DBLogInfoLevel) )
-        ulog[DBLogInfoLevel] << myname << "(init): connect dbnode=" << dbnode
+    dblog << myname << "(init): connect dbnode=" << dbnode
         << "\tdbname=" << dbname
         << " pingTime=" << PingTime
         << " ReconnectTime=" << ReconnectTime << endl;
 
     if( !db->connect(dbnode, user, password, dbname) )
     {
-//        ostringstream err;
-        if( ulog.debugging(Debug::CRIT) )
-            ulog[Debug::CRIT] << myname
-            << "(init): DB connection error: "
-            << db->error() << endl;
-//        throw Exception( string(myname+"(init): не смогли создать соединение с БД "+db->error()) );
+        uwarn << myname << "(init): DB connection error: " << db->error() << endl;
         askTimer(DBServer_PostgreSQL::ReconnectTimer,ReconnectTime);
     }
     else
     {
-        cout<<"DB CONNECT OK"<<endl;
-        if( ulog.debugging(DBLogInfoLevel) )
-            ulog[DBLogInfoLevel] << myname << "(init): connect [OK]" << endl;
+        dblog << myname << "(init): connect [OK]" << endl;
         connect_ok = true;
         askTimer(DBServer_PostgreSQL::ReconnectTimer,0);
         askTimer(DBServer_PostgreSQL::PingTimer,PingTime);
@@ -314,15 +288,14 @@ void DBServer_PostgreSQL::init_dbserver()
     }
 }
 //--------------------------------------------------------------------------------------------
-void DBServer_PostgreSQL::createTables( PostgreSQLInterface *db )
+void DBServer_PostgreSQL::createTables( std::shared_ptr<PostgreSQLInterface>& db )
 {
     auto conf = uniset_conf();
 
     UniXML_iterator it( conf->getNode("Tables") );
     if(!it)
     {
-        if( ulog.debugging(Debug::CRIT) )
-            ulog[Debug::CRIT] << myname << ": section <Tables> not found.."<< endl;
+        ucrit << myname << ": section <Tables> not found.."<< endl;
         throw Exception();
     }
 
@@ -330,12 +303,13 @@ void DBServer_PostgreSQL::createTables( PostgreSQLInterface *db )
     {
         if( it.getName() != "comment" )
         {
-            if( ulog.debugging(DBLogInfoLevel) )
-                ulog[DBLogInfoLevel] << myname  << "(createTables): create " << it.getName() << endl;
+            ucrit << myname  << "(createTables): create " << it.getName() << endl;
             ostringstream query;
             query << "CREATE TABLE " << conf->getProp(it,"name") << "(" << conf->getProp(it,"create") << ")";
-            if( !db->query(query.str()) && ulog.debugging(Debug::CRIT) )
-                ulog[Debug::CRIT] << myname << "(createTables): error: \t\t" << db->error() << endl;
+            if( !db->query(query.str()) )
+            {
+                ucrit << myname << "(createTables): error: \t\t" << db->error() << endl;
+            }
         }
     }
 }
@@ -348,8 +322,7 @@ void DBServer_PostgreSQL::timerInfo( const UniSetTypes::TimerMessage* tm )
         {
             if( !db->ping() )
             {
-                if( ulog.debugging(Debug::WARN) )
-                    ulog[Debug::WARN] << myname << "(timerInfo): DB lost connection.." << endl;
+                uwarn << myname << "(timerInfo): DB lost connection.." << endl;
                 connect_ok = false;
                 askTimer(DBServer_PostgreSQL::PingTimer,0);
                 askTimer(DBServer_PostgreSQL::ReconnectTimer,ReconnectTime);
@@ -357,16 +330,14 @@ void DBServer_PostgreSQL::timerInfo( const UniSetTypes::TimerMessage* tm )
             else
             {
                 connect_ok = true;
-                if( ulog.debugging(DBLogInfoLevel) )
-                    ulog[DBLogInfoLevel] << myname << "(timerInfo): DB ping ok" << endl;
+                dblog << myname << "(timerInfo): DB ping ok" << endl;
             }
         }
         break;
 
         case DBServer_PostgreSQL::ReconnectTimer:
         {
-            if( ulog.debugging(DBLogInfoLevel) )
-                ulog[DBLogInfoLevel] << myname << "(timerInfo): reconnect timer" << endl;
+            dblog << myname << "(timerInfo): reconnect timer" << endl;
             if( db->isConnection() )
             {
                 if( db->ping() )
@@ -403,3 +374,33 @@ void DBServer_PostgreSQL::sigterm( int signo )
     DBServer::sigterm(signo);
 }
 //--------------------------------------------------------------------------------------------
+std::shared_ptr<DBServer_PostgreSQL> DBServer_PostgreSQL::init_dbserver( int argc, const char* const* argv,
+                                            const std::string& prefix )
+{
+    auto conf = uniset_conf();
+
+    ObjectId ID = conf->getDBServer();
+
+    string name = conf->getArgParam("--" + prefix + "-name","");
+    if( !name.empty() )
+    {
+        ObjectId ID = conf->getObjectID(name);
+        if( ID == UniSetTypes::DefaultObjectId )
+        {
+            ucrit << "(DBServer_PostgreSQL): Unknown ObjectID for '" << name << endl;
+            return 0;
+        }
+    }
+
+    uinfo << "(DBServer_PostgreSQL): name = " << name << "(" << ID << ")" << endl;
+    return make_shared<DBServer_PostgreSQL>(ID,prefix);
+}
+// -----------------------------------------------------------------------------
+void DBServer_PostgreSQL::help_print( int argc, const char* const* argv )
+{
+    auto conf = uniset_conf();
+
+    cout << "Default: prefix='pgsql'" << endl;
+    cout << "--prefix-name objectID     - ObjectID. Default: 'conf->getDBServer()'" << endl;
+}
+// -----------------------------------------------------------------------------

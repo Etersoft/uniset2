@@ -7,5 +7,5 @@ Name: libUniSet2PostgreSQL
 Description: Support library for libUniSet2PostgreSQL
 Requires: libUniSet2 libpq
 Version: @VERSION@
-Libs: -L${libdir} -lUniSet2-postgresql
-Cflags: -I${includedir}/@PACKAGE@ -I${includedir}/@PACKAGE@/postgresql
+Libs: -L${libdir} -lUniSet2-pgsql
+Cflags: -I${includedir}/@PACKAGE@ -I${includedir}/@PACKAGE@/pgsql

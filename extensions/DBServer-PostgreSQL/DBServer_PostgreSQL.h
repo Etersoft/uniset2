@@ -11,16 +11,22 @@ class DBServer_PostgreSQL:
     public DBServer
 {
     public:
-        DBServer_PostgreSQL( UniSetTypes::ObjectId id );
+        DBServer_PostgreSQL( UniSetTypes::ObjectId id, const std::string& prefix );
         DBServer_PostgreSQL();
-        ~DBServer_PostgreSQL();
+        virtual ~DBServer_PostgreSQL();
 
         static const Debug::type DBLogInfoLevel = Debug::LEVEL9;
+
+        /*! глобальная функция для инициализации объекта */
+        static std::shared_ptr<DBServer_PostgreSQL> init_dbserver( int argc, const char* const* argv, const std::string& prefix="pgsql" );
+
+        /*! глобальная функция для вывода help-а */
+        static void help_print( int argc, const char* const* argv );
 
     protected:
         typedef std::map<int, std::string> DBTableMap;
 
-        virtual void initDB(PostgreSQLInterface *db){};
+        virtual void initDB( std::shared_ptr<PostgreSQLInterface>& db ){};
         virtual void initDBTableMap(DBTableMap& tblMap){};
 
         virtual void timerInfo( const UniSetTypes::TimerMessage* tm ) override;
@@ -31,7 +37,7 @@ class DBServer_PostgreSQL:
 
         bool writeToBase( const string& query );
         virtual void init_dbserver();
-        void createTables( PostgreSQLInterface* db );
+        void createTables( std::shared_ptr<PostgreSQLInterface>& db );
 
         inline const char* tblName(int key)
         {
@@ -45,7 +51,7 @@ class DBServer_PostgreSQL:
             lastNumberOfTimer
         };
 
-        PostgreSQLInterface *db;
+        std::shared_ptr<PostgreSQLInterface> db;
         int PingTime;
         int ReconnectTime;
         bool connect_ok;     /*! признак наличия соеднинения с сервером БД */

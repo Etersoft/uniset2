@@ -36,7 +36,7 @@
 using namespace UniSetTypes;
 using namespace std;
 // --------------------------------------------------------------------------
-#define dblog if( ulog()->debugging(DBLogInfoLevel) ) (*(ulog().get()))[DBLogInfoLevel]
+#define dblog if( ulog()->debugging(DBLogInfoLevel) ) ulog()->debug(DBLogInfoLevel)
 // --------------------------------------------------------------------------
 DBServer_MySQL::DBServer_MySQL(ObjectId id):
 	DBServer(id),

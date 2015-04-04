@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 
         db.close();
     }
-    catch( Exception& ex )
+    catch( const Exception& ex )
     {
         cerr << "(test): " << ex << endl;
     }

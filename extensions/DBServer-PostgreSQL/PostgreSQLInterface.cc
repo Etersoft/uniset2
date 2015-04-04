@@ -10,6 +10,7 @@ using namespace UniSetTypes;
 
 PostgreSQLInterface::PostgreSQLInterface():
 db(0),
+result(0),
 lastQ(""),
 lastE(""),
 queryok(false),
