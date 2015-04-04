@@ -6,17 +6,15 @@
 // --------------------------------------------------------------------------
 using namespace std;
 using namespace UniSetTypes;
+using namespace pqxx;
 // --------------------------------------------------------------------------
 
 PostgreSQLInterface::PostgreSQLInterface():
-db(0),
-result(0),
 lastQ(""),
 lastE(""),
-queryok(false),
-connected(false),
 last_inserted_id(0)
 {
+    //db = make_shared<pqxx::connection>();
 }
 
 PostgreSQLInterface::~PostgreSQLInterface()
@@ -27,33 +25,36 @@ PostgreSQLInterface::~PostgreSQLInterface()
 // -----------------------------------------------------------------------------------------
 bool PostgreSQLInterface::ping()
 {
-    return db && ( PQstatus(db) == CONNECTION_OK );
+    return db && db->is_open();
 }
 // -----------------------------------------------------------------------------------------
 bool PostgreSQLInterface::connect( const string& host, const string& user, const string& pswd, const string& dbname)
 {
-    if(connected == true)
+    if( db )
         return true;
 
     std::string conninfo ="dbname="+dbname+" host="+host+" user="+user+" password="+pswd;
-    db = PQconnectdb(conninfo.c_str());
-    if (PQstatus(db) == CONNECTION_BAD) {
-        connected = false;
-        return false;
+
+    try
+    {
+        db = make_shared<pqxx::connection>(conninfo);
+        return db->is_open();
+
+    }
+    catch( const std::exception &e )
+    {
+        cerr << e.what() << std::endl;
     }
 
-    connected = true;
-    return true;
-
+    return false;
 }
 // -----------------------------------------------------------------------------------------
 bool PostgreSQLInterface::close()
 {
     if( db )
     {
-        freeResult();
-        PQfinish(db);
-        db = 0;
+        db->disconnect();
+        db.reset();
     }
 
     return true;
@@ -64,18 +65,20 @@ bool PostgreSQLInterface::insert( const string& q )
     if( !db )
         return false;
 
-    result = PQexec(db, q.c_str());
-    ExecStatusType status = PQresultStatus(result);
-
-    if( !checkResult(status) ){
-        freeResult();
-        queryok = false;
-        return false;
+    try
+    {
+        work w( *(db.get()) );
+        w.exec(q);
+        w.commit();
+        return true;
+    }
+    catch( const std::exception &e )
+    {
+        //cerr << e.what() << std::endl;
+        lastE = string(e.what());
     }
 
-    queryok = true;
-    freeResult();
-    return true;
+    return false;
 }
 // -----------------------------------------------------------------------------------------
 bool PostgreSQLInterface::insertAndSaveRowid( const string& q )
@@ -84,41 +87,22 @@ bool PostgreSQLInterface::insertAndSaveRowid( const string& q )
         return false;
 
     std::string qplus=q+" RETURNING id";
-    result = PQexec(db, qplus.c_str());
-    ExecStatusType status = PQresultStatus(result);
 
-    if( !checkResult(status) ){
-        queryok = false;
-        freeResult();
-        return false;
+    try
+    {
+        work w( *(db.get()) );
+        pqxx::result res = w.exec(qplus);
+        w.commit();
+        save_inserted_id(res);
+        return true;
+    }
+    catch( const std::exception &e )
+    {
+        //cerr << e.what() << std::endl;
+        lastE = string(e.what());
     }
 
-    save_inserted_id(result);
-
-    queryok = true;
-    freeResult();
-    return true;
-}
-// -----------------------------------------------------------------------------------------
-bool PostgreSQLInterface::checkResult( ExecStatusType rc )
-{
-    if( rc == PGRES_BAD_RESPONSE  || rc == PGRES_NONFATAL_ERROR || rc == PGRES_FATAL_ERROR )
-        return false;
-/*
-NORMAL
-    PGRES-COMMAND-OK -- Successful completion of a command returning no data
-    PGRES-TUPLES-OK -- The query successfully executed
-    PGRES-COPY-OUT -- Copy Out (from server) data transfer started
-    PGRES-COPY-IN -- Copy In (to server) data transfer started
-
-    PGRES-EMPTY-QUERY -- The string sent to the backend was empty
-ERRORS:
-
-    PGRES-BAD-RESPONSE -- The server's response was not understood
-    PGRES-NONFATAL-ERROR
-    PGRES-FATAL-ERROR
-*/
-    return true;
+    return false;
 }
 // -----------------------------------------------------------------------------------------
 PostgreSQLResult PostgreSQLInterface::query( const string& q )
@@ -126,25 +110,24 @@ PostgreSQLResult PostgreSQLInterface::query( const string& q )
     if( !db )
         return PostgreSQLResult();
 
-    result = PQexec(db, q.c_str());
-    ExecStatusType status = PQresultStatus(result);
-
-    if( !checkResult(status) )
+    try
     {
-        queryok = false;
-        return PostgreSQLResult();
+        nontransaction n(*(db.get()));
+
+      /* Execute SQL query */
+      result res( n.exec(q) );
+      return PostgreSQLResult(res);
+    }
+    catch( const std::exception &e )
+    {
+        lastE = string(e.what());
     }
 
-    lastQ = q;
-    queryok = true;
-    return PostgreSQLResult(result);
+    return PostgreSQLResult();
 }
 // -----------------------------------------------------------------------------------------
 string PostgreSQLInterface::error()
 {
-    if( db )
-        lastE = PQerrorMessage(db);
-
     return lastE;
 }
 // -----------------------------------------------------------------------------------------
@@ -158,25 +141,15 @@ double PostgreSQLInterface::insert_id()
     return last_inserted_id;
 }
 // -----------------------------------------------------------------------------------------
-void PostgreSQLInterface::save_inserted_id( PGresult* res )
+void PostgreSQLInterface::save_inserted_id( const pqxx::result& res )
 {
-    if( res && PQntuples(res) == 1 && PQnfields(res) == 1 )
-        last_inserted_id = atoll(PQgetvalue(res, 0, 0));
+    if( res.size() > 0 && res[0].size() > 0 )
+    last_inserted_id = res[0][0].as<int>();
 }
 // -----------------------------------------------------------------------------------------
 bool PostgreSQLInterface::isConnection()
 {
-	return (db && PQstatus(db) == CONNECTION_OK);
-//    return connected;
-}
-// -----------------------------------------------------------------------------------------
-void PostgreSQLInterface::freeResult()
-{
-    if( !db || !result )
-        return;
-
-    PQclear(result);
-    result = 0;
+    return (db && db->is_open());
 }
 // -----------------------------------------------------------------------------------------
 int num_cols( PostgreSQLResult::iterator& it )
@@ -228,25 +201,14 @@ PostgreSQLResult::~PostgreSQLResult()
 
 }
 // -----------------------------------------------------------------------------------------
-PostgreSQLResult::PostgreSQLResult( PGresult* res, bool clearRES )
+PostgreSQLResult::PostgreSQLResult( const pqxx::result& res )
 {
-    int rec_count = PQntuples(res);
-    int rec_fields = PQnfields(res);
-
-    for (int nrow=0; nrow<rec_count; nrow++) {
-        COL c;
-        for (int ncol=0; ncol<rec_fields; ncol++) {
-            char* p = (char*)PQgetvalue(res, nrow, ncol);
-            if( p )
-                c.push_back(p);
-            else
-                c.push_back("");
-
-        }
-        row.push_back(c);
+    for (result::const_iterator c = res.begin(); c != res.end(); ++c)
+    {
+        COL col;
+        for( int i=0; i<c.size(); i++ )
+            col.push_back( c[i].as<string>() );
+        row.push_back(col);
     }
-
-    if( clearRES )
-        PQclear(res);
 }
 // -----------------------------------------------------------------------------------------

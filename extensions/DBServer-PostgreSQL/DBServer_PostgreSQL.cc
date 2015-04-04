@@ -75,7 +75,6 @@ void DBServer_PostgreSQL::sysCommand( const UniSetTypes::SystemMessage* sm )
         case SystemMessage::FoldUp:
         {
             activate = false;
-            db->freeResult();
             db->close();
         }
         break;
@@ -104,7 +103,6 @@ void DBServer_PostgreSQL::confirmInfo( const UniSetTypes::ConfirmMessage* cem )
         if( !writeToBase(data.str()) )
         {
             ucrit << myname << "(update_confirm):  db error: "<< db->error() << endl;
-            db->freeResult();
         }
     }
     catch( const Exception& ex )
@@ -146,10 +144,7 @@ bool DBServer_PostgreSQL::writeToBase( const string& query )
 
     // А теперь собственно запрос..
     if( db->insertAndSaveRowid(query) )
-    {
-        db->freeResult();
         return true;
-    }
 
     return false;
 }
@@ -200,7 +195,6 @@ void DBServer_PostgreSQL::sensorInfo( const UniSetTypes::SensorMessage *si )
         if( !writeToBase(data.str()) )
         {
             ucrit << myname <<  "(insert) sensor msg error: "<< db->error() << endl;
-            db->freeResult();
         }
     }
     catch( const Exception& ex )

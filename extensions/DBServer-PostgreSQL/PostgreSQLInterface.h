@@ -6,7 +6,7 @@
 #include <list>
 #include <vector>
 #include <iostream>
-#include <libpq-fe.h>
+#include <pqxx/pqxx>
 #include <PassiveTimer.h>
 // ----------------------------------------------------------------------------
 class PostgreSQLResult;
@@ -29,36 +29,25 @@ class PostgreSQLInterface
         bool insert( const std::string& q );
         bool insertAndSaveRowid( const std::string& q );
         double insert_id();
-        void save_inserted_id(PGresult*);
+        void save_inserted_id( const pqxx::result& res );
 
         std::string error();
-        void freeResult();
 
     protected:
 
-//         bool wait( ExecStatusType rc );
-        static bool checkResult( ExecStatusType rc );
-
     private:
 
-        PGconn* db;
-        PGresult* result;
-
+        std::shared_ptr<pqxx::connection> db;
         std::string lastQ;
         std::string lastE;
-        bool queryok;    // успешность текущего запроса
-        bool connected;
         double last_inserted_id;
-
-//         timeout_t opTimeout;
-//         timeout_t opCheckPause;
 };
 // ----------------------------------------------------------------------------------
 class PostgreSQLResult
 {
     public:
         PostgreSQLResult(){}
-        PostgreSQLResult( PGresult *res, bool clear = true ); // clear - clear result (call PQclear)
+        PostgreSQLResult( const pqxx::result& res );
         ~PostgreSQLResult();
 
         typedef std::vector<std::string> COL;

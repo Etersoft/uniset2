@@ -89,7 +89,7 @@ AC_ARG_ENABLE(pgsql, AC_HELP_STRING([--disable-pgsql], [disable PostgreSQL suppo
 
 if test ${buildpgsql} = true; then
 	AC_MSG_RESULT([enabled])
-	PKG_CHECK_MODULES(PGSQL,libpq)
+	PKG_CHECK_MODULES(PGSQL,libpqxx)
 	AC_SUBST(PGSQL_LIBS)
 	AC_SUBST(PGSQL_CFLAGS)
 else
