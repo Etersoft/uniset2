@@ -68,8 +68,8 @@ bool PostgreSQLInterface::insert( const string& q )
     ExecStatusType status = PQresultStatus(result);
 
     if( !checkResult(status) ){
-        queryok = false;
         freeResult();
+        queryok = false;
         return false;
     }
 
@@ -160,22 +160,23 @@ double PostgreSQLInterface::insert_id()
 // -----------------------------------------------------------------------------------------
 void PostgreSQLInterface::save_inserted_id( PGresult* res )
 {
-    if( PQntuples(res) == 1 && PQnfields(res) == 1 )
+    if( res && PQntuples(res) == 1 && PQnfields(res) == 1 )
         last_inserted_id = atoll(PQgetvalue(res, 0, 0));
 }
 // -----------------------------------------------------------------------------------------
 bool PostgreSQLInterface::isConnection()
 {
-    return connected;
+	return (db && PQstatus(db) == CONNECTION_OK);
+//    return connected;
 }
 // -----------------------------------------------------------------------------------------
 void PostgreSQLInterface::freeResult()
 {
-    if( !result )
+    if( !db || !result )
         return;
-//
-    queryok = false;
+
     PQclear(result);
+    result = 0;
 }
 // -----------------------------------------------------------------------------------------
 int num_cols( PostgreSQLResult::iterator& it )
@@ -235,8 +236,6 @@ PostgreSQLResult::PostgreSQLResult( PGresult* res, bool clearRES )
     for (int nrow=0; nrow<rec_count; nrow++) {
         COL c;
         for (int ncol=0; ncol<rec_fields; ncol++) {
-//         printf("%s\t", PQgetvalue(res, row, col));
-
             char* p = (char*)PQgetvalue(res, nrow, ncol);
             if( p )
                 c.push_back(p);
