@@ -34,7 +34,9 @@ prefix(prefix)
     mutex_start.setName(myname + "_mutex_start");
 
 //    xmlNode* cnode = conf->getNode(myname);
-    cnode = conf->getNode(myname);
+
+	string conf_name(conf->getArgParam("--" + prefix + "-confnode",myname));
+	cnode = conf->getNode(conf_name);
     if( cnode == NULL )
         throw UniSetTypes::SystemError("(MBSlave): Not found conf-node for " + myname );
 
@@ -907,6 +909,9 @@ void MBSlave::initIterators()
 void MBSlave::help_print( int argc, const char* const* argv )
 {
     cout << "Default: prefix='mbs'" << endl;
+    cout << "--prefix-name  name        - ObjectID. По умолчанию: MBSlave1" << endl;
+    cout << "--prefix-confnode cnode    - Возможность задать настроечный узел в configure.xml. По умолчанию: name" << endl;
+    cout << endl;
     cout << "--prefix-reg-from-id 0,1   - Использовать в качестве регистра sensor ID" << endl;
     cout << "--prefix-filter-field name - Считывать список опрашиваемых датчиков, только у которых есть поле field" << endl;
     cout << "--prefix-filter-value val  - Считывать список опрашиваемых датчиков, только у которых field=value" << endl;
