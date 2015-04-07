@@ -440,6 +440,7 @@ class MBSlave:
         typedef std::map<int,std::string> FileList;
         FileList flist;
         std::string prefix;
+        std::string prop_prefix;
 
         ModbusRTU::ModbusData buf[ModbusRTU::MAXLENPACKET/2+1];  /*!< буфер для формирования ответов */
 

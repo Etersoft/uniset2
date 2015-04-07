@@ -53,6 +53,8 @@ pollActivated(false)
     dinfo << myname << "(init): read fileter-field='" << s_field
           << "' filter-value='" << s_fvalue << "'" << endl;
 
+    prop_prefix = initPropPrefix();
+
     stat_time = conf->getArgPInt("--" + prefix + "-statistic-sec",it.getProp("statistic_sec"),0);
     if( stat_time > 0 )
         ptStatistic.setTiming(stat_time*1000);
@@ -139,6 +141,30 @@ pollActivated(false)
     }
 
     activateTimeout    = conf->getArgPInt("--" + prefix + "-activate-timeout", 20000);
+}
+// -----------------------------------------------------------------------------
+std::string MBExchange::initPropPrefix( const std::string& def_prop_prefix )
+{
+    auto conf = uniset_conf();
+
+    string pp(def_prop_prefix);
+    // если задано поле для "фильтрации"
+    // то в качестве префикса используем его
+    if( !s_field.empty() )
+        pp = s_field + "_";
+    // если "принудительно" задан префикс
+    // используем его.
+    {
+        string p("--" + prefix + "-set-prop-prefix");
+        string v = conf->getArgParam(p,"");
+        if( !v.empty() && v[0] != '-' )
+            pp = v;
+        // если параметр всё-таки указан, считаем, что это попытка задать "пустой" префикс
+        else if( findArgParam(p,conf->getArgc(),conf->getArgv()) != -1 )
+            pp = "";
+    }
+
+    return pp;
 }
 // -----------------------------------------------------------------------------
 void MBExchange::help_print( int argc, const char* const* argv )

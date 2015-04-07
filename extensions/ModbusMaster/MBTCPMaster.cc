@@ -22,24 +22,8 @@ pollThread(0)
 
     auto conf = uniset_conf();
 
-    // префикс для "свойств" - по умолчанию
-    prop_prefix = "tcp_";
-    // если задано поле для "фильтрации"
-    // то в качестве префикса используем его
-    if( !s_field.empty() )
-        prop_prefix = s_field + "_";
-    // если "принудительно" задан префикс
-    // используем его.
-    {
-        string p("--" + prefix + "-set-prop-prefix");
-        string v = conf->getArgParam(p,"");
-        if( !v.empty() && v[0] != '-' )
-            prop_prefix = v;
-        // если параметр всё-таки указан, считаем, что это попытка задать "пустой" префикс
-        else if( findArgParam(p,conf->getArgc(),conf->getArgv()) != -1 )
-            prop_prefix = "";
-    }
-
+    // префикс для "свойств" - по умолчанию "tcp_";
+    prop_prefix = initPropPrefix("tcp_");
     dinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
     UniXML::iterator it(cnode);

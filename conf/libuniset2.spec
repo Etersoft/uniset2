@@ -12,7 +12,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt24
+Release: alt25
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -409,6 +409,10 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Tue Apr 07 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt25
+- fixed bug in 'MBSlave' (thank`s Alexandr Hanadeev)
+- add --xxx-set-prop-prefix for MBSlave 
+
 * Thu Apr 02 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt24
 - codegen: modify interface for messages (setMsg())
 - remove alarm() function (deprecated)

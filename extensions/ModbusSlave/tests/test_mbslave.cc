@@ -943,3 +943,5 @@ TEST_CASE("access mode","[modbus][mbslvae][mbtcpslave]")
         REQUIRE( rret.data[0] == 555 );
     }
 }
+
+/*! \todo Доделать тесты на считывание с разными prop_prefix.. */

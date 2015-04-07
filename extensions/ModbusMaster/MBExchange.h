@@ -286,6 +286,8 @@ class MBExchange:
         bool initRTUDevice( RTUDevice* d, UniXML::iterator& it );
         virtual bool initDeviceInfo( RTUDeviceMap& m, ModbusRTU::ModbusAddr a, UniXML::iterator& it );
 
+        std::string initPropPrefix( const std::string& def_prop_prefix="" );
+
         void rtuQueryOptimization( RTUDeviceMap& m );
 
         xmlNode* cnode;

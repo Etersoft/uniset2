@@ -25,7 +25,8 @@ activateTimeout(500),
 pingOK(true),
 force(false),
 mbregFromID(false),
-prefix(prefix)
+prefix(prefix),
+prop_prefix("")
 {
     if( objId == DefaultObjectId )
         throw UniSetTypes::SystemError("(MBSlave): objId=-1?!! Use --mbs-name" );
@@ -49,6 +50,26 @@ prefix(prefix)
     s_fvalue = conf->getArgParam("--" + prefix + "-filter-value");
     dinfo << myname << "(init): read s_field='" << s_field
                         << "' s_fvalue='" << s_fvalue << "'" << endl;
+
+    // префикс для "свойств" - по умолчанию
+    prop_prefix = "";
+    // если задано поле для "фильтрации"
+    // то в качестве префикса используем его
+    if( !s_field.empty() )
+        prop_prefix = s_field + "_";
+    // если "принудительно" задан префикс
+    // используем его.
+    {
+        string p("--" + prefix + "-set-prop-prefix");
+        string v = conf->getArgParam(p,"");
+        if( !v.empty() && v[0] != '-' )
+            prop_prefix = v;
+        // если параметр всё-таки указан, считаем, что это попытка задать "пустой" префикс
+        else if( findArgParam(p,conf->getArgc(),conf->getArgv()) != -1 )
+            prop_prefix = "";
+    }
+
+    dinfo << myname << "(init): prop_prefix=" << prop_prefix << endl;
 
     force = conf->getArgInt("--" + prefix + "-force",it.getProp("force"));
 
@@ -816,8 +837,6 @@ bool MBSlave::initItem( UniXML::iterator& it )
 {
     IOProperty p;
     
-    string prop_prefix(prefix+"_");
-
     if( !IOBase::initItem( static_cast<IOBase*>(&p),it,shm,prop_prefix,false,dlog(),myname) )
         return false;
 
@@ -828,7 +847,7 @@ bool MBSlave::initItem( UniXML::iterator& it )
         string r = IOBase::initProp(it,"mbreg",prop_prefix,false);
         if( r.empty() )
         {
-            dcrit << myname << "(initItem): Unknown 'mbreg' for " << it.getProp("name") << endl;
+            dcrit << myname << "(initItem): Unknown '" << prop_prefix << "mbreg' for " << it.getProp("name") << endl;
             return false;
         }
 
@@ -866,14 +885,14 @@ bool MBSlave::initItem( UniXML::iterator& it )
             p.nbyte = IOBase::initIntProp(it,"nbyte",prop_prefix,false);
             if( p.nbyte <=0 )
             {
-                dcrit << myname << "(initItem): Unknown nbyte='' for "
+                dcrit << myname << "(initItem): Unknown " << prop_prefix << "nbyte='' for "
                       << it.getProp("name")
                       << endl;
                 return false;
             }
             else if( p.nbyte > 2 )
             {
-                dcrit << myname << "(initItem): BAD nbyte='" << p.nbyte << "' for "
+                dcrit << myname << "(initItem): BAD " << prop_prefix << "nbyte='" << p.nbyte << "' for "
                       << it.getProp("name")
                       << ". Must be [1,2]."
                       << endl;
@@ -928,6 +947,7 @@ void MBSlave::help_print( int argc, const char* const* argv )
     cout << "--prefix-reply-timeout msec      - Контрольное время для формирования ответа. " << endl
          << "                                   Если обработка запроса превысит это время, ответ не будет послан (timeout)." << endl
          << "                                   По умолчанию: 3 сек" << endl;
+    cout << "--prefix-set-prop-prefix [val]   - Использовать для свойств указанный или пустой префикс." << endl;
 
     cout << "--prefix-allow-setdatetime - On set date and time (0x50) modbus function" << endl;
     cout << "--prefix-my-addr      - адрес текущего узла" << endl;
