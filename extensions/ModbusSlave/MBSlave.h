@@ -278,6 +278,8 @@ class MBSlave:
             amWO
         };
 
+        struct BitRegProperty;
+
         struct IOProperty:
             public IOBase
         {
@@ -287,6 +289,7 @@ class MBSlave:
             int wnum;               /*!< номер слова (для типов с размеров больше 2х байт */
             int nbyte;              /*!< номер байта, который надо "сохранить" из "пришедщего в запросе" слова. [1-2] */
             bool rawdata;           /*!< флаг, что в SM просто сохраняются 4-байта (актуально для типа F4)*/
+            std::shared_ptr<BitRegProperty> bitreg; /*!< указатель, как признак является ли данный регистр "сборным" из битовых */
 
             IOProperty():
                 mbreg(0),
@@ -298,6 +301,23 @@ class MBSlave:
             {}
 
             friend std::ostream& operator<<( std::ostream& os, IOProperty& p );
+        };
+
+
+        struct BitRegProperty
+        {
+            typedef std::vector<IOProperty> BitSensorMap;
+
+            ModbusRTU::ModbusData mbreg; /*!< к какому регистру относятся биты */
+            BitSensorMap bvec;
+
+            BitRegProperty():mbreg(0),bvec(ModbusRTU::BitsPerData){}
+
+            /*! проверка привязан ли данный датчик, к какому-либо биту в этом слове */
+            bool check( const IOController_i::SensorInfo& si );
+
+            friend std::ostream& operator<<( std::ostream& os, BitRegProperty& p );
+            friend std::ostream& operator<<( std::ostream& os, BitRegProperty* p );
         };
 
         inline long getAskCount(){ return askCount; }
@@ -403,6 +423,10 @@ class MBSlave:
         ModbusRTU::mbErrCode much_real_write( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData* dat, int count );
 
         ModbusRTU::mbErrCode real_read_it( IOMap::iterator& it, ModbusRTU::ModbusData& val );
+        ModbusRTU::mbErrCode real_bitreg_read_it( std::shared_ptr<BitRegProperty>& bp, ModbusRTU::ModbusData& val );
+        ModbusRTU::mbErrCode real_read_prop( IOProperty* p, ModbusRTU::ModbusData& val );
+
+
         ModbusRTU::mbErrCode real_write_it( IOMap::iterator& it, ModbusRTU::ModbusData* dat, int& i, int count );
 
         MBSlave();

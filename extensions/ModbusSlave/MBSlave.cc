@@ -151,7 +151,7 @@ prop_prefix("")
     else
         throw UniSetTypes::SystemError(myname+"(MBSlave): Unknown slave type. Use: --mbs-type [RTU|TCP]");
 
-//    mbslot->connectReadCoil( sigc::mem_fun(this, &MBSlave::readCoilStatus) );
+    mbslot->connectReadCoil( sigc::mem_fun(this, &MBSlave::readCoilStatus) );
     mbslot->connectReadInputStatus( sigc::mem_fun(this, &MBSlave::readInputStatus) );
     mbslot->connectReadOutput( sigc::mem_fun(this, &MBSlave::readOutputRegisters) );
     mbslot->connectReadInput( sigc::mem_fun(this, &MBSlave::readInputRegisters) );
@@ -861,6 +861,63 @@ bool MBSlave::initItem( UniXML::iterator& it )
     else if( am == "wo" )
         p.amode = MBSlave::amWO;
 
+    int nbit = IOBase::initIntProp(it,"nbit",prop_prefix,false,-1);
+    if( nbit != -1 )
+    {
+        if( nbit<0 || nbit >= ModbusRTU::BitsPerData )
+        {
+            dcrit << myname << "(initItem): BAD " << prop_prefix << "nbit=" << nbit << ". Must be  0 <= nbit < " << ModbusRTU::BitsPerData
+                  << " for '"
+                  << it.getProp("name")
+                  << "'" << endl;
+            return false;
+        }
+
+        auto i = iomap.find(p.mbreg);
+        if( i != iomap.end() )
+        {
+            if( !i->second.bitreg )
+            {
+                dcrit << myname << "(initItem): BAD USE " << prop_prefix << "nbit=" << nbit
+                      << " (for '"
+                      << it.getProp("name")
+                      << "') SENSOR ALREADY ADDED sid='" << i->second.si.id << "'"
+                      << "(" << uniset_conf()->oind->getMapName(i->second.si.id) << ")"
+                      << endl;
+                return false;
+            }
+
+            if( i->second.bitreg->check(p.si) )
+            {
+                dcrit << myname << "(initItem): BIT " << prop_prefix << "nbit=" << nbit
+                      << " (for "
+                      << it.getProp("name")
+                      << ") ALREADY IN USE for sid='" << i->second.bitreg->bvec[nbit].si.id << "'"
+                      << "(" << uniset_conf()->oind->getMapName(i->second.bitreg->bvec[nbit].si.id) << ")"
+                      << endl;
+                return false;
+            }
+
+            i->second.bitreg->bvec[nbit] = std::move(p);
+            return true;
+        }
+        else
+        {
+            ModbusData mbreg = p.mbreg;
+            IOProperty p_dummy;
+            p_dummy.bitreg = make_shared<BitRegProperty>();
+            p_dummy.bitreg->mbreg = mbreg;
+
+            p.vtype = VTypes::vtUnknown;
+            p.wnum = 0;
+
+            p_dummy.bitreg->bvec[nbit] = std::move(p);
+            dinfo << myname << "(initItem): add bit register: " << p_dummy.bitreg.get() << endl;
+            iomap[mbreg] = std::move(p_dummy);
+        }
+        return true;
+    }
+
     string vt(IOBase::initProp(it,"vtype",prop_prefix,false));
     if( vt.empty() )
     {
@@ -914,11 +971,31 @@ bool MBSlave::initItem( UniXML::iterator& it )
     return true;
 }
 // ------------------------------------------------------------------------------------------
+bool MBSlave::BitRegProperty::check( const IOController_i::SensorInfo& si )
+{
+    for( auto& i: bvec )
+    {
+        if( i.si.id == si.id && i.si.node == si.node )
+            return true;
+    }
+
+    return false;
+}
+// ------------------------------------------------------------------------------------------
 void MBSlave::initIterators()
 {
     auto it=iomap.begin();
     for( ; it!=iomap.end(); ++it )
+    {
         shm->initIterator(it->second.ioit);
+        if( it->second.bitreg )
+        {
+            auto b = it->second.bitreg;
+            for( auto i=b->bvec.begin(); i!= b->bvec.end(); ++ i )
+                shm->initIterator(i->ioit);
+        }
+    }
+
 
     shm->initIterator(itHeartBeat);
     shm->initIterator(itAskCount);
@@ -986,12 +1063,28 @@ std::shared_ptr<MBSlave> MBSlave::init_mbslave( int argc, const char* const* arg
     return make_shared<MBSlave>(ID,icID,ic,prefix);
 }
 // -----------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, MBSlave::BitRegProperty* p )
+{
+    return os << (*p);
+}
+// -----------------------------------------------------------------------------
+std::ostream& operator<<( std::ostream& os, MBSlave::BitRegProperty& p )
+{
+    os  << " reg=" << ModbusRTU::dat2str(p.mbreg) << "(" << (int)p.mbreg << ")[ ";
+    for( auto& i: p.bvec )
+        os << "'" << i.si.id << "' ";
+    os << "]";
+
+    return os;
+}
+// -----------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream& os, MBSlave::IOProperty& p )
 {
-    os  << " reg=" << ModbusRTU::dat2str(p.mbreg)
+    os  << " reg=" << ModbusRTU::dat2str(p.mbreg) << "(" << (int)p.mbreg << ")"
         << " sid=" << p.si.id
         << " stype=" << p.stype
         << " wnum=" << p.wnum
+        << " nbyte=" << p.nbyte
         << " safety=" << p.safety
         << " invert=" << p.invert;
 
@@ -1060,7 +1153,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_write( ModbusRTU::ModbusData reg, Modbus
                         int count )
 {
     dinfo << myname << "(much_real_write): read mbID="
-            << ModbusRTU::dat2str(reg) << " count=" << count << endl;
+            << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")" << " count=" << count << endl;
 
 
     int i=0;
@@ -1316,7 +1409,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( ModbusRTU::ModbusData reg, ModbusR
                         int count )
 {
     dinfo << myname << "(much_real_read): read mbID="
-            << ModbusRTU::dat2str(reg) << " count=" << count << endl;
+            << ModbusRTU::dat2str(reg) << "(" << (int)reg << ") " << " count=" << count << endl;
 
     auto it = iomap.end();
     int i=0;
@@ -1362,7 +1455,7 @@ ModbusRTU::mbErrCode MBSlave::much_real_read( ModbusRTU::ModbusData reg, ModbusR
 ModbusRTU::mbErrCode MBSlave::real_read( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val )
 {
     dinfo << myname << "(real_read): read mbID="
-            << ModbusRTU::dat2str(reg) << endl;
+            << ModbusRTU::dat2str(reg) << "(" << (int)reg << ")" << endl;
 
     auto it = iomap.find(reg);
     return real_read_it(it,val);
@@ -1373,12 +1466,50 @@ ModbusRTU::mbErrCode MBSlave::real_read_it( IOMap::iterator& it, ModbusRTU::Modb
     if( it == iomap.end() )
         return ModbusRTU::erBadDataAddress;
 
+    dinfo << myname << "(real_read_it): read mbID="
+            << ModbusRTU::dat2str(it->first) << "(" << (int)it->first << ")" << endl;
+
+    IOProperty* p(&it->second);
+
+    if( p->bitreg )
+        return real_bitreg_read_it(p->bitreg,val);
+
+    return real_read_prop(p,val);
+}
+// -------------------------------------------------------------------------
+ModbusRTU::mbErrCode MBSlave::real_bitreg_read_it( std::shared_ptr<BitRegProperty>& bp, ModbusRTU::ModbusData& val )
+{
+    dinfo << myname << "(real_bitreg_read_it): read mbID="
+            << ModbusRTU::dat2str(bp->mbreg) << "(" << (int)bp->mbreg << ")" << endl;
+
+    ModbusRTU::DataBits16 d;
+
+    for( int i=0; i<ModbusRTU::BitsPerData; i++ )
+    {
+        IOProperty* p(&(bp->bvec[i]));
+
+        if( p->si.id == DefaultObjectId )
+        {
+            d.set(i,0);
+            continue;
+        }
+
+        ModbusRTU::ModbusData v = 0;
+        ModbusRTU::mbErrCode err = real_read_prop(p,v);
+        if( err == ModbusRTU::erNoError )
+            d.set(i,(bool)v);
+        else
+            d.set(i,0);
+    }
+
+    val = d.mdata();
+    return ModbusRTU::erNoError;
+}
+// -------------------------------------------------------------------------
+ModbusRTU::mbErrCode MBSlave::real_read_prop( IOProperty* p, ModbusRTU::ModbusData& val )
+{
     try
     {
-        dinfo << myname << "(real_read_it): read mbID="
-                << ModbusRTU::dat2str(it->first) << endl;
-
-        IOProperty* p(&it->second);
         val = 0;
 
         if( p->amode == MBSlave::amWO )
@@ -1563,8 +1694,62 @@ ModbusRTU::mbErrCode MBSlave::fileTransfer( ModbusRTU::FileTransferMessage& quer
 ModbusRTU::mbErrCode MBSlave::readCoilStatus( ReadCoilMessage& query,
                                                 ReadCoilRetMessage& reply )
 {
-//    cout << "(readInputStatus): " << query << endl;
-    return ModbusRTU::erOperationFailed;
+    dinfo << myname << "(readCoilStatus): " << query << endl;
+
+    try
+    {
+        if( query.count <= 1 )
+        {
+            ModbusRTU::ModbusData d = 0;
+            ModbusRTU::mbErrCode ret = real_read(query.start,d);
+            reply.addData(0);
+            if( ret == ModbusRTU::erNoError )
+                reply.setBit(0,0,d);
+            else
+                reply.setBit(0,0,0);
+
+            pingOK = true;
+            return ret;
+        }
+
+        much_real_read(query.start,buf,query.count);
+        int bnum = 0;
+        unsigned int i=0;
+        while( i<query.count )
+        {
+            reply.addData(0);
+            for( auto nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
+                reply.setBit(bnum,nbit,(bool)(buf[i]));
+            bnum++;
+        }
+
+        pingOK = true;
+        return ModbusRTU::erNoError;
+    }
+    catch( UniSetTypes::NameNotFound& ex )
+    {
+        dwarn << myname << "(readCoilStatus): " << ex << endl;
+        return ModbusRTU::erBadDataAddress;
+    }
+    catch( const Exception& ex )
+    {
+        if( pingOK )
+            dcrit << myname << "(readCoilStatus): " << ex << endl;
+    }
+    catch( const CORBA::SystemException& ex )
+    {
+        if( pingOK )
+            dcrit << myname << "(readCoilStatus): СORBA::SystemException: "
+                << ex.NP_minorString() << endl;
+    }
+    catch(...)
+    {
+        if( pingOK )
+            dcrit << myname << "(readCoilStatus): catch ..." << endl;
+    }
+
+    pingOK = false;
+    return ModbusRTU::erTimeOut;
 }
 // -------------------------------------------------------------------------
 ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query, 
@@ -1588,7 +1773,6 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
             return ret;
         }
 
-        // Фомирование ответа:
         much_real_read(query.start,buf,query.count);
         int bnum = 0;
         unsigned int i=0;
@@ -1596,7 +1780,7 @@ ModbusRTU::mbErrCode MBSlave::readInputStatus( ReadInputStatusMessage& query,
         {
             reply.addData(0);
             for( auto nbit=0; nbit<BitsPerByte && i<query.count; nbit++,i++ )
-                reply.setBit(bnum,nbit,buf[i]);
+                reply.setBit(bnum,nbit,(bool)(buf[i]));
             bnum++;
         }
 

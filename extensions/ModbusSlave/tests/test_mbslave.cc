@@ -881,7 +881,7 @@ TEST_CASE("(0x66): file transfer")
 
 }
 #endif
-
+// -------------------------------------------------------------
 TEST_CASE("access mode","[modbus][mbslvae][mbtcpslave]")
 {
     SECTION("test 'RO' register")
@@ -943,5 +943,33 @@ TEST_CASE("access mode","[modbus][mbslvae][mbtcpslave]")
         REQUIRE( rret.data[0] == 555 );
     }
 }
+// -------------------------------------------------------------
+TEST_CASE("Read(0x03,0x04): nbit","[modbus][mbslave][mbtcpslave][nbit]")
+{
+    using namespace VTypes;
+    InitTest();
 
+    SECTION("Test: read nbit..")
+    {
+        ModbusRTU::ModbusData tREG = 127;
+        SECTION("Test: read03")
+        {
+            ModbusRTU::ReadOutputRetMessage ret = mb->read03(slaveaddr,tREG,1);
+            ModbusRTU::DataBits16 d(ret.data[0]);
+            REQUIRE( d[0] == 1 );
+            REQUIRE( d[1] == 1 );
+            REQUIRE( d[5] == 1 );
+        }
+        SECTION("Test: read04")
+        {
+            ModbusRTU::ReadInputRetMessage ret = mb->read04(slaveaddr,tREG,1);
+            ModbusRTU::DataBits16 d(ret.data[0]);
+            REQUIRE( d[0] == 1 );
+            REQUIRE( d[1] == 1 );
+            REQUIRE( d[5] == 1 );
+        }
+    }
+}
+
+// -------------------------------------------------------------
 /*! \todo Доделать тесты на считывание с разными prop_prefix.. */

@@ -12,7 +12,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt25
+Release: alt26
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -409,6 +409,11 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Thu Apr 09 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt26
+- (ModbusSlave): added support nbit
+- (ModbusSlave): added support 0x01 (readCoilStatus) function
+- (ModbusSlave): minor fixes
+
 * Tue Apr 07 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt25
 - fixed bug in 'MBSlave' (thank`s Alexandr Hanadeev)
 - add --xxx-set-prop-prefix for MBSlave 
