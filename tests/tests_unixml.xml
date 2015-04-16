@@ -38,7 +38,9 @@
 		<TestData x="10" y="100" text="text" zero="0" negative="-10"/>
 		<TestNode name="TestNode1"/>
 		<TestNode name="TestNode2"/>
-		<TestNode name="TestNode3"/>
+		<TestNode name="TestNode3">
+			<subnode name="Test4"/>
+		</TestNode>
 		
 		<TestProc name="TestProc1"
 			on_s="Input1_S"

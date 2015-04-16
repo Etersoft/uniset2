@@ -101,6 +101,12 @@ TEST_CASE("UniXML::iterator", "[unixml][iterator][basic]" )
     CHECK( it.findName("TestNode","TestNode2") != 0 );
 
     it = uxml.begin();
+    CHECK( it.findName("TestNode","TestNode3") != 0 );
+    
+    CHECK( it.find("subnode") );
+    REQUIRE( it.getProp("name") == "Test4" );
+
+    it = uxml.begin();
     it.goChildren();
     CHECK( it.getName() == "UserData" );
     it.goParent();
