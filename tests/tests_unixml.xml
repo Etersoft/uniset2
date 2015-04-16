@@ -39,9 +39,11 @@
 		<TestNode name="TestNode1"/>
 		<TestNode name="TestNode2"/>
 		<TestNode name="TestNode3">
-			<subnode name="Test4"/>
+			<subnode name="Test5"/>
 		</TestNode>
-		
+
+		<subnode name="Test4"/>
+
 		<TestProc name="TestProc1"
 			on_s="Input1_S"
 			lamp_c="Lamp58_C"

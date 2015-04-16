@@ -12,7 +12,7 @@
 
 Name: libuniset2
 Version: 2.0
-Release: alt26
+Release: alt27
 
 Summary: UniSet - library for building distributed industrial control systems
 
@@ -409,6 +409,9 @@ mv -f %buildroot%python_sitelibdir_noarch/* %buildroot%python_sitelibdir/%oname
 # ..
 
 %changelog
+* Thu Apr 16 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt27
+- (UniXML): refactoring UniXML::iterator::find..
+
 * Thu Apr 09 2015 Pavel Vainerman <pv@altlinux.ru> 2.0-alt26
 - (ModbusSlave): added support nbit
 - (ModbusSlave): added support 0x01 (readCoilStatus) function

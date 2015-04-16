@@ -100,11 +100,17 @@ TEST_CASE("UniXML::iterator", "[unixml][iterator][basic]" )
     it = uxml.begin();
     CHECK( it.findName("TestNode","TestNode2") != 0 );
 
+    CHECK( it.find("subnode",false) );
+    REQUIRE( it.getProp("name") == "Test4" );
+
     it = uxml.begin();
     CHECK( it.findName("TestNode","TestNode3") != 0 );
+
+	UniXML::iterator sIt(it);
+	CHECK( sIt.goChildren() );
     
-    CHECK( it.find("subnode") );
-    REQUIRE( it.getProp("name") == "Test4" );
+    CHECK( sIt.find("subnode",false) );
+    REQUIRE( sIt.getProp("name") == "Test5" );
 
     it = uxml.begin();
     it.goChildren();
@@ -130,4 +136,27 @@ TEST_CASE("UniXML::iterator", "[unixml][iterator][basic]" )
     CHECK( it.getPIntProp("zero",20) == 0 );
     CHECK( it.getPIntProp("negative",20) == -10 );
     CHECK( it.getPIntProp("unknown",20) == 20 );
+}
+// -----------------------------------------------------------------------------
+TEST_CASE("UniXML::iterator::find", "[unixml][iterator-find][basic]" )
+{
+    UniXML uxml("tests_unixml.xml");
+    CHECK( uxml.isOpen() );
+
+    xmlNode* cnode = uxml.findNode(uxml.getFirstNode(),"UniSet");
+    CHECK( cnode != NULL );
+
+    UniXML::iterator it(cnode);
+
+    it = uxml.begin();
+    CHECK( it.findName("TestNode","TestNode3") != 0 );
+
+//    CHECK( it.find("subnode") );
+ //   REQUIRE( it.getProp("name") == "Test4" );
+
+	UniXML::iterator sIt(it);
+	sIt.goChildren();
+    
+    CHECK( sIt.find("subnode") );
+    REQUIRE( sIt.getProp("name") == "Test5" );
 }

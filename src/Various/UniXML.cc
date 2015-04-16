@@ -379,14 +379,15 @@ bool UniXML_iterator::goChildren()
     if (!curNode || !curNode->children )
         return false;
 
-    xmlNode* tmp(curNode);
+    xmlNode* tmp = curNode;
     curNode = curNode->children;
+
     // использовать везде xmlIsBlankNode, если подходит
-    if ( getName() == "text" )
+    if( getName() == "text" )
         return goNext();
-    if ( getName() == "comment" )
+    if( getName() == "comment" )
         return goNext();
-    if ( getName().empty() )
+    if( getName().empty() )
     {
         curNode = tmp;
         return false;
@@ -441,53 +442,65 @@ void UniXML_iterator::setProp( const string& name, const string& text )
 }
 
 // -------------------------------------------------------------------------    
-bool UniXML_iterator::findName( const std::string& node, const std::string& searchname )
+bool UniXML_iterator::findName( const std::string& nodename, const std::string& searchname, bool deepfind )
 {
-    while( this->find(node) )
-    {
-        if ( searchname == getProp("name") )
-            return true;
+    xmlNode* fnode = curNode;
 
+    while( fnode != NULL )
+    {
+        fnode = this->findX(fnode,nodename,deepfind);
+        if ( searchname == UniXML::getProp(fnode,"name") )
+        {
+            curNode = fnode;
+            return true;
+        }
+
+        // ищем дальше
+        fnode = fnode->next;
     }
 
     return false;
 }
 
-// -------------------------------------------------------------------------    
-bool UniXML_iterator::find( const std::string& searchnode )
-{    
-    // Функция ищет "в ширину и в глубь"
+// -------------------------------------------------------------------------
+bool UniXML_iterator::find( const std::string& searchnode, bool deepfind )
+{
+    xmlNode* fnode = findX(curNode,searchnode,deepfind);
+    if( fnode!=NULL )
+    {
+        curNode = fnode;
+        return true;
+    }
 
-    xmlNode* rnode = curNode;
-    
-    while (curNode != NULL)
-    {    
-        while( curNode->children )
+    return false;
+}
+// -------------------------------------------------------------------------
+xmlNode* UniXML_iterator::findX( xmlNode* root, const std::string& searchnode, bool deepfind )
+{
+    if( root == NULL )
+        return NULL;
+
+    // Функция ищет "в ширину и в глубь" начиная с текущего узла!
+    xmlNode* fnode = root;
+
+    while( fnode!=NULL )
+    {
+        if( searchnode == (const char*)fnode->name )
+            return fnode;
+
+        // идём "в глубь"
+        if( deepfind && fnode->children )
         {
-            curNode = curNode->children;
-            
-            if ( searchnode == (const char*)curNode->name )
-                return true;
+            xmlNode* cnode = findX(fnode->children,searchnode);
+            if( cnode!=NULL )
+                return cnode;
         }
 
-        while( !curNode->next && curNode->parent )
-        {    
-            // выше исходного узла "подыматься" нельзя
-            if( curNode == rnode )
-                break;            
-
-            curNode = curNode->parent;
-        }
-        
-        curNode = curNode->next;
-    
-        if ( curNode && searchnode == (const char*)curNode->name )
-        {    
-            return true;
-        }
+        // идём в ширину
+        fnode = fnode->next;
     }
     
-    return false;
+    return NULL;
 }
 // -------------------------------------------------------------------------
 UniXML_iterator UniXML_iterator::operator++()

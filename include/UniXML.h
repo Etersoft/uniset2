@@ -54,8 +54,9 @@ class UniXML_iterator:
         int getPIntProp( const std::string& name, int def );
         void setProp( const std::string& name, const std::string& text );
 
-        bool findName( const std::string& node, const std::string& searchname );
-        bool find( const std::string& searchnode);
+        bool findName( const std::string& node, const std::string& searchname, bool deepfind=true );
+        bool find( const std::string& searchnode, bool deepfind=true);
+        xmlNode* findX( xmlNode* root, const std::string& searchnode, bool deepfind=true );
 
         /*! Перейти к следующему узлу. Возвращает false, если некуда перейти */
         bool goNext();
