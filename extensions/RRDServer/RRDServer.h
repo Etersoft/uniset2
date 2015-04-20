@@ -1,6 +1,7 @@
 #ifndef _RRDServer_H_
 #define _RRDServer_H_
 // -----------------------------------------------------------------------------
+#include <unordered_map>
 #include <memory>
 #include "UObject_SK.h"
 #include "SMInterface.h"
@@ -93,7 +94,7 @@ class RRDServer:
                 dsname(dsname),value(defval){}
         };
 
-        typedef std::map<UniSetTypes::ObjectId,DSInfo> DSMap;
+        typedef std::unordered_map<UniSetTypes::ObjectId,DSInfo> DSMap;
 
         struct RRDInfo
         {

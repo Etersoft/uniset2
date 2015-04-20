@@ -23,7 +23,7 @@
 #ifndef ObjectIndex_XML_H_
 #define ObjectIndex_XML_H_
 // --------------------------------------------------------------------------
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <vector>
 #include <string>
@@ -57,7 +57,7 @@ class ObjectIndex_XML:
         unsigned int read_nodes( const std::shared_ptr<UniXML>& xml, const std::string& sec, unsigned int ind );
 
     private:
-        typedef std::map<std::string, ObjectId> MapObjectKey;
+        typedef std::unordered_map<std::string, ObjectId> MapObjectKey;
         MapObjectKey mok; // для обратного писка
         std::vector<ObjectInfo> omap; // для прямого поиска
 };

@@ -649,12 +649,12 @@ void SharedMemory::saveHistory()
     }
 }
 // -----------------------------------------------------------------------------
-void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
+void SharedMemory::updateHistory( std::shared_ptr<USensorInfo>& s_it, IOController* )
 {
     if( hist.empty() )
         return;
 
-    auto i = histmap.find(s_it->second.si.id);
+    auto i = histmap.find(s_it->si.id);
     if( i == histmap.end() )
         return;
 
@@ -662,14 +662,14 @@ void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
     long sm_tv_sec = 0;
     long sm_tv_usec = 0;
     {
-        uniset_rwmutex_rlock lock(s_it->second.val_lock);
-        value = s_it->second.value;
-        sm_tv_sec = s_it->second.tv_sec;
-        sm_tv_usec = s_it->second.tv_usec;
+        uniset_rwmutex_rlock lock(s_it->val_lock);
+        value = s_it->value;
+        sm_tv_sec = s_it->tv_sec;
+        sm_tv_usec = s_it->tv_usec;
     }
 
     dinfo << myname << "(updateHistory): "
-            << " sid=" << s_it->second.si.id
+            << " sid=" << s_it->si.id
             << " value=" << value
             << endl;
 
@@ -677,8 +677,8 @@ void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
     {
         History::iterator it = it1;
 
-        if( s_it->second.type == UniversalIO::DI ||
-            s_it->second.type == UniversalIO::DO )
+        if( s_it->type == UniversalIO::DI ||
+            s_it->type == UniversalIO::DO )
         {
             bool st = (bool)value;
 
@@ -694,8 +694,8 @@ void SharedMemory::updateHistory( IOStateList::iterator& s_it, IOController* )
                 m_historySignal.emit( (*it) );
             }
         }
-        else if( s_it->second.type == UniversalIO::AI ||
-                 s_it->second.type == UniversalIO::AO )
+        else if( s_it->type == UniversalIO::AI ||
+                 s_it->type == UniversalIO::AO )
         {
             if( !it->fuse_use_val )
             {

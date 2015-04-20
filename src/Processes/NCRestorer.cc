@@ -40,7 +40,7 @@ NCRestorer::~NCRestorer()
 {
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer::addlist( IONotifyController* ic, SInfo&& inf, IONotifyController::ConsumerListInfo&& lst, bool force )
+void NCRestorer::addlist( IONotifyController* ic, std::shared_ptr<IOController::USensorInfo>& inf, IONotifyController::ConsumerListInfo&& lst, bool force )
 {
     // Проверка зарегистрирован-ли данный датчик
     // если такого дискретного датчика нет, то здесь сработает исключение...
@@ -48,23 +48,23 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo&& inf, IONotifyControlle
     {
         try
         {
-            ic->getIOType(inf.si.id);
+            ic->getIOType(inf->si.id);
         }
         catch(...)
         {
             // Регистрируем (если не найден)
-            switch(inf.type)
+            switch(inf->type)
             {
                 case UniversalIO::DI:
                 case UniversalIO::DO:
                 case UniversalIO::AI:
                 case UniversalIO::AO:
-                    ic->ioRegistration( std::move(inf) );
+                    ic->ioRegistration(inf);
                 break;
 
                 default:
                     ucrit << ic->getName() << "(askDumper::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА! -> "
-                                    << uniset_conf()->oind->getNameById(inf.si.id) << endl;
+                                    << uniset_conf()->oind->getNameById(inf->si.id) << endl;
                     return;
                 break;
 
@@ -72,23 +72,23 @@ void NCRestorer::addlist( IONotifyController* ic, SInfo&& inf, IONotifyControlle
         }
     }
 
-    switch(inf.type)
+    switch(inf->type)
     {
         case UniversalIO::DI:
         case UniversalIO::AI:
         case UniversalIO::DO:
         case UniversalIO::AO:
-            ic->askIOList[inf.si.id]=std::move(lst);
+            ic->askIOList[inf->si.id]=std::move(lst);
         break;
 
         default:
             ucrit << ic->getName() << "(NCRestorer::addlist): НЕИЗВЕСТНЫЙ ТИП ДАТЧИКА!-> "
-                  << uniset_conf()->oind->getNameById(inf.si.id) << endl;
+                  << uniset_conf()->oind->getNameById(inf->si.id) << endl;
         break;
     }
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo&& inf, IONotifyController::ThresholdExtList&& lst, bool force )
+void NCRestorer::addthresholdlist( IONotifyController* ic, std::shared_ptr<IOController::USensorInfo>& inf, IONotifyController::ThresholdExtList&& lst, bool force )
 {
     // Проверка зарегистрирован-ли данный датчик    
     // если такого дискретного датчика нет сдесь сработает исключение...
@@ -96,18 +96,18 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo&& inf, IONotify
     {
         try
         {
-            ic->getIOType(inf.si.id);
+            ic->getIOType(inf->si.id);
         }
         catch(...)
         {
             // Регистрируем (если не найден)
-            switch(inf.type)
+            switch(inf->type)
             {
                 case UniversalIO::DI:
                 case UniversalIO::DO:
                 case UniversalIO::AI:
                 case UniversalIO::AO:
-                    ic->ioRegistration( std::move(inf) );
+                    ic->ioRegistration(inf);
                 break;
 
                 default:
@@ -120,17 +120,21 @@ void NCRestorer::addthresholdlist( IONotifyController* ic, SInfo&& inf, IONotify
     for( auto &it: lst )
         it.sit = ic->myioEnd();
 
-    ic->askTMap[inf.si.id].si      = inf.si;
-    ic->askTMap[inf.si.id].type    = inf.type;
-    ic->askTMap[inf.si.id].list    = std::move(lst);
-    ic->askTMap[inf.si.id].ait     = ic->myioEnd();
+    ic->askTMap[inf->si.id].si   = inf->si;
+    ic->askTMap[inf->si.id].type = inf->type;
+    ic->askTMap[inf->si.id].list = std::move(lst);
 }
 // ------------------------------------------------------------------------------------------
-NCRestorer::SInfo& NCRestorer::SInfo::operator=( IOController_i::SensorIOInfo& inf )
+NCRestorer::SInfo::SInfo( const IOController_i::SensorIOInfo& inf )
 {
-    this->si         = inf.si;
-    this->type         = inf.type;
-    this->priority     = inf.priority;
+    (*this) = inf;
+}
+// ------------------------------------------------------------------------------------------
+NCRestorer::SInfo& NCRestorer::SInfo::operator=( const IOController_i::SensorIOInfo& inf )
+{
+    this->si          = inf.si;
+    this->type        = inf.type;
+    this->priority    = inf.priority;
     this->default_val = inf.default_val;
     this->real_value = inf.real_value;
     this->ci         = inf.ci;
@@ -139,27 +143,41 @@ NCRestorer::SInfo& NCRestorer::SInfo::operator=( IOController_i::SensorIOInfo& i
     this->dbignore = inf.dbignore;
     this->any = 0;
     return *this;
-//    CalibrateInfo ci;
-//    long tv_sec;
-//    long v_usec;
 }
+// ------------------------------------------------------------------------------------------
+#if 0
+NCRestorer::SInfo& NCRestorer::SInfo::operator=( const std::shared_ptr<IOController_i::SensorIOInfo>& inf )
+{
+    this->si          = inf->si;
+    this->type        = inf->type;
+    this->priority    = inf->priority;
+    this->default_val = inf->default_val;
+    this->real_value = inf->real_value;
+    this->ci         = inf->ci;
+    this->undefined = inf->undefined;
+    this->blocked = inf->blocked;
+    this->dbignore = inf->dbignore;
+    this->any = 0;
+    return *this;
+}
+#endif
 // ------------------------------------------------------------------------------------------
 void NCRestorer::init_depends_signals( IONotifyController* ic )
 {
     for( auto it=ic->ioList.begin(); it!=ic->ioList.end(); ++it )
     {
         // обновляем итераторы...
-        it->second.it = it;
+        it->second->it = it->second;
 
-        if( it->second.d_si.id == DefaultObjectId )
+        if( it->second->d_si.id == DefaultObjectId )
             continue;
 
         uinfo << ic->getName() << "(NCRestorer::init_depends_signals): "
-                << " init depend: '" << uniset_conf()->oind->getMapName(it->second.si.id) << "'"
-                << " dep_name=(" << it->second.d_si.id << ")'" << uniset_conf()->oind->getMapName(it->second.d_si.id) << "'"
+                << " init depend: '" << uniset_conf()->oind->getMapName(it->second->si.id) << "'"
+                << " dep_name=(" << it->second->d_si.id << ")'" << uniset_conf()->oind->getMapName(it->second->d_si.id) << "'"
                 << endl;
 
-        ic->signal_change_value(it->second.d_si.id).connect( sigc::mem_fun( &it->second, &IOController::USensorInfo::checkDepend) );
+        ic->signal_change_value(it->second->d_si.id).connect( sigc::mem_fun( it->second.get(), &IOController::USensorInfo::checkDepend) );
     }
 }
 // -----------------------------------------------------------------------------

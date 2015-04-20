@@ -104,13 +104,13 @@ void NCRestorer_XML::init( const std::string& xmlfile )
     }
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer_XML::dump(const IONotifyController* ic, SInfo& inf, 
+void NCRestorer_XML::dump(const IONotifyController* ic, std::shared_ptr<SInfo>& inf,
                     const IONotifyController::ConsumerListInfo& lst)
 {
     uwarn << "NCRestorer_XML::dump NOT SUPPORT!!!!" << endl;
 }
 // ------------------------------------------------------------------------------------------
-void NCRestorer_XML::dumpThreshold(const IONotifyController* ic, SInfo& inf, 
+void NCRestorer_XML::dumpThreshold(const IONotifyController* ic, std::shared_ptr<SInfo>& inf,
                     const IONotifyController::ThresholdExtList& lst)
 {
     uwarn << "NCRestorer_XML::dumpThreshold NOT SUPPORT!!!!" << endl;
@@ -127,7 +127,7 @@ void NCRestorer_XML::read_list( const std::shared_ptr<UniXML>& xml, xmlNode* nod
         if( !check_list_item(it) )
             continue;
 
-        NCRestorer_XML::SInfo inf;
+        std::shared_ptr<NCRestorer_XML::SInfo> inf = make_shared<NCRestorer_XML::SInfo>();
 
         if( !getSensorInfo(xml,it,inf) )
         {
@@ -135,14 +135,16 @@ void NCRestorer_XML::read_list( const std::shared_ptr<UniXML>& xml, xmlNode* nod
             continue;
         }
 
-        inf.undefined = false;
+        inf->undefined = false;
 
         // т.к. в функции может обновится inf
         // вызываем перед регистрацией
         // (потому-что в xxRegistration inf будет скопирована
-        ncrslot(xml,it,node,inf);
+        std::shared_ptr<IOController::USensorInfo> uinf = std::static_pointer_cast<IOController::USensorInfo>(inf);
 
-        switch(inf.type)
+        ncrslot(xml,it,node,uinf);
+
+        switch(inf->type)
         {
             case UniversalIO::DO:
             case UniversalIO::DI:
@@ -151,7 +153,9 @@ void NCRestorer_XML::read_list( const std::shared_ptr<UniXML>& xml, xmlNode* nod
             {
                 try
                 {
-                    ioRegistration(ic, std::move(inf), true);
+
+
+                    ioRegistration(ic,uinf,true);
                 }
                 catch( const Exception& ex )
                 {
@@ -165,7 +169,7 @@ void NCRestorer_XML::read_list( const std::shared_ptr<UniXML>& xml, xmlNode* nod
         }
 
         rslot(xml,it,node);
-        read_consumers(xml, it, std::move(inf), ic);
+        read_consumers(xml, it, inf, ic);
     }
 }
 // ------------------------------------------------------------------------------------------
@@ -264,26 +268,26 @@ bool NCRestorer_XML::getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* i
     return true;
 }
 // ------------------------------------------------------------------------------------------
-bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode* it, SInfo& inf )
+bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode* it, std::shared_ptr<NCRestorer_XML::SInfo>& inf )
 {
-    if( !getBaseInfo(xml,it,inf.si) )
+    if( !getBaseInfo(xml,it,inf->si) )
         return false;
 
-    inf.priority = Message::Medium;
+    inf->priority = Message::Medium;
     string prior(xml->getProp(it,"priority"));
     if( prior == "Low" )
-        inf.priority = Message::Low;
+        inf->priority = Message::Low;
     else if( prior == "Medium" )
-        inf.priority = Message::Medium;
+        inf->priority = Message::Medium;
     else if( prior == "High" )
-        inf.priority = Message::High;
+        inf->priority = Message::High;
     else if( prior == "Super" )
-        inf.priority = Message::Super;
+        inf->priority = Message::Super;
     else
-        inf.priority = Message::Medium;
+        inf->priority = Message::Medium;
 
-    inf.type = UniSetTypes::getIOType(xml->getProp(it,"iotype"));
-    if( inf.type == UniversalIO::UnknownIOType )
+    inf->type = UniSetTypes::getIOType(xml->getProp(it,"iotype"));
+    if( inf->type == UniversalIO::UnknownIOType )
     {
         ucrit << "(NCRestorer_XML:getSensorInfo): unknown iotype=" << xml->getProp(it,"iotype")
             << " for  " << xml->getProp(it,"name") << endl;
@@ -291,34 +295,34 @@ bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode*
     }
 
     // калибровка
-    if( inf.type == UniversalIO::AI || inf.type == UniversalIO::AO )
+    if( inf->type == UniversalIO::AI || inf->type == UniversalIO::AO )
     {
-        inf.ci.minRaw = xml->getIntProp(it,"rmin");
-        inf.ci.maxRaw = xml->getIntProp(it,"rmax");
-        inf.ci.minCal = xml->getIntProp(it,"cmin");
-        inf.ci.maxCal = xml->getIntProp(it,"cmax");
-        inf.ci.precision = xml->getIntProp(it,"precision");
+        inf->ci.minRaw = xml->getIntProp(it,"rmin");
+        inf->ci.maxRaw = xml->getIntProp(it,"rmax");
+        inf->ci.minCal = xml->getIntProp(it,"cmin");
+        inf->ci.maxCal = xml->getIntProp(it,"cmax");
+        inf->ci.precision = xml->getIntProp(it,"precision");
     }
     else
     {
-        inf.ci.minRaw = 0;
-        inf.ci.maxRaw = 0;
-        inf.ci.minCal = 0;
-        inf.ci.maxCal = 0;
-        inf.ci.precision = 0;
+        inf->ci.minRaw = 0;
+        inf->ci.maxRaw = 0;
+        inf->ci.minCal = 0;
+        inf->ci.maxCal = 0;
+        inf->ci.precision = 0;
     }
 
-    inf.default_val = xml->getIntProp(it,"default");
-    inf.dbignore = xml->getIntProp(it,"dbignore");
-    inf.value = inf.default_val;
-    inf.undefined = false;
-    inf.real_value = inf.value;
+    inf->default_val = xml->getIntProp(it,"default");
+    inf->dbignore = xml->getIntProp(it,"dbignore");
+    inf->value = inf->default_val;
+    inf->undefined = false;
+    inf->real_value = inf->value;
 
     string d_txt( xml->getProp(it, "depend") );
     if( !d_txt.empty() )
     {
-        inf.d_si.id = uniset_conf()->getSensorID(d_txt);
-        if( inf.d_si.id == UniSetTypes::DefaultObjectId )
+        inf->d_si.id = uniset_conf()->getSensorID(d_txt);
+        if( inf->d_si.id == UniSetTypes::DefaultObjectId )
         {
             ucrit << "(NCRestorer_XML:getSensorInfo): sensor='" 
                     << xml->getProp(it,"name") << "' err: "
@@ -327,11 +331,11 @@ bool NCRestorer_XML::getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode*
             return false;
         }
 
-        inf.d_si.node = uniset_conf()->getLocalNode();
+        inf->d_si.node = uniset_conf()->getLocalNode();
 
         // по умолчанию срабатывание на "1"
-        inf.d_value = xml->getProp(it,"depend_value").empty() ? 1 : xml->getIntProp(it,"depend_value");
-        inf.d_off_value = xml->getPIntProp(it,"depend_off_value",0);
+        inf->d_value = xml->getProp(it,"depend_value").empty() ? 1 : xml->getIntProp(it,"depend_value");
+        inf->d_off_value = xml->getPIntProp(it,"depend_off_value",0);
     }
 
     return true;
@@ -348,7 +352,8 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
         if( !check_thresholds_item(it) )
             continue;
 
-        NCRestorer_XML::SInfo inf;
+        std::shared_ptr<NCRestorer_XML::SInfo> inf = make_shared<NCRestorer_XML::SInfo>();
+
         if( !getSensorInfo(xml,it.getCurrent(),inf) )
         {
             uwarn << ic->getName() 
@@ -371,7 +376,7 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
                 uwarn << ic->getName() 
                             << "(read_thresholds): не смог получить информацию о пороге"
                             << " для датчика "
-                            << uniset_conf()->oind->getNameById(inf.si.id) << endl;
+                            << uniset_conf()->oind->getNameById(inf->si.id) << endl;
                 continue;
             }
 
@@ -392,7 +397,7 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
                         uwarn << ic->getName() 
                                 << "(read_thresholds): не смог получить список заказчиков"
                                 << " для порога " << ti.id 
-                                << " датчика " << uniset_conf()->oind->getNameById(inf.si.id) << endl;
+                                << " датчика " << uniset_conf()->oind->getNameById(inf->si.id) << endl;
                     }
                 }
             }
@@ -402,13 +407,14 @@ void NCRestorer_XML::read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNod
             rtslot(xml,tit,it);
         }
 
-        addthresholdlist(ic, std::move(inf), std::move(tlst) );
+        std::shared_ptr<IOController::USensorInfo> uinf = std::static_pointer_cast<IOController::USensorInfo>(inf);
+        addthresholdlist(ic, uinf, std::move(tlst) );
     }
 }
 // ------------------------------------------------------------------------------------------
 
 void NCRestorer_XML::read_consumers( const std::shared_ptr<UniXML>& xml, xmlNode* it, 
-                                        NCRestorer_XML::SInfo&& inf, IONotifyController* ic )
+                                        std::shared_ptr<NCRestorer_XML::SInfo>& inf, IONotifyController* ic )
 {
     // в новых ask-файлах список выделен <consumers>...</consumers>,
     xmlNode* cnode = find_node(xml,it,"consumers","");
@@ -419,7 +425,10 @@ void NCRestorer_XML::read_consumers( const std::shared_ptr<UniXML>& xml, xmlNode
         {
             IONotifyController::ConsumerListInfo lst;
             if( getConsumerList(xml,cit,lst) )
-                addlist(ic,std::move(inf),std::move(lst),true);
+            {
+                std::shared_ptr<IOController::USensorInfo> uinf = std::static_pointer_cast<IOController::USensorInfo>(inf);
+                addlist(ic,uinf,std::move(lst),true);
+            }
         }
     }
 }

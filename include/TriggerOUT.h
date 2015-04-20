@@ -25,7 +25,7 @@
 #ifndef TriggerOUT_H_
 #define TriggerOUT_H_
 //---------------------------------------------------------------------------
-#include <map>
+#include <unordered_map>
 //---------------------------------------------------------------------------
 /*!
     \par Описание
@@ -120,7 +120,7 @@ class TriggerOUT
     protected:
         void resetOuts( OutIdType outIgnore );
 
-        typedef std::map<OutIdType, ValueType> OutList;
+        typedef std::unordered_map<OutIdType, ValueType> OutList;
         OutList outs; // список выходов
 
         Caller* cal;

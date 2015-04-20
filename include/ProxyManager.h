@@ -24,7 +24,7 @@
 #ifndef ProxyManager_H_
 #define ProxyManager_H_
 //---------------------------------------------------------------------------
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include "UniSetObject.h"
 
@@ -57,7 +57,7 @@ class ProxyManager:
         virtual bool deactivateObject();
 
     private:
-        typedef std::map<UniSetTypes::ObjectId, PassiveObject*> PObjectMap;
+        typedef std::unordered_map<UniSetTypes::ObjectId, PassiveObject*> PObjectMap;
         PObjectMap omap;
 };
 //----------------------------------------------------------------------------------------

@@ -25,6 +25,7 @@
 #ifndef NCRestorer_H_
 #define NCRestorer_H_
 // ------------------------------------------------------------------------------------------
+#include <memory>
 #include <sigc++/sigc++.h>
 #include <string>
 #include "UniXML.h"
@@ -69,24 +70,25 @@ class NCRestorer
                 this->default_val = 0;
             }
 
-            SInfo &operator=(IOController_i::SensorIOInfo& inf);
+            SInfo &operator=(const IOController_i::SensorIOInfo& inf);
+            SInfo( const IOController_i::SensorIOInfo& inf );
         };
 
         virtual void read( IONotifyController* ic, const std::string& fn="" )=0;
-        virtual void dump(const IONotifyController* ic, SInfo& inf, const IONotifyController::ConsumerListInfo& lst)=0;
-        virtual void dumpThreshold(const IONotifyController* ic, SInfo& inf, const IONotifyController::ThresholdExtList& lst)=0;
+        virtual void dump(const IONotifyController* ic, std::shared_ptr<SInfo>& inf, const IONotifyController::ConsumerListInfo& lst)=0;
+        virtual void dumpThreshold(const IONotifyController* ic, std::shared_ptr<SInfo>& inf, const IONotifyController::ThresholdExtList& lst)=0;
 
     protected:
 
         // добавление списка заказчиков
-        static void addlist( IONotifyController* ic, SInfo&& inf, IONotifyController::ConsumerListInfo&& lst, bool force=false );
+        static void addlist( IONotifyController* ic, std::shared_ptr<IOController::USensorInfo>& inf, IONotifyController::ConsumerListInfo&& lst, bool force=false );
 
         // добавление списка порогов и заказчиков
-        static void addthresholdlist( IONotifyController* ic, SInfo&& inf, IONotifyController::ThresholdExtList&& lst, bool force=false );
+        static void addthresholdlist( IONotifyController* ic, std::shared_ptr<IOController::USensorInfo>& inf, IONotifyController::ThresholdExtList&& lst, bool force=false );
 
-        static inline void ioRegistration( IONotifyController* ic, IOController::USensorInfo&& inf, bool force=false )
+        static inline void ioRegistration( IONotifyController* ic, std::shared_ptr<IOController::USensorInfo>& inf, bool force=false )
         {
-            ic->ioRegistration( std::move(inf),force);
+            ic->ioRegistration(inf,force);
         }
 
         static inline IOController::IOStateList::iterator ioFind( IONotifyController* ic, UniSetTypes::KeyType k )
@@ -149,26 +151,26 @@ class NCRestorer_XML:
         */
         void setReadThresholdItem( ReaderSlot sl );
 
-        typedef sigc::slot<bool,const std::shared_ptr<UniXML>&,UniXML::iterator&,xmlNode*,SInfo&> NCReaderSlot;
+        typedef sigc::slot<bool,const std::shared_ptr<UniXML>&,UniXML::iterator&,xmlNode*,std::shared_ptr<IOController::USensorInfo>&> NCReaderSlot;
 
         void setNCReadItem( NCReaderSlot sl );
 
         virtual void read( IONotifyController* ic, const std::string& filename="" );
         virtual void read( IONotifyController* ic, const std::shared_ptr<UniXML>& xml );
 
-        virtual void dump(const IONotifyController* ic, SInfo& inf, const IONotifyController::ConsumerListInfo& lst);
-        virtual void dumpThreshold(const IONotifyController* ic, SInfo& inf, const IONotifyController::ThresholdExtList& lst);
+        virtual void dump(const IONotifyController* ic, std::shared_ptr<NCRestorer::SInfo>& inf, const IONotifyController::ConsumerListInfo& lst) override;
+        virtual void dumpThreshold(const IONotifyController* ic, std::shared_ptr<NCRestorer::SInfo>& inf, const IONotifyController::ThresholdExtList& lst) override;
 
     protected:
 
         bool check_thresholds_item( UniXML::iterator& it );
-        void read_consumers( const std::shared_ptr<UniXML>& xml, xmlNode* node, NCRestorer_XML::SInfo&& inf, IONotifyController* ic );
+        void read_consumers( const std::shared_ptr<UniXML>& xml, xmlNode* node, std::shared_ptr<NCRestorer_XML::SInfo>& inf, IONotifyController* ic );
         void read_list( const std::shared_ptr<UniXML>& xml, xmlNode* node, IONotifyController* ic);
         void read_thresholds( const std::shared_ptr<UniXML>& xml, xmlNode* node, IONotifyController* ic);
         void init( const std::string& fname );
 
         bool getBaseInfo( const std::shared_ptr<UniXML>& xml, xmlNode* it, IOController_i::SensorInfo& si );
-        bool getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode* snode, SInfo& si );
+        bool getSensorInfo( const std::shared_ptr<UniXML>& xml, xmlNode* snode, std::shared_ptr<NCRestorer_XML::SInfo>& si );
         bool getConsumerList( const std::shared_ptr<UniXML>& xml,xmlNode* node, IONotifyController::ConsumerListInfo& lst);
         bool getThresholdInfo(const std::shared_ptr<UniXML>& xml,xmlNode* tnode, IONotifyController::ThresholdInfoExt& ti);
 

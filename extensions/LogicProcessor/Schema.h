@@ -1,7 +1,7 @@
 #ifndef Schema_H_
 #define Schema_H_
 // --------------------------------------------------------------------------
-#include <map>
+#include <unordered_map>
 #include "Element.h"
 #include "Schema.h"
 // --------------------------------------------------------------------------
@@ -59,7 +59,7 @@ class Schema
         void setIn( Element::ElementID ID, int inNum, bool state );
         bool getOut( Element::ElementID ID );
 
-        typedef std::map<Element::ElementID,Element*> ElementMap;
+        typedef std::unordered_map<Element::ElementID,Element*> ElementMap;
         typedef std::list<INLink> InternalList;
         typedef std::list<EXTLink> ExternalList;
         typedef std::list<EXTOut> OutputsList;

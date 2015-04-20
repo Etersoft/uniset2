@@ -3,7 +3,7 @@
 // -------------------------------------------------------------------------
 #include <string>
 #include <memory>
-#include <map>
+#include <unordered_map>
 #include "DebugStream.h"
 #include "LogServerTypes.h"
 // -------------------------------------------------------------------------
@@ -44,7 +44,7 @@ class LogAgregator:
 
 
     private:
-        typedef std::map<std::string, LogInfo> LogMap;
+        typedef std::unordered_map<std::string, LogInfo> LogMap;
         LogMap lmap;
 };
 // -------------------------------------------------------------------------

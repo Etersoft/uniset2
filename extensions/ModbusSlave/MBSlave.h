@@ -6,6 +6,7 @@
 #include <string>
 #include <memory>
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include "UniSetObject_LT.h"
 #include "modbus/ModbusTypes.h"
@@ -253,6 +254,17 @@
 
 */
 // -----------------------------------------------------------------------------
+namespace std {
+template<>
+class hash<ModbusRTU::mbErrCode> {
+public:
+    size_t operator()(const ModbusRTU::mbErrCode &e) const
+    {
+        return std::hash<int>()((int)e);
+    }
+};
+}
+// -----------------------------------------------------------------------------
 /*! Реализация slave-интерфейса */
 class MBSlave:
     public UniSetObject_LT
@@ -383,6 +395,8 @@ class MBSlave:
         virtual ModbusRTU::mbErrCode checkRegister( ModbusRTU::ModbusData reg, ModbusRTU::ModbusData& val )
         { return ModbusRTU::erNoError; }
 
+        // т.к. в функциях (much_real_read,nuch_real_write) рассчёт на отсортированность IOMap
+        // то использовать unordered_map нельзя
         typedef std::map<ModbusRTU::ModbusData,IOProperty> IOMap;
         IOMap iomap;            /*!< список входов/выходов */
 
@@ -449,7 +463,7 @@ class MBSlave:
 
         PassiveTimer ptTimeout;
         long askCount;
-        typedef std::map<ModbusRTU::mbErrCode,unsigned int> ExchangeErrorMap;
+        typedef std::unordered_map<ModbusRTU::mbErrCode,unsigned int> ExchangeErrorMap;
         ExchangeErrorMap errmap;     /*!< статистика обмена */
 
         std::atomic_bool activated;
@@ -461,7 +475,7 @@ class MBSlave:
 
         bool mbregFromID;
 
-        typedef std::map<int,std::string> FileList;
+        typedef std::unordered_map<int,std::string> FileList;
         FileList flist;
         std::string prefix;
         std::string prop_prefix;
@@ -471,9 +485,9 @@ class MBSlave:
         // данные для ответа на запрос 0x2B(43)/0x0E(14)
         // 'MEI' - modbus encapsulated interface
         // 'RDI' - read device identification
-        typedef std::map<int,std::string> MEIValMap;
-        typedef std::map<int,MEIValMap> MEIObjIDMap;
-        typedef std::map<int,MEIObjIDMap> MEIDevIDMap;
+        typedef std::unordered_map<int,std::string> MEIValMap;
+        typedef std::unordered_map<int,MEIValMap> MEIObjIDMap;
+        typedef std::unordered_map<int,MEIObjIDMap> MEIDevIDMap;
 
         MEIDevIDMap meidev;
 };

@@ -689,7 +689,6 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
     if( force )
         return;
 
-
     for( auto &it: iomap )
     {
         IOProperty* p(&it.second);
@@ -697,7 +696,7 @@ void MBSlave::askSensors( UniversalIO::UIOCommand cmd )
         {
             shm->askSensor(p->si.id,cmd);
         }
-        catch( UniSetTypes::Exception& ex )
+        catch( const UniSetTypes::Exception& ex )
         {
             dwarn << myname << "(askSensors): " << ex << std::endl;
         }

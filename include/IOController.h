@@ -25,7 +25,7 @@
 #ifndef IOController_H_
 #define IOController_H_
 //---------------------------------------------------------------------------
-#include <map>
+#include <unordered_map>
 #include <list>
 #include <sigc++/sigc++.h>
 #include "IOController_i.hh"
@@ -97,18 +97,18 @@ class IOController:
 
     public:
 
-        // предварительное объявление, чтобы в структуре объявить итератор..
+        // предварительное объявление..
         struct USensorInfo;
-        typedef std::map<UniSetTypes::ObjectId, USensorInfo> IOStateList;
+        typedef std::unordered_map<UniSetTypes::ObjectId, std::shared_ptr<USensorInfo>> IOStateList;
 
         // ================== Достпуные сигналы =================
         /*!
-        // \warning  В сигнале напрямую передаётся итератор (т.е. по сути указатель на внутреннюю структуру!)
+        // \warning  В сигнале напрямую передаётся указатель на внутреннюю структуру!
         // Это не очень хорошо, с точки зрения "архитектуры", но оптимальнее по быстродействию!
         // необходимо в обработчике не забывать использовать uniset_rwmutex_wrlock(val_lock) или uniset_rwmutex_rlock(val_lock)
         */
-        typedef sigc::signal<void, IOStateList::iterator&, IOController*> ChangeSignal;
-        typedef sigc::signal<void, IOStateList::iterator&, IOController*> ChangeUndefinedStateSignal;
+        typedef sigc::signal<void, std::shared_ptr<USensorInfo>&, IOController*> ChangeSignal;
+        typedef sigc::signal<void, std::shared_ptr<USensorInfo>&, IOController*> ChangeUndefinedStateSignal;
 
         // signal по изменению определённого датчика
         ChangeSignal signal_change_value( UniSetTypes::ObjectId sid );
@@ -120,59 +120,6 @@ class IOController:
         ChangeUndefinedStateSignal signal_change_undefined_state( UniSetTypes::ObjectId sid );
         ChangeUndefinedStateSignal signal_change_undefined_state();
         // -----------------------------------------------------------------------------------------
-
-        struct USensorInfo:
-            public IOController_i::SensorIOInfo
-        {
-            USensorInfo( const USensorInfo& ) = delete;
-            const USensorInfo& operator=(const USensorInfo& ) = delete;
-            USensorInfo( USensorInfo&& ) = default;
-            USensorInfo& operator=(USensorInfo&& ) = default;
-
-            USensorInfo():any(0),d_value(0),d_off_value(0)
-            {
-                d_si.id = UniSetTypes::DefaultObjectId;
-                d_si.node = UniSetTypes::DefaultObjectId;
-                value = default_val;
-                real_value = default_val;
-                dbignore = false;
-                undefined = false;
-                blocked = false;
-            }
-
-            virtual ~USensorInfo(){}
-
-            USensorInfo(IOController_i::SensorIOInfo& r);
-            USensorInfo(IOController_i::SensorIOInfo* r);
-            USensorInfo(const IOController_i::SensorIOInfo& r);
-
-            USensorInfo& operator=(IOController_i::SensorIOInfo& r);
-            const USensorInfo& operator=(const IOController_i::SensorIOInfo& r);
-            USensorInfo& operator=(IOController_i::SensorIOInfo* r);
-
-            // Дополнительные (вспомогательные поля)
-            UniSetTypes::uniset_rwmutex val_lock; /*!< флаг блокирующий работу со значением */
-
-            IOStateList::iterator it;
-
-            void* any; /*!< расширение для возможности хранения своей информации */
-
-            // сигнал для реализации механизма зависимостией..
-            // (все зависимые датчики подключаются к нему (см. NCRestorer::init_depends_signals)
-            UniSetTypes::uniset_rwmutex changeMutex;
-            ChangeSignal sigChange;
-
-            UniSetTypes::uniset_rwmutex undefMutex;
-            ChangeUndefinedStateSignal sigUndefChange;
-
-            IOController_i::SensorInfo d_si;  /*!< идентификатор датчика, от которого зависит данный */
-            long d_value; /*!< разрешающее работу значение датчика от которого зависит данный */
-            long d_off_value; /*!< блокирующее значение */
-
-            // функция обработки информации об изменении состояния датчика, от которого зависит данный
-            void checkDepend( IOStateList::iterator& it, IOController* );
-        };
-
         inline IOStateList::iterator ioBegin(){ return ioList.begin(); }
         inline IOStateList::iterator ioEnd(){ return ioList.end(); }
         inline IOStateList::iterator find(UniSetTypes::KeyType k){ return ioList.find(k); }
@@ -183,6 +130,12 @@ class IOController:
                                         CORBA::Long value, UniSetTypes::ObjectId sup_id );
 
         virtual long localGetValue( IOStateList::iterator& it, const UniSetTypes::ObjectId sid );
+
+        // вариант с указателем
+        void localSetValue( std::shared_ptr<USensorInfo>& usi, UniSetTypes::ObjectId sid,
+                                        CORBA::Long value, UniSetTypes::ObjectId sup_id );
+
+        long localGetValue( std::shared_ptr<USensorInfo>& it, const UniSetTypes::ObjectId sid );
 
 
         /*! функция выставления признака неопределённого состояния для аналоговых датчиков
@@ -212,7 +165,7 @@ class IOController:
             /*! регистрация датчика
                 force=true - не проверять на дублирование (оптимизация)
             */
-            void ioRegistration( USensorInfo&&, bool force=false );
+            void ioRegistration( std::shared_ptr<USensorInfo>&, bool force=false );
 
             /*! разрегистрация датчика */
             void ioUnRegistration( const UniSetTypes::ObjectId sid );
@@ -259,7 +212,7 @@ class IOController:
         // --------------------------
         // ФИЛЬТРОВАНИЕ
         //
-        typedef sigc::slot<bool,const USensorInfo&, CORBA::Long, UniSetTypes::ObjectId> IOFilterSlot;
+        typedef sigc::slot<bool,std::shared_ptr<USensorInfo>&, CORBA::Long, UniSetTypes::ObjectId> IOFilterSlot;
         typedef std::list<IOFilterSlot> IOFilterSlotList;
 
         /*
@@ -274,7 +227,7 @@ class IOController:
         void eraseIOFilter(IOFilterSlotList::iterator& it);
 
         // функии проверки текущего значения
-        bool checkIOFilters( const USensorInfo& ai, CORBA::Long& newvalue, UniSetTypes::ObjectId sup_id );
+        bool checkIOFilters( std::shared_ptr<USensorInfo>& ai, CORBA::Long& newvalue, UniSetTypes::ObjectId sup_id );
 
         inline bool iofiltersEmpty(){ return iofilters.empty(); }
         inline int iodiltersSize(){ return iofilters.size(); }
@@ -297,6 +250,60 @@ class IOController:
         IOFilterSlotList iofilters; /*!< список фильтров для аналоговых значений */
 
         UniSetTypes::uniset_rwmutex loggingMutex; /*!< logging info mutex */
+
+    public:
+        struct USensorInfo:
+            public IOController_i::SensorIOInfo
+        {
+            USensorInfo( const USensorInfo& ) = delete;
+            const USensorInfo& operator=(const USensorInfo& ) = delete;
+            USensorInfo( USensorInfo&& ) = default;
+            USensorInfo& operator=(USensorInfo&& ) = default;
+
+            USensorInfo():any(0),d_value(0),d_off_value(0)
+            {
+                d_si.id = UniSetTypes::DefaultObjectId;
+                d_si.node = UniSetTypes::DefaultObjectId;
+                value = default_val;
+                real_value = default_val;
+                dbignore = false;
+                undefined = false;
+                blocked = false;
+            }
+
+            virtual ~USensorInfo(){}
+
+            USensorInfo(IOController_i::SensorIOInfo& r);
+            USensorInfo(IOController_i::SensorIOInfo* r);
+            USensorInfo(const IOController_i::SensorIOInfo& r);
+
+            USensorInfo& operator=(IOController_i::SensorIOInfo& r);
+            const USensorInfo& operator=(const IOController_i::SensorIOInfo& r);
+            USensorInfo& operator=(IOController_i::SensorIOInfo* r);
+
+            // Дополнительные (вспомогательные поля)
+            UniSetTypes::uniset_rwmutex val_lock; /*!< флаг блокирующий работу со значением */
+
+            // IOStateList::iterator it;
+            std::shared_ptr<USensorInfo> it;
+
+            void* any; /*!< расширение для возможности хранения своей информации */
+
+            // сигнал для реализации механизма зависимостией..
+            // (все зависимые датчики подключаются к нему (см. NCRestorer::init_depends_signals)
+            UniSetTypes::uniset_rwmutex changeMutex;
+            ChangeSignal sigChange;
+
+            UniSetTypes::uniset_rwmutex undefMutex;
+            ChangeUndefinedStateSignal sigUndefChange;
+
+            IOController_i::SensorInfo d_si;  /*!< идентификатор датчика, от которого зависит данный */
+            long d_value; /*!< разрешающее работу значение датчика от которого зависит данный */
+            long d_off_value; /*!< блокирующее значение */
+
+            // функция обработки информации об изменении состояния датчика, от которого зависит данный
+            void checkDepend( std::shared_ptr<USensorInfo>& it, IOController* );
+        };
 };
 // --------------------------------------------------------------------------
 #endif

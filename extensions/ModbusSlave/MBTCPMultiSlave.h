@@ -2,7 +2,7 @@
 #ifndef _MBTCPMultiSlave_H_
 #define _MBTCPMultiSlave_H_
 // -----------------------------------------------------------------------------
-#include <map>
+#include <unordered_map>
 #include "MBSlave.h"
 #include "modbus/ModbusTCPServer.h"
 // -----------------------------------------------------------------------------
@@ -67,7 +67,7 @@ class MBTCPMultiSlave:
             }
         };
 
-        typedef std::map<const std::string,ClientInfo> ClientsMap;
+        typedef std::unordered_map<std::string,ClientInfo> ClientsMap;
         ClientsMap cmap;
 
 

@@ -25,7 +25,7 @@
 #ifndef TRIGGER_OR_H_
 #define TRIGGER_OR_H_
 //---------------------------------------------------------------------------
-#include <map>
+#include <unordered_map>
 //---------------------------------------------------------------------------
 /*!
     Триггер \b "ИЛИ", со множеством входов.
@@ -92,7 +92,7 @@ class TriggerOR
         void add(InputType in, bool state);
         void remove(InputType in);
 
-        typedef std::map<InputType, bool> InputMap;
+        typedef std::unordered_map<InputType, bool> InputMap;
 
         inline typename InputMap::const_iterator begin()
         {

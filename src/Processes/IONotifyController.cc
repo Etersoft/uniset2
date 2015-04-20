@@ -129,7 +129,7 @@ bool IONotifyController::removeConsumer( ConsumerListInfo& lst, const ConsumerIn
 /*! 
  *    \param si         - информация о датчике
  *    \param ci         - информация о заказчике
- *    \param cmd         - команда см. UniversalIO::UIOCommand
+ *    \param cmd        - команда см. UniversalIO::UIOCommand
 */
 void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
                                     const UniSetTypes::ConsumerInfo& ci, UniversalIO::UIOCommand cmd )
@@ -154,24 +154,24 @@ void IONotifyController::askSensor(const UniSetTypes::ObjectId sid,
     }    // unlock
 
     // посылка первый раз состояния 
-    if( cmd==UniversalIO::UIONotify || (cmd==UIONotifyFirstNotNull && li->second.value) )
+    if( cmd==UniversalIO::UIONotify || (cmd==UIONotifyFirstNotNull && li->second->value) )
     {
         SensorMessage  smsg;
         smsg.id          = sid;
         smsg.node        = uniset_conf()->getLocalNode();
         smsg.consumer    = ci.id;
         smsg.supplier    = getId();
-        smsg.sensor_type = li->second.type;    
-        smsg.priority    = (Message::Priority)li->second.priority;
-        smsg.sm_tv_sec   = li->second.tv_sec;
-        smsg.sm_tv_usec  = li->second.tv_usec;
-        smsg.ci          = li->second.ci;
+        smsg.sensor_type = li->second->type;
+        smsg.priority    = (Message::Priority)li->second->priority;
+        smsg.sm_tv_sec   = li->second->tv_sec;
+        smsg.sm_tv_usec  = li->second->tv_usec;
+        smsg.ci          = li->second->ci;
         {
-            uniset_rwmutex_rlock lock(li->second.val_lock);
-            smsg.value        = li->second.value;
-            smsg.undefined    = li->second.undefined;
-            smsg.sm_tv_sec    = li->second.tv_sec;
-            smsg.sm_tv_usec   = li->second.tv_usec;
+            uniset_rwmutex_rlock lock(li->second->val_lock);
+            smsg.value        = li->second->value;
+            smsg.undefined    = li->second->undefined;
+            smsg.sm_tv_sec    = li->second->tv_sec;
+            smsg.sm_tv_usec   = li->second->tv_usec;
         }
 
         try
@@ -278,10 +278,10 @@ void IONotifyController::ask( AskMap& askLst, const UniSetTypes::ObjectId sid,
     }
 }
 // ------------------------------------------------------------------------------------------
-bool IONotifyController::myIOFilter( const USensorInfo& ai, 
+bool IONotifyController::myIOFilter( std::shared_ptr<USensorInfo>& ai,
                                     CORBA::Long newvalue, UniSetTypes::ObjectId sup_id )
 {
-    if( ai.value == newvalue )
+    if( ai->value == newvalue )
         return false;
 
     return true;
@@ -318,32 +318,32 @@ void IONotifyController::localSetValue( IOController::IOStateList::iterator& li,
 
     IOController::localSetValue(li, sid, value, sup_id);
 
-    // сравниваем именно с li->second.value
+    // сравниваем именно с li->second->value
     // т.к. фактическое сохранённое значение может быть изменено
     // фильтрами или блокировками..
-    SensorMessage sm(sid,li->second.value);
+    SensorMessage sm(sid,li->second->value);
     { // lock
-        uniset_rwmutex_rlock lock(li->second.val_lock);
+        uniset_rwmutex_rlock lock(li->second->val_lock);
 
-        if( prevValue == li->second.value )
+        if( prevValue == li->second->value )
             return;
 
         // Рассылаем уведомления только в слуае изменения значения
         sm.id           = sid;
         sm.node         = uniset_conf()->getLocalNode();
-        sm.value        = li->second.value;
-        sm.undefined    = li->second.undefined;
-        sm.priority     = (Message::Priority)li->second.priority;
+        sm.value        = li->second->value;
+        sm.undefined    = li->second->undefined;
+        sm.priority     = (Message::Priority)li->second->priority;
         sm.supplier     = sup_id;
-        sm.sensor_type  = li->second.type;
-        sm.sm_tv_sec    = li->second.tv_sec;
-        sm.sm_tv_usec   = li->second.tv_usec;
-        sm.ci           = li->second.ci;
+        sm.sensor_type  = li->second->type;
+        sm.sm_tv_sec    = li->second->tv_sec;
+        sm.sm_tv_usec   = li->second->tv_usec;
+        sm.ci           = li->second->ci;
     } // unlock
 
     try
     {
-        if( !li->second.dbignore )
+        if( !li->second->dbignore )
             loggingInfo(sm);
     }
     catch(...){}
@@ -456,10 +456,10 @@ void IONotifyController::readDump()
 // --------------------------------------------------------------------------------------------------------------
 void IONotifyController::initItem( IOStateList::iterator& li, IOController* ic )
 {
-    USensorInfo& s(li->second);
+    auto s = li->second;
 
-    if( s.type == UniversalIO::AI || s.type == UniversalIO::AO )
-        checkThreshold( li, s.si.id, false );
+    if( s->type == UniversalIO::AI || s->type == UniversalIO::AO )
+        checkThreshold( li, s->si.id, false );
 }
 // ------------------------------------------------------------------------------------------
 void IONotifyController::dumpOrdersList( const UniSetTypes::ObjectId sid,
@@ -470,10 +470,10 @@ void IONotifyController::dumpOrdersList( const UniSetTypes::ObjectId sid,
 
     try
     {
-        NCRestorer::SInfo inf;
         IOController_i::SensorIOInfo ainf( getSensorIOInfo(sid) );
-        inf=ainf;
-        restorer->dump(this,inf,lst);
+        NCRestorer::SInfo tmp = ainf;
+        std::shared_ptr<NCRestorer::SInfo> sinf = make_shared<NCRestorer::SInfo>( std::move(tmp) );
+        restorer->dump(this,sinf,lst);
     }
     catch( const Exception& ex )
     {
@@ -489,10 +489,9 @@ void IONotifyController::dumpThresholdList( const UniSetTypes::ObjectId sid, con
 
     try
     {
-        NCRestorer::SInfo inf;
         IOController_i::SensorIOInfo ainf(getSensorIOInfo(sid));
-        inf=ainf;
-        restorer->dumpThreshold(this,inf,lst);
+        shared_ptr<NCRestorer::SInfo> sinf = make_shared<NCRestorer::SInfo>(ainf);
+        restorer->dumpThreshold(this,sinf,lst);
     }
     catch( const Exception& ex )
     { 
@@ -540,8 +539,7 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
                     tli.si.id   = sid;
                     tli.si.node = uniset_conf()->getLocalNode();
                     tli.list   = std::move(lst);
-                    tli.type   = li->second.type;
-                    tli.ait    = myioEnd();
+                    tli.type   = li->second->type;
 
                     // после этого вызова ti использовать нельзя
                     addThreshold(tli.list,std::move(ti),ci);
@@ -582,12 +580,12 @@ void IONotifyController::askThreshold(UniSetTypes::ObjectId sid, const UniSetTyp
                     sm.id         = sid;
                     sm.node       = uniset_conf()->getLocalNode();
                     sm.value      = val;
-                    sm.undefined  = li->second.undefined;
-                    sm.sensor_type  = li->second.type;
-                    sm.priority   = (Message::Priority)li->second.priority;
+                    sm.undefined  = li->second->undefined;
+                    sm.sensor_type  = li->second->type;
+                    sm.priority   = (Message::Priority)li->second->priority;
                     sm.consumer   = ci.id;
                     sm.tid        = tid;
-                    sm.ci         = li->second.ci;
+                    sm.ci         = li->second->ci;
 
                     // Проверка нижнего предела
                     if( val <= lowLimit )
@@ -700,7 +698,7 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
                                          bool send_msg )
 {
         // поиск списка порогов
-        auto lst = askTMap.end();
+        AskThresholdMap::iterator lst = askTMap.end();
 
         {
              uniset_rwmutex_rlock lock(trshMutex);
@@ -721,15 +719,15 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
         SensorMessage sm;
         sm.id           = sid;
         sm.node         = uniset_conf()->getLocalNode();
-        sm.sensor_type  = li->second.type;
-        sm.priority     = (Message::Priority)li->second.priority;
-        sm.ci           = li->second.ci;
+        sm.sensor_type  = li->second->type;
+        sm.priority     = (Message::Priority)li->second->priority;
+        sm.ci           = li->second->ci;
         {
-            uniset_rwmutex_rlock lock(li->second.val_lock);
-            sm.value      = li->second.value;
-            sm.undefined  = li->second.undefined;
-            sm.sm_tv_sec  = li->second.tv_sec;
-            sm.sm_tv_usec = li->second.tv_usec;
+            uniset_rwmutex_rlock lock(li->second->val_lock);
+            sm.value      = li->second->value;
+            sm.undefined  = li->second->undefined;
+            sm.sm_tv_sec  = li->second->tv_sec;
+            sm.sm_tv_usec = li->second->tv_usec;
         }
 
         // текущее время
@@ -740,10 +738,10 @@ void IONotifyController::checkThreshold( IOStateList::iterator& li,
 
      {
         uniset_rwmutex_rlock l(lst->second.mut);
-        for( auto it=lst->second.list.begin(); it!=lst->second.list.end(); ++it ) 
+        for( auto it=lst->second.list.begin(); it!=lst->second.list.end(); ++it )
         {
             // Используем здесь значение скопированное в sm.value
-            // чтобы не делать ещё раз lock на li->second.value
+            // чтобы не делать ещё раз lock на li->second->value
             IONotifyController_i::ThresholdState state = it->state;
 
             if( !it->invert )
@@ -945,38 +943,36 @@ IONotifyController_i::ThresholdsListSeq* IONotifyController::getThresholdsList()
     return res;
 }
 // -----------------------------------------------------------------------------
-void IONotifyController::onChangeUndefinedState( IOStateList::iterator& lit, IOController* ic )
+void IONotifyController::onChangeUndefinedState( std::shared_ptr<USensorInfo>& it, IOController* ic )
 {
-    USensorInfo& it(lit->second);
-
     SensorMessage sm;
 
     // эти поля можно копировать без lock, т.к. они не меняются
-    sm.id     = it.si.id;    
-    sm.node = it.si.node;
-    sm.undefined = it.undefined;
-    sm.priority     = (Message::Priority)it.priority;
-    sm.sensor_type     = it.type;
+    sm.id   = it->si.id;
+    sm.node = it->si.node;
+    sm.undefined = it->undefined;
+    sm.priority     = (Message::Priority)it->priority;
+    sm.sensor_type  = it->type;
     sm.supplier     = DefaultObjectId;
 
     { // lock
-        uniset_rwmutex_rlock lock(it.val_lock);
-        sm.value         = it.value;
-        sm.sm_tv_sec     = it.tv_sec;
-        sm.sm_tv_usec     = it.tv_usec;
-        sm.ci            = it.ci;
+        uniset_rwmutex_rlock lock(it->val_lock);
+        sm.value         = it->value;
+        sm.sm_tv_sec     = it->tv_sec;
+        sm.sm_tv_usec    = it->tv_usec;
+        sm.ci            = it->ci;
     } // unlock
 
     try
     {
-        if( !it.dbignore )
+        if( !it->dbignore )
             loggingInfo(sm);
     }
     catch(...){}
 
     { // lock
       uniset_rwmutex_rlock lock(askIOMutex);
-      auto it1 = askIOList.find(it.si.id);
+      auto it1 = askIOList.find(it->si.id);
       if( it1!=askIOList.end() )
           send(it1->second, sm);
     } // unlock

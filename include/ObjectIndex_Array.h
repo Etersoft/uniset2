@@ -24,7 +24,7 @@
 #define ObjectIndex_Array_H_
 // --------------------------------------------------------------------------
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <ostream>
 #include "UniSetTypes.h"
 #include "Exceptions.h"
@@ -56,7 +56,7 @@ class ObjectIndex_Array:
     private:
 
         int numOfObject;
-        typedef std::map<std::string, ObjectId> MapObjectKey;
+        typedef std::unordered_map<std::string, ObjectId> MapObjectKey;
         MapObjectKey::iterator MapObjectKeyIterator;
         MapObjectKey mok;
         const ObjectInfo *objectInfo;

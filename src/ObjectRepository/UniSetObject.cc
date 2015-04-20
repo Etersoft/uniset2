@@ -21,6 +21,8 @@
  *  \author Pavel Vainerman
 */
 // -------------------------------------------------------------------------- 
+#include <unordered_map>
+#include <map>
 #include <unistd.h>
 #include <signal.h>
 #include <iomanip>
@@ -477,10 +479,10 @@ struct tmpConsumerInfo
 {
     tmpConsumerInfo(){}
 
-    map<UniSetTypes::KeyType,VoidMessage> smap;
-    map<int,VoidMessage> tmap;
-    map<int,VoidMessage> sysmap;
-    map<CInfo,VoidMessage> cmap;
+    unordered_map<UniSetTypes::KeyType,VoidMessage> smap;
+    unordered_map<int,VoidMessage> tmap;
+    unordered_map<int,VoidMessage> sysmap;
+    std::map<CInfo,VoidMessage> cmap;
     list<VoidMessage> lstOther;
 };
 
@@ -492,7 +494,7 @@ void UniSetObject::cleanMsgQueue( MessagesQueue& q )
     // проходим по всем известным нам типам(базовым)
     // ищем все совпадающие сообщения и оставляем только последние...
     VoidMessage m;
-    map<UniSetTypes::ObjectId,tmpConsumerInfo> consumermap;
+    unordered_map<UniSetTypes::ObjectId,tmpConsumerInfo> consumermap;
 
 //        while( receiveMessage(vm) );
 //        while нельзя использовать потому-что, из параллельного потока

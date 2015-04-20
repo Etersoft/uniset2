@@ -25,7 +25,7 @@
 #ifndef IONotifyController_H_
 #define IONotifyController_H_
 //---------------------------------------------------------------------------
-#include <map>
+#include <unordered_map>
 #include <list>
 #include <string>
 
@@ -193,7 +193,7 @@ class IONotifyController:
         };
 
         /*! словарь: датчик -> список потребителей */
-        typedef std::map<UniSetTypes::KeyType,ConsumerListInfo> AskMap;
+        typedef std::unordered_map<UniSetTypes::KeyType,ConsumerListInfo> AskMap;
 
 
         /*! Информация о пороговом значении */
@@ -261,13 +261,13 @@ class IONotifyController:
 
             UniSetTypes::uniset_rwmutex mut;
             IOController_i::SensorInfo si;  /*!< аналоговый датчик */
-            IOStateList::iterator ait;
+            std::shared_ptr<USensorInfo> ait;
             UniversalIO::IOType type;
             ThresholdExtList list;   /*!< список порогов по данному аналоговому датчику */
         };
 
         /*! словарь: аналоговый датчик --> список порогов по нему */
-        typedef std::map<UniSetTypes::KeyType,ThresholdsListInfo> AskThresholdMap;
+        typedef std::unordered_map<UniSetTypes::KeyType,ThresholdsListInfo> AskThresholdMap;
 
     protected:
         IONotifyController();
@@ -275,7 +275,7 @@ class IONotifyController:
         virtual void initItem( IOStateList::iterator& it, IOController* ic );
 
         // ФИЛЬТРЫ
-        bool myIOFilter(const USensorInfo& ai, CORBA::Long newvalue, UniSetTypes::ObjectId sup_id);
+        bool myIOFilter(std::shared_ptr<USensorInfo>& ai, CORBA::Long newvalue, UniSetTypes::ObjectId sup_id);
 
         //! посылка информации об изменении состояния датчика
         virtual void send( ConsumerListInfo& lst, UniSetTypes::SensorMessage& sm );
@@ -304,7 +304,7 @@ class IONotifyController:
 
         NCRestorer* restorer;
 
-        void onChangeUndefinedState( IOStateList::iterator& it, IOController* ic );
+        void onChangeUndefinedState( std::shared_ptr<USensorInfo>& it, IOController* ic );
 
     private:
         friend class NCRestorer;

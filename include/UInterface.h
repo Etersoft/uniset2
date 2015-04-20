@@ -28,7 +28,7 @@
 #include <memory>
 #include <string>
 #include <sstream>
-#include <map>
+#include <unordered_map>
 #include <functional>
 #include <omniORB4/CORBA.h>
 #include "Exceptions.h"
@@ -281,7 +281,7 @@ class UInterface
                     }
                 };
 
-                typedef std::map<int, Info> CacheMap;
+                typedef std::unordered_map<int, Info> CacheMap;
                 mutable CacheMap mcache;
                 mutable UniSetTypes::uniset_rwmutex cmutex;
                 unsigned int MaxSize;      /*!< максимальный размер кэша */

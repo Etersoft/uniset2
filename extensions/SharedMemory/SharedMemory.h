@@ -2,6 +2,7 @@
 #ifndef SharedMemory_H_
 #define SharedMemory_H_
 // -----------------------------------------------------------------------------
+#include <unordered_map>
 #include <string>
 #include <memory>
 #include <deque>
@@ -341,7 +342,7 @@ class SharedMemory:
         // вводим не просто map, а "map списка историй".
         // точнее итераторов-историй.
         typedef std::list<History::iterator> HistoryItList;
-        typedef std::map<UniSetTypes::ObjectId,HistoryItList> HistoryFuseMap;
+        typedef std::unordered_map<UniSetTypes::ObjectId,HistoryItList> HistoryFuseMap;
 
         typedef sigc::signal<void, const HistoryInfo&> HistorySlot;
         HistorySlot signal_history(); /*!< сигнал о срабатывании условий "сброса" дампа истории */
@@ -428,7 +429,7 @@ class SharedMemory:
         History hist;
         HistoryFuseMap histmap;  /*!< map для оптимизации поиска */
 
-        virtual void updateHistory( IOStateList::iterator& it, IOController* );
+        virtual void updateHistory( std::shared_ptr<IOController::USensorInfo>& it, IOController* );
         virtual void saveHistory();
 
         void buildHistoryList( xmlNode* cnode );
