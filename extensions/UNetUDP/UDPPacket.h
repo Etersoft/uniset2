@@ -49,9 +49,12 @@ namespace UniSetUDP
     }__attribute__((packed));
 
     // Хотелось бы не вылезать за общий размер посылаемых пакетов 8192. (550,900 --> 8133)
+    // ------
+    // временное резрешение на A=800,D=5000! DI/DO
+    // 800*8 + 5000*4 + 5000/8 = 27025 байт максимальный размер данных + служебные заголовки
 
-    static const size_t MaxACount = 550;
-    static const size_t MaxDCount = 900;
+    static const size_t MaxACount = 800;
+    static const size_t MaxDCount = 5000;
     static const size_t MaxDDataCount = 1 + MaxDCount / 8*sizeof(unsigned char);
 
     struct UDPPacket
