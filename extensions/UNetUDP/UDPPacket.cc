@@ -235,6 +235,15 @@ size_t UDPMessage::transport_msg( UDPPacket& p )
 	return i;
 }
 // -----------------------------------------------------------------------------
+long UDPMessage::getIdentity()
+{
+    if( acount > 0 )
+        return a_dat[0].id;
+    if( dcount > 0 )
+        return d_id[0];
+    return num;
+}
+// -----------------------------------------------------------------------------
 UDPMessage::UDPMessage( UDPPacket& p )
 {
 	getMessage(*this, p);
