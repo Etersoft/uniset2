@@ -865,11 +865,11 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-        mycrit  &lt;&lt; "(setMsg): попытка послать сообщение с DefaultObjectId" &lt;&lt; endl;
+		mycrit &lt;&lt; myname &lt;&lt; "(setMsg): попытка послать сообщение с DefaultObjectId" &lt;&lt; endl;
 		return false;	
 	}
 
-    mylog8 &lt;&lt; "(setMsg): " &lt;&lt; ( _state ? "SEND " : "RESET " ) &lt;&lt; endl;
+    mylog8 &lt;&lt; myname &lt;&lt; "(setMsg): " &lt;&lt; ( _state ? "SEND " : "RESET " ) &lt;&lt; endl;
 
     // взводим автоматический сброс
     if( _state )
@@ -890,14 +890,14 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 		}
 	    catch( const std::exception&amp;ex )
     	{
-        	mycrit &lt;&lt; "(setMsg): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
+        	mycrit &lt;&lt; myname &lt;&lt; "(setMsg): catch " &lt;&lt; ex.what()  &lt;&lt;   endl;
 	    }
 
 		return false;
 	}
 	</xsl:for-each>
 	
-    mylog8 &lt;&lt; "(setMsg): not found MessgeOID?!!" &lt;&lt; endl;
+    mylog8 &lt;&lt; myname &lt;&lt; "(setMsg): not found MessgeOID?!!" &lt;&lt; endl;
 	return false;
 }
 // -----------------------------------------------------------------------------
@@ -1196,12 +1196,11 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 {
 	if( _code == UniSetTypes::DefaultObjectId )
 	{
-        mycrit  &lt;&lt; "(setMsg): попытка послать сообщение с DefaultObjectId"
-				&lt;&lt; endl;
+        mycrit  &lt;&lt; myname &lt;&lt; "(setMsg): попытка послать сообщение с DefaultObjectId" &lt;&lt; endl;
 		return false;	
 	}
 
-    mylog8 &lt;&lt; "(setMsg): (" &lt;&lt; _code  &lt;&lt; ")"  &lt;&lt; ( _state ? "SEND" : "RESET" ) &lt;&lt; endl;
+    mylog8 &lt;&lt; myname &lt;&lt; "(setMsg): (" &lt;&lt; _code  &lt;&lt; ")"  &lt;&lt; ( _state ? "SEND" : "RESET" ) &lt;&lt; endl;
 
     // взводим таймер автоматического сброса
     if( _state )
@@ -1213,7 +1212,7 @@ bool <xsl:value-of select="$CLASSNAME"/>_SK::setMsg( UniSetTypes::ObjectId _code
 	</xsl:call-template>
 </xsl:for-each>
 	
-    mylog8 &lt;&lt; "(setMsg): not found MessgeOID?!!" &lt;&lt; endl;
+    mylog8 &lt;&lt; myname &lt;&lt; "(setMsg): not found MessgeOID?!!" &lt;&lt; endl;
 	return false;
 }
 // -----------------------------------------------------------------------------
